@@ -18,50 +18,24 @@ the mouse (by clicking any mouse button in the desired window)  or  by
 specifying its' window id on the command line with the \fB-id\fP argument.
 There is also a special \fB-root\fP argument to quickly obtain information
 on X's root window.
-
-
 .PP
   The following is a sample summary taken with
-no arguments specified.
+no arguments specified:
 
 xwininfo ==> Please select the window you wish
          ==> information on by clicking the
          ==> mouse in that window.
 
-xwininfo ==> Window id: 0x10031 (has no name)
-         ==> Parent window id: 0x0
-         ==> Number of children: 13
-         ====> Child window id: 0xb00046
-         ====> Child window id: 0xb2004f
-         ====> Child window id: 0x630051
-         ====> Child window id: 0x5f0055
-         ====> Child window id: 0x5c0058
-         ====> Child window id: 0x55005c
-         ====> Child window id: 0x53005e
-         ====> Child window id: 0x510060
-         ====> Child window id: 0x42000c
-         ====> Child window id: 0x43000b
-         ====> Child window id: 0x3d0011
-         ====> Child window id: 0xa0028
-         ====> Child window id: 0x500061
-         ==> Associated window id: 0x0
-         ==> Window type: IsOpaque
-         ==> Window state: IsMapped
+xwininfo ==> Window id: 0x8006b (fred)
+
          ==> Upper left X: 0
          ==> Upper left Y: 0
-         ==> Width: 1088
+         ==> Width: 1024
          ==> Height: 864
+         ==> Depth: 1
          ==> Border width: 0
-         ==> Resize base width: 0
-         ==> Resize base height: 0
-         ==> Resize width increment: 1
-         ==> Resize height increment: 1
-         ==> Root absolute mouse X Position: 691
-         ==> Root absolute mouse Y Position: 261
-         ==> Target relative mouse X Position: 691
-         ==> Target relative mouse Y Position: 261
-
-
+         ==> Window class: InputOutput
+         ==> Window Map State: IsUnviewable
 
 .SH ARGUMENT SUMMARY
 .PP
