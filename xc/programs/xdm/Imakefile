@@ -1,8 +1,10 @@
-XCOMM $XConsortium: Imakefile,v 1.69 94/03/31 18:32:39 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.70 94/03/31 22:34:52 gildea Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
+#ifndef BuildChooser
 #define BuildChooser !SystemV
+#endif
 
 #ifndef SharedLibXdmGreet
 /* Can someone figure out how to make this work on more systems? */
@@ -81,9 +83,9 @@ LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB
 #if BuildChooser
           SRCS3 = chooser.c
           OBJS3 = chooser.o
-#endif
        DEPLIBS3 = XawClientDepLibs $(DEPXDMCPLIB)
           LIBS3 = XawClientLibs $(XDMCPLIB)
+#endif
        
           SRCS4 = sessreg.c
           OBJS4 = sessreg.o
