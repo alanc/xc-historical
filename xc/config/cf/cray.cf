@@ -1,4 +1,4 @@
-/**/# platform:  $XConsortium: cray.cf,v 1.4 89/06/21 10:18:18 jim Exp $
+/**/# platform:  $XConsortium: cray.cf,v 1.5 89/07/11 11:32:56 jim Exp $
 
 
 /*
@@ -21,4 +21,8 @@
 #define SignalReturnProcType void
 
 #define NeedBerklibInXlib	YES
-#define ConnectionFlags -DTCPCONN
+#if UNICOS4
+#define ConnectionFlags -DTCPCONN -DOLDTCP
+#else
+#define ConnectionFlags -DTCPCONN 
+#endif
