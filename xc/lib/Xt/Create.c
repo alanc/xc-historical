@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Create.c,v 1.64 89/11/08 17:36:57 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Create.c,v 1.65 89/11/14 11:22:22 swick Exp $";
 /* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
 #endif /*lint*/
 
@@ -175,7 +175,6 @@ static Widget _XtCreate(
     register Widget	    widget;
     XtCacheRef		    *cache_refs;
     register int	    i;
-    extern XtCacheRef* _XtGetResources();
 
     if (! (widget_class->core_class.class_inited))
 	XtInitializeWidgetClass(widget_class);
@@ -205,10 +204,10 @@ static Widget _XtCreate(
 
     /* fetch resources */
     cache_refs = _XtGetResources(widget, args, num_args, 
-			          typed_args, num_typed_args);
+			          typed_args, &num_typed_args);
 
     /* Convert typed arg list to arg list */
-    if (typed_args != NULL) {
+    if (typed_args != NULL && num_typed_args > 0) {
 	args = (ArgList)ALLOCATE_LOCAL(sizeof(Arg) * num_typed_args);
 	if (args == NULL) _XtAllocError(NULL);
 	for (i = 0; i < num_typed_args; i++) {
@@ -242,7 +241,7 @@ static Widget _XtCreate(
     bcopy ((char *) widget, (char *) req_widget, (int) size);
     CallInitialize (XtClass(widget), req_widget, widget, args, num_args);
 
-    if (typed_args != NULL) {
+    if (typed_args != NULL && num_typed_args > 0) {
 	
 	/* in GetResources we may have dynamically alloc'ed store to hold a */
 	/* copy of a resource which was larger then sizeof(XtARrgVal) .... */
