@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: daemon.c,v 1.9 93/09/29 17:27:22 rws Exp $
+ * $XConsortium: daemon.c,v 1.10 94/01/18 15:21:49 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -31,19 +31,39 @@
 #ifdef hpux
 #include <sys/ptyio.h>
 #endif
+#include <errno.h>
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
+#include <sys/types.h>
+#ifdef X_NOT_POSIX
+#define Pid_t int
+#else
+#define Pid_t pid_t
+#endif
 
 extern void exit ();
 
 BecomeOrphan ()
 {
+    Pid_t child_id;
     /*
      * fork so that the process goes into the background automatically. Also
      * has a nice side effect of having the child process get inherited by
      * init (pid 1).
+     * Separate the child into its own process group before the parent
+     * exits.  This eliminates the possibility that the child might get
+     * killed when the init script that's running xdm exits.
      */
 
-    if (fork ())
+    child_id = fork();
+    if (child_id)
+    {
+	if (setpgrp(child_id, child_id) != 0)
+	    LogError("setting process grp for daemon failed, errno = %d\n",
+		     errno);
 	exit (0);
+    }
 }
 
 BecomeDaemon ()
