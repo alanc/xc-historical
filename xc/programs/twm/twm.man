@@ -222,13 +222,13 @@ This variable specifies the default background color in the gray pattern
 used in unhighlighted borders (only if \fBNoHighlight\fP hasn't been set),
 and may only be given within a \fBColor\fP or \fBMonochrome\fP list.  The
 optional \fIwincolorlist\fP allows per-window colors to be specified.
-The default  is "black".
+The default  is "white".
 .IP "\fBBorderTileForeground\fP \fIstring\fP [{ \fIwincolorlist\fP }]" 8
 This variable specifies the default foreground color in the gray pattern
 used in unhighlighted borders (only
 if \fBNoHighlight\fP hasn't been set), and may only be given within a 
 \fBColor\fP or \fBMonochrome\fP list.  The optional \fIwincolorlist\fP allows
-per-window colors to be specified.  The default is "white".
+per-window colors to be specified.  The default is "black".
 .IP "\fBBorderWidth\fP \fIpixels\fP" 8
 This variable specifies the width in pixels of the border surrounding
 all client window frames if \fBClientBorderWidth\fP has not been specified.
@@ -378,7 +378,7 @@ if a bitmap file cannot be found in any of the directories
 in the \fBbitmapFilePath\fP resource.
 .IP "\fBIconFont\fP \fIstring\fP" 8
 This variable specifies the font to be used to display icon names within
-icons.  The default is "8x13".
+icons.  The default is "variable".
 .IP "\fBIconForeground\fP \fIstring\fP [{ \fIwin-list\fP }]" 8
 This variable specifies the foreground color to be used when displaying icons,
 and may only be specified inside of a 
@@ -412,7 +412,7 @@ iconified (such as \fIxclock\fP or \fIxload\fP) from taking up space in
 the icon manager.
 .IP "\fBIconManagerFont\fP \fIstring\fP" 8
 This variable specifies the font to be used when displaying icon manager
-entries.  The default is "8x13".
+entries.  The default is "variable".
 .IP "\fBIconManagerForeground\fP \fIstring\fP [{ \fIwin-list\fP }]" 8
 This variable specifies the foreground color to be used when displaying
 icon manager entries, and may only be specified inside of a 
@@ -523,7 +523,7 @@ and can only be specified inside of a
 \fBColor\fP or \fBMonochrome\fP list.  The default is "white".
 .IP "\fBMenuFont\fP \fIstring\fP" 8
 This variable specifies the font to use when displaying menus.  The default
-is "8x13".
+is "variable".
 .IP "\fBMenuForeground\fP \fIstring\fP" 8
 This variable specifies the foreground color used for menus,
 and can only be specified inside of a 
@@ -711,7 +711,7 @@ much space as possible and to not have a border.
 The default is 1.
 .IP "\fBTitleFont\fP \fIstring\fP" 8
 This variable specifies the font to used for displaying window names in
-titlebars.  The default is "8x13".
+titlebars.  The default is "variable".
 .IP "\fBTitleForeground\fP \fIstring\fP [{ \fIwin-list\fP }]" 8
 This variable specifies the foreground color used in titlebars, and
 may only be specified inside of a 
