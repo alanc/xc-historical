@@ -1,4 +1,4 @@
-/* $XConsortium: Xlcint.h,v 11.21 94/07/06 14:46:16 kaleb Exp kaleb $ */
+/* $XConsortium: Xlcint.h,v 11.22 94/09/01 18:44:49 kaleb Exp kaleb $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -245,7 +245,7 @@ typedef XIM (*XOpenIMProc)(
 #endif
 );
 
-typedef Bool (*XRegisterIMInstantiateCallbackProc)(
+typedef Bool (*XRegisterIMInstantiateCBProc)(
 #if NeedFunctionPrototypes
     XLCd		/* lcd */,
     Display*		/* display */,
@@ -257,7 +257,7 @@ typedef Bool (*XRegisterIMInstantiateCallbackProc)(
 #endif
 );
 
-typedef Bool (*XUnregisterIMInstantiateCallbackProc)(
+typedef Bool (*XUnregisterIMInstantiateCBProc)(
 #if NeedFunctionPrototypes
     XLCd		/* lcd */,
     Display*		/* display */,
@@ -343,8 +343,8 @@ typedef struct {
     XwcTextListToTextPropertyProc	wc_text_list_to_prop;
     XwcFreeStringListProc		wc_free_string_list;
     XDefaultStringProc			default_string;
-    XRegisterIMInstantiateCallbackProc	register_callback;
-    XUnregisterIMInstantiateCallbackProc unregister_callback;
+    XRegisterIMInstantiateCBProc	register_callback;
+    XUnregisterIMInstantiateCBProc	unregister_callback;
 } XLCdMethodsRec, *XLCdMethods;
 
 
