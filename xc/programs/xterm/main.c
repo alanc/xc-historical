@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.219 94/02/04 20:51:08 kaleb Exp $";
+static char *rid="$XConsortium: main.c,v 1.220 94/03/29 16:55:19 rws Exp $";
 #endif /* lint */
 
 /*
@@ -1373,14 +1373,22 @@ int pty_search(pty)
 	while (PTYCHAR2[devindex]) {
 	    ttydev [strlen(ttydev) - 1] = ptydev [strlen(ptydev) - 1] =
 		PTYCHAR2 [devindex];
+	    /* for next time around loop or next entry to this function */
+	    devindex++;
 	    if ((*pty = open (ptydev, O_RDWR)) >= 0) {
-		/* We need to set things up for our next entry
-		 * into this function!
+#ifdef sun
+		/* Need to check the process group of the pty.
+		 * If it exists, then the slave pty is in use,
+		 * and we need to get another one.
 		 */
-		(void) devindex++;
+		int pgrp_rtn;
+		if (ioctl(*pty, TIOCGPGRP, &pgrp_rtn) == 0 || errno != EIO) {
+		    close(*pty);
+		    continue;
+		}
+#endif /* sun */
 		return 0;
 	    }
-	    devindex++;
 	}
 	devindex = 0;
 	(void) letter++;
