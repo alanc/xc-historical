@@ -16,5 +16,5 @@ FontTarget(9x15)
 FontTarget(cursor)
 
 clean::
-	$(RM) *.snf fonts.dir
+	$(RM) *.snf *.snf.Z fonts.dir
 
