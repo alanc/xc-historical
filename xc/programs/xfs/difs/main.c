@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: main.c,v 1.5 91/05/13 16:55:59 gildea Exp $ */
 /*
  * Font server main routine
  */
@@ -93,12 +93,11 @@ main(argc, argv)
 	    serverClient = (ClientPtr) fsalloc(sizeof(ClientRec));
 	    if (!serverClient)
 		FatalError("couldn't create server client");
-	    serverClient->sequence = 0;
-	    serverClient->clientGone = CLIENT_ALIVE;
-	    serverClient->index = SERVER_CLIENT;
 	}
 	ResetSockets();
 	/* init per-cycle stuff */
+
+	InitClient (serverClient, SERVER_CLIENT, (pointer) 0);
 
 	clients[SERVER_CLIENT] = serverClient;
 	currentMaxClients = MINCLIENT;
