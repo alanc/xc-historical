@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.61 88/08/08 12:49:50 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.62 88/08/08 13:22:08 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -1413,6 +1413,13 @@ spawn ()
 		}
 		signal(SIGHUP, SIG_IGN);
 		if (get_ty) {
+#ifdef TIOCCONS
+		    if (Console) {
+			int on = 1;
+			if (ioctl (1, TIOCCONS, (char *)&on) == -1)
+			    SysError (ERROR_TIOCCONS);
+		    }
+#endif /* TIOCCONS */
 
 #ifdef SYSV				/* macII does NOT want this */
 			ioctl (0, TIOCTTY, &zero);
