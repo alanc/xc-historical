@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.81 91/01/08 12:21:06 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.82 91/01/09 17:55:30 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -121,7 +121,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.81 91/01/08 12:21:06 rws Exp $
 #define FontOSDefines /**/
 #endif
 #ifndef FontDefines
-#define FontDefines -DFONT_SNF -DFONT_BDF -DCOMPRESSED_FONTS FontOSDefines
+#define FontDefines -DFONT_SNF -DFONT_BDF -DFONT_PCF -DCOMPRESSED_FONTS FontOSDefines
 #endif
 #ifndef ExtensionOSDefines
 #define ExtensionOSDefines /**/
@@ -349,7 +349,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.81 91/01/08 12:21:06 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.81 91/01/08 12:21:06 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.82 91/01/09 17:55:30 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -395,14 +395,22 @@ XCOMM $XConsortium: Project.tmpl,v 1.81 91/01/08 12:21:06 rws Exp $
             IMAKE = imake		/* assume BINDIR in path */
            DEPEND = makedepend		/* assume BINDIR in path */
               RGB = rgb			/* assume BINDIR in path */
+#ifdef PcfFonts
+            FONTC = bdftopcf		/* assume BINDIR in path */
+#else
             FONTC = bdftosnf		/* assume BINDIR in path */
+#endif
         MKFONTDIR = mkfontdir		/* assume BINDIR in path */
         MKDIRHIER = BourneShell $(BINDIR)/mkdirhier
 #else
             IMAKE = $(IMAKESRC)/imake
            DEPEND = DependCmd
               RGB = $(RGBSRC)/rgb
+#ifdef PcfFonts
+            FONTC = $(BDFTOPCFSRC)/bdftopcf
+#else
             FONTC = $(BDFTOSNFSRC)/bdftosnf
+#endif
         MKFONTDIR = $(MKFONTDIRSRC)/mkfontdir
         MKDIRHIER = BourneShell $(SCRIPTSRC)/mkdirhier.sh
 #endif
@@ -431,6 +439,11 @@ XCOMM $XConsortium: Project.tmpl,v 1.81 91/01/08 12:21:06 rws Exp $
       XDMCPLIBSRC = $(LIBSRC)/Xdmcp
       BDFTOSNFSRC = $(FONTSRC)/bdftosnf
      MKFONTDIRSRC = $(FONTSRC)/mkfontdir
+#ifdef PcfFonts
+      BDFTOSNFSRC = $(FONTSRC)/tools/bdftosnf
+      BDFTOPCFSRC = $(FONTSRC)/tools/bdftopcf
+     MKFONTDIRSRC = $(FONTSRC)/tools/mkfontdir
+#endif
      EXTENSIONSRC = $(TOP)/extensions
 
 /*

@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.80 90/12/21 16:35:00 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.81 90/12/26 11:32:59 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1393,7 +1393,7 @@ fonts.dir:  $(OBJS)							@@\
 	$(MKFONTDIR) .							@@\
 									@@\
 clean::									@@\
-	$(RM) *.snf *.snf.Z fonts.dir
+	$(RM) *.snf *.snf.Z *.pcf *.pcf.Z fonts.dir
 #endif /* MakeFonts */
 
 
@@ -1418,33 +1418,33 @@ install::  fonts.alias							@@\
 	$(INSTALL) -c $(INSTDATFLAGS) fonts.alias dest
 #endif /* InstallFontAliases */
 
+#define FontSrc(basename) basename.bdf
+#define FontBaseObj(basename) basename.pcf
 
 /*
- * CompressedFontTarget - generate rules to convert a .bdf file into a 
- * compressed .snf file.
+ * UncompressedFontTarget
+ */
+#ifndef UncompressedFontTarget
+#define UncompressedFontTarget(basename)				@@\
+FontBaseObj(basename):  FontSrc(basename)				@@\
+	$(FONTC) $(FONTCFLAGS) $? >$@
+#endif /* CompressedFontTarget */
+
+/*
+ * CompressedFontTarget
  */
 #ifndef CompressedFontTarget
 #define CompressedFontTarget(basename)					@@\
-basename.snf.Z:  basename.bdf						@@\
+FontBaseObj(basename).Z:  FontSrc(basename)				@@\
 	$(FONTC) $(FONTCFLAGS) $? | $(COMPRESS) > $@
 #endif /* CompressedFontTarget */
 
-
-#define FontSrc(basename) basename.bdf
-
 #ifdef CompressAllFonts
 #define FontTarget(basename) CompressedFontTarget(basename)
-#define FontObj(basename) basename.snf.Z
+#define FontObj(basename) FontBaseObj(basename).Z
 #else
-/*
- * FontTarget - generate rules to convert a .bdf file into a .snf file.
- */
-#ifndef FontTarget
-#define FontTarget(basename)						@@\
-basename.snf:  basename.bdf						@@\
-	$(FONTC) $(FONTCFLAGS) $? >$@
-#define FontObj(basename) basename.snf
-#endif /* FontTarget */
+#define FontTarget(basename) UncompressedFontTarget(basename)
+#define FontObj(basename) FontBaseObj(basename)
 #endif /* CompressAllFonts */
 
 /*
