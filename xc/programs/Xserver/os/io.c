@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: io.c,v 1.40 88/07/20 13:23:11 toddb Exp $ */
+/* $Header: io.c,v 1.41 88/07/20 17:21:17 toddb Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -301,14 +301,13 @@ FlushClient(who, oc, extraBuf, extraCount)
     ClientPtr who;
     OsCommPtr oc;
     unsigned char *extraBuf;
-    int extraCount;
+    int extraCount; /* do not modify... returned below */
 {
 #define OUTTIME 2
     int connection = oc->fd,
     	total, n, i, notWritten, written,
 	mask[mskcnt],
-	iovCnt = 0,
-	padBytes = 0;
+	iovCnt = 0;
     struct timeval outtime;
     struct iovec iov[3];
     char padBuffer[3];
@@ -328,7 +327,7 @@ FlushClient(who, oc, extraBuf, extraCount)
 	iov[iovCnt++].iov_base = (caddr_t)extraBuf;
 	if (extraCount & 3)
 	{
-	    total += iov[iovCnt].iov_len = padBytes = padlength[extraCount & 3];
+	    total += iov[iovCnt].iov_len = padlength[extraCount & 3];
 	    iov[iovCnt++].iov_base = padBuffer;
 	}
     }
@@ -383,22 +382,22 @@ FlushClient(who, oc, extraBuf, extraCount)
 	{
 	    if (written > 0)
 	    {
-		oc->count = oc->count - written;
+		oc->count -= written;
 		bcopy(oc->buf + written, oc->buf, oc->count);
+		written = 0;
 	    }
 	}
-	else /* written >= oc->count */
+	else
 	{
-	    /* simply add the "extra" buffer to the current buffer */
-	    extraBuf += notWritten;
-	    extraCount -= written - oc->count; /* does not include pad */
+	    written -= oc->count;
 	    oc->count = 0;
 	}
-	if ((n = oc->count + extraCount + padBytes) > oc->bufsize)
+
+	if (notWritten > oc->bufsize)
 	{
 	    /* allocate at least enough to contain it plus one
 	       OutputBufferSize */
-	    oc->bufsize += n + OutputBufferSize;
+	    oc->bufsize = notWritten + OutputBufferSize;
 	    oc->buf = (unsigned char *)Xrealloc(oc->buf, oc->bufsize);
 	    if (oc->buf == NULL)
 	    {
@@ -418,11 +417,14 @@ FlushClient(who, oc, extraBuf, extraCount)
 		return(-1);
 	    }
 	}
-	if (extraCount)
- 	{
-	    bcopy (extraBuf, oc->buf + oc->count, extraCount);
-	    oc->count += extraCount + padBytes;
-	}
+
+	/* If the amount written extended into the padBuffer, then the
+	   difference "extraCount - written" may be less than 0 */
+	if ((n = extraCount - written) > 0)
+	    bcopy (extraBuf + written, oc->buf + oc->count, n);
+
+	oc->count = notWritten; /* this will include the pad */
+
 	return extraCount; /* return only the amount explicitly requested */
     }
 
