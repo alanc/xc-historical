@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.36 89/12/12 12:05:07 jim Exp $
+ * $XConsortium: main.c,v 1.37 89/12/12 12:44:15 jim Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -194,6 +194,9 @@ main(argc, argv)
 		}
 	}
 	*incp++ = INCLUDEDIR;
+#ifdef CRAY
+	*incp++ = "/usr/include/stdc";
+#endif
 
 	redirect(startat, makefile);
 
