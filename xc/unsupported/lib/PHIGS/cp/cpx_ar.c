@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cpx_ar.c,v 5.1 91/02/16 09:48:20 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -34,6 +34,10 @@ SOFTWARE.
 #include "PEXprotost.h"
 #include "PEXproto.h"
 #include "PEX.h"
+
+#ifndef L_XTND
+#define  L_XTND      2  /* relative to end of file */
+#endif
 
 static int	get_ar_structure_network_ids();
 static int	get_css_struct_ids();
@@ -134,11 +138,7 @@ Phg_ret *ret;
 			(phg_ar_write_afd(arh))) {
 		    ERR_BUF(cph->erh, ERR400);
 		} else {
-#ifndef SYSV
 		    arh->afiOffset = (CARD32)lseek(arh->fd, 0L, L_XTND);
-#else
-		    arh->afiOffset = (CARD32)lseek(arh->fd, 0L, SEEK_END);
-#endif
 		    if (phg_ar_write_toc(arh)) {
 			ERR_BUF(cph->erh, ERR400);
 		    } else {
