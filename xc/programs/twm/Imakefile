@@ -11,9 +11,9 @@
 #endif
 
          YFLAGS = -d
-        DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
-LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
-       LINTLIBS = $(LINTXMU) $(LINTXLIB)
+        DEPLIBS = $(DEPXMULIB) $(DEPEXTENSIONLIB) $(DEPXLIB)
+LOCAL_LIBRARIES = $(XMULIB) $(EXTENSIONLIB) $(XLIB)
+       LINTLIBS = $(LINTXMU) $(LINTEXTENSIONLIB) $(LINTXLIB)
         DEFINES = ExtensionDefines $(SIGNAL_DEFINES) $(PUTENVDEF)
 
            SRCS = gram.c lex.c deftwmrc.c add_window.c gc.c list.c twm.c \
