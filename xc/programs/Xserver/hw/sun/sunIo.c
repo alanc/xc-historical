@@ -133,14 +133,7 @@ ProcessInputEvents ()
     int         n;
 #endif SUN_WINDOWS
 
-    /*
-     *  Defensive programming - only reset sunIOPending (preventing
-     *  further calls to ProcessInputEvents() until a future SIGIO)
-     *  if we have actually received a SIGIO,  so we know it works.
-     */
-    if (sunSigIO) {
-	isItTimeToYield = 0;
-    }
+    sunSigIO = 0;
     pPointer = LookupPointerDevice();
     pKeyboard = LookupKeyboardDevice();
 
