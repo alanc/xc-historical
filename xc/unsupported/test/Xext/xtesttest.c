@@ -1,4 +1,4 @@
-/* $XConsortium: xtesttest.c,v 1.5 92/03/25 12:05:29 rws Exp $ */
+/* $XConsortium: xtesttest.c,v 1.6 93/02/05 17:08:51 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -255,7 +255,7 @@ test_xinput_devices(dpy, w, major_version, minor_version)
     XTestFakeMotionEvent(dpy, DefaultScreen(dpy), 10, 10, 0);
     XSync(dpy,True);
     if (keydevice) {
-	XTestFakeDeviceKeyEvent(dpy, keydevice, keycode, 6, axes, True, 0);
+	XTestFakeDeviceKeyEvent(dpy, keydevice, keycode, True, axes, 6, 0);
 	XNextEvent(dpy, &ev);
 	K = (XDeviceKeyEvent *) &ev;
 	if (K->type != dkp ||
@@ -271,7 +271,7 @@ test_xinput_devices(dpy, w, major_version, minor_version)
 	    K->axis_data[5] != 5)
 	    printf("error: bad event received for device key press\n");
 
-	XTestFakeDeviceKeyEvent(dpy, keydevice, keycode, 6, axes, False, 0);
+	XTestFakeDeviceKeyEvent(dpy, keydevice, keycode, False, axes, 6, 0);
 	XNextEvent(dpy, &ev);
 	K = (XDeviceKeyEvent *) &ev;
 	if (K->type != dkr ||
@@ -289,7 +289,7 @@ test_xinput_devices(dpy, w, major_version, minor_version)
     }
 
     if (buttondevice) {
-	XTestFakeDeviceButtonEvent(dpy, buttondevice, 1, 6, axes, True, 0);
+	XTestFakeDeviceButtonEvent(dpy, buttondevice, 1, True, axes, 6, 0);
 	XNextEvent(dpy, &ev);
 	B0 = (XDeviceButtonEvent *) &ev;
 	if (B0->type != dbp ||
@@ -305,7 +305,7 @@ test_xinput_devices(dpy, w, major_version, minor_version)
 	    B0->axis_data[5] != 5)
 	    printf("error: bad event received for device button press\n");
 
-	XTestFakeDeviceButtonEvent(dpy, buttondevice, 1, 6, axes, False, 1000);
+	XTestFakeDeviceButtonEvent(dpy, buttondevice, 1, False, axes, 6, 1000);
 	XNextEvent(dpy, &ev2);
 	B = (XDeviceButtonEvent *) &ev2;
 	if (B->type != dbr ||
@@ -326,7 +326,7 @@ test_xinput_devices(dpy, w, major_version, minor_version)
 	}
 
     if (proximitydevice) {
-	XTestFakeProximityEvent(dpy, proximitydevice, 6, axes, True, 0);
+	XTestFakeProximityEvent(dpy, proximitydevice, True, axes, 6, 0);
 	XNextEvent(dpy, &ev);
 	P = (XProximityNotifyEvent *) &ev;
 	if (P->type != dpi ||
@@ -341,7 +341,7 @@ test_xinput_devices(dpy, w, major_version, minor_version)
 	    P->axis_data[5] != 5)
 	    printf("error: bad event received for proximity in event\n");
 
-	XTestFakeProximityEvent(dpy, proximitydevice, 6, axes, False, 0);
+	XTestFakeProximityEvent(dpy, proximitydevice, False, axes, 6, 0);
 	XNextEvent(dpy, &ev);
 	P = (XProximityNotifyEvent *) &ev;
 	if (P->type != dpo ||
@@ -358,8 +358,7 @@ test_xinput_devices(dpy, w, major_version, minor_version)
     }
 
     if (motiondevice) {
-	XTestFakeDeviceMotionEvent(dpy, motiondevice, DefaultScreen(dpy), 6, 
-	    axes, 0);
+	XTestFakeDeviceMotionEvent(dpy, motiondevice, False, axes, 6, 0);
 	XNextEvent(dpy, &ev);
 	M = (XDeviceMotionEvent *) &ev;
 	if (M->type != dm ||
