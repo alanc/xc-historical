@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.h,v 1.7 89/08/21 08:57:57 rws Exp $ */
+/* $XConsortium: shape.h,v 1.8 89/10/05 17:10:05 jim Exp $ */
 
 #ifndef _SHAPE_H_
 #define _SHAPE_H_
@@ -67,7 +67,6 @@ typedef struct {
 } XShapeEvent;
 
 extern Bool XShapeQueryExtension ();
-extern int XShapeGetEventBase ();
 extern Bool XShapeQueryVersion ();
 extern void XShapeCombineRegion ();
 extern void XShapeCombineRectangles ();
