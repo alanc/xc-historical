@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsProp.c,v 1.8 91/07/22 15:49:52 rws Exp $" */
+/* $XConsortium: XcmsProp.c,v 1.9 91/07/22 16:27:06 rws Exp $" */
 
 /*
  *
@@ -78,6 +78,7 @@ _XcmsGetElement (format, pValue, pCount)
 #endif
 	*pValue += 4;
 	*pCount -= 1;
+	break;
       case 16:
 #ifdef WORD64
 	value = ((unsigned long)(((unsigned char *)(*pValue))[0])) << 8 ||
@@ -87,10 +88,12 @@ _XcmsGetElement (format, pValue, pCount)
 #endif
 	*pValue += 2;
 	*pCount -= 1;
+	break;
       case 8:
 	value = *((unsigned char *) (*pValue));
 	*pValue += 1;
 	*pCount -= 1;
+	break;
       default:
 	value = 0;
 	break;
