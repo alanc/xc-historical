@@ -37,6 +37,7 @@ static char *sccsid = "@(#)Initialize.c	1.0	8/2787";
 #include <X11/Xutil.h>
 #include "Atoms.h"
 #include "TopLevel.h"
+
 /*
  This is a set of default records describing the command line arguments that
  Xlib will parse and set into the resource data base.
@@ -90,9 +91,9 @@ typedef struct {
  ****************************************************************/
 
 typedef  struct {
-	CorePart core;
-	CompositePart composite;
-	TopLevelPart top;
+	CorePart 	core;
+	CompositePart 	composite;
+	TopLevelPart 	top;
 } TopLevelRec, *TopLevelWidget;
 
 static Resource resources[]=
@@ -129,10 +130,10 @@ static void EventHandler();
 typedef struct _TopLevelClassRec {
   	CoreClassPart      core_class;
 	CompositeClassPart composite_class;
-} TopLevelClassRec,*TopLevelWidgetClass;
+} TopLevelClassRec;
 
 
-TopLevelClassRec topLevelWidgetClassRec = {
+TopLevelClassRec topLevelClassRec = {
     /* superclass         */    (WidgetClass) &compositeClassRec,
     /* class_name         */    "TopLevel",
     /* size               */    sizeof(TopLevelRec),
