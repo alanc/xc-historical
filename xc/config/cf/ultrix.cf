@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.32 91/03/26 13:14:42 rws Exp $
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.33 91/03/27 09:13:32 rws Exp $
 
 #define OSName            Ultrix-32 4.1
 XCOMM operating system:  OSName
@@ -21,6 +21,7 @@ XCOMM operating system:  OSName
 #if !HasGcc
 #define BuildPex NO /* compiler runs out of table space */
 #endif
+#define BuildBdfFonts NO		/* XXX remove in R5 */
 #endif
 
 #ifdef MipsArchitecture
