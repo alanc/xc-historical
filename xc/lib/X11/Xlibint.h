@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.134 94/01/20 17:47:40 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.135 94/01/22 18:33:42 gildea Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -241,11 +241,19 @@ extern void (*_XFreeMutex_fn)(
 extern void (*_XLockMutex_fn)(
 #if NeedFunctionPrototypes
     LockInfoPtr	/* lock */
+#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
+    , char * /* file */
+    , int /* line */
+#endif
 #endif
 );
 extern void (*_XUnlockMutex_fn)(
 #if NeedFunctionPrototypes
     LockInfoPtr	/* lock */
+#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
+    , char * /* file */
+    , int /* line */
+#endif
 #endif
 );
 
