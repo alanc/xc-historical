@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.4 94/07/18 15:01:49 mor Exp $ */
+/* $XConsortium: globals.c,v 1.5 94/07/19 12:37:47 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -54,8 +54,6 @@ int		numClientNames = 0;
 int		sessionNameCount = 0;
 String		*sessionNames = NULL;
 
-Bool		issued_checkpoint = False;
-
 XtAppContext	appContext;
 
 Widget		topLevel;
@@ -106,6 +104,7 @@ Widget		    savePopup;
 Widget			saveForm;
 
 Widget			    saveTypeLabel;
+Widget			    saveTypeNone;
 Widget			    saveTypeGlobal;
 Widget			    saveTypeLocal;
 Widget			    saveTypeBoth;
