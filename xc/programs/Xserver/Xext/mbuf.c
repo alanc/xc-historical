@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: multibuf.c,v 1.11 91/06/01 13:25:50 rws Exp $ */
+/* $XConsortium: multibuf.c,v 1.13 92/10/15 16:15:57 hersh Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -111,8 +111,8 @@ typedef struct _DisplayRequest {
 static unsigned char	MultibufferReqCode;
 static int		MultibufferEventBase;
 static int		MultibufferErrorBase;
-static int		MultibufferScreenIndex = -1;
-static int		MultibufferWindowIndex = -1;
+int			MultibufferScreenIndex = -1;
+int			MultibufferWindowIndex = -1;
 
 static int		BlockHandlerRegistered;
 static void		MultibufferBlockHandler(), MultibufferWakeupHandler();
@@ -123,8 +123,6 @@ static Bool		QueueDisplayRequest ();
 
 static void		BumpTimeStamp ();
 
-static void		MultibufferExpose ();
-static void		MultibufferUpdate ();
 static void		AliasMultibuffer ();
 int			CreateImageBuffers ();
 void			DestroyImageBuffers ();
@@ -136,7 +134,7 @@ static int		EventSelectForMultibuffer();
  * The Pixmap associated with a buffer can be found as a resource
  * with this type
  */
-static RESTYPE		MultibufferDrawableResType;
+RESTYPE			MultibufferDrawableResType;
 static void		MultibufferDrawableDelete ();
 /*
  * The per-buffer data can be found as a resource with this type.
@@ -1331,7 +1329,7 @@ DeliverEventsToMultibuffer (pMultibuffer, pEvents, count, filter)
  * Send Expose events to interested clients
  */
 
-static void
+void
 MultibufferExpose (pMultibuffer, pRegion)
     MultibufferPtr	pMultibuffer;
     RegionPtr	pRegion;
@@ -1372,7 +1370,7 @@ MultibufferExpose (pMultibuffer, pRegion)
     }
 }
 
-static void
+void
 MultibufferUpdate (pMultibuffer, time)
     MultibufferPtr	pMultibuffer;
     CARD32	time;
@@ -1391,7 +1389,7 @@ MultibufferUpdate (pMultibuffer, time)
  * events
  */
 
-static void
+void
 MultibufferClobber (pMultibuffer)
     MultibufferPtr	pMultibuffer;
 {

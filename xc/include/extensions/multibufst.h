@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibufst.h,v 1.7 91/01/05 16:32:49 rws Exp $
+ * $XConsortium: multibufst.h,v 1.8 92/03/17 16:58:11 eswu Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -29,6 +29,7 @@
  * These would really be in Multi-Buffering's X.h and Xproto.h equivalents
  */
 
+#include "input.h"
 #include "multibuf.h"
 
 #if defined(__STDC__) && !defined(UNIXCPP)
@@ -376,7 +377,7 @@ typedef struct _mbufBuffer {
     mbufWindowPtr   pMBWindow;	    /* associated window data */
     Mask	    eventMask;	    /* client event mask */
     Mask	    otherEventMask; /* union of other clients' event masks */
-    OtherClients    *otherClients;  /* other clients that want events */
+    OtherClientsPtr otherClients;   /* other clients that want events */
     int		    number;	    /* index of this buffer into array */
     int		    side;	    /* stero side: always Mono */
     int		    clobber;	    /* clober state */
