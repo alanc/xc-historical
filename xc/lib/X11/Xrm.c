@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.80 93/11/11 17:45:53 kaleb Exp $
+ * $XConsortium: Xrm.c,v 1.81 93/11/15 11:18:13 kaleb Exp $
  */
 
 /***********************************************************
@@ -762,8 +762,10 @@ void XrmCombineDatabase(from, into, override)
 	}
 	(from->methods->destroy)(from->mbstate);
 #ifdef XTHREADS
-	xmutex_clear(from->linfo.lock);
-	xmutex_free(from->linfo.lock);
+	if (_XLockMutex_fn) {
+	    xmutex_clear(from->linfo.lock);
+	    xmutex_free(from->linfo.lock);
+	}
 #endif
 	Xfree((char *)from);
 	UnlockMutex(&(*into)->linfo);
@@ -2571,8 +2573,10 @@ void XrmDestroyDatabase(db)
 		DestroyNTable(table);
 	}
 #ifdef XTHREADS
-	xmutex_clear(db->linfo.lock);
-	xmutex_free(db->linfo.lock);
+	if (_XLockMutex_fn) {
+	    xmutex_clear(db->linfo.lock);
+	    xmutex_free(db->linfo.lock);
+	}
 #endif
 	(*db->methods->destroy)(db->mbstate);
 	Xfree((char *)db);
