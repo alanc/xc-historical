@@ -16,8 +16,8 @@
 .nr PS 9
 .vs 10
 .nr VS 10
-.EH '\s+2\fBX Protocol\fP''\fBX11, Release 3\fP\s-2'
-.OH '\s+2\fBX Protocol\fP''\fBX11, Release 3\fP\s-2'
+.EH '\s+2\fBX Protocol\fP''\fBX11, Release 4\fP\s-2'
+.OH '\s+2\fBX Protocol\fP''\fBX11, Release 4\fP\s-2'
 .EF ''\s+2\fB % \fP\s-2''
 .OF ''\s+2\fB % \fP\s-2''
 .\"The sections in this appendix correspond to their number counterparts
@@ -4267,3 +4267,4 @@ VISUALTYPE
 	1	CARD8		count
 	25			unused
 .De
+.bp
