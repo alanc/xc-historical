@@ -24,7 +24,7 @@ be used as leaves of the widget tree.  These widgets display information or
 handle small amounts of user input.
 .sp
 .IP \fBCommand\fP 1i
-A push button that, when selected, will cause a specific action
+A push button that, when selected, may cause a specific action
 to take place.  This widget can display a multi-line string or a bitmap image.
 .IP \fBGrip\fP 1i
 A rectangle that, when selected, will cause an action to take place.
@@ -35,11 +35,12 @@ A list of text strings presented in row column format that may be
 individually selected.  When an element is selected an action may take
 place. 
 .IP \fBScrollbar\fP
-A rectangular area containing a \fIthumb\fP that may be slid along one
-dimension.  The orientation may be either horizontal or vertical.
+A rectangular area containing a \fIthumb\fP that when slid along one
+dimension may cause a specific action to take place.  The Scrollbar may
+be oriented horizontally or vertically.
 .IP \fBSimple\fP 1i
 The base class for most of the simple widgets.  Provides a rectangular
-area with settable mouse cursor and special border.
+area with a settable mouse cursor and special border.
 .IP \fBStripChart\fP 1i
 A real time data graph that will automatically update and scroll.
 .IP \fBToggle\fP 1i
