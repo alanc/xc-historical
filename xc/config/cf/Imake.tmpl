@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.41 89/07/16 21:22:10 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.42 89/07/17 09:54:02 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -233,6 +233,13 @@
 #ifndef HasPutenv
 #define HasPutenv		NO	/* assume not */
 #endif
+#ifndef HasVoidSignalReturn
+#if SystemV
+#define HasVoidSignalReturn	YES
+#else
+#define HasVoidSignalReturn	NO	/* may or may not be true */
+#endif
+#endif
 #ifndef HasBsearch
 #if SystemV
 #define HasBsearch		YES
@@ -282,9 +289,6 @@
 #endif
 #ifndef PexCDebugFlags
 #define PexCDebugFlags -g
-#endif
-#ifndef SignalReturnProcType
-#define SignalReturnProcType int
 #endif
 #ifndef InstBinFlags
 #define InstBinFlags -m 0755

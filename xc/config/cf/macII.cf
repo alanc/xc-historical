@@ -20,15 +20,15 @@
 #define BuildServer NO
 
 #ifdef POSIX
-#define SignalReturnProcType void
+#define HasVoidSignalReturn YES
 #else
-#define SignalReturnProcType int
+#define HasVoidSignalReturn NO
 #endif
 
 #define ServerDefines StandardDefines ExtensionDefines -DPURDUE
 
 
-/**/# platform:  $XConsortium: macII.cf,v 1.9 89/03/22 18:29:02 jim Exp $
+/**/# platform:  $XConsortium: macII.cf,v 1.10 89/07/11 11:32:52 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************

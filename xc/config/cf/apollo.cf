@@ -11,10 +11,10 @@
 
             PAS = /com/pas
 
-#define SignalReturnProcType int
+#define HasVoidSignalReturn NO
 
 
-/**/# platform:  $XConsortium: apollo.cf,v 1.7 89/05/21 15:33:34 rws Exp $
+/**/# platform:  $XConsortium: apollo.cf,v 1.8 89/07/11 11:32:55 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************

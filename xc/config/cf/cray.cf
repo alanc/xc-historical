@@ -1,4 +1,4 @@
-/**/# platform:  $XConsortium: cray.cf,v 1.5 89/07/11 11:32:56 jim Exp $
+/**/# platform:  $XConsortium: cray.cf,v 1.6 89/07/12 11:38:48 jim Exp $
 
 
 /*
@@ -18,7 +18,7 @@
 #define ExecableScripts		NO
 #define BuildServer		NO
 
-#define SignalReturnProcType void
+#define HasVoidSignalReturn	YES
 
 #define NeedBerklibInXlib	YES
 #if UNICOS4

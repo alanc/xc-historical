@@ -1,4 +1,4 @@
-/**/# platform:  $XConsortium: att.cf,v 1.3 89/06/15 17:43:02 jim Exp $
+/**/# platform:  $XConsortium: att.cf,v 1.4 89/06/21 10:18:18 jim Exp $
 
 
 /*
@@ -20,7 +20,7 @@
 
 #define ExtraLoadFlags -lpt -lnsl_s
 
-#define SignalReturnProcType void
+#define HasVoidSignalReturn	YES
 
 #define NeedBerklibInXlib	YES
 

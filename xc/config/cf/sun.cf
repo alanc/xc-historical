@@ -21,9 +21,9 @@
 #endif
 
 #if OSMajorVersion <= 3
-#define SignalReturnProcType int
+#define HasVoidSignalReturn NO
 #else
-#define SignalReturnProcType void
+#define HasVoidSignalReturn YES
 #endif
 
 #ifdef sparc
@@ -47,7 +47,7 @@
 /* see below for ServerDefines */
 
 
-/**/# platform:  $XConsortium: sun.cf,v 1.20 89/07/12 09:50:42 rws Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.21 89/07/12 10:18:11 jim Exp $
 /**/# operating system:  OSName
 
 #if SunOSPlatform

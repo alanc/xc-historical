@@ -6,7 +6,7 @@
 #define OSMajorVersion    3
 #define OSMinorVersion    0
 #define SystemV NO
-#define SignalReturnProcType void
+#define HasVoidSignalReturn YES
 #define HasPutenv YES
 #define HasBsearch YES
 
@@ -26,5 +26,5 @@
 #define ServerDefines StandardDefines ExtensionDefines -DPURDUE
 #endif
 
-/**/# platform:  $XConsortium: ultrix.cf,v 1.10 89/07/12 10:18:12 jim Exp $
+/**/# platform:  $XConsortium: ultrix.cf,v 1.11 89/07/18 15:37:22 keith Exp $
 /**/# operating system:  OSName

@@ -8,10 +8,9 @@
 #define OSMinorVersion    2
 #define BuildServer       NO
 
+#define HasVoidSignalReturn NO
 
-#define SignalReturnProcType int
-
-/**/# platform:  $XConsortium: sony.cf,v 1.1 89/07/11 14:35:45 jim Exp $
+/**/# platform:  $XConsortium: sony.cf,v 1.2 89/07/12 10:18:16 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
