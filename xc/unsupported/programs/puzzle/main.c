@@ -70,7 +70,7 @@ WindowGeom	PuzzleWinInfo;
 Window 		PuzzleRoot, TitleWindow=0, TileWindow,
     		ScrambleWindow, SolveWindow;
 
-char		*ProgName = "Puzzle";
+char		*ProgName;
 
 char		*TitleFontName    = "8x13";
 char		*TileFontName     = "vtbold";
@@ -133,7 +133,8 @@ char *server;
 {
     dpy = XOpenDisplay(server);
     if (dpy == NULL) {
-	fprintf(stderr, "SetupDisplay: can't open display \"%s\"\n",server);
+	fprintf(stderr, "%s: unable to open display '%s'\n",
+		ProgName, XDisplayName (server));
 	exit(1);
     } 
     screen = DefaultScreen(dpy);
@@ -362,8 +363,7 @@ RepaintPictureTiles()
  ** Setup - Perform initial window creation, etc.
  **/
 
-Setup(server,geom,argc,argv)
-char *server,*geom;
+Setup (geom,argc,argv)
 int argc;
 char *argv[];
 {
@@ -380,8 +380,6 @@ char *argv[];
     /*******************************************/
     initialize();
     OutputLogging = 1;
-
-    SetupDisplay(server);
 
     FgPixel = BlackPixel(dpy,screen);
     BgPixel = WhitePixel(dpy,screen);
@@ -926,74 +924,124 @@ char *argv[];
 {
    int i, count;
    char *ServerName, *Geometry;
+   char *puzzle_size = NULL;
+   char *option;
+
+   ProgName = argv[0];
 
    ServerName = "";
    Geometry   = "";  
-   TilesPerSecond = DEFAULT_SPEED;
+   TilesPerSecond = -1;
 
    /********************************/
    /** parse command line options **/
    /********************************/
 
    for (i=1; i<argc; i++) {
-      if (argv[i][0] == '=') 
-         Geometry = argv[i];
-      else if (strchr(argv[i],':') != NULL)
-         ServerName = argv[i];
-      else if (strchr(argv[i],'x') != NULL) {
-         sscanf(argv[i],"%dx%d",&PuzzleWidth,&PuzzleHeight);
-         if (PuzzleWidth<4 || PuzzleHeight<4) {
-	     printf("Puzzle size must be at least 4x4.\n");
-	     exit(1);
-	 }
-	 PuzzleSize = min((PuzzleWidth/2)*2,(PuzzleHeight/2)*2);
-      }
-      else if (strncmp(argv[i],"-s",2) == 0) {
-         count = sscanf(&(argv[i][2]),"%d",&TilesPerSecond);
-         if (count != 1) usage(ProgName);
-         if (MoveSteps > MAX_STEPS) {
-           fprintf(stderr,"max steps=%d\n",MAX_STEPS);
-           exit(1);
-         }
-      }
-      else if (strncmp(argv[i],"-p",2) == 0) {
-	 if (argv[i][2] == 0) {
-	    UseDisplay++;
-            UsePicture++;
-	 }
-	 else {
-            UsePicture++;
-            PictureFileName = &(argv[i][2]);
-	 }
-      }
-      else if (strcmp(argv[i],"-cm") == 0) {
-	  CreateNewColormap++;
-      }
-      else if (isdigit(argv[i][0])) {
-         sscanf(argv[i],"%d",&PuzzleSize);
-         if (PuzzleSize<4) {
-	     printf("Puzzle size must be at least 4x4.\n");
-	     exit(1);
-	 }
-         PuzzleWidth = PuzzleSize;
-	 PuzzleHeight = PuzzleSize;
-	 PuzzleSize = (PuzzleSize/2) * 2;
-      }
-      else 
-         usage(ProgName);
+      char *arg = argv[i];
+
+      if (arg[0] == '-') {
+	switch (arg[1]) {
+	    case 'd':				/* -display host:dpy */
+		if (++i >= argc) usage ();
+		ServerName = argv[i];
+		continue;
+	    case 'g':				/* -geometry geom */
+		if (++i >= argc) usage ();
+		Geometry = argv[i];
+		continue;
+	    case 's':				/* -size WxH or -speed n */
+		if (arg[2] == 'i') {
+		    if (++i >= argc) usage ();
+		    puzzle_size = argv[i];
+		    continue;
+		} else if (arg[2] == 'p') {
+		    if (++i >= argc) usage ();
+		    TilesPerSecond = atoi (argv[i]);
+		    continue;
+		} else 
+		    usage ();
+		break;
+	    case 'p':				/* -picture filename */
+		if (++i >= argc) usage ();
+		UsePicture++;
+		PictureFileName = argv[i];
+		continue;
+	    case 'c':				/* -colormap */
+		CreateNewColormap++;
+		continue;
+	    default:
+		usage ();
+	}					/* end switch */
+      }	else
+	usage ();
+   }						/* end for */
+
+   SetupDisplay (ServerName);
+
+   if (!Geometry) {
+	Geometry = XGetDefault (dpy, ProgName, "Geometry");
    }
 
-   Setup(ServerName,Geometry,argc,argv);
+   if (!puzzle_size) {
+	option = XGetDefault (dpy, ProgName, "Size");
+	puzzle_size = option ? option : "4x4";
+   }
+
+   if (TilesPerSecond <= 0) {
+	option = XGetDefault (dpy, ProgName, "Speed");
+	TilesPerSecond = option ? atoi (option) : DEFAULT_SPEED;
+   }
+
+   if (!UsePicture) {
+	option = XGetDefault (dpy, ProgName, "Picture");
+	if (option) {
+	    UsePicture++;
+	    PictureFileName = option;
+	}
+   }
+
+   if (!CreateNewColormap) {
+	option = XGetDefault (dpy, ProgName, "Colormap");
+	if (option) {
+	    CreateNewColormap++;
+	}
+   }
+
+   sscanf (puzzle_size, "%dx%d", &PuzzleWidth, &PuzzleHeight);
+   if (PuzzleWidth < 4 || PuzzleHeight < 4) {
+	fprintf (stderr, "%s:  Puzzle size must be at least 4x4\n",
+		 ProgName);
+	exit (1);
+   }
+   PuzzleSize = min((PuzzleWidth/2)*2,(PuzzleHeight/2)*2);
+
+   Setup (Geometry,argc,argv);
    ProcessInput();
+   exit (0);
 }
 
-usage(name)
-char *name;
+static char *help_message[] = {
+"where options include:",
+"    -display host:dpy                X server to use",
+"    -geometry geom                   geometry of puzzle window",
+"    -size WxH                        number of squares in puzzle",
+"    -speed number                    tiles to move per second",
+"    -picture filename                image to use for tiles",
+"    -colormap                        create a new colormap",
+NULL};
+
+
+usage()
 {
-   fprintf(stderr,"usage: %s [geometry] [display] [size]\n", name);
-   fprintf(stderr,"       [-s<speed>] [-p<picture-file>]\n");
-   fprintf(stderr,"       -cm\n");
-   exit(1);
+    char **cpp;
+
+    fprintf (stderr, "usage:  %s [-options ...]\n\n", ProgName);
+    for (cpp = help_message; *cpp; cpp++) {
+	fprintf (stderr, "%s\n", *cpp);
+    }
+    fprintf (stderr, "\n");
+    exit (1);
 }
 
 error(str)
