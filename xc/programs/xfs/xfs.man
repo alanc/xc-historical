@@ -1,14 +1,14 @@
-.\" $XConsortium$
-.TH FS 1 "Release 5" "X Version 11"
+.\" $XConsortium: xfs.man,v 1.4 91/10/24 21:27:20 rws Exp $
+.TH XFS 1 "Release 5" "X Version 11"
 .SH NAME
-fs \- X font server
+xfs \- X font server
 .SH SYNOPSIS
-.B "fs"
-[-config \fIconfiguration_file\fP]
-[-port \fItcp_port\fP]
+.B "xfs"
+[\-config \fIconfiguration_file\fP]
+[\-port \fItcp_port\fP]
 .SH DESCRIPTION
 .PP
-.I Fs
+.I Xfs
 is the X Window System font server.  It supplies fonts to X Window
 System display servers.
 .SH "STARTING THE SERVER"
@@ -73,6 +73,9 @@ Resolutions the server supports by default.
 This information may be used as a hint for 
 pre-rendering, and substituted for scaled fonts 
 which do not specify a resolution.
+A resolution is a comma-separated pair of x and y resolutions in
+pixels per inch.
+Multiple resolutions are separated by commas.
 .IP "error-file (string)"
 Filename of the error file.  All warnings and errors
 will be logged here.
@@ -105,14 +108,15 @@ alternate-servers = hansen:7001,hansen:7002
 # misc bitmaps and the last is a set of 100dpi bitmaps
 #
 catalogue = /usr/lib/fonts/speedo,
-	/usr/lib/X11/ncd/fonts/misc,
-	/usr/lib/X11/ncd/fonts/100dpi/
+	/usr/lib/X11/fonts/misc,
+	/usr/lib/X11/fonts/100dpi/
 
 # in 12 points, decipoints
 default-point-size = 120
 
 # 100 x 100 and 75 x 75
 default-resolutions = 100,100,75,75
+use-syslog = off
 .fi
 .sp
 .SH "FONT SERVER NAMES"
@@ -152,7 +156,8 @@ X(1), \fIFont server implementation overview\fB
 .SH BUGS
 Multiple catalogues should be supported.
 .SH COPYRIGHT
-Copyright 1991, Network Computing Devices, Inc
+Copyright 1991, Network Computing Devices, Inc.
+.br
 Copyright 1991, Massachusetts Institute of Technology
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
