@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.153 91/07/10 13:17:26 dave Exp $
+ * $XConsortium: add_window.c,v 1.154 91/10/21 14:31:53 eswu Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -404,9 +404,24 @@ IconMgr *iconp;
 
 	    AddingW = tmp_win->attr.width + bw2;
 	    AddingH = tmp_win->attr.height + tmp_win->title_height + bw2;
+  
+  	    if (Scr->DontMoveOff) {
+  		/*
+  		 * Make sure the initial outline comes up on the screen.  
+  		 */
+  		if (AddingX < 0)
+  		    AddingX = 0;
+  		if (AddingX > Scr->MyDisplayWidth - AddingW)
+  		    AddingX = Scr->MyDisplayWidth - AddingW;
+  		      
+  		if (AddingY < 0)
+  		    AddingY = 0;
+  		if (AddingY > Scr->MyDisplayHeight - AddingH)
+  		    AddingY = Scr->MyDisplayHeight - AddingH;
+  	    }
 
-		MoveOutline(Scr->Root, AddingX, AddingY, AddingW, AddingH,
-			    tmp_win->frame_bw, tmp_win->title_height);
+	    MoveOutline(Scr->Root, AddingX, AddingY, AddingW, AddingH,
+	      	        tmp_win->frame_bw, tmp_win->title_height);
 
 	    while (TRUE)
 		{
