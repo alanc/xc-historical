@@ -1,0 +1,35 @@
+XCOMM $XConsortium: Imakefile,v 1.28 93/09/03 08:45:12 dpw Exp $
+
+  SHAPESRCS = shapetest.c
+  SHAPEOBJS = shapetest.o
+#if HasShm
+    SHMSRCS = shmtest.c
+    SHMOBJS = shmtest.o
+    SHMPROG = ProgramTargetName(shmtest)
+#endif
+   MBUFSRCS = xmbufinfo.c
+   MBUFOBJS = xmbufinfo.o
+  XTESTSRCS = xtesttest.c
+  XTESTOBJS = xtesttest.o
+  SAVERSRCS = savertest.c
+  SAVEROBJS = savertest.o
+  SAVERPROG = ProgramTargetName(savertest)
+  SYNCTESTSRCS = synctest.c
+  SYNCTESTOBJS = synctest.o
+
+   INCLUDES = -I../include
+       SRCS = $(SHAPESRCS) $(SHMSRCS) $(MBUFSRCS) $(XTESTSRCS) $(SAVERSRCS) $(SYNCTESTSRCS)
+       OBJS = $(SHAPEOBJS) $(SHMOBJS) $(MBUFOBJS) $(XTESTOBJS) $(SAVEROBJS)  $(SYNCTESTOBJS)
+
+all:: ProgramTargetName(shapetest) $(SHMPROG) ProgramTargetName(xmbufinfo) ProgramTargetName(xtesttest) $(SAVERPROG) ProgramTargetName(synctest)
+
+NormalProgramTarget(xmbufinfo,$(MBUFOBJS),$(DEPXLIB),$(XLIB),NullParameter)
+NormalProgramTarget(shapetest,$(SHAPEOBJS),$(DEPXLIB),$(XLIB),NullParameter)
+#if HasShm
+NormalProgramTarget(shmtest,$(SHMOBJS),$(DEPXLIB),$(XLIB),NullParameter)
+#endif
+NormalProgramTarget(xtesttest,$(XTESTOBJS),$(DEPXILIB) $(DEPXTESTLIB) $(DEPXLIB),$(XILIB) $(XTESTLIB) $(XLIB),NullParameter)
+NormalProgramTarget(savertest,$(SAVEROBJS),$(DEPXLIB),$(XLIB),NullParameter)
+NormalProgramTarget(synctest,$(SYNCTESTOBJS),$(DEPXLIB),$(XLIB),NullParameter)
+
+DependTarget()
