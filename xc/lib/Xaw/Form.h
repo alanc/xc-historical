@@ -1,4 +1,4 @@
-/* $Header: Form.h,v 1.4 88/01/11 08:42:13 swick Locked $ */
+/* $Header: Form.h,v 1.5 88/01/22 11:15:03 swick Locked $ */
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -95,16 +95,6 @@ typedef enum {
 				   from the edges of the form*/
 } XtEdgeType;
 #endif  _XtEdgeType_e
-
-
-#ifndef _XtJustify_e
-#define _XtJustify_e
-typedef enum {
-    XtjustifyLeft,       /* justify text to left side of button   */
-    XtjustifyCenter,     /* justify text in center of button      */
-    XtjustifyRight       /* justify text to right side of button  */
-} XtJustify;
-#endif _XtJustify_e
 
 typedef struct _FormClassRec	*FormWidgetClass;
 typedef struct _FormRec		*FormWidget;
