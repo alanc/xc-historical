@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.48 89/12/06 16:56:14 rws Exp $ */
+/* $XConsortium: servermd.h,v 1.49 90/01/04 19:34:22 keith Exp $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -95,6 +95,16 @@ SOFTWARE.
  *	the cache frequently.  On machines with real i-caches, this
  *	reduces loop overhead, causing a slight performance improvement.
  *	Currently defined for MIPS and SPARC
+ *
+ *  FAST_UNALIGNED_READS -
+ *	For machines with more memory bandwidth than CPU, this
+ *	define uses unaligned reads for 8-bit BitBLT instead of doing
+ *	aligned reads and combining the results with shifts and
+ *	logical-ors.  Currently defined for 68020 and vax.
+ *  PLENTIFUL_REGISTERS -
+ *	For machines with > 20 registers.  Currently used for
+ *	unrolling the text painting code a bit more.  Currently
+ *	defined for MIPS.
  */
 
 #ifdef vax
@@ -103,6 +113,7 @@ SOFTWARE.
 #define BITMAP_BIT_ORDER	LSBFirst
 #define	GLYPHPADBYTES		1
 #define GETLEFTBITS_ALIGNMENT	4
+#define FAST_UNALIGNED_READS
 
 #endif /* vax */
 
@@ -119,6 +130,10 @@ SOFTWARE.
 #ifdef sparc
 # define AVOID_MEMORY_READ
 # define LARGE_INSTRUCTION_CACHE
+#endif
+
+#ifdef mc68020
+#define FAST_UNALIGNED_READS
 #endif
 
 #define	GLYPHPADBYTES		4
@@ -165,6 +180,8 @@ SOFTWARE.
 #define GLYPHPADBYTES		4
 #define GETLEFTBITS_ALIGNMENT	1
 
+#define FAST_UNALIGNED_READS
+
 #endif /* tektronix */
 
 #ifdef macII
@@ -173,6 +190,8 @@ SOFTWARE.
 #define BITMAP_BIT_ORDER      	MSBFirst
 #define GLYPHPADBYTES         	4
 #define GETLEFTBITS_ALIGNMENT 	1
+
+/* might want FAST_UNALIGNED_READS for frame buffers with < 1us latency */
 
 #endif /* macII */
 
@@ -193,6 +212,7 @@ SOFTWARE.
 #define AVOID_MEMORY_READ
 #define FAST_CONSTANT_OFFSET_MODE
 #define LARGE_INSTRUCTION_CACHE
+#define PLENTIFUL_REGISTERS
 
 #endif /* mips */
 
