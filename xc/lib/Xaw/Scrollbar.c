@@ -54,35 +54,42 @@ static char *defaultTranslationTable[] = {
 
 /* grodyness needed because Xrm wants pointer to thing, not thing... */
 static caddr_t defaultTranslations = (caddr_t)defaultTranslationTable;
+static float floatZero = 0.0;
+
+#define Offset(field) XtOffset(ScrollbarWidget, field)
 
 static XtResource resources[] = {
   {XtNwidth, XtCWidth, XrmRInt, sizeof(int),
-     XtOffset(ScrollbarWidget, core.width), XtRString, "10"},
+	     Offset(core.width), XtRString, "10"},
   {XtNorientation, XtCOrientation, XtROrientation, sizeof(XtOrientation),
-     XtOffset(ScrollbarWidget, scrollbar.orientation), XtRString, "vertical"},
+	     Offset(scrollbar.orientation), XtRString, "vertical"},
   {XtNscrollProc, XtCCallback, XtRPointer, sizeof(caddr_t),
-     XtOffset(ScrollbarWidget, scrollbar.scrollProc), XtRPointer, NULL},
+	     Offset(scrollbar.scrollProc), XtRPointer, NULL},
   {XtNthumbProc, XtCCallback, XtRPointer, sizeof(caddr_t),
-     XtOffset(ScrollbarWidget, scrollbar.thumbProc), XtRPointer, NULL},
+	     Offset(scrollbar.thumbProc), XtRPointer, NULL},
   {XtNthumb, XtCThumb, XtRPixmap, sizeof(Pixmap),
-     XtOffset(ScrollbarWidget, scrollbar.thumb), XtRPixmap, NULL},
+	     Offset(scrollbar.thumb), XtRPixmap, NULL},
   {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-     XtOffset(ScrollbarWidget, scrollbar.foreground), XtRString, "black"},
+	     Offset(scrollbar.foreground), XtRString, "black"},
+  {XtNshown, XtCShown, XtRFloat, sizeof(float),
+	     Offset(scrollbar.shown), XtRFloat, (caddr_t)&floatZero},
+  {XtNtop, XtCTop, XtRFloat, sizeof(float),
+	     Offset(scrollbar.top), XtRFloat, (caddr_t)&floatZero},
   {XtNscrollVCursor, XtCScrollVCursor, XtRCursor, sizeof(Cursor),
-     XtOffset(ScrollbarWidget, scrollbar.verCursor), XtRString, "sb_v_double_arrow"},
+	     Offset(scrollbar.verCursor), XtRString, "sb_v_double_arrow"},
   {XtNscrollHCursor, XtCScrollHCursor, XtRCursor, sizeof(Cursor),
-     XtOffset(ScrollbarWidget, scrollbar.horCursor), XtRString, "sb_h_double_arrow"},
+	     Offset(scrollbar.horCursor), XtRString, "sb_h_double_arrow"},
   {XtNscrollUCursor, XtCScrollUCursor, XtRCursor, sizeof(Cursor),
-     XtOffset(ScrollbarWidget, scrollbar.upCursor), XtRString, "sb_up_arrow"},
+	     Offset(scrollbar.upCursor), XtRString, "sb_up_arrow"},
   {XtNscrollDCursor, XtCScrollDCursor, XtRCursor, sizeof(Cursor),
-     XtOffset(ScrollbarWidget, scrollbar.downCursor), XtRString, "sb_down_arrow"},
+	     Offset(scrollbar.downCursor), XtRString, "sb_down_arrow"},
   {XtNscrollLCursor, XtCScrollLCursor, XtRCursor, sizeof(Cursor),
-     XtOffset(ScrollbarWidget, scrollbar.leftCursor), XtRString, "sb_left_arrow"},
+	     Offset(scrollbar.leftCursor), XtRString, "sb_left_arrow"},
   {XtNscrollRCursor, XtCScrollRCursor, XtRCursor, sizeof(Cursor),
-     XtOffset(ScrollbarWidget, scrollbar.rightCursor), XtRString, "sb_right_arrow"},
+	     Offset(scrollbar.rightCursor), XtRString, "sb_right_arrow"},
   {XtNtranslations, XtCTranslations, XtRTranslationTable,
-     sizeof(XtTranslations), XtOffset(ScrollbarWidget, core.translations),
-     XtRTranslationTable, (caddr_t)&defaultTranslations},
+	     sizeof(XtTranslations), Offset(core.translations),
+	     XtRTranslationTable, (caddr_t)&defaultTranslations},
 };
 
 static void ClassInitialize();
