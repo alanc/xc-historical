@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Composite.c,v 1.7 88/09/06 10:03:35 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Composite.c,v 1.8 88/09/06 16:27:09 jim Exp $";
 /* $oHeader: Composite.c,v 1.2 88/08/18 15:35:39 asente Exp $ */
 #endif lint
 
@@ -31,6 +31,11 @@ SOFTWARE.
 #include "IntrinsicI.h"
 #include "StringDefs.h"
 
+static XtResource resources[] = {
+    {XtNinsertPosition, XtCInsertPosition, XtRFunction, sizeof(XtOrderProc),
+     XtOffset(CompositeWidget, composite.insert_position), XtRImmediate, NULL},
+};
+
 void CompositeClassPartInitialize();
 void CompositeInitialize();
 void CompositeInsertChild();
@@ -50,8 +55,8 @@ externaldef(compositeclassrec) CompositeClassRec compositeClassRec = {
     /* realize		    */	XtInheritRealize,
     /* actions		    */	NULL,
     /* num_actions	    */	0,
-    /* resources	    */	NULL,
-    /* num_resources	    */	0,
+    /* resources	    */	resources,
+    /* num_resources	    */	XtNumber(resources),
     /* xrm_class	    */	NULLQUARK,
     /* compress_motion      */	FALSE,
     /* compress_exposure    */	TRUE,
@@ -198,7 +203,6 @@ void CompositeInitialize(requested_widget, new_widget)
     register CompositeWidget cw;
 
     cw = (CompositeWidget) new_widget;
-    cw->composite.insert_position = NULL;
     cw->composite.num_children = 0;
     cw->composite.children = NULL;
     cw->composite.num_slots = 0;
