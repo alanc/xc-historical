@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.18 88/09/16 12:39:27 swick Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.19 88/09/19 12:03:12 swick Exp $";
 #endif lint
 
 
@@ -108,7 +108,6 @@ static int AsciiDisplayText (w, x, y, pos1, pos2, highlight)
     Dimension width;
     XtTextBlock blk;
     GC gc = highlight ? data->invgc : data->normgc;
-    GC invgc = highlight ? data->normgc : data->invgc;
 
     y += font->ascent;
     j = 0;
@@ -128,7 +127,7 @@ static int AsciiDisplayText (w, x, y, pos1, pos2, highlight)
 		buf[j] = 0;
 		x += XTextWidth(data->font, buf, j);
 		width = CharWidth(data, x, '\t');
-		XFillRectangle(XtDisplay(w), XtWindow(w), invgc, x,
+		XClearArea(XtDisplay(w), XtWindow(w), x,
 			       y - font->ascent, width,
 			       (Dimension) (data->font->ascent +
 					    data->font->descent));
