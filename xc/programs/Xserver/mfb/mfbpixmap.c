@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpixmap.c,v 5.2 89/07/13 10:11:42 rws Exp $ */
+/* $XConsortium: mfbpixmap.c,v 5.3 89/07/16 21:05:01 rws Exp $ */
 
 /* pixmap management
    written by drewry, september 1986
@@ -51,7 +51,8 @@ mfbCreatePixmap (pScreen, width, height, depth)
     if (depth != 1)
 	return NullPixmap;
 
-    pPixmap = (PixmapPtr)xalloc(sizeof(PixmapRec));
+    size = PixmapBytePad(width, 1);
+    pPixmap = (PixmapPtr)xalloc(sizeof(PixmapRec) + (height * size));
     if (!pPixmap)
 	return NullPixmap;
     pPixmap->drawable.type = DRAWABLE_PIXMAP;
@@ -65,15 +66,9 @@ mfbCreatePixmap (pScreen, width, height, depth)
     pPixmap->drawable.y = 0;
     pPixmap->drawable.width = width;
     pPixmap->drawable.height = height;
-    pPixmap->devKind = PixmapBytePad(width, 1);
+    pPixmap->devKind = size;
     pPixmap->refcnt = 1;
-    size = height * pPixmap->devKind;
-
-    if ( !(pPixmap->devPrivate.ptr = (pointer)xalloc(size)))
-    {
-	xfree(pPixmap);
-	return NullPixmap;
-    }
+    pPixmap->devPrivate.ptr = (pointer)(pPixmap + 1);
     return pPixmap;
 }
 
@@ -83,7 +78,6 @@ mfbDestroyPixmap(pPixmap)
 {
     if(--pPixmap->refcnt)
 	return TRUE;
-    xfree(pPixmap->devPrivate.ptr);
     xfree(pPixmap);
     return TRUE;
 }
@@ -94,10 +88,10 @@ mfbCopyPixmap(pSrc)
     register PixmapPtr	pSrc;
 {
     register PixmapPtr	pDst;
-    register int	*pDstPriv, *pSrcPriv, *pDstMax;
     int		size;
 
-    pDst = (PixmapPtr)xalloc(sizeof(PixmapRec));
+    size = pSrc->drawable.height * pSrc->devKind;
+    pDst = (PixmapPtr)xalloc(sizeof(PixmapRec) + size);
     if (!pDst)
 	return NullPixmap;
     pDst->drawable = pSrc->drawable;
@@ -105,24 +99,8 @@ mfbCopyPixmap(pSrc)
     pDst->drawable.serialNumber = NEXT_SERIAL_NUMBER;
     pDst->devKind = pSrc->devKind;
     pDst->refcnt = 1;
-
-    size = pDst->drawable.height * pDst->devKind;
-    pDstPriv = (int *)xalloc(size);
-    if (!pDstPriv)
-    {
-	xfree(pDst);
-	return NullPixmap;
-    }
-    bzero((char *) pDstPriv, size);
-    pDst->devPrivate.ptr = (pointer) pDstPriv;
-    pSrcPriv = (int *)pSrc->devPrivate.ptr;
-    pDstMax = pDstPriv + (size >> 2);
-    /* Copy words */
-    while(pDstPriv < pDstMax)
-    {
-        *pDstPriv++ = *pSrcPriv++;
-    }
-
+    pDst->devPrivate.ptr = (pointer)(pDst + 1);
+    bcopy((char *)pSrc->devPrivate.ptr, (char *)pDst->devPrivate.ptr, size);
     return pDst;
 }
 
