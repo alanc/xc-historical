@@ -9,7 +9,7 @@
         AIDOBJS = BandAidLibraryObjects
 #endif
            SRCS = *.c $(AIDSRCS)
-        HEADERS = Xlib.h Xresource.h Xutil.h
+        HEADERS = Xlib.h Xresource.h Xutil.h cursorfont.h
        LINTLIBS =
 
 OBJS1 =\
