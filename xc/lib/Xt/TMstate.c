@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.59 88/09/06 14:05:41 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.60 88/09/06 16:29:22 jim Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -1374,6 +1374,10 @@ void _XtOverrideTranslations(old, new,merged)
     XtTranslations old, new,*merged;
 {
     XtTranslations temp;
+    if (old == NULL) {
+	*merged = new;
+	return;
+    }
     _XtInitializeStateTable(&temp);
     temp->clickTime = new->clickTime;
     /* merge in new table, overriding any existing bindings from old */
@@ -1388,6 +1392,10 @@ void _XtAugmentTranslations(old, new,merged)
 {
     /* merge in extra bindings, keeping old binding if any */
     XtTranslations temp;
+    if (old == NULL) {
+	*merged = new;
+	return;
+    }
     _XtInitializeStateTable(&temp);
     temp->clickTime = old->clickTime;
     MergeTables(temp, old, FALSE,old->accProcTbl);
