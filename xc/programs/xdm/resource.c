@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.44 91/07/24 00:06:52 keith Exp $
+ * $XConsortium: resource.c,v 1.45 92/04/15 11:12:41 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -42,6 +42,8 @@ char	*keyFile;
 char	*accessFile;
 char	**exportList;
 char	*randomFile;
+char	*greeterLib;
+int	choiceTimeout;	/* chooser choice timeout */
 
 # define DM_STRING	0
 # define DM_INT		1
@@ -102,6 +104,9 @@ char	*randomFile;
 #ifndef DEF_RANDOM_FILE
 #define DEF_RANDOM_FILE "/dev/mem"
 #endif
+#ifndef DEF_GREETER_LIB
+#define DEF_GREETER_LIB "/X11/lib/X11/xdm/libXdmGreet.so"
+#endif
 
 #define DEF_UDP_PORT	"177"	    /* registered XDMCP port, dont change */
 
@@ -139,6 +144,10 @@ struct dmResources {
 				"",
 "randomFile",	"RandomFile",	DM_STRING,	&randomFile,
 				DEF_RANDOM_FILE,
+"greeterLib",	"GreeterLib",	DM_STRING,	&greeterLib,
+				DEF_GREETER_LIB,
+"choiceTimeout","ChoiceTimeout",DM_INT,		(char **) &choiceTimeout,
+				"15",
 };
 
 # define NUM_DM_RESOURCES	(sizeof DmResources / sizeof DmResources[0])

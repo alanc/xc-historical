@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.55 93/09/18 11:43:09 rws Exp $
+ * $XConsortium: dm.h,v 1.56 93/12/06 15:19:41 kaleb Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -24,10 +24,10 @@
  * public interfaces for greet/verify functionality
  */
 
-# include	<X11/Xos.h>
-# include	<X11/Xfuncs.h>
-# include	<X11/Xmd.h>
-# include	<X11/Xauth.h>
+#include <X11/Xos.h>
+#include <X11/Xfuncs.h>
+#include <X11/Xmd.h>
+#include <X11/Xauth.h>
 
 #if defined(X_POSIX_C_SOURCE)
 #define _POSIX_C_SOURCE X_POSIX_C_SOURCE
@@ -49,7 +49,7 @@
 #define XDMCP
 
 #ifdef XDMCP
-# include	<X11/Xdmcp.h>
+#include <X11/Xdmcp.h>
 #endif
 
 #ifndef NGROUPS_MAX
@@ -80,7 +80,7 @@ typedef int		waitType;
 # define waitCore(w)	(((w) >> 15) & 0x01)
 typedef int		waitType;
 #else /* SYSV */
-# include	<sys/wait.h>
+# include <sys/wait.h>
 # define waitCode(w)	((w).w_T.w_Retcode)
 # define waitSig(w)	((w).w_T.w_Termsig)
 # define waitCore(w)	((w).w_T.w_Coredump)
@@ -173,6 +173,7 @@ struct display {
 	int		resetSignal;	/* signal to reset server */
 	int		termSignal;	/* signal to terminate server */
 	int		resetForAuth;	/* server reads auth file at reset */
+	char		*greeterLib;	/* greeter shared library name */
 
 	/* session resources */
 	char		*resources;	/* resource file */
@@ -278,6 +279,8 @@ extern char	*keyFile;
 extern char	*accessFile;
 extern char	**exportList;
 extern char	*randomFile;
+extern char	*greeterLib;
+extern int	choiceTimeout;	/* chooser choice timeout */
 
 extern struct display	*FindDisplayByName (),
 			*FindDisplayBySessionID (),
@@ -290,6 +293,7 @@ extern struct protoDisplay	*FindProtoDisplay (),
 				*NewProtoDisplay ();
 
 extern char		*localHostname ();
+
 /*
  * CloseOnFork flags
  */
