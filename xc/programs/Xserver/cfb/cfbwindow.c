@@ -163,7 +163,7 @@ cfbCopyWindow(pWin, ptOldOrg, prgnSrc)
 	ppt->y = pbox->y1 + dy;
     }
 
-    cfbDoBitblt((DrawablePtr)pwinRoot, (DrawablePtr)pwinRoot,
+    cfbDoBitbltCopy((DrawablePtr)pwinRoot, (DrawablePtr)pwinRoot,
 		GXcopy, prgnDst, pptSrc, ~0L);
     DEALLOCATE_LOCAL(pptSrc);
     (* pWin->drawable.pScreen->RegionDestroy)(prgnDst);
