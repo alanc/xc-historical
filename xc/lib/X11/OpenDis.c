@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.101 91/01/08 10:35:06 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.102 91/01/08 14:41:27 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -17,7 +17,12 @@ without express or implied warranty.
 */
 
 /* Converted to V11 by jg */
- 
+
+#ifdef SVR4
+/* until AT&T condescends to document t_getname(), no DES */
+#undef HASDES
+#endif
+
 #include <stdio.h>
 #include <X11/Xlibint.h>
 #include <X11/Xos.h>
