@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.6 91/07/18 22:35:52 keith Exp $ */
+/* $XConsortium: dispatch.c,v 1.7 91/07/27 02:29:05 keith Exp $ */
 /*
  * protocol dispatcher
  */
@@ -138,6 +138,7 @@ Dispatch()
 		NoticeF("Re-reading config file\n");
 		if (ReadConfigFile(configfilename) != FSSuccess)
 		    ErrorF("couldn't parse config file");
+		SetConfigValues();
 		dispatchException &= ~DE_RECONFIG;
 	    }
 	    /* flush all the caches */
@@ -146,11 +147,10 @@ Dispatch()
 		CacheReset();
 		dispatchException &= ~DE_FLUSH;
 	    }
-	    /* reset when no clients left */
-	    if ((dispatchException & DE_RESET) && (nClients == 0)) {
-		NoticeF("reseting\n");
+	    /* reset */
+	    if (dispatchException & DE_RESET) {
+		NoticeF("resetting\n");
 		break;
-
 	    }
 	    /* die *now* */
 	    if (dispatchException & DE_TERMINATE) {
@@ -176,13 +176,14 @@ ProcInitialConnection(client)
     nClients++;
     prefix = (fsConnClientPrefix *) ((char *) stuff + sz_fsReq);
     if ((prefix->byteOrder != 'l') && (prefix->byteOrder != 'B'))
-	return (client->noClientException = -1);
+	return (client->noClientException = -2);
     if (((*(char *) &whichbyte) && (prefix->byteOrder == 'B')) ||
 	    (!(*(char *) &whichbyte) && (prefix->byteOrder == 'l'))) {
 	client->swapped = TRUE;
 	SwapConnClientPrefix(prefix);
     }
     stuff->reqType = 2;
+    stuff->length += (prefix->auth_len >> 2);
     if (client->swapped) {
 	swaps(&stuff->length, whichbyte);
     }
@@ -275,7 +276,7 @@ ProcEstablishConnection(client)
 
     if (auth_accept != AuthSuccess) {
 	nClients--;
-	return (client->noClientException = -1);
+	return (client->noClientException = -2);
     }
     client->requestVector = client->swapped ? SwappedProcVector : ProcVector;
     client->sequence = 0;
@@ -889,6 +890,9 @@ CloseDownClient(client)
     fprintf(stderr, "Shut down client\n");
 #endif
 
+    if (currentClient == client)
+	currentClient = serverClient;
+
     while (!clients[currentMaxClients - 1])
 	currentMaxClients--;
 }
@@ -987,5 +991,5 @@ NextAvailableClient(ospriv)
 MarkClientException(client)
     ClientPtr   client;
 {
-    client->noClientException = -1;
+    client->noClientException = -2;
 }
