@@ -1,5 +1,5 @@
 /*
-* $XConsortium: ShellP.h,v 1.24 89/09/13 17:56:19 swick Exp $
+* $XConsortium: ShellP.h,v 1.25 89/09/18 07:51:42 swick Exp $
 * $oHeader: ShellP.h,v 1.2 88/08/18 15:56:19 asente Exp $
 */
 
@@ -95,6 +95,7 @@ typedef struct {
 
 	XtCallbackList popup_callback;
 	XtCallbackList popdown_callback;
+	Visual*     visual;
 } ShellPart;
 
 typedef  struct {
@@ -164,8 +165,22 @@ typedef struct {
 	Boolean	    wait_for_wm;
 	Boolean	    transient;
 	Atom	    wm_configure_denied,  wm_moved;
-	XSizeHints  size_hints;
+	struct _OldXSizeHints {	/* pre-R4 Xlib structure */
+	    long flags;
+	    int x, y;
+	    int width, height;
+	    int min_width, min_height;
+	    int max_width, max_height;
+	    int width_inc, height_inc;
+	    struct {
+		    int x;
+		    int y;
+	    } min_aspect, max_aspect;
+	} size_hints;
 	XWMHints    wm_hints;
+	int base_width, base_height;
+	int win_gravity;
+	Atom title_encoding;
 } WMShellPart;
 
 typedef  struct {
@@ -202,7 +217,9 @@ externalref TransientShellClassRec transientShellClassRec;
 
 /* New fields for the transient shell widget */
 
-typedef struct {int brillig;} TransientShellPart;
+typedef struct {
+	Widget transient_for;
+} TransientShellPart;
 
 typedef  struct {
 	CorePart 	core;
@@ -241,6 +258,7 @@ externalref TopLevelShellClassRec topLevelShellClassRec;
 typedef struct {
 	char	   *icon_name;
 	Boolean	    iconic;
+	Atom	    icon_name_encoding;
 } TopLevelShellPart;
 
 typedef  struct {
