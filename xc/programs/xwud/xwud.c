@@ -4,7 +4,7 @@
 /* xwud - marginally useful raster image undumper */
 
 #ifndef lint
-static char *rcsid = "$XConsortium: xwud.c,v 1.24 88/12/27 16:48:33 rws Exp $";
+static char *rcsid = "$XConsortium: xwud.c,v 1.25 89/01/20 11:25:13 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -12,6 +12,8 @@ static char *rcsid = "$XConsortium: xwud.c,v 1.24 88/12/27 16:48:33 rws Exp $";
 #include <X11/Xutil.h>
 #include <stdio.h>
 #include <X11/XWDFile.h>
+#define  XK_LATIN1
+#include <X11/keysymdef.h>
 
 extern int errno;
 extern char *malloc();
@@ -21,7 +23,7 @@ char *progname;
 
 usage()
 {
-    fprintf(stderr, "usage: %s [-in <file>] [-geometry <geom>] [-display <display>] [-new] [-raw]\n", progname);
+    fprintf(stderr, "usage: %s [-in <file>] [-geometry <geom>] [-display <display>] [-new] [-std <maptype>] [-raw]\n", progname);
     fprintf(stderr, "            [-help] [-rv] [-plane <number>] [-fg <color>] [-bg <color>]\n");
     exit(1);
 }
@@ -46,6 +48,7 @@ main(argc, argv)
     char *win_name;
     Bool inverse = False, defvis = False, newmap = False;
     int plane = -1;
+    char *std = NULL;
     char *display_name = NULL;
     char *fgname = NULL;
     char *bgname = NULL;
@@ -61,6 +64,9 @@ main(argc, argv)
     XGCValues gc_val;
     XWDFileHeader header;
     FILE *in_file = stdin;
+    char *map_name;
+    Atom map_prop;
+    XStandardColormap stdmap;
 
     progname = argv[0];
 
@@ -99,7 +105,7 @@ main(argc, argv)
 	}
 	if (strcmp(argv[i], "-new") == 0) {
 	    newmap = True;
-	    if (defvis) usage();
+	    if (defvis || std) usage();
 	    continue;
 	}
 	if (strcmp(argv[i], "-plane") == 0) {
@@ -109,11 +115,17 @@ main(argc, argv)
 	}
 	if (strcmp(argv[i], "-raw") == 0) {
 	    defvis = True;
-	    if (newmap) usage();
+	    if (newmap || std) usage();
 	    continue;
 	}
 	if (strcmp(argv[i], "-rv") == 0) {
 	    inverse = True;
+	    continue;
+	}
+	if (strcmp(argv[i], "-std") == 0) {
+	    if (++i >= argc) usage();
+	    std = argv[i];
+	    if (newmap || defvis) usage();
 	    continue;
 	}
 	usage();
@@ -230,7 +242,8 @@ main(argc, argv)
     vinfo = vinfos[0];
     /* find a workable visual */
     if ((in_image.depth == 1) ||
-	((in_image.format == ZPixmap) && (plane >= 0))) {
+	((in_image.format == ZPixmap) && (plane >= 0)) ||
+	std) { /* XXX std until ICCCM support arrives */
 	/* default is OK */
     } else if (defvis) {
 	if (vinfo.depth != in_image.depth) {
@@ -274,6 +287,18 @@ main(argc, argv)
 	colormap = XCreateColormap(dpy, RootWindow(dpy, screen), vinfo.visual,
 				   AllocAll);
 	XStoreColors(dpy, colormap, colors, ncolors);
+    } else if (std) {
+	Latin1Upper(std);
+	map_name = malloc(strlen(std) + 9);
+	strcpy(map_name, "RGB_");
+	strcat(map_name, std);
+	strcat(map_name, "_MAP");
+	map_prop = XInternAtom(dpy, map_name, True);
+	if (!map_prop || !XGetStandardColormap(dpy, RootWindow(dpy, screen),
+					       &stdmap, map_prop))
+	    Error("specified standard colormap does not exist");
+	colormap = stdmap.colormap;
+	newmap = False;
     } else {
 	if (!newmap && (vinfo.visual == DefaultVisual(dpy, screen)))
 	    colormap = DefaultColormap(dpy, screen);
@@ -301,8 +326,10 @@ main(argc, argv)
 				 in_image.width, in_image.height,
 				 XBitmapPad(dpy), 0);
 	out_image->data = malloc(Image_Size(out_image));
-	if ((header.visual_class == TrueColor) ||
-	    (header.visual_class == DirectColor))
+	if (std)
+	    Do_Standard(dpy, &stdmap, ncolors, colors, &in_image, out_image);
+	else if ((header.visual_class == TrueColor) ||
+		 (header.visual_class == DirectColor))
 	    Do_Direct(dpy, &header, &colormap, ncolors, colors,
 		      &in_image, out_image);
 	else
@@ -393,6 +420,22 @@ main(argc, argv)
     }
 }
 
+Latin1Upper(str)
+    unsigned char *str;
+{
+    unsigned char c;
+
+    for (; c = *str; str++)
+    {
+	if ((c >= XK_a) && (c <= XK_z))
+	    *str = c - (XK_a - XK_A);
+	else if ((c >= XK_agrave) && (c <= XK_odiaeresis))
+	    *str = c - (XK_agrave - XK_Agrave);
+	else if ((c >= XK_oslash) && (c <= XK_thorn))
+	    *str = c - (XK_oslash - XK_Ooblique);
+    }
+}
+
 Extract_Plane(in_image, out_image, plane)
     register XImage *in_image, *out_image;
     int plane;
@@ -403,6 +446,36 @@ Extract_Plane(in_image, out_image, plane)
 	for (x = 0; x < in_image->width; x++)
 	    XPutPixel(out_image, x, y,
 		      (XGetPixel(in_image, x, y) >> plane) & 1);
+}
+
+Do_Standard(dpy, stdmap, ncolors, colors, in_image, out_image)
+    Display *dpy;
+    XStandardColormap *stdmap;
+    int ncolors;
+    XColor *colors;
+    register XImage *in_image, *out_image;
+{
+    register int i, x, y;
+    register XColor *color;
+
+    for (i = 0; i < ncolors; i++)
+	colors[i].flags = 0;
+    for (y = 0; y < in_image->height; y++) {
+	for (x = 0; x < in_image->width; x++) {
+	    color = &colors[XGetPixel(in_image, x, y)];
+	    if (!color->flags) {
+		color->flags = DoRed | DoGreen | DoBlue;
+		color->pixel = stdmap->base_pixel +
+			       (((color->red * stdmap->red_max) / 65535) *
+				stdmap->red_mult) +
+			       (((color->green * stdmap->green_max) / 65535) *
+				stdmap->green_mult) +
+			       (((color->blue * stdmap->blue_max) / 65535) *
+				stdmap->blue_mult);
+	    }
+	    XPutPixel(out_image, x, y, color->pixel);
+	}
+    }
 }
 
 Do_Pseudo(dpy, colormap, ncolors, colors, in_image, out_image)
