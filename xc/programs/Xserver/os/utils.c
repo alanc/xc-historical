@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.37 88/01/31 18:39:53 rws Exp $ */
+/* $Header: utils.c,v 1.38 88/02/05 10:34:57 rws Exp $ */
 #include <stdio.h>
 #include <sys/time.h>
 #include "misc.h"
@@ -308,12 +308,12 @@ Xalloc (amount)
         *((unsigned long *)(ptr + 8 + amount)) = SECONDMAGIC;
 	return (unsigned long *) (ptr + 8);
     }
-    FatalError("Error in Xalloc\n");
     /* NOTREACHED */
 #else
-    ptr =  (pointer) malloc(amount);
-    return ((unsigned long *)ptr);
+    if (ptr = (pointer) malloc(amount))
+	return ((unsigned long *)ptr);
 #endif /* DEBUG */
+    FatalError("Out of memory in Xalloc\n");
     /* NOTREACHED */
 }
 
@@ -366,11 +366,12 @@ unsigned long amount;
 	*((unsigned long *)(ptr + 8 + amount)) = SECONDMAGIC;
 	return ((unsigned long *) (ptr + 8));
     }
-    FatalError ("Error in Xrealloc\n");
-    /*NOTREACHED*/
 #else
+    if (ptr || !amount)
         return((unsigned long *)ptr);
 #endif /* DEBUG */
+    FatalError ("Out of memory in Xrealloc\n");
+    /*NOTREACHED*/
 }
                     
 /*****************
