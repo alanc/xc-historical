@@ -1,4 +1,4 @@
-.\" $XConsortium: userguide.mm,v 1.7 92/07/04 13:47:09 rws Exp $
+.\" $XConsortium: userguide.mm,v 1.8 92/07/04 15:35:26 rws Exp $
 '
 .ds dD User Guide for the X Test Suite
 .so 00.header
@@ -158,11 +158,11 @@ and the X extension library (normally named
 .C libXext.a ).
 .LE
 .H 2 "Installing the \*(xT"
-The \*(xT requires 10 Mb of disc space to 
-install from the supplied media and 50-80 Mb of disc space to build and
+The \*(xT requires about 10Mb of disc space to 
+install from the supplied media and 50-100Mb of disc space to build and
 run space-saving executable files (dependent on machine architecture).
 If you choose to build standard executable files
-you will require 150-250 Mb of disc space.
+you will require 100-250Mb of disc space.
 .P
 Change to the directory in which you wish to install the distribution.
 Set an environment variable \s-1TET_ROOT\s0 to the full path name of
@@ -175,23 +175,7 @@ the options
 supported by the utilities, and 
 the names of 
 the tape devices on your system.
-.P
-The distribution format will be shown on the media label. It will normally 
-be \fCcpio\fP format or \fCtar\fP format. If you have obtained the 
-distribution by \fCftp\fP, it will normally be in compressed \fCtar\fP format.
-.P
-The following are example commands which work on most systems:
-.TS
-box, center;
-lB | l.
-Media format	Example command
-_
-tar	tar xvf \fItape-device-name\fR
-_
-cpio	cpio -icvdB < \fItape-device-name\fR
-_
-compressed tar	uncompress \fIfile-name\fR; tar xvf \fIfile-name\fR
-.TE
+See the Release Notes for more information about installation.
 .P
 .SK
 .H 1 "Configuring the \*(xT"
@@ -1528,7 +1512,7 @@ to access the display under test.
 It must include a screen;
 all testing is done for a particular screen.
 .cS
-Eg: XT_DISPLAY=ariel:0.0
+Eg: XT_DISPLAY=:0.0
 .cE
 .LI \s-1XT_ALT_SCREEN\s0
 .br
@@ -1623,7 +1607,7 @@ Note that this parameter is only used to check the correctness of the values
 returned by XMatchVisualInfo and XGetVisualInfo. Other tests which loop
 over visuals obtain the values by calling these functions.
 .cS
-Eg. XT_VISUAL_CLASSES=StaticGray(1,8) GrayScale(1,8) StaticColor(8) 
+Eg. XT_VISUAL_CLASSES=StaticGray(8) GrayScale(8) StaticColor(8) 
                       PseudoColor(8) TrueColor(8) DirectColor(8)
 \fR(This must be typed as one line.)\fP
 .cE
@@ -1698,7 +1682,7 @@ zero otherwise. The
 more complete history is made available via the Xlib functions 
 XDisplayMotionBufferSize and XGetMotionEvents.
 .cS
-Eg: XT_DISPLAYMOTIONBUFFERSIZE=0
+Eg: XT_DISPLAYMOTIONBUFFERSIZE=256
 .cE
 .LE
 .H 3 "Configuration parameters for Display functions"
@@ -1736,28 +1720,28 @@ Eg: XT_PIXMAP_DEPTHS=1 8
 This parameter should be set to the black pixel value 
 of the specified screen of the display.
 .cS
-Eg: XT_BLACK_PIXEL=0x0
+Eg: XT_BLACK_PIXEL=1
 .cE
 .LI \s-1XT_WHITE_PIXEL\s0
 .br
 This parameter should be set to the white pixel value 
 of the specified screen of the display.
 .cS
-Eg: XT_WHITE_PIXEL=0xf
+Eg: XT_WHITE_PIXEL=0
 .cE
 .LI \s-1XT_HEIGHT_MM\s0
 .br
 This parameter should be set to the height in millimeters
 of the specified screen of the display.
 .cS
-Eg: XT_HEIGHT_MM=224
+Eg: XT_HEIGHT_MM=254
 .cE
 .LI \s-1XT_WIDTH_MM\s0
 .br
 This parameter should be set to the width in millimeters
 of the specified screen of the display.
 .cS
-Eg: XT_WIDTH_MM=288
+Eg: XT_WIDTH_MM=325
 .cE
 .LI \s-1XT_PROTOCOL_VERSION\s0
 .br
@@ -1778,14 +1762,14 @@ Eg. XT_PROTOCOL_REVISION=0
 This should be set to the X server vendor string
 as returned by XServerVendor.
 .cS
-Eg: XT_SERVER_VENDOR=
+Eg: XT_SERVER_VENDOR=MIT X Consortium
 .cE
 .LI \s-1XT_VENDOR_RELEASE\s0
 .br
 This should be set to the X server vendor's release 
 number as returned by XVendorRelease.
 .cS
-Eg. XT_VENDOR_RELEASE=1
+Eg. XT_VENDOR_RELEASE=5000
 .cE
 .LI \s-1XT_DOES_SAVE_UNDERS\s0
 .br
@@ -1862,7 +1846,7 @@ component of the display name.
 Note that this may not be the same as the machine on which the 
 test suite clients execute (XTESTHOST).
 .cS
-Eg. XT_DISPLAYHOST=ariel
+Eg. XT_DISPLAYHOST=xdisplay.lcs.mit.edu
 .cE
 .LI \s-1XT_LOCAL\s0
 .br
@@ -2041,7 +2025,7 @@ The visuals ID's should be entered in decimal, octal or hexadecimal
 and separated with commas and with no intervening spaces.
 This should not be set to a non-empty string for verification tests.
 .cS
-Eg. XT_DEBUG_VISUAL_IDS=0x80064,0x80068,0x8006A
+Eg. XT_DEBUG_VISUAL_IDS=0x22,0x24,0x27
 .cE
 .LI \s-1XT_DEBUG_NO_PIXCHECK\s0
 .br
@@ -2104,7 +2088,7 @@ The directory in which the xtest fonts are located
 This must be set such that appending a string gives a valid file name.
 This is normally set to \fC$TET_ROOT/xtest/fonts/\fP.
 .cS
-Eg: XT_FONTDIR=/tree/Xtest/x/root/xtest/fonts/
+Eg: XT_FONTDIR=/usr/mit/testsuite/xtest/fonts/
 .cE
 .LE
 .H 2 "Executing tests using the \s-1TET\s0"
