@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: inputstr.h,v 1.25 91/01/24 17:06:21 rws Exp $ */
+/* $XConsortium: inputstr.h,v 1.26 91/05/14 12:00:10 rws Exp $ */
 
 #ifndef INPUTSTRUCT_H
 #define INPUTSTRUCT_H
@@ -109,19 +109,19 @@ typedef struct _KeyClassRec {
     unsigned short	state;
 } KeyClassRec, *KeyClassPtr;
 
-typedef struct _XAxisInfo {
+typedef struct _AxisInfo {
     int		resolution;
     int		min_value;
     int		max_value;
-} XAxisInfo, *XAxisInfoPtr;
+} AxisInfo, *AxisInfoPtr;
 
 typedef struct _ValuatorClassRec {
     int		 	(*GetMotionProc) ();
     int		 	numMotionEvents;
     WindowPtr    	motionHintWindow;
-    XAxisInfoPtr 	axes;
+    AxisInfoPtr 	axes;
     unsigned short	numAxes;
-    unsigned int	*axisVal;
+    int			*axisVal;
     CARD8	 	mode;
 } ValuatorClassRec, *ValuatorClassPtr;
 
