@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.35 91/05/29 14:57:26 keith Exp $
+ * $XConsortium: miwideline.c,v 1.37 91/05/30 20:54:11 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -460,7 +460,8 @@ miLineJoin (pDrawable, pGC, pixel, spanData, pLeft, pRight)
 	    scale = adx;
 	slopes[2].dx = (dx * 65536) / scale;
 	slopes[2].dy = (dy * 65536) / scale;
-	slopes[2].k = pLeft->xa * slopes[2].dy - pLeft->ya * slopes[2].dx;
+	slopes[2].k = ((pLeft->xa + pRight->xa) * slopes[2].dy -
+		       (pLeft->ya + pRight->ya) * slopes[2].dx) / 2.0;
 	edgecount = 3;
     }
 

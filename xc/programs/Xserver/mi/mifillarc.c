@@ -17,7 +17,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.c,v 5.13 91/05/26 15:23:30 rws Exp $ */
+/* $XConsortium: mifillarc.c,v 5.14 91/06/12 20:35:56 rws Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -384,7 +384,7 @@ miFillArcSliceSetup(arc, slice, pGC)
     }
     else
     {
-	double w2, h2, x1, y1, dx, dy, scale;
+	double w2, h2, x1, y1, x2, y2, dx, dy, scale;
 	int signdx, signdy, y, k;
 
 	w2 = (double)arc->width / 2.0;
@@ -406,25 +406,31 @@ miFillArcSliceSetup(arc, slice, pGC)
 	}
 	if ((angle2 == 0) || (angle2 == HALFCIRCLE))
 	{
-	    dx = angle2 ? -w2 : w2;
-	    dy = 0.0;
+	    x2 = angle2 ? -w2 : w2;
+	    y2 = 0.0;
 	}
 	else if ((angle2 == QUADRANT) || (angle2 == QUADRANT3))
 	{
-	    dx = 0.0;
-	    dy = (angle2 == QUADRANT) ? h2 : -h2;
+	    x2 = 0.0;
+	    y2 = (angle2 == QUADRANT) ? h2 : -h2;
 	}
 	else
 	{
-	    dx = Dcos(angle2) * w2;
-	    dy = Dsin(angle2) * h2;
+	    x2 = Dcos(angle2) * w2;
+	    y2 = Dsin(angle2) * h2;
 	}
-	dx -= x1;
-	dy -= y1;
+	dx = x2 - x1;
+	dy = y2 - y1;
 	if (arc->height & 1)
+	{
 	    y1 -= 0.5;
+	    y2 -= 0.5;
+	}
 	if (arc->width & 1)
+	{
 	    x1 += 0.5;
+	    x2 += 0.5;
+	}
 	if (dy < 0.0)
 	{
 	    dy = -dy;
@@ -495,7 +501,7 @@ miFillArcSliceSetup(arc, slice, pGC)
 		slice->edge1.dx = -slice->edge1.dx;
 	    if (signdy < 0)
 		slice->edge1.dx = -slice->edge1.dx;
-	    k = ceil(x1 * slice->edge1.dy - y1 * slice->edge1.dx);
+	    k = ceil(((x1 + x2) * slice->edge1.dy - (y1 + y2) * slice->edge1.dx) / 2.0);
 	    slice->edge2.dx = slice->edge1.dx;
 	    slice->edge2.dy = slice->edge1.dy;
 	    slice->edge1_top = signdy < 0;
