@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.1 93/08/17 18:59:00 mor Exp $ */
+/* $XConsortium: process.c,v 1.1 93/08/19 18:25:29 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -23,17 +23,43 @@ purpose.  It is provided "as is" without express or implied warranty.
  *
  * If replyWait != NULL, the client is waiting for a reply...
  *
- *    - replyWait->opcode_of_request is the minor opcode of the
- *      message for which the client is waiting a reply.
- *
  *    - replyWait->sequence_of_request is the sequence number of the
- *      message for which the client is waiting a reply.
+ *      message for which the client is waiting a reply.  This is needed
+ *	to determine if an error matches a replyWait.
  *
- *    - replyWait->reply is a pointer to the reply message which
- *	will be filled in when the reply is ready.
+ *    - replyWait->major_opcode_of_request is the major opcode of the
+ *      message for which we are waiting a reply.
  *
- * If the reply/error is ready, TRUE is returned.
- * Otherwise, FALSE is returned.
+ *    - replyWait->minor_opcode_of_request is the minor opcode of the
+ *      message for which we are waiting a reply.
+ *
+ *    - replyWait->reply is a pointer to the reply message which will be
+ *	filled in when the reply is ready (the protocol library should
+ *      cast this IcePointer to the appropriate reply type).  In most cases,
+ *      the reply will have some fixed-size part, and the sender function
+ *      will have provided a pointer to a structure (e.g.) to hold this
+ *      fixed-size data.  If there is variable-length data, it would be
+ *      expected that the reply function will have to allocate additional
+ *      memory and store pointer(s) to that memory in the fixed-size
+ *      structure.  If the entire data is variable length (e.g., a single
+ *      variable-length string), then the sender function would probably
+ *      just pass a pointer to fixed-size space to hold a pointer, and the
+ *      reply function would allocate the storage and store the pointer.
+ *	It is the responsibility of the client receiving the reply to
+ *	free up any memory allocated on it's behalf.
+ *
+ * We might be waiting for several different replies (a function can wait
+ * for a reply, and while calling IceProcessMessage, a callback can be
+ * invoked which will wait for another reply).  We take advantage of the
+ * fact that for a given protocol, we are guaranteed that messages are
+ * processed in the order we sent them.  So, everytime we have a new
+ * replyWait, we add it to the END of the 'saved_reply_waits' list.  When
+ * we read a message and want to see if it matches a replyWait, we use the
+ * FIRST replyWait in the list with the major opcode of the message.  If the
+ * reply is ready, we remove that replyWait from the list.
+ *
+ * If the reply/error is ready for the replyWait passed in to
+ * IceProcessMessage, True is returned.  Otherwise, False is returned.
  */
 
 Bool
@@ -43,8 +69,9 @@ IceConn		 iceConn;
 IceReplyWaitInfo *replyWait;
 
 {
-    Bool	replyReady = False;
-    iceMsg	*header;
+    iceMsg		*header;
+    Bool		replyReady = False;
+    IceReplyWaitInfo	*useThisReplyWait;
     
     _IceRead (iceConn, SIZEOF (iceMsg), iceConn->inbuf);
     header = (iceMsg *) iceConn->inbuf;
@@ -73,7 +100,7 @@ IceReplyWaitInfo *replyWait;
 	    }
 	    else
 	    {
-		_IceErrorBadMinor (iceConn,
+		_IceErrorBadState (iceConn,
 		    header->minorOpcode, IceFatalToProtocol);
 	    }
 
@@ -91,6 +118,27 @@ IceReplyWaitInfo *replyWait;
 
     iceConn->sequence++;
 
+    if (replyWait)
+    {
+	/*
+	 * Add to the list of replyWaits (only if it doesn't exist
+	 * in the list already.
+	 */
+
+	_IceAddReplyWait (iceConn, replyWait);
+
+
+	/*
+	 * Note that there are two different replyWaits.  The first is
+	 * the one passed into IceProcessMessage, and is the replyWait
+	 * for the message the client is blocking on.  The second is
+	 * the replyWait for the message currently being processed
+	 * by IceProcessMessage.  We call it "useThisReplyWait".
+	 */
+
+	useThisReplyWait = _IceSearchReplyWaits (iceConn, header->majorOpcode);
+    }
+
     if (header->majorOpcode == 0)
     {
 	/*
@@ -101,7 +149,7 @@ IceReplyWaitInfo *replyWait;
 	    _IceVersions[iceConn->my_ice_version_index].process_core_msg_cb;
 
 	replyReady = (*processIce) (iceConn, header->minorOpcode,
-	    iceConn->swap, replyWait);
+	    iceConn->swap, useThisReplyWait);
     }
     else
     {
@@ -140,12 +188,24 @@ IceReplyWaitInfo *replyWait;
 		    processMsgInfo->process_msg_cb.orig_client;
 
 		replyReady = (*processCB) (iceConn, header->minorOpcode,
-		    header->length, iceConn->swap, replyWait);
+		    header->length, iceConn->swap, useThisReplyWait);
 	    }
 	}
     }
 
-    return (replyReady);
+    if (replyReady)
+    {
+	_IceSetReplyReady (iceConn, useThisReplyWait);
+    }
+
+
+    /*
+     * Now we check if the reply is ready for the replyWait passed
+     * into IceProcessMessage.  The replyWait is removed from the
+     * replyWait list if it is ready.
+     */
+
+    return (_IceCheckReplyReady (iceConn, replyWait));
 }
 
 
@@ -779,8 +839,8 @@ IceReplyWaitInfo	*replyWait;
     {
 	AuthReply (iceConn, replyDataLen, replyData);
 
-	replyWait->opcode_of_request = ICE_AuthReply;
 	replyWait->sequence_of_request = iceConn->sequence;
+	replyWait->minor_opcode_of_request = ICE_AuthReply;
 
 	if (iceConn->connect_to_you)
 	{
