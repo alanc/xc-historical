@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.120 89/12/12 20:14:55 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.121 89/12/13 12:57:52 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -159,7 +159,7 @@ typedef struct _TranslationData *XtAccelerators;
 typedef unsigned int Modifiers;
 
 typedef void (*XtActionProc)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     Widget 		/* widget */,
     XEvent*		/* event */,
     String*		/* params */,
@@ -193,7 +193,7 @@ typedef struct {
 } XtConvertArgRec, *XtConvertArgList;
 
 typedef void (*XtConvertArgProc)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     Widget 		/* widget */,
     Cardinal*		/* size */,
     XrmValue*		/* value */
@@ -215,7 +215,7 @@ typedef struct {
 #define XtSMDontChange	5
 
 typedef void (*XtConverter)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     XrmValue*		/* args */,
     Cardinal*		/* num_args */,
     XrmValue*		/* from */,
@@ -224,7 +224,7 @@ typedef void (*XtConverter)(
 );
 
 typedef Boolean (*XtTypeConverter)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     Display*		/* dpy */,
     XrmValue*		/* args */,
     Cardinal*		/* num_args */,
@@ -235,7 +235,7 @@ typedef Boolean (*XtTypeConverter)(
 );
 
 typedef void (*XtDestructor)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     XtAppContext	/* app */,
     XrmValue*		/* to */,
     XtPointer 		/* converter_data */,
@@ -249,7 +249,7 @@ typedef Opaque XtCacheRef;
 typedef Opaque XtActionHookId;
 
 typedef void (*XtActionHookProc)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     Widget		/* w */,
     XtPointer		/* client_data */,
     String		/* action_name */,
@@ -260,7 +260,7 @@ typedef void (*XtActionHookProc)(
 );
 
 typedef void (*XtKeyProc)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     Display*		/* dpy */,
     KeyCode* 		/* keycode */,
     Modifiers*		/* modifiers */,
@@ -270,7 +270,7 @@ typedef void (*XtKeyProc)(
 );
 
 typedef void (*XtCaseProc)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     KeySym*		/* keysym */,
     KeySym*		/* lower_return */,
     KeySym*		/* upper_return */
@@ -278,7 +278,7 @@ typedef void (*XtCaseProc)(
 );
 
 typedef void (*XtEventHandler)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     Widget 		/* widget */,
     XtPointer 		/* closure */,
     XEvent*		/* event */,
@@ -296,14 +296,14 @@ typedef unsigned long	XtInputMask;
 #define XtInputExceptMask	(1L<<2)
 
 typedef void (*XtTimerCallbackProc)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     XtPointer 		/* closure */,
     XtIntervalId*	/* id */
 #endif
 );
 
 typedef void (*XtInputCallbackProc)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     XtPointer 		/* closure */,
     int*		/* source */,
     XtInputId*		/* id */
@@ -318,7 +318,7 @@ typedef struct {
 typedef XtPointer	XtVarArgsList;
 
 typedef void (*XtCallbackProc)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     Widget 		/* widget */,
     XtPointer 		/* closure */,	/* data the application registered */
     XtPointer 		/* call_data */	/* callback specific data */
@@ -361,7 +361,7 @@ typedef struct _XtResource {
 } XtResource, *XtResourceList;
 
 typedef void (*XtErrorMsgHandler)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     String 		/* name */,
     String		/* type */,
     String		/* class */,
@@ -372,13 +372,13 @@ typedef void (*XtErrorMsgHandler)(
 );
 
 typedef void (*XtErrorHandler)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
   String		/* msg */
 #endif
 );
 
 typedef Boolean (*XtWorkProc)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     XtPointer 		/* closure */	/* data the application registered */
 #endif
 );
@@ -406,7 +406,7 @@ typedef XtPointer XtRequestId;
  * convert it between different machine types. */
 
 typedef Boolean (*XtConvertSelectionProc)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     Widget 		/* widget */,
     Atom*		/* selection */,
     Atom*		/* target */,
@@ -422,7 +422,7 @@ typedef Boolean (*XtConvertSelectionProc)(
  */
 
 typedef void (*XtLoseSelectionProc)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     Widget 		/* widget */,
     Atom*		/* selection */
 #endif
@@ -434,7 +434,7 @@ typedef void (*XtLoseSelectionProc)(
  */
 
 typedef void (*XtSelectionDoneProc)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     Widget 		/* widget */,
     Atom*		/* selection */,
     Atom*		/* target */
@@ -448,7 +448,7 @@ typedef void (*XtSelectionDoneProc)(
  */
 
 typedef void (*XtSelectionCallbackProc)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     Widget 		/* widget */,
     XtPointer 		/* closure */,
     Atom*		/* selection */,
@@ -460,7 +460,7 @@ typedef void (*XtSelectionCallbackProc)(
 );
 
 typedef void (*XtLoseSelectionIncrProc)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     Widget 		/* widget */,
     Atom*		/* selection */,
     XtPointer 		/* client_data */
@@ -468,7 +468,7 @@ typedef void (*XtLoseSelectionIncrProc)(
 );
 
 typedef void (*XtSelectionDoneIncrProc)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     Widget 		/* widget */,
     Atom*		/* selection */,
     Atom*		/* target */,
@@ -478,7 +478,7 @@ typedef void (*XtSelectionDoneIncrProc)(
 );
 
 typedef Boolean (*XtConvertSelectionIncrProc)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     Widget 		/* widget */,
     Atom*		/* selection */,
     Atom*		/* target */,
@@ -493,7 +493,7 @@ typedef Boolean (*XtConvertSelectionIncrProc)(
 );
 
 typedef void (*XtCancelSelectionCallbackProc)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     Widget 		/* widget */,
     Atom*		/* selection */,
     XtPointer 		/* client_data */
@@ -501,7 +501,7 @@ typedef void (*XtCancelSelectionCallbackProc)(
 );
 
 typedef void (*XtCancelConvertSelectionProc)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     Widget 		/* widget */,
     Atom*		/* selection */,
     Atom*		/* target */,
@@ -511,7 +511,7 @@ typedef void (*XtCancelConvertSelectionProc)(
 );
 
 typedef void (*XtSelectionIncrCallbackProc)(
-#if BrokenNeedFunctionPrototypes
+#if NeedFunctionPrototypes
     Widget 		/* widget */,
     XtPointer 		/* client_data */,
     Atom*		/* selection */,
