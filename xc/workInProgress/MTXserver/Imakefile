@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.148 93/07/12 12:52:06 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.149 93/07/12 15:52:35 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -63,7 +63,7 @@ XCOMM $XConsortium: Imakefile,v 1.148 93/07/12 12:52:06 rws Exp $
 #if SystemV4 && X386Server
         SYSLIBS = -lm /usr/ucblib/libucb.a
 #else
-#if XirisServer || XhpServer || (defined(SunArchitecture) && SystemV4)
+#if XirisServer || XhpServer || SystemV4
         SYSLIBS = -lm
 #else
         SYSLIBS = -lm -ldbm
