@@ -4,11 +4,9 @@
  * a widget which follows the mouse around
  */
 
-# include <sys/types.h>
-# include <sys/time.h>
+# include <X11/Xos.h>
 # include <stdio.h>
 # include <X11/IntrinsicP.h>
-# include <X11/Xos.h>
 # include <X11/StringDefs.h>
 # include "EyesP.h"
 # include <math.h>
@@ -260,6 +258,16 @@ int		num;
 {
 	Display *dpy = XtDisplay(w);
 	Window win = XtWindow(w);
+	int ecx = (int) EYE_CENTER_X(w, num), ecy = (int) EYE_CENTER_Y(w, num);
+	int et = EYE_THICK(w);
+	unsigned int ew = EYE_WIDTH(w), eh = EYE_HEIGHT(w);
+	int etdiv2 = et/2;
+	unsigned int ewdiv2 = ew/2, ehdiv2 = eh/2;
+
+#ifdef punt
+	/*
+	 * The following expression is too complicated for some compilers.
+	 */
 	XFillArc (dpy, win, outgc,
  		(int) EYE_CENTER_X(w, num) - EYE_WIDTH(w)/2 - EYE_THICK(w)/2,
 		(int) EYE_CENTER_Y(w, num) - EYE_HEIGHT(w)/2 - EYE_THICK(w)/2,
@@ -270,6 +278,15 @@ int		num;
 		(int) EYE_CENTER_Y(w, num) - EYE_HEIGHT(w)/2 + EYE_THICK(w)/2,
 		EYE_WIDTH(w) - EYE_THICK(w), EYE_HEIGHT(w) - EYE_THICK(w),
 		90 * 64, 360 * 64);
+#endif
+
+	XFillArc (dpy, win, outgc, 
+		  (ecx - ewdiv2 - etdiv2), (ecy - ehdiv2 - etdiv2),
+		  (ew + et), (eh + et), 90 * 64, 360 * 64);
+	XFillArc (dpy, win, centergc,
+		  (ecx - ewdiv2 + etdiv2), (ecy - ehdiv2 + etdiv2),
+		  (ew - et), (eh - et), 90 * 64, 360 * 64);
+
 }
 
 eyeBall (w, gc, num, dx, dy)
@@ -286,6 +303,7 @@ int	dx, dy;
 	double	a, b;
 	Display *dpy = XtDisplay(w);
 	Window win = XtWindow(w);
+	int bw = BALL_WIDTH(w), bh = BALL_HEIGHT(w);
 
 	dx = dx - EYE_CENTER_X(w, num);
 	dy = dy - EYE_CENTER_Y(w, num);
@@ -303,6 +321,13 @@ int	dx, dy;
 		cx = dist * cos (angle) + EYE_CENTER_X(w, num);
 		cy = dist * sin (angle) + EYE_CENTER_Y(w, num);
 	}
+#ifdef punt
+	/*
+	 * The following expression is too complicated for some compilers.
+	 */
 	XFillArc (dpy, win, gc, cx - BALL_WIDTH(w)/2, cy - BALL_HEIGHT(w)/2,
 		BALL_WIDTH(w), BALL_HEIGHT(w), 90 * 64, 360 * 64);
+#endif
+	XFillArc (dpy, win, gc, (cx - bw/2), (cy - bh/2), bw, bh, 
+		  90 * 64, 360 * 64);
 }
