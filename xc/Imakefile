@@ -8,14 +8,11 @@
 #if BuildServer
 SERVERDIRSTOMAKE = fonts server rgb
 #endif
-#if BuildExamples
-EXAMPLESDIRS = examples
-#endif
 #if BuildDoc
 DOCDIRS = doc
 #endif
         SUBDIRS = config include lib extensions $(SERVERDIRSTOMAKE) \
-			clients demos $(EXAMPLESDIRS) util $(DOCDIRS)
+			clients demos util $(DOCDIRS)
   LNINSTALLDIRS = $(EXTENSIONSRC) $(LIBSRC)
 
 MakeSubdirs($(SUBDIRS))
