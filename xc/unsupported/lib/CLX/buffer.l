@@ -592,7 +592,7 @@
     (with-buffer-input (reply-buffer :sizes (16) :index index)
       #-clx-overlapping-arrays
       (do* ((j start (index+ j 1))
-	    (end (index+ start index))
+	    (end (index+ start nitems))
 	    (index 0 (index+ index 2)))
 	   ((index>= j end))
 	(declare (type array-index j index))
