@@ -75,7 +75,7 @@ int InitAwait(xp, p, reps)
 
 	xplocal = xp;		/* so the signal handler can access it */
 
-        lutSize = ( 1 << xp->vinfo.depth ) * sizeof( unsigned char );
+        lutSize = ( ( AwaitParms * ) ( p->ts ) )->lutSize;
         lut = (unsigned char *)malloc( lutSize );
         if ( lut == ( unsigned char * ) NULL )
 	{
@@ -88,7 +88,7 @@ int InitAwait(xp, p, reps)
                 {
                         if ( i % 5 == 0 )
                         {
-                                lut[ i ] = ( 1 << xp->vinfo.depth ) - i;
+                                lut[ i ] = ( lutSize - 1 ) - i;
                         }
                         else
                         {
@@ -115,10 +115,10 @@ int InitAwait(xp, p, reps)
 
         data_class = xieValSingleBand;
         band_order = xieValLSFirst;
-        length[ 0 ] = 1 << p->levelsIn;
+        length[ 0 ] = lutSize;
         length[ 1 ] = 0;
         length[ 2 ] = 0;
-        levels[ 0 ] = 1 << p->levelsOut;
+        levels[ 0 ] = ( ( AwaitParms * ) ( p->ts ) )->lutLevels;
         levels[ 1 ] = 0;
         levels[ 2 ] = 0;
 
@@ -210,7 +210,7 @@ AwaitHandler(sig)
 		   or it worked and we have a situation similar
                    to one of those listed above */
 
-		alarm( 60 );
+		alarm( GetTimeout() );
 	}	
 }
 
@@ -220,6 +220,7 @@ void DoAwait(xp, p, reps)
     int     reps;
 {
 	int	i, pid;
+	int	status;
 	XieExtensionInfo *xieInfo;
         XiePhotofloState state;
         XiePhototag *expected, *avail;
@@ -253,7 +254,7 @@ void DoAwait(xp, p, reps)
 		else				/* parent */
 		{
 			signal( SIGALRM, AwaitHandler );
-			alarm( 60 );		
+			alarm( GetTimeout() );		
 
 			/* if we query the photoflo and it is active, then
 			   XieAwait didn't really do what we wanted it to */
@@ -264,10 +265,20 @@ void DoAwait(xp, p, reps)
 				fprintf( stderr, "XieQueryPhotoflo failed\n" );
 				break;
 			}				
+			if ( expected )
+				free( expected );
+			if ( avail )
+				free( avail );
 			if ( state != xieValInactive )
 			{
 				fprintf( stderr, 
 					"Flo state was not inactive\n" );
+				break;
+			}
+			wait( &status );
+			if ( status & 0xff )
+			{
+				fprintf( stderr, "Child process abnormal termination: %x\n", status & 0xff );	
 				break;
 			}
 		}

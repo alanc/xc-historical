@@ -1,4 +1,4 @@
-/* $XConsortium: do_exportclient.c,v 1.1 93/07/19 13:02:37 rws Exp $ */
+/* $XConsortium: exportcl.c,v 1.2 93/07/19 14:43:50 rws Exp $ */
 
 /**** module do_exportclient.c ****/
 /******************************************************************************
@@ -65,6 +65,7 @@ int InitExportClientPhoto(xp, p, reps)
     Parms   p;
     int     reps;
 {
+	p->data = ( char * ) NULL;
 	if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
 		reps = 0;
 	return( reps );
@@ -85,7 +86,10 @@ int InitExportClientLUT(xp, p, reps)
 		if ( lut )
 			free( lut );
 		else if ( p->data )
+		{
 			free( p->data );
+			p->data = ( char * ) NULL;
+		}
 		reps = 0;
 	}
 	else
@@ -94,7 +98,7 @@ int InitExportClientLUT(xp, p, reps)
 		{
 			lut[ i ] = ( 1 << xp->vinfo.depth ) - i;
 		}
-		if ( ( XIELut = GetXIELut( xp, p, lut, lutSize ) ) ==
+		if ( ( XIELut = GetXIELut( xp, p, lut, lutSize, lutSize ) ) ==
 			( XieLut ) NULL )
 		{
 			reps = 0;
@@ -116,10 +120,6 @@ int InitExportClientROI(xp, p, reps)
 	if ( rects == ( XieRectangle * ) NULL || p->data == ( char * ) NULL )
 	{
 		reps = 0;
-		if ( lut )
-			free( lut );
-		else if ( p->data )
-			free( p->data );
 	}
 	else
 	{
@@ -138,6 +138,17 @@ int InitExportClientROI(xp, p, reps)
 			reps = 0;
 		}
 	}
+	if ( !reps )
+	{
+		if ( rects )
+			free( rects );
+		if ( p->data )
+		{
+			free( p->data );
+			p->data = ( char * ) NULL;
+		}
+	}
+
 	return( reps );
 }
 
@@ -146,6 +157,7 @@ void DoExportClientPhotoImmediate(xp, p, reps)
     Parms   p;
     int     reps;
 {
+	XIEimage	*image;
     	int     i;
 	int	flo_notify, flo_id;
 	XiePhotospace photospace;
@@ -154,6 +166,9 @@ void DoExportClientPhotoImmediate(xp, p, reps)
 	XiePhotoElement *flograph;
 	unsigned int checksum;
 
+	image = p->finfo.image1;
+        if ( !image )
+                return;
 	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
 
 	flograph = XieAllocatePhotofloGraph(2);
@@ -183,10 +198,10 @@ void DoExportClientPhotoImmediate(xp, p, reps)
 		);
 		XSync( xp->d, 0 );
 		ReadNotifyExportData( xp, p, photospace, flo_id, 2, 
-			p->finfo.fsize1 );
+			image->fsize );
 		WaitForFloToFinish( xp, flo_id );
-		checksum = CheckSum( p->data, p->finfo.fsize1 );
-		if ( checksum != dataCheckSum1 )
+		checksum = CheckSum( p->data, image->fsize );
+		if ( checksum != image->chksum )
 		{
 			fprintf( stderr, "Photomap not read correctly by client\n" );
 			break;
@@ -202,6 +217,7 @@ void DoExportClientPhotoStored(xp, p, reps)
     Parms   p;
     int     reps;
 {
+	XIEimage	*image;
     	int     i;
         XiePhotospace photospace;
 	int	flo_notify;
@@ -211,6 +227,9 @@ void DoExportClientPhotoStored(xp, p, reps)
         char *encode_params=NULL;
 	unsigned int checksum;
 
+	image = p->finfo.image1;
+        if ( !image )
+                return;
 	flograph = XieAllocatePhotofloGraph(2);	
 	if ( flograph == ( XiePhotoElement * ) NULL )
 	{
@@ -237,10 +256,10 @@ void DoExportClientPhotoStored(xp, p, reps)
 		XieExecutePhotoflo( xp->d, flo, flo_notify );
 		XSync( xp->d, 0 );
 		ReadNotifyExportData( xp, p, photospace, flo, 2,
-			p->finfo.fsize1 );
+			image->fsize );
 		WaitForFloToFinish( xp, flo );
-		checksum = CheckSum( p->data, p->finfo.fsize1 );
-		if ( checksum != dataCheckSum1 )
+		checksum = CheckSum( p->data, image->fsize );
+		if ( checksum != image->chksum )
 		{
 			fprintf( stderr, "Photomap not read correctly by client\n" );
 			break;
@@ -275,7 +294,7 @@ void DoExportClientLUTImmediate(xp, p, reps)
 		return;
 	}
 
-     	length[ 0 ] = 1 << p->depth;
+     	length[ 0 ] = 1 << xp->vinfo.depth;
 	length[ 1 ] = 0;
 	length[ 2 ] = 0;
 
@@ -327,7 +346,6 @@ void DoExportClientLUTStored(xp, p, reps)
 	int	flo_notify;
 	XiePhotoElement *flograph;
 	XiePhotoflo flo;
-        int     decode_notify;
         XieOrientation band_order = xieValLSFirst;
         XieLTriplet     start, length, levels;
 
@@ -340,7 +358,7 @@ void DoExportClientLUTStored(xp, p, reps)
 
 	XieFloImportLUT(&flograph[0], XIELut);
 
-	length[ 0 ] = 1 << p->depth;
+	length[ 0 ] = 1 << xp->vinfo.depth;
 	length[ 1 ] = 0;
 	length[ 2 ] = 0;
 
@@ -490,7 +508,11 @@ void EndExportClientLUT(xp, p)
 {
 	XieDestroyLUT( xp->d, XIELut );
 	free( lut );
-	free( p->data );
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
 }
 
 void EndExportClientPhoto(xp, p)
@@ -498,7 +520,11 @@ void EndExportClientPhoto(xp, p)
     Parms   p;
 {
 	XieDestroyPhotomap(xp->d, XIEPhotomap);
-	free( p->data );
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
 }
 
 void EndExportClientROI(xp, p)
@@ -507,5 +533,9 @@ void EndExportClientROI(xp, p)
 {
 	XieDestroyROI(xp->d, XIERoi );
 	free( rects );
-	free( p->data );
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
 }

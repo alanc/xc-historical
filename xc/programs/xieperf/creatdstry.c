@@ -1,4 +1,4 @@
-/* $XConsortium: do_createdestroy.c,v 1.1 93/07/19 13:02:24 rws Exp $ */
+/* $XConsortium: creatdstry.c,v 1.2 93/07/19 14:43:45 rws Exp $ */
 
 /**** module do_createdestroy.c ****/
 /******************************************************************************
@@ -61,7 +61,6 @@ int InitCreateDestroyPhotoflo(xp, p, reps)
 {
 	int	lutSize;
 	unsigned char	*lut1, *lut2;
-        int     decode_notify;
         Bool    merge;
         XieLTriplet start;
 
@@ -72,7 +71,7 @@ int InitCreateDestroyPhotoflo(xp, p, reps)
                 return 0;
         }
 
-        lutSize = 1 << p->levelsIn;
+        lutSize = 1 << xp->vinfo.depth;
         lut1 = (unsigned char *)malloc( lutSize * sizeof( unsigned char ) );
         if ( lut1 == ( unsigned char * ) NULL )
                 return 0;
@@ -83,16 +82,16 @@ int InitCreateDestroyPhotoflo(xp, p, reps)
 		free( lut1 );
 		return( 0 );
 	}
-        if ( ( PhotofloTestLut1 = GetXIELut( xp, p, lut1, lutSize ) ) ==
-		( XieLut ) NULL )
+        if ( ( PhotofloTestLut1 = GetXIELut( xp, p, lut1, lutSize, lutSize ) ) 
+		== ( XieLut ) NULL )
         {
 	        XieFreePhotofloGraph(flograph,2);
 		free( lut1 );
 		free( lut2 );
                 return 0;
         }
-        if ( ( PhotofloTestLut2 = GetXIELut( xp, p, lut2, lutSize ) ) ==
-		( XieLut ) NULL )
+        if ( ( PhotofloTestLut2 = GetXIELut( xp, p, lut2, lutSize, lutSize ) ) 
+		== ( XieLut ) NULL )
         {
 	        XieFreePhotofloGraph(flograph,2);
 		free( lut1 );

@@ -86,10 +86,10 @@ int InitAbort(xp, p, reps)
 
         data_class = xieValSingleBand;
         band_order = xieValLSFirst;
-        length[ 0 ] = 1 << p->levelsIn;
+        length[ 0 ] = ( ( AbortParms * ) p->ts )->lutSize;
         length[ 1 ] = 0;
         length[ 2 ] = 0;
-        levels[ 0 ] = 1 << p->levelsOut;
+        levels[ 0 ] = ( ( AbortParms * ) p->ts )->lutLevels; 
         levels[ 1 ] = 0;
         levels[ 2 ] = 0;
 

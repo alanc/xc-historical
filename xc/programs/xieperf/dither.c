@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: dither.c,v 1.1 93/07/19 13:02:31 rws Exp $ */
 
 /**** module do_dither.c ****/
 /******************************************************************************
@@ -58,6 +58,8 @@ int InitDitherFloMap(xp, p, reps)
     Parms   p;
     int     reps;
 {
+	p->data = ( char * ) NULL;
+
         if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
                 reps = 0;
         return( reps );
@@ -85,12 +87,12 @@ void DoDitherFloMapImmediate(xp, p, reps)
 	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
 
 	threshold = 0;
-
+	decode_notify = False;
 	levels[ 1 ] = 0;
 	levels[ 2 ] = 0;
 	in_low[ 0 ] = 0.0;
 	out_low[ 0 ] = 0;
-	if ( p->testPrivate == Drawable )
+	if ( ( ( DitherParms * )p->ts )->drawable == Drawable )
 		out_high[ 0 ] = ( 1 << xp->vinfo.depth ) - 1;
 	else
 		out_high[ 0 ] = 1;
@@ -104,7 +106,7 @@ void DoDitherFloMapImmediate(xp, p, reps)
 	XieFloImportPhotomap(&flograph[0],XIEPhotomap, decode_notify);
 
 	dithertech_parms = ( char * ) NULL;
-	if ( p->dither == xieValDitherOrdered )
+	if ( ( ( DitherParms * ) p->ts )->dither == xieValDitherOrdered )
 	{	 
 		dithertech_parms = ( char * ) 
 			XieTecDitherOrderedParam(threshold); 
@@ -116,28 +118,28 @@ void DoDitherFloMapImmediate(xp, p, reps)
 		}
 	}
 
-	if ( p->testPrivate == Drawable )
+	if ( ( ( DitherParms * ) p->ts )->drawable == Drawable )
 		XieFloExportDrawable(&flograph[3],
 			3,              /* source phototag number */
 			xp->w,
 			pgc,
-			p->dst_x,       /* x offset in window */
-			p->dst_y        /* y offset in window */
+			0,       /* x offset in window */
+			0        /* y offset in window */
 		);
 	else
 		XieFloExportDrawablePlane(&flograph[3],
 			3,              /* source phototag number */
 			xp->w,
 			pgc,
-			p->dst_x,       /* x offset in window */
-			p->dst_y        /* y offset in window */
+			0,       /* x offset in window */
+			0        /* y offset in window */
 		);
 
-	flo_id = i + 1;		
 	flo_notify = False;	
     	for (i = 0; i != reps; i++) {
 
-		if ( p->testPrivate == Drawable )
+		flo_id = i + 1;		
+		if ( ( ( DitherParms * ) p->ts )->drawable == Drawable )
 			j = i + 2;
 		else
 			j = 2;
@@ -146,7 +148,7 @@ void DoDitherFloMapImmediate(xp, p, reps)
 		XieFloDither( &flograph[ 1 ], 
 			1,
 			levels,
-			p->dither,
+			( ( DitherParms * ) p->ts )->dither,
 			dithertech_parms
 		);
 
@@ -160,7 +162,7 @@ void DoDitherFloMapImmediate(xp, p, reps)
 			return;
 		}
 
-		if ( p->testPrivate == Drawable )
+		if ( ( ( DitherParms * ) p->ts )->drawable == Drawable )
 			levels[ 0 ] = 1 << xp->vinfo.depth;
 		else
 			levels[ 0 ] = 2;
@@ -180,6 +182,8 @@ void DoDitherFloMapImmediate(xp, p, reps)
        		);
 		XSync( xp->d, 0 );
     	}
+	if ( dithertech_parms )
+		free( dithertech_parms );
 	XieFreePhotofloGraph(flograph,4);	
 	XieDestroyPhotospace( xp->d, photospace );
 }
@@ -201,15 +205,18 @@ void DoDitherFloMapStored(xp, p, reps)
 	int	threshold;
 
 	threshold = 0;
-
+	decode_notify = False;
 	levels[ 0 ] = 2;
 	levels[ 1 ] = 0;
 	levels[ 2 ] = 0;
 
 	in_low[ 0 ] = 0.0;
-	in_high[ 0 ] = ( float ) ( ( 1 << xp->vinfo.depth ) - 1 );
+	in_high[ 0 ] = ( float ) 1;
 	out_low[ 0 ] = 0;
-	out_high[ 0 ] = levels[ 0 ] - 1;
+        if ( ( ( DitherParms * )p->ts )->drawable == Drawable )
+                out_high[ 0 ] = ( 1 << xp->vinfo.depth ) - 1;
+        else
+                out_high[ 0 ] = 1;
 	flograph = XieAllocatePhotofloGraph(4);	
 	if ( flograph == ( XiePhotoElement * ) NULL )
 	{
@@ -220,7 +227,7 @@ void DoDitherFloMapStored(xp, p, reps)
 	XieFloImportPhotomap(&flograph[0],XIEPhotomap,decode_notify);
 
         tech_parms = ( char * ) NULL;
-        if ( p->dither == xieValDitherOrdered )
+        if ( ( ( DitherParms * ) p->ts )->dither == xieValDitherOrdered )
         {
                 tech_parms = ( char * )
                 XieTecDitherOrderedParam(threshold);
@@ -235,10 +242,12 @@ void DoDitherFloMapStored(xp, p, reps)
 	XieFloDither( &flograph[ 1 ],
                 1,
                 levels,
-                p->dither,
+                ( ( DitherParms * ) p->ts )->dither,
                 tech_parms
         );
 
+	if ( tech_parms )
+		free( tech_parms );
         parms = XieTecClipScale( in_low, in_high, out_low, out_high);
         tech_parms = ( char * ) parms;
         if ( tech_parms == ( char * ) NULL )
@@ -248,30 +257,33 @@ void DoDitherFloMapStored(xp, p, reps)
                 return;
         }
 
-	if ( p->testPrivate == Drawable )
+	if ( ( ( DitherParms * ) p->ts )->drawable == Drawable )
 		levels[ 0 ] = 1 << xp->vinfo.depth;
+
         XieFloConstrain( &flograph[2],
                 2,
                 levels,
                 xieValConstrainClipScale,
                 tech_parms
 	);
-	
-	if ( p->testPrivate == Drawable )
+
+	if ( tech_parms )
+		free( tech_parms );	
+	if ( ( ( DitherParms * ) p->ts )->drawable == Drawable )
 		XieFloExportDrawable(&flograph[3],
 			3,              /* source phototag number */
 			xp->w,
 			xp->fggc,
-			p->dst_x,       /* x offset in window */
-			p->dst_y        /* y offset in window */
+			0,       /* x offset in window */
+			0        /* y offset in window */
 		);
 	else
 		XieFloExportDrawablePlane(&flograph[3],
 			3,              /* source phototag number */
 			xp->w,
 			xp->fggc,
-			p->dst_x,       /* x offset in window */
-			p->dst_y        /* y offset in window */
+			0,       /* x offset in window */
+			0        /* y offset in window */
 		);
 
 	flo = XieCreatePhotoflo( xp->d, flograph, 4 );
@@ -296,7 +308,11 @@ void EndDitherFloMap(xp, p)
 {
         /* deallocate the data buffer */
 
-        free( p->data );
+	if ( p->data )
+	{
+        	free( p->data );
+		p->data = ( char * ) NULL;	
+	}
 
         /* destroy the photomap */
 

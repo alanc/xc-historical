@@ -68,11 +68,20 @@ int InitBlendMonadic(xp, p, reps)
     Parms   p;
     int     reps;
 {
+	XIEimage *image;
+
+	monoflag = 0;
+	p->data = ( char * ) NULL;
+	image = p->finfo.image1;
+	if ( !image )
+		return( 0 );
 	alpha = ( XiePhotomap ) NULL; 
+	parms = NULL;
 	if ( xp->vinfo.depth == 1 )
 	{
 		monoflag = 1;
-		if ( !SetupMonoClipScale( xp, p, levels, in_low, in_high, out_low, out_high, &parms ) )
+		if ( !SetupMonoClipScale( image, levels, in_low, in_high, 
+			out_low, out_high, &parms ) )
 		{
 			reps = 0;
 		}
@@ -83,9 +92,12 @@ int InitBlendMonadic(xp, p, reps)
 		if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
 			reps = 0;
 	}
-	free( p->data );
-	p->data = NULL;
-	if ( reps && p->finfo.fname3 != ( char * ) NULL )
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
+	if ( reps && p->finfo.image3 != ( XIEimage * ) NULL )
 	{
 		/* alpha plane */
 
@@ -96,8 +108,12 @@ int InitBlendMonadic(xp, p, reps)
 		}
 	}
 	if (p->data != NULL)
+	{
 		free( p->data );
-
+		p->data = ( char * ) NULL;
+	}
+	if ( !reps )
+		free( parms );
 	return( reps );
 }
 
@@ -106,11 +122,20 @@ int InitBlendDyadic(xp, p, reps)
     Parms   p;
     int     reps;
 {
+	XIEimage *image;
+
+	monoflag = 0;
+	p->data = ( char * ) NULL;
+	image = p->finfo.image1;
+	if ( !image )
+		return( 0 );
 	alpha = ( XiePhotomap ) NULL; 
+	parms = NULL;
         if ( xp->vinfo.depth == 1 )
         {
 		monoflag = 1;
-		if ( SetupMonoClipScale( xp, p, levels, in_low, in_high, out_low, out_high, &parms ) == 0 )
+		if ( SetupMonoClipScale( image, levels, in_low, in_high, 
+			out_low, out_high, &parms ) == 0 )
 		{
 			return( 0 );
 		}
@@ -121,14 +146,19 @@ int InitBlendDyadic(xp, p, reps)
         else
         {
 		free( p->data );
+		p->data = ( char * ) NULL;
                 if ( ( src2 = GetXIEPhotomap( xp, p, 2 ) ) == ( XiePhotomap ) NULL )
 		{
 			XieDestroyPhotomap( xp->d, src1 );
                         reps = 0;
 		}
         }
-	free( p->data );
-        if ( reps && p->finfo.fname3 != ( char * ) NULL )
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
+        if ( reps && p->finfo.image3 != ( XIEimage * ) NULL )
         {
                 /* alpha plane */
 
@@ -138,8 +168,14 @@ int InitBlendDyadic(xp, p, reps)
                         XieDestroyPhotomap( xp->d, src2 );
                         reps = 0;
                 }
-		free( p->data );
+		if ( p->data )
+		{
+			free( p->data );
+			p->data = ( char * ) NULL;
+		}
         }
+	if ( !reps )
+		free( parms );
         return( reps );
 }
 
@@ -148,14 +184,22 @@ int InitROIBlendMonadic(xp, p, reps)
     Parms   p;
     int     reps;
 {
+	XIEimage *image;
         XieRectangle *rects;
         int     rectsSize, i;
 
+	image = p->finfo.image1;
+	if ( !image )
+		return( 0 );
 	alpha = ( XiePhotomap ) NULL; 
+	monoflag = 0;
+	parms = NULL;
+	p->data = ( char * ) NULL;
         if ( xp->vinfo.depth == 1 )
         {
 		monoflag = 1;
-		if ( SetupMonoClipScale( xp, p, levels, in_low, in_high, out_low, out_high, &parms ) == 0 )
+		if ( SetupMonoClipScale( image, levels, in_low, in_high, 
+			out_low, out_high, &parms ) == 0 )
 		{
 			return( 0 );
 		}
@@ -185,8 +229,12 @@ int InitROIBlendMonadic(xp, p, reps)
 		XieDestroyROI( xp->d, XIERoi );
                 reps = 0;
 	}
-	free( p->data );
-        if ( reps && p->finfo.fname3 != ( char * ) NULL )
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
+        if ( reps && p->finfo.image3 != ( XIEimage * ) NULL )
         {
                 /* alpha plane */
 
@@ -196,7 +244,11 @@ int InitROIBlendMonadic(xp, p, reps)
 			XieDestroyROI( xp->d, XIERoi );
                         reps = 0;
                 }
-		free( p->data );
+		if ( p->data )
+		{
+			free( p->data );
+			p->data = ( char * ) NULL;
+		}
         }
         return( reps );
 }
@@ -206,14 +258,22 @@ int InitROIBlendDyadic(xp, p, reps)
     Parms   p;
     int     reps;
 {
+	XIEimage *image;
         XieRectangle *rects;
         int     rectsSize, i;
 
+	image = p->finfo.image1;
+        if ( !image )
+                return( 0 );
 	alpha = ( XiePhotomap ) NULL; 
+	monoflag = 0;
+	parms = NULL;
+	p->data = ( char * ) NULL;
         if ( xp->vinfo.depth == 1 )
         {
 		monoflag = 1;
-		if ( SetupMonoClipScale( xp, p, levels, in_low, in_high, out_low, out_high, &parms ) == 0 )
+		if ( SetupMonoClipScale( image, levels, in_low, in_high, 
+			out_low, out_high, &parms ) == 0 )
 		{
 			return( 0 );
 		}
@@ -247,6 +307,7 @@ int InitROIBlendDyadic(xp, p, reps)
         else
         {
 		free( p->data );
+		p->data = ( char * ) NULL;
                 if ( ( src2 = GetXIEPhotomap( xp, p, 2 ) ) == ( XiePhotomap ) NULL )
 		{
                         reps = 0;
@@ -254,8 +315,12 @@ int InitROIBlendDyadic(xp, p, reps)
 			XieDestroyROI( xp->d, XIERoi );
 		}
         }
-	free( p->data );
-        if ( reps && p->finfo.fname3 != ( char * ) NULL )
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
+        if ( reps && p->finfo.image3 != ( XIEimage * ) NULL )
         {
                 /* alpha plane */
 
@@ -266,9 +331,14 @@ int InitROIBlendDyadic(xp, p, reps)
                         XieDestroyROI( xp->d, XIERoi );
                         reps = 0;
                 }
-                free( p->data );
+		if ( p->data )
+		{
+                	free( p->data );
+			p->data = ( char * ) NULL;
+		}
         }
-
+	if ( !reps )
+		free( parms );
         return( reps );
 }
 
@@ -278,16 +348,14 @@ void DoBlendMonadicImmediate(xp, p, reps)
     int     reps;
 {
     	int     i;
-	int     band_mask = 1;
-	char 	*datatmp;
 	int	flo_notify, flo_id;
 	int	flo_elements;
 	XiePhotospace photospace;
-	int     band_order = xieValLSFirst;
 	XieProcessDomain domain;
 	XiePhotoElement *flograph;
 	int	decode_notify;
 
+	decode_notify = False;
         photospace = XieCreatePhotospace(xp->d);/* XXX error check */
 	flo_id = 1;
 	i = 0;
@@ -319,11 +387,11 @@ void DoBlendMonadicImmediate(xp, p, reps)
 	XieFloBlend(&flograph[i], 
 		1,
 		0,
-		p->logicalConstant,
+		( ( BlendParms * ) p->ts )->constant,
 		( alpha != ( XiePhotomap ) NULL ? i : 0 ),	
-		p->blendAlphaConstant,	
+		( ( BlendParms * ) p->ts )->alphaConstant,	
 		&domain,
-		p->logicalBandMask ); i++;
+		( ( BlendParms * ) p->ts )->bandMask ); i++;
 
 	if ( monoflag )
 	{
@@ -338,8 +406,8 @@ void DoBlendMonadicImmediate(xp, p, reps)
 		i, /* source phototag number */
 		xp->w,
 		xp->fggc,
-		p->dst_x,       /* x offset in window */
-		p->dst_y        /* y offset in window */
+		0,       /* x offset in window */
+		0        /* y offset in window */
 	); i++;
 
 	flo_notify = True;	
@@ -366,17 +434,14 @@ void DoBlendDyadicImmediate(xp, p, reps)
     int     reps;
 {
         int     i, flo_elements;
-        int     band_mask = 1;
-        char    *datatmp;
         int     flo_notify, flo_id;
         XiePhotospace photospace;
-        int     band_order = xieValLSFirst;
         XieProcessDomain domain;
         XiePhotoElement *flograph;
         int     decode_notify;
 
         photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-
+	decode_notify = False;
         flo_id = 1;
 	i = 0;
         if ( monoflag )
@@ -409,11 +474,11 @@ void DoBlendDyadicImmediate(xp, p, reps)
 	XieFloBlend(&flograph[i],
 		1,
 		2,
-		p->logicalConstant,
+		( ( BlendParms * ) p->ts )->constant,
 		( alpha != ( XiePhotomap ) NULL ? i : 0 ),	
-		p->blendAlphaConstant,	
+		( ( BlendParms * ) p->ts )->alphaConstant,	
 		&domain,
-		p->logicalBandMask ); i++;
+		( ( BlendParms * ) p->ts )->bandMask ); i++;
 	if ( monoflag )
 	{
 		XieFloConstrain(&flograph[i],
@@ -428,8 +493,8 @@ void DoBlendDyadicImmediate(xp, p, reps)
 		i,         /* source phototag number */
 		xp->w,
 		xp->fggc,
-		p->dst_x,       /* x offset in window */
-		p->dst_y        /* y offset in window */
+		0,       /* x offset in window */
+		0        /* y offset in window */
 	); i++;
 
 	flo_notify = True;
@@ -456,16 +521,14 @@ void DoROIBlendMonadicImmediate(xp, p, reps)
 {
     	int     i, flo_elements;
 	int     band_mask = 1;
-	char 	*datatmp;
 	int	flo_notify, flo_id;
 	XiePhotospace photospace;
-	int     band_order = xieValLSFirst;
 	XieProcessDomain domain;
 	XiePhotoElement *flograph;
 	int	decode_notify;
 
 	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-
+	decode_notify = False;
 	flo_id = 1;
 	i = 0;
         if ( monoflag )
@@ -498,11 +561,11 @@ void DoROIBlendMonadicImmediate(xp, p, reps)
 	XieFloBlend(&flograph[i], 
 		1,
 		0,
-		p->logicalConstant,
+		( ( BlendParms * ) p->ts )->constant,
 		( alpha != ( XiePhotomap ) NULL ? i : 0 ),
-                p->blendAlphaConstant,
+                ( ( BlendParms * ) p->ts )->alphaConstant,
                 &domain,
-                p->logicalBandMask ); i++;
+                ( ( BlendParms * ) p->ts )->bandMask ); i++;
 
 
 	if ( monoflag )
@@ -519,8 +582,8 @@ void DoROIBlendMonadicImmediate(xp, p, reps)
 		i,       /* source phototag number */
 		xp->w,
 		xp->fggc,
-		p->dst_x,       /* x offset in window */
-		p->dst_y        /* y offset in window */
+		0,       /* x offset in window */
+		0        /* y offset in window */
 	); i++;
 
 	flo_notify = True;	
@@ -548,17 +611,14 @@ void DoROIBlendDyadicImmediate(xp, p, reps)
     int     reps;
 {
         int     i, flo_elements;
-        int     band_mask = 1;
-        char    *datatmp;
         int     flo_notify, flo_id;
         XiePhotospace photospace;
-        int     band_order = xieValLSFirst;
         XieProcessDomain domain;
         XiePhotoElement *flograph;
         int     decode_notify;
 
         photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-
+	decode_notify = False;
 	i = 0;
         flo_id = 1;
         if ( monoflag )
@@ -593,11 +653,11 @@ void DoROIBlendDyadicImmediate(xp, p, reps)
 	XieFloBlend(&flograph[i],
 		1,
 		2,
-                p->logicalConstant,
+                ( ( BlendParms * ) p->ts )->constant,
                 ( alpha != ( XiePhotomap ) NULL ? i : 0 ),
-                p->blendAlphaConstant,
+                ( ( BlendParms * ) p->ts )->alphaConstant,
                 &domain,
-                p->logicalBandMask ); i++;
+                ( ( BlendParms * ) p->ts )->bandMask ); i++;
 
 	if ( monoflag )
 	{
@@ -612,8 +672,8 @@ void DoROIBlendDyadicImmediate(xp, p, reps)
 		i,   		/* source phototag number */
 		xp->w,
 		xp->fggc,
-		p->dst_x,       /* x offset in window */
-		p->dst_y        /* y offset in window */
+		0,       /* x offset in window */
+		0        /* y offset in window */
 	); i++;
 
 	flo_notify = True;
@@ -638,7 +698,12 @@ int EndBlendMonadic(xp, p)
     XParms  xp;
     Parms   p;
 {
-	free( p->data );
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
+	free( parms );
 	XieDestroyPhotomap( xp->d, XIEPhotomap );
 	if ( alpha != ( XiePhotomap ) NULL )
 		XieDestroyPhotomap( xp->d, alpha );
@@ -648,7 +713,12 @@ int EndBlendDyadic(xp, p)
     XParms  xp;
     Parms   p;
 {
-	free( p->data );
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
+	free( parms );
 	XieDestroyPhotomap( xp->d, src1 );
 	XieDestroyPhotomap( xp->d, src2 );
 	if ( alpha != ( XiePhotomap ) NULL )
@@ -659,7 +729,12 @@ int EndROIBlendMonadic(xp, p)
     XParms  xp;
     Parms   p;
 {
-        free( p->data );
+	if ( p->data )
+	{
+        	free( p->data );
+		p->data = ( char * ) NULL;
+	}
+	free( parms );
         XieDestroyPhotomap( xp->d, XIEPhotomap );
         XieDestroyROI( xp->d, XIERoi );
 	if ( alpha != ( XiePhotomap ) NULL )
@@ -670,7 +745,12 @@ int EndROIBlendDyadic(xp, p)
     XParms  xp;
     Parms   p;
 {
-        free( p->data );
+	if ( p->data )
+	{
+        	free( p->data );
+		p->data = ( char * ) NULL;
+	}
+	free( parms );
         XieDestroyPhotomap( xp->d, src1 );
         XieDestroyPhotomap( xp->d, src2 );
         XieDestroyROI( xp->d, XIERoi );

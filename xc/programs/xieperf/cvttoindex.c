@@ -1,4 +1,4 @@
-/* $XConsortium: do_converttoindex.c,v 1.1 93/07/19 13:02:18 rws Exp $ */
+/* $XConsortium: cvttoindex.c,v 1.2 93/07/19 14:43:41 rws Exp $ */
 
 /**** module do_converttoindex.c ****/
 /******************************************************************************
@@ -71,6 +71,7 @@ int InitConvertToIndex(xp, p, reps)
 	char	*encode_param = ( char * ) NULL;
 	int	decode_notify;
 
+	p->data = ( char * ) NULL;
 	if ( !( clist = XieCreateColorList( xp->d ) ) )
 		return( 0 );
         if ( ( XIEPhotomap = GetXIETriplePhotomap( xp, p, 1 ) ) == 
@@ -83,7 +84,11 @@ int InitConvertToIndex(xp, p, reps)
 	if ( ( ditheredPhotomap = XieCreatePhotomap( xp->d ) ) == 
 		( XiePhotomap ) NULL )
 	{
-		free( p->data );
+		if ( p->data )
+		{
+			free( p->data );
+			p->data = ( char * ) NULL;
+		}
 		XieDestroyPhotomap( xp->d, XIEPhotomap );	
 		XieDestroyColorList( xp->d, clist );
 		return( 0 );
@@ -92,8 +97,6 @@ int InitConvertToIndex(xp, p, reps)
 	photospace = XieCreatePhotospace(xp->d);
 
 	threshold = 0;
-
-	/* this isn't pretty, but then again, neither am I */
 
 	levels[ 0 ] = 6;
 	levels[ 1 ] = 6;
@@ -106,7 +109,12 @@ int InitConvertToIndex(xp, p, reps)
 		XieDestroyPhotomap( xp->d, XIEPhotomap );
 		XieDestroyPhotomap( xp->d, ditheredPhotomap );
 		XieDestroyColorList( xp->d, clist );
-		free( p->data );
+		XieDestroyPhotospace( xp->d, photospace );
+		if ( p->data )
+		{
+			free( p->data );
+			p->data = ( char * ) NULL;
+		}
 		return( 0 );
 	}
 
@@ -115,7 +123,7 @@ int InitConvertToIndex(xp, p, reps)
 	XieFloImportPhotomap(&flograph[0],XIEPhotomap, decode_notify);
 
 	dithertech_parms = ( char * ) NULL;
-	if ( p->dither == xieValDitherOrdered )
+	if ( ( ( CvtToIndexParms * ) p->ts )->dither == xieValDitherOrdered )
 	{	 
 		dithertech_parms = ( char * ) 
 			XieTecDitherOrderedParam(threshold); 
@@ -123,14 +131,23 @@ int InitConvertToIndex(xp, p, reps)
 		{
 			fprintf( stderr, 
 			"Trouble loading dither technique parameters\n" );
-			return;
+			if ( p->data )
+			{
+				free( p->data );
+				p->data = ( char * ) NULL;
+			}
+			XieDestroyPhotomap( xp->d, XIEPhotomap );	
+			XieDestroyColorList( xp->d, clist );
+			XieFreePhotofloGraph(flograph,3);	
+			XieDestroyPhotospace( xp->d, photospace );
+			return( 0 );
 		}
 	}
 
 	XieFloDither( &flograph[ 1 ], 
 		1,
 		levels,
-		p->dither,
+		( ( CvtToIndexParms * ) p->ts )->dither,
 		dithertech_parms
 	);
 
@@ -155,6 +172,8 @@ int InitConvertToIndex(xp, p, reps)
 	XieFreePhotofloGraph(flograph,3);	
 	XieDestroyPhotospace( xp->d, photospace );
 	UninstallXIECmap( xp->d );
+	if ( dithertech_parms )
+		free( dithertech_parms );
 	return( reps );
 }
 
@@ -168,7 +187,7 @@ void DoConvertToIndex(xp, p, reps)
         XiePhotoElement *flograph;
         int     flo_notify, flo_id;
 	int	decode_notify;
-	XieColorAllocAllParam *color_param;
+	XieColorAllocAllParam *color_param = NULL;
 	Colormap cmap, GetColormap();
 	XWindowAttributes xwa;
 
@@ -189,21 +208,15 @@ void DoConvertToIndex(xp, p, reps)
                 2,              /* source phototag number */
                 xp->w,
                 xp->fggc,
-                p->dst_x,       /* x offset in window */
-                p->dst_y        /* y offset in window */
+                0,       /* x offset in window */
+                0        /* y offset in window */
         );
 
 	flo_id = 1;
 	flo_notify = True;
+	XGetWindowAttributes( xp->d, DefaultRootWindow( xp->d ), &xwa );
 	for ( i = 0; i < reps; i++ )
 	{
-
-#if 0
-		cmap = GetColormap( xp );
-		XSync( xp->d, 0 );
-#endif
-
-		XGetWindowAttributes( xp->d, DefaultRootWindow( xp->d ), &xwa );
 		XSetWindowColormap( xp->d, xp->w, xwa.colormap );
 		XSync( xp->d, 0 );
 		XieFloConvertToIndex(&flograph[1],
@@ -225,28 +238,14 @@ void DoConvertToIndex(xp, p, reps)
 		XSync( xp->d, 0 );
 		WaitForFloToFinish( xp, flo_id );
 		XSync( xp->d, 0 );
-#if 0
-		XFreeColormap( xp->d, cmap );
-#endif
                	flo_id = i + 1;
         }
         XieDestroyPhotospace( xp->d, photospace );
         XieFreePhotofloGraph(flograph,3);
-
+	if ( color_param )
+		free( color_param );
 }
 
-#if 0
-Colormap
-GetColormap( xp )
-XParms xp;
-{
-	Colormap foo;
-
-	foo = XCreateColormap( xp->d, xp->w, xp->vinfo.visual, AllocNone );
-	XSetWindowColormap( xp->d, xp->w, foo );
-	return( foo );
-}
-#endif
 
 void EndConvertToIndex(xp, p)
     XParms  xp;
@@ -254,7 +253,11 @@ void EndConvertToIndex(xp, p)
 {
         /* deallocate the data buffer */
 
-        free( p->data );
+	if ( p->data )
+	{
+        	free( p->data );
+		p->data = ( char * ) NULL;
+	}
 
         /* destroy the photomaps */
 
