@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.24 89/09/10 16:30:37 rws Exp $ */
+/* $XConsortium: cfbgc.c,v 5.25 89/09/19 15:36:16 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -144,7 +144,11 @@ matchCommon (pGC)
 	(pGC->font->pFI->maxbounds.metrics.rightSideBearing -
          pGC->font->pFI->minbounds.metrics.leftSideBearing) <= 32)
     {
-	if (pGC->font->pFI->terminalFont)
+	if (pGC->font->pFI->terminalFont
+#if PPW == 4
+	    && pGC->font->pFI->maxbounds.metrics.characterWidth >= 4
+#endif
+	)
 	    return &cfbTEOps;
 	else
 	    return &cfbNonTEOps;
@@ -641,7 +645,11 @@ cfbValidateGC(pGC, changes, pDrawable)
 #endif
 		pGC->ops->PolyGlyphBlt = miPolyGlyphBlt;
             /* special case ImageGlyphBlt for terminal emulator fonts */
-            if (pGC->font->pFI->terminalFont)
+            if (pGC->font->pFI->terminalFont
+#if PPW == 4
+		&& pGC->font->pFI->maxbounds.metrics.characterWidth >= 4
+#endif
+		)
 	    {
 #if PPW == 4
                 pGC->ops->ImageGlyphBlt = cfbTEGlyphBlt8;
