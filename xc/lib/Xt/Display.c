@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.50 90/08/31 08:15:10 swick Exp $ */
+/* $XConsortium: Display.c,v 1.51 90/10/08 09:15:47 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -234,18 +234,7 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 	pd->class = XrmStringToClass(classname);
 	pd->being_destroyed = False;
 	pd->GClist = NULL;
-	pd->drawable_tab = (ScreenDrawables)
-	    _XtHeapAlloc(&pd->heap,
-		       (unsigned)ScreenCount(dpy)*sizeof(ScreenDrawablesRec));
-	{
-	    int i;
-	    ScreenDrawables d;
-	    for (i=0, d=pd->drawable_tab; i<ScreenCount(dpy); i++, d++) {
-		d->screen = ScreenOfDisplay(dpy, i);
-		d->drawables = NULL;
-		d->drawable_count = 0;
-	    }
-	}
+	pd->pixmap_tab = NULL;
 	pd->rv = False;
 	pd->xa_wm_colormap_windows = None; /* Initialize this to None unless
 					      we need to use it.*/
@@ -538,13 +527,7 @@ static void CloseDisplay(dpy)
             xtpd->modsToKeysyms = NULL;
 	    XDestroyRegion(xtpd->region);
 	    _XtCacheFlushTag(xtpd->appContext, (XtPointer)&xtpd->heap);
-	    _XtGClistFree(xtpd->GClist);
-	    {
-		int i;
-		ScreenDrawables d;
-		for (i=0, d=xtpd->drawable_tab; i<ScreenCount(dpy); i++, d++)
-		    XtFree((char*)d->drawables);
-	    }
+	    _XtGClistFree(dpy, xtpd);
 	    XtFree((char*)xtpd->pdi.trace);
 	    _XtHeapFree(&xtpd->heap);
 	    _XtFreeWWTable(xtpd);
