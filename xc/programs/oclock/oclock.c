@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: oclock.c,v 1.12 91/01/09 18:30:51 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -78,18 +78,19 @@ void main(argc, argv)
     int argc;
     char **argv;
 {
+    XtAppContext xtcontext;
     Widget toplevel;
     Widget clock;
     Arg arg[2];
     int	i;
     
-    toplevel = XtInitialize("main", "Clock", options, XtNumber (options),
-				    (Cardinal *) &argc, argv);
+    toplevel = XtAppInitialize(&xtcontext, "Clock", options, XtNumber(options),
+			       &argc, argv, NULL, NULL, 0);
 
     if (argc != 1) usage();
 
     XtAppAddActions
-	(XtWidgetToApplicationContext(toplevel), actions, XtNumber(actions));
+	(xtcontext, actions, XtNumber(actions));
     XtOverrideTranslations
 	(toplevel, XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
 
@@ -114,7 +115,7 @@ void main(argc, argv)
     (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
                             &wm_delete_window, 1);
 
-    XtMainLoop();
+    XtAppMainLoop(xtcontext);
 }
 
 static void quit(w, event, params, num_params)
