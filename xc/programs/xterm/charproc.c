@@ -1,12 +1,13 @@
-
 /*
- *	$Header: charproc.c,v 1.8 88/02/16 14:59:40 jim Exp $
+ * $Source$
+ * $Header: charproc.c,v 1.9 88/02/16 17:40:03 jim Exp $
  */
 
 
 #include <X11/copyright.h>
 
 /*
+ * Copyright 1988 Massachusetts Institute of Technology
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
  *                         All Rights Reserved
@@ -57,7 +58,7 @@ extern void exit(), bcopy();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.8 88/02/16 14:59:40 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.9 88/02/16 17:40:03 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1441,6 +1442,13 @@ VTRun()
 		else
 			screen->buf = screen->allbuf;
 	}
+
+	if (!screen->Vshow) {
+	    XtRealizeWidget (term);
+	    screen->Vshow = TRUE;
+	    XMapRaised (screen->display, VWindow (screen));
+	} else
+	  XRaiseWindow (screen->display, VWindow (screen));
 
 	screen->cursor_state = OFF;
 	screen->cursor_set = ON;

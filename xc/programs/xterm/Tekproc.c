@@ -1,6 +1,6 @@
 /*
  * $Source: /usr/expo/X/src/clients/xterm.new/RCS/Tekproc.c,v $
- * $Header: Tekproc.c,v 1.3 88/02/16 14:59:35 jim Exp $
+ * $Header: Tekproc.c,v 1.4 88/02/16 17:39:55 jim Exp $
  *
  * Warning, there be crufty dragons here.  This is a good example of how to add
  * a trash bag on the side of a widget.  
@@ -10,6 +10,7 @@
 #include <X11/copyright.h>
 
 /*
+ * Copyright 1988 Massachusetts Institute of Technology
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
  *                         All Rights Reserved
@@ -116,7 +117,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.3 88/02/16 14:59:35 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.4 88/02/16 17:39:55 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -228,7 +229,6 @@ int TekInit ()
 {
     TekWidget tw;
 
-    Bell (); Bell (); 
     if (Tfailed) return (0);
     if (tekWidget) return (1);
     return (CreateTekWidget() ? 1 : 0);
