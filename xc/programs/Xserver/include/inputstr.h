@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: inputstr.h,v 1.17 88/09/06 15:47:47 jim Exp $ */
+/* $XConsortium: inputstr.h,v 1.18 89/03/30 09:31:06 rws Exp $ */
 
 #ifndef INPUTSTRUCT_H
 #define INPUTSTRUCT_H
@@ -143,9 +143,9 @@ typedef struct {
 /* for keeping the events for devices grabbed synchronously */
 typedef struct _QdEvent *QdEventPtr;
 typedef struct _QdEvent {
-    QdEventPtr		forw;
-    QdEventPtr		back;
+    QdEventPtr		next;
     DeviceIntPtr	device;
+    ScreenPtr		pScreen;
     xEvent		event;
 } QdEventRec;    
 
