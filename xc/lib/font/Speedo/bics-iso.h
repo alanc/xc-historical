@@ -1,6 +1,6 @@
-/* $XConsortium$ */
+/* $XConsortium: bics-iso.h,v 1.2 91/05/11 09:39:31 rws Exp $ */
 
-int  bics_map[] = {
+int  sp_bics_map[] = {
     32, 0,
     33, 1,
     34, 2,

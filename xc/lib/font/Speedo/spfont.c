@@ -1,12 +1,11 @@
-/* $XConsortium: spfont.c,v 1.15 92/04/15 14:37:12 gildea Exp $ */
+/* $XConsortium: spfont.c,v 1.16 92/05/12 18:07:52 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
@@ -43,9 +42,9 @@
 #endif
 
 extern void SpeedoCloseFont();
-static int  get_sp_glyphs(),
-            get_sp_metrics();
-static int load_sp_font();
+static int  sp_get_glyphs(),
+            sp_get_metrics();
+static int sp_load_font();
 
 static CharInfoRec junkDefault;
 
@@ -65,7 +64,7 @@ CopyCharInfo(ci, dst)
 }
 
 static int
-get_sp_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
+sp_get_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
     FontPtr     pFont;
     unsigned long count;
     register unsigned char *chars;
@@ -177,7 +176,7 @@ get_sp_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
 static CharInfoRec nonExistantChar;
 
 static int
-get_sp_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
+sp_get_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
     FontPtr     pFont;
     unsigned long count;
     register unsigned char *chars;
@@ -192,7 +191,7 @@ get_sp_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
     spf = (SpeedoFontPtr) pFont->fontPrivate;
     oldDefault = spf->pDefault;
     spf->pDefault = &nonExistantChar;
-    ret = get_sp_glyphs(pFont, count, chars, charEncoding,
+    ret = sp_get_glyphs(pFont, count, chars, charEncoding,
 			glyphCount, (CharInfoPtr *) glyphs);
 
     spf->pDefault = oldDefault;
@@ -200,7 +199,7 @@ get_sp_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
 }
 
 void
-fixup_vals(vals)
+sp_fixup_vals(vals)
     FontScalablePtr vals;
 {
     fsResolution *res;
@@ -230,7 +229,7 @@ fixup_vals(vals)
 
 
 int
-open_sp_font(fontname, filename, entry, format, fmask, flags, spfont)
+sp_open_font(fontname, filename, entry, format, fmask, flags, spfont)
     char       *fontname,
                *filename;
     FontEntryPtr entry;
@@ -251,7 +250,7 @@ open_sp_font(fontname, filename, entry, format, fmask, flags, spfont)
     spmf = (SpeedoMasterFontPtr) entry->u.scalable.extra->private;
     if (!spmf)
     {
-	ret = open_master(filename, &spmf);
+	ret = sp_open_master(filename, &spmf);
 	if (ret != Successful)
 	    return ret;
 	entry->u.scalable.extra->private = (pointer) spmf;
@@ -267,17 +266,17 @@ open_sp_font(fontname, filename, entry, format, fmask, flags, spfont)
     spf->entry = entry;
     spmf->refcount++;
     sp_reset_master(spmf);
-    /* now we've done enough that if we bail out we must call close_sp_font */
+    /* now we've done enough that if we bail out we must call sp_close_font */
 
     /* tear apart name to get sizes */
     strcpy(tmpname, fontname);
     if (!FontParseXLFDName(tmpname, &vals, FONT_XLFD_REPLACE_NONE))
     {
-	close_sp_font(spf);
+	sp_close_font(spf);
 	return BadFontName;
     }
 
-    fixup_vals(&vals);
+    sp_fixup_vals(&vals);
     if (vals.point > 0)
 	pointsize = vals.point;
     else if (vals.pixel > 0) {
@@ -312,7 +311,7 @@ open_sp_font(fontname, filename, entry, format, fmask, flags, spfont)
     /* XXX may have to do more tweaking for ROTATED_TEXT */
     if (specs.xxmult < TINY_FACTOR  ||  specs.yymult < TINY_FACTOR)
     {
-	close_sp_font(spf);
+	sp_close_font(spf);
 	return BadFontName;
     }
 
@@ -321,7 +320,7 @@ open_sp_font(fontname, filename, entry, format, fmask, flags, spfont)
 
     if (!sp_set_specs(&specs))
     {
-	close_sp_font(spf);
+	sp_close_font(spf);
 	return BadFontName;
     }
 
@@ -333,7 +332,7 @@ open_sp_font(fontname, filename, entry, format, fmask, flags, spfont)
 }
 
 static int
-load_sp_font(fontname, filename, entry, format, fmask, pfont, flags)
+sp_load_font(fontname, filename, entry, format, fmask, pfont, flags)
     char       *fontname,
                *filename;
     FontEntryPtr    entry;
@@ -347,7 +346,7 @@ load_sp_font(fontname, filename, entry, format, fmask, pfont, flags)
     int         esize;
     int         ret;
 
-    ret = open_sp_font(fontname, filename, entry, format, fmask, flags, &spf);
+    ret = sp_open_font(fontname, filename, entry, format, fmask, flags, &spf);
 
     if (ret != Successful)
 	return ret;
@@ -359,16 +358,16 @@ load_sp_font(fontname, filename, entry, format, fmask, pfont, flags)
     spf->encoding = (CharInfoPtr) xalloc(esize);
     bzero((char *) spf->encoding, esize);
     if (!spf->encoding) {
-	close_sp_font(spf);
+	sp_close_font(spf);
 	return AllocError;
     }
-    cur_spf = spf;
+    sp_fp_cur = spf;
 
-    make_sp_header(spf, &pfont->info);
+    sp_make_header(spf, &pfont->info);
 
-    compute_sp_bounds(spf, &pfont->info, SaveMetrics);
+    sp_compute_bounds(spf, &pfont->info, SaveMetrics);
 
-    compute_sp_props(spf, fontname, &pfont->info);
+    sp_compute_props(spf, fontname, &pfont->info);
 
     pfont->fontPrivate = (pointer) spf;
 
@@ -376,8 +375,8 @@ load_sp_font(fontname, filename, entry, format, fmask, pfont, flags)
     flags |= FontLoadBitmaps;
 
     if (flags & FontLoadBitmaps) {
-	cur_spf = spf;
-	ret = build_all_sp_bitmaps(pfont, format, fmask);
+	sp_fp_cur = spf;
+	ret = sp_build_all_bitmaps(pfont, format, fmask);
     }
     if (ret != Successful)
 	return ret;
@@ -387,15 +386,15 @@ load_sp_font(fontname, filename, entry, format, fmask, pfont, flags)
 
     pfont->format = format;
 
-    pfont->get_metrics = get_sp_metrics;
-    pfont->get_glyphs = get_sp_glyphs;
+    pfont->get_metrics = sp_get_metrics;
+    pfont->get_glyphs = sp_get_glyphs;
     pfont->unload_font = SpeedoCloseFont;
     pfont->refcnt = 0;
     pfont->maxPrivate = -1;
     pfont->devPrivates = (pointer *) 0;
 
     /* have to hold on to master for min/max id */
-    close_master_file(spmf);
+    sp_close_master_file(spmf);
 
     return ret;
 }
@@ -417,7 +416,7 @@ SpeedoFontLoad(ppfont, fontname, filename, entry, format, fmask, flags)
     if (!pfont) {
 	return AllocError;
     }
-    ret = load_sp_font(fontname, filename, entry, format, fmask, pfont, flags);
+    ret = sp_load_font(fontname, filename, entry, format, fmask, pfont, flags);
 
     if (ret == Successful)
 	*ppfont = pfont;
@@ -428,7 +427,7 @@ SpeedoFontLoad(ppfont, fontname, filename, entry, format, fmask, flags)
 }
 
 void
-close_sp_font(spf)
+sp_close_font(spf)
     SpeedoFontPtr spf;
 {
     SpeedoMasterFontPtr spmf;
@@ -436,7 +435,7 @@ close_sp_font(spf)
     spmf = spf->master;
     --spmf->refcount;
     if (spmf->refcount == 0)
-	close_master_font (spmf);
+	sp_close_master_font (spmf);
     xfree(spf->encoding);
     xfree(spf->bitmaps);
     xfree(spf);
@@ -449,7 +448,7 @@ SpeedoCloseFont(pfont)
     SpeedoFontPtr spf;
 
     spf = (SpeedoFontPtr) pfont->fontPrivate;
-    close_sp_font(spf);
+    sp_close_font(spf);
     xfree(pfont->info.isStringProp);
     xfree(pfont->info.props);
     xfree(pfont);

@@ -1,12 +1,11 @@
-/* $XConsortium: spfuncs.c,v 1.6 92/04/09 18:13:45 gildea Exp $ */
+/* $XConsortium: spfuncs.c,v 1.7 92/04/15 14:35:48 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
@@ -67,21 +66,21 @@ get_font_info(pinfo, fontname, filename, entry, spfont)
     SpeedoFontPtr spf;
     int         err;
 
-    err = open_sp_font(fontname, filename, entry,
+    err = sp_open_font(fontname, filename, entry,
 	       (fsBitmapFormat) 0, (fsBitmapFormatMask) 0, (unsigned long) 0,
 		       &spf);
 
     if (err != Successful)
 	return err;
 
-    cur_spf = spf;
+    sp_fp_cur = spf;
     sp_reset_master(spf->master);
 
-    make_sp_header(spf, pinfo);
+    sp_make_header(spf, pinfo);
 
-    compute_sp_bounds(spf, pinfo, (unsigned long) 0);
+    sp_compute_bounds(spf, pinfo, (unsigned long) 0);
 
-    compute_sp_props(spf, fontname, pinfo);
+    sp_compute_props(spf, fontname, pinfo);
 
     /* compute remaining accelerators */
     FontComputeInfoAccelerators (pinfo);
@@ -104,7 +103,7 @@ SpeedoGetInfoScaleable(fpe, pFontInfo, entry, fontName, fileName, vals)
     char        fullName[MAXFONTNAMELEN];
     int         err;
 
-    fixup_vals(vals);
+    sp_fixup_vals(vals);
 
     strcpy(fullName, entry->name.name);
     FontParseXLFDName(fullName, vals, FONT_XLFD_REPLACE_VALUE);
@@ -112,7 +111,7 @@ SpeedoGetInfoScaleable(fpe, pFontInfo, entry, fontName, fileName, vals)
     err = get_font_info(pFontInfo, fullName, fileName, entry, &spf);
 
     if (spf)
-	close_sp_font(spf);
+	sp_close_font(spf);
 
     return err;
 }
@@ -124,7 +123,7 @@ static FontRendererRec renderer = {
     
 SpeedoRegisterFontFileFunctions()
 {
-    make_sp_standard_props();
+    sp_make_standard_props();
     sp_reset();
     FontFileRegisterRenderer(&renderer);
 }

@@ -1,12 +1,11 @@
-/* $XConsortium: spglyph.c,v 1.11 92/04/15 16:12:09 gildea Exp $ */
+/* $XConsortium: spglyph.c,v 1.12 92/05/13 16:03:30 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
@@ -36,7 +35,7 @@ static int  bit_order,
             scan;
 
 unsigned long
-compute_sp_data_size(pfont, mappad, scanlinepad, start, end)
+sp_compute_data_size(pfont, mappad, scanlinepad, start, end)
     FontPtr     pfont;
     int         mappad,
                 scanlinepad;
@@ -107,7 +106,7 @@ finish_line(spf)
     if (bpr) {			/* char may not have any metrics... */
 	cfv->bp += bpr;
     }
-    assert(cfv->bp - cur_spf->bitmaps <= cur_spf->bitmap_size);
+    assert(cfv->bp - sp_fp_cur->bitmaps <= sp_fp_cur->bitmap_size);
 }
 
 
@@ -139,7 +138,7 @@ sp_set_bitmap_bits(y, xbit1, xbit2)
 	xbit2 = cfv->bit_width;
     }
     while (cfv->cur_y != y) {
-	finish_line(cur_spf);
+	finish_line(sp_fp_cur);
 	cfv->cur_y++;
     }
 
@@ -189,7 +188,7 @@ sp_open_bitmap(x_set_width, y_set_width, xorg, yorg, xsize, ysize)
     fix15       xsize;
     fix15       ysize;
 {
-    CharInfoPtr ci = &cur_spf->encoding[cfv->char_id - cur_spf->master->first_char_id];
+    CharInfoPtr ci = &sp_fp_cur->encoding[cfv->char_id - sp_fp_cur->master->first_char_id];
 
 /*-
  * this is set to provide better quality bitmaps.  since the Speedo
@@ -235,7 +234,7 @@ sp_open_bitmap(x_set_width, y_set_width, xorg, yorg, xsize, ysize)
     cfv->bit_height = ci->metrics.ascent + ci->metrics.descent;
 #endif
 
-    assert(cfv->bp - cur_spf->bitmaps <= cur_spf->bitmap_size);
+    assert(cfv->bp - sp_fp_cur->bitmaps <= sp_fp_cur->bitmap_size);
     ci->bits = (char *) cfv->bp;
 
     cfv->cur_y = 0;
@@ -244,17 +243,17 @@ sp_open_bitmap(x_set_width, y_set_width, xorg, yorg, xsize, ysize)
 void
 sp_close_bitmap()
 {
-    CharInfoPtr ci = &cur_spf->encoding[cfv->char_id - cur_spf->master->first_char_id];
+    CharInfoPtr ci = &sp_fp_cur->encoding[cfv->char_id - sp_fp_cur->master->first_char_id];
     int         bpr = cfv->bpr;
 
     if (bpr == 0)
 	bpr = GLYPH_SIZE(ci, cfv->scanpad);
     if (!cfv->trunc)
-	finish_line(cur_spf);
+	finish_line(sp_fp_cur);
     cfv->trunc = 0;
     cfv->last_y++;
     while (cfv->last_y < cfv->bit_height) {
-	finish_line(cur_spf);
+	finish_line(sp_fp_cur);
 	cfv->last_y++;
     }
     if (byte_order != bit_order) {
@@ -272,7 +271,7 @@ sp_close_bitmap()
 }
 
 int
-build_all_sp_bitmaps(pfont, format, fmask)
+sp_build_all_bitmaps(pfont, format, fmask)
     FontPtr     pfont;
     fsBitmapFormat format;
     fsBitmapFormatMask fmask;
@@ -301,7 +300,7 @@ build_all_sp_bitmaps(pfont, format, fmask)
 
     start = spmf->first_char_id;
     end = spmf->max_id;
-    glyph_size = compute_sp_data_size(pfont, image, glyph, start, end);
+    glyph_size = sp_compute_data_size(pfont, image, glyph, start, end);
 
     /* XXX -- MONDO KLUDGE -- add some slop */
     /*
@@ -320,7 +319,7 @@ build_all_sp_bitmaps(pfont, format, fmask)
     bzero((char *) bitmaps, glyph_size);
 
     /* set up some state */
-    cur_spf = spf;
+    sp_fp_cur = spf;
     spf->bitmaps = bitmaps;
     cfv->format = format;
     cfv->scanpad = glyph;

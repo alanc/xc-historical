@@ -1,12 +1,11 @@
-/* $XConsortium: spfile.c,v 1.5 92/03/25 18:45:45 keith Exp $ */
+/* $XConsortium: spfile.c,v 1.6 92/04/09 18:13:03 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
@@ -21,10 +20,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)spfile.c,v 4.6 1991/06/12 13:17:24 lemke Exp $
- *
  * Author: Dave Lemke, Network Computing Devices Inc
- *
  */
 
 #include	<stdio.h>
@@ -32,7 +28,7 @@
 
 #include	"spint.h"
 
-SpeedoFontPtr cur_spf = (SpeedoFontPtr) 0;
+SpeedoFontPtr sp_fp_cur = (SpeedoFontPtr) 0;
 
 #ifdef EXTRAFONTS
 #include	"ncdkeys.h"
@@ -116,7 +112,7 @@ sp_load_char_data(file_offset, num, cb_offset)
     fix15       num;
     fix15       cb_offset;
 {
-    SpeedoMasterFontPtr master = cur_spf->master;
+    SpeedoMasterFontPtr master = sp_fp_cur->master;
 
     if (fseek(master->fp, (long) file_offset, (int) 0)) {
 	SpeedoErr("can't seek to char\n");
@@ -135,7 +131,7 @@ sp_load_char_data(file_offset, num, cb_offset)
 }
 
 int
-open_master(filename, master)
+sp_open_master(filename, master)
     char       *filename;
     SpeedoMasterFontPtr *master;
 {
@@ -227,8 +223,8 @@ open_master(filename, master)
     spmf->num_chars = read_2b(f_buffer + FH_NCHRL);
 
 
-    spmf->enc = bics_map;
-    spmf->enc_size = bics_map_size;
+    spmf->enc = sp_bics_map;
+    spmf->enc_size = sp_bics_map_size;
 
 #ifdef EXTRAFONTS
     {				/* choose the proper encoding */
@@ -257,11 +253,12 @@ open_master(filename, master)
 
 cleanup:
     *master = (SpeedoMasterFontPtr) 0;
-    close_master_font(spmf);
+    sp_close_master_font(spmf);
     return ret;
 }
 
-close_master_font(spmf)
+void
+sp_close_master_font(spmf)
     SpeedoMasterFontPtr spmf;
 {
     if (!spmf)
@@ -277,7 +274,7 @@ close_master_font(spmf)
 }
 
 void
-close_master_file(spmf)
+sp_close_master_file(spmf)
     SpeedoMasterFontPtr spmf;
 {
     (void) fclose(spmf->fp);

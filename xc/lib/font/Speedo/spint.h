@@ -1,12 +1,11 @@
-/* $XConsortium: spint.h,v 1.4 91/07/16 20:20:32 keith Exp $ */
+/* $XConsortium: spint.h,v 1.5 92/03/25 18:45:51 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
@@ -20,9 +19,6 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * $NCDId: @(#)spint.h,v 4.6 1991/06/12 13:17:23 lemke Exp $
- *
  */
 
 #ifndef _SPINT_H_
@@ -115,23 +111,25 @@ typedef struct _sp_font {
 
 }           SpeedoFontRec, *SpeedoFontPtr;
 
-extern SpeedoFontPtr cur_spf;
+extern SpeedoFontPtr sp_fp_cur;
 
-extern int  open_sp_font();
-extern void close_sp_font();
-extern void close_master_file();
+extern int  sp_open_font();
+extern int  sp_open_master();
+extern void sp_close_font();
+extern void sp_close_master_font();
+extern void sp_close_master_file();
 extern void sp_reset_master();
 extern void SpeedoErr();
 
-extern void make_sp_standard_props();
-extern void make_sp_header();
-extern void compute_sp_bounds();
-extern void compute_sp_props();
-extern int  build_all_sp_bitmaps();
-extern unsigned long compute_sp_data_size();
+extern void sp_make_standard_props();
+extern void sp_make_header();
+extern void sp_compute_bounds();
+extern void sp_compute_props();
+extern int  sp_build_all_bitmaps();
+extern unsigned long sp_compute_data_size();
 
-extern int  bics_map[];
-extern int  bics_map_size;
+extern int  sp_bics_map[];
+extern int  sp_bics_map_size;
 
 #ifdef EXTRAFONTS
 extern int  adobe_map[];

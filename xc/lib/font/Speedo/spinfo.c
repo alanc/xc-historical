@@ -1,12 +1,11 @@
-/* $XConsortium: spinfo.c,v 1.6 91/07/22 22:59:56 keith Exp $ */
+/* $XConsortium: spinfo.c,v 1.7 91/09/16 11:42:32 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
@@ -21,10 +20,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)spinfo.c,v 4.6 1991/06/24 16:55:09 lemke Exp $
- *
  * Author: Dave Lemke, Network Computing Devices, Inc
- *
  */
 
 #include	"fontfilest.h"
@@ -76,7 +72,7 @@ static fontProp extraProps[] = {
 #define	NPROPS	(NNAMEPROPS + NEXTRAPROPS)
 
 void
-make_sp_standard_props()
+sp_make_standard_props()
 {
     int         i;
     fontProp   *t;
@@ -90,7 +86,7 @@ make_sp_standard_props()
 }
 
 void
-make_sp_header(spf, pinfo)
+sp_make_header(spf, pinfo)
     SpeedoFontPtr spf;
     FontInfoPtr pinfo;
 {
@@ -118,7 +114,7 @@ make_sp_header(spf, pinfo)
     pinfo->anamorphic = 0;
     if (spf->specs.xxmult != spf->specs.yymult)
 	pinfo->anamorphic = TRUE;
-/* computed by compute_sp_bounds:
+/* computed by sp_compute_bounds:
  *  maxOverlap
  *  maxbounds
  *  minbounds
@@ -153,7 +149,7 @@ adjust_min_max(minc, maxc, tmp)
 
 
 void
-compute_sp_bounds(spf, pinfo, flags)
+sp_compute_bounds(spf, pinfo, flags)
     SpeedoFontPtr spf;
     FontInfoPtr pinfo;
     unsigned long flags;
@@ -229,7 +225,7 @@ compute_sp_bounds(spf, pinfo, flags)
 }
 
 void
-compute_sp_props(spf, fontname, pinfo)
+sp_compute_props(spf, fontname, pinfo)
     SpeedoFontPtr spf;
     char       *fontname;
     FontInfoPtr pinfo;
