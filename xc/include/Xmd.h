@@ -1,6 +1,6 @@
 #ifndef XMD_H
 #define XMD_H 1
-/* $Header: Xmd.h,v 1.17 87/06/17 17:19:37 toddb Locked $ */
+/* $Header: Xmd.h,v 1.18 87/06/17 21:00:17 toddb Locked $ */
 /*
  *  MACHINE DEPENDENT DECLARATIONS.
  *
@@ -10,12 +10,25 @@
 
 /*
  * Machine dependent values:
+ * GLYPHPADBYTES should be chosen with consideration for the space-time
+ * trade-off.  Padding to 0 bytes means that there is no wasted space
+ * in the font bitmaps (both on disk and in memory), but that access of
+ * the bitmaps will cause odd-address memory references.  Padding to
+ * 2 bytes would ensure even address memory references and would
+ * be suitable for a 68010-class machine, but at the expense of wasted
+ * space in the font bitmaps.  Padding to 4 bytes would be good
+ * for real 32 bit machines, etc.  Be sure that you tell the font
+ * compiler what kind of padding you want because its defines are
+ * kept separate from this.  See server/include/fonts.h for how
+ * GLYPHPADBYTES is used.
  */
 
 #ifdef vax
 
 #define IMAGE_BYTE_ORDER	LSBFirst        /* Values for the VAX only */
 #define BITMAP_BIT_ORDER	LSBFirst
+#define	GLYPHPADBYTES		1
+#define	GETBITS_ALIGNMENT	1
 #define B16
 #define B32
 
@@ -24,6 +37,8 @@
 
 #define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the SUN only */
 #define BITMAP_BIT_ORDER	MSBFirst
+#define	GLYPHPADBYTES		4
+#define	GETBITS_ALIGNMENT	1
 #define B16
 #define B32
 
@@ -32,6 +47,8 @@
 
 #define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the Apollo only*/
 #define BITMAP_BIT_ORDER	MSBFirst
+#define	GLYPHPADBYTES		1
+#define	GETBITS_ALIGNMENT	1
 #define B16
 #define B32
 
@@ -40,6 +57,8 @@
 
 #define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the RT only*/
 #define BITMAP_BIT_ORDER	MSBFirst
+#define	GLYPHPADBYTES		1
+#define	GETBITS_ALIGNMENT	4
 #define B16
 #define B32
 
