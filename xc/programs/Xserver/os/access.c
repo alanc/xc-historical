@@ -624,16 +624,22 @@ AuthorizedClient(client)
     {
 	family = ConvertAddr ((struct sockaddr *) from,
 	    &alen, (pointer *)&addr);
-	free ((char *) from);
 	if (family == -1)
+	{
+	    xfree ((char *) from);
 	    return FALSE;
+	}
 	if (family == FamilyLocal)
+	{
+	    xfree ((char *) from);
 	    return TRUE;
+	}
 	for (host = selfhosts; host; host = host->next)
 	{
 	    if (addrEqual (family, addr, alen, host))
 		return TRUE;
 	}
+	xfree ((char *) from);
     }
     return FALSE;
 }
