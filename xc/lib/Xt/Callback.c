@@ -1,4 +1,4 @@
-/* $XConsortium: Callback.c,v 1.28 90/12/04 15:53:35 converse Exp $ */
+/* $XConsortium: Callback.c,v 1.29 90/12/12 14:50:30 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -393,7 +393,7 @@ XtCallbackList _XtGetCallbackList(callbacks)
 
     i = callbacks->count;
     garbage = XtMalloc(sizeof(XtCallbackRec) * (i+1) + sizeof(XtPointer));
-    xtcallbacks = (XtCallbackList) (garbage + 1);
+    xtcallbacks = (XtCallbackList) ((char *)garbage + sizeof(XtPointer));
     *((XtPointer *)garbage) = NULL;
 
     for(cl=ToList(callbacks), xtcl=xtcallbacks; --i >= 0; cl++,xtcl++)
