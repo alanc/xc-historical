@@ -1,4 +1,4 @@
-/* $Header: Xos.h,v 1.1 87/09/12 02:35:11 rws Exp $ */
+/* $Header: Xos.h,v 1.2 87/12/16 14:22:56 rws Locked $ */
 /* 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -47,5 +47,9 @@
 #ifdef SYSV
 #define SIGCHLD SIGCLD
 #endif /* SYSV */
+
+#ifdef hpux
+#define sigvec sigvector
+#endif /* hpux */
 
 #endif /* _XOS_H_ */
