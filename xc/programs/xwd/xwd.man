@@ -3,7 +3,7 @@
 xwd - dump an image of an X window
 .SH SYNOPSIS
 .B "xwd"
-[-debug] [-help] [-nobdrs] [-out \fIfile\fP] [-xy]
+[-debug] [-help] [-nobdrs] [-out \fIfile\fP] [-xy] [-frame]
 [-display \fIdisplay\fP]
 .SH DESCRIPTION
 .PP
@@ -46,6 +46,11 @@ instead of the default `Z' format.
 .TP 8
 .B "-add \fIvalue\fP"
 This option specifies an signed value to be added to every pixel.
+.PP
+.TP 8
+.B "-frame"
+This option indicates that the window manager frame should be included when
+manually selecting a window.
 .SH ENVIRONMENT
 .PP
 .TP 8

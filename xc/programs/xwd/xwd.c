@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.40 88/09/20 22:53:28 jim Exp $";
+static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.41 88/09/20 23:38:19 jim Exp $";
 #endif
 
 /*%
@@ -49,6 +49,7 @@ static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.40 88/09/20 22:53:28 jim Exp
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <stdio.h>
+#include <X11/Xmu.h>
 
 #define FEEP_VOLUME 0
 
@@ -89,6 +90,7 @@ main(argc, argv)
     register i;
     Window target_win;
     FILE *out_file = stdout;
+    Bool frame_only = False;
 
     INIT_NAME;
 
@@ -124,14 +126,29 @@ main(argc, argv)
 	    add_pixel_value = parse_long (argv[i]);
 	    continue;
 	}
+	if (!strcmp(argv[0], "-frame")) {
+	    frame_only = True;
+	    continue;
+	}
 	usage();
     }
     
     /*
      * Let the user select the target window.
      */
-    if (!target_win)
-      target_win = Select_Window(dpy);
+    if (!target_win) {
+	target_win = Select_Window(dpy);
+	if (target_win != None && !frame_only) {
+	    Window root;
+	    int dummy;
+
+	    if (XGetGeometry (dpy, target_win, &root, &dummy, &dummy,
+			      &dummy, &dummy, &dummy, &dummy) &&
+		target_win != root)
+	      target_win = XmuClientWindow (dpy, target_win);
+	}
+  }
+
 
     /*
      * Dump it!
@@ -330,7 +347,7 @@ usage()
     fprintf (stderr,
 "usage: %s [-display host:dpy] [-debug] [-help] %s [-nobdrs] [-out <file>]",
 	   program_name, SELECT_USAGE);
-    fprintf (stderr, " [-xy] [-add value]\n");
+    fprintf (stderr, " [-xy] [-add value] [-frame]\n");
     exit(1);
 }
 
