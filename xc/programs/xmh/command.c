@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: command.c,v 2.28 89/09/27 19:14:54 converse Exp $";
+    "$XConsortium: command.c,v 2.29 89/10/06 15:02:18 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987, 1989
@@ -75,7 +75,7 @@ typedef struct _CommandStatus {
 
 typedef char* Pointer;
 static void FreeStatus();
-
+static CheckReadFromPipe();
 
 static void SystemError(text)
     char* text;
