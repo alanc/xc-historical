@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.170 93/09/12 20:19:43 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.171 93/09/17 11:27:17 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -258,9 +258,9 @@ ProgramTargetName(target):: srclist					@@\
  */
 #ifndef CenterProgramTarget
 #define CenterProgramTarget(program,srclist,objlist,locallibs,syslibs)	@@\
-CenterLoadTarget(Concat(debug_,program),srclist,$(EXTRA_LDOPTIONS) $(LOCAL_LDFLAGS) $(LDPRELIB) locallibs $(SYS_LIBRARIES) $(EXTRA_LIBRARIES) syslibs,$(ALLDEFINES)) @@\
+CenterLoadTarget(Concat(debug_,program),srclist,$(EXTRA_LDOPTIONS) $(LOCAL_LDFLAGS) $(LDPRELIB) locallibs $(LDLIBS) syslibs,$(ALLDEFINES)) @@\
 									@@\
-CenterLoadTarget(Concat(odebug_,program),objlist,$(EXTRA_LDOPTIONS) $(LOCAL_LDFLAGS) $(LDPRELIB) locallibs $(SYS_LIBRARIES) $(EXTRA_LIBRARIES) syslibs,$(ALLDEFINES))
+CenterLoadTarget(Concat(odebug_,program),objlist,$(EXTRA_LDOPTIONS) $(LOCAL_LDFLAGS) $(LDPRELIB) locallibs $(LDLIBS) syslibs,$(ALLDEFINES))
 #endif /* CenterProgramTarget */
 
 #ifndef PurifyLinkTarget
@@ -268,7 +268,7 @@ CenterLoadTarget(Concat(odebug_,program),objlist,$(EXTRA_LDOPTIONS) $(LOCAL_LDFL
 #define PurifyLinkTarget(step,program,linklist)				@@\
 ProgramTargetName(step.pure):						@@\
 	RemoveTargetProgram($@)						@@\
-	$(CCENVSETUP) $(PURIFY) $(PURIFYOPTIONS) $(CC) -o program.pure linklist
+	$(CCENVSETUP) $(PURIFY) $(PURIFYOPTIONS) $(CC) -o program.pure $(LDOPTIONS) linklist $(EXTRA_LOAD_FLAGS)
 #else
 #define PurifyLinkTarget(step,program,linklist) /**/
 #endif
@@ -282,7 +282,7 @@ ProgramTargetName(step.pure):						@@\
 #define	PurifyProgramTarget(program,deplist,linklist)			@@\
 ProgramTargetName(program.pure): deplist				@@\
 	RemoveTargetProgram($@)						@@\
-	$(CCENVSETUP) $(PURIFY) $(PURIFYOPTIONS) $(CC) -o $@ linklist	@@\
+	$(CCENVSETUP) $(PURIFY) $(PURIFYOPTIONS) $(CC) -o $@ $(LDOPTIONS) linklist $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 clean clean.pure::							@@\
 	RemoveFile(program.pure program.pure.*)
@@ -296,7 +296,7 @@ clean clean.pure::							@@\
 #define ProofLinkTarget(step,program,linklist)				@@\
 ProgramTargetName(step.tc):						@@\
 	RemoveTargetProgram($@)						@@\
-	$(CCENVSETUP) $(PROOF) $(PROOFOPTIONS) $(CC) -o program.tc linklist
+	$(CCENVSETUP) $(PROOF) $(PROOFOPTIONS) $(CC) -o program.tc $(LDOPTIONS) linklist $(EXTRA_LOAD_FLAGS)
 #else
 #define ProofLinkTarget(step,program,linklist) /**/
 #endif
@@ -310,7 +310,7 @@ ProgramTargetName(step.tc):						@@\
 #define	ProofProgramTarget(program,deplist,linklist)			@@\
 ProgramTargetName(program.tc): deplist				@@\
 	RemoveTargetProgram($@)						@@\
-	$(CCENVSETUP) $(PROOF) $(PROOFOPTIONS) $(CC) -o $@ linklist	@@\
+	$(CCENVSETUP) $(PROOF) $(PROOFOPTIONS) $(CC) -o $@ $(LDOPTIONS) linklist $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 clean clean.tc::							@@\
 	RemoveFiles(program.tc program.tc.*.*)
@@ -382,8 +382,8 @@ ProgramTargetName(program): objects deplibs				@@\
 	RemoveTargetProgram($@)						@@\
 	LinkRule($@,$(LDOPTIONS),objects,locallibs $(LDLIBS) syslibs)	@@\
 									@@\
-PurifyProgramTarget(program,objects deplibs,objects $(LDOPTIONS) locallibs $(LDLIBS) syslibs $(EXTRA_LOAD_FLAGS)) @@\
-ProofProgramTarget(program,objects deplibs,objects $(LDOPTIONS) locallibs $(LDLIBS) syslibs $(EXTRA_LOAD_FLAGS)) @@\
+PurifyProgramTarget(program,objects deplibs,objects locallibs $(LDLIBS) syslibs) @@\
+ProofProgramTarget(program,objects deplibs,objects locallibs $(LDLIBS) syslibs) @@\
 									@@\
 clean::									@@\
 	RemoveFile(ProgramTargetName(program))
@@ -425,8 +425,8 @@ ProgramTargetName(program): $(objs) $(deplib)				@@\
 	LinkRule($@,$(LDOPTIONS),$(objs),locallib $(LDLIBS) syslib)	@@\
 									@@\
 CenterProgramTarget(program,$(srcs),$(objs),locallib,syslib)		@@\
-PurifyProgramTarget(program,$(objs) $(deplib),$(LDOPTIONS) $(objs) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS)) @@\
-ProofProgramTarget(program,$(objs) $(deplib),$(LDOPTIONS) $(objs) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS)) @@\
+PurifyProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
+ProofProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
 									@@\
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))
@@ -519,16 +519,16 @@ ProgramTargetHelper(program,SRCS3,OBJS3,DEPLIBS3,locallib,syslib)
 #define	ServerTarget(server,subdirs,objects,libs,syslibs)		@@\
 ProgramTargetName(server): subdirs objects libs				@@\
 	MoveToBakFile($@)						@@\
-	LinkRule($@,$(CDEBUGFLAGS) $(CCOPTIONS),objects,libs $(EXTRA_LIBRARIES) syslibs) @@\
+	LinkRule($@,$(LDOPTIONS),objects,libs $(LDLIBS) syslibs) @@\
 									@@\
 Concat(load,server):							@@\
 	MoveToBakFile(ProgramTargetName(server))			@@\
-	LinkRule(ProgramTargetName(server),$(CDEBUGFLAGS) $(CCOPTIONS),objects,libs $(EXTRA_LIBRARIES) syslibs) @@\
+	LinkRule(ProgramTargetName(server),$(LDOPTIONS),objects,libs $(LDLIBS) syslibs) @@\
 									@@\
-PurifyProgramTarget(server,subdirs objects libs,$(CDEBUGFLAGS) $(CCOPTIONS) objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS)) @@\
-PurifyLinkTarget(Concat(load,server),server,$(CDEBUGFLAGS) $(CCOPTIONS) objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS)) @@\
-ProofProgramTarget(server,subdirs objects libs,$(CDEBUGFLAGS) $(CCOPTIONS) objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS)) @@\
-ProofLinkTarget(Concat(load,server),server,$(CDEBUGFLAGS) $(CCOPTIONS) objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS)) @@\
+PurifyProgramTarget(server,subdirs objects libs,objects libs $(LDLIBS) syslibs) @@\
+PurifyLinkTarget(Concat(load,server),server,objects libs $(LDLIBS) syslibs) @@\
+ProofProgramTarget(server,subdirs objects libs,objects libs $(LDLIBS) syslibs) @@\
+ProofLinkTarget(Concat(load,server),server,objects libs $(LDLIBS) syslibs) @@\
 									@@\
 InstallProgram(server,$(BINDIR))					@@\
 									@@\
