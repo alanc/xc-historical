@@ -47,11 +47,13 @@ extern void NullProc	    (/* XParms xp; Parms p */);
 extern Bool NullInitProc    (/* XParms xp; Parms p */);
 
 typedef struct _Parms {
-    int  reps;		/* required of all  */
-    int  objects;       /* required of all  */
-    int  special;
+    /* Required fields */
+    int  objects;       /* Number of objects to process in one X call	    */
+
+    /* Optional fields.  (Wouldn't object-oriented programming be nice ?)   */
+    int  special;       /* Usually size of objects to paint		    */
     char *font, *bfont;
-    int  fillStyle;     /* Solid, transparent stipple, or opqaque stipple? */
+    int  fillStyle;     /* Solid, transparent stipple, opaque stipple, tile */
 } ParmRec, *Parms;
 
 typedef struct _XParms {
@@ -63,16 +65,22 @@ typedef struct _XParms {
     unsigned long   background;
 } XParmRec, *XParms;
 
+typedef enum {
+    WINDOW,     /* Windowing test, GXxor has no affect		    */
+    XOR,	/* Graphics test, GXxor has some affect		    */
+    NONXOR      /* Graphics or overhead test, GXxor has no affect   */
+} TestType;
+
 typedef struct _Test {
-    char    *option;    /* Name to use in prompt line			    */
-    char    *label;     /* Fuller description of test			    */
-    InitProc init;      /* Initialization procedure			    */
-    Proc    proc;       /* Timed benchmark procedure			    */
-    Proc    passCleanup;/* Cleanup between repetitions of same test	    */
-    Proc    cleanup;    /* Cleanup after test				    */
-    Bool    children;   /* Windowing test for differing number of kids?     */
-    int     clips;      /* Number of obscuring windows to force clipping    */
-    ParmRec parms;      /* Parameters passed to test procedures		    */
+    char	*option;    /* Name to use in prompt line		    */
+    char	*label;     /* Fuller description of test		    */
+    InitProc    init;       /* Initialization procedure			    */
+    Proc	proc;       /* Timed benchmark procedure		    */
+    Proc	passCleanup;/* Cleanup between repetitions of same test     */
+    Proc	cleanup;    /* Cleanup after test			    */
+    TestType    testType;   /* Windowing, graphics, nonxor		    */
+    int		clips;      /* Number of obscuring windows to force clipping*/
+    ParmRec     parms;      /* Parameters passed to test procedures	    */
 } Test;
 
 extern Test test[];
