@@ -19,6 +19,9 @@ RPCLIB = -lrpcsvc
 
 #if SystemV4 || HasShadowPasswd
 PWD_DEFINES = -DUSESHADOW
+#if SystemV
+SYS_LIBRARIES = -lsec
+#endif
 #endif
 
    XDMCONFIGDIR = XdmConfigurationSubdirectory
