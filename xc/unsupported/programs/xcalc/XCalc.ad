@@ -4,8 +4,8 @@
 *Cursor:	hand2
 *IconName:	Calc
 *IconPixmap:	calculator
-*Font:			*-helvetica-medium-r-normal--*-100-*-*-*-*-*-*
-*bevel.screen.LCD.Font:	*-helvetica-bold-r-normal--*-120-*-*-*-*-*-*
+*Font:			-*-helvetica-medium-r-normal--*-100-*-*-*-*-*-*
+*bevel.screen.LCD.Font:	-*-helvetica-bold-r-normal--*-120-*-*-*-*-*-*
 
 *bevel.Background:			black
 *bevel.horizDistance:			25
