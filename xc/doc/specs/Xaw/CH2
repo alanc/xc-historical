@@ -1,4 +1,4 @@
-.\" $XConsortium: CH2,v 1.18 94/04/14 18:43:18 kaleb Exp $
+.\" $XConsortium: CH2,v 1.19 94/05/01 19:20:55 gildea Exp $
 .bp
 \&
 .sp 1
@@ -83,7 +83,10 @@ a tree of widgets created by this application.
 .IN "fallback resources" "" "@DEF@"
 .FD 0
 Widget XtAppInitialize(\fIapp_context_return\fP, \fIapplication_class\fP, \
-\fIoptions\fP, \fInum_options\fP, \fIargc_in_out\fP, \fIargv_in_out\fP, \fIfallback_resources\fP, \fIargs\fP, \fInum_args\fP)
+\fIoptions\fP, \fInum_options\fP,
+.ta 2i
+	\fIargc_in_out\fP, \fIargv_in_out\fP, \fIfallback_resources\fP, \
+\fIargs\fP, \fInum_args\fP)
 .br
       XtAppContext *\fIapp_context_return\fP;    
 .br
