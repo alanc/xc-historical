@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: miregion.c,v 1.31 88/03/03 12:24:07 swick Exp $ */
+/* $Header: miregion.c,v 1.32 88/03/15 17:09:12 rws Exp $ */
 
 #include "miscstruct.h"
 #include "regionstr.h"
@@ -1551,4 +1551,126 @@ RegionPtr prgn;
 	    nMaxBand = nThisBand;
     }
     return (nMaxBand);
+}
+
+/*-
+ *-----------------------------------------------------------------------
+ * miRegionToSpans --
+ *	Given a region, convert its recangles to spans. If nSpans is 0,
+ *	space will be allocated for the spans and pointers to the space
+ *	will be stuffed into the ppPts and ppWidths arguments. The space
+ *	must be freed by the caller. If nSpans is non-zero, *ppPts and
+ *	*ppWidths are assumed to point to space to be overwritten
+ *	with the spans for the region.
+ *
+ * Results:
+ *	The number of spans.
+ *
+ * Side Effects:
+ *
+ *-----------------------------------------------------------------------
+ */
+int
+miRegionToSpans(pRgn, nSpans, ppPts, ppWidths, pwMax)
+    RegionPtr	  	pRgn;
+    int	    	  	nSpans;
+    DDXPointPtr	  	*ppPts;
+    int	    	  	**ppWidths;
+    int	    	  	*pwMax;
+{
+    register BoxPtr	pBox;
+    register BoxPtr	pTempBox;
+    register int  	n,
+			i;
+    register int  	y;
+    register DDXPointPtr    pPt;
+    register int  	*pWidth;
+    int	    	  	wMax;
+    
+    if (nSpans == 0)
+    {
+	/*
+	 * We need to allocate space for the spans. First count them. For
+	 * each box in the region, there are the same number of spans as
+	 * scanlines...
+	 */
+	for (pBox = pRgn->rects, n = pRgn->numRects; n > 0; pBox++, n--)
+	{
+	    nSpans += pBox->y2 - pBox->y1;
+	}
+	
+	/*
+	 * If still no spans, return 0 without doing anything, else allocate
+	 * room for the spans and save the pointers in the passed arguments.
+	 */
+	if (nSpans == 0)
+	{
+	    return (0);
+	}
+	else
+	{
+	    *ppPts = (DDXPointPtr)Xalloc(nSpans * sizeof(DDXPointRec));
+	    *ppWidths = (int *)Xalloc(nSpans * sizeof(int));
+	}
+    }
+	
+    /*
+     * If the caller isn't interested in the maximum span width, point our
+     * pwMax argument at a junk location to avoid repeated tests...
+     */
+    if (pwMax == (int *)NULL)
+    {
+	pwMax = &wMax;
+    }
+
+    *pwMax = 0;
+
+    pBox = pRgn->rects;
+    pPt = *ppPts;
+    pWidth = *ppWidths;
+
+    /*
+     * Convert each band of rectangles into spans in increasing-y order (i.e.
+     * the resulting spans are sorted).
+     */
+    for (n = pRgn->numRects; n > 0; )
+    {
+	int	  	nBand;
+	
+	/*
+	 * First count the number of rectangles in the current band, leaving
+	 * the result in nBand.
+	 */
+	for (pTempBox = pBox+1, nBand = 1;
+	     (pTempBox->y1 == pBox->y1) && (nBand <= n);
+	     pTempBox++, nBand++)
+	{
+	    /* void */ ;
+	}
+	
+	/*
+	 * For each scanline in the band, and each box enclosing that
+	 * scanline, enter a point and a width in the table.
+	 */
+	for (y = pBox->y1; y != pBox->y2; y++)
+	{
+	    for (i = 0, pTempBox = pBox; i < nBand; pTempBox++, i++)
+	    {
+		pPt->x = pTempBox->x1;
+		pPt->y = y;
+		*pWidth = pTempBox->x2 - pTempBox->x1;
+
+		if (*pWidth > *pwMax)
+		{
+		    *pwMax = *pWidth;
+		}
+
+		pPt++;
+		pWidth++;
+	    }
+	}
+	n -= nBand;
+	pBox += nBand;
+    }
+    return (nSpans);
 }
