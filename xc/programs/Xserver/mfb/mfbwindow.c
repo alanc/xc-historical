@@ -1,4 +1,4 @@
-/* $XConsortium: mfbwindow.c,v 1.17 89/03/29 19:32:21 rws Exp $ */
+/* $XConsortium: mfbwindow.c,v 5.0 89/06/09 15:07:08 keith Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -91,16 +91,11 @@ mfbDestroyWindow(pWin)
 
     pPrivWin = (mfbPrivWin *)(pWin->devPrivates[mfbWindowPrivateIndex].ptr);
 
-    /* mfbDestroyPixmap() deals with any NULL pointers */
-    mfbDestroyPixmap(pPrivWin->pRotatedBorder);
-    mfbDestroyPixmap(pPrivWin->pRotatedBackground);
+    if (pPrivWin->pRotatedBorder)
+	mfbDestroyPixmap(pPrivWin->pRotatedBorder);
+    if (pPrivWin->pRotatedBackground)
+	mfbDestroyPixmap(pPrivWin->pRotatedBackground);
     xfree(pWin->devPrivates[mfbWindowPrivateIndex].ptr);
-#ifdef NOTDEF
-    if (pWin->backingStore != NotUseful)
-    {
-	miFreeBackingStore(pWin);
-    }
-#endif
     return (TRUE);
 }
 

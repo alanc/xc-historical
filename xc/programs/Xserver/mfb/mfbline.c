@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbline.c,v 1.40 89/03/18 12:32:10 rws Exp $ */
+/* $XConsortium: mfbline.c,v 5.0 89/06/09 15:06:45 keith Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -686,7 +686,7 @@ mfbDashLine( pDrawable, pGC, mode, npt, pptInit)
     else
     {
 	fgRop = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop;
-	bgRop = ReduceRop(pGC->alu, pGC->bgPixel);
+	bgRop = mfbReduceRop(pGC->alu, pGC->bgPixel);
     }
 
     for (; --nseg >= 0; pdash++)

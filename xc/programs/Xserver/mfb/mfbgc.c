@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 1.129 89/03/29 19:32:04 rws Exp $ */
+/* $XConsortium: mfbgc.c,v 5.0 89/06/09 15:06:29 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -681,7 +681,7 @@ mfbValidateGC(pGC, changes, pDrawable)
 	  case GCFillRule:
 	    break;
 	  case GCTile:
-	    if(pGC->tile == (PixmapPtr)NULL)
+	    if(pGC->tileIsPixel)
 		break;
 	    new_rotate = TRUE;
 	    new_fill = TRUE;
@@ -752,10 +752,10 @@ mfbValidateGC(pGC, changes, pDrawable)
 	}
 
 	/* copy current tile and stipple */
-	if (pGC->tile && (pGC->tile->drawable.width <= 32) &&
-	    !(pGC->tile->drawable.width & (pGC->tile->drawable.width - 1)))
+	if (!pGC->tileIsPixel && (pGC->tile.pixmap->drawable.width <= 32) &&
+	    !(pGC->tile.pixmap->drawable.width & (pGC->tile.pixmap->drawable.width - 1)))
 	{
-	    devPriv->pRotatedTile = mfbCopyPixmap(pGC->tile);
+	    devPriv->pRotatedTile = mfbCopyPixmap(pGC->tile.pixmap);
 	    if (devPriv->pRotatedTile)
 		(void)mfbPadPixmap(devPriv->pRotatedTile);
 	}

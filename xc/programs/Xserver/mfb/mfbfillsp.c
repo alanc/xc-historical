@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillsp.c,v 1.35 89/03/21 11:42:13 rws Exp $ */
+/* $XConsortium: mfbfillsp.c,v 5.0 89/06/09 15:06:23 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -815,7 +815,7 @@ int fSorted;
 
     if (pGC->fillStyle == FillTiled)
     {
-	pTile = pGC->tile;
+	pTile = pGC->tile.pixmap;
 	tlwidth = pTile->devKind >> 2;
 	rop = pGC->alu;
     }

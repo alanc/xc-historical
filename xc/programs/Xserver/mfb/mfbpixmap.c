@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpixmap.c,v 1.49 89/04/05 13:39:56 rws Exp $ */
+/* $XConsortium: mfbpixmap.c,v 5.0 89/06/09 15:06:50 keith Exp $ */
 
 /* pixmap management
    written by drewry, september 1986
@@ -78,9 +78,6 @@ Bool
 mfbDestroyPixmap(pPixmap)
     PixmapPtr pPixmap;
 {
-    if (!IS_VALID_PIXMAP(pPixmap))
-	return TRUE;
-
     if(--pPixmap->refcnt)
 	return TRUE;
     xfree(pPixmap->devPrivate.ptr);
