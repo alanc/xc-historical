@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: /wachusett/p1/X11R5/alpha/mit/server/ddx/dec/ws/RCS/init.c,v 1.9 91/02/05 22:19:32 hohn Exp Locker: jg $ */
+/* $Header: init.c,v 1.1 91/05/11 10:51:07 rws Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -246,5 +246,5 @@ InitInput(argc, argv)
 		exit(1);
 	}
     }
-
+    SetTimeSinceLastInputEvent ();
 }

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: ws_io.c,v 1.18 91/02/06 16:21:07 edg Exp $ */
+/* $Header: ws_io.c,v 1.1 91/05/11 10:51:16 rws Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -117,13 +117,12 @@ wsSaveScreen(pScreen, on)
     vc.screen = screenDesc[pScreen->myNum].screen;
 
     if (on == SCREEN_SAVER_FORCER) {
-	lastEventTime = GetTimeInMillis();
+	lastEventTime = CURRENT_TIME;
     } else if (on == SCREEN_SAVER_ON) {
 	vc.control = SCREEN_OFF;
 	if (ioctl(wsFd, VIDEO_ON_OFF, &vc) < 0)
 	    ErrorF("VIDEO_ON_OFF: failed to turn screen off.\n");
     } else {
-        lastEventTime = GetTimeInMillis();	
 	vc.control = SCREEN_ON;
 	if (ioctl(wsFd, VIDEO_ON_OFF, &vc) < 0)
 	    ErrorF("VIDEO_ON_OFF: failed to turn screen on.\n");
@@ -774,6 +773,11 @@ TimeSinceLastInputEvent()
     if (lastEventTime == 0)
 	lastEventTime = CURRENT_TIME;
     return CURRENT_TIME -  lastEventTime;
+}
+
+SetTimeSinceLastInputEvent ()
+{
+    lastEventTime = CURRENT_TIME;
 }
 
 extern Bool PointerConfinedToScreen();

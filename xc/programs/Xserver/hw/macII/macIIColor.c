@@ -181,8 +181,10 @@ macIIColorUpdateColormap(pScreen, cmap)
 static Bool
 macIIColorSaveScreen (pScreen, on)
     ScreenPtr	  pScreen;
-    Bool    	  on;
+    int    	  on;
 {
+    if (on == SCREEN_SAVER_FORCER)
+	SetTimeSinceLastInputEvent ();
     return FALSE;
 }
 
@@ -343,7 +345,7 @@ macIIColorInit (index, pScreen, argc, argv)
 
     macIIFbs[index].installedMap = NULL;
 
-    (void) macIIColorSaveScreen( pScreen, SCREEN_SAVER_FORCER );
+    (void) macIIColorSaveScreen( pScreen, SCREEN_SAVER_OFF );
 
     return (macIIScreenInit(pScreen) && cfbCreateDefColormap(pScreen));
 }

@@ -340,6 +340,7 @@ InitInput(argc, argv)
     if (!mieqInit (k, p))
 	return FALSE;
     signal(SIGIO, SigIOHandler);
+    SetTimeSinceLastInputEvent ();
 }
 
 /*-

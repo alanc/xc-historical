@@ -85,8 +85,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 static Bool
 macIIMonoSaveScreen (pScreen, on)
     ScreenPtr	  pScreen;
-    Bool    	  on;
+    int    	  on;
 {
+    if (on == SCREEN_SAVER_FORCER)
+	SetTimeSinceLastInputEvent ();
     return FALSE;
 }
 

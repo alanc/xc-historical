@@ -269,6 +269,7 @@ InitInput(argc, argv)
     if (!p || !k)
 	FatalError("failed to create input devices in InitInput");
 
+    SetTimeSinceLastInputEvent();
     RegisterPointerDevice(p);
     RegisterKeyboardDevice(k);
     miRegisterPointerDevice(screenInfo.screens[0], p);
@@ -297,17 +298,20 @@ sunCloseScreen (i, pScreen)
 Bool
 sunSaveScreen (pScreen, on)
     ScreenPtr	pScreen;
-    Bool	on;
+    int		on;
 {
-    int		state = on;
+    int		state;
 
-    if (on != SCREEN_SAVER_ON) {
+    if (on == SCREEN_SAVER_FORCER)
 	SetTimeSinceLastInputEvent();
-	state = 1;
-    } else {
-	state = 0;
+    else
+    {
+	if (on == SCREEN_SAVER_ON)
+	    state = 0;
+	else
+	    state = 1;
+	(void) ioctl(sunFbs[pScreen->myNum].fd, FBIOSVIDEO, &state);
     }
-    (void) ioctl(sunFbs[pScreen->myNum].fd, FBIOSVIDEO, &state);
     return( TRUE );
 }
 
