@@ -1,4 +1,4 @@
-XCOMM $XConsortium: ibmLib.rules,v 1.5 91/05/10 09:27:27 jap Exp $
+XCOMM $XConsortium: ibmLib.rules,v 1.6 92/06/28 17:44:12 rws Exp $
 
 /*
  * AIX shared library rules
@@ -27,6 +27,24 @@ XCOMM $XConsortium: ibmLib.rules,v 1.5 91/05/10 09:27:27 jap Exp $
 #endif
 #ifndef ExtraLoadFlags
 #define ExtraLoadFlags -bnodelcsect
+#endif
+
+/*
+ * SharedLibReferences - variables for shared libraries
+ */
+#ifndef SharedLibReferences
+#define SharedLibReferences(varname,libname,libsource,revname,rev)	@@\
+Concat3(DEP,varname,LIB) = /**/						@@\
+Concat(varname,LIB) = _Use(Concat(-l,libname),Concat(libsource/lib,libname.a)) @@\
+LintLibReferences(varname,libname,libsource)
+#endif
+
+/*
+ * SharedDSLibReferences - variables for shared libraries
+ */
+#ifndef SharedDSLibReferences
+#define SharedDSLibReferences(varname,libname,libsource,revname,rev)	@@\
+SharedLibReferences(varname,libname,libsource,revname,rev)
 #endif
 
 /*
