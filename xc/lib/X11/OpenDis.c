@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.113 91/02/20 21:20:20 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.114 91/02/28 11:11:37 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -43,6 +43,10 @@ without express or implied warranty.
 #endif
 
 #include <stdio.h>
+
+#ifdef X_NOT_STDC_ENV
+extern char *getenv();
+#endif
 
 extern int _Xdebug;
 
@@ -228,7 +232,6 @@ Display *XOpenDisplay (display)
 	unsigned long mask;
 	extern Bool _XSendClientPrefix();
 	extern int _XConnectDisplay();
-	extern char *getenv();
 	extern XID _XAllocID();
 #ifdef SECURE_RPC
 	char	rpc_cred[MAX_AUTH_BYTES];

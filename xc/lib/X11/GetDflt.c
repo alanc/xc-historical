@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XGetDflt.c,v 1.24 91/02/01 16:34:15 gildea Exp $
+ * $XConsortium: XGetDflt.c,v 1.25 91/03/27 17:55:10 gildea Exp $
  */
 
 /***********************************************************
@@ -33,6 +33,10 @@ SOFTWARE.
 #include <stdio.h>
 #include <ctype.h>
 
+#ifdef X_NOT_STDC_ENV
+extern char *getenv();
+#endif
+
 static char *GetHomeDir (dest)
 	char *dest;
 {
@@ -43,7 +47,6 @@ static char *GetHomeDir (dest)
 	extern int getuid();
 	extern struct passwd *getpwuid(), *getpwnam();
 #endif
-	extern char *getenv();
 	struct passwd *pw;
 	register char *ptr;
 
@@ -73,7 +76,6 @@ static XrmDatabase InitDefaults (dpy)
     XrmDatabase userdb;
     XrmDatabase xdb;
     char fname[BUFSIZ];                 /* longer than any conceivable size */
-    char *getenv();
     char *xenv;
 
     XrmInitialize();
