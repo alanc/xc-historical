@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.52 93/09/12 20:01:36 rws Exp $
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.53 93/09/12 21:33:46 rws Exp $
 
 #define OSName            Ultrix-32 4.3
 XCOMM operating system:  OSName
@@ -10,6 +10,10 @@ XCOMM operating system:  OSName
 #define HasShm YES
 #define LintLibFlag -o
 #define LintOpts -ax
+
+#if HasDECnet
+#define ExtraLibraries -ldnet
+#endif
 
 #ifdef VaxArchitecture
 #define XqdssServer YES
