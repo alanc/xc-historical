@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Paned.c,v 1.14 90/04/17 19:13:50 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Paned.c,v 1.15 90/04/30 17:05:54 converse Exp $";
 #endif /* lint */
 
 
@@ -1849,7 +1849,12 @@ int    *min, *max;
 
 void 
 #if NeedFunctionPrototypes
-XawPanedSetRefigureMode(Widget w, Boolean mode)
+XawPanedSetRefigureMode(Widget w,
+#if NeedWidePrototypes
+			int mode)
+#else
+			Boolean mode)
+#endif
 #else
 XawPanedSetRefigureMode(w, mode)
 Widget w;
@@ -1886,7 +1891,12 @@ Widget w;
 
 void 
 #if NeedFunctionPrototypes
-XawPanedAllowResize(Widget widget, Boolean allow_resize)
+XawPanedAllowResize(Widget widget,
+#if NeedWidePrototypes
+		    int allow_resize)
+#else
+		    Boolean allow_resize)
+#endif
 #else
 XawPanedAllowResize(widget, allow_resize)
 Widget widget;

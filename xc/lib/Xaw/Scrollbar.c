@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Scrollbar.c,v 1.62 90/04/26 15:39:22 kit Exp $";
+    "$XConsortium: Scrollbar.c,v 1.63 90/04/30 17:04:00 converse Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -725,11 +725,15 @@ static void NotifyThumb( gw, event, params, num_params )
 
 /* Set the scroll bar to the given location. */
 
-extern void 
 #if NeedFunctionPrototypes
-XawScrollbarSetThumb(Widget gw, float top, float shown )
+void XawScrollbarSetThumb(Widget gw,
+#if NeedWidePrototypes
+			  double top, double shown)
 #else
-XawScrollbarSetThumb( gw, top, shown )
+			  float top, float shown)
+#endif
+#else
+void XawScrollbarSetThumb( gw, top, shown )
 Widget gw;
 float top, shown;
 #endif

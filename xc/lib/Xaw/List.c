@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER))
-  static char Xrcs_id[] = "$XConsortium: List.c,v 1.27 90/04/26 15:39:42 kit Exp $";
+  static char Xrcs_id[] = "$XConsortium: List.c,v 1.28 90/04/30 17:03:53 converse Exp $";
 #endif
 
 /*
@@ -889,7 +889,11 @@ Widget current, request, new;
 void
 #if NeedFunctionPrototypes
 XawListChange(Widget w, char ** list, int nitems, int longest,
+#if NeedWidePrototypes
+	      int resize_it)
+#else
 	      Boolean resize_it)
+#endif
 #else
 XawListChange(w, list, nitems, longest, resize_it)
 Widget w;

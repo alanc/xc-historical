@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Form.c,v 1.38 90/02/28 19:18:43 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Form.c,v 1.39 90/04/30 17:05:41 converse Exp $";
 #endif /* lint */
 
 
@@ -730,7 +730,12 @@ static XtGeometryResult PreferredGeometry( widget, request, reply  )
 
 void
 #if NeedFunctionPrototypes
-XawFormDoLayout(Widget w, Boolean doit)
+XawFormDoLayout(Widget w,
+#if NeedWidePrototypes
+		int doit)
+#else
+		Boolean doit)
+#endif
 #else
 XawFormDoLayout(w, doit)
 Widget w;

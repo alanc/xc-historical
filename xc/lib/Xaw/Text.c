@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.146 90/04/26 17:35:41 converse Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.147 90/04/30 17:46:25 converse Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -3154,7 +3154,12 @@ Widget w;
 
 void
 #if NeedFunctionPrototypes
-XawTextDisplayCaret (Widget w, Boolean display_caret)
+XawTextDisplayCaret (Widget w,
+#if NeedWidePrototypes
+		     /* Boolean */ int display_caret)
+#else
+		     Boolean display_caret)
+#endif
 #else
 XawTextDisplayCaret (w, display_caret)
 Widget w;
@@ -3186,7 +3191,13 @@ Boolean display_caret;
 
 XawTextPosition
 #if NeedFunctionPrototypes
-XawTextSearch(Widget w, XawTextScanDirection dir, XawTextBlock *text)
+XawTextSearch(Widget w,
+#if NeedWidePrototypes
+	      /* XawTextScanDirection */ int dir,
+#else
+	      XawTextScanDirection dir,
+#endif
+	      XawTextBlock *text)
 #else
 XawTextSearch(w, dir, text) 
 Widget w;
