@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: main.c,v 1.4 89/01/06 18:42:08 kit Exp $
+ * $XConsortium: main.c,v 1.5 89/02/15 19:25:12 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -76,6 +76,18 @@ static XrmOptionDescRec xman_options[] = {
 {"-bothshown", "bothShown", XrmoptionNoArg, (caddr_t) "True"},
 };
 
+XtActionsRec xman_actions[] = {
+  {"GotoPage",          GotoPage},
+  {"Quit",              Quit},
+  {"Search",            Search},
+  {"PopupHelp",         PopupHelp},
+  {"PopupSearch",       PopupSearch},
+  {"CreateNewManpage",  CreateNewManpage},
+  {"RemoveThisManpage", RemoveThisManpage},
+  {"SaveFormattedPage", SaveFormattedPage},
+  {"ShowVersion",       ShowVersion},
+};
+
 /*	Function Name: main
  *	Description: This is the main driver for Xman.
  *	Arguments: argc, argv - the command line arguments.
@@ -87,7 +99,7 @@ main(argc,argv)
 char ** argv;
 int argc;
 {
-  initial_widget = XtInitialize(NULL, "XMan", 
+  initial_widget = XtInitialize(NULL, "Xman", 
 				xman_options, XtNumber(xman_options),
 				(unsigned int*) &argc,argv);
   if (argc != 1) {
@@ -95,9 +107,14 @@ int argc;
     exit(42);
   }
 
+  manglobals_context = XStringToContext(MANNAME);
+
   XtGetApplicationResources( initial_widget, (caddr_t) &resources, 
 			    my_resources, XtNumber(my_resources),
 			    NULL, (Cardinal) 0);
+
+  XtAppAddActions(XtWidgetToApplicationContext(initial_widget),
+		  xman_actions, XtNumber(xman_actions));
 
   if (!resources.fonts.normal)
 	PrintError("Failed to get the manualFontNormal font");
@@ -126,11 +143,11 @@ int argc;
   default_height *= 3;
   default_height /= 4;
 
-  sections = Man();
+  if ( (sections = Man()) == 0 )
+    PrintError("There are no manual sections to display, check your MANPATH.");
 
-  if (resources.top_box_active) {
-    MakeTopMenuWidget();	
-  }
+  if (resources.top_box_active) 
+    MakeTopBox();	
   else
     CreateManpage();
 
@@ -147,21 +164,6 @@ int argc;
 
   XtMainLoop();
 }
-
-/*	Function Name: Quit
- *	Description: closes the display and quits.
- *	Arguments: widget - and widget.
- *	Returns: none.
- */
-
-void
-Quit(w)
-Widget w;
-{
-  XCloseDisplay(XtDisplay(w));
-  exit(0);
-}
-
 
 /*	Function Name: ArgError
  *	Description:  Prints error message about unknow arguments.

@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: globals.h,v 1.3 89/01/06 18:41:58 kit Exp $
+ * $XConsortium: globals.h,v 1.4 89/02/14 16:07:59 kit Exp $
  * $Athena: globals.h,v 4.5 88/12/19 13:46:58 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -38,4 +38,9 @@ extern int man_pages_shown;		/* The current number of manual
 extern Manual * manual;		        /* The manual structure. */
 extern int sections;			/* The number of manual sections. */
 
+extern XContext manglobals_context;	/* The context for man_globals. */
+
 extern Widget initial_widget;	      /* The initial widget, never realized. */
+
+extern char * option_names[];
+

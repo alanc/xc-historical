@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.7 89/02/15 20:00:23 kit Exp $
- * $Header: buttons.c,v 1.7 89/02/15 20:00:23 kit Exp $
+ * $XConsortium: buttons.c,v 1.8 89/03/11 09:49:45 rws Exp $
+ * $Header: buttons.c,v 1.8 89/03/11 09:49:45 rws Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -32,34 +32,30 @@
 #include "icon_help.h"
 #include "iconclosed.h"
 
-static void AddManpageCallbacks();
+static void AddManpageCallbacks(), CreateOptionMenu(), CreateSectionMenu();
 ManpageGlobals * InitPsuedoGlobals();
 
-/*	Function Name: MakeTopMenuWidget
+/*	Function Name: MakeTopBox
  *	Description: This funtion creates the top menu, in a shell widget.
  *	Arguments: none.
  *	Returns: the top level widget
  */
 
-#define TOPBUTTONS 3
 #define TOPARGS 5
 
 void
-MakeTopMenuWidget()
+MakeTopBox()
 {
-  Widget top;			/* top box widget. */
-  Widget menu;			/* Top Box and menu. */
-  Menu topbox;			/* The menu structure for this box. */
-  Button topbuttons[TOPBUTTONS]; /* The button structure for these buttons. */
+  Widget top, form, command, label; /* widgets. */
   Arg arglist[TOPARGS];		/* An argument list */
-  int i;			/* A Counter. */
   Cardinal num_args = 0;	/* The number of arguments. */
-  static char * name[]  = {	/* The names of the buttons. */
-    "Help",
-    "Quit",
-    "Manual Page"
-    };
-
+  static char * full_size[] = {
+    "manualBrowser", MANPAGE_BUTTON, NULL
+  };
+  static char * half_size[] = {
+    HELP_BUTTON, QUIT_BUTTON, NULL
+  };
+  
 /* create the top icon. */
 
   num_args = 0;
@@ -69,44 +65,34 @@ MakeTopMenuWidget()
 				 iconclosed_bits, iconclosed_width,
 				 iconclosed_height));
   num_args++;
-  XtSetArg(arglist[num_args], XtNallowShellResize, TRUE); 
-  num_args++;
 
   top = XtCreatePopupShell(TOPBOXNAME, topLevelShellWidgetClass, 
 			   initial_widget, arglist, num_args);
 
-  /* Set up the manual structure. */
+  form = XtCreateManagedWidget("form", formWidgetClass, top, 
+			       NULL, (Cardinal) 0);
 
-  topbox.number = TOPBUTTONS;
-  topbox.name = "Manual Browser";
-  topbox.label_args = NULL;
-  topbox.label_num = (unsigned int) 0;
-  topbox.box_args = NULL;
-  topbox.box_num = (unsigned int) 0;
-  topbox.button_args = NULL;
-  topbox.button_num = (unsigned int) 0;
-  topbox.buttons = topbuttons;
-  topbox.callback = TopCallback;
+  label = XtCreateManagedWidget("manualBrowser", labelWidgetClass, form, 
+			       NULL, (Cardinal) 0);
 
-/*
- * Set up the button structures, by assiging each one a name and a 
- * width, this puts either one button on a line or two depending on
- * the length of the string that will go into the buttons. See Menu.c for 
- * details.
- */
+  num_args = 0;
+  XtSetArg(arglist[num_args], XtNfromVert, label); num_args++;
+  command = XtCreateManagedWidget(HELP_BUTTON, commandWidgetClass, form, 
+				  arglist, num_args);
 
-  for ( i = 0 ; i < TOPBUTTONS; i ++) {
-    topbuttons[i].name = name[i];
-    topbuttons[i].number_per_line = strlen(topbox.name)/strlen(name[i]);
-    if (topbuttons[i].number_per_line > 1 ) /* Max of 2 buttons per line. */
-      topbuttons[i].number_per_line = 2;
-  }
+  /* use same vertical as help widget. */
+  XtSetArg(arglist[num_args], XtNfromHoriz, command); num_args++;
+  command = XtCreateManagedWidget(QUIT_BUTTON, commandWidgetClass, form, 
+				  arglist, num_args);
+
+  num_args = 0;
+  XtSetArg(arglist[num_args], XtNfromVert, command); num_args++;
+  command = XtCreateManagedWidget(MANPAGE_BUTTON, commandWidgetClass, form, 
+				  arglist, num_args);
 
   help_widget = NULL;		/* We have not seen the help yet. */
 
-  menu = MakeMenu(top,&topbox, NULL); /* Create the menu. */
-  XtManageChild(menu);		/* Manage the menu. */
-
+  FormUpWidgets(form, full_size, half_size);
   XtRealizeWidget(top);
   XtMapWidget(top);
   AddCursor(top, resources.cursors.top);
@@ -179,7 +165,7 @@ Boolean full_instance;
   int font_height;
   Arg arglist[MANPAGEARGS];	/* An argument list for widget creation */
   Cardinal num_args;		/* The number of arguments in the list. */
-  Widget top, pane, section,search;	/* Widgets */
+  Widget top, pane, hpane, sections;	/* Widgets */
   ManPageWidgets * mpw = &(man_globals->manpagewidgets);
 
   num_args = (Cardinal) 0;
@@ -191,6 +177,7 @@ Boolean full_instance;
   top = XtCreatePopupShell(name, topLevelShellWidgetClass, initial_widget,
 			   arglist, num_args);
 
+  MakeSearchWidget(man_globals, top);
   man_globals->This_Manpage = top; /* pointer to root widget of Manualpage. */
   num_args = 0;
   if (full_instance)
@@ -209,15 +196,42 @@ Boolean full_instance;
   pane = XtCreateManagedWidget("Manpage_Vpane", vPanedWidgetClass, top, NULL, 
 			       (Cardinal) 0);
 
-/* Create top label. */
+/* Create menu bar. */
+
+  hpane = XtCreateManagedWidget("horizPane", panedWidgetClass,
+				  pane, NULL, (Cardinal) 0);
+  num_args = 0;
+  XtSetArg(arglist[num_args], XtNmenuName, OPTION_MENU); num_args++;
+  (void) XtCreateManagedWidget("options", menuButtonWidgetClass,
+				  hpane, arglist, num_args);
+
+  CreateOptionMenu(man_globals, top);
+
+  num_args = 0;
+  XtSetArg(arglist[num_args], XtNmenuName, SECTION_MENU); num_args++;
+  sections = XtCreateManagedWidget("sections", menuButtonWidgetClass,
+				   hpane, arglist, num_args);
+
+  XtSetArg(arglist[0], XtNlabel, SHOW_BOTH);
+  XawSimpleMenuUpdateEntry(man_globals->option_menu, BOTH_SCREENS,
+			   arglist, (Cardinal) 1);
+
+  if (full_instance) {
+    CreateSectionMenu(man_globals, top);
+    MakeSaveWidgets(man_globals, top);
+  } else {
+    Widget menu = man_globals->option_menu;
+    XtSetSensitive(sections, FALSE);       
+    XtSetArg(arglist[0], XtNsensitive, FALSE);
+    XawSimpleMenuUpdateEntry(menu, DIRECTORY,    arglist, (Cardinal) 1);
+    XawSimpleMenuUpdateEntry(menu, MANPAGE,      arglist, (Cardinal) 1);
+    XawSimpleMenuUpdateEntry(menu, HELP,         arglist, (Cardinal) 1);
+    XawSimpleMenuUpdateEntry(menu, SEARCH,       arglist, (Cardinal) 1);
+    XawSimpleMenuUpdateEntry(menu, BOTH_SCREENS, arglist, (Cardinal) 1);
+  }
 
   man_globals->label = XtCreateManagedWidget(MANNAME, labelWidgetClass,
-				pane, NULL, (Cardinal) 0);
-
-  XtPanedSetMinMax( man_globals->label, 2 ,
-		   Height( man_globals->label ) );
-  XtAddEventHandler(man_globals->label, (Cardinal) EnterWindowMask,
-		    FALSE ,PopUpMenu, NULL);
+					     hpane, NULL, (Cardinal) 0);
 
 /* Create Directory */
 
@@ -251,28 +265,6 @@ Boolean full_instance;
 				pane, arglist, num_args);
 
   AddManpageCallbacks(man_globals, mpw->manpage);
-
-/* make popup widgets. */
-
-  MakeTopPopUpWidget(man_globals, man_globals->label, &section, &search,
-		     full_instance);
-  if (full_instance) {
-    MakeDirPopUpWidget(man_globals, section);
-    MakeSearchWidget(man_globals, search);
-    MakeSaveWidgets(man_globals, mpw->directory, mpw->manpage);
-  }
-  else {
-    man_globals->both_shown = TRUE; /* This is a lie, but keeps it from
-				      being allowed to change to non-existant
-				      directory. */
-    XtSetSensitive(section, FALSE);
-    XtSetSensitive(search, FALSE);
-    XtSetSensitive(man_globals->put_up_manpage,FALSE);
-    XtSetSensitive(man_globals->put_up_directory,FALSE);
-    XtSetSensitive(man_globals->both_shown_button, FALSE); 
-    XtSetSensitive(man_globals->help_button, FALSE);       
-    MakeLong( XtParent(man_globals->help_button) ); /* Fix top menu. */
-  }
 }
 
 /*	Function Name: StartManpage
@@ -290,6 +282,7 @@ Boolean help;
   Widget dir = man_globals->manpagewidgets.directory;
   Widget manpage = man_globals->manpagewidgets.manpage;
   Widget label = man_globals->label;
+  Arg arglist[1];
 
 /* 
  * If there is a helpfile then put up both screens if both_show is set.
@@ -300,12 +293,19 @@ Boolean help;
     if (man_globals->both_shown) {
       XtManageChild(dir);
       man_globals->dir_shown = TRUE;
-      XtPanedSetMinMax(dir, resources.directory_height, 
-		       resources.directory_height);
-      XtSetSensitive(man_globals->put_up_manpage,FALSE);
-      XtSetSensitive(man_globals->put_up_directory,FALSE);
-      ChangeLabel(man_globals->both_shown_button, SHOW_ONE);
-      MakeLong( XtParent(man_globals->help_button) ); /* Fix top menu. */
+
+      XtSetArg(arglist[0], XtNpreferredPaneSize, resources.directory_height);
+      XtSetValues(dir, arglist, (Cardinal) 1);
+
+      XtSetArg(arglist[0], XtNsensitive, FALSE);
+      XawSimpleMenuUpdateEntry(man_globals->option_menu, MANPAGE,
+			       arglist, (Cardinal) 1);
+      XawSimpleMenuUpdateEntry(man_globals->option_menu, DIRECTORY,
+			       arglist, (Cardinal) 1);
+
+      XtSetArg(arglist[0], XtNlabel, SHOW_ONE);
+      XawSimpleMenuUpdateEntry(man_globals->option_menu, BOTH_SCREENS,
+			       arglist, (Cardinal) 1);
       ChangeLabel(label,
 		  man_globals->section_name[man_globals->current_directory]);
     }
@@ -322,10 +322,13 @@ Boolean help;
   else {			
     XtManageChild(dir);
     man_globals->dir_shown = TRUE;
-    XtSetSensitive(man_globals->put_up_manpage, FALSE);
-    XtSetSensitive(man_globals->both_shown_button, FALSE);    
-    XtSetSensitive(man_globals->help_button, FALSE);    
-    MakeLong( XtParent(man_globals->help_button) ); /* Fix top menu. */
+    XtSetArg(arglist[0], XtNsensitive, FALSE);
+    XawSimpleMenuUpdateEntry(man_globals->option_menu, MANPAGE,
+			     arglist, (Cardinal) 1);
+    XawSimpleMenuUpdateEntry(man_globals->option_menu, HELP,
+			     arglist, (Cardinal) 1);
+    XawSimpleMenuUpdateEntry(man_globals->option_menu, BOTH_SCREENS,
+			     arglist, (Cardinal) 1);
     man_globals->both_shown = FALSE;
     ChangeLabel(label,
 		man_globals->section_name[man_globals->current_directory]);
@@ -335,11 +338,11 @@ Boolean help;
  * Start 'er up, and change the cursor.
  */
 
-  XtRealizeWidget(  man_globals->This_Manpage );
+  XtRealizeWidget( man_globals->This_Manpage );
+  SaveGlobals( man_globals->This_Manpage, man_globals);
   XtMapWidget( man_globals->This_Manpage );
 
   AddCursor( man_globals->This_Manpage, resources.cursors.manpage);
-  XtPanedSetMinMax(dir, 1, 10000); 
 }
 
 /*	Function Name: AddManpageCallbacks
@@ -360,9 +363,7 @@ Widget w;
  * text to print for the manpage.
  */
 
-  man_globals->memory_struct = (MemoryStruct *) malloc(sizeof(MemoryStruct));
-  if (man_globals->memory_struct == NULL)
-    PrintError("Could not allocate space for the memory_struct.");
+  man_globals->memory_struct = (MemoryStruct *) XtMalloc(sizeof(MemoryStruct));
 
 /*
  * Initialize to NULL, telling InitManpage not to try to free this memory. 
@@ -373,174 +374,87 @@ Widget w;
   
   XtAddCallback(w, XtNcallback,
 		PrintManpage, (caddr_t) man_globals->memory_struct);
-
-/* 
- * We would also like to be notified of button press events in
- * The manual page, this allows us to switch to the directory on middle
- * button press.
- */
-
-  XtAddEventHandler(w, (unsigned int) ButtonPressMask | ButtonReleaseMask,
-		    FALSE, ManpageButtonPress, (caddr_t) man_globals);
-
 }
 
-/*	Function Name: MakeTopPopUpWidget
- *	Description: Creates the pop up menu for Xman.
- *	Arguments: man_globals - the manpage psuedo globals file.
- *                 widget - this popup shell's parent.
- *                 command, section - the widgets that corrospond to these
- *                                    two command buttons.
- *                 is_manpage - TRUE = manpage; FALSE = help widget.
- *	Returns: the parent widget of the popup menu that is created.
+/*      Function Name: MenuDestroy
+ *      Description: free's data associated with menu when it is destroyed.
+ *      Arguments: w - menu widget.
+ *                 free_me - data to free.
+ *                 junk - not used.
+ *      Returns: none.
  */
 
-
-/* The method used for creating all these popup menus is very similar
- * to that used for the top level buttons see the functions: MakeTopMenuWidget
- * and MakeMenu for details.
- */
-
-#define TOPPOPUPBUTTONS 10
-
-void
-MakeTopPopUpWidget(man_globals,widget,section,search, is_manpage)
-ManpageGlobals * man_globals;
-Widget widget,*section,*search;
-Boolean is_manpage;
+/* ARGSUSED */
+static void
+MenuDestroy(w, free_me, junk)
+Widget w;
+caddr_t free_me, junk;
 {
-  Menu popup;			/* The menu structure. */
-  Widget popup_shell;		/* the pop up widget's shell. */
-  Widget pupwidget;		/* The popup menu widget. */
-  Button buttons[TOPPOPUPBUTTONS];	/* The menu buttons structure. */
-  Arg args[1];			/* The argument list. */
+  XtFree( (char *) free_me);
+}
+
+/*      Function Name:   CreateOptionMenu
+ *      Description: Create the option menu.
+ *      Arguments: man_globals - the manual page globals.
+ *                 parent - the button that activates the menu.
+ *      Returns: none.
+ */
+
+static void
+CreateOptionMenu(man_globals, parent)
+ManpageGlobals * man_globals;
+Widget parent;
+{
+  Widget menu;
   int i;
-  Cardinal num_args = 0;	/* The number of arguments. */
-  static char * name[] = {	/* Names of the buttons. */
-    "Change Section",
-    "Display Directory",
-    "Display Manual Page",
-    "Help",
-    "Search",
-    "Show Both Screens",
-    "Remove This Manpage",
-    "Open New Manpage",
-    "Show Version",
-    "Quit",
-  };
+  MenuStruct * menu_struct;
 
-  if (!is_manpage)
-    name[6] = "Remove Help";
-  else			    /* since manpages are often started after help. */
-    name[6] = "Remove This Manpage";
-    
-  popup_shell = XtCreatePopupShell(POPUPNAME, overrideShellWidgetClass, 
-				   widget, NULL, (Cardinal) 0);
-  XtSetArg(args[num_args],XtNjustify,XtJustifyLeft); 
-  num_args++;
-
-  popup.number = TOPPOPUPBUTTONS;
-  popup.name = "Xman Options";
-  popup.label_args = NULL;
-  popup.label_num = 0;
-  popup.box_args = NULL;
-  popup.box_num = 0;
-  popup.button_args = args;
-  popup.button_num = num_args;
-  popup.buttons = buttons;
-  popup.callback = TopPopUpCallback;
-
-  for ( i = 0 ; i < TOPPOPUPBUTTONS; i ++) {
-    buttons[i].name = name[i];
-    buttons[i].number_per_line = 0; /* zero means do not resize, this is
-				       done later in the function MakeLong. */
+  menu = XtCreatePopupShell(OPTION_MENU, simpleMenuWidgetClass, parent,
+			    NULL, (Cardinal) 0);
+  man_globals->option_menu = menu;
+  
+  for (i = 0 ; i < NUM_OPTIONS ; i++) {
+    XawSimpleMenuAddEntry(menu, option_names[i], NULL, (Cardinal) 0);
+    menu_struct = (MenuStruct *) XtMalloc(sizeof(MenuStruct));
+    menu_struct->data = (caddr_t) man_globals;
+    menu_struct->quark = XrmStringToQuark(option_names[i]);
+    XawSimpleMenuAddCallback(menu, option_names[i], OptionCallback,
+			     (caddr_t) menu_struct);
+    XtAddCallback(menu, XtNdestroyCallback, 
+		  MenuDestroy, (caddr_t) menu_struct);
   }
-
-/*
- * This is not too pretty but it works.  The numbers of the children are the
- * order that they were in the name list, and the label is child 0.
- */
-
-  pupwidget = MakeMenu(popup_shell,&popup,
-					 (caddr_t) man_globals);
-/* Boy this is ugly, but I can't think of a better method. */
-
-  *section =Child(pupwidget, 1);
-  man_globals->put_up_directory = Child(pupwidget, 2);
-  man_globals->put_up_manpage = Child(pupwidget, 3);
-  man_globals->help_button = Child(pupwidget, 4);
-  *search = Child(pupwidget, 5);
-  man_globals->both_shown_button = Child(pupwidget, 6);
-
-/* Pop down when you leave the menu window. */
-
-  XtAddEventHandler(popup_shell, (Cardinal) LeaveWindowMask,
-		    FALSE, PopDown, NULL);
-  XtManageChild((Widget) pupwidget); /* Manage it. */
-
-/*
- * Make all children of the button box that contains the menu the same length
- * as the longest child.
- */
-
-  MakeLong((Widget) pupwidget);
-
-  XtRealizeWidget(popup_shell);	/* Realize it and change its cursor. */
-  AddCursor(popup_shell,resources.cursors.top);
 }
 
-/*	Function Name: MakeDirPopUpWidget
- *	Description: Creates the pop up menu for Xman.
- *	Arguments: man_globals - the manpage psuedo globals file.
- *                 widget - any widget
- *	Returns: the parent widget of the popup menu that is created.
+
+/*      Function Name: CreateSectionMenu
+ *      Description: Create the Section menu.
+ *      Arguments: man_globals - the manual page globals.
+ *                 parent - the button that activates the menu.
+ *      Returns: none.
  */
 
-/* The method used for creating all these popup menus is very similar
- * to that used for the top level buttons see the functions: MakeTopMenuWidget
- * and MakeMenu for details.
- */
-
-void
-MakeDirPopUpWidget(man_globals,widget)
+static void
+CreateSectionMenu(man_globals, parent)
 ManpageGlobals * man_globals;
-Widget widget;
+Widget parent;
 {
-  Menu popup;			/* The menu structure. */
-  Widget popup_shell;		/* the pop up widget's shell. */
-  Widget pupwidget;		/* The popup menu widget. */
-  Arg args[1];			/* The argument list. */
-  int i;			/* A counter. */
-  Cardinal num_args = 0;	/* The number of arguments. */
+  Widget menu;
+  int i;
+  MenuStruct * menu_struct;
 
-  popup_shell = XtCreatePopupShell( SPOPUPNAME, overrideShellWidgetClass,
-				   widget, NULL, (Cardinal) 0);
-  XtSetArg(args[num_args],XtNjustify,XtJustifyLeft); 
-  num_args++;
+  menu = XtCreatePopupShell(SECTION_MENU, simpleMenuWidgetClass, parent,
+			    NULL, (Cardinal) 0);
 
-  popup.number = sections;
-  popup.name = "Manual Sections";
-  popup.label_args = NULL;
-  popup.label_num = (Cardinal) 0;
-  popup.box_args = NULL;
-  popup.box_num = (Cardinal) 0;
-  popup.button_args = args;
-  popup.button_num = num_args;
-  popup.buttons = (Button *) XtCalloc( (Cardinal) sections, 
-				      (Cardinal) sizeof(Button) );
-  popup.callback = DirPopUpCallback;
-
-  for ( i = 0 ; i < sections; i ++)
-    popup.buttons[i].name = manual[i].blabel;
-
-  pupwidget = MakeMenu(popup_shell,&popup, (caddr_t) man_globals);
-  XtAddEventHandler(popup_shell, (Cardinal) LeaveWindowMask,
-		    FALSE, PopDown, NULL);
-  XtManageChild(pupwidget);
-  (void) MakeLong(pupwidget);
-  XtRealizeWidget(popup_shell);
-  AddCursor(popup_shell,resources.cursors.top);
-  XtFree( (char *) popup.buttons);
+  for (i = 0 ; i < sections ; i ++) {
+    XawSimpleMenuAddEntry(menu, manual[i].blabel, NULL, (Cardinal) 0);
+    menu_struct = (MenuStruct *) XtMalloc(sizeof(MenuStruct));
+    menu_struct->data = (caddr_t) man_globals;
+    menu_struct->number = i;
+    XawSimpleMenuAddCallback(menu, manual[i].blabel, DirPopupCallback, 
+			     (caddr_t) menu_struct);
+    XtAddCallback(menu, XtNdestroyCallback, 
+		  MenuDestroy, (caddr_t) menu_struct);
+  }
 }
 
 /*	Function Name: CreateManpageName
@@ -552,7 +466,7 @@ Widget widget;
 /*
  * If the filename is foo.3     - Create an entry of the form:  foo
  * If the filename is foo.3X11 
- * or foo.cX11.stuff            - Create an entry of the form:  foo(X11)
+ * or foo.3X11.stuff            - Create an entry of the form:  foo(X11)
  */
 
 char *
@@ -591,9 +505,8 @@ CreateList(section)
   char ** ret_list, **current;
   int count;
 
-  ret_list = (char **) malloc((manual[section].nentries + 1)*sizeof (char *));
-  if (ret_list == NULL)
-    PrintError("Could not allocate space for a directory list.");
+  ret_list = (char **) XtMalloc( (manual[section].nentries + 1) * 
+				   sizeof (char *));
 
   for (current = ret_list, count = 0 ; count < manual[section].nentries ;
        count++, current++)
@@ -632,8 +545,6 @@ int section;
   num_args = 0;
   XtSetArg(arglist[num_args], XtNlist, CreateList(section));
   num_args++;
-  XtSetArg(arglist[num_args], XtNborderWidth, 0);
-  num_args++;
   XtSetArg(arglist[num_args], XtNfont, resources.fonts.directory);
   num_args++;
   
@@ -642,102 +553,167 @@ int section;
   
   XtAddCallback(*dir_disp, XtNcallback,
 		DirectoryHandler, (caddr_t) man_globals);
-  XtAddEventHandler(*dir_disp, (Cardinal) ButtonPressMask | ButtonReleaseMask, 
-		    FALSE, GotoManpage ,(caddr_t) man_globals);
 }
 
 /*	Function Name: MakeSaveWidgets.
  *	Description: This functions creates two popup widgets, the please 
  *                   standby widget and the would you like to save widget.
  *	Arguments: man_globals - the psuedo globals structure for each man page
- *                 standby_parent - the parent for the standby widget.
- *                 save_parent - the parent for the save widget.
+ *                 parent - the parent for both popups.
  *	Returns: none.
  */
 
 void
-MakeSaveWidgets(man_globals, standby_parent, save_parent)
+MakeSaveWidgets(man_globals, parent)
 ManpageGlobals *man_globals;
-Widget standby_parent,save_parent;
+Widget parent;
 {
-  Widget box, shell, label, button; /* misc. widgets. */
-  Arg arglist[10];		/* The arglist. */
-  Cardinal num_args;		/* the number of args. */
-  Dimension form_width;		/* The width of the form widget. */
+  Widget shell, dialog; /* misc. widgets. */
   
 /* make the please stand by popup widget. */
 
-  num_args = 0;
   shell = XtCreatePopupShell( "pleaseStandBy", transientShellWidgetClass,
-			      standby_parent, arglist, num_args);
+			      parent, NULL, (Cardinal) 0);
 
-  XtSetArg(arglist[num_args], XtNborderWidth, 0);
-  num_args++; 
-  XtSetArg(arglist[num_args], XtNlabel, 
-	   "Formatting Manual Page, Please Stand By...");
-  num_args++; 
-  man_globals->standby = XtCreateManagedWidget("label",
-					       labelWidgetClass,shell,
-					       arglist,num_args);
-
+  man_globals->standby = XtCreateManagedWidget("label", labelWidgetClass, 
+					       shell, NULL, (Cardinal) 0);
   XtRealizeWidget(shell);
   AddCursor(shell,resources.cursors.top);
 
-  num_args = 0;
-  shell = XtCreatePopupShell("likeToSave",transientShellWidgetClass,
-			     save_parent,arglist,num_args);
+  man_globals->save = XtCreatePopupShell("likeToSave",
+					 transientShellWidgetClass,
+					 parent, NULL, (Cardinal) 0);
 
-  box = XtCreateWidget("likeToSave",formWidgetClass,shell,
-		       arglist,num_args);
+  dialog = XtCreateManagedWidget("dialog", dialogWidgetClass, 
+				 man_globals->save, NULL, (Cardinal) 0);
 
-  num_args = 0;
-  XtSetArg(arglist[num_args], XtNborderWidth, 0);
-  num_args++;
+  XtDialogAddButton(dialog, FILE_SAVE, NULL, NULL);
+  XtDialogAddButton(dialog, CANCEL_FILE_SAVE, NULL, NULL);
 
-  XtSetArg(arglist[num_args], XtNlabel, 
-	   "Would you like to save this formatted manual page?");
-  num_args++;
-  label = XtCreateManagedWidget("label", labelWidgetClass, box, 
-				arglist, num_args);
+  XtRealizeWidget(man_globals->save);
+  AddCursor(man_globals->save, resources.cursors.top);
+}
 
-/* Find out what the width of the form is. */
-
-  num_args = 0;
-  XtSetArg(arglist[num_args], XtNwidth, &form_width);
-  num_args++;
-
-  XtGetValues(box,arglist,num_args); 
-
-  form_width /= 2;
-
-  num_args = 0; 
-  XtSetArg(arglist[num_args], XtNwidth, form_width);
-  num_args++;
-  XtSetArg(arglist[num_args], XtNfromVert, label);
-  num_args++;
-
-/* 
- * We are constraining the width of these guys so be careful in setting the 
- * values of FILE_SAVE and CANCEL_FILE_SAVE.
+/*      Function Name: FormUpWidgets
+ *      Description: Sizes widgets to look nice.
+ *      Arguments: parent - the common parent of all the widgets.
+ *                 full_size - array of widget names that will he full size.
+ *                 half_size - array of widget names that will he half size.
+ *      Returns: none
  */
 
-  button = XtCreateManagedWidget(FILE_SAVE,commandWidgetClass,box,
-				 arglist,num_args);
-  XtAddCallback(button, XtNcallback, SaveCallback, (caddr_t) man_globals);
+void
+FormUpWidgets(parent, full_size, half_size)
+Widget parent;
+char ** full_size, ** half_size;
+{
+  static Widget * ConvertNamesToWidgets();
+  Widget * full_widgets, * half_widgets, *temp, long_widget;
+  Dimension longest, length, b_width;
+  int interior_dist;
+  Arg arglist[2];
+    
+  full_widgets = ConvertNamesToWidgets(parent, full_size);
+  half_widgets = ConvertNamesToWidgets(parent, half_size);
+  
+  long_widget = NULL;
+  longest = 0;
+  XtSetArg(arglist[0], XtNwidth, &length);
+  XtSetArg(arglist[1], XtNborderWidth, &b_width);
 
-  num_args = 0;
-  XtSetArg(arglist[num_args], XtNwidth, form_width);
-  num_args++;
-  XtSetArg(arglist[num_args], XtNfromVert, label);
-  num_args++;
-  XtSetArg(arglist[num_args], XtNfromHoriz, button);
-  num_args++;
- 
-  button =  XtCreateManagedWidget(CANCEL_FILE_SAVE,commandWidgetClass,box,
-			 arglist,num_args);
-  XtAddCallback(button, XtNcallback, SaveCallback, (caddr_t) man_globals);
+/*
+ * Find Longest widget.
+ */
 
-  XtManageChild(box);
-  XtRealizeWidget(shell);
-  AddCursor(shell,resources.cursors.top);
+  for ( temp = full_widgets ; *temp != (Widget) NULL ; temp++) {
+    XtGetValues(*temp, arglist, (Cardinal) 2);
+    length += 2 * b_width;
+    if (length > longest) {
+      longest = length;
+      long_widget = *temp;
+    }
+  }
+
+  if (long_widget == (Widget) NULL) {          /* Make sure we found one. */
+    PrintWarning(GetGlobals(parent), 
+		 "Could not find longest widget, aborting...");
+    XtFree(full_widgets);
+    XtFree(half_widgets);
+    return;
+  }
+
+/*
+ * Set all other full_widgets to this length.
+ */
+
+  for ( temp = full_widgets ; *temp != (Widget) NULL ; temp++ )
+    if ( long_widget != *temp) {
+      Dimension width, border_width;
+
+      XtSetArg(arglist[0], XtNborderWidth, &border_width);
+      XtGetValues(*temp, arglist, (Cardinal) 1);
+    
+      width = longest - 2 * border_width;
+      XtSetArg(arglist[0], XtNwidth, width);
+      XtSetValues(*temp, arglist, (Cardinal) 1);
+    }
+
+/*
+ * Set all the half widgets to the right length.
+ */
+
+  XtSetArg(arglist[0], XtNdefaultDistance, &interior_dist);
+  XtGetValues(parent, arglist, (Cardinal) 1);
+  
+  for ( temp = half_widgets ; *temp != (Widget) NULL ; temp++) {
+    Dimension width, border_width;
+
+    XtSetArg(arglist[0], XtNborderWidth, &border_width);
+    XtGetValues(*temp, arglist, (Cardinal) 1);
+    
+    width = (longest - interior_dist)/2 - 2 * border_width;
+    XtSetArg(arglist[0], XtNwidth, width);
+    XtSetValues(*temp, arglist, (Cardinal) 1);
+  }
+
+  XtFree(full_widgets);
+  XtFree(half_widgets);
 }
+  
+/*      Function Name: ConvertNamesToWidgets
+ *      Description: Convers a list of names into a list of widgets.
+ *      Arguments: parent - the common parent of these widgets.
+ *                 names - an array of widget names.
+ *      Returns: an array of widget id's.
+ */
+
+static Widget *
+ConvertNamesToWidgets(parent, names)
+Widget parent;
+char ** names;
+{
+  char ** temp;
+  Widget * ids, * temp_ids;
+  int count;
+
+  for (count = 0, temp = names; *temp != NULL ; count++, temp++);
+
+  ids = (Widget *) XtMalloc( (count + 1) * sizeof(Widget));
+
+  
+  for ( temp_ids = ids; *names != NULL ; names++, temp_ids++) {
+    *temp_ids = XtNameToWidget(parent, *names);
+    if (*temp_ids == NULL) {
+      char error_buf[BUFSIZ];
+    
+      sprintf(error_buf, "Could not find widget named '%s'", *names);
+      PrintError(error_buf);
+      XtFree(ids);
+      return(NULL);
+    }
+  }
+  
+  *temp_ids = (Widget) NULL;
+  return(ids);
+}
+    

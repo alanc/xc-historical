@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: defs.h,v 1.11 89/02/15 20:42:51 kit Exp $
+ * $XConsortium: defs.h,v 1.12 89/03/11 09:49:27 rws Exp $
  * $Athena: defs.h,v 4.8 89/01/06 15:56:19 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -45,15 +45,35 @@
 #define DIRECTORY_NORMAL "fixed"
 #endif ATHENA
 
+#define OPTION_MENU "optionMenu" /* Name of the Option Menu. */
+#define SECTION_MENU "sectionMenu" /* Name of the Section Menu. */
+
+#define HELP_BUTTON "helpButton" /* Name of top help button */
+#define QUIT_BUTTON "quitButton" /* Name of top quit button */
+#define MANPAGE_BUTTON "manpageButton" /* Name of top manpage button */
+
 #define TOPBOXNAME  "topBox"	/* Name of the Top Box. */
 #define MANNAME "manualBrowser"	/* name for each manual page widget. */
-#define POPUPNAME "xmanCommands" /* The name of the popup menu */
-#define SPOPUPNAME "xmanSections" /* The name of the section popup name. */
-#define SEARCHNAME "xmanSearch" /* The name for the search widget. */
+#define SEARCHNAME "search" /* The name for the search widget. */
 #define HELPNAME  "help"	/* The name of the help widget. */
 #define DIRECTORY_NAME "directory" /* name of the directory widget. */
-#define MANUALPAGE "manualpage"	/* name of the Scrollbyline widget that
+#define MANUALPAGE "manualPage"	/* name of the Scrollbyline widget that
 				 contains the man page. */
+#define DIALOG         "dialog"
+
+/* Names of the menu buttons */
+
+#define NUM_OPTIONS 9		/* Number of menu options. */
+
+#define DIRECTORY      "displayDirectory"
+#define MANPAGE        "displayManualPage"
+#define HELP           "help"
+#define SEARCH         "search"
+#define BOTH_SCREENS   "showBothScreens"
+#define REMOVE_MANPAGE "removeThisManpage"
+#define OPEN_MANPAGE   "openNewManpage"
+#define SHOW_VERSION   "showVersion"
+#define QUIT           "quit"
 
 /* definitions of string to use for show both and show one. */
 
@@ -65,29 +85,33 @@
  * MANUALSEARCH longer APROPOSSEARCH, see search.c for details.
  */
 
-#define MANUALSEARCH "Manual Page"
-#define APROPOSSEARCH "Apropos"
+#define MANUALSEARCH "manualPage"
+#define APROPOSSEARCH "apropos"
+#define CANCEL "cancel"
 
 #define MANUAL 0
 #define APROPOS 1
 
-#define INIT_SEARCH_STRING "xman"     /* Intial search string. */
-#define SEARCH_STRING_LENGTH 30
 #define NO_SECTION_DEFAULTS ("no default sections")
+
 /*
  * The command filters for the manual and apropos searches.
  */
 
 #define APROPOSFILTER ("man -M %s -k %s | pr -h Apropos > %s")
 #define MANUALCOMMAND "man -M"
-#ifdef macII
-#define FORMAT "pcat"		              /* The format command. */
-#else
-#define FORMAT "| neqn | nroff -man"          /* The format command. */
-#endif
-#define TBL "tbl"
 
-#define CANCEL "Cancel"
+#if defined( macII )
+#  define FORMAT "pcat"		              /* The format command. */
+#else
+#  if defined( ultrix )
+#    define FORMAT "| nroff -man"             /* The format command. */
+#  else
+#    define FORMAT "| neqn | nroff -man"      /* The format command. */
+#  endif
+#endif
+
+#define TBL "tbl"
 
 #define DEFAULT_WIDTH 500	/* The default width of xman. */
 #define SECTALLOC  8		/* The number of entries allocated
@@ -106,7 +130,12 @@
 #define LCAT 3
 #define CAT "cat"
 
+#ifdef pegasus
+#define SEARCHDIR  CAT
+#else
 #define SEARCHDIR  MAN
+#endif
+
 #define LSEARCHDIR LMAN		/* The directories to search we are making 
 				 the assumption that the manual directories 
 				 are more complete that the cat directories. 
@@ -125,8 +154,8 @@
 #define INDENT 15
 #define TYP20STR "MMMMMMMMMMMMMMMMMMMM"
 
-#define FILE_SAVE "Yes"
-#define CANCEL_FILE_SAVE "No"
+#define FILE_SAVE "yes"
+#define CANCEL_FILE_SAVE "no"
 #define MANTEMP "/tmp/xmanXXXXXX"
 
 /*
@@ -136,72 +165,5 @@
 #define streq(a, b)        ( strcmp((a), (b)) == 0 )
 
 /* 
- * function defintions 
+ * Function definitions moved to man.h
  */
-
-/*
- * This is easier than trying to find all calls to StrAlloc().
- */
-
-#define StrAlloc(ptr) XtNewString(ptr)
-
-/* Standard library function definitions. */
-
-char * mktemp(), * getenv(), * malloc(), * realloc();
-void exit();
-
-/* Toolkit standard definitions. */
-
-void XtResizeWidget(), XtMoveWidget();
-
-/* buttons.c */
-
-void MakeTopMenuWidget(), CreateManpage();
-void CreateManpageWidget(), MakeSaveWidgets(), WriteLabel();
-void MakeTopPopUpWidget(),MakeDirPopUpWidget(), MakeDirectoryBox();
-char * CreateManpageName();
-
-/* handler.c */
-
-void DirectoryHandler(),SearchCallback(),PopUpMenu(),SaveCallback();
-void TopCallback(),TopPopUpCallback(),DirPopUpCallback();
-void PopDown(),ManpageButtonPress(), GotoManpage();
-
-/* help.c */
-
-void PopupHelp();
-Boolean MakeHelpWidget(), OpenHelpfile();
-
-/* main.c */
-
-void main(),Quit();
-
-/* man.c */
-
-int Man();
-
-/* menu.c is self contained */
-
-/* misc.c */
-
-void PrintError(),PrintWarning(),KillManpage(), ChangeLabel();
-void RemovePixmaps(),PositionCenter(),AddCursor(),ParseEntry();
-FILE *FindFilename(),*Format(), *OpenEntryFile();
-
-/* pages.c */
-
-void InitManpage();
-void PrintManpage();
-Boolean Boldify();
-
-/* search */
-
-void MakeSearchWidget();
-FILE * DoSearch();
-
-/* tkfunctions.c */
-
-int Width(), Height(), BorderWidth();
-Widget PopupChild(), Child();
-char * Name();
-Boolean MakeLong();

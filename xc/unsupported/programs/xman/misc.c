@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.10 89/02/15 19:25:33 kit Exp $
+ * $XConsortium: misc.c,v 1.11 89/02/16 13:31:21 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -85,7 +85,7 @@ char * entry;
 
   temp = CreateManpageName(entry);
   sprintf(man_globals->manpage_title, "The current manual page is: %s.", temp);
-  free(temp);
+  XtFree(temp);
   
   ParseEntry(entry, path, section, page);
   sprintf(man_globals->filename, "%s/%s%c/%s", path, CAT, section[LCAT], page);
@@ -131,7 +131,7 @@ char * entry;
  * Replace with XtPopupSync when this becomes avaliable. 
  */
 
-  PopUpMenu(w,NULL,NULL);
+  Popup(XtParent(man_globals->standby), XtGrabExclusive);
   while ( !XCheckTypedWindowEvent(XtDisplay(w), 
 				 XtWindow(man_globals->standby), 
 				 Expose, &event) );
@@ -185,10 +185,8 @@ char * entry;
     x = (Position) Width(man_globals->manpagewidgets.manpage)/2;
     y = (Position) Height(man_globals->manpagewidgets.manpage)/2;
     XtTranslateCoords(manpage, x, y, &x, &y);
-    PositionCenter( PopupChild(man_globals->manpagewidgets.manpage, 0),
-		    (int) x, (int) y, 0, 0, 0, 0);
-    XtPopup( PopupChild(man_globals->manpagewidgets.manpage, 0),
-	    XtGrabExclusive);
+    PositionCenter( man_globals->save, (int) x, (int) y, 0, 0, 0, 0);
+    XtPopup( man_globals->save, XtGrabExclusive);
   }
   else {
 
@@ -201,31 +199,6 @@ char * entry;
   }
     
   return(file);
-}
-
-/*	Function Name: KillManpage
- *	Description: This function kills off a manpage display and cleans up
- *                   after it.
- *	Arguments: man_globals - the psuedo global structure.
- *	Returns: none.
- */
-
-void
-KillManpage(man_globals)
-ManpageGlobals * man_globals;
-{
-  if (man_globals->This_Manpage != help_widget) {
-    XtDestroyWidget(man_globals->This_Manpage);
-
-    XtFree( (char *) man_globals->section_name);
-    XtFree( (char *) man_globals->manpagewidgets.box);
-    XtFree( (char *) man_globals);
-
-    man_pages_shown--;
-  }
-  else
-    XtPopdown(help_widget);
-    
 }
 
 /*	Function Name: AddCursor
@@ -374,4 +347,76 @@ char *entry, *path, *page, *sect;
 
   if (path != NULL)
     strcpy(path, temp);
+}
+
+/*      Function Name: GetGlobals
+ *      Description: Gets the psuedo globals associated with the
+ *                   manpage associated with this widget.
+ *      Arguments: w - a widget in the manpage.
+ *      Returns: the psuedo globals.
+ *      Notes: initial_widget is a globals variable.
+ *             manglobals_context is a global variable.
+ */
+
+ManpageGlobals *
+GetGlobals(w)
+Widget w;
+{
+  Widget temp;
+  caddr_t data;
+
+  while ( (temp = XtParent(w)) != initial_widget && (temp != NULL))
+    w = temp;
+
+  if (temp == NULL) 
+    XtAppError(XtWidgetToApplicationContext(w), 
+	       "Xman: Could not locate widget in tree, exiting");
+
+  if (XFindContext(XtDisplay(w), XtWindow(w),
+		   manglobals_context, &data) != XCSUCCESS)
+    XtAppError(XtWidgetToApplicationContext(w), 
+	       "Xman: Could not find global data, exiting");
+
+  return( (ManpageGlobals *) data);
+}
+  
+/*      Function Name: SaveGlobals
+ *      Description: Saves the psuedo globals on the widget passed
+ *                   to this function, although GetGlobals assumes that
+ *                   the data is associated with the popup child of topBox.
+ *      Arguments: w - the widget to associate the data with.
+ *                 globals - data to associate with this widget.
+ *      Returns: none.
+ *      Notes: WIDGET MUST BE REALIZED.
+ *             manglobals_context is a global variable.
+ */
+
+void
+SaveGlobals(w, globals)
+Widget w;
+ManpageGlobals * globals;
+{
+  if (XSaveContext(XtDisplay(w), XtWindow(w), manglobals_context,
+		   (caddr_t) globals) != XCSUCCESS)
+    XtAppError(XtWidgetToApplicationContext(w), 
+	       "Xman: Could not save global data, are you out of memory?");
+}
+
+/*      Function Name: RemoveGlobals
+ *      Description: Removes the psuedo globals from the widget passed
+ *                   to this function.
+ *      Arguments: w - the widget to remove the data from.
+ *      Returns: none.
+ *      Notes: WIDGET MUST BE REALIZED.
+ *             manglobals_context is a global variable.
+ */
+
+void
+RemoveGlobals(w)
+Widget w;
+{
+  if (XDeleteContext(XtDisplay(w), XtWindow(w), 
+		     manglobals_context) != XCSUCCESS)
+    XtAppError(XtWidgetToApplicationContext(w), 
+	       "Xman: Could not remove global data?");
 }

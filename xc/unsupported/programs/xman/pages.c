@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: pages.c,v 1.4 89/02/15 16:47:50 kit Exp $
+ * $XConsortium: pages.c,v 1.5 89/02/16 12:50:49 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -67,7 +67,7 @@
  *	Returns: none.
  */
 
-void
+Boolean
 InitManpage(man_globals,widget,file)
 ManpageGlobals * man_globals;
 Widget widget;
@@ -86,11 +86,6 @@ FILE * file;
   
   memory_struct = man_globals->memory_struct;
 
-  if ( memory_struct->top_line != NULL) {
-    free(memory_struct->top_line);
-    free(memory_struct->top_of_page);
-  }
-
 /*
  * Get file size and allocate a chunk of memory for the file to be 
  * copied into.
@@ -99,20 +94,20 @@ FILE * file;
   if (fstat(fileno(file), &fileinfo))
     PrintError("Failure in fstat");
 
-  page = (char *) malloc(fileinfo.st_size + 1);	/* leave space for the NULL */
-  if (page == NULL)
-    PrintError("Could not allocate space for new manpage");
-  top_of_page = page;
-
 /* 
  * Allocate a space for a list of pointer to the beginning of each line.
  */
 
-  nlines = fileinfo.st_size/CHAR_PER_LINE;
-  line_pointer = (char**) malloc( nlines * sizeof(char *) );
-  if (line_pointer == NULL)
-    PrintError("Could not allocate space for new manpage");
+  if ( (nlines = fileinfo.st_size/CHAR_PER_LINE) == 0) {
+    PrintWarning(man_globals, "This file is empty, aborting display.");
+    return(FALSE);
+  }
+
+  line_pointer = (char**) XtMalloc( nlines * sizeof(char *) );
   top_line = line_pointer;
+
+  page = XtMalloc(fileinfo.st_size + 1); /* leave space for the NULL */
+  top_of_page = page;
 
   *line_pointer++ = page;
 
@@ -155,6 +150,15 @@ FILE * file;
   top_line = (char **) realloc(top_line,nlines * sizeof(char *));
 
 /*
+ * Free old memory pointers. 
+ */
+
+  if ( memory_struct->top_line != NULL) {
+    XtFree(memory_struct->top_line);
+    XtFree(memory_struct->top_of_page);
+  }
+
+/*
  * Store the memory pointers into a structure that will be returned with
  * the widget callback.
  */
@@ -167,6 +171,7 @@ FILE * file;
   num_args++;
     
   XtSetValues(widget,arglist,num_args);
+  return(TRUE);
 }
 
 

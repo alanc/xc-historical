@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.c,v 1.6 89/02/15 13:50:40 kit Exp $
+ * $XConsortium: man.c,v 1.7 89/02/15 16:06:44 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -25,7 +25,9 @@
 
 #include "globals.h"
 
+#ifdef DEBUG
 static char error_buf[BUFSIZ];		/* The buffer for error messages. */
+#endif /* DEBUG */
 
 static void SortList(), ReadMandescFile(), SortAndRemove(), InitManual();
 static void AddToCurrentSection(), AddNewSection(), AddStandardSections();
@@ -78,9 +80,7 @@ Man()
 
   sect = 0;
   num_alloced = SECTALLOC;
-  manual = (Manual *) malloc( sizeof(Manual) * num_alloced );
-  if (manual == NULL) 
-    PrintError("Could not allocate memory for manual sections.");
+  manual = (Manual *) XtMalloc( sizeof(Manual) * num_alloced );
   InitManual( manual + sect, list->label );
   current_label = NULL;
   while ( list != NULL ) {
@@ -90,7 +90,7 @@ Man()
       AddToCurrentSection( manual + sect, list->directory);
     else {
       if (manual[sect].nentries == 0) {	/* empty section, re-use it. */
-	free(manual[sect].blabel);
+	XtFree(manual[sect].blabel);
 	manual[sect].blabel = list->label;
       }
       else {
@@ -109,7 +109,7 @@ Man()
     current_label = list->label; 
     old_list = list;
     list = list->next;
-    free(old_list);		/* free what you allocate. */
+    XtFree(old_list);		/* free what you allocate. */
   }
   if (manual[sect].nentries != 0)
     sect++;			/* don't forget that last section. */
@@ -299,8 +299,7 @@ Boolean standard;
 
 /* Allocate a new list element */
 
-  if ( (local_list = (SectionList *) malloc(sizeof(SectionList)) ) == NULL)
-    PrintError("Could not allocate Memory in AddNewSection.");
+  local_list = (SectionList *) XtMalloc(sizeof(SectionList));
 
   if (*list != NULL) {
     for ( end = *list ; end->next != NULL ; end = end->next );
@@ -352,10 +351,8 @@ char * path;
       continue;
     if( nentries >= nalloc ) {
       nalloc = local_manual->nalloc += ENTRYALLOC;
-      local_manual->entries = (char **) realloc( (char *)local_manual->entries,
+      local_manual->entries =(char **) XtRealloc((char *)local_manual->entries,
 				local_manual->nalloc * sizeof(char *));
-      if(local_manual->entries == NULL)
-        PrintError("Could not allocate memory while building manpage list.");
     }
     sprintf(full_name, "%s/%s", path, name);
     local_manual->entries[nentries++] = StrAlloc(full_name);
@@ -452,9 +449,7 @@ char * label;
 {
   bzero( l_manual, sizeof(Manual) );	        /* clear it. */
   l_manual->blabel = label;	                /* set label. */
-  l_manual->entries = (char **) malloc( sizeof(char *) * ENTRYALLOC);
-  if (l_manual->entries == NULL)
-	PrintError("Could not allocate memory in InitManual().");
+  l_manual->entries = (char **) XtMalloc( sizeof(char *) * ENTRYALLOC);
   l_manual->nalloc = ENTRYALLOC;
 }
   

@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: search.c,v 1.5 89/02/15 16:06:53 kit Exp $
+ * $XConsortium: search.c,v 1.6 89/02/16 18:18:29 kit Exp $
  * $oHeader: search.c,v 4.0 88/08/31 22:13:19 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -28,10 +28,6 @@
 
 /* Map <CR> and control-M to goto begining of file. */
 
-char search_trans_table[] =
-"<Key>0xff0d:   beginning-of-file() \n\
-Ctrl<Key>m:    beginning-of-file()";
-
 #define SEARCHARGS 10
 
 FILE * DoManualSearch();
@@ -45,130 +41,82 @@ static int BEntrySearch();
  */
 
 void
-MakeSearchWidget(man_globals,parent)
+MakeSearchWidget(man_globals, parent)
 ManpageGlobals * man_globals;
 Widget parent;
 {
-  Widget label,box,command,text;	/* the widgets for various items. */
-  Widget popup_shell;		/* the pop up widget's shell. */
-  Arg arglist[SEARCHARGS];	/* The arglist and number of args. */
-  Cardinal num_args;
-  Dimension width, height;	/* The width of the cancel and text button. */
-  Dimension h_space;
-  XtGeometryResult answer;	/* the answer for the resize request. */
-  XtTranslations translations;	/* The translation table to add to the text
-				   widget.*/
+  Widget dialog, command, text, cancel;
 
-  num_args = 0;
-  XtSetArg(arglist[num_args], XtNallowShellResize, TRUE);
-  num_args++;
+  man_globals->search_widget = XtCreatePopupShell(SEARCHNAME, 
+						  transientShellWidgetClass, 
+						  parent,
+						  NULL, (Cardinal) 0);  
 
-  popup_shell = XtCreatePopupShell(SEARCHNAME, transientShellWidgetClass, 
-				   parent, arglist, num_args);
-
-  box = XtCreateWidget("box",boxWidgetClass, popup_shell,NULL, (Cardinal) 0);
-
-  num_args = 0;
-  XtSetArg(arglist[num_args], XtNborderWidth, 0);
-  num_args++;
-
-  label = XtCreateWidget("Type string to search for",
-			 labelWidgetClass,box,arglist,num_args);
-  XtManageChild(label);
-
-  num_args = 0;
-
-  XtSetArg(arglist[num_args], XtNeditType, XttextEdit);
-  num_args++;
-
-  strcpy(man_globals->search_string, INIT_SEARCH_STRING);
-
-  XtSetArg(arglist[num_args], XtNstring, man_globals->search_string);
-  num_args++;
-
-/* length the user is allowed to make the search string. */
-
-  XtSetArg(arglist[num_args], XtNlength, SEARCH_STRING_LENGTH);
-  num_args++;
-  XtSetArg(arglist[num_args], XtNcursor, resources.cursors.search_entry);
-  num_args++;
-
-  text = XtCreateWidget("textWidgetSearch",asciiStringWidgetClass,
-			box, arglist, num_args);
-  XtManageChild(text);
-  translations = XtParseTranslationTable(search_trans_table);
-  XtOverrideTranslations(text, translations);
-
-  man_globals->text_widget = text;
-  XtSetKeyboardFocus(box, text);
-
-/* 
- * I am playing a few games here, Make sure that the button with the longest
- * name comes first, otherwise you may lose some text.
- */
-
-  num_args = 0;
-  command = XtCreateManagedWidget(MANUALSEARCH,commandWidgetClass,box,
-			   arglist, num_args);
-  XtAddCallback(command, XtNcallback, SearchCallback, (caddr_t) man_globals);
-
-  num_args = 0;
-  XtSetArg(arglist[num_args], XtNwidth, &width); 
-  num_args++;
-  XtGetValues(command,arglist,num_args);
-
-  num_args = 0;
-  XtSetArg(arglist[num_args], XtNwidth, width); 
-  num_args++;
-
-  command = XtCreateManagedWidget(APROPOSSEARCH,commandWidgetClass,box,
-			   arglist, num_args);
-  XtAddCallback(command, XtNcallback, SearchCallback, (caddr_t) man_globals);
   
-  XtSetArg(arglist[0], XtNhSpace, &h_space);
-  XtGetValues(box, arglist, (Cardinal) 1);
+  dialog = XtCreateManagedWidget(DIALOG, dialogWidgetClass,
+				 man_globals->search_widget, 
+				 NULL, (Cardinal) 0); 
+
+  if ( (text = XtNameToWidget(dialog, "value")) == (Widget) NULL)
+    PrintWarning(NULL, "Could not find text widget in MakeSearchWidget.");
+  else
+    XtSetKeyboardFocus(dialog, text);
+
+  XtDialogAddButton(dialog, MANUALSEARCH, NULL, NULL);
+  XtDialogAddButton(dialog, APROPOSSEARCH, NULL, NULL);
+  XtDialogAddButton(dialog, CANCEL, NULL, NULL);
 
 /*
- * The width of the cancel button is 2 command buttons + 2 border_widths
- * + the h_space of the button. 
- */
- 
-  width = 2 * Width(command);
-  width += 2 * BorderWidth(command);
-  width += h_space;
-
-  num_args = 0;			
-  XtSetArg(arglist[num_args], XtNwidth, width); 
-  num_args++;
-
-  command = XtCreateManagedWidget(CANCEL, commandWidgetClass, box,
-				  arglist, num_args);
-  XtAddCallback(command, XtNcallback, SearchCallback, (caddr_t) man_globals);
-
-/* 
- * Make the text widget 1 line high.
- * 
- * NOTE: This assumes that the text widget uses the same font as the command 
- * widgets.
+ * This is a bit gross, but it get the cancel button underneath the 
+ * others, and forms them up to the right size..
  */
 
-  height = Height(command);
+  if ( ((command = XtNameToWidget(dialog, MANUALSEARCH)) == (Widget) NULL) ||
+       ((cancel = XtNameToWidget(dialog, CANCEL)) == (Widget) NULL) )
+    PrintWarning(NULL,
+		 "Could not find manual search widget in MakeSearchWidget.");
+  else {
+    Cardinal num_args = 0;
+    Arg arglist[2];
+    static char * half_size[] = {
+      MANUALSEARCH, APROPOSSEARCH, NULL
+    };
+    static char * full_size[] = {
+      "label", "value", CANCEL, NULL
+    };
 
-  answer = XtMakeResizeRequest(text, width, height, &width, &height);
-    
-  switch(answer) {
-  case XtGeometryYes:
-  case XtGeometryNo:
-    break;
-  case XtGeometryAlmost:
-    (void) XtMakeResizeRequest(text, width, height, &width, &height);
+    XtSetArg(arglist[num_args], XtNfromVert, command); num_args++;
+    XtSetArg(arglist[num_args], XtNfromHoriz, NULL); num_args++;
+    XtSetValues(cancel, arglist, num_args);
+    FormUpWidgets(dialog, full_size, half_size);
   }
 
-  XtManageChild(box);
-  XtRealizeWidget(popup_shell);
-  AddCursor(popup_shell,resources.cursors.search_entry);
+  XtRealizeWidget(man_globals->search_widget);
+  AddCursor(man_globals->search_widget, resources.cursors.search_entry);
 }
 
+/*      Function Name: SearchString
+ *      Description: Returns the search string.
+ *      Arguments: man_globals - the globals.
+ *      Returns: the search string.
+ */
+
+static char *
+SearchString(man_globals)
+ManpageGlobals * man_globals;
+{
+  Widget dialog;
+
+  dialog = XtNameToWidget(man_globals->search_widget, DIALOG);
+  if (dialog != NULL) 
+    return(XtDialogGetValueString(dialog));
+
+  PrintWarning(man_globals,
+	      "Could not get the search string, no search will be preformed.");
+  return(NULL);
+}
+
+  
 /*	Function Name: DoSearch
  *	Description: This function performs a search for a man page or apropos
  *                   search upon search string.
@@ -180,10 +128,11 @@ Widget parent;
 #define LOOKLINES 6
 
 /* 
- * All I do here is to check the string to be sure that we like it, and
- * Then exec the commend via a system() call, the information for a manual
- * search is all in memory, but I was too lazy to write a function to look
- * for it.  If you want one, please write it and send it to me.
+ * Manual searches look through the list of manual pages for the right one
+ * with a binary search.
+ *
+ * Apropos searches still exec man -k.
+ *
  * If nothing is found then I send a warning message to the user, and do
  * nothing.
  */
@@ -196,14 +145,16 @@ int type;
   char cmdbuf[BUFSIZ],*mantmp,*manpath;
   char tmp[BUFSIZ],path[BUFSIZ];
   char string_buf[BUFSIZ], cmp_str[BUFSIZ], error_buf[BUFSIZ],label[BUFSIZ];
+  char * search_string = SearchString(man_globals);
   FILE * file;
-  int i, count;
+  int count;
   Boolean flag;
+
+  if (search_string == NULL) return(NULL);
 
   /* If the string is empty or starts with a space then do not search */
 
-  if ( streq(man_globals->search_string,"") || 
-      (man_globals->search_string[0] == ' ')) {
+  if ( streq(search_string,"") || (search_string[0] == ' ')) {
     PrintWarning(man_globals, "You want me to search for what???");
     return(NULL);
   }
@@ -220,9 +171,8 @@ int type;
     strcpy(path,manpath);
 
   if (type == APROPOS) {
-    sprintf(cmdbuf, APROPOSFILTER, path, man_globals->search_string, mantmp);
-    sprintf(label,"Results of apropos search on: %s",
-	    man_globals->search_string);
+    sprintf(cmdbuf, APROPOSFILTER, path, search_string, mantmp);
+    sprintf(label,"Results of apropos search on: %s", search_string);
 
     if(system(cmdbuf) != 0) {	/* execute search. */
       sprintf(error_buf,"Something went wrong trying to run %s\n",cmdbuf);
@@ -239,7 +189,7 @@ int type;
 
     unlink(mantmp);
 
-    sprintf(string_buf,"%s: nothing appropriate",man_globals->search_string);
+    sprintf(string_buf,"%s: nothing appropriate", search_string);
 
     /*
      * Check first LOOKLINES lines for "nothing appropriate".
@@ -247,7 +197,7 @@ int type;
   
     count = 0;
     flag = FALSE;
-    while ( fgets(cmp_str, BUFSIZ, file) != NULL && count < LOOKLINES ) {
+    while ( (fgets(cmp_str, BUFSIZ, file) != NULL) && (count < LOOKLINES) ) {
       if ( cmp_str[strlen(cmp_str) - 1] == '\n') /* strip off the '\n' */
 	  cmp_str[strlen(cmp_str) - 1] = '\0';
 
@@ -275,9 +225,9 @@ int type;
     fseek(file, 0L, 0);		/* reset file to point at top. */
   }
   else {			/* MANUAL SEACH */
-    file = DoManualSearch(man_globals);
+    file = DoManualSearch(man_globals, search_string);
     if (file == NULL) {
-      sprintf(string_buf,"No manual entry for %s.",man_globals->search_string);
+      sprintf(string_buf,"No manual entry for %s.", search_string);
       ChangeLabel(man_globals->label,string_buf);
       return(NULL);
     }
@@ -294,16 +244,15 @@ int type;
 #define NO_ENTRY -100
 
 FILE * 
-DoManualSearch(man_globals)
+DoManualSearch(man_globals, string)
 ManpageGlobals *man_globals;
+char * string;
 {
-  char *string;
   int e_num = NO_ENTRY;
   int i;
 
 /* search current section first. */
   
-  string = man_globals->search_string;
   i = man_globals->current_directory;
   e_num = BEntrySearch(string, manual[i].entries, manual[i].nentries);
 
@@ -312,14 +261,14 @@ ManpageGlobals *man_globals;
   if (e_num == NO_ENTRY) {
     i = 0;			/* At the exit of the loop i needs to
 				   be the one we used. */
-    while ( (i < sections) && (e_num == NO_ENTRY) ) {
+    while ( TRUE ) {
       if (i == man_globals->current_directory)
 	if (++i >= sections) break;
       e_num = BEntrySearch(string, manual[i].entries, manual[i].nentries);
-      i++;
+      if (e_num != NO_ENTRY) break;
+      if (++i >= sections) return(NULL);
     }
-    if (e_num == NO_ENTRY)
-      return(NULL);
+
 /*
  * Manual page found in some other section, unhighlight the current one.
  */

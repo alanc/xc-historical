@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: help.c,v 1.2 88/09/06 17:48:01 jim Exp $
+ * $XConsortium: help.c,v 1.3 89/01/06 18:42:03 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -55,22 +55,10 @@ MakeHelpWidget()
 
   XtManageChild( man_globals->manpagewidgets.manpage );
   XtRealizeWidget(  help_widget );
+  SaveGlobals( man_globals->This_Manpage, man_globals );
   AddCursor( help_widget, resources.cursors.manpage);
 
   return(TRUE);
-}
-
-/*	Function Name: PopupHelp
- *	Description: This function pops down the help widget.
- *	Arguments: none.
- *	Returns: none.
- */
-
-void
-PopupHelp()
-{
-  if (MakeHelpWidget())
-    XtPopup(help_widget,XtGrabNone);
 }
 
 /*	Function Name: OpenHelpfile
@@ -90,7 +78,14 @@ ManpageGlobals * man_globals;
 		 "Could not open help file, NO HELP WILL BE AVALIABLE.");
     return(FALSE);
   }
-  InitManpage(man_globals, man_globals->manpagewidgets.manpage, help_file_ptr);
+
+  if ( ! InitManpage(man_globals, 
+		     man_globals->manpagewidgets.manpage, help_file_ptr) ) {
+    PrintWarning(man_globals,
+		 "Help file is empty, NO HELP WILL BE AVALIABLE.");
+    return(FALSE);
+  }
+
   fclose(help_file_ptr);
   return(TRUE);
 }

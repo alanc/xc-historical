@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.h,v 1.5 89/02/15 18:26:19 kit Exp $
+ * $XConsortium: man.h,v 1.6 89/02/15 19:02:12 kit Exp $
  * $Athena: man.h,v 4.6 89/01/06 12:17:38 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -43,12 +43,15 @@
 #include <X11/AsciiText.h>
 #include <X11/Box.h>
 #include <X11/Command.h>
+#include <X11/Dialog.h>
 #include <X11/Label.h>
 #include <X11/List.h>
+#include <X11/MenuButton.h>
 #include <X11/Scroll.h>
 #include <X11/Shell.h>
 #include <X11/VPaned.h>
 #include <X11/Viewport.h>
+#include <X11/SimpleMenu.h>
 
 /* program specific header files. */
 
@@ -56,7 +59,6 @@
 
 #include "version.h"
 #include "defs.h"
-#include "menu.h"
 
 typedef void (*fcall)();	/* function pointer typedef */
 
@@ -82,6 +84,12 @@ typedef struct _ManPageWidgets {
 				   appear. */
     *box;			/* The boxes containing the sections. */
 } ManPageWidgets;
+
+typedef struct _MenuStruct {
+  caddr_t data;
+  int number;
+  XrmQuark quark;
+} MenuStruct;
 
 /*
  * The manual sections and entries
@@ -115,12 +123,11 @@ typedef struct _ManpageGlobals{
 				   the directory are to be shown.*/
   Widget label,			/* The label widget at the top of the page. */
     standby,			/* The please standby widget. */
-    both_shown_button,		/* The both_shown widget itself. */
+    save,			/* The "would you like to save?" widget. */
+    search_widget,		/* The search widget popup. */
     help_button,		/* The help button. */
-    put_up_manpage,		/* The button that puts up the manpage. */
-    put_up_directory,		/* The button that puts up the directory. */
+    option_menu,		/* The option menu. */
     text_widget;		/* text widget containing search string. */
-  char search_string[SEARCH_STRING_LENGTH];	/* The search string. */
   char manpage_title[80];	/* The label to use for the current manpage. */
   char filename[80];		/* the name of the file that we are
 				   currently looking at.*/
@@ -152,3 +159,79 @@ typedef struct _Xman_Resources {
 				   both_shown mode. */
   char * help_file;		/* The name of the help file. */
 } Xman_Resources;
+
+/************************************************************
+ *
+ * Function Defintions 
+ * 
+ ************************************************************/
+
+/*
+ * This is easier than trying to find all calls to StrAlloc().
+ */
+
+#define StrAlloc(ptr) XtNewString(ptr)
+
+/* Standard library function definitions. */
+
+char * mktemp(), * getenv(), * malloc(), * realloc();
+void exit();
+
+/* Toolkit standard definitions. */
+
+void XtResizeWidget(), XtMoveWidget();
+
+/* buttons.c */
+
+void MakeTopBox(), CreateManpage(), FormUpWidgets();
+void CreateManpageWidget(), MakeSaveWidgets(), WriteLabel();
+void MakeTopPopUpWidget(),MakeDirPopUpWidget(), MakeDirectoryBox();
+char * CreateManpageName();
+
+/* handler.c */
+
+void DirectoryHandler(), PopUpMenu(), SaveCallback(), OptionCallback();
+void Popup(),ManpageButtonPress(), GotoManpage(), DirPopupCallback();;
+
+/* Action Routines. */
+
+void GotoPage(), PopupHelp(), PopupSearch(), Quit(), SaveFormattedPage();
+void CreateNewManpage(), RemoveThisManpage(), Search(), ShowVersion();
+
+/* help.c */
+
+Boolean MakeHelpWidget(), OpenHelpfile();
+
+/* main.c */
+
+void main();
+
+/* man.c */
+
+int Man();
+
+/* misc.c */
+
+void PrintError(),PrintWarning(), ChangeLabel();
+void RemovePixmaps(),PositionCenter(),AddCursor(),ParseEntry();
+FILE *FindFilename(),*Format(), *OpenEntryFile();
+ManpageGlobals * GetGlobals();
+void SaveGlobals(), RemoveGlobals();
+
+/* pages.c */
+
+Boolean InitManpage();
+void PrintManpage();
+Boolean Boldify();
+
+/* search */
+
+void MakeSearchWidget();
+FILE * DoSearch();
+
+/* tkfunctions.c */
+
+int Width(), Height(), BorderWidth();
+Widget PopupChild(), Child();
+char * Name();
+Boolean MakeLong();

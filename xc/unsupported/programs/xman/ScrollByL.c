@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.c,v 1.4 88/10/17 20:21:12 swick Exp $
- * $Header: ScrollByL.c,v 4.5 88/12/19 13:46:04 kit Exp $
+ * $XConsortium: ScrollByL.c,v 1.5 89/01/06 18:41:40 kit Exp $
+ * $Header: ScrollByL.c,v 1.5 89/01/06 18:41:40 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -436,6 +436,7 @@ Widget w;
  *	Returns: none.
  */
 
+/* ARGSUSED */
 static void 
 Page(w, event, params, num_params)
 Widget w;
@@ -641,6 +642,7 @@ Boolean force_redisp;
  *	Returns: none.
  */
 
+/* ARGSUSED */
 static void
 VerticalThumb(w,junk,percent)
 Widget w;
@@ -675,6 +677,7 @@ float *percent;
  *	Returns: none.
  */
 
+/* ARGSUSED */
 static void
 VerticalScroll(w,junk,pos)
 Widget w;
@@ -703,6 +706,7 @@ int pos;
 
 }
 
+/* ARGSUSED */
 static void 
 Initialize(req, new)
 Widget req, new;
@@ -777,8 +781,10 @@ static void Realize(w, valueMask, attributes)
  *
  */
 
-static Boolean SetValues (current, request, new)
-    Widget current, request, new;
+/* ARGSUSED */
+static Boolean 
+SetValues (current, request, new)
+Widget current, request, new;
 {
   ScrollByLineWidget sblw_new, sblw_current;
   Boolean ret = FALSE;
