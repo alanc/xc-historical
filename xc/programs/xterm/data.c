@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: data.c,v 1.3 88/07/12 18:39:52 jim Exp $
+ *	$XConsortium: data.c,v 1.4 88/09/06 17:08:01 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -34,7 +34,7 @@
 #include "data.h"
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: data.c,v 1.3 88/07/12 18:39:52 jim Exp $";
+static char rcs_id[] = "$XConsortium: data.c,v 1.4 88/09/06 17:08:01 jim Exp $";
 #endif	/* lint */
 
 XPoint T_boxlarge[NBOX] = {
@@ -67,15 +67,15 @@ XPoint T_boxsmall[NBOX] = {
 };
 jmp_buf Tekend;
 int Tbcnt = 0;
-char *Tbuffer;
-char *Tbptr;
+Char *Tbuffer;
+Char *Tbptr;
 TekLink *TekRefresh;
-char *Tpushb;
-char *Tpushback;
+Char *Tpushb;
+Char *Tpushback;
 int Ttoggled = 0;
 int bcnt = 0;
-char buffer[BUF_SIZE];
-char *bptr = buffer;
+Char buffer[BUF_SIZE];
+Char *bptr = buffer;
 jmp_buf VTend;
 XPoint VTbox[NBOX] = {
 	{0, 0},

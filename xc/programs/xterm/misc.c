@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.28 88/11/17 16:07:46 rws Exp $
+ *	$XConsortium: misc.c,v 1.29 89/01/04 12:25:17 jim Exp $
  */
 
 
@@ -54,7 +54,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.28 88/11/17 16:07:46 rws Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.29 89/01/04 12:25:17 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -673,7 +673,7 @@ register TScreen *screen;
 FlushLog(screen)
 register TScreen *screen;
 {
-	register char *cp;
+	register Char *cp;
 	register int i;
 
 	cp = screen->TekEmu ? Tbptr : bptr;

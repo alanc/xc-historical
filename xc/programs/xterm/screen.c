@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.9 88/11/07 11:34:48 jim Exp $
+ *	$XConsortium: screen.c,v 1.10 89/01/03 16:18:06 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* screen.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: screen.c,v 1.9 88/11/07 11:34:48 jim Exp $";
+static char rcs_id[] = "$XConsortium: screen.c,v 1.10 89/01/03 16:18:06 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -40,9 +40,7 @@ static char rcs_id[] = "$XConsortium: screen.c,v 1.9 88/11/07 11:34:48 jim Exp $
 #include "ptyx.h"
 #include "error.h"
 
-extern char *calloc();
-extern char *malloc();
-extern char *realloc();
+extern Char *calloc(), *malloc(), *realloc();
 extern void Bcopy();
 extern void free();
 
@@ -77,9 +75,9 @@ char *str;
 register unsigned flags;
 register int length;		/* length of string */
 {
-	register char *att;
+	register Char *att;
 	register int avail  = screen->max_col - screen->cur_col + 1;
-	register char *col;
+	register Char *col;
 
 	if (length > avail)
 	    length = avail;
@@ -174,8 +172,8 @@ int row, size;
 register int col, n;
 {
 	register int i, j;
-	register char *ptr = sb [2 * row];
-	register char *att = sb [2 * row + 1];
+	register Char *ptr = sb [2 * row];
+	register Char *att = sb [2 * row + 1];
 
 	for (i = size - 1; i >= col + n; i--) {
 		ptr[i] = ptr[j = i - n];
@@ -195,8 +193,8 @@ ScrnBuf sb;
 register int row, size;
 register int n, col;
 {
-	register char *ptr = sb[2 * row];
-	register char *att = sb[2 * row + 1];
+	register Char *ptr = sb[2 * row];
+	register Char *att = sb[2 * row + 1];
 	register nbytes = (size - n - col);
 
 	Bcopy (ptr + col + n, ptr + col, nbytes);
@@ -230,8 +228,8 @@ Boolean force;			/* ... leading/trailing spaces */
 	 screen->cursor_row <= maxrow + topline)
 		screen->cursor_state = OFF;
 	for (row = toprow; row <= maxrow; y += FontHeight(screen), row++) {
-	   register char *chars;
-	   register char *att;
+	   register Char *chars;
+	   register Char *att;
 	   register int col = leftcol;
 	   int maxcol = leftcol + ncols - 1;
 	   int lastind;

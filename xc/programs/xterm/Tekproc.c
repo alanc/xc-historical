@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.47 89/01/04 12:01:34 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.48 89/01/18 16:29:39 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -121,7 +121,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.47 89/01/04 12:01:34 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.48 89/01/18 16:29:39 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -584,7 +584,6 @@ static int Tselect_mask;
 Tinput()
 {
 	register TScreen *screen = &term->screen;
-	register char *cp;
 	register int i;
 	register TekLink *tek;
 	extern char *malloc();
@@ -623,9 +622,6 @@ again:
 				} else if(Tbcnt == 0)
 					Panic("input: read returned zero\n", 0);
 				else {
-					/* strip parity bit */
-					for(i = Tbcnt, cp = Tbptr ; i > 0 ; i--)
-						*cp++ &= CHAR;
 					break;
 				}
 			}
@@ -1123,8 +1119,8 @@ static void TekRealize (gw, valuemaskp, values)
 		xterm_name, SMALLFONTNAME);
 	screen->Tfont[SMALLFONT] = XQueryFont (screen->display, DefaultGCID);
     }
-    if((Tbuffer = (char *)malloc(BUF_SIZE)) == NULL ||
-       (Tpushb = (char *)malloc(10)) == NULL ||
+    if((Tbuffer = (Char *)malloc(BUF_SIZE)) == NULL ||
+       (Tpushb = (Char *)malloc(10)) == NULL ||
        (Tline = (XSegment *)malloc(MAX_VTX * sizeof(XSegment))) == NULL) {
 	fprintf (stderr, "%s: Not enough core for Tek mode\n", xterm_name);
 	goto mallocfailed;
@@ -1559,8 +1555,8 @@ Tdomenufunc(item)
 int item;
 {
 	register TScreen *screen = &term->screen;
-	register char *tp;
-	register char *fp;
+	register Char *tp;
+	register Char *fp;
 
 	switch (item) {
 	case TMENU_LARGE:
@@ -1573,7 +1569,7 @@ int item;
 		}
 		if(Tbcnt < 0)
 			Tbcnt = 0;
-		for(fp = changesize[item], tp = &Tbptr[Tbcnt] ; *fp ; ) {
+		for(fp = (Char *) changesize[item], tp = &Tbptr[Tbcnt] ; *fp ; ) {
 			*tp++ = *fp++;
 			Tbcnt++;
 		}

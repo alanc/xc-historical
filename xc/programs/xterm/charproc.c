@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.65 89/01/06 15:58:03 jim Exp $
+ * $XConsortium: charproc.c,v 1.66 89/01/18 16:29:31 jim Exp $
  */
 
 
@@ -136,7 +136,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.65 89/01/06 15:58:03 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.66 89/01/18 16:29:31 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -391,15 +391,15 @@ VTparse()
 {
 	register TScreen *screen = &term->screen;
 	register int *parsestate = groundtable;
-	register int c;
-	register char *cp;
+	register unsigned int c;
+	register unsigned char *cp;
 	register int row, col, top, bot, scstype;
 	extern int bitset(), bitclr(), finput(), TrackMouse();
 
 	if(setjmp(vtjmpbuf))
 		parsestate = groundtable;
-	for( ; ; )
-		switch(parsestate[c = doinput()]) {
+	for( ; ; ) {
+	        switch (parsestate[c = doinput()]) {
 		 case CASE_PRINT:
 			/* printable characters */
 			top = bcnt > TEXT_BUF_SIZE ? TEXT_BUF_SIZE : bcnt;
@@ -801,8 +801,8 @@ VTparse()
 			for(row = screen->max_row ; row >= 0 ; row--) {
 				bzero(screen->buf[2 * row + 1],
 				 col = screen->max_col + 1);
-				for(cp = screen->buf[2 * row] ; col > 0 ; col--)
-					*cp++ = 'E';
+				for(cp = (unsigned char *)screen->buf[2 * row] ; col > 0 ; col--)
+					*cp++ = (unsigned char) 'E';
 			}
 			ScrnRefresh(screen, 0, 0, screen->max_row + 1,
 			 screen->max_col + 1, False);
@@ -940,6 +940,7 @@ VTparse()
 			parsestate = groundtable;
 			break;
 		}
+	}
 }
 
 finput()
@@ -1032,7 +1033,6 @@ int l;
 in_put()
 {
 	register TScreen *screen = &term->screen;
-	register char *cp;
 	register int i;
 	static struct timeval trackTimeOut;
 
@@ -1052,9 +1052,6 @@ in_put()
 			} else if(bcnt == 0)
 				Panic("input: read returned zero\n", 0);
 			else {
-				/* strip parity bit */
-				for(i = bcnt, cp = bptr ; i > 0 ; i--)
-					*cp++ &= CHAR;
 				if(screen->scrollWidget && screen->scrollinput &&
 				 screen->topline < 0)
 					/* Scroll to bottom */
@@ -2265,7 +2262,7 @@ ShowCursor()
 {
 	register TScreen *screen = &term->screen;
 	register int x, y, flags;
-	char c;
+	Char c;
 	GC	currentGC;
 	Boolean	in_selection;
 

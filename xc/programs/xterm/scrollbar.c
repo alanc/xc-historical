@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.18 89/01/06 15:58:19 jim Exp $
+ *	$XConsortium: scrollbar.c,v 1.19 89/01/06 16:21:51 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -43,7 +43,7 @@
 extern void Bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.18 89/01/06 15:58:19 jim Exp $";
+static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.19 89/01/06 16:21:51 jim Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -299,7 +299,7 @@ ScrollBarOn (xw, init, doalloc)
 	register TScreen *screen = &xw->screen;
 	register int border = 2 * screen->border;
 	register int i;
-	char *realloc(), *calloc();
+	Char *realloc(), *calloc();
 
 	if(screen->scrollbar)
 		return;

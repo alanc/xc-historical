@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.31 89/01/04 14:52:26 swick Exp $
+ *	$XConsortium: button.c,v 1.32 89/01/05 12:47:45 swick Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.31 89/01/04 14:52:26 swick Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.32 89/01/05 12:47:45 swick Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -681,7 +681,7 @@ register int row;
 {
 	register TScreen *screen =  &term->screen;
 	register int i;
-	register char *ch;
+	register Char *ch;
 
 	for(i = screen->max_col,
 	 ch = screen->buf[2 * (row + screen->topline)] + i ;
@@ -741,7 +741,7 @@ ComputeSelect(startRow, startCol, endRow, endCol)
 int startRow, startCol, endRow, endCol;
 {
 	register TScreen *screen = &term->screen;
-	register char *ptr;
+	register Char *ptr;
 	register int length;
 	register int class;
 
@@ -1170,7 +1170,7 @@ int Length(screen, row, scol, ecol)
 register int row, scol, ecol;
 register TScreen *screen;
 {
-	register char *ch;
+	register Char *ch;
 
 	ch = screen->buf[2 * (row + screen->topline)];
 	while (ecol >= scol && (ch[ecol] == ' ' || ch[ecol] == 0))
@@ -1186,7 +1186,7 @@ TScreen *screen;
 register char *lp;		/* pointer to where to put the text */
 {
 	register int i = 0;
-	register char *ch = screen->buf[2 * (row + screen->topline)];
+	register Char *ch = screen->buf[2 * (row + screen->topline)];
 	register int c;
 
 	if ((i = Length(screen, row, scol, ecol)) == 0) return(lp);

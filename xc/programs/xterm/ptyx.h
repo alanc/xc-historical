@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.20 88/11/16 18:13:26 rws Exp $
+ *	$XConsortium: ptyx.h,v 1.21 89/01/06 15:58:14 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -116,7 +116,8 @@ typedef enum {NORMAL, LEFTEXTENSION, RIGHTEXTENSION} EventMode;
  * on a screen is screen->max_row + 1, and similarly for columns.
  */
 
-typedef char **ScrnBuf;
+typedef unsigned char Char;		/* to support 8 bit chars */
+typedef Char **ScrnBuf;
 
 /*
  * ANSI emulation.
@@ -225,7 +226,7 @@ typedef struct {
 	Boolean		grabbedKbd;	/* keyboard is grabbed		*/
 	int		logfd;		/* file descriptor of log	*/
 	char		*logfile;	/* log file name		*/
-	char		*logstart;	/* current start of log buffer	*/
+	unsigned char	*logstart;	/* current start of log buffer	*/
 	int		inhibit;	/* flags for inhibiting changes	*/
 
 /* VT window parameters */
