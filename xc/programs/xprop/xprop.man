@@ -1,4 +1,4 @@
-.TH XPROP 1 "1 March 1988" "X Version 11"
+.TH XPROP 1 "24 October 1988" "X Version 11"
 .SH NAME
 xprop - property displayer for X
 .SH SYNOPSIS
@@ -15,7 +15,7 @@ The
 .I prop
 utility is for displaying window and font properties in an X server.
 One window or font is selected using the command
-line arguemnts or possibly in the case of a window, by clicking on the desired
+line arguments or possibly in the case of a window, by clicking on the desired
 window.  A list of properties is then given, possibly with formatting
 information.
 .SH OPTIONS
@@ -30,9 +30,9 @@ Print out a detailed grammar for all command line options.
 .PP
 .TP 8
 .B "-id \fIid\fP"
-This argument allows the user to select window \fIid\fP  on  the
-command  line rather than using the pointer to select the target window.
-This is very useful in  debugging  X  applications  where  the  target
+This argument allows the user to select window \fIid\fP on the
+command line rather than using the pointer to select the target window.
+This is very useful in debugging X applications where the target
 window is not mapped to the screen or where the use of the pointer might
 be impossible or interfere with the application.
 .PP
@@ -49,8 +49,8 @@ This argument allows the user to specify that the properties of font
 .PP
 .TP 8
 .B "-root"
-This  argument  specifies  that  X's root window is the target window.
-This is useful in situations  where  the  root  window  is  completely
+This argument specifies that X's root window is the target window.
+This is useful in situations where the root window is completely
 obscured.
 .PP
 .TP 8
@@ -100,9 +100,9 @@ with 0x) while the -name argument selects a window by name.
 .PP
 The last way to select a window does not involve the command line at all.
 If none of -font, -id, -name, and -root are specified, a crosshairs cursor
-is displayed and the user allowed to choose any visible window by pressing
+is displayed and the user is allowed to choose any visible window by pressing
 any pointer button in the desired window.  If it is desired to display properties
-of a font as opposed to a window, the -font argument may be used.
+of a font as opposed to a window, the -font argument must be used.
 .PP
 Other than the above four arguments and the -help argument for obtaining help,
 and the -grammar argument for listing the full grammar for the command line,
@@ -135,7 +135,7 @@ format.  New users especially are encouraged to skip this part.
 A \fIformat\fP consists of one of 0, 8, 16, or 32 followed by a sequence of one
 or more format characters.  The 0, 8, 16, or 32 specifies how many bits per
 field there are in the property.  Zero is a special case meaning use the
-field size information associated with the property itself. (this is only
+field size information associated with the property itself.  (This is only
 needed for special cases like type INTEGER which is actually three different
 types depending on the size of the fields of the property)
 .PP
@@ -186,13 +186,13 @@ The format of a \fIdformat\fP unlike that of a \fIformat\fP is not so rigid.
 The only limitations on a \fIdformat\fP is that one may not start with a letter
 or a dash.  This is so that it can be distingished from a property name or
 an argument.  A \fIdformat\fP is a text string containing special characters
-instructing that various fields be printed at various points in a manor similar
+instructing that various fields be printed at various points in a manner similar
 to the formatting string used by printf.  For example, the \fIdformat\fP
 " is ( $0, $1 \\)\\n" would render the POINT 3, -4 which has a \fIformat\fP of
 32ii as " is ( 3, -4 )\\n".
 .PP
 Any character other than a $, ?, \\, or a ( in a \fIdformat\fP prints as
-itself.  To print out one of $, ?, \\, or ( preceed it by a \\.  I.e.,
+itself.  To print out one of $, ?, \\, or ( preceed it by a \\.  For example,
 to print out a $, use \\$.  Several special backslash sequences are provided
 as shortcuts.  \\n will cause a newline to be displayed while \\t will
 cause a tab to be displayed.  \\\fIo\fP where \fIo\fP is an octal number
@@ -200,7 +200,7 @@ will display character number \fIo\fP.
 .PP
 A $ followed by a number \fIn\fP causes field number \fIn\fP to be
 displayed.  The format of the displayed field depends on the formatting
-character used to describe it in the corrsponding \fIformat\fP.  I.e., if
+character used to describe it in the corresponding \fIformat\fP.  I.e., if
 a cardinal is described by 'c' it will print in decimal while if it is
 described by a 'x' it is displayed in hex.
 .PP
@@ -214,7 +214,8 @@ This is useful for a property that is a list of values.
 A ? is used to start a conditional expression, a kind of if-then statement.
 ?\fIexp\fP(\fItext\fP) will display \fItext\fP if and only if \fIexp\fP evaluates to
 non-zero.  This is useful for two things.  First, it allows fields to be
-displayed if and only if a flag is set.  And second, it allows a value to such as a state
+displayed if and only if a flag is set.  
+And second, it allows a value such as a state
 number to be displayed as a name rather than as just a number.  The syntax of
 \fIexp\fP is as follows:
 .TP
