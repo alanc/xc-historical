@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XImUtil.c,v 11.21 88/02/09 13:29:46 rws Exp $ */
+/* $Header: XImUtil.c,v 11.22 88/02/18 17:58:46 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -66,7 +66,7 @@ static char _himask[0x09] = { 0xff, 0xfe, 0xfc, 0xf8, 0xf0, 0xe0, 0xc0, 0x80, 0x
  */
 static _normalizeimagebits (bpt, nb, byteorder, unitsize, bitorder)
     unsigned char *bpt;	/* beginning pointer to image bits */
-    long nb;		/* number of bytes to normalize */
+    int nb;		/* number of bytes to normalize */
     int byteorder;	/* swap bytes if byteorder == MSBFirst */
     int unitsize;	/* size of the bitmap_unit or Zpixel */
     int bitorder;	/* swap bits if bitorder == MSBFirst */
@@ -302,37 +302,6 @@ int _XDestroyImage (ximage)
 	return 1;
 }
 
-/*
- * Convert from native machine format to LSBFirst, slowly.
- */
-static unsigned long LSBPixel(pixel)
-    unsigned long pixel;
-{
-	int i;
-	unsigned long p = 0;
-
-	for (i=0; i<sizeof(unsigned long); i++)
-	{
-	    ((unsigned char *)&p)[i] = pixel;
-	    pixel >>= 8;
-	}
-	return p;
-}
-
-/*
- *  Convert from LSBFirst to the native machine format, slowly
- */
-static unsigned long NativePixel(pixel)
-    unsigned long pixel;
-{
-	int i;
-	unsigned long p = 0;
-
-	for (i=sizeof(unsigned long); --i >= 0; )
-	    p = (p << 8) | ((unsigned char *)&pixel)[i];
-	return p;
-}
-         
 
 /*
  * GetPixel
@@ -354,12 +323,12 @@ unsigned long _XGetPixel (ximage, x, y)
     int y;
 
 {
-	unsigned long pixel, px, temp;
+	unsigned long pixel, px;
 	register char *src;
 	register char *dst;
-	register long i, j;
-	int bits,plane;
-	long nbytes;
+	register int i, j;
+	int bits, nbytes;
+	long plane;
      
 	if (ximage->depth == 1) {
 		src = &ximage->data[XYINDEX(x, y, ximage)];
@@ -387,13 +356,20 @@ unsigned long _XGetPixel (ximage, x, y)
 		}
 	} else if (ximage->format == ZPixmap) {
 		src = &ximage->data[ZINDEX(x, y, ximage)];
-		dst = (char *)&pixel;
-		pixel = 0;
+		dst = (char *)&px;
+		px = 0;
 		nbytes = ROUNDUP(ximage->bits_per_pixel, 8) >> 3;
 		for (i=0; i < nbytes; i++) *dst++ = *src++;		
-		ZNORMALIZE(&pixel, nbytes, ximage);
-                pixel = NativePixel(pixel);
-		pixel = pixel >> ((x * ximage->bits_per_pixel) & 7);
+		ZNORMALIZE(&px, nbytes, ximage);
+		pixel = 0;
+		for (i=sizeof(unsigned long); --i >= 0; )
+		    pixel = (pixel << 8) | ((unsigned char *)&px)[i];
+		if (ximage->bits_per_pixel == 4) {
+		    if (x & 1)
+			pixel >>= 4;
+		    else
+			pixel &= 0xf;
+		}
 	} else {
 		_XReportBadImage("format", ximage->format, "_XGetPixel");
 	}
@@ -424,16 +400,18 @@ int _XPutPixel (ximage, x, y, pixel)
     unsigned long pixel;
 
 {
-	unsigned long px;
+	unsigned long px, npixel;
 	register char *src;
 	register char *dst;
-	register long i;
-	int plane, j;
-	register long nbytes;
-        unsigned long npixel;   /* native pixel */
+	register int i;
+	int j, nbytes;
+	long plane;
 
+	if (ximage->depth == 4)
+	    pixel &= 0xf;
         npixel = pixel;
-        pixel = LSBPixel(pixel);
+	for (i=0, px=pixel; i<sizeof(unsigned long); i++, px>>=8)
+	    ((unsigned char *)&pixel)[i] = px;
 	if (ximage->depth == 1) {
 		src = &ximage->data[XYINDEX(x, y, ximage)];
 		dst = (char *)&px;
@@ -464,7 +442,8 @@ int _XPutPixel (ximage, x, y, pixel)
 		    dst = &ximage->data[XYINDEX(x, y, ximage) + plane];
 		    for (i=0; i < nbytes; i++) *dst++ = *src++;
 		    npixel = npixel >> 1;
-                    pixel = LSBPixel(npixel);
+		    for (i=0, px=npixel; i<sizeof(unsigned long); i++, px>>=8)
+			((unsigned char *)&pixel)[i] = px;
 		    plane = plane - (ximage->bytes_per_line * ximage->height);
 		}
 	} else if (ximage->format == ZPixmap) {
@@ -476,7 +455,7 @@ int _XPutPixel (ximage, x, y, pixel)
 		ZNORMALIZE(&px, nbytes, ximage);
 		_putbits ((char *)&pixel, 
 			  (long) (x * ximage->bits_per_pixel) & 7, 
-		    ximage->bits_per_pixel, (char *)&px);
+			  ximage->bits_per_pixel, (char *)&px);
 		ZNORMALIZE(&px, nbytes, ximage);
 		src = (char *)&px;
 		dst = &ximage->data[ZINDEX(x, y, ximage)];
