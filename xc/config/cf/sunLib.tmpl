@@ -1,0 +1,51 @@
+/*
+ * SunOS shared library template
+ */
+
+#ifndef SharedXlibRev
+#define SharedXlibRev 4.2
+#endif
+#ifndef SharedOldXRev
+#define SharedOldXRev 4.0
+#endif
+#ifndef SharedXtRev
+#define SharedXtRev 4.0
+#endif
+#ifndef SharedXawRev
+#define SharedXawRev 4.0
+#endif
+#ifndef SharedXmuRev
+#define SharedXmuRev 4.0
+#endif
+#ifndef SharedXextRev
+#define SharedXextRev 4.0
+#endif
+
+/*
+ * and now a little bit of magic for using imake without source tree; if we
+ * are using shared libraries, we really do not need to depend on anything
+ */
+#if SharedLibXext
+  DEPEXTENSIONLIB = /* _UseCat($(USRLIBDIR),$(EXTENSIONSRC)/lib,/libXext.sa.$(SOXEXTREV)) */
+     EXTENSIONLIB = _Use(-lXext,-L$(EXTENSIONSRC) -lXext)
+#endif
+#if SharedLibX
+          DEPXLIB = $(DEPEXTENSIONLIB) /* _UseCat($(USRLIBDIR),$(XLIBSRC),/libX11.sa.$(SOXLIBREV)) */
+             XLIB = $(EXTENSIONLIB) _Use(-lX11,-L$(XLIBSRC) -lX11)
+#endif
+#if SharedLibXmu
+        DEPXMULIB = _UseCat($(USRLIBDIR),$(XMUSRC),/libXmu.sa.$(SOXMUREV))
+           XMULIB = _Use(-lXmu,-L$(XMUSRC) -lXmu)
+#endif
+#if SharedOldLibX
+       DEPOLDXLIB = /* _UseCat($(USRLIBDIR),$(OLDXLIBSRC),/liboldX.sa.$(SOOLDXREV)) */
+          OLDXLIB = _Use(-loldX,-L$(OLDXLIBSRC) -loldX)
+#endif
+#if SharedLibXt
+      DEPXTOOLLIB = _UseCat($(USRLIBDIR),$(TOOLKITSRC),/libXt.sa.$(SOXTREV))
+         XTOOLLIB = _Use(-lXt,-L$(TOOLKITSRC) -lXt)
+#endif
+#if SharedLibXaw
+        DEPXAWLIB = _UseCat($(USRLIBDIR),$(AWIDGETSRC),/libXaw.sa.$(SOXAWREV))
+           XAWLIB = _Use(-lXaw,-L$(AWIDGETSRC) -lXaw)
+#endif
