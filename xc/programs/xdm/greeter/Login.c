@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.31 91/05/11 15:39:09 gildea Exp $
+ * $XConsortium: Login.c,v 1.32 91/05/22 17:47:48 converse Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -685,17 +685,6 @@ static XtConvertArgRec displayConvertArg[] = {
     {XtProcedureArg, (XtPointer)FetchDisplayArg, 0},
 };
 
-static Boolean	CvtStringToFontStruct ();
-static void	FreeFontStruct();
-
-static void
-ClassInitialize ()
-{
-    XtSetTypeConverter( XtRString, XtRFontStruct, CvtStringToFontStruct,
-			displayConvertArg, XtNumber(displayConvertArg),
-			XtCacheByDisplay, FreeFontStruct);
-}
-
 /* ARGSUSED */
 static void Initialize (greq, gnew, args, num_args)
     Widget greq, gnew;
@@ -826,21 +815,9 @@ static Boolean SetValues (current, request, new, args, num_args)
     
     currentL = (LoginWidget) current;
     newL = (LoginWidget) new;
-    if (GREETING (currentL) != GREETING (newL)) {
-	w = currentL;
-	XSetForeground (XtDisplay (w), w->login.greetGC,
-			w->core.background_pixel);
-	XDrawString (XtDisplay (w), XtWindow (w), w->login.greetGC,
-			GREET_X(w), GREET_Y(w),
-			GREETING(w), strlen (GREETING(w)));
-	w = newL;
-	XSetForeground (XtDisplay (w), w->login.greetGC,
-			w->login.greetpixel);
-	XDrawString (XtDisplay (w), XtWindow (w), w->login.greetGC,
-			GREET_X(w), GREET_Y(w),
-			GREETING(w), strlen (GREETING(w)));
-    }
-    return 0;
+    if (GREETING (currentL) != GREETING (newL))
+	return True;
+    return False;
 }
 
 char defaultLoginTranslations [] =
@@ -886,7 +863,7 @@ LoginClassRec loginClassRec = {
     /* superclass		*/	&widgetClassRec,
     /* class_name		*/	"Login",
     /* size			*/	sizeof(LoginRec),
-    /* class_initialize		*/	ClassInitialize,
+    /* class_initialize		*/	NULL,
     /* class_part_initialize	*/	NULL,
     /* class_inited		*/	FALSE,
     /* initialize		*/	Initialize,
@@ -919,149 +896,3 @@ LoginClassRec loginClassRec = {
 };
 
 WidgetClass loginWidgetClass = (WidgetClass) &loginClassRec;
-
-/*
- * Gratuitously copied from lib/Xt/Converters.c which was arbitrarily
- * changed for R4 to call XtAppErrorMsg (which calls exit) instead of
- * simply failing the conversion.  Xt is so stupid.
- */
-
-#define	done(type, value, ret) \
-	{							\
-	    if (toVal->addr != NULL) {				\
-		if (toVal->size < sizeof(type)) {		\
-		    toVal->size = sizeof(type);			\
-		    return False;				\
-		}						\
-		*(type*)(toVal->addr) = (value);		\
-	    }							\
-	    else {						\
-		static type static_val;				\
-		static_val = (value);				\
-		toVal->addr = (XtPointer)&static_val;		\
-	    }							\
-	    toVal->size = sizeof(type);				\
-	    return (ret);					\
-	}
-
-
-static int CompareISOLatin1 (first, second)
-    char *first, *second;
-{
-    register unsigned char *ap, *bp;
-
-    for (ap = (unsigned char *) first, bp = (unsigned char *) second;
-	 *ap && *bp; ap++, bp++) {
-	register unsigned char a, b;
-
-	if ((a = *ap) != (b = *bp)) {
-	    /* try lowercasing and try again */
-
-	    if ((a >= XK_A) && (a <= XK_Z))
-	      a += (XK_a - XK_A);
-	    else if ((a >= XK_Agrave) && (a <= XK_Odiaeresis))
-	      a += (XK_agrave - XK_Agrave);
-	    else if ((a >= XK_Ooblique) && (a <= XK_Thorn))
-	      a += (XK_oslash - XK_Ooblique);
-
-	    if ((b >= XK_A) && (b <= XK_Z))
-	      b += (XK_a - XK_A);
-	    else if ((b >= XK_Agrave) && (b <= XK_Odiaeresis))
-	      b += (XK_agrave - XK_Agrave);
-	    else if ((b >= XK_Ooblique) && (b <= XK_Thorn))
-	      b += (XK_oslash - XK_Ooblique);
-
-	    if (a != b) break;
-	}
-    }
-    return (((int) *bp) - ((int) *ap));
-}
-
-/*ARGSUSED*/
-static Boolean
-CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
-    Display*	dpy;
-    XrmValuePtr args;
-    Cardinal    *num_args;
-    XrmValuePtr	fromVal;
-    XrmValuePtr	toVal;
-    XtPointer	*closure_ret;
-{
-    XFontStruct	    *f;
-    Display*	display;
-
-    if (*num_args != 1)
-     XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
-	     "wrong parameters","cvtStringToFontStruct","XtToolkitError",
-             "String to font conversion needs display argument",
-              (String *) NULL, (Cardinal *)NULL);
-
-    display = *(Display**)args[0].addr;
-
-    if (CompareISOLatin1((String)fromVal->addr, XtDefaultFont) != 0) {
-	f = XLoadQueryFont(display, (char *)fromVal->addr);
-	if (f != NULL) {
-  Done:	    done( XFontStruct*, f, True);
-	}
-
-	XtDisplayStringConversionWarning( dpy, (char*)fromVal->addr,
-					  "FontStruct" );
-    }
-
-    /* try and get the default font */
-
-    {
-	XrmName xrm_name[2];
-	XrmClass xrm_class[2];
-	XrmRepresentation rep_type;
-	XrmValue value;
-
-	xrm_name[0] = XrmStringToName ("xtDefaultFont");
-	xrm_name[1] = NULL;
-	xrm_class[0] = XrmStringToClass ("XtDefaultFont");
-	xrm_class[1] = NULL;
-	if (XrmQGetResource(XtDatabase(dpy), xrm_name, xrm_class, 
-			    &rep_type, &value)) {
-	    if (rep_type == XrmPermStringToQuark(XtRString)) {
-		f = XLoadQueryFont(display, (char*)value.addr);
-		if (f != NULL)
-		    goto Done;
-		else {
-		    XtDisplayStringConversionWarning( dpy, (char*)value.addr,
-						      "FontStruct" );
-		}
-	    } else if (rep_type == XrmPermStringToQuark(XtRFont)) {
-		f = XQueryFont(dpy, *(Font*)value.addr );
-		if (f != NULL) goto Done;
-	    } else if (rep_type == XrmPermStringToQuark(XtRFontStruct)) {
-		f = (XFontStruct*)value.addr;
-		goto Done;
-	    }
-	}
-    }
-    /* Should really do XListFonts, but most servers support this */
-    f = XLoadQueryFont(dpy,"-*-*-*-R-*-*-*-120-*-*-*-*-ISO8859-1");
-    if (f != NULL)
-	goto Done;
-
-    done ( XFontStruct*, f, False );
-}
-
-/* ARGSUSED */
-static void FreeFontStruct(app, toVal, closure, args, num_args)
-    XtAppContext app;
-    XrmValuePtr	toVal;
-    XtPointer	closure;	/* unused */
-    XrmValuePtr	args;
-    Cardinal	*num_args;
-{
-    Display *display;
-    if (*num_args != 1)
-     XtAppErrorMsg(app,
-	     "wrong parameters","freeFontStruct","XtToolkitError",
-             "Free FontStruct requires display argument",
-              (String *) NULL, (Cardinal *)NULL);
-
-    display = *(Display**)args[0].addr;
-    XFreeFont( display, *(XFontStruct**)toVal->addr );
-}
