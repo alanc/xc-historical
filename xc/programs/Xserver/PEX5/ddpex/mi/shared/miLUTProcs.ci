@@ -1,4 +1,4 @@
-/* $XConsortium: miLUTProcs.ci,v 5.3 91/05/03 15:19:27 hersh Exp $ */
+/* $XConsortium: miLUTProcs.ci,v 5.4 91/07/19 20:47:01 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -65,7 +65,7 @@ extern ddpex4rtn miDealWithDynamics();	/* in level4/miDynamics.c */
 
 /* get pointer to first legal entry in the table */
 #define	FIRST_ENTRY( pheader )		\
-	LUT_TABLE_START(pheader) + MILUT_START_INDEX(pheader)
+	LUT_TABLE_START(pheader)
 
 #define SET_TABLE_INFO( drawType, pInfo )       \
         switch(drawType) {                               \
@@ -584,8 +584,13 @@ LUT_CREATE (pLUT, pheader)
     MILUT_NUM_ENTS(pheader) = 0;
     SET_TABLE_INFO( pheader->drawType, &(pheader->tableInfo) );
 
-    if ( (LUT_TABLE_START(pheader) = 
-	(MI_LUT_ENTRY_STR *)xalloc(MILUT_ALLOC_ENTS(pheader) * sizeof(MI_LUT_ENTRY_STR)) ) == NULL)
+    if (MILUT_ALLOC_ENTS(pheader) == 0)
+    {
+      LUT_TABLE_START(pheader) = NULL;
+    }
+    else if ( (LUT_TABLE_START(pheader) = (MI_LUT_ENTRY_STR *)
+		xalloc(MILUT_ALLOC_ENTS(pheader) * sizeof(MI_LUT_ENTRY_STR)) ) 
+		== NULL)
     {
 	MILUT_DESTROY_HEADER(pheader);
 	return(BadAlloc);

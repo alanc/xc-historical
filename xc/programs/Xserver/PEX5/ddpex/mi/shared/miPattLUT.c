@@ -1,4 +1,4 @@
-/* $XConsortium: miPattLUT.c,v 5.1 91/02/16 09:56:32 rws Exp $ */
+/* $XConsortium: miPattLUT.c,v 5.2 91/07/19 20:45:20 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -346,8 +346,13 @@ LUT_CREATE (pLUT, pheader)
     MILUT_NUM_ENTS(pheader) = 0;
     SET_TABLE_INFO( pheader->drawType, &(pheader->tableInfo) );
 
-    if ( (LUT_TABLE_START(pheader) = 
-	(MI_LUT_ENTRY_STR *)xalloc(MILUT_ALLOC_ENTS(pheader) * sizeof(MI_LUT_ENTRY_STR)) ) == NULL)
+    if (MILUT_ALLOC_ENTS(pheader) == 0)
+    {
+      LUT_TABLE_START(pheader) = NULL;
+    }
+    else if ((LUT_TABLE_START(pheader) = (MI_LUT_ENTRY_STR *)
+		xalloc(MILUT_ALLOC_ENTS(pheader) * sizeof(MI_LUT_ENTRY_STR))) 
+		== NULL)
     {
 	MILUT_DESTROY_HEADER(pheader);
 	return(BadAlloc);

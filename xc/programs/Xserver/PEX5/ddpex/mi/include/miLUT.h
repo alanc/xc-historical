@@ -1,4 +1,4 @@
-/* $XConsortium: miLUT.h,v 5.1 91/02/16 09:54:46 rws Exp $ */
+/* $XConsortium: miLUT.h,v 5.2 91/05/03 15:21:12 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -346,13 +346,8 @@ typedef struct _miLUTHeader {
 #define MILUT_DEF_ENTS( pheader ) \
                 (pheader)->tableInfo.definableEntries
 
-/* number of allocated entries: if starting index = 0, 
- * allocated entries = the number of definable entries;
- * if starting index = 1, allocated entries = def entries + 1
- * and entry 0 is a dummy
- */
 #define MILUT_ALLOC_ENTS( pheader )		\
-	(MILUT_DEF_ENTS(pheader) + MILUT_START_INDEX(pheader))
+	(MILUT_DEF_ENTS(pheader))
 
 /* number of predefined entries */
 #define MILUT_PRENUM( pheader ) \
