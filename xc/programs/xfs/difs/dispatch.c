@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.4 91/06/21 18:23:00 keith Exp $ */
+/* $XConsortium: dispatch.c,v 1.5 91/07/16 20:23:26 keith Exp $ */
 /*
  * protocol dispatcher
  */
@@ -236,6 +236,7 @@ ProcEstablishConnection(client)
 	altlen += (2 + altservers[i].namelen + 3) >> 2;
     }
 
+    auth_index = prefix->num_auths;
     ret = CheckClientAuthorization(client, client_auth,
 		    &auth_accept, &auth_index, &auth_len, &server_auth_data);
 
@@ -418,7 +419,7 @@ ProcSetCatalogues(client)
 		return FSBadAlloc;
 	    bcopy((char *) &stuff[1], new_cat, len);
 	} else {
-	    SendErrToClient(client, err, (pointer) num);
+	    SendErrToClient(client, err, (pointer) &num);
 	    return err;
 	}
     }
@@ -481,13 +482,17 @@ ProcCreateAC(client)
     authp = (AuthContextPtr) LookupIDByType(client->index, stuff->acid,
 					    RT_AUTHCONT);
     if (authp) {
-	SendErrToClient(client, FSBadIDChoice, (pointer) stuff->acid);
+	SendErrToClient(client, FSBadIDChoice, (pointer) &stuff->acid);
 	return FSBadIDChoice;
     }
-    acp = (AuthPtr) ALLOCATE_LOCAL(stuff->num_auths * sizeof(AuthRec));
-    if (!acp) {
-	SendErrToClient(client, FSBadAlloc, (pointer) 0);
-	return FSBadAlloc;
+    acp = 0;
+    if (stuff->num_auths)
+    {
+    	acp = (AuthPtr) ALLOCATE_LOCAL(stuff->num_auths * sizeof(AuthRec));
+    	if (!acp) {
+	    SendErrToClient(client, FSBadAlloc, (pointer) 0);
+	    return FSBadAlloc;
+    	}
     }
     /* build up a list of the stuff */
     for (i = 0, ad = (pointer) &stuff[1]; i < stuff->num_auths; i++) {
@@ -502,19 +507,24 @@ ProcCreateAC(client)
     }
 
 /* XXX needs work for AuthContinue */
+    index = stuff->num_auths;
     err = CheckClientAuthorization(client, acp, &accept, &index, &size,
 				   &auth_data);
 
     if (err != FSSuccess) {
 	SendErrToClient(client, err, (pointer) 0);
-	DEALLOCATE_LOCAL(acp);
+	if (acp)
+	    DEALLOCATE_LOCAL(acp);
 	return err;
     }
-    if (index > 0) {		/* build a new auth context */
-	authp = (AuthContextPtr) fsalloc(sizeof(AuthContextRec));
-	if (!authp) {
-	    goto alloc_failure;
-	}
+    authp = (AuthContextPtr) fsalloc(sizeof(AuthContextRec));
+    if (!authp) {
+	goto alloc_failure;
+    }
+    authp->authname = 0;
+    authp->authdata = 0;
+    if (index >= 0)
+    {
 	authp->authname = (char *) fsalloc(acp[index].namelen + 1);
 	authp->authdata = (char *) fsalloc(acp[index].datalen + 1);
 	if (!authp->authname || !authp->authdata) {
@@ -525,13 +535,14 @@ ProcCreateAC(client)
 	}
 	bcopy(acp[index].name, authp->authname, acp[index].namelen);
 	bcopy(acp[index].data, authp->authdata, acp[index].datalen);
-	authp->acid = stuff->acid;
     }
-    if (!AddResource(client->index, stuff->acid, RT_AUTHCONT,
-		     (pointer) authp)) {
+    authp->acid = stuff->acid;
+    if (!AddResource(client->index, stuff->acid, RT_AUTHCONT,(pointer) authp)) 
+    {
 alloc_failure:
 	SendErrToClient(client, FSBadAlloc, (pointer) 0);
-	DEALLOCATE_LOCAL(acp);
+	if (acp)
+	    DEALLOCATE_LOCAL(acp);
 	return FSBadAlloc;
     }
     DEALLOCATE_LOCAL(acp);
@@ -547,17 +558,32 @@ alloc_failure:
 }
 
 int
+DeleteAuthCont (value, id)
+    pointer value;
+    FSID    id;
+{
+    AuthContextPtr  authp = (AuthContextPtr) value;
+
+    if (authp->authname)
+	fsfree (authp->authname);
+    if (authp->authdata)
+	fsfree (authp->authdata);
+    fsfree (authp);
+    return 1;
+}
+
+int
 ProcFreeAC(client)
     ClientPtr   client;
 {
-    AuthContextPtr acp;
+    AuthContextPtr authp;
 
     REQUEST(fsFreeACReq);
     REQUEST_AT_LEAST_SIZE(fsFreeACReq);
-    acp = (AuthContextPtr) LookupIDByType(client->index, stuff->id,
+    authp = (AuthContextPtr) LookupIDByType(client->index, stuff->id,
 					  RT_AUTHCONT);
-    if (!acp) {
-	SendErrToClient(client, FSBadIDChoice, (pointer) stuff->id);
+    if (!authp) {
+	SendErrToClient(client, FSBadIDChoice, (pointer) &stuff->id);
 	return FSBadIDChoice;
     }
     FreeResource(client->index, stuff->id, RT_NONE);
@@ -575,7 +601,7 @@ ProcSetAuthorization(client)
     acp = (AuthContextPtr) LookupIDByType(client->index, stuff->id,
 					  RT_AUTHCONT);
     if (!acp) {
-	SendErrToClient(client, FSBadIDChoice, (pointer) stuff->id);
+	SendErrToClient(client, FSBadIDChoice, (pointer) &stuff->id);
 	return FSBadIDChoice;
     }
     client->auth = acp;		/* XXX does this need a refcount? */
