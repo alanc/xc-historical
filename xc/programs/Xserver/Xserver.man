@@ -168,10 +168,10 @@ sets default connection timeout in seconds.
 ignored, for servers started the ancient way (from init).
 .TP 8
 .B v
-sets video-on screen-saver preference.
+sets video-off screen-saver preference.
 .TP 8
 .B \-v
-sets video-off screen-saver preference.
+sets video-on screen-saver preference.
 .TP 8
 .B \-wm
 forces the default backing-store of all windows to be WhenMapped;
