@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dixstruct.h,v 1.19 93/09/03 08:28:57 dpw Exp $ */
+/* $XConsortium: dixstruct.h,v 1.20 93/09/05 10:51:41 rws Exp $ */
 
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
@@ -103,6 +103,13 @@ typedef struct _WorkQueue {
 
 extern TimeStamp currentTime;
 extern TimeStamp lastDeviceEventTime;
+
+extern int CompareTimeStamps(
+#if NeedFunctionPrototypes
+    TimeStamp /*a*/,
+    TimeStamp /*b*/
+#endif
+);
 
 extern TimeStamp ClientTimeToServerTime(
 #if NeedFunctionPrototypes
