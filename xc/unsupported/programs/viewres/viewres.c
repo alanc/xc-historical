@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.45 90/02/28 18:46:39 jim Exp $
+ * $XConsortium: viewres.c,v 1.46 90/03/01 13:02:24 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -658,19 +658,25 @@ static void toggle_callback (gw, closure, data)
     update_selection_items ();
 }
 
+static Boolean in_report = FALSE;
+static XawPannerReport lastrep;
+
 /* ARGSUSED */
 static void panner_callback (gw, closure, data)
     Widget gw;
     caddr_t closure;			/* undefined */
     caddr_t data;			/* report */
 {
-    XawPannerReport *rep = (XawPannerReport *) data;
-    Arg args[2];
-
+    if (in_report) return;
     if (portholeWidget) {
+	XawPannerReport *rep = (XawPannerReport *) data;
+	Arg args[2];
+
+	in_report = TRUE;
 	XtSetArg (args[0], XtNx, -rep->slider_x);
 	XtSetArg (args[1], XtNy, -rep->slider_y);
 	XtSetValues (treeWidget, args, TWO);
+	in_report = FALSE;
     }
 }
 
@@ -680,12 +686,13 @@ static void porthole_callback (gw, closure, data)
     caddr_t closure;			/* undefined */
     caddr_t data;			/* report */
 {
-    XawPannerReport *rep = (XawPannerReport *) data;
-
+    if (in_report) return;
     if (pannerWidget) {
+	XawPannerReport *rep = (XawPannerReport *) data;
 	Arg args[6];
 	Cardinal n = TWO;
 
+	in_report = TRUE;
 	XtSetArg (args[0], XtNsliderX, rep->slider_x);
 	XtSetArg (args[1], XtNsliderY, rep->slider_y);
 	if (rep->changed != (XawPRSliderX | XawPRSliderY)) {
@@ -696,6 +703,7 @@ static void porthole_callback (gw, closure, data)
 	    n = SIX;
 	}
 	XtSetValues (pannerWidget, args, n);
+	in_report = FALSE;
     }
 }
 
