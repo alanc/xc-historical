@@ -39,10 +39,7 @@ Xtransport	*Xtransports[] = {
 
 
 #ifdef WIN32
-#define ESET(val) WSASetLastError(val)
 #define ioctl ioctlsocket
-#else
-#define ESET(val) errno = val
 #endif
 
 
@@ -85,6 +82,7 @@ PRMSG(3,"TRANS(SelectTransport)(%s)\n",protocol, 0, 0);
 strncpy(protobuf,protocol,PROTOBUFSIZE);
 
 for(i=0;i<PROTOBUFSIZE&&protobuf[i]!='\0';i++)
+    if (isupper(protobuf[i]))
 	protobuf[i]=tolower(protobuf[i]);
 
 /* Look at all of the configured protocols */
@@ -772,7 +770,6 @@ return 0;
 /*
  * Cray UniCOS does not have readv and writev so we emulate
  */
-#include <sys/socket.h> /* why is this needed?? */
 
 int TRANS(ReadV) (ciptr, iov, iovcnt)
 XtransConnInfo	ciptr;
