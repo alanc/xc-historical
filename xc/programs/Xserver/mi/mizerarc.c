@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.2 89/09/04 11:05:23 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.3 89/09/04 13:33:46 rws Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -81,8 +81,18 @@ miZeroCircleSetup(arc, info)
 	startAngle = startAngle % FULLCIRCLE;
     if (endAngle < 0)
 	endAngle = FULLCIRCLE - (-endAngle) % FULLCIRCLE;
-    if (endAngle > FULLCIRCLE)
-	endAngle = (endAngle-1) % FULLCIRCLE + 1;
+    if (endAngle >= FULLCIRCLE)
+	endAngle = endAngle % FULLCIRCLE;
+    if (startAngle == endAngle)
+    {
+	info->startx = -1;
+	info->endx = -1;
+	if (angle2)
+	    info->initialMask = 0xff;
+	else
+	    info->initialMask = 0;
+	return;
+    }
     startseg = startAngle / EIGHTH;
     if ((startseg + 1) & 2)
 	info->startx = Dcos((double)startAngle/64.0) * r;
@@ -134,13 +144,11 @@ miZeroCircleSetup(arc, info)
 	if ((info->startx > info->endx) && !overlap)
 	    info->startMask &= ~(1 << endseg);
     }
-    if (info->startx == info->endx)
-	info->startMask = info->endMask;
     if ((arc->width & 1) && !info->startx)
     {
-	info->startx = 1;
-	if (info->endx == 1)
+	if (!info->endx)
 	    info->startMask = info->endMask;
+	info->startx = 1;
     }
 }
 
@@ -163,8 +171,6 @@ miZeroCirclePts(arc, pts)
     {
 	if (x == info.startx)
 	    mask = info.startMask;
-	else if (x == info.endx)
-	    mask = info.endMask;
 	if (mask & 1)
 	{
 	    pts->x = info.xorg + y;
@@ -189,32 +195,37 @@ miZeroCirclePts(arc, pts)
 	    pts->y = info.yorg + y;
 	    pts++;
 	}
-	if ((x == y) || (x == 0))
-	    continue;
-	if (mask & 2)
+	if (x == y)
+	    break;
+	if (x)
 	{
-	    pts->x = info.xorg + x;
-	    pts->y = info.yorgo - y;
-	    pts++;
+	    if (mask & 2)
+	    {
+		pts->x = info.xorg + x;
+		pts->y = info.yorgo - y;
+		pts++;
+	    }
+	    if (mask & 8)
+	    {
+		pts->x = info.xorgo - y;
+		pts->y = info.yorgo - x;
+		pts++;
+	    }
+	    if (mask & 32)
+	    {
+		pts->x = info.xorgo - x;
+		pts->y = info.yorg + y;
+		pts++;
+	    }
+	    if (mask & 128)
+	    {
+		pts->x = info.xorg + y;
+		pts->y = info.yorg + x;
+		pts++;
+	    }
 	}
-	if (mask & 8)
-	{
-	    pts->x = info.xorgo - y;
-	    pts->y = info.yorgo - x;
-	    pts++;
-	}
-	if (mask & 32)
-	{
-	    pts->x = info.xorgo - x;
-	    pts->y = info.yorg + y;
-	    pts++;
-	}
-	if (mask & 128)
-	{
-	    pts->x = info.xorg + y;
-	    pts->y = info.yorg + x;
-	    pts++;
-	}
+	if (x == info.endx)
+	    mask = info.endMask;
 	if (d < 0)
 	{
 	    d += (x << 2) + dn;
