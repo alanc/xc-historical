@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium$";
+static char rcsid[] = "$XConsortium: StrToCurs.c,v 1.1 88/09/09 14:56:28 swick Exp $";
 #endif lint
 
 
@@ -30,6 +30,8 @@ SOFTWARE.
 #include	<X11/Intrinsic.h>
 #include	<X11/StringDefs.h>
 #include	<X11/cursorfont.h>
+#include	<X11/IntrinsicP.h>	/* 'cause CoreP.h needs it */
+#include	<X11/CoreP.h>		/* just to do XtConvert() */
 #include	<sys/param.h>		/* just to get MAXPATHLEN */
 #include	"Xmu.h"
 
@@ -38,7 +40,8 @@ extern void CvtStringToCursor();
 /*
  * XmuConvertStringToCursor:
  *
- * allows String to specify a standard cursor name (from cursorfont.h),
+ * allows String to specify a standard cursor name (from cursorfont.h), a
+ * font name and glyph index of the form "FONT fontname index [[font] index]", 
  * or a bitmap file name (absolute, or relative to the global resource
  * bitmapFilePath, class BitmapFilePath).  If the resource is not
  * defined, the default value is the build symbol BITMAPDIR.
@@ -64,6 +67,8 @@ static XtConvertArgRec screenConvertArg[] = {
 #define BITMAPDIR "/usr/include/X11/bitmaps"
 #endif
 
+#define FONTSPECIFIER		"FONT "
+
 /*ARGSUSED*/
 void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
     XrmValuePtr args;
@@ -78,8 +83,8 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
     static char* bitmap_file_path = NULL;
     char filename[MAXPATHLEN];
     Pixmap source, mask;
-    static XColor bgColor = {0, 0, 0, 0};
-    static XColor fgColor = {0, ~0, ~0, ~0};
+    static XColor bgColor = {0, ~0, ~0, ~0};
+    static XColor fgColor = {0, 0, 0, 0};
     int width, height, xhot, yhot;
 
     static struct _CursorName {
@@ -173,6 +178,63 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
               (String *)NULL, (Cardinal *)NULL);
 
     screen = *((Screen **) args[0].addr);
+
+    if (0 == strncmp(FONTSPECIFIER, name, strlen(FONTSPECIFIER))) {
+	char source_name[MAXPATHLEN], mask_name[MAXPATHLEN];
+	int source_char, mask_char, fields;
+	WidgetRec widgetRec;
+	Font source_font, mask_font;
+	XrmValue fromString, toFont;
+
+	fields = sscanf(name, "FONT %s %d %s %d",
+			source_name, &source_char,
+			mask_name, &mask_char);
+	if (fields < 2) {
+	    XtStringConversionWarning( name, "Cursor" );
+	    return;
+	}
+
+	/* widgetRec is stupid; we should just use XtDirectConvert,
+	 * but the names in Xt/Converters aren't public. */
+	widgetRec.core.screen = screen;
+	fromString.addr = source_name;
+	fromString.size = strlen(source_name);
+	XtConvert(&widgetRec, XtRString, &fromString, XtRFont, &toFont);
+	if (toFont.addr == NULL) {
+	    XtStringConversionWarning( name, "Cursor" );
+	    return;
+	}
+	source_font = *(Font*)toFont.addr;
+
+	switch (fields) {
+	  case 2:		/* defaulted mask font & char */
+	    mask_font = source_font;
+	    mask_char = source_char;
+	    break;
+
+	  case 3:		/* defaulted mask font */
+	    mask_font = source_font;
+	    mask_char = atoi(mask_name);
+	    break;
+
+	  case 4:		/* specified mask font & char */
+	    fromString.addr = mask_name;
+	    fromString.size = strlen(mask_name);
+	    XtConvert(&widgetRec, XtRString, &fromString, XtRFont, &toFont);
+	    if (toFont.addr == NULL) {
+		XtStringConversionWarning( name, "Cursor" );
+		return;
+	    }
+	    mask_font = *(Font*)toFont.addr;
+	}
+
+	cursor = XCreateGlyphCursor( DisplayOfScreen(screen), source_font,
+				     mask_font, source_char, mask_char,
+				     &fgColor, &bgColor );
+	done(&cursor, Cursor);
+	return;
+    }
+
     for (i=0, cache=cursor_names; i < XtNumber(cursor_names); i++, cache++ ) {
 	if (strcmp(name, cache->name) == 0) {
 	    if (!cache->cursor)
