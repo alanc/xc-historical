@@ -1,4 +1,4 @@
-/* $Header: Xutil.h,v 11.35 87/08/18 15:31:43 jg Exp $ */
+/* $Header: Xutil.h,v 11.36 87/08/31 01:53:19 hania Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -110,6 +110,11 @@ typedef struct {
 	int max_width, max_height;
 	int width_inc, height_inc;
 } XIconSize;
+
+typedef struct {
+	char *res_name;
+	char *res_class;
+} XClassHint;
 
 /*
  * These macros are used to give some sugar to the image routines so that
