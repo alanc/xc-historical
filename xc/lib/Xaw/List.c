@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER))
-  static char Xrcs_id[] = "$XConsortium: List.c,v 1.16 89/05/11 14:00:48 kit Exp $";
+  static char Xrcs_id[] = "$XConsortium: List.c,v 1.17 89/05/15 16:50:59 kit Exp $";
 #endif
 
 /***********************************************************
@@ -47,7 +47,10 @@ SOFTWARE.
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 
+#include <X11/Xmu/Xmu.h>
+
 #include <X11/Xaw/ListP.h>
+
 
 /* 
  * Default Translation table.
@@ -203,8 +206,8 @@ Widget w;
 Boolean changex, changey;
 {
     ListWidget lw = (ListWidget) w;
-    int width = w->core.width;
-    int height = w->core.height;
+    Dimension width = w->core.width;
+    Dimension height = w->core.height;
 
     if (lw->list.nitems == 0)	/* Get number of items. */
         while (lw->list.list[lw->list.nitems] != NULL)
@@ -237,13 +240,13 @@ Boolean changex, changey;
 static void
 ChangeSize(w, width, height)
 Widget w;
-int width, height;
+Dimension width, height;
 {
-    int w_ret, h_ret;
+    Dimension w_ret, h_ret;
 
     (void) Layout(w, FALSE, FALSE, &width, &height);
 
-    switch ( XtMakeResizeRequest(w, width, height, &w_ret, &h_ret) ) {
+    switch ( XtMakeResizeRequest(w, width,height, &w_ret, &h_ret) ) {
     case XtGeometryYes:
     case XtGeometryNo:
         break;
@@ -539,11 +542,12 @@ PreferredGeom(w, intended, requested)
 Widget w;
 XtWidgetGeometry *intended, *requested;
 {
-    int width_req, height_req, new_width, new_height;
-    Boolean change;
+    Dimension new_width, new_height;
+    Boolean change, width_req, height_req;
     
     width_req = intended->request_mode & CWWidth;
     height_req = intended->request_mode & CWHeight;
+
     if (width_req)
       new_width = intended->width;
     else
@@ -560,9 +564,8 @@ XtWidgetGeometry *intended, *requested;
  * We only care about our height and width.
  */
 
-    if ( !width_req && !height_req) {
+    if ( !width_req && !height_req)
       return(XtGeometryYes);
-    }
     
     change = Layout(w, !width_req, !height_req, &new_width, &new_height);
 
@@ -587,7 +590,7 @@ static void
 Resize(w)
 Widget w;
 {
-  int width, height;
+  Dimension width, height;
 
   width = w->core.width;
   height = w->core.height;
@@ -613,7 +616,7 @@ static Boolean
 Layout(w, xfree, yfree, width, height)
 Widget w;
 Boolean xfree, yfree;
-int *width, *height;
+Dimension *width, *height;
 {
     ListWidget lw = (ListWidget) w;
     Boolean change = FALSE;
@@ -663,8 +666,8 @@ int *width, *height;
  * of the widget to fit the current list exactly.
  */
     else if (!xfree) {
-        lw->list.ncols = (*width - 2 * lw->list.internal_width)
-	               / lw->list.col_width;
+        lw->list.ncols = ( (*width - 2 * lw->list.internal_width)
+	                    / lw->list.col_width);
 	if (lw->list.ncols <= 0) lw->list.ncols = 1;
 	lw->list.nrows = ( ( lw->list.nitems - 1) / lw->list.ncols) + 1 ;
 	if ( yfree ) {
