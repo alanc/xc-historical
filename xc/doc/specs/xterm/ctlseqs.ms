@@ -1,4 +1,6 @@
 .\"#! troff -Q -ms $1
+.\" "Xterm Control Sequences" document
+.\" $XConsortium$
 .\" This is the "Xterm Control Sequences" document, originally written by
 .\" Edward Moy, University of California, Berkeley, for the X.V10R4 xterm.
 .\" Some minor edits have been made to begin to reconcile this document with
@@ -159,6 +161,7 @@
 .[] | |
 .[] } }
 .[] c~ ~
+.[] Sc \fIc\fP
 .ds Cc \fIC\fP
 .ds Ps \fIP\v'.3m'\h'-.2m'\s-2s\s0\v'-.3m'\fP
 .ds Pm \fIP\v'.3m'\h'-.2m'\s-2m\s0\v'-.3m'\fP
@@ -172,11 +175,24 @@
 .nr LL 6.5i
 .TL
 Xterm Control Sequences
+.AU
+Edward Moy
+.AI
+University of California, Berkeley
+.sp
+Revised by
+.AU
+Stephen Gildea
+.AI
+MIT X Consortium
+
 .am NP
 .ds CF %
 ..
 .SH
 Definitions
+.IP \*(Sc
+The literal character \fIc\fP.
 .IP \*(Cc
 A single (required) character.
 .IP \*(Ps
@@ -194,45 +210,51 @@ Most of these control sequences are standard VT102 control sequences.
 There are, however, additional ones to provide control of
 .I xterm
 dependent functions, like the scrollbar or window size.
+Where the function is specified by DEC or ISO 6429, the code assigned
+to it is given in parentheses.  The escape codes to designate
+character sets are specified by ISO 2022; see that document for a
+discussion of character sets.
 .St
 .IP \\*(Be
 Bell (Ctrl-G)
 .IP \\*(Bs
 Backspace (Ctrl-H)
 .IP \\*(Ta
-Horizontal Tab (Ctrl-I)
+Horizontal Tab (HT) (Ctrl-I)
 .IP \\*(Lf
-Line Feed or New Line (Ctrl-J)
+Line Feed or New Line (NL) (Ctrl-J)
 .IP \\*(Vt
-Vertical Tab (Ctrl-K)
+Vertical Tab (Ctrl-K) same as LF
 .IP \\*(Ff
-Form Feed or New Page (Ctrl-L)
+Form Feed or New Page (NP) (Ctrl-L) same as LF
 .IP \\*(Cr
 Carriage Return (Ctrl-M)
 .IP \\*(So
-Shift Out (Ctrl-N) \(-> Switch to Alternate Character Set
+Shift Out (Ctrl-N) \(-> Switch to Alternate Character Set: invokes the
+G1 character set.
 .IP \\*(Si
-Shift In (Ctrl-O) \(-> Switch to Standard Character Set
+Shift In (Ctrl-O) \(-> Switch to Standard Character Set: invokes the
+G0 character set (the default).
 .IP \\*(Es\\*#\\*8
 DEC Screen Alignment Test (DECALN)
 .IP \\*(Es\\*(((\\*(Cc
-Select G0 Character Set (SCS)
-  \*(Cc = \*0 \(-> Special Character and Line Drawing Set
+Designate G0 Character Set (ISO 2022)
+  \*(Cc = \*0 \(-> DEC Special Character and Line Drawing Set
   \*(Cc = \*A \(-> United Kingdom (UK)
   \*(Cc = \*(cB \(-> United States (USASCII)
 .IP \\*(Es\\*)\\*(Cc
-Select G1 Character Set (SCS)
-  \*(Cc = \*0 \(-> Special Character and Line Drawing Set
+Designate G1 Character Set (ISO 2022)
+  \*(Cc = \*0 \(-> DEC Special Character and Line Drawing Set
   \*(Cc = \*A \(-> United Kingdom (UK)
   \*(Cc = \*(cB \(-> United States (USASCII)
 .IP \\*(Es\\**\\*(Cc
-Select G2 Character Set (SCS)
-  \*(Cc = \*0 \(-> Special Character and Line Drawing Set
+Designate G2 Character Set (ISO 2022)
+  \*(Cc = \*0 \(-> DEC Special Character and Line Drawing Set
   \*(Cc = \*A \(-> United Kingdom (UK)
   \*(Cc = \*(cB \(-> United States (USASCII)
 .IP \\*(Es\\*+\\*(Cc
-Select G3 Character Set (SCS)
-  \*(Cc = \*0 \(-> Special Character and Line Drawing Set
+Designate G3 Character Set (ISO 2022)
+  \*(Cc = \*0 \(-> DEC Special Character and Line Drawing Set
   \*(Cc = \*A \(-> United Kingdom (UK)
   \*(Cc = \*(cB \(-> United States (USASCII)
 .IP \\*(Es\\*7
@@ -252,9 +274,9 @@ Tab Set (HTS)
 .IP \\*(Es\\*M
 Reverse Index (RI)
 .IP \\*(Es\\*N
-Single Shift Select of G2 Character Set (SS2)
+Single Shift Select of G2 Character Set (SS2): affects next character only
 .IP \\*(Es\\*O
-Single Shift Select of G3 Character Set (SS3)
+Single Shift Select of G3 Character Set (SS3): affects next character only
 .IP \\*(Es\\*Z
 Return Terminal ID (DECID)
 .IP \\*(Es\\*([[\\*(Ps\|\\*@
@@ -288,7 +310,7 @@ Delete \*(Ps Character(s) (default = 1) (DCH)
 .IP \\*(Es\\*([[\\*(Ps\|\\*;\\*(Ps\|\\*;\\*(Ps\|\\*;\\*(Ps\|\\*;\\*(Ps\|\\*T
 Track Mouse [func;startcol;startrow;firstrow;lastrow] XXX - describe
 .IP \\*(Es\\*([[\\*(Ps\|\\*c
-Device Attributes (default 0) (DA)
+Device Attributes (default 0) (DA) XXX - describe
 .IP \\*(Es\\*([[\\*(Ps\|\\*;\\*(Ps\|\\*f
 Horizontal and Vertical Position [row;column] (default = [1,1]) (HVP)
 .IP \\*(Es\\*([[\\*(Ps\|\\*g
@@ -296,24 +318,24 @@ Tab Clear
   \*(Ps = \*0 \(-> Clear Current Column (default)
   \*(Ps = \*3 \(-> Clear All
 .IP \\*(Es\\*([[\\*(Ps\|\\*h
-Mode Set (SET)
+Set Mode (SM)
   \*(Ps = \*4 \(-> Insert Mode (IRM)
   \*(Ps = \*2\*0 \(-> Automatic Linefeed (LNM)
 .IP \\*(Es\\*([[\\*(Ps\|\\*l
-Mode Reset (RST)
+Reset Mode (RM)
   \*(Ps = \*4 \(-> Insert Mode (IRM)
   \*(Ps = \*2\*0 \(-> Automatic Linefeed (LNM)
 .IP \\*(Es\\*([[\\*(Pm\|\\*m
 Character Attributes (SGR)
   \*(Ps = \*0 \(-> Normal (default)
-  \*(Ps = \*1 \(-> Blink (appears as Bold)
+  \*(Ps = \*1 \(-> Bold
   \*(Ps = \*4 \(-> Underscore
-  \*(Ps = \*5 \(-> Bold
+  \*(Ps = \*5 \(-> Blink (appears as Bold)
   \*(Ps = \*7 \(-> Inverse
 .IP \\*(Es\\*([[\\*(Ps\|\\*n
 Device Status Report (DSR)
-  \*(Ps = 5 \(-> Status Report \*(Es\*([[\*0\*n \(-> OK
-  \*(Ps = 6 \(-> Report Cursor Position (CPR) [row;column] as
+  \*(Ps = \*5 \(-> Status Report \*(Es\*([[\*0\*n \(-> OK
+  \*(Ps = \*6 \(-> Report Cursor Position (CPR) [row;column] as
 \*(Es\*([[\*(Ir\|\*;\*(Ic\|\*R
 .IP \\*(Es\\*([[\\*(Ps\|\\*;\\*(Ps\|\\*r
 Set Scrolling Region [top;bottom] (default = full size of window) (DECSTBM)
@@ -322,22 +344,26 @@ Request Terminal Parameters (DECREQTPARM)
 .IP \\*(Es\\*([[\\*?\\*(Ps\|\\*h
 DEC Private Mode Set (DECSET)
   \*(Ps = \*1 \(-> Application Cursor Keys (DECCKM)
+  \*(Ps = \*2 \(-> Select ANSI mode (DECANM).  Since \fIxterm\fP
+doesn't support VT52 mode, this is not too exciting.  It designates
+USASCII for character sets G0-G3.
   \*(Ps = \*3 \(-> 132 Column Mode (DECCOLM)
   \*(Ps = \*4 \(-> Smooth (Slow) Scroll (DECSCLM)
   \*(Ps = \*5 \(-> Reverse Video (DECSCNM)
   \*(Ps = \*6 \(-> Origin Mode (DECOM)
   \*(Ps = \*7 \(-> Wraparound Mode (DECAWM)
   \*(Ps = \*8 \(-> Auto-repeat Keys (DECARM)
-  \*(Ps = \*9 \(-> Send MIT Mouse Row & Column on Button Press
+  \*(Ps = \*9 \(-> Send MIT Mouse Row & Column on Button Press XXX - describe
   \*(Ps = \*3\*8 \(-> Enter Tektronix Mode (DECTEK)
   \*(Ps = \*4\*0 \(-> Allow 80 \z\(<-\(-> 132 Mode
   \*(Ps = \*4\*1 \(-> \fIcurses\fP(5) fix
   \*(Ps = \*4\*4 \(-> Turn On Margin Bell
   \*(Ps = \*4\*5 \(-> Reverse-wraparound Mode
   \*(Ps = \*4\*6 \(-> Start Logging
-  \*(Ps = \*4\*7 \(-> Use Alternate Screen Buffer
-  \*(Ps = \*1\*0\*0\*0 \(-> Send VT200 Mouse Row & Column on Button Press
-  \*(Ps = \*1\*0\*0\*1 \(-> Send VT200 Hilite Mouse Row & Column on Button Press
+  \*(Ps = \*4\*7 \(-> Use Alternate Screen Buffer (unless
+disabled by the \fBtiteInhibit\fP resource)
+  \*(Ps = \*1\*0\*0\*0 \(-> Send VT200 Mouse Row & Column on Button Press XXX - describe
+  \*(Ps = \*1\*0\*0\*1 \(-> Send VT200 Hilite Mouse Row & Column on Button Press XXX - describe
 .IP \\*(Es\\*([[\\*?\\*(Ps\|\\*l
 DEC Private Mode Reset (DECRST)
   \*(Ps = \*1 \(-> Normal Cursor Keys (DECCKM)
@@ -397,14 +423,21 @@ Set Text Parameters
   \*(Ps = \*0 \(-> Change Icon Name and Window Title to \*(Pt
   \*(Ps = \*1 \(-> Change Icon Name to \*(Pt
   \*(Ps = \*2 \(-> Change Window Title to \*(Pt
-  \*(Ps = \*4\*6 \(-> Change Log File to \*(Pt
+  \*(Ps = \*4\*6 \(-> Change Log File to \*(Pt (normally disabled by a
+compile-time option)
   \*(Ps = \*5\*0 \(-> Set Font to \*(Pt
 .IP \\*(Es\\*c
 Full Reset (RIS)
 .IP \\*(Es\\*n
-Locking Shift Select of G2 Character Set (LS2)
+Select the G2 Character Set (LS2)
 .IP \\*(Es\\*o
-Locking Shift Select of G3 Character Set (LS3)
+Select the G3 Character Set (LS3)
+.IP \\*(Es\\*|
+Invoke the G3 Character Set as GR (LS3R).  Has no visible effect in \fIxterm\fP.
+.IP \\*(Es\\*}
+Invoke the G2 Character Set as GR (LS2R).  Has no visible effect in \fIxterm\fP.
+.IP \\*(Es\\*~
+Invoke the G1 Character Set as GR (LS1R).  Has no visible effect in \fIxterm\fP.
 .Ed
 .SH
 Tektronix 4015 Mode
@@ -413,6 +446,8 @@ Tektronix 4015 Mode
 Most of these sequences are standard Tektronix 4015 control sequences.
 The major features missing are the alternate (APL) character set and
 the write-thru and defocused modes.
+This document does not describe the commands used in the various
+Tektronix plotting modes, but does describe the commands to switch modes.
 .St
 .IP \\*(Be
 Bell (Ctrl-G)
@@ -423,7 +458,7 @@ Horizontal Tab (Ctrl-I)
 .IP \\*(Lf
 Line Feed or New Line (Ctrl-J)
 .IP \\*(Vt
-Vertical Tab (Ctrl-K)
+Cursor up (Ctrl-K)
 .IP \\*(Ff
 Form Feed or New Page (Ctrl-L)
 .IP \\*(Cr
@@ -442,12 +477,6 @@ Bypass Condition
 GIN mode
 .IP \\*(Es\\*(Fs
 Special Point Plot Mode
-.IP \\*(Es\\*(Gs
-Graph Mode (same as \*(Gs)
-.IP \\*(Es\\*(Rs
-Incremental Plot Mode (same as \*(Rs)
-.IP \\*(Es\\*(Us
-Alpha Mode (same as \*(Us)
 .IP \\*(Es\\*8
 Select Large Character Set
 .IP \\*(Es\\*9
@@ -457,7 +486,7 @@ Select #3 Character Set
 .IP \\*(Es\\*;
 Select Small Character Set
 .IP \\*(Es\\*]\\*(Ps\|\\*;\\*(Pt\|\\*(Be
-Set Text Parameters
+Set Text Parameters of VT window
   \*(Ps = \*0 \(-> Change Icon Name and Window Title to \*(Pt
   \*(Ps = \*1 \(-> Change Icon Name to \*(Pt
   \*(Ps = \*2 \(-> Change Window Title to \*(Pt
@@ -493,11 +522,11 @@ Write-Thru Mode and Short-Dashed Vectors
 .IP \\*(Es\\*t
 Write-Thru Mode and Long-Dashed Vectors
 .IP \\*(Fs
-Point Plot Mode
+Point Plot Mode (Ctrl-\e)
 .IP \\*(Gs
-Graph Mode
+Graph Mode (Ctrl-])
 .IP \\*(Rs
-Incremental Plot Mode
+Incremental Plot Mode (Ctrl-^)
 .IP \\*(Us
-Alpha Mode
+Alpha Mode (Ctrl-_)
 .Ed
