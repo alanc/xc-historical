@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: ButtonBox.c,v 1.17 87/12/14 09:14:21 swick Locked $";
+static char rcsid[] = "$Header: ButtonBox.c,v 1.18 87/12/17 09:03:24 swick Locked $";
 #endif lint
 
 /*
@@ -232,7 +232,7 @@ static void Resize(w)
 static Boolean TryNewLayout(bbw)
     ButtonBoxWidget	bbw;
 {
-    Dimension		width, height;
+    Dimension		width, height, junk_w, junk_h;
 
     if (!PreferredSize(bbw, bbw->core.width, bbw->core.height, &width, &height))
 	(void) PreferredSize(bbw, width, height, &width, &height);
@@ -249,10 +249,13 @@ static Boolean TryNewLayout(bbw)
 	    return (TRUE);
 
 	case XtGeometryNo:
-	    return (FALSE);
+	    if ((width <= bbw->core.width) && (height <= bbw->core.height))
+	        return (TRUE);
+	    else
+	        return (FALSE);
 
 	case XtGeometryAlmost:
-	    if (! PreferredSize(bbw, width, height, &width, &height))
+	    if (! PreferredSize(bbw, width, height, &junk_w, &junk_h))
 	        return (FALSE);
 	    (void) XtMakeResizeRequest((Widget) bbw, width, height, 
 					&width, &height);
