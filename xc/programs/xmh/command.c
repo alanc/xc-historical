@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: command.c,v 1.13 87/07/31 09:35:45 weissman Exp $";
+static char rcs_id[] = "$Header: command.c,v 1.13 87/09/11 08:18:00 toddb Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -29,13 +29,17 @@ static char rcs_id[] = "$Header: command.c,v 1.13 87/07/31 09:35:45 weissman Exp
 /* command.c -- interface to exec mh commands. */
 
 #include "xmh.h"
+#ifdef X10
 #include <sys/types.h>
+#include <sys/time.h>
+#include <sys/file.h>
+#endif	/* X10 */
 #include <sys/stat.h>
 #include <sys/signal.h>
+#ifndef SYSV
 #include <sys/wait.h>
-#include <sys/time.h>
+#endif	/* !SYSV */
 #include <sys/resource.h>
-#include <sys/file.h>
 
 #ifndef FD_SET
 #define NFDBITS         (8*sizeof(fd_set))
@@ -95,7 +99,11 @@ if (debug) {(void)fprintf(stderr, "Executing %s ...", argv[0]); (void) fflush(st
 		(void) QXPending(theDisplay);
 	    }
 	}
+#ifdef SYSV
+	(void) wait((int *) NULL);
+#else	/* SYSV */
 	(void) wait((union wait *) NULL);
+#endif	/* SYSV */
 if (debug) (void)fprintf(stderr, " done\n");
     } else {			/* We're the child process. */
 	if (inputfile) {
@@ -154,7 +162,11 @@ if (debug) {(void)fprintf(stderr, "Executing %s ...", argv[0]); (void) fflush(st
     pid = vfork();
     if (pid == -1) Punt("Couldn't fork!");
     if (pid) {
+#ifdef SYSV
+	while (wait((int *) 0) == -1) ;
+#else	/* !SYSV */
 	while (wait((union wait *) 0) == -1) ;
+#endif	/* !SYSV */
 	l = read(fildes[0], result, 1024);
 	if (l <= 0) Punt("Couldn't read result from DoCommandToString");
 	(void) myclose(fildes[0]);
