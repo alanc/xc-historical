@@ -1,4 +1,4 @@
-/* $XConsortium: fsconvert.c,v 1.5 91/05/30 19:08:22 keith Exp $ */
+/* $XConsortium: fsconvert.c,v 1.6 91/06/16 12:40:39 keith Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -63,6 +63,8 @@ fs_convert_header(hdr, pfi)
     fsFontHeader *hdr;
     FontInfoPtr pfi;
 {
+    Bool    terminal;
+
     pfi->allExist = (hdr->flags & FontInfoAllCharsExist) != 0;
     pfi->drawDirection = (hdr->draw_direction == LeftToRightDrawDirection) ?
 	LeftToRight : RightToLeft;
@@ -77,9 +79,18 @@ fs_convert_header(hdr, pfi)
     pfi->fontDescent = hdr->font_descent;
     pfi->fontAscent = hdr->font_ascent;
 
-
     fs_convert_char_info(&hdr->min_bounds, &pfi->minbounds);
     fs_convert_char_info(&hdr->max_bounds, &pfi->maxbounds);
+
+    if (FontCouldBeTerminal (pfi))
+    {
+	pfi->terminalFont = TRUE;
+	pfi->minbounds.ascent = pfi->fontAscent;
+	pfi->minbounds.descent = pfi->fontDescent;
+	pfi->minbounds.leftSideBearing = 0;
+	pfi->minbounds.rightSideBearing = pfi->minbounds.characterWidth;
+	pfi->maxbounds = pfi->minbounds;
+    }
 
     fs_convert_char_info(&hdr->min_bounds, &pfi->ink_minbounds);
     fs_convert_char_info(&hdr->max_bounds, &pfi->ink_maxbounds);
