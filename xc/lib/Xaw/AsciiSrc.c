@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.5 89/07/10 17:35:00 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.6 89/07/11 16:44:44 kit Exp $";
 #endif /* lint && SABER */
 
 /*
@@ -1032,11 +1032,14 @@ Piece * prev;
     piece->next = NULL;
   }
   else {
+    if (prev->next != NULL)
+      (prev->next)->prev = piece;
     piece->next = prev->next;
     prev->next = piece;
   }
   
   piece->prev = prev;
+
   return(piece);
 }
 
