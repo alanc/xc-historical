@@ -368,7 +368,7 @@ int GetHeight(w)
    Widget w;
 {
     static int height;
-    static Arg args[] = { {XtNheight, &height} } ;
+    static Arg args[] = { {XtNheight, (XtArgVal)&height} } ;
 
     XtGetValues( w, args, (Cardinal)1 );
     return height;
@@ -379,7 +379,7 @@ int GetWidth(w)
    Widget w;
 {
     static int width;
-    static Arg args[] = { {XtNwidth, &width} } ;
+    static Arg args[] = { {XtNwidth, (XtArgVal)&width} } ;
 
     XtGetValues( w, args, (Cardinal)1 );
     return width;
