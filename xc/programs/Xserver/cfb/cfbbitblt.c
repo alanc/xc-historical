@@ -391,6 +391,46 @@ each band.
 translated.
 */
 
+
+/*
+ * magic macro for copying longword aligned regions -
+ * can easily be replaced with bcopy (from, to, count * 4)
+ * with some reduction in performance...
+ */
+
+#ifdef vax
+#define longcopy(from,to,count)\
+{ \
+      bcopy((char *) (from),(char *) (to),(count)<<2); \
+      (from) += (count); \
+      (to) += (count); \
+}
+#else
+#define longcopy(from,to,count)    \
+{ \
+    switch (count & 31) { \
+	do { \
+	  case 0:   *to++ = *from++;	  case 31:  *to++ = *from++; \
+	  case 30:  *to++ = *from++;	  case 29:  *to++ = *from++; \
+	  case 28:  *to++ = *from++;	  case 27:  *to++ = *from++; \
+	  case 26:  *to++ = *from++;	  case 25:  *to++ = *from++; \
+	  case 24:  *to++ = *from++;	  case 23:  *to++ = *from++; \
+	  case 22:  *to++ = *from++;	  case 21:  *to++ = *from++; \
+	  case 20:  *to++ = *from++;	  case 19:  *to++ = *from++; \
+	  case 18:  *to++ = *from++;	  case 17:  *to++ = *from++; \
+	  case 16:  *to++ = *from++;	  case 15:  *to++ = *from++; \
+	  case 14:  *to++ = *from++;	  case 13:  *to++ = *from++; \
+	  case 12:  *to++ = *from++;	  case 11:  *to++ = *from++; \
+	  case 10:  *to++ = *from++;	  case 9:   *to++ = *from++; \
+	  case 8:   *to++ = *from++;	  case 7:   *to++ = *from++; \
+	  case 6:   *to++ = *from++;	  case 5:   *to++ = *from++; \
+	  case 4:   *to++ = *from++;	  case 3:   *to++ = *from++; \
+	  case 2:   *to++ = *from++;	  case 1:   *to++ = *from++; \
+	} while ((count -= 32) > 0); \
+    } \
+}
+#endif
+
 cfbDoBitblt(pSrcDrawable, pDstDrawable, alu, prgnDst, pptSrc)
 DrawablePtr pSrcDrawable;
 DrawablePtr pDstDrawable;
@@ -637,13 +677,24 @@ DDXPointPtr pptSrc;
 			        psrc++;
 		        }
 
-		        nl = nlMiddle;
-		        while (nl--)
-		        {
-			    getbits(psrc, xoffSrc, PPW, tmpSrc)
-			    *pdst++ = tmpSrc;
-			    psrc++;
-		        }
+			/* special case for aligned copies (scrolling) */
+			if (xoffSrc == 0)
+			{
+			    
+			    if ((nl = nlMiddle) != 0)
+			    {
+				longcopy (psrc, pdst, nl)
+			    }
+			}
+ 			else
+			{
+			    nl = nlMiddle + 1;
+			    while (--nl)
+		            {
+				getbits (psrc, xoffSrc, PPW, *pdst++);
+				psrc++;
+			    }
+			}
 
 		        if (endmask)
 		        {
@@ -680,8 +731,7 @@ DDXPointPtr pptSrc;
 		        while (nl--)
 		        {
 			    --psrc;
-			    getbits(psrc, xoffSrc, PPW, tmpSrc)
-			    *--pdst = tmpSrc;
+			    getbits(psrc, xoffSrc, PPW, *--pdst)
 		        }
 
 		        if (startmask)
