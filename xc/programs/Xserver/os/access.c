@@ -1,4 +1,4 @@
-/* $XConsortium: access.c,v 1.69 94/03/23 21:40:23 dpw Exp $ */
+/* $XConsortium: access.c,v 1.70 94/03/24 14:54:05 mor Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -53,10 +53,10 @@ SOFTWARE.
 #  include <net/if.h>
 # endif
 #else
-#if defined(SVR4) || defined(SYSV386)
+#if defined(SVR4) ||  (defined(SYSV) && defined(i386))
 # include <sys/utsname.h>
 #endif
-#if defined(SYSV) && defined(SYSV386)
+#if defined(SYSV) &&  defined(i386)
 # include <sys/stream.h>
 #endif
 #ifdef ESIX
@@ -327,7 +327,7 @@ DefineSelf (fd)
     int		family;
     register HOST	*host;
 
-#ifdef __386BSD__
+#if defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__)
     char name[100];
 #else
     struct utsname name;
@@ -342,7 +342,7 @@ DefineSelf (fd)
     struct	sockaddr_in	*inetaddr;
     struct sockaddr_in broad_addr;
 
-#ifdef __386BSD__
+#if defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__)
     if (gethostname (name, sizeof name) < 0)
 	    hp = NULL;
     else
