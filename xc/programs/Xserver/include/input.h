@@ -99,6 +99,7 @@ typedef struct {
 
 typedef struct {
     Leds        led_values;
+    Mask        led_mask;
 } LedCtrl;
 
 extern KeybdCtrl	defaultKeyboardControl;
