@@ -967,10 +967,11 @@
 	   (event-decoder (and (< event-code (length *event-handler-vector*))
 			       (aref *event-handler-vector* event-code))))
       (if event-decoder
-	  (let ((event-handler (if (type? handler 'sequence)
-				   (and (< event-code (length handler))
-					(elt handler event-code))
-				 handler)))
+	  (let ((event-handler (if (functionp handler)
+				   handler
+				   (and (type? handler 'sequence)
+					(< event-code (length handler))
+					(elt handler event-code)))))
 	    (if event-handler
 		(let ((result (funcall event-decoder display event event-handler)))
 		  (when result
