@@ -1,5 +1,5 @@
 /*
- * $XConsortium: protodpy.c,v 1.8 91/05/06 23:53:39 gildea Exp $
+ * $XConsortium: protodpy.c,v 1.9 91/07/16 22:19:41 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -39,6 +39,7 @@
 
 static struct protoDisplay	*protoDisplays;
 
+#ifdef DEBUG
 static
 PrintProtoDisplay (pdpy)
     struct protoDisplay	*pdpy;
@@ -50,6 +51,7 @@ PrintProtoDisplay (pdpy)
     Debug ("\tdisplay Number %d\n", pdpy->displayNumber);
     Debug ("\tsessionID %d\n", pdpy->sessionID);
 }
+#endif
 
 struct protoDisplay *
 FindProtoDisplay (address, addrlen, displayNumber)
