@@ -1,7 +1,5 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.99 90/04/13 20:20:34 swick Exp $";
+/* "$XConsortium: TMstate.c,v 1.100 90/06/04 15:06:51 kit Exp $"; */
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
-#endif /* lint */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -38,6 +36,12 @@ SOFTWARE.
 #include "StringDefs.h"
 #include <stdio.h>
 #include "IntrinsicI.h"
+
+#ifdef __STDC__
+#define Const const
+#else
+#define Const /**/
+#endif
 
 static String XtNtranslationError = "translationError";
 
@@ -1045,7 +1049,7 @@ CompiledActionTable _CompileActionTable(actions, count)
 static EventMask EventToMask(event)
     EventObjPtr	event;
 {
-static EventMask masks[] = {
+static EventMask Const masks[] = {
         0,			    /* Error, should never see  */
         0,			    /* Reply, should never see  */
         KeyPressMask,		    /* KeyPress			*/
@@ -2543,7 +2547,7 @@ void _XtRegisterGrabs(widget,tm)
     }
 }
 
-static XtActionsRec tmActions[] = {
+static XtActionsRec Const tmActions[] = {
     {"XtMenuPopup", XtMenuPopupAction},
     {"XtMenuPopdown", _XtMenuPopdownAction},
     {"MenuPopup", XtMenuPopupAction}, /* old & obsolete */
@@ -2559,7 +2563,7 @@ static XtActionsRec tmActions[] = {
 void _XtPopupInitialize(app)
     XtAppContext app;
 {
-    XtAppAddActions(app, tmActions, XtNumber(tmActions));
+    XtAppAddActions(app, (XtActionList) tmActions, XtNumber(tmActions));
     if (grabActionList == NULL)
 	XtRegisterGrabAction( XtMenuPopupAction, True,
 			      (unsigned)(ButtonPressMask | ButtonReleaseMask),
