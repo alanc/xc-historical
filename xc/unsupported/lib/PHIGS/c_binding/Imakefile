@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.9 91/07/12 17:37:37 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.10 91/07/22 22:26:15 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -48,38 +48,20 @@ OBJS = cb_ar.o cb_erhd.o cb_inp.o cb_sedt.o cb_ws.o \
 HSRCS = cb_priv.h
 SRCS = $(CSRCS) $(HSRCS)
 
-.SUFFIXES: .o .lint
-
    PEXAPIINC = -I../include
   PEXINCLUDE = -I../../../include/PEX
     INCLUDES = $(PEXAPIINC) $(PEXINCLUDE) -I../../../../X11
 
-LINTOPTS = -u
 LINT_LIBS = ../cp/llib-lcp.ln ../util/llib-lut.ln ../error/llib-lerr.ln \
 		../ws_type/llib-lwst.ln
 XLINT_LIBS = $(LINTXLIB)
 
 SubdirLibraryRule($(OBJS))
 
-extract : $(SRCS)
+NormalLintTarget($(SRCS))
 
-lint:   $(SRCS)
-	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) 
-
-lint-x: $(SRCS)
-	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) 
-
-lintlib : llib-lcb.ln
-
-llib-lcb.ln : $(SRCS)
-	$(LINT) $(CSRCS) $(LINTFLAGS) -Ccb 
-
-lint-library: llib-lphigs.ln
-llib-lphigs.ln : phigs_cb.c phigs.c_bind
-	$(LINT) $(LINTFLAGS) -Cphigs phigs_cb.c
-
-.c.lint:
-	$(LINT) $< $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) 
+LintLibraryTarget(phigs,phigs_cb.c)
+InstallLintLibrary(phigs,$(LINTLIBDIR))
 
 #ifdef HPArchitecture
 SpecialObjectRule(hpext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
