@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.110 90/03/22 18:52:55 jim Exp $
+ * $XConsortium: twm.c,v 1.111 90/03/23 13:23:34 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.110 90/03/22 18:52:55 jim Exp $";
+"$XConsortium: twm.c,v 1.111 90/03/23 13:23:34 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -614,7 +614,7 @@ InitVariables()
     Scr->Highlight = TRUE;
     Scr->StackMode = TRUE;
     Scr->TitleHighlight = TRUE;
-    Scr->MoveDelta = 0;
+    Scr->MoveDelta = 1;		/* so that f.deltastop will work */
     Scr->ZoomCount = 8;
     Scr->SortIconMgr = FALSE;
     Scr->Shadow = TRUE;
