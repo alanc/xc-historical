@@ -24,6 +24,9 @@ NormalLibraryObjectRule()
 NormalLibraryTarget(ext,$(OBJS))
 LintLibraryTarget(ext,$(SRCS))
 NormalLintTarget($(SRCS))
+
+DependTarget()
+
 #ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
@@ -33,5 +36,3 @@ DependSubdirs($(SUBDIRS))
 saber_src:
 	/**/#load $(CFLAGS) $(SRCS)
 #endif
-
-DependTarget()
