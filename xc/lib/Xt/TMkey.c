@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.10 91/05/04 13:26:10 converse Exp $ */
+/* $XConsortium: TMkey.c,v 1.11 91/05/04 13:53:09 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -309,6 +309,7 @@ void _XtBuildKeysymTables(dpy,pd)
     if (pd->keysyms)
 	XtFree( (char *)pd->keysyms );
     XDisplayKeycodes(dpy, &pd->min_keycode, &pd->max_keycode);
+    pd->keysyms_serial = NextRequest(dpy);
     pd->keysyms = XGetKeyboardMapping(dpy, pd->min_keycode,
 				      pd->max_keycode-pd->min_keycode+1,
 				      &pd->keysyms_per_keycode);
