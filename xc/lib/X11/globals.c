@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: globals.c,v 1.1 89/06/15 11:46:50 jim Exp $
  */
 
 /*
@@ -28,16 +28,18 @@
 
 #include <sys/param.h>			/* for definition of NULL */
 
+
 #ifdef SHARELIB
 #include "Xresource.h"			/* for definitions of quarks */
 
-extern int _XIOError();
-extern int _XDefaultError();
 
 /* from XlibInt.c */
 
+extern int _XIOError();
+extern int _XDefaultError();
 int (*_XIOErrorFunction)() = _XIOError;
 int (*_XErrorFunction)()   = _XDefaultError;
+
 
 /* from XOpenDis.c */
 
@@ -46,8 +48,9 @@ long _XdebugFlag = 0;
 void * _XdebugPtr = NULL;
 
 Display *_XHeadOfDisplayList = NULL;
-long _HeadOfDisplayListFlag = 0;
+long _XHeadOfDisplayListFlag = 0;
 void * _XHeadOfDisplayListPtr = NULL;
+
 
 /* from Quarks.c */
 
@@ -118,10 +121,13 @@ XrmQuark  XrmQEyes	= NULLQUARK;
 long   XrmQEyesFlag = 0;
 void * XrmQEyesPtr = NULL;
 
-#endif
+#endif /* SHARELIB */
+
 
 #ifdef STREAMSCONN
-char	TypeOfStream[100] =
+#include "Xstreams.h"
+
+char _XsTypeOfStream[100] =
    {
    0
    };
@@ -141,9 +147,7 @@ extern int WriteTliStream();
 extern int CloseTliStream();
 extern int ErrorCall(); 
 
-#include "Xstreams.h"
-
-Xstream xstream[] = {
+Xstream _XsStream[] = {
     { 
 	SetupLocalStream,
 	ConnectLocalClient,

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.103 89/06/15 11:52:31 jim Exp $
+ * $XConsortium: XlibInt.c,v 11.104 89/06/15 12:17:24 jim Exp $
  */
 
 #include "copyright.h"
@@ -16,10 +16,6 @@
 #include "Xlibint.h"
 
 static void _EatData32();
-
-#ifdef att
-#include "XIO.h"			/* get connection to server stuff */
-#endif
 
 #if defined(CRAY) || defined(att)
 static int readv(), write();
@@ -1669,8 +1665,8 @@ int iovcnt;
 	END USER STAMP AREA
 */
 extern char * malloc();
-extern char TypeOfStream[];
-extern Xstream xstream[];
+extern char _XsTypeOfStream[];
+extern Xstream _XsStream[];
 
 #define MAX_WORKAREA 4096
 static char workarea[MAX_WORKAREA];
@@ -1708,7 +1704,7 @@ int		n;
 		errno = EINVAL;
 		return (-1);
 	}
-	if((rc = (*xstream[TypeOfStream[fd]].ReadFromStream)(fd, buf, size,
+	if((rc = (*_XsStream[_XsTypeOfStream[fd]].ReadFromStream)(fd, buf, size,
 							     BUFFERING))> 0)
 	{
 		for (i = 0, p = buf; i < n; ++i)
@@ -1762,7 +1758,7 @@ int n;
 		memcpy (p, v[i].iov_base, len = v[i].iov_len);
 		p += len;
 	}
-	rc = (*xstream[TypeOfStream[fd]].WriteToStream)(fd, buf, size);
+	rc = (*_XsStream[_XsTypeOfStream[fd]].WriteToStream)(fd, buf, size);
 
 	if (size > MAX_WORKAREA)
 		free (buf);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 1.1 89/06/14 16:33:42 jim Exp $
+ * $XConsortium: XConnDis.c,v 11.46 89/06/15 11:52:23 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -71,7 +71,6 @@
 #include <memory.h>
 #include <signal.h>
 #include <sys/utsname.h>
-#include "XIO.h"
 #include <X11/Xproto.h>
 #include <errno.h>
 
@@ -263,7 +262,7 @@ int * ptr;
 
         errno = 0;
 
-	if(TypeOfStream[fd] == X_LOCAL_STREAM)
+	if(_XsTypeOfStream[fd] == X_LOCAL_STREAM)
 	   	n = read(fd, &_XsInputBuffer[fd][inbuf], BUFFERSIZE-inbuf);
 	else
 	   	n = t_rcv(fd, &_XsInputBuffer[fd][inbuf], BUFFERSIZE-inbuf, &flg);
