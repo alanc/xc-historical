@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.22 89/08/24 17:56:23 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.23 89/09/14 16:30:06 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3138,11 +3138,8 @@ miBSValidateGC (pGC, stateChanges, pDrawable)
 	if (backingCompositeClip)
 	    (* pGC->pScreen->RegionDestroy) (backingCompositeClip);
 
-	/*
-	 * don't wrap the operations, just the functions
-	 */
-
-	pGC->funcs = &miBSGCFuncs;
+	/* unwrap the GC again */
+	miBSDestroyGCPrivate (pGC);
 
 	return;
     }
