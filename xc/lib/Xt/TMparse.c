@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.111 91/04/20 17:46:39 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.112 91/04/28 18:05:32 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1797,7 +1797,7 @@ static String ParseTranslationTableProduction(parseTree, str)
 
 
 /*ARGSUSED*/
-static Boolean CvtStringToAccelerators(dpy, args, num_args, from, to, closure)
+Boolean XtCvtStringToAcceleratorTable(dpy, args, num_args, from, to, closure)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -1833,8 +1833,8 @@ static Boolean CvtStringToAccelerators(dpy, args, num_args, from, to, closure)
 
 
 /*ARGSUSED*/
-static Boolean
-CvtStringToTranslations(dpy, args, num_args, from, to, closure_ret)
+Boolean
+XtCvtStringToTranslationTable(dpy, args, num_args, from, to, closure_ret)
     Display	*dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -2025,16 +2025,14 @@ void _XtTranslateInitialize()
 _XtAddTMConverters(table)
     ConverterTable table;
 {
-    XrmQuark q;
-
      _XtTableAddConverter(table,
-	     q = XrmPermStringToQuark(XtRString), 
+	     XtQString,
 	     XrmPermStringToQuark(XtRTranslationTable), 
- 	     CvtStringToTranslations, (XtConvertArgList) NULL,
+ 	     XtCvtStringToTranslationTable, (XtConvertArgList) NULL,
 	     (Cardinal)0, True, CACHED, _XtFreeTranslations);
-     _XtTableAddConverter(table, q,
+     _XtTableAddConverter(table, XtQString,
 	     XrmPermStringToQuark(XtRAcceleratorTable),
- 	     CvtStringToAccelerators, (XtConvertArgList) NULL,
+ 	     XtCvtStringToAcceleratorTable, (XtConvertArgList) NULL,
 	     (Cardinal)0, True, CACHED, _XtFreeTranslations);
      _XtTableAddConverter(table,
 	     XrmPermStringToQuark( _XtRStateTablePair ),
