@@ -31,6 +31,13 @@ NamingContext::NotFound::NotFound() {
     _hash_ = _code;
     _interface_ = _NamingContext_tid_;
 }
+NamingContext::NotFound::NotFound(Long _mode) : 
+    mode(_mode)
+{
+    _major_ = _index;
+    _hash_ = _code;
+    _interface_ = _NamingContext_tid_;
+}
 NamingContext::NotFound* NamingContext::NotFound::_cast(const Exception* e) {
     if (e->_major() == _index && e->_interface() == _NamingContext_tid_) {
         return (NotFound*)e;
@@ -65,16 +72,14 @@ NamingContext::PermissionDenied* NamingContext::PermissionDenied::_cast(const Ex
 NamingContextType::NamingContextType() { }
 NamingContextType::~NamingContextType() { }
 
-TypeObj_Descriptor* _NamingContext_parents_[] = { nil };
 extern TypeObjId _NamingContext_tid_;
 extern TypeObj_UnmarshalException _NamingContext_excepts[];
 TypeObj_Descriptor _NamingContext_type_ = {
     /* type */ 0,
     /* id */ &_NamingContext_tid_,
     "NamingContext",
-    _NamingContext_parents_, _NamingContext_excepts,
-    /* methods */ nil,
-    /* params */ nil,
+    /* parents */ nil, _NamingContext_excepts,
+    /* methods */ nil, /* params */ nil,
     /* receive */ nil
 };
 
@@ -84,7 +89,6 @@ NamingContextRef NamingContext::_narrow(BaseObjectRef o) {
     );
 }
 TypeObjId NamingContextType::_tid() { return _NamingContext_tid_; }
-
 extern void _NamingContext_Name_put(
     MarshalBuffer&, const NamingContext::Name&
 );
@@ -136,7 +140,7 @@ BaseObjectRef NamingContextStub::_create(Exchange* e) {
 Exchange* NamingContextStub::_exchange() {
     return exch_;
 }
-MarshalBuffer::ArgDesc _NamingContext_resolve_pdesc[3] = { 2, 48, 1 };
+MarshalBuffer::ArgDesc _NamingContext_resolve_pdesc[3] = { 2, 60, 1 };
 MarshalBuffer::ArgMarshal _NamingContext_resolve_pfunc[] = {
     &_NamingContext_Name_put, &_NamingContext_Name_get,
     &BaseObjectStub::_create
@@ -144,7 +148,7 @@ MarshalBuffer::ArgMarshal _NamingContext_resolve_pfunc[] = {
 MarshalBuffer::ArgInfo _NamingContext_resolve_pinfo = {
     &_NamingContext_tid_, 0, _NamingContext_resolve_pdesc, _NamingContext_resolve_pfunc
 };
-_BaseObjectExpr NamingContextType::resolve(const NamingContext::Name& n, Env* _env) {
+BaseObject_tmp NamingContextType::resolve(const NamingContext::Name& n, Env* _env) {
     return _c_resolve(n, _env);
 }
 BaseObjectRef NamingContextType::_c_resolve(const NamingContext::Name& n, Env* _env) {

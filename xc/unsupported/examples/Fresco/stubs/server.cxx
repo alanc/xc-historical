@@ -14,15 +14,15 @@
 class NamingContextImpl : public NamingContextType {
 public:
     NamingContextImpl(
-	char* host, long_int port, long_int impl, long_int o, char* root
+	char* host, Long port, Long impl, Long o, char* root
     );
     ~NamingContextImpl();
 
     Exchange* _exchange();
 
     //+ NamingContext::=
-    BaseObjectRef _c_resolve(const NamingContext::Name& n, Env* _env);
-    NamingContext::BindingInfoList list(const NamingContext::Name& n, Env* _env);
+    BaseObjectRef _c_resolve(const NamingContext::Name& n, Env* _env = 0);
+    NamingContext::BindingInfoList list(const NamingContext::Name& n, Env* _env = 0);
     //+
 
     char* name_to_string(NamingContext::Name);
@@ -32,9 +32,9 @@ protected:
     char* root;
 };
 
-static const u_long_int MAX_IMPLS = 10;
+static const ULong MAX_IMPLS = 10;
 NamingContextImpl* impls[MAX_IMPLS];
-u_long_int num_impls = 0;
+ULong num_impls = 0;
 
 NamingContextImpl* add_impl(char* root) {
     if (num_impls + 1 == MAX_IMPLS) {
@@ -50,8 +50,8 @@ NamingContextImpl* add_impl(char* root) {
 
 static void* dispatch_call(void* data) {
     MarshalBuffer* b = (MarshalBuffer*)data;
-    u_long_int impl_id = b->get_unsigned_long();
-    u_long_int obj_id = b->get_unsigned_long();
+    ULong impl_id = b->get_unsigned_long();
+    ULong obj_id = b->get_unsigned_long();
     if (obj_id >= num_impls) {
 	fprintf(stderr, "Bad object id %d\n", obj_id);
     } else {
@@ -95,7 +95,7 @@ char* NamingContextImpl::name_to_string(NamingContext::Name n) {
 extern NamingContextImpl* add_impl(char* root);
 
 NamingContextImpl::NamingContextImpl(
-    char* host, long_int port, long_int impl, long_int o, char* r
+    char* host, Long port, Long impl, Long o, char* r
 ) : exch_(host, port, impl, o) {
     root = r;
 }
@@ -115,9 +115,7 @@ BaseObjectRef NamingContextImpl::_c_resolve(const NamingContext::Name& n, Env* _
 	switch (errno) {
 	case ENOENT:
 	case ENOTDIR: {
-	    NamingContext::NotFound* n = new NamingContext::NotFound;
-	    n->mode = 17;
-	    _env->set_exception(n);
+	    _env->set_exception(new NamingContext::NotFound(17));
 	    return nil;
 	}
 	case EACCES:
