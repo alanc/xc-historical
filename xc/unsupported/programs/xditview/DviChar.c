@@ -39,6 +39,7 @@ DviRegisterMap (map)
 	DviCharNameMap	*map;
 {
 	struct map_list	*m;
+	static dispose_hash(), compute_hash();
 
 	if (!standard_maps_loaded)
 		load_standard_maps ();
@@ -174,7 +175,7 @@ static DviCharNameMap ISO8859_1_map = {
 {	"*",		/* 42 */},
 {	"+",		/* 43 */},
 {	",",		/* 44 */},
-{	"-","\-",	/* 45 */},
+{	"-","\\-",	/* 45 */},
 {	".",		/* 46 */},
 {	"/","sl",	/* 47 */},
 {	"0",		/* 48 */},
