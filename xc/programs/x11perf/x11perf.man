@@ -1,4 +1,4 @@
-.\" $XConsortium: x11perf.man,v 1.14 92/11/11 14:36:01 rws Exp $
+.\" $XConsortium: x11perf.man,v 1.15 92/11/11 16:12:34 rws Exp $
 .TH X11PERF 1 "Release 5" "X Version 11"
 .SH NAME
 x11perf \- X11 server performance test program
@@ -163,17 +163,17 @@ Generates just the descriptive labels for each test specified.  See
 .I x11perfcomp
 for more details.
 .TP 14
-.B \-fg \fIcolor\fP
-Specifies the foreground color to use.
+.B \-fg \fIcolor-or-pixel\fP
+Specifies the foreground color or pixel value to use.
 .TP 14
-.B \-bg \fIcolor\fP
-Specifies the background color to use.
+.B \-bg \fIcolor-or-pixel\fP
+Specifies the background color or pixel value to use.
 .TP 14
 .B \-clips \fIdefault\fP
 Default number of clip windows.
 .TP 14
-.B \-ddbg \fIcolor
-Specifies the color to use for drawing
+.B \-ddbg \fIcolor-or-pixel\fP
+Specifies the color or pixel value to use for drawing
 the odd segments of a DoubleDashed line or arc.
 This will default to the bg color.
 .TP 14
