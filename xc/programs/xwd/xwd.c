@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.26 87/09/07 16:03:26 rws Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.27 87/09/09 20:24:39 rws Exp $";
 #endif
 
 /*%
@@ -51,8 +51,6 @@ static char *rcsid_xwd_c = "$Header: xwd.c,v 1.26 87/09/07 16:03:26 rws Locked $
 #include <stdio.h>
 #include <strings.h>
 
-#define FAILURE 0
-
 #define FEEP_VOLUME 0
 
 /* Include routines to do parsing */
@@ -60,7 +58,7 @@ static char *rcsid_xwd_c = "$Header: xwd.c,v 1.26 87/09/07 16:03:26 rws Locked $
 
 /* Setable Options */
 
-int format = XYPixmap;
+int format = ZPixmap;
 Bool nobdrs = False;
 Bool standard_out = True;
 Bool debug = False;
@@ -79,8 +77,6 @@ main(argc, argv)
     INIT_NAME;
 
     Setup_Display_And_Screen(&argc, argv);
-    if (DisplayPlanes(dpy, DefaultScreen(dpy)) > 1)
-        format = ZPixmap;
 
     /* Get window select on command line, if any */
     target_win = Select_Window_Args(&argc, argv);
@@ -138,11 +134,12 @@ Window_Dump(window, out)
      Window window;
      FILE *out;
 {
-    XColor *pixcolors;
+    unsigned long swaptest = 1;
+    XColor *colors;
     unsigned buffer_size;
     int win_name_size;
     int header_size;
-    int ncolors = 0;
+    int ncolors, i;
     char win_name[100];
     XWindowAttributes win_info;
     XImage *image;
@@ -171,8 +168,6 @@ Window_Dump(window, out)
 
     /*
      * Snarf the pixmap with XGetImage.
-     * Color windows get snarfed in Z format first to check the color
-     * map allocations before resnarfing if XY format selected.
      */
 
     if (nobdrs) {
@@ -195,13 +190,9 @@ Window_Dump(window, out)
      */
     buffer_size = Image_Size(image);
 
-    /*
-     * Get XColors of all pixels used in the pixmap
-     */
-
     if (debug) outl("xwd: Getting Colors.\n");
 
-    ncolors = Get_XColors(win_info, &pixcolors);
+    ncolors = Get_XColors(&win_info, &colors);
 
     /*
      * Inform the user that the image has been retrieved.
@@ -220,33 +211,44 @@ Window_Dump(window, out)
      * Write out header information.
      */
     if (debug) outl("xwd: Constructing and dumping file header.\n");
-    header.header_size = header_size;
-    header.file_version = XWD_FILE_VERSION;
-    header.pixmap_format = format;
-    header.pixmap_depth = image->depth;
-    header.pixmap_width = image->width;
-    header.pixmap_height = image->height;
-    header.xoffset = image->xoffset;
-    header.byte_order = image->byte_order;
-    header.bitmap_unit = image->bitmap_unit;
-    header.bitmap_bit_order = image->bitmap_bit_order;
-    header.bitmap_pad = image->bitmap_pad;
-    header.bits_per_pixel = image->bits_per_pixel;
-    header.bytes_per_line = image->bytes_per_line;
-    header.red_mask = image->red_mask;
-    header.green_mask = image->green_mask;
-    header.blue_mask = image->blue_mask;
-    header.window_width = win_info.width;
-    header.window_height = win_info.height;
+    header.header_size = (xwdval) header_size;
+    header.file_version = (xwdval) XWD_FILE_VERSION;
+    header.pixmap_format = (xwdval) format;
+    header.pixmap_depth = (xwdval) image->depth;
+    header.pixmap_width = (xwdval) image->width;
+    header.pixmap_height = (xwdval) image->height;
+    header.xoffset = (xwdval) image->xoffset;
+    header.byte_order = (xwdval) image->byte_order;
+    header.bitmap_unit = (xwdval) image->bitmap_unit;
+    header.bitmap_bit_order = (xwdval) image->bitmap_bit_order;
+    header.bitmap_pad = (xwdval) image->bitmap_pad;
+    header.bits_per_pixel = (xwdval) image->bits_per_pixel;
+    header.bytes_per_line = (xwdval) image->bytes_per_line;
+    header.visual_class = (xwdval) win_info.visual->class;
+    header.red_mask = (xwdval) win_info.visual->red_mask;
+    header.green_mask = (xwdval) win_info.visual->green_mask;
+    header.blue_mask = (xwdval) win_info.visual->blue_mask;
+    header.bits_per_rgb = (xwdval) win_info.visual->bits_per_rgb;
+    header.colormap_entries = (xwdval) win_info.visual->map_entries;
+    header.ncolors = ncolors;
+    header.window_width = (xwdval) win_info.width;
+    header.window_height = (xwdval) win_info.height;
     if (nobdrs) {
-      header.window_x = win_info.x + win_info.border_width;
-      header.window_y = win_info.y + win_info.border_width;
+      header.window_x = (xwdval) (win_info.x + win_info.border_width);
+      header.window_y = (xwdval) (win_info.y + win_info.border_width);
     } else {
-      header.window_x = win_info.x;
-      header.window_y = win_info.y;
+      header.window_x = (xwdval) win_info.x;
+      header.window_y = (xwdval) win_info.y;
     }
-    header.window_bdrwidth = win_info.border_width;
-    header.window_ncolors = 0;  /*%  = ncolors;  %*/
+    header.window_bdrwidth = (xwdval) win_info.border_width;
+
+    if (*(char *) &swaptest) {
+	_swaplong((char *) &header, sizeof(header));
+	for (i = 0; i < ncolors; i++) {
+	    _swaplong((char *) &colors[i].pixel, sizeof(long));
+	    _swapshort((char *) &colors[i].red, 3 * sizeof(short));
+	}
+    }
 
     (void) fwrite((char *)&header, sizeof(header), 1, out);
     (void) fwrite(win_name, win_name_size, 1, out);
@@ -255,8 +257,8 @@ Window_Dump(window, out)
      * Write out the color maps, if any
      */
 
-    if (debug) outl("xwd: Dumping %d colors.\n",ncolors);
-    (void) fwrite(pixcolors, sizeof(XColor), ncolors, out);
+    if (debug) outl("xwd: Dumping %d colors.\n", ncolors);
+    (void) fwrite((char *) colors, sizeof(XColor), ncolors, out);
 
     /*
      * Write out the buffer.
@@ -275,8 +277,8 @@ Window_Dump(window, out)
      * free the color buffer.
      */
 
-    if(debug && ncolors > 0) outl("xwd: Freeing color map.\n");
-    if(ncolors > 0) free(pixcolors);
+    if(debug && ncolors > 0) outl("xwd: Freeing colors.\n");
+    if(ncolors > 0) free(colors);
 
     /*
      * Free window name string.
@@ -337,103 +339,27 @@ int Image_Size(image)
 /*
  * Get the XColors of all pixels in image - returns # of colors
  */
-int Get_XColors(win_info, pixcolors)
-     XWindowAttributes win_info;
-     XColor **pixcolors;
+int Get_XColors(win_info, colors)
+     XWindowAttributes *win_info;
+     XColor **colors;
 {
     int i, ncolors;
-#ifndef COLOR
-    return(0);
-#endif
 
-    ncolors = 1 << (win_info.depth);
+    if (!win_info->colormap)
+	return(0);
 
-    if (!(*pixcolors = (XColor *) malloc( sizeof(XColor) * ncolors )))
+    if (win_info->visual->class == TrueColor ||
+	win_info->visual->class == DirectColor)
+	return(0);    /* XXX punt for now */
+
+    ncolors = win_info->visual->map_entries;
+    if (!(*colors = (XColor *) malloc (sizeof(XColor) * ncolors)))
       Fatal_Error("Out of memory!");
 
     for (i=0; i<ncolors; i++)
-      (*pixcolors)[i].pixel = i;
+      (*colors)[i].pixel = i;
 
-    XQueryColors(dpy, win_info.colormap, *pixcolors, ncolors);
+    XQueryColors(dpy, win_info->colormap, *colors, ncolors);
     
     return(ncolors);
 }
-
-#ifdef OLD_JUNK
-
-int Get_XColors(buffer, pixcolors, buffer_size)
-     char *buffer;
-     XColor *pixcolors[];       /* RETURNED */
-     int buffer_size;
-{
-    register int i, *histbuffer;
-    register u_short *wbuffer;
-    register char *buffer;
-    int ncolors = 0;
-
-    if (DisplayPlanes(dpy,screen)<2)
-      return(0);
-
-#ifdef COLOR
-
-    if(DisplayPlanes(dpy, screen) < 9) {
-	histbuffer = (int *)calloc(256, sizeof(int));
-	bzero(histbuffer, 256*sizeof(int));
-	*pixcolors = (XColor *)calloc(1, sizeof(XColor));
-	for(i=0; i<buffer_size; i++) {
-	    /* if previously found, skip color query */
-	    if(histbuffer[(int)buffer[i]] == 0) {
-		*pixcolors = 
-		  (XColor *)realloc(*pixcolors, sizeof(XColor)*(++ncolors));
-		if(debug)
-		  outl("Color %3d at pixel val %5d, i= %5d =",
-		       ncolors, buffer[i], i);
-		histbuffer[(int)buffer[i]]++;
-		(*pixcolors)[ncolors-1].pixel = (int)buffer[i];
-		if(XQueryColor(dpy, pixcolors[ncolors-1]) == 0) 
-		  Fatal_Error("Unable to query color table?");
-		if(debug) outl("%5d %5d %5d\n",
-			       (*pixcolors)[ncolors-1].red,
-			       (*pixcolors)[ncolors-1].green,
-			       (*pixcolors)[ncolors-1].blue);
-	    }
-	}
-    }
-    else if(DisplayPlanes(dpy, screen) < 17) {
-	wbuffer = (u_short *)buffer;
-	histbuffer = (int *)calloc(65536, sizeof(int));
-	bzero(histbuffer, 65536*sizeof(int));
-	*pixcolors = (XColor *)calloc(1, sizeof(XColor));
-	for(i=0; i<(buffer_size/sizeof(u_short)); i++) {
-
-	    /* if previously found, skip color query */
-
-	    if(histbuffer[(int)wbuffer[i]] == 0) {
-		*pixcolors = 
-		  (XColor *)realloc(*pixcolors, sizeof(XColor)*(++ncolors));
-		if(debug)
-		  outl("Color %2d at pixel val %d, i= %d =",
-		       ncolors, wbuffer[i], i);
-		histbuffer[(int)wbuffer[i]]++;
-		(*pixcolors)[ncolors-1].pixel = (int)wbuffer[i];
-		if(XQueryColor(dpy, pixcolors[ncolors-1]) == 0) 
-		  Fatal_Error("Unable to query color table?");
-		if(debug) outl("%d %d %d\n",
-			       (*pixcolors)[ncolors-1].red,
-			       (*pixcolors)[ncolors-1].green,
-			       (*pixcolors)[ncolors-1].blue);
-	    }
-	}
-    } 
-
-    else
-      if(DisplayPlanes(dpy, screen) > 16)
-	Fatal_Error("Unable to handle more than 16 planes at this time");
-    
-    free(histbuffer);
-
-#endif
-    
-    return(ncolors);
-}
-#endif
