@@ -16,7 +16,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbglblt8.c,v 5.9 90/11/29 19:32:10 keith Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.10 90/11/30 14:54:26 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -111,7 +111,14 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int			widthGlyph;
     unsigned long	widthMask;
 #endif
+#ifdef USE_STIPPLE_CODE
+    void		(*stipple)();
+    extern void		stipplestack (), stipplestackte ();
 
+    stipple = stipplestack;
+    if (pfi->inkMetrics)
+	stipple = stipplestackte;
+#endif
     
     /* compute an approximate (but covering) bounding box */
     if ((ppci[0]->metrics.leftSideBearing < 0))
@@ -183,10 +190,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	widthMask = endtab[w];
 #endif
 #ifdef USE_STIPPLE_CODE
-	if (w + xoff > 32)
-	    stipplestackwide(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
-	else
-	    stipplestack(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
+	(*stipple)(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
 #else
 	ew = (w + xoff + 3) >> 2;
 	dst = dstLine;
@@ -401,10 +405,7 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    glyphBits = clips;
 	    /* fall through */
 	case rgnIN:
-	    if (w + xoff > 32)
-	    	stipplestackwide(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
-	    else
-	    	stipplestack(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
+	    stipplestackte(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
 	    break;
 #else
 	case rgnIN:

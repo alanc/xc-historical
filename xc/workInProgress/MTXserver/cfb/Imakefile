@@ -17,6 +17,12 @@ SRCS =	 cfbgc.c cfbrrop.c cfbwindow.c \
  	 cfb8segC.c cfb8segX.c cfb8segG.c cfb8segCS.c \
 	 cfbbres.c cfbline.c cfbhrzvert.c cfbbresd.c cfbimage.c cfbseg.c
 
+#ifdef MipsArchitecture
+STIPPLESRC = stipplemips.s stipplemipste.s
+STIPPLEOBJ = stipplemips.o stipplemipste.o
+STIPPLEDEF = -DHAS_STIPPLE_CODE
+#endif
+
 OBJS =   cfbgc.o cfbrrop.o cfbwindow.o \
 	 cfbgetsp.o cfbfillrct.o \
 	 cfbsolidC.o cfbsolidX.o cfbsolidG.o \
@@ -33,7 +39,7 @@ OBJS =   cfbgc.o cfbrrop.o cfbwindow.o \
 	 cfb8lineCO.o cfb8lineX.o cfb8lineG.o cfb8lineCP.o \
 	 cfbbres.o cfbline.o cfbhrzvert.o cfbbresd.o cfbimage.o cfbseg.o \
  	 cfbbitblt.o cfbbltC.o cfbbltX.o cfbbltO.o cfbbltG.o \
-	 cfbpush8.o
+	 cfbpush8.o $(STIPPLEOBJ)
 
    INCLUDES = -I. -I../mfb -I../mi -I../../include -I$(INCLUDESRC)
    LINTLIBS = ../../dix/llib-ldix.ln ../../os/4.2bsd/llib-los.ln \
@@ -50,9 +56,20 @@ saber_src:
 	/**/#load $(CFLAGS) $(SRCS)
 #endif
 
+#ifdef MipsArchitecture
+stipplemipste.s: stipplemips.s
+	$(RM) $@
+	$(LN) stipplemips.s stipplemipste.s
+
+stipplemipste.o: stipplemipste.s
+	$(AS) -o $@ -DTETEXT stipplemipste.s
+#endif
+
 ObjectFromSpecialSource(cfbseg,cfbline,-DPOLYSEGMENT)
 
 ObjectFromSpecialSource(cfbglrop8,cfbglblt8,-DGLYPHROP)
+
+SpecialObjectRule(cfbglblt8.o,,$(STIPPLEDEF))
 
 ObjectFromSpecialSource(cfbfillarcC,cfbfillarc,-DRROP=GXcopy)
 
