@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.132 92/12/29 16:01:42 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.133 92/12/29 18:45:24 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -619,19 +619,19 @@ static String ScanIdent(str)
     return str;
 }
 
-static String FetchModifierToken(str, modQ_return)
+static String FetchModifierToken(str, token_return)
     String str;
-    XrmQuark *modQ_return;
+    XrmQuark *token_return;
 {
     String start = str;
 
     if (*str == '$') {
-        *modQ_return = QMeta;
+        *token_return = QMeta;
         str++;
         return str;
     }
     if (*str == '^') {
-        *modQ_return = QCtrl;
+        *token_return = QCtrl;
         str++;
         return str;
     }
@@ -640,7 +640,7 @@ static String FetchModifierToken(str, modQ_return)
 	char modStr[100];
 	bcopy(start, modStr, str-start);
 	modStr[str-start] = '\0';
-	*modQ_return = XrmStringToQuark(modStr);
+	*token_return = XrmStringToQuark(modStr);
 	return str;
     }
     return str;
@@ -654,19 +654,19 @@ static String ParseModifiers(str, event,error)
     register String start;
     Boolean notFlag, exclusive, keysymAsMod;
     Value maskBit;
-    XrmQuark modQ;
+    XrmQuark Qmod;
  
     ScanWhitespace(str);
     start = str;
-    str = FetchModifierToken(str, &modQ);
+    str = FetchModifierToken(str, &Qmod);
     exclusive = FALSE;
     if (start != str) {
-	if (modQ == QNone) {
+	if (Qmod == QNone) {
 	    event->event.modifierMask = ~0;
 	    event->event.modifiers = 0;
 	    ScanWhitespace(str);
 	    return str;
-	} else if (modQ == QAny) { /*backward compatability*/
+	} else if (Qmod == QAny) { /*backward compatability*/
 	    event->event.modifierMask = 0;
 	    event->event.modifiers = AnyModifier;
 	    ScanWhitespace(str);
@@ -699,23 +699,23 @@ static String ParseModifiers(str, event,error)
         }
         else keysymAsMod = FALSE;
 	start = str;
-        str = FetchModifierToken(str, &modQ);
+        str = FetchModifierToken(str, &Qmod);
         if (start == str) {
             Syntax("Modifier or '<' expected","");
             *error = TRUE;
             return PanicModeRecovery(str);
         }
          if (keysymAsMod) {
-             _XtParseKeysymMod(XrmQuarkToString(modQ),
+             _XtParseKeysymMod(XrmQuarkToString(Qmod),
 			       &event->event.lateModifiers,
 			       notFlag,&maskBit, error);
 	     if (*error)
                  return PanicModeRecovery(str);
 
          } else
-  	     if (!_XtLookupModifier(modQ, &event->event.lateModifiers,
+  	     if (!_XtLookupModifier(Qmod, &event->event.lateModifiers,
 				    notFlag, &maskBit, FALSE)) {
-	         Syntax("Unknown modifier name:  ", XrmQuarkToString(modQ));
+	         Syntax("Unknown modifier name:  ", XrmQuarkToString(Qmod));
                  *error = TRUE;
                  return PanicModeRecovery(str);
              }
