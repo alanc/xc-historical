@@ -21,6 +21,7 @@ BEGIN {
 	printf(" */\n\n") > cfile;
 	printf("#include \"X.h\"\n") > cfile;
 	printf("#include \"Xatom.h\"\n") > cfile;
+	printf("extern Atom MakeAtom();\n") > cfile;
 	printf("MakePredeclaredAtoms()\n") > cfile;
 	printf("{\n") > cfile;
 

@@ -1,4 +1,4 @@
-/* $Header: grabs.c,v 1.2 87/10/13 13:36:32 rws Locked $ */
+/* $Header: grabs.c,v 1.3 88/01/02 13:21:38 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -29,7 +29,7 @@ SOFTWARE.
 #include "windowstr.h"
 #include "inputstr.h"
 
-#define BITMASK(i) (1 << ((i) & 31))
+#define BITMASK(i) (((Mask)1) << ((i) & 31))
 #define MASKIDX(i) ((i) >> 5)
 #define MASKWORD(buf, i) buf[MASKIDX(i)]
 #define BITSET(buf, i) MASKWORD(buf, i) |= BITMASK(i)
@@ -54,7 +54,7 @@ CreateDetailMask()
 static void
 DeleteDetailFromMask(ppDetailMask, detail)
 Mask **ppDetailMask;
-int detail;
+unsigned short detail;
 {
     if (*ppDetailMask == NULL)
 	*ppDetailMask = CreateDetailMask();
@@ -141,10 +141,10 @@ GrabPtr pGrab;
 }
 
 
-static BOOL
+static Bool
 IsInGrabMask(firstDetail, secondDetail, exception)
 DetailRec firstDetail, secondDetail;
-int exception;
+unsigned short exception;
 {
     if (firstDetail.exact == exception)
     {
@@ -162,9 +162,9 @@ int exception;
     return FALSE;
 }
 
-static BOOL 
+static Bool 
 IdenticalExactDetails(firstExact, secondExact, exception)
-int firstExact, secondExact, exception;
+unsigned short firstExact, secondExact, exception;
 {
     if ((firstExact == exception) || (secondExact == exception))
 	return FALSE;
@@ -175,10 +175,10 @@ int firstExact, secondExact, exception;
     return FALSE;
 }
 
-static BOOL 
+static Bool 
 DetailSupersedesSecond(firstDetail, secondDetail, exception)
 DetailRec firstDetail, secondDetail;
-int exception;
+unsigned short exception;
 {
     if (IsInGrabMask(firstDetail, secondDetail, exception))
 	return TRUE;
@@ -190,23 +190,23 @@ int exception;
 
 }
 
-BOOL
+Bool
 GrabSupersedesSecond(pFirstGrab, pSecondGrab)
 GrabPtr pFirstGrab, pSecondGrab;
 {
     if (!DetailSupersedesSecond(pFirstGrab->modifiersDetail,
 	pSecondGrab->modifiersDetail, 
-	AnyModifier))
+	(unsigned short)AnyModifier))
 	return FALSE;
 
     if (DetailSupersedesSecond(pFirstGrab->u.keybd.keyDetail,
-	pSecondGrab->u.keybd.keyDetail, (int)AnyKey))
+	pSecondGrab->u.keybd.keyDetail, (unsigned short)AnyKey))
 	return TRUE;
  
     return FALSE;
 }
 
-BOOL
+Bool
 GrabMatchesSecond(pFirstGrab, pSecondGrab)
 GrabPtr pFirstGrab, pSecondGrab;
 {
@@ -220,17 +220,17 @@ GrabPtr pFirstGrab, pSecondGrab;
 	return TRUE;
  
     if (DetailSupersedesSecond(pSecondGrab->u.keybd.keyDetail, 
-	pFirstGrab->u.keybd.keyDetail, (int)AnyKey) 
+	pFirstGrab->u.keybd.keyDetail, (unsigned short)AnyKey) 
 	&& 
 	DetailSupersedesSecond(pFirstGrab->modifiersDetail, 
-	pSecondGrab->modifiersDetail, AnyModifier))
+	pSecondGrab->modifiersDetail, (unsigned short)AnyModifier))
 	return TRUE;
 
     if (DetailSupersedesSecond(pFirstGrab->u.keybd.keyDetail, 
-	pSecondGrab->u.keybd.keyDetail, (int)AnyKey) 
+	pSecondGrab->u.keybd.keyDetail, (unsigned short)AnyKey) 
 	&& 
 	DetailSupersedesSecond(pSecondGrab->modifiersDetail, 
-	pFirstGrab->modifiersDetail, AnyModifier))
+	pFirstGrab->modifiersDetail, (unsigned short)AnyModifier))
 	return TRUE;
 
     return FALSE;

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.102 88/01/02 13:48:56 rws Locked $ */
+/* $Header: gc.c,v 1.103 88/01/02 15:40:20 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -734,11 +734,11 @@ FreeGCperDepth(screenNum)
     ppGC = (GCPtr *) pScreen->GCperDepth;
 
     /* do depth 1 seperately because it's not included in list */
-    (void)FreeGC(ppGC[0], 0);
+    (void)FreeGC(ppGC[0], (GContext)0);
 
     for (i = 0; i < pScreen-> numDepths; i++)
     {
-	(void)FreeGC(ppGC[i+1], 0);
+	(void)FreeGC(ppGC[i+1], (GContext)0);
     }
 }
 
@@ -1010,7 +1010,7 @@ FreeScratchGC(pGC)
 	    return;
 	}
     }
-    (void)FreeGC(pGC, 0);
+    (void)FreeGC(pGC, (GContext)0);
 }
 
 

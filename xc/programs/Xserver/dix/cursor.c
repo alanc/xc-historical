@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $Header: cursor.c,v 1.27 87/09/11 07:18:41 toddb Exp $ */
+/* $Header: cursor.c,v 1.28 87/12/30 17:27:08 rws Locked $ */
 
 #include "X.h"
 #include "scrnintstr.h"
@@ -39,17 +39,17 @@ SOFTWARE.
  * To be called indirectly by DeleteResource; must use exactly two args
  */
 /*ARGSUSED*/
-void
+int
 FreeCursor( pCurs, cid)
     CursorPtr 	pCurs;
-    int 	cid;	
+    Cursor 	cid;	
 {
     int		nscr;
 
     ScreenPtr	pscr;
 
     if ( --pCurs->refcnt > 0)
-	return;
+	return(Success);
 
     for ( nscr=0, pscr=screenInfo.screen;
 	  nscr<screenInfo.numScreens;
@@ -58,9 +58,10 @@ FreeCursor( pCurs, cid)
         if ( pscr->UnrealizeCursor)
 	    ( *pscr->UnrealizeCursor)( pscr, pCurs);
     }
-    Xfree( pCurs->source);
-    Xfree( pCurs->mask);
-    Xfree( pCurs);
+    xfree( pCurs->source);
+    xfree( pCurs->mask);
+    xfree( pCurs);
+    return(Success);
 }
 
 /*
@@ -80,7 +81,7 @@ AllocCursor( psrcbits, pmaskbits, cm,
     int		nscr;
     ScreenPtr 	pscr;
 
-    pCurs = (CursorPtr )Xalloc( sizeof(CursorRec)); 
+    pCurs = (CursorPtr )xalloc( sizeof(CursorRec)); 
 
     pCurs->source = psrcbits;
     pCurs->mask = pmaskbits;
@@ -127,20 +128,20 @@ AllocCursor( psrcbits, pmaskbits, cm,
 
 CursorPtr 
 CreateRootCursor(pfilename, glyph)
-    char *	pfilename;
-    int		glyph;
+    char *		pfilename;
+    unsigned short	glyph;
 {
     CursorPtr 	curs;
     FontPtr 	cursorfont;
-    char *	psrcbits;
-    char *	pmskbits;
+    unsigned char *psrcbits;
+    unsigned char *pmskbits;
     CursorMetricRec cm;
     XID		fontID;
 
     fontID = FakeClientID(0);
-    if (cursorfont = OpenFont( strlen( pfilename), pfilename))
+    if (cursorfont = OpenFont( (unsigned)strlen( pfilename), pfilename))
 	AddResource(
-	   fontID, RT_FONT, cursorfont, CloseFont, RC_CORE);
+	   fontID, RT_FONT, (pointer)cursorfont, CloseFont, RC_CORE);
     else
 	return NullCursor;
 
@@ -154,7 +155,7 @@ CreateRootCursor(pfilename, glyph)
 
     curs = AllocCursor( psrcbits, pmskbits, &cm, 0, 0, 0, ~0, ~0, ~0);
 
-    AddResource(FakeClientID(0), RT_CURSOR, curs, FreeCursor, RC_CORE);
+    AddResource(FakeClientID(0), RT_CURSOR, (pointer)curs, FreeCursor, RC_CORE);
     return curs;
 }
 
