@@ -1,4 +1,4 @@
-;;; -*- Mode: common-lisp; Package: USER; Base: 10; Lowercase: Yes -*-
+;;; -*- Mode: common-lisp; Package: xlib; Base: 10; Lowercase: Yes -*-
 ;;;
 ;;; CLX -- excldep.cl
 ;;;
@@ -24,35 +24,17 @@
 					; running.  (Must be able to make
 					; a process-lock.)
 
-(import '(excl::if* excl::defcmacro))
+(import '(excl::if*))
+#+allegro
+(import '(excl::without-interrupts))
 
-;;
-;; The following is a suggestion.  If you comment out this form be
-;; prepared for possible deadlock, since no interrupts will be recognized
-;; while reading from the X socket if the scheduler is not running.
-;;
-;; Note -- this really should be in defsystem.cl, since it only matters when
-;; compiling, but it's here and loaded into CLX.fasl for safety.
-;;
-(setq compiler::generate-interrupt-checks-switch
-  (compile nil '(lambda (safety size speed)
-		   (declare (ignore size))
-		  (or (< speed 3) (> safety 0)))))
-
-
+#+(or (and excl (not allegro)) allegro-v3.0)
 (eval-when (eval compile load)
   (let ((x '#(1)))
     (if (not (eq 0 (sys::memref x
 				#.(comp::mdparam 'comp::md-svector-data0-adj)
 				0 :unsigned-byte)))
-	(pushnew :clx-little-endian *features*)))
-  #+allegro
-  (if (not (boundp 'excl::cl-major-version-number))
-      (pushnew :allegro-v2.2 *features*))
-  
-  (proclaim '(special mp::*scheduler-stack-group* mp::*current-process*))
-  (if (not (boundp 'mp::*scheduler-stack-group*))
-      (setq mp::*scheduler-stack-group* nil)))
+	(pushnew :little-endian *features*))))
 
 
 (defmacro define-condition (name (parent-type) &optional slots &rest args)
@@ -75,8 +57,8 @@
     (keysym . card32p)
     ))
 
-;; This (if (and ...) t nil) stuff has a purpose -- it lets the sun4 compiler
-;; opencode the `and'.
+;; This (if (and ...) t nil) stuff has a purpose -- it lets the old 
+;; sun4 compiler opencode the `and'.
 
 (defun card8p (x)
   (declare (optimize (speed 3) (safety 0))
@@ -85,28 +67,12 @@
       t
     nil))
 
-(defcmacro card8p (x)
-  (let ((xx (gensym)))
-    `(let ((,xx ,x))
-       (declare (optimize (speed 3) (safety 0))
-		(fixnum ,xx))
-       (and (fixnump ,xx) (> #.(expt 2 8) ,xx) (>= ,xx 0)))))
-
 (defun card16p (x)
   (declare (optimize (speed 3) (safety 0))
 	   (fixnum x))
   (if (and (fixnump x) (> #.(expt 2 16) x) (>= x 0))
       t
     nil))
-
-(defcmacro card16p (x)
-  (let ((xx (gensym)))
-    `(let ((,xx ,x))
-       (declare (optimize (speed 3) (safety 0))
-		(fixnum ,xx))
-       (and (fixnump ,xx) (> #.(expt 2 16) ,xx) (>= ,xx 0)))))
-
-;; These next two are too large to macroexpand.
 
 (defun card29p (x)
   (declare (optimize (speed 3) (safety 0)))
@@ -131,26 +97,12 @@
       t
     nil))
 
-(defcmacro int8p (x)
-  (let ((xx (gensym)))
-    `(let ((,xx ,x))
-       (declare (optimize (speed 3) (safety 0))
-		(fixnum ,xx))
-       (and (fixnump ,xx) (> #.(expt 2 7) ,xx) (>= ,xx #.(expt -2 7))))))
-
 (defun int16p (x)
   (declare (optimize (speed 3) (safety 0))
 	   (fixnum x))
   (if (and (fixnump x) (> #.(expt 2 15) x) (>= x #.(expt -2 15)))
       t
     nil))
-
-(defcmacro int16p (x)
-  (let ((xx (gensym)))
-    `(let ((,xx ,x))
-       (declare (optimize (speed 3) (safety 0))
-		(fixnum ,xx))
-       (and (fixnump ,xx) (> #.(expt 2 15) ,xx) (>= ,xx #.(expt -2 15))))))
 
 (defun int32p (x)
   (declare (optimize (speed 3) (safety 0)))
@@ -178,13 +130,38 @@
 		 else (comp::no-transform)))))
 
 
+;; Return t if there is a character available for reading or on error,
+;; otherwise return nil.
 (defun fd-char-avail-p (fd)
-   ;; return t if there is a character available for reading or on error
-   (multiple-value-bind (available-p errcode)
-	 (comp::.primcall-sargs 'sys::filesys excl::fs-char-avail fd)
-      (if* errcode
-	 then t
-	 else available-p)))
+  (multiple-value-bind (available-p errcode)
+      (comp::.primcall-sargs 'sys::filesys excl::fs-char-avail fd)
+    (if* errcode
+       then t
+       else available-p)))
+
+(defmacro with-interrupt-checking-on (&body body)
+  `(locally (declare (optimize (safety 1)))
+     ,@body))
+
+;; Read from the given fd into 'vector', which has element type card8.
+;; Start storing at index 'start-index' and read exactly 'length' bytes.
+;; Return t if an error occurred, nil otherwise.
+(defun fd-read-bytes (fd vector start-index length)
+  (declare (fixnum fd start-index length)
+	   (type (simple-array (unsigned-byte 8) (*)) vector))
+  (with-interrupt-checking-on
+   (do ((totread 0))
+       ((eq totread length) nil)
+     (declare (fixnum totread))
+     (multiple-value-bind (numread errcode)
+	 (comp::.primcall-sargs 'sys::filesys excl::fs-read-bytes fd vector
+				start-index length)
+       (declare (fixnum numread))
+       (if* errcode
+	  then (if (not (eq errcode
+			    excl::*error-code-interrupted-system-call*))
+		   (return t))
+	  else (incf totread numread))))))
 
 
 (when
@@ -198,7 +175,6 @@
 					     :language :c))
   (load "excldep.o"))
 
-
 (when
     (plusp (ff:get-entry-points
 	    (make-array 1 :initial-contents
@@ -209,33 +185,25 @@
   (ff:remove-entry-point (ff:convert-to-lang "connect_to_server" :language :c))
   (load "socket.o"))
 
-(ff:defforeign-list `((xlib::connect-to-server
+(ff:defforeign-list `((connect-to-server
 		       :entry-point
-		       ,(ff:convert-to-lang "connect_to_server" :language :c)
+		       ,(ff:convert-to-lang "connect_to_server")
 		       :return-type :fixnum
 		       :arg-checking nil
 		       :arguments (string fixnum))
-		      (xlib::c-read-bytes
-		       :entry-point
-		       ,(ff:convert-to-lang "c_read_bytes" :language :c)
+		      (fd-wait-for-input
+		       :entry-point ,(ff:convert-to-lang "fd_wait_for_input")
 		       :return-type :fixnum
 		       :arg-checking nil
 		       :call-direct t
 		       :callback nil
 		       :allow-other-keys t
-		       :arguments (fixnum (simple-array (unsigned-byte 8) (*))
-				   fixnum fixnum))
-		      (xlib::c-read-bytes-interruptible
-		       :entry-point
-		       ,(ff:convert-to-lang "c_read_bytes_interruptible"
-			 :language :c)
-		       :return-type :fixnum
-		       :arg-checking nil
-		       :call-direct t
-		       :callback nil
-		       :allow-other-keys t
-		       :arguments (fixnum (simple-array (unsigned-byte 8) (*))
-				   fixnum fixnum))))
+		       :arguments (fixnum fixnum))))
+
+
+#-allegro
+(defmacro without-interrupts (&body body)
+  `(let ((excl::*without-interrupts* t)) ,@body))
 
 
 (in-package :excl)
@@ -300,8 +268,7 @@
       ;(msg " resulting decriptor " res 'N)
       res))
 
-
-#+(or (not allegro) allegro-v2.2)
+#+(not allegro)
 (defun make-sequence (type length &rest rest &key initial-element)
   "Returns a sequence of the given Type and Length, with elements initialized
   to :Initial-Element."
@@ -328,3 +295,18 @@
 			      (t (return-from make-sequence (make-sequence
 				   (funcall temp (list type)) length)))))))
      (error "~s is a bad type specifier for sequences." type ))))
+
+
+#+(or allegro-v3.0 allegro-v3.1)
+(in-package :mp)
+
+#+(or allegro-v3.0 allegro-v3.1)
+(defun process-lock (lock &optional (lock-value *current-process*)
+				    (whostate "Lock") timeout)
+  (declare (optimize (speed 3)))
+  (let ((.got-process-lock. nil))
+    (declare (special .got-process-lock.))
+    (if* timeout
+       then (with-timeout (timeout (when .got-process-lock. lock-value))
+	      (process-lock-1 lock lock-value whostate))
+       else (process-lock-1 lock lock-value whostate))))
