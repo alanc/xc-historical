@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.48 88/05/05 09:17:30 rws Exp $ */
+/* $Header: dispatch.c,v 1.49 88/05/05 11:45:58 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3298,7 +3298,6 @@ Oops (client, reqCode, minorCode, status)
     int status;
 {
     xError rep;
-    register int i;
 
     rep.type = X_Error;
     rep.sequenceNumber = client->sequence;
