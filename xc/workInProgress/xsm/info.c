@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.3 94/07/12 14:25:24 mor Exp $ */
+/* $XConsortium: info.c,v 1.4 94/07/13 11:04:34 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -244,20 +244,11 @@ ClientInfoXtProc (w, client_data, callData)
 
 {
     static Bool did_first_popup = 0;
-    Dimension width;
 
     if (!client_info_visible)
     {
 	UpdateClientList ();
 	XtRealizeWidget (clientInfoPopup);
-
-	XtVaGetValues (clientInfoPopup,
-	    XtNwidth, &width,
-	    NULL);
-    
-	XtVaSetValues (clientListWidget,
-	    XtNlongest, width,
-	    NULL);
 
 	if (!did_first_popup)
 	{
@@ -287,7 +278,6 @@ create_client_info_popup ()
 
     clientInfoPopup = XtVaCreatePopupShell (
 	"clientInfoPopup", transientShellWidgetClass, topLevel,
-        XtNmappedWhenManaged, False,
 	XtNallowShellResize, True,
 	NULL);
     
@@ -300,6 +290,7 @@ create_client_info_popup ()
 	"viewPropButton", commandWidgetClass, clientInfoForm,
         XtNfromHoriz, NULL,
         XtNfromVert, NULL,
+	XtNresizable, True,
         NULL);
     
     XtAddCallback (viewPropButton, XtNcallback, GetClientInfoXtProc, 0);
@@ -309,6 +300,7 @@ create_client_info_popup ()
 	"killClientButton", commandWidgetClass, clientInfoForm,
         XtNfromHoriz, viewPropButton,
         XtNfromVert, NULL,
+	XtNresizable, True,
         NULL);
     
     XtAddCallback (killClientButton, XtNcallback, KillClientXtProc, 0);
@@ -318,6 +310,7 @@ create_client_info_popup ()
 	"clientInfoDoneButton", commandWidgetClass, clientInfoForm,
         XtNfromHoriz, killClientButton,
         XtNfromVert, NULL,
+	XtNresizable, True,
         NULL);
 
     XtAddCallback (clientInfoDoneButton, XtNcallback, listDoneXtProc, 0);
@@ -325,13 +318,12 @@ create_client_info_popup ()
 
     clientListWidget = XtVaCreateManagedWidget (
 	"clientListWidget", listWidgetClass, clientInfoForm,
-	XtNresizable, True,
         XtNdefaultColumns, 1,
 	XtNforceColumns, True,
         XtNfromHoriz, NULL,
         XtNfromVert, viewPropButton,
+	XtNresizable, True,
 	NULL);
-
 
 
     /*
@@ -346,13 +338,13 @@ create_client_info_popup ()
 
     clientPropForm = XtVaCreateManagedWidget (
 	"clientPropForm", formWidgetClass, clientPropPopup,
-	XtNresizable, True,
 	NULL);
 
     clientPropDoneButton = XtVaCreateManagedWidget (
 	"clientPropDoneButton", commandWidgetClass, clientPropForm,
         XtNfromHoriz, NULL,
         XtNfromVert, NULL,
+	XtNresizable, True,
         NULL);
 
     XtAddCallback (clientPropDoneButton, XtNcallback, clientPropDoneXtProc, 0);
@@ -364,8 +356,8 @@ create_client_info_popup ()
         XtNfromVert, clientPropDoneButton,
 	XtNeditType, XawtextRead,
         XtNdisplayCaret, False,
-/*	XtNresize, XawtextResizeBoth, */
 	XtNscrollVertical, XawtextScrollWhenNeeded,
 	XtNscrollHorizontal, XawtextScrollWhenNeeded,
+	XtNresizable, True,
 	NULL);
 }
