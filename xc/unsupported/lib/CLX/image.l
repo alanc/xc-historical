@@ -2495,7 +2495,7 @@
 	       (bits-per-line (index* width bits-per-pixel))
 	       (bytes-per-line (index-ceiling bits-per-line 8))
 	       (padded-bits-per-line
-		 (index* (ceiling bits-per-line 32) 32))
+		 (index* (index-ceiling bits-per-line 32) 32))
 	       (padded-bytes-per-line
 		 (index-ceiling padded-bits-per-line 8))
 	       (data (make-array (* padded-bytes-per-line height)
