@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.63 90/05/03 14:26:20 jim Exp $
+ * $XConsortium: viewres.c,v 1.64 90/05/03 18:34:44 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -99,7 +99,7 @@ static char *help_message[] = {
 static XrmOptionDescRec Options[] = {
     { "-top", "*topObject", XrmoptionSepArg, (caddr_t) NULL },
     { "-variable", "*showVariable", XrmoptionNoArg, (caddr_t) "on" },
-    { "-vertical", "*Tree.Orientation", XrmoptionNoArg, (caddr_t) "vertical" },
+    { "-vertical", "*Tree.Gravity", XrmoptionNoArg, (caddr_t) "north" }
 };
 
 static struct _appresources {
@@ -873,7 +873,7 @@ main (argc, argv)
 
     toplevel = XtAppInitialize (&app_con, "Viewres", 
 				Options, XtNumber (Options),
-				&argc, argv, fallback_resources, 
+				(Cardinal *) &argc, argv, fallback_resources, 
 				(ArgList) NULL, ZERO);
     if (argc != 1) usage ();
     XtAppAddActions (app_con, viewres_actions, XtNumber (viewres_actions));
