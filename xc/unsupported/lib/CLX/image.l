@@ -2539,17 +2539,15 @@
 	    :unit 32 :byte-lsb-first-p t :bit-lsb-first-p t
 	    :pad 32 :left-pad left-pad))))))
 
-(defun write-bitmap-file (pathname image &rest options &key name &allow-other-keys)
+(defun write-bitmap-file (pathname image &optional name)
   ;; Writes an image to a C include file in standard X11 format
   ;; NAME argument used for variable prefixes.  Defaults to "image"
   (declare (type (or pathname string stream) pathname)
 	   (type image image)
-	   (type (or null stringable) name)
-	   (arglist pathname image &key name if-exists if-does-not-exist))
+	   (type (or null stringable) name))
   (unless (typep image 'image-x)
     (setq image (copy-image image :result-type 'image-x)))
-  (let* ((options (copy-list options))
-	 (plist (image-plist image))
+  (let* ((plist (image-plist image))
 	 (name (or name (image-name image) 'image))
 	 (left-pad (image-x-left-pad image))
 	 (width (index+ (image-width image) left-pad))
@@ -2563,15 +2561,13 @@
 	 (bytes-per-line (index-ceiling bits-per-line 8))
 	 (last (index* bytes-per-line height))
 	 (count 0))
-    (declare (type list options plist)
+    (declare (type list plist)
 	     (type stringable name)
 	     (type card8 left-pad)
 	     (type card16 width height)
 	     (type (member 1 4 8 16 24 32) bits-per-pixel)
 	     (type image-depth depth)
 	     (type array-index bits-per-line bytes-per-line count last))
-    ;; Remove NAME from options
-    (remf options :name)
     ;; Move x-hot by left-pad, if there is an x-hot, so image readers that
     ;; don't know about left pad get the hot spot in the right place.  We have
     ;; already increased width by left-pad.
@@ -2594,7 +2590,7 @@
 	  32 t t))
       (with-vector (data buffer-bytes)
 	(setq name (string-downcase (string name)))
-	(with-open-stream (fstream (apply #'open pathname :direction :output options))
+	(with-open-file (fstream pathname :direction :output)
 	  (format fstream "#define ~a_width ~d~%" name width)
 	  (format fstream "#define ~a_height ~d~%" name height)
 	  (unless (= depth 1)

@@ -2921,17 +2921,12 @@ If there are no regions given, return a very large region."
   (declare (type (or pathname string stream) pathname)
 	   (values image)))
 
-(defun write-bitmap-file (pathname image &key name if-exists if-does-not-exist)
+(defun write-bitmap-file (pathname image &optional name)
   ;; Writes an image to a C include file in standard X11 format
   ;; NAME argument used for variable prefixes.  Defaults to "image"
   (declare (type (or pathname string stream) pathname)
 	   (type image image)
-	   (type (or null stringable) name)
-	   (type (or null
-		     (member :error :new-version :rename :rename-and-delete
-			     :overwrite :append :supersede))
-		 if-exists)
-	   (type (or null (member :error :create)) if-does-not-exist)))
+	   (type (or null stringable) name)))
 
 ;;;-----------------------------------------------------------------------------
 ;;; Resource data-base
