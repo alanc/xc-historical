@@ -940,3 +940,20 @@ char *s;
 {
 	ErrorF(s);
 }
+
+/* AUX version of ffs does bits in the wrong order, silly them */
+
+int
+ffs(mask)
+unsigned int	mask;
+{
+    register i;
+
+    if ( ! mask ) return 0;
+    i = 1;
+    while (! (mask & 1)) {
+	i++;
+	mask = mask >> 1;
+    }
+    return i;
+}
