@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parse.c,v 1.18 91/03/27 16:21:25 gildea Exp $
+ * $XConsortium: parse.c,v 1.19 91/04/05 17:34:07 rws Exp $
  */
 #include "def.h"
 
@@ -20,7 +20,7 @@ find_includes(filep, file, file_red, recursion, failOK)
 		case IF:
 		doif:
 			type = find_includes(filep, file,
-				file_red, recursion+1, TRUE);
+				file_red, recursion+1, failOK);
 			while ((type == ELIF) || (type == ELIFFALSE))
 				type = gobble(filep, file, file_red);
 			if (type == ELSE)
@@ -31,7 +31,13 @@ find_includes(filep, file, file_red, recursion, failOK)
 			type = gobble(filep, file, file_red);
 			if (type == ELSE)
 			    find_includes(filep, file,
-				file_red, recursion+1, failOK);
+					  file_red, recursion+1,
+#ifdef	CPP
+					  failOK
+#else
+					  TRUE
+#endif
+					  );
 			else
 			if (type == ELIF)
 			    goto doif;
