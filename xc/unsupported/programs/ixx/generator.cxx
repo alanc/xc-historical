@@ -30,6 +30,20 @@
 #include <ctype.h>
 #include <string.h>
 
+/*
+ * Forward declarations of classes for picky C++ compilers
+ */
+
+class String;
+class UniqueString;
+class Identifier;
+class Expr;
+class ExprList;
+class CaseList;
+class CaseElement;
+class UnionMember;
+class SourcePosition;
+
 #include "tokens"
 
 implementPtrList(StringList,String)

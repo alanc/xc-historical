@@ -42,6 +42,17 @@
  * to include the necessary files ahead of its definitions.  It therefore
  * must be included after the other files define the appropriate symbols.
  */
+
+class String;
+class UniqueString;
+class Identifier;
+class Expr;
+class ExprList;
+class CaseList;
+class CaseElement;
+class UnionMember;
+class SourcePosition;
+
 #include "tokens"
 
 /* global for yylex/yyparse */
