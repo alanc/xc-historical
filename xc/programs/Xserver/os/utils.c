@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.45 88/05/19 10:36:30 swick Exp $ */
+/* $Header: utils.c,v 1.46 88/07/12 21:43:30 xguest Locked $ */
 #include <stdio.h>
 #include <sys/time.h>
 #include "misc.h"
@@ -369,12 +369,14 @@ unsigned long amount;
     amount = (amount + 3) & ~3;  
     if (ptr)
     {
+#ifndef macII
         if (ptr < minfree)
         {
 	    ErrorF("Xrealloc: trying to free static storage\n");
 	    /* Force a core dump */
 	    AbortServer();
 	}
+#endif macII
 #ifdef DEBUG
 	if (!CheckNode(ptr - 8))
 	    AbortServer();
