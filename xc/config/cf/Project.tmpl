@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.185 93/09/11 17:26:19 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.186 93/09/11 17:44:22 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -43,24 +43,14 @@ XCOMM $XConsortium: Project.tmpl,v 1.185 93/09/11 17:26:19 rws Exp $
 #ifndef BuildFonts
 #define BuildFonts		(BuildServer | BuildFontServer)
 #endif
-#ifndef BuildPex
-#define BuildPex		YES
-#endif
-#ifndef BuildPexClients
-#define BuildPexClients		BuildPex
+#ifndef BuildPhigs
+#define BuildPhigs		NO
 #endif
 #ifndef BuildPexExt
-#if BuildServer
-#define BuildPexExt		BuildPex
-#else
-#define BuildPexExt		NO
-#endif
+#define BuildPexExt		YES
 #endif
 #ifndef BuildXInputExt
 #define BuildXInputExt		NO
-#endif
-#ifndef BuildXInputLib
-#define BuildXInputLib		YES
 #endif
 #ifndef BuildXIE
 #define BuildXIE		YES
