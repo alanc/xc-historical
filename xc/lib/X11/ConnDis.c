@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.94 92/12/31 16:25:05 rws Exp $
+ * $XConsortium: XConnDis.c,v 11.95 93/07/09 15:24:55 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -281,8 +281,10 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
     if ((fd = (*connfunc) (phostname, idisplay, X_CONNECTION_RETRIES,
 			   &family, &saddrlen, &saddr)) < 0)
       goto bad;
+#ifndef USE_POLL
     if (fd >= OPEN_MAX)
 	goto bad;
+#endif
 
     /*
      * Set close-on-exec so that programs that fork() doesn't get confused.
