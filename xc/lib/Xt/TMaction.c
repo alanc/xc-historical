@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.6 91/02/06 21:16:56 converse Exp $ */
+/* $XConsortium: TMaction.c,v 1.7 91/02/08 17:17:52 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -59,6 +59,10 @@ static CompiledActionTable CompileActionTable(actions, count, stat, perm)
 {
     CompiledActionTable cActions = (CompiledActionTable)actions;
     register int i;
+    CompiledAction hold;
+
+    if (!count)
+	return (CompiledActionTable) NULL;
 
     if (! stat) {
 	cActions = (CompiledActionTable) XtMalloc(count * 
@@ -73,6 +77,18 @@ static CompiledActionTable CompileActionTable(actions, count, stat, perm)
     else
 	for (i=0; i<count; i++)
 	    cActions[i].signature = XrmStringToQuark(actions[i].string);
+    
+    /* Insertion sort.  Whatever sort is used, it must be stable. */
+    for (i=1; i < count - 1; i++) {
+	register int j;
+	hold = cActions[i];
+	j = i;
+	while (j && cActions[j-1].signature > hold.signature) {
+	    cActions[j] = cActions[j-1];
+	    j--;
+	}
+	cActions[j] = hold;
+    }
 
     return cActions;
 }
@@ -127,6 +143,33 @@ static void ReportUnboundActions(xlations, bindData)
 }
 
 
+static CompiledAction *SearchActionTable(quark, actionTable, numActions)
+    XrmQuark		quark;
+    CompiledActionTable	actionTable;
+    Cardinal		numActions;
+{
+    register int i, left, right;
+
+    left = 0;
+    right = numActions - 1;
+
+    while (left <= right) {
+	i = (left + right) / 2;
+
+	if (quark < actionTable[i].signature)
+	    right = i - 1;
+	else {
+	    left = i + 1;
+	    if (quark == actionTable[i].signature) {
+		while (i && actionTable[i - 1].signature == quark)
+		    i--;
+		return &actionTable[i];
+	    }
+	}
+    }
+    return (CompiledAction *) NULL;
+}
+
 static int BindActions(stateTree, procs, compiledActionTable, numActions, ndxP)
     TMSimpleStateTree	stateTree;
     XtActionProc	*procs;
@@ -136,7 +179,7 @@ static int BindActions(stateTree, procs, compiledActionTable, numActions, ndxP)
 {
     int unbound = stateTree->numQuarks - *ndxP;
     CompiledAction* action;
-    Cardinal ndx, i;
+    Cardinal ndx;
     Boolean savedNdx = False;
     
     for (ndx = *ndxP; ndx < stateTree->numQuarks; ndx++) {
@@ -144,15 +187,12 @@ static int BindActions(stateTree, procs, compiledActionTable, numActions, ndxP)
 	    /* attempt to bind it */
 	    register XrmQuark q = stateTree->quarkTbl[ndx];
 	    Boolean found = False;
-	    for (i = 0, action = compiledActionTable; 
-		 i < numActions;
-		 i++, action++) {
-		if (action->signature == q) {
-		    procs[ndx] = action->proc;
-		    unbound--;
-		    found = True;
-		    break;
-		}
+
+	    action = SearchActionTable(q, compiledActionTable, numActions);
+	    if (action) {
+		procs[ndx] = action->proc;
+		unbound--;
+		found = True;
 	    }
 	    if (!found && !savedNdx) {
 		*ndxP= ndx;
