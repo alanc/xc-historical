@@ -1,4 +1,4 @@
-/* $XConsortium: remote.c,v 1.10 94/08/29 17:46:05 mor Exp mor $ */
+/* $XConsortium: remote.c,v 1.11 94/12/14 20:00:47 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -30,6 +30,8 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 #include "xsm.h"
+
+#include <X11/ICE/ICEutil.h>
 
 static char 		*format_rstart_env();
 
