@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.12 89/02/02 19:42:01 rws Exp $
+ * $XConsortium: Xmu.h,v 1.13 89/03/08 14:03:59 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -89,6 +89,9 @@ char *XmuGetAtomName( /* Display*, Atom */ );
 char *XmuNameOfAtom( /* AtomPtr */ );
 int XmuReadBitmapData(), XmuReadBitmapDataFromFile();
 int XmuPrintDefaultErrorMessage();
+Status XmuAllStandardColormaps( /* Display* */ );
+Status XmuVisualStandardColormaps( /* Display*, int, Visual*, int */);
+Status XmuStandardColormap( /* Display*, int, Visual*, ... */);
 
 #ifndef _Atoms_c_
 #define XA_ATOM_PAIR(d)		XmuInternAtom(d, _XA_ATOM_PAIR)
