@@ -34,8 +34,7 @@ SOFTWARE.
 #include "XIproto.h"
 #include "Xlibint.h"
 #include "XInput.h"
-
-extern int	IReqCode;
+#include "extutil.h"
 
 XDeviceState
 *XQueryDeviceState (dpy, dev)
@@ -44,19 +43,20 @@ XDeviceState
     {       
     int				i,j;
     int				rlen;
-    int				size;
+    int				size = 0;
     xQueryDeviceStateReq 	*req;
     xQueryDeviceStateReply 	rep;
     XDeviceState		*state = NULL;
     XInputClass			*any, *Any;
     char			*data;
+    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return ((XDeviceState *) NoSuchExtension);
 
     GetReq(QueryDeviceState,req);		
-    req->reqType = IReqCode;
+    req->reqType = info->codes->major_opcode;
     req->ReqType = X_QueryDeviceState;
     req->deviceid = dev->device_id;
 
@@ -128,6 +128,7 @@ XDeviceState
 		    V->class = v->class;
 		    V->length = sizeof (XValuatorState);
 		    V->num_valuators = v->num_valuators;
+		    V->mode = v->mode;
 		    Any = (XInputClass *) 
 			((char *) Any + sizeof (XValuatorState));
 		    V->valuators = (int *) Any;

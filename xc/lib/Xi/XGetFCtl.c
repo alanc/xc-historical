@@ -35,8 +35,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "Xlib.h"
 #include "XInput.h"
-
-extern	int	IReqCode;
+#include "extutil.h"
 
 XFeedbackState
 *XGetFeedbackControl (dpy, dev, num_feedbacks)
@@ -51,13 +50,14 @@ XFeedbackState
     xFeedbackState *sav = NULL;
     xGetFeedbackControlReq *req;
     xGetFeedbackControlReply rep;
+    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return ((XFeedbackState *) NoSuchExtension);
 
     GetReq(GetFeedbackControl,req);
-    req->reqType = IReqCode;
+    req->reqType = info->codes->major_opcode;
     req->ReqType = X_GetFeedbackControl;
     req->deviceid = dev->device_id;
 

@@ -34,11 +34,10 @@ SOFTWARE.
 #include "XIproto.h"
 #include "Xlibint.h"
 #include "XInput.h"
+#include "extutil.h"
 #define NEED_REPLIES
 
 /* returns either  DeviceMappingSuccess or DeviceMappingBusy  */
-
-extern	int	IReqCode;
 
 int 
 XSetDeviceButtonMapping (dpy, device, map, nmap)
@@ -49,12 +48,13 @@ XSetDeviceButtonMapping (dpy, device, map, nmap)
     {
     register xSetDeviceButtonMappingReq *req;
     xSetDeviceButtonMappingReply rep;
+    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay(dpy);
     if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
     GetReq (SetDeviceButtonMapping, req);
-    req->reqType = IReqCode;
+    req->reqType = info->codes->major_opcode;
     req->ReqType = X_SetDeviceButtonMapping;
     req->map_length = nmap;
     req->length += (nmap + 3)>>2;

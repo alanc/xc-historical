@@ -34,8 +34,7 @@ SOFTWARE.
 #include "XIproto.h"
 #include "Xlibint.h"
 #include "XInput.h"
-
-extern	int	IReqCode;
+#include "extutil.h"
 
 KeySym 
 *XGetDeviceKeyMapping (dpy, dev, first, keycount, syms_per_code)
@@ -49,13 +48,14 @@ KeySym
     register KeySym *mapping = NULL;
     xGetDeviceKeyMappingReq *req;
     xGetDeviceKeyMappingReply rep;
+    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return ((KeySym *) NoSuchExtension);
 
     GetReq(GetDeviceKeyMapping,req);
-    req->reqType = IReqCode;
+    req->reqType = info->codes->major_opcode;
     req->ReqType = X_GetDeviceKeyMapping;
     req->deviceid = dev->device_id;
     req->firstKeyCode = first;

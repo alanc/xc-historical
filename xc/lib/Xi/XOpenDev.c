@@ -34,8 +34,7 @@ SOFTWARE.
 #include "XIproto.h"
 #include "XInput.h"
 #include "Xlibint.h"
-
-extern	int	IReqCode;
+#include "extutil.h"
 
 XDevice
 *XOpenDevice(dpy, id)
@@ -45,15 +44,16 @@ XDevice
     int			i;
     register long	rlen;
     xOpenDeviceReq 	*req;
-    xOpenDeviceReply rep;
-    XDevice *dev;
+    xOpenDeviceReply 	rep;
+    XDevice 		*dev;
+    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return ((XDevice *) NoSuchExtension);
 
     GetReq(OpenDevice,req);		
-    req->reqType = IReqCode;
+    req->reqType = info->codes->major_opcode;
     req->ReqType = X_OpenDevice;
     req->deviceid = id;
 

@@ -34,8 +34,7 @@ SOFTWARE.
 #include "XIproto.h"
 #include "Xlibint.h"
 #include "XInput.h"
-
-extern int	IReqCode;
+#include "extutil.h"
 
 int
 XSetDeviceFocus(dpy, dev, focus, revert_to, time)
@@ -46,11 +45,12 @@ XSetDeviceFocus(dpy, dev, focus, revert_to, time)
     Time	time;
     {       
     xSetDeviceFocusReq 	*req;
+    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
 
     GetReq(SetDeviceFocus,req);		
-    req->reqType = IReqCode;
+    req->reqType = info->codes->major_opcode;
     req->ReqType = X_SetDeviceFocus;
     req->device = dev->device_id;
     req->focus = focus;

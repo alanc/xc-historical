@@ -34,8 +34,7 @@ SOFTWARE.
 #include "XIproto.h"
 #include "Xlibint.h"
 #include "XInput.h"
-
-extern	int	IReqCode;
+#include "extutil.h"
 
 int
 XGrabDeviceButton (dpy, dev, button, modifiers, modifier_device, 
@@ -54,6 +53,7 @@ XGrabDeviceButton (dpy, dev, button, modifiers, modifier_device,
     int 			other_devices_mode;
     {
     register xGrabDeviceButtonReq *req;
+    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
@@ -61,7 +61,7 @@ XGrabDeviceButton (dpy, dev, button, modifiers, modifier_device,
 
     GetReq(GrabDeviceButton, req);
 
-    req->reqType = IReqCode;
+    req->reqType = info->codes->major_opcode;
     req->ReqType = X_GrabDeviceButton;
     req->grabbed_device = dev->device_id;
     req->button = button;

@@ -35,8 +35,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "Xproto.h"
 #include "XInput.h"
-
-extern int	IReqCode;
+#include "extutil.h"
 
 int
 XGetSelectedExtensionEvents (dpy, w, this_client_count, this_client_list, 
@@ -51,13 +50,14 @@ XGetSelectedExtensionEvents (dpy, w, this_client_count, this_client_list,
     int		rlen;
     register 	xGetSelectedExtensionEventsReq *req;
     xGetSelectedExtensionEventsReply rep;
+    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
     GetReq(GetSelectedExtensionEvents,req);		
 
-    req->reqType = IReqCode;
+    req->reqType = info->codes->major_opcode;
     req->ReqType = X_GetSelectedExtensionEvents;
     req->window = w;
 

@@ -38,8 +38,7 @@ SOFTWARE.
 #include "XIproto.h"
 #include "XI.h"
 #include "XInput.h"
-
-extern int	IReqCode;
+#include "extutil.h"
 
 XDeviceInfo 
 *XListInputDevices(dpy, ndevices)
@@ -57,13 +56,14 @@ XDeviceInfo
     char			*nptr, *Nptr;
     register int 		i,j,k,namelen;
     register long 		rlen;
+    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return ((XDeviceInfo *) NoSuchExtension);
 
     GetReq(ListInputDevices,req);		
-    req->reqType = IReqCode;
+    req->reqType = info->codes->major_opcode;
     req->ReqType = X_ListInputDevices;
 
     (void) _XReply (dpy, (xReply *) &rep, 0, xFalse);

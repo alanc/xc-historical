@@ -34,8 +34,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XI.h"
 #include "XInput.h"
-
-extern int	IReqCode;
+#include "extutil.h"
 
 XExtensionVersion
 *XGetExtensionVersion (dpy, name)
@@ -45,13 +44,14 @@ XExtensionVersion
     xGetExtensionVersionReq 	*req;
     xGetExtensionVersionReply 	rep;
     XExtensionVersion		*ext;
+    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (CheckExtInit(dpy, Dont_Check) == -1)
 	return ((XExtensionVersion *) NoSuchExtension);
 
     GetReq(GetExtensionVersion,req);		
-    req->reqType = IReqCode;
+    req->reqType = info->codes->major_opcode;
     req->ReqType = X_GetExtensionVersion;
     req->nbytes = name ? strlen(name) : 0;
     req->length += (req->nbytes+3)>>2;

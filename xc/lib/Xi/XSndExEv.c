@@ -34,9 +34,9 @@ SOFTWARE.
 #include "XIproto.h"
 #include "Xlibint.h"
 #include "XInput.h"
+#include "extutil.h"
 
-extern int	IReqCode;
-extern Status _XExtEventToWire();
+extern Status XInputEventToWire();
 
 Status
 XSendExtensionEvent (dpy, dev, dest, prop, count, list, event)
@@ -54,6 +54,7 @@ XSendExtensionEvent (dpy, dev, dest, prop, count, list, event)
     xEvent 			*ev;
     register Status 		(**fp)();
     Status 			status;
+    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
@@ -63,13 +64,13 @@ XSendExtensionEvent (dpy, dev, dest, prop, count, list, event)
 
     fp = &dpy->wire_vec[event->type & 0177];
     if (*fp == NULL) 
-	*fp = _XExtEventToWire;
+	*fp = XInputEventToWire;
     status = (**fp)(dpy, event, &ev, &num_events);
 
     if (status) 
 	{
 	GetReq(SendExtensionEvent,req);		
-	req->reqType = IReqCode;
+        req->reqType = info->codes->major_opcode;
 	req->ReqType = X_SendExtensionEvent;
 	req->deviceid = dev->device_id;
 	req->destination = dest;

@@ -34,8 +34,7 @@ SOFTWARE.
 #include "XIproto.h"
 #include "Xlibint.h"
 #include "XInput.h"
-
-extern int	IReqCode;
+#include "extutil.h"
 
 int 
 XGrabDevice (dpy, dev, grab_window, ownerEvents, event_count, event_list,
@@ -53,13 +52,14 @@ XGrabDevice (dpy, dev, grab_window, ownerEvents, event_count, event_list,
     xGrabDeviceReply rep;
     register xGrabDeviceReq *req;
     register int status;
+    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
 
     GetReq(GrabDevice,req);		
-    req->reqType = IReqCode;
+    req->reqType = info->codes->major_opcode;
     req->ReqType = X_GrabDevice;
     
     req->deviceid = dev->device_id;

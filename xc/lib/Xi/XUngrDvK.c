@@ -34,8 +34,7 @@ SOFTWARE.
 #include "XIproto.h"
 #include "Xlibint.h"
 #include "XInput.h"
-
-extern	int	IReqCode;
+#include "extutil.h"
 
 int
 XUngrabDeviceKey (dpy, dev, key, modifiers, modifier_dev, grab_window)
@@ -46,14 +45,15 @@ XUngrabDeviceKey (dpy, dev, key, modifiers, modifier_dev, grab_window)
     XDevice			*modifier_dev;
     Window 			grab_window;
     {
-    register xUngrabDeviceKeyReq *req;
+    register xUngrabDeviceKeyReq 	*req;
+    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay(dpy);
     if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
     GetReq(UngrabDeviceKey, req);
 
-    req->reqType = IReqCode;
+    req->reqType = info->codes->major_opcode;
     req->ReqType = X_UngrabDeviceKey;
     req->grabbed_device = dev->device_id;
     req->key = key;

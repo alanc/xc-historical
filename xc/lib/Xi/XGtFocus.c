@@ -34,8 +34,7 @@ SOFTWARE.
 #include "XIproto.h"
 #include "Xlibint.h"
 #include "XInput.h"
-
-extern int	IReqCode;
+#include "extutil.h"
 
 int
 XGetDeviceFocus (dpy, dev, focus, revert_to, time)
@@ -47,13 +46,14 @@ XGetDeviceFocus (dpy, dev, focus, revert_to, time)
     {       
     xGetDeviceFocusReq 	*req;
     xGetDeviceFocusReply 	rep;
+    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return (NoSuchExtension);
 
     GetReq(GetDeviceFocus,req);		
-    req->reqType = IReqCode;
+    req->reqType = info->codes->major_opcode;
     req->ReqType = X_GetDeviceFocus;
     req->deviceid = dev->device_id;
 

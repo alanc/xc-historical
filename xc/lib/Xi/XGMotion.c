@@ -34,8 +34,7 @@ SOFTWARE.
 #include "XIproto.h"
 #include "Xlibint.h"
 #include "XInput.h"
-
-extern int	IReqCode;
+#include "extutil.h"
 
 XDeviceTimeCoord
 *XGetDeviceMotionEvents (dpy, dev, start, stop, nEvents, mode, axis_count)
@@ -54,13 +53,14 @@ XDeviceTimeCoord
     char *bufp, *buf2p, *tmpp;
     long size, size2;
     int	 i, j;
+    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
 	return ((XDeviceTimeCoord *) NoSuchExtension);
 
     GetReq(GetDeviceMotionEvents,req);		
-    req->reqType = IReqCode;
+    req->reqType = info->codes->major_opcode;
     req->ReqType = X_GetDeviceMotionEvents;
     req->start = start;
     req->stop = stop;

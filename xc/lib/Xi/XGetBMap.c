@@ -34,12 +34,11 @@ SOFTWARE.
 #include "XIproto.h"
 #include "Xlibint.h"
 #include "XInput.h"
+#include "extutil.h"
 #ifdef MIN			/* some systems define this in <sys/param.h> */
 #undef MIN
 #endif
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
-
-extern	int	IReqCode;
 
 int
 XGetDeviceButtonMapping (dpy, device, map, nmap)
@@ -51,6 +50,7 @@ XGetDeviceButtonMapping (dpy, device, map, nmap)
     int	status = 0;
     unsigned char mapping[256];				/* known fixed size */
     long nbytes;
+    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 
     register xGetDeviceButtonMappingReq *req;
     xGetDeviceButtonMappingReply rep;
@@ -60,7 +60,7 @@ XGetDeviceButtonMapping (dpy, device, map, nmap)
 	return (NoSuchExtension);
     GetReq(GetDeviceButtonMapping, req);
 
-    req->reqType = IReqCode;
+    req->reqType = info->codes->major_opcode;
     req->ReqType = X_GetDeviceButtonMapping;
     req->deviceid = device->device_id;
 
