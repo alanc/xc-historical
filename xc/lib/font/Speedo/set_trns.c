@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: set_trns.c,v 1.2 91/05/11 09:54:57 rws Exp $ */
 
 /*
 
@@ -1263,10 +1263,10 @@ for (j = 0; ; j++)
 #endif
         zone_orus = (fix31)end_orus - (fix31)start_orus;
         sp_plaid.mult[i] = ((((fix31)end_pix - (fix31)start_pix) << sp_globals.mpshift) + 
-                   (zone_orus >> 1)) / zone_orus;
+                   (zone_orus / 2)) / zone_orus;
         sp_plaid.offset[i] = 
             (((((fix31)start_pix + (fix31)end_pix) << sp_globals.mpshift) - 
-              ((fix31)sp_plaid.mult[i] * ((fix31)start_orus + (fix31)end_orus))) >> 1) + 
+              ((fix31)sp_plaid.mult[i] * ((fix31)start_orus + (fix31)end_orus))) / 2) + 
             sp_globals.mprnd;
         i++;
         }
