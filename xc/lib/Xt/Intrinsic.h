@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.87 88/10/09 11:14:38 rws Exp $
+* $XConsortium: Intrinsic.h,v 1.1 89/06/01 14:34:05 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -110,9 +110,21 @@ extern void XtStringConversionWarning();
 
 typedef void (*XtConverter)();
     /* XrmValue		    *args;	    */
-    /* Cardinal		    *num_args;       */
+    /* Cardinal		    *num_args;      */
     /* XrmValue		    *from;	    */
     /* Xrmvalue		    *to;	    */
+
+typedef Boolean (*XtNewConverter)();
+    /* Display		    *dpy;	    */
+    /* XrmValue		    *args;	    */
+    /* Cardinal		    *num_args;      */
+    /* XrmValue		    *from;	    */
+    /* Xrmvalue		    *to;	    */
+
+typedef void (*XtDestructor)();
+    /* caddr_t		    client_data;    */
+
+typedef char* XtCacheRef;
 
 typedef enum {
 /* address mode     	parameter representation    */
@@ -161,6 +173,15 @@ extern void XtDirectConvert();
     /* Cardinal		    num_args;       */
     /* XrmValuePtr	    from;	    */
     /* XrmValue		    *to;	    */  /* RETURN */
+
+extern Boolean XtCallConverter();
+    /* Display		    *dpy;	    */
+    /* XtConverter	    converter;      */
+    /* XrmValuePtr	    args;	    */
+    /* Cardinal		    num_args;       */
+    /* XrmValuePtr	    from;	    */
+    /* XrmValue		    *to;	    */  /* RETURN */
+    /* XtCacheRef	    *cache_ref;	    */  /* RETURN */
 
 /****************************************************************
  *
@@ -764,6 +785,9 @@ extern void XtDestroyApplicationContext();
 extern XtAppContext XtWidgetToApplicationContext();
     /* Widget	widget */
 
+extern XtAppContext XtDisplayToApplicationContext();
+    /* Display	*dpy; */
+
 extern XrmDatabase XtDatabase();
     /*  Display *dpy; */
 
@@ -1037,6 +1061,19 @@ extern void XtDestroyGC (); /* widget, gc */
     /* GC gc; */
 /* we pass in the widget because XFreeGC needs a display, and there isn't */
 /* one stored in the GC record. */
+
+extern void XtReleaseCacheRef(); /* cache_ref */
+    /* XtCacheRef *cache_ref; */
+
+extern void XtCallbackReleaseCacheRef(); /* widget, closure, call_data */
+    /* Widget widget;	*/
+    /* caddr_t closure; */	/* XtCacheRef */
+    /* caddr_t call_data */
+
+extern void XtCallbackReleaseCacheRefList(); /* widget, closure, call_data */
+    /* Widget widget;	*/
+    /* caddr_t closure; */	/* XtCacheRef* */
+    /* caddr_t call_data */
 
 #endif _XtIntrinsic_h
 /* DON'T ADD STUFF AFTER THIS #endif */

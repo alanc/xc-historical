@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.9 89/01/18 17:05:57 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.1 89/06/01 14:34:03 swick Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -84,6 +84,12 @@ typedef struct _ProcessContextRec {
     ConverterTable	globalConverterTable;
 } ProcessContextRec, *ProcessContext;
 
+typedef struct {
+    char*	start;
+    char*	current;
+    int		bytes_remaining;
+} Heap;
+
 typedef struct _XtAppStruct {
     XtAppContext next;		/* link to next app in process context */
     ProcessContext process;	/* back pointer to our process context */
@@ -102,6 +108,7 @@ typedef struct _XtAppStruct {
     FdStruct fds;
     short count, max, last;
     Boolean sync, rv, being_destroyed, error_inited;
+    Heap heap;
 } XtAppStruct;
 
 extern void _XtSetDefaultErrorHandlers();
@@ -137,6 +144,7 @@ typedef struct _XtPerDisplayStruct {
     Boolean being_destroyed;
     XrmName name;		       /* resolved app name */
     XrmClass class;		       /* R2 compatibility only */
+    Heap heap;
 } XtPerDisplayStruct, *XtPerDisplay;
 
 extern void _XtPerDisplayInitialize();
@@ -144,7 +152,7 @@ extern void _XtPerDisplayInitialize();
 extern XtPerDisplay _XtGetPerDisplay();
     /* Display *dpy */
 
-extern XtAppContext _XtDisplayToApplicationContext();
+extern XtAppContext XtDisplayToApplicationContext();
     /* Display *dpy */
 
 extern void _XtDisplayInitialize();
@@ -155,3 +163,5 @@ extern void _XtDisplayInitialize();
     /* 	Cardinal *argc; */
     /* 	char *argv[];  */
 
+extern void _XtCacheFlushTag();
+    /*	caddr_t tag;	*/

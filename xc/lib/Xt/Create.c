@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Create.c,v 1.48 88/12/02 12:49:46 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Create.c,v 1.49 89/06/02 10:41:38 swick Exp $";
 /* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
 #endif lint
 
@@ -125,6 +125,8 @@ Widget _XtCreate(
     char                    *req_constraints;
     Cardinal                size;
     register Widget widget;
+    XtCacheRef		    *cache_refs;
+    extern XtCacheRef* _XtGetResources();
 
     if (! (widgetClass->core_class.class_inited))
 	ClassInit(widgetClass);
@@ -153,7 +155,7 @@ Widget _XtCreate(
     }
 
     /* fetch resources */
-    XtGetResources(widget, args, num_args);
+    cache_refs = _XtGetResources(widget, args, num_args);
 
     /* Compile any callback lists into internal form */
     for (offsetList = widget->core.widget_class->core_class.callback_private;
@@ -165,6 +167,11 @@ Widget _XtCreate(
 	    *pCallbacks =
 		(XtCallbackList) _XtCompileCallbackList(widget, *pCallbacks);
 	}
+    }
+    if (cache_refs != NULL) {
+	extern void _XtCallbackReleaseCacheRefs();
+	XtAddCallback( widget, XtNdestroyCallback,
+		       XtCallbackReleaseCacheRefList, (caddr_t)cache_refs );
     }
 
     size = XtClass(widget)->core_class.widget_size;
@@ -340,7 +347,7 @@ Widget XtAppCreateShell(name, class, widgetClass, display, args, num_args)
 
 {
     if (widgetClass == NULL) {
-	XtAppErrorMsg(_XtDisplayToApplicationContext(display),
+	XtAppErrorMsg(XtDisplayToApplicationContext(display),
 	       "invalidClass","xtAppCreateShell","XtToolkitError",
                "XtAppCreateShell requires non-NULL widget class",
                  (String *)NULL, (Cardinal *)NULL);

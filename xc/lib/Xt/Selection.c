@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Selection.c,v 1.11 89/03/10 18:02:37 rws Exp $";
+static char Xrcsid[] = "$XConsortium: Selection.c,v 1.12 89/06/02 10:11:49 swick Exp $";
 /* $oHeader: Selection.c,v 1.8 88/09/01 11:53:42 asente Exp $ */
 #endif lint
 
@@ -120,7 +120,7 @@ Atom prop;
  if (prop == None) return;
  if (XFindContext(dpy, DefaultRootWindow(dpy), selectPropertyContext,
     (caddr_t *)&sarray)) 
-    XtAppErrorMsg(_XtDisplayToApplicationContext(dpy),
+    XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
 	    "noSelectionProperties", "freeSelectionProperty", "XtToolkitError",
 		"internal error: no selection property context for display",
 		 (String *)NULL,  (Cardinal *)NULL );

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.74 89/02/03 10:56:00 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.1 89/06/01 14:34:09 swick Exp $";
 /* $oHeader: TMparse.c,v 1.4 88/09/01 17:30:39 asente Exp $ */
 #endif lint
 
@@ -34,7 +34,14 @@ SOFTWARE.
 #include "IntrinsicI.h"
 #ifndef NOTASCII
 #define XK_LATIN1
+#endif
+#define XK_MISCELLANY
 #include <X11/keysymdef.h>
+
+#ifndef NOCACHE_TRANSLATIONS
+#define CACHED True
+#else
+#define CACHED False
 #endif
 
 /* Private definitions. */
@@ -83,14 +90,14 @@ static ModifierRec modifiers[] = {
     {"Mod3",	0,	ParseModImmed,Mod3Mask},
     {"Mod4",	0,	ParseModImmed,Mod4Mask},
     {"Mod5",	0,	ParseModImmed,Mod5Mask},
-    {"Meta",	0,	ParseModSym,  KeysymModMask},
-    {"m",       0,      ParseModSym,  KeysymModMask},
-    {"h",       0,      ParseModSym,  KeysymModMask},
-    {"su",      0,      ParseModSym,  KeysymModMask},
-    {"a",       0,      ParseModSym,  KeysymModMask},
-    {"Hyper",   0,      ParseModSym,  KeysymModMask},
-    {"Super",   0,      ParseModSym,  KeysymModMask},
-    {"Alt",     0,      ParseModSym,  KeysymModMask},
+    {"Meta",	0,	ParseModSym,  XK_Meta_L},
+    {"m",       0,      ParseModSym,  XK_Meta_L},
+    {"h",       0,      ParseModSym,  XK_Hyper_L},
+    {"su",      0,      ParseModSym,  XK_Super_L},
+    {"a",       0,      ParseModSym,  XK_Alt_L},
+    {"Hyper",   0,      ParseModSym,  XK_Hyper_L},
+    {"Super",   0,      ParseModSym,  XK_Super_L},
+    {"Alt",     0,      ParseModSym,  XK_Alt_L},
     {"Button1",	0,	ParseModImmed,Button1Mask},
     {"Button2",	0,	ParseModImmed,Button2Mask},
     {"Button3",	0,	ParseModImmed,Button3Mask},
@@ -98,6 +105,10 @@ static ModifierRec modifiers[] = {
     {"Button5",	0,	ParseModImmed,Button5Mask},
 
     {"Any",	0,	ParseModImmed,AnyModifier},
+
+    {"c",	0,	ParseModImmed,ControlMask},
+    {"s",	0,	ParseModImmed,ShiftMask},
+    {"l",	0,	ParseModImmed,LockMask},
 
     {NULL, NULL, NULL},
 };
@@ -780,20 +791,9 @@ static void ParseModSym (name,value,lateBindings,notFlag,valueP)
     Boolean notFlag;
     Value* valueP;
 {
-    int length;
-    char newName[500];		/* MAXKEYSYMNAMELEN+2 */
-    KeySym keysymL, keysymR;
-    Boolean error = False;
-    length = strlen(name);
-    XtBCopy(name,newName,length);
-    newName[length++] = '_';
-    newName[length] = 'L';
-    newName[length+1] = '\0';
-    keysymL = StringToKeySym(newName, &error);
-    newName[length] = 'R';
-    keysymR = StringToKeySym(newName, &error);
-    if (keysymL != NoSymbol || keysymR != NoSymbol)
-        StoreLateBindings(keysymL,notFlag,keysymR,notFlag,lateBindings);
+    register KeySym keysymL = (KeySym)value;
+    register KeySym keysymR = keysymL + 1; /* valid for supported keysyms */
+    StoreLateBindings(keysymL,notFlag,keysymR,notFlag,lateBindings);
     *valueP = 0;
 }
 
@@ -1700,44 +1700,40 @@ XtTranslations _XtParseTranslationTable (source)
 }
 
 /*ARGSUSED*/
-void _CompileAccelerators (args, num_args, from, to)
+static Boolean CvtStringToAccelerators(dpy, args, num_args, from, to, closure)
+    Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
     XrmValuePtr from,to;
+    caddr_t	*closure;
 {
     String str;
-    static XtTranslations stateTable;
+
     if (*num_args != 0)
-        XtWarningMsg("invalidParameters","compileAccelerators","XtToolkitError",
+        XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+	  "invalidParameters","compileAccelerators","XtToolkitError",
           "String to TranslationTable needs no extra arguments",
 	  (String *)NULL, (Cardinal *)NULL);
      str = (String)(from->addr);
-     if (str == NULL) {
-         to->addr = NULL;
-         to->size = 0;
-         return;
-    };
-    _XtInitializeStateTable(&stateTable);
-    str = CheckForPoundSign(stateTable,str);
-    while (str != NULL && *str != '\0') {
-       str =  ParseTranslationTableProduction(stateTable,str,TRUE);
+     if (str == NULL)
+         return False;
+
+    if (to->addr != NULL) {
+	if (to->size < sizeof(XtAccelerators)) {
+	    to->size = sizeof(XtAccelerators);
+	    return False;
+	}
+	*(XtAccelerators*)to->addr = XtParseAcceleratorTable(str);
     }
-    to->addr= (caddr_t)&stateTable;
-    to->size = sizeof(XtTranslations);
+    else {
+	static XtAccelerators staticStateTable;
+	staticStateTable = XtParseAcceleratorTable(str);
+	to->addr= (caddr_t)&staticStateTable;
+	to->size = sizeof(XtAccelerators);
+    }
+    return True;
 }
 
-
-XtAccelerators XtParseAcceleratorTable (source)
-    String   source;
-{
-    XrmValue from,to;
-    from.addr = source;
-    from.size = strlen(source)+1;
-    XtDirectConvert((XtConverter) _CompileAccelerators, (XrmValuePtr) NULL,
-            0, &from, &to);
-    return (*(XtAccelerators*)(to.addr));
-
-}
 
 static String CheckForPoundSign(stateTable,str)
     XtTranslations stateTable;
@@ -1769,33 +1765,39 @@ static String CheckForPoundSign(stateTable,str)
 }
 
 /*ARGSUSED*/
-void _CompileTranslations (args, num_args, from, to)
+static Boolean
+CvtStringToTranslations(dpy, args, num_args, from, to, closure_ret)
+    Display	*dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
     XrmValuePtr from,to;
+    caddr_t	*closure_ret;
 {
     String str;
-    static XtTranslations stateTable;
 
     if (*num_args != 0)
-	XtWarningMsg("invalidParameters","compileTranslations","XtToolkitError",
-          "String to TranslationTable needs no extra arguments",
+	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+	  "invalidParameters","compileTranslations","XtToolkitError",
+          "String to TranslationTable conversion needs no extra arguments",
 	  (String *)NULL, (Cardinal *)NULL);
      str = (String)(from->addr);
-     if (str == NULL) {
-         to->addr = NULL;
-         to->size = 0;
-         return;
-     };
-    _XtInitializeStateTable(&stateTable);
-  
-    str = CheckForPoundSign(stateTable,str);
-    while (str != NULL && *str != '\0') {
-       str =  ParseTranslationTableProduction(stateTable,str,FALSE);
-    }
+     if (str == NULL)
+         return False;
 
-    to->addr= (caddr_t)&stateTable;
-    to->size = sizeof(XtTranslations);
+    if (to->addr != NULL) {
+	if (to->size < sizeof(XtTranslations)) {
+	    to->size = sizeof(XtTranslations);
+	    return False;
+	}
+	*(XtTranslations*)to->addr = XtParseTranslationTable(str);
+    }
+    else {
+	static XtTranslations staticStateTable;
+	staticStateTable = XtParseTranslationTable(str);
+	to->addr= (caddr_t)&staticStateTable;
+	to->size = sizeof(XtTranslations);
+    }
+    return True;
 }
 
 /*** public procedures ***/
@@ -1806,14 +1808,37 @@ void _CompileTranslations (args, num_args, from, to)
 XtTranslations XtParseTranslationTable(source)
     String source;
 {
-    XrmValue from,to;
-    from.addr = source;
-    from.size = strlen(source)+1;
-    XtDirectConvert((XtConverter) _CompileTranslations, (XrmValuePtr) NULL,
-	    0, &from, &to);
-    return (*(XtTranslations*)(to.addr));
+    XtTranslations stateTable;
 
+    if (source == NULL)
+         return (XtTranslations)NULL;
+
+    _XtInitializeStateTable(&stateTable);
+
+    source = CheckForPoundSign(stateTable,source);
+    while (source != NULL && *source != '\0') {
+       source =  ParseTranslationTableProduction(stateTable,source,FALSE);
+    }
+    return stateTable;
 }
+
+XtAccelerators XtParseAcceleratorTable (source)
+    String   source;
+{
+    XtTranslations stateTable;
+
+    if (source == NULL)
+	return NULL;
+
+    _XtInitializeStateTable(&stateTable);
+
+    source = CheckForPoundSign(stateTable,source);
+    while (source != NULL && *source != '\0') {
+       source =  ParseTranslationTableProduction(stateTable,source,TRUE);
+    }
+    return stateTable;
+}
+
 
 void _XtTranslateInitialize()
 {
@@ -1841,12 +1866,20 @@ _XtAddTMConverters(table)
     ConverterTable table;
 {
     XrmQuark q;
+    extern void _XtFreeTranslations();
+    extern Boolean _XtCvtMergeTranslations();
      _XtTableAddConverter(table,
 	     q = XrmStringToRepresentation(XtRString), 
 	     XrmStringToRepresentation(XtRTranslationTable), 
- 	    (XtConverter) _CompileTranslations, (XtConvertArgList) NULL, 0);
+ 	     CvtStringToTranslations, (XtConvertArgList) NULL,
+	     (Cardinal)0, _XtFreeTranslations, True, CACHED);
      _XtTableAddConverter(table, q,
 	     XrmStringToRepresentation(XtRAcceleratorTable),
- 	    (XtConverter) _CompileAccelerators,
-            (XtConvertArgList) NULL, 0);
+ 	     CvtStringToAccelerators, (XtConvertArgList) NULL,
+	     (Cardinal)0, (XtDestructor)_XtFreeTranslations, True, CACHED);
+     _XtTableAddConverter(table,
+	     XrmStringToRepresentation( "_XtTranslationTablePair" ),
+	     XrmStringToRepresentation(XtRTranslationTable), 
+ 	     _XtCvtMergeTranslations, (XtConvertArgList) NULL,
+	     (Cardinal)0, _XtFreeTranslations, True, CACHED);
 }
