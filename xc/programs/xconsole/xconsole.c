@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xconsole.c,v 1.5 91/02/22 10:49:43 rws Exp $
+ * $XConsortium: xconsole.c,v 1.6 91/04/03 20:15:48 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -69,6 +69,7 @@ static struct _app_resources {
     Boolean notify;
     Boolean daemon;
     Boolean verbose;
+    Boolean exitOnFail;
 } app_resources;
 
 #define Offset(field) XtOffsetOf(struct _app_resources, field)
@@ -77,13 +78,15 @@ static XtResource  resources[] = {
     {"file",	"File",	    XtRString,	sizeof (char *),
 	Offset (file),	XtRString,  "console" },
     {"notify",	"Notify",   XtRBoolean,	sizeof (Boolean),
-	Offset (notify), XtRString, "TRUE" },
+	Offset (notify), XtRImmediate, (XtPointer)True },
     {"stripNonprint",	"StripNonprint",    XtRBoolean, sizeof (Boolean),
-	Offset (stripNonprint), XtRString, "TRUE" },
+	Offset (stripNonprint), XtRImmediate, (XtPointer)True },
     {"daemon",		"Daemon",	    XtRBoolean,	sizeof (Boolean),
-	Offset (daemon), XtRString, "FALSE"},
+	Offset (daemon), XtRImmediate, (XtPointer)False},
     {"verbose",		"Verbose",	    XtRBoolean,	sizeof (Boolean),
-	Offset (verbose),XtRString, "FALSE"},
+	Offset (verbose),XtRImmediate, (XtPointer)False},
+    {"exitOnFail",	"ExitOnFail",    XtRBoolean,	sizeof (Boolean),
+	Offset (exitOnFail),XtRImmediate, (XtPointer)False},
 };
 
 #undef Offset
@@ -94,6 +97,7 @@ static XrmOptionDescRec options[] = {
     {"-nonotify",   "*notify",		XrmoptionNoArg,	    "FALSE"},
     {"-daemon",	    "*daemon",		XrmoptionNoArg,	    "TRUE"},
     {"-verbose",    "*verbose",		XrmoptionNoArg,	    "TRUE"},
+    {"-exitOnFail", "*exitOnFail",	XrmoptionNoArg,	    "TRUE"},
 };
 
 #ifdef ultrix
@@ -105,6 +109,7 @@ static XrmOptionDescRec options[] = {
 #include    <sys/ioctl.h>
 #ifdef SVR4
 #include    <termios.h>
+#include    <sys/stropts.h>		/* for I_PUSH */
 #endif
 
 #ifdef TIOCCONS
@@ -158,6 +163,8 @@ OpenConsole ()
 	}
 	if (!input)
 	{
+	    if (app_resources.exitOnFail)
+		exit(0);
 	    TextAppend (text, "Couldn't open ", 14);
 	    TextAppend (text, app_resources.file, strlen (app_resources.file));
 	    TextAppend (text, "\n", 1);
@@ -584,9 +591,13 @@ get_pty (pty, tty, ttydev, ptydev)
 	if ((*pty = open ("/dev/ptmx", O_RDWR)) < 0) {
 	    return 1;
 	}
+	grantpt(*pty);
+	unlockpt(*pty);
 	strcpy(ttydev, ptsname(*pty));
-	if ((*tty = open(ttydev, O_RDWR)) >= 0)
+	if ((*tty = open(ttydev, O_RDWR)) >= 0) {
+	    (void)ioctl(*tty, I_PUSH, "ttcompat");
 	    return 0;
+	}
 	if (*pty >= 0)
 	    close (*pty);
 #else /* !SVR4, need lots of code */
