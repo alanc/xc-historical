@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSrc.c,v 1.48 91/03/18 14:52:35 converse Exp $ */
+/* $XConsortium: AsciiSrc.c,v 1.45 91/02/17 14:45:54 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -44,7 +44,6 @@
 #if (defined(ASCII_STRING) || defined(ASCII_DISK))
 #  include <X11/Xaw/AsciiText.h> /* for Widget Classes. */
 #endif
-
 
 /****************************************************************
  *
@@ -205,10 +204,13 @@ Widget request, new;
   src->ascii_src.changes = FALSE;
   src->ascii_src.allocated_string = FALSE;
 
-  file = InitStringOrFile(src, src->ascii_src.type == XawAsciiFile);
+  file = InitStringOrFile(src);
   LoadPieces(src, file, NULL);
 
   if (file != NULL) fclose(file);
+
+  if ( src->ascii_src.type == XawAsciiString )
+      src->ascii_src.string = NULL;
 }
 
 /*	Function Name: ReadText
@@ -616,7 +618,7 @@ Cardinal * num_args;
   if ( old_src->ascii_src.use_string_in_place != 
        src->ascii_src.use_string_in_place ) {
       XtAppWarning( XtWidgetToApplicationContext(new),
-	   "AsciiSrc: The XtNuseStringInPlace resource may not be changed.");
+	   "AsciiSrc: The XtNuseStrinInPlace resources may not be changed.");
        src->ascii_src.use_string_in_place = 
 	   old_src->ascii_src.use_string_in_place;
   }
@@ -628,12 +630,25 @@ Cardinal * num_args;
       }
   
   if ( string_set || (old_src->ascii_src.type != src->ascii_src.type) ) {
-    RemoveOldStringOrFile(old_src, string_set); /* remove old info. */
-    file = InitStringOrFile(src, string_set);	/* Init new info. */
+    if (string_set) {
+      /* Fool it into not freeing the string */
+      old_src->ascii_src.allocated_string = FALSE; 
+      RemoveOldStringOrFile(old_src);        /* remove old info. */
+      old_src->ascii_src.allocated_string = TRUE;
+    }
+    else {
+      RemoveOldStringOrFile(old_src);        /* remove old info. */
+      src->ascii_src.allocated_string = FALSE;
+    }
+
+    file = InitStringOrFile(src);    /* Init new info. */
     LoadPieces(src, file, NULL);    /* load new info into internal buffers. */
     if (file != NULL) fclose(file);
     XawTextSetSource( XtParent(new), new, 0);   /* Tell text widget
 						   what happened. */
+    if ( src->ascii_src.type == XawAsciiString )
+	src->ascii_src.string = NULL;
+
     total_reset = TRUE;
   }
 
@@ -694,7 +709,7 @@ static void
 Destroy (w)
 Widget w;
 {
-  RemoveOldStringOrFile((AsciiSrcObject) w, True);
+  RemoveOldStringOrFile((AsciiSrcObject) w);
 }
 
 /************************************************************
@@ -828,17 +843,13 @@ Widget w;
  ************************************************************/
 
 static void
-RemoveOldStringOrFile(src, checkString) 
+RemoveOldStringOrFile(src) 
 AsciiSrcObject src;
-Boolean checkString;
 {
   FreeAllPieces(src);
 
-  if (checkString && src->ascii_src.allocated_string) {
+  if (src->ascii_src.allocated_string) 
     XtFree(src->ascii_src.string);
-    src->ascii_src.allocated_string = False;
-    src->ascii_src.string = NULL;
-  }
 }
 
 /*	Function Name: WriteToFile
@@ -906,31 +917,20 @@ AsciiSrcObject src;
  */
 
 static FILE *
-InitStringOrFile(src, newString)
+InitStringOrFile(src)
 AsciiSrcObject src;
-Boolean newString;
 {
     char * open_mode;
     FILE * file;
     char fileName[TMPSIZ];
 
     if (src->ascii_src.type == XawAsciiString) {
-
 	if (src->ascii_src.string == NULL)
 	    src->ascii_src.length = 0;
-
-	else if (! src->ascii_src.use_string_in_place) {
-	    src->ascii_src.string = XtNewString(src->ascii_src.string);
-	    src->ascii_src.allocated_string = True;
+	else 
 	    src->ascii_src.length = strlen(src->ascii_src.string);
-	}
-
+	
 	if (src->ascii_src.use_string_in_place) {
-	    src->ascii_src.length = strlen(src->ascii_src.string);
-	    /* In case the length resource is incorrectly set */
-	    if (src->ascii_src.length > src->ascii_src.ascii_length)
-		src->ascii_src.ascii_length = src->ascii_src.length;
-
 	    if (src->ascii_src.ascii_length == MAGIC_VALUE) 
 		src->ascii_src.piece_size = src->ascii_src.length;
 	    else
@@ -945,6 +945,8 @@ Boolean newString;
  */
     
     src->ascii_src.is_tempfile = FALSE;
+    if (src->ascii_src.allocated_string)
+	XtFree(src->ascii_src.string);
 
     switch (src->text_src.edit_mode) {
     case XawtextRead:
@@ -969,10 +971,8 @@ Boolean newString;
 		   NULL, NULL);
     }
 
-    if (newString && ! src->ascii_src.is_tempfile) {
-	src->ascii_src.string = XtNewString(src->ascii_src.string);
-	src->ascii_src.allocated_string = TRUE;
-    }
+    src->ascii_src.string = XtNewString(src->ascii_src.string);
+    src->ascii_src.allocated_string = TRUE;
     
     if (!src->ascii_src.is_tempfile) {
 	if ((file = fopen(src->ascii_src.string, open_mode)) == 0) {
