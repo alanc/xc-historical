@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xfuncs.h,v 1.3 91/01/09 15:06:17 rws Exp $
+ * $XConsortium: Xfuncs.h,v 1.4 91/01/09 16:30:08 rws Exp $
  * 
  * Copyright 1990 by the Massachusetts Institute of Technology
  *
@@ -18,19 +18,24 @@
 #ifndef _XFUNCS_H_
 #define _XFUNCS_H_
 
-#if __STDC__ && !defined(NOSTDHDRS) && !defined(_XUSEBFUNCS)
+#ifdef _XUSEBFUNCS
+void bcopy();
+void bzero();
+int bcmp();
+#else
+#if __STDC__ && !defined(NOSTDHDRS)
 #include <string.h>
 #define bcopy(b1,b2,len) memmove((void *)(b2), (void *)(b1), (size_t)(len))
 #define bzero(b,len) memset((void *)(b), 0, (size_t)(len))
 #define bcmp(b1,b2,len) memcmp((void *)(b1), (void *)(b2), (size_t)(len))
 #else
-#if defined(SYSV) && defined(hpux) && !defined(_XUSEBFUNCS)
+#if defined(SVR4) || defined(hpux)
 #include <string.h>
 #define bcopy(b1,b2,len) memmove(b2, b1, len)
 #define bzero(b,len) memset(b, 0, len)
 #define bcmp(b1,b2,len) memcmp(b1, b2, len)
 #else
-#if defined(SYSV) && !defined(_XUSEBFUNCS)
+#ifdef SYSV
 #include <memory.h>
 #if defined(_XBCOPYFUNC) && !defined(macII)
 #define bcopy _XBCOPYFUNC
@@ -43,6 +48,7 @@ void bcopy();
 void bcopy();
 void bzero();
 int bcmp();
+#endif
 #endif
 #endif
 #endif
