@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: xfontsel.c,v 1.9 89/11/14 09:28:42 jim Exp $";
+static char Xrcsid[] = "$XConsortium: xfontsel.c,v 1.10 89/11/14 09:35:12 swick Exp $";
 #endif
 
 /*
@@ -125,6 +125,7 @@ typedef struct FieldValueList FieldValueList;
 struct FieldValueList {
     int count;			/* of values */
     int allocated;
+    Boolean show_unselectable;
     FieldValue value[1];	/* really [allocated] */
 };
 
@@ -146,6 +147,13 @@ typedef struct Choice Choice;
 struct Choice {
     Choice *prev;
     FieldValue *value;
+};
+
+
+static XtResource menuResources[] = {
+    { "showUnselectable", "ShowUnselectable", XtRBoolean, sizeof(Boolean),
+		XtOffsetOf( FieldValueList, show_unselectable ),
+		XtRImmediate, (XtPointer)True },
 };
 
 
@@ -543,6 +551,8 @@ void MakeFieldMenu(closure)
 	SetNoFonts();
 	return;
     }
+    XtGetSubresources(menu, values, "options", "Options",
+		      menuResources, XtNumber(menuResources), NZ);
     XtAddCallback(menu, XtNpopupCallback, EnableOtherValues,
 		  (XtPointer)makeRec->field );
 
@@ -813,18 +823,10 @@ EnableRemainingItems()
 		for (fontCount = value->count; fontCount; fontCount--, fp++) {
 		    if (fontInSet[*fp]) {
 			value->enable = True;
-#ifdef notdef
-			if (!XtIsSensitive(value->menu_item))
-			    XtSetSensitive( value->menu_item, True );
-#endif
 			goto NextValue;
 		    }
 		}
 		value->enable = False;
-#ifdef notdef
-		if (XtIsSensitive(value->menu_item))
-		    XtSetSensitive( value->menu_item, False );
-#endif
 	      NextValue:;
 	    }
 	}
@@ -845,10 +847,6 @@ EnableAllItems(field)
     int count;
     for (count = fieldValues[field]->count; count; count--, value++) {
 	value->enable = True;
-#ifdef notdef
-	if (!XtIsSensitive(value->menu_item)
-	    XtSetSensitive( value->menu_item, True );
-#endif
     }
 }
 
@@ -917,10 +915,43 @@ void EnableMenu(closure)
     int field = (int)closure;
     FieldValue *val = fieldValues[field]->value;
     int f;
+    Widget *managed = NULL, *pManaged = NULL;
+    Widget *unmanaged = NULL, *pUnmanaged = NULL;
+    Boolean showUnselectable = fieldValues[field]->show_unselectable;
 
     for (f = fieldValues[field]->count; f; f--, val++) {
-	if (val->enable != XtIsSensitive(val->menu_item))
-	    XtSetSensitive(val->menu_item, val->enable);
+	if (showUnselectable) {
+	    if (val->enable != XtIsSensitive(val->menu_item))
+		XtSetSensitive(val->menu_item, val->enable);
+	}
+	else {
+	    if (val->enable != XtIsManaged(val->menu_item)) {
+		if (val->enable) {
+		    if (managed == NULL) {
+			managed = (Widget*)
+			    XtMalloc(fieldValues[field]->count*sizeof(Widget));
+			pManaged = managed;
+		    }
+		    *pManaged++ = val->menu_item;
+		}
+		else {
+		    if (unmanaged == NULL) {
+			unmanaged = (Widget*)
+			    XtMalloc(fieldValues[field]->count*sizeof(Widget));
+			pUnmanaged = unmanaged;
+		    }
+		    *pUnmanaged++ = val->menu_item;
+		}
+	    }
+	}
+    }
+    if (pManaged != managed) {
+	XtManageChildren(managed, pManaged - managed);
+	XtFree(managed);
+    }
+    if (pUnmanaged != unmanaged) {
+	XtUnmanageChildren(unmanaged, pUnmanaged - unmanaged);
+	XtFree(unmanaged);
     }
     enabledMenuIndex = field;
 }
