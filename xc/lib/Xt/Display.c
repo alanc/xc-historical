@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.46 90/07/15 21:39:36 swick Exp $ */
+/* $XConsortium: Display.c,v 1.47 90/07/26 10:03:10 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -313,12 +313,15 @@ static void DestroyAppContext(app)
 	if (app->list != NULL) XtFree((char *)app->list);
 	_XtFreeConverterTable(app->converterTable);
 	_XtCacheFlushTag(app, (XtPointer)&app->heap);
-	_XtHeapFree(&app->heap);
 	_XtFreeActions(app->action_table);
 	if (app->destroy_callbacks != NULL) {
 	    _XtCallCallbacks(&app->destroy_callbacks, (XtPointer)app);
 	    _XtRemoveAllCallbacks(&app->destroy_callbacks);
 	}
+	while (app->timerQueue) XtRemoveTimeOut((XtIntervalId)app->timerQueue);
+	while (app->workQueue) XtRemoveWorkProc((XtWorkProcId)app->workQueue);
+	if (app->input_list) _XtRemoveAllInputs(app);
+	_XtHeapFree(&app->heap);
 	while (*prev_app != app) prev_app = &(*prev_app)->next;
 	*prev_app = app->next;
 	if (app->process->defaultAppContext == app)
