@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.25 92/06/11 15:23:08 converse Exp $" */
+/* $XConsortium: XcmsLRGB.c,v 1.26 92/06/11 16:26:32 converse Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -1776,7 +1776,7 @@ _XcmsLRGB_InitScrnDefault(dpy, screenNumber, pPerScrnInfo)
 /*
  *	DESCRIPTION
  *		Given a display and screen number, this routine attempts
- *		to initialize the TekCMS per Screen Info structure
+ *		to initialize the Xcms per Screen Info structure
  *		(XcmsPerScrnInfo) with defaults.
  *
  *	RETURNS

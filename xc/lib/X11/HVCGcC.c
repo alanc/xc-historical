@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVCGcC.c,v 1.6 91/06/27 10:52:16 dave Exp $" */
+/* $XConsortium: TekHVCGcC.c,v 1.7 91/07/25 01:08:00 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -80,7 +80,7 @@ XcmsTekHVCClipC (ccc, pColors_in_out, nColors, i, pCompressed)
  *		Reduce the Chroma for a specific hue and value to
  *		to bring the given color into the gamut of the 
  *		specified device.  As required of gamut compression
- *		functions in TekCMS, this routine returns pColor_in_out
+ *		functions in Xcms, this routine returns pColor_in_out
  *		in XcmsCIEXYZFormat on successful completion.
  *		
  *		Since this routine works with the value within

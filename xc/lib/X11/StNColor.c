@@ -1,4 +1,4 @@
-/* $XConsortium: XStNColor.c,v 11.21 91/06/27 10:52:04 dave Exp $ */
+/* $XConsortium: XStNColor.c,v 11.22 91/07/22 22:35:01 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -42,7 +42,7 @@ int flags;  /* DoRed, DoGreen, DoBlue */
     XColor scr_def;
 
     /*
-     * Let's Attempt to use TekCMS approach to Parse Color
+     * Let's Attempt to use Xcms approach to Parse Color
      */
     if ((ccc = XcmsCCCOfColormap(dpy, cmap)) != (XcmsCCC)NULL) {
 	if (_XcmsResolveColorString(ccc, &name, &cmsColor_exact,
@@ -60,7 +60,7 @@ int flags;  /* DoRed, DoGreen, DoBlue */
     }
 
     /*
-     * The TekCMS and i18n methods failed, so lets pass it to the server
+     * The Xcms and i18n methods failed, so lets pass it to the server
      * for parsing.
      */
 

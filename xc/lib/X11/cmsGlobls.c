@@ -1,4 +1,4 @@
-/*$XConsortium: XcmsGlobls.c,v 1.8 91/07/25 01:08:47 rws Exp $ */
+/*$XConsortium: XcmsGlobls.c,v 1.9 92/06/11 16:24:55 converse Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -28,7 +28,7 @@
  *		XcmsGlobls.c
  *
  *	DESCRIPTION
- *		Source file containing TekCMS globals
+ *		Source file containing Xcms globals
  *
  *
  */

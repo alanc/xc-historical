@@ -1,4 +1,4 @@
-/* $XConsortium: XParseCol.c,v 11.27 91/07/22 22:34:30 rws Exp $ */
+/* $XConsortium: XParseCol.c,v 11.28 93/07/05 11:38:56 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -79,7 +79,7 @@ Status XParseColor (dpy, cmap, spec, def)
 
 
 	/*
-	 * Let's Attempt to use TekCMS and i18n approach to Parse Color
+	 * Let's Attempt to use Xcms and i18n approach to Parse Color
 	 */
 	if ((ccc = XcmsCCCOfColormap(dpy, cmap)) != (XcmsCCC)NULL) {
 	    if (_XcmsResolveColorString(ccc, &spec,
@@ -95,7 +95,7 @@ Status XParseColor (dpy, cmap, spec, def)
 	}
 
 	/*
-	 * TekCMS and i18n methods failed, so lets pass it to the server
+	 * Xcms and i18n methods failed, so lets pass it to the server
 	 * for parsing.
 	 */
 	{

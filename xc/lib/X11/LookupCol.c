@@ -1,4 +1,4 @@
-/* $XConsortium: XLookupCol.c,v 11.18 91/07/22 15:44:19 rws Exp $ */
+/* $XConsortium: XLookupCol.c,v 11.19 91/07/22 22:34:03 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -43,7 +43,7 @@ Status XLookupColor (dpy, cmap, spec, def, scr)
 	XcmsColor cmsColor_exact;
 
 	/*
-	 * Let's Attempt to use TekCMS and i18n approach to Parse Color
+	 * Let's Attempt to use Xcms and i18n approach to Parse Color
 	 */
 	/* copy string to allow overwrite by _XcmsResolveColorString() */
 	if ((ccc = XcmsCCCOfColormap(dpy, cmap)) != (XcmsCCC)NULL) {
@@ -62,7 +62,7 @@ Status XLookupColor (dpy, cmap, spec, def, scr)
 
 
 	/*
-	 * TekCMS and i18n methods failed, so lets pass it to the server
+	 * Xcms and i18n methods failed, so lets pass it to the server
 	 * for parsing.
 	 */
 

@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCvCols.c,v 1.9 91/07/25 01:08:38 rws Exp $" */
+/* $XConsortium: XcmsCvCols.c,v 1.10 92/06/04 16:25:19 converse Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -28,7 +28,7 @@
  *		XcmsCvCols.c
  *
  *	DESCRIPTION
- *		TekCMS API routine that converts between the
+ *		Xcms API routine that converts between the
  *		device-independent color spaces.
  *
  *

@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLkCol.c,v 1.10 91/06/27 10:52:10 dave Exp $ */
+/* $XConsortium: XcmsLkCol.c,v 1.11 91/07/22 15:48:23 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -159,7 +159,7 @@ XcmsLookupColor(dpy, cmap, colorname, pColor_exact_return, pColor_scrn_return,
 
 PassToServer:
     /*
-     * TekCMS and i18n methods failed, so lets pass it to the server
+     * Xcms and i18n methods failed, so lets pass it to the server
      * for parsing.
      */
 

@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsAlNCol.c,v 1.6 91/05/14 10:58:45 rws Exp $" */
+/* $XConsortium: XcmsAlNCol.c,v 1.7 91/06/27 10:52:23 dave Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -110,7 +110,7 @@ XcmsAllocNamedColor(dpy, cmap, colorname, pColor_scrn_return,
     }
 
     /*
-     * 1. Convert string to a XcmsColor using TekCMS and i18n mechanism
+     * 1. Convert string to a XcmsColor using Xcms and i18n mechanism
      */
     if ((retval1 = _XcmsResolveColorString(ccc, &colorname,
 	    &tmpColor, result_format)) == XcmsFailure) {
