@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Shell.c,v 1.11 88/02/07 13:49:46 swick Locked $";
+static char rcsid[] = "$Header: Shell.c,v 1.12 88/02/08 16:01:33 swick Exp $";
 #endif lint
 
 /*
@@ -1074,7 +1074,7 @@ Cardinal mask;
 	}
 	if (mask & CWWidth) {
 		if (w->core.width == values->width) {
-			mask &= CWWidth;
+			mask &= ~CWWidth;
 		} else if (wm) {
 			hintp->flags &= ~USSize;
 			hintp->flags |= PSize;
@@ -1083,7 +1083,7 @@ Cardinal mask;
 	}
 	if (mask & CWHeight) {
 		if (w->core.height == values->height) {
-			mask &= CWHeight;
+			mask &= ~CWHeight;
 		} else if (wm) {
 			hintp->flags &= ~USSize;
 			hintp->flags |= PSize;
