@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.181 89/04/05 13:55:18 rws Exp $ */
+/* $XConsortium: events.c,v 1.182 89/04/19 14:58:55 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -3871,7 +3871,9 @@ ProcGrabButton(client)
     }
 
     grab = CreateGrab(client, inputInfo.pointer, pWin, 
-	(Mask)(stuff->eventMask),
+	permitOldBugs ? (Mask)(stuff->eventMask |
+			       ButtonPressMask | ButtonReleaseMask) :
+			(Mask)stuff->eventMask,
 	(Bool)stuff->ownerEvents, (Bool) stuff->keyboardMode,
 	(Bool)stuff->pointerMode, stuff->modifiers, stuff->button,
 	confineTo, cursor);
