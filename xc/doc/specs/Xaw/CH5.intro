@@ -185,6 +185,26 @@ file.  There is no key sequence to perform this action.
 .IP \fBCancel\fP 15
 Remove the search popup from the screen.
 .LP
+The widget hierarchy for the search popup is:
+.sp
+.nf
+.ta .5i 1.0i 1.5i 2.0i 2.5i
+<name of Text widget> - Text
+	search - TransientShell
+		form - Form
+			label1 - Label
+			label2 - Label
+			backwards - Toggle
+			forwards - Toggle
+			searchLabel - Label
+			searchText - Text
+			replaceLabel - Label
+			replaceText - Text
+			search - Command
+			replaceOne - Command
+			replaceAll - Command
+			cancel - Command
+.fi
 .NH 3
 File Insertion
 .LP
@@ -201,6 +221,18 @@ to enter the filename again.  The file insert may be aborted by clicking
 on \fICancel\fP.  If \fIMeta-i\fP is typed at a text widget that is
 read-only, it will beep, as no file insertion is allowed.
 .LP
+The widget hierarchy for the file insert popup is:
+.sp
+.nf
+.ta .5i 1.0i 1.5i 2.0i 2.5i
+<name of Text widget> - Text
+	insertFile - TransientShell
+		form - Form
+			label - Label 
+			text - Text
+			insert - Command
+			cancel - Command
+.fi
 .NH 3
 Text Selections for Users
 .LP
