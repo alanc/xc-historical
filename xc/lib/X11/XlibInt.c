@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.172 93/08/14 19:22:57 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.173 93/08/15 16:25:39 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -2080,6 +2080,10 @@ int _XIOError (dpy)
     Display *dpy;
 {
     dpy->flags |= XlibDisplayIOError;
+#ifdef WIN32
+    errno = WSAGetLastError();
+#endif
+
     if (_XIOErrorFunction != NULL)
 	(*_XIOErrorFunction)(dpy);
     else
