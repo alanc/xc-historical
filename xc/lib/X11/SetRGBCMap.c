@@ -1,5 +1,5 @@
 /* Copyright 1989 Massachusetts Institute of Technolgoy */
-/* $XConsortium: SetRGBCMap.c,v 1.4 89/03/21 13:43:38 jim Exp $ */
+/* $XConsortium: SetRGBCMap.c,v 1.1 89/03/28 18:11:45 jim Exp $ */
 
 #include "copyright.h"
 
@@ -29,7 +29,7 @@ void XSetRGBColormaps (dpy, w, cmaps, count, property)
      * if doing more than one, allocate scratch space for it
      */
     if ((count > 1) && ((data = ((xPropStandardColormap *)
-				 Xalloc(count*sizeof(xPropStandardColormap))))
+				 Xmalloc(count*sizeof(xPropStandardColormap))))
 			 != NULL)) {
 	alloced_scratch_space = True;
     } else {
