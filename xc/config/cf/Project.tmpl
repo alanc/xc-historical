@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.84 91/01/30 13:38:15 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.85 91/02/04 20:13:41 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -352,7 +352,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.84 91/01/30 13:38:15 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.84 91/01/30 13:38:15 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.85 91/02/04 20:13:41 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -398,10 +398,10 @@ XCOMM $XConsortium: Project.tmpl,v 1.84 91/01/30 13:38:15 rws Exp $
             IMAKE = imake		/* assume BINDIR in path */
            DEPEND = makedepend		/* assume BINDIR in path */
               RGB = rgb			/* assume BINDIR in path */
-#ifdef PcfFonts
-            FONTC = bdftopcf		/* assume BINDIR in path */
-#else
+#ifdef SnfFonts
             FONTC = bdftosnf		/* assume BINDIR in path */
+#else
+            FONTC = bdftopcf		/* assume BINDIR in path */
 #endif
         MKFONTDIR = mkfontdir		/* assume BINDIR in path */
         MKDIRHIER = BourneShell $(BINDIR)/mkdirhier
@@ -409,10 +409,10 @@ XCOMM $XConsortium: Project.tmpl,v 1.84 91/01/30 13:38:15 rws Exp $
             IMAKE = $(IMAKESRC)/imake
            DEPEND = DependCmd
               RGB = $(RGBSRC)/rgb
-#ifdef PcfFonts
-            FONTC = $(BDFTOPCFSRC)/bdftopcf
-#else
+#ifdef SnfFonts
             FONTC = $(BDFTOSNFSRC)/bdftosnf
+#else
+            FONTC = $(BDFTOPCFSRC)/bdftopcf
 #endif
         MKFONTDIR = $(MKFONTDIRSRC)/mkfontdir
         MKDIRHIER = BourneShell $(SCRIPTSRC)/mkdirhier.sh
@@ -442,11 +442,9 @@ XCOMM $XConsortium: Project.tmpl,v 1.84 91/01/30 13:38:15 rws Exp $
       XDMCPLIBSRC = $(LIBSRC)/Xdmcp
       BDFTOSNFSRC = $(FONTSRC)/bdftosnf
      MKFONTDIRSRC = $(FONTSRC)/mkfontdir
-#ifdef PcfFonts
       BDFTOSNFSRC = $(FONTSRC)/tools/bdftosnf
       BDFTOPCFSRC = $(FONTSRC)/tools/bdftopcf
      MKFONTDIRSRC = $(FONTSRC)/tools/mkfontdir
-#endif
      EXTENSIONSRC = $(TOP)/extensions
 
 /*
