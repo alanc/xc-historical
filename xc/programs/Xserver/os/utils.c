@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.53 88/08/16 20:17:54 jim Exp $ */
+/* $Header: utils.c,v 1.54 88/08/16 20:42:07 jim Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -54,7 +54,6 @@ int ErrorfOn = 1;
 
 #ifdef hpux
 int Rtprio = 0;
-int CatseyeBrainDamage = 0;
 int TopcatBrainDamage = 0;
 #endif
 
