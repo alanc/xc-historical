@@ -1,4 +1,4 @@
-/* $XConsortium: accept.c,v 1.10 93/09/22 11:14:47 mor Exp $ */
+/* $XConsortium: accept.c,v 1.11 93/09/22 11:51:38 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -77,6 +77,11 @@ static int open_dnet_socket ();
 #endif
 
 
+static int   _listen_count = 0;
+static int   _listen_descrips[MAX_LISTEN_CONNECTIONS];
+static char *_listen_network_ids[MAX_LISTEN_CONNECTIONS];
+
+
 
 Status
 IceListenForConnections (countRet, descripsRet, networkIdsRet,
@@ -120,9 +125,16 @@ char *errorStringRet;
 #ifdef UNIXCONN
     if ((fd = open_unix_socket (&unix_networkId)) != -1)
     {
-	(*descripsRet)[(*countRet)++] = _IceUnixDomainConnection = fd;
+	(*descripsRet)[*countRet] = _IceUnixDomainConnection = fd;
         unix_networkId_len = strlen (unix_networkId);
 	networkIdsLen += (unix_networkId_len + 1);
+
+	_listen_descrips[*countRet] = fd;
+	_listen_network_ids[*countRet] = (char *) malloc (
+	    unix_networkId_len + 1);
+	strcpy (_listen_network_ids[*countRet], unix_networkId);
+
+	(*countRet)++;
     }
     else
     {
@@ -133,9 +145,16 @@ char *errorStringRet;
 #ifdef TCPCONN
     if ((fd = open_tcp_socket (&tcp_networkId)) != -1)
     {
-	(*descripsRet)[(*countRet)++] = fd;
+	(*descripsRet)[*countRet] = fd;
         tcp_networkId_len = strlen (tcp_networkId);
 	networkIdsLen += (tcp_networkId_len + 1);
+
+	_listen_descrips[*countRet] = fd;
+	_listen_network_ids[*countRet] = (char *) malloc (
+	    tcp_networkId_len + 1);
+	strcpy (_listen_network_ids[*countRet], tcp_networkId);
+
+	(*countRet)++;
     }
     else
     {
@@ -146,9 +165,16 @@ char *errorStringRet;
 #ifdef DNETCONN
     if ((fd = open_dnet_socket (&dnet_networkId)) != -1)
     {
-	(*descripsRet)[(*countRet)++] = fd;
+	(*descripsRet)[*countRet] = fd;
         dnet_networkId_len = strlen (dnet_networkId);
 	networkIdsLen += (dnet_networkId_len + 1);
+
+	_listen_descrips[*countRet] = fd;
+	_listen_network_ids[*countRet] = (char *) malloc (
+	    dnet_networkId_len + 1);
+	strcpy (_listen_network_ids[*countRet], dnet_networkId);
+
+	(*countRet)++;
     }
     else
     {
@@ -156,6 +182,8 @@ char *errorStringRet;
 	    "Cannot establish dnet listening socket", errorLength);
     }
 #endif
+
+    _listen_count = *countRet;
 
     if (*countRet == 0)
     {
@@ -206,6 +234,73 @@ char *errorStringRet;
 
 
 
+void
+IceSetAuthenticationData (numEntries, entries)
+
+int			numEntries;
+IceAuthDataEntry	*entries;
+
+{
+    int i;
+
+    if (_IceAuthDataEntries)
+    {
+	for (i = 0; i < _IceAuthDataEntryCount; i++)
+	{
+	    free (_IceAuthDataEntries[i].protocol_name);
+	    free (_IceAuthDataEntries[i].protocol_data);
+	    free (_IceAuthDataEntries[i].address_list);
+	    free (_IceAuthDataEntries[i].auth_name);
+	    free (_IceAuthDataEntries[i].auth_data);
+	}
+
+	free ((char *) _IceAuthDataEntries);
+    }
+
+    _IceAuthDataEntryCount = numEntries;
+
+    _IceAuthDataEntries = (IceAuthDataEntry *) malloc (
+	numEntries * sizeof (IceAuthDataEntry));
+
+    for (i = 0; i < numEntries; i++)
+    {
+	_IceAuthDataEntries[i].protocol_name_length =
+	    entries[i].protocol_name_length;
+	_IceAuthDataEntries[i].protocol_data_length =
+	    entries[i].protocol_data_length;
+	_IceAuthDataEntries[i].address_list_length =
+            entries[i].address_list_length;
+	_IceAuthDataEntries[i].auth_name_length =
+            entries[i].auth_name_length;
+	_IceAuthDataEntries[i].auth_data_length =
+            entries[i].auth_data_length;
+
+	_IceAuthDataEntries[i].protocol_name = (char *) malloc (
+	    entries[i].protocol_name_length);
+	_IceAuthDataEntries[i].protocol_data = (char *) malloc (
+	    entries[i].protocol_data_length);
+	_IceAuthDataEntries[i].address_list = (char *) malloc (
+            entries[i].address_list_length);
+	_IceAuthDataEntries[i].auth_name = (char *) malloc (
+            entries[i].auth_name_length);
+	_IceAuthDataEntries[i].auth_data = (char *) malloc (
+            entries[i].auth_data_length);
+
+	memcpy (_IceAuthDataEntries[i].protocol_name,
+	    entries[i].protocol_name, entries[i].protocol_name_length);
+	memcpy (_IceAuthDataEntries[i].protocol_data,
+	    entries[i].protocol_data, entries[i].protocol_data_length);
+	memcpy (_IceAuthDataEntries[i].address_list,
+            entries[i].address_list, entries[i].address_list_length);
+	memcpy (_IceAuthDataEntries[i].auth_name,
+            entries[i].auth_name, entries[i].auth_name_length);
+	memcpy (_IceAuthDataEntries[i].auth_data,
+            entries[i].auth_data, entries[i].auth_data_length);
+    }
+}
+
+
+
 IceConn
 IceAcceptConnection (fd)
 
@@ -215,7 +310,7 @@ int fd;
     IceConn    		iceConn;
     int        		newconn;
     iceByteOrderMsg 	*pMsg;
-    int   		endian;
+    int   		endian, i;
 
     /*
      * Accept the connection.
@@ -244,7 +339,26 @@ int fd;
     iceConn->fd = newconn;
     iceConn->sequence = 0;
 
-    iceConn->connection_string = NULL;
+    for (i = 0; i < _listen_count; i++)
+	if (_listen_descrips[i] == fd)
+	    break;
+
+    if (i == _listen_count)
+    {
+	/* This should never happen, but just in case */
+
+	close (newconn);
+	free ((char *) iceConn);
+	return (NULL);
+    }
+    else
+    {
+	iceConn->connection_string = (char *) malloc (
+	    strlen (_listen_network_ids[i]) + 1);
+
+	strcpy (iceConn->connection_string, _listen_network_ids[i]);
+    }
+
     iceConn->vendor = NULL;
     iceConn->release = NULL;
 
