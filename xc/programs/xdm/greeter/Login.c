@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.6 88/09/26 17:29:57 jim Exp $
+ * $XConsortium: Login.c,v 1.7 88/10/15 19:07:00 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -71,6 +71,8 @@ static XtResource resources[] = {
 	offset(failTimeout), XtRString, "30"},
     {XtNnotifyDone, XtCCallback, XtRFunction, sizeof (caddr_t),
 	offset(notify_done), XtRFunction, (caddr_t) 0},
+    {XtNsessionArgument, XtCSessionArgument, XtRString,	sizeof (char *),
+	offset(sessionArg), XtRString, (char *) 0 },
 };
 
 #undef offset
@@ -422,6 +424,22 @@ FinishField (ctx, event)
 }
 
 static void
+SetSessionArgument (ctx, event, params, num_params)
+    LoginWidget	ctx;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
+{
+    if (ctx->login.sessionArg)
+	XtFree (ctx->login.sessionArg);
+    if (*num_params > 0) {
+	ctx->login.sessionArg = XtMalloc (strlen (params[0]) + 1);
+	strcpy (ctx->login.sessionArg, params[0]);
+    } else
+    	ctx->login.sessionArg = 0;
+}
+
+static void
 RestartSession (ctx, event)
     LoginWidget	ctx;
     XEvent	*event;
@@ -651,6 +669,7 @@ XtActionsRec loginActionsTable [] = {
   {"abort-display",		AbortDisplay},
   {"restart-session",		RestartSession},
   {"insert-char", 		InsertChar},
+  {"set-session-argument",	SetSessionArgument},
 };
 
 LoginClassRec loginClassRec = {
