@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cache.h,v 1.2 91/05/13 16:48:00 gildea Exp $ */
 /* 
  * Copyright 1990, 1991 Network Computing Devices; 
  * Portions Copyright 1987 by Digital Equipment Corporation and the 
@@ -43,6 +43,7 @@ extern int  CacheFreeMemory();
 extern void CacheSimpleFree();
 extern Cache CacheInit();
 extern void CacheReset();
+extern void CacheResize();
 extern pointer CacheFetchMemory();
 extern void CacheStats();
 
