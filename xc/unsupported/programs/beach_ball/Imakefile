@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.5 91/02/17 12:04:46 rws Exp $
+# $XConsortium: Imakefile,v 5.6 91/02/18 11:50:55 rws Exp $
 ##
 ##
 ## Copyright 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -27,7 +27,7 @@
        INCLUDES = -I$(BUILDINCDIR)
 LOCAL_LIBRARIES = $(PHIGSLIB) $(XLIB)
   SYS_LIBRARIES = -lm
-        DEPLIBS = $(PHIGSLIB) $(DEPXLIB)
+        DEPLIBS = $(DEPPHIGSLIB) $(DEPXLIB)
 
            SRCS = beach_ball.c clock.c spheres.c init_win.c
            OBJS = beach_ball.o clock.o spheres.o init_win.o
