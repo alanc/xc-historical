@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.187 94/01/14 17:56:15 kaleb Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.188 94/03/07 20:15:46 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1032,7 +1032,7 @@ static char *ExtractLocaleName(lang)
     String	lang;
 {
 
-#if defined(hpux) || defined(__bsdi__) || defined(sun) || defined(SVR4) || defined(sgi) || defined(__osf__) || defined(AIXV3) || defined(ultrix)
+#if defined(hpux) || defined(__bsdi__) || defined(sun) || defined(SVR4) || defined(sgi) || defined(__osf__) || defined(AIXV3) || defined(ultrix) || defined(WIN32)
 #ifdef hpux
 #define SKIPCOUNT 2
 #define STARTCHAR ':'
@@ -1043,6 +1043,11 @@ static char *ExtractLocaleName(lang)
 #define STARTCHAR '\001'
 #define ENDCHAR '\001'
 #else
+#ifdef WIN32
+#define SKIPCOUNT 1
+#define STARTCHAR '='
+#define ENDCHAR ';'
+#else
 #if defined(__osf__) || defined(AIXV3)
 #define STARTCHAR ' '
 #define ENDCHAR ' '
@@ -1051,6 +1056,7 @@ static char *ExtractLocaleName(lang)
 #define STARTCHAR '/'
 #endif
 #define ENDCHAR '/'
+#endif
 #endif
 #endif
 #endif
