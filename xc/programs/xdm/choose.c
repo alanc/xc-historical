@@ -1,5 +1,5 @@
 /*
- * $XConsortium: choose.c,v 1.5 91/07/15 15:59:01 gildea Exp $
+ * $XConsortium: choose.c,v 1.6 91/07/16 22:19:50 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -87,7 +87,7 @@ RememberIndirectClient (clientAddress, connectionType)
     for (i = indirectUsers; i; i = i->next)
 	if (XdmcpARRAY8Equal (clientAddress, &i->client) &&
 	    connectionType == i->connectionType)
-	    return;
+	    return 1;
     i = (IndirectUsersPtr) malloc (sizeof (IndirectUsersRec));
     if (!XdmcpCopyARRAY8 (clientAddress, &i->client))
     {
@@ -302,6 +302,7 @@ RemoveIndirectChoice (clientAddress, connectionType)
     }
 }
 
+/*ARGSUSED*/
 static
 AddChooserHost (connectionType, addr, closure)
     CARD16	connectionType;

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: mitauth.c,v 1.7 90/11/19 17:34:43 keith Exp $
+ * $XConsortium: rpcauth.c,v 1.1 91/02/12 15:34:33 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -29,6 +29,7 @@
 # include   <rpc/key_prot.h>
 # include   "dm.h"
 
+/*ARGSUSED*/
 SecureRPCInitAuth (name_len, name)
     unsigned short  name_len;
     char	    *name;
