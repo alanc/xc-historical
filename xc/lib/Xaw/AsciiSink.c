@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: AsciiSink.c,v 1.6 87/12/23 07:47:04 swick Locked $";
+static char rcsid[] = "$Header: AsciiSink.c,v 1.7 87/12/23 16:25:21 swick Locked $";
 #endif lint
 
 /*
@@ -32,7 +32,7 @@ static char rcsid[] = "$Header: AsciiSink.c,v 1.6 87/12/23 07:47:04 swick Locked
 #include <X/Text.h>
 #include "TextP.h"
 
-#define GETLASTPOS (*(source->scan))(source, 0, XtstFile, XtsdRight, 1, TRUE)
+#define GETLASTPOS (*source->Scan)(source, 0, XtstAll, XtsdRight, 1, TRUE)
 /* Private Ascii TextSink Definitions */
 
 static unsigned bufferSize = 200;
@@ -43,10 +43,10 @@ typedef struct _AsciiSinkData {
     XFontStruct *font;
     int tabwidth;
     Pixmap insertCursorOn;
-    InsertState laststate;
+    XtTextInsertState laststate;
 } AsciiSinkData, *AsciiSinkPtr;
 
-static char *buf;
+static char *buf = NULL;
 
 /* XXX foreground default should be XtDefaultFGPixel. How do i do that?? */
 
@@ -115,7 +115,7 @@ static int AsciiDisplayText (w, x, y, pos1, pos2, highlight)
     y += font->ascent;
     j = 0;
     while (pos1 < pos2) {
-	pos1 = (*(source->read))(source, pos1, &blk, pos2 - pos1);
+	pos1 = (*source->Read)(source, pos1, &blk, pos2 - pos1);
 	for (k = 0; k < blk.length; k++) {
 	    if (j >= bufferSize - 5) {
 		bufferSize *= 2;
@@ -168,7 +168,7 @@ Screen *s;
 static AsciiInsertCursor (w, x, y, state)
   Widget w;
   Position x, y;
-  InsertState state;
+  XtTextInsertState state;
 {
     XtTextSink sink = ((TextWidget)w)->text.sink;
     AsciiSinkData *data = (AsciiSinkData *) sink->data;
@@ -226,11 +226,11 @@ static AsciiFindDistance (w, fromPos, fromx, toPos,
     data = (AsciiSinkData *) sink->data;
     /* we may not need this */
     lastPos = GETLASTPOS;
-    (*(source->read))(source, fromPos, &blk, toPos - fromPos);
+    (*source->Read)(source, fromPos, &blk, toPos - fromPos);
     *resWidth = 0;
     for (index = fromPos; index != toPos && index < lastPos; index++) {
 	if (index - blk.firstPos >= blk.length)
-	    (*(source->read))(source, index, &blk, toPos - fromPos);
+	    (*source->Read)(source, index, &blk, toPos - fromPos);
 	c = blk.ptr[index - blk.firstPos];
 	if (c == LF) {
 	    *resWidth += CharWidth(data, fromx + *resWidth, SP);
@@ -267,14 +267,14 @@ static AsciiFindPosition(w, fromPos, fromx, width, stopAtWordBreak,
     data = (AsciiSinkData *) sink->data;
     lastPos = GETLASTPOS;
 
-    (*(source->read))(source, fromPos, &blk, bufferSize);
+    (*source->Read)(source, fromPos, &blk, bufferSize);
     *resWidth = 0;
     whiteSpaceSeen = FALSE;
     c = 0;
     for (index = fromPos; *resWidth <= width && index < lastPos; index++) {
 	lastWidth = *resWidth;
 	if (index - blk.firstPos >= blk.length)
-	    (*(source->read))(source, index, &blk, bufferSize);
+	    (*source->Read)(source, index, &blk, bufferSize);
 	c = blk.ptr[index - blk.firstPos];
 	if (c == LF) {
 	    *resWidth += CharWidth(data, fromx + *resWidth, SP);
@@ -346,21 +346,6 @@ static int AsciiMaxHeightForLines (w, lines)
 
 /***** Public routines *****/
 
-static Boolean initialized = FALSE;
-static XContext asciiSinkContext;
-
-AsciiSinkInitialize()
-{
-    if (initialized)
-    	return;
-    initialized = TRUE;
-
-    asciiSinkContext = XUniqueContext();
-
-    buf = (char *) XtMalloc(bufferSize);
-}
-
-
 XtTextSink XtAsciiSinkCreate (parent, args, num_args)
     Widget	parent;
     ArgList 	args;
@@ -374,26 +359,23 @@ XtTextSink XtAsciiSinkCreate (parent, args, num_args)
     unsigned long wid;
     XFontStruct *font;
 
-    if (!initialized)
-    	AsciiSinkInitialize();
+    if (!buf) buf = XtMalloc(bufferSize);
 
     sink = XtNew(XtTextSinkRec);
-    sink->display = AsciiDisplayText;
-    sink->insertCursor = AsciiInsertCursor;
-    sink->clearToBackground = AsciiClearToBackground;
-    sink->findPosition = AsciiFindPosition;
-    sink->findDistance = AsciiFindDistance;
-    sink->resolve = AsciiResolveToPosition;
-    sink->maxLines = AsciiMaxLinesForHeight;
-    sink->maxHeight = AsciiMaxHeightForLines;
+    sink->Display = AsciiDisplayText;
+    sink->InsertCursor = AsciiInsertCursor;
+    sink->ClearToBackground = AsciiClearToBackground;
+    sink->FindPosition = AsciiFindPosition;
+    sink->FindDistance = AsciiFindDistance;
+    sink->Resolve = AsciiResolveToPosition;
+    sink->MaxLines = AsciiMaxLinesForHeight;
+    sink->MaxHeight = AsciiMaxHeightForLines;
     data = XtNew(AsciiSinkData);
     sink->data = (caddr_t)data;
 
     XtGetSubresources (parent, (caddr_t)data, XtNtextSink, XtCTextSink, 
 		       SinkResources, XtNumber(SinkResources),
 		       args, num_args);
-
-/* XXX do i have to XLoadQueryFont or does the resource guy do it for me */
 
     font = data->font;
     values.function = GXcopy;
