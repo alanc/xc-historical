@@ -1,5 +1,5 @@
 /*
- * $XConsortium: RepeaterP.h,v 1.1 90/03/02 11:47:00 jim Exp $
+ * $XConsortium: RepeaterP.h,v 1.2 90/03/02 15:15:19 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -48,6 +48,8 @@ typedef struct {			/* new fields in widget */
     int minimum_delay;			/* minimumDelay/MinimumDelay */
     int decay;				/* decay to minimum delay */
     Boolean flash;			/* flash/Boolean */
+    XtCallbackList start_callbacks;	/* startCallback/StartCallback */
+    XtCallbackList stop_callbacks;	/* stopCallback/StopCallback */
     /* private data... */
     int next_delay;			/* next amount for timer */
     XtIntervalId timer;			/* timer that will fire */

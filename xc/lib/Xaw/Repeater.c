@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Repeater.c,v 1.2 90/03/02 11:51:04 jim Exp $
+ * $XConsortium: Repeater.c,v 1.3 90/03/02 15:15:16 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -83,6 +83,10 @@ static XtResource resources[] = {
 	off(repeat_delay), XtRImmediate, (XtPointer) REP_DEF_REPEAT_DELAY },
     { XtNflash, XtCBoolean, XtRBoolean, sizeof (Boolean),
 	off(flash), XtRImmediate, (XtPointer) FALSE },
+    { XtNstartCallback, XtCStartCallback, XtRCallback, sizeof (XtPointer),
+	off(start_callbacks), XtRImmediate, (XtPointer) NULL },
+    { XtNstopCallback, XtCStopCallback, XtRCallback, sizeof (XtPointer),
+	off(stop_callbacks), XtRImmediate, (XtPointer) NULL },
 #undef off
 };
 
@@ -236,6 +240,9 @@ static void ActionStart (gw, event, params, num_params)
     RepeaterWidget rw = (RepeaterWidget) gw;
 
     CLEAR_TIMEOUT (rw);
+    if (rw->repeater.start_callbacks) 
+      XtCallCallbackList (gw, rw->repeater.start_callbacks, NULL);
+
     DO_CALLBACK (rw);
     rw->repeater.timer = ADD_TIMEOUT (rw, rw->repeater.initial_delay);
     rw->repeater.next_delay = rw->repeater.repeat_delay;
@@ -249,6 +256,10 @@ static void ActionStop (gw, event, params, num_params)
     String *params;			/* unused */
     Cardinal *num_params;		/* unused */
 {
+    RepeaterWidget rw = (RepeaterWidget) gw;
+
     CLEAR_TIMEOUT ((RepeaterWidget) gw);
+    if (rw->repeater.stop_callbacks) 
+      XtCallCallbackList (gw, rw->repeater.stop_callbacks, NULL);
 }
 

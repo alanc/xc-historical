@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Repeater.h,v 1.1 90/03/02 11:46:59 jim Exp $
+ * $XConsortium: Repeater.h,v 1.2 90/03/02 15:15:18 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -44,6 +44,8 @@
  *  initialDelay	Delay		int		200 milliseconds
  *  minimumDelay	MinimumDelay	int		10 milliseconds
  *  repeatDelay		Delay		int		50 milliseconds
+ *  startCallback	StartCallback	XtCallbackList	NULL
+ *  stopCallback	StopCallback	XtCallbackList	NULL
  * 
  *****************************************************************************/
 
@@ -56,6 +58,12 @@
 #define XtCMinimumDelay "MinimumDelay"
 #define XtNrepeatDelay "repeatDelay"
 #define XtNflash "flash"
+#define XtNstartCallback "startCallback"
+#define XtCStartCallback "StartCallback"
+#define XtNstopCallback "stopCallback"
+#define XtCStopCallback "StopCallback"
+
+
 					/* external declarations */
 extern WidgetClass repeaterWidgetClass;
 
