@@ -1,6 +1,6 @@
-/* objtetra.h - structure values for tetrahedron */
+/* objocta.h - structure values for octahedron */
 
-{	"tetrahedron", "tetra",	/* long and short names */
+{	"octahedron", "octa",	/* long and short names */
 	"cube",		/* long name of dual */
 	6, 12, 8,	/* number of vertices, edges, and faces */
 	{		/* vertices (x,y,z) */
