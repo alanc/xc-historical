@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 5.13 90/06/12 17:46:54 rws Exp $ */
+/* $XConsortium: miexpose.c,v 5.14 90/11/11 19:08:06 keith Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -109,7 +109,7 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
     srcBox.x2 = srcx+width;
     srcBox.y2 = srcy+height;
 
-    if (pSrcDrawable->type == DRAWABLE_WINDOW)
+    if (pSrcDrawable->type != DRAWABLE_PIXMAP)
     {
 	BoxRec TsrcBox;
 
@@ -160,7 +160,7 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
     {
 	prgnDstClip = prgnSrcClip;
     }
-    else if (pDstDrawable->type == DRAWABLE_WINDOW)
+    else if (pDstDrawable->type != DRAWABLE_PIXMAP)
     {
 	if (pGC->subWindowMode == IncludeInferiors)
 	{
@@ -224,7 +224,7 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
      */
     extents = pGC->graphicsExposures &&
 	      (REGION_NUM_RECTS(&rgnExposed) > RECTLIMIT) &&
-	      (pDstDrawable->type == DRAWABLE_WINDOW);
+	      (pDstDrawable->type != DRAWABLE_PIXMAP);
 #ifdef SHAPE
     if (pSrcWin)
     {
@@ -256,7 +256,7 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 					 expBox.y2 - expBox.y1,
 					 FALSE);
     }
-    if ((pDstDrawable->type == DRAWABLE_WINDOW) &&
+    if ((pDstDrawable->type != DRAWABLE_PIXMAP) &&
 	(((WindowPtr)pDstDrawable)->backgroundState != None))
     {
 	WindowPtr pWin = (WindowPtr)pDstDrawable;
@@ -541,6 +541,7 @@ int what;
     RegionRec prgnWin;
     DDXPointRec oldCorner;
     BoxRec box;
+    WindowPtr	pBgWin;
     GCPtr pGC;
     register int i;
     register BoxPtr pbox;
@@ -597,6 +598,13 @@ int what;
     i = pScreen->myNum;
     pRoot = WindowTable[i];
 
+    pBgWin = pWin;
+    if (what == PW_BORDER)
+    {
+	while (pBgWin->backgroundState == ParentRelative)
+	    pBgWin = pBgWin->parent;
+    }
+
     if ((pWin->drawable.depth != pRoot->drawable.depth) ||
 	(pWin->drawable.bitsPerPixel != pRoot->drawable.bitsPerPixel))
     {
@@ -624,8 +632,8 @@ int what;
 	    box.y2 = pScreen->height;
 	    (*pScreen->RegionInit)(&pWin->clipList, &box, 1);
 	    pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-	    newValues[ABSX] = pWin->drawable.x;
-	    newValues[ABSY] = pWin->drawable.y;
+	    newValues[ABSX] = pBgWin->drawable.x;
+	    newValues[ABSY] = pBgWin->drawable.y;
 	}
 	else
 	{
@@ -651,8 +659,8 @@ int what;
 	}
 	pGC = screenContext[i];
 	newValues[SUBWINDOW] = IncludeInferiors;
-	newValues[ABSX] = pWin->drawable.x;
-	newValues[ABSY] = pWin->drawable.y;
+	newValues[ABSX] = pBgWin->drawable.x;
+	newValues[ABSY] = pBgWin->drawable.y;
 	gcmask |= GCSubwindowMode;
 	pWin = pRoot;
     }
