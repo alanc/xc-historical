@@ -144,10 +144,6 @@ LoadFontHeader(pinfo, hdr, pi)
     else
 	hdr->draw_direction = RightToLeftDrawDirection;
 
-    if (pinfo->allExist)
-	hdr->flags |= FontInfoAllCharsExist;
-    if (!pinfo->noOverlap)
-	bdr->flags |= FontInfoHorizontalOverlap;
     if (pinfo->inkInside)
 	hdr->flags |= FontInfoInkInside;
     hdr->char_range.min_char.low = pinfo->firstCol;

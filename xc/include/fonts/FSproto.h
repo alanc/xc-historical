@@ -95,8 +95,10 @@
 
 typedef CARD32	fsTimestamp;
 
+#ifdef NOTDEF /* in fsmasks.h */
 typedef CARD32	fsBitmapFormat;
 typedef CARD32	fsBitmapFormatMask;
+#endif
 
 typedef struct {
     INT16 	left B16,
@@ -613,7 +615,7 @@ typedef struct {
 /* events */
 typedef struct {
     BYTE        type;
-    BYTE        request;
+    BYTE        event_code;
     CARD16 	sequenceNumber B16;
     CARD32 	length B32;
     fsTimestamp	timestamp;
@@ -621,7 +623,7 @@ typedef struct {
 
 typedef struct {
     BYTE        type;
-    BYTE        request;
+    BYTE        event_code;
     CARD16 	sequenceNumber B16;
     CARD32 	length B32;
     fsTimestamp	timestamp;
