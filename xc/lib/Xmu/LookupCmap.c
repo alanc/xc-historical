@@ -1,4 +1,4 @@
-/* $XConsortium: LookupCmap.c,v 1.7 89/10/08 15:00:44 rws Exp $ 
+/* $XConsortium: LookupCmap.c,v 1.8 92/11/23 15:43:44 rws Exp $ 
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
@@ -233,6 +233,7 @@ static Status lookup(dpy, screen, visualid, property, new, replace)
 		m->green_mult = maps->green_mult;
 		m->blue_max   = maps->blue_max;
 		m->blue_mult  = maps->blue_mult;
+		m->base_pixel = maps->base_pixel;
 		m->visualid   = maps->visualid;
 		m->killid     = maps->killid;
 	    }
@@ -243,6 +244,7 @@ static Status lookup(dpy, screen, visualid, property, new, replace)
 	    m->green_mult = new->green_mult;
 	    m->blue_max   = new->blue_max;
 	    m->blue_mult  = new->blue_mult;
+	    m->base_pixel = new->base_pixel;
 	    m->visualid   = new->visualid;
 	    m->killid     = new->killid;
 
