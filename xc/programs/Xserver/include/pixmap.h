@@ -1,4 +1,4 @@
-/* $XConsortium: pixmap.h,v 5.2 89/06/09 18:22:03 keith Exp $ */
+/* $XConsortium: pixmap.h,v 5.3 92/02/27 18:11:45 eswu Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -56,5 +56,8 @@ typedef union _PixUnion {
 
 #define WindowDrawable(type) \
 	((type == DRAWABLE_WINDOW) || (type == UNDRAWABLE_WINDOW))
+
+extern PixmapPtr GetScratchPixmapHeader();
+extern void FreeScratchPixmapHeader();
 
 #endif /* PIXMAP_H */
