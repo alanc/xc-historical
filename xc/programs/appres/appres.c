@@ -1,5 +1,5 @@
 /*
- * $XConsortium: appres.c,v 1.4 89/08/14 11:16:53 jim Exp $
+ * $XConsortium: appres.c,v 1.5 89/12/10 15:51:38 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -74,7 +74,7 @@ main (argc, argv)
 	}
     }
     toplevel = XtInitialize (NULL, cname ? cname : NOCLASS, NULL, 0,
-			     &argc, argv);
+			     (Cardinal *) &argc, argv);
     if (argc != 1) usage ();
 
     strcpy (tmpbuf, "/tmp/ar.XXXXXX~");
