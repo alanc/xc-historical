@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.19 94/02/07 19:10:23 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.20 94/02/08 11:47:37 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -100,18 +100,22 @@ void		FreeClientInfo ();
 
 struct _resources {
     Boolean	verbose; /* whether to report protocol activity to stdout */
+    Boolean	debug;   /* whether to include extra options for debugging */
 } app_resources;
 
 #define Offset(field) XtOffsetOf(struct _resources, field)
 static XtResource resources [] = {
     {"verbose",  "Verbose",  XtRBoolean, sizeof(Boolean), 
-	 Offset(verbose), XtRImmediate, (XtPointer) False}
+	 Offset(verbose), XtRImmediate, (XtPointer) False},
+    {"debug",  "Debug",  XtRBoolean, sizeof(Boolean), 
+	 Offset(debug), XtRImmediate, (XtPointer) False}
 };
 #undef Offset
 
 static XrmOptionDescRec options[] = {
     {"-verbose",	"*verbose",	XrmoptionNoArg,		"TRUE"},
     {"-quiet",		"*verbose",	XrmoptionNoArg,		"FALSE"},
+    {"-debug",		"*debug",	XrmoptionNoArg,		"TRUE"},
 };
 
 char		session_save_file[PATH_MAX];
@@ -927,8 +931,6 @@ XtPointer 	callData;
 
 {
     ClientRec *client = ClientList;
-
-    if (!app_resources.verbose) return;
 
     if (client == NULL) {
 	printf ("There are no clients registered with the SM\n");
@@ -1924,12 +1926,15 @@ main(argc, argv)
 
     XtAddCallback (saveButton, XtNcallback, SaveYourselfXtProc, 0);
 
-    propButton = XtVaCreateManagedWidget (
-	"propButton", commandWidgetClass, mainWindow,
-	XtNlabel, "List properties of each client",
-	NULL);
+    if (app_resources.debug)
+    {
+	propButton = XtVaCreateManagedWidget (
+	    "propButton", commandWidgetClass, mainWindow,
+	    XtNlabel, "List properties of each client",
+	    NULL);
 
-    XtAddCallback (propButton, XtNcallback, ListPropXtProc, 0);
+	XtAddCallback (propButton, XtNcallback, ListPropXtProc, 0);
+    }
 
     pingButton = XtVaCreateManagedWidget (
 	"pingButton", commandWidgetClass, mainWindow,
