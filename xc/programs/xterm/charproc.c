@@ -1,5 +1,5 @@
 /*
- * $XHeader: charproc.c,v 1.43 88/07/28 20:00:44 jim Exp $
+ * $XHeader: charproc.c,v 1.44 88/07/29 14:49:39 jim Exp $
  */
 
 
@@ -122,7 +122,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XHeader: charproc.c,v 1.43 88/07/28 20:00:44 jim Exp $";
+static char rcs_id[] = "$XHeader: charproc.c,v 1.44 88/07/29 14:49:39 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1289,6 +1289,7 @@ int		(*func)();
 			(*func)(&term->flags, WRAPAROUND);
 			break;
 		case 8:			/* DECARM			*/
+#ifdef DO_AUTOREPEAT
 			j = term->flags;
 			(*func)(&term->flags, AUTOREPEAT);
 			if ((term->flags ^ j) & AUTOREPEAT)
@@ -1296,6 +1297,7 @@ int		(*func)();
 					XAutoRepeatOn(screen->display);
 				else
 					XAutoRepeatOff(screen->display);
+#endif /* DO_AUTOREPEAT */
 			break;
 		case 9:			/* MIT bogus sequence		*/
 			if(func == bitset)
@@ -1388,7 +1390,9 @@ XtermWidget term;
 			screen->save_modes[5] = term->flags & WRAPAROUND;
 			break;
 		case 8:			/* DECARM			*/
+#ifdef DO_AUTOREPEAT
 			screen->save_modes[6] = term->flags & AUTOREPEAT;
+#endif /* DO_AUTOREPEAT */
 			break;
 		case 9:			/* mouse bogus sequence */
 			screen->save_modes[7] = screen->send_mouse_pos;
@@ -1497,6 +1501,7 @@ XtermWidget term;
 			term->flags |= screen->save_modes[5] & WRAPAROUND;
 			break;
 		case 8:			/* DECARM			*/
+#ifdef DO_AUTOREPEAT
 			if((screen->save_modes[6] ^ term->flags) & AUTOREPEAT) {
 				term->flags &= ~REVERSE_VIDEO;
 				term->flags |= screen->save_modes[6] &
@@ -1506,6 +1511,7 @@ XtermWidget term;
 				else
 					XAutoRepeatOff(screen->display);
 			}
+#endif /* DO_AUTOREPEAT */
 			break;
 		case 9:			/* MIT bogus sequence		*/
 			screen->send_mouse_pos = screen->save_modes[7];
@@ -2374,8 +2380,12 @@ int full;
 #define	MMENU_NLM		(MMENU_REVERSEWRAP+1)
 #define	MMENU_CURSOR		(MMENU_NLM+1)
 #define	MMENU_PAD		(MMENU_CURSOR+1)
+#ifdef DO_AUTOREPEAT
 #define	MMENU_REPEAT		(MMENU_PAD+1)
 #define	MMENU_SCROLLKEY		(MMENU_REPEAT+1)
+#else /* else not DO_AUTOREPEAT */
+#define MMENU_SCROLLKEY		(MMENU_PAD+1)
+#endif /* DO_AUTOREPEAT */
 #define	MMENU_SCROLLINPUT	(MMENU_SCROLLKEY+1)
 #define	MMENU_C132		(MMENU_SCROLLINPUT+1)
 #define	MMENU_CURSES		(MMENU_C132+1)
@@ -2397,7 +2407,9 @@ static char *vtext[] = {
 	"Auto Linefeed",
 	"Application Cursor Mode",
 	"Application Keypad Mode",
+#ifdef DO_AUTOREPEAT
 	"Auto Repeat",
+#endif /* DO_AUTOREPEAT */
 	"Scroll to bottom on key press",
 	"Scroll to bottom on tty output",
 	"Allow 80/132 switching",
@@ -2452,8 +2464,10 @@ register Menu **menu;
 			CheckItem(*menu, MMENU_CURSOR);
 		if(kflags & KYPD_APL)
 			CheckItem(*menu, MMENU_PAD);
+#ifdef DO_AUTOREPEAT
 		if(flags & AUTOREPEAT)
 			CheckItem(*menu, MMENU_REPEAT);
+#endif /* DO_AUTOREPEAT */
 		if(tscrollbar = (screen->scrollbar > 0)) {
 			CheckItem(*menu, MMENU_SCROLLBAR);
 			if(tscrollkey = screen->scrollkey)
@@ -2505,8 +2519,10 @@ register Menu **menu;
 		SetItemCheck(*menu, MMENU_CURSOR, kflags & CURSOR_APL);
 	if (menukbdflags & KYPD_APL)
 		SetItemCheck(*menu, MMENU_PAD, kflags & KYPD_APL);
+#ifdef DO_AUTOREPEAT
         if (menutermflags & AUTOREPEAT)
                 SetItemCheck(*menu, MMENU_REPEAT, flags & AUTOREPEAT);
+#endif /* DO_AUTOREPEAT */
 	if(tscrollbar != (screen->scrollbar > 0)) {
 		SetItemCheck(*menu, MMENU_SCROLLBAR, (tscrollbar =
 		 (screen->scrollbar > 0)));
@@ -2584,6 +2600,7 @@ int item;
 		term->keyboard.flags ^= KYPD_APL;
 		break;
 
+#ifdef DO_AUTOREPEAT
 	case MMENU_REPEAT:
 		term->flags ^= AUTOREPEAT;
 		if (term->flags & AUTOREPEAT)
@@ -2591,6 +2608,7 @@ int item;
 		else
 			XAutoRepeatOff(screen->display);
 		break;
+#endif /* DO_AUTOREPEAT */
 
 	case MMENU_SCROLLBAR:
 		if(screen->scrollbar)
