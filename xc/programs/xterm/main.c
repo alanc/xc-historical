@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.189 91/06/24 18:43:00 gildea Exp $";
+static char *rid="$XConsortium: main.c,v 1.190 91/06/24 19:10:02 gildea Exp $";
 #endif /* lint */
 
 /*
@@ -64,6 +64,7 @@ SOFTWARE.
 #define SYSV			/* SVR4 is (approx) superset of SVR3 */
 #define USE_SYSV_UTMP
 #define ATT
+#define USE_TERMIOS
 #endif
 
 #ifdef ATT
@@ -81,11 +82,26 @@ SOFTWARE.
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 
+#ifdef USE_TERMIOS
+#include <termios.h>
+/* this hacked termios support only works on SYSV */
+#define USE_SYSV_TERMIO
+#define termio termios
+#undef TCGETA
+#define TCGETA TCGETS
+#undef TCSETA
+#define TCSETA TCSETS
+#else /* USE_TERMIOS */
 #ifdef SYSV
 #include <sys/termio.h>
+#endif /* SYSV */
+#endif /* USE_TERMIOS else */
+
 #ifdef SVR4
 #undef TIOCSLTC				/* defined, but not useable */
-#endif /* SVR4 */
+#endif
+
+#ifdef SYSV
 #ifdef USE_USG_PTYS			/* AT&T SYSV has no ptyio.h */
 #include <sys/stream.h>			/* get typedef used in ptem.h */
 #include <sys/ptem.h>			/* get struct winsize */
@@ -733,7 +749,9 @@ char **argv;
     	d_tio.c_cflag = B9600|CS8|CREAD|PARENB|HUPCL;
     	d_tio.c_lflag = ISIG|ICANON|ECHO|ECHOE|ECHOK;
 
+#ifndef USE_TERMIOS
 	d_tio.c_line = 0;
+#endif
 
 	d_tio.c_cc[VINTR] = CINTR;
 	d_tio.c_cc[VQUIT] = CQUIT;
@@ -744,7 +762,7 @@ char **argv;
 	d_tio.c_cc[VEOL2] = CNUL;
 	d_tio.c_cc[VSWTCH] = CNUL;
 
-#ifdef SVR4
+#ifdef USE_TERMIOS
 	d_tio.c_cc[VSUSP] = CSUSP;
 	d_tio.c_cc[VDSUSP] = CDSUSP;
 	d_tio.c_cc[VREPRINT] = CNUL;
@@ -810,7 +828,7 @@ char **argv;
         d_ltc.t_werasc = '\377';
         d_ltc.t_lnextc = '\377';
 #endif	/* TIOCSLTC */
-#ifdef SVR4
+#ifdef USE_TERMIOS
 	d_tio.c_cc[VSUSP] = '\000';
 	d_tio.c_cc[VDSUSP] = '\000';
 	d_tio.c_cc[VREPRINT] = '\377';
