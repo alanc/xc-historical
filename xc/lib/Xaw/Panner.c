@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.33 90/03/08 10:52:37 jim Exp $
+ * $XConsortium: Panner.c,v 1.34 90/03/09 15:26:33 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -378,7 +378,7 @@ static Boolean get_event_xy (pw, event, x, y)
 }
 
 static int parse_page_string (s, pagesize, canvassize, relative)
-    char *s;
+    register char *s;
     int pagesize, canvassize;
     Boolean *relative;
 {
@@ -390,7 +390,7 @@ static int parse_page_string (s, pagesize, canvassize, relative)
      * syntax:    spaces [+-] number spaces [pc\0] spaces
      */
 
-    for (s; isascii(*s) && isspace(*s); s++) ;	/* skip white space */
+    for (; isascii(*s) && isspace(*s); s++) ;	/* skip white space */
 
     if (*s == '+' || *s == '-') {	/* deal with signs */
 	rel = TRUE;
