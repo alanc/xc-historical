@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.68 91/07/18 21:01:38 converse Exp $
+ * $XConsortium: init.c,v 2.69 91/07/22 13:54:51 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -453,7 +453,6 @@ char **argv;
     TocInit();
     InitPick();
     BBoxInit();
-    PopupInit(app);
 
     XtAppAddActions(app, actions, XtNumber(actions));
     XtRegisterGrabAction(XmhPopupFolderMenu, True, 
