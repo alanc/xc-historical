@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.28 93/08/18 15:07:45 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.29 93/09/07 21:33:19 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -288,6 +288,7 @@ typedef fd_set FdSet;
 
 #define CLEARBITS(set) FD_ZERO(&set)
 #define BITSET(set,s) FD_SET(s,&set)
+#define GETBIT(set,s) FD_ISSET(s,&set)
 #define _XANYSET(set) set.fd_count
 
 #endif /* WIN32 */
