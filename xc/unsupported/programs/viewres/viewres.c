@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.29 90/02/07 17:38:43 jim Exp $
+ * $XConsortium: viewres.c,v 1.30 90/02/07 18:23:47 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -203,17 +203,19 @@ static void horizontal_orientation_callback (gw, closure, data)
 static Boolean create_resource_lw (node)
     WidgetNode *node;
 {
-    Arg args[2];
+    Arg args[4];
     Cardinal n;
 
     if (node->nnewresources == 0) return FALSE;
 
     if (!node->resource_labels &&
-	!set_resource_labels (node, RESLAB_NAME | RESLAB_CLASS)) return FALSE;
+	!set_resource_labels (node)) return FALSE;
 
     n = 0;
-    XtSetArg (args[n], XtNnumberStrings, 2 * node->nnewresources); n++;
+    XtSetArg (args[n], XtNnumberStrings, 3 * node->nnewresources); n++;
     XtSetArg (args[n], XtNlist, node->resource_labels); n++;
+    XtSetArg (args[n], XtNdefaultColumns, 3); n++;
+    XtSetArg (args[n], XtNforceColumns, TRUE); n++;
     node->resource_lw = XtCreateManagedWidget (node->label, listWidgetClass,
 					       XtParent(node->instance),
 					       args, n);
