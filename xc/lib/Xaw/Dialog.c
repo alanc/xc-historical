@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.28 89/05/11 01:05:08 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.29 89/05/31 08:59:06 swick Exp $";
 #endif /* lint */
 
 
@@ -42,6 +42,7 @@ SOFTWARE.
 #include <X11/Xaw/Command.h>	
 #include <X11/Xaw/Label.h>
 #include <X11/Xaw/DialogP.h>
+#include <X11/Xaw/Cardinals.h>
 
 #define streq(a,b) (strcmp( (a), (b) ) == 0)
 
@@ -50,6 +51,8 @@ static XtResource resources[] = {
      XtOffset(DialogWidget, dialog.label), XtRString, NULL},
   {XtNvalue, XtCValue, XtRString, sizeof(String),
      XtOffset(DialogWidget, dialog.value), XtRString, NULL},
+  {XtNicon, XtCIcon, XtRPixmap, sizeof(Pixmap),
+     XtOffset(DialogWidget, dialog.icon), XtRImmediate, 0},
   {XtNmaximumLength, XtCMax, XtRInt, sizeof(int),
      XtOffset(DialogWidget, dialog.max_length), XtRImmediate, (caddr_t)256}
 };
@@ -124,17 +127,33 @@ static void Initialize(request, new)
 Widget request, new;
 {
     DialogWidget dw = (DialogWidget)new;
-    static Arg arglist[5];
+    Arg arglist[9];
     Cardinal num_args = 0;
 
-    XtSetArg(arglist[num_args], XtNlabel, dw->dialog.label); num_args++;
     XtSetArg(arglist[num_args], XtNborderWidth, 0); num_args++;
     XtSetArg(arglist[num_args], XtNleft, XtChainLeft); num_args++;
+
+    if (dw->dialog.icon != (Pixmap)0) {
+	XtSetArg(arglist[num_args], XtNbitmap, dw->dialog.icon); num_args++;
+	XtSetArg(arglist[num_args], XtNright, XtChainLeft); num_args++;
+	dw->dialog.iconW =
+	    XtCreateManagedWidget( "icon", labelWidgetClass,
+				   new, arglist, num_args );
+	num_args = 2;
+	XtSetArg(arglist[num_args], XtNfromHoriz, dw->dialog.iconW);num_args++;
+    } else dw->dialog.iconW = (Widget)NULL;
+
+    XtSetArg(arglist[num_args], XtNlabel, dw->dialog.label); num_args++;
     XtSetArg(arglist[num_args], XtNright, XtChainRight); num_args++;
 
     dw->dialog.labelW = XtCreateManagedWidget( "label", labelWidgetClass,
 					      new, arglist, num_args);
 
+    if (dw->dialog.iconW != (Widget)NULL &&
+	(dw->dialog.labelW->core.height < dw->dialog.iconW->core.height)) {
+	XtSetArg( arglist[0], XtNheight, dw->dialog.iconW->core.height );
+	XtSetValues( dw->dialog.labelW, arglist, ONE );
+    }
     if (dw->dialog.value != NULL) 
         CreateDialogValueWidget( (Widget) dw);
     else
@@ -197,11 +216,40 @@ Widget current, request, new;
         w->dialog.max_length = old->dialog.max_length;
     }
 
+    if (w->dialog.icon != old->dialog.icon) {
+	if (w->dialog.icon != (Pixmap)0) {
+	    Arg args[5];
+	    XtSetArg( args[0], XtNbitmap, w->dialog.icon );
+	    if (old->dialog.iconW != (Widget)NULL) {
+		XtSetValues( old->dialog.iconW, args, ONE );
+	    } else {
+		XtSetArg( args[1], XtNborderWidth, 0);
+		XtSetArg( args[2], XtNleft, XtChainLeft);
+		XtSetArg( args[3], XtNright, XtChainLeft);
+		w->dialog.iconW =
+		    XtCreateWidget( "icon", labelWidgetClass,
+				    new, args, FOUR );
+		((DialogConstraints)w->dialog.labelW->core.constraints)->
+		    form.horiz_base = w->dialog.iconW;
+		XtManageChild(w->dialog.iconW);
+	    }
+	} else {
+	    ((DialogConstraints)w->dialog.labelW->core.constraints)->
+		    form.horiz_base = (Widget)NULL;
+	    XtDestroyWidget(old->dialog.iconW);
+	    w->dialog.iconW = (Widget)NULL;
+	}
+    }
     if ( (w->dialog.label != old->dialog.label) ||
 	 ((w->dialog.label != NULL) && /* so both are non-NULL */
 	   !streq(w->dialog.label, old->dialog.label)) ) {
         num_args = 0;
         XtSetArg( args[num_args], XtNlabel, w->dialog.label ); num_args++;
+	if (w->dialog.iconW != (Widget)NULL &&
+	    (w->dialog.labelW->core.height <= w->dialog.iconW->core.height)) {
+	    XtSetArg(args[num_args], XtNheight, w->dialog.iconW->core.height);
+	    num_args++;
+	}
 	XtSetValues( w->dialog.labelW, args, num_args );
     }
 

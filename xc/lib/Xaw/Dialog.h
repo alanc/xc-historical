@@ -1,4 +1,4 @@
-/* $XConsortium: Dialog.h,v 1.14 89/05/11 01:05:10 kit Exp $ */
+/* $XConsortium: Dialog.h,v 1.15 89/05/11 14:20:16 kit Exp $ */
 
 
 /***********************************************************
@@ -45,6 +45,7 @@ SOFTWARE.
  borderWidth	     BorderWidth	Dimension	1
  destroyCallback     Callback		Pointer		NULL
  height		     Height		Dimension	computed at create
+ icon		     Icon		Pixmap		0
  label		     Label		String		NULL
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  maximumLength	     Max		int		256
@@ -57,8 +58,10 @@ SOFTWARE.
 */
 
 #define XtNgrabFocus			"grabFocus"
+#define XtNicon "icon"
 #define XtNmaximumLength		"maximumLength"
 #define XtCGrabFocus			"GrabFocus"
+#define XtCIcon "Icon"
 #define XtCMax				"Max"
 
 typedef struct _DialogClassRec	*DialogWidgetClass;

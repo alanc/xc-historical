@@ -1,4 +1,4 @@
-/* $XConsortium: DialogP.h,v 1.9 89/03/30 16:05:27 jim Exp $ */
+/* $XConsortium: DialogP.h,v 1.10 89/05/11 01:05:12 kit Exp $ */
 
 
 /***********************************************************
@@ -49,8 +49,10 @@ typedef struct _DialogPart {
     /* resources */
     String	label;		/* description of the dialog	*/
     String	value;		/* for the user response	*/
+    Pixmap	icon;		/* icon bitmap			*/
     Cardinal	max_length;	/* of user response		*/
     /* private data */
+    Widget	iconW;		/* widget to display the icon	*/
     Widget	labelW;		/* widget to display description*/
     Widget	valueW;		/* user response TextWidget	*/
 } DialogPart;
