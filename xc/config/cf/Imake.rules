@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.96 91/03/24 10:31:58 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.97 91/03/24 17:25:00 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -296,12 +296,12 @@ InstallManPage(program,$(MANDIR))
 #ifndef ServerTarget
 #define	ServerTarget(server,subdirs,objects,libs,syslibs)		@@\
 server: subdirs objects libs						@@\
-	-@if [ -f server ]; then echo "	$(MV) server server.bak"; \	@@\
+	-@if [ -f server ]; then set -x; \				@@\
 		$(MV) server server.bak; else exit 0; fi		@@\
 	$(CC) $(CDEBUGFLAGS) $(CCOPTIONS) -o server objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 Concat(load,server):							@@\
-	-@if [ -f server ]; then echo "	$(MV) server server.bak"; \	@@\
+	-@if [ -f server ]; then set -x; \				@@\
 		$(MV) server server.bak; else exit 0; fi		@@\
 	$(CC) $(CDEBUGFLAGS) $(CCOPTIONS) -o server objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS)
 #endif /* ServerTarget */
@@ -619,8 +619,7 @@ $(IMAKE):								@@\
 ImakeDependency(Makefile)						@@\
 									@@\
 Makefile:: 								@@\
-	-@if [ -f Makefile ]; then \					@@\
-		echo "	$(RM) Makefile.bak; $(MV) Makefile Makefile.bak"; \ @@\
+	-@if [ -f Makefile ]; then set -x; \				@@\
 		$(RM) Makefile.bak; $(MV) Makefile Makefile.bak; \	@@\
 	else exit 0; fi							@@\
 	$(IMAKE_CMD) -DTOPDIR=$(TOP) -DCURDIR=$(CURRENT_DIR) imakeflags
@@ -1124,8 +1123,7 @@ target::								@@\
 #define MakeNsubdirMakefiles()						@@\
 subdirMakefiles:							@@\
 	$(RM) $(MAKEFILE_SUBDIR)/Makefile.bak				@@\
-	-@if [ -f $(MAKEFILE_SUBDIR)/Makefile ]; then \			@@\
-	echo "	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak"; \ @@\
+	-@if [ -f $(MAKEFILE_SUBDIR)/Makefile ]; then set -x; \		@@\
 	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak; \ @@\
 	else exit 0; fi							@@\
 	cd $(MAKEFILE_SUBDIR); $(IMAKE_CMD) -DTOPDIR=$(UPPREFIX)$(TOP) -DCURDIR=$(NEW_CURRENT_DIR); \	@@\
@@ -1133,8 +1131,7 @@ subdirMakefiles:							@@\
 									@@\
 subsubdirMakefiles:							@@\
 	$(RM) $(MAKEFILE_SUBDIR)/Makefile.bak				@@\
-	-@if [ -f $(MAKEFILE_SUBDIR)/Makefile ]; then \			@@\
-	echo "	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak"; \ @@\
+	-@if [ -f $(MAKEFILE_SUBDIR)/Makefile ]; then set -x; \		@@\
 	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak; \ @@\
 	else exit 0; fi							@@\
 	cd $(MAKEFILE_SUBDIR); $(IMAKE_CMD) -DTOPDIR=$(UPPREFIX)$(UPPREFIX)$(TOP) -DCURDIR=$(NEW_CURRENT_DIR); \	@@\
@@ -1142,8 +1139,7 @@ subsubdirMakefiles:							@@\
 									@@\
 subsubsubdirMakefiles:							@@\
 	$(RM) $(MAKEFILE_SUBDIR)/Makefile.bak				@@\
-	-@if [ -f $(MAKEFILE_SUBDIR)/Makefile ]; then \			@@\
-	echo "	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak"; \ @@\
+	-@if [ -f $(MAKEFILE_SUBDIR)/Makefile ]; then set -x; \		@@\
 	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak; \ @@\
 	else exit 0; fi @@\
 	cd $(MAKEFILE_SUBDIR); $(IMAKE_CMD) -DTOPDIR=$(UPPREFIX)$(UPPREFIX)$(UPPREFIX)$(TOP) -DCURDIR=$(NEW_CURRENT_DIR); \	@@\
@@ -1151,8 +1147,7 @@ subsubsubdirMakefiles:							@@\
 									@@\
 subsubsubsubdirMakefiles:						@@\
 	$(RM) $(MAKEFILE_SUBDIR)/Makefile.bak				@@\
-	-@if [ -f $(MAKEFILE_SUBDIR)/Makefile ]; then \			@@\
-	echo "	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak"; \ @@\
+	-@if [ -f $(MAKEFILE_SUBDIR)/Makefile ]; then set -x; \		@@\
 	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak; \ @@\
 	else exit 0; fi 						@@\
 	cd $(MAKEFILE_SUBDIR); $(IMAKE_CMD) -DTOPDIR=$(UPPREFIX)$(UPPREFIX)$(UPPREFIX)$(UPPREFIX)$(TOP) -DCURDIR=$(NEW_CURRENT_DIR); \	@@\
