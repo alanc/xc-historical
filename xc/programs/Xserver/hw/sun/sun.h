@@ -1,5 +1,5 @@
 
-/* $XConsortium: sun.h,v 5.36 94/02/21 10:20:36 kaleb Exp $ */
+/* $XConsortium: sun.h,v 5.37 94/03/16 16:44:21 kaleb Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -75,7 +75,6 @@ extern int errno;
 # include <sys/memreg.h>
 # include <stropts.h>
 # define usleep(usec) poll((struct pollfd *) 0, (size_t) 0, usec / 1000)
-# define GETTIMEOFDAY(x) gettimeofday(x)
 #else
 # include <sun/fbio.h>
 # include <sundev/kbd.h>
@@ -84,7 +83,6 @@ extern int errno;
 # include <sundev/vuid_event.h>
 # include <pixrect/pixrect.h>
 # include <pixrect/memreg.h>
-# define GETTIMEOFDAY(x) gettimeofday(x, NULL);
 extern int ioctl();
 extern int getrlimit();
 extern int setrlimit();
@@ -97,7 +95,6 @@ extern int gettimeofday();
  */
 #include "misc.h"
 #undef abs /* don't munge function prototypes in headers, sigh */
-#undef fabs
 #include "scrnintstr.h"
 #ifdef NEED_EVENTS
 # include "inputstr.h"
@@ -252,6 +249,7 @@ extern Bool		sunFlipPixels;
 extern Bool		sunActiveZaphod;
 extern Bool		sunFbInfo;
 extern Bool		sunCG4Frob;
+extern Bool		sunNoGX;
 extern int		sunScreenIndex;
 extern int*		sunProtected;
 

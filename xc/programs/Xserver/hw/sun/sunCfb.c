@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunCfb.c,v 1.11 94/02/23 15:55:56 dpw Exp $ */
+/* $XConsortium: sunCfb.c,v 1.12 94/03/16 16:46:07 kaleb Exp $ */
 
 /*
  * Copyright 1990 Massachusetts Institute of Technology
@@ -420,8 +420,10 @@ Bool sunCG6Init (screen, pScreen, argc, argv)
 	    sunFbs[screen].info.fb_width,
 	    sunFbs[screen].info.fb_depth))
 	return FALSE;
-    if (!sunGXInit (pScreen, &sunFbs[screen]))
-	return FALSE;
+    if (sunNoGX == FALSE) {
+	if (!sunGXInit (pScreen, &sunFbs[screen]))
+	    return FALSE;
+    }
     if (!sunCfbFinishScreenInit(pScreen,
 	    sunFbs[screen].fb + CG6_IMAGE_OFFSET,
 	    sunFbs[screen].info.fb_width, 

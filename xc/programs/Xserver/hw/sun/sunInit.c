@@ -1,4 +1,4 @@
-/* $XConsortium: sunInit.c,v 5.49 94/02/21 10:21:02 kaleb Exp $ */
+/* $XConsortium: sunInit.c,v 5.50 94/03/16 16:46:09 kaleb Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -148,6 +148,7 @@ Bool sunSwapLkeys = FALSE;
 Bool sunFlipPixels = FALSE;
 Bool sunFbInfo = FALSE;
 Bool sunCG4Frob = FALSE;
+Bool sunNoGX = FALSE;
 
 sunKbdPrivRec sunKbdPriv = {
     -1,		/* fd */

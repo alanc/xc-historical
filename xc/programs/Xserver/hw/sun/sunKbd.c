@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.39 94/02/23 15:55:52 dpw Exp $ */
+/* $XConsortium: sunKbd.c,v 5.40 94/03/16 16:46:13 kaleb Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -560,6 +560,7 @@ Firm_event* sunKbdGetEvents (fd, pNumEvents, pAgain)
  */
 #ifndef XKB
 static xEvent	autoRepeatEvent;
+static int	composeCount;
 
 static Bool DoSpecialKeys(device, xE, fe)
     DeviceIntPtr  device;
@@ -603,19 +604,28 @@ static Bool DoSpecialKeys(device, xE, fe)
 	ksym == SunXK_Compose || (keyModifiers & LockMask)))
 	xE->u.u.type = KeyRelease;
 
-    if (ksym == XK_Num_Lock) {
-	if (pPriv->type == KB_SUN4)
+    if (pPriv->type == KB_SUN4) {
+	if (ksym == XK_Num_Lock) {
 	    ModLight (device, xE->u.u.type == KeyPress, XLED_NUM_LOCK);
-    } else if (ksym == XK_Scroll_Lock) {
-	if (pPriv->type == KB_SUN4)
+	} else if (ksym == XK_Scroll_Lock) {
 	    ModLight (device, xE->u.u.type == KeyPress, XLED_SCROLL_LOCK);
-    } else if (ksym == SunXK_Compose) {
-	if (pPriv->type == KB_SUN4)
+	} else if (ksym == SunXK_Compose) {
 	    ModLight (device, xE->u.u.type == KeyPress, XLED_COMPOSE);
-    } else if (keyModifiers & LockMask) {
-	if (pPriv->type == KB_SUN4)
+	    if (xE->u.u.type == KeyPress) composeCount = 2;
+	    else composeCount = 0;
+	} else if (keyModifiers & LockMask) {
 	    ModLight (device, xE->u.u.type == KeyPress, XLED_CAPS_LOCK);
-    } else if ((xE->u.u.type == KeyPress) && (keyModifiers == 0)) {
+	}
+	if (xE->u.u.type == KeyRelease) {
+	    if (composeCount > 0 && --composeCount == 0) {
+		pseudoKey(device, FALSE,
+		    LookupKeyCode(SunXK_Compose, &device->key->curKeySyms));
+		ModLight (device, FALSE, XLED_COMPOSE);
+	    }
+	}
+    }
+
+    if ((xE->u.u.type == KeyPress) && (keyModifiers == 0)) {
 	/* initialize new AutoRepeater event & mark AutoRepeater on */
 	autoRepeatEvent = *xE;
 	autoRepeatFirst = TRUE;

@@ -1,4 +1,4 @@
-/* $XConsortium: sunIo.c,v 5.21 94/02/01 11:02:32 kaleb Exp $ */
+/* $XConsortium: sunIo.c,v 5.22 94/03/16 16:46:11 kaleb Exp $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.
@@ -247,6 +247,10 @@ ddxProcessArgument (argc, argv, i)
 	sunCG4Frob = TRUE;
 	return 1;
     }
+    if (strcmp (argv[i], "-noGX") == 0) {
+	sunNoGX = TRUE;
+	return 1;
+    }
     return 0;
 }
 
@@ -263,5 +267,8 @@ ddxUseMsg()
     ErrorF("-mono               force monochrome-only screen\n");
     ErrorF("-zaphod             disable active Zaphod mode\n");
     ErrorF("-fbinfo             tell more about the found frame buffer(s)\n");
+#ifdef UNDOCUMENTED
     ErrorF("-cg4frob            don't use the mono plane of the cgfour\n");
+    ErrorF("-noGX               treat the GX as a dumb frame buffer\n");
+#endif
 }

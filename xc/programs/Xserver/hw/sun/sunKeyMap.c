@@ -1,4 +1,4 @@
-/* $XConsortium: sunKeyMap.c,v 4.17 93/12/08 12:03:58 kaleb Exp $ */
+/* $XConsortium: sunKeyMap.c,v 4.17 93/12/08 12:05:59 kaleb Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -149,7 +149,7 @@ static KeySym US2Keymap[] = {
 	XK_0,		XK_parenright,		/* 0x27 */
 	XK_minus,	XK_underscore,		/* 0x28 */
 	XK_equal,	XK_plus,		/* 0x29 */
-	XK_quoteleft,	XK_asciitilde,		/* 0x2a */
+	XK_grave,	XK_asciitilde,		/* 0x2a */
 	XK_BackSpace,	NoSymbol,		/* 0x2b */
 	NoSymbol,	NoSymbol,		/* 0x2c */
 	XK_R4,		NoSymbol,		/* 0x2d */
@@ -194,7 +194,7 @@ static KeySym US2Keymap[] = {
 	XK_K,		NoSymbol,		/* 0x54 */
 	XK_L,		NoSymbol,		/* 0x55 */
 	XK_semicolon,	XK_colon,		/* 0x56 */
-	XK_quoteright,	XK_quotedbl,		/* 0x57 */
+	XK_apostrophe,	XK_quotedbl,		/* 0x57 */
 	XK_backslash,	XK_bar,			/* 0x58 */
 	XK_Return,	NoSymbol,		/* 0x59 */
 	NoSymbol,	NoSymbol,		/* 0x5a */
@@ -296,7 +296,7 @@ static KeySym US3Keymap[] = {
 	XK_0,		XK_parenright,		/* 0x27 */
 	XK_minus,	XK_underscore,		/* 0x28 */
 	XK_equal,	XK_plus,		/* 0x29 */
-	XK_quoteleft,	XK_asciitilde,		/* 0x2a */
+	XK_grave,	XK_asciitilde,		/* 0x2a */
 	XK_BackSpace,	NoSymbol,		/* 0x2b */
 	NoSymbol,	NoSymbol,		/* 0x2c */
 	XK_R4,		NoSymbol,		/* 0x2d */
@@ -341,7 +341,7 @@ static KeySym US3Keymap[] = {
 	XK_K,		NoSymbol,		/* 0x54 */
 	XK_L,		NoSymbol,		/* 0x55 */
 	XK_semicolon,	XK_colon,		/* 0x56 */
-	XK_quoteright,	XK_quotedbl,		/* 0x57 */
+	XK_apostrophe,	XK_quotedbl,		/* 0x57 */
 	XK_backslash,	XK_bar,			/* 0x58 */
 	XK_Return,	NoSymbol,		/* 0x59 */
 	NoSymbol,	NoSymbol,		/* 0x5a */
@@ -542,7 +542,7 @@ static KeySym Canada4Keymap[] = {
 	XK_0,   	XK_parenright,	XK_braceright,	NoSymbol,	/* 39*/
 	XK_minus,	XK_underscore,	XK_bar, 	NoSymbol,	/* 40*/
 	XK_equal,	XK_plus,	NoSymbol,	NoSymbol,	/* 41*/
-	XK_Agrave,	NoSymbol,	XK_quoteleft,	NoSymbol,	/* 42*/
+	XK_Agrave,	NoSymbol,	XK_grave,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	XK_KP_Equal,  	XK_KP_Equal,  	XK_R4,		NoSymbol,	/* 45*/
@@ -607,7 +607,7 @@ static KeySym Canada4Keymap[] = {
 	XK_B,   	NoSymbol,	NoSymbol,	NoSymbol,	/*104*/
 	XK_N,   	NoSymbol,	NoSymbol,	NoSymbol,	/*105*/
 	XK_M,   	NoSymbol,	NoSymbol,	NoSymbol,	/*106*/
-	XK_comma,	XK_quoteright,	XK_less,	NoSymbol,	/*107*/
+	XK_comma,	XK_apostrophe,	XK_less,	NoSymbol,	/*107*/
 	XK_period,	NoSymbol,	XK_greater,	NoSymbol,	/*108*/
 	XK_Eacute,	NoSymbol,	XK_slash,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
@@ -693,7 +693,7 @@ static KeySym Denmark4Keymap[] = {
 	XK_0,   	XK_equal,	XK_braceright,	NoSymbol,	/* 39*/
 	XK_plus,	XK_question,	NoSymbol,	NoSymbol,	/* 40*/
 	SunXK_FA_Acute,	SunXK_FA_Grave,	XK_bar, 	NoSymbol,	/* 41*/
-	XK_quoteright,	XK_asterisk,	XK_quoteleft,	NoSymbol,	/* 42*/
+	XK_apostrophe,	XK_asterisk,	XK_grave,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	XK_KP_Equal,  	NoSymbol,  	XK_R4,		NoSymbol,	/* 45*/
@@ -879,7 +879,7 @@ static KeySym Denmark5Keymap[] = {
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_AE,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 86*/
 	XK_Ooblique,	NoSymbol,	NoSymbol,	NoSymbol,	/* 87*/
-	XK_quoteright,	XK_asterisk,	XK_quoteleft,	NoSymbol,	/* 88*/
+	XK_apostrophe,	XK_asterisk,	XK_grave,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
 	XK_KP_Left,	XK_KP_4, 	NoSymbol,	NoSymbol,	/* 91*/
@@ -964,10 +964,10 @@ static KeySym France5Keymap[] = {
 	XK_ampersand,	XK_1,   	NoSymbol,	NoSymbol,	/* 30*/
 	XK_eacute,	XK_2,   	XK_asciitilde,	NoSymbol,	/* 31*/
 	XK_quotedbl,	XK_3,   	XK_numbersign,	NoSymbol,	/* 32*/
-	XK_quoteright,	XK_4,   	XK_braceleft,	NoSymbol,	/* 33*/
+	XK_apostrophe,	XK_4,   	XK_braceleft,	NoSymbol,	/* 33*/
 	XK_parenleft,	XK_5,   	XK_bracketleft,	NoSymbol,	/* 34*/
 	XK_minus,	XK_6,   	XK_bar, 	NoSymbol,	/* 35*/
-	XK_egrave,	XK_7,   	XK_quoteleft,	NoSymbol,	/* 36*/
+	XK_egrave,	XK_7,   	XK_grave,	NoSymbol,	/* 36*/
 	XK_underscore,	XK_8,   	XK_backslash,	NoSymbol,	/* 37*/
 	XK_ccedilla,	XK_9,   	XK_asciicircum,	NoSymbol,	/* 38*/
 	XK_agrave,	XK_0,   	XK_at,  	NoSymbol,	/* 39*/
@@ -1104,7 +1104,7 @@ static KeySym FranceBelg4Keymap[] = {
 	XK_ampersand,	XK_1,   	NoSymbol,	NoSymbol,	/* 30*/
 	XK_eacute,	XK_2,   	XK_twosuperior,	NoSymbol,	/* 31*/
 	XK_quotedbl,	XK_3,   	XK_threesuperior,NoSymbol,	/* 32*/
-	XK_quoteright,	XK_4,   	NoSymbol,	NoSymbol,	/* 33*/
+	XK_apostrophe,	XK_4,   	XK_acute,	NoSymbol,	/* 33*/
 	XK_parenleft,	XK_5,   	NoSymbol,	NoSymbol,	/* 34*/
 	XK_section,	XK_6,   	XK_asciicircum,	NoSymbol,	/* 35*/
 	XK_egrave,	XK_7,   	NoSymbol,	NoSymbol,	/* 36*/
@@ -1136,7 +1136,7 @@ static KeySym FranceBelg4Keymap[] = {
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
 	SunXK_FA_Circum,SunXK_FA_Diaeresis,NoSymbol,	NoSymbol,	/* 64*/
-	XK_quoteleft,	XK_dollar,	XK_at,  	NoSymbol,	/* 65*/
+	XK_grave,	XK_dollar,	XK_at,  	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
 	XK_KP_Home,  	XK_KP_7,  	XK_R7,		NoSymbol,	/* 68*/
@@ -1248,8 +1248,8 @@ static KeySym Germany4Keymap[] = {
 	XK_5,   	XK_percent,	NoSymbol,	NoSymbol,	/* 34*/
 	XK_6,   	XK_ampersand,	NoSymbol,	NoSymbol,	/* 35*/
 	XK_7,   	XK_slash,	XK_degree,	NoSymbol,	/* 36*/
-	XK_8,   	XK_parenleft,	XK_quoteleft,	NoSymbol,	/* 37*/
-	XK_9,   	XK_parenright,	XK_quoteright,	NoSymbol,	/* 38*/
+	XK_8,   	XK_parenleft,	XK_grave,	NoSymbol,	/* 37*/
+	XK_9,   	XK_parenright,	XK_apostrophe,	NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	XK_bar, 	NoSymbol,	/* 39*/
 	XK_ssharp,	XK_question,	XK_backslash,	NoSymbol,	/* 40*/
 	SunXK_FA_Acute,	SunXK_FA_Grave,	NoSymbol,	NoSymbol,	/* 41*/
@@ -1450,7 +1450,7 @@ static KeySym Germany5Keymap[] = {
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_Odiaeresis,	NoSymbol,	NoSymbol,	NoSymbol,	/* 86*/
 	XK_Adiaeresis,	NoSymbol,	NoSymbol,	NoSymbol,	/* 87*/
-	XK_numbersign,	XK_quoteright,	XK_quoteleft,	NoSymbol,	/* 88*/
+	XK_numbersign,	XK_apostrophe,	XK_grave,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
 	XK_KP_Left,	XK_KP_4, 	NoSymbol,	NoSymbol,	/* 91*/
@@ -1542,7 +1542,7 @@ static KeySym Italy4Keymap[] = {
 	XK_8,   	XK_parenleft,	NoSymbol,	NoSymbol,	/* 37*/
 	XK_9,   	XK_parenright,	XK_backslash,	NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	XK_bar, 	NoSymbol,	/* 39*/
-	XK_quoteright,	XK_question,	XK_quoteleft,	NoSymbol,	/* 40*/
+	XK_apostrophe,	XK_question,	XK_grave,	NoSymbol,	/* 40*/
 	XK_igrave,	XK_asciicircum,	NoSymbol,	NoSymbol,	/* 41*/
 	XK_ugrave,	XK_section,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
@@ -1682,7 +1682,7 @@ static KeySym Italy5Keymap[] = {
 	XK_8,   	XK_parenleft,	XK_braceleft,	NoSymbol,	/* 37*/
 	XK_9,   	XK_parenright,	XK_braceright,	NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	NoSymbol,	NoSymbol,	/* 39*/
-	XK_quoteright,	XK_question,	XK_quoteleft,	NoSymbol,	/* 40*/
+	XK_apostrophe,	XK_question,	XK_grave,	NoSymbol,	/* 40*/
 	XK_igrave,	XK_asciicircum,	NoSymbol,	NoSymbol,	/* 41*/
 	XK_backslash,	XK_bar, 	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
@@ -1818,7 +1818,7 @@ static KeySym Japan4Keymap[] = {
 	XK_4,   	XK_dollar,	XK_kana_U,	XK_kana_u,	/* 33*/
 	XK_5,   	XK_percent,	XK_kana_E,	XK_kana_e,	/* 34*/
 	XK_6,   	XK_ampersand,	XK_kana_O,	XK_kana_o,	/* 35*/
-	XK_7,   	XK_quoteright,	XK_kana_YA,	XK_kana_ya,	/* 36*/
+	XK_7,   	XK_apostrophe,	XK_kana_YA,	XK_kana_ya,	/* 36*/
 	XK_8,   	XK_parenleft,	XK_kana_YU,	XK_kana_yu,	/* 37*/
 	XK_9,   	XK_parenright,	XK_kana_YO,	XK_kana_yo,	/* 38*/
 	XK_0,   	XK_0,   	XK_kana_WA,	XK_kana_WO,	/* 39*/
@@ -1846,7 +1846,7 @@ static KeySym Japan4Keymap[] = {
 	XK_i,   	XK_I,   	XK_kana_NI,	NoSymbol,	/* 61*/
 	XK_o,   	XK_O,   	XK_kana_RA,	NoSymbol,	/* 62*/
 	XK_p,   	XK_P,   	XK_kana_SE,	NoSymbol,	/* 63*/
-	XK_at,  	XK_quoteleft,	XK_voicedsound,	NoSymbol,	/* 64*/
+	XK_at,  	XK_grave,	XK_voicedsound,	NoSymbol,	/* 64*/
 	XK_bracketleft,	XK_braceleft,	XK_semivoicedsound,XK_kana_openingbracket,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
@@ -1958,7 +1958,7 @@ static KeySym Japan5Keymap[] = {
 	XK_4,   	XK_dollar,	XK_kana_U,	XK_kana_u,	/* 33*/
 	XK_5,   	XK_percent,	XK_kana_E,	XK_kana_e,	/* 34*/
 	XK_6,   	XK_ampersand,	XK_kana_O,	XK_kana_o,	/* 35*/
-	XK_7,   	XK_quoteright,	XK_kana_YA,	XK_kana_ya,	/* 36*/
+	XK_7,   	XK_apostrophe,	XK_kana_YA,	XK_kana_ya,	/* 36*/
 	XK_8,   	XK_parenleft,	XK_kana_YU,	XK_kana_yu,	/* 37*/
 	XK_9,   	XK_parenright,	XK_kana_YO,	XK_kana_yo,	/* 38*/
 	XK_0,   	XK_0,   	XK_kana_WA,	XK_kana_WO,	/* 39*/
@@ -1986,7 +1986,7 @@ static KeySym Japan5Keymap[] = {
 	XK_i,   	XK_I,   	XK_kana_NI,	NoSymbol,	/* 61*/
 	XK_o,   	XK_O,   	XK_kana_RA,	NoSymbol,	/* 62*/
 	XK_p,   	XK_P,   	XK_kana_SE,	NoSymbol,	/* 63*/
-	XK_at,  	XK_quoteleft,	XK_voicedsound,	NoSymbol,	/* 64*/
+	XK_at,  	XK_grave,	XK_voicedsound,	NoSymbol,	/* 64*/
 	XK_bracketleft,	XK_braceleft,	XK_semivoicedsound,XK_kana_openingbracket,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
@@ -2104,7 +2104,7 @@ static KeySym Korea4Keymap[] = {
 	XK_0,   	XK_parenright,	NoSymbol,	NoSymbol,	/* 39*/
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/* 40*/
 	XK_equal,	XK_plus,	NoSymbol,	NoSymbol,	/* 41*/
-	XK_quoteleft,	XK_asciitilde,	NoSymbol,	NoSymbol,	/* 42*/
+	XK_grave,	XK_asciitilde,	XK_acute,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	XK_KP_Equal,  	NoSymbol,  	XK_R4,		NoSymbol,	/* 45*/
@@ -2149,7 +2149,7 @@ static KeySym Korea4Keymap[] = {
 	XK_K,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 84*/
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_semicolon,	XK_colon,	NoSymbol,	NoSymbol,	/* 86*/
-	XK_quoteright,	XK_quotedbl,	NoSymbol,	NoSymbol,	/* 87*/
+	XK_apostrophe,	XK_quotedbl,	NoSymbol,	NoSymbol,	/* 87*/
 	XK_backslash,	XK_bar, 	XK_brokenbar,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
@@ -2255,7 +2255,7 @@ static KeySym Korea5Keymap[] = {
 	XK_0,   	XK_parenright,	NoSymbol,	NoSymbol,	/* 39*/
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/* 40*/
 	XK_equal,	XK_plus,	NoSymbol,	NoSymbol,	/* 41*/
-	XK_quoteleft,	XK_asciitilde,	NoSymbol,	NoSymbol,	/* 42*/
+	XK_grave,	XK_asciitilde,	XK_acute,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	SunXK_AudioMute,SunXK_VideoDegauss,NoSymbol,	NoSymbol,	/* 45*/
@@ -2300,7 +2300,7 @@ static KeySym Korea5Keymap[] = {
 	XK_K,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 84*/
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_semicolon,	XK_colon,	NoSymbol,	NoSymbol,	/* 86*/
-	XK_quoteright,	XK_quotedbl,	NoSymbol,	NoSymbol,	/* 87*/
+	XK_apostrophe,	XK_quotedbl,	NoSymbol,	NoSymbol,	/* 87*/
 	XK_backslash,	XK_bar, 	XK_brokenbar,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
@@ -2392,7 +2392,7 @@ static KeySym Netherland4Keymap[] = {
 	XK_7,   	XK_underscore,	XK_sterling,	NoSymbol,	/* 36*/
 	XK_8,   	XK_parenleft,	XK_braceleft,	NoSymbol,	/* 37*/
 	XK_9,   	XK_parenright,	XK_braceright,	NoSymbol,	/* 38*/
-	XK_0,   	XK_quoteright,	XK_quoteleft,	NoSymbol,	/* 39*/
+	XK_0,   	XK_apostrophe,	XK_grave,	NoSymbol,	/* 39*/
 	XK_slash,	XK_question,	NoSymbol,	NoSymbol,	/* 40*/
 	XK_degree,	SunXK_FA_Tilde,	SunXK_FA_Cedilla,NoSymbol,	/* 41*/
 	XK_less,	XK_greater,	NoSymbol,	NoSymbol,	/* 42*/
@@ -2532,7 +2532,7 @@ static KeySym Netherland5Keymap[] = {
 	XK_7,   	XK_underscore,	XK_sterling,	NoSymbol,	/* 36*/
 	XK_8,   	XK_parenleft,	XK_braceleft,	NoSymbol,	/* 37*/
 	XK_9,   	XK_parenright,	XK_braceright,	NoSymbol,	/* 38*/
-	XK_0,   	XK_quoteright,	XK_quoteleft,	NoSymbol,	/* 39*/
+	XK_0,   	XK_apostrophe,	XK_grave,	NoSymbol,	/* 39*/
 	XK_slash,	XK_question,	XK_backslash,	NoSymbol,	/* 40*/
 	XK_degree,	SunXK_FA_Tilde,	SunXK_FA_Cedilla,NoSymbol,	/* 41*/
 	XK_at,  	XK_section,	XK_notsign,	NoSymbol,	/* 42*/
@@ -2675,7 +2675,7 @@ static KeySym Norway4Keymap[] = {
 	XK_0,   	XK_equal,	XK_braceright,	NoSymbol,	/* 39*/
 	XK_plus,	XK_question,	NoSymbol,	NoSymbol,	/* 40*/
 	XK_backslash,	SunXK_FA_Grave,	SunXK_FA_Acute,	NoSymbol,	/* 41*/
-	XK_quoteright,	XK_asterisk,	XK_quoteleft,	NoSymbol,	/* 42*/
+	XK_apostrophe,	XK_asterisk,	XK_grave,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	XK_KP_Equal,  	NoSymbol,  	XK_R4,		NoSymbol,	/* 45*/
@@ -2861,7 +2861,7 @@ static KeySym Norway5Keymap[] = {
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_Ooblique,	NoSymbol,	NoSymbol,	NoSymbol,	/* 86*/
 	XK_AE,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 87*/
-	XK_quoteright,	XK_asterisk,	XK_quoteleft,	NoSymbol,	/* 88*/
+	XK_apostrophe,	XK_asterisk,	XK_grave,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
 	XK_KP_Left,	XK_KP_4, 	NoSymbol,	NoSymbol,	/* 91*/
@@ -2953,7 +2953,7 @@ static KeySym Portugal4Keymap[] = {
 	XK_8,   	XK_parenleft,	NoSymbol,	NoSymbol,	/* 37*/
 	XK_9,   	XK_parenright,	XK_backslash,	NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	XK_bar, 	NoSymbol,	/* 39*/
-	XK_quoteright,	XK_question,	XK_quoteleft,	NoSymbol,	/* 40*/
+	XK_apostrophe,	XK_question,	XK_grave,	NoSymbol,	/* 40*/
 	XK_exclamdown,	XK_questiondown,NoSymbol,	NoSymbol,	/* 41*/
 	SunXK_FA_Tilde,	SunXK_FA_Circum,XK_asciicircum,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
@@ -3093,7 +3093,7 @@ static KeySym Portugal5Keymap[] = {
 	XK_8,   	XK_parenleft,	XK_bracketleft,	NoSymbol,	/* 37*/
 	XK_9,   	XK_parenright,	XK_bracketright,NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	XK_braceright,	NoSymbol,	/* 39*/
-	XK_quoteright,	XK_question,	XK_quoteleft,	NoSymbol,	/* 40*/
+	XK_apostrophe,	XK_question,	XK_grave,	NoSymbol,	/* 40*/
 	XK_guillemotleft,XK_guillemotright,NoSymbol,	NoSymbol,	/* 41*/
 	XK_backslash,	XK_bar, 	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
@@ -3233,7 +3233,7 @@ static KeySym Spain5Keymap[] = {
 	XK_8,   	XK_parenleft,	NoSymbol,	NoSymbol,	/* 37*/
 	XK_9,   	XK_parenright,	NoSymbol,	NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	NoSymbol,	NoSymbol,	/* 39*/
-	XK_quoteright,	XK_question,	XK_quoteleft,	NoSymbol,	/* 40*/
+	XK_apostrophe,	XK_question,	XK_grave,	NoSymbol,	/* 40*/
 	XK_exclamdown,	XK_questiondown,NoSymbol,	NoSymbol,	/* 41*/
 	XK_masculine,	XK_ordfeminine,	XK_backslash,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
@@ -3373,7 +3373,7 @@ static KeySym SpainLatAm4Keymap[] = {
 	XK_8,   	XK_parenleft,	NoSymbol,	NoSymbol,	/* 37*/
 	XK_9,   	XK_parenright,	XK_backslash,	NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	XK_bar, 	NoSymbol,	/* 39*/
-	XK_quoteright,	XK_question,	XK_quoteleft,	NoSymbol,	/* 40*/
+	XK_apostrophe,	XK_question,	XK_grave,	NoSymbol,	/* 40*/
 	XK_exclamdown,	XK_questiondown,NoSymbol,	NoSymbol,	/* 41*/
 	XK_Ccedilla,	NoSymbol,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
@@ -3561,7 +3561,7 @@ static KeySym Sweden5Keymap[] = {
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_Odiaeresis,	NoSymbol,	NoSymbol,	NoSymbol,	/* 86*/
 	XK_Adiaeresis,	NoSymbol,	NoSymbol,	NoSymbol,	/* 87*/
-	XK_quoteright,	XK_asterisk,	XK_quoteleft,	NoSymbol,	/* 88*/
+	XK_apostrophe,	XK_asterisk,	XK_grave,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
 	XK_KP_Left,	XK_KP_4, 	NoSymbol,	NoSymbol,	/* 91*/
@@ -3655,7 +3655,7 @@ static KeySym SwedenFin4Keymap[] = {
 	XK_0,   	XK_equal,	XK_braceright,	NoSymbol,	/* 39*/
 	XK_plus,	XK_question,	XK_backslash,	NoSymbol,	/* 40*/
 	SunXK_FA_Acute,	SunXK_FA_Grave,	NoSymbol,	NoSymbol,	/* 41*/
-	XK_quoteright,	XK_asterisk,	XK_quoteleft,	NoSymbol,	/* 42*/
+	XK_apostrophe,	XK_asterisk,	XK_grave,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	XK_KP_Equal,  	NoSymbol,  	XK_R4,		NoSymbol,	/* 45*/
@@ -3793,7 +3793,7 @@ static KeySym SwissFr4Keymap[] = {
 	XK_8,   	XK_parenleft,	XK_degree,	NoSymbol,	/* 37*/
 	XK_9,   	XK_parenright,	XK_backslash,	NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	XK_asciicircum,	NoSymbol,	/* 39*/
-	XK_quoteright,	XK_question,	XK_quoteleft,	NoSymbol,	/* 40*/
+	XK_apostrophe,	XK_question,	XK_grave,	NoSymbol,	/* 40*/
 	SunXK_FA_Circum,SunXK_FA_Grave,	NoSymbol,	NoSymbol,	/* 41*/
 	XK_dollar,	SunXK_FA_Tilde,	XK_sterling,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
@@ -3932,8 +3932,8 @@ static KeySym SwissFr5Keymap[] = {
 	XK_7,   	XK_slash,	NoSymbol,	NoSymbol,	/* 36*/
 	XK_8,   	XK_parenleft,	NoSymbol,	NoSymbol,	/* 37*/
 	XK_9,   	XK_parenright,	NoSymbol,	NoSymbol,	/* 38*/
-	XK_0,   	XK_equal,	XK_quoteleft,	NoSymbol,	/* 39*/
-	XK_quoteright,	XK_question,	SunXK_FA_Acute,	NoSymbol,	/* 40*/
+	XK_0,   	XK_equal,	XK_grave,	NoSymbol,	/* 39*/
+	XK_apostrophe,	XK_question,	SunXK_FA_Acute,	NoSymbol,	/* 40*/
 	SunXK_FA_Circum,SunXK_FA_Grave,	SunXK_FA_Tilde,	NoSymbol,	/* 41*/
 	XK_section,	XK_degree,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
@@ -4073,7 +4073,7 @@ static KeySym SwissGe4Keymap[] = {
 	XK_8,   	XK_parenleft,	XK_degree,	NoSymbol,	/* 37*/
 	XK_9,   	XK_parenright,	XK_backslash,	NoSymbol,	/* 38*/
 	XK_0,   	XK_equal,	XK_asciicircum,	NoSymbol,	/* 39*/
-	XK_quoteright,	XK_question,	XK_quoteleft,	NoSymbol,	/* 40*/
+	XK_apostrophe,	XK_question,	XK_grave,	NoSymbol,	/* 40*/
 	SunXK_FA_Circum,SunXK_FA_Grave,	NoSymbol,	NoSymbol,	/* 41*/
 	XK_dollar,	SunXK_FA_Tilde,	XK_sterling,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
@@ -4212,8 +4212,8 @@ static KeySym SwissGe5Keymap[] = {
 	XK_7,   	XK_slash,	NoSymbol,	NoSymbol,	/* 36*/
 	XK_8,   	XK_parenleft,	NoSymbol,	NoSymbol,	/* 37*/
 	XK_9,   	XK_parenright,	NoSymbol,	NoSymbol,	/* 38*/
-	XK_0,   	XK_equal,	XK_quoteleft,	NoSymbol,	/* 39*/
-	XK_quoteright,	XK_question,	SunXK_FA_Acute,	NoSymbol,	/* 40*/
+	XK_0,   	XK_equal,	XK_grave,	NoSymbol,	/* 39*/
+	XK_apostrophe,	XK_question,	SunXK_FA_Acute,	NoSymbol,	/* 40*/
 	SunXK_FA_Circum,SunXK_FA_Grave,	SunXK_FA_Tilde,	NoSymbol,	/* 41*/
 	XK_section,	XK_degree,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
@@ -4355,7 +4355,7 @@ static KeySym Taiwan4Keymap[] = {
 	XK_0,   	XK_parenright,	NoSymbol,	NoSymbol,	/* 39*/
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/* 40*/
 	XK_equal,	XK_plus,	NoSymbol,	NoSymbol,	/* 41*/
-	XK_quoteleft,	XK_asciitilde,	NoSymbol,	NoSymbol,	/* 42*/
+	XK_grave,	XK_asciitilde,	XK_acute,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	XK_KP_Equal,  	NoSymbol,  	XK_R4,		NoSymbol,	/* 45*/
@@ -4400,7 +4400,7 @@ static KeySym Taiwan4Keymap[] = {
 	XK_K,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 84*/
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_semicolon,	XK_colon,	NoSymbol,	NoSymbol,	/* 86*/
-	XK_quoteright,	XK_quotedbl,	NoSymbol,	NoSymbol,	/* 87*/
+	XK_apostrophe,	XK_quotedbl,	NoSymbol,	NoSymbol,	/* 87*/
 	XK_backslash,	XK_bar, 	XK_brokenbar,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
@@ -4495,7 +4495,7 @@ static KeySym Taiwan5Keymap[] = {
 	XK_0,   	XK_parenright,	NoSymbol,	NoSymbol,	/* 39*/
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/* 40*/
 	XK_equal,	XK_plus,	NoSymbol,	NoSymbol,	/* 41*/
-	XK_quoteleft,	XK_asciitilde,	NoSymbol,	NoSymbol,	/* 42*/
+	XK_grave,	XK_asciitilde,	XK_acute,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	SunXK_AudioMute,SunXK_VideoDegauss,NoSymbol,	NoSymbol,	/* 45*/
@@ -4540,7 +4540,7 @@ static KeySym Taiwan5Keymap[] = {
 	XK_K,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 84*/
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_semicolon,	XK_colon,	NoSymbol,	NoSymbol,	/* 86*/
-	XK_quoteright,	XK_quotedbl,	NoSymbol,	NoSymbol,	/* 87*/
+	XK_apostrophe,	XK_quotedbl,	NoSymbol,	NoSymbol,	/* 87*/
 	XK_backslash,	XK_bar, 	XK_brokenbar,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
@@ -4635,7 +4635,7 @@ static KeySym UK4Keymap[] = {
 	XK_0,   	XK_parenright,	NoSymbol,	NoSymbol,	/* 39*/
 	XK_minus,	XK_underscore,	XK_notsign,	NoSymbol,	/* 40*/
 	XK_equal,	XK_plus,	NoSymbol,	NoSymbol,	/* 41*/
-	XK_quoteleft,	XK_asciitilde,	NoSymbol,	NoSymbol,	/* 42*/
+	XK_grave,	XK_asciitilde,	XK_acute,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	XK_KP_Equal,  	NoSymbol,  	XK_R4,		NoSymbol,	/* 45*/
@@ -4680,7 +4680,7 @@ static KeySym UK4Keymap[] = {
 	XK_K,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 84*/
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_semicolon,	XK_colon,	NoSymbol,	NoSymbol,	/* 86*/
-	XK_quoteright,	XK_quotedbl,	NoSymbol,	NoSymbol,	/* 87*/
+	XK_apostrophe,	XK_quotedbl,	XK_acute,	NoSymbol,	/* 87*/
 	XK_backslash,	XK_bar, 	NoSymbol,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
@@ -4775,7 +4775,7 @@ static KeySym UK5Keymap[] = {
 	XK_0,   	XK_parenright,	NoSymbol,	NoSymbol,	/* 39*/
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/* 40*/
 	XK_equal,	XK_plus,	NoSymbol,	NoSymbol,	/* 41*/
-	XK_quoteleft,	XK_notsign,	XK_brokenbar,	NoSymbol,	/* 42*/
+	XK_grave,	XK_notsign,	XK_brokenbar,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	SunXK_AudioMute,SunXK_VideoDegauss,NoSymbol,	NoSymbol,	/* 45*/
@@ -4820,7 +4820,7 @@ static KeySym UK5Keymap[] = {
 	XK_K,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 84*/
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_semicolon,	XK_colon,	NoSymbol,	NoSymbol,	/* 86*/
-	XK_quoteright,	XK_at,  	NoSymbol,	NoSymbol,	/* 87*/
+	XK_apostrophe,	XK_at,  	XK_acute,	NoSymbol,	/* 87*/
 	XK_numbersign,	XK_asciitilde,	NoSymbol,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
@@ -4915,7 +4915,7 @@ static KeySym US101AKeymap[] = {
 	XK_0,   	XK_parenright,	NoSymbol,	NoSymbol,	/* 39*/
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/* 40*/
 	XK_equal,	XK_plus,	NoSymbol,	NoSymbol,	/* 41*/
-	XK_quoteleft,	XK_asciitilde,	NoSymbol,	NoSymbol,	/* 42*/
+	XK_grave,	XK_asciitilde,	XK_acute,	NoSymbol,	/* 42*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 45*/
@@ -4960,7 +4960,7 @@ static KeySym US101AKeymap[] = {
 	XK_K,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 84*/
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_semicolon,	XK_colon,	NoSymbol,	NoSymbol,	/* 86*/
-	XK_quoteright,	XK_quotedbl,	NoSymbol,	NoSymbol,	/* 87*/
+	XK_apostrophe,	XK_quotedbl,	XK_acute,	NoSymbol,	/* 87*/
 	XK_backslash,	XK_bar, 	NoSymbol,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
@@ -5064,7 +5064,7 @@ static KeySym US4Keymap[] = {
 	XK_0,   	XK_parenright,	NoSymbol,	NoSymbol,	/* 39*/
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/* 40*/
 	XK_equal,	XK_plus,	NoSymbol,	NoSymbol,	/* 41*/
-	XK_quoteleft,	XK_asciitilde,	NoSymbol,	NoSymbol,	/* 42*/
+	XK_grave,	XK_asciitilde,	XK_acute,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	XK_KP_Equal,  	NoSymbol,  	XK_R4,		NoSymbol,	/* 45*/
@@ -5109,7 +5109,7 @@ static KeySym US4Keymap[] = {
 	XK_K,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 84*/
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_semicolon,	XK_colon,	NoSymbol,	NoSymbol,	/* 86*/
-	XK_quoteright,	XK_quotedbl,	NoSymbol,	NoSymbol,	/* 87*/
+	XK_apostrophe,	XK_quotedbl,	XK_acute,	NoSymbol,	/* 87*/
 	XK_backslash,	XK_bar, 	NoSymbol,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
@@ -5204,7 +5204,7 @@ static KeySym US5Keymap[] = {
 	XK_0,   	XK_parenright,	NoSymbol,	NoSymbol,	/* 39*/
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/* 40*/
 	XK_equal,	XK_plus,	NoSymbol,	NoSymbol,	/* 41*/
-	XK_quoteleft,	XK_asciitilde,	NoSymbol,	NoSymbol,	/* 42*/
+	XK_grave,	XK_asciitilde,	XK_acute,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	SunXK_AudioMute,SunXK_VideoDegauss,NoSymbol,	NoSymbol,	/* 45*/
@@ -5249,7 +5249,7 @@ static KeySym US5Keymap[] = {
 	XK_K,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 84*/
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_semicolon,	XK_colon,	NoSymbol,	NoSymbol,	/* 86*/
-	XK_quoteright,	XK_quotedbl,	NoSymbol,	NoSymbol,	/* 87*/
+	XK_apostrophe,	XK_quotedbl,	XK_acute,	NoSymbol,	/* 87*/
 	XK_backslash,	XK_bar, 	NoSymbol,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
@@ -5354,7 +5354,7 @@ static KeySym US_UNIX5Keymap[] = {
 	XK_0,   	XK_parenright,	NoSymbol,	NoSymbol,	/* 39*/
 	XK_minus,	XK_underscore,	NoSymbol,	NoSymbol,	/* 40*/
 	XK_equal,	XK_plus,	NoSymbol,	NoSymbol,	/* 41*/
-	XK_quoteleft,	XK_asciitilde,	NoSymbol,	NoSymbol,	/* 42*/
+	XK_grave,	XK_asciitilde,	XK_acute,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
 	SunXK_AudioMute,SunXK_VideoDegauss,NoSymbol,	NoSymbol,	/* 45*/
@@ -5399,7 +5399,7 @@ static KeySym US_UNIX5Keymap[] = {
 	XK_K,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 84*/
 	XK_L,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 85*/
 	XK_semicolon,	XK_colon,	NoSymbol,	NoSymbol,	/* 86*/
-	XK_quoteright,	XK_quotedbl,	NoSymbol,	NoSymbol,	/* 87*/
+	XK_apostrophe,	XK_quotedbl,	XK_acute,	NoSymbol,	/* 87*/
 	XK_backslash,	XK_bar, 	NoSymbol,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
 	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
