@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.86 92/11/23 15:32:29 converse Exp $ */
+/* $XConsortium: Display.c,v 1.87 93/02/10 15:30:20 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -454,7 +454,7 @@ static void CloseDisplay(dpy)
 {
         register XtPerDisplay xtpd;
 	register PerDisplayTablePtr pd, opd;
-	XrmDatabase def_db, db;
+	XrmDatabase db;
 	int i;
 	
 #ifdef lint
@@ -504,14 +504,14 @@ static void CloseDisplay(dpy)
 	    XtFree((char*)xtpd->pdi.trace);
 	    _XtHeapFree(&xtpd->heap);
 	    _XtFreeWWTable(xtpd);
-	    def_db = XrmGetDatabase(dpy);
 	    for (i = ScreenCount(dpy); --i >= 0; ) {
 		db = xtpd->per_screen_db[i];
-		if (db && db != def_db)
+		if (db)
 		    XrmDestroyDatabase(db);
 	    }
 	    XtFree((char *)xtpd->per_screen_db);
-	    XrmDestroyDatabase(def_db);
+	    if (db = XrmGetDatabase(dpy))
+		XrmDestroyDatabase(db);
 	    if (xtpd->cmd_db)
 		XrmDestroyDatabase(xtpd->cmd_db);
 	    if (xtpd->server_db)
