@@ -12,7 +12,7 @@
         HEADERS = Xlib.h Xresource.h Xutil.h
        LINTLIBS =
 
-OBJS =\
+OBJS1 =\
 	Context.o \
 	ParseCmd.o \
 	Quarks.o \
@@ -138,7 +138,9 @@ OBJS =\
 	XListExt.o \
 	XLoadFont.o \
 	XLookupCol.o \
-	XLowerWin.o \
+	XLowerWin.o 
+
+OBJS2 =\
 	XMacros.o \
 	XMapRaised.o \
 	XMapSubs.o \
@@ -237,7 +239,10 @@ OBJS =\
 	evtomask.o \
 	$(AIDOBJS)
 
-NormalLibraryTarget(X11,$(OBJS))
+OBJS =\
+	$(OBJS1) $(OBJS2)
+
+NormalLibraryTarget2(X11,$(OBJS1),$(OBJS2))
 LintLibraryTarget(X11,*.c)
 InstallLibrary(X11,$(USRLIBDIR))
 # Uncomment the following two lines if you need compatibility for
