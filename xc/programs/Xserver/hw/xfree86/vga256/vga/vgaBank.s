@@ -1,3 +1,4 @@
+/* $XConsortium: io.c,v 1.86 94/03/27 13:06:32 dpw Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
