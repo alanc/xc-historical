@@ -1,4 +1,4 @@
-/* $XConsortium: Core.c,v 1.40 90/07/03 17:25:04 swick Exp $ */
+/* $XConsortium: Core.c,v 1.41 90/07/12 17:49:14 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -250,7 +250,7 @@ static void CoreDestroy (widget)
     XtFree((char *) widget->core.tm.proc_table);
     if (widget->core.tm.translations &&
         widget->core.tm.translations->accProcTbl) {
-	  XtFree( (char*)widget->core.tm.translations );
+	  _XtUninstallAccelerators(widget);
     }
     _XtUnregisterWindow(widget->core.window, widget);
 
@@ -353,6 +353,7 @@ static Boolean CoreSetValues(old, reference, new)
 	    _XtBindActions(new, &new->core.tm);
 	    _XtInstallTranslations((Widget) new, new->core.tm.translations);
 	    _XtRegisterGrabs(new, False);
+	    if (translations->accProcTbl) _XtRegisterAccRemoveCallbacks(new);
 	}
     } /* if realized */
 
