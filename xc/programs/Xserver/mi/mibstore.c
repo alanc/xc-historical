@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.33 90/03/16 15:30:43 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.34 90/03/17 09:12:30 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1417,7 +1417,7 @@ miBSCopyArea (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty)
 	    if (bw > 0 && bh > 0)
 		pixExposed = (* pBackingGC->ops->CopyArea) (pSrc, 
 			    pBackingDrawable, pBackingGC, 
-			    bsrcx, bsrcy, bw, bdstx - pBackingStore->x,
+			    bsrcx, bsrcy, bw, bh, bdstx - pBackingStore->x,
 			    bdsty - pBackingStore->y);
 	}
 	else
