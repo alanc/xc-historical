@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.76 91/05/29 15:38:55 converse Exp $ */
+/* $XConsortium: Display.c,v 1.77 91/05/31 17:58:37 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -113,6 +113,7 @@ static XtPerDisplay InitPerDisplay(dpy, app, name, classname)
     pd->region = XCreateRegion();
     pd->case_cvt = NULL;
     pd->defaultKeycodeTranslator = XtTranslateKey;
+    pd->keysyms_serial = 0;
     pd->keysyms = NULL;
     pd->modKeysyms = NULL;
     pd->modsToKeysyms = NULL;
