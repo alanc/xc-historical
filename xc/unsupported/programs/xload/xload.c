@@ -3,7 +3,7 @@
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
- * $XConsortium: xload.c,v 1.34 91/05/01 14:48:39 keith Exp $
+ * $XConsortium: xload.c,v 1.35 91/05/02 13:56:30 converse Exp $
  */
 
 #include <stdio.h> 
@@ -25,6 +25,7 @@ char *ProgramName;
 extern void exit(), GetLoadPoint();
 static void quit();
 static void ClearLights();
+static void SetLights();
 
 /*
  * Definition of the Application resources structure.
@@ -60,9 +61,9 @@ static XrmOptionDescRec options[] = {
 
 static XtResource my_resources[] = {
   {"showLabel", XtCBoolean, XtRBoolean, sizeof(Boolean),
-     Offset(show_label), XtRImmediate, (caddr_t) TRUE},
+     Offset(show_label), XtRImmediate, (XtPointer) TRUE},
   {"useLights", XtCBoolean, XtRBoolean, sizeof(Boolean),
-    Offset(use_lights), XtRImmediate, (caddr_t) FALSE},
+    Offset(use_lights), XtRImmediate, (XtPointer) FALSE},
 };
 
 #undef Offset
@@ -73,7 +74,7 @@ static XtActionsRec xload_actions[] = {
     { "quit",	quit },
 };
 static Atom wm_delete_window;
-
+static int light_update = 10 * 1000;
 
 /*
  * Exit with message describing command line format.
@@ -109,18 +110,15 @@ void usage()
     exit(1);
 }
 
-static XtAppContext app_con;
-static int	    light_update = 10 * 1000;
-static void	    SetLights();
-
 void main(argc, argv)
     int argc;
     char **argv;
 {
-    char host[256], * label;
+    XtAppContext app_con;
     Widget toplevel, load, pane, label_wid, load_parent;
     Arg args[1];
     Pixmap icon_pixmap = None;
+    char *label, host[256];
 
     ProgramName = argv[0];
 
@@ -131,12 +129,12 @@ void main(argc, argv)
     setuid(getuid());
 
     toplevel = XtAppInitialize(&app_con, "XLoad", options, XtNumber(options),
-			       &argc, argv, NULL, NULL, 0);
-      
-    XtGetApplicationResources( toplevel, (caddr_t) &resources, 
+			       &argc, argv, NULL, NULL, (Cardinal) 0);
+    if (argc != 1) usage();
+
+    XtGetApplicationResources( toplevel, (XtPointer) &resources, 
 			      my_resources, XtNumber(my_resources),
 			      NULL, (Cardinal) 0);
-    if (argc != 1) usage();
     
     if (resources.use_lights)
     {
@@ -144,16 +142,18 @@ void main(argc, argv)
 	XrmString   type;
 	XrmValue    db_value;
 	XrmValue    int_value;
+	Bool	    found = False;
 
-	sprintf (name, "%s.paned.load.update", XtName(toplevel));
-	XrmGetResource (XtScreenDatabase(XtScreen(toplevel)),
-			name,
-			"XLoad.Paned.StripChart.Interval",
-			&type, &db_value);
-	if (type)
-	{
-	    XtConvert(toplevel, type, &db_value, XtRInt, &int_value);
-	    light_update = *((int *) int_value.addr) * 1000;
+	(void) sprintf (name, "%s.paned.load.update", XtName(toplevel));
+	found = XrmGetResource (XtScreenDatabase(XtScreen(toplevel)),
+				name, "XLoad.Paned.StripChart.Interval",
+				&type, &db_value);
+	if (found) {
+	    int_value.size = sizeof(int);
+	    int_value.addr = (XPointer) &light_update;
+	    found = XtConvertAndStore(toplevel, type, &db_value, XtRInt,
+				      &int_value);
+	    if (found) light_update *= 1000;
 	}
 	ClearLights (XtDisplay (toplevel));
 	SetLights ((XtPointer) toplevel, (XtIntervalId *) 0);
@@ -241,7 +241,7 @@ SetLights (data, timer)
 
     toplevel = (Widget) data;
     dpy = XtDisplay (toplevel);
-    GetLoadPoint (toplevel, (caddr_t) 0, (caddr_t) &value);
+    GetLoadPoint (toplevel, (XtPointer) 0, (XtPointer) &value);
     new_leds = (1 << (int) (value + 0.1)) - 1;
     change = new_leds ^ current_leds;
     i = 1;
@@ -258,7 +258,8 @@ SetLights (data, timer)
 	i++;
 	bit <<= 1;
     }
-    XtAppAddTimeOut (app_con, light_update, SetLights, data);
+    XtAppAddTimeOut(XtWidgetToApplicationContext(toplevel), light_update,
+		    SetLights, data);
 }
 
 static void quit (w, event, params, num_params)
@@ -274,6 +275,6 @@ static void quit (w, event, params, num_params)
     }
     if (resources.use_lights)
 	ClearLights (XtDisplay (w));
-    XCloseDisplay (XtDisplay(w));
+    XtDestroyApplicationContext(XtWidgetToApplicationContext(w));
     exit (0);
 }
