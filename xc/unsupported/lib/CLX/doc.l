@@ -32,6 +32,7 @@
 ;; Design Contributors:
 ;;	Dan Cerys, Texas Instruments
 ;;	Scott Fahlman, CMU
+;;      Charles Hornig, Symbolics
 ;;	Kerry Kimbrough, Texas Instruments
 ;;	Chris Lindblad, MIT
 ;;	Rob MacLachlan, CMU

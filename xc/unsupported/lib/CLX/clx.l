@@ -26,6 +26,7 @@
 ;; Design Contributors:
 ;;	Dan Cerys, Texas Instruments
 ;;	Scott Fahlman, CMU
+;;      Charles Hornig, Symbolics
 ;;	Kerry Kimbrough, Texas Instruments
 ;;	Chris Lindblad, MIT
 ;;	Rob MacLachlan, CMU
@@ -40,9 +41,10 @@
 ;;	LaMott Oren, Texas Instruments
 
 ;; Implementation Contributors:
+;;      Charles Hornig, Symbolics
+;;      John Irwin, Franz
 ;;	Chris Lindblad, MIT
 ;;	Robert Scheifler, MIT
-;;      John Irwin, Franz
 
 ;;;
 ;;; Change history:
