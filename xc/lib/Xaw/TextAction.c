@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.21 89/12/07 17:46:59 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.22 89/12/10 10:50:34 rws Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -957,7 +957,7 @@ XEvent *event;
   KeySym keysym;
   XawTextBlock text;
 
-  if ( (text.length = XLookupString (event, strbuf, BUFSIZ,
+  if ( (text.length = XLookupString (&event->xkey, strbuf, BUFSIZ,
 			       &keysym, &compose_status)) == 0) {
     return;
   }
