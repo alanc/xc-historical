@@ -1,5 +1,5 @@
 /*
-* $XConsortium$
+* $XConsortium: PassivGraI.h,v 1.1 89/12/14 14:58:01 swick Exp $
 */
 
 /********************************************************
@@ -79,6 +79,7 @@ typedef enum {
 typedef struct {
     Widget		focusKid;
     XtServerGrabPtr	keyList, ptrList;
+    Boolean		map_handler_added:1;
     Boolean		realize_handler_added:1;
     Boolean		active_handler_added:1;
     Boolean		haveFocus:1;
