@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.12 89/12/08 12:36:32 swick Exp $";
+static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.13 89/12/12 18:17:17 keith Exp $";
 #endif
 
 /***********************************************************
@@ -152,7 +152,7 @@ StripChartWidget w;
 unsigned int which;
 {
   if (which & FOREGROUND) 
-    XFreeGC( XtDisplay((Widget) w), w->strip_chart.fgGC);
+    XtReleaseGC((Widget) w, w->strip_chart.fgGC);
 
   if (which & HIGHLIGHT) 
     XtReleaseGC((Widget) w, w->strip_chart.hiGC);
