@@ -56,12 +56,15 @@ borderWidth	BorderWidth	Dimension		0
 callback	Callback	Callback		NULL
 colormap	Colormap	Pointer		Parent's Colormap
 cursor	Cursor	Cursor		None
+cursorName	Cursor	String		NULL
 depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
 foreground	Foreground	Pixel		XtDefaultForeground
 height	Height	Dimension		8
 insensitiveBorder	Insensitive	Pixmap		GreyPixmap
 mappedWhenManaged	MappedWhenManaged	Boolean		True
+pointerColor	Foreground	Pixel		XtDefaultForeground
+pointerColorBackground	Background	Pixel		XtDefaultBackground
 screen	Screen	Pointer	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
 translations	Translations	TranslationTable		NULL
@@ -89,6 +92,7 @@ information passed to the action routine.  A more thorough description
 is given below in the \fBGrip Actions\fP section.
 .Cm
 .Cu
+.Pn
 .Dp
 .Dc
 .IP \fBforeground\fP 1.5i
@@ -97,6 +101,8 @@ used to flood fill the entire Grip widget.
 .Hw
 .Ib
 .Mm
+.Pf
+.Pb
 .Sc
 .Se
 .Tr
