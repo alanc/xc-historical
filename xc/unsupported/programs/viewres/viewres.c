@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.68 91/01/10 14:15:03 gildea Exp $
+ * $XConsortium: viewres.c,v 1.69 91/02/16 21:09:21 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -119,7 +119,7 @@ static XtResource Resources[] = {
 	Offset(show_variable), XtRImmediate, (caddr_t) FALSE },
 };
 
-#undef Offset;
+#undef Offset
 
 static char *fallback_resources[] = {
     "*allowShellResize: true",
