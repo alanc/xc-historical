@@ -1,7 +1,7 @@
 #ifndef _PEXLIB_H_
 #define _PEXLIB_H_
 
-/* $XConsortium: PEXlib.h,v 1.3 92/05/20 21:27:13 mor Exp $ */
+/* $XConsortium: PEXlib.h,v 1.4 92/06/12 12:41:17 mor Exp $ */
 
 /******************************************************************************/
 /*  Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Mass.      */
@@ -1982,6 +1982,14 @@ extern void PEXCopyStructure(
 #endif
 );
 
+extern unsigned long PEXCountOCs(
+#if NeedFunctionPrototypes
+    int				/* float_format */,
+    unsigned long		/* length */,
+    char *                      /* encoded_ocs */
+#endif
+);
+
 extern PEXLookupTable PEXCreateLookupTable(
 #if NeedFunctionPrototypes
     Display *		/* display */,
@@ -2062,6 +2070,7 @@ extern PEXOCData *PEXDecodeOCs(
 #if NeedFunctionPrototypes
     int 		/* float_format */,
     unsigned long 		/* oc_count */,
+    unsigned long 		/* length */,
     char *		/* encoded_ocs */
 #endif
 );
@@ -2756,11 +2765,12 @@ extern PEXPointer PEXGetTableEntry(
 #endif
 );
 
-extern PEXTableInfo *PEXGetTableInfo(
+extern Status PEXGetTableInfo(
 #if NeedFunctionPrototypes
     Display *		/* display */,
     Drawable 		/* drawable */,
-    int 		/* table_type */
+    int 		/* table_type */,
+    PEXTableInfo *	/* info_return */
 #endif
 );
 
