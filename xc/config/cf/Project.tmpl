@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.121 91/05/31 11:57:20 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.122 91/05/31 17:31:30 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -46,6 +46,9 @@ XCOMM $XConsortium: Project.tmpl,v 1.121 91/05/31 11:57:20 rws Exp $
 #endif
 #ifndef BuildDoc
 #define BuildDoc		NO	/* at least not for alpha */
+#endif
+#ifndef InstallXtermSetUID
+#define InstallXtermSetUID	YES	/* xterm needs to be set uid */
 #endif
 #ifndef InstallXinitConfig
 #define InstallXinitConfig	NO	/* install sample xinit config */
@@ -430,7 +433,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.121 91/05/31 11:57:20 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.121 91/05/31 11:57:20 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.122 91/05/31 17:31:30 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
