@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Viewport.c,v 1.16 88/02/09 07:27:09 swick Exp $";
+static char rcsid[] = "$Header: Viewport.c,v 1.17 88/02/14 18:45:04 swick Exp $";
 #endif lint
 
 /*
@@ -55,7 +55,7 @@ static XtResource resources[] = {
 static void ClassInitialize(), Initialize(), ConstraintInitialize(),
     Realize(), Resize(), ChangeManaged();
 static Boolean SetValues(), DoLayout();
-static XtGeometryResult GeometryManager();
+static XtGeometryResult GeometryManager(), PreferredGeometry();
 
 #define superclass	(&formClassRec)
 ViewportClassRec viewportClassRec = {
@@ -88,7 +88,8 @@ ViewportClassRec viewportClassRec = {
     /* accept_focus	  */	NULL,
     /* version            */    XtVersion,
     /* callback_private	  */	NULL,
-    /* tm_table    	  */	NULL
+    /* tm_table    	  */	NULL,
+    /* query_geometry     */    PreferredGeometry,
   },
   { /* composite_class fields */
     /* geometry_manager	  */	GeometryManager,
@@ -408,8 +409,19 @@ static void Resize(widget)
     int child_width, child_height;
 
     if (child) {
-	child_width = child->core.width;
-	child_height = child->core.height;
+	XtWidgetGeometry intended, reply;
+	intended.request_mode = 0;
+	if (!w->viewport.allowhoriz || child->core.width < w->core.width) {
+	    intended.request_mode = CWWidth;
+	    intended.width = w->core.width;
+	}
+	if (!w->viewport.allowvert || child->core.height < w->core.height) {
+	    intended.request_mode |= CWHeight;
+	    intended.height = w->core.height;
+	}
+	XtQueryGeometry( child, &intended, &reply );
+	child_width = reply.width;
+	child_height = reply.height;
     }
     else {
 	child_width = 0;
@@ -668,4 +680,15 @@ static Boolean DoLayout(w, width, height)
 	result = XtMakeGeometryRequest(w, &geometry, NULL);
 
     return (result == XtGeometryYes);
+}
+
+static XtGeometryResult PreferredGeometry(w, constraints, reply)
+    Widget w;
+    XtWidgetGeometry *constraints, *reply;
+{
+    if (((ViewportWidget)w)->viewport.child != NULL)
+	return XtQueryGeometry( ((ViewportWidget)w)->viewport.child,
+			       constraints, reply );
+    else
+	return XtGeometryYes;
 }
