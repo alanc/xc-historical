@@ -1,4 +1,4 @@
-/* $XConsortium: Context.c,v 1.15 92/07/29 11:15:44 rws Exp $ */
+/* $XConsortium: Context.c,v 1.16 92/07/31 17:43:27 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard,
@@ -39,6 +39,9 @@ SOFTWARE.
 
 #include "Xlibint.h"
 #include "Xutil.h"
+#ifdef XTHREADS
+#include "locking.h"
+#endif
 
 #define INITHASHMASK 63 /* Number of entries originally in the hash table. */
 
@@ -53,11 +56,10 @@ typedef struct _XContextDB {	/* Stores hash table for one display. */
     TableEntry *table;		/* Pointer to array of hash entries. */
     int mask;			/* Current size of hash table minus 1. */
     int numentries;		/* Number of entries currently in table. */
-} DBRec, *DB;
-
-#ifdef MOTIFBC
-static DB NullDB = (DB)0;
+#ifdef XTHREADS
+    LockInfoRec linfo;
 #endif
+} DBRec, *DB;
 
 /* Given an XID and a context, returns a value between 0 and HashSize-1.
    Currently, this requires that HashSize be a power of 2.
@@ -141,11 +143,10 @@ int XSaveContext(display, rid, context, data)
     TableEntry *head;
     register TableEntry entry;
 
-#ifdef MOTIFBC
-    if (!display) pdb = &NullDB; else
-#endif
+    LockDisplay(display);
     pdb = &display->context_db;
     db = *pdb;
+    UnlockDisplay(display);
     if (!db) {
 	db = (DB) Xmalloc(sizeof(DBRec));
 	if (!db)
@@ -157,13 +158,15 @@ int XSaveContext(display, rid, context, data)
 	    return XCNOMEM;
 	}
 	db->numentries = 0;
+	CreateMutex(&db->linfo);
+	LockDisplay(display);
 	*pdb = db;
-#ifdef MOTIFBC
-	if (display)
-#endif
 	display->free_funcs->context_db = _XFreeContextDB;
+	UnlockDisplay(display);
     }
+    LockMutex(&db->linfo);
     head = &Hash(db, rid, context);
+    UnlockMutex(&db->linfo);
     for (entry = *head; entry; entry = entry->next) {
 	if (entry->rid == rid && entry->context == context) {
 	    entry->data = (XPointer)data;
@@ -178,9 +181,11 @@ int XSaveContext(display, rid, context, data)
     entry->data = (XPointer)data;
     entry->next = *head;
     *head = entry;
+    LockMutex(&db->linfo);
     db->numentries++;
     if (db->numentries > (db->mask << 2))
 	ResizeTable(db);
+    UnlockMutex(&db->linfo);
     return 0;
 }
 
@@ -200,19 +205,21 @@ int XFindContext(display, rid, context, data)
     register DB db;
     register TableEntry entry;
 
-#ifdef MOTIFBC
-    if (!display) db = NullDB; else
-#endif
+    LockDisplay(display);
     db = display->context_db;
+    UnlockDisplay(display);
     if (!db)
 	return XCNOENT;
+    LockMutex(&db->linfo);
     for (entry = Hash(db, rid, context); entry; entry = entry->next)
     {
 	if (entry->rid == rid && entry->context == context) {
 	    *data = (XPointer)entry->data;
+	    UnlockMutex(&db->linfo);
 	    return 0;
 	}
     }
+    UnlockMutex(&db->linfo);
     return XCNOENT;
 }
 
@@ -231,12 +238,12 @@ int XDeleteContext(display, rid, context)
     register DB db;
     register TableEntry entry, *prev;
 
-#ifdef MOTIFBC
-    if (!display) db = NullDB; else
-#endif
+    LockDisplay(display);
     db = display->context_db;
+    UnlockDisplay(display);
     if (!db)
 	return XCNOENT;
+    LockMutex(&db->linfo);
     for (prev = &Hash(db, rid, context);
 	 entry = *prev;
 	 prev = &entry->next) {
@@ -246,8 +253,10 @@ int XDeleteContext(display, rid, context)
 	    db->numentries--;
 	    if (db->numentries < db->mask && db->mask > INITHASHMASK)
 		ResizeTable(db);
+	    UnlockMutex(&db->linfo);
 	    return 0;
 	}
     }
+    UnlockMutex(&db->linfo);
     return XCNOENT;
 }

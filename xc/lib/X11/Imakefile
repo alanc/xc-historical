@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.165 93/10/21 10:14:57 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.166 93/11/11 17:46:47 kaleb Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoDebugLib DebugLibX11
@@ -887,7 +887,7 @@ SpecialCLibObjectRule(Xstreams,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(XlibInt,$(ICONFIGFILES),-I$(EXTINCSRC) $(CONN_DEFINES) $(MTT_DEFINES) $(POLL_DEFINES))
 SpecialCLibObjectRule(cmsColNm,$(ICONFIGFILES),$(CMS_DEFINES))
 SpecialCLibObjectRule(globals,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialCLibObjectRule(Context,$(ICONFIGFILES),$(BC_DEFINES))
+SpecialCLibObjectRule(Context,$(ICONFIGFILES),$(BC_DEFINES) $(MTT_DEFINES))
 SpecialCLibObjectRule(Xrm,$(_NOOP_),$(RCONST_DEFINES) $(MTT_DEFINES))
 SpecialCLibObjectRule(locking,$(ICONFIGFILES),$(MTT_DEFINES))
 SpecialCLibObjectRule(imTransR,$(ICONFIGFILES),$(CONN_DEFINES))
