@@ -218,6 +218,48 @@ InitInput(argc, argv)
 
 /*-
  *-----------------------------------------------------------------------
+ * sunQueryBestSize --
+ *	Supposed to hint about good sizes for things.
+ *
+ * Results:
+ *	Perhaps change *pwidth (Height irrelevant)
+ *
+ * Side Effects:
+ *	None.
+ *
+ *-----------------------------------------------------------------------
+ */
+void
+sunQueryBestSize(class, pwidth, pheight)
+int class;
+short *pwidth;
+short *pheight;
+{
+    unsigned width, test;
+
+    switch(class)
+    {
+      case CursorShape:
+      case TileShape:
+      case StippleShape:
+	  width = *pwidth;
+	  /* Return the closes power of two not less than what they gave me */
+	  test = 0x80000000;
+	  /* Find the highest 1 bit in the width given */
+	  while(!(test & width))
+	     test >>= 1;
+	  /* If their number is greater than that, bump up to the next
+	   *  power of two */
+	  if((test - 1) & width)
+	     test <<= 1;
+	  *pwidth = test;
+	  /* We don't care what height they use */
+	  break;
+    }
+}
+
+/*-
+ *-----------------------------------------------------------------------
  * sunScreenInit --
  *	Things which must be done for all types of frame buffers...
  *	Should be called last of all.
@@ -271,6 +313,7 @@ sunScreenInit (pScreen)
     pScreen->CreateGC =	    	    	sunCreateGC;
     pScreen->CreateWindow = 	    	sunCreateWindow;
     pScreen->ChangeWindowAttributes = 	sunChangeWindowAttributes;
+    pScreen->QueryBestSize =		sunQueryBestSize;
     pScreen->GetImage =	    	    	sunGetImage;
     pScreen->GetSpans =			sunGetSpans;
 
@@ -514,9 +557,17 @@ sunOpenFrameBuffer(expect, pfbType, index, fbNum, argc, argv)
 
 	input_imnull(&inputMask);
 	inputMask.im_flags = IM_ASCII | IM_META | IM_NEGEVENT | IM_INTRANSIT;
+
+#ifdef notdef
+	win_setinputcodebit(&inputMask, KBD_USE);
+	win_setinputcodebit(&inputMask, KBD_DONE);
+#endif notdef
 	win_setinputcodebit(&inputMask, LOC_MOVE);
 	win_setinputcodebit(&inputMask, LOC_WINEXIT);
 	win_setinputcodebit(&inputMask, LOC_WINENTER);
+	win_setinputcodebit(&inputMask, MS_LEFT);
+	win_setinputcodebit(&inputMask, MS_MIDDLE);
+	win_setinputcodebit(&inputMask, MS_RIGHT);
 	win_set_pick_mask(winFd, &inputMask);
 
 	win_insert(winFd);

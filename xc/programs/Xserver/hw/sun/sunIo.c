@@ -169,13 +169,17 @@ ProcessInputEvents ()
 	     * Ignore the events if the locator has exited X Display.
 	     */
 	    switch (event_id(se)) {
-		case LOC_WINEXIT:
-		    event_ignore = TRUE;
-		    sunSetUpKbdSunWin(windowFd, FALSE, pKeyboard);
+		case KBD_DONE:
+		    sunChangeKbdTranslation( pKeyboard, FALSE );
+		    break;
+		case KBD_USE:
+		    sunChangeKbdTranslation( pKeyboard, TRUE );
 		    break;
 		case LOC_WINENTER:
 		    event_ignore = FALSE;
-		    sunSetUpKbdSunWin(windowFd, TRUE, pKeyboard);
+		    break;
+		case LOC_WINEXIT:
+		    event_ignore = TRUE;
 		    break;
 	    }
 
@@ -195,6 +199,8 @@ ProcessInputEvents ()
 		    break;
 		case LOC_WINEXIT:
 		case LOC_WINENTER:
+		case KBD_DONE:
+		case KBD_USE:
 		    break;
 		default:
 		    sunKbdProcessEventSunWin(pKeyboard,se);

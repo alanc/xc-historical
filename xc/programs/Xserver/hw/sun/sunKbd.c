@@ -82,6 +82,8 @@ static KbPrivRec  	sysKbPriv = {
     sunKbdDoneEvents,		/* Function called when all events */
 				/* have been handled. */
     (pointer)&sunKbPriv,	/* Private to keyboard device */
+    (Bool)0,			/* Mapped queue */
+    0,				/* offset for device keycodes */
 };
 
 /*-
@@ -134,8 +136,12 @@ sunKbdProc (pKeyboard, what)
 		(void) ioctl (kbdFd, KIOCGTRANS, &sunKbPriv.trans);
 		if (sysKbPriv.type < 0 || sysKbPriv.type > KB_SUN3
 		    || sunKeySyms[sysKbPriv.type].map == NULL)
-		    FatalError("Unsupported keyboard type %d\n", sysKbPriv.type);
-		if (! sunUseSunWindows()) {
+		    FatalError("Unsupported keyboard type %d\n", 
+			sysKbPriv.type);
+		if (sunUseSunWindows()) {
+		    (void) close( kbdFd );
+		    sysKbPriv.fd = -1;
+		} else {
 		    if (fcntl (kbdFd, F_SETFL, (FNDELAY|FASYNC)) < 0
 			|| fcntl(kbdFd, F_SETOWN, getpid()) < 0) {
 			perror("sunKbdProc");
@@ -152,6 +158,16 @@ sunKbdProc (pKeyboard, what)
 	    pKeyboard->devicePrivate = (pointer)&sysKbPriv;
 
 	    pKeyboard->on = FALSE;
+	    /*
+	     * ensure that the keycodes on the wire are >= MIN_KEYCODE
+	     */
+	    if (sunKeySyms[sysKbPriv.type].minKeyCode < MIN_KEYCODE) {
+		int offset = MIN_KEYCODE -sunKeySyms[sysKbPriv.type].minKeyCode;
+
+		sunKeySyms[sysKbPriv.type].minKeyCode += offset;
+		sunKeySyms[sysKbPriv.type].maxKeyCode += offset;
+		sysKbPriv.offset = offset;
+	    }
 	    InitKeyboardDeviceStruct(
 		    pKeyboard,
 		    &(sunKeySyms[sysKbPriv.type]),
@@ -164,7 +180,7 @@ sunKbdProc (pKeyboard, what)
 	    if (sunUseSunWindows()) {
 #ifdef SUN_WINDOWS
 		if (! sunSetUpKbdSunWin(windowFd, TRUE, pKeyboard)) {
-		    FatalError("Can't close keyboard\n");
+		    FatalError("Can't set up keyboard\n");
 		}
 		AddEnabledDevice(windowFd);
 #endif SUN_WINDOWS
@@ -327,7 +343,7 @@ sunKbdProcessEvent (pKeyboard, fe)
     xE.u.keyButtonPointer.rootX = ptrPriv->x;
     xE.u.keyButtonPointer.rootY = ptrPriv->y;
     xE.u.u.type = ((fe->value == VKEY_UP) ? KeyRelease : KeyPress);
-    xE.u.u.detail = (fe->id & 0x7F);
+    xE.u.u.detail = (fe->id & 0x7F) + sysKbPriv.offset;
 
     (* pKeyboard->processInputProc) (&xE, pKeyboard);
 }
@@ -371,25 +387,37 @@ sunChangeKbdTranslation(pKeyboard,makeTranslated)
     KbPrivPtr	pPriv;
     int 	kbdFd;
     int 	tmp;
+    int		KbdOpenedHere;
 
     pPriv = (KbPrivPtr)pKeyboard->devicePrivate;
     kbdFd = pPriv->fd;
 
+    KbdOpenedHere = ( kbdFd < 0 );
+    if ( KbdOpenedHere ) {
+	kbdFd = open("/dev/kbd", O_RDONLY, 0);
+	if ( kbdFd < 0 ) {
+	    Error( "sunChangeKbdTranslation: Can't open keyboard" );
+	    goto bad;
+	}
+    }
+	
     if (makeTranslated) {
         /*
          * Next set the keyboard into "direct" mode and turn on
          * event translation. If either of these fails, we can't go
          * on.
          */
-	tmp = 1;
-	if (ioctl (kbdFd, KIOCSDIRECT, &tmp) < 0) {
-	    Error ("Setting keyboard direct mode");
-	    return (-1);
+	if ( ! sunUseSunWindows() ) {
+	    tmp = 1;
+	    if (ioctl (kbdFd, KIOCSDIRECT, &tmp) < 0) {
+		Error ("Setting keyboard direct mode");
+		goto bad;
+	    }
 	}
 	tmp = TR_UNTRANS_EVENT;
 	if (ioctl (kbdFd, KIOCTRANS, &tmp) < 0) {
 	    Error ("Setting keyboard translation");
-	    return (-1);
+	    goto bad;
 	}
     }
     else {
@@ -397,12 +425,22 @@ sunChangeKbdTranslation(pKeyboard,makeTranslated)
          * Next set the keyboard into "indirect" mode and turn off
          * event translation.
          */
-	tmp = 0;
-	(void)ioctl (kbdFd, KIOCSDIRECT, &tmp);
+	if ( ! sunUseSunWindows() ) {
+	    tmp = 0;
+	    (void)ioctl (kbdFd, KIOCSDIRECT, &tmp);
+	}
 	tmp = ((SunKbPrivPtr)pPriv->devPrivate)->trans;
 	(void)ioctl (kbdFd, KIOCTRANS, &tmp);
     }
+
+    if ( KbdOpenedHere )
+	(void) close( kbdFd );
     return(0);
+
+bad:
+    if ( KbdOpenedHere )
+	(void) close( kbdFd );
+    return( -1 );
 }
 
 
@@ -439,12 +477,8 @@ sunSetUpKbdSunWin(windowFd, onoff, pKeyboard)
 		IM_ASCII | IM_NEGASCII | 
 		IM_META | IM_NEGMETA | 
 		IM_NEGEVENT | IM_INTRANSIT;
-	win_setinputcodebit(&inputMask, LOC_MOVE);
-	win_setinputcodebit(&inputMask, LOC_WINEXIT);
-	win_setinputcodebit(&inputMask, LOC_WINENTER);
-	win_setinputcodebit(&inputMask, MS_LEFT);
-	win_setinputcodebit(&inputMask, MS_MIDDLE);
-	win_setinputcodebit(&inputMask, MS_RIGHT);
+	win_setinputcodebit(&inputMask, KBD_USE);
+	win_setinputcodebit(&inputMask, KBD_DONE);
 	win_setinputcodebit(&inputMask, SHIFT_CAPSLOCK);
 	win_setinputcodebit(&inputMask, SHIFT_LOCK);
 	win_setinputcodebit(&inputMask, SHIFT_LEFT);
@@ -464,16 +498,17 @@ sunSetUpKbdSunWin(windowFd, onoff, pKeyboard)
             win_setinputcodebit(&inputMask, i);
         }
 
-	win_set_pick_mask(windowFd, &inputMask);
 	win_set_kbd_mask(windowFd, &inputMask);
 
         /*
          * Set the keyboard into "direct" mode and turn on
          * event translation.
          */
+#ifdef notdef
 	if (sunChangeKbdTranslation(pKeyboard,TRUE) < 0) {
 	    FatalError("Can't set keyboard translation\n");
 	}
+#endif notdef
     }
     else {
 	win_set_kbd_mask(windowFd, &oldInputMask);
