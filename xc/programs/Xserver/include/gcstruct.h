@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: gcstruct.h,v 1.1 87/09/11 07:49:45 rws Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -111,7 +111,6 @@ typedef struct _GC{
 } GC;
 
 extern GC *CreateGC();
-extern GC BltGCs[];
 extern void FreeGC();
 
 #endif /* GCSTRUCT_H */
