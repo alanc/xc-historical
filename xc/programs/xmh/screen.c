@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 1.9 88/01/07 16:53:55 swick Exp $";
+static char rcs_id[] = "$Header: screen.c,v 1.10 88/01/08 08:08:40 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -175,11 +175,10 @@ Scrn scrn;
 					XtselectWord,
 					XtselectAll,
 					XtselectNull};
-#ifdef notdef
-    static Arg arglist2[] = {
-	{XtNselectionArray, (XtArgVal) sarray},
-	{XtNselectionArrayCount, (XtArgVal) XtNumber(sarray)}
-#endif
+/*    static Arg arglist2[] = {
+ *	{XtNselectionArray, (XtArgVal) sarray},
+ *	{XtNselectionArrayCount, (XtArgVal) XtNumber(sarray)}
+ */
 
     XtPanedRefigureMode(scrn->widget, FALSE);
     scrn->folderbuttons = BBoxRadioCreate(scrn, 0, "folders",
