@@ -367,12 +367,12 @@ int fSorted;
 		}
 		else
 #endif /* notdef */
-		if(((rem & PIM) + w) <= PPW)
+		if(((x & PIM) + w) <= PPW)
 		{
 		    getbits(psrc, (rem & PIM), w, tmpSrc);
 		    putbitsrop(tmpSrc, x & PIM, w, pdst, 
 			pGC->planemask, rop);
-		    ++pdst;
+		    if ((x & PIM) + w == PPW) ++pdst;
 		}
 		else
 		{
@@ -387,18 +387,18 @@ int fSorted;
 	            else
 		        nend = 0;
 
-	            srcStartOver = nstart > PLST;
+	            srcStartOver = nstart + (rem & PIM) > PLST;
 
 		    if(startmask)
 		    {
-			getbits(psrc, 0, nstart, tmpSrc);
+			getbits(psrc, rem & PIM, nstart, tmpSrc);
 			putbitsrop(tmpSrc, x & PIM, nstart, pdst, 
 			    pGC->planemask, rop);
 			pdst++;
 			if(srcStartOver)
 			    psrc++;
 		    }
-		     
+		    nstart = (nstart + rem) & PIM;
 		    while(nlMiddle--)
 		    {
 			    getbits(psrc, nstart, PPW, tmpSrc);
