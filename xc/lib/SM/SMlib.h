@@ -1,4 +1,4 @@
-/* $XConsortium: SMlib.h,v 1.9 93/09/28 10:36:16 mor Exp $ */
+/* $XConsortium: SMlib.h,v 1.10 93/11/08 11:26:40 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -538,6 +538,7 @@ extern Status SmsInitialize (
     char *		/* release */,
     SmsNewClientProc	/* newClientProc */,
     SmPointer		/* managerData */,
+    IceHostBasedAuthProc /* hostBasedAuthProc */,
     int			/* errorLength */,
     char *		/* errorStringRet */
 #endif
