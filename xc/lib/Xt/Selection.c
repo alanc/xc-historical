@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.66 91/05/06 17:22:07 converse Exp $ */
+/* $XConsortium: Selection.c,v 1.67 91/05/09 12:50:55 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -318,6 +318,26 @@ XtPointer closure;
     }
 }
 
+static int nextRequest;
+static int (*oldErrorProc)(
+#if NeedFunctionPrototypes
+			   Display*, XErrorEvent*
+#endif
+			   ) = NULL;
+
+static int LocalErrorHandler (dpy, error)
+Display *dpy;
+XErrorEvent *error;
+{
+    /* If BadWindow, nothing to do. Otherwise, invoke saved error handler */
+    if (error->error_code == BadWindow && error->serial == nextRequest)
+	return 0;
+
+    if (oldErrorProc == NULL) return 0;  /* should never happen */
+
+    return (*oldErrorProc)(dpy, error);
+}
+
 static void RemoveHandler(dpy, window, widget, mask, proc, closure)
 Display *dpy;
 Window window;
@@ -335,7 +355,14 @@ XtPointer closure;
 			   (caddr_t *)&requestWindow);
 	if (--requestWindow->active_transfer_count == 0) {
 	    _XtUnregisterWindow(window, widget);
+	    /* protect ourselves against requestor having destroyed
+	       his window by this time. */
+	    oldErrorProc = XSetErrorHandler(LocalErrorHandler);
+	    nextRequest = NextRequest(dpy);
 	    XSelectInput(dpy, window, 0L);
+	    XSync(dpy, False);
+	    XSetErrorHandler(oldErrorProc);
+	    oldErrorProc = NULL;
 	    (void)XDeleteContext(dpy, window, selectWindowContext);
 	    XtFree((char*)requestWindow);
 	}
@@ -411,8 +438,6 @@ Widget widget;
 XtPointer closure;
 XEvent *ev;
 {
-
-
     XPropertyEvent *event = (XPropertyEvent *) ev;
     Request req = (Request)closure;
     Select ctx = req->ctx;
