@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.69 91/02/16 21:09:21 dave Exp $
+ * $XConsortium: viewres.c,v 1.70 91/02/18 13:12:31 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -882,10 +882,6 @@ main (argc, argv)
 				&argc, argv, fallback_resources, 
 				(ArgList) NULL, ZERO);
     if (argc != 1) usage ();
-    XtAppAddActions (app_con, viewres_actions, XtNumber (viewres_actions));
-
-    XtOverrideTranslations
-	(toplevel, XtParseTranslationTable ("<Message>WM_PROTOCOLS: Quit()"));
 
     initialize_widgetnode_list (&selected_list.elements,
 				&selected_list.max_elements, 10);
@@ -895,6 +891,15 @@ main (argc, argv)
     XmuWnInitializeNodes (widget_list, nwidgets);
 
     topnode = XmuWnNameToNode (widget_list, nwidgets, options.top_object);
+    if (!topnode) {
+	fprintf(stderr, "%s: no widget with name \"%s\" found.\n",
+		ProgramName, options.top_object);
+	exit(1);
+    }
+
+    XtAppAddActions (app_con, viewres_actions, XtNumber (viewres_actions));
+    XtOverrideTranslations
+	(toplevel, XtParseTranslationTable ("<Message>WM_PROTOCOLS: Quit()"));
 
     /*
      * create dummy widgets to initialize resources
