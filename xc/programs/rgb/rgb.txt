@@ -93,6 +93,14 @@
  96 154 194		LightSteelBlue
  95 153 159		cadet blue
  95 153 159		CadetBlue
+112 128 144		slate gray
+112 128 144		slate grey
+112 128 144		SlateGray
+112 128 144		SlateGrey
+119 136 153		light slate gray
+119 136 153		light slate grey
+119 136 153		LightSlateGray
+119 136 153		LightSlateGrey
  47  79  79		dark slate grey
  47  79  79		dark slate gray
  47  79  79		DarkSlateGrey
