@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.61 93/02/25 14:23:49 rws Exp $ */
+/* $XConsortium: events.c,v 5.62 93/02/26 11:35:28 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -42,7 +42,6 @@ extern WindowPtr *WindowTable;
 
 extern void (* EventSwapVector[128]) ();
 extern void (* ReplySwapVector[256]) ();
-extern void SetCriticalOutputPending();
 
 #define EXTENSION_EVENT_BASE  64
 
@@ -124,18 +123,28 @@ static  struct {
     HotSpot	hotPhys;	/* physical pointer position */
 } sprite;			/* info about the cursor sprite */
 
-static void DoEnterLeaveEvents();	/* merely forward declarations */
-static WindowPtr XYToWindow();
+static void DoEnterLeaveEvents(
+#if NeedFunctionPrototypes
+    WindowPtr /*fromWin*/,
+    WindowPtr /*toWin*/,
+    int /*mode*/
+#endif
+);
+
+static WindowPtr XYToWindow(
+#if NeedFunctionPrototypes
+    int /*x*/,
+    int /*y*/
+#endif
+);
+
 void DeliverFocusedEvent();
 int DeliverDeviceEvents();
 void DoFocusEvents();
 Mask EventMaskForClient();
-void WriteEventsToClient();
 Bool CheckDeviceGrabs();
 void NewCurrentScreen();
 void EnqueueEvent();
-
-extern void MaybeStopHint();
 
 extern GrabPtr CreateGrab();		/* Defined in grabs.c */
 extern Bool GrabMatchesSecond();
@@ -763,8 +772,8 @@ DeactivatePointerGrab(mouse)
 
 void
 ActivateKeyboardGrab(keybd, grab, time, passive)
-    GrabPtr grab;
     register DeviceIntPtr keybd;
+    GrabPtr grab;
     TimeStamp time;
     Bool passive;
 {
@@ -2048,11 +2057,12 @@ RecalculateDeliverableEvents(pWin)
 }
 
 int
-OtherClientGone(pWin, id)
-    register WindowPtr pWin;
+OtherClientGone(value, id)
+    pointer value; /* must conform to DeleteType */
     XID   id;
 {
     register OtherClientsPtr other, prev;
+    register WindowPtr pWin = (WindowPtr)value;
 
     prev = 0;
     for (other = wOtherClients(pWin); other; other = other->next)

@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.26 93/02/25 15:30:35 rws Exp $ */
+/* $XConsortium: devices.c,v 5.27 93/02/26 11:33:32 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -64,8 +64,8 @@ AddInputDevice(deviceProc, autoStart)
     dev->id = inputInfo.numDevices;
     inputInfo.numDevices++;
     dev->public.on = FALSE;
-    dev->public.processInputProc = NoopDDA;
-    dev->public.realInputProc = NoopDDA;
+    dev->public.processInputProc = (ProcessInputProc)NoopDDA;
+    dev->public.realInputProc = (ProcessInputProc)NoopDDA;
     dev->public.enqueueInputProc = EnqueueEvent;
     dev->deviceProc = deviceProc;
     dev->startup = autoStart;
@@ -442,7 +442,7 @@ InitButtonClassDeviceStruct(dev, numButtons, map)
 Bool
 InitValuatorClassDeviceStruct(dev, numAxes, motionProc, numMotionEvents, mode)
     DeviceIntPtr dev;
-    int (*motionProc)();
+    ValuatorMotionProcPtr motionProc;
     int numAxes;
     int numMotionEvents;
     int mode;
@@ -490,8 +490,8 @@ InitFocusClassDeviceStruct(dev)
 Bool
 InitKbdFeedbackClassDeviceStruct(dev, bellProc, controlProc)
     DeviceIntPtr dev;
-    void (*bellProc)();
-    void (*controlProc)();
+    BellProcPtr bellProc;
+    KbdCtrlProcPtr controlProc;
 {
     register KbdFeedbackPtr feedc;
 
@@ -512,7 +512,7 @@ InitKbdFeedbackClassDeviceStruct(dev, bellProc, controlProc)
 Bool
 InitPtrFeedbackClassDeviceStruct(dev, controlProc)
     DeviceIntPtr dev;
-    void (*controlProc)();
+    PtrCtrlProcPtr controlProc;
 {
     register PtrFeedbackPtr feedc;
 
@@ -550,7 +550,7 @@ Bool
 InitStringFeedbackClassDeviceStruct (dev, controlProc, max_symbols,
 				     num_symbols_supported, symbols)
     DeviceIntPtr dev;
-    void (*controlProc)();
+    StringCtrlProcPtr controlProc;
     int max_symbols;
     int num_symbols_supported;
     KeySym *symbols;
@@ -591,8 +591,8 @@ InitStringFeedbackClassDeviceStruct (dev, controlProc, max_symbols,
 Bool
 InitBellFeedbackClassDeviceStruct (dev, bellProc, controlProc)
     DeviceIntPtr dev;
-    void (*bellProc)();
-    void (*controlProc)();
+    BellProcPtr bellProc;
+    BellCtrlProcPtr controlProc;
 {
     register BellFeedbackPtr feedc;
 
@@ -613,7 +613,7 @@ InitBellFeedbackClassDeviceStruct (dev, bellProc, controlProc)
 Bool
 InitLedFeedbackClassDeviceStruct (dev, controlProc)
     DeviceIntPtr dev;
-    void (*controlProc)();
+    LedCtrlProcPtr controlProc;
 {
     register LedFeedbackPtr feedc;
 
@@ -633,7 +633,7 @@ InitLedFeedbackClassDeviceStruct (dev, controlProc)
 Bool
 InitIntegerFeedbackClassDeviceStruct (dev, controlProc)
     DeviceIntPtr dev;
-    void (*controlProc)();
+    IntegerCtrlProcPtr controlProc;
 {
     register IntegerFeedbackPtr feedc;
 
@@ -656,8 +656,8 @@ InitPointerDeviceStruct(device, map, numButtons, motionProc, controlProc,
     DevicePtr device;
     CARD8 *map;
     int numButtons;
-    void (*controlProc)();
-    int (*motionProc)();
+    PtrCtrlProcPtr controlProc;
+    ValuatorMotionProcPtr motionProc;
     int numMotionEvents;
 {
     DeviceIntPtr dev = (DeviceIntPtr)device;
@@ -673,8 +673,8 @@ InitKeyboardDeviceStruct(device, pKeySyms, pModifiers, bellProc, controlProc)
     DevicePtr device;
     KeySymsPtr pKeySyms;
     CARD8 pModifiers[];
-    void (*bellProc)();
-    void (*controlProc)();
+    BellProcPtr bellProc;
+    KbdCtrlProcPtr controlProc;
 {
     DeviceIntPtr dev = (DeviceIntPtr)device;
 
@@ -685,8 +685,8 @@ InitKeyboardDeviceStruct(device, pKeySyms, pModifiers, bellProc, controlProc)
 
 int
 SendMappingNotify(request, firstKeyCode, count)
-    CARD8 request, count;
-    KeyCode firstKeyCode;
+    unsigned int request, count;
+    unsigned int firstKeyCode;
 {
     int i;
     xEvent event;

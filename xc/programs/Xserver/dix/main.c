@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.20 92/08/21 19:29:46 rws Exp $ */
+/* $XConsortium: main.c,v 5.21 93/06/24 10:02:04 dpw Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -61,19 +61,17 @@ extern void InitProcVectors();
 extern void InitEvents();
 extern void InitExtensions();
 extern void DefineInitialRootWindow();
-extern void QueryMinMaxKeyCodes();
-extern Bool InitClientResources();
-static Bool CreateConnectionBlock();
 extern Bool CreateGCperDepthArray();
-extern Bool CreateDefaultStipple();
-extern void ResetWellKnownSockets();
-extern void ResetWindowPrivates();
-extern void ResetGCPrivates();
-static void FreeScreen();
-extern void ResetScreenPrivates();
-
-Bool CreateScratchPixmapsForScreen();
-void FreeScratchPixmapsForScreen();
+static Bool CreateConnectionBlock(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+static void FreeScreen(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/
+#endif
+);
 
 PaddingInfo PixmapWidthPaddingInfo[33];
 int connBlockScreenStart;

@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: cursor.c,v 1.41 91/12/23 12:08:35 keith Exp $ */
+/* $XConsortium: cursor.c,v 1.42 93/02/06 13:48:43 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -75,11 +75,12 @@ FreeCursorBits(bits)
  */
 /*ARGSUSED*/
 int
-FreeCursor( pCurs, cid)
-    CursorPtr 	pCurs;
-    Cursor 	cid;	
+FreeCursor(value, cid)
+    pointer	value; /* must conform to DeleteType */
+    XID 	cid;	
 {
     int		nscr;
+    CursorPtr 	pCurs = (CursorPtr)value;
 
     ScreenPtr	pscr;
 
@@ -167,7 +168,7 @@ AllocGlyphCursor(source, sourceChar, mask, maskChar,
 		 foreRed, foreGreen, foreBlue, backRed, backGreen, backBlue,
 		 ppCurs, client)
     Font source, mask;
-    unsigned short sourceChar, maskChar;
+    unsigned int sourceChar, maskChar;
     unsigned foreRed, foreGreen, foreBlue;
     unsigned backRed, backGreen, backBlue;
     CursorPtr *ppCurs;
@@ -346,7 +347,7 @@ AllocGlyphCursor(source, sourceChar, mask, maskChar,
 CursorPtr 
 CreateRootCursor(pfilename, glyph)
     char *		pfilename;
-    unsigned short	glyph;
+    unsigned int	glyph;
 {
     CursorPtr 	curs;
     FontPtr 	cursorfont;

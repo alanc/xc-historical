@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.87 91/10/30 14:50:54 rws Exp $ */
+/* $XConsortium: resource.c,v 1.88 92/04/20 17:34:59 rws Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -55,10 +55,14 @@ SOFTWARE.
 #include "opaque.h"
 #include "windowstr.h"
 
-extern void HandleSaveSet();
 extern void FlushClientCaches();
-static void RebuildTable();
 extern WindowPtr *WindowTable;
+
+static void RebuildTable(
+#if NeedFunctionPrototypes
+    int /*client*/
+#endif
+);
 
 #define SERVER_MINID 32
 
@@ -87,8 +91,6 @@ typedef struct _ClientResource {
 static RESTYPE lastResourceType;
 static RESTYPE lastResourceClass;
 static RESTYPE TypeMask;
-
-typedef int (*DeleteType)();
 
 static DeleteType *DeleteFuncs = (DeleteType *)NULL;
 
@@ -153,7 +155,7 @@ InitClientResources(client)
 					   sizeof(DeleteType));
 	if (!DeleteFuncs)
 	    return FALSE;
-	DeleteFuncs[RT_NONE & TypeMask] = (int (*)()) NoopDDA;
+	DeleteFuncs[RT_NONE & TypeMask] = (DeleteType)NoopDDA;
 	DeleteFuncs[RT_WINDOW & TypeMask] = DeleteWindow;
 	DeleteFuncs[RT_PIXMAP & TypeMask] = dixDestroyPixmap;
 	DeleteFuncs[RT_GC & TypeMask] = FreeGC;

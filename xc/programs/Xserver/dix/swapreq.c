@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swapreq.c,v 1.34 91/06/05 17:20:22 rws Exp $ */
+/* $XConsortium: swapreq.c,v 1.35 91/12/10 11:32:26 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -40,7 +40,7 @@ extern void (* EventSwapVector[128]) ();  /* for SendEvent */
 
 void
 SwapLongs (list, count)
-	register long *list;
+	register CARD32 *list;
 	register unsigned long count;
 {
 	register char n;

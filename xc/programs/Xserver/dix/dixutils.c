@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: dixutils.c,v 1.41 92/02/27 18:19:53 eswu Exp $ */
+/* $XConsortium: dixutils.c,v 1.42 92/07/21 18:22:02 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -233,7 +233,11 @@ DeleteWindowFromAnySaveSet(pWin)
  * procedure to call than to check if there's a procedure 
  */
 void
-NoopDDA()
+NoopDDA(
+#if NeedVarargsPrototypes
+    void* f, ...
+#endif
+)
 {
 }
 

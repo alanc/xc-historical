@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.24 92/02/18 16:57:14 rws Exp $ */
+/* $XConsortium: colormap.c,v 5.25 92/11/14 15:30:34 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -37,14 +37,153 @@ SOFTWARE.
 
 extern XID clientErrorValue;
 
-static Pixel FindBestPixel();
-static void  CopyFree(), FreeCell(), FreePixels(), UpdateColors();
-static int   AllComp(), RedComp(), GreenComp(), BlueComp();
-static int   AllocDirect(), AllocPseudo(), FreeCo();
-static Bool  AllocCP(), AllocShared();
-static int   TellNoMap();
+static Pixel FindBestPixel(
+#if NeedFunctionPrototypes
+    EntryPtr /*pentFirst*/,
+    int /*size*/,
+    xrgb */*prgb*/,
+    int /*channel*/
+#endif
+);
 
-int   FreeClientPixels();
+static int AllComp(
+#if NeedFunctionPrototypes
+    EntryPtr /*pent*/,
+    xrgb */*prgb*/
+#endif
+);
+
+static int RedComp(
+#if NeedFunctionPrototypes
+    EntryPtr /*pent*/,
+    xrgb */*prgb*/
+#endif
+);
+
+static int GreenComp(
+#if NeedFunctionPrototypes
+    EntryPtr /*pent*/,
+    xrgb */*prgb*/
+#endif
+);
+
+static int BlueComp(
+#if NeedFunctionPrototypes
+    EntryPtr /*pent*/,
+    xrgb */*prgb*/
+#endif
+);
+
+static void FreePixels(
+#if NeedFunctionPrototypes
+    register ColormapPtr /*pmap*/,
+    register int /*client*/
+#endif
+);
+
+extern int FreeClientPixels(
+#if NeedFunctionPrototypes
+    pointer /*value*/,
+    XID /*fakeid*/
+#endif
+);
+
+static void CopyFree(
+#if NeedFunctionPrototypes
+    int /*channel*/,
+    int /*client*/,
+    ColormapPtr /*pmapSrc*/,
+    ColormapPtr /*pmapDst*/
+#endif
+);
+
+static void FreeCell(
+#if NeedFunctionPrototypes
+    ColormapPtr /*pmap*/,
+    Pixel /*i*/,
+    int /*channel*/
+#endif
+);
+
+static void UpdateColors(
+#if NeedFunctionPrototypes
+    ColormapPtr /*pmap*/
+#endif
+);
+
+static int AllocDirect(
+#if NeedFunctionPrototypes
+    int /*client*/,
+    ColormapPtr /*pmap*/,
+    int /*c*/,
+    int /*r*/,
+    int /*g*/,
+    int /*b*/,
+    Bool /*contig*/,
+    Pixel */*pixels*/,
+    Pixel */*prmask*/,
+    Pixel */*pgmask*/,
+    Pixel */*pbmask*/
+#endif
+);
+
+static int AllocPseudo(
+#if NeedFunctionPrototypes
+    int /*client*/,
+    ColormapPtr /*pmap*/,
+    int /*c*/,
+    int /*r*/,
+    Bool /*contig*/,
+    Pixel */*pixels*/,
+    Pixel */*pmask*/,
+    Pixel **/*pppixFirst*/
+#endif
+);
+
+static Bool AllocCP(
+#if NeedFunctionPrototypes
+    ColormapPtr /*pmap*/,
+    EntryPtr /*pentFirst*/,
+    int /*count*/,
+    int /*planes*/,
+    Bool /*contig*/,
+    Pixel */*pixels*/,
+    Pixel */*pMask*/
+#endif
+);
+
+static Bool AllocShared(
+#if NeedFunctionPrototypes
+    ColormapPtr /*pmap*/,
+    Pixel */*ppix*/,
+    int /*c*/,
+    int /*r*/,
+    int /*g*/,
+    int /*b*/,
+    Pixel /*rmask*/,
+    Pixel /*gmask*/,
+    Pixel /*bmask*/,
+    Pixel */*ppixFirst*/
+#endif
+);
+
+static int FreeCo(
+#if NeedFunctionPrototypes
+    ColormapPtr /*pmap*/,
+    int /*client*/,
+    int /*color*/,
+    int /*npixIn*/,
+    Pixel */*ppixIn*/,
+    Pixel /*mask*/
+#endif
+);
+
+static int   TellNoMap(
+#if NeedFunctionPrototypes
+    WindowPtr	/*pwin*/,
+    Colormap 	* /*pmid*/
+#endif
+);
 
 #define NUMRED(vis) ((vis->redMask >> vis->offsetRed) + 1)
 #define NUMGREEN(vis) ((vis->greenMask >> vis->offsetGreen) + 1)
@@ -83,11 +222,11 @@ int   FreeClientPixels();
 /* ID of server as client */
 #define SERVER_ID	0
 
-typedef struct 
+typedef struct _colorResource
 {
 	Colormap	mid;
 	int		client;
-	} colorResource;
+} colorResource;
 
 /* Invariants:
  * refcnt == 0 means entry is empty
@@ -247,17 +386,18 @@ CreateColormap (mid, pScreen, pVisual, ppcmap, alloc, client)
 }
 
 int
-FreeColormap (pmap, mid)
-    ColormapPtr	pmap;
-    Colormap	mid;
+FreeColormap (value, mid)
+    pointer	value; /* must conform to DeleteType */
+    XID		mid;
 {
     int		i;
     register EntryPtr pent;
+    ColormapPtr	pmap = (ColormapPtr)value;
 
     if(CLIENT_ID(mid) != SERVER_ID)
     {
         (*pmap->pScreen->UninstallColormap) (pmap);
-        WalkTree(pmap->pScreen, TellNoMap, (pointer) &mid);
+        WalkTree(pmap->pScreen, (VisitWindowProcPtr)TellNoMap, (pointer) &mid);
     }
 
     /* This is the device's chance to undo anything it needs to, especially
@@ -971,7 +1111,7 @@ FindColor (pmap, pentFirst, size, prgb, pPixel, channel, client, comp)
     Pixel	*pPixel;
     int		channel;
     int		client;
-    int		(*comp) ();
+    ColorCompareProcPtr comp;
 {
     EntryPtr	pent;
     Bool	foundFree;
@@ -1317,11 +1457,12 @@ FreePixels(pmap, client)
 /* Free all of a client's colors and cells */
 /*ARGSUSED*/
 int
-FreeClientPixels (pcr, fakeid)
-    colorResource *pcr;
+FreeClientPixels (value, fakeid)
+    pointer value;  /* must conform to DeleteType */
     XID	fakeid;
 {
     ColormapPtr pmap;
+    colorResource *pcr = (colorResource *)value;
 
     pmap = (ColormapPtr) LookupIDByType(pcr->mid, RT_COLORMAP);
     if (pmap)

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: tables.c,v 1.20 89/01/16 11:33:02 rws Exp $ */
+/* $XConsortium: tables.c,v 1.21 89/02/16 11:58:08 rws Exp $ */
 
 extern int    ProcInitialConnection(), ProcEstablishConnection();
 
@@ -105,15 +105,13 @@ extern int    SProcSProcBadRequest(), SProcCreateWindow(),
     SProcNoOperation(), SProcResourceReq(), SProcSimpleReq();
 
 extern void 
-    SErrorEvent(), NotImplemented(), SKeyButtonPtrEvent(), SKeyButtonPtrEvent(),
-    SKeyButtonPtrEvent(), SKeyButtonPtrEvent(), SKeyButtonPtrEvent(),
-    SEnterLeaveEvent(), SEnterLeaveEvent(), SFocusEvent(),
+    SErrorEvent(), NotImplemented(), SKeyButtonPtrEvent(), SEnterLeaveEvent(),
     SFocusEvent(), SKeymapNotifyEvent(), SExposeEvent(),
     SGraphicsExposureEvent(), SNoExposureEvent(), SVisibilityEvent(),
     SCreateNotifyEvent(), SDestroyNotifyEvent(), SUnmapNotifyEvent(),
     SMapNotifyEvent(), SMapRequestEvent(), SReparentEvent(),
     SConfigureNotifyEvent(), SConfigureRequestEvent(), SGravityEvent(),
-    SResizeRequestEvent(), SCirculateEvent(), SCirculateEvent(),
+    SResizeRequestEvent(), SCirculateEvent(),
     SPropertyEvent(), SSelectionClearEvent(), SSelectionRequestEvent(),
     SSelectionNotifyEvent(), SColormapEvent(), SClientMessageEvent(), SMappingEvent();
 

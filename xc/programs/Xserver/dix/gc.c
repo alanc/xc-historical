@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.19 92/12/24 12:44:20 rws Exp $ */
+/* $XConsortium: gc.c,v 5.20 93/06/24 10:04:10 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -39,7 +39,11 @@ SOFTWARE.
 
 extern XID clientErrorValue;
 
-static Bool CreateDefaultTile();
+static Bool CreateDefaultTile(
+#if NeedFunctionPrototypes
+    GCPtr /*pGC*/
+#endif
+);
 
 unsigned char DefaultDash[2] = {4, 4};
 
@@ -101,7 +105,7 @@ DoChangeGC(pGC, mask, pval, fPointer)
 	switch (index)
 	{
 	    case GCFunction:
-		if (((CARD8)*pval >= GXclear) && ((CARD8)*pval <= GXset))
+		if (/*((CARD8)*pval >= GXclear) &&*/ ((CARD8)*pval <= GXset))
 		    pGC->alu = (CARD8)*pval;
 		else
 		{
@@ -132,8 +136,8 @@ DoChangeGC(pGC, mask, pval, fPointer)
                 pval++;
 		break;
 	    case GCLineStyle:
-		if (((CARD8)*pval >= LineSolid) 
-		    && ((CARD8)*pval <= LineDoubleDash))
+		if (/*((CARD8)*pval >= LineSolid) &&*/
+		    ((CARD8)*pval <= LineDoubleDash))
 		    pGC->lineStyle = (CARD8)*pval;
 		else
 		{
@@ -143,8 +147,8 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		pval++;
 		break;
 	    case GCCapStyle:
-		if (((CARD8)*pval >= CapNotLast) 
-		    && ((CARD8)*pval <= CapProjecting))
+		if (/*((CARD8)*pval >= CapNotLast) &&*/
+		    ((CARD8)*pval <= CapProjecting))
 		    pGC->capStyle = (CARD8)*pval;
 		else
 		{
@@ -154,7 +158,8 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		pval++;
 		break;
 	    case GCJoinStyle:
-		if (((CARD8)*pval >= JoinMiter) && ((CARD8)*pval <= JoinBevel))
+		if (/*((CARD8)*pval >= JoinMiter) &&*/
+		    ((CARD8)*pval <= JoinBevel))
 		    pGC->joinStyle = (CARD8)*pval;
 		else
 		{
@@ -164,8 +169,8 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		pval++;
 		break;
 	    case GCFillStyle:
-		if (((CARD8)*pval >= FillSolid) 
-		    && ((CARD8)*pval <= FillOpaqueStippled))
+		if (/*((CARD8)*pval >= FillSolid) &&*/
+		    ((CARD8)*pval <= FillOpaqueStippled))
 		    pGC->fillStyle = (CARD8)*pval;
 		else
 		{
@@ -175,7 +180,7 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		pval++;
 		break;
 	    case GCFillRule:
-		if (((CARD8)*pval >= EvenOddRule) && 
+		if (/*((CARD8)*pval >= EvenOddRule) &&*/
 		    ((CARD8)*pval <= WindingRule))
 		    pGC->fillRule = (CARD8)*pval;
 		else
@@ -388,8 +393,8 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		pval++;
 		break;
 	    case GCArcMode:
-		if (((CARD8)*pval >= ArcChord) 
-		    && ((CARD8)*pval <= ArcPieSlice))
+		if (/*((CARD8)*pval >= ArcChord) &&*/
+		    ((CARD8)*pval <= ArcPieSlice))
 		    pGC->arcMode = (CARD8)*pval;
 		else
 		{
@@ -538,7 +543,7 @@ CreateGC(pDrawable, mask, pval, pStatus)
     {
 	if (!pGC->tileIsPixel && !pGC->tile.pixmap)
 	    pGC->tileIsPixel = TRUE; /* undo special case */
-	FreeGC(pGC, (GContext)0);
+	FreeGC(pGC, (XID)0);
 	pGC = (GCPtr)NULL;
     }
 
@@ -553,7 +558,7 @@ CreateDefaultTile (pGC)
     PixmapPtr 	pTile;
     GCPtr	pgcScratch;
     xRectangle	rect;
-    short	w, h;
+    CARD16	w, h;
 
     w = 1;
     h = 1;
@@ -758,10 +763,12 @@ CopyGC(pgcSrc, pgcDst, mask)
 
 /*ARGSUSED*/
 int
-FreeGC(pGC, gid)
-    GCPtr pGC;
-    GContext gid;
+FreeGC(value, gid)
+    pointer value; /* must conform to DeleteType */
+    XID gid;
 {
+    GCPtr pGC = (GCPtr)value;
+
     CloseFont(pGC->font, (Font)0);
     (* pGC->funcs->DestroyClip)(pGC);
 
@@ -853,7 +860,7 @@ CreateScratchGC(pScreen, depth)
     pGC->stateChanges = (1 << GCLastBit+1) - 1;
     if (!(*pScreen->CreateGC)(pGC))
     {
-	FreeGC(pGC, (GContext)0);
+	FreeGC(pGC, (XID)0);
 	pGC = (GCPtr)NULL;
     }
     return pGC;
@@ -871,7 +878,7 @@ FreeGCperDepth(screenNum)
     ppGC = pScreen->GCperDepth;
 
     for (i = 0; i <= pScreen->numDepths; i++)
-	(void)FreeGC(ppGC[i], (GContext)0);
+	(void)FreeGC(ppGC[i], (XID)0);
     pScreen->rgf = ~0L;
 }
 
@@ -899,7 +906,7 @@ CreateGCperDepth(screenNum)
 	if (!(ppGC[i+1] = CreateScratchGC(pScreen, pDepth->depth)))
 	{
 	    for (; i >= 0; i--)
-		(void)FreeGC(ppGC[i], (GContext)0);
+		(void)FreeGC(ppGC[i], (XID)0);
 	    return FALSE;
 	}
 	ppGC[i+1]->graphicsExposures = FALSE;
@@ -914,7 +921,7 @@ CreateDefaultStipple(screenNum)
     register ScreenPtr pScreen;
     XID tmpval[3];
     xRectangle rect;
-    short w, h;
+    CARD16 w, h;
     GCPtr pgcScratch;
 
     pScreen = screenInfo.screens[screenNum];

@@ -1,4 +1,4 @@
-/* $XConsortium: grabs.c,v 5.6 89/11/25 12:15:29 rws Exp $ */
+/* $XConsortium: grabs.c,v 5.7 89/12/11 15:43:47 keith Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -102,11 +102,12 @@ FreeGrab(pGrab)
 
 /*ARGSUSED*/
 int
-DeletePassiveGrab(pGrab, id)
-    GrabPtr pGrab;
+DeletePassiveGrab(value, id)
+    pointer value;
     XID   id;
 {
     register GrabPtr g, prev;
+    GrabPtr pGrab = (GrabPtr)value;
 
     /* it is OK if the grab isn't found */
     prev = 0;

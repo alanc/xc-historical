@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.93 93/03/29 19:06:25 rws Exp $ */
+/* $XConsortium: window.c,v 5.94 93/06/24 10:05:14 dpw Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -64,7 +64,6 @@ ScreenSaverStuffRec savedScreenInfo[MAXSCREENS];
 extern WindowPtr *WindowTable;
 extern void (* ReplySwapVector[256]) ();
 
-static void ResizeChildrenWinSize();
 extern void CheckCursorConfinement();
 extern void DeleteWindowFromAnySelections();
 extern void DeleteWindowFromAnyEvents();
@@ -72,9 +71,43 @@ extern Mask EventMaskForClient();
 extern void WindowHasNewCursor();
 extern void RecalculateDeliverableEvents();
 extern int rand();
-static Bool MarkOverlappedWindows();
-static void SetWinSize(), SetBorderSize();
-static Bool TileScreenSaver();
+
+static void SetWinSize(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+static void SetBorderSize(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+static void ResizeChildrenWinSize(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    int /*dx*/,
+    int /*dy*/,
+    int /*dw*/,
+    int /*dh*/
+#endif
+);
+
+static Bool MarkOverlappedWindows(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    WindowPtr /*pFirst*/
+#endif
+);
+
+static Bool TileScreenSaver(
+#if NeedFunctionPrototypes
+    int /*i*/,
+    int /*kind*/
+#endif
+);
+
 
 #define INPUTONLY_LEGAL_MASK (CWWinGravity | CWEventMask | \
 			      CWDontPropagate | CWOverrideRedirect | CWCursor )
@@ -390,7 +423,7 @@ PrintWindowTree()
 int
 TraverseTree(pWin, func, data)
     register WindowPtr pWin;
-    int (*func)();
+    VisitWindowProcPtr func;
     pointer data;
 {
     register int result;
@@ -428,7 +461,7 @@ TraverseTree(pWin, func, data)
 int
 WalkTree(pScreen, func, data)
     ScreenPtr pScreen;
-    int (* func)();
+    VisitWindowProcPtr func;
     pointer data;
 {
     return(TraverseTree(WindowTable[pScreen->myNum], func, data));
@@ -559,7 +592,7 @@ MakeRootTile(pWin)
 	    *to++ = *from;
 
    (*pGC->ops->PutImage)((DrawablePtr)pWin->background.pixmap, pGC, 1,
-	            0, 0, 4, 4, 0, XYBitmap, back);
+	            0, 0, 4, 4, 0, XYBitmap, (char *)back);
 
    FreeScratchGC(pGC);
 
@@ -707,6 +740,7 @@ CreateRootWindow(pScreen)
     return TRUE;
 }
 
+void
 InitRootWindow(pWin)
     WindowPtr pWin;
 {
@@ -786,9 +820,9 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 	     depth, client, visual, error)
     Window wid;
     register WindowPtr pParent;
-    short x,y;
-    unsigned short w, h, bw;
-    unsigned short class;
+    int x,y;
+    unsigned int w, h, bw;
+    unsigned int class;
     register Mask vmask;
     XID *vlist;
     int depth;
@@ -1103,11 +1137,12 @@ CrushTree(pWin)
  *****/
 
 /*ARGSUSED*/
-DeleteWindow(pWin, wid)
-    register WindowPtr pWin;
-    Window wid;
-{
+DeleteWindow(value, wid)
+    pointer value;
+    XID wid;
+ {
     register WindowPtr pParent;
+    register WindowPtr pWin = (WindowPtr)value;
     xEvent event;
 
     UnmapWindow(pWin, FALSE);
@@ -2061,11 +2096,12 @@ ResizeChildrenWinSize(pWin, dx, dy, dw, dh)
  */
 
 static int
-RecomputeExposures (pWin, pValid)
+RecomputeExposures (pWin, value)
     register WindowPtr	pWin;
-    RegionPtr	pValid;
+    pointer		value; /* must conform to VisitWindowProcPtr */
 {
     register ScreenPtr	pScreen;
+    RegionPtr	pValid = (RegionPtr)value;
 
     if (pWin->valdata)
     {
@@ -3264,10 +3300,12 @@ CirculateWindow(pParent, direction, client)
 }
 
 static int
-CompareWIDs(pWin, wid)
+CompareWIDs(pWin, value)
     WindowPtr pWin;
-    Window *wid;
+    pointer   value; /* must conform to VisitWindowProcPtr */
 {
+    Window *wid = (Window *)value;
+
     if (pWin->drawable.id == *wid)
        return(WT_STOPWALKING);
     else
@@ -3281,7 +3319,7 @@ CompareWIDs(pWin, wid)
 int
 ReparentWindow(pWin, pParent, x, y, client)
     register WindowPtr pWin, pParent;
-    short x,y;
+    int x,y;
     ClientPtr client;
 {
     WindowPtr pPrev;
@@ -3798,6 +3836,7 @@ UnmapWindow(pWin, fromConfigure)
  *    children of the window, in bottom to top stacking order.
  *****/
 
+void
 UnmapSubwindows(pWin)
     register WindowPtr pWin;
 {
@@ -3961,7 +4000,11 @@ SendVisibilityNotify(pWin)
 
 #ifndef NOLOGOHACK
 extern int logoScreenSaver;
-static DrawLogo();
+static void DrawLogo(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
 #endif
 
 void
@@ -4204,6 +4247,7 @@ FindWindowWithOptional (w)
  * release the optional record
  */
 
+void
 CheckWindowOptionalNeed (w)
     register WindowPtr w;
 {
@@ -4298,6 +4342,7 @@ MakeWindowOptional (pWin)
     return TRUE;
 }
 
+void
 DisposeWindowOptional (pWin)
     register WindowPtr pWin;
 {
@@ -4319,7 +4364,7 @@ DisposeWindowOptional (pWin)
 }
 
 #ifndef NOLOGOHACK
-static
+static void
 DrawLogo(pWin)
     WindowPtr pWin;
 {
@@ -4329,7 +4374,7 @@ DrawLogo(pWin)
     unsigned int width, height, size;
     GC *pGC;
     int d11, d21, d31;
-    xPoint poly[4];
+    DDXPointRec poly[4];
     XID fore[2], back[2];
     xrgb rgb[2];
     BITS32 fmask, bmask;

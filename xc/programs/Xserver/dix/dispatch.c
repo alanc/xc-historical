@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.42 92/12/17 11:47:36 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.43 92/12/24 12:44:46 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -52,24 +52,14 @@ SOFTWARE.
 extern WindowPtr *WindowTable;
 extern xConnSetupPrefix connSetupPrefix;
 extern char *ConnectionInfo;
-extern void ValidateGC();
 extern Atom MakeAtom();
 extern char *NameForAtom();
-extern void SaveScreens();
 extern void ReleaseActiveGrabs();
-extern void QueryFont();
 extern void NotImplemented();
-extern WindowPtr RealChildHead();
-extern Bool InitClientResources();
-extern unsigned char *GetFontPath();
 
 Selection *CurrentSelections;
 int NumCurrentSelections;
 
-extern long ScreenSaverTime;
-extern long ScreenSaverInterval;
-extern int  ScreenSaverBlanking;
-extern int  ScreenSaverAllowExposures;
 extern long defaultScreenSaverTime;
 extern long defaultScreenSaverInterval;
 extern int  defaultScreenSaverBlanking;
@@ -86,16 +76,21 @@ extern int connBlockScreenStart;
 extern int (* InitialVector[3]) ();
 extern int (* ProcVector[256]) ();
 extern int (* SwappedProcVector[256]) ();
-extern void (* EventSwapVector[128]) ();
 extern void (* ReplySwapVector[256]) ();
 extern void Swap32Write(), SLHostsExtend(), SQColorsExtend(), WriteSConnectionInfo();
 extern void WriteSConnSetupPrefix();
-extern char *ClientAuthorized();
-extern Bool InsertFakeRequest();
-static void KillAllClients();
-static void DeleteClientFromAnySelections();
-extern void ProcessWorkQueue();
 
+static void KillAllClients(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+static void DeleteClientFromAnySelections(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
 
 static int nextFreeClientID; /* always MIN free client ID */
 
@@ -194,6 +189,7 @@ FlushClientCaches(id)
 
 #define MAJOROP ((xReq *)client->requestBuffer)->reqType
 
+void
 Dispatch()
 {
     register int        *clientReady;     /* array of request ready clients */
@@ -300,8 +296,6 @@ ProcBadRequest(client)
 {
     return (BadRequest);
 }
-
-extern int Ones();
 
 int
 ProcCreateWindow(client)
@@ -1236,15 +1230,17 @@ ProcListFontsWithInfo(client)
     REQUEST_FIXED_SIZE(xListFontsWithInfoReq, stuff->nbytes);
 
     return StartListFontsWithInfo(client, stuff->nbytes,
-				    (char *) &stuff[1], stuff->maxNames);
+				  (unsigned char *) &stuff[1], stuff->maxNames);
 }
 
 /*ARGSUSED*/
-dixDestroyPixmap(pPixmap, pid)
-    PixmapPtr pPixmap;
-    Pixmap pid;
+int
+dixDestroyPixmap(value, pid)
+    pointer value; /* must conform to DeleteType */
+    XID pid;
 {
-    (*pPixmap->drawable.pScreen->DestroyPixmap)(pPixmap);
+    PixmapPtr pPixmap = (PixmapPtr)value;
+    return (*pPixmap->drawable.pScreen->DestroyPixmap)(pPixmap);
 }
 
 int
@@ -1586,7 +1582,7 @@ ProcPolyPoint(client)
     npoint = ((client->req_len << 2) - sizeof(xPolyPointReq)) >> 2;
     if (npoint)
         (*pGC->ops->PolyPoint)(pDraw, pGC, stuff->coordMode, npoint,
-			  (DDXPointPtr) &stuff[1]);
+			  (xPoint *) &stuff[1]);
     return (client->noClientException);
 }
 
@@ -1791,7 +1787,7 @@ ProcPutImage(client)
     (*pGC->ops->PutImage) (pDraw, pGC, stuff->depth, stuff->dstX, stuff->dstY,
 		  stuff->width, stuff->height, 
 		  stuff->leftPad, stuff->format, 
-		  (unsigned char *) &stuff[1]);
+		  (char *) &stuff[1]);
      return (client->noClientException);
 }
 
@@ -1911,7 +1907,7 @@ ProcGetImage(client)
 				         nlines,
 				         stuff->format,
 				         stuff->planeMask,
-				         pBuf);
+				         (pointer) pBuf);
 	    /* Note that this is NOT a call to WriteSwappedDataToClient,
                as we do NOT byte swap */
 	    (void)WriteToClient(client, (int)(nlines * widthBytesLine), pBuf);
@@ -1935,7 +1931,7 @@ ProcGetImage(client)
 				                 nlines,
 				                 stuff->format,
 				                 plane,
-				                 pBuf);
+				                 (pointer)pBuf);
 		    /* Note: NOT a call to WriteSwappedDataToClient,
 		       as we do NOT byte swap */
 		    (void)WriteToClient(client, (int)(nlines * widthBytesLine),
@@ -2045,7 +2041,8 @@ ProcImageText8(client)
     REQUEST_FIXED_SIZE(xImageTextReq, stuff->nChars);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
 
-    (void) LoadGlyphs(client, pGC->font, stuff->nChars, 1, &stuff[1]);
+    (void) LoadGlyphs(client, pGC->font, stuff->nChars, 1,
+		      (unsigned char *)&stuff[1]);
     (*pGC->ops->ImageText8)(pDraw, pGC, stuff->x, stuff->y,
 		       stuff->nChars, (char *)&stuff[1]);
     return (client->noClientException);
@@ -2063,9 +2060,10 @@ ProcImageText16(client)
     REQUEST_FIXED_SIZE(xImageTextReq, stuff->nChars << 1);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
 
-    (void) LoadGlyphs(client, pGC->font, stuff->nChars, 2, &stuff[1]);
+    (void) LoadGlyphs(client, pGC->font, stuff->nChars, 2,
+		      (unsigned char *)&stuff[1]);
     (*pGC->ops->ImageText16)(pDraw, pGC, stuff->x, stuff->y,
-			stuff->nChars, (unsigned char *)&stuff[1]);
+			stuff->nChars, (unsigned short *)&stuff[1]);
     return (client->noClientException);
 }
 
@@ -2703,8 +2701,8 @@ ProcCreateCursor( client)
 
     /* zeroing the (pad) bits helps some ddx cursor handling */
     bzero((char *)srcbits, n);
-    (* src->drawable.pScreen->GetImage)( src, 0, 0, width, height,
-					 XYPixmap, 1, srcbits);
+    (* src->drawable.pScreen->GetImage)( (DrawablePtr)src, 0, 0, width, height,
+					 XYPixmap, 1, (pointer)srcbits);
     if ( msk == (PixmapPtr)NULL)
     {
 	register unsigned char *bits = mskbits;
@@ -2715,8 +2713,8 @@ ProcCreateCursor( client)
     {
 	/* zeroing the (pad) bits helps some ddx cursor handling */
 	bzero((char *)mskbits, n);
-	(* msk->drawable.pScreen->GetImage)( msk, 0, 0, width, height,
-					     XYPixmap, 1, mskbits);
+	(* msk->drawable.pScreen->GetImage)( (DrawablePtr)msk, 0, 0, width,
+					height, XYPixmap, 1, (pointer)mskbits);
     }
     cm.width = width;
     cm.height = height;
@@ -3024,7 +3022,8 @@ ProcSetFontPath(client)
     }
     if (total >= 4)
 	return(BadLength);
-    result = SetFontPath(client, stuff->nFonts, (char *)&stuff[1], &error);
+    result = SetFontPath(client, stuff->nFonts, (unsigned char *)&stuff[1],
+			 &error);
     if (error != -1)
 	client->errorValue = error;
     if (!result)
@@ -3051,7 +3050,7 @@ ProcGetFontPath(client)
 
     WriteReplyToClient(client, sizeof(xGetFontPathReply), &reply);
     if (stringLens || numpaths)
-	(void)WriteToClient(client, stringLens + numpaths, bufferStart);
+	(void)WriteToClient(client, stringLens + numpaths, (char *)bufferStart);
     return(client->noClientException);
 }
 

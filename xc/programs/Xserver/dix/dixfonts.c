@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.37 93/02/15 11:03:35 rws Exp $ */
+/* $XConsortium: dixfonts.c,v 1.38 93/03/29 19:18:49 rws Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -395,13 +395,14 @@ OpenFont(client, fid, flags, lenfname, pfontname)
  */
 /*ARGSUSED*/
 int
-CloseFont(pfont, fid)
-    FontPtr     pfont;
-    Font        fid;
+CloseFont(value, fid)
+    pointer	value;  /* must conform to DeleteType */
+    XID		fid;
 {
     int         nscr;
     ScreenPtr   pscr;
     FontPathElementPtr fpe;
+    FontPtr     pfont = (FontPtr)value;
 
     if (pfont == NullFont)
 	return (Success);
@@ -876,7 +877,7 @@ int
 StartListFontsWithInfo(client, length, pattern, max_names)
     ClientPtr   client;
     int         length;
-    char       *pattern;
+    unsigned char       *pattern;
     int         max_names;
 {
     int		    err;

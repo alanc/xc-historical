@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: glyphcurs.c,v 5.8 91/12/23 12:11:03 keith Exp $ */
+/* $XConsortium: glyphcurs.c,v 5.9 92/12/24 12:45:14 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -109,8 +109,8 @@ ServerBitsFromGlyph(pfont, ch, cm, ppbits)
     DoChangeGC(pGC, GCForeground, gcval, 0);
     ValidateGC((DrawablePtr)ppix, pGC);
     (*pGC->ops->PolyText16)((DrawablePtr)ppix, pGC, cm->xhot, cm->yhot,
-			    1, char2b);
-    (*pScreen->GetImage)(ppix, 0, 0, cm->width, cm->height,
+			    1, (unsigned short *)char2b);
+    (*pScreen->GetImage)((DrawablePtr)ppix, 0, 0, cm->width, cm->height,
 			 XYPixmap, 1, pbits);
     *ppbits = pbits;
     FreeScratchGC(pGC);
