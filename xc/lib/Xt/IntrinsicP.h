@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicP.h,v 1.60 93/09/30 13:46:29 kaleb Exp $ */
+/* $XConsortium: IntrinsicP.h,v 1.61 94/01/10 20:26:44 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -176,12 +176,12 @@ typedef void (*XtAllocateProc)(
 #if NeedFunctionPrototypes
     WidgetClass		/* widget_class */,
     WidgetClass		/* constraint_class */,
-    Cardinal		/* more_bytes */,
+    Cardinal *		/* more_bytes */,
     Widget		/* parent */,
     ArgList		/* args */,
-    Cardinal		/* num_args */,
+    Cardinal *		/* num_args */,
     XtTypedArgList	/* typed_args */,
-    Cardinal		/* num_typed_args */,
+    Cardinal *		/* num_typed_args */,
     Widget *		/* new_return */,
     XtPointer *		/* more_bytes_return */
 #endif
