@@ -1,4 +1,4 @@
-/* $XConsortium: XawIm.c,v 1.0 94/01/01 00:00:00 kaleb Exp $ */
+/* $XConsortium: XawIm.c,v 1.1 94/01/31 09:57:00 kaleb Exp $ */
 
 /*
  * Copyright 1991 by OMRON Corporation
@@ -1673,7 +1673,7 @@ _XawImWcLookupString( inwidg, event, buffer_return, bytes_buffer,
     ret = XLookupString( event, tmp_buf, 64, keysym_return,
 		         (XComposeStatus*) status_return );
     for ( i = 0, tmp_p = tmp_buf, buf_p = buffer_return; i < ret; i++ ) {
-	*buf_p++ = atowc(*tmp_p++);
+	*buf_p++ = _Xawatowc(*tmp_p++);
     }
     return( ret );
 }
