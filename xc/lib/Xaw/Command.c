@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Command.c,v 1.26 87/12/04 10:55:55 swick Locked $";
+static char rcsid[] = "$Header: Command.c,v 1.29 88/01/28 07:55:01 swick Locked $";
 #endif lint
 
 /*
@@ -38,8 +38,8 @@ static char rcsid[] = "$Header: Command.c,v 1.26 87/12/04 10:55:55 swick Locked 
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include <X/Intrinsic.h>
 #include <X/Atoms.h>
+#include "IntrinsicP.h"
 #include "CommandP.h"
 #include "CommandI.h"
 
@@ -51,27 +51,25 @@ static char rcsid[] = "$Header: Command.c,v 1.26 87/12/04 10:55:55 swick Locked 
 
 /* Private Data */
 
-static char *defaultTranslation[] = {
-    "<Btn1Down>:       set()",
-    "<Btn1Up>:       notify() unset()",
-    "<EnterWindow>:       highlight()",
-    "<LeaveWindow>:       unhighlight()",
-    NULL
-};
-static caddr_t defaultTranslations = (caddr_t)defaultTranslation;
+static char defaultTranslations[] =
+    "<Btn1Down>:	set() \n\
+     <Btn1Up>:		notify() unset() \n\
+     <EnterWindow>:	highlight() \n\
+     <LeaveWindow>:	unhighlight()";
+
+static int defHighlight = 2;
+
+#define offset(field) XtOffset(CommandWidget, field)
 static XtResource resources[] = { 
 
-   {XtNcallback, XtCCallback, XtRPointer, sizeof(caddr_t), 
-      XtOffset(CommandWidget, command.callbacks), XtRPointer, (caddr_t)NULL},
+   {XtNcallback, XtCCallback, XtRCallback, sizeof(caddr_t), 
+      offset(command.callbacks), XtRPointer, (caddr_t)NULL},
    {XtNcursor, XtCCursor, XtRCursor, sizeof(Cursor),
-      XtOffset(SimpleWidget, simple.cursor), XtRString, "opendot"},
-   {XtNhighlightThickness, XtCThickness, XrmRInt, sizeof(Dimension),
-      XtOffset(CommandWidget,command.highlight_thickness), XrmRString,"2"},
-   {XtNtranslations, XtCTranslations, XtRTranslationTable,
-      sizeof(XtTranslations),
-      XtOffset(CommandWidget, core.translations),XtRTranslationTable,
-      (caddr_t)&defaultTranslations},
- };  
+      offset(simple.cursor), XtRString, "opendot"},
+   {XtNhighlightThickness, XtCThickness, XtRInt, sizeof(Dimension),
+      offset(command.highlight_thickness), XtRInt, (caddr_t)&defHighlight},
+};
+#undef offset
 
 static XtActionsRec actionsList[] =
 {
@@ -88,28 +86,35 @@ static XtActionsRec actionsList[] =
   */
 CommandClassRec commandClassRec = {
   {
-    (WidgetClass) &labelClassRec,          /* superclass	*/    
-    "Command",                             /* class_name	*/
-    sizeof(CommandRec),                    /* size		*/
-    NULL,                                  /* class initialize  */
-    FALSE,                                 /* class_inited      */
-    Initialize,                            /* initialize	*/
-    XtInheritRealize,                      /* realize		*/
-    actionsList,                           /* actions		*/
-    XtNumber(actionsList),                 /* num_actions	*/
-    resources,                             /* resources	        */
-    XtNumber(resources),                   /* resource_count	*/
-    NULLQUARK,                             /* xrm_class	        */
-    FALSE,                                 /* compress_motion	*/
-    FALSE,                                 /* compress_exposure	*/
-    FALSE,                                 /* visible_interest	*/
-    Destroy,                               /* destroy		*/
-    XtInheritResize,                       /* resize		*/
-    Redisplay,                             /* expose		*/
-    SetValues,                             /* set_values	*/
-    NULL,                                  /* accept_focus	*/
-    NULL,                                  /* callback_private	*/
-    NULL,                                  /* reserved_private	*/
+    (WidgetClass) &labelClassRec,	/* superclass		  */	
+    "Command",				/* class_name		  */
+    sizeof(CommandRec),			/* size			  */
+    NULL,				/* class_initialize	  */
+    NULL,				/* class_part_initialize  */
+    FALSE,				/* class_inited		  */
+    Initialize,				/* initialize		  */
+    NULL,				/* initialize_hook	  */
+    XtInheritRealize,			/* realize		  */
+    actionsList,			/* actions		  */
+    XtNumber(actionsList),		/* num_actions		  */
+    resources,				/* resources		  */
+    XtNumber(resources),		/* resource_count	  */
+    NULLQUARK,				/* xrm_class		  */
+    FALSE,				/* compress_motion	  */
+    TRUE,				/* compress_exposure	  */
+    TRUE,				/* compress_enterleave    */
+    FALSE,				/* visible_interest	  */
+    Destroy,				/* destroy		  */
+    XtInheritResize,			/* resize		  */
+    Redisplay,				/* expose		  */
+    SetValues,				/* set_values		  */
+    NULL,				/* set_values_hook	  */
+    XtInheritSetValuesAlmost,		/* set_values_almost	  */
+    NULL,				/* get_values_hook	  */
+    NULL,				/* accept_focus		  */
+    XtVersion,				/* version		  */
+    NULL,				/* callback_private	  */
+    defaultTranslations,		/* tm_table		  */
   },  /* CoreClass fields initialization */
   {
     0,                                     /* field not used    */
@@ -175,10 +180,8 @@ static void Get_highlightGC(cbw)
 
 
 /* ARGSUSED */
-static void Initialize(request, new, args, num_args)
+static void Initialize(request, new)
  Widget request, new;
- ArgList args;
- Cardinal *num_args;
 {
     CommandWidget cbw = (CommandWidget) new;
 
@@ -196,14 +199,16 @@ static void Initialize(request, new, args, num_args)
 
 /***************************
 *
-*  EVENT HANDLERS
+*  Action Procedures
 *
 ***************************/
 
 /* ARGSUSED */
-static void Set(w,event)
+static void Set(w,event,params,num_params)
      Widget w;
      XEvent *event;
+     String *params;		/* unused */
+     Cardinal *num_params;	/* unused */
 {
   CommandWidget cbw = (CommandWidget)w;
   ComWset = TRUE;
@@ -211,9 +216,11 @@ static void Set(w,event)
 }
 
 /* ARGSUSED */
-static void Unset(w,event)
+static void Unset(w,event,params,num_params)
      Widget w;
      XEvent *event;
+     String *params;		/* unused */
+     Cardinal *num_params;	/* unused */
 {
   CommandWidget cbw = (CommandWidget)w;
   ComWset = FALSE;
@@ -221,9 +228,11 @@ static void Unset(w,event)
 }
 
 /* ARGSUSED */
-static void Highlight(w,event)
+static void Highlight(w,event,params,num_params)
      Widget w;
      XEvent *event;
+     String *params;		/* unused */
+     Cardinal *num_params;	/* unused */
 {
   CommandWidget cbw = (CommandWidget)w;
   ComWhighlighted = TRUE;
@@ -231,9 +240,11 @@ static void Highlight(w,event)
 }
 
 /* ARGSUSED */
-static void Unhighlight(w,event)
+static void Unhighlight(w,event,params,num_params)
      Widget w;
      XEvent *event;
+     String *params;		/* unused */
+     Cardinal *num_params;	/* unused */
 {
   CommandWidget cbw = (CommandWidget)w;
   ComWhighlighted = FALSE;
@@ -241,9 +252,11 @@ static void Unhighlight(w,event)
 }
 
 /* ARGSUSED */
-static void Notify(w,event)
+static void Notify(w,event,params,num_params)
      Widget w;
      XEvent *event;
+     String *params;		/* unused */
+     Cardinal *num_params;	/* unused */
 {
   XtCallCallbacks(w, XtNcallback, NULL);
 }
@@ -263,7 +276,6 @@ static void Redisplay(w, event)
     XEvent *event;
 {
    CommandWidget cbw = (CommandWidget) w;
-   XSetWindowAttributes window_attributes;
 
    /* Here's the scoop:  If the command button button is normal,
       you show the text.  If the command button is highlighted but 
@@ -316,9 +328,8 @@ static void Destroy(w)
  * Set specified arguments into widget
  */
 /* ARGSUSED */
-static Boolean SetValues (current, request, new, last)
+static Boolean SetValues (current, request, new)
     Widget current, request, new;
-    Boolean last;
 {
     CommandWidget cbw = (CommandWidget) current;
     CommandWidget newcbw = (CommandWidget) new;
