@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.182 91/07/17 13:59:14 dave Exp $
+ * $XConsortium: events.c,v 1.183 91/10/21 14:32:04 eswu Exp $
  *
  * twm event handling
  *
@@ -556,6 +556,7 @@ HandleVisibilityNotify()
 void
 HandleKeyPress()
 {
+    KeySym ks;
     FuncKey *key;
     int len;
     unsigned int modifier;
@@ -582,9 +583,10 @@ HandleKeyPress()
     }
 
     modifier = (Event.xkey.state & mods_used);
+    ks = XLookupKeysym((XKeyEvent *) &Event, /* KeySyms index */ 0);
     for (key = Scr->FuncKeyRoot.next; key != NULL; key = key->next)
     {
-	if (key->keycode == Event.xkey.keycode &&
+ 	if (key->keysym == ks &&
 	    key->mods == modifier &&
 	    (key->cont == Context || key->cont == C_NAME))
 	{
