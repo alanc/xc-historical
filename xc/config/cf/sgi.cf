@@ -7,7 +7,6 @@
 #define ExecableScripts		YES
 #define SetTtyGroup		YES
 #define HasNdbm			YES
-#define BuildPex		YES
 #define HasVFork		YES
 #define Malloc0ReturnsNull	YES
 /* At SGI, in 3.2 we have TCP/IP sockets only, 3.3 has unix domain also ! */

@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.17 91/03/14 08:15:43 rws Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.18 91/03/21 19:03:07 rws Exp $
 XCOMM operating system:  OSName
 
 /*
@@ -22,7 +22,6 @@ XCOMM operating system:  OSName
 #define BootstrapCFlags		-Dsony
 #define CcCmd                   /usr/bin/cc
 #define HasSockets		YES
-#define BuildPex		YES
 #define BuildServer             YES /* XXX change to NO in R5 */
 #define XnonServer Xnon /* XXX remove in R5 */
 #if BuildPex

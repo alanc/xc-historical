@@ -11,7 +11,6 @@
 #define HasShm YES
 #define LintLibFlag -o
 #define LintOpts -ax
-#define BuildPex YES
 
 #ifdef VaxArchitecture
 #define BuildBdfFonts NO		/* XXX remove in R5 */
@@ -37,5 +36,5 @@
 #define ServerCCOptions /* */
 #endif
 
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.29 91/03/16 15:39:11 rws Exp $
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.30 91/03/25 22:16:21 rws Exp $
 XCOMM operating system:  OSName
