@@ -1,4 +1,4 @@
-/* $XConsortium: prop.c,v 1.2 94/08/25 17:27:25 mor Exp mor $ */
+/* $XConsortium: prop.c,v 1.3 94/11/30 17:55:50 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -204,6 +204,8 @@ Bool		freeIt;
 		XtFree (client->saveDiscardCommand);
 	    client->saveDiscardCommand =
 		(char *) XtNewString (theProp->vals[0].value);
+
+	    client->receivedDiscardCommand = True;
 	}
 	else
 	{
