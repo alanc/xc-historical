@@ -1,11 +1,11 @@
-/*
-  static rcs_id[] = 
-  "$Header: PassivGrab.c,v 1.3 89/12/11 17:25:46 gabe Exp $"
-  */
+#ifndef lint
+static char Xrcsid[] = "$XConsortium";
+#endif
+
 /********************************************************
 
 Copyright (c) 1988 by Hewlett-Packard Company
-Copyright (c) 1987, 1988 by Digital Equipment Corporation, Maynard, 
+Copyright (c) 1987, 1988, 1989 by Digital Equipment Corporation, Maynard, 
               Massachusetts, and the Massachusetts Institute of Technology, 
               Cambridge, Massachusetts
 
@@ -32,7 +32,6 @@ SOFTWARE.
 #include <X11/Xatom.h>
 #include "StringDefs.h"
 #include "PassivGraI.h"
-#include "PassivGrab.h"
 
 
 /* typedef unsigned long Mask; */
@@ -843,11 +842,11 @@ void  XtGrabButton(widget, button, modifiers, owner_events,
 		   event_mask, confine_to, cursor)
     Widget	widget;
     int		button;
-    unsigned int modifiers;
+    Modifiers	modifiers;
     Boolean	owner_events;
+    unsigned int event_mask;
     int 	pointer_mode;
     int 	keyboard_mode;
-    Mask	event_mask;
     Window 	confine_to;
     Cursor 	cursor;
 {
@@ -998,14 +997,14 @@ void   XtUngrabKeyboard(widget, time)
 /*
  * grab the pointer
  */
-int XtGrabPointer (widget, owner_events,
+int XtGrabPointer (widget, owner_events, event_mask,
 		   pointer_mode, keyboard_mode, 
-		   event_mask, confine_to, cursor, time, isKeyboard)
+		   confine_to, cursor, time, isKeyboard)
     Widget	widget;
     Boolean	owner_events;
+    unsigned int event_mask;
     int 	pointer_mode;
     int 	keyboard_mode;
-    Mask	event_mask;
     Window 	confine_to;
     Cursor 	cursor;
     Time	time;
