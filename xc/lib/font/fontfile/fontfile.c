@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfile.c,v 1.20 94/02/04 11:12:22 gildea Exp $
+ * $XConsortium: fontfile.c,v 1.21 94/02/08 18:32:08 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -361,6 +361,7 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 		if (scaled->pFont)
 		{
 		    *pFont = scaled->pFont;
+		    (*pFont)->fpe = fpe;
 		    ret = Successful;
 		}
 		else if (scaled->bitmap)
@@ -370,6 +371,7 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 		    if (bitmap->pFont)
 		    {
 			*pFont = bitmap->pFont;
+			(*pFont)->fpe = fpe;
 			ret = Successful;
 		    }
 		    else
@@ -377,6 +379,8 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 			ret = FontFileOpenBitmapNCF (fpe, pFont, flags, entry,
 						     format, fmask,
 						     non_cachable_font);
+			if (ret == Successful && *pFont)
+			    (*pFont)->fpe = fpe;
 		    }
 		}
 		else /* "cannot" happen */
@@ -426,6 +430,7 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 			    ranges = 0;
 			else
 			    (*pFont)->fpePrivate = (pointer) 0;
+			(*pFont)->fpe = fpe;
 		    }
 		}
 	    }
