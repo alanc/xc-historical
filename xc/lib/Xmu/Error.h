@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Error.h,v 1.1 89/07/14 17:51:55 jim Exp $
+ * $XConsortium: Error.h,v 1.2 89/11/14 16:16:30 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -22,7 +22,27 @@
 #ifndef _XMU_ERROR_H_
 #define _XMU_ERROR_H_
 
-int XmuPrintDefaultErrorMessage();
-int XmuSimpleErrorHandler();
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
+
+extern int XmuPrintDefaultErrorMessage(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    XErrorEvent*	/* event */,
+    FILE*		/* fp */
+#endif
+);
+
+extern int XmuSimpleErrorHandler(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    XErrorEvent*	/* errorp */
+#endif
+);
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #endif /* _XMU_ERROR_H_ */

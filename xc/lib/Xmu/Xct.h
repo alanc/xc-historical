@@ -2,7 +2,7 @@
 #define _Xct_h
 
 /* 
- * $XConsortium: Xct.h,v 1.2 89/10/09 12:30:38 rws Exp $
+ * $XConsortium: Xct.h,v 1.3 89/11/21 12:03:47 rws Exp $
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -123,10 +123,40 @@ typedef struct _XctRec {
     struct _XctPriv	*priv;		/* private to parser, don't peek */
 } *XctData;
 
-/* these are the external routines */
-extern XctData XctCreate();
-extern XctResult XctNextItem();
-extern void XctFree();
-extern void XctReset();
-
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
 #endif
+
+/* these are the external routines */
+
+extern XctData XctCreate(
+#if NeedFunctionPrototypes
+    _Xconst XctString	/* string */,
+    int			/* length */,
+    XctFlags		/* flags */
+#endif
+);
+
+extern XctResult XctNextItem(
+#if NeedFunctionPrototypes
+    XctData	/* data */
+#endif
+);
+
+extern void XctFree(
+#if NeedFunctionPrototypes
+    XctData	/* data */
+#endif
+);
+
+extern void XctReset(
+#if NeedFunctionPrototypes
+    XctData	/* data */
+#endif
+);
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
+
+#endif /* _Xct_h */
