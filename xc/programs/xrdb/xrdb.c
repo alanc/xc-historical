@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: xrdb.c,v 11.26 89/03/24 11:09:16 jim Exp $";
+static char rcs_id[] = "$XConsortium: xrdb.c,v 11.27 89/05/26 14:03:53 rws Exp $";
 #endif
 
 /*
@@ -45,6 +45,18 @@ static char rcs_id[] = "$XConsortium: xrdb.c,v 11.26 89/03/24 11:09:16 jim Exp $
 #define CPP "/usr/lib/cpp"
 #endif /* CPP */
 
+#ifdef hpux
+#define USE_UNAME
+#endif
+#ifdef USG
+#define USE_UNAME
+#endif
+
+#ifdef USE_UNAME
+#include <sys/utsname.h>
+#endif
+
+
 char *ProgramName;
 static Bool quiet = False;
 
@@ -70,6 +82,43 @@ typedef struct _Entries {
 
 #define INIT_BUFFER_SIZE 10000
 #define INIT_ENTRY_SIZE 500
+
+int _GetHostname (buf, maxlen)
+    char *buf;
+    int maxlen;
+{
+    int len;
+
+#ifdef USE_UNAME
+    struct utsname name;
+
+    uname (&name);
+    len = strlen (name.nodename);
+    if (len >= maxlen) len = maxlen - 1;
+    (void) strncpy (buf, name.nodename, len);
+    buf[len] = '\0';
+#else
+    buf[0] = '\0';
+    (void) gethostname (buf, maxlen);
+    buf [maxlen - 1] = '\0';
+    len = strlen(buf);
+#endif
+    return len;
+}
+
+#ifdef USG
+int rename (from, to)
+    char *from, *to;
+{
+    (void) unlink (to);
+    if (link (from, to) == 0) {
+        unlink (from);
+        return 0;
+    } else {
+        return -1;
+    }
+}
+#endif
 
 fatal(msg, prog, x1, x2, x3, x4, x5)
     char *msg, *prog;
@@ -338,7 +387,7 @@ DoDefines(display, defs, prog, host)
     if (colon != NULL)
 	*colon = '\0';
     if (temp[0] == '\0')	/* must be connected to :0 */
-	gethostname(temp, MAXHOSTNAME);
+	_GetHostname(temp, MAXHOSTNAME);
     AddDef(defs, "HOST", temp);
     AddNum(defs, "VERSION", ProtocolVersion(display));
     AddNum(defs, "REVISION", ProtocolRevision(display));
