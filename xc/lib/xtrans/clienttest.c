@@ -101,7 +101,7 @@ main(argc,argv)
 int	argc;
 char	*argv[];
 {
-int		fd;
+XtransConnInfo  ciptr;
 char		buf[128];
 int		family;
 int		addrlen;
@@ -118,8 +118,8 @@ for(i=0;i<NUMDISPLAYS;i++)
 				connections[i].host, port);
 	sprintf(addrbuf,"%s:%s",connections[i].host, port);
 
-	if( (fd=_TESTTransOpenCOTSClient(addrbuf)) < 0 ||
-	   _TESTTransConnect (fd, addrbuf) < 0)
+	if( (ciptr=_TESTTransOpenCOTSClient(addrbuf)) == NULL ||
+	   _TESTTransConnect (ciptr, addrbuf) < 0)
 		{
 		fprintf(stderr,"%%%%Failed to open connection for %s:%s\n",
 				connections[i].host, port);
@@ -133,7 +133,7 @@ for(i=0;i<NUMDISPLAYS;i++)
 
 		free(addr);
 
-		_TESTTransGetPeerAddr(fd,&family, &addrlen, &addr);
+		_TESTTransGetPeerAddr(ciptr,&family, &addrlen, &addr);
 
 		print_addr("Server", addr,addrlen );
 
@@ -141,12 +141,12 @@ for(i=0;i<NUMDISPLAYS;i++)
 				
 		/* Exchange some data with server */
 
-		_TESTTransRead(fd,buf,sizeof(buf));
+		_TESTTransRead(ciptr,buf,sizeof(buf));
 		fprintf(stderr,"message from server: %s\n",buf );
 		sprintf(buf,"Connected to %s:%s",
 				connections[i].host, port);
-		_TESTTransWrite(fd,buf, strlen(buf)+1 );
-		_TESTTransClose(fd);
+		_TESTTransWrite(ciptr,buf, strlen(buf)+1 );
+		_TESTTransClose(ciptr);
 		}
 	sleep(1);
 	}

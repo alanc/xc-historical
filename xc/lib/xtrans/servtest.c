@@ -7,7 +7,6 @@
 #include <sys/un.h>
 #include <netinet/in.h>
 
-FdMask	fds;
 fd_set	readfds;
 
 print_addr(title,addr,addrlen)
@@ -44,7 +43,8 @@ int	argc;
 char	*argv[];
 {
 int	loop,i;
-int	newfd;
+int	count;
+XtransConnInfo *ciptrs, newciptr;
 char	buf[128];
 int	family;
 int	addrlen;
@@ -54,72 +54,67 @@ char	*port="transtest";
 if( argc > 1 )
 	port=argv[1];
 	
-_TESTTransMakeAllCOTSServerListeners(port,&fds);
+if (_TESTTransMakeAllCOTSServerListeners(port,&count,&ciptrs) < 0)
+    exit (1);
 
-for(i=0;i<32;i++)
+for(i=0;i<count;i++)
 	{
-	if( fds & (1<<i) )
-		{
-		_TESTTransGetMyAddr(i,&family,&addrlen,&addr);
-		print_addr("Listner",addr,addrlen);
-		free(addr);
-		}
+	    _TESTTransGetMyAddr(ciptrs[i],&family,&addrlen,&addr);
+	    print_addr("Listner",addr,addrlen);
+	    free(addr);
 	}
 
 for(loop=0;loop<30;loop++)
 	{
 	FD_ZERO(&readfds);
-	for(i=0;i<32;i++)
+	for(i=0;i<count;i++)
 		{
-		if( fds & (1<<i) )
-			{
-			FD_SET(i, &readfds);
-			fprintf(stderr,"%d, ",i);
-			}
+		    int fd = _TESTTransGetConnectionNumber(ciptrs[i]);
+		    FD_SET(fd, &readfds);
+		    fprintf(stderr,"%d, ",fd);
 		}
 	fprintf(stderr,"\n");
 	select(32,(int *)&readfds,NULL,NULL,NULL);
-	for(i=0;i<32;i++)
+	for(i=0;i<count;i++)
 		{
-		if(FD_ISSET(i,&readfds))
+		int fd = _TESTTransGetConnectionNumber(ciptrs[i]);
+		if(FD_ISSET(fd,&readfds))
 			{
-			fprintf(stderr,"Accepting on %d\n", i );
-			if( (newfd=_TESTTransAccept(i)) < 0 )
+			fprintf(stderr,"Accepting on %d\n", fd );
+			if( (newciptr=_TESTTransAccept(ciptrs[i])) == NULL )
 				{
 				fprintf(stderr,"_TESTTransAccept(%d) failed\n",
-								i );
+								fd );
 				continue;
 				}
 
-			_TESTTransGetMyAddr(i,&family,&addrlen,&addr);
+			_TESTTransGetMyAddr(newciptr,&family,&addrlen,&addr);
 			print_addr("Server",addr,addrlen);
-			_TESTTransGetPeerAddr(i,&family,&addrlen,&addr);
+			_TESTTransGetPeerAddr(newciptr,&family,&addrlen,&addr);
 			print_addr("Client",addr,addrlen);
 
-			if( _TESTTransWrite(newfd,"SERVER OK", 10 ) < 0 )
+			if( _TESTTransWrite(newciptr,"SERVER OK", 10 ) < 0 )
 				{
 				fprintf(stderr,"_TESTTransWrite() failed\n" );
-				_TESTTransClose(newfd);
+				_TESTTransClose(newciptr);
 				continue;
 				}
-			if( _TESTTransRead(newfd,buf,sizeof(buf)) < 0 )
+			if( _TESTTransRead(newciptr,buf,sizeof(buf)) < 0 )
 				{
 				fprintf(stderr,"_TESTTransRead() failed\n" );
-				_TESTTransClose(newfd);
+				_TESTTransClose(newciptr);
 				continue;
 				}
 			fprintf(stderr,"message from client: %s\n",buf );
-			_TESTTransClose(newfd);
+			_TESTTransClose(newciptr);
 			}
 		}
 	}
 
-for(i=0;i<32;i++)
+for(i=0;i<count;i++)
 	{
-	if( fds & (1<<i) )
-		{
-		fprintf(stderr,"closing: %d\n", i );
-		_TESTTransClose(i);
-		}
+	    fprintf(stderr,"closing: %d\n",
+		_TESTTransGetConnectionNumber(ciptrs[i]));
+	    _TESTTransClose(ciptrs[i]);
 	}
 }

@@ -7,7 +7,6 @@
 #include <sys/un.h>
 #include <netinet/in.h>
 
-FdMask	fds;
 fd_set	readfds;
 
 print_addr(title,addr,addrlen)
@@ -45,25 +44,24 @@ int	i;
 int	family;
 int	addrlen;
 Xtransaddr	*addr;
+int	count;
+XtransConnInfo *ciptrs;
 
-_TESTTransMakeAllCOTSServerListeners(NULL,&fds); /* bind to any port */
+/* bind to any port */
+if (_TESTTransMakeAllCOTSServerListeners(NULL,&count,&ciptrs) < 0)
+    exit (1);
 
-for(i=0;i<32;i++)
+for(i=0;i<count;i++)
 	{
-	if( fds & (1<<i) )
-		{
-		_TESTTransGetMyAddr(i,&family,&addrlen,&addr);
-		print_addr("Listner",addr,addrlen);
-		free(addr);
-		}
+	    _TESTTransGetMyAddr(ciptrs[i],&family,&addrlen,&addr);
+	    print_addr("Listner",addr,addrlen);
+	    free(addr);
 	}
 
-for(i=0;i<32;i++)
+for(i=0;i<count;i++)
 	{
-	if( fds & (1<<i) )
-		{
-		fprintf(stderr,"closing: %d\n", i );
-		_TESTTransClose(i);
-		}
+	    fprintf(stderr,"closing: %d\n",
+		_TESTTransGetConnectionNumber(ciptrs[i]) );
+	    _TESTTransClose(ciptrs[i]);
 	}
 }
