@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.13 92/05/28 16:41:53 gildea Exp $ */
+/* $XConsortium: dispatch.c,v 1.14 92/05/29 18:05:13 gildea Exp $ */
 /*
  * protocol dispatcher
  */
@@ -530,19 +530,21 @@ ProcCreateAC(client)
     }
     authp->authname = 0;
     authp->authdata = 0;
-    if (index >= 0)
+    if (index > 0)
     {
-	authp->authname = (char *) fsalloc(acp[index].namelen + 1);
-	authp->authdata = (char *) fsalloc(acp[index].datalen + 1);
+	authp->authname = (char *) fsalloc(acp[index - 1].namelen + 1);
+	authp->authdata = (char *) fsalloc(acp[index - 1].datalen + 1);
 	if (!authp->authname || !authp->authdata) {
 	    fsfree((char *) authp->authname);
 	    fsfree((char *) authp->authdata);
 	    fsfree((char *) authp);
 	    goto alloc_failure;
 	}
-	bcopy(acp[index].name, authp->authname, acp[index].namelen);
-	bcopy(acp[index].data, authp->authdata, acp[index].datalen);
+	bcopy(acp[index - 1].name, authp->authname, acp[index - 1].namelen);
+	bcopy(acp[index - 1].data, authp->authdata, acp[index - 1].datalen);
     }
+    else
+	size = 0;
     authp->acid = stuff->acid;
     if (!AddResource(client->index, stuff->acid, RT_AUTHCONT,(pointer) authp)) 
     {
@@ -555,11 +557,6 @@ alloc_failure:
     DEALLOCATE_LOCAL(acp);
     rep.type = FS_Reply;
     rep.status = accept;
-    if (index < 0)
-    {
-	size = 0;
-	index = 0;
-    }
     rep.auth_index = index;
     rep.sequenceNumber = client->sequence;
     rep.length = (sizeof(fsCreateACReply) + size) >> 2;
