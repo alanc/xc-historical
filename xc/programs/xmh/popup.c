@@ -1,4 +1,4 @@
-/* $XConsortium: popup.c,v 2.33 91/07/08 15:28:29 converse Exp $
+/* $XConsortium: popup.c,v 2.34 91/07/17 21:31:00 converse Exp $
  *
  *
  *			  COPYRIGHT 1989
@@ -464,7 +464,7 @@ void PopupError(widget, message)
 }
 
 /*ARGSUSED*/
-static void PopupWarningHandler(name, type, class, msg, params, num)
+void PopupWarningHandler(name, type, class, msg, params, num)
     String name;
     String type;
     String class;
@@ -492,10 +492,4 @@ static void PopupWarningHandler(name, type, class, msg, params, num)
 	    PopupError((Widget)NULL,
 		       "Some arguments in previous message were lost.");
     }
-}
-
-void PopupInit(app)
-    XtAppContext app;
-{
-    (void) XtAppSetWarningMsgHandler(app, PopupWarningHandler);
 }
