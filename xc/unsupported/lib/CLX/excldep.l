@@ -161,6 +161,8 @@
 	  then (if (not (eq errcode
 			    excl::*error-code-interrupted-system-call*))
 		   (return t))
+	elseif (eq 0 numread)
+	  then (return t)
 	  else (incf totread numread))))))
 
 
