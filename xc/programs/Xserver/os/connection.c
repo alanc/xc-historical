@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.102 89/03/30 09:07:10 rws Exp $ */
+/* $XConsortium: connection.c,v 1.103 89/04/06 13:37:18 keith Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -59,7 +59,9 @@ SOFTWARE.
 #ifdef TCPCONN
 #include <netinet/in.h>
 #ifndef hpux
+#ifndef apollo
 #include <netinet/tcp.h>
+#endif
 #endif
 #endif
 
