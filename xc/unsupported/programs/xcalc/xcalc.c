@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcalc.c,v 1.4 89/06/05 18:42:55 jim Exp $
+ * $XConsortium: xcalc.c,v 1.5 89/08/11 13:30:15 converse Exp $
  *
  * xcalc.c  -  a hand calculator for the X Window system
  * 
@@ -119,7 +119,7 @@ void main(argc, argv)
     XtSetValues(toplevel, args, TWO);
 
     XtGetApplicationResources(toplevel, (caddr_t)&App_Resources, Resources,
-			      XtNumber(Resources), (ArgList) NULL, ZER0);
+			      XtNumber(Resources), (ArgList) NULL, ZERO);
 
     create_calculator(toplevel);
 
