@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.6 93/09/08 20:43:54 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.7 93/09/10 14:17:12 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -473,9 +473,16 @@ typedef union {
  * Watch for ICE connection create/destroy.
  */
 
+typedef struct _IceWatchedConnection {
+    IceConn				iceConn;
+    IcePointer				watch_data;
+    struct _IceWatchedConnection	*next;
+} _IceWatchedConnection;
+
 typedef struct _IceWatchProc {
     IceWatchProc		watch_proc;
     IcePointer			client_data;
+    _IceWatchedConnection	*watched_connections;
     struct _IceWatchProc	*next;
 } _IceWatchProc;
 
@@ -673,6 +680,20 @@ _IceCheckReplyReady (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     IceReplyWaitInfo *	/* replyWait */
+#endif
+);
+
+extern void
+_IceConnectionOpened (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */
+#endif
+);
+
+extern void
+_IceConnectionClosed (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */
 #endif
 );
 
