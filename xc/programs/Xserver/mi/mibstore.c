@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 1.13 88/09/06 14:50:19 jim Exp $ */
+/* $XConsortium: mibstore.c,v 1.14 88/10/02 14:42:52 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2789,6 +2789,7 @@ miTranslateBackingStore(pWin, dx, dy, oldClip)
 			      extents.y2 - extents.y1,
 			      TRUE);
 	pBackingStore->pSavedRegion = pSavedRegion;
+	(* pScreen->RegionEmpty) (obscured);
     }
     /* finally install new pSavedRegion */
     (* pScreen->Union) (pSavedRegion, pSavedRegion, newSaved);
