@@ -37,7 +37,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 2.1 89/04/21 20:39:06 joel Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 1.51 89/05/01 18:24:30 keith Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    <stdio.h>
@@ -474,7 +474,6 @@ miValidateTree (pParent, pChild, kind, anyMarked)
 				     * the marked children. */
     RegionPtr	  	childClip;  /* The new borderClip for the current
 				     * child */
-    RegionPtr		childUnion; /* old area occupied by marked children */
     register ScreenPtr	pScreen;
     register WindowPtr	pWin;
 
@@ -486,9 +485,7 @@ miValidateTree (pParent, pChild, kind, anyMarked)
     if (pChild == NullWindow)
 	pChild = pParent->firstChild;
 
-    totalClip = (* pScreen->RegionCreate) (NULL, 1);
     childClip = (* pScreen->RegionCreate) (NULL, 1);
-    childUnion = (* pScreen->RegionCreate) (NULL, 200);
     if (exposed == NullRegion) 
 	exposed = (* pScreen->RegionCreate) (NULL, 1);
 
@@ -498,16 +495,15 @@ miValidateTree (pParent, pChild, kind, anyMarked)
      * is the area which can be divied up among the marked
      * children in their new configuration.
      */
+    totalClip = (* pScreen->RegionCreate) (NULL, 200);
     for (pWin = pChild; pWin != NullWindow; pWin = pWin->nextSib)
     {
 	if (pWin->marked)
 	    /* (* pScreen->RegionAppend) */
-	    miRegionAppend (childUnion, pWin->borderClip);
+	    miRegionAppend (totalClip, pWin->borderClip);
     }
     
-    (void) /* (* pScreen->RegionValidate) */ miRegionValidate (childUnion);
-
-    (* pScreen->Union) (totalClip, pParent->clipList, childUnion);
+    (void) /* (* pScreen->RegionValidate) */ miRegionValidate (totalClip);
 
     /*
      * Now go through the children of the root and figure their new
@@ -515,6 +511,9 @@ miValidateTree (pParent, pChild, kind, anyMarked)
      * to handle recursively. Once that's done, we remove the child
      * from the totalClip to clip any siblings below it.
      */
+
+    if (kind != VTStack)
+	(* pScreen->Union) (totalClip, totalClip, pParent->clipList);
 
     for (pWin = pChild;
 	 pWin != NullWindow;
@@ -544,7 +543,6 @@ miValidateTree (pParent, pChild, kind, anyMarked)
 	}
     }
 
-    (* pScreen->RegionDestroy) (childUnion);
     (* pScreen->RegionDestroy) (childClip);
 
     /*
