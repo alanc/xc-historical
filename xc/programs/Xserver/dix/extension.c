@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: extension.c,v 1.40 87/12/05 11:07:24 rws Exp $ */
+/* $Header: extension.c,v 1.41 87/12/31 16:27:58 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -68,10 +68,10 @@ ExtensionEntry *AddExtension(name, NumEvents, NumErrors, MainProc,
 
     i = NumExtensions;
     NumExtensions += 1;
-    extensions = (ExtensionEntry **) Xrealloc(extensions,
+    extensions = (ExtensionEntry **) xrealloc(extensions,
 			      NumExtensions * sizeof(ExtensionEntry *));
-    extensions[i] = (ExtensionEntry *) Xalloc(sizeof(ExtensionEntry));
-    extensions[i]->name = (char *)Xalloc(strlen(name) + 1);
+    extensions[i] = (ExtensionEntry *) xalloc(sizeof(ExtensionEntry));
+    extensions[i]->name = (char *)xalloc(strlen(name) + 1);
     strcpy(extensions[i]->name,  name);
     extensions[i]->index = i;
     extensions[i]->base = i + EXTENSION_BASE;
@@ -111,10 +111,10 @@ CloseDownExtensions()
     {
 	(* extensions[i]->CloseDown)(extensions[i]);
 	NumExtensions = i;
-	Xfree(extensions[i]->name);
-	Xfree(extensions[i]);
+	xfree(extensions[i]->name);
+	xfree(extensions[i]);
     }
-    Xfree(extensions);
+    xfree(extensions);
     extensions = (ExtensionEntry **)NULL;
     lastEvent = EXTENSION_EVENT_BASE;
     lastError = FirstExtensionError;
@@ -125,9 +125,9 @@ CloseDownExtensions()
 	while (spentry->num)
 	{
 	    spentry->num--;
-	    Xfree(spentry->procList[spentry->num].name);
+	    xfree(spentry->procList[spentry->num].name);
 	}
-	Xfree(spentry->procList);
+	xfree(spentry->procList);
 	spentry->procList = (ProcEntryPtr)NULL;
     }
 }
@@ -156,7 +156,7 @@ ProcQueryExtension(client)
         for (i=0; i<NumExtensions; i++)
 	{
             if ((strlen(extensions[i]->name) == stuff->nbytes) &&
-                 !strncmp(&stuff[1], extensions[i]->name, stuff->nbytes))
+                 !strncmp((char *)&stuff[1], extensions[i]->name, stuff->nbytes))
                  break;
 	}
         if (i == NumExtensions)
@@ -269,10 +269,10 @@ RegisterScreenProc(name, pScreen, proc)
     else
     {
 	spentry->procList = (ProcEntryPtr)
-			    Xrealloc(spentry->procList,
+			    xrealloc(spentry->procList,
 				     sizeof(ProcEntryRec) * (spentry->num+1));
         procEntry = &spentry->procList[spentry->num];
-        procEntry->name = (char *)Xalloc(strlen(name)+1);
+        procEntry->name = (char *)xalloc(strlen(name)+1);
         strcpy(procEntry->name, name);
         procEntry->proc = proc;
         spentry->num++;        
@@ -307,5 +307,5 @@ RegisterScreenProc(name, pScreen, proc)
      ErrorF("    rep.resourceID = %x\n", rep.resourceID);
 #endif
 
-     WriteEventsToClient (client, 1, (pointer) &rep);
+     WriteEventsToClient (client, 1, &rep);
 }
