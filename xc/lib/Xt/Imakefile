@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.100 93/08/23 11:11:48 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.101 93/08/27 16:17:57 kaleb Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -36,6 +36,7 @@ XTWARNINGPREFIX = XtWarningPrefix
 		  $(POLL_DEFINES) XtExtraDefines XMTDefines
 
     MTT_DEFINES = ThreadTypeDefines
+ DEPEND_DEFINES = ThreadTypeDefines
 
      DB_DEFINES = -DERRORDB=\"$(LIBDIR)/XtErrorDB\" \
 		  -DXTERROR_PREFIX=\"$(XTERRORPREFIX)\" \
