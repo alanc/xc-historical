@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.23 91/12/10 11:24:05 rws Exp $ */
+/* $XConsortium: devices.c,v 5.24 92/08/21 19:21:52 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -840,7 +840,7 @@ ProcSetModifierMapping(client)
 	 *	list of keycodes.
 	 */
 	map = (KeyCode *)xalloc(inputMapLen);
-	if (!map)
+	if (!map && inputMapLen)
 	    return BadAlloc;
 	if (keyc->modifierKeyMap)
 	    xfree(keyc->modifierKeyMap);
