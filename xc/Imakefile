@@ -1,8 +1,12 @@
 #define IHaveSubdirs
 #define PassCDebugFlags
 
+#if MakeContributed
+CONTRIBDIRS = $(CONTRIBSRC)
+#endif
+
 #
-# Preserve this order: include comes first, clients and demos come last.
+# Preserve this order: include comes first, clients, demos, contrib come last.
 #
      DIRSTOMAKE = \
 		$(INCLUDESRC) \
@@ -11,7 +15,8 @@
 		$(FONTSRC) \
 		$(EXTENSIONSRC) \
 		$(CLIENTSRC) \
-		$(DEMOSRC)
+		$(DEMOSRC) \
+		$(CONTRIBDIRS)
         SUBDIRS = \
 		$(DIRSTOMAKE) \
 		$(UTILSRC) \
@@ -21,7 +26,6 @@
 		$(LIBSRC)
 
 MakeSubdirs($(DIRSTOMAKE) $(RGBSRC) $(XMANSRC))
-NamedMakeSubdirs(hacks,$(HACKSRC))
 MakeLintLibSubdirs($(LINTLIBDIRS))
 
 #
@@ -37,8 +41,6 @@ $(DEPEND):
 	@echo "making $(DEPENDSRC)"; \
 	cd $(DEPENDSRC); $(MAKE)
 
-DependSubdirs($(SUBDIRS) $(HACKSRC))
-
 install::
 	-mkdir $(USRLIBDIR)
 	-mkdir $(BINDIR)
@@ -53,10 +55,6 @@ install::
 #
 Makefiles:: $(IMAKE)
 
-MakeMakeSubdirs($(HACKSRC))
-
 $(IMAKE):
 	@echo "making $(IMAKESRC)"; \
 	cd $(IMAKESRC); $(MAKE)
-
-CleanSubdirs($(HACKSRC))
