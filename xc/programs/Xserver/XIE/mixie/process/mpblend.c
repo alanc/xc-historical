@@ -1,4 +1,4 @@
-/* $XConsortium: mpblend.c,v 1.1 93/10/26 09:47:28 rws Exp $ */
+/* $XConsortium: mpblend.c,v 1.2 93/10/31 09:48:06 dpw Exp $ */
 /**** module mpblend.c ****/
 /******************************************************************************
 				NOTICE
@@ -470,15 +470,15 @@ static int MonoBlend(flo,ped,pet)
   bandPtr sb1        = &rcp[SRCt1].band[0];
   bandPtr bnd        = &pet->emitter[0];
   mpBlendPvtPtr mpvt = (mpBlendPvtPtr) pet->private;
-  void *sr1, *dst;
+  pointer sr1, dst;
   CARD32 b;
   
   for(b = 0; b < bands; b++, sb1++, bnd++, sconst++, mpvt++) {
     BlendFloat offset = *sconst * aconst1;
 
     /* get pointers to the initial src and dst scanlines */
-    sr1 = GetCurrentSrc(void,flo,pet,sb1);
-    dst = GetCurrentDst(void,flo,pet,bnd);
+    sr1 = GetCurrentSrc(pointer,flo,pet,sb1);
+    dst = GetCurrentDst(pointer,flo,pet,bnd);
 
     /* continue while all is well and we have pointers */
     while(!ferrCode(flo) && sr1 && dst && 
@@ -496,8 +496,8 @@ static int MonoBlend(flo,ped,pet)
       }
 
       /* get pointers to the next src and dst scanlines */
-      sr1 = GetNextSrc(void,flo,pet,sb1,TRUE);
-      dst = GetNextDst(void,flo,pet,bnd,TRUE);
+      sr1 = GetNextSrc(pointer,flo,pet,sb1,TRUE);
+      dst = GetNextDst(pointer,flo,pet,bnd,TRUE);
     }
     /* make sure the scheduler knows how much src we used */
     FreeData(flo,pet,sb1,sb1->current);
@@ -521,7 +521,7 @@ static int DualBlend(flo,ped,pet)
   bandPtr sb2        = &rcp[SRCt2].band[0];
   bandPtr bnd        = &pet->emitter[0];
   mpBlendPvtPtr mpvt = (mpBlendPvtPtr) pet->private;
-  void *sr1, *sr2, *dst;
+  pointer sr1, sr2, dst;
   CARD32 b, w;
   
   for(b = 0; b < bands; b++,sb1++,sb2++,bnd++,mpvt++) {
@@ -533,9 +533,9 @@ static int DualBlend(flo,ped,pet)
         w = sb1->format->width;
 
     /* get pointers to the initial src-1, src-2, and dst scanlines */
-    sr1 = GetCurrentSrc(void,flo,pet,sb1);
-    sr2 = GetCurrentSrc(void,flo,pet,sb2);
-    dst = GetCurrentDst(void,flo,pet,bnd);
+    sr1 = GetCurrentSrc(pointer,flo,pet,sb1);
+    sr2 = GetCurrentSrc(pointer,flo,pet,sb2);
+    dst = GetCurrentDst(pointer,flo,pet,bnd);
 	
     /* continue while all is well and we have pointers */
     while(!ferrCode(flo) && sr1 && sr2 && dst &&
@@ -555,9 +555,9 @@ static int DualBlend(flo,ped,pet)
       }
 
       /* get pointers to the next src-1, src-2, and dst scanlines */
-      sr1 = GetNextSrc(void,flo,pet,sb1,TRUE);
-      sr2 = GetNextSrc(void,flo,pet,sb2,TRUE);
-      dst = GetNextDst(void,flo,pet,bnd,TRUE);
+      sr1 = GetNextSrc(pointer,flo,pet,sb1,TRUE);
+      sr2 = GetNextSrc(pointer,flo,pet,sb2,TRUE);
+      dst = GetNextDst(pointer,flo,pet,bnd,TRUE);
     }
 
     /* If src2 < sr1, pass remaining lines through untouched */
@@ -591,7 +591,7 @@ static int MonoAlphaBlend(flo,ped,pet)
   bandPtr bnd          = &pet->emitter[0];
   double *sconst       = pvt->constant;
   mpBlendPvtPtr mpvt   = (mpBlendPvtPtr) pet->private;
-  void *sr1, *alpha, *dst;
+  pointer sr1, alpha, dst;
   CARD32 b, w;
   
   for(b = 0; b < bands; b++,sb1++,bnd++,sconst++, mpvt++, aband++) {
@@ -604,9 +604,9 @@ static int MonoAlphaBlend(flo,ped,pet)
         w = sb1->format->width;
 
     /* get pointers to the initial src-1, alpha, and dst scanlines */
-    sr1   = GetCurrentSrc(void,flo,pet,sb1);
-    alpha = GetCurrentSrc(void,flo,pet,aband);
-    dst   = GetCurrentDst(void,flo,pet,bnd);
+    sr1   = GetCurrentSrc(pointer,flo,pet,sb1);
+    alpha = GetCurrentSrc(pointer,flo,pet,aband);
+    dst   = GetCurrentDst(pointer,flo,pet,bnd);
 	
     /* continue while all is well and we have pointers */
     while(!ferrCode(flo) && sr1 && alpha && dst &&
@@ -626,9 +626,9 @@ static int MonoAlphaBlend(flo,ped,pet)
       }
 
       /* get pointers to the next src-1 and dst scanlines */
-      sr1   = GetNextSrc(void,flo,pet,sb1,FLUSH);
-      alpha = GetNextSrc(void,flo,pet,aband,FLUSH);
-      dst   = GetNextDst(void,flo,pet,bnd,FLUSH);
+      sr1   = GetNextSrc(pointer,flo,pet,sb1,FLUSH);
+      alpha = GetNextSrc(pointer,flo,pet,aband,FLUSH);
+      dst   = GetNextDst(pointer,flo,pet,bnd,FLUSH);
     }
 
     /* If alpha < sr1, pass remaining lines through untouched */
@@ -663,7 +663,7 @@ static int DualAlphaBlend(flo,ped,pet)
   bandPtr aband        = &rcp[aindex].band[0];
   bandPtr bnd          = &pet->emitter[0];
   mpBlendPvtPtr mpvt   = (mpBlendPvtPtr) pet->private;
-  void *sr1, *sr2, *alpha, *dst;
+  pointer sr1, sr2, alpha, dst;
   CARD32 b, w;
 
   for(b = 0; b < bands; b++,sb1++,sb2++,bnd++,mpvt++,aband++) {
@@ -678,10 +678,10 @@ static int DualAlphaBlend(flo,ped,pet)
         w = sb1->format->width;
 
     /* get pointers to the initial src-1, src-2, and dst scanlines */
-    sr1   = GetCurrentSrc(void,flo,pet,sb1);
-    sr2   = GetCurrentSrc(void,flo,pet,sb2);
-    alpha = GetCurrentSrc(void,flo,pet,aband);
-    dst   = GetCurrentDst(void,flo,pet,bnd);
+    sr1   = GetCurrentSrc(pointer,flo,pet,sb1);
+    sr2   = GetCurrentSrc(pointer,flo,pet,sb2);
+    alpha = GetCurrentSrc(pointer,flo,pet,aband);
+    dst   = GetCurrentDst(pointer,flo,pet,bnd);
 	
     /* continue while all is well and we have pointers */
     while(!ferrCode(flo) && sr1 && sr2 && alpha && dst &&
@@ -701,10 +701,10 @@ static int DualAlphaBlend(flo,ped,pet)
       }
 
       /* get pointers to the next src-1, src-2, and dst scanlines */
-      sr1   = GetNextSrc(void,flo,pet,sb1,FLUSH);
-      sr2   = GetNextSrc(void,flo,pet,sb2,FLUSH);
-      alpha = GetNextSrc(void,flo,pet,aband,FLUSH);
-      dst   = GetNextDst(void,flo,pet,bnd,FLUSH);
+      sr1   = GetNextSrc(pointer,flo,pet,sb1,FLUSH);
+      sr2   = GetNextSrc(pointer,flo,pet,sb2,FLUSH);
+      alpha = GetNextSrc(pointer,flo,pet,aband,FLUSH);
+      dst   = GetNextDst(pointer,flo,pet,bnd,FLUSH);
     }
 
     /* If alpha < sr1, pass remaining lines through untouched */
@@ -784,7 +784,7 @@ static int DestroyBlend(flo,ped)
 #define DOMono(fname,stype)					\
 static void fname(count,width,is,id,aconst2,offset) 		\
 INT32 count, width;						\
-void *is, *id;							\
+pointer is, id;							\
 BlendFloat aconst2, offset;					\
 {								\
 stype *sr1 = ((stype *)is) + count;				\
@@ -805,7 +805,7 @@ DOMono(MonoB,BytePixel)
 #define DODual(fname,stype)					\
 static void fname(count,width,is1,is2,id,aconst1,aconst2)	\
 INT32 count,width;						\
-void *is1, *is2, *id;						\
+pointer is1, is2, id;						\
 BlendFloat aconst1, aconst2;					\
 {								\
 stype *sr1 = ((stype *)is1) + count;				\
@@ -827,7 +827,7 @@ DODual(DualB,BytePixel)
 #define DOMonoAlpha(fname,stype,atype)				\
 static void fname(count,width,is1,ia,id,iac,sf)			\
 INT32 count, width;						\
-void *is1, *ia, *id;						\
+pointer is1, ia, id;						\
 BlendFloat iac, sf;						\
 {								\
 stype *sr1 = ((stype *)is1) + count;				\
@@ -860,7 +860,7 @@ DOMonoAlpha(MonoAlphaBB,BytePixel,BytePixel)
 #define DODualAlpha(fname,stype,atype)				\
 static void fname(count,width,is1,is2,ia,id,iac)		\
 CARD32 count,width;						\
-void *is1, *is2, *ia, *id;					\
+pointer is1, is2, ia, id;					\
 BlendFloat iac;							\
 {								\
 stype *sr1   = ((stype *)is1) + count;				\
