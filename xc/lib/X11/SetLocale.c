@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.13 91/02/21 10:46:11 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.15 91/04/02 15:04:20 rws Exp $
  */
 
 /*
@@ -223,7 +223,7 @@ static char locale_name[MAXLOCALE] = "C";
 
 /*ARGSUSED*/
 char *
-_XGetLocaleName(category, name)
+_XSetLocale(category, name)
     int		category;
     char       *name;
 {
