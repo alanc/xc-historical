@@ -1,4 +1,4 @@
-/* $XConsortium: utils.c,v 1.145 94/04/07 18:13:35 erik Exp $ */
+/* $XConsortium: utils.c,v 1.146 94/04/17 20:27:07 erik Exp dpw $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -109,9 +109,14 @@ extern Bool defeatAccessControl;
 
 Bool CoreDump;
 Bool noTestExtensions;
+
+Bool noXkbExtension = 
 #ifdef XKB
-Bool noXkbExtension;
+    FALSE;
+#else
+    TRUE;
 #endif
+
 int auditTrailLevel = 1;
 
 void ddxUseMsg();
