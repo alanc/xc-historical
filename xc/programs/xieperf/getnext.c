@@ -1,4 +1,4 @@
-/* $XConsortium: getnext.c,v 1.2 93/10/26 18:47:37 rws Exp $ */
+/* $XConsortium: getnext.c,v 1.3 93/10/27 21:52:20 rws Exp $ */
 
 /**** module getnext.c ****/
 /******************************************************************************
@@ -90,6 +90,8 @@ otravez:				/* Spanish for 'once again'. */
 		fflush( stderr );
 		goto otravez;
 	}
+	else if ( line[ 0 ] == '#' )
+		goto otravez;
 
 	/* grab up to MAXARGS */ 
 

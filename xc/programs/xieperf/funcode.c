@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: funcode.c,v 1.1 93/10/26 10:08:44 rws Exp $ */
 
 /**** module funcode.c ****/
 /******************************************************************************
@@ -69,6 +69,8 @@ static int type;
 char *parms;
 static XStandardColormap stdCmap;
 extern Bool WMSafe;
+
+void EndFunnyEncode();
 
 int 
 InitFunnyEncode(xp, p, reps)
@@ -151,13 +153,7 @@ int     reps;
 	}
 	if ( reps && type == xieValTripleBand )
 	{
-		if ( WMSafe == True )
-			InstallThisColormap( xp->d, xp->p, stdCmap.colormap );
-		else
-		{
-			InstallThisColormap( xp->d, xp->w, stdCmap.colormap );
-			InstallThisColormap( xp->d, drawableWindow, stdCmap.colormap );
-		}
+		InstallThisColormap( xp, stdCmap.colormap );
 	}
 
 	if ( reps )
@@ -472,7 +468,7 @@ int     reps;
                 XSync( xp->d, 0 );
 	}
 	if ( !reps )
-		FreeFunnyEncodeStuff( xp, p );
+		EndFunnyEncode( xp, p );
 	return( reps );
 }
 
@@ -504,13 +500,7 @@ Parms   p;
 
 	dontClear = False;
 	if ( type == xieValTripleBand )
-                if ( WMSafe == True )
-                        InstallCustomColormap( xp->d, xp->p );
-                else
-		{
-                        InstallCustomColormap( xp->d, xp->w );
-                        InstallCustomColormap( xp->d, drawableWindow );
-		}
+                InstallCustomColormap( xp );
 
         XUnmapWindow( xp->d, drawableWindow );
 	FreeFunnyEncodeStuff( xp, p );

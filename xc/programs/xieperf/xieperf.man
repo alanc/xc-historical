@@ -1,4 +1,3 @@
-.\" $XConsortium$
 .TH xieperf 1 "Release 6" "X Version 11"
 .SH NAME
 xieperf - XIE server extension test and demo program
@@ -13,134 +12,52 @@ program is based upon R5
 , and while not entirely comprehensive in its coverage of the XIE 
 protocol (see BUGS, below), it is intended to be useful in the evaluation of 
 XIE implementations in the areas of protocol adherance and performance. 
-Additionally, 
-.I xieperf
-provides a customizable demonstration program for XIE.
-.PP
-The 
-.I xieperf
-program calibrates tests in a manner identical to the
-.I x11perf
-program. A test is made up of three components executed in sequence - an 
-initialization function, a test 
-function, and an end function. The initialization function is responsible for 
-allocating and populating test resources, such as photomaps and LUTs, and for 
-creating a stored photoflo which will be executed by the test function. The 
-test function, in most cases, simply executes the stored photoflo for a 
-specified number of repetitions. The end function, which is called following 
-the test function, is used primarily to destroy any non-cachable server
-resources 
-used by the test, and to free any memory which was dynamically allocated by 
-the client. It should be noted that some tests, such as -modify1, -await, -abort, 
-and -redefine, perform additional steps within the test function inner loop, 
-as required by the element being tested, or in an attempt to make the test 
-more visually appealing. 
-.PP
-In order to reduce the contribution of image transmission and flo setup times to
-the overall time required for test execution, and to reduce host and network
-loading, most
-.I xieperf
-tests use the test initialization function to pre-load the server with resources
-such as photomaps and LUTs, which are used during the test, and to create a 
-stored photoflo which will be executed from the test function. If photomap 
-caching is enabled (by default, up to 3 photomaps can be cached in the server), 
-this setup time can be significantly reduced for certain tests, as the image
-data will not need to be transmitted by 
-.I xieperf
-to the server nor will a flo converting it into a photomap need to be executed 
-by the test initialization function.
-.PP 
-First and foremost, 
+The
 .I xieperf 
-is designed to be used as a testing vehicle for XIE implementations, and was
-used extensively in this manner during the development of the R6 Sample 
-Implementation of XIE. The 
-.I xieperf 
-program
-includes tests which execute each of the protocol requests and photoflo 
+program includes tests which execute each of the protocol requests and photoflo 
 elements specified by revision 4.14 of the XIE protocol. In addition, 
 .I xieperf 
 provides a set of tests which can be used to validate the detection and 
 transmission of XIE protocol request errors, such as FloMatch, FloValue, and 
-so forth.
-.PP
-Second, 
-.I xieperf 
-is designed to provide a convenient means for exploring the performance
-of XIE implementations. However, ascertaining individual flo element 
-performance is problematic, at best...
-.PP
-In
-.I x11perf
-, core protocol requests, such as DrawRectangle, can be executed 
-individually to gain a measure of their individual execution times. 
-In XIE, the performance of any given photoflo element is influenced by the 
-operational characteristics of the remaining elements in the photoflo.
-However, many of the xieperf flos are relatively simple, and often a first 
-order approximation of some element X can be deduced by comparing a flo
-like IP/X/ED to the flo IP/ED.  Of course, effects like cache behavior,
-network shadows, and other effects can change things. 
-.PP
-However,
-.I xieperf 
-can be used to ascertain the relative performance differences which exist
-among photoflo elements and techniques. As one example, 
+so forth. Finally, 
 .I xieperf
-contains tests which can be executed to highlight the performance differences 
-which exist between the various geometry techniques. The tests -geometry1 and
-and -geometry15, both of which perform 12 degree rotations on a source photomap,
-execute photoflos which are identical in every respect except for the Geometry 
-technique which is used by the Geometry element. By comparing the resulting 
-.I xieperf
-times, a generalization such as "the NearestNeighbor technique is faster than
-AntiAlias" may be made (assuming that the observed times support this 
-ascertation). 
+provides a customizable demonstration program for XIE.
 .PP
-As is the case with 
-.I x11perf
-, 
-.I xieperf
-does not attempt to provide a single value which can be used to quantify the 
-performance characteristics of an XIE implementation or of a machine which is
-running XIE. Such numbers are misleading as they tend to overshadow the 
-individual test cases which led up to the number and which, for the most part, 
-are more meaningful to a particular application. 
+A test is made up of three components executed in sequence - an 
+initialization function, a test function, and an end function. The 
+initialization function is responsible for allocating and populating test 
+resources, such as photomaps and LUTs, and for creating a stored photoflo 
+which will be executed by the test function. The test function, in most cases, 
+simply executes the stored photoflo for a specified number of repetitions. 
+The end function, which is called following the test function, is used 
+primarily to destroy any non-cachable server resources used by the test, and 
+to free any memory which was dynamically allocated by the client. Some tests, 
+such as -modify1, -await, -abort, and -redefine, perform additional steps 
+within the test function inner loop, as required by the element being tested, 
+or in an attempt to make the test more visually appealing. 
+.PP
+Evaluating the performance of individual XIE elements is not
+as simple as measuring Core X drawing times. The XIE
+protocol requires elements to be embedded within photoflos
+in order to be exercised,  and the minimum possible photoflo
+size is two.  This implies that it is impossible to measure
+performance of a single element in isolation - the time it
+takes to run the flo depends on what other elements exist in 
+the flo.  Extrapolating performance of a single elment 
+(or technique) in a flo must be done carefully, on a case-by-case 
+basis,  since in general measured element performance depends on 
+input image size, data type, and other factors,  all of which can 
+be influenced by upstream flo elements.  Note further that the
+number and type of elements in a flo can be influenced by the 
+visuals available on the display,  so even flo-flo comparisons 
+on machines with different visuals must be done with caution.
 .PP 
-Many test labels provide a simple description of the test, along with a 
-symbolic representation of the flo used. For example, the test 
--importclientphoto1 has the label "ICP/EP UncompressedSingle".
-The labels are generally the capitalized letters found in the 
-.I XIElib
-function to which they correspond, after the initial XieFlo prefix. In this 
-example the functions are XieFloImportClientPhotomap() and 
-XieFloExportPhotomap(), respectively. In some cases, the test label spells out
-the flo elements used entirely.
-.PP
-Any given test flo may be augmented with additional flo elements should a 
-mismatch exist between the number of levels per-band of the data prior to 
-an ExportDrawable element, and the depth of the destination drawable. 
-For example, in order to display an 8-bit image on a 1-bit deep drawable, the 
-image needs to be dithered or constrained, or perhaps run through a point 
-element prior to being passed on to ExportDrawable. Failing to do so would
-result in FloMatch errors. Be aware that these preperatory steps may exist and
-can add to the overall execution time of the photoflo.
-.PP
-Finally,
-.I xieperf
-can be used as a demonstration program for XIE. Some level of pain was 
-endured by the author and his critics to make 
-.I xieperf
-at least marginally interesting to watch. Features not found in 
-.I x11perf 
-were added to 
-.I xieperf
-to support its use as a demonstration program. For example, a user of
-.I xieperf
-may create a script file which lists a subset of the available tests, in any
-order desired, for 
-.I xieperf
-to execute. See the discussion of the -script option (see OPTIONS, below), for 
-more details.
+Many test labels contain an abbreviated pipeline description. For
+instance. IP/IL/P/ED indicates ImportPhotomap, ImportLUT, Point, and
+ExportDrawable. Pipelines ending in ED (ExportDrawable) often include
+hidden elements such as BandExtract, ConvertToIndex, Dither, or Point
+to match the flo output to the screen visual.  Pipelines ending in EP
+(ExportPhotomap) will result in a blank window.
 .PP
 .I xieperf
 is compatible with 
@@ -157,30 +74,6 @@ the resulting labels file to
 to obtain correct output. See the
 .I x11perfcomp(1)
 man pages for more details on this. 
-.PP
-As with
-.I x11perf 
-,
-.I xieperf
-should be run using a local connection on a freshly-started server. The 
-default configuration runs each test 2 times, in order to see if each trial 
-takes approximately the same amount of time. Each trial is run for 5 seconds, 
-in order to reduce random time differences. You may control the number of 
-iterations in the test function (-reps) or the number of times the test 
-function is called (-repeat) from the command line or from within a script 
-file. Additionally, for those not interested in timing results e.g. during 
-demos, the -loCal argument may be used to disable test calibration.
-.PP
-.I xieperf
-was designed so that new tests, or derivatives of existing ones, can be
-added to
-.I xieperf
-without too much grief. For hints on how to do this, look at the definition 
-of TriplePointParms in xieperf.h, the declaration of the array 
-TriplePointParmVec and its inclusion as one of its elements in the test 
-configuration structure for triplepoint1, both in tests.c, and look at the 
-use of the TriplePointParms structure field ``atom'' in the function 
-InitTriplePoint, located in the file point.c . 
 .SH OPTIONS
 .I xieperf 
 accepts the options listed below:
@@ -191,18 +84,18 @@ Specifies which display to use.
 .B \-images \fI<path>\fP
 Normally,
 .I xieperf
-references image files located in the directory XXX/images. If you are running
+references image files located in the directory ``images'', which 
 .I xieperf
-from a location other than XXX, or have relocated the images directory to some
-other location, you may use the -images directory to specify the location of
-the images directory. 
+assumes is located in your current directory. If the ``images'' directory is 
+not in your current directory, or the file has been renamed, use this option 
+to specify its location.
 .TP 14
 .B \-timeout \fI<s>\fP
 Some tests require the reception of an event such as FloNotify to continue, and
 may cause 
 .I xieperf 
-to hang should these events not be received. This option 
-allows the user to specify a timeout value which, if exceeded, will cause
+to hang should these events not be received. This option allows the user to 
+specify a timeout value which, if exceeded, will cause
 .I xieperf
 to give up waiting for an event, and continue on with the next test in sequence.
 Should an event timeout, a warning message will be printed to stderr. The 
@@ -210,7 +103,6 @@ default timeout value is 60 seconds.
 .TP 14
 .B \-sync
 Runs the tests in synchronous mode.
-Normally only useful for debugging 
 .I xieperf .
 .TP 14
 .B \-script \fI<file>\fP
@@ -222,21 +114,8 @@ for demonstration purposes. Using this option causes
 .I xieperf
 to read commands specified in a script file, or from stdin if \fI<file>\fP is 
 ``-''. Tests are specified by newline-terminated input lines of the form 
-"command [-reps n ] [ -repeat m ]", where reps and repeat are optional and
-may be specified in any order (see the description of -reps and -repeat, 
-below). For example, "dither1 -reps 1" will cause
-.I xieperf
-to execute the test dither1 with a fixed inner loop of 1 rep. 
-.I xieperf 
-will echo to stdout each line that is read from a script file that
-is parsed as a valid command. If ``-'' is specified, 
-.I xieperf
-will print a ``>'' prompt to stdout for each input line, which it will read 
-from stdin, and which must be of the form described above. Typing ^D will
-cause 
-.I xieperf
-to exit. Comments may be added to script files; lines starting with a ``#'' 
-character are ignored by the parser.
+"command [-reps n ] [ -repeat m ]".  Lines starting with "#" are treated
+as comments.
 .TP 14
 .B \-repeat \fI<n>\fP
 Repeats each test 
@@ -253,28 +132,22 @@ Use a visual with <depth> planes per pixel (default is the default
 visual).
 .TP 14
 .B \-GrayScale
-Use a GrayScale visual (default is the default visual). Useful for XIE
-implementors.
+Use a GrayScale visual (default is the default visual). 
 .TP 14
 .B \-PseudoColor
-Use a PseudoColor visual (default is the default visual). Useful for XIE
-implementors.
+Use a PseudoColor visual (default is the default visual). 
 .TP 14
 .B \-StaticGray
-Use a StaticGray visual (default is the default visual). Useful for XIE
-implementors.
+Use a StaticGray visual (default is the default visual). 
 .TP 14
 .B \-StaticColor
-Use a StaticColor visual (default is the default visual). Useful for XIE
-implementors.
+Use a StaticColor visual (default is the default visual). 
 .TP 14
 .B \-TrueColor
-Use a TrueColor visual (default is the default visual). Useful for XIE
-implementors.
+Use a TrueColor visual (default is the default visual). 
 .TP 14
 .B \-DirectColor
-Use a DirectColor visual (default is the default visual). Useful for XIE
-implementors.
+Use a DirectColor visual (default is the default visual). 
 .TP 14
 .B \-WMSafe
 If
@@ -286,11 +159,11 @@ aware of this. If specified,
 will create a window, identical to the size of the root window, and all
 further windows created by
 .I xieperf
-will be transient popup children of this window. In addition,
+will be transient popup children of this window. If this flag is omitted,
 .I xieperf
 will set the override_redirect attribute of all windows to ``True'' 
-and will also do evil things such as calling XInstallColormap if the
--WMSafe flag is omitted. Finally, using this option will cause the window 
+and will also do evil things such as calling XInstallColormap. 
+Using this option will cause the window 
 manager to (hopefully) obey window geometry hints specified by 
 .I xieperf
 .TP 14
@@ -346,20 +219,11 @@ because it was too lengthy. Also, the output generated by this option can be
 used as a basis for a script file (see -script, above). 
 .TP 14
 .B \-cache \fI<n>\fP
-Cache up to n photomaps in the server. Most flos which utilize a photomap
-resource execute an ImportClientPhoto -> ExportPhotomap flo in the test
-initialization function, to get an image into the photomap. If the photomap 
-is in the cache, then it exists in the server and has valid image data, and
-the above preperatory flo does not need to be executed, reducing setup time.
-If the cache is full and a test introduces a new photomap not in the cache,
-then the least recently used photomap will be removed from the cache, and
-its Photomap resource in the server will be destroyed. The new photomap will
-then be loaded by an ICP -> EP photoflo, and added to the cache. 
+Most test flos utilize a photomap resource for a source.  A photomap cache
+of up to n entries is controlled by 
 .I xieperf
-uses a maximum number of 3 photomaps during any one test. There are currently 
-14 photomaps used by 
-.I xieperf
-in total. The default cache size is 3.
+to avoid having to constantly reload these images during test initialization.
+The default cache size is 3.
 .TP 14
 .B \-labels
 Generates just the descriptive labels for each test specified. Use -all or
@@ -548,40 +412,22 @@ Constrain HardClip technique test, photomap destination.
 Constrain ClipScale technique test, photomap destination.
 .TP 14
 .B \-convolve1            
-Boxcar 3x3 convolution test. 
+Boxcar 3x3 convolution test. Smoothing or lowpass filter.
 .TP 14
 .B \-convolve2            
-Boxcar 5x5 convolution test.
+Boxcar 5x5 convolution test. Smoothing or lowpass filter.
 .TP 14
 .B \-convolve3
-LaPlacian 3x3 convolution test.            
+LaPlacian 3x3 convolution test. Edge or highpass filter. 
 .TP 14
 .B \-convolve4            
-LaPlacian 5x5 convolution test.            
+LaPlacian 5x5 convolution test. Edge or highpass filter.
 .TP 14
 .B \-convolveroi1         
 LaPlacian 3x3 convolution test, with ROI.
 .TP 14
 .B \-convolveroi2         
 LaPlacian 5x5 convolution test, with ROI.
-.TP 14
-.B \-convolvephoto1       
-Boxcar 3x3 convolution test, photomap destination.
-.TP 14
-.B \-convolvephoto2       
-Boxcar 5x5 convolution test, photomap destination.
-.TP 14
-.B \-convolvephoto3       
-LaPlacian 3x3 convolution test, photomap destination.
-.TP 14
-.B \-convolvephoto4       
-LaPlacian 5x5 convolution test, photomap destination.
-.TP 14
-.B \-convolveroiphoto1   
-LaPlacian 3x3 convolution test, with ROI, photomap destination.
-.TP 14
-.B \-convolveroiphoto2   
-LaPlacian 5x5 convolution test, with ROI, photomap destination.
 .TP 14
 .B \-math1 through \-mathroi7
 Various tests which exercise the Math element, with and without ROIs. 
@@ -791,13 +637,16 @@ Test XieModifyPhotoflo() by changing ExportDrawable x and y offsets.
 .TP 14
 .B \-modify4
 This test creates a rather long flo of arithmetic elements, each which does 
-nothing more than add 1 to the flo source data. The test init function 
+nothing more than add 1 to a small image. The test init function 
 scales the input photomap. The ExportDrawable x and y offset is modified
-randomly during each iteration of the test function inner loop. This is
-done to XXX
+randomly during each iteration of the test function inner loop.
 .TP 14
 .B \-modify5          
-XXX
+This test creates a rather long flo of arithmetic elements, each which does 
+nothing more than add 1 to a large image.  Each rep, the Geometry 
+and ExportDrawable elements at the end of the flo are modifed to
+crop a small piece of the
+input into its appropriate place in the larger image.
 .TP 14
 .B \-rgb1 through \-rgb16
 These tests all basically take an UncompressedTriple image as input, send it
@@ -807,14 +656,11 @@ original image is displayed in the lefthand window, and the image which has
 passed through the flo is shown in the righthand window. The goal of these
 test is to show that ConvertFromRGB -> ConvertToRGB is lossless. 
 .TP 14
-.B \-converttoindexpixel1
-ConvertToIndex test, TripleBand BandByPixel input data, image 1.
-.TP 14
-.B \-converttoindexpixel2    
-ConvertToIndex test, TripleBand BandByPixel input data, image 2.
+.B \-converttoindexpixel
+ConvertToIndex test, TripleBand BandByPixel.
 .TP 14
 .B \-converttoindexplane
-ConvertToIndex test, TripleBand BandByPlane input data.
+ConvertToIndex test, TripleBand BandByPlane.
 .TP 14
 .B \-convertfromindex 
 The test init function uses a flo containing ConvertToIndex to display an
@@ -829,25 +675,18 @@ X(1), x11perf(1), x11perfcomp(1)
 There should be a IMAGES environment variable to augment the -images option.
 .PP
 Many tests only scratch the surface of possible test cases. 
+Some of the options available for certain flo elements are either inadequately 
+tested, or ignored altogether. Control planes are not tested. 
+There are insufficent tests for bitonal, large pixel, or triple band tests.
 .PP 
-Not all test labels identify constrain, dither, or point elements added to a 
-flo in order to avoid FloMatch errors.
-.PP
 Some of the test names are inconsistently cased, e.g. -Abort and -dither1.
 .PP
-Control planes are not tested. 
-.PP
-There are insufficent tests for bitonal, large pixel, or triple band tests.
-.PP
-Currently a bug exists which causes the root colormap to be lost in 
+Currently a bug exists which may cause the root colormap to be lost in 
 .I xieperf 
 tests which use the RGB_BEST_MAP standard colormap. Recycling will fix the 
 problem.
 .PP
 Some tests are hopelessly slow when run against machines with slow FPUs.
-.PP
-Some of the options available for certain flo elements are either inadequately 
-tested, or ignored altogether. 
 .SH COPYRIGHT
 Copyright 1993 by AGE Logic, Inc. and the Massachusetts Institute of Technology
 .br

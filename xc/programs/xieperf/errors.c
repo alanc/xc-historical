@@ -1,4 +1,4 @@
-/* $XConsortium: errors.c,v 1.4 93/10/30 11:48:50 rws Exp $ */
+/* $XConsortium: errors.c,v 1.5 93/10/30 16:26:19 rws Exp $ */
 /**** module errors.c ****/
 /******************************************************************************
 				NOTICE
@@ -58,6 +58,7 @@ static int flo_elements;
 static XiePhotospace photospace;
 
 static XieRoi XIERoi;
+static XieLut XIELut;
 static XiePhotomap XIEPhotomap;
 static XieColorList clist;
 
@@ -264,9 +265,12 @@ XParms	xp;
 Parms	p;
 int	reps;
 {
+        Bool    merge;
+        XieLTriplet start;
+
         flograph = ( XiePhotoElement * ) NULL;
         flo = ( XiePhotoflo ) NULL;
-	XIERoi = ( XieRoi ) NULL;
+	XIELut = ( XieLut ) NULL;
 
         flo_elements = 2;
         flograph = XieAllocatePhotofloGraph(flo_elements);
@@ -277,19 +281,26 @@ int	reps;
         }
 	else
 	{
-		XIERoi = XieCreateROI( xp->d );
-                XieFloImportROI(&flograph[0], XIERoi );
+		XIELut = XieCreateLUT( xp->d );
+                XieFloImportLUT(&flograph[0], XIELut );
 
-                XieFloExportROI(&flograph[1],
+                merge = False;
+                start[ 0 ] = 0;
+                start[ 1 ] = 0;
+                start[ 2 ] = 0;
+
+                XieFloExportLUT(&flograph[1],
                         1,              /* source phototag number */
-                        XIERoi
+                        XIELut,
+			merge,
+			start
                 );
 
                 flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
 	}
 	if ( !reps )
 	{
-		FreeErrorWithROIStuff( xp, p );
+		FreeErrorWithLUTStuff( xp, p );
 	}	
 	return( reps );
 }
@@ -711,7 +722,7 @@ int     reps;
 	}
 	if ( reps )
 	{
-		InstallDefaultColormap( xp->d, xp->p );
+		InstallDefaultColormap( xp );
 		flo_elements = 3; 
 	        flograph = XieAllocatePhotofloGraph( flo_elements );
         	if ( flograph == ( XiePhotoElement * ) NULL )
@@ -768,7 +779,7 @@ int     reps;
 
 	if ( !reps )
 	{
-		InstallCustomColormap( xp->d, xp->p );
+		InstallCustomColormap( xp );
 		FreeErrorWithPhotomapStuff( xp, p );
 	}
 	return( reps );
@@ -1043,10 +1054,13 @@ XParms  xp;
 Parms   p;
 int     reps;
 {
-	XieRectangle rect;
+	char	*lut;
+        XieLTriplet     start, length;
 
         flograph = ( XiePhotoElement * ) NULL;
         flo = ( XiePhotoflo ) NULL;
+	XIELut = ( XieLut ) NULL;
+	lut = ( char * ) NULL;
 
         flo_elements = 2;
         flograph = XieAllocatePhotofloGraph(flo_elements);
@@ -1057,22 +1071,30 @@ int     reps;
         }
 	else
 	{
-                rect.x = 0;
-                rect.y = 0;
-                rect.width = 100;
-                rect.height = 100;
+		lut = ( char * ) malloc( 128 );
 
-                if ( ( XIERoi = GetXIERoi( xp, p, &rect, 1 ) ) ==
-                        ( XieRoi ) NULL )
+		length[ 0 ] = 128;
+		length[ 1 ] = 0;
+		length[ 2 ] = 0;
+
+		start[ 0 ] = 0;
+		start[ 1 ] = 0;
+		start[ 2 ] = 0;
+
+                if ( ( XIELut = GetXIELut( xp, p, lut, 128, 128 ) ) ==
+                        ( XieLut ) NULL )
                 {
                         reps = 0;
                 }
 		else
 		{
-			XieFloImportROI(&flograph[0], XIERoi);
-			XieFloExportClientROI(&flograph[1],
+			XieFloImportLUT(&flograph[0], XIELut);
+			XieFloExportClientLUT(&flograph[1],
 				1,       /* source phototag number */
-				0xff
+				xieValMSFirst,
+				0xff,
+				start,
+				length	
 			);
 			flo = XieCreatePhotoflo( xp->d, 
 				flograph, flo_elements );
@@ -1080,8 +1102,10 @@ int     reps;
 	}
 	if ( !reps )
 	{
-		FreeErrorWithROIStuff( xp, p );
+		FreeErrorWithLUTStuff( xp, p );
 	}	
+	if ( lut )
+		free( lut );	
 	return( reps );
 }
 
@@ -1263,7 +1287,7 @@ int     reps;
 	int	i;
 
         for (i = 0; i != reps; i++) {
-                XieFloImportROI(&flograph[1], ( XieRoi ) NULL);
+                XieFloImportLUT(&flograph[1], ( XieLut ) NULL);
                 XieModifyPhotoflo( xp->d, flo, 2, &flograph[1], 1 );
 	}
 }
@@ -1402,7 +1426,7 @@ Parms	p;
 	switch( which )
 	{
 	case xieErrNoFloAccess :
-		FreeErrorWithROIStuff( xp, p );
+		FreeErrorWithLUTStuff( xp, p );
 		break;
 	case xieErrNoFloDrawable :
 		FreeErrorWithPhotomapStuff( xp, p );
@@ -1414,7 +1438,7 @@ Parms	p;
 		FreeErrorWithPhotomapStuff( xp, p );
 		break;
 	case xieErrNoFloColorList :
-		InstallCustomColormap( xp->d, xp->p );
+		InstallCustomColormap( xp );
 		FreeErrorWithPhotomapStuff( xp, p );
 		break;
 	case xieErrNoFloDomain :   
@@ -1447,7 +1471,7 @@ Parms	p;
 		FreeErrorWithPhotomapStuff( xp, p );
 		break;
 	case xieErrNoFloValue : 
-		FreeErrorWithROIStuff( xp, p );
+		FreeErrorWithLUTStuff( xp, p );
 		break;
 	default:
 		break;
@@ -1506,6 +1530,33 @@ Parms	p;
 	{
 		XieDestroyROI( xp->d, XIERoi );
 		XIERoi = ( XieRoi ) NULL;
+	}
+}
+
+int
+FreeErrorWithLUTStuff( xp, p )
+XParms	xp;
+Parms	p;
+{
+        if ( photospace )
+        {
+                XieDestroyPhotospace( xp->d, photospace );
+                photospace = ( XiePhotospace ) NULL;
+        }
+        if ( flograph )
+        {
+                XieFreePhotofloGraph(flograph,flo_elements);
+                flograph = ( XiePhotoElement * ) NULL;
+        }
+        if ( flo )
+        {
+                XieDestroyPhotoflo( xp->d, flo );
+                flo = ( XiePhotoflo ) NULL;
+        }
+	if ( XIELut )
+	{
+		XieDestroyLUT( xp->d, XIELut );
+		XIELut = ( XieLut ) NULL;
 	}
 }
 

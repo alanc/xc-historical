@@ -1,4 +1,4 @@
-/* $XConsortium: encode.c,v 1.1 93/10/26 10:09:24 rws Exp $ */
+/* $XConsortium: encode.c,v 1.2 93/10/26 20:58:29 rws Exp $ */
 /**** module encode.c ****/
 /******************************************************************************
 				NOTICE
@@ -85,18 +85,18 @@ int     reps;
 	float bias;
 	XieConstant c1;
 	int visclass;
-	char *parms;
 	XIEimage *image;
-        XieConstant in_low,in_high;
-        XieLTriplet out_low,out_high;
         GeometryParms gp;
 	Bool exportClient;
 	int decodeTech;
 	char *decodeTechParms;
-	XieLTriplet width, height;
+	XieLTriplet width, height, rgblevels; 
+	XieConstant rgbbias;
+	XieRGBToYCbCrParam *RGBToYCbCrParm = (XieRGBToYCbCrParam *) NULL;
+	XieYCbCrToRGBParam *YCbCrToRGBParm = (XieYCbCrToRGBParam *) NULL;
+	int doYCbCr = True;
 
 	needconstrain = 0;
-	parms = ( char * ) NULL;
 	decodeTechParms = ( char * ) NULL;
 	XIELut = ( XieLut ) NULL;
 	XIEPhotomap = (XiePhotomap) NULL;
@@ -197,6 +197,10 @@ int     reps;
 
 	if ( reps )
 	{
+		encodeTech = ( ( EncodeParms * )p->ts )->encode;	
+		encodeTechParms = ( ( EncodeParms * )p->ts )->parms;
+		exportClient = ( ( EncodeParms * )p->ts )->exportClient;
+
 		/* determine flo size */
 	
 		flo1_elements = 2;
@@ -206,11 +210,18 @@ int     reps;
 			flo2_elements+=2;
 		if ( needconstrain == 1 && type == xieValSingleBand )
 			flo2_elements+=2;
+		if ( type == xieValTripleBand &&
+			encodeTech == xieValEncodeJPEGBaseline &&
+			doYCbCr == True )
+		{
+			flo1_elements += 1;
+			flo2_elements += 1;
+		}
 
 		flograph1 = XieAllocatePhotofloGraph(flo1_elements);
 		flograph2 = XieAllocatePhotofloGraph(flo2_elements);
 		if ( flograph1 == ( XiePhotoElement * ) NULL || 
-			flograph2 == ( XiePhotoElement * ) NULL )
+		 flograph2 == ( XiePhotoElement * ) NULL )
 		{
 			fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
 			reps = 0;
@@ -224,23 +235,30 @@ int     reps;
                 XieFloImportPhotomap(&flograph1[idx], XIEPhotomap, False);
 		idx++;
 
-		encodeTech = ( ( EncodeParms * )p->ts )->encode;	
-		encodeTechParms = ( ( EncodeParms * )p->ts )->parms;
-		exportClient = ( ( EncodeParms * )p->ts )->exportClient;
-	}
-
-	if ( reps )
-	{
-		if ( exportClient == False )
+		if ( type == xieValTripleBand &&
+		     encodeTech == xieValEncodeJPEGBaseline &&
+		     doYCbCr == True )
 		{
-			XieFloExportPhotomap(&flograph1[idx],
-				idx,
-				XIEPhotomap2,
-				encodeTech,
-				encodeTechParms
+
+			rgblevels[0] = 256; rgbbias[0]=0;
+			rgblevels[1] = 256; rgbbias[1]=127;
+			rgblevels[2] = 256; rgbbias[2]=127;
+
+			RGBToYCbCrParm = XieTecRGBToYCbCr(
+				rgblevels,
+				 0.299, 0.587, 0.114, 
+				rgbbias
 			);
-		}
-		else
+			/* XXX check for error return */
+			XieFloConvertFromRGB( &flograph1[idx],
+				idx,
+				xieValYCbCr,
+				(char *) RGBToYCbCrParm
+			);
+			idx++;
+		} 
+
+		if ( exportClient == True )
 		{
 			XieFloExportClientPhoto(&flograph1[idx],
 				idx,
@@ -248,17 +266,7 @@ int     reps;
 				encodeTech,
 				encodeTechParms
 			);
-		}
-		
-		idx = 0;
-
-		if ( exportClient == False )
-		{
-			XieFloImportPhotomap(&flograph2[idx], XIEPhotomap2, 
-				False );
-		}
-		else
-		{
+			idx = 0;
 			GetDecodeParms( encodeTech, encodeTechParms,
 				&decodeTech, &decodeTechParms );
 
@@ -272,38 +280,55 @@ int     reps;
 				decodeTechParms
 			);
 		}
+		else
+		{
+			XieFloExportPhotomap(&flograph1[idx],
+				idx,
+				XIEPhotomap2,
+				encodeTech,
+				encodeTechParms
+			);
+			idx = 0;
+			XieFloImportPhotomap(&flograph2[idx], XIEPhotomap2, 
+				False );
+		}
 		idx++;
 
-		levels[ 0 ] = ( long ) stdCmap.red_max + 1;
-		levels[ 1 ] = ( long ) stdCmap.green_max + 1;
-		levels[ 2 ] = ( long ) stdCmap.blue_max + 1;
-
-                in_low[ 0 ] = 0.0;
-                in_low[ 1 ] = 0.0;
-                in_low[ 2 ] = 0.0;
-		in_high[ 0 ] = ( float ) ( 1 << image->depth[ 0 ] ) - 1;
-		in_high[ 1 ] = ( float ) ( 1 << image->depth[ 1 ] ) - 1;
-		in_high[ 2 ] = ( float ) ( 1 << image->depth[ 2 ] ) - 1;
-                out_low[ 0 ] = 0;
-                out_low[ 1 ] = 0;
-                out_low[ 2 ] = 0;
-                out_high[ 0 ] = stdCmap.red_max;
-                out_high[ 1 ] = stdCmap.green_max;
-                out_high[ 2 ] = stdCmap.blue_max;
-                parms = ( char * ) XieTecClipScale( in_low, in_high,
-                                out_low, out_high);
-                if ( parms == ( char * ) NULL )
-                        reps = 0;
 	}
 	if ( reps )
 	{
 		if ( type == xieValTripleBand )
 		{
-			XieFloConstrain(&flograph2[idx],
+			if ( encodeTech == xieValEncodeJPEGBaseline &&
+			     doYCbCr == True )
+			{
+
+				YCbCrToRGBParm = XieTecYCbCrToRGB(
+					rgblevels,
+					0.299, 0.587, 0.114,
+					rgbbias,
+					xieValGamutNone,
+					(char *) NULL
+				);
+				/* XXX check for error return */
+				XieFloConvertToRGB( &flograph2[idx],
+					idx,
+					xieValYCbCr,
+					(char *) YCbCrToRGBParm
+				);
+				idx++;
+			}
+
+			levels[ 0 ] = ( long ) stdCmap.red_max + 1;
+			levels[ 0 ] = ( long ) stdCmap.red_max + 1;
+			levels[ 1 ] = ( long ) stdCmap.green_max + 1;
+			levels[ 2 ] = ( long ) stdCmap.blue_max + 1;
+			XieFloDither(&flograph2[idx],
 				idx,
+				0x7,
 				levels,
-				xieValConstrainClipScale,
-				parms
+				xieValDitherDefault,
+				(char *) NULL
 			);
 			idx++;
 
@@ -349,34 +374,23 @@ int     reps;
 	}
 
 	if ( !reps )
-	{
 		FreeEncodePhotomapStuff( xp, p );
-	}
 	else 
 	{
 		dontClear = True;
-		if (  type == xieValTripleBand )
-		{
-			if ( WMSafe == True )
-				InstallThisColormap( xp->d, xp->p, 
-					stdCmap.colormap );
-			else 
-			{
-				InstallThisColormap( xp->d, xp->w, 
-					stdCmap.colormap );
-				InstallThisColormap( xp->d, drawableWindow, 
-					stdCmap.colormap );
-			}
-		}
+		if ( type == xieValTripleBand )
+			InstallThisColormap( xp, stdCmap.colormap );
                	XMoveWindow( xp->d, drawableWindow, WIDTH + 10, 0 );
                 XMapRaised( xp->d, drawableWindow );
                 XSync( xp->d, 0 );
 		dontClear = True;
 	}
-	if ( parms )
-		free( parms );
 	if ( decodeTechParms )
 		free( decodeTechParms );
+	if ( RGBToYCbCrParm )
+		free( (char *) RGBToYCbCrParm );
+	if ( YCbCrToRGBParm )
+		free( (char *) YCbCrToRGBParm );
 	return( reps );
 }
 
@@ -505,16 +519,17 @@ int     reps;
 	{
                 XieExecutePhotoflo(xp->d, flo1, True );
 		XSync( xp->d, 0 );
-		WaitForXIEEvent( xp, xieEvnNoExportAvailable, flo1, 2, False );
+		WaitForXIEEvent( xp, xieEvnNoExportAvailable,
+					flo1, flo1_elements, False );
                 if ( type == xieValTripleBand && interleave == xieValBandByPlane )
 		{
-			size = ReadNotifyExportTripleData( xp, p, 0, flo1, 
-				2, 1, size, &data, &done );
+			size = ReadNotifyExportTripleData( xp, p, 0,
+				flo1, flo1_elements, 1, size, &data, &done );
 		}
 		else
 		{
-			size = ReadNotifyExportData( xp, p, 0, flo1, 2, 1, 
-				size, &data, &done );
+			size = ReadNotifyExportData( xp, p, 0,
+				flo1, flo1_elements, 1, size, &data, &done );
 		}
 		WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo1, 0, False );
                 XieExecutePhotoflo(xp->d, flo2, True );
@@ -532,7 +547,7 @@ void EndEncodePhotomap(xp, p)
 XParms  xp;
 Parms   p;
 {
-	InstallCustomColormap( xp->d, xp->p );
+	InstallCustomColormap( xp );
 	XUnmapWindow( xp->d, drawableWindow );
         dontClear = False;
 	FreeEncodePhotomapStuff( xp, p );

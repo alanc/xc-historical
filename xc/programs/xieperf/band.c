@@ -1,4 +1,4 @@
-/* $XConsortium: band.c,v 1.1 93/10/26 10:08:17 rws Exp $ */
+/* $XConsortium: band.c,v 1.2 93/10/27 21:51:52 rws Exp $ */
 /**** module band.c ****/
 /******************************************************************************
 				NOTICE
@@ -129,7 +129,7 @@ int     reps;
 
 	if ( reps && colorclass )
 	{
-		InstallDefaultColormap( xp->d, xp->p );
+		InstallDefaultColormap( xp );
 		if ( !CreateColorBandSelectExtractFlo( xp, p, cube ) )
 		{
 			fprintf( stderr, "CreateColorBandSelectFlo failed\n" );
@@ -148,7 +148,7 @@ int     reps;
 	if ( !reps )
 	{
 		if ( colorclass )
-			InstallCustomColormap( xp->d, xp->p );
+			InstallCustomColormap( xp );
 		FreeBandStuff( xp, p );
 	}
 	return( reps );
@@ -225,10 +225,7 @@ int     reps;
 		FreeBandStuff( xp, p );
 	}
         else if ( useStdCmap == True )
-		if ( WMSafe == True )
-			InstallThisColormap( xp->d, xp->p, stdCmap.colormap );
-		else
-			InstallThisColormap( xp->d, xp->w, stdCmap.colormap );
+		InstallThisColormap( xp, stdCmap.colormap );
 
 	return( reps );
 }
@@ -604,10 +601,7 @@ XParms	xp;
 Parms	p;
 {
 	if ( useStdCmap == True )
-		if ( WMSafe == True )
-			InstallCustomColormap( xp->d, xp->p );
-		else
-			InstallCustomColormap( xp->d, xp->w );
+		InstallCustomColormap( xp );
 	FreeBandStuff( xp, p );
 }
 
@@ -616,7 +610,7 @@ XParms  xp;
 Parms   p;
 {
 	if ( IsColorVisual( cclass ) )
-		InstallCustomColormap( xp->d, xp->p );
+		InstallCustomColormap( xp );
 	FreeBandStuff( xp, p );
 }
 

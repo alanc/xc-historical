@@ -1,4 +1,4 @@
-/* $XConsortium: events.c,v 1.3 93/10/30 13:49:32 rws Exp $ */
+/* $XConsortium: events.c,v 1.4 93/10/30 15:28:27 rws Exp $ */
 /**** module events.c ****/
 /******************************************************************************
 				NOTICE
@@ -69,6 +69,7 @@ static int timeout = 60;        /* in seconds */
 static XiePhotomap XIEPhotomap;
 static XiePhotomap XIEPhotomap2;
 static XieRoi XIERoi;
+static XieLut XIELut;
 
 static XiePhotoElement *flograph;
 static XiePhotoflo flo;
@@ -205,7 +206,7 @@ Bool	verbose;
 				ExportAvailable->src == tag )
 			{
 				if ( verbose == True )
-					fprintf( stderr, "NoExportAvailable event received\n" );
+					fprintf( stderr, "ExportAvailable event received\n" );
 				retval = ExportAvailable->data[ 0 ];
 				done = True;
 			}
@@ -528,32 +529,25 @@ XParms	xp;
 Parms	p;
 int	reps;
 {
-	int	i, rectsSize;
+	int	i, lutSize;
+	char	*lut;
+	XieLTriplet start, length;
 
-        XIERoi = ( XieRoi ) NULL;
+        XIELut = ( XieLut ) NULL;
         flograph = ( XiePhotoElement * ) NULL;
         flo = ( XiePhotoflo ) NULL;
 
-        rectsSize = 10;
-        rects = (XieRectangle *)malloc( rectsSize * sizeof( XieRectangle ) );
-        data = (char *)malloc( rectsSize * sizeof( XieRectangle ) );
-        if ( rects == ( XieRectangle * ) NULL || data == ( char * ) NULL )
+        lutSize = 10;
+        lut = (char *)malloc( lutSize );
+        data = (char *)malloc( lutSize );
+        if ( lut == ( char * ) NULL || data == ( char * ) NULL )
         {
                 reps = 0;
         }
         else
         {
-		/* the ROI attribs are irrelevant, but initialize anyway */
-
-                for ( i = 0; i < rectsSize; i++ )
-                {
-                        rects[ i ].x = i * 10;
-                        rects[ i ].y = i * 10;
-                        rects[ i ].width = i * 10;
-                        rects[ i ].height = i * 10;
-                }
-                if ( ( XIERoi = GetXIERoi( xp, p, rects, rectsSize ) ) ==
-                        ( XieRoi ) NULL )
+                if ( ( XIELut = GetXIELut( xp, p, lut, lutSize, lutSize ) ) ==
+                        ( XieLut ) NULL )
                 {
                         reps = 0;
                 }
@@ -569,15 +563,28 @@ int	reps;
                         }
                         else
                         {
-                                XieFloImportROI(&flograph[0], XIERoi);
-                                XieFloExportClientROI(&flograph[1],
+               			length[ 0 ] = lutSize;
+                		length[ 1 ] = 0;
+                		length[ 2 ] = 0;
+
+                		start[ 0 ] = 0;
+                		start[ 1 ] = 0;
+                		start[ 2 ] = 0;
+
+                                XieFloImportLUT(&flograph[0], XIELut);
+                                XieFloExportClientLUT(&flograph[1],
                                         1,       /* source phototag number */
-                                        xieValNewData
+                                        xieValMSFirst,
+					xieValNewData,
+					start,
+					length
                                 );
                                 flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
                         }
                 }
         }
+	if ( lut )
+		free( lut );
         if ( !reps )
                 FreeExportAvailableEventStuff( xp, p );
         return( reps );
@@ -743,12 +750,6 @@ FreeExportAvailableEventStuff( xp, p )
 XParms	xp;
 Parms	p;
 {
-	if ( rects )
-	{
-		free( rects );
-		rects = ( XieRectangle * ) NULL;
-	}
-
         if ( data )
         {
                 free( data );
@@ -767,10 +768,10 @@ Parms	p;
                 flo = ( XiePhotoflo ) NULL;
         }
 
-	if ( XIERoi )
+	if ( XIELut )
 	{
-		XieDestroyROI( xp->d, XIERoi );
-	        XIERoi = ( XieRoi ) NULL;
+		XieDestroyLUT( xp->d, XIELut );
+	        XIELut = ( XieLut ) NULL;
 	}
 }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: rgb.c,v 1.1 93/10/26 10:08:37 rws Exp $ */
+/* $XConsortium: rgb.c,v 1.2 93/10/27 21:52:46 rws Exp $ */
 
 /**** module rgb.c ****/
 /******************************************************************************
@@ -82,7 +82,7 @@ int     reps;
 	flograph = ( XiePhotoElement * ) NULL;
 	flo = ( XiePhotoflo ) NULL;
 
-	InstallDefaultColormap( xp->d, xp->p );
+	InstallDefaultColormap( xp );
 	
 	if ( !( clist = XieCreateColorList( xp->d ) ) )
 		reps = 0;
@@ -107,7 +107,7 @@ int     reps;
 
 	if ( !reps )
 	{
-		InstallCustomColormap( xp->d, xp->p );
+		InstallCustomColormap( xp );
 		FreeRGBStuff( xp, p );
 	}
 	return( reps );
@@ -416,7 +416,7 @@ void EndRGB(xp, p)
 XParms  xp;
 Parms   p;
 {
-	InstallCustomColormap( xp->d, xp->p );
+	InstallCustomColormap( xp );
 	FreeRGBStuff( xp, p );
 }
 
