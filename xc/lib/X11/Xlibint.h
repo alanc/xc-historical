@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.139 94/03/30 11:26:49 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.140 94/03/30 11:30:21 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -21,7 +21,7 @@ without express or implied warranty.
  *	Warning, there be dragons here....
  */
 
-#ifndef NEED_EVENTS
+#if !defined(NEED_EVENTS) && !NeedFunctionPrototypes
 #define _XEVENT_
 #endif
 
@@ -727,9 +727,9 @@ _XFUNCPROTOBEGIN
 #ifdef DataRoutineIsProcedure
 extern void Data(
 #if NeedFunctionPrototypes
-    Display*	/* dpy */,
-    char*	/* data */,
-    long	/* len */
+    Display*		/* dpy */,
+    _Xconst char*	/* data */,
+    long		/* len */
 #endif
 );
 #endif
@@ -822,6 +822,64 @@ extern char *_XGetAsyncReply(
     int		/* len */,
     int		/* extra */,
     Bool	/* discard */
+#endif
+);
+extern _XFlush(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */
+#endif
+);
+extern int _XEventsQueued(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    int 	/* mode */
+#endif
+);
+extern _XReadEvents(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */
+#endif
+);
+extern _XRead(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    char*	/* data */,
+    long	/* size */
+#endif
+);
+extern _XReadPad(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    char*	/* data */,
+    long	/* size */
+#endif
+);
+extern _XSend(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    _Xconst char*	/* data */,
+    long		/* size */
+#endif
+);
+extern Status _XReply(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    xReply*	/* rep */,
+    int		/* extra */,
+    Bool	/* discard */
+#endif
+);
+extern _XEnq(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    xEvent*	/* event */
+#endif
+);
+extern _XDeq(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    _XQEvent*	/* prev */,
+    _XQEvent*	/* qelt */
 #endif
 );
 
