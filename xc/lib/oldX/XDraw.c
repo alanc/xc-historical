@@ -1,4 +1,4 @@
-/* $Header: XDraw.c,v 1.3 87/12/09 19:08:55 rws Exp $ */
+/* $Header: XDraw.c,v 1.4 88/04/29 14:05:59 jim Exp $ */
 #include "copyright.h"
 
 /* Copyright    Massachusetts Institute of Technology    1987	*/
@@ -203,6 +203,10 @@ static vertices_converter(pathaddr, pathcount, ppathaddr_new, newpathcnt)
   int       count;
   int	    curve_flag;	    /* 0 = no curves in path; 1 = curves in path */
   
+  /*
+   * The following is necessary because of the pseudo-floating point
+   * calculations done down below.
+   */
   i = 1;
   if (*(char *) &i)
     little_endian = 1;
@@ -452,34 +456,22 @@ static vertices_converter(pathaddr, pathcount, ppathaddr_new, newpathcnt)
 	    	for ( ; m > 1; m--)
 		  {
 		    pbntable += increment;
+		    xxe.lword = *pbntable * p0x;
+		    yye.lword = *pbntable++ * p0y;
+		    xxe.lword += *pbntable * p1x;
+		    yye.lword += *pbntable++ * p1y;
+		    xxe.lword += *pbntable * p2x;
+		    yye.lword += *pbntable++ * p2y;
+		    xxe.lword += *pbntable * p3x;
+		    yye.lword += *pbntable++ * p3y;
+		    xxe.lword = xxe.lword << 1;	/* double values...  */
+		    yye.lword = yye.lword << 1;	/* ...bn accts for it*/
+		    xxe.lword += 0x8000; /* round off the accum value */
+		    yye.lword += 0x8000;
 		    if (little_endian) {
-			xxe.lword = *pbntable * p0x;
-			yye.lword = *pbntable++ * p0y;
-			xxe.lword += *pbntable * p1x;
-			yye.lword += *pbntable++ * p1y;
-			xxe.lword += *pbntable * p2x;
-			yye.lword += *pbntable++ * p2y;
-			xxe.lword += *pbntable * p3x;
-			yye.lword += *pbntable++ * p3y;
-			xxe.lword = xxe.lword << 1;	/* double values...  */
-			yye.lword = yye.lword << 1;	/* ...bn accts for it*/
-			xxe.lword += 0x8000; /* round off the accum value */
-			yye.lword += 0x8000;
 			pnewpath->x = xxe.sword.high;/* the X coordinate  */
 			pnewpath->y = yye.sword.high;/* the Y coordinate  */
 		    } else {
-			xxe.lword = *pbntable * p0x;
-			yye.lword = *pbntable++ * p0y;
-			xxe.lword += *pbntable * p1x;
-			yye.lword += *pbntable++ * p1y;
-			xxe.lword += *pbntable * p2x;
-			yye.lword += *pbntable++ * p2y;
-			xxe.lword += *pbntable * p3x;
-			yye.lword += *pbntable++ * p3y;
-			xxe.lword = xxe.lword << 1;	/* double values...  */
-			yye.lword = yye.lword << 1;	/* ...bn accts for it*/
-			xxe.lword += 0x8000; /* round off the accum value */
-			yye.lword += 0x8000;
 			pnewpath->x = xxe.sword.low;/* the X coordinate  */
 			pnewpath->y = yye.sword.low;/* the Y coordinate  */
 		    }
