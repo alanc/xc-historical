@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.sample,v 1.7 94/04/05 16:40:53 gildea Exp $
+XCOMM site:  $XConsortium: site.sample,v 1.8 94/04/07 15:45:55 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -81,8 +81,36 @@ XCOMM site:  $XConsortium: site.sample,v 1.7 94/04/05 16:40:53 gildea Exp $
 */
 
 /*
-#ifdef SVR4Architecture
+#if XsvgaServer
 #define SvgaConfig vga.pmi:1024x768
+#endif
+*/
+
+/* You do NOT need SetUID if you only run the server under xdm */
+/* You MAY need SetUID if users run the server by hand or under xinit */
+/* Consult your system administrator before making the X server setuid */
+/*
+#if defined(SunArchitecture) && OSMajorVersion > 4
+#define InstallXserverSetUID YES
+#endif
+*/
+
+/* You do NOT need SetUID if you only run the server under xdm */
+/* You MAY need SetUID if users run the server by hand or under xinit */
+/* Consult your system administrator before making the X server setuid */
+/*
+#if XsvgaServer
+#define SvgaConfig vga.pmi:1024x768
+#define InstallXserverSetUID YES
+#endif
+*/
+
+/* You do NOT need SetUID if you only run the server under xdm */
+/* You MAY need SetUID if users run the server by hand or under xinit */
+/* Consult your system administrator before making the X server setuid */
+/*
+#ifdef XFree86Version
+#define InstallXserverSetUID YES
 #endif
 */
 
