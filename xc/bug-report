@@ -1,34 +1,43 @@
-Please send just ONE bug report per mail message.  Reports should be sent to
-
-                            xbugs@expo.lcs.mit.edu
+******************************************************************************* 
+*                                                                             *
+*          Please remove this header and send ONE bug per message to          *
+*                                                                             *
+*                           xbugs@expo.lcs.mit.edu                            *
+*                                                                             *
+*******************************************************************************
 
 
 VERSION:
-	X Version 11 Release 2
+	X Window System, Version 11, Release 2
 
-CLIENT MACHINE:
-	(e.g. Sun 3/280, Microvax II, HP 9000, IBM PC/RT, etc.)
 
-CLIENT OPERATING SYSTEM:
-	(e.g. Ultrix 2.0, SunOS 3.4, 4.3bsd, etc.)
+CLIENT MACHINE and OPERATING SYSTEM:
+	[e.g. Sun 3/280 running SunOS 3.4, Microvax II running Ultrix 2.0, ...]
+
 
 DISPLAY:
-	(e.g. QVSS, GPX, CG4, HP TOPCAT, etc.)
+	[e.g. Digital QVSS, Sun CG4, HP Topcat, IBM APA16, Apollo 4 plane, ...]
+
 
 AREA:
-	(e.g. Xlib, xterm, server, etc.)
+	[e.g. Xlib, xterm, uwm, server, ...]
+
 
 SYNOPSIS:
-	(Brief description of the problem)
+	[Brief description of the problem and where it is located.]
+
 
 DESCRIPTION:
-	(More detailed description)
+	[Detailed description.]
+
 
 REPEAT-BY:
-	(What you did to get the error; include test program if appropriate)
+	[What you did to get the error; include test program if appropriate.]
+
 
 FILES:
-	(list source files involved)
+	[List source files involved, if possible.]
+
 
 FIX:
-	(Preferred, but not necessary)
+	[Preferred, but not necessary.]
