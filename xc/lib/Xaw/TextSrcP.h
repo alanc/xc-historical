@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextSrcP.h,v 1.17 89/10/04 13:56:16 kit Exp $
+* $XConsortium: TextSrcP.h,v 1.18 91/02/20 17:58:06 converse Exp $
 */
 
 
@@ -41,15 +41,22 @@ SOFTWARE.
  *
  ***********************************************************************/
 
-#include <X11/ObjectP.h>
-#include <X11/Xaw/TextP.h>	/* This source works with the Text widget. */
 #include <X11/Xaw/TextSrc.h>
+#include <X11/Xaw/TextP.h>	/* This source works with the Text widget. */
 
 /************************************************************
  *
  * New fields for the TextSrc object class record.
  *
  ************************************************************/
+
+typedef struct {
+  XtPointer		next_extension;
+  XrmQuark		record_type;
+  long			version;
+  Cardinal		record_size;
+  int			(*Input)();
+} TextSrcExtRec, *TextSrcExt;
 
 typedef struct _TextSrcClassPart {
   XawTextPosition	(*Read)();
@@ -72,6 +79,8 @@ extern TextSrcClassRec textSrcClassRec;
 typedef struct {
     /* resources */
   XawTextEditType	edit_mode;
+  XrmQuark		text_format;	/* 2 formats: FMT8BIT for Ascii */
+					/*            FMTWIDE for ISO 10646 */
 } TextSrcPart;
 
 /****************************************************************
@@ -85,6 +94,28 @@ typedef struct _TextSrcRec {
   TextSrcPart	textSrc;
 } TextSrcRec;
 
+/******************************************************************
+ *
+ * Semiprivate declarations of functions used in other modules
+ *
+ ******************************************************************/
+
+char* _XawTextWCToMB(
+#if NeedFunctionPrototypes
+    Display* /* d */,
+    wchar_t* /* wstr */,
+    int*     /* len_in_out */
+#endif
+);
+
+wchar_t* _XawTextMBToWC(
+#if NeedFunctionPrototypes
+    Display*  /* d */,
+    char*     /* str */,
+    int*      /* len_in_out */
+#endif
+);
+
 /************************************************************
  *
  * Private declarations.
@@ -96,11 +127,14 @@ typedef int (*_XawIntFunc)();
 typedef XawTextPosition (*_XawTextPositionFunc)();
 typedef void (*_XawTextVoidFunc)();
 
+#define XtInheritInput                ((_XawTextPositionFunc) _XtInherit)
 #define XtInheritRead                 ((_XawTextPositionFunc) _XtInherit)
 #define XtInheritReplace              ((_XawIntFunc) _XtInherit)
 #define XtInheritScan                 ((_XawTextPositionFunc) _XtInherit)
 #define XtInheritSearch               ((_XawTextPositionFunc) _XtInherit)
 #define XtInheritSetSelection         ((_XawTextVoidFunc) _XtInherit)
 #define XtInheritConvertSelection     ((_XawBooleanFunc) _XtInherit)
+#define XtTextSrcExtVersion	      1
+#define XtTextSrcExtTypeString        "XT_TEXTSRC_EXT"
 
 #endif /* _XawTextSrcP_h */

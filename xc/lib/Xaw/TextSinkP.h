@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextSinkP.h,v 1.3 89/10/04 13:56:59 kit Exp $
+* $XConsortium: TextSinkP.h,v 1.4 90/04/30 17:46:39 converse Exp $
 */
 
 
@@ -41,10 +41,9 @@ SOFTWARE.
  *
  ***********************************************************************/
 
-#include <X11/ObjectP.h>
+#include <X11/Xaw/TextSink.h>
 #include <X11/Xaw/TextP.h>	/* This source works with the Text widget. */
 #include <X11/Xaw/TextSrcP.h>	/* This source works with the Text Source. */
-#include <X11/Xaw/TextSink.h>
 
 /************************************************************
  *
@@ -76,7 +75,6 @@ extern TextSinkClassRec textSinkClassRec;
 /* New fields for the TextSink object record */
 typedef struct {
     /* resources */
-    XFontStruct	*font;		/* Font to draw in. */
     Pixel foreground;		/* Foreground color. */
     Pixel background;		/* Background color. */
 

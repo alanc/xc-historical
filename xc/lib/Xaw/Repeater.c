@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Repeater.c,v 1.8 91/03/14 16:48:04 converse Exp $
+ * $XConsortium: Repeater.c,v 1.9 91/10/16 21:39:36 eswu Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -25,7 +25,7 @@
  * This widget is used for press-and-hold style buttons.
  */
 
-#include <X11/IntrinsicP.h>		/* for toolkit inheritance stuff */
+#include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>		/* for XtN and XtC defines */
 #include <X11/Xaw/XawInit.h>		/* for XawInitializeWidgetSet() */
 #include <X11/Xaw/RepeaterP.h>		/* us */
@@ -33,7 +33,7 @@
 static void tic();			/* clock timeout */
 
 #define DO_CALLBACK(rw) \
-    XtCallCallbackList ((Widget) rw, rw->command.callbacks, NULL)
+    XtCallCallbackList ((Widget) rw, rw->command.callbacks, (XtPointer)NULL)
 
 
 #define ADD_TIMEOUT(rw,delay) \
@@ -247,7 +247,7 @@ static void ActionStart (gw, event, params, num_params)
 
     CLEAR_TIMEOUT (rw);
     if (rw->repeater.start_callbacks) 
-      XtCallCallbackList (gw, rw->repeater.start_callbacks, NULL);
+      XtCallCallbackList (gw, rw->repeater.start_callbacks, (XtPointer)NULL);
 
     DO_CALLBACK (rw);
     rw->repeater.timer = ADD_TIMEOUT (rw, rw->repeater.initial_delay);
@@ -266,6 +266,6 @@ static void ActionStop (gw, event, params, num_params)
 
     CLEAR_TIMEOUT ((RepeaterWidget) gw);
     if (rw->repeater.stop_callbacks) 
-      XtCallCallbackList (gw, rw->repeater.stop_callbacks, NULL);
+      XtCallCallbackList (gw, rw->repeater.stop_callbacks, (XtPointer)NULL);
 }
 

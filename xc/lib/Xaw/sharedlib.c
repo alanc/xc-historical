@@ -21,6 +21,8 @@
 #include <X11/Xaw/AsciiSinkP.h>
 #include <X11/Xaw/AsciiSrcP.h>
 #include <X11/Xaw/AsciiTextP.h>
+#include <X11/Xaw/MultiSinkP.h>
+#include <X11/Xaw/MultiSrcP.h>
 #include <X11/Xaw/BoxP.h>
 #include <X11/Xaw/CommandP.h>
 #include <X11/Xaw/DialogP.h>
@@ -66,6 +68,12 @@ WidgetClass asciiStringWidgetClass = (WidgetClass)&asciiStringClassRec;
 extern AsciiDiskClassRec asciiDiskClassRec;
 WidgetClass asciiDiskWidgetClass = (WidgetClass)&asciiDiskClassRec;
 #endif
+
+extern MultiSinkClassRec multiSinkClassRec;
+WidgetClass multiSinkObjectClass = (WidgetClass)&multiSinkClassRec;
+
+extern MultiSrcClassRec multiSrcClassRec;
+WidgetClass multiSrcObjectClass = (WidgetClass)&multiSrcClassRec;
 
 extern BoxClassRec boxClassRec;
 WidgetClass boxWidgetClass = (WidgetClass)&boxClassRec;

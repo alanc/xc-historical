@@ -53,8 +53,6 @@ static void FindDistance(), Resolve(), SetTabs(), GetCursorBounds();
 
 #define offset(field) XtOffsetOf(TextSinkRec, text_sink.field)
 static XtResource resources[] = {
-  {XtNfont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
-     offset(font), XtRString, XtDefaultFont},
   {XtNforeground, XtCForeground, XtRPixel, sizeof (Pixel),
      offset(foreground), XtRString, XtDefaultForeground}, 
   {XtNbackground, XtCBackground, XtRPixel, sizeof (Pixel),
@@ -120,7 +118,7 @@ static void
 ClassPartInitialize(wc)
 WidgetClass wc;
 {
-  register TextSinkObjectClass t_src, superC;
+  TextSinkObjectClass t_src, superC;
 
   t_src = (TextSinkObjectClass) wc;
   superC = (TextSinkObjectClass) t_src->object_class.superclass;
@@ -222,16 +220,9 @@ Cardinal *num_args;
 {
   TextSinkObject w = (TextSinkObject) new;
   TextSinkObject old_w = (TextSinkObject) current;
-  TextSinkObjectClass class = (TextSinkObjectClass) w->object.widget_class;
 
-  if (w->text_sink.font != old_w->text_sink.font) {
-    (*class->text_sink_class.SetTabs)(new, w->text_sink.tab_count, 
-				      w->text_sink.char_tabs);
-    ((TextWidget)XtParent(new))->text.redisplay_needed = True;
-  } else {
-      if (w->text_sink.foreground != old_w->text_sink.foreground)
-	  ((TextWidget)XtParent(new))->text.redisplay_needed = True;
-  }
+  if (w->text_sink.foreground != old_w->text_sink.foreground)
+     ((TextWidget)XtParent(new))->text.redisplay_needed = True;
 
   return FALSE;
 }
@@ -403,11 +394,13 @@ MaxLines(w, height)
 Widget w;
 Dimension height;
 {
-  TextSinkObject sink = (TextSinkObject) w;
-  int font_height;
-
-  font_height = sink->text_sink.font->ascent + sink->text_sink.font->descent;
-  return( ((int) height) / font_height );
+  /*
+   * The fontset has gone down to descent Sink Widget, so
+   * the functions such MaxLines, SetTabs... are bound to the descent.
+   *
+   * by Li Yuhong, Jan. 15, 1991
+   */
+  return 0;
 }
 
 /*	Function Name: MaxHeight
@@ -424,10 +417,7 @@ MaxHeight(w, lines)
 Widget w;
 int lines;
 {
-  TextSinkObject sink = (TextSinkObject) w;
-
-  return(lines * (sink->text_sink.font->ascent + 
-		  sink->text_sink.font->descent));
+  return 0;
 }
 
 /*	Function Name: SetTabs
@@ -438,47 +428,14 @@ int lines;
  *	Returns: none
  */
 
+/*ARGSUSED*/
 static void
 SetTabs(w, tab_count, tabs)
 Widget w;
 int tab_count;
 short *tabs;
 {
-  TextSinkObject sink = (TextSinkObject) w;
-  int i;
-  Atom XA_FIGURE_WIDTH;
-  unsigned long figure_width = 0;
-  XFontStruct *font = sink->text_sink.font;
-
-/*
- * Find the figure width of the current font.
- */
-
-  XA_FIGURE_WIDTH = XInternAtom(XtDisplayOfObject(w), "FIGURE_WIDTH", FALSE);
-  if ( XA_FIGURE_WIDTH != None && 
-       ( (!XGetFontProperty(font, XA_FIGURE_WIDTH, &figure_width)) ||
-	 (figure_width == 0)) ) 
-    if (font->per_char && font->min_char_or_byte2 <= '$' &&
-	font->max_char_or_byte2 >= '$')
-      figure_width = font->per_char['$' - font->min_char_or_byte2].width;
-    else
-      figure_width = font->max_bounds.width;
-
-  if (tab_count > sink->text_sink.tab_count) {
-    sink->text_sink.tabs = (Position *)
-	XtRealloc((char *) sink->text_sink.tabs,
-		  (Cardinal) (tab_count * sizeof(Position)));
-    sink->text_sink.char_tabs = (short *)
-	XtRealloc((char *) sink->text_sink.char_tabs,
-		  (Cardinal) (tab_count * sizeof(short)));
-  }
-
-  for ( i = 0 ; i < tab_count ; i++ ) {
-    sink->text_sink.tabs[i] = tabs[i] * figure_width;
-    sink->text_sink.char_tabs[i] = tabs[i];
-  }
-    
-  sink->text_sink.tab_count = tab_count;
+  return;
 }
 
 /*	Function Name: GetCursorBounds
@@ -782,8 +739,8 @@ int tab_count, *tabs;
   if (tab_count > 0) {
     TextSinkObjectClass class = (TextSinkObjectClass) w->core.widget_class;
     short *char_tabs = (short*)XtMalloc( (unsigned)tab_count*sizeof(short) );
-    register short *tab;
-    register int i;
+    short *tab;
+    int i;
 
     for (i = tab_count, tab = char_tabs; i; i--) *tab++ = (short)*tabs++;
 

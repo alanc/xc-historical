@@ -1,4 +1,4 @@
-/* $XConsortium: XawInit.h,v 1.3 91/07/22 18:52:06 converse Exp $
+/* $XConsortium: XawInit.h,v 1.4 91/07/22 19:05:25 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -19,8 +19,6 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#include <X11/Xfuncproto.h>
 
 _XFUNCPROTOBEGIN
 

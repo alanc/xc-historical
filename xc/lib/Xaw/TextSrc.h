@@ -1,5 +1,5 @@
 /*
- * $XConsortium: TextSrc.h,v 1.8 91/01/02 11:41:09 gildea Exp $
+ * $XConsortium: TextSrc.h,v 1.9 91/02/17 13:12:26 rws Exp $
  */
 
 /***********************************************************
@@ -35,8 +35,7 @@ SOFTWARE.
  *
  ***********************************************************************/
 
-#include <X11/Object.h>
-#include <X11/Xfuncproto.h>
+#include <X11/Xaw/Text.h>
 
 /* Resources:
 

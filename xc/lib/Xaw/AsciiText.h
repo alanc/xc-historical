@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AsciiText.h,v 1.15 89/07/06 16:00:35 kit Exp $ 
+ * $XConsortium: AsciiText.h,v 1.16 91/01/21 12:39:04 swick Exp $ 
  */
 
 /***********************************************************
@@ -56,6 +56,7 @@ SOFTWARE.
 
 #include <X11/Xaw/Text.h>		/* AsciiText is a subclass of Text */
 #include <X11/Xaw/AsciiSrc.h>
+#include <X11/Xaw/MultiSrc.h>
 
 /* Resources:
 
@@ -75,6 +76,7 @@ SOFTWARE.
  foreground	     Foreground		Pixel		  Black
  height		     Height		Dimension	  font height
  insertPosition	     TextPosition	int		  0
+ international	     International		Boolean		false
  leftMargin	     Margin		Position	  2
  mappedWhenManaged   MappedWhenManaged	Boolean		  True
  resize		     Resize		XawTextResizeMode XawtextResizeNever

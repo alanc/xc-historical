@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiText.c,v 1.44 91/07/11 18:09:54 converse Exp $ */
+/* $XConsortium: AsciiText.c,v 1.44 91/07/12 11:27:23 converse Exp $ */
 
 /*
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -52,6 +52,9 @@ SOFTWARE.
 #include <X11/Xaw/AsciiTextP.h>
 #include <X11/Xaw/AsciiSrc.h>
 #include <X11/Xaw/AsciiSink.h>
+#include <X11/Xaw/MultiSrc.h>
+#include <X11/Xaw/MultiSinkP.h>
+#include <X11/Xaw/XawImP.h>
 
 #define TAB_COUNT 32
 
@@ -114,15 +117,31 @@ Cardinal *num_args;
   int i;
   int tabs[TAB_COUNT], tab;
 
+  MultiSinkObject sink;
+
   /* superclass Initialize can't set the following,
    * as it didn't know the source or sink when it was called */
+
   if (request->core.height == DEFAULT_TEXT_HEIGHT)
     new->core.height = DEFAULT_TEXT_HEIGHT;
 
-  w->text.source = XtCreateWidget( "textSource", asciiSrcObjectClass,
+
+  /* This is the main change for internationalization.  */
+
+  if ( w->simple.international == True ) { /* The multi* are international. */
+
+      w->text.source = XtCreateWidget( "textSource", multiSrcObjectClass,
 				  new, args, *num_args );
-  w->text.sink = XtCreateWidget( "textSink", asciiSinkObjectClass,
+      w->text.sink = XtCreateWidget( "textSink", multiSinkObjectClass,
 				new, args, *num_args );
+  }
+  else { 
+
+      w->text.source = XtCreateWidget( "textSource", asciiSrcObjectClass,
+				  new, args, *num_args );
+      w->text.sink = XtCreateWidget( "textSink", asciiSinkObjectClass,
+				new, args, *num_args );
+  }
 
   if (w->core.height == DEFAULT_TEXT_HEIGHT)
     w->core.height = VMargins(w) + XawTextSinkMaxHeight(w->text.sink, 1);
@@ -134,12 +153,31 @@ Cardinal *num_args;
 
   XawTextDisableRedisplay(new);
   XawTextEnableRedisplay(new);
+
+
+  /* If we are using a MultiSink we need to tell the input method stuff. */
+
+  if ( w->simple.international == True ) {
+
+      sink = (MultiSinkObject)w->text.sink;
+      _XawImRegister( new );
+      _XawImVASetValues( new, XtNfontSet, sink->multi_sink.fontset,
+		    XtNinsertPosition, w->text.insertPos,
+		    XtNforeground, sink->text_sink.foreground,
+		    XtNbackground, sink->text_sink.background,
+		    NULL );
+  }
 }
 
 static void 
 Destroy(w)
 Widget w;
 {
+    /* Disconnect input method */
+
+    if ( ((AsciiWidget)w)->simple.international == True )
+        _XawImUnregister( w );
+
     if (w == XtParent(((AsciiWidget)w)->text.source))
 	XtDestroyWidget( ((AsciiWidget)w)->text.source );
 

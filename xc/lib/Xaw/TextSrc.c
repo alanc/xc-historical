@@ -30,13 +30,16 @@
  *
  */
 
-#include <stdio.h>
-#include <ctype.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
+#include <X11/Xutil.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/TextSrcP.h>
+#include <X11/Xmu/Atoms.h>
 #include <X11/Xmu/CharSet.h>
+#include "XawI18n.h"
+#include <stdio.h>
+#include <ctype.h>
 
 /****************************************************************
  *
@@ -93,7 +96,7 @@ TextSrcClassRec textSrcClassRec = {
     /* tm_table		   	*/	NULL,
     /* query_geometry		*/	NULL,
     /* display_accelerator	*/	NULL,
-    /* extension		*/	NULL
+    /* extension		*/	NULL,
   },
 /* textSrc_class fields */
   {
@@ -120,7 +123,7 @@ static void
 ClassPartInitialize(wc)
 WidgetClass wc;
 {
-  register TextSrcObjectClass t_src, superC;
+  TextSrcObjectClass t_src, superC;
 
   t_src = (TextSrcObjectClass) wc;
   superC = (TextSrcObjectClass) t_src->object_class.superclass;
@@ -129,7 +132,6 @@ WidgetClass wc;
  * We don't need to check for null super since we'll get to TextSrc
  * eventually.
  */
-
     if (t_src->textSrc_class.Read == XtInheritRead) 
       t_src->textSrc_class.Read = superC->textSrc_class.Read;
 
@@ -175,6 +177,8 @@ int length;
 {
   XtAppError(XtWidgetToApplicationContext(w), 
 	     "TextSrc Object: No read function is defined.");
+
+  return( (XawTextPosition) 0 ); /* for gcc -Wall and lint */
 }
 
 /*	Function Name: Replace.
@@ -222,6 +226,8 @@ Boolean	              include;
 {
   XtAppError(XtWidgetToApplicationContext(w), 
 	     "TextSrc Object: No SCAN function is defined.");
+
+  return( (XawTextPosition) 0 ); /* for gcc -Wall and lint */
 }
 
 /*	Function Name: Search
@@ -356,6 +362,11 @@ int length;
 {
   TextSrcObjectClass class = (TextSrcObjectClass) w->core.widget_class;
 
+  if ( !XtIsSubclass( w, textSrcObjectClass ) )
+      XtErrorMsg("bad argument", "textSource", "XawError",
+		"XawTextSourceRead's 1st parameter must be subclass of asciiSrc.",
+		   NULL, NULL);
+
   return((*class->textSrc_class.Read)(w, pos, text, length));
 }
 
@@ -380,6 +391,11 @@ XawTextBlock *text;
 #endif
 {
   TextSrcObjectClass class = (TextSrcObjectClass) w->core.widget_class;
+
+  if ( !XtIsSubclass( w, textSrcObjectClass ) )
+      XtErrorMsg("bad argument", "textSource", "XawError",
+		"XawTextSourceReplace's 1st parameter must be subclass of asciiSrc.",
+		   NULL, NULL);
 
   return((*class->textSrc_class.Replace)(w, startPos, endPos, text));
 }
@@ -424,6 +440,11 @@ Boolean	              include;
 {
   TextSrcObjectClass class = (TextSrcObjectClass) w->core.widget_class;
 
+  if ( !XtIsSubclass( w, textSrcObjectClass ) )
+      XtErrorMsg("bad argument", "textSource", "XawError",
+		"XawTextSourceScan's 1st parameter must be subclass of asciiSrc.",
+		   NULL, NULL);
+
   return((*class->textSrc_class.Scan)(w, position, type, dir, count, include));
 }
 
@@ -455,6 +476,11 @@ XawTextBlock *        text;
 #endif
 {
   TextSrcObjectClass class = (TextSrcObjectClass) w->core.widget_class;
+
+  if ( !XtIsSubclass( w, textSrcObjectClass ) )
+      XtErrorMsg("bad argument", "textSource", "XawError",
+		"XawTextSourceSearch's 1st parameter must be subclass of asciiSrc.",
+		   NULL, NULL);
 
   return((*class->textSrc_class.Search)(w, position, dir, text));
 }
@@ -488,6 +514,11 @@ int * format;
 {
   TextSrcObjectClass class = (TextSrcObjectClass) w->core.widget_class;
 
+  if ( !XtIsSubclass( w, textSrcObjectClass ) )
+      XtErrorMsg("bad argument", "textSource", "XawError",
+		"XawTextSourceConvertSelectionXawTextSourceConvertSelection's 1st parameter must be subclass of asciiSrc.",
+		   NULL, NULL);
+
   return((*class->textSrc_class.ConvertSelection)(w, selection, target, type,
 						  value, length, format));
 }
@@ -513,7 +544,119 @@ Atom selection;
 {
   TextSrcObjectClass class = (TextSrcObjectClass) w->core.widget_class;
 
+  if ( !XtIsSubclass( w, textSrcObjectClass ) )
+      XtErrorMsg("bad argument", "textSource", "XawError",
+		"'s 1st parameter must be subclass of asciiSrc.",
+		   NULL, NULL);
+
   (*class->textSrc_class.SetSelection)(w, left, right, selection);
 }
 
+/********************************************************************
+ *
+ *      External Functions for Multi Text.
+ *
+ ********************************************************************/
+
+/*
+ * TextFormat(): 
+ *   returns the format of text: FMT8BIT or FMTWIDE. 
+ *  
+ */
+XrmQuark
+#if NeedFunctionPrototypes
+TextFormat(TextWidget tw)
+#else
+TextFormat(tw)
+TextWidget tw;
+#endif
+{
+  return (((TextSrcObject)(tw->text.source))->textSrc.text_format);
+}
+
+
+/* _XawTextWCToMB():
+ *   convert the wchar string to external encoding.
+ *   The caller is responsible for freeing both the source and ret string.
+ *
+ * wstr       - source wchar string.
+ * len_in_out - lengh of string.
+ *              As In, length of source wchar string, measured in wchar.
+ *              As Out, length of returned string. 
+ */
+
+
+char *
+_XawTextWCToMB( d, wstr, len_in_out )
+    Display*	d;
+    wchar_t*	wstr;
+    int*	len_in_out;
+
+{
+    XTextProperty textprop;
+    if (XwcTextListToTextProperty(d, (wchar_t**)&wstr, 1,
+      XTextStyle, &textprop) < Success) {
+      XtWarningMsg("convertError", "textSource", "XawError",
+                 "Non-character code(s) in buffer.", NULL, NULL);
+      *len_in_out = 0;
+      return( NULL );
+    }
+    *len_in_out = textprop.nitems;
+    return((char *)textprop.value);
+}
+
+
+/* _XawTextMBToWC():
+ *   convert the string to internal processing codeset WC.
+ *   The caller is responsible for freeing both the source and ret string.
+ * 
+ * str        - source string.
+ * len_in_out - lengh of string.
+ *              As In, it is length of source string.
+ *              As Out, it is length of returned string, measured in wchar.
+ */
+
+wchar_t* _XawTextMBToWC( d, str, len_in_out )
+Display		*d;
+char		*str;
+int		*len_in_out;
+{
+  if (*len_in_out == 0) {
+    return(NULL);
+  } else {
+    XTextProperty textprop;
+    char *buf;
+    wchar_t **wlist, *wstr;
+    int count;
+    buf = XtMalloc(*len_in_out + 1);
+    if (!buf) {
+	XtErrorMsg("convertError", "multiSourceCreate", "XawError",
+		 "No Memory", NULL, NULL);
+	*len_in_out = 0;
+	return (NULL);   /* The above function doesn't really return. */
+    }
+    strncpy(buf, str, *len_in_out);
+    *(buf + *len_in_out) = '\0';
+    if (XmbTextListToTextProperty(d, &buf, 1, XTextStyle, &textprop)
+			!= Success) {
+	XtWarningMsg("convertError", "textSource", "XawError",
+		 "No Memory, or Locale not supported.", NULL, NULL);
+	XtFree(buf);
+	*len_in_out = 0;
+	return (NULL);
+    }
+    XtFree(buf);
+    if (XwcTextPropertyToTextList(d, &textprop,
+			(wchar_t***)&wlist, &count) != Success) {
+	XtWarningMsg("convertError", "multiSourceCreate", "XawError",
+		 "Non-character code(s) in source.", NULL, NULL);
+	*len_in_out = 0;
+	return (NULL);
+    }
+    wstr = wlist[0];
+    *len_in_out = wcslen(wstr);
+    XtFree((XtPointer)wlist);
+    return(wstr);
+  }
+}
 

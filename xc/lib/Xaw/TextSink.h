@@ -1,5 +1,5 @@
 /*
- * $XConsortium: TextSink.h,v 1.7 90/05/08 15:18:18 converse Exp $
+ * $XConsortium: TextSink.h,v 1.8 91/02/17 13:20:18 rws Exp $
  */
 
 /***********************************************************
@@ -29,14 +29,13 @@ SOFTWARE.
 #ifndef _XawTextSink_h
 #define _XawTextSink_h
 
+#include <X11/Xaw/Text.h>
+
 /***********************************************************************
  *
  * TextSink Object
  *
  ***********************************************************************/
-
-#include <X11/Object.h>
-#include <X11/Xfuncproto.h>
 
 /* Resources:
 
@@ -292,4 +291,4 @@ extern void XawTextSinkGetCursorBounds(
 
 _XFUNCPROTOEND
 
-#endif /* _XawTextSrc_h -- DON'T ADD STUFF AFTER THIS #endif */
+#endif /* _XawTextSrc_h */

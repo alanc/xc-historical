@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AsciiTextP.h,v 1.14 89/07/06 16:00:37 kit Exp $ 
+ * $XConsortium: AsciiTextP.h,v 1.15 89/07/17 18:09:37 kit Exp $ 
  */
 
 /***********************************************************
@@ -49,8 +49,9 @@ SOFTWARE.
 #define _AsciiTextP_h
 
 #include <X11/Xaw/TextP.h>
-#include <X11/Xaw/AsciiSrc.h> /* no need to get private header. */
 #include <X11/Xaw/AsciiText.h>
+#include <X11/Xaw/AsciiSrc.h>
+#include <X11/Xaw/MultiSrc.h>
 
 typedef struct {int empty;} AsciiClassPart;
 
@@ -69,7 +70,7 @@ typedef struct _AsciiRec {
     CorePart		core;
     SimplePart		simple;
     TextPart		text;
-    AsciiPart           ascii;
+    AsciiPart		ascii;
 } AsciiRec;
 
 /************************************************************

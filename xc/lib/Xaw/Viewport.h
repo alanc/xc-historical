@@ -1,4 +1,4 @@
-/* $XConsortium: Viewport.h,v 1.20 91/07/22 18:50:08 converse Exp $ */
+/* $XConsortium: Viewport.h,v 1.21 91/07/22 19:05:23 converse Exp $ */
 
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -29,7 +29,6 @@ SOFTWARE.
 
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Reports.h>
-#include <X11/Xfuncproto.h>
 
 /* Resources:
 

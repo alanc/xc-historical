@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.42 91/02/20 20:06:07 converse Exp $
+ * $XConsortium: Tree.c,v 1.43 91/10/16 21:40:18 eswu Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -27,12 +27,8 @@
  * as well as to support vertical trees.
  */
 
-#include <X11/Intrinsic.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include <X11/CoreP.h>
-#include <X11/CompositeP.h>
-#include <X11/ConstrainP.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Xaw/TreeP.h>
@@ -167,8 +163,8 @@ static void initialize_dimensions (listp, sizep, n)
     int *sizep;
     int n;
 {
-    register int i;
-    register Dimension *l;
+    int i;
+    Dimension *l;
 
     if (!*listp) {
 	*listp = (Dimension *) XtCalloc ((unsigned int) n,
@@ -303,6 +299,7 @@ static void ClassInitialize ()
 }
 
 
+/*ARGSUSED*/
 static void Initialize (grequest, gnew, args, num_args)
     Widget grequest, gnew;
     ArgList args;
@@ -563,7 +560,7 @@ static void Redisplay (gw, event, region)
 	Window w = XtWindow (tw);
 
 	for (i = 0; i < tw->composite.num_children; i++) {
-	    register Widget child = tw->composite.children[i];
+	    Widget child = tw->composite.children[i];
 	    TreeConstraints tc = TREE_CONSTRAINT(child);
 
 	    /*
@@ -590,7 +587,7 @@ static void Redisplay (gw, event, region)
 		}
 
 		for (j = 0; j < tc->tree.n_children; j++) {
-		    register Widget k = tc->tree.children[j];
+		    Widget k = tc->tree.children[j];
 		    GC gc = (tc->tree.gc ? tc->tree.gc : tw->tree.gc);
 
 		    switch (tw->tree.gravity) {
@@ -648,7 +645,7 @@ static XtGeometryResult QueryGeometry (w, intended, preferred)
     Widget w;
     XtWidgetGeometry *intended, *preferred;
 {
-    register TreeWidget tw = (TreeWidget) w;
+    TreeWidget tw = (TreeWidget) w;
 
     preferred->request_mode = (CWWidth | CWHeight);
     preferred->width = tw->tree.maxwidth;
@@ -684,7 +681,7 @@ static void compute_bounding_box_subtree (tree, w, depth)
     int depth;
 {
     TreeConstraints tc = TREE_CONSTRAINT(w);  /* info attached to all kids */
-    register int i;
+    int i;
     Bool horiz = IsHorizontal (tree);
     Dimension newwidth, newheight;
     Dimension bw2 = w->core.border_width * 2;
@@ -800,7 +797,7 @@ static void arrange_subtree (tree, w, depth, x, y)
 {
     TreeConstraints tc = TREE_CONSTRAINT(w);  /* info attached to all kids */
     TreeConstraints firstcc, lastcc;
-    register int i;
+    int i;
     int newx, newy;
     Bool horiz = IsHorizontal (tree);
     Widget child = NULL;
@@ -985,5 +982,4 @@ XawTreeForceLayout (tree)
 {
     layout_tree ((TreeWidget) tree, FALSE);
 }
-
 
