@@ -1,4 +1,4 @@
-/* $XConsortium: LookupCmap.c,v 1.2 89/05/19 14:44:37 converse Exp $ 
+/* $XConsortium: LookupCmap.c,v 1.4 89/05/22 19:21:21 converse Exp $ 
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
@@ -26,11 +26,9 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
+#include <X11/Xmu/Xmu.h>
 
-extern XStandardColormap *XmuStandardColormap();
-extern void XmuDeleteStandardColormap();
-extern Status XmuGetColormapAllocation();
-
+extern char *malloc();
 static Status lookup();
 
 /*
@@ -97,7 +95,7 @@ Status XmuLookupStandardColormap(dpy, screen, visualid, depth, property,
 
     /* If the requested property already exists on this screen, and, 
      * if the replace flag has not been set to true, return success.
-     * lookup_map will remove a pre-existing map if replace is true.
+     * lookup() will remove a pre-existing map if replace is true.
      */
 
     if (lookup(dpy, screen, visualid, property, (XStandardColormap *) NULL,
@@ -170,31 +168,36 @@ Status XmuLookupStandardColormap(dpy, screen, visualid, depth, property,
 
 /* Lookup a standard colormap property.  If the property is RGB_DEFAULT_MAP,
  * the visualid is used to determine whether the indicated standard colormap
- * exists.  If the map exists and replace is true, delete the maps
- * resources and remove the property.  Return true if the map exists,
- * or did exist and was deleted, return false if the map was not found.
- * If new is not NULL, new gives an XStandardColormap structure to be added
- * to the standard colormap property definition.
+ * exists.  If the map exists and replace is true, delete the resources used
+ * by the map and remove the property.  Return true if the map exists,
+ * or did exist and was deleted; return false if the map was not found.
+ *
+ * Note that this is not the way that a Status return is normally used.
+ *
+ * If new is not NULL, new points to an XStandardColormap structure which
+ * describes a standard colormap of the specified property.  It will be made
+ * a standard colormap of the screen if none already exists, or if replace 
+ * is true.
  */
 
 static Status lookup(dpy, screen, visualid, property, new, replace)
-    Display		*dpy;
-    int			screen;
-    VisualID		visualid;
-    Atom		property;
-    XStandardColormap	*new;
-    Bool		replace;
+    Display		*dpy;		/* specifies display connection */
+    int			screen;		/* specifies screen number */
+    VisualID		visualid;	/* specifies visualid for std map */
+    Atom		property;	/* specifies colormap property name */
+    XStandardColormap	*new;		/* specifies a standard colormap */
+    Bool		replace;	/* specifies whether to replace */
 {
     register int	i;
     int			count;
     XStandardColormap	*stdcmaps, *s;
+    Window		win = RootWindow(dpy, screen);
 
     /* The property does not already exist */
 
-    if (! XGetRGBColormaps(dpy, RootWindow(dpy, screen), &stdcmaps, &count,
-			   property)) {
+    if (! XGetRGBColormaps(dpy, win, &stdcmaps, &count, property)) {
 	if (new)
-	    XSetRGBColormaps(dpy, RootWindow(dpy, screen), new, 1, property);
+	    XSetRGBColormaps(dpy, win, new, 1, property);
 	return 0;
     }
 
@@ -204,15 +207,14 @@ static Status lookup(dpy, screen, visualid, property, new, replace)
 	if (replace) {
 	    XmuDeleteStandardColormap(dpy, screen, property);
 	    if (new)
-		XSetRGBColormaps(dpy, RootWindow(dpy, screen), new, 1,
-				 property);
+		XSetRGBColormaps(dpy, win, new, 1, property);
 	}
 	XFree((char *)stdcmaps);
 	return 1;
     }
-    
-    /* The property exists and is RGB_DEFAULT_MAP */
 
+    /* The property exists and is RGB_DEFAULT_MAP */
+    
     for (i=0, s=stdcmaps; (i < count) && (s->visualid != visualid); i++, s++)
 	;
 
@@ -222,8 +224,9 @@ static Status lookup(dpy, screen, visualid, property, new, replace)
 	if (new) {
 	    XStandardColormap	*m, *maps;
 
-	    s = (XStandardColormap *) malloc((count+1) * sizeof
-					      (XStandardColormap));
+	    s = (XStandardColormap *) malloc((unsigned) ((count+1) * sizeof
+					      (XStandardColormap)));
+
 	    for (i = 0, m = s, maps = stdcmaps; i < count; i++, m++, maps++) {
 		m->colormap   = maps->colormap;
 		m->red_max    = maps->red_max;
@@ -244,8 +247,8 @@ static Status lookup(dpy, screen, visualid, property, new, replace)
 	    m->blue_mult  = new->blue_mult;
 	    m->visualid   = new->visualid;
 	    m->killid     = new->killid;
-	    count++;
-	    XSetRGBColormaps(dpy, RootWindow(dpy, screen), s, count, property);
+
+	    XSetRGBColormaps(dpy, win, s, ++count, property);
 	    free((char *) s);
 	}
 	XFree((char *) stdcmaps);
@@ -264,38 +267,34 @@ static Status lookup(dpy, screen, visualid, property, new, replace)
 	if (count == 1) {
 	    XmuDeleteStandardColormap(dpy, screen, property);
 	    if (new)
-		XSetRGBColormaps(dpy, RootWindow(dpy, screen), new, 1,
-				 property);
+		XSetRGBColormaps(dpy, win, new, 1, property);
 	}
 	else {
-	    XStandardColormap	*n;
+	    XStandardColormap	*map;
 
-	    if ((s->killid == ReleaseByFreeingColormap)
-		&& (s->colormap != None)
-		&& (s->colormap != DefaultColormap(dpy, screen)))
-		XFreeColormap(dpy, s->colormap);
+	    /* s still points to the matching standard colormap */
+
+	    if (s->killid == ReleaseByFreeingColormap) {
+		if ((s->colormap != None) &&
+		    (s->colormap != DefaultColormap(dpy, screen)))
+		    XFreeColormap(dpy, s->colormap);
+	    }
 	    else if (s->killid != None)
 		XKillClient(dpy, s->killid);
 
-	    if (new)
-		n = new;
-	    else {
-		for (i=0, n=stdcmaps; i < count; i++, n++)
-		    ;
-		count--;
-	    }
-	    s->colormap   = n->colormap;
-	    s->red_max    = n->red_max;
-	    s->red_mult   = n->red_mult;
-	    s->green_max  = n->green_max;
-	    s->green_mult = n->green_mult;
-	    s->blue_max   = n->blue_max;
-	    s->blue_mult  = n->blue_mult;
-	    s->visualid   = n->visualid;
-	    s->killid     = n->killid;
+	    map = (new) ? new : stdcmaps + --count;
 
-	    XSetRGBColormaps(dpy, RootWindow(dpy, screen), stdcmaps, count,
-			     XA_RGB_DEFAULT_MAP);
+	    s->colormap   = map->colormap;
+	    s->red_max    = map->red_max;
+	    s->red_mult   = map->red_mult;
+	    s->green_max  = map->green_max;
+	    s->green_mult = map->green_mult;
+	    s->blue_max   = map->blue_max;
+	    s->blue_mult  = map->blue_mult;
+	    s->visualid   = map->visualid;
+	    s->killid     = map->killid;
+
+	    XSetRGBColormaps(dpy, win, stdcmaps, count, property);
 	}
     }
     XFree((char *) stdcmaps);
