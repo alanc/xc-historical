@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: NextEvent.c,v 1.40 88/02/26 12:43:29 swick Exp $";
+static char rcsid[] = "$Header: NextEvent.c,v 1.41 88/03/03 12:14:05 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -340,24 +340,22 @@ caddr_t closure;
 	struct InputEvent *sptr;
 	XtInputMask condition = (XtInputMask) Condition;
 	
+	sptr = (struct InputEvent *)XtMalloc((unsigned) sizeof (*sptr));
 	if(condition == XtInputReadMask){
-	    sptr = (struct InputEvent *)XtMalloc((unsigned) sizeof (*sptr));
 	    sptr->ie_next = Select_rqueue[source];
-	    sptr->ie_source = source;
 	    Select_rqueue[source] = sptr;
 	    XFD_SET(source, &composite.rmask);
 	} else if(condition == XtInputWriteMask) {
-	    sptr = (struct InputEvent *) XtMalloc((unsigned) sizeof (*sptr));
 	    sptr->ie_next = Select_wqueue[source];
 	    Select_wqueue[source] = sptr;
 	    XFD_SET(source, &composite.wmask);
 	} else if(condition == XtInputExceptMask) {
-	    sptr = (struct InputEvent *) XtMalloc((unsigned) sizeof (*sptr));
 	    sptr->ie_next = Select_equeue[source];
 	    Select_equeue[source] = sptr;
 	    XFD_SET(source, &composite.emask);
 	} else
 	  XtError("invalid condition passed to XtAddInput");
+	sptr->ie_source = source;
 	sptr->ie_proc = proc;
 	sptr->ie_closure =closure;
 
