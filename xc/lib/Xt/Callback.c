@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Callback.c,v 1.23 90/04/04 11:27:30 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Callback.c,v 1.24 90/04/13 20:16:30 swick Exp $";
 /* $oHeader: Callback.c,v 1.4 88/09/01 11:08:37 asente Exp $ */
 #endif /* lint */
 
@@ -140,7 +140,7 @@ void XtAddCallback(widget, name, callback, closure)
     if (callbacks == NULL) {
        XtAppWarningMsg(XtWidgetToApplicationContext(widget),
 	       XtNinvalidCallbackList,XtNxtAddCallback,XtCXtToolkitError,
-              "Cannot find callback list in XtAddCallbacks",
+              "Cannot find callback list in XtAddCallback",
 	      (String *)NULL, (Cardinal *)NULL);
        return;
     }
