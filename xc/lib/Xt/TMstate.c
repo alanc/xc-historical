@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.65 89/01/20 08:05:17 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.66 89/01/27 14:33:45 jim Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -87,15 +87,17 @@ static String PrintModifiers(buf, len, str, mask, mod)
     CHECK_STR_OVERFLOW;
 
 #define PRINTMOD(modmask,modstring) \
-    if (mask & modmask) {	 \
-	if (! (mod & modmask)) \
+    if (mask & modmask) {		 \
+	if (! (mod & modmask)) {	 \
 	    *str++ = '~';		 \
+	    notfirst = True;		 \
+	}				 \
 	else if (notfirst)		 \
 	    *str++ = ' ';		 \
+	else notfirst = True;		 \
 	*str = '\0';			 \
 	strcat(str, modstring);		 \
 	str += strlen(str);		 \
-	notfirst = True;		 \
     }
 
     PRINTMOD(ShiftMask, "Shift");
