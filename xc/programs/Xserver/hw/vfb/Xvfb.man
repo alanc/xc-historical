@@ -1,0 +1,42 @@
+.\" $XConsortium: Xffb.man,v 1.18 93/11/14 13:01:13 kaleb Exp $
+.TH XFFB 1 "Release 6" "X Version 11"
+.SH NAME
+Xffb \- fake framebuffer for X Version 11
+.SH SYNOPSIS
+.B Xffb
+[ option ] ...
+.SH DESCRIPTION
+.I Xffb
+is an X server that can run on machines with no display hardware
+and no physical input devices.  It emulates a dumb framebuffer using
+virtual memory.
+.PP
+The primary use of this server is intended to be server testing.
+The cfb code for any depth can be exercised with this server without
+the need for real hardware that supports the required depths.
+.PP
+Secondary uses include testing clients against unusual depths, and
+using the trivial ddx code as a starting point for new server
+developers.
+.SH OPTIONS
+.PP
+In addition to the normal server options described in the \fIXserver(1)\fP
+manual page, \fIXffb\fP accepts the following command line switches:
+.TP 8
+.B "\-screen \fIscreennum\fP \fIWxHxD\fP"
+This option creates screen \fIscreennum\fP and sets its width, height,
+and depth to W, H, and D respectively.  By default, only screen 0 exists
+and has the dimensions 1280x1024x8.
+.TP 8
+.B "\-pixdepths \fIlist-of-depths\fP"
+This option specifies a list of pixmap depths that the server should
+support in addition to the depths implied by the supported screens.
+\fIlist-of-depths\fP is a space-separated list of integers that can
+have values from 1 to 32.
+.SH "SEE ALSO"
+.PP
+X(1), Xserver(1)
+.SH AUTHORS
+.TP 8
+X Consortium, Inc.
+David P. Wiggins
