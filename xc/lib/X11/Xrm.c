@@ -1,6 +1,6 @@
 
 /*
- * $XConsortium: Xrm.c,v 1.34 90/06/05 13:55:36 kit Exp $
+ * $XConsortium: Xrm.c,v 1.35 90/06/11 13:33:54 rws Exp $
  */
 
 /***********************************************************
@@ -150,23 +150,24 @@ void XrmStringToQuarkList(name, quarks)
     register unsigned short	bits;
     register Signature  	sig = 0;
     register char       	ch, *tname;
+    register int 		i = 0;
 
     if ((tname = (char *)name) != NULL) {
-	if (xrm_is_tight_or_loose (bits = get_next_char(ch, tname)))
-	    name = tname;
-	else
-	    sig = (sig << 1) + ch; /* Compute the signature. */
-
 	while (!xrm_is_EOF(bits = get_next_char(ch, tname))) {
 	    if (xrm_is_tight_or_loose (bits)) {
-		/* Found a complete name */
-		*quarks++ = _XrmInternalStringToQuark(name, 
-						      tname -name -1, sig);
-		sig = 0;
+		if (i != 0) {
+		    /* Found a complete name */
+		    *quarks++ = _XrmInternalStringToQuark(name, 
+							  tname -name -1, sig);
+		    i = 0;
+		    sig = 0;
+		}
 		name = tname;
 	    }
-	    else 
+	    else {
 		sig = (sig << 1) + ch; /* Compute the signature. */
+		i++;
+	    }
 	}
 	*quarks++ = _XrmInternalStringToQuark(name, tname - name - 1, sig);
     }
@@ -189,34 +190,31 @@ void XrmStringToBindingQuarkList(name, bindings, quarks)
     register Signature  	sig = 0;
     register char       	ch, *tname;
     register XrmBinding 	binding;
+    register int 		i = 0;
 
     if ((tname = (char *)name) != NULL) {
 	binding = XrmBindTightly;
-	if (xrm_is_tight_or_loose (bits = get_next_char(ch, tname))) {
-	    if (xrm_is_loose(bits)) 
-		binding = XrmBindLoosely;
-
-	    name = tname;
-	}
-	else 
-	    sig = (sig << 1) + ch; /* Compute the signature. */
-
 	while (!xrm_is_EOF(bits = get_next_char(ch, tname))) {
 	    if (xrm_is_tight_or_loose (bits)) {
-		/* Found a complete name */
-		*bindings++ = binding;
-		*quarks++ = _XrmInternalStringToQuark(name, 
+		if (i != 0) {
+		    /* Found a complete name */
+		    *bindings++ = binding;
+		    *quarks++ = _XrmInternalStringToQuark(name, 
 							  tname -name -1, sig);
-		sig = 0;
+
+		    i = 0;
+		    sig = 0;
+		    binding = XrmBindTightly;
+		}
+		name = tname;
+
 		if (xrm_is_loose(bits)) 
 		    binding = XrmBindLoosely;
-		else
-		    binding = XrmBindTightly;
-
-		name = tname;
 	    }
-	    else 
+	    else {
 		sig = (sig << 1) + ch; /* Compute the signature. */
+		i++;
+	    }
 	}
 	*bindings = binding;
 	*quarks++ = _XrmInternalStringToQuark(name, tname - name - 1, sig);
@@ -949,60 +947,65 @@ register char * str;
 	t_bindings = bindings;
 	t_quarks = quarks;
 
-	/*
-	 * Process the optional leading binding.
-	 */
-
-	if (xrm_is_loose(bits)) {
-	    *t_bindings = XrmBindLoosely;	
-	    bits = get_next_char(c, str);
-	}
-	else {
-	    *t_bindings = XrmBindTightly;	
-	    if (xrm_is_tight(bits))
-		bits = get_next_char(c, str);
-	}
-
 	sig = 0;
 	ptr = buffer;
+	*t_bindings = XrmBindTightly;	
 	for(;;) {
-
-	    while (!xrm_is_end_of_quark(bits)) {
-		*ptr++ = c;
-		sig = (sig << 1) + c; /* Compute the signature. */
-		bits = get_next_char(c, str);
-	    }
-		
-	    *t_quarks++ = _XrmInternalStringToQuark(buffer, ptr - buffer, sig);
-	    
-	    if (xrm_is_separator(bits))  {
-		if (!xrm_is_space(bits))
-		    break;
-		/* Remove white space */
-		do {
+	    if (!xrm_is_end_of_quark(bits) || xrm_is_space(bits)) {
+		while (!xrm_is_end_of_quark(bits)) {
 		    *ptr++ = c;
 		    sig = (sig << 1) + c; /* Compute the signature. */
-		} while (xrm_is_space(bits = get_next_char(c, str)));
-		if (xrm_is_separator(bits))
-		    break;
-		/* The spec doesn't permit it, but support spaces
-		 * internal to resource name/class */
-		t_quarks--;
-		continue;
+		    bits = get_next_char(c, str);
+		}
+
+		*t_quarks++ = _XrmInternalStringToQuark(buffer, 
+							ptr - buffer, sig);
+	    
+		if (xrm_is_separator(bits))  {
+		    if (!xrm_is_space(bits))
+			break;
+
+		    /* Remove white space */
+		    do {
+			*ptr++ = c;
+			sig = (sig << 1) + c; /* Compute the signature. */
+		    } while (xrm_is_space(bits = get_next_char(c, str)));
+
+		    /* 
+		     * The spec doesn't permit it, but support spaces
+		     * internal to resource name/class 
+		     */
+
+		    if (xrm_is_separator(bits))
+			break;
+		    t_quarks--;
+		    continue;
+		}
+
+		if (xrm_is_tight(bits))
+		    *(++t_bindings) = XrmBindTightly;
+		else
+		    *(++t_bindings) = XrmBindLoosely;
+
+		sig = 0;
+		ptr = buffer;
+	    }
+	    else {
+		/*
+		 * Magic unspecified feature #254.
+		 *
+		 * If two separators appear with no Text between them then
+		 * ignore them.
+		 *
+		 * If anyone of those separators is a '*' then the binding 
+		 * will be loose, otherwise it will be tight.
+		 */
+
+		if (xrm_is_loose(bits))
+		    *t_bindings = XrmBindLoosely;
 	    }
 
-	    /*
-	     * Set new binding. 
-	     */
-	    
-	    if (xrm_is_tight(bits))
-		*(++t_bindings) = XrmBindTightly;
-	    else
-		*(++t_bindings) = XrmBindLoosely;
-
 	    bits = get_next_char(c, str);
-	    sig = 0;
-	    ptr = buffer;
 	} 
 
 	*t_quarks = NULLQUARK;
