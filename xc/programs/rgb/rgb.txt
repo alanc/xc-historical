@@ -32,8 +32,8 @@
 0 255 255		cyan
 142 35 35		firebrick
 165 42 42		brown
-244 164 96		Sandy Brown
-244 164 96		sandybrown
+244 164 96		sandy brown
+244 164 96		SandyBrown
 204 127 50		gold
 219 219 112		goldenrod
 234 234 173		medium goldenrod
