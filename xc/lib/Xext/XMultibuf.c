@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.24 91/01/05 14:48:13 rws Exp $
+ * $XConsortium: XMultibuf.c,v 1.25 91/01/05 16:34:04 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -404,12 +404,23 @@ Status XmbufGetWindowAttributes (dpy, w, attr)
     LockDisplay (dpy);
     MbufGetReq (MbufGetMBufferAttributes, req, info);
     req->window = w;
-    if (!_XReply (dpy, (xReply *) &rep, 
-		  (SIZEOF(xMbufGetMBufferAttributesReply) -
-		   SIZEOF(xReply)) >> 2, xTrue)) {
+    if (!_XReply (dpy, (xReply *) &rep, 0, xFalse)) {
 	UnlockDisplay (dpy);
 	SyncHandle ();
 	return 0;
+    }
+    attr->buffers = (Multibuffer *) NULL; 
+    if (attr->nbuffers = rep.length) {
+	int nbytes = rep.length * sizeof(Multibuffer);
+	attr->buffers = (Multibuffer *) Xmalloc((unsigned) nbytes);
+	nbytes = rep.length << 2;
+	if (! attr->buffers) {
+	    _XEatData(dpy, (unsigned long) nbytes);
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	    return (0);
+	}
+	_XRead32 (dpy, (char *) attr->buffers, nbytes);
     }
     attr->displayed_index = rep.displayedBuffer;
     attr->update_action = rep.updateAction;
@@ -476,9 +487,7 @@ Status XmbufGetBufferAttributes (dpy, b, attr)
     LockDisplay (dpy);
     MbufGetReq (MbufGetBufferAttributes, req, info);
     req->buffer = b;
-    if (!_XReply (dpy, (xReply *) &rep, 
-		  (SIZEOF(xMbufGetBufferAttributesReply) -
-		   SIZEOF(xReply)) >> 2, xTrue)) {
+    if (!_XReply (dpy, (xReply *) &rep, 0, xTrue)) {
 	UnlockDisplay (dpy);
 	SyncHandle ();
 	return 0;
