@@ -1,4 +1,4 @@
-.TH XMH 1
+.TH XMH 1 "1 March 1988" "X Version 11"
 .SH NAME
 \fIxmh\fR \- X window interface to the mh Mail Handler
 .SH SYNOPSIS
@@ -31,7 +31,7 @@ For more information, refer to the \fImh\fR documentation.
 
 .SH RUNNING XMH
 Run \fIxmh\fR as you would any other X application (e.g., xterm).  It will
-accept a command-line display (of the form ``displayname:displaynumber'');
+accept a command-line display (of the form ``-display host:dpy'');
 the default display is specified in the environment variable DISPLAY.
 
 The rest of this document will probably be rather hard to follow without
@@ -737,9 +737,6 @@ desired value.  Thus, to run \fIxmh\fR with terse button names,
 .SH SEE ALSO
 mh (1) - the mh Mail Handler
 
-.SH AUTHOR
-Terry Weissman (weissman@decwrl.dec.com)
-
 .SH BUGS
 Command-line syntax is silly.
 
@@ -757,3 +754,7 @@ Still a few commands missing (rename folder, remail message).
 The user should probably be able to customize the buttonboxes somewhat.
 
 Needs sub-folder support.
+
+.SH AUTHOR
+Terry Weissman, Digital Western Research Laboratory
+
