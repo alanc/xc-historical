@@ -32,7 +32,7 @@
             CFB = ddx/cfb/libcfb.a
              MI = ddx/mi/libmi.a
             DIX = dix/libdix.a
-           FONT = $(FONTSRC)/lib/libfont.a
+           FONT = $(FONTSRC)/lib/font/libfont.a
          APOLLO = ddx/apollo/libapollo.a
             APC = ddx/apollo/apc/libapc.a
             SUN = ddx/sun/libsun.a
