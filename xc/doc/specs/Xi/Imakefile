@@ -1,8 +1,9 @@
-XCOMM $XConsortium: Imakefile,v 1.2 91/07/17 16:01:33 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.1 91/07/23 17:06:18 rws Exp $
 PSRCS = ../../util/macros.t protocol.ms encoding.ms
 LSRCS = ../../util/macros.t library.ms
+GSRCS = ../../util/macros.t porting.ms
 
-all: proto.PS lib.PS
+all: proto.PS lib.PS port.PS
 
 proto.PS:
 	$(TBL) $(PSRCS) | $(TROFF) $(MSMACROS) > proto.PS
@@ -10,5 +11,8 @@ proto.PS:
 lib.PS:
 	$(TBL) $(LSRCS) | $(TROFF) $(MSMACROS) > lib.PS
 
+port.PS:
+	$(TROFF) $(MSMACROS) $(GSRCS) > port.PS
+
 clean::
-	$(RM) proto.PS lib.PS
+	$(RM) proto.PS lib.PS port.PS
