@@ -9,7 +9,7 @@
        FONTUTIL = $(FONTUTILDIR)/fontdir.o
      ALLDDXDIRS = ddx/snf ddx/mi ddx/cfb ddx/mfb \
                   ddx/dec/lk201 ddx/dec/qvss ddx/dec/qdss ddx/dec/qdss/libtl \
-                  ddx/dec/sm ddx/sun \
+                  ddx/sun \
                   ddx/apollo \
                   ddx/ibm \
                   ddx/hp/hp ddx/hp/cfb ddx/hp/mfb ddx/hp/topcat \
