@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.222 94/03/30 11:05:31 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.223 94/03/30 11:22:51 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1263,10 +1263,17 @@ _XReadPad (dpy, data, size)
  * transmission is used, if size is not 0 mod 4, extra bytes are transmitted.
  * This routine may have to be reworked if int < long;
  */
+#if NeedFunctionPrototypes
+_XSend (
+	register Display *dpy,
+	_Xconst char *data,
+	register long size)
+#else
 _XSend (dpy, data, size)
 	register Display *dpy;
 	char *data;
 	register long size;
+#endif
 {
 	struct iovec iov[3];
 	static char pad[3] = {0, 0, 0};
@@ -1285,7 +1292,7 @@ _XSend (dpy, data, size)
 	padsize = padlength[size & 3];
 	for (ext = dpy->flushes; ext; ext = ext->next_flush) {
 	    (*ext->before_flush)(dpy, &ext->codes, dpy->buffer, dbufsize);
-	    (*ext->before_flush)(dpy, &ext->codes, data, size);
+	    (*ext->before_flush)(dpy, &ext->codes, (char *)data, size);
 	    if (padsize)
 		(*ext->before_flush)(dpy, &ext->codes, pad, padsize);
 	}
@@ -1336,7 +1343,7 @@ _XSend (dpy, data, size)
 	    }
 
 	    InsertIOV (dpy->buffer, dbufsize)
-	    InsertIOV (data, size)
+	    InsertIOV ((char *)data, size)
 	    InsertIOV (pad, padsize)
     
 	    ESET(0);
