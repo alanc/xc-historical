@@ -1,4 +1,4 @@
-/* $XConsortium: ddpex.h,v 5.4 91/06/27 14:48:40 hersh Exp $ */
+/* $XConsortium: ddpex.h,v 5.5 91/09/13 18:22:40 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -164,8 +164,8 @@ typedef struct {
 
 typedef struct {
 	ddSHORT		xmin;
-	ddSHORT		xmax;
 	ddSHORT		ymin;
+	ddSHORT		xmax;
 	ddSHORT		ymax;
 } ddDeviceRect;
 
