@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.43 90/09/11 16:41:02 converse Exp $
+ * $XConsortium: Mailbox.c,v 1.44 90/09/12 09:42:12 converse Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -91,10 +91,6 @@ static XtResource resources[] = {
 	offset (update), XtRString, "30" },
     { XtNforeground, XtCForeground, XtRPixel, sizeof (Pixel),
 	offset (foreground_pixel), XtRString, XtDefaultForeground },
-    { XtNbackground, XtCBackground, XtRPixel, sizeof (Pixel),
-	goffset (background_pixel), XtRString, XtDefaultBackground },
-    { XtNreverseVideo, XtCReverseVideo, XtRBoolean, sizeof (Boolean),
-	offset (reverseVideo), XtRString, "FALSE" },
     { XtNfile, XtCFile, XtRString, sizeof (String),
 	offset (filename), XtRString, NULL },
     { XtNcheckCommand, XtCCheckCommand, XtRString, sizeof(char*),
@@ -217,14 +213,6 @@ static void Initialize (request, new)
 
     if (w->core.width <= 0) w->core.width = 1;
     if (w->core.height <= 0) w->core.height = 1;
-
-    if (w->mailbox.reverseVideo) {
-	Pixel tmp;
-
-	tmp = w->mailbox.foreground_pixel;
-	w->mailbox.foreground_pixel = w->core.background_pixel;
-	w->core.background_pixel = tmp;
-    }
 
 #ifdef SHAPE
     if (w->mailbox.shapeit && !XShapeQueryExtension (XtDisplay (w),
