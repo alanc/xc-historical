@@ -1,5 +1,5 @@
 /*
- * $XConsortium: oclock.c,v 1.13 91/01/10 21:33:48 gildea Exp $
+ * $XConsortium: oclock.c,v 1.14 92/04/01 17:27:56 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -25,6 +25,7 @@
 #include <X11/Xatom.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
+#include <X11/Xmu/Editres.h>
 #include "Clock.h"
 #include <stdio.h> 
 
@@ -114,6 +115,9 @@ void main(argc, argv)
 				   False);
     (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
                             &wm_delete_window, 1);
+
+    XtAddEventHandler(toplevel, (EventMask) 0, TRUE, 
+		      _XEditResCheckMessages, NULL);
 
     XtAppMainLoop(xtcontext);
 }
