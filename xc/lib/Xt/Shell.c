@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.66 89/09/26 18:08:13 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.67 89/09/29 14:42:56 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -1576,20 +1576,22 @@ static XtGeometryResult RootGeometryManager(w, request, reply)
 				= request->border_width;
     }
     if (mask & CWWidth) {
-	    if (w->core.width == request->width) mask &= ~CWWidth;
+	    values.width = request->width;
+	    if (w->core.width == values.width) mask &= ~CWWidth;
 	    else if (wm) {
 		    hintp->flags &= ~USSize;
 		    hintp->flags |= PSize;
-		    hintp->width = values.width = request->width;
-	    } else w->core.width = values.width = request->width;
+		    hintp->width = values.width;
+	    } else w->core.width = values.width;
     } else values.width = w->core.width; /* for _wait_for_response */
     if (mask & CWHeight) {
-	    if (w->core.height == request->height) mask &= ~CWHeight;
+	    values.height = request->height;
+	    if (w->core.height == values.height) mask &= ~CWHeight;
 	    else if (wm) {
 		    hintp->flags &= ~USSize;
 		    hintp->flags |= PSize;
-		    hintp->height = values.height = request->height;
-	    } else w->core.height = values.height = request->height;
+		    hintp->height = values.height;
+	    } else w->core.height = values.height;
     } else values.height = w->core.height; /* for _wait_for_response */
     if (mask & CWStackMode) {
 	values.stack_mode = request->stack_mode;
