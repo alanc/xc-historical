@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.114 89/11/08 18:50:13 converse Exp $
+ * $XConsortium: XlibInt.c,v 11.115 89/11/08 19:20:31 converse Exp $
  */
 
 #include "copyright.h"
@@ -1775,8 +1775,8 @@ int writev (fd, v, n)
 #include <sys/time.h>  can't use the regular .h since timezone is an extern
                        which needs to be defined for shared library
 		       [there is no <sys/time.h> in 3.2]
+#include "time.h"      now including Xos.h which has this
 */
-#include "time.h"
 #include <sys/poll.h>
 
 #define POLLERROR		(POLLHUP | POLLNVAL | POLLERR)
