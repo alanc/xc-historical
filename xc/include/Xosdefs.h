@@ -1,7 +1,7 @@
 /*
  * O/S-dependent (mis)feature macro definitions
  *
- * $XConsortium: Xosdefs.h,v 1.2 91/04/01 17:00:15 rws Exp $
+ * $XConsortium: Xosdefs.h,v 1.3 91/04/02 21:22:35 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -38,27 +38,41 @@
 #ifdef NOSTDHDRS	/* this is to aid backwards compatibility only */
 #define X_NOT_POSIX
 #define X_NOT_STDC_ENV
-#endif
+#else
 
 #ifdef bsd43
 #define X_NOT_POSIX
 #define X_NOT_STDC_ENV
-#endif
+#else
 
 #ifdef UTEK
 #define X_NOT_POSIX
 #define X_NOT_STDC_ENV
-#endif
+#else
 
 #ifdef CRAY
 #define X_NOT_POSIX
-#endif
+#else
 
 #ifdef vax
 #ifndef ultrix			/* assume vanilla BSD */
 #define X_NOT_POSIX
 #define X_NOT_STDC_ENV
 #endif
-#endif
+#else
+
+#ifdef luna
+#define X_NOT_POSIX
+#define X_NOT_STDC_ENV
+#else
+
+/* add new ones here */
+
+#endif /* luna */
+#endif /* vax */
+#endif /* CRAY */
+#endif /* UTEK */
+#endif /* bsd43 */
+#endif /* NOSTDHDRS */
 
 #endif /* _XOSDEFS_H_ */
