@@ -1,4 +1,4 @@
-.\" $XConsortium: xterm.man,v 1.76 94/04/12 18:42:50 gildea Exp $
+.\" $XConsortium: xterm.man,v 1.77 94/04/13 22:02:55 gildea Exp $
 .\" Copyright 1989 Massachusetts Institute of Technology
 .\"
 .\" Permission to use, copy, modify, distribute, and sell this software and
@@ -571,8 +571,8 @@ See the section on specifying character classes.
 .TP 8
 .B "curses (\fPclass\fB Curses)"
 Specifies whether or not the last column bug in
-.IR curses (3x)
-should be worked around.
+.IR more (1)
+should be worked around.  See the \fB\-cu\fP option for details.
 The default is ``false.''
 .TP 8
 .B "background (\fPclass\fB Background)"
