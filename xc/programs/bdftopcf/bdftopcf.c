@@ -125,7 +125,7 @@ main (argc, argv)
     }
     else
 	input = stdin;
-    if (bdfReadFont (&font, input, bit, byte, glyph, scan) != Success)
+    if (bdfReadFont (&font, input, bit, byte, glyph, scan) != Successful)
     {
 	fprintf (stderr, "%s: bdf input, %s, corrupt\n",
 		 program_name, input_name);
@@ -143,7 +143,7 @@ main (argc, argv)
     } 
     else
 	output = stdout;
-    if (pcfWriteFont (&font, output) != Success)
+    if (pcfWriteFont (&font, output) != Successful)
     {
 	fprintf (stderr, "%s: can't write pcf file %s\n",
 		 program_name, output_name ? output_name : "<stdout>");
