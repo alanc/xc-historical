@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.235 89/03/24 15:43:54 rws Exp $ */
+/* $XConsortium: window.c,v 1.237 89/03/31 13:19:02 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2870,7 +2870,7 @@ CirculateWindow(pParent, direction, client)
 static int
 CompareWIDs(pWin, wid)
     WindowPtr pWin;
-    int *wid;
+    Window *wid;
 {
     if (pWin->wid == *wid) 
        return(WT_STOPWALKING);
