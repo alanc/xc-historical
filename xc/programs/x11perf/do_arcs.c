@@ -15,20 +15,42 @@ void InitSizedCircles(d, p, size)
     int     size;
 {
     int i;
+    int x, y;		/* base of square to draw the circle in		    */
+    int xorg, yorg;     /* Used to get from column to column or row to row  */
 
     for (i = 0; i < 4; i++)
 	w[i] = None;
     i = 0;
     arcs = (XArc *)malloc((p->objects) * sizeof(XArc));
-    
+    xorg = 0; yorg = 0;
+    x    = 0; y    = 0;
+
     for (i = 0; i != p->objects; i++)
     {    
-	arcs[i].x = rand() % (WIDTH - size);
-	arcs[i].y = rand() % (HEIGHT - size);
+	arcs[i].x = x;
+	arcs[i].y = y;
 	arcs[i].width = size;
 	arcs[i].height = size;
 	arcs[i].angle1 = 0;
 	arcs[i].angle2 = 360*64;
+
+	y += size;
+	if (y >= HEIGHT - size) {
+	    /* Go to next column */
+	    yorg++;
+	    if (yorg >= size || yorg >= HEIGHT - size) {
+		yorg = 0;
+		xorg++;
+		if (xorg >= size || xorg >= WIDTH - size) {
+		    xorg = 0;
+		}
+	    }
+	    y = yorg;
+	    x += size;
+	    if (x >= WIDTH - size) {
+		x = xorg;
+	    }
+	}
     }
     CreatePerfStuff(d, 1, WIDTH, HEIGHT, w, &bggc, &fggc);
     for (i = 0; i < p->special; i++)
@@ -36,7 +58,7 @@ void InitSizedCircles(d, p, size)
 	    d, ws[i].x, ws[i].y, ws[i].width, ws[i].height);
 }
 
-void InitSmallCircles(d, p)
+void InitCircles1(d, p)
     Display *d;
     Parms p;
 {
@@ -44,7 +66,7 @@ void InitSmallCircles(d, p)
 }
 
 
-void InitMedCircles(d, p)
+void InitCircles10(d, p)
     Display *d;
     Parms p;
 {
@@ -52,40 +74,21 @@ void InitMedCircles(d, p)
 }
 
 
-void InitCircles(d, p)
+void InitCircles100(d, p)
     Display *d;
-    Parms   p;
+    Parms p;
 {
-    int     MAXSIZE;
-    int     size, sizeinc;
-    int i;
-
-    for (i = 0; i < 4; i++)
-	w[i] = None;
-    i = 0;
-    size = 0;
-    arcs = (XArc *)malloc((p->objects) * sizeof(XArc));
-    
-    if (HEIGHT > WIDTH) MAXSIZE = WIDTH; else MAXSIZE = HEIGHT;
-    sizeinc = MAXSIZE / p->objects;
-    if (sizeinc == 0) sizeinc = 1;
-
-    for (i = 0; i != p->objects; i++)
-    {    
-	arcs[i].x = rand() % (WIDTH - size);
-	arcs[i].y = rand() % (HEIGHT - size);
-	arcs[i].width = size;
-	arcs[i].height = size;
-	arcs[i].angle1 = 0;
-	arcs[i].angle2 = 360*64;
-	size += sizeinc;
-	if (size > MAXSIZE) size -= MAXSIZE;
-    }
-    CreatePerfStuff(d, 1, WIDTH, HEIGHT, w, &bggc, &fggc);
-    for (i = 0; i < p->special; i++)
-	w[i+1] = CreatePerfWindow(
-	    d, ws[i].x, ws[i].y, ws[i].width, ws[i].height);
+    InitSizedCircles(d, p, 100);
 }
+
+
+void InitCircles500(d, p)
+    Display *d;
+    Parms p;
+{
+    InitSizedCircles(d, p, 500);
+}
+
 
 void InitSizedEllipses(d, p, size)
     Display *d;
@@ -93,18 +96,23 @@ void InitSizedEllipses(d, p, size)
     int     size;
 {
     int i;
-    int vsize;
+    int x, y;		/* base of square to draw ellipse in		*/
+    int vsize, vsizeinc;
 
     for (i = 0; i < 4; i++)
 	w[i] = None;
     i = 0;
-    vsize = 0;
+    vsize = 1;
+    vsizeinc = size / p->objects;
+    if (vsizeinc == 0) vsizeinc = 1;
+
     arcs = (XArc *)malloc((p->objects) * sizeof(XArc));
-    
+    x = 0; y = 0;
+
     for (i = 0; i != p->objects; i++)
     {    
-	arcs[i].x = rand() % (WIDTH - size);
-	arcs[i].y = rand() % (HEIGHT - size);
+	arcs[i].x = x;
+	arcs[i].y = y;
 	if (i & 1) {
 	    /* Make vertical axis longer */
 	    arcs[i].width = vsize;
@@ -114,10 +122,21 @@ void InitSizedEllipses(d, p, size)
 	    arcs[i].width = size;
 	    arcs[i].height = vsize;
 	}
-	vsize++;
-	if (vsize > size) vsize = 0;
 	arcs[i].angle1 = 0;
 	arcs[i].angle2 = 360*64;
+
+	y += size;
+	if (y >= HEIGHT - size) {
+	    /* Go to next column */
+	    y = 0;
+	    x += size;
+	    if (x >= WIDTH - size) {
+		x = 0;
+	    }
+	}
+	
+	vsize += vsizeinc;
+	if (vsize > size) vsize -= size;
     }
     CreatePerfStuff(d, 1, WIDTH, HEIGHT, w, &bggc, &fggc);
     for (i = 0; i < p->special; i++)
@@ -125,7 +144,7 @@ void InitSizedEllipses(d, p, size)
 	    d, ws[i].x, ws[i].y, ws[i].width, ws[i].height);
 }
 
-void InitSmallEllipses(d, p)
+void InitEllipses1(d, p)
     Display *d;
     Parms p;
 {
@@ -133,7 +152,7 @@ void InitSmallEllipses(d, p)
 }
 
 
-void InitMedEllipses(d, p)
+void InitEllipses10(d, p)
     Display *d;
     Parms p;
 {
@@ -141,47 +160,22 @@ void InitMedEllipses(d, p)
 }
 
 
-extern double sqrt();
-
-void InitEllipses(d, p, size)
+void InitEllipses100(d, p)
     Display *d;
-    Parms   p;
+    Parms p;
 {
-    int i;
-    int xsize, ysize;
-    int steps, xsizeinc, ysizeinc;
-
-    for (i = 0; i < 4; i++)
-	w[i] = None;
-    i = 0;
-    xsize = 0;
-    ysize = 0;
-    arcs = (XArc *)malloc((p->objects) * sizeof(XArc));
-    
-    steps = (int) sqrt((double) p->objects);
-    xsizeinc = WIDTH / steps;
-    ysizeinc = HEIGHT / steps;
-
-    for (i = 0; i != p->objects; i++)
-    {    
-	arcs[i].x = rand() % (WIDTH - xsize);
-	arcs[i].y = rand() % (HEIGHT - ysize);
-	arcs[i].width = xsize;
-	arcs[i].height = ysize;
-	arcs[i].angle1 = 0;
-	arcs[i].angle2 = 360*64;
-	xsize += xsizeinc;
-	if (xsize > WIDTH) {
-	    xsize -= WIDTH;
-	    ysize += ysizeinc;
-	    if (ysize > HEIGHT) ysize -= HEIGHT;
-	}
-    }
-    CreatePerfStuff(d, 1, WIDTH, HEIGHT, w, &bggc, &fggc);
-    for (i = 0; i < p->special; i++)
-	w[i+1] = CreatePerfWindow(
-	    d, ws[i].x, ws[i].y, ws[i].width, ws[i].height);
+    InitSizedEllipses(d, p, 100);
 }
+
+
+void InitEllipses500(d, p)
+    Display *d;
+    Parms p;
+{
+    InitSizedEllipses(d, p, 500);
+}
+
+
 
 void DoArcs(d, p)
     Display *d;
