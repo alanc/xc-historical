@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XPolyTxt.c,v 11.16 88/08/10 16:07:54 jim Exp $ */
+/* $XConsortium: XPolyTxt.c,v 11.17 88/09/06 16:09:46 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -86,7 +86,7 @@ XDrawText(dpy, d, gc, x, y, items, nitems)
 	    int nbytes = SIZEOF(xTextElt);
 	    int PartialNChars = item->nchars;
 	    int PartialDelta = item->delta;
-            register xTextElt *elt;
+            /* register xTextElt *elt; */
 	    int FirstTimeThrough = True;
  	    char *CharacterOffset = item->chars;
             char *tbuf;

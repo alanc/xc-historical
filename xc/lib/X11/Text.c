@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XText.c,v 11.16 88/08/10 16:07:51 jim Exp $ */
+/* $XConsortium: XText.c,v 11.17 88/09/06 16:10:57 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -47,7 +47,7 @@ XDrawString(dpy, d, gc, x, y, string, length)
     {
 	int nbytes;
 	int PartialNChars = length;
-        register xTextElt *elt;
+        /* register xTextElt *elt; */
  	char *CharacterOffset = string;
         unsigned char *tbuf;
 
