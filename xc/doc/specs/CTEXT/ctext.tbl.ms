@@ -1,10 +1,11 @@
 .\" Use tbl and -ms
 .sp 8
-.ce 4
+.ce 5
 \s+2\fBCompound Text Encoding\fP\s-2
 .sp 6p
 Version 1.1
 MIT X Consortium Standard
+X Version 11, Release 5
 Robert W. Scheifler
 .sp 2
 .LP

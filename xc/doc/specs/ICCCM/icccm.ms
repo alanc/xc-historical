@@ -7,15 +7,17 @@
 .nr PS 11
 \&
 .sp 8
-.ce 5
+.ce 4
 \s+2\fBInter-Client Communication Conventions Manual\fP\s-2
 
-\s-1\fBVersion 1.1\fP\s-1
+\fBVersion 1.1\fP
 
-\s+1\fBMIT X Consortium Standard\fP\s-1
+\fBMIT X Consortium Standard\fP
+
+\fBX Version 11, Release 5\fP
 .sp 6
-.ce 5
-\s+1Dave Rosenthal\s-1
+.ce 2
+\s+1David Rosenthal\s-1
 .sp 6p
 \s+1Sun Microsystems, Inc.\s-1
 .bp
