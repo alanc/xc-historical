@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XKeyBind.c,v 11.33 87/09/04 16:59:43 newman Locked $ */
+/* $Header: XKeyBind.c,v 11.34 87/09/08 14:32:21 toddb Locked $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -12,7 +12,7 @@
 #include "keysym.h"
 #include <stdio.h>
 
-#define HAS_CTRL(c)  ((c) >= '@' && (c) <= '\0177')
+#define HAS_CTRL(c)  ((c) >= '@' && (c) <= '\177')
 
 struct XKeytrans {
 	struct XKeytrans *next;/* next on list */
