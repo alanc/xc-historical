@@ -1,4 +1,4 @@
-/* $XConsortium: Berklib.c,v 1.16 93/03/24 18:11:54 gildea Exp $ */
+/* $XConsortium: Berklib.c,v 1.17 93/03/29 18:18:48 rws Exp $ */
 
 /*
  * These are routines found in BSD but not on all other systems.  The core
@@ -269,9 +269,7 @@ int gettimeofday (tvp, tzp)
 	fprintf( stderr,
 		 "Warning: gettimeofday() emulation does not return timezone\n"
 		);
-#endif /* _SEQUENT_ */
     }
-#endif
+#endif /* _SEQUENT_ */
 }
 #endif /* WANT_GTOD */
-
