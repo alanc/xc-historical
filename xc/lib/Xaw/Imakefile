@@ -41,7 +41,8 @@ HEADERS = \
 	Paned.h \
 	PanedP.h \
 	Scroll.h \
-	ScrollP.h \
+	Scrollbar.h \
+	ScrollbarP.h \
 	Simple.h \
 	SimpleP.h \
 	SimpleMenu.h \
