@@ -1,5 +1,4 @@
-/* $XConsortium$ */
-
+/* $XConsortium: XIE.h,v 1.1 93/10/26 09:40:58 rws Exp $ */
 /******************************************************************************
 
 				NOTICE
@@ -53,9 +52,20 @@ terms and conditions:
 #define xieExtName		"XIE"
 
 #define xieMajorVersion		4
-#define xieMinorVersion		13
-#define xieEarliestMinorVersion	13
-#define xieLatestMinorVersion	13
+#define xieMinorVersion		14
+#define xieEarliestMinorVersion	14
+#define xieLatestMinorVersion	14
+
+
+/* ServiceClass */
+#ifdef  XIE_DIS
+#define XIE_FULL 0
+#else
+#define XIE_FULL 1
+#endif
+
+#define xieValFull	1
+#define xieValDIS	2
 
 
 /* Limits */
@@ -264,12 +274,6 @@ terms and conditions:
 #define xieValNonexistent	3
 
 
-/* ServiceClass */
-
-#define xieValFull	1
-#define xieValDIS	2
-
-
 /* TechniqueGroup */
 
 #define	xieValDefault		0
@@ -310,38 +314,37 @@ terms and conditions:
 #define xieElemArithmetic		9
 #define xieElemBandCombine		10
 #define xieElemBandExtract		11
-#define xieElemBlend			12
-#define xieElemCompare			13
-#define xieElemConstrain		14
-#define xieElemConvertFromIndex		15
-#define xieElemConvertFromRGB		16
-#define xieElemConvertToIndex		17
-#define xieElemConvertToRGB		18
-#define xieElemConvolve			19
-#define xieElemDither			20
-#define xieElemGeometry			21
-#define xieElemLogical			22
-#define xieElemMatchHistogram		23
-#define xieElemMath			24
-#define xieElemPasteUp			25
-#define xieElemPoint			26
-#define xieElemUnconstrain		27
-#define xieElemExportClientHistogram	28
-#define xieElemExportClientLUT		29
-#define xieElemExportClientPhoto	30
-#define xieElemExportClientROI		31
-#define xieElemExportDrawable		32
-#define xieElemExportDrawablePlane	33
-#define xieElemExportLUT		34
-#define xieElemExportPhotomap		35
-#define xieElemExportROI		36
+#define xieElemBandSelect		12
+#define xieElemBlend			13
+#define xieElemCompare			14
+#define xieElemConstrain		15
+#define xieElemConvertFromIndex		16
+#define xieElemConvertFromRGB		17
+#define xieElemConvertToIndex		18
+#define xieElemConvertToRGB		19
+#define xieElemConvolve			20
+#define xieElemDither			21
+#define xieElemGeometry			22
+#define xieElemLogical			23
+#define xieElemMatchHistogram		24
+#define xieElemMath			25
+#define xieElemPasteUp			26
+#define xieElemPoint			27
+#define xieElemUnconstrain		28
+#define xieElemExportClientHistogram	29
+#define xieElemExportClientLUT		30
+#define xieElemExportClientPhoto	31
+#define xieElemExportClientROI		32
+#define xieElemExportDrawable		33
+#define xieElemExportDrawablePlane	34
+#define xieElemExportLUT		35
+#define xieElemExportPhotomap		36
+#define xieElemExportROI		37
 
-#define xieMaxElem			36
+#define xieMaxElem			37
 
 
-/*
- * Event Codes
- */
+/* Event Codes */
 
 #define xieEvnNoColorAlloc		0
 #define xieEvnNoDecodeNotify		1
@@ -349,13 +352,10 @@ terms and conditions:
 #define xieEvnNoImportObscured		3
 #define xieEvnNoPhotofloDone		4
 
-#define xieNumEvents			5	
+#define xieNumEvents			5
 
 
-
-/*
- * Error Codes
- */
+/* Error Codes */
 
 #define xieErrNoColorList	0
 #define xieErrNoLUT		1
@@ -365,7 +365,10 @@ terms and conditions:
 #define xieErrNoROI		5
 #define xieErrNoFlo		6
 
-#define xieNumErrors		7	
+#define xieNumErrors		7
+
+
+/* Flo Error Codes */
 
 #define xieErrNoFloAccess	   1
 #define xieErrNoFloAlloc	   2
@@ -387,5 +390,6 @@ terms and conditions:
 #define xieErrNoFloValue	  18
 #define xieErrNoFloImplementation 19
 
+#define xieNumFloErrors		  19
 
 #endif /* XIE_H */

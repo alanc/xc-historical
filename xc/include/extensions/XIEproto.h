@@ -1,5 +1,4 @@
-/* $XConsortium: XIEproto.h,v 1.1 93/07/19 11:43:46 mor Exp $ */
-
+/* $XConsortium: XIEproto.h,v 1.1 93/10/26 09:41:05 rws Exp $ */
 /******************************************************************************
 
 				NOTICE
@@ -48,11 +47,11 @@ terms and conditions:
 #ifndef XIEPROTO_H
 #define XIEPROTO_H
 
+#include <X11/extensions/XIEprotost.h>
+
 #define Drawable CARD32
 #define Colormap CARD32
 #define GContext CARD32
-
-#include <X11/extensions/XIEprotost.h>
 
 
 typedef struct {        
@@ -190,9 +189,9 @@ typedef struct {
     CARD32                      height0 B32;
     CARD32                      height1 B32;
     CARD32                      height2 B32;
-    CARD32                      level0 B32;
-    CARD32                      level1 B32;
-    CARD32                      level2 B32;
+    CARD32                      levels0 B32;
+    CARD32                      levels1 B32;
+    CARD32                      levels2 B32;
 } xieQueryPhotomapReply;
 
 typedef struct {        
@@ -435,7 +434,7 @@ typedef struct {
 
 typedef struct {
     CARD8			event;
-    CARD8			bandNumber;	/* XXX new */
+    CARD8			bandNumber;
     CARD16			sequenceNum B16;
     CARD32			time B32;
     CARD32			instanceNameSpace B32;
@@ -443,7 +442,7 @@ typedef struct {
     xieTypPhototag		src B16;
     CARD16			type B16;
     xieTypDecodeTechnique	decodeTechnique B16;
-    BOOL			aborted;	/* XXX moved */
+    BOOL			aborted;
     CARD8			pad;
     CARD32			width B32;
     CARD32		        height B32;
@@ -451,7 +450,7 @@ typedef struct {
 
 typedef struct {
     CARD8		event;
-    CARD8		bandNumber;	/* XXX new */
+    CARD8		bandNumber;
     CARD16		sequenceNum B16;
     CARD32		time B32;
     CARD32		instanceNameSpace B32;
@@ -488,99 +487,115 @@ typedef struct {
     CARD8             code;
     CARD16            sequenceNum B16;
     CARD32            resourceID B32;
-    CARD8	      opcode;
-    CARD8             pad[23];
+    CARD16	      minorOpcode B16;
+    CARD8	      majorOpcode;
+    CARD8             pad[21];
 } xieResourceErr;
 
 typedef struct {
     CARD8             error;
     CARD8             code;
     CARD16            sequenceNum B16;
-    CARD32            nameSpace B32;
     CARD32            floID B32;
+    CARD16	      minorOpcode B16;
+    CARD8	      majorOpcode;
+    CARD8             floErrorCode;
+    CARD32            nameSpace B32;
     xieTypPhototag    phototag B16;
     CARD16            type B16;
-    CARD8             floErrorCode;
-    CARD8             opcode;
-    CARD8             pad[14];
-} xieFloErr, xieFloAccessErr, xieFloAllocErr, xieFloElementErr, xieFloIDErr,
-  xieFloLengthErr, xieFloMatchErr, xieFloSourceErr, xieFloImplementationErr;
-
-typedef struct {
-    CARD8             error;
-    CARD8             code;
-    CARD16            sequenceNum B16;
-    CARD32            nameSpace B32;
-    CARD32            floID B32;
-    xieTypPhototag    phototag B16;
-    CARD16            type B16;
-    CARD8             floErrorCode;
-    CARD8             opcode;
-    CARD8             pad1[2];
     CARD32	      resourceID B32;
-    CARD8             pad2[8];
+    CARD8             pad[8];
 } xieFloResourceErr;
 
 typedef struct {
     CARD8             error;
     CARD8             code;
     CARD16            sequenceNum B16;
-    CARD32            nameSpace B32;
     CARD32            floID B32;
+    CARD16	      minorOpcode B16;
+    CARD8	      majorOpcode;
+    CARD8             floErrorCode;
+    CARD32            nameSpace B32;
     xieTypPhototag    phototag B16;
     CARD16            type B16;
-    CARD8             floErrorCode;
-    CARD8             opcode;
-    xieTypPhototag    domainSrc B16;
     CARD8             pad[12];
+} xieFloErr, xieFloAccessErr, xieFloAllocErr, xieFloElementErr,
+  xieFloLengthErr, xieFloMatchErr, xieFloSourceErr, xieFloImplementationErr;
+
+typedef struct {
+    CARD8             error;
+    CARD8             code;
+    CARD16            sequenceNum B16;
+    CARD32            floID B32;
+    CARD16	      minorOpcode B16;
+    CARD8	      majorOpcode;
+    CARD8             floErrorCode;
+    CARD32            nameSpace B32;
+    xieTypPhototag    phototag B16;
+    CARD16            type B16;
+    xieTypPhototag    domainSrc B16;
+    CARD8             pad[10];
 } xieFloDomainErr;
 
 typedef struct {
     CARD8             error;
     CARD8             code;
     CARD16            sequenceNum B16;
-    CARD32            nameSpace B32;
     CARD32            floID B32;
+    CARD16	      minorOpcode B16;
+    CARD8	      majorOpcode;
+    CARD8             floErrorCode;
+    CARD32            nameSpace B32;
+    CARD8             pad[16];
+} xieFloIDErr;
+
+typedef struct {
+    CARD8             error;
+    CARD8             code;
+    CARD16            sequenceNum B16;
+    CARD32            floID B32;
+    CARD16	      minorOpcode B16;
+    CARD8	      majorOpcode;
+    CARD8             floErrorCode;
+    CARD32            nameSpace B32;
     xieTypPhototag    phototag B16;
     CARD16            type B16;
-    CARD8             floErrorCode;
     CARD8             operator;
-    CARD8             opcode;
-    CARD8             pad[13];
+    CARD8             pad[11];
 } xieFloOperatorErr;
 
 typedef struct {
     CARD8             error;
     CARD8             code;
     CARD16            sequenceNum B16;
-    CARD32            nameSpace B32;
     CARD32            floID B32;
+    CARD16	      minorOpcode B16;
+    CARD8	      majorOpcode;
+    CARD8             floErrorCode;
+    CARD32            nameSpace B32;
     xieTypPhototag    phototag B16;
     CARD16            type B16;
-    CARD8             floErrorCode;
-    CARD8             opcode;
     CARD16            techniqueNumber B16;
     CARD16            lenTechParams B16;
-    CARD8             pad[10];
+    CARD8             techniqueGroup;
+    CARD8             pad[7];
 } xieFloTechniqueErr;
 
 typedef struct {
     CARD8             error;
     CARD8             code;
     CARD16            sequenceNum B16;
-    CARD32            nameSpace B32;
     CARD32            floID B32;
+    CARD16	      minorOpcode B16;
+    CARD8	      majorOpcode;
+    CARD8             floErrorCode;
+    CARD32            nameSpace B32;
     xieTypPhototag    phototag B16;
     CARD16            type B16;
-    CARD8             floErrorCode;
-    CARD8             opcode;
     CARD32            badValue B32;
     CARD8             pad[8];
 } xieFloValueErr;
 
-#undef Drawable
-#undef Colormap
-#undef GContext
 
 
 /*
@@ -642,5 +657,8 @@ typedef struct {
 #define sz_xieFloImplementationErr	32
 #define sz_xieFloErr			32
 
+#undef Drawable
+#undef Colormap
+#undef GContext
 
 #endif /* XIEPROTO_H */

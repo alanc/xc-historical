@@ -1,5 +1,4 @@
-/* $XConsortium: XIEprotost.h,v 1.1 93/07/19 11:43:48 mor Exp $ */
-
+/* $XConsortium: XIEprotost.h,v 1.1 93/10/26 09:41:11 rws Exp $ */
 /******************************************************************************
 
 				NOTICE
@@ -71,12 +70,6 @@ typedef CARD8	xieTypAlignment;
 
 typedef CARD8	xieTypArithmeticOp;
 
-typedef struct {
-    CARD32	byteCount B32;
-    /* LISTofCARD8 (byteCount) */
-    /* pad (byteCount) */
-} xieTypByteStream;
-
 typedef CARD16  xieTypColorAllocTechnique;
 
 typedef	CARD32	xieTypColorList;
@@ -120,12 +113,12 @@ typedef CARD8	xieTypExportNotify;
 
 typedef CARD8	xieTypExportState;
 
-typedef CARD16	xieTypeGamutTechnique;
+typedef CARD16	xieTypGamutTechnique;
 
-typedef CARD16	xieTypeGeometryTechnique;
+typedef CARD16	xieTypGeometryTechnique;
 
 typedef struct {
-    CARD32	index B32;
+    CARD32	value B32;
     CARD32	count B32;
 } xieTypHistogramData;
 
@@ -152,7 +145,7 @@ typedef CARD16	xieTypPhototag;
 typedef struct {
     INT32		offsetX B32;
     INT32		offsetY B32;
-    xieTypPhototag	domain B16;
+    xieTypPhototag	domain B16;		
 } xieTypProcessDomain;
 
 typedef struct {
@@ -174,7 +167,7 @@ typedef struct {
     CARD16			number B16;
     CARD8			speed;
     CARD8			nameLength;
-    CARD8			pad[2];
+    CARD16			pad B16;
     /* LISTofCARD8 (nameLength) */
     /* pad (nameLength) */
 } xieTypTechniqueRec;
@@ -216,9 +209,9 @@ typedef struct {
     CARD32		length0 B32;
     CARD32		length1 B32;
     CARD32		length2 B32;
-    CARD32		level0 B32;
-    CARD32		level1 B32;
-    CARD32		level2 B32;
+    CARD32		levels0 B32;
+    CARD32		levels1 B32;
+    CARD32		levels2 B32;
 } xieFloImportClientLUT;
 
 typedef struct {
@@ -233,9 +226,9 @@ typedef struct {
     CARD32			height0 B32;
     CARD32			height1 B32;
     CARD32			height2 B32;
-    CARD32			level0 B32;
-    CARD32			level1 B32;
-    CARD32			level2 B32;
+    CARD32			levels0 B32;
+    CARD32			levels1 B32;
+    CARD32			levels2 B32;
     xieTypDecodeTechnique	decodeTechnique B16;
     CARD16			lenParams B16;
     /* Technique dependent decode params */
@@ -327,6 +320,8 @@ typedef struct {
     CARD16		elemLength B16;
     xieTypPhototag	src B16;
     CARD16		pad B16;
+    CARD32		levels B32;
+    xieTypFloat		bias B32;
     xieTypFloat		constant0 B32;
     xieTypFloat		constant1 B32;
     xieTypFloat		constant2 B32;
@@ -335,10 +330,18 @@ typedef struct {
 typedef struct {
     CARD16		elemType B16;
     CARD16		elemLength B16;
+    xieTypPhototag	src B16;
+    CARD8		bandNumber;
+    CARD8		pad;
+} xieFloBandSelect;
+
+typedef struct {
+    CARD16		elemType B16;
+    CARD16		elemLength B16;
     xieTypPhototag	src1 B16;
     xieTypPhototag	src2 B16;
     xieTypPhototag	alpha B16;
-    CARD8		pad1[2];
+    CARD16		pad1 B16;
     INT32		domainOffsetX B32;
     INT32		domainOffsetY B32;
     xieTypPhototag	domainPhototag B16;		
@@ -372,9 +375,9 @@ typedef struct {
     CARD16			elemLength B16;
     xieTypPhototag		src B16;
     CARD16			pad B16;
-    CARD32			level0 B32;
-    CARD32			level1 B32;
-    CARD32			level2 B32;
+    CARD32			levels0 B32;
+    CARD32			levels1 B32;
+    CARD32			levels2 B32;
     xieTypConstrainTechnique	constrain B16;
     CARD16			lenParams B16;
     /* Technique dependent constrain params */
@@ -442,10 +445,11 @@ typedef struct {
     CARD16			elemType B16;
     CARD16			elemLength B16;
     xieTypPhototag		src B16;
-    CARD16			pad B16;
-    CARD32			level0 B32;
-    CARD32			level1 B32;
-    CARD32			level2 B32;
+    CARD8			bandMask;
+    CARD8			pad;
+    CARD32			levels0 B32;
+    CARD32			levels1 B32;
+    CARD32			levels2 B32;
     xieTypDitherTechnique	dither B16;
     CARD16			lenParams B16;
     /* Technique dependent dither params */
@@ -468,7 +472,7 @@ typedef struct {
     xieTypFloat			constant0 B32;
     xieTypFloat			constant1 B32;
     xieTypFloat			constant2 B32;
-    xieTypeGeometryTechnique	sample B16;
+    xieTypGeometryTechnique	sample B16;
     CARD16			lenParams B16;
     /* Technique dependent sample params */
 } xieFloGeometry;
@@ -654,18 +658,18 @@ typedef struct {
  */
 
 typedef struct {
-    xieTypFloat		input_low0   B32;
-    xieTypFloat		input_low1   B32;
-    xieTypFloat		input_low2   B32;
-    xieTypFloat		input_high0  B32;
-    xieTypFloat		input_high1  B32;
-    xieTypFloat		input_high2  B32;
-    CARD32		output_low0  B32;
-    CARD32		output_low1  B32;
-    CARD32		output_low2  B32;
-    CARD32		output_high0 B32;
-    CARD32		output_high1 B32;
-    CARD32		output_high2 B32;
+    xieTypFloat		inputLow0   B32;
+    xieTypFloat		inputLow1   B32;
+    xieTypFloat		inputLow2   B32;
+    xieTypFloat		inputHigh0  B32;
+    xieTypFloat		inputHigh1  B32;
+    xieTypFloat		inputHigh2  B32;
+    CARD32		outputLow0  B32;
+    CARD32		outputLow1  B32;
+    CARD32		outputLow2  B32;
+    CARD32		outputHigh0 B32;
+    CARD32		outputHigh1 B32;
+    CARD32		outputHigh2 B32;
 } xieTecClipScale;
 
 typedef struct {
@@ -682,23 +686,83 @@ typedef struct {
 } xieTecColorAllocRequantize;
 
 typedef struct {
-    xieTypMatrix		matrix;
+    xieTypFloat			matrix00 B32;
+    xieTypFloat			matrix01 B32;
+    xieTypFloat			matrix02 B32;
+    xieTypFloat			matrix10 B32;
+    xieTypFloat			matrix11 B32;
+    xieTypFloat			matrix12 B32;
+    xieTypFloat			matrix20 B32;
+    xieTypFloat			matrix21 B32;
+    xieTypFloat			matrix22 B32;
     xieTypWhiteAdjustTechnique	whiteAdjusted B16;
     CARD16			lenParams B16;
     /* Technique dependent white params */
 } xieTecRGBToCIELab, xieTecRGBToCIEXYZ;
 
 typedef struct {
-    xieTypFloat		red B32;
-    xieTypFloat		green B32;
-    xieTypFloat		blue B32;
-} xieTecRGBToYCbCr, xieTecRGBToYCC, xieTecYCbCrToRGB, xieTecYCCToRGB;
+    CARD32		levels0 B32;
+    CARD32		levels1 B32;
+    CARD32		levels2 B32;
+    xieTypFloat		lumaRed B32;
+    xieTypFloat		lumaGreen B32;
+    xieTypFloat		lumaBlue B32;
+    xieTypFloat		bias0 B32;
+    xieTypFloat		bias1 B32;
+    xieTypFloat		bias2 B32;
+} xieTecRGBToYCbCr;
 
 typedef struct {
-    xieTypMatrix		matrix;
+    CARD32		levels0 B32;
+    CARD32		levels1 B32;
+    CARD32		levels2 B32;
+    xieTypFloat		lumaRed B32;
+    xieTypFloat		lumaGreen B32;
+    xieTypFloat		lumaBlue B32;
+    xieTypFloat		scale B32;
+} xieTecRGBToYCC;
+
+typedef struct {
+    CARD32			levels0 B32;
+    CARD32			levels1 B32;
+    CARD32			levels2 B32;
+    xieTypFloat			lumaRed B32;
+    xieTypFloat			lumaGreen B32;
+    xieTypFloat			lumaBlue B32;
+    xieTypFloat			bias0 B32;
+    xieTypFloat			bias1 B32;
+    xieTypFloat			bias2 B32;
+    xieTypGamutTechnique	gamutTechnique B16;
+    CARD16			numGamutParams B16;
+    /* Technique dependent gamut params */
+} xieTecYCbCrToRGB;
+
+typedef struct {
+    CARD32			levels0 B32;
+    CARD32			levels1 B32;
+    CARD32			levels2 B32;
+    xieTypFloat			lumaRed B32;
+    xieTypFloat			lumaGreen B32;
+    xieTypFloat			lumaBlue B32;
+    xieTypFloat			scale B32;
+    xieTypGamutTechnique	gamutTechnique B16;
+    CARD16			numGamutParams B16;
+    /* Technique dependent gamut params */
+} xieTecYCCToRGB;
+
+typedef struct {
+    xieTypFloat			matrix00 B32;
+    xieTypFloat			matrix01 B32;
+    xieTypFloat			matrix02 B32;
+    xieTypFloat			matrix10 B32;
+    xieTypFloat			matrix11 B32;
+    xieTypFloat			matrix12 B32;
+    xieTypFloat			matrix20 B32;
+    xieTypFloat			matrix21 B32;
+    xieTypFloat			matrix22 B32;
     xieTypWhiteAdjustTechnique	whiteAdjusted B16;
     CARD16			numWhiteParams B16;
-    xieTypeGamutTechnique	gamutTechnique B16;
+    xieTypGamutTechnique	gamutTechnique B16;
     CARD16			numGamutParams B16;
     /* Technique dependent white params */
     /* Technique dependent gamut params */
@@ -733,9 +797,16 @@ typedef struct {
 typedef struct {
     xieTypOrientation	encodedOrder;
     BOOL		normal;
-    CARD16		pad B16;
+    BOOL		radiometric;
+    CARD8		pad;
 } xieTecDecodeG31D, xieTecDecodeG32D, xieTecDecodeG42D,
-  xieTecDecodeTIFF2, xieTecDecodeTIFFPackBits;
+  xieTecDecodeTIFF2;
+
+typedef struct {
+    xieTypOrientation	encodedOrder;
+    BOOL		normal;
+    CARD16		pad B16;
+} xieTecDecodeTIFFPackBits;
 
 typedef struct {
     xieTypInterleave	interleave;
@@ -766,49 +837,57 @@ typedef struct {
 } xieTecEncodeUncompressedTriple;
 
 typedef struct {
-    BOOL		alignEol;
     xieTypOrientation	encodedOrder;
-    CARD16		pad B16;
+    BOOL		alignEol;
+    BOOL		radiometric;
+    CARD8		pad;
 } xieTecEncodeG31D;
 
 typedef struct {
-    BOOL		uncompressed;
-    BOOL		alignEol;
     xieTypOrientation	encodedOrder;
-    CARD8		pad;
+    BOOL		alignEol;
+    BOOL		radiometric;
+    BOOL		uncompressed;
     CARD32		kFactor B32;
 } xieTecEncodeG32D;
 
 typedef struct {
-    BOOL		uncompressed;
     xieTypOrientation	encodedOrder;
-    CARD16		pad B16;
+    BOOL		radiometric;
+    BOOL		uncompressed;
+    CARD8		pad;
 } xieTecEncodeG42D;
 
 typedef struct {
     xieTypInterleave	interleave;
     xieTypOrientation	bandOrder;
-    CARD16		q B16; 		/* multiple of 4 */
-    CARD16		a B16; 		/* multiple of 4 */
-    CARD16		d B16; 		/* multiple of 4 */
-    /* LISTofCARD8 (q) */
-    /* LISTofCARD8 (a) */
-    /* LISTofCARD8 (d) */
+    CARD16		lenQtable B16;	/* multiple of 4 */
+    CARD16		lenACtable B16;	/* multiple of 4 */
+    CARD16		lenDCtable B16;	/* multiple of 4 */
+    /* LISTofCARD8 (Qtable)  */
+    /* LISTofCARD8 (ACtable) */
+    /* LISTofCARD8 (DCtable) */
 } xieTecEncodeJPEGBaseline;
 
 typedef struct {
     xieTypInterleave	interleave;
     xieTypOrientation	bandOrder;
-    CARD16		tableSize B16;	/* multiple of 4 */
+    CARD16		lenTable B16;	/* multiple of 4 */
     CARD8		predictor[3];
     CARD8		pad;
-    /* LISTofCARD8 (tableSize) */
+    /* LISTofCARD8 (table) */
 } xieTecEncodeJPEGLossless;
 
 typedef struct {
     xieTypOrientation	encodedOrder;
+    BOOL		radiometric;
+    CARD16		pad B16;
+} xieTecEncodeTIFF2;
+
+typedef struct {
+    xieTypOrientation	encodedOrder;
     CARD8		pad[3];
-} xieTecEncodeTIFF2, xieTecEncodeTIFFPackBits;
+} xieTecEncodeTIFFPackBits;
 
 typedef struct {
     INT16	simple B16;
@@ -835,7 +914,7 @@ typedef struct {
 
 typedef struct {
     xieTypFloat		mean B32;
-    xieTypFloat		variance B32;
+    xieTypFloat		sigma B32;
 } xieTecHistogramGaussian;
 
 typedef struct {
@@ -859,7 +938,6 @@ typedef struct {
 #define sz_xieTypMatrix				36
 #define sz_xieTypAlignment			1
 #define sz_xieTypArithmeticOp			1
-#define sz_xieTypByteStream			4
 #define sz_xieTypColorAllocTechnique		2
 #define sz_xieTypColorList			4
 #define sz_xieTypColorspace			2
@@ -909,7 +987,8 @@ typedef struct {
 #define sz_xieFloImportROI			8
 #define sz_xieFloArithmetic			32
 #define sz_xieFloBandCombine			12
-#define sz_xieFloBandExtract			20
+#define sz_xieFloBandExtract			28
+#define sz_xieFloBandSelect			8
 #define sz_xieFloBlend				40
 #define sz_xieFloCompare			36
 #define sz_xieFloConstrain			24
@@ -944,10 +1023,10 @@ typedef struct {
 #define sz_xieTecConvolveReplicate		0
 #define sz_xieTecRGBToCIELab			40
 #define sz_xieTecRGBToCIEXYZ			40
-#define sz_xieTecRGBToYCbCr			12
-#define sz_xieTecRGBToYCC			12
-#define sz_xieTecYCbCrToRGB			12
-#define sz_xieTecYCCToRGB			12
+#define sz_xieTecRGBToYCbCr			36
+#define sz_xieTecRGBToYCC			28
+#define sz_xieTecYCbCrToRGB			40
+#define sz_xieTecYCCToRGB			32
 #define sz_xieTecCIELabToRGB			44
 #define sz_xieTecCIEXYZToRGB			44
 #define sz_xieTecDecodeUncompressedSingle	8
