@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.42 92/04/05 19:01:47 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.43 92/04/06 09:59:18 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -130,7 +130,7 @@ typedef struct {
     int y1;
     int x2;
     int y2;
-} BBox;
+} Box;
 
 void process();
 
@@ -201,6 +201,8 @@ error(Dpy, err)
     Display *Dpy;
     XErrorEvent *err;
 {
+    if (err->error_code == BadWindow || err->error_code == BadDrawable)
+	return 0;
     reset();
     return (*olderror)(Dpy, err);
 }
@@ -561,7 +563,7 @@ compute_univ(puniv, iuniv, w, wa, level)
 void
 compute_box(univ, box)
     Region univ;
-    BBox *box;
+    Box *box;
 {
     XRectangle rect;
 
@@ -672,7 +674,7 @@ find_closest(rec, parent, pwa, puniv, level)
     int i;
     Bool found;
     double dist;
-    BBox box;
+    Box box;
     int x, y;
     Region iuniv, univ;
 
