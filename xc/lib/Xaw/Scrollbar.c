@@ -1,4 +1,4 @@
-/* $XConsortium: Scrollbar.c,v 1.66 91/01/11 18:43:33 converse Exp $ */
+/* $XConsortium: Scrollbar.c,v 1.67 91/02/17 15:47:08 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -389,7 +389,8 @@ static void Realize( gw, valueMask, attributes )
      * The Simple widget actually stuffs the value in the valuemask. 
      */
     
-    (*XtSuperclass(gw)->core_class.realize) (gw, valueMask, attributes);
+    (*scrollbarWidgetClass->core_class.superclass->core_class.realize)
+	(gw, valueMask, attributes);
 }
 
 /* ARGSUSED */

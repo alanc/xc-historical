@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Porthole.c,v 1.12 90/04/26 17:35:33 converse Exp $
+ * $XConsortium: Porthole.c,v 1.13 91/02/17 15:46:51 converse Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -209,7 +209,8 @@ static void Realize (gw, valueMask, attributes)
 
     if (gw->core.width < 1) gw->core.width = 1;
     if (gw->core.height < 1) gw->core.height = 1;
-    (*(XtSuperclass(gw)->core_class.realize)) (gw, valueMask, attributes);
+    (*portholeWidgetClass->core_class.superclass->core_class.realize)
+	(gw, valueMask, attributes);
 }
 
 

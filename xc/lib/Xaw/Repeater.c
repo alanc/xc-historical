@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Repeater.c,v 1.6 90/12/31 17:23:31 gildea Exp $
+ * $XConsortium: Repeater.c,v 1.7 91/02/17 15:47:05 converse Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -166,8 +166,8 @@ static void tic (client_data, id)
 
     rw->repeater.timer = 0;		/* timer is removed */
     if (rw->repeater.flash) {
-	XtExposeProc expose = XtSuperclass(rw)->core_class.expose;
-
+	XtExposeProc expose;
+	expose = repeaterWidgetClass->core_class.superclass->core_class.expose;
 	XClearWindow (XtDisplay((Widget) rw), XtWindow((Widget) rw));
 	rw->command.set = FALSE;
 	(*expose) ((Widget) rw, (XEvent *) NULL, (Region) NULL);

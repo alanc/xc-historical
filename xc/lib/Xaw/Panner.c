@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.40 91/02/17 15:38:24 converse Exp $
+ * $XConsortium: Panner.c,v 1.41 91/02/19 16:06:27 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -678,8 +678,8 @@ static void SetValuesAlmost (gold, gnew, req, reply)
     if (reply->request_mode == 0) {	/* got turned down, so cope */
 	Resize (gnew);
     }
-    (*(XtSuperclass(gnew)->core_class.set_values_almost)) (gold, gnew,
-							   req, reply);
+    (*pannerWidgetClass->core_class.superclass->core_class.set_values_almost)
+	(gold, gnew, req, reply);
 }
 
 static XtGeometryResult QueryGeometry (gw, intended, pref)

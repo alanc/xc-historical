@@ -1,4 +1,4 @@
-/* $XConsortium: Logo.c,v 1.22 91/02/19 19:21:29 converse Exp $ */
+/* $XConsortium: Logo.c,v 1.23 91/03/08 14:12:51 converse Exp $ */
 
 /*
 Copyright 1988 by the Massachusetts Institute of Technology
@@ -220,7 +220,8 @@ static void Realize (gw, valuemaskp, attr)
 	*valuemaskp |= CWBackPixel;
     } else
       create_gcs (w);
-    (*XtSuperclass(gw)->core_class.realize) (gw, valuemaskp, attr);
+    (*logoWidgetClass->core_class.superclass->core_class.realize)
+	(gw, valuemaskp, attr);
 }
 
 static void Resize (gw)

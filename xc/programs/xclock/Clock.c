@@ -1,4 +1,4 @@
-/* $XConsortium: Clock.c,v 1.56 91/02/17 14:51:26 converse Exp $ */
+/* $XConsortium: Clock.c,v 1.57 91/03/08 14:07:47 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -232,7 +232,8 @@ static void Realize (gw, valueMask, attrs)
 	attrs->backing_store = w->clock.backing_store;
 	break;
      }
-     (*XtSuperclass(gw)->core_class.realize) (gw, valueMask, attrs);
+     (*clockWidgetClass->core_class.superclass->core_class.realize)
+	 (gw, valueMask, attrs);
      Resize(gw);
 }
 
