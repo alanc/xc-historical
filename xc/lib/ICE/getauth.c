@@ -1,4 +1,4 @@
-/* $XConsortium: getauth.c,v 1.1 93/12/06 19:06:11 mor Exp $ */
+/* $XConsortium: getauth.c,v 1.2 93/12/07 11:04:08 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -42,16 +42,17 @@ char		**authDataRet;
 
     entry = IceGetAuthFileEntry (protocolName, address, authName);
 
-    if (entry &&
-	(*authDataRet = (char *) malloc (entry->auth_data_length)) != NULL)
+    if (entry)
     {
 	*authDataLenRet = entry->auth_data_length;
-	memcpy (*authDataRet, entry->auth_data, entry->auth_data_length);
+
+	if ((*authDataRet = (char *) malloc (entry->auth_data_length)) != NULL)
+	    memcpy (*authDataRet, entry->auth_data, entry->auth_data_length);
     }
     else
     {
-	*authDataRet = NULL;
 	*authDataLenRet = 0;
+	*authDataRet = NULL;
     }
 
     IceFreeAuthFileEntry (entry);
@@ -83,16 +84,17 @@ char		**authDataRet;
             strcmp (authName, entry->auth_name) == 0;
     }
 
-    if (found &&
-	(*authDataRet = (char *) malloc (entry->auth_data_length)) != NULL)
+    if (found)
     {
 	*authDataLenRet = entry->auth_data_length;
-	memcpy (*authDataRet, entry->auth_data, entry->auth_data_length);
+
+	if ((*authDataRet = (char *) malloc (entry->auth_data_length)) != NULL)
+	    memcpy (*authDataRet, entry->auth_data, entry->auth_data_length);
     }
     else
     {
-	*authDataRet = NULL;
 	*authDataLenRet = 0;
+	*authDataRet = NULL;
     }
 }
 
