@@ -35,7 +35,6 @@
           OBJS2 = resize.o
        PROGRAMS = resize xterm
    INSTALLFLAGS = $(INSTUIDFLAGS)
-       INCLUDES = -I$(TOOLKITSRC) -I$(TOP)
        DEPLIBS1 = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
        DEPLIBS2 = 
 
