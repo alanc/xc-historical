@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.26 89/11/29 14:48:18 jim Exp $
+ * $XConsortium: parse.c,v 1.27 89/11/30 18:03:34 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.26 89/11/29 14:48:18 jim Exp $";
+"$XConsortium: parse.c,v 1.27 89/11/30 18:03:34 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -404,10 +404,10 @@ static TwmKeyword keytable[] = {
     { "f.saveyourself",		FKEYWORD, F_SAVEYOURSELF },
     { "f.showiconmgr",		FKEYWORD, F_SHOWLIST },
     { "f.sorticonmgr",		FKEYWORD, F_SORTICONMGR },
-    { "f.source",		FSKEYWORD, F_SOURCE },
+    { "f.source",		FSKEYWORD, F_BEEP },  /* XXX - don't work */
     { "f.title",		FKEYWORD, F_TITLE },
     { "f.topzoom",		FKEYWORD, F_TOPZOOM },
-    { "f.twmrc",		FKEYWORD, F_TWMRC },
+    { "f.twmrc",		FKEYWORD, F_RESTART },
     { "f.unfocus",		FKEYWORD, F_UNFOCUS },
     { "f.upiconmgr",		FKEYWORD, F_UPICONMGR },
     { "f.version",		FKEYWORD, F_VERSION },

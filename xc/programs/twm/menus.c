@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.130 89/11/30 16:55:28 jim Exp $
+ * $XConsortium: menus.c,v 1.131 89/11/30 18:58:07 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.130 89/11/30 16:55:28 jim Exp $";
+"$XConsortium: menus.c,v 1.131 89/11/30 18:58:07 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -960,22 +960,7 @@ Bool PopUpMenu (menu, x, y, center)
 
 	/* this is the twm windows menu,  let's go ahead and build it */
 
-	if (menu->w)
-	{
-	    XDeleteContext(dpy, menu->w, MenuContext);
-	    XDeleteContext(dpy, menu->w, ScreenContext);
-	    if (Scr->Shadow) {
-		XDestroyWindow (dpy, menu->shadow);
-	    }
-	    XDestroyWindow(dpy, menu->w);
-	}
-
-	for (tmp = menu->first; tmp != NULL;)
-	{
-	    tmp1 = tmp;
-	    tmp = tmp->next;
-	    free(tmp1);
-	}
+	DestroyMenu (menu);
 
 	menu->first = NULL;
 	menu->last = NULL;
@@ -1887,83 +1872,6 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	}
 	break;
 
-    case F_TWMRC:
-	len = strlen(action);
-	if (len == 0)
-	    ptr = InitFile;
-	else {
-	    char *actiontmp;
-
-	    ptr = (char *) malloc (len + 1);
-	    if (!ptr) {
-		fprintf (stderr, 
-		 "%s:  unable to allocate %d bytes to source file \"%s\"\n", 
-			 ProgramName, len+1, action);
-		break;
-	    }
-	    strcpy (ptr, action);
-	    actiontmp = ExpandFilename (ptr);
-	    if (!actiontmp) {
-		free (ptr);
-		break;
-	    }
-	    if (actiontmp != ptr) free (ptr);
-	    ptr = actiontmp;
-	}
-
-	oldScr = Scr;
-	FirstScreen = TRUE;
-	for (scrnum = 0; scrnum < NumScreens; scrnum++)
-	{
-	    if ((Scr = ScreenList[scrnum]) == NULL)
-		continue;
-
-	    /* first get rid of the existing menu structure and destroy all
-	     * windows */
-	    for (root = Scr->MenuList; root != NULL;)
-	    {
-		for (item = root->last; item != NULL;)
-		{
-		    tmp_item = item;
-		    item = item->prev;
-		    free(tmp_item);
-		}
-
-		if (root->w)
-		{
-		    XDeleteContext(dpy, root->w, MenuContext);
-		    XDeleteContext(dpy, root->w, ScreenContext);
-		    if (Scr->Shadow) {
-			XDestroyWindow (dpy, root->shadow);
-		    }
-		    XDestroyWindow(dpy, root->w);
-		}
-
-		tmp_root = root;
-		root = root->next;
-		free(tmp_root);
-	    }
-	    Scr->MenuList = NULL;
-	    Scr->LastMenu = NULL;
-	    ActiveMenu = NULL;
-	    ActiveItem = NULL;
-
-	    UngrabAllButtons();
-	    UngrabAllKeys();
-	    FreeIconRegions();
-
-	    ParseTwmrc(ptr);
-	    MakeMenus();
-
-	    GrabAllButtons();
-	    GrabAllKeys();
-	    FirstScreen = FALSE;
-	}
-
-	if (ptr != InitFile) free (ptr);
-	Scr = oldScr;
-	break;
-
     case F_REFRESH:
 	{
 	    XSetWindowAttributes attributes;
@@ -2557,6 +2465,25 @@ SetBorder (tmp, onoroff)
 
 	XSetWindowBorderPixmap (dpy, tmp->frame, pix);
 	if (tmp->title_w) XSetWindowBorderPixmap (dpy, tmp->title_w, pix);
+    }
+}
+
+DestroyMenu (menu)
+    MenuRoot *menu;
+{
+    MenuItem *item;
+
+    if (menu->w) {
+	XDeleteContext (dpy, menu->w, MenuContext);
+	XDeleteContext (dpy, menu->w, ScreenContext);
+	if (Scr->Shadow) XDestroyWindow (dpy, menu->shadow);
+	XDestroyWindow(dpy, menu->w);
+    }
+
+    for (item = menu->first; item; ) {
+	MenuItem *tmp = item;
+	item = item->next;
+	free ((char *) tmp);
     }
 }
 

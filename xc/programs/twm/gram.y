@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.79 89/11/21 16:41:24 jim Exp $
+ * $XConsortium: gram.y,v 1.80 89/11/28 11:33:00 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.79 89/11/21 16:41:24 jim Exp $";
+"$XConsortium: gram.y,v 1.80 89/11/28 11:33:00 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -534,9 +534,6 @@ action		: FKEYWORD	{ $$ = $1; }
 				$$ = $1;
 				Action = $2;
 				switch ($1) {
-				  case F_SOURCE:
-				    $$ = F_TWMRC;
-				    break;
 				  case F_MENU:
 				    pull = GetRoot ($2, 0, 0);
 				    pull->prev = root;

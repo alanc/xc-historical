@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: parse.h,v 1.9 89/11/21 16:41:38 jim Exp $
+ * $XConsortium: parse.h,v 1.10 89/11/30 18:03:36 jim Exp $
  *
  * .twmrc parsing externs
  *
@@ -74,35 +74,33 @@ extern void TwmOutput();
 #define F_DESTROY		27
 #define F_DELETE		28
 #define F_SAVEYOURSELF		29
-#define F_TWMRC			30
-#define F_VERSION		31
-#define F_TITLE			32
-#define F_RIGHTICONMGR		33
-#define F_LEFTICONMGR		34
-#define F_UPICONMGR		35
-#define F_DOWNICONMGR		36
-#define F_FORWICONMGR		37
-#define F_BACKICONMGR		38
-#define F_NEXTICONMGR		39
-#define F_PREVICONMGR		40
-#define F_SORTICONMGR		41
-#define F_CIRCLEUP		42
-#define F_CIRCLEDOWN		43
-#define F_CUTFILE		44
-#define F_SHOWLIST		45
-#define F_HIDELIST		46
+#define F_VERSION		30
+#define F_TITLE			31
+#define F_RIGHTICONMGR		32
+#define F_LEFTICONMGR		33
+#define F_UPICONMGR		34
+#define F_DOWNICONMGR		35
+#define F_FORWICONMGR		36
+#define F_BACKICONMGR		37
+#define F_NEXTICONMGR		38
+#define F_PREVICONMGR		39
+#define F_SORTICONMGR		40
+#define F_CIRCLEUP		41
+#define F_CIRCLEDOWN		42
+#define F_CUTFILE		43
+#define F_SHOWLIST		44
+#define F_HIDELIST		45
 
 #define F_MENU			101	/* string */
-#define F_SOURCE		102	/* string */
-#define F_WARPTO		103	/* string */
-#define F_WARPTOICONMGR		104	/* string */
-#define F_WARPRING		105	/* string */
-#define F_FILE			106	/* string */
-#define F_EXEC			107	/* string */
-#define F_CUT			108	/* string */
-#define F_FUNCTION		109	/* string */
-#define F_WARPTOSCREEN		110	/* string */
-#define F_COLORMAP		111	/* string */
+#define F_WARPTO		102	/* string */
+#define F_WARPTOICONMGR		103	/* string */
+#define F_WARPRING		104	/* string */
+#define F_FILE			105	/* string */
+#define F_EXEC			106	/* string */
+#define F_CUT			107	/* string */
+#define F_FUNCTION		108	/* string */
+#define F_WARPTOSCREEN		109	/* string */
+#define F_COLORMAP		110	/* string */
 
 #define D_NORTH			1
 #define D_SOUTH			2
