@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sunGX.c,v 1.9 91/11/01 17:44:19 keith Exp $
+ * $XConsortium: sunGX.c,v 1.10 91/11/08 19:17:16 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -135,7 +135,6 @@
 /* fg = fgPixel	    bg = don't care */
  
 #define ROP_STIP(O,I)   (ROP_STANDARD |\
-			GX_PATTERN_MASK |\
 			GX_ROP_11_1(I) |\
 			GX_ROP_11_0(GX_ROP_NOOP) |\
 			GX_ROP_10_1(I) |\
@@ -148,7 +147,6 @@
 /* fg = fgPixel	    bg = bgPixel */
 			    
 #define ROP_OSTP(O,I)   (ROP_STANDARD |\
-			GX_PATTERN_MASK |\
 			GX_ROP_11_1(I) |\
 			GX_ROP_11_0(I) |\
 			GX_ROP_10_1(I) |\
@@ -157,6 +155,28 @@
 			GX_ROP_01_0(I) |\
 			GX_ROP_00_1(O) |\
 			GX_ROP_00_0(O))
+
+#define ROP_ITXT(O,I)   (ROP_STANDARD |\
+			GX_PATTERN_ONES |\
+			GX_ROP_11_1(I) |\
+			GX_ROP_11_0(I) |\
+			GX_ROP_10_1(I) |\
+			GX_ROP_10_0(O) |\
+			GX_ROP_01_1(O) |\
+			GX_ROP_01_0(I) |\
+			GX_ROP_00_1(O) |\
+			GX_ROP_00_0(O))
+
+#define ROP_PTXT(O,I)   (ROP_STANDARD |\
+			GX_PATTERN_ONES |\
+			GX_ROP_11_1(I) |\
+			GX_ROP_11_0(GX_ROP_NOOP) |\
+			GX_ROP_10_1(I) |\
+			GX_ROP_10_0(GX_ROP_NOOP) | \
+			GX_ROP_01_1(O) |\
+			GX_ROP_01_0(GX_ROP_NOOP) |\
+			GX_ROP_00_1(O) |\
+			GX_ROP_00_0(GX_ROP_NOOP))
 
 static Uint gx_blit_rop_table[16]={
     ROP_BLIT(GX_ROP_CLEAR,  GX_ROP_CLEAR),	/* GXclear */
@@ -816,7 +836,7 @@ sunGXFillArcSlice (pDraw, pGC, gx, arc)
 #define FlipBits4(a)     ((FlipBits2(a) << 2) | FlipBits2(a >> 2))
 #define FlipBits8(a)     ((FlipBits4(a) << 4) | FlipBits4(a >> 4))
 #define FlipBits16(a)    ((FlipBits8(a) << 8) | FlipBits8(a >> 8))
-#define FlipBits32(a)    ((FlipBits16(a) << 16) | FlipBits8(a >> 16))
+#define FlipBits32(a)    ((FlipBits16(a) << 16) | FlipBits16(a >> 16))
 #define Bits32(v)   FlipBits32(v)
 #define Bits16(v)   FlipBits16(v)
 #define Bits8(v)    FlipBits8(v)
@@ -910,7 +930,7 @@ sunGXPolyFillArc (pDraw, pGC, narcs, parcs)
 			    	while (i--)
 				    dp[i] = sp[i];
 			    }
-			    gx->alu = gx_stipple_rop_table[pGC->alu];
+			    gx->alu = gx_stipple_rop_table[pGC->alu]|GX_PATTERN_MASK;
 			    old_width = arc->width;
 			}
 			offx = 16 - (x + pDraw->x) & 0xf;
@@ -1318,6 +1338,221 @@ sunGXPolyFillRect1Rect (pDrawable, pGC, nrect, prect)
 }
 
 static void
+sunGXPolyGlyphBlt (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
+    DrawablePtr	    pDrawable;
+    GCPtr	    pGC;
+    int		    x, y;
+    unsigned int    nglyph;
+    CharInfoPtr	    *ppci;		/* array of character info */
+    unsigned long   *pglyphBase;
+{
+    sunGXPtr	    gx = sunGXGetScreenPrivate (pDrawable->pScreen);
+    int		    h;
+    int		    w;
+    CharInfoPtr	    pci;
+    unsigned long   *bits;
+    register int    r;
+    RegionPtr	    clip;
+    BoxPtr	    extents;
+    BoxRec	    box;
+
+    clip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+    extents = &clip->extents;
+
+    if (REGION_NUM_RECTS(clip) == 1)
+    {
+	GXSetClip (gx, extents);
+    }
+    else
+    {
+    	/* compute an approximate (but covering) bounding box */
+    	box.x1 = 0;
+    	if ((ppci[0]->metrics.leftSideBearing < 0))
+	    box.x1 = ppci[0]->metrics.leftSideBearing;
+    	h = nglyph - 1;
+    	w = ppci[h]->metrics.rightSideBearing;
+    	while (--h >= 0)
+	    w += ppci[h]->metrics.characterWidth;
+    	box.x2 = w;
+    	box.y1 = -FONTMAXBOUNDS(pGC->font,ascent);
+    	box.y2 = FONTMAXBOUNDS(pGC->font,descent);
+    
+    	box.x1 += pDrawable->x + x;
+    	box.x2 += pDrawable->x + x;
+    	box.y1 += pDrawable->y + y;
+    	box.y2 += pDrawable->y + y;
+    
+    	switch ((*pGC->pScreen->RectIn)(clip, &box))
+	{
+	case rgnPART:
+	    cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+	case rgnOUT:
+	    return;
+	}
+    }
+
+    GXDrawInit (gx, pGC->fgPixel, 
+		gx_stipple_rop_table[pGC->alu]|GX_PATTERN_ONES|POLY_N,
+ 		pGC->planemask);
+    gx->mode = GX_BLIT_NOSRC | GX_MODE_COLOR1;
+    x += pDrawable->x;
+    y += pDrawable->y;
+
+    while (nglyph--)
+    {
+	pci = *ppci++;
+	gx->incx = 0;
+	gx->incy = 1;
+	gx->x0 = x + pci->metrics.leftSideBearing;
+	gx->x1 = (x + pci->metrics.rightSideBearing) - 1;
+	gx->y0 = y - pci->metrics.ascent;
+	h = pci->metrics.ascent + pci->metrics.descent;
+	bits = (unsigned long *) pci->bits;
+	while (h--) {
+	    gx->font = *bits++;
+	}
+	x += pci->metrics.characterWidth;
+    }
+    GXWait (gx, r);
+    gx->mode = GX_BLIT_SRC | GX_MODE_COLOR8;
+    GXResetClip (gx, pDrawable->pScreen);
+}
+
+static void
+sunGXTEGlyphBlt (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
+    DrawablePtr	pDrawable;
+    GCPtr	pGC;
+    int 	x, y;
+    unsigned int nglyph;
+    CharInfoPtr *ppci;		/* array of character info */
+    unsigned char *pglyphBase;	/* start of array of glyphs */
+{
+    sunGXPtr	    gx = sunGXGetScreenPrivate (pDrawable->pScreen);
+    int		    h, hTmp;
+    int		    w;
+    FontPtr	    pfont = pGC->font;
+    register int    r;
+    unsigned long   *char1, *char2, *char3, *char4;
+    int		    widthGlyphs, widthGlyph;
+    BoxRec	    bbox;
+    BoxPtr	    extents;
+    RegionPtr	    clip;
+    unsigned long   rop;
+
+    widthGlyph = FONTMAXBOUNDS(pfont,characterWidth);
+    h = FONTASCENT(pfont) + FONTDESCENT(pfont);
+    clip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+    extents = &clip->extents;
+
+    if (REGION_NUM_RECTS(clip) == 1)
+    {
+	GXSetClip (gx, extents);
+    }
+    else
+    {
+    	bbox.x1 = x + pDrawable->x;
+    	bbox.x2 = bbox.x1 + (widthGlyph * nglyph);
+    	bbox.y1 = y + pDrawable->y - FONTASCENT(pfont);
+    	bbox.y2 = bbox.y1 + h;
+    
+    	switch ((*pGC->pScreen->RectIn)(clip, &bbox))
+    	{
+	case rgnPART:
+	    if (pglyphBase)
+		cfbPolyGlyphBlt8(pDrawable, pGC, x, y, nglyph, ppci, NULL);
+	    else
+		miImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+	case rgnOUT:
+	    return;
+    	}
+    }
+
+    rop = gx_opaque_stipple_rop_table[GXcopy] | GX_PATTERN_ONES;
+    if (pglyphBase)
+	rop = gx_stipple_rop_table[pGC->alu] | GX_PATTERN_ONES;
+    GXDrawInit (gx, pGC->fgPixel, rop, pGC->planemask);
+    gx->bg = pGC->bgPixel;
+    gx->mode = GX_BLIT_NOSRC | GX_MODE_COLOR1;
+
+    y = y + pDrawable->y - FONTASCENT(pfont);
+    x += pDrawable->x;
+
+#define LoopIt(count, w, loadup, fetch) \
+    	while (nglyph >= count) \
+    	{ \
+	    nglyph -= count; \
+	    gx->incx = 0; \
+	    gx->incy = 1; \
+	    gx->x0 = x; \
+	    gx->x1 = (x += w) - 1; \
+	    gx->y0 = y; \
+	    loadup \
+	    hTmp = h; \
+	    while (hTmp--) \
+	    	gx->font = fetch; \
+    	}
+
+    if (widthGlyph <= 8)
+    {
+	widthGlyphs = widthGlyph << 2;
+	LoopIt(4, widthGlyphs,
+	    char1 = (unsigned long *) (*ppci++)->bits;
+	    char2 = (unsigned long *) (*ppci++)->bits;
+	    char3 = (unsigned long *) (*ppci++)->bits;
+	    char4 = (unsigned long *) (*ppci++)->bits;,
+	    (*char1++ | ((*char2++ | ((*char3++ | (*char4++
+		    >> widthGlyph))
+		    >> widthGlyph))
+		    >> widthGlyph)))
+    }
+    else if (widthGlyph <= 10)
+    {
+	widthGlyphs = (widthGlyph << 1) + widthGlyph;
+	LoopIt(3, widthGlyphs,
+	    char1 = (unsigned long *) (*ppci++)->bits;
+	    char2 = (unsigned long *) (*ppci++)->bits;
+	    char3 = (unsigned long *) (*ppci++)->bits;,
+	    (*char1++ | ((*char2++ | (*char3++ >> widthGlyph)) >> widthGlyph)))
+    }
+    else if (widthGlyph <= 16)
+    {
+	widthGlyphs = widthGlyph << 1;
+	LoopIt(2, widthGlyphs,
+	    char1 = (unsigned long *) (*ppci++)->bits;
+	    char2 = (unsigned long *) (*ppci++)->bits;,
+	    (*char1++ | (*char2++ >> widthGlyph)))
+    }
+    while (nglyph--) {
+	gx->incx = 0;
+	gx->incy = 1;
+	gx->x0 = x;
+	gx->x1 = (x += widthGlyph) - 1;
+	gx->y0 = y;
+	char1 = (unsigned long *) (*ppci++)->bits;
+	hTmp = h;
+	while (hTmp--)
+	    gx->font = *char1++;
+    }
+    gx->incx = 0;
+    gx->incy = 0;
+    GXWait (gx, r);
+    gx->mode = GX_BLIT_SRC | GX_MODE_COLOR8;
+    GXResetClip (gx, pDrawable->pScreen);
+}
+
+static void
+sunGXPolyTEGlyphBlt (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
+    DrawablePtr	pDrawable;
+    GCPtr	pGC;
+    int 	x, y;
+    unsigned int nglyph;
+    CharInfoPtr *ppci;		/* array of character info */
+    unsigned char *pglyphBase;	/* start of array of glyphs */
+{
+    sunGXTEGlyphBlt (pDrawable, pGC, x, y, nglyph, ppci, (unsigned char *) 1);
+}
+
+static void
 sunGXFillBoxSolid (pDrawable, nBox, pBox, pixel)
     DrawablePtr	    pDrawable;
     int		    nBox;
@@ -1486,7 +1721,7 @@ sunGXCheckFill (pGC, pDrawable)
 	}
 	stipple = tmpStipple;
     }
-    alu =  gx_opaque_stipple_rop_table[pGC->alu];
+    alu =  gx_opaque_stipple_rop_table[pGC->alu]|GX_PATTERN_MASK;
     switch (pGC->fillStyle) {
     case FillTiled:
 	if (!sunGXCheckTile (pGC->tile.pixmap, stipple))
@@ -1500,7 +1735,7 @@ sunGXCheckFill (pGC, pDrawable)
 	}
 	break;
     case FillStippled:
-	alu = gx_stipple_rop_table[pGC->alu];
+	alu = gx_stipple_rop_table[pGC->alu]|GX_PATTERN_MASK;
     case FillOpaqueStippled:
 	if (!sunGXCheckStipple (pGC->stipple, stipple))
 	{
@@ -1566,8 +1801,8 @@ GCOps	sunGXTEOps1Rect = {
     miPolyText16,
     miImageText8,
     miImageText16,
-    cfbTEGlyphBlt8,
-    cfbPolyGlyphBlt8,
+    sunGXTEGlyphBlt,
+    sunGXPolyTEGlyphBlt,
     cfbPushPixels8,
     NULL,
 };
@@ -1590,8 +1825,8 @@ GCOps	sunGXTEOps = {
     miPolyText16,
     miImageText8,
     miImageText16,
-    cfbTEGlyphBlt8,
-    cfbPolyGlyphBlt8,
+    sunGXTEGlyphBlt,
+    sunGXPolyTEGlyphBlt,
     cfbPushPixels8,
     NULL,
 };
@@ -1615,7 +1850,7 @@ GCOps	sunGXNonTEOps1Rect = {
     miImageText8,
     miImageText16,
     miImageGlyphBlt,
-    cfbPolyGlyphBlt8,
+    sunGXPolyGlyphBlt,
     cfbPushPixels8,
     NULL,
 };
@@ -1639,12 +1874,15 @@ GCOps	sunGXNonTEOps = {
     miImageText8,
     miImageText16,
     miImageGlyphBlt,
-    cfbPolyGlyphBlt8,
+    sunGXPolyGlyphBlt,
     cfbPushPixels8,
     NULL,
 };
 
 #define PPW 4
+
+#define FONTWIDTH(font)	(FONTMAXBOUNDS(font,rightSideBearing) - \
+			 FONTMINBOUNDS(font,leftSideBearing))
 
 GCOps *
 sunGXMatchCommon (pGC, devPriv)
@@ -1662,15 +1900,10 @@ sunGXMatchCommon (pGC, devPriv)
     if (!WID_OK(pGC->pScreen))
 	return 0;
     if (pGC->font &&
-	FONTMAXBOUNDS(pGC->font,rightSideBearing) -
-        FONTMINBOUNDS(pGC->font,leftSideBearing) <= 32 &&
+        FONTWIDTH (pGC->font) <= 32 &&
 	FONTMINBOUNDS(pGC->font,characterWidth) >= 0)
     {
-	if (TERMINALFONT(pGC->font)
-#if PPW == 4
-	    && FONTMAXBOUNDS(pGC->font,characterWidth) >= 4
-#endif
-	)
+	if (TERMINALFONT(pGC->font))
 	    if (devPriv->oneRect)
 		return &sunGXTEOps1Rect;
 	    else
@@ -1965,9 +2198,9 @@ sunGXValidateGC (pGC, changes, pDrawable)
 	if (gxPriv->stipple)
 	{
 	    if (pGC->fillStyle == FillStippled)
-		gxPriv->stipple->alu = gx_stipple_rop_table[pGC->alu];
+		gxPriv->stipple->alu = gx_stipple_rop_table[pGC->alu]|GX_PATTERN_MASK;
 	    else
-		gxPriv->stipple->alu = gx_opaque_stipple_rop_table[pGC->alu];
+		gxPriv->stipple->alu = gx_opaque_stipple_rop_table[pGC->alu]|GX_PATTERN_MASK;
 	    if (pGC->fillStyle != FillTiled)
 	    {
 		gxPriv->stipple->fore = pGC->fgPixel;
@@ -2085,8 +2318,7 @@ sunGXValidateGC (pGC, changes, pDrawable)
 
     if (new_text && (pGC->font))
     {
-        if (FONTMAXBOUNDS(pGC->font,rightSideBearing) -
-            FONTMINBOUNDS(pGC->font,leftSideBearing) > 32 ||
+        if (FONTWIDTH(pGC->font) > 32 ||
 	    FONTMINBOUNDS(pGC->font,characterWidth) < 0)
         {
             pGC->ops->PolyGlyphBlt = miPolyGlyphBlt;
@@ -2094,39 +2326,20 @@ sunGXValidateGC (pGC, changes, pDrawable)
         }
         else
         {
-#if PPW == 4
-	    if (pGC->fillStyle == FillSolid)
+	    if (pGC->fillStyle == FillSolid) 
 	    {
-		if (devPriv->rop == GXcopy)
-		    pGC->ops->PolyGlyphBlt = cfbPolyGlyphBlt8;
+		if (TERMINALFONT (pGC->font))
+		    pGC->ops->PolyGlyphBlt = sunGXPolyTEGlyphBlt;
 		else
-		    pGC->ops->PolyGlyphBlt = cfbPolyGlyphRop8;
+		    pGC->ops->PolyGlyphBlt = sunGXPolyGlyphBlt;
 	    }
 	    else
-#endif
 		pGC->ops->PolyGlyphBlt = miPolyGlyphBlt;
             /* special case ImageGlyphBlt for terminal emulator fonts */
-            if (TERMINALFONT(pGC->font) &&
-		(pGC->planemask & PMSK) == PMSK
-#if PPW == 4
-		&& FONTMAXBOUNDS(pGC->font,characterWidth) >= 4
-#endif
-		)
-	    {
-#if PPW == 4
-                pGC->ops->ImageGlyphBlt = cfbTEGlyphBlt8;
-#else
-                pGC->ops->ImageGlyphBlt = cfbTEGlyphBlt;
-#endif
-	    }
+            if (TERMINALFONT(pGC->font))
+		pGC->ops->ImageGlyphBlt = sunGXTEGlyphBlt;
             else
-	    {
-#if PPW == 4
-		pGC->ops->ImageGlyphBlt = miImageGlyphBlt;
-#else
                 pGC->ops->ImageGlyphBlt = miImageGlyphBlt;
-#endif
-	    }
         }
     }    
 
@@ -2147,19 +2360,15 @@ sunGXValidateGC (pGC, changes, pDrawable)
 		pGC->ops->FillSpans = cfbUnnaturalTileFS;
 	    break;
 	case FillStippled:
-#if PPW == 4
 	    if (devPriv->pRotatedPixmap)
 		pGC->ops->FillSpans = cfb8Stipple32FS;
 	    else
-#endif
 		pGC->ops->FillSpans = cfbUnnaturalStippleFS;
 	    break;
 	case FillOpaqueStippled:
-#if PPW == 4
 	    if (devPriv->pRotatedPixmap)
 		pGC->ops->FillSpans = cfb8OpaqueStipple32FS;
 	    else
-#endif
 		pGC->ops->FillSpans = cfbUnnaturalStippleFS;
 	    break;
 	default:
@@ -2265,7 +2474,7 @@ sunGXChangeWindowAttributes (pWin, mask)
 	    }
  	    else if (stipple && sunGXCheckTile (pWin->background.pixmap, stipple))
 	    {
-		stipple->alu = gx_opaque_stipple_rop_table[GXcopy];
+		stipple->alu = gx_opaque_stipple_rop_table[GXcopy]|GX_PATTERN_MASK;
 		pPrivWin->fastBackground = FALSE;
 		sunGXSetWindowPrivate(pWin, stipple);
 		if (stipple == tmpStipple)
