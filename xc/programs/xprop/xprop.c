@@ -5,6 +5,7 @@
 #include <ctype.h>
 
 #include <X11/Xatom.h>
+#include <X11/Xmu.h>
 
 #include "dsimple.h"
 
@@ -942,6 +943,7 @@ usage()
 "    -len n                         display at most n bytes of any property",
 "    -notype                        do not display the type field",
 "    -fs filename                   where to look for formats for properties",
+"    -wm                            don't recurse when pressing on window",
 "    -f propname format [dformat]   formats to use for property of given name",
 "    -spy                           examine window properties forever",
 NULL};
@@ -1021,6 +1023,7 @@ char **argv;
   char *name, *getenv();
   thunk *props, *Handle_Prop_Requests();
   char *remove_propname = NULL;
+  Bool wm_window = False;
 
   INIT_NAME;
 
@@ -1079,6 +1082,10 @@ char **argv;
 	    remove_propname = argv[0];
 	    continue;
     }
+    if (!strcmp(argv[0], "-wmwindow") || !strcmp(argv[0], "-wm")) {
+	    wm_window = True;
+	    continue;
+    }
     if (!strcmp(argv[0], "-f") || !strcmp(argv[0], "-format")) {
       Parse_Format_Mapping(&argc, &argv);
       continue;
@@ -1086,8 +1093,11 @@ char **argv;
     usage();
   }
 
-  if (target_win==0)
-    target_win = Select_Window(dpy);
+  if (target_win == None) {
+      target_win = Select_Window(dpy);
+      if (target_win != None && !wm_window) 
+        target_win = XmuClientWindow (dpy, target_win);
+  }
 
   if (remove_propname) {
     remove_property (dpy, target_win, remove_propname);

@@ -73,6 +73,12 @@ Specifies that file \fIfile\fP should be used as a source of more formats
 for properties.
 .PP
 .TP 8
+.B "-wm"
+Specifies that when selecting a window by hand (i.e. if none of \fB-name\fP,
+\fB-root\fP, or \fB-id\fP are given), look at the window manager frame (if
+any) instead of looking for the client window.
+.PP
+.TP 8
 .B "-remove \fIproperty-name\fP"
 Specifies the name of a property to be removed from the indicated window.
 .PP
