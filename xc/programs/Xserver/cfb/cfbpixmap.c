@@ -251,7 +251,7 @@ cfbPadPixmap(pPixmap)
         }
         p++;
     }    
-    pPixmap->width = PPW;
+    pPixmap->width = 32/(pPixmap->drawable.depth);
     return(TRUE);
 }
 
