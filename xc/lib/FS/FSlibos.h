@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibos.h,v 1.14 93/09/18 11:37:12 rws Exp $ */
+/* $XConsortium: FSlibos.h,v 1.15 93/09/22 18:59:01 rws Exp $ */
 
 /* @(#)FSlibos.h	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -29,6 +29,12 @@
 
 #include <X11/Xfuncs.h>
 #include <X11/Xosdefs.h>
+
+#ifdef LONG64
+typedef int BytesReadable_t;
+#else
+typedef long BytesReadable_t;
+#endif
 
 #ifndef WIN32
 
@@ -70,9 +76,9 @@
 #if defined(SYSV386) && defined(SYSV)
 #include <net/errno.h>
 #include <sys/stropts.h>
-#define BytesReadable(fd,ptr) ioctl((fd), I_NREAD, (ptr))
+#define BytesReadable(fd,ptr) ioctl((fd), I_NREAD, (char *)(ptr))
 #else
-#define BytesReadable(fd, ptr) ioctl ((fd), FIONREAD, (ptr))
+#define BytesReadable(fd, ptr) ioctl ((fd), FIONREAD, (char *)(ptr))
 #endif
 #endif /* STREAMSCONN else */
 

@@ -1,4 +1,4 @@
-/* $XConsortium: FSConnServ.c,v 1.21 93/08/22 12:35:58 rws Exp $ */
+/* $XConsortium: FSConnServ.c,v 1.22 93/09/13 19:04:35 rws Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;
@@ -494,8 +494,8 @@ _FSWaitForWritable(svr)
 
 	if (_FSANYSET(r_mask)) {
 	    char        buf[BUFSIZE];
-	    long        pend_not_register;
-	    register long pend;
+	    BytesReadable_t pend_not_register;
+	    register BytesReadable_t pend;
 	    register fsEvent *ev;
 
 	    /* find out how much data can be read */

@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibInt.c,v 1.10 92/11/18 21:31:12 gildea Exp $ */
+/* $XConsortium: FSlibInt.c,v 1.11 93/08/22 12:27:21 rws Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -250,8 +250,8 @@ _FSEventsQueued(svr, mode)
     register FSServer *svr;
     int         mode;
 {
-    register int len;
-    int         pend;
+    register BytesReadable_t len;
+    BytesReadable_t pend;
     char        buf[BUFSIZE];
     register fsReply *rep;
 
@@ -260,7 +260,7 @@ _FSEventsQueued(svr, mode)
 	if (svr->qlen)
 	    return (svr->qlen);
     }
-    if (BytesReadable(svr->fd, (char *) &pend) < 0)
+    if (BytesReadable(svr->fd, &pend) < 0)
 	(*_FSIOErrorFunction) (svr);
     if ((len = pend) < SIZEOF(fsReply))
 	return (svr->qlen);	/* _FSFlush can enqueue events */
@@ -288,15 +288,15 @@ _FSReadEvents(svr)
     register FSServer *svr;
 {
     char        buf[BUFSIZE];
-    long        pend_not_register;	/* because can't "&" a register
+    BytesReadable_t pend_not_register;	/* because can't "&" a register
 					 * variable */
-    register long pend;
+    register BytesReadable_t pend;
     register fsEvent *ev;
     Bool        not_yet_flushed = True;
 
     do {
 	/* find out how much data can be read */
-	if (BytesReadable(svr->fd, (char *) &pend_not_register) < 0)
+	if (BytesReadable(svr->fd, &pend_not_register) < 0)
 	    (*_FSIOErrorFunction) (svr);
 	pend = pend_not_register;
 
@@ -323,7 +323,7 @@ _FSReadEvents(svr)
 	/* round down to an integral number of XReps */
 	pend = (pend / SIZEOF(fsEvent)) * SIZEOF(fsEvent);
 
-	_FSRead(svr, buf, pend);
+	_FSRead(svr, buf, (long)pend);
 
 	/* no space between comma and type or else macro will die */
 	STARTITERATE(ev, fsEvent, buf, (pend > 0),
