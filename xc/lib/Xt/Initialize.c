@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.142 89/09/28 13:00:12 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.143 89/09/29 12:08:59 swick Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif /* lint */
 
@@ -167,6 +167,7 @@ static String XtGetRootDirName(buf)
      extern char *getenv();
      extern int getuid();
      extern struct passwd *getpwuid();
+     extern struct passwd *getpwnam();
      struct passwd *pw;
      static char *ptr = NULL;
 
