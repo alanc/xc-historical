@@ -1,5 +1,5 @@
-.\" $XConsortium: xmessage.man,v 1.2 94/04/11 14:44:03 gildea Exp $
-.TH XMESSAGE 1 "11 April 1994" "X Version 11"
+.\" $XConsortium: xmessage.man,v 1.3 94/04/17 20:45:57 gildea Exp $
+.TH XMESSAGE 1 "26 April 1994" "X Version 11"
 .SH NAME
 xmessage \- display a message or query in a window (X-based /bin/echo)
 .SH SYNOPSIS
@@ -82,7 +82,7 @@ class and name of each widget is given.
 .nf
 Xmessage (xmessage)
 	Form form
-		Label message
+		Text message
 		Command (label1)
 		Command (label2)
 		.
@@ -127,4 +127,4 @@ not be used with a button.
 .SH AUTHORS
 Chris Peterson, MIT Project Athena 
 .br
-Stephen Gildea, MIT X Consortium
+Stephen Gildea, X Consortium
