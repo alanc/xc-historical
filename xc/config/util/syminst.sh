@@ -16,7 +16,7 @@ rmprog="${RMPROG-rm}"
 
 instcmd="$lnprog"
 rmcmd="$rmprog -f"
-srcdir=`pwd`
+srcdir=`pwd`/
 src=""
 dst=""
 
@@ -40,7 +40,7 @@ while [ x"$1" != x ]; do
 	-s) shift
 	    continue;;
 
-	-DIR) srcdir=`echo $2 | sed 's;/\./;/;g'`
+	-DIR) srcdir=`echo $2 | sed 's;/\./;/;g'`/
 	      shift
               shift
               continue;;
@@ -77,10 +77,14 @@ then
 	dst="$dst"/`basename $src`
 fi
 
+case $src in
+    /*) srcdir=""
+	instcmd=cp;;
+esac
 
 # get rid of the old one and mode the new one in
 
 $doit $rmcmd $dst
-$doit $instcmd $srcdir/$src $dst
+$doit $instcmd $srcdir$src $dst
 
 exit 0
