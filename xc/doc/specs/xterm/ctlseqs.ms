@@ -1,6 +1,6 @@
 .\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
-.\" $XConsortium: ctlseqs.ms,v 1.13 94/04/19 14:04:34 gildea Exp $
+.\" $XConsortium: ctlseqs.ms,v 1.14 94/04/19 14:13:43 gildea Exp $
 .\"
 .\" Copyright 1991, 1994 X Consortium
 .\"
@@ -189,7 +189,8 @@
 .ds Ir \fIr\fP
 .ds Ic \fIc\fP
 .ie t .nr LL 6.5i
-.el .nr LL 76m
+.el .nr LL 72m
+.if n .na
 .TL
 Xterm Control Sequences
 .AU
@@ -619,4 +620,4 @@ Incremental Plot Mode (Ctrl-^)
 .IP \\*(Us
 Alpha Mode (Ctrl-_)
 .Ed
-.if n .pl \\n(nlu+8v
+.if n .pl \n(nlu+1v
