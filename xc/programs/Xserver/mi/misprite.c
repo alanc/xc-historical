@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.32 91/04/07 18:12:47 keith Exp $ */
+/* $XConsortium: misprite.c,v 5.34 91/04/26 21:46:03 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -230,7 +230,7 @@ miSpriteInitialize (pScreen, spriteFuncs, screenFuncs)
     pPriv = (miSpriteScreenPtr) xalloc (sizeof (miSpriteScreenRec));
     if (!pPriv)
 	return FALSE;
-    if (!miPointerInitialize (pScreen, &miSpritePointerFuncs, screenFuncs))
+    if (!miPointerInitialize (pScreen, &miSpritePointerFuncs, screenFuncs,TRUE))
     {
 	xfree ((pointer) pPriv);
 	return FALSE;

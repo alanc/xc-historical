@@ -2,7 +2,7 @@
  * mipointer.c
  */
 
-/* $XConsortium: mipointer.c,v 5.10 90/03/16 17:50:30 keith Exp $ */
+/* $XConsortium: mipointer.c,v 5.11 91/04/26 21:46:50 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -202,19 +202,22 @@ miPointerSetCursorPosition(pScreen, x, y, generateEvent)
     int       x, y;
     Bool      generateEvent;
 {
-    SetupScreen(pScreen);
-
+    SetupScreen (pScreen);
+    if (*checkForInput[0] != *checkForInput[1])
+	ProcessInputEvents ();
+    /* device dependent - must pend signal and call miPointerWarpCursor */
+    (*pScreenPriv->screenFuncs->WarpCursor) (pScreen, x, y);
     if (generateEvent)
-	/* device dependent - must enqueue an event ignoring signals */
-	(*pScreenPriv->screenFuncs->WarpCursor) (pScreen, x, y);
-    else
     {
-	mieqSwitchScreen (pScreen);
-	miPointer.pScreen = pScreen;
-	miPointer.x = x;
-	miPointer.y = y;
-	miPointerUpdate ();
+	xEvent	e;
+
+    	e.u.u.type = MotionNotify;
+    	e.u.keyButtonPointer.rootX = x;
+    	e.u.keyButtonPointer.rootY = y;
+    	e.u.keyButtonPointer.time = GetTimeInMillis ();
+    	(*miPointer.pPointer->processInputProc) (&e, miPointer.pPointer, 1);
     }
+    miPointerUpdate ();
 }
 
 /* Once signals are ignored, the WarpCursor function can call this */
@@ -224,7 +227,9 @@ miPointerWarpCursor (pScreen, x, y)
     ScreenPtr	pScreen;
     int		x, y;
 {
-    miPointerMove (pScreen, x, y, GetTimeInMillis());
+    miPointer.pScreen = pScreen;
+    miPointer.x = x;
+    miPointer.y = y;
 }
 
 /*
