@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.68 91/07/15 15:21:45 rws Exp $
+ * $XConsortium: Xrm.c,v 1.69 91/09/21 21:39:28 rws Exp $
  */
 
 /***********************************************************
@@ -861,7 +861,10 @@ static void PutEntry(db, bindings, quarks, type, value)
 		/* match, need to override */
 		if ((type == XrmQString) == entry->string &&
 		    entry->size == value->size) {
-		    /* identical size and type, just overwrite */
+		    /* update type if not String, can be different */
+		    if (!entry->string)
+			RepType(entry) = type;
+		    /* identical size, just overwrite value */
 		    bcopy((char *)value->addr, RawValue(entry), value->size);
 		    return;
 		}
