@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.32 95/01/16 20:03:38 kaleb Exp kaleb $
+ *	$XConsortium: resize.c,v 1.33 95/04/07 18:59:30 kaleb Exp gildea $
  */
 
 /*
@@ -481,12 +481,12 @@ readstring(fp, buf, str)
     char *str;
 {
 	register int last, c;
-	SIGNAL_T timeout();
+	SIGNAL_T resize_timeout();
 #ifndef USG
 	struct itimerval it;
 #endif
 
-	signal(SIGALRM, timeout);
+	signal(SIGALRM, resize_timeout);
 #ifdef USG
 	alarm (TIMEOUT);
 #else
@@ -524,10 +524,10 @@ Usage()
 }
 
 SIGNAL_T
-timeout(sig)
+resize_timeout(sig)
     int sig;
 {
-	fprintf(stderr, "%s: Time out occurred\r\n", myname);
+	fprintf(stderr, "\n%s: Time out occurred\r\n", myname);
 	onintr(sig);
 }
 
