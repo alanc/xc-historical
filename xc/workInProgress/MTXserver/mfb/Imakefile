@@ -1,21 +1,23 @@
 SRCS =	 mfbgc.c mfbwindow.c mfbfont.c \
 	 mfbfillrct.c mfbpntwin.c maskbits.c mfbpixmap.c \
 	 mfbimage.c mfbline.c mfbbres.c mfbhrzvert.c \
-	 mfbpushpxl.c mfbclipsp.c \
-	 mfbfillsp.c mfbsetsp.c mfbscrinit.c mfbclip.c mfbbitblt.c \
-	 mfbgetsp.c mfbpolypnt.c \
+	 mfbpushpxl.c \
+         mfbfillsp.c mfbsetsp.c mfbscrinit.c mfbscrclse.c mfbclip.c \
+         mfbbitblt.c mfbgetsp.c mfbpolypnt.c \
 	 mfbplygblt.c mfbimggblt.c mfbcmap.c \
-	 mfbpntarea.c mfbscrclose.c mfbtile.c mfbmisc.c
+	 mfbpntarea.c mfbtile.c \
+         mfbtegblt.c mfbmisc.c
 
 OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 	 mfbfillrct.o mfbpntwin.o maskbits.o mfbpixmap.o \
 	 mfbimage.o mfbline.o mfbbres.o mfbhrzvert.o \
-	 mfbpushpxl.o mfbclipsp.o \
-	 mfbfillsp.o mfbsetsp.o mfbscrinit.o mfbclip.o mfbbitblt.o \
-	 mfbgetsp.o mfbpolypnt.o \
+	 mfbpushpxl.o \
+	 mfbfillsp.o mfbsetsp.o mfbscrinit.o mfbscrclse.o mfbclip.o \
+         mfbbitblt.o mfbgetsp.o mfbpolypnt.o \
 	 mfbpgbwht.o mfbpgbblak.o mfbpgbinv.o \
 	 mfbigbwht.o mfbigbblak.o mfbcmap.o \
-	 mfbpawhite.o mfbpablack.o mfbpainv.o mfbscrclose.o mfbtile.o mfbmisc.o
+	 mfbpawhite.o mfbpablack.o mfbpainv.o mfbtile.o \
+         mfbtewhite.o mfbteblack.o mfbmisc.o
 
 CDEBUGFLAGS = ServerCDebugFlags
 INCLUDES = -I. -I../../include -I../../../include
@@ -25,8 +27,8 @@ NormalLibraryTarget(mfb,$(OBJS))
 
 DependTarget()
 
-mfbpntarea.o mfbimggblt.o mfbplygblt.o:
-	touch $@
+mfbpntarea.o mfbimggblt.o mfbplygblt.o mfbtegblt.o:
+	rm -f $@; touch $@
 
 mfbpgbwht.o: mfbplygblt.c mfbplygblt.o
 	rm -f $@ mfbpgbwht.c
@@ -89,6 +91,20 @@ mfbpainv.o: mfbpntarea.c mfbpntarea.o
 	   -DOPEQ=\^=  -DEQWHOLEWORD=\^=~0 \
 	   $(CFLAGS) -c mfbpainv.c
 	rm -f mfbpainv.c
+
+mfbtewhite.o: mfbtegblt.c mfbtegblt.o
+	@rm -f $@ mfbtewhite.c
+	cp mfbtegblt.c mfbtewhite.c
+	${CC} -DMFBTEGLYPHBLT=mfbTEGlyphBltWhite \
+	   -DOP= -DCLIPTETEXT=mfbImageGlyphBltWhite $(CFLAGS) -c mfbtewhite.c
+	rm -f mfbtewhite.c
+
+mfbteblack.o: mfbtegblt.c mfbtegblt.o
+	@rm -f $@ mfbteblack.c
+	cp mfbtegblt.c mfbteblack.c
+	${CC} -DMFBTEGLYPHBLT=mfbTEGlyphBltBlack \
+	   -DOP=~ -DCLIPTETEXT=mfbImageGlyphBltBlack $(CFLAGS) -c mfbteblack.c
+	rm -f mfbteblack.c
 
 lint:
 	lint -Clibmfb $(INCLUDES) -DMFBPOLYGLYPHBLT=mfbPolyGlyphBltWhite \
