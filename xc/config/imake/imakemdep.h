@@ -1,4 +1,4 @@
-/* $XConsortium: imakemdep.h,v 1.80 95/01/09 20:06:32 kaleb Exp kaleb $ */
+/* $XConsortium: imakemdep.h,v 1.81 95/01/09 21:54:28 kaleb Exp kaleb $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -348,21 +348,21 @@ char *cpp_argv[ARGUMENTS] = {
 #    endif
 #   endif
 #  endif
-# endif
-# ifdef SCO
+#  ifdef SCO
 	"-DSCO",
-#  ifdef SCO324
+#   ifdef SCO324
 	"-DSCO324",
+#   endif
 #  endif
-# endif
-# ifdef ESIX
+#  ifdef ESIX
 	"-DESIX",
-# endif
-# ifdef ATT
+#  endif
+#  ifdef ATT
 	"-DATT",
-# endif
-# ifdef DELL
+#  endif
+#  ifdef DELL
 	"-DDELL",
+#  endif
 # endif
 #endif
 #ifdef SYSV386		/* System V/386 folks, obsolete */
@@ -388,21 +388,21 @@ char *cpp_argv[ARGUMENTS] = {
 #    endif
 #   endif
 #  endif
-# endif
-# ifdef SCO
+#  ifdef SCO
 	"-DSCO",
-#  ifdef SCO324
+#   ifdef SCO324
 	"-DSCO324",
+#   endif
 #  endif
-# endif
-# ifdef ESIX
+#  ifdef ESIX
 	"-DESIX",
-# endif
-# ifdef ATT
+#  endif
+#  ifdef ATT
 	"-DATT",
-# endif
-# ifdef DELL
+#  endif
+#  ifdef DELL
 	"-DDELL",
+#  endif
 # endif
 #endif
 #ifdef __osf__
