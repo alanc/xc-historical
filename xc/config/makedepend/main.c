@@ -1,7 +1,10 @@
 /*
- * $Header: main.c,v 1.4 87/06/29 16:13:18 toddb Locked $
+ * $Header: main.c,v 1.5 87/06/29 16:16:50 toddb Locked $
  *
  * $Log:	main.c,v $
+ * Revision 1.5  87/06/29  16:16:50  toddb
+ * One too few bytes allocated.
+ * 
  * Revision 1.4  87/06/29  16:13:18  toddb
  * Initial revision.
  * 
@@ -183,6 +186,7 @@ main(argc, argv)
 		find_includes(filecontent, ip, ip, 0);
 		freefile(filecontent);
 		recursive_pr_include(ip, ip->i_file, basename(*fp));
+		inc_clean();
 	}
 	if (printed)
 		printf("\n");
