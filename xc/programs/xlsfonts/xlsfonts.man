@@ -1,10 +1,21 @@
-.\" $XConsortium: xlsfonts.man,v 1.16 93/08/02 11:13:33 gildea Exp $
+.\" $XConsortium: xlsfonts.man,v 1.17 94/04/11 14:27:10 gildea Exp $
+.\" Copyright 1988 Massachusetts Institute of Technology
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name of M.I.T. not be used in advertising or
+.\" publicity pertaining to distribution of the software without specific,
+.\" written prior permission.  M.I.T. makes no representations about the
+.\" suitability of this software for any purpose.  It is provided "as is"
+.\" without express or implied warranty.
 .TH XLSFONTS 1 "Release 6" "X Version 11"
 .SH NAME
-xlsfonts - server font list displayer for X
+xlsfonts \- server font list displayer for X
 .SH SYNOPSIS
 .B xlsfonts
-[-options ...] [-fn pattern]
+[\-options ...] [\-fn pattern]
 .SH DESCRIPTION
 .I Xlsfonts
 lists the fonts that match the given \fIpattern\fP.
@@ -21,9 +32,14 @@ being expanded by the shell.
 This option specifies the X server to contact.
 .PP
 .TP 8
-.B \-l[l[l]]
-This option indicates that medium, long, and very long listings, respectively,
-should be generated for each font.
+.B \-l
+Lists some attributes of the font on one line in addition to its name.
+.TP 8
+.B \-ll
+Lists font properties in addition to \fB\-l\fP output.
+.TP 8
+.B \-lll
+Lists character metrics in addition to \fB\-ll\fP output.
 .TP 8
 .B \-m
 This option indicates that long listings should also print the minimum and
@@ -31,11 +47,11 @@ maximum bounds of each font.
 .TP 8
 .B \-C
 This option indicates that listings should use multiple columns.  This is the
-same as \fB-n 0\fP.
+same as \fB\-n 0\fP.
 .TP 8
 .B \-1
 This option indicates that listings should use a single column.  This is the
-same as \fB-n 1\fP.
+same as \fB\-n 1\fP.
 .TP 8
 .B \-w \fIwidth\fP
 This option specifies the width in characters that should be used in 
@@ -44,7 +60,7 @@ figuring out how many columns to print.  The default is 79.
 .B \-n \fIcolumns\fP
 This option specifies the number of columns to use in displaying the output.
 By default, it will attempt to fit as many columns of font names into the 
-number of character specified by \fB-w \fIwidth\fR.
+number of character specified by \fB\-w \fIwidth\fR.
 .TP 8
 .B \-u
 This option indicates that the output should be left unsorted.
@@ -54,9 +70,13 @@ This option indicates that \fIxlsfonts\fP should do an \fBOpenFont\fP (and
 \fBQueryFont\fP, if appropriate) rather than a \fBListFonts\fP.  This is
 useful if \fBListFonts\fP or \fBListFontsWithInfo\fP fail to list a known
 font (as is the case with some scaled font systems).
+.TP 8
+.B \-fn \fIpattern\fP
+This option specifies the font name pattern to match.
 .PP
 .SH "SEE ALSO"
-X(1), Xserver(1), xset(1), xfd(1)
+X(1), Xserver(1), xset(1), xfd(1),
+.I "X Logical Font Description Conventions"
 .SH ENVIRONMENT
 .TP 8
 .B DISPLAY
@@ -65,10 +85,6 @@ to get the default host and display to use.
 Doing ``xlsfonts -l'' can tie up your server for a very long time.
 This is really a bug with single-threaded non-preemptable servers, not with
 this program.
-.SH COPYRIGHT
-Copyright 1988, Massachusetts Institute of Technology.
-.br
-See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Mark Lillibridge, MIT Project Athena; Jim Fulton, MIT X Consortium;
 Phil Karlton, SGI
