@@ -17,6 +17,10 @@
 /* the server *REALLY* needs GCC for performance */
 #define HasGcc         YES
 
+#if !HasGcc
+#define CcCmd cc -B /usr/lib/big/
+#endif
+
 #undef ExtensionDefines
 #define ExtensionDefines -DSHAPE -DMULTIBUFFER -DMITSHM -DMITMISC
 
@@ -32,7 +36,7 @@
 #define ServerDefines StandardDefines ExtensionDefines -DPURDUE
 
 
-/**/# platform:  $XConsortium: macII.cf,v 1.16 89/12/22 15:50:50 rws Exp $
+/**/# platform:  $XConsortium: macII.cf,v 1.17 89/12/26 10:16:32 rws Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
