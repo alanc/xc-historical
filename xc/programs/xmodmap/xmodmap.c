@@ -1,8 +1,8 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $Source: /usr.MC68020/expo.lcs.mit.edu/jim/X11/xmodmap/RCS/xmodmap.c,v $
- * $Header: xmodmap.c,v 1.3 88/02/08 18:30:46 jim Exp $
+ * $Source: /usr/expo/X/src/clients/xmodmap/RCS/xmodmap.c,v $
+ * $Header: xmodmap.c,v 1.8 88/02/08 18:33:49 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -78,7 +78,7 @@ static char *grammar_message[] = {
 "    remove MODIFIER = KEYSYM ...   remove the keysyms from the modifier",
 "",
 "where NUMBER is a decimal, octal, or hex constant; KEYSYM is a valid",
-"Key Symbol name; and MODIFIER is one of the eight modifier names:  Shift",
+"Key Symbol name; and MODIFIER is one of the eight modifier names:  Shift,",
 "Lock, Control, Mod1, Mod2, Mod3, Mod4, or Mod5.  Lines beginning with",
 "an exclamation mark (!) are taken as comments.  Case is significant except",
 "for MODIFIER names.",
