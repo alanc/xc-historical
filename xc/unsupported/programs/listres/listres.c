@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.7 89/07/10 19:07:51 jim Exp $
+ * $XConsortium: listres.c,v 1.8 89/07/10 19:21:12 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -36,20 +36,25 @@ static XrmOptionDescRec listres_options[] = {
   { "-known", "*listKnown", XrmoptionNoArg, (caddr_t) "on" },
   { "-objects", "*showObjects", XrmoptionNoArg, (caddr_t) "on" },
   { "-format", "*resourceFormat", XrmoptionSepArg, (caddr_t) NULL },
+  { "-nosort", "*sortEntries", XrmoptionNoArg, (caddr_t) "off" },
 };
 
 static struct _appresources {
     Boolean known;
     Boolean objects;
+    Boolean sort;
     char *format;
 } listres_resources;
+
 
 static XtResource Resources[] = {
 #define offset(field) XtOffset(struct _appresources *, field)
   { "listKnown", "ListKnown", XtRBoolean, sizeof(Boolean),
-      offset(known), XtRString, "FALSE" },
+      offset(known), XtRImmediate, (caddr_t) FALSE },
   { "showObjects", "ShowObjects", XtRBoolean, sizeof(Boolean),
-      offset(objects), XtRString, "FALSE" },
+      offset(objects), XtRImmediate, (caddr_t) FALSE },
+  { "sortEntries", "SortEntries", XtRBoolean, sizeof(Boolean),
+      offset(sort), XtRImmediate, (caddr_t) TRUE },
   { "resourceFormat", "ResourceFormat", XtRString, sizeof(char *),
       offset(format), XtRString, " %27s  %-27s    %s" },
 #undef offset
@@ -69,6 +74,8 @@ usage ()
 	    "    -objects          include object prefixes in listings\n");
     fprintf(stderr,
 	    "    -format string    printf format for instance, class, type\n");
+    fprintf(stderr,
+	    "    -nosort           do not sort output\n");
     fprintf(stderr, "\n");
     exit (1);
 }
@@ -112,7 +119,8 @@ main (argc, argv)
     if (argc == 0) {
 	for (i = 0, wl = widget_list; i < nwidgets; i++, wl++) {
 	    list_resources (listres_resources.format,
-			    wl->label, wl->widget_class[0], top, toplevel);
+			    wl->label, wl->widget_class[0], top, toplevel,
+			    listres_resources.sort);
 	}
     } else {
 	char tmpbuf[1024];
@@ -162,7 +170,8 @@ main (argc, argv)
 		    strcmp (buf, ep->data + ep->off_cl) == 0) {
 		    list_resources (listres_resources.format,
 				    wl->label, wl->widget_class[0], top,
-				    toplevel);
+				    toplevel, listres_resources.sort);
+
 		    found++;
 		}
 	    }
