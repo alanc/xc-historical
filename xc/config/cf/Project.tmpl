@@ -1,6 +1,6 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.230 94/03/21 15:24:20 matt Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.231 94/03/23 15:37:38 gildea Exp $
 
 /****************************************************************************
  *                                                                          *
@@ -79,6 +79,9 @@ XCOMM $XConsortium: Project.tmpl,v 1.230 94/03/21 15:24:20 matt Exp $
 #else
 #define BuildFresco		NO
 #endif
+#endif
+#ifndef BuildLBX
+#define BuildLBX		NO
 #endif
 #ifndef InstallLibManPages
 #define InstallLibManPages	YES
