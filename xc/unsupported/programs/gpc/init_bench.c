@@ -1,4 +1,4 @@
-/* $XConsortium: init_bench.c,v 5.4 91/05/07 12:02:43 rws Exp $ */
+/* $XConsortium: init_bench.c,v 5.5 92/05/28 20:10:46 hersh Exp $ */
 /***********************************************************
 Copyright(c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -550,9 +550,11 @@ int *depth;
 XStandardColormap *cm;
 {
     XVisualInfo		*available_visuals, *the_best, template;
-    XStandardColormap	 std;
+    XStandardColormap	 std, *cmap;
     Visual		*root_visual;
     int			 nvisuals, i, found;
+    Atom		 property;
+    Display		*ndisplay = NULL;
     
     template.screen = DefaultScreen(display); 
     available_visuals = XGetVisualInfo(display, VisualScreenMask,
@@ -599,22 +601,28 @@ XStandardColormap *cm;
 	  case DirectColor:
 	  case PseudoColor:
 	    /* Try the default map */
-	    *cm = *(XmuStandardColormap(display,DefaultScreen(display),
-					the_best->visual->visualid,
-					the_best->depth,XA_RGB_DEFAULT_MAP,
-					DefaultColormap(display,
-							DefaultScreen(display)),
-					REDS_256-1,GREENS_256-1,BLUES_256-1));
-	    if (!cm->colormap) {
+	    ndisplay = XOpenDisplay(DisplayString(display));
+	    if (!ndisplay)
+		break;
+	    property = XA_RGB_DEFAULT_MAP;
+	    cmap = XmuStandardColormap(ndisplay,DefaultScreen(display),
+				       the_best->visual->visualid,
+				       the_best->depth,property,
+				       DefaultColormap(display,
+						       DefaultScreen(display)),
+				       REDS_256-1,GREENS_256-1,BLUES_256-1);
+	    if (!cmap) {
 		/* That didn't work, try any map */
-		*cm = *(XmuStandardColormap(display,DefaultScreen(display),
-					    the_best->visual->visualid,
-					    the_best->depth,XA_RGB_BEST_MAP,
-					    (Colormap)NULL, REDS_256-1,
-					    GREENS_256-1,BLUES_256-1));
-		if (!cm->colormap)
+		property = XA_RGB_BEST_MAP;
+		cmap = XmuStandardColormap(ndisplay,DefaultScreen(display),
+					   the_best->visual->visualid,
+					   the_best->depth,property,
+					   (Colormap)None, REDS_256-1,
+					   GREENS_256-1,BLUES_256-1);
+		if (!cmap) 
 		    break;
 	    }
+	    *cm = *cmap;
 	    found = TRUE;
 	    break;
 	  case StaticColor:
@@ -646,10 +654,20 @@ XStandardColormap *cm;
 		std.visualid = the_best->visual->visualid;
 		std.killid = 0;
 		*cm = std;
+		property = XA_RGB_DEFAULT_MAP;
 		found = TRUE;
 	    }
 	    break;
 	}
+	if (found) {
+	    XSetRGBColormaps(display,
+			     RootWindow(display, DefaultScreen(display)),
+			     cm,1,property);
+	    if (ndisplay)
+		XSetCloseDownMode(ndisplay, RetainPermanent);
+	}
+	if (ndisplay)
+	    XCloseDisplay(ndisplay);
 	if (!found) {
 	    XFree((caddr_t)available_visuals);
 	    return(0);
@@ -797,13 +815,6 @@ int depth;
 
     XSetStandardProperties( dpy, win, BIF_title, BIF_icon_name,
 			   None, Argv, Argc, &size_hints );
-
-    /*
-     * Set a standard colormap property on the root window. This is where
-     * the API expects to find it.
-     */
-    XSetRGBColormaps(dpy,RootWindow(dpy, DefaultScreen(dpy)),
-		     &ci,1,XA_RGB_BEST_MAP);
 
     XMapWindow(dpy, win);
 
