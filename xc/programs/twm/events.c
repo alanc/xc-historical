@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.52 89/04/13 10:01:00 jim Exp $
+ * $XConsortium: events.c,v 1.53 89/05/02 09:48:47 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.52 89/04/13 10:01:00 jim Exp $";
+"$XConsortium: events.c,v 1.53 89/05/02 09:48:47 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -644,6 +644,7 @@ HandleClientMessage()
     }
 }
 
+
 /***********************************************************************
  *
  *  Procedure:
@@ -656,6 +657,7 @@ void
 HandleExpose()
 {
     MenuRoot *tmp;
+    static void flush_expose();
 
 #ifdef DEBUG_EVENTS
     fprintf(stderr, "Expose %d\n", Event.xexpose.count);
@@ -684,6 +686,7 @@ HandleExpose()
 	    XDrawImageString(dpy, Scr->InfoWindow, Scr->NormalGC,
 		5, (i*height) + Scr->DefaultFont.y, Info[i], strlen(Info[i]));
 	}
+	flush_expose (Event.xany.window);
     }
 
     if (Tmp_win != NULL)
@@ -696,6 +699,7 @@ HandleExpose()
 	    XDrawImageString(dpy, Tmp_win->title_w, Scr->NormalGC,
 		TitleBarX, Scr->TitleBarFont.y,
 		Tmp_win->name, strlen(Tmp_win->name));
+	    flush_expose (Event.xany.window);
 	}
 
 	if (Tmp_win->iconify_w == Event.xany.window)
@@ -703,6 +707,7 @@ HandleExpose()
 	    FB(Tmp_win->title.fore, Tmp_win->title.back);
 	    XCopyPlane(dpy, Scr->iconifyPm, Tmp_win->iconify_w, Scr->NormalGC,
 		0,0, Scr->TitleHeight, Scr->TitleHeight, 0, 0, 1);
+	    flush_expose (Event.xany.window);
 	    return;
 	}
 #ifndef NOFOCUS
@@ -711,6 +716,7 @@ HandleExpose()
 	    FB(Tmp_win->title.fore, Tmp_win->title.back);
 	    XCopyPlane(dpy, Scr->focusPm, Tmp_win->focus_w, Scr->NormalGC,
 		0,0, Scr->TitleHeight, Scr->TitleHeight, 0, 0, 1);
+	    flush_expose (Event.xany.window);
 	    return;
 	}
 #endif
@@ -719,6 +725,7 @@ HandleExpose()
 	    FB(Tmp_win->title.fore, Tmp_win->title.back);
 	    XCopyPlane(dpy, Scr->resizePm, Tmp_win->resize_w, Scr->NormalGC,
 		0,0, Scr->TitleHeight, Scr->TitleHeight, 0, 0, 1);
+	    flush_expose (Event.xany.window);
 	    return;
 	}
 
@@ -731,6 +738,7 @@ HandleExpose()
 		Scr->NormalGC,
 		Tmp_win->icon_x, Tmp_win->icon_y,
 		Tmp_win->icon_name, strlen(Tmp_win->icon_name));
+	    flush_expose (Event.xany.window);
 	    return;
 	}
 
@@ -744,6 +752,7 @@ HandleExpose()
 		    iconmgr_textx, Scr->IconManagerFont.y+4,
 		    Tmp_win->icon_name, strlen(Tmp_win->icon_name));
 		DrawIconManagerBorder(Tmp_win->list);
+		flush_expose (Event.xany.window);
 		return;
 	    }
 	    if (Event.xany.window == Tmp_win->list->icon)
@@ -755,6 +764,7 @@ HandleExpose()
 		    XDrawRectangle(dpy, Tmp_win->list->icon,
 			Scr->NormalGC, 0, 0, 
 			siconify_width-1, siconify_height-1);
+		flush_expose (Event.xany.window);
 		return;
 	    }
 	}
@@ -766,6 +776,7 @@ HandleExpose()
 	XDrawImageString(dpy, Scr->VersionWindow, Scr->NormalGC,
 	    twm_width + 10,
 	    2 + Scr->VersionFont.font->ascent, Version, strlen(Version));
+	flush_expose (Event.xany.window);
 	return;
     }
 }
@@ -1760,4 +1771,12 @@ FindScreenInfo(w)
     return(NULL);
 }
 
+
+static void flush_expose (w)
+    Window w;
+{
+    XEvent dummy;
+
+    while (XCheckTypedWindowEvent (dpy, w, Expose, &dummy)) ;
+}
 
