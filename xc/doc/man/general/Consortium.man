@@ -104,7 +104,7 @@ NEC Corporation
 Network Computing Devices
 Nippon Telegraph and Telephone Corporation
 Oki Electric Industry Co., Ltd.
-Olivetti D.O.R.
+Olivetti Systems & Networks
 OMRON Corporation
 Prime Computer, Inc.
 The Santa Cruz Operation, Inc.
