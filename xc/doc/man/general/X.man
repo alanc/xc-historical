@@ -9,16 +9,16 @@ range of computing and graphics machines.  The core distribution from MIT
 has support for the following operating systems:
 .sp
 .ce 10
-Digital Ultrix 3.1
-Sun SunOS 4.0.3
-Hewlett-Packard HP-UX 6.5
-Apollo Domain/OS 10.2
-Apple A/UX 1.1
-IBM AOS-4.3
-Tektronix UTEK 4.0
-Sony NEWS-OS 3.2 (client only)
-Cray UNICOS 5.0.1 (client only)
-AT&T UNIX System V, Release 3.2 (client only)
+Ultrix 3.1 (Digital)
+SunOS 4.0.3 (Sun)
+HP-UX 6.5 (Hewlett-Packard)
+Domain/OS 10.2 (HP/Apollo)
+A/UX 1.1 (Apple)
+AOS-4.3 (IBM)
+UTEK 4.0 (Tektronix)
+NEWS-OS 3.2 (Sony; client only)
+UNICOS 5.0.1 (Cray; client only)
+UNIX System V, Release 3.2 (AT&T; client only)
 .sp
 Commercial implementations are also available for a much wider range
 of platforms.
