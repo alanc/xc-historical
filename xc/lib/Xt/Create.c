@@ -1,6 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Create.c,v 1.73 90/06/25 12:05:51 swick Exp $";
-#endif /*lint*/
+/* $XConsortium: Create.c,v 1.74 90/07/02 16:47:25 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -214,9 +212,12 @@ static Widget _XtCreate(
     };
     if (XtIsApplicationShell(widget)) {
 	ApplicationShellWidget a = (ApplicationShellWidget) widget;
-	if (class != NULL) a->application.class = XtNewString(class);
-	else a->application.class = widget_class->core_class.class_name;
-	a->application.xrm_class = StringToClass(a->application.class);
+	if (class != NULL)
+	    a->application.xrm_class = StringToClass(class);
+	else
+	    a->application.xrm_class =
+		StringToClass(widget_class->core_class.class_name);
+	a->application.class = XrmQuarkToString(a->application.xrm_class);
     }
 
     /* fetch resources */
