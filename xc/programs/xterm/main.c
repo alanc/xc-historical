@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.213 94/02/02 11:28:43 kaleb Exp $";
+static char *rid="$XConsortium: main.c,v 1.214 94/02/04 15:38:55 kaleb Exp $";
 #endif /* lint */
 
 /*
@@ -145,6 +145,7 @@ static Bool IsPts = False;
 #define HAS_BSD_GROUPS
 #endif
 #ifdef macII
+#define USE_SYSV_UTMP
 #define HAS_UTMP_UT_HOST
 #define HAS_BSD_GROUPS
 #include <sys/ttychars.h>
