@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.13 90/02/02 18:45:41 jim Exp $
+ * $XConsortium: Tree.c,v 1.14 90/02/02 18:54:40 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -696,6 +696,7 @@ static void new_layout (tw)
      * this information to layout the children at each level.
      */
 
+    tw->tree.maxwidth = tw->tree.maxheight = 0;
     initialize_dimensions (&tw->tree.largest, &tw->tree.n_largest, 
 			   tw->tree.n_largest);
     compute_bounding_box_subtree (tw, tw->tree.tree_root, 0);
