@@ -3,6 +3,32 @@
 .ce
 \fBX Transport Interface\fR
 .sp
+Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
+.sp
+Copyright 1993, 1994 by the Massachusetts Institute of Technology
+.sp  
+All Rights Reserved
+.sp
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted, provided
+that the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the name NCR or M.I.T. not be used in advertising
+or publicity pertaining to distribution of the software without specific,
+written prior permission.  NCR and M.I.T. make no representations about the
+suitability of this software for any purpose.  It is provided "as is"
+without express or implied warranty.
+.sp
+NCR DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN
+NO EVENT SHALL NCR BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.sp
+Designed by Stuart Anderson (NCR) with help from Ralph Mor (X Consortium)
+.sp
 .ce
 \fIDraft Version 0.6\fR
 .sp 3
@@ -189,7 +215,7 @@ as:
 .DS
 .nf
 typedef struct _XtransConnInfo *XtransConnInfo;
-.sp
+
 struct _XtransConnInfo {
     struct _Xtransport     *transptr;
     char	*priv;
@@ -201,7 +227,6 @@ struct _XtransConnInfo {
     char	*peeraddr;
     int		peeraddrlen;
 };
-
 .fi
 .DE
 .H 1 "Exposed Transport Independent API"
@@ -371,6 +396,7 @@ int TRANS(IsLocal)(XtransConnInfo connection)
 Returns TRUE if it is a local transport.
 .LI
 int TRANS(GetMyAddr)(XtransConnInfo connection,
+.br
 	int *familyp, int *addrlenp, Xtransaddr **addrp)
 .P
 This function is similar to getsockname(). This function will allocate space
@@ -379,6 +405,7 @@ have a valid address until a connection is established. This function should
 not be used until the connection is established with Connect() or Accept().
 .LI
 int TRANS(GetPeerAddr)(XtransConnInfo connection,
+.br
 	int *familyp, int *addrlenp, Xtransaddr **addrp)
 .P
 This function is similar to getpeername().  This function will allocate space
@@ -391,8 +418,8 @@ int TRANS(GetConnectionNumber)(XtransConnInfo connection)
 Returns the file descriptor associated with this transport.
 .LI
 int TRANS(MakeAllCOTSServerListeners)(
-	char *port, int *partial_ret, int *count_ret,
-	XtransConnInfo **connections_ret)
+.br
+	char *port, int *partial_ret, int *count_ret, XtransConnInfo **connections_ret)
 .P
 This function should be used by most servers. It will try to establish a COTS
 server endpoint for each transport listed in the transport table.
@@ -401,8 +428,8 @@ created.  \fIcount_ret\fR is the number of transports returns, and
 \fIconnections_ret\fR is the list of transports.
 .LI
 int TRANS(MakeAllCLTSServerListeners)(
-	char *port, int *partial_ret, int *count_ret,
-	XtransConnInfo **connections_ret)
+.br
+	char *port, int *partial_ret, int *count_ret, XtransConnInfo **connections_ret)
 .P
 This function should be used by most servers. It will try to establish a CLTS
 server endpoint for each transport listed in the transport table.
@@ -452,6 +479,7 @@ Stuff like the #ifdef SUNSYSV should be handled inside these functions.
 .BL
 .LI
 XtransConnInfo *OpenCOTSClient (
+.br
 	struct _Xtransport *thistrans, char *protocol, char *host, char *port)
 .P
 This function creates a Connection-Oriented Transport. The parameter
@@ -467,6 +495,7 @@ local address portion of the XtransConnInfo structure will also be filled
 in by this function.
 .LI
 XtransConnInfo *OpenCOTSServer (
+.br
 	struct _Xtransport *thistrans, char *protocol, char *host, char *port)
 .P
 This function creates a Connection-Oriented Transport. The parameter
@@ -480,6 +509,7 @@ structure that is returned by this function. This function will open the
 transport. 
 .LI
 XtransConnInfo *OpenCLTSClient (
+.br
 	struct _Xtransport *thistrans, char *protocol, char *host, char *port)
 .P
 This function creates a Connection-Less Transport. The parameter
@@ -495,6 +525,7 @@ local address portion of the XtransConnInfo structure will also be filled
 in by this function.
 .LI
 XtransConnInfo *OpenCLTSServer (
+.br
 	struct _Xtransport *thistrans, char *protocol, char *host, char *port)
 .P
 This function creates a Connection-Less Transport. The parameter
