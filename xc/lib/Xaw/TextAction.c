@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.7 89/08/17 17:46:26 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.8 89/08/17 18:42:17 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -903,7 +903,7 @@ static void
 AutoFill(ctx)
 TextWidget ctx;
 {
-  int (*FindPosition)() = ctx->text.sink->FindPosition;
+  void (*FindPosition)() = ctx->text.sink->FindPosition;
   int width, height, x, line_num, max_width;
   XawTextPosition ret_pos;
   XawTextBlock text;
@@ -1226,7 +1226,7 @@ InsertNewCRs(ctx, from, to)
 TextWidget ctx;
 XawTextPosition from, to;
 {
-  int (*FindPosition)() = ctx->text.sink->FindPosition;
+  void (*FindPosition)() = ctx->text.sink->FindPosition;
   XawTextPosition (*Scan)() = ctx->text.source->Scan;
   XawTextPosition startPos, endPos, space, eol;
   XawTextBlock text;

@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.105 89/08/17 18:42:09 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.106 89/08/17 19:10:51 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -811,7 +811,7 @@ int line;
   XawTextPosition endPos;
   Position y;
   int count, width, realW, realH;
-  int (*FindPosition)() = ctx->text.sink->FindPosition;
+  void (*FindPosition)() = ctx->text.sink->FindPosition;
   XawTextSource src = ctx->text.source;
 
   if ( ((ctx->text.resize == XawtextResizeWidth) ||
@@ -1000,7 +1000,7 @@ TextWidget ctx;
 int n;			
 {
   XawTextPosition top, target;
-  int (*ClearToBG)() = ctx->text.sink->ClearToBackground;
+  void (*ClearToBG)() = ctx->text.sink->ClearToBackground;
   int y;
   XawTextLineTable * lt = &(ctx->text.lt);
 
@@ -1079,7 +1079,7 @@ caddr_t callData;		/* #pixels */
   TextWidget ctx = (TextWidget) closure;
   Widget tw = (Widget) ctx;
   Position old_left, pixels = (Position) callData;
-  int (*ClearToBG)() = ctx->text.sink->ClearToBackground;
+  void (*ClearToBG)() = ctx->text.sink->ClearToBackground;
   XRectangle rect, t_rect;
   
   _XawTextPrepareToUpdate(ctx);
@@ -1641,7 +1641,7 @@ Widget w;
 XawTextPosition pos1, pos2;
 {
   TextWidget ctx = (TextWidget)w;
-  int (*ClearToBG)() = ctx->text.sink->ClearToBackground;
+  void (*ClearToBG)() = ctx->text.sink->ClearToBackground;
   Position x, y;
   int height, line, i, lastPos = ctx->text.lastPos;
   XawTextPosition startPos, endPos;
@@ -1848,7 +1848,7 @@ static void
 ClearWindow (w)
 Widget w;
 {
-  int (*ClearToBG)() = (((TextWidget)w)->text.sink->ClearToBackground);
+  void (*ClearToBG)() = (((TextWidget)w)->text.sink->ClearToBackground);
 
   if (XtIsRealized(w))
     (*ClearToBG) (w, 0, 0, (int)w->core.width, (int)w->core.height);
