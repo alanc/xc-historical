@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: chgptr.m,v 1.8 94/02/21 18:01:31 rws Exp $
+ * $XConsortium: chgptr.m,v 1.9 94/04/17 21:12:45 rws Exp dpw $
  */
 >>TITLE XChangePointerDevice XINPUT
 void
@@ -668,9 +668,9 @@ Make the call with an invalid device.
 >>CODE baddevice
 XDevice nodevice;
 XID baddevice;
-int major, first, err;
+int ximajor, first, err;
 
-	if (!XQueryExtension (display, INAME, &major, &first, &err))
+	if (!XQueryExtension (display, INAME, &ximajor, &first, &err))
 	    {
 	    untested("%s: Input extension not supported.\n", TestName);
 	    return;

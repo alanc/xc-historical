@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: slextevnt.m,v 1.15 94/02/21 18:15:20 rws Exp $
+ * $XConsortium: slextevnt.m,v 1.16 94/04/17 21:12:49 rws Exp dpw $
  */
 >>TITLE XSelectExtensionEvent XINPUT
 void
@@ -59,10 +59,10 @@ int i, j, ndevices;
 XInputClassInfo *ip;
 XDeviceInfo *list;
 XDevice *device;
-int major, first, err;
+int ximajor, first, err;
 
 	fdisplay = opendisplay();
-	if (!XQueryExtension (fdisplay, INAME, &major, &first, &err)) {
+	if (!XQueryExtension (fdisplay, INAME, &ximajor, &first, &err)) {
 	    untested("%s: Input extension not supported.\n", TestName);
 	    return;
 	    }

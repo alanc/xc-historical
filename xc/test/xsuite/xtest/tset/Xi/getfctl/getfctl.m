@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: getfctl.m,v 1.5 94/01/30 12:09:39 rws Exp $
+ * $XConsortium: getfctl.m,v 1.6 94/04/17 21:12:55 rws Exp dpw $
  */
 >>TITLE XGetFeedbackControl XINPUT
 XFeedbackState *
@@ -89,9 +89,9 @@ returns a BadDevice error if an invalid device is specified.
 XID 	baddevice;
 XDevice bogus;
 XFeedbackState *state;
-int major, first, err;
+int ximajor, first, err;
 
-	if (!XQueryExtension (display, INAME, &major, &first, &err))
+	if (!XQueryExtension (display, INAME, &ximajor, &first, &err))
 	    {
 	    untested("%s: Input extension not supported.\n", TestName);
 	    return;

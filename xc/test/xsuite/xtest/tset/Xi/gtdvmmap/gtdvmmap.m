@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtdvmmap.m,v 1.11 94/02/21 18:10:52 rws Exp $
+ * $XConsortium: gtdvmmap.m,v 1.12 94/04/17 21:13:16 rws Exp dpw $
  */
 >>TITLE XGetDeviceModifierMapping EXTENSIONS
 XModifierKeymap	*
@@ -253,9 +253,9 @@ Specifiy an invalid device.
 XModifierKeymap *ret;
 XID baddevice;
 XDevice bogus;
-int major, first, err;
+int ximajor, first, err;
 
-	if (!XQueryExtension (display, INAME, &major, &first, &err))
+	if (!XQueryExtension (display, INAME, &ximajor, &first, &err))
 	    {
 	    untested("%s: Input extension not supported.\n", TestName);
 	    return;

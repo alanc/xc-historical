@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: chgfctl.m,v 1.5 94/01/30 12:08:50 rws Exp $
+ * $XConsortium: chgfctl.m,v 1.6 94/04/17 21:12:56 rws Exp dpw $
  */
 >>TITLE XChangeFeedbackControl XINPUT
 int
@@ -316,9 +316,9 @@ XBellFeedbackState *B;
 XDeviceInfoPtr list;
 XInputClassInfo *ip;
 XFeedbackState *state;
-int major, first, err;
+int ximajor, first, err;
 
-if (!XQueryExtension (display, INAME, &major, &first, &err)) {
+if (!XQueryExtension (display, INAME, &ximajor, &first, &err)) {
     untested("%s: Input extension not supported.\n", TestName);
     return;
     }
@@ -539,9 +539,9 @@ Do a ChangeFeedbackControl, specifying an invalid device.
 >>CODE baddevice
 XDevice bogus;
 XID baddevice;
-int major, first, err;
+int ximajor, first, err;
 
-    if (!XQueryExtension (display, INAME, &major, &first, &err)) {
+    if (!XQueryExtension (display, INAME, &ximajor, &first, &err)) {
 	    untested("%s: Input extension not supported.\n", TestName);
 	    return;
 	    }

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: opendev.m,v 1.6 94/01/30 12:10:58 rws Exp $
+ * $XConsortium: opendev.m,v 1.7 94/04/17 21:12:48 rws Exp dpw $
  */
 
 >>TITLE XOpenDevice XINPUT
@@ -98,9 +98,9 @@ Call xname.
 >>CODE baddevice
 XDevice *dev;
 XID	baddevice;
-int major, first, err;
+int ximajor, first, err;
 
-	if (!XQueryExtension (display, INAME, &major, &first, &err))
+	if (!XQueryExtension (display, INAME, &ximajor, &first, &err))
 	    {
 	    untested("%s: Input extension not supported.\n", TestName);
 	    return;

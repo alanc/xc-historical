@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: setdvfocus.m,v 1.6 94/02/21 12:12:49 rws Exp $
+ * $XConsortium: setdvfocus.m,v 1.7 94/04/17 21:13:04 rws Exp dpw $
  */
 >>TITLE XSetDeviceFocus XINPUT
 void
@@ -1372,9 +1372,9 @@ A call to xname specifying an invalid device results in a BadDevice error.
 Make the call with an invalid device.
 >>CODE baddevice
 XDevice nodevice;
-int major, first, err;
+int ximajor, first, err;
 
-	if (!XQueryExtension (display, INAME, &major, &first, &err)) {
+	if (!XQueryExtension (display, INAME, &ximajor, &first, &err)) {
 	    untested("%s: Input extension not supported.\n", TestName);
 	    return;
 	    }

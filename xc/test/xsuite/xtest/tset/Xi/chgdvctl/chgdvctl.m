@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: chgdvctl.m,v 1.5 94/01/30 12:08:44 rws Exp $
+ * $XConsortium: chgdvctl.m,v 1.6 94/04/17 21:13:07 rws Exp dpw $
  */
 >>TITLE XChangeDeviceControl XINPUT
 int
@@ -415,9 +415,9 @@ Do a ChangeDeviceControl request, specifying an invalid device.
 >>CODE baddevice
 XDevice bogus;
 XID baddevice;
-int major, first, err, ret, val;
+int ximajor, first, err, ret, val;
 
-    if (!XQueryExtension (display, INAME, &major, &first, &err))
+    if (!XQueryExtension (display, INAME, &ximajor, &first, &err))
 	{
 	untested("%s: Input extension not supported.\n", TestName);
 	return;

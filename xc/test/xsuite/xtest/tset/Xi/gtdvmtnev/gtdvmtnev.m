@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtdvmtnev.m,v 1.12 94/02/21 12:13:33 rws Exp $
+ * $XConsortium: gtdvmtnev.m,v 1.13 94/04/17 21:13:17 rws Exp dpw $
  */
 >>TITLE XGetDeviceMotionEvents XINPUT
 XDeviceTimeCoord *
@@ -397,9 +397,9 @@ Verify that a BadDevice error results.
 XID baddevice;
 XDevice nodevice;
 XDeviceTimeCoord *tc;
-int major, first, err;
+int ximajor, first, err;
 
-	if (!XQueryExtension (display, INAME, &major, &first, &err))
+	if (!XQueryExtension (display, INAME, &ximajor, &first, &err))
 	    {
 	    untested("%s: Input extension not supported.\n", TestName);
 	    return;

@@ -35,7 +35,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: chgprop.m,v 1.6 94/01/30 12:09:03 rws Exp $
+ * $XConsortium: chgprop.m,v 1.7 94/04/17 21:12:58 rws Exp dpw $
  */
 
 >>TITLE XChangeDeviceDontPropagateList XINPUT
@@ -244,7 +244,7 @@ Call xname with an invalid window id.  Verify that a BadWindow error is
 generated.
 >>CODE BadWindow
 int 	ret;
-int major, first, err;
+int ximajor, first, err;
 
 	if (!Setup_Extension_DeviceInfo(KeyMask))
 	    {
@@ -270,7 +270,7 @@ Call xname with an invalid window id.  Verify that a BadWindow error is
 generated.
 >>CODE badmode
 int 	ret, badmode;
-int major, first, err;
+int ximajor, first, err;
 
 	if (!Setup_Extension_DeviceInfo(KeyMask))
 	    {
