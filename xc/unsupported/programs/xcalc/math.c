@@ -1,4 +1,4 @@
-/* $XConsortium: math.c,v 1.7 90/12/17 10:40:40 rws Exp $ 
+/* $XConsortium: math.c,v 1.8 90/12/21 13:25:59 converse Exp $ 
  *
  *  math.c  -  mathematics functions for a hand calculator under X
  *
@@ -166,12 +166,12 @@ void post_op()
 /*-------------------------------------------------------------------------*/
 DrawDisplay()
 {
-    if (strlen(dispstr)>12) {       /* strip out some decimal digits */
+    if ((int) strlen(dispstr) > 12) {	 /* strip out some decimal digits */
         char tmp[32];
         char *exp = index(dispstr,'e');  /* search for exponent part */
         if (!exp) dispstr[12]='\0';      /* no exp, just trunc. */
         else {
-            if (strlen(exp)<=4) 
+            if ((int) strlen(exp) <= 4) 
                 sprintf(tmp,"%.8s",dispstr); /* leftmost 8 chars */
             else
                 sprintf(tmp,"%.7s",dispstr); /* leftmost 7 chars */
@@ -246,7 +246,7 @@ numeric(keynum)
     if (rpn & lift_enabled)
 	PushNum(dnum);
   }
-  if (strlen(dispstr)>=MAXDISP)
+  if ((int) strlen(dispstr) >= MAXDISP)
     return;
     
     switch (keynum){
@@ -280,7 +280,7 @@ bkspf()
   {
       if (entered!=1 || clrdisp)
 	  return;
-      if (strlen(dispstr) > 0)
+      if ((int) strlen(dispstr) > 0)
 	  dispstr[strlen(dispstr)-1] = 0;
       if (strlen(dispstr) == 0) {
 	  strcat(dispstr, "0");
@@ -873,10 +873,12 @@ ResetCalc()
 
 #ifndef IEEE
 /******************/
+/* keep SVR4 compiler from complaining about scope of arg declaration below */
+typedef struct sigcontext * sigcontextstructp;
 /*ARGSUSED*/
 signal_t fperr(sig,code,scp)
   int sig,code;
-  struct sigcontext *scp;
+  sigcontextstructp scp;
 /******************/
 {
 #ifdef SYSV
