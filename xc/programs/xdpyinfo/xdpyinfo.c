@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xdpyinfo.c,v 1.22 91/09/14 15:39:11 rws Exp $
+ * $XConsortium: xdpyinfo.c,v 1.23 92/08/17 12:22:55 rws Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -179,6 +179,12 @@ print_display_info (dpy)
     return;
 }
 
+static int StrCmp(a, b)
+    char **a, **b;
+{
+    return strcmp(*a, *b);
+}
+
 print_extension_info (dpy)
     Display *dpy;
 {
@@ -190,6 +196,7 @@ print_extension_info (dpy)
     if (extlist) {
 	register int i;
 
+	qsort(extlist, n, sizeof(char *), StrCmp);
 	for (i = 0; i < n; i++) {
 	    printf ("    %s\n", extlist[i]);
 	}
