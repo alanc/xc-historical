@@ -1,6 +1,6 @@
-/* $Header: XrmConvert.c,v 1.2 87/09/13 20:07:28 swick Locked $ */
+/* $Header: Convert.c,v 1.6 88/01/29 17:05:35 asente Exp $ */
 #ifndef lint
-static char *sccsid = "@(#)XrmConvert.c	1.6	2/25/87";
+static char *sccsid = "@(#)XtConvert.c	1.6	2/25/87";
 #endif lint
 
 /*
@@ -26,17 +26,14 @@ static char *sccsid = "@(#)XrmConvert.c	1.6	2/25/87";
  * SOFTWARE.
  */
 
+#include	"IntrinsicI.h"
 
-#include	"Xlibint.h"
-#include	"Xresource.h"
-#include	"XrmConvert.h"
-#include	"Conversion.h"
+#include        "Convert.h"
+#include	"Quarks.h"
+#include	"Resource.h"
 
 /* ||| */
 #include	<stdio.h>
-
-extern int	bcmp();
-extern void	bcopy();
 
 /* Conversion procedure hash table */
 
@@ -45,14 +42,16 @@ typedef struct _ConverterRec *ConverterPtr;
 typedef struct _ConverterRec {
     ConverterPtr	next;
     XrmRepresentation	from, to;
-    XrmTypeConverter	proc;
+    XtConverter		converter;
+    XtConvertArgList    convert_args;
+    Cardinal		num_args;
 } ConverterRec;
 
-#define CONVERTERHASHSIZE	256
-#define CONVERTERHASHMASK	255
-#define ProcHash(from, to) (2 * (from) + to)
+#define CONVERTHASHSIZE	512
+#define CONVERTHASHMASK	511
+#define ProcHash(from_type, to_type) (2 * (from_type) + to_type)
 
-typedef ConverterPtr ConverterTable[CONVERTERHASHSIZE];
+typedef ConverterPtr ConverterTable[CONVERTHASHSIZE];
 
 static ConverterTable	converterTable;
 
@@ -62,170 +61,287 @@ static ConverterTable	converterTable;
 typedef struct _CacheRec *CachePtr;
 
 typedef struct _CacheRec {
-    CachePtr		next;
-    int			hash;
-    Screen		*screen;
-    XrmRepresentation	fromType;
-    XrmValue		from;
-    XrmRepresentation	toType;
-    XrmValue		to;
+    CachePtr	next;
+    int		hash;
+    XtConverter converter;
+    XrmValue	*args;
+    Cardinal	num_args;
+    XrmValue	from;
+    XrmValue	to;
 } CacheRec;
 
 #define CACHEHASHSIZE	256
 #define CACHEHASHMASK	255
-#define CacheHash(from, to, data) (2 * (from) + to + (int)(data))
-
 typedef CachePtr CacheHashTable[CACHEHASHSIZE];
 
 static CacheHashTable	cacheHashTable;
 
-void _XrmRegisterTypeConverter(fromType, toType, convertProc)
-    XrmRepresentation		fromType, toType;
-    XrmTypeConverter		convertProc;
+void _XtAddConverter(fromType, toType, converter, convert_args, num_args)
+    XrmRepresentation   fromType, toType;
+    XtConverter		converter;
+    XtConvertArgList    convert_args;
+    Cardinal		num_args;
 {
     register ConverterPtr	*pHashEntry;
     register ConverterPtr	p;
 
-    pHashEntry = &converterTable[ProcHash(fromType,toType) & CONVERTERHASHMASK];
-    p 		= (ConverterPtr) Xmalloc(sizeof(ConverterRec));
-    p->next 	= *pHashEntry;
-    *pHashEntry	= p;
-    p->from	= fromType;
-    p->to	= toType;
-    p->proc	= convertProc;
+    pHashEntry = &converterTable[ProcHash(fromType, toType) & CONVERTHASHMASK];
+    /* ||| Check for existing entry */
+    p		    = (ConverterPtr) Xpermalloc(sizeof(ConverterRec));
+    p->next	    = *pHashEntry;
+    *pHashEntry     = p;
+    p->from	    = fromType;
+    p->to	    = toType;
+    p->converter    = converter;
+    p->convert_args = convert_args;
+    p->num_args     = num_args;
 }
 
-void XrmRegisterTypeConverter(fromType, toType, convertProc)
+void XtAddConverter(fromType, toType, converter, convert_args, num_args)
     register XrmAtom	fromType, toType;
-    XrmTypeConverter	convertProc;
+    XtConverter		converter;
+    XtConvertArgList    convert_args;
+    Cardinal		num_args;
 {
-    _XrmRegisterTypeConverter(XrmAtomToRepresentation(fromType),
-			     XrmAtomToRepresentation(toType), convertProc);
+    _XtAddConverter(
+	XrmAtomToRepresentation(fromType), XrmAtomToRepresentation(toType),
+	converter, convert_args, num_args);
 }
 
-Bool LookupConverter(fromType, toType, convertProc)
-    register XrmRepresentation	fromType, toType;
-    XrmTypeConverter		*convertProc;
+static void CacheEnter(converter, args, num_args, from, to, hash)
+    register XtConverter    converter;
+    register XrmValuePtr    args;
+    Cardinal		    num_args;
+    XrmValuePtr		    from;
+    XrmValuePtr		    to;
+    register int	    hash;
 {
-    register ConverterPtr	p;
-
-    p = converterTable[ProcHash(fromType, toType) & CONVERTERHASHMASK];
-    while (p != NULL) {
-	if ((fromType == p->from) && (toType == p->to)) {
-	    *convertProc = p->proc;
-	    return True;
-	}
-	p = p->next;
-    }
-    return False;
-}
-
-Bool CacheLookup(screen, fromType, from, toType, to, pHash)
-    register Screen		*screen;
-    register XrmRepresentation	fromType;
-    XrmValuePtr			from;
-    register XrmRepresentation	toType;
-    XrmValuePtr			to;
-    int				*pHash;
-{
-    register CachePtr		p;
-    register int		hash;
-
-    hash = CacheHash(fromType, toType, *((char *)from->addr));
-    for (p = cacheHashTable[hash & CACHEHASHMASK]; p != NULL; p = p->next) {
-	if ((p->hash == hash)
-	 && (p->toType == toType)
-	 && (p->fromType == fromType)
-	 && (p->screen == screen)
-	 && (p->from.size == from->size)
-	 && (! bcmp((char *)p->from.addr, (char *)from->addr, (int)from->size))) {
-	    /* Perfect match */
-	    *to = p->to;
-	    return True;
-	}
-    }
-    (*to).size = 0;
-    (*to).addr = NULL;
-    (*pHash) = hash;
-    return False;
-}
-
-static void CacheEnter(screen, fromType, from, toType, to, hash)
-    Screen		*screen;
-    XrmRepresentation	fromType;
-    XrmValuePtr		from;
-    XrmRepresentation	toType;
-    XrmValuePtr		to;
-    register int	hash;
-    {
     register	CachePtr *pHashEntry;
     register	CachePtr p;
+    register    Cardinal i;
 
     pHashEntry = &cacheHashTable[hash & CACHEHASHMASK];
 
-    p = (CachePtr) Xmalloc(sizeof(CacheRec));
-    p->next     = *pHashEntry;
-    *pHashEntry = p;
-    p->hash     = hash;
-    p->screen  = screen;
-    p->fromType = fromType;
-    p->from     = *from;
-    p->from.addr = (caddr_t) Xmalloc(from->size);
-    bcopy((char *) from->addr, (char *)p->from.addr, (int) from->size);
+    p = (CachePtr) Xpermalloc(sizeof(CacheRec));
+    p->next	    = *pHashEntry;
+    *pHashEntry     = p;
+    p->hash	    = hash;
+    p->converter    = converter;
+    p->from.size    = from->size;
+    p->from.addr = (caddr_t) Xpermalloc(from->size);
+    XtBCopy(from->addr, p->from.addr, from->size);
+    p->num_args = num_args;
+    if (num_args == 0) {
+	p->args = NULL;
+    } else {
+	p->args = (XrmValuePtr) Xpermalloc(num_args * sizeof(XrmValue));
+	for (i = 0; i < num_args; i++) {
+	    p->args[i].size = args[i].size;
+	    p->args[i].addr = (caddr_t) Xpermalloc(args[i].size);
+	    XtBCopy(args[i].addr, p->args[i].addr, args[i].size);
+	}
+    }
+    p->to.size  = to->size;
+    p->to.addr  = (caddr_t) Xpermalloc(to->size);
+    XtBCopy(to->addr, p->to.addr, to->size);
+}
 
-    p->toType	= toType;
-    p->to       = *to;
-    p->to.addr = (caddr_t) Xmalloc(to->size);
-    bcopy((char *) to->addr, (char *) p->to.addr, (int) to->size);
+
+void CacheStats()
+{
+    register Cardinal i;
+    register CachePtr p;
+    register Cardinal entries;
+
+#define MIN(x,y)    ((x) < (y) ? (x) : (y))
+
+    for (i = 0; i < CACHEHASHSIZE; i++) {
+	p = cacheHashTable[i];
+	if (p != NULL) {
+	    for (entries = 0; p != NULL; p = p->next) {
+		entries++;
+	    }
+	    (void) fprintf(stdout, "Index: %4d  Entries: %d\n", i, entries);
+	    for (p = cacheHashTable[i]; p != NULL; p = p->next) {
+		(void) fprintf(stdout, "    Size: %3d  '", p->from.size);
+		(void) fwrite(p->from.addr, 1, (int) MIN(p->from.size, 48),
+			stdout);
+		(void) fprintf(stdout, "'\n");
+	    }
+	    (void) fprintf(stdout, "\n");
+	}
+    }
+}
+
+static Boolean ResourceQuarkToOffset(widget_class, name, offset)
+    WidgetClass widget_class;
+    XrmName     name;
+    Cardinal    *offset;
+{
+    register WidgetClass     wc;
+    register Cardinal        i;
+    register XrmResourceList resources;
+
+    for (wc = widget_class;
+	wc != NULL;
+	wc = wc->core_class.superclass) {
+	resources = (XrmResourceList) wc->core_class.resources;
+	for (i = 0; i < wc->core_class.num_resources; i++, resources++) {
+	    if (resources->xrm_name == name) {
+		*offset = -resources->xrm_offset - 1;
+		return True;
+	    }
+	} /* for i in resources */
+    } /* for wc in widget classes */
+    (*offset) = 0;
+    return False;
+}
+
+
+static void ComputeArgs(widget, convert_args, num_args, args)
+    Widget		widget;
+    XtConvertArgList    convert_args;
+    Cardinal		num_args;
+    XrmValuePtr		args;
+{
+    register Cardinal   i;
+    Cardinal		offset;
+    char		message[1000];
+
+    for (i = 0; i < num_args; i++) {
+	args[i].size = convert_args[i].size;
+	switch (convert_args[i].address_mode) {
+	case XtAddress: 
+	    args[i].addr = convert_args[i].address_id;
+	    break;
+
+	case XtBaseOffset:
+	    args[i].addr =
+		(caddr_t) ((int) widget + (int) convert_args[i].address_id);
+	    break;
+
+	case XtImmediate:
+	    args[i].addr = (caddr_t) &(convert_args[i].address_id);
+	    break;
+
+	case XtResourceString:
+	    /* Convert in place for next usage */
+	    convert_args[i].address_mode = XtResourceQuark;
+	    convert_args[i].address_id =
+	       (caddr_t) XrmAtomToQuark((String) convert_args[i].address_id);
+	    /* Fall through */
+
+	case XtResourceQuark:
+	    if (! ResourceQuarkToOffset(widget->core.widget_class,
+		    (XrmQuark) convert_args[i].address_id, &offset)) {
+		(void) sprintf(message,
+		    "Cannot find resource name %s as argument to conversion",
+		    XrmQuarkToAtom((XrmQuark) convert_args[i].address_id));
+		XtWarning(message);
+		offset = 0;
+	    }
+	    args[i].addr = (caddr_t) ((int) widget + offset);
+	    break;
+	} /* switch */
+    } /* for */
+} /* ComputeArgs */
+
+void XtDirectConvert(converter, args, num_args, from, to)
+    XtConverter     converter;
+    XrmValuePtr     args;
+    Cardinal	    num_args;
+    register XrmValuePtr from;
+    XrmValuePtr     to;
+{
+    register CachePtr   p;
+    register int	hash;
+    register Cardinal   i;
+
+    /* Try to find cache entry for conversion */
+    hash = ((int)(converter) >> 2) + from->size + *((char *) from->addr);
+    if (from->size > 1) hash += ((char *) from->addr)[1];
+    
+    for (p = cacheHashTable[hash & CACHEHASHMASK]; p != NULL; p = p->next) {
+	if ((p->hash == hash)
+	 && (p->converter == converter)
+	 && (p->from.size == from->size)
+	 && (! XtBCmp(p->from.addr, from->addr, from->size))
+         && (p->num_args == num_args)) {
+	    /* Are all args the same data ? */
+	    for (i = 0; i < num_args; i++) {
+		if (   p->args[i].size != args[i].size
+		    || XtBCmp(p->args[i].addr, args[i].addr, args[i].size)) {
+		    break;
+		}
+	    }
+	    if (i == num_args) {	 
+		/* Perfect match */
+		(*to) = p->to;
+		return;
+	    }
+	}
     }
 
-void _XrmConvert(screen, fromType, from, toType, to)
-    register Screen		*screen;
+    /* Didn't find it, call converter procedure and entry result in cache */
+    (*to).size = 0;
+    (*to).addr = NULL;
+    (*converter)(args, &num_args, from, to);
+    CacheEnter(converter, args, num_args, from, to, hash);
+}
+
+void _XtConvert(widget, fromType, from, toType, to)
+             Widget		widget;
     register XrmRepresentation	fromType;
 	     XrmValuePtr	from;
     register XrmRepresentation	toType;
     register XrmValuePtr	to;
-    {
-    XrmTypeConverter	proc;
-    int			hash;
-    char		msg[100];
+{
+    register ConverterPtr	p;
+    Cardinal		num_args;
+    XrmValue		stack_args[20], *args;
+    char		msg[200];
 
-    if (fromType != toType) {
-	if (CacheLookup(screen, fromType, from, toType, to, &hash))
-	    return;
-	if (LookupConverter(fromType, toType, &proc)) {
-	    (*proc)(screen, from, to);
-	    if ((*to).addr != NULL) {
-	        CacheEnter(screen, fromType, from, toType, to, hash);
+    /* Look for type converter */
+    p = converterTable[ProcHash(fromType, toType) & CONVERTHASHMASK];
+    for (; p != NULL; p = p->next) {
+	if (fromType == p->from && toType == p->to) {
+	    /* Compute actual arguments from widget and arg descriptor */
+	    num_args = p->num_args;
+	    if (num_args > XtNumber(stack_args)) {
+		args = (XrmValuePtr) XtMalloc(num_args * sizeof (XrmValue));
 	    } else {
-#ifdef notdef
-	        (void)sprintf(msg, "Bad source value for '%s' to '%s' conversion.\n",
-		    XrmRepresentationToAtom(fromType),
-		    XrmRepresentationToAtom(toType));
-/* ||| Some sort of pluggable warning call */
-	    	(void) fprintf(stderr, "%s", msg);
-#endif
+		args = stack_args;
 	    }
-	} else {
-	    (void)sprintf(msg, "No type converter registered for '%s' to '%s'.\n",
-	    	XrmRepresentationToAtom(fromType),
-		XrmRepresentationToAtom(toType));
-/* ||| Some sort of pluggable warning call */
-	    (void) fprintf(stderr, "%s", msg);
+	    if (num_args != 0)
+		ComputeArgs(widget, p->convert_args, num_args, args);
+	    XtDirectConvert(p->converter, args, num_args, from, to);
+	    if (args != stack_args) XtFree((char *) args);
+	    return;
 	}
-    } else {
-	(*to).size = from->size;
-	(*to).addr = from->addr;
     }
+
+    (void) sprintf(msg,
+	"No type converter registered for '%s' to '%s' conversion.",
+	XrmRepresentationToAtom(fromType),
+	XrmRepresentationToAtom(toType));
+    XtWarning(msg);
+    to->addr = NULL;
+    to->size = 0;
 }
 
-void XrmConvert(screen, fromType, from, toType, to)
-    Screen	*screen;
-    XrmAtom	fromType;
+void XtConvert(widget, from_type_str, from, to_type_str, to)
+    Widget	widget;
+    XrmAtom	from_type_str;
     XrmValuePtr	from;
-    XrmAtom	toType;
+    XrmAtom	to_type_str;
     XrmValuePtr	to;
 {
-    _XrmConvert(screen, XrmAtomToRepresentation(fromType), from,
-	       XrmAtomToRepresentation(toType),   to);
+    XrmQuark    fromType, toType;
+
+    fromType = XrmAtomToRepresentation(from_type_str);
+    toType = XrmAtomToRepresentation(to_type_str);
+    if (fromType != toType)
+	_XtConvert(widget, fromType, from, toType, to);
+    else
+	(*to) = *from;
 }
