@@ -29,10 +29,7 @@
 
 #ifndef LINT
 static char *copy_notice = "(c) Copyright 1990 Tektronix, Inc., All Rights Reserved.";
-#  ifdef RCS_ID
-
-#  endif /* RCS_ID */
-#endif LINT
+#endif /* LINT */
 
 /*
  *      EXTERNAL INCLUDES

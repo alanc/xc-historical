@@ -1,12 +1,7 @@
-#ifndef TEKCMSUTIL
-#ifndef LINT
-#  ifdef RCS_ID
-#  endif 
-#endif LINT
-#ifdef AUTOHEADER
-#else
-#endif
+/* $XConsortum: TekCMSutil.h,v 1.1 91/02/11 19:40:54 dave Exp $ */
 
+#ifndef TEKCMSUTIL
+#define TEKCMSUTIL
 
 
 
@@ -29,7 +24,4 @@ extern void
 PrintXcmsColorSpecs();
 extern void
 PrintXcmsColorSpec();
-#ifndef TEKCMSUTIL
-#define TEKCMSUTIL
-#endif
 #endif

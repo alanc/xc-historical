@@ -1,11 +1,7 @@
+/* $XConsortum: TekCMS_LT.h,v 1.1 91/02/11 19:40:54 dave Exp $ */
+
 #ifndef TEKCMS_LT
-#ifndef LINT
-#  ifdef RCS_ID
-#  endif 
-#endif LINT
-#ifdef AUTOHEADER
-#else
-#endif
+#define TEKCMS_LT
 
 #define LIBTEST_CMDTBL	LibTstCmdTbl
 #define LIBTEST_COMMENT_CHAR    '#'
@@ -21,9 +17,6 @@ extern FuncTableEntry LibTstCmdTbl[] ;
 
 extern int
 Check_init();
-#ifdef NO_AUTO_INIT
-#else
-#endif 
 extern int
 Cmd_List();
 extern int
@@ -96,7 +89,4 @@ extern int
 Cmd_XStoreNamedColor();
 extern int
 Cmd_StoreColors();
-#ifndef TEKCMS_LT
-#define TEKCMS_LT
-#endif
 #endif
