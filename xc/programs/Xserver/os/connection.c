@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.191 95/03/04 12:46:07 kaleb Exp kaleb $ */
+/* $XConsortium: connection.c,v 1.192 95/04/05 19:58:27 kaleb Exp mor $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -397,7 +397,7 @@ AuthAudit (client, letin, saddr, len, proto_n, auth_proto)
 	switch (saddr->sa_family)
 	{
 	case AF_UNSPEC:
-#ifdef UNIXCONN
+#if defined(UNIXCONN) || defined(LOCALCONN)
 	case AF_UNIX:
 #endif
 	    strcpy(addr, "local host");
