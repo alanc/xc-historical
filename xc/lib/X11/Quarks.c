@@ -1,10 +1,11 @@
 /*
- * $XConsortium: Quarks.c,v 1.22 90/10/07 20:30:22 rws Exp $
+ * $XConsortium: Quarks.c,v 1.22 90/10/07 20:49:30 rws Exp $
  */
 
 /***********************************************************
-Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
-and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
+Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard,
+Massachusetts, and the Massachusetts Institute of Technology, Cambridge,
+Massachusetts.
 
                         All Rights Reserved
 
@@ -29,8 +30,14 @@ SOFTWARE.
 #include "Xlibint.h"
 #include <X11/Xresource.h>
 
+/* Not cost effective, at least for vanilla MIT clients */
+/* #define PERMQ */
+
 typedef unsigned long Signature;
 typedef unsigned long Entry;
+#ifdef PERMQ
+typedef unsigned char Bits;
+#endif
 
 static XrmQuark nextQuark = 1;	/* next available quark number */
 static unsigned long quarkMask = 0;
@@ -38,22 +45,41 @@ static Entry zero = 0;
 static Entry *quarkTable = &zero; /* crock */
 static unsigned long quarkRehash;
 static XrmString **stringTable = NULL;
+#ifdef PERMQ
+static Bits **permTable = NULL;
+#endif
 static XrmQuark nextUniq = -1;	/* next quark from XrmUniqueQuark */
 
 #define QUANTUMSHIFT	8
-#define QUANTUMMASK	((1<<QUANTUMSHIFT)-1)
+#define QUANTUMMASK	((1 << QUANTUMSHIFT) - 1)
 #define CHUNKPER	8
-#define CHUNKMASK	((CHUNKPER<<QUANTUMSHIFT)-1)
+#define CHUNKMASK	((CHUNKPER << QUANTUMSHIFT) - 1)
 
-#define LARGEQUARK	0x40000000L
-#define QUARKSHIFT	16
-#define QUARKMASK	((LARGEQUARK-1)>>QUARKSHIFT)
-#define SIGMASK		((1L<<QUARKSHIFT)-1)
+#define LARGEQUARK	0x80000000L
+#define QUARKSHIFT	18
+#define QUARKMASK	((LARGEQUARK - 1) >> QUARKSHIFT)
+#define SIGMASK		((1L << QUARKSHIFT) - 1)
+
+#define STRQUANTSIZE	(sizeof(XrmString) * (QUANTUMMASK + 1))
+#ifdef PERMQ
+#define QUANTSIZE	(STRQUANTSIZE + \
+			 (sizeof(Bits) * ((QUANTUMMASK + 1) >> 3))
+#else
+#define QUANTSIZE	STRQUANTSIZE
+#endif
 
 #define HASH(sig) ((sig) & quarkMask)
 #define REHASHVAL(sig) ((((sig) % quarkRehash) + 2) | 1)
 #define REHASH(idx,rehash) idx = ((idx + rehash) & quarkMask)
-#define NAME(q) stringTable[(q)>>QUANTUMSHIFT][(q)&QUANTUMMASK]
+#define NAME(q) stringTable[(q) >> QUANTUMSHIFT][(q) & QUANTUMMASK]
+#ifdef PERMQ
+#define BYTEREF(q) permTable[(q) >> QUANTUMSHIFT][((q) & QUANTUMMASK) >> 3]
+#define ISPERM(q) (BYTEREF(q) & (1 << ((q) & 7)))
+#define SETPERM(q) BYTEREF(q) |= (1 << ((q) & 7))
+#define CLEARPERM(q) BYTEREF(q) &= ~(1 << ((q) & 7))
+#endif
+
+void bzero();
 
 /* Permanent memory allocation */
 
@@ -62,7 +88,7 @@ static char *neverFreeTable = NULL;
 static int  neverFreeTableSize = 0;
 
 char *Xpermalloc(length)
-    unsigned int length;
+    register unsigned int length;
 {
     char *ret;
 
@@ -75,12 +101,12 @@ char *Xpermalloc(length)
 #endif /* WORD64 */
 
     if (neverFreeTableSize < length) {
-	neverFreeTableSize =
-	    (length > NEVERFREETABLESIZE ? length : NEVERFREETABLESIZE);
-	if (! (neverFreeTable = Xmalloc((unsigned) neverFreeTableSize))) {
-	    neverFreeTableSize = 0;
+	if (length >= NEVERFREETABLESIZE)
+	    return Xmalloc(length);
+	if (! (ret = Xmalloc(NEVERFREETABLESIZE)))
 	    return (char *) NULL;
-	}
+	neverFreeTableSize = NEVERFREETABLESIZE;
+	neverFreeTable = ret;
     }
     ret = neverFreeTable;
     neverFreeTable += length;
@@ -103,13 +129,25 @@ ExpandQuarkTable()
     if (oldmask = quarkMask)
 	newmask = (oldmask << 1) + 1;
     else {
-	stringTable = (XrmString **)Xmalloc(sizeof(XrmString *) * CHUNKPER);
-	if (!stringTable)
+	if (!stringTable) {
+	    stringTable = (XrmString **)Xmalloc(sizeof(XrmString *) *
+						CHUNKPER);
+	    if (!stringTable)
+		return False;
+	    stringTable[0] = (XrmString *)NULL;
+	}
+#ifdef PERMQ
+	if (!permTable)
+	    permTable = (Bits **)Xmalloc(sizeof(Bits *) * CHUNKPER);
+	if (!permTable)
 	    return False;
-	stringTable[0] = (XrmString *)Xmalloc(sizeof(XrmString) *
-					      (QUANTUMMASK+1));
+#endif
+	stringTable[0] = (XrmString *)Xpermalloc(QUANTSIZE);
 	if (!stringTable[0])
 	    return False;
+#ifdef PERMQ
+	permTable[0] = (Bits *)((char *)stringTable[0] + STRQUANTSIZE);
+#endif
 	newmask = 0x1ff;
     }
     entries = (Entry *)Xmalloc(sizeof(Entry) * (newmask + 1));
@@ -144,12 +182,14 @@ ExpandQuarkTable()
 
 #if NeedFunctionPrototypes
 XrmQuark _XrmInternalStringToQuark(
-    register const char *name, register int len, register Signature sig)
+    register const char *name, register int len, register Signature sig,
+    Bool permstring)
 #else
-XrmQuark _XrmInternalStringToQuark(name, len, sig)
+XrmQuark _XrmInternalStringToQuark(name, len, sig, permstring)
     register XrmString name;
     register int len;
     register Signature sig;
+    Bool permstring;
 #endif
 {
     register XrmQuark q;
@@ -157,7 +197,7 @@ XrmQuark _XrmInternalStringToQuark(name, len, sig)
     register int idx, rehash;
     register int i;
     register char *s1, *s2;
-    XrmString **new;
+    char *new;
 
     if (!len)
 	return (NULLQUARK);
@@ -181,6 +221,13 @@ nomatch:    if (!rehash)
 	    idx = REHASH(idx, rehash);
 	    continue;
 	}
+#ifdef PERMQ
+	if (permstring && !ISPERM(q)) {
+	    Xfree(NAME(q));
+	    NAME(q) = (char *)name;
+	    SETPERM(q);
+	}
+#endif
 	return q;
     }
     if (nextUniq == nextQuark)
@@ -188,29 +235,52 @@ nomatch:    if (!rehash)
     if ((nextQuark + (nextQuark >> 2)) > quarkMask) {
 	if (!ExpandQuarkTable())
 	    return NULLQUARK;
-	return _XrmInternalStringToQuark(name, len, sig);
+	return _XrmInternalStringToQuark(name, len, sig, permstring);
     }
     q = nextQuark;
     if (!(q & QUANTUMMASK)) {
 	if (!(q & CHUNKMASK)) {
-	    if (!(new = (XrmString **)Xrealloc((char *)stringTable,
-					       sizeof(XrmString *) *
-					       ((q >> QUANTUMSHIFT) +
-						CHUNKPER))))
+	    if (!(new = Xrealloc((char *)stringTable,
+				 sizeof(XrmString *) *
+				 ((q >> QUANTUMSHIFT) + CHUNKPER))))
 		return NULLQUARK;
-	    stringTable = new;
+	    stringTable = (XrmString **)new;
+#ifdef PERMQ
+	    if (!(new = Xrealloc((char *)permTable,
+				 sizeof(Bits *) *
+				 ((q >> QUANTUMSHIFT) + CHUNKPER))))
+		return NULLQUARK;
+	    permTable = (Bits **)new;
+#endif
 	}
-	if (!(stringTable[q >> QUANTUMSHIFT] =
-	      (XrmString *)Xmalloc(sizeof(XrmString) * (QUANTUMMASK+1))))
+	new = Xpermalloc(QUANTSIZE);
+	if (!new)
 	    return NULLQUARK;
+	stringTable[q >> QUANTUMSHIFT] = (XrmString *)new;
+#ifdef PERMQ
+	permTable[q >> QUANTUMSHIFT] = (Bits *)(new + STRQUANTSIZE);
+#endif
     }
-    s1 = Xpermalloc(len+1);
-    if (!s1)
-	return NULLQUARK;
-    NAME(q) = s1;
-    for (i = len, s2 = (char *)name; --i >= 0; )
-	*s1++ = *s2++;
-    *s1++ = '\0';
+    if (!permstring) {
+	s2 = (char *)name;
+#ifdef PERMQ
+	name = Xmalloc(len+1);
+#else
+	name = Xpermalloc(len+1);
+#endif
+	if (!name)
+	    return NULLQUARK;
+	for (i = len, s1 = (char *)name; --i >= 0; )
+	    *s1++ = *s2++;
+	*s1++ = '\0';
+#ifdef PERMQ
+	CLEARPERM(q);
+    }
+    else {
+	SETPERM(q);
+#endif
+    }
+    NAME(q) = (char *)name;
     if (q <= QUARKMASK)
 	entry = (q << QUARKSHIFT) | (sig & SIGMASK);
     else
@@ -238,7 +308,28 @@ XrmQuark XrmStringToQuark(name)
     for (tname = (char *)name; c = *tname++; i++)
 	sig = (sig << 1) + c;
 
-    return _XrmInternalStringToQuark(name, i, sig);
+    return _XrmInternalStringToQuark(name, i, sig, False);
+}
+
+#if NeedFunctionPrototypes
+XrmQuark XrmPermStringToQuark(
+    const char *name)
+#else
+XrmQuark XrmPermStringToQuark(name)
+    XrmString name;
+#endif
+{
+    register char c, *tname;
+    register int i = 0;
+    register Signature sig = 0;
+
+    if (!name)
+	return (NULLQUARK);
+
+    for (tname = (char *)name; c = *tname++; i++)
+	sig = (sig << 1) + c;
+
+    return _XrmInternalStringToQuark(name, i, sig, True);
 }
 
 XrmQuark XrmUniqueQuark()
@@ -249,9 +340,15 @@ XrmQuark XrmUniqueQuark()
 }
 
 XrmString XrmQuarkToString(quark)
-    XrmQuark quark;
+    register XrmQuark quark;
 {
     if (quark <= 0 || quark >= nextQuark)
     	return NULLSTRING;
+#ifdef PERMQ
+    /* We have to mark the quark as permanent, since the caller might hold
+     * onto the string pointer forver.
+     */
+    SETPERM(quark);
+#endif
     return NAME(quark);
 }
