@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.129 92/05/20 16:05:31 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.130 92/12/16 17:46:50 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -91,7 +91,6 @@ static String PanicModeRecovery();
 static String CheckForPoundSign();
 static KeySym StringToKeySym();
 static ModifierRec modifiers[] = {
-    {"None",    0,      ParseModImmed,None},
     {"Shift",	0,	ParseModImmed,ShiftMask},
     {"Lock",	0,	ParseModImmed,LockMask},
     {"Ctrl",	0,	ParseModImmed,ControlMask},
@@ -113,9 +112,6 @@ static ModifierRec modifiers[] = {
     {"Button3",	0,	ParseModImmed,Button3Mask},
     {"Button4",	0,	ParseModImmed,Button4Mask},
     {"Button5",	0,	ParseModImmed,Button5Mask},
-
-    {"Any",	0,	ParseModImmed,AnyModifier},
-
     {"c",	0,	ParseModImmed,ControlMask},
     {"s",	0,	ParseModImmed,ShiftMask},
     {"l",	0,	ParseModImmed,LockMask},
@@ -352,6 +348,10 @@ static EventKey events[] = {
 
 
 static Boolean initialized = FALSE;
+static XrmQuark QMeta;
+static XrmQuark QCtrl;
+static XrmQuark QNone;
+static XrmQuark QAny;
 
 static void FreeEventSeq(eventSeq)
     EventSeqPtr eventSeq;
@@ -564,22 +564,22 @@ static _XtParseKeysymMod(name,lateBindings,notFlag,valueP,error)
     }
 }
 
-static Boolean _XtLookupModifier(name,lateBindings,notFlag,valueP,constMask)
-    String name;
+static Boolean _XtLookupModifier(signature, lateBindings, notFlag, valueP,
+				 constMask)
+    XrmQuark signature;
     LateBindingsPtr* lateBindings;
     Boolean notFlag;
     Value *valueP;
     Bool constMask;
 {
    register int i, left, right;
-   register XrmQuark signature = StringToQuark(name);
    static int previous = 0;
    
    if (signature == modifiers[previous].signature) {
        if (constMask)  *valueP = modifiers[previous].value;
        else /* if (modifiers[previous].modifierParseProc) always true */
 	   (*modifiers[previous].modifierParseProc)
-	      (name, modifiers[previous].value, lateBindings, notFlag, valueP);
+	      (modifiers[previous].value, lateBindings, notFlag, valueP);
        return TRUE;
    }
 
@@ -596,7 +596,7 @@ static Boolean _XtLookupModifier(name,lateBindings,notFlag,valueP,constMask)
 	   if (constMask)  *valueP = modifiers[i].value;
 	   else /* if (modifiers[i].modifierParseProc) always true */
 	       (*modifiers[i].modifierParseProc)
-		   (name, modifiers[i].value, lateBindings, notFlag, valueP);
+		   (modifiers[i].value, lateBindings, notFlag, valueP);
 	   return TRUE;
        }
    }
@@ -619,27 +619,29 @@ static String ScanIdent(str)
     return str;
 }
 
-static String FetchModifierToken(str,modStr)
-    String str,modStr;
+static String FetchModifierToken(str, modQ_return)
+    String str;
+    XrmQuark *modQ_return;
 {
     String start = str;
-    String metaString = "Meta";
-    String ctrlString = "Ctrl";
+
     if (*str == '$') {
-        strcpy(modStr,metaString);
+        *modQ_return = QMeta;
         str++;
         return str;
     }
     if (*str == '^') {
-        strcpy(modStr,ctrlString);
+        *modQ_return = QCtrl;
         str++;
         return str;
     }
     str = ScanIdent(str);
     if (start != str) {
-	 bcopy(start, modStr, str-start);
-          modStr[str-start] = '\0';
-          return str;
+	char modStr[100];
+	bcopy(start, modStr, str-start);
+	modStr[str-start] = '\0';
+	*modQ_return = XrmStringToQuark(modStr);
+	return str;
     }
     return str;
 }        
@@ -652,29 +654,25 @@ static String ParseModifiers(str, event,error)
     register String start;
     Boolean notFlag, exclusive, keysymAsMod;
     Value maskBit;
-    char modStr[100];
+    XrmQuark modQ;
  
     ScanWhitespace(str);
     start = str;
-    str = FetchModifierToken(str,modStr);
+    str = FetchModifierToken(str, &modQ);
     exclusive = FALSE;
     if (start != str) {
-          if (_XtLookupModifier(modStr,(LateBindingsPtr *) NULL,
-		  FALSE,&maskBit,TRUE)) {
-	      if (maskBit== None) {
-		  event->event.modifierMask = ~0;
-		  event->event.modifiers = 0;
-		  ScanWhitespace(str);
-		  return str;
-	      }
-	      if (maskBit == AnyModifier) {/*backward compatability*/
-		  event->event.modifierMask = 0;
-		  event->event.modifiers = 0;
-		  ScanWhitespace(str);
-		  return str;
-	      }
-	  }
-	  str = start; /*if plain modifier, reset to beginning */
+	if (modQ == QNone) {
+	    event->event.modifierMask = ~0;
+	    event->event.modifiers = 0;
+	    ScanWhitespace(str);
+	    return str;
+	} else if (modQ == QAny) { /*backward compatability*/
+	    event->event.modifierMask = 0;
+	    event->event.modifiers = 0;
+	    ScanWhitespace(str);
+	    return str;
+	}
+	str = start; /*if plain modifier, reset to beginning */
     }
     else while (*str == '!' || *str == ':') {
         if (*str == '!') {
@@ -701,22 +699,23 @@ static String ParseModifiers(str, event,error)
         }
         else keysymAsMod = FALSE;
 	start = str;
-        str = FetchModifierToken(str,modStr);
+        str = FetchModifierToken(str, &modQ);
         if (start == str) {
             Syntax("Modifier or '<' expected","");
             *error = TRUE;
             return PanicModeRecovery(str);
         }
          if (keysymAsMod) {
-             _XtParseKeysymMod(modStr,&event->event.lateModifiers,
+             _XtParseKeysymMod(XrmQuarkToString(modQ),
+			       &event->event.lateModifiers,
 			       notFlag,&maskBit, error);
 	     if (*error)
                  return PanicModeRecovery(str);
 
          } else
-  	     if (!_XtLookupModifier( modStr,
-	   &event->event.lateModifiers, notFlag, &maskBit,FALSE)) {
-	         Syntax("Unknown modifier name:  ",modStr);
+  	     if (!_XtLookupModifier(modQ, &event->event.lateModifiers,
+				    notFlag, &maskBit, FALSE)) {
+	         Syntax("Unknown modifier name:  ", XrmQuarkToString(modQ));
                  *error = TRUE;
                  return PanicModeRecovery(str);
              }
@@ -831,8 +830,7 @@ static KeySym StringToKeySym(str, error)
     return NoSymbol;
 }
 /* ARGSUSED */
-static void ParseModImmed(name,value,lateBindings,notFlag,valueP)
-    String name;
+static void ParseModImmed(value, lateBindings, notFlag, valueP)
     Value value;
     LateBindingsPtr* lateBindings;
     Boolean notFlag;
@@ -840,12 +838,11 @@ static void ParseModImmed(name,value,lateBindings,notFlag,valueP)
 {
     *valueP = value;
 }
-/* ARGSUSED */
-static void ParseModSym (name,value,lateBindings,notFlag,valueP)
+
+static void ParseModSym(value, lateBindings, notFlag, valueP)
  /* is only valid with keysyms that have an _L and _R in their name;
   * and ignores keysym lookup errors (i.e. assumes only valid keysyms)
   */
-    String name;
     Value value;
     LateBindingsPtr* lateBindings;
     Boolean notFlag;
@@ -1117,7 +1114,7 @@ static String ParseQuotedStringEvent(str, event,error)
 	event->event.modifiers = ControlMask;
     } else if (*str == '$') {
 	str++;
-	(void) _XtLookupModifier("Meta", &event->event.lateModifiers, FALSE,
+	(void) _XtLookupModifier(QMeta, &event->event.lateModifiers, FALSE,
 				 &metaMask, FALSE);
     }
     if (*str == '\\')
@@ -2004,6 +2001,10 @@ void _XtTranslateInitialize()
     }
 
     initialized = TRUE;
+    QMeta = XrmPermStringToQuark("Meta");
+    QCtrl = XrmPermStringToQuark("Ctrl");
+    QNone = XrmPermStringToQuark("None");
+    QAny  = XrmPermStringToQuark("Any");
 
     Compile_XtEventTable( events, XtNumber(events) );
     Compile_XtModifierTable( modifiers, XtNumber(modifiers) );
