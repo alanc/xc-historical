@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.50 91/07/10 19:06:50 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.51 92/01/30 19:40:07 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -353,7 +353,7 @@ miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
     
     SCREEN_PROLOGUE (pScreen, GetImage);
 
-    if (pDrawable->type == DRAWABLE_WINDOW &&
+    if (pDrawable->type != DRAWABLE_PIXMAP &&
 	((WindowPtr) pDrawable)->visibility != VisibilityUnobscured)
     {
 	PixmapPtr	pPixmap;
@@ -532,7 +532,7 @@ miBSGetSpans (pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
     
     SCREEN_PROLOGUE (pScreen, GetSpans);
 
-    if (pDrawable->type == DRAWABLE_WINDOW && ((WindowPtr) pDrawable)->backStorage)
+    if (pDrawable->type != DRAWABLE_PIXMAP && ((WindowPtr) pDrawable)->backStorage)
     {
 	PixmapPtr	pPixmap;
 	miBSWindowPtr	pWindowPriv;
@@ -699,7 +699,7 @@ miBSCheapValidateGC (pGC, stateChanges, pDrawable)
 {
     CHEAP_FUNC_PROLOGUE (pGC);
     
-    if (pDrawable->type == DRAWABLE_WINDOW &&
+    if (pDrawable->type != DRAWABLE_PIXMAP &&
         ((WindowPtr) pDrawable)->backStorage != NULL &&
 	miBSCreateGCPrivate (pGC))
     {
@@ -2363,7 +2363,7 @@ miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, state, pixunion, planeMask)
     if (!pRect)
 	return;
     pWin = 0;
-    if (pDrawable->type == DRAWABLE_WINDOW)
+    if (pDrawable->type != DRAWABLE_PIXMAP)
     {
 	pWin = (WindowPtr) pDrawable;
 	if (!pWin->backStorage)
@@ -3227,7 +3227,7 @@ miBSValidateGC (pGC, stateChanges, pDrawable)
     int			lift_functions;
     RegionPtr		backingCompositeClip = NULL;
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
+    if (pDrawable->type != DRAWABLE_PIXMAP)
     {
         pWin = (WindowPtr) pDrawable;
 	pWindowPriv = (miBSWindowPtr) pWin->backStorage;
