@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.54 91/04/02 19:28:46 gildea Exp $
+ * $XConsortium: init.c,v 2.55 91/04/09 08:48:20 rws Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -130,7 +130,7 @@ static XtResource resources[] = {
     {"appDefaultsVersion", "AppDefaultsVersion", XtRInt, sizeof(int),
 	 Offset(app_defaults_version), XtRImmediate, (XtPointer)0},
     {"banner", "Banner", XtRString, sizeof(char *),
-	 Offset(banner), XtRString, "xmh    MIT X Consortium    R4"},
+	 Offset(banner), XtRString, "xmh    MIT X Consortium    R5"}
 };
 
 #undef Offset
