@@ -58,6 +58,7 @@ install::
 	-mkdir $(UWMDIR)
 	-mkdir $(MANPATH)
 	-mkdir $(MANDIR)
+	-mkdir $(LIBMANDIR)
 
 #ifdef ClientSideOnly
 install::
