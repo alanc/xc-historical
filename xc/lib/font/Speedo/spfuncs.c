@@ -1,4 +1,4 @@
-/* $XConsortium: spfuncs.c,v 1.4 91/07/16 20:18:44 keith Exp $ */
+/* $XConsortium: spfuncs.c,v 1.5 91/09/16 11:42:30 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -102,7 +102,7 @@ SpeedoGetInfoScaleable(fpe, pFontInfo, entry, fontName, fileName, vals)
     char		*fileName;
     FontScalablePtr	vals;
 {
-    SpeedoFontPtr spf;
+    SpeedoFontPtr spf = NULL;
     char        fullName[MAXFONTNAMELEN];
     int         err;
 
@@ -113,7 +113,9 @@ SpeedoGetInfoScaleable(fpe, pFontInfo, entry, fontName, fileName, vals)
 
     err = get_font_info(pFontInfo, fullName, fileName, entry, &spf);
 
-    close_sp_font(spf);
+    if (spf)
+	close_sp_font(spf);
+
     return err;
 }
 

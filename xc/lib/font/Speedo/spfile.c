@@ -1,4 +1,4 @@
-/* $XConsortium: spfile.c,v 1.4 91/07/15 18:16:46 keith Exp $ */
+/* $XConsortium: spfile.c,v 1.5 92/03/25 18:45:45 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -154,6 +154,9 @@ open_master(filename, master)
     if (!spmf)
 	return AllocError;
     bzero(spmf, sizeof(SpeedoMasterFontRec));
+    spmf->entry = NULL;
+    spmf->f_buffer = NULL;
+    spmf->c_buffer = NULL;
 
     /* open font */
     spmf->fname = (char *) xalloc(strlen(filename) + 1);
@@ -265,7 +268,8 @@ close_master_font(spmf)
 	return;
     if (spmf->state & MasterFileOpen)
 	fclose(spmf->fp);
-    spmf->entry->u.scalable.extra->private = (pointer) 0;
+    if (spmf->entry)
+	spmf->entry->u.scalable.extra->private = NULL;
     xfree(spmf->fname);
     xfree(spmf->f_buffer);
     xfree(spmf->c_buffer);
