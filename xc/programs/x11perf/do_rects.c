@@ -37,12 +37,23 @@ int InitRectangles(xp, p, reps)
     int step;
     int x, y;
     int rows;
+    int	half;
+    int	lw = 0;
 
     pgc = xp->fggc;
 
+    if (p->bfont)
+    {
+	lw = atoi (p->bfont);
+
+	XSetLineAttributes(xp->d, xp->bggc, lw, LineSolid, CapButt, JoinMiter);
+	XSetLineAttributes(xp->d, xp->fggc, lw, LineSolid, CapButt, JoinMiter);
+	lw = (lw >> 1) + 1;
+    }
+
     rects = (XRectangle *)malloc(p->objects * sizeof(XRectangle));
-    x = 0;
-    y = 0;
+    x = lw;
+    y = lw;
     rows = 0;
     if (xp->pack) {
 	/* Pack rectangles as close as possible, mainly for debugging faster
@@ -62,10 +73,10 @@ int InitRectangles(xp, p, reps)
 	rows++;
 	if (y + size > HEIGHT || rows == MAXROWS) {
 	    rows = 0;
-	    y = 0;
+	    y = lw;
 	    x += step;
 	    if (x + size > WIDTH) {
-		x = 0;
+		x = lw;
 	    }
 	}
     }
@@ -84,6 +95,22 @@ void DoRectangles(xp, p, reps)
 
     for (i = 0; i != reps; i++) {
         XFillRectangles(xp->d, xp->w, pgc, rects, p->objects);
+        if (pgc == xp->bggc)
+            pgc = xp->fggc;
+        else
+            pgc = xp->bggc;
+    }
+}
+
+void DoOutlineRectangles (xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int	    reps;
+{
+    int	i;
+
+    for (i = 0; i != reps; i++) {
+	XDrawRectangles (xp->d, xp->w, pgc, rects, p->objects);
         if (pgc == xp->bggc)
             pgc = xp->fggc;
         else
