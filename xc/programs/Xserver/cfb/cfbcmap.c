@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cfbcmap.c,v 4.13 92/02/11 15:04:07 keith Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -459,9 +459,13 @@ cfbInitVisuals (visualp, depthp, nvisualp, ndepthp, rootDepthp, defaultVisp, siz
 	d = visuals->depth;
 	vtype = visuals->visuals;
 	nvtype = visuals->count;
-	vid = (VisualID *) xalloc (nvtype * sizeof (VisualID));
-	if (!vid && nvtype)
-	    return FALSE;
+	vid = NULL;
+	if (nvtype)
+	{
+	    vid = (VisualID *) xalloc (nvtype * sizeof (VisualID));
+	    if (!vid)
+		return FALSE;
+	}
 	depth->depth = d;
 	depth->numVids = nvtype;
 	depth->vids = (unsigned long *) vid;
