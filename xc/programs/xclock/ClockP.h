@@ -1,5 +1,5 @@
 /*
-* $Header$
+* $Header: ClockP.h,v 1.6 87/10/09 13:11:03 chow BL5 $
 */
 
 /*

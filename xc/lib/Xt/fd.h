@@ -1,5 +1,5 @@
 /*
-* $Header$
+* $Header: fd.h,v 1.3 87/10/09 13:12:13 chow BL5 $
 */
 
 /*
