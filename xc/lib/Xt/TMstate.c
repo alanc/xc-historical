@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.112 90/07/26 10:06:41 swick Exp $ */
+/* $XConsortium: TMstate.c,v 1.113 90/08/09 09:00:15 swick Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -1666,7 +1666,18 @@ static void MergeStates(old, new, override, indexMap,
                a->index = quarkIndexMap[b->index];
            else
                a->index = -(accQuarkIndexMap[-(b->index+1)]+1);
+#ifdef REFCNT_TRANSLATIONS
+	   if (b->num_params) {
+	       int p;
+	       a->params = (String*)
+		   XtMalloc((Cardinal)b->num_params * sizeof(String));
+	       for (p = 0; p < b->num_params; p++)
+		   a->params[p] = XtNewString(b->params[p]);
+	   }
+	   else a->params = NULL;
+#else
            a->params = b->params;
+#endif
            a->num_params=b->num_params;
            a->next = NULL;
            *aa = a;
@@ -1750,9 +1761,9 @@ static void MergeTables(old, new, override)
 	    old->eventObjTbl[j] = *newEvent;
 #ifdef REFCNT_TRANSLATIONS
 	    if (newEvent->event.lateModifiers != NULL) {
-		int count = 0;
+		int count = 1;
 		LateBindingsPtr b = newEvent->event.lateModifiers;
-		while (b->keysym != 0) {b++; count++};
+		while (b->keysym != 0) {b++; count++;}
 		old->eventObjTbl[j].event.lateModifiers =
 		    b = (LateBindingsPtr)
 			XtMalloc( (unsigned)count*sizeof(LateBindings) );
@@ -2096,9 +2107,7 @@ static void RemoveAccelerators(widget,closure,data)
     XtPointer closure, data;
 {
     int i;
-    Widget destination = (Widget)closure;
-    XtTranslations table = destination->core.tm.translations;
-    StateTablePtr stateTable = table->stateTable;
+    XtTranslations table = *(XtTranslations*)closure;
     if (table == NULL) {
         XtAppWarningMsg(XtWidgetToApplicationContext(widget),
             XtNtranslationError,"nullTable",XtCXtToolkitError,
@@ -2113,7 +2122,7 @@ static void RemoveAccelerators(widget,closure,data)
             (String *)NULL, (Cardinal *)NULL);
         return;
     }
-    for (i=0;i<stateTable->accNumQuarks;i++) {
+    for (i=0;i<table->stateTable->accNumQuarks;i++) {
         if (table->accProcTbl[i].widget == widget)
             table->accProcTbl[i].widget = NULL;
     }
@@ -2138,12 +2147,12 @@ void _XtRegisterAccRemoveCallbacks(dest)
 					    lastWidget->core.destroy_callbacks
 					   ),
 				      RemoveAccelerators,
-				      (XtPointer)dest
+				      (XtPointer)&dest->core.tm.translations
 				     );
 	      else
 		  XtAddCallback( lastWidget, XtNdestroyCallback,
 				 RemoveAccelerators,
-				 (XtPointer)dest
+				 (XtPointer)&dest->core.tm.translations
 				);
 	}
     }
@@ -2163,7 +2172,8 @@ void _XtUninstallAccelerators(w)
 	    translations->accProcTbl[i].widget != lastWidget) {
 	      lastWidget = translations->accProcTbl[i].widget;
 	      XtRemoveCallback(lastWidget, XtNdestroyCallback,
-			       RemoveAccelerators, (XtPointer)w);
+			       RemoveAccelerators,
+			       (XtPointer)&w->core.tm.translations);
 	}
     }
     XtFree( (char*)translations );
@@ -2211,7 +2221,8 @@ void XtInstallAccelerators(destination, source)
     }
 
     XtAddCallback(source, XtNdestroyCallback,
-        RemoveAccelerators,(XtPointer)destination);
+		  RemoveAccelerators,
+		  (XtPointer)&destination->core.tm.translations);
     if (XtClass(source)->core_class.display_accelerator != NULL){
 	 char *buf = XtMalloc((Cardinal)100);
 	 int len = 100;
