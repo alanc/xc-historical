@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.19 90/08/14 09:41:06 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.20 90/08/16 10:47:00 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -308,11 +308,11 @@ miFillWideCircle(pDraw, pGC, parc)
 	    MIFILLINCIRCSTEP(inslw);
 	    pts->x = xorg - x;
 	    pts->y = yorg - y;
-	    *wids++ = xorg - inx - pts->x;
+	    *wids++ = x - inx;
 	    pts++;
 	    pts->x = xorg - inx + inslw;
 	    pts->y = yorg - y;
-	    *wids++ = xorg - x + slw - pts->x;
+	    *wids++ = inx - x + slw - inslw;
 	    pts++;
 	}
 	else
@@ -328,11 +328,11 @@ miFillWideCircle(pDraw, pGC, parc)
 	    {
 		pts->x = xorg - x;
 		pts->y = yorg + y + dy;
-		*wids++ = xorg - inx - pts->x;
+		*wids++ = x - inx;
 		pts++;
 		pts->x = xorg - inx + inslw;
 		pts->y = yorg + y + dy;
-		*wids++ = xorg - x + slw - pts->x;
+		*wids++ = inx - x + slw - inslw;
 		pts++;
 	    }
 	    else
