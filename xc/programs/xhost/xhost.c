@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.40 91/02/12 13:36:35 rws Exp $ */
+/* $XConsortium: xhost.c,v 11.41 91/02/12 19:10:20 rws Exp $ */
  
 /*
 
@@ -549,7 +549,7 @@ static Bool get_streams_address (name, hap)
 
   if(GetNetworkInfo (ConnectionNumber(dpy), NULL, ConvertNameToNetAddr, &packet, &retptr, NULL)<0)
            {
-		return True;
+		return False;
            }
    hap->family = ((xHostEntry *) retptr)->family;
    hap->length = ((xHostEntry *) retptr)->length;
@@ -558,9 +558,13 @@ static Bool get_streams_address (name, hap)
    if(hap->length > 127)
    	hap->length = 127;
 
+   /* trim internet address to four */
+   if (hap->family == FamilyInternet)
+	hap->length = 4;
+
    ptr = &retptr[sizeof(xHostEntry)];
-   ptr[hap->length] = '\0';
-   memcpy(buf, ptr, hap->length +1);
+   memcpy(buf, ptr, hap->length);
+   buf[hap->length] = '\0';
    return True;
 }
 
@@ -631,7 +635,7 @@ static char *get_streams_hostname (ha)
 {
   static char buf[128];
   char	 *ptr, *packet, pktbuf[128], *retptr;
-  int	 n;
+  int	 n, len;
 
    if(_XsTypeOfStream[ConnectionNumber(dpy)] == X_LOCAL_STREAM || ha->family == FamilyUname){
 	return(ha->address);
@@ -656,9 +660,9 @@ static char *get_streams_hostname (ha)
 		return(ha->address);
            }
    ptr = &retptr[sizeof(xHostEntry)];
-   ptr[((xHostEntry *) retptr)->length] = '\0';
-
-   memcpy(buf, ptr, ((xHostEntry *) retptr)->length +1);
+   len = ((xHostEntry *) retptr)->length;
+   memcpy(buf, ptr, len);
+   buf[len] = '\0';
    return(buf);
 }
 
