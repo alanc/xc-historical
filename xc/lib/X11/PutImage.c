@@ -1,293 +1,16 @@
 #include "copyright.h"
 
-/* $Header: XPutImage.c,v 11.35 87/10/10 18:38:54 rws Locked $ */
+/* $Header: XPutImage.c,v 11.36 87/10/11 14:56:23 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
 #include "Xlibint.h"
 #include <errno.h>
 
+#define ROUNDUP(nbytes, pad) ((((nbytes) + ((pad)-1)) / (pad)) * (pad))
 
-#define ROUNDUP(nbytes, pad) (((((nbytes) - 1) + (pad)) / (pad)) * (pad))
-
-/* XXX Note to who ever must maintain this code:
-
-The helper routine "PutImageRequest" is unfinished and still has a few bugs.
-Byte swapping is never required when
-    (image->byte_order == image->bitmap_bit_order) &&
-    (dpy->byte_order == dpy->bitmap_bit_order)
-Someday we will write a treatise on the subject.  If you don't believe us, try it.
-Note that all display hardware we know of works this way.
-Note that in X10, shipping from a VAX to a SUN ended up byte-swapping twice (once
-in dix and once in ddx).  Shipping from a SUN to a VAX byte-swapped once, but
-that worked because bitmaps were described as shorts in VAX order, and thus when
-compiled on a SUN resulted in the additional byte-swap.
-
-Swapping in the other cases is probably worked out, but we don't have time to
-make sure, and we don't have any machines that do things that way to test it on.
-You probably need to swap halves within longs without swapping bytes within shorts
-for some cases.
-
-Also, if a client sends ZPixmap format images of 4 bits_per_pixel and nibble swapping
-is required, this routine does not swap the 4 bit nibbles as it should.
-
-XXX */
-
-static PutImageRequest(dpy, d, gc, image, req_xoffset,req_yoffset, x, y, req_width,
-								req_height)
-    register Display *dpy;
-    Drawable d;
-    GC gc;
-    register XImage *image;
-    int x, y;
-    unsigned int req_width, req_height;
-    int req_xoffset, req_yoffset;
-{
-	register xPutImageReq *req;
-	int total_xoffset;
-
-	FlushGC(dpy, gc);
-	GetReq (PutImage, req);
-	/*
-	 * first set up the standard stuff in the request
-	 */
-	req->drawable = d;
-	req->gc = gc->gid;
-	req->dstX = x;
-	req->dstY = y;
-	req->width = req_width;
-	req->height = req_height;
-	req->format = image->format;
-	req->depth = image->depth;
-        total_xoffset = image->xoffset + req_xoffset;
-	switch (image->format) {
-	      long length;
-	      int i;
-	      case XYBitmap:
-		/*
-		 * If the client side format matches the screen, we win!
-		 */
-		if ((dpy->bitmap_unit == image->bitmap_unit) 
-		    &&(dpy->bitmap_pad == image->bitmap_pad)
-		    &&(dpy->byte_order == image->byte_order)
-		    &&(dpy->bitmap_bit_order == image->bitmap_bit_order)
-		    &&(image->width == req_width)
-		    &&(total_xoffset < dpy->bitmap_pad)) {
-		      length = image->bytes_per_line * req_height;
-		      req->length += length >> 2;
-		      req->leftPad = total_xoffset;
-		      _XSend (dpy, image->data + req_yoffset * image->bytes_per_line, length);
-		  }
-		else {
-		       long nbytes;
-		       char *row_addr;
-		       register char *p;
-		       char* tempbuf;
-		       /*
-			* compute length of image data; round up to next length
-			*/
-		       req->leftPad = total_xoffset%dpy->bitmap_pad;
-		       nbytes = length = ROUNDUP(req_width + req->leftPad,
-						 dpy->bitmap_pad) >> 3;
-		       length *= req_height;
-		       req->length += length >> 2;
-
-			/*Get space to put the image*/
-
-		       tempbuf = p = _XAllocScratch (dpy, 
-				(unsigned long)(length));
-			
-		       /*Figure out where to start*/
-
-		       row_addr = (image->data)+
-			      (image->bytes_per_line*req_yoffset) +
-			      ((total_xoffset - req->leftPad)>>3);
-
-		       /* Now copy the desired (sub)image into the buffer */
-
-		       for (i = 0; i < req_height; 
-			    	i++, row_addr += image->bytes_per_line,p+=nbytes) {
-			   bcopy (row_addr, p, (int)nbytes);
-			   if (image->bitmap_bit_order != dpy->bitmap_bit_order)
-				_swapbits ((unsigned char *)p,
-					   (long)image->bytes_per_line);
-#ifdef notdef
-			   if ((image->byte_order != image->bitmap_bit_order) ||
-			       (dpy->byte_order != dpy->bitmap_bit_order))
-			   {
-			     /* XXX swapping missing XXX */
-			   }
-#endif
-			}
-		        _XSend(dpy,tempbuf,length);
-	       }
-		  
-		break;
-
-	      case XYPixmap:
-		/*
-		 * If the client side format matches the screen, we win!
-		 */
-		if ((dpy->bitmap_unit == image->bitmap_unit) 
-		    &&(dpy->bitmap_pad == image->bitmap_pad)
-		    &&(dpy->byte_order == image->byte_order)
-		    &&(dpy->bitmap_bit_order == image->bitmap_bit_order)
-		    &&(image->width == req_width)
-		    &&(total_xoffset < dpy->bitmap_pad)
-		    &&(req_yoffset == 0)) {
-		      length = image->bytes_per_line * req_height * 
-								image->depth;
-		      req->length += length >> 2;
-		      req->leftPad = total_xoffset;
-		      _XSend (dpy, image->data, length);
-		  }
-		else {
-		       long nbytes;
-		       char *row_addr;
-		       register char *p;
-		       char *tempbuf;
-		       int bytes_per_plane,j;
-		       /*
-			* compute length of image data; round up to next length
-			*/
-		       req->leftPad = total_xoffset%dpy->bitmap_pad;
-		       nbytes = length = ROUNDUP(req_width + req->leftPad,
-						 dpy->bitmap_pad) >> 3;
-		       length *= req_height * image->depth;
-		       req->length += length >> 2;
-		       bytes_per_plane = image->bytes_per_line * image->height;
-
-			/*Get space to put the image*/
-
-		       tempbuf = p = _XAllocScratch (dpy, 
-				(unsigned long)(length));
-
-		       /* Loop on planes */
-			
-		       for (j = 0; j < image->depth; j++) {
-
-			   /*Figure out where to start in image structure*/
-
-			   row_addr = (image->data)+
-				  (j * bytes_per_plane) +
-				  (image->bytes_per_line*req_yoffset) +
-				  ((total_xoffset - req->leftPad)>>3);
-
-			   /* Now copy a plane of the desired (sub)image into the
-			      buffer */
-
-			   for (i = 0; i < req_height; 
-				    i++, row_addr += image->bytes_per_line,p+=nbytes) {
-			       bcopy (row_addr, p, (int)nbytes);
-			       if (image->bitmap_bit_order != dpy->bitmap_bit_order)
-				   _swapbits ((unsigned char *)p, nbytes);
-#ifdef notdef
-			       if ((image->byte_order != image->bitmap_bit_order) ||
-				   (dpy->byte_order != dpy->bitmap_bit_order))
-			       {
-				 /* XXX swapping missing XXX */
-			       }
-#endif
-			    }
-			}
-		        _XSend(dpy,tempbuf,length);
-	       }
-		  
-		break;
-
-	      case ZPixmap:
-	        /*
-		 * If the client side format matches the screen, we win!
-		 */
-		req->leftPad = 0;
-
-		if ((dpy->byte_order == image->byte_order)
-		    &&(dpy->bitmap_pad == image->bitmap_pad)
-		    &&(image->width == req_width)
-		    &&(total_xoffset == 0)) {
-		    length = image->bytes_per_line * req_height;
-		    req->length += length >> 2;
-		    _XSend (dpy, image->data + req_yoffset * image->bytes_per_line, length);
-		  }
-		else {
-		    /*
-		     * since we have no other way to go, we presume format
-		     * of image matches format of drawable....  Sure makes
-		     * things simpler.
-		     */
-		    long nbytes;
-		    unsigned char *row = (unsigned char *) (image->data + req_yoffset * image->bytes_per_line);
-		    char *tempbuf, *p;
-		    int bit_xoffset, pseudoLeftPad, byte_xoffset;
-
-		    nbytes = length = ROUNDUP(req_width * image->bits_per_pixel, dpy->bitmap_pad) >> 3;
-    
-		    length *= req_height;
-		    tempbuf = p = _XAllocScratch(dpy, (unsigned long)length);
-
-		    req->length += length >> 2;
-
-		    bit_xoffset = req_xoffset * image->bits_per_pixel;
-		    pseudoLeftPad = bit_xoffset % 8;
-		    byte_xoffset = bit_xoffset >> 3;
-
-		    for (i = 0; i < req_height; 
-				    i++, row += image->bytes_per_line, p+=nbytes) {
-			/*
-			 * Move the data somewhere we can reformat it.
-			 */
-		     
-
-			if (pseudoLeftPad != 0)
-			{
-			    register unsigned char *pp = (unsigned char *)p;
-			    register unsigned char *rp = row + byte_xoffset;
-			    register unsigned char *endp = pp + nbytes;
-			    register int pseudoRightPad = 8 - pseudoLeftPad;
-			    if (image->bitmap_bit_order == MSBFirst)
-				for (; pp < endp; pp++, rp++)
-				    *pp = *rp << pseudoLeftPad |
-					  *(rp+1) >> pseudoRightPad;
-			    else
-				for (; pp < endp; pp++, rp++)
-				    *pp = *rp >> pseudoLeftPad |
-					  *(rp+1) << pseudoRightPad;
-			}
-			else
-			    bcopy ((char *) (row + byte_xoffset), p, (int)nbytes);
-			if (image->bits_per_pixel == 1) {
-			    if (image->bitmap_bit_order != dpy->bitmap_bit_order)
-				_swapbits ((unsigned char *)p, nbytes);
-#ifdef notdef
-			   if ((image->byte_order != image->bitmap_bit_order) ||
-			       (dpy->byte_order != dpy->bitmap_bit_order))
-			   {
-			     /* XXX swapping missing XXX */
-			   }
-#endif
-			} else if (image->byte_order != dpy->byte_order) {
-			  if(image->bits_per_pixel == 32) _swaplong(p, nbytes);
-			  else if (image->bits_per_pixel == 24)
-			      _swapthree (p, nbytes);
-			  else if (image->bits_per_pixel == 16) 
-			      _swapshort (p, nbytes);
-			}
-		    }
-		    _XSend(dpy, tempbuf, length);
-		}
-	        break;
-	      default:	/* should never get here */
-		(void) fputs ("unknown image type in XPutImage\n", stderr);
-		exit(1);
-		break;
-	}
-
-	SyncHandle();
-	return;
-}
-	
-
-char _reverse_byte[0x100] = {
+/* this is used elsewhere */
+unsigned char _reverse_byte[0x100] = {
 	0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0,
 	0x10, 0x90, 0x50, 0xd0, 0x30, 0xb0, 0x70, 0xf0,
 	0x08, 0x88, 0x48, 0xc8, 0x28, 0xa8, 0x68, 0xe8,
@@ -322,179 +45,493 @@ char _reverse_byte[0x100] = {
 	0x1f, 0x9f, 0x5f, 0xdf, 0x3f, 0xbf, 0x7f, 0xff
 };
 
-
-_swapbits (b, n)
-	register unsigned char *b;
-	register long n;
-{
-	do {
-		*b = _reverse_byte[*b];
-		b++;
-	    } while (--n > 0);
-	
-}
+/* XXX _swapshort isn't used here anymore, but is used in Xlib (move it?) */
 
 _swapshort (bp, n)
-     register char *bp;
-     register long n;
+    register char *bp;
+    register long n;
 {
-	register char c;
-	register char *ep = bp + n;
-	do {
-		c = *bp;
-		*bp = *(bp + 1);
-		bp++;
-		*bp = c;
-		bp++;
-	}
-	while (bp < ep);
+    register char c;
+    register char *ep = bp + n;
+
+    while (bp < ep) {
+	c = *bp;
+	*bp = *(bp + 1);
+	bp++;
+	*bp++ = c;
+    }
 }
+
+/* XXX _swaplong isn't used in Xlib any more, but xwd/xwud use it (fix them) */
 
 _swaplong (bp, n)
-     register char *bp;
-     register long n;
+    register char *bp;
+    register long n;
 {
-	register char c;
-	register char *ep = bp + n;
-	register char *sp;
-	do {
-	  	sp = bp + 3;
-		c = *sp;
-		*sp = *bp;
-		*bp++ = c;
-		sp = bp + 1;
-		c = *sp;
-		*sp = *bp;
-		*bp++ = c;
-		bp += 2;
-	}
-	while (bp < ep);
-}
+    register char c;
+    register char *ep = bp + n;
+    register char *sp;
 
-_swapthree (bp, n)
-     register char *bp;
-     register long n;
-{
-	register char c;
-	register char *ep = bp + n;
-	do {
-	  	c = *bp;
-		*(bp + 2) = *bp;
-		*bp = c;
-		bp += 3;
-	}
-	while (bp < ep);
+    while (bp < ep) {
+	sp = bp + 3;
+	c = *sp;
+	*sp = *bp;
+	*bp++ = c;
+	sp = bp + 1;
+	c = *sp;
+	*sp = *bp;
+	*bp++ = c;
+	bp += 2;
+    }
 }
-
 
 static int
-BytesPerImageRow(dpy, image, req_width, req_xoffset)
-    Display *dpy;
-    XImage *image;
-    unsigned int req_width;
-    int req_xoffset;
+NoSwap (src, dest, srclen, srcinc, destinc, height)
+    register unsigned char *src, *dest;
+    long srclen, srcinc, destinc;
+    unsigned int height;
 {
-    int total_offset = image->xoffset + req_xoffset;
-    int left_pad = total_offset % dpy->bitmap_pad;
-    int nbytes;
+    long h = height;
+    long length = (srclen < destinc) ? srclen : destinc;
 
-    switch (image->format) 
-    {
-	case XYBitmap:
-            nbytes = ROUNDUP(req_width + left_pad, dpy->bitmap_pad) >> 3;
-   	    break;
-
-        case XYPixmap:
-	    nbytes = (ROUNDUP(req_width + left_pad, dpy->bitmap_pad) >> 3)
-		* image->depth;
-           break;
-	case ZPixmap:
-            nbytes = ROUNDUP(req_width * image->bits_per_pixel, 
-		dpy->bitmap_pad) >> 3;
- 	   break;
-	default:	/* should never get here */
-	    (void) fputs ("unknown image type in XPutImage\n", stderr);
-	    exit(1);
-	    break;
-    }
- 
-    return nbytes;
-}
-	   
-static void
-PutSubImage (dpy, d, gc, image, req_xoffset,req_yoffset, x, y, req_width,
-								req_height)
-    register Display *dpy;
-    Drawable d;
-    GC gc;
-    register XImage *image;
-    int x, y;
-    unsigned int req_width, req_height;
-    int req_xoffset, req_yoffset;
-
-{
-    int total_offset = image->xoffset + req_xoffset;
-    int left_pad = total_offset % dpy->bitmap_pad;
-    int BytesPerRowOfImage;
-    int BytesInRequestAvailableForImage;
-    int MaximumRequestSizeInBytes =
-        (65536 < dpy->max_request_size) ? (65536 << 2)
-	 :( dpy->max_request_size << 2);
-
-    if ((req_width == 0) || (req_height == 0)) return;
-    
-    BytesInRequestAvailableForImage = MaximumRequestSizeInBytes -
-	sizeof(xPutImageReq);
-
-    if (BytesInRequestAvailableForImage < (dpy->bitmap_pad >> 3))
-    {
-	/* This is a ridiculous case that should never happen, but just in
-		case. */
-		(void) fputs("Request size is simply too small to put image\n",
-			stderr);
-		exit(1);
-    }
-  
-    BytesPerRowOfImage = BytesPerImageRow(dpy, image, req_width, req_xoffset);
-
-    if ((BytesPerRowOfImage * req_height) <= BytesInRequestAvailableForImage)
-    {
-        PutImageRequest(dpy, d, gc, image, req_xoffset, req_yoffset, x, y, 
-	    req_width, req_height);
-    }
+    if (srcinc == destinc)
+	bcopy((char *)src, (char *)dest, (int)(srcinc * (h - 1) + srclen));
     else
-    {
-	if (req_height > 1)
-        {
-	    int SubImageHeight = BytesInRequestAvailableForImage /
-		    BytesPerRowOfImage;
-
-	    if (SubImageHeight < 1) SubImageHeight = 1;
-
-	    PutSubImage(dpy, d, gc, image, req_xoffset, req_yoffset, x, y, 
-		req_width, (unsigned int) SubImageHeight);
-
-	    PutSubImage(dpy, d, gc, image, req_xoffset, 
-		req_yoffset + SubImageHeight, x, y + SubImageHeight, req_width,
-		req_height - SubImageHeight);
-	}
-	else
-	{
-	    int SubImageWidth = ((BytesInRequestAvailableForImage << 3) /
-		dpy->bitmap_pad) * dpy->bitmap_pad - left_pad;
-
-	    PutSubImage(dpy, d, gc, image, req_xoffset, req_yoffset, x, y, 
-		(unsigned int) SubImageWidth, req_height);
-
-	    PutSubImage(dpy, d, gc, image, req_xoffset + SubImageWidth, 
-		req_yoffset, x + SubImageWidth, y, req_width - SubImageWidth, 
-		req_height);
-	}
-    }
-    return;
+	for (; --h >= 0; src += srcinc, dest += destinc)
+	    bcopy((char *)src, (char *)dest, (int)length);
 }
 
-XPutImage (dpy, d, gc, image, req_xoffset,req_yoffset, x, y, req_width,
+static int
+SwapTwoBytes (src, dest, srclen, srcinc, destinc, height)
+    register unsigned char *src, *dest;
+    long srclen, srcinc, destinc;
+    unsigned int height;
+{
+    long length = (srclen < destinc) ? srclen : destinc;
+    register long h, n;
+
+    srcinc -= length;
+    destinc -= length;
+    for (h = height; --h >= 0; src += srcinc, dest += destinc) {
+	for (n = length; n > 0; n -= 2, src += 2) {
+	    *dest++ = *(src+1);
+	    *dest++ = *src;
+	}
+    }
+}
+
+static int
+SwapThreeBytes (src, dest, srclen, srcinc, destinc, height)
+    register unsigned char *src, *dest;
+    long srclen, srcinc, destinc;
+    unsigned int height;
+{
+    long length = (srclen < destinc) ? srclen : destinc;
+    register long h, n;
+
+    srcinc -= length;
+    destinc -= length;
+    for (h = height; --h >= 0; src += srcinc, dest += destinc) {
+	for (n = length; n > 0; n -= 3, src += 3) {
+	    *dest++ = *(src + 2);
+	    *dest++ = *(src + 1);
+	    *dest++ = *src;
+	}
+    }
+}
+
+static int
+SwapFourBytes (src, dest, srclen, srcinc, destinc, height)
+    register unsigned char *src, *dest;
+    long srclen, srcinc, destinc;
+    unsigned int height;
+{
+    long length = (srclen < destinc) ? srclen : destinc;
+    register long h, n;
+
+    srcinc -= length;
+    destinc -= length;
+    for (h = height; --h >= 0; src += srcinc, dest += destinc)
+	for (n = length; n > 0; n -= 4, src += 4) {
+	    *dest++ = *(src + 3);
+	    *dest++ = *(src + 2);
+	    *dest++ = *(src + 1);
+	    *dest++ = *src;
+	}
+}
+
+static int
+SwapWords (src, dest, srclen, srcinc, destinc, height)
+    register unsigned char *src, *dest;
+    long srclen, srcinc, destinc;
+    unsigned int height;
+{
+    long length = (srclen < destinc) ? srclen : destinc;
+    register long h, n;
+
+    srcinc -= length;
+    destinc -= length;
+    for (h = height; --h >= 0; src += srcinc, dest += destinc)
+	for (n = length; n > 0; n -= 4, src += 2) {
+	    *dest++ = *(src + 2);
+	    *dest++ = *(src + 3);
+	    *dest++ = *src++;
+	    *dest++ = *src++;
+	}
+}
+
+/* XXX do this with a table someday, ya think? */
+static int
+SwapNibbles (src, dest, srclen, srcinc, destinc, height)
+    register unsigned char *src, *dest;
+    long srclen, srcinc, destinc;
+    unsigned int height;
+{
+    long length = (srclen < destinc) ? srclen : destinc;
+    register long h, n;
+    register unsigned char c;
+
+    srcinc -= length;
+    destinc -= length;
+    for (h = height; --h >= 0; src += srcinc, dest += destinc)
+	for (n = length; --n >= 0; ) {
+	    c = *src++;
+	    *dest++ = ((c & 0xf) << 4) | ((c & 0xf0) >> 4);
+	}
+}
+
+static int
+SwapBits (src, dest, srclen, srcinc, destinc, height)
+    register unsigned char *src, *dest;
+    long srclen, srcinc, destinc;
+    unsigned int height;
+{
+    long length = (srclen < destinc) ? srclen : destinc;
+    register long h, n;
+    register unsigned char *rev = _reverse_byte;
+
+    srcinc -= length;
+    destinc -= length;
+    for (h = height; --h >= 0; src += srcinc, dest += destinc)
+	for (n = length; --n >= 0; )
+	    *dest++ = rev[*src++];
+}
+
+static int
+SwapBitsAndTwoBytes (src, dest, srclen, srcinc, destinc, height)
+    register unsigned char *src, *dest;
+    long srclen, srcinc, destinc;
+    unsigned int height;
+{
+    long length = (srclen < destinc) ? srclen : destinc;
+    register long h, n;
+    register unsigned char *rev = _reverse_byte;
+
+    srcinc -= length;
+    destinc -= length;
+    for (h = height; --h >= 0; src += srcinc, dest += destinc)
+	for (n = length; n > 0; n -= 2, src += 2) {
+	    *dest++ = rev[*(src + 1)];
+	    *dest++ = rev[*src];
+	}
+}
+
+static int
+SwapBitsAndFourBytes (src, dest, srclen, srcinc, destinc, height)
+    register unsigned char *src, *dest;
+    long srclen, srcinc, destinc;
+    unsigned int height;
+{
+    long length = (srclen < destinc) ? srclen : destinc;
+    register long h, n;
+    register unsigned char *rev = _reverse_byte;
+
+    srcinc -= length;
+    destinc -= length;
+    for (h = height; --h >= 0; src += srcinc, dest += destinc)
+	for (n = length; n > 0; n -= 4, src += 4) {
+	    *dest++ = rev[*(src + 3)];
+	    *dest++ = rev[*(src + 2)];
+	    *dest++ = rev[*(src + 1)];
+	    *dest++ = rev[*src];
+	}
+}
+
+static int
+SwapBitsAndWords (src, dest, srclen, srcinc, destinc, height)
+    register unsigned char *src, *dest;
+    long srclen, srcinc, destinc;
+    unsigned int height;
+{
+    long length = (srclen < destinc) ? srclen : destinc;
+    register long h, n;
+    register unsigned char *rev = _reverse_byte;
+
+    srcinc -= length;
+    destinc -= length;
+    for (h = height; --h >= 0; src += srcinc, dest += destinc)
+	for (n = length; n > 0; n -= 4, src += 2) {
+	    *dest++ = rev[*(src + 2)];
+	    *dest++ = rev[*(src + 3)];
+	    *dest++ = rev[*src++];
+	    *dest++ = rev[*src++];
+	}
+}
+
+/*
+
+The following table gives the bit ordering within bytes (when accessed
+sequentially) for a scanline containing 32 bits, with bits numbered 0 to
+31, where bit 0 should be leftmost on the display.  For a given byte
+labelled A-B, A is for the most significant bit of the byte, and B is
+for the least significant bit.
+
+legend:
+	1   scanline-unit = 8
+	2   scanline-unit = 16
+	4   scanline-unit = 32
+	M   byte-order = MostSignificant
+	L   byte-order = LeastSignificant
+	m   bit-order = MostSignificant
+	l   bit-order = LeastSignificant
+
+
+format	ordering
+
+1Mm	00-07 08-15 16-23 24-31
+2Mm	00-07 08-15 16-23 24-31
+4Mm	00-07 08-15 16-23 24-31
+1Ml	07-00 15-08 23-16 31-24
+2Ml	15-08 07-00 31-24 23-16
+4Ml	31-24 23-16 15-08 07-00
+1Lm	00-07 08-15 16-23 24-31
+2Lm	08-15 00-07 24-31 16-23
+4Lm	24-31 16-23 08-15 00-07
+1Ll	07-00 15-08 23-16 31-24
+2Ll	07-00 15-08 23-16 31-24
+4Ll	07-00 15-08 23-16 31-24
+
+
+The following table gives the required conversion between any two
+formats.  It is based strictly on the table above.  If you believe one,
+you should believe the other.
+
+legend:
+	n   no changes
+	s   reverse 8-bit units within 16-bit units
+	l   reverse 8-bit units within 32-bit units
+	w   reverse 16-bit units within 32-bit units
+	R   reverse bits within 8-bit units
+	S   s+R
+	L   l+R
+	W   w+R
+
+*/
+
+static int (*(SwapFunction[12][12]))() = {
+#define n NoSwap,
+#define s SwapTwoBytes,
+#define l SwapFourBytes,
+#define w SwapWords,
+#define R SwapBits,
+#define S SwapBitsAndTwoBytes,
+#define L SwapBitsAndFourBytes,
+#define W SwapBitsAndWords,
+
+/*         1Mm 2Mm 4Mm 1Ml 2Ml 4Ml 1Lm 2Lm 4Lm 1Ll 2Ll 4Ll   */
+/* 1Mm */ { n   n   n   R   S   L   n   s   l   R   R   R },
+/* 2Mm */ { n   n   n   R   S   L   n   s   l   R   R   R },
+/* 4Mm */ { n   n   n   R   S   L   n   s   l   R   R   R },
+/* 1Ml */ { R   R   R   n   s   l   R   S   L   n   n   n },
+/* 2Ml */ { S   S   S   s   n   w   S   R   W   s   s   s },
+/* 4Ml */ { L   L   L   l   w   n   L   W   R   l   l   l },
+/* 1Lm */ { n   n   n   R   S   L   n   s   l   R   R   R },
+/* 2Lm */ { s   s   s   S   R   W   s   n   w   S   S   S },
+/* 4Lm */ { l   l   l   L   W   R   l   w   n   L   L   L },
+/* 1Ll */ { R   R   R   n   s   l   R   S   L   n   n   n },
+/* 2Ll */ { R   R   R   n   s   l   R   S   L   n   n   n },
+/* 4Ll */ { R   R   R   n   s   l   R   S   L   n   n   n },
+
+#undef n
+#undef s
+#undef l
+#undef w
+#undef R
+#undef S
+#undef L
+#undef W
+
+};
+
+/*
+ * This macro creates a value from 0 to 11 suitable for indexing
+ * into the table above.
+ */
+#define	ComposeIndex(bitmap_unit, bitmap_bit_order, byte_order)			\
+		(((bitmap_unit == 32) ? 2 : ((bitmap_unit == 16) ? 1 : 0))	\
+		     + (((bitmap_bit_order == MSBFirst) ? 0 : 3)		\
+		     + ((byte_order == MSBFirst) ? 0 : 6)))
+
+static void
+SendXYImage(dpy, req, image, req_xoffset, req_yoffset)
+    register Display *dpy;
+    register xPutImageReq *req;
+    register XImage *image;
+    int req_xoffset, req_yoffset;
+{
+    register int j;
+    long total_xoffset, bytes_per_src, bytes_per_dest, length;
+    long bytes_per_src_plane, bytes_per_dest_plane;
+    char *src, *dest, *buf;
+    register int (*swapfunc)();
+
+    total_xoffset = image->xoffset + req_xoffset;
+    req->leftPad = total_xoffset % dpy->bitmap_pad;
+    total_xoffset = (total_xoffset - req->leftPad) >> 3;
+    /* The protocol requires left-pad of zero on all ZPixmap, even
+     * though the 1-bit case is identical to bitmap format.  This is a
+     * bug in the protocol, caused because 1-bit ZPixmap was added late
+     * in the game.  Hairy shifting code compensation isn't worth it,
+     * just use XYPixmap format instead.
+     */
+    if ((req->leftPad != 0) && (req->format == ZPixmap))
+	req->format = XYPixmap;
+    bytes_per_dest = ROUNDUP(req->width + req->leftPad, dpy->bitmap_pad) >> 3;
+    bytes_per_dest_plane = bytes_per_dest * req->height;
+    length = bytes_per_dest_plane * image->depth;
+    req->length += (length + 3) >> 2;
+
+    swapfunc = SwapFunction[ComposeIndex(image->bitmap_unit,
+					 image->bitmap_bit_order,
+					 image->byte_order)]
+			   [ComposeIndex(dpy->bitmap_unit,
+					 dpy->bitmap_bit_order,
+					 dpy->byte_order)];
+
+    src = image->data + (image->bytes_per_line * req_yoffset) + total_xoffset;
+
+    /* when total_xoffset > 0, we have to worry about stepping off the
+     * end of image->data.
+     */
+    if ((swapfunc == NoSwap) &&
+	(image->bytes_per_line == bytes_per_dest) &&
+	(((total_xoffset == 0) &&
+	  ((image->depth == 1) || (image->height == req->height))) ||
+	 ((image->depth == 1) &&
+	  ((req_yoffset + req->height) < image->height)))) {
+	Data(dpy, src, length);
+	return;
+    }
+
+    length = (length + 3) & ~3L;
+    if ((dpy->bufptr + length) > dpy->bufmax)
+	buf = _XAllocScratch(dpy, (unsigned long)(length));
+    else
+	buf = dpy->bufptr;
+    bytes_per_src = ROUNDUP(req->width + req->leftPad, image->bitmap_pad) >> 3;
+    bytes_per_src_plane = image->bytes_per_line * image->height;
+
+    for (dest = buf, j = image->depth;
+	 --j >= 0;
+	 src += bytes_per_src_plane, dest += bytes_per_dest_plane)
+	(*swapfunc)((unsigned char *)src, (unsigned char *)dest,
+		    bytes_per_src, (long)image->bytes_per_line,
+		    bytes_per_dest, req->height);
+    if (buf == dpy->bufptr)
+	dpy->bufptr += length;
+    else
+	_XSend(dpy, buf, length);
+  }
+
+/* XXX assumes image->bits_per_pixel matches server's */
+static void
+SendZImage(dpy, req, image, req_xoffset, req_yoffset)
+    register Display *dpy;
+    register xPutImageReq *req;
+    register XImage *image;
+    int req_xoffset, req_yoffset;
+{
+    long bytes_per_src, bytes_per_dest, length;
+    unsigned char *src, *dest;
+
+    req->leftPad = 0;
+    bytes_per_src = ROUNDUP(req->width * image->bits_per_pixel,
+			    image->bitmap_pad) >> 3;
+    bytes_per_dest = ROUNDUP(req->width * image->bits_per_pixel,
+			     dpy->bitmap_pad) >> 3;
+    length = bytes_per_dest * req->height;
+    req->length += (length + 3) >> 2;
+    src = (unsigned char *)image->data +
+	  (req_yoffset * image->bytes_per_line) +
+	  ((req_xoffset * image->bits_per_pixel) >> 3);
+
+    if (((image->byte_order == dpy->byte_order) ||
+	 (image->bits_per_pixel == 8)) &&
+	((long)image->bytes_per_line == bytes_per_dest) &&
+	((req_xoffset == 0) ||
+	 ((req_yoffset + req->height) < image->height))) {
+	Data(dpy, (char *)src, length);
+	return;
+    }
+
+    length = (length + 3) & ~3L;
+    if ((dpy->bufptr + length) <= dpy->bufmax)
+	dest = (unsigned char *)dpy->bufptr;
+    else
+	dest = (unsigned char *)_XAllocScratch(dpy, (unsigned long)(length));
+
+    if ((image->byte_order == dpy->byte_order) ||
+	(image->bits_per_pixel == 8))
+	NoSwap(src, dest, bytes_per_src, (long)image->bytes_per_line,
+	       bytes_per_dest, req->height);
+    else if (image->bits_per_pixel == 32)
+	SwapFourBytes(src, dest, bytes_per_src, (long)image->bytes_per_line,
+		      bytes_per_dest, req->height);
+    else if (image->bits_per_pixel == 24)
+	SwapThreeBytes(src, dest, bytes_per_src, (long)image->bytes_per_line,
+		       bytes_per_dest, req->height);
+    else if (image->bits_per_pixel == 16)
+	SwapTwoBytes(src, dest, bytes_per_src, (long)image->bytes_per_line,
+		     bytes_per_dest, req->height);
+    else
+	SwapNibbles(src, dest, bytes_per_src, (long)image->bytes_per_line,
+		    bytes_per_dest, req->height);
+    if (dest == (unsigned char *)dpy->bufptr)
+	dpy->bufptr += length;
+    else
+	_XSend(dpy, (char *)dest, length);
+}
+
+static void
+PutImageRequest(dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
+								   req_height)
+    register Display *dpy;
+    Drawable d;
+    GC gc;
+    register XImage *image;
+    int x, y;
+    unsigned int req_width, req_height;
+    int req_xoffset, req_yoffset;
+{
+    register xPutImageReq *req;
+
+    GetReq(PutImage, req);
+    req->drawable = d;
+    req->gc = gc->gid;
+    req->dstX = x;
+    req->dstY = y;
+    req->width = req_width;
+    req->height = req_height;
+    req->depth = image->depth;
+    req->format = image->format;
+    if ((image->depth == 1) || (image->format != ZPixmap))
+	SendXYImage(dpy, req, image, req_xoffset, req_yoffset);
+    else
+	SendZImage(dpy, req, image, req_xoffset, req_yoffset);
+}
+	
+static void
+PutSubImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
 								req_height)
     register Display *dpy;
     Drawable d;
@@ -505,15 +542,104 @@ XPutImage (dpy, d, gc, image, req_xoffset,req_yoffset, x, y, req_width,
     int req_xoffset, req_yoffset;
 
 {
-    /* Does the display need to be locked and the GC flushed here? */
+    int left_pad, BytesPerRow, Available;
+
+    if ((req_width == 0) || (req_height == 0))
+	return;
+    
+    Available = ((65536 < dpy->max_request_size) ? (65536 << 2)
+						 : (dpy->max_request_size << 2))
+		- sizeof(xPutImageReq);
+
+    if ((image->depth == 1) || (image->format != ZPixmap)) {
+	left_pad = (image->xoffset + req_xoffset) % dpy->bitmap_pad;
+	BytesPerRow = (ROUNDUP(req_width + left_pad, dpy->bitmap_pad) >> 3)
+			* image->depth;
+    } else {
+	left_pad = 0;
+	BytesPerRow = ROUNDUP(req_width * image->bits_per_pixel,
+			      dpy->bitmap_pad) >> 3;
+    }
+
+    if ((BytesPerRow * req_height) <= Available) {
+        PutImageRequest(dpy, d, gc, image, req_xoffset, req_yoffset, x, y, 
+			req_width, req_height);
+    } else if (req_height > 1) {
+	int SubImageHeight = Available / BytesPerRow;
+
+	if (SubImageHeight == 0)
+	    SubImageHeight = 1;
+
+	PutSubImage(dpy, d, gc, image, req_xoffset, req_yoffset, x, y, 
+		    req_width, (unsigned int) SubImageHeight);
+
+	PutSubImage(dpy, d, gc, image, req_xoffset, 
+		    req_yoffset + SubImageHeight, x, y + SubImageHeight,
+		    req_width, req_height - SubImageHeight);
+    } else {
+	int SubImageWidth = (((Available << 3) / dpy->bitmap_pad)
+				* dpy->bitmap_pad) - left_pad;
+
+	PutSubImage(dpy, d, gc, image, req_xoffset, req_yoffset, x, y, 
+		    (unsigned int) SubImageWidth, 1);
+
+	PutSubImage(dpy, d, gc, image, req_xoffset + SubImageWidth, 
+		    req_yoffset, x + SubImageWidth, y,
+		    req_width - SubImageWidth, 1);
+    }
+}
+
+XPutImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
+							      req_height)
+    register Display *dpy;
+    Drawable d;
+    GC gc;
+    register XImage *image;
+    int x, y;
+    unsigned int req_width, req_height;
+    int req_xoffset, req_yoffset;
+
+{
+    long width = req_width;
+    long height = req_height;
+
+    if (req_xoffset < 0) {
+	width += req_xoffset;
+	req_xoffset = 0;
+    }
+    if (req_yoffset < 0) {
+	height += req_yoffset;
+	req_yoffset = 0;
+    }
+    if ((req_xoffset + width) > image->width)
+	width = image->width - req_xoffset;
+    if ((req_yoffset + height) > image->height)
+	height = image->height - req_yoffset;
+    if ((width <= 0) || (height <= 0))
+	return;
+
+    /* XXX until SendZImage gets hairy */
+    if (image->depth > 1) {
+	int n;
+
+	for (n = 0;
+	     (n < dpy->nformats) &&
+	     ((dpy->pixmap_format[n].depth != image->depth) ||
+	      (dpy->pixmap_format[n].bits_per_pixel != image->bits_per_pixel));
+	     n++) ;
+	if (n >= dpy->nformats) {
+	    fputs("XPutImage: bits_per_pixel conversion unimplemented.\n",
+		  stderr);
+	    return;
+	}
+    }
+
     LockDisplay(dpy);
-    if ((req_width == 0) || (req_height == 0)) return;
+    FlushGC(dpy, gc);
 
-    PutSubImage(dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
-	req_height);
+    PutSubImage(dpy, d, gc, image, req_xoffset, req_yoffset, x, y,
+		(unsigned int) width, (unsigned int) height);
 
-    /* Does the display need to be unlocked here? Are any status values
-	returned? */
     UnlockDisplay(dpy);
-    return;
+    SyncHandle();
 }
