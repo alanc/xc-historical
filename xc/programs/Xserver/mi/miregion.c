@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.53 90/05/15 18:37:20 keith Exp $ */
+/* $XConsortium: miregion.c,v 1.54 91/07/03 12:35:08 keith Exp $ */
 
 #include <stdio.h>
 #include "miscstruct.h"
@@ -1533,11 +1533,6 @@ NextRect: ;
     return TRUE;
 }
 
-/* XXX truncates regions to 14 bits to avoid overflow when added
- * to a reasonable window origin.  This, along with all 16 bit
- * representation issues, is still a "bug"
- */
-
 RegionPtr
 miRectsToRegion(nrects, prect, ctype)
     int			nrects;
@@ -1557,10 +1552,10 @@ miRectsToRegion(nrects, prect, ctype)
     {
 	x1 = prect->x;
 	y1 = prect->y;
-	if ((x2 = x1 + (int) prect->width) > MAXSHORT / 2)
-	    x2 = MAXSHORT / 2;
-	if ((y2 = y1 + (int) prect->height) > MAXSHORT / 2)
-	    y2 = MAXSHORT / 2;
+	if ((x2 = x1 + (int) prect->width) > MAXSHORT)
+	    x2 = MAXSHORT;
+	if ((y2 = y1 + (int) prect->height) > MAXSHORT)
+	    y2 = MAXSHORT;
 	if (x1 != x2 && y1 != y2)
 	{
 	    pRgn->extents.x1 = x1;
@@ -1579,10 +1574,10 @@ miRectsToRegion(nrects, prect, ctype)
     {
 	x1 = prect->x;
 	y1 = prect->y;
-	if ((x2 = x1 + (int) prect->width) > MAXSHORT / 2)
-	    x2 = MAXSHORT / 2;
-	if ((y2 = y1 + (int) prect->height) > MAXSHORT / 2)
-	    y2 = MAXSHORT / 2;
+	if ((x2 = x1 + (int) prect->width) > MAXSHORT)
+	    x2 = MAXSHORT;
+	if ((y2 = y1 + (int) prect->height) > MAXSHORT)
+	    y2 = MAXSHORT;
 	if (x1 != x2 && y1 != y2)
 	{
 	    pBox->x1 = x1;
@@ -1981,27 +1976,83 @@ miTranslateRegion(pReg, x, y)
     register int x;
     register int y;
 {
-    good(pReg);
-    if (pReg->data)
-    {
-	register int nbox;
-	register BoxPtr pbox;
+    int x1, x2, y1, y2;
+    register int nbox;
+    register BoxPtr pbox;
 
-	nbox = pReg->data->numRects;
-	if (!nbox)
-	    return;
-	for (pbox = REGION_BOXPTR(pReg); nbox--; pbox++)
+    good(pReg);
+    pReg->extents.x1 = x1 = pReg->extents.x1 + x;
+    pReg->extents.y1 = y1 = pReg->extents.y1 + y;
+    pReg->extents.x2 = x2 = pReg->extents.x2 + x;
+    pReg->extents.y2 = y2 = pReg->extents.y2 + y;
+    if (((x1 - MINSHORT)|(y1 - MINSHORT)|(MAXSHORT - x2)|(MAXSHORT - y2)) >= 0)
+    {
+	if (pReg->data && (nbox = pReg->data->numRects))
 	{
-	    pbox->x1 += x;
-	    pbox->y1 += y;
-	    pbox->x2 += x;
-	    pbox->y2 += y;
+	    for (pbox = REGION_BOXPTR(pReg); nbox--; pbox++)
+	    {
+		pbox->x1 += x;
+		pbox->y1 += y;
+		pbox->x2 += x;
+		pbox->y2 += y;
+	    }
+	}
+	return;
+    }
+    if (((x2 - MINSHORT)|(y2 - MINSHORT)|(MAXSHORT - x1)|(MAXSHORT - y1)) <= 0)
+    {
+	pReg->extents.x2 = pReg->extents.x1;
+	pReg->extents.y2 = pReg->extents.y1;
+	xfreeData(pReg);
+	pReg->data = &EmptyData;
+	return;
+    }
+    if (x1 < MINSHORT)
+	pReg->extents.x1 = MINSHORT;
+    else if (x2 > MAXSHORT)
+	pReg->extents.x2 = MAXSHORT;
+    if (y1 < MINSHORT)
+	pReg->extents.y1 = MINSHORT;
+    else if (y2 > MAXSHORT)
+	pReg->extents.y2 = MAXSHORT;
+    if (pReg->data && (nbox = pReg->data->numRects))
+    {
+	register BoxPtr pboxout;
+
+	for (pboxout = pbox = REGION_BOXPTR(pReg); nbox--; pbox++)
+	{
+	    pboxout->x1 = x1 = pbox->x1 + x;
+	    pboxout->y1 = y1 = pbox->y1 + y;
+	    pboxout->x2 = x2 = pbox->x2 + x;
+	    pboxout->y2 = y2 = pbox->y2 + y;
+	    if (((x2 - MINSHORT)|(y2 - MINSHORT)|
+		 (MAXSHORT - x1)|(MAXSHORT - y1)) <= 0)
+	    {
+		pReg->data->numRects--;
+		continue;
+	    }
+	    if (x1 < MINSHORT)
+		pboxout->x1 = MINSHORT;
+	    else if (x2 > MAXSHORT)
+		pboxout->x2 = MAXSHORT;
+	    if (y1 < MINSHORT)
+		pboxout->y1 = MINSHORT;
+	    else if (y2 > MAXSHORT)
+		pboxout->y2 = MAXSHORT;
+	    pboxout++;
+	}
+	if (pboxout != pbox)
+	{
+	    if (pReg->data->numRects == 1)
+	    {
+		pReg->extents = *REGION_BOXPTR(pReg);
+		xfreeData(pReg);
+		pReg->data = (RegDataPtr)NULL;
+	    }
+	    else
+		miSetExtents(pReg);
 	}
     }
-    pReg->extents.x1 += x;
-    pReg->extents.y1 += y;
-    pReg->extents.x2 += x;
-    pReg->extents.y2 += y;
 }
 
 void
