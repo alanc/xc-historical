@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.c,v 1.25 92/11/18 21:31:08 gildea Exp $ */
+/* $XConsortium: fsio.c,v 1.26 93/08/24 18:49:15 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -27,6 +27,9 @@
  * font server i/o routines
  */
 
+#ifdef WIN32
+#define _WILLWINSOCK_
+#endif
 #include	<X11/Xos.h>
 
 #ifdef NCD
@@ -38,33 +41,47 @@
 #include	<stdio.h>
 #include	<signal.h>
 #include	<sys/types.h>
+#ifndef WIN32
 #include	<sys/socket.h>
-/* #include	<netinet/tcp.h> */
+#endif
 #include	<errno.h>
 #include	"FSlibos.h"
 #include	"fontmisc.h"
 #include	"fsio.h"
+#ifdef WIN32
+#define EWOULDBLOCK WSAEWOULDBLOCK
+#undef EINTR
+#define EINTR WSAEINTR
+#endif
 
 extern int  errno;
 
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
  * systems are broken and return EWOULDBLOCK when they should return EAGAIN
  */
-
+#ifdef WIN32
+#define ETEST() (WSAGetLastError() == WSAEWOULDBLOCK)
+#else
 #if defined(EAGAIN) && defined(EWOULDBLOCK)
-#define ETEST(err) (err == EAGAIN || err == EWOULDBLOCK)
+#define ETEST() (errno == EAGAIN || errno == EWOULDBLOCK)
 #else
-
 #ifdef EAGAIN
-#define ETEST(err) (err == EAGAIN)
+#define ETEST() (errno == EAGAIN)
 #else
-#define ETEST(err) (err == EWOULDBLOCK)
+#define ETEST() (errno == EWOULDBLOCK)
 #endif
-
+#endif
+#endif
+#ifdef WIN32
+#define ECHECK(err) (WSAGetLastError() == err)
+#define ESET(val) WSASetLastError(val)
+#else
+#define ECHECK(err) (errno == err)
+#define ESET(val) errno = val
 #endif
 
 static int  padlength[4] = {0, 3, 2, 1};
-unsigned long _fs_fd_mask[MSKCNT];
+FdSet _fs_fd_mask;
 
 int  _fs_wait_for_readable();
 
@@ -114,7 +131,8 @@ _fs_name_to_address(servername, inaddr)
 	inaddr->sin_addr.s_addr = hostinetaddr;
 	inaddr->sin_family = AF_INET;
     }
-    inaddr->sin_port = htons(servernum);
+    inaddr->sin_port = servernum;
+    inaddr->sin_port = htons(inaddr->sin_port);
 #ifdef BSD44SOCKETS
     inaddr->sin_len = sizeof(*inaddr);
 #endif
@@ -144,11 +162,20 @@ _fs_connect(servername, timeout)
     int         fd;
     struct sockaddr *addr;
     struct sockaddr_in inaddr;
+#ifdef SIGALRM
     unsigned    oldTime;
 
     SIGNAL_T(*oldAlarm) ();
+#endif
     int         ret;
+#ifdef WIN32
+    static WSADATA wsadata;
+#endif
 
+#ifdef WIN32
+    if (!wsadata.wVersion && WSAStartup(MAKEWORD(1,1), &wsadata))
+	return -1;
+#endif
     if (_fs_name_to_address(servername, &inaddr) < 0)
 	return -1;
 
@@ -156,35 +183,46 @@ _fs_connect(servername, timeout)
     if ((fd = socket((int) addr->sa_family, SOCK_STREAM, 0)) < 0)
 	return -1;
 
+#ifdef SIGALRM
     oldTime = alarm((unsigned) 0);
     oldAlarm = signal(SIGALRM, _fs_alarm);
     alarm((unsigned) timeout);
+#endif
     ret = connect(fd, addr, sizeof(struct sockaddr_in));
+#ifdef SIGALRM
     alarm((unsigned) 0);
     signal(SIGALRM, oldAlarm);
     alarm(oldTime);
+#endif
     if (ret == -1) {
 	(void) close(fd);
 	return -1;
     }
+
+    /*
+     * Set the connection non-blocking since we use select() to block.
+     */
     /* ultrix reads hang on Unix sockets, hpux reads fail */
-
-#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux))
-    (void) fcntl(fd, F_SETFL, O_NONBLOCK);
+#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux) && !defined(AIXV3) && !defined(uniosu))
+    (void) fcntl (fd, F_SETFL, O_NONBLOCK);
 #else
-
 #ifdef FIOSNBIO
     {
-	int         arg = 1;
-
-	ioctl(fd, FIOSNBIO, &arg);
+	int arg = 1;
+	ioctl (fd, FIOSNBIO, &arg);
     }
 #else
-    (void) fcntl(fd, F_SETFL, FNDELAY);
+#if (defined(AIXV3) || defined(uniosu) || defined(WIN32)) && defined(FIONBIO)
+    {
+	int arg;
+	arg = 1;
+	ioctl(fd, FIONBIO, &arg);
+    }
+#else
+    (void) fcntl (fd, F_SETFL, FNDELAY);
 #endif
-
 #endif
-
+#endif
     return fd;
 }
 
@@ -387,26 +425,26 @@ _fs_read(conn, data, size)
 
 	return 0;
     }
-    errno = 0;
+    ESET(0);
     while ((bytes_read = read(conn->fs_fd, data, (int) size)) != size) {
 	if (bytes_read > 0) {
 	    size -= bytes_read;
 	    data += bytes_read;
-	} else if (ETEST(errno)) {
+	} else if (ETEST()) {
 	    /* in a perfect world, this shouldn't happen */
 	    /* ... but then, its less than perfect... */
 	    if (_fs_wait_for_readable(conn) == -1) {	/* check for error */
 		_fs_connection_died(conn);
-		errno = EPIPE;
+		ESET(EPIPE);
 		return -1;
 	    }
-	    errno = 0;
-	} else if (errno == EINTR) {
+	    ESET(0);
+	} else if (ECHECK(EINTR)) {
 	    continue;
 	} else {		/* something bad happened */
 	    if (conn->fs_fd > 0)
 		_fs_connection_died(conn);
-	    errno = EPIPE;
+	    ESET(EPIPE);
 	    return -1;
 	}
     }
@@ -428,22 +466,22 @@ _fs_write(conn, data, size)
 
 	return 0;
     }
-    errno = 0;
+    ESET(0);
     while ((bytes_written = write(conn->fs_fd, data, (int) size)) != size) {
 	if (bytes_written > 0) {
 	    size -= bytes_written;
 	    data += bytes_written;
-	} else if (ETEST(errno)) {
+	} else if (ETEST()) {
 	    /* XXX -- we assume this can't happen */
 
 #ifdef DEBUG
 	    fprintf(stderr, "fs_write blocking\n");
 #endif
-	} else if (errno == EINTR) {
+	} else if (ECHECK(EINTR)) {
 	    continue;
 	} else {		/* something bad happened */
 	    _fs_connection_died(conn);
-	    errno = EPIPE;
+	    ESET(EPIPE);
 	    return -1;
 	}
     }
@@ -502,8 +540,8 @@ int
 _fs_wait_for_readable(conn)
     FSFpePtr    conn;
 {
-    unsigned long r_mask[MSKCNT];
-    unsigned long e_mask[MSKCNT];
+    FdSet r_mask;
+    FdSet e_mask;
     int         result;
 
 #ifdef DEBUG
@@ -515,9 +553,13 @@ _fs_wait_for_readable(conn)
     do {
 	BITSET(r_mask, conn->fs_fd);
 	BITSET(e_mask, conn->fs_fd);
+#ifdef WIN32
+	result = select(0, &r_mask, NULL, &e_mask, NULL);
+#else
 	result = select(conn->fs_fd + 1, r_mask, NULL, e_mask, NULL);
+#endif
 	if (result == -1) {
-	    if (errno != EINTR)
+	    if (!ECHECK(EINTR))
 		return -1;
 	    else
 		continue;
@@ -531,15 +573,16 @@ _fs_wait_for_readable(conn)
 
 int
 _fs_set_bit(mask, fd)
-    unsigned long *mask;
+    FdSet *mask;
     int         fd;
 {
-    return BITSET(mask, fd);
+    BITSET(mask, fd);
+    return fd;
 }
 
 int
 _fs_is_bit_set(mask, fd)
-    unsigned long *mask;
+    FdSet *mask;
     int         fd;
 {
     return GETBIT(mask, fd);
@@ -547,7 +590,7 @@ _fs_is_bit_set(mask, fd)
 
 void
 _fs_bit_clear(mask, fd)
-    unsigned long *mask;
+    FdSet *mask;
     int         fd;
 {
     BITCLEAR(mask, fd);
@@ -555,7 +598,7 @@ _fs_bit_clear(mask, fd)
 
 int
 _fs_any_bit_set(mask)
-    unsigned long *mask;
+    FdSet *mask;
 {
 
 #ifdef ANYSET
@@ -572,11 +615,25 @@ _fs_any_bit_set(mask)
 
 int
 _fs_or_bits(dst, m1, m2)
-    unsigned long *dst,
-               *m1,
-               *m2;
+    FdSet *dst, *m1, *m2;
 {
+#ifdef WIN32
+    int i;
+    if (dst != m1) {
+	for (i = m1->fd_count; --i >= 0; ) {
+	    if (!FD_ISSET(m1->fd_array[i], dst))
+		FD_SET(m1->fd_array[i], dst);
+	}
+    }
+    if (dst != m2) {
+	for (i = m2->fd_count; --i >= 0; ) {
+	    if (!FD_ISSET(m2->fd_array[i], dst))
+		FD_SET(m2->fd_array[i], dst);
+	}
+    }
+#else
     ORBITS(dst, m1, m2);
+#endif
 }
 
 _fs_drain_bytes(conn, len)

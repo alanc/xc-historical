@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.26 92/11/18 21:31:02 gildea Exp $ */
+/* $XConsortium: fserve.c,v 1.27 93/08/24 18:49:09 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -25,6 +25,9 @@
  * font server specific font access
  */
 
+#ifdef WIN32
+#define _WILLWINSOCK_
+#endif
 #include	<X11/X.h>
 #include	<X11/Xos.h>
 #include	"FS.h"
@@ -1919,7 +1922,7 @@ fs_load_all_glyphs(pfont)
     while ((err = _fs_load_glyphs(serverClient, pfont, TRUE, 0, 0, NULL)) ==
 	   Suspended)
     {
-	long TempSelectMask[MSKCNT];
+	FdSet TempSelectMask;
 	if (_fs_wait_for_readable(conn) == -1)
 	{
 	    /* We lost our connection.  Don't wait to reestablish it;
@@ -1931,8 +1934,13 @@ fs_load_all_glyphs(pfont)
 
 	    return BadCharRange;	/* As good an error as any other */
 	}
+#ifdef WIN32
+	_fs_set_bit(&TempSelectMask, conn->fs_fd);
+	fs_wakeup(pfont->fpe, &TempSelectMask);
+#else
 	_fs_set_bit(TempSelectMask, conn->fs_fd);
 	fs_wakeup(pfont->fpe, TempSelectMask);
+#endif
     }
 
     return err;

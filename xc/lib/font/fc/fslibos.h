@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibos.h,v 1.5 91/06/21 18:15:49 keith Exp $ */
+/* $XConsortium: FSlibos.h,v 1.6 91/07/19 16:39:04 rws Exp $ */
 /* @(#)FSlibos.h	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -8,6 +8,8 @@
 /*
  * FSlib networking & os include file
  */
+
+#ifndef WIN32
 
 /* Sorry, we do not really support streams yet */
 #ifdef STREAMSCONN
@@ -70,6 +72,8 @@
 #endif
 
 #define MSKCNT ((OPEN_MAX + 31) / 32)
+
+typedef unsigned long FdSet[MSKCNT];
 
 #if (MSKCNT==1)
 #define BITMASK(i) (1 << (i))
@@ -173,3 +177,25 @@
 #endif
 #endif
 
+#else /* not WIN32 */
+
+#define BOOL wBOOL
+#undef Status
+#define Status wStatus
+#include <winsock.h>
+#undef Status
+#define Status int
+#undef BOOL
+#include <X11/Xw32defs.h>
+
+#define BytesReadable(fd,ptr) ioctlsocket((SOCKET)fd, FIONREAD, (u_long *)ptr)
+
+typedef fd_set FdSet;
+
+#define CLEARBITS(set) FD_ZERO(&set)
+#define BITSET(set,s) FD_SET(s,&set)
+#define BITCLEAR(set,s) FD_CLR(s,&set)
+#define GETBIT(set,s) FD_ISSET(s,&set)
+#define ANYSET(set) set->fd_count
+
+#endif
