@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.30 92/03/25 10:18:02 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.31 92/03/25 15:45:35 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -466,7 +466,8 @@ undo_stroke()
 	curbscount--;
 	if (!in_control_seq) {
 	    if ((history_end < 3) ||
-		(history[history_end-2] != '\015') ||
+		(history[history_end-2] != '\015' &&
+		 history[history_end-2] != '\003') ||
 		(history[history_end-3] != control_char))
 		do_char('\b');
 	}
@@ -536,7 +537,7 @@ parse_string(buf, ip, lenp, term)
 		buf[j++] = '\177';
 	    else {
 		if (c >= 'a' && c <= 'z')
-		    i -= 'a' - 'A';
+		    c -= 'a' - 'A';
 		buf[j++] = c - '@';
 	    }
 	} else if (c == '\\')
