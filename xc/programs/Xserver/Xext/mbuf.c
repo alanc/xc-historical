@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: mbuf.c,v 1.18 93/07/12 09:38:27 dpw Exp $ */
+/* $XConsortium: mbuf.c,v 1.19 93/09/20 20:16:09 dpw Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -1064,11 +1064,11 @@ PerformDisplayRequest (ppMultibuffers, pMultibuffer, nbuf)
 		    extern RegionPtr	CreateUnclippedWinSize();
 
 		    pWinSize = CreateUnclippedWinSize (pWin);
-		    (*pWin->drawable.pScreen->Intersect) (pExposed,
+		    REGION_INTERSECT(pWin->drawable.pScreen, pExposed,
 							  pExposed, pWinSize);
-		    (*pWin->drawable.pScreen->RegionDestroy) (pWinSize);
+		    REGION_DESTROY(pWin->drawable.pScreen, pWinSize);
 	    	    MultibufferExpose (pPrevMultibuffer, pExposed);
-	    	    (*pWin->drawable.pScreen->RegionDestroy) (pExposed);
+	    	    REGION_DESTROY(pWin->drawable.pScreen, pExposed);
 	    	}
 	    	bool = FALSE;
 	    	DoChangeGC (pGC, GCGraphicsExposures, &bool, FALSE);
@@ -1347,7 +1347,7 @@ MultibufferExpose (pMultibuffer, pRegion)
 	int numRects;
 
 	pPixmap = pMultibuffer->pPixmap;
-	(* pPixmap->drawable.pScreen->TranslateRegion)(pRegion,
+	REGION_TRANSLATE(pPixmap->drawable.pScreen, pRegion,
 		    -pPixmap->drawable.x, -pPixmap->drawable.y);
 	/* XXX MultibufferExpose "knows" the region representation */
 	numRects = REGION_NUM_RECTS(pRegion);

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpushpxl.c,v 5.2 89/09/14 16:26:57 rws Exp $ */
+/* $XConsortium: mfbpushpxl.c,v 5.3 92/12/23 17:48:50 rws Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -96,11 +96,11 @@ mfbSolidPP(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
     srcBox.y1 = yOrg;
     srcBox.x2 = xOrg + dx;
     srcBox.y2 = yOrg + dy;
-    (*pGC->pScreen->RegionInit)(&rgnDst, &srcBox, 1);
+    REGION_INIT(pGC->pScreen, &rgnDst, &srcBox, 1);
 
     /* clip the shape of the dst to the destination composite clip */
-    (*pGC->pScreen->Intersect)(&rgnDst, &rgnDst,
-			       ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
+    REGION_INTERSECT(pGC->pScreen, &rgnDst, &rgnDst,
+	((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
 
     if (!REGION_NIL(&rgnDst))
     {
@@ -119,7 +119,7 @@ mfbSolidPP(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 	    DEALLOCATE_LOCAL(pptSrc);
 	}
     }
-    (*pGC->pScreen->RegionUninit)(&rgnDst);
+    REGION_UNINIT(pGC->pScreen, &rgnDst);
 }
 
 #define NPT 128

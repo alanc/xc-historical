@@ -15,7 +15,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbpush8.c,v 5.11 93/07/12 16:28:34 dpw Exp $ */
+/* $XConsortium: cfbpush8.c,v 5.12 93/12/13 17:22:23 dpw Exp $ */
 
 #if PSZ == 8
 
@@ -60,7 +60,7 @@ cfbPushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
     bbox.y2 = bbox.y1 + dy;
     devPriv = cfbGetGCPrivate(pGC);
     
-    switch ((*pGC->pScreen->RectIn)(devPriv->pCompositeClip, &bbox))
+    switch (RECT_IN_REGION(pGC->pScreen, devPriv->pCompositeClip, &bbox))
     {
       case rgnPART:
 	mfbPushPixels(pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg);

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbplygblt.c,v 5.8 93/09/13 09:32:11 dpw Exp $ */
+/* $XConsortium: mfbplygblt.c,v 5.9 93/09/20 20:22:11 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -133,8 +133,8 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     bbox.y1 = y - info.overallAscent;
     bbox.y2 = y + info.overallDescent;
 
-    switch ((*pGC->pScreen->RectIn)(
-                ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
+    switch (RECT_IN_REGION(pGC->pScreen, 
+           ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
     {
       case rgnOUT:
 	break;
@@ -364,5 +364,3 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	break;
     }
 }
-
-

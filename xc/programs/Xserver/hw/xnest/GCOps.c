@@ -1,4 +1,4 @@
-/* $XConsortium: GCOps.c,v 1.4 93/09/03 08:13:28 dpw Exp $ */
+/* $XConsortium: GCOps.c,v 1.5 93/09/20 20:18:46 dpw Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -151,8 +151,8 @@ RegionPtr xnestBitBlitHelper(pGC)
     BoxRec Box;
     Bool pending, overlap;
 
-    pReg = (*pGC->pScreen->RegionCreate)(NULL, 1);
-    pTmpReg = (*pGC->pScreen->RegionCreate)(NULL, 1);
+    pReg = REGION_CREATE(pGC->pScreen, NULL, 1);
+    pTmpReg = REGION_CREATE(pGC->pScreen, NULL, 1);
     if(!pReg || !pTmpReg) return NullRegion;
     
     pending = True;
@@ -169,15 +169,15 @@ RegionPtr xnestBitBlitHelper(pGC)
 	Box.y1 = event.xgraphicsexpose.y;
 	Box.x2 = event.xgraphicsexpose.x + event.xgraphicsexpose.width;
 	Box.y2 = event.xgraphicsexpose.y + event.xgraphicsexpose.height;
-	(*pGC->pScreen->RegionReset)(pTmpReg, &Box);
-	(*pGC->pScreen->RegionAppend)(pReg, pTmpReg);
+	REGION_RESET(pGC->pScreen, pTmpReg, &Box);
+	REGION_APPEND(pGC->pScreen, pReg, pTmpReg);
 	pending = event.xgraphicsexpose.count;
 	break;
       }
     }
 
-    (*pGC->pScreen->RegionDestroy)(pTmpReg);
-    (*pGC->pScreen->RegionValidate)(pReg, &overlap);
+    REGION_DESTROY(pGC->pScreen, pTmpReg);
+    REGION_VALIDATE(pGC->pScreen, pReg, &overlap);
     return(pReg);
   }
 }

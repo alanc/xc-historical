@@ -1,4 +1,4 @@
-/* $XConsortium: sunCursor.c,v 5.15 93/09/03 20:58:47 kaleb Exp $ */
+/* $XConsortium: sunCursor.c,v 5.16 93/10/29 17:40:22 kaleb Exp $ */
 /*-
  * sunCursor.c --
  *	Functions for maintaining the Sun software cursor...
@@ -68,9 +68,9 @@ sunCursorRepad (pScreen, bits, src_bits, dst_bits, ptSrc, w, h)
     box.y1 = 0;
     box.x2 = w;
     box.y2 = h;
-    (*pScreen->RegionInit)(&rgnDst, &box, 1);
+    REGION_INIT(pScreen, &rgnDst, &box, 1);
     mfbDoBitblt(src, dst, GXcopy, &rgnDst, ptSrc);
-    (*pScreen->RegionUninit)(&rgnDst);
+    REGION_UNINIT(pScreen, &rgnDst);
     FreeScratchPixmapHeader(src);
     FreeScratchPixmapHeader(dst);
 }
@@ -244,4 +244,3 @@ void sunDisableCursor (pScreen)
     }
 #endif
 }
-

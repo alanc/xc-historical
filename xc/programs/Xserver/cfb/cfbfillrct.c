@@ -16,7 +16,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbfillrct.c,v 5.15 93/09/13 09:34:59 dpw Exp $ */
+/* $XConsortium: cfbfillrct.c,v 5.16 93/12/13 17:21:55 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -214,7 +214,7 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     {
 	int x1, y1, x2, y2, bx2, by2;
 
-	pextent = (*pGC->pScreen->RegionExtents)(prgnClip);
+	pextent = REGION_EXTENTS(pGC->pScreen, prgnClip);
 	x1 = pextent->x1;
 	y1 = pextent->y1;
 	x2 = pextent->x2;

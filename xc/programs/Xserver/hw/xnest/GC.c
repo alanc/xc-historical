@@ -1,4 +1,4 @@
-/* $XConsortium: GC.c,v 1.2 93/09/03 08:13:04 dpw Exp $ */
+/* $XConsortium: GC.c,v 1.3 93/09/20 20:18:41 dpw Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -285,7 +285,7 @@ void xnestDestroyClipHelper(pGC)
       break;
       
     case CT_REGION:
-      (*pGC->pScreen->RegionDestroy)(pGC->clientClip); 
+      REGION_DESTROY(pGC->pScreen, pGC->clientClip); 
       break;
       
     case CT_PIXMAP:
@@ -316,8 +316,8 @@ void xnestCopyClip(pGCDst, pGCSrc)
       break;
 
     case CT_REGION:
-      pRgn = (*pGCDst->pScreen->RegionCreate)(NULL, 1);
-      (*pGCDst->pScreen->RegionCopy)(pRgn, pGCSrc->clientClip);
+      pRgn = REGION_CREATE(pGCDst->pScreen, NULL, 1);
+      REGION_COPY(pGCDst->pScreen, pRgn, pGCSrc->clientClip);
       xnestChangeClip(pGCDst, CT_REGION, pRgn, 0);
       break;
 

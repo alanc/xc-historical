@@ -1,4 +1,4 @@
-/* $XConsortium: mfbtegblt.c,v 5.9 93/09/13 09:32:14 dpw Exp $ */
+/* $XConsortium: mfbtegblt.c,v 5.10 93/09/20 20:22:15 dpw Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -164,8 +164,8 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     bbox.y1 = ypos;
     bbox.y2 = ypos + h;
 
-    switch ((*pGC->pScreen->RectIn)(
-                ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
+    switch (RECT_IN_REGION(pGC->pScreen, 
+           ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
     {
       case rgnPART:
 	/* this is the WRONG thing to do, but it works.

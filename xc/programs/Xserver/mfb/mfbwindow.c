@@ -1,4 +1,4 @@
-/* $XConsortium: mfbwindow.c,v 5.8 89/09/13 18:58:36 rws Exp $ */
+/* $XConsortium: mfbwindow.c,v 5.9 92/03/31 17:54:35 keith Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -159,12 +159,12 @@ mfbCopyWindow(pWin, ptOldOrg, prgnSrc)
 
     pwinRoot = WindowTable[pWin->drawable.pScreen->myNum];
 
-    prgnDst = (* pWin->drawable.pScreen->RegionCreate)(NULL, 1);
+    prgnDst = REGION_CREATE(pWin->drawable.pScreen, NULL, 1);
 
     dx = ptOldOrg.x - pWin->drawable.x;
     dy = ptOldOrg.y - pWin->drawable.y;
-    (* pWin->drawable.pScreen->TranslateRegion)(prgnSrc, -dx, -dy);
-    (* pWin->drawable.pScreen->Intersect)(prgnDst, &pWin->borderClip, prgnSrc);
+    REGION_TRANSLATE(pWin->drawable.pScreen, prgnSrc, -dx, -dy);
+    REGION_INTERSECT(pWin->drawable.pScreen, prgnDst, &pWin->borderClip, prgnSrc);
 
     pbox = REGION_RECTS(prgnDst);
     nbox = REGION_NUM_RECTS(prgnDst);
@@ -181,7 +181,7 @@ mfbCopyWindow(pWin, ptOldOrg, prgnSrc)
     mfbDoBitblt((DrawablePtr)pwinRoot, (DrawablePtr)pwinRoot,
 		GXcopy, prgnDst, pptSrc);
     DEALLOCATE_LOCAL(pptSrc);
-    (* pWin->drawable.pScreen->RegionDestroy)(prgnDst);
+    REGION_DESTROY(pWin->drawable.pScreen, prgnDst);
 }
 
 

@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbzerarc.c,v 5.19 91/12/19 14:17:28 keith Exp $ */
+/* $XConsortium: cfbzerarc.c,v 5.20 93/12/13 17:22:43 dpw Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -181,7 +181,7 @@ RROP_NAME (cfbZeroPolyArcSS8) (pDraw, pGC, narcs, parcs)
 	    box.y1 = arc->y + pDraw->y;
 	    box.x2 = box.x1 + (int)arc->width + 1;
 	    box.y2 = box.y1 + (int)arc->height + 1;
-	    if ((*pDraw->pScreen->RectIn)(cclip, &box) == rgnIN)
+	    if (RECT_IN_REGION(pDraw->pScreen, cclip, &box) == rgnIN)
 		RROP_NAME (cfbZeroArcSS8) (pDraw, pGC, arc);
 	    else
 		miZeroPolyArc(pDraw, pGC, 1, arc);

@@ -1,4 +1,4 @@
-/* $XConsortium: midraw.c,v 1.3 93/10/31 09:45:07 dpw Exp $ */
+/* $XConsortium: midraw.c,v 1.6 93/11/06 15:33:33 rws Exp $ */
 /**** module midraw.c ****/
 /******************************************************************************
 				NOTICE
@@ -211,7 +211,7 @@ static int InitializeIDraw(flo,ped)
 
   if(notify && dix->pDraw->type != DRAWABLE_PIXMAP) {
     ddx->pExposed = &ddx->Exposed;
-    (*dix->pDraw->pScreen->RegionInit) (ddx->pExposed, NullBox, 0);
+    REGION_INIT(dix->pDraw->pScreen, ddx->pExposed, NullBox, 0);
   }
   /* note: ImportResource elements don't use their receptors */
   return InitEmitter(flo,ped,NO_DATAMAP,NO_INPLACE);
@@ -365,7 +365,7 @@ static void FlushExposeEvents(flo,ped)
 					rects->y2 - rects->y1);
 	    }
 	}
-    	(*pDraw->pScreen->RegionUninit) (rp);
+    	REGION_UNINIT(pDraw->pScreen, rp);
     } /* else Memory Leak */
     pvt->pExposed = NullRegion;
   }
@@ -481,7 +481,7 @@ XIEGetImage (pDrawable, sx, sy, w, h, format, pmask, pdst, fill, Exposed)
 	bounds.y1 = sy + pDrawable->y;
 	bounds.x2 = bounds.x1 + w;
 	bounds.y2 = bounds.y1 + h;
-	(*pScreen->RegionInit) (&Remaining, &bounds, 0);
+	REGION_INIT(pScreen, &Remaining, &bounds, 0);
 	if (!(pPixmap = (*pScreen->CreatePixmap) (pScreen, w, h, depth)))
 	    goto punt;
 	if(!(pGC = GetScratchGC (depth, pScreen))) {
@@ -489,12 +489,12 @@ XIEGetImage (pDrawable, sx, sy, w, h, format, pmask, pdst, fill, Exposed)
 	    goto punt;
 	}
 	if (pWin->viewable && 
-	    (*pScreen->RectIn) (&Remaining, (*pScreen->RegionExtents)
-					(&pWin->borderSize)) != rgnOUT) {
+	    RECT_IN_REGION(pScreen, &Remaining, REGION_EXTENTS(pScreen, 
+					&pWin->borderSize)) != rgnOUT) {
 	    XID	subWindowMode = IncludeInferiors;
 	    ChangeGC (pGC, GCSubwindowMode, &subWindowMode);
 	    ValidateGC ((DrawablePtr)pPixmap, pGC);
-	    (*pScreen->RegionInit) (&Inside, NullBox, 0);
+	    REGION_INIT(pScreen, &Inside, NullBox, 0);
 	    pSrcWin = (WindowPtr) pDrawable;
 	    x = sx;
 	    y = sy;
@@ -507,9 +507,9 @@ XIEGetImage (pDrawable, sx, sy, w, h, format, pmask, pdst, fill, Exposed)
 				   (DrawablePtr)pPixmap, pGC,
 				   x, y, w, h,
 				   0, 0);
-	    (*pScreen->Subtract) (&Remaining, &Remaining,
+	    REGION_SUBTRACT(pScreen, &Remaining, &Remaining,
 				  &((WindowPtr) pDrawable)->borderClip);
-	    (*pScreen->TranslateRegion) (&Remaining, -pWin->drawable.x,
+	    REGION_TRANSLATE(pScreen, &Remaining, -pWin->drawable.x,
 						     -pWin->drawable.y);
 	    if (REGION_NUM_RECTS(&Remaining) == 0) goto done;
 	}
@@ -547,13 +547,13 @@ XIEGetImage (pDrawable, sx, sy, w, h, format, pmask, pdst, fill, Exposed)
 	/* Accumulate Exposures if requested */
 	if (REGION_NUM_RECTS(&Remaining) > 0) {
 	    if (Exposed) {
-		(*pScreen->Union) (Exposed, Exposed, &Remaining);
+		REGION_UNION(pScreen, Exposed, Exposed, &Remaining);
 	    }
 	}
 
 done:
-	(*pScreen->RegionUninit) (&Remaining);
-	(*pScreen->RegionUninit) (&Inside);
+	REGION_UNINIT(pScreen, &Remaining);
+	REGION_UNINIT(pScreen, &Inside);
 	(*pScreen->GetImage) ((DrawablePtr) pPixmap, 0, 0, w, h,
 			      format, pmask, pdst);
 	(*pScreen->DestroyPixmap) (pPixmap);

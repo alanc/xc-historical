@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 5.21 91/07/02 19:54:31 keith Exp $ */
+/* $XConsortium: mfbbitblt.c,v 5.22 93/09/13 09:32:15 dpw Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -239,8 +239,8 @@ int dstx, dsty;
     }
     else
     {
-	(*pGC->pScreen->RegionInit)(&rgnDst, &fastBox, 1);
-	(*pGC->pScreen->Intersect)(&rgnDst, &rgnDst, prgnSrcClip);
+	REGION_INIT(pGC->pScreen, &rgnDst, &fastBox, 1);
+	REGION_INTERSECT(pGC->pScreen, &rgnDst, &rgnDst, prgnSrcClip);
     }
 
     dstx += pDstDrawable->x;
@@ -251,9 +251,9 @@ int dstx, dsty;
 	if (!((WindowPtr)pDstDrawable)->realized)
 	{
 	    if (!fastClip)
-		(*pGC->pScreen->RegionUninit)(&rgnDst);
+		REGION_UNINIT(pGC->pScreen, &rgnDst);
 	    if (freeSrcClip)
-		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+		REGION_DESTROY(pGC->pScreen, prgnSrcClip);
 	    return NULL;
 	}
     }
@@ -287,9 +287,13 @@ int dstx, dsty;
 
 	    /* Check to see if the region is empty */
 	    if (fastBox.x1 >= fastBox.x2 || fastBox.y1 >= fastBox.y2)
-		(*pGC->pScreen->RegionInit)(&rgnDst, NullBox, 0);
+	    {
+		REGION_INIT(pGC->pScreen, &rgnDst, NullBox, 0);
+	    }
 	    else
-		(*pGC->pScreen->RegionInit)(&rgnDst, &fastBox, 1);
+	    {
+		REGION_INIT(pGC->pScreen, &rgnDst, &fastBox, 1);
+	    }
 	}
         else
 	{
@@ -297,19 +301,18 @@ int dstx, dsty;
 	       a full blown region.  It is intersected with the
 	       composite clip below. */
 	    fastClip = 0;
-	    (*pGC->pScreen->RegionInit)(&rgnDst, &fastBox,1);
+	    REGION_INIT(pGC->pScreen, &rgnDst, &fastBox,1);
 	}
     }
     else
     {
-        (*pGC->pScreen->TranslateRegion)(&rgnDst, -dx, -dy);
+        REGION_TRANSLATE(pGC->pScreen, &rgnDst, -dx, -dy);
     }
 
     if (!fastClip)
     {
-	(*pGC->pScreen->Intersect)(&rgnDst,
-				   &rgnDst,
-				 ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
+	REGION_INTERSECT(pGC->pScreen, &rgnDst, &rgnDst,
+	 ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
     }
 
     /* Do bit blitting */
@@ -319,9 +322,9 @@ int dstx, dsty;
 	if(!(pptSrc = (DDXPointPtr)ALLOCATE_LOCAL(numRects *
 						  sizeof(DDXPointRec))))
 	{
-	    (*pGC->pScreen->RegionUninit)(&rgnDst);
+	    REGION_UNINIT(pGC->pScreen, &rgnDst);
 	    if (freeSrcClip)
-		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+		REGION_DESTROY(pGC->pScreen, prgnSrcClip);
 	    return NULL;
 	}
 	pbox = REGION_RECTS(&rgnDst);
@@ -350,9 +353,9 @@ int dstx, dsty;
 				  (int)origSource.height,
 				  origDest.x, origDest.y, (unsigned long)0);
     }
-    (*pGC->pScreen->RegionUninit)(&rgnDst);
+    REGION_UNINIT(pGC->pScreen, &rgnDst);
     if (freeSrcClip)
-	(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+	REGION_DESTROY(pGC->pScreen, prgnSrcClip);
     return prgnExposed;
 }
 

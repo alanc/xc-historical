@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimggblt.c,v 5.11 93/12/29 12:30:57 rob Exp $ */
+/* $XConsortium: mfbimggblt.c,v 5.12 93/12/29 15:12:09 rob Exp $ */
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
@@ -179,8 +179,8 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
      */
 
     /* the faint-hearted can open their eyes now */
-    switch ((*pGC->pScreen->RectIn)(
-		  ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
+    switch (RECT_IN_REGION(pGC->pScreen, 
+	((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
     {
       case rgnOUT:
 	break;
@@ -417,4 +417,3 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	break;
     }
 }
-

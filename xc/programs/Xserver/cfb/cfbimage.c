@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbimage.c,v 1.14 93/09/20 20:10:25 dpw Exp $ */
+/* $XConsortium: cfbimage.c,v 1.15 93/12/13 17:22:08 dpw Exp $ */
 
 #include "X.h"
 #include "windowstr.h"
@@ -136,10 +136,10 @@ cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
         box.y1 = 0;
         box.x2 = w;
         box.y2 = h;
-        (*pScreen->RegionInit)(&rgnDst, &box, 1);
+        REGION_INIT(pScreen, &rgnDst, &box, 1);
 	cfbDoBitblt(pDrawable, (DrawablePtr)pPixmap, GXcopy, &rgnDst,
 		    &ptSrc, planeMask);
-        (*pScreen->RegionUninit)(&rgnDst);
+        REGION_UNINIT(pScreen, &rgnDst);
 	FreeScratchPixmapHeader(pPixmap);
     }
     else
@@ -156,10 +156,10 @@ cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
         box.y1 = 0;
         box.x2 = w;
         box.y2 = h;
-        (*pScreen->RegionInit)(&rgnDst, &box, 1);
+        REGION_INIT(pScreen, &rgnDst, &box, 1);
 	cfbCopyImagePlane (pDrawable, (DrawablePtr)pPixmap, GXcopy, &rgnDst,
 		    &ptSrc, planeMask);
-        (*pScreen->RegionUninit)(&rgnDst);
+        REGION_UNINIT(pScreen, &rgnDst);
 	FreeScratchPixmapHeader(pPixmap);
 #else
 	miGetImage (pDrawable, sx, sy, w, h, format, planeMask, pdstLine);

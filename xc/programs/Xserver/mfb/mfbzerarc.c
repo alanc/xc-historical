@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbzerarc.c,v 5.14 92/12/24 13:07:59 rws Exp $ */
+/* $XConsortium: mfbzerarc.c,v 5.15 93/10/12 11:28:53 dpw Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -213,7 +213,7 @@ mfbZeroPolyArcSS(pDraw, pGC, narcs, parcs)
 	    box.y1 = arc->y + pDraw->y;
 	    box.x2 = box.x1 + (int)arc->width + 1;
 	    box.y2 = box.y1 + (int)arc->height + 1;
-	    if ((*pDraw->pScreen->RectIn)(cclip, &box) == rgnIN)
+	    if (RECT_IN_REGION(pDraw->pScreen, cclip, &box) == rgnIN)
 		mfbZeroArcSS(pDraw, pGC, arc);
 	    else
 		miZeroPolyArc(pDraw, pGC, 1, arc);

@@ -1,4 +1,4 @@
-/* $XConsortium: cfbtegblt.c,v 5.6 93/09/20 20:10:23 dpw Exp $ */
+/* $XConsortium: cfbtegblt.c,v 5.7 93/12/13 17:22:36 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -106,7 +106,7 @@ cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     fgfill = PFILL(pGC->fgPixel);
     bgfill = PFILL(pGC->bgPixel);
 
-    switch ((*pGC->pScreen->RectIn)( cfbGetCompositeClip(pGC), &bbox))
+    switch (RECT_IN_REGION(pGC->pScreen,  cfbGetCompositeClip(pGC), &bbox))
     {
       case rgnOUT:
 	break;

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miwindow.c,v 5.11 93/09/30 15:59:37 dpw Exp $ */
+/* $XConsortium: miwindow.c,v 5.12 93/11/03 16:47:06 rob Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "region.h"
@@ -86,7 +86,7 @@ miClearToBackground(pWin, x, y, w, h, generateExposures)
     box.y2 = y2;
 
     pScreen = pWin->drawable.pScreen;
-    (*pScreen->RegionInit) (&reg, &box, 1);
+    REGION_INIT(pScreen, &reg, &box, 1);
     if (pWin->backStorage)
     {
 	/*
@@ -100,14 +100,14 @@ miClearToBackground(pWin, x, y, w, h, generateExposures)
 						 generateExposures);
     }
 
-    (* pScreen->Intersect)(&reg, &reg, &pWin->clipList);
+    REGION_INTERSECT(pScreen, &reg, &reg, &pWin->clipList);
     if (generateExposures)
 	(*pScreen->WindowExposures)(pWin, &reg, pBSReg);
     else if (pWin->backgroundState != None)
         (*pScreen->PaintWindowBackground)(pWin, &reg, PW_BACKGROUND);
-    (* pScreen->RegionUninit)(&reg);
+    REGION_UNINIT(pScreen, &reg);
     if (pBSReg)
-	(* pScreen->RegionDestroy)(pBSReg);
+	REGION_DESTROY(pScreen, pBSReg);
 }
 
 /*
@@ -153,7 +153,7 @@ miCheckSubSaveUnder(pParent, pFirst, pRegion)
 
 	for (; pChild != pFirst; pChild = pChild->nextSib)
 	    if (pChild->viewable && pChild->saveUnder)
-		(*pScreen->Union) (pRegion, pRegion, &pChild->borderSize);
+		REGION_UNION(pScreen, pRegion, pRegion, &pChild->borderSize);
 	
 	/*
 	 * check region below and including first changed window
@@ -172,10 +172,10 @@ miCheckSubSaveUnder(pParent, pFirst, pRegion)
 		{
 		    if (!subInited)
 		    {
-			(*pScreen->RegionInit)(&SubRegion, NullBox, 0);
+			REGION_INIT(pScreen, &SubRegion, NullBox, 0);
 			subInited = TRUE;
 		    }
-		    (*pScreen->RegionCopy) (&SubRegion, pRegion);
+		    REGION_COPY(pScreen, &SubRegion, pRegion);
 		    res |= miCheckSubSaveUnder(pChild, pChild->firstChild,
 					     &SubRegion);
 		}
@@ -186,12 +186,12 @@ miCheckSubSaveUnder(pParent, pFirst, pRegion)
 		}
 
 		if (pChild->saveUnder)
-		    (*pScreen->Union) (pRegion, pRegion, &pChild->borderSize);
+		    REGION_UNION(pScreen, pRegion, pRegion, &pChild->borderSize);
 	    }
 	}
 
 	if (subInited)
-	    (*pScreen->RegionUninit) (&SubRegion);
+	    REGION_UNINIT(pScreen, &SubRegion);
     }
 
     /*
@@ -202,9 +202,9 @@ miCheckSubSaveUnder(pParent, pFirst, pRegion)
 
     if (pParent->viewable && 
 	((pParent->eventMask | wOtherEventMasks(pParent)) & ExposureMask) &&
-	(*pScreen->RegionNotEmpty) (&pParent->borderSize) &&
-	(*pScreen->RectIn) (pRegion, (*pScreen->RegionExtents)
-					(&pParent->borderSize)) != rgnOUT)
+	REGION_NOTEMPTY(pScreen, &pParent->borderSize) &&
+	RECT_IN_REGION(pScreen, pRegion, REGION_EXTENTS(pScreen, 
+					&pParent->borderSize)) != rgnOUT)
     {
 	if (!pParent->DIXsaveUnder)
 	{
@@ -255,11 +255,11 @@ miChangeSaveUnder(pWin, first)
     numSaveUndersViewable += deltaSaveUndersViewable;
     deltaSaveUndersViewable = 0;
     pScreen = pWin->drawable.pScreen;
-    (*pScreen->RegionInit) (&rgn, NullBox, 1);
+    REGION_INIT(pScreen, &rgn, NullBox, 1);
     res = miCheckSubSaveUnder (pWin->parent,
 			       pWin->saveUnder ? first : pWin->nextSib,
 			       &rgn);
-    (*pScreen->RegionUninit) (&rgn);
+    REGION_UNINIT(pScreen, &rgn);
     return res;
 }
 
@@ -343,9 +343,9 @@ miMarkOverlappedWindows(pWin, pFirst, ppLayerWin)
 {
     register BoxPtr box;
     register WindowPtr pChild, pLast;
-    int (* RectIn)();
     Bool anyMarked = FALSE;
     void (* MarkWindow)() = pWin->drawable.pScreen->MarkWindow;
+    ScreenPtr pScreen = pWin->drawable.pScreen;
 
     /* single layered systems are easy */
     if (ppLayerWin) *ppLayerWin = pWin;
@@ -379,12 +379,12 @@ miMarkOverlappedWindows(pWin, pFirst, ppLayerWin)
     }
     if ( (pChild = pFirst) )
     {
-	box = (* pChild->drawable.pScreen->RegionExtents)(&pWin->borderSize);
-	RectIn = pChild->drawable.pScreen->RectIn;
+	box = REGION_EXTENTS(pChild->drawable.pScreen, &pWin->borderSize);
 	pLast = pChild->parent->lastChild;
 	while (1)
 	{
-	    if (pChild->viewable && (*RectIn)(&pChild->borderSize, box))
+	    if (pChild->viewable && RECT_IN_REGION(pScreen, &pChild->borderSize,
+						       box))
 	    {
 		(* MarkWindow)(pChild);
 		anyMarked = TRUE;
@@ -418,25 +418,22 @@ miHandleValidateExposures(pWin)
 {
     register WindowPtr pChild;
     register ValidatePtr val;
-    Bool (* RegionNotEmpty)();
-    void (* RegionUninit)();
+    ScreenPtr pScreen = pWin->drawable.pScreen;
     void (* WindowExposures)();
 
     pChild = pWin;
-    RegionNotEmpty = pChild->drawable.pScreen->RegionNotEmpty;
-    RegionUninit = pChild->drawable.pScreen->RegionUninit;
     WindowExposures = pChild->drawable.pScreen->WindowExposures;
     while (1)
     {
 	if ( (val = pChild->valdata) )
 	{
-	    if ((*RegionNotEmpty)(&val->after.borderExposed))
+	    if (REGION_NOTEMPTY(pScreen, &val->after.borderExposed))
 		(*pChild->drawable.pScreen->PaintWindowBorder)(pChild,
 						    &val->after.borderExposed,
 						    PW_BORDER);
-	    (*RegionUninit)(&val->after.borderExposed);
+	    REGION_UNINIT(pScreen, &val->after.borderExposed);
 	    (*WindowExposures)(pChild, &val->after.exposed, NullRegion);
-	    (*RegionUninit)(&val->after.exposed);
+	    REGION_UNINIT(pScreen, &val->after.exposed);
 	    xfree(val);
 	    pChild->valdata = (ValidatePtr)NULL;
 	    if (pChild->firstChild)
@@ -483,8 +480,8 @@ miMoveWindow(pWin, x, y, pNextSib, kind)
     oldpt.y = pWin->drawable.y;
     if (WasViewable)
     {
-	oldRegion = (*pScreen->RegionCreate)(NullBox, 1);
-	(*pScreen->RegionCopy)(oldRegion, &pWin->borderClip);
+	oldRegion = REGION_CREATE(pScreen, NullBox, 1);
+	REGION_COPY(pScreen, oldRegion, &pWin->borderClip);
 	anyMarked = (*pScreen->MarkOverlappedWindows)(pWin, pWin, &pLayerWin);
     }
     pWin->origin.x = x + (int)bw;
@@ -521,7 +518,7 @@ miMoveWindow(pWin, x, y, pNextSib, kind)
 	{
 	    (*pScreen->ValidateTree)(pLayerWin->parent, NullWindow, kind);
 	    (* pWin->drawable.pScreen->CopyWindow)(pWin, oldpt, oldRegion);
-	    (*pScreen->RegionDestroy)(oldRegion);
+	    REGION_DESTROY(pScreen, oldRegion);
 	    /* XXX need to retile border if ParentRelative origin */
 	    (*pScreen->HandleExposures)(pLayerWin->parent);
 	}
@@ -561,13 +558,14 @@ miRecomputeExposures (pWin, value)
 	/*
 	 * compute exposed regions of this window
 	 */
-	(*pScreen->Subtract)(&pWin->valdata->after.exposed, &pWin->clipList, pValid);
+	REGION_SUBTRACT(pScreen, &pWin->valdata->after.exposed,
+			&pWin->clipList, pValid);
 	/*
 	 * compute exposed regions of the border
 	 */
-	(*pScreen->Subtract)(&pWin->valdata->after.borderExposed,
+	REGION_SUBTRACT(pScreen, &pWin->valdata->after.borderExposed,
 			     &pWin->borderClip, &pWin->winSize);
-	(*pScreen->Subtract)(&pWin->valdata->after.borderExposed,
+	REGION_SUBTRACT(pScreen, &pWin->valdata->after.borderExposed,
 			     &pWin->valdata->after.borderExposed, pValid);
 	return WT_WALKCHILDREN;
     }
@@ -624,8 +622,8 @@ miSlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	/*
 	 * save the visible region of the window
 	 */
-	oldRegion = (*pScreen->RegionCreate) (NullBox, 1);
-	(*pScreen->RegionCopy) (oldRegion, &pWin->winSize);
+	oldRegion = REGION_CREATE(pScreen, NullBox, 1);
+	REGION_COPY(pScreen, oldRegion, &pWin->winSize);
 
 	/*
 	 * categorize child windows into regions to be moved
@@ -638,8 +636,8 @@ miSlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	    if (g != UnmapGravity)
 	    {
 		if (!gravitate[g])
-		    gravitate[g] = (*pScreen->RegionCreate) (NullBox, 1);
-		(*pScreen->Union) (gravitate[g],
+		    gravitate[g] = REGION_CREATE(pScreen, NullBox, 1);
+		REGION_UNION(pScreen, gravitate[g],
 				   gravitate[g], &pChild->borderClip);
 	    }
 	    else
@@ -654,8 +652,8 @@ miSlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	oldWinClip = NULL;
 	if (pWin->bitGravity != ForgetGravity)
 	{
-	    oldWinClip = (*pScreen->RegionCreate) (NullBox, 1);
-	    (*pScreen->RegionCopy) (oldWinClip, &pWin->clipList);
+	    oldWinClip = REGION_CREATE(pScreen, NullBox, 1);
+	    REGION_COPY(pScreen, oldWinClip, &pWin->clipList);
 	}
 	/*
 	 * if the window is changing size, borderExposed
@@ -670,16 +668,16 @@ miSlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	if ((pWin->drawable.height != h || pWin->drawable.width != w) &&
 	    HasBorder (pWin))
 	{
-	    borderVisible = (*pScreen->RegionCreate) (NullBox, 1);
+	    borderVisible = REGION_CREATE(pScreen, NullBox, 1);
 	    /* for tiled borders, we punt and draw the whole thing */
 	    if (pWin->borderIsPixel || !moved)
 	    {
 		if (shrunk || moved)
-		    (*pScreen->Subtract) (borderVisible,
+		    REGION_SUBTRACT(pScreen, borderVisible,
 					  &pWin->borderClip,
 					  &pWin->winSize);
 		else
-		    (*pScreen->RegionCopy) (borderVisible,
+		    REGION_COPY(pScreen, borderVisible,
 					    &pWin->borderClip);
 	    }
 	}
@@ -706,9 +704,9 @@ miSlideAndSizeWindow(pWin, x, y, w, h, pSib)
 
     if (WasViewable)
     {
-	pRegion = (*pScreen->RegionCreate) (NullBox, 1);
+	pRegion = REGION_CREATE(pScreen, NullBox, 1);
 	if (pWin->backStorage)
-	    (*pScreen->RegionCopy) (pRegion, &pWin->clipList);
+	    REGION_COPY(pScreen, pRegion, &pWin->clipList);
 
 	if (pLayerWin == pWin)
 	    anyMarked |= (*pScreen->MarkOverlappedWindows)(pWin, pFirstChange,
@@ -739,7 +737,7 @@ miSlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	 * the entire window is trashed unless bitGravity
 	 * recovers portions of it
 	 */
-	(*pScreen->RegionCopy) (&pWin->valdata->after.exposed, &pWin->clipList);
+	REGION_COPY(pScreen, &pWin->valdata->after.exposed, &pWin->clipList);
     }
 
     GravityTranslate (x, y, oldx, oldy, dw, dh, pWin->bitGravity, &nx, &ny);
@@ -783,15 +781,16 @@ miSlideAndSizeWindow(pWin, x, y, w, h, pSib)
 		dy = (oldy - ny) - offy;
 		if (dx || dy)
 		{
-		    (*pScreen->TranslateRegion) (&pWin->winSize, dx, dy);
+		    REGION_TRANSLATE(pScreen, &pWin->winSize, dx, dy);
 		    offx += dx;
 		    offy += dy;
 		}
-		(*pScreen->Intersect) (gravitate[g], gravitate[g], &pWin->winSize);
+		REGION_INTERSECT(pScreen, gravitate[g], gravitate[g],
+				 &pWin->winSize);
 	    }
 	    /* get winSize back where it belongs */
 	    if (offx || offy)
-		(*pScreen->TranslateRegion) (&pWin->winSize, -offx, -offy);
+		REGION_TRANSLATE(pScreen, &pWin->winSize, -offx, -offy);
 	}
 	/*
 	 * add screen bits to the appropriate bucket
@@ -802,9 +801,9 @@ miSlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	    /*
 	     * clip to new clipList
 	     */
-	    (*pScreen->RegionCopy) (pRegion, oldWinClip);
-	    (*pScreen->TranslateRegion) (pRegion, nx - oldx, ny - oldy);
-	    (*pScreen->Intersect) (oldWinClip, pRegion, &pWin->clipList);
+	    REGION_COPY(pScreen, pRegion, oldWinClip);
+	    REGION_TRANSLATE(pScreen, pRegion, nx - oldx, ny - oldy);
+	    REGION_INTERSECT(pScreen, oldWinClip, pRegion, &pWin->clipList);
 	    /*
 	     * don't step on any gravity bits which will be copied after this
 	     * region.	Note -- this assumes that the regions will be copied
@@ -813,16 +812,17 @@ miSlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	    for (g = pWin->bitGravity + 1; g <= StaticGravity; g++)
 	    {
 		if (gravitate[g])
-		    (*pScreen->Subtract) (oldWinClip, oldWinClip, gravitate[g]);
+		    REGION_SUBTRACT(pScreen, oldWinClip, oldWinClip,
+					gravitate[g]);
 	    }
-	    (*pScreen->TranslateRegion) (oldWinClip, oldx - nx, oldy - ny);
+	    REGION_TRANSLATE(pScreen, oldWinClip, oldx - nx, oldy - ny);
 	    g = pWin->bitGravity;
 	    if (!gravitate[g])
 		gravitate[g] = oldWinClip;
 	    else
 	    {
-		(*pScreen->Union) (gravitate[g], gravitate[g], oldWinClip);
-		(*pScreen->RegionDestroy) (oldWinClip);
+		REGION_UNION(pScreen, gravitate[g], gravitate[g], oldWinClip);
+		REGION_DESTROY(pScreen, oldWinClip);
 	    }
 	}
 
@@ -846,14 +846,14 @@ miSlideAndSizeWindow(pWin, x, y, w, h, pSib)
 
 	    /* only copy the remaining useful bits */
 
-	    (*pScreen->Intersect) (gravitate[g], gravitate[g], oldRegion);
+	    REGION_INTERSECT(pScreen, gravitate[g], gravitate[g], oldRegion);
 
 	    /* clip to not overwrite already copied areas */
 
 	    if (destClip) {
-		(*pScreen->TranslateRegion) (destClip, oldpt.x - x, oldpt.y - y);
-		(*pScreen->Subtract) (gravitate[g], gravitate[g], destClip);
-		(*pScreen->TranslateRegion) (destClip, x - oldpt.x, y - oldpt.y);
+		REGION_TRANSLATE(pScreen, destClip, oldpt.x - x, oldpt.y - y);
+		REGION_SUBTRACT(pScreen, gravitate[g], gravitate[g], destClip);
+		REGION_TRANSLATE(pScreen, destClip, x - oldpt.x, y - oldpt.y);
 	    }
 
 	    /* and move those bits */
@@ -863,7 +863,7 @@ miSlideAndSizeWindow(pWin, x, y, w, h, pSib)
 
 	    /* remove any overwritten bits from the remaining useful bits */
 
-	    (*pScreen->Subtract) (oldRegion, oldRegion, gravitate[g]);
+	    REGION_SUBTRACT(pScreen, oldRegion, oldRegion, gravitate[g]);
 
 	    /*
 	     * recompute exposed regions of child windows
@@ -873,7 +873,7 @@ miSlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	    {
 		if (pChild->winGravity != g)
 		    continue;
-		(*pScreen->Intersect) (pRegion,
+		REGION_INTERSECT(pScreen, pRegion,
 				       &pChild->borderClip, gravitate[g]);
 		TraverseTree (pChild, miRecomputeExposures, (pointer)pRegion);
 	    }
@@ -884,21 +884,21 @@ miSlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	     */
 
 	    if (g == pWin->bitGravity)
-		(*pScreen->Subtract)(&pWin->valdata->after.exposed,
+		REGION_SUBTRACT(pScreen, &pWin->valdata->after.exposed,
 				     &pWin->valdata->after.exposed, gravitate[g]);
 	    if (!destClip)
 		destClip = gravitate[g];
 	    else
 	    {
-		(*pScreen->Union) (destClip, destClip, gravitate[g]);
-		(*pScreen->RegionDestroy) (gravitate[g]);
+		REGION_UNION(pScreen, destClip, destClip, gravitate[g]);
+		REGION_DESTROY(pScreen, gravitate[g]);
 	    }
 	}
 
-	(*pScreen->RegionDestroy) (oldRegion);
-	(*pScreen->RegionDestroy) (pRegion);
+	REGION_DESTROY(pScreen, oldRegion);
+	REGION_DESTROY(pScreen, pRegion);
 	if (destClip)
-	    (*pScreen->RegionDestroy) (destClip);
+	    REGION_DESTROY(pScreen, destClip);
 	if (bsExposed)
 	{
 	    RegionPtr	valExposed = NullRegion;
@@ -907,8 +907,8 @@ miSlideAndSizeWindow(pWin, x, y, w, h, pSib)
 		valExposed = &pWin->valdata->after.exposed;
 	    (*pScreen->WindowExposures) (pWin, valExposed, bsExposed);
 	    if (valExposed)
-		(*pScreen->RegionEmpty) (valExposed);
-	    (*pScreen->RegionDestroy) (bsExposed);
+		REGION_EMPTY(pScreen, valExposed);
+	    REGION_DESTROY(pScreen, bsExposed);
 	}
 	if (anyMarked)
 	    (*pScreen->HandleExposures)(pLayerWin->parent);
@@ -928,7 +928,7 @@ miSlideAndSizeWindow(pWin, x, y, w, h, pSib)
     else if (bsExposed)
     {
 	(*pScreen->WindowExposures) (pWin, NullRegion, bsExposed);
-	(*pScreen->RegionDestroy) (bsExposed);
+	REGION_DESTROY(pScreen, bsExposed);
     }
     if (pWin->realized)
 	WindowsRestructured ();
@@ -973,8 +973,8 @@ miSetShape(pWin)
 	    {
 		RegionPtr	borderVisible;
 
-		borderVisible = (*pScreen->RegionCreate) (NullBox, 1);
-		(*pScreen->Subtract) (borderVisible,
+		borderVisible = REGION_CREATE(pScreen, NullBox, 1);
+		REGION_SUBTRACT(pScreen, borderVisible,
 				      &pWin->borderClip, &pWin->winSize);
 		pWin->valdata->before.borderVisible = borderVisible;
 	    }
@@ -991,8 +991,8 @@ miSetShape(pWin)
     {
 	if (pWin->backStorage)
 	{
-	    pOldClip = (*pScreen->RegionCreate) (NullBox, 1);
-	    (*pScreen->RegionCopy) (pOldClip, &pWin->clipList);
+	    pOldClip = REGION_CREATE(pScreen, NullBox, 1);
+	    REGION_COPY(pScreen, pOldClip, &pWin->clipList);
 	}
 
 	anyMarked |= (*pScreen->MarkOverlappedWindows)(pWin, pWin,
@@ -1018,7 +1018,7 @@ miSetShape(pWin)
 			     (pWin, 0, 0, pOldClip,
 			      pWin->drawable.x, pWin->drawable.y);
 	if (WasViewable)
-	    (*pScreen->RegionDestroy) (pOldClip);
+	    REGION_DESTROY(pScreen, pOldClip);
 	if (bsExposed)
 	{
 	    RegionPtr	valExposed = NullRegion;
@@ -1027,8 +1027,8 @@ miSetShape(pWin)
 		valExposed = &pWin->valdata->after.exposed;
 	    (*pScreen->WindowExposures) (pWin, valExposed, bsExposed);
 	    if (valExposed)
-		(*pScreen->RegionEmpty) (valExposed);
-	    (*pScreen->RegionDestroy) (bsExposed);
+		REGION_EMPTY(pScreen, valExposed);
+	    REGION_DESTROY(pScreen, bsExposed);
 	}
     }
     if (WasViewable)
@@ -1091,8 +1091,8 @@ miChangeBorderWidth(pWin, width)
 	    if (pWin->valdata && HadBorder)
 	    {
 		RegionPtr   borderVisible;
-		borderVisible = (*pScreen->RegionCreate) (NULL, 1);
-		(*pScreen->Subtract) (borderVisible,
+		borderVisible = REGION_CREATE(pScreen, NULL, 1);
+		REGION_SUBTRACT(pScreen, borderVisible,
 				      &pWin->borderClip, &pWin->winSize);
 		pWin->valdata->before.borderVisible = borderVisible;
 	    }
@@ -1130,9 +1130,9 @@ miMarkUnrealizedWindow(pChild, pWin, fromConfigure)
 {
     if ((pChild != pWin) || fromConfigure)
     {
-	(* pChild->drawable.pScreen->RegionEmpty)(&pChild->clipList);
+	REGION_EMPTY(pChild->drawable.pScreen, &pChild->clipList);
 	if (pChild->drawable.pScreen->ClipNotify)
 	    (* pChild->drawable.pScreen->ClipNotify)(pChild, 0, 0);
-	(* pChild->drawable.pScreen->RegionEmpty)(&pChild->borderClip);
+	REGION_EMPTY(pChild->drawable.pScreen, &pChild->borderClip);
     }
 }

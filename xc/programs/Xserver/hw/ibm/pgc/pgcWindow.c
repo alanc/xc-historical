@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: pgcWindow.c,v 1.2 91/07/16 13:13:11 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -62,10 +62,10 @@ pgcCopyWindow(pWin, ptOldOrg, prgnSrc)
 
     dx = ptOldOrg.x - pWin->drawable.x ;
     dy = ptOldOrg.y - pWin->drawable.y ;
-    (* pWin->drawable.pScreen->TranslateRegion)(prgnSrc, -dx, -dy) ;
+    REGION_TRANSLATE(pWin->drawable.pScreen, prgnSrc, -dx, -dy) ;
 
-    prgnDst = (* pWin->drawable.pScreen->RegionCreate)(NULL, 1);
-    (* pWin->drawable.pScreen->Intersect)(prgnDst, &pWin->borderClip, prgnSrc) ;
+    prgnDst = REGION_CREATE(pWin->drawable.pScreen, NULL, 1);
+    REGION_INTERSECT(pWin->drawable.pScreen, prgnDst, &pWin->borderClip, prgnSrc) ;
 
     if ( !( nbox = REGION_NUM_RECTS(prgnDst) ) )
 	return;
@@ -152,6 +152,6 @@ pgcCopyWindow(pWin, ptOldOrg, prgnSrc)
     if ( pboxNew )
 	DEALLOCATE_LOCAL( pboxNew ) ;
 
-    (* pWin->drawable.pScreen->RegionDestroy)(prgnDst) ;
+    REGION_DESTROY(pWin->drawable.pScreen, prgnDst) ;
     return ;
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: svgaBank.c,v 1.6 93/09/20 14:04:03 rws Exp $ */
+/* $XConsortium: svgaBank.c,v 1.7 93/10/12 11:26:35 dpw Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -237,7 +237,7 @@ svgaBankCloseScreen(
 
   for (i = 0; i < pScreenPriv->numBanks; i++)
     if (pScreenPriv->pBanks[i])
-      (*pScreen->RegionDestroy)(pScreenPriv->pBanks[i]);
+      REGION_DESTROY(pScreen, pScreenPriv->pBanks[i]);
 
   if (pScreenPriv->dstBase)
     munmap((caddr_t)pScreenPriv->dstBase, pScreenPriv->winSize);
@@ -436,13 +436,13 @@ svgaBankPaintWindow(
       PaintWindow = pScreen->PaintWindowBackground;
     }
 
-  (*pScreen->RegionInit)(&tmpReg, NullBox, 0);
+  REGION_INIT(pScreen, &tmpReg, NullBox, 0);
   
   for (i = 0; i < pScreenPriv->numBanks; i++)
     {
-      (*pScreen->Intersect)(&tmpReg, pRegion, pScreenPriv->pBanks[i]);
+      REGION_INTERSECT(pScreen, &tmpReg, pRegion, pScreenPriv->pBanks[i]);
 
-      if ((*pScreen->RegionNotEmpty)(&tmpReg))
+      if (REGION_NOTEMPTY(pScreen, &tmpReg))
 	{
 	  SET_SINGLE_BANK(((DrawablePtr)pWin), i);
 
@@ -450,7 +450,7 @@ svgaBankPaintWindow(
 	}
     }
 
-  (*pScreen->RegionUninit)(&tmpReg);
+  REGION_UNINIT(pScreen, &tmpReg);
 
   if (what == PW_BORDER)
     {
@@ -483,12 +483,12 @@ svgaBankCopyWindow(
   ChangeGC(pGC, GCSubwindowMode, &subWindowMode);
   ValidateGC(pDrawable, pGC);
 
-  pRgnDst = (*pScreen->RegionCreate)(NULL, 1);
+  pRgnDst = REGION_CREATE(pScreen, NULL, 1);
   
   dx = ptOldOrg.x - pWindow->drawable.x;
   dy = ptOldOrg.y - pWindow->drawable.y;
-  (*pScreen->TranslateRegion)(pRgnSrc, -dx, -dy);
-  (*pScreen->Intersect)(pRgnDst, &pWindow->borderClip, pRgnSrc);
+  REGION_TRANSLATE(pScreen, pRgnSrc, -dx, -dy);
+  REGION_INTERSECT(pScreen, pRgnDst, &pWindow->borderClip, pRgnSrc);
 
   pBox = REGION_RECTS(pRgnDst);
   nBox = REGION_NUM_RECTS(pRgnDst);
@@ -561,7 +561,7 @@ svgaBankCopyWindow(
 
   FreeScratchGC(pGC);
 
-  (*pScreen->RegionDestroy)(pRgnDst);
+  REGION_DESTROY(pScreen, pRgnDst);
 
   if (pBoxNew2) DEALLOCATE_LOCAL(pBoxNew2);
   if (pBoxNew1) DEALLOCATE_LOCAL(pBoxNew1);
@@ -600,9 +600,9 @@ svgaBankValidateGC(
 	for (i = 0; i < pScreenPriv->numBanks; i++) {
 
 	  if (!(prgnClip = pGCPriv->pBankedClips[i]))
-	    prgnClip = (*pScreen->RegionCreate)(NULL, 1);
+	    prgnClip = REGION_CREATE(pScreen, NULL, 1);
 
-	  (*pScreen->Intersect)(prgnClip,
+	  REGION_INTERSECT(pScreen, prgnClip,
 				pScreenPriv->pBanks[i],
 				pCompositeClip);
 
@@ -610,7 +610,7 @@ svgaBankValidateGC(
 	      (prgnClip->extents.x1 == prgnClip->extents.x2 ||
 	       prgnClip->extents.y1 == prgnClip->extents.y2))
 	    {
-	      (*pScreen->RegionDestroy)(prgnClip);
+	      REGION_DESTROY(pScreen, prgnClip);
 	      pGCPriv->pBankedClips[i] = NULL;
 	    }
 	  else
@@ -626,7 +626,7 @@ svgaBankValidateGC(
 
 	  if (pGCPriv->pBankedClips[i])
 	    {
-	      (*pScreen->RegionDestroy)(pGCPriv->pBankedClips[i]);
+	      REGION_DESTROY(pScreen, pGCPriv->pBankedClips[i]);
 	      pGCPriv->pBankedClips[i] = NULL;
 	    }
 	}
@@ -684,7 +684,7 @@ svgaBankDestroyGC(
   for (i = 0; i < pScreenPriv->numBanks; i++) {
 
     if (pGCPriv->pBankedClips[i])
-      (*pScreen->RegionDestroy)(pGCPriv->pBankedClips[i]);
+      REGION_DESTROY(pScreen, pGCPriv->pBankedClips[i]);
   }
 
   GC_EPILOGUE(pGC, pGCPriv);
@@ -921,8 +921,8 @@ svgaBankCopyArea(
 
     if (!fastClip)
       {
-	(*pGC->pScreen->RegionInit)(&rgnDst, &fastBox, 1);
-	(*pGC->pScreen->Intersect)(&rgnDst, &rgnDst, prgnSrcClip);
+	REGION_INIT(pGC->pScreen, &rgnDst, &fastBox, 1);
+	REGION_INTERSECT(pGC->pScreen, &rgnDst, &rgnDst, prgnSrcClip);
 	pBox = REGION_RECTS(&rgnDst);
 	nBox = REGION_NUM_RECTS(&rgnDst);
       }
@@ -984,9 +984,9 @@ svgaBankCopyArea(
 
     if (!fastClip)
       {
-	(*pGC->pScreen->RegionUninit)(&rgnDst);
+	REGION_UNINIT(pGC->pScreen, &rgnDst);
 	if (freeSrcClip)
-	  (*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+	  REGION_DESTROY(pGC->pScreen, prgnSrcClip);
       }
 
     /* sort */
@@ -1532,25 +1532,25 @@ svgaBankSaveAreas(
   RegionRec        rgnClipped;
   int              i;
 
-  (*pScreen->RegionInit) (&rgnClipped, NullBox, 0);
-  (*pScreen->TranslateRegion)(prgnSave, xorg, yorg);
+  REGION_INIT(pScreen, &rgnClipped, NullBox, 0);
+  REGION_TRANSLATE(pScreen, prgnSave, xorg, yorg);
 
   for (i = 0; i < pScreenPriv->numBanks; i++) {
 
-    (*pScreen->Intersect)(&rgnClipped, prgnSave, pScreenPriv->pBanks[i]);
+    REGION_INTERSECT(pScreen, &rgnClipped, prgnSave, pScreenPriv->pBanks[i]);
 
     if (!REGION_NIL(&rgnClipped)) {
 
       SET_SINGLE_BANK(pDrawable, i);
 
-      (*pScreen->TranslateRegion)(&rgnClipped, -xorg, -yorg);
+      REGION_TRANSLATE(pScreen, &rgnClipped, -xorg, -yorg);
 
       cfbSaveAreas(pPixmap, &rgnClipped, xorg, yorg, pWin);
     }
   }
 
-  (*pScreen->TranslateRegion)(prgnSave, -xorg, -yorg);
-  (*pScreen->RegionUninit)(&rgnClipped);
+  REGION_TRANSLATE(pScreen, prgnSave, -xorg, -yorg);
+  REGION_UNINIT(pScreen, &rgnClipped);
 }
 
 static void
@@ -1568,11 +1568,11 @@ svgaBankRestoreAreas(
   RegionRec         rgnClipped;
   int               i;
 
-  (*pScreen->RegionInit) (&rgnClipped, NullBox, 0);
+  REGION_INIT(pScreen, &rgnClipped, NullBox, 0);
 
   for (i = 0; i < pScreenPriv->numBanks; i++) {
 
-    (*pScreen->Intersect)(&rgnClipped, prgnRestore, pScreenPriv->pBanks[i]);
+    REGION_INTERSECT(pScreen, &rgnClipped, prgnRestore, pScreenPriv->pBanks[i]);
 
     if (!REGION_NIL(&rgnClipped)) {
 
@@ -1582,7 +1582,7 @@ svgaBankRestoreAreas(
     }
 
   }
-  (*pScreen->RegionUninit)(&rgnClipped);
+  REGION_UNINIT(pScreen, &rgnClipped);
 }
 
 miBSFuncRec svgaBankBSFuncRec = {
@@ -1771,7 +1771,7 @@ svgaBankScreenInit(
 	}
       }
 
-      pScreenPriv->pBanks[i] = (*pScreen->RectsToRegion)(pRects - pRectsBase,
+      pScreenPriv->pBanks[i] = RECTS_TO_REGION(pScreen, pRects - pRectsBase,
 							 pRectsBase,
 							 0);
     }

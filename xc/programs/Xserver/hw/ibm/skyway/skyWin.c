@@ -1,5 +1,5 @@
 /*
- * $XConsortium: $
+ * $XConsortium: skyWin.c,v 1.2 91/12/11 21:40:58 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991 
  *
@@ -74,12 +74,12 @@ skyCopyWindow(pWin, ptOldOrg, prgnSrc)
 
     pwinRoot = WindowTable[pWin->drawable.pScreen->myNum];
 
-    prgnDst = (* pWin->drawable.pScreen->RegionCreate)(NULL, 1);
+    prgnDst = REGION_CREATE(pWin->drawable.pScreen, NULL, 1);
 
     dx = ptOldOrg.x - pWin->drawable.x;
     dy = ptOldOrg.y - pWin->drawable.y;
-    (* pWin->drawable.pScreen->TranslateRegion)(prgnSrc, -dx, -dy);
-    (* pWin->drawable.pScreen->Intersect)(prgnDst, &pWin->borderClip, prgnSrc);
+    REGION_TRANSLATE(pWin->drawable.pScreen, prgnSrc, -dx, -dy);
+    REGION_INTERSECT(pWin->drawable.pScreen, prgnDst, &pWin->borderClip, prgnSrc);
 
     pbox = REGION_RECTS(prgnDst);
     nbox = REGION_NUM_RECTS(prgnDst);
@@ -96,5 +96,5 @@ skyCopyWindow(pWin, ptOldOrg, prgnSrc)
     skyDoBitblt_WinToWin((DrawablePtr)pwinRoot, (DrawablePtr)pwinRoot,
 		GXcopy, prgnDst, pptSrc, ~0L);
     DEALLOCATE_LOCAL(pptSrc);
-    (* pWin->drawable.pScreen->RegionDestroy)(prgnDst);
+    REGION_DESTROY(pWin->drawable.pScreen, prgnDst);
 }

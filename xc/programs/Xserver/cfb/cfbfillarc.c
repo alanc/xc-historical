@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbfillarc.c,v 5.12 91/04/10 11:41:49 keith Exp $ */
+/* $XConsortium: cfbfillarc.c,v 5.13 93/12/13 17:21:54 dpw Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -226,7 +226,7 @@ RROP_NAME(cfbPolyFillArcSolid) (pDraw, pGC, narcs, parcs)
 	    box.y1 = arc->y + pDraw->y;
 	    box.x2 = box.x1 + (int)arc->width + 1;
 	    box.y2 = box.y1 + (int)arc->height + 1;
-	    if ((*pDraw->pScreen->RectIn)(cclip, &box) == rgnIN)
+	    if (RECT_IN_REGION(pDraw->pScreen, cclip, &box) == rgnIN)
 	    {
 		if ((arc->angle2 >= FULLCIRCLE) ||
 		    (arc->angle2 <= -FULLCIRCLE))

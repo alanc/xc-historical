@@ -1,4 +1,4 @@
-/* $XConsortium: mi.h,v 1.11 93/10/12 11:41:02 dpw Exp $ */
+/* $XConsortium: mi.h,v 1.12 93/12/13 17:32:30 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -446,32 +446,7 @@ extern void miPushPixels(
 
 /* miregion.c */
 
-extern RegionPtr miRegionCreate(
-#if NeedFunctionPrototypes
-    BoxPtr /*rect*/,
-    int /*size*/
-#endif
-);
-
-extern void miRegionInit(
-#if NeedFunctionPrototypes
-    RegionPtr /*pReg*/,
-    BoxPtr /*rect*/,
-    int /*size*/
-#endif
-);
-
-extern void miRegionDestroy(
-#if NeedFunctionPrototypes
-    RegionPtr /*pReg*/
-#endif
-);
-
-extern void miRegionUninit(
-#if NeedFunctionPrototypes
-    RegionPtr /*pReg*/
-#endif
-);
+/* see also region.h */
 
 extern Bool miRectAlloc(
 #if NeedFunctionPrototypes
@@ -480,117 +455,7 @@ extern Bool miRectAlloc(
 #endif
 );
 
-extern Bool miRegionCopy(
-#if NeedFunctionPrototypes
-    RegionPtr /*dst*/,
-    RegionPtr /*src*/
-#endif
-);
-
 extern void miSetExtents(
-#if NeedFunctionPrototypes
-    RegionPtr /*pReg*/
-#endif
-);
-
-extern Bool miIntersect(
-#if NeedFunctionPrototypes
-    RegionPtr /*newReg*/,
-    RegionPtr /*reg1*/,
-    RegionPtr /*reg2*/
-#endif
-);
-
-extern Bool miUnion(
-#if NeedFunctionPrototypes
-    RegionPtr /*newReg*/,
-    RegionPtr /*reg1*/,
-    RegionPtr /*reg2*/
-#endif
-);
-
-extern Bool miRegionAppend(
-#if NeedFunctionPrototypes
-    RegionPtr /*dstrgn*/,
-    RegionPtr /*rgn*/
-#endif
-);
-
-extern Bool miRegionValidate(
-#if NeedFunctionPrototypes
-    RegionPtr /*badreg*/,
-    Bool * /*pOverlap*/
-#endif
-);
-
-extern RegionPtr miRectsToRegion(
-#if NeedFunctionPrototypes
-    int /*nrects*/,
-    xRectangle * /*prect*/,
-    int /*ctype*/
-#endif
-);
-
-extern Bool miSubtract(
-#if NeedFunctionPrototypes
-    RegionPtr /*regD*/,
-    RegionPtr /*regM*/,
-    RegionPtr /*regS*/
-#endif
-);
-
-extern Bool miInverse(
-#if NeedFunctionPrototypes
-    RegionPtr /*newReg*/,
-    RegionPtr /*reg1*/,
-    BoxPtr /*invRect*/
-#endif
-);
-
-extern int miRectIn(
-#if NeedFunctionPrototypes
-    RegionPtr /*region*/,
-    BoxPtr /*prect*/
-#endif
-);
-
-extern void miTranslateRegion(
-#if NeedFunctionPrototypes
-    RegionPtr /*pReg*/,
-    int /*x*/,
-    int /*y*/
-#endif
-);
-
-extern void miRegionReset(
-#if NeedFunctionPrototypes
-    RegionPtr /*pReg*/,
-    BoxPtr /*pBox*/
-#endif
-);
-
-extern Bool miPointInRegion(
-#if NeedFunctionPrototypes
-    RegionPtr /*pReg*/,
-    int /*x*/,
-    int /*y*/,
-    BoxPtr /*box*/
-#endif
-);
-
-extern Bool miRegionNotEmpty(
-#if NeedFunctionPrototypes
-    RegionPtr /*pReg*/
-#endif
-);
-
-extern void miRegionEmpty(
-#if NeedFunctionPrototypes
-    RegionPtr /*pReg*/
-#endif
-);
-
-extern BoxPtr miRegionExtents(
 #if NeedFunctionPrototypes
     RegionPtr /*pReg*/
 #endif

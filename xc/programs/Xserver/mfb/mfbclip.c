@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbclip.c,v 5.2 89/11/30 14:21:50 keith Exp $ */
+/* $XConsortium: mfbclip.c,v 5.3 92/05/05 13:42:11 keith Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "pixmapstr.h"
@@ -80,7 +80,7 @@ mfbPixmapToRegion(pPix)
     unsigned		*pwLine;
     int			nWidth;
 
-    pReg = (*pPix->drawable.pScreen->RegionCreate)(NULL, 1);
+    pReg = REGION_CREATE(pPix->drawable.pScreen, NULL, 1);
     if(!pReg)
 	return NullRegion;
     FirstRect = REGION_BOXPTR(pReg);

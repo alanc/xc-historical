@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: misc.h,v 1.61 93/09/23 15:00:24 rws Exp $ */
+/* $XConsortium: misc.h,v 1.62 94/01/02 09:17:14 rob Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -190,6 +190,7 @@ extern void SwapShorts(
 typedef struct _xPoint *DDXPointPtr;
 typedef struct _Box *BoxPtr;
 typedef struct _xEvent *xEventPtr;
+typedef struct _xRectangle *xRectanglePtr;
 
 /*  typedefs from other places - duplicated here to minimize the amount
  *  of unnecessary junk that one would normally have to include to get

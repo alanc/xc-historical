@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbteblt8.c,v 5.20 93/09/20 20:10:26 dpw Exp $ */
+/* $XConsortium: cfbteblt8.c,v 5.21 93/12/13 17:22:34 dpw Exp $ */
 
 #if PSZ == 8
 
@@ -367,7 +367,7 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     bbox.y1 = y;
     bbox.y2 = y + h;
 
-    switch ((*pGC->pScreen->RectIn)( cfbGetCompositeClip(pGC), &bbox))
+    switch (RECT_IN_REGION(pGC->pScreen,  cfbGetCompositeClip(pGC), &bbox))
     {
       case rgnPART:
 	cfbImageGlyphBlt8(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimage.c,v 5.7 93/09/13 09:32:08 dpw Exp $ */
+/* $XConsortium: mfbimage.c,v 5.8 93/09/20 20:22:05 dpw Exp $ */
 
 #include "X.h"
 
@@ -137,10 +137,10 @@ mfbGetImage( pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
         box.y1 = 0;
         box.x2 = w;
         box.y2 = h;
-        (*pScreen->RegionInit)(&rgnDst, &box, 1);
+        REGION_INIT(pScreen, &rgnDst, &box, 1);
         mfbDoBitblt(pDrawable, (DrawablePtr)pPixmap,
 		    GXcopy, &rgnDst, &ptSrc);
-        (*pScreen->RegionUninit)(&rgnDst);
+        REGION_UNINIT(pScreen, &rgnDst);
 	FreeScratchPixmapHeader(pPixmap);
     }
     else

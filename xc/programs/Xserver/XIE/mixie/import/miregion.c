@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miregion.c,v 1.1 93/10/26 09:45:42 rws Exp $ */
 /**** module miregion.c ****/
 /******************************************************************************
 				NOTICE
@@ -141,7 +141,7 @@ extern Bool Must_have_memory;
  * rectangles in the same places (of the same width, of course).
  *
  * Adam de Boor wrote most of the original region code.  Joel McCormack
- * substantially modified or rewrote most of the core arithmetic routines,
+
  * and added miXieRegionValidate in order to support several speed improvements
  * to miXieValidateTree.  Bob Scheifler changed the representation to be more
  * compact when empty or a single rectangle, and did a bunch of gratuitous
@@ -190,8 +190,8 @@ if (((numRects) < ((reg)->data->size >> 1)) && ((reg)->data->size > 50)) \
 }
 
 
-static XieBoxRec EmptyBox = {0, 0, 0, 0};
-static XieRegDataRec EmptyData = {0, 0};
+static XieBoxRec XieEmptyBox = {0, 0, 0, 0};
+static XieRegDataRec XieEmptyData = {0, 0};
 
 /*****************************************************************
  *   XieRegionCreate(rect, size)
@@ -216,14 +216,14 @@ miXieRegionCreate(rect, size)
     }
     else
     {
-	pReg->extents = EmptyBox;
+	pReg->extents = XieEmptyBox;
 	if ((size > 1) && (pReg->data = xallocData(size)))
 	{
 	    pReg->data->size = size;
 	    pReg->data->numRects = 0;
 	}
 	else
-	    pReg->data = &EmptyData;
+	    pReg->data = &XieEmptyData;
     }
     return(pReg);
 }
@@ -510,14 +510,14 @@ miXieRegionOp(newReg, reg1, reg2, overlapFunc, appendNon1, appendNon2, pOverlap)
 	((newReg == reg2) && (numRects > 1)))
     {
 	oldData = newReg->data;
-	newReg->data = &EmptyData;
+	newReg->data = &XieEmptyData;
     }
     /* guess at new size */
     if (numRects > newSize)
 	newSize = numRects;
     newSize <<= 1;
     if (!newReg->data)
-	newReg->data = &EmptyData;
+	newReg->data = &XieEmptyData;
     else if (newReg->data->size)
 	newReg->data->numRects = 0;
     if (newSize > newReg->data->size)
@@ -652,7 +652,7 @@ miXieRegionOp(newReg, reg1, reg2, overlapFunc, appendNon1, appendNon2, pOverlap)
     if (!(numRects = newReg->data->numRects))
     {
 	xfreeData(newReg);
-	newReg->data = &EmptyData;
+	newReg->data = &XieEmptyData;
     }
     else if (numRects == 1)
     {

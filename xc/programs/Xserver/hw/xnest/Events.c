@@ -1,4 +1,4 @@
-/* $XConsortium: Events.c,v 1.1 93/07/12 15:28:14 rws Exp $ */
+/* $XConsortium: Events.c,v 1.2 93/09/23 18:57:11 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -83,7 +83,7 @@ void xnestCollectExposures()
       Box.x2 = Box.x1 + X.xexpose.width;
       Box.y2 = Box.y1 + X.xexpose.height;
       
-      (*pWin->drawable.pScreen->RegionInit)(&Rgn, &Box, 1);
+      REGION_INIT(pWin->drawable.pScreen, &Rgn, &Box, 1);
       
       miWindowExposures(pWin, &Rgn, NullRegion); 
     }

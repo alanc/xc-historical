@@ -1,4 +1,4 @@
-/* $XConsortium: xnestPixmap.c,v 1.1 93/06/23 16:23:36 dmatic Exp $ */
+/* $XConsortium: Pixmap.c,v 1.1 93/07/12 15:28:39 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -92,8 +92,8 @@ RegionPtr xnestPixmapToRegion(pPixmap)
 		     pPixmap->drawable.width, pPixmap->drawable.height,
 		     1, XYPixmap);
   
-  pReg = (*pPixmap->drawable.pScreen->RegionCreate)(NULL, 1);
-  pTmpReg = (*pPixmap->drawable.pScreen->RegionCreate)(NULL, 1);
+  pReg = REGION_CREATE(pPixmap->drawable.pScreen, NULL, 1);
+  pTmpReg = REGION_CREATE(pPixmap->drawable.pScreen, NULL, 1);
   if(!pReg || !pTmpReg) return NullRegion;
   
   for (y = 0; y < pPixmap->drawable.height; y++) {
@@ -110,8 +110,8 @@ RegionPtr xnestPixmapToRegion(pPixmap)
 	else if (currentPixel == 0L) {
 	  /* right edge */
 	  Box.x2 = x;
-	  (*pPixmap->drawable.pScreen->RegionReset)(pTmpReg, &Box);
-	  (*pPixmap->drawable.pScreen->RegionAppend)(pReg, pTmpReg);
+	  REGION_RESET(pPixmap->drawable.pScreen, pTmpReg, &Box);
+	  REGION_APPEND(pPixmap->drawable.pScreen, pReg, pTmpReg);
 	}
 	previousPixel = currentPixel;
       }
@@ -119,15 +119,15 @@ RegionPtr xnestPixmapToRegion(pPixmap)
     if (previousPixel != 0L) {
       /* right edge because of the end of pixmap */
       Box.x2 = pPixmap->drawable.width;
-      (*pPixmap->drawable.pScreen->RegionReset)(pTmpReg, &Box);
-      (*pPixmap->drawable.pScreen->RegionAppend)(pReg, pTmpReg);
+      REGION_RESET(pPixmap->drawable.pScreen, pTmpReg, &Box);
+      REGION_APPEND(pPixmap->drawable.pScreen, pReg, pTmpReg);
     }
   }
   
-  (*pPixmap->drawable.pScreen->RegionDestroy)(pTmpReg);
+  REGION_DESTROY(pPixmap->drawable.pScreen, pTmpReg);
   XDestroyImage(ximage);
 
-  (*pPixmap->drawable.pScreen->RegionValidate)(pReg, &overlap);
+  REGION_VALIDATE(pPixmap->drawable.pScreen, pReg, &overlap);
 
   return(pReg);
 }

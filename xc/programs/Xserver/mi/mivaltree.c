@@ -1,4 +1,4 @@
-/* $XConsortium: mivaltree.c,v 5.30 92/03/13 16:00:03 eswu Exp $ */
+/* $XConsortium: mivaltree.c,v 5.31 93/09/29 17:18:51 dpw Exp $ */
 /*
  * mivaltree.c --
  *	Functions for recalculating window clip lists. Main function
@@ -61,9 +61,7 @@ miShapedWindowIn (pScreen, universe, bounding, rect, x, y)
     int	    nbox;
     Bool    someIn, someOut;
     register int t, x1, y1, x2, y2;
-    int	    (*RectIn)();
 
-    RectIn = pScreen->RectIn;
     nbox = REGION_NUM_RECTS (bounding);
     boundBox = REGION_RECTS (bounding);
     someIn = someOut = FALSE;
@@ -89,7 +87,7 @@ miShapedWindowIn (pScreen, universe, bounding, rect, x, y)
 	    box.x2 = box.x1;
 	if (box.y1 > box.y2)
 	    box.y2 = box.y1;
-	switch ((*RectIn) (universe, &box))
+	switch (RECT_IN_REGION(pScreen, universe, &box))
 	{
 	case rgnIN:
 	    if (someOut)
@@ -173,7 +171,7 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     borderSize.y2 = dy;
 
     oldVis = pParent->visibility;
-    switch ((* pScreen->RectIn) (universe, &borderSize)) 
+    switch (RECT_IN_REGION( pScreen, universe, &borderSize)) 
     {
 	case rgnIN:
 	    newVis = VisibilityUnobscured;
@@ -235,9 +233,9 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 		{
 		    if (pChild->visibility != VisibilityFullyObscured)
 		    {
-			(* pScreen->TranslateRegion) (&pChild->borderClip,
+			REGION_TRANSLATE( pScreen, &pChild->borderClip,
 						      dx, dy);
-			(* pScreen->TranslateRegion) (&pChild->clipList,
+			REGION_TRANSLATE( pScreen, &pChild->clipList,
 						      dx, dy);
 			pChild->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 			if (pScreen->ClipNotify)
@@ -246,15 +244,17 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 		    }
 		    if (pChild->valdata)
 		    {
-			(* pScreen->RegionInit) (&pChild->valdata->after.borderExposed,
-						 NullBox, 0);
+			REGION_INIT(pScreen, 
+				    &pChild->valdata->after.borderExposed,
+				    NullBox, 0);
 			if (HasParentRelativeBorder(pChild))
 			{
-			    (* pScreen->Subtract)(&pChild->valdata->after.borderExposed,
-						  &pChild->borderClip, 
-						  &pChild->winSize);
+			    REGION_SUBTRACT(pScreen,
+					 &pChild->valdata->after.borderExposed,
+					 &pChild->borderClip,
+					 &pChild->winSize);
 			}
-			(* pScreen->RegionInit) (&pChild->valdata->after.exposed,
+			REGION_INIT( pScreen, &pChild->valdata->after.exposed,
 						 NullBox, 0);
 		    }
 		    if (pChild->firstChild)
@@ -284,16 +284,16 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 	     * We translate the old clipList because that will be exposed or copied
 	     * if gravity is right.
 	     */
-	    (* pScreen->TranslateRegion) (&pParent->borderClip, dx, dy);
-	    (* pScreen->TranslateRegion) (&pParent->clipList, dx, dy);
+	    REGION_TRANSLATE( pScreen, &pParent->borderClip, dx, dy);
+	    REGION_TRANSLATE( pScreen, &pParent->clipList, dx, dy);
     	} 
 	break;
     }
 
     borderVisible = pParent->valdata->before.borderVisible;
     resized = pParent->valdata->before.resized;
-    (* pScreen->RegionInit) (&pParent->valdata->after.borderExposed, NullBox, 0);
-    (* pScreen->RegionInit) (&pParent->valdata->after.exposed, NullBox, 0);
+    REGION_INIT( pScreen, &pParent->valdata->after.borderExposed, NullBox, 0);
+    REGION_INIT( pScreen, &pParent->valdata->after.exposed, NullBox, 0);
 
     /*
      * Since the borderClip must not be clipped by the children, we do
@@ -313,22 +313,22 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 	     * of the border will be saved by DIX in borderVisible --
 	     * use that region and destroy it
 	     */
-	    (* pScreen->Subtract) (exposed, universe, borderVisible);
-	    (* pScreen->RegionDestroy) (borderVisible);
+	    REGION_SUBTRACT( pScreen, exposed, universe, borderVisible);
+	    REGION_DESTROY( pScreen, borderVisible);
     	}
     	else
     	{
-	    (* pScreen->Subtract) (exposed, universe, &pParent->borderClip);
+	    REGION_SUBTRACT( pScreen, exposed, universe, &pParent->borderClip);
     	}
 	if (HasParentRelativeBorder(pParent) && (dx || dy))
-	    (* pScreen->Subtract)(&pParent->valdata->after.borderExposed,
+	    REGION_SUBTRACT( pScreen, &pParent->valdata->after.borderExposed,
 				  universe,
 				  &pParent->winSize);
 	else
-	    (* pScreen->Subtract) (&pParent->valdata->after.borderExposed,
+	    REGION_SUBTRACT( pScreen, &pParent->valdata->after.borderExposed,
 			       exposed, &pParent->winSize);
 
-    	(* pScreen->RegionCopy) (&pParent->borderClip, universe);
+    	REGION_COPY( pScreen, &pParent->borderClip, universe);
     
     	/*
      	 * To get the right clipList for the parent, and to make doubly sure
@@ -336,15 +336,15 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
      	 * border from the universe before proceeding.
      	 */
     
-    	(* pScreen->Intersect) (universe, universe, &pParent->winSize);
+    	REGION_INTERSECT( pScreen, universe, universe, &pParent->winSize);
     }
     else
-    	(* pScreen->RegionCopy) (&pParent->borderClip, universe);
+    	REGION_COPY( pScreen, &pParent->borderClip, universe);
     
     if ((pChild = pParent->firstChild) && pParent->mapped)
     {
-	(*pScreen->RegionInit) (&childUniverse, NullBox, 0);
-	(*pScreen->RegionInit) (&childUnion, NullBox, 0);
+	REGION_INIT(pScreen, &childUniverse, NullBox, 0);
+	REGION_INIT(pScreen, &childUnion, NullBox, 0);
 	if ((pChild->drawable.y < pParent->lastChild->drawable.y) ||
 	    ((pChild->drawable.y == pParent->lastChild->drawable.y) &&
 	     (pChild->drawable.x < pParent->lastChild->drawable.x)))
@@ -352,7 +352,7 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 	    for (; pChild; pChild = pChild->nextSib)
 	    {
 		if (pChild->viewable)
-		    (* pScreen->RegionAppend)(&childUnion, &pChild->borderSize);
+		    REGION_APPEND( pScreen, &childUnion, &pChild->borderSize);
 	    }
 	}
 	else
@@ -360,10 +360,10 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 	    for (pChild = pParent->lastChild; pChild; pChild = pChild->prevSib)
 	    {
 		if (pChild->viewable)
-		    (* pScreen->RegionAppend)(&childUnion, &pChild->borderSize);
+		    REGION_APPEND( pScreen, &childUnion, &pChild->borderSize);
 	    }
 	}
-	(* pScreen->RegionValidate)(&childUnion, &overlap);
+	REGION_VALIDATE( pScreen, &childUnion, &overlap);
 
 	for (pChild = pParent->firstChild;
 	     pChild;
@@ -380,7 +380,7 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 		     * Figure out the new universe from the child's
 		     * perspective and recurse.
 		     */
-		    (* pScreen->Intersect) (&childUniverse,
+		    REGION_INTERSECT( pScreen, &childUniverse,
 					    universe,
 					    &pChild->borderSize);
 		    miComputeClips (pChild, pScreen, &childUniverse, kind,
@@ -392,14 +392,14 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 		 * other sibling.
 		 */
 		if (overlap)
-		    (* pScreen->Subtract)
-			(universe, universe, &pChild->borderSize);
+		    REGION_SUBTRACT( pScreen, universe, universe,
+					  &pChild->borderSize);
 	    }
 	}
 	if (!overlap)
-	    (* pScreen->Subtract) (universe, universe, &childUnion);
-	(* pScreen->RegionUninit) (&childUnion);
-	(* pScreen->RegionUninit) (&childUniverse);
+	    REGION_SUBTRACT( pScreen, universe, universe, &childUnion);
+	REGION_UNINIT( pScreen, &childUnion);
+	REGION_UNINIT( pScreen, &childUniverse);
     } /* if any children */
 
     /*
@@ -412,13 +412,12 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     if (oldVis == VisibilityFullyObscured ||
 	oldVis == VisibilityNotViewable)
     {
-	(* pScreen->RegionCopy) (&pParent->valdata->after.exposed,
-				 universe);
+	REGION_COPY( pScreen, &pParent->valdata->after.exposed, universe);
     }
     else if (newVis != VisibilityFullyObscured &&
 	     newVis != VisibilityNotViewable)
     {
-    	(* pScreen->Subtract) (&pParent->valdata->after.exposed,
+    	REGION_SUBTRACT( pScreen, &pParent->valdata->after.exposed,
 			       universe, &pParent->clipList);
     }
 
@@ -430,7 +429,7 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
      */
     if (pParent->backStorage && !resized)
     {
-	(* pScreen->Subtract) (exposed, &pParent->clipList, universe);
+	REGION_SUBTRACT( pScreen, exposed, &pParent->clipList, universe);
 	(* pScreen->SaveDoomedAreas)(pParent, exposed, dx, dy);
     }
     
@@ -444,7 +443,7 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     }
 
 #ifdef NOTDEF
-    (* pScreen->RegionCopy) (&pParent->clipList, universe);
+    REGION_COPY( pScreen, &pParent->clipList, universe);
 #endif
 
     pParent->drawable.serialNumber = NEXT_SERIAL_NUMBER;
@@ -539,8 +538,8 @@ miValidateTree (pParent, pChild, kind)
     if (pChild == NullWindow)
 	pChild = pParent->firstChild;
 
-    (*pScreen->RegionInit) (&childClip, NullBox, 0);
-    (*pScreen->RegionInit) (&exposed, NullBox, 0);
+    REGION_INIT(pScreen, &childClip, NullBox, 0);
+    REGION_INIT(pScreen, &exposed, NullBox, 0);
 
     /*
      * compute the area of the parent window occupied
@@ -548,7 +547,7 @@ miValidateTree (pParent, pChild, kind)
      * is the area which can be divied up among the marked
      * children in their new configuration.
      */
-    (*pScreen->RegionInit) (&totalClip, NullBox, 0);
+    REGION_INIT(pScreen, &totalClip, NullBox, 0);
     viewvals = 0;
     if ((pChild->drawable.y < pParent->lastChild->drawable.y) ||
 	((pChild->drawable.y == pParent->lastChild->drawable.y) &&
@@ -559,7 +558,7 @@ miValidateTree (pParent, pChild, kind)
 	{
 	    if (pWin->valdata)
 	    {
-		(* pScreen->RegionAppend) (&totalClip, &pWin->borderClip);
+		REGION_APPEND( pScreen, &totalClip, &pWin->borderClip);
 		if (pWin->viewable)
 		    viewvals++;
 	    }
@@ -573,7 +572,7 @@ miValidateTree (pParent, pChild, kind)
 	{
 	    if (pWin->valdata)
 	    {
-		(* pScreen->RegionAppend) (&totalClip, &pWin->borderClip);
+		REGION_APPEND( pScreen, &totalClip, &pWin->borderClip);
 		if (pWin->viewable)
 		    viewvals++;
 	    }
@@ -582,7 +581,7 @@ miValidateTree (pParent, pChild, kind)
 	    pWin = pWin->prevSib;
 	}
     }
-    (* pScreen->RegionValidate)(&totalClip, &overlap);
+    REGION_VALIDATE( pScreen, &totalClip, &overlap);
 
     /*
      * Now go through the children of the root and figure their new
@@ -594,7 +593,7 @@ miValidateTree (pParent, pChild, kind)
     overlap = TRUE;
     if (kind != VTStack)
     {
-	(* pScreen->Union) (&totalClip, &totalClip, &pParent->clipList);
+	REGION_UNION( pScreen, &totalClip, &totalClip, &pParent->clipList);
 	if (viewvals > 1)
 	{
 	    /*
@@ -604,12 +603,12 @@ miValidateTree (pParent, pChild, kind)
 	     * lower than the cost of multiple Subtracts in the
 	     * loop below.
 	     */
-	    (*pScreen->RegionInit) (&childUnion, NullBox, 0);
+	    REGION_INIT(pScreen, &childUnion, NullBox, 0);
 	    if (forward)
 	    {
 		for (pWin = pChild; pWin; pWin = pWin->nextSib)
 		    if (pWin->valdata && pWin->viewable)
-			(* pScreen->RegionAppend) (&childUnion,
+			REGION_APPEND( pScreen, &childUnion,
 						   &pWin->borderSize);
 	    }
 	    else
@@ -618,16 +617,16 @@ miValidateTree (pParent, pChild, kind)
 		while (1)
 		{
 		    if (pWin->valdata && pWin->viewable)
-			(* pScreen->RegionAppend) (&childUnion,
+			REGION_APPEND( pScreen, &childUnion,
 						   &pWin->borderSize);
 		    if (pWin == pChild)
 			break;
 		    pWin = pWin->prevSib;
 		}
 	    }
-	    (*pScreen->RegionValidate)(&childUnion, &overlap);
+	    REGION_VALIDATE(pScreen, &childUnion, &overlap);
 	    if (overlap)
-		(*pScreen->RegionUninit) (&childUnion);
+		REGION_UNINIT(pScreen, &childUnion);
 	}
     }
 
@@ -637,13 +636,13 @@ miValidateTree (pParent, pChild, kind)
     {
 	if (pWin->viewable) {
 	    if (pWin->valdata) {
-		(* pScreen->Intersect) (&childClip,
+		REGION_INTERSECT( pScreen, &childClip,
 					&totalClip,
  					&pWin->borderSize);
 		miComputeClips (pWin, pScreen, &childClip, kind, &exposed);
 		if (overlap)
 		{
-		    (* pScreen->Subtract) (&totalClip,
+		    REGION_SUBTRACT( pScreen, &totalClip,
 				       	   &totalClip,
 				       	   &pWin->borderSize);
 		}
@@ -652,24 +651,24 @@ miValidateTree (pParent, pChild, kind)
 	    }
 	} else {
 	    if (pWin->valdata) {
-		(* pScreen->RegionEmpty)(&pWin->clipList);
+		REGION_EMPTY( pScreen, &pWin->clipList);
 		if (pScreen->ClipNotify)
 		    (* pScreen->ClipNotify) (pWin, 0, 0);
-		(* pScreen->RegionEmpty)(&pWin->borderClip);
+		REGION_EMPTY( pScreen, &pWin->borderClip);
 		pWin->valdata = (ValidatePtr)NULL;
 	    }
 	}
     }
 
-    (* pScreen->RegionUninit) (&childClip);
+    REGION_UNINIT( pScreen, &childClip);
     if (!overlap)
     {
-	(*pScreen->Subtract)(&totalClip, &totalClip, &childUnion);
-	(*pScreen->RegionUninit) (&childUnion);
+	REGION_SUBTRACT(pScreen, &totalClip, &totalClip, &childUnion);
+	REGION_UNINIT(pScreen, &childUnion);
     }
 
-    (* pScreen->RegionInit) (&pParent->valdata->after.exposed, NullBox, 0);
-    (* pScreen->RegionInit) (&pParent->valdata->after.borderExposed, NullBox, 0);
+    REGION_INIT( pScreen, &pParent->valdata->after.exposed, NullBox, 0);
+    REGION_INIT( pScreen, &pParent->valdata->after.borderExposed, NullBox, 0);
 
     /*
      * each case below is responsible for updating the
@@ -685,22 +684,22 @@ miValidateTree (pParent, pChild, kind)
 	 * exposures and obscures as per miComputeClips and reset the parent's
 	 * clipList.
 	 */
-	(* pScreen->Subtract) (&pParent->valdata->after.exposed,
+	REGION_SUBTRACT( pScreen, &pParent->valdata->after.exposed,
 			       &totalClip, &pParent->clipList);
 	/* fall through */
     case VTMap:
 	if (pParent->backStorage) {
-	    (* pScreen->Subtract) (&exposed, &pParent->clipList, &totalClip);
+	    REGION_SUBTRACT( pScreen, &exposed, &pParent->clipList, &totalClip);
 	    (* pScreen->SaveDoomedAreas)(pParent, &exposed, 0, 0);
 	}
 	
-	(* pScreen->RegionCopy) (&pParent->clipList, &totalClip);
+	REGION_COPY( pScreen, &pParent->clipList, &totalClip);
 	pParent->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 	break;
     }
 
-    (* pScreen->RegionUninit) (&totalClip);
-    (* pScreen->RegionUninit) (&exposed);
+    REGION_UNINIT( pScreen, &totalClip);
+    REGION_UNINIT( pScreen, &exposed);
     if (pScreen->ClipNotify)
 	(*pScreen->ClipNotify) (pParent, 0, 0);
     return (1);

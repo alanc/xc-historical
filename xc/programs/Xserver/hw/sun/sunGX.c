@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: sunGX.c,v 1.22 93/10/29 17:40:25 kaleb Exp $";
+static char *rid="$XConsortium: sunGX.c,v 1.23 93/12/13 18:22:29 dpw Exp $";
 #endif /* lint */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
@@ -734,7 +734,7 @@ sunGXPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     {
 	int x1, y1, x2, y2, bx2, by2;
 
-	pextent = (*pGC->pScreen->RegionExtents)(prgnClip);
+	pextent = REGION_EXTENTS(pGC->pScreen, prgnClip);
 	x1 = pextent->x1;
 	y1 = pextent->y1;
 	x2 = pextent->x2;
@@ -1100,7 +1100,7 @@ sunGXPolyFillArc (pDraw, pGC, narcs, parcs)
 	    	box.y2 = box.y1 + (int)arc->height + 1;
 	    }
 	    if (devPriv->oneRect ||
-		(*pDraw->pScreen->RectIn)(cclip, &box) == rgnIN)
+		RECT_IN_REGION(pDraw->pScreen, cclip, &box) == rgnIN)
 	    {
 		if ((arc->angle2 >= FULLCIRCLE) ||
 		    (arc->angle2 <= -FULLCIRCLE))
@@ -1577,7 +1577,7 @@ sunGXPolyGlyphBlt (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     	box.y1 += pDrawable->y + y;
     	box.y2 += pDrawable->y + y;
     
-    	switch ((*pGC->pScreen->RectIn)(clip, &box))
+    	switch (RECT_IN_REGION(pGC->pScreen, clip, &box))
 	{
 	case rgnPART:
 	    cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
@@ -1650,7 +1650,7 @@ sunGXTEGlyphBlt (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     	bbox.y1 = y + pDrawable->y - FONTASCENT(pfont);
     	bbox.y2 = bbox.y1 + h;
     
-    	switch ((*pGC->pScreen->RectIn)(clip, &bbox))
+    	switch (RECT_IN_REGION(pGC->pScreen, clip, &bbox))
     	{
 	case rgnPART:
 	    if (pglyphBase)
@@ -2830,12 +2830,12 @@ sunGXCopyWindow(pWin, ptOldOrg, prgnSrc)
 
     pwinRoot = WindowTable[pWin->drawable.pScreen->myNum];
 
-    prgnDst = (* pWin->drawable.pScreen->RegionCreate)(NULL, 1);
+    prgnDst = REGION_CREATE(pWin->drawable.pScreen, NULL, 1);
 
     dx = ptOldOrg.x - pWin->drawable.x;
     dy = ptOldOrg.y - pWin->drawable.y;
-    (* pWin->drawable.pScreen->TranslateRegion)(prgnSrc, -dx, -dy);
-    (* pWin->drawable.pScreen->Intersect)(prgnDst, &pWin->borderClip, prgnSrc);
+    REGION_TRANSLATE(pWin->drawable.pScreen, prgnSrc, -dx, -dy);
+    REGION_INTERSECT(pWin->drawable.pScreen, prgnDst, &pWin->borderClip, prgnSrc);
 
     pbox = REGION_RECTS(prgnDst);
     nbox = REGION_NUM_RECTS(prgnDst);
@@ -2852,7 +2852,7 @@ sunGXCopyWindow(pWin, ptOldOrg, prgnSrc)
     sunGXDoBitblt ((DrawablePtr)pwinRoot, (DrawablePtr)pwinRoot,
 		    GXcopy, prgnDst, pptSrc, ~0L);
     DEALLOCATE_LOCAL(pptSrc);
-    (* pWin->drawable.pScreen->RegionDestroy)(prgnDst);
+    REGION_DESTROY(pWin->drawable.pScreen, prgnDst);
 }
 
 #if NeedFunctionPrototypes
@@ -2920,4 +2920,3 @@ sunGXInit (pScreen, fb)
     pScreen->CopyWindow = sunGXCopyWindow;
     return TRUE;
 }
-

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: pgcCpArea.c,v 1.2 91/07/16 13:12:10 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -136,16 +136,16 @@ int dstx, dsty ;
 		srcBox.x2 = srcx + width ;
 		srcBox.y2 = srcy + height ;
 
-		prgnDst = (* pScreen->RegionCreate)( &srcBox, 1 ) ;
+		prgnDst = REGION_CREATE(pScreen,  &srcBox, 1 ) ;
 	}
 	if ( pGC->subWindowMode == IncludeInferiors ) {
 		register RegionPtr prgnSrcClip =
 			NotClippedByChildren( (WindowPtr) pSrcDrawable ) ;
-		(* pScreen->Intersect)( prgnDst, prgnDst, prgnSrcClip ) ;
-		(* pScreen->RegionDestroy)( prgnSrcClip ) ;
+		REGION_INTERSECT(pScreen,  prgnDst, prgnDst, prgnSrcClip ) ;
+		REGION_DESTROY(pScreen,  prgnSrcClip ) ;
 	}
 	else
-		(* pScreen->Intersect)( prgnDst, prgnDst,
+		REGION_INTERSECT(pScreen,  prgnDst, prgnDst,
 				&(((WindowPtr) pSrcDrawable)->clipList) ) ;
 
 	dstx += pDstDrawable->x ;
@@ -155,8 +155,8 @@ int dstx, dsty ;
 	dy = srcy - dsty ;
 
 	/* clip the shape of the dst to the destination composite clip */
-	(* pScreen->TranslateRegion)( prgnDst, -dx, -dy ) ;
-	(* pScreen->Intersect)( prgnDst, prgnDst, pPriv->pCompositeClip ) ;
+	REGION_TRANSLATE(pScreen,  prgnDst, -dx, -dy ) ;
+	REGION_INTERSECT(pScreen,  prgnDst, prgnDst, pPriv->pCompositeClip ) ;
 
 	/* nbox != 0 destination region is visable */
 	if ( nbox = REGION_NUM_RECTS(prgnDst) ) {
@@ -173,7 +173,7 @@ int dstx, dsty ;
 				/* reverse order of bands */
 				if ( !( pboxNew1 = (BoxPtr)
 					ALLOCATE_LOCAL( nbox * sizeof (BoxRec) ) ) ) {
-					(* pScreen->RegionDestroy)( prgnDst ) ;
+					REGION_DESTROY(pScreen,  prgnDst ) ;
 					return NULL ;
 				}
 				for ( pboxBase = pboxNext = pbox + nbox - 1 ;
@@ -194,7 +194,7 @@ int dstx, dsty ;
 				/* reverse order of rects in each band */
 				if ( !( pboxNew2 = (BoxPtr)
 				    ALLOCATE_LOCAL( sizeof (BoxRec) * nbox ) ) ) {
-					(* pScreen->RegionDestroy)( prgnDst ) ;
+					REGION_DESTROY(pScreen,  prgnDst ) ;
 					return NULL ;
 				}
 				for ( pboxBase = pboxNext = pbox ;
@@ -248,7 +248,7 @@ int dstx, dsty ;
 	else /* nbox == 0 no visable destination region */
 		prgnExposed = (RegionPtr) 0 ;
 
-	(* pScreen->RegionDestroy)( prgnDst ) ;
+	REGION_DESTROY(pScreen,  prgnDst ) ;
 
 	return prgnExposed ;
 }

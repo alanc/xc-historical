@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillrct.c,v 5.7 90/07/21 14:58:32 rws Exp $ */
+/* $XConsortium: mfbfillrct.c,v 5.8 91/05/25 19:00:50 rws Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "pixmapstr.h"
@@ -141,7 +141,7 @@ mfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     {
 	int x1, y1, x2, y2, bx2, by2;
 
-	pextent = (*pGC->pScreen->RegionExtents)(prgnClip);
+	pextent = REGION_EXTENTS(pGC->pScreen, prgnClip);
 	x1 = pextent->x1;
 	y1 = pextent->y1;
 	x2 = pextent->x2;

@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.42 93/09/20 20:23:43 dpw Exp $ */
+/* $XConsortium: misprite.c,v 5.43 93/09/21 09:24:21 dpw Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -171,7 +171,7 @@ static GCOps miSpriteGCOps = {
 		(pWin)->drawable.y < pScreenPriv->saved.y2 &&	    \
 		pScreenPriv->saved.y1 < (pWin)->drawable.y +	    \
 				    (int) (pWin)->drawable.height &&\
-		(pWin)->drawable.pScreen->RectIn (&(pWin)->borderClip, \
+		RECT_IN_REGION((pWin)->drawable.pScreen, &(pWin)->borderClip, \
 			&pScreenPriv->saved) != rgnOUT))))
 
 #define GC_OP_PROLOGUE(pGC) { \
@@ -646,7 +646,7 @@ miSpriteSaveDoomedAreas (pWin, pObscured, dx, dy)
 	    cursorBox.x2 += dx;
 	    cursorBox.y2 += dy;
 	}
-	if ((* pScreen->RectIn) (pObscured, &cursorBox) != rgnOUT)
+	if (RECT_IN_REGION( pScreen, pObscured, &cursorBox) != rgnOUT)
 	    miSpriteRemoveCursor (pScreen);
     }
 
@@ -671,7 +671,7 @@ miSpriteRestoreAreas (pWin, prgnExposed)
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
     if (pScreenPriv->isUp)
     {
-	if ((* pScreen->RectIn) (prgnExposed, &pScreenPriv->saved) != rgnOUT)
+	if (RECT_IN_REGION( pScreen, prgnExposed, &pScreenPriv->saved) != rgnOUT)
 	    miSpriteRemoveCursor (pScreen);
     }
 
@@ -706,7 +706,7 @@ miSpritePaintWindowBackground (pWin, pRegion, what)
 	 * If the cursor is on the same screen as the window, check the
 	 * region to paint for the cursor and remove it as necessary
 	 */
-	if ((* pScreen->RectIn) (pRegion, &pScreenPriv->saved) != rgnOUT)
+	if (RECT_IN_REGION( pScreen, pRegion, &pScreenPriv->saved) != rgnOUT)
 	    miSpriteRemoveCursor (pScreen);
     }
 
@@ -735,7 +735,7 @@ miSpritePaintWindowBorder (pWin, pRegion, what)
 	 * If the cursor is on the same screen as the window, check the
 	 * region to paint for the cursor and remove it as necessary
 	 */
-	if ((* pScreen->RectIn) (pRegion, &pScreenPriv->saved) != rgnOUT)
+	if (RECT_IN_REGION( pScreen, pRegion, &pScreenPriv->saved) != rgnOUT)
 	    miSpriteRemoveCursor (pScreen);
     }
 
@@ -774,8 +774,8 @@ miSpriteCopyWindow (pWin, ptOldOrg, pRegion)
 	cursorBox.x2 -= dx;
 	cursorBox.y1 -= dy;
 	cursorBox.y2 -= dy;
-	if ((* pScreen->RectIn) (pRegion, &pScreenPriv->saved) != rgnOUT ||
-	    (* pScreen->RectIn) (pRegion, &cursorBox) != rgnOUT)
+	if (RECT_IN_REGION( pScreen, pRegion, &pScreenPriv->saved) != rgnOUT ||
+	    RECT_IN_REGION( pScreen, pRegion, &cursorBox) != rgnOUT)
 	    miSpriteRemoveCursor (pScreen);
     }
 
@@ -842,7 +842,7 @@ miSpriteValidateGC (pGC, changes, pDrawable)
 	pRegion = &pWin->clipList;
 	if (pGC->subWindowMode == IncludeInferiors)
 	    pRegion = &pWin->borderClip;
-	if ((*pDrawable->pScreen->RegionNotEmpty) (pRegion))
+	if (REGION_NOTEMPTY(pDrawable->pScreen, pRegion))
 	    pGCPriv->wrapOps = pGC->ops;
     }
 

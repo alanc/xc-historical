@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 5.18 93/10/12 10:50:04 dpw Exp $ */
+/* $XConsortium: mibitblt.c,v 5.19 93/12/13 17:32:19 dpw Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -85,7 +85,7 @@ miCopyArea(pSrcDrawable, pDstDrawable,
 	box.x2 = pSrcDrawable->x + (int) pSrcDrawable->width;
 	box.y2 = pSrcDrawable->y + (int) pSrcDrawable->height;
 
-	prgnSrcClip = (*pGC->pScreen->RegionCreate)(&box, 1);
+	prgnSrcClip = REGION_CREATE(pGC->pScreen, &box, 1);
 	realSrcClip = 1;
     }
     else
@@ -232,7 +232,7 @@ miCopyArea(pSrcDrawable, pDstDrawable,
     prgnExposed = miHandleExposures(pSrcDrawable, pDstDrawable, pGC, xIn, yIn,
 		      widthSrc, heightSrc, xOut, yOut, (unsigned long)0);
     if(realSrcClip)
-	(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+	REGION_DESTROY(pGC->pScreen, prgnSrcClip);
 		
     DEALLOCATE_LOCAL(ordering);
     DEALLOCATE_LOCAL(pwidthFirst);
@@ -399,9 +399,9 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
        to destroy what it's sent.  note that this means we don't
        have to free prgnSrcClip ourselves.
     */
-    prgnSrcClip = (*pGCT->pScreen->RegionCreate)(NULL, 0);
-    (*pGCT->pScreen->RegionCopy)(prgnSrcClip, prgnSrc);
-    (*pGCT->pScreen->TranslateRegion) (prgnSrcClip, srcx, 0);
+    prgnSrcClip = REGION_CREATE(pGCT->pScreen, NULL, 0);
+    REGION_COPY(pGCT->pScreen, prgnSrcClip, prgnSrc);
+    REGION_TRANSLATE(pGCT->pScreen, prgnSrcClip, srcx, 0);
     (*pGCT->funcs->ChangeClip)(pGCT, CT_REGION, prgnSrcClip, 0);
     ValidateGC((DrawablePtr)pPixmap, pGCT);
 
@@ -533,7 +533,7 @@ miCopyPlane(pSrcDrawable, pDstDrawable,
 	box.x2 = box.x1;
     if (box.y1 > box.y2)
 	box.y2 = box.y1;
-    prgnSrc = (*pGC->pScreen->RegionCreate)(&box, 1);
+    prgnSrc = REGION_CREATE(pGC->pScreen, &box, 1);
 
     if (pSrcDrawable->type != DRAWABLE_PIXMAP) {
 	/* clip to visible drawable */
@@ -541,15 +541,15 @@ miCopyPlane(pSrcDrawable, pDstDrawable,
 	if (pGC->subWindowMode == IncludeInferiors)
 	{
 	    RegionPtr	clipList = NotClippedByChildren ((WindowPtr) pSrcDrawable);
-	    (*pGC->pScreen->Intersect) (prgnSrc, prgnSrc, clipList);
-	    (*pGC->pScreen->RegionDestroy) (clipList);
+	    REGION_INTERSECT(pGC->pScreen, prgnSrc, prgnSrc, clipList);
+	    REGION_DESTROY(pGC->pScreen, clipList);
 	} else
-	    (*pGC->pScreen->Intersect)
-		    (prgnSrc, prgnSrc, &((WindowPtr)pSrcDrawable)->clipList);
+	    REGION_INTERSECT(pGC->pScreen, prgnSrc, prgnSrc,
+				       &((WindowPtr)pSrcDrawable)->clipList);
     }
 
-    box = *(*pGC->pScreen->RegionExtents)(prgnSrc);
-    (*pGC->pScreen->TranslateRegion)(prgnSrc, -box.x1, -box.y1);
+    box = *REGION_EXTENTS(pGC->pScreen, prgnSrc);
+    REGION_TRANSLATE(pGC->pScreen, prgnSrc, -box.x1, -box.y1);
 
     if ((box.x2 > box.x1) && (box.y2 > box.y1))
     {
@@ -573,7 +573,7 @@ miCopyPlane(pSrcDrawable, pDstDrawable,
     }
     prgnExposed = miHandleExposures(pSrcDrawable, pDstDrawable, pGC, srcx, srcy,
 		      width, height, dstx, dsty, bitPlane);
-    (*pGC->pScreen->RegionDestroy)(prgnSrc);
+    REGION_DESTROY(pGC->pScreen, prgnSrc);
     return prgnExposed;
 }
 
@@ -721,11 +721,11 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	box.y1 = 0;
 	box.x2 = w;
 	box.y2 = h;
-	prgnSrc = (*pGC->pScreen->RegionCreate)(&box, 1);
+	prgnSrc = REGION_CREATE(pGC->pScreen, &box, 1);
 
         miOpqStipDrawable(pDraw, pGC, prgnSrc, (unsigned long *) pImage,
 			  leftPad, w, h, x, y);
-	(*pGC->pScreen->RegionDestroy)(prgnSrc);
+	REGION_DESTROY(pGC->pScreen, prgnSrc);
 	break;
 
       case XYPixmap:

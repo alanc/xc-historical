@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyFillRct.c,v 1.2 91/12/11 21:40:49 eswu Exp $
+ * $XConsortium: skyFillRct.c,v 1.3 92/01/27 18:03:14 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991 
  *
@@ -256,7 +256,7 @@ skyPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     {
 	int x1, y1, x2, y2, bx2, by2;
 
-	pextent = (*pGC->pScreen->RegionExtents)(prgnClip);
+	pextent = REGION_EXTENTS(pGC->pScreen, prgnClip);
 	x1 = pextent->x1;
 	y1 = pextent->y1;
 	x2 = pextent->x2;

@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: multibufpx.c,v 1.2 93/07/08 14:09:28 rws Exp $ */
+/* $XConsortium: mbufpx.c,v 1.3 93/07/12 09:38:37 dpw Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -385,13 +385,13 @@ pixDisplayImageBuffers(pScreen, ppMBWindow, ppMBBuffer, nbuf)
 			 * window-relative so that region ops involving
 			 * pExposed and pWinSize behave sensibly.
 			 */
-			(* pScreen->TranslateRegion)(pWinSize,
+			REGION_TRANSLATE(pScreen, pWinSize,
 						     -pWin->drawable.x,
 						     -pWin->drawable.y);
-			(* pScreen->Intersect) (pExposed, pExposed, pWinSize);
-			(* pScreen->RegionDestroy) (pWinSize);
+			REGION_INTERSECT(pScreen, pExposed, pExposed, pWinSize);
+			REGION_DESTROY(pScreen, pWinSize);
 			MultibufferExpose (pPrevMBBuffer, pExposed);
-			(* pScreen->RegionDestroy) (pExposed);
+			REGION_DESTROY(pScreen, pExposed);
 		    }
 		    bool = FALSE;
 		    DoChangeGC (pGC, GCGraphicsExposures, &bool, FALSE);
@@ -517,7 +517,7 @@ pixPositionWindow (pWin, x, y)
 	box.x1 = box.y1 = 0;
 	box.x2 = width;
 	box.y2 = height;
-	(*pScreen->RegionInit)(&exposedRegion, &box, 1);
+	REGION_INIT(pScreen, &exposedRegion, &box, 1);
 	if (pWin->bitGravity != ForgetGravity)
 	{
 	    RegionRec preservedRegion;
@@ -525,9 +525,9 @@ pixPositionWindow (pWin, x, y)
 	    box.y1 = desty;
 	    box.x2 = destx + savewidth;
 	    box.y2 = desty + saveheight;
-	    (* pScreen->RegionInit)(&preservedRegion, &box, 1);
-	    (* pScreen->Subtract)(&exposedRegion, &exposedRegion, &preservedRegion);
-	    (* pScreen->RegionUninit)(&preservedRegion);
+	    REGION_INIT(pScreen, &preservedRegion, &box, 1);
+	    REGION_SUBTRACT(pScreen, &exposedRegion, &exposedRegion, &preservedRegion);
+	    REGION_UNINIT(pScreen, &preservedRegion);
 	}
 
     } /* end if (clear) */
@@ -570,7 +570,7 @@ pixPositionWindow (pWin, x, y)
     }
     FreeScratchGC (pGC);
     if (clear)
-	(*pScreen->RegionUninit)(&exposedRegion);
+	REGION_UNINIT(pScreen, &exposedRegion);
     return TRUE;
 }
 
@@ -623,7 +623,7 @@ pixClearImageBufferArea(pMBBuffer, x,y, width,height, exposures)
     if (box.x2 > w_width)  box.x2 = w_width;
     if (box.y2 > w_height) box.y2 = w_height;
 
-    (* pScreen->RegionInit)(&region, &box, 1);
+    REGION_INIT(pScreen, &region, &box, 1);
 
     if (pMBBuffer->number == pMBBuffer->pMBWindow->displayedMultibuffer)
       pDrawable = (DrawablePtr) pWin;
@@ -635,7 +635,7 @@ pixClearImageBufferArea(pMBBuffer, x,y, width,height, exposures)
     if (exposures)
 	MultibufferExpose(pMBBuffer, &region);
 
-    (*pScreen->RegionUninit)(&region);
+    REGION_UNINIT(pScreen, &region);
 }
 
 static void

@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbfillarc.c,v 5.9 92/12/24 09:26:18 rws Exp $ */
+/* $XConsortium: mfbfillarc.c,v 5.10 93/10/12 11:28:50 dpw Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -287,7 +287,7 @@ mfbPolyFillArcSolid(pDraw, pGC, narcs, parcs)
 	    box.y1 = arc->y + pDraw->y;
 	    box.x2 = box.x1 + (int)arc->width + 1;
 	    box.y2 = box.y1 + (int)arc->height + 1;
-	    if ((*pDraw->pScreen->RectIn)(cclip, &box) == rgnIN)
+	    if (RECT_IN_REGION(pDraw->pScreen, cclip, &box) == rgnIN)
 	    {
 		if ((arc->angle2 >= FULLCIRCLE) ||
 		    (arc->angle2 <= -FULLCIRCLE))

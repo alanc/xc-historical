@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.52 93/09/26 15:41:02 gildea Exp $ */
+/* $XConsortium: dispatch.c,v 5.53 93/09/26 17:20:15 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1049,8 +1049,8 @@ ProcTranslateCoords(client)
 		 * borderSize
 		 */
 		&& (!wBoundingShape(pWin) ||
-		    (*pWin->drawable.pScreen->PointInRegion)
-			    (&pWin->borderSize, x, y, &box))
+		    POINT_IN_REGION(pWin->drawable.pScreen, 
+					&pWin->borderSize, x, y, &box))
 #endif
 		)
             {
@@ -1518,7 +1518,7 @@ ProcCopyArea(client)
 	(*pDst->pScreen->SendGraphicsExpose)
  		(client, pRgn, stuff->dstDrawable, X_CopyArea, 0);
 	if (pRgn)
-	    (*pDst->pScreen->RegionDestroy) (pRgn);
+	    REGION_DESTROY(pDst->pScreen, pRgn);
     }
 
     return(client->noClientException);
@@ -1564,7 +1564,7 @@ ProcCopyPlane(client)
 	(*pdstDraw->pScreen->SendGraphicsExpose)
  		(client, pRgn, stuff->dstDrawable, X_CopyPlane, 0);
 	if (pRgn)
-	    (*pdstDraw->pScreen->RegionDestroy) (pRgn);
+	    REGION_DESTROY(pdstDraw->pScreen, pRgn);
     }
     return(client->noClientException);
 }

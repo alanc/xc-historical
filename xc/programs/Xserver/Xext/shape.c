@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 5.17 92/05/15 13:57:34 keith Exp $ */
+/* $XConsortium: shape.c,v 5.18 93/09/29 17:04:16 dpw Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -116,27 +116,27 @@ RegionOperate (client, pWin, kind, destRgnp, srcRgn, op, xoff, yoff, create)
     ScreenPtr	pScreen = pWin->drawable.pScreen;
 
     if (srcRgn && (xoff || yoff))
-	(*pScreen->TranslateRegion) (srcRgn, xoff, yoff);
+	REGION_TRANSLATE(pScreen, srcRgn, xoff, yoff);
     if (!pWin->parent)
     {
 	if (srcRgn)
-	    (*pScreen->RegionDestroy) (srcRgn);
+	    REGION_DESTROY(pScreen, srcRgn);
 	return Success;
     }
     switch (op) {
     case ShapeSet:
 	if (*destRgnp)
-	    (*pScreen->RegionDestroy) (*destRgnp);
+	    REGION_DESTROY(pScreen, *destRgnp);
 	*destRgnp = srcRgn;
 	srcRgn = 0;
 	break;
     case ShapeUnion:
 	if (*destRgnp)
-	    (*pScreen->Union) (*destRgnp, *destRgnp, srcRgn);
+	    REGION_UNION(pScreen, *destRgnp, *destRgnp, srcRgn);
 	break;
     case ShapeIntersect:
 	if (*destRgnp)
-	    (*pScreen->Intersect) (*destRgnp, *destRgnp, srcRgn);
+	    REGION_INTERSECT(pScreen, *destRgnp, *destRgnp, srcRgn);
 	else {
 	    *destRgnp = srcRgn;
 	    srcRgn = 0;
@@ -145,20 +145,20 @@ RegionOperate (client, pWin, kind, destRgnp, srcRgn, op, xoff, yoff, create)
     case ShapeSubtract:
 	if (!*destRgnp)
 	    *destRgnp = (*create)(pWin);
-	(*pScreen->Subtract) (*destRgnp, *destRgnp, srcRgn);
+	REGION_SUBTRACT(pScreen, *destRgnp, *destRgnp, srcRgn);
 	break;
     case ShapeInvert:
 	if (!*destRgnp)
-	    *destRgnp = (*pScreen->RegionCreate) ((BoxPtr) 0, 0);
+	    *destRgnp = REGION_CREATE(pScreen, (BoxPtr) 0, 0);
 	else
-	    (*pScreen->Subtract) (*destRgnp, srcRgn, *destRgnp);
+	    REGION_SUBTRACT(pScreen, *destRgnp, srcRgn, *destRgnp);
 	break;
     default:
 	client->errorValue = op;
 	return BadValue;
     }
     if (srcRgn)
-	(*pScreen->RegionDestroy) (srcRgn);
+	REGION_DESTROY(pScreen, srcRgn);
     (*pScreen->SetShape) (pWin);
     SendShapeNotify (pWin, kind);
     return Success;
@@ -174,7 +174,7 @@ CreateBoundingShape (pWin)
     extents.y1 = -wBorderWidth (pWin);
     extents.x2 = pWin->drawable.width + wBorderWidth (pWin);
     extents.y2 = pWin->drawable.height + wBorderWidth (pWin);
-    return (*pWin->drawable.pScreen->RegionCreate) (&extents, 1);
+    return REGION_CREATE(pWin->drawable.pScreen, &extents, 1);
 }
 
 static RegionPtr
@@ -187,7 +187,7 @@ CreateClipShape (pWin)
     extents.y1 = 0;
     extents.x2 = pWin->drawable.width;
     extents.y2 = pWin->drawable.height;
-    return (*pWin->drawable.pScreen->RegionCreate) (&extents, 1);
+    return REGION_CREATE(pWin->drawable.pScreen, &extents, 1);
 }
 
 static int
@@ -266,7 +266,7 @@ ProcShapeRectangles (client)
     ctype = VerifyRectOrder(nrects, prects, (int)stuff->ordering);
     if (ctype < 0)
 	return BadMatch;
-    srcRgn = (*pScreen->RectsToRegion)(nrects, prects, ctype);
+    srcRgn = RECTS_TO_REGION(pScreen, nrects, prects, ctype);
 
     if (!pWin->optional)
 	MakeWindowOptional (pWin);
@@ -325,7 +325,7 @@ ProcShapeMask (client)
 	if (pPixmap->drawable.pScreen != pScreen ||
 	    pPixmap->drawable.depth != 1)
 	    return BadMatch;
-	srcRgn = (*pScreen->BitmapToRegion)(pPixmap);
+	srcRgn = BITMAP_TO_REGION(pScreen, pPixmap);
 	if (!srcRgn)
 	    return BadAlloc;
     }
@@ -404,8 +404,8 @@ ProcShapeCombine (client)
     }
 
     if (srcRgn) {
-        tmp = (*pScreen->RegionCreate) ((BoxPtr) 0, 0);
-        (*pScreen->RegionCopy) (tmp, srcRgn);
+        tmp = REGION_CREATE(pScreen, (BoxPtr) 0, 0);
+        REGION_COPY(pScreen, tmp, srcRgn);
         srcRgn = tmp;
     } else
 	srcRgn = (*createSrc) (pSrcWin);
@@ -454,7 +454,7 @@ ProcShapeOffset (client)
     pScreen = pWin->drawable.pScreen;
     if (srcRgn)
     {
-        (*pScreen->TranslateRegion) (srcRgn, stuff->xOff, stuff->yOff);
+        REGION_TRANSLATE(pScreen, srcRgn, stuff->xOff, stuff->yOff);
         (*pScreen->SetShape) (pWin);
     }
     SendShapeNotify (pWin, (int)stuff->destKind);
@@ -481,7 +481,7 @@ ProcShapeQueryExtents (client)
     rep.boundingShaped = (wBoundingShape(pWin) != 0);
     rep.clipShaped = (wClipShape(pWin) != 0);
     if (wBoundingShape(pWin)) {
-	extents = *(pWin->drawable.pScreen->RegionExtents) (wBoundingShape(pWin));
+	extents = *REGION_EXTENTS(pWin->drawable.pScreen, wBoundingShape(pWin));
     } else {
 	extents.x1 = -wBorderWidth (pWin);
 	extents.y1 = -wBorderWidth (pWin);
@@ -493,7 +493,7 @@ ProcShapeQueryExtents (client)
     rep.widthBoundingShape = extents.x2 - extents.x1;
     rep.heightBoundingShape = extents.y2 - extents.y1;
     if (wClipShape(pWin)) {
-	extents = *(pWin->drawable.pScreen->RegionExtents) (wClipShape(pWin));
+	extents = *REGION_EXTENTS(pWin->drawable.pScreen, wClipShape(pWin));
     } else {
 	extents.x1 = 0;
 	extents.y1 = 0;
@@ -677,7 +677,7 @@ SendShapeNotify (pWin, which)
     if (which == ShapeBounding) {
 	region = wBoundingShape(pWin);
 	if (region) {
-	    extents = *(pWin->drawable.pScreen->RegionExtents) (region);
+	    extents = *REGION_EXTENTS(pWin->drawable.pScreen, region);
 	    shaped = xTrue;
 	} else {
 	    extents.x1 = -wBorderWidth (pWin);
@@ -689,7 +689,7 @@ SendShapeNotify (pWin, which)
     } else {
 	region = wClipShape(pWin);
 	if (region) {
-	    extents = *(pWin->drawable.pScreen->RegionExtents) (region);
+	    extents = *REGION_EXTENTS(pWin->drawable.pScreen, region);
 	    shaped = xTrue;
 	} else {
 	    extents.x1 = 0;

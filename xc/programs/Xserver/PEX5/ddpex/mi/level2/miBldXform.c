@@ -1,4 +1,4 @@
-/* $XConsortium: miBldXform.c,v 5.4 92/12/21 10:35:52 mor Exp $ */
+/* $XConsortium: miBldXform.c,v 5.5 93/09/03 15:06:15 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -290,7 +290,7 @@ ng
 
 	      pGC = pddc->Static.misc.pPolylineGC;
 
-	      clipRegion = (*pGC->pScreen->RectsToRegion)(numrects,
+	      clipRegion = RECTS_TO_REGION(pGC->pScreen, numrects,
 	          xrects, Unsorted);
 
 	      Xfree((char *) xrects);
@@ -300,9 +300,9 @@ ng
 	      box.x2 = viewport.x + viewport.width;
 	      box.y2 = viewport.y + viewport.height;
 
-	      (*pGC->pScreen->RegionInit)(&tempRegion, &box, 1);
-	      (*pGC->pScreen->Intersect)(clipRegion, clipRegion, &tempRegion);
-	      (*pGC->pScreen->RegionUninit)(&tempRegion);
+	      REGION_INIT(pGC->pScreen, &tempRegion, &box, 1);
+	      REGION_INTERSECT(pGC->pScreen, clipRegion, clipRegion, &tempRegion);
+	      REGION_UNINIT(pGC->pScreen, &tempRegion);
 
 
 	      /*
@@ -315,7 +315,7 @@ ng
 	      SetViewportClip (pddc->Static.misc.pPolyMarkerGC, clipRegion);
 	      SetViewportClip (pddc->Static.misc.pTextGC, clipRegion);
 
-	      (*pGC->pScreen->RegionDestroy)(clipRegion);
+	      REGION_DESTROY(pGC->pScreen, clipRegion);
 	  }
 	  else {
 	      SetClipRects(pddc->Static.misc.pPolylineGC,
@@ -673,9 +673,9 @@ void SetViewportClip(pGC, clipRegion)
      * and use tempRegion when calling ChangeClip.
      */
 
-    RegionPtr tempRegion = (*pGC->pScreen->RegionCreate)(NullBox, 0);
+    RegionPtr tempRegion = REGION_CREATE(pGC->pScreen, NullBox, 0);
 
-    (*pGC->pScreen->RegionCopy)(tempRegion, clipRegion);
+    REGION_COPY(pGC->pScreen, tempRegion, clipRegion);
 
     pGC->serialNumber |= GC_CHANGE_SERIAL_BIT;
     pGC->clipOrg.x = 0;

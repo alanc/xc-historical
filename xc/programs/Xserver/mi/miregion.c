@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.56 91/12/26 11:31:15 rws Exp $ */
+/* $XConsortium: miregion.c,v 1.57 93/09/03 08:06:33 dpw Exp $ */
 
 #include <stdio.h>
 #include "miscstruct.h"
@@ -162,8 +162,8 @@ if (((numRects) < ((reg)->data->size >> 1)) && ((reg)->data->size > 50)) \
 }
 
 
-static BoxRec EmptyBox = {0, 0, 0, 0};
-static RegDataRec EmptyData = {0, 0};
+BoxRec EmptyBox = {0, 0, 0, 0};
+RegDataRec EmptyData = {0, 0};
 
 #ifdef DEBUG
 int
