@@ -9,7 +9,7 @@
  * LibName, SoRev, HasSharedData, and optionally HugLibrary and IncSubdir
  */
 
-XCOMM $XConsortium: Library.tmpl,v 1.23 93/09/06 10:22:56 rws Exp $
+XCOMM $XConsortium: Library.tmpl,v 1.24 93/09/17 11:27:55 rws Exp $
 
 #ifndef LibraryCcCmd
 #if DoSharedLib && defined(SharedLibraryCcCmd)
@@ -163,7 +163,7 @@ InstallLibrary($(LIBNAME),$(USRLIBDIR))
 #endif
 #if DoProfileLib
 ProfiledLibraryTarget($(LIBNAME),$(OBJS))
-InstallLibrary($(LIBNAME)_p),$(USRLIBDIR))
+InstallLibrary($(LIBNAME)_p,$(USRLIBDIR))
 #endif
 #if DoDebugLib
 DebuggedLibraryTarget($(LIBNAME),$(OBJS))
