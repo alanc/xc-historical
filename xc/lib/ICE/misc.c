@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.2 93/08/20 15:36:59 rws Exp $ */
+/* $XConsortium: misc.c,v 1.3 93/09/10 14:11:51 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -244,34 +244,20 @@ register char	 *ptr;
 #ifdef WIN32
 	    errno = WSAGetLastError();
 #endif
-	    if (iceConn->want_to_close)
-	    {
-		/*
-		 * We were about to send a WantToClose message and now we
-		 * detected that the other side closed the connection,
-		 * so we just close our side.
-		 */
-
-		_IceFreeConnection (iceConn, False);
-		break;
-	    }
-	    else
-	    {
-		/*
-		 * Fatal IO error, invoke the IO error handler.
-		 */
-
-		(*_IceIOErrorHandler) (iceConn);
+	    /*
+	     * Fatal IO error, invoke the IO error handler.
+	     */
+	    
+	    (*_IceIOErrorHandler) (iceConn);
 
 
-		/*
-		 * All IO error handlers must either exit() or do
-		 * a long jump.  If we reached this point, we have
-		 * no choice but to exit().
-		 */
+	    /*
+	     * All IO error handlers must either exit() or do
+	     * a long jump.  If we reached this point, we have
+	     * no choice but to exit().
+	     */
 
-		exit (1);
-	    }
+	    exit (1);
 	}
 
 	nleft -= nwritten;
