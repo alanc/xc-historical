@@ -1,7 +1,7 @@
 /*
  * O/S-dependent (mis)feature macro definitions
  *
- * $XConsortium: Xosdefs.h,v 1.10 93/12/06 15:17:14 kaleb Exp $
+ * $XConsortium: Xosdefs.h,v 1.11 94/01/01 14:52:28 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -99,6 +99,11 @@
 #ifndef _POSIX_
 #define X_NOT_POSIX
 #endif
+#endif
+
+#if defined(nec_ews_svr2) || defined(SX) || defined(PC_UX)
+#define X_NOT_POSIX
+#define X_NOT_STDC_ENV
 #endif
 
 #endif /* _XOSDEFS_H_ */
