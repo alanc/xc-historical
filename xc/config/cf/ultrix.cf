@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.62 94/03/26 18:58:08 rws Exp $
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.63 94/03/28 09:11:49 kaleb Exp $
 
 #define OSName            Ultrix-32 4.3
 XCOMM operating system:  OSName
@@ -25,6 +25,7 @@ XCOMM operating system:  OSName
 #define PexNativeFPFormat PEXDEC_F_Floating
 #define NativeFPFormat DEC_F_Float
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
+#define BuildServer NO
 #endif
 
 #ifdef MipsArchitecture
@@ -34,6 +35,7 @@ XCOMM operating system:  OSName
 /* Even under ultrix 4.2, the compiler miscompiles some alloca calls */
 #define AllocateLocalDefines /* -DINCLUDE_ALLOCA_H */
 #else
+#define BuildServer NO
 #define AllocateLocalDefines /**/
 #endif
 #if !HasGcc
