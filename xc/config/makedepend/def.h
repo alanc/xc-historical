@@ -1,15 +1,11 @@
 /*
- * $XConsortium: def.h,v 1.9 89/11/03 10:21:22 jim Exp $
+ * $XConsortium: def.h,v 1.10 89/12/09 16:12:45 jim Exp $
  */
 #include <stdio.h>
 #include <ctype.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-
-#ifdef USG
-#define u_char		unchar
-#endif
 
 #define MAXDEFINES	512
 #define MAXFILES	512
@@ -54,7 +50,7 @@ extern int	_debugmask;
 #define	debug(level,arg) /**/
 #endif /* DEBUG */
 
-typedef	u_char	boolean;
+typedef	unsigned char boolean;
 
 struct symtab {
 	char	*s_name;
