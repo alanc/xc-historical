@@ -1,4 +1,4 @@
-/* $XConsortium: tocintrnl.h,v 2.14 89/11/25 21:07:35 converse Exp $ */
+/* $XConsortium: tocintrnl.h,v 2.15 91/07/10 19:59:18 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -39,21 +39,22 @@ typedef enum {
 typedef struct _MsgRec {
     Toc		toc;		/* Which toc this message is in. */
     Toc		desttoc;	/* Folder to copy or move to (NULL if none) */
-    FateType	fate;		/* What will be done to this message */
+    Scrn	*scrn;		/* Scrns showing this message (if any) */
+    Widget      source;		/* Source (if any) containing this msg. */
     XawTextPosition position;	/* Position in the scanfile for this msg. */
-    int		length;		/* #/chars for this msg's entry in scanfile. */
+    XawTextPosition startPos;	/* Where to start the insertion point. */
     char	*buf;		/* The scanline for this message. */
     int		msgid;		/* Message id for this message. */
-    short	changed;	/* True iff this entry needs to be saved. */
-    short	visible;	/* Whether we should show this message. */
-    short	temporary;	/* Whether we should delete this message when
-				   it is no longer visible. */
-    Scrn	*scrn;		/* Scrns showing this message (if any) */
-    Cardinal	num_scrns;	/* How many scrns are currently showing msg. */
-    Widget      source;		/* Source (if any) containing this msg. */
-    short	reapable;	/* True iff we don't need to keep this
-				   composition around. */
-    XawTextPosition startPos;	/* Where to start the insertion point. */
+    short	length;		/* #/chars for this msg's entry in scanfile */
+    unsigned char num_scrns;	/* How many scrns are currently showing msg */
+    unsigned	fate:2;		/* What will be done to this message */
+    unsigned	changed:1;	/* True iff this entry needs to be saved */
+    unsigned	visible:1;	/* Whether we should show this message */
+    unsigned	temporary:1;	/* Whether we should delete this message when
+				   it is no longer visible */
+    unsigned	reapable:1;	/* True iff we don't need to keep this
+				   composition around */
+    unsigned	unused:2;
 } MsgRec;
 
 typedef struct _TocRec {
