@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.43 89/05/04 19:39:51 keith Exp $
+ * $XConsortium: twm.c,v 1.44 89/05/11 13:54:37 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.43 89/05/04 19:39:51 keith Exp $";
+"$XConsortium: twm.c,v 1.44 89/05/11 13:54:37 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -114,6 +114,8 @@ int Argc;
 char **Argv;
 char **Environ;
 
+Bool RestartPreviousState = False;	/* try to restart in previous state */
+
 unsigned long black, white;
 
 /***********************************************************************
@@ -160,13 +162,6 @@ main(argc, argv, environ)
     Argv = argv;
     Environ = environ;
 
-    if (argc > 5)
-    {
-	fprintf(stderr,
-	"Usage: twm [-display display] [-f init_file] [-singlescreen]\n");
-	exit(1);
-    }
-
     for (i = 1; i < argc; i++)
     {
 	if (strncmp(argv[i], "-d", 2) == 0)
@@ -178,7 +173,7 @@ main(argc, argv, environ)
 	else
 	{
 	    fprintf(stderr,
-	    "Usage: twm [-display display] [-f init_file] [-singlescreen]\n");
+	     "Usage:  twm [-display display] [-f init_file] [-singlescreen]\n");
 	    exit(1);
 	}
     }
@@ -463,7 +458,7 @@ main(argc, argv, environ)
 	exit (1);
     }
 
-
+    RestartPreviousState = False;
     HandlingEvents = TRUE;
     InitEvents();
     HandleEvents();

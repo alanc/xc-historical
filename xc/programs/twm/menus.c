@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.55 89/05/05 15:31:16 jim Exp $
+ * $XConsortium: menus.c,v 1.56 89/05/10 01:25:58 keith Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.55 89/05/05 15:31:16 jim Exp $";
+"$XConsortium: menus.c,v 1.56 89/05/10 01:25:58 keith Exp $";
 #endif
 
 #include <stdio.h>
@@ -2359,11 +2359,12 @@ TwmWindow *t;
 
 }
 
+static Atom wmStateAtom = None;
+
 SetMapStateProp(tmp_win, state)
 TwmWindow *tmp_win;
 int state;
 {
-    static Atom wmStateAtom = None;
     unsigned long data[2];
   
     if (tmp_win->iconmgr) return;
@@ -2373,8 +2374,34 @@ int state;
 			   tmp_win->icon_w);
 
     if (wmStateAtom == None) 
-     wmStateAtom = XInternAtom (dpy, "WM_STATE", False);
+      wmStateAtom = XInternAtom (dpy, "WM_STATE", False);
 
     XChangeProperty (dpy, tmp_win->w, wmStateAtom, wmStateAtom, 32, 
 		 PropModeReplace, (unsigned char *) data, 2);
 }
+
+Bool GetWMState (w, statep, iwp)
+    int *statep;
+    Window *iwp;
+{
+    Atom actual_type;
+    int actual_format;
+    long nitems, bytesafter;
+    unsigned long *datap = NULL;
+
+    if (wmStateAtom == None &&
+        (wmStateAtom = XInternAtom (dpy, "WM_STATE", False)) == None)
+      return False;
+
+    if (XGetWindowProperty (dpy, w, wmStateAtom, 0, 2, False, wmStateAtom,
+			    &actual_type, &actual_format, &nitems, &bytesafter,
+			    (unsigned char **) &datap) != Success)
+      return False;
+
+    *statep = (int) datap[0];
+    *iwp = (Window) datap[1];
+    XFree ((char *) datap);
+    return True;
+}
+
+

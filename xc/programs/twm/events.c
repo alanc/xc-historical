@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.57 89/05/10 01:25:48 keith Exp $
+ * $XConsortium: events.c,v 1.58 89/05/11 13:54:10 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.57 89/05/10 01:25:48 keith Exp $";
+"$XConsortium: events.c,v 1.58 89/05/11 13:54:10 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -886,7 +886,7 @@ HandleMapRequest()
     {
 	if (Transient(Event.xany.window) && !Scr->DecorateTransients)
 	{
-	    XMapRaised(dpy, Event.xany.window);
+	    XMapWindow(dpy, Event.xany.window);
 	    return;
 	}
 
@@ -910,14 +910,22 @@ HandleMapRequest()
     if ((! Tmp_win->icon) &&
 	Tmp_win->wmhints && (Tmp_win->wmhints->flags & StateHint))
     {
-	switch (Tmp_win->wmhints->initial_state)
+	int state;
+	Window icon;
+
+	/* use WM_STATE if enabled */
+	if (!(RestartPreviousState && GetWMState(Tmp_win->w, &state, &icon) &&
+	      (state == NormalState || state == IconicState)))
+	  state = Tmp_win->wmhints->initial_state;
+
+	switch (state) 
 	{
 	    case DontCareState:
 	    case NormalState:
 	    case ZoomState:
 	    case InactiveState:
 		XMapWindow(dpy, Tmp_win->w);
-		XMapRaised(dpy, Tmp_win->frame);
+		XMapWindow(dpy, Tmp_win->frame);
 		SetMapStateProp(Tmp_win, NormalState);
 		break;
 

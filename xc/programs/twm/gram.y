@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.35 89/05/04 19:02:40 keith Exp $
+ * $XConsortium: gram.y,v 1.36 89/05/10 01:25:52 keith Exp $
  *
  * .twmrc command grammer
  *
@@ -35,7 +35,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.35 89/05/04 19:02:40 keith Exp $";
+"$XConsortium: gram.y,v 1.36 89/05/10 01:25:52 keith Exp $";
 
 #include <stdio.h>
 #include "twm.h"
@@ -83,7 +83,7 @@ extern int yylineno;
 %token <num> ICONMGR_FOREGROUND ICONMGR_BACKGROUND ICONMGR_FONT ICONMGR
 %token <num> ICONMGR_GEOMETRY SHOW_ICONMGR ICONMGR_NOSHOW MAKE_TITLE
 %token <num> F_RAISELOWER DECORATE_TRANSIENTS RANDOM_PLACEMENT
-%token <num> ICONIFY_BY_UNMAPPING DONT_ICONIFY_BY_UNMAPPING
+%token <num> ICONIFY_BY_UNMAPPING DONT_ICONIFY_BY_UNMAPPING 
 %token <num> WARPCURSOR NUMBER BORDERWIDTH CLIENT_BORDERWIDTH TITLE_FONT 
 %token <num> RESIZE_FONT NO_TITLE AUTO_RAISE FORCE_ICON NO_HILITE
 %token <num> MENU_FONT ICON_FONT UNKNOWN_ICON ICONS ICON_DIRECTORY
@@ -102,7 +102,7 @@ extern int yylineno;
 %token <num> F_WARPTOICONMGRE ALL OR CURSORS CUR_BUTTON CUR_FRAME
 %token <num> CUR_TITLE CUR_ICONMGR CUR_ICON NO_ICONMGRS F_SORTICONMGR
 %token <num> CUR_MOVE CUR_RESIZE CUR_WAIT CUR_SELECT CUR_KILL
-%token <num> ICON_REGION NORTH SOUTH EAST WEST
+%token <num> ICON_REGION NORTH SOUTH EAST WEST RESTART_PREVIOUS_STATE
 %token <ptr> STRING
 
 %type <ptr> string
@@ -189,6 +189,8 @@ stmt		: error
 						Scr->BorderWidth = $2; }
 		| ICON_BORDERWIDTH number{ if (Scr->FirstTime) 
 						Scr->IconBorderWidth = $2; }
+		| RESTART_PREVIOUS_STATE { if (Scr->FirstTime)
+						RestartPreviousState = True; }
 		| CLIENT_BORDERWIDTH	{ if (Scr->FirstTime)
 						Scr->ClientBorderWidth=TRUE; }
 		| NO_TITLE_FOCUS	{ if (Scr->FirstTime) 

@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.24 89/04/13 15:48:48 jim Exp $
+ * $XConsortium: twm.h,v 1.25 89/05/11 13:54:41 jim Exp $
  *
  * twm include file
  *
@@ -267,5 +267,8 @@ extern Bool ErrorOccurred;
 extern XErrorEvent LastErrorEvent;
 
 #define ResetError() (ErrorOccurred = False)
+
+extern Bool RestartPreviousState;
+extern Bool GetWMState();
 
 #endif /* _TWM_ */
