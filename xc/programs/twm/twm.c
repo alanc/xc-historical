@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.77 89/11/03 19:11:01 jim Exp $
+ * $XConsortium: twm.c,v 1.78 89/11/03 21:56:55 keith Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.77 89/11/03 19:11:01 jim Exp $";
+"$XConsortium: twm.c,v 1.78 89/11/03 21:56:55 keith Exp $";
 #endif
 
 #include <stdio.h>
@@ -322,11 +322,12 @@ main(argc, argv, environ)
 	LocateStandardColormaps();
 
 	Scr->TBInfo.inited = False;
-	Scr->TBInfo.nbuttons = 0;
+	Scr->TBInfo.nleft = Scr->TBInfo.nright = 0;
 	Scr->TBInfo.head = NULL;
 	Scr->TBInfo.border = TITLEBUTTON_BORDERWIDTH;
 	Scr->TBInfo.width = 0;
-	Scr->TBInfo.totalwidth = 0;
+	Scr->TBInfo.leftx = 0;
+	Scr->TBInfo.titlex = 0;
 
 	Scr->MyDisplayWidth = DisplayWidth(dpy, scrnum);
 	Scr->MyDisplayHeight = DisplayHeight(dpy, scrnum);
@@ -566,6 +567,7 @@ InitVariables()
     Scr->UnknownWidth = 0;
     Scr->UnknownHeight = 0;
     Scr->NumAutoRaises = 0;
+    Scr->NoDefaults = FALSE;
     Scr->UsePPosition = PPOS_OFF;
     Scr->FocusRoot = TRUE;
     Scr->Focus = NULL;

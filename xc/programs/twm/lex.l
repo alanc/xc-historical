@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.51 89/11/01 17:27:50 jim Exp $
+ * $XConsortium: lex.l,v 1.52 89/11/03 21:56:34 keith Exp $
  *
  * .twmrc lex file
  *
@@ -37,7 +37,7 @@
  ***********************************************************************/
 
 static char RCSinfo[]=
-"$XConsortium: lex.l,v 1.51 89/11/01 17:27:50 jim Exp $";
+"$XConsortium: lex.l,v 1.52 89/11/03 21:56:34 keith Exp $";
 
 /* #include <stdio.h> */		/* lex already includes stdio.h */
 #include "gram.h"
@@ -181,12 +181,19 @@ t.move				{ return F_MOVE; }
 [Ss][Ee][Ll][Ee][Cc][Tt]	{ return CUR_SELECT; }
 [Dd][Ee][Ss][Tt][Rr][Oo][Yy]	{ return CUR_KILL; }
 [Ii][Cc][Oo][Nn][Mm][Gg][Rr]	{ return CUR_ICONMGR; }
-[Tt][Ii][Tt][Ll][Ee][Bb][Uu][Tt][Tt][Oo][Nn]	{ return TITLEBUTTON; }
-[Ss][Qq][Uu][Ee][Ee][Zz][Ee][Tt][Ii][Tt][Ll][Ee]	{ return SQUEEZETITLE; }
+[Nn][Oo][Dd][Ee][Ff][Aa][Uu][Ll][Tt][Ss]	{ return NODEFAULTS; }
+[Ll][Ee][Ff][Tt][Tt][Ii][Tt][Ll][Ee][Bb][Uu][Tt][Tt][Oo][Nn]	{ 
+						return LEFT_TITLEBUTTON; }
+[Rr][Ii][Gg][Hh][Tt][Tt][Ii][Tt][Ll][Ee][Bb][Uu][Tt][Tt][Oo][Nn]	{
+						return RIGHT_TITLEBUTTON; }
+[Ss][Qq][Uu][Ee][Ee][Zz][Ee][Tt][Ii][Tt][Ll][Ee]	{ 
+						return SQUEEZETITLE; }
 
 [Xo][Oo][Rr][Vv][Aa][Ll][Uu][Ee]	{ return XOR_VALUE; }
-[Aa][Uu][Tt][Oo][Rr][Ee][Ll][Aa][Tt][Ii][Vv][Ee][Rr][Ee][Ss][Ii][Zz][Ee]	{ return AUTO_RELATIVE_RESIZE; }
-[Nn][Oo][Gg][Rr][Aa][Bb][Ss][Ee][Rr][Vv][Ee][Rr]	{return NO_GRAB_SERVER;}
+[Aa][Uu][Tt][Oo][Rr][Ee][Ll][Aa][Tt][Ii][Vv][Ee][Rr][Ee][Ss][Ii][Zz][Ee] {
+						return AUTO_RELATIVE_RESIZE; }
+[Nn][Oo][Gg][Rr][Aa][Bb][Ss][Ee][Rr][Vv][Ee][Rr]	{
+						return NO_GRAB_SERVER;}
 [Ii][Cc][Oo][Nn][Rr][Ee][Gg][Ii][Oo][Nn]	{ return ICON_REGION; }
 [Nn][Oo][Rr][Tt][Hh]				{ return NORTH; }
 [Ss][Oo][Uu][Tt][Hh]				{ return SOUTH; }

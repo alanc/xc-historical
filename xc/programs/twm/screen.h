@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.44 89/11/03 16:15:31 jim Exp $
+ * $XConsortium: screen.h,v 1.45 89/11/03 21:56:39 keith Exp $
  *
  * twm per-screen data include file
  *
@@ -49,6 +49,7 @@ typedef struct _StdCmap {
 #define TITLEBUTTON_BORDERWIDTH 1
 #define SIZE_HINDENT 10
 #define SIZE_VINDENT 2
+#define SQUEEZED_HIGHLIGHT 8
 
 typedef struct ScreenInfo
 {
@@ -92,12 +93,14 @@ typedef struct ScreenInfo
     } StdCmapInfo;
     struct {
 	Bool inited;			/* has been initialized */
-	int nbuttons;			/* how many buttons in list */
+	int nleft, nright;		/* numbers of buttons in list */
 	TitleButton *head;		/* start of list */
 	int border;			/* button border */
 	int pad;			/* button-padding */
 	int width;			/* width of single button w/o border */
-	int totalwidth;			/* including padding */
+	int leftx;			/* start of left buttons */
+	int titlex;			/* start of title string */
+	int rightoff;			/* offset back from right edge */
     } TBInfo;
     ColorPair BorderTileC;	/* border tile colors */
     ColorPair TitleC;		/* titlebar colors */
@@ -177,6 +180,7 @@ typedef struct ScreenInfo
     int TitlePadding;		/* distance between items in titlebar */
     int ButtonIndent;		/* amount to shrink buttons on each side */
     int NumAutoRaises;		/* number of autoraise windows on screen */
+    short NoDefaults;		/* do not add in default UI stuff */
     short UsePPosition;		/* what do with PPosition, see values below */
     short AutoRelativeResize;	/* start resize relative to position in quad */
     short FocusRoot;		/* is the input focus on the root ? */

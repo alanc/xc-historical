@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.46 89/11/03 21:57:39 keith Exp $
+ * $XConsortium: resize.c,v 1.47 89/11/03 22:18:41 keith Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.46 89/11/03 21:57:39 keith Exp $";
+"$XConsortium: resize.c,v 1.47 89/11/03 22:18:41 keith Exp $";
 #endif
 
 #include <stdio.h>
@@ -679,22 +679,17 @@ int x, y, w, h;
 #ifdef SHAPE
     if (!HasShape)
 	Scr->SqueezeTitle = FALSE;
+#endif
 
+    ComputeWindowTitleOffsets (tmp_win, xwc.width, True);
+
+#ifdef SHAPE
     reShape = FALSE;
     if (tmp_win->wShaped && w != tmp_win->frame_width)
 	reShape = TRUE;
     if (Scr->SqueezeTitle)
     {
-    	title_width =   Scr->FramePadding +	    /* frame pad */
-		    	Scr->TBInfo.border +    /* border of iconify box */
-		    	Scr->TBInfo.width +	    /* iconify box */
-		    	Scr->TBInfo.border +    /* other border of iconify box */
-		    	Scr->TitlePadding +	    /* pad to title */
-		    	tmp_win->name_width +   /* string name width */
-		    	Scr->TitlePadding +	    /* pad after title */
-		    	Scr->TBInfo.totalwidth +/* RHS title widgets */
-		    	Scr->FramePadding;	    /* RHS frame pad */
-		    	
+	title_width = tmp_win->rightx + Scr->TBInfo.rightoff;
 	if (title_width < xwc.width)
 	{
 	    xwc.width = title_width;
@@ -730,25 +725,18 @@ int x, y, w, h;
 
     XMoveResizeWindow(dpy, tmp_win->frame, x, y, w, h);
 
-    if (!Scr->SqueezeTitle && tmp_win->title_height && tmp_win->hilite_w)
+    /*
+     * fix up highlight window
+     */
+    if (tmp_win->title_height && tmp_win->hilite_w)
     {
-	int boxwidth = (Scr->FramePadding + Scr->TBInfo.width + 
-			Scr->TBInfo.border * 2);
-	int start = (boxwidth + Scr->TitlePadding +
-		     tmp_win->name_width + Scr->TitlePadding);
-	int width = (title_width - start -
-		     (Scr->TitlePadding + Scr->TBInfo.totalwidth + 
-		      Scr->FramePadding));
-
-        if (width <= 0)
-        {
+	xwc.width = (tmp_win->rightx - tmp_win->highlightx);
+	if (Scr->TBInfo.nright > 0) xwc.width -= Scr->TitlePadding;
+        if (xwc.width <= 0) {
             xwc.x = Scr->MyDisplayWidth;	/* move offscreen */
             xwc.width = 1;
-        }
-        else
-        {
-            xwc.x = start;
-            xwc.width = width;
+        } else {
+            xwc.x = tmp_win->highlightx;
         }
 
         xwcm = CWX | CWWidth;

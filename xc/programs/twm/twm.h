@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.43 89/11/03 19:11:03 jim Exp $
+ * $XConsortium: twm.h,v 1.44 89/11/03 21:55:12 keith Exp $
  *
  * twm include file
  *
@@ -187,6 +187,8 @@ typedef struct TwmWindow
     char *name;			/* name of the window */
     char *icon_name;		/* name of the icon */
     int name_width;		/* width of name text */
+    int highlightx;		/* start of highlight window */
+    int rightx;			/* start of right buttons */
     XWindowAttributes attr;	/* the child window attributes */
     XSizeHints hints;		/* normal hints */
     XWMHints *wmhints;		/* WM hints */

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.109 89/11/03 16:19:18 jim Exp $
+ * $XConsortium: menus.c,v 1.110 89/11/03 19:03:37 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.109 89/11/03 16:19:18 jim Exp $";
+"$XConsortium: menus.c,v 1.110 89/11/03 19:03:37 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -199,13 +199,15 @@ Bool AddFuncKey (name, cont, mods, func, win_name, action)
     return True;
 }
 
-int MakeTitleButton (bm, width, height, func, action, menuroot, rightside)
+int MakeTitleButton (bm, width, height, func, action, menuroot, rightside,
+		     append)
     Pixmap bm;
     int width, height;
     int func;
     char *action;
     MenuRoot *menuroot;
     Bool rightside;
+    Bool append;
 {
     TitleButton *tb = (TitleButton *) malloc (sizeof(TitleButton));
 
@@ -224,28 +226,50 @@ int MakeTitleButton (bm, width, height, func, action, menuroot, rightside)
     tb->action = action;
     tb->menuroot = menuroot;
     tb->rightside = rightside;
-
-    Scr->TBInfo.nbuttons++;
     if (rightside) {
-	if (Scr->TBInfo.head) {		/* link it at end of list */
-	    TitleButton *tail;
-	    for (tail = Scr->TBInfo.head; tail->next; tail = tail->next) ;
-	    tail->next = tb;
-	} else {
-	    Scr->TBInfo.head = tb;
-	}
-    } else {				/* put it at beginning */
+	Scr->TBInfo.nright++;
+    } else {
+	Scr->TBInfo.nleft++;
+    }
+
+    /*
+     * Cases for list:
+     * 
+     *     1.  empty list, prepend left       put at head of list
+     *     2.  append left, prepend right     put in between left and right
+     *     3.  append right                   put at tail of list
+     */
+    if ((!Scr->TBInfo.head) || ((!append) && (!rightside))) {	/* 1 */
 	tb->next = Scr->TBInfo.head;
 	Scr->TBInfo.head = tb;
+    } else if (append && rightside) {	/* 3 */
+	register TitleButton *t;
+	for (t = Scr->TBInfo.head; t->next; t = t->next) ;
+	t->next = tb;
+	tb->next = NULL;
+    } else {				/* 2 */
+	register TitleButton *t, *prev = NULL;
+	for (t = Scr->TBInfo.head; t && !t->rightside; t = t->next) {
+	    prev = t;
+	}
+	if (prev) {
+	    tb->next = prev->next;
+	    prev->next = tb;
+	} else {
+	    tb->next = Scr->TBInfo.head;
+	    Scr->TBInfo.head = tb;
+	}
     }
+
     return 1;
 }
 
-int AddTitleButton (bitmapname, func, action, menuroot)
+int AddTitleButton (bitmapname, func, action, menuroot, rightside)
     char *bitmapname;
     int func;
     char *action;
     MenuRoot *menuroot;
+    Bool rightside;
 {
     int width, height;
     Pixmap bm = FindBitmap (bitmapname, &width, &height);
@@ -260,7 +284,8 @@ int AddTitleButton (bitmapname, func, action, menuroot)
 	width = questionmark_width;
 	height = questionmark_height;
     }
-    return MakeTitleButton (bm, width, height, func, action, menuroot, True);
+    return MakeTitleButton (bm, width, height, func, action, menuroot, 
+			    rightside, True);
 }
 
 
@@ -1271,20 +1296,22 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		0, 0, 0, 0, eventp->xbutton.x_root, eventp->xbutton.y_root);
 
 	if (w != tmp_win->icon_w) {	/* can't resize icons */
-	    register int i;
 	    register TBWindow *tbw;
-	    Bool lastbutton = False;	/* controls AutoRelativeResizing */
+	    Bool fromtitlebar = False;	/* controls AutoRelativeResizing */
 
 	    /*
-	     * see if this is being done from the last button (resize)
+	     * see if this is being done from the titlebar
 	     */
 	    if (tmp_win) {		/* if titlebar, then don't do */
-		if (tmp_win->titlebuttons &&
-		    tmp_win->titlebuttons[Scr->TBInfo.nbuttons-1].window == w)
-		  lastbutton = True;
+		for (tbw = tmp_win->titlebuttons; tbw; tbw++) {
+		    if (tbw->window == w) {
+			fromtitlebar = True;
+			break;
+		    }
+		}
 	    }
 
-	    StartResize (eventp, tmp_win, lastbutton);
+	    StartResize (eventp, tmp_win, fromtitlebar);
 	    return TRUE;
 	}
 	break;

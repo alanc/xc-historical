@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.99 89/11/03 19:03:28 jim Exp $
+ * $XConsortium: events.c,v 1.100 89/11/03 19:10:53 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.99 89/11/03 19:03:28 jim Exp $";
+"$XConsortium: events.c,v 1.100 89/11/03 19:10:53 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -850,9 +850,7 @@ HandleExpose()
 		Scr->TitleBarFont.font->fid);
 
 	    XDrawString (dpy, Tmp_win->title_w, Scr->NormalGC,
-			 (Scr->FramePadding + Scr->TBInfo.border * 2 +
-			  Scr->TBInfo.width + Scr->TitlePadding), 
-			 Scr->TitleBarFont.y,
+			 Scr->TBInfo.titlex, Scr->TitleBarFont.y, 
 			 Tmp_win->name, strlen(Tmp_win->name));
 	    flush_expose (Event.xany.window);
 	}
@@ -871,9 +869,9 @@ HandleExpose()
 	    int i;
 	    Window w = Event.xany.window;
 	    register TBWindow *tbw;
+	    int nb = Scr->TBInfo.nleft + Scr->TBInfo.nright;
 
-	    for (i = 0, tbw = Tmp_win->titlebuttons; i < Scr->TBInfo.nbuttons;
-		 i++, tbw++) {
+	    for (i = 0, tbw = Tmp_win->titlebuttons; i < nb; i++, tbw++) {
 		if (w == tbw->window) {
 		    register TitleButton *tb = tbw->info;
 
@@ -952,6 +950,7 @@ HandleDestroyNotify()
     }
     if (Tmp_win->title_height)
     {
+	int nb = Scr->TBInfo.nleft + Scr->TBInfo.nright;
 	XDeleteContext(dpy, Tmp_win->title_w, TwmContext);
 	XDeleteContext(dpy, Tmp_win->title_w, ScreenContext);
 	if (Tmp_win->hilite_w)
@@ -959,7 +958,7 @@ HandleDestroyNotify()
 	    XDeleteContext(dpy, Tmp_win->hilite_w, TwmContext);
 	    XDeleteContext(dpy, Tmp_win->hilite_w, ScreenContext);
 	}
-	for (i = 0; i < Scr->TBInfo.nbuttons; i++) {
+	for (i = 0; i < nb; i++) {
 	    XDeleteContext(dpy, Tmp_win->titlebuttons[i].window, TwmContext);
 	    XDeleteContext(dpy, Tmp_win->titlebuttons[i].window, ScreenContext);
         }
@@ -1461,9 +1460,9 @@ HandleButtonPress()
     {
 	register int i;
 	register TBWindow *tbw;
+	int nb = Scr->TBInfo.nleft + Scr->TBInfo.nright;
 
-	for (i = 0, tbw = Tmp_win->titlebuttons; i < Scr->TBInfo.nbuttons;
-	     i++, tbw++) {
+	for (i = 0, tbw = Tmp_win->titlebuttons; i < nb; i++, tbw++) {
 	    if (Event.xany.window == tbw->window) {
 		if (tbw->info->func == F_MENU) {
 		    ButtonEvent = Event;

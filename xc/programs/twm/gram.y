@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.63 89/11/03 14:59:13 jim Exp $
+ * $XConsortium: gram.y,v 1.64 89/11/03 21:56:20 keith Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.63 89/11/03 14:59:13 jim Exp $";
+"$XConsortium: gram.y,v 1.64 89/11/03 21:56:20 keith Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -112,7 +112,8 @@ extern int yylineno;
 %token <num> CUR_MOVE CUR_RESIZE CUR_WAIT CUR_SELECT CUR_KILL
 %token <num> ICON_REGION NORTH SOUTH EAST WEST RESTART_PREVIOUS_STATE
 %token <num> F_WARPTOSCREEN AUTO_RELATIVE_RESIZE FRAME_PADDING TITLE_PADDING
-%token <num> CONSTRAINED_MOVE_TIME USE_PPOSITION TITLEBUTTON SQUEEZETITLE;
+%token <num> CONSTRAINED_MOVE_TIME USE_PPOSITION NODEFAULTS
+%token <num> LEFT_TITLEBUTTON RIGHT_TITLEBUTTON SQUEEZETITLE
 %token <ptr> STRING
 
 %type <ptr> string
@@ -129,6 +130,7 @@ stmts		: /* Empty */
 		;
 
 stmt		: error
+		| NODEFAULTS	{ Scr->NoDefaults = True; }
 		| USE_PPOSITION string { int ppos = ParseUsePPosition ($2);
 					 if (ppos < 0) {
 					     fprintf (stderr,
@@ -232,8 +234,11 @@ stmt		: error
 		    Scr->IconifyByUnmapping = TRUE; }
 		| SHOW_ICONMGR	{ if (Scr->FirstTime) 
 					Scr->ShowIconManager = TRUE; }
-		| TITLEBUTTON string EQUALS action { 
-					  GotTitleButton ($2, $4); 
+		| LEFT_TITLEBUTTON string EQUALS action { 
+					  GotTitleButton ($2, $4, False);
+					}
+		| RIGHT_TITLEBUTTON string EQUALS action { 
+					  GotTitleButton ($2, $4, True);
 					}
 		| button string		{ root = GetRoot($2, 0, 0);
 					  Scr->Mouse[$1][C_ROOT][0].func = F_MENU;
@@ -925,14 +930,15 @@ int func;
 }
 
 
-static void GotTitleButton (bitmapname, func)
+static void GotTitleButton (bitmapname, func, rightside)
     char *bitmapname;
     int func;
+    Bool rightside;
 {
-    if (!AddTitleButton (bitmapname, func, Action, pull)) {
+    if (!AddTitleButton (bitmapname, func, Action, pull, rightside)) {
 	fprintf (stderr, 
-		 "twm: line %d:  unable to add titlebutton \"%s\"\n",
-		 yylineno, bitmapname);
+		 "twm: line %d:  unable to add %s titlebutton \"%s\"\n",
+		 yylineno, rightside ? "right" : "left", bitmapname);
     }
     Action = "";
     pull = NULL;
