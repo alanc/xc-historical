@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfread.c,v 1.4 91/05/30 19:06:23 keith Exp $ */
+/* $XConsortium: bdfread.c,v 1.5 91/05/31 13:42:11 rws Exp $ */
 
 #include <ctype.h>
 #include "fontfilest.h"
@@ -513,16 +513,13 @@ bdfReadHeader(file, pState)
 	return (FALSE);
     }
     if (sscanf((char *) line, "SIZE %f%d%d", &pState->pointSize,
-	       &pState->resolution, &tmp) != 3) {
+	       &pState->resolution_x, &pState->resolution_y) != 3) {
 	bdfError("bad 'SIZE'\n");
 	return (FALSE);
     }
-    if (pState->pointSize < 1 || pState->resolution < 1 || tmp < 1) {
+    if (pState->pointSize < 1 ||
+	pState->resolution_x < 1 || pState->resolution_y < 1) {
 	bdfError("SIZE values must be > 0\n");
-	return (FALSE);
-    }
-    if (pState->resolution != tmp) {
-	bdfError("x and y resolution must be equal\n");
 	return (FALSE);
     }
     line = bdfGetLine(file, lineBuf, BUFSIZ);
@@ -672,9 +669,24 @@ bdfReadProperties(file, pFont, pState)
 	pState->weightProp = &props[nextProp];
 	nextProp++;
     }
-    if (!pState->resolutionProp) {
+    if (!pState->resolutionProp &&
+	pState->resolution_x == pState->resolution_y) {
 	props[nextProp].name = bdfForceMakeAtom("RESOLUTION", NULL);
-	props[nextProp].value = (INT32) ((pState->resolution * 100.0) / 72.27);
+	props[nextProp].value = (INT32) ((pState->resolution_x * 100.0) / 72.27);
+	stringProps[nextProp] = FALSE;
+	pState->resolutionProp = &props[nextProp];
+	nextProp++;
+    }
+    if (!pState->resolutionXProp) {
+	props[nextProp].name = bdfForceMakeAtom("RESOLUTION_X", NULL);
+	props[nextProp].value = (INT32) pState->resolution_x;
+	stringProps[nextProp] = FALSE;
+	pState->resolutionProp = &props[nextProp];
+	nextProp++;
+    }
+    if (!pState->resolutionYProp) {
+	props[nextProp].name = bdfForceMakeAtom("RESOLUTION_Y", NULL);
+	props[nextProp].value = (INT32) pState->resolution_y;
 	stringProps[nextProp] = FALSE;
 	pState->resolutionProp = &props[nextProp];
 	nextProp++;
