@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.15 89/09/13 14:42:05 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.16 89/10/04 17:08:36 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1124,7 +1124,7 @@ StripOutOldCRs(ctx, from, to)
 TextWidget ctx;
 XawTextPosition from, to;
 {
-  XawTextPosition startPos, endPos, eop_begin, eop_end;
+  XawTextPosition startPos, endPos, eop_begin, eop_end, temp;
   Widget src = ctx->text.source;
   XawTextBlock text;
   char *buf;
@@ -1140,8 +1140,11 @@ XawTextPosition from, to;
   eop_begin = eop_end = startPos = endPos = from;
   while (TRUE) {
     endPos=SrcScan(src, startPos, XawstEOL, XawsdRight, 1, FALSE);
-    endPos=SrcScan(src, endPos, XawstWhiteSpace, XawsdLeft, 1, FALSE);
-    endPos=SrcScan(src, endPos, XawstWhiteSpace, XawsdRight, 1, FALSE);
+
+    temp=SrcScan(src, endPos, XawstWhiteSpace, XawsdLeft, 1, FALSE);
+    temp=SrcScan(src, temp, XawstWhiteSpace, XawsdRight, 1, FALSE);
+    if (temp > startPos)
+	endPos = temp;
 
     if (endPos >= to)
       break;
