@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.5 91/02/18 11:24:53 rws Exp $
+# $XConsortium: Imakefile,v 5.6 91/05/06 11:21:27 hersh Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -78,7 +78,7 @@
     DDPEXSDIR = ddpex/mi/shared
        DDPEXS = $(DDPEXSDIR)/libddpexs.a
 
-     OSPEXDIR = ospex/4.2bsd
+     OSPEXDIR = ospex
         OSPEX = $(OSPEXDIR)/libospex.a
 
      SUBDIRS = $(DISPATCHDIR) $(SWAPDIR) $(OBJECTSDIR) $(DDPEX1DIR) \
