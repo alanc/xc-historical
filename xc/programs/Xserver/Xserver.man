@@ -124,19 +124,19 @@ causes all remaining command line arguments to be ignored.
 .TP 8
 .B \-ld \fIkilobytes\fP
 sets the data space limit of the server to the specified number of kilobytes.
-The default value is zero, making the data size as large as possible.  A value
+A value of zero makes the data size as large as possible.  The default value
 of \-1 leaves the data space limit unchanged.  This option is not available in
 all operating systems.
 .TP 8
 .B \-ls \fIkilobytes\fP
 sets the stack space limit of the server to the specified number of kilobytes.
-The default value is zero, making the stack size as large as possible.  A value
+A value of zero makes the stack size as large as possible.  The default value
 of \-1 leaves the stack space limit unchanged.  This option is not available in
 all operating systems.
 .TP 8
 .B \-lf \fIfiles\fP
 sets the number-of-open-files limit of the server to the specified number.
-The default value is zero, making the limit as large as possible.  A value
+A value is zero makes the limit as large as possible.  The default value
 of \-1 leaves the limit unchanged.  This option is not available in
 all operating systems.
 .TP 8
