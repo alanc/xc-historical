@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.120 91/05/06 20:31:02 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.121 91/05/08 11:42:05 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -208,6 +208,12 @@ XCOMM
 #  define MotoR4Architecture
 # endif
 #endif /* MOTOROLA */
+
+#ifdef SYSV386
+#define MacroIncludeFile <x386.cf>
+#define MacroFile x386.cf
+#define i386Architecture
+#endif /* SYSV386 */
 
 #ifndef MacroIncludeFile
 XCOMM WARNING:  Imake.tmpl not configured; guessing at definitions!!!
@@ -609,6 +615,7 @@ XCOMM site-specific configuration parameters - edit site.def to change
                AR = ArCmd
   BOOTSTRAPCFLAGS = BootstrapCFlags	/* set if cpp does not have uniq sym */
                CC = CcCmd
+               AS = AsCmd
 #if HasFortran
                FC = FortranCmd
       FDEBUGFLAGS = FortranDebugFlags
