@@ -1,5 +1,4 @@
-/* $XConsortium: Popup.c,v 1.28 90/12/28 15:58:15 gildea Exp $ */
-/* $oHeader: Popup.c,v 1.3 88/09/01 11:45:34 asente Exp $ */
+/* $XConsortium: Popup.c,v 1.28 90/12/28 17:25:33 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -53,7 +52,8 @@ void _XtPopup(widget, grab_kind, spring_loaded)
     }
 
     if (! shell_widget->shell.popped_up) {
-	XtCallCallbacks(widget, XtNpopupCallback, (XtPointer)NULL);
+	XtGrabKind call_data = grab_kind;
+	XtCallCallbacks(widget, XtNpopupCallback, (XtPointer)&call_data);
 	shell_widget->shell.popped_up = TRUE;
 	shell_widget->shell.grab_kind = grab_kind;
 	shell_widget->shell.spring_loaded = spring_loaded;
@@ -114,14 +114,15 @@ void XtPopdown(widget)
     }
 
     if (shell_widget->shell.popped_up) {
+	XtGrabKind grab_kind = shell_widget->shell.grab_kind;
 	XtUnmapWidget(widget);
 	XWithdrawWindow(XtDisplay(widget), XtWindow(widget),
 			XScreenNumberOfScreen(XtScreen(widget)));
-	if (shell_widget->shell.grab_kind != XtGrabNone) {
+	if (grab_kind != XtGrabNone) {
 	    XtRemoveGrab(widget);
 	}
 	shell_widget->shell.popped_up = FALSE;
-	XtCallCallbacks(widget, XtNpopdownCallback, (XtPointer)NULL);
+	XtCallCallbacks(widget, XtNpopdownCallback, (XtPointer)&grab_kind);
     }
 } /* XtPopdown */
 
