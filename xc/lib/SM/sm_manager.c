@@ -1,4 +1,4 @@
-/* $XConsortium: sm_manager.c,v 1.9 93/09/28 10:38:00 mor Exp $ */
+/* $XConsortium: sm_manager.c,v 1.10 93/11/08 11:29:05 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -60,6 +60,10 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 #endif
 
+#if defined(_sparc) && !defined(sparc)
+#define sparc
+#endif
+
 #include <arpa/nameser.h>
 #include <resolv.h>
 
@@ -69,12 +73,13 @@ static ns_inaddrtohostname ();
 
 Status
 SmsInitialize (vendor, release, newClientProc, managerData,
-    errorLength, errorStringRet)
+    hostBasedAuthProc, errorLength, errorStringRet)
 
 char 		 *vendor;
 char 		 *release;
 SmsNewClientProc newClientProc;
 SmPointer	 managerData;
+IceHostBasedAuthProc		hostBasedAuthProc;
 int  		 errorLength;
 char 		 *errorStringRet;
 
@@ -96,8 +101,8 @@ char 		 *errorStringRet;
 
 	if ((_SmsOpcode = IceRegisterForProtocolReply ("XSMP",
 	    vendor, release, _SmVersionCount, _SmsVersions,
-	    _SmsProtocolSetupNotifyProc,
-	    _SmAuthCount, _SmsAuthRecs, NULL)) < 0)
+	    _SmAuthCount, _SmAuthNames, _SmsAuthProcs,
+            hostBasedAuthProc, _SmsProtocolSetupNotifyProc, NULL)) < 0)
 	{
 	    strncpy (errorStringRet,
 	        "Could not register XSMP protocol with ICE", errorLength);
@@ -210,7 +215,8 @@ SmsConn smsConn;
 	}
     }
 
-    hostname = strdup (addr);
+    hostname = (char *) malloc (strlen (addr) + 1);
+    strcpy (hostname, addr);
 
     return (hostname);
 }
