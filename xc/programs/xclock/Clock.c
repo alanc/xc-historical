@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Clock.c,v 1.32 88/07/11 12:04:45 jim Exp $";
+static char rcsid[] = "$Header: Clock.c,v 1.33 88/07/11 12:53:29 jim Exp $";
 #endif lint
 
 
@@ -281,6 +281,8 @@ static void Redisplay (gw, event, region)
 	if (w->clock.numseg != 0)
 	    erase_hands (w, (struct tm *) 0);
         DrawClockFace(w);
+    } else {
+	w->clock.prev_time_string[0] = '\0';
     }
     clock_tic((caddr_t)w, (XtIntervalId)NULL);
 }
@@ -321,16 +323,25 @@ static void clock_tic(client_data, id)
 	}
 	if( w->clock.analog == FALSE ) {
 	    int	clear_from;
+	    int i, len, prev_len;
 
 	    time_ptr = asctime(&tm);
-	    time_ptr[strlen(time_ptr) - 1] = 0;
+	    len = strlen (time_ptr);
+	    if (time_ptr[len - 1] == '\n') time_ptr[--len] = '\0';
+	    prev_len = strlen (w->clock.prev_time_string);
+	    for (i = 0; ((i < len) && (i < prev_len) && 
+	    		 (w->clock.prev_time_string[i] == time_ptr[i])); i++);
+	    strcpy (w->clock.prev_time_string+i, time_ptr+i);
+
 	    XDrawImageString (dpy, win, w->clock.myGC,
-			     2+w->clock.padding, 2+w->clock.font->ascent+w->clock.padding,
-			     time_ptr, strlen(time_ptr));
+			      (2+w->clock.padding +
+			       XTextWidth (w->clock.font, time_ptr, i)),
+			      2+w->clock.font->ascent+w->clock.padding,
+			      time_ptr + i, len - i);
 	    /*
 	     * Clear any left over bits
 	     */
-	    clear_from = XTextWidth (w->clock.font, time_ptr, strlen (time_ptr))
+	    clear_from = XTextWidth (w->clock.font, time_ptr, len)
  	    		+ 2 + w->clock.padding;
 	    if (clear_from < w->core.width)
 		XFillRectangle (dpy, win, w->clock.EraseGC,

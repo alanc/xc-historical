@@ -1,5 +1,5 @@
 /*
-* $Header: ClockP.h,v 1.10 88/02/14 15:24:44 jim Exp $
+* $Header: ClockP.h,v 1.11 88/02/25 16:24:45 swick Exp $
 */
 
 
@@ -35,6 +35,7 @@ SOFTWARE.
 #include <X11/CoreP.h>
 
 #define SEG_BUFF_SIZE		128
+#define ASCII_TIME_BUFLEN	32	/* big enough for 26 plus slop */
 
 /* New fields for the clock widget instance record */
 typedef struct {
@@ -68,6 +69,7 @@ typedef struct {
 	 XPoint	*hour, *sec;
 	 struct tm  otm ;
 	 XtIntervalId interval_id;
+	 char prev_time_string[ASCII_TIME_BUFLEN];
    } ClockPart;
 
 /* Full instance record declaration */
