@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: util.c,v 1.29 91/05/30 16:46:16 gildea Exp $
+ *	$XConsortium: util.c,v 1.30 91/06/18 11:08:38 gildea Exp $
  */
 
 /*
@@ -534,7 +534,8 @@ DeleteChar (screen, n)
 		XFillRectangle
 		    (screen->display, TextWindow(screen),
 		     screen->reverseGC,
-		     screen->border + screen->scrollbar + Width(screen) - width,
+		     screen->border + screen->scrollbar
+		       + Width(screen) - n*FontWidth(screen),
 		     CursorY (screen, screen->cur_row), n * FontWidth(screen),
 		     FontHeight(screen));
 	    }
