@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.47 91/08/17 17:14:38 rws Exp $
+ * $XConsortium: Xos.h,v 1.48 92/05/07 17:43:36 eswu Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -122,7 +122,7 @@
 #ifdef CRAY
 #undef word
 #endif /* CRAY */
-#if defined(USG) && !defined(CRAY) && !defined(MOTOROLA)
+#if defined(USG) && !defined(CRAY) && !defined(MOTOROLA) && !defined(uniosu)
 struct timeval {
     long tv_sec;
     long tv_usec;
