@@ -1,7 +1,7 @@
 #include "x11perf.h"
 
 static Window w;
-char **charBuf = NULL;
+static char **charBuf = NULL;
 static GC blackgc, whitegc;
 static XFontStruct *font, *bfont;
 static int height, ypos;
