@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: subwindow.mc,v 1.11 92/06/12 09:40:34 rws Exp $
+ * $XConsortium: subwindow.mc,v 1.12 92/06/29 19:23:39 rws Exp $
  */
 >>EXTERN
 #ifdef A_WINDOW2
@@ -268,7 +268,7 @@ XSetWindowAttributes w_attr;
          * it is entire possible that the depth differs from that of the
          * parent window.
          */
-        w_attr.colormap = makecolmap(A_DISPLAY, vp2, AllocNone);
+        w_attr.colormap = makecolmap(A_DISPLAY, vp2->visual, AllocNone);
         w_attr.border_pixel = 0;
 	XCreateWindow(A_DISPLAY
 		, A_DRAW
