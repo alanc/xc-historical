@@ -1,4 +1,4 @@
-/* $XConsortium: microi.c,v 1.1 93/10/26 09:44:57 rws Exp $ */
+/* $XConsortium: microi.c,v 1.2 93/10/31 09:45:06 dpw Exp $ */
 /**** module microi.c ****/
 /******************************************************************************
 				NOTICE
@@ -179,7 +179,7 @@ peTexPtr pet;
     bandPtr     sbnd = &pet->receptor[IMPORT].band[0];
     bandPtr     dbnd = &pet->emitter[0];
     CARD32   maxRect = ((xieFloImportClientROI *)ped->elemRaw)->rectangles;
-    xieTypRectangle *irect = GetSrcBytes(xieTypRectangle,flo,pet,sbnd,
+    xieTypRectangle *irect = GetSrcBytes(xieTypRectangle *,flo,pet,sbnd,
 			sbnd->current, sizeof(xieTypRectangle),FLUSH);
     XieBoxRec *rects, *br;
     CARD32    yxbands, size;
@@ -195,7 +195,7 @@ peTexPtr pet;
 	while (irect && rp->currentRect < maxRect) {
 	    rectCvt(irect,br++);
 	    rp->currentRect++;
-            irect = GetSrcBytes(xieTypRectangle,flo,pet,sbnd,
+            irect = GetSrcBytes(xieTypRectangle *,flo,pet,sbnd,
 			sbnd->current + sizeof(xieTypRectangle),
 			sizeof(xieTypRectangle),FLUSH);
     	
@@ -253,7 +253,7 @@ peTexPtr pet;
     size = sizeof(ROIRec) + sizeof(lineRec) * yxbands + 
 						sizeof(runRec) * maxRect;
    
-    if (!(roi = GetDstBytes(ROIRec,flo,pet,dbnd,0,size,FALSE)))
+    if (!(roi = GetDstBytes(ROIRec *,flo,pet,dbnd,0,size,FALSE)))
 	AllocError(flo,ped,return(FALSE));
 
     roi->x      = rp->roireg->extents.x1;
