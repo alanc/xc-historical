@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.50 94/01/18 17:29:14 gildea Exp $
+ * $XConsortium: auth.c,v 1.51 94/02/02 08:42:20 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -335,6 +335,7 @@ SaveServerAuthorizations (d, auths, count)
     return ret;
 }
 
+void
 SetLocalAuthorization (d)
     struct display	*d;
 {
@@ -508,7 +509,7 @@ doneAddrs ()
 
 static checkEntry ();
 
-static
+static void
 saveEntry (auth)
     Xauth	*auth;
 {
@@ -700,8 +701,16 @@ DefineSelf (fd, file, auth)
     ifc.ifc_buf = buf;
     if (ioctl (fd, SIOCGIFCONF, (char *) &ifc) < 0)
         LogError ("Trouble getting network interface configuration");
-    for (ifr = ifc.ifc_req, n = ifc.ifc_len / sizeof (struct ifreq); --n >= 0;
-     ifr++)
+    for (ifr = ifc.ifc_req
+#if defined (__bsdi__) || defined(__NetBSD__)
+	 ; (char *)ifr < ifc.ifc_buf + ifc.ifc_len;
+	 ifr = (struct ifreq *)((char *)ifr + sizeof (struct ifreq) +
+		   (ifr->ifr_addr.sa_len > sizeof (ifr->ifr_addr) ?
+		    ifr->ifr_addr.sa_len - sizeof (ifr->ifr_addr) : 0))
+#else
+	 , n = ifc.ifc_len / sizeof (struct ifreq); --n >= 0; ifr++
+#endif
+	 )
     {
 #ifdef DNETCONN
 	/*
@@ -845,7 +854,7 @@ writeLocalAuth (file, auth, name)
 
 #ifdef XDMCP
 
-static
+static void
 writeRemoteAuth (file, auth, peer, peerlen, name)
     FILE	    *file;
     Xauth	    *auth;
@@ -876,9 +885,10 @@ writeRemoteAuth (file, auth, peer, peerlen, name)
 
 #endif /* XDMCP */
 
+void
 SetUserAuthorization (d, verify)
-struct display		*d;
-struct verify_info	*verify;
+    struct display		*d;
+    struct verify_info	*verify;
 {
     FILE	*old, *new;
     char	home_name[1024], backup_name[1024], new_name[1024];
@@ -1031,6 +1041,7 @@ struct verify_info	*verify;
     Debug ("done SetUserAuthorization\n");
 }
 
+void
 RemoveUserAuthorization (d, verify)
     struct display	*d;
     struct verify_info	*verify;
