@@ -1,4 +1,4 @@
-.\" $XConsortium: protocol.ms,v 1.10 92/11/14 11:40:37 rws Exp $
+.\" $XConsortium: protocol.ms,v 1.11 94/04/17 20:06:05 rws Exp $
 .\" Input Extension
 .EH ''''
 .OH ''''
@@ -17,7 +17,7 @@ Version 1.0
 .sp 1
 X Consortium Standard
 .sp 1
-X Version 11, Release 5
+X Version 11, Release 6
 .sp 16
 .ps 15
 \fBMark Patrick\0\0\0\0Ardent Computer

@@ -1,4 +1,4 @@
-.\" $XConsortium: library.ms,v 1.8 92/11/14 13:11:36 rws Exp $
+.\" $XConsortium: library.ms,v 1.9 94/04/17 20:06:02 rws Exp $
 .\" Input Extension
 .EH ''''
 .OH ''''
@@ -15,7 +15,7 @@
 .sp 2
 X Consortium Standard
 .sp 1
-X Version 11, Release 5
+X Version 11, Release 6
 .sp 16
 .ps 15
 \fBMark Patrick\0\0\0\0Ardent Computer

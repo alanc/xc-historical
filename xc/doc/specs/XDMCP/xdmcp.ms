@@ -1,5 +1,5 @@
 .\" Use eqn, tbl, and -ms
-.\" $XConsortium: xdmcp.ms,v 1.20 94/04/13 20:24:42 rws Exp $
+.\" $XConsortium: xdmcp.ms,v 1.21 94/04/17 20:05:11 rws Exp $
 .EQ
 delim @@
 define oc % "\\fR{\\fP" %
@@ -19,7 +19,7 @@ Version 1.0
 .sp
 X Consortium Standard
 .sp
-X Version 11, Release 5
+X Version 11, Release 6
 .AU
 Keith Packard
 .AI

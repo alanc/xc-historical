@@ -5,7 +5,7 @@
 .sp 6p
 Version 1.1
 X Consortium Standard
-X Version 11, Release 5
+X Version 11, Release 6
 Robert W. Scheifler
 .sp 2
 .LP

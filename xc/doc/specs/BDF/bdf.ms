@@ -7,7 +7,7 @@
 
 X Consortium Standard
 
-X Version 11, Release 5
+X Version 11, Release 6
 .sp 3
 Copyright 1984, 1987, 1988 Adobe Systems, Inc.
 .sp 1

@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: shape.ms,v 1.14 94/04/13 19:24:53 rws Exp $
+.\" $XConsortium: shape.ms,v 1.15 94/04/17 20:06:12 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -14,7 +14,7 @@
 .ce 3
 Version 1.0
 X Consortium Standard
-X Version 11, Release 5
+X Version 11, Release 6
 .sp 6
 .ce 4
 \s-1Keith Packard
