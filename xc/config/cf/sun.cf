@@ -10,6 +10,7 @@
 #define OSMinorVersion    0
 #define HasSaberC	  YES		/* for machines that have it */
 #define XsunServer Xsun
+#define HasGcc NO			/* very useful for server, though */
 
 #define SystemV           NO
 #define HasPutenv YES
@@ -34,10 +35,12 @@
 #define i386Architecture
 #endif
 
+#if !HasGcc
 #ifdef mc68000
 #define DefaultCCOptions -f68881 -pipe		/* remove in R4 */
 #else
 #define DefaultCCOptions -pipe			/* remove in R4 */
+#endif
 #endif
 
 #define LibraryCCOptions /* don't want special floating point */
@@ -45,7 +48,7 @@
 /* see below for ServerDefines */
 
 
-/**/# platform:  $XConsortium: sun.cf,v 1.24 89/08/18 17:48:39 keith Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.25 89/08/22 18:02:07 jim Exp $
 /**/# operating system:  OSName
 
 #if SunOSPlatform
