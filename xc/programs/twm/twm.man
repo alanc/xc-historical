@@ -925,7 +925,12 @@ This function raises the bottom-most window that is occluded by another window.
 This function rotates the colormaps (obtained from the WM_COLORMAP_WINDOWS
 property on the window) that \fItwm\fP will display when the pointer
 is in this window.  The argument \fIstring\fP may have one of the following 
-values: \fB"next"\fP, \fB"prev"\fP, and \fB"default"\fP.
+values: \fB"next"\fP, \fB"prev"\fP, and \fB"default"\fP.  It should be noted
+here that in general, the installed colormap is determined by keyboard focus.
+A pointer driven keyboard focus will install a private colormap upon entry
+of the window owning the colormap.  Using the click to type model, private
+colormaps will not be installed until the user presses a mouse button on
+the target window.
 .\"OBSOLETE - should go away and use a clipboard.
 .\".IP "\fBf.cut\fP \fIstring\fP" 8
 .\"This function places the specified \fIstring\fP (followed by a newline
