@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.142 90/04/17 18:10:45 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.143 90/04/20 16:41:55 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1927,12 +1927,39 @@ Boolean motion;
     newRight = SrcScan(src, pos, XawstPositions, XawsdRight, 1, FALSE);
     break;
   case XawselectWord: 
-    newRight = SrcScan(src, pos, XawstWhiteSpace, XawsdRight, 1, FALSE);
-    newLeft= SrcScan(src, newRight, XawstWhiteSpace, XawsdLeft, 1, FALSE);
-    break;
   case XawselectParagraph: 
-    newRight = SrcScan(src, pos, XawstParagraph, XawsdRight, 1, FALSE);
-    newLeft = SrcScan(src, newRight, XawstParagraph, XawsdLeft, 1, FALSE);
+    {
+      XawTextScanType stype;
+
+      if (newType == XawselectWord)
+        stype = XawstWhiteSpace;
+      else
+	stype = XawstParagraph;
+
+      /*
+       * Somewhat complicated, but basically I treat the space between
+       * two objects as another object.  The object that I am currently
+       * in then becomes the end of the selection.
+       * 
+       * Chris Peterson - 4/19/90.
+       */
+
+      newRight = SrcScan(ctx->text.source, pos, stype, XawsdRight, 1, FALSE);
+      newRight =SrcScan(ctx->text.source, newRight,stype,XawsdLeft,1, FALSE);
+
+      if (pos != newRight) 
+	newLeft = SrcScan(ctx->text.source, pos, stype, XawsdLeft, 1, FALSE);
+      else
+	newLeft = pos;
+
+      newLeft =SrcScan(ctx->text.source, newLeft, stype, XawsdRight,1,FALSE);
+
+      if (newLeft > newRight) {
+	  XawTextPosition temp = newLeft;
+	  newLeft = newRight;
+	  newRight = temp;
+      }
+    }
     break;
   case XawselectLine: 
     newLeft = SrcScan(src, pos, XawstEOL, XawsdLeft, 1, FALSE);
