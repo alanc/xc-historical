@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.16 89/11/10 11:00:01 rws Exp $ */
+/* $XConsortium: events.c,v 5.17 89/11/10 11:10:22 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -729,6 +729,8 @@ ActivateKeyboardGrab(keybd, grab, time, passive)
 
     if (oldWin == FollowKeyboardWin)
 	oldWin = inputInfo.keyboard->focus->win;
+    if (keybd->valuator)
+	keybd->valuator->motionHintWindow = NullWindow;
     DoFocusEvents(keybd, oldWin, grab->window, NotifyGrab);
     if (syncEvents.playingEvents)
 	keybd->grabTime = syncEvents.time;
@@ -751,6 +753,8 @@ DeactivateKeyboardGrab(keybd)
 
     if (focusWin == FollowKeyboardWin)
 	focusWin = inputInfo.keyboard->focus->win;
+    if (keybd->valuator)
+	keybd->valuator->motionHintWindow = NullWindow;
     keybd->grab = NullGrab;
     keybd->sync.state = NOT_GRABBED;
     keybd->fromPassiveGrab = FALSE;
@@ -975,6 +979,16 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
 		pEvents->u.u.detail = NotifyNormal;
 	    }
 	}
+#ifdef XINPUT
+	else
+	{
+	    extern int DeviceMotionNotify;
+
+	    if ((type == DeviceMotionNotify) &&
+		MaybeSendDeviceMotionNotifyHint (pEvents, mask) != 0)
+		return 1;
+	}
+#endif
 	type &= 0177;
 	if (type != KeymapNotify)
 	{
@@ -1084,6 +1098,17 @@ DeliverEventsToWindow(pWin, pEvents, count, filter, grab, mskidx)
     }
     else if ((type == MotionNotify) && deliveries)
 	inputInfo.pointer->valuator->motionHintWindow = pWin;
+#ifdef XINPUT
+    else
+    {
+	extern int DeviceMotionNotify, DeviceButtonPress;
+
+	if (((type == DeviceMotionNotify) || (type == DeviceButtonPress)) &&
+	    deliveries)
+	    CheckDeviceGrabAndHintWindow (pWin, type, pEvents, grab, client, 
+					  deliveryMask);
+    }
+#endif
     if (deliveries)
 	return deliveries;
     return nondeliveries;
