@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.5 94/06/07 12:08:51 mor Exp $ */
+/* $XConsortium: save.c,v 1.6 94/06/14 20:12:11 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -34,7 +34,7 @@ static Bool	 getline();
 
 
 
-void
+int
 read_save(sm_id)
 
 char **sm_id;
@@ -63,7 +63,7 @@ char **sm_id;
 	if (app_resources.verbose)
 	    printf("No session save file.\n");
 	*sm_id = NULL;
-	return;
+	return 0;
     }
     if (app_resources.verbose)
 	printf("Reading session save file...\n");
@@ -152,6 +152,8 @@ char **sm_id;
 	}
     }
     fclose(f);
+
+    return 1;
 }
 
 
