@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.4 89/08/01 08:45:32 rws Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.5 89/08/01 09:20:27 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -650,30 +650,22 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 	}
 	else
 	{
-	    /* Pixmap sources generate simple exposure events */
-	    fastExpose = 1;
-
-	    /* Pixmap is just one clipping rectangle so we can avoid
-	       allocating a full-blown region. */
 	    fastClip = 1;
-
-	    fastBox.x1 = srcx;
-	    fastBox.y1 = srcy;
-	    fastBox.x2 = srcx + width;
-	    fastBox.y2 = srcy + height;
-
-	    /* Left and top are already clipped, so clip right and bottom */
-	    if (fastBox.x2 > pSrcDrawable->x + (int) pSrcDrawable->width)
-	      fastBox.x2 = pSrcDrawable->x + (int) pSrcDrawable->width;
-	    if (fastBox.y2 > pSrcDrawable->y + (int) pSrcDrawable->height)
-	      fastBox.y2 = pSrcDrawable->y + (int) pSrcDrawable->height;
 	}
     }
     else
     {
 	if (pGC->subWindowMode == IncludeInferiors)
 	{
-	    if ((pSrcDrawable == pDstDrawable) &&
+	    if (!((WindowPtr) pSrcDrawable)->parent)
+	    {
+		/*
+		 * special case bitblt from root window in
+		 * IncludeInferiors mode; just like from a pixmap
+		 */
+		fastClip = 1;
+	    }
+	    else if ((pSrcDrawable == pDstDrawable) &&
 		(pGC->clientClipType == CT_NONE))
 	    {
 		prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
@@ -690,17 +682,43 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 	}
     }
 
-    /* Don't create a source region if we are doing a fast clip */
-    if (!fastClip)
-    {
-	BoxRec srcBox;
+    fastBox.x1 = srcx;
+    fastBox.y1 = srcy;
+    fastBox.x2 = srcx + width;
+    fastBox.y2 = srcy + height;
 
-	srcBox.x1 = srcx;
-	srcBox.y1 = srcy;
-	srcBox.x2 = srcx + width;
-	srcBox.y2 = srcy + height;
-	
-	(*pGC->pScreen->RegionInit)(&rgnDst, &srcBox, 1);
+    /* Don't create a source region if we are doing a fast clip */
+    if (fastClip)
+    {
+	fastExpose = 1;
+	/*
+	 * clip the source; if regions extend beyond the source size,
+ 	 * make sure exposure events get sent
+	 */
+	if (fastBox.x1 < pSrcDrawable->x)
+	{
+	    fastBox.x1 = pSrcDrawable->x;
+	    fastExpose = 0;
+	}
+	if (fastBox.y1 < pSrcDrawable->y)
+	{
+	    fastBox.y1 = pSrcDrawable->y;
+	    fastExpose = 0;
+	}
+	if (fastBox.x2 > pSrcDrawable->x + (int) pSrcDrawable->width)
+	{
+	    fastBox.x2 = pSrcDrawable->x + (int) pSrcDrawable->width;
+	    fastExpose = 0;
+	}
+	if (fastBox.y2 > pSrcDrawable->y + (int) pSrcDrawable->height)
+	{
+	    fastBox.y2 = pSrcDrawable->y + (int) pSrcDrawable->height;
+	    fastExpose = 0;
+	}
+    }
+    else
+    {
+	(*pGC->pScreen->RegionInit)(&rgnDst, &fastBox, 1);
 	(*pGC->pScreen->Intersect)(&rgnDst, &rgnDst, prgnSrcClip);
     }
 
