@@ -1,5 +1,5 @@
 /*
-* $XConsortium: ShellP.h,v 1.28 89/10/04 11:46:53 swick Exp $
+* $XConsortium: ShellP.h,v 1.29 89/10/04 12:22:48 swick Exp $
 * $oHeader: ShellP.h,v 1.2 88/08/18 15:56:19 asente Exp $
 */
 
@@ -299,7 +299,11 @@ externalref ApplicationShellClassRec applicationShellClassRec;
 /* New fields for the application shell widget */
 
 typedef struct {
+#if defined(__cplusplus) || defined(c_plusplus)
+	char *c_class;
+#else
 	char *class;
+#endif
 	XrmClass xrm_class;
 	int argc;
 	char **argv;
