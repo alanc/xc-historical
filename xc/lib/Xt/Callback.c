@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Callback.c,v 1.17 89/09/12 16:49:25 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Callback.c,v 1.18 89/09/26 11:00:36 swick Exp $";
 /* $oHeader: Callback.c,v 1.4 88/09/01 11:08:37 asente Exp $ */
 #endif /* lint */
 
@@ -420,5 +420,5 @@ void XtCallCallbackList(callbacks, call_data)
     XtCallbackList callbacks;
     XtPointer call_data;
 {
-    _XtCallCallbacks((CallbackList*)&callbacks, call_data);
+    _XtCallCallbacks(&((CallbackStruct*)callbacks)->internal_form, call_data);
 }
