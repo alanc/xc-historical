@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: NextEvent.c,v 1.41 88/03/03 12:14:05 swick Exp $";
+static char rcsid[] = "$Header: NextEvent.c,v 1.42 88/05/02 16:15:13 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -453,14 +453,13 @@ XEvent *event;
 		IeCallProc(ie_ptr);
 	}
 	(void) gettimeofday (&cur_time, &cur_timezone);
-	if (TimerQueue!= NULL) {	/* check timeout queue */
-		while(IS_AFTER (TimerQueue->te_timer_value, cur_time)) {
-			te_ptr = TimerQueue;
-			TimerQueue = TimerQueue->te_next;
-			te_ptr->te_next = NULL;
-			TeCallProc(te_ptr);
-			XtFree((char*)te_ptr);
-		}
+	while(TimerQueue != NULL &&
+	      IS_AFTER (TimerQueue->te_timer_value, cur_time)) {
+		    te_ptr = TimerQueue;
+		    TimerQueue = TimerQueue->te_next;
+		    te_ptr->te_next = NULL;
+		    TeCallProc(te_ptr);
+		    XtFree((char*)te_ptr);
 	}
 	XFlush(toplevelDisplay);
 	Claims_X_is_pending = _XtwaitForSomething(
