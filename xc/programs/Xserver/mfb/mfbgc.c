@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.6 89/07/19 09:30:40 rws Exp $ */
+/* $XConsortium: mfbgc.c,v 5.7 89/07/28 08:29:09 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -327,8 +327,7 @@ mfbCreateGC(pGC)
     pPriv = (mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr);
     pPriv->rop = mfbReduceRop(pGC->alu, pGC->fgPixel);
     pPriv->fExpose = TRUE;
-    pPriv->pRotatedTile = NullPixmap;
-    pPriv->pRotatedStipple = NullPixmap;
+    pPriv->pRotatedPixmap = NullPixmap;
     pPriv->freeCompClip = FALSE;
     pPriv->FillArea = mfbSolidInvertArea;
     return TRUE;
@@ -375,10 +374,8 @@ mfbDestroyGC(pGC)
     mfbPrivGC *pPriv;
 
     pPriv = (mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr);
-    if (pPriv->pRotatedTile)
-	mfbDestroyPixmap(pPriv->pRotatedTile);
-    if (pPriv->pRotatedStipple)
-	mfbDestroyPixmap(pPriv->pRotatedStipple);
+    if (pPriv->pRotatedPixmap)
+	mfbDestroyPixmap(pPriv->pRotatedPixmap);
     if (pPriv->freeCompClip)
 	(*pGC->pScreen->RegionDestroy)(pPriv->pCompositeClip);
     mfbDestroyOps (pGC->ops);
@@ -672,23 +669,13 @@ mfbValidateGC(pGC, changes, pDrawable)
 
     if(new_rotate || new_fill)
     {
+	Bool new_pix = FALSE;
+
 	/* figure out how much to rotate */
 	xrot = pGC->patOrg.x;
 	yrot = pGC->patOrg.y;
 	xrot += pDrawable->x;
 	yrot += pDrawable->y;
-
-	/* destroy any previously rotated tile or stipple */
-	if (devPriv->pRotatedTile)
-	{
-	    mfbDestroyPixmap(devPriv->pRotatedTile);
-	    devPriv->pRotatedTile = (PixmapPtr)NULL;
-	}
-	if (devPriv->pRotatedStipple)
-	{
-	    mfbDestroyPixmap(devPriv->pRotatedStipple);
-	    devPriv->pRotatedStipple = (PixmapPtr)NULL;
-	}
 
 	switch (pGC->fillStyle)
 	{
@@ -697,15 +684,9 @@ mfbValidateGC(pGC, changes, pDrawable)
 	    if (!pGC->tileIsPixel && (pGC->tile.pixmap->drawable.width <= 32) &&
 	    	!(pGC->tile.pixmap->drawable.width & (pGC->tile.pixmap->drawable.width - 1)))
 	    {
-	    	devPriv->pRotatedTile = mfbCopyPixmap(pGC->tile.pixmap);
-	    	if (devPriv->pRotatedTile)
-		{
-		    (void)mfbPadPixmap(devPriv->pRotatedTile);
-		    if (xrot)
-			mfbXRotatePixmap(devPriv->pRotatedTile, xrot);
-		    if (yrot)
-			mfbYRotatePixmap(devPriv->pRotatedTile, yrot);
-		}
+		mfbCopyRotatePixmap(pGC->tile.pixmap,
+				    &devPriv->pRotatedPixmap, xrot, yrot);
+		new_pix = TRUE;
 	    }
 	    break;
 	case FillStippled:
@@ -717,22 +698,24 @@ mfbValidateGC(pGC, changes, pDrawable)
 	    	{
 		    if (pGC->stipple->drawable.width != 32)
 			mfbPadPixmap(pGC->stipple);
-		    devPriv->pRotatedStipple = pGC->stipple;
-		    ++devPriv->pRotatedStipple->refcnt;
+		    if (devPriv->pRotatedPixmap)
+			mfbDestroyPixmap(devPriv->pRotatedPixmap);
+		    devPriv->pRotatedPixmap = pGC->stipple;
+		    ++devPriv->pRotatedPixmap->refcnt;
 	    	}
 	    	else
 	    	{
-		    devPriv->pRotatedStipple = mfbCopyPixmap(pGC->stipple);
-		    if (devPriv->pRotatedStipple)
-		    {
-		    	(void)mfbPadPixmap(devPriv->pRotatedStipple);
-			if (xrot)
-			    mfbXRotatePixmap(devPriv->pRotatedStipple, xrot);
-			if (yrot)
-			    mfbYRotatePixmap(devPriv->pRotatedStipple, yrot);
-		    }
+		    mfbCopyRotatePixmap(pGC->stipple,
+					&devPriv->pRotatedPixmap, xrot, yrot);
 	    	}
+		new_pix = TRUE;
 	    }
+	}
+	/* destroy any previously rotated tile or stipple */
+	if (!new_pix && devPriv->pRotatedPixmap)
+	{
+	    mfbDestroyPixmap(devPriv->pRotatedPixmap);
+	    devPriv->pRotatedPixmap = (PixmapPtr)NULL;
 	}
     }
 
@@ -919,14 +902,13 @@ mfbValidateGC(pGC, changes, pDrawable)
 	    }
 	}
 	/* beyond this point, opaqueStippled ==> fg != bg */
-	else if (((pGC->fillStyle == FillTiled) &&
-		  !devPriv->pRotatedTile) ||
-		 ((pGC->fillStyle == FillOpaqueStippled) &&
-		  !devPriv->pRotatedStipple))
+	else if (((pGC->fillStyle == FillTiled) ||
+		  (pGC->fillStyle == FillOpaqueStippled)) &&
+		 !devPriv->pRotatedPixmap)
 	{
 	    pGC->ops->FillSpans = mfbUnnaturalTileFS;
 	}
-	else if ((pGC->fillStyle == FillStippled) && !devPriv->pRotatedStipple)
+	else if ((pGC->fillStyle == FillStippled) && !devPriv->pRotatedPixmap)
 	{
 	    pGC->ops->FillSpans = mfbUnnaturalStippleFS;
 	}
@@ -956,8 +938,9 @@ mfbValidateGC(pGC, changes, pDrawable)
 	/* the rectangle code doesn't deal with opaque stipples that
 	   are two colors -- we can fool it for fg==bg, though
 	 */
-	if (((pGC->fillStyle == FillTiled) && !devPriv->pRotatedTile) ||
-	    ((pGC->fillStyle == FillStippled) && !devPriv->pRotatedStipple) ||
+	if ((((pGC->fillStyle == FillTiled) ||
+	      (pGC->fillStyle == FillStippled)) &&
+	     !devPriv->pRotatedPixmap) ||
 	    ((pGC->fillStyle == FillOpaqueStippled) &&
 	     (pGC->fgPixel != pGC->bgPixel))
 	   )
