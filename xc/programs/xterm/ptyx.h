@@ -1,5 +1,5 @@
 /*
- *	$Header: ptyx.h,v 1.3 88/02/16 17:38:43 jim Exp $
+ *	$Header: ptyx.h,v 1.4 88/02/16 18:58:47 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -339,7 +339,6 @@ typedef struct
 typedef struct _Misc {
     char *geo_metry;
     char *T_geometry;
-    char *icon_geom;
     char *f_n;
     char *f_b;
     char *curs_shape;
