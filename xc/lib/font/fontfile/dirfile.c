@@ -1,5 +1,5 @@
 #endif /* lint */
- * $XConsortium: dirfile.c,v 1.2 91/05/11 13:33:46 rws Exp $
+ * $XConsortium: dirfile.c,v 1.3 91/07/16 20:12:42 keith Exp $
  *
 /*
  * Copyright 1991 Massachusetts Institute of Technology
@@ -31,8 +31,8 @@
  */
 #include    "fontfilest.h"
 #include    <stdio.h>
-#include    <sys/errno.h>
 #include    <sys/types.h>
+#include    <errno.h>
 #include    <sys/stat.h>
 
 extern int  errno;
