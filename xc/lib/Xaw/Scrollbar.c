@@ -1,4 +1,4 @@
-/* $XConsortium: Scrollbar.c,v 1.64 90/05/08 15:16:28 converse Exp $ */
+/* $XConsortium: Scrollbar.c,v 1.65 90/12/31 17:29:09 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -33,6 +33,7 @@ SOFTWARE.
 
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/ScrollbarP.h>
+#include <X11/Xmu/Drawing.h>
 
 /* Private definitions. */
 
@@ -66,7 +67,7 @@ static XtResource resources[] = {
        Offset(scrollbar.thumbProc), XtRCallback, NULL},
   {XtNjumpProc, XtCCallback, XtRCallback, sizeof(caddr_t),
        Offset(scrollbar.jumpProc), XtRCallback, NULL},
-  {XtNthumb, XtCThumb, XtRPixmap, sizeof(Pixmap),
+  {XtNthumb, XtCThumb, XtRBitmap, sizeof(Pixmap),
        Offset(scrollbar.thumb), XtRImmediate, (XtPointer) XtUnspecifiedPixmap},
   {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
        Offset(scrollbar.foreground), XtRString, XtDefaultForeground},
@@ -167,16 +168,9 @@ WidgetClass scrollbarWidgetClass = (WidgetClass)&scrollbarClassRec;
 
 static void ClassInitialize()
 {
-    static XtConvertArgRec screenConvertArg[] = {
-        {XtWidgetBaseOffset, (caddr_t) XtOffset(Widget, core.screen),
-	     sizeof(Screen *)}
-    };
-
     XawInitializeWidgetSet();
     XtAddConverter( XtRString, XtROrientation, XmuCvtStringToOrientation,
 		    NULL, (Cardinal)0 );
-    XtAddConverter( XtRString, XtRPixmap, XmuCvtStringToBitmap,
-		   screenConvertArg, XtNumber(screenConvertArg));
 }
 
 /*
