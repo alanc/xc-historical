@@ -1,9 +1,9 @@
 NoGrabServer
 DecorateTransients
-TitleFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
-MenuFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
-IconFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*-*-*-*"
-IconManagerFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*"
+TitleFont "-*-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
+MenuFont "-*-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
+IconFont "-*-helvetica-bold-r-normal--*-100-*-*-*-*-*-*"
+IconManagerFont "-*-helvetica-bold-r-normal--*-100-*-*-*"
 ResizeFont "fixed"
 
 MoveDelta 3
