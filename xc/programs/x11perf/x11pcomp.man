@@ -1,4 +1,4 @@
-.TH x11perfcomp 1 "30 Apr 1991" "X Version 11"
+.TH x11perfcomp 1 "Release 5" "X Version 11"
 .SH NAME
 x11perfcomp - X11 server performance comparison program
 .SH SYNTAX
