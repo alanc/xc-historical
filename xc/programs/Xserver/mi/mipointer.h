@@ -3,7 +3,7 @@
  *
  */
 
-/* $XConsortium: mipointer.h,v 5.2 89/06/21 11:16:15 rws Exp $ */
+/* $XConsortium: mipointer.h,v 5.3 91/04/26 21:46:00 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -30,6 +30,8 @@ typedef struct {
     Bool	(*CursorOffScreen)();	/* ppScreen, px, py */
     void	(*CrossScreen)();	/* pScreen, entering */
     void	(*WarpCursor)();	/* pScreen, x, y */
+    void	(*EnqueueEvent)();	/* xEvent */
+    void	(*NewEventScreen)();	/* pScreen */
 } miPointerScreenFuncRec, *miPointerScreenFuncPtr;
 
 extern Bool miPointerInitialize ();

@@ -2,7 +2,7 @@
  * mipointer.c
  */
 
-/* $XConsortium: mipointer.c,v 5.12 91/05/04 23:10:16 keith Exp $ */
+/* $XConsortium: mipointer.c,v 5.13 91/07/12 19:59:51 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -58,6 +58,7 @@ static void miPointerMove ();
 extern void miRecolorCursor ();
 extern void ProcessInputEvents ();
 extern void NewCurrentScreen ();
+extern void mieqEnqueue (), mieqSwitchScreen ();
 
 Bool
 miPointerInitialize (pScreen, spriteFuncs, screenFuncs, waitForUpdate)
@@ -80,6 +81,13 @@ miPointerInitialize (pScreen, spriteFuncs, screenFuncs, waitForUpdate)
 	return FALSE;
     pScreenPriv->spriteFuncs = spriteFuncs;
     pScreenPriv->screenFuncs = screenFuncs;
+    /*
+     * check for uninitialized methods
+     */
+    if (!screenFuncs->EnqueueEvent)
+	screenFuncs->EnqueueEvent = mieqEnqueue;
+    if (!screenFuncs->NewEventScreen)
+	screenFuncs->NewEventScreen = mieqSwitchScreen;
     pScreenPriv->waitForUpdate = waitForUpdate;
     pScreenPriv->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = miPointerCloseScreen;
@@ -370,7 +378,7 @@ miPointerAbsoluteCursor (x, y, time)
 	    if (newScreen != pScreen)
 	    {
 		pScreen = newScreen;
-		mieqSwitchScreen (pScreen);
+		(*pScreenPriv->screenFuncs->NewEventScreen) (pScreen);
 		pScreenPriv = GetScreenPrivate (pScreen);
 	    	/* Smash the confine to the new screen */
 	    	miPointer.limits.x2 = pScreen->width;
@@ -440,7 +448,7 @@ miPointerMove (pScreen, x, y, time)
     	xE.u.keyButtonPointer.rootX = x;
     	xE.u.keyButtonPointer.rootY = y;
     	xE.u.keyButtonPointer.time = time;
-    	mieqEnqueue (&xE);
+	(*pScreenPriv->screenFuncs->EnqueueEvent) (&xE);
     }
     miPointer.wasnoninterest = isnoninterest;
     miPointer.x = x;
