@@ -1,4 +1,4 @@
-/* $XConsortium: spfuncs.c,v 1.2 91/05/11 09:58:17 rws Exp $ */
+/* $XConsortium: spfuncs.c,v 1.3 91/06/12 14:35:28 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -23,12 +23,15 @@
  *
  * Author: Dave Lemke, Network Computing Devices, Inc
  *
+ * $NCDId: @(#)spfuncs.c,v 4.8 1991/07/02 17:01:44 lemke Exp $
+ *
  */
 
 #include	<X11/Xos.h>
 #include	"fontfilest.h"
 #include	"spint.h"
 
+/* ARGSUSED */
 SpeedoOpenScalable (fpe, pFont, flags, entry, fileName, vals, format, fmask)
     FontPathElementPtr	fpe;
     FontPtr		*pFont;
@@ -40,7 +43,6 @@ SpeedoOpenScalable (fpe, pFont, flags, entry, fileName, vals, format, fmask)
     fsBitmapFormatMask	fmask;
 {
     char	fullName[MAXFONTNAMELEN];
-    int		ret;
 
     strcpy (fullName, entry->name.name);
     FontParseXLFDName (fullName, vals, FONT_XLFD_REPLACE_VALUE);
@@ -48,9 +50,68 @@ SpeedoOpenScalable (fpe, pFont, flags, entry, fileName, vals, format, fmask)
 			    format, fmask, flags);
 }
 
-SpeedoGetInfoScaleable ()
+/*
+ * XXX
+ *
+ * this does a lot more then i'd like, but it has to get the bitmaps
+ * in order to get accurate metrics (which it *must* have).
+ *
+ * a possible optimization is to avoid allocating the glyph memory
+ * and to simply save the values without doing the work.
+ */
+static int
+get_font_info(pinfo, fontname, filename, entry, spfont)
+    FontInfoPtr pinfo;
+    char       *fontname;
+    char       *filename;
+    FontEntryPtr	entry;
+    SpeedoFontPtr *spfont;
 {
-    /* XXX TBD */
+    SpeedoFontPtr spf;
+    int         err;
+
+    err = open_sp_font(fontname, filename, entry,
+	       (fsBitmapFormat) 0, (fsBitmapFormatMask) 0, (unsigned long) 0,
+		       spfont);
+    spf = *spfont;
+
+    if (err != Successful)
+	return err;
+
+    cur_spf = spf;
+    sp_reset_master(spf->master);
+
+    make_sp_header(spf, pinfo);
+
+    compute_sp_bounds(spf, pinfo, (unsigned long) 0);
+
+    compute_sp_props(spf, fontname, pinfo);
+
+    return Successful;
+}
+
+/* ARGSUSED */
+SpeedoGetInfoScaleable(fpe, pFontInfo, entry, fontName, fileName, vals)
+    FontPathElementPtr	fpe;
+    FontInfoPtr		pFontInfo;
+    FontEntryPtr	entry;
+    FontNamePtr		fontName;
+    char		*fileName;
+    FontScalablePtr	vals;
+{
+    SpeedoFontPtr spf;
+    char        fullName[MAXFONTNAMELEN];
+    int         err;
+
+    fixup_vals(vals);
+
+    strcpy(fullName, entry->name.name);
+    FontParseXLFDName(fullName, vals, FONT_XLFD_REPLACE_VALUE);
+
+    err = get_font_info(pFontInfo, fullName, fileName, entry, &spf);
+
+    close_sp_font(spf);
+    return err;
 }
 
 static FontRendererRec renderer = {
@@ -62,5 +123,5 @@ SpeedoRegisterFontFileFunctions()
 {
     make_sp_standard_props();
     sp_reset();
-    FontFileRegisterRenderer (&renderer);
+    FontFileRegisterRenderer(&renderer);
 }
