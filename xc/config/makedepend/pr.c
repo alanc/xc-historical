@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pr.c,v 1.13 91/05/10 18:21:46 rws Exp $
+ * $XConsortium: pr.c,v 1.14 91/07/25 11:51:15 rws Exp $
  */
 #include "def.h"
 
@@ -12,7 +12,8 @@ extern boolean	printed;
 extern boolean	verbose;
 extern boolean	show_where_not;
 
-add_include(file, file_red, include, dot, failOK)
+add_include(filep, file, file_red, include, dot, failOK)
+	struct filepointer	*filep;
 	struct inclist	*file, *file_red;
 	char	*include;
 	boolean	dot;
@@ -28,10 +29,10 @@ add_include(file, file_red, include, dot, failOK)
 		if (failOK)
 		    return;
 		if (file != file_red)
-			warning("%s (reading %s): ",
-				file_red->i_file, file->i_file);
+			warning("%s (reading %s, line %d): ",
+				file_red->i_file, file->i_file, filep->f_line);
 		else
-			warning("%s: ", file->i_file);
+			warning("%s, line %d: ", file->i_file, filep->f_line);
 		warning1("cannot find include file \"%s\"\n", include);
 		show_where_not = TRUE;
 		newfile = inc_path(file->i_file, include, dot);

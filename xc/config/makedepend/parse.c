@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parse.c,v 1.23 92/08/22 14:37:04 rws Exp $
+ * $XConsortium: parse.c,v 1.24 92/08/24 16:31:42 gildea Exp $
  */
 #include "def.h"
 
@@ -91,10 +91,10 @@ find_includes(filep, file, file_red, recursion, failOK)
 			undefine(line, file_red);
 			break;
 		case INCLUDE:
-			add_include(file, file_red, line, FALSE, failOK);
+			add_include(filep, file, file_red, line, FALSE, failOK);
 			break;
 		case INCLUDEDOT:
-			add_include(file, file_red, line, TRUE, failOK);
+			add_include(filep, file, file_red, line, TRUE, failOK);
 			break;
 		case PRAGMA:
 		case ERROR:
