@@ -9,16 +9,16 @@
 #define OSMajorVersion    4
 #define OSMinorVersion    50
 
-XCOMM platform:  $XConsortium: Mips.cf,v 1.12 93/07/15 17:17:28 rws Exp $
+XCOMM platform:  $XConsortium: Mips.cf,v 1.13 93/10/13 15:30:15 rws Exp $
 XCOMM operating system:  OSName
 
-/*****************************************************************************
- *			  Platform-specific parameters                       *
- *****************************************************************************/
+/***************************************************************************
+ *			 Platform-specific parameters                      *
+ ***************************************************************************/
 
 #define HasVoidSignalReturn		NO
 #define SetTtyGroup			YES
-#define UnalignedReferencesAllowed	NO     /* if arbitrary deref is okay */
+#define UnalignedReferencesAllowed	NO     /* if arbitrary deref okay */
 #define HasBsearch			NO
 
 #define MipsArchitecture
@@ -35,19 +35,19 @@ XCOMM operating system:  OSName
 #define DoRanlibCmd NO
 #define AllocateLocalDefines -DINCLUDE_ALLOCA_H
 
-/*****************************************************************************
- *                                                                           *
- *			DEFINE PARAMETERS FOR BUILDING                       *
- *                                                                           *
- *****************************************************************************/
+/***************************************************************************
+ *                                                                         *
+ *			DEFINE PARAMETERS FOR BUILDING                     *
+ *                                                                         *
+ ***************************************************************************/
 
 #define XmipsServer	YES
 
-/*****************************************************************************
- *                                                                           *
- *	      OVERRIDE ANY CONFIGURATION PARAMETERS FROM Imake.tmpl          *
- *                                                                           *
- *****************************************************************************/
+/***************************************************************************
+ *                                                                         *
+ *	      OVERRIDE ANY CONFIGURATION PARAMETERS FROM Imake.tmpl        *
+ *                                                                         *
+ ***************************************************************************/
 
 #define SpecialMalloc		NO
 
@@ -55,8 +55,8 @@ XCOMM operating system:  OSName
 
 #define ConstructMFLAGS	NO		/* build MFLAGS from MAKEFLAGS */
 
-#define DefaultUserPath /usr/net:/bin:/usr/bin:$(BINPATH):/usr/ucb
-#define DefaultSystemPath /usr/net:/bin:/usr/bin:/etc:$(BINPATH):/usr/ucb
+#define DefaultUserPath /usr/net:/bin:/usr/bin:$(BINDIR):/usr/ucb
+#define DefaultSystemPath /usr/net:/bin:/usr/bin:/etc:$(BINDIR):/usr/ucb
 
 /* mips manuals are really complicated.  This certainly won't work. */
 
