@@ -155,15 +155,16 @@ InitOutput(pScreenInfo, argc, argv)
     int     	  argc;
     char    	  **argv;
 {
-    int     	  i, index;
+    int     	  i, index, ac = argc;
+    char	  **av = argv;
     int		  nonBlockConsole = 1;
 
-    while (argc--) {
-	if (!strcmp(*argv,"-debug")) {
+    while (ac--) {
+	if (!strcmp(*av,"-debug")) {
 	    nonBlockConsole = 0;
 	    break;
 	}
-	argv++;
+	av++;
     }
     /*
      *	Writes to /dev/console can block - causing an
