@@ -433,7 +433,7 @@ void XtManageChildren(children, num_children)
 void XtManageChild(child)
     Widget child;
 {
-    XtManageChildren(&child, 1);
+    XtManageChildren(&child, (Cardinal) 1);
 }
 
 void XtSetMappedWhenManaged(widget, mappedWhenManaged)
