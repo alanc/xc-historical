@@ -241,8 +241,7 @@ This option indicates that \fIxterm\fP should start in VT102 mode.
 .BI \-tm " string"
 This option specifies a series of terminal setting keywords followed by the
 characters that should be bound to those functions, similar to the \fIstty\fP
-program.  This is ignored when \fB\-L\fP is given since \fIgetty\fP resets
-the terminal.  Allowable keywords include: intr, quit, erase, kill, eof,
+program.  Allowable keywords include: intr, quit, erase, kill, eof,
 eol, swtch, start, stop, brk, susp, dsusp, rprnt, flush, weras, and lnext.
 Control characters may be specified as ^char (e.g. ^c or ^u) and ^? may be 
 used to indicate delete.
@@ -308,14 +307,6 @@ the foreground and background colors.  It is equivalent to
 .BI \-w " number"
 This option specifies the width in pixels of the border surrounding the window.
 It is equivalent to \fB-borderwidth\fP or \fB-bw\fP.
-.TP 8
-.B \-L
-This option indicates that \fIxterm\fP was started by \fIinit\fP.  In this
-mode, \fIxterm\fP does not try to allocate a new pseudoterminal as \fIinit\fP
-has already done so.  In addition, the system program \fIgetty\fP is run 
-instead of the user's shell.  \fBThis option has been superceeded by the new
-\fIxdm\fP program; furthermore, this option should never be used by users when
-starting terminal windows.\fP
 .PP
 The following standard X Toolkit command line arguments are commonly used 
 with \fIxterm\fP:
@@ -385,9 +376,7 @@ this application.
 .TP 8
 .B "ttyModes (\fPclass\fB TtyModes)"
 Specifies a string containing terminal setting keywords and the characters
-to which they may be bound.  This option is ignored when \fB\-L\fP is given 
-since 
-\fIgetty\fP resets the terminal.  Allowable keywords include: intr, quit, 
+to which they may be bound.  Allowable keywords include: intr, quit, 
 erase, kill, eof, eol, swtch, start, stop, brk, susp, dsusp, rprnt, flush, 
 weras, and lnext.  Control characters may be specified as ^char (e.g. ^c or ^u)
 and ^? may be used to indicate delete.  This is very useful for overriding
@@ -899,10 +888,14 @@ The actions available for key translations are:
 .B secure()
 Toggles the \fBSecure Keyboard\fP mode; see \fBSECURITY\fP.
 .TP 15
-.B insert()
+.B insert-seven-bit()
 Processes the key in the normal way; i.e. inserts the
-ASCII character code corresponding to the keysym found in the
+ISO Latin 1 character code corresponding to the keysym found in the
 keyboard mapping table into the input stream.
+.TP 15
+.B insert-eight-bit()
+Processes the key the same as \fBinsert-seven-bit()\fP but forces the eighth
+bit to be set.
 .TP 15
 .B string(\fIstring\fB)
 Rebinds the key or key sequence to the string value; that is, inserts the
@@ -993,7 +986,8 @@ The default bindings are:
 .Ds
 .TA .5i 1i 2i
 .ta .5i 1i 2i
-		<KeyPress>:	insert() \\n\\
+	~Meta	<KeyPress>:	insert-seven-bit() \\n\\
+	 Meta	<KeyPress:	insert-eight-bit() \\n\\
  Ctrl	~Meta	<Btn1Down>:	mode-menu() \\n\\
 	~Meta	<Btn1Down>:	select-start() \\n\\
 	~Meta	<Btn1Motion>:	select-extend() \\n\\
@@ -1007,48 +1001,6 @@ The default bindings are:
 .De
 .sp
 .in -4
-.SH "STARTING XTERM FROM INIT"
-.PP
-\fBWarning, this feature is now obsolete and may not be supported in 
-future releases.  Sites using this method should switch to \fIxdm\fP 
-instead.\fR
-.PP
-On operating systems such as 4.3bsd and Ultrix, the server and initial login 
-window are normally started automatically by 
-\fIinit(8)\fP.
-.PP
-By convention, the pseudoterminal with the
-highest minor device number (e.g. \fI\/dev\/ttyqf\fP and \fI\/dev\/ptyqf\fP)
-is renamed for
-the lowest display number (e.g. \fI\/dev\/ttyv0\fP and \fI\/dev\/ptyv0\fP).
-Machines that have more than one
-display can repeat this process using \fIttyqe\fP for \fIttyv1\fP, and 
-so on.
-.PP
-Once the pseudoterminals are in place, a line similar to the following may be 
-added to \fI/etc/ttys\fP (replacing \fIXqvss\fP with the appropriate server
-and putting it all on one line):
-.sp
-.in +4
-.nf
-ttyv0 "/usr/bin/X11/xterm -L -geom 80x24+1+1 -display :0" 
-	xterm on secure window="/usr/bin/X11/Xqvss :0"
-.fi
-.in -4
-.PP
-Sites that used to run X10 should note that the colon in the server display
-number is required.
-.PP
-Although the release will install both the X server and 
-\fIxterm\fP in /usr/bin/X11 by default, many sites choose to make a copy of
-both of these programs on the root partition (usually in /etc) so that they
-may still be used even if the partition containing /usr/bin/X11 isn't mounted.
-.PP
-Some versions of \fIinit\fP have relatively small program name buffer 
-sizes and treat all sharp signs as comment delimiters.  Sites that wish to
-list large numbers of options on the xterm line will need to write a small
-shell script to exec the long xterm line.  The best solution, of course, is
-to use \fIxdm\fP.
 .SH "OTHER FEATURES"
 .I Xterm
 automatically highlights the window border and text cursor when the
@@ -1090,11 +1042,6 @@ resize(1), X(1), pty(4), tty(4)
 .br
 .I ``Xterm Control Sequences''
 .SH BUGS
-.PP
-The \fB\-L\fP option is no longer needed as the new \fIxdm\fP display manager
-system handles logging in in a much cleaner way.  No more messing around with
-trying to match colors in \fI/etc/ttys\fP or worrying about an unwanted login
-window.  \fBThis option may be removed in future releases.\fP
 .PP
 \fBXterm will hang forever if you try to paste too much text at one time.\fP
 It is both producer and consumer for the pty and can deadlock.
