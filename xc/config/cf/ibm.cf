@@ -2,14 +2,70 @@
  * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
  */
 
-#define SystemV                NO
-
-#define OSName                 ACIS
 #define OSMajorVersion         0
 #define OSMinorVersion         0
+
+#ifdef AIXArchitecture
+#define SystemV                YES
+#define OSName                 AIX			/* SVR2++ */
+#ifndef USE_PCC
+#define CcCmd cc -Nd4000 -Nn3000 -DBSD_INCLUDES
+#define LibraryDefines -Hcpp -DUNIXCPP
+#define ibmosdefs -DSYSV -Nd4000 -Nn3000
+#else
+#define CcCmd i386cc
+#define ibmosdefs -DHCVERSION=HCRevision
+#define LibraryDefines /**/
+#endif
+#else
+#define SystemV                NO
+#define OSName                 AOS			/* BSD */
 #define CcCmd                  hc
+#define ibmosdefs              -DHCVERSION=HCRevision
+#endif
 
 #define HasVoidSignalReturn    NO
+
+
+#ifdef RtArchitecture
+#define ibmdisplayoption(ps2opt,rtopt) rtopt
+#endif /* RtArchitecture */
+
+#ifdef PS2Architecture
+#define AsCmd /bin.386/i386as
+#define LdCmd /bin.386/i386ld
+#define ExtraLibraries /lib.386/libtcp.a
+#define LnCmd ln			/* no symbolic links */
+#define ibmarchdefs -Di386 -DiAPX386
+#define ibmdisplayoption(ps2opt,rtopt) ps2opt
+#endif /* PS2Architecture */
+
+/*
+ * These define the screens the server will allow
+ * affected:    .../server/ddx/ibm/Makefile
+ *              .../server/ddx/ibm/common/Makefile
+ * Also, be sure to remove .../server/ddx/ibm/common/ibmscreen.o
+ * 
+ *                                        PS2, Rt, ...
+ */
+#define ibmInclude8514  ibmdisplayoption (YES, YES)
+#define ibmIncludeAED   ibmdisplayoption (NO,  YES)
+#define ibmIncludeAPA16 ibmdisplayoption (NO,  YES)
+#define ibmIncludeAPA8c ibmdisplayoption (NO,  NO)
+#define ibmIncludeEGA   ibmdisplayoption (NO,  YES)
+#define ibmIncludeMPEL  ibmdisplayoption (NO,  YES)
+#define ibmIncludeVGA   ibmdisplayoption (YES, YES)
+#define ibmIncludeGEN   ibmdisplayoption (NO,  NO)
+#undef ibmdisplayoption
+
+#ifndef ibmosdefs
+#define ibmosdefs /**/
+#endif
+#ifndef ibmarchdefs
+#define ibmarchdefs /**/
+#endif
+#define StandardDefines ibmosdefs ibmarchdefs
+#define LintOpts -ax ibmosdefs ibmarchdefs
 
 /* 
  * This defines the name of server you want.
@@ -35,13 +91,10 @@
 /* Need This Also For our IBM Imakefiles */
 #define	ibmSpecialMalloc		YES
 
-#define	GlobalDefines	-DHCVERSION=HCRevision
-#define OPERATING_SYSTEM BSDrt
-#define OSDefines -DBSDrt
-
  LDCOMBINEFLAGS = -X -r
             PCC = pcc
 
+#ifndef AIXArchitecture
 /*
  * It's real useful to know the version of hc we're using, but hc doesn't
  * identify itself in the pre-processor, so we have to do it by hand.
@@ -72,17 +125,18 @@
 #if HCRevision == 14018
 #define BandAidCompiler "rtcchack.bac"
 #undef MacroFile
-#define MacroFile rt.cf $(IRULESRC)/rtcchack.bac
+#define MacroFile ibm.cf $(IRULESRC)/rtcchack.bac
 #endif
+#endif /* not AIX */
 
 /* 
  * define this as you like for server compilation 
  * affected: all makefiles in .../X11/server
  */
-#define ServerDefines  -DUNIXCPP -DNOSTDHDRS GlobalDefines ExtensionDefines
+#define ServerDefines  StandardDefines -DUNIXCPP -DNOSTDHDRS StandardDefines ExtensionDefines
 
 /* define this as you like for server font support */
-#define FontDefines	-DFONT_SNF -DFONT_BDF -DCOMPRESSED_FONTS GlobalDefines
+#define FontDefines -DFONT_SNF -DFONT_BDF -DCOMPRESSED_FONTS StandardDefines
 
 /* define the following line for easily debuggable servers, the */
 /* second line for especially speedy servers.			*/
@@ -90,22 +144,7 @@
 #define	ServerCDebugFlags	-O 
 
 /* define this as you like for normal library compilation */
-#define LibraryDefines		-DUNIXCPP GlobalDefines
+#define LibraryDefines		-DUNIXCPP StandardDefines
 
-/* 
- * These define the screens the server will allow
- * affected:	.../server/ddx/ibm/Makefile
- *		.../server/ddx/ibm/common/Makefile
- * Also, be sure to remove .../server/ddx/ibm/common/ibmscreen.o
- */
-#define	ibmInclude8514	YES
-#define	ibmIncludeAED	YES
-#define	ibmIncludeAPA16	YES
-#define	ibmIncludeAPA8c	NO
-#define	ibmIncludeEGA	YES
-#define	ibmIncludeMPEL	YES
-#define	ibmIncludeVGA	YES
-#define	ibmIncludeGEN	NO
-
-#define BigEndianArchitecture	YES	/* ddx-specific stuff might need? */
-
+/**/# platform:  $XConsortium: hp.cf,v 1.16 89/08/16 15:48:41 jim Exp $
+/**/# operating system:  OSName

@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.54 89/09/27 10:53:27 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.55 89/10/03 08:52:55 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -42,15 +42,6 @@
  *
  *     4.  Create a .cf file with the name given by MacroFile.
  */
-
-#ifdef ibm032
-#define MacroIncludeFile <ibm.cf>
-#define MacroFile ibm.cf
-#undef ibm032
-#undef ibm
-#define IBMArchitecture
-#define RtArchitecture
-#endif /* ibm032 */
 
 #ifdef ultrix
 #define MacroIncludeFile <ultrix.cf>
@@ -156,6 +147,27 @@
 #define MipsArchitecture
 #define UMipsArchitecture
 #endif
+
+#if defined(ibm)
+#define MacroIncludeFile <ibm.cf>
+#define MacroFile ibm.cf
+#undef ibm
+#define IBMArchitecture
+#ifdef i386
+#undef i386
+#define PS2Architecture
+#endif
+#ifdef ibm032
+#undef ibm032
+#define RtArchitecture
+#endif
+#ifdef aix
+#undef aix
+#define AIXArchitecture
+#endif
+#endif /* ibm */
+
+
 
 #ifndef MacroIncludeFile
 /**/# WARNING:  Imake.tmpl not configured; guessing at definitions!!!
