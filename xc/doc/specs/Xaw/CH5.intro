@@ -4,9 +4,9 @@
 .ce 3
 \s+1\fBChapter 4\fP\s-1
 
-\s+1\fBText Widget\fP\s-1
+\s+1\fBText Widgets\fP\s-1
 .sp 2
-.nr H1 3
+.nr H1 4
 .nr H2 0
 .nr H3 0
 .nr H4 0
@@ -14,11 +14,270 @@
 .na
 .LP
 .XS
-Chapter 4 - Text Widget
+Chapter 4 - Text Widgets.
 .XE
 .LP
-This chapter describes the Athena Text widget and it associated sources
-and sinks.
+The Athena Text widget comes in a number of different pieces.  The AsciiText
+widget and Text widgets shall be referred to as the \fItext
+widgets\fP.  The other 
+pieces (sources and sinks) are X Toolkit objects and have no window
+associated with them.  No source or sink is useful unless assigned to
+a text widget.
+.LP
+Each piece of the text widget has a specific purpose, and will be
+discussed later in this chapter in detail.  The following list is a
+quick overview of the functionality of each piece.
+.IN "Text Widget" ""
+.IP Text 15 
+This is the glue that binds everything else together.  This widget code
+reads the text data from the source, and displays the information in the
+sink.  All translations and actions are handled here in the Text widget itself.
+.IN "TextSink Object" ""
+.IP TextSink 15 
+This object is responsible for 
+displaying and clearing the drawing area.  It also reports the
+configuration of the window that contains the drawing area.  The TextSink
+does not have its own window, but does all it drawing on the Text
+widget's window. 
+.IN "TextSource Object" ""
+.IP TextSource 15 
+This object is responsibile for reading, editing and searching through the
+text buffer.  This buffer can
+be any store of information that this particular TextSource knows how to read.
+.IN "AsciiSink Object" ""
+.IP AsciiSink 15
+This object is a subclass of the TextSink and knows how to display
+ASCII text.  Extended support has been added to display 8-bit characters.
+.IN "AsciiSource Object" ""
+.IP AsciiSource 15
+This object is a subclass of the TextSource and knows how to read strings
+and files.
+.IN "AsciiText Widget" ""
+.IP AsciiText 15
+This widget is a subclass of the Text widget that automatically attaches
+an AsciiSource and AsciiSink to itself at creation time.  This widget provides
+the simplest interface to the Athena Text Widget.
+.LP
+The AsciiText widget is the most commonly used and combines the Text
+Widget, AsciiSink and AsciiSource in one package for easy use.  While
+this solution solves most needs, it is not general enough for
+everyone.  When more flexibility is needed the programmer may gain
+special features and extra functionality by implementing his own
+TextSource or TextSink, or perhaps even subclasssing the Text Widget
+itself.
+.LP
+The word \fIcursor\fP is used in this chapter to refer to the
+text cursor.  This is the caret that is displayed between two
+characters in the file.  The cursor marks the insertion point for any
+new characters that will be added to the file.  To avoid confusion
+the mouse pointer will always be referred to as \fImouse pointer\fP.
+.LP
+All of the text widgets provide a window that will allow an application to
+display and edit one or more lines of text.  An option is provided to
+let the user add Scrollbars to the Text window, allowing the user to scroll
+through the displayed text.  Other options allow the user to modify the text
+and its attributes.  
+.LP
+The text widgets supports three edit modes:
+.IN "Text widgets" "edit modes"
+.IP \(bu 5
+Append-only 
+.IP \(bu 5
+Editable
+.IP \(bu 5
+Read-only 
+.LP
+Read-only mode does not allow the user or application to modify the text in
+the widget.  While the application may reset the entire string in read-only
+mode with \fBXtSetValues\fP, it may not modify parts of the text with
+\fBXawTextReplace\fP.  Append-only and editable modes allow the text at the
+text cursor position to be modified.  The only difference is that text may
+only be added to or, removed from, the end of a buffer in Append-only mode.
+.LP
+.NH 2
+Text Widget for Users
+.IN "Text Widgets" "User Guide"
+.LP
+The text widgets provide many of the common keyboard editing commands.  This
+allows users to move around, and edit the buffer.  If an operation is not
+allowed the text widget will \fIbeep\fP at the user.  For instance, the
+user will not be allowed to delete characters in a read-only text widget.
+.NH3
+Default Key Bindings
+.LP
+.Ds 0
+.TA 1.0i 3.0i 4.5i
+.ta 1.0i 3.0i 4.5i
+Ctrl-a	Beginning Of Line	Meta-b	Backward Word
+Ctrl-b	Backward Character	Meta-f	Forward Word
+Ctrl-d	Delete Next Character	Meta-i	Insert File
+Ctrl-e	End Of Line	Meta-k	Kill To End Of Paragraph
+Ctrl-f	Forward Character	Meta-q	Form Paragraph
+Ctrl-g	Multiply Reset	Meta-v	Previous Page
+Ctrl-h	Delete Previous Character	Meta-y	Insert Current Selection
+Ctrl-j	Newline And Indent	Meta-z	Scroll One Line Down
+Ctrl-k	Kill To End Of Line	Meta-d	Delete Next Word
+Ctrl-l	Redraw Display	Meta-D	Kill Word
+Ctrl-m	Newline	Meta-h	Delete Previous Word
+Ctrl-n	Next Line	Meta-H	Backward Kill Word
+Ctrl-o	Newline And Backup	Meta-<	Beginning Of File
+Ctrl-p	Previous Line	Meta->	End Of File
+Ctrl-r	Search/Replace Backward	Meta-]	Forward Paragraph
+Ctrl-s	Search/Replace Forward	Meta-[	Backward Paragraph
+Ctrl-t	Transpose Characters
+Ctrl-u	Multiply by 4	Meta-Delete	Delete Previous Word
+Ctrl-v	Next Page	Meta-Shift Delete	Kill Previous Word
+Ctrl-w	Kill Selection	Meta-Backspace	Delete Previous Word
+Ctrl-y	Unkill	Meta-Shift Backspace	Kill Previous Word
+Ctrl-z	Scroll One Line Up
+.De
+.LP
+The user can also use the mouse to \fIcut and paste\fP text in the text
+widgets.  The commands supported by the mouse buttons are listed below.
+.LP
+.Ds
+.TA .5i 2.0i
+.ta .5i 2.0i
+	Button 1 Down	Start Selection
+	Button 1 Motion	Adjust Selection
+	Button 1 Up	End Selection
 
+	Button 2 Down	Insert Current Selection
 
+	Button 3 Down	Extend Current Selection
+	Button 3 Motion	Adjust Selection
+	Button 3 Up	End Selection
 
+.De
+.LP
+Since all of these key and mouse bindings are set through the translations
+and resource manager, the application programmer or user can modify them 
+by changing the \fBtranslations\fP resource. 
+.bs 1
+.NH 3
+Search and Replace
+.IN "text widgets" "Search"
+.IN "text widgets" "Query Replace"
+.LP
+The Text widget provides a search popup that can be used to search for a
+string within the current text widget.  The popup can be activated 
+by typing either \fIControl-r\fP or \fIControl-s\fP.  If \fIControl-s\fP is
+used the search will be forward in the file from the current cursor location;
+if \fIControl-r\fP is used the search will be backward.  The activated popup 
+is placed under the mouse pointer.
+The search popup has a number of buttons that allow both text searches
+and text replacements to be performed.  
+.LP
+At the top of the search popup are two toggle buttons labeled \fIbackward\fP
+and \fIforward\fP.  One of these buttons will be highlighted; this is the
+direction in which the search will be performed.  The user can change the
+direction by clicking on a button corresponding to a search direction.
+.LP
+Directly under the buttons there are two text areas, one labeled
+\fISearch for:\fP and the other labeled \fIReplace with:\fP.  If this is
+a Read-Only text widget the \fIReplace with:\fP field will be grayed out
+and no replacements will be allowed.  After each of these labels will be
+a text field.  This field will allow the user to enter a
+string to search for and
+the string to replace it with.  Only one of these text fields will have a
+window border around it; this is the active text field.  Any key presses
+that occur when the focus in in the search popup will be directed to the
+active text field.  There are also a few special key sequences:
+.DS
+.TA 1.5i
+.ta 1.5i
+\fBCarrige Return\fP:	Execute the action, and pop down the search widget.
+\fBTab\fP:	Execute the action, then move to the next field.
+\fBShift Carrige Return\fP:	Execute the action, then move to the next field.
+\fBControl-q Tab\fP:	Enter a Tab into a text field.
+\fBControl-c\fP:	Pop down the search popup.
+.DE
+.LP
+Using these special key sequences should allow simple
+searches without ever removing ones hands from the keyboard.
+.LP
+At the bottom of the search popup is a row of buttons.  These buttons
+allow the same actions to to be performed as the key sequences, but the
+buttons will leave the popup active.  This can be quite useful if many
+searches are being performed, as the popup will be left on the display.
+Since the search popup is a transient widget it may be picked
+up with the window manager and pulled off to the side for use 
+at a later time.
+.IP \fBSearch\fP 15
+Search for the string, but do not pop down the search popup.
+.IP \fBReplace\fP 15
+Replace the currently highlighted string with the string in the
+\fIReplace with\fP text field, and move onto the next occurrence of the
+\fISearch for\fP text field.  The functionality is commonly referred to as
+query-replace.
+.IP \fBReplace-All\fP 15
+Replace all occurrences of the search string with the replace string from
+the current cursor position to the end (or beginning) of the file.  There is
+no key sequence to perform this action.
+.IP \fBCancel\fP 15
+Remove the search popup from the screen.
+.LP
+.IN "text widgets" "File Insertion"
+.NH 3
+File Insertion
+.LP
+To insert a file into a text widget type the key sequence \fIMeta-i\fP
+activate the file insert popup.  The popup will appear under
+the mouse pointer, and any text typed while the focus is in this popup will
+be redirected to the text field used for the filename.  When the correct
+filename has been entered click on \fIInsert File\fP, or type
+\fICarrige Return\fP.  The named file will be inserted in the intial
+text widget beginning at the cursor position.  
+If an error occurs when opening the file the an error message will be
+printed prompting the use to enter the filename again.
+The file insert may be aborted by clicking on \fICancel\fP.  
+If \fIMeta-i\fP is typed at a text widget that is read-only it will
+beep, as no file insertion is allowed. 
+.LP
+.IN "text widgets" "Text Selections for users"
+.NH 3
+Text Selections for Users
+.LP
+The text widgets have a very powerful text selection mechanism that allows
+the user to copy pieces of the text into the \fBPRIMARY\fP selection,
+and paste 
+into the text widget some text that another application (or text
+widget) has put in the \fBPRIMARY\fP selection.
+.LP
+The simplest method of selecting text is to click with mouse button 1 on
+the beginning of the text to be selected.  While
+holding the mouse button down drag the mouse pointer until entire body
+of the desired text is highlighted, now le go of the mouse button to
+activate the selection.  The text may now be
+pasted into any other application.  This selection will remain
+active until some other client wants the selection.
+.LP
+To modify a currently active selection click mouse button
+3 near either the end, or the beginning of the selection that you want
+to adjust.  This end of the selection may be moved while holding
+down mouse button 3.  When the proper area has been highlighted
+release the mouse button to activate the selection.
+.LP
+To paste text that some other application or text widget has
+put into the \fBPRIMARY\fP selection into this text widget
+use mouse button 2.  First place the insert cursor at the location
+to insert the text, then click and release mouse button 2.  The text
+in the current selection will be placed into the text widget.
+.LP
+Clicking rapidly in succession with mouse button 1 will select the
+following text.
+.IP \fBTwo\fP 1.0i
+Select the word under the mouse pointer.  A word boundary is defined by the
+text widget to be a Space, Tab, or Carriage Return.  The string
+\fIfoo-bar\fP is considered one word.
+.IP \fBThree\fP 1.0i
+Select the line under the mouse pointer.
+.IP \fBFour\fP 1.0i
+Select the paragraph under the mouse pointer.  A paragraph boundary is
+defined by the text widget as two Carriage Returns in a row with only
+Spaces or Tabs between them. 
+.IP \fBFive\fP 1.0i
+Select the entire text buffer.
+.LP
+To unset the text selection just click and release button 1 without
+moving it.
