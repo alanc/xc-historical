@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.49 88/07/12 15:32:21 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.50 88/07/12 18:39:53 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -151,6 +151,8 @@ static int tslot;
 #endif	/* !SYSV */
 static jmp_buf env;
 
+char *ProgramName;
+
 static char *icon_geometry;
 static char *title;
 
@@ -251,6 +253,88 @@ static XrmOptionDescRec optionDescList[] = {
 {"-w",		".TopLevelShell.borderWidth", XrmoptionSepArg, (caddr_t) NULL},
 };
 
+static char *options[] = {
+"[-display displayname]        X server to contact",
+"[-geometry geom]              size (in characters) and position",
+"[-rv] [+rv]                   turn on/off reverse video",
+"[-bg color]                   background color",
+"[-fg color]                   foreground color",
+"[-bd color]                   border color",
+"[-bw number]                  border width in pixels",
+"[-fn fontname]                normal text font",
+"[-iconic]                     start iconic",
+"[-name string]                client instance, icon, and title strings",
+"[-title string]               title string",
+"[-xrm resourcestring]         additional resource specifications",
+"[-132] [+132]                 turn on/off column switch inhibiting",
+"[-ah] [+ah]                   turn on/off always highlight",
+"[-b number]                   internal border in pixels",
+"[-cb] [+cb]                   turn on/off cut-to-beginning-of-line inhibit",
+"[-cc classrange]              specify additional character classes",
+"[-cn] [+cn]                   turn on/off cut newline inhibit",
+"[-cr color]                   text cursor color",
+"[-cu] [+cu]                   turn on/off curses emulation",
+"[-fb fontname]                bold text font",
+"[-j] [+j]                     turn on/off jump scroll",
+"[-l] [+l]                     turn on/off logging",
+"[-lf filename]                logging filename",
+"[-ls] [+ls]                   turn on/off login shell",
+"[-mb] [+mb]                   turn on/off margin bell",
+"[-mc milliseconds]            multiclick time in milliseconds",
+"[-ms color]                   pointer color",
+"[-nb number]                  margin bell in characters from right end",
+"[-rw] [+rw]                   turn on/off reverse wraparound",
+"[-s] [+s]                     turn on/off multiscroll",
+"[-sb] [+sb]                   turn on/off scrollbar",
+"[-si] [+si]                   turn on/off scroll-on-input inhibit",
+"[-sk] [+sk]                   turn on/off scroll-on-keypress",
+"[-sl number]                  number of scrolled lines to save",
+"[-t] [+t]                     turn on/off Tek emulation window",
+"[-ut] [+ut]                   turn on/off utmp inhibit",
+"[-vb] [+vb]                   turn on/off visual bell",
+"[-e command args]             command to execute",
+"[%geom]                       Tek window geometry",
+"[#geom]                       icon window geometry",
+"[-C]                          console mode",
+"[-L]                          getty mode started from init",
+"[-Sxxd]                       slave mode on ttyxx, file descriptor \"d\"",
+NULL };
+
+static char *message[] = {
+"Fonts must be fixed width and, if both normal and bold are specified, must",
+"have the same size.  If only a normal font is specified, it will be used for",
+"both normal and bold text (by doing overstriking).  The -e option, if given,",
+"must be appear at the end of the command line, otherwise the user's default",
+"shell will be started.  Options that start with a plus sign (+) restore the",
+"default.",
+NULL};
+
+Syntax (badOption)
+    char *badOption;
+{
+    char **cpp;
+
+    fprintf (stderr, "%s:  bad option \"%s\" given\n\n",
+	     ProgramName, badOption);
+
+    fprintf (stderr, "usage:\n        %s [-options ...] [-e command args]\n\n",
+	     ProgramName);
+    fprintf (stderr, "where options include:\n");
+    for (cpp = options; *cpp; cpp++) {
+	fprintf (stderr, "    %s\n", *cpp);
+    }
+
+    putc ('\n', stderr);
+    for (cpp = message; *cpp; cpp++) {
+	fputs (*cpp, stderr);
+	putc ('\n', stderr);
+    }
+    putc ('\n', stderr);
+
+    exit (1);
+}
+
+
 extern WidgetClass xtermWidgetClass;
 
 Arg ourTopLevelShellArgs[] = {
@@ -260,8 +344,6 @@ Arg ourTopLevelShellArgs[] = {
 int number_ourTopLevelShellArgs = 2;
 	
 Widget toplevel;
-
-char *ProgramName;
 
 main (argc, argv)
 int argc;
@@ -664,53 +746,6 @@ char *name;
 	char *rindex();
 
 	return((cp = rindex(name, '/')) ? cp + 1 : name);
-}
-
-static char *ustring[] = {
-"Usage: xterm [-132] [-b inner_border_width] [-bd border_color] \\\n",
-#ifdef TIOCCONS
-" [-bg backgrnd_color] [-bw border_width] [-C] [-cr cursor_color] [-cu] \\\n",
-#else	/* TIOCCONS */
-" [-bg backgrnd_color] [-bw border_width] [-cr cursor_color] [-cu] \\\n",
-#endif	/* TIOCCONS */
-" [-fb bold_font] [-fg foregrnd_color] [-fn norm_font] [-cc charclasses]\\\n",
-" [-i] [-j] [-l] [-lf logfile] [-ls] [-mb] [-ms mouse_color] \\\n",
-" [-n name] [-nb bell_margin] [-rv] [-rw] [-s] [-mc msecs]\\\n",
-" [-sb] [-si] [-sk] [-sl save_lines] [-sn] [-st] [-T title] [-t] [-tb] \\\n",
-" [-vb] [-cn] [-cb] [=[width]x[height][[+-]xoff[[+-]yoff]]] [-hs] [+hs] \\\n",
-" [%[width]x[height][[+-]xoff[[+-]yoff]]] [#[+-]xoff[[+-]yoff]] \\\n",
-" [-e command_to_exec]\n\n",
-"Fonts must be of fixed width and of same size;\n",
-"If only one font is specified, it will be used for normal and bold text\n",
-"The -132 option allows 80 <-> 132 column escape sequences\n",
-#ifdef TIOCCONS
-"The -C option forces output to /dev/console to appear in this window\n",
-#endif	/* TIOCCONS */
-"The -cu option turns a curses bug fix on\n",
-"The -i  option enables iconic startup\n",
-"The -j  option enables jump scroll\n",
-"The -l  option enables logging\n",
-"The -ls option makes the shell a login shell\n",
-"The -mb option turns the margin bell on\n",
-"The -rv option turns reverse video on\n",
-"The -rw option turns reverse wraparound on\n",
-"The -s  option enables asynchronous scrolling\n",
-"The -sb option enables the scrollbar\n",
-"The -si option disables re-positioning the scrollbar at the bottom on input\n",
-"The -sk option causes the scrollbar to position at the bottom on a key\n",
-"The -t  option starts Tektronix mode\n",
-"The -vb option enables visual bell\n",
-0
-};
-
-Syntax (badOption)
-char	*badOption;
-{
-	register char **us = ustring;
-
-	fprintf(stderr, "Unknown option \"%s\"\n\n", badOption);
-	while (*us) fputs(*us++, stderr);
-	exit (1);
 }
 
 get_pty (pty, tty)
@@ -1625,3 +1660,5 @@ remove_termcap_entry (buf, str)
     }
     return;
 }
+
+
