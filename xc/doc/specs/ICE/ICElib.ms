@@ -124,7 +124,7 @@ The header file \fI<X11/ICE/ICElib.h>\fP\^ defines all of the ICElib data
 structures and function prototypes.  \fIICElib.h\fP\^ includes the
 header file \fI<X11/ICE/ICE.h>\fP\^ which defines all of the ICElib constants.
 Protocol libraries that need to read and write messages should include
-the header file \fI<X11/ICE/ICElibint.h>\fP\^.
+the header file \fI<X11/ICE/ICEmsg.h>\fP\^.
 .LP
 Applications should link against ICElib using \fI-lICE\fP\^.
 .LP
@@ -763,6 +763,7 @@ T}
 .TE
 .LP
 .sp 0.5
+.bp
 .PN IcePaAuthProc
 is the callback invoked for the client that received the
 \fIProtocol Setup\fP\^.
@@ -1515,6 +1516,7 @@ The \fIclient_data\fP\^ pointer that was passed to
 .PN IceAddConnectionWatch .
 .LP
 .eM
+.bp
 .NH 1
 Protocol Setup and Shutdown
 .XS
@@ -1622,6 +1624,7 @@ Status IceProtocolShutdown\^(\^\fIice_conn\fP, \fImajor_opcode\fP\^)
 .br
     int \fImajor_opcode\fP\^;
 .FN
+.bp
 .IP \fIice_conn\fP 1i
 A valid ICE connection object.
 .IP \fImajor_opcode\fP 1i
@@ -2707,6 +2710,7 @@ sections of code that access an ICE connection (for example, when
 generating messages).  Two calls, which are generally implemented as
 macros, are provided:
 .LP
+.bp
 .sM
 .FD 0
 IceLockConn\^(\^\fIice_conn\fP\^)
@@ -2813,8 +2817,8 @@ Appendix A \- Authentication Utility Functions
 .sp
 .LP
 As discussed in this document, the means by which authentication data
-is obtained by the ICE library for the client opening an ICE connection or
-initiating a \fIProtocol Setup\fP is implementation dependent.\(dg
+is obtained by the ICE library (for \fIConnection Setups\fP\^ or
+\fIProtocol Setups\fP\^) is implementation dependent.\(dg
 .FS \(dg
 The X Consortium's ICElib implementation assumes the presence of an
 ICE authority file.
@@ -3065,7 +3069,7 @@ Appendix B \- MIT-MAGIC-COOKIE-1 Authentication
 .sp
 .LP
 The X Consortium's ICElib implementation supports a simple
-MIT-MAGIC-COOKIE-1 authentication using the authority file utilities
+MIT-MAGIC-COOKIE-1 authentication scheme using the authority file utilities
 described in Appendix A.
 .LP
 In this model, an application such as a session manager, obtains a
