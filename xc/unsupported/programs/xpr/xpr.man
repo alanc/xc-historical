@@ -322,6 +322,7 @@ The \fB\-slide\fP option is not supported for LaserJet printers.
 
 The \fB\-split\fP option is not supported for HP printers.
 
+The \fB\-gray\fP option is not supported for HP or IBM printers.
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
 .br
