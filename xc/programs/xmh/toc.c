@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: toc.c,v 2.18 89/04/10 11:50:25 converse Exp $";
+static char rcs_id[] = "$XConsortium: toc.c,v 2.19 89/05/11 19:24:28 converse Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -779,7 +779,7 @@ Toc toc;
 		(void) fprintf(stderr, "\n");
 		(void) fflush(stderr);
 	    }
-	    DoCommand(argv, (char *) NULL, "/dev/null");
+	    DoCommand(argv, (char *) NULL, (char *) NULL);
 	    for (i = 0; argv[i]; i++)
 		XtFree((char *) argv[i]);
 	    XtFree((char *) argv);
