@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: TMparse.c,v 1.50 87/12/08 10:59:30 rws Locked $";
+static char rcsid[] = "$Header: TMparse.c,v 6.22 88/01/29 16:25:36 asente Exp $";
 #endif lint
 
 /*
@@ -26,22 +26,14 @@ static char rcsid[] = "$Header: TMparse.c,v 1.50 87/12/08 10:59:30 rws Locked $"
  */
 /* TMparse.c -- parse all X events into widget specific actions. */
 
-#ifndef VMS
-#include <X11/Xos.h>
+#include <strings.h>
 #include "Xlib.h"
 #include "Xutil.h"
-#else
-#include Xlib
-#include Xutil
-#include string
-#include <descrip.h>
-#include "VMSutil.h"
-#endif
-#include <stdio.h>
-#include "Intrinsic.h"
 #include "Atoms.h"
-#include "TM.h"
+#include <stdio.h>
+#include "IntrinsicI.h"
 #include "TMprivate.h"
+#include "Convert.h"
 
 /* Private definitions. */
 #define LF 0x0a
@@ -64,9 +56,8 @@ typedef struct _EventKey {
     Opaque	closure;
 }EventKey, *EventKeys;
 
-static char *currentProduction;
-
 static NameValueRec modifiers[] = {
+    {"None",    0,      None},
     {"Shift",	0,	ShiftMask},
     {"Lock",	0,	LockMask},
     {"Ctrl",	0,	ControlMask},
@@ -98,41 +89,41 @@ static NameValueRec buttonNames[] = {
 };
 
 static NameValueRec notifyModes[] = {
-    {"Normal", 0,	NotifyNormal},
-    {"Grab", 0,	NotifyGrab},
-    {"Ungrab", 0,	NotifyUngrab},
-    {"WhileGrabbed", 0,	NotifyWhileGrabbed},
+    {"Normal",		0,	NotifyNormal},
+    {"Grab",		0,	NotifyGrab},
+    {"Ungrab",		0,	NotifyUngrab},
+    {"WhileGrabbed",    0,	NotifyWhileGrabbed},
     {NULL, NULL, NULL},
 };
 
 static NameValueRec notifyDetail[] = {
-    {"Ancestor", 0,	NotifyAncestor},
-    {"Virtual", 0,	NotifyVirtual},
-    {"Inferior", 0,	NotifyInferior},
-    {"Nonlinear", 0,	NotifyNonlinear},
-    {"NonlinearVirtual", 0,	NotifyNonlinearVirtual},
-    {"Pointer", 0,	NotifyPointer},
-    {"PointerRoot", 0,	NotifyPointerRoot},
-    {"DetailNone", 0,	NotifyDetailNone},
+    {"Ancestor",	    0,	NotifyAncestor},
+    {"Virtual",		    0,	NotifyVirtual},
+    {"Inferior",	    0,	NotifyInferior},
+    {"Nonlinear",	    0,	NotifyNonlinear},
+    {"NonlinearVirtual",    0,	NotifyNonlinearVirtual},
+    {"Pointer",		    0,	NotifyPointer},
+    {"PointerRoot",	    0,	NotifyPointerRoot},
+    {"DetailNone",	    0,	NotifyDetailNone},
     {NULL, NULL, NULL},
 };
 
 static NameValueRec visibilityNotify[] = {
-    {"Unobscured", 0,	VisibilityUnobscured},
-    {"PartiallyObscured", 0,	VisibilityPartiallyObscured},
-    {"FullyObscured", 0,	VisibilityFullyObscured},
+    {"Unobscured",	    0,	VisibilityUnobscured},
+    {"PartiallyObscured",   0,	VisibilityPartiallyObscured},
+    {"FullyObscured",       0,	VisibilityFullyObscured},
     {NULL, NULL, NULL},
 };
 
 static NameValueRec circulation[] = {
-    {"OnTop", 0,	PlaceOnTop},
-    {"OnBottom", 0,	PlaceOnBottom},
+    {"OnTop",       0,	PlaceOnTop},
+    {"OnBottom",    0,	PlaceOnBottom},
     {NULL, NULL, NULL},
 };
 
 static NameValueRec propertyChanged[] = {
-    {"NewValue", 0,	PropertyNewValue},
-    {"Delete", 0,	PropertyDelete},
+    {"NewValue",    0,	PropertyNewValue},
+    {"Delete",      0,	PropertyDelete},
     {NULL, NULL, NULL},
 };
 
@@ -141,7 +132,6 @@ static String ParseKeyAndModifiers();
 static String ParseTable();
 static String ParseImmed();
 static String ParseNone();
-static String ParseModImmed();
 
 static EventKey events[] = {
 
@@ -179,18 +169,6 @@ static EventKey events[] = {
 {"PtrMoved", 	    NULL, MotionNotify,	ParseNone,	NULL},
 {"Motion", 	    NULL, MotionNotify,	ParseNone,	NULL},
 {"MouseMoved", 	    NULL, MotionNotify,	ParseNone,	NULL},
-{"ButtonMotion", NULL, MotionNotify, ParseModImmed, (Opaque)AnyButtonModifier},
-{"BtnMotion",    NULL, MotionNotify, ParseModImmed, (Opaque)AnyButtonModifier},
-{"Button1Motion",   NULL, MotionNotify, ParseModImmed,	(Opaque)Button1Mask},
-{"Btn1Motion",      NULL, MotionNotify, ParseModImmed,	(Opaque)Button1Mask},
-{"Button2Motion",   NULL, MotionNotify, ParseModImmed,	(Opaque)Button2Mask},
-{"Btn2Motion",      NULL, MotionNotify, ParseModImmed,	(Opaque)Button2Mask},
-{"Button3Motion",   NULL, MotionNotify, ParseModImmed,	(Opaque)Button3Mask},
-{"Btn3Motion",      NULL, MotionNotify, ParseModImmed,	(Opaque)Button3Mask},
-{"Button4Motion",   NULL, MotionNotify, ParseModImmed,	(Opaque)Button4Mask},
-{"Btn4Motion",      NULL, MotionNotify, ParseModImmed,	(Opaque)Button4Mask},
-{"Button5Motion",   NULL, MotionNotify, ParseModImmed,	(Opaque)Button5Mask},
-{"Btn5Motion",      NULL, MotionNotify, ParseModImmed,	(Opaque)Button5Mask},
 
 {"EnterNotify",     NULL, EnterNotify,    ParseTable,(Opaque)notifyModes},
 {"Enter",	    NULL, EnterNotify,    ParseTable,(Opaque)notifyModes},
@@ -296,7 +274,7 @@ static Boolean initialized = FALSE;
 static void FreeEventSeq(eventSeq)
     EventSeqPtr eventSeq;
 {
-    EventSeqPtr evs = eventSeq;
+    register EventSeqPtr evs = eventSeq;
 
     while (evs != NULL) {
 	evs->state = (StatePtr) evs;
@@ -308,7 +286,7 @@ static void FreeEventSeq(eventSeq)
 
     evs = eventSeq;
     while (evs != NULL) {
-	EventPtr event = evs;
+	register EventPtr event = evs;
 	evs = evs->next;
 	if (evs == event) evs = NULL;
 	XtFree((char *)event);
@@ -318,7 +296,7 @@ static void FreeEventSeq(eventSeq)
 static void CompileNameValueTable(table)
     NameValueTable table;
 {
-    int i;
+    register int i;
 
     for (i=0; table[i].name; i++)
         table[i].signature = StringToQuark(table[i].name);
@@ -327,7 +305,7 @@ static void CompileNameValueTable(table)
 static void Compile_XtEventTable(table)
     EventKeys	table;
 {
-    int i;
+    register int i;
 
     for (i=0; table[i].event; i++)
         table[i].signature = StringToQuark(table[i].event);
@@ -338,8 +316,6 @@ static Syntax(str)
 {
     (void) fprintf(stderr,
      "Translation table syntax error: %s\n", str);
-
-    (void) fprintf(stderr, "Found while parsing '%s'.\n", currentProduction);
 }
 
 
@@ -348,8 +324,8 @@ static Cardinal LookupTMEventType(eventStr)
   String eventStr;
 
 {
-    Cardinal i;
-    XrmQuark	signature;
+    register Cardinal   i;
+    register XrmQuark	signature;
 
     signature = StringToQuark(eventStr);
     for (i = 0; events[i].signature != NULL; i++)
@@ -372,10 +348,10 @@ Boolean _XtLookupTableSym(table, name, valueP)
 {
 /* ||| should implement via hash or something else faster than linear search */
 
-    int i;
-    XrmQuark	signature = StringToQuark(name);
+    register int i;
+    register XrmQuark signature = StringToQuark(name);
 
-    for (i=0;table[i].name != NULL;i++)
+    for (i=0; table[i].name != NULL; i++)
 	if (table[i].signature == signature) {
 	    *valueP = table[i].value;
 	    return TRUE;
@@ -385,23 +361,22 @@ Boolean _XtLookupTableSym(table, name, valueP)
 }
 
 static String ScanFor(str, ch)
-    String str;
-    char ch;
+    register String str;
+    register char ch;
 {
-    while (*str != ch && *str != '\0') str++;
-
+    while (*str != ch && *str != '\0' &&*str != '\n') str++;
     return str;
 }
 
 static String ScanNumeric(str)
-    String str;
+    register String str;
 {
     while ('0' <= *str && *str <= '9') str++;
     return str;
 }
 
 static String ScanAlphanumeric(str)
-    String str;
+    register String str;
 {
     while (
         ('A' <= *str && *str <= 'Z') || ('a' <= *str && *str <= 'z')
@@ -410,7 +385,7 @@ static String ScanAlphanumeric(str)
 }
 
 static String ScanIdent(str)
-    String str;
+    register String str;
 {
     str = ScanAlphanumeric(str);
     while (
@@ -425,44 +400,79 @@ static String ScanIdent(str)
 }
 
 static String ScanWhitespace(str)
-    String str;
+    register String str;
 {
     while (*str == ' ' || *str == '\t') str++;
     return str;
 }
 
 static String ParseModifiers(str, event)
-    String str;
+    register String str;
     EventPtr event;
 {
-    String start;
+    register String start;
     char modStr[100];
-    Boolean notFlag;
+    Boolean notFlag, exclusive;
     Value maskBit;
 
+ 
+    str = ScanWhitespace(str);
+    start = str;
+    str = ScanAlphanumeric(str);
+    if (start != str) {
+         (void) strncpy(modStr, start, str-start);
+          modStr[str-start] = '\0';
+          if (_XtLookupTableSym(modifiers, modStr, &maskBit))
+	    if (maskBit== None) {
+                event->event.modifierMask = ~0;
+		event->event.modifiers = 0;
+                str = ScanWhitespace(str);
+	        return str;
+            }
+            if (maskBit == AnyModifier) {/*backward compatability*/
+                event->event.modifierMask = 0;
+                event->event.modifiers = 0;
+                str = ScanWhitespace(str);
+                return str;
+            }
+         str = start;
+    }
+
+    if (*str == '!') {
+         exclusive = TRUE;
+         str++;
+         str = ScanWhitespace(str);
+    }
+    else exclusive = FALSE;
+
+   
     while (*str != '<') {
-	str = ScanWhitespace(str);
-	if (*str == '~') { notFlag = TRUE; str++; } else notFlag = FALSE;
+        if (*str == '~') {
+             notFlag = TRUE;
+             str++;
+          } else 
+              notFlag = FALSE;
 	start = str;
         str = ScanAlphanumeric(str);
-	if (start == str) {
-	    Syntax("Modifier or '<' expected.");
-	    return str;
-	}
-	(void) strncpy(modStr, start, str-start);
-	modStr[str-start] = '\0';
-	maskBit = 0;
-	if (!_XtLookupTableSym(modifiers, modStr, &maskBit))
-	    Syntax("Unknown modifier name.");
-	event->event.modifierMask |= maskBit;
+        if (start == str) {
+           Syntax("Modifier or '<' expected");
+           return str;
+        }
+  	   (void) strncpy(modStr, start, str-start);
+	   modStr[str-start] = '\0';
+	   if (!_XtLookupTableSym(modifiers, modStr, &maskBit))
+	       Syntax("Unknown modifier name.");
+	    event->event.modifierMask |= maskBit;
 	if (notFlag) event->event.modifiers &= ~maskBit;
 	else event->event.modifiers |= maskBit;
+        str = ScanWhitespace(str);
     }
+    if (exclusive) event->event.modifierMask = ~0;
     return str;
 }
 
 static String ParseXtEventType(str, event, tmEventP)
-    String str;
+    register String str;
     EventPtr event;
     Cardinal *tmEventP;
 {
@@ -481,8 +491,8 @@ static String ParseXtEventType(str, event, tmEventP)
 static unsigned int StrToHex(str)
     String str;
 {
-    char c;
-    int	val = 0;
+    register char   c;
+    register int    val = 0;
 
     while (c = *str) {
 	if ('0' <= c && c <= '9') val = val*16+c-'0';
@@ -498,8 +508,8 @@ static unsigned int StrToHex(str)
 static unsigned int StrToOct(str)
     String str;
 {
-    char c;
-    int	val = 0;
+    register char c;
+    register int  val = 0;
 
     while (c = *str) {
         if ('0' <= c && c <= '7') val = val*8+c-'0'; else return -1;
@@ -512,8 +522,8 @@ static unsigned int StrToOct(str)
 static unsigned int StrToNum(str)
     String str;
 {
-    char c;
-    int	val = 0;
+    register char c;
+    register int val = 0;
 
     if (*str == '0') {
 	str++;
@@ -553,17 +563,6 @@ static String ParseImmed(str, closure, event)
     return str;
 }
 
-static String ParseModImmed(str, closure, event)
-    String str;
-    Opaque closure;
-    EventPtr event;
-{
-    event->event.modifiers = (unsigned long)closure;
-    event->event.modifierMask = (unsigned long)closure;
-
-    return str;
-}
-
 static String ParseKeyAndModifiers(str, closure, event)
     String str;
     Opaque closure;
@@ -577,8 +576,9 @@ static String ParseKeyAndModifiers(str, closure, event)
     return str;
 }
 
+/*ARGSUSED*/
 static String ParseKeySym(str, closure, event)
-    String str;
+    register String str;
     Opaque closure;
     EventPtr event;
 {
@@ -589,7 +589,7 @@ static String ParseKeySym(str, closure, event)
     if (*str == '\\') {
 	str++;
 	keySymName[0] = *str;
-	if (*str != '\0') str++;
+	if (*str != '\0' && *str != '\n') str++;
 	keySymName[1] = '\0';
 	event->event.eventCode = XStringToKeySym(keySymName);
 	event->event.eventCodeMask = ~0L;
@@ -604,6 +604,7 @@ static String ParseKeySym(str, closure, event)
 		&& *str != ':'
 		&& *str != ' '
 		&& *str != '\t'
+                && *str != '\n'
 		&& *str != '\0') str++;
 	(void) strncpy(keySymName, start, str-start);
 	keySymName[str-start] = '\0';
@@ -615,11 +616,11 @@ static String ParseKeySym(str, closure, event)
 }
 
 static String ParseTable(str, closure, event)
-    String str;
+    register String str;
     Opaque closure;
     EventPtr event;
 {
-    String start = str;
+    register String start = str;
     char tableSymName[100];
 
     event->event.eventCode = 0L;
@@ -635,6 +636,7 @@ static String ParseTable(str, closure, event)
     return str;
 }
 
+/*ARGSUSED*/
 static String ParseNone(str, closure, event)
     String str;
     Opaque closure;
@@ -651,7 +653,7 @@ static ModifierMask buttonModifierMasks[] = {
 };
 
 static String ParseEvent(str, event)
-    String str;
+    register String str;
     EventPtr	event;
 {
     Cardinal	tmEvent;
@@ -667,7 +669,8 @@ static String ParseEvent(str, event)
  * modifiers in grabs.
  */
     if ((event->event.eventType == ButtonRelease)
-	&& (event->event.modifiers != AnyModifier))
+	&& (event->event.modifiers |event->event.modifierMask != 0) /* any */
+        && (event->event.modifiers != AnyModifier))
     {
 	event->event.modifiers
 	    |= buttonModifierMasks[event->event.eventCode];
@@ -678,15 +681,15 @@ static String ParseEvent(str, event)
 }
 
 static String ParseQuotedStringEvent(str, event)
-    String str;
-    EventPtr event;
+    register String str;
+    register EventPtr event;
 {
-    int j;
+    register int j;
 
     ModifierMask ctrlMask;
     ModifierMask metaMask;
     ModifierMask shiftMask;
-    char	c;
+    register char	c;
     char	s[2];
     Cardinal	tmEvent;
 
@@ -706,11 +709,11 @@ static String ParseQuotedStringEvent(str, event)
 	} else if (*str == '\\') {
 	    str++;
 	    c = *str;
-	    if (*str != '\0') str++;
+	    if (*str != '\0' && *str != '\n') str++;
 	    break;
 	} else {
 	    c = *str;
-	    if (*str != '\0') str++;
+	    if (*str != '\0' && *str != '\n') str++;
 	    break;
 	}
     tmEvent = (EventType) LookupTMEventType("Key");
@@ -751,9 +754,9 @@ static void RepeatDown(eventP, reps, actionsP)
     ActionPtr **actionsP;
 {
     EventRec upEventRec;
-    EventPtr event, downEvent;
+    register EventPtr event, downEvent;
     EventPtr upEvent = &upEventRec;
-    int i;
+    register int i;
 
     static EventSeqRec timerEventRec = {
 	{0, 0, _XtEventTimerEventType, 0L, 0L},
@@ -767,7 +770,8 @@ static void RepeatDown(eventP, reps, actionsP)
     upEvent->event.eventType = ((event->event.eventType == ButtonPress) ?
 	ButtonRelease : KeyRelease);
     if ((upEvent->event.eventType == ButtonRelease)
-	&& (upEvent->event.modifiers != AnyModifier))
+	&& (upEvent->event.modifiers != AnyModifier)
+        && (upEvent->event.modifiers | upEvent->event.modifierMask !=0))
 	upEvent->event.modifiers
 	    |= buttonModifierMasks[event->event.eventCode];
 
@@ -801,9 +805,9 @@ static void RepeatDownPlus(eventP, reps, actionsP)
     ActionPtr **actionsP;
 {
     EventRec upEventRec;
-    EventPtr event, downEvent, lastDownEvent;
+    register EventPtr event, downEvent, lastDownEvent;
     EventPtr upEvent = &upEventRec;
-    int i;
+    register int i;
 
     static EventSeqRec timerEventRec = {
 	{0, 0, _XtEventTimerEventType, 0L, 0L},
@@ -817,7 +821,8 @@ static void RepeatDownPlus(eventP, reps, actionsP)
     upEvent->event.eventType = ((event->event.eventType == ButtonPress) ?
 	ButtonRelease : KeyRelease);
     if ((upEvent->event.eventType == ButtonRelease)
-	&& (upEvent->event.modifiers != AnyModifier))
+	&& (upEvent->event.modifiers != AnyModifier)
+        && (upEvent->event.modifiers | upEvent->event.modifierMask != 0))
 	upEvent->event.modifiers
 	    |= buttonModifierMasks[event->event.eventCode];
 
@@ -854,9 +859,9 @@ static void RepeatUp(eventP, reps, actionsP)
     ActionPtr **actionsP;
 {
     EventRec upEventRec;
-    EventPtr event, downEvent;
+    register EventPtr event, downEvent;
     EventPtr upEvent = &upEventRec;
-    int i;
+    register int i;
 
     static EventSeqRec timerEventRec = {
 	{0, 0, _XtEventTimerEventType, 0L, 0L},
@@ -874,7 +879,8 @@ static void RepeatUp(eventP, reps, actionsP)
     downEvent->event.eventType = ((event->event.eventType == ButtonRelease) ?
 	ButtonPress : KeyPress);
     if ((downEvent->event.eventType == ButtonPress)
-	&& (downEvent->event.modifiers != AnyModifier))
+	&& (downEvent->event.modifiers != AnyModifier)
+        && (downEvent->event.modifiers | downEvent->event.modifierMask != 0))
 	downEvent->event.modifiers
 	    &= ~buttonModifierMasks[event->event.eventCode];
 
@@ -913,9 +919,9 @@ static void RepeatUpPlus(eventP, reps, actionsP)
     ActionPtr **actionsP;
 {
     EventRec upEventRec;
-    EventPtr event, downEvent, lastUpEvent;
+    register EventPtr event, downEvent, lastUpEvent;
     EventPtr upEvent = &upEventRec;
-    int i;
+    register int i;
 
     static EventSeqRec timerEventRec = {
 	{0, 0, _XtEventTimerEventType, 0L, 0L},
@@ -933,7 +939,8 @@ static void RepeatUpPlus(eventP, reps, actionsP)
     downEvent->event.eventType = ((event->event.eventType == ButtonRelease) ?
 	ButtonPress : KeyPress);
     if ((downEvent->event.eventType == ButtonPress)
-	&& (downEvent->event.modifiers != AnyModifier))
+	&& (downEvent->event.modifiers != AnyModifier)
+        && (downEvent->event.modifiers |downEvent->event.modifierMask !=0))
 	downEvent->event.modifiers
 	    &= ~buttonModifierMasks[event->event.eventCode];
 
@@ -966,8 +973,8 @@ static void RepeatOther(eventP, reps, actionsP)
     int reps;
     ActionPtr **actionsP;
 {
-    EventPtr event, tempEvent;
-    int i;
+    register EventPtr event, tempEvent;
+    register int i;
 
     tempEvent = event = *eventP;
 
@@ -986,8 +993,8 @@ static void RepeatOtherPlus(eventP, reps, actionsP)
     int reps;
     ActionPtr **actionsP;
 {
-    EventPtr event, tempEvent;
-    int i;
+    register EventPtr event, tempEvent;
+    register int i;
 
     tempEvent = event = *eventP;
 
@@ -1029,7 +1036,7 @@ static void RepeatEvent(eventP, reps, plus, actionsP)
 }
 
 static String ParseRepeat(str, eventP, actionsP)
-    String str;
+    register String str;
     EventPtr *eventP;
     ActionPtr **actionsP;
 {
@@ -1067,7 +1074,7 @@ static String ParseRepeat(str, eventP, actionsP)
  **********************************************************************/
 
 static String ParseEventSeq(str, eventSeqP, actionsP)
-    String str;
+    register String str;
     EventSeqPtr *eventSeqP;
     ActionPtr	**actionsP;
 {
@@ -1075,7 +1082,7 @@ static String ParseEventSeq(str, eventSeqP, actionsP)
 
     *eventSeqP = NULL;
 
-    while (*str != ':' && *str != '\0') {
+    while (*str != ':' && *str != '\0' && *str != '\n') {
 	static Event	nullEvent = {0, 0, 0, 0L, 0L};
 	EventPtr	event;
 
@@ -1089,7 +1096,7 @@ static String ParseEventSeq(str, eventSeqP, actionsP)
 
 	if (*str == '"') {
 	    str++;
-	    while (*str != '"' && *str != '\0') {
+	    while (*str != '"' && *str != '\0' && *str != '\n') {
 		str = ParseQuotedStringEvent(str, event);
 		if (*nextEvent != NULL)
 		    XtWarning("Events follow '+' repeat count.");
@@ -1120,10 +1127,10 @@ static String ParseEventSeq(str, eventSeqP, actionsP)
 
 
 static String ParseActionProc(str, actionProcNameP)
-    String str;
+    register String str;
     String *actionProcNameP;
 {
-    String start = str;
+    register String start = str;
     char procName[100];
 
     str = ScanIdent(str);
@@ -1137,15 +1144,15 @@ static String ParseActionProc(str, actionProcNameP)
 
 
 static String ParseString(str, strP)
-    String str;
+    register String str;
     String *strP;
 {
-    String start;
+    register String start;
 
     if (*str == '"') {
 	str++;
 	start = str;
-	while (*str != '"' && *str != '\0') str++;
+	while (*str != '"' && *str != '\0' && *str != '\n') str++;
 	*strP = strncpy(XtMalloc((unsigned)(str-start+1)), start, str-start);
 	(*strP)[str-start] = '\0';
 	if (*str == '"') str++; else XtWarning("Missing '\"'.");
@@ -1156,6 +1163,7 @@ static String ParseString(str, strP)
 		&& *str != '\t'
 		&& *str != ','
 		&& *str != ')'
+                && *str != '\n'
 		&& *str != '\0') str++;
 	*strP = strncpy(XtMalloc((unsigned)(str-start+1)), start, str-start);
 	(*strP)[str-start] = '\0';
@@ -1165,7 +1173,7 @@ static String ParseString(str, strP)
 
 
 static String ParseParamSeq(str, paramSeqP, paramNumP)
-    String str;
+    register String str;
     String **paramSeqP;
     unsigned long *paramNumP;
 {
@@ -1176,11 +1184,11 @@ static String ParseParamSeq(str, paramSeqP, paramNumP)
     } ParamRec;
 
     ParamPtr params = NULL;
-    unsigned long num_params = 0;
-    unsigned long i;
+    register Cardinal num_params = 0;
+    register Cardinal i;
 
     str = ScanWhitespace(str);
-    while (*str != ')' && *str != '\0') {
+    while (*str != ')' && *str != '\0' && *str != '\n') {
 	String newStr;
 	str = ParseString(str, &newStr);
 	if (newStr != NULL) {
@@ -1222,46 +1230,49 @@ static String ParseAction(str, actionP)
     if (*str == '(') {
 	str++;
 	str = ParseParamSeq(str, &actionP->params, &actionP->num_params);
-    } else {
-        Syntax("Missing '('");
-        str = ")";		/* ignore rest of sequence */
-    }
-
-    if (*str == ')')
-        str++;
-    else {
-        Syntax("Missing ')'");
-	str = "";		/* ignore rest of sequence */
-    }
+    } else { Syntax("Missing '('"); }
+    if (*str == ')') str++; else Syntax("Missing ')'");
 
     return str;
 }
 
 
-static String ParseActionSeq(str, actionsP)
+static String ParseActionSeq(stateTable,str, actionsP)
+    XtTranslations stateTable;
     String str;
     ActionPtr *actionsP;
 {
     ActionPtr *nextActionP = actionsP;
-
+    int index;
     *actionsP = NULL;
 
-    while (*str != '\0') {
-	ActionPtr	action;
+    while (*str != '\0' && *str != '\n') {
+	register ActionPtr	action;
 
 	action = XtNew(ActionRec);
         action->token = NULL;
-        action->proc = NULL;
+        action->index = -1;
         action->params = NULL;
         action->num_params = 0;
         action->next = NULL;
 
 	str = ParseAction(str, action);
+        index = stateTable->numQuarks++;
+        if (index==stateTable->quarkTblSize) {
+          stateTable->quarkTblSize +=20;
+          stateTable->quarkTable=(XrmQuark*) XtRealloc(
+                    (char*)stateTable->quarkTable,
+                    stateTable->quarkTblSize*sizeof(int));
+        }
+        (stateTable->quarkTable)[index] = 
+         StringToQuark(action->token);
+        action->index=index;
 	str = ScanWhitespace(str);
 	*nextActionP = action;
 	nextActionP = &action->next;
     }
-
+    if (*str == '\n') str++;
+    str = ScanWhitespace(str);
     return str;
 }
 
@@ -1271,19 +1282,16 @@ static String ParseActionSeq(str, actionsP)
  * Parses one line of event bindings.
  ***********************************************************************/
 
-static void ParseTranslationTableProduction(stateTable, str)
+static String ParseTranslationTableProduction(stateTable, str)
   XtTranslations stateTable;
-  String str;
+  register String str;
 {
     EventSeqPtr	eventSeq = NULL;
     ActionPtr	*actionsP;
-    EventPtr	event;
-
-    currentProduction = str;
 
     str = ParseEventSeq(str, &eventSeq, &actionsP);
     str = ScanWhitespace(str);
-    str = ParseActionSeq(str, actionsP);
+    str = ParseActionSeq(stateTable,str, actionsP);
 
 #ifdef notdef
     /* build the event mask and */
@@ -1300,8 +1308,49 @@ static void ParseTranslationTableProduction(stateTable, str)
     _XtAddEventSeqToStateTable(eventSeq, stateTable);
 
     FreeEventSeq(eventSeq);
+    return (str);
+}
+XtTranslations _ParseTranslationTable (source)
+    String   source;
+{
+    String str = source;
+    XtTranslations stateTable;
+    if (str == NULL) return ((XtTranslations)(NULL));
+    _XtInitializeStateTable(&stateTable);
+
+
+    while (str != NULL && *str != '\0') {
+       str =  ParseTranslationTableProduction(stateTable,str);
+    }
+    return(stateTable);
 }
 
+/* ARGSUSED */
+void _CompileTranslations (args, num_args, from, to)
+    XrmValuePtr args;
+    Cardinal    *num_args;
+    XrmValuePtr from,to;
+{
+    String str;
+    static XtTranslations stateTable;
+
+    if (*num_args != 0)
+	XtWarning("String to TranslationTable needs no extra arguments");
+     str = (String)(from->addr);
+     if (str == NULL) {
+         to->addr = NULL;
+         to->size = 0;
+         return;
+     };
+    _XtInitializeStateTable(&stateTable);
+
+
+    while (str != NULL && *str != '\0') {
+       str =  ParseTranslationTableProduction(stateTable,str);
+    }
+    to->addr= (caddr_t)&stateTable;
+    to->size = sizeof(XtTranslations);
+}
 
 /*** public procedures ***/
 
@@ -1309,38 +1358,15 @@ static void ParseTranslationTableProduction(stateTable, str)
  * Parses a user's or applications translation table
  */
 XtTranslations XtParseTranslationTable(source)
-    String *source;
+    String source;
 {
-    int i;
-    XtTranslations stateTable;
+    XrmValue from,to;
+    from.addr = source;
+    from.size = strlen(source)+1;
+    XtDirectConvert((XtConverter) _CompileTranslations, (XrmValuePtr) NULL,
+	    0, &from, &to);
+    return (*(XtTranslations*)(to.addr));
 
-    _XtInitializeStateTable(&stateTable);
-    if (source == NULL) {
-	return stateTable;
-    }
-
-    i = 0;
-    while (source[i]) {
-        ParseTranslationTableProduction(
-	    stateTable,
-	    source[i]);
-	i++;
-    }
-
-    return stateTable;
-}
-
-void _XtDefineTranslation(w)
-  Widget w;
-{
-    /* this procedure assumes that there is a string table in the */
-    /* core.translations field. It compiles it, and puts the resulting */
-    /* internal data structure into the core.translations field. */
-    /* Note that this means that if you call DefineTranslation twice, */
-    /* bad things will happen */
-
-    w->core.translations = XtParseTranslationTable(
-	(String *)w->core.translations);
 }
 
 void _XtTranslateInitialize()
@@ -1360,7 +1386,7 @@ void _XtTranslateInitialize()
     CompileNameValueTable( visibilityNotify );
     CompileNameValueTable( circulation );
     CompileNameValueTable( propertyChanged );
-
+    XtAddConverter(XtRString, XtRTranslationTable,
+	    (XtConverter) _CompileTranslations, (XtConvertArgList) NULL, 0);
     _XtPopupInitialize();
-
 }
