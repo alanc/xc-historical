@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.42 93/10/13 15:32:07 rws Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.43 94/01/01 12:12:10 rws Exp $
 
 #ifdef SonyBsdArchitecture
 
@@ -45,8 +45,11 @@ XCOMM platform:  $XConsortium: sony.cf,v 1.42 93/10/13 15:32:07 rws Exp $
 #define BootstrapCFlags		-Dsony
 #define SystemV4		YES
 #define CcCmd			/usr/bin/cc
-#define DefaultCCOptions	-Wf,-XNp9000,-XNd6000
-#define PexCCOptions		-Wf,-XNp15000,-XNd15000
+#define DefaultCCOptions	-Xc -Wf,-XNp9000,-XNd6000
+#define PexCCOptions		-Xc -Wf,-XNp15000,-XNd15000
+#define SharedLibraryLoadFlags -G
+#define PositionIndependentCFlags -K PIC -Wx,-G 0
+#include <sv4Lib.rules>
 
 #endif
 XCOMM operating system:  OSName
