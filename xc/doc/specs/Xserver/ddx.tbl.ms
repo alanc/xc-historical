@@ -1,4 +1,4 @@
-.\" $Header: ddx.doc.tbl.ms,v 1.1 87/09/07 12:10:03 toddb Locked $
+.\" $Header: ddx.doc.tbl.ms,v 1.2 87/09/07 12:15:14 toddb Exp $
 .EF 'Porting Layer Definition'- % -'June 15, 1987'
 .OF 'Porting Layer Definition'- % -'June 15, 1987'
 .EH '''
@@ -1770,7 +1770,8 @@ this happens when the system is reset.
 DisplayCursor should change the cursor on the given screen to the one passed in.
 It is called by DIX when the user moves the pointing device into a 
 different window with
-a different cursor.
+a different cursor.  The hotspot in the cursor should be aligned
+with the current cursor position.
 .nf
 
 	void pScreen->RecolorCursor( pScr, pCurs, displayed)
@@ -1835,16 +1836,20 @@ This routine is for informing DIX only; it alters no state within
 DDX.
 .nf
 
-	Bool pScreen->SetCursorPosition( pScr, newx, newy)
+	Bool pScreen->SetCursorPosition( pScr, newx, newy, generateEvent)
 		ScreenPtr pScr;
 		unsigned int newx;
 		unsigned int newy;
+		Bool generateEvent;
 .fi
 .LP
 SetCursorPosition should artificially move the cursor as though the user
 had jerked the pointing device very quickly.
 This is called in response to the WarpPointer request from the client,
 and at other times.
+If generateEvent is True, the device should decide whether or
+not to call ProcessInputEvents() nd then it must call
+DevicePtr->processInputProc.
 Its effects are, of course, limited in value for absolute pointing devices such 
 as a tablet.
 
