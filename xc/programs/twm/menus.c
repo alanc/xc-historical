@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.141 90/03/05 16:35:24 jim Exp $
+ * $XConsortium: menus.c,v 1.142 90/03/07 11:06:09 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.141 90/03/05 16:35:24 jim Exp $";
+"$XConsortium: menus.c,v 1.142 90/03/07 11:06:09 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -813,18 +813,14 @@ MenuRoot *mr;
     /* get the default colors into the menus */
     for (tmp = mr->first; tmp != NULL; tmp = tmp->next)
     {
-	if (tmp->user_colors)
-	    continue;
-
-	if (tmp->func != F_TITLE)
-	{
-	    tmp->fore = Scr->MenuC.fore;
-	    tmp->back = Scr->MenuC.back;
-	}
-	else
-	{
-	    tmp->fore = Scr->MenuTitleC.fore;
-	    tmp->back = Scr->MenuTitleC.back;
+	if (!tmp->user_colors) {
+	    if (tmp->func != F_TITLE) {
+		tmp->fore = Scr->MenuC.fore;
+		tmp->back = Scr->MenuC.back;
+	    } else {
+		tmp->fore = Scr->MenuTitleC.fore;
+		tmp->back = Scr->MenuTitleC.back;
+	    }
 	}
 
 	if (mr->hi_fore != -1)
@@ -911,22 +907,6 @@ MenuRoot *mr;
 	    b3 = save_back;
 	}
 	start = end;
-    }
-
-    /* now redo the highlight colors
-     */
-    for (cur = mr->first; cur != NULL; cur = cur->next)
-    {
-	if (mr->hi_fore != -1)
-	{
-	    cur->hi_fore = mr->hi_fore;
-	    cur->hi_back = mr->hi_back;
-	}
-	else
-	{
-	    cur->hi_fore = cur->back;
-	    cur->hi_back = cur->fore;
-	}
     }
 }
 
