@@ -1,5 +1,5 @@
 /*
-* $Header: Atoms.h,v 1.22 87/12/03 11:42:40 swick Locked $
+* $Header: Atoms.h,v 1.23 87/12/04 16:48:26 swick Locked $
 */
 
 /*
@@ -170,6 +170,7 @@
 #define XtCUnhighlight		"Unhighlight"
 #define XtCValue		"Value"
 #define XtCVSpace		"VSpace"
+#define XtCWidget		"Widget"
 #define XtCWidth		"Width"
 #define XtCWindow		"Window"
 #define XtCX			"X"
@@ -200,6 +201,7 @@
 #define XtRStringTable		"StringTable"
 #define XtRTextPosition 	"XtTextPosition"
 #define XtRTranslationTable     "TranslationTable"
+#define XtRWidget		"Widget"
 #define XtRWindow		XrmRWindow
 
 /* Orientation enumeration constants */
