@@ -1,5 +1,5 @@
 /*
- * $XConsortium: lcWrap.c,v 11.18 94/03/30 19:03:52 rws Exp $
+ * $XConsortium: lcWrap.c,v 11.18 94/03/30 19:19:02 rws Exp $
  */
 
 /*
@@ -81,8 +81,11 @@ XSetLocaleModifiers(modifiers)
     user_mods = getenv("XMODIFIERS");
     modifiers = (*lcd->methods->map_modifiers) (lcd,
 						user_mods, (char *)modifiers);
-    if (modifiers)
+    if (modifiers) {
+	if (lcd->core->modifiers)
+	    Xfree(lcd->core->modifiers);
 	lcd->core->modifiers = (char *)modifiers;
+    }
     return (char *)modifiers;
 }
 
