@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.14 87/06/16 07:28:27 chariot Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.15 87/06/16 07:39:00 chariot Locked $";
 #endif
 
 /*%
@@ -135,30 +135,22 @@ char *calloc();
 
 #include "XWDFile.h"
 
-#define UBPS (sizeof(short)/2) /* useful bytes per short */
-#define BitmapSize(width, height) (((((width) + 15) >> 3) &~ 1) * (height) * UBPS)
-#define XYPixmapSize(width, height, planes) (BitmapSize(width, height) * (planes))
-/*%
-#define BZPixmapSize(width, height) ((width) * (height))
-#define WZPixmapSize(width, height) (((width) * (height)) << 1)
-%*/
-
 #define DONT_KNOW_YET 17
 
 Window_Dump(window, out)
      Window window;
      FILE *out;
 {
-    register int i, *histbuffer;
-    register u_short *wbuffer;
-    register char *buffer, *cbuffer;
+    register int i;
+    register char *cbuffer;
 
+    XColor *pixcolors;
     unsigned buffer_size;
     unsigned int virt_width, virt_height;
     int virt_x, virt_y;
     int win_name_size;
     int header_size;
-/*%    int ncolors = 0;   %*/
+    int ncolors = 0;
     int depth;
     int offset;
     long plane_mask;
@@ -219,27 +211,7 @@ Window_Dump(window, out)
     /*
      * Determine the pixmap size.
      */
-    if (format == XYBitmap)
-      buffer_size = BitmapSize(virt_width, virt_height);
-
-/*%
-    else if (format == XYPixmap) {
-	buffer_size = XYPixmapSize(virt_width, virt_height,
-				   DisplayPlanes(dpy, screen));
-	if (debug)
-	    outl("xwd: Pixmap in XYFormat, size %d bytes.\n", buffer_size);
-    }
-    else if (DisplayPlanes(dpy, screen) < 9) {
-	buffer_size = BZPixmapSize(virt_width, virt_height);
-	if (debug)
-	  outl("xwd: Pixmap in byte ZFormat, size %d bytes.\n", buffer_size);
-    }
-    else {
-        buffer_size = WZPixmapSize(virt_width, virt_height);
-	if (debug)
-	  outl("xwd: Pixmap in word ZFormat, size %d bytes.\n", buffer_size);
-    }
-%*/
+    buffer_size = Pixmap_Size(virt_width, virt_height);
 
     /*
      * Snarf the pixmap with XGetImage.
@@ -258,67 +230,11 @@ Window_Dump(window, out)
     if (debug) outl("xwd: Getting pixmap.\n");
 
     /*
-     * Find the number of colors used, then write them out to the file.
+     * Get XColors of all pixels used in the pixmap
      */
 
-/*%    ncolors = 0;
-  if(DisplayPlanes(dpy, screen) > 1) {
-	if(DisplayPlanes(dpy, screen) < 9) {
-	    histbuffer = (int *)calloc(256, sizeof(int));
-	    bzero(histbuffer, 256*sizeof(int));
-	    pixcolors = (XColor *)calloc(1, sizeof(XColor));
-	    for(i=0; i<buffer_size; i++) {
-%*/
-		/* if previously found, skip color query */
-/*%
-		if(histbuffer[(int)buffer[i]] == 0) {
-		    pixcolors = 
-		      (XColor *)realloc(pixcolors, sizeof(XColor)*(++ncolors));
-		    if(debug)
-		      outl("Color %3d at pixel val %5d, i= %5d =",
-			      ncolors, buffer[i], i);
-		    histbuffer[(int)buffer[i]]++;
-		    pixcolors[ncolors-1].pixel = (int)buffer[i];
-		    if(XQueryColor(&pixcolors[ncolors-1]) == 0) 
-		      Error("Unable to query color table?");
-		    if(debug) outl("%5d %5d %5d\n",
-				      pixcolors[ncolors-1].red,
-				      pixcolors[ncolors-1].green,
-				      pixcolors[ncolors-1].blue);
-		}
-	    }
-	}
-	else if(DisplayPlanes(dpy, screen) < 17) {
-	    wbuffer = (u_short *)buffer;
-	    histbuffer = (int *)calloc(65536, sizeof(int));
-	    bzero(histbuffer, 65536*sizeof(int));
-	    pixcolors = (XColor *)calloc(1, sizeof(XColor));
-	    for(i=0; i<(buffer_size/sizeof(u_short)); i++) {
-%*/
-		/* if previously found, skip color query */
-/*%
-		if(histbuffer[(int)wbuffer[i]] == 0) {
-		    pixcolors = 
-		      (XColor *)realloc(pixcolors, sizeof(XColor)*(++ncolors));
-		    if(debug)
-		      outl("Color %2d at pixel val %d, i= %d =",
-			      ncolors, wbuffer[i], i);
-		    histbuffer[(int)wbuffer[i]]++;
-		    pixcolors[ncolors-1].pixel = (int)wbuffer[i];
-		    if(XQueryColor(&pixcolors[ncolors-1]) == 0) 
-		      Error("Unable to query color table?");
-		    if(debug) outl("%d %d %d\n",
-				      pixcolors[ncolors-1].red,
-				      pixcolors[ncolors-1].green,
-				      pixcolors[ncolors-1].blue);
-		}
-	    }
-	} 
+    ncolors = Get_XColors(image->data, &pixcolors, buffer_size);
 
-	else
-if(DisplayPlanes(dpy, screen) > 16)
-	  Error("Unable to handle more than 16 planes at this time");
-%*/
 	/* reread in XY format if necessary */
 /*%
 	if(format == XYPixmap) {
@@ -331,7 +247,6 @@ if(DisplayPlanes(dpy, screen) > 16)
 %*/
 
 /*%	}
-	free(histbuffer);
    }
 %*/
 
@@ -399,12 +314,6 @@ if(DisplayPlanes(dpy, screen) > 16)
 %*/
 
     /*
-     * Free the pixmap buffer.
-     */
-    if (debug) outl("xwd: Freeing pixmap buffer.\n");
-    free(buffer);
-
-    /*
      * Free window name string.
      */
     if (debug) outl("xwd: Freeing window name string.\n");
@@ -437,4 +346,127 @@ Error(string)
 	}
 
 	exit(1);
+}
+
+
+/*
+ * Determine the pixmap size.
+ */
+#define UBPS (sizeof(short)/2) /* useful bytes per short */
+#define BitmapSize(width, height) (((((width) + 15) >> 3) &~ 1) * (height) * UBPS)
+#define XYPixmapSize(width, height, planes) (BitmapSize(width, height) * (planes))
+#define BZPixmapSize(width, height) ((width) * (height))
+#define WZPixmapSize(width, height) (((width) * (height)) << 1)
+
+int Pixmap_Size(width, height)
+     int width, height;
+{
+	int buffer_size;
+
+	if (format == XYBitmap)
+	  buffer_size = BitmapSize(width, height);
+
+#ifdef COLOR
+
+	else if (format == XYPixmap) {
+	    buffer_size = XYPixmapSize(width, height,
+				       DisplayPlanes(dpy, screen));
+	    if (debug)
+	      outl("xwd: Pixmap in XYFormat, size %d bytes.\n", buffer_size);
+	}
+	else if (DisplayPlanes(dpy, screen) < 9) {
+	    buffer_size = BZPixmapSize(width, height);
+	    if (debug)
+	      outl("xwd: Pixmap in byte ZFormat, size %d bytes.\n",
+		   buffer_size);
+	}
+	else {
+	    buffer_size = WZPixmapSize(width, height);
+	    if (debug)
+	      outl("xwd: Pixmap in word ZFormat, size %d bytes.\n",
+		   buffer_size);
+    }
+#endif
+
+	return(buffer_size);
+}
+
+
+/*
+ * Get the XColors of all pixels in image - returns # of colors
+ */
+int Get_XColors(buffer, pixcolors, buffer_size)
+     char *buffer;
+     XColor *pixcolors[];       /* RETURNED */
+     int buffer_size;
+{
+    register int i, *histbuffer;
+    register u_short *wbuffer;
+    register char *buffer;
+    int ncolors = 0;
+
+    if (DisplayPlanes(dpy,screen)<2)
+      return(0);
+
+#ifdef COLOR
+
+    if(DisplayPlanes(dpy, screen) < 9) {
+	histbuffer = (int *)calloc(256, sizeof(int));
+	bzero(histbuffer, 256*sizeof(int));
+	*pixcolors = (XColor *)calloc(1, sizeof(XColor));
+	for(i=0; i<buffer_size; i++) {
+	    /* if previously found, skip color query */
+	    if(histbuffer[(int)buffer[i]] == 0) {
+		*pixcolors = 
+		  (XColor *)realloc(*pixcolors, sizeof(XColor)*(++ncolors));
+		if(debug)
+		  outl("Color %3d at pixel val %5d, i= %5d =",
+		       ncolors, buffer[i], i);
+		histbuffer[(int)buffer[i]]++;
+		(*pixcolors)[ncolors-1].pixel = (int)buffer[i];
+		if(XQueryColor(dpy, pixcolors[ncolors-1]) == 0) 
+		  Fatal_Error("Unable to query color table?");
+		if(debug) outl("%5d %5d %5d\n",
+			       (*pixcolors)[ncolors-1].red,
+			       (*pixcolors)[ncolors-1].green,
+			       (*pixcolors)[ncolors-1].blue);
+	    }
+	}
+    }
+    else if(DisplayPlanes(dpy, screen) < 17) {
+	wbuffer = (u_short *)buffer;
+	histbuffer = (int *)calloc(65536, sizeof(int));
+	bzero(histbuffer, 65536*sizeof(int));
+	*pixcolors = (XColor *)calloc(1, sizeof(XColor));
+	for(i=0; i<(buffer_size/sizeof(u_short)); i++) {
+
+	    /* if previously found, skip color query */
+
+	    if(histbuffer[(int)wbuffer[i]] == 0) {
+		*pixcolors = 
+		  (XColor *)realloc(*pixcolors, sizeof(XColor)*(++ncolors));
+		if(debug)
+		  outl("Color %2d at pixel val %d, i= %d =",
+		       ncolors, wbuffer[i], i);
+		histbuffer[(int)wbuffer[i]]++;
+		(*pixcolors)[ncolors-1].pixel = (int)wbuffer[i];
+		if(XQueryColor(dpy, pixcolors[ncolors-1]) == 0) 
+		  Fatal_Error("Unable to query color table?");
+		if(debug) outl("%d %d %d\n",
+			       (*pixcolors)[ncolors-1].red,
+			       (*pixcolors)[ncolors-1].green,
+			       (*pixcolors)[ncolors-1].blue);
+	    }
+	}
+    } 
+
+    else
+      if(DisplayPlanes(dpy, screen) > 16)
+	Fatal_Error("Unable to handle more than 16 planes at this time");
+    
+    free(histbuffer);
+
+#endif
+    
+    return(ncolors);
 }
