@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.180 94/04/08 16:55:50 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.181 94/04/08 17:42:50 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -39,8 +39,12 @@ XCOMM $XConsortium: Imakefile,v 1.180 94/04/08 16:55:50 rws Exp $
           XIDIR = Xi
 #endif
 #if BuildXIE
-      XIEEXT =  XIE/dixie/libdixie.a XIE/mixie/libmixie.a 
+      XIEEXT = XIE/dixie/libdixie.a XIE/mixie/libmixie.a 
       XIEDIR = XIE
+#endif
+#if BuildXKB
+      XKBEXT = xkb/libxkb.a
+      XKBDIR = xkb
 #endif
 #ifdef SiteExtensionLibs
      SITEEXTS = SiteExtensionLibs
@@ -49,8 +53,8 @@ XCOMM $XConsortium: Imakefile,v 1.180 94/04/08 16:55:50 rws Exp $
      SITEEXTDIRS = SiteExtensionDirs
 #endif
 
-      OTHEREXTS = Xext/libext.a $(XINPUTEXT) $(XIEEXT) $(SITEEXTS)
-        EXTDIRS = Xext $(XIDIR) $(XIEDIR) $(PEXDIR) $(SITEDIRS)
+      OTHEREXTS = Xext/libext.a $(XKBEXT) $(XINPUTEXT) $(XIEEXT) $(SITEEXTS)
+        EXTDIRS = Xext $(XKBDIR) $(XIDIR) $(XIEDIR) $(PEXDIR) $(SITEDIRS)
      EXTENSIONS = $(OTHEREXTS) $(PEXLIBS)
          XAULIB = $(XAUTHSRC)/libXau.a
        XDMCPLIB = $(XDMCPLIBSRC)/libXdmcp.a
