@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.h,v 1.24 94/01/19 17:20:50 converse Exp $ */
+/* $XConsortium: Shell.h,v 1.25 94/02/04 17:53:28 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -26,6 +26,8 @@ SOFTWARE.
 
 #ifndef _XtShell_h
 #define _XtShell_h
+
+#include <X11/SM/SMlib.h>
 
 /***********************************************************************
  *
