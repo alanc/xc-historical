@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbpushpxl.c,v 1.16 87/06/15 02:41:23 sue Exp $ */
+/* $Header: mfbpushpxl.c,v 1.16 87/09/11 07:48:33 toddb Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -146,7 +146,7 @@ mfbPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 	/* If scanline ended with last bit set, end the box */
 	if(fInBox)
 	{
-	    width[ipt] = ((pw - pwLineStart) << 5) + ib + xOrg - pt[ipt].x;
+	    width[ipt] = dx + xOrg - pt[ipt].x;
 	    if (++ipt >= NPT)
 	    {
 		(*pGC->FillSpans)(pDrawable, pGC, NPT, pt, width, TRUE);
