@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.21 92/03/24 12:08:50 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.22 92/03/24 12:17:08 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -618,6 +618,8 @@ get_undofile(undofile)
     up = (undo *)malloc(sizeof(undo));
     idx = 0;
     while (fgets(buf, sizeof(buf), fp)) {
+	if (buf[0] == '\n' || buf[0] == '!')
+	    continue;
 	i = 0;
 	if (!(up[idx].seq = parse_string(buf, &i, &up[idx].seq_len, ':')) ||
 	    !(up[idx].undo = parse_string(buf, &i, &up[idx].undo_len, '\n'))) {
