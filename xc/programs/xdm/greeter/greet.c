@@ -35,7 +35,6 @@
 
 extern Display	*dpy;
 
-extern void	exit ();
 static int	done, code;
 static char	name[128], password[128];
 static Widget		toplevel;

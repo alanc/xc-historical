@@ -28,8 +28,6 @@
 # include "dm.h"
 # include <stdio.h>
 
-extern void	exit ();
-
 InitErrorLog ()
 {
 	int	i;

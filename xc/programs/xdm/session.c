@@ -72,8 +72,6 @@ SessionPingFailed (d)
     SessionExit (d, RESERVER_DISPLAY, TRUE);
 }
 
-extern void	exit ();
-
 /*
  * We need our own error handlers because we can't be sure what exit code Xlib
  * will use, and our Xlib does exit(1) which matches REMANAGE_DISPLAY, which
