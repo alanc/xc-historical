@@ -974,7 +974,7 @@ with the specified byte order,
 and all 16-bit and 32-bit quantities returned by the server will be transmitted
 with this byte order.
 .LP
-Information received by the client if authorization fails:
+Information received by the client if the connection is refused:
 .LP
 .ps 9
 .nr PS 9
@@ -982,7 +982,7 @@ Information received by the client if authorization fails:
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
-	1	0		failed
+	1	0		Failed
 	1	n		length of reason in bytes
 	2	CARD16		protocol-major-version
 	2	CARD16		protocol-minor-version
@@ -993,7 +993,7 @@ Information received by the client if authorization fails:
 .ps 11
 .nr PS 11
 .LP
-Information received by the client if authorization is accepted:
+Information received by the client if further authentication is required:
 .LP
 .ps 9
 .nr PS 9
@@ -1001,7 +1001,24 @@ Information received by the client if authorization is accepted:
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
-	1	1		success
+	1	2		Authenticate
+	5			unused
+	2	(n+p)/4			length in 4-byte units of ``additional data''
+	n	STRING8			reason
+	p			unused, p=pad(n)
+.De
+.ps 11
+.nr PS 11
+.LP
+Information received by the client if the connection is accepted:
+.LP
+.ps 9
+.nr PS 9
+.Ds 0
+.TA .2i .5i 1.5i 2.5i
+.ta .2i .5i 1.5i 2.5i
+.R
+	1	1		Success
 	1			unused
 	2	CARD16		protocol-major-version
 	2	CARD16		protocol-minor-version

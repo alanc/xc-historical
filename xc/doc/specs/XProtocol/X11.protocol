@@ -832,8 +832,9 @@ by attaching that KEYSYM to some KEYCODE and attaching that KEYCODE to any
 one of the modifiers Mod1 through Mod5.  This modifier is called the
 ``numlock modifier.''  The standard KEYSYMs with the prefix KEYPAD in their
 name are called ``keypad'' KEYSYMs; these are KEYSYMS with numeric value in
-the range 0xFF80 to 0xFFBD inclusive.  In addition, vendor-specific KEYSYMS
-in the range 0x11000000 to 0x1100FFFF are also keypad KEYSYMs.
+the hexadecimal range #xFF80 to #xFFBD inclusive.  In addition,
+vendor-specific KEYSYMS in the hexadecimal range #x11000000 to #x1100FFFF
+are also keypad KEYSYMs.
 .LP
 Within a group, the choice of KEYSYM is determined by applying the first
 rule that is satisfied from the following list:
@@ -962,13 +963,12 @@ authorization-protocol-data: STRING8
 The version numbers indicate what version of the protocol the client
 expects the server to implement.
 .LP
-The authorization name indicates what authorization protocol the client
+The authorization name indicates what authorization (and authentication)
+protocol the client
 expects the server to use, and the data is specific to that protocol.
 Specification of valid authorization mechanisms is not part of the core
 X protocol.
-It is hoped that eventually one authorization protocol will be agreed upon.
-In the meantime,
-a server that implements a different protocol than the client expects 
+A server that does not implement the protocol the client expects 
 or that only implements the host-based mechanism may simply ignore this
 information.
 If both name and data strings are empty,
@@ -978,35 +978,46 @@ Server Response
 .LP
 The client receives the following information at connection setup:
 .IP
-success: BOOL
-.br
+success:
+.Pn { Failed ,
+.PN Success ,
+.PN Authenticate }
+.LP
+The client receives the following additional data if the returned success
+value is
+.PN Failed ,
+and the connection is not successfully established:
+.IP
 protocol-major-version: CARD16
 .br
 protocol-minor-version: CARD16
 .br
-length: CARD16
+reason: STRING8
 .LP
-Length is the amount of additional data to follow, in units of four bytes.
-The version numbers are an escape hatch in case future revisions of the
-protocol are necessary.
-In general, 
-the major version would increment for incompatible changes, 
-and the minor version would increment for small upward compatible changes.
-Barring changes,
-the major version will be 11, and the minor version will be 0.
-The protocol version numbers returned indicate the protocol the server
-actually supports.
-This might not equal the version sent by the client.
-The server can (but need not) refuse connections from clients that offer a
-different version than the server supports.
-A server can (but need not) support more than one version simultaneously.
-.LP
-The client receives the following additional data if authorization fails:
+The client receives the following additional data if the returned success
+value is
+.PN Authenticate ,
+and further authentication negotiation is required:
 .IP
 reason: STRING8
 .LP
-The client receives the following additional data if authorization is accepted:
+The contents of the reason string are specific to the authorization
+protocol in use.  The semantics of this authentication negotiation are
+not constrained, except that the negotiation must eventually terminate
+with a reply from the server containing a success value of
+.PN Failed
+or
+.PN Success .
+.LP
+The client receives the following additional data if the returned success
+value is
+.PN Success ,
+and the connection is successfully established:
 .IP
+protocol-major-version: CARD16
+.br
+protocol-minor-version: CARD16
+.br
 vendor: STRING8
 .br
 release-number: CARD32
@@ -1113,6 +1124,20 @@ T}
 Server Information
 .LP
 The information that is global to the server is:
+.LP
+The protocol version numbers are an escape hatch in case future revisions of
+the protocol are necessary.
+In general, 
+the major version would increment for incompatible changes, 
+and the minor version would increment for small upward compatible changes.
+Barring changes,
+the major version will be 11, and the minor version will be 0.
+The protocol version numbers returned indicate the protocol the server
+actually supports.
+This might not equal the version sent by the client.
+The server can (but need not) refuse connections from clients that offer a
+different version than the server supports.
+A server can (but need not) support more than one version simultaneously.
 .LP
 The vendor string gives some identification of the owner of the server
 implementation.
