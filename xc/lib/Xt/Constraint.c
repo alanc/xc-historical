@@ -1,4 +1,4 @@
-/* $XConsortium: Constraint.c,v 1.11 89/06/16 19:48:17 jim Exp $ */
+/* $XConsortium: Constraint.c,v 1.12 91/01/06 13:32:08 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -88,9 +88,9 @@ static void ConstraintPartInitialize(wc)
     WidgetClass wc;
 {
     ConstraintWidgetClass cwc = (ConstraintWidgetClass)wc;
-    if (cwc->constraint_class.resources != NULL) {
-         XrmCompileResourceList(cwc ->constraint_class.resources,
-                                cwc->constraint_class.num_resources);
-    }
+    if (cwc->constraint_class.resources)
+	_XtCompileResourceList(cwc->constraint_class.resources,
+			       cwc->constraint_class.num_resources);
+
     _XtConstraintResDependencies((ConstraintWidgetClass)wc);
 }

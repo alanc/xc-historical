@@ -1,4 +1,4 @@
-/* $XConsortium: Object.c,v 1.17 91/02/17 14:04:34 converse Exp $ */
+/* $XConsortium: Object.c,v 1.18 91/05/09 18:08:38 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -153,10 +153,10 @@ static void ObjectClassPartInitialize(wc)
 
     oc->object_class.xrm_class = XrmPermStringToQuark(oc->object_class.class_name);
 
-    if (oc->object_class.resources != NULL) {
-	XrmCompileResourceList(oc->object_class.resources,
-		oc->object_class.num_resources);
-    }
+    if (oc->object_class.resources)
+	_XtCompileResourceList(oc->object_class.resources,
+			       oc->object_class.num_resources);
+
     ConstructCallbackOffsets(wc);
     _XtResourceDependencies(wc);
 }

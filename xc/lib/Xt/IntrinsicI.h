@@ -1,6 +1,4 @@
-/*
- * $XConsortium: IntrinsicI.h,v 1.45 91/03/25 11:41:31 gildea Exp $
- */
+/* $XConsortium: IntrinsicI.h,v 1.46 91/04/08 18:09:14 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -171,6 +169,13 @@ extern String XtCXtToolkitError;
 extern void _XtAllocError(
 #if NeedFunctionPrototypes
     String	/* alloc_type */
+#endif
+);
+
+extern void _XtCompileResourceList(
+#if NeedFunctionPrototypes
+    XtResourceList 	/* resources */,
+    Cardinal 		/* num_resources */
 #endif
 );
 

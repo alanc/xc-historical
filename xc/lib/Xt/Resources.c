@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.103 91/03/28 15:50:13 rws Exp $ */
+/* $XConsortium: Resources.c,v 1.104 91/05/09 18:09:19 swick Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -260,7 +260,7 @@ static Cardinal GetNamesAndClasses(w, names, classes)
 /* All atoms are replaced by quarks, and offsets are -offset-1 to	*/
 /* indicate that this list has been compiled already			*/
 
-void  XrmCompileResourceList(resources, num_resources)
+void _XtCompileResourceList(resources, num_resources)
     register XtResourceList resources;
     	     Cardinal       num_resources;
 {
@@ -282,9 +282,9 @@ void  XrmCompileResourceList(resources, num_resources)
     }
 #undef PSToQ
 #undef xrmres
-} /* XrmCompileResourceList */
+} /* _XtCompileResourceList */
 
-/* Like XrmCompileResourceList, but strings are not permanent */
+/* Like _XtCompileResourceList, but strings are not permanent */
 static void  XrmCompileResourceListEphem(resources, num_resources)
     register XtResourceList resources;
     	     Cardinal       num_resources;
