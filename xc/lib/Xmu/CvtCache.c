@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CvtCache.c,v 1.2 89/08/17 14:13:32 jim Exp $
+ * $XConsortium: CvtCache.c,v 1.3 89/08/17 18:15:13 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,7 +23,9 @@
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-#include <X11/Intrinsic.h>
+#include <stdio.h>
+#include <X11/Xlib.h>
+#include <X11/Xos.h>
 #include <X11/Xmu/CvtCache.h>
 
 extern char *malloc();
