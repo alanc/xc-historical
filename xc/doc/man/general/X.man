@@ -121,7 +121,7 @@ way.  If not, you can build such a script using the \fIxinit\fP program.
 This utility simply runs one user-specified program to start the server,
 runs another to start up any desired clients, and then waits for either to
 finish.  Since either or both of the user-specified programs may be a shell 
-script, this gives substantial flexibility at the expense of a human 
+script, this gives substantial flexibility at the expense of a
 nice interface.  For this reason, \fIxinit\fP is not intended for end users.
 .SH "DISPLAY NAMES"
 .PP
