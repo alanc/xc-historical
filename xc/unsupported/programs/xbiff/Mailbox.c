@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.22 89/04/12 13:59:01 jim Exp $
+ * $XConsortium: Mailbox.c,v 1.23 89/04/12 15:09:43 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -362,7 +362,10 @@ static void Realize (gw, valuemaskp, attr)
 					  &w->mailbox.full.width,
 					  &w->mailbox.full.height);
 			 
-    /* save bitmaps and masks for SHAPE extension */
+#ifdef SHAPE
+    if (w->mailbox.empty.mask == None && w->mailbox.full.mask == None)
+      w->mailbox.shapeit = False;
+#endif
 
     w->mailbox.gc = get_mailbox_gc (w);
 
