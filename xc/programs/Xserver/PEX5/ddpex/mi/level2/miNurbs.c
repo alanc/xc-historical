@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miNurbs.c,v 5.1 91/02/16 09:55:47 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -216,20 +216,20 @@ mi_nu_insert_knots( order, pt_type,
     /* Check to see if new knots needed. Copy and return if not. */
     if ( *numoutknots <= 0 ) {
 	*numoutknots = numinknots;
-	memcpy( nknots, oknots, numinknots * sizeof(ddFLOAT) );
+	bcopy( oknots, nknots, numinknots * sizeof(ddFLOAT) );
 	return 1;
     }
 
     /* Copy old control points into new space. */
     num_pts = numinknots - order;
     if ( DD_IsVert2D(pt_type) ) {
-	memcpy( npoints, opoints, num_pts * sizeof(ddCoord2D));
+	bcopy( opoints, npoints, num_pts * sizeof(ddCoord2D));
 	npts2 = (ddCoord2D *)npoints;
     } else if ( DD_IsVert3D(pt_type) ) {
-	memcpy( npoints, opoints, num_pts * sizeof(ddCoord3D));
+	bcopy( opoints, npoints, num_pts * sizeof(ddCoord3D));
 	npts3 = (ddCoord3D *)npoints;
     } else if ( DD_IsVert4D(pt_type) ) {
-	memcpy( npoints, opoints, num_pts * sizeof(ddCoord4D));
+	bcopy( opoints, npoints, num_pts * sizeof(ddCoord4D));
 	npts4 = (ddCoord4D *)npoints;
     } else return (1);
 
@@ -240,7 +240,7 @@ mi_nu_insert_knots( order, pt_type,
     /* Insert new knots and control points, starting from the end of the
      * original lists.
      */
-    memcpy( tmpknots, oknots, numinknots * sizeof(ddFLOAT) );
+    bcopy( oknots, tmpknots, numinknots * sizeof(ddFLOAT) );
     numtmpknots = numinknots;
     ink = *numoutknots;
     iok = numinknots - 1;
@@ -345,7 +345,7 @@ mi_nu_insert_knots( order, pt_type,
 
     /* copy results into output buffers */
     *numoutknots = numtmpknots; /* resulting total knots */
-    memcpy( nknots, tmpknots, numtmpknots * sizeof(ddFLOAT) );
+    bcopy( tmpknots, nknots, numtmpknots * sizeof(ddFLOAT) );
 
     free( tmpknots );
     return 1;
