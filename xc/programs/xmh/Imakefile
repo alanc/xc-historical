@@ -1,6 +1,6 @@
 INCLUDES = -I$(TOP) -I$(INCLUDESRC)
 LOCAL_LIBRARIES = $(XTOOLLIB) $(XLIB)
-        DEFINES = -DX11 -DLIBDIR=\"${LIBDIR}\"
+        DEFINES = -DX11 -DLIBDIR=\"${LIBDIR}\" -DNOGRABFOCUS
            SRCS = EDiskSrc.c alloc.c bbox.c button.c command.c compfuncs.c \
                   folder.c icon.c init.c main.c mlist.c msg.c pick.c popup.c \
                   screen.c toc.c tocfuncs.c tocutil.c tsource.c util.c \
@@ -10,5 +10,5 @@ LOCAL_LIBRARIES = $(XTOOLLIB) $(XLIB)
                   screen.o toc.o tocfuncs.o tocutil.o tsource.o util.o \
                   version.o viewfuncs.o
 
-ComplexProgramTarget(xmh, $(BINDIR))
+ComplexProgramTarget(xmh)
 InstallNonExec(xmh.X11defaults,$(LIBDIR))
