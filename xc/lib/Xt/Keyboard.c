@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.7 89/12/14 18:35:09 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.8 89/12/14 20:29:30 swick Exp $";
 #endif
 
 /********************************************************
@@ -705,7 +705,7 @@ void XtSetKeyboardFocus(widget, descendant)
     XtPerWidgetInput pwi = _XtGetPerWidgetInput(widget, TRUE);
     Widget oldDesc = pwi->focusKid;
     
-    if (! XtIsWidget(descendant))
+    if ((descendant != (Widget)None) && ! XtIsWidget(descendant))
 	descendant = _XtWindowedAncestor(descendant);
     
     if (descendant != oldDesc) {
@@ -717,12 +717,19 @@ void XtSetKeyboardFocus(widget, descendant)
 	/* all the rest handles focus ins and focus outs and misc gunk */
 	
 	if (oldDesc) {
-	    XtRemoveCallback (oldDesc, XtNdestroyCallback, 
-			      FocusDestroyCallback, (XtPointer) widget);
-
-	    if (pwi->map_handler_added) {
-		XtRemoveEventHandler(descendant, XtAllEvents, True,
-				     QueryEventMask, (XtPointer)widget);
+	    if (!oldDesc->core.being_destroyed) {
+		XtRemoveCallback (oldDesc, XtNdestroyCallback, 
+				  FocusDestroyCallback, (XtPointer) widget);
+		if (pwi->haveFocus) {
+		    _XtSendFocusEvent( oldDesc, FocusOut);
+		}
+		if (pwi->map_handler_added) {
+		    XtRemoveEventHandler(descendant, XtAllEvents, True,
+					 QueryEventMask, (XtPointer)widget);
+		    pwi->map_handler_added = FALSE;
+		}
+	    }
+	    else if (pwi->map_handler_added) {
 		pwi->map_handler_added = FALSE;
 	    }
 	    /*
@@ -734,14 +741,6 @@ void XtSetKeyboardFocus(widget, descendant)
 	    if (!XtIsShell(widget) && !descendant)
 	      XtRemoveEventHandler(widget, XtAllEvents, True, 
 				   _XtHandleFocus, (XtPointer)pwi);
-	    /*
-	     * If we had the focus send a focus out to the
-	     * windowed parent if it's not also the new parent (from
-	     * and to are gadgets).
-	     */
-	    if (pwi->haveFocus) {
-		_XtSendFocusEvent( oldDesc, FocusOut);
-	    }
 	}
 	
 	if (!descendant)
