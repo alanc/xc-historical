@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbline.c,v 1.12 89/11/19 16:16:05 rws Exp $ */
+/* $XConsortium: cfbline.c,v 1.14 90/01/31 12:31:42 keith Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -93,6 +93,7 @@ actual clipping.
    j = _t; \
 }
 
+#if PPW != 4
 void
 #ifdef POLYSEGMENT
 cfbSegmentSS (pDrawable, pGC, nseg, pSeg)
@@ -487,6 +488,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     }
 #endif
 }
+#endif /* PPW != 4 */
 
 /*
  * Draw dashed 1-pixel lines.

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8line.c,v 1.4 90/06/13 18:25:08 keith Exp $
+ * $XConsortium: cfb8line.c,v 1.6 90/08/15 19:19:34 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -46,6 +46,24 @@
 #define IMPORTANT_START	do { do { do { do { do { do {
 #define IMPORTANT_END	} while (0); } while (0); } while (0); } while (0); } while (0); } while (0);
 
+#ifdef NOTDEF
+
+#define OUT_LEFT_SHIFT	3
+#define OUT_RIGHT_SHIFT	2
+#define OUT_ABOVE_SHIFT	1
+#define OUT_BELOW_SHIFT	0
+
+#define BOX_OFF		-1
+
+#define OUTCODES_IMPLICIT(result, x, y) \
+    result = ((x - bx1) >> (32 - OUT_LEFT_SHIFT) & OUT_LEFT) | \
+	     ((bx2 - x) >> (32 - OUT_RIGHT_SHIFT) & OUT_RIGHT) | \
+	     ((y - by1) >> (32 - OUT_ABOVE_SHIFT) & OUT_ABOVE) | \
+	     ((by2 - y) >> (32 - OUT_BELOW_SHIFT) & OUT_BELOW);
+	     
+#else
+#define BOX_OFF		0
+
 #define OUTCODES_IMPLICIT(result, x, y) \
     if (x < bx1) \
 	result |= OUT_LEFT; \
@@ -55,6 +73,7 @@
 	result |= OUT_ABOVE; \
     else if (y >= by2) \
 	result |= OUT_BELOW;
+#endif
 
 #define OUTCODES(result, x, y, box) \
     if (x < box->x1) \
@@ -75,13 +94,14 @@ RROP_NAME(cfb8SegmentSS1Rect) (pDrawable, pGC, nseg, pSegInit, boxp)
     xSegment	*pSegInit;
     BoxPtr	boxp;
 #else
-RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, boxp)
+RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, boxp, x1p, y1p)
     DrawablePtr pDrawable;
     GCPtr	pGC;
     int	mode;		/* Origin or Previous */
     int	npt;		/* number of points */
     DDXPointPtr pptInit;
     BoxPtr	boxp;
+    STUPID int	*x1p, *y1p;
 #endif
 {
     int		    bx1, bx2, by1, by2;
@@ -115,8 +135,8 @@ RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, boxp)
     capStyle = pGC->capStyle;
     bx1 = boxp->x1;
     by1 = boxp->y1;
-    bx2 = boxp->x2;
-    by2 = boxp->y2;
+    bx2 = boxp->x2 + BOX_OFF;
+    by2 = boxp->y2 + BOX_OFF;
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
 	addr = (char *)
@@ -136,11 +156,12 @@ RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, boxp)
     while (nseg--)
 #else
     ppt = pptInit;
-    x2 = ppt->x + xorg;
-    y2 = ppt->y + yorg;
+    x2 = *x1p + xorg;
+    y2 = *y1p + yorg;
     oc2 = 0;
     OUTCODES_IMPLICIT (oc2, x2, y2);
     --npt;
+    mode -= CoordModePrevious;
     while (npt--)
 #endif
     {
@@ -159,7 +180,7 @@ RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, boxp)
 	y1 = y2;
 	oc1 = oc2;
 	++ppt;
-	if (mode == CoordModePrevious)
+	if (!mode)
 	{
 	    xorg = x1;
 	    yorg = y1;
@@ -171,6 +192,16 @@ RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, boxp)
 #endif
 	if (oc1 & oc2)
 	    continue;
+	if (oc1 | oc2)
+	{
+#ifdef POLYSEGMENT
+	    return nseg;
+#else
+	    *x1p = x1 - xorg;
+	    *y1p = y1 - yorg;
+	    return npt;
+#endif
+	}
 #ifdef REARRANGE
 	{
 	register int e, e1, e3, len;
@@ -231,28 +262,6 @@ RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, boxp)
 
 	addrb = addr + (y1 * nwidth) + x1;
 
-	/* clip the line if necessary.  This code is heavily
-	 * optimized for the case where lines are either
-	 * fully clipped or unclipped; rearranging things
-	 * would allow clipped lines to run a bit faster perhaps
-	 */
-	if (oc1 | oc2)
-	{
-	    STUPID int	xt = x1, yt = y1, lent;
-#ifdef POLYSEGMENT
-#define shorten	(capStyle == CapNotLast)
-#else
-#define shorten	TRUE
-#endif
-	    e = cfbClipLine (&xt, &yt, &lent, x2, y2, boxp, shorten);
-#undef shorten
-	    len = lent;
-	    addrb = addr + (yt * nwidth) + xt;
-
-	    /* make sure the line is still visible */
-	    if (len < 0)
-		continue;
-	}
 
 #ifndef REARRANGE
 	if (!ady)
@@ -336,6 +345,195 @@ RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, boxp)
     return -1;
 }
 
+#ifndef POLYSEGMENT
+RROP_NAME (cfb8ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
+    DrawablePtr	pDrawable;
+    GCPtr	pGC;
+    int		x1, y1, x2, y2;
+    BoxPtr	boxp;
+    Bool	shorten;
+{
+    int		    oc1, oc2;
+    int		    signdx, signdy, axis, e, e1, e3, len;
+    int		    adx, ady;
+
+    char	    *addr;
+    int		    nwidth;
+    int		    stepx, stepy;
+    int		    xorg, yorg;
+
+    if (pDrawable->type == DRAWABLE_WINDOW)
+    {
+	addr = (char *)
+		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
+	nwidth = (int)
+		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind);
+    }
+    else
+    {
+	addr = (char *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
+	nwidth = (int)(((PixmapPtr)pDrawable)->devKind);
+    }
+    xorg = pDrawable->x;
+    yorg = pDrawable->y;
+    x1 += xorg;
+    y1 += yorg;
+    x2 += xorg;
+    y2 += yorg;
+
+    signdx = 1;
+    stepx = 1;
+    if ((adx = x2 - x1) < 0)
+    {
+	adx = -adx;
+	signdx = -1;
+	stepx = -1;
+    }
+    signdy = 1;
+    stepy = nwidth;
+    if ((ady = y2 - y1) < 0)
+    {
+	ady = -ady;
+	signdy = -1;
+	stepy = -nwidth;
+    }
+    axis = X_AXIS;
+    if (adx <= ady)
+    {
+	int	t;
+
+	t = adx;
+	adx = ady;
+	ady = t;
+
+	t = stepx;
+	stepx = stepy;
+	stepy = t;
+	
+	axis = Y_AXIS;
+    }
+    e1 = ady << 1;
+    e3 = - (adx << 1);
+    e = - adx;
+    len = adx;
+    oc1 = 0;
+    oc2 = 0;
+    OUTCODES (oc1, x1, y1, boxp);
+    OUTCODES (oc2, x2, y2, boxp);
+    if (oc2)
+    {
+	int xt = x2, yt = y2;
+	int	dx = x2 - x1, dy = y2 - y1;
+	int change;
+
+	oc2 = cfbClipPoint (oc2, &xt, &yt, -dx, -dy, boxp);
+	if (axis == Y_AXIS)
+	    change = y2 - yt;
+	else
+	    change = x2 - xt;
+	if (change < 0)
+	    change = -change;
+	len -= change;
+    } else if (shorten)
+	--len;
+    if (oc1)
+    {
+	int	xt = x1, yt = y1;
+	int	dx = x2 - x1, dy = y2 - y1;
+	int	changex, changey;
+
+	oc1 = cfbClipPoint (oc1, &xt, &yt, dx, dy, boxp);
+	changex = x1 - xt;
+	if (changex < 0)
+	    changex = -changex;
+	changey = y1 - yt;
+	if (changey < 0)
+	    changey = -changey;
+	if (axis == X_AXIS)
+	{
+	    len -= changex;
+	    e = e + changey * e3 + changex * e1;
+	}
+	else
+	{
+	    len -= changey;
+	    e = e + changex * e3 + changey * e1;
+	}
+	x1 = xt;
+	y1 = yt;
+    }
+    if (oc1 | oc2)
+	return;
+
+    {
+    register char	*addrb;
+    RROP_DECLARE
+
+    RROP_FETCH_GC(pGC);
+
+    addrb = addr + (y1 * nwidth) + x1;
+
+#ifndef REARRANGE
+    if (!ady)
+    {
+#define body	{ RROP_SOLID(addrb); addrb += stepx; }
+	while (len >= 4)
+	{
+	    body body body body
+	    len -= 4;
+	}
+	switch (len)
+	{
+	case  3: body case 2: body case 1: body
+	}
+#undef body
+    }
+    else
+#endif
+    {
+#define body {\
+	    RROP_SOLID(addrb); \
+	    addrb += stepx; \
+	    e += e1; \
+	    if (e >= 0) \
+	    { \
+		addrb += stepy; \
+		e += e3; \
+	     } \
+	}
+
+#ifdef LARGE_INSTRUCTION_CACHE
+	while (len >= 4)
+	{
+	    body body body body
+	    len -= 4;
+	}
+	switch (len)
+	{
+	case  3: body case 2: body case 1: body
+	}
+#else
+	IMPORTANT_START
+
+	while ((len -= 2) >= 0)
+	{
+	    body body
+	}
+	if (len & 1)
+	    body;
+
+	IMPORTANT_END
+
+#endif
+    }
+    RROP_SOLID(addrb);
+#undef body
+
+    }
+
+}
+#endif
+
 #if RROP == GXset && !defined (POLYSEGMENT)
 
 #define round(dividend, divisor) \
@@ -343,7 +541,6 @@ RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, boxp)
 #define ceiling(m,n)  (((m)-1)/(n) + 1)
 #define SignTimes(sign,n)   (((sign) < 0) ? -(n) : (n))
 
-static
 cfbClipPoint (oc, xp, yp, dx, dy, boxp)
     int	oc;
     int	*xp, *yp;
@@ -420,100 +617,8 @@ cfbClipPoint (oc, xp, yp, dx, dy, boxp)
     return oc;
 }
 
-cfbClipLine (x1p, y1p, lenp, x2, y2, boxp, shorten)
-    int		*x1p, *y1p;
-    int		*lenp;
-    int		x2, y2;
-    BoxPtr	boxp;
-    Bool	shorten;
-{
-    int		    x1, y1;
-    int		    oc1, oc2;
-    int		    signdx, signdy, axis, e, e1, e3, len;
-    int		    adx, ady;
-    
-    x1 = *x1p;
-    y1 = *y1p;
-    signdx = 1;
-    if ((adx = x2 - x1) < 0)
-    {
-	adx = -adx;
-	signdx = -1;
-    }
-    signdy = 1;
-    if ((ady = y2 - y1) < 0)
-    {
-	ady = -ady;
-	signdy = -1;
-    }
-    axis = X_AXIS;
-    if (adx <= ady)
-    {
-	int	t;
-
-	t = adx;
-	adx = ady;
-	ady = t;
-
-	axis = Y_AXIS;
-    }
-    e1 = ady << 1;
-    e3 = - (adx << 1);
-    e = - adx;
-    len = adx;
-    oc1 = 0;
-    oc2 = 0;
-    OUTCODES (oc1, x1, y1, boxp);
-    OUTCODES (oc2, x2, y2, boxp);
-    if (oc2)
-    {
-	int xt = x2, yt = y2;
-	int	dx = x2 - x1, dy = y2 - y1;
-	int change;
-
-	oc2 = cfbClipPoint (oc2, &xt, &yt, -dx, -dy, boxp);
-	if (axis == Y_AXIS)
-	    change = y2 - yt;
-	else
-	    change = x2 - xt;
-	if (change < 0)
-	    change = -change;
-	len -= change;
-    } else if (shorten)
-	--len;
-    if (oc1)
-    {
-	int	xt = x1, yt = y1;
-	int	dx = x2 - x1, dy = y2 - y1;
-	int	changex, changey;
-
-	oc1 = cfbClipPoint (oc1, &xt, &yt, dx, dy, boxp);
-	changex = x1 - xt;
-	if (changex < 0)
-	    changex = -changex;
-	changey = y1 - yt;
-	if (changey < 0)
-	    changey = -changey;
-	if (axis == X_AXIS)
-	{
-	    len -= changex;
-	    e = e + changey * e3 + changex * e1;
-	}
-	else
-	{
-	    len -= changey;
-	    e = e + changex * e3 + changey * e1;
-	}
-	*x1p = xt;
-	*y1p = yt;
-    }
-    if (oc1 | oc2)
-	len = -1;
-    *lenp = len;
-    return e;
-}
-
 extern int cfb8LineSS1RectCopy(), cfb8LineSS1RectXor(), cfb8LineSS1RectGeneral(); 
+extern int cfb8ClippedLineCopy(), cfb8ClippedLineXor(), cfb8ClippedLineGeneral();
 
 void
 cfb8LineSS (pDrawable, pGC, mode, npt, pptInit)
@@ -523,22 +628,28 @@ cfb8LineSS (pDrawable, pGC, mode, npt, pptInit)
     int		npt;
     DDXPointPtr	pptInit;
 {
-    int		    (*func)();
+    int		    (*func)(), (*clip)();
     cfbPrivGCPtr    devPriv;
     BoxPtr	    boxp;
     int		    nbox;
+    int		    done, nptt;
+    int		    x1, y1, x2, y2;
+    DDXPointPtr	    pptt;
 
     devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
     switch (devPriv->rop)
     {
     case GXcopy:
 	func = cfb8LineSS1RectCopy;
+	clip = cfb8ClippedLineCopy;
 	break;
     case GXxor:
 	func = cfb8LineSS1RectXor;
+	clip = cfb8ClippedLineXor;
 	break;
     default:
 	func = cfb8LineSS1RectGeneral;
+	clip = cfb8ClippedLineGeneral;
 	break;
     }
     for (boxp = REGION_RECTS (devPriv->pCompositeClip),
@@ -546,7 +657,27 @@ cfb8LineSS (pDrawable, pGC, mode, npt, pptInit)
  	 nbox;
  	 nbox--, boxp++)
     {
-	(*func) (pDrawable, pGC, mode, npt, pptInit, boxp);
+	pptt = pptInit;
+	nptt = npt;
+	x1 = pptInit[0].x;
+	y1 = pptInit[0].y;
+	for (;;)
+	{
+	    done = (*func) (pDrawable, pGC, mode, nptt, pptt, boxp, &x1, &y1);
+	    if (done == -1)
+		break;
+	    done++;
+	    pptt = pptt + (nptt - done);
+	    x2 = pptt[0].x;
+	    y2 = pptt[0].y;
+	    if (mode == CoordModePrevious)
+	    {
+		x2 += x1;
+		y2 += y1;
+	    }
+	    (*clip) (pDrawable, pGC, x1, y1, x2, y2, boxp, TRUE);
+	    nptt = done;
+	}
     }
 }
 
@@ -559,22 +690,28 @@ cfb8SegmentSS (pDrawable, pGC, nseg, pSegInit)
     int		    nseg;
     xSegment	    *pSegInit;
 {
-    int		    (*func)();
+    int		    (*func)(), (*clip)();
     cfbPrivGCPtr    devPriv;
     BoxPtr	    boxp;
     int		    nbox;
+    int		    nsegt;
+    xSegment	    *pSegt;
+    int		    done;
 
     devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
     switch (devPriv->rop)
     {
     case GXcopy:
 	func = cfb8SegmentSS1RectCopy;
+	clip = cfb8ClippedLineCopy;
 	break;
     case GXxor:
 	func = cfb8SegmentSS1RectXor;
+	clip = cfb8ClippedLineXor;
 	break;
     default:
 	func = cfb8SegmentSS1RectGeneral;
+	clip = cfb8ClippedLineGeneral;
 	break;
     }
     for (boxp = REGION_RECTS (devPriv->pCompositeClip),
@@ -582,7 +719,19 @@ cfb8SegmentSS (pDrawable, pGC, nseg, pSegInit)
  	 nbox;
  	 nbox--, boxp++)
     {
-	(*func) (pDrawable, pGC, nseg, pSegInit, boxp);
+	nsegt = nseg;
+	pSegt = pSegInit;
+	for (;;)
+	{
+	    done = (*func) (pDrawable, pGC, nsegt, pSegt, boxp);
+	    if (done < 0)
+		break;
+	    pSegt += nsegt - (done + 1);
+	    (*clip) (pDrawable, pGC, pSegt->x1, pSegt->y1,
+		     pSegt->x2, pSegt->y2, boxp, pGC->capStyle == CapNotLast);
+	    nsegt = done;
+	    pSegt++;
+	}
     }
 }
 
