@@ -1,5 +1,5 @@
 #
-# $XConsortium: system.twmrc,v 1.5 89/11/03 16:16:07 jim Exp $
+# $XConsortium: system.twmrc,v 1.6 89/11/30 18:32:57 jim Exp $
 # 
 # Default twm configuration file; needs to be kept small to conserve string
 # space in systems whose compilers don't handle medium-sized strings.
@@ -41,6 +41,7 @@ Color
 # Define some useful functions for motion-based actions.
 #
 MoveDelta 3
+Function "move-or-lower" { f.move f.deltastop f.lower }
 Function "move-or-raise" { f.move f.deltastop f.raise }
 Function "move-or-iconify" { f.move f.deltastop f.iconify }
 
@@ -49,7 +50,9 @@ Function "move-or-iconify" { f.move f.deltastop f.iconify }
 #
 Button1 = : root : f.menu "defops"
 
-Button1 = m : window|icon : f.function "move-or-iconify"
+Button1 = m : window|icon : f.function "move-or-lower"
+Button2 = m : window|icon : f.iconify
+Button3 = m : window|icon : f.function "move-or-raise"
 
 Button1 = : title : f.function "move-or-raise"
 Button2 = : title : f.raiselower
