@@ -15,16 +15,24 @@ XFontStruct *XLoadQueryFont(dpy, name)
     register long nbytes;
     Font fid;
     xOpenFontReq *req;
+    int seqadj = 1;
 
     LockDisplay(dpy);
     GetReq(OpenFont, req);
     nbytes = req->nbytes  = name ? strlen(name) : 0;
     req->fid = fid = XAllocID(dpy);
-    req->length += (nbytes+3)>>2;		/* required by protocol */
+    req->length += (nbytes+3)>>2;
     Data (dpy, name, nbytes);
-    dpy->request--;
+#ifdef WORD64
+    /* 
+     *  If a NoOp is generated, the sequence number will be off
+     *  by one, so this temporarily adjusts the sequence number.
+     */
+    if ((long)dpy->bufptr >> 61) seqadj = 2;
+#endif
+    dpy->request -= seqadj;
     font_result = (_XQueryFont(dpy, fid));
-    dpy->request++;
+    dpy->request += seqadj;
     if (!font_result) {
        /* if _XQueryFont returned NULL, then the OpenFont request got
           a BadName error.  This means that the following QueryFont
