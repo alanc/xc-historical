@@ -1,4 +1,4 @@
-/* $XConsortium: restart.c,v 1.15 94/08/02 18:46:37 mor Exp mor $ */
+/* $XConsortium: restart.c,v 1.16 94/08/10 15:05:00 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -31,7 +31,6 @@ in this Software without prior written authorization from the X Consortium.
 #define vfork() fork()
 #endif
 
-extern List *PendingList;
 extern void remote_start ();
 
 
@@ -161,8 +160,7 @@ int flag;
 {
     List 	*cl, *pl, *vl;
     PendingClient *c;
-    PendingProp *prop;
-    PendingValue *v;
+    Prop 	*prop;
     char	*cwd;
     char	*program;
     char	**args;
@@ -194,33 +192,33 @@ int flag;
 	is_manager = 0;
 
 	for(pl = ListFirst(c->props); pl; pl = ListNext(pl)) {
-	    prop = (PendingProp *)pl->thing;
+	    prop = (Prop *)pl->thing;
 	    if(!strcmp(prop->name, SmProgram)) {
 		vl = ListFirst(prop->values);
-		if(vl) program = ((PendingValue *)vl->thing)->value;
+		if(vl) program = ((PropValue *)vl->thing)->value;
 		if (CheckIsManager (program))
 		    is_manager = 1;
 	    } else if(!strcmp(prop->name, SmCurrentDirectory)) {
 		vl = ListFirst(prop->values);
-		if(vl) cwd = ((PendingValue *)vl->thing)->value;
+		if(vl) cwd = ((PropValue *)vl->thing)->value;
 	    } else if(!strcmp(prop->name, "_XC_RestartService")) {
 		vl = ListFirst(prop->values);
 		if(vl) restart_service_prop =
-		    ((PendingValue *)vl->thing)->value;
+		    ((PropValue *)vl->thing)->value;
 	    } else if(!strcmp(prop->name, SmRestartCommand)) {
 		cnt = ListCount(prop->values);
-		args = (char **)malloc((cnt+1) * sizeof(char *));
+		args = (char **)XtMalloc((cnt+1) * sizeof(char *));
 		pp = args;
 		for(vl = ListFirst(prop->values); vl; vl = ListNext(vl)) {
-		    *pp++ = ((PendingValue *)vl->thing)->value;
+		    *pp++ = ((PropValue *)vl->thing)->value;
 		}
 		*pp = NULL;
 	    } else if(!strcmp(prop->name, SmEnvironment)) {
 		cnt = ListCount(prop->values);
-		env = (char **)malloc((cnt+3+1) * sizeof(char *));
+		env = (char **)XtMalloc((cnt+3+1) * sizeof(char *));
 		pp = env;
 		for(vl = ListFirst(prop->values); vl; vl = ListNext(vl)) {
-		    p = ((PendingValue *)vl->thing)->value;
+		    p = ((PropValue *)vl->thing)->value;
 		    if((display_env && strbw(p, "DISPLAY="))
 		    || (session_env && strbw(p, "SESSION_MANAGER="))
 		    || (audio_env && strbw(p, "AUDIOSERVER="))
@@ -238,8 +236,8 @@ int flag;
 	    if ((flag == RESTART_MANAGERS && !is_manager) ||
 	        (flag == RESTART_REST_OF_CLIENTS && is_manager))
 	    {
-		if(args) free((char *)args);
-		if(env) free((char *)env);
+		if(args) XtFree((char *)args);
+		if(env) XtFree((char *)env);
 		continue;
 	    }
 
@@ -303,8 +301,8 @@ int flag;
 	    fprintf(stderr, "Can't restart ID '%s':  no program or no args\n",
 		c->clientId);
 	}
-	if(args) free((char *)args);
-	if(env) free((char *)env);
+	if(args) XtFree((char *)args);
+	if(env) XtFree((char *)env);
     }
 
     if (flag == RESTART_MANAGERS && !ran_manager)
@@ -331,13 +329,13 @@ Bool useSavedState;
     char	**args;
     char	**env;
     char	**pp;
-    int		i, j;
     extern char **environ;
     char	*p;
     char	*restart_service_prop;
     char	*restart_protocol;
     char	*restart_machine;
     Bool	run_local;
+    List	*pl, *pj;
 
     if (verbose)
     {
@@ -352,34 +350,44 @@ Bool useSavedState;
     args = NULL;
     restart_service_prop = NULL;
 
-    for (i = 0; i < client->numProps; i++)
+    for (pl = ListFirst (client->props); pl; pl = ListNext (pl))
     {
-	SmProp *prop = client->props[i];
+	Prop *pprop = (Prop *) pl->thing;
+	List *vl = ListFirst (pprop->values);
+	PropValue *pval = (PropValue *) vl->thing;
 
-	if (strcmp (prop->name, SmProgram) == 0)
-	    program = (char *) prop->vals[0].value;
-	else if (strcmp (prop->name, SmCurrentDirectory) == 0)
-	    cwd = (char *) prop->vals[0].value;
-	else if (strcmp (prop->name, "_XC_RestartService") == 0)
-	    restart_service_prop = (char *) prop->vals[0].value;
+	if (strcmp (pprop->name, SmProgram) == 0)
+	    program = (char *) pval->value;
+	else if (strcmp (pprop->name, SmCurrentDirectory) == 0)
+	    cwd = (char *) pval->value;
+	else if (strcmp (pprop->name, "_XC_RestartService") == 0)
+	    restart_service_prop = (char *) pval->value;
 	else if (
-	    (!useSavedState && strcmp(prop->name, SmCloneCommand) == 0) ||
-	    (useSavedState && strcmp(prop->name, SmRestartCommand) == 0))
+	    (!useSavedState && strcmp (pprop->name, SmCloneCommand) == 0) ||
+	    (useSavedState && strcmp (pprop->name, SmRestartCommand) == 0))
 	{
-	    args = (char **) malloc ((prop->num_vals + 1) * sizeof (char *));
+	    args = (char **) XtMalloc (
+		(ListCount (pprop->values) + 1) * sizeof (char *));
+
 	    pp = args;
-	    for (j = 0; j < prop->num_vals; j++)
-		*pp++ = (char *) prop->vals[j].value;
+
+	    for (pj = ListFirst (pprop->values); pj; pj = ListNext (pj))
+	    {
+		pval = (PropValue *) pj->thing;
+		*pp++ = (char *) pval->value;
+	    }
 	    *pp = NULL;
 	}
-	else if (strcmp (prop->name, SmEnvironment) == 0)
+	else if (strcmp (pprop->name, SmEnvironment) == 0)
 	{
-	    env = (char **) malloc (
-		(prop->num_vals + 3 + 1) * sizeof (char *));
+	    env = (char **) XtMalloc (
+		(ListCount (pprop->values) + 3 + 1) * sizeof (char *));
 	    pp = env;
-	    for (j = 0; j < prop->num_vals; j++)
+
+	    for (pj = ListFirst (pprop->values); pj; pj = ListNext (pj))
 	    {
-		p = (char *) prop->vals[j].value;
+		pval = (PropValue *) pj->thing;
+		p = (char *) pval->value;
 
 		if ((display_env && strbw (p, "DISPLAY="))
 	         || (session_env && strbw (p, "SESSION_MANAGER="))
@@ -467,9 +475,9 @@ Bool useSavedState;
     }
 
     if (args)
-	free ((char *)args);
+	XtFree ((char *)args);
     if (env)
-	free ((char *)env);
+	XtFree ((char *)env);
 }
 
 
