@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.39 88/08/31 18:45:10 rws Exp $
+ * $XConsortium: Tekproc.c,v 1.40 88/09/05 19:17:14 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -119,7 +119,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.39 88/08/31 18:45:10 rws Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.40 88/09/05 19:17:14 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {

@@ -1,9 +1,9 @@
 /*
- *	$Header: resize.c,v 1.3 88/07/20 12:07:45 jim Exp $
+ *	$XConsortium: resize.c,v 1.4 88/07/22 12:50:12 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_resize_c = "$Header: resize.c,v 1.3 88/07/20 12:07:45 jim Exp $";
+static char *rcsid_resize_c = "$XConsortium: resize.c,v 1.4 88/07/22 12:50:12 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -70,7 +70,7 @@ extern struct passwd *fgetpwent();
 #endif	/* USE_SYSV_TERMIO */
 
 #ifndef lint
-static char rcs_id[] = "$Header: resize.c,v 1.3 88/07/20 12:07:45 jim Exp $";
+static char rcs_id[] = "$XConsortium: resize.c,v 1.4 88/07/22 12:50:12 jim Exp $";
 #endif
 
 #define	EMULATIONS	2

@@ -1,5 +1,5 @@
 /*
- *	$Header: scrollbar.c,v 1.11 88/06/28 15:11:53 swick Exp $
+ *	$XConsortium: scrollbar.c,v 1.12 88/07/12 10:41:23 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -42,7 +42,7 @@
 extern void Bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$Header: scrollbar.c,v 1.11 88/06/28 15:11:53 swick Exp $";
+static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.12 88/07/12 10:41:23 jim Exp $";
 #endif	/* lint */
 
 /* Event handlers */

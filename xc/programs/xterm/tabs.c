@@ -1,9 +1,9 @@
 /*
- *	$Header: tabs.c,v 1.6 87/12/19 10:10:20 rws Exp $
+ *	$XConsortium: tabs.c,v 1.1 88/02/10 13:08:17 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_tabs_c = "$Header: tabs.c,v 1.6 87/12/19 10:10:20 rws Exp $";
+static char *rcsid_tabs_c = "$XConsortium: tabs.c,v 1.1 88/02/10 13:08:17 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -34,7 +34,7 @@ static char *rcsid_tabs_c = "$Header: tabs.c,v 1.6 87/12/19 10:10:20 rws Exp $";
 /* tabs.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: tabs.c,v 1.6 87/12/19 10:10:20 rws Exp $";
+static char rcs_id[] = "$XConsortium: tabs.c,v 1.1 88/02/10 13:08:17 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>

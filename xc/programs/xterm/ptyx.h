@@ -1,5 +1,5 @@
 /*
- *	$Header: ptyx.h,v 1.12 88/07/12 16:43:24 jim Exp $
+ *	$XConsortium: ptyx.h,v 1.13 88/08/08 12:49:55 jim Exp $
  */
 
 #include <X11/copyright.h>

@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.36 88/08/18 15:45:08 jim Exp $";
+static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.37 88/08/18 15:50:02 jim Exp $";
 #endif
 
 /*%

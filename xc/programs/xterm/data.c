@@ -1,5 +1,5 @@
 /*
- *	$Header: data.c,v 1.2 88/02/16 14:59:48 jim Exp $
+ *	$XConsortium: data.c,v 1.3 88/07/12 18:39:52 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -34,7 +34,7 @@
 #include "data.h"
 
 #ifndef lint
-static char rcs_id[] = "$Header: data.c,v 1.2 88/02/16 14:59:48 jim Exp $";
+static char rcs_id[] = "$XConsortium: data.c,v 1.3 88/07/12 18:39:52 jim Exp $";
 #endif	/* lint */
 
 XPoint T_boxlarge[NBOX] = {

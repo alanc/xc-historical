@@ -1,9 +1,9 @@
 /*
- *	$Header: cursor.c,v 1.2 88/07/12 10:41:15 jim Exp $
+ *	$XConsortium: cursor.c,v 1.3 88/07/12 11:47:40 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_cursor_c = "$Header: cursor.c,v 1.2 88/07/12 10:41:15 jim Exp $";
+static char *rcsid_cursor_c = "$XConsortium: cursor.c,v 1.3 88/07/12 11:47:40 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -35,7 +35,7 @@ static char *rcsid_cursor_c = "$Header: cursor.c,v 1.2 88/07/12 10:41:15 jim Exp
 
 
 #ifndef lint
-static char rcs_id[] = "$Header: cursor.c,v 1.2 88/07/12 10:41:15 jim Exp $";
+static char rcs_id[] = "$XConsortium: cursor.c,v 1.3 88/07/12 11:47:40 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>

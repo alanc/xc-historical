@@ -1,5 +1,5 @@
 /*
- *	$Header: VTparse.h,v 1.1 88/02/11 22:08:38 jim Exp $
+ *	$XConsortium: VTparse.h,v 1.2 88/07/20 12:25:51 jim Exp $
  */
 
 

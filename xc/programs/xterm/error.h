@@ -1,5 +1,5 @@
 /*
- *	$Header: error.h,v 1.1 88/02/11 22:08:39 jim Exp $
+ *	$XConsortium: error.h,v 1.2 88/02/20 15:32:08 swick Exp $
  */
 
 

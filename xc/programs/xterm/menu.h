@@ -1,6 +1,6 @@
 /*		@(#)menu.h	1.2 Stellar 87/10/07	*/
 /*
- *	$Header: menu.h,v 1.1 88/02/10 13:08:10 jim Exp $
+ *	$XConsortium: menu.h,v 1.2 88/07/29 15:38:32 jim Exp $
  */
 
 

@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $XConsortium: dsimple.h,v 1.1 87/09/11 08:17:50 toddb Exp $ */
 /*
  * Just_display.h: This file contains the definitions needed to use the
  *                 functions in just_display.c.  It also declares the global

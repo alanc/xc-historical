@@ -1,5 +1,5 @@
 /*
- *	$Header: button.c,v 1.7 88/07/29 14:50:32 jim Exp $
+ *	$XConsortium: button.c,v 1.8 88/07/29 15:37:52 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$Header: button.c,v 1.7 88/07/29 14:50:32 jim Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.8 88/07/29 15:37:52 jim Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>

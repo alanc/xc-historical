@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.21 88/08/31 18:46:36 rws Exp $
+ *	$XConsortium: misc.c,v 1.22 88/09/02 10:14:55 swick Exp $
  */
 
 
@@ -53,7 +53,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$Header: misc.c,v 1.21 88/08/31 18:46:36 rws Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.22 88/09/02 10:14:55 swick Exp $";
 #endif	/* lint */
 
 xevents()
