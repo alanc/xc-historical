@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.128 91/01/05 16:45:01 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.129 91/01/05 17:28:23 rws Exp $
  */
 
 #include "copyright.h"
@@ -1783,8 +1783,10 @@ int _XReadV (fd, v, n)
 		p += rc;
 		len -= rc;
 		size += rc;
-	    } else if (rc < 0) {
-		break;
+	    } else if (rc < 0 && size == 0) {
+		return -1;
+	    } else {
+		return size;
 	    }
 	}
     }
@@ -1820,8 +1822,10 @@ int _XWriteV (fd, v, n)
 		p += rc;
 		len -= rc;
 		size += rc;
-	    } else if (rc < 0) {
-		break;
+	    } else if (rc < 0 && size == 0) {
+		return -1;
+	    } else {
+		return size;
 	    }
 	}
     }
