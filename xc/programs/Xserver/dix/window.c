@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.177 87/11/07 17:03:15 rws Locked $ */
+/* $Header: window.c,v 1.178 87/11/11 14:14:31 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -425,7 +425,6 @@ CreateRootWindow(screen)
 /*****
  * CreateWindow
  *    Makes a window in response to client request 
- *    XXX  What about depth of inputonly windows -- should be 0
  *****/
 
 WindowPtr
@@ -451,6 +450,16 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     Bool fOK;
     DepthPtr pDepth;
 
+    if (class == CopyFromParent)
+	class = pParent->class;
+
+    if ((class != InputOutput) && (class != InputOnly))
+    {
+	*error = BadValue;
+	client->errorValue = class;
+	return (WindowPtr)NULL;
+    }
+
     if ((class != InputOnly) && (pParent->class == InputOnly))
     {
         *error = BadMatch;
@@ -466,8 +475,7 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     pScreen = pParent->drawable.pScreen;
     /* Find out if the depth and visual are acceptable for this Screen */
     fOK = FALSE;
-    if ((class == InputOutput && depth == 0) || 
-	(class == InputOnly) || (class == CopyFromParent))
+    if ((class == InputOutput) && (depth == 0))
         depth = pParent->drawable.depth;
 
     if (visual == CopyFromParent)
@@ -476,12 +484,15 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     for(idepth = 0; idepth < pScreen->numDepths; idepth++)
     {
 	pDepth = (DepthPtr) &pScreen->allowedDepths[idepth];
-	if (depth == pDepth->depth)
+	if ((depth == pDepth->depth) || (depth == 0))
 	{
 	    for (ivisual = 0; ivisual < pDepth->numVids; ivisual++)
 	    {
 		if (visual == pDepth->vids[ivisual])
+		{
 		    fOK = TRUE;
+		    break;
+		}
 	    }
 	}
     }
@@ -491,49 +502,38 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 	return (WindowPtr)NULL;
     }
 
-    pWin = (WindowPtr ) Xalloc( sizeof(WindowRec) );
-    if (pWin == (WindowPtr) NULL) 
+    if (((vmask & (CWBorderPixmap | CWBorderPixel)) == 0) &&
+	(class != InputOnly) &&
+	(depth != pParent->drawable.depth))
     {
-	*error = BadAlloc;
-	return (WindowPtr)NULL;
+        *error = BadMatch;
+        return (WindowPtr)NULL;
     }
+
+    pWin = (WindowPtr) Xalloc( sizeof(WindowRec) );
     InitProcedures(pWin);
     pWin->drawable = pParent->drawable;
-    if (class == InputOutput)
-	pWin->drawable.depth = depth;
-    else if (class == InputOnly)
+    pWin->drawable.depth = depth;
+    if (class == InputOnly)
         pWin->drawable.type = (short) UNDRAWABLE_WINDOW;
 
     pWin->wid = wid;
     pWin->client = client;
     pWin->visual = visual;
+    pWin->class = class;
 
     SetWindowToDefaults(pWin, pScreen);
 
     pWin->cursor = (CursorPtr)None;
 
-    if (class == CopyFromParent)
-	pWin->class = pParent->class;
-    else
-	pWin->class = class;
-
     pWin->borderWidth = (int) bw;
     pWin->backgroundTile = (PixmapPtr)None;
-    pWin->backgroundPixel = pScreen->whitePixel;
 
-    if ((pWin->drawable.depth != pParent->drawable.depth) &&
-	(((vmask & (CWBorderPixmap | CWBorderPixel)) == 0 )))
-    {
-        Xfree(pWin);
-        *error = BadMatch;
-        return (WindowPtr)NULL;
-    }
     if ((vmask & (CWBorderPixmap | CWBorderPixel)) != 0)
 		/* it will just get fixed in ChangeWindowAttributes */
-        pWin->borderTile = (PixmapPtr)NULL;
+        pWin->borderTile = (PixmapPtr)USE_BORDER_PIXEL;
     else
-    {                              /* this is WRONG!!         XXX */
-	                           /* should be actually copied */
+    {
         pWin->borderTile = pParent->borderTile;   
         if (IS_VALID_PIXMAP(pParent->borderTile))
             pParent->borderTile->refcnt++;
@@ -608,9 +608,16 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     if (vmask)
         *error = ChangeWindowAttributes(pWin, vmask, vlist, pWin->client);
     else
-        *error = Success;
+	*error = Success;
 
-    WindowHasNewCursor( pWin);
+    if (*error != Success)
+    {
+        EventSelectForWindow(pWin, client, 0);
+	DeleteWindow(pWin, wid);
+	return (WindowPtr)NULL;
+    }
+
+    WindowHasNewCursor(pWin);
 
     event.u.u.type = CreateNotify;
     event.u.createNotify.window = wid;
@@ -621,7 +628,7 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     event.u.createNotify.height = h;
     event.u.createNotify.borderWidth = bw;
     event.u.createNotify.override = pWin->overrideRedirect;
-    DeliverEvents(pWin->parent, &event, 1, NullWindow);		
+    DeliverEvents(pParent, &event, 1, NullWindow);		
 
     return pWin;
 }
@@ -721,8 +728,8 @@ DeleteWindow(pWin, wid)
             pWin->nextSib->prevSib = pWin->prevSib;
         if (pWin->prevSib) 
             pWin->prevSib->nextSib = pWin->nextSib;
-	Xfree(pWin);
     }
+    Xfree(pWin);
 }
 
 DestroySubwindows(pWin, client)
@@ -761,7 +768,8 @@ DestroySubwindows(pWin, client)
 	Xfree(pChild);
 	pChild = pSib;
     }
-    pWin->firstChild = (WindowPtr )NULL;
+    pWin->firstChild = (WindowPtr)NULL;
+    pWin->lastChild = (WindowPtr)NULL;
 }
 
 
