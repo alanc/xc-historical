@@ -1,4 +1,4 @@
-/* $XConsortium: Context.c,v 1.18 93/12/09 15:01:54 kaleb Exp $ */
+/* $XConsortium: Context.c,v 1.19 94/01/17 11:21:44 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard,
@@ -61,6 +61,10 @@ typedef struct _XContextDB {	/* Stores hash table for one display. */
 #endif
 } DBRec, *DB;
 
+#ifdef MOTIFBC
+static DB NullDB = (DB)0;
+#endif
+
 /* Given an XID and a context, returns a value between 0 and HashSize-1.
    Currently, this requires that HashSize be a power of 2.
 */
@@ -105,11 +109,8 @@ static void _XFreeContextDB(display)
     register int i;
     register TableEntry *pentry, entry, next;
 
-    LockDisplay(display);
     db = display->context_db;
-    UnlockDisplay(display);
     if (db) {
-	_XLockMutex(&db->linfo);
 	for (i = db->mask + 1, pentry = db->table ; --i >= 0; pentry++) {
 	    for (entry = *pentry; entry; entry = next) {
 		next = entry->next;
@@ -148,10 +149,18 @@ int XSaveContext(display, rid, context, data)
     TableEntry *head;
     register TableEntry entry;
 
-    LockDisplay(display);
-    pdb = &display->context_db;
-    db = *pdb;
-    UnlockDisplay(display);
+#ifdef MOTIFBC
+    if (!display) {
+	pdb = &NullDB;
+	db = *pdb;
+    } else
+#endif
+    {
+	LockDisplay(display);
+	pdb = &display->context_db;
+	db = *pdb;
+	UnlockDisplay(display);
+    }
     if (!db) {
 	db = (DB) Xmalloc(sizeof(DBRec));
 	if (!db)
@@ -164,10 +173,15 @@ int XSaveContext(display, rid, context, data)
 	}
 	db->numentries = 0;
 	_XCreateMutex(&db->linfo);
-	LockDisplay(display);
-	*pdb = db;
-	display->free_funcs->context_db = _XFreeContextDB;
-	UnlockDisplay(display);
+#ifdef MOTIFBC
+	if (!display) *pdb = db; else
+#endif
+	{
+	    LockDisplay(display);
+	    *pdb = db;
+	    display->free_funcs->context_db = _XFreeContextDB;
+	    UnlockDisplay(display);
+	}
     }
     _XLockMutex(&db->linfo);
     head = &Hash(db, rid, context);
@@ -210,9 +224,14 @@ int XFindContext(display, rid, context, data)
     register DB db;
     register TableEntry entry;
 
-    LockDisplay(display);
-    db = display->context_db;
-    UnlockDisplay(display);
+#ifdef MOTIFBC
+    if (!display) db = NullDB; else
+#endif
+    {
+	LockDisplay(display);
+	db = display->context_db;
+	UnlockDisplay(display);
+    }
     if (!db)
 	return XCNOENT;
     _XLockMutex(&db->linfo);
@@ -243,9 +262,14 @@ int XDeleteContext(display, rid, context)
     register DB db;
     register TableEntry entry, *prev;
 
-    LockDisplay(display);
-    db = display->context_db;
-    UnlockDisplay(display);
+#ifdef MOTIFBC
+    if (!display) db = NullDB; else
+#endif
+    {
+	LockDisplay(display);
+	db = display->context_db;
+	UnlockDisplay(display);
+    }
     if (!db)
 	return XCNOENT;
     _XLockMutex(&db->linfo);
