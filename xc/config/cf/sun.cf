@@ -1,6 +1,6 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.134 94/08/17 18:56:43 matt Exp gildea $
+XCOMM platform:  $XConsortium: sun.cf,v 1.135 94/10/03 21:32:05 gildea Exp kaleb $
 
-#ifdef SVR4
+#ifdef SVR4Architecture
 #ifdef i386Architecture
 #define OSName            SunOS 5.1 x86
 XCOMM operating system:  OSName
@@ -141,7 +141,7 @@ XCOMM operating system:  OSName
 #define XawI18nDefines    -DHAS_WCTYPE_H -DHAS_ISW_FUNCS
 #endif
 #ifdef i386Architecture
-#define StandardDefines	  -Dsun -Di386 -DSVR4
+#define StandardDefines	  -Dsun -Di386 -DSVR4 -D__i386
 #else
 #define StandardDefines	  -Dsun -DSVR4
 #endif

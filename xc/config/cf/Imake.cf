@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imake.cf,v 1.14 94/12/02 11:35:06 kaleb Exp kaleb $
+XCOMM $XConsortium: Imake.cf,v 1.15 94/12/03 12:04:28 kaleb Exp kaleb $
 /*
  * To add support for another platform:
  * 
@@ -98,6 +98,10 @@ XCOMM $XConsortium: Imake.cf,v 1.14 94/12/02 11:35:06 kaleb Exp kaleb $
 #ifdef sun
 #define MacroIncludeFile <sun.cf>
 #define MacroFile sun.cf
+#ifdef SVR4
+#undef SVR4
+#define SVR4Architecture
+#endif
 #ifdef sparc
 #undef sparc
 #define SparcArchitecture

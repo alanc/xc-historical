@@ -1,4 +1,4 @@
-XCOMM $XConsortium: svr4.cf,v 1.6 94/04/08 18:56:33 rws Exp kaleb $
+XCOMM $XConsortium: svr4.cf,v 1.7 94/11/21 17:13:14 kaleb Exp kaleb $
 /*
  * A default OS name
  */
@@ -28,10 +28,14 @@ XCOMM $XConsortium: svr4.cf,v 1.6 94/04/08 18:56:33 rws Exp kaleb $
 #define	OSTeenyVersion	0
 #endif
 #ifndef BootstrapCFlags
+#ifdef i386Architecture
+#define BootstrapCFlags		-DSVR4 -Di386
+#else
 #ifdef SYSV386
-#define BootstrapCFlags         -DSVR4 -DSYSV386
+#define BootstrapCFlags         -DSVR4 -Di386
 #else
 #define BootstrapCFlags         -DSVR4
+#endif
 #endif
 #endif
 
