@@ -1,5 +1,5 @@
 /*
- * $XConsortium: gethost.c,v 1.10 89/12/10 19:58:51 jim Exp $
+ * $XConsortium: gethost.c,v 1.11 91/01/29 13:44:24 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -32,12 +32,18 @@
 #include <sys/types.h>
 #define __TYPES__
 #endif
-#include <stdio.h>
 #ifndef STREAMSCONN
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#endif
+#ifdef SYSV386
+#ifndef SVR4
+#ifndef SCO
+#include <net/errno.h>
+#endif /* !SCO */
+#endif /* !SVR4 */
+#endif /* SYSV386 */
+#endif /* !STREAMSCONN */
 #include <errno.h>
 extern int errno;			/* for stupid errno.h files */
 #ifdef DNETCONN
