@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.89 93/03/15 15:27:35 converse Exp $ */
+/* $XConsortium: Display.c,v 1.90 93/06/18 17:02:37 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -126,6 +126,7 @@ static XtPerDisplay InitPerDisplay(dpy, app, name, classname)
     pd->pixmap_tab = NULL;
     pd->language = NULL;
     pd->rv = False;
+    pd->last_event.xany.serial = 0;
     pd->last_timestamp = 0;
     _XtAllocTMContext(pd);
     pd->mapping_callbacks = NULL;
