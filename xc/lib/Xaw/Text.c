@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.118 89/10/09 16:20:24 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.119 89/10/19 15:00:55 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -428,8 +428,10 @@ TextWidget ctx;
   XtAddCallback( hbar, XtNscrollProc, HScroll, (caddr_t)ctx );
   XtAddCallback( hbar, XtNjumpProc, HJump, (caddr_t)ctx );
 
+/*
   ctx->text.r_margin.bottom += hbar->core.height + hbar->core.border_width;
   ctx->text.margin.bottom = ctx->text.r_margin.bottom;
+*/
 
   PositionHScrollBar(ctx);
   if (XtIsRealized(ctx)) {
@@ -452,8 +454,11 @@ TextWidget ctx;
 
   if (hbar == NULL) return;
 
+/*
   ctx->text.r_margin.bottom -= hbar->core.height + hbar->core.border_width;
   ctx->text.margin.bottom = ctx->text.r_margin.bottom;
+*/
+
   XtDestroyWidget(hbar);
   ctx->text.hbar = NULL;
 }
