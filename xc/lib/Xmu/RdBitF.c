@@ -1,5 +1,5 @@
 /*
- * $XConsortium: RdBitF.c,v 1.1 88/09/05 10:44:28 jim Exp $
+ * $XConsortium: RdBitF.c,v 1.2 88/09/05 10:52:01 jim Exp $
  *
  * Copyright, 1987, Massachusetts Institute of Technology
  *
@@ -10,6 +10,10 @@
  *
  *     XmuReadBitmapDataFromFile	read X10 or X11 format bitmap files
  *					and return data
+ *
+ * Note that this file and ../X/XRdBitF.c look very similar....  Keep them
+ * that way (but don't use common source code so that people can have one 
+ * without the other).
  */
 
 #include "copyright.h"
@@ -28,8 +32,7 @@
 #define MAX_SIZE 255
 
 /* shared data for the image read/parse logic */
-
-static short hexTable[255];		/* conversion value */
+static short hexTable[256];		/* conversion value */
 static Bool initialized = False;	/* easier to fill in at run time */
 
 
@@ -40,8 +43,12 @@ static Bool initialized = False;	/* easier to fill in at run time */
 static void initHexTable()
 {
     /*
-     * this is easier and less prone to error than a static table, but it isn't
-     * reentrant.
+     * We build the table at run time for several reasons:
+     *
+     *     1.  portable to non-ASCII machines.
+     *     2.  still reentrant since we set the init flag after setting table.
+     *     3.  easier to extend.
+     *     4.  less prone to bugs.
      */
     hexTable['0'] = 0;	hexTable['1'] = 1;
     hexTable['2'] = 2;	hexTable['3'] = 3;
