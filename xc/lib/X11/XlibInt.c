@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.133 91/01/09 15:09:24 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.134 91/02/01 18:53:01 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1787,7 +1787,9 @@ int iovcnt;
 /*
 	END USER STAMP AREA
 */
-extern char * malloc();
+
+#include <X11/Xlibos.h>		/* for malloc() declaration */
+
 extern char _XsTypeOfStream[];
 extern Xstream _XsStream[];
 
