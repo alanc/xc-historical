@@ -1,3 +1,4 @@
+.\" $XConsortium: xrdb.man,v 1.72 91/08/23 18:46:18 gildea Exp $
 .TH XRDB 1 "Release 5" "X Version 11"
 .SH NAME
 xrdb - X server resource database utility
