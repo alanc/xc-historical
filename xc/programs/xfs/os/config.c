@@ -1,4 +1,4 @@
-/* $XConsortium: config.c,v 1.11 93/09/20 18:08:45 hersh Exp $ */
+/* $XConsortium: config.c,v 1.12 94/02/04 17:07:27 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -270,16 +270,19 @@ ReadConfigFile(filename)
     data = (char *) fsalloc(CONFIG_MAX_FILESIZE);
     if (!data) {
 	ErrorF(ConfigErrors[CONFIG_ERR_MEMORY], filename);
-	return -1;
+	return FSBadAlloc;
     }
     if ((fp = fopen(filename, "r")) == NULL) {
+	fsfree(data);
 	ErrorF(ConfigErrors[CONFIG_ERR_OPEN], filename);
-	return -1;
+	return FSBadName;
     }
     ret = fread(data, sizeof(char), CONFIG_MAX_FILESIZE, fp);
     if (ret <= 0) {
+	fsfree(data);
+	(void) fclose(fp);
 	ErrorF(ConfigErrors[CONFIG_ERR_READ], filename);
-	return -1;
+	return FSBadName;
     }
     len = ftell(fp);
     len = min(len, CONFIG_MAX_FILESIZE);
