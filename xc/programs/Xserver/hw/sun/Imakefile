@@ -10,6 +10,7 @@ SRCS =	\
 	sunGC.c \
 	sunCG2C.c \
 	sunCG2M.c \
+	sunCG3C.c \
 	sunCG4C.c \
 	sunKeyMap.c \
 	kbd_mode.c
@@ -27,6 +28,7 @@ OBJS = \
 	sunGC.o \
 	sunCG2C.o \
 	sunCG2M.o \
+	sunCG3C.o \
 	sunCG4C.o \
 	sunKeyMap.o
 

@@ -57,6 +57,7 @@ extern int sunMouseProc();
 extern void sunKbdProc();
 extern Bool sunBW2Probe();
 extern Bool sunCG2CProbe();
+extern Bool sunCG3CProbe();
 extern Bool sunCG4CProbe();
 extern void ProcessInputEvents();
 
@@ -104,12 +105,14 @@ SigIOHandler(sig, code, scp)
 sunFbDataRec sunFbData[] = {
     sunBW2Probe,  	"/dev/bwtwo0",	    neverProbed,	0, 0,
     sunCG2CProbe,  	"/dev/cgtwo0",	    neverProbed,	0, 0,
+    sunCG3CProbe,  	"/dev/cgthree0",    neverProbed,	0, 0,
     sunCG4CProbe,  	"/dev/cgfour0",	    neverProbed,	0, 0,
 };
 #else  ZOIDS
 sunFbDataRec sunFbData[] = {
     sunBW2Probe,  	"/dev/bwtwo0",	    neverProbed,
     sunCG2CProbe,  	"/dev/cgtwo0",	    neverProbed,
+    sunCG3CProbe,  	"/dev/cgthree0",    neverProbed,
     sunCG4CProbe,  	"/dev/cgfour0",	    neverProbed,
 };
 #endif ZOIDS
