@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.52 89/01/16 17:13:04 rws Exp $ */
+/* $XConsortium: io.c,v 1.53 89/03/14 09:11:35 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -308,7 +308,7 @@ static int padlength[4] = {0, 3, 2, 1};
  *
  **********************/
 
-static int
+int
 FlushClient(who, oc, extraBuf, extraCount)
     ClientPtr who;
     OsCommPtr oc;
