@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.14 90/07/05 20:16:40 rws Exp $ */
+/* $XConsortium: colormap.c,v 5.15 90/09/15 12:18:20 keith Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -424,6 +424,7 @@ CopyFree (channel, client, pmapSrc, pmapDst)
     EntryPtr	pentSrcFirst, pentDstFirst;
     EntryPtr	pentSrc, pentDst;
     Pixel	*ppix;
+    int		nalloc;
 
     switch(channel)
     {
@@ -449,6 +450,7 @@ CopyFree (channel, client, pmapSrc, pmapDst)
 	oldFree = pmapSrc->freeBlue;
 	break;
     }
+    nalloc = 0;
     if (pmapSrc->class & DynamicClass)
     {
 	for(z = npix; --z >= 0; ppix++)
@@ -463,6 +465,7 @@ CopyFree (channel, client, pmapSrc, pmapDst)
 	    else
 	    {
 		*pentDst = *pentSrc;
+		nalloc++;
 		if (pentSrc->refcnt > 0)
 		    pentDst->refcnt = 1;
 		else
@@ -476,7 +479,7 @@ CopyFree (channel, client, pmapSrc, pmapDst)
     switch(channel)
     {
       case REDMAP:
-        pmapDst->freeRed -= (pmapSrc->freeRed - oldFree);
+        pmapDst->freeRed -= nalloc;
         (pmapDst->clientPixelsRed)[client] =
 	    (pmapSrc->clientPixelsRed)[client];
         (pmapSrc->clientPixelsRed)[client] = (Pixel *) NULL;
@@ -484,7 +487,7 @@ CopyFree (channel, client, pmapSrc, pmapDst)
         (pmapSrc->numPixelsRed)[client] = 0;
 	break;
       case GREENMAP:
-        pmapDst->freeGreen -= (pmapSrc->freeGreen - oldFree);
+        pmapDst->freeGreen -= nalloc;
         (pmapDst->clientPixelsGreen)[client] =
 	    (pmapSrc->clientPixelsGreen)[client];
         (pmapSrc->clientPixelsGreen)[client] = (Pixel *) NULL;
@@ -492,7 +495,7 @@ CopyFree (channel, client, pmapSrc, pmapDst)
         (pmapSrc->numPixelsGreen)[client] = 0;
 	break;
       case BLUEMAP:
-        pmapDst->freeBlue -= (pmapSrc->freeBlue - oldFree);
+        pmapDst->freeBlue -= nalloc;
         pmapDst->clientPixelsBlue[client] = pmapSrc->clientPixelsBlue[client];
         pmapSrc->clientPixelsBlue[client] = (Pixel *) NULL;
         pmapDst->numPixelsBlue[client] = pmapSrc->numPixelsBlue[client];
