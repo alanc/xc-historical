@@ -21,13 +21,14 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.65 88/10/13 19:33:33 rws Exp $ */
+/* $XConsortium: utils.c,v 1.66 88/10/22 13:28:24 keith Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
 #include "X.h"
 #include "input.h"
 #include "opaque.h"
+#include <sys/signal.h>
 extern char *display;
 
 extern long defaultScreenSaverTime;	/* for parsing command line */
@@ -60,12 +61,17 @@ char *dev_tty_from_init = NULL;		/* since we need to parse it anyway */
 
 AutoResetServer ()
 {
+    if (clientsDoomed)
+	return;
     clientsDoomed = TRUE;
     /* force an immediate timeout (and exit) in WaitForSomething */
     ScreenSaverTime = TimeSinceLastInputEvent();
 #ifdef GPROF
     chdir ("/tmp");
     exit (0);
+#endif
+#ifdef SYSV
+    signal (SIGHUP, AutoResetServer);
 #endif
 }
 
@@ -151,6 +157,7 @@ void UseMsg()
 {
     ErrorF("use: X [:<display>] [option]\n");
     ErrorF("-a #                   mouse acceleration (pixels)\n");
+    ErrorF("-auth string           select authorization file\n");	
     ErrorF("-bs                    disable any backing store support\n");
     ErrorF("-c                     turns off key-click\n");
     ErrorF("c #                    key-click volume (0-8)\n");
@@ -215,6 +222,14 @@ char	*argv[];
 	    if(++i < argc)
 	        defaultPointerControl.num = atoi(argv[i]);
 	    else
+		UseMsg();
+	}
+	else if ( strcmp( argv[i], "-auth") == 0)
+	{
+	    if(++i < argc) {
+	        if (InitAuthorization (argv[i]))
+		    DisableLocalHost ();
+	    } else
 		UseMsg();
 	}
 	else if ( strcmp( argv[i], "-bs") == 0)

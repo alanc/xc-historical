@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.25 88/08/31 10:09:32 rws Exp $ */
+/* $XConsortium: access.c,v 1.26 88/09/06 15:51:03 jim Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -54,6 +54,10 @@ SOFTWARE.
 
 #define acmp(a1, a2, len) bcmp((char *)(a1), (char *)(a2), len)
 #define acopy(a1, a2, len) bcopy((char *)(a1), (char *)(a2), len)
+#define addrEqual(fam, address, length, host) \
+			 ((fam) == (host)->family &&\
+			  (length) == (host)->len &&\
+			  !acmp (address, (host)->addr, length))
 
 #define DONT_CHECK -1
 extern char	*index();
@@ -68,6 +72,7 @@ typedef struct _host {
 static HOST *selfhosts = NULL;
 static HOST *validhosts = NULL;
 static int AccessEnabled = DEFAULT_ACCESS_CONTROL;
+static int LocalHostDisabled = 0;
 
 typedef struct {
     int af, xf;
@@ -84,6 +89,21 @@ static FamilyMap familyMap[] = {
     {AF_INET, FamilyInternet}
 #endif
 };
+
+/*
+ * called when authorization is enabled, to remove the
+ * local host from the access list
+ */
+
+DisableLocalHost ()
+{
+    LocalHostDisabled = 1;
+}
+
+EnableLocalHost ()
+{
+    LocalHostDisabled = 0;
+}
 
 #define FAMILIES ((sizeof familyMap)/(sizeof familyMap[0]))
 
@@ -125,8 +145,7 @@ DefineSelf (fd)
 	family = ConvertAddr ( &(saddr.sa), &len, &addr);
 	if ( family > 0) {
 	    for (host = selfhosts;
-		 host && ( family != host->family ||
-			  acmp ( addr, host->addr, len));
+		 host && !addrEqual (family, addr, len, host);
 		 host = host->next) ;
 	    if (!host) {
 		/* add this host to the host list.	*/
@@ -177,8 +196,9 @@ DefineSelf (fd)
 #endif /* DNETCONN */
         if ((family = ConvertAddr (&ifr->ifr_addr, &len, &addr)) <= 0)
 	    continue;
-        for (host = selfhosts; host && (family != host->family ||
-	  acmp (addr, host->addr, len)); host = host->next)
+        for (host = selfhosts;
+ 	     host && !addrEqual (family, addr, len, host);
+	     host = host->next)
 	    ;
         if (host)
 	    continue;
@@ -225,12 +245,14 @@ ResetHosts (display)
         validhosts = host->next;
         xfree (host);
     }
-    for (self = selfhosts; self; self = self->next)
-    {
-        host = (HOST *) xalloc (sizeof (HOST));
-        *host = *self;
-        host->next = validhosts;
-        validhosts = host;
+    if (!LocalHostDisabled) {
+    	for (self = selfhosts; self; self = self->next)
+    	{
+            host = (HOST *) xalloc (sizeof (HOST));
+            *host = *self;
+            host->next = validhosts;
+            validhosts = host;
+    	}
     }
     strcpy (fname, "/etc/X");
     strcat (fname, display);
@@ -311,7 +333,7 @@ AuthorizedClient(client)
 		return TRUE;
 	    for (host = selfhosts; host; host = host->next)
 	    {
-		if (family == host->family && !acmp (addr, host->addr, alen))
+		if (addrEqual (family, addr, alen, host))
 		    return TRUE;
 	    }
 	}
@@ -349,7 +371,7 @@ AddHost (client, family, length, pAddr)
     }
     for (host = validhosts; host; host = host->next)
     {
-        if (unixFamily == host->family && !acmp (pAddr, host->addr, len))
+        if (addrEqual (unixFamily, pAddr, len, host))
     	    return (Success);
     }
     host = (HOST *) xalloc (sizeof (HOST));
@@ -374,8 +396,8 @@ NewHost (family, addr)
         return;
     for (host = validhosts; host; host = host->next)
     {
-        if (family == host->family && !acmp (addr, host->addr, len))
-    	return;
+        if (addrEqual (family, addr, len, host))
+	    return;
     }
     host = (HOST *) xalloc (sizeof (HOST));
     host->family = family;
@@ -412,8 +434,7 @@ RemoveHost (client, family, length, pAddr)
         return(BadValue);
     }
     for (prev = &validhosts;
-         (host = *prev) && (unixFamily != host->family ||
-		            acmp (pAddr, host->addr, len));
+         (host = *prev) && (!addrEqual (unixFamily, pAddr, len, host));
          prev = &host->next)
         ;
     if (host)
@@ -507,8 +528,7 @@ CheckFamily (connection, family)
 		return (len);
 	    for (host = selfhosts; host; host = host->next)
 	    {
-		if (family == host->family &&
-		    !acmp (addr, host->addr, alen))
+		if (addrEqual (family, addr, alen, host))
 		    return (len);
 	    }
 	}
@@ -526,16 +546,34 @@ InvalidHost (saddr, len)
 {
     int 			family;
     pointer			addr;
-    register HOST 		*host;
+    register HOST 		*selfhost, *host;
     if ((family = ConvertAddr (saddr, len ? &len : 0, &addr)) < 0)
         return (1);
     if (family == 0)
-        return (0);
+    {
+	if (LocalHostDisabled)
+ 	{
+	    /*
+	     * check to see if any local address is enabled.  This 
+	     * implicitly enables local connections.
+	     */
+	    for (selfhost = selfhosts; selfhost; selfhost=selfhost->next)
+ 	    {
+		for (host = validhosts; host; host=host->next) {
+		    if (addrEqual (selfhost->family, selfhost->addr,
+				   selfhost->len, host))
+			return 0;
+		}
+	    }
+	} else
+	    return (0);
+	return 1;
+    }
     if (!AccessEnabled)   /* just let them in */
         return(0);    
     for (host = validhosts; host; host = host->next)
     {
-        if (family == host->family && !acmp (addr, host->addr, len))
+        if (addrEqual (family, addr, len, host))
     	    return (0);
     }
     return (1);

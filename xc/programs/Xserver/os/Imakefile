@@ -22,9 +22,9 @@
 
 BOOTSTRAPCFLAGS = 
            SRCS = WaitFor.c access.c connection.c fonttype.c io.c oscolor.c \
-                  osfonts.c osinit.c utils.c OtherSources
+                  osfonts.c osinit.c utils.c auth.c mitauth.c OtherSources
            OBJS = WaitFor.o access.o connection.o fonttype.o io.o oscolor.o \
-                  osfonts.o osinit.o utils.o OtherObjects
+                  osfonts.o osinit.o utils.o auth.o mitauth.o OtherObjects
    FONT_DEFINES = FontDefines FontFilters
     STD_DEFINES = ServerDefines
     CDEBUGFLAGS = ServerCDebugFlags
@@ -34,7 +34,7 @@ BOOTSTRAPCFLAGS =
      OS_DEFINES =
 #endif /* SpecialMalloc */
         DEFINES = ConnectionFlags $(OS_DEFINES)
-       INCLUDES = -I.  -I../../include -I$(INCLUDESRC)
+       INCLUDES = -I.  -I../../include -I$(INCLUDESRC) -I$(TOP)/lib/Xau
     EXT_DEFINES = ExtensionDefines
        LINTLIBS = ../../dix/llib-ldix.ln
 

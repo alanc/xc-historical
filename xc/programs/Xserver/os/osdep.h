@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.14 88/08/16 20:17:25 jim Exp $ */
+/* $XConsortium: osdep.h,v 1.15 88/09/06 15:50:47 jim Exp $ */
 
 #ifndef NULL
 #define NULL 0
@@ -149,6 +149,7 @@ typedef struct _osComm {
     unsigned char *buf;
     int bufsize;
     int count;
+    XID	auth_id;		/* authorization id */
 } OsCommRec, *OsCommPtr;
 
 void Notice();

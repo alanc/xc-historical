@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.87 88/10/22 17:18:54 keith Exp $ */
+/* $XConsortium: connection.c,v 1.88 88/10/22 22:06:31 keith Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -335,6 +335,7 @@ ResetWellKnownSockets ()
 	}
     }
 #endif /* UNIXCONN */
+    ResetAuthorization ();
 }
 
 
@@ -423,10 +424,11 @@ ReadBuffer(conn, buffer, charsWanted)
  *****************************************************************/
 
 int 
-ClientAuthorized(conn, pswapped, reason)
+ClientAuthorized(conn, pswapped, reason, auth_idp)
     long conn;
     int  *pswapped;
     char **reason;   /* if authorization fails, put reason in here */
+    XID	*auth_idp;
 {
     short slen;
     union {
@@ -441,10 +443,11 @@ ClientAuthorized(conn, pswapped, reason)
 	struct sockaddr_dn dn;
 #endif /* DNETCONN */
     } from;
-    int	fromlen;
+    int	fromlen = sizeof (from);
     xConnClientPrefix xccp;
-    char auth_proto[100];
-    char auth_string[100];
+    XID	 auth_id;
+    char *auth_proto = 0;
+    char *auth_string = 0;
 
     if (!ReadBuffer(conn, (char *)&xccp, sizeof(xConnClientPrefix)))
     {
@@ -471,19 +474,8 @@ ClientAuthorized(conn, pswapped, reason)
 #undef STR
         return 0;
     }
-    fromlen = sizeof (from);
-    if (getpeername (conn, &from.sa, &fromlen) ||
-        InvalidHost (&from.sa, fromlen)) 
-    {
-#define STR "Server is not authorized to connect to host"	
-        *reason = (char *)xalloc(sizeof(STR));
-        strcpy(*reason, STR);
-#undef STR
-        return 0;
-    }
-    
-   slen = (xccp.nbytesAuthProto + 3) & ~3;  
-    if ( slen )
+    slen = (xccp.nbytesAuthProto + 3) & ~3;  
+    if ( slen  && (auth_proto = (char *) Xalloc (slen))) {
         if (!ReadBuffer(conn, auth_proto, slen))
         {
 #define STR "Length error in xConnClientPrefix for protocol authorization "
@@ -492,10 +484,10 @@ ClientAuthorized(conn, pswapped, reason)
             return 0;
 #undef STR
 	}
-    auth_proto[slen] = '\0';
+    }
 
     slen = (xccp.nbytesAuthString + 3) & ~3;   
-    if ( slen)
+    if ( slen && (auth_string = (char *) Xalloc (slen)))
         if (!ReadBuffer(conn, auth_string, slen))
         {
 #define STR "Length error in xConnClientPrefix for protocol string"
@@ -504,7 +496,35 @@ ClientAuthorized(conn, pswapped, reason)
             return 0;
 #undef STR
 	}
-    auth_string[slen] = '\0';
+
+    auth_id = (XID) -1;
+
+    if (xccp.nbytesAuthProto > 0 && xccp.nbytesAuthString > 0) {
+        auth_id = CheckAuthorization (xccp.nbytesAuthProto, auth_proto,
+				      xccp.nbytesAuthString, auth_string);
+    }
+
+    if (auth_proto)
+	Xfree (auth_proto);
+    if (auth_string)
+	Xfree (auth_string);
+
+    if (auth_id == (XID) -1 && 
+    	getpeername (conn, &from.sa, &fromlen) != -1 &&
+        !InvalidHost (&from.sa, fromlen))
+    {
+	auth_id = (XID) 0;
+    }
+
+    if (auth_id == (XID) -1) {
+#define STR "Client is not authorized to connect to Server"
+    	*reason = (char *)xalloc(sizeof(STR));
+    	strcpy(*reason, STR);
+	return 0;
+#undef STR
+    }
+
+    *auth_idp = auth_id;
 
     /* At this point, if the client is authorized to change the access control
      * list, we should getpeername() information, and add the client to
@@ -513,7 +533,7 @@ ClientAuthorized(conn, pswapped, reason)
      * access control list.
      */
     return(1);
-}    
+}
 
 static int padlength[4] = {0, 3, 2, 1};
 
@@ -535,6 +555,7 @@ EstablishNewConnections(newclients, nnew)
     int	 swapped;		/* set by ClientAuthorized if connection is
 				 * swapped */
     char *reason;
+    XID	auth_id;		/* authorization id */
     struct iovec iov[2];
     char p[3];
 
@@ -586,7 +607,7 @@ ErrorF("Didn't make connection: Out of file descriptors for connections\n");
 			}
 		    }
 #endif /* TCP_NODELAY */
-		    if (ClientAuthorized(newconn, &swapped, &reason))
+		    if (ClientAuthorized(newconn, &swapped, &reason, &auth_id))
 		    {
 #ifdef	hpux
 			/*
@@ -632,6 +653,7 @@ ErrorF("Didn't make connection: Out of file descriptors for connections\n");
 			   priv->buf = (unsigned char *)
 					xalloc(OutputBufferSize);
 			   priv->bufsize = OutputBufferSize;
+			   priv->auth_id = auth_id;
 			   priv->count = 0;
 			   next->osPrivate = (pointer)priv;
 		        }
