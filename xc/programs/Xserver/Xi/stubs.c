@@ -55,7 +55,7 @@ SOFTWARE.
  *
  */
 
-Status
+int
 ChangeKeyboardDevice (old_dev, new_dev)
     DeviceIntPtr	old_dev;
     DeviceIntPtr	new_dev;
@@ -96,7 +96,7 @@ ChangeKeyboardDevice (old_dev, new_dev)
  *
  */
 
-Status
+int
 ChangePointerDevice (old_dev, new_dev, x, y)
     DeviceIntPtr	old_dev, new_dev;
     unsigned char	x, y;
@@ -219,11 +219,11 @@ OpenInputDevice (dev, client, status)
  *
  */
 
-Status
+int
 SetDeviceMode (client, dev, mode)
     register	ClientPtr	client;
-    int		id;
-    DeviceIntPtr dev
+    DeviceIntPtr dev;
+    int		mode;
     {
     return BadMatch;
     }
@@ -240,7 +240,7 @@ SetDeviceMode (client, dev, mode)
  *
  */
 
-Status
+int
 SetDeviceValuators (client, dev, valuators, first_valuator, num_valuators)
     register	ClientPtr	client;
     DeviceIntPtr dev;
