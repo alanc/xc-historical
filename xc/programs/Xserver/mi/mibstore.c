@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.6 89/07/04 16:12:30 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.7 89/07/05 20:20:47 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -881,6 +881,8 @@ miBSDoCopy(pWin, pGC, srcx, srcy, w, h, dstx, dsty, plane, copyProc, ppRgn)
     int	    	  	dx, dy, nrects;
     Bool    	  	graphicsExposures;
     RegionPtr	  	(*pixCopyProc)();
+    int			numRectsExp, numRectsObs;
+    BoxPtr		pBoxExp, pBoxObs;
 
     SETUP_BACKING_VERBOSE (pWin, pGC);
 
@@ -893,7 +895,7 @@ miBSDoCopy(pWin, pGC, srcx, srcy, w, h, dstx, dsty, plane, copyProc, ppRgn)
     box.y2 = box.y1 + h;
     
     pRgnExp = (*pGC->pScreen->RegionCreate) (&box, 1);
-    (*pGC->pScreen->Intersect) (pRgnExp, pRgnExp, pWin->clipList);
+    (*pGC->pScreen->Intersect) (pRgnExp, pRgnExp, &pWin->clipList);
     pRgnObs = (*pGC->pScreen->RegionCreate) (NULL, 1);
     (* pGC->pScreen->Inverse) (pRgnObs, pRgnExp, &box);
 
@@ -921,7 +923,11 @@ miBSDoCopy(pWin, pGC, srcx, srcy, w, h, dstx, dsty, plane, copyProc, ppRgn)
 	return (FALSE);
     }
 
-    nrects = pRgnExp->numRects + pRgnObs->numRects;
+    numRectsExp = REGION_NUM_RECTS(pRgnExp);
+    pBoxExp = REGION_RECTS(pRgnExp);
+    pBoxObs = REGION_RECTS(pRgnObs);
+    numRectsObs = REGION_NUM_RECTS(pRgnObs);
+    nrects = numRectsExp + numRectsObs;
     
     boxes = (struct BoxDraw *)ALLOCATE_LOCAL(nrects * sizeof(struct BoxDraw));
     sequence = (int *) ALLOCATE_LOCAL(nrects * sizeof(int));
@@ -942,25 +948,25 @@ miBSDoCopy(pWin, pGC, srcx, srcy, w, h, dstx, dsty, plane, copyProc, ppRgn)
      * to copy which box, storing the result in the boxes array
      */
     for (i = 0, j = 0, k = 0;
-	 (i < pRgnExp->numRects) && (j < pRgnObs->numRects);
+	 (i < numRectsExp) && (j < numRectsObs);
 	 k++)
     {
-	if (pRgnExp->rects[i].y1 < pRgnObs->rects[j].y1)
+	if (pBoxExp[i].y1 < pBoxObs[j].y1)
 	{
-	    boxes[k].pBox = &pRgnExp->rects[i];
+	    boxes[k].pBox = &pBoxExp[i];
 	    boxes[k].source = win;
 	    i++;
 	}
-	else if ((pRgnObs->rects[j].y1 < pRgnExp->rects[i].y1) ||
-		 (pRgnObs->rects[j].x1 < pRgnExp->rects[i].x1))
+	else if ((pBoxObs[j].y1 < pBoxExp[i].y1) ||
+		 (pBoxObs[j].x1 < pBoxExp[i].x1))
 	{
-	    boxes[k].pBox = &pRgnObs->rects[j];
+	    boxes[k].pBox = &pBoxObs[j];
 	    boxes[k].source = pix;
 	    j++;
 	}
 	else
 	{
-	    boxes[k].pBox = &pRgnExp->rects[i];
+	    boxes[k].pBox = &pBoxExp[i];
 	    boxes[k].source = win;
 	    i++;
 	}
@@ -970,26 +976,26 @@ miBSDoCopy(pWin, pGC, srcx, srcy, w, h, dstx, dsty, plane, copyProc, ppRgn)
      * Catch any leftover boxes from either region (note that only
      * one can have leftover boxes...)
      */
-    if (i != pRgnExp->numRects)
+    if (i != numRectsExp)
     {
 	do
 	{
-	    boxes[k].pBox = &pRgnExp->rects[i];
+	    boxes[k].pBox = &pBoxExp[i];
 	    boxes[k].source = win;
 	    i++;
 	    k++;
-	} while (i < pRgnExp->numRects);
+	} while (i < numRectsExp);
 
     }
     else
     {
 	do
 	{
-	    boxes[k].pBox = &pRgnObs->rects[j];
+	    boxes[k].pBox = &pBoxObs[j];
 	    boxes[k].source = pix;
 	    j++;
 	    k++;
-	} while (j < pRgnObs->numRects);
+	} while (j < numRectsObs);
     }
     
     if (dsty <= srcy)
@@ -1987,6 +1993,7 @@ miBSClearToBackground(pWin, x, y, w, h, generateExposures)
     BoxRec  	  	box;
     PixUnion		background;
     int			backgroundState;
+    int			numRects;
 
     pBackingStore = (miBSWindowPtr)pWin->backStorage->devPrivate.ptr;
     pScreen = pWin->drawable.pScreen;
@@ -2084,12 +2091,13 @@ miBSClearToBackground(pWin, x, y, w, h, generateExposures)
 		 * Figure out the array of rectangles to fill and fill them with
 		 * PolyFillRect in the proper mode, as set in the GC above.
 		 */
-		rects = (xRectangle *)ALLOCATE_LOCAL(pRgn->numRects*sizeof(xRectangle));
+		numRects = REGION_NUM_RECTS(pRgn);
+		rects = (xRectangle *)ALLOCATE_LOCAL(numRects*sizeof(xRectangle));
 	    
 		if (rects)
 		{
-		    for (i = 0, pBox = pRgn->rects;
-			 i < pRgn->numRects;
+		    for (i = 0, pBox = REGION_RECTS(pRgn);
+			 i < numRects;
 			 i++, pBox++)
 		    {
 			rects[i].x = pBox->x1;
@@ -2098,7 +2106,7 @@ miBSClearToBackground(pWin, x, y, w, h, generateExposures)
 			rects[i].height = pBox->y2 - pBox->y1;
 		    }
 		    (* pGC->ops->PolyFillRect) (pBackingStore->pBackingPixmap,
-				       pGC, pRgn->numRects, rects);
+				       pGC, numRects, rects);
 		    DEALLOCATE_LOCAL(rects);
 		}	
 		FreeScratchGC(pGC);
@@ -2118,12 +2126,13 @@ miBSClearToBackground(pWin, x, y, w, h, generateExposures)
 	     */
 	    offset = (((* pScreen->RectIn) (pRgn, &box) != rgnIN)?1:0);
 
-	    events = (xEvent *)ALLOCATE_LOCAL(pRgn->numRects*sizeof(xEvent));
+	    numRects = REGION_NUM_RECTS(pRgn);
+	    events = (xEvent *)ALLOCATE_LOCAL(numRects*sizeof(xEvent));
 	    if (events)
 	    {
-		for (i = pRgn->numRects-1, pBox = pRgn->rects, ev = events;
-		     i >= 0;
-		     i--, pBox++, ev++)
+		for (i = numRects, pBox = REGION_RECTS(pRgn), ev = events;
+		     --i >= 0;
+		     pBox++, ev++)
 		{
 		    ev->u.u.type = Expose;
 		    ev->u.expose.window = pWin->drawable.id;
@@ -2133,7 +2142,7 @@ miBSClearToBackground(pWin, x, y, w, h, generateExposures)
 		    ev->u.expose.height = pBox->y2 - pBox->y1;
 		    ev->u.expose.count = i + offset;
 		}
-		DeliverEvents(pWin, events, (int)pRgn->numRects, NullWindow);
+		DeliverEvents(pWin, events, numRects, NullWindow);
 		DEALLOCATE_LOCAL(events);
 	    }
 	}
@@ -2230,7 +2239,7 @@ miBSGetImage (pWin, pOldPixmapPtr, x, y, w, h, format, planeMask, pImage)
     box.x2 = box.x1 + w;
     box.y2 = box.y1 + h;
     
-    (* pScreen->Inverse)(pRgn, pWin->borderClip, &box);
+    (* pScreen->Inverse)(pRgn, &pWin->borderClip, &box);
 
     /*
      * Nothing that wasn't visible -- return immediately.
@@ -2327,10 +2336,12 @@ miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, state, pixunion, planeMask)
     xRectangle	*pRect;
     BoxPtr	pBox;
     WindowPtr	pWin;
+    int		numRects;
 
     if (state == None)
 	return;
-    pRect = (xRectangle *)ALLOCATE_LOCAL(pRgn->numRects * sizeof(xRectangle));
+    numRects = REGION_NUM_RECTS(pRgn);
+    pRect = (xRectangle *)ALLOCATE_LOCAL(numRects * sizeof(xRectangle));
     if (!pRect)
 	return;
     pWin = 0;
@@ -2389,16 +2400,16 @@ miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, state, pixunion, planeMask)
     if (pDrawable->serialNumber != pGC->serialNumber)
 	ValidateGC (pDrawable, pGC);
 
-    pBox = pRgn->rects;
-    for (i = 0; i < pRgn->numRects; i++, pBox++, pRect++)
+    pBox = REGION_RECTS(pRgn);
+    for (i = numRects; --i >= 0; pBox++, pRect++)
     {
     	pRect->x = pBox->x1 - x;
 	pRect->y = pBox->y1 - y;
 	pRect->width = pBox->x2 - pBox->x1;
 	pRect->height = pBox->y2 - pBox->y1;
     }
-    pRect -= pRgn->numRects;
-    (*pGC->ops->PolyFillRect) (pDrawable, pGC, pRgn->numRects, pRect);
+    pRect -= numRects;
+    (*pGC->ops->PolyFillRect) (pDrawable, pGC, numRects, pRect);
     if (pWin)
 	(*pWin->backStorage->funcs->DrawGuarantee) (pWin, pGC, GuaranteeNothing);
     DEALLOCATE_LOCAL (pRect);
@@ -2429,7 +2440,6 @@ miBSDoGetImage (pWin, pPixmap, pRgn, x, y, pGC, planeMask)
     int		dx, dy;
     int		n;
     
-    pBox = pRgn->rects;
     pScreen = pWin->drawable.pScreen;
     pBackingStore = (miBSWindowPtr)pWin->backStorage->devPrivate.ptr;
     pBackRgn = (*pScreen->RegionCreate) (NULL, 1);
@@ -2456,7 +2466,8 @@ miBSDoGetImage (pWin, pPixmap, pRgn, x, y, pGC, planeMask)
 
 		if (pBackingStore->pBackingPixmap)
 		{
-		    if (pWin->drawable.depth != pPixmap->drawable.depth && pBackRgn->numRects)
+		    if (pWin->drawable.depth != pPixmap->drawable.depth &&
+			!REGION_NIL(pBackRgn))
 		    {
 			XID	gcval[3];
 
@@ -2466,8 +2477,8 @@ miBSDoGetImage (pWin, pPixmap, pRgn, x, y, pGC, planeMask)
 			DoChangeGC (pGC, GCPlaneMask|GCForeground|GCBackground, gcval, 1);
 			ValidateGC ((DrawablePtr) pPixmap, pGC);
 		    }
-		    pBox = pBackRgn->rects;
-		    for (n = 0; n < pBackRgn->numRects; n++)
+		    pBox = REGION_RECTS(pBackRgn);
+		    for (n = REGION_NUM_RECTS(pBackRgn); --n >= 0;)
 		    {
 			if (pWin->drawable.depth == pPixmap->drawable.depth)
 			    (*pGC->ops->CopyArea) (pBackingStore->pBackingPixmap,
@@ -2512,7 +2523,7 @@ miBSDoGetImage (pWin, pPixmap, pRgn, x, y, pGC, planeMask)
 	     * compute areas of border to display
 	     */
 
-	    (*pScreen->Subtract) (pBackRgn, pWin->borderSize, pWin->winSize);
+	    (*pScreen->Subtract) (pBackRgn, &pWin->borderSize, &pWin->winSize);
 
 	    /*
 	     * translate relative to pWin
@@ -2640,6 +2651,7 @@ miBSAllocate(pWin)
 	    RegionPtr	pSavedRegion;
 	    xEvent	*pEvent, *pe;
 	    int		i;
+	    int		numRects;
 
 	    pSavedRegion = pBackingStore->pSavedRegion;
 
@@ -2648,7 +2660,7 @@ miBSAllocate(pWin)
 	    box.y1 = pWin->drawable.y;
 	    box.y2 = pWin->drawable.y + pWin->drawable.height;
 
-	    (* pScreen->Inverse)(pSavedRegion, pWin->clipList,  &box);
+	    (* pScreen->Inverse)(pSavedRegion, &pWin->clipList,  &box);
 	    (* pScreen->TranslateRegion) (pSavedRegion,
 					  -pWin->drawable.x,
 					  -pWin->drawable.y);
@@ -2665,15 +2677,13 @@ miBSAllocate(pWin)
 	     * as exposure events to the window
 	     */
 
-	    pBox = pSavedRegion->rects;
-        
-	    if(!(pEvent = (xEvent *) ALLOCATE_LOCAL(pSavedRegion->numRects *
+	    pBox = REGION_RECTS(pSavedRegion);
+	    numRects = REGION_NUM_RECTS(pSavedRegion);
+	    if(!(pEvent = (xEvent *) ALLOCATE_LOCAL(numRects *
 						    sizeof(xEvent))))
 		return;
 
-	    for (i=1, pe = pEvent;
-		 i<=pSavedRegion->numRects;
-		 i++, pe++, pBox++)
+	    for (i=numRects, pe = pEvent; --i >= 0; pe++, pBox++)
 	    {
 		pe->u.u.type = Expose;
 		pe->u.expose.window = pWin->drawable.id;
@@ -2681,10 +2691,9 @@ miBSAllocate(pWin)
 		pe->u.expose.y = pBox->y1;
 		pe->u.expose.width = pBox->x2 - pBox->x1;
 		pe->u.expose.height = pBox->y2 - pBox->y1;
-		pe->u.expose.count = (pSavedRegion->numRects - i);
+		pe->u.expose.count = i;
 	    }
-	    DeliverEvents(pWin, pEvent, (int)pSavedRegion->numRects,
-			  NullWindow);
+	    DeliverEvents(pWin, pEvent, numRects, NullWindow);
 	    DEALLOCATE_LOCAL(pEvent);
 	}
     }
@@ -3062,7 +3071,7 @@ miBSRestoreAreas(pWin, prgnExposed)
 	box.y1 = pWin->drawable.y;
 	box.y2 = pWin->drawable.y + pWin->drawable.height;
 	
-	(* pScreen->Inverse)(prgnSaved, pWin->clipList,  &box);
+	(* pScreen->Inverse)(prgnSaved, &pWin->clipList,  &box);
 	(* pScreen->TranslateRegion) (prgnSaved,
 				      -pWin->drawable.x,
 				      -pWin->drawable.y);
@@ -3128,7 +3137,7 @@ miBSTranslateBackingStore(pWin, dx, dy, oldClip)
     /* now find any already saved areas we should retain */
     if (pWin->viewable)
     {
-	(* pScreen->RegionCopy) (newSaved, pWin->clipList);
+	(* pScreen->RegionCopy) (newSaved, &pWin->clipList);
 	(* pScreen->TranslateRegion)(newSaved, -dx, -dy);
 	(* pScreen->Intersect) (pSavedRegion, pSavedRegion, newSaved);
     }
@@ -3137,7 +3146,7 @@ miBSTranslateBackingStore(pWin, dx, dy, oldClip)
     extents.x2 = pWin->drawable.x + pWin->drawable.width;
     extents.y1 = pWin->drawable.y;
     extents.y2 = pWin->drawable.y + pWin->drawable.height;
-    (* pScreen->Inverse)(newSaved, pWin->clipList, &extents);
+    (* pScreen->Inverse)(newSaved, &pWin->clipList, &extents);
 #ifdef SHAPE
     if (wBoundingShape (pWin) || wClipShape (pWin)) {
 	(* pScreen->TranslateRegion) (newSaved,
@@ -3666,12 +3675,15 @@ miCreateBSPixmap (pWin)
 	    pWin->background.pixmap->refcnt++;
     }
 
-    extents = (* pScreen->RegionExtents) (pBackingStore->pSavedRegion);
-    miBSClearToBackground(pWin,
-			  extents->x1, extents->y1,
-			  extents->x2 - extents->x1,
-			  extents->y2 - extents->y1,
-			  FALSE);
+    if ((* pScreen->RegionNotEmpty) (pBackingStore->pSavedRegion))
+    {
+	extents = (* pScreen->RegionExtents) (pBackingStore->pSavedRegion);
+	miBSClearToBackground(pWin,
+			      extents->x1, extents->y1,
+			      extents->x2 - extents->x1,
+			      extents->y2 - extents->y1,
+			      FALSE);
+    }
 
     if (backSet)
     {
@@ -3751,7 +3763,10 @@ miBSExposeCopy (pSrc, pDst, pGC, prgnExposed, srcx, srcy, dstx, dsty, plane)
 	}
 	break;
     case StatusContents:
-	for (i = tempRgn->numRects, pBox = tempRgn->rects; i > 0; i--, pBox++) {
+	for (i = REGION_NUM_RECTS(tempRgn), pBox = REGION_RECTS(tempRgn);
+	     --i >= 0;
+	     pBox++)
+	{
 	    (* copyProc) (pBackingStore->pBackingPixmap,
 			  pDst, pGC, pBox->x1, pBox->y1,
 			  pBox->x2 - pBox->x1, pBox->y2 - pBox->y1,
