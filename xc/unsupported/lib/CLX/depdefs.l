@@ -623,31 +623,6 @@
 	   ,object ,stream ,type ,identity #'.print-unreadable-object-body.))
     `(print-unreadable-object-function ,object ,stream ,type ,identity nil)))
 
-#-(or ansi-common-lisp Genera)
-(defun with-standard-io-syntax-function (function)
-  (let ((*package* (find-package :user))
-	(*print-array* t)
-	(*print-base* 10)
-	(*print-case* :upcase)
-	(*print-circle* nil)
-	(*print-escape* t)
-	(*print-gensym* t)
-	(*print-length* nil)
-	(*print-level* nil)
-	(*print-pretty* nil)
-	(*print-radix* nil)
-	(*read-base* 10)
-	(*read-default-float-format* 'single-float)
-	(*read-suppress* nil)
-	#+ticl (ticl:*print-structure* t)
-	#+lucid (lucid::*print-structure* t))
-    (funcall function)))
-
-#-(or ansi-common-lisp Genera)
-(defmacro with-standard-io-syntax (&body body)
-  `(flet ((.with-standard-io-syntax-body. () ,@body))
-     (with-standard-io-syntax-function #'.with-standard-io-syntax-body.)))
-
 
 ;;-----------------------------------------------------------------------------
 ;; Image stuff
