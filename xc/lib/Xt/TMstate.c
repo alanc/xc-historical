@@ -1,4 +1,5 @@
-/* "$XConsortium: TMstate.c,v 1.110 90/07/15 21:17:38 swick Exp $"; */
+/* $XConsortium: TMstate.c,v 1.111 90/07/24 12:02:36 swick Exp $ */
+
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1473,6 +1474,18 @@ void XtAppAddActions(app, actions, num_actions)
     rec->next = app->action_table;
     app->action_table = rec;
     rec->table = (CompiledActionTable) _CompileActionTable(actions, num_actions);
+}
+
+void _XtFreeActions(actions)
+    register ActionList actions;
+{
+    register ActionList next_action;
+    while (actions) {
+	next_action = actions->next;
+	XtFree((char*)actions->table);
+	XtFree((char*)actions);
+	actions = next_action;
+    }
 }
 
 void _XtInitializeStateTable(pStateTable)
