@@ -1,5 +1,5 @@
 /*
- * $XConsortium: OpenDis.c,v 11.139 93/09/19 15:21:24 rws Exp $
+ * $XConsortium: OpenDis.c,v 11.140 93/09/26 15:40:55 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -199,6 +199,7 @@ Display *XOpenDisplay (display)
 	dpy->in_process_conni	= False;
 	dpy->filedes		= NULL;
 	dpy->flushes		= NULL;
+	dpy->xkb_info		= NULL;
 
 /*
  * Setup other information in this display structure.
@@ -631,6 +632,8 @@ _XFreeDisplayStructure(dpy)
 	   (*dpy->free_funcs->key_bindings)(dpy);
 	if (dpy->context_db)
 	   (*dpy->free_funcs->context_db)(dpy);
+	if (dpy->xkb)
+	   (*dpy->free_funcs->xkb)(dpy);
 
 	if (dpy->screens) {
 	    register int i;
