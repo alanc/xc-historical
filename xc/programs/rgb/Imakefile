@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.29 94/03/31 14:07:54 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.30 94/05/14 16:36:45 rws Exp kaleb $
 
 #if UseRgbTxt
    RGB_DEFINES = -DUSE_RGB_TXT
@@ -26,7 +26,7 @@ XCOMM $XConsortium: Imakefile,v 1.29 94/03/31 14:07:54 gildea Exp $
 #else
     DATAFILES = rgb.pag rgb.dir
       DATADEP = rgb.dir		/* just want one run of rgb */
-#if !(defined(SGIArchitecture) || SystemV4)
+#if !(defined(SGIArchitecture) || defined(SVR4Architecture))
        DBMLIB = -ldbm
 #endif
 #endif
@@ -35,7 +35,7 @@ XCOMM $XConsortium: Imakefile,v 1.29 94/03/31 14:07:54 gildea Exp $
     CCOPTIONS = /**/
     EXTRA_LOAD_FLAGS = /**/
 #endif
-#if defined(i386SVR4Architecture)
+#if defined(i386Architecture) && defined(SVR4Architecture)
        DBMLIB = -ldbm -lucb
 #endif
 #endif /*!UseRgbTxt */
