@@ -1,4 +1,4 @@
-/* $XConsortium: XGetImage.c,v 11.25 90/12/12 09:18:04 rws Exp $ */
+/* $XConsortium: XGetImage.c,v 11.26 91/01/06 11:46:07 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -71,7 +71,8 @@ XImage *XGetImage (dpy, d, x, y, width, height, plane_mask, format)
         _XReadPad (dpy, data, nbytes);
         if (format == XYPixmap)
 	   image = XCreateImage(dpy, _XVIDtoVisual(dpy, rep.visual),
-		  Ones (plane_mask & ((1 << rep.depth) - 1)),
+		  Ones (plane_mask &
+			(((unsigned long)0xFFFFFFFF) >> (32 - rep.depth))),
 		  format, 0, data, width, height, dpy->bitmap_pad, 0);
 	else /* format == ZPixmap */
            image = XCreateImage (dpy, _XVIDtoVisual(dpy, rep.visual),
