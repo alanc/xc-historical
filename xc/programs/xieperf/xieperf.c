@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.33 94/03/10 11:57:50 kaleb Exp $ */
+/* $XConsortium: xieperf.c,v 1.34 94/03/10 16:14:51 kaleb Exp $ */
 
 /**** module xieperf.c ****/
 /******************************************************************************
@@ -2007,8 +2007,10 @@ int	*done;
 		else if ( new_state_ret == xieValExportMore ) 
 		{
 			if ( bytes <= 0 )
+			{
 				reallocFlag = True;
-			bytes = 2048;
+				bytes = 2048;
+			}
 		}
 		else if ( new_state_ret == xieValExportDone ) 
 		{
