@@ -1,4 +1,4 @@
-/* $XConsortium: sunIo.c,v 5.28 95/01/05 20:04:29 kaleb Exp kaleb $ */
+/* $XConsortium: sunIo.c,v 5.29 95/01/12 18:59:25 kaleb Exp kaleb $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.
@@ -171,7 +171,7 @@ void AbortDDX()
     devPtr = LookupKeyboardDevice();
     if (devPtr)
 	(void) sunChangeKbdTranslation (((sunKbdPrivPtr)(devPtr->devicePrivate))->fd, FALSE);
-#ifdef SVR4
+#if defined(SVR4) || defined(__NetBSD__)
     sunNonBlockConsoleOff ();
 #else
     sunNonBlockConsoleOff (NULL);
