@@ -119,7 +119,7 @@ ServerTarget(Xaed,$(EXTDIR) $(AEDDIRS),$(AEDOBJS),$(AEDLIBS),$(SYSLIBS))
 #
 APOLLODIRS = dix ddx/mi ddx/mfb ddx/apollo os/4.2bsd
 APOLLOOBJS = ddx/apollo/init.o ddx/apollo/apollo_io.o \
-
+	        ddx/apollo/gpr_tmgr.o ddx/apollo/apolloGC.o \
 		/sys/traits/io_traits
 APOLLOLIBS = $(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 XapolloDIRS = $(APOLLODIRS)
