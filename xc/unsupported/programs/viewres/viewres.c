@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.56 90/03/09 18:09:35 jim Exp $
+ * $XConsortium: viewres.c,v 1.57 90/03/14 14:35:37 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -700,12 +700,12 @@ static void toggle_callback (gw, closure, data)
 /*
  * panner/porthole controls - called when the other changes
  */
+/* ARGSUSED */
 static void panner_callback (gw, closure, data)
     Widget gw;				/* panner widget */
     caddr_t closure;			/* porthole widget */
     caddr_t data;			/* report */
 {
-    Widget porthole = (Widget) closure;
     XawPannerReport *rep = (XawPannerReport *) data;
     Arg args[2];
 
@@ -713,9 +713,10 @@ static void panner_callback (gw, closure, data)
 
     XtSetArg (args[0], XtNx, -rep->slider_x);
     XtSetArg (args[1], XtNy, -rep->slider_y);
-    XtSetValues (treeWidget, args, TWO);
+    XtSetValues (treeWidget, args, TWO);	/* just assume... */
 }
 
+/* ARGSUSED */
 static void porthole_callback (gw, closure, data)
     Widget gw;				/* porthole widget */
     caddr_t closure;			/* panner widget */
