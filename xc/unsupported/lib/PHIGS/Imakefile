@@ -26,7 +26,7 @@
 #include <Library.tmpl>
 
 #define IHaveSubdirs
-#define PassCDebugFlags
+#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
 #ifndef PexPhigsCDebugFlags
 #define PexPhigsCDebugFlags LibraryCDebugFlags
@@ -35,15 +35,20 @@
 CDEBUGFLAGS = PexPhigsCDebugFlags
     DEFINES = PexPhigsDefines
 
-.SUFFIXES: .o .a
+.SUFFIXES: .o
 
-     AR = ar
-     SUBDIRS = include archive c_binding css cp error input pex util ws ws_type
+     ARADD = ar rul
+     AREXT = ar xl
+     LIBDIRS = archive c_binding css cp error input pex util ws ws_type
+     SUBDIRS = include $(LIBDIRS)
 
      ALL_OBJ = archive/ar*.o c_binding/cb*.o \
 		cp/cp*.o cp/psl.o css/css*.o \
 		error/er*.o input/sin*.o pex/pex*.o  util/ut*.o \
 		ws/ws*.o ws_type/wstx*.o
+     ALL_DONE = archive/DONE c_binding/DONE cp/DONE css/DONE \
+		error/DONE input/DONE pex/DONE util/DONE \
+		ws/DONE ws_type/DONE
 
    PEXAPIINC = include
   PEXINCLUDE = ../../include/PEX
@@ -51,48 +56,41 @@ CDEBUGFLAGS = PexPhigsCDebugFlags
     INCLUDES = -I. -I$(PEXAPIINC) -I$(PEXINCLUDE) -I$(XINCLUDE) \
 		-I$(INCLUDESRC)
 
-  PEXLIBNAME = libphigs.a
-      MFLAGS = "LIBCODE=../$(PEXLIBNAME)"
-
-    SWAPLIB  = ../../server/PEX/dipex/swap/libdiswapex.a
+    SWAPDIR = ../../server/PEX/dipex/swap
+    SWAPLIB  = $(SWAPDIR)/libdiswapex.a
    SWAPOBJS  = OCTables.o Convert.o floatconv.o OCattr.o OCcolour.o   \
 		cOCprim.o uOCprim.o
 
     LINTLIBS =
 
-# local builds
-#
-CHILD = phigsmon
+all:: include libphigs.a phigsmon lib lib/PHIGSerr.txt lib/PHIGSfnc.txt lib/phigsmon
 
-all:: errortext subdirs swapcode
-	$(AR) rul $(PEXLIBNAME) $(ALL_OBJ)
-	RanLibrary($(PEXLIBNAME))
-	$(MAKE) $(CHILD)
+libphigs.a: $(LIBDIRS) $(ALL_DONE) $(SWAPDIR) $(SWAPLIB)
+	$(RM) $@
+	$(AREXT) $(SWAPLIB) $(SWAPOBJS)
+	$(AR) $@ $(SWAPOBJS)
+	$(RM) $(SWAPOBJS)
+	$(ARADD) $@ $(ALL_OBJ)
+	RanLibrary($@)
 
-LIB_SHARED_DIR = lib
-$(LIB_SHARED_DIR):
+lib:
 	-mkdir $@
 
-$(CHILD) : FRC
-	-(cd cp; $(MAKE) $@)
-	if [ -f cp/$@ ]; then \
-	    $(MV) -f cp/$@ lib/$(CHILD);  \
-	fi;
+phigsmon:
+	cd cp;$(MAKE) $(MFLAGS) PassCDebugFlags phigsmon
 
-ERR_TEXT_FILES = PHIGSerr.txt PHIGSfnc.txt
-errortext: FRC $(LIB_SHARED_DIR)
-	(cd $(LIB_SHARED_DIR); $(RM) $(ERR_TEXT_FILES))
-	(cd include; $(MAKE) $(ERR_TEXT_FILES) )
-	(cd include; $(CP) $(ERR_TEXT_FILES) ../$(LIB_SHARED_DIR))
+lib/phigsmon: cp/phigsmon
+	$(RM) ../$@
+	$(LN) cp/phigsmon $@
 
+lib/PHIGSerr.txt: include/PHIGSerr.txt
+	$(RM) $@
+	$(LN) include/PHIGSerr.txt $@	
 
-swapcode: FRC
-	@echo "Extracting swap objects from diPEX library" $(SWAPLIB)
-	$(AR) xl $(SWAPLIB) $(SWAPOBJS)
-	@echo "Archiving swap objects into" $(PEXLIBNAME)
-	$(AR) rul $(PEXLIBNAME) $(SWAPOBJS)
-	-$(RM) $(SWAPOBJS)
-	
+lib/PHIGSfnc.txt: include/PHIGSfnc.txt
+	$(RM) $@
+	$(LN) include/PHIGSfnc.txt $@	
+
 lintlib lint-library: FRC
 	(cd c_binding; $(MAKE) lint-library)
 
@@ -112,21 +110,23 @@ extract: FRC
 	for i in  $(SUBDIRS) ;\
 	do \
 	(cd $$i ; echo "making $@ in $$i"; \
-	$(MAKE)  $(MFLAGS) $@); \
+	$(MAKE) $@); \
 	done
 
-# Force Re-Compliation
-FRC:
-	@echo "forcing remake"
-
-
-NamedMakeSubdirs(subdirs, $(SUBDIRS))
-NormalLibraryObjectRule()
+$(LIBDIRS) $(SWAPDIR): FRC
+	@cd $@ ; echo "making $@"; \
+	$(MAKE) $(MFLAGS) PassCDebugFlags all
 
 InstallLibrary(phigs,$(USRLIBDIR))
 
 #ifdef HPArchitecture
+NormalLibraryObjectRule()
 SpecialObjectRule(hppex.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
 #endif
 
 DependSubdirs($(SUBDIRS))
+
+clean::
+	$(RM) lib/phigsmon lib/PHIGSerr.txt lib/PHIGSfnc.txt
+
+FRC:
