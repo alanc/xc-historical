@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Shell.c,v 1.1 88/02/02 14:03:11 swick Locked $";
+static char rcsid[] = "$Header: Shell.c,v 1.5 88/02/02 16:26:29 swick Locked $";
 #endif lint
 
 /*
@@ -27,7 +27,6 @@ static char rcsid[] = "$Header: Shell.c,v 1.1 88/02/02 14:03:11 swick Locked $";
 
 #define SHELL
 
-#include "fd.h"
 #include <pwd.h>
 #include <stdio.h>
 #include <strings.h>
@@ -45,6 +44,7 @@ static char rcsid[] = "$Header: Shell.c,v 1.1 88/02/02 14:03:11 swick Locked $";
 #include "VendorP.h"
 #include "Popup.h"
 #include "PopupP.h"
+#include "fd.h"
 
 /***************************************************************************
  *
