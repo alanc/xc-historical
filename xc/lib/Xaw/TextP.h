@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.19 88/09/06 09:46:48 swick Exp $
+* $XConsortium: TextP.h,v 1.20 88/09/06 16:42:34 jim Exp $
 */
 
 
@@ -128,7 +128,7 @@ typedef struct {
 
 #define IsPositionVisible(ctx, pos) \
 		(pos >= ctx->text.lt.info[0].position && \
-		 pos <= ctx->text.lt.info[ctx->text.lt.lines].position)
+		 pos < ctx->text.lt.info[ctx->text.lt.lines].position)
 
 /* Private Text Definitions */
 
@@ -186,6 +186,7 @@ typedef struct _TextPart {
     GC              gc;
     Boolean         hasfocus;       /* TRUE if we currently have input focus.*/
     Boolean	    update_disabled; /* TRUE if display updating turned off */
+    XtTextPosition  old_insert;      /* Last insertPos for batched updates */
 } TextPart;
 
 /****************************************************************
