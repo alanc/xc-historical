@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.107 94/03/28 15:24:42 gildea Exp $
+XCOMM site:  $XConsortium: site.def,v 1.108 94/03/28 19:37:04 matt Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -32,20 +32,12 @@ XCOMM site:  $XConsortium: site.def,v 1.107 94/03/28 15:24:42 gildea Exp $
 
 #ifdef BeforeVendorCF
 
-#ifdef PegasusArchitecture
-#define HasGcc YES
-#endif
-
-#ifdef Sun3Architecture
-#define HasGcc2 YES
-#endif
-
-#if defined(SunArchitecture) && defined(SVR4)
-XCOMM #define HasGcc2 YES
-#endif
+#include <host.def>
 
 #ifdef SunArchitecture
+#ifndef HasCplusplus 
 #define HasCplusplus YES
+#endif
 #ifdef HasCenterLineCplusplus
 #define CplusplusCmd /obj/CenterLine/bin/CC
 #define DefaultCplusplusOptions -Xa
@@ -55,10 +47,12 @@ XCOMM #define HasGcc2 YES
 #define CplusplusDependIncludes -I/obj/CenterLine/clc++/sparc-sunos4/incl
 #endif
 #endif
-#endif
+#endif /* SunArchitecture */
 
 #ifdef HPArchitecture
+#ifndef HasCplusplus
 #define HasCplusplus YES
+#endif
 #define CplusplusCmd /obj/CenterLine/bin/CC
 #define CplusplusStandardDefines -D__ANSI_CPP__
 #define DefaultCplusplusDebugFlags -g
@@ -180,11 +174,12 @@ clean::									@@\
 #define BuildPexExt NO
 #endif
 
-#endif /* AfterVendorCF */
-
 #ifndef SiteIConfigFiles
 #define SiteIConfigFiles $(IRULESRC)/host.def
 #define LocalConfigFiles host.def
 #endif
 
 #include <host.def>
+
+#endif /* AfterVendorCF */
+
