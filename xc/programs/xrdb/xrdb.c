@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: xrdb.c,v 11.17 88/02/09 11:51:41 jim Exp $";
+static char rcs_id[] = "$Header: xrdb.c,v 11.18 88/05/11 14:21:55 swick Exp $";
 #endif
 
 /*
@@ -313,7 +313,8 @@ DoDefines(display, defs, prog, host)
     AddNum(defs, "HEIGHT", screen->height);
     AddNum(defs, "X_RESOLUTION", Resolution(screen->width,screen->mwidth));
     AddNum(defs, "Y_RESOLUTION", Resolution(screen->height,screen->mheight));
-    AddNum(defs, "PLANES", visual->bits_per_rgb);
+    AddNum(defs, "PLANES", DisplayPlanes(display, DefaultScreen(display)));
+    AddNum(defs, "BITS_PER_RGB", visual->bits_per_rgb);
     switch(visual->class) {
 	case StaticGray:
 	    AddDef(defs, "CLASS", "StaticGray");
@@ -326,7 +327,7 @@ DoDefines(display, defs, prog, host)
 	    AddSimpleDef(defs, "COLOR");
 	    break;
 	case PseudoColor:
-	    AddDef(defs, "CLASS", "PsuedoColor");
+	    AddDef(defs, "CLASS", "PseudoColor");
 	    AddSimpleDef(defs, "COLOR");
 	    break;
 	case TrueColor:
