@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.50 89/04/27 17:49:00 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.51 89/06/01 13:37:00 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif lint
 
@@ -1090,7 +1090,7 @@ static void ChangeManaged(wid)
 
     if (!XtIsRealized ((Widget) wid)) {
 	Boolean is_wmshell = XtIsSubclass(wid, wmShellWidgetClass);
-	int x, y, width, height, win_gravity, flag;
+	int x, y, width, height, win_gravity = NorthWestGravity, flag;
 	XSizeHints hints, *hintsP;
 
 	if (w->core.width == 0 && w->core.height == 0 && childwid != NULL) {
@@ -1147,9 +1147,9 @@ static void ChangeManaged(wid)
 	    if (wmshell->wm.size_hints.win_gravity == -1)
 		wmshell->wm.size_hints.win_gravity = win_gravity;
 	    wmshell->wm.size_hints.flags |= PWinGravity;
-	    if ((flag & (XValue|YValue)) == XValue|YValue)
+	    if ((flag & (XValue|YValue)) == (XValue|YValue))
 		wmshell->wm.size_hints.flags |= USPosition;
-	    if ((flag & (WidthValue|HeightValue)) == WidthValue|HeightValue)
+	    if ((flag & (WidthValue|HeightValue)) == (WidthValue|HeightValue))
 		wmshell->wm.size_hints.flags |= USSize;
 	}
     }
