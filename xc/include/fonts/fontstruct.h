@@ -1,4 +1,4 @@
-/* $XConsortium: fontstruct.h,v 1.11 92/05/12 18:07:16 gildea Exp $ */
+/* $XConsortium: fontstruct.h,v 1.12 93/08/24 18:49:32 gildea Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -37,10 +37,6 @@ SOFTWARE.
  */
 
 #define GLYPHPADOPTIONS 4	/* 1, 2, 4, or 8 */
-
-typedef enum {
-    Linear8Bit, TwoD8Bit, Linear16Bit, TwoD16Bit
-}           FontEncoding;
 
 typedef struct _FontProp {
     long        name;
