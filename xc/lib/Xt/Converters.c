@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.76 91/05/11 14:56:24 converse Exp $ */
+/* $XConsortium: Converters.c,v 1.77 91/06/10 10:26:45 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -44,6 +44,8 @@ static Const String XtNwrongParameters = "wrongParameters";
 static Const String XtNconversionError = "conversionError";
 static Const String XtNmissingCharsetList = "missingCharsetList";
 
+/* Representation types */
+
 #define XtQAtom		XrmPermStringToQuark(XtRAtom)
 #define XtQCursor	XrmPermStringToQuark(XtRCursor)
 #define XtQDisplay	XrmPermStringToQuark(XtRDisplay)
@@ -58,8 +60,8 @@ static Const String XtNmissingCharsetList = "missingCharsetList";
 #define XtQUnsignedChar	XrmPermStringToQuark(XtRUnsignedChar)
 #define XtQVisual	XrmPermStringToQuark(XtRVisual)
 
-static XrmQuark  XtQBoolean;
 static XrmQuark  XtQBool;
+static XrmQuark  XtQBoolean;
 static XrmQuark  XtQColor;
 static XrmQuark  XtQDimension;
 static XrmQuark  XtQFont;
@@ -72,8 +74,7 @@ XrmQuark  _XtQString;
 
 void _XtConvertInitialize()
 {
-/* Representation types */
-
+    XtQBool		= XrmPermStringToQuark(XtRBool);
     XtQBoolean		= XrmPermStringToQuark(XtRBoolean);
     XtQColor		= XrmPermStringToQuark(XtRColor);
     XtQDimension	= XrmPermStringToQuark(XtRDimension);
@@ -81,7 +82,6 @@ void _XtConvertInitialize()
     XtQFontSet		= XrmPermStringToQuark(XtRFontSet);
     XtQFontStruct	= XrmPermStringToQuark(XtRFontStruct);
     XtQInt		= XrmPermStringToQuark(XtRInt);
-    XtQBool		= XrmPermStringToQuark(XtRBool);
     XtQPixel		= XrmPermStringToQuark(XtRPixel);
     XtQPosition		= XrmPermStringToQuark(XtRPosition);
     _XtQString		= XrmPermStringToQuark(XtRString);
