@@ -1,3 +1,7 @@
+#ifndef lint
+static char rcsid[] = "$Header$";
+#endif lint
+
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  * 
@@ -20,7 +24,6 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-
 /* TMstate.c -- maintains the state table of actions for the translation 
  *              manager.
  */

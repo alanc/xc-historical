@@ -1,5 +1,5 @@
 #ifndef lint
-static char *sccsid = "@(#)Knob.c	1.10	2/25/87";
+static char rcsid[] = "$Header$";
 #endif lint
 
 /*
@@ -24,7 +24,6 @@ static char *sccsid = "@(#)Knob.c	1.10	2/25/87";
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-
 /*
  * Knob.c - Knob composite Widget (Used by VPane Widget)
  *

@@ -1,4 +1,8 @@
 /*
+* $Header$
+*/
+
+/*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  * 
  *                         All Rights Reserved
@@ -20,7 +24,6 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-
 /*
  *  KnobPrivate.h - Private definitions for Knob widget (Used by VPane Widget)
  *

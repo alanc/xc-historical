@@ -1,5 +1,5 @@
 #ifndef lint
-static char *sccsid = "@(#)Initialize.c	1.0	8/2787";
+static char rcsid[] = "$Header$";
 #endif lint
 
 /*
@@ -24,7 +24,6 @@ static char *sccsid = "@(#)Initialize.c	1.0	8/2787";
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-
 /* Make sure all wm properties can make it out of the resource manager */
 
 #include <stdio.h>

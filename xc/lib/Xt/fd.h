@@ -1,4 +1,8 @@
 /*
+* $Header$
+*/
+
+/*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  * 
  *                         All Rights Reserved
@@ -20,7 +24,6 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-
 #ifndef __fd_set
 #define __fd_set
 #ifndef NBBY

@@ -1,5 +1,5 @@
 #ifndef lint
-static char *sccsid = "@(#)Text.c	1.27	2/25/87";
+static char rcsid[] = "$Header$";
 #endif lint
 
 /*
@@ -24,8 +24,6 @@ static char *sccsid = "@(#)Text.c	1.27	2/25/87";
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-
-
 /* File: Text.c */
 
 #include "Intrinsic.h"

@@ -1,6 +1,6 @@
 /*
- *	sccsid:	%W%	%G%
- */
+* $Header$
+*/
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -24,7 +24,6 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-
 /* 
  * ButtonBoxPrivate.h - Private definitions for ButtonBox widget
  * 
@@ -76,6 +75,9 @@ typedef struct _ButtonBoxRec {
 } ButtonBoxRec;
 
 /* $Log:	ButtonBoxPrivate.h,v $
+ * Revision 1.1  87/08/31  07:37:27  joel
+ * Initial revision
+ * 
  *  */
 
 

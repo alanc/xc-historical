@@ -1,8 +1,6 @@
-
-
 /*
- *	sccsid:	%W%	%G%
- */
+* $Header$
+*/
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -26,8 +24,6 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-
-
 /* 
  * CommandPrivate.h - Private definitions for Command widget
  * 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char *sccsid = "@(#)ButtonBox.c	1.14	2/26/87";
+static char rcsid[] = "$Header$";
 #endif lint
 
 /*
@@ -24,8 +24,6 @@ static char *sccsid = "@(#)ButtonBox.c	1.14	2/26/87";
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-
-
 /* 
  * ButtonBox.c - Button box composite widget
  * 

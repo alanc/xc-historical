@@ -1,6 +1,7 @@
 #ifndef lint
-static char *sccsid = "@(#)ScrollBar.c	1.8	2/25/87";
+static char rcsid[] = "$Header$";
 #endif lint
+
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  * 
@@ -23,8 +24,6 @@ static char *sccsid = "@(#)ScrollBar.c	1.8	2/25/87";
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-
-
 /* ScrollBar.c */
 /* created by weissman, Mon Jul  7 13:20:03 1986 */
 /* converted by swick, Thu Aug 27 1987 */

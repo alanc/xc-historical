@@ -1,9 +1,6 @@
-
-/* $Header: LabelPrivate.h,v 1.5 87/08/31 07:35:16 chow Exp $ */
-
 /*
- *	sccsid:	%W%	%G%
- */
+* $Header$
+*/
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -27,7 +24,6 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-
 /* 
  * LabelPrivate.h - Private definitions for Label widget
  * 
@@ -91,6 +87,9 @@ typedef struct _LabelRec {
 } LabelRec;
 
 /* $Log:	LabelPrivate.h,v $
+ * Revision 1.6  87/09/10  14:39:17  haynes
+ * major renaming cataclysm, de-linted, cleaned up
+ * 
  * Revision 1.5  87/08/31  07:35:16  chow
  * bugs
  * 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char *sccsid = "@(#)AsciiSink.c	1.9	2/24/87";
+static char rcsid[] = "$Header$";
 #endif lint
 
 /*
@@ -24,7 +24,6 @@ static char *sccsid = "@(#)AsciiSink.c	1.9	2/24/87";
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-
 #include "Xlib.h"
 #include "Xutil.h"
 #include "Xatom.h"

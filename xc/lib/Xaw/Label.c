@@ -1,5 +1,5 @@
 #ifndef lint
-static char *sccsid = "@(#)Label.c	1.15	2/25/87";
+static char rcsid[] = "$Header$";
 #endif lint
 
 /*
@@ -24,8 +24,6 @@ static char *sccsid = "@(#)Label.c	1.15	2/25/87";
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-
-
 /*
  * Label.c - Label widget
  *
