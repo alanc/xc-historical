@@ -1,5 +1,5 @@
 /*
- * $XConsortium: GenKey.c,v 1.3 91/01/23 22:13:42 gildea Exp $
+ * $XConsortium: GenKey.c,v 1.4 94/01/19 12:20:21 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -58,7 +58,7 @@ XdmcpGenerateKey (key)
 {
     long    lowbits, highbits;
 
-    srandom ((int)getpid() ^ time((Time_t)0));
+    srandom ((int)getpid() ^ time((Time_t *)0));
     lowbits = random ();
     highbits = random ();
     getbits (lowbits, key->data);
