@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.151 91/04/26 15:49:48 gildea Exp $
+ * $XConsortium: charproc.c,v 1.152 91/04/26 16:42:14 gildea Exp $
  */
 
 /*
@@ -2550,6 +2550,8 @@ int full;
 	if(full) {
 		TabReset (term->tabs);
 		term->keyboard.flags = NULL;
+		update_appcursor();
+		update_appkeypad();
 		screen->gsets[0] = 'B';
 		screen->gsets[1] = 'B';
 		screen->gsets[2] = 'B';
@@ -2563,6 +2565,12 @@ int full;
 			ReverseVideo(term);
 
 		term->flags = term->initflags;
+		update_reversevideo();
+		update_autowrap();
+		update_reversewrap();
+		update_autolinefeed();
+		screen->jumpscroll = !(term->flags & SMOOTHSCROLL);
+		update_jumpscroll();
 		if(screen->c132 && (term->flags & IN132COLUMNS)) {
 		        Dimension junk;
 			XtMakeResizeRequest(
