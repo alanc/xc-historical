@@ -8,7 +8,7 @@ xlogo - X Window System logo
 The
 .I xlogo
 program displays the X Window System logo.  This program is
-nothing more than a wrapper around the Athena Logo widget.
+nothing more than a wrapper around the \fIundocumented\fP Athena Logo widget.
 .SH OPTIONS
 .I Xlogo
 accepts all of the standard X Toolkit command line options, of which the
@@ -16,36 +16,42 @@ following are used most frequently:
 .TP 8
 .B \-bg \fIcolor\fP
 This option specifies the color to use for the background of the window.  
-The default is \fIwhite\fP.
-A correct color for the background is something like \fImaroon\fP.
+The default is depends on whether \fIreverseVideo\fP is specified.  If
+\fIreverseVideo\fP is specified the default is \fIlblack\fP, otherwise
+the default is \fIwhite\fP.
 .TP 8
 .B \-bd \fIcolor\fP
 This option specifies the color to use for the border of the window.
-The default is \fIblack\fP.
+The default is depends on whether \fIreverseVideo\fP is specified.  If
+\fIreverseVideo\fP is specified the default is \fIlwhite\fP, otherwise
+the default is \fIblack\fP.
 .TP 8
 .B \-bw \fInumber\fP
-This option specifies the width in pixels of the border surrounding the window.
+This option specifies the width, in pixels, of the border surrounding the 
+window.
 .TP 8
 .B \-fg \fIcolor\fP
 This option specifies the color to use for displaying the logo.
-The default is \fIblack\fP.
-A correct color for the background is something like \fIsilver,\fP
-which you can approximate with a shade of gray, like \#aa9.
+The default is depends on whether \fIreverseVideo\fP is specified.  If
+\fIreverseVideo\fP is specified the default is \fIlwhite\fP, otherwise
+the default is \fIblack\fP.
 .TP 8
 .B \-rv
-This option indicates that reverse video should be simulated by swapping
-the foreground and background colors.
+This option indicates that reverse video should be simulated, changing the
+default value for the foreground, background and border colors.
 .TP 8
 .B \-geometry \fIgeometry\fP
 This option specifies the prefered size and position of the logo window.
+See \fIX(1)\fP for details on the syntax of this argument.
 .TP 8
 .B \-display \fIdisplay\fP
-This option specifies the X server to contact.
+This option specifies the X server to contact. See \fIX(1)\fP for details on 
+the syntax of this argument.
 .TP 8
 .B \-xrm \fIresourcestring\fP
 This option specifies a resource string to be used.  This is especially
 useful for setting resources that do not have separate command line options.
-.SH X DEFAULTS
+.SH RESOURCES
 This program uses the \fILogo\fP widget in the Athena widget set.  It
 understands all of the core resource names and classes as well as:
 .PP
@@ -57,10 +63,23 @@ Specifies the width of the logo.  The default width is 100 pixels.
 Specifies the height of the logo.  The default height is 100 pixels.
 .TP 8
 .B foreground (\fPclass\fB Foreground)
-Specifies the color for the logo. The default is \fIblack\fP since the core default for background is \fIwhite\fP.
+Specifies the color for the logo.  The default is depends on whether
+\fIreverseVideo\fP is specified.  If \fIreverseVideo\fP is specified
+the default is \fIlwhite\fP, otherwise the default is \fIblack\fP.
 .TP 8
 .B reverseVideo (\fPclass\fB ReverseVideo)
-Specifies that the foreground and background should be reversed.
+This option indicates that reverse video should be simulated, changing the
+default value for the foreground, background and border colors.
+.SH WIDGETS
+The widgets used by xlogo are listed below.  Widgets are listed by
+name and class.  
+.sp
+.Ds 5
+.TA .5i 1.0i 1.5i
+.ta .5i 1.0i 1.5i
+<application name> - XLogo
+	xlogo - Logo
+.De
 .SH ENVIRONMENT
 .PP
 .TP 8
@@ -77,5 +96,6 @@ Copyright 1988, Massachusetts Institute of Technology.
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHORS
-Ollie Jones of Apollo Computer wrote the logo graphics routine,
-based on a graphic design by Danny Chong and Ross Chapman of Apollo Computer.
+Ollie Jones of Apollo Computer and Jim Fulton of the MIT X Constium
+wrote the logo graphics routine, based on a graphic design by Danny
+Chong and Ross Chapman of Apollo Computer.

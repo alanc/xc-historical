@@ -1,58 +1,71 @@
-#ifndef lint
-static char rcsid[] = "$XConsortium: xlogo.c,v 1.9 89/07/16 15:36:11 jim Exp $";
-#endif /* lint */
+/*
+ * $XConsortium$
+ *
+ * Copyright 1989 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
+ * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
 
 #include <X11/Intrinsic.h>
-#include <X11/StringDefs.h>
-#include <X11/Shell.h>
 
 #include <X11/Xaw/Logo.h>
 #include <X11/Xaw/Cardinals.h>
-#include <X11/Xmu/Drawing.h>
 
 extern void exit();
 
+String fallback_resources[] = {
+    "*iconPixmap:    xlogo32",
+    "*iconMask:      xlogo32",
+    NULL,
+};
+
 /*
- * Report the syntax for calling xclock.
+ * Report the syntax for calling xlogo.
  */
+
+static void
 Syntax(call)
-	char *call;
+    char *call;
 {
-	(void) printf ("Usage: %s [-fg <color>] [-bg <color>] [-rv]\n", call);
-	(void) printf ("       [-bw <pixels>] [-bd <color>]\n");
-	(void) printf ("       [-d [<host>]:[<vs>]]\n");
-	(void) printf ("       [-g [<width>][x<height>][<+-><xoff>[<+-><yoff>]]]\n\n");
-	exit(1);
+    (void) printf ("Usage: %s [-fg <color>] [-bg <color>] [-rv] %s\n", call, 
+		   "[-bw <pixels>] [-bd <color>]");
+    (void) printf ("             [-d [<host>]:[<vs>]]\n");
+    (void) printf ("             [-g [<width>][x<height>]%s", 
+		   "[<+-><xoff>[<+-><yoff>]]]\n\n");
+    exit(1);
 }
 
-void main(argc, argv)
-    int argc;
-    char **argv;
+void 
+main(argc, argv)
+int argc;
+char **argv;
 {
     Widget toplevel;
-    Pixmap icon;
-    Arg arg;
-    XGCValues  gcv;
-    GC gcFore, gcBack;
+    XtAppContext app_con;
 
-    toplevel = XtInitialize(NULL, "XLogo", NULL, 0, &argc, argv);
-    if (argc != 1) Syntax(argv[0]);
-    icon = XCreatePixmap(XtDisplay(toplevel), XtScreen(toplevel)->root,
-			 32, 32, 1);
-    gcv.foreground = 1;
-    gcFore = XCreateGC(XtDisplay(toplevel), icon, GCForeground, &gcv);
-    gcv.foreground = 0;
-    gcBack = XCreateGC(XtDisplay(toplevel), icon, GCForeground, &gcv);
-    XmuDrawLogo(XtDisplay(toplevel), icon, gcFore, gcBack, 0, 0, 32, 32);
-    XFreeGC(XtDisplay(toplevel), gcFore);
-    XFreeGC(XtDisplay(toplevel), gcBack);
-    arg.name = XtNiconPixmap;
-    arg.value = (XtArgVal) icon;
-    XtSetValues (toplevel, &arg, ONE); 
-    arg.name = XtNiconMask;
-    arg.value = (XtArgVal) icon;
-    XtSetValues (toplevel, &arg, ONE); 
+    toplevel = XtAppInitialize(&app_con, "XLogo", NULL, ZERO, &argc, argv,
+			       fallback_resources, NULL, ZERO);
+
+    if (argc != 1) 
+	Syntax(argv[0]);
+
     XtCreateManagedWidget("xlogo", logoWidgetClass, toplevel, NULL, ZERO);
     XtRealizeWidget(toplevel);
-    XtMainLoop();
+    XtAppMainLoop(app_con);
 }
