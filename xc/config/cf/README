@@ -1,4 +1,4 @@
-$XConsortium: README,v 1.32 93/10/11 09:56:13 rws Exp $
+$XConsortium: README,v 1.33 93/10/11 12:25:06 rws Exp $
 
 The easiest way to write an Imakefile is to find another one that does
 something similar and copy/modify it!
@@ -122,20 +122,21 @@ Project.tmpl provides defaults for the following variables:
 	ConfigDir		install directory for config files
 	ConnectionFlags		-D's for supported transports
 	ContribDir		location of user-contributed sources
+	DebugLibFS		boolean for building libFS_d.a
 	DebugLibICE		boolean for building libICE_d.a
 	DebugLibPex		boolean for building libPEX5_d.a
 	DebugLibSM		boolean for building libSM_d.a
 	DebugLibX11		boolean for building libX11_d.a
-	DebugLibXTest		boolean for building libXtst_d.a
 	DebugLibXau		boolean for building libXau_d.a
 	DebugLibXaw		boolean for building libXaw_d.a
 	DebugLibXdmcp		boolean for building libXdmcp_d.a
 	DebugLibXext		boolean for building libXext_d.a
+	DebugLibXi		boolean for building libXi_d.a
 	DebugLibXie		boolean for building libXie_d.a
-	DebugLibXinput		boolean for building libXi_d.a
 	DebugLibXmu		boolean for building libXmu_d.a
 	DebugLibXt		boolean for building libXt_d.a
-	DebugOldLibX		boolean for building liboldX_d.a
+	DebugLibXtst		boolean for building libXtst_d.a
+	DebugOldX		boolean for building liboldX_d.a
 	DefaultFSConfigFile	default font server config file
 	DefaultFontPath		default server font path
 	DefaultRGBDatabase	default server rgb color database
@@ -170,21 +171,22 @@ Project.tmpl provides defaults for the following variables:
 	ManSuffix		man suffix for programs
 	NeedDefaultDepLibs	boolean for enabling default DEPLIBS
 	NlsDir			directory in which to install nls files
+	NormalLibFS		boolean for building libFS.a
 	NormalLibICE		boolean for building libICE.a
 	NormalLibPex		boolean for building libPEX5.a
 	NormalLibPhigs		boolean for building libphigs.a
 	NormalLibSM		boolean for building libSM.a
 	NormalLibX11		boolean for building libX11.a
-	NormalLibXTest		boolean for building libXtst.a
 	NormalLibXau		boolean for building libXau.a
 	NormalLibXaw		boolean for building libXaw.a
 	NormalLibXdmcp		boolean for building libXdmcp.a
 	NormalLibXext		boolean for building libXext.a
+	NormalLibXi		boolean for building libXi.a
 	NormalLibXie		boolean for building libXie.a
-	NormalLibXinput		boolean for building libXi.a
 	NormalLibXmu		boolean for building libXmu.a
 	NormalLibXt		boolean for building libXt.a
-	NormalOldLibX		boolean for building liboldX.a
+	NormalLibXtst		boolean for building libXtst.a
+	NormalOldX		boolean for building liboldX.a
 	OsNameDefines		beats me
 	PexApiDir		PEX include file location
 	PexCCOptions		special options for building PEX library
@@ -195,41 +197,43 @@ Project.tmpl provides defaults for the following variables:
 	PexShmIPC		boolean for using shared memory in phigsmon
 	PhigsInclude		include directory for phigs clients
 	PrimaryScreenResolution	resolution of default server screen
+	ProfileLibFS		boolean for building libFS_p.a
 	ProfileLibICE		boolean for building libICE_p.a
 	ProfileLibPex		boolean for building libPEX5_p.a
 	ProfileLibSM		boolean for building libSM_p.a
 	ProfileLibX11		boolean for building libX11_p.a
-	ProfileLibXTest		boolean for building libXtst_p.a
 	ProfileLibXau		boolean for buidling libXau_p.a
 	ProfileLibXaw		boolean for building libXaw_p.a
 	ProfileLibXdmcp		boolean for building libXdmcp_p.a
 	ProfileLibXext		boolean for building libXext_p.a
+	ProfileLibXi		boolean for building libXi_p.a
 	ProfileLibXie		boolean for building libXie_p.a
-	ProfileLibXinput	boolean for building libXi_p.a
 	ProfileLibXmu		boolean for building libXmu_p.a
 	ProfileLibXt		boolean for building libXt_p.a
-	ProfileOldLibX		boolean for building liboldX_p.a
+	ProfileLibXtst		boolean for building libXtst_p.a
+	ProfileOldX		boolean for building liboldX_p.a
 	ProjectX		version indicating this is the X Window System
 	RemoveTargetProgramByMoving	boolean for rm -f that doesn't
 	SHELLPATH		-D for /bin/sh
 	ServerDefines		complete -D's for server
 	ServerExtraDefines	special -D's for server
 	ServerOSDefines		OS -D's for server
+	SharedLibFS		boolean for making sharable libFS.so
 	SharedLibICE		boolean for making sharable libICE.so
 	SharedLibPex		boolean for making sharable libPEX5.so
 	SharedLibPhigs		boolean for making sharable libphigs.so
 	SharedLibSM		boolean for making sharable libSM.so
 	SharedLibX11		boolean for making sharable libX11.so
-	SharedLibXTest		boolean for making sharable libXtst.so
 	SharedLibXau		boolean for making sharable libXau.so
 	SharedLibXaw		boolean for making sharable libXaw.so
 	SharedLibXdmcp		boolean for making sharable libXdmcp.so
 	SharedLibXext		boolean for making sharable libXext.so
+	SharedLibXi		boolean for making sharable libXi.so
 	SharedLibXie		boolean for making sharable libXie.so
-	SharedLibXinput		boolean for making sharable libXi.so
 	SharedLibXmu		boolean for making sharable libXmu.so
 	SharedLibXt		boolean for making sharable libXt.so
-	SharedOldLibX		boolean for making sharable liboldX.so
+	SharedLibXtst		boolean for making sharable libXtst.so
+	SharedOldX		boolean for making sharable liboldX.so
 	ShmDefines		MIT-SHM define
 	TwmDir			directory in which to install twm config files
 	UseCCMakeDepend		boolean for using alternate makedepend script
@@ -278,6 +282,8 @@ An <os>Lib.rules file provides defaults for the following variables:
 
 An <os>Lib.tmpl file provides defaults for the following variables:
 
+	SharedFSReqs		required libs for libFS.so
+	SharedFSRev		version number for libFS.so
 	SharedICEReqs		required libs for libICE.so
 	SharedICERev		version number for libICE.so
 	SharedOldXReqs		required libs for liboldX.so
@@ -296,11 +302,13 @@ An <os>Lib.tmpl file provides defaults for the following variables:
 	SharedXdmcpRev		version number for libXdmcp.so
 	SharedXextReqs		required libs for libXext.so
 	SharedXextRev		version number for libXext.so
+	SharedXiReqs		required libs for libXi.so
+	SharedXiRev		version number for libXi.so
 	SharedXieReqs		required libs for libXie.so
 	SharedXieRev		version number for libXie.so
-	SharedXinputReqs	required libs for libXi.so
-	SharedXinputRev		version number for libXi.so
 	SharedXmuReqs		required libs for libXmu.so
 	SharedXmuRev		version number for libXmu.so
 	SharedXtReqs		required libs for libXt.so
 	SharedXtRev		version number for libXt.so
+	SharedXtstReqs		required libs for libXtst.so
+	SharedXtstRev		version number for libXtst.so
