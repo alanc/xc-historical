@@ -1,4 +1,4 @@
-/* $XConsortium: wsx.c,v 5.2 91/04/05 17:29:53 hersh Exp $ */
+/* $XConsortium: wsx.c,v 5.3 91/07/01 16:23:46 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -67,6 +67,7 @@ phg_wsx_setup_tool( ws, conn_info, wst )
     Pint			err;
     Phg_pex_ext_info		pex_info;
     Colormap			cmap;
+    XColor                      screen, exact;
 
     /* Create the window. */
     if (!phg_wsx_find_best_visual(ws, wst, &best_visual, &cmap, &err)) {
@@ -76,8 +77,10 @@ phg_wsx_setup_tool( ws, conn_info, wst )
     /* Need the depth of this visual */
     template.visualid = best_visual.visualid;
     best_info = XGetVisualInfo(display, (long)VisualIDMask, &template, &nvisuals);
-    attrs.border_pixel	   = WhitePixel(display, DefaultScreen(display));
-    attrs.background_pixel = BlackPixel(display, DefaultScreen(display));
+    XAllocNamedColor(display, cmap, "WHITE", &screen, &exact);
+    attrs.border_pixel = screen.pixel;
+    XAllocNamedColor(display, cmap, "BLACK", &screen, &exact);
+    attrs.background_pixel = screen.pixel;
     attrs.colormap = cmap;
     /* TODO: background and border colour attributes. */
 
