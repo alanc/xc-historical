@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.136 94/02/04 14:20:03 kaleb Exp $ */
+/* $XConsortium: NextEvent.c,v 1.139 94/03/30 15:22:35 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -298,7 +298,11 @@ static void FindInputs (app, wf, nfds, ignoreEvents, ignoreInputs, dpy_no, found
 
     for (ii = 0; ii < wf->nfds && nfds > 0; ii++) {
 	condition = 0;
-	if (FD_ISSET (ii, &wf->rmask)) {
+	if (FD_ISSET (ii, &wf->rmask)
+#ifdef XTHREADS
+	    && FD_ISSET (ii, &app->fds.rmask)
+#endif
+	) {
 	    nfds--;
 	    if (!ignoreEvents) {
 		for (dd = 0; dd < app->count; dd++) {
@@ -320,14 +324,11 @@ static void FindInputs (app, wf, nfds, ignoreEvents, ignoreInputs, dpy_no, found
 		    }
 		}
 	    }
-#ifdef XTHREADS
-	    if (FD_ISSET (ii, &app->fds.rmask))
-#endif
 	    condition = XtInputReadMask;
 	}
 	if (FD_ISSET (ii, &wf->wmask)
 #ifdef XTHREADS
-	 && FD_ISSET (ii, &app->fds.wmask)
+	    && FD_ISSET (ii, &app->fds.wmask)
 #endif
 	) {
 	    condition |= XtInputWriteMask;
@@ -335,7 +336,7 @@ static void FindInputs (app, wf, nfds, ignoreEvents, ignoreInputs, dpy_no, found
 	}
 	if (FD_ISSET (ii, &wf->emask)
 #ifdef XTHREADS
-	 && FD_ISSET (ii, &app->fds.emask)
+	    && FD_ISSET (ii, &app->fds.emask)
 #endif
 	) {
 	    condition |= XtInputExceptMask;
@@ -357,16 +358,20 @@ ENDILOOP:   ;
     *dpy_no = -1;
     *found_input = False;
 
-    if (!ignoreEvents)
-	for (ii = 0; ii < wf->num_dpys; ii++, fdlp++)
-	    if (fdlp->revents & (POLLIN|POLLHUP) &&
+    if (!ignoreEvents) {
+	for (ii = 0; ii < wf->num_dpys; ii++, fdlp++) {
+	    if (*dpy_no == -1 && fdlp->revents & (POLLIN|POLLHUP) &&
 #ifdef XTHREADS
 		!(fdlp->revents & POLLNVAL) &&
 #endif
-		XEventsQueued (app->list[ii], QueuedAfterReading))
+		XEventsQueued (app->list[ii], QueuedAfterReading)) {
 		*dpy_no = ii;
+		break;
+	    }
+	}
+    }
 
-     if (!ignoreInputs) {
+    if (!ignoreInputs) {
 	for (ii = wf->num_dpys; ii < wf->fdlistlen; ii++, fdlp++) {
 	    condition = 0;
 	    if (fdlp->revents) {
