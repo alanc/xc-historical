@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 1.51 88/09/02 16:36:06 matt Exp $ */
+/* $XConsortium: miarc.c,v 1.55 88/10/14 18:41:28 keith Exp $ */
 /* Author: Keith Packard */
 
 #include "X.h"
@@ -104,7 +104,7 @@ static miPolyArcPtr miDashArcs (), miSolidArcs ();
 #define GCValsJoinStyle		5
 #define GCValsMask		(GCFunction | GCForeground | GCBackground | \
 				 GCLineWidth | GCCapStyle | GCJoinStyle)
-static CARD32 gcvals[];
+static CARD32 gcvals[6];
 
 /*
  * draw one segment of the arc using the arc spans generation routines
