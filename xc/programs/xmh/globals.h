@@ -1,5 +1,5 @@
 /*
- *  $XConsortium: globals.h,v 2.32 89/12/16 03:34:01 converse Exp $
+ *  $XConsortium: globals.h,v 2.33 91/07/02 17:58:58 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -66,6 +66,8 @@ ext struct _resources {
     Boolean	make_checkpoints;     /* Whether to create checkpoint files. */
     int		check_frequency;	/* in minutes, of new mail check */
     int		mail_waiting_flag;	/* If true, change icon on new mail */
+    Pixmap	flag_up;		/* folder has new mail */
+    Pixmap	flag_down;		/* folder has no new mail */
     Cursor	cursor;			/* application cursor */
     Pixel	pointer_color;		/* application cursor color */
     Boolean	sticky_menu;		/* command menu entries are sticky? */
