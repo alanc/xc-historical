@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.117 94/03/30 20:09:40 matt Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.118 94/03/30 20:52:50 matt Exp $
 
 #ifdef SVR4
 #ifdef i386Architecture
@@ -151,7 +151,7 @@ XCOMM operating system:  OSName
 #define PositionIndependentCFlags -Kpic
 #endif
 #if HasSunCplusplus || HasCenterLineCplusplus
-#define PositionIndependentCplusplusFlags -Kpic
+#define PositionIndependentCplusplusFlags -pic
 #endif
 #include <svr4.cf>
 #else
