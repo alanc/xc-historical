@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: handle.c,v 1.15 88/10/09 15:56:53 rws Exp $
+ * $XConsortium: handle.c,v 1.16 88/11/07 11:13:13 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -311,7 +311,7 @@ static Bool parse_keysym (line, n, name, keysym)
 /*
  * do_keycode - parse off lines of the form
  *
- *                 "keycode" number "=" keysym ...
+ *                 "keycode" number "=" [keysym ...]
  *                           ^
  *
  * where number is in decimal, hex, or octal.  Any number of keysyms may be
@@ -353,7 +353,7 @@ static int do_keycode (line, len)
 /*
  * do_keysym - parse off lines of the form
  *
- *                 "keysym" keysym "=" keysym ...
+ *                 "keysym" keysym "=" [keysym ...]
  *                          ^
  *
  * The left keysyms has to be checked for validity and evaluated.
@@ -414,7 +414,7 @@ static int finish_keycode (line, len, keycode)
     n = skip_until_char (line, len, '=');
     line += n, len -= n;
     
-    if (len < 2 || *line != '=') {	/* =a minimum */
+    if (len < 1 || *line != '=') {	/* = minimum */
 	badmsg ("keycode command (missing keysym list),", NULL);
 	return (-1);
     }
@@ -423,7 +423,8 @@ static int finish_keycode (line, len, keycode)
     n = skip_space (line, len);
     line += n, len -= n;
 
-    if (get_keysym_list (line, len, &n, &kslist) < 0 || n <= 0) {
+    /* allow empty list */
+    if (get_keysym_list (line, len, &n, &kslist) < 0 || n < 0) {
 	badmsg ("keycode keysym list", NULL);
 	return (-1);
     }
@@ -907,6 +908,8 @@ static int get_keysym_list (line, len, np, kslistp)
     *np = 0;
     *kslistp = NULL;
 
+    if (len == 0) return (0);		/* empty list */
+
     havesofar = 0;
     maxcanhave = 4;			/* most lists are small */
     keysymlist = (KeySym *) malloc (maxcanhave * sizeof (KeySym));
@@ -1168,8 +1171,14 @@ int execute_work_queue ()
 static int exec_keycode (opk)
     struct op_keycode *opk;
 {
-    XChangeKeyboardMapping (dpy, opk->target_keycode, opk->count, 
-			    opk->keysyms, 1);
+    if (opk->count == 0) {
+	KeySym dummy = NoSymbol;
+	XChangeKeyboardMapping (dpy, opk->target_keycode, 1,
+				&dummy, 1);
+    } else {
+	XChangeKeyboardMapping (dpy, opk->target_keycode, opk->count, 
+				opk->keysyms, 1);
+    }
     return (0);
 }
 

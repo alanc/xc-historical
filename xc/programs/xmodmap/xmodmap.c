@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: xmodmap.c,v 1.15 88/10/08 15:38:35 jim Exp $
+ * $XConsortium: xmodmap.c,v 1.16 88/10/08 15:42:44 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -70,8 +70,8 @@ void usage ()
 static char *grammar_message[] = {
 "    pointer = default              reset pointer buttons to default",
 "    pointer = NUMBER ...           set pointer button codes",
-"    keycode NUMBER = KEYSYM ...    assign keysyms to the given keycode",
-"    keysym KEYSYM = KEYSYM ...     look up keysym and do a keycode line",
+"    keycode NUMBER = [KEYSYM ...]  map keycode to given keysyms",
+"    keysym KEYSYM = [KEYSYM ...]   look up keysym and do a keycode operation",
 "    clear MODIFIER                 remove all keys for this modifier",
 "    add MODIFIER = KEYSYM ...      add the keysyms to the modifier",
 "    remove MODIFIER = KEYSYM ...   remove the keysyms from the modifier",
