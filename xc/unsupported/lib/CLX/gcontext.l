@@ -399,7 +399,7 @@
 				 nil
 			       last-request))
 		       (return-from no-changes nil))
-		     (card32-put 8 mask)
+		     (card29-put 8 mask)
 		     (card16-put 2 (index-ash nbyte -2))
 		     (index-incf (buffer-boffset display) nbyte))
 		  (declare (type array-index i nbyte)
@@ -476,13 +476,16 @@
 	(saved-state (gensym))
 	(temp-gc (gensym))
 	(temp-mask (gensym))
+	(temp-var (gensym))
+	(need-temp-var nil)
 	(setfs nil)
 	(indexes nil)				; List of gcontext field indices
 	(extension-indexes nil)			; List of gcontext extension field indices
 	(ts-index (getf *gcontext-indexes* :timestamp)))
 
     (do* ((option options (cddr option))
-	  (name (car option) (car option)))
+	  (name (car option) (car option))
+	  (value (cadr option) (cadr option)))
 	 ((endp option) (setq setfs (nreverse setfs)))
       (let ((index (getf *gcontext-indexes* name)))
 	(if index
@@ -493,11 +496,16 @@
 		  (push (xintern "Internal-" 'gcontext- name "-State-Index")
 			extension-indexes))
 	      (x-type-error name 'gcontext-key)))))
-      (push `(setf (,(xintern 'gcontext- name) ,gc ,@(when (eq name :clip-mask)
-						       `(,clip-ordering)))
-		   ,(cadr option))
-	    setfs))
-    
+      (let ((accessor `(,(xintern 'gcontext- name) ,gc ,@(when (eq name :clip-mask)
+							   `(,clip-ordering)))))
+	(cond ((not (constantp value))
+	       (setq need-temp-var t)
+	       (push `(when (setq ,temp-var ,value) (setf ,accessor ,temp-var))
+		     setfs))
+	      (value
+	       (push `(setf ,accessor ,value) setfs)))))
+    (when need-temp-var
+      (setq setfs `((let (,temp-var) ,@setfs))))
     (if setfs
 	`(multiple-value-bind (,gc ,saved-state ,temp-mask ,temp-gc)
 	     (copy-gcontext-local-state ,gcontext ',indexes ,@extension-indexes)
@@ -552,13 +560,13 @@
 	    (with-buffer-request (display *x-creategc*)
 	      (gcontext temp-gc)
 	      (drawable (gcontext-drawable gcontext))
-	      (card32 0))
+	      (card29 0))
 	    ;; Copy changed components to the temporary gcontext
 	    (when (plusp temp-mask)
 	      (with-buffer-request (display *x-copygc*)
 		(gcontext gcontext)
 		(gcontext temp-gc)
-		(card32 (xgcmask->gcmask temp-mask))))
+		(card29 (xgcmask->gcmask temp-mask))))
 	    ;; Copy extension fields to the new gcontext
 	    (when (plusp extension-mask)
 	      ;; Copy extension fields from temp back to gcontext
@@ -573,16 +581,15 @@
       (values gcontext saved-state (logior temp-mask extension-mask) temp-gc))))
 
 (defun restore-gcontext-temp-state (gcontext temp-mask temp-gc)
-  (declare (type gcontext gcontext)
-	   (type xgcmask temp-mask)
-	   (type resource-id temp-gc))
+  (declare (type gcontext gcontext temp-gc)
+	   (type xgcmask temp-mask))
   (let ((display (gcontext-display gcontext)))
     (declare (type display display))
     (with-display (display)
       (with-buffer-request (display *x-copygc*)
 	(gcontext temp-gc)
 	(gcontext gcontext)
-	(card32 (xgcmask->gcmask temp-mask)))
+	(card29 (xgcmask->gcmask temp-mask)))
       ;; Copy extension fields from temp back to gcontext
       (do ((bit (ash temp-mask (- *gcontext-data-length*)) (ash bit -1))
 	   (extensions *gcontext-extensions* (cdr extensions))
@@ -724,7 +731,7 @@
 	(setf (gcontext-internal-font-obj server-state) local-font)))
 
     (with-buffer-request (display *x-creategc*)
-      (card32 gcontextid)
+      (resource-id gcontextid)
       (drawable drawable)
       (progn (do* ((i 0 (index+ i 1))
 		   (bit 1 (the gcmask (ash bit 1)))
@@ -732,7 +739,7 @@
 		   (mask 0)
 		   (local (svref local-state i) (svref local-state i)))
 		 ((index>= i *gcontext-fast-change-length*)
-		  (card32-put 12 mask)
+		  (card29-put 12 mask)
 		  (card16-put 2 (index-ash nbyte -2))
 		  (index-incf (buffer-boffset display) nbyte))
 	       (declare (type array-index i nbyte)
@@ -814,7 +821,7 @@
 		    (setf (svref dst-server-state i) (svref src-server-state i)))))
 	  (with-buffer-request (display *x-copygc*)
 	    (gcontext src dst)
-	    (card32 (xgcmask->gcmask mask))))))))
+	    (card29 (xgcmask->gcmask mask))))))))
 
 (defun copy-gcontext (src dst)
   (declare (type gcontext src dst))
