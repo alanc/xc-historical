@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: bigreq.ms,v 1.7 93/01/04 17:26:22 rws Exp $
+.\" $XConsortium: bigreq.ms,v 1.8 93/01/07 20:07:54 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -59,7 +59,7 @@ or arcs
 .Pn ( PolyArc ),
 since these requests cannot be broken up into smaller requests without
 disturbing the rendering of the join points.  It is also much more of
-a problem for recent protocol extensions, such as the PEX extension
+a problem for protocol extensions, such as the PEX extension
 for 3D graphics and the XIE extension for imaging, that need to send
 long data lists in output commands.
 .LP
