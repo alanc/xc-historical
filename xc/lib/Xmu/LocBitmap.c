@@ -1,5 +1,5 @@
 /*
- * $XConsortium: LocBitmap.c,v 1.3 89/11/30 18:21:45 rws Exp $
+ * $XConsortium: LocBitmap.c,v 1.4 89/12/10 10:35:21 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -43,6 +43,27 @@ Pixmap XmuLocateBitmapFile (screen, name, srcname, srcnamelen,
 			    widthp, heightp, xhotp, yhotp)
     Screen *screen;
     char *name;
+    char *srcname;			/* RETURN */
+    int srcnamelen;
+    int *widthp, *heightp, *xhotp, *yhotp;  /* RETURN */
+{
+    return XmuLocatePixmapFile (screen, name, 
+				(unsigned long) 1, (unsigned long) 0,
+				(unsigned int) 1, srcname, srcnamelen,
+				widthp, heightp, xhotp, yhotp);
+}
+
+
+/*
+ * version that reads pixmap data as well as bitmap data
+ */
+Pixmap XmuLocatePixmapFile (screen, name, fore, back, depth, 
+			    srcname, srcnamelen,
+			    widthp, heightp, xhotp, yhotp)
+    Screen *screen;
+    char *name;
+    unsigned long fore, back;
+    unsigned int depth;
     char *srcname;			/* RETURN */
     int srcnamelen;
     int *widthp, *heightp, *xhotp, *yhotp;  /* RETURN */
@@ -106,6 +127,7 @@ Pixmap XmuLocateBitmapFile (screen, name, srcname, srcnamelen,
     for (i = 1; i <= 4; i++) {
 	char *fn = filename;
 	Pixmap pixmap;
+	unsigned char *data;
 
 	switch (i) {
 	  case 1:
@@ -131,8 +153,17 @@ Pixmap XmuLocateBitmapFile (screen, name, srcname, srcnamelen,
 	    break;
 	}
 
-	if (XReadBitmapFile (dpy, root, fn, &width, &height, 
-			     &pixmap, &xhot, &yhot) == BitmapSuccess) {
+	data = NULL;
+	pixmap = None;
+	if (XmuReadBitmapDataFromFile (fn, &width, &height, &data,
+				       &xhot, &yhot) == BitmapSuccess) {
+	    pixmap = XCreatePixmapFromBitmapData (dpy, root, data,
+						  width, height,
+						  fore, back, depth);
+	    XFree (data);
+	}
+
+	if (pixmap) {
 	    if (widthp) *widthp = (int)width;
 	    if (heightp) *heightp = (int)height;
 	    if (xhotp) *xhotp = xhot;
