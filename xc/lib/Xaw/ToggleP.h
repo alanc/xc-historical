@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ToggleP.h,v 1.6 89/12/11 15:23:04 kit Exp $
+ * $XConsortium: ToggleP.h,v 1.7 91/05/19 09:43:16 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -85,7 +85,7 @@ extern ToggleClassRec toggleClassRec;
 typedef struct {
     /* resources */
     Widget      widget;
-    caddr_t     radio_data;
+    XtPointer   radio_data;
 
     /* private data */
     RadioGroup * radio_group;
