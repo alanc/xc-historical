@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.15 89/10/04 18:08:07 jim Exp $ */
+/* $XConsortium: ico.c,v 1.16 89/10/04 18:21:34 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -363,14 +363,29 @@ char **argv;
 		    XMapWindow (dpy, icowin);
 		}
 		if (XmbufCreateBuffers (dpy, icowin ? icowin : draw_window, 2,
-					MultibufferActionBackground,
-					MultibufferHintFrequent,
+					MultibufferUpdateActionBackground,
+					MultibufferUpdateHintFrequent,
 					multibuffers) == 2) {
 		    win = multibuffers[0];
 #ifdef notimplementedyet
 		    XmbufClearBuffer (dpy, multibuffers[0], 0, 0, 0, 0, False);
 		    XmbufClearBuffer (dpy, multibuffers[1], 0, 0, 0, 0, False);
+#else
+		    /* workaround for ClearBuffer */
+		    {
+			GC tmpgc;
+			int i;
+
+			xgcv.foreground = bg;
+			tmpgc = XCreateGC (dpy, draw_window, GCForeground,
+					   &xgcv);
+			for (i = 0; i < 2; i++)
+			  XFillRectangle (dpy, multibuffers[i], tmpgc,
+					  0, 0, winW, winH);
+			XFreeGC (dpy, tmpgc);
+		    }
 #endif
+
 		} else 
 		  icoFatal ("unable to obtain 2 buffers");
 	    } else
@@ -396,19 +411,6 @@ char **argv;
 	    vmask |= (GCLineStyle | GCDashList);
 	}
 	gc = XCreateGC (dpy, draw_window, vmask, &xgcv);
-#ifdef MULTIBUFFER
-	/* workaround for ClearBuffer */
-	if (multibuf) {
-	    GC tmpgc;
-	    int i;
-
-	    xgcv.foreground = bg;
-	    tmpgc = XCreateGC (dpy, draw_window, GCForeground, &xgcv);
-	    for (i = 0; i < 2; i++)
-	      XFillRectangle (dpy, multibuffers[i], tmpgc, 0, 0, winW, winH);
-	    XFreeGC (dpy, tmpgc);
-	}
-#endif
 
 	if (dofaces && numcolors>=1) {
 	    int i,t,bits;
