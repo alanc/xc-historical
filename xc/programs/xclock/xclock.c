@@ -2,7 +2,7 @@
  *  Hacked from Tony Della Fera's much hacked clock program.
  */
 #ifndef lint
-static char *rcsid_xclock_c = "$Header: xclock.c,v 1.24 87/07/14 17:45:14 hania Exp $";
+static char *rcsid_xclock_c = "$Header: xclock.c,v 1.1 87/08/30 23:22:37 newman Exp $";
 #endif  lint
 
 #include "Xatom.h"
@@ -53,19 +53,19 @@ void main(argc, argv)
     char **argv;
 {
     Display *dpy;
-    Widget toplevel;
+    Widget toplevel, w;
     Arg arg;
 
-    dpy = XtInitialize(options, XtNumber(options), argv, &argc, NULL, "XClock", &toplevel);
+    dpy = XtInitialize(options, XtNumber(options), &argc, argv, NULL, "XClock", &toplevel);
     if (argc != 1) Syntax(argv[0]);
 
     arg.name = XtNiconPixmap;
     arg.value = (XtArgVal) XCreateBitmapFromData (dpy, XtScreen(toplevel)->root, 
         clock_bits, clock_width, clock_height);
-    XtWidgetSetValues (toplevel, &arg, 1);
+/* |||     XtSetValues (toplevel, &arg, 1); */
 
-    (void) XtWidgetCreate (argv[0], clockWidgetClass, toplevel, NULL, 0);
-    
-    XtRealize(toplevel);
+    w = XtCreateWidget (argv[0], clockWidgetClass, toplevel, NULL, 0);
+    XtCompositeAddChild(w);  /****** shouldn't have to do this! ******/
+    XtRealizeWidget (toplevel, 0, NULL);
     XtMainLoop();
 }
