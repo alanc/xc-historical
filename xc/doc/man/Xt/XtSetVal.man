@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtSet-Values XtSet-Subvalues XtGet-Values XtGet-Subvalues wid-get
+.hw XtSet-Values XtVa-Set-Values XtSet-Subvalues XtGet-Values XtVa-Get-Values XtGet-Subvalues constraint-Widget-Class wid-get
 .na
 .de Ds
 .nf
@@ -99,7 +99,7 @@
 .ny0
 .TH XtSetValues 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtSetValues, XtSetSubvalues, XtGetValues, XtGetSubvalues \- obtain and set widget resources 
+XtSetValues, XtVaSetValues, XtSetSubvalues, XtGetValues, XtVaGetValues, XtGetSubvalues \- obtain and set widget resources 
 .SH SYNTAX
 void XtSetValues(\fIw\fP, \fIargs\fP, \fInum_args\fP)
 .br
@@ -108,6 +108,10 @@ void XtSetValues(\fIw\fP, \fIargs\fP, \fInum_args\fP)
       ArgList \fIargs\fP;
 .br
       Cardinal \fInum_args\fP;
+.LP
+void XtVaSetValues(\fIw\fP, \fI...\fP)
+.br
+      Widget \fIw\fP;
 .LP
 void XtSetSubvalues(\fIbase\fP, \fIresources\fP, \fInum_resources\fP, \
 \fIargs\fP, \fInum_args\fP)
@@ -129,6 +133,10 @@ void XtGetValues(\fIw\fP, \fIargs\fP, \fInum_args\fP)
       ArgList \fIargs\fP;
 .br
       Cardinal \fInum_args\fP;
+.LP
+void XtVaGetValues(\fIw\fP, \fI...\fP)
+.br
+      Widget \fIw\fP;
 .LP
 void XtGetSubvalues(\fIbase\fP, \fIresources\fP, \fInum_resources\fP, \
 \fIargs\fP, \fInum_args\fP)
@@ -160,6 +168,8 @@ Specifies the nonwidget resource list or values.
 Specifies the number of resources in the resource list.
 .IP \fIw\fP 1i
 Specifies the widget.
+.IP \fI...\fP 1i
+Specifes the variable argument list \*(Al.
 .SH DESCRIPTION
 The
 .ZN XtSetValues
