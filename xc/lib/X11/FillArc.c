@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XFillArc.c,v 11.9 87/09/11 08:03:00 toddb Exp $ */
+/* $Header: XFillArc.c,v 11.10 88/08/09 15:57:14 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -18,11 +18,19 @@ XFillArc(dpy, d, gc, x, y, width, height, angle1, angle2)
     int angle1, angle2; /* INT16 */
 {
     xArc *arc;
+#ifdef MUSTCOPY
+    xArc arcdata;
+    long len = SIZEOF(xArc);
+
+    arc = &arcdata;
+#endif /* MUSTCOPY */
 
     LockDisplay(dpy);
     FlushGC(dpy, gc);
+
     {
     register xPolyFillArcReq *req = (xPolyFillArcReq *) dpy->last_req;
+
     /* if same as previous request, with same drawable, batch requests */
     if (
           (req->reqType == X_PolyFillArc)
@@ -30,9 +38,11 @@ XFillArc(dpy, d, gc, x, y, width, height, angle1, angle2)
        && (req->gc == gc->gid)
        && ((dpy->bufptr + SIZEOF(xArc)) <= dpy->bufmax)
        && (((char *)dpy->bufptr - (char *)req) < size) ) {
-         arc = (xArc *) dpy->bufptr;
 	 req->length += SIZEOF(xArc) >> 2;
+#ifndef MUSTCOPY
+         arc = (xArc *) dpy->bufptr;
 	 dpy->bufptr += SIZEOF(xArc);
+#endif /* not MUSTCOPY */
 	 }
 
     else {
@@ -40,7 +50,11 @@ XFillArc(dpy, d, gc, x, y, width, height, angle1, angle2)
 
 	req->drawable = d;
 	req->gc = gc->gid;
-	arc = (xArc *) (req + 1);
+#ifdef MUSTCOPY
+	dpy->bufptr -= SIZEOF(xArc);
+#else
+	arc = (xArc *) NEXTPTR(req,xPolyFillArcReq);
+#endif /* MUSTCOPY */
 	}
     arc->x = x;
     arc->y = y;
@@ -48,6 +62,11 @@ XFillArc(dpy, d, gc, x, y, width, height, angle1, angle2)
     arc->height = height;
     arc->angle1 = angle1;
     arc->angle2 = angle2;
+
+#ifdef MUSTCOPY
+    Data (dpy, (char *) arc, len);
+#endif /* MUSTCOPY */
+
     }
     UnlockDisplay(dpy);
     SyncHandle();

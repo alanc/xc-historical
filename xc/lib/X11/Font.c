@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XFont.c,v 11.22 87/10/29 23:58:45 newman Exp $ */
+/* $Header: XFont.c,v 11.23 88/08/09 15:56:32 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -77,7 +77,7 @@ XFontStruct *_XQueryFont (dpy, fid)	/* Internal-only entry point */
 
     GetResReq(QueryFont, fid, req);
     if (!_XReply (dpy, (xReply *) &reply,
-       ((sizeof (reply) - SIZEOF(xReply)) >> 2), xFalse))
+       ((SIZEOF(xQueryFontReply) - SIZEOF(xReply)) >> 2), xFalse))
 	   return (NULL);
     fs = (XFontStruct *) Xmalloc (sizeof (XFontStruct));
     fs->ext_data 		= NULL;
@@ -92,10 +92,31 @@ XFontStruct *_XQueryFont (dpy, fid)	/* Internal-only entry point */
     fs->ascent 			= reply.fontAscent;
     fs->descent 		= reply.fontDescent;
     
-    /* XXX the next two statements won't work if short isn't 16 bits */
+#ifdef MUSTCOPY
+    {
+	xCharInfo *xcip;
 
+	xcip = (xCharInfo *) &reply.minBounds;
+	fs->min_bounds.lbearing = xcip->leftSideBearing;
+	fs->min_bounds.rbearing = xcip->rightSideBearing;
+	fs->min_bounds.width = xcip->characterWidth;
+	fs->min_bounds.ascent = xcip->ascent;
+	fs->min_bounds.descent = xcip->descent;
+	fs->min_bounds.attributes = xcip->attributes;
+
+	xcip = (xCharInfo *) &reply.maxBounds;
+	fs->max_bounds.lbearing = xcip->leftSideBearing;
+	fs->max_bounds.rbearing = xcip->rightSideBearing;
+	fs->max_bounds.width = xcip->characterWidth;
+	fs->max_bounds.ascent = xcip->ascent;
+	fs->max_bounds.descent = xcip->descent;
+	fs->max_bounds.attributes = xcip->attributes;
+    }
+#else
+    /* XXX the next two statements won't work if short isn't 16 bits */
     fs->min_bounds = * (XCharStruct *) &reply.minBounds;
     fs->max_bounds = * (XCharStruct *) &reply.maxBounds;
+#endif /* MUSTCOPY */
 
     fs->n_properties = reply.nFontProps;
     /* 
@@ -104,20 +125,22 @@ XFontStruct *_XQueryFont (dpy, fid)	/* Internal-only entry point */
      */
     fs->properties = NULL;
     if (fs->n_properties > 0) {
-	    fs->properties = (XFontProp *) Xmalloc (
-	       (unsigned)(nbytes = reply.nFontProps * sizeof (XFontProp)));
-	    _XRead (dpy, (char *)fs->properties, nbytes);
+	    nbytes = reply.nFontProps * sizeof(XFontProp);
+	    fs->properties = (XFontProp *) Xmalloc (nbytes);
+	    nbytes = reply.nFontProps * SIZEOF(xFontProp);
+	    _XRead32 (dpy, (char *)fs->properties, nbytes);
     }
     /*
      * If no characters in font, then it is a bad font, but
      * shouldn't try to read nothing.
      */
-    /* XXX may have to unpack charinfos on some machines (CRAY) */
+    /* have to unpack charinfos on some machines (CRAY) */
     fs->per_char = NULL;
     if (reply.nCharInfos > 0){
-	    fs->per_char = (XCharStruct *) Xmalloc (
-	       (unsigned)(nbytes = reply.nCharInfos * sizeof (XCharStruct)));
-	    _XRead (dpy, (char *)fs->per_char, nbytes);
+	    nbytes = reply.nCharInfos * sizeof(XCharStruct);
+	    fs->per_char = (XCharStruct *) Xmalloc (nbytes);
+	    nbytes = reply.nCharInfos * SIZEOF(xCharInfo);
+	    _XRead16 (dpy, (char *)fs->per_char, nbytes);
     }
 
     ext = dpy->ext_procs;

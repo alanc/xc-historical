@@ -89,29 +89,31 @@ XDrawText(dpy, d, gc, x, y, items, nitems)
             register xTextElt *elt;
 	    int FirstTimeThrough = True;
  	    char *CharacterOffset = item->chars;
+            char *tbuf;
 
 	    while((PartialDelta < -128) || (PartialDelta > 127))
             {
 	    	int nb = SIZEOF(xTextElt);
 
-	    	BufAlloc (xTextElt *, elt, nb); 
-	    	elt->len = 0;
+	    	BufAlloc (char *, tbuf, nb); 
+	    	*tbuf = 0;    /*   elt->len  */
 	    	if (PartialDelta > 0 ) 
 		{
-		    elt->delta = 127;
+		    *(tbuf+1) = 127;  /* elt->delta  */
 		    PartialDelta = PartialDelta - 127;
 		}
 		else
 		{
-		    elt->delta = -128;
+		    /* -128 = 0x8, need to be careful of signed chars... */
+		    *((unsigned char *)(tbuf+1)) = 0x80;  /* elt->delta */
 		    PartialDelta = PartialDelta + 128;
 		}
 	    }
 	    if (PartialDelta)
             {
-                BufAlloc (xTextElt *, elt, nbytes); 
-	        elt->len = 0;
-		elt->delta = PartialDelta;
+                BufAlloc (char *, tbuf , nbytes); 
+	        *tbuf = 0;      /* elt->len */
+		*(tbuf+1) = PartialDelta;    /* elt->delta  */
 	    }
 	    while(PartialNChars > 254)
             {
@@ -122,26 +124,25 @@ XDrawText(dpy, d, gc, x, y, items, nitems)
 		    if (!item->delta)
  		    { 
 			nbytes += SIZEOF(xTextElt);
-	   		BufAlloc (xTextElt *, elt, nbytes); 
-		        elt->delta = 0;
+	   		BufAlloc (char *, tbuf, nbytes); 
+		        *(tbuf+1) = 0;     /* elt->delta */
 		    }
 		    else
 		    {
 			char *DummyChar;
 		        BufAlloc(char *, DummyChar, nbytes);
-#ifdef lint
-			DummyChar = DummyChar;
-#endif
 		    }
 		}
 		else
 		{
  		    nbytes += SIZEOF(xTextElt);
-	   	    BufAlloc (xTextElt *, elt, nbytes);
-		    elt->delta = 0;
+	   	    BufAlloc (char *, tbuf, nbytes);
+		    *(tbuf+1) = 0;   /* elt->delta */
 		}
-	    	elt->len = 254;
-                bcopy (CharacterOffset, (char *) (elt + 1), 254);
+		/* watch out for signs on chars */
+		*(unsigned char *)tbuf = 254;  /* elt->len */
+	    	*tbuf = 254;     /* elt->len */
+                bcopy (CharacterOffset, tbuf+2 , 254);
 		PartialNChars = PartialNChars - 254;
 		CharacterOffset += 254;
 
@@ -155,26 +156,23 @@ XDrawText(dpy, d, gc, x, y, items, nitems)
 		    if (!item->delta)
  		    { 
 			nbytes += SIZEOF(xTextElt);
-	   		BufAlloc (xTextElt *, elt, nbytes); 
-			elt->delta = 0;
+	   		BufAlloc (char *, tbuf, nbytes); 
+			*(tbuf+1) = 0;   /*  elt->delta  */
 		    }
 		    else
 		    {
 			char *DummyChar;
 		        BufAlloc(char *, DummyChar, nbytes);
-#ifdef lint
-			DummyChar = DummyChar;
-#endif
 		    }
 		}
 		else
 		{
  		    nbytes += SIZEOF(xTextElt);
-	   	    BufAlloc (xTextElt *, elt, nbytes); 
-		    elt->delta = 0;
+	   	    BufAlloc (char *, tbuf, nbytes); 
+		    *(tbuf+1) = 0;   /* elt->delta  */
 		}
-	    	elt->len = PartialNChars;
-                bcopy (CharacterOffset, (char *) (elt + 1), PartialNChars);
+	    	*tbuf = PartialNChars;   /*  elt->len  */
+                bcopy (CharacterOffset, tbuf+2 , PartialNChars);
 	    }
 	}
     item++;

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XFreeCols.c,v 11.6 87/05/24 21:35:19 jg Exp $ */
+/* $Header: XFreeCols.c,v 11.6 87/09/11 08:03:32 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -28,7 +28,7 @@ unsigned long planes; /* CARD32 */
 
     nbytes = npixels << 2;
 
-    Data(dpy, (char *) pixels, nbytes);
+    Data32 (dpy, (char *) pixels, nbytes);
     UnlockDisplay(dpy);
     SyncHandle();
 }

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XDrLines.c,v 11.9 87/05/26 16:56:47 jg Exp $ */
+/* $Header: XDrLines.c,v 11.9 87/09/11 08:15:20 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -23,10 +23,8 @@ XDrawLines (dpy, d, gc, points, npoints, mode)
     req->coordMode = mode;
     req->length += npoints;
        /* each point is 2 16-bit integers */
-    length = npoints << 2; 
-       /* do this here, not in arguments to PackData, since PackData
-          may be a macro which uses its arguments more than once */
-    PackData (dpy, (char *) points, length);
+    length = npoints << 2;		/* eval here Data16 may be a macro */
+    Data16 (dpy, (char *) points, length);
     UnlockDisplay(dpy);
     SyncHandle();
 }

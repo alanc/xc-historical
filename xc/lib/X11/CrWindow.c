@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XCrWindow.c,v 11.9 87/05/24 21:34:03 jg Exp $ */
+/* $Header: XCrWindow.c,v 11.9 87/09/11 08:02:37 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -15,7 +15,6 @@ Window XCreateSimpleWindow(dpy, parent, x, y, width, height,
     unsigned long background;
 {
     Window wid;
-    register unsigned long *valuePtr;
     register xCreateWindowReq *req;
 
     LockDisplay(dpy);
@@ -32,9 +31,22 @@ Window XCreateSimpleWindow(dpy, parent, x, y, width, height,
     wid = req->wid = XAllocID(dpy);
     req->mask = CWBackPixel | CWBorderPixel;
 
-    valuePtr = (unsigned long *) (req + 1);
-    *valuePtr++ = background;
-    *valuePtr = border;
+#ifdef MUSTCOPY
+    {
+	unsigned long lbackground = background, lborder = border;
+	dpy->bufptr -= 8;
+	Data32 (dpy, (char *) &lbackground, 4);
+	Data32 (dpy, (char *) &lborder, 4);
+    }
+#else
+    {
+	register unsigned long *valuePtr =
+	  (unsigned long *) NEXTPTR(req,xCreateWindowReq);
+	*valuePtr++ = background;
+	*valuePtr = border;
+    }
+#endif /* MUSTCOPY */
+
     UnlockDisplay(dpy);
     SyncHandle();
     return (wid);

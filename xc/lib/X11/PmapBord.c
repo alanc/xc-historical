@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XPmapBord.c,v 11.5 87/05/24 21:37:44 jg Exp $ */
+/* $Header: XPmapBord.c,v 11.5 87/09/11 08:05:38 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -15,7 +15,7 @@ XSetWindowBorderPixmap(dpy, w, pixmap)
     GetReqExtra (ChangeWindowAttributes, 4, req);
     req->window = w;
     req->valueMask = CWBorderPixmap;
-    * (unsigned long *) (req + 1) = pixmap;
+    OneDataCard32 (dpy, NEXTPTR(req,xChangeWindowAttributesReq), pixmap);
     UnlockDisplay(dpy);
     SyncHandle();
 }

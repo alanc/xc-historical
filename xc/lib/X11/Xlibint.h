@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $Header: Xlibint.h,v 11.47 88/08/09 17:12:27 jim Exp $ */
+/* $Header: Xlibint.h,v 11.48 88/08/09 18:39:57 jim Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -21,6 +21,11 @@
 #endif /* __TYPES__ */
 #else
 #include <sys/types.h>
+#endif /* CRAY */
+
+#ifdef CRAY
+#define MUSTCOPY
+#define WORD64
 #endif /* CRAY */
 
 #include <X11/Xlib.h>
@@ -266,7 +271,7 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
  * Stuff to handle large architecture machines; the constants were generated
  * on a 32-bit machine and must coorespond to the protocol.
  */
-#ifdef WORD64
+#ifdef MUSTCOPY
 
 #if (defined __STDC__) && (!defined UNIXCPP)
 #define SIZEOF(x) sizeof_##x
@@ -434,7 +439,7 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 #define sizeof_xPropIconSize 24
 #define sizeof_xChangeKeyboardMappingReq 8
 
-#else /* else not WORD64, this is used for 32-bit machines */
+#else /* else not MUSTCOPY, this is used for 32-bit machines */
 
 #define SIZEOF(x) sizeof(x)
 #define NEXTPTR(p,t) ((p)+1)
@@ -444,5 +449,5 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 #define OneDataCard32(dpy,dstaddr,srcvar) \
   { *(unsigned long *)(dstaddr) = (srcvar); }
 
-#endif /* WORD64 - used by CRAY */
+#endif /* MUSTCOPY - used machines whose C structs don't line up with proto */
 

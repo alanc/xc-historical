@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XStColors.c,v 11.9 87/09/11 08:07:31 toddb Exp $ */
+/* $Header: XStColors.c,v 11.10 88/08/09 15:57:27 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -30,7 +30,7 @@ int ncolors;
 	citem.flags = defs[i].flags;
 
 	/* note that xColorItem doesn't contain all 16-bit quantities, so
-	   we can't use PackData */
+	   we can't use Data16 */
 	Data(dpy, (char *)&citem, (long) SIZEOF(xColorItem)); 
 			/* assume size is 4*n */
     }

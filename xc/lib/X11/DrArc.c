@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XDrArc.c,v 11.11 87/12/08 13:28:22 newman Exp $ */
+/* $Header: XDrArc.c,v 11.12 88/08/09 15:57:33 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /* Note to future maintainers:  XDrawArc does NOT batch successive PolyArc
@@ -19,8 +19,14 @@ XDrawArc(dpy, d, gc, x, y, width, height, angle1, angle2)
     unsigned int width, height; /* CARD16 */
     int angle1, angle2; /* INT16 */
 {
-    register xArc *arc;
     register xPolyArcReq *req;
+    register xArc *arc;
+#ifdef MUSTCOPY
+    xArc arcdata;
+    long len = SIZEOF(xArc);
+
+    arc = &arcdata;
+#endif /* MUSTCOPY */
 
     LockDisplay(dpy);
     FlushGC(dpy, gc);
@@ -29,13 +35,21 @@ XDrawArc(dpy, d, gc, x, y, width, height, angle1, angle2)
     req->drawable = d;
     req->gc = gc->gid;
 
-    arc = (xArc *) (req + 1);
+#ifndef MUSTCOPY
+    arc = (xArc *) NEXTPTR(req,xPolyArcReq);
+#endif /* MUSTCOPY */
+
     arc->x = x;
     arc->y = y;
     arc->width = width;
     arc->height = height;
     arc->angle1 = angle1;
     arc->angle2 = angle2;
+
+#ifdef MUSTCOPY
+    dpy->bufptr -= SIZEOF(xArc);
+    Data (dpy, (char *) arc, len);
+#endif /* MUSTCOPY */
 
     UnlockDisplay(dpy);
     SyncHandle();

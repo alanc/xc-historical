@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XChWindow.c,v 11.6 87/05/31 14:07:45 jg Exp $ */
+/* $Header: XChWindow.c,v 11.6 87/09/11 08:01:46 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -10,7 +10,6 @@ register Display *dpy;
 Window w;
 unsigned int width, height;
 {
-    register unsigned long *valuePtr;
     register xConfigureWindowReq *req;
 
     LockDisplay(dpy);
@@ -20,9 +19,21 @@ unsigned int width, height;
 
     req->window = w;
     req->mask = CWWidth | CWHeight;
-    valuePtr = (unsigned long *) (req + 1);
-    *valuePtr++ = width;
-    *valuePtr++ = height;
+#ifdef MUSTCOPY
+    {
+	unsigned long lwidth = width, lheight = height;
+    dpy->bufptr -= 8;
+    Data32 (dpy, (char *) &lwidth, 4);	/* order dictated by values of */
+    Data32 (dpy, (char *) &lheight, 4);	/* CWWidth and CWHeight */
+    }
+#else
+    {
+	unsigned long * valuePtr =
+	  (unsigned long *) NEXTPTR(req,xConfigureWindowReq);
+	*valuePtr++ = width;
+	*valuePtr++ = height;
+    }
+#endif /* MUSTCOPY */
     UnlockDisplay(dpy);
     SyncHandle();
 }

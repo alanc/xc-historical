@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XBorder.c,v 11.5 87/05/24 21:32:39 jg Exp $ */
+/* $Header: XBorder.c,v 11.5 87/09/11 08:01:10 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -16,7 +16,7 @@ XSetWindowBorder(dpy, w, pixel)
     GetReqExtra (ChangeWindowAttributes, 4, req);
     req->window = w;
     req->valueMask = CWBorderPixel;
-    * (unsigned long *) (req + 1) = pixel;
+    OneDataCard32 (dpy, NEXTPTR(req,xChangeWindowAttributesReq), pixel);
     UnlockDisplay(dpy);
     SyncHandle();
 }

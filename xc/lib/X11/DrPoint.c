@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XDrPoint.c,v 11.8 87/09/11 08:10:07 toddb Exp $ */
+/* $Header: XDrPoint.c,v 11.9 88/08/09 15:57:40 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -16,10 +16,20 @@ XDrawPoint(dpy, d, gc, x, y)
     int x, y; /* INT16 */
 {
     xPoint *point;
+#ifdef MUSTCOPY
+    xPoint pointdata;
+    long len = SIZEOF(xPoint);
+
+    point = &pointdata;
+#endif /* MUSTCOPY */
+
     LockDisplay(dpy);
     FlushGC(dpy, gc);
+
     {
     register xPolyPointReq *req = (xPolyPointReq *) dpy->last_req;
+
+
     /* if same as previous request, with same drawable, batch requests */
     if (
           (req->reqType == X_PolyPoint)
@@ -28,9 +38,11 @@ XDrawPoint(dpy, d, gc, x, y)
        && (req->coordMode == CoordModeOrigin)
        && ((dpy->bufptr + SIZEOF(xPoint)) <= dpy->bufmax)
        && (((char *)dpy->bufptr - (char *)req) < size) ) {
-         point = (xPoint *) dpy->bufptr;
 	 req->length += SIZEOF(xPoint) >> 2;
+#ifndef MUSTCOPY
+         point = (xPoint *) dpy->bufptr;
 	 dpy->bufptr += SIZEOF(xPoint);
+#endif /* not MUSTCOPY */
 	 }
 
     else {
@@ -38,10 +50,19 @@ XDrawPoint(dpy, d, gc, x, y)
 	req->drawable = d;
 	req->gc = gc->gid;
 	req->coordMode = CoordModeOrigin;
-	point = (xPoint *) (req + 1);
+#ifdef MUSTCOPY
+	dpy->bufptr -= SIZEOF(xPoint);
+#else
+	point = (xPoint *) NEXTPTR(req,xPolyPointReq);
+#endif /* MUSTCOPY */
 	}
+
     point->x = x;
     point->y = y;
+
+#ifdef MUSTCOPY
+    Data (dpy, (char *) point, len);
+#endif /* MUSTCOPY */
     }
     UnlockDisplay(dpy);
     SyncHandle();

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: XGetDflt.c,v 1.9 88/02/26 12:56:49 swick Exp $";
+static char rcsid[] = "$Header: XGetDflt.c,v 1.10 88/07/06 15:53:47 jim Exp $";
 #endif lint
 
 /***********************************************************
@@ -39,7 +39,7 @@ static char *GetHomeDir (dest)
 	int uid;
 	extern char *getenv();
 	extern int getuid();
-	extern struct passwd *getpwuid();
+	extern struct passwd *getpwuid(), *getpwnam();
 	struct passwd *pw;
 	register char *ptr;
 

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetKCnt.c,v 11.8 87/08/31 17:20:08 toddb Exp $ */
+/* $Header: XGetKCnt.c,v 11.9 88/08/09 15:56:58 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -18,7 +18,7 @@ XGetKeyboardControl (dpy, state)
     LockDisplay(dpy);
     GetEmptyReq (GetKeyboardControl, req);
     (void) _XReply (dpy, (xReply *) &rep, 
-	(sizeof(rep) - SIZEOF(xReply)) >> 2, xTrue);
+	(sizeof(xGetKeyboardControlReply) - SIZEOF(xReply)) >> 2, xTrue);
 
     state->key_click_percent = rep.keyClickPercent;
     state->bell_percent = rep.bellPercent;

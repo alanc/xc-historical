@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetPntMap.c,v 1.5 87/09/11 08:09:56 newman Locked $ */
+/* $Header: XGetPntMap.c,v 1.6 87/10/29 19:03:10 newman Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -58,9 +58,13 @@ KeySym *XGetKeyboardMapping (dpy, first_keycode, count, keysyms_per_keycode)
     if (rep.length > 0) {
         *keysyms_per_keycode = rep.keySymsPerKeyCode;
 	nbytes = (long)rep.length << 2;
+#ifdef WORD64
+	mapping = (KeySym *) Xmalloc ((unsigned) nbytes * 2);
+	_XRead32 (dpy, (char *) mapping, nbytes);
+#else
 	mapping = (KeySym *) Xmalloc((unsigned) nbytes);
-
 	_XRead (dpy, (char *)mapping, nbytes);
+#endif /* WORD64 */
       }
     UnlockDisplay(dpy);
     SyncHandle();

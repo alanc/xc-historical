@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XFillRects.c,v 11.8 87/09/11 08:03:13 toddb Exp $ */
+/* $Header: XFillRects.c,v 11.9 88/08/09 15:57:20 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -26,7 +26,7 @@ int n_rects;
 
     nbytes = n_rects * SIZEOF(xRectangle);
 
-    PackData (dpy, (char *) rectangles, nbytes);
+    Data16 (dpy, (char *) rectangles, nbytes);
     UnlockDisplay(dpy);
     SyncHandle();
 }

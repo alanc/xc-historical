@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XLowerWin.c,v 11.5 87/05/24 21:37:04 jg Exp $ */
+/* $Header: XLowerWin.c,v 11.5 87/09/11 08:04:56 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -10,11 +10,13 @@ Display *dpy;
 Window w;
 {
     register xConfigureWindowReq *req;
+    unsigned long val = Below;		/* needed for macro */
+
     LockDisplay(dpy);
     GetReqExtra(ConfigureWindow, 4, req);
     req->window = w;
     req->mask = CWStackMode;
-    * (unsigned long *) (req + 1) = Below;
+    OneDataCard32 (dpy, NEXTPTR(req,XConfigureWindowReq), val);
     UnlockDisplay(dpy);
     SyncHandle();
 }

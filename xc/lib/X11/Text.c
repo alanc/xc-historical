@@ -49,14 +49,20 @@ XDrawString(dpy, d, gc, x, y, string, length)
 	int PartialNChars = length;
         register xTextElt *elt;
  	char *CharacterOffset = string;
+        unsigned char *tbuf;
 
 	while(PartialNChars > 254)
         {
  	    nbytes = 254 + SIZEOF(xTextElt);
-	    BufAlloc (xTextElt *, elt, nbytes);
-	    elt->delta = 0;
-	    elt->len = 254;
-            bcopy (CharacterOffset, (char *) (elt + 1), 254);
+	    BufAlloc (unsigned char *, tbuf, nbytes);
+/*    elt->delta = 0;
+ *    elt->len = 254;
+ */
+            *(unsigned char *)tbuf = 254;
+            *(tbuf+1) = 0;
+/*       bcopy (CharacterOffset, (char *) (elt + 1), 254);
+ */
+            bcopy (CharacterOffset, tbuf+2, 254);
 	    PartialNChars = PartialNChars - 254;
 	    CharacterOffset += 254;
 	}
@@ -64,10 +70,15 @@ XDrawString(dpy, d, gc, x, y, string, length)
         if (PartialNChars)
         {
 	    nbytes = PartialNChars + SIZEOF(xTextElt);
-	    BufAlloc (xTextElt *, elt, nbytes); 
-	    elt->delta = 0;
-	    elt->len = PartialNChars;
-            bcopy (CharacterOffset, (char *) (elt + 1), PartialNChars);
+	    BufAlloc (unsigned char *, tbuf, nbytes); 
+/*    elt->delta = 0;
+ *    elt->len = PartialNChars;
+ */
+            *(unsigned char *)tbuf =  PartialNChars;
+            *(tbuf+1) = 0;
+/*     bcopy (CharacterOffset, (char *) (elt + 1), PartialNChars);
+ */
+         bcopy (CharacterOffset, tbuf+2, PartialNChars);
 	 }
     }
 
@@ -100,4 +111,3 @@ XDrawString(dpy, d, gc, x, y, string, length)
     SyncHandle();
     return;
 }
-

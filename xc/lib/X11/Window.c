@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XWindow.c,v 11.11 87/09/11 08:08:31 toddb Exp $ */
+/* $Header: XWindow.c,v 11.12 88/01/30 14:01:34 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -110,11 +110,11 @@ _XProcessWindowAttributes (dpy, req, valuemask, attributes)
 
     req->length += (nvalues = value - values);
 
-    /* note: Data is a macro that uses its arguments multiple
+    /* note: Data32 may be a macro that uses its arguments multiple
        times, so "nvalues" is changed in a separate assignment
        statement */
 
     nvalues <<= 2;
-    Data (dpy, (char *) values, (long)nvalues);
+    Data32 (dpy, (char *) values, (long)nvalues);
 
     }

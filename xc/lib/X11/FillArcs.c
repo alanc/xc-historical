@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XFillArcs.c,v 11.8 87/09/11 08:03:03 toddb Exp $ */
+/* $Header: XFillArcs.c,v 11.9 88/08/09 15:57:16 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -26,7 +26,7 @@ int n_arcs;
     
     nbytes = n_arcs * SIZEOF(xArc);
 
-    PackData (dpy, (char *) arcs, nbytes);
+    Data16 (dpy, (char *) arcs, nbytes);
     UnlockDisplay(dpy);
     SyncHandle();
 }

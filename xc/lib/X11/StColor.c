@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XStColor.c,v 11.5 87/09/11 08:07:28 toddb Exp $ */
+/* $Header: XStColor.c,v 11.6 88/08/09 15:57:26 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -18,7 +18,7 @@ XColor *def;
 
     req->cmap = cmap;
 
-    citem = (xColorItem *) (req + 1);
+    citem = (xColorItem *) NEXTPTR(req,xStoreColorsReq);
 
     citem->pixel = def->pixel;
     citem->red = def->red;

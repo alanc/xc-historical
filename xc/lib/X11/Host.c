@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XHost.c,v 11.8 87/05/29 03:06:36 jg Exp $ */
+/* $Header: XHost.c,v 11.8 87/09/11 08:08:38 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 /* this might be rightly reguarded an os dependent file */
 
@@ -18,7 +18,7 @@ XAddHost (dpy, host)
     req->mode = HostInsert;
     req->hostFamily = host->family;
     req->hostLength = host->length;
-    bcopy (host->address, (char *) (req + 1), host->length);
+    bcopy (host->address, (char *) NEXTPTR(req,xChangeHostsReq), host->length);
     UnlockDisplay(dpy);
     SyncHandle();
     }
@@ -35,7 +35,7 @@ XRemoveHost (dpy, host)
     req->mode = HostDelete;
     req->hostFamily = host->family;
     req->hostLength = host->length;
-    bcopy (host->address, (char *) (req + 1), host->length);
+    bcopy (host->address, (char *) NEXTPTR(req,xChangeHostsReq), host->length);
     UnlockDisplay(dpy);
     SyncHandle();
     }

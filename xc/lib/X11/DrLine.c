@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XDrLine.c,v 11.10 87/09/11 08:09:53 toddb Exp $ */
+/* $Header: XDrLine.c,v 11.11 88/08/09 15:57:35 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -16,10 +16,19 @@ XDrawLine (dpy, d, gc, x1, y1, x2, y2)
     int x1, y1, x2, y2;
 {
     register xSegment *segment;
+#ifdef MUSTCOPY
+    xSegment segmentdata;
+    long len = SIZEOF(xSegment);
+
+    segment = &segmentdata;
+#endif /* not MUSTCOPY */
+
     LockDisplay(dpy);
     FlushGC(dpy, gc);
+
     {
     register xPolySegmentReq *req = (xPolySegmentReq *) dpy->last_req;
+
     /* if same as previous request, with same drawable, batch requests */
     if (
           (req->reqType == X_PolySegment)
@@ -27,22 +36,33 @@ XDrawLine (dpy, d, gc, x1, y1, x2, y2)
        && (req->gc == gc->gid)
        && ((dpy->bufptr + SIZEOF(xSegment)) <= dpy->bufmax)
        && (((char *)dpy->bufptr - (char *)req) < size) ) {
-         segment = (xSegment *) dpy->bufptr;
 	 req->length += SIZEOF(xSegment) >> 2;
+#ifndef MUSTCOPY
+         segment = (xSegment *) dpy->bufptr;
 	 dpy->bufptr += SIZEOF(xSegment);
+#endif /* not MUSTCOPY */
 	 }
 
     else {
 	GetReqExtra (PolySegment, SIZEOF(xSegment), req);
 	req->drawable = d;
 	req->gc = gc->gid;
-	segment = (xSegment *) (req + 1);
+#ifdef MUSTCOPY
+	dpy->bufptr -= SIZEOF(xSegment);
+#else
+	segment = (xSegment *) NEXTPTR(req,xPolySegmentReq);
+#endif /* MUSTCOPY */
 	}
 
     segment->x1 = x1;
     segment->y1 = y1;
     segment->x2 = x2;
     segment->y2 = y2;
+
+#ifdef MUSTCOPY
+    Data (dpy, (char *) &segmentdata, len);
+#endif /* MUSTCOPY */
+
     UnlockDisplay(dpy);
     SyncHandle();
     }

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XSetCRects.c,v 11.14 87/09/21 07:51:47 rws Exp $ */
+/* $Header: XSetCRects.c,v 11.15 88/08/09 15:56:52 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -42,6 +42,6 @@ _XSetClipRectangles (dpy, gc, clip_x_origin, clip_y_origin, rectangles, n,
     req->length += n * (SIZEOF(xRectangle)/4);
     gc->rects = 1;
     nbytes = (long)n * SIZEOF(xRectangle);
-    PackData (dpy, (char *) rectangles, nbytes);
+    Data16 (dpy, (char *) rectangles, nbytes);
     gc->dirty &= ~(GCClipMask | GCClipXOrigin | GCClipYOrigin);
 }

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XQuColor.c,v 11.13 87/09/11 08:05:47 toddb Exp $ */
+/* $Header: XQuColor.c,v 11.14 88/08/09 15:57:21 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -14,12 +14,13 @@ XQueryColor(dpy, cmap, def)
     xrgb color;
     xQueryColorsReply rep;
     register xQueryColorsReq *req;
+    unsigned long val = def->pixel;	/* needed for macro below */
 
     LockDisplay(dpy);
     GetReqExtra(QueryColors, 4, req); /* a pixel (CARD32) is 4 bytes */
     req->cmap = cmap;
 
-    * (unsigned long *) (req + 1) = def->pixel;
+    OneDataCard32 (dpy, NEXTPTR(req,xQueryColorsReq), val);
 
     if (_XReply(dpy, (xReply *) &rep, 0, xFalse) != 0) {
 

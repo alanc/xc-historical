@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XBackgnd.c,v 11.5 87/05/24 21:32:32 jg Exp $ */
+/* $Header: XBackgnd.c,v 11.5 87/09/11 08:01:04 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -16,7 +16,7 @@ XSetWindowBackground(dpy, w, pixel)
     GetReqExtra (ChangeWindowAttributes, 4, req);
     req->window = w;
     req->valueMask = CWBackPixel;
-    * (unsigned long *) (req + 1) = pixel;
+    OneDataCard32 (dpy, NEXTPTR(req,xChangeWindowAttributesReq), pixel);
     UnlockDisplay(dpy);
     SyncHandle();
 }

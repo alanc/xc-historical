@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XFillPoly.c,v 11.7 87/05/26 16:57:30 jg Exp $ */
+/* $Header: XFillPoly.c,v 11.7 87/09/11 08:03:06 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -33,7 +33,7 @@ int mode;
 
     nbytes = n_points << 2;
     
-    PackData(dpy, (char *) points, nbytes);
+    Data16 (dpy, (char *) points, nbytes);
     UnlockDisplay(dpy);
     SyncHandle();
 }
