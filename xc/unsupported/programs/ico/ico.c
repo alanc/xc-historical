@@ -1,4 +1,4 @@
-/* $Header: ico.c,v 1.2 88/02/04 14:23:53 jim Locked $ */
+/* $Header: ico.c,v 1.3 88/02/04 14:42:43 jim Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -156,8 +156,6 @@ char **argv;
 			geom = *++argv;
 		} else if (**argv == '=') 		/* obsolete */
 			geom = *argv;
-		else if (index(*argv, ':'))		/* obsolete */
-			display = *argv;
 		else if (!strcmp(*argv, "-r"))
 			useRoot = 1;
 		else if (!strcmp (*argv, "-d"))
