@@ -8,8 +8,9 @@ IconDirectory "/users/jim/icons"
 
 SqueezeTitle
 NoDefaults
-LeftTitleButton "bar7" = f.menu "windowops"
-#NoTitleHighlight
+LeftTitleButton "menu12" = f.menu "windowmenu"
+TitleButtonBorderWidth 0
+ButtonIndent 0
 
 UsePPosition "on"
 NoVersion
@@ -88,15 +89,13 @@ Function "move-or-raise"
 DefaultFunction f.nop
 
 Button1 =      : root                     : f.menu "twmops"
-Button1 =      : title                    : f.move
+Button2 =      : root                     : f.menu "windowops"
+Button3 =      : root                     : f.menu "apps"
+Button1 =      : title                    : f.function "move-or-raise"
+Button1 =      : icon                     : f.iconify
 Button1 =      : iconmgr                  : f.iconify
 Button1 = m    : window|icon|frame|title  : f.lower
-Button2 =      : root                     : f.menu "windowops"
 Button2 = m    : window                   : f.resize
-Button2 =      : icon                     : f.iconify
-Button2 = m    : icon                     : f.iconify
-Button3 =      : root                     : f.menu "apps"
-Button3 =      : title                    : f.menu "windowops"
 Button3 = m    : window|icon|frame|title  : f.function "move-or-raise"
 #"F20"   =      : all                      : f.warptoscreen "next"
 
@@ -110,8 +109,6 @@ Button3 = m    : window|icon|frame|title  : f.function "move-or-raise"
 "Up"    = m    : all                      : f.upiconmgr
 "Down"  = m    : all                      : f.downiconmgr
 
-#LeftTitleButton "wide_weave" = f.refresh
-#RightTitleButton "bar7" = f.menu "windowops"
 
 ###############################################################################
 #                                                                             #
@@ -183,6 +180,15 @@ menu "windowops"
 "Info"			f.identify
 "Focus"			f.focus
 "Unfocus"		f.unfocus
+}
+
+menu "windowmenu"
+{
+"Iconify"		f.iconify
+"Refresh"		f.winrefresh
+"Focus"			f.focus
+""			f.nop
+"Kill"			f.menu "kill"
 }
 
 menu "apps"
