@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.23 87/07/16 22:50:27 chariot Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.24 87/08/19 20:30:09 dkk Locked $";
 #endif
 
 /*%
@@ -138,12 +138,8 @@ Window_Dump(window, out)
      Window window;
      FILE *out;
 {
-    register int i;
-
     XColor *pixcolors;
     unsigned buffer_size;
-    unsigned int virt_width, virt_height;
-    int virt_x, virt_y;
     int win_name_size;
     int header_size;
     int ncolors = 0;
@@ -174,32 +170,24 @@ Window_Dump(window, out)
     win_name_size = strlen(win_name) + sizeof(char);
 
     /*
-     * Calculate the virtual x, y, width and height of the window pane image
-     * (this depends on whether or not the borders are included)
-     */
-    if (nobdrs) {
-	if (debug) outl("xwd: Image without borders selected.\n");
-	virt_x = 0;
-	virt_y = 0;
-	virt_width = win_info.width;
-	virt_height = win_info.height;
-    }
-    else {
-	if (debug) outl("xwd: Image with borders selected.\n");
-	virt_x = win_info.x;
-	virt_y = win_info.y;
-	virt_width = win_info.width + (win_info.border_width << 1);
-    	virt_height = win_info.height + (win_info.border_width << 1);
-    }
-
-    /*
      * Snarf the pixmap with XGetImage.
      * Color windows get snarfed in Z format first to check the color
      * map allocations before resnarfing if XY format selected.
      */
 
-    image = XGetImage ( dpy, window, 0, 0, virt_width,
-		       virt_height, ~0, format); 
+    if (nobdrs) {
+      	if (debug) outl("xwd: Image without borders selected.\n");
+	image = XGetImage ( dpy, window, 0, 0, win_info.width,
+			   win_info.height, ~0, format); 
+      }
+    else {
+	if (debug) outl("xwd: Image with borders selected.\n");
+	image = XGetImage ( dpy, window,
+			   -win_info.border_width, -win_info.border_width, 
+			   win_info.width + (win_info.border_width << 1),
+			   win_info.height + (win_info.border_width << 1),
+			   ~0, format); 
+      }
     if (debug) outl("xwd: Getting pixmap.\n");
 
     /*
@@ -237,12 +225,20 @@ Window_Dump(window, out)
     header.display_type = 0; /* DisplayType(dpy, screen);  [obsolete] */
     header.display_planes = DisplayPlanes(dpy, screen);
     header.pixmap_format = format;
-    header.pixmap_width = virt_width;
-    header.pixmap_height = virt_height;
     header.window_width = win_info.width;
     header.window_height = win_info.height;
-    header.window_x = win_info.x;
-    header.window_y = win_info.y;
+    if (nobdrs) {
+      header.pixmap_width = win_info.width;
+      header.pixmap_height = win_info.height;
+      header.window_x = win_info.x + win_info.border_width;
+      header.window_y = win_info.y + win_info.border_width;
+    }
+    else {
+      header.pixmap_width = win_info.width + (win_info.border_width << 1);
+      header.pixmap_height = win_info.height + (win_info.border_width << 1);
+      header.window_x = win_info.x;
+      header.window_y = win_info.y;
+    }
     header.window_bdrwidth = win_info.border_width;
     header.window_ncolors = 0;  /*%  = ncolors;  %*/
 
