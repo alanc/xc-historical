@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbpolypnt.c,v 5.0 89/08/21 08:59:28 rws Exp $ */
+/* $XConsortium: cfbpolypnt.c,v 5.0 89/08/22 18:44:35 rws Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -92,7 +92,7 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	    	*addrb = DoRop(rop, pixel, *addrb);
 #else
 		addr = addrl + (y * nlwidth) + (x >> PWSH);
-		mask = cfbmask[x & PMSK];
+		mask = cfbmask[x & PIM];
 		*addr = (*addr & ~mask) | (DoRop(rop, pixel, *addr) & mask);
 #endif
 	    }
