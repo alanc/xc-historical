@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.95 93/07/12 09:24:28 dpw Exp $ */
+/* $XConsortium: window.c,v 5.96 93/09/29 17:13:14 dpw Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2645,7 +2645,6 @@ MapSubwindows(pParent, client)
 		{
 		    anyMarked |= (*pScreen->MarkOverlappedWindows)(pWin, pWin,
 							(WindowPtr *)NULL);
-/* XYZ sgi structure different here */
 #ifdef DO_SAVE_UNDERS
 		    if (DO_SAVE_UNDERS(pWin))
 		    {
@@ -2666,7 +2665,6 @@ MapSubwindows(pParent, client)
 	    (*pScreen->ValidateTree)(pParent, pFirstMapped, VTMap);
 	    (*pScreen->HandleExposures)(pParent);
 	}
-/* XYZ sgi structure different here */
 #ifdef DO_SAVE_UNDERS
 	if (dosave)
 	    (*pScreen->PostChangeSaveUnder)(pParent, pFirstSaveUndered->nextSib);
@@ -2678,7 +2676,7 @@ MapSubwindows(pParent, client)
 }
 
 static void
-UnrealizeTree(pWin, /* XYZ sgi numInLayer, */ fromConfigure)
+UnrealizeTree(pWin, fromConfigure)
     WindowPtr pWin;
     Bool fromConfigure;
 {
@@ -2704,24 +2702,10 @@ UnrealizeTree(pWin, /* XYZ sgi numInLayer, */ fromConfigure)
 		    deltaSaveUndersViewable--;
 #endif
 		pChild->viewable = FALSE;
-		/* XYZ sgi increments numInLayer */
 		if (pChild->backStorage)
 		    (*pChild->drawable.pScreen->SaveDoomedAreas)(
 					    pChild, &pChild->clipList, 0, 0);
 		(* MarkUnrealizedWindow)(pChild, pWin, fromConfigure);
-#if 0 /* XYZ */
-		/* XYZ sgi extra condition here: need layer */
-		/* XYZ screen func for this if */
-		if ((pChild != pWin) || fromConfigure)
-		{
-		    (* RegionEmpty)(&pChild->clipList);
-		    if (ClipNotify)
-			(* ClipNotify)(pChild, 0, 0);
-		    (* RegionEmpty)(&pChild->borderClip);
-		}
-		/* XYZ sgi UnmapValData */
-		/* XYZ ibm throws  away other regions */
-#endif
 		pChild->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 	    }
 	    if (pChild->firstChild)
@@ -2755,7 +2739,7 @@ UnmapWindow(pWin, fromConfigure)
     Bool wasRealized = (Bool)pWin->realized;
     Bool wasViewable = (Bool)pWin->viewable;
     ScreenPtr pScreen = pWin->drawable.pScreen;
-    WindowPtr pLayerWin;
+    WindowPtr pLayerWin = pWin;
 
     if ((!pWin->mapped) || (!(pParent = pWin->parent)))
 	return(Success);
@@ -2774,7 +2758,6 @@ UnmapWindow(pWin, fromConfigure)
     }
     pWin->mapped = FALSE;
     if (wasRealized)
-	/* XYZ sgi allocate & init numUnmapped array */
 	UnrealizeTree(pWin, fromConfigure);
     if (wasViewable)
     {
@@ -2797,7 +2780,6 @@ UnmapWindow(pWin, fromConfigure)
 	if (!fromConfigure && pScreen->PostValidateTree)
 	    (*pScreen->PostValidateTree)(pLayerWin->parent, pWin, VTUnmap);
     }
-    /* XYZ sgi use & dealloc numUnmapped */
     if (wasRealized && !fromConfigure)
 	WindowsRestructured ();
     return(Success);
@@ -2830,8 +2812,6 @@ UnmapSubwindows(pWin)
     if (wasViewable)
 	pLayerWin = (*pScreen->GetLayerWindow)(pWin);
 
-    /* XYZ sgi alloc & init numUnmapped */
-
     for (pChild = pWin->lastChild; pChild != pHead; pChild = pChild->prevSib)
     {
 	if (pChild->mapped)
@@ -2850,7 +2830,7 @@ UnmapSubwindows(pWin)
 	    }
 	    pChild->mapped = FALSE;
 	    if (pChild->realized)
-		UnrealizeTree(pChild, /* XYZ sgi numUnmapped, */ FALSE);
+		UnrealizeTree(pChild, FALSE);
 	    if (wasViewable)
 	    {
 #ifdef DO_SAVE_UNDERS
