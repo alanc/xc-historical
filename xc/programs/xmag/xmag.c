@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
