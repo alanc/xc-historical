@@ -1,4 +1,4 @@
-/* $XConsortium: CallbackI.h,v 1.12 90/12/03 16:28:53 converse Exp $ */
+/* $XConsortium: CallbackI.h,v 1.13 90/12/29 12:12:48 rws Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -38,6 +38,9 @@ typedef struct internalCallbackRec {
     unsigned short count;
     char	   is_padded;	/* contains NULL padding for external form */
     char	   call_state;  /* combination of _XtCB{FreeAfter}Calling */
+#ifdef LONG64
+    unsigned int   align_pad;	/* padding to align callback list */
+#endif
     /* XtCallbackList */
 } InternalCallbackRec, *InternalCallbackList;
 
