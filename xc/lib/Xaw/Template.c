@@ -1,5 +1,7 @@
-/* Copyright	Massachusetts Institute of Technology	1987, 1988 */
 #include <X11/copyright.h>
+
+/* $XConsortium: TemplateP.h,v 1.1 88/10/23 14:32:59 swick Exp $ */
+/* Copyright	Massachusetts Institute of Technology	1987, 1988 */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -8,17 +10,17 @@
 static XtResource resources[] = {
 #define offset(field) XtOffset(TemplateWidget, template.field)
     /* {name, class, type, size, offset, default_type, default_addr}, */
-    { XtNtemplate, XtCTemplate, XtRTemplate, sizeof(char*),
-	  offset(template), XtRString, "default" },
+    { XtNtemplateResource, XtCTemplateResource, XtRTemplateResource, sizeof(char*),
+	  offset(resource), XtRString, "default" },
 #undef offset
 };
 
-static void Template(/* Widget, String*, Cardinal */);
+static void TemplateAction(/* Widget, XEvent*, String*, Cardinal* */);
 
 static XtActionsRec actions[] =
 {
   /* {name, procedure}, */
-    {"template",	Template},
+    {"template",	TemplateAction},
 };
 
 static char translations[] =
