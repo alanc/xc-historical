@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.23 93/11/06 15:11:01 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.25 94/01/12 20:48:30 rws Exp $ */
 
 int   verbosity_Group_xielib ;
 int   verbosity_Group_xielib_user_level ;
@@ -61,6 +61,11 @@ terms and conditions:
 #include <errno.h>
 #ifdef X_NOT_STDC_ENV
 extern int errno;
+#define Time_t long
+extern Time_t time ();
+#else
+#include <time.h>
+#define Time_t time_t
 #endif
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -189,9 +194,9 @@ static struct  timeval start;
 
 void PrintTime()
 {
-    time_t t;
+    Time_t t;
 
-    t = time((long *)NULL);
+    t = time((Time_t *)NULL);
     printf("%s\n", ctime(&t));
 }
 
