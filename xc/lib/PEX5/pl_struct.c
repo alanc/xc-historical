@@ -1,4 +1,4 @@
-/* $XConsortium: pl_struct.c,v 1.4 92/06/12 10:23:23 mor Exp $ */
+/* $XConsortium: pl_struct.c,v 1.5 92/07/16 10:58:02 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -149,18 +149,19 @@ INPUT PEXStructure	destStructure;
 }
 
 
-PEXStructureInfo *
-PEXGetStructureInfo (display, structure, float_format, value_mask)
+Status
+PEXGetStructureInfo (display, structure, float_format,
+    value_mask, info_return)
 
 INPUT Display			*display;
 INPUT PEXStructure		structure;
 INPUT int			float_format;
 INPUT unsigned long		value_mask;
+OUTPUT PEXStructureInfo		*info_return;
 
 {
     pexGetStructureInfoReq	*req;
     pexGetStructureInfoReply	rep;
-    PEXStructureInfo		*psi;
 
 
     /*
@@ -183,27 +184,20 @@ INPUT unsigned long		value_mask;
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
-	return (NULL);            /* return an error */
+	return (0);            /* return an error */
     }
 
 
-    /*
-     * Allocate a buffer for the replies to pass back to the client.
-     */
-
-    psi = (PEXStructureInfo *) PEXAllocBuf
-	((unsigned) (sizeof (PEXStructureInfo)));
-
     if (value_mask & PEXEditMode)
-	psi->edit_mode = rep.editMode;
+	info_return->edit_mode = rep.editMode;
     if (value_mask & PEXElementPtr)
-	psi->element_pointer = rep.elementPtr;
+	info_return->element_pointer = rep.elementPtr;
     if (value_mask & PEXNumElements)
-	psi->element_count = rep.numElements;
+	info_return->element_count = rep.numElements;
     if (value_mask & PEXLengthStructure)
-	psi->size = rep.lengthStructure;
+	info_return->size = rep.lengthStructure;
     if (value_mask & PEXHasRefs)
-	psi->has_refs = rep.hasRefs;
+	info_return->has_refs = rep.hasRefs;
 
 
     /*
@@ -213,13 +207,13 @@ INPUT unsigned long		value_mask;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (psi);
+    return (1);
 }
 
 
-PEXElementInfo *
+Status
 PEXGetElementInfo (display, structure, whence1, offset1, whence2, offset2,
-    float_format, numElementInfoReturn)
+    float_format, numElementInfoReturn, infoReturn)
 
 INPUT Display		*display;
 INPUT PEXStructure	structure;
@@ -229,11 +223,11 @@ INPUT int		whence2;
 INPUT long		offset2;
 INPUT int		float_format;
 OUTPUT unsigned long	*numElementInfoReturn;
+OUTPUT PEXElementInfo	**infoReturn;
 
 {
     pexGetElementInfoReq	*req;
     pexGetElementInfoReply	rep;
-    pexElementInfo		*pei;
 
 
     /*
@@ -260,7 +254,8 @@ OUTPUT unsigned long	*numElementInfoReturn;
         UnlockDisplay (display);
         PEXSyncHandle (display);
 	*numElementInfoReturn = 0;
-	return (NULL);        /* return an error */
+	*infoReturn = NULL;
+	return (0);        /* return an error */
     }
 
     *numElementInfoReturn = rep.numInfo;
@@ -270,9 +265,10 @@ OUTPUT unsigned long	*numElementInfoReturn;
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    pei = (pexElementInfo *) PEXAllocBuf ((unsigned) (rep.length << 2));
+    *infoReturn = (PEXElementInfo *) PEXAllocBuf (
+	(unsigned) (rep.length << 2));
 
-    _XRead (display, (char *) pei, (long) (rep.length << 2));
+    _XRead (display, (char *) *infoReturn, (long) (rep.length << 2));
 
 
     /*
@@ -282,7 +278,7 @@ OUTPUT unsigned long	*numElementInfoReturn;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return ((PEXElementInfo *) pei);
+    return (1);
 }
 
 
@@ -519,9 +515,9 @@ OUTPUT unsigned long	*numPathsReturn;
 }
 
 
-char *
+Status
 PEXFetchElements (display, structure, whence1, offset1, whence2, offset2,
-    float_format, numElementsReturn, sizeReturn)
+    float_format, numElementsReturn, sizeReturn, ocsReturn)
 
 INPUT Display		*display;
 INPUT PEXStructure	structure;
@@ -532,12 +528,12 @@ INPUT long		offset2;
 INPUT int		float_format;
 OUTPUT unsigned long	*numElementsReturn;
 OUTPUT unsigned long	*sizeReturn;
+OUTPUT char		**ocsReturn;
 
 {
     pexFetchElementsReq		*req;
     pexFetchElementsReply	rep;
     long			repSize;
-    char	 		*ocReturn;
     int				server_float_format;
 
 
@@ -567,7 +563,8 @@ OUTPUT unsigned long	*sizeReturn;
         UnlockDisplay (display);
         PEXSyncHandle (display);
     	*sizeReturn = *numElementsReturn = 0;
-        return (NULL);		/* return an error */
+	*ocsReturn = NULL;
+        return (0);		/* return an error */
     }
 
     *numElementsReturn = rep.numElements;
@@ -580,7 +577,7 @@ OUTPUT unsigned long	*sizeReturn;
 	 */
 
 	*sizeReturn = 0;
-	ocReturn = NULL;
+	*ocsReturn = NULL;
     }
     else
     {
@@ -589,9 +586,9 @@ OUTPUT unsigned long	*sizeReturn;
 	 */
 
 	*sizeReturn = repSize = rep.length << 2;
-	ocReturn = (char *) PEXAllocBuf (repSize);
-	if (ocReturn != NULL)
-	    _XRead (display, ocReturn, (long) repSize);
+	*ocsReturn = (char *) PEXAllocBuf (repSize);
+	if (*ocsReturn != NULL)
+	    _XRead (display, *ocsReturn, (long) repSize);
     }
 
 
@@ -602,7 +599,7 @@ OUTPUT unsigned long	*sizeReturn;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (ocReturn);
+    return (1);
 }
 
 
