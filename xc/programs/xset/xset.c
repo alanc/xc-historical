@@ -1,5 +1,5 @@
 /* 
- * $Header: xset.c,v 1.5 87/05/12 12:25:41 dkk Locked $ 
+ * $Header: xset.c,v 1.6 87/05/12 16:01:14 dkk Locked $ 
  * $Locker: dkk $ 
  */
 #include <X11/copyright.h>
@@ -7,7 +7,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.5 87/05/12 12:25:41 dkk Locked $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.6 87/05/12 16:01:14 dkk Locked $";
 #endif
 
 #include <X11/X.h>      /*  Should be transplanted to X11/Xlibwm.h     %*/
@@ -248,7 +248,7 @@ char **argv;
 		else if (index(arg, ':')) {
 			disp = arg;
 		} 
-		else if (strcmp(arg, "?") == 0) {
+		else if (strcmp(arg, "q") == 0 || strcmp(arg, "query") == 0) {
 		        status = TRUE;
 		}
 		else
