@@ -205,7 +205,14 @@
 			    &body body &environment env)
   ;; exclusive access to event queue
   (if (and (null inline) (macroexpand '(use-closures) env))
-      `(with-event-queue-function ,display ,timeout #'(lambda () ,@body))
+      `(with-event-queue-function
+	 ,display ,timeout
+	 #'(lambda () 
+	     (macrolet ((with-event-queue ((display &key timeout) &body body)
+			  ;; Speedup hack for lexically nested with-event-queues
+			  `(progn (progn ,display ,@(and timeout `(,timeout)) nil)
+				  ,@body)))
+	       ,@body)))
     (let ((disp (if (or (symbolp display) (constantp display)) display '.display.)))
       `(macrolet ((with-event-queue ((display &key timeout) &body body)
 		    ;; Speedup hack for lexically nested with-event-queues

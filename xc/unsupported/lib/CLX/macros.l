@@ -689,7 +689,9 @@
 	   &body type-args &environment env)
   (declare (values request-number))
   (if (and (null inline) (macroexpand '(use-closures) env))
-      `(with-buffer-request-function
+      `(,(if (eq (car (macroexpand '(with-buffer (buffer)) env)) 'progn)
+	     'with-buffer-request-function-nolock
+	   'with-buffer-request-function)
 	 ,buffer ,gc-force
 	 #'(lambda (.display.)
 	     (declare (type display .display.))

@@ -62,7 +62,14 @@
   ;; exclusive access to the local buffer object for request generation and
   ;; reply processing.
   (if (and (null inline) (macroexpand '(use-closures) env))
-      `(with-buffer-function ,buffer ,timeout #'(lambda () ,@body))
+      `(with-buffer-function
+	 ,buffer ,timeout
+	 #'(lambda ()
+	     (macrolet ((with-buffer ((buffer &key timeout) &body body)
+			  ;; Speedup hack for lexically nested with-buffers
+			  `(progn (progn ,buffer ,@(and timeout `(,timeout)) nil)
+				  ,@body)))
+	       ,@body)))
     (let ((buf (if (or (symbolp buffer) (constantp buffer)) buffer '.buffer.)))
       `(macrolet ((with-buffer ((buffer &key timeout) &body body)
 		    ;; Speedup hack for lexically nested with-buffers
@@ -281,6 +288,17 @@
 	(when gc-force (force-gcontext-changes-internal gc-force))
 	(without-aborts (funcall request-function display)))
       (display-invoke-after-function display))))
+
+(defun with-buffer-request-function-nolock (display gc-force request-function)
+  (declare (type display display)
+	   (type (or null gcontext) gc-force))
+  (declare (type function request-function)
+	   (downward-funarg request-function))
+  (multiple-value-prog1
+    (progn
+      (when gc-force (force-gcontext-changes-internal gc-force))
+      (without-aborts (funcall request-function display)))
+    (display-invoke-after-function display)))
 
 (defstruct (pending-command (:copier nil) (:predicate nil))
   (sequence 0 :type card16)

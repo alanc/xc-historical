@@ -406,98 +406,106 @@
 (defun force-gcontext-changes-internal (gcontext)
   ;; Force any delayed changes.
   (declare (type gcontext gcontext))
+  #.(declare-buffun)
+
   (let ((display (gcontext-display gcontext))
 	(server-state (gcontext-server-state gcontext))
 	(local-state (gcontext-local-state gcontext)))
     (declare (type display display)
 	     (type gcontext-state server-state local-state))
+
     ;; Update server when timestamps don't match
     (unless (= (the fixnum (gcontext-internal-timestamp local-state))
 	       (the fixnum (gcontext-internal-timestamp server-state)))
-	  
-      ;; Because there is no locking on the local state we have to
-      ;; assume that state will change and set timestamps up front,
-      ;; otherwise by the time we figured out there were no changes
-      ;; and tried to store the server stamp as the local stamp, the
-      ;; local stamp might have since been modified.
-      (setf (gcontext-internal-timestamp local-state)
-	    (incf-internal-timestamp server-state))
 
-      (block no-changes
-	(let ((last-request (buffer-last-request display)))
-	  (with-buffer-request (display *x-changegc*)
-	    (gcontext gcontext)
-	    (progn
-	      (do ((i 0 (index+ i 1))
-		   (bit 1 (the xgcmask (ash bit 1)))
-		   (nbyte 12)
-		   (mask 0)
-		   (local 0))
-		  ((index>= i *gcontext-fast-change-length*)
-		   (when (zerop mask)
-		     ;; If nothing changed, restore last-request and quit
-		     (setf (buffer-last-request display)
-			   (if (zerop (buffer-last-request display))
-			       nil
-			     last-request))
-		     (return-from no-changes nil))
-		   (card29-put 8 mask)
-		   (card16-put 2 (index-ash nbyte -2))
-		   (index-incf (buffer-boffset display) nbyte))
-		(declare (type array-index i nbyte)
-			 (type xgcmask bit)
-			 (type gcmask mask)
-			 (type (or null card32) local))
-		(unless (eql (the (or null card32) (svref server-state i))
-			     (setq local (the (or null card32) (svref local-state i))))
-		  (setf (svref server-state i) local)
-		  (card32-put nbyte local)
-		  (setq mask (the gcmask (logior mask bit)))
-		  (index-incf nbyte 4)))))))
+      ;; The display is already locked.
+      (macrolet ((with-buffer ((buffer &key timeout) &body body)
+		   `(progn (progn ,buffer ,@(and timeout `(,timeout)) nil)
+			   ,@body)))
 
-      ;; Update GContext extensions
-      (do ((extension *gcontext-extensions* (cdr extension))
-	   (i *gcontext-data-length* (index+ i 1))
-	   (local))
-	  ((endp extension))
-	(unless (eql (svref server-state i)
-		     (setq local (svref local-state i)))
-	  (setf (svref server-state i) local)
-	  (funcall (gcontext-extension-set-function (car extension)) gcontext local)))
+	;; Because there is no locking on the local state we have to
+	;; assume that state will change and set timestamps up front,
+	;; otherwise by the time we figured out there were no changes
+	;; and tried to store the server stamp as the local stamp, the
+	;; local stamp might have since been modified.
+	(setf (gcontext-internal-timestamp local-state)
+	      (incf-internal-timestamp server-state))
 
-      ;; Update clipping rectangles
-      (multiple-value-bind (local-clip server-clip)
-	  (without-interrupts 
-	    (values (gcontext-internal-clip local-state)
-		    (gcontext-internal-clip server-state)))
-	(unless (equalp local-clip server-clip)
-	  (setf (gcontext-internal-clip server-state) nil)
-	  (unless (null local-clip)
-	    (with-buffer-request (display *x-setcliprectangles*)
-	      (data (first local-clip))
+	(block no-changes
+	  (let ((last-request (buffer-last-request display)))
+	    (with-buffer-request (display *x-changegc*)
 	      (gcontext gcontext)
-	      ;; XXX treat nil correctly
-	      (card16 (or (gcontext-internal-clip-x local-state) 0)
-		      (or (gcontext-internal-clip-y local-state) 0))
-	      ;; XXX this has both int16 and card16 values
-	      ((sequence :format int16) (second local-clip)))
-	    (setf (gcontext-internal-clip server-state) local-clip))))
+	      (progn
+		(do ((i 0 (index+ i 1))
+		     (bit 1 (the xgcmask (ash bit 1)))
+		     (nbyte 12)
+		     (mask 0)
+		     (local 0))
+		    ((index>= i *gcontext-fast-change-length*)
+		     (when (zerop mask)
+		       ;; If nothing changed, restore last-request and quit
+		       (setf (buffer-last-request display)
+			     (if (zerop (buffer-last-request display))
+				 nil
+			       last-request))
+		       (return-from no-changes nil))
+		     (card29-put 8 mask)
+		     (card16-put 2 (index-ash nbyte -2))
+		     (index-incf (buffer-boffset display) nbyte))
+		  (declare (type array-index i nbyte)
+			   (type xgcmask bit)
+			   (type gcmask mask)
+			   (type (or null card32) local))
+		  (unless (eql (the (or null card32) (svref server-state i))
+			       (setq local (the (or null card32) (svref local-state i))))
+		    (setf (svref server-state i) local)
+		    (card32-put nbyte local)
+		    (setq mask (the gcmask (logior mask bit)))
+		    (index-incf nbyte 4)))))))
 
-      ;; Update dashes
-      (multiple-value-bind (local-dash server-dash)
-	  (without-interrupts 
-	    (values (gcontext-internal-dash local-state)
-		    (gcontext-internal-dash server-state)))
-	(unless (equalp local-dash server-dash)
-	  (setf (gcontext-internal-dash server-state) nil)
-	  (unless (null local-dash)
-	    (with-buffer-request (display *x-setdashes*)
-	      (gcontext gcontext)
-	      ;; XXX treat nil correctly
-	      (card16 (or (gcontext-internal-dash-offset local-state) 0)
-		      (length local-dash))
-	      ((sequence :format card8) local-dash))
-	    (setf (gcontext-internal-dash server-state) local-dash)))))))
+	;; Update GContext extensions
+	(do ((extension *gcontext-extensions* (cdr extension))
+	     (i *gcontext-data-length* (index+ i 1))
+	     (local))
+	    ((endp extension))
+	  (unless (eql (svref server-state i)
+		       (setq local (svref local-state i)))
+	    (setf (svref server-state i) local)
+	    (funcall (gcontext-extension-set-function (car extension)) gcontext local)))
+
+	;; Update clipping rectangles
+	(multiple-value-bind (local-clip server-clip)
+	    (without-interrupts 
+	      (values (gcontext-internal-clip local-state)
+		      (gcontext-internal-clip server-state)))
+	  (unless (equalp local-clip server-clip)
+	    (setf (gcontext-internal-clip server-state) nil)
+	    (unless (null local-clip)
+	      (with-buffer-request (display *x-setcliprectangles*)
+		(data (first local-clip))
+		(gcontext gcontext)
+		;; XXX treat nil correctly
+		(card16 (or (gcontext-internal-clip-x local-state) 0)
+			(or (gcontext-internal-clip-y local-state) 0))
+		;; XXX this has both int16 and card16 values
+		((sequence :format int16) (second local-clip)))
+	      (setf (gcontext-internal-clip server-state) local-clip))))
+
+	;; Update dashes
+	(multiple-value-bind (local-dash server-dash)
+	    (without-interrupts 
+	      (values (gcontext-internal-dash local-state)
+		      (gcontext-internal-dash server-state)))
+	  (unless (equalp local-dash server-dash)
+	    (setf (gcontext-internal-dash server-state) nil)
+	    (unless (null local-dash)
+	      (with-buffer-request (display *x-setdashes*)
+		(gcontext gcontext)
+		;; XXX treat nil correctly
+		(card16 (or (gcontext-internal-dash-offset local-state) 0)
+			(length local-dash))
+		((sequence :format card8) local-dash))
+	      (setf (gcontext-internal-dash server-state) local-dash))))))))
 
 (defun force-gcontext-changes (gcontext)
   ;; Force any delayed changes.
