@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.56 94/07/21 14:56:12 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.57 94/07/26 14:15:07 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -208,8 +208,7 @@ char **argv;
 	if (!found_command_line_name)
 	    session_name = XtNewString (DEFAULT_SESSION_NAME);
 
-    	StartSession (session_name,
-	    True /* Use ~/.xsmstartup if found, else system.xsm */);
+    	StartSession (session_name, !found_command_line_name);
     }
     else
     {
