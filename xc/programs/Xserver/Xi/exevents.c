@@ -330,7 +330,7 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
 	    {
 	    if (k->curKeySyms.maxKeyCode > 32)
 		evcount++;
-	    if (b->numButtons != NULL)
+	    if ((b != NULL) && (b->numButtons != NULL))
 		evcount++;
 	    }
 
