@@ -1,4 +1,4 @@
-/* $XConsortium: TextPop.c,v 1.30 94/03/30 21:28:45 kaleb Exp $ */
+/* $XConsortium: TextPop.c,v 1.31 94/04/17 20:13:10 kaleb Exp kaleb $ */
 
 /*
 
@@ -66,11 +66,6 @@ in this Software without prior written authorization from the X Consortium.
 
 #ifdef X_NOT_STDC_ENV
 extern int errno;
-#endif
-
-#if !defined(WIN32) && (defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)) || defined(macII))
-extern int sys_nerr;
-extern char* sys_errlist[];
 #endif
 
 #define INSERT_FILE ("Enter Filename:")
@@ -250,12 +245,7 @@ XtPointer call_data;		/* unused */
       return;
     }
     else
-#if defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)) || defined(macII)
-      (void) sprintf( msg, "*** Error: %s ***",
-	      (errno <= sys_nerr) ? sys_errlist[errno] : "Can't open file" );
-#else
       (void) sprintf( msg, "*** Error: %s ***", strerror(errno));
-#endif
 
   (void)SetResourceByName(ctx->text.file_insert, 
 			  LABEL_NAME, XtNlabel, (XtArgVal) msg);

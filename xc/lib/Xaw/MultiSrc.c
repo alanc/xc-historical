@@ -1,4 +1,4 @@
-/* $XConsortium: MultiSrc.c,v 1.5 94/03/30 21:28:36 kaleb Exp $ */
+/* $XConsortium: MultiSrc.c,v 1.6 94/04/17 20:12:25 kaleb Exp kaleb $ */
 
 /*
  * Copyright 1991 by OMRON Corporation
@@ -125,10 +125,6 @@ static void (MyWStrncpy)();
 extern char *tmpnam();
 #ifdef X_NOT_STDC_ENV
 extern int errno; 
-#endif
-#if !defined(WIN32) && (defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)))
-extern int sys_nerr;
-extern char* sys_errlist[];
 #endif
 
 #ifdef X_NOT_POSIX
@@ -1170,19 +1166,9 @@ InitStringOrFile(src, newString)
 	} else {
 	    String params[2];
 	    Cardinal num_params = 2;
-	    char msg[11];
 	    
 	    params[0] = src->multi_src.string;
-#if defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4))
-	    if (errno <= sys_nerr)
-		params[1] = sys_errlist[errno];
-	    else {
-		sprintf(msg, "errno=%.4d", errno);
-		params[1] = msg;
-	    }
-#else
-	    params[1] = msg;
-#endif
+	    params[1] = strerror(errno);
 	    XtAppWarningMsg(XtWidgetToApplicationContext((Widget)src),
 			    "openError", "multiSourceCreate", "XawWarning",
 			    "Cannot open file %s; %s", params, &num_params);

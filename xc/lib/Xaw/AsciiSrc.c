@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSrc.c,v 1.64 94/03/21 13:20:59 kaleb Exp $ */
+/* $XConsortium: AsciiSrc.c,v 1.65 94/04/17 20:11:45 kaleb Exp kaleb $ */
 
 /*
 
@@ -100,10 +100,6 @@ static String MyStrncpy(), StorePiecesInString();
 static Boolean SetValues(), WriteToFile();
 #ifdef X_NOT_STDC_ENV
 extern int errno;
-#endif
-#if !defined(WIN32) && (defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)) || defined(macII))
-extern int sys_nerr;
-extern char* sys_errlist[];
 #endif
 
 #ifdef X_NOT_POSIX
@@ -1060,19 +1056,9 @@ Boolean newString;
 	} else {
 	    String params[2];
 	    Cardinal num_params = 2;
-	    char msg[11];
 	    
 	    params[0] = src->ascii_src.string;
-#if defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)) || defined(macII)
-	    if (errno <= sys_nerr)
-		params[1] = sys_errlist[errno];
-	    else {
-		sprintf(msg, "errno=%.4d", errno);
-		params[1] = msg;
-	    }
-#else
 	    params[1] = strerror(errno);
-#endif
 	    XtAppWarningMsg(XtWidgetToApplicationContext((Widget)src),
 			    "openError", "asciiSourceCreate", "XawWarning",
 			    "Cannot open file %s; %s", params, &num_params);
