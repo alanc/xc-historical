@@ -43,6 +43,7 @@ may require a checkpoint.\n\n\
 Give the session a name...
 
 *nameSessionPopup.title:	Name Session
+*nameSessionPopup*font:		10x20
 *nameSessionOkButton.label:	OK
 *nameSessionCancelButton.label:	Cancel
 
