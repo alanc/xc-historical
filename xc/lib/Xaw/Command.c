@@ -348,7 +348,7 @@ static void Redisplay(w)
      /* Don't clear the window if the button's in a set condition;
 	instead, fill it with black to avoid flicker. (Must fil
 	with black in case it was an expose */
-   else if (ComWset == ComWdisplaySet ||  (ComWset && !ComWdisplaySet))
+   else if (ComWset) /* && ComWdisplaySet) ||  (ComWset && !ComWdisplaySet))*/
      XFillRectangle(XtDisplay(w),XtWindow(w), ComWinverseGC,
 		    0,0,ComWwidth,ComWheight);
 
