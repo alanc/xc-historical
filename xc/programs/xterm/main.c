@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.66 88/08/12 14:17:14 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.67 88/08/12 14:34:45 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -1200,7 +1200,7 @@ spawn ()
 		** we won't reset it later if the pid's don't match.
 		** Also, if utmpInhibit is set, then pretend failure.
 		*/
-		added_utmp_entry = utmpInhibit ? False : True;
+		added_utmp_entry = resource.utmpInhibit ? False : True;
 #else	/* not USE_SYSV_UTMP, it is bsd */
 		added_utmp_entry = False;
 		if (!resource.utmpInhibit &&
@@ -1398,13 +1398,13 @@ spawn ()
 
 #ifdef UTMP
 		/* write out the entry */
-		if (!utmpInhibit) (void) pututline(&utmp);
+		if (!resource.utmpInhibit) (void) pututline(&utmp);
 #endif	/* UTMP */
 
 		/* close the file */
 		(void) endutent();
 
-		if (get_ty && !utmpInhibit) {
+		if (get_ty && !resource.utmpInhibit) {
 		    /* set wtmp entry if wtmp file exists */
 		    if (fd = open("/etc/wtmp", O_WRONLY | O_APPEND)) {
 			(void) write(fd, &utmp, sizeof(utmp));
@@ -1523,7 +1523,7 @@ int n;
 	struct utmp *utptr;
 
 	/* cleanup the utmp entry we forged earlier */
-	if (!utmpInhibit && added_utmp_entry) {
+	if (!resource.utmpInhibit && added_utmp_entry) {
 	    utmp.ut_type = USER_PROCESS;
 	    (void) strncpy(utmp.ut_id, ttydev + strlen(ttydev) - 2,
 		    sizeof(utmp.ut_id));
