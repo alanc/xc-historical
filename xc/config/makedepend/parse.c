@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parse.c,v 1.9 89/06/02 17:30:57 jim Exp $
+ * $XConsortium: parse.c,v 1.10 89/06/13 19:15:37 jim Exp $
  */
 #include "def.h"
 #include	<sys/signal.h>
@@ -140,7 +140,7 @@ gobble(filep, file, file_red)
 			while ((type == ELIF) || (type == ELIFFALSE))
 			    type = gobble(filep, file, file_red);
 			if (type == ELSE)
-			        type = gobble(filep, file, file_red);
+			        (void)gobble(filep, file, file_red);
 			break;
 		case ELSE:
 		case ENDIF:
