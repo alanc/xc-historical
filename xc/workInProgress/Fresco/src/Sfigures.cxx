@@ -47,11 +47,11 @@ FigureKit::Vertices& FigureKit::Vertices::operator =(const Vertices& _s) {
     return *this;
 }
 
-FigureKitType::FigureKitType() { }
-FigureKitType::~FigureKitType() { }
-void* FigureKitType::_this() { return this; }
+FigureKit::FigureKit() { }
+FigureKit::~FigureKit() { }
+void* FigureKit::_this() { return this; }
 
-extern TypeObj_Descriptor _XfFigureStyle_type, _XfStyleObj_type, _XfGlyph_type, 
+extern TypeObj_Descriptor _XfFigureStyle_type, _XfStyle_type, _XfGlyph_type, 
     _XfCharString_type, _XfCoord_type, _XfFigureKit_Mode_type, _XfFigureKit_Vertices_type;
 
 TypeObj_OpData _XfFigureKit_methods[] = {
@@ -74,7 +74,7 @@ TypeObj_OpData _XfFigureKit_methods[] = {
 };
 TypeObj_ParamData _XfFigureKit_params[] = {
     /* new_style */
-        { "parent", 0, &_XfStyleObj_type },
+        { "parent", 0, &_XfStyle_type },
     /* figure_root */
         { "child", 0, &_XfGlyph_type },
     /* label */
@@ -144,10 +144,10 @@ TypeObj_Descriptor _XfFigureKit_type = {
 
 FigureKitRef FigureKit::_narrow(BaseObjectRef o) {
     return (FigureKitRef)_BaseObject_tnarrow(
-        o, _XfFigureKit_tid, &FigureKitStub::_create
+        o, _XfFigureKit_tid, &_XfFigureKitStub_create
     );
 }
-TypeObjId FigureKitType::_tid() { return _XfFigureKit_tid; }
+TypeObjId FigureKit::_tid() { return _XfFigureKit_tid; }
 void _XfFigureKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
     extern TypeObjId _XfFigureKit_tid;
     FigureKitRef _this = (FigureKitRef)_BaseObject_tcast(_object, _XfFigureKit_tid);
@@ -155,17 +155,17 @@ void _XfFigureKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
         case /* default_style */ 0: {
             extern MarshalBuffer::ArgInfo _XfFigureKit_default_style_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_default_style();
+            _arg[0].u_objref = _this->default_style();
             _b.reply(_XfFigureKit_default_style_pinfo, _arg);
             break;
         }
         case /* new_style */ 1: {
             extern MarshalBuffer::ArgInfo _XfFigureKit_new_style_pinfo;
             MarshalBuffer::ArgValue _arg[2];
-            StyleObjRef parent;
+            StyleRef parent;
             _arg[1].u_addr = &parent;
             _b.receive(_XfFigureKit_new_style_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_new_style(parent);
+            _arg[0].u_objref = _this->new_style(parent);
             _b.reply(_XfFigureKit_new_style_pinfo, _arg);
             break;
         }
@@ -175,7 +175,7 @@ void _XfFigureKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             GlyphRef child;
             _arg[1].u_addr = &child;
             _b.receive(_XfFigureKit_figure_root_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_figure_root(child);
+            _arg[0].u_objref = _this->figure_root(child);
             _b.reply(_XfFigureKit_figure_root_pinfo, _arg);
             break;
         }
@@ -187,7 +187,7 @@ void _XfFigureKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             CharStringRef str;
             _arg[2].u_addr = &str;
             _b.receive(_XfFigureKit_label_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_label(s, str);
+            _arg[0].u_objref = _this->label(s, str);
             _b.reply(_XfFigureKit_label_pinfo, _arg);
             break;
         }
@@ -201,7 +201,7 @@ void _XfFigureKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             Coord y;
             _arg[3].u_addr = &y;
             _b.receive(_XfFigureKit_point_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_point(s, x, y);
+            _arg[0].u_objref = _this->point(s, x, y);
             _b.reply(_XfFigureKit_point_pinfo, _arg);
             break;
         }
@@ -219,7 +219,7 @@ void _XfFigureKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             Coord y1;
             _arg[5].u_addr = &y1;
             _b.receive(_XfFigureKit_line_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_line(s, x0, y0, x1, y1);
+            _arg[0].u_objref = _this->line(s, x0, y0, x1, y1);
             _b.reply(_XfFigureKit_line_pinfo, _arg);
             break;
         }
@@ -239,7 +239,7 @@ void _XfFigureKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             Coord top;
             _arg[6].u_addr = &top;
             _b.receive(_XfFigureKit_rectangle_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_rectangle(m, s, left, bottom, right, top);
+            _arg[0].u_objref = _this->rectangle(m, s, left, bottom, right, top);
             _b.reply(_XfFigureKit_rectangle_pinfo, _arg);
             break;
         }
@@ -257,7 +257,7 @@ void _XfFigureKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             Coord r;
             _arg[5].u_addr = &r;
             _b.receive(_XfFigureKit_circle_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_circle(m, s, x, y, r);
+            _arg[0].u_objref = _this->circle(m, s, x, y, r);
             _b.reply(_XfFigureKit_circle_pinfo, _arg);
             break;
         }
@@ -277,7 +277,7 @@ void _XfFigureKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             Coord r2;
             _arg[6].u_addr = &r2;
             _b.receive(_XfFigureKit_ellipse_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_ellipse(m, s, x, y, r1, r2);
+            _arg[0].u_objref = _this->ellipse(m, s, x, y, r1, r2);
             _b.reply(_XfFigureKit_ellipse_pinfo, _arg);
             break;
         }
@@ -291,7 +291,7 @@ void _XfFigureKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             FigureKit::Vertices v;
             _arg[3].u_addr = &v;
             _b.receive(_XfFigureKit_open_bspline_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_open_bspline(m, s, v);
+            _arg[0].u_objref = _this->open_bspline(m, s, v);
             _b.reply(_XfFigureKit_open_bspline_pinfo, _arg);
             break;
         }
@@ -305,7 +305,7 @@ void _XfFigureKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             FigureKit::Vertices v;
             _arg[3].u_addr = &v;
             _b.receive(_XfFigureKit_closed_bspline_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_closed_bspline(m, s, v);
+            _arg[0].u_objref = _this->closed_bspline(m, s, v);
             _b.reply(_XfFigureKit_closed_bspline_pinfo, _arg);
             break;
         }
@@ -319,7 +319,7 @@ void _XfFigureKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             FigureKit::Vertices v;
             _arg[3].u_addr = &v;
             _b.receive(_XfFigureKit_multiline_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_multiline(m, s, v);
+            _arg[0].u_objref = _this->multiline(m, s, v);
             _b.reply(_XfFigureKit_multiline_pinfo, _arg);
             break;
         }
@@ -333,7 +333,7 @@ void _XfFigureKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             FigureKit::Vertices v;
             _arg[3].u_addr = &v;
             _b.receive(_XfFigureKit_polygon_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_polygon(m, s, v);
+            _arg[0].u_objref = _this->polygon(m, s, v);
             _b.reply(_XfFigureKit_polygon_pinfo, _arg);
             break;
         }
@@ -343,14 +343,14 @@ void _XfFigureKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             GlyphRef g;
             _arg[1].u_addr = &g;
             _b.receive(_XfFigureKit_fitter_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_fitter(g);
+            _arg[0].u_objref = _this->fitter(g);
             _b.reply(_XfFigureKit_fitter_pinfo, _arg);
             break;
         }
         case /* group */ 14: {
             extern MarshalBuffer::ArgInfo _XfFigureKit_group_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_group();
+            _arg[0].u_objref = _this->group();
             _b.reply(_XfFigureKit_group_pinfo, _arg);
             break;
         }
@@ -419,7 +419,7 @@ extern void _XfFigureKit_Vertices_get(
 
 FigureKitStub::FigureKitStub(Exchange* e) { exch_ = e; }
 FigureKitStub::~FigureKitStub() { }
-BaseObjectRef FigureKitStub::_create(Exchange* e) {
+BaseObjectRef _XfFigureKitStub_create(Exchange* e) {
     return (BaseObjectRef)(void*)new FigureKitStub(e);
 }
 Exchange* FigureKitStub::_exchange() {
@@ -427,12 +427,12 @@ Exchange* FigureKitStub::_exchange() {
 }
 MarshalBuffer::ArgDesc _XfFigureKit_default_style_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfFigureKit_default_style_pfunc[] = {
-    &FigureStyleStub::_create
+    &_XfFigureStyleStub_create
 };
 MarshalBuffer::ArgInfo _XfFigureKit_default_style_pinfo = {
     &_XfFigureKit_tid, 0, _XfFigureKit_default_style_pdesc, _XfFigureKit_default_style_pfunc
 };
-FigureStyleRef FigureKitType::_c_default_style() {
+FigureStyleRef FigureKit::default_style() {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureKit_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -441,13 +441,13 @@ FigureStyleRef FigureKitType::_c_default_style() {
 }
 MarshalBuffer::ArgDesc _XfFigureKit_new_style_pdesc[3] = { 2, 60, 61 };
 MarshalBuffer::ArgMarshal _XfFigureKit_new_style_pfunc[] = {
-    &StyleObjStub::_create,
-    &FigureStyleStub::_create
+    &_XfStyleStub_create,
+    &_XfFigureStyleStub_create
 };
 MarshalBuffer::ArgInfo _XfFigureKit_new_style_pinfo = {
     &_XfFigureKit_tid, 1, _XfFigureKit_new_style_pdesc, _XfFigureKit_new_style_pfunc
 };
-FigureStyleRef FigureKitType::_c_new_style(StyleObj_in parent) {
+FigureStyleRef FigureKit::new_style(Style_in parent) {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureKit_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -457,13 +457,13 @@ FigureStyleRef FigureKitType::_c_new_style(StyleObj_in parent) {
 }
 MarshalBuffer::ArgDesc _XfFigureKit_figure_root_pdesc[3] = { 2, 60, 61 };
 MarshalBuffer::ArgMarshal _XfFigureKit_figure_root_pfunc[] = {
-    &GlyphStub::_create,
-    &GlyphStub::_create
+    &_XfGlyphStub_create,
+    &_XfGlyphStub_create
 };
 MarshalBuffer::ArgInfo _XfFigureKit_figure_root_pinfo = {
     &_XfFigureKit_tid, 2, _XfFigureKit_figure_root_pdesc, _XfFigureKit_figure_root_pfunc
 };
-GlyphRef FigureKitType::_c_figure_root(Glyph_in child) {
+GlyphRef FigureKit::figure_root(Glyph_in child) {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureKit_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -473,14 +473,14 @@ GlyphRef FigureKitType::_c_figure_root(Glyph_in child) {
 }
 MarshalBuffer::ArgDesc _XfFigureKit_label_pdesc[4] = { 3, 60, 61, 61 };
 MarshalBuffer::ArgMarshal _XfFigureKit_label_pfunc[] = {
-    &FigureStyleStub::_create,
-    &CharStringStub::_create,
-    &GlyphStub::_create
+    &_XfFigureStyleStub_create,
+    &_XfCharStringStub_create,
+    &_XfGlyphStub_create
 };
 MarshalBuffer::ArgInfo _XfFigureKit_label_pinfo = {
     &_XfFigureKit_tid, 3, _XfFigureKit_label_pdesc, _XfFigureKit_label_pfunc
 };
-GlyphRef FigureKitType::_c_label(FigureStyle_in s, CharString_in str) {
+GlyphRef FigureKit::label(FigureStyle_in s, CharString_in str) {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureKit_tid;
     MarshalBuffer::ArgValue _arg[3];
@@ -491,13 +491,13 @@ GlyphRef FigureKitType::_c_label(FigureStyle_in s, CharString_in str) {
 }
 MarshalBuffer::ArgDesc _XfFigureKit_point_pdesc[5] = { 4, 60, 61, 49, 49 };
 MarshalBuffer::ArgMarshal _XfFigureKit_point_pfunc[] = {
-    &FigureStyleStub::_create,
-    &GlyphStub::_create
+    &_XfFigureStyleStub_create,
+    &_XfGlyphStub_create
 };
 MarshalBuffer::ArgInfo _XfFigureKit_point_pinfo = {
     &_XfFigureKit_tid, 4, _XfFigureKit_point_pdesc, _XfFigureKit_point_pfunc
 };
-GlyphRef FigureKitType::_c_point(FigureStyle_in s, Coord x, Coord y) {
+GlyphRef FigureKit::point(FigureStyle_in s, Coord x, Coord y) {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureKit_tid;
     MarshalBuffer::ArgValue _arg[4];
@@ -509,13 +509,13 @@ GlyphRef FigureKitType::_c_point(FigureStyle_in s, Coord x, Coord y) {
 }
 MarshalBuffer::ArgDesc _XfFigureKit_line_pdesc[7] = { 6, 60, 61, 49, 49, 49, 49 };
 MarshalBuffer::ArgMarshal _XfFigureKit_line_pfunc[] = {
-    &FigureStyleStub::_create,
-    &GlyphStub::_create
+    &_XfFigureStyleStub_create,
+    &_XfGlyphStub_create
 };
 MarshalBuffer::ArgInfo _XfFigureKit_line_pinfo = {
     &_XfFigureKit_tid, 5, _XfFigureKit_line_pdesc, _XfFigureKit_line_pfunc
 };
-GlyphRef FigureKitType::_c_line(FigureStyle_in s, Coord x0, Coord y0, Coord x1, Coord y1) {
+GlyphRef FigureKit::line(FigureStyle_in s, Coord x0, Coord y0, Coord x1, Coord y1) {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureKit_tid;
     MarshalBuffer::ArgValue _arg[6];
@@ -529,13 +529,13 @@ GlyphRef FigureKitType::_c_line(FigureStyle_in s, Coord x0, Coord y0, Coord x1, 
 }
 MarshalBuffer::ArgDesc _XfFigureKit_rectangle_pdesc[8] = { 7, 60, 33, 61, 49, 49, 49, 49 };
 MarshalBuffer::ArgMarshal _XfFigureKit_rectangle_pfunc[] = {
-    &FigureStyleStub::_create,
-    &GlyphStub::_create
+    &_XfFigureStyleStub_create,
+    &_XfGlyphStub_create
 };
 MarshalBuffer::ArgInfo _XfFigureKit_rectangle_pinfo = {
     &_XfFigureKit_tid, 6, _XfFigureKit_rectangle_pdesc, _XfFigureKit_rectangle_pfunc
 };
-GlyphRef FigureKitType::_c_rectangle(FigureKit::Mode m, FigureStyle_in s, Coord left, Coord bottom, Coord right, Coord top) {
+GlyphRef FigureKit::rectangle(FigureKit::Mode m, FigureStyle_in s, Coord left, Coord bottom, Coord right, Coord top) {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureKit_tid;
     MarshalBuffer::ArgValue _arg[7];
@@ -550,13 +550,13 @@ GlyphRef FigureKitType::_c_rectangle(FigureKit::Mode m, FigureStyle_in s, Coord 
 }
 MarshalBuffer::ArgDesc _XfFigureKit_circle_pdesc[7] = { 6, 60, 33, 61, 49, 49, 49 };
 MarshalBuffer::ArgMarshal _XfFigureKit_circle_pfunc[] = {
-    &FigureStyleStub::_create,
-    &GlyphStub::_create
+    &_XfFigureStyleStub_create,
+    &_XfGlyphStub_create
 };
 MarshalBuffer::ArgInfo _XfFigureKit_circle_pinfo = {
     &_XfFigureKit_tid, 7, _XfFigureKit_circle_pdesc, _XfFigureKit_circle_pfunc
 };
-GlyphRef FigureKitType::_c_circle(FigureKit::Mode m, FigureStyle_in s, Coord x, Coord y, Coord r) {
+GlyphRef FigureKit::circle(FigureKit::Mode m, FigureStyle_in s, Coord x, Coord y, Coord r) {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureKit_tid;
     MarshalBuffer::ArgValue _arg[6];
@@ -570,13 +570,13 @@ GlyphRef FigureKitType::_c_circle(FigureKit::Mode m, FigureStyle_in s, Coord x, 
 }
 MarshalBuffer::ArgDesc _XfFigureKit_ellipse_pdesc[8] = { 7, 60, 33, 61, 49, 49, 49, 49 };
 MarshalBuffer::ArgMarshal _XfFigureKit_ellipse_pfunc[] = {
-    &FigureStyleStub::_create,
-    &GlyphStub::_create
+    &_XfFigureStyleStub_create,
+    &_XfGlyphStub_create
 };
 MarshalBuffer::ArgInfo _XfFigureKit_ellipse_pinfo = {
     &_XfFigureKit_tid, 8, _XfFigureKit_ellipse_pdesc, _XfFigureKit_ellipse_pfunc
 };
-GlyphRef FigureKitType::_c_ellipse(FigureKit::Mode m, FigureStyle_in s, Coord x, Coord y, Coord r1, Coord r2) {
+GlyphRef FigureKit::ellipse(FigureKit::Mode m, FigureStyle_in s, Coord x, Coord y, Coord r1, Coord r2) {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureKit_tid;
     MarshalBuffer::ArgValue _arg[7];
@@ -591,14 +591,14 @@ GlyphRef FigureKitType::_c_ellipse(FigureKit::Mode m, FigureStyle_in s, Coord x,
 }
 MarshalBuffer::ArgDesc _XfFigureKit_open_bspline_pdesc[5] = { 4, 60, 33, 61, 1 };
 MarshalBuffer::ArgMarshal _XfFigureKit_open_bspline_pfunc[] = {
-    &FigureStyleStub::_create,
+    &_XfFigureStyleStub_create,
     &_XfFigureKit_Vertices_put, &_XfFigureKit_Vertices_get,
-    &GlyphStub::_create
+    &_XfGlyphStub_create
 };
 MarshalBuffer::ArgInfo _XfFigureKit_open_bspline_pinfo = {
     &_XfFigureKit_tid, 9, _XfFigureKit_open_bspline_pdesc, _XfFigureKit_open_bspline_pfunc
 };
-GlyphRef FigureKitType::_c_open_bspline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v) {
+GlyphRef FigureKit::open_bspline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v) {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureKit_tid;
     MarshalBuffer::ArgValue _arg[4];
@@ -610,14 +610,14 @@ GlyphRef FigureKitType::_c_open_bspline(FigureKit::Mode m, FigureStyle_in s, con
 }
 MarshalBuffer::ArgDesc _XfFigureKit_closed_bspline_pdesc[5] = { 4, 60, 33, 61, 1 };
 MarshalBuffer::ArgMarshal _XfFigureKit_closed_bspline_pfunc[] = {
-    &FigureStyleStub::_create,
+    &_XfFigureStyleStub_create,
     &_XfFigureKit_Vertices_put, &_XfFigureKit_Vertices_get,
-    &GlyphStub::_create
+    &_XfGlyphStub_create
 };
 MarshalBuffer::ArgInfo _XfFigureKit_closed_bspline_pinfo = {
     &_XfFigureKit_tid, 10, _XfFigureKit_closed_bspline_pdesc, _XfFigureKit_closed_bspline_pfunc
 };
-GlyphRef FigureKitType::_c_closed_bspline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v) {
+GlyphRef FigureKit::closed_bspline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v) {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureKit_tid;
     MarshalBuffer::ArgValue _arg[4];
@@ -629,14 +629,14 @@ GlyphRef FigureKitType::_c_closed_bspline(FigureKit::Mode m, FigureStyle_in s, c
 }
 MarshalBuffer::ArgDesc _XfFigureKit_multiline_pdesc[5] = { 4, 60, 33, 61, 1 };
 MarshalBuffer::ArgMarshal _XfFigureKit_multiline_pfunc[] = {
-    &FigureStyleStub::_create,
+    &_XfFigureStyleStub_create,
     &_XfFigureKit_Vertices_put, &_XfFigureKit_Vertices_get,
-    &GlyphStub::_create
+    &_XfGlyphStub_create
 };
 MarshalBuffer::ArgInfo _XfFigureKit_multiline_pinfo = {
     &_XfFigureKit_tid, 11, _XfFigureKit_multiline_pdesc, _XfFigureKit_multiline_pfunc
 };
-GlyphRef FigureKitType::_c_multiline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v) {
+GlyphRef FigureKit::multiline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v) {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureKit_tid;
     MarshalBuffer::ArgValue _arg[4];
@@ -648,14 +648,14 @@ GlyphRef FigureKitType::_c_multiline(FigureKit::Mode m, FigureStyle_in s, const 
 }
 MarshalBuffer::ArgDesc _XfFigureKit_polygon_pdesc[5] = { 4, 60, 33, 61, 1 };
 MarshalBuffer::ArgMarshal _XfFigureKit_polygon_pfunc[] = {
-    &FigureStyleStub::_create,
+    &_XfFigureStyleStub_create,
     &_XfFigureKit_Vertices_put, &_XfFigureKit_Vertices_get,
-    &GlyphStub::_create
+    &_XfGlyphStub_create
 };
 MarshalBuffer::ArgInfo _XfFigureKit_polygon_pinfo = {
     &_XfFigureKit_tid, 12, _XfFigureKit_polygon_pdesc, _XfFigureKit_polygon_pfunc
 };
-GlyphRef FigureKitType::_c_polygon(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v) {
+GlyphRef FigureKit::polygon(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v) {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureKit_tid;
     MarshalBuffer::ArgValue _arg[4];
@@ -667,13 +667,13 @@ GlyphRef FigureKitType::_c_polygon(FigureKit::Mode m, FigureStyle_in s, const Fi
 }
 MarshalBuffer::ArgDesc _XfFigureKit_fitter_pdesc[3] = { 2, 60, 61 };
 MarshalBuffer::ArgMarshal _XfFigureKit_fitter_pfunc[] = {
-    &GlyphStub::_create,
-    &GlyphStub::_create
+    &_XfGlyphStub_create,
+    &_XfGlyphStub_create
 };
 MarshalBuffer::ArgInfo _XfFigureKit_fitter_pinfo = {
     &_XfFigureKit_tid, 13, _XfFigureKit_fitter_pdesc, _XfFigureKit_fitter_pfunc
 };
-GlyphRef FigureKitType::_c_fitter(Glyph_in g) {
+GlyphRef FigureKit::fitter(Glyph_in g) {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureKit_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -683,12 +683,12 @@ GlyphRef FigureKitType::_c_fitter(Glyph_in g) {
 }
 MarshalBuffer::ArgDesc _XfFigureKit_group_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfFigureKit_group_pfunc[] = {
-    &GlyphStub::_create
+    &_XfGlyphStub_create
 };
 MarshalBuffer::ArgInfo _XfFigureKit_group_pinfo = {
     &_XfFigureKit_tid, 14, _XfFigureKit_group_pdesc, _XfFigureKit_group_pfunc
 };
-GlyphRef FigureKitType::_c_group() {
+GlyphRef FigureKit::group() {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureKit_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -713,9 +713,9 @@ void _XfFigureKit_Vertices_get(MarshalBuffer& _b, FigureKit::Vertices& _this) {
 //+
 
 //+ FigureStyle::%init,type+dii,client
-FigureStyleType::FigureStyleType() { }
-FigureStyleType::~FigureStyleType() { }
-void* FigureStyleType::_this() { return this; }
+FigureStyle::FigureStyle() { }
+FigureStyle::~FigureStyle() { }
+void* FigureStyle::_this() { return this; }
 
 extern TypeObj_Descriptor _XfColor_type, _Xfvoid_type, _XfBrush_type, 
     _XfFont_type;
@@ -741,8 +741,8 @@ TypeObj_ParamData _XfFigureStyle_params[] = {
     /* foreground */
         { "_p", 0, &_XfColor_type }
 };
-extern TypeObj_Descriptor _XfStyleObj_type;
-TypeObj_Descriptor* _XfFigureStyle_parents[] = { &_XfStyleObj_type, nil };
+extern TypeObj_Descriptor _XfStyle_type;
+TypeObj_Descriptor* _XfFigureStyle_parents[] = { &_XfStyle_type, nil };
 extern TypeObjId _XfFigureStyle_tid;
 extern void _XfFigureStyle_receive(BaseObjectRef, ULong, MarshalBuffer&);
 TypeObj_Descriptor _XfFigureStyle_type = {
@@ -756,10 +756,10 @@ TypeObj_Descriptor _XfFigureStyle_type = {
 
 FigureStyleRef FigureStyle::_narrow(BaseObjectRef o) {
     return (FigureStyleRef)_BaseObject_tnarrow(
-        o, _XfFigureStyle_tid, &FigureStyleStub::_create
+        o, _XfFigureStyle_tid, &_XfFigureStyleStub_create
     );
 }
-TypeObjId FigureStyleType::_tid() { return _XfFigureStyle_tid; }
+TypeObjId FigureStyle::_tid() { return _XfFigureStyle_tid; }
 void _XfFigureStyle_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
     extern TypeObjId _XfFigureStyle_tid;
     FigureStyleRef _this = (FigureStyleRef)_BaseObject_tcast(_object, _XfFigureStyle_tid);
@@ -767,7 +767,7 @@ void _XfFigureStyle_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) 
         case /* _get_background */ 0: {
             extern MarshalBuffer::ArgInfo _XfFigureStyle__get_background_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_background();
+            _arg[0].u_objref = _this->background();
             _b.reply(_XfFigureStyle__get_background_pinfo, _arg);
             break;
         }
@@ -777,14 +777,14 @@ void _XfFigureStyle_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) 
             ColorRef _p;
             _arg[1].u_addr = &_p;
             _b.receive(_XfFigureStyle__set_background_pinfo, _arg);
-            _this->_c_background(_p);
+            _this->background(_p);
             _b.reply(_XfFigureStyle__set_background_pinfo, _arg);
             break;
         }
         case /* _get_brush_attr */ 2: {
             extern MarshalBuffer::ArgInfo _XfFigureStyle__get_brush_attr_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_brush_attr();
+            _arg[0].u_objref = _this->brush_attr();
             _b.reply(_XfFigureStyle__get_brush_attr_pinfo, _arg);
             break;
         }
@@ -794,14 +794,14 @@ void _XfFigureStyle_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) 
             BrushRef _p;
             _arg[1].u_addr = &_p;
             _b.receive(_XfFigureStyle__set_brush_attr_pinfo, _arg);
-            _this->_c_brush_attr(_p);
+            _this->brush_attr(_p);
             _b.reply(_XfFigureStyle__set_brush_attr_pinfo, _arg);
             break;
         }
         case /* _get_font_attr */ 4: {
             extern MarshalBuffer::ArgInfo _XfFigureStyle__get_font_attr_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_font_attr();
+            _arg[0].u_objref = _this->font_attr();
             _b.reply(_XfFigureStyle__get_font_attr_pinfo, _arg);
             break;
         }
@@ -811,14 +811,14 @@ void _XfFigureStyle_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) 
             FontRef _p;
             _arg[1].u_addr = &_p;
             _b.receive(_XfFigureStyle__set_font_attr_pinfo, _arg);
-            _this->_c_font_attr(_p);
+            _this->font_attr(_p);
             _b.reply(_XfFigureStyle__set_font_attr_pinfo, _arg);
             break;
         }
         case /* _get_foreground */ 6: {
             extern MarshalBuffer::ArgInfo _XfFigureStyle__get_foreground_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_foreground();
+            _arg[0].u_objref = _this->foreground();
             _b.reply(_XfFigureStyle__get_foreground_pinfo, _arg);
             break;
         }
@@ -828,7 +828,7 @@ void _XfFigureStyle_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) 
             ColorRef _p;
             _arg[1].u_addr = &_p;
             _b.receive(_XfFigureStyle__set_foreground_pinfo, _arg);
-            _this->_c_foreground(_p);
+            _this->foreground(_p);
             _b.reply(_XfFigureStyle__set_foreground_pinfo, _arg);
             break;
         }
@@ -836,7 +836,7 @@ void _XfFigureStyle_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) 
 }
 FigureStyleStub::FigureStyleStub(Exchange* e) { exch_ = e; }
 FigureStyleStub::~FigureStyleStub() { }
-BaseObjectRef FigureStyleStub::_create(Exchange* e) {
+BaseObjectRef _XfFigureStyleStub_create(Exchange* e) {
     return (BaseObjectRef)(void*)new FigureStyleStub(e);
 }
 Exchange* FigureStyleStub::_exchange() {
@@ -844,12 +844,12 @@ Exchange* FigureStyleStub::_exchange() {
 }
 MarshalBuffer::ArgDesc _XfFigureStyle__get_background_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfFigureStyle__get_background_pfunc[] = {
-    &ColorStub::_create
+    &_XfColorStub_create
 };
 MarshalBuffer::ArgInfo _XfFigureStyle__get_background_pinfo = {
     &_XfFigureStyle_tid, 0, _XfFigureStyle__get_background_pdesc, _XfFigureStyle__get_background_pfunc
 };
-ColorRef FigureStyleType::_c_background() {
+ColorRef FigureStyle::background() {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureStyle_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -858,13 +858,13 @@ ColorRef FigureStyleType::_c_background() {
 }
 MarshalBuffer::ArgDesc _XfFigureStyle__set_background_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfFigureStyle__set_background_pfunc[] = {
-    &ColorStub::_create,
+    &_XfColorStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfFigureStyle__set_background_pinfo = {
     &_XfFigureStyle_tid, 1, _XfFigureStyle__set_background_pdesc, _XfFigureStyle__set_background_pfunc
 };
-void FigureStyleType::_c_background(Color_in _p) {
+void FigureStyle::background(Color_in _p) {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureStyle_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -873,12 +873,12 @@ void FigureStyleType::_c_background(Color_in _p) {
 }
 MarshalBuffer::ArgDesc _XfFigureStyle__get_brush_attr_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfFigureStyle__get_brush_attr_pfunc[] = {
-    &BrushStub::_create
+    &_XfBrushStub_create
 };
 MarshalBuffer::ArgInfo _XfFigureStyle__get_brush_attr_pinfo = {
     &_XfFigureStyle_tid, 2, _XfFigureStyle__get_brush_attr_pdesc, _XfFigureStyle__get_brush_attr_pfunc
 };
-BrushRef FigureStyleType::_c_brush_attr() {
+BrushRef FigureStyle::brush_attr() {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureStyle_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -887,13 +887,13 @@ BrushRef FigureStyleType::_c_brush_attr() {
 }
 MarshalBuffer::ArgDesc _XfFigureStyle__set_brush_attr_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfFigureStyle__set_brush_attr_pfunc[] = {
-    &BrushStub::_create,
+    &_XfBrushStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfFigureStyle__set_brush_attr_pinfo = {
     &_XfFigureStyle_tid, 3, _XfFigureStyle__set_brush_attr_pdesc, _XfFigureStyle__set_brush_attr_pfunc
 };
-void FigureStyleType::_c_brush_attr(Brush_in _p) {
+void FigureStyle::brush_attr(Brush_in _p) {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureStyle_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -902,12 +902,12 @@ void FigureStyleType::_c_brush_attr(Brush_in _p) {
 }
 MarshalBuffer::ArgDesc _XfFigureStyle__get_font_attr_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfFigureStyle__get_font_attr_pfunc[] = {
-    &FontStub::_create
+    &_XfFontStub_create
 };
 MarshalBuffer::ArgInfo _XfFigureStyle__get_font_attr_pinfo = {
     &_XfFigureStyle_tid, 4, _XfFigureStyle__get_font_attr_pdesc, _XfFigureStyle__get_font_attr_pfunc
 };
-FontRef FigureStyleType::_c_font_attr() {
+FontRef FigureStyle::font_attr() {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureStyle_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -916,13 +916,13 @@ FontRef FigureStyleType::_c_font_attr() {
 }
 MarshalBuffer::ArgDesc _XfFigureStyle__set_font_attr_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfFigureStyle__set_font_attr_pfunc[] = {
-    &FontStub::_create,
+    &_XfFontStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfFigureStyle__set_font_attr_pinfo = {
     &_XfFigureStyle_tid, 5, _XfFigureStyle__set_font_attr_pdesc, _XfFigureStyle__set_font_attr_pfunc
 };
-void FigureStyleType::_c_font_attr(Font_in _p) {
+void FigureStyle::font_attr(Font_in _p) {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureStyle_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -931,12 +931,12 @@ void FigureStyleType::_c_font_attr(Font_in _p) {
 }
 MarshalBuffer::ArgDesc _XfFigureStyle__get_foreground_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfFigureStyle__get_foreground_pfunc[] = {
-    &ColorStub::_create
+    &_XfColorStub_create
 };
 MarshalBuffer::ArgInfo _XfFigureStyle__get_foreground_pinfo = {
     &_XfFigureStyle_tid, 6, _XfFigureStyle__get_foreground_pdesc, _XfFigureStyle__get_foreground_pfunc
 };
-ColorRef FigureStyleType::_c_foreground() {
+ColorRef FigureStyle::foreground() {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureStyle_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -945,13 +945,13 @@ ColorRef FigureStyleType::_c_foreground() {
 }
 MarshalBuffer::ArgDesc _XfFigureStyle__set_foreground_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfFigureStyle__set_foreground_pfunc[] = {
-    &ColorStub::_create,
+    &_XfColorStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfFigureStyle__set_foreground_pinfo = {
     &_XfFigureStyle_tid, 7, _XfFigureStyle__set_foreground_pdesc, _XfFigureStyle__set_foreground_pfunc
 };
-void FigureStyleType::_c_foreground(Color_in _p) {
+void FigureStyle::foreground(Color_in _p) {
     MarshalBuffer _b;
     extern TypeObjId _XfFigureStyle_tid;
     MarshalBuffer::ArgValue _arg[2];

@@ -26,15 +26,6 @@
  * OF THIS SOFTWARE.
  */
 
-/*
- * This file contains the type initialization code for the various
- * Fresco interfaces and types.  Seemed easier to do it all here than
- * to have every implementation file require Ox/dii.h.
- *
- * Note that with the exception of the #include's and the initialization
- * at the end, this code is generated automatically by ix.
- */
-
 #include <X11/Fresco/display.h>
 #include <X11/Fresco/drawing.h>
 #include <X11/Fresco/figures.h>
@@ -63,11 +54,10 @@ TypeObjId TypeIdVar(CharString) = 106;
 TypeObjId TypeIdVar(Coord) = 107;
 TypeObjId TypeIdVar(Cursor) = 108;
 /* unused gap */
-TypeObjId TypeIdVar(DamageObj) = 110;
-TypeObjId TypeIdVar(DisplayObj) = 111;
-TypeObjId TypeIdVar(XfDisplayObj_ScreenNumber) = 112;
+TypeObjId TypeIdVar(Damage) = 110;
+TypeObjId TypeIdVar(Display) = 111;
+TypeObjId TypeIdVar(XfDisplay_ScreenNumber) = 112;
 TypeObjId TypeIdVar(DisplayImpl) = 113;
-TypeObjId TypeIdVar(DisplayStyle) = 114;
 /* unused gap */
 TypeObjId TypeIdVar(Event) = 120;
 TypeObjId TypeIdVar(XfEvent_ButtonIndex) = 121;
@@ -82,27 +72,27 @@ TypeObjId TypeIdVar(Focus) = 130;
 TypeObjId TypeIdVar(FrescoObject) = 131;
 TypeObjId TypeIdVar(Glyph) = 132;
 TypeObjId TypeIdVar(XfGlyph_AllocationInfo) = 133;
-TypeObjId TypeIdVar(XfGlyph_AllocationInfoList) = 134;
-TypeObjId TypeIdVar(XfGlyph_Requirement) = 135;
-TypeObjId TypeIdVar(XfGlyph_Requisition) = 136;
-TypeObjId TypeIdVar(GlyphImpl) = 137;
-TypeObjId TypeIdVar(GlyphOffset) = 138;
-TypeObjId TypeIdVar(GlyphTraversal) = 139;
-TypeObjId TypeIdVar(XfGlyphTraversal_Operation) = 140;
-TypeObjId TypeIdVar(GlyphVisitor) = 141;
+TypeObjId TypeIdVar(XfGlyph_AllocationInfoSeq) = 134;
+TypeObjId TypeIdVar(XfGlyph_OffsetSeq) = 135;
+TypeObjId TypeIdVar(XfGlyph_Requirement) = 136;
+TypeObjId TypeIdVar(XfGlyph_Requisition) = 137;
+TypeObjId TypeIdVar(GlyphImpl) = 138;
+TypeObjId TypeIdVar(GlyphOffset) = 139;
+TypeObjId TypeIdVar(GlyphTraversal) = 140;
+TypeObjId TypeIdVar(XfGlyphTraversal_Operation) = 141;
 /* unused gap */
 TypeObjId TypeIdVar(PixelCoord) = 150;
 TypeObjId TypeIdVar(Region) = 151;
 TypeObjId TypeIdVar(XfRegion_BoundingSpan) = 152;
-TypeObjId TypeIdVar(ScreenObj) = 153;
+TypeObjId TypeIdVar(Screen) = 153;
 TypeObjId TypeIdVar(ScreenImpl) = 154;
-TypeObjId TypeIdVar(StyleObj) = 155;
+TypeObjId TypeIdVar(Style) = 155;
 TypeObjId TypeIdVar(StyleValue) = 156;
 TypeObjId TypeIdVar(StyleVisitor) = 157;
 /* unused gap */
 TypeObjId TypeIdVar(Tag) = 170;
-TypeObjId TypeIdVar(TransformObj) = 171;
-TypeObjId TypeIdVar(XfTransformObj_Matrix) = 172;
+TypeObjId TypeIdVar(Transform) = 171;
+TypeObjId TypeIdVar(XfTransform_Matrix) = 172;
 TypeObjId TypeIdVar(XfCoord_array_4) = 173;
 TypeObjId TypeIdVar(XfCoord_array_4_4) = 174;
 TypeObjId TypeIdVar(Vertex) = 175;
@@ -111,27 +101,28 @@ TypeObjId TypeIdVar(Viewer) = 176;
 TypeObjId TypeIdVar(Window) = 180;
 TypeObjId TypeIdVar(XfWindow_Placement) = 181;
 TypeObjId TypeIdVar(WindowImpl) = 182;
-TypeObjId TypeIdVar(WindowStyle) = 183;
-TypeObjId TypeIdVar(WindowStyleImpl) = 184;
 
 /* DrawingKit types */
 TypeObjId TypeIdVar(DrawingKit) = 200;
-TypeObjId TypeIdVar(XfDrawingKit_Data) = 201;
-TypeObjId TypeIdVar(XfLong_array_16) = 202;
-TypeObjId TypeIdVar(Brush) = 202;
-TypeObjId TypeIdVar(BrushImpl) = 203;
-TypeObjId TypeIdVar(Color) = 204;
-TypeObjId TypeIdVar(ColorImpl) = 205;
-TypeObjId TypeIdVar(XfColor_Intensity) = 206;
-TypeObjId TypeIdVar(Font) = 207;
-TypeObjId TypeIdVar(FontImpl) = 208;
-TypeObjId TypeIdVar(XfFont_Info) = 209;
-TypeObjId TypeIdVar(PainterObj) = 210;
-TypeObjId TypeIdVar(XPainterImpl) = 211;
-TypeObjId TypeIdVar(Raster) = 212;
-TypeObjId TypeIdVar(XfRaster_Element) = 213;
-TypeObjId TypeIdVar(XfRaster_Index) = 214;
-TypeObjId TypeIdVar(RasterImpl) = 215;
+TypeObjId TypeIdVar(XfDrawingKit_Data8) = 201;
+TypeObjId TypeIdVar(XfDrawingKit_Data32) = 202;
+TypeObjId TypeIdVar(XfLong_array_16) = 203;
+TypeObjId TypeIdVar(Brush) = 204;
+TypeObjId TypeIdVar(BrushImpl) = 205;
+TypeObjId TypeIdVar(Color) = 206;
+TypeObjId TypeIdVar(ColorImpl) = 207;
+TypeObjId TypeIdVar(XfColor_Intensity) = 208;
+TypeObjId TypeIdVar(Font) = 209;
+TypeObjId TypeIdVar(FontImpl) = 210;
+TypeObjId TypeIdVar(XfFont_Info) = 211;
+TypeObjId TypeIdVar(Painter) = 212;
+TypeObjId TypeIdVar(XPainterImpl) = 213;
+TypeObjId TypeIdVar(Pattern) = 214;
+TypeObjId TypeIdVar(PatternImpl) = 215;
+TypeObjId TypeIdVar(Raster) = 216;
+TypeObjId TypeIdVar(XfRaster_Element) = 217;
+TypeObjId TypeIdVar(XfRaster_Index) = 218;
+TypeObjId TypeIdVar(RasterImpl) = 219;
 
 /* FigureKit types */
 TypeObjId TypeIdVar(FigureKit) = 300;
@@ -141,8 +132,6 @@ TypeObjId TypeIdVar(FigureStyle) = 303;
 
 /* LayoutKit types */
 TypeObjId TypeIdVar(LayoutKit) = 400;
-TypeObjId TypeIdVar(DeckObj) = 401;
-TypeObjId TypeIdVar(ScrollBox) = 402;
 
 /* WidgetKit types */
 TypeObjId TypeIdVar(WidgetKit) = 500;
@@ -158,6 +147,7 @@ TypeObjId TypeIdVar(XfTelltale_Flag) = 505;
 
 extern TypeObj_Descriptor
     TypeVar(XfBoolean),
+    TypeVar(XfOctet),
     TypeVar(XfFloat),
     TypeVar(XfLong),
     TypeVar(XfULong),
@@ -168,9 +158,8 @@ extern TypeObj_Descriptor
     TypeVar(CharString),
     TypeVar(Color), TypeVar(ColorImpl),
     TypeVar(Cursor),
-    TypeVar(DamageObj),
-    TypeVar(DeckObj),
-    TypeVar(DisplayObj), TypeVar(DisplayImpl), TypeVar(DisplayStyle),
+    TypeVar(Damage),
+    TypeVar(Display), TypeVar(DisplayImpl),
     TypeVar(DrawingKit),
     TypeVar(Event), TypeVar(EventImpl),
     TypeVar(FigureKit), TypeVar(FigureStyle),
@@ -180,20 +169,19 @@ extern TypeObj_Descriptor
     TypeVar(Glyph), TypeVar(GlyphImpl),
     TypeVar(GlyphOffset),
     TypeVar(GlyphTraversal),
-    TypeVar(GlyphVisitor),
     TypeVar(LayoutKit),
     TypeVar(Menu), TypeVar(MenuItem),
-    TypeVar(PainterObj), TypeVar(XPainterImpl),
+    TypeVar(Painter), TypeVar(XPainterImpl),
+    TypeVar(Pattern), TypeVar(PatternImpl),
     TypeVar(Region),
     TypeVar(Raster), TypeVar(RasterImpl),
-    TypeVar(ScreenObj), TypeVar(ScreenImpl),
-    TypeVar(ScrollBox),
-    TypeVar(StyleObj), TypeVar(StyleVisitor),
+    TypeVar(Screen), TypeVar(ScreenImpl),
+    TypeVar(Style), TypeVar(StyleVisitor),
     TypeVar(Telltale),
-    TypeVar(TransformObj),
+    TypeVar(Transform),
     TypeVar(Viewer),
     TypeVar(WidgetKit),
-    TypeVar(Window), TypeVar(WindowImpl), TypeVar(WindowStyle);
+    TypeVar(Window), TypeVar(WindowImpl);
 
 /*
  * Define types.  The interfaces are generated automatically,
@@ -211,7 +199,7 @@ DefineType(XfCoord_array_4, Coord[4], "Coord[4]")
 DefineType(XfCoord_array_4_4, Coord[4][4], "Coord[4][4]")
 DefineType(Coord, Coord, "Coord")
 DefineType(
-    XfDisplayObj_ScreenNumber, DisplayObj::ScreenNumber, "ScreenNumber"
+    XfDisplay_ScreenNumber, Display::ScreenNumber, "ScreenNumber"
 )
 DefineType(XfEvent_ButtonIndex, Event::ButtonIndex, "ButtonIndex")
 DefineType(XfEvent_KeySym, Event::KeySym, "KeySym")
@@ -223,8 +211,9 @@ DefineType(
     XfGlyph_AllocationInfo, Glyph::AllocationInfo, "AllocationInfo"
 )
 DefineType(
-    XfGlyph_AllocationInfoList, Glyph::AllocationInfoList, "AllocationInfoList"
+    XfGlyph_AllocationInfoSeq, Glyph::AllocationInfoSeq, "AllocationInfoSeq"
 )
+DefineType(XfGlyph_OffsetSeq, Glyph::OffsetSeq, "OffsetSeq")
 DefineType(XfGlyph_Requirement, Glyph::Requirement, "Requirement")
 DefineType(XfGlyph_Requisition, Glyph::Requisition, "Requisition")
 DefineType(XfGlyphTraversal_Operation, GlyphTraversal::Operation, "Operation")
@@ -232,7 +221,7 @@ DefineType(XfGlyphTraversal_Operation, GlyphTraversal::Operation, "Operation")
 DefineType(PixelCoord, PixelCoord, "PixelCoord")
 DefineType(XfRegion_BoundingSpan, Region::BoundingSpan, "BoundingSpan")
 DefineType(Tag, Tag, "Tag")
-DefineType(XfTransformObj_Matrix, TransformObj::Matrix, "Matrix")
+DefineType(XfTransform_Matrix, Transform::Matrix, "Matrix")
 DefineType(Vertex, Vertex, "Vertex")
 DefineType(XfWindow_Placement, Window::Placement, "Window_Placement")
 
@@ -243,7 +232,7 @@ static TypeObj_Descriptor* adjustment_settings_fields[] = {
 };
 
 static TypeObj_Descriptor* glyph_allocationinfo_fields[] = {
-    &TypeVar(Region), &TypeVar(TransformObj), &TypeVar(DamageObj),
+    &TypeVar(Region), &TypeVar(Transform), &TypeVar(Damage),
     nil
 };
 
@@ -273,7 +262,8 @@ static TypeObj_Descriptor* window_placement_fields[] = {
 
 /* Define DrawingKit types */
 
-DefineType(XfDrawingKit_Data, DrawingKit::Data, "DrawingKit::Data")
+DefineType(XfDrawingKit_Data8, DrawingKit::Data8, "DrawingKit::Data8")
+DefineType(XfDrawingKit_Data32, DrawingKit::Data32, "DrawingKit::Data32")
 DefineType(XfLong_array_16, long[16], "long[16]")
 DefineType(XfColor_Intensity, Color::Intensity, "Intensity")
 DefineType(XfFont_Info, Font::Info, "Info")
@@ -304,10 +294,9 @@ static TypeObj_Descriptor* fresco_schema[] = {
     &TypeVar(Adjustment),
     &TypeVar(CharString),
     &TypeVar(Cursor),
-    &TypeVar(DamageObj),
-    &TypeVar(DisplayObj),
+    &TypeVar(Damage),
+    &TypeVar(Display),
     &TypeVar(DisplayImpl),
-    &TypeVar(DisplayStyle),
     &TypeVar(Event),
     &TypeVar(EventImpl),
     &TypeVar(Focus),
@@ -316,21 +305,20 @@ static TypeObj_Descriptor* fresco_schema[] = {
     &TypeVar(GlyphImpl),
     &TypeVar(GlyphOffset),
     &TypeVar(GlyphTraversal),
-    &TypeVar(GlyphVisitor),
     &TypeVar(Region),
-    &TypeVar(ScreenObj),
+    &TypeVar(Screen),
     &TypeVar(ScreenImpl),
-    &TypeVar(StyleObj),
+    &TypeVar(Style),
     &TypeVar(StyleVisitor),
-    &TypeVar(TransformObj),
+    &TypeVar(Transform),
     &TypeVar(Viewer),
     &TypeVar(Window),
     &TypeVar(WindowImpl),
-    &TypeVar(WindowStyle),
 
     /* DrawingKit types */
     &TypeVar(DrawingKit),
-    &TypeVar(XfDrawingKit_Data),
+    &TypeVar(XfDrawingKit_Data8),
+    &TypeVar(XfDrawingKit_Data32),
     &TypeVar(XfLong_array_16),
     &TypeVar(Brush),
     &TypeVar(BrushImpl),
@@ -340,8 +328,10 @@ static TypeObj_Descriptor* fresco_schema[] = {
     &TypeVar(Font),
     &TypeVar(FontImpl),
     &TypeVar(XfFont_Info),
-    &TypeVar(PainterObj),
+    &TypeVar(Painter),
     &TypeVar(XPainterImpl),
+    &TypeVar(Pattern),
+    &TypeVar(PatternImpl),
     &TypeVar(Raster),
     &TypeVar(XfRaster_Element),
     &TypeVar(XfRaster_Index),
@@ -353,8 +343,6 @@ static TypeObj_Descriptor* fresco_schema[] = {
 
     /* LayoutKit types */
     &TypeVar(LayoutKit),
-    &TypeVar(DeckObj),
-    &TypeVar(ScrollBox),
 
     /* WidgetKit types */
     &TypeVar(WidgetKit),
@@ -393,7 +381,7 @@ void FrescoImpl::init_types() {
     make_array(XfCoord_array_4, Coord, 4);
     make_array(XfCoord_array_4_4, XfCoord_array_4, 4);
     make_typedef(Coord, XfFloat);
-    make_typedef(XfDisplayObj_ScreenNumber, XfLong);
+    make_typedef(XfDisplay_ScreenNumber, XfLong);
     make_typedef(XfEvent_ButtonIndex, XfLong);
     make_typedef(XfEvent_KeySym, XfULong);
     make_sequence(XfEvent_KeyChord, XfEvent_KeySym);
@@ -401,19 +389,21 @@ void FrescoImpl::init_types() {
     make_typedef(XfEvent_TimeStamp, XfULong);
     make_enum(XfEvent_TypeId, 7);
     make_struct(XfGlyph_AllocationInfo, glyph_allocationinfo_fields);
-    make_sequence(XfGlyph_AllocationInfoList, XfGlyph_AllocationInfo);
+    make_sequence(XfGlyph_AllocationInfoSeq, XfGlyph_AllocationInfo);
+    make_sequence(XfGlyph_OffsetSeq, XfGlyphOffset);
     make_struct(XfGlyph_Requirement, glyph_requirement_fields);
     make_struct(XfGlyph_Requisition, glyph_requisition_fields);
     make_enum(XfGlyphTraversal_Operation, 4);
     make_typedef(PixelCoord, XfLong);
     make_struct(XfRegion_BoundingSpan, region_boundingspan_fields);
     make_typedef(Tag, XfLong);
-    make_typedef(XfTransformObj_Matrix, XfCoord_array_4_4);
+    make_typedef(XfTransform_Matrix, XfCoord_array_4_4);
     make_struct(Vertex, vertex_fields);
     make_struct(XfWindow_Placement, window_placement_fields);
 
     /* DrawingKit types */
-    make_sequence(XfDrawingKit_Data, XfLong);
+    make_sequence(XfDrawingKit_Data8, XfOctet);
+    make_sequence(XfDrawingKit_Data32, XfLong);
     make_array(XfLong_array_16, XfLong, 16);
     make_typedef(XfColor_Intensity, XfFloat);
     make_struct(XfFont_Info, font_info_fields);

@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
 	app_context, xdisplay, "XtTest", args, argv, options
     );
 
-    FigureKit figures = f->figure_kit();
+    FigureKit_var figures = f->figure_kit();
     f->init_widget_glyph(
 	fw, figures->figure_root(
 	    figures->circle(
@@ -96,4 +96,3 @@ int main(int argc, char* argv[]) {
     Fresco::unref(f);
     return 0;
 }
-    

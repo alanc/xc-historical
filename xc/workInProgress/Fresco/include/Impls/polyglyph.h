@@ -43,15 +43,15 @@ public:
     PolyGlyph();
     virtual ~PolyGlyph();
 
-    GlyphOffsetRef _c_append(Glyph_in g); //+ Glyph::append
-    GlyphOffsetRef _c_prepend(Glyph_in g); //+ Glyph::prepend
-    void visit_children(GlyphVisitor_in v); //+ Glyph::visit_children
-    void visit_children_reversed(GlyphVisitor_in v); //+ Glyph::visit_children_reversed
+    void append(Glyph_in g); //+ Glyph::append
+    void prepend(Glyph_in g); //+ Glyph::prepend
+    GlyphOffset_return first_child_offset(); //+ Glyph::first_child_offset
+    GlyphOffset_return last_child_offset(); //+ Glyph::last_child_offset
 
     PolyGlyphOffsetList children_;
 
     //- children_requests
-    Glyph::Requisition* children_requests(Glyph::Requisition* req, long n);
+    Glyph::Requisition* children_requests(Glyph::Requisition* req, Long n);
 	//. Return an array of requisitions for the polyglyph's children.
 	//. If the given integer is as large as the number of children,
 	//. then the given pointer will be used for the result array.
@@ -66,13 +66,13 @@ public:
 	//. allocation information for the parent.
 
     //- fixup
-    virtual void fixup(long start, long delta);
+    virtual void fixup(Long start, Long delta);
 	//. This operation is called when a list item is added
 	//. or removed, meaning that the indices in all offsets
 	//. must be updated.
 
     //- change
-    virtual void change(long index);
+    virtual void change(Long index);
 	//. Note that the request of the indexed child
 	//. may have changed.
 
@@ -83,9 +83,9 @@ public:
 	//. should invalidate the cache.
 };
 
-class PolyGlyphOffset : public GlyphOffsetType {
+class PolyGlyphOffset : public GlyphOffset {
 public:
-    PolyGlyphOffset(PolyGlyph* parent, long index, GlyphRef child);
+    PolyGlyphOffset(PolyGlyph* parent, Long index, GlyphRef child);
     ~PolyGlyphOffset();
 
     //+ GlyphOffset::*
@@ -97,10 +97,12 @@ public:
     void notify_observers();
     void update();
     /* GlyphOffset */
-    GlyphRef _c_parent();
-    GlyphRef _c_child();
-    void allocations(Glyph::AllocationInfoList& a);
-    GlyphOffsetRef _c_insert(Glyph_in g);
+    Glyph_return parent();
+    Glyph_return child();
+    GlyphOffset_return next_child();
+    GlyphOffset_return prev_child();
+    void allocations(Glyph::AllocationInfoSeq& a);
+    void insert(Glyph_in g);
     void replace(Glyph_in g);
     void remove();
     void notify();
@@ -110,9 +112,11 @@ public:
 
     SharedFrescoObjectImpl object_;
     PolyGlyph* parent_;
-    long index_;
+    Long index_;
     GlyphRef child_;
     Tag remove_tag_;
+
+    GlyphOffsetRef offset(Long index);
 };
 
 #endif

@@ -32,7 +32,7 @@
 class RegionImpl;
 class ViewerImpl;
 
-class ViewerOffset : public GlyphOffsetType {
+class ViewerOffset : public GlyphOffset {
 public:
     ViewerOffset(ViewerImpl*);
     ~ViewerOffset();
@@ -46,10 +46,12 @@ public:
     void notify_observers();
     void update();
     /* GlyphOffset */
-    GlyphRef _c_parent();
-    GlyphRef _c_child();
-    void allocations(Glyph::AllocationInfoList& a);
-    GlyphOffsetRef _c_insert(Glyph_in g);
+    Glyph_return parent();
+    Glyph_return child();
+    GlyphOffset_return next_child();
+    GlyphOffset_return prev_child();
+    void allocations(Glyph::AllocationInfoSeq& a);
+    void insert(Glyph_in g);
     void replace(Glyph_in g);
     void remove();
     void notify();
@@ -63,10 +65,10 @@ public:
 };
 
 //- ViewerImpl*
-class ViewerImpl : public ViewerType, public StyleObjType {
+class ViewerImpl : public Viewer, public Style {
     //. ViewerImpl is an implementation of the viewer interface.
     //. Because every viewer has one and only one distinct style,
-    //. ViewerImpl also implements the StyleObj interface directly.
+    //. ViewerImpl also implements the Style interface directly.
     //. This approach means there is only one object for a viewer and
     //. its style.
     //.
@@ -75,7 +77,7 @@ class ViewerImpl : public ViewerType, public StyleObjType {
     //. by inspecting the event type and calling the appropriate
     //. virtual function.
 public:
-    ViewerImpl(Fresco*);
+    ViewerImpl(Fresco*, Boolean transparent = false);
     ~ViewerImpl();
 
     //+ Viewer::*
@@ -87,36 +89,36 @@ public:
     void notify_observers();
     void update();
     /* Glyph */
-    GlyphRef _c_clone_glyph();
-    StyleObjRef _c_style();
-    void _c_style(StyleObj_in _p);
-    TransformObjRef _c_transform();
+    Glyph_return clone_glyph();
+    Style_return glyph_style();
+    void glyph_style(Style_in _p);
+    Transform_return transformation();
     void request(Glyph::Requisition& r);
     void extension(const Glyph::AllocationInfo& a, Region_in r);
-    RegionRef _c_shape();
+    void shape(Region_in r);
     void traverse(GlyphTraversal_in t);
     void draw(GlyphTraversal_in t);
     void pick(GlyphTraversal_in t);
-    GlyphRef _c_body();
-    void _c_body(Glyph_in _p);
-    GlyphOffsetRef _c_append(Glyph_in g);
-    GlyphOffsetRef _c_prepend(Glyph_in g);
+    Glyph_return body();
+    void body(Glyph_in _p);
+    void append(Glyph_in g);
+    void prepend(Glyph_in g);
     Tag add_parent(GlyphOffset_in parent_offset);
     void remove_parent(Tag add_tag);
-    void visit_children(GlyphVisitor_in v);
-    void visit_children_reversed(GlyphVisitor_in v);
-    void visit_parents(GlyphVisitor_in v);
-    void allocations(Glyph::AllocationInfoList& a);
+    GlyphOffset_return first_child_offset();
+    GlyphOffset_return last_child_offset();
+    void parent_offsets(OffsetSeq& parents);
+    void allocations(Glyph::AllocationInfoSeq& a);
     void need_redraw();
     void need_redraw_region(Region_in r);
     void need_resize();
     Boolean restore_trail(GlyphTraversal_in t);
     /* Viewer */
-    ViewerRef _c_parent_viewer();
-    ViewerRef _c_next_viewer();
-    ViewerRef _c_prev_viewer();
-    ViewerRef _c_first_viewer();
-    ViewerRef _c_last_viewer();
+    Viewer_return parent_viewer();
+    Viewer_return next_viewer();
+    Viewer_return prev_viewer();
+    Viewer_return first_viewer();
+    Viewer_return last_viewer();
     void append_viewer(Viewer_in v);
     void prepend_viewer(Viewer_in v);
     void insert_viewer(Viewer_in v);
@@ -125,7 +127,7 @@ public:
     void set_viewer_links(Viewer_in parent, Viewer_in prev, Viewer_in next);
     void set_first_viewer(Viewer_in v);
     void set_last_viewer(Viewer_in v);
-    FocusRef _c_request_focus(Viewer_in requestor, Boolean temporary);
+    Focus_return request_focus(Viewer_in requestor, Boolean temporary);
     Boolean receive_focus(Focus_in f, Boolean primary);
     void lose_focus(Boolean temporary);
     Boolean first_focus();
@@ -136,22 +138,22 @@ public:
     void close();
     //+
 
-    //+ StyleObj::=
-    StyleObjRef _c_new_style();
-    StyleObjRef _c_parent_style();
-    void link_parent(StyleObj_in parent);
+    //+ Style::=
+    Style_return new_style();
+    Style_return parent_style();
+    void link_parent(Style_in parent);
     void unlink_parent();
-    Tag link_child(StyleObj_in child);
+    Tag link_child(Style_in child);
     void unlink_child(Tag link_tag);
-    void merge(StyleObj_in s);
-    CharStringRef _c_name();
-    void _c_name(CharString_in _p);
+    void merge(Style_in s);
+    CharString_return name();
+    void name(CharString_in _p);
     void alias(CharString_in s);
     Boolean is_on(CharString_in name);
-    StyleValueRef _c_bind(CharString_in name);
+    StyleValue_return bind(CharString_in name);
     void unbind(CharString_in name);
-    StyleValueRef _c_resolve(CharString_in name);
-    StyleValueRef _c_resolve_wildcard(CharString_in name, StyleObj_in start);
+    StyleValue_return resolve(CharString_in name);
+    StyleValue_return resolve_wildcard(CharString_in name, Style_in start);
     Long match(CharString_in name);
     void visit_aliases(StyleVisitor_in v);
     void visit_attributes(StyleVisitor_in v);
@@ -256,13 +258,13 @@ protected:
     ViewerRef first_;
     ViewerRef last_;
 
-    Boolean entered_;
-    Boolean pressed_;
+    Boolean entered_ : 1;
+    Boolean pressed_ : 1;
+    Boolean transparent_ : 1;
     Event::ButtonIndex button_;
     Boolean recorded_time_;
     unsigned long click_time_;
-    unsigned long threshold_;
-    DisplayObjRef display_;
+    DisplayRef display_;
     Tag filter_;
 };
 
@@ -272,7 +274,7 @@ class ActiveViewer : public ViewerImpl {
     //. ViewerImpl::move and ViewerImpl::drag to notice when
     //. the pointer enters or leaves the viewer.
 public:
-    ActiveViewer(Fresco*);
+    ActiveViewer(Fresco*, Boolean transparent = false);
     ~ActiveViewer();
 
     Boolean move(GlyphTraversalRef, EventRef);
@@ -289,7 +291,7 @@ public:
 	//. is to do nothing.
 };
 
-class FocusImpl : public FocusType {
+class FocusImpl : public Focus {
 public:
     FocusImpl(Fresco*);
     ~FocusImpl();
@@ -319,12 +321,12 @@ public:
     ~MainViewer();
 
     void notify_observers(); //+ FrescoObject::notify_observers
-    void allocations(Glyph::AllocationInfoList& a); //+ Glyph::allocations
+    void allocations(Glyph::AllocationInfoSeq& a); //+ Glyph::allocations
     void traverse(GlyphTraversal_in t); //+ Glyph::traverse
     void draw(GlyphTraversal_in t); //+ Glyph::draw
     void need_redraw(); //+ Glyph::need_redraw
     void need_resize(); //+ Glyph::need_resize
-    FocusRef _c_request_focus(Viewer_in requestor, Boolean temporary); //+ Viewer::request_focus
+    Focus_return request_focus(Viewer_in requestor, Boolean temporary); //+ Viewer::request_focus
     void close(); //+ Viewer::close
 
     WindowRef window_;
@@ -333,7 +335,7 @@ protected:
     FocusImpl* focus_;
     Boolean valid_;
     ColorRef background_;
-    DamageObjRef damage_;
+    DamageRef damage_;
 
     void cache();
     void invalidate();

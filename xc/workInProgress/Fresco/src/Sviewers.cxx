@@ -48,9 +48,9 @@ Event::KeyChord& Event::KeyChord::operator =(const KeyChord& _s) {
     return *this;
 }
 
-EventType::EventType() { }
-EventType::~EventType() { }
-void* EventType::_this() { return this; }
+Event::Event() { }
+Event::~Event() { }
+void* Event::_this() { return this; }
 
 extern TypeObj_Descriptor _XfEvent_TypeId_type, _XfEvent_TimeStamp_type, 
     _XfBoolean_type, _XfCoord_type, _XfEvent_ButtonIndex_type, _XfEvent_Modifier_type, 
@@ -59,6 +59,7 @@ extern TypeObj_Descriptor _XfEvent_TypeId_type, _XfEvent_TimeStamp_type,
 TypeObj_OpData _XfEvent_methods[] = {
     { "type", &_XfEvent_TypeId_type, 0 },
     { "time", &_XfEvent_TimeStamp_type, 0 },
+    { "double_click", &_XfBoolean_type, 1 },
     { "positional", &_XfBoolean_type, 0 },
     { "pointer_x", &_XfCoord_type, 0 },
     { "pointer_y", &_XfCoord_type, 0 },
@@ -71,6 +72,8 @@ TypeObj_OpData _XfEvent_methods[] = {
     { 0, 0, 0 }
 };
 TypeObj_ParamData _XfEvent_params[] = {
+    /* double_click */
+        { "previous", 0, &_XfEvent_TimeStamp_type },
     /* button_is_down */
         { "b", 0, &_XfEvent_ButtonIndex_type },
     /* modifier_is_down */
@@ -91,10 +94,10 @@ TypeObj_Descriptor _XfEvent_type = {
 
 EventRef Event::_narrow(BaseObjectRef o) {
     return (EventRef)_BaseObject_tnarrow(
-        o, _XfEvent_tid, &EventStub::_create
+        o, _XfEvent_tid, &_XfEventStub_create
     );
 }
-TypeObjId EventType::_tid() { return _XfEvent_tid; }
+TypeObjId Event::_tid() { return _XfEvent_tid; }
 void _XfEvent_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
     extern TypeObjId _XfEvent_tid;
     EventRef _this = (EventRef)_BaseObject_tcast(_object, _XfEvent_tid);
@@ -113,35 +116,45 @@ void _XfEvent_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             _b.reply(_XfEvent_time_pinfo, _arg);
             break;
         }
-        case /* positional */ 2: {
+        case /* double_click */ 2: {
+            extern MarshalBuffer::ArgInfo _XfEvent_double_click_pinfo;
+            MarshalBuffer::ArgValue _arg[2];
+            Event::TimeStamp previous;
+            _arg[1].u_addr = &previous;
+            _b.receive(_XfEvent_double_click_pinfo, _arg);
+            _arg[0].u_boolean = _this->double_click(previous);
+            _b.reply(_XfEvent_double_click_pinfo, _arg);
+            break;
+        }
+        case /* positional */ 3: {
             extern MarshalBuffer::ArgInfo _XfEvent_positional_pinfo;
             MarshalBuffer::ArgValue _arg[1];
             _arg[0].u_boolean = _this->positional();
             _b.reply(_XfEvent_positional_pinfo, _arg);
             break;
         }
-        case /* pointer_x */ 3: {
+        case /* pointer_x */ 4: {
             extern MarshalBuffer::ArgInfo _XfEvent_pointer_x_pinfo;
             MarshalBuffer::ArgValue _arg[1];
             _arg[0].u_float = _this->pointer_x();
             _b.reply(_XfEvent_pointer_x_pinfo, _arg);
             break;
         }
-        case /* pointer_y */ 4: {
+        case /* pointer_y */ 5: {
             extern MarshalBuffer::ArgInfo _XfEvent_pointer_y_pinfo;
             MarshalBuffer::ArgValue _arg[1];
             _arg[0].u_float = _this->pointer_y();
             _b.reply(_XfEvent_pointer_y_pinfo, _arg);
             break;
         }
-        case /* pointer_button */ 5: {
+        case /* pointer_button */ 6: {
             extern MarshalBuffer::ArgInfo _XfEvent_pointer_button_pinfo;
             MarshalBuffer::ArgValue _arg[1];
             _arg[0].u_long = _this->pointer_button();
             _b.reply(_XfEvent_pointer_button_pinfo, _arg);
             break;
         }
-        case /* button_is_down */ 6: {
+        case /* button_is_down */ 7: {
             extern MarshalBuffer::ArgInfo _XfEvent_button_is_down_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             Event::ButtonIndex b;
@@ -151,7 +164,7 @@ void _XfEvent_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             _b.reply(_XfEvent_button_is_down_pinfo, _arg);
             break;
         }
-        case /* modifier_is_down */ 7: {
+        case /* modifier_is_down */ 8: {
             extern MarshalBuffer::ArgInfo _XfEvent_modifier_is_down_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             Event::Modifier m;
@@ -161,21 +174,21 @@ void _XfEvent_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             _b.reply(_XfEvent_modifier_is_down_pinfo, _arg);
             break;
         }
-        case /* key */ 8: {
+        case /* key */ 9: {
             extern MarshalBuffer::ArgInfo _XfEvent_key_pinfo;
             MarshalBuffer::ArgValue _arg[1];
             _arg[0].u_unsigned_long = _this->key();
             _b.reply(_XfEvent_key_pinfo, _arg);
             break;
         }
-        case /* character */ 9: {
+        case /* character */ 10: {
             extern MarshalBuffer::ArgInfo _XfEvent_character_pinfo;
             MarshalBuffer::ArgValue _arg[1];
             _arg[0].u_long = _this->character();
             _b.reply(_XfEvent_character_pinfo, _arg);
             break;
         }
-        case /* unread */ 10: {
+        case /* unread */ 11: {
             extern MarshalBuffer::ArgInfo _XfEvent_unread_pinfo;
             MarshalBuffer::ArgValue _arg[1];
             _this->unread();
@@ -193,7 +206,7 @@ extern void _XfEvent_KeyChord_get(
 
 EventStub::EventStub(Exchange* e) { exch_ = e; }
 EventStub::~EventStub() { }
-BaseObjectRef EventStub::_create(Exchange* e) {
+BaseObjectRef _XfEventStub_create(Exchange* e) {
     return (BaseObjectRef)(void*)new EventStub(e);
 }
 Exchange* EventStub::_exchange() {
@@ -203,7 +216,7 @@ MarshalBuffer::ArgDesc _XfEvent_type_pdesc[2] = { 1, 32 };
 MarshalBuffer::ArgInfo _XfEvent_type_pinfo = {
     &_XfEvent_tid, 0, _XfEvent_type_pdesc, 0
 };
-Event::TypeId EventType::type() {
+Event::TypeId Event::type() {
     MarshalBuffer _b;
     extern TypeObjId _XfEvent_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -214,18 +227,30 @@ MarshalBuffer::ArgDesc _XfEvent_time_pdesc[2] = { 1, 36 };
 MarshalBuffer::ArgInfo _XfEvent_time_pinfo = {
     &_XfEvent_tid, 1, _XfEvent_time_pdesc, 0
 };
-Event::TimeStamp EventType::time() {
+Event::TimeStamp Event::time() {
     MarshalBuffer _b;
     extern TypeObjId _XfEvent_tid;
     MarshalBuffer::ArgValue _arg[1];
     _b.invoke(this, _XfEvent_time_pinfo, _arg);
     return _arg[0].u_unsigned_long;
 }
+MarshalBuffer::ArgDesc _XfEvent_double_click_pdesc[3] = { 2, 12, 37 };
+MarshalBuffer::ArgInfo _XfEvent_double_click_pinfo = {
+    &_XfEvent_tid, 2, _XfEvent_double_click_pdesc, 0
+};
+Boolean Event::double_click(Event::TimeStamp previous) {
+    MarshalBuffer _b;
+    extern TypeObjId _XfEvent_tid;
+    MarshalBuffer::ArgValue _arg[2];
+    _arg[1].u_unsigned_long = previous;
+    _b.invoke(this, _XfEvent_double_click_pinfo, _arg);
+    return _arg[0].u_boolean;
+}
 MarshalBuffer::ArgDesc _XfEvent_positional_pdesc[2] = { 1, 12 };
 MarshalBuffer::ArgInfo _XfEvent_positional_pinfo = {
-    &_XfEvent_tid, 2, _XfEvent_positional_pdesc, 0
+    &_XfEvent_tid, 3, _XfEvent_positional_pdesc, 0
 };
-Boolean EventType::positional() {
+Boolean Event::positional() {
     MarshalBuffer _b;
     extern TypeObjId _XfEvent_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -234,9 +259,9 @@ Boolean EventType::positional() {
 }
 MarshalBuffer::ArgDesc _XfEvent_pointer_x_pdesc[2] = { 1, 48 };
 MarshalBuffer::ArgInfo _XfEvent_pointer_x_pinfo = {
-    &_XfEvent_tid, 3, _XfEvent_pointer_x_pdesc, 0
+    &_XfEvent_tid, 4, _XfEvent_pointer_x_pdesc, 0
 };
-Coord EventType::pointer_x() {
+Coord Event::pointer_x() {
     MarshalBuffer _b;
     extern TypeObjId _XfEvent_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -245,9 +270,9 @@ Coord EventType::pointer_x() {
 }
 MarshalBuffer::ArgDesc _XfEvent_pointer_y_pdesc[2] = { 1, 48 };
 MarshalBuffer::ArgInfo _XfEvent_pointer_y_pinfo = {
-    &_XfEvent_tid, 4, _XfEvent_pointer_y_pdesc, 0
+    &_XfEvent_tid, 5, _XfEvent_pointer_y_pdesc, 0
 };
-Coord EventType::pointer_y() {
+Coord Event::pointer_y() {
     MarshalBuffer _b;
     extern TypeObjId _XfEvent_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -256,9 +281,9 @@ Coord EventType::pointer_y() {
 }
 MarshalBuffer::ArgDesc _XfEvent_pointer_button_pdesc[2] = { 1, 32 };
 MarshalBuffer::ArgInfo _XfEvent_pointer_button_pinfo = {
-    &_XfEvent_tid, 5, _XfEvent_pointer_button_pdesc, 0
+    &_XfEvent_tid, 6, _XfEvent_pointer_button_pdesc, 0
 };
-Event::ButtonIndex EventType::pointer_button() {
+Event::ButtonIndex Event::pointer_button() {
     MarshalBuffer _b;
     extern TypeObjId _XfEvent_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -267,9 +292,9 @@ Event::ButtonIndex EventType::pointer_button() {
 }
 MarshalBuffer::ArgDesc _XfEvent_button_is_down_pdesc[3] = { 2, 12, 33 };
 MarshalBuffer::ArgInfo _XfEvent_button_is_down_pinfo = {
-    &_XfEvent_tid, 6, _XfEvent_button_is_down_pdesc, 0
+    &_XfEvent_tid, 7, _XfEvent_button_is_down_pdesc, 0
 };
-Boolean EventType::button_is_down(Event::ButtonIndex b) {
+Boolean Event::button_is_down(Event::ButtonIndex b) {
     MarshalBuffer _b;
     extern TypeObjId _XfEvent_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -279,9 +304,9 @@ Boolean EventType::button_is_down(Event::ButtonIndex b) {
 }
 MarshalBuffer::ArgDesc _XfEvent_modifier_is_down_pdesc[3] = { 2, 12, 33 };
 MarshalBuffer::ArgInfo _XfEvent_modifier_is_down_pinfo = {
-    &_XfEvent_tid, 7, _XfEvent_modifier_is_down_pdesc, 0
+    &_XfEvent_tid, 8, _XfEvent_modifier_is_down_pdesc, 0
 };
-Boolean EventType::modifier_is_down(Event::Modifier m) {
+Boolean Event::modifier_is_down(Event::Modifier m) {
     MarshalBuffer _b;
     extern TypeObjId _XfEvent_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -291,9 +316,9 @@ Boolean EventType::modifier_is_down(Event::Modifier m) {
 }
 MarshalBuffer::ArgDesc _XfEvent_key_pdesc[2] = { 1, 36 };
 MarshalBuffer::ArgInfo _XfEvent_key_pinfo = {
-    &_XfEvent_tid, 8, _XfEvent_key_pdesc, 0
+    &_XfEvent_tid, 9, _XfEvent_key_pdesc, 0
 };
-Event::KeySym EventType::key() {
+Event::KeySym Event::key() {
     MarshalBuffer _b;
     extern TypeObjId _XfEvent_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -302,9 +327,9 @@ Event::KeySym EventType::key() {
 }
 MarshalBuffer::ArgDesc _XfEvent_character_pdesc[2] = { 1, 32 };
 MarshalBuffer::ArgInfo _XfEvent_character_pinfo = {
-    &_XfEvent_tid, 9, _XfEvent_character_pdesc, 0
+    &_XfEvent_tid, 10, _XfEvent_character_pdesc, 0
 };
-CharCode EventType::character() {
+CharCode Event::character() {
     MarshalBuffer _b;
     extern TypeObjId _XfEvent_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -313,9 +338,9 @@ CharCode EventType::character() {
 }
 MarshalBuffer::ArgDesc _XfEvent_unread_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfEvent_unread_pinfo = {
-    &_XfEvent_tid, 10, _XfEvent_unread_pdesc, 0
+    &_XfEvent_tid, 11, _XfEvent_unread_pdesc, 0
 };
-void EventType::unread() {
+void Event::unread() {
     MarshalBuffer _b;
     extern TypeObjId _XfEvent_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -351,9 +376,9 @@ TypeObjId EventImpl::_tid() { return _XfEventImpl_tid; }
 //+
 
 //+ Focus::%init,type+dii,client
-FocusType::FocusType() { }
-FocusType::~FocusType() { }
-void* FocusType::_this() { return this; }
+Focus::Focus() { }
+Focus::~Focus() { }
+void* Focus::_this() { return this; }
 
 extern TypeObj_Descriptor _XfViewer_type, _XfAction_type, _XfEvent_KeyChord_type;
 
@@ -396,10 +421,10 @@ TypeObj_Descriptor _XfFocus_type = {
 
 FocusRef Focus::_narrow(BaseObjectRef o) {
     return (FocusRef)_BaseObject_tnarrow(
-        o, _XfFocus_tid, &FocusStub::_create
+        o, _XfFocus_tid, &_XfFocusStub_create
     );
 }
-TypeObjId FocusType::_tid() { return _XfFocus_tid; }
+TypeObjId Focus::_tid() { return _XfFocus_tid; }
 void _XfFocus_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
     extern TypeObjId _XfFocus_tid;
     FocusRef _this = (FocusRef)_BaseObject_tcast(_object, _XfFocus_tid);
@@ -473,7 +498,7 @@ extern void _XfEvent_KeyChord_get(
 
 FocusStub::FocusStub(Exchange* e) { exch_ = e; }
 FocusStub::~FocusStub() { }
-BaseObjectRef FocusStub::_create(Exchange* e) {
+BaseObjectRef _XfFocusStub_create(Exchange* e) {
     return (BaseObjectRef)(void*)new FocusStub(e);
 }
 Exchange* FocusStub::_exchange() {
@@ -481,13 +506,13 @@ Exchange* FocusStub::_exchange() {
 }
 MarshalBuffer::ArgDesc _XfFocus_add_focus_interest_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfFocus_add_focus_interest_pfunc[] = {
-    &ViewerStub::_create,
+    &_XfViewerStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfFocus_add_focus_interest_pinfo = {
     &_XfFocus_tid, 0, _XfFocus_add_focus_interest_pdesc, _XfFocus_add_focus_interest_pfunc
 };
-void FocusType::add_focus_interest(Viewer_in v) {
+void Focus::add_focus_interest(Viewer_in v) {
     MarshalBuffer _b;
     extern TypeObjId _XfFocus_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -496,13 +521,13 @@ void FocusType::add_focus_interest(Viewer_in v) {
 }
 MarshalBuffer::ArgDesc _XfFocus_receive_focus_below_pdesc[4] = { 3, 4, 61, 13 };
 MarshalBuffer::ArgMarshal _XfFocus_receive_focus_below_pfunc[] = {
-    &ViewerStub::_create,
+    &_XfViewerStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfFocus_receive_focus_below_pinfo = {
     &_XfFocus_tid, 1, _XfFocus_receive_focus_below_pdesc, _XfFocus_receive_focus_below_pfunc
 };
-void FocusType::receive_focus_below(Viewer_in v, Boolean temporary) {
+void Focus::receive_focus_below(Viewer_in v, Boolean temporary) {
     MarshalBuffer _b;
     extern TypeObjId _XfFocus_tid;
     MarshalBuffer::ArgValue _arg[3];
@@ -512,13 +537,13 @@ void FocusType::receive_focus_below(Viewer_in v, Boolean temporary) {
 }
 MarshalBuffer::ArgDesc _XfFocus_lose_focus_below_pdesc[4] = { 3, 4, 61, 13 };
 MarshalBuffer::ArgMarshal _XfFocus_lose_focus_below_pfunc[] = {
-    &ViewerStub::_create,
+    &_XfViewerStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfFocus_lose_focus_below_pinfo = {
     &_XfFocus_tid, 2, _XfFocus_lose_focus_below_pdesc, _XfFocus_lose_focus_below_pfunc
 };
-void FocusType::lose_focus_below(Viewer_in v, Boolean temporary) {
+void Focus::lose_focus_below(Viewer_in v, Boolean temporary) {
     MarshalBuffer _b;
     extern TypeObjId _XfFocus_tid;
     MarshalBuffer::ArgValue _arg[3];
@@ -528,13 +553,13 @@ void FocusType::lose_focus_below(Viewer_in v, Boolean temporary) {
 }
 MarshalBuffer::ArgDesc _XfFocus_map_keystroke_pdesc[4] = { 3, 4, 37, 61 };
 MarshalBuffer::ArgMarshal _XfFocus_map_keystroke_pfunc[] = {
-    &ActionStub::_create,
+    &_XfActionStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfFocus_map_keystroke_pinfo = {
     &_XfFocus_tid, 3, _XfFocus_map_keystroke_pdesc, _XfFocus_map_keystroke_pfunc
 };
-void FocusType::map_keystroke(Event::KeySym k, Action_in a) {
+void Focus::map_keystroke(Event::KeySym k, Action_in a) {
     MarshalBuffer _b;
     extern TypeObjId _XfFocus_tid;
     MarshalBuffer::ArgValue _arg[3];
@@ -545,13 +570,13 @@ void FocusType::map_keystroke(Event::KeySym k, Action_in a) {
 MarshalBuffer::ArgDesc _XfFocus_map_keychord_pdesc[4] = { 3, 4, 1, 61 };
 MarshalBuffer::ArgMarshal _XfFocus_map_keychord_pfunc[] = {
     &_XfEvent_KeyChord_put, &_XfEvent_KeyChord_get,
-    &ActionStub::_create,
+    &_XfActionStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfFocus_map_keychord_pinfo = {
     &_XfFocus_tid, 4, _XfFocus_map_keychord_pdesc, _XfFocus_map_keychord_pfunc
 };
-void FocusType::map_keychord(const Event::KeyChord& k, Action_in a) {
+void Focus::map_keychord(const Event::KeyChord& k, Action_in a) {
     MarshalBuffer _b;
     extern TypeObjId _XfFocus_tid;
     MarshalBuffer::ArgValue _arg[3];
@@ -562,9 +587,9 @@ void FocusType::map_keychord(const Event::KeyChord& k, Action_in a) {
 //+
 
 //+ Viewer::%init,type+dii,client
-ViewerType::ViewerType() { }
-ViewerType::~ViewerType() { }
-void* ViewerType::_this() { return this; }
+Viewer::Viewer() { }
+Viewer::~Viewer() { }
+void* Viewer::_this() { return this; }
 
 extern TypeObj_Descriptor _XfFocus_type, _XfGlyphTraversal_type, _XfEvent_type;
 
@@ -637,10 +662,10 @@ TypeObj_Descriptor _XfViewer_type = {
 
 ViewerRef Viewer::_narrow(BaseObjectRef o) {
     return (ViewerRef)_BaseObject_tnarrow(
-        o, _XfViewer_tid, &ViewerStub::_create
+        o, _XfViewer_tid, &_XfViewerStub_create
     );
 }
-TypeObjId ViewerType::_tid() { return _XfViewer_tid; }
+TypeObjId Viewer::_tid() { return _XfViewer_tid; }
 void _XfViewer_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
     extern TypeObjId _XfViewer_tid;
     ViewerRef _this = (ViewerRef)_BaseObject_tcast(_object, _XfViewer_tid);
@@ -648,35 +673,35 @@ void _XfViewer_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
         case /* parent_viewer */ 0: {
             extern MarshalBuffer::ArgInfo _XfViewer_parent_viewer_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_parent_viewer();
+            _arg[0].u_objref = _this->parent_viewer();
             _b.reply(_XfViewer_parent_viewer_pinfo, _arg);
             break;
         }
         case /* next_viewer */ 1: {
             extern MarshalBuffer::ArgInfo _XfViewer_next_viewer_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_next_viewer();
+            _arg[0].u_objref = _this->next_viewer();
             _b.reply(_XfViewer_next_viewer_pinfo, _arg);
             break;
         }
         case /* prev_viewer */ 2: {
             extern MarshalBuffer::ArgInfo _XfViewer_prev_viewer_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_prev_viewer();
+            _arg[0].u_objref = _this->prev_viewer();
             _b.reply(_XfViewer_prev_viewer_pinfo, _arg);
             break;
         }
         case /* first_viewer */ 3: {
             extern MarshalBuffer::ArgInfo _XfViewer_first_viewer_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_first_viewer();
+            _arg[0].u_objref = _this->first_viewer();
             _b.reply(_XfViewer_first_viewer_pinfo, _arg);
             break;
         }
         case /* last_viewer */ 4: {
             extern MarshalBuffer::ArgInfo _XfViewer_last_viewer_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_last_viewer();
+            _arg[0].u_objref = _this->last_viewer();
             _b.reply(_XfViewer_last_viewer_pinfo, _arg);
             break;
         }
@@ -769,7 +794,7 @@ void _XfViewer_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             Boolean temporary;
             _arg[2].u_addr = &temporary;
             _b.receive(_XfViewer_request_focus_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_request_focus(requestor, temporary);
+            _arg[0].u_objref = _this->request_focus(requestor, temporary);
             _b.reply(_XfViewer_request_focus_pinfo, _arg);
             break;
         }
@@ -846,7 +871,7 @@ void _XfViewer_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
 }
 ViewerStub::ViewerStub(Exchange* e) { exch_ = e; }
 ViewerStub::~ViewerStub() { }
-BaseObjectRef ViewerStub::_create(Exchange* e) {
+BaseObjectRef _XfViewerStub_create(Exchange* e) {
     return (BaseObjectRef)(void*)new ViewerStub(e);
 }
 Exchange* ViewerStub::_exchange() {
@@ -854,12 +879,12 @@ Exchange* ViewerStub::_exchange() {
 }
 MarshalBuffer::ArgDesc _XfViewer_parent_viewer_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfViewer_parent_viewer_pfunc[] = {
-    &ViewerStub::_create
+    &_XfViewerStub_create
 };
 MarshalBuffer::ArgInfo _XfViewer_parent_viewer_pinfo = {
     &_XfViewer_tid, 0, _XfViewer_parent_viewer_pdesc, _XfViewer_parent_viewer_pfunc
 };
-ViewerRef ViewerType::_c_parent_viewer() {
+ViewerRef Viewer::parent_viewer() {
     MarshalBuffer _b;
     extern TypeObjId _XfViewer_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -868,12 +893,12 @@ ViewerRef ViewerType::_c_parent_viewer() {
 }
 MarshalBuffer::ArgDesc _XfViewer_next_viewer_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfViewer_next_viewer_pfunc[] = {
-    &ViewerStub::_create
+    &_XfViewerStub_create
 };
 MarshalBuffer::ArgInfo _XfViewer_next_viewer_pinfo = {
     &_XfViewer_tid, 1, _XfViewer_next_viewer_pdesc, _XfViewer_next_viewer_pfunc
 };
-ViewerRef ViewerType::_c_next_viewer() {
+ViewerRef Viewer::next_viewer() {
     MarshalBuffer _b;
     extern TypeObjId _XfViewer_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -882,12 +907,12 @@ ViewerRef ViewerType::_c_next_viewer() {
 }
 MarshalBuffer::ArgDesc _XfViewer_prev_viewer_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfViewer_prev_viewer_pfunc[] = {
-    &ViewerStub::_create
+    &_XfViewerStub_create
 };
 MarshalBuffer::ArgInfo _XfViewer_prev_viewer_pinfo = {
     &_XfViewer_tid, 2, _XfViewer_prev_viewer_pdesc, _XfViewer_prev_viewer_pfunc
 };
-ViewerRef ViewerType::_c_prev_viewer() {
+ViewerRef Viewer::prev_viewer() {
     MarshalBuffer _b;
     extern TypeObjId _XfViewer_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -896,12 +921,12 @@ ViewerRef ViewerType::_c_prev_viewer() {
 }
 MarshalBuffer::ArgDesc _XfViewer_first_viewer_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfViewer_first_viewer_pfunc[] = {
-    &ViewerStub::_create
+    &_XfViewerStub_create
 };
 MarshalBuffer::ArgInfo _XfViewer_first_viewer_pinfo = {
     &_XfViewer_tid, 3, _XfViewer_first_viewer_pdesc, _XfViewer_first_viewer_pfunc
 };
-ViewerRef ViewerType::_c_first_viewer() {
+ViewerRef Viewer::first_viewer() {
     MarshalBuffer _b;
     extern TypeObjId _XfViewer_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -910,12 +935,12 @@ ViewerRef ViewerType::_c_first_viewer() {
 }
 MarshalBuffer::ArgDesc _XfViewer_last_viewer_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfViewer_last_viewer_pfunc[] = {
-    &ViewerStub::_create
+    &_XfViewerStub_create
 };
 MarshalBuffer::ArgInfo _XfViewer_last_viewer_pinfo = {
     &_XfViewer_tid, 4, _XfViewer_last_viewer_pdesc, _XfViewer_last_viewer_pfunc
 };
-ViewerRef ViewerType::_c_last_viewer() {
+ViewerRef Viewer::last_viewer() {
     MarshalBuffer _b;
     extern TypeObjId _XfViewer_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -924,13 +949,13 @@ ViewerRef ViewerType::_c_last_viewer() {
 }
 MarshalBuffer::ArgDesc _XfViewer_append_viewer_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfViewer_append_viewer_pfunc[] = {
-    &ViewerStub::_create,
+    &_XfViewerStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfViewer_append_viewer_pinfo = {
     &_XfViewer_tid, 5, _XfViewer_append_viewer_pdesc, _XfViewer_append_viewer_pfunc
 };
-void ViewerType::append_viewer(Viewer_in v) {
+void Viewer::append_viewer(Viewer_in v) {
     MarshalBuffer _b;
     extern TypeObjId _XfViewer_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -939,13 +964,13 @@ void ViewerType::append_viewer(Viewer_in v) {
 }
 MarshalBuffer::ArgDesc _XfViewer_prepend_viewer_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfViewer_prepend_viewer_pfunc[] = {
-    &ViewerStub::_create,
+    &_XfViewerStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfViewer_prepend_viewer_pinfo = {
     &_XfViewer_tid, 6, _XfViewer_prepend_viewer_pdesc, _XfViewer_prepend_viewer_pfunc
 };
-void ViewerType::prepend_viewer(Viewer_in v) {
+void Viewer::prepend_viewer(Viewer_in v) {
     MarshalBuffer _b;
     extern TypeObjId _XfViewer_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -954,13 +979,13 @@ void ViewerType::prepend_viewer(Viewer_in v) {
 }
 MarshalBuffer::ArgDesc _XfViewer_insert_viewer_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfViewer_insert_viewer_pfunc[] = {
-    &ViewerStub::_create,
+    &_XfViewerStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfViewer_insert_viewer_pinfo = {
     &_XfViewer_tid, 7, _XfViewer_insert_viewer_pdesc, _XfViewer_insert_viewer_pfunc
 };
-void ViewerType::insert_viewer(Viewer_in v) {
+void Viewer::insert_viewer(Viewer_in v) {
     MarshalBuffer _b;
     extern TypeObjId _XfViewer_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -969,13 +994,13 @@ void ViewerType::insert_viewer(Viewer_in v) {
 }
 MarshalBuffer::ArgDesc _XfViewer_replace_viewer_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfViewer_replace_viewer_pfunc[] = {
-    &ViewerStub::_create,
+    &_XfViewerStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfViewer_replace_viewer_pinfo = {
     &_XfViewer_tid, 8, _XfViewer_replace_viewer_pdesc, _XfViewer_replace_viewer_pfunc
 };
-void ViewerType::replace_viewer(Viewer_in v) {
+void Viewer::replace_viewer(Viewer_in v) {
     MarshalBuffer _b;
     extern TypeObjId _XfViewer_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -986,7 +1011,7 @@ MarshalBuffer::ArgDesc _XfViewer_remove_viewer_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfViewer_remove_viewer_pinfo = {
     &_XfViewer_tid, 9, _XfViewer_remove_viewer_pdesc, 0
 };
-void ViewerType::remove_viewer() {
+void Viewer::remove_viewer() {
     MarshalBuffer _b;
     extern TypeObjId _XfViewer_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -994,15 +1019,15 @@ void ViewerType::remove_viewer() {
 }
 MarshalBuffer::ArgDesc _XfViewer_set_viewer_links_pdesc[5] = { 4, 4, 61, 61, 61 };
 MarshalBuffer::ArgMarshal _XfViewer_set_viewer_links_pfunc[] = {
-    &ViewerStub::_create,
-    &ViewerStub::_create,
-    &ViewerStub::_create,
+    &_XfViewerStub_create,
+    &_XfViewerStub_create,
+    &_XfViewerStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfViewer_set_viewer_links_pinfo = {
     &_XfViewer_tid, 10, _XfViewer_set_viewer_links_pdesc, _XfViewer_set_viewer_links_pfunc
 };
-void ViewerType::set_viewer_links(Viewer_in parent, Viewer_in prev, Viewer_in next) {
+void Viewer::set_viewer_links(Viewer_in parent, Viewer_in prev, Viewer_in next) {
     MarshalBuffer _b;
     extern TypeObjId _XfViewer_tid;
     MarshalBuffer::ArgValue _arg[4];
@@ -1013,13 +1038,13 @@ void ViewerType::set_viewer_links(Viewer_in parent, Viewer_in prev, Viewer_in ne
 }
 MarshalBuffer::ArgDesc _XfViewer_set_first_viewer_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfViewer_set_first_viewer_pfunc[] = {
-    &ViewerStub::_create,
+    &_XfViewerStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfViewer_set_first_viewer_pinfo = {
     &_XfViewer_tid, 11, _XfViewer_set_first_viewer_pdesc, _XfViewer_set_first_viewer_pfunc
 };
-void ViewerType::set_first_viewer(Viewer_in v) {
+void Viewer::set_first_viewer(Viewer_in v) {
     MarshalBuffer _b;
     extern TypeObjId _XfViewer_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1028,13 +1053,13 @@ void ViewerType::set_first_viewer(Viewer_in v) {
 }
 MarshalBuffer::ArgDesc _XfViewer_set_last_viewer_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfViewer_set_last_viewer_pfunc[] = {
-    &ViewerStub::_create,
+    &_XfViewerStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfViewer_set_last_viewer_pinfo = {
     &_XfViewer_tid, 12, _XfViewer_set_last_viewer_pdesc, _XfViewer_set_last_viewer_pfunc
 };
-void ViewerType::set_last_viewer(Viewer_in v) {
+void Viewer::set_last_viewer(Viewer_in v) {
     MarshalBuffer _b;
     extern TypeObjId _XfViewer_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1043,16 +1068,13 @@ void ViewerType::set_last_viewer(Viewer_in v) {
 }
 MarshalBuffer::ArgDesc _XfViewer_request_focus_pdesc[4] = { 3, 60, 61, 13 };
 MarshalBuffer::ArgMarshal _XfViewer_request_focus_pfunc[] = {
-    &ViewerStub::_create,
-    &FocusStub::_create
+    &_XfViewerStub_create,
+    &_XfFocusStub_create
 };
 MarshalBuffer::ArgInfo _XfViewer_request_focus_pinfo = {
     &_XfViewer_tid, 13, _XfViewer_request_focus_pdesc, _XfViewer_request_focus_pfunc
 };
-Focus_tmp ViewerType::request_focus(Viewer_in requestor, Boolean temporary) {
-    return _c_request_focus(requestor, temporary);
-}
-FocusRef ViewerType::_c_request_focus(Viewer_in requestor, Boolean temporary) {
+FocusRef Viewer::request_focus(Viewer_in requestor, Boolean temporary) {
     MarshalBuffer _b;
     extern TypeObjId _XfViewer_tid;
     MarshalBuffer::ArgValue _arg[3];
@@ -1063,13 +1085,13 @@ FocusRef ViewerType::_c_request_focus(Viewer_in requestor, Boolean temporary) {
 }
 MarshalBuffer::ArgDesc _XfViewer_receive_focus_pdesc[4] = { 3, 12, 61, 13 };
 MarshalBuffer::ArgMarshal _XfViewer_receive_focus_pfunc[] = {
-    &FocusStub::_create,
+    &_XfFocusStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfViewer_receive_focus_pinfo = {
     &_XfViewer_tid, 14, _XfViewer_receive_focus_pdesc, _XfViewer_receive_focus_pfunc
 };
-Boolean ViewerType::receive_focus(Focus_in f, Boolean primary) {
+Boolean Viewer::receive_focus(Focus_in f, Boolean primary) {
     MarshalBuffer _b;
     extern TypeObjId _XfViewer_tid;
     MarshalBuffer::ArgValue _arg[3];
@@ -1082,7 +1104,7 @@ MarshalBuffer::ArgDesc _XfViewer_lose_focus_pdesc[3] = { 2, 4, 13 };
 MarshalBuffer::ArgInfo _XfViewer_lose_focus_pinfo = {
     &_XfViewer_tid, 15, _XfViewer_lose_focus_pdesc, 0
 };
-void ViewerType::lose_focus(Boolean temporary) {
+void Viewer::lose_focus(Boolean temporary) {
     MarshalBuffer _b;
     extern TypeObjId _XfViewer_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1093,7 +1115,7 @@ MarshalBuffer::ArgDesc _XfViewer_first_focus_pdesc[2] = { 1, 12 };
 MarshalBuffer::ArgInfo _XfViewer_first_focus_pinfo = {
     &_XfViewer_tid, 16, _XfViewer_first_focus_pdesc, 0
 };
-Boolean ViewerType::first_focus() {
+Boolean Viewer::first_focus() {
     MarshalBuffer _b;
     extern TypeObjId _XfViewer_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1104,7 +1126,7 @@ MarshalBuffer::ArgDesc _XfViewer_last_focus_pdesc[2] = { 1, 12 };
 MarshalBuffer::ArgInfo _XfViewer_last_focus_pinfo = {
     &_XfViewer_tid, 17, _XfViewer_last_focus_pdesc, 0
 };
-Boolean ViewerType::last_focus() {
+Boolean Viewer::last_focus() {
     MarshalBuffer _b;
     extern TypeObjId _XfViewer_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1115,7 +1137,7 @@ MarshalBuffer::ArgDesc _XfViewer_next_focus_pdesc[2] = { 1, 12 };
 MarshalBuffer::ArgInfo _XfViewer_next_focus_pinfo = {
     &_XfViewer_tid, 18, _XfViewer_next_focus_pdesc, 0
 };
-Boolean ViewerType::next_focus() {
+Boolean Viewer::next_focus() {
     MarshalBuffer _b;
     extern TypeObjId _XfViewer_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1126,7 +1148,7 @@ MarshalBuffer::ArgDesc _XfViewer_prev_focus_pdesc[2] = { 1, 12 };
 MarshalBuffer::ArgInfo _XfViewer_prev_focus_pinfo = {
     &_XfViewer_tid, 19, _XfViewer_prev_focus_pdesc, 0
 };
-Boolean ViewerType::prev_focus() {
+Boolean Viewer::prev_focus() {
     MarshalBuffer _b;
     extern TypeObjId _XfViewer_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1135,14 +1157,14 @@ Boolean ViewerType::prev_focus() {
 }
 MarshalBuffer::ArgDesc _XfViewer_handle_pdesc[4] = { 3, 12, 61, 61 };
 MarshalBuffer::ArgMarshal _XfViewer_handle_pfunc[] = {
-    &GlyphTraversalStub::_create,
-    &EventStub::_create,
+    &_XfGlyphTraversalStub_create,
+    &_XfEventStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfViewer_handle_pinfo = {
     &_XfViewer_tid, 20, _XfViewer_handle_pdesc, _XfViewer_handle_pfunc
 };
-Boolean ViewerType::handle(GlyphTraversal_in t, Event_in e) {
+Boolean Viewer::handle(GlyphTraversal_in t, Event_in e) {
     MarshalBuffer _b;
     extern TypeObjId _XfViewer_tid;
     MarshalBuffer::ArgValue _arg[3];
@@ -1155,7 +1177,7 @@ MarshalBuffer::ArgDesc _XfViewer_close_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfViewer_close_pinfo = {
     &_XfViewer_tid, 21, _XfViewer_close_pdesc, 0
 };
-void ViewerType::close() {
+void Viewer::close() {
     MarshalBuffer _b;
     extern TypeObjId _XfViewer_tid;
     MarshalBuffer::ArgValue _arg[1];

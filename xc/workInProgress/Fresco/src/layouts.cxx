@@ -42,63 +42,28 @@
 #include <X11/Fresco/Impls/transform.h>
 #include <X11/Fresco/OS/math.h>
 
+/*
+ * You would think this should be a const float, but C++ compilers
+ * don't typically do the right thing with such a declaration.
+ */
 #define infinite_coord 10e6;
 
-class DeckImpl : public DeckObjType, public PolyGlyph {
+class DeckImpl : public PolyGlyph {
 public:
     DeckImpl();
     ~DeckImpl();
 
-    //+ DeckObj::*
-    /* FrescoObject */
-    Long ref__(Long references);
-    Tag attach(FrescoObject_in observer);
-    void detach(Tag attach_tag);
-    void disconnect();
-    void notify_observers();
-    void update();
-    /* Glyph */
-    GlyphRef _c_clone_glyph();
-    StyleObjRef _c_style();
-    void _c_style(StyleObj_in _p);
-    TransformObjRef _c_transform();
-    void request(Glyph::Requisition& r);
-    void extension(const Glyph::AllocationInfo& a, Region_in r);
-    RegionRef _c_shape();
-    void traverse(GlyphTraversal_in t);
-    void draw(GlyphTraversal_in t);
-    void pick(GlyphTraversal_in t);
-    GlyphRef _c_body();
-    void _c_body(Glyph_in _p);
-    GlyphOffsetRef _c_append(Glyph_in g);
-    GlyphOffsetRef _c_prepend(Glyph_in g);
-    Tag add_parent(GlyphOffset_in parent_offset);
-    void remove_parent(Tag add_tag);
-    void visit_children(GlyphVisitor_in v);
-    void visit_children_reversed(GlyphVisitor_in v);
-    void visit_parents(GlyphVisitor_in v);
-    void allocations(Glyph::AllocationInfoList& a);
-    void need_redraw();
-    void need_redraw_region(Region_in r);
-    void need_resize();
-    Boolean restore_trail(GlyphTraversal_in t);
-    /* DeckObj */
-    GlyphOffsetRef _c_card();
-    void flip_to(GlyphOffset_in off);
-    //+
+    void request(Glyph::Requisition& r); //+ Glyph::request
+    void extension(const Glyph::AllocationInfo& a, Region_in r); //+ Glyph::extension
+    void traverse(GlyphTraversal_in t); //+ Glyph::traverse
 
     void modified();
 protected:
-    GlyphOffsetRef top_;
     Boolean requested_;
     Glyph::Requisition requisition_;
 };
 
-/*
- * ScrollBox -- NOT IMPLEMENTED YET
- */
-
-class LayoutKitImpl : public LayoutKitType {
+class LayoutKitImpl : public LayoutKit {
 public:
     LayoutKitImpl();
     ~LayoutKitImpl();
@@ -114,72 +79,71 @@ public:
     /* LayoutKit */
     Coord fil();
     void fil(Coord _p);
-    GlyphRef _c_hbox();
-    GlyphRef _c_vbox();
-    GlyphRef _c_hbox_first_aligned();
-    GlyphRef _c_vbox_first_aligned();
-    ScrollBoxRef _c_vscrollbox();
-    GlyphRef _c_overlay();
-    DeckObjRef _c_deck();
-    GlyphRef _c_back(Glyph_in g, Glyph_in under);
-    GlyphRef _c_front(Glyph_in g, Glyph_in over);
-    GlyphRef _c_between(Glyph_in g, Glyph_in under, Glyph_in over);
-    GlyphRef _c_glue(Axis a, Coord natural, Coord stretch, Coord shrink, Alignment align);
-    GlyphRef _c_glue_requisition(const Glyph::Requisition& r);
-    GlyphRef _c_hfil();
-    GlyphRef _c_hglue_fil(Coord natural);
-    GlyphRef _c_hglue(Coord natural, Coord stretch, Coord shrink);
-    GlyphRef _c_hglue_aligned(Coord natural, Coord stretch, Coord shrink, Alignment a);
-    GlyphRef _c_hspace(Coord natural);
-    GlyphRef _c_vfil();
-    GlyphRef _c_vglue_fil(Coord natural);
-    GlyphRef _c_vglue(Coord natural, Coord stretch, Coord shrink);
-    GlyphRef _c_vglue_aligned(Coord natural, Coord stretch, Coord shrink, Alignment a);
-    GlyphRef _c_vspace(Coord natural);
-    GlyphRef _c_shape_of(Glyph_in g);
-    GlyphRef _c_shape_of_xy(Glyph_in gx, Glyph_in gy);
-    GlyphRef _c_shape_of_xyz(Glyph_in gx, Glyph_in gy, Glyph_in gz);
-    GlyphRef _c_strut(Font_in f, Coord natural, Coord stretch, Coord shrink);
-    GlyphRef _c_hstrut(Coord right_bearing, Coord left_bearing, Coord natural, Coord stretch, Coord shrink);
-    GlyphRef _c_vstrut(Coord ascent, Coord descent, Coord natural, Coord stretch, Coord shrink);
-    GlyphRef _c_spaces(Long count, Coord each, Font_in f, Color_in c);
-    GlyphRef _c_center(Glyph_in g);
-    GlyphRef _c_center_aligned(Glyph_in g, Alignment x, Alignment y);
-    GlyphRef _c_center_axis(Glyph_in g, Axis a, Alignment align);
-    GlyphRef _c_hcenter(Glyph_in g);
-    GlyphRef _c_hcenter_aligned(Glyph_in g, Alignment x);
-    GlyphRef _c_vcenter(Glyph_in g);
-    GlyphRef _c_vcenter_aligned(Glyph_in g, Alignment y);
-    GlyphRef _c_fixed(Glyph_in g, Coord x, Coord y);
-    GlyphRef _c_fixed_axis(Glyph_in g, Axis a, Coord size);
-    GlyphRef _c_hfixed(Glyph_in g, Coord x);
-    GlyphRef _c_vfixed(Glyph_in g, Coord y);
-    GlyphRef _c_flexible(Glyph_in g, Coord stretch, Coord shrink);
-    GlyphRef _c_flexible_fil(Glyph_in g);
-    GlyphRef _c_flexible_axis(Glyph_in g, Axis a, Coord stretch, Coord shrink);
-    GlyphRef _c_hflexible(Glyph_in g, Coord stretch, Coord shrink);
-    GlyphRef _c_vflexible(Glyph_in g, Coord stretch, Coord shrink);
-    GlyphRef _c_natural(Glyph_in g, Coord x, Coord y);
-    GlyphRef _c_natural_axis(Glyph_in g, Axis a, Coord size);
-    GlyphRef _c_hnatural(Glyph_in g, Coord x);
-    GlyphRef _c_vnatural(Glyph_in g, Coord y);
-    GlyphRef _c_margin(Glyph_in g, Coord all);
-    GlyphRef _c_margin_lrbt(Glyph_in g, Coord lmargin, Coord rmargin, Coord bmargin, Coord tmargin);
-    GlyphRef _c_margin_lrbt_flexible(Glyph_in g, Coord lmargin, Coord lstretch, Coord lshrink, Coord rmargin, Coord rstretch, Coord rshrink, Coord bmargin, Coord bstretch, Coord bshrink, Coord tmargin, Coord tstretch, Coord tshrink);
-    GlyphRef _c_hmargin(Glyph_in g, Coord both);
-    GlyphRef _c_hmargin_lr(Glyph_in g, Coord lmargin, Coord rmargin);
-    GlyphRef _c_hmargin_lr_flexible(Glyph_in g, Coord lmargin, Coord lstretch, Coord lshrink, Coord rmargin, Coord rstretch, Coord rshrink);
-    GlyphRef _c_vmargin(Glyph_in g, Coord both);
-    GlyphRef _c_vmargin_bt(Glyph_in g, Coord bmargin, Coord tmargin);
-    GlyphRef _c_vmargin_bt_flexible(Glyph_in g, Coord bmargin, Coord bstretch, Coord bshrink, Coord tmargin, Coord tstretch, Coord tshrink);
-    GlyphRef _c_lmargin(Glyph_in g, Coord natural);
-    GlyphRef _c_lmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink);
-    GlyphRef _c_rmargin(Glyph_in g, Coord natural);
-    GlyphRef _c_rmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink);
-    GlyphRef _c_bmargin(Glyph_in g, Coord natural);
-    GlyphRef _c_bmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink);
-    GlyphRef _c_tmargin(Glyph_in g, Coord natural);
-    GlyphRef _c_tmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink);
+    Glyph_return hbox();
+    Glyph_return vbox();
+    Glyph_return hbox_first_aligned();
+    Glyph_return vbox_first_aligned();
+    Glyph_return overlay();
+    Glyph_return deck();
+    Glyph_return back(Glyph_in g, Glyph_in under);
+    Glyph_return front(Glyph_in g, Glyph_in over);
+    Glyph_return between(Glyph_in g, Glyph_in under, Glyph_in over);
+    Glyph_return glue(Axis a, Coord natural, Coord stretch, Coord shrink, Alignment align);
+    Glyph_return glue_requisition(const Glyph::Requisition& r);
+    Glyph_return hfil();
+    Glyph_return hglue_fil(Coord natural);
+    Glyph_return hglue(Coord natural, Coord stretch, Coord shrink);
+    Glyph_return hglue_aligned(Coord natural, Coord stretch, Coord shrink, Alignment a);
+    Glyph_return hspace(Coord natural);
+    Glyph_return vfil();
+    Glyph_return vglue_fil(Coord natural);
+    Glyph_return vglue(Coord natural, Coord stretch, Coord shrink);
+    Glyph_return vglue_aligned(Coord natural, Coord stretch, Coord shrink, Alignment a);
+    Glyph_return vspace(Coord natural);
+    Glyph_return shape_of(Glyph_in g);
+    Glyph_return shape_of_xy(Glyph_in gx, Glyph_in gy);
+    Glyph_return shape_of_xyz(Glyph_in gx, Glyph_in gy, Glyph_in gz);
+    Glyph_return strut(Font_in f, Coord natural, Coord stretch, Coord shrink);
+    Glyph_return hstrut(Coord right_bearing, Coord left_bearing, Coord natural, Coord stretch, Coord shrink);
+    Glyph_return vstrut(Coord ascent, Coord descent, Coord natural, Coord stretch, Coord shrink);
+    Glyph_return spaces(Long count, Coord each, Font_in f, Color_in c);
+    Glyph_return center(Glyph_in g);
+    Glyph_return center_aligned(Glyph_in g, Alignment x, Alignment y);
+    Glyph_return center_axis(Glyph_in g, Axis a, Alignment align);
+    Glyph_return hcenter(Glyph_in g);
+    Glyph_return hcenter_aligned(Glyph_in g, Alignment x);
+    Glyph_return vcenter(Glyph_in g);
+    Glyph_return vcenter_aligned(Glyph_in g, Alignment y);
+    Glyph_return fixed(Glyph_in g, Coord x, Coord y);
+    Glyph_return fixed_axis(Glyph_in g, Axis a, Coord size);
+    Glyph_return hfixed(Glyph_in g, Coord x);
+    Glyph_return vfixed(Glyph_in g, Coord y);
+    Glyph_return flexible(Glyph_in g, Coord stretch, Coord shrink);
+    Glyph_return flexible_fil(Glyph_in g);
+    Glyph_return flexible_axis(Glyph_in g, Axis a, Coord stretch, Coord shrink);
+    Glyph_return hflexible(Glyph_in g, Coord stretch, Coord shrink);
+    Glyph_return vflexible(Glyph_in g, Coord stretch, Coord shrink);
+    Glyph_return natural(Glyph_in g, Coord x, Coord y);
+    Glyph_return natural_axis(Glyph_in g, Axis a, Coord size);
+    Glyph_return hnatural(Glyph_in g, Coord x);
+    Glyph_return vnatural(Glyph_in g, Coord y);
+    Glyph_return margin(Glyph_in g, Coord all);
+    Glyph_return margin_lrbt(Glyph_in g, Coord lmargin, Coord rmargin, Coord bmargin, Coord tmargin);
+    Glyph_return margin_lrbt_flexible(Glyph_in g, Coord lmargin, Coord lstretch, Coord lshrink, Coord rmargin, Coord rstretch, Coord rshrink, Coord bmargin, Coord bstretch, Coord bshrink, Coord tmargin, Coord tstretch, Coord tshrink);
+    Glyph_return hmargin(Glyph_in g, Coord both);
+    Glyph_return hmargin_lr(Glyph_in g, Coord lmargin, Coord rmargin);
+    Glyph_return hmargin_lr_flexible(Glyph_in g, Coord lmargin, Coord lstretch, Coord lshrink, Coord rmargin, Coord rstretch, Coord rshrink);
+    Glyph_return vmargin(Glyph_in g, Coord both);
+    Glyph_return vmargin_bt(Glyph_in g, Coord bmargin, Coord tmargin);
+    Glyph_return vmargin_bt_flexible(Glyph_in g, Coord bmargin, Coord bstretch, Coord bshrink, Coord tmargin, Coord tstretch, Coord tshrink);
+    Glyph_return lmargin(Glyph_in g, Coord natural);
+    Glyph_return lmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink);
+    Glyph_return rmargin(Glyph_in g, Coord natural);
+    Glyph_return rmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink);
+    Glyph_return bmargin(Glyph_in g, Coord natural);
+    Glyph_return bmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink);
+    Glyph_return tmargin(Glyph_in g, Coord natural);
+    Glyph_return tmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink);
     //+
 protected:
     Coord fil_;
@@ -198,7 +162,7 @@ LayoutKitRef FrescoImpl::create_layout_kit() {
  * LayoutManager -- determine appropriate allocations for a set of requests
  */
 
-class LayoutManager : public FrescoObjectType {
+class LayoutManager : public FrescoObject {
 protected:
     LayoutManager();
     virtual ~LayoutManager();
@@ -770,14 +734,16 @@ void LayoutKitImpl::fil(Coord c) { fil_ = c; }
 Coord LayoutKitImpl::fil() { return fil_; }
 
 //+ LayoutKitImpl(LayoutKit::hbox)
-GlyphRef LayoutKitImpl::_c_hbox() {
+Glyph_return LayoutKitImpl::hbox() {
     return new Box(
-	new LayoutSuperpose(new LayoutTile(X_axis), new LayoutAlign(Y_axis))
+	new LayoutSuperpose(
+	    new LayoutTile(X_axis), new LayoutAlign(Y_axis)
+	)
     );
 }
 
 //+ LayoutKitImpl(LayoutKit::vbox)
-GlyphRef LayoutKitImpl::_c_vbox() {
+Glyph_return LayoutKitImpl::vbox() {
     return new Box(
 	new LayoutSuperpose(
 	    new LayoutTileReversed(Y_axis), new LayoutAlign(X_axis)
@@ -786,7 +752,7 @@ GlyphRef LayoutKitImpl::_c_vbox() {
 }
 
 //+ LayoutKitImpl(LayoutKit::hbox_first_aligned)
-GlyphRef LayoutKitImpl::_c_hbox_first_aligned() {
+Glyph_return LayoutKitImpl::hbox_first_aligned() {
     return new Box(
 	new LayoutSuperpose(
 	    new LayoutTileFirstAligned(X_axis), new LayoutAlign(Y_axis)
@@ -795,7 +761,7 @@ GlyphRef LayoutKitImpl::_c_hbox_first_aligned() {
 }
 
 //+ LayoutKitImpl(LayoutKit::vbox_first_aligned
-GlyphRef LayoutKitImpl::_c_vbox_first_aligned() {
+Glyph_return LayoutKitImpl::vbox_first_aligned() {
     return new Box(
 	new LayoutSuperpose(
 	    new LayoutTileReversedFirstAligned(Y_axis),
@@ -804,14 +770,8 @@ GlyphRef LayoutKitImpl::_c_vbox_first_aligned() {
     );
 }
 
-//+ LayoutKitImpl(LayoutKit::vscrollbox)
-ScrollBoxRef LayoutKitImpl::_c_vscrollbox() {
-    /* NOT IMPLEMENTED */
-    return nil;
-}
-
 //+ LayoutKitImpl(LayoutKit::overlay)
-GlyphRef LayoutKitImpl::_c_overlay() {
+Glyph_return LayoutKitImpl::overlay() {
     return new Box(
 	new LayoutSuperpose(
 	    new LayoutAlign(X_axis), new LayoutAlign(Y_axis)
@@ -820,127 +780,127 @@ GlyphRef LayoutKitImpl::_c_overlay() {
 }
 
 //+ LayoutKitImpl(LayoutKit::deck)
-DeckObjRef LayoutKitImpl::_c_deck() {
+Glyph_return LayoutKitImpl::deck() {
     return new DeckImpl;
 }
 
 //+ LayoutKitImpl(LayoutKit::back)
-GlyphRef LayoutKitImpl::_c_back(Glyph_in g, Glyph_in under) {
+Glyph_return LayoutKitImpl::back(Glyph_in g, Glyph_in under) {
     return new LayoutLayer(g, under, nil);
 }
 
 //+ LayoutKitImpl(LayoutKit::front)
-GlyphRef LayoutKitImpl::_c_front(Glyph_in g, Glyph_in over) {
+Glyph_return LayoutKitImpl::front(Glyph_in g, Glyph_in over) {
     return new LayoutLayer(g, nil, over);
 }
 
 //+ LayoutKitImpl(LayoutKit::between)
-GlyphRef LayoutKitImpl::_c_between(Glyph_in g, Glyph_in under, Glyph_in over) {
+Glyph_return LayoutKitImpl::between(Glyph_in g, Glyph_in under, Glyph_in over) {
     return new LayoutLayer(g, under, over);
 }
 
 //+ LayoutKitImpl(LayoutKit::glue)
-GlyphRef LayoutKitImpl::_c_glue(Axis a, Coord natural, Coord stretch, Coord shrink, Alignment align) {
+Glyph_return LayoutKitImpl::glue(Axis a, Coord natural, Coord stretch, Coord shrink, Alignment align) {
     return new Glue(a, natural, stretch, shrink, align);
 }
 
 //+ LayoutKitImpl(LayoutKit::glue_requisition)
-GlyphRef LayoutKitImpl::_c_glue_requisition(const Glyph::Requisition& r) {
+Glyph_return LayoutKitImpl::glue_requisition(const Glyph::Requisition& r) {
     return new Glue(r);
 }
 
 //+ LayoutKitImpl(LayoutKit::hfil)
-GlyphRef LayoutKitImpl::_c_hfil() {
+Glyph_return LayoutKitImpl::hfil() {
     return new Glue(X_axis, 0, fil_, 0, 0.0);
 }
 
 //+ LayoutKitImpl(LayoutKit::hglue_fil)
-GlyphRef LayoutKitImpl::_c_hglue_fil(Coord natural) {
+Glyph_return LayoutKitImpl::hglue_fil(Coord natural) {
     return new Glue(X_axis, natural, fil_, 0, 0.0);
 }
 
 //+ LayoutKitImpl(LayoutKit::hglue)
-GlyphRef LayoutKitImpl::_c_hglue(Coord natural, Coord stretch, Coord shrink) {
+Glyph_return LayoutKitImpl::hglue(Coord natural, Coord stretch, Coord shrink) {
     return new Glue(X_axis, natural, stretch, shrink, 0.0);
 }
 
 //+ LayoutKitImpl(LayoutKit::hglue_aligned)
-GlyphRef LayoutKitImpl::_c_hglue_aligned(Coord natural, Coord stretch, Coord shrink, Alignment a) {
+Glyph_return LayoutKitImpl::hglue_aligned(Coord natural, Coord stretch, Coord shrink, Alignment a) {
     return new Glue(X_axis, natural, stretch, shrink, a);
 }
 
 //+ LayoutKitImpl(LayoutKit::hspace)
-GlyphRef LayoutKitImpl::_c_hspace(Coord natural) {
+Glyph_return LayoutKitImpl::hspace(Coord natural) {
     return new Glue(X_axis, natural, 0, 0, 0.0);
 }
 
 //+ LayoutKitImpl(LayoutKit::vfil)
-GlyphRef LayoutKitImpl::_c_vfil() {
+Glyph_return LayoutKitImpl::vfil() {
     return new Glue(Y_axis, 0, fil_, 0, 0.0);
 }
 
 //+ LayoutKitImpl(LayoutKit::vglue_fil)
-GlyphRef LayoutKitImpl::_c_vglue_fil(Coord natural) {
+Glyph_return LayoutKitImpl::vglue_fil(Coord natural) {
     return new Glue(Y_axis, natural, fil_, 0, 0.0);
 }
 
 //+ LayoutKitImpl(LayoutKit::vglue)
-GlyphRef LayoutKitImpl::_c_vglue(Coord natural, Coord stretch, Coord shrink) {
+Glyph_return LayoutKitImpl::vglue(Coord natural, Coord stretch, Coord shrink) {
     return new Glue(Y_axis, natural, stretch, shrink, 0.0);
 }
 
 //+ LayoutKitImpl(LayoutKit::vglue_aligned)
-GlyphRef LayoutKitImpl::_c_vglue_aligned(Coord natural, Coord stretch, Coord shrink, Alignment a) {
+Glyph_return LayoutKitImpl::vglue_aligned(Coord natural, Coord stretch, Coord shrink, Alignment a) {
     return new Glue(Y_axis, natural, stretch, shrink, a);
 }
 
 //+ LayoutKitImpl(LayoutKit::vspace)
-GlyphRef LayoutKitImpl::_c_vspace(Coord natural) {
+Glyph_return LayoutKitImpl::vspace(Coord natural) {
     return new Glue(Y_axis, natural, 0, 0, 0.0);
 }
 
 //+ LayoutKitImpl(LayoutKit::shape_of)
-GlyphRef LayoutKitImpl::_c_shape_of(Glyph_in g) {
+Glyph_return LayoutKitImpl::shape_of(Glyph_in g) {
     return new ShapeOf(g, nil, nil);
 }
 
 //+ LayoutKitImpl(LayoutKit::shape_of_xy)
-GlyphRef LayoutKitImpl::_c_shape_of_xy(Glyph_in gx, Glyph_in gy) {
+Glyph_return LayoutKitImpl::shape_of_xy(Glyph_in gx, Glyph_in gy) {
     return new ShapeOf(gx, gy, nil);
 }
 
 //+ LayoutKitImpl(LayoutKit::shape_of_xyz)
-GlyphRef LayoutKitImpl::_c_shape_of_xyz(Glyph_in gx, Glyph_in gy, Glyph_in gz) {
+Glyph_return LayoutKitImpl::shape_of_xyz(Glyph_in gx, Glyph_in gy, Glyph_in gz) {
     return new ShapeOf(gx, gy, gz);
 }
 
 //+ LayoutKitImpl(LayoutKit::strut)
-GlyphRef LayoutKitImpl::_c_strut(Font_in f, Coord natural, Coord stretch, Coord shrink) {
+Glyph_return LayoutKitImpl::strut(Font_in f, Coord natural, Coord stretch, Coord shrink) {
     return new Strut(f, natural, stretch, shrink);
 }
 
 //+ LayoutKitImpl(LayoutKit::hstrut)
-GlyphRef LayoutKitImpl::_c_hstrut(Coord right_bearing, Coord left_bearing, Coord natural, Coord stretch, Coord shrink) {
+Glyph_return LayoutKitImpl::hstrut(Coord right_bearing, Coord left_bearing, Coord natural, Coord stretch, Coord shrink) {
     return new HStrut(right_bearing, left_bearing, natural, stretch, shrink);
 }
 
 //+ LayoutKitImpl(LayoutKit::vstrut)
-GlyphRef LayoutKitImpl::_c_vstrut(Coord ascent, Coord descent, Coord natural, Coord stretch, Coord shrink) {
+Glyph_return LayoutKitImpl::vstrut(Coord ascent, Coord descent, Coord natural, Coord stretch, Coord shrink) {
     return new VStrut(ascent, descent, natural, stretch, shrink);
 }
 
 //+ LayoutKitImpl(LayoutKit::spaces)
-GlyphRef LayoutKitImpl::_c_spaces(Long count, Coord each, Font_in f, Color_in c) {
+Glyph_return LayoutKitImpl::spaces(Long count, Coord each, Font_in f, Color_in c) {
     return new Space(count, each, f, c);
 }
 
 //+ LayoutKitImpl(LayoutKit::center)
-GlyphRef LayoutKitImpl::_c_center(Glyph_in g) {
-    return _c_center_aligned(g, 0.5, 0.5);
+Glyph_return LayoutKitImpl::center(Glyph_in g) {
+    return center_aligned(g, 0.5, 0.5);
 }
 
 //+ LayoutKitImpl(LayoutKit::center_aligned)
-GlyphRef LayoutKitImpl::_c_center_aligned(Glyph_in g, Alignment x, Alignment y) {
+Glyph_return LayoutKitImpl::center_aligned(Glyph_in g, Alignment x, Alignment y) {
     return new Placement(
 	g,
 	new LayoutSuperpose(
@@ -950,32 +910,32 @@ GlyphRef LayoutKitImpl::_c_center_aligned(Glyph_in g, Alignment x, Alignment y) 
 }
 
 //+ LayoutKitImpl(LayoutKit::center_axis)
-GlyphRef LayoutKitImpl::_c_center_axis(Glyph_in g, Axis a, Alignment align) {
+Glyph_return LayoutKitImpl::center_axis(Glyph_in g, Axis a, Alignment align) {
     return new Placement(g, new LayoutCenter(a, align));
 }
 
 //+ LayoutKitImpl(LayoutKit::hcenter)
-GlyphRef LayoutKitImpl::_c_hcenter(Glyph_in g) {
-    return _c_center_axis(g, X_axis, 0.5);
+Glyph_return LayoutKitImpl::hcenter(Glyph_in g) {
+    return center_axis(g, X_axis, 0.5);
 }
 
 //+ LayoutKitImpl(LayoutKit::hcenter_aligned)
-GlyphRef LayoutKitImpl::_c_hcenter_aligned(Glyph_in g, Alignment x) {
-    return _c_center_axis(g, X_axis, x);
+Glyph_return LayoutKitImpl::hcenter_aligned(Glyph_in g, Alignment x) {
+    return center_axis(g, X_axis, x);
 }
 
 //+ LayoutKitImpl(LayoutKit::vcenter)
-GlyphRef LayoutKitImpl::_c_vcenter(Glyph_in g) {
-    return _c_center_axis(g, Y_axis, 0.5);
+Glyph_return LayoutKitImpl::vcenter(Glyph_in g) {
+    return center_axis(g, Y_axis, 0.5);
 }
 
 //+ LayoutKitImpl(LayoutKit::vcenter_aligned)
-GlyphRef LayoutKitImpl::_c_vcenter_aligned(Glyph_in g, Alignment y) {
-    return _c_center_axis(g, Y_axis, y);
+Glyph_return LayoutKitImpl::vcenter_aligned(Glyph_in g, Alignment y) {
+    return center_axis(g, Y_axis, y);
 }
 
 //+ LayoutKitImpl(LayoutKit::fixed)
-GlyphRef LayoutKitImpl::_c_fixed(Glyph_in g, Coord x, Coord y) {
+Glyph_return LayoutKitImpl::fixed(Glyph_in g, Coord x, Coord y) {
     return new Placement(
 	g,
 	new LayoutSuperpose(
@@ -985,22 +945,22 @@ GlyphRef LayoutKitImpl::_c_fixed(Glyph_in g, Coord x, Coord y) {
 }
 
 //+ LayoutKitImpl(LayoutKit::fixed_axis)
-GlyphRef LayoutKitImpl::_c_fixed_axis(Glyph_in g, Axis a, Coord size) {
+Glyph_return LayoutKitImpl::fixed_axis(Glyph_in g, Axis a, Coord size) {
     return new Placement(g, new LayoutFixed(a, size));
 }
 
 //+ LayoutKitImpl(LayoutKit::hfixed)
-GlyphRef LayoutKitImpl::_c_hfixed(Glyph_in g, Coord x) {
-    return _c_fixed_axis(g, X_axis, x);
+Glyph_return LayoutKitImpl::hfixed(Glyph_in g, Coord x) {
+    return fixed_axis(g, X_axis, x);
 }
 
 //+ LayoutKitImpl(LayoutKit::vfixed)
-GlyphRef LayoutKitImpl::_c_vfixed(Glyph_in g, Coord y) {
-    return _c_fixed_axis(g, Y_axis, y);
+Glyph_return LayoutKitImpl::vfixed(Glyph_in g, Coord y) {
+    return fixed_axis(g, Y_axis, y);
 }
 
 //+ LayoutKitImpl(LayoutKit::flexible)
-GlyphRef LayoutKitImpl::_c_flexible(Glyph_in g, Coord stretch, Coord shrink) {
+Glyph_return LayoutKitImpl::flexible(Glyph_in g, Coord stretch, Coord shrink) {
     return new Placement(
 	g,
 	new LayoutSuperpose(
@@ -1011,27 +971,27 @@ GlyphRef LayoutKitImpl::_c_flexible(Glyph_in g, Coord stretch, Coord shrink) {
 }
 
 //+ LayoutKitImpl(LayoutKit::flexible_fil)
-GlyphRef LayoutKitImpl::_c_flexible_fil(Glyph_in g) {
-    return _c_flexible(g, fil_, fil_);
+Glyph_return LayoutKitImpl::flexible_fil(Glyph_in g) {
+    return flexible(g, fil_, fil_);
 }
 
 //+ LayoutKitImpl(LayoutKit::flexible_axis)
-GlyphRef LayoutKitImpl::_c_flexible_axis(Glyph_in g, Axis a, Coord stretch, Coord shrink) {
+Glyph_return LayoutKitImpl::flexible_axis(Glyph_in g, Axis a, Coord stretch, Coord shrink) {
     return new Placement(g, new LayoutVariable(a, stretch, shrink));
 }
 
 //+ LayoutKitImpl(LayoutKit::hflexible)
-GlyphRef LayoutKitImpl::_c_hflexible(Glyph_in g, Coord stretch, Coord shrink) {
-    return _c_flexible_axis(g, X_axis, stretch, shrink);
+Glyph_return LayoutKitImpl::hflexible(Glyph_in g, Coord stretch, Coord shrink) {
+    return flexible_axis(g, X_axis, stretch, shrink);
 }
 
 //+ LayoutKitImpl(LayoutKit::vflexible)
-GlyphRef LayoutKitImpl::_c_vflexible(Glyph_in g, Coord stretch, Coord shrink) {
-    return _c_flexible_axis(g, Y_axis, stretch, shrink);
+Glyph_return LayoutKitImpl::vflexible(Glyph_in g, Coord stretch, Coord shrink) {
+    return flexible_axis(g, Y_axis, stretch, shrink);
 }
 
 //+ LayoutKitImpl(LayoutKit::natural)
-GlyphRef LayoutKitImpl::_c_natural(Glyph_in g, Coord x, Coord y) {
+Glyph_return LayoutKitImpl::natural(Glyph_in g, Coord x, Coord y) {
     return new Placement(
 	g,
 	new LayoutSuperpose(
@@ -1042,34 +1002,34 @@ GlyphRef LayoutKitImpl::_c_natural(Glyph_in g, Coord x, Coord y) {
 }
 
 //+ LayoutKitImpl(LayoutKit::natural_axis)
-GlyphRef LayoutKitImpl::_c_natural_axis(Glyph_in g, Axis a, Coord size) {
+Glyph_return LayoutKitImpl::natural_axis(Glyph_in g, Axis a, Coord size) {
     return new Placement(g, new LayoutNatural(a, size));
 }
 
 //+ LayoutKitImpl(LayoutKit::hnatural)
-GlyphRef LayoutKitImpl::_c_hnatural(Glyph_in g, Coord x) {
-    return _c_natural_axis(g, X_axis, x);
+Glyph_return LayoutKitImpl::hnatural(Glyph_in g, Coord x) {
+    return natural_axis(g, X_axis, x);
 }
 
 //+ LayoutKitImpl(LayoutKit::vnatural)
-GlyphRef LayoutKitImpl::_c_vnatural(Glyph_in g, Coord y) {
-    return _c_natural_axis(g, Y_axis, y);
+Glyph_return LayoutKitImpl::vnatural(Glyph_in g, Coord y) {
+    return natural_axis(g, Y_axis, y);
 }
 
 //+ LayoutKitImpl(LayoutKit::margin)
-GlyphRef LayoutKitImpl::_c_margin(Glyph_in g, Coord all) {
+Glyph_return LayoutKitImpl::margin(Glyph_in g, Coord all) {
     return new Placement(g, new LayoutMargin(all));
 }
 
 //+ LayoutKitImpl(LayoutKit::margin_lrbt)
-GlyphRef LayoutKitImpl::_c_margin_lrbt(Glyph_in g, Coord lmargin, Coord rmargin, Coord bmargin, Coord tmargin) {
+Glyph_return LayoutKitImpl::margin_lrbt(Glyph_in g, Coord lmargin, Coord rmargin, Coord bmargin, Coord tmargin) {
     return new Placement(
 	g, new LayoutMargin(lmargin, rmargin, bmargin, tmargin)
     );
 }
 
 //+ LayoutKitImpl(LayoutKit::margin_lrbt_flexible)
-GlyphRef LayoutKitImpl::_c_margin_lrbt_flexible(Glyph_in g, Coord lmargin, Coord lstretch, Coord lshrink, Coord rmargin, Coord rstretch, Coord rshrink, Coord bmargin, Coord bstretch, Coord bshrink, Coord tmargin, Coord tstretch, Coord tshrink) {
+Glyph_return LayoutKitImpl::margin_lrbt_flexible(Glyph_in g, Coord lmargin, Coord lstretch, Coord lshrink, Coord rmargin, Coord rstretch, Coord rshrink, Coord bmargin, Coord bstretch, Coord bshrink, Coord tmargin, Coord tstretch, Coord tshrink) {
     return new Placement(
 	g,
 	new LayoutMargin(
@@ -1080,18 +1040,18 @@ GlyphRef LayoutKitImpl::_c_margin_lrbt_flexible(Glyph_in g, Coord lmargin, Coord
 }
 
 //+ LayoutKitImpl(LayoutKit::hmargin)
-GlyphRef LayoutKitImpl::_c_hmargin(Glyph_in g, Coord both) {
-    return _c_margin_lrbt(g, both, both, 0, 0);
+Glyph_return LayoutKitImpl::hmargin(Glyph_in g, Coord both) {
+    return margin_lrbt(g, both, both, 0, 0);
 }
 
 //+ LayoutKitImpl(LayoutKit::hmargin_lr)
-GlyphRef LayoutKitImpl::_c_hmargin_lr(Glyph_in g, Coord lmargin, Coord rmargin) {
-    return _c_margin_lrbt(g, lmargin, rmargin, 0, 0);
+Glyph_return LayoutKitImpl::hmargin_lr(Glyph_in g, Coord lmargin, Coord rmargin) {
+    return margin_lrbt(g, lmargin, rmargin, 0, 0);
 }
 
 //+ LayoutKitImpl(LayoutKit::hmargin_lr_flexible)
-GlyphRef LayoutKitImpl::_c_hmargin_lr_flexible(Glyph_in g, Coord lmargin, Coord lstretch, Coord lshrink, Coord rmargin, Coord rstretch, Coord rshrink) {
-    return _c_margin_lrbt_flexible(
+Glyph_return LayoutKitImpl::hmargin_lr_flexible(Glyph_in g, Coord lmargin, Coord lstretch, Coord lshrink, Coord rmargin, Coord rstretch, Coord rshrink) {
+    return margin_lrbt_flexible(
 	g,
 	lmargin, lstretch, lshrink, rmargin, rstretch, rshrink,
 	0, 0, 0, 0, 0, 0
@@ -1099,18 +1059,18 @@ GlyphRef LayoutKitImpl::_c_hmargin_lr_flexible(Glyph_in g, Coord lmargin, Coord 
 }
 
 //+ LayoutKitImpl(LayoutKit::vmargin)
-GlyphRef LayoutKitImpl::_c_vmargin(Glyph_in g, Coord both) {
-    return _c_margin_lrbt(g, 0, 0, both, both);
+Glyph_return LayoutKitImpl::vmargin(Glyph_in g, Coord both) {
+    return margin_lrbt(g, 0, 0, both, both);
 }
 
 //+ LayoutKitImpl(LayoutKit::vmargin_bt)
-GlyphRef LayoutKitImpl::_c_vmargin_bt(Glyph_in g, Coord bmargin, Coord tmargin) {
-    return _c_margin_lrbt(g, 0, 0, bmargin, tmargin);
+Glyph_return LayoutKitImpl::vmargin_bt(Glyph_in g, Coord bmargin, Coord tmargin) {
+    return margin_lrbt(g, 0, 0, bmargin, tmargin);
 }
 
 //+ LayoutKitImpl(LayoutKit::vmargin_bt_flexible)
-GlyphRef LayoutKitImpl::_c_vmargin_bt_flexible(Glyph_in g, Coord bmargin, Coord bstretch, Coord bshrink, Coord tmargin, Coord tstretch, Coord tshrink) {
-    return _c_margin_lrbt_flexible(
+Glyph_return LayoutKitImpl::vmargin_bt_flexible(Glyph_in g, Coord bmargin, Coord bstretch, Coord bshrink, Coord tmargin, Coord tstretch, Coord tshrink) {
+    return margin_lrbt_flexible(
 	g,
 	0, 0, 0, 0, 0, 0,
 	bmargin, bstretch, bshrink, tmargin, tstretch, tshrink
@@ -1118,49 +1078,49 @@ GlyphRef LayoutKitImpl::_c_vmargin_bt_flexible(Glyph_in g, Coord bmargin, Coord 
 }
 
 //+ LayoutKitImpl(LayoutKit::lmargin)
-GlyphRef LayoutKitImpl::_c_lmargin(Glyph_in g, Coord natural) {
-    return _c_margin_lrbt(g, natural, 0, 0, 0);
+Glyph_return LayoutKitImpl::lmargin(Glyph_in g, Coord natural) {
+    return margin_lrbt(g, natural, 0, 0, 0);
 }
 
 //+ LayoutKitImpl(LayoutKit::lmargin_flexible)
-GlyphRef LayoutKitImpl::_c_lmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink) {
-    return _c_margin_lrbt_flexible(
+Glyph_return LayoutKitImpl::lmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink) {
+    return margin_lrbt_flexible(
 	g, natural, stretch, shrink, 0, 0, 0, 0, 0, 0, 0, 0, 0
     );
 }
 
 //+ LayoutKitImpl(LayoutKit::rmargin)
-GlyphRef LayoutKitImpl::_c_rmargin(Glyph_in g, Coord natural) {
-    return _c_margin_lrbt(g, 0, natural, 0, 0);
+Glyph_return LayoutKitImpl::rmargin(Glyph_in g, Coord natural) {
+    return margin_lrbt(g, 0, natural, 0, 0);
 }
 
 //+ LayoutKitImpl(LayoutKit::rmargin_flexible)
-GlyphRef LayoutKitImpl::_c_rmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink) {
-    return _c_margin_lrbt_flexible(
+Glyph_return LayoutKitImpl::rmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink) {
+    return margin_lrbt_flexible(
 	g, 0, 0, 0, natural, stretch, shrink, 0, 0, 0, 0, 0, 0
     );
 }
 
 //+ LayoutKitImpl(LayoutKit::bmargin)
-GlyphRef LayoutKitImpl::_c_bmargin(Glyph_in g, Coord natural) {
-    return _c_margin_lrbt(g, 0, 0, natural, 0);
+Glyph_return LayoutKitImpl::bmargin(Glyph_in g, Coord natural) {
+    return margin_lrbt(g, 0, 0, natural, 0);
 }
 
 //+ LayoutKitImpl(LayoutKit::bmargin_flexible)
-GlyphRef LayoutKitImpl::_c_bmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink) {
-    return _c_margin_lrbt_flexible(
+Glyph_return LayoutKitImpl::bmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink) {
+    return margin_lrbt_flexible(
 	g, 0, 0, 0, 0, 0, 0, natural, stretch, shrink, 0, 0, 0
     );
 }
 
 //+ LayoutKitImpl(LayoutKit::tmargin)
-GlyphRef LayoutKitImpl::_c_tmargin(Glyph_in g, Coord natural) {
-    return _c_margin_lrbt(g, 0, 0, 0, natural);
+Glyph_return LayoutKitImpl::tmargin(Glyph_in g, Coord natural) {
+    return margin_lrbt(g, 0, 0, 0, natural);
 }
 
 //+ LayoutKitImpl(LayoutKit::tmargin_flexible)
-GlyphRef LayoutKitImpl::_c_tmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink) {
-    return _c_margin_lrbt_flexible(
+Glyph_return LayoutKitImpl::tmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink) {
+    return margin_lrbt_flexible(
 	g, 0, 0, 0, 0, 0, 0, 0, 0, 0, natural, stretch, shrink
     );
 }
@@ -1772,16 +1732,16 @@ void Placement::child_allocate(Glyph::AllocationInfo& a) {
 
     TransformImpl tx;
     normal_transform(result_, &tx);
-    if (is_nil(a.transform)) {
-	a.transform = new TransformImpl;
+    if (is_nil(a.transformation)) {
+	a.transformation = new TransformImpl;
     }
-    a.transform->premultiply(&tx);
+    a.transformation->premultiply(&tx);
     given->copy(result_);
 }
 
 //+ Placement(Glyph::traverse)
 void Placement::traverse(GlyphTraversal_in t) {
-    Region given = t->allocation();
+    Region_var given = t->allocation();
     if (is_not_nil(given)) {
 	result_->copy(given);
 	Glyph::Requisition r;
@@ -1790,9 +1750,9 @@ void Placement::traverse(GlyphTraversal_in t) {
 	layout_->allocate(1, &r, given, &result_);
 	TransformImpl tx;
 	normal_transform(result_, &tx);
-	PainterObj p = t->painter();
+	Painter_var p = t->current_painter();
 	p->push_matrix();
-	p->transform(&tx);
+	p->premultiply(&tx);
 	t->traverse_child(&offset_, result_);
 	p->pop_matrix();
     } else {
@@ -1868,28 +1828,63 @@ void Box::request(Glyph::Requisition& r) {
     r = requisition_;
 }
 
+//+ Box(Glyph::extension)
+void Box::extension(const Glyph::AllocationInfo& a, Region_in r) {
+    Long n = children_.count();
+    if (n > 0) {
+	Glyph::AllocationInfo child;
+	Vertex prev_o, o, v;
+	prev_o.x = 0; prev_o.y = 0; prev_o.z = 0;
+	TransformImpl child_tx, tmp_tx;
+	child.transformation = &child_tx;
+	child.transformation->load(a.transformation);
+	child.damaged = a.damaged;
+	RegionImpl** result = children_allocations(a.allocation);
+	for (Long i = 0; i < n; i++) {
+	    Placement::normal_origin(result[i], o);
+	    v.x = o.x - prev_o.x;
+	    v.y = o.y - prev_o.y;
+	    v.z = o.z - prev_o.z;
+	    tmp_tx.load_identity();
+	    tmp_tx.translate(v);
+	    child.allocation = result[i];
+	    child.transformation->premultiply(&tmp_tx);
+	    children_.item(i)->child_->extension(child, r);
+	    prev_o = o;
+	    Fresco::unref(result[i]);
+	}
+	child.allocation = nil;
+	child.transformation = nil;
+	child.damaged = nil;
+	delete [] result;
+    }
+}
+
 /*
- * Not implemented!
+ * The cull test below (allocation_is_visible) is not quite ideal.
+ * If the box contains something that draws outside the box's allocation,
+ * then the box might not redraw correctly.  However, the alternative,
+ * using extensions, can be pretty expensive.  In practice, using
+ * allocations works in every case we have seen.
  */
 
-//+ Box(Glyph::extension)
-void Box::extension(const Glyph::AllocationInfo& a, Region_in r) { }
+//+ Box(Glyph::traverse)
+void Box::traverse(GlyphTraversal_in t) {
+    Region_var given = t->allocation();
+    if (is_not_nil(given)) {
+	if (t->allocation_is_visible()) {
+	    traverse_with_allocation(t, given);
+	}
+    } else {
+	traverse_without_allocation(t);
+    }
+}
 
 /*
  * Both traverse and child_allocate could be made more efficient
  * by avoiding memory allocation using a fixed size array of regions
  * when the number of children is below a reasonable amount.
  */
-
-//+ Box(Glyph::traverse)
-void Box::traverse(GlyphTraversal_in t) {
-    Region given = t->allocation();
-    if (is_not_nil(given)) {
-	traverse_with_allocation(t, given);
-    } else {
-	traverse_without_allocation(t);
-    }
-}
 
 RegionImpl** Box::children_allocations(Region_in a) {
     Long n = children_.count();
@@ -1901,7 +1896,9 @@ RegionImpl** Box::children_allocations(Region_in a) {
     }
     RegionImpl** result = new RegionImpl*[n];
     for (Long i = 0; i < n; i++) {
-	result[i] = new RegionImpl;
+	RegionImpl* region = new RegionImpl;
+	region->defined_ = true;
+	result[i] = region;
     }
     layout_->allocate(n, r, a, result);
     if (r != req) {
@@ -1934,7 +1931,7 @@ void Box::traverse_with_allocation(GlyphTraversal_in t, Region_in a) {
     }
     Vertex o, v;
     TransformImpl tx;
-    PainterObj p = t->painter();
+    Painter_var p = t->current_painter();
     p->push_matrix();
     for (Long i = i_start; i != i_stop; i += i_incr) {
 	Placement::normal_origin(result[i], o);
@@ -1943,8 +1940,9 @@ void Box::traverse_with_allocation(GlyphTraversal_in t, Region_in a) {
 	v.z = o.z - prev_o.z;
 	tx.load_identity();
 	tx.translate(v);
-	p->transform(&tx);
+	p->premultiply(&tx);
 	t->traverse_child(children_.item(i), result[i]);
+	Fresco::unref(result[i]);
 	if (i_picking && is_not_nil(t->picked())) {
 	    break;
 	}
@@ -1975,10 +1973,10 @@ void Box::child_allocate(Long index, Glyph::AllocationInfo& a) {
     RegionImpl** result = children_allocations(given);
     TransformImpl tx;
     Placement::normal_transform(result[index], &tx);
-    if (is_nil(a.transform)) {
-	a.transform = new TransformImpl;
+    if (is_nil(a.transformation)) {
+	a.transformation = new TransformImpl;
     }
-    a.transform->premultiply(&tx);
+    a.transformation->premultiply(&tx);
     given->copy(result[index]);
     Long n = children_.count();
     for (Long i = 0; i < n; i++) {
@@ -1999,44 +1997,8 @@ void Box::modified() {
 
 /* class DeckImpl */
 
-DeckImpl::DeckImpl() { top_ = nil; requested_ = false; }
-DeckImpl::~DeckImpl() { Fresco::unref(top_); }
-
-//+ DeckImpl(FrescoObject::=PolyGlyph::)
-Long DeckImpl::ref__(Long references) {
-    return PolyGlyph::ref__(references);
-}
-Tag DeckImpl::attach(FrescoObject_in observer) {
-    return PolyGlyph::attach(observer);
-}
-void DeckImpl::detach(Tag attach_tag) {
-    PolyGlyph::detach(attach_tag);
-}
-void DeckImpl::disconnect() {
-    PolyGlyph::disconnect();
-}
-void DeckImpl::notify_observers() {
-    PolyGlyph::notify_observers();
-}
-void DeckImpl::update() {
-    PolyGlyph::update();
-}
-//+
-
-//+ DeckImpl(Glyph::style=s)
-void DeckImpl::_c_style(StyleObj_in s) {
-    PolyGlyph::style(s);
-}
-
-//+ DeckImpl(Glyph::style?)
-StyleObjRef DeckImpl::_c_style() {
-    return PolyGlyph::_c_style();
-}
-
-//+ DeckImpl(Glyph::transform)
-TransformObjRef DeckImpl::_c_transform() {
-    return PolyGlyph::_c_transform();
-}
+DeckImpl::DeckImpl() { requested_ = false; }
+DeckImpl::~DeckImpl() { }
 
 //+ DeckImpl(Glyph::request)
 void DeckImpl::request(Glyph::Requisition& r) {
@@ -2061,124 +2023,23 @@ void DeckImpl::request(Glyph::Requisition& r) {
 
 //+ DeckImpl(Glyph::extension)
 void DeckImpl::extension(const Glyph::AllocationInfo& a, Region_in r) {
-    PolyGlyph::extension(a, r);
-}
-
-//+ DeckImpl(Glyph::shape)
-RegionRef DeckImpl::_c_shape() {
-    return PolyGlyph::shape();
-}
-
-//+ DeckImpl(Glyph::allocations)
-void DeckImpl::allocations(Glyph::AllocationInfoList& a) {
-    PolyGlyph::allocations(a);
+    Long n = children_.count();
+    if (n > 0) {
+	children_.item(n - 1)->child_->extension(a, r);
+    }
 }
 
 //+ DeckImpl(Glyph::traverse)
 void DeckImpl::traverse(GlyphTraversal_in t) {
-    if (is_not_nil(top_)) {
-	t->traverse_child(top_, nil);
+    Long n = children_.count();
+    if (n > 0) {
+	t->traverse_child(children_.item(n - 1), _tmp(t->allocation()));
     }
-}
-
-//+ DeckImpl(Glyph::draw)
-void DeckImpl::draw(GlyphTraversal_in t) {
-    PolyGlyph::draw(t);
-}
-
-//+ DeckImpl(Glyph::pick)
-void DeckImpl::pick(GlyphTraversal_in t) {
-    PolyGlyph::pick(t);
-}
-
-//+ DeckImpl(Glyph::body=)
-void DeckImpl::_c_body(Glyph_in) { }
-
-//+ DeckImpl(Glyph::body?)
-GlyphRef DeckImpl::_c_body() { return nil; }
-
-//+ DeckImpl(Glyph::append)
-GlyphOffsetRef DeckImpl::_c_append(Glyph_in g) {
-    return PolyGlyph::_c_append(g);
-}
-
-//+ DeckImpl(Glyph::prepend)
-GlyphOffsetRef DeckImpl::_c_prepend(Glyph_in g) {
-    return PolyGlyph::_c_prepend(g);
-}
-
-//+ DeckImpl(Glyph::add_parent)
-Tag DeckImpl::add_parent(GlyphOffset_in parent_offset) {
-    return PolyGlyph::add_parent(parent_offset);
-}
-
-//+ DeckImpl(Glyph::remove_parent)
-void DeckImpl::remove_parent(Tag add_tag) {
-    PolyGlyph::remove_parent(add_tag);
-}
-
-//+ DeckImpl(Glyph::visit_children)
-void DeckImpl::visit_children(GlyphVisitor_in v) {
-    PolyGlyph::visit_children(v);
-}
-
-//+ DeckImpl(Glyph::visit_children_reversed)
-void DeckImpl::visit_children_reversed(GlyphVisitor_in v) {
-    PolyGlyph::visit_children_reversed(v);
-}
-
-//+ DeckImpl(Glyph::visit_parents)
-void DeckImpl::visit_parents(GlyphVisitor_in v) {
-    PolyGlyph::visit_parents(v);
-}
-
-//+ DeckImpl(Glyph::need_redraw)
-void DeckImpl::need_redraw() {
-    PolyGlyph::need_redraw();
-}
-
-//+ DeckImpl(Glyph::need_redraw_region)
-void DeckImpl::need_redraw_region(Region_in r) {
-    PolyGlyph::need_redraw_region(r);
-}
-
-//+ DeckImpl(Glyph::need_resize)
-void DeckImpl::need_resize() {
-    PolyGlyph::need_resize();
-}
-
-//+ DeckImpl(Glyph::restore_trail)
-Boolean DeckImpl::restore_trail(GlyphTraversal_in t) {
-    return false;
-}
-
-//+ DeckImpl(Glyph::clone_glyph)
-GlyphRef DeckImpl::_c_clone_glyph() {
-    return nil;
-}
-
-/*
- * Return the current top of the deck.
- */
-
-//+ DeckImpl(DeckObj::card)
-GlyphOffsetRef DeckImpl::_c_card() {
-    return GlyphOffset::_duplicate(top_);
-}
-
-/*
- * Change the current top of the deck.
- */
-
-//+ DeckImpl(DeckObj::flip_to)
-void DeckImpl::flip_to(GlyphOffset_in off) {
-    Fresco::unref(top_);
-    top_ = GlyphOffset::_duplicate(off);
-    need_redraw();
 }
 
 void DeckImpl::modified() {
     requested_ = false;
+    need_redraw();
 }
 
 /* class Glue */
@@ -2244,9 +2105,9 @@ void Space::draw(GlyphTraversal_in t) {
 	Vertex v0, v1, v;
 	t->bounds(v0, v1, v);
 	Coord each = (v1.x - v0.x) / count_;
-	PainterObj p = t->painter();
-	p->font_attr(font_);
-	p->color_attr(color_);
+	Painter_var p = t->current_painter();
+	p->current_font(font_);
+	p->current_color(color_);
         for (long i = 0; i < count_; ++i) {
             p->character(' ', each, v.x, v.y);
             v.x += each;

@@ -41,8 +41,8 @@ class RasterBitmap;
 class WindowImpl;
 
 //- RasterImpl*
-//+ RasterImpl : RasterType
-class RasterImpl : public RasterType {
+//+ RasterImpl : Raster
+class RasterImpl : public Raster {
 public:
     ~RasterImpl();
     TypeObjId _tid();
@@ -71,10 +71,10 @@ public:
 
     Boolean equal(Raster_in r); //+ Raster::equal
     ULong hash(); //+ Raster::hash
-    Raster::Index rows(); //+ Raster::rows
-    Raster::Index columns(); //+ Raster::columns
-    Raster::Index origin_x(); //+ Raster::origin_x
-    Raster::Index origin_y(); //+ Raster::origin_y
+    Index rows(); //+ Raster::rows
+    Index columns(); //+ Raster::columns
+    Index origin_x(); //+ Raster::origin_x
+    Index origin_y(); //+ Raster::origin_y
     void scale(Coord); //+ Raster::scale=
     Coord scale(); //+ Raster::scale?
 
@@ -83,7 +83,7 @@ public:
 	XDisplay* xdisplay;
 	ScreenImpl* screen;
 	ScreenImpl::VisualInfo* visual;
-	TransformObjRef trans;
+	TransformRef trans;
 
 	// Internal representation
 	Pixmap pixmap;
@@ -105,9 +105,9 @@ public:
 
     virtual RasterBitmap* bitmap();
     virtual void invalidate();
-    virtual RasterImpl::PerScreenData* lookup(WindowImpl*, TransformObjRef);
+    virtual RasterImpl::PerScreenData* lookup(WindowImpl*, TransformRef);
     virtual RasterImpl::PerScreenData* create(
-	WindowImpl*, TransformObjRef
+	WindowImpl*, TransformRef
     ) = 0;
     virtual void read_drawable(
 	XDisplay*, XDrawable drawable, int from_x, int from_y
@@ -122,9 +122,9 @@ public:
     unsigned long hash_;
     PerScreenData* per_screen_;
 
-    TransformObjRef device_transform(TransformObjRef, ScreenImpl* screen);
+    TransformRef device_transform(TransformRef, ScreenImpl* screen);
     static void transform_bounds(
-	TransformObjRef t,
+	TransformRef t,
 	Raster::Index& rows, Raster::Index& columns,
 	Coord& origin_x, Coord& origin_y,
 	Coord& from_x, Coord& from_y,
@@ -146,7 +146,7 @@ class RasterBitmap : public RasterImpl {
     //. using X images.
 public:
     RasterBitmap(
-	DrawingKit::Data data,
+	DrawingKit::Data8 data,
 	Raster::Index rows, Raster::Index columns,
 	Raster::Index origin_row, Raster::Index origin_column,
 	Coord scale = 0
@@ -155,18 +155,18 @@ public:
 
     Boolean equal(Raster_in r); //+ Raster::equal
     ULong hash(); //+ Raster::hash
-    void peek(Raster::Index row, Raster::Index column, Raster::Element& e); //+ Raster::peek
-    void poke(Raster::Index row, Raster::Index column, const Raster::Element& e); //+ Raster::poke
+    void peek(Index row, Index column, Element& e); //+ Raster::peek
+    void poke(Index row, Index column, const Element& e); //+ Raster::poke
 
     virtual RasterBitmap* bitmap();
     virtual void invalidate();
-    virtual RasterImpl::PerScreenData* create(WindowImpl*, TransformObjRef);
+    virtual RasterImpl::PerScreenData* create(WindowImpl*, TransformRef);
     virtual void read_drawable(
 	XDisplay*, XDrawable drawable, int from_x, int from_y
     );
 
     Boolean compute_transform(
-	TransformObjRef,
+	TransformRef,
 	Raster::Index& column, Raster::Index& row,
 	Coord& x, Coord& y, unsigned char*& data
     );
@@ -204,7 +204,7 @@ public:
 
     void peek(Raster::Index row, Raster::Index column, Raster::Element&);
     void poke(Raster::Index row, Raster::Index column, const Raster::Element& e);
-    virtual RasterImpl::PerScreenData* create(WindowImpl*, TransformObjRef);
+    virtual RasterImpl::PerScreenData* create(WindowImpl*, TransformRef);
     virtual void read_drawable(
 	XDisplay*, XDrawable drawable, int from_x, int from_y
     );
@@ -213,7 +213,7 @@ public:
     int channel_count_;
 
     Boolean compute_transform(
-	TransformObjRef,
+	TransformRef,
 	Raster::Index& column, Raster::Index& row,
 	Coord& x, Coord& y,
 	Pixmap& pixmap, unsigned char*& mask, WindowImpl* w
@@ -237,12 +237,12 @@ public:
 
     void peek(Raster::Index row, Raster::Index column, Raster::Element&);
     void poke(Raster::Index row, Raster::Index column, const Raster::Element& e);
-    virtual RasterImpl::PerScreenData* create(WindowImpl*, TransformObjRef);
+    virtual RasterImpl::PerScreenData* create(WindowImpl*, TransformRef);
     virtual void read_drawable(
 	XDisplay*, XDrawable drawable, int from_x, int from_y
     );
     Boolean compute_transform(
-	TransformObjRef,
+	TransformRef,
 	Raster::Index& column, Raster::Index& row,
 	Coord& x, Coord& y,
 	Pixmap& image, unsigned long x_lut[256], WindowImpl* w

@@ -36,12 +36,11 @@ class DisplayImplDamage;
 class DisplayImplFilters;
 class DisplayImplRemoveFilter;
 class DisplayImplWindowTable;
-class DisplayStyleImpl;
 class EventImpl;
 class ScreenImpl;
 
-//+ DisplayImpl : DisplayObjType
-class DisplayImpl : public DisplayObjType {
+//+ DisplayImpl : Display
+class DisplayImpl : public Display {
 public:
     ~DisplayImpl();
     TypeObjId _tid();
@@ -50,7 +49,7 @@ public:
 public:
     DisplayImpl(Fresco*, XDisplay*);
 
-    //+ DisplayObj::*
+    //+ Display::*
     /* FrescoObject */
     Long ref__(Long references);
     Tag attach(FrescoObject_in observer);
@@ -58,16 +57,16 @@ public:
     void disconnect();
     void notify_observers();
     void update();
-    /* DisplayObj */
-    DisplayStyleRef _c_style();
-    DrawingKitRef _c_drawing_kit();
-    ScreenObjRef _c_screen(DisplayObj::ScreenNumber n);
-    DisplayObj::ScreenNumber number_of_screens();
-    ScreenObjRef _c_default_screen();
-    CursorRef _c_cursor_from_data(Short x, Short y, Long pattern[16], Long mask[16]);
-    CursorRef _c_cursor_from_bitmap(Raster_in b, Raster_in mask);
-    CursorRef _c_cursor_from_font(Font_in f, Long pattern, Long mask);
-    CursorRef _c_cursor_from_index(Long index);
+    /* Display */
+    Style_return display_style();
+    DrawingKit_return drawing_kit();
+    Screen_return display_screen(Display::ScreenNumber n);
+    Display::ScreenNumber number_of_screens();
+    Screen_return default_screen();
+    Cursor_return cursor_from_data(Short x, Short y, Long pat[16], Long mask[16]);
+    Cursor_return cursor_from_bitmap(Raster_in b, Raster_in mask);
+    Cursor_return cursor_from_font(Font_in f, Long pat, Long mask);
+    Cursor_return cursor_from_index(Long n);
     void run(Boolean b);
     Boolean running();
     Tag add_filter(GlyphTraversal_in t);
@@ -78,6 +77,16 @@ public:
     void flush_and_wait();
     void ring_bell(Float pct_loudness);
     void close();
+    Boolean auto_repeat();
+    void auto_repeat(Boolean _p);
+    Float key_click_volume();
+    void key_click_volume(Float _p);
+    Float pointer_acceleration();
+    void pointer_acceleration(Float _p);
+    Long pointer_threshold();
+    void pointer_threshold(Long _p);
+    Float pointer_double_click_threshold();
+    void pointer_double_click_threshold(Float _p);
     //+
 
     struct FilterInfo {
@@ -88,6 +97,7 @@ public:
 
     Fresco* fresco() { return fresco_; }
     XDisplay* xdisplay();
+    ULong double_click_threshold_msec() { return double_click_msec_; }
     Atom wm_protocols_atom();
     Atom wm_delete_atom();
     void bind(XWindow, WindowRef);
@@ -103,11 +113,13 @@ protected:
 
     SharedFrescoObjectImpl object_;
     Fresco* fresco_;
-    LockObj lock_;
+    LockObj_var lock_;
     Boolean running_;
     XDisplay* xdisplay_;
     XWindow xwindow_;
-    DisplayStyleImpl* style_;
+    StyleImpl* style_;
+    Float double_click_;
+    ULong double_click_msec_;
     Long nscreens_;
     ScreenImpl** screen_;
     Boolean trace_events_;
@@ -115,11 +127,11 @@ protected:
     Long waiting_to_read_;
     Boolean requesting_;
     Long waiting_to_request_;
-    ConditionVariable wait_to_read_;
-    ConditionVariable wait_to_request_;
-    ThreadObj redisplay_;
-    LockObj damage_lock_;
-    ConditionVariable damage_pending_;
+    ConditionVariable_var wait_to_read_;
+    ConditionVariable_var wait_to_request_;
+    ThreadObj_var redisplay_;
+    LockObj_var damage_lock_;
+    ConditionVariable_var damage_pending_;
     DisplayImplDamage* damaged_;
     DisplayImplFilters* filters_;
     long filter_tag_;
@@ -142,59 +154,6 @@ protected:
     void redisplay_thread();
     void notify_redisplay();
     void do_repairs();
-};
-
-class DisplayStyleImpl : public DisplayStyleType {
-public:
-    DisplayStyleImpl(Fresco*, DisplayImpl*);
-    ~DisplayStyleImpl();
-
-    //+ DisplayStyle::*
-    /* FrescoObject */
-    Long ref__(Long references);
-    Tag attach(FrescoObject_in observer);
-    void detach(Tag attach_tag);
-    void disconnect();
-    void notify_observers();
-    void update();
-    /* StyleObj */
-    StyleObjRef _c_new_style();
-    StyleObjRef _c_parent_style();
-    void link_parent(StyleObj_in parent);
-    void unlink_parent();
-    Tag link_child(StyleObj_in child);
-    void unlink_child(Tag link_tag);
-    void merge(StyleObj_in s);
-    CharStringRef _c_name();
-    void _c_name(CharString_in _p);
-    void alias(CharString_in s);
-    Boolean is_on(CharString_in name);
-    StyleValueRef _c_bind(CharString_in name);
-    void unbind(CharString_in name);
-    StyleValueRef _c_resolve(CharString_in name);
-    StyleValueRef _c_resolve_wildcard(CharString_in name, StyleObj_in start);
-    Long match(CharString_in name);
-    void visit_aliases(StyleVisitor_in v);
-    void visit_attributes(StyleVisitor_in v);
-    void visit_styles(StyleVisitor_in v);
-    void lock();
-    void unlock();
-    /* DisplayStyle */
-    Boolean auto_repeat();
-    void auto_repeat(Boolean _p);
-    Float key_click_volume();
-    void key_click_volume(Float _p);
-    Float pointer_acceleration();
-    void pointer_acceleration(Float _p);
-    Long pointer_threshold();
-    void pointer_threshold(Long _p);
-    //+
-
-    SharedStyleImpl* impl() { return &impl_; }
-protected:
-    SharedFrescoObjectImpl object_;
-    SharedStyleImpl impl_;
-    DisplayImpl* display_;
 };
 
 #endif

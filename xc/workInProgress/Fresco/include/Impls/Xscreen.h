@@ -36,8 +36,8 @@ class ScreenVisualList;
 
 typedef int XCoord;
 
-//+ ScreenImpl : ScreenObjType
-class ScreenImpl : public ScreenObjType {
+//+ ScreenImpl : Screen
+class ScreenImpl : public Screen {
 public:
     ~ScreenImpl();
     TypeObjId _tid();
@@ -46,7 +46,7 @@ public:
 public:
     ScreenImpl(Fresco*, DisplayImpl*, long n);
 
-    //+ ScreenObj::*
+    //+ Screen::*
     /* FrescoObject */
     Long ref__(Long references);
     Tag attach(FrescoObject_in observer);
@@ -54,21 +54,21 @@ public:
     void disconnect();
     void notify_observers();
     void update();
-    /* ScreenObj */
+    /* Screen */
     Coord dpi();
     void dpi(Coord _p);
-    DisplayObjRef _c_display();
+    Display_return screen_display();
     Coord width();
     Coord height();
     PixelCoord to_pixels(Coord c);
     Coord to_coord(PixelCoord p);
     Coord to_pixels_coord(Coord c);
     void move_pointer(Coord x, Coord y);
-    WindowRef _c_application(Viewer_in v);
-    WindowRef _c_top_level(Viewer_in v, Window_in group_leader);
-    WindowRef _c_transient(Viewer_in v, Window_in transient_for);
-    WindowRef _c_popup(Viewer_in v);
-    WindowRef _c_icon(Viewer_in v);
+    Window_return application(Viewer_in v);
+    Window_return top_level(Viewer_in v, Window_in group_leader);
+    Window_return transient(Viewer_in v, Window_in transient_for);
+    Window_return popup(Viewer_in v);
+    Window_return icon(Viewer_in v);
     //+
 
     struct OverlayInfo {
@@ -100,7 +100,7 @@ public:
 
     XWindow root_window();
     ScreenImpl::VisualInfo* default_visual();
-    ScreenImpl::VisualInfo* find_visual(StyleObjRef);
+    ScreenImpl::VisualInfo* find_visual(StyleRef);
     void find_color(ScreenImpl::VisualInfo&, XColor&);
 protected:
     SharedFrescoObjectImpl object_;
@@ -118,11 +118,11 @@ protected:
     Coord points_;
 
     void set_dpi();
-    ScreenImpl::VisualInfo* lookup_overlay(StyleObjRef);
+    ScreenImpl::VisualInfo* lookup_overlay(StyleRef);
     Boolean find_layer(StyleValueRef, long& layer);
     Boolean find_overlay(long layer, XVisualInfo&, ScreenImpl::OverlayInfo&);
-    Boolean lookup_visual_id(StyleObjRef, XVisualInfo&);
-    Boolean lookup_visual(StyleObjRef, XVisualInfo&);
+    Boolean lookup_visual_id(StyleRef, XVisualInfo&);
+    Boolean lookup_visual(StyleRef, XVisualInfo&);
     Boolean find_visual_by_class_name(CharStringRef name, XVisualInfo& xinfo);
     void find_overlay(long layer, ScreenImpl::VisualInfo&);
     Boolean find_visual_by_info(XVisualInfo&, long mask);
@@ -130,7 +130,7 @@ protected:
     void init_color_tables(ScreenImpl::VisualInfo&);
     void set_shift(unsigned long mask, unsigned long& v, unsigned long& shift);
     unsigned int MSB(unsigned long);
-    unsigned long xor(const ScreenImpl::VisualInfo&, StyleObjRef);
+    unsigned long xor(const ScreenImpl::VisualInfo&, StyleRef);
     void load_map(ScreenImpl::VisualInfo&);
     void search_map(
 	ScreenImpl::VisualInfo&, ScreenImpl::RGBTableEntry& rgb, XColor& xc

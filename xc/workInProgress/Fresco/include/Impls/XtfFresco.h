@@ -38,12 +38,12 @@ public:
     );
     virtual ~XtfFresco();
 
-    DisplayObjType* _c_open_display(CharStringRef name);
-    DisplayObjType* _c_open_default_display();
+    Display* open_display(CharStringRef name);
+    Display* open_default_display();
 
     //- init_widget, init_widget_glyph
-    void init_widget(Widget, ViewerType*);
-    void init_widget_glyph(Widget, GlyphType*);
+    void init_widget(Widget, Viewer*);
+    void init_widget_glyph(Widget, Glyph*);
 	//. These operations initialize an XtfViewer widget to contain
 	//. a given Fresco viewer or glyph.  The XtfViewer widget should
 	//. be placed in the Xt hierarchy in the normal Xt manner.

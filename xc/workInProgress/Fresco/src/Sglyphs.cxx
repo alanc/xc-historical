@@ -37,123 +37,123 @@
 #include <X11/Fresco/Ox/stub.h>
 #include <X11/Fresco/Ox/schema.h>
 
-//+ DamageObj::%init,type+dii,client
-DamageObjType::DamageObjType() { }
-DamageObjType::~DamageObjType() { }
-void* DamageObjType::_this() { return this; }
+//+ Damage::%init,type+dii,client
+Damage::Damage() { }
+Damage::~Damage() { }
+void* Damage::_this() { return this; }
 
 extern TypeObj_Descriptor _Xfvoid_type, _XfRegion_type;
 
-TypeObj_OpData _XfDamageObj_methods[] = {
+TypeObj_OpData _XfDamage_methods[] = {
     { "incur", &_Xfvoid_type, 0 },
     { "extend", &_Xfvoid_type, 1 },
     { "current", &_XfRegion_type, 0 },
     { 0, 0, 0 }
 };
-TypeObj_ParamData _XfDamageObj_params[] = {
+TypeObj_ParamData _XfDamage_params[] = {
     /* extend */
         { "r", 0, &_XfRegion_type }
 };
 extern TypeObj_Descriptor _XfFrescoObject_type;
-TypeObj_Descriptor* _XfDamageObj_parents[] = { &_XfFrescoObject_type, nil };
-extern TypeObjId _XfDamageObj_tid;
-extern void _XfDamageObj_receive(BaseObjectRef, ULong, MarshalBuffer&);
-TypeObj_Descriptor _XfDamageObj_type = {
+TypeObj_Descriptor* _XfDamage_parents[] = { &_XfFrescoObject_type, nil };
+extern TypeObjId _XfDamage_tid;
+extern void _XfDamage_receive(BaseObjectRef, ULong, MarshalBuffer&);
+TypeObj_Descriptor _XfDamage_type = {
     /* type */ 0,
-    /* id */ &_XfDamageObj_tid,
-    "DamageObj",
-    _XfDamageObj_parents, /* offsets */ nil, /* excepts */ nil,
-    _XfDamageObj_methods, _XfDamageObj_params,
-    &_XfDamageObj_receive
+    /* id */ &_XfDamage_tid,
+    "Damage",
+    _XfDamage_parents, /* offsets */ nil, /* excepts */ nil,
+    _XfDamage_methods, _XfDamage_params,
+    &_XfDamage_receive
 };
 
-DamageObjRef DamageObj::_narrow(BaseObjectRef o) {
-    return (DamageObjRef)_BaseObject_tnarrow(
-        o, _XfDamageObj_tid, &DamageObjStub::_create
+DamageRef Damage::_narrow(BaseObjectRef o) {
+    return (DamageRef)_BaseObject_tnarrow(
+        o, _XfDamage_tid, &_XfDamageStub_create
     );
 }
-TypeObjId DamageObjType::_tid() { return _XfDamageObj_tid; }
-void _XfDamageObj_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
-    extern TypeObjId _XfDamageObj_tid;
-    DamageObjRef _this = (DamageObjRef)_BaseObject_tcast(_object, _XfDamageObj_tid);
+TypeObjId Damage::_tid() { return _XfDamage_tid; }
+void _XfDamage_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
+    extern TypeObjId _XfDamage_tid;
+    DamageRef _this = (DamageRef)_BaseObject_tcast(_object, _XfDamage_tid);
     switch (_m) {
         case /* incur */ 0: {
-            extern MarshalBuffer::ArgInfo _XfDamageObj_incur_pinfo;
+            extern MarshalBuffer::ArgInfo _XfDamage_incur_pinfo;
             MarshalBuffer::ArgValue _arg[1];
             _this->incur();
-            _b.reply(_XfDamageObj_incur_pinfo, _arg);
+            _b.reply(_XfDamage_incur_pinfo, _arg);
             break;
         }
         case /* extend */ 1: {
-            extern MarshalBuffer::ArgInfo _XfDamageObj_extend_pinfo;
+            extern MarshalBuffer::ArgInfo _XfDamage_extend_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             RegionRef r;
             _arg[1].u_addr = &r;
-            _b.receive(_XfDamageObj_extend_pinfo, _arg);
+            _b.receive(_XfDamage_extend_pinfo, _arg);
             _this->extend(r);
-            _b.reply(_XfDamageObj_extend_pinfo, _arg);
+            _b.reply(_XfDamage_extend_pinfo, _arg);
             break;
         }
         case /* current */ 2: {
-            extern MarshalBuffer::ArgInfo _XfDamageObj_current_pinfo;
+            extern MarshalBuffer::ArgInfo _XfDamage_current_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_current();
-            _b.reply(_XfDamageObj_current_pinfo, _arg);
+            _arg[0].u_objref = _this->current();
+            _b.reply(_XfDamage_current_pinfo, _arg);
             break;
         }
     }
 }
-DamageObjStub::DamageObjStub(Exchange* e) { exch_ = e; }
-DamageObjStub::~DamageObjStub() { }
-BaseObjectRef DamageObjStub::_create(Exchange* e) {
-    return (BaseObjectRef)(void*)new DamageObjStub(e);
+DamageStub::DamageStub(Exchange* e) { exch_ = e; }
+DamageStub::~DamageStub() { }
+BaseObjectRef _XfDamageStub_create(Exchange* e) {
+    return (BaseObjectRef)(void*)new DamageStub(e);
 }
-Exchange* DamageObjStub::_exchange() {
+Exchange* DamageStub::_exchange() {
     return exch_;
 }
-MarshalBuffer::ArgDesc _XfDamageObj_incur_pdesc[2] = { 1, 4 };
-MarshalBuffer::ArgInfo _XfDamageObj_incur_pinfo = {
-    &_XfDamageObj_tid, 0, _XfDamageObj_incur_pdesc, 0
+MarshalBuffer::ArgDesc _XfDamage_incur_pdesc[2] = { 1, 4 };
+MarshalBuffer::ArgInfo _XfDamage_incur_pinfo = {
+    &_XfDamage_tid, 0, _XfDamage_incur_pdesc, 0
 };
-void DamageObjType::incur() {
+void Damage::incur() {
     MarshalBuffer _b;
-    extern TypeObjId _XfDamageObj_tid;
+    extern TypeObjId _XfDamage_tid;
     MarshalBuffer::ArgValue _arg[1];
-    _b.invoke(this, _XfDamageObj_incur_pinfo, _arg);
+    _b.invoke(this, _XfDamage_incur_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfDamageObj_extend_pdesc[3] = { 2, 4, 61 };
-MarshalBuffer::ArgMarshal _XfDamageObj_extend_pfunc[] = {
-    &RegionStub::_create,
+MarshalBuffer::ArgDesc _XfDamage_extend_pdesc[3] = { 2, 4, 61 };
+MarshalBuffer::ArgMarshal _XfDamage_extend_pfunc[] = {
+    &_XfRegionStub_create,
 
 };
-MarshalBuffer::ArgInfo _XfDamageObj_extend_pinfo = {
-    &_XfDamageObj_tid, 1, _XfDamageObj_extend_pdesc, _XfDamageObj_extend_pfunc
+MarshalBuffer::ArgInfo _XfDamage_extend_pinfo = {
+    &_XfDamage_tid, 1, _XfDamage_extend_pdesc, _XfDamage_extend_pfunc
 };
-void DamageObjType::extend(Region_in r) {
+void Damage::extend(Region_in r) {
     MarshalBuffer _b;
-    extern TypeObjId _XfDamageObj_tid;
+    extern TypeObjId _XfDamage_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = r;
-    _b.invoke(this, _XfDamageObj_extend_pinfo, _arg);
+    _b.invoke(this, _XfDamage_extend_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfDamageObj_current_pdesc[2] = { 1, 60 };
-MarshalBuffer::ArgMarshal _XfDamageObj_current_pfunc[] = {
-    &RegionStub::_create
+MarshalBuffer::ArgDesc _XfDamage_current_pdesc[2] = { 1, 60 };
+MarshalBuffer::ArgMarshal _XfDamage_current_pfunc[] = {
+    &_XfRegionStub_create
 };
-MarshalBuffer::ArgInfo _XfDamageObj_current_pinfo = {
-    &_XfDamageObj_tid, 2, _XfDamageObj_current_pdesc, _XfDamageObj_current_pfunc
+MarshalBuffer::ArgInfo _XfDamage_current_pinfo = {
+    &_XfDamage_tid, 2, _XfDamage_current_pdesc, _XfDamage_current_pfunc
 };
-RegionRef DamageObjType::_c_current() {
+RegionRef Damage::current() {
     MarshalBuffer _b;
-    extern TypeObjId _XfDamageObj_tid;
+    extern TypeObjId _XfDamage_tid;
     MarshalBuffer::ArgValue _arg[1];
-    _b.invoke(this, _XfDamageObj_current_pinfo, _arg);
+    _b.invoke(this, _XfDamage_current_pinfo, _arg);
     return (RegionRef)_arg[0].u_objref;
 }
 //+
 
 //+ Glyph::%init,type+dii,client
-Glyph::AllocationInfoList& Glyph::AllocationInfoList::operator =(const AllocationInfoList& _s) {
+Glyph::AllocationInfoSeq& Glyph::AllocationInfoSeq::operator =(const AllocationInfoSeq& _s) {
     delete [] _buffer;
     _maximum = _s._maximum;
     _length = _s._length;
@@ -163,36 +163,46 @@ Glyph::AllocationInfoList& Glyph::AllocationInfoList::operator =(const Allocatio
     }
     return *this;
 }
+Glyph::OffsetSeq& Glyph::OffsetSeq::operator =(const OffsetSeq& _s) {
+    delete [] _buffer;
+    _maximum = _s._maximum;
+    _length = _s._length;
+    _buffer = _maximum == 0 ? 0 : new GlyphOffsetRef[_maximum];
+    for (int i = 0; i < _length; i++) {
+        _buffer[i] = _s._buffer[i];
+    }
+    return *this;
+}
 
-GlyphType::GlyphType() { }
-GlyphType::~GlyphType() { }
-void* GlyphType::_this() { return this; }
+Glyph::Glyph() { }
+Glyph::~Glyph() { }
+void* Glyph::_this() { return this; }
 
-extern TypeObj_Descriptor _XfGlyph_type, _XfStyleObj_type, _XfTransformObj_type, 
+extern TypeObj_Descriptor _XfGlyph_type, _XfStyle_type, _XfTransform_type, 
     _XfGlyph_Requisition_type, _XfGlyph_AllocationInfo_type, _XfGlyphTraversal_type, 
-    _XfGlyphOffset_type, _XfTag_type, _XfGlyphVisitor_type, _XfGlyph_AllocationInfoList_type, 
+    _XfTag_type, _XfGlyphOffset_type, _XfGlyph_OffsetSeq_type, _XfGlyph_AllocationInfoSeq_type, 
     _XfBoolean_type;
 
 TypeObj_OpData _XfGlyph_methods[] = {
     { "clone_glyph", &_XfGlyph_type, 0 },
-    { "_get_style", &_XfStyleObj_type, 0 },
-    { "_set_style", &_Xfvoid_type, 1 },
-    { "transform", &_XfTransformObj_type, 0 },
+    { "_get_glyph_style", &_XfStyle_type, 0 },
+    { "_set_glyph_style", &_Xfvoid_type, 1 },
+    { "transformation", &_XfTransform_type, 0 },
     { "request", &_Xfvoid_type, 1 },
     { "extension", &_Xfvoid_type, 2 },
-    { "shape", &_XfRegion_type, 0 },
+    { "shape", &_Xfvoid_type, 1 },
     { "traverse", &_Xfvoid_type, 1 },
     { "draw", &_Xfvoid_type, 1 },
     { "pick", &_Xfvoid_type, 1 },
     { "_get_body", &_XfGlyph_type, 0 },
     { "_set_body", &_Xfvoid_type, 1 },
-    { "append", &_XfGlyphOffset_type, 1 },
-    { "prepend", &_XfGlyphOffset_type, 1 },
+    { "append", &_Xfvoid_type, 1 },
+    { "prepend", &_Xfvoid_type, 1 },
     { "add_parent", &_XfTag_type, 1 },
     { "remove_parent", &_Xfvoid_type, 1 },
-    { "visit_children", &_Xfvoid_type, 1 },
-    { "visit_children_reversed", &_Xfvoid_type, 1 },
-    { "visit_parents", &_Xfvoid_type, 1 },
+    { "first_child_offset", &_XfGlyphOffset_type, 0 },
+    { "last_child_offset", &_XfGlyphOffset_type, 0 },
+    { "parent_offsets", &_Xfvoid_type, 1 },
     { "allocations", &_Xfvoid_type, 1 },
     { "need_redraw", &_Xfvoid_type, 0 },
     { "need_redraw_region", &_Xfvoid_type, 1 },
@@ -201,12 +211,14 @@ TypeObj_OpData _XfGlyph_methods[] = {
     { 0, 0, 0 }
 };
 TypeObj_ParamData _XfGlyph_params[] = {
-    /* style */
-        { "_p", 0, &_XfStyleObj_type },
+    /* glyph_style */
+        { "_p", 0, &_XfStyle_type },
     /* request */
         { "r", 1, &_XfGlyph_Requisition_type },
     /* extension */
         { "a", 0, &_XfGlyph_AllocationInfo_type },
+        { "r", 0, &_XfRegion_type },
+    /* shape */
         { "r", 0, &_XfRegion_type },
     /* traverse */
         { "t", 0, &_XfGlyphTraversal_type },
@@ -224,14 +236,10 @@ TypeObj_ParamData _XfGlyph_params[] = {
         { "parent_offset", 0, &_XfGlyphOffset_type },
     /* remove_parent */
         { "add_tag", 0, &_XfTag_type },
-    /* visit_children */
-        { "v", 0, &_XfGlyphVisitor_type },
-    /* visit_children_reversed */
-        { "v", 0, &_XfGlyphVisitor_type },
-    /* visit_parents */
-        { "v", 0, &_XfGlyphVisitor_type },
+    /* parent_offsets */
+        { "parents", 2, &_XfGlyph_OffsetSeq_type },
     /* allocations */
-        { "a", 1, &_XfGlyph_AllocationInfoList_type },
+        { "a", 1, &_XfGlyph_AllocationInfoSeq_type },
     /* need_redraw_region */
         { "r", 0, &_XfRegion_type },
     /* restore_trail */
@@ -252,10 +260,10 @@ TypeObj_Descriptor _XfGlyph_type = {
 
 GlyphRef Glyph::_narrow(BaseObjectRef o) {
     return (GlyphRef)_BaseObject_tnarrow(
-        o, _XfGlyph_tid, &GlyphStub::_create
+        o, _XfGlyph_tid, &_XfGlyphStub_create
     );
 }
-TypeObjId GlyphType::_tid() { return _XfGlyph_tid; }
+TypeObjId Glyph::_tid() { return _XfGlyph_tid; }
 void _XfGlyph_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
     extern TypeObjId _XfGlyph_tid;
     GlyphRef _this = (GlyphRef)_BaseObject_tcast(_object, _XfGlyph_tid);
@@ -263,32 +271,32 @@ void _XfGlyph_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
         case /* clone_glyph */ 0: {
             extern MarshalBuffer::ArgInfo _XfGlyph_clone_glyph_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_clone_glyph();
+            _arg[0].u_objref = _this->clone_glyph();
             _b.reply(_XfGlyph_clone_glyph_pinfo, _arg);
             break;
         }
-        case /* _get_style */ 1: {
-            extern MarshalBuffer::ArgInfo _XfGlyph__get_style_pinfo;
+        case /* _get_glyph_style */ 1: {
+            extern MarshalBuffer::ArgInfo _XfGlyph__get_glyph_style_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_style();
-            _b.reply(_XfGlyph__get_style_pinfo, _arg);
+            _arg[0].u_objref = _this->glyph_style();
+            _b.reply(_XfGlyph__get_glyph_style_pinfo, _arg);
             break;
         }
-        case /* _set_style */ 2: {
-            extern MarshalBuffer::ArgInfo _XfGlyph__set_style_pinfo;
+        case /* _set_glyph_style */ 2: {
+            extern MarshalBuffer::ArgInfo _XfGlyph__set_glyph_style_pinfo;
             MarshalBuffer::ArgValue _arg[2];
-            StyleObjRef _p;
+            StyleRef _p;
             _arg[1].u_addr = &_p;
-            _b.receive(_XfGlyph__set_style_pinfo, _arg);
-            _this->_c_style(_p);
-            _b.reply(_XfGlyph__set_style_pinfo, _arg);
+            _b.receive(_XfGlyph__set_glyph_style_pinfo, _arg);
+            _this->glyph_style(_p);
+            _b.reply(_XfGlyph__set_glyph_style_pinfo, _arg);
             break;
         }
-        case /* transform */ 3: {
-            extern MarshalBuffer::ArgInfo _XfGlyph_transform_pinfo;
+        case /* transformation */ 3: {
+            extern MarshalBuffer::ArgInfo _XfGlyph_transformation_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_transform();
-            _b.reply(_XfGlyph_transform_pinfo, _arg);
+            _arg[0].u_objref = _this->transformation();
+            _b.reply(_XfGlyph_transformation_pinfo, _arg);
             break;
         }
         case /* request */ 4: {
@@ -315,8 +323,11 @@ void _XfGlyph_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
         }
         case /* shape */ 6: {
             extern MarshalBuffer::ArgInfo _XfGlyph_shape_pinfo;
-            MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_shape();
+            MarshalBuffer::ArgValue _arg[2];
+            RegionRef r;
+            _arg[1].u_addr = &r;
+            _b.receive(_XfGlyph_shape_pinfo, _arg);
+            _this->shape(r);
             _b.reply(_XfGlyph_shape_pinfo, _arg);
             break;
         }
@@ -353,7 +364,7 @@ void _XfGlyph_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
         case /* _get_body */ 10: {
             extern MarshalBuffer::ArgInfo _XfGlyph__get_body_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_body();
+            _arg[0].u_objref = _this->body();
             _b.reply(_XfGlyph__get_body_pinfo, _arg);
             break;
         }
@@ -363,7 +374,7 @@ void _XfGlyph_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             GlyphRef _p;
             _arg[1].u_addr = &_p;
             _b.receive(_XfGlyph__set_body_pinfo, _arg);
-            _this->_c_body(_p);
+            _this->body(_p);
             _b.reply(_XfGlyph__set_body_pinfo, _arg);
             break;
         }
@@ -373,7 +384,7 @@ void _XfGlyph_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             GlyphRef g;
             _arg[1].u_addr = &g;
             _b.receive(_XfGlyph_append_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_append(g);
+            _this->append(g);
             _b.reply(_XfGlyph_append_pinfo, _arg);
             break;
         }
@@ -383,7 +394,7 @@ void _XfGlyph_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             GlyphRef g;
             _arg[1].u_addr = &g;
             _b.receive(_XfGlyph_prepend_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_prepend(g);
+            _this->prepend(g);
             _b.reply(_XfGlyph_prepend_pinfo, _arg);
             break;
         }
@@ -407,40 +418,34 @@ void _XfGlyph_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             _b.reply(_XfGlyph_remove_parent_pinfo, _arg);
             break;
         }
-        case /* visit_children */ 16: {
-            extern MarshalBuffer::ArgInfo _XfGlyph_visit_children_pinfo;
-            MarshalBuffer::ArgValue _arg[2];
-            GlyphVisitorRef v;
-            _arg[1].u_addr = &v;
-            _b.receive(_XfGlyph_visit_children_pinfo, _arg);
-            _this->visit_children(v);
-            _b.reply(_XfGlyph_visit_children_pinfo, _arg);
+        case /* first_child_offset */ 16: {
+            extern MarshalBuffer::ArgInfo _XfGlyph_first_child_offset_pinfo;
+            MarshalBuffer::ArgValue _arg[1];
+            _arg[0].u_objref = _this->first_child_offset();
+            _b.reply(_XfGlyph_first_child_offset_pinfo, _arg);
             break;
         }
-        case /* visit_children_reversed */ 17: {
-            extern MarshalBuffer::ArgInfo _XfGlyph_visit_children_reversed_pinfo;
-            MarshalBuffer::ArgValue _arg[2];
-            GlyphVisitorRef v;
-            _arg[1].u_addr = &v;
-            _b.receive(_XfGlyph_visit_children_reversed_pinfo, _arg);
-            _this->visit_children_reversed(v);
-            _b.reply(_XfGlyph_visit_children_reversed_pinfo, _arg);
+        case /* last_child_offset */ 17: {
+            extern MarshalBuffer::ArgInfo _XfGlyph_last_child_offset_pinfo;
+            MarshalBuffer::ArgValue _arg[1];
+            _arg[0].u_objref = _this->last_child_offset();
+            _b.reply(_XfGlyph_last_child_offset_pinfo, _arg);
             break;
         }
-        case /* visit_parents */ 18: {
-            extern MarshalBuffer::ArgInfo _XfGlyph_visit_parents_pinfo;
+        case /* parent_offsets */ 18: {
+            extern MarshalBuffer::ArgInfo _XfGlyph_parent_offsets_pinfo;
             MarshalBuffer::ArgValue _arg[2];
-            GlyphVisitorRef v;
-            _arg[1].u_addr = &v;
-            _b.receive(_XfGlyph_visit_parents_pinfo, _arg);
-            _this->visit_parents(v);
-            _b.reply(_XfGlyph_visit_parents_pinfo, _arg);
+            Glyph::OffsetSeq parents;
+            _arg[1].u_addr = &parents;
+            _b.receive(_XfGlyph_parent_offsets_pinfo, _arg);
+            _this->parent_offsets(parents);
+            _b.reply(_XfGlyph_parent_offsets_pinfo, _arg);
             break;
         }
         case /* allocations */ 19: {
             extern MarshalBuffer::ArgInfo _XfGlyph_allocations_pinfo;
             MarshalBuffer::ArgValue _arg[2];
-            Glyph::AllocationInfoList a;
+            Glyph::AllocationInfoSeq a;
             _arg[1].u_addr = &a;
             _b.receive(_XfGlyph_allocations_pinfo, _arg);
             _this->allocations(a);
@@ -495,11 +500,17 @@ extern void _XfGlyph_AllocationInfo_put(
 extern void _XfGlyph_AllocationInfo_get(
     MarshalBuffer&, Glyph::AllocationInfo&
 );
-extern void _XfGlyph_AllocationInfoList_put(
-    MarshalBuffer&, const Glyph::AllocationInfoList&
+extern void _XfGlyph_AllocationInfoSeq_put(
+    MarshalBuffer&, const Glyph::AllocationInfoSeq&
 );
-extern void _XfGlyph_AllocationInfoList_get(
-    MarshalBuffer&, Glyph::AllocationInfoList&
+extern void _XfGlyph_AllocationInfoSeq_get(
+    MarshalBuffer&, Glyph::AllocationInfoSeq&
+);
+extern void _XfGlyph_OffsetSeq_put(
+    MarshalBuffer&, const Glyph::OffsetSeq&
+);
+extern void _XfGlyph_OffsetSeq_get(
+    MarshalBuffer&, Glyph::OffsetSeq&
 );
 extern void _XfGlyph_Requisition_put(
     MarshalBuffer&, const Glyph::Requisition&
@@ -513,22 +524,28 @@ extern void _XfGlyph_AllocationInfo_put(
 extern void _XfGlyph_AllocationInfo_get(
     MarshalBuffer&, Glyph::AllocationInfo&
 );
+extern void _XfGlyph_OffsetSeq_put(
+    MarshalBuffer&, const Glyph::OffsetSeq&
+);
+extern void _XfGlyph_OffsetSeq_get(
+    MarshalBuffer&, Glyph::OffsetSeq&
+);
 extern void _XfGlyph_AllocationInfo_put(
     MarshalBuffer&, const Glyph::AllocationInfo&
 );
 extern void _XfGlyph_AllocationInfo_get(
     MarshalBuffer&, Glyph::AllocationInfo&
 );
-extern void _XfGlyph_AllocationInfoList_put(
-    MarshalBuffer&, const Glyph::AllocationInfoList&
+extern void _XfGlyph_AllocationInfoSeq_put(
+    MarshalBuffer&, const Glyph::AllocationInfoSeq&
 );
-extern void _XfGlyph_AllocationInfoList_get(
-    MarshalBuffer&, Glyph::AllocationInfoList&
+extern void _XfGlyph_AllocationInfoSeq_get(
+    MarshalBuffer&, Glyph::AllocationInfoSeq&
 );
 
 GlyphStub::GlyphStub(Exchange* e) { exch_ = e; }
 GlyphStub::~GlyphStub() { }
-BaseObjectRef GlyphStub::_create(Exchange* e) {
+BaseObjectRef _XfGlyphStub_create(Exchange* e) {
     return (BaseObjectRef)(void*)new GlyphStub(e);
 }
 Exchange* GlyphStub::_exchange() {
@@ -536,60 +553,60 @@ Exchange* GlyphStub::_exchange() {
 }
 MarshalBuffer::ArgDesc _XfGlyph_clone_glyph_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfGlyph_clone_glyph_pfunc[] = {
-    &GlyphStub::_create
+    &_XfGlyphStub_create
 };
 MarshalBuffer::ArgInfo _XfGlyph_clone_glyph_pinfo = {
     &_XfGlyph_tid, 0, _XfGlyph_clone_glyph_pdesc, _XfGlyph_clone_glyph_pfunc
 };
-GlyphRef GlyphType::_c_clone_glyph() {
+GlyphRef Glyph::clone_glyph() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
     MarshalBuffer::ArgValue _arg[1];
     _b.invoke(this, _XfGlyph_clone_glyph_pinfo, _arg);
     return (GlyphRef)_arg[0].u_objref;
 }
-MarshalBuffer::ArgDesc _XfGlyph__get_style_pdesc[2] = { 1, 60 };
-MarshalBuffer::ArgMarshal _XfGlyph__get_style_pfunc[] = {
-    &StyleObjStub::_create
+MarshalBuffer::ArgDesc _XfGlyph__get_glyph_style_pdesc[2] = { 1, 60 };
+MarshalBuffer::ArgMarshal _XfGlyph__get_glyph_style_pfunc[] = {
+    &_XfStyleStub_create
 };
-MarshalBuffer::ArgInfo _XfGlyph__get_style_pinfo = {
-    &_XfGlyph_tid, 1, _XfGlyph__get_style_pdesc, _XfGlyph__get_style_pfunc
+MarshalBuffer::ArgInfo _XfGlyph__get_glyph_style_pinfo = {
+    &_XfGlyph_tid, 1, _XfGlyph__get_glyph_style_pdesc, _XfGlyph__get_glyph_style_pfunc
 };
-StyleObjRef GlyphType::_c_style() {
+StyleRef Glyph::glyph_style() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
     MarshalBuffer::ArgValue _arg[1];
-    _b.invoke(this, _XfGlyph__get_style_pinfo, _arg);
-    return (StyleObjRef)_arg[0].u_objref;
+    _b.invoke(this, _XfGlyph__get_glyph_style_pinfo, _arg);
+    return (StyleRef)_arg[0].u_objref;
 }
-MarshalBuffer::ArgDesc _XfGlyph__set_style_pdesc[3] = { 2, 4, 61 };
-MarshalBuffer::ArgMarshal _XfGlyph__set_style_pfunc[] = {
-    &StyleObjStub::_create,
+MarshalBuffer::ArgDesc _XfGlyph__set_glyph_style_pdesc[3] = { 2, 4, 61 };
+MarshalBuffer::ArgMarshal _XfGlyph__set_glyph_style_pfunc[] = {
+    &_XfStyleStub_create,
 
 };
-MarshalBuffer::ArgInfo _XfGlyph__set_style_pinfo = {
-    &_XfGlyph_tid, 2, _XfGlyph__set_style_pdesc, _XfGlyph__set_style_pfunc
+MarshalBuffer::ArgInfo _XfGlyph__set_glyph_style_pinfo = {
+    &_XfGlyph_tid, 2, _XfGlyph__set_glyph_style_pdesc, _XfGlyph__set_glyph_style_pfunc
 };
-void GlyphType::_c_style(StyleObj_in _p) {
+void Glyph::glyph_style(Style_in _p) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = _p;
-    _b.invoke(this, _XfGlyph__set_style_pinfo, _arg);
+    _b.invoke(this, _XfGlyph__set_glyph_style_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfGlyph_transform_pdesc[2] = { 1, 60 };
-MarshalBuffer::ArgMarshal _XfGlyph_transform_pfunc[] = {
-    &TransformObjStub::_create
+MarshalBuffer::ArgDesc _XfGlyph_transformation_pdesc[2] = { 1, 60 };
+MarshalBuffer::ArgMarshal _XfGlyph_transformation_pfunc[] = {
+    &_XfTransformStub_create
 };
-MarshalBuffer::ArgInfo _XfGlyph_transform_pinfo = {
-    &_XfGlyph_tid, 3, _XfGlyph_transform_pdesc, _XfGlyph_transform_pfunc
+MarshalBuffer::ArgInfo _XfGlyph_transformation_pinfo = {
+    &_XfGlyph_tid, 3, _XfGlyph_transformation_pdesc, _XfGlyph_transformation_pfunc
 };
-TransformObjRef GlyphType::_c_transform() {
+TransformRef Glyph::transformation() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
     MarshalBuffer::ArgValue _arg[1];
-    _b.invoke(this, _XfGlyph_transform_pinfo, _arg);
-    return (TransformObjRef)_arg[0].u_objref;
+    _b.invoke(this, _XfGlyph_transformation_pinfo, _arg);
+    return (TransformRef)_arg[0].u_objref;
 }
 MarshalBuffer::ArgDesc _XfGlyph_request_pdesc[3] = { 2, 4, 2 };
 MarshalBuffer::ArgMarshal _XfGlyph_request_pfunc[] = {
@@ -599,7 +616,7 @@ MarshalBuffer::ArgMarshal _XfGlyph_request_pfunc[] = {
 MarshalBuffer::ArgInfo _XfGlyph_request_pinfo = {
     &_XfGlyph_tid, 4, _XfGlyph_request_pdesc, _XfGlyph_request_pfunc
 };
-void GlyphType::request(Glyph::Requisition& r) {
+void Glyph::request(Glyph::Requisition& r) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -609,13 +626,13 @@ void GlyphType::request(Glyph::Requisition& r) {
 MarshalBuffer::ArgDesc _XfGlyph_extension_pdesc[4] = { 3, 4, 1, 61 };
 MarshalBuffer::ArgMarshal _XfGlyph_extension_pfunc[] = {
     &_XfGlyph_AllocationInfo_put, &_XfGlyph_AllocationInfo_get,
-    &RegionStub::_create,
+    &_XfRegionStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfGlyph_extension_pinfo = {
     &_XfGlyph_tid, 5, _XfGlyph_extension_pdesc, _XfGlyph_extension_pfunc
 };
-void GlyphType::extension(const Glyph::AllocationInfo& a, Region_in r) {
+void Glyph::extension(const Glyph::AllocationInfo& a, Region_in r) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
     MarshalBuffer::ArgValue _arg[3];
@@ -623,29 +640,30 @@ void GlyphType::extension(const Glyph::AllocationInfo& a, Region_in r) {
     _arg[2].u_objref = r;
     _b.invoke(this, _XfGlyph_extension_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfGlyph_shape_pdesc[2] = { 1, 60 };
+MarshalBuffer::ArgDesc _XfGlyph_shape_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfGlyph_shape_pfunc[] = {
-    &RegionStub::_create
+    &_XfRegionStub_create,
+
 };
 MarshalBuffer::ArgInfo _XfGlyph_shape_pinfo = {
     &_XfGlyph_tid, 6, _XfGlyph_shape_pdesc, _XfGlyph_shape_pfunc
 };
-RegionRef GlyphType::_c_shape() {
+void Glyph::shape(Region_in r) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
-    MarshalBuffer::ArgValue _arg[1];
+    MarshalBuffer::ArgValue _arg[2];
+    _arg[1].u_objref = r;
     _b.invoke(this, _XfGlyph_shape_pinfo, _arg);
-    return (RegionRef)_arg[0].u_objref;
 }
 MarshalBuffer::ArgDesc _XfGlyph_traverse_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfGlyph_traverse_pfunc[] = {
-    &GlyphTraversalStub::_create,
+    &_XfGlyphTraversalStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfGlyph_traverse_pinfo = {
     &_XfGlyph_tid, 7, _XfGlyph_traverse_pdesc, _XfGlyph_traverse_pfunc
 };
-void GlyphType::traverse(GlyphTraversal_in t) {
+void Glyph::traverse(GlyphTraversal_in t) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -654,13 +672,13 @@ void GlyphType::traverse(GlyphTraversal_in t) {
 }
 MarshalBuffer::ArgDesc _XfGlyph_draw_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfGlyph_draw_pfunc[] = {
-    &GlyphTraversalStub::_create,
+    &_XfGlyphTraversalStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfGlyph_draw_pinfo = {
     &_XfGlyph_tid, 8, _XfGlyph_draw_pdesc, _XfGlyph_draw_pfunc
 };
-void GlyphType::draw(GlyphTraversal_in t) {
+void Glyph::draw(GlyphTraversal_in t) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -669,13 +687,13 @@ void GlyphType::draw(GlyphTraversal_in t) {
 }
 MarshalBuffer::ArgDesc _XfGlyph_pick_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfGlyph_pick_pfunc[] = {
-    &GlyphTraversalStub::_create,
+    &_XfGlyphTraversalStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfGlyph_pick_pinfo = {
     &_XfGlyph_tid, 9, _XfGlyph_pick_pdesc, _XfGlyph_pick_pfunc
 };
-void GlyphType::pick(GlyphTraversal_in t) {
+void Glyph::pick(GlyphTraversal_in t) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -684,12 +702,12 @@ void GlyphType::pick(GlyphTraversal_in t) {
 }
 MarshalBuffer::ArgDesc _XfGlyph__get_body_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfGlyph__get_body_pfunc[] = {
-    &GlyphStub::_create
+    &_XfGlyphStub_create
 };
 MarshalBuffer::ArgInfo _XfGlyph__get_body_pinfo = {
     &_XfGlyph_tid, 10, _XfGlyph__get_body_pdesc, _XfGlyph__get_body_pfunc
 };
-GlyphRef GlyphType::_c_body() {
+GlyphRef Glyph::body() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -698,66 +716,58 @@ GlyphRef GlyphType::_c_body() {
 }
 MarshalBuffer::ArgDesc _XfGlyph__set_body_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfGlyph__set_body_pfunc[] = {
-    &GlyphStub::_create,
+    &_XfGlyphStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfGlyph__set_body_pinfo = {
     &_XfGlyph_tid, 11, _XfGlyph__set_body_pdesc, _XfGlyph__set_body_pfunc
 };
-void GlyphType::_c_body(Glyph_in _p) {
+void Glyph::body(Glyph_in _p) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = _p;
     _b.invoke(this, _XfGlyph__set_body_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfGlyph_append_pdesc[3] = { 2, 60, 61 };
+MarshalBuffer::ArgDesc _XfGlyph_append_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfGlyph_append_pfunc[] = {
-    &GlyphStub::_create,
-    &GlyphOffsetStub::_create
+    &_XfGlyphStub_create,
+
 };
 MarshalBuffer::ArgInfo _XfGlyph_append_pinfo = {
     &_XfGlyph_tid, 12, _XfGlyph_append_pdesc, _XfGlyph_append_pfunc
 };
-GlyphOffset_tmp GlyphType::append(Glyph_in g) {
-    return _c_append(g);
-}
-GlyphOffsetRef GlyphType::_c_append(Glyph_in g) {
+void Glyph::append(Glyph_in g) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = g;
     _b.invoke(this, _XfGlyph_append_pinfo, _arg);
-    return (GlyphOffsetRef)_arg[0].u_objref;
 }
-MarshalBuffer::ArgDesc _XfGlyph_prepend_pdesc[3] = { 2, 60, 61 };
+MarshalBuffer::ArgDesc _XfGlyph_prepend_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfGlyph_prepend_pfunc[] = {
-    &GlyphStub::_create,
-    &GlyphOffsetStub::_create
+    &_XfGlyphStub_create,
+
 };
 MarshalBuffer::ArgInfo _XfGlyph_prepend_pinfo = {
     &_XfGlyph_tid, 13, _XfGlyph_prepend_pdesc, _XfGlyph_prepend_pfunc
 };
-GlyphOffset_tmp GlyphType::prepend(Glyph_in g) {
-    return _c_prepend(g);
-}
-GlyphOffsetRef GlyphType::_c_prepend(Glyph_in g) {
+void Glyph::prepend(Glyph_in g) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = g;
     _b.invoke(this, _XfGlyph_prepend_pinfo, _arg);
-    return (GlyphOffsetRef)_arg[0].u_objref;
 }
 MarshalBuffer::ArgDesc _XfGlyph_add_parent_pdesc[3] = { 2, 36, 61 };
 MarshalBuffer::ArgMarshal _XfGlyph_add_parent_pfunc[] = {
-    &GlyphOffsetStub::_create,
+    &_XfGlyphOffsetStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfGlyph_add_parent_pinfo = {
     &_XfGlyph_tid, 14, _XfGlyph_add_parent_pdesc, _XfGlyph_add_parent_pfunc
 };
-Tag GlyphType::add_parent(GlyphOffset_in parent_offset) {
+Tag Glyph::add_parent(GlyphOffset_in parent_offset) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -769,67 +779,65 @@ MarshalBuffer::ArgDesc _XfGlyph_remove_parent_pdesc[3] = { 2, 4, 37 };
 MarshalBuffer::ArgInfo _XfGlyph_remove_parent_pinfo = {
     &_XfGlyph_tid, 15, _XfGlyph_remove_parent_pdesc, 0
 };
-void GlyphType::remove_parent(Tag add_tag) {
+void Glyph::remove_parent(Tag add_tag) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_unsigned_long = add_tag;
     _b.invoke(this, _XfGlyph_remove_parent_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfGlyph_visit_children_pdesc[3] = { 2, 4, 61 };
-MarshalBuffer::ArgMarshal _XfGlyph_visit_children_pfunc[] = {
-    &GlyphVisitorStub::_create,
-
+MarshalBuffer::ArgDesc _XfGlyph_first_child_offset_pdesc[2] = { 1, 60 };
+MarshalBuffer::ArgMarshal _XfGlyph_first_child_offset_pfunc[] = {
+    &_XfGlyphOffsetStub_create
 };
-MarshalBuffer::ArgInfo _XfGlyph_visit_children_pinfo = {
-    &_XfGlyph_tid, 16, _XfGlyph_visit_children_pdesc, _XfGlyph_visit_children_pfunc
+MarshalBuffer::ArgInfo _XfGlyph_first_child_offset_pinfo = {
+    &_XfGlyph_tid, 16, _XfGlyph_first_child_offset_pdesc, _XfGlyph_first_child_offset_pfunc
 };
-void GlyphType::visit_children(GlyphVisitor_in v) {
+GlyphOffsetRef Glyph::first_child_offset() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
-    MarshalBuffer::ArgValue _arg[2];
-    _arg[1].u_objref = v;
-    _b.invoke(this, _XfGlyph_visit_children_pinfo, _arg);
+    MarshalBuffer::ArgValue _arg[1];
+    _b.invoke(this, _XfGlyph_first_child_offset_pinfo, _arg);
+    return (GlyphOffsetRef)_arg[0].u_objref;
 }
-MarshalBuffer::ArgDesc _XfGlyph_visit_children_reversed_pdesc[3] = { 2, 4, 61 };
-MarshalBuffer::ArgMarshal _XfGlyph_visit_children_reversed_pfunc[] = {
-    &GlyphVisitorStub::_create,
-
+MarshalBuffer::ArgDesc _XfGlyph_last_child_offset_pdesc[2] = { 1, 60 };
+MarshalBuffer::ArgMarshal _XfGlyph_last_child_offset_pfunc[] = {
+    &_XfGlyphOffsetStub_create
 };
-MarshalBuffer::ArgInfo _XfGlyph_visit_children_reversed_pinfo = {
-    &_XfGlyph_tid, 17, _XfGlyph_visit_children_reversed_pdesc, _XfGlyph_visit_children_reversed_pfunc
+MarshalBuffer::ArgInfo _XfGlyph_last_child_offset_pinfo = {
+    &_XfGlyph_tid, 17, _XfGlyph_last_child_offset_pdesc, _XfGlyph_last_child_offset_pfunc
 };
-void GlyphType::visit_children_reversed(GlyphVisitor_in v) {
+GlyphOffsetRef Glyph::last_child_offset() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
-    MarshalBuffer::ArgValue _arg[2];
-    _arg[1].u_objref = v;
-    _b.invoke(this, _XfGlyph_visit_children_reversed_pinfo, _arg);
+    MarshalBuffer::ArgValue _arg[1];
+    _b.invoke(this, _XfGlyph_last_child_offset_pinfo, _arg);
+    return (GlyphOffsetRef)_arg[0].u_objref;
 }
-MarshalBuffer::ArgDesc _XfGlyph_visit_parents_pdesc[3] = { 2, 4, 61 };
-MarshalBuffer::ArgMarshal _XfGlyph_visit_parents_pfunc[] = {
-    &GlyphVisitorStub::_create,
+MarshalBuffer::ArgDesc _XfGlyph_parent_offsets_pdesc[3] = { 2, 4, 3 };
+MarshalBuffer::ArgMarshal _XfGlyph_parent_offsets_pfunc[] = {
+    &_XfGlyph_OffsetSeq_put, &_XfGlyph_OffsetSeq_get,
 
 };
-MarshalBuffer::ArgInfo _XfGlyph_visit_parents_pinfo = {
-    &_XfGlyph_tid, 18, _XfGlyph_visit_parents_pdesc, _XfGlyph_visit_parents_pfunc
+MarshalBuffer::ArgInfo _XfGlyph_parent_offsets_pinfo = {
+    &_XfGlyph_tid, 18, _XfGlyph_parent_offsets_pdesc, _XfGlyph_parent_offsets_pfunc
 };
-void GlyphType::visit_parents(GlyphVisitor_in v) {
+void Glyph::parent_offsets(OffsetSeq& parents) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
     MarshalBuffer::ArgValue _arg[2];
-    _arg[1].u_objref = v;
-    _b.invoke(this, _XfGlyph_visit_parents_pinfo, _arg);
+    _arg[1].u_addr = &parents;
+    _b.invoke(this, _XfGlyph_parent_offsets_pinfo, _arg);
 }
 MarshalBuffer::ArgDesc _XfGlyph_allocations_pdesc[3] = { 2, 4, 2 };
 MarshalBuffer::ArgMarshal _XfGlyph_allocations_pfunc[] = {
-    &_XfGlyph_AllocationInfoList_put, &_XfGlyph_AllocationInfoList_get,
+    &_XfGlyph_AllocationInfoSeq_put, &_XfGlyph_AllocationInfoSeq_get,
 
 };
 MarshalBuffer::ArgInfo _XfGlyph_allocations_pinfo = {
     &_XfGlyph_tid, 19, _XfGlyph_allocations_pdesc, _XfGlyph_allocations_pfunc
 };
-void GlyphType::allocations(Glyph::AllocationInfoList& a) {
+void Glyph::allocations(Glyph::AllocationInfoSeq& a) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -840,7 +848,7 @@ MarshalBuffer::ArgDesc _XfGlyph_need_redraw_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfGlyph_need_redraw_pinfo = {
     &_XfGlyph_tid, 20, _XfGlyph_need_redraw_pdesc, 0
 };
-void GlyphType::need_redraw() {
+void Glyph::need_redraw() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -848,13 +856,13 @@ void GlyphType::need_redraw() {
 }
 MarshalBuffer::ArgDesc _XfGlyph_need_redraw_region_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfGlyph_need_redraw_region_pfunc[] = {
-    &RegionStub::_create,
+    &_XfRegionStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfGlyph_need_redraw_region_pinfo = {
     &_XfGlyph_tid, 21, _XfGlyph_need_redraw_region_pdesc, _XfGlyph_need_redraw_region_pfunc
 };
-void GlyphType::need_redraw_region(Region_in r) {
+void Glyph::need_redraw_region(Region_in r) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -865,7 +873,7 @@ MarshalBuffer::ArgDesc _XfGlyph_need_resize_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfGlyph_need_resize_pinfo = {
     &_XfGlyph_tid, 22, _XfGlyph_need_resize_pdesc, 0
 };
-void GlyphType::need_resize() {
+void Glyph::need_resize() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -873,13 +881,13 @@ void GlyphType::need_resize() {
 }
 MarshalBuffer::ArgDesc _XfGlyph_restore_trail_pdesc[3] = { 2, 12, 61 };
 MarshalBuffer::ArgMarshal _XfGlyph_restore_trail_pfunc[] = {
-    &GlyphTraversalStub::_create,
+    &_XfGlyphTraversalStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfGlyph_restore_trail_pinfo = {
     &_XfGlyph_tid, 23, _XfGlyph_restore_trail_pdesc, _XfGlyph_restore_trail_pfunc
 };
-Boolean GlyphType::restore_trail(GlyphTraversal_in t) {
+Boolean Glyph::restore_trail(GlyphTraversal_in t) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyph_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -915,27 +923,42 @@ void _XfGlyph_Requisition_get(MarshalBuffer& _b, Glyph::Requisition& _this) {
 }
 void _XfGlyph_AllocationInfo_put(MarshalBuffer& _b, const Glyph::AllocationInfo& _this) {
     _b.put_object(_this.allocation);
-    _b.put_object(_this.transform);
-    _b.put_object(_this.damage);
+    _b.put_object(_this.transformation);
+    _b.put_object(_this.damaged);
 }
 void _XfGlyph_AllocationInfo_get(MarshalBuffer& _b, Glyph::AllocationInfo& _this) {
-    _this.allocation = (RegionRef)_b.get_object(&RegionStub::_create);
-    _this.transform = (TransformObjRef)_b.get_object(&TransformObjStub::_create);
-    _this.damage = (DamageObjRef)_b.get_object(&DamageObjStub::_create);
+    _this.allocation = (RegionRef)_b.get_object(&_XfRegionStub_create);
+    _this.transformation = (TransformRef)_b.get_object(&_XfTransformStub_create);
+    _this.damaged = (DamageRef)_b.get_object(&_XfDamageStub_create);
 }
-void _XfGlyph_AllocationInfoList_put(MarshalBuffer& _b, const Glyph::AllocationInfoList& _this) {
+void _XfGlyph_AllocationInfoSeq_put(MarshalBuffer& _b, const Glyph::AllocationInfoSeq& _this) {
     long _i;
     _b.put_seq_hdr(&_this);
     for (_i = 0; _i < _this._length; _i++) {
         _XfGlyph_AllocationInfo_put(_b, _this._buffer[_i]);
     }
 }
-void _XfGlyph_AllocationInfoList_get(MarshalBuffer& _b, Glyph::AllocationInfoList& _this) {
+void _XfGlyph_AllocationInfoSeq_get(MarshalBuffer& _b, Glyph::AllocationInfoSeq& _this) {
     Long _i;
     _b.get_seq_hdr(&_this);
     _this._buffer = (_this._maximum == 0) ? 0 : new Glyph::AllocationInfo[_this._maximum];
     for (_i = 0; _i < _this._length; _i++) {
         _XfGlyph_AllocationInfo_get(_b, _this._buffer[_i]);
+    }
+}
+void _XfGlyph_OffsetSeq_put(MarshalBuffer& _b, const Glyph::OffsetSeq& _this) {
+    long _i;
+    _b.put_seq_hdr(&_this);
+    for (_i = 0; _i < _this._length; _i++) {
+        _b.put_object(_this._buffer[_i]);
+    }
+}
+void _XfGlyph_OffsetSeq_get(MarshalBuffer& _b, Glyph::OffsetSeq& _this) {
+    Long _i;
+    _b.get_seq_hdr(&_this);
+    _this._buffer = (_this._maximum == 0) ? 0 : new GlyphOffsetRef[_this._maximum];
+    for (_i = 0; _i < _this._length; _i++) {
+        _this._buffer[_i] = (GlyphOffsetRef)_b.get_object(&_XfGlyphOffsetStub_create);
     }
 }
 //+
@@ -962,17 +985,19 @@ TypeObjId GlyphImpl::_tid() { return _XfGlyphImpl_tid; }
 //+
 
 //+ GlyphOffset::%init,type+dii,client
-GlyphOffsetType::GlyphOffsetType() { }
-GlyphOffsetType::~GlyphOffsetType() { }
-void* GlyphOffsetType::_this() { return this; }
+GlyphOffset::GlyphOffset() { }
+GlyphOffset::~GlyphOffset() { }
+void* GlyphOffset::_this() { return this; }
 
 extern TypeObj_Descriptor _Xfvoid_type;
 
 TypeObj_OpData _XfGlyphOffset_methods[] = {
     { "parent", &_XfGlyph_type, 0 },
     { "child", &_XfGlyph_type, 0 },
+    { "next_child", &_XfGlyphOffset_type, 0 },
+    { "prev_child", &_XfGlyphOffset_type, 0 },
     { "allocations", &_Xfvoid_type, 1 },
-    { "insert", &_XfGlyphOffset_type, 1 },
+    { "insert", &_Xfvoid_type, 1 },
     { "replace", &_Xfvoid_type, 1 },
     { "remove", &_Xfvoid_type, 0 },
     { "notify", &_Xfvoid_type, 0 },
@@ -982,7 +1007,7 @@ TypeObj_OpData _XfGlyphOffset_methods[] = {
 };
 TypeObj_ParamData _XfGlyphOffset_params[] = {
     /* allocations */
-        { "a", 1, &_XfGlyph_AllocationInfoList_type },
+        { "a", 1, &_XfGlyph_AllocationInfoSeq_type },
     /* insert */
         { "g", 0, &_XfGlyph_type },
     /* replace */
@@ -1007,10 +1032,10 @@ TypeObj_Descriptor _XfGlyphOffset_type = {
 
 GlyphOffsetRef GlyphOffset::_narrow(BaseObjectRef o) {
     return (GlyphOffsetRef)_BaseObject_tnarrow(
-        o, _XfGlyphOffset_tid, &GlyphOffsetStub::_create
+        o, _XfGlyphOffset_tid, &_XfGlyphOffsetStub_create
     );
 }
-TypeObjId GlyphOffsetType::_tid() { return _XfGlyphOffset_tid; }
+TypeObjId GlyphOffset::_tid() { return _XfGlyphOffset_tid; }
 void _XfGlyphOffset_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
     extern TypeObjId _XfGlyphOffset_tid;
     GlyphOffsetRef _this = (GlyphOffsetRef)_BaseObject_tcast(_object, _XfGlyphOffset_tid);
@@ -1018,38 +1043,52 @@ void _XfGlyphOffset_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) 
         case /* parent */ 0: {
             extern MarshalBuffer::ArgInfo _XfGlyphOffset_parent_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_parent();
+            _arg[0].u_objref = _this->parent();
             _b.reply(_XfGlyphOffset_parent_pinfo, _arg);
             break;
         }
         case /* child */ 1: {
             extern MarshalBuffer::ArgInfo _XfGlyphOffset_child_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_child();
+            _arg[0].u_objref = _this->child();
             _b.reply(_XfGlyphOffset_child_pinfo, _arg);
             break;
         }
-        case /* allocations */ 2: {
+        case /* next_child */ 2: {
+            extern MarshalBuffer::ArgInfo _XfGlyphOffset_next_child_pinfo;
+            MarshalBuffer::ArgValue _arg[1];
+            _arg[0].u_objref = _this->next_child();
+            _b.reply(_XfGlyphOffset_next_child_pinfo, _arg);
+            break;
+        }
+        case /* prev_child */ 3: {
+            extern MarshalBuffer::ArgInfo _XfGlyphOffset_prev_child_pinfo;
+            MarshalBuffer::ArgValue _arg[1];
+            _arg[0].u_objref = _this->prev_child();
+            _b.reply(_XfGlyphOffset_prev_child_pinfo, _arg);
+            break;
+        }
+        case /* allocations */ 4: {
             extern MarshalBuffer::ArgInfo _XfGlyphOffset_allocations_pinfo;
             MarshalBuffer::ArgValue _arg[2];
-            Glyph::AllocationInfoList a;
+            Glyph::AllocationInfoSeq a;
             _arg[1].u_addr = &a;
             _b.receive(_XfGlyphOffset_allocations_pinfo, _arg);
             _this->allocations(a);
             _b.reply(_XfGlyphOffset_allocations_pinfo, _arg);
             break;
         }
-        case /* insert */ 3: {
+        case /* insert */ 5: {
             extern MarshalBuffer::ArgInfo _XfGlyphOffset_insert_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             GlyphRef g;
             _arg[1].u_addr = &g;
             _b.receive(_XfGlyphOffset_insert_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_insert(g);
+            _this->insert(g);
             _b.reply(_XfGlyphOffset_insert_pinfo, _arg);
             break;
         }
-        case /* replace */ 4: {
+        case /* replace */ 6: {
             extern MarshalBuffer::ArgInfo _XfGlyphOffset_replace_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             GlyphRef g;
@@ -1059,21 +1098,21 @@ void _XfGlyphOffset_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) 
             _b.reply(_XfGlyphOffset_replace_pinfo, _arg);
             break;
         }
-        case /* remove */ 5: {
+        case /* remove */ 7: {
             extern MarshalBuffer::ArgInfo _XfGlyphOffset_remove_pinfo;
             MarshalBuffer::ArgValue _arg[1];
             _this->remove();
             _b.reply(_XfGlyphOffset_remove_pinfo, _arg);
             break;
         }
-        case /* notify */ 6: {
+        case /* notify */ 8: {
             extern MarshalBuffer::ArgInfo _XfGlyphOffset_notify_pinfo;
             MarshalBuffer::ArgValue _arg[1];
             _this->notify();
             _b.reply(_XfGlyphOffset_notify_pinfo, _arg);
             break;
         }
-        case /* visit_trail */ 7: {
+        case /* visit_trail */ 9: {
             extern MarshalBuffer::ArgInfo _XfGlyphOffset_visit_trail_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             GlyphTraversalRef t;
@@ -1083,7 +1122,7 @@ void _XfGlyphOffset_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) 
             _b.reply(_XfGlyphOffset_visit_trail_pinfo, _arg);
             break;
         }
-        case /* child_allocate */ 8: {
+        case /* child_allocate */ 10: {
             extern MarshalBuffer::ArgInfo _XfGlyphOffset_child_allocate_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             Glyph::AllocationInfo a;
@@ -1101,11 +1140,11 @@ extern void _XfGlyph_AllocationInfo_put(
 extern void _XfGlyph_AllocationInfo_get(
     MarshalBuffer&, Glyph::AllocationInfo&
 );
-extern void _XfGlyph_AllocationInfoList_put(
-    MarshalBuffer&, const Glyph::AllocationInfoList&
+extern void _XfGlyph_AllocationInfoSeq_put(
+    MarshalBuffer&, const Glyph::AllocationInfoSeq&
 );
-extern void _XfGlyph_AllocationInfoList_get(
-    MarshalBuffer&, Glyph::AllocationInfoList&
+extern void _XfGlyph_AllocationInfoSeq_get(
+    MarshalBuffer&, Glyph::AllocationInfoSeq&
 );
 extern void _XfGlyph_AllocationInfo_put(
     MarshalBuffer&, const Glyph::AllocationInfo&
@@ -1116,7 +1155,7 @@ extern void _XfGlyph_AllocationInfo_get(
 
 GlyphOffsetStub::GlyphOffsetStub(Exchange* e) { exch_ = e; }
 GlyphOffsetStub::~GlyphOffsetStub() { }
-BaseObjectRef GlyphOffsetStub::_create(Exchange* e) {
+BaseObjectRef _XfGlyphOffsetStub_create(Exchange* e) {
     return (BaseObjectRef)(void*)new GlyphOffsetStub(e);
 }
 Exchange* GlyphOffsetStub::_exchange() {
@@ -1124,12 +1163,12 @@ Exchange* GlyphOffsetStub::_exchange() {
 }
 MarshalBuffer::ArgDesc _XfGlyphOffset_parent_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfGlyphOffset_parent_pfunc[] = {
-    &GlyphStub::_create
+    &_XfGlyphStub_create
 };
 MarshalBuffer::ArgInfo _XfGlyphOffset_parent_pinfo = {
     &_XfGlyphOffset_tid, 0, _XfGlyphOffset_parent_pdesc, _XfGlyphOffset_parent_pfunc
 };
-GlyphRef GlyphOffsetType::_c_parent() {
+GlyphRef GlyphOffset::parent() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphOffset_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1138,58 +1177,85 @@ GlyphRef GlyphOffsetType::_c_parent() {
 }
 MarshalBuffer::ArgDesc _XfGlyphOffset_child_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfGlyphOffset_child_pfunc[] = {
-    &GlyphStub::_create
+    &_XfGlyphStub_create
 };
 MarshalBuffer::ArgInfo _XfGlyphOffset_child_pinfo = {
     &_XfGlyphOffset_tid, 1, _XfGlyphOffset_child_pdesc, _XfGlyphOffset_child_pfunc
 };
-GlyphRef GlyphOffsetType::_c_child() {
+GlyphRef GlyphOffset::child() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphOffset_tid;
     MarshalBuffer::ArgValue _arg[1];
     _b.invoke(this, _XfGlyphOffset_child_pinfo, _arg);
     return (GlyphRef)_arg[0].u_objref;
 }
+MarshalBuffer::ArgDesc _XfGlyphOffset_next_child_pdesc[2] = { 1, 60 };
+MarshalBuffer::ArgMarshal _XfGlyphOffset_next_child_pfunc[] = {
+    &_XfGlyphOffsetStub_create
+};
+MarshalBuffer::ArgInfo _XfGlyphOffset_next_child_pinfo = {
+    &_XfGlyphOffset_tid, 2, _XfGlyphOffset_next_child_pdesc, _XfGlyphOffset_next_child_pfunc
+};
+GlyphOffsetRef GlyphOffset::next_child() {
+    MarshalBuffer _b;
+    extern TypeObjId _XfGlyphOffset_tid;
+    MarshalBuffer::ArgValue _arg[1];
+    _b.invoke(this, _XfGlyphOffset_next_child_pinfo, _arg);
+    return (GlyphOffsetRef)_arg[0].u_objref;
+}
+MarshalBuffer::ArgDesc _XfGlyphOffset_prev_child_pdesc[2] = { 1, 60 };
+MarshalBuffer::ArgMarshal _XfGlyphOffset_prev_child_pfunc[] = {
+    &_XfGlyphOffsetStub_create
+};
+MarshalBuffer::ArgInfo _XfGlyphOffset_prev_child_pinfo = {
+    &_XfGlyphOffset_tid, 3, _XfGlyphOffset_prev_child_pdesc, _XfGlyphOffset_prev_child_pfunc
+};
+GlyphOffsetRef GlyphOffset::prev_child() {
+    MarshalBuffer _b;
+    extern TypeObjId _XfGlyphOffset_tid;
+    MarshalBuffer::ArgValue _arg[1];
+    _b.invoke(this, _XfGlyphOffset_prev_child_pinfo, _arg);
+    return (GlyphOffsetRef)_arg[0].u_objref;
+}
 MarshalBuffer::ArgDesc _XfGlyphOffset_allocations_pdesc[3] = { 2, 4, 2 };
 MarshalBuffer::ArgMarshal _XfGlyphOffset_allocations_pfunc[] = {
-    &_XfGlyph_AllocationInfoList_put, &_XfGlyph_AllocationInfoList_get,
+    &_XfGlyph_AllocationInfoSeq_put, &_XfGlyph_AllocationInfoSeq_get,
 
 };
 MarshalBuffer::ArgInfo _XfGlyphOffset_allocations_pinfo = {
-    &_XfGlyphOffset_tid, 2, _XfGlyphOffset_allocations_pdesc, _XfGlyphOffset_allocations_pfunc
+    &_XfGlyphOffset_tid, 4, _XfGlyphOffset_allocations_pdesc, _XfGlyphOffset_allocations_pfunc
 };
-void GlyphOffsetType::allocations(Glyph::AllocationInfoList& a) {
+void GlyphOffset::allocations(Glyph::AllocationInfoSeq& a) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphOffset_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_addr = &a;
     _b.invoke(this, _XfGlyphOffset_allocations_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfGlyphOffset_insert_pdesc[3] = { 2, 60, 61 };
+MarshalBuffer::ArgDesc _XfGlyphOffset_insert_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfGlyphOffset_insert_pfunc[] = {
-    &GlyphStub::_create,
-    &GlyphOffsetStub::_create
+    &_XfGlyphStub_create,
+
 };
 MarshalBuffer::ArgInfo _XfGlyphOffset_insert_pinfo = {
-    &_XfGlyphOffset_tid, 3, _XfGlyphOffset_insert_pdesc, _XfGlyphOffset_insert_pfunc
+    &_XfGlyphOffset_tid, 5, _XfGlyphOffset_insert_pdesc, _XfGlyphOffset_insert_pfunc
 };
-GlyphOffsetRef GlyphOffsetType::_c_insert(Glyph_in g) {
+void GlyphOffset::insert(Glyph_in g) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphOffset_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = g;
     _b.invoke(this, _XfGlyphOffset_insert_pinfo, _arg);
-    return (GlyphOffsetRef)_arg[0].u_objref;
 }
 MarshalBuffer::ArgDesc _XfGlyphOffset_replace_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfGlyphOffset_replace_pfunc[] = {
-    &GlyphStub::_create,
+    &_XfGlyphStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfGlyphOffset_replace_pinfo = {
-    &_XfGlyphOffset_tid, 4, _XfGlyphOffset_replace_pdesc, _XfGlyphOffset_replace_pfunc
+    &_XfGlyphOffset_tid, 6, _XfGlyphOffset_replace_pdesc, _XfGlyphOffset_replace_pfunc
 };
-void GlyphOffsetType::replace(Glyph_in g) {
+void GlyphOffset::replace(Glyph_in g) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphOffset_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1198,9 +1264,9 @@ void GlyphOffsetType::replace(Glyph_in g) {
 }
 MarshalBuffer::ArgDesc _XfGlyphOffset_remove_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfGlyphOffset_remove_pinfo = {
-    &_XfGlyphOffset_tid, 5, _XfGlyphOffset_remove_pdesc, 0
+    &_XfGlyphOffset_tid, 7, _XfGlyphOffset_remove_pdesc, 0
 };
-void GlyphOffsetType::remove() {
+void GlyphOffset::remove() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphOffset_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1208,9 +1274,9 @@ void GlyphOffsetType::remove() {
 }
 MarshalBuffer::ArgDesc _XfGlyphOffset_notify_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfGlyphOffset_notify_pinfo = {
-    &_XfGlyphOffset_tid, 6, _XfGlyphOffset_notify_pdesc, 0
+    &_XfGlyphOffset_tid, 8, _XfGlyphOffset_notify_pdesc, 0
 };
-void GlyphOffsetType::notify() {
+void GlyphOffset::notify() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphOffset_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1218,13 +1284,13 @@ void GlyphOffsetType::notify() {
 }
 MarshalBuffer::ArgDesc _XfGlyphOffset_visit_trail_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfGlyphOffset_visit_trail_pfunc[] = {
-    &GlyphTraversalStub::_create,
+    &_XfGlyphTraversalStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfGlyphOffset_visit_trail_pinfo = {
-    &_XfGlyphOffset_tid, 7, _XfGlyphOffset_visit_trail_pdesc, _XfGlyphOffset_visit_trail_pfunc
+    &_XfGlyphOffset_tid, 9, _XfGlyphOffset_visit_trail_pdesc, _XfGlyphOffset_visit_trail_pfunc
 };
-void GlyphOffsetType::visit_trail(GlyphTraversal_in t) {
+void GlyphOffset::visit_trail(GlyphTraversal_in t) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphOffset_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1237,9 +1303,9 @@ MarshalBuffer::ArgMarshal _XfGlyphOffset_child_allocate_pfunc[] = {
 
 };
 MarshalBuffer::ArgInfo _XfGlyphOffset_child_allocate_pinfo = {
-    &_XfGlyphOffset_tid, 8, _XfGlyphOffset_child_allocate_pdesc, _XfGlyphOffset_child_allocate_pfunc
+    &_XfGlyphOffset_tid, 10, _XfGlyphOffset_child_allocate_pdesc, _XfGlyphOffset_child_allocate_pfunc
 };
-void GlyphOffsetType::child_allocate(Glyph::AllocationInfo& a) {
+void GlyphOffset::child_allocate(Glyph::AllocationInfo& a) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphOffset_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1249,20 +1315,19 @@ void GlyphOffsetType::child_allocate(Glyph::AllocationInfo& a) {
 //+
 
 //+ GlyphTraversal::%init,type+dii,client
-GlyphTraversalType::GlyphTraversalType() { }
-GlyphTraversalType::~GlyphTraversalType() { }
-void* GlyphTraversalType::_this() { return this; }
+GlyphTraversal::GlyphTraversal() { }
+GlyphTraversal::~GlyphTraversal() { }
+void* GlyphTraversal::_this() { return this; }
 
 extern TypeObj_Descriptor _XfGlyphTraversal_Operation_type, _XfViewer_type, 
-    _XfPainterObj_type, _XfDisplayObj_type, _XfScreenObj_type, _XfVertex_type, 
-    _XfAxis_type, _XfRegion_BoundingSpan_type, _XfDamageObj_type, 
-    _XfLong_type;
+    _XfPainter_type, _XfDisplay_type, _XfScreen_type, _XfVertex_type, 
+    _XfDamage_type, _XfLong_type;
 
 TypeObj_OpData _XfGlyphTraversal_methods[] = {
     { "op", &_XfGlyphTraversal_Operation_type, 0 },
     { "swap_op", &_XfGlyphTraversal_Operation_type, 1 },
-    { "begin_trail", &_Xfvoid_type, 1 },
-    { "end_trail", &_Xfvoid_type, 0 },
+    { "begin_viewer", &_Xfvoid_type, 1 },
+    { "end_viewer", &_Xfvoid_type, 0 },
     { "traverse_child", &_Xfvoid_type, 2 },
     { "visit", &_Xfvoid_type, 0 },
     { "trail", &_XfGlyphTraversal_type, 0 },
@@ -1271,16 +1336,15 @@ TypeObj_OpData _XfGlyphTraversal_methods[] = {
     { "current_viewer", &_XfViewer_type, 0 },
     { "forward", &_XfBoolean_type, 0 },
     { "backward", &_XfBoolean_type, 0 },
-    { "_get_painter", &_XfPainterObj_type, 0 },
-    { "_set_painter", &_Xfvoid_type, 1 },
-    { "display", &_XfDisplayObj_type, 0 },
-    { "screen", &_XfScreenObj_type, 0 },
+    { "_get_current_painter", &_XfPainter_type, 0 },
+    { "_set_current_painter", &_Xfvoid_type, 1 },
+    { "current_display", &_XfDisplay_type, 0 },
+    { "current_screen", &_XfScreen_type, 0 },
     { "allocation", &_XfRegion_type, 0 },
     { "bounds", &_XfBoolean_type, 3 },
-    { "origin", &_XfBoolean_type, 1 },
-    { "span", &_XfBoolean_type, 2 },
-    { "transform", &_XfTransformObj_type, 0 },
-    { "damage", &_XfDamageObj_type, 0 },
+    { "allocation_is_visible", &_XfBoolean_type, 0 },
+    { "current_transform", &_XfTransform_type, 0 },
+    { "damaged", &_XfDamage_type, 0 },
     { "hit", &_Xfvoid_type, 0 },
     { "_get_hit_info", &_XfLong_type, 0 },
     { "_set_hit_info", &_Xfvoid_type, 1 },
@@ -1291,22 +1355,17 @@ TypeObj_OpData _XfGlyphTraversal_methods[] = {
 TypeObj_ParamData _XfGlyphTraversal_params[] = {
     /* swap_op */
         { "op", 0, &_XfGlyphTraversal_Operation_type },
-    /* begin_trail */
+    /* begin_viewer */
         { "v", 0, &_XfViewer_type },
     /* traverse_child */
         { "o", 0, &_XfGlyphOffset_type },
         { "allocation", 0, &_XfRegion_type },
-    /* painter */
-        { "_p", 0, &_XfPainterObj_type },
+    /* current_painter */
+        { "_p", 0, &_XfPainter_type },
     /* bounds */
         { "lower", 1, &_XfVertex_type },
         { "upper", 1, &_XfVertex_type },
         { "origin", 1, &_XfVertex_type },
-    /* origin */
-        { "origin", 1, &_XfVertex_type },
-    /* span */
-        { "a", 0, &_XfAxis_type },
-        { "s", 1, &_XfRegion_BoundingSpan_type },
     /* hit_info */
         { "_p", 0, &_XfLong_type }
 };
@@ -1325,10 +1384,10 @@ TypeObj_Descriptor _XfGlyphTraversal_type = {
 
 GlyphTraversalRef GlyphTraversal::_narrow(BaseObjectRef o) {
     return (GlyphTraversalRef)_BaseObject_tnarrow(
-        o, _XfGlyphTraversal_tid, &GlyphTraversalStub::_create
+        o, _XfGlyphTraversal_tid, &_XfGlyphTraversalStub_create
     );
 }
-TypeObjId GlyphTraversalType::_tid() { return _XfGlyphTraversal_tid; }
+TypeObjId GlyphTraversal::_tid() { return _XfGlyphTraversal_tid; }
 void _XfGlyphTraversal_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
     extern TypeObjId _XfGlyphTraversal_tid;
     GlyphTraversalRef _this = (GlyphTraversalRef)_BaseObject_tcast(_object, _XfGlyphTraversal_tid);
@@ -1350,21 +1409,21 @@ void _XfGlyphTraversal_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _
             _b.reply(_XfGlyphTraversal_swap_op_pinfo, _arg);
             break;
         }
-        case /* begin_trail */ 2: {
-            extern MarshalBuffer::ArgInfo _XfGlyphTraversal_begin_trail_pinfo;
+        case /* begin_viewer */ 2: {
+            extern MarshalBuffer::ArgInfo _XfGlyphTraversal_begin_viewer_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             ViewerRef v;
             _arg[1].u_addr = &v;
-            _b.receive(_XfGlyphTraversal_begin_trail_pinfo, _arg);
-            _this->begin_trail(v);
-            _b.reply(_XfGlyphTraversal_begin_trail_pinfo, _arg);
+            _b.receive(_XfGlyphTraversal_begin_viewer_pinfo, _arg);
+            _this->begin_viewer(v);
+            _b.reply(_XfGlyphTraversal_begin_viewer_pinfo, _arg);
             break;
         }
-        case /* end_trail */ 3: {
-            extern MarshalBuffer::ArgInfo _XfGlyphTraversal_end_trail_pinfo;
+        case /* end_viewer */ 3: {
+            extern MarshalBuffer::ArgInfo _XfGlyphTraversal_end_viewer_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _this->end_trail();
-            _b.reply(_XfGlyphTraversal_end_trail_pinfo, _arg);
+            _this->end_viewer();
+            _b.reply(_XfGlyphTraversal_end_viewer_pinfo, _arg);
             break;
         }
         case /* traverse_child */ 4: {
@@ -1389,28 +1448,28 @@ void _XfGlyphTraversal_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _
         case /* trail */ 6: {
             extern MarshalBuffer::ArgInfo _XfGlyphTraversal_trail_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_trail();
+            _arg[0].u_objref = _this->trail();
             _b.reply(_XfGlyphTraversal_trail_pinfo, _arg);
             break;
         }
         case /* current_glyph */ 7: {
             extern MarshalBuffer::ArgInfo _XfGlyphTraversal_current_glyph_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_current_glyph();
+            _arg[0].u_objref = _this->current_glyph();
             _b.reply(_XfGlyphTraversal_current_glyph_pinfo, _arg);
             break;
         }
         case /* current_offset */ 8: {
             extern MarshalBuffer::ArgInfo _XfGlyphTraversal_current_offset_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_current_offset();
+            _arg[0].u_objref = _this->current_offset();
             _b.reply(_XfGlyphTraversal_current_offset_pinfo, _arg);
             break;
         }
         case /* current_viewer */ 9: {
             extern MarshalBuffer::ArgInfo _XfGlyphTraversal_current_viewer_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_current_viewer();
+            _arg[0].u_objref = _this->current_viewer();
             _b.reply(_XfGlyphTraversal_current_viewer_pinfo, _arg);
             break;
         }
@@ -1428,41 +1487,41 @@ void _XfGlyphTraversal_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _
             _b.reply(_XfGlyphTraversal_backward_pinfo, _arg);
             break;
         }
-        case /* _get_painter */ 12: {
-            extern MarshalBuffer::ArgInfo _XfGlyphTraversal__get_painter_pinfo;
+        case /* _get_current_painter */ 12: {
+            extern MarshalBuffer::ArgInfo _XfGlyphTraversal__get_current_painter_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_painter();
-            _b.reply(_XfGlyphTraversal__get_painter_pinfo, _arg);
+            _arg[0].u_objref = _this->current_painter();
+            _b.reply(_XfGlyphTraversal__get_current_painter_pinfo, _arg);
             break;
         }
-        case /* _set_painter */ 13: {
-            extern MarshalBuffer::ArgInfo _XfGlyphTraversal__set_painter_pinfo;
+        case /* _set_current_painter */ 13: {
+            extern MarshalBuffer::ArgInfo _XfGlyphTraversal__set_current_painter_pinfo;
             MarshalBuffer::ArgValue _arg[2];
-            PainterObjRef _p;
+            PainterRef _p;
             _arg[1].u_addr = &_p;
-            _b.receive(_XfGlyphTraversal__set_painter_pinfo, _arg);
-            _this->_c_painter(_p);
-            _b.reply(_XfGlyphTraversal__set_painter_pinfo, _arg);
+            _b.receive(_XfGlyphTraversal__set_current_painter_pinfo, _arg);
+            _this->current_painter(_p);
+            _b.reply(_XfGlyphTraversal__set_current_painter_pinfo, _arg);
             break;
         }
-        case /* display */ 14: {
-            extern MarshalBuffer::ArgInfo _XfGlyphTraversal_display_pinfo;
+        case /* current_display */ 14: {
+            extern MarshalBuffer::ArgInfo _XfGlyphTraversal_current_display_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_display();
-            _b.reply(_XfGlyphTraversal_display_pinfo, _arg);
+            _arg[0].u_objref = _this->current_display();
+            _b.reply(_XfGlyphTraversal_current_display_pinfo, _arg);
             break;
         }
-        case /* screen */ 15: {
-            extern MarshalBuffer::ArgInfo _XfGlyphTraversal_screen_pinfo;
+        case /* current_screen */ 15: {
+            extern MarshalBuffer::ArgInfo _XfGlyphTraversal_current_screen_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_screen();
-            _b.reply(_XfGlyphTraversal_screen_pinfo, _arg);
+            _arg[0].u_objref = _this->current_screen();
+            _b.reply(_XfGlyphTraversal_current_screen_pinfo, _arg);
             break;
         }
         case /* allocation */ 16: {
             extern MarshalBuffer::ArgInfo _XfGlyphTraversal_allocation_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_allocation();
+            _arg[0].u_objref = _this->allocation();
             _b.reply(_XfGlyphTraversal_allocation_pinfo, _arg);
             break;
         }
@@ -1480,57 +1539,42 @@ void _XfGlyphTraversal_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _
             _b.reply(_XfGlyphTraversal_bounds_pinfo, _arg);
             break;
         }
-        case /* origin */ 18: {
-            extern MarshalBuffer::ArgInfo _XfGlyphTraversal_origin_pinfo;
-            MarshalBuffer::ArgValue _arg[2];
-            Vertex origin;
-            _arg[1].u_addr = &origin;
-            _b.receive(_XfGlyphTraversal_origin_pinfo, _arg);
-            _arg[0].u_boolean = _this->origin(origin);
-            _b.reply(_XfGlyphTraversal_origin_pinfo, _arg);
-            break;
-        }
-        case /* span */ 19: {
-            extern MarshalBuffer::ArgInfo _XfGlyphTraversal_span_pinfo;
-            MarshalBuffer::ArgValue _arg[3];
-            Axis a;
-            _arg[1].u_addr = &a;
-            Region::BoundingSpan s;
-            _arg[2].u_addr = &s;
-            _b.receive(_XfGlyphTraversal_span_pinfo, _arg);
-            _arg[0].u_boolean = _this->span(a, s);
-            _b.reply(_XfGlyphTraversal_span_pinfo, _arg);
-            break;
-        }
-        case /* transform */ 20: {
-            extern MarshalBuffer::ArgInfo _XfGlyphTraversal_transform_pinfo;
+        case /* allocation_is_visible */ 18: {
+            extern MarshalBuffer::ArgInfo _XfGlyphTraversal_allocation_is_visible_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_transform();
-            _b.reply(_XfGlyphTraversal_transform_pinfo, _arg);
+            _arg[0].u_boolean = _this->allocation_is_visible();
+            _b.reply(_XfGlyphTraversal_allocation_is_visible_pinfo, _arg);
             break;
         }
-        case /* damage */ 21: {
-            extern MarshalBuffer::ArgInfo _XfGlyphTraversal_damage_pinfo;
+        case /* current_transform */ 19: {
+            extern MarshalBuffer::ArgInfo _XfGlyphTraversal_current_transform_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_damage();
-            _b.reply(_XfGlyphTraversal_damage_pinfo, _arg);
+            _arg[0].u_objref = _this->current_transform();
+            _b.reply(_XfGlyphTraversal_current_transform_pinfo, _arg);
             break;
         }
-        case /* hit */ 22: {
+        case /* damaged */ 20: {
+            extern MarshalBuffer::ArgInfo _XfGlyphTraversal_damaged_pinfo;
+            MarshalBuffer::ArgValue _arg[1];
+            _arg[0].u_objref = _this->damaged();
+            _b.reply(_XfGlyphTraversal_damaged_pinfo, _arg);
+            break;
+        }
+        case /* hit */ 21: {
             extern MarshalBuffer::ArgInfo _XfGlyphTraversal_hit_pinfo;
             MarshalBuffer::ArgValue _arg[1];
             _this->hit();
             _b.reply(_XfGlyphTraversal_hit_pinfo, _arg);
             break;
         }
-        case /* _get_hit_info */ 23: {
+        case /* _get_hit_info */ 22: {
             extern MarshalBuffer::ArgInfo _XfGlyphTraversal__get_hit_info_pinfo;
             MarshalBuffer::ArgValue _arg[1];
             _arg[0].u_long = _this->hit_info();
             _b.reply(_XfGlyphTraversal__get_hit_info_pinfo, _arg);
             break;
         }
-        case /* _set_hit_info */ 24: {
+        case /* _set_hit_info */ 23: {
             extern MarshalBuffer::ArgInfo _XfGlyphTraversal__set_hit_info_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             Long _p;
@@ -1540,14 +1584,14 @@ void _XfGlyphTraversal_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _
             _b.reply(_XfGlyphTraversal__set_hit_info_pinfo, _arg);
             break;
         }
-        case /* picked */ 25: {
+        case /* picked */ 24: {
             extern MarshalBuffer::ArgInfo _XfGlyphTraversal_picked_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_picked();
+            _arg[0].u_objref = _this->picked();
             _b.reply(_XfGlyphTraversal_picked_pinfo, _arg);
             break;
         }
-        case /* clear */ 26: {
+        case /* clear */ 25: {
             extern MarshalBuffer::ArgInfo _XfGlyphTraversal_clear_pinfo;
             MarshalBuffer::ArgValue _arg[1];
             _this->clear();
@@ -1574,32 +1618,20 @@ extern void _XfVertex_put(
 extern void _XfVertex_get(
     MarshalBuffer&, Vertex&
 );
-extern void _XfVertex_put(
-    MarshalBuffer&, const Vertex&
-);
-extern void _XfVertex_get(
-    MarshalBuffer&, Vertex&
-);
-extern void _XfRegion_BoundingSpan_put(
-    MarshalBuffer&, const Region::BoundingSpan&
-);
-extern void _XfRegion_BoundingSpan_get(
-    MarshalBuffer&, Region::BoundingSpan&
-);
 
 GlyphTraversalStub::GlyphTraversalStub(Exchange* e) { exch_ = e; }
 GlyphTraversalStub::~GlyphTraversalStub() { }
-BaseObjectRef GlyphTraversalStub::_create(Exchange* e) {
+BaseObjectRef _XfGlyphTraversalStub_create(Exchange* e) {
     return (BaseObjectRef)(void*)new GlyphTraversalStub(e);
 }
 Exchange* GlyphTraversalStub::_exchange() {
     return exch_;
 }
-MarshalBuffer::ArgDesc _XfGlyphTraversal_op_pdesc[2] = { 1, 32 };
+MarshalBuffer::ArgDesc _XfGlyphTraversal_op_pdesc[2] = { 1, 8 };
 MarshalBuffer::ArgInfo _XfGlyphTraversal_op_pinfo = {
     &_XfGlyphTraversal_tid, 0, _XfGlyphTraversal_op_pdesc, 0
 };
-GlyphTraversal::Operation GlyphTraversalType::op() {
+GlyphTraversal::Operation GlyphTraversal::op() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1610,7 +1642,7 @@ MarshalBuffer::ArgDesc _XfGlyphTraversal_swap_op_pdesc[3] = { 2, 32, 33 };
 MarshalBuffer::ArgInfo _XfGlyphTraversal_swap_op_pinfo = {
     &_XfGlyphTraversal_tid, 1, _XfGlyphTraversal_swap_op_pdesc, 0
 };
-GlyphTraversal::Operation GlyphTraversalType::swap_op(GlyphTraversal::Operation op) {
+GlyphTraversal::Operation GlyphTraversal::swap_op(Operation op) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1618,41 +1650,41 @@ GlyphTraversal::Operation GlyphTraversalType::swap_op(GlyphTraversal::Operation 
     _b.invoke(this, _XfGlyphTraversal_swap_op_pinfo, _arg);
     return (GlyphTraversal::Operation)_arg[0].u_long;
 }
-MarshalBuffer::ArgDesc _XfGlyphTraversal_begin_trail_pdesc[3] = { 2, 4, 61 };
-MarshalBuffer::ArgMarshal _XfGlyphTraversal_begin_trail_pfunc[] = {
-    &ViewerStub::_create,
+MarshalBuffer::ArgDesc _XfGlyphTraversal_begin_viewer_pdesc[3] = { 2, 4, 61 };
+MarshalBuffer::ArgMarshal _XfGlyphTraversal_begin_viewer_pfunc[] = {
+    &_XfViewerStub_create,
 
 };
-MarshalBuffer::ArgInfo _XfGlyphTraversal_begin_trail_pinfo = {
-    &_XfGlyphTraversal_tid, 2, _XfGlyphTraversal_begin_trail_pdesc, _XfGlyphTraversal_begin_trail_pfunc
+MarshalBuffer::ArgInfo _XfGlyphTraversal_begin_viewer_pinfo = {
+    &_XfGlyphTraversal_tid, 2, _XfGlyphTraversal_begin_viewer_pdesc, _XfGlyphTraversal_begin_viewer_pfunc
 };
-void GlyphTraversalType::begin_trail(Viewer_in v) {
+void GlyphTraversal::begin_viewer(Viewer_in v) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = v;
-    _b.invoke(this, _XfGlyphTraversal_begin_trail_pinfo, _arg);
+    _b.invoke(this, _XfGlyphTraversal_begin_viewer_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfGlyphTraversal_end_trail_pdesc[2] = { 1, 4 };
-MarshalBuffer::ArgInfo _XfGlyphTraversal_end_trail_pinfo = {
-    &_XfGlyphTraversal_tid, 3, _XfGlyphTraversal_end_trail_pdesc, 0
+MarshalBuffer::ArgDesc _XfGlyphTraversal_end_viewer_pdesc[2] = { 1, 4 };
+MarshalBuffer::ArgInfo _XfGlyphTraversal_end_viewer_pinfo = {
+    &_XfGlyphTraversal_tid, 3, _XfGlyphTraversal_end_viewer_pdesc, 0
 };
-void GlyphTraversalType::end_trail() {
+void GlyphTraversal::end_viewer() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[1];
-    _b.invoke(this, _XfGlyphTraversal_end_trail_pinfo, _arg);
+    _b.invoke(this, _XfGlyphTraversal_end_viewer_pinfo, _arg);
 }
 MarshalBuffer::ArgDesc _XfGlyphTraversal_traverse_child_pdesc[4] = { 3, 4, 61, 61 };
 MarshalBuffer::ArgMarshal _XfGlyphTraversal_traverse_child_pfunc[] = {
-    &GlyphOffsetStub::_create,
-    &RegionStub::_create,
+    &_XfGlyphOffsetStub_create,
+    &_XfRegionStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfGlyphTraversal_traverse_child_pinfo = {
     &_XfGlyphTraversal_tid, 4, _XfGlyphTraversal_traverse_child_pdesc, _XfGlyphTraversal_traverse_child_pfunc
 };
-void GlyphTraversalType::traverse_child(GlyphOffset_in o, Region_in allocation) {
+void GlyphTraversal::traverse_child(GlyphOffset_in o, Region_in allocation) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[3];
@@ -1664,7 +1696,7 @@ MarshalBuffer::ArgDesc _XfGlyphTraversal_visit_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfGlyphTraversal_visit_pinfo = {
     &_XfGlyphTraversal_tid, 5, _XfGlyphTraversal_visit_pdesc, 0
 };
-void GlyphTraversalType::visit() {
+void GlyphTraversal::visit() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1672,12 +1704,12 @@ void GlyphTraversalType::visit() {
 }
 MarshalBuffer::ArgDesc _XfGlyphTraversal_trail_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfGlyphTraversal_trail_pfunc[] = {
-    &GlyphTraversalStub::_create
+    &_XfGlyphTraversalStub_create
 };
 MarshalBuffer::ArgInfo _XfGlyphTraversal_trail_pinfo = {
     &_XfGlyphTraversal_tid, 6, _XfGlyphTraversal_trail_pdesc, _XfGlyphTraversal_trail_pfunc
 };
-GlyphTraversalRef GlyphTraversalType::_c_trail() {
+GlyphTraversalRef GlyphTraversal::trail() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1686,12 +1718,12 @@ GlyphTraversalRef GlyphTraversalType::_c_trail() {
 }
 MarshalBuffer::ArgDesc _XfGlyphTraversal_current_glyph_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfGlyphTraversal_current_glyph_pfunc[] = {
-    &GlyphStub::_create
+    &_XfGlyphStub_create
 };
 MarshalBuffer::ArgInfo _XfGlyphTraversal_current_glyph_pinfo = {
     &_XfGlyphTraversal_tid, 7, _XfGlyphTraversal_current_glyph_pdesc, _XfGlyphTraversal_current_glyph_pfunc
 };
-GlyphRef GlyphTraversalType::_c_current_glyph() {
+GlyphRef GlyphTraversal::current_glyph() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1700,12 +1732,12 @@ GlyphRef GlyphTraversalType::_c_current_glyph() {
 }
 MarshalBuffer::ArgDesc _XfGlyphTraversal_current_offset_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfGlyphTraversal_current_offset_pfunc[] = {
-    &GlyphOffsetStub::_create
+    &_XfGlyphOffsetStub_create
 };
 MarshalBuffer::ArgInfo _XfGlyphTraversal_current_offset_pinfo = {
     &_XfGlyphTraversal_tid, 8, _XfGlyphTraversal_current_offset_pdesc, _XfGlyphTraversal_current_offset_pfunc
 };
-GlyphOffsetRef GlyphTraversalType::_c_current_offset() {
+GlyphOffsetRef GlyphTraversal::current_offset() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1714,15 +1746,12 @@ GlyphOffsetRef GlyphTraversalType::_c_current_offset() {
 }
 MarshalBuffer::ArgDesc _XfGlyphTraversal_current_viewer_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfGlyphTraversal_current_viewer_pfunc[] = {
-    &ViewerStub::_create
+    &_XfViewerStub_create
 };
 MarshalBuffer::ArgInfo _XfGlyphTraversal_current_viewer_pinfo = {
     &_XfGlyphTraversal_tid, 9, _XfGlyphTraversal_current_viewer_pdesc, _XfGlyphTraversal_current_viewer_pfunc
 };
-Viewer_tmp GlyphTraversalType::current_viewer() {
-    return _c_current_viewer();
-}
-ViewerRef GlyphTraversalType::_c_current_viewer() {
+ViewerRef GlyphTraversal::current_viewer() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1733,7 +1762,7 @@ MarshalBuffer::ArgDesc _XfGlyphTraversal_forward_pdesc[2] = { 1, 12 };
 MarshalBuffer::ArgInfo _XfGlyphTraversal_forward_pinfo = {
     &_XfGlyphTraversal_tid, 10, _XfGlyphTraversal_forward_pdesc, 0
 };
-Boolean GlyphTraversalType::forward() {
+Boolean GlyphTraversal::forward() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1744,78 +1773,78 @@ MarshalBuffer::ArgDesc _XfGlyphTraversal_backward_pdesc[2] = { 1, 12 };
 MarshalBuffer::ArgInfo _XfGlyphTraversal_backward_pinfo = {
     &_XfGlyphTraversal_tid, 11, _XfGlyphTraversal_backward_pdesc, 0
 };
-Boolean GlyphTraversalType::backward() {
+Boolean GlyphTraversal::backward() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[1];
     _b.invoke(this, _XfGlyphTraversal_backward_pinfo, _arg);
     return _arg[0].u_boolean;
 }
-MarshalBuffer::ArgDesc _XfGlyphTraversal__get_painter_pdesc[2] = { 1, 60 };
-MarshalBuffer::ArgMarshal _XfGlyphTraversal__get_painter_pfunc[] = {
-    &PainterObjStub::_create
+MarshalBuffer::ArgDesc _XfGlyphTraversal__get_current_painter_pdesc[2] = { 1, 60 };
+MarshalBuffer::ArgMarshal _XfGlyphTraversal__get_current_painter_pfunc[] = {
+    &_XfPainterStub_create
 };
-MarshalBuffer::ArgInfo _XfGlyphTraversal__get_painter_pinfo = {
-    &_XfGlyphTraversal_tid, 12, _XfGlyphTraversal__get_painter_pdesc, _XfGlyphTraversal__get_painter_pfunc
+MarshalBuffer::ArgInfo _XfGlyphTraversal__get_current_painter_pinfo = {
+    &_XfGlyphTraversal_tid, 12, _XfGlyphTraversal__get_current_painter_pdesc, _XfGlyphTraversal__get_current_painter_pfunc
 };
-PainterObjRef GlyphTraversalType::_c_painter() {
+PainterRef GlyphTraversal::current_painter() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[1];
-    _b.invoke(this, _XfGlyphTraversal__get_painter_pinfo, _arg);
-    return (PainterObjRef)_arg[0].u_objref;
+    _b.invoke(this, _XfGlyphTraversal__get_current_painter_pinfo, _arg);
+    return (PainterRef)_arg[0].u_objref;
 }
-MarshalBuffer::ArgDesc _XfGlyphTraversal__set_painter_pdesc[3] = { 2, 4, 61 };
-MarshalBuffer::ArgMarshal _XfGlyphTraversal__set_painter_pfunc[] = {
-    &PainterObjStub::_create,
+MarshalBuffer::ArgDesc _XfGlyphTraversal__set_current_painter_pdesc[3] = { 2, 4, 61 };
+MarshalBuffer::ArgMarshal _XfGlyphTraversal__set_current_painter_pfunc[] = {
+    &_XfPainterStub_create,
 
 };
-MarshalBuffer::ArgInfo _XfGlyphTraversal__set_painter_pinfo = {
-    &_XfGlyphTraversal_tid, 13, _XfGlyphTraversal__set_painter_pdesc, _XfGlyphTraversal__set_painter_pfunc
+MarshalBuffer::ArgInfo _XfGlyphTraversal__set_current_painter_pinfo = {
+    &_XfGlyphTraversal_tid, 13, _XfGlyphTraversal__set_current_painter_pdesc, _XfGlyphTraversal__set_current_painter_pfunc
 };
-void GlyphTraversalType::_c_painter(PainterObj_in _p) {
+void GlyphTraversal::current_painter(Painter_in _p) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = _p;
-    _b.invoke(this, _XfGlyphTraversal__set_painter_pinfo, _arg);
+    _b.invoke(this, _XfGlyphTraversal__set_current_painter_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfGlyphTraversal_display_pdesc[2] = { 1, 60 };
-MarshalBuffer::ArgMarshal _XfGlyphTraversal_display_pfunc[] = {
-    &DisplayObjStub::_create
+MarshalBuffer::ArgDesc _XfGlyphTraversal_current_display_pdesc[2] = { 1, 60 };
+MarshalBuffer::ArgMarshal _XfGlyphTraversal_current_display_pfunc[] = {
+    &_XfDisplayStub_create
 };
-MarshalBuffer::ArgInfo _XfGlyphTraversal_display_pinfo = {
-    &_XfGlyphTraversal_tid, 14, _XfGlyphTraversal_display_pdesc, _XfGlyphTraversal_display_pfunc
+MarshalBuffer::ArgInfo _XfGlyphTraversal_current_display_pinfo = {
+    &_XfGlyphTraversal_tid, 14, _XfGlyphTraversal_current_display_pdesc, _XfGlyphTraversal_current_display_pfunc
 };
-DisplayObjRef GlyphTraversalType::_c_display() {
+DisplayRef GlyphTraversal::current_display() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[1];
-    _b.invoke(this, _XfGlyphTraversal_display_pinfo, _arg);
-    return (DisplayObjRef)_arg[0].u_objref;
+    _b.invoke(this, _XfGlyphTraversal_current_display_pinfo, _arg);
+    return (DisplayRef)_arg[0].u_objref;
 }
-MarshalBuffer::ArgDesc _XfGlyphTraversal_screen_pdesc[2] = { 1, 60 };
-MarshalBuffer::ArgMarshal _XfGlyphTraversal_screen_pfunc[] = {
-    &ScreenObjStub::_create
+MarshalBuffer::ArgDesc _XfGlyphTraversal_current_screen_pdesc[2] = { 1, 60 };
+MarshalBuffer::ArgMarshal _XfGlyphTraversal_current_screen_pfunc[] = {
+    &_XfScreenStub_create
 };
-MarshalBuffer::ArgInfo _XfGlyphTraversal_screen_pinfo = {
-    &_XfGlyphTraversal_tid, 15, _XfGlyphTraversal_screen_pdesc, _XfGlyphTraversal_screen_pfunc
+MarshalBuffer::ArgInfo _XfGlyphTraversal_current_screen_pinfo = {
+    &_XfGlyphTraversal_tid, 15, _XfGlyphTraversal_current_screen_pdesc, _XfGlyphTraversal_current_screen_pfunc
 };
-ScreenObjRef GlyphTraversalType::_c_screen() {
+ScreenRef GlyphTraversal::current_screen() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[1];
-    _b.invoke(this, _XfGlyphTraversal_screen_pinfo, _arg);
-    return (ScreenObjRef)_arg[0].u_objref;
+    _b.invoke(this, _XfGlyphTraversal_current_screen_pinfo, _arg);
+    return (ScreenRef)_arg[0].u_objref;
 }
 MarshalBuffer::ArgDesc _XfGlyphTraversal_allocation_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfGlyphTraversal_allocation_pfunc[] = {
-    &RegionStub::_create
+    &_XfRegionStub_create
 };
 MarshalBuffer::ArgInfo _XfGlyphTraversal_allocation_pinfo = {
     &_XfGlyphTraversal_tid, 16, _XfGlyphTraversal_allocation_pdesc, _XfGlyphTraversal_allocation_pfunc
 };
-RegionRef GlyphTraversalType::_c_allocation() {
+RegionRef GlyphTraversal::allocation() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1832,7 +1861,7 @@ MarshalBuffer::ArgMarshal _XfGlyphTraversal_bounds_pfunc[] = {
 MarshalBuffer::ArgInfo _XfGlyphTraversal_bounds_pinfo = {
     &_XfGlyphTraversal_tid, 17, _XfGlyphTraversal_bounds_pdesc, _XfGlyphTraversal_bounds_pfunc
 };
-Boolean GlyphTraversalType::bounds(Vertex& lower, Vertex& upper, Vertex& origin) {
+Boolean GlyphTraversal::bounds(Vertex& lower, Vertex& upper, Vertex& origin) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[4];
@@ -1842,72 +1871,50 @@ Boolean GlyphTraversalType::bounds(Vertex& lower, Vertex& upper, Vertex& origin)
     _b.invoke(this, _XfGlyphTraversal_bounds_pinfo, _arg);
     return _arg[0].u_boolean;
 }
-MarshalBuffer::ArgDesc _XfGlyphTraversal_origin_pdesc[3] = { 2, 12, 2 };
-MarshalBuffer::ArgMarshal _XfGlyphTraversal_origin_pfunc[] = {
-    &_XfVertex_put, &_XfVertex_get,
-
+MarshalBuffer::ArgDesc _XfGlyphTraversal_allocation_is_visible_pdesc[2] = { 1, 12 };
+MarshalBuffer::ArgInfo _XfGlyphTraversal_allocation_is_visible_pinfo = {
+    &_XfGlyphTraversal_tid, 18, _XfGlyphTraversal_allocation_is_visible_pdesc, 0
 };
-MarshalBuffer::ArgInfo _XfGlyphTraversal_origin_pinfo = {
-    &_XfGlyphTraversal_tid, 18, _XfGlyphTraversal_origin_pdesc, _XfGlyphTraversal_origin_pfunc
-};
-Boolean GlyphTraversalType::origin(Vertex& origin) {
-    MarshalBuffer _b;
-    extern TypeObjId _XfGlyphTraversal_tid;
-    MarshalBuffer::ArgValue _arg[2];
-    _arg[1].u_addr = &origin;
-    _b.invoke(this, _XfGlyphTraversal_origin_pinfo, _arg);
-    return _arg[0].u_boolean;
-}
-MarshalBuffer::ArgDesc _XfGlyphTraversal_span_pdesc[4] = { 3, 12, 33, 2 };
-MarshalBuffer::ArgMarshal _XfGlyphTraversal_span_pfunc[] = {
-    &_XfRegion_BoundingSpan_put, &_XfRegion_BoundingSpan_get,
-
-};
-MarshalBuffer::ArgInfo _XfGlyphTraversal_span_pinfo = {
-    &_XfGlyphTraversal_tid, 19, _XfGlyphTraversal_span_pdesc, _XfGlyphTraversal_span_pfunc
-};
-Boolean GlyphTraversalType::span(Axis a, Region::BoundingSpan& s) {
-    MarshalBuffer _b;
-    extern TypeObjId _XfGlyphTraversal_tid;
-    MarshalBuffer::ArgValue _arg[3];
-    _arg[1].u_long = a;
-    _arg[2].u_addr = &s;
-    _b.invoke(this, _XfGlyphTraversal_span_pinfo, _arg);
-    return _arg[0].u_boolean;
-}
-MarshalBuffer::ArgDesc _XfGlyphTraversal_transform_pdesc[2] = { 1, 60 };
-MarshalBuffer::ArgMarshal _XfGlyphTraversal_transform_pfunc[] = {
-    &TransformObjStub::_create
-};
-MarshalBuffer::ArgInfo _XfGlyphTraversal_transform_pinfo = {
-    &_XfGlyphTraversal_tid, 20, _XfGlyphTraversal_transform_pdesc, _XfGlyphTraversal_transform_pfunc
-};
-TransformObjRef GlyphTraversalType::_c_transform() {
+Boolean GlyphTraversal::allocation_is_visible() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[1];
-    _b.invoke(this, _XfGlyphTraversal_transform_pinfo, _arg);
-    return (TransformObjRef)_arg[0].u_objref;
+    _b.invoke(this, _XfGlyphTraversal_allocation_is_visible_pinfo, _arg);
+    return _arg[0].u_boolean;
 }
-MarshalBuffer::ArgDesc _XfGlyphTraversal_damage_pdesc[2] = { 1, 60 };
-MarshalBuffer::ArgMarshal _XfGlyphTraversal_damage_pfunc[] = {
-    &DamageObjStub::_create
+MarshalBuffer::ArgDesc _XfGlyphTraversal_current_transform_pdesc[2] = { 1, 60 };
+MarshalBuffer::ArgMarshal _XfGlyphTraversal_current_transform_pfunc[] = {
+    &_XfTransformStub_create
 };
-MarshalBuffer::ArgInfo _XfGlyphTraversal_damage_pinfo = {
-    &_XfGlyphTraversal_tid, 21, _XfGlyphTraversal_damage_pdesc, _XfGlyphTraversal_damage_pfunc
+MarshalBuffer::ArgInfo _XfGlyphTraversal_current_transform_pinfo = {
+    &_XfGlyphTraversal_tid, 19, _XfGlyphTraversal_current_transform_pdesc, _XfGlyphTraversal_current_transform_pfunc
 };
-DamageObjRef GlyphTraversalType::_c_damage() {
+TransformRef GlyphTraversal::current_transform() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[1];
-    _b.invoke(this, _XfGlyphTraversal_damage_pinfo, _arg);
-    return (DamageObjRef)_arg[0].u_objref;
+    _b.invoke(this, _XfGlyphTraversal_current_transform_pinfo, _arg);
+    return (TransformRef)_arg[0].u_objref;
+}
+MarshalBuffer::ArgDesc _XfGlyphTraversal_damaged_pdesc[2] = { 1, 60 };
+MarshalBuffer::ArgMarshal _XfGlyphTraversal_damaged_pfunc[] = {
+    &_XfDamageStub_create
+};
+MarshalBuffer::ArgInfo _XfGlyphTraversal_damaged_pinfo = {
+    &_XfGlyphTraversal_tid, 20, _XfGlyphTraversal_damaged_pdesc, _XfGlyphTraversal_damaged_pfunc
+};
+DamageRef GlyphTraversal::damaged() {
+    MarshalBuffer _b;
+    extern TypeObjId _XfGlyphTraversal_tid;
+    MarshalBuffer::ArgValue _arg[1];
+    _b.invoke(this, _XfGlyphTraversal_damaged_pinfo, _arg);
+    return (DamageRef)_arg[0].u_objref;
 }
 MarshalBuffer::ArgDesc _XfGlyphTraversal_hit_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfGlyphTraversal_hit_pinfo = {
-    &_XfGlyphTraversal_tid, 22, _XfGlyphTraversal_hit_pdesc, 0
+    &_XfGlyphTraversal_tid, 21, _XfGlyphTraversal_hit_pdesc, 0
 };
-void GlyphTraversalType::hit() {
+void GlyphTraversal::hit() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1915,9 +1922,9 @@ void GlyphTraversalType::hit() {
 }
 MarshalBuffer::ArgDesc _XfGlyphTraversal__get_hit_info_pdesc[2] = { 1, 32 };
 MarshalBuffer::ArgInfo _XfGlyphTraversal__get_hit_info_pinfo = {
-    &_XfGlyphTraversal_tid, 23, _XfGlyphTraversal__get_hit_info_pdesc, 0
+    &_XfGlyphTraversal_tid, 22, _XfGlyphTraversal__get_hit_info_pdesc, 0
 };
-Long GlyphTraversalType::hit_info() {
+Long GlyphTraversal::hit_info() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1926,9 +1933,9 @@ Long GlyphTraversalType::hit_info() {
 }
 MarshalBuffer::ArgDesc _XfGlyphTraversal__set_hit_info_pdesc[3] = { 2, 4, 33 };
 MarshalBuffer::ArgInfo _XfGlyphTraversal__set_hit_info_pinfo = {
-    &_XfGlyphTraversal_tid, 24, _XfGlyphTraversal__set_hit_info_pdesc, 0
+    &_XfGlyphTraversal_tid, 23, _XfGlyphTraversal__set_hit_info_pdesc, 0
 };
-void GlyphTraversalType::hit_info(Long _p) {
+void GlyphTraversal::hit_info(Long _p) {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1937,12 +1944,12 @@ void GlyphTraversalType::hit_info(Long _p) {
 }
 MarshalBuffer::ArgDesc _XfGlyphTraversal_picked_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfGlyphTraversal_picked_pfunc[] = {
-    &GlyphTraversalStub::_create
+    &_XfGlyphTraversalStub_create
 };
 MarshalBuffer::ArgInfo _XfGlyphTraversal_picked_pinfo = {
-    &_XfGlyphTraversal_tid, 25, _XfGlyphTraversal_picked_pdesc, _XfGlyphTraversal_picked_pfunc
+    &_XfGlyphTraversal_tid, 24, _XfGlyphTraversal_picked_pdesc, _XfGlyphTraversal_picked_pfunc
 };
-GlyphTraversalRef GlyphTraversalType::_c_picked() {
+GlyphTraversalRef GlyphTraversal::picked() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1951,93 +1958,12 @@ GlyphTraversalRef GlyphTraversalType::_c_picked() {
 }
 MarshalBuffer::ArgDesc _XfGlyphTraversal_clear_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfGlyphTraversal_clear_pinfo = {
-    &_XfGlyphTraversal_tid, 26, _XfGlyphTraversal_clear_pdesc, 0
+    &_XfGlyphTraversal_tid, 25, _XfGlyphTraversal_clear_pdesc, 0
 };
-void GlyphTraversalType::clear() {
+void GlyphTraversal::clear() {
     MarshalBuffer _b;
     extern TypeObjId _XfGlyphTraversal_tid;
     MarshalBuffer::ArgValue _arg[1];
     _b.invoke(this, _XfGlyphTraversal_clear_pinfo, _arg);
-}
-//+
-
-//+ GlyphVisitor::%init,type+dii,client
-GlyphVisitorType::GlyphVisitorType() { }
-GlyphVisitorType::~GlyphVisitorType() { }
-void* GlyphVisitorType::_this() { return this; }
-
-extern TypeObj_Descriptor _Xfvoid_type;
-
-TypeObj_OpData _XfGlyphVisitor_methods[] = {
-    { "visit", &_XfBoolean_type, 2 },
-    { 0, 0, 0 }
-};
-TypeObj_ParamData _XfGlyphVisitor_params[] = {
-    /* visit */
-        { "glyph", 0, &_XfGlyph_type },
-        { "offset", 0, &_XfGlyphOffset_type }
-};
-extern TypeObj_Descriptor _XfFrescoObject_type;
-TypeObj_Descriptor* _XfGlyphVisitor_parents[] = { &_XfFrescoObject_type, nil };
-extern TypeObjId _XfGlyphVisitor_tid;
-extern void _XfGlyphVisitor_receive(BaseObjectRef, ULong, MarshalBuffer&);
-TypeObj_Descriptor _XfGlyphVisitor_type = {
-    /* type */ 0,
-    /* id */ &_XfGlyphVisitor_tid,
-    "GlyphVisitor",
-    _XfGlyphVisitor_parents, /* offsets */ nil, /* excepts */ nil,
-    _XfGlyphVisitor_methods, _XfGlyphVisitor_params,
-    &_XfGlyphVisitor_receive
-};
-
-GlyphVisitorRef GlyphVisitor::_narrow(BaseObjectRef o) {
-    return (GlyphVisitorRef)_BaseObject_tnarrow(
-        o, _XfGlyphVisitor_tid, &GlyphVisitorStub::_create
-    );
-}
-TypeObjId GlyphVisitorType::_tid() { return _XfGlyphVisitor_tid; }
-void _XfGlyphVisitor_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
-    extern TypeObjId _XfGlyphVisitor_tid;
-    GlyphVisitorRef _this = (GlyphVisitorRef)_BaseObject_tcast(_object, _XfGlyphVisitor_tid);
-    switch (_m) {
-        case /* visit */ 0: {
-            extern MarshalBuffer::ArgInfo _XfGlyphVisitor_visit_pinfo;
-            MarshalBuffer::ArgValue _arg[3];
-            GlyphRef glyph;
-            _arg[1].u_addr = &glyph;
-            GlyphOffsetRef offset;
-            _arg[2].u_addr = &offset;
-            _b.receive(_XfGlyphVisitor_visit_pinfo, _arg);
-            _arg[0].u_boolean = _this->visit(glyph, offset);
-            _b.reply(_XfGlyphVisitor_visit_pinfo, _arg);
-            break;
-        }
-    }
-}
-GlyphVisitorStub::GlyphVisitorStub(Exchange* e) { exch_ = e; }
-GlyphVisitorStub::~GlyphVisitorStub() { }
-BaseObjectRef GlyphVisitorStub::_create(Exchange* e) {
-    return (BaseObjectRef)(void*)new GlyphVisitorStub(e);
-}
-Exchange* GlyphVisitorStub::_exchange() {
-    return exch_;
-}
-MarshalBuffer::ArgDesc _XfGlyphVisitor_visit_pdesc[4] = { 3, 12, 61, 61 };
-MarshalBuffer::ArgMarshal _XfGlyphVisitor_visit_pfunc[] = {
-    &GlyphStub::_create,
-    &GlyphOffsetStub::_create,
-
-};
-MarshalBuffer::ArgInfo _XfGlyphVisitor_visit_pinfo = {
-    &_XfGlyphVisitor_tid, 0, _XfGlyphVisitor_visit_pdesc, _XfGlyphVisitor_visit_pfunc
-};
-Boolean GlyphVisitorType::visit(Glyph_in glyph, GlyphOffset_in offset) {
-    MarshalBuffer _b;
-    extern TypeObjId _XfGlyphVisitor_tid;
-    MarshalBuffer::ArgValue _arg[3];
-    _arg[1].u_objref = glyph;
-    _arg[2].u_objref = offset;
-    _b.invoke(this, _XfGlyphVisitor_visit_pinfo, _arg);
-    return _arg[0].u_boolean;
 }
 //+

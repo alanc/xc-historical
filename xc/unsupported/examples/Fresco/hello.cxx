@@ -10,13 +10,14 @@ static Option options[] = {
 
 int main(int argc, char** argv) {
     Fresco* f = Fresco_open("Test", argc, argv, options);
-    CharString hello = Fresco::string_ref("hello goodbye");
-    StyleValue a = f->style()->resolve(Fresco::string_ref("string"));
-    if (is_not_nil(a)) {
-	a->read_string(hello);
+    CharString_var hello = Fresco::get_string(
+	_tmp(f->fresco_style()), "string"
+    );
+    if (is_nil(hello)) {
+	hello = Fresco::tmp_string_ref("hello goodbye");
     }
-    FigureKit figures = f->figure_kit();
-    f->main(nil, figures->label(figures->default_style(), hello));
+    FigureKit_var figures = f->figure_kit();
+    f->run(nil, figures->label(_tmp(figures->default_style()), hello));
     Fresco::unref(f);
     return 0;
 }

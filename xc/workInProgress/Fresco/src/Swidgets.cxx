@@ -36,9 +36,9 @@
 #include <X11/Fresco/Ox/schema.h>
 
 //+ Adjustment::%init,type+dii,client
-AdjustmentType::AdjustmentType() { }
-AdjustmentType::~AdjustmentType() { }
-void* AdjustmentType::_this() { return this; }
+Adjustment::Adjustment() { }
+Adjustment::~Adjustment() { }
+void* Adjustment::_this() { return this; }
 
 extern TypeObj_Descriptor _XfCoord_type, _Xfvoid_type, _XfAdjustment_Settings_type;
 
@@ -92,10 +92,10 @@ TypeObj_Descriptor _XfAdjustment_type = {
 
 AdjustmentRef Adjustment::_narrow(BaseObjectRef o) {
     return (AdjustmentRef)_BaseObject_tnarrow(
-        o, _XfAdjustment_tid, &AdjustmentStub::_create
+        o, _XfAdjustment_tid, &_XfAdjustmentStub_create
     );
 }
-TypeObjId AdjustmentType::_tid() { return _XfAdjustment_tid; }
+TypeObjId Adjustment::_tid() { return _XfAdjustment_tid; }
 void _XfAdjustment_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
     extern TypeObjId _XfAdjustment_tid;
     AdjustmentRef _this = (AdjustmentRef)_BaseObject_tcast(_object, _XfAdjustment_tid);
@@ -244,7 +244,7 @@ extern void _XfAdjustment_Settings_get(
 
 AdjustmentStub::AdjustmentStub(Exchange* e) { exch_ = e; }
 AdjustmentStub::~AdjustmentStub() { }
-BaseObjectRef AdjustmentStub::_create(Exchange* e) {
+BaseObjectRef _XfAdjustmentStub_create(Exchange* e) {
     return (BaseObjectRef)(void*)new AdjustmentStub(e);
 }
 Exchange* AdjustmentStub::_exchange() {
@@ -254,7 +254,7 @@ MarshalBuffer::ArgDesc _XfAdjustment__get_small_scroll_pdesc[2] = { 1, 48 };
 MarshalBuffer::ArgInfo _XfAdjustment__get_small_scroll_pinfo = {
     &_XfAdjustment_tid, 0, _XfAdjustment__get_small_scroll_pdesc, 0
 };
-Coord AdjustmentType::small_scroll() {
+Coord Adjustment::small_scroll() {
     MarshalBuffer _b;
     extern TypeObjId _XfAdjustment_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -265,7 +265,7 @@ MarshalBuffer::ArgDesc _XfAdjustment__set_small_scroll_pdesc[3] = { 2, 4, 49 };
 MarshalBuffer::ArgInfo _XfAdjustment__set_small_scroll_pinfo = {
     &_XfAdjustment_tid, 1, _XfAdjustment__set_small_scroll_pdesc, 0
 };
-void AdjustmentType::small_scroll(Coord _p) {
+void Adjustment::small_scroll(Coord _p) {
     MarshalBuffer _b;
     extern TypeObjId _XfAdjustment_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -276,7 +276,7 @@ MarshalBuffer::ArgDesc _XfAdjustment__get_large_scroll_pdesc[2] = { 1, 48 };
 MarshalBuffer::ArgInfo _XfAdjustment__get_large_scroll_pinfo = {
     &_XfAdjustment_tid, 2, _XfAdjustment__get_large_scroll_pdesc, 0
 };
-Coord AdjustmentType::large_scroll() {
+Coord Adjustment::large_scroll() {
     MarshalBuffer _b;
     extern TypeObjId _XfAdjustment_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -287,7 +287,7 @@ MarshalBuffer::ArgDesc _XfAdjustment__set_large_scroll_pdesc[3] = { 2, 4, 49 };
 MarshalBuffer::ArgInfo _XfAdjustment__set_large_scroll_pinfo = {
     &_XfAdjustment_tid, 3, _XfAdjustment__set_large_scroll_pdesc, 0
 };
-void AdjustmentType::large_scroll(Coord _p) {
+void Adjustment::large_scroll(Coord _p) {
     MarshalBuffer _b;
     extern TypeObjId _XfAdjustment_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -302,7 +302,7 @@ MarshalBuffer::ArgMarshal _XfAdjustment_get_settings_pfunc[] = {
 MarshalBuffer::ArgInfo _XfAdjustment_get_settings_pinfo = {
     &_XfAdjustment_tid, 4, _XfAdjustment_get_settings_pdesc, _XfAdjustment_get_settings_pfunc
 };
-void AdjustmentType::get_settings(Adjustment::Settings& s) {
+void Adjustment::get_settings(Adjustment::Settings& s) {
     MarshalBuffer _b;
     extern TypeObjId _XfAdjustment_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -313,7 +313,7 @@ MarshalBuffer::ArgDesc _XfAdjustment_begin_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfAdjustment_begin_pinfo = {
     &_XfAdjustment_tid, 5, _XfAdjustment_begin_pdesc, 0
 };
-void AdjustmentType::begin() {
+void Adjustment::begin() {
     MarshalBuffer _b;
     extern TypeObjId _XfAdjustment_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -323,7 +323,7 @@ MarshalBuffer::ArgDesc _XfAdjustment_commit_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfAdjustment_commit_pinfo = {
     &_XfAdjustment_tid, 6, _XfAdjustment_commit_pdesc, 0
 };
-void AdjustmentType::commit() {
+void Adjustment::commit() {
     MarshalBuffer _b;
     extern TypeObjId _XfAdjustment_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -333,7 +333,7 @@ MarshalBuffer::ArgDesc _XfAdjustment_cancel_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfAdjustment_cancel_pinfo = {
     &_XfAdjustment_tid, 7, _XfAdjustment_cancel_pdesc, 0
 };
-void AdjustmentType::cancel() {
+void Adjustment::cancel() {
     MarshalBuffer _b;
     extern TypeObjId _XfAdjustment_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -343,7 +343,7 @@ MarshalBuffer::ArgDesc _XfAdjustment_scroll_forward_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfAdjustment_scroll_forward_pinfo = {
     &_XfAdjustment_tid, 8, _XfAdjustment_scroll_forward_pdesc, 0
 };
-void AdjustmentType::scroll_forward() {
+void Adjustment::scroll_forward() {
     MarshalBuffer _b;
     extern TypeObjId _XfAdjustment_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -353,7 +353,7 @@ MarshalBuffer::ArgDesc _XfAdjustment_scroll_backward_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfAdjustment_scroll_backward_pinfo = {
     &_XfAdjustment_tid, 9, _XfAdjustment_scroll_backward_pdesc, 0
 };
-void AdjustmentType::scroll_backward() {
+void Adjustment::scroll_backward() {
     MarshalBuffer _b;
     extern TypeObjId _XfAdjustment_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -363,7 +363,7 @@ MarshalBuffer::ArgDesc _XfAdjustment_page_forward_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfAdjustment_page_forward_pinfo = {
     &_XfAdjustment_tid, 10, _XfAdjustment_page_forward_pdesc, 0
 };
-void AdjustmentType::page_forward() {
+void Adjustment::page_forward() {
     MarshalBuffer _b;
     extern TypeObjId _XfAdjustment_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -373,7 +373,7 @@ MarshalBuffer::ArgDesc _XfAdjustment_page_backward_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfAdjustment_page_backward_pinfo = {
     &_XfAdjustment_tid, 11, _XfAdjustment_page_backward_pdesc, 0
 };
-void AdjustmentType::page_backward() {
+void Adjustment::page_backward() {
     MarshalBuffer _b;
     extern TypeObjId _XfAdjustment_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -383,7 +383,7 @@ MarshalBuffer::ArgDesc _XfAdjustment_scroll_to_pdesc[3] = { 2, 4, 49 };
 MarshalBuffer::ArgInfo _XfAdjustment_scroll_to_pinfo = {
     &_XfAdjustment_tid, 12, _XfAdjustment_scroll_to_pdesc, 0
 };
-void AdjustmentType::scroll_to(Coord lower) {
+void Adjustment::scroll_to(Coord lower) {
     MarshalBuffer _b;
     extern TypeObjId _XfAdjustment_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -394,7 +394,7 @@ MarshalBuffer::ArgDesc _XfAdjustment_scroll_by_pdesc[3] = { 2, 4, 49 };
 MarshalBuffer::ArgInfo _XfAdjustment_scroll_by_pinfo = {
     &_XfAdjustment_tid, 13, _XfAdjustment_scroll_by_pdesc, 0
 };
-void AdjustmentType::scroll_by(Coord delta) {
+void Adjustment::scroll_by(Coord delta) {
     MarshalBuffer _b;
     extern TypeObjId _XfAdjustment_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -405,7 +405,7 @@ MarshalBuffer::ArgDesc _XfAdjustment_scale_to_pdesc[3] = { 2, 4, 49 };
 MarshalBuffer::ArgInfo _XfAdjustment_scale_to_pinfo = {
     &_XfAdjustment_tid, 14, _XfAdjustment_scale_to_pdesc, 0
 };
-void AdjustmentType::scale_to(Coord length) {
+void Adjustment::scale_to(Coord length) {
     MarshalBuffer _b;
     extern TypeObjId _XfAdjustment_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -416,7 +416,7 @@ MarshalBuffer::ArgDesc _XfAdjustment_constrain_pdesc[3] = { 2, 4, 51 };
 MarshalBuffer::ArgInfo _XfAdjustment_constrain_pinfo = {
     &_XfAdjustment_tid, 15, _XfAdjustment_constrain_pdesc, 0
 };
-void AdjustmentType::constrain(Coord& c) {
+void Adjustment::constrain(Coord& c) {
     MarshalBuffer _b;
     extern TypeObjId _XfAdjustment_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -442,9 +442,9 @@ void _XfAdjustment_Settings_get(MarshalBuffer& _b, Adjustment::Settings& _this) 
 //+
 
 //+ Button::%init,type+dii,client
-ButtonType::ButtonType() { }
-ButtonType::~ButtonType() { }
-void* ButtonType::_this() { return this; }
+Button::Button() { }
+Button::~Button() { }
+void* Button::_this() { return this; }
 
 extern TypeObj_Descriptor _XfTelltale_type, _XfAction_type;
 
@@ -476,10 +476,10 @@ TypeObj_Descriptor _XfButton_type = {
 
 ButtonRef Button::_narrow(BaseObjectRef o) {
     return (ButtonRef)_BaseObject_tnarrow(
-        o, _XfButton_tid, &ButtonStub::_create
+        o, _XfButton_tid, &_XfButtonStub_create
     );
 }
-TypeObjId ButtonType::_tid() { return _XfButton_tid; }
+TypeObjId Button::_tid() { return _XfButton_tid; }
 void _XfButton_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
     extern TypeObjId _XfButton_tid;
     ButtonRef _this = (ButtonRef)_BaseObject_tcast(_object, _XfButton_tid);
@@ -487,7 +487,7 @@ void _XfButton_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
         case /* _get_state */ 0: {
             extern MarshalBuffer::ArgInfo _XfButton__get_state_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_state();
+            _arg[0].u_objref = _this->state();
             _b.reply(_XfButton__get_state_pinfo, _arg);
             break;
         }
@@ -497,14 +497,14 @@ void _XfButton_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             TelltaleRef _p;
             _arg[1].u_addr = &_p;
             _b.receive(_XfButton__set_state_pinfo, _arg);
-            _this->_c_state(_p);
+            _this->state(_p);
             _b.reply(_XfButton__set_state_pinfo, _arg);
             break;
         }
         case /* _get_click_action */ 2: {
             extern MarshalBuffer::ArgInfo _XfButton__get_click_action_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_click_action();
+            _arg[0].u_objref = _this->click_action();
             _b.reply(_XfButton__get_click_action_pinfo, _arg);
             break;
         }
@@ -514,7 +514,7 @@ void _XfButton_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             ActionRef _p;
             _arg[1].u_addr = &_p;
             _b.receive(_XfButton__set_click_action_pinfo, _arg);
-            _this->_c_click_action(_p);
+            _this->click_action(_p);
             _b.reply(_XfButton__set_click_action_pinfo, _arg);
             break;
         }
@@ -522,7 +522,7 @@ void _XfButton_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
 }
 ButtonStub::ButtonStub(Exchange* e) { exch_ = e; }
 ButtonStub::~ButtonStub() { }
-BaseObjectRef ButtonStub::_create(Exchange* e) {
+BaseObjectRef _XfButtonStub_create(Exchange* e) {
     return (BaseObjectRef)(void*)new ButtonStub(e);
 }
 Exchange* ButtonStub::_exchange() {
@@ -530,15 +530,12 @@ Exchange* ButtonStub::_exchange() {
 }
 MarshalBuffer::ArgDesc _XfButton__get_state_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfButton__get_state_pfunc[] = {
-    &TelltaleStub::_create
+    &_XfTelltaleStub_create
 };
 MarshalBuffer::ArgInfo _XfButton__get_state_pinfo = {
     &_XfButton_tid, 0, _XfButton__get_state_pdesc, _XfButton__get_state_pfunc
 };
-Telltale_tmp ButtonType::state() {
-    return _c_state();
-}
-TelltaleRef ButtonType::_c_state() {
+TelltaleRef Button::state() {
     MarshalBuffer _b;
     extern TypeObjId _XfButton_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -547,16 +544,13 @@ TelltaleRef ButtonType::_c_state() {
 }
 MarshalBuffer::ArgDesc _XfButton__set_state_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfButton__set_state_pfunc[] = {
-    &TelltaleStub::_create,
+    &_XfTelltaleStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfButton__set_state_pinfo = {
     &_XfButton_tid, 1, _XfButton__set_state_pdesc, _XfButton__set_state_pfunc
 };
-void ButtonType::state(Telltale_in _p) {
-    _c_state(_p);
-}
-void ButtonType::_c_state(Telltale_in _p) {
+void Button::state(Telltale_in _p) {
     MarshalBuffer _b;
     extern TypeObjId _XfButton_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -565,12 +559,12 @@ void ButtonType::_c_state(Telltale_in _p) {
 }
 MarshalBuffer::ArgDesc _XfButton__get_click_action_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfButton__get_click_action_pfunc[] = {
-    &ActionStub::_create
+    &_XfActionStub_create
 };
 MarshalBuffer::ArgInfo _XfButton__get_click_action_pinfo = {
     &_XfButton_tid, 2, _XfButton__get_click_action_pdesc, _XfButton__get_click_action_pfunc
 };
-ActionRef ButtonType::_c_click_action() {
+ActionRef Button::click_action() {
     MarshalBuffer _b;
     extern TypeObjId _XfButton_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -579,13 +573,13 @@ ActionRef ButtonType::_c_click_action() {
 }
 MarshalBuffer::ArgDesc _XfButton__set_click_action_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfButton__set_click_action_pfunc[] = {
-    &ActionStub::_create,
+    &_XfActionStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfButton__set_click_action_pinfo = {
     &_XfButton_tid, 3, _XfButton__set_click_action_pdesc, _XfButton__set_click_action_pfunc
 };
-void ButtonType::_c_click_action(Action_in _p) {
+void Button::click_action(Action_in _p) {
     MarshalBuffer _b;
     extern TypeObjId _XfButton_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -595,9 +589,9 @@ void ButtonType::_c_click_action(Action_in _p) {
 //+
 
 //+ Menu::%init,type+dii,client
-MenuType::MenuType() { }
-MenuType::~MenuType() { }
-void* MenuType::_this() { return this; }
+Menu::Menu() { }
+Menu::~Menu() { }
+void* Menu::_this() { return this; }
 
 extern TypeObj_Descriptor _XfMenuItem_type;
 
@@ -633,10 +627,10 @@ TypeObj_Descriptor _XfMenu_type = {
 
 MenuRef Menu::_narrow(BaseObjectRef o) {
     return (MenuRef)_BaseObject_tnarrow(
-        o, _XfMenu_tid, &MenuStub::_create
+        o, _XfMenu_tid, &_XfMenuStub_create
     );
 }
-TypeObjId MenuType::_tid() { return _XfMenu_tid; }
+TypeObjId Menu::_tid() { return _XfMenu_tid; }
 void _XfMenu_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
     extern TypeObjId _XfMenu_tid;
     MenuRef _this = (MenuRef)_BaseObject_tcast(_object, _XfMenu_tid);
@@ -664,21 +658,21 @@ void _XfMenu_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
         case /* first_menu_item */ 2: {
             extern MarshalBuffer::ArgInfo _XfMenu_first_menu_item_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_first_menu_item();
+            _arg[0].u_objref = _this->first_menu_item();
             _b.reply(_XfMenu_first_menu_item_pinfo, _arg);
             break;
         }
         case /* last_menu_item */ 3: {
             extern MarshalBuffer::ArgInfo _XfMenu_last_menu_item_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_last_menu_item();
+            _arg[0].u_objref = _this->last_menu_item();
             _b.reply(_XfMenu_last_menu_item_pinfo, _arg);
             break;
         }
         case /* _get_selected */ 4: {
             extern MarshalBuffer::ArgInfo _XfMenu__get_selected_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_selected();
+            _arg[0].u_objref = _this->selected();
             _b.reply(_XfMenu__get_selected_pinfo, _arg);
             break;
         }
@@ -688,7 +682,7 @@ void _XfMenu_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             MenuItemRef _p;
             _arg[1].u_addr = &_p;
             _b.receive(_XfMenu__set_selected_pinfo, _arg);
-            _this->_c_selected(_p);
+            _this->selected(_p);
             _b.reply(_XfMenu__set_selected_pinfo, _arg);
             break;
         }
@@ -696,7 +690,7 @@ void _XfMenu_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
 }
 MenuStub::MenuStub(Exchange* e) { exch_ = e; }
 MenuStub::~MenuStub() { }
-BaseObjectRef MenuStub::_create(Exchange* e) {
+BaseObjectRef _XfMenuStub_create(Exchange* e) {
     return (BaseObjectRef)(void*)new MenuStub(e);
 }
 Exchange* MenuStub::_exchange() {
@@ -704,13 +698,13 @@ Exchange* MenuStub::_exchange() {
 }
 MarshalBuffer::ArgDesc _XfMenu_append_menu_item_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfMenu_append_menu_item_pfunc[] = {
-    &MenuItemStub::_create,
+    &_XfMenuItemStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfMenu_append_menu_item_pinfo = {
     &_XfMenu_tid, 0, _XfMenu_append_menu_item_pdesc, _XfMenu_append_menu_item_pfunc
 };
-void MenuType::append_menu_item(MenuItem_in i) {
+void Menu::append_menu_item(MenuItem_in i) {
     MarshalBuffer _b;
     extern TypeObjId _XfMenu_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -719,13 +713,13 @@ void MenuType::append_menu_item(MenuItem_in i) {
 }
 MarshalBuffer::ArgDesc _XfMenu_prepend_menu_item_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfMenu_prepend_menu_item_pfunc[] = {
-    &MenuItemStub::_create,
+    &_XfMenuItemStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfMenu_prepend_menu_item_pinfo = {
     &_XfMenu_tid, 1, _XfMenu_prepend_menu_item_pdesc, _XfMenu_prepend_menu_item_pfunc
 };
-void MenuType::prepend_menu_item(MenuItem_in i) {
+void Menu::prepend_menu_item(MenuItem_in i) {
     MarshalBuffer _b;
     extern TypeObjId _XfMenu_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -734,12 +728,12 @@ void MenuType::prepend_menu_item(MenuItem_in i) {
 }
 MarshalBuffer::ArgDesc _XfMenu_first_menu_item_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfMenu_first_menu_item_pfunc[] = {
-    &MenuItemStub::_create
+    &_XfMenuItemStub_create
 };
 MarshalBuffer::ArgInfo _XfMenu_first_menu_item_pinfo = {
     &_XfMenu_tid, 2, _XfMenu_first_menu_item_pdesc, _XfMenu_first_menu_item_pfunc
 };
-MenuItemRef MenuType::_c_first_menu_item() {
+MenuItemRef Menu::first_menu_item() {
     MarshalBuffer _b;
     extern TypeObjId _XfMenu_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -748,12 +742,12 @@ MenuItemRef MenuType::_c_first_menu_item() {
 }
 MarshalBuffer::ArgDesc _XfMenu_last_menu_item_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfMenu_last_menu_item_pfunc[] = {
-    &MenuItemStub::_create
+    &_XfMenuItemStub_create
 };
 MarshalBuffer::ArgInfo _XfMenu_last_menu_item_pinfo = {
     &_XfMenu_tid, 3, _XfMenu_last_menu_item_pdesc, _XfMenu_last_menu_item_pfunc
 };
-MenuItemRef MenuType::_c_last_menu_item() {
+MenuItemRef Menu::last_menu_item() {
     MarshalBuffer _b;
     extern TypeObjId _XfMenu_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -762,12 +756,12 @@ MenuItemRef MenuType::_c_last_menu_item() {
 }
 MarshalBuffer::ArgDesc _XfMenu__get_selected_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfMenu__get_selected_pfunc[] = {
-    &MenuItemStub::_create
+    &_XfMenuItemStub_create
 };
 MarshalBuffer::ArgInfo _XfMenu__get_selected_pinfo = {
     &_XfMenu_tid, 4, _XfMenu__get_selected_pdesc, _XfMenu__get_selected_pfunc
 };
-MenuItemRef MenuType::_c_selected() {
+MenuItemRef Menu::selected() {
     MarshalBuffer _b;
     extern TypeObjId _XfMenu_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -776,13 +770,13 @@ MenuItemRef MenuType::_c_selected() {
 }
 MarshalBuffer::ArgDesc _XfMenu__set_selected_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfMenu__set_selected_pfunc[] = {
-    &MenuItemStub::_create,
+    &_XfMenuItemStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfMenu__set_selected_pinfo = {
     &_XfMenu_tid, 5, _XfMenu__set_selected_pdesc, _XfMenu__set_selected_pfunc
 };
-void MenuType::_c_selected(MenuItem_in _p) {
+void Menu::selected(MenuItem_in _p) {
     MarshalBuffer _b;
     extern TypeObjId _XfMenu_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -792,9 +786,9 @@ void MenuType::_c_selected(MenuItem_in _p) {
 //+
 
 //+ MenuItem::%init,type+dii,client
-MenuItemType::MenuItemType() { }
-MenuItemType::~MenuItemType() { }
-void* MenuItemType::_this() { return this; }
+MenuItem::MenuItem() { }
+MenuItem::~MenuItem() { }
+void* MenuItem::_this() { return this; }
 
 extern TypeObj_Descriptor _XfMenu_type;
 
@@ -834,10 +828,10 @@ TypeObj_Descriptor _XfMenuItem_type = {
 
 MenuItemRef MenuItem::_narrow(BaseObjectRef o) {
     return (MenuItemRef)_BaseObject_tnarrow(
-        o, _XfMenuItem_tid, &MenuItemStub::_create
+        o, _XfMenuItem_tid, &_XfMenuItemStub_create
     );
 }
-TypeObjId MenuItemType::_tid() { return _XfMenuItem_tid; }
+TypeObjId MenuItem::_tid() { return _XfMenuItem_tid; }
 void _XfMenuItem_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
     extern TypeObjId _XfMenuItem_tid;
     MenuItemRef _this = (MenuItemRef)_BaseObject_tcast(_object, _XfMenuItem_tid);
@@ -845,7 +839,7 @@ void _XfMenuItem_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
         case /* _get_submenu */ 0: {
             extern MarshalBuffer::ArgInfo _XfMenuItem__get_submenu_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_submenu();
+            _arg[0].u_objref = _this->submenu();
             _b.reply(_XfMenuItem__get_submenu_pinfo, _arg);
             break;
         }
@@ -855,21 +849,21 @@ void _XfMenuItem_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             MenuRef _p;
             _arg[1].u_addr = &_p;
             _b.receive(_XfMenuItem__set_submenu_pinfo, _arg);
-            _this->_c_submenu(_p);
+            _this->submenu(_p);
             _b.reply(_XfMenuItem__set_submenu_pinfo, _arg);
             break;
         }
         case /* next_menu */ 2: {
             extern MarshalBuffer::ArgInfo _XfMenuItem_next_menu_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_next_menu();
+            _arg[0].u_objref = _this->next_menu();
             _b.reply(_XfMenuItem_next_menu_pinfo, _arg);
             break;
         }
         case /* prev_menu */ 3: {
             extern MarshalBuffer::ArgInfo _XfMenuItem_prev_menu_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_prev_menu();
+            _arg[0].u_objref = _this->prev_menu();
             _b.reply(_XfMenuItem_prev_menu_pinfo, _arg);
             break;
         }
@@ -914,7 +908,7 @@ void _XfMenuItem_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
 }
 MenuItemStub::MenuItemStub(Exchange* e) { exch_ = e; }
 MenuItemStub::~MenuItemStub() { }
-BaseObjectRef MenuItemStub::_create(Exchange* e) {
+BaseObjectRef _XfMenuItemStub_create(Exchange* e) {
     return (BaseObjectRef)(void*)new MenuItemStub(e);
 }
 Exchange* MenuItemStub::_exchange() {
@@ -922,15 +916,12 @@ Exchange* MenuItemStub::_exchange() {
 }
 MarshalBuffer::ArgDesc _XfMenuItem__get_submenu_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfMenuItem__get_submenu_pfunc[] = {
-    &MenuStub::_create
+    &_XfMenuStub_create
 };
 MarshalBuffer::ArgInfo _XfMenuItem__get_submenu_pinfo = {
     &_XfMenuItem_tid, 0, _XfMenuItem__get_submenu_pdesc, _XfMenuItem__get_submenu_pfunc
 };
-Menu_tmp MenuItemType::submenu() {
-    return _c_submenu();
-}
-MenuRef MenuItemType::_c_submenu() {
+MenuRef MenuItem::submenu() {
     MarshalBuffer _b;
     extern TypeObjId _XfMenuItem_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -939,16 +930,13 @@ MenuRef MenuItemType::_c_submenu() {
 }
 MarshalBuffer::ArgDesc _XfMenuItem__set_submenu_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfMenuItem__set_submenu_pfunc[] = {
-    &MenuStub::_create,
+    &_XfMenuStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfMenuItem__set_submenu_pinfo = {
     &_XfMenuItem_tid, 1, _XfMenuItem__set_submenu_pdesc, _XfMenuItem__set_submenu_pfunc
 };
-void MenuItemType::submenu(Menu_in _p) {
-    _c_submenu(_p);
-}
-void MenuItemType::_c_submenu(Menu_in _p) {
+void MenuItem::submenu(Menu_in _p) {
     MarshalBuffer _b;
     extern TypeObjId _XfMenuItem_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -957,12 +945,12 @@ void MenuItemType::_c_submenu(Menu_in _p) {
 }
 MarshalBuffer::ArgDesc _XfMenuItem_next_menu_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfMenuItem_next_menu_pfunc[] = {
-    &MenuItemStub::_create
+    &_XfMenuItemStub_create
 };
 MarshalBuffer::ArgInfo _XfMenuItem_next_menu_pinfo = {
     &_XfMenuItem_tid, 2, _XfMenuItem_next_menu_pdesc, _XfMenuItem_next_menu_pfunc
 };
-MenuItemRef MenuItemType::_c_next_menu() {
+MenuItemRef MenuItem::next_menu() {
     MarshalBuffer _b;
     extern TypeObjId _XfMenuItem_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -971,12 +959,12 @@ MenuItemRef MenuItemType::_c_next_menu() {
 }
 MarshalBuffer::ArgDesc _XfMenuItem_prev_menu_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfMenuItem_prev_menu_pfunc[] = {
-    &MenuItemStub::_create
+    &_XfMenuItemStub_create
 };
 MarshalBuffer::ArgInfo _XfMenuItem_prev_menu_pinfo = {
     &_XfMenuItem_tid, 3, _XfMenuItem_prev_menu_pdesc, _XfMenuItem_prev_menu_pfunc
 };
-MenuItemRef MenuItemType::_c_prev_menu() {
+MenuItemRef MenuItem::prev_menu() {
     MarshalBuffer _b;
     extern TypeObjId _XfMenuItem_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -985,13 +973,13 @@ MenuItemRef MenuItemType::_c_prev_menu() {
 }
 MarshalBuffer::ArgDesc _XfMenuItem_insert_menu_before_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfMenuItem_insert_menu_before_pfunc[] = {
-    &MenuItemStub::_create,
+    &_XfMenuItemStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfMenuItem_insert_menu_before_pinfo = {
     &_XfMenuItem_tid, 4, _XfMenuItem_insert_menu_before_pdesc, _XfMenuItem_insert_menu_before_pfunc
 };
-void MenuItemType::insert_menu_before(MenuItem_in i) {
+void MenuItem::insert_menu_before(MenuItem_in i) {
     MarshalBuffer _b;
     extern TypeObjId _XfMenuItem_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1000,13 +988,13 @@ void MenuItemType::insert_menu_before(MenuItem_in i) {
 }
 MarshalBuffer::ArgDesc _XfMenuItem_insert_menu_after_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfMenuItem_insert_menu_after_pfunc[] = {
-    &MenuItemStub::_create,
+    &_XfMenuItemStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfMenuItem_insert_menu_after_pinfo = {
     &_XfMenuItem_tid, 5, _XfMenuItem_insert_menu_after_pdesc, _XfMenuItem_insert_menu_after_pfunc
 };
-void MenuItemType::insert_menu_after(MenuItem_in i) {
+void MenuItem::insert_menu_after(MenuItem_in i) {
     MarshalBuffer _b;
     extern TypeObjId _XfMenuItem_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1015,13 +1003,13 @@ void MenuItemType::insert_menu_after(MenuItem_in i) {
 }
 MarshalBuffer::ArgDesc _XfMenuItem_replace_menu_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfMenuItem_replace_menu_pfunc[] = {
-    &MenuItemStub::_create,
+    &_XfMenuItemStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfMenuItem_replace_menu_pinfo = {
     &_XfMenuItem_tid, 6, _XfMenuItem_replace_menu_pdesc, _XfMenuItem_replace_menu_pfunc
 };
-void MenuItemType::replace_menu(MenuItem_in i) {
+void MenuItem::replace_menu(MenuItem_in i) {
     MarshalBuffer _b;
     extern TypeObjId _XfMenuItem_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1032,7 +1020,7 @@ MarshalBuffer::ArgDesc _XfMenuItem_remove_menu_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfMenuItem_remove_menu_pinfo = {
     &_XfMenuItem_tid, 7, _XfMenuItem_remove_menu_pdesc, 0
 };
-void MenuItemType::remove_menu() {
+void MenuItem::remove_menu() {
     MarshalBuffer _b;
     extern TypeObjId _XfMenuItem_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1041,9 +1029,9 @@ void MenuItemType::remove_menu() {
 //+
 
 //+ Telltale::%init,type+dii,client
-TelltaleType::TelltaleType() { }
-TelltaleType::~TelltaleType() { }
-void* TelltaleType::_this() { return this; }
+Telltale::Telltale() { }
+Telltale::~Telltale() { }
+void* Telltale::_this() { return this; }
 
 extern TypeObj_Descriptor _XfTelltale_Flag_type, _XfBoolean_type;
 
@@ -1080,10 +1068,10 @@ TypeObj_Descriptor _XfTelltale_type = {
 
 TelltaleRef Telltale::_narrow(BaseObjectRef o) {
     return (TelltaleRef)_BaseObject_tnarrow(
-        o, _XfTelltale_tid, &TelltaleStub::_create
+        o, _XfTelltale_tid, &_XfTelltaleStub_create
     );
 }
-TypeObjId TelltaleType::_tid() { return _XfTelltale_tid; }
+TypeObjId Telltale::_tid() { return _XfTelltale_tid; }
 void _XfTelltale_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
     extern TypeObjId _XfTelltale_tid;
     TelltaleRef _this = (TelltaleRef)_BaseObject_tcast(_object, _XfTelltale_tid);
@@ -1121,7 +1109,7 @@ void _XfTelltale_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
         case /* _get_current */ 3: {
             extern MarshalBuffer::ArgInfo _XfTelltale__get_current_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_current();
+            _arg[0].u_objref = _this->current();
             _b.reply(_XfTelltale__get_current_pinfo, _arg);
             break;
         }
@@ -1131,7 +1119,7 @@ void _XfTelltale_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             TelltaleRef _p;
             _arg[1].u_addr = &_p;
             _b.receive(_XfTelltale__set_current_pinfo, _arg);
-            _this->_c_current(_p);
+            _this->current(_p);
             _b.reply(_XfTelltale__set_current_pinfo, _arg);
             break;
         }
@@ -1139,7 +1127,7 @@ void _XfTelltale_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
 }
 TelltaleStub::TelltaleStub(Exchange* e) { exch_ = e; }
 TelltaleStub::~TelltaleStub() { }
-BaseObjectRef TelltaleStub::_create(Exchange* e) {
+BaseObjectRef _XfTelltaleStub_create(Exchange* e) {
     return (BaseObjectRef)(void*)new TelltaleStub(e);
 }
 Exchange* TelltaleStub::_exchange() {
@@ -1149,7 +1137,7 @@ MarshalBuffer::ArgDesc _XfTelltale_set_pdesc[3] = { 2, 4, 33 };
 MarshalBuffer::ArgInfo _XfTelltale_set_pinfo = {
     &_XfTelltale_tid, 0, _XfTelltale_set_pdesc, 0
 };
-void TelltaleType::set(Telltale::Flag f) {
+void Telltale::set(Telltale::Flag f) {
     MarshalBuffer _b;
     extern TypeObjId _XfTelltale_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1160,7 +1148,7 @@ MarshalBuffer::ArgDesc _XfTelltale_clear_pdesc[3] = { 2, 4, 33 };
 MarshalBuffer::ArgInfo _XfTelltale_clear_pinfo = {
     &_XfTelltale_tid, 1, _XfTelltale_clear_pdesc, 0
 };
-void TelltaleType::clear(Telltale::Flag f) {
+void Telltale::clear(Telltale::Flag f) {
     MarshalBuffer _b;
     extern TypeObjId _XfTelltale_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1171,7 +1159,7 @@ MarshalBuffer::ArgDesc _XfTelltale_test_pdesc[3] = { 2, 12, 33 };
 MarshalBuffer::ArgInfo _XfTelltale_test_pinfo = {
     &_XfTelltale_tid, 2, _XfTelltale_test_pdesc, 0
 };
-Boolean TelltaleType::test(Telltale::Flag f) {
+Boolean Telltale::test(Telltale::Flag f) {
     MarshalBuffer _b;
     extern TypeObjId _XfTelltale_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1181,12 +1169,12 @@ Boolean TelltaleType::test(Telltale::Flag f) {
 }
 MarshalBuffer::ArgDesc _XfTelltale__get_current_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfTelltale__get_current_pfunc[] = {
-    &TelltaleStub::_create
+    &_XfTelltaleStub_create
 };
 MarshalBuffer::ArgInfo _XfTelltale__get_current_pinfo = {
     &_XfTelltale_tid, 3, _XfTelltale__get_current_pdesc, _XfTelltale__get_current_pfunc
 };
-TelltaleRef TelltaleType::_c_current() {
+TelltaleRef Telltale::current() {
     MarshalBuffer _b;
     extern TypeObjId _XfTelltale_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1195,13 +1183,13 @@ TelltaleRef TelltaleType::_c_current() {
 }
 MarshalBuffer::ArgDesc _XfTelltale__set_current_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfTelltale__set_current_pfunc[] = {
-    &TelltaleStub::_create,
+    &_XfTelltaleStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfTelltale__set_current_pinfo = {
     &_XfTelltale_tid, 4, _XfTelltale__set_current_pdesc, _XfTelltale__set_current_pfunc
 };
-void TelltaleType::_c_current(Telltale_in _p) {
+void Telltale::current(Telltale_in _p) {
     MarshalBuffer _b;
     extern TypeObjId _XfTelltale_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1211,12 +1199,12 @@ void TelltaleType::_c_current(Telltale_in _p) {
 //+
 
 //+ WidgetKit::%init,type+dii,client
-WidgetKitType::WidgetKitType() { }
-WidgetKitType::~WidgetKitType() { }
-void* WidgetKitType::_this() { return this; }
+WidgetKit::WidgetKit() { }
+WidgetKit::~WidgetKit() { }
+void* WidgetKit::_this() { return this; }
 
 extern TypeObj_Descriptor _XfGlyph_type, _XfViewer_type, _XfCharString_type, 
-    _XfButton_type, _XfAxis_type, _XfAdjustment_type;
+    _XfButton_type, _XfAdjustment_type, _XfFloat_type, _XfAxis_type;
 
 TypeObj_OpData _XfWidgetKit_methods[] = {
     { "inset_frame", &_XfGlyph_type, 1 },
@@ -1237,6 +1225,7 @@ TypeObj_OpData _XfWidgetKit_methods[] = {
     { "palette_button", &_XfButton_type, 2 },
     { "check_box", &_XfButton_type, 2 },
     { "radio_button", &_XfButton_type, 3 },
+    { "bounded_float", &_XfAdjustment_type, 3 },
     { "slider", &_XfViewer_type, 2 },
     { "scroll_bar", &_XfViewer_type, 2 },
     { "panner", &_XfViewer_type, 2 },
@@ -1245,6 +1234,7 @@ TypeObj_OpData _XfWidgetKit_methods[] = {
     { "down_mover", &_XfButton_type, 1 },
     { "left_mover", &_XfButton_type, 1 },
     { "right_mover", &_XfButton_type, 1 },
+    { "viewer_group", &_XfViewer_type, 1 },
     { 0, 0, 0 }
 };
 TypeObj_ParamData _XfWidgetKit_params[] = {
@@ -1281,6 +1271,10 @@ TypeObj_ParamData _XfWidgetKit_params[] = {
         { "g", 0, &_XfGlyph_type },
         { "a", 0, &_XfAction_type },
         { "group", 0, &_XfTelltale_type },
+    /* bounded_float */
+        { "lower", 0, &_XfFloat_type },
+        { "upper", 0, &_XfFloat_type },
+        { "initial", 0, &_XfFloat_type },
     /* slider */
         { "a", 0, &_XfAxis_type },
         { "adj", 0, &_XfAdjustment_type },
@@ -1302,7 +1296,9 @@ TypeObj_ParamData _XfWidgetKit_params[] = {
     /* left_mover */
         { "a", 0, &_XfAdjustment_type },
     /* right_mover */
-        { "a", 0, &_XfAdjustment_type }
+        { "a", 0, &_XfAdjustment_type },
+    /* viewer_group */
+        { "g", 0, &_XfGlyph_type }
 };
 extern TypeObj_Descriptor _XfFrescoObject_type;
 TypeObj_Descriptor* _XfWidgetKit_parents[] = { &_XfFrescoObject_type, nil };
@@ -1319,10 +1315,10 @@ TypeObj_Descriptor _XfWidgetKit_type = {
 
 WidgetKitRef WidgetKit::_narrow(BaseObjectRef o) {
     return (WidgetKitRef)_BaseObject_tnarrow(
-        o, _XfWidgetKit_tid, &WidgetKitStub::_create
+        o, _XfWidgetKit_tid, &_XfWidgetKitStub_create
     );
 }
-TypeObjId WidgetKitType::_tid() { return _XfWidgetKit_tid; }
+TypeObjId WidgetKit::_tid() { return _XfWidgetKit_tid; }
 void _XfWidgetKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
     extern TypeObjId _XfWidgetKit_tid;
     WidgetKitRef _this = (WidgetKitRef)_BaseObject_tcast(_object, _XfWidgetKit_tid);
@@ -1333,7 +1329,7 @@ void _XfWidgetKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             GlyphRef g;
             _arg[1].u_addr = &g;
             _b.receive(_XfWidgetKit_inset_frame_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_inset_frame(g);
+            _arg[0].u_objref = _this->inset_frame(g);
             _b.reply(_XfWidgetKit_inset_frame_pinfo, _arg);
             break;
         }
@@ -1343,7 +1339,7 @@ void _XfWidgetKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             GlyphRef g;
             _arg[1].u_addr = &g;
             _b.receive(_XfWidgetKit_outset_frame_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_outset_frame(g);
+            _arg[0].u_objref = _this->outset_frame(g);
             _b.reply(_XfWidgetKit_outset_frame_pinfo, _arg);
             break;
         }
@@ -1353,7 +1349,7 @@ void _XfWidgetKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             GlyphRef g;
             _arg[1].u_addr = &g;
             _b.receive(_XfWidgetKit_bright_inset_frame_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_bright_inset_frame(g);
+            _arg[0].u_objref = _this->bright_inset_frame(g);
             _b.reply(_XfWidgetKit_bright_inset_frame_pinfo, _arg);
             break;
         }
@@ -1363,28 +1359,28 @@ void _XfWidgetKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             CharStringRef s;
             _arg[1].u_addr = &s;
             _b.receive(_XfWidgetKit_label_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_label(s);
+            _arg[0].u_objref = _this->label(s);
             _b.reply(_XfWidgetKit_label_pinfo, _arg);
             break;
         }
         case /* menubar */ 4: {
             extern MarshalBuffer::ArgInfo _XfWidgetKit_menubar_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_menubar();
+            _arg[0].u_objref = _this->menubar();
             _b.reply(_XfWidgetKit_menubar_pinfo, _arg);
             break;
         }
         case /* pulldown */ 5: {
             extern MarshalBuffer::ArgInfo _XfWidgetKit_pulldown_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_pulldown();
+            _arg[0].u_objref = _this->pulldown();
             _b.reply(_XfWidgetKit_pulldown_pinfo, _arg);
             break;
         }
         case /* pullright */ 6: {
             extern MarshalBuffer::ArgInfo _XfWidgetKit_pullright_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_pullright();
+            _arg[0].u_objref = _this->pullright();
             _b.reply(_XfWidgetKit_pullright_pinfo, _arg);
             break;
         }
@@ -1394,7 +1390,7 @@ void _XfWidgetKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             GlyphRef g;
             _arg[1].u_addr = &g;
             _b.receive(_XfWidgetKit_menubar_item_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_menubar_item(g);
+            _arg[0].u_objref = _this->menubar_item(g);
             _b.reply(_XfWidgetKit_menubar_item_pinfo, _arg);
             break;
         }
@@ -1404,7 +1400,7 @@ void _XfWidgetKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             GlyphRef g;
             _arg[1].u_addr = &g;
             _b.receive(_XfWidgetKit_menu_item_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_menu_item(g);
+            _arg[0].u_objref = _this->menu_item(g);
             _b.reply(_XfWidgetKit_menu_item_pinfo, _arg);
             break;
         }
@@ -1414,7 +1410,7 @@ void _XfWidgetKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             GlyphRef g;
             _arg[1].u_addr = &g;
             _b.receive(_XfWidgetKit_check_menu_item_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_check_menu_item(g);
+            _arg[0].u_objref = _this->check_menu_item(g);
             _b.reply(_XfWidgetKit_check_menu_item_pinfo, _arg);
             break;
         }
@@ -1426,21 +1422,21 @@ void _XfWidgetKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             TelltaleRef group;
             _arg[2].u_addr = &group;
             _b.receive(_XfWidgetKit_radio_menu_item_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_radio_menu_item(g, group);
+            _arg[0].u_objref = _this->radio_menu_item(g, group);
             _b.reply(_XfWidgetKit_radio_menu_item_pinfo, _arg);
             break;
         }
         case /* menu_item_separator */ 11: {
             extern MarshalBuffer::ArgInfo _XfWidgetKit_menu_item_separator_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_menu_item_separator();
+            _arg[0].u_objref = _this->menu_item_separator();
             _b.reply(_XfWidgetKit_menu_item_separator_pinfo, _arg);
             break;
         }
         case /* telltale_group */ 12: {
             extern MarshalBuffer::ArgInfo _XfWidgetKit_telltale_group_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_telltale_group();
+            _arg[0].u_objref = _this->telltale_group();
             _b.reply(_XfWidgetKit_telltale_group_pinfo, _arg);
             break;
         }
@@ -1452,7 +1448,7 @@ void _XfWidgetKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             ActionRef a;
             _arg[2].u_addr = &a;
             _b.receive(_XfWidgetKit_push_button_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_push_button(g, a);
+            _arg[0].u_objref = _this->push_button(g, a);
             _b.reply(_XfWidgetKit_push_button_pinfo, _arg);
             break;
         }
@@ -1464,7 +1460,7 @@ void _XfWidgetKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             ActionRef a;
             _arg[2].u_addr = &a;
             _b.receive(_XfWidgetKit_default_button_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_default_button(g, a);
+            _arg[0].u_objref = _this->default_button(g, a);
             _b.reply(_XfWidgetKit_default_button_pinfo, _arg);
             break;
         }
@@ -1476,7 +1472,7 @@ void _XfWidgetKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             ActionRef a;
             _arg[2].u_addr = &a;
             _b.receive(_XfWidgetKit_palette_button_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_palette_button(g, a);
+            _arg[0].u_objref = _this->palette_button(g, a);
             _b.reply(_XfWidgetKit_palette_button_pinfo, _arg);
             break;
         }
@@ -1488,7 +1484,7 @@ void _XfWidgetKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             ActionRef a;
             _arg[2].u_addr = &a;
             _b.receive(_XfWidgetKit_check_box_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_check_box(g, a);
+            _arg[0].u_objref = _this->check_box(g, a);
             _b.reply(_XfWidgetKit_check_box_pinfo, _arg);
             break;
         }
@@ -1502,11 +1498,25 @@ void _XfWidgetKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             TelltaleRef group;
             _arg[3].u_addr = &group;
             _b.receive(_XfWidgetKit_radio_button_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_radio_button(g, a, group);
+            _arg[0].u_objref = _this->radio_button(g, a, group);
             _b.reply(_XfWidgetKit_radio_button_pinfo, _arg);
             break;
         }
-        case /* slider */ 18: {
+        case /* bounded_float */ 18: {
+            extern MarshalBuffer::ArgInfo _XfWidgetKit_bounded_float_pinfo;
+            MarshalBuffer::ArgValue _arg[4];
+            Float lower;
+            _arg[1].u_addr = &lower;
+            Float upper;
+            _arg[2].u_addr = &upper;
+            Float initial;
+            _arg[3].u_addr = &initial;
+            _b.receive(_XfWidgetKit_bounded_float_pinfo, _arg);
+            _arg[0].u_objref = _this->bounded_float(lower, upper, initial);
+            _b.reply(_XfWidgetKit_bounded_float_pinfo, _arg);
+            break;
+        }
+        case /* slider */ 19: {
             extern MarshalBuffer::ArgInfo _XfWidgetKit_slider_pinfo;
             MarshalBuffer::ArgValue _arg[3];
             Axis a;
@@ -1514,11 +1524,11 @@ void _XfWidgetKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             AdjustmentRef adj;
             _arg[2].u_addr = &adj;
             _b.receive(_XfWidgetKit_slider_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_slider(a, adj);
+            _arg[0].u_objref = _this->slider(a, adj);
             _b.reply(_XfWidgetKit_slider_pinfo, _arg);
             break;
         }
-        case /* scroll_bar */ 19: {
+        case /* scroll_bar */ 20: {
             extern MarshalBuffer::ArgInfo _XfWidgetKit_scroll_bar_pinfo;
             MarshalBuffer::ArgValue _arg[3];
             Axis a;
@@ -1526,11 +1536,11 @@ void _XfWidgetKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             AdjustmentRef adj;
             _arg[2].u_addr = &adj;
             _b.receive(_XfWidgetKit_scroll_bar_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_scroll_bar(a, adj);
+            _arg[0].u_objref = _this->scroll_bar(a, adj);
             _b.reply(_XfWidgetKit_scroll_bar_pinfo, _arg);
             break;
         }
-        case /* panner */ 20: {
+        case /* panner */ 21: {
             extern MarshalBuffer::ArgInfo _XfWidgetKit_panner_pinfo;
             MarshalBuffer::ArgValue _arg[3];
             AdjustmentRef x;
@@ -1538,11 +1548,11 @@ void _XfWidgetKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             AdjustmentRef y;
             _arg[2].u_addr = &y;
             _b.receive(_XfWidgetKit_panner_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_panner(x, y);
+            _arg[0].u_objref = _this->panner(x, y);
             _b.reply(_XfWidgetKit_panner_pinfo, _arg);
             break;
         }
-        case /* zoomer */ 21: {
+        case /* zoomer */ 22: {
             extern MarshalBuffer::ArgInfo _XfWidgetKit_zoomer_pinfo;
             MarshalBuffer::ArgValue _arg[5];
             Coord scale;
@@ -1554,55 +1564,65 @@ void _XfWidgetKit_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             AdjustmentRef z;
             _arg[4].u_addr = &z;
             _b.receive(_XfWidgetKit_zoomer_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_zoomer(scale, x, y, z);
+            _arg[0].u_objref = _this->zoomer(scale, x, y, z);
             _b.reply(_XfWidgetKit_zoomer_pinfo, _arg);
             break;
         }
-        case /* up_mover */ 22: {
+        case /* up_mover */ 23: {
             extern MarshalBuffer::ArgInfo _XfWidgetKit_up_mover_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             AdjustmentRef a;
             _arg[1].u_addr = &a;
             _b.receive(_XfWidgetKit_up_mover_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_up_mover(a);
+            _arg[0].u_objref = _this->up_mover(a);
             _b.reply(_XfWidgetKit_up_mover_pinfo, _arg);
             break;
         }
-        case /* down_mover */ 23: {
+        case /* down_mover */ 24: {
             extern MarshalBuffer::ArgInfo _XfWidgetKit_down_mover_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             AdjustmentRef a;
             _arg[1].u_addr = &a;
             _b.receive(_XfWidgetKit_down_mover_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_down_mover(a);
+            _arg[0].u_objref = _this->down_mover(a);
             _b.reply(_XfWidgetKit_down_mover_pinfo, _arg);
             break;
         }
-        case /* left_mover */ 24: {
+        case /* left_mover */ 25: {
             extern MarshalBuffer::ArgInfo _XfWidgetKit_left_mover_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             AdjustmentRef a;
             _arg[1].u_addr = &a;
             _b.receive(_XfWidgetKit_left_mover_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_left_mover(a);
+            _arg[0].u_objref = _this->left_mover(a);
             _b.reply(_XfWidgetKit_left_mover_pinfo, _arg);
             break;
         }
-        case /* right_mover */ 25: {
+        case /* right_mover */ 26: {
             extern MarshalBuffer::ArgInfo _XfWidgetKit_right_mover_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             AdjustmentRef a;
             _arg[1].u_addr = &a;
             _b.receive(_XfWidgetKit_right_mover_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_right_mover(a);
+            _arg[0].u_objref = _this->right_mover(a);
             _b.reply(_XfWidgetKit_right_mover_pinfo, _arg);
+            break;
+        }
+        case /* viewer_group */ 27: {
+            extern MarshalBuffer::ArgInfo _XfWidgetKit_viewer_group_pinfo;
+            MarshalBuffer::ArgValue _arg[2];
+            GlyphRef g;
+            _arg[1].u_addr = &g;
+            _b.receive(_XfWidgetKit_viewer_group_pinfo, _arg);
+            _arg[0].u_objref = _this->viewer_group(g);
+            _b.reply(_XfWidgetKit_viewer_group_pinfo, _arg);
             break;
         }
     }
 }
 WidgetKitStub::WidgetKitStub(Exchange* e) { exch_ = e; }
 WidgetKitStub::~WidgetKitStub() { }
-BaseObjectRef WidgetKitStub::_create(Exchange* e) {
+BaseObjectRef _XfWidgetKitStub_create(Exchange* e) {
     return (BaseObjectRef)(void*)new WidgetKitStub(e);
 }
 Exchange* WidgetKitStub::_exchange() {
@@ -1610,13 +1630,13 @@ Exchange* WidgetKitStub::_exchange() {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_inset_frame_pdesc[3] = { 2, 60, 61 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_inset_frame_pfunc[] = {
-    &GlyphStub::_create,
-    &GlyphStub::_create
+    &_XfGlyphStub_create,
+    &_XfGlyphStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_inset_frame_pinfo = {
     &_XfWidgetKit_tid, 0, _XfWidgetKit_inset_frame_pdesc, _XfWidgetKit_inset_frame_pfunc
 };
-GlyphRef WidgetKitType::_c_inset_frame(Glyph_in g) {
+GlyphRef WidgetKit::inset_frame(Glyph_in g) {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1626,13 +1646,13 @@ GlyphRef WidgetKitType::_c_inset_frame(Glyph_in g) {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_outset_frame_pdesc[3] = { 2, 60, 61 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_outset_frame_pfunc[] = {
-    &GlyphStub::_create,
-    &GlyphStub::_create
+    &_XfGlyphStub_create,
+    &_XfGlyphStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_outset_frame_pinfo = {
     &_XfWidgetKit_tid, 1, _XfWidgetKit_outset_frame_pdesc, _XfWidgetKit_outset_frame_pfunc
 };
-GlyphRef WidgetKitType::_c_outset_frame(Glyph_in g) {
+GlyphRef WidgetKit::outset_frame(Glyph_in g) {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1642,13 +1662,13 @@ GlyphRef WidgetKitType::_c_outset_frame(Glyph_in g) {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_bright_inset_frame_pdesc[3] = { 2, 60, 61 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_bright_inset_frame_pfunc[] = {
-    &GlyphStub::_create,
-    &GlyphStub::_create
+    &_XfGlyphStub_create,
+    &_XfGlyphStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_bright_inset_frame_pinfo = {
     &_XfWidgetKit_tid, 2, _XfWidgetKit_bright_inset_frame_pdesc, _XfWidgetKit_bright_inset_frame_pfunc
 };
-GlyphRef WidgetKitType::_c_bright_inset_frame(Glyph_in g) {
+GlyphRef WidgetKit::bright_inset_frame(Glyph_in g) {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1658,13 +1678,13 @@ GlyphRef WidgetKitType::_c_bright_inset_frame(Glyph_in g) {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_label_pdesc[3] = { 2, 60, 61 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_label_pfunc[] = {
-    &CharStringStub::_create,
-    &ViewerStub::_create
+    &_XfCharStringStub_create,
+    &_XfViewerStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_label_pinfo = {
     &_XfWidgetKit_tid, 3, _XfWidgetKit_label_pdesc, _XfWidgetKit_label_pfunc
 };
-ViewerRef WidgetKitType::_c_label(CharString_in s) {
+ViewerRef WidgetKit::label(CharString_in s) {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1674,12 +1694,12 @@ ViewerRef WidgetKitType::_c_label(CharString_in s) {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_menubar_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_menubar_pfunc[] = {
-    &MenuStub::_create
+    &_XfMenuStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_menubar_pinfo = {
     &_XfWidgetKit_tid, 4, _XfWidgetKit_menubar_pdesc, _XfWidgetKit_menubar_pfunc
 };
-MenuRef WidgetKitType::_c_menubar() {
+MenuRef WidgetKit::menubar() {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1688,12 +1708,12 @@ MenuRef WidgetKitType::_c_menubar() {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_pulldown_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_pulldown_pfunc[] = {
-    &MenuStub::_create
+    &_XfMenuStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_pulldown_pinfo = {
     &_XfWidgetKit_tid, 5, _XfWidgetKit_pulldown_pdesc, _XfWidgetKit_pulldown_pfunc
 };
-MenuRef WidgetKitType::_c_pulldown() {
+MenuRef WidgetKit::pulldown() {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1702,12 +1722,12 @@ MenuRef WidgetKitType::_c_pulldown() {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_pullright_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_pullright_pfunc[] = {
-    &MenuStub::_create
+    &_XfMenuStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_pullright_pinfo = {
     &_XfWidgetKit_tid, 6, _XfWidgetKit_pullright_pdesc, _XfWidgetKit_pullright_pfunc
 };
-MenuRef WidgetKitType::_c_pullright() {
+MenuRef WidgetKit::pullright() {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1716,13 +1736,13 @@ MenuRef WidgetKitType::_c_pullright() {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_menubar_item_pdesc[3] = { 2, 60, 61 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_menubar_item_pfunc[] = {
-    &GlyphStub::_create,
-    &MenuItemStub::_create
+    &_XfGlyphStub_create,
+    &_XfMenuItemStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_menubar_item_pinfo = {
     &_XfWidgetKit_tid, 7, _XfWidgetKit_menubar_item_pdesc, _XfWidgetKit_menubar_item_pfunc
 };
-MenuItemRef WidgetKitType::_c_menubar_item(Glyph_in g) {
+MenuItemRef WidgetKit::menubar_item(Glyph_in g) {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1732,13 +1752,13 @@ MenuItemRef WidgetKitType::_c_menubar_item(Glyph_in g) {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_menu_item_pdesc[3] = { 2, 60, 61 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_menu_item_pfunc[] = {
-    &GlyphStub::_create,
-    &MenuItemStub::_create
+    &_XfGlyphStub_create,
+    &_XfMenuItemStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_menu_item_pinfo = {
     &_XfWidgetKit_tid, 8, _XfWidgetKit_menu_item_pdesc, _XfWidgetKit_menu_item_pfunc
 };
-MenuItemRef WidgetKitType::_c_menu_item(Glyph_in g) {
+MenuItemRef WidgetKit::menu_item(Glyph_in g) {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1748,13 +1768,13 @@ MenuItemRef WidgetKitType::_c_menu_item(Glyph_in g) {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_check_menu_item_pdesc[3] = { 2, 60, 61 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_check_menu_item_pfunc[] = {
-    &GlyphStub::_create,
-    &MenuItemStub::_create
+    &_XfGlyphStub_create,
+    &_XfMenuItemStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_check_menu_item_pinfo = {
     &_XfWidgetKit_tid, 9, _XfWidgetKit_check_menu_item_pdesc, _XfWidgetKit_check_menu_item_pfunc
 };
-MenuItemRef WidgetKitType::_c_check_menu_item(Glyph_in g) {
+MenuItemRef WidgetKit::check_menu_item(Glyph_in g) {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1764,14 +1784,14 @@ MenuItemRef WidgetKitType::_c_check_menu_item(Glyph_in g) {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_radio_menu_item_pdesc[4] = { 3, 60, 61, 61 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_radio_menu_item_pfunc[] = {
-    &GlyphStub::_create,
-    &TelltaleStub::_create,
-    &MenuItemStub::_create
+    &_XfGlyphStub_create,
+    &_XfTelltaleStub_create,
+    &_XfMenuItemStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_radio_menu_item_pinfo = {
     &_XfWidgetKit_tid, 10, _XfWidgetKit_radio_menu_item_pdesc, _XfWidgetKit_radio_menu_item_pfunc
 };
-MenuItemRef WidgetKitType::_c_radio_menu_item(Glyph_in g, Telltale_in group) {
+MenuItemRef WidgetKit::radio_menu_item(Glyph_in g, Telltale_in group) {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[3];
@@ -1782,12 +1802,12 @@ MenuItemRef WidgetKitType::_c_radio_menu_item(Glyph_in g, Telltale_in group) {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_menu_item_separator_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_menu_item_separator_pfunc[] = {
-    &MenuItemStub::_create
+    &_XfMenuItemStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_menu_item_separator_pinfo = {
     &_XfWidgetKit_tid, 11, _XfWidgetKit_menu_item_separator_pdesc, _XfWidgetKit_menu_item_separator_pfunc
 };
-MenuItemRef WidgetKitType::_c_menu_item_separator() {
+MenuItemRef WidgetKit::menu_item_separator() {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1796,12 +1816,12 @@ MenuItemRef WidgetKitType::_c_menu_item_separator() {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_telltale_group_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_telltale_group_pfunc[] = {
-    &TelltaleStub::_create
+    &_XfTelltaleStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_telltale_group_pinfo = {
     &_XfWidgetKit_tid, 12, _XfWidgetKit_telltale_group_pdesc, _XfWidgetKit_telltale_group_pfunc
 };
-TelltaleRef WidgetKitType::_c_telltale_group() {
+TelltaleRef WidgetKit::telltale_group() {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1810,14 +1830,14 @@ TelltaleRef WidgetKitType::_c_telltale_group() {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_push_button_pdesc[4] = { 3, 60, 61, 61 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_push_button_pfunc[] = {
-    &GlyphStub::_create,
-    &ActionStub::_create,
-    &ButtonStub::_create
+    &_XfGlyphStub_create,
+    &_XfActionStub_create,
+    &_XfButtonStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_push_button_pinfo = {
     &_XfWidgetKit_tid, 13, _XfWidgetKit_push_button_pdesc, _XfWidgetKit_push_button_pfunc
 };
-ButtonRef WidgetKitType::_c_push_button(Glyph_in g, Action_in a) {
+ButtonRef WidgetKit::push_button(Glyph_in g, Action_in a) {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[3];
@@ -1828,14 +1848,14 @@ ButtonRef WidgetKitType::_c_push_button(Glyph_in g, Action_in a) {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_default_button_pdesc[4] = { 3, 60, 61, 61 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_default_button_pfunc[] = {
-    &GlyphStub::_create,
-    &ActionStub::_create,
-    &ButtonStub::_create
+    &_XfGlyphStub_create,
+    &_XfActionStub_create,
+    &_XfButtonStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_default_button_pinfo = {
     &_XfWidgetKit_tid, 14, _XfWidgetKit_default_button_pdesc, _XfWidgetKit_default_button_pfunc
 };
-ButtonRef WidgetKitType::_c_default_button(Glyph_in g, Action_in a) {
+ButtonRef WidgetKit::default_button(Glyph_in g, Action_in a) {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[3];
@@ -1846,14 +1866,14 @@ ButtonRef WidgetKitType::_c_default_button(Glyph_in g, Action_in a) {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_palette_button_pdesc[4] = { 3, 60, 61, 61 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_palette_button_pfunc[] = {
-    &GlyphStub::_create,
-    &ActionStub::_create,
-    &ButtonStub::_create
+    &_XfGlyphStub_create,
+    &_XfActionStub_create,
+    &_XfButtonStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_palette_button_pinfo = {
     &_XfWidgetKit_tid, 15, _XfWidgetKit_palette_button_pdesc, _XfWidgetKit_palette_button_pfunc
 };
-ButtonRef WidgetKitType::_c_palette_button(Glyph_in g, Action_in a) {
+ButtonRef WidgetKit::palette_button(Glyph_in g, Action_in a) {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[3];
@@ -1864,14 +1884,14 @@ ButtonRef WidgetKitType::_c_palette_button(Glyph_in g, Action_in a) {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_check_box_pdesc[4] = { 3, 60, 61, 61 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_check_box_pfunc[] = {
-    &GlyphStub::_create,
-    &ActionStub::_create,
-    &ButtonStub::_create
+    &_XfGlyphStub_create,
+    &_XfActionStub_create,
+    &_XfButtonStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_check_box_pinfo = {
     &_XfWidgetKit_tid, 16, _XfWidgetKit_check_box_pdesc, _XfWidgetKit_check_box_pfunc
 };
-ButtonRef WidgetKitType::_c_check_box(Glyph_in g, Action_in a) {
+ButtonRef WidgetKit::check_box(Glyph_in g, Action_in a) {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[3];
@@ -1882,15 +1902,15 @@ ButtonRef WidgetKitType::_c_check_box(Glyph_in g, Action_in a) {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_radio_button_pdesc[5] = { 4, 60, 61, 61, 61 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_radio_button_pfunc[] = {
-    &GlyphStub::_create,
-    &ActionStub::_create,
-    &TelltaleStub::_create,
-    &ButtonStub::_create
+    &_XfGlyphStub_create,
+    &_XfActionStub_create,
+    &_XfTelltaleStub_create,
+    &_XfButtonStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_radio_button_pinfo = {
     &_XfWidgetKit_tid, 17, _XfWidgetKit_radio_button_pdesc, _XfWidgetKit_radio_button_pfunc
 };
-ButtonRef WidgetKitType::_c_radio_button(Glyph_in g, Action_in a, Telltale_in group) {
+ButtonRef WidgetKit::radio_button(Glyph_in g, Action_in a, Telltale_in group) {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[4];
@@ -1900,15 +1920,32 @@ ButtonRef WidgetKitType::_c_radio_button(Glyph_in g, Action_in a, Telltale_in gr
     _b.invoke(this, _XfWidgetKit_radio_button_pinfo, _arg);
     return (ButtonRef)_arg[0].u_objref;
 }
+MarshalBuffer::ArgDesc _XfWidgetKit_bounded_float_pdesc[5] = { 4, 60, 49, 49, 49 };
+MarshalBuffer::ArgMarshal _XfWidgetKit_bounded_float_pfunc[] = {
+    &_XfAdjustmentStub_create
+};
+MarshalBuffer::ArgInfo _XfWidgetKit_bounded_float_pinfo = {
+    &_XfWidgetKit_tid, 18, _XfWidgetKit_bounded_float_pdesc, _XfWidgetKit_bounded_float_pfunc
+};
+AdjustmentRef WidgetKit::bounded_float(Float lower, Float upper, Float initial) {
+    MarshalBuffer _b;
+    extern TypeObjId _XfWidgetKit_tid;
+    MarshalBuffer::ArgValue _arg[4];
+    _arg[1].u_float = lower;
+    _arg[2].u_float = upper;
+    _arg[3].u_float = initial;
+    _b.invoke(this, _XfWidgetKit_bounded_float_pinfo, _arg);
+    return (AdjustmentRef)_arg[0].u_objref;
+}
 MarshalBuffer::ArgDesc _XfWidgetKit_slider_pdesc[4] = { 3, 60, 33, 61 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_slider_pfunc[] = {
-    &AdjustmentStub::_create,
-    &ViewerStub::_create
+    &_XfAdjustmentStub_create,
+    &_XfViewerStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_slider_pinfo = {
-    &_XfWidgetKit_tid, 18, _XfWidgetKit_slider_pdesc, _XfWidgetKit_slider_pfunc
+    &_XfWidgetKit_tid, 19, _XfWidgetKit_slider_pdesc, _XfWidgetKit_slider_pfunc
 };
-ViewerRef WidgetKitType::_c_slider(Axis a, Adjustment_in adj) {
+ViewerRef WidgetKit::slider(Axis a, Adjustment_in adj) {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[3];
@@ -1919,13 +1956,13 @@ ViewerRef WidgetKitType::_c_slider(Axis a, Adjustment_in adj) {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_scroll_bar_pdesc[4] = { 3, 60, 33, 61 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_scroll_bar_pfunc[] = {
-    &AdjustmentStub::_create,
-    &ViewerStub::_create
+    &_XfAdjustmentStub_create,
+    &_XfViewerStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_scroll_bar_pinfo = {
-    &_XfWidgetKit_tid, 19, _XfWidgetKit_scroll_bar_pdesc, _XfWidgetKit_scroll_bar_pfunc
+    &_XfWidgetKit_tid, 20, _XfWidgetKit_scroll_bar_pdesc, _XfWidgetKit_scroll_bar_pfunc
 };
-ViewerRef WidgetKitType::_c_scroll_bar(Axis a, Adjustment_in adj) {
+ViewerRef WidgetKit::scroll_bar(Axis a, Adjustment_in adj) {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[3];
@@ -1936,14 +1973,14 @@ ViewerRef WidgetKitType::_c_scroll_bar(Axis a, Adjustment_in adj) {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_panner_pdesc[4] = { 3, 60, 61, 61 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_panner_pfunc[] = {
-    &AdjustmentStub::_create,
-    &AdjustmentStub::_create,
-    &ViewerStub::_create
+    &_XfAdjustmentStub_create,
+    &_XfAdjustmentStub_create,
+    &_XfViewerStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_panner_pinfo = {
-    &_XfWidgetKit_tid, 20, _XfWidgetKit_panner_pdesc, _XfWidgetKit_panner_pfunc
+    &_XfWidgetKit_tid, 21, _XfWidgetKit_panner_pdesc, _XfWidgetKit_panner_pfunc
 };
-ViewerRef WidgetKitType::_c_panner(Adjustment_in x, Adjustment_in y) {
+ViewerRef WidgetKit::panner(Adjustment_in x, Adjustment_in y) {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[3];
@@ -1954,15 +1991,15 @@ ViewerRef WidgetKitType::_c_panner(Adjustment_in x, Adjustment_in y) {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_zoomer_pdesc[6] = { 5, 60, 49, 61, 61, 61 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_zoomer_pfunc[] = {
-    &AdjustmentStub::_create,
-    &AdjustmentStub::_create,
-    &AdjustmentStub::_create,
-    &ButtonStub::_create
+    &_XfAdjustmentStub_create,
+    &_XfAdjustmentStub_create,
+    &_XfAdjustmentStub_create,
+    &_XfButtonStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_zoomer_pinfo = {
-    &_XfWidgetKit_tid, 21, _XfWidgetKit_zoomer_pdesc, _XfWidgetKit_zoomer_pfunc
+    &_XfWidgetKit_tid, 22, _XfWidgetKit_zoomer_pdesc, _XfWidgetKit_zoomer_pfunc
 };
-ButtonRef WidgetKitType::_c_zoomer(Coord scale, Adjustment_in x, Adjustment_in y, Adjustment_in z) {
+ButtonRef WidgetKit::zoomer(Coord scale, Adjustment_in x, Adjustment_in y, Adjustment_in z) {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[5];
@@ -1975,13 +2012,13 @@ ButtonRef WidgetKitType::_c_zoomer(Coord scale, Adjustment_in x, Adjustment_in y
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_up_mover_pdesc[3] = { 2, 60, 61 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_up_mover_pfunc[] = {
-    &AdjustmentStub::_create,
-    &ButtonStub::_create
+    &_XfAdjustmentStub_create,
+    &_XfButtonStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_up_mover_pinfo = {
-    &_XfWidgetKit_tid, 22, _XfWidgetKit_up_mover_pdesc, _XfWidgetKit_up_mover_pfunc
+    &_XfWidgetKit_tid, 23, _XfWidgetKit_up_mover_pdesc, _XfWidgetKit_up_mover_pfunc
 };
-ButtonRef WidgetKitType::_c_up_mover(Adjustment_in a) {
+ButtonRef WidgetKit::up_mover(Adjustment_in a) {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1991,13 +2028,13 @@ ButtonRef WidgetKitType::_c_up_mover(Adjustment_in a) {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_down_mover_pdesc[3] = { 2, 60, 61 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_down_mover_pfunc[] = {
-    &AdjustmentStub::_create,
-    &ButtonStub::_create
+    &_XfAdjustmentStub_create,
+    &_XfButtonStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_down_mover_pinfo = {
-    &_XfWidgetKit_tid, 23, _XfWidgetKit_down_mover_pdesc, _XfWidgetKit_down_mover_pfunc
+    &_XfWidgetKit_tid, 24, _XfWidgetKit_down_mover_pdesc, _XfWidgetKit_down_mover_pfunc
 };
-ButtonRef WidgetKitType::_c_down_mover(Adjustment_in a) {
+ButtonRef WidgetKit::down_mover(Adjustment_in a) {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -2007,13 +2044,13 @@ ButtonRef WidgetKitType::_c_down_mover(Adjustment_in a) {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_left_mover_pdesc[3] = { 2, 60, 61 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_left_mover_pfunc[] = {
-    &AdjustmentStub::_create,
-    &ButtonStub::_create
+    &_XfAdjustmentStub_create,
+    &_XfButtonStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_left_mover_pinfo = {
-    &_XfWidgetKit_tid, 24, _XfWidgetKit_left_mover_pdesc, _XfWidgetKit_left_mover_pfunc
+    &_XfWidgetKit_tid, 25, _XfWidgetKit_left_mover_pdesc, _XfWidgetKit_left_mover_pfunc
 };
-ButtonRef WidgetKitType::_c_left_mover(Adjustment_in a) {
+ButtonRef WidgetKit::left_mover(Adjustment_in a) {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -2023,18 +2060,34 @@ ButtonRef WidgetKitType::_c_left_mover(Adjustment_in a) {
 }
 MarshalBuffer::ArgDesc _XfWidgetKit_right_mover_pdesc[3] = { 2, 60, 61 };
 MarshalBuffer::ArgMarshal _XfWidgetKit_right_mover_pfunc[] = {
-    &AdjustmentStub::_create,
-    &ButtonStub::_create
+    &_XfAdjustmentStub_create,
+    &_XfButtonStub_create
 };
 MarshalBuffer::ArgInfo _XfWidgetKit_right_mover_pinfo = {
-    &_XfWidgetKit_tid, 25, _XfWidgetKit_right_mover_pdesc, _XfWidgetKit_right_mover_pfunc
+    &_XfWidgetKit_tid, 26, _XfWidgetKit_right_mover_pdesc, _XfWidgetKit_right_mover_pfunc
 };
-ButtonRef WidgetKitType::_c_right_mover(Adjustment_in a) {
+ButtonRef WidgetKit::right_mover(Adjustment_in a) {
     MarshalBuffer _b;
     extern TypeObjId _XfWidgetKit_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = a;
     _b.invoke(this, _XfWidgetKit_right_mover_pinfo, _arg);
     return (ButtonRef)_arg[0].u_objref;
+}
+MarshalBuffer::ArgDesc _XfWidgetKit_viewer_group_pdesc[3] = { 2, 60, 61 };
+MarshalBuffer::ArgMarshal _XfWidgetKit_viewer_group_pfunc[] = {
+    &_XfGlyphStub_create,
+    &_XfViewerStub_create
+};
+MarshalBuffer::ArgInfo _XfWidgetKit_viewer_group_pinfo = {
+    &_XfWidgetKit_tid, 27, _XfWidgetKit_viewer_group_pdesc, _XfWidgetKit_viewer_group_pfunc
+};
+ViewerRef WidgetKit::viewer_group(Glyph_in g) {
+    MarshalBuffer _b;
+    extern TypeObjId _XfWidgetKit_tid;
+    MarshalBuffer::ArgValue _arg[2];
+    _arg[1].u_objref = g;
+    _b.invoke(this, _XfWidgetKit_viewer_group_pinfo, _arg);
+    return (ViewerRef)_arg[0].u_objref;
 }
 //+

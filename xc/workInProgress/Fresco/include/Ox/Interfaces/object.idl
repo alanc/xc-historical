@@ -37,19 +37,19 @@ interface TypeObj {
 
     //- ParamInfo
     struct ParamInfo {
-	string name;
-	ParamMode mode;
-	TypeObj type;
+	string param_name;
+	ParamMode param_mode;
+	TypeObj param_type;
     };
 	//. This structure contains information about
 	//. a particular parameter.
 
     //- OpInfo
     struct OpInfo {
-	string name;
-	long index;
-	TypeObj result;
-	sequence<ParamInfo> params;
+	string op_name;
+	long op_index;
+	TypeObj op_result;
+	sequence<ParamInfo> op_params;
     };
 	//. This structure contains information about
 	//. an operation or attribute.
@@ -72,7 +72,7 @@ interface TypeObj {
 	//. in the source, not qualified by any containing scopes.
 
     //- op_info
-    boolean op_info(out TypeObj::OpInfo op, in long index);
+    boolean op_info(out TypeObj::OpInfo op, in long n);
 	//. Retrieve the information about the operation referred
 	//. to by the given index, if any.  This operation returns
 	//. true if the index is valid.
@@ -94,7 +94,7 @@ interface TypeObj {
 	//. Return the number of members in a structure.
 
     //- member_info
-    TypeObj member_info(in long index);
+    TypeObj member_info(in long n);
 	//. Return the type of the member identified by the given index.
 
     //- sequence_info

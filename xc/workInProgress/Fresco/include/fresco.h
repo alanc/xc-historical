@@ -31,20 +31,14 @@
  * so we can avoid including the interface definitions.
  */
 
-class DisplayObj;
-class DisplayObjType;
+class Display;
 class DrawingKit;
-class DrawingKitType;
 class FigureKit;
-class FigureKitType;
-class GlyphType;
+class Glyph;
 class LayoutKit;
-class LayoutKitType;
 class ThreadKit;
-class ThreadKitType;
-class ViewerType;
+class Viewer;
 class WidgetKit;
-class WidgetKitType;
 
 //- Option
 struct Option {
@@ -67,7 +61,7 @@ struct Option {
 };
 
 //- Fresco
-class Fresco : public BaseObjectType {
+class Fresco : public BaseObject {
     //. Fresco is a C++ class that defines operations for accessing
     //. other Fresco objects.  It is defined as a class
     //. rather than an interface to provide support for
@@ -88,12 +82,11 @@ protected:
     virtual ~Fresco();
 public:
     //- class_name
-    CharString class_name();
+    virtual CharStringRef class_name() = 0;
 	//. Return the class name associated with a Fresco object.
 	//. This operation is normally only needed when opening
 	//. a display and initializing the display's style
 	//. information.
-    virtual CharStringRef _c_class_name() = 0;
 
     //- argc, argv
     virtual long argc() = 0;
@@ -103,8 +96,8 @@ public:
 	//. needed for registration with a session manager.
 
     //- open_display, open_default_display
-    DisplayObj open_display(CharStringRef name);
-    DisplayObj open_default_display();
+    virtual Display* open_display(CharStringRef name) = 0;
+    virtual Display* open_default_display() = 0;
 	//. Open a display by name or open the default display.
 	//. The name of the default display is platform-specific;
 	//. on POSIX it can be set by the DISPLAY environment variable.
@@ -115,24 +108,20 @@ public:
 	//. D is a display number on the host, and S is
 	//. the number of the screen to use on the display
 	//. by default.
-    virtual DisplayObjType* _c_open_display(CharStringRef name) = 0;
-    virtual DisplayObjType* _c_open_default_display() = 0;
 
-    //- style
-    StyleObj style();
+    //- fresco_style
+    virtual StyleRef fresco_style() = 0;
 	//. Return the root Fresco style.  This style will contain
 	//. default and command-line attributes, but not display-specific
 	//. or user-specific attributes.
-    virtual StyleObjRef _c_style() = 0;
 
     //- create_request*
-    RequestObj create_request(BaseObjectRef);
+    virtual RequestObjRef create_request(BaseObjectRef) = 0;
 	//. Return a new request for dynamically invoking an operation
 	//. on the given object.
-    virtual RequestObjRef _c_create_request(BaseObjectRef) = 0;
 
     //- main*
-    virtual void main(ViewerType* v, GlyphType* g) = 0;
+    virtual void run(Viewer* v, Glyph* g) = 0;
 	//. Start and run a "main loop" in the common case
 	//. with a single viewer on a single display.
 	//. This operation creates and maps a main viewer
@@ -142,56 +131,59 @@ public:
 	//. in which case input is ignored) and the given glyph
 	//. for output (unless the glyph is nil, in which case the
 	//. viewer is used for output).  After mapping the viewer,
-	//. main calls DisplayObj::run and waits for it to return.
+	//. main calls Display::run and waits for it to return.
 
     //- drawing_kit*
-    void drawing_kit(DrawingKitType*);
-    DrawingKit drawing_kit();
+    virtual void drawing_kit(DrawingKit*) = 0;
+    virtual DrawingKit* drawing_kit() = 0;
 	//. Set or get the kit creating drawing objects such
 	//. as colors and fonts.
-    virtual void _c_drawing_kit(DrawingKitType*) = 0;
-    virtual DrawingKitType* _c_drawing_kit() = 0;
 
     //- figure_kit*
-    void figure_kit(FigureKitType*);
-    FigureKit figure_kit();
+    virtual void figure_kit(FigureKit*) = 0;
+    virtual FigureKit* figure_kit() = 0;
 	//. Set or get the kit for creating simple graphics figures.
-    virtual void _c_figure_kit(FigureKitType*) = 0;
-    virtual FigureKitType* _c_figure_kit() = 0;
 
     //- layout_kit*
-    void layout_kit(LayoutKitType*);
-    LayoutKit layout_kit();
+    virtual void layout_kit(LayoutKit*) = 0;
+    virtual LayoutKit* layout_kit() = 0;
 	//. Set or get the kit for creating simple layout manager objects.
-    virtual void _c_layout_kit(LayoutKitType*) = 0;
-    virtual LayoutKitType* _c_layout_kit() = 0;
 
     //- thread_kit*
-    void thread_kit(ThreadKitType*);
-    ThreadKit thread_kit();
+    virtual void thread_kit(ThreadKit*) = 0;
+    virtual ThreadKit* thread_kit() = 0;
 	//. Set or get the kit for creating threads and
 	//. synchronization objects.
-    virtual void _c_thread_kit(ThreadKitType*) = 0;
-    virtual ThreadKitType* _c_thread_kit() = 0;
 
     //- widget_kit*
-    void widget_kit(WidgetKitType*);
-    WidgetKit widget_kit();
+    virtual void widget_kit(WidgetKit*) = 0;
+    virtual WidgetKit* widget_kit() = 0;
 	//. Set or get the kit for creating simple widgets
 	//. such as buttons, menus, and scrollbars.
-    virtual void _c_widget_kit(WidgetKitType*) = 0;
-    virtual WidgetKitType* _c_widget_kit() = 0;
 
-    //- string_ref, string_copy
-    static CharString string_ref(const char*);
-    static CharString string_copy(const char*);
+    //- string_ref, tmp_string_ref, string_copy, tmp_string_copy
+    static CharStringRef string_ref(const char*);
+    static CharStringRef string_copy(const char*);
+    static CharString_var tmp_string_ref(const char*);
+    static CharString_var tmp_string_copy(const char*);
 	//. Create a string from a null-terminated array
 	//. of characters.  The string_ref operation simply
 	//. references the data; the string_copy operation
 	//. copies the data into its own storage that is freed
-	//. when the string is deallocated.
-    static CharStringRef _c_string_ref(const char*);
-    static CharStringRef _c_string_copy(const char*);
+	//. when the string is deallocated.  The tmp_string_ref and
+	//. tmp_string_copy operations return a managed rather than
+	//. raw object reference.
+
+    //- get_string, get_tmp_string
+    static CharStringRef get_string(Style_in, const char* name);
+    static CharString_var get_tmp_string(Style_in, const char* name);
+	//. Return the string bound to the given name in
+	//. the given style.  The get_tmp_string operation returns
+	//. a managed rather than a raw reference.  These operations
+	//. are effectively short-hand for creating a string, calling
+	//. resolve on the style, and calling read_string on the
+	//. result if non-nil.  Both operations return a nil string
+	//. if either the name is not defined in the style.
 
     //- ref, unref
     static void ref(BaseObjectRef);
@@ -203,6 +195,12 @@ public:
 	//. These operations are static rather than operations
 	//. on BaseObject to allow for nil references,
 	//. which are ignored.
+
+    //- delay
+    static Boolean delay(Float seconds);
+	//. Pause execution the given number of seconds or fraction
+	//. of a second.  Return true if execution was successfully
+	//. suspended the requested duration.
 private:
     Fresco(const Fresco&);
     void operator =(const Fresco&);
@@ -242,24 +240,16 @@ extern Fresco* Fresco_open_display(
     //. if they cannot successfully open the display.
 //-
 
-inline CharString Fresco::class_name() { return _c_class_name(); }
-inline StyleObj Fresco::style() { return _c_style(); }
-inline RequestObj Fresco::create_request(BaseObjectRef obj) {
-    return _c_create_request(obj);
+inline CharString_var Fresco::tmp_string_ref(const char* s) {
+    return string_ref(s);
 }
 
-inline void Fresco::drawing_kit(DrawingKitType* k) { _c_drawing_kit(k); }
-inline void Fresco::figure_kit(FigureKitType* k) { _c_figure_kit(k); }
-inline void Fresco::layout_kit(LayoutKitType* k) { _c_layout_kit(k); }
-inline void Fresco::thread_kit(ThreadKitType* k) { _c_thread_kit(k); }
-inline void Fresco::widget_kit(WidgetKitType* k) { _c_widget_kit(k); }
-
-inline CharString Fresco::string_ref(const char* s) {
-    return _c_string_ref(s);
+inline CharString_var Fresco::tmp_string_copy(const char* s) {
+    return string_copy(s);
 }
 
-inline CharString Fresco::string_copy(const char* s) {
-    return _c_string_copy(s);
+inline CharString_var Fresco::get_tmp_string(StyleRef s, const char* name) {
+    return get_string(s, name);
 }
 
 #endif

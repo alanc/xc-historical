@@ -137,16 +137,16 @@ interface Semaphore : BaseThreadsObj {
     //. A semaphore is created with an initial count that
     //. corresponds to the number of free resources.
     //. Threads can then atomically increment the count
-    //. with the P operation and atomically decrement the count
-    //. with the V operation.
+    //. with the wait operation and atomically decrement the count
+    //. with the signal operation.
 
-    //- P
-    void P();
+    //- wait
+    void wait();
 	//. Wait until the semaphore's count is positive,
 	//. then decrement it.
 
-    //- V
-    void V();
+    //- signal
+    void signal();
 	//. If one or more threads are waiting on the semaphore,
 	//. then wake one up (chosen arbitrarily).  Otherwise,
 	//. increment the count.

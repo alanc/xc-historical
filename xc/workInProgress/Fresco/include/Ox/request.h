@@ -30,7 +30,7 @@
 
 class MarshalBuffer;
 
-class RequestObjImpl : public RequestObjType {
+class RequestObjImpl : public RequestObj {
 public:
     RequestObjImpl(BaseObjectRef);
     ~RequestObjImpl();
@@ -40,8 +40,8 @@ public:
     //+ RequestObj::*
     /* RequestObj */
     void set_operation(string s);
-    RequestObj::CallStatus invoke();
-    RequestObj::CallStatus op_info(TypeObj::OpInfo& op);
+    CallStatus invoke();
+    CallStatus op_info(TypeObj::OpInfo& op);
     void put_char(Char value);
     Char get_char();
     void put_boolean(Boolean value);
@@ -63,7 +63,7 @@ public:
     void put_string(string value);
     string get_string();
     void put_object(BaseObject_in obj);
-    BaseObjectRef _c_get_object();
+    BaseObject_return get_object();
     void begin_aggregate();
     void end_aggregate();
     //+

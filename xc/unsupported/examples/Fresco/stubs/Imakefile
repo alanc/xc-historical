@@ -1,12 +1,12 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.2 94/03/23 15:53:18 matt Exp $
 XCOMM
 XCOMM Sample client-server
 XCOMM
 
-#include <fresco.cf>
+#include <Fresco.tmpl>
 
 SRCS = client.CCsuf server.CCsuf naming-exch.CCsuf
-OBJS = client.o     server.o     naming-exch.o
+OBJS = client.o server.o naming-exch.o
 
 #define Example(p,o)				@@\
 NormalCplusplusProgramTarget(p,o,$(DEPLIBS),$(LOCAL_LIBRARIES),NullParameter)
@@ -22,7 +22,7 @@ XCOMM
 XCOMM  The rest of this file is related to running ixx
 XCOMM
 
-#include <ixx.cf>
+#include <Ixx.tmpl>
 
    IXFLAGS = -s BaseObject -m TypeObj -stubclass Stub -env Env -refobjs
 IXINCLUDES =

@@ -32,11 +32,11 @@
 
 class TransformImpl;
 
-declarePtrList(GlyphOffsetList,GlyphOffsetType)
+declarePtrList(GlyphOffsetList,GlyphOffset)
 
 //- GlyphImpl*
-//+ GlyphImpl : GlyphType
-class GlyphImpl : public GlyphType {
+//+ GlyphImpl : Glyph
+class GlyphImpl : public Glyph {
 public:
     ~GlyphImpl();
     TypeObjId _tid();
@@ -58,26 +58,26 @@ public:
     void notify_observers();
     void update();
     /* Glyph */
-    GlyphRef _c_clone_glyph();
-    StyleObjRef _c_style();
-    void _c_style(StyleObj_in _p);
-    TransformObjRef _c_transform();
+    Glyph_return clone_glyph();
+    Style_return glyph_style();
+    void glyph_style(Style_in _p);
+    Transform_return transformation();
     void request(Glyph::Requisition& r);
     void extension(const Glyph::AllocationInfo& a, Region_in r);
-    RegionRef _c_shape();
+    void shape(Region_in r);
     void traverse(GlyphTraversal_in t);
     void draw(GlyphTraversal_in t);
     void pick(GlyphTraversal_in t);
-    GlyphRef _c_body();
-    void _c_body(Glyph_in _p);
-    GlyphOffsetRef _c_append(Glyph_in g);
-    GlyphOffsetRef _c_prepend(Glyph_in g);
+    Glyph_return body();
+    void body(Glyph_in _p);
+    void append(Glyph_in g);
+    void prepend(Glyph_in g);
     Tag add_parent(GlyphOffset_in parent_offset);
     void remove_parent(Tag add_tag);
-    void visit_children(GlyphVisitor_in v);
-    void visit_children_reversed(GlyphVisitor_in v);
-    void visit_parents(GlyphVisitor_in v);
-    void allocations(Glyph::AllocationInfoList& a);
+    GlyphOffset_return first_child_offset();
+    GlyphOffset_return last_child_offset();
+    void parent_offsets(OffsetSeq& parents);
+    void allocations(Glyph::AllocationInfoSeq& a);
     void need_redraw();
     void need_redraw_region(Region_in r);
     void need_resize();
@@ -114,38 +114,25 @@ public:
     static Glyph::Requirement* requirement(Glyph::Requisition& r, Axis a);
 	//. Return the requirement for the given requisition along
 	//. the given axis.
+
+    //- default_extension
+    static void default_extension(
+	GlyphRef g, const Glyph::AllocationInfo& a, Region_in r
+    );
+	//. Compute the "default" extension for a glyph, which assumes
+	//. that the glyph fills its allocation.
+
+    //- release_allocation_info
+    static void release_allocation_info(Glyph::AllocationInfo& a);
+	//. Release the references in an AllocationInfo structure.
 protected:
     SharedFrescoObjectImpl object_;
     GlyphOffsetList parents_;
 };
 
-//- GlyphVisitorImpl
-class GlyphVisitorImpl : public GlyphVisitorType {
-    //. GlyphVisitorImpl provides a default implementation for
-    //. GlyphVisitor.  Other implementations can subclass
-    //. from GlyphVisitorImpl and just redefine visit.
-public:
-    GlyphVisitorImpl();
-    ~GlyphVisitorImpl();
-
-    //+ GlyphVisitor::*
-    /* FrescoObject */
-    Long ref__(Long references);
-    Tag attach(FrescoObject_in observer);
-    void detach(Tag attach_tag);
-    void disconnect();
-    void notify_observers();
-    void update();
-    /* GlyphVisitor */
-    Boolean visit(Glyph_in glyph, GlyphOffset_in offset);
-    //+
-protected:
-    SharedFrescoObjectImpl object_;
-};
-
 class MonoGlyph;
 
-class MonoGlyphOffset : public GlyphOffsetType {
+class MonoGlyphOffset : public GlyphOffset {
 public:
     MonoGlyphOffset(MonoGlyph*);
     ~MonoGlyphOffset();
@@ -159,10 +146,12 @@ public:
     void notify_observers();
     void update();
     /* GlyphOffset */
-    GlyphRef _c_parent();
-    GlyphRef _c_child();
-    void allocations(Glyph::AllocationInfoList& a);
-    GlyphOffsetRef _c_insert(Glyph_in g);
+    Glyph_return parent();
+    Glyph_return child();
+    GlyphOffset_return next_child();
+    GlyphOffset_return prev_child();
+    void allocations(Glyph::AllocationInfoSeq& a);
+    void insert(Glyph_in g);
     void replace(Glyph_in g);
     void remove();
     void notify();
@@ -185,14 +174,14 @@ public:
 
     void request(Glyph::Requisition& r); //+ Glyph::request
     void extension(const Glyph::AllocationInfo& a, Region_in r); //+ Glyph::extension
-    RegionRef _c_shape(); //+ Glyph::shape
+    void shape(Region_in r); //+ Glyph::shape
     void traverse(GlyphTraversal_in t); //+ Glyph::traverse
-    void _c_body(Glyph_in); //+ Glyph::body=
-    GlyphRef _c_body(); //+ Glyph::body?
-    GlyphOffsetRef _c_append(Glyph_in g); //+ Glyph::append
-    GlyphOffsetRef _c_prepend(Glyph_in g); //+ Glyph::prepend
-    void visit_children(GlyphVisitor_in v); //+ Glyph::visit_children
-    void visit_children_reversed(GlyphVisitor_in v); //+ Glyph::visit_children_reversed
+    void body(Glyph_in); //+ Glyph::body=
+    GlyphRef body(); //+ Glyph::body?
+    void append(Glyph_in g); //+ Glyph::append
+    void prepend(Glyph_in g); //+ Glyph::prepend
+    GlyphOffset_return first_child_offset(); //+ Glyph::first_child_offset
+    GlyphOffset_return last_child_offset(); //+ Glyph::last_child_offset
 
     void visit_trail(GlyphTraversalRef t);
     virtual void child_allocate(Glyph::AllocationInfo& a);
@@ -284,8 +273,7 @@ public:
     ~Allocator();
 
     void request(Glyph::Requisition& r); //+ Glyph::request
-    void extension(const Glyph::AllocationInfo& a, Region_in r); //+ Glyph::extension
-    void allocations(Glyph::AllocationInfoList& a); //+ Glyph::allocations
+    void allocations(Glyph::AllocationInfoSeq& a); //+ Glyph::allocations
     void traverse(GlyphTraversal_in t); //+ Glyph::traverse
     void need_resize(); //+ Glyph::need_resize
 
@@ -294,6 +282,7 @@ protected:
     Boolean requested_;
     Glyph::Requisition req_;
     RegionImpl nat_;
+    RegionImpl ext_;
 
     void update_requisition();
 };

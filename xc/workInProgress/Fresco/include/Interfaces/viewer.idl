@@ -79,8 +79,14 @@ interface Event : FrescoObject {
     Event::TimeStamp time();
 	//. Return a time-stamp indicating when the event occurred.
 
+    //- double_click
+    boolean double_click(in Event::TimeStamp previous);
+	//. Return true if the difference between the event's time-stamp
+	//. and the given time-stamp is below the double click
+	//. threshold defined by the event's display.
+
     //- positional
-    Boolean positional();
+    boolean positional();
 	//. The event specifies a position, such as for a pointing device.
 	//. Focused (non-positional) events may also report the current
 	//. location of a pointing device, but will return false

@@ -7,141 +7,104 @@
 #include <X11/Fresco/drawing.h>
 #include <X11/Fresco/glyph.h>
 
-class FigureStyleType;
-typedef FigureStyleType* FigureStyleRef;
-typedef FigureStyleRef FigureStyle_in;
 class FigureStyle;
-class FigureStyle_tmp;
+typedef FigureStyle* FigureStyleRef;
+typedef FigureStyleRef FigureStyle_in;
+typedef FigureStyleRef FigureStyle_out, FigureStyle_inout;
+typedef FigureStyleRef FigureStyle_return;
 class FigureStyle_var;
 
-class FigureStyle {
+extern BaseObjectRef _XfFigureStyleStub_create(Exchange*);
+
+class FigureStyle : public Style {
+protected:
+    FigureStyle();
+    virtual ~FigureStyle();
 public:
-    FigureStyleRef _obj_;
+    FigureStyleRef _obj() { return this; };
+    static FigureStyleRef  _return_ref(FigureStyle_return r) { return r; }
 
-    FigureStyle() { _obj_ = 0; }
-    FigureStyle(FigureStyleRef p) { _obj_ = p; }
-    FigureStyle& operator =(FigureStyleRef p);
-    FigureStyle(const FigureStyle&);
-    FigureStyle& operator =(const FigureStyle& r);
-    FigureStyle(const FigureStyle_tmp&);
-    FigureStyle& operator =(const FigureStyle_tmp&);
-    FigureStyle(const FigureStyle_var&);
-    FigureStyle& operator =(const FigureStyle_var&);
-    ~FigureStyle();
+    virtual void* _this();
+    virtual TypeObjId _tid();
 
-    FigureStyleRef operator ->() { return _obj_; }
-
-    operator FigureStyle_in() const { return _obj_; }
-    operator StyleObj() const;
-    operator FrescoObject() const;
-    static FigureStyleRef _narrow(BaseObjectRef p);
-    static FigureStyle_tmp _narrow(const BaseObject& r);
-
-    static FigureStyleRef _duplicate(FigureStyleRef obj);
-    static FigureStyle_tmp _duplicate(const FigureStyle& r);
-};
-
-class FigureStyle_tmp : public FigureStyle {
-public:
-    FigureStyle_tmp(FigureStyleRef p) { _obj_ = p; }
-    FigureStyle_tmp(const FigureStyle& r);
-    FigureStyle_tmp(const FigureStyle_tmp& r);
-    ~FigureStyle_tmp();
+    static FigureStyleRef _narrow(BaseObjectRef);
+    static FigureStyleRef _duplicate(FigureStyleRef obj) {
+        return (FigureStyleRef)_BaseObject__duplicate(obj, &_XfFigureStyleStub_create);
+    }
+    virtual Color_return background();
+    virtual void background(Color_in _p);
+    virtual Brush_return brush_attr();
+    virtual void brush_attr(Brush_in _p);
+    virtual Font_return font_attr();
+    virtual void font_attr(Font_in _p);
+    virtual Color_return foreground();
+    virtual void foreground(Color_in _p);
 };
 
 class FigureStyle_var {
-public:
-    FigureStyleRef _obj_;
-
-    FigureStyle_var(FigureStyleRef p) { _obj_ = p; }
-    operator FigureStyleRef() const { return _obj_; }
-    FigureStyleRef operator ->() { return _obj_; }
-};
-
-class FigureStyleType : public StyleObjType {
 protected:
-    FigureStyleType();
-    virtual ~FigureStyleType();
+    FigureStyleRef _obj_;
 public:
-    Color_tmp background() {
-        return _c_background();
+    FigureStyle_var() { _obj_ = 0; };
+    FigureStyle_var(FigureStyleRef p) { _obj_ = p; }
+    FigureStyle_var(const FigureStyle_var& r) {
+        _obj_ = FigureStyle::_duplicate(r._obj_);
     }
-    virtual ColorRef _c_background();
-    void background(Color_in _p) {
-        _c_background(_p);
+    ~FigureStyle_var() { _BaseObject__release(_obj_); }
+
+    FigureStyle_var& operator =(FigureStyleRef p) {
+        _BaseObject__release(_obj_);
+        _obj_ = FigureStyle::_duplicate(p);
+        return *this;
     }
-    virtual void _c_background(Color_in _p);
-    Brush_tmp brush_attr() {
-        return _c_brush_attr();
+    FigureStyle_var& operator =(const FigureStyle_var& r) {
+        _BaseObject__release(_obj_);
+        _obj_ = FigureStyle::_duplicate(r._obj_);
+        return *this;
     }
-    virtual BrushRef _c_brush_attr();
-    void brush_attr(Brush_in _p) {
-        _c_brush_attr(_p);
-    }
-    virtual void _c_brush_attr(Brush_in _p);
-    Font_tmp font_attr() {
-        return _c_font_attr();
-    }
-    virtual FontRef _c_font_attr();
-    void font_attr(Font_in _p) {
-        _c_font_attr(_p);
-    }
-    virtual void _c_font_attr(Font_in _p);
-    Color_tmp foreground() {
-        return _c_foreground();
-    }
-    virtual ColorRef _c_foreground();
-    void foreground(Color_in _p) {
-        _c_foreground(_p);
-    }
-    virtual void _c_foreground(Color_in _p);
-    FigureStyleRef _obj() { return this; }
-    void* _this();
-    virtual TypeObjId _tid();
+
+    FigureStyleRef _obj() const { return _obj_; }
+    FigureStyleRef& _out() { return _obj_; }
+    operator FigureStyleRef() const { return _obj_; }
+    FigureStyleRef operator ->() const { return _obj_; }
 };
 
-class FigureStyleStub : public FigureStyleType {
+inline FigureStyle_var _tmp(FigureStyleRef p) { return FigureStyle_var(p); }
+
+class FigureStyleStub : public FigureStyle {
 public:
     FigureStyleStub(Exchange*);
     ~FigureStyleStub();
 
-    static BaseObjectRef _create(Exchange*);
     Exchange* _exchange();
 protected:
     Exchange* exch_;
 };
 
-class FigureKitType;
-typedef FigureKitType* FigureKitRef;
-typedef FigureKitRef FigureKit_in;
 class FigureKit;
-class FigureKit_tmp;
+typedef FigureKit* FigureKitRef;
+typedef FigureKitRef FigureKit_in;
+typedef FigureKitRef FigureKit_out, FigureKit_inout;
+typedef FigureKitRef FigureKit_return;
 class FigureKit_var;
 
-class FigureKit {
+extern BaseObjectRef _XfFigureKitStub_create(Exchange*);
+
+class FigureKit : public FrescoObject {
+protected:
+    FigureKit();
+    virtual ~FigureKit();
 public:
-    FigureKitRef _obj_;
+    FigureKitRef _obj() { return this; };
+    static FigureKitRef  _return_ref(FigureKit_return r) { return r; }
 
-    FigureKit() { _obj_ = 0; }
-    FigureKit(FigureKitRef p) { _obj_ = p; }
-    FigureKit& operator =(FigureKitRef p);
-    FigureKit(const FigureKit&);
-    FigureKit& operator =(const FigureKit& r);
-    FigureKit(const FigureKit_tmp&);
-    FigureKit& operator =(const FigureKit_tmp&);
-    FigureKit(const FigureKit_var&);
-    FigureKit& operator =(const FigureKit_var&);
-    ~FigureKit();
+    virtual void* _this();
+    virtual TypeObjId _tid();
 
-    FigureKitRef operator ->() { return _obj_; }
-
-    operator FigureKit_in() const { return _obj_; }
-    operator FrescoObject() const;
-    static FigureKitRef _narrow(BaseObjectRef p);
-    static FigureKit_tmp _narrow(const BaseObject& r);
-
-    static FigureKitRef _duplicate(FigureKitRef obj);
-    static FigureKit_tmp _duplicate(const FigureKit& r);
+    static FigureKitRef _narrow(BaseObjectRef);
+    static FigureKitRef _duplicate(FigureKitRef obj) {
+        return (FigureKitRef)_BaseObject__duplicate(obj, &_XfFigureKitStub_create);
+    }
     class Vertices {
     public:
         long _maximum, _length; Vertex* _buffer;
@@ -157,217 +120,62 @@ public:
     enum Mode {
         fill, stroke, fill_stroke
     };
-};
-
-class FigureKit_tmp : public FigureKit {
-public:
-    FigureKit_tmp(FigureKitRef p) { _obj_ = p; }
-    FigureKit_tmp(const FigureKit& r);
-    FigureKit_tmp(const FigureKit_tmp& r);
-    ~FigureKit_tmp();
+    virtual FigureStyle_return default_style();
+    virtual FigureStyle_return new_style(Style_in parent);
+    virtual Glyph_return figure_root(Glyph_in child);
+    virtual Glyph_return label(FigureStyle_in s, CharString_in str);
+    virtual Glyph_return point(FigureStyle_in s, Coord x, Coord y);
+    virtual Glyph_return line(FigureStyle_in s, Coord x0, Coord y0, Coord x1, Coord y1);
+    virtual Glyph_return rectangle(FigureKit::Mode m, FigureStyle_in s, Coord left, Coord bottom, Coord right, Coord top);
+    virtual Glyph_return circle(FigureKit::Mode m, FigureStyle_in s, Coord x, Coord y, Coord r);
+    virtual Glyph_return ellipse(FigureKit::Mode m, FigureStyle_in s, Coord x, Coord y, Coord r1, Coord r2);
+    virtual Glyph_return open_bspline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v);
+    virtual Glyph_return closed_bspline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v);
+    virtual Glyph_return multiline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v);
+    virtual Glyph_return polygon(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v);
+    virtual Glyph_return fitter(Glyph_in g);
+    virtual Glyph_return group();
 };
 
 class FigureKit_var {
-public:
-    FigureKitRef _obj_;
-
-    FigureKit_var(FigureKitRef p) { _obj_ = p; }
-    operator FigureKitRef() const { return _obj_; }
-    FigureKitRef operator ->() { return _obj_; }
-};
-
-class FigureKitType : public FrescoObjectType {
 protected:
-    FigureKitType();
-    virtual ~FigureKitType();
+    FigureKitRef _obj_;
 public:
-    FigureStyle_tmp default_style() {
-        return _c_default_style();
+    FigureKit_var() { _obj_ = 0; };
+    FigureKit_var(FigureKitRef p) { _obj_ = p; }
+    FigureKit_var(const FigureKit_var& r) {
+        _obj_ = FigureKit::_duplicate(r._obj_);
     }
-    virtual FigureStyleRef _c_default_style();
-    FigureStyle_tmp new_style(StyleObj_in parent) {
-        return _c_new_style(parent);
+    ~FigureKit_var() { _BaseObject__release(_obj_); }
+
+    FigureKit_var& operator =(FigureKitRef p) {
+        _BaseObject__release(_obj_);
+        _obj_ = FigureKit::_duplicate(p);
+        return *this;
     }
-    virtual FigureStyleRef _c_new_style(StyleObj_in parent);
-    Glyph_tmp figure_root(Glyph_in child) {
-        return _c_figure_root(child);
+    FigureKit_var& operator =(const FigureKit_var& r) {
+        _BaseObject__release(_obj_);
+        _obj_ = FigureKit::_duplicate(r._obj_);
+        return *this;
     }
-    virtual GlyphRef _c_figure_root(Glyph_in child);
-    Glyph_tmp label(FigureStyle_in s, CharString_in str) {
-        return _c_label(s, str);
-    }
-    virtual GlyphRef _c_label(FigureStyle_in s, CharString_in str);
-    Glyph_tmp point(FigureStyle_in s, Coord x, Coord y) {
-        return _c_point(s, x, y);
-    }
-    virtual GlyphRef _c_point(FigureStyle_in s, Coord x, Coord y);
-    Glyph_tmp line(FigureStyle_in s, Coord x0, Coord y0, Coord x1, Coord y1) {
-        return _c_line(s, x0, y0, x1, y1);
-    }
-    virtual GlyphRef _c_line(FigureStyle_in s, Coord x0, Coord y0, Coord x1, Coord y1);
-    Glyph_tmp rectangle(FigureKit::Mode m, FigureStyle_in s, Coord left, Coord bottom, Coord right, Coord top) {
-        return _c_rectangle(m, s, left, bottom, right, top);
-    }
-    virtual GlyphRef _c_rectangle(FigureKit::Mode m, FigureStyle_in s, Coord left, Coord bottom, Coord right, Coord top);
-    Glyph_tmp circle(FigureKit::Mode m, FigureStyle_in s, Coord x, Coord y, Coord r) {
-        return _c_circle(m, s, x, y, r);
-    }
-    virtual GlyphRef _c_circle(FigureKit::Mode m, FigureStyle_in s, Coord x, Coord y, Coord r);
-    Glyph_tmp ellipse(FigureKit::Mode m, FigureStyle_in s, Coord x, Coord y, Coord r1, Coord r2) {
-        return _c_ellipse(m, s, x, y, r1, r2);
-    }
-    virtual GlyphRef _c_ellipse(FigureKit::Mode m, FigureStyle_in s, Coord x, Coord y, Coord r1, Coord r2);
-    Glyph_tmp open_bspline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v) {
-        return _c_open_bspline(m, s, v);
-    }
-    virtual GlyphRef _c_open_bspline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v);
-    Glyph_tmp closed_bspline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v) {
-        return _c_closed_bspline(m, s, v);
-    }
-    virtual GlyphRef _c_closed_bspline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v);
-    Glyph_tmp multiline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v) {
-        return _c_multiline(m, s, v);
-    }
-    virtual GlyphRef _c_multiline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v);
-    Glyph_tmp polygon(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v) {
-        return _c_polygon(m, s, v);
-    }
-    virtual GlyphRef _c_polygon(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v);
-    Glyph_tmp fitter(Glyph_in g) {
-        return _c_fitter(g);
-    }
-    virtual GlyphRef _c_fitter(Glyph_in g);
-    Glyph_tmp group() {
-        return _c_group();
-    }
-    virtual GlyphRef _c_group();
-    FigureKitRef _obj() { return this; }
-    void* _this();
-    virtual TypeObjId _tid();
+
+    FigureKitRef _obj() const { return _obj_; }
+    FigureKitRef& _out() { return _obj_; }
+    operator FigureKitRef() const { return _obj_; }
+    FigureKitRef operator ->() const { return _obj_; }
 };
 
-class FigureKitStub : public FigureKitType {
+inline FigureKit_var _tmp(FigureKitRef p) { return FigureKit_var(p); }
+
+class FigureKitStub : public FigureKit {
 public:
     FigureKitStub(Exchange*);
     ~FigureKitStub();
 
-    static BaseObjectRef _create(Exchange*);
     Exchange* _exchange();
 protected:
     Exchange* exch_;
 };
 
-inline FigureStyleRef FigureStyle::_duplicate(FigureStyleRef obj) {
-    return (FigureStyleRef)_BaseObject__duplicate(obj, &FigureStyleStub::_create);
-}
-inline FigureStyle& FigureStyle::operator =(FigureStyleRef p) {
-    _BaseObject__release(_obj_);
-    _obj_ = FigureStyle::_duplicate(p);
-    return *this;
-}
-inline FigureStyle::FigureStyle(const FigureStyle& r) {
-    _obj_ = FigureStyle::_duplicate(r._obj_);
-}
-inline FigureStyle& FigureStyle::operator =(const FigureStyle& r) {
-    _BaseObject__release(_obj_);
-    _obj_ = FigureStyle::_duplicate(r._obj_);
-    return *this;
-}
-inline FigureStyle::FigureStyle(const FigureStyle_tmp& r) {
-    _obj_ = r._obj_;
-    ((FigureStyle_tmp*)&r)->_obj_ = 0;
-}
-inline FigureStyle& FigureStyle::operator =(const FigureStyle_tmp& r) {
-    _BaseObject__release(_obj_);
-    _obj_ = r._obj_;
-    ((FigureStyle_tmp*)&r)->_obj_ = 0;
-    return *this;
-}
-inline FigureStyle::FigureStyle(const FigureStyle_var& e) {
-    _obj_ = FigureStyle::_duplicate(e._obj_);
-}
-inline FigureStyle& FigureStyle::operator =(const FigureStyle_var& e) {
-    _BaseObject__release(_obj_);
-    _obj_ = FigureStyle::_duplicate(e._obj_);
-    return *this;
-}
-inline FigureStyle::~FigureStyle() {
-    _BaseObject__release(_obj_);
-}
-inline FigureStyle_tmp FigureStyle::_narrow(const BaseObject& r) {
-    return _narrow(r._obj_);
-}
-inline FigureStyle_tmp FigureStyle::_duplicate(const FigureStyle& r) {
-    return _duplicate(r._obj_);
-}
-inline FigureStyle::operator StyleObj() const {
-    return StyleObj_tmp((StyleObjRef)_BaseObject__duplicate((StyleObjRef)_obj_, &StyleObjStub::_create));
-}
-inline FigureStyle::operator FrescoObject() const {
-    return FrescoObject_tmp((FrescoObjectRef)_BaseObject__duplicate((StyleObjRef)(FrescoObjectRef)_obj_, &FrescoObjectStub::_create));
-}
-inline FigureStyle_tmp::FigureStyle_tmp(const FigureStyle& r) {
-    _obj_ = FigureStyle::_duplicate(r._obj_);
-}
-inline FigureStyle_tmp::FigureStyle_tmp(const FigureStyle_tmp& r) {
-    _obj_ = r._obj_;
-    ((FigureStyle_tmp*)&r)->_obj_ = 0;
-}
-inline FigureStyle_tmp::~FigureStyle_tmp() { }
-
-inline FigureKitRef FigureKit::_duplicate(FigureKitRef obj) {
-    return (FigureKitRef)_BaseObject__duplicate(obj, &FigureKitStub::_create);
-}
-inline FigureKit& FigureKit::operator =(FigureKitRef p) {
-    _BaseObject__release(_obj_);
-    _obj_ = FigureKit::_duplicate(p);
-    return *this;
-}
-inline FigureKit::FigureKit(const FigureKit& r) {
-    _obj_ = FigureKit::_duplicate(r._obj_);
-}
-inline FigureKit& FigureKit::operator =(const FigureKit& r) {
-    _BaseObject__release(_obj_);
-    _obj_ = FigureKit::_duplicate(r._obj_);
-    return *this;
-}
-inline FigureKit::FigureKit(const FigureKit_tmp& r) {
-    _obj_ = r._obj_;
-    ((FigureKit_tmp*)&r)->_obj_ = 0;
-}
-inline FigureKit& FigureKit::operator =(const FigureKit_tmp& r) {
-    _BaseObject__release(_obj_);
-    _obj_ = r._obj_;
-    ((FigureKit_tmp*)&r)->_obj_ = 0;
-    return *this;
-}
-inline FigureKit::FigureKit(const FigureKit_var& e) {
-    _obj_ = FigureKit::_duplicate(e._obj_);
-}
-inline FigureKit& FigureKit::operator =(const FigureKit_var& e) {
-    _BaseObject__release(_obj_);
-    _obj_ = FigureKit::_duplicate(e._obj_);
-    return *this;
-}
-inline FigureKit::~FigureKit() {
-    _BaseObject__release(_obj_);
-}
-inline FigureKit_tmp FigureKit::_narrow(const BaseObject& r) {
-    return _narrow(r._obj_);
-}
-inline FigureKit_tmp FigureKit::_duplicate(const FigureKit& r) {
-    return _duplicate(r._obj_);
-}
-inline FigureKit::operator FrescoObject() const {
-    return FrescoObject_tmp((FrescoObjectRef)_BaseObject__duplicate((FrescoObjectRef)_obj_, &FrescoObjectStub::_create));
-}
-inline FigureKit_tmp::FigureKit_tmp(const FigureKit& r) {
-    _obj_ = FigureKit::_duplicate(r._obj_);
-}
-inline FigureKit_tmp::FigureKit_tmp(const FigureKit_tmp& r) {
-    _obj_ = r._obj_;
-    ((FigureKit_tmp*)&r)->_obj_ = 0;
-}
-inline FigureKit_tmp::~FigureKit_tmp() { }
 
 #endif

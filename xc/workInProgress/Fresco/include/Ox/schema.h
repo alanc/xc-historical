@@ -71,7 +71,7 @@ struct TypeObj_Descriptor {
     TypeObj_CallFunc receive;
 };
 
-class TypeImpl : public TypeObjType {
+class TypeImpl : public TypeObj {
 public:
     TypeImpl(TypeObj::KindOf, TypeObj_Descriptor*);
     ~TypeImpl();
@@ -80,14 +80,14 @@ public:
 
     //+ TypeObj::=
     string name();
-    Boolean op_info(TypeObj::OpInfo& op, Long index);
-    TypeObj::KindOf kind();
+    Boolean op_info(TypeObj::OpInfo& op, Long n);
+    KindOf kind();
     Long enum_info();
-    void _c_array_info(TypeObjRef& type, Long& size);
+    void array_info(TypeObj_out& type, Long& size);
     Long members();
-    TypeObjRef _c_member_info(Long index);
-    void _c_sequence_info(TypeObjRef& type, Long& size);
-    TypeObjRef _c_typedef_info();
+    TypeObj_return member_info(Long n);
+    void sequence_info(TypeObj_out& type, Long& size);
+    TypeObj_return typedef_info();
     //+
 
     static TypeImpl* make_type(TypeObj_Descriptor*);

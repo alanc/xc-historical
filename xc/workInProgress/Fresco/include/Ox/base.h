@@ -29,8 +29,8 @@ class Env;
 class Exchange;
 class MarshalBuffer;
 
-class RequestObjType;
-class TypeObjType;
+class RequestObj;
+class TypeObj;
 
 #ifndef nil
 #define nil 0
@@ -99,12 +99,11 @@ typedef unsigned long ULongLong;
 typedef float Float;
 typedef double Double;
 
-class BaseObjectType;
-typedef BaseObjectType* BaseObjectRef;
-typedef BaseObjectRef BaseObject_in;
 class BaseObject;
-class BaseObject_tmp;
-class BaseObject_var;
+typedef BaseObject* BaseObjectRef;
+typedef BaseObjectRef
+    BaseObject_in, BaseObject_out, BaseObject_inout, BaseObject_return;
+class BaseObject_;
 
 #ifndef ox_is_nil
 #define ox_is_nil
@@ -124,100 +123,25 @@ typedef BaseObjectRef (*StubCreator)(Exchange*);
 extern void* _BaseObject__duplicate(BaseObjectRef, StubCreator);
 extern void _BaseObject__release(BaseObjectRef);
 
+//- BaseObject*
 class BaseObject {
+    //. All objects support BaseObject operations, which
+    //. include access to an object's type and holding or
+    //. releasing a reference to the object.
 public:
-    BaseObjectRef _obj_;
-
-    BaseObject() { _obj_ = 0; }
-    BaseObject(BaseObjectRef p) { _obj_ = p; }
-    BaseObject& operator =(BaseObjectRef p) {
-	_BaseObject__release(_obj_);
-	_obj_ = p;
-	return *this;
-    }
-    BaseObject(const BaseObject& r) {
-	_obj_ = (BaseObjectRef)_BaseObject__duplicate(r._obj_, 0);
-    }
-    BaseObject& operator =(const BaseObject& r) {
-	_BaseObject__release(_obj_);
-	_obj_ = (BaseObjectRef)_BaseObject__duplicate(r._obj_, 0);
-	return *this;
-    }
-    BaseObject(const BaseObject_tmp& r);
-    BaseObject& operator =(const BaseObject_tmp& r);
-    BaseObject(const BaseObject_var& r);
-    BaseObject& operator =(const BaseObject_var& r);
-    ~BaseObject() { _BaseObject__release(_obj_); }
-
-    BaseObjectRef operator ->() { return _obj_; }
-    operator BaseObjectRef() const { return _obj_; }
-    BaseObjectRef _obj() { return _obj_; }
+    BaseObject();
+    virtual ~BaseObject();
 
     static BaseObjectRef _duplicate(BaseObjectRef p) {
 	return (BaseObjectRef)_BaseObject__duplicate(p, 0);
     }
-    static BaseObject_tmp _duplicate(const BaseObject& r);
-};
-
-class BaseObject_tmp : public BaseObject {
-public:
-    BaseObject_tmp(BaseObjectRef p) { _obj_ = p; }
-    BaseObject_tmp(const BaseObject& r) { _obj_ = r._obj_; }
-    BaseObject_tmp(const BaseObject_tmp& r) { _obj_ = r._obj_; }
-    ~BaseObject_tmp() { }
-};
-
-inline BaseObject::BaseObject(const BaseObject_tmp& r) {
-    _obj_ = r._obj_;
-    ((BaseObject_tmp*)&r)->_obj_ = 0;
-}
-
-inline BaseObject& BaseObject::operator =(const BaseObject_tmp& r) {
-    _BaseObject__release(_obj_);
-    _obj_ = r._obj_;
-    ((BaseObject_tmp*)&r)->_obj_ = 0;
-    return *this;
-}
-
-inline BaseObject_tmp BaseObject::_duplicate(const BaseObject& r) {
-    return (BaseObjectRef)_BaseObject__duplicate(r._obj_, 0);
-}
-
-class BaseObject_var {
-public:
-    BaseObjectRef _obj_;
-
-    BaseObject_var(BaseObjectRef p) { _obj_ = p; }
-    operator BaseObjectRef() const { return _obj_; }
-    BaseObjectRef operator ->() { return _obj_; }
-};
-
-inline BaseObject::BaseObject(const BaseObject_var& r) {
-    _BaseObject__release(_obj_);
-    _obj_ = (BaseObjectRef)_BaseObject__duplicate(r._obj_, 0);
-}
-
-inline BaseObject& BaseObject::operator =(const BaseObject_var& r) {
-    _BaseObject__release(_obj_);
-    _obj_ = (BaseObjectRef)_BaseObject__duplicate(r._obj_, 0);
-    return *this;
-}
-
-//- BaseObjectType*
-class BaseObjectType {
-    //. All objects support BaseObjectType operations, which
-    //. include access to an object's type and holding or
-    //. releasing a reference to the object.
-public:
-    BaseObjectType();
-    virtual ~BaseObjectType();
 
     //- _type
-    virtual TypeObjType* _type();
+    virtual TypeObj* _type();
 	//. Return a reference to the object's type.
 
     //- _request
-    virtual RequestObjType* _request();
+    virtual RequestObj* _request();
 	//. Create a request for performing dynamically-chosen operations
 	//. on the object.
 
@@ -226,16 +150,32 @@ public:
     virtual void* _this();
     virtual TypeObjId _tid();
 private:
-    BaseObjectType(const BaseObjectType&);
-    void operator =(const BaseObjectType&);
+    BaseObject(const BaseObject&);
+    void operator =(const BaseObject&);
 };
 
-class BaseObjectStub : public BaseObjectType {
+class BaseObject_ {
+protected:
+    BaseObjectRef _obj_;
+public:
+    BaseObject_() { _obj_ = 0; }
+    BaseObject_(BaseObjectRef p) { _obj_ = p; }
+    ~BaseObject_() { _BaseObject__release(_obj_); }
+
+    BaseObjectRef _obj() const { return _obj_; }
+    operator BaseObjectRef() const { return _obj_; }
+    BaseObjectRef operator ->() const { return _obj_; }
+private:
+    void operator =(const BaseObject&) { }
+};
+
+BaseObjectRef _BaseObjectStub_create(Exchange*);
+
+class BaseObjectStub : public BaseObject {
 public:
     BaseObjectStub(Exchange*);
     ~BaseObjectStub();
 
-    static BaseObjectRef _create(Exchange*);
     Exchange* _exchange();
 protected:
     Exchange* exch_;
@@ -249,7 +189,7 @@ protected:
     TypeSchema();
     virtual ~TypeSchema();
 public:
-    virtual TypeObjType* map(TypeObjId t) = 0;
+    virtual TypeObj* map(TypeObjId t) = 0;
 };
 
 class Exception {

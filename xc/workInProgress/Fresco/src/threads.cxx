@@ -34,51 +34,51 @@
 #include <string.h>
 
 //+ BaseThreadsObj::%init,!type
-BaseThreadsObjType::BaseThreadsObjType() { }
-BaseThreadsObjType::~BaseThreadsObjType() { }
-void* BaseThreadsObjType::_this() { return this; }
+BaseThreadsObj::BaseThreadsObj() { }
+BaseThreadsObj::~BaseThreadsObj() { }
+void* BaseThreadsObj::_this() { return this; }
 
-TypeObjId BaseThreadsObjType::_tid() { return 0; }
+TypeObjId BaseThreadsObj::_tid() { return 0; }
 //+
 
 //+ ThreadKit::%init,!type
-ThreadKitType::ThreadKitType() { }
-ThreadKitType::~ThreadKitType() { }
-void* ThreadKitType::_this() { return this; }
+ThreadKit::ThreadKit() { }
+ThreadKit::~ThreadKit() { }
+void* ThreadKit::_this() { return this; }
 
-TypeObjId ThreadKitType::_tid() { return 0; }
+TypeObjId ThreadKit::_tid() { return 0; }
 //+
 
 //+ ThreadObj::%init,!type
-ThreadObjType::ThreadObjType() { }
-ThreadObjType::~ThreadObjType() { }
-void* ThreadObjType::_this() { return this; }
+ThreadObj::ThreadObj() { }
+ThreadObj::~ThreadObj() { }
+void* ThreadObj::_this() { return this; }
 
-TypeObjId ThreadObjType::_tid() { return 0; }
+TypeObjId ThreadObj::_tid() { return 0; }
 //+
 
 //+ LockObj::%init,!type
-LockObjType::LockObjType() { }
-LockObjType::~LockObjType() { }
-void* LockObjType::_this() { return this; }
+LockObj::LockObj() { }
+LockObj::~LockObj() { }
+void* LockObj::_this() { return this; }
 
-TypeObjId LockObjType::_tid() { return 0; }
+TypeObjId LockObj::_tid() { return 0; }
 //+
 
 //+ ConditionVariable::%init,!type
-ConditionVariableType::ConditionVariableType() { }
-ConditionVariableType::~ConditionVariableType() { }
-void* ConditionVariableType::_this() { return this; }
+ConditionVariable::ConditionVariable() { }
+ConditionVariable::~ConditionVariable() { }
+void* ConditionVariable::_this() { return this; }
 
-TypeObjId ConditionVariableType::_tid() { return 0; }
+TypeObjId ConditionVariable::_tid() { return 0; }
 //+
 
 //+ Semaphore::%init,!type
-SemaphoreType::SemaphoreType() { }
-SemaphoreType::~SemaphoreType() { }
-void* SemaphoreType::_this() { return this; }
+Semaphore::Semaphore() { }
+Semaphore::~Semaphore() { }
+void* Semaphore::_this() { return this; }
 
-TypeObjId SemaphoreType::_tid() { return 0; }
+TypeObjId Semaphore::_tid() { return 0; }
 //+
 
 #if !defined(sun) || !defined(SVR4)
@@ -88,7 +88,7 @@ TypeObjId SemaphoreType::_tid() { return 0; }
  * which has its builtin semaphores.
  */
 
-class SemaphoreImpl : public SemaphoreType {
+class SemaphoreImpl : public Semaphore {
 public:
     SemaphoreImpl(ThreadKitRef, long count);
     ~SemaphoreImpl();
@@ -97,14 +97,14 @@ public:
     /* BaseThreadsObj */
     Long ref__(Long references);
     /* Semaphore */
-    void P();
-    void V();
+    void wait();
+    void signal();
     //+
 private:
     SharedBaseObjectImpl object_;
     long count_;
-    LockObj lock_;
-    ConditionVariable wait_;
+    LockObj_var lock_;
+    ConditionVariable_var wait_;
 };
 
 SemaphoreImpl::SemaphoreImpl(ThreadKitRef t, long count) {
@@ -122,8 +122,8 @@ Long SemaphoreImpl::ref__(Long references) {
 }
 //+
 
-//+ SemaphoreImpl(Semaphore::P)
-void SemaphoreImpl::P() {
+//+ SemaphoreImpl(Semaphore::wait)
+void SemaphoreImpl::wait() {
     lock_->acquire();
     --count_;
     if (count_ < 0) {
@@ -132,8 +132,8 @@ void SemaphoreImpl::P() {
     lock_->release();
 }
 
-//+ SemaphoreImpl(Semaphore::V)
-void SemaphoreImpl::V() {
+//+ SemaphoreImpl(Semaphore::signal)
+void SemaphoreImpl::signal() {
     lock_->acquire();
     ++count_;
     if (count_ <= 0) {
@@ -165,7 +165,7 @@ extern "C" {
 class ThreadImpl;
 class ThreadList;
 
-class ThreadKitImpl : public ThreadKitType {
+class ThreadKitImpl : public ThreadKit {
 public:
     ThreadKitImpl(const char* filename);
     ~ThreadKitImpl();
@@ -174,12 +174,12 @@ public:
     /* BaseThreadsObj */
     Long ref__(Long references);
     /* ThreadKit */
-    ThreadObjRef _c_thread(Action_in a);
-    LockObjRef _c_lock();
-    ConditionVariableRef _c_condition();
-    SemaphoreRef _c_general_semaphore(Long count);
-    SemaphoreRef _c_mutex_semaphore();
-    SemaphoreRef _c_wait_semaphore();
+    ThreadObj_return thread(Action_in a);
+    LockObj_return lock();
+    ConditionVariable_return condition();
+    Semaphore_return general_semaphore(Long count);
+    Semaphore_return mutex_semaphore();
+    Semaphore_return wait_semaphore();
     //+
 
     const char* filename();
@@ -193,7 +193,7 @@ protected:
 #endif
 
     SharedBaseObjectImpl object_;
-    LockObj lock_;
+    LockObj_var lock_;
     char* filename_;
     usptr_t* arena_;
     ThreadList* threads_;
@@ -207,7 +207,7 @@ protected:
 /* kludge for signal handling ... */
 ThreadKitImpl* ThreadKitImpl::this_kit_;
 
-class ThreadImpl : public ThreadObjType {
+class ThreadImpl : public ThreadObj {
 public:
     ThreadImpl(ThreadKitImpl*, ActionRef);
     ~ThreadImpl();
@@ -228,12 +228,12 @@ protected:
     short status_;
     short exitcode_;
     pid_t id_;
-    Action action_;
+    Action_var action_;
 
     static void sproc_entry(void*);
 };
 
-class LockImpl : public LockObjType {
+class LockImpl : public LockObj {
 public:
     LockImpl(usptr_t* arena, ulock_t lock);
     ~LockImpl();
@@ -252,7 +252,7 @@ private:
     ulock_t lock_;
 };
 
-class ConditionImpl : public ConditionVariableType {
+class ConditionImpl : public ConditionVariable {
 public:
     ConditionImpl(usptr_t* arena, LockObjRef mutex, usema_t* wait);
     ~ConditionImpl();
@@ -267,7 +267,7 @@ public:
     //+
 private:
     SharedBaseObjectImpl object_;
-    LockObj mutex_;
+    LockObj_var mutex_;
     usptr_t* arena_;
     long waiters_;
     usema_t* wait_;
@@ -323,7 +323,7 @@ Long ThreadKitImpl::ref__(Long references) {
 //+
 
 //+ ThreadKitImpl(ThreadKit::thread)
-ThreadObjRef ThreadKitImpl::_c_thread(Action_in a) {
+ThreadObj_return ThreadKitImpl::thread(Action_in a) {
     lock_->acquire();
     ThreadImpl* t = new ThreadImpl(this, a);
     Fresco::ref(t);
@@ -333,7 +333,7 @@ ThreadObjRef ThreadKitImpl::_c_thread(Action_in a) {
 }
 
 //+ ThreadKitImpl(ThreadKit::lock)
-LockObjRef ThreadKitImpl::_c_lock() {
+LockObj_return ThreadKitImpl::lock() {
     ulock_t lock = usnewlock(arena_);
     if (lock == 0) {
 	return nil;
@@ -342,7 +342,7 @@ LockObjRef ThreadKitImpl::_c_lock() {
 }
 
 //+ ThreadKitImpl(ThreadKit::condition)
-ConditionVariableRef ThreadKitImpl::_c_condition() {
+ConditionVariable_return ThreadKitImpl::condition() {
     LockObjRef mutex = lock();
     if (mutex == nil) {
 	return nil;
@@ -355,17 +355,17 @@ ConditionVariableRef ThreadKitImpl::_c_condition() {
 }
 
 //+ ThreadKitImpl(ThreadKit::general_semaphore)
-SemaphoreRef ThreadKitImpl::_c_general_semaphore(Long count) {
+Semaphore_return ThreadKitImpl::general_semaphore(Long count) {
     return new SemaphoreImpl(this, count);
 }
 
 //+ ThreadKitImpl(ThreadKit::mutex_semaphore)
-SemaphoreRef ThreadKitImpl::_c_mutex_semaphore() {
+Semaphore_return ThreadKitImpl::mutex_semaphore() {
     return new SemaphoreImpl(this, 1);
 }
 
 //+ ThreadKitImpl(ThreadKit::wait_semaphore)
-SemaphoreRef ThreadKitImpl::_c_wait_semaphore() {
+Semaphore_return ThreadKitImpl::wait_semaphore() {
     return new SemaphoreImpl(this, 0);
 }
 
@@ -620,7 +620,7 @@ class ThreadImpl;
 class ThreadList;
 class ConditionImpl;
 
-class ThreadKitImpl : public ThreadKitType {
+class ThreadKitImpl : public ThreadKit {
 public:
     ThreadKitImpl(const char* filename);
     ~ThreadKitImpl();
@@ -629,12 +629,12 @@ public:
     /* BaseThreadsObj */
     Long ref__(Long references);
     /* ThreadKit */
-    ThreadObjRef _c_thread(Action_in a);
-    LockObjRef _c_lock();
-    ConditionVariableRef _c_condition();
-    SemaphoreRef _c_general_semaphore(Long count);
-    SemaphoreRef _c_mutex_semaphore();
-    SemaphoreRef _c_wait_semaphore();
+    ThreadObj_return thread(Action_in a);
+    LockObj_return lock();
+    ConditionVariable_return condition();
+    Semaphore_return general_semaphore(Long count);
+    Semaphore_return mutex_semaphore();
+    Semaphore_return wait_semaphore();
     //+
     void report_error(int errcode);
     void terminate_all(int errcode);
@@ -642,12 +642,12 @@ private:
     static ThreadKitImpl* this_kit_;
 
     SharedBaseObjectImpl object_;
-    LockObj lock_;
+    LockObj_var lock_;
 
     ThreadList* threads_;
 };
 
-class ThreadImpl : public ThreadObjType {
+class ThreadImpl : public ThreadObj {
 public:
     ThreadImpl(ThreadKitImpl*, LockObjRef, ActionRef);
     virtual ~ThreadImpl();
@@ -662,9 +662,9 @@ public:
     //+
 protected:
     SharedBaseObjectImpl object_;
-    LockObj lock_;
+    LockObj_var lock_;
     ThreadKitImpl* kit_;
-    Action action_;
+    Action_var action_;
     pthread_t thread_;
     enum Status { thread_created, thread_running, thread_canceled };
     Status status_;
@@ -673,7 +673,7 @@ protected:
     static void cleanup_routine(void*);
 };
 
-class LockImpl : public LockObjType {
+class LockImpl : public LockObj {
 public:
     LockImpl(pthread_mutex_t& mutex);
     ~LockImpl();
@@ -693,7 +693,7 @@ private:
     pthread_mutex_t mutex_;
 };
 
-class ConditionImpl : public ConditionVariableType {
+class ConditionImpl : public ConditionVariable {
 public:
     ConditionImpl(pthread_cond_t&);
     ~ConditionImpl();
@@ -733,7 +733,7 @@ Long ThreadKitImpl::ref__(Long references) {
 //+
 
 //+ ThreadKitImpl(ThreadKit::thread)
-ThreadObjRef ThreadKitImpl::_c_thread(Action_in a) {
+ThreadObj_return ThreadKitImpl::thread(Action_in a) {
     lock_->acquire();
     ThreadImpl* t = new ThreadImpl(this, lock(), a);
     threads_->append(t);
@@ -743,7 +743,7 @@ ThreadObjRef ThreadKitImpl::_c_thread(Action_in a) {
 }
 
 //+ ThreadKitImpl(ThreadKit::lock)
-LockObjRef ThreadKitImpl::_c_lock() {
+LockObj_return ThreadKitImpl::lock() {
     pthread_mutex_t mutex;
 
     int status = pthread_mutex_init(&mutex, pthread_mutexattr_default);
@@ -754,7 +754,7 @@ LockObjRef ThreadKitImpl::_c_lock() {
 }
 
 //+ ThreadKitImpl(ThreadKit::condition)
-ConditionVariableRef ThreadKitImpl::_c_condition() {
+ConditionVariable_return ThreadKitImpl::condition() {
     pthread_cond_t cond;
 
     int status = pthread_cond_init(&cond, pthread_condattr_default);
@@ -766,17 +766,17 @@ ConditionVariableRef ThreadKitImpl::_c_condition() {
 }
 
 //+ ThreadKitImpl(ThreadKit::general_semaphore)
-SemaphoreRef ThreadKitImpl::_c_general_semaphore(Long count) {
+Semaphore_return ThreadKitImpl::general_semaphore(Long count) {
     return new SemaphoreImpl(this, count);
 }
 
 //+ ThreadKitImpl(ThreadKit::mutex_semaphore)
-SemaphoreRef ThreadKitImpl::_c_mutex_semaphore() {
+Semaphore_return ThreadKitImpl::mutex_semaphore() {
     return new SemaphoreImpl(this, 1);
 }
 
 //+ ThreadKitImpl(ThreadKit::wait_semaphore)
-SemaphoreRef ThreadKitImpl::_c_wait_semaphore() {
+Semaphore_return ThreadKitImpl::wait_semaphore() {
     return new SemaphoreImpl(this, 0);
 }
 
@@ -964,7 +964,7 @@ void ConditionImpl::broadcast() {
 #include <thread.h>
 #include <unistd.h>
 
-class ThreadKitImpl : public ThreadKitType {
+class ThreadKitImpl : public ThreadKit {
 public:
     ThreadKitImpl(const char*);
     virtual ~ThreadKitImpl();
@@ -973,19 +973,19 @@ public:
     /* BaseThreadsObj */
     Long ref__(Long references);
     /* ThreadKit */
-    ThreadObjRef _c_thread(Action_in a);
-    LockObjRef _c_lock();
-    ConditionVariableRef _c_condition();
-    SemaphoreRef _c_general_semaphore(Long count);
-    SemaphoreRef _c_mutex_semaphore();
-    SemaphoreRef _c_wait_semaphore();
+    ThreadObj_return thread(Action_in a);
+    LockObj_return lock();
+    ConditionVariable_return condition();
+    Semaphore_return general_semaphore(Long count);
+    Semaphore_return mutex_semaphore();
+    Semaphore_return wait_semaphore();
     //+
 private:
     SharedBaseObjectImpl object_;
     struct sigaction saved_sigaction_;
 };
 
-class ThreadImpl : public ThreadObjType {
+class ThreadImpl : public ThreadObj {
 public:
     ThreadImpl(ActionRef);
     virtual ~ThreadImpl();
@@ -1002,12 +1002,12 @@ public:
 protected:
     SharedBaseObjectImpl object_;
     thread_t thread_;
-    Action action_;
+    Action_var action_;
 
     static void* sproc_entry(void*);
 };
 
-class LockImpl : public LockObjType {
+class LockImpl : public LockObj {
 public:
     LockImpl();
     virtual ~LockImpl();
@@ -1027,7 +1027,7 @@ private:
     mutex_t lock_;
 };
 
-class ConditionImpl : public ConditionVariableType {
+class ConditionImpl : public ConditionVariable {
 public:
     ConditionImpl();
     virtual ~ConditionImpl();
@@ -1045,7 +1045,7 @@ private:
     cond_t wait_;
 };
 
-class SemaphoreImpl : public SemaphoreType {
+class SemaphoreImpl : public Semaphore {
 public:
     SemaphoreImpl(unsigned int);
     virtual ~SemaphoreImpl();
@@ -1054,8 +1054,8 @@ public:
     /* BaseThreadsObj */
     Long ref__(Long references);
     /* Semaphore */
-    void P();
-    void V();
+    void wait();
+    void signal();
     //+
 private:
     SharedBaseObjectImpl object_;
@@ -1087,32 +1087,32 @@ Long ThreadKitImpl::ref__(Long references) {
 //+
 
 //+ ThreadKitImpl(ThreadKit::thread)
-ThreadObjRef ThreadKitImpl::_c_thread(Action_in a) {
+ThreadObj_return ThreadKitImpl::thread(Action_in a) {
     return new ThreadImpl(a);
 }
 
 //+ ThreadKitImpl(ThreadKit::lock)
-LockObjRef ThreadKitImpl::_c_lock() {
+LockObj_return ThreadKitImpl::lock() {
     return new LockImpl();
 }
 
 //+ ThreadKitImpl(ThreadKit::condition)
-ConditionVariableRef ThreadKitImpl::_c_condition() {
+ConditionVariable_return ThreadKitImpl::condition() {
     return new ConditionImpl();
 }
 
 //+ ThreadKitImpl(ThreadKit::general_semaphore)
-SemaphoreRef ThreadKitImpl::_c_general_semaphore(Long count) {
+Semaphore_return ThreadKitImpl::general_semaphore(Long count) {
     return new SemaphoreImpl((unsigned int)count);
 }
 
 //+ ThreadKitImpl(ThreadKit::mutex_semaphore)
-SemaphoreRef ThreadKitImpl::_c_mutex_semaphore() {
+Semaphore_return ThreadKitImpl::mutex_semaphore() {
     return general_semaphore(1);
 }
 
 //+ ThreadKitImpl(ThreadKit::wait_semaphore)
-SemaphoreRef ThreadKitImpl::_c_wait_semaphore() {
+Semaphore_return ThreadKitImpl::wait_semaphore() {
     return general_semaphore(0);
 }
 
@@ -1299,8 +1299,8 @@ Long SemaphoreImpl::ref__(Long references) {
 }
 //+
 
-//+ SemaphoreImpl(Semaphore::P)
-void SemaphoreImpl::P() {
+//+ SemaphoreImpl(Semaphore::wait)
+void SemaphoreImpl::wait() {
     int status = sema_wait(&semaphore_);
     if (status != 0) {
 	perror("failed to wait on semaphore");
@@ -1308,8 +1308,8 @@ void SemaphoreImpl::P() {
     }
 }
 
-//+ SemaphoreImpl(Semaphore::V)
-void SemaphoreImpl::V() {
+//+ SemaphoreImpl(Semaphore::signal)
+void SemaphoreImpl::signal() {
     int status = sema_post(&semaphore_);
     if (status != 0) {
 	perror("failed to post on semaphore");
@@ -1327,7 +1327,7 @@ void SemaphoreImpl::V() {
  * dummy locks and condition variables that never block.
  */
 
-class ThreadKitImpl : public ThreadKitType {
+class ThreadKitImpl : public ThreadKit {
 public:
     ThreadKitImpl(const char*);
     ~ThreadKitImpl();
@@ -1336,18 +1336,18 @@ public:
     /* BaseThreadsObj */
     Long ref__(Long references);
     /* ThreadKit */
-    ThreadObjRef _c_thread(Action_in a);
-    LockObjRef _c_lock();
-    ConditionVariableRef _c_condition();
-    SemaphoreRef _c_general_semaphore(Long count);
-    SemaphoreRef _c_mutex_semaphore();
-    SemaphoreRef _c_wait_semaphore();
+    ThreadObj_return thread(Action_in a);
+    LockObj_return lock();
+    ConditionVariable_return condition();
+    Semaphore_return general_semaphore(Long count);
+    Semaphore_return mutex_semaphore();
+    Semaphore_return wait_semaphore();
     //+
 protected:
     SharedBaseObjectImpl object_;
 };
 
-class LockImpl : public LockObjType {
+class LockImpl : public LockObj {
 public:
     LockImpl();
     ~LockImpl();
@@ -1364,7 +1364,7 @@ protected:
     SharedBaseObjectImpl object_;
 };
 
-class ConditionImpl : public ConditionVariableType {
+class ConditionImpl : public ConditionVariable {
 public:
     ConditionImpl();
     ~ConditionImpl();
@@ -1394,32 +1394,32 @@ Long ThreadKitImpl::ref__(Long references) {
 //+
 
 //+ ThreadKitImpl(ThreadKit::thread)
-ThreadObjRef ThreadKitImpl::_c_thread(Action_in a) {
+ThreadObj_return ThreadKitImpl::thread(Action_in a) {
     return nil;
 }
 
 //+ ThreadKitImpl(ThreadKit::lock)
-LockObjRef ThreadKitImpl::_c_lock() {
+LockObj_return ThreadKitImpl::lock() {
     return new LockImpl;
 }
 
 //+ ThreadKitImpl(ThreadKit::condition)
-ConditionVariableRef ThreadKitImpl::_c_condition() {
+ConditionVariable_return ThreadKitImpl::condition() {
     return new ConditionImpl;
 }
 
 //+ ThreadKitImpl(ThreadKit::general_semaphore)
-SemaphoreRef ThreadKitImpl::_c_general_semaphore(Long count) {
+Semaphore_return ThreadKitImpl::general_semaphore(Long count) {
     return new SemaphoreImpl(this, count);
 }
 
 //+ ThreadKitImpl(ThreadKit::mutex_semaphore)
-SemaphoreRef ThreadKitImpl::_c_mutex_semaphore() {
+Semaphore_return ThreadKitImpl::mutex_semaphore() {
     return new SemaphoreImpl(this, 1);
 }
 
 //+ ThreadKitImpl(ThreadKit::wait_semaphore)
-SemaphoreRef ThreadKitImpl::_c_wait_semaphore() {
+Semaphore_return ThreadKitImpl::wait_semaphore() {
     return new SemaphoreImpl(this, 0);
 }
 

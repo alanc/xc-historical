@@ -49,19 +49,61 @@
 #include <X11/Xatom.h>
 #include <ctype.h>
 #include <limits.h>
-
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /*
- * This rather disgusting macro encapsulates the tedium of testing whether
- * an operation to set a paint object, such as brush or color, in fact
- * changes the current paint state.  The usage is "same(new,old)" and
- * returns true if the new is nil or equal to old.
+ * Sony NEWS-OS 6.0 has conflicting prototypes for abs() in math.h
+ * and stdlib.h, so you cannot include both headers in any C++ source
+ * file.  Until that bug is fixed (in NEWS-OS 6.0.1), we'll have to
+ * explicitly define the symbols we need from math.h on the Sony.
+ * On other platforms we can just include math.h
  */
 
-#define same(a,b) ( \
-    is_nil(a) ? true : is_not_nil(b) && (Fresco::ref(b), a->equal(b)) \
-)
+#if defined(sony) && defined(SVR4)
+extern "C" double sqrt(double);
+#else
+#include <math.h>
+#endif
+
+/*
+ * X logical font description manipulator
+ */
+
+static const int max_spec = 1000;
+typedef unsigned int FontSpecIndex;
+
+class FontSpec {
+public:
+    FontSpec(const char*);
+    FontSpec(const FontSpec&);
+    FontSpec();
+    ~FontSpec();
+
+    void operator =(const FontSpec&);
+
+    enum Field {
+	foundry, family, weight, slant, setwidth, astyle, pixels, points,
+	xdpi, ydpi, spacing, width, set, last, max_index
+    };
+
+    const char* full_spec() const;
+    Boolean is_scalable();
+
+    char* field(FontSpecIndex) const;
+    void field(FontSpecIndex, char*);
+
+    static Boolean valid(const char*);
+protected:
+    char specs_[max_spec];
+    char* fields_[max_index];
+    Boolean updated_;
+
+    void copy(const FontSpec&);
+    void copy(const char*);
+    void update();
+};
 
 /*
  * Two useful array macros: determine the number of elements and
@@ -75,20 +117,45 @@
 /*
  * This function tests whether a matrix is only a translation.
  * Something like this probably should be provided directly
- * by the TransformObj interface.
+ * by the Transform interface.
  */
 static Boolean is_translation(TransformRef t) {
-    TransformObj::Matrix m;
+    Transform::Matrix m;
     t->store_matrix(m);
     return m[0][0] == 1 && m[0][1] == 0 && m[1][0] == 0 && m[1][1] == 1;
 }
 
-BrushImpl::BrushImpl(Coord w) { init(nil, 0, w); }
-BrushImpl::BrushImpl(const long* p, long c, Coord w) { init(p, c, w); }
+/*
+ * Returns true if the two transforms differ at most by a translation.
+ */
+static Boolean translated_only(Transform_in t1, Transform_in t2) {
+    Transform::Matrix m1, m2;
+    t1->store_matrix(m1);
+    t2->store_matrix(m2);
+    return (
+	m1[0][0] == m2[0][0] && m1[0][1] == m2[0][1] &&
+	m1[1][0] == m2[1][0] && m1[1][1] == m2[1][1]
+    );
+}
 
-BrushImpl::BrushImpl(long pat, Coord w) {
-    long dash[16];
-    long count;
+/*
+ * Translate t2 by t1.
+ */
+static void translate_remainder(Transform_in t1, Transform_in t2) {
+    Transform::Matrix m1, m2;
+    t1->store_matrix(m1);
+    t2->store_matrix(m2);
+    m2[2][0] = m1[2][0];
+    m2[2][1] = m1[2][1];
+    t2->load_matrix(m2);
+}
+
+BrushImpl::BrushImpl(Coord w) { init(nil, 0, w); }
+BrushImpl::BrushImpl(const Long* p, Long c, Coord w) { init(p, c, w); }
+
+BrushImpl::BrushImpl(Long pat, Coord w) {
+    Long dash[16];
+    Long count;
 
     calc_dashes(pat, dash, count);
     init(dash, count, w);
@@ -119,6 +186,11 @@ void BrushImpl::update() {
 }
 //+
 
+//+ BrushImpl(Brush::width)
+Coord BrushImpl::width() {
+    return width_;
+}
+
 //+ BrushImpl(Brush::hash)
 ULong BrushImpl::hash() {
     return 0;
@@ -133,18 +205,18 @@ Boolean BrushImpl::equal(Brush_in b) {
     return this == b;
 }
 
-void BrushImpl::info(Coord& w, char*& dash_list, long& count) {
+void BrushImpl::info(Coord& w, char*& dash_list, Long& count) {
     w = width_;
     dash_list = dash_list_;
     count = dash_count_;
 }
 
-void BrushImpl::init(const long* pattern, long count, Coord w) {
+void BrushImpl::init(const Long* pattern, Long count, Coord w) {
     width_ = w;
     dash_count_ = count;
     if (count > 0) {
         dash_list_ = new char[count];
-        for (long i = 0; i < count; i++) {
+        for (Long i = 0; i < count; i++) {
             dash_list_[i] = char(pattern[i]);
         }
     } else {
@@ -152,13 +224,13 @@ void BrushImpl::init(const long* pattern, long count, Coord w) {
     }
 }
 
-void BrushImpl::calc_dashes(long pat, long* dash, long& count) {
-    unsigned long p = pat & 0xffff;
+void BrushImpl::calc_dashes(Long pat, Long* dash, Long& count) {
+    ULong p = pat & 0xffff;
 
     if (p == 0 || p == 0xffff) {
         count = 0;
     } else {
-        const unsigned long MSB = 1 << 15;
+        const ULong MSB = 1 << 15;
         while ((p & MSB) == 0) {
             p <<= 1;
         }
@@ -180,8 +252,8 @@ void BrushImpl::calc_dashes(long pat, long* dash, long& count) {
             dash[1] = 1;
             count = 2;
         } else {
-           unsigned long m = MSB;
-           long index = 0;
+           ULong m = MSB;
+           Long index = 0;
            while (m != 0) {
                 /* count the consecutive one bits */
                 int length = 0;
@@ -238,7 +310,7 @@ void ColorImpl::update() {
 //+
 
 //+ ColorImpl(Color::rgb)
-void ColorImpl::rgb(Color::Intensity& r, Color::Intensity& g, Color::Intensity& b) {
+void ColorImpl::rgb(Intensity& r, Intensity& g, Intensity& b) {
     r = red_;
     g = green_;
     b = blue_;
@@ -252,9 +324,9 @@ void ColorImpl::rgb(Color::Intensity& r, Color::Intensity& g, Color::Intensity& 
 
 //+ ColorImpl(Color::hash)
 ULong ColorImpl::hash() {
-    long r = long(64 * red_) & 0x3f;
-    long g = long(64 * green_) & 0x3f;
-    long b = long(64 * blue_) & 0x3f;
+    Long r = Long(64 * red_) & 0x3f;
+    Long g = Long(64 * green_) & 0x3f;
+    Long b = Long(64 * blue_) & 0x3f;
     return (r << 12) | (g << 6) | b;
 }
 
@@ -300,7 +372,6 @@ FontImpl::FontImpl(DisplayImpl* d, const char* name) {
     encoding_ = nil;
     point_size_ = 0;
     scale_ = 1.0;
-    widths_ = nil;
     xdisplay_ = d->xdisplay();
     xfont_ = nil;
     rasters_ = nil;
@@ -309,11 +380,11 @@ FontImpl::FontImpl(DisplayImpl* d, const char* name) {
 FontImpl::~FontImpl() {
     Fresco::unref(name_);
     Fresco::unref(encoding_);
-    delete [] widths_;
     if (rasters_ != nil) {
-	for (Long i = num_chars(xfont_); i >= 0; i--) {
+	for (Long i = num_chars(xfont_) - 1; i >= 0; i--) {
 	    Fresco::unref(rasters_[i]);
 	}
+	delete [] rasters_;
     }
     if (xfont_ != nil) {
 	XFreeFont(xdisplay_, xfont_);
@@ -352,12 +423,12 @@ Boolean FontImpl::equal(Font_in f) {
 }
 
 //+ FontImpl(Font::name)
-CharStringRef FontImpl::_c_name() {
+CharString_return FontImpl::name() {
     return CharString::_duplicate(name_);
 }
 
 //+ FontImpl(Font::encoding)
-CharStringRef FontImpl::_c_encoding() {
+CharString_return FontImpl::encoding() {
     return CharString::_duplicate(encoding_);
 }
 
@@ -379,6 +450,7 @@ void FontImpl::font_info(Font::Info& i) {
     i.descent = to_coord(xf->descent);
     i.font_ascent = i.ascent;
     i.font_descent = i.descent;
+    i.height = i.font_ascent + i.font_descent;
 }
 
 //+ FontImpl(Font::char_info)
@@ -397,11 +469,8 @@ void FontImpl::char_info(CharCode c, Font::Info& i) {
     i.descent = to_coord(xc.descent);
     i.font_ascent = to_coord(xfont_->ascent);
     i.font_descent = to_coord(xfont_->descent);
-    if (widths_ != nil) {
-	i.width = widths_[c];
-    } else {
-	i.width = to_coord(XTextWidth16(xfont_, &xc2b, 1));
-    }
+    i.width = to_coord(xc.width);
+    i.height = i.ascent + i.descent;
 }
 
 //+ FontImpl(Font::string_info)
@@ -409,7 +478,7 @@ void FontImpl::string_info(CharString_in s, Font::Info& i) {
     load();
     CharStringBuffer buf(s);
     const char* cp = buf.string();
-    long n = buf.length();
+    Long n = buf.length();
     XCharStruct xc;
     int dir, asc, des;
     XTextExtents(xfont_, cp, int(n), &dir, &asc, &des, &xc);
@@ -419,15 +488,8 @@ void FontImpl::string_info(CharString_in s, Font::Info& i) {
     i.descent = to_coord(xc.descent);
     i.font_ascent = to_coord(xfont_->ascent);
     i.font_descent = to_coord(xfont_->descent);
-    if (widths_ != nil) {
-	Coord w = 0;
-	for (long p = 0; p < n; p++) {
-	    w += widths_[cp[p]];
-	}
-	i.width = w;
-    } else {
-	i.width = to_coord(XTextWidth(xfont_, cp, int(n)));
-    }
+    i.width = to_coord(xc.width);
+    i.height = i.ascent + i.descent;
 }
 
 void FontImpl::load() {
@@ -440,12 +502,15 @@ void FontImpl::load() {
 	/* raise exception? */
 	return;
     }
-    unsigned long value;
+    ULong value;
     if (XGetFontProperty(xfont_, XA_POINT_SIZE, &value)) {
 	point_size_ = Coord(value) / 10.0;
     }
     if (XGetFontProperty(xfont_, XA_RESOLUTION, &value)) {
 	scale_ = (100.0 * 72.0 / 72.27) / Coord(value);
+    } else {
+	FontSpec spec(buf.string());
+	scale_ = 72.0 / atol(spec.field(FontSpec::ydpi));
     }
 }
 
@@ -487,7 +552,7 @@ RasterRef FontImpl::bitmap(CharCode c) {
     XSetForeground(xdisplay_, xgc, 1);
     XDrawString16(xdisplay_, pixmap, xgc, -xc.lbearing, xc.ascent, &xc2b, 1);
     XFreeGC(xdisplay_, xgc);
-    DrawingKit::Data data;
+    DrawingKit::Data8 data;
     data._buffer = nil;
     RasterBitmap* rb = new RasterBitmap(
 	data, cheight, cwidth, xc.descent, -xc.lbearing, scale_
@@ -499,8 +564,104 @@ RasterRef FontImpl::bitmap(CharCode c) {
     return rb;
 }
 
-Coord FontImpl::to_coord(XCoord c) {
+Coord FontImpl::to_coord(PixelCoord c) {
     return scale_ * Coord(c);
+}
+
+Coord FontImpl::average_width() {
+    load();
+    XFontStruct* f = xfont_;
+    Coord width = 0.0;
+    if (f->per_char != nil) {
+	PixelCoord pwidth = 0, n = 0;
+	Long max = f->max_char_or_byte2 - f->min_char_or_byte2;
+	for (Long i = 0; i < max; i++) {
+	    PixelCoord w = f->per_char[i].width;
+	    if (w > 0) {
+		pwidth += w;
+		++n;
+	    }
+	}
+	if (n > 0) {
+	    width = to_coord(pwidth / n);
+	}
+    }
+    return width;
+}
+
+PatternImpl::PatternImpl(ULong p) {
+    stipple_._maximum = 4;
+    stipple_._length = 4;
+    stipple_._buffer = new Long[4];
+    stipple_._buffer[0] = (p & 0xf000) >> 12;
+    stipple_._buffer[1] = (p & 0x0f00) >> 8;
+    stipple_._buffer[2] = (p & 0x00f0) >> 4;
+    stipple_._buffer[3] = (p & 0x000f);
+}
+
+PatternImpl::PatternImpl(const DrawingKit::Data32& d) {
+    stipple_._maximum = d._length;
+    stipple_._length = d._length;
+    stipple_._buffer = new Long[d._length];
+    Memory::copy(d._buffer, stipple_._buffer, sizeof(Long) * d._length);
+}
+
+PatternImpl::~PatternImpl() {
+    /* avoid implicit deallocation */
+    stipple_._buffer = nil;
+}
+
+//+ PatternImpl(FrescoObject::=object_.)
+Long PatternImpl::ref__(Long references) {
+    return object_.ref__(references);
+}
+Tag PatternImpl::attach(FrescoObject_in observer) {
+    return object_.attach(observer);
+}
+void PatternImpl::detach(Tag attach_tag) {
+    object_.detach(attach_tag);
+}
+void PatternImpl::disconnect() {
+    object_.disconnect();
+}
+void PatternImpl::notify_observers() {
+    object_.notify_observers();
+}
+void PatternImpl::update() {
+    object_.update();
+}
+//+
+
+//+ PatternImpl(Pattern::equal)
+Boolean PatternImpl::equal(Pattern_in p) {
+    Boolean b = false;
+    if (p == this) {
+	b = true;
+    } else {
+	PatternImpl* i = PatternImpl::_narrow(p);
+	if (i != nil) {
+	    Long n = stipple_._length;
+	    DrawingKit::Data32& d = i->stipple_;
+	    b = (
+		n == d._length &&
+		Memory::compare(
+		    stipple_._buffer, d._buffer, n * sizeof(Long)
+		) == 0
+	    );
+	}
+	/* should do something reasonable here, but what? */
+    }
+    return b;
+}
+
+//+ PatternImpl(Pattern::hash)
+ULong PatternImpl::hash() {
+    return 0;
+}
+
+//+ PatternImpl(Pattern::stipple)
+void PatternImpl::stipple(DrawingKit::Data32& d) {
+    d = stipple_;
 }
 
 /*
@@ -509,7 +670,7 @@ Coord FontImpl::to_coord(XCoord c) {
  */
 
 struct MatrixStackElement {
-    TransformObj::Matrix matrix;
+    Transform::Matrix matrix;
 };
 
 declareList(MatrixStack,MatrixStackElement)
@@ -518,13 +679,18 @@ implementList(MatrixStack,MatrixStackElement)
 declarePtrList(ClippingStack,RegionImpl)
 implementPtrList(ClippingStack,RegionImpl)
 
+inline Long DefaultPainterImpl::clip_index(Long i) {
+    return i % (sizeof(free_clippers_) / sizeof(free_clippers_[0]));
+}
+
 DefaultPainterImpl::DefaultPainterImpl() {
     brush_ = nil;
     color_ = nil;
     font_ = nil;
+    pattern_ = nil;
     matrix_ = new TransformImpl;
+    matrix_tag_ = matrix_->attach(this);
     transforms_ = new MatrixStack;
-    transformed_ = false;
     clipping_ = nil;
     clippers_ = new ClippingStack;
     free_clipper_head_ = 0;
@@ -535,12 +701,22 @@ DefaultPainterImpl::~DefaultPainterImpl() {
     Fresco::unref(brush_);
     Fresco::unref(color_);
     Fresco::unref(font_);
+    Fresco::unref(pattern_);
+    matrix_->detach(matrix_tag_);
+    Fresco::unref(matrix_);
     delete transforms_;
     Fresco::unref(clipping_);
     for (ListItr(ClippingStack) j(*clippers_); j.more(); j.next()) {
 	Fresco::unref(j.cur());
     }
     delete clippers_;
+    for (
+	Long i = free_clipper_head_;
+	i != free_clipper_tail_;
+	i = clip_index(i + 1)
+    ) {
+	Fresco::unref(free_clippers_[i]);
+    }
 }
 
 //+ DefaultPainterImpl(FrescoObject::=object_.)
@@ -564,102 +740,127 @@ void DefaultPainterImpl::update() {
 }
 //+
 
-//+ DefaultPainterImpl(PainterObj::to_coord)
+//+ DefaultPainterImpl(Painter::to_coord)
 Coord DefaultPainterImpl::to_coord(PixelCoord p) { return Coord(p); }
 
-//+ DefaultPainterImpl(PainterObj::to_pixels)
+//+ DefaultPainterImpl(Painter::to_pixels)
 PixelCoord DefaultPainterImpl::to_pixels(Coord c) { return PixelCoord(c); }
 
-//+ DefaultPainterImpl(PainterObj::to_pixels_coord)
+//+ DefaultPainterImpl(Painter::to_pixels_coord)
 Coord DefaultPainterImpl::to_pixels_coord(Coord c) { return c; }
 
-//+ DefaultPainterImpl(PainterObj::begin_path)
+//+ DefaultPainterImpl(Painter::begin_path)
 void DefaultPainterImpl::begin_path() { }
 
-//+ DefaultPainterImpl(PainterObj::move_to)
+//+ DefaultPainterImpl(Painter::move_to)
 void DefaultPainterImpl::move_to(Coord, Coord) { }
 
-//+ DefaultPainterImpl(PainterObj::line_to)
+//+ DefaultPainterImpl(Painter::line_to)
 void DefaultPainterImpl::line_to(Coord, Coord) { }
 
-//+ DefaultPainterImpl(PainterObj::curve_to)
+//+ DefaultPainterImpl(Painter::curve_to)
 void DefaultPainterImpl::curve_to(Coord, Coord, Coord, Coord, Coord, Coord) { }
 
-//+ DefaultPainterImpl(PainterObj::close_path)
+//+ DefaultPainterImpl(Painter::close_path)
 void DefaultPainterImpl::close_path() { }
 
-//+ DefaultPainterImpl(PainterObj::brush_attr=b)
-void DefaultPainterImpl::_c_brush_attr(Brush_in b) {
-    brush_ = Brush::_duplicate(b);
+//+ DefaultPainterImpl(Painter::current_brush=b)
+void DefaultPainterImpl::current_brush(Brush_in b) {
+    if (brush_ != b) {
+	Fresco::unref(brush_);
+	brush_ = Brush::_duplicate(b);
+	set_brush();
+    }
 }
 
-//+ DefaultPainterImpl(PainterObj::brush_attr?)
-BrushRef DefaultPainterImpl::_c_brush_attr() {
+//+ DefaultPainterImpl(Painter::current_brush?)
+BrushRef DefaultPainterImpl::current_brush() {
     return Brush::_duplicate(brush_);
 }
 
-//+ DefaultPainterImpl(PainterObj::color_attr=c)
-void DefaultPainterImpl::_c_color_attr(Color_in c) {
-    color_ = Color::_duplicate(c);
+//+ DefaultPainterImpl(Painter::current_color=c)
+void DefaultPainterImpl::current_color(Color_in c) {
+    if (color_ != c) {
+	Fresco::unref(color_);
+	color_ = Color::_duplicate(c);
+	set_color();
+    }
 }
 
-//+ DefaultPainterImpl(PainterObj::color_attr?)
-ColorRef DefaultPainterImpl::_c_color_attr() {
+//+ DefaultPainterImpl(Painter::current_color?)
+ColorRef DefaultPainterImpl::current_color() {
     return Color::_duplicate(color_);
 }
 
-//+ DefaultPainterImpl(PainterObj::font_attr=f)
-void DefaultPainterImpl::_c_font_attr(Font_in f) {
-    font_ = Font::_duplicate(f);
+//+ DefaultPainterImpl(Painter::current_font=f)
+void DefaultPainterImpl::current_font(Font_in f) {
+    if (font_ != f) {
+	Fresco::unref(font_);
+	font_ = Font::_duplicate(f);
+	set_font();
+    }
 }
 
-//+ DefaultPainterImpl(PainterObj::font_attr?)
-FontRef DefaultPainterImpl::_c_font_attr() {
+//+ DefaultPainterImpl(Painter::current_font?)
+FontRef DefaultPainterImpl::current_font() {
     return Font::_duplicate(font_);
 }
 
-//+ DefaultPainterImpl(PainterObj::stroke)
+//+ DefaultPainterImpl(Painter::current_pattern=p)
+void DefaultPainterImpl::current_pattern(Pattern_in p) {
+    if (pattern_ != p) {
+	Fresco::unref(pattern_);
+	pattern_ = Pattern::_duplicate(p);
+	set_pattern();
+    }
+}
+
+//+ DefaultPainterImpl(Painter::current_pattern?)
+PatternRef DefaultPainterImpl::current_pattern() {
+    return Pattern::_duplicate(pattern_);
+}
+
+//+ DefaultPainterImpl(Painter::stroke)
 void DefaultPainterImpl::stroke() { }
 
-//+ DefaultPainterImpl(PainterObj::fill)
+//+ DefaultPainterImpl(Painter::fill)
 void DefaultPainterImpl::fill() { }
 
-//+ DefaultPainterImpl(PainterObj::line)
+//+ DefaultPainterImpl(Painter::line)
 void DefaultPainterImpl::line(Coord, Coord, Coord, Coord) { }
 
-//+ DefaultPainterImpl(PainterObj::rect)
+//+ DefaultPainterImpl(Painter::rect)
 void DefaultPainterImpl::rect(Coord, Coord, Coord, Coord) { }
 
-//+ DefaultPainterImpl(PainterObj::fill_rect)
+//+ DefaultPainterImpl(Painter::fill_rect)
 void DefaultPainterImpl::fill_rect(Coord, Coord, Coord, Coord) { }
 
-//+ DefaultPainterImpl(PainterObj::character)
+//+ DefaultPainterImpl(Painter::character)
 void DefaultPainterImpl::character(CharCode, Coord, Coord, Coord) { }
 
-//+ DefaultPainterImpl(PainterObj::image)
+//+ DefaultPainterImpl(Painter::image)
 void DefaultPainterImpl::image(Raster_in, Coord, Coord) { }
 
-//+ DefaultPainterImpl(PainterObj::stencil)
+//+ DefaultPainterImpl(Painter::stencil)
 void DefaultPainterImpl::stencil(Raster_in, Coord, Coord) { }
 
-//+ DefaultPainterImpl(PainterObj::matrix=t)
-void DefaultPainterImpl::_c_matrix(TransformObj_in t) {
+//+ DefaultPainterImpl(Painter::current_matrix=t)
+void DefaultPainterImpl::current_matrix(Transform_in t) {
     flush_text();
     matrix_->load(t);
-    transformed_ = !matrix_->identity();
 }
 
-//+ DefaultPainterImpl(PainterObj::matrix?)
-TransformObjRef DefaultPainterImpl::_c_matrix() {
-    return TransformObj::_duplicate(matrix_);
+//+ DefaultPainterImpl(Painter::current_matrix?)
+TransformRef DefaultPainterImpl::current_matrix() {
+    return Transform::_duplicate(matrix_);
 }
 
-//+ DefaultPainterImpl(PainterObj::push_matrix)
+//+ DefaultPainterImpl(Painter::push_matrix)
 void DefaultPainterImpl::push_matrix() {
     transforms_->prepend(*((MatrixStackElement*)(matrix_->matrix())));
 }
 
-//+ DefaultPainterImpl(PainterObj::pop_matrix)
+//+ DefaultPainterImpl(Painter::pop_matrix)
 void DefaultPainterImpl::pop_matrix() {
     MatrixStack* s = transforms_;
     if (s->count() == 0) {
@@ -670,30 +871,29 @@ void DefaultPainterImpl::pop_matrix() {
     }
     flush_text();
     matrix_->load_matrix(s->item_ref(0).matrix);
-    transformed_ = !matrix_->identity();
     s->remove(0);
 }
 
-//+ DefaultPainterImpl(PainterObj::transform)
-void DefaultPainterImpl::transform(TransformObj_in t) {
+//+ DefaultPainterImpl(Painter::premultiply)
+void DefaultPainterImpl::premultiply(Transform_in t) {
     flush_text();
     matrix_->premultiply(t);
-    transformed_ = !matrix_->identity();
 }
 
-//+ DefaultPainterImpl(PainterObj::clip)
+//+ DefaultPainterImpl(Painter::clip)
 void DefaultPainterImpl::clip() {
     /* not implemented */
 }
 
-//+ DefaultPainterImpl(PainterObj::clip_rect)
+//+ DefaultPainterImpl(Painter::clip_rect)
 void DefaultPainterImpl::clip_rect(Coord x0, Coord y0, Coord x1, Coord y1) {
     RegionImpl region;
     RegionImpl* r = (clipping_ == nil) ? new_clip() : &region;
+    r->defined_ = true;
     r->lower_.x = x0; r->lower_.y = y0; r->lower_.z = 0.0;
     r->upper_.x = x1; r->upper_.y = y1; r->upper_.z = 0.0;
-    if (transformed_) {
-	r->transform(matrix_);
+    if (!matrix_->identity()) {
+	r->apply_transform(matrix_);
     }
     if (clipping_ == nil) {
 	clipping_ = r;
@@ -703,20 +903,16 @@ void DefaultPainterImpl::clip_rect(Coord x0, Coord y0, Coord x1, Coord y1) {
     set_clip();
 }
 
-//+ DefaultPainterImpl(PainterObj::push_clipping)
+//+ DefaultPainterImpl(Painter::push_clipping)
 void DefaultPainterImpl::push_clipping() {
-//printf("push_clipping\n");
     clippers_->prepend(clipping_);
     if (is_not_nil(clipping_)) {
 	RegionImpl* r = new_clip();
+	r->defined_ = true;
 	r->lower_ = clipping_->lower_;
 	r->upper_ = clipping_->upper_;
 	clipping_ = r;
     }
-}
-
-inline Long DefaultPainterImpl::clip_index(Long i) {
-    return i % (sizeof(free_clippers_) / sizeof(free_clippers_[0]));
 }
 
 RegionImpl* DefaultPainterImpl::new_clip() {
@@ -730,7 +926,7 @@ RegionImpl* DefaultPainterImpl::new_clip() {
     return r;
 }
 
-//+ DefaultPainterImpl(PainterObj::pop_clipping)
+//+ DefaultPainterImpl(Painter::pop_clipping)
 void DefaultPainterImpl::pop_clipping() {
     ClippingStack* s = clippers_;
     if (s->count() == 0) {
@@ -739,7 +935,6 @@ void DefaultPainterImpl::pop_clipping() {
 	 */
 	return;
     }
-//printf("pop_clipping\n");
     flush_text();
     free_clip(clipping_);
     clipping_ = s->item(0);
@@ -762,7 +957,7 @@ void DefaultPainterImpl::free_clip(RegionImpl* r) {
  * given the current clipping region.
  */
 
-//+ DefaultPainterImpl(PainterObj::is_visible)
+//+ DefaultPainterImpl(Painter::is_visible)
 Boolean DefaultPainterImpl::is_visible(Region_in r) {
     Boolean b = is_nil(clipping_);
     if (!b) {
@@ -773,15 +968,15 @@ Boolean DefaultPainterImpl::is_visible(Region_in r) {
 	} else {
 	    rr = &bounds;
 	    rr->copy(r);
-	    rr->transform(matrix_);
+	    rr->apply_transform(matrix_);
 	}
 	b = clipping_->intersects(rr);
     }
     return b;
 }
 
-//+ DefaultPainterImpl(PainterObj::visible)
-RegionRef DefaultPainterImpl::_c_visible() {
+//+ DefaultPainterImpl(Painter::visible)
+Region_return DefaultPainterImpl::visible() {
     return Region::_duplicate(clipping_);
 }
 
@@ -790,22 +985,28 @@ RegionRef DefaultPainterImpl::_c_visible() {
  * only relevent for a printer.
  */
 
-//+ DefaultPainterImpl(PainterObj::comment)
+//+ DefaultPainterImpl(Painter::comment)
 void DefaultPainterImpl::comment(CharString_in) { }
 
-//+ DefaultPainterImpl(PainterObj::page_number)
+//+ DefaultPainterImpl(Painter::page_number)
 void DefaultPainterImpl::page_number(CharString_in) { }
 
 void DefaultPainterImpl::set_clip() { }
 void DefaultPainterImpl::reset_clip() { }
 void DefaultPainterImpl::flush_text() { }
 
+void DefaultPainterImpl::set_brush() { }
+void DefaultPainterImpl::set_color() { }
+void DefaultPainterImpl::set_font() { }
+void DefaultPainterImpl::set_pattern() { }
+
 /* class XPainterImpl */
 
 XPainterImpl::XPainterImpl(WindowImpl* w, ScreenImpl* s) {
     window_ = w;
     screen_ = s;
-    xdisplay_ = w->display()->xdisplay();
+    DisplayImpl* display = w->display();
+    xdisplay_ = display->xdisplay();
     double_buffered_ = false;
     xdrawable_ = nil;
     xfrontbuffer_ = nil;
@@ -815,6 +1016,7 @@ XPainterImpl::XPainterImpl(WindowImpl* w, ScreenImpl* s) {
     pixels_ = s->to_coord(1);
     points_ = 1 / pixels_;
     smoothness_ = 10.0;
+    matrix_modified_ = false;
     point_ = new XPoint[25];
     cur_point_ = point_;
     end_point_ = point_ + 25;
@@ -827,6 +1029,17 @@ XPainterImpl::XPainterImpl(WindowImpl* w, ScreenImpl* s) {
     ty0_ = 0;
     tx_ = 0.0;
     ty_ = 0.0;
+    tsx_ = 0.0;
+    Fresco* f = display->fresco();
+    font_tol_ = 0.3;
+    StyleValue_var a = _tmp(f->fresco_style())->resolve(
+	Fresco::tmp_string_ref("fontTolerance")
+    );
+    if (is_not_nil(a)) {
+	double d;
+	a->read_real(d);
+	font_tol_ = float(d);
+    }
     pwidth_ = 0;
     pheight_ = 0;
 }
@@ -844,17 +1057,25 @@ XPainterImpl::~XPainterImpl() {
     close_fonts();
 }
 
-//+ XPainterImpl(PainterObj::to_coord)
+//+ XPainterImpl(FrescoObject::update)
+void XPainterImpl::update() {
+    matrix_modified_ = true;
+    /* avoid redundant update calls */
+    matrix_->detach(matrix_tag_);
+    matrix_tag_ = 0;
+}
+
+//+ XPainterImpl(Painter::to_coord)
 Coord XPainterImpl::to_coord(PixelCoord p) {
     return inline_to_coord(p);
 }
 
-//+ XPainterImpl(PainterObj::to_pixels)
+//+ XPainterImpl(Painter::to_pixels)
 PixelCoord XPainterImpl::to_pixels(Coord c) {
     return inline_to_pixels(c);
 }
 
-//+ XPainterImpl(PainterObj::to_pixels_coord)
+//+ XPainterImpl(Painter::to_pixels_coord)
 Coord XPainterImpl::to_pixels_coord(Coord c) {
     return inline_to_pixels_coord(c);
 }
@@ -874,7 +1095,7 @@ inline Coord XPainterImpl::mid(Coord a, Coord b) {
     return (a + b) * 0.5;
 }
 
-//+ XPainterImpl(PainterObj::begin_path)
+//+ XPainterImpl(Painter::begin_path)
 void XPainterImpl::begin_path() {
     path_cur_x_ = 0;
     path_cur_y_ = 0;
@@ -889,14 +1110,14 @@ void XPainterImpl::begin_path() {
     cur_subpath_->closed = false;
 }
 
-//+ XPainterImpl(PainterObj::move_to)
+//+ XPainterImpl(Painter::move_to)
 void XPainterImpl::move_to(Coord x, Coord y) {
     path_cur_x_ = x;
     path_cur_y_ = y;
     Vertex v;
     v.x = x; v.y = y; v.z = 0;
-    if (transformed_) {
-	matrix_->transform(v);
+    if (!matrix_->identity()) {
+	matrix_->transform_vertex(v);
     }
 
     XPoint* xp;
@@ -943,7 +1164,7 @@ static void constrain_point(XPoint* xp, PixelCoord x, PixelCoord y) {
     }
 }
 
-//+ XPainterImpl(PainterObj::line_to)
+//+ XPainterImpl(Painter::line_to)
 void XPainterImpl::line_to(Coord x, Coord y) {
     if (cur_subpath_->closed) {
 	return;
@@ -953,15 +1174,15 @@ void XPainterImpl::line_to(Coord x, Coord y) {
     path_cur_y_ = y;
     Vertex v;
     v.x = x; v.y = y; v.z = 0;
-    if (transformed_) {
-	matrix_->transform(v);
+    if (!matrix_->identity()) {
+	matrix_->transform_vertex(v);
     }
     PixelCoord px = inline_to_pixels(v.x);
     PixelCoord py = pheight_ - inline_to_pixels(v.y);
     constrain_point(next_point(), px, py);
 }
 
-//+ XPainterImpl(PainterObj::curve_to)
+//+ XPainterImpl(Painter::curve_to)
 void XPainterImpl::curve_to(Coord x, Coord y, Coord x1, Coord y1, Coord x2, Coord y2) {
     Vertex v, v1, v2, pv;
     v.x = x;
@@ -972,18 +1193,18 @@ void XPainterImpl::curve_to(Coord x, Coord y, Coord x1, Coord y1, Coord x2, Coor
     v2.y = y2;
     pv.x = path_cur_x_;
     pv.y = path_cur_y_;
-    if (transformed_) {
-	matrix_->transform(v);
-	matrix_->transform(v1);
-	matrix_->transform(v2);
-	matrix_->transform(pv);
+    if (!matrix_->identity()) {
+	matrix_->transform_vertex(v);
+	matrix_->transform_vertex(v1);
+	matrix_->transform_vertex(v2);
+	matrix_->transform_vertex(pv);
     }
     curve_pt(pv.x, pv.y, v.x, v.y, v1.x, v1.y, v2.x, v2.y);
     path_cur_x_ = x;
     path_cur_y_ = y;
 }
 
-//+ XPainterImpl(PainterObj::close_path)
+//+ XPainterImpl(Painter::close_path)
 void XPainterImpl::close_path() {
     if (cur_subpath_->closed) {
 	return;
@@ -1002,7 +1223,7 @@ void XPainterImpl::close_path() {
     cur_subpath_->closed = true;
 }
 
-//+ XPainterImpl(PainterObj::line)
+//+ XPainterImpl(Painter::line)
 void XPainterImpl::line(Coord x0, Coord y0, Coord x1, Coord y1) {
     begin_path();
     move_to(x0, y0);
@@ -1010,7 +1231,7 @@ void XPainterImpl::line(Coord x0, Coord y0, Coord x1, Coord y1) {
     stroke();
 }
 
-//+ XPainterImpl(PainterObj::rect)
+//+ XPainterImpl(Painter::rect)
 void XPainterImpl::rect(Coord x0, Coord y0, Coord x1, Coord y1) {
     begin_path();
     move_to(x0, y0);
@@ -1021,7 +1242,7 @@ void XPainterImpl::rect(Coord x0, Coord y0, Coord x1, Coord y1) {
     stroke();
 }
 
-//+ XPainterImpl(PainterObj::fill_rect)
+//+ XPainterImpl(Painter::fill_rect)
 void XPainterImpl::fill_rect(Coord x0, Coord y0, Coord x1, Coord y1) {
     begin_path();
     move_to(x0, y0);
@@ -1032,20 +1253,14 @@ void XPainterImpl::fill_rect(Coord x0, Coord y0, Coord x1, Coord y1) {
     fill();
 }
 
-//+ XPainterImpl(PainterObj::brush_attr=b)
-void XPainterImpl::_c_brush_attr(Brush_in b) {
-    if (same(b, brush_)) {
-	return;
-    }
-    Fresco::unref(brush_);
-    brush_ = Brush::_duplicate(b);
+void XPainterImpl::set_brush() {
     /*
      * Should do (checked) narrow instead of cast.
      */
-    BrushImpl* br = (BrushImpl*)b;
+    BrushImpl* br = (BrushImpl*)brush_;
     Coord w;
     char* dashes;
-    long ndashes;
+    Long ndashes;
     br->info(w, dashes, ndashes);
     short p = short(inline_to_pixels(w));
     XDisplay* dpy = xdisplay_;
@@ -1058,23 +1273,12 @@ void XPainterImpl::_c_brush_attr(Brush_in b) {
     }
 }
 
-//+ XPainterImpl(PainterObj::brush_attr?)
-BrushRef XPainterImpl::_c_brush_attr() {
-    return Brush::_duplicate(brush_);
-}
-
-//+ XPainterImpl(PainterObj::color_attr=c)
-void XPainterImpl::_c_color_attr(Color_in c) {
-    if (same(c, color_)) {
-	return;
-    }
+void XPainterImpl::set_color() {
     flush_text();
-    Fresco::unref(color_);
-    color_ = Color::_duplicate(c);
     // need a table here from Color -> pixel
     XColor xc;
     Color::Intensity r, g, b;
-    c->rgb(r, g, b);
+    color_->rgb(r, g, b);
     xc.red = ColorImpl::to_short(r);
     xc.green = ColorImpl::to_short(g);
     xc.blue = ColorImpl::to_short(b);
@@ -1082,17 +1286,8 @@ void XPainterImpl::_c_color_attr(Color_in c) {
     XSetForeground(xdisplay_, xgc_, xc.pixel);
 }
 
-//+ XPainterImpl(PainterObj::color_attr?)
-ColorRef XPainterImpl::_c_color_attr() {
-    return Color::_duplicate(color_);
-}
-
-//+ XPainterImpl(PainterObj::font_attr=f)
-void XPainterImpl::_c_font_attr(Font_in f) {
-    if (same(f, fontinfo_->font)) {
-	return;
-    }
-    XPainterImpl::FontInfo* info = open_font(f);
+void XPainterImpl::set_font() {
+    XPainterImpl::FontInfo* info = open_font(font_);
     if (info->charsize != fontinfo_->charsize) {
 	flush_text();
     }
@@ -1102,12 +1297,10 @@ void XPainterImpl::_c_font_attr(Font_in f) {
     fontinfo_ = info;
 }
 
-//+ XPainterImpl(PainterObj::font_attr?)
-FontRef XPainterImpl::_c_font_attr() {
-    return Font::_duplicate(fontinfo_->font);
+void XPainterImpl::set_pattern() {
 }
 
-//+ XPainterImpl(PainterObj::fill)
+//+ XPainterImpl(Painter::fill)
 void XPainterImpl::fill() {
     int n = int(cur_point_ - point_);
     if (n <= 2) {
@@ -1128,7 +1321,7 @@ void XPainterImpl::fill() {
     }
 }
 
-//+ XPainterImpl(PainterObj::stroke)
+//+ XPainterImpl(Painter::stroke)
 void XPainterImpl::stroke() {
     XDisplay* dpy = xdisplay_;
     XDrawable d = xdrawable_;
@@ -1154,47 +1347,75 @@ void XPainterImpl::stroke() {
     }
 }
 
-//+ XPainterImpl(PainterObj::character)
+//+ XPainterImpl(Painter::character)
 void XPainterImpl::character(CharCode ch, Coord width, Coord x, Coord y) {
-    if (transformed_) {
-	if (!is_translation(matrix_)) {
-	    stencil(fontinfo_->font->bitmap(ch), x, y);
-	    return;
+    FontInfo* i = fontinfo_;
+    if (matrix_modified_) {
+	matrix_modified_ = false;
+	matrix_tag_ = matrix_->attach(this);
+	if (is_not_nil(i->transform) &&
+	    translated_only(matrix_, i->transform)
+	) {
+	    translate_remainder(matrix_, i->remainder);
 	} else {
-	    Vertex v;
-	    v.x = x;
-	    v.y = y;
-	    v.z = 0;
-	    matrix_->transform(v);
-	    x = v.x;
-	    y = v.y;
+	    set_font();
+	    i = fontinfo_;
 	}
     }
+    Boolean translation_only = is_translation(i->remainder);
+    if (!translation_only) {
+	adjust_for_remainder(i->remainder, matrix_, x, y);
+	FontImpl* font = is_not_nil(i->surrogate) ? i->surrogate : i->font;
+	stencil_with_transform(font->bitmap(ch), x, y, i->remainder);
+	return;
+    }
+
+    Coord sx = x, swidth = width;
+    if (is_not_nil(i->surrogate)) {
+	Coord swidth = i->widths[ch];
+	if (Math::equal(swidth, float(0.0), float(1e-3))) {
+	    Font::Info info;
+	    i->surrogate->char_info(ch, info);
+	    swidth = info.width;
+	    i->widths[ch] = swidth;
+	}
+    }
+	    
+    if (translation_only) {
+	Vertex v;
+	v.x = x;
+	v.y = y;
+	v.z = 0.0;
+	i->remainder->transform_vertex(v);
+	sx = v.x;
+	y = v.y;
+    }
+
     if (!Math::equal(y, ty_, float(1e-2)) ||
 	char_ + fontinfo_->charsize >= array_end(chars_)
     ) {
 	flush_text();
     }
+
     if (char_ == chars_) {
-	tx0_ = inline_to_pixels(x);
+	tx0_ = inline_to_pixels(sx);
 	ty0_ = pheight_ - inline_to_pixels(y);
 	tx_ = x;
 	ty_ = y;
-    } else {
-	PixelCoord px = inline_to_pixels(x);
-	PixelCoord ptx = inline_to_pixels(tx_);
-	int delta = XCoord(px - ptx);
-	if (delta != 0) {
-	    add_item();
-	    item_->delta = delta;
-	}
+	tsx_ = sx;
+    } else if (!Math::equal(x, tx_, Coord(1e-3))) {
+	PixelCoord psx = inline_to_pixels(sx);
+	PixelCoord ptsx = inline_to_pixels(tsx_);
+	add_item();
+	item_->delta = XCoord(psx - ptsx);
     }
     item_->nchars += fontinfo_->charsize;
     tx_ = x + width;
+    tsx_ = sx + swidth;
     add_char(ch);
 }
 
-//+ XPainterImpl(PainterObj::image)
+//+ XPainterImpl(Painter::image)
 void XPainterImpl::image(Raster_in r, Coord x, Coord y) {
     RasterImpl* raster = RasterImpl::_narrow(r);
     if (raster == nil) {
@@ -1209,13 +1430,13 @@ void XPainterImpl::image(Raster_in r, Coord x, Coord y) {
     // part of the transform. We'll add it afterwards.
     Vertex v;
     v.x = 0; v.y = 0; v.z = 0;
-    matrix_->transform(v);
+    matrix_->transform_vertex(v);
     TransformRef t;
     if (v.x == 0 && v.y == 0 && v.z == 0) {
 	Fresco::ref(matrix_);
 	t = matrix_;
     } else {
-	TransformObj::Matrix m;
+	Transform::Matrix m;
 	matrix_->store_matrix(m);
 	t = new TransformImpl(m);
 	v.x = - v.x;
@@ -1231,7 +1452,7 @@ void XPainterImpl::image(Raster_in r, Coord x, Coord y) {
     XDisplay* dpy = xdisplay_;
 
     v.x = x; v.y = y; v.z = 0;
-    matrix_->transform(v);
+    matrix_->transform_vertex(v);
 
     PixelCoord px, py;
     px = Math::round(inline_to_pixels(v.x) + psd->origin_x);
@@ -1246,8 +1467,24 @@ void XPainterImpl::image(Raster_in r, Coord x, Coord y) {
     );
 }
 
-//+ XPainterImpl(PainterObj::stencil)
+/*
+ * Stencil fills through a given bitmap, aligning its origin
+ * to the given position.
+ *
+ * We split this into two functions so that we can pass a special
+ * transform for when we are stenciling characters.  Otherwise,
+ * we'd be modifying the transform for stenciling, which in turn
+ * would trigger update notification from the matrix.
+ */
+
+//+ XPainterImpl(Painter::stencil)
 void XPainterImpl::stencil(Raster_in r, Coord x, Coord y) {
+    stencil_with_transform(r, x, y, matrix_);
+}
+
+void XPainterImpl::stencil_with_transform(
+    Raster_in r, Coord x, Coord y, Transform_in tx
+) {
     RasterImpl* raster = RasterImpl::_narrow(r);
     if (raster == nil) {
 	/*
@@ -1261,13 +1498,13 @@ void XPainterImpl::stencil(Raster_in r, Coord x, Coord y) {
     // part of the transform. We'll add it afterwards.
     Vertex v;
     v.x = 0; v.y = 0; v.z = 0;
-    matrix_->transform(v);
+    tx->transform_vertex(v);
     TransformRef t;
     if (v.x == 0 && v.y == 0 && v.z == 0) {
-	t = matrix_;
+	t = tx;
     } else {
-	TransformObj::Matrix m;
-	matrix_->store_matrix(m);
+	Transform::Matrix m;
+	tx->store_matrix(m);
 	t = new TransformImpl(m);
 	v.x = - v.x;
 	v.y = - v.y;
@@ -1282,7 +1519,7 @@ void XPainterImpl::stencil(Raster_in r, Coord x, Coord y) {
     XDisplay* dpy = xdisplay_;
 
     v.x = x; v.y = y; v.z = 0;
-    matrix_->transform(v);
+    tx->transform_vertex(v);
 
     PixelCoord px = Math::round(inline_to_pixels(v.x) + psd->origin_x);
     PixelCoord py = Math::round(
@@ -1290,7 +1527,7 @@ void XPainterImpl::stencil(Raster_in r, Coord x, Coord y) {
     );
 
     XGCValues gcv;
-    unsigned long valuemask = 0;
+    ULong valuemask = 0;
 
     valuemask |= GCFunction;
     gcv.function = GXand;
@@ -1390,8 +1627,7 @@ void XPainterImpl::prepare(Boolean double_buffered) {
     brush_ = nil;
     Fresco::unref(color_);
     color_ = nil;
-    Fresco::unref(fontinfo_->font);
-    fontinfo_->font = nil;
+    clear_font(fontinfo_);
 }
 
 void XPainterImpl::frontbuffer() {
@@ -1418,6 +1654,11 @@ void XPainterImpl::init_fonts() {
     FontInfo* i;
     for (i = fontinfos_; i < array_end(fontinfos_); i++) {
 	i->font = nil;
+	i->transform = nil;
+	i->surrogate = nil;
+	i->widths = nil;
+	i->remainder = nil;
+	i->xfont = None;
 	i->charsize = 0;
 	i->age = 0;
     }
@@ -1436,11 +1677,13 @@ void XPainterImpl::init_items() {
 XPainterImpl::FontInfo* XPainterImpl::open_font(FontRef f) {
     FontInfo* i = find_font(f);
     if (i->font != nil) {
+	translate_remainder(matrix_, i->remainder);
 	return i;
     }
     /*
      * Should use narrow
      */
+    Fresco::ref(f);
     FontImpl* fi = (FontImpl*)f;
     i->font = fi;
     XFontStruct* xf = fi->xfont();
@@ -1450,14 +1693,35 @@ XPainterImpl::FontInfo* XPainterImpl::open_font(FontRef f) {
 	i->charsize = 1;
     }
     if (fi->xdisplay() == xdisplay_) {
-	i->xfont = xf->fid;
-	i->scaled = !Math::equal(fi->to_coord(1), to_coord(1), 0.001f);
+	TransformImpl* t = new TransformImpl;
+	t->load(matrix_);
+	i->transform = t;
+	i->surrogate = substitute(fi, scale(t, Y_axis));
+	if (is_nil(i->surrogate)) {
+	    i->xfont = xf->fid;
+	} else {
+	    FontImpl* s = i->surrogate;
+	    s->load();
+	    XFontStruct* xfont = s->xfont();
+	    i->xfont = xfont->fid;
+	    Long max = xfont->max_char_or_byte2 + 1;
+	    Coord* widths = new Coord[max];
+	    for (Long w = 0; w < max; w++) {
+		widths[w] = 0.0;
+	    }
+	    i->widths = widths;
+	}
+	i->remainder = remainder(fi, t, i->surrogate);
     } else {
-	/* Use temporary variable to workaround DEC CXX bug */
-	CharString fname = fi->name();
-	CharStringBuffer s(fname);
+	/* Convert to ref to workaround DEC CXX bug */
+	CharStringBuffer s(CharString::_return_ref(fi->name()));
+	/*
+	 * Haven't implemented font matching for mulitple displays.
+	 * The strategy probably should be to save xdisplay in FontInfo
+	 * and compare for equality of font, transform, and display
+	 * at the beginning of font_attr.
+	 */
 	i->xfont = XLoadFont(xdisplay_, s.string());
-	i->scaled = true;
     }
     return i;
 }
@@ -1478,7 +1742,9 @@ XPainterImpl::FontInfo* XPainterImpl::find_font(FontRef f) {
 	    if (is_nil(cur->font)) {
 		oldest = cur;
 	    } else {
-		if (f->equal(cur->font)) {
+		if (f->equal(cur->font) &&
+		    translated_only(matrix_, cur->transform)
+		) {
 		    i = cur;
 		} else if (
 		    oldest == nil || (
@@ -1494,8 +1760,7 @@ XPainterImpl::FontInfo* XPainterImpl::find_font(FontRef f) {
     if (i == nil) {
 	i = oldest;
 	if (i->font != nil) {
-	    Fresco::unref(i->font);
-	    i->font = nil;
+	    clear_font(i);
 	}
     }
     return i;
@@ -1529,12 +1794,25 @@ void XPainterImpl::cleanup() {
     }
 }
 
+void XPainterImpl::clear_font(FontInfo* i) {
+    Fresco::unref(i->font);
+    i->font = nil;
+    Fresco::unref(i->transform);
+    i->transform = nil;
+    Fresco::unref(i->surrogate);
+    i->surrogate = nil;
+    delete [] i->widths;
+    i->widths = nil;
+    Fresco::unref(i->remainder);
+    i->remainder = nil;
+}
+
 XPoint* XPainterImpl::next_point() {
     if (cur_point_ == end_point_) {
-	long old_size = cur_point_ - point_;
-	long new_size = old_size + old_size;
+	Long old_size = cur_point_ - point_;
+	Long new_size = old_size + old_size;
 	XPoint* new_path = new XPoint[new_size];
-	for (long i = 0; i < old_size; i++) {
+	for (Long i = 0; i < old_size; i++) {
 	    new_path[i] = point_[i];
 	}
 	delete point_;
@@ -1550,10 +1828,10 @@ XPoint* XPainterImpl::next_point() {
 XPainterImpl::SubPathInfo* XPainterImpl::next_subpath() {
     ++cur_subpath_;
     if (cur_subpath_ == end_subpath_) {
-	long old_size = cur_subpath_ - subpath_;
-	long new_size = old_size + old_size;
+	Long old_size = cur_subpath_ - subpath_;
+	Long new_size = old_size + old_size;
 	SubPathInfo* new_subpath = new SubPathInfo[new_size];
-	for (long i = 0; i < old_size; i++) {
+	for (Long i = 0; i < old_size; i++) {
 	    new_subpath[i] = subpath_[i];
 	}
 	delete subpath_;
@@ -1674,6 +1952,335 @@ void XPainterImpl::flush_text() {
     item_->font = fontinfo_->xfont;
 }
 
+float XPainterImpl::scale(TransformRef t, Axis a) {
+    Vertex v0, v1;
+    v0.x = 0;
+    v0.y = 0;
+    switch (a) {
+    case X_axis:
+	v1.x = 1;
+	v1.y = 0;
+	break;
+    case Y_axis:
+	v1.x = 0;
+	v1.y = 1;
+	break;
+    case Z_axis:
+	return 0.0;
+    }
+    t->transform_vertex(v0);
+    t->transform_vertex(v1);
+    Coord dx = v1.x - v0.x;
+    Coord dy = v1.y - v0.y;
+    return sqrt(dx * dx + dy * dy);
+}
+
+/*
+ *  Return the best font that accounts for the difference in dpi between the
+ *  given font and this screen and the scaling of the transformation.  A nil
+ *  return value means that the given font should be used.
+ */
+FontImpl* XPainterImpl::substitute(FontImpl* f, float scale) {
+    FontImpl* result = nil;
+    CharStringBuffer name(f->name());
+    if (FontSpec::valid(name.string())) {
+	FontSpec spec(name.string());
+	if (spec.is_scalable()) {
+	    result = scaled(f, spec, scale);
+	} else {
+	    result = closest(f, spec, scale);
+	}
+    }
+    return result;
+}
+
+FontImpl* XPainterImpl::scaled(FontImpl* f, FontSpec& spec, float scale) {
+    FontImpl* result = nil;
+    PixelCoord dpi = PixelCoord(screen_->dpi());
+    float rscale =  float(dpi) / atol(spec.field(FontSpec::ydpi));
+    if (!Math::equal(rscale, 1.0f, 0.05f) || scale != 1.0) {
+	scale *= rscale;
+	Coord desired_width = f->average_width() * scale;
+	PixelCoord points = atoi(spec.field(FontSpec::points));
+	if (points == 0) {
+	    Font::Info info;
+	    f->font_info(info);
+	    points = to_pixels(info.height) * 10;
+	    char value[5];
+	    sprintf(value, "%d", points);
+	    spec.field(FontSpec::points, value);
+	}
+	for (;;) {
+	    Boolean zero = scale_field(spec, scale, FontSpec::points, false);
+	    zero = scale_field(spec, scale, FontSpec::pixels, zero);
+	    zero = scale_field(spec, scale, FontSpec::width, zero);
+	    result = new FontImpl(window_->display(), spec.full_spec());
+	    Coord average_width = result->average_width();
+	    if (average_width <= desired_width) {
+		break;
+	    } else {
+		scale = desired_width/average_width;
+		Fresco::unref(result);
+		result = nil;
+	    }
+      }
+    }
+    return result;
+}
+
+/*
+ *  The fields pixels, points, and widths are all scalable.  If we scale all
+ *  fields together, the values may not be satisfied simultaneously by the
+ *  server.  Instead, we only scale one field and zero the other two.
+ *
+ *  A scalable font specification should be like:
+ *
+ *    pixel:          0
+ *    points:         specify
+ *    [x,y]dpi:       match current display or existing font (xlsfonts)+
+ *    width:          0
+ *
+ *  + if we are on a 90 dpi screen, and xlsfonts show that scalable fonts
+ *    exist for 72, 75, or 100 dpi for the desired font family.  Then the
+ *    dpi field could be 72, 75, 90, or 100.  90 would be most efficient,
+ *    but not portable.
+ */
+Boolean XPainterImpl::scale_field(
+    FontSpec& spec, float scale, unsigned field, Boolean zero
+) {
+    PixelCoord pvalue = 0;
+    char buffer[10];
+    if (!zero) {
+	XCoord xvalue = atoi(spec.field(field));
+	if (xvalue != 0) {
+	    pvalue = xvalue * scale;
+	    zero = true;
+	}
+    }
+    sprintf(buffer, "%d", pvalue);
+    spec.field(field, buffer);
+    return zero;
+}
+
+/*
+ *  Return a bitmapped font that best matches the height
+ *  requirement scaled by the transformation.
+ */
+FontImpl* XPainterImpl::closest(FontImpl* f, FontSpec& spec, float scale) {
+    FontImpl* result = nil;
+    char** family;
+    Long count = font_family(spec, family);
+    if (count > 0) {
+	Font::Info info;
+	f->font_info(info);
+	Coord width = f->to_coord(atoi(spec.field(FontSpec::width)));
+	Long pixel_height = inline_to_pixels(info.height * scale);
+	Long pixel_width = inline_to_pixels(width * scale);
+	FontSpec best;
+	Long best_height = 0;
+	Long best_width = 0;
+	for (Long i = 0; i < count; i++) {
+	    FontSpec spec(family[i]);
+	    Long p = atol(spec.field(FontSpec::pixels));
+	    Long w = atol(spec.field(FontSpec::width));
+	    if (p >= best_height && p <= pixel_height && w <= pixel_width) {
+		if (p > best_height || (p == best_height && w > best_width)) {
+		    best = spec;
+		    best_height = p;
+		    best_width = w;
+		}
+	    }
+	}
+	if (best_height != 0) {
+	    result = new FontImpl(window_->display(), best.full_spec());
+	}
+	XFreeFontNames(family);
+    }
+    return result;
+}
+
+Long XPainterImpl::font_family(FontSpec& given, char**& names) {
+    FontSpec spec(given);
+    spec.field(FontSpec::pixels, "*");
+    spec.field(FontSpec::points, "*");
+    spec.field(FontSpec::xdpi, "*");
+    spec.field(FontSpec::ydpi, "*");
+    spec.field(FontSpec::width, "*");
+    const int max_names = 10000;
+    int count;
+    names = XListFonts(xdisplay_, spec.full_spec(), max_names, &count);
+    if (names == NULL) {
+	count = 0;
+    }
+    return count;
+}
+
+TransformImpl* XPainterImpl::remainder(
+    FontImpl* font, TransformImpl* t, FontImpl* surrogate
+) {
+    TransformImpl* result = new TransformImpl;
+    result->load(t);
+    if (is_not_nil(surrogate)) {
+	Font::Info fi, si;
+	font->font_info(fi);
+	surrogate->font_info(si);
+	float y_scale = scale(t, Y_axis);
+	float f_scale = fi.height / si.height;
+	if (!Math::equal(f_scale * y_scale, 1.0f, font_tol_) ||
+	    !Math::equal(scale(t, X_axis), y_scale, 0.01f)
+	) {
+	    Vertex vt, v;
+	    vt.x = 0;
+	    vt.y = 0;
+	    vt.z = 0;
+	    result->transform_vertex(vt);
+	    vt.x = -vt.x;
+	    vt.y = -vt.y;
+	    vt.z = -vt.z;
+	    result->translate(vt);
+
+	    v.x = f_scale;
+	    v.y = f_scale;
+	    v.z = 0;
+	    result->scale(v);
+
+	    vt.x = -vt.x;
+	    vt.y = -vt.y;
+	    vt.z = -vt.z;
+	    result->translate(vt);
+	}
+    }
+    return result;
+}
+
+void XPainterImpl::adjust_for_remainder(
+    TransformImpl* remainder, TransformImpl* painter, Coord& x, Coord& y
+) {
+    if (!remainder->equal(painter)) {
+	Vertex v;
+	v.x = x;
+	v.y = y;
+	v.z = 0;
+	painter->transform_vertex(v);
+	remainder->inverse_transform_vertex(v);
+	x = v.x;
+	y = v.y;
+    }
+}
+
+/* class FontSpec */
+
+FontSpec::FontSpec(const char* full_spec) {
+    copy(full_spec);
+}
+
+FontSpec::FontSpec(const FontSpec& other) {
+    copy(other);
+}
+
+FontSpec::FontSpec() {
+    for (Long i = 0; i < max_index; i++) {
+	fields_[i] = nil;
+    }
+    updated_ = true;
+}
+
+FontSpec::~FontSpec() {
+    for (Long i = 0; i < max_index; i++) {
+	delete fields_[i];
+    }
+}
+
+void FontSpec::operator=(const FontSpec& other) {
+    for (int i = 0; i < max_index; i++) {
+	delete fields_[i];
+    }
+    copy(other);
+}
+
+const char* FontSpec::full_spec() const {
+    if (updated_) {
+	FontSpec* self = (FontSpec*)this;
+	self->update();
+	self->updated_ = false;
+    }
+    return specs_;
+}
+
+Boolean FontSpec::is_scalable() {
+    return (
+	atoi(fields_[pixels]) == 0 ||
+	atoi(fields_[points]) == 0 || atoi(fields_[width]) == 0
+    );
+}
+
+char* FontSpec::field(FontSpecIndex index) const { return fields_[index]; }
+
+void FontSpec::field(FontSpecIndex index, char* field) {
+    delete fields_[index];
+    fields_[index] = new char[strlen(field) + 1];
+    strcpy(fields_[index], field);
+    updated_ = true;
+}
+
+Boolean FontSpec::valid(const char* name) {
+    int field = 0;
+    for (int i = 0; name[i] != '\0'; i++) {
+	if (name[i] == '-') {
+	    ++field;
+	}
+    }
+    return field == 14;
+}
+
+void FontSpec::copy(const FontSpec& other) {
+    for (int i = 0; i < max_index; i++) {
+	const char* field = other.fields_[i];
+	if (field != nil) {
+	    fields_[i] = new char[strlen(field) + 1];
+	    strcpy(fields_[i], field);
+	} else {
+	    fields_[i] = nil;
+	}
+    }
+    updated_ = true;
+}
+
+void FontSpec::copy(const char* name) {
+    const char* p = name;
+    for (int i = 0; i < max_index; i++) {
+	++p;
+	const char* field = p;
+	while (*p != nil && *p != '-') {
+	    ++p;
+	}
+	int length = p - field;
+	if (length == 0 || (length == 1 && *field == '*')) {
+	    fields_[i] = nil;
+	} else {
+	    char* f = new char[length + 1];
+	    strncpy(f, field, length);
+	    f[length] = 0;
+	    fields_[i] = f;
+	}
+    }
+    updated_ = true;
+}
+
+void FontSpec::update() {
+    char* specs = &specs_[0];
+    for (int i = 0; i < max_index; i++) {
+	*specs++ = '-';
+	const char* field = fields_[i];
+	if (field != 0) {
+	    int length = strlen(field);
+	    strcpy(specs, field);
+	    specs += length;
+	}
+    }
+    *specs = '\0';
+}
+
 /*
  * DrawingKit -- create drawing objects
  */
@@ -1724,33 +2331,53 @@ void DrawingKitImpl::update() {
 }
 //+
 
-//+ DrawingKitImpl(DrawingKit::style)
-StyleObjRef DrawingKitImpl::_c_style() {
-    return display_->_c_style();
+//+ DrawingKitImpl(DrawingKit::drawing_style)
+Style_return DrawingKitImpl::drawing_style() {
+    return display_->display_style();
 }
 
 //+ DrawingKitImpl(DrawingKit::simple_brush)
-BrushRef DrawingKitImpl::_c_simple_brush(Coord width) {
+Brush_return DrawingKitImpl::simple_brush(Coord width) {
     return new BrushImpl(width);
 }
 
 //+ DrawingKitImpl(DrawingKit::dither_brush)
-BrushRef DrawingKitImpl::_c_dither_brush(Coord width, Long pattern) {
-    return new BrushImpl(pattern, width);
+Brush_return DrawingKitImpl::dither_brush(Coord width, Long p) {
+    return new BrushImpl(p, width);
 }
 
 //+ DrawingKitImpl(DrawingKit::patterned_brush)
-BrushRef DrawingKitImpl::_c_patterned_brush(Coord width, const DrawingKit::Data& pattern) {
-    return new BrushImpl(pattern._buffer, pattern._length, width);
+Brush_return DrawingKitImpl::patterned_brush(Coord width, const Data32& p) {
+    return new BrushImpl(p._buffer, p._length, width);
+}
+
+//+ DrawingKitImpl(DrawingKit::solid_pattern)
+Pattern_return DrawingKitImpl::solid_pattern() {
+    return new PatternImpl(0xffff);
+}
+
+//+ DrawingKitImpl(DrawingKit::halftone_pattern)
+Pattern_return DrawingKitImpl::halftone_pattern() {
+    return new PatternImpl(0xa5a5);
+}
+
+//+ DrawingKitImpl(DrawingKit::stipple)
+Pattern_return DrawingKitImpl::stipple(const Data32& d) {
+    return new PatternImpl(d);
+}
+
+//+ DrawingKitImpl(DrawingKit::stipple_4x4)
+Pattern_return DrawingKitImpl::stipple_4x4(ULong p) {
+    return new PatternImpl(p);
 }
 
 //+ DrawingKitImpl(DrawingKit::color_rgb)
-ColorRef DrawingKitImpl::_c_color_rgb(Color::Intensity r, Color::Intensity g, Color::Intensity b) {
+Color_return DrawingKitImpl::color_rgb(Color::Intensity r, Color::Intensity g, Color::Intensity b) {
     return new ColorImpl(r, g, b);
 }
 
 //+ DrawingKitImpl(DrawingKit::find_color)
-ColorRef DrawingKitImpl::_c_find_color(CharString_in name) {
+Color_return DrawingKitImpl::find_color(CharString_in name) {
     ColorRef c = nil;
     if (!colors_->find(c, name)) {
 	XColor xc;
@@ -1771,87 +2398,108 @@ ColorRef DrawingKitImpl::_c_find_color(CharString_in name) {
 }
 
 //+ DrawingKitImpl(DrawingKit::resolve_color)
-ColorRef DrawingKitImpl::_c_resolve_color(StyleObj_in s, CharString_in name) {
-    ColorRef c = nil;
-    StyleValue a = s->resolve(name);
+Color_return DrawingKitImpl::resolve_color(Style_in s, CharString_in name) {
+    Color_return c = nil;
+    StyleValue_var a = s->resolve(name);
     if (is_not_nil(a)) {
-	CharString v;
-	if (a->read_string(v)) {
-	    c = _c_find_color(v);
+	CharString_var v;
+	if (a->read_string(v._out())) {
+	    c = find_color(v);
 	}
     }
     return c;
 }
 
 //+ DrawingKitImpl(DrawingKit::foreground)
-ColorRef DrawingKitImpl::_c_foreground(StyleObj_in s) {
+Color_return DrawingKitImpl::foreground(Style_in s) {
     return resolve_colors(s, foreground_str_, Foreground_str_);
 }
 
 //+ DrawingKitImpl(DrawingKit::background)
-ColorRef DrawingKitImpl::_c_background(StyleObj_in s) {
+Color_return DrawingKitImpl::background(Style_in s) {
     return resolve_colors(s, background_str_, Background_str_);
 }
 
 ColorRef DrawingKitImpl::resolve_colors(
-    StyleObjRef s, CharString_in name1, CharString_in name2
+    StyleRef s, CharString_in name1, CharString_in name2
 ) {
-    ColorRef c = _c_resolve_color(s, name1);
+    Color_return c = resolve_color(s, name1);
     if (is_nil(c)) {
-	c = _c_resolve_color(s, name2);
+	c = resolve_color(s, name2);
     }
     return c;
 }
 
 //+ DrawingKitImpl(DrawingKit::find_font)
-FontRef DrawingKitImpl::_c_find_font(CharString_in fullname) {
+Font_return DrawingKitImpl::find_font(CharString_in fullname) {
     FontRef f = nil;
     if (!fonts_->find(f, fullname)) {
 	CharStringBuffer cs(fullname);
-	int n;
-	char** names = XListFonts(display_->xdisplay(), cs.string(), 1, &n);
-	if (n == 1) {
-	    f = new FontImpl(display_, names[0]);
-	    fonts_->insert(fullname, f);
+	const char* lfd = cs.string();
+	int n = 0;
+	char** names = nil;
+	if (FontSpec::valid(lfd)) {
+	    FontSpec spec(lfd);
+	    if (spec.is_scalable()) {
+		spec.field(FontSpec::pixels, "0");
+		spec.field(FontSpec::points, "0");
+		spec.field(FontSpec::width, "0");
+		names = XListFonts(
+		    display_->xdisplay(), spec.full_spec(), 1, &n
+		);
+		if (n == 1) {
+		    f = new FontImpl(display_, lfd);
+		    fonts_->insert(fullname, f);
+		}
+	    }
 	}
-	XFreeFontNames(names);
+	if (n == 0) {
+	    names = XListFonts(display_->xdisplay(), lfd, 1, &n);
+	    if (n == 1) {
+		f = new FontImpl(display_, names[0]);
+		fonts_->insert(fullname, f);
+	    }
+	}
+	if (n > 0) {
+	    XFreeFontNames(names);
+	}
     }
     return Font::_duplicate(f);
 }
 
 //+ DrawingKitImpl(DrawingKit::find_font_match)
-FontRef DrawingKitImpl::_c_find_font_match(CharString_in family, CharString_in style, Coord ptsize) {
+Font_return DrawingKitImpl::find_font_match(CharString_in font_family, CharString_in font_style, Coord ptsize) {
     return nil;
 }
 
 //+ DrawingKitImpl(DrawingKit::resolve_font)
-FontRef DrawingKitImpl::_c_resolve_font(StyleObj_in s, CharString_in name) {
-    FontRef f = nil;
-    StyleValue a = s->resolve(name);
+Font_return DrawingKitImpl::resolve_font(Style_in s, CharString_in name) {
+    Font_return f = nil;
+    StyleValue_var a = s->resolve(name);
     if (is_not_nil(a)) {
-	CharString v;
-	if (a->read_string(v)) {
-	    f = _c_find_font(v);
+	CharString_var v;
+	if (a->read_string(v._out())) {
+	    f = find_font(v);
 	}
     }
     return f;
 }
 
 //+ DrawingKitImpl(DrawingKit::default_font)
-FontRef DrawingKitImpl::_c_default_font(StyleObj_in s) {
-    FontRef f = _c_resolve_font(s, font_str_);
+Font_return DrawingKitImpl::default_font(Style_in s) {
+    Font_return f = resolve_font(s, font_str_);
     if (is_nil(f)) {
-	f = _c_resolve_font(s, Font_str_);
+	f = resolve_font(s, Font_str_);
     }
     return f;
 }
 
-//+ DrawingKitImpl(DrawingKit::bitmap_file)
-RasterRef DrawingKitImpl::_c_bitmap_file(CharString_in filename) {
-    if (is_nil(filename)) {
+//+ DrawingKitImpl(DrawingKit::raster_open)
+Raster_return DrawingKitImpl::raster_open(CharString_in name) {
+    if (is_nil(name)) {
 	return nil;
     }
-    CharStringBuffer cs(filename);
+    CharStringBuffer cs(name);
     unsigned int width, height;
     int x, y;
     Pixmap pixmap;
@@ -1868,7 +2516,7 @@ RasterRef DrawingKitImpl::_c_bitmap_file(CharString_in filename) {
     if (y == -1) {
 	y = height;
     }
-    DrawingKit::Data data;
+    DrawingKit::Data8 data;
     data._buffer = nil;
     RasterBitmap* rb = new RasterBitmap(data, height, width, height - y, x, 0);
     rb->read_drawable(display_->xdisplay(), pixmap, 0, 0);
@@ -1876,33 +2524,28 @@ RasterRef DrawingKitImpl::_c_bitmap_file(CharString_in filename) {
     return rb;
 }
 
-//+ DrawingKitImpl(DrawingKit::bitmap_data)
-RasterRef DrawingKitImpl::_c_bitmap_data(const DrawingKit::Data& data, Raster::Index rows, Raster::Index columns, Raster::Index origin_row, Raster::Index origin_column) {
-    return new RasterBitmap(data, rows, columns, origin_row, origin_column);
+//+ DrawingKitImpl(DrawingKit::bitmap_from_data)
+Raster_return DrawingKitImpl::bitmap_from_data(const Data8& d, Raster::Index rows, Raster::Index columns, Raster::Index origin_row, Raster::Index origin_column) {
+    return new RasterBitmap(d, rows, columns, origin_row, origin_column);
 }
 
-//+ DrawingKitImpl(DrawingKit::bitmap_char)
-RasterRef DrawingKitImpl::_c_bitmap_char(Font_in f, CharCode c) {
+//+ DrawingKitImpl(DrawingKit::bitmap_from_char)
+Raster_return DrawingKitImpl::bitmap_from_char(Font_in f, CharCode c) {
     FontImpl* fi = (FontImpl*)f;
     return fi->bitmap(c);
 }
 
-//+ DrawingKitImpl(DrawingKit::raster_tiff)
-RasterRef DrawingKitImpl::_c_raster_tiff(CharString_in filename) {
-    return nil;
-}
-
-//+ DrawingKitImpl(DrawingKit::identity_transform)
-TransformObjRef DrawingKitImpl::_c_identity_transform() {
-    return new TransformImpl;
-}
-
-//+ DrawingKitImpl(DrawingKit::transform)
-TransformObjRef DrawingKitImpl::_c_transform(TransformObj::Matrix m) {
+//+ DrawingKitImpl(DrawingKit::transform_matrix)
+Transform_return DrawingKitImpl::transform_matrix(Transform::Matrix m) {
     return new TransformImpl(m);
 }
 
+//+ DrawingKitImpl(DrawingKit::identity_matrix)
+Transform_return DrawingKitImpl::identity_matrix() {
+    return new TransformImpl;
+}
+
 //+ DrawingKitImpl(DrawingKit::printer)
-PainterObjRef DrawingKitImpl::_c_printer(CharString_in output) {
+Painter_return DrawingKitImpl::printer(CharString_in output) {
     return nil;
 }

@@ -2,7 +2,7 @@
 #include <X11/Fresco/Ox/schema.h>
 #include <X11/Fresco/Ox/stub.h>
 
-TypeObjId _NamingContext_tid_ = 1000;
+TypeObjId _NamingContext_tid = 1000;
 
 //+ NamingContext::%init,type,client
 NamingContext::Name& NamingContext::Name::operator =(const Name& _s) {
@@ -25,70 +25,71 @@ NamingContext::BindingInfoList& NamingContext::BindingInfoList::operator =(const
     }
     return *this;
 }
-extern TypeObjId _NamingContext_tid_;
+extern TypeObjId _NamingContext_tid;
 NamingContext::NotFound::NotFound() {
     _major_ = _index;
     _hash_ = _code;
-    _interface_ = _NamingContext_tid_;
+    _interface_ = _NamingContext_tid;
 }
 NamingContext::NotFound::NotFound(Long _mode) : 
     mode(_mode)
 {
     _major_ = _index;
     _hash_ = _code;
-    _interface_ = _NamingContext_tid_;
+    _interface_ = _NamingContext_tid;
 }
 NamingContext::NotFound* NamingContext::NotFound::_cast(const Exception* e) {
-    if (e->_major() == _index && e->_interface() == _NamingContext_tid_) {
+    if (e->_major() == _index && e->_interface() == _NamingContext_tid) {
         return (NotFound*)e;
     }
     return 0;
 }
-extern TypeObjId _NamingContext_tid_;
+extern TypeObjId _NamingContext_tid;
 NamingContext::NotContext::NotContext() {
     _major_ = _index;
     _hash_ = _code;
-    _interface_ = _NamingContext_tid_;
+    _interface_ = _NamingContext_tid;
 }
 NamingContext::NotContext* NamingContext::NotContext::_cast(const Exception* e) {
-    if (e->_major() == _index && e->_interface() == _NamingContext_tid_) {
+    if (e->_major() == _index && e->_interface() == _NamingContext_tid) {
         return (NotContext*)e;
     }
     return 0;
 }
-extern TypeObjId _NamingContext_tid_;
+extern TypeObjId _NamingContext_tid;
 NamingContext::PermissionDenied::PermissionDenied() {
     _major_ = _index;
     _hash_ = _code;
-    _interface_ = _NamingContext_tid_;
+    _interface_ = _NamingContext_tid;
 }
 NamingContext::PermissionDenied* NamingContext::PermissionDenied::_cast(const Exception* e) {
-    if (e->_major() == _index && e->_interface() == _NamingContext_tid_) {
+    if (e->_major() == _index && e->_interface() == _NamingContext_tid) {
         return (PermissionDenied*)e;
     }
     return 0;
 }
 
-NamingContextType::NamingContextType() { }
-NamingContextType::~NamingContextType() { }
+NamingContext::NamingContext() { }
+NamingContext::~NamingContext() { }
+void* NamingContext::_this() { return this; }
 
-extern TypeObjId _NamingContext_tid_;
+extern TypeObjId _NamingContext_tid;
 extern TypeObj_UnmarshalException _NamingContext_excepts[];
-TypeObj_Descriptor _NamingContext_type_ = {
+TypeObj_Descriptor _NamingContext_type = {
     /* type */ 0,
-    /* id */ &_NamingContext_tid_,
+    /* id */ &_NamingContext_tid,
     "NamingContext",
-    /* parents */ nil, _NamingContext_excepts,
+    /* parents */ nil, /* offsets */ nil, _NamingContext_excepts,
     /* methods */ nil, /* params */ nil,
     /* receive */ nil
 };
 
 NamingContextRef NamingContext::_narrow(BaseObjectRef o) {
-    return (NamingContextRef)_BaseObject_tnarrow_(
-        o, _NamingContext_tid_, &NamingContextStub::_create
+    return (NamingContextRef)_BaseObject_tnarrow(
+        o, _NamingContext_tid, &_NamingContextStub_create
     );
 }
-TypeObjId NamingContextType::_tid() { return _NamingContext_tid_; }
+TypeObjId NamingContext::_tid() { return _NamingContext_tid; }
 extern void _NamingContext_Name_put(
     MarshalBuffer&, const NamingContext::Name&
 );
@@ -134,7 +135,7 @@ extern void _NamingContext_Name_get(
 
 NamingContextStub::NamingContextStub(Exchange* e) { exch_ = e; }
 NamingContextStub::~NamingContextStub() { }
-BaseObjectRef NamingContextStub::_create(Exchange* e) {
+BaseObjectRef _NamingContextStub_create(Exchange* e) {
     return (BaseObjectRef)(void*)new NamingContextStub(e);
 }
 Exchange* NamingContextStub::_exchange() {
@@ -143,17 +144,14 @@ Exchange* NamingContextStub::_exchange() {
 MarshalBuffer::ArgDesc _NamingContext_resolve_pdesc[3] = { 2, 60, 1 };
 MarshalBuffer::ArgMarshal _NamingContext_resolve_pfunc[] = {
     &_NamingContext_Name_put, &_NamingContext_Name_get,
-    &BaseObjectStub::_create
+    &_BaseObjectStub_create
 };
 MarshalBuffer::ArgInfo _NamingContext_resolve_pinfo = {
-    &_NamingContext_tid_, 0, _NamingContext_resolve_pdesc, _NamingContext_resolve_pfunc
+    &_NamingContext_tid, 0, _NamingContext_resolve_pdesc, _NamingContext_resolve_pfunc
 };
-BaseObject_tmp NamingContextType::resolve(const NamingContext::Name& n, Env* _env) {
-    return _c_resolve(n, _env);
-}
-BaseObjectRef NamingContextType::_c_resolve(const NamingContext::Name& n, Env* _env) {
+BaseObjectRef NamingContext::resolve(const Name& n, Env* _env) {
     MarshalBuffer _b;
-    extern TypeObjId _NamingContext_tid_;
+    extern TypeObjId _NamingContext_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_addr = &n;
     _b.invoke(this, _NamingContext_resolve_pinfo, _arg, _env);
@@ -165,11 +163,11 @@ MarshalBuffer::ArgMarshal _NamingContext_list_pfunc[] = {
     &_NamingContext_BindingInfoList_put, &_NamingContext_BindingInfoList_get
 };
 MarshalBuffer::ArgInfo _NamingContext_list_pinfo = {
-    &_NamingContext_tid_, 1, _NamingContext_list_pdesc, _NamingContext_list_pfunc
+    &_NamingContext_tid, 1, _NamingContext_list_pdesc, _NamingContext_list_pfunc
 };
-NamingContext::BindingInfoList NamingContextType::list(const NamingContext::Name& n, Env* _env) {
+NamingContext::BindingInfoList NamingContext::list(const Name& n, Env* _env) {
     MarshalBuffer _b;
-    extern TypeObjId _NamingContext_tid_;
+    extern TypeObjId _NamingContext_tid;
     MarshalBuffer::ArgValue _arg[2];
     NamingContext::BindingInfoList _result;
     _arg[0].u_addr = &_result;
@@ -216,7 +214,7 @@ void _NamingContext_BindingInfoList_get(MarshalBuffer& _b, NamingContext::Bindin
     }
 }
 void NamingContext::NotFound::_put(MarshalBuffer& _b) const {
-    _b.put_long(_NamingContext_tid_);
+    _b.put_long(_NamingContext_tid);
     _b.put_long(_major_);
     const NamingContext::NotFound& _this = *this;
     _b.put_long(_this.mode);
@@ -227,12 +225,12 @@ Exception* NamingContext::NotFound::_get(MarshalBuffer& _b) {
     return &_this;
 }
 void NamingContext::NotContext::_put(MarshalBuffer& _b) const {
-    _b.put_long(_NamingContext_tid_);
+    _b.put_long(_NamingContext_tid);
     _b.put_long(_major_);
 }
 Exception* NamingContext::NotContext::_get(MarshalBuffer&) { return new NotContext; }
 void NamingContext::PermissionDenied::_put(MarshalBuffer& _b) const {
-    _b.put_long(_NamingContext_tid_);
+    _b.put_long(_NamingContext_tid);
     _b.put_long(_major_);
 }
 Exception* NamingContext::PermissionDenied::_get(MarshalBuffer&) { return new PermissionDenied; }

@@ -33,18 +33,19 @@
 
 class ClippingStack;
 class FontImpl;
+class FontSpec;
 class MatrixStack;
 class RegionImpl;
 class ScreenImpl;
 class TransformImpl;
 class WindowImpl;
 
-class DefaultPainterImpl : public PainterObjType {
+class DefaultPainterImpl : public Painter {
 public:
     DefaultPainterImpl();
     ~DefaultPainterImpl();
 
-    //+ PainterObj::*
+    //+ Painter::*
     /* FrescoObject */
     Long ref__(Long references);
     Tag attach(FrescoObject_in observer);
@@ -52,7 +53,7 @@ public:
     void disconnect();
     void notify_observers();
     void update();
-    /* PainterObj */
+    /* Painter */
     Coord to_coord(PixelCoord p);
     PixelCoord to_pixels(Coord c);
     Coord to_pixels_coord(Coord c);
@@ -61,12 +62,14 @@ public:
     void line_to(Coord x, Coord y);
     void curve_to(Coord x, Coord y, Coord x1, Coord y1, Coord x2, Coord y2);
     void close_path();
-    BrushRef _c_brush_attr();
-    void _c_brush_attr(Brush_in _p);
-    ColorRef _c_color_attr();
-    void _c_color_attr(Color_in _p);
-    FontRef _c_font_attr();
-    void _c_font_attr(Font_in _p);
+    Brush_return current_brush();
+    void current_brush(Brush_in _p);
+    Color_return current_color();
+    void current_color(Color_in _p);
+    Font_return current_font();
+    void current_font(Font_in _p);
+    Pattern_return current_pattern();
+    void current_pattern(Pattern_in _p);
     void stroke();
     void fill();
     void line(Coord x0, Coord y0, Coord x1, Coord y1);
@@ -75,17 +78,17 @@ public:
     void character(CharCode ch, Coord width, Coord x, Coord y);
     void image(Raster_in r, Coord x, Coord y);
     void stencil(Raster_in r, Coord x, Coord y);
-    TransformObjRef _c_matrix();
-    void _c_matrix(TransformObj_in _p);
+    Transform_return current_matrix();
+    void current_matrix(Transform_in _p);
     void push_matrix();
     void pop_matrix();
-    void transform(TransformObj_in t);
+    void premultiply(Transform_in t);
     void clip();
     void clip_rect(Coord x0, Coord y0, Coord x1, Coord y1);
     void push_clipping();
     void pop_clipping();
     Boolean is_visible(Region_in r);
-    RegionRef _c_visible();
+    Region_return visible();
     void comment(CharString_in s);
     void page_number(CharString_in s);
     //+
@@ -93,13 +96,19 @@ public:
     virtual void set_clip();
     virtual void reset_clip();
     virtual void flush_text();
+
+    virtual void set_brush();
+    virtual void set_color();
+    virtual void set_font();
+    virtual void set_pattern();
 protected:
     SharedFrescoObjectImpl object_;
     BrushRef brush_;
     ColorRef color_;
     FontRef font_;
-    Boolean transformed_;
+    PatternRef pattern_;
     TransformImpl* matrix_;
+    Tag matrix_tag_;
     MatrixStack* transforms_;
     RegionImpl* clipping_;
     ClippingStack* clippers_;
@@ -123,34 +132,32 @@ public:
 public:
     XPainterImpl(WindowImpl*, ScreenImpl*);
 
-    Coord to_coord(PixelCoord p); //+ PainterObj::to_coord
-    PixelCoord to_pixels(Coord c); //+ PainterObj::to_pixels
-    Coord to_pixels_coord(Coord c); //+ PainterObj::to_pixels_coord
-    void begin_path(); //+ PainterObj::begin_path
-    void move_to(Coord x, Coord y); //+ PainterObj::move_to
-    void line_to(Coord x, Coord y); //+ PainterObj::line_to
-    void curve_to(Coord x, Coord y, Coord x1, Coord y1, Coord x2, Coord y2); //+ PainterObj::curve_to
-    void close_path(); //+ PainterObj::close_path
-    void _c_brush_attr(Brush_in); //+ PainterObj::brush_attr=
-    BrushRef _c_brush_attr(); //+ PainterObj::brush_attr?
-    void _c_color_attr(Color_in); //+ PainterObj::color_attr=
-    ColorRef _c_color_attr(); //+ PainterObj::color_attr?
-    void _c_font_attr(Font_in); //+ PainterObj::font_attr=
-    FontRef _c_font_attr(); //+ PainterObj::font_attr?
-    void stroke(); //+ PainterObj::stroke
-    void fill(); //+ PainterObj::fill
-    void line(Coord x0, Coord y0, Coord x1, Coord y1); //+ PainterObj::line
-    void rect(Coord x0, Coord y0, Coord x1, Coord y1); //+ PainterObj::rect
-    void fill_rect(Coord x0, Coord y0, Coord x1, Coord y1); //+ PainterObj::fill_rect
-    void character(CharCode ch, Coord width, Coord x, Coord y); //+ PainterObj::character
-    void image(Raster_in r, Coord x, Coord y); //+ PainterObj::image
-    void stencil(Raster_in r, Coord x, Coord y); //+ PainterObj::stencil
+    void update(); //+ FrescoObject::update
+
+    Coord to_coord(PixelCoord p); //+ Painter::to_coord
+    PixelCoord to_pixels(Coord c); //+ Painter::to_pixels
+    Coord to_pixels_coord(Coord c); //+ Painter::to_pixels_coord
+    void begin_path(); //+ Painter::begin_path
+    void move_to(Coord x, Coord y); //+ Painter::move_to
+    void line_to(Coord x, Coord y); //+ Painter::line_to
+    void curve_to(Coord x, Coord y, Coord x1, Coord y1, Coord x2, Coord y2); //+ Painter::curve_to
+    void close_path(); //+ Painter::close_path
+    void stroke(); //+ Painter::stroke
+    void fill(); //+ Painter::fill
+    void line(Coord x0, Coord y0, Coord x1, Coord y1); //+ Painter::line
+    void rect(Coord x0, Coord y0, Coord x1, Coord y1); //+ Painter::rect
+    void fill_rect(Coord x0, Coord y0, Coord x1, Coord y1); //+ Painter::fill_rect
+    void character(CharCode ch, Coord width, Coord x, Coord y); //+ Painter::character
+    void image(Raster_in r, Coord x, Coord y); //+ Painter::image
+    void stencil(Raster_in r, Coord x, Coord y); //+ Painter::stencil
 
     struct FontInfo {
 	FontImpl* font;
 	XFont xfont;
-	Boolean scaled;
-	float scale;
+	TransformImpl* transform;
+	FontImpl* surrogate;
+	Coord* widths;
+	TransformImpl* remainder;
 	short charsize;
 	short age;
     };
@@ -175,11 +182,25 @@ public:
     void frontbuffer();
     void backbuffer();
     void swapbuffers();
+    WindowImpl* window();
     PixelCoord inline_to_pixels(Coord c);
     Coord inline_to_coord(PixelCoord p);
     Coord inline_to_pixels_coord(Coord c);
     void smoothness(float s);
     float smoothness();
+
+    void stencil_with_transform(
+	Raster_in r, Coord x, Coord y, Transform_in tx
+    );
+
+    void set_clip();
+    void reset_clip();
+    void flush_text();
+
+    void set_brush();
+    void set_color();
+    void set_font();
+    void set_pattern();
 protected:
     WindowImpl* window_;
     ScreenImpl* screen_;
@@ -199,12 +220,14 @@ protected:
     FontInfo* fontinfo_;
     FontInfo fontinfos_[10];
     PixelCoord tx0_, ty0_;
-    Coord tx_, ty_;
+    Coord tx_, ty_, tsx_;
     char* char_;
     char chars_[200];
     XTextItem* item_;
     XTextItem items_[100];
+    float font_tol_;
 
+    Boolean matrix_modified_;
     Coord path_cur_x_;
     Coord path_cur_y_;
     XPoint* point_;
@@ -216,10 +239,11 @@ protected:
 
     void init_fonts();
     void init_items();
-    XPainterImpl::FontInfo* open_font(FontRef);
-    XPainterImpl::FontInfo* find_font(FontRef);
+    FontInfo* open_font(FontRef);
+    FontInfo* find_font(FontRef);
     void close_fonts();
     void cleanup();
+    void clear_font(FontInfo*);
     XPoint* next_point();
     SubPathInfo* next_subpath();
 
@@ -235,11 +259,20 @@ protected:
     );
     void add_item();
     void add_char(CharCode);
-    void flush_text();
 
-    void set_clip();
-    void reset_clip();
+    float scale(Transform_in, Axis);
+    FontImpl* substitute(FontImpl*, float scale);
+    FontImpl* scaled(FontImpl*, FontSpec&, float scale);
+    Boolean scale_field(
+	FontSpec&, float scale, unsigned int field, Boolean zero
+    );
+    FontImpl* closest(FontImpl*, FontSpec&, float scale);
+    Long font_family(FontSpec&, char**&names);
+    TransformImpl* remainder(FontImpl*, TransformImpl*, FontImpl*);
+    void adjust_for_remainder(TransformImpl*, TransformImpl*, Coord&, Coord&);
 };
+
+inline WindowImpl* XPainterImpl::window() { return window_; }
 
 inline PixelCoord XPainterImpl::inline_to_pixels(Coord c) {
     return PixelCoord( c * points_ + ((c > 0) ? 0.5 : -0.5) );

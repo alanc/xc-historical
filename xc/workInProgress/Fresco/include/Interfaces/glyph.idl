@@ -28,8 +28,8 @@
 #include <X11/Fresco/Interfaces/display.idl>
 #include <X11/Fresco/Interfaces/drawing.idl>
 
-//- DamageObj
-interface DamageObj : FrescoObject {
+//- Damage
+interface Damage : FrescoObject {
     //. A damage object represents the smallest unit of screen update.
     //. Typically, there will be one damage object for each main viewer.
     //. Before a draw traversal begins, the damage object is normally
@@ -51,7 +51,6 @@ interface DamageObj : FrescoObject {
 
 interface GlyphOffset;
 interface GlyphTraversal;
-interface GlyphVisitor;
 
 //- Glyph
 interface Glyph : FrescoObject {
@@ -94,19 +93,23 @@ interface Glyph : FrescoObject {
     //- AllocationInfo
     struct AllocationInfo {
 	Region allocation;
-	TransformObj transform;
-	DamageObj damage;
+	Transform transformation;
+	Damage damaged;
     };
 	//. The AllocationInfo structure contains specific
 	//. cumulative geometry information.  This information
 	//. is used to determine what regions to damage
 	//. in order to redraw a glyph.
 
-    //- AllocationInfoList
-    typedef sequence<AllocationInfo> AllocationInfoList;
-	//. AllocationInfoList is a list of AllocationInfo
+    //- AllocationInfoSeq
+    typedef sequence<AllocationInfo> AllocationInfoSeq;
+	//. AllocationInfoSeq is a list of AllocationInfo
 	//. structures to handle the possibility that a glyph
 	//. appears several places at once on the screen.
+
+    //- OffsetSeq
+    typedef sequence<GlyphOffset> OffsetSeq;
+	//. OffsetSeq is a list of glyph offsets.
 
     //- clone_glyph
     Glyph clone_glyph();
@@ -115,8 +118,8 @@ interface Glyph : FrescoObject {
 	//. are not copied.  The target data may be locked while
 	//. the copy is in progress.
 
-    //- style
-    attribute StyleObj style;
+    //- glyph_style
+    attribute Style glyph_style;
 	//. A glyph may use the style attribute to customize
 	//. the font, colors, and other characteristics
 	//. of the glyph's appearance.  Usage of the style attribute
@@ -124,8 +127,8 @@ interface Glyph : FrescoObject {
 	//. of the style and may return nil when the style
 	//. is retrieved.
 
-    //- transform
-    TransformObj transform();
+    //- transformation
+    Transform transformation();
 	//. Return a transformation matrix associated with the glyph.
 	//. If a glyph implementation does not provide a transform,
 	//. this operation will return nil.
@@ -149,13 +152,13 @@ interface Glyph : FrescoObject {
 	//. the allocation and transform defined by the AllocationInfo.
 
     //- shape
-    Region shape();
-	//. The shape operation asks the glyph to generate the
-	//. precise shape of where it would naturally draw.
+    void shape(in Region r);
+	//. This operation extends the given region by the
+	//. precise shape where this glyph would naturally draw.
 	//. Calling shape may be more costly than calling extension
-	//. (which just computes bounds) and therefore is only
-	//. called by composites that wish to perform layout
-	//. using the actual area where the object will draw.
+	//. (which just computes bounds) and therefore should only
+	//. be called by composites that wish to perform layout
+	//. using the actual area where the object would draw.
 
     //- traverse
     void traverse(in GlyphTraversal t);
@@ -206,14 +209,13 @@ interface Glyph : FrescoObject {
 	//. otherwise adjust the appearance of the body.
 
     //- append, prepend
-    GlyphOffset append(in Glyph g);
-    GlyphOffset prepend(in Glyph g);
-	//. Add the given glyph to this composite, returning the newly-created
-	//. offset.  If the receiver is not actually a composite,
-	//. the operation will be ignored.  If the receiver has a body glyph,
-	//. it should pass the operation on to the body.  In this way,
-	//. "wrapper" glyphs can alter appearance without affecting
-	//. structural operations.
+    void append(in Glyph g);
+    void prepend(in Glyph g);
+	//. Add the given glyph to this composite.  If the receiver
+	//. is not actually a composite, the operation will be ignored.
+	//. If the receiver has a body glyph, it should pass the operation
+	//. on to the body.  In this way, "wrapper" glyphs can
+	//. alter appearance without affecting structural operations.
 
     //- add_parent, remove_parent
     Tag add_parent(in GlyphOffset parent_offset);
@@ -229,18 +231,26 @@ interface Glyph : FrescoObject {
 	//. is not passed with a reference and should not be unref'd
 	//. by the add_parent operation.
 
-    //- visit_children, visit_children_reversed, visit_parents
-    void visit_children(in GlyphVisitor v);
-    void visit_children_reversed(in GlyphVisitor v);
-    void visit_parents(in GlyphVisitor v);
-	//. Visit each of a glyph's children or parents.  The
-	//. visit_children_reversed operation begins with
-	//. the last child and iterates through the list backwards
-	//. to the first child.  Parents are not ordered, so
-	//. no similar capability is necessary.
+    //- first_child_offset, last_child_offset
+    GlyphOffset first_child_offset();
+    GlyphOffset last_child_offset();
+	//. Return the offset of the first or last of this glyph's
+	//. list of children.  Both operations will return nil
+	//. if the glyph has no children.
+
+    //- parent_offsets
+    void parent_offsets(inout OffsetSeq parents);
+	//. Get the offsets of the parents of this glyph.
+	//. The parameter is inout to allow the caller to allocate
+	//. a fixed size array for the result.  If this glyph
+	//. has more parents than the maximum size given for the list,
+	//. then it will allocate new storage for the list.
+	//. The caller therefore must check to see whether the
+	//. resulting size is smaller or now to deallocate
+	//. the list elements correctly.
 
     //- allocations
-    void allocations(out Glyph::AllocationInfoList a);
+    void allocations(out Glyph::AllocationInfoSeq a);
 	//. Compute cumulative information for each allocation
 	//. of the glyph.  This operation normally need not
 	//. be called directly; instead application objects
@@ -276,24 +286,8 @@ interface Glyph : FrescoObject {
     //- restore_trail
     boolean restore_trail(in GlyphTraversal t);
 	//. This operation attempts to restore the traversal state
-	//. (allocation and painter's state) for a particular
-	//. GlyphTraversal.  The return value indicates whether
-	//. restoration is successful.
-};
-
-//- GlyphVisitor
-interface GlyphVisitor : FrescoObject {
-    //. A glyph visitor is essentially a callback for iterating
-    //. over a list of glyph children or parents.
-
-    //- visit
-    boolean visit(in Glyph glyph, in GlyphOffset offset);
-	//. Visit the given glyph.  During a child iteration,
-	//. the glyph is the offset's child.  During a parent
-	//. iteration, the glyph is the offset's parent.
-	//. The visit operation should return whether or not
-	//. the iteration should continue (returning true
-	//. means continue, false means stop).
+	//. (allocation and drawing state) for the given traversal
+	//. The return value indicates whether restoration is successful.
 };
 
 //- GlyphOffset
@@ -309,18 +303,23 @@ interface GlyphOffset : FrescoObject {
 	//. Return the composite parent and child glyph to which
 	//. the offset refers.
 
+    //- next_child, prev_child
+    GlyphOffset next_child();
+    GlyphOffset prev_child();
+	//. Return the next or previous offset within the list
+	//. of children.
+
     //- allocations
-    void allocations(out Glyph::AllocationInfoList a);
+    void allocations(out Glyph::AllocationInfoSeq a);
 	//. Compute cumulative information for each allocation
 	//. of the glyph.  This operation normally need not
 	//. be called directly; it is normally called
 	//. by an implementation Glyph::allocations.
 
     //- insert
-    GlyphOffset insert(in Glyph g);
+    void insert(in Glyph g);
 	//. Insert the given glyph into the composite before the glyph
-	//. referred to by the target offset.  Return the newly-created
-	//. offset.
+	//. referred to by the target offset.
 
     //- replace
     void replace(in Glyph g);
@@ -382,9 +381,9 @@ interface GlyphTraversal : FrescoObject {
 	//. The swap_op method additionally changes the operation
 	//. to the given operation.
 
-    //- begin_trail, end_trail
-    void begin_trail(in Viewer v);
-    void end_trail();
+    //- begin_viewer*, end_viewer*
+    void begin_viewer(in Viewer v);
+    void end_viewer();
 	//. Record the beginning and end of a trail associated with
 	//. the given viewer.
 
@@ -424,38 +423,41 @@ interface GlyphTraversal : FrescoObject {
 	//. toward the viewer.  Both operations return true
 	//. if successful at moving the current glyph.
 
-    //- painter
-    attribute PainterObj painter;
+    //- current_painter
+    attribute Painter current_painter;
 	//. This attribute defines the drawing state for glyphs
 	//. during the traversal.
 
-    //- display, screen
-    DisplayObj display();
-    ScreenObj screen();
+    //- current_display, current_screen
+    Display current_display();
+    Screen current_screen();
 	//. These operations return the display or screen
 	//. where the traversal is rooted.
 
-    //- allocation, bounds, origin, span
+    //- allocation, bounds, origin, span, is_visible
     Region allocation();
     boolean bounds(out Vertex lower, out Vertex upper, out Vertex origin);
-    boolean origin(out Vertex origin);
-    boolean span(in Axis a, out Region::BoundingSpan s);
-	//. These operations return the current allocation or
-	//. information about the allocation.  The bounds, origin, and
-	//. span operations are short-hand for retrieving the
-	//. allocation region and retrieving information from it.
-	//. The bounds, origin, and span operations return false
-	//. if the allocation is not defined (which could happen
-	//. during a non-allocating traversal).
+    boolean allocation_is_visible();
+	//. These operations return the current allocation region or
+	//. information about it.  A traversal may not define
+	//. an allocation, in which case a nil region is returned.
+	//. If the allocation region is defined, the bounds operation
+	//. retrieves the corners and origin and returns true.
+	//. Otherwise, bounds just returns false without modifying
+	//. its parameters.
+	//.
+	//. The allocation_is_visible operation returns true
+	//. if the allocation is defined and is visible in
+	//. the current drawing state (see Painter::is_visible).
 
-    //- transform
-    TransformObj transform();
-	//. Return the transformation matrix associated with
-	//. the current glyph.
+    //- current_transform
+    Transform current_transform();
+	//. Return the cumulative transformation matrix for
+	//. the current glyph in the traversal.
 
-    //- damage
-    DamageObj damage();
-	//. Return the damage object that glyphs in the traversal
+    //- damaged
+    Damage damaged();
+	//. Return the damage area that glyphs in the traversal
 	//. may use to cause a screen update.
 
     //- hit

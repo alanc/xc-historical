@@ -1,7 +1,3 @@
-/*
- * $XConsortium$
- */
-
 #include "naming.h"
 #include <X11/Fresco/Ox/env.h>
 #include <X11/Fresco/Ox/schema.h>
@@ -15,7 +11,15 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-class NamingContextImpl : public NamingContextType {
+#if !sgi
+/* No one except SGI seems to provide a prototype for this */
+extern "C" {
+    int registerrpc(u_long,u_long,u_long,void*(*)(void*),xdrproc_t,xdrproc_t);
+}
+#endif
+
+
+class NamingContextImpl : public NamingContext {
 public:
     NamingContextImpl(
 	char* host, Long port, Long impl, Long o, char* root
@@ -25,8 +29,8 @@ public:
     Exchange* _exchange();
 
     //+ NamingContext::=
-    BaseObjectRef _c_resolve(const NamingContext::Name& n, Env* _env = 0);
-    NamingContext::BindingInfoList list(const NamingContext::Name& n, Env* _env = 0);
+    BaseObject_return resolve(const Name& n, Env* _env = 0);
+    BindingInfoList list(const Name& n, Env* _env = 0);
     //+
 
     char* name_to_string(NamingContext::Name);
@@ -111,7 +115,7 @@ NamingContextImpl::~NamingContextImpl() {
 Exchange* NamingContextImpl::_exchange() { return &exch_; }
 
 //+ NamingContextImpl(NamingContext::resolve)
-BaseObjectRef NamingContextImpl::_c_resolve(const NamingContext::Name& n, Env* _env) {
+BaseObject_return NamingContextImpl::resolve(const Name& n, Env* _env) {
     char* str = name_to_string(n);
     printf("NamingContextImpl::resolve: Name=%s\n", str);
     struct stat stat_buf;
@@ -135,7 +139,7 @@ BaseObjectRef NamingContextImpl::_c_resolve(const NamingContext::Name& n, Env* _
 }
 
 //+ NamingContextImpl(NamingContext::list)
-NamingContext::BindingInfoList NamingContextImpl::list(const NamingContext::Name& n, Env* _env) {
+NamingContext::BindingInfoList NamingContextImpl::list(const Name& n, Env* _env) {
     char* str = name_to_string(n);
     printf("NamingContextImpl::list: Name=%s\n", str);
     NamingContext::BindingInfoList list;
@@ -171,7 +175,8 @@ NamingContext::BindingInfoList NamingContextImpl::list(const NamingContext::Name
 
 //+ NamingContext::%server
 void _NamingContext_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
-    NamingContextRef _this = (NamingContextRef)_object;
+    extern TypeObjId _NamingContext_tid;
+    NamingContextRef _this = (NamingContextRef)_BaseObject_tcast(_object, _NamingContext_tid);
     Env* _env = _b.env();
     switch (_m) {
         case /* resolve */ 0: {
@@ -180,7 +185,7 @@ void _NamingContext_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) 
             NamingContext::Name n;
             _arg[1].u_addr = &n;
             _b.receive(_NamingContext_resolve_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_resolve(n, _env);
+            _arg[0].u_objref = _this->resolve(n, _env);
             _b.reply(_NamingContext_resolve_pinfo, _arg);
             break;
         }

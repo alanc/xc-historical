@@ -36,11 +36,10 @@ class DamageRegion;
 class GlyphTraversalImpl;
 class MainViewer;
 class RegionImpl;
-class WindowStyleImpl;
 class XPainterImpl;
 
-//+ WindowImpl : WindowType, DamageObjType
-class WindowImpl : public WindowType, public DamageObjType {
+//+ WindowImpl : Window, Damage
+class WindowImpl : public Window, public Damage {
 public:
     ~WindowImpl();
     TypeObjId _tid();
@@ -58,9 +57,27 @@ public:
     void notify_observers();
     void update();
     /* Window */
-    ScreenObjRef _c_screen();
-    WindowStyleRef _c_style();
-    ViewerRef _c_main_viewer();
+    Boolean double_buffered();
+    void double_buffered(Boolean _p);
+    Cursor_return default_cursor();
+    void default_cursor(Cursor_in _p);
+    Color_return cursor_foreground();
+    void cursor_foreground(Color_in _p);
+    Color_return cursor_background();
+    void cursor_background(Color_in _p);
+    CharString_return geometry();
+    void geometry(CharString_in _p);
+    Window_return icon();
+    void icon(Window_in _p);
+    Boolean iconic();
+    void iconic(Boolean _p);
+    CharString_return title();
+    void title(CharString_in _p);
+    Long xor_pixel();
+    void xor_pixel(Long _p);
+    Screen_return window_screen();
+    Style_return window_style();
+    Viewer_return main_viewer();
     void configure(const Window::Placement& p);
     void get_configuration(Boolean position, Window::Placement& p);
     void configure_notify(Coord width, Coord height);
@@ -81,10 +98,10 @@ public:
     void ungrab_pointer();
     //+
 
-    //+ DamageObj::=
+    //+ Damage::=
     void incur();
     void extend(Region_in r);
-    RegionRef _c_current();
+    Region_return current();
     //+
 
     virtual void default_geometry();
@@ -99,6 +116,7 @@ public:
     virtual void need_repair();
 
     DisplayImpl* display();
+    ScreenImpl* screen_impl();
     ScreenImpl::VisualInfo* visual();
     XDisplay* xdisplay();
     XWindow xwindow();
@@ -106,15 +124,18 @@ public:
     PixelCoord pheight() { return pheight_; }
 protected:
     SharedFrescoObjectImpl object_;
-    LockObj lock_;
+    LockObj_var lock_;
     DisplayImpl* display_;
     ScreenImpl* screen_;
-    WindowStyleImpl* style_;
+    StyleImpl* style_;
+    CursorRef cursor_;
+    ColorRef cursor_foreground_;
+    ColorRef cursor_background_;
+    WindowRef icon_;
     ScreenImpl::VisualInfo* visual_;
     MainViewer* viewer_;
     XPainterImpl* painter_;
-    LockObj damage_lock_;
-    Boolean damaged_;
+    LockObj_var damage_lock_;
     RegionImpl* damage_;
     GlyphTraversalImpl* draw_;
     GlyphTraversalImpl* pick_;
@@ -135,6 +156,8 @@ protected:
     Boolean map_pending_ : 1;
 
     static Boolean xbound(XWindow);
+    void set_attribute(const char* name, CharStringRef value);
+    CharStringRef get_attribute(const char* name);
     void clear_mapping_info();
     void check_binding();
     void check_position();
@@ -147,6 +170,7 @@ protected:
 };
 
 inline DisplayImpl* WindowImpl::display() { return display_; }
+inline ScreenImpl* WindowImpl::screen_impl() { return screen_; }
 inline ScreenImpl::VisualInfo* WindowImpl::visual() { return visual_; }
 inline XDisplay* WindowImpl::xdisplay() { return display_->xdisplay(); }
 inline XWindow WindowImpl::xwindow() { return xwindow_; }
@@ -235,86 +259,6 @@ public:
     virtual ~IconWindow();
 
     virtual void do_map();
-};
-
-class WindowStyleImpl : public WindowStyleType {
-public:
-    WindowStyleImpl(Fresco*, WindowImpl*);
-    ~WindowStyleImpl();
-
-    //+ StyleObj::*
-    /* FrescoObject */
-    Long ref__(Long references);
-    Tag attach(FrescoObject_in observer);
-    void detach(Tag attach_tag);
-    void disconnect();
-    void notify_observers();
-    void update();
-    /* StyleObj */
-    StyleObjRef _c_new_style();
-    StyleObjRef _c_parent_style();
-    void link_parent(StyleObj_in parent);
-    void unlink_parent();
-    Tag link_child(StyleObj_in child);
-    void unlink_child(Tag link_tag);
-    void merge(StyleObj_in s);
-    CharStringRef _c_name();
-    void _c_name(CharString_in _p);
-    void alias(CharString_in s);
-    Boolean is_on(CharString_in name);
-    StyleValueRef _c_bind(CharString_in name);
-    void unbind(CharString_in name);
-    StyleValueRef _c_resolve(CharString_in name);
-    StyleValueRef _c_resolve_wildcard(CharString_in name, StyleObj_in start);
-    Long match(CharString_in name);
-    void visit_aliases(StyleVisitor_in v);
-    void visit_attributes(StyleVisitor_in v);
-    void visit_styles(StyleVisitor_in v);
-    void lock();
-    void unlock();
-    //+
-
-    //+ WindowStyle::=
-    Boolean double_buffered();
-    void double_buffered(Boolean _p);
-    CursorRef _c_default_cursor();
-    void _c_default_cursor(Cursor_in _p);
-    ColorRef _c_cursor_foreground();
-    void _c_cursor_foreground(Color_in _p);
-    ColorRef _c_cursor_background();
-    void _c_cursor_background(Color_in _p);
-    CharStringRef _c_geometry();
-    void _c_geometry(CharString_in _p);
-    WindowRef _c_icon();
-    void _c_icon(Window_in _p);
-    RasterRef _c_icon_bitmap();
-    void _c_icon_bitmap(Raster_in _p);
-    RasterRef _c_icon_mask();
-    void _c_icon_mask(Raster_in _p);
-    CharStringRef _c_icon_name();
-    void _c_icon_name(CharString_in _p);
-    CharStringRef _c_icon_geometry();
-    void _c_icon_geometry(CharString_in _p);
-    Boolean iconic();
-    void iconic(Boolean _p);
-    CharStringRef _c_title();
-    void _c_title(CharString_in _p);
-    Long xor_pixel();
-    void xor_pixel(Long _p);
-    //+
-private:
-    SharedFrescoObjectImpl object_;
-    SharedStyleImpl impl_;
-    WindowImpl* window_;
-    CursorRef cursor_;
-    ColorRef cursor_foreground_;
-    ColorRef cursor_background_;
-    WindowRef icon_;
-    RasterRef icon_bitmap_;
-    RasterRef icon_mask_;
-
-    void set_attribute(const char* name, CharStringRef value);
-    CharStringRef get_attribute(const char* name);
 };
 
 #endif

@@ -28,7 +28,7 @@
 #include <X11/Fresco/types.h>
 #include <X11/Fresco/Impls/fobjects.h>
 
-class CharStringImpl : public CharStringType {
+class CharStringImpl : public CharString {
 public:
     CharStringImpl();
     CharStringImpl(const char*);
@@ -46,15 +46,15 @@ public:
     void notify_observers();
     void update();
     /* CharString */
-    CharString::HashValue hash();
+    HashValue hash();
     Long count();
     void copy(CharString_in s);
     Boolean equal(CharString_in s);
     Boolean case_insensitive_equal(CharString_in s);
-    void get_data(CharString::Data& d);
-    void get_char_data(CharString::CharData& d);
-    void put_data(const CharString::Data& d);
-    void put_char_data(const CharString::CharData& d);
+    void get_data(Data& d);
+    void get_char_data(CharData& d);
+    void put_data(const Data& d);
+    void put_char_data(const CharData& d);
     //+
 
     static CharStringImpl* create_static(const char* s);
@@ -71,7 +71,7 @@ protected:
 
 class CharStringBuffer {
 public:
-    CharStringBuffer(CharString s) { init(s); }
+    CharStringBuffer(const CharString_var& s) { init(s); }
     CharStringBuffer(CharStringRef s) { init(s); }
     ~CharStringBuffer();
 

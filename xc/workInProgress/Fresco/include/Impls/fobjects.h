@@ -28,7 +28,7 @@
 #include <X11/Fresco/OS/thread.h>
 #include <X11/Fresco/Ox/obj-impl.h>
 
-class LockObjType;
+class LockObj;
 class ObserverList;
 
 //- SharedFrescoObjectImpl*
@@ -67,7 +67,7 @@ public:
     void detach(Tag attach_tag);
     void notify_observers();
 
-    LockObj lock_;
+    LockObj_var lock_;
 private:
     ObserverList* observers_;
 };

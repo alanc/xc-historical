@@ -28,12 +28,11 @@
 #include <X11/Fresco/Interfaces/drawing.idl>
 
 interface Color;
-interface Cursor;
 interface Event;
 interface Font;
 interface GlyphTraversal;
 interface Raster;
-interface ScreenObj;
+interface Screen;
 interface Viewer;
 interface Window;
 interface WindowStyle;
@@ -49,10 +48,8 @@ interface Cursor : FrescoObject {
     //. to the cursor's lower-left corner.
 };
 
-interface DisplayStyle;
-
-//- DisplayObj
-interface DisplayObj : FrescoObject {
+//- Display
+interface Display : FrescoObject {
     //. A display is the unit of window system control; typically it
     //. consists of a single screen, keyboard, and a mouse or other
     //. pointing device.  Application objects typically need not
@@ -63,9 +60,9 @@ interface DisplayObj : FrescoObject {
 	//. The ScreenNumber type defines the representation of
 	//. screen numbers.
 
-    //- style
-    DisplayStyle style();
-	//. Return the style for the display.
+    //- display_style
+    Style display_style();
+	//. Return the style associated with a display.
 
     //- drawing_kit
     DrawingKit drawing_kit();
@@ -74,10 +71,10 @@ interface DisplayObj : FrescoObject {
 	//. colors and fonts.  The drawing_kit operation on a display
 	//. returns a drawing kit that provides this service.
 
-    //- screen, number_of_screens, default_screen
-    ScreenObj screen(in DisplayObj::ScreenNumber n);
-    DisplayObj::ScreenNumber number_of_screens();
-    ScreenObj default_screen();
+    //- display_screen, number_of_screens, default_screen
+    Screen display_screen(in Display::ScreenNumber n);
+    Display::ScreenNumber number_of_screens();
+    Screen default_screen();
 	//. For displays with multiple screens, the screen
 	//. operation returns the screen object corresponding
 	//. to the given index.  The number_of_screens returns
@@ -90,11 +87,11 @@ interface DisplayObj : FrescoObject {
     //- cursor_from_data, cursor_from_bitmap
     //- cursor_from_font, cursor_from_index
     Cursor cursor_from_data(
-	in short x, in short y, in long pattern[16], in long mask[16]
+	in short x, in short y, in long pat[16], in long mask[16]
     );
     Cursor cursor_from_bitmap(in Raster b, in Raster mask);
-    Cursor cursor_from_font(in Font f, in long pattern, in long mask);
-    Cursor cursor_from_index(in long index);
+    Cursor cursor_from_font(in Font f, in long pat, in long mask);
+    Cursor cursor_from_index(in long n);
 	//. These operations return cursors that can be used
 	//. on windows on the display.
 
@@ -164,12 +161,6 @@ interface DisplayObj : FrescoObject {
     void close();
 	//. Terminate the connection to the display.  Once a connection
 	//. is closed, it cannot be re-opened.
-};
-
-//- DisplayStyle
-interface DisplayStyle : StyleObj {
-    //. A display style provides a type-checked interface to the predefined
-    //. display attributes.
 
     //- auto_repeat
     attribute boolean auto_repeat;
@@ -192,10 +183,17 @@ interface DisplayStyle : StyleObj {
 	//. Pointer movement will be multiplied by the acceleration
 	//. when it moves more than the number of pixels specified
 	//. by the threshold.
+
+    //- pointer_double_click_time
+    attribute float pointer_double_click_threshold;
+	//. This attribute holds time difference, in seconds,
+	//. between two clicks below which the second click
+	//. may be interpreted as a double click event.
+	//. The default value is 250 milliseconds.
 };
 
-//- ScreenObj
-interface ScreenObj : FrescoObject {
+//- Screen
+interface Screen : FrescoObject {
     //. A screen represents a physical array of pixels.
 
     //- dpi
@@ -206,7 +204,7 @@ interface ScreenObj : FrescoObject {
 	//. in the conversion to and from pixel coordinates.
 
     //- display
-    DisplayObj display();
+    Display screen_display();
 	//. Return the display that contains the screen.
 
     //- width, height
@@ -300,12 +298,57 @@ interface Window : FrescoObject {
 	//. be 0.0,0.0, meaning the coordinates specify the lower-left
 	//. corner of the window.
 
-    //- screen
-    ScreenObj screen();
+    //- double_buffered
+    attribute boolean double_buffered;
+	//. This attribute determines whether drawing to a window is
+	//. double-buffered or not.
+
+    //- default_cursor, cursor_foreground, cursor_background
+    attribute Cursor default_cursor;
+    attribute Color cursor_foreground;
+    attribute Color cursor_background;
+	//. These attributes define the default cursor and cursor colors
+	//. to use when the pointer is inside the window.
+
+    //- geometry
+    attribute CharString geometry;
+	//. Geometry specifications are strings of the form "WxH+X+Y"
+	//. where W is the width, H the height, X the left corner, and
+	//. Y the top corner of the window.  Either the position
+	//. or the size may be omitted, and the position can use "-"
+	//. instead of "+" to denote a distance from the opposite
+	//. side of the screen to the opposite side of the window.
+	//. For example, a -X value specifies the right side of the
+	//. window should be a distance X from the right edge
+	//. of the screen.
+
+    //- icon, iconic
+    attribute Window icon;
+    attribute boolean iconic;
+	//. If the icon attribute is specified then
+	//. a window manager will normally map the icon window
+	//. when this window is unmapped.  If the iconic flag
+	//. is true, then calling Window::map will actually map
+	//. its icon window instead.
+
+    //- title
+    attribute CharString title;
+	//. This attribute defines a string that may be used
+	//. by a window manager in a title bar above a window.
+
+    //- xor_pixel
+    attribute long xor_pixel;
+	//. This attribute defines the pixel value to use when
+	//. performing xor drawing operations.  Using xor on
+	//. a color display is problematic and should generally
+	//. be avoided.
+
+    //- window_screen
+    Screen window_screen();
 	//. Return the screen with which the window is associated.
 
-    //- style
-    WindowStyle style();
+    //- window_style
+    Style window_style();
 	//. Return the style for the window.
 
     //- main_viewer*
@@ -397,77 +440,6 @@ interface Window : FrescoObject {
 	//. for the entire display until a subsequent call to
 	//. ungrab_pointer.  The cursor parameter, unless nil,
 	//. is used during the grab when the pointer is outside the window.
-};
-
-//- WindowStyle
-interface WindowStyle : StyleObj {
-    //. A window style provides a type-checked interface to the predefined
-    //. window attributes.
-
-    //- double_buffered
-    attribute boolean double_buffered;
-	//. This attribute determines whether drawing to a window is
-	//. double-buffered or not.
-
-    //- default_cursor, cursor_foreground, cursor_background
-    attribute Cursor default_cursor;
-    attribute Color cursor_foreground;
-    attribute Color cursor_background;
-	//. These attributes define the default cursor and cursor colors
-	//. to use when the pointer is inside the window.
-
-    //- geometry
-    attribute CharString geometry;
-	//. Geometry specifications are strings of the form "WxH+X+Y"
-	//. where W is the width, H the height, X the left corner, and
-	//. Y the top corner of the window.  Either the position
-	//. or the size may be omitted, and the position can use "-"
-	//. instead of "+" to denote a distance from the opposite
-	//. side of the screen to the opposite side of the window.
-	//. For example, a -X value specifies the right side of the
-	//. window should be a distance X from the right edge
-	//. of the screen.
-
-    //- icon, icon_bitmap, icon_mask, icon_name,
-    //- icon_geometry, iconic
-    attribute Window icon;
-    attribute Raster icon_bitmap;
-    attribute Raster icon_mask;
-    attribute CharString icon_name;
-    attribute CharString icon_geometry;
-    attribute boolean iconic;
-	//. These attributes specify information about a window,
-	//. called an icon, that is normally mapped when
-	//. this window is iconified and unmapped when the
-	//. window is deiconified.  If the icon attribute
-	//. is defined, then it specifies the icon window.
-	//. Otherwise, the icon_bitmap and icon_mask attributes
-	//. define the icon appearance.  The icon_mask defines the area
-	//. to be drawn and the bitmap defines the foreground and
-	//. background components.  Pixels that correspond to a one
-	//. in the bitmap and a one in the mask are drawn with
-	//. the foreground color.  Pixels that correspond to a zero
-	//. in the bitmap and a one in the mask are drawn with the
-	//. background color.  Pixels that correspond to a zero
-	//. in the mask are not drawn.
-	//.
-	//. If neither a window nor rasters are set, then
-	//. the icon_name attribute defines a string to be used
-	//. as a label on a generic icon.  If the iconic flag
-	//. is true, then calling Window::map will actually map
-	//. its icon window instead.
-
-    //- title
-    attribute CharString title;
-	//. This attribute defines a string that may be used
-	//. by a window manager in a title bar above a window.
-
-    //- xor_pixel
-    attribute long xor_pixel;
-	//. This attribute defines the pixel value to use when
-	//. performing xor drawing operations.  Using xor on
-	//. a color display is problematic and should generally
-	//. be avoided.
 };
 
 #endif

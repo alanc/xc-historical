@@ -54,8 +54,8 @@ Exchange::~Exchange() { }
 
 /* class BaseObject */
 
-BaseObjectType::BaseObjectType() { }
-BaseObjectType::~BaseObjectType() { }
+BaseObject::BaseObject() { }
+BaseObject::~BaseObject() { }
 
 TypeObj_Descriptor* _BaseObject_parents_[] = { nil };
 
@@ -67,9 +67,9 @@ TypeObj_Descriptor _BaseObject_type = {
     /* methods */ nil, /* params */ nil, /* receive */ nil
 };
 
-Long BaseObjectType::ref__(Long r) { return _exchange()->ref__(r); }
+Long BaseObject::ref__(Long r) { return _exchange()->ref__(r); }
 
-Exchange* BaseObjectType::_exchange() { return nil; }
+Exchange* BaseObject::_exchange() { return nil; }
 
 void* _BaseObject_tnarrow(BaseObjectRef obj, TypeObjId t, StubCreator f) {
     void* v;
@@ -93,8 +93,8 @@ void* _BaseObject_tcast(BaseObjectRef obj, TypeObjId t) {
     return TypeSchemaImpl::schema()->cast(obj->_this(), t, obj->_tid());
 }
 
-void* BaseObjectType::_this() { return this; }
-TypeObjId BaseObjectType::_tid() { return _BaseObject_tid; }
+void* BaseObject::_this() { return this; }
+TypeObjId BaseObject::_tid() { return _BaseObject_tid; }
 
 /*
  * Duplicate an object reference.  This implementation assumes
@@ -143,11 +143,11 @@ void _BaseObject__release(BaseObjectRef obj) {
     }
 }
 
-TypeObjRef BaseObjectType::_type() {
+TypeObjRef BaseObject::_type() {
     return TypeSchemaImpl::schema()->map(_tid());
 }
 
-RequestObjRef BaseObjectType::_request() { return nil; }
+RequestObjRef BaseObject::_request() { return nil; }
 
 /* class Env */
 
@@ -356,9 +356,9 @@ TypeObj::OpInfo::_ParamInfoSeq& TypeObj::OpInfo::_ParamInfoSeq::operator =(const
     return *this;
 }
 
-TypeObjType::TypeObjType() { }
-TypeObjType::~TypeObjType() { }
-void* TypeObjType::_this() { return this; }
+TypeObj::TypeObj() { }
+TypeObj::~TypeObj() { }
+void* TypeObj::_this() { return this; }
 
 //+
 
@@ -379,7 +379,7 @@ TypeObjRef TypeObj::_narrow(BaseObjectRef r) {
         r, _TypeObj_tid, 0
     );
 }
-TypeObjId TypeObjType::_tid() { return _TypeObj_tid; }
+TypeObjId TypeObj::_tid() { return _TypeObj_tid; }
 
 /* class TypeImpl */
 
@@ -404,33 +404,33 @@ Long TypeImpl::ref__(Long r) { return object_.ref__(r); }
 string TypeImpl::name() { return descriptor_->name; }
 
 //+ TypeImpl(TypeObj::op_info)
-Boolean TypeImpl::op_info(TypeObj::OpInfo& op, Long index) {
-    if (index < 0 || index >= opcount_) {
+Boolean TypeImpl::op_info(TypeObj::OpInfo& op, Long n) {
+    if (n < 0 || n >= opcount_) {
 	return false;
     }
     TypeObj_Descriptor* d = descriptor_;
     if (d->methods == nil || d->params == nil) {
 	return false;
     }
-    const TypeObj_OpData& opdata = d->methods[index];
-    op.name = (char*)opdata.name;
-    op.index = index;
-    op.result = make_type(opdata.result);
-    Long n = opdata.nparams;
-    op.params._length = n;
-    op.params._maximum = n;
-    delete [] op.params._buffer;
-    op.params._buffer = new TypeObj::ParamInfo[n];
+    const TypeObj_OpData& opdata = d->methods[n];
+    op.op_name = (char*)opdata.name;
+    op.op_index = n;
+    op.op_result = make_type(opdata.result);
+    Long nparams = opdata.nparams;
+    op.op_params._length = nparams;
+    op.op_params._maximum = nparams;
+    delete [] op.op_params._buffer;
+    op.op_params._buffer = new TypeObj::ParamInfo[nparams];
     Long p = 0;
-    for (Long i = 0; i < index; i++) {
+    for (Long i = 0; i < n; i++) {
 	p += d->methods[i].nparams;
     }
-    for (Long j = 0; j < n; j++) {
+    for (Long j = 0; j < nparams; j++) {
 	const TypeObj_ParamData& pdata = d->params[p];
-	TypeObj::ParamInfo& param = op.params._buffer[j];
-	param.name = (char*)pdata.name;
-	param.mode = (TypeObj::ParamMode)pdata.mode;
-	param.type = make_type(pdata.type);
+	TypeObj::ParamInfo& param = op.op_params._buffer[j];
+	param.param_name = (char*)pdata.name;
+	param.param_mode = (TypeObj::ParamMode)pdata.mode;
+	param.param_type = make_type(pdata.type);
 	++p;
     }
     return true;
@@ -447,7 +447,7 @@ Long TypeImpl::enum_info() {
 }
 
 //+ TypeImpl(TypeObj::array_info)
-void TypeImpl::_c_array_info(TypeObjRef& type, Long& size) {
+void TypeImpl::array_info(TypeObj_out& type, Long& size) {
     type = nil;
     size = 0;
 }
@@ -463,16 +463,16 @@ Long TypeImpl::members() {
  */
 
 /* TypeImpl(TypeObj::member_info) */
-TypeObjRef TypeImpl::_c_member_info(Long) { return nil; }
+TypeObjRef TypeImpl::member_info(Long) { return nil; }
 
 //+ TypeImpl(TypeObj::sequence_info)
-void TypeImpl::_c_sequence_info(TypeObjRef& type, Long& size) {
+void TypeImpl::sequence_info(TypeObj_out& type, Long& size) {
     type = nil;
     size = 0;
 }
 
 //+ TypeImpl(TypeObj::typedef_info)
-TypeObjRef TypeImpl::_c_typedef_info() {
+TypeObj_return TypeImpl::typedef_info() {
     return nil;
 }
 
@@ -488,9 +488,9 @@ TypeImpl* TypeImpl::make_type(TypeObj_Descriptor* d) {
 }
 
 //+ RequestObj::%init
-RequestObjType::RequestObjType() { }
-RequestObjType::~RequestObjType() { }
-void* RequestObjType::_this() { return this; }
+RequestObj::RequestObj() { }
+RequestObj::~RequestObj() { }
+void* RequestObj::_this() { return this; }
 
 //+
 
@@ -512,7 +512,7 @@ RequestObjRef RequestObj::_narrow(BaseObjectRef o) {
         o, _RequestObj_tid, 0
     );
 }
-TypeObjId RequestObjType::_tid() { return _RequestObj_tid; }
+TypeObjId RequestObj::_tid() { return _RequestObj_tid; }
 
 RequestObjImpl::RequestObjImpl(BaseObjectRef o) {
     target_ = BaseObject::_duplicate(o);
@@ -542,7 +542,7 @@ RequestObj::CallStatus RequestObjImpl::invoke() {
     if (status_ == RequestObj::ambiguous_operation) {
 	return status_;
     }
-    if (argc_ != opinfo_.params._length) {
+    if (argc_ != opinfo_.op_params._length) {
 	return status(RequestObj::bad_argument_count);
     }
     buffer_->make_out_in();
@@ -697,10 +697,8 @@ void RequestObjImpl::put_object(BaseObject_in obj) {
     put();
 }
 
-BaseObject_tmp RequestObjType::get_object() { return _c_get_object(); }
-
 //+ RequestObjImpl(RequestObj::get_object)
-BaseObjectRef RequestObjImpl::_c_get_object() {
+BaseObject_return RequestObjImpl::get_object() {
     return buffer_->get_object(nil);
 }
 
@@ -744,15 +742,15 @@ Boolean RequestObjImpl::find_op(TypeObjRef type, Long& index) {
     Boolean b = false;
     TypeObj::OpInfo op;
     for (Long i = 0; type->op_info(op, i); i++) {
-	if (strcmp(operation_, op.name) == 0) {
+	if (strcmp(operation_, op.op_name) == 0) {
 	    index = i;
 	    opinfo_ = op;
-	    op.params._buffer = nil;
+	    op.op_params._buffer = nil;
 	    b = true;
 	    break;
 	} else {
-	    delete [] op.params._buffer;
-	    op.params._buffer = nil;
+	    delete [] op.op_params._buffer;
+	    op.op_params._buffer = nil;
 	}
     }
     return b;
@@ -851,7 +849,7 @@ ArrayTypeObj::ArrayTypeObj(
 ArrayTypeObj::~ArrayTypeObj() { }
 
 //+ ArrayTypeObj(TypeObj::array_info)
-void ArrayTypeObj::_c_array_info(TypeObjRef& type, Long& size) {
+void ArrayTypeObj::array_info(TypeObj_out& type, Long& size) {
     type = TypeObj::_duplicate(TypeImpl::make_type(type_));
     size = count_;
 }
@@ -875,11 +873,11 @@ Long StructTypeObj::members() {
 }
 
 //+ StructTypeObj(TypeObj::member_info)
-TypeObjRef StructTypeObj::_c_member_info(Long index) {
-    if (index < 0 || index >= count_) {
+TypeObj_return StructTypeObj::member_info(Long n) {
+    if (n < 0 || n >= count_) {
 	return nil;
     }
-    return TypeObj::_duplicate(TypeImpl::make_type(members_[index]));
+    return TypeObj::_duplicate(TypeImpl::make_type(members_[n]));
 }
 
 /* class SequenceTypeObj */
@@ -899,7 +897,7 @@ SequenceTypeObj::SequenceTypeObj(
 SequenceTypeObj::~SequenceTypeObj() { }
 
 //+ SequenceTypeObj(TypeObj::sequence_info)
-void SequenceTypeObj::_c_sequence_info(TypeObjRef& type, Long& size) {
+void SequenceTypeObj::sequence_info(TypeObj_out& type, Long& size) {
     type = TypeObj::_duplicate(TypeImpl::make_type(type_));
     size = 0;
 }
@@ -915,7 +913,7 @@ TypedefObj::TypedefObj(
 TypedefObj::~TypedefObj() { }
 
 //+ TypedefObj(TypeObj::typedef_info)
-TypeObjRef TypedefObj::_c_typedef_info() {
+TypeObj_return TypedefObj::typedef_info() {
     return TypeObj::_duplicate(TypeImpl::make_type(type_));
 }
 
@@ -1475,7 +1473,7 @@ void MarshalBuffer::dispatch(BaseObjectRef obj) {
 BaseObjectStub::BaseObjectStub(Exchange* e) { exch_ = e; }
 BaseObjectStub::~BaseObjectStub() { delete exch_; }
 
-BaseObjectRef BaseObjectStub::_create(Exchange* e) {
+BaseObjectRef _BaseObjectStub_create(Exchange* e) {
     return new BaseObjectStub(e);
 }
 

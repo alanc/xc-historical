@@ -1,8 +1,4 @@
 /*
- * $XConsortium$
- */
-
-/*
  * Copyright (c) 1987-91 Stanford University
  * Copyright (c) 1991-94 Silicon Graphics, Inc.
  * Copyright (c) 1993-94 Fujitsu, Ltd.
@@ -48,7 +44,7 @@ public:
     Figure(Figure*);
     ~Figure();
 
-    TransformObjRef _c_transform(); //+ Glyph::transform
+    Transform_return transformation(); //+ Glyph::transformation
     void request(Glyph::Requisition& r); //+ Glyph::request
     void extension(const Glyph::AllocationInfo& a, Region_in r); //+ Glyph::extension
     void draw(GlyphTraversal_in t); //+ Glyph::draw
@@ -83,17 +79,16 @@ public:
     void request(Glyph::Requisition& r); //+ Glyph::request
     void extension(const Glyph::AllocationInfo& a, Region_in r); //+ Glyph::extension
     void traverse(GlyphTraversal_in t); //+ Glyph::traverse
-    TransformObjRef _c_transform(); //+ Glyph::transform
+    Transform_return transformation(); //+ Glyph::transformation
     void need_resize(); //+ Glyph::need_resize
     void visit_trail(long, GlyphTraversalRef t);
     void child_allocate(long, Glyph::AllocationInfo& a);
  
     static void corners(
-	TransformObjRef t, Coord& left, Coord& bottom, Coord& right, Coord& top
+	TransformRef t, Coord& left, Coord& bottom, Coord& right, Coord& top
     );
 protected:
     TransformImpl* tx_;
-    Boolean bbox_cached_;
     RegionImpl* bbox_;
 
     void update_bbox();
@@ -110,7 +105,7 @@ public:
     void pick(GlyphTraversal_in t); //+ Glyph::pick
 private:
     FigureStyleRef style_;
-    CharString text_;
+    CharString_var text_;
     Font::Info info_;
 };
 

@@ -17,43 +17,6 @@
 #include <X11/Fresco/OS/thread.h>
 #include <stdio.h>
 
-#ifdef sgi
-
-extern "C" int sginap(long);
-
-static Boolean delay(float seconds) {
-    long n = long(100.0 * seconds + 0.5);
-    if (n <= 2) {
-	n = 3;
-    }
-    return sginap(n) == 0;
-}
-
-#else
-
-#include <X11/Fresco/OS/types.h>
-#include <sys/time.h>
-
-#if defined(AIXV3) || defined(sony)
-#include <sys/select.h>
-#endif
-
-#if defined(sony)
-extern "C" {
-    /* Sony has select in libsocket, but no prototype in /usr/include */
-    int select(int, fd_set*, fd_set*, fd_set*, struct timeval*);
-}
-#endif
-
-static Boolean delay(float seconds) {
-    struct timeval tv;
-    tv.tv_sec = time_t(seconds);
-    tv.tv_usec = time_t(1000000.0 * (seconds - float(tv.tv_sec)) + 0.5);
-    return select(0, nil, nil, nil, &tv) == 0;
-}
-
-#endif
-
 static Option options[] = {
     { "-p", "*pause", Option::value },
     { "-pause", "*pause", Option::value },
@@ -71,7 +34,7 @@ public:
 
     virtual void traverse(GlyphTraversalRef t);
 private:
-    Color color_;
+    Color_var color_;
 };
 
 ColorPatch::ColorPatch(ColorRef c, GlyphRef b) {
@@ -83,8 +46,8 @@ ColorPatch::~ColorPatch () { }
 
 void ColorPatch::traverse (GlyphTraversalRef t) {
     if (t->op() == GlyphTraversal::draw) {
-        PainterObj p = t->painter();
-        Region a = t->allocation();
+        Painter_var p = t->current_painter();
+        Region_var a = t->allocation();
         Vertex lower, upper;
         a->bounds(lower, upper);
 
@@ -94,7 +57,7 @@ void ColorPatch::traverse (GlyphTraversalRef t) {
         p->line_to(upper.x, upper.y);
         p->line_to(lower.x, upper.y);
         p->close_path();
-        p->color_attr(color_);
+        p->current_color(color_);
         p->fill();
     } else {
         MonoGlyph::traverse(t);
@@ -152,17 +115,17 @@ void Barrier::request (Glyph::Requisition& r) {
 }
 
 void Barrier::traverse(GlyphTraversalRef t) {
-    Region region = t->allocation();
-    PainterObj pr = t->painter();
+    Region_var region = t->allocation();
+    Painter_var pr = t->current_painter();
     if (is_not_nil(pr)) {
-        Vertex lower, upper;
-        region->bounds(lower, upper);
-        pr->push_clipping();
-        pr->clip_rect(lower.x, lower.y, upper.x, upper.y);
-        MonoGlyph::traverse(t);
-        pr->pop_clipping();
+	Vertex lower, upper;
+	region->bounds(lower, upper);
+	pr->push_clipping();
+	pr->clip_rect(lower.x, lower.y, upper.x, upper.y);
+	MonoGlyph::traverse(t);
+	pr->pop_clipping();
     } else {
-        MonoGlyph::traverse(t);
+	MonoGlyph::traverse(t);
     }        
 }
     
@@ -172,7 +135,8 @@ void Barrier::need_resize() {
 
 class TimedAction : public ActionImpl {
 public:
-    TimedAction(StyleObjRef style, GlyphRef parent, FigureKitRef figures);
+    TimedAction(StyleRef style, GlyphRef parent, FigureKitRef figures);
+    ~TimedAction();
 
     virtual void execute();
 private:
@@ -182,12 +146,12 @@ private:
 };
 
 TimedAction::TimedAction (
-    StyleObjRef style, GlyphRef parent, FigureKitRef figures
+    StyleRef style, GlyphRef parent, FigureKitRef figures
 ) {
     parent_ = Glyph::_duplicate(parent);
-    figures_ = FigureKit::_duplicate(figures);
+    figures_ = figures;
     pause_ = 0.03;
-    StyleValue a = style->bind(Fresco::string_ref("pause"));
+    StyleValue_var a = style->bind(Fresco::tmp_string_ref("pause"));
     if (is_not_nil(a)) {
 	double d;
 	if (a->read_real(d)) {
@@ -195,6 +159,8 @@ TimedAction::TimedAction (
 	}
     }
 }
+
+TimedAction::~TimedAction() { }
 
 void TimedAction::execute () {
     Coord orig_size = 10.0;
@@ -207,7 +173,7 @@ void TimedAction::execute () {
 		)
 	    );
             parent_->need_resize();
-	    delay(pause_);
+	    Fresco::delay(pause_);
         }
         for (long j = 19; j > 0; j--) {
 	    parent_->body(
@@ -217,7 +183,7 @@ void TimedAction::execute () {
 		)
 	    );
             parent_->need_resize();
-	    delay(pause_);
+	    Fresco::delay(pause_);
         }
     }
 }
@@ -225,26 +191,27 @@ void TimedAction::execute () {
 int main(int argc, char** argv) {
     Fresco* f = Fresco_open("Barrier", argc, argv, options);
 
-    StyleObj s = f->style();
-    FigureKit figures = f->figure_kit();
-    LayoutKit layouts = f->layout_kit();
-    ThreadKit threads = f->thread_kit();
+    Style_var s = f->fresco_style();
+    FigureKit_var figures = f->figure_kit();
+    LayoutKit_var layouts = f->layout_kit();
+    ThreadKit_var threads = f->thread_kit();
     
-    Glyph g = figures->rectangle(
-        FigureKit::stroke, figures->default_style(), 0, 0, 10, 10
+    Glyph_var g = figures->rectangle(
+        FigureKit::stroke, _tmp(figures->default_style()),
+	0, 0, 10, 10
     );
 
     Coord px, py, cx, cy;
-    if (s->is_on(Fresco::string_ref("ll"))) {
+    if (s->is_on(Fresco::tmp_string_ref("ll"))) {
 	px = 0.0; py = 0.0;
 	cx = 0.0; cy = 0.0;
-    } else if (s->is_on(Fresco::string_ref("lr"))) {
+    } else if (s->is_on(Fresco::tmp_string_ref("lr"))) {
 	px = 1.0; py = 0.0;
 	cx = 1.0; cy = 0.0;
-    } else if (s->is_on(Fresco::string_ref("ul"))) {
+    } else if (s->is_on(Fresco::tmp_string_ref("ul"))) {
 	px = 0.0; py = 1.0;
 	cx = 0.0; cy = 1.0;
-    } else if (s->is_on(Fresco::string_ref("ur"))) {
+    } else if (s->is_on(Fresco::tmp_string_ref("ur"))) {
 	px = 1.0; py = 1.0;
 	cx = 1.0; cy = 1.0;
     } else {
@@ -256,7 +223,7 @@ int main(int argc, char** argv) {
     g = t;
 
     Coord fil = layouts->fil();
-    ThreadObj tr = threads->thread(new TimedAction(s, g, figures));
+    ThreadObj_var tr = threads->thread(_tmp(new TimedAction(s, g, figures)));
 
     Glyph::Requisition req;
     req.x.natural = 100;
@@ -269,19 +236,19 @@ int main(int argc, char** argv) {
 
     g = new MaxShaper(req, g);
 
-    Glyph patch1 = new ColorPatch(
+    Glyph_var patch1 = new ColorPatch(
         new ColorImpl(1.0, 0.0, 0.0), layouts->hglue(30.0, 0, fil*100)
     );
 
-    Glyph patch2 = new ColorPatch(
+    Glyph_var patch2 = new ColorPatch(
         new ColorImpl(0.0, 0.0, 1.0), layouts->vglue(30.0, 0, fil*100)
     );
-    Glyph hbox = layouts->hbox();
+    Glyph_var hbox = layouts->hbox();
     hbox->append(patch1);
     hbox->append(g);
     hbox->append(patch1);
 
-    Glyph vbox = layouts->vbox();
+    Glyph_var vbox = layouts->vbox();
     vbox->append(patch2);
     vbox->append(hbox);
     vbox->append(patch2);
@@ -294,7 +261,7 @@ int main(int argc, char** argv) {
     } else {
         tr->run();
     }
-    f->main(nil, g);
+    f->run(nil, g);
     Fresco::unref(f);
     return 0;
 }

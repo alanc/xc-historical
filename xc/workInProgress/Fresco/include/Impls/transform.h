@@ -27,20 +27,18 @@
 
 #include <X11/Fresco/Impls/fobjects.h>
 
-typedef TransformObjRef TransformRef;
-
 //- TransformImpl*
-class TransformImpl : public TransformObjType {
+class TransformImpl : public Transform {
     //. TransformImpl is a default implementation of
     //. the Transform interface.  The current implementation
     //. only supports 3x2 matrices, but this will be replaced
     //. with 4x4 matrix code in the near future.
 public:
     TransformImpl();
-    TransformImpl(TransformObj::Matrix m);
+    TransformImpl(Transform::Matrix m);
     ~TransformImpl();
 
-    //+ TransformObj::*
+    //+ Transform::*
     /* FrescoObject */
     Long ref__(Long references);
     Tag attach(FrescoObject_in observer);
@@ -48,28 +46,28 @@ public:
     void disconnect();
     void notify_observers();
     void update();
-    /* TransformObj */
-    void load(TransformObj_in t);
+    /* Transform */
+    void load(Transform_in t);
     void load_identity();
-    void load_matrix(TransformObj::Matrix m);
-    void store_matrix(TransformObj::Matrix m);
-    Boolean equal(TransformObj_in t);
+    void load_matrix(Matrix m);
+    void store_matrix(Matrix m);
+    Boolean equal(Transform_in t);
     Boolean identity();
     Boolean det_is_zero();
     void scale(const Vertex& v);
     void rotate(Float angle, Axis a);
     void translate(const Vertex& v);
-    void premultiply(TransformObj_in t);
-    void postmultiply(TransformObj_in t);
+    void premultiply(Transform_in t);
+    void postmultiply(Transform_in t);
     void invert();
-    void transform(Vertex& v);
-    void inverse_transform(Vertex& v);
+    void transform_vertex(Vertex& v);
+    void inverse_transform_vertex(Vertex& v);
     //+
 
-    TransformObj::Matrix& matrix();
+    Transform::Matrix& matrix();
 protected:
     SharedFrescoObjectImpl object_;
-    TransformObj::Matrix mat_;
+    Transform::Matrix mat_;
     Boolean identity_ : 1;
     Boolean translate_only_ : 1;
     Boolean xy_ : 1;
@@ -81,6 +79,6 @@ protected:
     Coord det();
 };
 
-inline TransformObj::Matrix& TransformImpl::matrix() { return mat_; }
+inline Transform::Matrix& TransformImpl::matrix() { return mat_; }
 
 #endif

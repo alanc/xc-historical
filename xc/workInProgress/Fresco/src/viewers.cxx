@@ -33,9 +33,11 @@
 
 #include <X11/Fresco/display.h>
 #include <X11/Fresco/drawing.h>
+#include <X11/Fresco/Impls/glyphs.h>
 #include <X11/Fresco/Impls/region.h>
 #include <X11/Fresco/Impls/transform.h>
 #include <X11/Fresco/Impls/viewers.h>
+#include <X11/Fresco/OS/list.h>
 #include <X11/Fresco/OS/memory.h>
 
 /* class ViewerOffset */
@@ -66,24 +68,35 @@ void ViewerOffset::update() {
 //+
 
 //+ ViewerOffset(GlyphOffset::parent)
-GlyphRef ViewerOffset::_c_parent() {
+Glyph_return ViewerOffset::parent() {
     return Glyph::_duplicate(parent_);
 }
 
 //+ ViewerOffset(GlyphOffset::child)
-GlyphRef ViewerOffset::_c_child() {
+Glyph_return ViewerOffset::child() {
     return Glyph::_duplicate(child_);
 }
 
+//+ ViewerOffset(GlyphOffset::next_child)
+GlyphOffset_return ViewerOffset::next_child() {
+    return nil;
+}
+
+//+ ViewerOffset(GlyphOffset::prev_child)
+GlyphOffset_return ViewerOffset::prev_child() {
+    return nil;
+}
+
 //+ ViewerOffset(GlyphOffset::allocations)
-void ViewerOffset::allocations(Glyph::AllocationInfoList& a) {
+void ViewerOffset::allocations(Glyph::AllocationInfoSeq& a) {
+    Long start = a._length;
     parent_->allocations(a);
-    for (Long i = 0; i < a._length; i++) {
+    for (Long i = start; i < a._length; i++) {
 	parent_->child_allocate(a._buffer[i]);
     }
 }
 
-//+ ViewerOffset(GLyphOffset::child_allocate)
+//+ ViewerOffset(GlyphOffset::child_allocate)
 void ViewerOffset::child_allocate(Glyph::AllocationInfo& a) {
     parent_->child_allocate(a);
 }
@@ -93,9 +106,7 @@ void ViewerOffset::child_allocate(Glyph::AllocationInfo& a) {
  */
 
 //+ ViewerOffset(GlyphOffset::insert)
-GlyphOffsetRef ViewerOffset::_c_insert(Glyph_in g) {
-    return nil;
-}
+void ViewerOffset::insert(Glyph_in) { }
 
 //+ ViewerOffset(GlyphOffset::replace)
 void ViewerOffset::replace(Glyph_in) { }
@@ -113,7 +124,7 @@ void ViewerOffset::visit_trail(GlyphTraversal_in t) {
     parent_->visit_trail(t);
 }
 
-ViewerImpl::ViewerImpl(Fresco* f) : style_(f), offset_(this) {
+ViewerImpl::ViewerImpl(Fresco* f, Boolean tr) : style_(f), offset_(this) {
     style_.style_ = this;
     style_.lock_ = nil;
     offset_.child_ = nil;
@@ -124,25 +135,18 @@ ViewerImpl::ViewerImpl(Fresco* f) : style_(f), offset_(this) {
     last_ = nil;
     entered_ = false;
     pressed_ = false;
+    transparent_ = tr;
     recorded_time_ = false;
-    threshold_ = 250;
     display_ = nil;
     filter_ = 0;
-    alias(Fresco::string_ref("Viewer"));
-    StyleValue a = style_._c_bind(Fresco::string_ref("click_delay"));
-    if (is_not_nil(a)) {
-	long n;
-	if (a->read_integer(n)) {
-	    threshold_ = n;
-	}
-    }
+    alias(Fresco::tmp_string_ref("Viewer"));
 }
 
 ViewerImpl::~ViewerImpl() {
     Fresco::unref(offset_.child_);
     ViewerRef v, nextv;
     for (v = first_; is_not_nil(v); v = nextv) {
-	nextv = v->_c_next_viewer();
+	nextv = Viewer::_return_ref(v->next_viewer());
 	v->remove_viewer();
     }
 }
@@ -168,34 +172,42 @@ void ViewerImpl::update() {
 }
 //+
 
-//+ ViewerImpl(Glyph::style=s)
-void ViewerImpl::_c_style(StyleObj_in s) { link_parent(s); }
+//+ ViewerImpl(Glyph::glyph_style=s)
+void ViewerImpl::glyph_style(Style_in s) { link_parent(s); }
 
-//+ ViewerImpl(Glyph::style?)
-StyleObjRef ViewerImpl::_c_style() {
-    return StyleObj::_duplicate(StyleObjRef(this));
+//+ ViewerImpl(Glyph::glyph_style?)
+StyleRef ViewerImpl::glyph_style() {
+    return Style::_duplicate(StyleRef(this));
 }
 
-//+ ViewerImpl(Glyph::transform)
-TransformObjRef ViewerImpl::_c_transform() { return nil; }
+//+ ViewerImpl(Glyph::transformation)
+Transform_return ViewerImpl::transformation() { return nil; }
 
 //+ ViewerImpl(Glyph::request)
 void ViewerImpl::request(Glyph::Requisition& r) {
     offset_.child_->request(r);
 }
 
+/*
+ * If the viewer is not transparent then we quickly compute
+ * the extension assuming that the contents do not draw
+ * outside the origin.
+ */
+
 //+ ViewerImpl(Glyph::extension)
 void ViewerImpl::extension(const Glyph::AllocationInfo& a, Region_in r) {
-    offset_.child_->extension(a, r);
+    if (transparent_) {
+	offset_.child_->extension(a, r);
+    } else {
+	GlyphImpl::default_extension(this, a, r);
+    }
 }
 
 //+ ViewerImpl(Glyph::shape)
-RegionRef ViewerImpl::_c_shape() {
-    return offset_.child_->shape();
-}
+void ViewerImpl::shape(Region_in r) { offset_.child_->shape(r); }
 
 //+ ViewerImpl(Glyph::allocations)
-void ViewerImpl::allocations(Glyph::AllocationInfoList& a) {
+void ViewerImpl::allocations(Glyph::AllocationInfoSeq& a) {
     for (ListItr(GlyphOffsetList) i(glyph_parents_); i.more(); i.next()) {
 	i.cur()->allocations(a);
     }
@@ -203,21 +215,26 @@ void ViewerImpl::allocations(Glyph::AllocationInfoList& a) {
 
 //+ ViewerImpl(Glyph::traverse)
 void ViewerImpl::traverse(GlyphTraversal_in t) {
-    Boolean b;
+    Boolean visit_child, hit;
     switch (t->op()) {
     case GlyphTraversal::pick_top:
     case GlyphTraversal::pick_any:
     case GlyphTraversal::pick_all:
-	b = t->painter()->is_visible(t->allocation());
+	visit_child = t->allocation_is_visible();
+	hit = !transparent_;
 	break;
     default:
-	b = true;
+	visit_child = true;
+	hit = false;
 	break;
     }
-    if (b) {
-	t->begin_trail(ViewerRef(this));
-	t->traverse_child(&offset_, nil);
-	t->end_trail();
+    if (visit_child) {
+	t->begin_viewer(ViewerRef(this));
+	if (hit) {
+	    t->hit();
+	}
+	t->traverse_child(&offset_, _tmp(t->allocation()));
+	t->end_viewer();
     }
 }
 
@@ -228,7 +245,7 @@ void ViewerImpl::draw(GlyphTraversal_in) { }
 void ViewerImpl::pick(GlyphTraversal_in) { }
 
 //+ ViewerImpl(Glyph::body=g)
-void ViewerImpl::_c_body(Glyph_in g) {
+void ViewerImpl::body(Glyph_in g) {
     if (is_not_nil(offset_.child_)) {
 	offset_.child_->remove_parent(offset_.remove_tag_);
     }
@@ -238,18 +255,18 @@ void ViewerImpl::_c_body(Glyph_in g) {
 }
 
 //+ ViewerImpl(Glyph::body?)
-GlyphRef ViewerImpl::_c_body() {
+GlyphRef ViewerImpl::body() {
     return Glyph::_duplicate(offset_.child_);
 }
 
 //+ ViewerImpl(Glyph::append)
-GlyphOffsetRef ViewerImpl::_c_append(Glyph_in g) {
-    return offset_.child_->append(g);
+void ViewerImpl::append(Glyph_in g) {
+    offset_.child_->append(g);
 }
 
 //+ ViewerImpl(Glyph::prepend)
-GlyphOffsetRef ViewerImpl::_c_prepend(Glyph_in g) {
-    return offset_.child_->prepend(g);
+void ViewerImpl::prepend(Glyph_in g) {
+    offset_.child_->prepend(g);
 }
 
 //+ ViewerImpl(Glyph::add_parent)
@@ -267,48 +284,54 @@ void ViewerImpl::remove_parent(Tag add_tag) {
     }
 }
 
-//+ ViewerImpl(Glyph::visit_children)
-void ViewerImpl::visit_children(GlyphVisitor_in v) {
-    offset_.child_->visit_children(v);
+//+ ViewerImpl(Glyph::first_child_offset)
+GlyphOffset_return ViewerImpl::first_child_offset() {
+    return offset_.child_->first_child_offset();
 }
 
-//+ ViewerImpl(Glyph::visit_children_reversed)
-void ViewerImpl::visit_children_reversed(GlyphVisitor_in v) {
-    offset_.child_->visit_children_reversed(v);
+//+ ViewerImpl(Glyph::last_child_offset)
+GlyphOffset_return ViewerImpl::last_child_offset() {
+    return offset_.child_->last_child_offset();
 }
 
-//+ ViewerImpl(Glyph::visit_parents)
-void ViewerImpl::visit_parents(GlyphVisitor_in v) {
-    GlyphOffsetRef g;
-    for (ListItr(GlyphOffsetList) i(glyph_parents_); i.more(); i.next()) {
-	g = i.cur();
-	v->visit(g->parent(), g);
+//+ ViewerImpl(Glyph::parent_offsets)
+void ViewerImpl::parent_offsets(OffsetSeq& parents) {
+    if (glyph_parents_.count() > parents._maximum) {
+	parents._maximum = glyph_parents_.count();
+	parents._buffer = new GlyphOffsetRef[parents._maximum];
+    }
+    parents._length = glyph_parents_.count();
+    Long n = 0;
+    for (ListItr(GlyphOffsetList) i(glyph_parents_); i.more(); i.next(), n++) {
+	parents._buffer[n] = GlyphOffset::_duplicate(i.cur());
     }
 }
 
 //+ ViewerImpl(Glyph::need_redraw)
 void ViewerImpl::need_redraw() {
-    Glyph::AllocationInfoList a;
-    allocations(a);
+    Glyph::AllocationInfoSeq alist;
+    allocations(alist);
     RegionImpl r;
-    for (Long i = 0; i < a._length; i++) {
-	Glyph::AllocationInfo& info = a._buffer[i];
-	if (is_not_nil(info.damage)) {
-	    extension(info, &r);
-	    info.damage->extend(&r);
+    for (Long i = 0; i < alist._length; i++) {
+	Glyph::AllocationInfo& a = alist._buffer[i];
+	if (is_not_nil(a.damaged)) {
+	    extension(a, &r);
+	    a.damaged->extend(&r);
 	}
+	GlyphImpl::release_allocation_info(a);
     }
 }
 
 //+ ViewerImpl(Glyph::need_redraw_region)
 void ViewerImpl::need_redraw_region(Region_in r) {
-    Glyph::AllocationInfoList a;
-    allocations(a);
-    for (Long i = 0; i < a._length; i++) {
-	Glyph::AllocationInfo& info = a._buffer[i];
-	if (is_not_nil(info.damage)) {
-	    info.damage->extend(r);
+    Glyph::AllocationInfoSeq alist;
+    allocations(alist);
+    for (Long i = 0; i < alist._length; i++) {
+	Glyph::AllocationInfo& a = alist._buffer[i];
+	if (is_not_nil(a.damaged)) {
+	    a.damaged->extend(r);
 	}
+	GlyphImpl::release_allocation_info(a);
     }
 }
 
@@ -328,26 +351,26 @@ void ViewerImpl::visit_trail(GlyphTraversalRef) { }
 void ViewerImpl::child_allocate(Glyph::AllocationInfo&) { }
 
 //+ ViewerImpl(Glyph::clone_glyph)
-GlyphRef ViewerImpl::_c_clone_glyph() {
+Glyph_return ViewerImpl::clone_glyph() {
     return nil;
 }
 
 //+ ViewerImpl(Viewer::parent_viewer)
-ViewerRef ViewerImpl::_c_parent_viewer() {
+Viewer_return ViewerImpl::parent_viewer() {
     return Viewer::_duplicate(parent_);
 }
 
 //+ ViewerImpl(Viewer::next_viewer)
-ViewerRef ViewerImpl::_c_next_viewer() { return Viewer::_duplicate(next_); }
+Viewer_return ViewerImpl::next_viewer() { return Viewer::_duplicate(next_); }
 
 //+ ViewerImpl(Viewer::prev_viewer)
-ViewerRef ViewerImpl::_c_prev_viewer() { return Viewer::_duplicate(prev_); }
+Viewer_return ViewerImpl::prev_viewer() { return Viewer::_duplicate(prev_); }
 
 //+ ViewerImpl(Viewer::first_viewer)
-ViewerRef ViewerImpl::_c_first_viewer() { return Viewer::_duplicate(first_); }
+Viewer_return ViewerImpl::first_viewer() { return Viewer::_duplicate(first_); }
 
 //+ ViewerImpl(Viewer::last_viewer)
-ViewerRef ViewerImpl::_c_last_viewer() { return Viewer::_duplicate(last_); }
+Viewer_return ViewerImpl::last_viewer() { return Viewer::_duplicate(last_); }
 
 //+ ViewerImpl(Viewer::append_viewer)
 void ViewerImpl::append_viewer(Viewer_in v) {
@@ -445,9 +468,9 @@ void ViewerImpl::set_last_viewer(Viewer_in v) {
 }
 
 //+ ViewerImpl(Viewer::request_focus)
-FocusRef ViewerImpl::_c_request_focus(Viewer_in requestor, Boolean temporary) {
+Focus_return ViewerImpl::request_focus(Viewer_in requestor, Boolean temporary) {
     return (
-	is_nil(parent_) ? nil : parent_->_c_request_focus(requestor, temporary)
+	is_nil(parent_) ? nil : parent_->request_focus(requestor, temporary)
     );
 }
 
@@ -524,13 +547,14 @@ Boolean ViewerImpl::handle_position_event(GlyphTraversalRef t, EventRef e) {
 	    pressed_ = false;
 	    ungrab();
 	    unsigned long time = e->time();
-	    if (recorded_time_ && time - click_time_ < threshold_) {
+	    if (recorded_time_ && e->double_click(click_time_)) {
 		b = double_click(t, e);
+		recorded_time_ = false;
 	    } else {
 		b = release(t, e);
+		click_time_ = time;
+		recorded_time_ = true;
 	    }
-	    click_time_ = time;
-	    recorded_time_ = true;
 	}
 	break;
     default:
@@ -570,7 +594,7 @@ Boolean ViewerImpl::key_press(GlyphTraversalRef t, EventRef e) {
 	if (v->handle(t, e)) {
 	    return true;
 	}
-	nextv = v->_c_next_viewer();
+	nextv = Viewer::_return_ref(v->next_viewer());
     }
     return false;
 }
@@ -579,10 +603,10 @@ Boolean ViewerImpl::key_release(GlyphTraversalRef, EventRef) { return false; }
 Boolean ViewerImpl::other(GlyphTraversalRef, EventRef) { return false; }
 
 Boolean ViewerImpl::inside(GlyphTraversalRef t) {
-    Boolean b = false;
-    if (t->painter()->is_visible(t->allocation())) {
+    Boolean b = t->allocation_is_visible();
+    if (b && transparent_) {
 	GlyphTraversal::Operation op = t->swap_op(GlyphTraversal::pick_any);
-	t->traverse_child(&offset_, nil);
+	t->traverse_child(&offset_, _tmp(t->allocation()));
 	t->swap_op(op);
 	b = is_not_nil(t->picked());
     }
@@ -591,7 +615,7 @@ Boolean ViewerImpl::inside(GlyphTraversalRef t) {
 
 void ViewerImpl::grab(GlyphTraversalRef t) {
     if (is_nil(display_)) {
-	display_ = t->_c_display();
+	display_ = Display::_return_ref(t->current_display());
 	/*
 	 * Probably should check to make sure this is the current viewer.
 	 */
@@ -607,33 +631,33 @@ void ViewerImpl::ungrab() {
     }
 }
 
-//+ ViewerImpl(StyleObj::=style_.)
-StyleObjRef ViewerImpl::_c_new_style() {
-    return style_._c_new_style();
+//+ ViewerImpl(Style::=style_.)
+Style_return ViewerImpl::new_style() {
+    return style_.new_style();
 }
-StyleObjRef ViewerImpl::_c_parent_style() {
-    return style_._c_parent_style();
+Style_return ViewerImpl::parent_style() {
+    return style_.parent_style();
 }
-void ViewerImpl::link_parent(StyleObj_in parent) {
+void ViewerImpl::link_parent(Style_in parent) {
     style_.link_parent(parent);
 }
 void ViewerImpl::unlink_parent() {
     style_.unlink_parent();
 }
-Tag ViewerImpl::link_child(StyleObj_in child) {
+Tag ViewerImpl::link_child(Style_in child) {
     return style_.link_child(child);
 }
 void ViewerImpl::unlink_child(Tag link_tag) {
     style_.unlink_child(link_tag);
 }
-void ViewerImpl::merge(StyleObj_in s) {
+void ViewerImpl::merge(Style_in s) {
     style_.merge(s);
 }
-CharStringRef ViewerImpl::_c_name() {
-    return style_._c_name();
+CharString_return ViewerImpl::name() {
+    return style_.name();
 }
-void ViewerImpl::_c_name(CharString_in _p) {
-    style_._c_name(_p);
+void ViewerImpl::name(CharString_in _p) {
+    style_.name(_p);
 }
 void ViewerImpl::alias(CharString_in s) {
     style_.alias(s);
@@ -641,17 +665,17 @@ void ViewerImpl::alias(CharString_in s) {
 Boolean ViewerImpl::is_on(CharString_in name) {
     return style_.is_on(name);
 }
-StyleValueRef ViewerImpl::_c_bind(CharString_in name) {
-    return style_._c_bind(name);
+StyleValue_return ViewerImpl::bind(CharString_in name) {
+    return style_.bind(name);
 }
 void ViewerImpl::unbind(CharString_in name) {
     style_.unbind(name);
 }
-StyleValueRef ViewerImpl::_c_resolve(CharString_in name) {
-    return style_._c_resolve(name);
+StyleValue_return ViewerImpl::resolve(CharString_in name) {
+    return style_.resolve(name);
 }
-StyleValueRef ViewerImpl::_c_resolve_wildcard(CharString_in name, StyleObj_in start) {
-    return style_._c_resolve_wildcard(name, start);
+StyleValue_return ViewerImpl::resolve_wildcard(CharString_in name, Style_in start) {
+    return style_.resolve_wildcard(name, start);
 }
 Long ViewerImpl::match(CharString_in name) {
     return style_.match(name);
@@ -675,7 +699,7 @@ void ViewerImpl::unlock() {
 
 /* ActiveViewer */
 
-ActiveViewer::ActiveViewer(Fresco* f) : ViewerImpl(f) { }
+ActiveViewer::ActiveViewer(Fresco* f, Boolean tr) : ViewerImpl(f, tr) { }
 ActiveViewer::~ActiveViewer() { }
 
 /*
@@ -758,7 +782,7 @@ void FocusImpl::map_keychord(const Event::KeyChord&, Action_in) { }
  * hold a reference back to the window.
  */
 
-MainViewer::MainViewer(Fresco* f) : ViewerImpl(f) {
+MainViewer::MainViewer(Fresco* f) : ViewerImpl(f, true) {
     window_ = nil;
     focus_ = new FocusImpl(f);
     background_ = nil;
@@ -778,36 +802,36 @@ void MainViewer::notify_observers() {
 }
 
 //+ MainViewer(Glyph::allocations)
-void MainViewer::allocations(Glyph::AllocationInfoList& a) {
+void MainViewer::allocations(Glyph::AllocationInfoSeq& a) {
     if (a._length >= a._maximum) {
-	long n = a._maximum == 0 ? 10 : a._maximum + a._maximum;
+	Long n = a._maximum == 0 ? 10 : a._maximum + a._maximum;
 	Glyph::AllocationInfo* buffer = new Glyph::AllocationInfo[n];
 	if (a._maximum > 0) {
 	    Memory::copy(
 		a._buffer, buffer, a._maximum * sizeof(Glyph::AllocationInfo)
 	    );
 	}
-	/* should free elems? */
+	/* should free old buffer? */
 	a._buffer = buffer;
 	a._maximum = n;
     }
     Glyph::AllocationInfo& i = a._buffer[a._length];
     i.allocation = new RegionImpl;
     i.allocation->copy(allocation_);
-    i.transform = new TransformImpl;
-    i.damage = DamageObj::_duplicate(damage_);
+    i.transformation = new TransformImpl;
+    i.damaged = Damage::_duplicate(damage_);
     ++a._length;
 }
 
 //+ MainViewer(Glyph::traverse)
 void MainViewer::traverse(GlyphTraversal_in t) {
-    t->begin_trail(ViewerRef(this));
+    t->begin_viewer(ViewerRef(this));
     if (t->op() == GlyphTraversal::draw) {
 	draw(t);
     }
     ViewerImpl::traverse(t);
-    t->end_trail();
-    damage_ = t->_c_damage();
+    t->end_viewer();
+    damage_ = Damage::_return_ref(t->damaged());
     Fresco::unref(damage_);
 }
 
@@ -818,8 +842,8 @@ void MainViewer::draw(GlyphTraversal_in t) {
     }
     Vertex lower, upper;
     t->allocation()->bounds(lower, upper);
-    PainterObj p = t->painter();
-    p->color_attr(background_);
+    Painter_var p = t->current_painter();
+    p->current_color(background_);
     p->fill_rect(lower.x, lower.y, upper.x, upper.y);
 }
 
@@ -836,7 +860,7 @@ void MainViewer::need_resize() {
 }
 
 //+ MainViewer(Viewer::request_focus)
-FocusRef MainViewer::_c_request_focus(Viewer_in requestor, Boolean temporary) {
+Focus_return MainViewer::request_focus(Viewer_in requestor, Boolean temporary) {
     // should note who has focus here
     return focus_;
 }
@@ -847,12 +871,13 @@ FocusRef MainViewer::_c_request_focus(Viewer_in requestor, Boolean temporary) {
 
 void MainViewer::close() {
     if (is_not_nil(window_)) {
-	window_->screen()->display()->run(false);
+	window_->window_screen()->screen_display()->run(false);
     }
 }
 
 void MainViewer::cache() {
-    background_ = style_.fresco_->drawing_kit()->_c_background(style());
+    DrawingKit_var d = style_.fresco_->drawing_kit();
+    background_ = d->background(_tmp(glyph_style()));
     valid_ = true;
 }
 

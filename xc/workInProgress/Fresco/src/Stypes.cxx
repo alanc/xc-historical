@@ -36,9 +36,9 @@
 #include <X11/Fresco/Ox/schema.h>
 
 //+ Action::%init,type+dii,client
-ActionType::ActionType() { }
-ActionType::~ActionType() { }
-void* ActionType::_this() { return this; }
+Action::Action() { }
+Action::~Action() { }
+void* Action::_this() { return this; }
 
 extern TypeObj_Descriptor _Xfvoid_type, _XfBoolean_type;
 
@@ -66,10 +66,10 @@ TypeObj_Descriptor _XfAction_type = {
 
 ActionRef Action::_narrow(BaseObjectRef o) {
     return (ActionRef)_BaseObject_tnarrow(
-        o, _XfAction_tid, &ActionStub::_create
+        o, _XfAction_tid, &_XfActionStub_create
     );
 }
-TypeObjId ActionType::_tid() { return _XfAction_tid; }
+TypeObjId Action::_tid() { return _XfAction_tid; }
 void _XfAction_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
     extern TypeObjId _XfAction_tid;
     ActionRef _this = (ActionRef)_BaseObject_tcast(_object, _XfAction_tid);
@@ -99,7 +99,7 @@ void _XfAction_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
 }
 ActionStub::ActionStub(Exchange* e) { exch_ = e; }
 ActionStub::~ActionStub() { }
-BaseObjectRef ActionStub::_create(Exchange* e) {
+BaseObjectRef _XfActionStub_create(Exchange* e) {
     return (BaseObjectRef)(void*)new ActionStub(e);
 }
 Exchange* ActionStub::_exchange() {
@@ -109,7 +109,7 @@ MarshalBuffer::ArgDesc _XfAction_execute_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfAction_execute_pinfo = {
     &_XfAction_tid, 0, _XfAction_execute_pdesc, 0
 };
-void ActionType::execute() {
+void Action::execute() {
     MarshalBuffer _b;
     extern TypeObjId _XfAction_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -119,7 +119,7 @@ MarshalBuffer::ArgDesc _XfAction_reversible_pdesc[2] = { 1, 12 };
 MarshalBuffer::ArgInfo _XfAction_reversible_pinfo = {
     &_XfAction_tid, 1, _XfAction_reversible_pdesc, 0
 };
-Boolean ActionType::reversible() {
+Boolean Action::reversible() {
     MarshalBuffer _b;
     extern TypeObjId _XfAction_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -130,7 +130,7 @@ MarshalBuffer::ArgDesc _XfAction_unexecute_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfAction_unexecute_pinfo = {
     &_XfAction_tid, 2, _XfAction_unexecute_pdesc, 0
 };
-void ActionType::unexecute() {
+void Action::unexecute() {
     MarshalBuffer _b;
     extern TypeObjId _XfAction_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -160,9 +160,9 @@ CharString::CharData& CharString::CharData::operator =(const CharData& _s) {
     return *this;
 }
 
-CharStringType::CharStringType() { }
-CharStringType::~CharStringType() { }
-void* CharStringType::_this() { return this; }
+CharString::CharString() { }
+CharString::~CharString() { }
+void* CharString::_this() { return this; }
 
 extern TypeObj_Descriptor _XfFrescoObject_type;
 TypeObj_Descriptor* _XfCharString_parents[] = { &_XfFrescoObject_type, nil };
@@ -178,10 +178,10 @@ TypeObj_Descriptor _XfCharString_type = {
 
 CharStringRef CharString::_narrow(BaseObjectRef o) {
     return (CharStringRef)_BaseObject_tnarrow(
-        o, _XfCharString_tid, &CharStringStub::_create
+        o, _XfCharString_tid, &_XfCharStringStub_create
     );
 }
-TypeObjId CharStringType::_tid() { return _XfCharString_tid; }
+TypeObjId CharString::_tid() { return _XfCharString_tid; }
 extern void _XfCharString_Data_put(
     MarshalBuffer&, const CharString::Data&
 );
@@ -221,7 +221,7 @@ extern void _XfCharString_CharData_get(
 
 CharStringStub::CharStringStub(Exchange* e) { exch_ = e; }
 CharStringStub::~CharStringStub() { }
-BaseObjectRef CharStringStub::_create(Exchange* e) {
+BaseObjectRef _XfCharStringStub_create(Exchange* e) {
     return (BaseObjectRef)(void*)new CharStringStub(e);
 }
 Exchange* CharStringStub::_exchange() {
@@ -231,7 +231,7 @@ MarshalBuffer::ArgDesc _XfCharString_hash_pdesc[2] = { 1, 36 };
 MarshalBuffer::ArgInfo _XfCharString_hash_pinfo = {
     &_XfCharString_tid, 0, _XfCharString_hash_pdesc, 0
 };
-CharString::HashValue CharStringType::hash() {
+CharString::HashValue CharString::hash() {
     MarshalBuffer _b;
     extern TypeObjId _XfCharString_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -242,7 +242,7 @@ MarshalBuffer::ArgDesc _XfCharString_count_pdesc[2] = { 1, 32 };
 MarshalBuffer::ArgInfo _XfCharString_count_pinfo = {
     &_XfCharString_tid, 1, _XfCharString_count_pdesc, 0
 };
-Long CharStringType::count() {
+Long CharString::count() {
     MarshalBuffer _b;
     extern TypeObjId _XfCharString_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -251,13 +251,13 @@ Long CharStringType::count() {
 }
 MarshalBuffer::ArgDesc _XfCharString_copy_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfCharString_copy_pfunc[] = {
-    &CharStringStub::_create,
+    &_XfCharStringStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfCharString_copy_pinfo = {
     &_XfCharString_tid, 2, _XfCharString_copy_pdesc, _XfCharString_copy_pfunc
 };
-void CharStringType::copy(CharString_in s) {
+void CharString::copy(CharString_in s) {
     MarshalBuffer _b;
     extern TypeObjId _XfCharString_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -266,13 +266,13 @@ void CharStringType::copy(CharString_in s) {
 }
 MarshalBuffer::ArgDesc _XfCharString_equal_pdesc[3] = { 2, 12, 61 };
 MarshalBuffer::ArgMarshal _XfCharString_equal_pfunc[] = {
-    &CharStringStub::_create,
+    &_XfCharStringStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfCharString_equal_pinfo = {
     &_XfCharString_tid, 3, _XfCharString_equal_pdesc, _XfCharString_equal_pfunc
 };
-Boolean CharStringType::equal(CharString_in s) {
+Boolean CharString::equal(CharString_in s) {
     MarshalBuffer _b;
     extern TypeObjId _XfCharString_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -282,13 +282,13 @@ Boolean CharStringType::equal(CharString_in s) {
 }
 MarshalBuffer::ArgDesc _XfCharString_case_insensitive_equal_pdesc[3] = { 2, 12, 61 };
 MarshalBuffer::ArgMarshal _XfCharString_case_insensitive_equal_pfunc[] = {
-    &CharStringStub::_create,
+    &_XfCharStringStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfCharString_case_insensitive_equal_pinfo = {
     &_XfCharString_tid, 4, _XfCharString_case_insensitive_equal_pdesc, _XfCharString_case_insensitive_equal_pfunc
 };
-Boolean CharStringType::case_insensitive_equal(CharString_in s) {
+Boolean CharString::case_insensitive_equal(CharString_in s) {
     MarshalBuffer _b;
     extern TypeObjId _XfCharString_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -304,7 +304,7 @@ MarshalBuffer::ArgMarshal _XfCharString_get_data_pfunc[] = {
 MarshalBuffer::ArgInfo _XfCharString_get_data_pinfo = {
     &_XfCharString_tid, 5, _XfCharString_get_data_pdesc, _XfCharString_get_data_pfunc
 };
-void CharStringType::get_data(CharString::Data& d) {
+void CharString::get_data(Data& d) {
     MarshalBuffer _b;
     extern TypeObjId _XfCharString_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -319,7 +319,7 @@ MarshalBuffer::ArgMarshal _XfCharString_get_char_data_pfunc[] = {
 MarshalBuffer::ArgInfo _XfCharString_get_char_data_pinfo = {
     &_XfCharString_tid, 6, _XfCharString_get_char_data_pdesc, _XfCharString_get_char_data_pfunc
 };
-void CharStringType::get_char_data(CharString::CharData& d) {
+void CharString::get_char_data(CharData& d) {
     MarshalBuffer _b;
     extern TypeObjId _XfCharString_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -334,7 +334,7 @@ MarshalBuffer::ArgMarshal _XfCharString_put_data_pfunc[] = {
 MarshalBuffer::ArgInfo _XfCharString_put_data_pinfo = {
     &_XfCharString_tid, 7, _XfCharString_put_data_pdesc, _XfCharString_put_data_pfunc
 };
-void CharStringType::put_data(const CharString::Data& d) {
+void CharString::put_data(const Data& d) {
     MarshalBuffer _b;
     extern TypeObjId _XfCharString_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -349,7 +349,7 @@ MarshalBuffer::ArgMarshal _XfCharString_put_char_data_pfunc[] = {
 MarshalBuffer::ArgInfo _XfCharString_put_char_data_pinfo = {
     &_XfCharString_tid, 8, _XfCharString_put_char_data_pdesc, _XfCharString_put_char_data_pfunc
 };
-void CharStringType::put_char_data(const CharString::CharData& d) {
+void CharString::put_char_data(const CharData& d) {
     MarshalBuffer _b;
     extern TypeObjId _XfCharString_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -371,9 +371,9 @@ void _XfCharString_CharData_get(MarshalBuffer& _b, CharString::CharData& _this) 
 //+
 
 //+ FrescoObject::%init,type+dii,client
-FrescoObjectType::FrescoObjectType() { }
-FrescoObjectType::~FrescoObjectType() { }
-void* FrescoObjectType::_this() { return this; }
+FrescoObject::FrescoObject() { }
+FrescoObject::~FrescoObject() { }
+void* FrescoObject::_this() { return this; }
 
 extern TypeObj_Descriptor _XfLong_type, _XfTag_type, _XfFrescoObject_type;
 
@@ -407,10 +407,10 @@ TypeObj_Descriptor _XfFrescoObject_type = {
 
 FrescoObjectRef FrescoObject::_narrow(BaseObjectRef o) {
     return (FrescoObjectRef)_BaseObject_tnarrow(
-        o, _XfFrescoObject_tid, &FrescoObjectStub::_create
+        o, _XfFrescoObject_tid, &_XfFrescoObjectStub_create
     );
 }
-TypeObjId FrescoObjectType::_tid() { return _XfFrescoObject_tid; }
+TypeObjId FrescoObject::_tid() { return _XfFrescoObject_tid; }
 void _XfFrescoObject_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
     extern TypeObjId _XfFrescoObject_tid;
     FrescoObjectRef _this = (FrescoObjectRef)_BaseObject_tcast(_object, _XfFrescoObject_tid);
@@ -470,7 +470,7 @@ void _XfFrescoObject_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b)
 }
 FrescoObjectStub::FrescoObjectStub(Exchange* e) { exch_ = e; }
 FrescoObjectStub::~FrescoObjectStub() { }
-BaseObjectRef FrescoObjectStub::_create(Exchange* e) {
+BaseObjectRef _XfFrescoObjectStub_create(Exchange* e) {
     return (BaseObjectRef)(void*)new FrescoObjectStub(e);
 }
 Exchange* FrescoObjectStub::_exchange() {
@@ -480,7 +480,7 @@ MarshalBuffer::ArgDesc _XfFrescoObject_ref___pdesc[3] = { 2, 32, 33 };
 MarshalBuffer::ArgInfo _XfFrescoObject_ref___pinfo = {
     &_XfFrescoObject_tid, 0, _XfFrescoObject_ref___pdesc, 0
 };
-Long FrescoObjectType::ref__(Long references) {
+Long FrescoObject::ref__(Long references) {
     MarshalBuffer _b;
     extern TypeObjId _XfFrescoObject_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -490,13 +490,13 @@ Long FrescoObjectType::ref__(Long references) {
 }
 MarshalBuffer::ArgDesc _XfFrescoObject_attach_pdesc[3] = { 2, 36, 61 };
 MarshalBuffer::ArgMarshal _XfFrescoObject_attach_pfunc[] = {
-    &FrescoObjectStub::_create,
+    &_XfFrescoObjectStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfFrescoObject_attach_pinfo = {
     &_XfFrescoObject_tid, 1, _XfFrescoObject_attach_pdesc, _XfFrescoObject_attach_pfunc
 };
-Tag FrescoObjectType::attach(FrescoObject_in observer) {
+Tag FrescoObject::attach(FrescoObject_in observer) {
     MarshalBuffer _b;
     extern TypeObjId _XfFrescoObject_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -508,7 +508,7 @@ MarshalBuffer::ArgDesc _XfFrescoObject_detach_pdesc[3] = { 2, 4, 37 };
 MarshalBuffer::ArgInfo _XfFrescoObject_detach_pinfo = {
     &_XfFrescoObject_tid, 2, _XfFrescoObject_detach_pdesc, 0
 };
-void FrescoObjectType::detach(Tag attach_tag) {
+void FrescoObject::detach(Tag attach_tag) {
     MarshalBuffer _b;
     extern TypeObjId _XfFrescoObject_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -519,7 +519,7 @@ MarshalBuffer::ArgDesc _XfFrescoObject_disconnect_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfFrescoObject_disconnect_pinfo = {
     &_XfFrescoObject_tid, 3, _XfFrescoObject_disconnect_pdesc, 0
 };
-void FrescoObjectType::disconnect() {
+void FrescoObject::disconnect() {
     MarshalBuffer _b;
     extern TypeObjId _XfFrescoObject_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -529,7 +529,7 @@ MarshalBuffer::ArgDesc _XfFrescoObject_notify_observers_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfFrescoObject_notify_observers_pinfo = {
     &_XfFrescoObject_tid, 4, _XfFrescoObject_notify_observers_pdesc, 0
 };
-void FrescoObjectType::notify_observers() {
+void FrescoObject::notify_observers() {
     MarshalBuffer _b;
     extern TypeObjId _XfFrescoObject_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -539,7 +539,7 @@ MarshalBuffer::ArgDesc _XfFrescoObject_update_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfFrescoObject_update_pinfo = {
     &_XfFrescoObject_tid, 5, _XfFrescoObject_update_pdesc, 0
 };
-void FrescoObjectType::update() {
+void FrescoObject::update() {
     MarshalBuffer _b;
     extern TypeObjId _XfFrescoObject_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -548,12 +548,12 @@ void FrescoObjectType::update() {
 //+
 
 //+ Region::%init,type+dii,client
-RegionType::RegionType() { }
-RegionType::~RegionType() { }
-void* RegionType::_this() { return this; }
+Region::Region() { }
+Region::~Region() { }
+void* Region::_this() { return this; }
 
 extern TypeObj_Descriptor _XfVertex_type, _XfAxis_type, _XfRegion_type, 
-    _XfTransformObj_type, _XfRegion_BoundingSpan_type;
+    _XfTransform_type, _XfRegion_BoundingSpan_type;
 
 TypeObj_OpData _XfRegion_methods[] = {
     { "contains", &_XfBoolean_type, 1 },
@@ -563,7 +563,7 @@ TypeObj_OpData _XfRegion_methods[] = {
     { "merge_intersect", &_Xfvoid_type, 1 },
     { "merge_union", &_Xfvoid_type, 1 },
     { "subtract", &_Xfvoid_type, 1 },
-    { "transform", &_Xfvoid_type, 1 },
+    { "apply_transform", &_Xfvoid_type, 1 },
     { "bounds", &_Xfvoid_type, 2 },
     { "origin", &_Xfvoid_type, 1 },
     { "span", &_Xfvoid_type, 2 },
@@ -585,8 +585,8 @@ TypeObj_ParamData _XfRegion_params[] = {
         { "r", 0, &_XfRegion_type },
     /* subtract */
         { "r", 0, &_XfRegion_type },
-    /* transform */
-        { "t", 0, &_XfTransformObj_type },
+    /* apply_transform */
+        { "t", 0, &_XfTransform_type },
     /* bounds */
         { "lower", 1, &_XfVertex_type },
         { "upper", 1, &_XfVertex_type },
@@ -611,10 +611,10 @@ TypeObj_Descriptor _XfRegion_type = {
 
 RegionRef Region::_narrow(BaseObjectRef o) {
     return (RegionRef)_BaseObject_tnarrow(
-        o, _XfRegion_tid, &RegionStub::_create
+        o, _XfRegion_tid, &_XfRegionStub_create
     );
 }
-TypeObjId RegionType::_tid() { return _XfRegion_tid; }
+TypeObjId Region::_tid() { return _XfRegion_tid; }
 void _XfRegion_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
     extern TypeObjId _XfRegion_tid;
     RegionRef _this = (RegionRef)_BaseObject_tcast(_object, _XfRegion_tid);
@@ -691,14 +691,14 @@ void _XfRegion_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             _b.reply(_XfRegion_subtract_pinfo, _arg);
             break;
         }
-        case /* transform */ 7: {
-            extern MarshalBuffer::ArgInfo _XfRegion_transform_pinfo;
+        case /* apply_transform */ 7: {
+            extern MarshalBuffer::ArgInfo _XfRegion_apply_transform_pinfo;
             MarshalBuffer::ArgValue _arg[2];
-            TransformObjRef t;
+            TransformRef t;
             _arg[1].u_addr = &t;
-            _b.receive(_XfRegion_transform_pinfo, _arg);
-            _this->transform(t);
-            _b.reply(_XfRegion_transform_pinfo, _arg);
+            _b.receive(_XfRegion_apply_transform_pinfo, _arg);
+            _this->apply_transform(t);
+            _b.reply(_XfRegion_apply_transform_pinfo, _arg);
             break;
         }
         case /* bounds */ 8: {
@@ -776,7 +776,7 @@ extern void _XfRegion_BoundingSpan_get(
 
 RegionStub::RegionStub(Exchange* e) { exch_ = e; }
 RegionStub::~RegionStub() { }
-BaseObjectRef RegionStub::_create(Exchange* e) {
+BaseObjectRef _XfRegionStub_create(Exchange* e) {
     return (BaseObjectRef)(void*)new RegionStub(e);
 }
 Exchange* RegionStub::_exchange() {
@@ -790,7 +790,7 @@ MarshalBuffer::ArgMarshal _XfRegion_contains_pfunc[] = {
 MarshalBuffer::ArgInfo _XfRegion_contains_pinfo = {
     &_XfRegion_tid, 0, _XfRegion_contains_pdesc, _XfRegion_contains_pfunc
 };
-Boolean RegionType::contains(const Vertex& v) {
+Boolean Region::contains(const Vertex& v) {
     MarshalBuffer _b;
     extern TypeObjId _XfRegion_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -806,7 +806,7 @@ MarshalBuffer::ArgMarshal _XfRegion_contains_plane_pfunc[] = {
 MarshalBuffer::ArgInfo _XfRegion_contains_plane_pinfo = {
     &_XfRegion_tid, 1, _XfRegion_contains_plane_pdesc, _XfRegion_contains_plane_pfunc
 };
-Boolean RegionType::contains_plane(const Vertex& v, Axis a) {
+Boolean Region::contains_plane(const Vertex& v, Axis a) {
     MarshalBuffer _b;
     extern TypeObjId _XfRegion_tid;
     MarshalBuffer::ArgValue _arg[3];
@@ -817,13 +817,13 @@ Boolean RegionType::contains_plane(const Vertex& v, Axis a) {
 }
 MarshalBuffer::ArgDesc _XfRegion_intersects_pdesc[3] = { 2, 12, 61 };
 MarshalBuffer::ArgMarshal _XfRegion_intersects_pfunc[] = {
-    &RegionStub::_create,
+    &_XfRegionStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfRegion_intersects_pinfo = {
     &_XfRegion_tid, 2, _XfRegion_intersects_pdesc, _XfRegion_intersects_pfunc
 };
-Boolean RegionType::intersects(Region_in r) {
+Boolean Region::intersects(Region_in r) {
     MarshalBuffer _b;
     extern TypeObjId _XfRegion_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -833,13 +833,13 @@ Boolean RegionType::intersects(Region_in r) {
 }
 MarshalBuffer::ArgDesc _XfRegion_copy_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfRegion_copy_pfunc[] = {
-    &RegionStub::_create,
+    &_XfRegionStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfRegion_copy_pinfo = {
     &_XfRegion_tid, 3, _XfRegion_copy_pdesc, _XfRegion_copy_pfunc
 };
-void RegionType::copy(Region_in r) {
+void Region::copy(Region_in r) {
     MarshalBuffer _b;
     extern TypeObjId _XfRegion_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -848,13 +848,13 @@ void RegionType::copy(Region_in r) {
 }
 MarshalBuffer::ArgDesc _XfRegion_merge_intersect_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfRegion_merge_intersect_pfunc[] = {
-    &RegionStub::_create,
+    &_XfRegionStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfRegion_merge_intersect_pinfo = {
     &_XfRegion_tid, 4, _XfRegion_merge_intersect_pdesc, _XfRegion_merge_intersect_pfunc
 };
-void RegionType::merge_intersect(Region_in r) {
+void Region::merge_intersect(Region_in r) {
     MarshalBuffer _b;
     extern TypeObjId _XfRegion_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -863,13 +863,13 @@ void RegionType::merge_intersect(Region_in r) {
 }
 MarshalBuffer::ArgDesc _XfRegion_merge_union_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfRegion_merge_union_pfunc[] = {
-    &RegionStub::_create,
+    &_XfRegionStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfRegion_merge_union_pinfo = {
     &_XfRegion_tid, 5, _XfRegion_merge_union_pdesc, _XfRegion_merge_union_pfunc
 };
-void RegionType::merge_union(Region_in r) {
+void Region::merge_union(Region_in r) {
     MarshalBuffer _b;
     extern TypeObjId _XfRegion_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -878,33 +878,33 @@ void RegionType::merge_union(Region_in r) {
 }
 MarshalBuffer::ArgDesc _XfRegion_subtract_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfRegion_subtract_pfunc[] = {
-    &RegionStub::_create,
+    &_XfRegionStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfRegion_subtract_pinfo = {
     &_XfRegion_tid, 6, _XfRegion_subtract_pdesc, _XfRegion_subtract_pfunc
 };
-void RegionType::subtract(Region_in r) {
+void Region::subtract(Region_in r) {
     MarshalBuffer _b;
     extern TypeObjId _XfRegion_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = r;
     _b.invoke(this, _XfRegion_subtract_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfRegion_transform_pdesc[3] = { 2, 4, 61 };
-MarshalBuffer::ArgMarshal _XfRegion_transform_pfunc[] = {
-    &TransformObjStub::_create,
+MarshalBuffer::ArgDesc _XfRegion_apply_transform_pdesc[3] = { 2, 4, 61 };
+MarshalBuffer::ArgMarshal _XfRegion_apply_transform_pfunc[] = {
+    &_XfTransformStub_create,
 
 };
-MarshalBuffer::ArgInfo _XfRegion_transform_pinfo = {
-    &_XfRegion_tid, 7, _XfRegion_transform_pdesc, _XfRegion_transform_pfunc
+MarshalBuffer::ArgInfo _XfRegion_apply_transform_pinfo = {
+    &_XfRegion_tid, 7, _XfRegion_apply_transform_pdesc, _XfRegion_apply_transform_pfunc
 };
-void RegionType::transform(TransformObj_in t) {
+void Region::apply_transform(Transform_in t) {
     MarshalBuffer _b;
     extern TypeObjId _XfRegion_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = t;
-    _b.invoke(this, _XfRegion_transform_pinfo, _arg);
+    _b.invoke(this, _XfRegion_apply_transform_pinfo, _arg);
 }
 MarshalBuffer::ArgDesc _XfRegion_bounds_pdesc[4] = { 3, 4, 2, 2 };
 MarshalBuffer::ArgMarshal _XfRegion_bounds_pfunc[] = {
@@ -915,7 +915,7 @@ MarshalBuffer::ArgMarshal _XfRegion_bounds_pfunc[] = {
 MarshalBuffer::ArgInfo _XfRegion_bounds_pinfo = {
     &_XfRegion_tid, 8, _XfRegion_bounds_pdesc, _XfRegion_bounds_pfunc
 };
-void RegionType::bounds(Vertex& lower, Vertex& upper) {
+void Region::bounds(Vertex& lower, Vertex& upper) {
     MarshalBuffer _b;
     extern TypeObjId _XfRegion_tid;
     MarshalBuffer::ArgValue _arg[3];
@@ -931,7 +931,7 @@ MarshalBuffer::ArgMarshal _XfRegion_origin_pfunc[] = {
 MarshalBuffer::ArgInfo _XfRegion_origin_pinfo = {
     &_XfRegion_tid, 9, _XfRegion_origin_pdesc, _XfRegion_origin_pfunc
 };
-void RegionType::origin(Vertex& v) {
+void Region::origin(Vertex& v) {
     MarshalBuffer _b;
     extern TypeObjId _XfRegion_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -946,7 +946,7 @@ MarshalBuffer::ArgMarshal _XfRegion_span_pfunc[] = {
 MarshalBuffer::ArgInfo _XfRegion_span_pinfo = {
     &_XfRegion_tid, 10, _XfRegion_span_pdesc, _XfRegion_span_pfunc
 };
-void RegionType::span(Axis a, Region::BoundingSpan& s) {
+void Region::span(Axis a, Region::BoundingSpan& s) {
     MarshalBuffer _b;
     extern TypeObjId _XfRegion_tid;
     MarshalBuffer::ArgValue _arg[3];
@@ -970,17 +970,17 @@ void _XfRegion_BoundingSpan_get(MarshalBuffer& _b, Region::BoundingSpan& _this) 
 }
 //+
 
-//+ StyleObj::%init,type+dii,client
-StyleObjType::StyleObjType() { }
-StyleObjType::~StyleObjType() { }
-void* StyleObjType::_this() { return this; }
+//+ Style::%init,type+dii,client
+Style::Style() { }
+Style::~Style() { }
+void* Style::_this() { return this; }
 
-extern TypeObj_Descriptor _XfStyleObj_type, _XfCharString_type, _XfStyleValue_type, 
+extern TypeObj_Descriptor _XfStyle_type, _XfCharString_type, _XfStyleValue_type, 
     _XfStyleVisitor_type;
 
-TypeObj_OpData _XfStyleObj_methods[] = {
-    { "new_style", &_XfStyleObj_type, 0 },
-    { "parent_style", &_XfStyleObj_type, 0 },
+TypeObj_OpData _XfStyle_methods[] = {
+    { "new_style", &_XfStyle_type, 0 },
+    { "parent_style", &_XfStyle_type, 0 },
     { "link_parent", &_Xfvoid_type, 1 },
     { "unlink_parent", &_Xfvoid_type, 0 },
     { "link_child", &_XfTag_type, 1 },
@@ -1002,15 +1002,15 @@ TypeObj_OpData _XfStyleObj_methods[] = {
     { "unlock", &_Xfvoid_type, 0 },
     { 0, 0, 0 }
 };
-TypeObj_ParamData _XfStyleObj_params[] = {
+TypeObj_ParamData _XfStyle_params[] = {
     /* link_parent */
-        { "parent", 0, &_XfStyleObj_type },
+        { "parent", 0, &_XfStyle_type },
     /* link_child */
-        { "child", 0, &_XfStyleObj_type },
+        { "child", 0, &_XfStyle_type },
     /* unlink_child */
         { "link_tag", 0, &_XfTag_type },
     /* merge */
-        { "s", 0, &_XfStyleObj_type },
+        { "s", 0, &_XfStyle_type },
     /* name */
         { "_p", 0, &_XfCharString_type },
     /* alias */
@@ -1025,7 +1025,7 @@ TypeObj_ParamData _XfStyleObj_params[] = {
         { "name", 0, &_XfCharString_type },
     /* resolve_wildcard */
         { "name", 0, &_XfCharString_type },
-        { "start", 0, &_XfStyleObj_type },
+        { "start", 0, &_XfStyle_type },
     /* match */
         { "name", 0, &_XfCharString_type },
     /* visit_aliases */
@@ -1036,539 +1036,539 @@ TypeObj_ParamData _XfStyleObj_params[] = {
         { "v", 0, &_XfStyleVisitor_type }
 };
 extern TypeObj_Descriptor _XfFrescoObject_type;
-TypeObj_Descriptor* _XfStyleObj_parents[] = { &_XfFrescoObject_type, nil };
-extern TypeObjId _XfStyleObj_tid;
-extern void _XfStyleObj_receive(BaseObjectRef, ULong, MarshalBuffer&);
-TypeObj_Descriptor _XfStyleObj_type = {
+TypeObj_Descriptor* _XfStyle_parents[] = { &_XfFrescoObject_type, nil };
+extern TypeObjId _XfStyle_tid;
+extern void _XfStyle_receive(BaseObjectRef, ULong, MarshalBuffer&);
+TypeObj_Descriptor _XfStyle_type = {
     /* type */ 0,
-    /* id */ &_XfStyleObj_tid,
-    "StyleObj",
-    _XfStyleObj_parents, /* offsets */ nil, /* excepts */ nil,
-    _XfStyleObj_methods, _XfStyleObj_params,
-    &_XfStyleObj_receive
+    /* id */ &_XfStyle_tid,
+    "Style",
+    _XfStyle_parents, /* offsets */ nil, /* excepts */ nil,
+    _XfStyle_methods, _XfStyle_params,
+    &_XfStyle_receive
 };
 
-StyleObjRef StyleObj::_narrow(BaseObjectRef o) {
-    return (StyleObjRef)_BaseObject_tnarrow(
-        o, _XfStyleObj_tid, &StyleObjStub::_create
+StyleRef Style::_narrow(BaseObjectRef o) {
+    return (StyleRef)_BaseObject_tnarrow(
+        o, _XfStyle_tid, &_XfStyleStub_create
     );
 }
-TypeObjId StyleObjType::_tid() { return _XfStyleObj_tid; }
-void _XfStyleObj_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
-    extern TypeObjId _XfStyleObj_tid;
-    StyleObjRef _this = (StyleObjRef)_BaseObject_tcast(_object, _XfStyleObj_tid);
+TypeObjId Style::_tid() { return _XfStyle_tid; }
+void _XfStyle_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
+    extern TypeObjId _XfStyle_tid;
+    StyleRef _this = (StyleRef)_BaseObject_tcast(_object, _XfStyle_tid);
     switch (_m) {
         case /* new_style */ 0: {
-            extern MarshalBuffer::ArgInfo _XfStyleObj_new_style_pinfo;
+            extern MarshalBuffer::ArgInfo _XfStyle_new_style_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_new_style();
-            _b.reply(_XfStyleObj_new_style_pinfo, _arg);
+            _arg[0].u_objref = _this->new_style();
+            _b.reply(_XfStyle_new_style_pinfo, _arg);
             break;
         }
         case /* parent_style */ 1: {
-            extern MarshalBuffer::ArgInfo _XfStyleObj_parent_style_pinfo;
+            extern MarshalBuffer::ArgInfo _XfStyle_parent_style_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_parent_style();
-            _b.reply(_XfStyleObj_parent_style_pinfo, _arg);
+            _arg[0].u_objref = _this->parent_style();
+            _b.reply(_XfStyle_parent_style_pinfo, _arg);
             break;
         }
         case /* link_parent */ 2: {
-            extern MarshalBuffer::ArgInfo _XfStyleObj_link_parent_pinfo;
+            extern MarshalBuffer::ArgInfo _XfStyle_link_parent_pinfo;
             MarshalBuffer::ArgValue _arg[2];
-            StyleObjRef parent;
+            StyleRef parent;
             _arg[1].u_addr = &parent;
-            _b.receive(_XfStyleObj_link_parent_pinfo, _arg);
+            _b.receive(_XfStyle_link_parent_pinfo, _arg);
             _this->link_parent(parent);
-            _b.reply(_XfStyleObj_link_parent_pinfo, _arg);
+            _b.reply(_XfStyle_link_parent_pinfo, _arg);
             break;
         }
         case /* unlink_parent */ 3: {
-            extern MarshalBuffer::ArgInfo _XfStyleObj_unlink_parent_pinfo;
+            extern MarshalBuffer::ArgInfo _XfStyle_unlink_parent_pinfo;
             MarshalBuffer::ArgValue _arg[1];
             _this->unlink_parent();
-            _b.reply(_XfStyleObj_unlink_parent_pinfo, _arg);
+            _b.reply(_XfStyle_unlink_parent_pinfo, _arg);
             break;
         }
         case /* link_child */ 4: {
-            extern MarshalBuffer::ArgInfo _XfStyleObj_link_child_pinfo;
+            extern MarshalBuffer::ArgInfo _XfStyle_link_child_pinfo;
             MarshalBuffer::ArgValue _arg[2];
-            StyleObjRef child;
+            StyleRef child;
             _arg[1].u_addr = &child;
-            _b.receive(_XfStyleObj_link_child_pinfo, _arg);
+            _b.receive(_XfStyle_link_child_pinfo, _arg);
             _arg[0].u_unsigned_long = _this->link_child(child);
-            _b.reply(_XfStyleObj_link_child_pinfo, _arg);
+            _b.reply(_XfStyle_link_child_pinfo, _arg);
             break;
         }
         case /* unlink_child */ 5: {
-            extern MarshalBuffer::ArgInfo _XfStyleObj_unlink_child_pinfo;
+            extern MarshalBuffer::ArgInfo _XfStyle_unlink_child_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             Tag link_tag;
             _arg[1].u_addr = &link_tag;
-            _b.receive(_XfStyleObj_unlink_child_pinfo, _arg);
+            _b.receive(_XfStyle_unlink_child_pinfo, _arg);
             _this->unlink_child(link_tag);
-            _b.reply(_XfStyleObj_unlink_child_pinfo, _arg);
+            _b.reply(_XfStyle_unlink_child_pinfo, _arg);
             break;
         }
         case /* merge */ 6: {
-            extern MarshalBuffer::ArgInfo _XfStyleObj_merge_pinfo;
+            extern MarshalBuffer::ArgInfo _XfStyle_merge_pinfo;
             MarshalBuffer::ArgValue _arg[2];
-            StyleObjRef s;
+            StyleRef s;
             _arg[1].u_addr = &s;
-            _b.receive(_XfStyleObj_merge_pinfo, _arg);
+            _b.receive(_XfStyle_merge_pinfo, _arg);
             _this->merge(s);
-            _b.reply(_XfStyleObj_merge_pinfo, _arg);
+            _b.reply(_XfStyle_merge_pinfo, _arg);
             break;
         }
         case /* _get_name */ 7: {
-            extern MarshalBuffer::ArgInfo _XfStyleObj__get_name_pinfo;
+            extern MarshalBuffer::ArgInfo _XfStyle__get_name_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_name();
-            _b.reply(_XfStyleObj__get_name_pinfo, _arg);
+            _arg[0].u_objref = _this->name();
+            _b.reply(_XfStyle__get_name_pinfo, _arg);
             break;
         }
         case /* _set_name */ 8: {
-            extern MarshalBuffer::ArgInfo _XfStyleObj__set_name_pinfo;
+            extern MarshalBuffer::ArgInfo _XfStyle__set_name_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             CharStringRef _p;
             _arg[1].u_addr = &_p;
-            _b.receive(_XfStyleObj__set_name_pinfo, _arg);
-            _this->_c_name(_p);
-            _b.reply(_XfStyleObj__set_name_pinfo, _arg);
+            _b.receive(_XfStyle__set_name_pinfo, _arg);
+            _this->name(_p);
+            _b.reply(_XfStyle__set_name_pinfo, _arg);
             break;
         }
         case /* alias */ 9: {
-            extern MarshalBuffer::ArgInfo _XfStyleObj_alias_pinfo;
+            extern MarshalBuffer::ArgInfo _XfStyle_alias_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             CharStringRef s;
             _arg[1].u_addr = &s;
-            _b.receive(_XfStyleObj_alias_pinfo, _arg);
+            _b.receive(_XfStyle_alias_pinfo, _arg);
             _this->alias(s);
-            _b.reply(_XfStyleObj_alias_pinfo, _arg);
+            _b.reply(_XfStyle_alias_pinfo, _arg);
             break;
         }
         case /* is_on */ 10: {
-            extern MarshalBuffer::ArgInfo _XfStyleObj_is_on_pinfo;
+            extern MarshalBuffer::ArgInfo _XfStyle_is_on_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             CharStringRef name;
             _arg[1].u_addr = &name;
-            _b.receive(_XfStyleObj_is_on_pinfo, _arg);
+            _b.receive(_XfStyle_is_on_pinfo, _arg);
             _arg[0].u_boolean = _this->is_on(name);
-            _b.reply(_XfStyleObj_is_on_pinfo, _arg);
+            _b.reply(_XfStyle_is_on_pinfo, _arg);
             break;
         }
         case /* bind */ 11: {
-            extern MarshalBuffer::ArgInfo _XfStyleObj_bind_pinfo;
+            extern MarshalBuffer::ArgInfo _XfStyle_bind_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             CharStringRef name;
             _arg[1].u_addr = &name;
-            _b.receive(_XfStyleObj_bind_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_bind(name);
-            _b.reply(_XfStyleObj_bind_pinfo, _arg);
+            _b.receive(_XfStyle_bind_pinfo, _arg);
+            _arg[0].u_objref = _this->bind(name);
+            _b.reply(_XfStyle_bind_pinfo, _arg);
             break;
         }
         case /* unbind */ 12: {
-            extern MarshalBuffer::ArgInfo _XfStyleObj_unbind_pinfo;
+            extern MarshalBuffer::ArgInfo _XfStyle_unbind_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             CharStringRef name;
             _arg[1].u_addr = &name;
-            _b.receive(_XfStyleObj_unbind_pinfo, _arg);
+            _b.receive(_XfStyle_unbind_pinfo, _arg);
             _this->unbind(name);
-            _b.reply(_XfStyleObj_unbind_pinfo, _arg);
+            _b.reply(_XfStyle_unbind_pinfo, _arg);
             break;
         }
         case /* resolve */ 13: {
-            extern MarshalBuffer::ArgInfo _XfStyleObj_resolve_pinfo;
+            extern MarshalBuffer::ArgInfo _XfStyle_resolve_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             CharStringRef name;
             _arg[1].u_addr = &name;
-            _b.receive(_XfStyleObj_resolve_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_resolve(name);
-            _b.reply(_XfStyleObj_resolve_pinfo, _arg);
+            _b.receive(_XfStyle_resolve_pinfo, _arg);
+            _arg[0].u_objref = _this->resolve(name);
+            _b.reply(_XfStyle_resolve_pinfo, _arg);
             break;
         }
         case /* resolve_wildcard */ 14: {
-            extern MarshalBuffer::ArgInfo _XfStyleObj_resolve_wildcard_pinfo;
+            extern MarshalBuffer::ArgInfo _XfStyle_resolve_wildcard_pinfo;
             MarshalBuffer::ArgValue _arg[3];
             CharStringRef name;
             _arg[1].u_addr = &name;
-            StyleObjRef start;
+            StyleRef start;
             _arg[2].u_addr = &start;
-            _b.receive(_XfStyleObj_resolve_wildcard_pinfo, _arg);
-            _arg[0].u_objref = _this->_c_resolve_wildcard(name, start);
-            _b.reply(_XfStyleObj_resolve_wildcard_pinfo, _arg);
+            _b.receive(_XfStyle_resolve_wildcard_pinfo, _arg);
+            _arg[0].u_objref = _this->resolve_wildcard(name, start);
+            _b.reply(_XfStyle_resolve_wildcard_pinfo, _arg);
             break;
         }
         case /* match */ 15: {
-            extern MarshalBuffer::ArgInfo _XfStyleObj_match_pinfo;
+            extern MarshalBuffer::ArgInfo _XfStyle_match_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             CharStringRef name;
             _arg[1].u_addr = &name;
-            _b.receive(_XfStyleObj_match_pinfo, _arg);
+            _b.receive(_XfStyle_match_pinfo, _arg);
             _arg[0].u_long = _this->match(name);
-            _b.reply(_XfStyleObj_match_pinfo, _arg);
+            _b.reply(_XfStyle_match_pinfo, _arg);
             break;
         }
         case /* visit_aliases */ 16: {
-            extern MarshalBuffer::ArgInfo _XfStyleObj_visit_aliases_pinfo;
+            extern MarshalBuffer::ArgInfo _XfStyle_visit_aliases_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             StyleVisitorRef v;
             _arg[1].u_addr = &v;
-            _b.receive(_XfStyleObj_visit_aliases_pinfo, _arg);
+            _b.receive(_XfStyle_visit_aliases_pinfo, _arg);
             _this->visit_aliases(v);
-            _b.reply(_XfStyleObj_visit_aliases_pinfo, _arg);
+            _b.reply(_XfStyle_visit_aliases_pinfo, _arg);
             break;
         }
         case /* visit_attributes */ 17: {
-            extern MarshalBuffer::ArgInfo _XfStyleObj_visit_attributes_pinfo;
+            extern MarshalBuffer::ArgInfo _XfStyle_visit_attributes_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             StyleVisitorRef v;
             _arg[1].u_addr = &v;
-            _b.receive(_XfStyleObj_visit_attributes_pinfo, _arg);
+            _b.receive(_XfStyle_visit_attributes_pinfo, _arg);
             _this->visit_attributes(v);
-            _b.reply(_XfStyleObj_visit_attributes_pinfo, _arg);
+            _b.reply(_XfStyle_visit_attributes_pinfo, _arg);
             break;
         }
         case /* visit_styles */ 18: {
-            extern MarshalBuffer::ArgInfo _XfStyleObj_visit_styles_pinfo;
+            extern MarshalBuffer::ArgInfo _XfStyle_visit_styles_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             StyleVisitorRef v;
             _arg[1].u_addr = &v;
-            _b.receive(_XfStyleObj_visit_styles_pinfo, _arg);
+            _b.receive(_XfStyle_visit_styles_pinfo, _arg);
             _this->visit_styles(v);
-            _b.reply(_XfStyleObj_visit_styles_pinfo, _arg);
+            _b.reply(_XfStyle_visit_styles_pinfo, _arg);
             break;
         }
         case /* lock */ 19: {
-            extern MarshalBuffer::ArgInfo _XfStyleObj_lock_pinfo;
+            extern MarshalBuffer::ArgInfo _XfStyle_lock_pinfo;
             MarshalBuffer::ArgValue _arg[1];
             _this->lock();
-            _b.reply(_XfStyleObj_lock_pinfo, _arg);
+            _b.reply(_XfStyle_lock_pinfo, _arg);
             break;
         }
         case /* unlock */ 20: {
-            extern MarshalBuffer::ArgInfo _XfStyleObj_unlock_pinfo;
+            extern MarshalBuffer::ArgInfo _XfStyle_unlock_pinfo;
             MarshalBuffer::ArgValue _arg[1];
             _this->unlock();
-            _b.reply(_XfStyleObj_unlock_pinfo, _arg);
+            _b.reply(_XfStyle_unlock_pinfo, _arg);
             break;
         }
     }
 }
-StyleObjStub::StyleObjStub(Exchange* e) { exch_ = e; }
-StyleObjStub::~StyleObjStub() { }
-BaseObjectRef StyleObjStub::_create(Exchange* e) {
-    return (BaseObjectRef)(void*)new StyleObjStub(e);
+StyleStub::StyleStub(Exchange* e) { exch_ = e; }
+StyleStub::~StyleStub() { }
+BaseObjectRef _XfStyleStub_create(Exchange* e) {
+    return (BaseObjectRef)(void*)new StyleStub(e);
 }
-Exchange* StyleObjStub::_exchange() {
+Exchange* StyleStub::_exchange() {
     return exch_;
 }
-MarshalBuffer::ArgDesc _XfStyleObj_new_style_pdesc[2] = { 1, 60 };
-MarshalBuffer::ArgMarshal _XfStyleObj_new_style_pfunc[] = {
-    &StyleObjStub::_create
+MarshalBuffer::ArgDesc _XfStyle_new_style_pdesc[2] = { 1, 60 };
+MarshalBuffer::ArgMarshal _XfStyle_new_style_pfunc[] = {
+    &_XfStyleStub_create
 };
-MarshalBuffer::ArgInfo _XfStyleObj_new_style_pinfo = {
-    &_XfStyleObj_tid, 0, _XfStyleObj_new_style_pdesc, _XfStyleObj_new_style_pfunc
+MarshalBuffer::ArgInfo _XfStyle_new_style_pinfo = {
+    &_XfStyle_tid, 0, _XfStyle_new_style_pdesc, _XfStyle_new_style_pfunc
 };
-StyleObjRef StyleObjType::_c_new_style() {
+StyleRef Style::new_style() {
     MarshalBuffer _b;
-    extern TypeObjId _XfStyleObj_tid;
+    extern TypeObjId _XfStyle_tid;
     MarshalBuffer::ArgValue _arg[1];
-    _b.invoke(this, _XfStyleObj_new_style_pinfo, _arg);
-    return (StyleObjRef)_arg[0].u_objref;
+    _b.invoke(this, _XfStyle_new_style_pinfo, _arg);
+    return (StyleRef)_arg[0].u_objref;
 }
-MarshalBuffer::ArgDesc _XfStyleObj_parent_style_pdesc[2] = { 1, 60 };
-MarshalBuffer::ArgMarshal _XfStyleObj_parent_style_pfunc[] = {
-    &StyleObjStub::_create
+MarshalBuffer::ArgDesc _XfStyle_parent_style_pdesc[2] = { 1, 60 };
+MarshalBuffer::ArgMarshal _XfStyle_parent_style_pfunc[] = {
+    &_XfStyleStub_create
 };
-MarshalBuffer::ArgInfo _XfStyleObj_parent_style_pinfo = {
-    &_XfStyleObj_tid, 1, _XfStyleObj_parent_style_pdesc, _XfStyleObj_parent_style_pfunc
+MarshalBuffer::ArgInfo _XfStyle_parent_style_pinfo = {
+    &_XfStyle_tid, 1, _XfStyle_parent_style_pdesc, _XfStyle_parent_style_pfunc
 };
-StyleObjRef StyleObjType::_c_parent_style() {
+StyleRef Style::parent_style() {
     MarshalBuffer _b;
-    extern TypeObjId _XfStyleObj_tid;
+    extern TypeObjId _XfStyle_tid;
     MarshalBuffer::ArgValue _arg[1];
-    _b.invoke(this, _XfStyleObj_parent_style_pinfo, _arg);
-    return (StyleObjRef)_arg[0].u_objref;
+    _b.invoke(this, _XfStyle_parent_style_pinfo, _arg);
+    return (StyleRef)_arg[0].u_objref;
 }
-MarshalBuffer::ArgDesc _XfStyleObj_link_parent_pdesc[3] = { 2, 4, 61 };
-MarshalBuffer::ArgMarshal _XfStyleObj_link_parent_pfunc[] = {
-    &StyleObjStub::_create,
+MarshalBuffer::ArgDesc _XfStyle_link_parent_pdesc[3] = { 2, 4, 61 };
+MarshalBuffer::ArgMarshal _XfStyle_link_parent_pfunc[] = {
+    &_XfStyleStub_create,
 
 };
-MarshalBuffer::ArgInfo _XfStyleObj_link_parent_pinfo = {
-    &_XfStyleObj_tid, 2, _XfStyleObj_link_parent_pdesc, _XfStyleObj_link_parent_pfunc
+MarshalBuffer::ArgInfo _XfStyle_link_parent_pinfo = {
+    &_XfStyle_tid, 2, _XfStyle_link_parent_pdesc, _XfStyle_link_parent_pfunc
 };
-void StyleObjType::link_parent(StyleObj_in parent) {
+void Style::link_parent(Style_in parent) {
     MarshalBuffer _b;
-    extern TypeObjId _XfStyleObj_tid;
+    extern TypeObjId _XfStyle_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = parent;
-    _b.invoke(this, _XfStyleObj_link_parent_pinfo, _arg);
+    _b.invoke(this, _XfStyle_link_parent_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfStyleObj_unlink_parent_pdesc[2] = { 1, 4 };
-MarshalBuffer::ArgInfo _XfStyleObj_unlink_parent_pinfo = {
-    &_XfStyleObj_tid, 3, _XfStyleObj_unlink_parent_pdesc, 0
+MarshalBuffer::ArgDesc _XfStyle_unlink_parent_pdesc[2] = { 1, 4 };
+MarshalBuffer::ArgInfo _XfStyle_unlink_parent_pinfo = {
+    &_XfStyle_tid, 3, _XfStyle_unlink_parent_pdesc, 0
 };
-void StyleObjType::unlink_parent() {
+void Style::unlink_parent() {
     MarshalBuffer _b;
-    extern TypeObjId _XfStyleObj_tid;
+    extern TypeObjId _XfStyle_tid;
     MarshalBuffer::ArgValue _arg[1];
-    _b.invoke(this, _XfStyleObj_unlink_parent_pinfo, _arg);
+    _b.invoke(this, _XfStyle_unlink_parent_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfStyleObj_link_child_pdesc[3] = { 2, 36, 61 };
-MarshalBuffer::ArgMarshal _XfStyleObj_link_child_pfunc[] = {
-    &StyleObjStub::_create,
+MarshalBuffer::ArgDesc _XfStyle_link_child_pdesc[3] = { 2, 36, 61 };
+MarshalBuffer::ArgMarshal _XfStyle_link_child_pfunc[] = {
+    &_XfStyleStub_create,
 
 };
-MarshalBuffer::ArgInfo _XfStyleObj_link_child_pinfo = {
-    &_XfStyleObj_tid, 4, _XfStyleObj_link_child_pdesc, _XfStyleObj_link_child_pfunc
+MarshalBuffer::ArgInfo _XfStyle_link_child_pinfo = {
+    &_XfStyle_tid, 4, _XfStyle_link_child_pdesc, _XfStyle_link_child_pfunc
 };
-Tag StyleObjType::link_child(StyleObj_in child) {
+Tag Style::link_child(Style_in child) {
     MarshalBuffer _b;
-    extern TypeObjId _XfStyleObj_tid;
+    extern TypeObjId _XfStyle_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = child;
-    _b.invoke(this, _XfStyleObj_link_child_pinfo, _arg);
+    _b.invoke(this, _XfStyle_link_child_pinfo, _arg);
     return _arg[0].u_unsigned_long;
 }
-MarshalBuffer::ArgDesc _XfStyleObj_unlink_child_pdesc[3] = { 2, 4, 37 };
-MarshalBuffer::ArgInfo _XfStyleObj_unlink_child_pinfo = {
-    &_XfStyleObj_tid, 5, _XfStyleObj_unlink_child_pdesc, 0
+MarshalBuffer::ArgDesc _XfStyle_unlink_child_pdesc[3] = { 2, 4, 37 };
+MarshalBuffer::ArgInfo _XfStyle_unlink_child_pinfo = {
+    &_XfStyle_tid, 5, _XfStyle_unlink_child_pdesc, 0
 };
-void StyleObjType::unlink_child(Tag link_tag) {
+void Style::unlink_child(Tag link_tag) {
     MarshalBuffer _b;
-    extern TypeObjId _XfStyleObj_tid;
+    extern TypeObjId _XfStyle_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_unsigned_long = link_tag;
-    _b.invoke(this, _XfStyleObj_unlink_child_pinfo, _arg);
+    _b.invoke(this, _XfStyle_unlink_child_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfStyleObj_merge_pdesc[3] = { 2, 4, 61 };
-MarshalBuffer::ArgMarshal _XfStyleObj_merge_pfunc[] = {
-    &StyleObjStub::_create,
+MarshalBuffer::ArgDesc _XfStyle_merge_pdesc[3] = { 2, 4, 61 };
+MarshalBuffer::ArgMarshal _XfStyle_merge_pfunc[] = {
+    &_XfStyleStub_create,
 
 };
-MarshalBuffer::ArgInfo _XfStyleObj_merge_pinfo = {
-    &_XfStyleObj_tid, 6, _XfStyleObj_merge_pdesc, _XfStyleObj_merge_pfunc
+MarshalBuffer::ArgInfo _XfStyle_merge_pinfo = {
+    &_XfStyle_tid, 6, _XfStyle_merge_pdesc, _XfStyle_merge_pfunc
 };
-void StyleObjType::merge(StyleObj_in s) {
+void Style::merge(Style_in s) {
     MarshalBuffer _b;
-    extern TypeObjId _XfStyleObj_tid;
+    extern TypeObjId _XfStyle_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = s;
-    _b.invoke(this, _XfStyleObj_merge_pinfo, _arg);
+    _b.invoke(this, _XfStyle_merge_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfStyleObj__get_name_pdesc[2] = { 1, 60 };
-MarshalBuffer::ArgMarshal _XfStyleObj__get_name_pfunc[] = {
-    &CharStringStub::_create
+MarshalBuffer::ArgDesc _XfStyle__get_name_pdesc[2] = { 1, 60 };
+MarshalBuffer::ArgMarshal _XfStyle__get_name_pfunc[] = {
+    &_XfCharStringStub_create
 };
-MarshalBuffer::ArgInfo _XfStyleObj__get_name_pinfo = {
-    &_XfStyleObj_tid, 7, _XfStyleObj__get_name_pdesc, _XfStyleObj__get_name_pfunc
+MarshalBuffer::ArgInfo _XfStyle__get_name_pinfo = {
+    &_XfStyle_tid, 7, _XfStyle__get_name_pdesc, _XfStyle__get_name_pfunc
 };
-CharStringRef StyleObjType::_c_name() {
+CharStringRef Style::name() {
     MarshalBuffer _b;
-    extern TypeObjId _XfStyleObj_tid;
+    extern TypeObjId _XfStyle_tid;
     MarshalBuffer::ArgValue _arg[1];
-    _b.invoke(this, _XfStyleObj__get_name_pinfo, _arg);
+    _b.invoke(this, _XfStyle__get_name_pinfo, _arg);
     return (CharStringRef)_arg[0].u_objref;
 }
-MarshalBuffer::ArgDesc _XfStyleObj__set_name_pdesc[3] = { 2, 4, 61 };
-MarshalBuffer::ArgMarshal _XfStyleObj__set_name_pfunc[] = {
-    &CharStringStub::_create,
+MarshalBuffer::ArgDesc _XfStyle__set_name_pdesc[3] = { 2, 4, 61 };
+MarshalBuffer::ArgMarshal _XfStyle__set_name_pfunc[] = {
+    &_XfCharStringStub_create,
 
 };
-MarshalBuffer::ArgInfo _XfStyleObj__set_name_pinfo = {
-    &_XfStyleObj_tid, 8, _XfStyleObj__set_name_pdesc, _XfStyleObj__set_name_pfunc
+MarshalBuffer::ArgInfo _XfStyle__set_name_pinfo = {
+    &_XfStyle_tid, 8, _XfStyle__set_name_pdesc, _XfStyle__set_name_pfunc
 };
-void StyleObjType::_c_name(CharString_in _p) {
+void Style::name(CharString_in _p) {
     MarshalBuffer _b;
-    extern TypeObjId _XfStyleObj_tid;
+    extern TypeObjId _XfStyle_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = _p;
-    _b.invoke(this, _XfStyleObj__set_name_pinfo, _arg);
+    _b.invoke(this, _XfStyle__set_name_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfStyleObj_alias_pdesc[3] = { 2, 4, 61 };
-MarshalBuffer::ArgMarshal _XfStyleObj_alias_pfunc[] = {
-    &CharStringStub::_create,
+MarshalBuffer::ArgDesc _XfStyle_alias_pdesc[3] = { 2, 4, 61 };
+MarshalBuffer::ArgMarshal _XfStyle_alias_pfunc[] = {
+    &_XfCharStringStub_create,
 
 };
-MarshalBuffer::ArgInfo _XfStyleObj_alias_pinfo = {
-    &_XfStyleObj_tid, 9, _XfStyleObj_alias_pdesc, _XfStyleObj_alias_pfunc
+MarshalBuffer::ArgInfo _XfStyle_alias_pinfo = {
+    &_XfStyle_tid, 9, _XfStyle_alias_pdesc, _XfStyle_alias_pfunc
 };
-void StyleObjType::alias(CharString_in s) {
+void Style::alias(CharString_in s) {
     MarshalBuffer _b;
-    extern TypeObjId _XfStyleObj_tid;
+    extern TypeObjId _XfStyle_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = s;
-    _b.invoke(this, _XfStyleObj_alias_pinfo, _arg);
+    _b.invoke(this, _XfStyle_alias_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfStyleObj_is_on_pdesc[3] = { 2, 12, 61 };
-MarshalBuffer::ArgMarshal _XfStyleObj_is_on_pfunc[] = {
-    &CharStringStub::_create,
+MarshalBuffer::ArgDesc _XfStyle_is_on_pdesc[3] = { 2, 12, 61 };
+MarshalBuffer::ArgMarshal _XfStyle_is_on_pfunc[] = {
+    &_XfCharStringStub_create,
 
 };
-MarshalBuffer::ArgInfo _XfStyleObj_is_on_pinfo = {
-    &_XfStyleObj_tid, 10, _XfStyleObj_is_on_pdesc, _XfStyleObj_is_on_pfunc
+MarshalBuffer::ArgInfo _XfStyle_is_on_pinfo = {
+    &_XfStyle_tid, 10, _XfStyle_is_on_pdesc, _XfStyle_is_on_pfunc
 };
-Boolean StyleObjType::is_on(CharString_in name) {
+Boolean Style::is_on(CharString_in name) {
     MarshalBuffer _b;
-    extern TypeObjId _XfStyleObj_tid;
+    extern TypeObjId _XfStyle_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = name;
-    _b.invoke(this, _XfStyleObj_is_on_pinfo, _arg);
+    _b.invoke(this, _XfStyle_is_on_pinfo, _arg);
     return _arg[0].u_boolean;
 }
-MarshalBuffer::ArgDesc _XfStyleObj_bind_pdesc[3] = { 2, 60, 61 };
-MarshalBuffer::ArgMarshal _XfStyleObj_bind_pfunc[] = {
-    &CharStringStub::_create,
-    &StyleValueStub::_create
+MarshalBuffer::ArgDesc _XfStyle_bind_pdesc[3] = { 2, 60, 61 };
+MarshalBuffer::ArgMarshal _XfStyle_bind_pfunc[] = {
+    &_XfCharStringStub_create,
+    &_XfStyleValueStub_create
 };
-MarshalBuffer::ArgInfo _XfStyleObj_bind_pinfo = {
-    &_XfStyleObj_tid, 11, _XfStyleObj_bind_pdesc, _XfStyleObj_bind_pfunc
+MarshalBuffer::ArgInfo _XfStyle_bind_pinfo = {
+    &_XfStyle_tid, 11, _XfStyle_bind_pdesc, _XfStyle_bind_pfunc
 };
-StyleValueRef StyleObjType::_c_bind(CharString_in name) {
+StyleValueRef Style::bind(CharString_in name) {
     MarshalBuffer _b;
-    extern TypeObjId _XfStyleObj_tid;
+    extern TypeObjId _XfStyle_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = name;
-    _b.invoke(this, _XfStyleObj_bind_pinfo, _arg);
+    _b.invoke(this, _XfStyle_bind_pinfo, _arg);
     return (StyleValueRef)_arg[0].u_objref;
 }
-MarshalBuffer::ArgDesc _XfStyleObj_unbind_pdesc[3] = { 2, 4, 61 };
-MarshalBuffer::ArgMarshal _XfStyleObj_unbind_pfunc[] = {
-    &CharStringStub::_create,
+MarshalBuffer::ArgDesc _XfStyle_unbind_pdesc[3] = { 2, 4, 61 };
+MarshalBuffer::ArgMarshal _XfStyle_unbind_pfunc[] = {
+    &_XfCharStringStub_create,
 
 };
-MarshalBuffer::ArgInfo _XfStyleObj_unbind_pinfo = {
-    &_XfStyleObj_tid, 12, _XfStyleObj_unbind_pdesc, _XfStyleObj_unbind_pfunc
+MarshalBuffer::ArgInfo _XfStyle_unbind_pinfo = {
+    &_XfStyle_tid, 12, _XfStyle_unbind_pdesc, _XfStyle_unbind_pfunc
 };
-void StyleObjType::unbind(CharString_in name) {
+void Style::unbind(CharString_in name) {
     MarshalBuffer _b;
-    extern TypeObjId _XfStyleObj_tid;
+    extern TypeObjId _XfStyle_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = name;
-    _b.invoke(this, _XfStyleObj_unbind_pinfo, _arg);
+    _b.invoke(this, _XfStyle_unbind_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfStyleObj_resolve_pdesc[3] = { 2, 60, 61 };
-MarshalBuffer::ArgMarshal _XfStyleObj_resolve_pfunc[] = {
-    &CharStringStub::_create,
-    &StyleValueStub::_create
+MarshalBuffer::ArgDesc _XfStyle_resolve_pdesc[3] = { 2, 60, 61 };
+MarshalBuffer::ArgMarshal _XfStyle_resolve_pfunc[] = {
+    &_XfCharStringStub_create,
+    &_XfStyleValueStub_create
 };
-MarshalBuffer::ArgInfo _XfStyleObj_resolve_pinfo = {
-    &_XfStyleObj_tid, 13, _XfStyleObj_resolve_pdesc, _XfStyleObj_resolve_pfunc
+MarshalBuffer::ArgInfo _XfStyle_resolve_pinfo = {
+    &_XfStyle_tid, 13, _XfStyle_resolve_pdesc, _XfStyle_resolve_pfunc
 };
-StyleValueRef StyleObjType::_c_resolve(CharString_in name) {
+StyleValueRef Style::resolve(CharString_in name) {
     MarshalBuffer _b;
-    extern TypeObjId _XfStyleObj_tid;
+    extern TypeObjId _XfStyle_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = name;
-    _b.invoke(this, _XfStyleObj_resolve_pinfo, _arg);
+    _b.invoke(this, _XfStyle_resolve_pinfo, _arg);
     return (StyleValueRef)_arg[0].u_objref;
 }
-MarshalBuffer::ArgDesc _XfStyleObj_resolve_wildcard_pdesc[4] = { 3, 60, 61, 61 };
-MarshalBuffer::ArgMarshal _XfStyleObj_resolve_wildcard_pfunc[] = {
-    &CharStringStub::_create,
-    &StyleObjStub::_create,
-    &StyleValueStub::_create
+MarshalBuffer::ArgDesc _XfStyle_resolve_wildcard_pdesc[4] = { 3, 60, 61, 61 };
+MarshalBuffer::ArgMarshal _XfStyle_resolve_wildcard_pfunc[] = {
+    &_XfCharStringStub_create,
+    &_XfStyleStub_create,
+    &_XfStyleValueStub_create
 };
-MarshalBuffer::ArgInfo _XfStyleObj_resolve_wildcard_pinfo = {
-    &_XfStyleObj_tid, 14, _XfStyleObj_resolve_wildcard_pdesc, _XfStyleObj_resolve_wildcard_pfunc
+MarshalBuffer::ArgInfo _XfStyle_resolve_wildcard_pinfo = {
+    &_XfStyle_tid, 14, _XfStyle_resolve_wildcard_pdesc, _XfStyle_resolve_wildcard_pfunc
 };
-StyleValueRef StyleObjType::_c_resolve_wildcard(CharString_in name, StyleObj_in start) {
+StyleValueRef Style::resolve_wildcard(CharString_in name, Style_in start) {
     MarshalBuffer _b;
-    extern TypeObjId _XfStyleObj_tid;
+    extern TypeObjId _XfStyle_tid;
     MarshalBuffer::ArgValue _arg[3];
     _arg[1].u_objref = name;
     _arg[2].u_objref = start;
-    _b.invoke(this, _XfStyleObj_resolve_wildcard_pinfo, _arg);
+    _b.invoke(this, _XfStyle_resolve_wildcard_pinfo, _arg);
     return (StyleValueRef)_arg[0].u_objref;
 }
-MarshalBuffer::ArgDesc _XfStyleObj_match_pdesc[3] = { 2, 32, 61 };
-MarshalBuffer::ArgMarshal _XfStyleObj_match_pfunc[] = {
-    &CharStringStub::_create,
+MarshalBuffer::ArgDesc _XfStyle_match_pdesc[3] = { 2, 32, 61 };
+MarshalBuffer::ArgMarshal _XfStyle_match_pfunc[] = {
+    &_XfCharStringStub_create,
 
 };
-MarshalBuffer::ArgInfo _XfStyleObj_match_pinfo = {
-    &_XfStyleObj_tid, 15, _XfStyleObj_match_pdesc, _XfStyleObj_match_pfunc
+MarshalBuffer::ArgInfo _XfStyle_match_pinfo = {
+    &_XfStyle_tid, 15, _XfStyle_match_pdesc, _XfStyle_match_pfunc
 };
-Long StyleObjType::match(CharString_in name) {
+Long Style::match(CharString_in name) {
     MarshalBuffer _b;
-    extern TypeObjId _XfStyleObj_tid;
+    extern TypeObjId _XfStyle_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = name;
-    _b.invoke(this, _XfStyleObj_match_pinfo, _arg);
+    _b.invoke(this, _XfStyle_match_pinfo, _arg);
     return _arg[0].u_long;
 }
-MarshalBuffer::ArgDesc _XfStyleObj_visit_aliases_pdesc[3] = { 2, 4, 61 };
-MarshalBuffer::ArgMarshal _XfStyleObj_visit_aliases_pfunc[] = {
-    &StyleVisitorStub::_create,
+MarshalBuffer::ArgDesc _XfStyle_visit_aliases_pdesc[3] = { 2, 4, 61 };
+MarshalBuffer::ArgMarshal _XfStyle_visit_aliases_pfunc[] = {
+    &_XfStyleVisitorStub_create,
 
 };
-MarshalBuffer::ArgInfo _XfStyleObj_visit_aliases_pinfo = {
-    &_XfStyleObj_tid, 16, _XfStyleObj_visit_aliases_pdesc, _XfStyleObj_visit_aliases_pfunc
+MarshalBuffer::ArgInfo _XfStyle_visit_aliases_pinfo = {
+    &_XfStyle_tid, 16, _XfStyle_visit_aliases_pdesc, _XfStyle_visit_aliases_pfunc
 };
-void StyleObjType::visit_aliases(StyleVisitor_in v) {
+void Style::visit_aliases(StyleVisitor_in v) {
     MarshalBuffer _b;
-    extern TypeObjId _XfStyleObj_tid;
+    extern TypeObjId _XfStyle_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = v;
-    _b.invoke(this, _XfStyleObj_visit_aliases_pinfo, _arg);
+    _b.invoke(this, _XfStyle_visit_aliases_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfStyleObj_visit_attributes_pdesc[3] = { 2, 4, 61 };
-MarshalBuffer::ArgMarshal _XfStyleObj_visit_attributes_pfunc[] = {
-    &StyleVisitorStub::_create,
+MarshalBuffer::ArgDesc _XfStyle_visit_attributes_pdesc[3] = { 2, 4, 61 };
+MarshalBuffer::ArgMarshal _XfStyle_visit_attributes_pfunc[] = {
+    &_XfStyleVisitorStub_create,
 
 };
-MarshalBuffer::ArgInfo _XfStyleObj_visit_attributes_pinfo = {
-    &_XfStyleObj_tid, 17, _XfStyleObj_visit_attributes_pdesc, _XfStyleObj_visit_attributes_pfunc
+MarshalBuffer::ArgInfo _XfStyle_visit_attributes_pinfo = {
+    &_XfStyle_tid, 17, _XfStyle_visit_attributes_pdesc, _XfStyle_visit_attributes_pfunc
 };
-void StyleObjType::visit_attributes(StyleVisitor_in v) {
+void Style::visit_attributes(StyleVisitor_in v) {
     MarshalBuffer _b;
-    extern TypeObjId _XfStyleObj_tid;
+    extern TypeObjId _XfStyle_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = v;
-    _b.invoke(this, _XfStyleObj_visit_attributes_pinfo, _arg);
+    _b.invoke(this, _XfStyle_visit_attributes_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfStyleObj_visit_styles_pdesc[3] = { 2, 4, 61 };
-MarshalBuffer::ArgMarshal _XfStyleObj_visit_styles_pfunc[] = {
-    &StyleVisitorStub::_create,
+MarshalBuffer::ArgDesc _XfStyle_visit_styles_pdesc[3] = { 2, 4, 61 };
+MarshalBuffer::ArgMarshal _XfStyle_visit_styles_pfunc[] = {
+    &_XfStyleVisitorStub_create,
 
 };
-MarshalBuffer::ArgInfo _XfStyleObj_visit_styles_pinfo = {
-    &_XfStyleObj_tid, 18, _XfStyleObj_visit_styles_pdesc, _XfStyleObj_visit_styles_pfunc
+MarshalBuffer::ArgInfo _XfStyle_visit_styles_pinfo = {
+    &_XfStyle_tid, 18, _XfStyle_visit_styles_pdesc, _XfStyle_visit_styles_pfunc
 };
-void StyleObjType::visit_styles(StyleVisitor_in v) {
+void Style::visit_styles(StyleVisitor_in v) {
     MarshalBuffer _b;
-    extern TypeObjId _XfStyleObj_tid;
+    extern TypeObjId _XfStyle_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = v;
-    _b.invoke(this, _XfStyleObj_visit_styles_pinfo, _arg);
+    _b.invoke(this, _XfStyle_visit_styles_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfStyleObj_lock_pdesc[2] = { 1, 4 };
-MarshalBuffer::ArgInfo _XfStyleObj_lock_pinfo = {
-    &_XfStyleObj_tid, 19, _XfStyleObj_lock_pdesc, 0
+MarshalBuffer::ArgDesc _XfStyle_lock_pdesc[2] = { 1, 4 };
+MarshalBuffer::ArgInfo _XfStyle_lock_pinfo = {
+    &_XfStyle_tid, 19, _XfStyle_lock_pdesc, 0
 };
-void StyleObjType::lock() {
+void Style::lock() {
     MarshalBuffer _b;
-    extern TypeObjId _XfStyleObj_tid;
+    extern TypeObjId _XfStyle_tid;
     MarshalBuffer::ArgValue _arg[1];
-    _b.invoke(this, _XfStyleObj_lock_pinfo, _arg);
+    _b.invoke(this, _XfStyle_lock_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfStyleObj_unlock_pdesc[2] = { 1, 4 };
-MarshalBuffer::ArgInfo _XfStyleObj_unlock_pinfo = {
-    &_XfStyleObj_tid, 20, _XfStyleObj_unlock_pdesc, 0
+MarshalBuffer::ArgDesc _XfStyle_unlock_pdesc[2] = { 1, 4 };
+MarshalBuffer::ArgInfo _XfStyle_unlock_pinfo = {
+    &_XfStyle_tid, 20, _XfStyle_unlock_pdesc, 0
 };
-void StyleObjType::unlock() {
+void Style::unlock() {
     MarshalBuffer _b;
-    extern TypeObjId _XfStyleObj_tid;
+    extern TypeObjId _XfStyle_tid;
     MarshalBuffer::ArgValue _arg[1];
-    _b.invoke(this, _XfStyleObj_unlock_pinfo, _arg);
+    _b.invoke(this, _XfStyle_unlock_pinfo, _arg);
 }
 //+
 
 //+ StyleValue::%init,type+dii,client
-StyleValueType::StyleValueType() { }
-StyleValueType::~StyleValueType() { }
-void* StyleValueType::_this() { return this; }
+StyleValue::StyleValue() { }
+StyleValue::~StyleValue() { }
+void* StyleValue::_this() { return this; }
 
 extern TypeObj_Descriptor _XfCoord_type, _XfDouble_type;
 
@@ -1637,10 +1637,10 @@ TypeObj_Descriptor _XfStyleValue_type = {
 
 StyleValueRef StyleValue::_narrow(BaseObjectRef o) {
     return (StyleValueRef)_BaseObject_tnarrow(
-        o, _XfStyleValue_tid, &StyleValueStub::_create
+        o, _XfStyleValue_tid, &_XfStyleValueStub_create
     );
 }
-TypeObjId StyleValueType::_tid() { return _XfStyleValue_tid; }
+TypeObjId StyleValue::_tid() { return _XfStyleValue_tid; }
 void _XfStyleValue_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
     extern TypeObjId _XfStyleValue_tid;
     StyleValueRef _this = (StyleValueRef)_BaseObject_tcast(_object, _XfStyleValue_tid);
@@ -1648,7 +1648,7 @@ void _XfStyleValue_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
         case /* name */ 0: {
             extern MarshalBuffer::ArgInfo _XfStyleValue_name_pinfo;
             MarshalBuffer::ArgValue _arg[1];
-            _arg[0].u_objref = _this->_c_name();
+            _arg[0].u_objref = _this->name();
             _b.reply(_XfStyleValue_name_pinfo, _arg);
             break;
         }
@@ -1769,7 +1769,7 @@ void _XfStyleValue_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             CharStringRef s;
             _arg[1].u_addr = &s;
             _b.receive(_XfStyleValue_read_string_pinfo, _arg);
-            _arg[0].u_boolean = _this->_c_read_string(s);
+            _arg[0].u_boolean = _this->read_string(s);
             _b.reply(_XfStyleValue_read_string_pinfo, _arg);
             break;
         }
@@ -1789,7 +1789,7 @@ void _XfStyleValue_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
             FrescoObjectRef s;
             _arg[1].u_addr = &s;
             _b.receive(_XfStyleValue_read_value_pinfo, _arg);
-            _arg[0].u_boolean = _this->_c_read_value(s);
+            _arg[0].u_boolean = _this->read_value(s);
             _b.reply(_XfStyleValue_read_value_pinfo, _arg);
             break;
         }
@@ -1821,7 +1821,7 @@ void _XfStyleValue_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
 }
 StyleValueStub::StyleValueStub(Exchange* e) { exch_ = e; }
 StyleValueStub::~StyleValueStub() { }
-BaseObjectRef StyleValueStub::_create(Exchange* e) {
+BaseObjectRef _XfStyleValueStub_create(Exchange* e) {
     return (BaseObjectRef)(void*)new StyleValueStub(e);
 }
 Exchange* StyleValueStub::_exchange() {
@@ -1829,12 +1829,12 @@ Exchange* StyleValueStub::_exchange() {
 }
 MarshalBuffer::ArgDesc _XfStyleValue_name_pdesc[2] = { 1, 60 };
 MarshalBuffer::ArgMarshal _XfStyleValue_name_pfunc[] = {
-    &CharStringStub::_create
+    &_XfCharStringStub_create
 };
 MarshalBuffer::ArgInfo _XfStyleValue_name_pinfo = {
     &_XfStyleValue_tid, 0, _XfStyleValue_name_pdesc, _XfStyleValue_name_pfunc
 };
-CharStringRef StyleValueType::_c_name() {
+CharStringRef StyleValue::name() {
     MarshalBuffer _b;
     extern TypeObjId _XfStyleValue_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1845,7 +1845,7 @@ MarshalBuffer::ArgDesc _XfStyleValue_uninitialized_pdesc[2] = { 1, 12 };
 MarshalBuffer::ArgInfo _XfStyleValue_uninitialized_pinfo = {
     &_XfStyleValue_tid, 1, _XfStyleValue_uninitialized_pdesc, 0
 };
-Boolean StyleValueType::uninitialized() {
+Boolean StyleValue::uninitialized() {
     MarshalBuffer _b;
     extern TypeObjId _XfStyleValue_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1856,7 +1856,7 @@ MarshalBuffer::ArgDesc _XfStyleValue__get_priority_pdesc[2] = { 1, 32 };
 MarshalBuffer::ArgInfo _XfStyleValue__get_priority_pinfo = {
     &_XfStyleValue_tid, 2, _XfStyleValue__get_priority_pdesc, 0
 };
-Long StyleValueType::priority() {
+Long StyleValue::priority() {
     MarshalBuffer _b;
     extern TypeObjId _XfStyleValue_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1867,7 +1867,7 @@ MarshalBuffer::ArgDesc _XfStyleValue__set_priority_pdesc[3] = { 2, 4, 33 };
 MarshalBuffer::ArgInfo _XfStyleValue__set_priority_pinfo = {
     &_XfStyleValue_tid, 3, _XfStyleValue__set_priority_pdesc, 0
 };
-void StyleValueType::priority(Long _p) {
+void StyleValue::priority(Long _p) {
     MarshalBuffer _b;
     extern TypeObjId _XfStyleValue_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1878,7 +1878,7 @@ MarshalBuffer::ArgDesc _XfStyleValue_is_on_pdesc[2] = { 1, 12 };
 MarshalBuffer::ArgInfo _XfStyleValue_is_on_pinfo = {
     &_XfStyleValue_tid, 4, _XfStyleValue_is_on_pdesc, 0
 };
-Boolean StyleValueType::is_on() {
+Boolean StyleValue::is_on() {
     MarshalBuffer _b;
     extern TypeObjId _XfStyleValue_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -1889,7 +1889,7 @@ MarshalBuffer::ArgDesc _XfStyleValue_read_boolean_pdesc[3] = { 2, 12, 14 };
 MarshalBuffer::ArgInfo _XfStyleValue_read_boolean_pinfo = {
     &_XfStyleValue_tid, 5, _XfStyleValue_read_boolean_pdesc, 0
 };
-Boolean StyleValueType::read_boolean(Boolean& b) {
+Boolean StyleValue::read_boolean(Boolean& b) {
     MarshalBuffer _b;
     extern TypeObjId _XfStyleValue_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1901,7 +1901,7 @@ MarshalBuffer::ArgDesc _XfStyleValue_write_boolean_pdesc[3] = { 2, 4, 13 };
 MarshalBuffer::ArgInfo _XfStyleValue_write_boolean_pinfo = {
     &_XfStyleValue_tid, 6, _XfStyleValue_write_boolean_pdesc, 0
 };
-void StyleValueType::write_boolean(Boolean b) {
+void StyleValue::write_boolean(Boolean b) {
     MarshalBuffer _b;
     extern TypeObjId _XfStyleValue_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1912,7 +1912,7 @@ MarshalBuffer::ArgDesc _XfStyleValue_read_coord_pdesc[3] = { 2, 12, 50 };
 MarshalBuffer::ArgInfo _XfStyleValue_read_coord_pinfo = {
     &_XfStyleValue_tid, 7, _XfStyleValue_read_coord_pdesc, 0
 };
-Boolean StyleValueType::read_coord(Coord& c) {
+Boolean StyleValue::read_coord(Coord& c) {
     MarshalBuffer _b;
     extern TypeObjId _XfStyleValue_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1924,7 +1924,7 @@ MarshalBuffer::ArgDesc _XfStyleValue_write_coord_pdesc[3] = { 2, 4, 49 };
 MarshalBuffer::ArgInfo _XfStyleValue_write_coord_pinfo = {
     &_XfStyleValue_tid, 8, _XfStyleValue_write_coord_pdesc, 0
 };
-void StyleValueType::write_coord(Coord c) {
+void StyleValue::write_coord(Coord c) {
     MarshalBuffer _b;
     extern TypeObjId _XfStyleValue_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1935,7 +1935,7 @@ MarshalBuffer::ArgDesc _XfStyleValue_read_integer_pdesc[3] = { 2, 12, 34 };
 MarshalBuffer::ArgInfo _XfStyleValue_read_integer_pinfo = {
     &_XfStyleValue_tid, 9, _XfStyleValue_read_integer_pdesc, 0
 };
-Boolean StyleValueType::read_integer(Long& i) {
+Boolean StyleValue::read_integer(Long& i) {
     MarshalBuffer _b;
     extern TypeObjId _XfStyleValue_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1947,7 +1947,7 @@ MarshalBuffer::ArgDesc _XfStyleValue_write_integer_pdesc[3] = { 2, 4, 33 };
 MarshalBuffer::ArgInfo _XfStyleValue_write_integer_pinfo = {
     &_XfStyleValue_tid, 10, _XfStyleValue_write_integer_pdesc, 0
 };
-void StyleValueType::write_integer(Long i) {
+void StyleValue::write_integer(Long i) {
     MarshalBuffer _b;
     extern TypeObjId _XfStyleValue_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1958,7 +1958,7 @@ MarshalBuffer::ArgDesc _XfStyleValue_read_real_pdesc[3] = { 2, 12, 54 };
 MarshalBuffer::ArgInfo _XfStyleValue_read_real_pinfo = {
     &_XfStyleValue_tid, 11, _XfStyleValue_read_real_pdesc, 0
 };
-Boolean StyleValueType::read_real(Double& d) {
+Boolean StyleValue::read_real(Double& d) {
     MarshalBuffer _b;
     extern TypeObjId _XfStyleValue_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1970,7 +1970,7 @@ MarshalBuffer::ArgDesc _XfStyleValue_write_real_pdesc[3] = { 2, 4, 53 };
 MarshalBuffer::ArgInfo _XfStyleValue_write_real_pinfo = {
     &_XfStyleValue_tid, 12, _XfStyleValue_write_real_pdesc, 0
 };
-void StyleValueType::write_real(Double d) {
+void StyleValue::write_real(Double d) {
     MarshalBuffer _b;
     extern TypeObjId _XfStyleValue_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1979,13 +1979,13 @@ void StyleValueType::write_real(Double d) {
 }
 MarshalBuffer::ArgDesc _XfStyleValue_read_string_pdesc[3] = { 2, 12, 62 };
 MarshalBuffer::ArgMarshal _XfStyleValue_read_string_pfunc[] = {
-    &CharStringStub::_create,
+    &_XfCharStringStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfStyleValue_read_string_pinfo = {
     &_XfStyleValue_tid, 13, _XfStyleValue_read_string_pdesc, _XfStyleValue_read_string_pfunc
 };
-Boolean StyleValueType::_c_read_string(CharStringRef& s) {
+Boolean StyleValue::read_string(CharString_out& s) {
     MarshalBuffer _b;
     extern TypeObjId _XfStyleValue_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -1995,13 +1995,13 @@ Boolean StyleValueType::_c_read_string(CharStringRef& s) {
 }
 MarshalBuffer::ArgDesc _XfStyleValue_write_string_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfStyleValue_write_string_pfunc[] = {
-    &CharStringStub::_create,
+    &_XfCharStringStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfStyleValue_write_string_pinfo = {
     &_XfStyleValue_tid, 14, _XfStyleValue_write_string_pdesc, _XfStyleValue_write_string_pfunc
 };
-void StyleValueType::write_string(CharString_in s) {
+void StyleValue::write_string(CharString_in s) {
     MarshalBuffer _b;
     extern TypeObjId _XfStyleValue_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -2010,13 +2010,13 @@ void StyleValueType::write_string(CharString_in s) {
 }
 MarshalBuffer::ArgDesc _XfStyleValue_read_value_pdesc[3] = { 2, 12, 62 };
 MarshalBuffer::ArgMarshal _XfStyleValue_read_value_pfunc[] = {
-    &FrescoObjectStub::_create,
+    &_XfFrescoObjectStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfStyleValue_read_value_pinfo = {
     &_XfStyleValue_tid, 15, _XfStyleValue_read_value_pdesc, _XfStyleValue_read_value_pfunc
 };
-Boolean StyleValueType::_c_read_value(FrescoObjectRef& s) {
+Boolean StyleValue::read_value(FrescoObject_out& s) {
     MarshalBuffer _b;
     extern TypeObjId _XfStyleValue_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -2026,13 +2026,13 @@ Boolean StyleValueType::_c_read_value(FrescoObjectRef& s) {
 }
 MarshalBuffer::ArgDesc _XfStyleValue_write_value_pdesc[3] = { 2, 4, 61 };
 MarshalBuffer::ArgMarshal _XfStyleValue_write_value_pfunc[] = {
-    &FrescoObjectStub::_create,
+    &_XfFrescoObjectStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfStyleValue_write_value_pinfo = {
     &_XfStyleValue_tid, 16, _XfStyleValue_write_value_pdesc, _XfStyleValue_write_value_pfunc
 };
-void StyleValueType::write_value(FrescoObject_in s) {
+void StyleValue::write_value(FrescoObject_in s) {
     MarshalBuffer _b;
     extern TypeObjId _XfStyleValue_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -2043,7 +2043,7 @@ MarshalBuffer::ArgDesc _XfStyleValue_lock_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfStyleValue_lock_pinfo = {
     &_XfStyleValue_tid, 17, _XfStyleValue_lock_pdesc, 0
 };
-void StyleValueType::lock() {
+void StyleValue::lock() {
     MarshalBuffer _b;
     extern TypeObjId _XfStyleValue_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -2053,7 +2053,7 @@ MarshalBuffer::ArgDesc _XfStyleValue_unlock_pdesc[2] = { 1, 4 };
 MarshalBuffer::ArgInfo _XfStyleValue_unlock_pinfo = {
     &_XfStyleValue_tid, 18, _XfStyleValue_unlock_pdesc, 0
 };
-void StyleValueType::unlock() {
+void StyleValue::unlock() {
     MarshalBuffer _b;
     extern TypeObjId _XfStyleValue_tid;
     MarshalBuffer::ArgValue _arg[1];
@@ -2062,9 +2062,9 @@ void StyleValueType::unlock() {
 //+
 
 //+ StyleVisitor::%init,type+dii,client
-StyleVisitorType::StyleVisitorType() { }
-StyleVisitorType::~StyleVisitorType() { }
-void* StyleVisitorType::_this() { return this; }
+StyleVisitor::StyleVisitor() { }
+StyleVisitor::~StyleVisitor() { }
+void* StyleVisitor::_this() { return this; }
 
 extern TypeObj_Descriptor _Xfvoid_type;
 
@@ -2080,7 +2080,7 @@ TypeObj_ParamData _XfStyleVisitor_params[] = {
     /* visit_attribute */
         { "a", 0, &_XfStyleValue_type },
     /* visit_style */
-        { "s", 0, &_XfStyleObj_type }
+        { "s", 0, &_XfStyle_type }
 };
 extern TypeObj_Descriptor _XfFrescoObject_type;
 TypeObj_Descriptor* _XfStyleVisitor_parents[] = { &_XfFrescoObject_type, nil };
@@ -2097,10 +2097,10 @@ TypeObj_Descriptor _XfStyleVisitor_type = {
 
 StyleVisitorRef StyleVisitor::_narrow(BaseObjectRef o) {
     return (StyleVisitorRef)_BaseObject_tnarrow(
-        o, _XfStyleVisitor_tid, &StyleVisitorStub::_create
+        o, _XfStyleVisitor_tid, &_XfStyleVisitorStub_create
     );
 }
-TypeObjId StyleVisitorType::_tid() { return _XfStyleVisitor_tid; }
+TypeObjId StyleVisitor::_tid() { return _XfStyleVisitor_tid; }
 void _XfStyleVisitor_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
     extern TypeObjId _XfStyleVisitor_tid;
     StyleVisitorRef _this = (StyleVisitorRef)_BaseObject_tcast(_object, _XfStyleVisitor_tid);
@@ -2128,7 +2128,7 @@ void _XfStyleVisitor_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b)
         case /* visit_style */ 2: {
             extern MarshalBuffer::ArgInfo _XfStyleVisitor_visit_style_pinfo;
             MarshalBuffer::ArgValue _arg[2];
-            StyleObjRef s;
+            StyleRef s;
             _arg[1].u_addr = &s;
             _b.receive(_XfStyleVisitor_visit_style_pinfo, _arg);
             _arg[0].u_boolean = _this->visit_style(s);
@@ -2139,7 +2139,7 @@ void _XfStyleVisitor_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b)
 }
 StyleVisitorStub::StyleVisitorStub(Exchange* e) { exch_ = e; }
 StyleVisitorStub::~StyleVisitorStub() { }
-BaseObjectRef StyleVisitorStub::_create(Exchange* e) {
+BaseObjectRef _XfStyleVisitorStub_create(Exchange* e) {
     return (BaseObjectRef)(void*)new StyleVisitorStub(e);
 }
 Exchange* StyleVisitorStub::_exchange() {
@@ -2147,13 +2147,13 @@ Exchange* StyleVisitorStub::_exchange() {
 }
 MarshalBuffer::ArgDesc _XfStyleVisitor_visit_alias_pdesc[3] = { 2, 12, 61 };
 MarshalBuffer::ArgMarshal _XfStyleVisitor_visit_alias_pfunc[] = {
-    &CharStringStub::_create,
+    &_XfCharStringStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfStyleVisitor_visit_alias_pinfo = {
     &_XfStyleVisitor_tid, 0, _XfStyleVisitor_visit_alias_pdesc, _XfStyleVisitor_visit_alias_pfunc
 };
-Boolean StyleVisitorType::visit_alias(CharString_in name) {
+Boolean StyleVisitor::visit_alias(CharString_in name) {
     MarshalBuffer _b;
     extern TypeObjId _XfStyleVisitor_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -2163,13 +2163,13 @@ Boolean StyleVisitorType::visit_alias(CharString_in name) {
 }
 MarshalBuffer::ArgDesc _XfStyleVisitor_visit_attribute_pdesc[3] = { 2, 12, 61 };
 MarshalBuffer::ArgMarshal _XfStyleVisitor_visit_attribute_pfunc[] = {
-    &StyleValueStub::_create,
+    &_XfStyleValueStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfStyleVisitor_visit_attribute_pinfo = {
     &_XfStyleVisitor_tid, 1, _XfStyleVisitor_visit_attribute_pdesc, _XfStyleVisitor_visit_attribute_pfunc
 };
-Boolean StyleVisitorType::visit_attribute(StyleValue_in a) {
+Boolean StyleVisitor::visit_attribute(StyleValue_in a) {
     MarshalBuffer _b;
     extern TypeObjId _XfStyleVisitor_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -2179,13 +2179,13 @@ Boolean StyleVisitorType::visit_attribute(StyleValue_in a) {
 }
 MarshalBuffer::ArgDesc _XfStyleVisitor_visit_style_pdesc[3] = { 2, 12, 61 };
 MarshalBuffer::ArgMarshal _XfStyleVisitor_visit_style_pfunc[] = {
-    &StyleObjStub::_create,
+    &_XfStyleStub_create,
 
 };
 MarshalBuffer::ArgInfo _XfStyleVisitor_visit_style_pinfo = {
     &_XfStyleVisitor_tid, 2, _XfStyleVisitor_visit_style_pdesc, _XfStyleVisitor_visit_style_pfunc
 };
-Boolean StyleVisitorType::visit_style(StyleObj_in s) {
+Boolean StyleVisitor::visit_style(Style_in s) {
     MarshalBuffer _b;
     extern TypeObjId _XfStyleVisitor_tid;
     MarshalBuffer::ArgValue _arg[2];
@@ -2195,15 +2195,15 @@ Boolean StyleVisitorType::visit_style(StyleObj_in s) {
 }
 //+
 
-//+ TransformObj::%init,type+dii,client
-TransformObjType::TransformObjType() { }
-TransformObjType::~TransformObjType() { }
-void* TransformObjType::_this() { return this; }
+//+ Transform::%init,type+dii,client
+Transform::Transform() { }
+Transform::~Transform() { }
+void* Transform::_this() { return this; }
 
-extern TypeObj_Descriptor _XfTransformObj_Matrix_type, _XfTransformObj_Matrix_type, 
+extern TypeObj_Descriptor _XfTransform_Matrix_type, _XfTransform_Matrix_type, 
     _XfFloat_type;
 
-TypeObj_OpData _XfTransformObj_methods[] = {
+TypeObj_OpData _XfTransform_methods[] = {
     { "load", &_Xfvoid_type, 1 },
     { "load_identity", &_Xfvoid_type, 0 },
     { "load_matrix", &_Xfvoid_type, 1 },
@@ -2217,19 +2217,19 @@ TypeObj_OpData _XfTransformObj_methods[] = {
     { "premultiply", &_Xfvoid_type, 1 },
     { "postmultiply", &_Xfvoid_type, 1 },
     { "invert", &_Xfvoid_type, 0 },
-    { "transform", &_Xfvoid_type, 1 },
-    { "inverse_transform", &_Xfvoid_type, 1 },
+    { "transform_vertex", &_Xfvoid_type, 1 },
+    { "inverse_transform_vertex", &_Xfvoid_type, 1 },
     { 0, 0, 0 }
 };
-TypeObj_ParamData _XfTransformObj_params[] = {
+TypeObj_ParamData _XfTransform_params[] = {
     /* load */
-        { "t", 0, &_XfTransformObj_type },
+        { "t", 0, &_XfTransform_type },
     /* load_matrix */
-        { "m", 0, &_XfTransformObj_Matrix_type },
+        { "m", 0, &_XfTransform_Matrix_type },
     /* store_matrix */
-        { "m", 1, &_XfTransformObj_Matrix_type },
+        { "m", 1, &_XfTransform_Matrix_type },
     /* equal */
-        { "t", 0, &_XfTransformObj_type },
+        { "t", 0, &_XfTransform_type },
     /* scale */
         { "v", 0, &_XfVertex_type },
     /* rotate */
@@ -2238,195 +2238,195 @@ TypeObj_ParamData _XfTransformObj_params[] = {
     /* translate */
         { "v", 0, &_XfVertex_type },
     /* premultiply */
-        { "t", 0, &_XfTransformObj_type },
+        { "t", 0, &_XfTransform_type },
     /* postmultiply */
-        { "t", 0, &_XfTransformObj_type },
-    /* transform */
+        { "t", 0, &_XfTransform_type },
+    /* transform_vertex */
         { "v", 2, &_XfVertex_type },
-    /* inverse_transform */
+    /* inverse_transform_vertex */
         { "v", 2, &_XfVertex_type }
 };
 extern TypeObj_Descriptor _XfFrescoObject_type;
-TypeObj_Descriptor* _XfTransformObj_parents[] = { &_XfFrescoObject_type, nil };
-extern TypeObjId _XfTransformObj_tid;
-extern void _XfTransformObj_receive(BaseObjectRef, ULong, MarshalBuffer&);
-TypeObj_Descriptor _XfTransformObj_type = {
+TypeObj_Descriptor* _XfTransform_parents[] = { &_XfFrescoObject_type, nil };
+extern TypeObjId _XfTransform_tid;
+extern void _XfTransform_receive(BaseObjectRef, ULong, MarshalBuffer&);
+TypeObj_Descriptor _XfTransform_type = {
     /* type */ 0,
-    /* id */ &_XfTransformObj_tid,
-    "TransformObj",
-    _XfTransformObj_parents, /* offsets */ nil, /* excepts */ nil,
-    _XfTransformObj_methods, _XfTransformObj_params,
-    &_XfTransformObj_receive
+    /* id */ &_XfTransform_tid,
+    "Transform",
+    _XfTransform_parents, /* offsets */ nil, /* excepts */ nil,
+    _XfTransform_methods, _XfTransform_params,
+    &_XfTransform_receive
 };
 
-TransformObjRef TransformObj::_narrow(BaseObjectRef o) {
-    return (TransformObjRef)_BaseObject_tnarrow(
-        o, _XfTransformObj_tid, &TransformObjStub::_create
+TransformRef Transform::_narrow(BaseObjectRef o) {
+    return (TransformRef)_BaseObject_tnarrow(
+        o, _XfTransform_tid, &_XfTransformStub_create
     );
 }
-TypeObjId TransformObjType::_tid() { return _XfTransformObj_tid; }
-void _XfTransformObj_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
-    extern TypeObjId _XfTransformObj_tid;
-    TransformObjRef _this = (TransformObjRef)_BaseObject_tcast(_object, _XfTransformObj_tid);
+TypeObjId Transform::_tid() { return _XfTransform_tid; }
+void _XfTransform_receive(BaseObjectRef _object, ULong _m, MarshalBuffer& _b) {
+    extern TypeObjId _XfTransform_tid;
+    TransformRef _this = (TransformRef)_BaseObject_tcast(_object, _XfTransform_tid);
     switch (_m) {
         case /* load */ 0: {
-            extern MarshalBuffer::ArgInfo _XfTransformObj_load_pinfo;
+            extern MarshalBuffer::ArgInfo _XfTransform_load_pinfo;
             MarshalBuffer::ArgValue _arg[2];
-            TransformObjRef t;
+            TransformRef t;
             _arg[1].u_addr = &t;
-            _b.receive(_XfTransformObj_load_pinfo, _arg);
+            _b.receive(_XfTransform_load_pinfo, _arg);
             _this->load(t);
-            _b.reply(_XfTransformObj_load_pinfo, _arg);
+            _b.reply(_XfTransform_load_pinfo, _arg);
             break;
         }
         case /* load_identity */ 1: {
-            extern MarshalBuffer::ArgInfo _XfTransformObj_load_identity_pinfo;
+            extern MarshalBuffer::ArgInfo _XfTransform_load_identity_pinfo;
             MarshalBuffer::ArgValue _arg[1];
             _this->load_identity();
-            _b.reply(_XfTransformObj_load_identity_pinfo, _arg);
+            _b.reply(_XfTransform_load_identity_pinfo, _arg);
             break;
         }
         case /* load_matrix */ 2: {
-            extern MarshalBuffer::ArgInfo _XfTransformObj_load_matrix_pinfo;
+            extern MarshalBuffer::ArgInfo _XfTransform_load_matrix_pinfo;
             MarshalBuffer::ArgValue _arg[2];
-            TransformObj::Matrix m;
+            Transform::Matrix m;
             _arg[1].u_addr = m;
-            _b.receive(_XfTransformObj_load_matrix_pinfo, _arg);
+            _b.receive(_XfTransform_load_matrix_pinfo, _arg);
             _this->load_matrix(m);
-            _b.reply(_XfTransformObj_load_matrix_pinfo, _arg);
+            _b.reply(_XfTransform_load_matrix_pinfo, _arg);
             break;
         }
         case /* store_matrix */ 3: {
-            extern MarshalBuffer::ArgInfo _XfTransformObj_store_matrix_pinfo;
+            extern MarshalBuffer::ArgInfo _XfTransform_store_matrix_pinfo;
             MarshalBuffer::ArgValue _arg[2];
-            TransformObj::Matrix m;
+            Transform::Matrix m;
             _arg[1].u_addr = m;
-            _b.receive(_XfTransformObj_store_matrix_pinfo, _arg);
+            _b.receive(_XfTransform_store_matrix_pinfo, _arg);
             _this->store_matrix(m);
-            _b.reply(_XfTransformObj_store_matrix_pinfo, _arg);
+            _b.reply(_XfTransform_store_matrix_pinfo, _arg);
             break;
         }
         case /* equal */ 4: {
-            extern MarshalBuffer::ArgInfo _XfTransformObj_equal_pinfo;
+            extern MarshalBuffer::ArgInfo _XfTransform_equal_pinfo;
             MarshalBuffer::ArgValue _arg[2];
-            TransformObjRef t;
+            TransformRef t;
             _arg[1].u_addr = &t;
-            _b.receive(_XfTransformObj_equal_pinfo, _arg);
+            _b.receive(_XfTransform_equal_pinfo, _arg);
             _arg[0].u_boolean = _this->equal(t);
-            _b.reply(_XfTransformObj_equal_pinfo, _arg);
+            _b.reply(_XfTransform_equal_pinfo, _arg);
             break;
         }
         case /* identity */ 5: {
-            extern MarshalBuffer::ArgInfo _XfTransformObj_identity_pinfo;
+            extern MarshalBuffer::ArgInfo _XfTransform_identity_pinfo;
             MarshalBuffer::ArgValue _arg[1];
             _arg[0].u_boolean = _this->identity();
-            _b.reply(_XfTransformObj_identity_pinfo, _arg);
+            _b.reply(_XfTransform_identity_pinfo, _arg);
             break;
         }
         case /* det_is_zero */ 6: {
-            extern MarshalBuffer::ArgInfo _XfTransformObj_det_is_zero_pinfo;
+            extern MarshalBuffer::ArgInfo _XfTransform_det_is_zero_pinfo;
             MarshalBuffer::ArgValue _arg[1];
             _arg[0].u_boolean = _this->det_is_zero();
-            _b.reply(_XfTransformObj_det_is_zero_pinfo, _arg);
+            _b.reply(_XfTransform_det_is_zero_pinfo, _arg);
             break;
         }
         case /* scale */ 7: {
-            extern MarshalBuffer::ArgInfo _XfTransformObj_scale_pinfo;
+            extern MarshalBuffer::ArgInfo _XfTransform_scale_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             Vertex v;
             _arg[1].u_addr = &v;
-            _b.receive(_XfTransformObj_scale_pinfo, _arg);
+            _b.receive(_XfTransform_scale_pinfo, _arg);
             _this->scale(v);
-            _b.reply(_XfTransformObj_scale_pinfo, _arg);
+            _b.reply(_XfTransform_scale_pinfo, _arg);
             break;
         }
         case /* rotate */ 8: {
-            extern MarshalBuffer::ArgInfo _XfTransformObj_rotate_pinfo;
+            extern MarshalBuffer::ArgInfo _XfTransform_rotate_pinfo;
             MarshalBuffer::ArgValue _arg[3];
             Float angle;
             _arg[1].u_addr = &angle;
             Axis a;
             _arg[2].u_addr = &a;
-            _b.receive(_XfTransformObj_rotate_pinfo, _arg);
+            _b.receive(_XfTransform_rotate_pinfo, _arg);
             _this->rotate(angle, a);
-            _b.reply(_XfTransformObj_rotate_pinfo, _arg);
+            _b.reply(_XfTransform_rotate_pinfo, _arg);
             break;
         }
         case /* translate */ 9: {
-            extern MarshalBuffer::ArgInfo _XfTransformObj_translate_pinfo;
+            extern MarshalBuffer::ArgInfo _XfTransform_translate_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             Vertex v;
             _arg[1].u_addr = &v;
-            _b.receive(_XfTransformObj_translate_pinfo, _arg);
+            _b.receive(_XfTransform_translate_pinfo, _arg);
             _this->translate(v);
-            _b.reply(_XfTransformObj_translate_pinfo, _arg);
+            _b.reply(_XfTransform_translate_pinfo, _arg);
             break;
         }
         case /* premultiply */ 10: {
-            extern MarshalBuffer::ArgInfo _XfTransformObj_premultiply_pinfo;
+            extern MarshalBuffer::ArgInfo _XfTransform_premultiply_pinfo;
             MarshalBuffer::ArgValue _arg[2];
-            TransformObjRef t;
+            TransformRef t;
             _arg[1].u_addr = &t;
-            _b.receive(_XfTransformObj_premultiply_pinfo, _arg);
+            _b.receive(_XfTransform_premultiply_pinfo, _arg);
             _this->premultiply(t);
-            _b.reply(_XfTransformObj_premultiply_pinfo, _arg);
+            _b.reply(_XfTransform_premultiply_pinfo, _arg);
             break;
         }
         case /* postmultiply */ 11: {
-            extern MarshalBuffer::ArgInfo _XfTransformObj_postmultiply_pinfo;
+            extern MarshalBuffer::ArgInfo _XfTransform_postmultiply_pinfo;
             MarshalBuffer::ArgValue _arg[2];
-            TransformObjRef t;
+            TransformRef t;
             _arg[1].u_addr = &t;
-            _b.receive(_XfTransformObj_postmultiply_pinfo, _arg);
+            _b.receive(_XfTransform_postmultiply_pinfo, _arg);
             _this->postmultiply(t);
-            _b.reply(_XfTransformObj_postmultiply_pinfo, _arg);
+            _b.reply(_XfTransform_postmultiply_pinfo, _arg);
             break;
         }
         case /* invert */ 12: {
-            extern MarshalBuffer::ArgInfo _XfTransformObj_invert_pinfo;
+            extern MarshalBuffer::ArgInfo _XfTransform_invert_pinfo;
             MarshalBuffer::ArgValue _arg[1];
             _this->invert();
-            _b.reply(_XfTransformObj_invert_pinfo, _arg);
+            _b.reply(_XfTransform_invert_pinfo, _arg);
             break;
         }
-        case /* transform */ 13: {
-            extern MarshalBuffer::ArgInfo _XfTransformObj_transform_pinfo;
+        case /* transform_vertex */ 13: {
+            extern MarshalBuffer::ArgInfo _XfTransform_transform_vertex_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             Vertex v;
             _arg[1].u_addr = &v;
-            _b.receive(_XfTransformObj_transform_pinfo, _arg);
-            _this->transform(v);
-            _b.reply(_XfTransformObj_transform_pinfo, _arg);
+            _b.receive(_XfTransform_transform_vertex_pinfo, _arg);
+            _this->transform_vertex(v);
+            _b.reply(_XfTransform_transform_vertex_pinfo, _arg);
             break;
         }
-        case /* inverse_transform */ 14: {
-            extern MarshalBuffer::ArgInfo _XfTransformObj_inverse_transform_pinfo;
+        case /* inverse_transform_vertex */ 14: {
+            extern MarshalBuffer::ArgInfo _XfTransform_inverse_transform_vertex_pinfo;
             MarshalBuffer::ArgValue _arg[2];
             Vertex v;
             _arg[1].u_addr = &v;
-            _b.receive(_XfTransformObj_inverse_transform_pinfo, _arg);
-            _this->inverse_transform(v);
-            _b.reply(_XfTransformObj_inverse_transform_pinfo, _arg);
+            _b.receive(_XfTransform_inverse_transform_vertex_pinfo, _arg);
+            _this->inverse_transform_vertex(v);
+            _b.reply(_XfTransform_inverse_transform_vertex_pinfo, _arg);
             break;
         }
     }
 }
-extern void _XfTransformObj_Matrix_put(
+extern void _XfTransform_Matrix_put(
     MarshalBuffer&, const Coord Matrix[4][4]
 );
-extern void _XfTransformObj_Matrix_get(
+extern void _XfTransform_Matrix_get(
     MarshalBuffer&, Coord Matrix[4][4]
 );
-extern void _XfTransformObj_Matrix_put(
+extern void _XfTransform_Matrix_put(
     MarshalBuffer&, const Coord Matrix[4][4]
 );
-extern void _XfTransformObj_Matrix_get(
+extern void _XfTransform_Matrix_get(
     MarshalBuffer&, Coord Matrix[4][4]
 );
-extern void _XfTransformObj_Matrix_put(
+extern void _XfTransform_Matrix_put(
     MarshalBuffer&, const Coord Matrix[4][4]
 );
-extern void _XfTransformObj_Matrix_get(
+extern void _XfTransform_Matrix_get(
     MarshalBuffer&, Coord Matrix[4][4]
 );
 extern void _XfVertex_put(
@@ -2454,220 +2454,220 @@ extern void _XfVertex_get(
     MarshalBuffer&, Vertex&
 );
 
-TransformObjStub::TransformObjStub(Exchange* e) { exch_ = e; }
-TransformObjStub::~TransformObjStub() { }
-BaseObjectRef TransformObjStub::_create(Exchange* e) {
-    return (BaseObjectRef)(void*)new TransformObjStub(e);
+TransformStub::TransformStub(Exchange* e) { exch_ = e; }
+TransformStub::~TransformStub() { }
+BaseObjectRef _XfTransformStub_create(Exchange* e) {
+    return (BaseObjectRef)(void*)new TransformStub(e);
 }
-Exchange* TransformObjStub::_exchange() {
+Exchange* TransformStub::_exchange() {
     return exch_;
 }
-MarshalBuffer::ArgDesc _XfTransformObj_load_pdesc[3] = { 2, 4, 61 };
-MarshalBuffer::ArgMarshal _XfTransformObj_load_pfunc[] = {
-    &TransformObjStub::_create,
+MarshalBuffer::ArgDesc _XfTransform_load_pdesc[3] = { 2, 4, 61 };
+MarshalBuffer::ArgMarshal _XfTransform_load_pfunc[] = {
+    &_XfTransformStub_create,
 
 };
-MarshalBuffer::ArgInfo _XfTransformObj_load_pinfo = {
-    &_XfTransformObj_tid, 0, _XfTransformObj_load_pdesc, _XfTransformObj_load_pfunc
+MarshalBuffer::ArgInfo _XfTransform_load_pinfo = {
+    &_XfTransform_tid, 0, _XfTransform_load_pdesc, _XfTransform_load_pfunc
 };
-void TransformObjType::load(TransformObj_in t) {
+void Transform::load(Transform_in t) {
     MarshalBuffer _b;
-    extern TypeObjId _XfTransformObj_tid;
+    extern TypeObjId _XfTransform_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = t;
-    _b.invoke(this, _XfTransformObj_load_pinfo, _arg);
+    _b.invoke(this, _XfTransform_load_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfTransformObj_load_identity_pdesc[2] = { 1, 4 };
-MarshalBuffer::ArgInfo _XfTransformObj_load_identity_pinfo = {
-    &_XfTransformObj_tid, 1, _XfTransformObj_load_identity_pdesc, 0
+MarshalBuffer::ArgDesc _XfTransform_load_identity_pdesc[2] = { 1, 4 };
+MarshalBuffer::ArgInfo _XfTransform_load_identity_pinfo = {
+    &_XfTransform_tid, 1, _XfTransform_load_identity_pdesc, 0
 };
-void TransformObjType::load_identity() {
+void Transform::load_identity() {
     MarshalBuffer _b;
-    extern TypeObjId _XfTransformObj_tid;
+    extern TypeObjId _XfTransform_tid;
     MarshalBuffer::ArgValue _arg[1];
-    _b.invoke(this, _XfTransformObj_load_identity_pinfo, _arg);
+    _b.invoke(this, _XfTransform_load_identity_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfTransformObj_load_matrix_pdesc[3] = { 2, 4, 1 };
-MarshalBuffer::ArgMarshal _XfTransformObj_load_matrix_pfunc[] = {
-    &_XfTransformObj_Matrix_put, &_XfTransformObj_Matrix_get,
+MarshalBuffer::ArgDesc _XfTransform_load_matrix_pdesc[3] = { 2, 4, 1 };
+MarshalBuffer::ArgMarshal _XfTransform_load_matrix_pfunc[] = {
+    &_XfTransform_Matrix_put, &_XfTransform_Matrix_get,
 
 };
-MarshalBuffer::ArgInfo _XfTransformObj_load_matrix_pinfo = {
-    &_XfTransformObj_tid, 2, _XfTransformObj_load_matrix_pdesc, _XfTransformObj_load_matrix_pfunc
+MarshalBuffer::ArgInfo _XfTransform_load_matrix_pinfo = {
+    &_XfTransform_tid, 2, _XfTransform_load_matrix_pdesc, _XfTransform_load_matrix_pfunc
 };
-void TransformObjType::load_matrix(TransformObj::Matrix m) {
+void Transform::load_matrix(Matrix m) {
     MarshalBuffer _b;
-    extern TypeObjId _XfTransformObj_tid;
+    extern TypeObjId _XfTransform_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_addr = m;
-    _b.invoke(this, _XfTransformObj_load_matrix_pinfo, _arg);
+    _b.invoke(this, _XfTransform_load_matrix_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfTransformObj_store_matrix_pdesc[3] = { 2, 4, 2 };
-MarshalBuffer::ArgMarshal _XfTransformObj_store_matrix_pfunc[] = {
-    &_XfTransformObj_Matrix_put, &_XfTransformObj_Matrix_get,
+MarshalBuffer::ArgDesc _XfTransform_store_matrix_pdesc[3] = { 2, 4, 2 };
+MarshalBuffer::ArgMarshal _XfTransform_store_matrix_pfunc[] = {
+    &_XfTransform_Matrix_put, &_XfTransform_Matrix_get,
 
 };
-MarshalBuffer::ArgInfo _XfTransformObj_store_matrix_pinfo = {
-    &_XfTransformObj_tid, 3, _XfTransformObj_store_matrix_pdesc, _XfTransformObj_store_matrix_pfunc
+MarshalBuffer::ArgInfo _XfTransform_store_matrix_pinfo = {
+    &_XfTransform_tid, 3, _XfTransform_store_matrix_pdesc, _XfTransform_store_matrix_pfunc
 };
-void TransformObjType::store_matrix(TransformObj::Matrix m) {
+void Transform::store_matrix(Matrix m) {
     MarshalBuffer _b;
-    extern TypeObjId _XfTransformObj_tid;
+    extern TypeObjId _XfTransform_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_addr = m;
-    _b.invoke(this, _XfTransformObj_store_matrix_pinfo, _arg);
+    _b.invoke(this, _XfTransform_store_matrix_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfTransformObj_equal_pdesc[3] = { 2, 12, 61 };
-MarshalBuffer::ArgMarshal _XfTransformObj_equal_pfunc[] = {
-    &TransformObjStub::_create,
+MarshalBuffer::ArgDesc _XfTransform_equal_pdesc[3] = { 2, 12, 61 };
+MarshalBuffer::ArgMarshal _XfTransform_equal_pfunc[] = {
+    &_XfTransformStub_create,
 
 };
-MarshalBuffer::ArgInfo _XfTransformObj_equal_pinfo = {
-    &_XfTransformObj_tid, 4, _XfTransformObj_equal_pdesc, _XfTransformObj_equal_pfunc
+MarshalBuffer::ArgInfo _XfTransform_equal_pinfo = {
+    &_XfTransform_tid, 4, _XfTransform_equal_pdesc, _XfTransform_equal_pfunc
 };
-Boolean TransformObjType::equal(TransformObj_in t) {
+Boolean Transform::equal(Transform_in t) {
     MarshalBuffer _b;
-    extern TypeObjId _XfTransformObj_tid;
+    extern TypeObjId _XfTransform_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = t;
-    _b.invoke(this, _XfTransformObj_equal_pinfo, _arg);
+    _b.invoke(this, _XfTransform_equal_pinfo, _arg);
     return _arg[0].u_boolean;
 }
-MarshalBuffer::ArgDesc _XfTransformObj_identity_pdesc[2] = { 1, 12 };
-MarshalBuffer::ArgInfo _XfTransformObj_identity_pinfo = {
-    &_XfTransformObj_tid, 5, _XfTransformObj_identity_pdesc, 0
+MarshalBuffer::ArgDesc _XfTransform_identity_pdesc[2] = { 1, 12 };
+MarshalBuffer::ArgInfo _XfTransform_identity_pinfo = {
+    &_XfTransform_tid, 5, _XfTransform_identity_pdesc, 0
 };
-Boolean TransformObjType::identity() {
+Boolean Transform::identity() {
     MarshalBuffer _b;
-    extern TypeObjId _XfTransformObj_tid;
+    extern TypeObjId _XfTransform_tid;
     MarshalBuffer::ArgValue _arg[1];
-    _b.invoke(this, _XfTransformObj_identity_pinfo, _arg);
+    _b.invoke(this, _XfTransform_identity_pinfo, _arg);
     return _arg[0].u_boolean;
 }
-MarshalBuffer::ArgDesc _XfTransformObj_det_is_zero_pdesc[2] = { 1, 12 };
-MarshalBuffer::ArgInfo _XfTransformObj_det_is_zero_pinfo = {
-    &_XfTransformObj_tid, 6, _XfTransformObj_det_is_zero_pdesc, 0
+MarshalBuffer::ArgDesc _XfTransform_det_is_zero_pdesc[2] = { 1, 12 };
+MarshalBuffer::ArgInfo _XfTransform_det_is_zero_pinfo = {
+    &_XfTransform_tid, 6, _XfTransform_det_is_zero_pdesc, 0
 };
-Boolean TransformObjType::det_is_zero() {
+Boolean Transform::det_is_zero() {
     MarshalBuffer _b;
-    extern TypeObjId _XfTransformObj_tid;
+    extern TypeObjId _XfTransform_tid;
     MarshalBuffer::ArgValue _arg[1];
-    _b.invoke(this, _XfTransformObj_det_is_zero_pinfo, _arg);
+    _b.invoke(this, _XfTransform_det_is_zero_pinfo, _arg);
     return _arg[0].u_boolean;
 }
-MarshalBuffer::ArgDesc _XfTransformObj_scale_pdesc[3] = { 2, 4, 1 };
-MarshalBuffer::ArgMarshal _XfTransformObj_scale_pfunc[] = {
+MarshalBuffer::ArgDesc _XfTransform_scale_pdesc[3] = { 2, 4, 1 };
+MarshalBuffer::ArgMarshal _XfTransform_scale_pfunc[] = {
     &_XfVertex_put, &_XfVertex_get,
 
 };
-MarshalBuffer::ArgInfo _XfTransformObj_scale_pinfo = {
-    &_XfTransformObj_tid, 7, _XfTransformObj_scale_pdesc, _XfTransformObj_scale_pfunc
+MarshalBuffer::ArgInfo _XfTransform_scale_pinfo = {
+    &_XfTransform_tid, 7, _XfTransform_scale_pdesc, _XfTransform_scale_pfunc
 };
-void TransformObjType::scale(const Vertex& v) {
+void Transform::scale(const Vertex& v) {
     MarshalBuffer _b;
-    extern TypeObjId _XfTransformObj_tid;
+    extern TypeObjId _XfTransform_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_addr = &v;
-    _b.invoke(this, _XfTransformObj_scale_pinfo, _arg);
+    _b.invoke(this, _XfTransform_scale_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfTransformObj_rotate_pdesc[4] = { 3, 4, 49, 33 };
-MarshalBuffer::ArgInfo _XfTransformObj_rotate_pinfo = {
-    &_XfTransformObj_tid, 8, _XfTransformObj_rotate_pdesc, 0
+MarshalBuffer::ArgDesc _XfTransform_rotate_pdesc[4] = { 3, 4, 49, 33 };
+MarshalBuffer::ArgInfo _XfTransform_rotate_pinfo = {
+    &_XfTransform_tid, 8, _XfTransform_rotate_pdesc, 0
 };
-void TransformObjType::rotate(Float angle, Axis a) {
+void Transform::rotate(Float angle, Axis a) {
     MarshalBuffer _b;
-    extern TypeObjId _XfTransformObj_tid;
+    extern TypeObjId _XfTransform_tid;
     MarshalBuffer::ArgValue _arg[3];
     _arg[1].u_float = angle;
     _arg[2].u_long = a;
-    _b.invoke(this, _XfTransformObj_rotate_pinfo, _arg);
+    _b.invoke(this, _XfTransform_rotate_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfTransformObj_translate_pdesc[3] = { 2, 4, 1 };
-MarshalBuffer::ArgMarshal _XfTransformObj_translate_pfunc[] = {
+MarshalBuffer::ArgDesc _XfTransform_translate_pdesc[3] = { 2, 4, 1 };
+MarshalBuffer::ArgMarshal _XfTransform_translate_pfunc[] = {
     &_XfVertex_put, &_XfVertex_get,
 
 };
-MarshalBuffer::ArgInfo _XfTransformObj_translate_pinfo = {
-    &_XfTransformObj_tid, 9, _XfTransformObj_translate_pdesc, _XfTransformObj_translate_pfunc
+MarshalBuffer::ArgInfo _XfTransform_translate_pinfo = {
+    &_XfTransform_tid, 9, _XfTransform_translate_pdesc, _XfTransform_translate_pfunc
 };
-void TransformObjType::translate(const Vertex& v) {
+void Transform::translate(const Vertex& v) {
     MarshalBuffer _b;
-    extern TypeObjId _XfTransformObj_tid;
+    extern TypeObjId _XfTransform_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_addr = &v;
-    _b.invoke(this, _XfTransformObj_translate_pinfo, _arg);
+    _b.invoke(this, _XfTransform_translate_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfTransformObj_premultiply_pdesc[3] = { 2, 4, 61 };
-MarshalBuffer::ArgMarshal _XfTransformObj_premultiply_pfunc[] = {
-    &TransformObjStub::_create,
+MarshalBuffer::ArgDesc _XfTransform_premultiply_pdesc[3] = { 2, 4, 61 };
+MarshalBuffer::ArgMarshal _XfTransform_premultiply_pfunc[] = {
+    &_XfTransformStub_create,
 
 };
-MarshalBuffer::ArgInfo _XfTransformObj_premultiply_pinfo = {
-    &_XfTransformObj_tid, 10, _XfTransformObj_premultiply_pdesc, _XfTransformObj_premultiply_pfunc
+MarshalBuffer::ArgInfo _XfTransform_premultiply_pinfo = {
+    &_XfTransform_tid, 10, _XfTransform_premultiply_pdesc, _XfTransform_premultiply_pfunc
 };
-void TransformObjType::premultiply(TransformObj_in t) {
+void Transform::premultiply(Transform_in t) {
     MarshalBuffer _b;
-    extern TypeObjId _XfTransformObj_tid;
+    extern TypeObjId _XfTransform_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = t;
-    _b.invoke(this, _XfTransformObj_premultiply_pinfo, _arg);
+    _b.invoke(this, _XfTransform_premultiply_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfTransformObj_postmultiply_pdesc[3] = { 2, 4, 61 };
-MarshalBuffer::ArgMarshal _XfTransformObj_postmultiply_pfunc[] = {
-    &TransformObjStub::_create,
+MarshalBuffer::ArgDesc _XfTransform_postmultiply_pdesc[3] = { 2, 4, 61 };
+MarshalBuffer::ArgMarshal _XfTransform_postmultiply_pfunc[] = {
+    &_XfTransformStub_create,
 
 };
-MarshalBuffer::ArgInfo _XfTransformObj_postmultiply_pinfo = {
-    &_XfTransformObj_tid, 11, _XfTransformObj_postmultiply_pdesc, _XfTransformObj_postmultiply_pfunc
+MarshalBuffer::ArgInfo _XfTransform_postmultiply_pinfo = {
+    &_XfTransform_tid, 11, _XfTransform_postmultiply_pdesc, _XfTransform_postmultiply_pfunc
 };
-void TransformObjType::postmultiply(TransformObj_in t) {
+void Transform::postmultiply(Transform_in t) {
     MarshalBuffer _b;
-    extern TypeObjId _XfTransformObj_tid;
+    extern TypeObjId _XfTransform_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_objref = t;
-    _b.invoke(this, _XfTransformObj_postmultiply_pinfo, _arg);
+    _b.invoke(this, _XfTransform_postmultiply_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfTransformObj_invert_pdesc[2] = { 1, 4 };
-MarshalBuffer::ArgInfo _XfTransformObj_invert_pinfo = {
-    &_XfTransformObj_tid, 12, _XfTransformObj_invert_pdesc, 0
+MarshalBuffer::ArgDesc _XfTransform_invert_pdesc[2] = { 1, 4 };
+MarshalBuffer::ArgInfo _XfTransform_invert_pinfo = {
+    &_XfTransform_tid, 12, _XfTransform_invert_pdesc, 0
 };
-void TransformObjType::invert() {
+void Transform::invert() {
     MarshalBuffer _b;
-    extern TypeObjId _XfTransformObj_tid;
+    extern TypeObjId _XfTransform_tid;
     MarshalBuffer::ArgValue _arg[1];
-    _b.invoke(this, _XfTransformObj_invert_pinfo, _arg);
+    _b.invoke(this, _XfTransform_invert_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfTransformObj_transform_pdesc[3] = { 2, 4, 3 };
-MarshalBuffer::ArgMarshal _XfTransformObj_transform_pfunc[] = {
+MarshalBuffer::ArgDesc _XfTransform_transform_vertex_pdesc[3] = { 2, 4, 3 };
+MarshalBuffer::ArgMarshal _XfTransform_transform_vertex_pfunc[] = {
     &_XfVertex_put, &_XfVertex_get,
 
 };
-MarshalBuffer::ArgInfo _XfTransformObj_transform_pinfo = {
-    &_XfTransformObj_tid, 13, _XfTransformObj_transform_pdesc, _XfTransformObj_transform_pfunc
+MarshalBuffer::ArgInfo _XfTransform_transform_vertex_pinfo = {
+    &_XfTransform_tid, 13, _XfTransform_transform_vertex_pdesc, _XfTransform_transform_vertex_pfunc
 };
-void TransformObjType::transform(Vertex& v) {
+void Transform::transform_vertex(Vertex& v) {
     MarshalBuffer _b;
-    extern TypeObjId _XfTransformObj_tid;
+    extern TypeObjId _XfTransform_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_addr = &v;
-    _b.invoke(this, _XfTransformObj_transform_pinfo, _arg);
+    _b.invoke(this, _XfTransform_transform_vertex_pinfo, _arg);
 }
-MarshalBuffer::ArgDesc _XfTransformObj_inverse_transform_pdesc[3] = { 2, 4, 3 };
-MarshalBuffer::ArgMarshal _XfTransformObj_inverse_transform_pfunc[] = {
+MarshalBuffer::ArgDesc _XfTransform_inverse_transform_vertex_pdesc[3] = { 2, 4, 3 };
+MarshalBuffer::ArgMarshal _XfTransform_inverse_transform_vertex_pfunc[] = {
     &_XfVertex_put, &_XfVertex_get,
 
 };
-MarshalBuffer::ArgInfo _XfTransformObj_inverse_transform_pinfo = {
-    &_XfTransformObj_tid, 14, _XfTransformObj_inverse_transform_pdesc, _XfTransformObj_inverse_transform_pfunc
+MarshalBuffer::ArgInfo _XfTransform_inverse_transform_vertex_pinfo = {
+    &_XfTransform_tid, 14, _XfTransform_inverse_transform_vertex_pdesc, _XfTransform_inverse_transform_vertex_pfunc
 };
-void TransformObjType::inverse_transform(Vertex& v) {
+void Transform::inverse_transform_vertex(Vertex& v) {
     MarshalBuffer _b;
-    extern TypeObjId _XfTransformObj_tid;
+    extern TypeObjId _XfTransform_tid;
     MarshalBuffer::ArgValue _arg[2];
     _arg[1].u_addr = &v;
-    _b.invoke(this, _XfTransformObj_inverse_transform_pinfo, _arg);
+    _b.invoke(this, _XfTransform_inverse_transform_vertex_pinfo, _arg);
 }
-void _XfTransformObj_Matrix_put(MarshalBuffer& _b, const Coord _array[4][4]
+void _XfTransform_Matrix_put(MarshalBuffer& _b, const Coord _array[4][4]
 ) {
     for (int _i0 = 0; _i0 < 4; _i0++) {
         for (int _i1 = 0; _i1 < 4; _i1++) {
@@ -2676,7 +2676,7 @@ void _XfTransformObj_Matrix_put(MarshalBuffer& _b, const Coord _array[4][4]
         }
     }
 }
-void _XfTransformObj_Matrix_get(MarshalBuffer& _b, Coord _array[4][4]
+void _XfTransform_Matrix_get(MarshalBuffer& _b, Coord _array[4][4]
 ) {
     for (int _i0 = 0; _i0 < 4; _i0++) {
         for (int _i1 = 0; _i1 < 4; _i1++) {

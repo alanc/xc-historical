@@ -31,9 +31,9 @@
 
 class GTStack;
 
-class GlyphTraversalImpl : public GlyphTraversalType {
+class GlyphTraversalImpl : public GlyphTraversal {
 public:
-    GlyphTraversalImpl(GlyphTraversal::Operation, WindowRef, DamageObjRef);
+    GlyphTraversalImpl(GlyphTraversal::Operation, WindowRef, DamageRef);
     GlyphTraversalImpl(const GlyphTraversalImpl&);
     ~GlyphTraversalImpl();
 
@@ -46,32 +46,31 @@ public:
     void notify_observers();
     void update();
     /* GlyphTraversal */
-    GlyphTraversal::Operation op();
-    GlyphTraversal::Operation swap_op(GlyphTraversal::Operation op);
-    void begin_trail(Viewer_in v);
-    void end_trail();
+    Operation op();
+    Operation swap_op(Operation op);
+    void begin_viewer(Viewer_in v);
+    void end_viewer();
     void traverse_child(GlyphOffset_in o, Region_in allocation);
     void visit();
-    GlyphTraversalRef _c_trail();
-    GlyphRef _c_current_glyph();
-    GlyphOffsetRef _c_current_offset();
-    ViewerRef _c_current_viewer();
+    GlyphTraversal_return trail();
+    Glyph_return current_glyph();
+    GlyphOffset_return current_offset();
+    Viewer_return current_viewer();
     Boolean forward();
     Boolean backward();
-    PainterObjRef _c_painter();
-    void _c_painter(PainterObj_in _p);
-    DisplayObjRef _c_display();
-    ScreenObjRef _c_screen();
-    RegionRef _c_allocation();
+    Painter_return current_painter();
+    void current_painter(Painter_in _p);
+    Display_return current_display();
+    Screen_return current_screen();
+    Region_return allocation();
     Boolean bounds(Vertex& lower, Vertex& upper, Vertex& origin);
-    Boolean origin(Vertex& origin);
-    Boolean span(Axis a, Region::BoundingSpan& s);
-    TransformObjRef _c_transform();
-    DamageObjRef _c_damage();
+    Boolean allocation_is_visible();
+    Transform_return current_transform();
+    Damage_return damaged();
     void hit();
     Long hit_info();
     void hit_info(Long _p);
-    GlyphTraversalRef _c_picked();
+    GlyphTraversal_return picked();
     void clear();
     //+
 
@@ -80,12 +79,12 @@ public:
 	GlyphRef glyph;
 	GlyphOffsetRef offset;
 	RegionRef allocation;
-	TransformObjRef transform;
+	TransformRef transformation;
     };
 
     void push(
 	ViewerRef v, GlyphRef g, GlyphOffsetRef o,
-	RegionRef allocation, TransformObjRef transform
+	RegionRef allocation, TransformRef transform
     );
     void pop();
 protected:
@@ -93,9 +92,9 @@ protected:
     GlyphTraversal::Operation op_;
     GTStack* stack_;
     long index_;
-    PainterObjRef painter_;
+    PainterRef painter_;
     WindowRef window_;
-    DamageObjRef damage_;
+    DamageRef damage_;
     GlyphTraversalImpl* picked_;
     long hit_info_;
 

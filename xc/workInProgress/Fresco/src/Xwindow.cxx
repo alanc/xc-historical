@@ -55,21 +55,19 @@
 #include <X11/Xatom.h>
 #include <string.h>
 
-#include <stdio.h>
-
 class PickTraversal : public GlyphTraversalImpl {
 public:
-    PickTraversal(GlyphTraversal::Operation, WindowRef, DamageObjRef);
+    PickTraversal(GlyphTraversal::Operation, WindowRef, DamageRef);
     PickTraversal(const PickTraversal&);
     ~PickTraversal();
 
-    void begin_trail(Viewer_in v); //+ GlyphTraversal::begin_trail
+    void begin_viewer(Viewer_in v); //+ GlyphTraversal::begin_viewer
     void traverse_child(GlyphOffset_in o, Region_in allocation); //+ GlyphTraversal::traverse_child
     void hit(); //+ GlyphTraversal::hit
 };
 
 PickTraversal::PickTraversal(
-    GlyphTraversal::Operation op, WindowRef w, DamageObjRef d
+    GlyphTraversal::Operation op, WindowRef w, DamageRef d
 ) : GlyphTraversalImpl(op, w, d) {
     painter_ = new DefaultPainterImpl;
 }
@@ -85,22 +83,21 @@ PickTraversal::~PickTraversal() {
     Fresco::unref(painter_);
 }
 
-//+ PickTraversal(GlyphTraversal::begin_trail)
-void PickTraversal::begin_trail(Viewer_in v) {
+//+ PickTraversal(GlyphTraversal::begin_viewer)
+void PickTraversal::begin_viewer(Viewer_in v) {
     GlyphTraversalImpl::Info* i = top();
     TransformImpl* t = new TransformImpl;
-    t->load(painter_->matrix());
+    t->load(painter_->current_matrix());
     push(v, nil, nil, i->allocation, t);
     Fresco::unref(t);
 }
 
 //+ PickTraversal(GlyphTraversal::traverse_child)
 void PickTraversal::traverse_child(GlyphOffset_in o, Region_in allocation) {
-    TransformImpl* t = new TransformImpl;
-    t->load(painter_->matrix());
+    Transform_var t = new TransformImpl;
+    t->load(painter_->current_matrix());
     push(nil, nil, o, allocation, t);
-    Fresco::unref(t);
-    o->child()->traverse(this);
+    _tmp(o->child())->traverse(this);
     pop();
 }
 
@@ -125,22 +122,26 @@ void PickTraversal::hit() {
 
 WindowImpl::WindowImpl(DisplayImpl* d, ScreenImpl* s, ViewerRef v) {
     Fresco* f = d->fresco();
-    ThreadKit t = f->thread_kit();
+    ThreadKit_var t = f->thread_kit();
     lock_ = t->lock();
     damage_lock_ = t->lock();
     display_ = d;
     screen_ = s;
-    style_ = new WindowStyleImpl(f, this);
-    style_->link_parent(d->style());
+    style_ = new StyleImpl(f);
+    style_->link_parent(_tmp(d->display_style()));
+    cursor_ = nil;
+    cursor_foreground_ = nil;
+    cursor_background_ = nil;
+    icon_ = nil;
     visual_ = nil;
     viewer_ = new MainViewer(f);
     viewer_->append_viewer(v);
     viewer_->body(v);
     viewer_->window_ = this;
     viewer_->allocation_ = new RegionImpl;
-    viewer_->style(d->style());
+    viewer_->glyph_style(_tmp(d->display_style()));
     painter_ = new XPainterImpl(this, s);
-    StyleValue a = style_->resolve(Fresco::string_ref("smoothness"));
+    StyleValue_var a = style_->resolve(Fresco::tmp_string_ref("smoothness"));
     if (is_not_nil(a)) {
 	double s;
 	if (a->read_real(s)) {
@@ -148,10 +149,9 @@ WindowImpl::WindowImpl(DisplayImpl* d, ScreenImpl* s, ViewerRef v) {
 	}
     }
     damage_ = new RegionImpl;
-    damaged_ = false;
     draw_ = new GlyphTraversalImpl(GlyphTraversal::draw, this, this);
     pick_ = new PickTraversal(GlyphTraversal::pick_top, this, this);
-    draw_->painter(painter_);
+    draw_->current_painter(painter_);
     placement_.x = 0;
     placement_.y = 0;
     placement_.align_x = 0;
@@ -165,6 +165,7 @@ WindowImpl::WindowImpl(DisplayImpl* d, ScreenImpl* s, ViewerRef v) {
 WindowImpl::~WindowImpl() {
     unbind();
     Fresco::unref(style_);
+    Fresco::unref(viewer_->allocation_);
     Fresco::unref(ViewerRef(viewer_));
     Fresco::unref(painter_);
     Fresco::unref(damage_);
@@ -193,18 +194,135 @@ void WindowImpl::update() {
 }
 //+
 
-//+ WindowImpl(Window::screen)
-ScreenObjRef WindowImpl::_c_screen() {
-    return ScreenObj::_duplicate(screen_);
+//+ WindowImpl(Window::window_screen)
+Screen_return WindowImpl::window_screen() {
+    return Screen::_duplicate(screen_);
 }
 
-//+ WindowImpl(Window::style)
-WindowStyleRef WindowImpl::_c_style() {
-    return WindowStyle::_duplicate(style_);
+//+ WindowImpl(Window::window_style)
+Style_return WindowImpl::window_style() {
+    return Style::_duplicate(style_);
+}
+
+//+ WindowImpl(Window::double_buffered=b)
+void WindowImpl::double_buffered(Boolean b) {
+    set_attribute("doubleBuffered", Fresco::string_ref(b ? "true" : "false"));
+}
+
+//+ WindowImpl(Window::double_buffered?)
+Boolean WindowImpl::double_buffered() {
+    return style_->is_on(Fresco::string_ref("doubleBuffered"));
+}
+
+//+ WindowImpl(Window::default_cursor=c)
+void WindowImpl::default_cursor(Cursor_in c) {
+    Fresco::unref(cursor_);
+    cursor_ = Cursor::_duplicate(c);
+    XWindow xw = xwindow_;
+    if (xw != 0) {
+	XDisplay* dpy = display_->xdisplay();
+	if (is_nil(c)) {
+	    XUndefineCursor(dpy, xw);
+	} else {
+	    // XDefineCursor(dpy, xw, c->rep()->xid(w.display_, w.visual_));
+	}
+	XFlush(dpy);
+    }
+}
+
+//+ WindowImpl(Window::default_cursor?)
+CursorRef WindowImpl::default_cursor() {
+    return Cursor::_duplicate(cursor_);
+}
+
+//+ WindowImpl(Window::cursor_foreground=c)
+void WindowImpl::cursor_foreground(Color_in c) {
+    cursor_foreground_ = Color::_duplicate(c);
+}
+
+//+ WindowImpl(Window::cursor_foreground?)
+ColorRef WindowImpl::cursor_foreground() {
+    return Color::_duplicate(cursor_foreground_);
+}
+
+//+ WindowImpl(Window::cursor_background=c)
+void WindowImpl::cursor_background(Color_in c) {
+    cursor_background_ = Color::_duplicate(c);
+}
+
+//+ WindowImpl(Window::cursor_background?)
+ColorRef WindowImpl::cursor_background() {
+    return Color::_duplicate(cursor_background_);
+}
+
+//+ WindowImpl(Window::geometry=g)
+void WindowImpl::geometry(CharString_in g) {
+    set_attribute("geometry", g);
+}
+
+//+ WindowImpl(Window::geometry?)
+CharStringRef WindowImpl::geometry() {
+    return get_attribute("geometry");
+}
+
+//+ WindowImpl(Window::icon=w)
+void WindowImpl::icon(Window_in w) {
+    Fresco::unref(icon_);
+    icon_ = Window::_duplicate(w);
+}
+
+//+ WindowImpl(Window::icon?)
+WindowRef WindowImpl::icon() {
+    return Window::_duplicate(icon_);
+}
+
+//+ WindowImpl(Window::iconic=b)
+void WindowImpl::iconic(Boolean b) {
+    set_attribute("iconic", Fresco::string_ref(b ? "true" : "false"));
+}
+
+//+ WindowImpl(Window::iconic?)
+Boolean WindowImpl::iconic() {
+    return style_->is_on(Fresco::string_ref("iconic"));
+}
+
+//+ WindowImpl(Window::title=t)
+void WindowImpl::title(CharString_in t) {
+    set_attribute("title", t);
+}
+
+//+ WindowImpl(Window::title?)
+CharStringRef WindowImpl::title() {
+    return get_attribute("title");
+}
+
+//+ WindowImpl(Window::xor_pixel=p)
+void WindowImpl::xor_pixel(Long p) {
+    StyleValue_var a = style_->bind(Fresco::string_ref("xor_pixel"));
+    a->write_integer(p);
+}
+
+//+ WindowImpl(Window::xor_pixel?)
+Long WindowImpl::xor_pixel() {
+    long p = 0;
+    StyleValue_var a = style_->resolve(Fresco::tmp_string_ref("xor_pixel"));
+    if (is_not_nil(a)) {
+	a->read_integer(p);
+    }
+    return p;
+}
+
+void WindowImpl::set_attribute(const char* name, CharStringRef value) {
+    StyleValue_var a = style_->bind(Fresco::string_ref(name));
+    a->write_string(value);
+}
+
+CharStringRef WindowImpl::get_attribute(const char* name) {
+    return Fresco::get_string(style_, name);
 }
 
 //+ WindowImpl(Window::main_viewer)
-ViewerRef WindowImpl::_c_main_viewer() {
+Viewer_return WindowImpl::main_viewer() {
     return Viewer::_duplicate(viewer_);
 }
 
@@ -441,15 +559,14 @@ void WindowImpl::repair() {
 void WindowImpl::handle_event(Event_in e) {
     if (!e->positional()) {
 	pick_->push(viewer_, viewer_, nil, viewer_->allocation_, nil);
-	pick_->begin_trail(viewer_);
+	pick_->begin_viewer(viewer_);
 	viewer_->handle(pick_, e);
-	pick_->end_trail();
+	pick_->end_viewer();
 	pick_->pop();
     } else {
 	pick_->clear();
 	Coord x = e->pointer_x(), y = e->pointer_y();
-//printf("event %.2f,%.2f\n", x, y);
-	PainterObj painter = pick_->painter();
+	Painter_var painter = pick_->current_painter();
 	painter->push_clipping();
 	painter->clip_rect(x, y, x, y);
 	pick_->push(viewer_, viewer_, nil, viewer_->allocation_, nil);
@@ -457,22 +574,17 @@ void WindowImpl::handle_event(Event_in e) {
 	pick_->pop();
 	painter->pop_clipping();
 
-	GlyphTraversal p = pick_->picked();
+	GlyphTraversal_var p = pick_->picked();
 	if (is_not_nil(p)) {
 	    Vertex ev;
 	    do {
-		Glyph g = p->current_glyph();
-		Viewer v = p->current_viewer();
+		Glyph_var g = p->current_glyph();
+		Viewer_var v = p->current_viewer();
 		if (is_nil(g) && is_not_nil(v)) {
 		    ev.x = x; ev.y = y; ev.z = 0;
-		    TransformObjRef t = p->transform();
+		    Transform_var t = p->current_transform();
 		    if (is_not_nil(t)) {
-			t->inverse_transform(ev);
-//printf("matrix: ");
-TransformObj::Matrix m;
-t->store_matrix(m);
-//printf("    %.2f %.2f; %.2f %.2f; %.2f %.2f\n",
-//m[0][0], m[0][1], m[1][0], m[1][1], m[2][0], m[2][1]);
+			t->inverse_transform_vertex(ev);
 		    }
 		    painter->push_clipping();
 		    painter->clip_rect(ev.x, ev.y, ev.x, ev.y);
@@ -584,12 +696,12 @@ void WindowImpl::set_attributes() {
     xattrmask_ |= CWBorderPixel;
     xattrs_.border_pixel = 0;
 
-    if (style_->is_on(Fresco::string_ref("backingStore"))) {
+    if (style_->is_on(Fresco::tmp_string_ref("backingStore"))) {
 	xattrmask_ |= CWBackingStore;
 	xattrs_.backing_store = WhenMapped;
     }
 
-    if (style_->is_on(Fresco::string_ref("saveUnder"))) {
+    if (style_->is_on(Fresco::tmp_string_ref("saveUnder"))) {
 	xattrmask_ |= CWSaveUnder;
 	xattrs_.save_under = True;
     }
@@ -602,7 +714,7 @@ void WindowImpl::set_attributes() {
 	FocusChangeMask |
 	OwnerGrabButtonMask
     );
-    StyleValue a = style_->resolve(Fresco::string_ref("eventMask"));
+    StyleValue_var a = style_->resolve(Fresco::tmp_string_ref("eventMask"));
     if (is_not_nil(a)) {
 	a->read_integer(events);
     }
@@ -638,26 +750,25 @@ void WindowImpl::do_map() {
     map_pending_ = true;
 }
 
-//+ WindowImpl(DamageObj::incur)
+//+ WindowImpl(Damage::incur)
 void WindowImpl::incur() {
     damage(0, 0, placement_.width, placement_.height);
 }
 
-//+ WindowImpl(DamageObj::extend)
+//+ WindowImpl(Damage::extend)
 void WindowImpl::extend(Region_in r) {
     damage_lock_->acquire();
-    if (damaged_) {
+    if (damage_->defined_) {
 	damage_->merge_union(r);
     } else {
-	damaged_ = true;
 	damage_->copy(r);
 	need_repair();
     }
     damage_lock_->release();
 }
 
-//+ WindowImpl(DamageObj::current)
-RegionRef WindowImpl::_c_current() {
+//+ WindowImpl(Damage::current)
+Region_return WindowImpl::current() {
     damage_lock_->acquire();
     RegionRef r = Region::_duplicate(damage_);
     damage_lock_->release();
@@ -724,13 +835,13 @@ void WindowImpl::compute_x_position() {
 void WindowImpl::damage(Coord l, Coord b, Coord r, Coord t) {
     damage_lock_->acquire();
     RegionImpl* d = damage_;
-    if (damaged_) {
+    if (d->defined_) {
 	d->lower_.x = Math::min(d->lower_.x, l);
 	d->lower_.y = Math::min(d->lower_.y, b);
 	d->upper_.x = Math::max(d->upper_.x, r);
 	d->upper_.y = Math::max(d->upper_.y, t);
     } else {
-	damaged_ = true;
+	d->defined_ = true;
 	d->lower_.x = l;
 	d->lower_.y = b;
 	d->upper_.x = r;
@@ -757,9 +868,9 @@ void WindowImpl::do_request(Glyph::Requisition& r) {
 void WindowImpl::do_draw_traversal() {
     damage_lock_->acquire();
     RegionImpl* d = damage_;
-    damaged_ = false;
     painter_->push_clipping();
     painter_->clip_rect(d->lower_.x, d->lower_.y, d->upper_.x, d->upper_.y);
+    d->defined_ = false;
     damage_lock_->release();
     draw_->push(viewer_, viewer_, nil, viewer_->allocation_, nil);
     viewer_->traverse(draw_);
@@ -787,6 +898,7 @@ void WindowImpl::resize() {
     Glyph::Requisition r;
     do_request(r);
     RegionImpl* a = viewer_->allocation_;
+    a->defined_ = true;
     a->lower_.x = 0;
     a->lower_.y = 0;
     a->upper_.x = placement_.width;
@@ -802,7 +914,9 @@ void WindowImpl::resize() {
 	a->zalign_ = 0;
     }
 
-    painter_->prepare(style_->is_on(Fresco::string_ref("double_buffered")));
+    painter_->prepare(
+	style_->is_on(Fresco::tmp_string_ref("double_buffered"))
+    );
     damage(a->lower_.x, a->lower_.y, a->upper_.x, a->upper_.y);
 }
 
@@ -884,9 +998,9 @@ void ManagedWindow::do_set(ManagedWindow::HintFunction f) {
 }
 
 Boolean ManagedWindow::set_name(ManagedWindow::HintInfo& info) {
-    CharStringRef s = style_->name();
+    CharString_var s = style_->name();
     if (is_nil(s)) {
-	s = display_->style()->name();
+	s = _tmp(display_->display_style())->name();
     }
     if (is_not_nil(s)) {
 	CharStringBuffer cs(s);
@@ -933,50 +1047,51 @@ Boolean ManagedWindow::set_transient_for(ManagedWindow::HintInfo& info) {
 }
 
 Boolean ManagedWindow::set_icon(ManagedWindow::HintInfo& info) {
-    Window icon = style_->icon();
-    if (is_nil(icon)) {
+    if (is_nil(icon_)) {
 	info.hints->flags &= ~IconWindowHint;
 	info.hints->icon_window = None;
 	return true;
     } else {
-	// need a narrow test here
-	WindowImpl* i = (WindowImpl*)WindowRef(icon);
-	XWindow iw = i->xwindow();
-	if (!xbound(iw)) {
-	    info.hints->flags |= IconWindowHint;
-	    info.hints->icon_window = iw;
-	    return true;
+	WindowImpl* i = WindowImpl::_narrow(icon_);
+	if (i != nil) {
+	    XWindow iw = i->xwindow();
+	    if (!xbound(iw)) {
+		info.hints->flags |= IconWindowHint;
+		info.hints->icon_window = iw;
+		return true;
+	    }
 	}
     }
     return false;
 }
 
-Boolean ManagedWindow::set_icon_name(ManagedWindow::HintInfo& info) {
+/*
+ * This icon stuff is not currently implemented, as some or all
+ * might better be handled at a higher-level.
+ */
+
+Boolean ManagedWindow::set_icon_name(ManagedWindow::HintInfo&) {
     Boolean b = false;
-    StyleValue a = style_->resolve(Fresco::string_ref("iconName"));
-    if (is_nil(a)) {
-	a = style_->resolve(Fresco::string_ref("name"));
+#ifdef notdef
+    CharString_var c = Fresco::get_tmp_string(style_, "iconName");
+    if (is_not_nil(c)) {
+	CharStringBuffer cs(c);
+	XSetIconName(info.xdisplay, info.xwindow, cs.string());
+	b = true;
     }
-    if (is_not_nil(a)) {
-	CharString v;
-	if (a->read_string(v)) {
-	    CharStringBuffer cs(v);
-	    XSetIconName(info.xdisplay, info.xwindow, cs.string());
-	    b = true;
-	}
-    }
+#endif
     return b;
 }
 
-Boolean ManagedWindow::set_icon_geometry(ManagedWindow::HintInfo& info) {
+Boolean ManagedWindow::set_icon_geometry(ManagedWindow::HintInfo&) {
+#ifdef notdef
     info.hints->flags &= ~IconPositionHint;
-    StyleValue a = style_->resolve(Fresco::string_ref("iconGeometry"));
+    StyleValue_var a = style_->resolve(Fresco::string_ref("iconGeometry"));
     if (is_nil(a)) {
-	Window icon = style_->icon();
-	if (is_nil(icon)) {
+	if (is_nil(icon_)) {
 	    return false;
 	}
-	StyleObj s = icon->style();
+	Style_var s = icon_->style();
 	if (is_nil(s)) {
 	    return false;
 	}
@@ -985,7 +1100,7 @@ Boolean ManagedWindow::set_icon_geometry(ManagedWindow::HintInfo& info) {
 	    return false;
 	}
     }
-    CharString g;
+    CharString_var g;
     if (!a->read_string(g)) {
 	return false;
     }
@@ -993,14 +1108,14 @@ Boolean ManagedWindow::set_icon_geometry(ManagedWindow::HintInfo& info) {
     XCoord x = 0, y = 0;
     unsigned int w = XCoord(pwidth_);
     unsigned int h = XCoord(pheight_);
-    Raster b = style_->icon_bitmap();
+    Raster_ b = icon_bitmap_;
     if (is_not_nil(b)) {
 	Coord s = b->scale();
 	w = XCoord(screen_->to_pixels(s * b->rows()));
 	h = XCoord(screen_->to_pixels(s * b->columns()));
     }
     unsigned int p = XParseGeometry(cs.string(), &x, &y, &w, &h);
-    ScreenObjRef s = screen_;
+    ScreenRef s = screen_;
     if ((p & XNegative) != 0) {
 	x = XCoord(s->to_pixels(s->width()) + x - w);
     }
@@ -1013,11 +1128,13 @@ Boolean ManagedWindow::set_icon_geometry(ManagedWindow::HintInfo& info) {
 	info.hints->icon_y = y;
 	return true;
     }
+#endif
     return false;
 }
 
-Boolean ManagedWindow::set_icon_bitmap(ManagedWindow::HintInfo& info) {
-    Raster b = style_->icon_bitmap();
+Boolean ManagedWindow::set_icon_bitmap(ManagedWindow::HintInfo&) {
+#ifdef notdef
+    Raster_ b = style_->icon_bitmap();
     if (is_nil(b)) {
 	info.hints->flags &= ~IconPixmapHint;
 	info.hints->icon_pixmap = None;
@@ -1025,11 +1142,13 @@ Boolean ManagedWindow::set_icon_bitmap(ManagedWindow::HintInfo& info) {
 	info.hints->flags |= IconPixmapHint;
 	// info.hints->icon_pixmap = icon_bitmap_->rep()->pixmap_;
     }
+#endif
     return true;
 }
 
-Boolean ManagedWindow::set_icon_mask(ManagedWindow::HintInfo& info) {
-    Raster b = style_->icon_mask();
+Boolean ManagedWindow::set_icon_mask(ManagedWindow::HintInfo&) {
+#ifdef notdef
+    Raster_ b = style_->icon_mask();
     if (is_nil(b)) {
 	info.hints->flags &= ~IconMaskHint;
 	info.hints->icon_mask = None;
@@ -1037,6 +1156,7 @@ Boolean ManagedWindow::set_icon_mask(ManagedWindow::HintInfo& info) {
 	info.hints->flags |= IconMaskHint;
 	// info.hints->icon_mask = icon_mask_->rep()->pixmap_;
     }
+#endif
     return true;
 }
 
@@ -1061,7 +1181,7 @@ Boolean ManagedWindow::set_all(ManagedWindow::HintInfo& info) {
 }
 
 void ManagedWindow::wm_normal_hints() {
-    ScreenObjRef s = screen_;
+    ScreenRef s = screen_;
     XSizeHints sizehints;
     if (placed_) {
 	sizehints.flags = USPosition | USSize;
@@ -1122,20 +1242,16 @@ void ManagedWindow::wm_name() {
 }
 
 void ManagedWindow::wm_class() {
-    WindowStyleRef s = style_;
     XClassHint classhint;
-    CharStringRef instance = style_->name();
+    CharString_var instance = style_->name();
     if (is_not_nil(instance)) {
-	StyleValue a_class = style_->resolve(Fresco::string_ref("class"));
-	if (is_not_nil(a_class)) {
-	    CharString classname;
-	    if (a_class->read_string(classname)) {
-		CharStringBuffer cs1(instance);
-		CharStringBuffer cs2(classname);
-		classhint.res_name = (char*)cs1.string();
-		classhint.res_class = (char*)cs2.string();
-		XSetClassHint(display_->xdisplay(), xwindow_, &classhint);
-	    }
+	CharString_var classname = Fresco::get_tmp_string(style_, "class");
+	if (is_not_nil(classname)) {
+	    CharStringBuffer cs1(instance);
+	    CharStringBuffer cs2(classname);
+	    classhint.res_name = (char*)cs1.string();
+	    classhint.res_class = (char*)cs2.string();
+	    XSetClassHint(display_->xdisplay(), xwindow_, &classhint);
 	}
     }
 }
@@ -1164,9 +1280,8 @@ ApplicationWindow::~ApplicationWindow() { }
 void ApplicationWindow::compute_geometry() {
     unsigned int spec = 0;
     if (is_not_nil(style_)) {
-	StyleValue a = style_->resolve(Fresco::string_ref("geometry"));
-	CharString v;
-	if (is_not_nil(a) && a->read_string(v)) {
+	CharString_var v = Fresco::get_tmp_string(style_, "geometry");
+	if (is_not_nil(v)) {
 	    CharStringBuffer g(v);
 	    int x = XCoord(xleft_), y = XCoord(xtop_);
 	    unsigned int xw, xh;
@@ -1195,11 +1310,9 @@ void ApplicationWindow::compute_geometry() {
 }
 
 void ApplicationWindow::set_props() {
-    /*
     DisplayImpl* d = display();
     Fresco* f = d->fresco();
-    XSetCommand(d->xdisplay(), xwindow_, f->argv(), f->argc());
-     */
+    XSetCommand(d->xdisplay(), xwindow_, f->argv(), int(f->argc()));
     ManagedWindow::set_props();
 }
 
@@ -1224,7 +1337,7 @@ TransientWindow::TransientWindow(
 TransientWindow::~TransientWindow() { }
 
 void TransientWindow::set_attributes() {
-    style_->alias(Fresco::string_ref("TransientWindow"));
+    style_->alias(Fresco::tmp_string_ref("TransientWindow"));
     ManagedWindow::set_attributes();
 }
 
@@ -1252,267 +1365,3 @@ IconWindow::IconWindow(
 IconWindow::~IconWindow() { }
 
 void IconWindow::do_map() { }
-
-WindowStyleImpl::WindowStyleImpl(Fresco* f, WindowImpl* w) : impl_(f) {
-    impl_.style_ = this;
-    impl_.lock_ = nil;
-    window_ = w;
-    cursor_ = nil;
-    cursor_foreground_ = nil;
-    cursor_background_ = nil;
-    icon_ = nil;
-    icon_bitmap_ = nil;
-    icon_mask_ = nil;
-}
-
-WindowStyleImpl::~WindowStyleImpl() { }
-
-//+ WindowStyleImpl(FrescoObject::=object_.)
-Long WindowStyleImpl::ref__(Long references) {
-    return object_.ref__(references);
-}
-Tag WindowStyleImpl::attach(FrescoObject_in observer) {
-    return object_.attach(observer);
-}
-void WindowStyleImpl::detach(Tag attach_tag) {
-    object_.detach(attach_tag);
-}
-void WindowStyleImpl::disconnect() {
-    object_.disconnect();
-}
-void WindowStyleImpl::notify_observers() {
-    object_.notify_observers();
-}
-void WindowStyleImpl::update() {
-    object_.update();
-}
-//+
-
-//+ WindowStyleImpl(StyleObj::=impl_.)
-StyleObjRef WindowStyleImpl::_c_new_style() {
-    return impl_._c_new_style();
-}
-StyleObjRef WindowStyleImpl::_c_parent_style() {
-    return impl_._c_parent_style();
-}
-void WindowStyleImpl::link_parent(StyleObj_in parent) {
-    impl_.link_parent(parent);
-}
-void WindowStyleImpl::unlink_parent() {
-    impl_.unlink_parent();
-}
-Tag WindowStyleImpl::link_child(StyleObj_in child) {
-    return impl_.link_child(child);
-}
-void WindowStyleImpl::unlink_child(Tag link_tag) {
-    impl_.unlink_child(link_tag);
-}
-void WindowStyleImpl::merge(StyleObj_in s) {
-    impl_.merge(s);
-}
-CharStringRef WindowStyleImpl::_c_name() {
-    return impl_._c_name();
-}
-void WindowStyleImpl::_c_name(CharString_in _p) {
-    impl_._c_name(_p);
-}
-void WindowStyleImpl::alias(CharString_in s) {
-    impl_.alias(s);
-}
-Boolean WindowStyleImpl::is_on(CharString_in name) {
-    return impl_.is_on(name);
-}
-StyleValueRef WindowStyleImpl::_c_bind(CharString_in name) {
-    return impl_._c_bind(name);
-}
-void WindowStyleImpl::unbind(CharString_in name) {
-    impl_.unbind(name);
-}
-StyleValueRef WindowStyleImpl::_c_resolve(CharString_in name) {
-    return impl_._c_resolve(name);
-}
-StyleValueRef WindowStyleImpl::_c_resolve_wildcard(CharString_in name, StyleObj_in start) {
-    return impl_._c_resolve_wildcard(name, start);
-}
-Long WindowStyleImpl::match(CharString_in name) {
-    return impl_.match(name);
-}
-void WindowStyleImpl::visit_aliases(StyleVisitor_in v) {
-    impl_.visit_aliases(v);
-}
-void WindowStyleImpl::visit_attributes(StyleVisitor_in v) {
-    impl_.visit_attributes(v);
-}
-void WindowStyleImpl::visit_styles(StyleVisitor_in v) {
-    impl_.visit_styles(v);
-}
-void WindowStyleImpl::lock() {
-    impl_.lock();
-}
-void WindowStyleImpl::unlock() {
-    impl_.unlock();
-}
-//+
-
-//+ WindowStyleImpl(WindowStyle::double_buffered=b)
-void WindowStyleImpl::double_buffered(Boolean b) {
-    set_attribute("doubleBuffered", Fresco::string_ref(b ? "true" : "false"));
-}
-
-//+ WindowStyleImpl(WindowStyle::double_buffered?)
-Boolean WindowStyleImpl::double_buffered() {
-    return is_on(Fresco::string_ref("doubleBuffered"));
-}
-
-//+ WindowStyleImpl(WindowStyle::default_cursor=c)
-void WindowStyleImpl::_c_default_cursor(Cursor_in c) {
-    Fresco::unref(cursor_);
-    cursor_ = Cursor::_duplicate(c);
-    XWindow xw = window_->xwindow();
-    if (xw != 0) {
-	XDisplay* dpy = window_->xdisplay();
-	if (is_nil(c)) {
-	    XUndefineCursor(dpy, xw);
-	} else {
-	    // XDefineCursor(dpy, xw, c->rep()->xid(w.display_, w.visual_));
-	}
-	XFlush(dpy);
-    }
-}
-
-//+ WindowStyleImpl(WindowStyle::default_cursor?)
-CursorRef WindowStyleImpl::_c_default_cursor() {
-    Fresco::ref(cursor_);
-    return cursor_;
-}
-
-//+ WindowStyleImpl(WindowStyle::cursor_foreground=)
-void WindowStyleImpl::_c_cursor_foreground(Color_in) {
-}
-
-//+ WindowStyleImpl(WindowStyle::cursor_foreground?)
-ColorRef WindowStyleImpl::_c_cursor_foreground() {
-    return nil;
-}
-
-//+ WindowStyleImpl(WindowStyle::cursor_background=)
-void WindowStyleImpl::_c_cursor_background(Color_in) {
-}
-
-//+ WindowStyleImpl(WindowStyle::cursor_background?)
-ColorRef WindowStyleImpl::_c_cursor_background() {
-    return nil;
-}
-
-//+ WindowStyleImpl(WindowStyle::geometry=g)
-void WindowStyleImpl::_c_geometry(CharString_in g) {
-    set_attribute("geometry", g);
-}
-
-//+ WindowStyleImpl(WindowStyle::geometry?)
-CharStringRef WindowStyleImpl::_c_geometry() {
-    return get_attribute("geometry");
-}
-
-//+ WindowStyleImpl(WindowStyle::icon=w)
-void WindowStyleImpl::_c_icon(Window_in w) {
-    Fresco::unref(icon_);
-    icon_ = Window::_duplicate(w);
-}
-
-//+ WindowStyleImpl(WindowStyle::icon?)
-WindowRef WindowStyleImpl::_c_icon() {
-    return Window::_duplicate(icon_);
-}
-
-//+ WindowStyleImpl(WindowStyle::icon_bitmap=b)
-void WindowStyleImpl::_c_icon_bitmap(Raster_in b) {
-    Fresco::unref(icon_bitmap_);
-    icon_bitmap_ = Raster::_duplicate(b);
-}
-
-//+ WindowStyleImpl(WindowStyle::icon_bitmap?)
-RasterRef WindowStyleImpl::_c_icon_bitmap() {
-    return Raster::_duplicate(icon_bitmap_);
-}
-
-//+ WindowStyleImpl(WindowStyle::icon_mask=m)
-void WindowStyleImpl::_c_icon_mask(Raster_in m) {
-    Fresco::unref(icon_mask_);
-    icon_mask_ = Raster::_duplicate(m);
-}
-
-//+ WindowStyleImpl(WindowStyle::icon_mask?)
-RasterRef WindowStyleImpl::_c_icon_mask() {
-    return Raster::_duplicate(icon_mask_);
-}
-
-//+ WindowStyleImpl(WindowStyle::icon_geometry=g)
-void WindowStyleImpl::_c_icon_geometry(CharString_in g) {
-    set_attribute("iconGeometry", g);
-}
-
-//+ WindowStyleImpl(WindowStyle::icon_geometry?)
-CharStringRef WindowStyleImpl::_c_icon_geometry() {
-    return get_attribute("iconGeometry");
-}
-
-//+ WindowStyleImpl(WindowStyle::icon_name=name)
-void WindowStyleImpl::_c_icon_name(CharString_in name) {
-    set_attribute("iconName", name);
-}
-
-//+ WindowStyleImpl(WindowStyle::icon_name?)
-CharStringRef WindowStyleImpl::_c_icon_name() {
-    return get_attribute("iconName");
-}
-
-//+ WindowStyleImpl(WindowStyle::iconic=b)
-void WindowStyleImpl::iconic(Boolean b) {
-    set_attribute("iconic", Fresco::string_ref(b ? "true" : "false"));
-}
-
-//+ WindowStyleImpl(WindowStyle::iconic?)
-Boolean WindowStyleImpl::iconic() {
-    return is_on(Fresco::string_ref("iconic"));
-}
-
-//+ WindowStyleImpl(WindowStyle::title=t)
-void WindowStyleImpl::_c_title(CharString_in t) {
-    set_attribute("title", t);
-}
-
-//+ WindowStyleImpl(WindowStyle::title?)
-CharStringRef WindowStyleImpl::_c_title() {
-    return get_attribute("title");
-}
-
-//+ WindowStyleImpl(WindowStyle::xor_pixel=p)
-void WindowStyleImpl::xor_pixel(Long p) {
-    StyleValue a = bind(Fresco::string_ref("xor_pixel"));
-    a->write_integer(p);
-}
-
-//+ WindowStyleImpl(WindowStyle::xor_pixel?)
-Long WindowStyleImpl::xor_pixel() {
-    long p = 0;
-    StyleValue a = bind(Fresco::string_ref("xor_pixel"));
-    if (is_not_nil(a)) {
-	a->read_integer(p);
-    }
-    return p;
-}
-
-void WindowStyleImpl::set_attribute(const char* name, CharStringRef value) {
-    StyleValue a = bind(Fresco::string_ref(name));
-    a->write_string(value);
-}
-
-CharStringRef WindowStyleImpl::get_attribute(const char* name) {
-    CharString g = nil;
-    StyleValue a = resolve(Fresco::string_ref(name));
-    if (is_not_nil(a)) {
-	a->read_string(g);
-    }
-    return g;
-}

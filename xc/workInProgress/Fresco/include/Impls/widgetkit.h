@@ -32,9 +32,12 @@
 #include <X11/Fresco/widgets.h>
 #include <X11/Fresco/Impls/fobjects.h>
 #include <X11/Fresco/Impls/viewers.h>
+#include <X11/Fresco/OS/thread.h>
+
+class Fresco;
 
 //- ButtonImpl*
-class ButtonImpl : public ButtonType, public ActiveViewer {
+class ButtonImpl : public Button, public ActiveViewer {
     //. This class implements the Button interface using
     //. the ActiveViewer implementation for noticing when
     //. motion enters or leaves the button.  The button
@@ -54,36 +57,36 @@ public:
     void notify_observers();
     void update();
     /* Glyph */
-    GlyphRef _c_clone_glyph();
-    StyleObjRef _c_style();
-    void _c_style(StyleObj_in _p);
-    TransformObjRef _c_transform();
+    Glyph_return clone_glyph();
+    Style_return glyph_style();
+    void glyph_style(Style_in _p);
+    Transform_return transformation();
     void request(Glyph::Requisition& r);
     void extension(const Glyph::AllocationInfo& a, Region_in r);
-    RegionRef _c_shape();
+    void shape(Region_in r);
     void traverse(GlyphTraversal_in t);
     void draw(GlyphTraversal_in t);
     void pick(GlyphTraversal_in t);
-    GlyphRef _c_body();
-    void _c_body(Glyph_in _p);
-    GlyphOffsetRef _c_append(Glyph_in g);
-    GlyphOffsetRef _c_prepend(Glyph_in g);
+    Glyph_return body();
+    void body(Glyph_in _p);
+    void append(Glyph_in g);
+    void prepend(Glyph_in g);
     Tag add_parent(GlyphOffset_in parent_offset);
     void remove_parent(Tag add_tag);
-    void visit_children(GlyphVisitor_in v);
-    void visit_children_reversed(GlyphVisitor_in v);
-    void visit_parents(GlyphVisitor_in v);
-    void allocations(Glyph::AllocationInfoList& a);
+    GlyphOffset_return first_child_offset();
+    GlyphOffset_return last_child_offset();
+    void parent_offsets(Glyph::OffsetSeq& parents);
+    void allocations(Glyph::AllocationInfoSeq& a);
     void need_redraw();
     void need_redraw_region(Region_in r);
     void need_resize();
     Boolean restore_trail(GlyphTraversal_in t);
     /* Viewer */
-    ViewerRef _c_parent_viewer();
-    ViewerRef _c_next_viewer();
-    ViewerRef _c_prev_viewer();
-    ViewerRef _c_first_viewer();
-    ViewerRef _c_last_viewer();
+    Viewer_return parent_viewer();
+    Viewer_return next_viewer();
+    Viewer_return prev_viewer();
+    Viewer_return first_viewer();
+    Viewer_return last_viewer();
     void append_viewer(Viewer_in v);
     void prepend_viewer(Viewer_in v);
     void insert_viewer(Viewer_in v);
@@ -92,7 +95,7 @@ public:
     void set_viewer_links(Viewer_in parent, Viewer_in prev, Viewer_in next);
     void set_first_viewer(Viewer_in v);
     void set_last_viewer(Viewer_in v);
-    FocusRef _c_request_focus(Viewer_in requestor, Boolean temporary);
+    Focus_return request_focus(Viewer_in requestor, Boolean temporary);
     Boolean receive_focus(Focus_in f, Boolean primary);
     void lose_focus(Boolean temporary);
     Boolean first_focus();
@@ -102,15 +105,14 @@ public:
     Boolean handle(GlyphTraversal_in t, Event_in e);
     void close();
     /* Button */
-    TelltaleRef _c_state();
-    void _c_state(Telltale_in _p);
-    ActionRef _c_click_action();
-    void _c_click_action(Action_in _p);
+    Telltale_return state();
+    void state(Telltale_in _p);
+    Action_return click_action();
+    void click_action(Action_in _p);
     //+
 
     Boolean press(GlyphTraversalRef, EventRef);
     Boolean release(GlyphTraversalRef, EventRef);
-    Boolean inside(GlyphTraversalRef);
 
     void enter();
     void leave();
@@ -125,7 +127,7 @@ protected:
 };
 
 //- TelltaleImpl*
-class TelltaleImpl : public TelltaleType {
+class TelltaleImpl : public Telltale {
     //. The TelltaleImpl class implements the Telltale interface.
 public:
     //- FlagSet
@@ -162,8 +164,8 @@ public:
     void set(Telltale::Flag f);
     void clear(Telltale::Flag f);
     Boolean test(Telltale::Flag f);
-    TelltaleRef _c_current();
-    void _c_current(Telltale_in _p);
+    Telltale_return current();
+    void current(Telltale_in _p);
     //+
 
     //- flags
@@ -204,7 +206,6 @@ public:
     virtual ~Beveler();
 
     void request(Glyph::Requisition& r); //+ Glyph::request
-    void extension(const Glyph::AllocationInfo& a, Region_in r); //+ Glyph::extension
     void traverse(GlyphTraversal_in t); //+ Glyph::traverse
 
     RegionRef allocate_body(GlyphTraversalRef t);
@@ -213,17 +214,17 @@ public:
     );
 
     //- set_color
-    static void set_color(PainterObjRef p, ColorRef c);
+    static void set_color(PainterRef p, ColorRef c);
 	//. Short-hand for ref'ing the color and then setting
 	//. the painter's color.
 
     //- fill_path
-    static void fill_path(PainterObjRef p, Vertex* v, long n);
+    static void fill_path(PainterRef p, Vertex* v, long n);
 	//. Short-hand for filling a path containing the given vertices.
 
     //- rect
     static void rect(
-	PainterObjRef p, Coord thickness,
+	PainterRef p, Coord thickness,
 	ColorRef light, ColorRef medium, ColorRef dark,
 	Coord left, Coord bottom, Coord right, Coord top
     );
@@ -234,7 +235,7 @@ public:
 
     //- left_arrow
     static void left_arrow(
-	PainterObjRef p, Coord thickness,
+	PainterRef p, Coord thickness,
 	ColorRef light, ColorRef medium, ColorRef dark,
 	Coord left, Coord bottom, Coord right, Coord top
     );
@@ -245,7 +246,7 @@ public:
 
     //- right_arrow
     static void right_arrow(
-	PainterObjRef p, Coord thickness,
+	PainterRef p, Coord thickness,
 	ColorRef light, ColorRef medium, ColorRef dark,
 	Coord left, Coord bottom, Coord right, Coord top
     );
@@ -256,7 +257,7 @@ public:
 
     //- up_arrow
     static void up_arrow(
-	PainterObjRef p, Coord thickness,
+	PainterRef p, Coord thickness,
 	ColorRef light, ColorRef medium, ColorRef dark,
 	Coord left, Coord bottom, Coord right, Coord top
     );
@@ -267,7 +268,7 @@ public:
 
     //- down_arrow
     static void down_arrow(
-	PainterObjRef p, Coord thickness,
+	PainterRef p, Coord thickness,
 	ColorRef light, ColorRef medium, ColorRef dark,
 	Coord left, Coord bottom, Coord right, Coord top
     );
@@ -278,7 +279,7 @@ public:
 
     //- diamond
     static void diamond(
-	PainterObjRef p, Coord thickness,
+	PainterRef p, Coord thickness,
 	ColorRef light, ColorRef medium, ColorRef dark,
 	Coord left, Coord bottom, Coord right, Coord top
     );
@@ -291,11 +292,264 @@ protected:
     Boolean hmargin_ : 1, vmargin_ : 1;
     RegionImpl* allocation_;
 
-    Coord thickness(PainterObjRef);
+    Coord thickness(PainterRef);
 };
 
+class Slider;
+class Stepper;
+
+class SliderViewer : public ActiveViewer {
+public:
+    SliderViewer(Fresco*, Slider*);
+    ~SliderViewer();
+
+    /* ActiveViewer */
+    Boolean move(GlyphTraversal_in, Event_in);
+    Boolean press(GlyphTraversal_in, Event_in);
+    Boolean drag(GlyphTraversal_in, Event_in);
+    Boolean release(GlyphTraversal_in, Event_in);
+protected:
+    Slider* slider_;
+    Boolean dragging_ : 1;
+    Boolean aborted_ : 1;
+    Coord xoffset_;
+    Coord yoffset_;
+    Stepper* stepper_;
+};
+
+class Slider : public PolyGlyph {
+public:
+    Slider(Fresco*, StyleRef);
+    ~Slider();
+
+    /* Slider */
+    void normal_thumb(GlyphRef);
+    void visible_thumb(GlyphRef);
+    void old_thumb(GlyphRef);
+
+    Stepper* forward_stepper();
+    Stepper* backward_stepper();
+    ViewerRef viewer();
+
+    /* PolyGlyph */
+    void request(Glyph::Requisition& r); //+ Glyph::request
+    void draw(GlyphTraversal_in t); //+ Glyph::draw
+    void child_allocation(long, Glyph::AllocationInfo&);
+    void update(); //+ FrescoObject::update
+
+    /* For SliderViewer */
+    void move_thumb(GlyphTraversalRef t, EventRef);
+    long hit_thumb(GlyphTraversalRef t, EventRef);
+    void show_old_thumb();
+    void release_thumb();
+    void redraw_thumb();
+
+    virtual Region_return thumb_allocation(Region_in);
+    virtual void move_to(Coord x, Coord y);
+    virtual void begin_adjustment();
+    virtual void commit_adjustment();
+protected:
+    LayoutKit_var layouts_;
+    GlyphOffsetRef normal_thumb_;
+    GlyphOffsetRef visible_thumb_;
+    GlyphOffsetRef old_thumb_;
+    Coord min_thumb_size_;
+    Boolean showing_visible_;
+    Boolean showing_old_thumb_;
+    Stepper* forward_;
+    Stepper* backward_;
+    SliderViewer viewer_;
+    const long old_thumb_index;
+    const long normal_thumb_index;
+    const long visible_thumb_index;
+
+    void forward_stepper(Stepper*);
+    void backward_stepper(Stepper*);
+    void allot_thumb_major_axis(
+	Coord slider_size, Coord slider_lower, Adjustment::Settings&,
+	float& scale, Coord& lower, Coord& upper, float& align
+    );
+    void allot_thumb_minor_axis(
+	Coord lower, Coord upper,
+	Coord& new_lower, Coord& new_upper, float& align
+    );
+    Boolean changed(AdjustmentRef, Adjustment::Settings&);
+
+    virtual RegionRef old_thumb_allocation(RegionRef);
+    virtual Boolean adjustments_changed();
+};
+
+class XSlider : public Slider {
+public:
+    XSlider(Fresco*, StyleRef, AdjustmentRef);
+    ~XSlider();
+
+    void move_to(Coord x, Coord y);
+    RegionRef old_thumb_allocation(RegionRef);
+    RegionRef thumb_allocation(RegionRef);
+    void disconnect();
+    void begin_adjustment();
+    void commit_adjustment();
+protected:
+    AdjustmentRef adjustment_;
+    Tag tag_;
+    float xscale_;
+    Adjustment::Settings settings_;
+    Adjustment::Settings old_settings_;
+
+    RegionRef allocate_thumb(RegionRef, Adjustment::Settings&);
+    Boolean adjustments_changed();
+};
+
+class YSlider : public Slider {
+public:
+    YSlider(Fresco*, StyleRef, AdjustmentRef);
+    ~YSlider();
+
+    void move_to(Coord x, Coord y);
+    RegionRef old_thumb_allocation(RegionRef);
+    RegionRef thumb_allocation(RegionRef);
+    void disconnect();
+    void begin_adjustment();
+    void commit_adjustment();
+protected:
+    AdjustmentRef adjustment_;
+    Tag tag_;
+    float yscale_;
+    Adjustment::Settings settings_;
+    Adjustment::Settings old_settings_;
+
+    RegionRef allocate_thumb(RegionRef, Adjustment::Settings&);
+    Boolean adjustments_changed();
+};
+
+class XYSlider : public Slider {
+public:
+    XYSlider(Fresco*, StyleRef, AdjustmentRef x, AdjustmentRef y);
+    ~XYSlider();
+
+    void move_to(Coord x, Coord y);
+    RegionRef old_thumb_allocation(RegionRef);
+    RegionRef thumb_allocation(RegionRef);
+    void disconnect();
+    void begin_adjustment();
+    void commit_adjustment();
+protected:
+    AdjustmentRef x_adjustment_;
+    AdjustmentRef y_adjustment_;
+    Tag x_tag_;
+    Tag y_tag_;
+    float xscale_;
+    float yscale_;
+    Adjustment::Settings x_settings_;
+    Adjustment::Settings y_settings_;
+    Adjustment::Settings x_old_settings_;
+    Adjustment::Settings y_old_settings_;
+
+    RegionRef allocate_thumb(
+	RegionRef, Adjustment::Settings& x, Adjustment::Settings& y
+    );
+    Boolean adjustments_changed();
+};
+
+class BoundedFloat : public Adjustment {
+public:
+    BoundedFloat(float lower, float upper, float initial);
+    ~BoundedFloat();
+
+    //+ Adjustment::*
+    /* FrescoObject */
+    Long ref__(Long references);
+    Tag attach(FrescoObject_in observer);
+    void detach(Tag attach_tag);
+    void disconnect();
+    void notify_observers();
+    void update();
+    /* Adjustment */
+    Coord small_scroll();
+    void small_scroll(Coord _p);
+    Coord large_scroll();
+    void large_scroll(Coord _p);
+    void get_settings(Adjustment::Settings& s);
+    void begin();
+    void commit();
+    void cancel();
+    void scroll_forward();
+    void scroll_backward();
+    void page_forward();
+    void page_backward();
+    void scroll_to(Coord lower);
+    void scroll_by(Coord delta);
+    void scale_to(Coord length);
+    void constrain(Coord& c);
+    //+
+protected:
+    SharedFrescoObjectImpl object_;
+    float value_;
+    float lower_;
+    float span_;
+    Coord scroll_incr_;
+    Coord page_incr_;
+    Adjustment::Settings saved_;
+};
+
+//- Stepper*
+class Stepper : public ButtonImpl {
+    //. The stepper class implements a button with autorepeat.
+public:
+    Stepper(Fresco*, StyleRef, TelltaleRef, ActionRef = nil);
+    ~Stepper();
+
+    Boolean press(GlyphTraversal_in, Event_in);
+    Boolean release(GlyphTraversal_in, Event_in);
+
+    void start_stepping();
+    void stop_stepping();
+protected:
+    long start_delay_;
+    long next_delay_;
+    ThreadKit_var threads_;
+    LockObj_var lock_;
+    ThreadObj_var ticker_;
+
+    virtual void adjust();
+    void tick();
+};
+
+#define declareAdjustStepper(StepperSubclassName) \
+class StepperSubclassName : public Stepper { \
+public: \
+    StepperSubclassName(Fresco*, StyleRef, TelltaleRef, AdjustmentRef); \
+    ~StepperSubclassName(); \
+\
+    void adjust(); \
+protected: \
+    Adjustment_var adjustment_; \
+};
+
+declareAdjustStepper(ForwardScroller)
+declareAdjustStepper(BackwardScroller)
+declareAdjustStepper(ForwardPager)
+declareAdjustStepper(BackwardPager)
+
+#define declareArrowGlyph(ArrowSubclassName) \
+class ArrowSubclassName : public GlyphImpl { \
+public: \
+    ArrowSubclassName(ColorRef); \
+    ~ArrowSubclassName(); \
+\
+    void draw(GlyphTraversal_in); \
+protected: \
+    Color_var color_; \
+};
+
+declareArrowGlyph(UpArrow)
+declareArrowGlyph(DownArrow)
+declareArrowGlyph(LeftArrow)
+declareArrowGlyph(RightArrow)
+
 //- WidgetKitImpl*
-class WidgetKitImpl : public WidgetKitType {
+class WidgetKitImpl : public WidgetKit {
     //. WidgetKitImpl provides an implementation of the WidgetKit
     //. interface that creates objects with a Motif-like look and feel.
     //. The bevelled look is slightly enhanced by using several levels
@@ -313,32 +567,34 @@ public:
     void notify_observers();
     void update();
     /* WidgetKit */
-    GlyphRef _c_inset_frame(Glyph_in g);
-    GlyphRef _c_outset_frame(Glyph_in g);
-    GlyphRef _c_bright_inset_frame(Glyph_in g);
-    ViewerRef _c_label(CharString_in s);
-    MenuRef _c_menubar();
-    MenuRef _c_pulldown();
-    MenuRef _c_pullright();
-    MenuItemRef _c_menubar_item(Glyph_in g);
-    MenuItemRef _c_menu_item(Glyph_in g);
-    MenuItemRef _c_check_menu_item(Glyph_in g);
-    MenuItemRef _c_radio_menu_item(Glyph_in g, Telltale_in group);
-    MenuItemRef _c_menu_item_separator();
-    TelltaleRef _c_telltale_group();
-    ButtonRef _c_push_button(Glyph_in g, Action_in a);
-    ButtonRef _c_default_button(Glyph_in g, Action_in a);
-    ButtonRef _c_palette_button(Glyph_in g, Action_in a);
-    ButtonRef _c_check_box(Glyph_in g, Action_in a);
-    ButtonRef _c_radio_button(Glyph_in g, Action_in a, Telltale_in group);
-    ViewerRef _c_slider(Axis a, Adjustment_in adj);
-    ViewerRef _c_scroll_bar(Axis a, Adjustment_in adj);
-    ViewerRef _c_panner(Adjustment_in x, Adjustment_in y);
-    ButtonRef _c_zoomer(Coord scale, Adjustment_in x, Adjustment_in y, Adjustment_in z);
-    ButtonRef _c_up_mover(Adjustment_in a);
-    ButtonRef _c_down_mover(Adjustment_in a);
-    ButtonRef _c_left_mover(Adjustment_in a);
-    ButtonRef _c_right_mover(Adjustment_in a);
+    Glyph_return inset_frame(Glyph_in g);
+    Glyph_return outset_frame(Glyph_in g);
+    Glyph_return bright_inset_frame(Glyph_in g);
+    Viewer_return label(CharString_in s);
+    Menu_return menubar();
+    Menu_return pulldown();
+    Menu_return pullright();
+    MenuItem_return menubar_item(Glyph_in g);
+    MenuItem_return menu_item(Glyph_in g);
+    MenuItem_return check_menu_item(Glyph_in g);
+    MenuItem_return radio_menu_item(Glyph_in g, Telltale_in group);
+    MenuItem_return menu_item_separator();
+    Telltale_return telltale_group();
+    Button_return push_button(Glyph_in g, Action_in a);
+    Button_return default_button(Glyph_in g, Action_in a);
+    Button_return palette_button(Glyph_in g, Action_in a);
+    Button_return check_box(Glyph_in g, Action_in a);
+    Button_return radio_button(Glyph_in g, Action_in a, Telltale_in group);
+    Adjustment_return bounded_float(Float lower, Float upper, Float initial);
+    Viewer_return slider(Axis a, Adjustment_in adj);
+    Viewer_return scroll_bar(Axis a, Adjustment_in adj);
+    Viewer_return panner(Adjustment_in x, Adjustment_in y);
+    Button_return zoomer(Coord scale, Adjustment_in x, Adjustment_in y, Adjustment_in z);
+    Button_return up_mover(Adjustment_in a);
+    Button_return down_mover(Adjustment_in a);
+    Button_return left_mover(Adjustment_in a);
+    Button_return right_mover(Adjustment_in a);
+    Viewer_return viewer_group(Glyph_in g);
     //+
 
     struct Info {
@@ -349,28 +605,29 @@ public:
 	Coord slider_size;
 	Coord min_button_width;
 	long num_colors;
-	FontRef font;
-	ColorRef* color;
-	RasterRef checkmark;
-	ColorRef checkmark_color;
-	RasterRef shadow1;
-	RasterRef shadow2;
+	Font_var font;
+	Color_var* color;
+	Raster_var checkmark;
+	Color_var checkmark_color;
+	Raster_var shadow1;
+	Raster_var shadow2;
     };
 
     ColorRef brightness(ColorRef c, float adjust);
 protected:
     SharedFrescoObjectImpl object_;
     Fresco* fresco_;
-    StyleObjRef style_;
+    Style_var style_;
     WidgetKitImpl::Info info_;
 
     void load();
-    RasterRef make_bitmap(
-	DrawingKitRef, const char*, unsigned int width, unsigned int height
+    Raster_return make_bitmap(
+	DrawingKitRef, unsigned char*, unsigned int width, unsigned int height
     );
     void load_coord(const char*, Coord&);
     void load_float(const char*, float&);
     void unload();
+    void make_thumb(Slider*, Axis);
 };
 
 #endif

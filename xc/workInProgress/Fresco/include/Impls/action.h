@@ -27,7 +27,7 @@
 #include <X11/Fresco/Impls/fobjects.h>
 
 //- ActionImpl*
-class ActionImpl : public ActionType {
+class ActionImpl : public Action {
     //. ActionImpl provides a common implementation for actions.
 public:
     ActionImpl();

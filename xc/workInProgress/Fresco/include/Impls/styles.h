@@ -35,11 +35,11 @@ class StyleValueTableEntry;
 class Fresco;
 class StyleList;
 
-declarePtrList(StringList,CharStringType)
+declarePtrList(StringList,CharString)
 
 typedef StringList PathName;
 
-class StyleValueImpl : public StyleValueType {
+class StyleValueImpl : public StyleValue {
 public:
     StyleValueImpl(Fresco*, CharStringRef name, PathName* path);
     ~StyleValueImpl();
@@ -53,7 +53,7 @@ public:
     void notify_observers();
     void update();
     /* StyleValue */
-    CharStringRef _c_name();
+    CharString_return name();
     Boolean uninitialized();
     Long priority();
     void priority(Long _p);
@@ -66,9 +66,9 @@ public:
     void write_integer(Long i);
     Boolean read_real(Double& d);
     void write_real(Double d);
-    Boolean _c_read_string(CharStringRef& s);
+    Boolean read_string(CharString_out& s);
     void write_string(CharString_in s);
-    Boolean _c_read_value(FrescoObjectRef& s);
+    Boolean read_value(FrescoObject_out& s);
     void write_value(FrescoObject_in s);
     void lock();
     void unlock();
@@ -100,22 +100,22 @@ public:
     SharedStyleImpl(Fresco*);
     ~SharedStyleImpl();
 
-    //+ StyleObj::=
-    StyleObjRef _c_new_style();
-    StyleObjRef _c_parent_style();
-    void link_parent(StyleObj_in parent);
+    //+ Style::=
+    Style_return new_style();
+    Style_return parent_style();
+    void link_parent(Style_in parent);
     void unlink_parent();
-    Tag link_child(StyleObj_in child);
+    Tag link_child(Style_in child);
     void unlink_child(Tag link_tag);
-    void merge(StyleObj_in s);
-    CharStringRef _c_name();
-    void _c_name(CharString_in _p);
+    void merge(Style_in s);
+    CharString_return name();
+    void name(CharString_in _p);
     void alias(CharString_in s);
     Boolean is_on(CharString_in name);
-    StyleValueRef _c_bind(CharString_in name);
+    StyleValue_return bind(CharString_in name);
     void unbind(CharString_in name);
-    StyleValueRef _c_resolve(CharString_in name);
-    StyleValueRef _c_resolve_wildcard(CharString_in name, StyleObj_in start);
+    StyleValue_return resolve(CharString_in name);
+    StyleValue_return resolve_wildcard(CharString_in name, Style_in start);
     Long match(CharString_in name);
     void visit_aliases(StyleVisitor_in v);
     void visit_attributes(StyleVisitor_in v);
@@ -125,26 +125,26 @@ public:
     //+
 
     struct Info {
-	StyleObjRef child;
+	StyleRef child;
 	Tag tag;
     };
 
     Fresco* fresco_;
-    StyleObjRef style_;
-    LockObj lock_;
+    StyleRef style_;
+    LockObj_var lock_;
 
     void load_file(const char* filename, Long priority);
     void load_list(const char* str, Long length, Long priority);
     void load_property(const char* property, Long length, Long priority);
 
-    StyleValueRef wildcard_match(StyleValueTableEntry* e, StyleObjRef start);
+    StyleValueRef wildcard_match(StyleValueTableEntry* e, StyleRef start);
     StyleValueRef wildcard_match_name(
-	CharStringRef name, StyleValueTableEntry*, StyleObjRef cur
+	CharStringRef name, StyleValueTableEntry*, StyleRef cur
     );
 protected:
     CharStringRef name_;
     PathName* aliases_;
-    StyleObjRef parent_;
+    StyleRef parent_;
     Tag links_;
     Tag unlink_;
     StyleValueTable* table_;
@@ -164,19 +164,19 @@ protected:
 
     StyleValueTableEntry* find_tail_entry(PathName*, Boolean force);
     StyleValueTableEntry* find_entry(CharStringRef, Boolean force);
-    long finish_wildcard_match(StyleObjRef, PathName*, long p_index);
+    long finish_wildcard_match(StyleRef, PathName*, long p_index);
 };
 
 /*
  * StyleImpl is an implementation of Style that can be constructed directly.
  */
 
-class StyleImpl : public StyleObjType {
+class StyleImpl : public Style {
 public:
     StyleImpl(Fresco*);
     ~StyleImpl();
 
-    //+ StyleObj::*
+    //+ Style::*
     /* FrescoObject */
     Long ref__(Long references);
     Tag attach(FrescoObject_in observer);
@@ -184,22 +184,22 @@ public:
     void disconnect();
     void notify_observers();
     void update();
-    /* StyleObj */
-    StyleObjRef _c_new_style();
-    StyleObjRef _c_parent_style();
-    void link_parent(StyleObj_in parent);
+    /* Style */
+    Style_return new_style();
+    Style_return parent_style();
+    void link_parent(Style_in parent);
     void unlink_parent();
-    Tag link_child(StyleObj_in child);
+    Tag link_child(Style_in child);
     void unlink_child(Tag link_tag);
-    void merge(StyleObj_in s);
-    CharStringRef _c_name();
-    void _c_name(CharString_in _p);
+    void merge(Style_in s);
+    CharString_return name();
+    void name(CharString_in _p);
     void alias(CharString_in s);
     Boolean is_on(CharString_in name);
-    StyleValueRef _c_bind(CharString_in name);
+    StyleValue_return bind(CharString_in name);
     void unbind(CharString_in name);
-    StyleValueRef _c_resolve(CharString_in name);
-    StyleValueRef _c_resolve_wildcard(CharString_in name, StyleObj_in start);
+    StyleValue_return resolve(CharString_in name);
+    StyleValue_return resolve_wildcard(CharString_in name, Style_in start);
     Long match(CharString_in name);
     void visit_aliases(StyleVisitor_in v);
     void visit_attributes(StyleVisitor_in v);
@@ -209,6 +209,7 @@ public:
     //+
 protected:
     LockedFrescoObjectImpl object_;
+public:
     SharedStyleImpl impl_;
 };
 
@@ -219,7 +220,7 @@ protected:
  * and just redefine the desired iteration method or methods.
  */
 
-class StyleVisitorImpl : public StyleVisitorType {
+class StyleVisitorImpl : public StyleVisitor {
 public:
     StyleVisitorImpl();
     ~StyleVisitorImpl();
@@ -235,7 +236,7 @@ public:
     /* StyleVisitor */
     Boolean visit_alias(CharString_in name);
     Boolean visit_attribute(StyleValue_in a);
-    Boolean visit_style(StyleObj_in s);
+    Boolean visit_style(Style_in s);
     //+
 protected:
     SharedFrescoObjectImpl object_;

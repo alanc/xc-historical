@@ -50,7 +50,7 @@ implementList(VertexList,Vertex)
 
 class FigureStyleImpl;
 
-class FigureKitImpl : public FigureKitType {
+class FigureKitImpl : public FigureKit {
 public:
     FigureKitImpl(Fresco*);
     ~FigureKitImpl();
@@ -64,29 +64,29 @@ public:
     void notify_observers();
     void update();
     /* FigureKit */
-    FigureStyleRef _c_default_style();
-    FigureStyleRef _c_new_style(StyleObj_in parent);
-    GlyphRef _c_figure_root(Glyph_in child);
-    GlyphRef _c_label(FigureStyle_in s, CharString_in str);
-    GlyphRef _c_point(FigureStyle_in s, Coord x, Coord y);
-    GlyphRef _c_line(FigureStyle_in s, Coord x0, Coord y0, Coord x1, Coord y1);
-    GlyphRef _c_rectangle(FigureKit::Mode m, FigureStyle_in s, Coord left, Coord bottom, Coord right, Coord top);
-    GlyphRef _c_circle(FigureKit::Mode m, FigureStyle_in s, Coord x, Coord y, Coord r);
-    GlyphRef _c_ellipse(FigureKit::Mode m, FigureStyle_in s, Coord x, Coord y, Coord r1, Coord r2);
-    GlyphRef _c_open_bspline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v);
-    GlyphRef _c_closed_bspline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v);
-    GlyphRef _c_multiline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v);
-    GlyphRef _c_polygon(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v);
-    GlyphRef _c_fitter(Glyph_in g);
-    GlyphRef _c_group();
+    FigureStyle_return default_style();
+    FigureStyle_return new_style(Style_in parent);
+    Glyph_return figure_root(Glyph_in child);
+    Glyph_return label(FigureStyle_in s, CharString_in str);
+    Glyph_return point(FigureStyle_in s, Coord x, Coord y);
+    Glyph_return line(FigureStyle_in s, Coord x0, Coord y0, Coord x1, Coord y1);
+    Glyph_return rectangle(FigureKit::Mode m, FigureStyle_in s, Coord left, Coord bottom, Coord right, Coord top);
+    Glyph_return circle(FigureKit::Mode m, FigureStyle_in s, Coord x, Coord y, Coord r);
+    Glyph_return ellipse(FigureKit::Mode m, FigureStyle_in s, Coord x, Coord y, Coord r1, Coord r2);
+    Glyph_return open_bspline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v);
+    Glyph_return closed_bspline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v);
+    Glyph_return multiline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v);
+    Glyph_return polygon(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v);
+    Glyph_return fitter(Glyph_in g);
+    Glyph_return group();
     //+
 protected:
     SharedFrescoObjectImpl object_;
     Fresco* fresco_;
-    FigureStyle style_;
+    FigureStyle_var style_;
 };
 
-class FigureStyleImpl : public FigureStyleType {
+class FigureStyleImpl : public FigureStyle {
 public:
     FigureStyleImpl(Fresco*);
     ~FigureStyleImpl();
@@ -99,22 +99,22 @@ public:
     void disconnect();
     void notify_observers();
     void update();
-    /* StyleObj */
-    StyleObjRef _c_new_style();
-    StyleObjRef _c_parent_style();
-    void link_parent(StyleObj_in parent);
+    /* Style */
+    Style_return new_style();
+    Style_return parent_style();
+    void link_parent(Style_in parent);
     void unlink_parent();
-    Tag link_child(StyleObj_in child);
+    Tag link_child(Style_in child);
     void unlink_child(Tag link_tag);
-    void merge(StyleObj_in s);
-    CharStringRef _c_name();
-    void _c_name(CharString_in _p);
+    void merge(Style_in s);
+    CharString_return name();
+    void name(CharString_in _p);
     void alias(CharString_in s);
     Boolean is_on(CharString_in name);
-    StyleValueRef _c_bind(CharString_in name);
+    StyleValue_return bind(CharString_in name);
     void unbind(CharString_in name);
-    StyleValueRef _c_resolve(CharString_in name);
-    StyleValueRef _c_resolve_wildcard(CharString_in name, StyleObj_in start);
+    StyleValue_return resolve(CharString_in name);
+    StyleValue_return resolve_wildcard(CharString_in name, Style_in start);
     Long match(CharString_in name);
     void visit_aliases(StyleVisitor_in v);
     void visit_attributes(StyleVisitor_in v);
@@ -122,22 +122,26 @@ public:
     void lock();
     void unlock();
     /* FigureStyle */
-    ColorRef _c_background();
-    void _c_background(Color_in _p);
-    BrushRef _c_brush_attr();
-    void _c_brush_attr(Brush_in _p);
-    FontRef _c_font_attr();
-    void _c_font_attr(Font_in _p);
-    ColorRef _c_foreground();
-    void _c_foreground(Color_in _p);
+    Color_return background();
+    void background(Color_in _p);
+    Brush_return brush_attr();
+    void brush_attr(Brush_in _p);
+    Font_return font_attr();
+    void font_attr(Font_in _p);
+    Color_return foreground();
+    void foreground(Color_in _p);
     //+
+
+    DrawingKit_return drawing_kit() {
+	return style_.fresco_->drawing_kit();
+    }
 private:
     LockedFrescoObjectImpl object_;
     SharedStyleImpl style_;
-    Color background_;
-    Brush brush_;
-    Font font_;
-    Color foreground_;
+    Color_var background_;
+    Brush_var brush_;
+    Font_var font_;
+    Color_var foreground_;
 };
 
 FigureKitRef FrescoImpl::create_figure_kit() {
@@ -146,7 +150,7 @@ FigureKitRef FrescoImpl::create_figure_kit() {
 
 FigureKitImpl::FigureKitImpl(Fresco* f) {
     fresco_ = f;
-    style_ = new_style(f->drawing_kit()->style());
+    style_ = new_style(_tmp(_tmp(f->drawing_kit())->drawing_style()));
 }
 
 FigureKitImpl::~FigureKitImpl() { }
@@ -173,36 +177,36 @@ void FigureKitImpl::update() {
 //+
 
 //+ FigureKitImpl(FigureKit::default_style)
-FigureStyleRef FigureKitImpl::_c_default_style() {
+FigureStyle_return FigureKitImpl::default_style() {
     return FigureStyle::_duplicate(style_->_obj());
 }
 
 //+ FigureKitImpl(FigureKit::new_style)
-FigureStyleRef FigureKitImpl::_c_new_style(StyleObj_in parent) {
+FigureStyle_return FigureKitImpl::new_style(Style_in parent) {
     FigureStyleImpl* fs = new FigureStyleImpl(fresco_);
     fs->link_parent(parent);
     return fs;
 }
 
 //+ FigureKitImpl(FigureKit::figure_root)
-GlyphRef FigureKitImpl::_c_figure_root(Glyph_in child) {
+Glyph_return FigureKitImpl::figure_root(Glyph_in child) {
     GlyphRef g = new TransformAllocator(0.5, 0.5, 0.5, 0.5, 0.5, 0.5);
     g->body(child);
     return g;
 }
 
 //+ FigureKitImpl(FigureKit::label)
-GlyphRef FigureKitImpl::_c_label(FigureStyle_in s, CharString_in str) {
+Glyph_return FigureKitImpl::label(FigureStyle_in s, CharString_in str) {
     return new FigureLabel(s, str);
 }
 
 //+ FigureKitImpl(FigureKit::point)
-GlyphRef FigureKitImpl::_c_point(FigureStyle_in s, Coord x, Coord y) {
-    return _c_line(s, x, y, x, y);
+Glyph_return FigureKitImpl::point(FigureStyle_in s, Coord x, Coord y) {
+    return line(s, x, y, x, y);
 }
 
 //+ FigureKitImpl(FigureKit::line)
-GlyphRef FigureKitImpl::_c_line(FigureStyle_in s, Coord x0, Coord y0, Coord x1, Coord y1) {
+Glyph_return FigureKitImpl::line(FigureStyle_in s, Coord x0, Coord y0, Coord x1, Coord y1) {
     Figure* f = new Figure(FigureKit::stroke, s, false, false, 2);
     f->add_point(x0, y0);
     f->add_point(x1, y1);
@@ -210,7 +214,7 @@ GlyphRef FigureKitImpl::_c_line(FigureStyle_in s, Coord x0, Coord y0, Coord x1, 
 }
 
 //+ FigureKitImpl(FigureKit::rectangle)
-GlyphRef FigureKitImpl::_c_rectangle(FigureKit::Mode m, FigureStyle_in s, Coord left, Coord bottom, Coord right, Coord top) {
+Glyph_return FigureKitImpl::rectangle(FigureKit::Mode m, FigureStyle_in s, Coord left, Coord bottom, Coord right, Coord top) {
     Figure* f = new Figure(m, s, true, false, 4);
     f->add_point(left, bottom);
     f->add_point(left, top);
@@ -222,7 +226,7 @@ GlyphRef FigureKitImpl::_c_rectangle(FigureKit::Mode m, FigureStyle_in s, Coord 
 static const float magic = 0.5522847498307934; // 4/3 * (sqrt(2) - 1)
 
 //+ FigureKitImpl(FigureKit::circle)
-GlyphRef FigureKitImpl::_c_circle(FigureKit::Mode m, FigureStyle_in s, Coord x, Coord y, Coord r) {
+Glyph_return FigureKitImpl::circle(FigureKit::Mode m, FigureStyle_in s, Coord x, Coord y, Coord r) {
     float r0 = magic * r;
 
     Figure* f = new Figure(m, s, true, true, 25);
@@ -241,7 +245,7 @@ static const float p3 = 0.51763809;   // cos 60 * sqrt(1 + tan 15 * tan 15)
 static const float p4 = 0.26794919;   // tan 15
 
 //+ FigureKitImpl(FigureKit::ellipse)
-GlyphRef FigureKitImpl::_c_ellipse(FigureKit::Mode m, FigureStyle_in s, Coord x, Coord y, Coord r1, Coord r2) {
+Glyph_return FigureKitImpl::ellipse(FigureKit::Mode m, FigureStyle_in s, Coord x, Coord y, Coord r1, Coord r2) {
     float px0 = p0 * r1, py0 = p0 * r2;
     float px1 = p1 * r1, py1 = p1 * r2;
     float px2 = p2 * r1, py2 = p2 * r2;
@@ -262,7 +266,7 @@ GlyphRef FigureKitImpl::_c_ellipse(FigureKit::Mode m, FigureStyle_in s, Coord x,
 }
 
 //+ FigureKitImpl(FigureKit::open_bspline)
-GlyphRef FigureKitImpl::_c_open_bspline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v) {
+Glyph_return FigureKitImpl::open_bspline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v) {
     long n = v._length;
     Vertex* vv = v._buffer;
     Figure* f = new Figure(m, s, false, true, (n + 2) * 3 + 1);
@@ -283,7 +287,7 @@ GlyphRef FigureKitImpl::_c_open_bspline(FigureKit::Mode m, FigureStyle_in s, con
 }
 
 //+ FigureKitImpl(FigureKit::closed_bspline)
-GlyphRef FigureKitImpl::_c_closed_bspline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v) {
+Glyph_return FigureKitImpl::closed_bspline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v) {
     long n = v._length;
     Vertex* vv = v._buffer;
     Figure* f = new Figure(m, s, true, true, n * 3 + 1);
@@ -305,7 +309,7 @@ GlyphRef FigureKitImpl::_c_closed_bspline(FigureKit::Mode m, FigureStyle_in s, c
 }
 
 //+ FigureKitImpl(FigureKit::multiline)
-GlyphRef FigureKitImpl::_c_multiline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v) {
+Glyph_return FigureKitImpl::multiline(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v) {
     long n = v._length;
     Vertex* vv = v._buffer;
     Figure* f = new Figure(m, s, false, false, n);
@@ -317,7 +321,7 @@ GlyphRef FigureKitImpl::_c_multiline(FigureKit::Mode m, FigureStyle_in s, const 
 }
 
 //+ FigureKitImpl(FigureKit::polygon)
-GlyphRef FigureKitImpl::_c_polygon(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v) {
+Glyph_return FigureKitImpl::polygon(FigureKit::Mode m, FigureStyle_in s, const FigureKit::Vertices& v) {
     long n = v._length;
     Vertex* vv = v._buffer;
     Figure* f = new Figure(m, s, true, false, n);
@@ -329,13 +333,13 @@ GlyphRef FigureKitImpl::_c_polygon(FigureKit::Mode m, FigureStyle_in s, const Fi
 }
 
 //+ FigureKitImpl(FigureKit::fitter)
-GlyphRef FigureKitImpl::_c_fitter(Glyph_in g) {
+Glyph_return FigureKitImpl::fitter(Glyph_in g) {
     /* unimplemented */
     return g;
 }
 
 //+ FigureKitImpl(FigureKit::group)
-GlyphRef FigureKitImpl::_c_group() {
+Glyph_return FigureKitImpl::group() {
     return new PolyFigure;
 }
 
@@ -424,62 +428,76 @@ void Figure::Bspline_curve_to(
     add_curve((p1x + p2x) / 2, (p1y + p2y) / 2, p3x, p3y, p1x, p1y);
 }
 
-//+ Figure(Glyph::transform)
-TransformObjRef Figure::_c_transform() {
-    return TransformObj::_duplicate(tx_->_obj());
+//+ Figure(Glyph::transformation)
+Transform_return Figure::transformation() {
+    return Transform::_duplicate(tx_->_obj());
 }
 
 //+ Figure(Glyph::request)
 void Figure::request(Glyph::Requisition& r) {
     if (v_->count() > 0) {
 	RegionImpl region;
+	region.defined_ = true;
 	region.lower_ = vmin_;
 	region.upper_ = vmax_;
 	region.xalign_ = region.yalign_ = region.zalign_ = 0;
-	region.transform(tx_);
+	region.apply_transform(tx_);
 	Coord x_lead = -region.lower_.x, x_trail = region.upper_.x;
 	Coord y_lead = -region.lower_.y, y_trail = region.upper_.y;
+	Coord z_lead = -region.lower_.z, z_trail = region.upper_.z;
 	GlyphImpl::require_lead_trail(
 	    r.x, x_lead, x_lead, x_lead, x_trail, x_trail, x_trail
 	);
 	GlyphImpl::require_lead_trail(
 	    r.y, y_lead, y_lead, y_lead, y_trail, y_trail, y_trail
 	);
+	GlyphImpl::require_lead_trail(
+	    r.z, z_lead, z_lead, z_lead, z_trail, z_trail, z_trail
+	);
     } else {
 	r.x.defined = false;
 	r.y.defined = false;
+	r.z.defined = false;
     }
 }
 
 //+ Figure(Glyph::extension)
 void Figure::extension(const Glyph::AllocationInfo& a, Region_in r) {
-    RegionImpl region;
     if (v_->count() > 0) {
-	TransformImpl t;
-	if (is_not_nil(a.transform)) {
-	    t.load(a.transform);
-	}
-	t.premultiply(tx_);
-
+	RegionImpl region;
+	region.defined_ = true;
 	region.lower_ = vmin_;
 	region.upper_ = vmax_;
 	region.xalign_ = region.yalign_ = region.zalign_ = 0;
-	region.transform(&t);
-    } else {
-	region.lower_.x = 1e6;
-	region.lower_.y = region.lower_.x;
-	region.upper_.x = -region.lower_.x;
-	region.upper_.y = -region.lower_.y;
+	if (mode_ == FigureKit::stroke || mode_ == FigureKit::fill_stroke) {
+	    Coord w = 1.0;
+	    Brush_var b = style_->brush_attr();
+	    if (is_not_nil(b)) {
+		Coord bw = b->width();
+		if (!Math::equal(bw, float(0), float(1e-2))) {
+		    w = bw;
+		}
+	    }
+	    region.lower_.x -= w; region.upper_.x += w;
+	    region.lower_.y -= w; region.upper_.y += w;
+	    region.lower_.z -= w; region.upper_.z += w;
+	}
+	TransformImpl t;
+	if (is_not_nil(a.transformation)) {
+	    t.load(a.transformation);
+	}
+	t.premultiply(tx_);
+	region.apply_transform(&t);
+	r->merge_union(&region);
     }
-    r->merge_union(&region);
 }
 
 //+ Figure(Glyph::draw)
 void Figure::draw(GlyphTraversal_in t) {
     if (v_->count() > 0) {
-	PainterObj p = t->painter();
+	Painter_var p = t->current_painter();
 	p->push_matrix();
-	p->transform(tx_);
+	p->premultiply(tx_);
 
 	/*
 	 * Should do bounding box culling here.  The bounding box is
@@ -508,10 +526,10 @@ void Figure::draw(GlyphTraversal_in t) {
             p->close_path();
         }
 	if (mode_ == FigureKit::stroke || mode_ == FigureKit::fill_stroke) {
-	    p->brush_attr(style_->brush_attr());
+	    p->current_brush(style_->brush_attr());
 	}
 	if (mode_ == FigureKit::fill || mode_ == FigureKit::stroke) {
-	    p->color_attr(style_->foreground());
+	    p->current_color(style_->foreground());
 	}
 	switch (mode_) {
 	case FigureKit::fill:
@@ -521,9 +539,9 @@ void Figure::draw(GlyphTraversal_in t) {
 	    p->stroke();
 	    break;
 	case FigureKit::fill_stroke:
-	    p->color_attr(style_->background());
+	    p->current_color(style_->background());
 	    p->fill();
-	    p->color_attr(style_->foreground());
+	    p->current_color(style_->foreground());
 	    p->stroke();
 	    break;
 	}
@@ -538,10 +556,11 @@ void Figure::draw(GlyphTraversal_in t) {
 //+ Figure(Glyph::pick)
 void Figure::pick(GlyphTraversal_in t) {
     if (v_->count() > 0) {
-	PainterObj p = t->painter();
+	Painter_var p = t->current_painter();
 	p->push_matrix();
-	p->transform(tx_);
+	p->premultiply(tx_);
 	RegionImpl bbox;
+	bbox.defined_ = true;
 	bbox.lower_ = vmin_;
 	bbox.upper_ = vmax_;
 	bbox.xalign_ = 0;
@@ -567,7 +586,6 @@ void Figure::reset() {
 PolyFigure::PolyFigure() {
     tx_ = new TransformImpl;
     bbox_ = new RegionImpl;
-    bbox_cached_ = false;
 }
 
 PolyFigure::PolyFigure(PolyFigure* pf) {
@@ -575,7 +593,7 @@ PolyFigure::PolyFigure(PolyFigure* pf) {
     tx_->load(pf->tx_);
     bbox_ = new RegionImpl;
     bbox_->copy(pf->bbox_);
-    bbox_cached_ = pf->bbox_cached_;
+    bbox_->defined_ = pf->bbox_->defined_;
 }
 
 PolyFigure::~PolyFigure() {
@@ -584,75 +602,80 @@ PolyFigure::~PolyFigure() {
 }
 
 void PolyFigure::update_bbox() {
-    if (!bbox_cached_) {
+    if (!bbox_->defined_) {
 	Long n = children_.count();
 	if (n > 0) {
 	    Glyph::AllocationInfo a;
-	    a.transform = nil;
+	    a.transformation = nil;
 	    a.allocation = nil;
-	    a.damage = nil;
-	    children_.item(0)->child_->extension(a, bbox_);
+	    a.damaged = nil;
 	    RegionImpl region;
-	    for (Long i = 1; i < n; i++) {
+	    for (Long i = 0; i < n; i++) {
 		children_.item(i)->child_->extension(a, &region);
 		bbox_->merge_union(&region);
 	    }
-	} else {
-	    bbox_->lower_.x = 1e6;
-	    bbox_->upper_.x = -bbox_->lower_.x;
-	    bbox_->lower_.y = bbox_->lower_.x;
-	    bbox_->upper_.y = -bbox_->lower_.y;
 	}
-	bbox_cached_ = true;
     }
 }
 
 void PolyFigure::child_allocate(Long, Glyph::AllocationInfo& a) {
-    a.transform->premultiply(tx_);
+    Fresco::unref(a.allocation);
+    a.allocation = nil;
+    a.transformation->premultiply(tx_);
 }
 
 //+ PolyFigure(Glyph::request)
 void PolyFigure::request(Glyph::Requisition& r) {
     if (children_.count() != 0) {
 	Glyph::AllocationInfo a;
-	a.transform = nil;
+	a.transformation = nil;
 	a.allocation = nil;
-	a.damage = nil;
+	a.damaged = nil;
 	RegionImpl region;
 	extension(a, &region);
 	Coord x_lead = -region.lower_.x, x_trail = region.upper_.x;
 	Coord y_lead = -region.lower_.y, y_trail = region.upper_.y;
+	Coord z_lead = -region.lower_.z, z_trail = region.upper_.z;
 	GlyphImpl::require_lead_trail(
 	    r.x, x_lead, x_lead, x_lead, x_trail, x_trail, x_trail
 	);
 	GlyphImpl::require_lead_trail(
 	    r.y, y_lead, y_lead, y_lead, y_trail, y_trail, y_trail
 	);
+	GlyphImpl::require_lead_trail(
+	    r.z, z_lead, z_lead, z_lead, z_trail, z_trail, z_trail
+	);
     } else {
 	r.x.defined = false;
 	r.y.defined = false;
+	r.z.defined = false;
     }
 }
 
 //+ PolyFigure(Glyph::extension)
 void PolyFigure::extension(const Glyph::AllocationInfo& a, Region_in r) {
-    update_bbox();
-    r->copy(bbox_);
-    TransformImpl t;
-    if (is_not_nil(a.transform)) {
-	t.load(a.transform);
+    Glyph::AllocationInfo ga;
+    ga.transformation = new TransformImpl;
+    if (is_not_nil(a.transformation)) {
+	ga.transformation->load(a.transformation);
     }
-    t.premultiply(tx_);
-    r->transform(&t);
+    ga.transformation->premultiply(tx_);
+    ga.allocation = Region::_duplicate(a.allocation);
+    ga.damaged = a.damaged;
+    for (Long i = 0; i < children_.count(); i++) {
+	children_.item(i)->child_->extension(ga, r);
+    }
+    Fresco::unref(ga.transformation);
+    Fresco::unref(ga.allocation);
 }
 
 //+ PolyFigure(Glyph::traverse)
 void PolyFigure::traverse(GlyphTraversal_in t) {
-    PainterObj p = t->painter();
+    Painter_var p = t->current_painter();
     Boolean tx = is_not_nil(p) && !tx_->identity();
     if (tx) {
 	p->push_matrix();
-	p->transform(tx_);
+	p->premultiply(tx_);
     }
     GlyphTraversal::Operation op = t->op();
     if (op == GlyphTraversal::pick_top || op == GlyphTraversal::pick_any) {
@@ -672,19 +695,19 @@ void PolyFigure::traverse(GlyphTraversal_in t) {
     }
 }
 
-//+ PolyFigure(Glyph::transform)
-TransformObjRef PolyFigure::_c_transform() {
-    return TransformObj::_duplicate(tx_->_obj());
+//+ PolyFigure(Glyph::transformation)
+Transform_return PolyFigure::transformation() {
+    return Transform::_duplicate(tx_->_obj());
 }
 
 //+ PolyFigure(Glyph::need_resize)
 void PolyFigure::need_resize() {
-    bbox_cached_ = false;
+    bbox_->defined_ = false;
     PolyGlyph::need_resize();
 }
 
 void PolyFigure::visit_trail(Long, GlyphTraversalRef t) {
-    t->painter()->matrix()->premultiply(tx_);
+    t->current_painter()->current_matrix()->premultiply(tx_);
 }
 
 /* class FigureLabel */
@@ -692,7 +715,7 @@ void PolyFigure::visit_trail(Long, GlyphTraversalRef t) {
 FigureLabel::FigureLabel(FigureStyleRef s, CharStringRef str) {
     style_ = FigureStyle::_duplicate(s);
     text_ = CharString::_duplicate(str);
-    style_->font_attr()->string_info(text_, info_);
+    _tmp(style_->font_attr())->string_info(text_, info_);
 }
 
 FigureLabel::FigureLabel(FigureLabel* fl) {
@@ -720,12 +743,13 @@ void FigureLabel::request(Glyph::Requisition& r) {
 
 //+ FigureLabel(Glyph::draw)
 void FigureLabel::draw(GlyphTraversal_in t) {
-    PainterObj p = t->painter();
-    p->color_attr(style_->foreground());
-    Font f = style_->font_attr();
-    p->font_attr(f);
+    Painter_var p = t->current_painter();
+    Region_var a = t->allocation();
+    p->current_color(style_->foreground());
+    Font_var f = style_->font_attr();
+    p->current_font(f);
     Vertex v;
-    t->origin(v);
+    a->origin(v);
     Font::Info info;
     CharStringBuffer buf(text_);
     const char* cur = buf.string();
@@ -743,8 +767,7 @@ void FigureLabel::pick(GlyphTraversal_in) { }
 /* class FigureStyleImpl */
 
 FigureStyleImpl::FigureStyleImpl(Fresco* f) : style_(f) {
-    ThreadKit t = f->thread_kit();
-    object_.lock_ = t->lock();
+    object_.lock_ = _tmp(f->thread_kit())->lock();
     style_.style_ = this;
     style_.lock_ = object_.lock_;
 }
@@ -772,33 +795,33 @@ void FigureStyleImpl::update() {
 }
 //+
 
-//+ FigureStyleImpl(StyleObj::=style_.)
-StyleObjRef FigureStyleImpl::_c_new_style() {
-    return style_._c_new_style();
+//+ FigureStyleImpl(Style::=style_.)
+Style_return FigureStyleImpl::new_style() {
+    return style_.new_style();
 }
-StyleObjRef FigureStyleImpl::_c_parent_style() {
-    return style_._c_parent_style();
+Style_return FigureStyleImpl::parent_style() {
+    return style_.parent_style();
 }
-void FigureStyleImpl::link_parent(StyleObj_in parent) {
+void FigureStyleImpl::link_parent(Style_in parent) {
     style_.link_parent(parent);
 }
 void FigureStyleImpl::unlink_parent() {
     style_.unlink_parent();
 }
-Tag FigureStyleImpl::link_child(StyleObj_in child) {
+Tag FigureStyleImpl::link_child(Style_in child) {
     return style_.link_child(child);
 }
 void FigureStyleImpl::unlink_child(Tag link_tag) {
     style_.unlink_child(link_tag);
 }
-void FigureStyleImpl::merge(StyleObj_in s) {
+void FigureStyleImpl::merge(Style_in s) {
     style_.merge(s);
 }
-CharStringRef FigureStyleImpl::_c_name() {
-    return style_._c_name();
+CharString_return FigureStyleImpl::name() {
+    return style_.name();
 }
-void FigureStyleImpl::_c_name(CharString_in _p) {
-    style_._c_name(_p);
+void FigureStyleImpl::name(CharString_in _p) {
+    style_.name(_p);
 }
 void FigureStyleImpl::alias(CharString_in s) {
     style_.alias(s);
@@ -806,17 +829,17 @@ void FigureStyleImpl::alias(CharString_in s) {
 Boolean FigureStyleImpl::is_on(CharString_in name) {
     return style_.is_on(name);
 }
-StyleValueRef FigureStyleImpl::_c_bind(CharString_in name) {
-    return style_._c_bind(name);
+StyleValue_return FigureStyleImpl::bind(CharString_in name) {
+    return style_.bind(name);
 }
 void FigureStyleImpl::unbind(CharString_in name) {
     style_.unbind(name);
 }
-StyleValueRef FigureStyleImpl::_c_resolve(CharString_in name) {
-    return style_._c_resolve(name);
+StyleValue_return FigureStyleImpl::resolve(CharString_in name) {
+    return style_.resolve(name);
 }
-StyleValueRef FigureStyleImpl::_c_resolve_wildcard(CharString_in name, StyleObj_in start) {
-    return style_._c_resolve_wildcard(name, start);
+StyleValue_return FigureStyleImpl::resolve_wildcard(CharString_in name, Style_in start) {
+    return style_.resolve_wildcard(name, start);
 }
 Long FigureStyleImpl::match(CharString_in name) {
     return style_.match(name);
@@ -839,53 +862,56 @@ void FigureStyleImpl::unlock() {
 //+
 
 //+ FigureStyleImpl(FigureStyle::background=c)
-void FigureStyleImpl::_c_background(Color_in c) {
+void FigureStyleImpl::background(Color_in c) {
     background_ = Color::_duplicate(c);
 }
 
 //+ FigureStyleImpl(FigureStyle::background?)
-ColorRef FigureStyleImpl::_c_background() {
+ColorRef FigureStyleImpl::background() {
     ColorRef c = background_->_obj();
     if (is_nil(c)) {
-	c = style_.fresco_->drawing_kit()->_c_background(this);
+	c = _tmp(drawing_kit())->background(this);
     }
     return Color::_duplicate(c);
 }
 
 //+ FigureStyleImpl(FigureStyle::brush_attr=b)
-void FigureStyleImpl::_c_brush_attr(Brush_in b) {
+void FigureStyleImpl::brush_attr(Brush_in b) {
     brush_ = Brush::_duplicate(b);
 }
 
 //+ FigureStyleImpl(FigureStyle::brush_attr?)
-BrushRef FigureStyleImpl::_c_brush_attr() {
+BrushRef FigureStyleImpl::brush_attr() {
     return Brush::_duplicate(brush_->_obj());
 }
 
 //+ FigureStyleImpl(FigureStyle::font_attr=f)
-void FigureStyleImpl::_c_font_attr(Font_in f) {
+void FigureStyleImpl::font_attr(Font_in f) {
     font_ = Font::_duplicate(f);
 }
 
 //+ FigureStyleImpl(FigureStyle::font_attr?)
-FontRef FigureStyleImpl::_c_font_attr() {
-    FontRef f = font_->_obj();
-    if (is_nil(f)) {
-	f = style_.fresco_->drawing_kit()->_c_default_font(this);
+FontRef FigureStyleImpl::font_attr() {
+    if (is_nil(font_)) {
+	DrawingKit_var d = drawing_kit();
+	font_ = d->default_font(this);
+	if (is_nil(font_)) {
+	    font_ = d->find_font(Fresco::tmp_string_ref("fixed"));
+	}
     }
-    return Font::_duplicate(f);
+    return Font::_duplicate(font_);
 }
 
 //+ FigureStyleImpl(FigureStyle::foreground=c)
-void FigureStyleImpl::_c_foreground(Color_in c) {
+void FigureStyleImpl::foreground(Color_in c) {
     foreground_ = Color::_duplicate(c);
 }
 
 //+ FigureStyleImpl(FigureStyle::foreground?)
-ColorRef FigureStyleImpl::_c_foreground() {
+ColorRef FigureStyleImpl::foreground() {
     ColorRef c = foreground_->_obj();
     if (is_nil(c)) {
-	c = style_.fresco_->drawing_kit()->_c_foreground(this);
+	c = _tmp(drawing_kit())->foreground(this);
     }
     return Color::_duplicate(c);
 }

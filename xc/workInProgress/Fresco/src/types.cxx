@@ -1,5 +1,5 @@
 /*
- * $XConsortium: types.cxx,v 1.4 94/03/18 11:25:32 matt Exp $
+ * $XConsortium$
  */
 
 /*
@@ -41,15 +41,17 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <stdio.h>
+
 /*
  * Sony NEWS-OS 6.0 has conflicting prototypes for abs() in math.h
  * and stdlib.h, so you cannot include both headers in any C++ source
- * file.  Until that bug is fixed, we'll have to explicitly define 
- * the symbols we need from math.h on the Sony.  On other platforms,
- * we can just include math.h and be done with it.
+ * file.  Until that bug is fixed (in NEWS-OS 6.0.1), we'll have to
+ * explicitly define the symbols we need from math.h on the Sony.
+ * On other platforms we can just include math.h
  */
 
-#if defined(sony)
+#if defined(sony) && defined(SVR4)
 #define M_PI 3.14159265358979323846
 extern "C" {
     double cos(double);
@@ -58,7 +60,6 @@ extern "C" {
 #else
 #include <math.h>
 #endif
-
 
 /*
  * AIX lacks prototypes for strcasecmp and strncasecmp, even though they
@@ -194,7 +195,7 @@ Boolean CharStringImpl::case_insensitive_equal(CharString_in s) {
 }
 
 //+ CharStringImpl(CharString::get_data)
-void CharStringImpl::get_data(CharString::Data& d) {
+void CharStringImpl::get_data(Data& d) {
     Long n = (length_ > d._maximum) ? d._maximum : length_;
     for (Long i = 0; i < n; i++) {
 	d._buffer[i] = data_[i];
@@ -202,7 +203,7 @@ void CharStringImpl::get_data(CharString::Data& d) {
 }
 
 //+ CharStringImpl(CharString::get_char_data)
-void CharStringImpl::get_char_data(CharString::CharData& d) {
+void CharStringImpl::get_char_data(CharData& d) {
     Long m = d._maximum - 1;
     Long n = (length_ > m) ? m : length_;
     for (Long i = 0; i < n; i++) {
@@ -213,7 +214,7 @@ void CharStringImpl::get_char_data(CharString::CharData& d) {
 }
 
 //+ CharStringImpl(CharString::put_data)
-void CharStringImpl::put_data(const CharString::Data& d) {
+void CharStringImpl::put_data(const Data& d) {
     free();
     length_ = d._length;
     data_ = new char[length_];
@@ -224,7 +225,7 @@ void CharStringImpl::put_data(const CharString::Data& d) {
 }
 
 //+ CharStringImpl(CharString::put_char_data)
-void CharStringImpl::put_char_data(const CharString::CharData& d) {
+void CharStringImpl::put_char_data(const CharData& d) {
     free();
     length_ = d._length;
     data_ = new char[length_];
@@ -314,11 +315,29 @@ Boolean ActionImpl::reversible() { return false; }
 void ActionImpl::unexecute() { }
 
 RegionImpl::RegionImpl() {
+    defined_ = false;
     lower_.x = lower_.y = 0;
     upper_.x = upper_.y = 0;
     xalign_ = yalign_ = zalign_ = 0;
     lower_.z = -1e6;
     upper_.z = 1e6;
+}
+
+RegionImpl::RegionImpl(RegionRef a, TransformRef t1, TransformRef t2) {
+    TransformImpl cumulative;
+    Boolean xf = false;
+    if (is_not_nil(t1) && !t1->identity()) {
+	cumulative.load(t1);
+	xf = true;
+    }
+    if (is_not_nil(t2) && !t2->identity()) {
+	cumulative.premultiply(t2);
+	xf = true;
+    }
+    RegionImpl::copy(a);
+    if (xf) {
+	RegionImpl::apply_transform(&cumulative);
+    }
 }
 
 RegionImpl::~RegionImpl() { }
@@ -347,6 +366,7 @@ void RegionImpl::update() {
 //+ RegionImpl(Region::contains)
 Boolean RegionImpl::contains(const Vertex& v) {
     return (
+	defined_ &&
 	v.x >= lower_.x && v.x <= upper_.x &&
 	v.y >= lower_.y && v.y <= upper_.y &&
 	v.z >= lower_.z && v.z <= upper_.z
@@ -356,38 +376,43 @@ Boolean RegionImpl::contains(const Vertex& v) {
 //+ RegionImpl(Region::contains_plane)
 Boolean RegionImpl::contains_plane(const Vertex& v, Axis a) {
     Boolean b = false;
-    switch (a) {
-    case X_axis:
-	b = (
-	    v.y >= lower_.y && v.y <= upper_.y &&
-	    v.z >= lower_.z && v.z <= upper_.z
-	);
-	break;
-    case Y_axis:
-	b = (
-	    v.x >= lower_.x && v.x <= upper_.x &&
-	    v.z >= lower_.z && v.z <= upper_.z
-	);
-	break;
-    case Z_axis:
-	b = (
-	    v.x >= lower_.x && v.x <= upper_.x &&
-	    v.y >= lower_.y && v.y <= upper_.y
-	);
-	break;
+    if (defined_) {
+	switch (a) {
+	case X_axis:
+	    b = (
+		v.y >= lower_.y && v.y <= upper_.y &&
+		v.z >= lower_.z && v.z <= upper_.z
+	    );
+	    break;
+	case Y_axis:
+	    b = (
+		v.x >= lower_.x && v.x <= upper_.x &&
+		v.z >= lower_.z && v.z <= upper_.z
+	    );
+	    break;
+	case Z_axis:
+	    b = (
+		v.x >= lower_.x && v.x <= upper_.x &&
+		v.y >= lower_.y && v.y <= upper_.y
+	    );
+	    break;
+	}
     }
     return b;
 }
 
 //+ RegionImpl(Region::intersects)
 Boolean RegionImpl::intersects(Region_in r) {
-    Vertex lower, upper;
-    r->bounds(lower, upper);
-    Boolean b = (
-	upper.x >= lower_.x && lower.x <= upper_.x &&
-	upper.y >= lower_.y && lower.y <= upper_.y &&
-	upper.z >= lower_.z && lower.z <= upper_.z
-    );
+    Boolean b = false;
+    if (defined_) {
+	Vertex lower, upper;
+	r->bounds(lower, upper);
+	b = (
+	    upper.x >= lower_.x && lower.x <= upper_.x &&
+	    upper.y >= lower_.y && lower.y <= upper_.y &&
+	    upper.z >= lower_.z && lower.z <= upper_.z
+	);
+    }
     return b;
 }
 
@@ -397,6 +422,7 @@ void RegionImpl::copy(Region_in r) {
     r->span(X_axis, x);
     r->span(Y_axis, y);
     r->span(Z_axis, z);
+    defined_ = true;
     lower_.x = x.begin;
     lower_.y = y.begin;
     lower_.z = z.begin;
@@ -406,23 +432,32 @@ void RegionImpl::copy(Region_in r) {
     xalign_ = x.align;
     yalign_ = y.align;
     zalign_ = z.align;
+    notify();
 }
 
 //+ RegionImpl(Region::merge_intersect)
 void RegionImpl::merge_intersect(Region_in r) {
-    Vertex lower, upper;
-    r->bounds(lower, upper);
-    merge_max(lower_, lower);
-    merge_min(upper_, upper);
+    if (defined_) {
+	Vertex lower, upper;
+	r->bounds(lower, upper);
+	merge_max(lower_, lower);
+	merge_min(upper_, upper);
+    } else {
+	copy(r);
+    }
     notify();
 }
 
 //+ RegionImpl(Region::merge_union)
 void RegionImpl::merge_union(Region_in r) {
-    Vertex lower, upper;
-    r->bounds(lower, upper);
-    merge_min(lower_, lower);
-    merge_max(upper_, upper);
+    if (defined_) {
+	Vertex lower, upper;
+	r->bounds(lower, upper);
+	merge_min(lower_, lower);
+	merge_max(upper_, upper);
+    } else {
+	copy(r);
+    }
     notify();
 }
 
@@ -432,63 +467,98 @@ void RegionImpl::subtract(Region_in r) {
     notify();
 }
 
-//+ RegionImpl(Region::transform)
-void RegionImpl::transform(TransformObj_in t) {
-    Vertex v[8];
-    v[0] = lower_;
-    v[1] = upper_;
-    v[2].x = v[1].x; v[2].y = v[0].y; v[2].z = v[0].z;
-    v[3].x = v[1].x; v[3].y = v[0].y; v[3].z = v[1].z;
-    v[4].x = v[1].x; v[4].y = v[1].y; v[4].z = v[0].z;
-    v[5].x = v[0].x; v[5].y = v[1].y; v[5].z = v[1].z;
-    v[6].x = v[0].x; v[6].y = v[1].y; v[6].z = v[0].z;
-    v[7].x = v[1].x; v[7].y = v[1].y; v[7].z = v[0].z;
-    for (long i = 0; i < 8; i++) {
-	t->transform(v[i]);
+//+ RegionImpl(Region::apply_transform)
+void RegionImpl::apply_transform(Transform_in t) {
+    if (defined_) {
+	Vertex v[8];
+	v[0] = lower_;
+	v[1] = upper_;
+	v[2].x = v[1].x; v[2].y = v[0].y; v[2].z = v[0].z;
+	v[3].x = v[1].x; v[3].y = v[0].y; v[3].z = v[1].z;
+	v[4].x = v[1].x; v[4].y = v[1].y; v[4].z = v[0].z;
+	v[5].x = v[0].x; v[5].y = v[1].y; v[5].z = v[1].z;
+	v[6].x = v[0].x; v[6].y = v[1].y; v[6].z = v[0].z;
+	v[7].x = v[1].x; v[7].y = v[1].y; v[7].z = v[0].z;
+	for (long i = 0; i < 8; i++) {
+	    t->transform_vertex(v[i]);
+	}
+	lower_ = v[0];
+	upper_ = v[0];
+	for (long j = 1; j < 8; j++) {
+	    merge_min(lower_, v[j]);
+	    merge_max(upper_, v[j]);
+	}
+
+	Vertex o;
+	origin(o);
+	t->transform_vertex(o);
+	xalign_ = span_align(lower_.x, upper_.x, o.x);
+	yalign_ = span_align(lower_.y, upper_.y, o.y);
+	zalign_ = span_align(lower_.z, upper_.z, o.z);
+	notify();
     }
-    lower_ = v[0];
-    upper_ = v[0];
-    for (long j = 1; j < 8; j++) {
-	merge_min(lower_, v[j]);
-	merge_max(upper_, v[j]);
+}
+
+Coord RegionImpl::span_align(Coord lower, Coord upper, Coord origin) {
+    Coord s;
+    if (Math::equal(lower, upper, float(1e-4))) {
+	s = 0.0;
+    } else {
+	s = (origin - lower) / (upper - lower);
     }
-    notify();
+    return s;
 }
 
 //+ RegionImpl(Region::bounds)
 void RegionImpl::bounds(Vertex& lower, Vertex& upper) {
-    lower = lower_;
-    upper = upper_;
+    if (defined_) {
+	lower = lower_;
+	upper = upper_;
+    }
 }
 
 //+ RegionImpl(Region::origin)
 void RegionImpl::origin(Vertex& v) {
-    v.x = lower_.x + xalign_ * (upper_.x - lower_.x);
-    v.y = lower_.y + yalign_ * (upper_.y - lower_.y);
-    v.z = lower_.z + zalign_ * (upper_.z - lower_.z);
+    if (defined_) {
+	v.x = span_origin(lower_.x, upper_.x, xalign_);
+	v.y = span_origin(lower_.y, upper_.y, yalign_);
+	v.z = span_origin(lower_.z, upper_.z, zalign_);
+    }
+}
+
+Coord RegionImpl::span_origin(Coord lower, Coord upper, Coord align) {
+    Coord orig;
+    if (Math::equal(lower, upper, float(1e-4))) {
+	orig = 0.0;
+    } else {
+	orig = lower + align * (upper - lower);
+    }
+    return orig;
 }
 
 //+ RegionImpl(Region::span)
 void RegionImpl::span(Axis a, Region::BoundingSpan& s) {
-    switch (a) {
-    case X_axis:
-	s.begin = lower_.x;
-	s.end = upper_.x;
-	s.align = xalign_;
-	break;
-    case Y_axis:
-	s.begin = lower_.y;
-	s.end = upper_.y;
-	s.align = yalign_;
-	break;
-    case Z_axis:
-	s.begin = lower_.z;
-	s.end = upper_.z;
-	s.align = zalign_;
-	break;
+    if (defined_) {
+	switch (a) {
+	case X_axis:
+	    s.begin = lower_.x;
+	    s.end = upper_.x;
+	    s.align = xalign_;
+	    break;
+	case Y_axis:
+	    s.begin = lower_.y;
+	    s.end = upper_.y;
+	    s.align = yalign_;
+	    break;
+	case Z_axis:
+	    s.begin = lower_.z;
+	    s.end = upper_.z;
+	    s.align = zalign_;
+	    break;
+	}
+	s.length = s.end - s.begin;
+	s.origin = s.begin + s.align * s.length;
     }
-    s.length = s.end - s.begin;
-    s.origin = s.begin + s.align * s.length;
 }
 
 void RegionImpl::notify() { }
@@ -505,7 +575,7 @@ void RegionImpl::merge_max(Vertex& v0, const Vertex& v) {
     v0.z = Math::max(v0.z, v.z);
 }
 
-implementPtrList(StringList,CharStringType)
+implementPtrList(StringList,CharString)
 
 /*
  * Create an attribute.
@@ -517,7 +587,7 @@ StyleValueImpl::StyleValueImpl(Fresco* f, CharStringRef name, PathName* path) {
     uninitialized_ = true;
     value_ = nil;
     any_value_ = nil;
-    object_.lock_ = f->thread_kit()->lock();
+    object_.lock_ = _tmp(f->thread_kit())->lock();
 }
 
 /*
@@ -553,7 +623,7 @@ void StyleValueImpl::update() {
 //+
 
 //+ StyleValueImpl(StyleValue::name)
-CharStringRef StyleValueImpl::_c_name() {
+CharString_return StyleValueImpl::name() {
     return CharString::_duplicate(name_);
 }
 
@@ -581,10 +651,10 @@ Boolean StyleValueImpl::is_on() {
 
 //+ StyleValueImpl(StyleValue::read_boolean)
 Boolean StyleValueImpl::read_boolean(Boolean& b) {
-    CharString s;
-    if (read_string(s)) {
-	CharString s1 = Fresco::string_ref("on");
-	CharString s2 = Fresco::string_ref("true");
+    CharString_var s;
+    if (read_string(s._out())) {
+	CharString_var s1 = Fresco::string_ref("on");
+	CharString_var s2 = Fresco::string_ref("true");
 	b = s->case_insensitive_equal(s1) || s->case_insensitive_equal(s2);
 	return true;
     }
@@ -593,14 +663,14 @@ Boolean StyleValueImpl::read_boolean(Boolean& b) {
 
 //+ StyleValueImpl(StyleValue::write_boolean)
 void StyleValueImpl::write_boolean(Boolean b) {
-    write_string(CharString(new CharStringImpl(b ? "on" : "off")));
+    write_string(_tmp(Fresco::string_ref(b ? "on" : "off")));
 }
 
 //+ StyleValueImpl(StyleValue::read_coord)
 Boolean StyleValueImpl::read_coord(Coord& c) {
     Boolean b = false;
-    CharString s;
-    if (read_string(s)) {
+    CharString_var s;
+    if (read_string(s._out())) {
 	CharStringBuffer buf(s);
 	Coord pts = 1.0;
 	char* p = buf.string();
@@ -645,8 +715,8 @@ void StyleValueImpl::write_coord(Coord) { }
 //+ StyleValueImpl(StyleValue::read_integer)
 Boolean StyleValueImpl::read_integer(Long& i) {
     Boolean b = false;
-    CharString s;
-    if (read_string(s)) {
+    CharString_var s;
+    if (read_string(s._out())) {
 	CharStringBuffer buf(s);
 	char* ptr;
 	Long n = strtol(buf.string(), &ptr, 0);
@@ -664,8 +734,8 @@ void StyleValueImpl::write_integer(Long) { }
 //+ StyleValueImpl(StyleValue::read_real)
 Boolean StyleValueImpl::read_real(Double& d) {
     Boolean b = false;
-    CharString s;
-    if (read_string(s)) {
+    CharString_var s;
+    if (read_string(s._out())) {
 	CharStringBuffer buf(s);
 	char* ptr;
 	double r = strtod(buf.string(), &ptr);
@@ -681,7 +751,7 @@ Boolean StyleValueImpl::read_real(Double& d) {
 void StyleValueImpl::write_real(Double) { }
 
 //+ StyleValueImpl(StyleValue::read_string)
-Boolean StyleValueImpl::_c_read_string(CharStringRef& s) {
+Boolean StyleValueImpl::read_string(CharString_out& s) {
     Boolean b = false;
     if (!uninitialized_ && value_ != nil) {
 	s = CharString::_duplicate(value_);
@@ -698,7 +768,7 @@ void StyleValueImpl::write_string(CharString_in s) {
 }
 
 //+ StyleValueImpl(StyleValue::read_value)
-Boolean StyleValueImpl::_c_read_value(FrescoObjectRef& s) {
+Boolean StyleValueImpl::read_value(FrescoObject_out& s) {
     Boolean b = false;
     if (any_value_ != nil) {
 	s = any_value_;
@@ -871,7 +941,7 @@ public:
     //+ StyleVisitor::=
     Boolean visit_alias(CharString_in name);
     Boolean visit_attribute(StyleValue_in a);
-    Boolean visit_style(StyleObj_in s);
+    Boolean visit_style(Style_in s);
     //+
 private:
     SharedStyleImpl* style_impl_;
@@ -882,15 +952,15 @@ StyleCloner::~StyleCloner() { }
 
 //+ StyleCloner(StyleVisitor::visit_alias)
 Boolean StyleCloner::visit_alias(CharString_in name) {
-    style_impl_->alias(CharString(new CharStringImpl(name)));
+    style_impl_->alias(name);
     return true;
 }
 
 //+ StyleCloner(StyleVisitor::visit_attribute)
 Boolean StyleCloner::visit_attribute(StyleValue_in a) {
-    StyleValue n = style_impl_->_c_bind(a->name());
-    CharString s;
-    if (a->read_string(s)) {
+    StyleValue_var n = style_impl_->bind(_tmp(a->name()));
+    CharString_var s;
+    if (a->read_string(s._out())) {
 	n->write_string(s);
 	n->priority(a->priority());
     }
@@ -898,21 +968,21 @@ Boolean StyleCloner::visit_attribute(StyleValue_in a) {
 }
 
 //+ StyleCloner(StyleVisitor::visit_style)
-Boolean StyleCloner::visit_style(StyleObj_in s) {
-    StyleObj ns = style_impl_->_c_new_style();
+Boolean StyleCloner::visit_style(Style_in s) {
+    Style_var ns = style_impl_->new_style();
     ns->merge(s);
     ns->link_parent(style_impl_->style_);
     return true;
 }
 
-//+ SharedStyleImpl(StyleObj::new_style)
-StyleObjRef SharedStyleImpl::_c_new_style() {
-    return StyleObj::_duplicate(new StyleImpl(fresco_));
+//+ SharedStyleImpl(Style::new_style)
+Style_return SharedStyleImpl::new_style() {
+    return new StyleImpl(fresco_);
 }
 
-//+ SharedStyleImpl(StyleObj::parent_style)
-StyleObjRef SharedStyleImpl::_c_parent_style() {
-    return StyleObj::_duplicate(parent_);
+//+ SharedStyleImpl(Style::parent_style)
+Style_return SharedStyleImpl::parent_style() {
+    return Style::_duplicate(parent_);
 }
 
 /*
@@ -921,8 +991,8 @@ StyleObjRef SharedStyleImpl::_c_parent_style() {
  * to the parent.
  */
 
-//+ SharedStyleImpl(StyleObj::link_parent)
-void SharedStyleImpl::link_parent(StyleObj_in parent) {
+//+ SharedStyleImpl(Style::link_parent)
+void SharedStyleImpl::link_parent(Style_in parent) {
     if (is_not_nil(parent_)) {
 	parent_->unlink_child(unlink_);
     }
@@ -932,7 +1002,7 @@ void SharedStyleImpl::link_parent(StyleObj_in parent) {
     parent_ = parent;
 }
 
-//+ SharedStyleImpl(StyleObj::unlink_parent)
+//+ SharedStyleImpl(Style::unlink_parent)
 void SharedStyleImpl::unlink_parent() {
     if (is_not_nil(parent_)) {
 	parent_->unlink_child(unlink_);
@@ -941,20 +1011,20 @@ void SharedStyleImpl::unlink_parent() {
     }
 }
 
-//+ SharedStyleImpl(StyleObj::link_child)
-Tag SharedStyleImpl::link_child(StyleObj_in child) {
+//+ SharedStyleImpl(Style::link_child)
+Tag SharedStyleImpl::link_child(Style_in child) {
     if (children_ == nil) {
 	children_ = new StyleList(5);
     }
     ++links_;
     SharedStyleImpl::Info info;
-    info.child = StyleObj::_duplicate(child);
+    info.child = Style::_duplicate(child);
     info.tag = links_;
     children_->append(info);
     return links_;
 }
 
-//+ SharedStyleImpl(StyleObj::unlink_child)
+//+ SharedStyleImpl(Style::unlink_child)
 void SharedStyleImpl::unlink_child(Tag link_tag) {
     if (children_ != nil && links_ != nil) {
 	for (ListUpdater(StyleList) i(*children_); i.more(); i.next()) {
@@ -967,31 +1037,31 @@ void SharedStyleImpl::unlink_child(Tag link_tag) {
     }
 }
 
-//+ SharedStyleImpl(StyleObj::merge)
-void SharedStyleImpl::merge(StyleObj_in s) {
+//+ SharedStyleImpl(Style::merge)
+void SharedStyleImpl::merge(Style_in s) {
     if (name_ == nil) {
-	CharString name = s->name();
+	CharString_var name = s->name();
 	if (is_not_nil(name)) {
 	    name_ = new CharStringImpl(name);
 	}
     }
-    StyleVisitor v = new StyleCloner(this);
+    StyleVisitor_var v = new StyleCloner(this);
     s->visit_aliases(v);
     s->visit_attributes(v);
     s->visit_styles(v);
 }
 
-//+ SharedStyleImpl(StyleObj::name=s)
-void SharedStyleImpl::_c_name(CharString_in s) {
+//+ SharedStyleImpl(Style::name=s)
+void SharedStyleImpl::name(CharString_in s) {
     name_ = CharString::_duplicate(s->_obj());
 }
 
-//+ SharedStyleImpl(StyleObj::name?)
-CharStringRef SharedStyleImpl::_c_name() {
+//+ SharedStyleImpl(Style::name?)
+CharStringRef SharedStyleImpl::name() {
     return CharString::_duplicate(name_);
 }
 
-//+ SharedStyleImpl(StyleObj::alias)
+//+ SharedStyleImpl(Style::alias)
 void SharedStyleImpl::alias(CharString_in s) {
     if (aliases_ == nil) {
 	aliases_ = new PathName(5);
@@ -1004,8 +1074,8 @@ void SharedStyleImpl::alias(CharString_in s) {
  * return the attribute.  Otherwise, create a new attribute.
  */
 
-//+ SharedStyleImpl(StyleObj::bind)
-StyleValueRef SharedStyleImpl::_c_bind(CharString_in name) {
+//+ SharedStyleImpl(Style::bind)
+StyleValue_return SharedStyleImpl::bind(CharString_in name) {
     PathName* path = parse_name(name);
     if (path == nil) {
 	/* irrelevant attribute: A*B where A doesn't match */
@@ -1013,7 +1083,7 @@ StyleValueRef SharedStyleImpl::_c_bind(CharString_in name) {
     }
 
     if (table_ == nil) {
-	table_ = new StyleValueTable(100);
+	table_ = new StyleValueTable(50);
     }
 
     StyleValueTableEntry* e = find_tail_entry(path, true);
@@ -1117,7 +1187,7 @@ Long SharedStyleImpl::find_separator(const char* start, const char* end) {
  *     2 and up - index of alias match plus 2
  */
 
-//+ SharedStyleImpl(StyleObj::match)
+//+ SharedStyleImpl(Style::match)
 Long SharedStyleImpl::match(CharString_in name) {
     long match = 0;
     if (is_not_nil(name_) && name_->equal(name)) {
@@ -1207,14 +1277,14 @@ void SharedStyleImpl::load_property(
 	} else if (value_length == 0) {
 	    bad_property_value(p, length);
 	} else {
-	    StyleValue a = _c_bind(
-		CharString(new CharStringImpl(name, name_length))
+	    StyleValue_var a = bind(
+		CharString_var(new CharStringImpl(name, name_length))
 	    );
 	    if (is_not_nil(a)) {
 		long p = priority + match_priority_;
 		if (a->uninitialized() || p >= a->priority()) {
 		    a->write_string(
-			CharString(new CharStringImpl(value, value_length))
+			CharString_var(new CharStringImpl(value, value_length))
 		    );
 		    a->priority(p);
 		}
@@ -1244,9 +1314,9 @@ void SharedStyleImpl::bad_property_value(const char*, Long) { }
  * Test if an attribute is defined and readable as a boolean set to true.
  */
 
-//+ SharedStyleImpl(StyleObj::is_on)
+//+ SharedStyleImpl(Style::is_on)
 Boolean SharedStyleImpl::is_on(CharString_in name) {
-    StyleValueRef a = _c_resolve(name);
+    StyleValue_var a = resolve(name);
     Boolean b;
     return is_not_nil(a) && a->read_boolean(b) && b;
 }
@@ -1255,8 +1325,8 @@ Boolean SharedStyleImpl::is_on(CharString_in name) {
  * Find the attribute bound to a given name, if any.
  */
 
-//+ SharedStyleImpl(StyleObj::resolve)
-StyleValueRef SharedStyleImpl::_c_resolve(CharString_in name) {
+//+ SharedStyleImpl(Style::resolve)
+StyleValue_return SharedStyleImpl::resolve(CharString_in name) {
     StyleValueTableEntry* e = find_entry(name, false);
     if (e != nil) {
 	StyleValueImplList* list = e->entries[0];
@@ -1265,9 +1335,9 @@ StyleValueRef SharedStyleImpl::_c_resolve(CharString_in name) {
 	}
     }
 
-    StyleObj s = _c_parent_style();
+    Style_var s = parent_style();
     for (; is_not_nil(s); s = s->parent_style()) {
-	StyleValueRef a = s->_c_resolve_wildcard(name, style_);
+	StyleValue_return a = s->resolve_wildcard(name, style_);
 	if (is_not_nil(a)) {
 	    return a;
 	}
@@ -1280,8 +1350,8 @@ StyleValueRef SharedStyleImpl::_c_resolve(CharString_in name) {
  * The start style's name and aliases are possible wildcard prefixes.
  */
 
-//+ SharedStyleImpl(StyleObj::resolve_wildcard)
-StyleValueRef SharedStyleImpl::_c_resolve_wildcard(CharString_in name, StyleObj_in start) {
+//+ SharedStyleImpl(Style::resolve_wildcard)
+StyleValue_return SharedStyleImpl::resolve_wildcard(CharString_in name, Style_in start) {
     StyleValueTableEntry* e = find_entry(name, false);
     if (e != nil) {
 	if (e->used > 0) {
@@ -1356,15 +1426,15 @@ public:
 
     void setup(
 	SharedStyleImpl*, StyleValueTableEntry*,
-	StyleObjRef start, StyleObjRef cur
+	StyleRef start, StyleRef cur
     );
 
     Boolean visit_alias(CharString_in name); //+ StyleVisitor::visit_alias
 
     SharedStyleImpl* style_;
     StyleValueTableEntry* entry_;
-    StyleObjRef start_;
-    StyleObjRef cur_;
+    StyleRef start_;
+    StyleRef cur_;
     StyleValueRef match_;
 };
 
@@ -1379,7 +1449,7 @@ StyleMatcher::~StyleMatcher() { }
 
 void StyleMatcher::setup(
     SharedStyleImpl* style, StyleValueTableEntry* e,
-    StyleObjRef start, StyleObjRef cur
+    StyleRef start, StyleRef cur
 ) {
     style_ = style;
     entry_ = e;
@@ -1399,15 +1469,15 @@ Boolean StyleMatcher::visit_alias(CharString_in name) {
 }
 
 StyleValueRef SharedStyleImpl::wildcard_match(
-    StyleValueTableEntry* e, StyleObjRef start
+    StyleValueTableEntry* e, StyleRef start
 ) {
-    StyleValueRef found = nil;
+    StyleValue_return found = nil;
     StyleMatcher matcher;
-    StyleObj s = StyleObj::_duplicate(start);
+    Style_var s = Style::_duplicate(start);
     while (is_not_nil(s)) {
-	CharString name = s->name();
+	CharString_var name = s->name();
 	if (is_not_nil(name)) {
-	    StyleValueRef a = wildcard_match_name(name->_obj(), e, s->_obj());
+	    StyleValue_return a = wildcard_match_name(name, e, s);
 	    if (is_not_nil(a)) {
 		found = a;
 		break;
@@ -1425,7 +1495,7 @@ StyleValueRef SharedStyleImpl::wildcard_match(
 }
 
 StyleValueRef SharedStyleImpl::wildcard_match_name(
-    CharStringRef name, StyleValueTableEntry* e, StyleObjRef cur
+    CharStringRef name, StyleValueTableEntry* e, StyleRef cur
 ) {
     for (long i = e->used - 1; i >= 1; i--) {
 	StyleValueImplList* list = e->entries[i];
@@ -1458,10 +1528,10 @@ StyleValueRef SharedStyleImpl::wildcard_match_name(
 }
 
 long SharedStyleImpl::finish_wildcard_match(
-    StyleObjRef cur, PathName* path, long p_index
+    StyleRef cur, PathName* path, long p_index
 ) {
     long matched = 0;
-    StyleObj s = StyleObj::_duplicate(cur);
+    Style_var s = Style::_duplicate(cur);
     long p_cur = p_index;
     while (p_cur >= 0 && is_not_nil(s)) {
 	long m = s->match(path->item(p_cur));
@@ -1474,7 +1544,7 @@ long SharedStyleImpl::finish_wildcard_match(
     return matched;
 }
 
-//+ SharedStyleImpl(StyleObj::unbind)
+//+ SharedStyleImpl(Style::unbind)
 void SharedStyleImpl::unbind(CharString_in name) {
     if (table_ == nil) {
 	return;
@@ -1505,7 +1575,7 @@ void SharedStyleImpl::unbind(CharString_in name) {
     StyleValueImpl::delete_path(path);
 }
 
-//+ SharedStyleImpl(StyleObj::visit_aliases)
+//+ SharedStyleImpl(Style::visit_aliases)
 void SharedStyleImpl::visit_aliases(StyleVisitor_in v) {
     if (aliases_ != nil) {
 	long n = aliases_->count();
@@ -1517,7 +1587,7 @@ void SharedStyleImpl::visit_aliases(StyleVisitor_in v) {
     }
 }
 
-//+ SharedStyleImpl(StyleObj::visit_attributes)
+//+ SharedStyleImpl(Style::visit_attributes)
 void SharedStyleImpl::visit_attributes(StyleVisitor_in v) {
     if (table_ != nil) {
 	for (TableIterator(StyleValueTable) i(*table_); i.more(); i.next()) {
@@ -1538,7 +1608,7 @@ void SharedStyleImpl::visit_attributes(StyleVisitor_in v) {
     }
 }
 
-//+ SharedStyleImpl(StyleObj::visit_styles)
+//+ SharedStyleImpl(Style::visit_styles)
 void SharedStyleImpl::visit_styles(StyleVisitor_in v) {
     if (children_ != nil) {
 	for (ListItr(StyleList) i(*children_); i.more(); i.next()) {
@@ -1549,19 +1619,19 @@ void SharedStyleImpl::visit_styles(StyleVisitor_in v) {
     }
 }
 
-//+ SharedStyleImpl(StyleObj::lock)
+//+ SharedStyleImpl(Style::lock)
 void SharedStyleImpl::lock() {
     lock_->acquire();
 }
 
-//+ SharedStyleImpl(StyleObj::unlock)
+//+ SharedStyleImpl(Style::unlock)
 void SharedStyleImpl::unlock() {
     lock_->release();
 }
 
 StyleImpl::StyleImpl(Fresco* f) : impl_(f) {
     impl_.style_ = this;
-    object_.lock_ = f->thread_kit()->lock();
+    object_.lock_ = _tmp(f->thread_kit())->lock();
     impl_.lock_ = object_.lock_;
 }
 
@@ -1588,33 +1658,33 @@ void StyleImpl::update() {
 }
 //+
 
-//+ StyleImpl(StyleObj::=impl_.)
-StyleObjRef StyleImpl::_c_new_style() {
-    return impl_._c_new_style();
+//+ StyleImpl(Style::=impl_.)
+Style_return StyleImpl::new_style() {
+    return impl_.new_style();
 }
-StyleObjRef StyleImpl::_c_parent_style() {
-    return impl_._c_parent_style();
+Style_return StyleImpl::parent_style() {
+    return impl_.parent_style();
 }
-void StyleImpl::link_parent(StyleObj_in parent) {
+void StyleImpl::link_parent(Style_in parent) {
     impl_.link_parent(parent);
 }
 void StyleImpl::unlink_parent() {
     impl_.unlink_parent();
 }
-Tag StyleImpl::link_child(StyleObj_in child) {
+Tag StyleImpl::link_child(Style_in child) {
     return impl_.link_child(child);
 }
 void StyleImpl::unlink_child(Tag link_tag) {
     impl_.unlink_child(link_tag);
 }
-void StyleImpl::merge(StyleObj_in s) {
+void StyleImpl::merge(Style_in s) {
     impl_.merge(s);
 }
-CharStringRef StyleImpl::_c_name() {
-    return impl_._c_name();
+CharString_return StyleImpl::name() {
+    return impl_.name();
 }
-void StyleImpl::_c_name(CharString_in _p) {
-    impl_._c_name(_p);
+void StyleImpl::name(CharString_in _p) {
+    impl_.name(_p);
 }
 void StyleImpl::alias(CharString_in s) {
     impl_.alias(s);
@@ -1622,17 +1692,17 @@ void StyleImpl::alias(CharString_in s) {
 Boolean StyleImpl::is_on(CharString_in name) {
     return impl_.is_on(name);
 }
-StyleValueRef StyleImpl::_c_bind(CharString_in name) {
-    return impl_._c_bind(name);
+StyleValue_return StyleImpl::bind(CharString_in name) {
+    return impl_.bind(name);
 }
 void StyleImpl::unbind(CharString_in name) {
     impl_.unbind(name);
 }
-StyleValueRef StyleImpl::_c_resolve(CharString_in name) {
-    return impl_._c_resolve(name);
+StyleValue_return StyleImpl::resolve(CharString_in name) {
+    return impl_.resolve(name);
 }
-StyleValueRef StyleImpl::_c_resolve_wildcard(CharString_in name, StyleObj_in start) {
-    return impl_._c_resolve_wildcard(name, start);
+StyleValue_return StyleImpl::resolve_wildcard(CharString_in name, Style_in start) {
+    return impl_.resolve_wildcard(name, start);
 }
 Long StyleImpl::match(CharString_in name) {
     return impl_.match(name);
@@ -1680,14 +1750,14 @@ void StyleVisitorImpl::update() {
 
 Boolean StyleVisitorImpl::visit_alias(CharString_in) { return false; }
 Boolean StyleVisitorImpl::visit_attribute(StyleValue_in) { return false; }
-Boolean StyleVisitorImpl::visit_style(StyleObj_in) { return false; }
+Boolean StyleVisitorImpl::visit_style(Style_in) { return false; }
 
 static const double radians_per_degree = M_PI / 180;
 static const float tolerance = 1e-4;
 
 TransformImpl::TransformImpl() { init(); }
 
-TransformImpl::TransformImpl(TransformObj::Matrix m) {
+TransformImpl::TransformImpl(Transform::Matrix m) {
     load_matrix(m);
     identity_ = false;
     translate_only_ = false;
@@ -1762,15 +1832,15 @@ Coord TransformImpl::det() {
     return mat_[0][0] * mat_[1][1] - mat_[0][1] * mat_[1][0];
 }
 
-//+ TransformImpl(TransformObj::load)
-void TransformImpl::load(TransformObj_in t) {
-    TransformObj::Matrix m;
+//+ TransformImpl(Transform::load)
+void TransformImpl::load(Transform_in t) {
+    Transform::Matrix m;
     t->store_matrix(m);
     load_matrix(m);
 }
 
-//+ TransformImpl(TransformObj::load_matrix)
-void TransformImpl::load_matrix(TransformObj::Matrix m) {
+//+ TransformImpl(Transform::load_matrix)
+void TransformImpl::load_matrix(Matrix m) {
     mat_[0][0] = m[0][0]; mat_[0][1] = m[0][1];
     mat_[0][2] = m[0][2]; mat_[0][3] = m[0][3];
     mat_[1][0] = m[1][0]; mat_[1][1] = m[1][1];
@@ -1782,11 +1852,11 @@ void TransformImpl::load_matrix(TransformObj::Matrix m) {
     modified();
 }
 
-//+ TransformImpl(TransformObj::load_identity)
+//+ TransformImpl(Transform::load_identity)
 void TransformImpl::load_identity() { init(); }
 
-//+ TransformImpl(TransformObj::store_matrix)
-void TransformImpl::store_matrix(TransformObj::Matrix m) {
+//+ TransformImpl(Transform::store_matrix)
+void TransformImpl::store_matrix(Matrix m) {
     m[0][0] = mat_[0][0]; m[0][1] = mat_[0][1];
     m[0][2] = mat_[0][2]; m[0][3] = mat_[0][3];
     m[1][0] = mat_[1][0]; m[1][1] = mat_[1][1];
@@ -1797,8 +1867,8 @@ void TransformImpl::store_matrix(TransformObj::Matrix m) {
     m[3][2] = mat_[3][2]; m[3][3] = mat_[3][3];
 }
 
-//+ TransformImpl(TransformObj::equal)
-Boolean TransformImpl::equal(TransformObj_in t) {
+//+ TransformImpl(Transform::equal)
+Boolean TransformImpl::equal(Transform_in t) {
     if (modified_) {
 	recompute();
     }
@@ -1808,7 +1878,7 @@ Boolean TransformImpl::equal(TransformObj_in t) {
     if (t->identity()) {
 	return false;
     }
-    TransformObj::Matrix m;
+    Transform::Matrix m;
     t->store_matrix(m);
     Coord m00 = mat_[0][0];
     Coord m01 = mat_[0][1];
@@ -1827,7 +1897,7 @@ Boolean TransformImpl::equal(TransformObj_in t) {
     );
 }
 
-//+ TransformImpl(TransformObj::identity)
+//+ TransformImpl(Transform::identity)
 Boolean TransformImpl::identity() {
     if (modified_) {
 	recompute();
@@ -1835,13 +1905,13 @@ Boolean TransformImpl::identity() {
     return identity_;
 }
 
-//+ TransformImpl(TransformObj::det_is_zero)
+//+ TransformImpl(Transform::det_is_zero)
 Boolean TransformImpl::det_is_zero() {
     Coord d = det();
     return d < tolerance && d > -tolerance;
 }
 
-//+ TransformImpl(TransformObj::scale)
+//+ TransformImpl(Transform::scale)
 void TransformImpl::scale(const Vertex& v) {
     mat_[0][0] *= v.x;
     mat_[0][1] *= v.y;
@@ -1853,12 +1923,12 @@ void TransformImpl::scale(const Vertex& v) {
     modified();
 }
 
-//+ TransformImpl(TransformObj::rotate)
+//+ TransformImpl(Transform::rotate)
 void TransformImpl::rotate(Float angle, Axis a) {
     if (a != Z_axis) {
 	return;
     }
-    TransformObj::Matrix m;
+    Transform::Matrix m;
     Coord r_angle = angle * radians_per_degree;
     Coord tmp1 = cos(r_angle);
     Coord tmp2 = sin(r_angle);
@@ -1880,36 +1950,38 @@ void TransformImpl::rotate(Float angle, Axis a) {
     modified();
 }
 
-//+ TransformImpl(TransformObj::translate)
+//+ TransformImpl(Transform::translate)
 void TransformImpl::translate(const Vertex& v) {
     mat_[2][0] += v.x;
     mat_[2][1] += v.y;
     modified();
 }
 
-//+ TransformImpl(TransformObj::premultiply)
-void TransformImpl::premultiply(TransformObj_in t) {
-    TransformObj::Matrix m;
-    t->store_matrix(m);
+//+ TransformImpl(Transform::premultiply)
+void TransformImpl::premultiply(Transform_in t) {
+    if (!t->identity()) {
+	Transform::Matrix m;
+	t->store_matrix(m);
 
-    Coord tmp1 = mat_[0][0];
-    Coord tmp2 = mat_[1][0];
-    mat_[0][0]  = m[0][0] * tmp1 + m[0][1] * tmp2;
-    mat_[1][0]  = m[1][0] * tmp1 + m[1][1] * tmp2;
-    mat_[2][0] += m[2][0] * tmp1 + m[2][1] * tmp2;
- 
-    tmp1 = mat_[0][1];
-    tmp2 = mat_[1][1];
- 
-    mat_[0][1]  = m[0][0] * tmp1 + m[0][1] * tmp2;
-    mat_[1][1]  = m[1][0] * tmp1 + m[1][1] * tmp2;
-    mat_[2][1] += m[2][0] * tmp1 + m[2][1] * tmp2;
-    modified();
+	Coord tmp1 = mat_[0][0];
+	Coord tmp2 = mat_[1][0];
+	mat_[0][0]  = m[0][0] * tmp1 + m[0][1] * tmp2;
+	mat_[1][0]  = m[1][0] * tmp1 + m[1][1] * tmp2;
+	mat_[2][0] += m[2][0] * tmp1 + m[2][1] * tmp2;
+     
+	tmp1 = mat_[0][1];
+	tmp2 = mat_[1][1];
+     
+	mat_[0][1]  = m[0][0] * tmp1 + m[0][1] * tmp2;
+	mat_[1][1]  = m[1][0] * tmp1 + m[1][1] * tmp2;
+	mat_[2][1] += m[2][0] * tmp1 + m[2][1] * tmp2;
+	modified();
+    }
 }    
 
-//+ TransformImpl(TransformObj::postmultiply)
-void TransformImpl::postmultiply(TransformObj_in t) {
-    TransformObj::Matrix m;
+//+ TransformImpl(Transform::postmultiply)
+void TransformImpl::postmultiply(Transform_in t) {
+    Transform::Matrix m;
     t->store_matrix(m);
 
     Coord tmp = mat_[0][0] * m[0][1] + mat_[0][1] * m[1][1];
@@ -1929,7 +2001,7 @@ void TransformImpl::postmultiply(TransformObj_in t) {
     modified();
 }
 
-//+ TransformImpl(TransformObj::invert)
+//+ TransformImpl(Transform::invert)
 void TransformImpl::invert() {
     Coord d = det();
     if (Math::equal(d, float(0), tolerance)) {
@@ -1947,15 +2019,15 @@ void TransformImpl::invert() {
     modified();
 }
 
-//+ TransformImpl(TransformObj::transform)
-void TransformImpl::transform(Vertex& v) {
+//+ TransformImpl(Transform::transform_vertex)
+void TransformImpl::transform_vertex(Vertex& v) {
     Coord tx = v.x;
     v.x = tx * mat_[0][0] + v.y * mat_[1][0] + mat_[2][0];
     v.y = tx * mat_[0][1] + v.y * mat_[1][1] + mat_[2][1];
 }
 
-//+ TransformImpl(TransformObj::inverse_transform)
-void TransformImpl::inverse_transform(Vertex& v) {
+//+ TransformImpl(Transform::inverse_transform_vertex)
+void TransformImpl::inverse_transform_vertex(Vertex& v) {
     Coord d = det();
     Coord a = (v.x - mat_[2][0]) / d;
     Coord b = (v.y - mat_[2][1]) / d;

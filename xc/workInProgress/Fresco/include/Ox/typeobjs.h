@@ -65,7 +65,7 @@ public:
     );
     ~ArrayTypeObj();
 
-    void _c_array_info(TypeObjRef& type, Long& size); //+ TypeObj::array_info
+    void array_info(TypeObj_out& type, Long& size); //+ TypeObj::array_info
 protected:
     TypeObj_Descriptor* type_;
     Long count_;
@@ -77,7 +77,7 @@ public:
     ~StructTypeObj();
 
     Long members(); //+ TypeObj::members
-    TypeObjRef _c_member_info(Long index); //+ TypeObj::member_info
+    TypeObj_return member_info(Long n); //+ TypeObj::member_info
 protected:
     TypeObj_Descriptor** members_;
     Long count_;
@@ -88,7 +88,7 @@ public:
     SequenceTypeObj(TypeObj_Descriptor*, TypeObj_Descriptor* element);
     ~SequenceTypeObj();
 
-    void _c_sequence_info(TypeObjRef& type, Long& size); //+ TypeObj::sequence_info
+    void sequence_info(TypeObj_out& type, Long& size); //+ TypeObj::sequence_info
 protected:
     TypeObj_Descriptor* type_;
 };
@@ -98,7 +98,7 @@ public:
     TypedefObj(TypeObj_Descriptor*, TypeObj_Descriptor* type);
     ~TypedefObj();
 
-    TypeObjRef _c_typedef_info(); //+ TypeObj::typedef_info
+    TypeObj_return typedef_info(); //+ TypeObj::typedef_info
 protected:
     TypeObj_Descriptor* type_;
 };

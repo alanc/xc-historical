@@ -1,59 +1,17 @@
-XCOMM $XConsortium: Imakefile,v 1.5 94/03/07 18:32:18 matt Exp $
+XCOMM $XConsortium: Imakefile,v 1.6 94/03/25 19:58:22 matt Exp $
 
-/*
- * TODO:  Figure out what to do with the stubs/ and raster/
- * subdirectories.			-- Matt Landau 2.10.94
- */
+#define IHaveSubdirs
+#define PassCDebugFlags /**/
+
+SUBDIRS = stubs
 
 #include <Fresco.tmpl>
 
-        DEPLIBS = FrescoClientDepLibs
-LOCAL_LIBRARIES = FrescoClientLibs 
+    SRCS = barrier.CCsuf hello.CCsuf mtcircles.CCsuf styles.CCsuf xtf.CCsuf 
+    OBJS = barrier.o hello.o mtcircles.o styles.o xtf.o 
+EXAMPLES = barrier hello mtcircles styles xtf
 
-           SRCS = barrier.CCsuf \
-		  box.CCsuf \
-	  	  buttons.CCsuf \
-		  check.CCsuf \
-		  circle.CCsuf \
-		  figviewer.CCsuf \
-		  hello.CCsuf \
-		  mtcircles.CCsuf \
-		  narrow.CCsuf \
-		  styles.CCsuf \
-		  subpaths.CCsuf \
-		  xtf.CCsuf 
-
-           OBJS = barrier.o \
-		  box.o \
-	  	  buttons.o \
-		  check.o \
-		  circle.o \
-		  figviewer.o \
-		  hello.o \
-		  mtcircles.o \
-		  narrow.o \
-		  styles.o \
-		  subpaths.o \
-		  xtf.o 
-
-       EXAMPLES = barrier \
-		  box \
-	  	  buttons \
-		  check \
-		  circle \
-		  figviewer \
-		  hello \
-		  mtcircles \
-		  narrow \
-		  styles \
-		  subpaths \
- 		  xtf
-
-all: $(EXAMPLES)
-
-#ifdef FrescoExample
-#undef FrescoExample
-#endif
+all:: $(EXAMPLES)
 
 #define FrescoExample(name)			@@\
 NormalCplusplusProgramTarget(name,name.o,$(DEPLIBS),$(LOCAL_LIBRARIES),NullParameter)
@@ -62,17 +20,13 @@ NormalCplusplusProgramTarget(name,name.o,$(DEPLIBS),$(LOCAL_LIBRARIES),NullParam
 NormalCplusplusProgramTarget(name,name.o,$(DEPLIBS),libs $(LOCAL_LIBRARIES),NullParameter)
 
 FrescoExample(barrier)
-FrescoExample(box)
-FrescoExample(buttons)
-FrescoExample(check)
-FrescoExample(circle)
-FrescoExample(figviewer)
 FrescoExample(hello)
 FrescoExample(mtcircles)
-FrescoExample(narrow)
 FrescoExample(styles)
-FrescoExample(subpaths)
 
 FrescoExampleWithLibs(xtf, $(XTFLIB) XawClientLibs)
 
 DependTarget()
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))

@@ -31,8 +31,8 @@
 
 class DisplayImpl;
 
-//+ EventImpl : EventType
-class EventImpl : public EventType {
+//+ EventImpl : Event
+class EventImpl : public Event {
 public:
     ~EventImpl();
     TypeObjId _tid();
@@ -52,6 +52,7 @@ public:
     /* Event */
     Event::TypeId type();
     Event::TimeStamp time();
+    Boolean double_click(Event::TimeStamp previous);
     Boolean positional();
     Coord pointer_x();
     Coord pointer_y();

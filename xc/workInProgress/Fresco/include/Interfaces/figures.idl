@@ -29,7 +29,7 @@
 #include <X11/Fresco/Interfaces/glyph.idl>
 
 //- FigureStyle*
-interface FigureStyle : StyleObj {
+interface FigureStyle : Style {
     //. A figure style provides a type-checked interface to the
     //. predefined figure attributes.
 
@@ -95,7 +95,7 @@ interface FigureKit : FrescoObject {
 	//. Return a default style to use for figures.
 
     //- new_style
-    FigureStyle new_style(in StyleObj parent);
+    FigureStyle new_style(in Style parent);
 	//. Return a new figure style that inherits from the given style.
 
     //- figure_root

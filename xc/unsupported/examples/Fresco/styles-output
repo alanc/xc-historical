@@ -1,6 +1,6 @@
 foreground = "green"
 background = "snow"
-font = "*times-medium-r-normal--18-*"
+font = "*times-medium-r-normal--*-140-*"
 StyleTest.foreground = "green"
 PushButton.foreground = "red"
 mybutton.foreground = "black"

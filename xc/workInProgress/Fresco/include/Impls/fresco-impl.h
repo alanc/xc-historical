@@ -41,46 +41,46 @@ public:
     void update();
     //+
 
-    CharStringRef _c_class_name();
+    CharStringRef class_name();
     long argc();
     char** argv();
 
-    DisplayObjType* _c_open_display(CharStringRef name);
-    DisplayObjType* _c_open_default_display();
+    Display* open_display(CharStringRef name);
+    Display* open_default_display();
 
-    StyleObjRef _c_style();
-    RequestObjRef _c_create_request(BaseObjectRef);
+    StyleRef fresco_style();
+    RequestObjRef create_request(BaseObjectRef);
 
-    void main(ViewerType*, GlyphType*);
+    void run(Viewer*, Glyph*);
 
-    void _c_drawing_kit(DrawingKitType*);
-    DrawingKitType* _c_drawing_kit();
+    void drawing_kit(DrawingKit*);
+    DrawingKit* drawing_kit();
 
-    void _c_figure_kit(FigureKitType*);
-    FigureKitType* _c_figure_kit();
+    void figure_kit(FigureKit*);
+    FigureKit* figure_kit();
 
-    void _c_layout_kit(LayoutKitType*);
-    LayoutKitType* _c_layout_kit();
+    void layout_kit(LayoutKit*);
+    LayoutKit* layout_kit();
 
-    void _c_thread_kit(ThreadKitType*);
-    ThreadKitType* _c_thread_kit();
+    void thread_kit(ThreadKit*);
+    ThreadKit* thread_kit();
 
-    void _c_widget_kit(WidgetKitType*);
-    WidgetKitType* _c_widget_kit();
+    void widget_kit(WidgetKit*);
+    WidgetKit* widget_kit();
 
-    void connect(DisplayObjType*);
+    void connect(Display*);
 protected:
     SharedFrescoObjectImpl object_;
     CharStringRef class_name_;
     long argc_;
     char** argv_;
-    DisplayObjType* display_;
-    StyleObjRef style_;
-    DrawingKitType* drawing_kit_;
-    FigureKitType* figure_kit_;
-    LayoutKitType* layout_kit_;
-    ThreadKitType* thread_kit_;
-    WidgetKitType* widget_kit_;
+    Display* display_;
+    StyleRef style_;
+    DrawingKit* drawing_kit_;
+    FigureKit* figure_kit_;
+    LayoutKit* layout_kit_;
+    ThreadKit* thread_kit_;
+    WidgetKit* widget_kit_;
 
     void create_root_style(
 	const char* name, int& argc, char** argv, Option* options
@@ -91,10 +91,10 @@ protected:
     const char* next_arg(int& i, int argc, char** argv, const char* message);
     void bad_arg(const char* message);
 
-    FigureKitType* create_figure_kit();
-    LayoutKitType* create_layout_kit();
-    ThreadKitType* create_thread_kit();
-    WidgetKitType* create_widget_kit();
+    FigureKit* create_figure_kit();
+    LayoutKit* create_layout_kit();
+    ThreadKit* create_thread_kit();
+    WidgetKit* create_widget_kit();
     void init_types();
 };
 

@@ -225,7 +225,7 @@ interface Action : FrescoObject {
 	//. since the execute operation was most recently called.
 };
 
-interface TransformObj;
+interface Transform;
 
 //- Region
 interface Region : FrescoObject {
@@ -290,8 +290,8 @@ interface Region : FrescoObject {
 	//. the intersection of itself and the given region.
 	//. The origin of the region is unchanged.
 
-    //- transform
-    void transform(in TransformObj t);
+    //- apply_transform
+    void apply_transform(in Transform t);
 	//. Set this region to be the region that results from
 	//. the given transformation applied to the original region.
 	//. Because a region may be implemented using bounding boxes,
@@ -347,6 +347,7 @@ interface StyleValue : FrescoObject {
     boolean is_on();
 	//. Return true if the value can be interpreted as a boolean;
 	//. that is if value is the string "on" or the string "true".
+	//. The string comparision is case-insensitive.
 
     //- read_boolean, write_boolean
     boolean read_boolean(out boolean b);
@@ -402,8 +403,8 @@ interface StyleValue : FrescoObject {
 
 interface StyleVisitor;
 
-//- StyleObj
-interface StyleObj : FrescoObject {
+//- Style
+interface Style : FrescoObject {
     //. A style is similar to an environment in a text formatting system
     //. such as Scribe.  Styles may be nested hierarchically, and
     //. attributes defined in an outer context are visible in an
@@ -447,15 +448,15 @@ interface StyleObj : FrescoObject {
     //. arguments.
 
     //- new_style
-    StyleObj new_style();
+    Style new_style();
 	//. Return a newly-created style.
 
     //- parent
-    StyleObj parent_style();
+    Style parent_style();
 	//. Return the style's parent style, if any.
 
     //- link_parent, unlink_parent
-    void link_parent(in StyleObj parent);
+    void link_parent(in Style parent);
     void unlink_parent();
 	//. The link_parent operation sets the parent of a style
 	//. for the purposes of inheriting attributes.
@@ -463,7 +464,7 @@ interface StyleObj : FrescoObject {
 	//. so that attributes are no longer inherited.
 
     //- link_child, unlink_child
-    Tag link_child(in StyleObj child);
+    Tag link_child(in Style child);
     void unlink_child(in Tag link_tag);
 	//. The link_child operation adds the given style
 	//. to the list of nested styles of this style and
@@ -471,7 +472,7 @@ interface StyleObj : FrescoObject {
 	//. removed from the list.
 
     //- merge
-    void merge(in StyleObj s);
+    void merge(in Style s);
 	//. Copy all the attributes, aliases, and nested styles
 	//. in the given style into this style.
 
@@ -516,7 +517,7 @@ interface StyleObj : FrescoObject {
 	//. where the inherited attribute is defined.
 
     //- resolve_wildcard
-    StyleValue resolve_wildcard(in CharString name, in StyleObj start);
+    StyleValue resolve_wildcard(in CharString name, in Style start);
 	//. Look for a wildcard match in this style,
 	//. using the given style as the starting point
 	//. for name and alias comparisons.  This operation
@@ -557,14 +558,14 @@ interface StyleVisitor : FrescoObject {
     //- visit_alias, visit_attribute, visit_style
     boolean visit_alias(in CharString name);
     boolean visit_attribute(in StyleValue a);
-    boolean visit_style(in StyleObj s);
+    boolean visit_style(in Style s);
 	//. Each of the visit operations
 	//. returns a boolean value indicating whether the iteration
 	//. should continue or not.
 };
 
-//- TransformObj
-interface TransformObj : FrescoObject {
+//- Transform
+interface Transform : FrescoObject {
     //. A transform represents a (logically) 4x4 matrix for use
     //. in translating coordinates.  A 2-dimensional implementation
     //. may store and manipulate a 3x2 matrix rather than
@@ -576,7 +577,7 @@ interface TransformObj : FrescoObject {
 	//. in a transform.
 
     //- load
-    void load(in TransformObj t);
+    void load(in Transform t);
 	//. Copy the matrix data from the given transform.
 
     //- load_identity
@@ -592,7 +593,7 @@ interface TransformObj : FrescoObject {
 	//. Store this transform's matrix to the given matrix data.
 
     //- equal, identity, det_is_zero
-    boolean equal(in TransformObj t);
+    boolean equal(in Transform t);
     boolean identity();
     boolean det_is_zero();
 	//. The equal operation tests if a transformation matrix
@@ -613,8 +614,8 @@ interface TransformObj : FrescoObject {
 	//. only implements rotate about the z-axis.
 
     //- premultiply, postmultiply
-    void premultiply(in TransformObj t);
-    void postmultiply(in TransformObj t);
+    void premultiply(in Transform t);
+    void postmultiply(in Transform t);
 	//. These operations set the matrix to be the result of
 	//. multiplying the matrix and the given transform.
 	//. Two operations are necessary because matrix multiplication
@@ -627,9 +628,9 @@ interface TransformObj : FrescoObject {
     void invert();
 	//. Set the matrix to its inverse.
 
-    //- transform, inverse_transform
-    void transform(inout Vertex v);
-    void inverse_transform(inout Vertex v);
+    //- transform_vertex, inverse_transform_vertex
+    void transform_vertex(inout Vertex v);
+    void inverse_transform_vertex(inout Vertex v);
 	//. Multiply the given vertex by the transformation matrix
 	//. to compute transformed or inverse-transformed coordinates.
 };

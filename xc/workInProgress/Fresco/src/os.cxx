@@ -1,5 +1,5 @@
 /*
- * $XConsortium: os.cxx,v 1.7 94/03/18 18:01:53 matt Exp $
+ * $XConsortium: os.cxx,v 1.3 94/03/07 14:58:32 matt Exp $
  */
 
 /*
@@ -51,16 +51,13 @@
 #endif
 #include <pwd.h>
 
-#if !defined(sony)
-#include <assert.h>	/* Sony's CC can't compile its own assert.h file */
-#endif
-
 #include <ctype.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sysent.h>
 #include <unistd.h>
 
 /*
@@ -90,7 +87,7 @@ extern "C" {
  * using gethostname if you can
  */
 
-#if (defined(sun) && defined(SVR4)) || (defined(sony) && defined(SVR4))
+#if defined(SVR4) && (defined(sun) || defined(sony))
 #define NEED_UTSNAME	/* avoid UCB compatiblity package */
 #include <sys/utsname.h>
 #endif
@@ -487,23 +484,12 @@ Boolean DirectoryImpl::ifdir(const char* path) {
 #include <sys/mman.h>
 #endif
 
-/* no standard place for these */
+/* apollo doesn't put read in one of the standard places? */
 extern "C" {
-    extern int close(int);
-#if defined(sgi)
-    extern int read(int, void*, unsigned int);
-#endif
-#if defined(sun) && !defined(__SYSENT_H)
-    extern int read(int, void*, unsigned int);
-#endif
 #if defined(apollo)
     extern long read(int, void*, unsigned int);
 #endif
 }
-
-#if defined(__GNUC__) || defined(sco)
-#include <unistd.h>
-#endif
 
 class FileInfo {
 public:
@@ -530,9 +516,6 @@ FileInfo::FileInfo(const char* s, int fd) {
 }
 
 File::File(FileInfo* i) {
-#if !defined(sony)
-    assert(i != nil);
-#endif
     rep_ = i;
 }
 

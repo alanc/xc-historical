@@ -174,16 +174,11 @@ void RasterImpl::invalidate() {
 	}
 
 	Fresco::unref(psd.trans);
-	Fresco::unref(psd.screen);
     }
 }
 
 RasterImpl::PerScreenData* RasterImpl::lookup(WindowImpl* w, TransformRef t) {
-    /*
-     * This cast is bad.  At worst, it should be a narrow, but I haven't
-     * had time to work on it.
-     */
-    ScreenImpl* screen = (ScreenImpl*)w->_c_screen();
+    ScreenImpl* screen = w->screen_impl();
     ScreenImpl::VisualInfo* visual = w->visual();
 
     for (PerScreenData* psd = per_screen_; psd != nil; psd = psd->next) {
@@ -228,13 +223,23 @@ void RasterImpl::transform_bounds(
     Coord& start_x, Coord& start_y,
     Coord& dx_x, Coord& dy_x, Coord& dx_y, Coord& dy_y
 ) {
+    if (is_nil(t)) {
+	start_x = 0;
+	start_y = 0;
+	dx_x = 1;
+	dy_x = 0;
+	dx_y = 0;
+	dy_y = 1;
+	return;
+    }
+
     Vertex boundaries[4];
     Vertex lower, upper, origin;
 
     origin.x = origin_x;
     origin.y = origin_y;
     origin.z = 0;
-    t->transform(origin);
+    t->transform_vertex(origin);
 
     boundaries[0].x = 0;
     boundaries[0].y = 0;
@@ -249,20 +254,8 @@ void RasterImpl::transform_bounds(
     boundaries[3].y = boundaries[2].y;
     boundaries[3].z = 0;
 
-    if (is_nil(t)) {
-	lower.x = 0;
-	lower.y = 0;
-	upper.x = columns;
-	upper.y = rows;
-	dx_x = 1;
-	dy_x = 0;
-	dx_y = 0;
-	dy_y = 1;
-	return;
-    }
-
     for (int i = 0; i < 4; i++) {
-	t->transform(boundaries[i]);
+	t->transform_vertex(boundaries[i]);
     }
 
     lower = boundaries[0];
@@ -283,7 +276,7 @@ void RasterImpl::transform_bounds(
     boundaries[3].z = 0;
 
     for (i = 0; i < 4; i++) {
-	t->inverse_transform(boundaries[i]);
+	t->inverse_transform_vertex(boundaries[i]);
     }
     
     // Change to device coordinates
@@ -316,17 +309,16 @@ RasterRef RasterImpl::read_drawable(
 }
 
 RasterBitmap::RasterBitmap(
-    DrawingKit::Data data,
+    DrawingKit::Data8 data,
     Raster::Index rows, Raster::Index columns,
     Raster::Index origin_row, Raster::Index origin_column,
     Coord scale
 ) : RasterImpl(rows, columns, origin_row, origin_column, scale) {
     bytes_per_row_ = (columns_ + 7) / 8;
     size_ = rows_ * bytes_per_row_;
-    long length = ((rows_ * columns_) + sizeof(long) - 1) / sizeof(long);
     data_ = new unsigned char[size_];
-    if (data._length == length && data._buffer != nil) {
-	Memory::copy(data._buffer, data_, (size_t)size_);
+    if (data._length == size_ && data._buffer != nil) {
+	Memory::copy(data._buffer, data_, size_t(size_));
     }
 }
 
@@ -375,7 +367,7 @@ Boolean RasterBitmap::inline_peek(
 }
 
 //+ RasterBitmap(Raster::peek)
-void RasterBitmap::peek(Raster::Index row, Raster::Index column, Raster::Element& e) {
+void RasterBitmap::peek(Index row, Index column, Element& e) {
     if (row >= rows_ || column >= columns_) {
 	e.on = false;
 	e.pixel = nil;
@@ -397,7 +389,7 @@ void RasterBitmap::peek(Raster::Index row, Raster::Index column, Raster::Element
 }
 
 //+ RasterBitmap(Raster::poke)
-void RasterBitmap::poke(Raster::Index row, Raster::Index column, const Raster::Element& e) {
+void RasterBitmap::poke(Index row, Index column, const Element& e) {
     if (row >= rows_ || column >= columns_) {
 	return;
     }
@@ -418,8 +410,8 @@ RasterImpl::PerScreenData* RasterBitmap::create(
     WindowImpl* w, TransformRef t
 ) {
     // Compute transform to map to device coordinates
-    ScreenImpl* screen = ScreenImpl::_narrow(w->screen());
-    TransformObj internal_t = device_transform(t, screen);
+    ScreenImpl* screen = w->screen_impl();
+    Transform_var internal_t = device_transform(t, screen);
     Raster::Index width = columns_, height = rows_;
     unsigned char* data = data_;
     Boolean clip_output = false;
@@ -432,7 +424,6 @@ RasterImpl::PerScreenData* RasterBitmap::create(
 	);
 	// Check for singular transforms
 	if (width == 0 || height == 0) {
-	    Fresco::unref(screen);
 	    return nil;
 	}
     } else {
@@ -443,7 +434,7 @@ RasterImpl::PerScreenData* RasterBitmap::create(
     psc->xdisplay = w->display()->xdisplay();
     psc->screen = screen;
     psc->visual = w->visual();
-    TransformObj::Matrix m;
+    Transform::Matrix m;
     t->store_matrix(m);
     psc->trans = new TransformImpl(m);
     psc->mask = nil;
@@ -462,7 +453,6 @@ RasterImpl::PerScreenData* RasterBitmap::create(
     );
     psc->time = time_++;
     psc->next = nil;
-    Fresco::unref(screen);
     if (data != data_) {
 	delete [] data;
     }
@@ -696,29 +686,24 @@ void RasterChannels::poke(
     }
 
     unsigned long index = (rows_ - row) * columns_ + column;
+    Color::Intensity r, g, b;
     
     switch (channel_count_) {
     case 2:
 	channels_[1][index] = pxl(e.blend * 255.0);
 	// fall through
-    case 1: {
-	Color::Intensity r, g, b;
-
+    case 1:
 	e.pixel->rgb(r, g, b);
 	channels_[0][index] = pxl((0.299 * r + 0.587 * g + 0.114 * b) * 255);
-    }
 	return;
     case 4:
 	channels_[3][index] = pxl(e.blend * 255.0);
 	// fall through
-    case 3: {
-	Color::Intensity r, g, b;
-
+    case 3:
 	e.pixel->rgb(r, g, b);
 	channels_[0][index] = pxl(r * 255);
 	channels_[1][index] = pxl(g * 255);
 	channels_[2][index] = pxl(b * 255);
-    }
 	return;
     }
 }
@@ -727,15 +712,15 @@ RasterImpl::PerScreenData* RasterChannels::create(
     WindowImpl* w, TransformRef t
 ) {
     // Compute transform to map to device coordinates
-    ScreenImpl* screen = ScreenImpl::_narrow(w->screen());
-    TransformObj internal_t = device_transform(t, screen);
+    ScreenImpl* screen = w->screen_impl();
+    Transform_var internal_t = device_transform(t, screen);
     Raster::Index width = columns_, height = rows_;
     Coord origin_x = origin_x_;
     Coord origin_y = origin_y_;
     Pixmap pixmap = nil;
     unsigned char* mask = nil;
     Boolean clip_output = false;
-    XDisplay* xdpy = w->display()->xdisplay();
+    XDisplay* xdpy = w->xdisplay();
 
     if (is_not_nil(internal_t) && ! internal_t->identity()) {
 	clip_output = compute_transform(
@@ -745,7 +730,6 @@ RasterImpl::PerScreenData* RasterChannels::create(
 	);
 	// Check for singular transforms
 	if (width == 0 || height == 0) {
-	    Fresco::unref(screen);
 	    return nil;
 	}
     } else {
@@ -838,7 +822,7 @@ RasterImpl::PerScreenData* RasterChannels::create(
     psc->xdisplay = xdpy;
     psc->screen = screen;
     psc->visual = w->visual();
-    TransformObj::Matrix m;
+    Transform::Matrix m;
     t->store_matrix(m);
     psc->trans = new TransformImpl(m);
     psc->pixmap = pixmap;
@@ -859,7 +843,6 @@ RasterImpl::PerScreenData* RasterChannels::create(
     psc->cost = psc->pwidth * psc->pheight * channel_count_;
     psc->time = time_++;
     psc->next = nil;
-    Fresco::unref(screen);
     return psc;
 }
 
@@ -902,9 +885,9 @@ Boolean RasterChannels::compute_transform(
 	return false;
     }
     
-    ScreenImpl* screen = ScreenImpl::_narrow(w->screen());
+    ScreenImpl* screen = w->screen_impl();
     ScreenImpl::VisualInfo* vi = w->visual();
-    XDisplay* xdpy = w->display()->xdisplay();
+    XDisplay* xdpy = w->xdisplay();
     XDrawable xwindow = w->xwindow();
     
     pixmap =  XCreatePixmap(
@@ -1097,14 +1080,14 @@ pxl RasterLUT::find_color(ColorRef color) {
 
 RasterImpl::PerScreenData* RasterLUT::create(WindowImpl* w, TransformRef t) {
     // Compute transform to map to device coordinates
-    ScreenImpl* screen = ScreenImpl::_narrow(w->screen());
+    ScreenImpl* screen = w->screen_impl();
     TransformRef internal_t = device_transform(t, screen);
     Raster::Index width = columns_, height = rows_;
     Coord origin_x = origin_x_;
     Coord origin_y = origin_y_;
     Pixmap pixmap = nil;
     Boolean clip_output = false;
-    XDisplay* xdpy = w->display()->xdisplay();
+    XDisplay* xdpy = w->xdisplay();
 
     // We assume the color indexes don't change. Compute the mapping
     // from local color map to X color map on the visual/screen.
@@ -1132,7 +1115,6 @@ RasterImpl::PerScreenData* RasterLUT::create(WindowImpl* w, TransformRef t) {
 	);
 	// Check for singular transforms
 	if (width == 0 || height == 0) {
-	    Fresco::unref(screen);
 	    return nil;
 	}
     } else {
@@ -1171,7 +1153,7 @@ RasterImpl::PerScreenData* RasterLUT::create(WindowImpl* w, TransformRef t) {
     psc->xdisplay = xdpy;
     psc->screen = screen;
     psc->visual = w->visual();
-    TransformObj::Matrix m;
+    Transform::Matrix m;
     t->store_matrix(m);
     psc->trans = new TransformImpl(m);
     psc->pixmap = pixmap;
@@ -1184,7 +1166,6 @@ RasterImpl::PerScreenData* RasterLUT::create(WindowImpl* w, TransformRef t) {
     psc->cost = psc->pwidth * psc->pheight;
     psc->time = time_++;
     psc->next = nil;
-    Fresco::unref(screen);
     return psc;
 }
 
@@ -1227,9 +1208,9 @@ Boolean RasterLUT::compute_transform(
 	return false;
     }
 
-    ScreenImpl* screen = ScreenImpl::_narrow(w->screen());
+    ScreenImpl* screen = w->screen_impl();
     ScreenImpl::VisualInfo* vi = w->visual();
-    XDisplay* xdpy = w->display()->xdisplay();;
+    XDisplay* xdpy = w->xdisplay();;
     XDrawable xwindow = w->xwindow();
     XCoord pwidth = XCoord(width);
     XCoord pheight = XCoord(height);
@@ -1248,8 +1229,7 @@ Boolean RasterLUT::compute_transform(
 	    unsigned long pixel;
 	    int px = round_minf(x); // we look at the pixel center
 	    int py = round_minf(y);
-	    if (px >= 0 && px < columns_
-		&& py >= 0 && py < rows_) {
+	    if (px >= 0 && px < columns_ && py >= 0 && py < rows_) {
 		pixel = x_lut[data_[py * columns_ + px]];
 	    } else {
 		pixel = 0;

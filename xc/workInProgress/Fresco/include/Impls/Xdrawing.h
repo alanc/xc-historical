@@ -33,7 +33,7 @@ class DisplayImpl;
 class DrawingKitColorTable;
 class DrawingKitFontTable;
 
-class DrawingKitImpl : public DrawingKitType {
+class DrawingKitImpl : public DrawingKit {
 public:
     DrawingKitImpl(DisplayImpl*);
     ~DrawingKitImpl();
@@ -47,46 +47,49 @@ public:
     void notify_observers();
     void update();
     /* DrawingKit */
-    StyleObjRef _c_style();
-    BrushRef _c_simple_brush(Coord width);
-    BrushRef _c_dither_brush(Coord width, Long pattern);
-    BrushRef _c_patterned_brush(Coord width, const DrawingKit::Data& pattern);
-    ColorRef _c_color_rgb(Color::Intensity r, Color::Intensity g, Color::Intensity b);
-    ColorRef _c_find_color(CharString_in name);
-    ColorRef _c_resolve_color(StyleObj_in s, CharString_in name);
-    ColorRef _c_foreground(StyleObj_in s);
-    ColorRef _c_background(StyleObj_in s);
-    FontRef _c_find_font(CharString_in fullname);
-    FontRef _c_find_font_match(CharString_in family, CharString_in style, Coord ptsize);
-    FontRef _c_resolve_font(StyleObj_in s, CharString_in name);
-    FontRef _c_default_font(StyleObj_in s);
-    RasterRef _c_bitmap_file(CharString_in filename);
-    RasterRef _c_bitmap_data(const DrawingKit::Data& data, Raster::Index rows, Raster::Index columns, Raster::Index origin_row, Raster::Index origin_column);
-    RasterRef _c_bitmap_char(Font_in f, CharCode c);
-    RasterRef _c_raster_tiff(CharString_in filename);
-    TransformObjRef _c_transform(TransformObj::Matrix m);
-    TransformObjRef _c_identity_transform();
-    PainterObjRef _c_printer(CharString_in output);
+    Style_return drawing_style();
+    Brush_return simple_brush(Coord width);
+    Brush_return dither_brush(Coord width, Long p);
+    Brush_return patterned_brush(Coord width, const Data32& p);
+    Pattern_return solid_pattern();
+    Pattern_return halftone_pattern();
+    Pattern_return stipple(const Data32& d);
+    Pattern_return stipple_4x4(ULong p);
+    Color_return color_rgb(Color::Intensity r, Color::Intensity g, Color::Intensity b);
+    Color_return find_color(CharString_in name);
+    Color_return resolve_color(Style_in s, CharString_in name);
+    Color_return foreground(Style_in s);
+    Color_return background(Style_in s);
+    Font_return find_font(CharString_in fullname);
+    Font_return find_font_match(CharString_in font_family, CharString_in font_style, Coord ptsize);
+    Font_return resolve_font(Style_in s, CharString_in name);
+    Font_return default_font(Style_in s);
+    Raster_return bitmap_from_data(const Data8& d, Raster::Index rows, Raster::Index columns, Raster::Index origin_row, Raster::Index origin_column);
+    Raster_return bitmap_from_char(Font_in f, CharCode c);
+    Raster_return raster_open(CharString_in name);
+    Transform_return transform_matrix(Transform::Matrix m);
+    Transform_return identity_matrix();
+    Painter_return printer(CharString_in output);
     //+
 protected:
     SharedFrescoObjectImpl object_;
     DisplayImpl* display_;
     DrawingKitColorTable* colors_;
     DrawingKitFontTable* fonts_;
-    CharString foreground_str_;
-    CharString Foreground_str_;
-    CharString background_str_;
-    CharString Background_str_;
-    CharString font_str_;
-    CharString Font_str_;
+    CharString_var foreground_str_;
+    CharString_var Foreground_str_;
+    CharString_var background_str_;
+    CharString_var Background_str_;
+    CharString_var font_str_;
+    CharString_var Font_str_;
 
     ColorRef resolve_colors(
-	StyleObjRef s, CharString_in name1, CharString_in name2
+	StyleRef s, CharString_in name1, CharString_in name2
     );
 };
 
-//+ BrushImpl : BrushType
-class BrushImpl : public BrushType {
+//+ BrushImpl : Brush
+class BrushImpl : public Brush {
 public:
     ~BrushImpl();
     TypeObjId _tid();
@@ -106,6 +109,7 @@ public:
     void notify_observers();
     void update();
     /* Brush */
+    Coord width();
     Boolean equal(Brush_in b);
     ULong hash();
     //+
@@ -121,8 +125,8 @@ protected:
     void calc_dashes(long pat, long* dash, long& count);
 };
 
-//+ ColorImpl : ColorType
-class ColorImpl : public ColorType {
+//+ ColorImpl : Color
+class ColorImpl : public Color {
 public:
     ~ColorImpl();
     TypeObjId _tid();
@@ -140,7 +144,7 @@ public:
     void notify_observers();
     void update();
     /* Color */
-    void rgb(Color::Intensity& r, Color::Intensity& g, Color::Intensity& b);
+    void rgb(Intensity& r, Intensity& g, Intensity& b);
     Boolean equal(Color_in c);
     ULong hash();
     //+
@@ -167,8 +171,8 @@ inline Color::Intensity ColorImpl::to_intensity(unsigned short s) {
     return float(s) / float(0xffff);
 }
 
-//+ FontImpl : FontType
-class FontImpl : public FontType {
+//+ FontImpl : Font
+class FontImpl : public Font {
 public:
     ~FontImpl();
     TypeObjId _tid();
@@ -188,8 +192,8 @@ public:
     /* Font */
     Boolean equal(Font_in f);
     ULong hash();
-    CharStringRef _c_name();
-    CharStringRef _c_encoding();
+    CharString_return name();
+    CharString_return encoding();
     Coord point_size();
     void font_info(Font::Info& i);
     void char_info(CharCode c, Font::Info& i);
@@ -200,14 +204,14 @@ public:
     XDisplay* xdisplay();
     XFontStruct* xfont();
     RasterRef bitmap(CharCode);
-    Coord to_coord(int);
+    Coord to_coord(PixelCoord);
+    Coord average_width();
 protected:
     SharedFrescoObjectImpl object_;
     CharStringRef name_;
     CharStringRef encoding_;
     Coord point_size_;
     Coord scale_;
-    Coord* widths_;
     XDisplay* xdisplay_;
     XFontStruct* xfont_;
     RasterRef* rasters_;
@@ -215,5 +219,35 @@ protected:
 
 inline XDisplay* FontImpl::xdisplay() { return xdisplay_; }
 inline XFontStruct* FontImpl::xfont() { return xfont_; }
+
+//+ PatternImpl : Pattern
+class PatternImpl : public Pattern {
+public:
+    ~PatternImpl();
+    TypeObjId _tid();
+    static PatternImpl* _narrow(BaseObjectRef);
+//+
+public:
+    PatternImpl(ULong);
+    PatternImpl(const DrawingKit::Data32&);
+
+    //+ Pattern::*
+    /* FrescoObject */
+    Long ref__(Long references);
+    Tag attach(FrescoObject_in observer);
+    void detach(Tag attach_tag);
+    void disconnect();
+    void notify_observers();
+    void update();
+    /* Pattern */
+    Boolean equal(Pattern_in p);
+    ULong hash();
+    void stipple(DrawingKit::Data32& d);
+    //+
+protected:
+    SharedFrescoObjectImpl object_;
+public:
+    DrawingKit::Data32 stipple_;
+};
 
 #endif

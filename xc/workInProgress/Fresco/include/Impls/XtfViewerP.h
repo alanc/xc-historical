@@ -37,14 +37,14 @@ typedef struct _XtfViewerClassRec {
 extern XtfViewerClassRec XtfviewerClassRec;
 
 struct Fresco;
-struct GlyphType;
-struct ViewerType;
+struct Glyph;
+struct Viewer;
 struct XtfWindowImpl;
 
 typedef struct _XtfViewerPart {
     struct Fresco* fresco;
-    struct ViewerType* viewer;
-    struct GlyphType* glyph;
+    struct Viewer* viewer;
+    struct Glyph* glyph;
     struct XtfWindowImpl* window;
 } XtfViewerPart;
 

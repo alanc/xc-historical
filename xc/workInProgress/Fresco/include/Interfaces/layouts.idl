@@ -31,31 +31,6 @@
 interface Color;
 interface Font;
 
-//- DeckObj*
-interface DeckObj : Glyph {
-    //. A deck is an aggregate that only shows one of its children
-    //. at a time.  The natural size of a deck is the maximum size
-    //. of the natural sizes of its children.  Regardless of
-    //. the flexibility of their children, decks are rigid.
-
-    //- card
-    GlyphOffset card();
-	//. Return the offset for the currently-visible child
-	//. (also known as the "top").
-
-    //- flip_to
-    void flip_to(in GlyphOffset off);
-	//. Set the currently-visible child to the one that corresponds
-	//. to the given offset.
-};
-
-interface ScrollBox : Glyph {
-    boolean shown(in GlyphOffset off);
-
-    GlyphOffset first_shown();
-    GlyphOffset last_shown();
-};
-
 //- LayoutKit*
 interface LayoutKit : FrescoObject {
     //. LayoutKit provides operations for creating glyphs that
@@ -98,8 +73,6 @@ interface LayoutKit : FrescoObject {
 	//. use the alignment of their first component
 	//. for their alignment along the tiling axis.
 
-    ScrollBox vscrollbox();
-
     //- overlay
     Glyph overlay();
 	//. An overlay aligns the origins of its children
@@ -109,8 +82,11 @@ interface LayoutKit : FrescoObject {
 	//. with the same z-coordinate.
 
     //- deck
-    DeckObj deck();
-	//. Return a new deck.  See the DeckObj interface definition.
+    Glyph deck();
+	//. A deck is an aggregate that only shows one of its children
+	//. at a time.  The natural size of a deck is the maximum size
+	//. of the natural sizes of its children.  Regardless of
+	//. the flexibility of their children, decks are rigid.
 
     //- back
     Glyph back(in Glyph g, in Glyph under);

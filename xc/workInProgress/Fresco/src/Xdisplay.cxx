@@ -72,13 +72,9 @@ extern "C" {
  * Fresco operations to open an X display.
  */
 
-DisplayObj Fresco::open_display(CharStringRef name) {
-    return _c_open_display(name);
-}
-
-DisplayObjRef FrescoImpl::_c_open_display(CharStringRef name) {
+DisplayRef FrescoImpl::open_display(CharStringRef name) {
     CharStringBuffer buf(name);
-    DisplayObjRef d = nil;
+    DisplayRef d = nil;
     XDisplay* dpy = XOpenDisplay(buf.string());
     if (dpy != nil) {
 	d = new DisplayImpl(this, dpy);
@@ -86,18 +82,11 @@ DisplayObjRef FrescoImpl::_c_open_display(CharStringRef name) {
     return d;
 }
 
-DisplayObj Fresco::open_default_display() {
-    return _c_open_default_display();
-}
-
-DisplayObjRef FrescoImpl::_c_open_default_display() {
-    DisplayObjRef d = nil;
-    StyleValue a = style_->resolve(Fresco::string_ref("display"));
-    if (is_not_nil(a)) {
-	CharString v;
-	if (a->read_string(v)) {
-	    d = _c_open_display(v);
-	}
+DisplayRef FrescoImpl::open_default_display() {
+    DisplayRef d = nil;
+    CharString_var v = Fresco::get_string(style_, "display");
+    if (is_not_nil(v)) {
+	d = Display::_return_ref(open_display(v));
     }
     if (is_nil(d)) {
 	XDisplay* dpy = XOpenDisplay(nil);
@@ -108,7 +97,7 @@ DisplayObjRef FrescoImpl::_c_open_default_display() {
     return d;
 }
 
-class CursorImpl : public CursorType {
+class CursorImpl : public Cursor {
 public:
     CursorImpl(short x, short y, long pattern[16], long mask[16]);
     CursorImpl(RasterRef bitmap, RasterRef mask);
@@ -171,8 +160,8 @@ void CursorImpl::update() {
 }
 //+
 
-declarePtrList(DisplayImplDamage,WindowType)
-implementPtrList(DisplayImplDamage,WindowType)
+declarePtrList(DisplayImplDamage,Window)
+implementPtrList(DisplayImplDamage,Window)
 
 declarePtrList(DisplayImplFilters,DisplayImpl::FilterInfo)
 implementPtrList(DisplayImplFilters,DisplayImpl::FilterInfo)
@@ -181,7 +170,7 @@ declareTable(DisplayImplWindowTable,XWindow,WindowRef)
 implementTable(DisplayImplWindowTable,XWindow,WindowRef)
 
 DisplayImpl::DisplayImpl(Fresco* f, XDisplay* xdisplay) {
-    ThreadKit t = f->thread_kit();
+    ThreadKit_var t = f->thread_kit();
     fresco_ = f;
     lock_ = t->lock();
     reading_ = false;
@@ -199,6 +188,16 @@ DisplayImpl::DisplayImpl(Fresco* f, XDisplay* xdisplay) {
 	DefaultVisual(xdisplay, s), 0, nil
     );
     init_style();
+
+    double dblclick = 0.250;
+    StyleValue_var a = style_->resolve(
+	Fresco::tmp_string_ref("dblclick_threshold")
+    );
+    if (is_not_nil(a)) {
+	a->read_real(dblclick);
+    }
+    pointer_double_click_threshold(dblclick);
+
     nscreens_ = ScreenCount(xdisplay_);
     screen_ = new ScreenImpl*[nscreens_];
     for (long i = 0; i < nscreens_; i++) {
@@ -212,10 +211,10 @@ DisplayImpl::DisplayImpl(Fresco* f, XDisplay* xdisplay) {
     damaged_ = new DisplayImplDamage;
     wm_protocols_ = None;
     wm_delete_ = None;
-    if (style_->is_on(Fresco::string_ref("synchronous"))) {
+    if (style_->is_on(Fresco::tmp_string_ref("synchronous"))) {
 	XSynchronize(xdisplay_, True);
     }
-    trace_events_ = style_->is_on(Fresco::string_ref("traceEvents"));
+    trace_events_ = style_->is_on(Fresco::tmp_string_ref("traceEvents"));
 }
 
 DisplayImpl::~DisplayImpl() {
@@ -258,49 +257,49 @@ void DisplayImpl::update() {
 }
 //+
 
-//+ DisplayImpl(DisplayObj::style)
-DisplayStyleRef DisplayImpl::_c_style() {
-    return DisplayStyle::_duplicate(style_);
+//+ DisplayImpl(Display::display_style)
+Style_return DisplayImpl::display_style() {
+    return Style::_duplicate(style_);
 }
 
-//+ DisplayImpl(DisplayObj::drawing_kit)
-DrawingKitRef DisplayImpl::_c_drawing_kit() {
+//+ DisplayImpl(Display::drawing_kit)
+DrawingKit_return DisplayImpl::drawing_kit() {
     return new DrawingKitImpl(this);
 }
 
-//+ DisplayImpl(DisplayObj::number_of_screens)
-DisplayObj::ScreenNumber DisplayImpl::number_of_screens() {
+//+ DisplayImpl(Display::number_of_screens)
+Display::ScreenNumber DisplayImpl::number_of_screens() {
     return nscreens_;
 }
 
-//+ DisplayImpl(DisplayObj::default_screen)
-ScreenObjRef DisplayImpl::_c_default_screen() {
-    return ScreenObj::_duplicate(screen_[DefaultScreen(xdisplay_)]);
+//+ DisplayImpl(Display::default_screen)
+Screen_return DisplayImpl::default_screen() {
+    return Screen::_duplicate(screen_[DefaultScreen(xdisplay_)]);
 }
 
-//+ DisplayImpl(DisplayObj::screen)
-ScreenObjRef DisplayImpl::_c_screen(DisplayObj::ScreenNumber n) {
-    return ScreenObj::_duplicate(screen_[n]);
+//+ DisplayImpl(Display::display_screen)
+Screen_return DisplayImpl::display_screen(Display::ScreenNumber n) {
+    return Screen::_duplicate(screen_[n]);
 }
 
-//+ DisplayImpl(DisplayObj::cursor_from_data)
-CursorRef DisplayImpl::_c_cursor_from_data(Short x, Short y, Long pattern[16], Long mask[16]) {
-    return new CursorImpl(x, y, pattern, mask);
+//+ DisplayImpl(Display::cursor_from_data)
+Cursor_return DisplayImpl::cursor_from_data(Short x, Short y, Long pat[16], Long mask[16]) {
+    return new CursorImpl(x, y, pat, mask);
 }
 
-//+ DisplayImpl(DisplayObj::cursor_from_bitmap)
-CursorRef DisplayImpl::_c_cursor_from_bitmap(Raster_in b, Raster_in mask) {
+//+ DisplayImpl(Display::cursor_from_bitmap)
+Cursor_return DisplayImpl::cursor_from_bitmap(Raster_in b, Raster_in mask) {
     return new CursorImpl(b, mask);
 }
 
-//+ DisplayImpl(DisplayObj::cursor_from_font)
-CursorRef DisplayImpl::_c_cursor_from_font(Font_in f, Long pattern, Long mask) {
-    return new CursorImpl(f, pattern, mask);
+//+ DisplayImpl(Display::cursor_from_font)
+Cursor_return DisplayImpl::cursor_from_font(Font_in f, Long pat, Long mask) {
+    return new CursorImpl(f, pat, mask);
 }
 
-//+ DisplayImpl(DisplayObj::cursor_from_index)
-CursorRef DisplayImpl::_c_cursor_from_index(Long index) {
-    return new CursorImpl(index);
+//+ DisplayImpl(Display::cursor_from_index)
+Cursor_return DisplayImpl::cursor_from_index(Long n) {
+    return new CursorImpl(n);
 }
 
 /*
@@ -313,7 +312,7 @@ CursorRef DisplayImpl::_c_cursor_from_index(Long index) {
 declareActionCallback(DisplayImpl)
 implementActionCallback(DisplayImpl)
 
-//+ DisplayImpl(DisplayObj::run)
+//+ DisplayImpl(Display::run)
 void DisplayImpl::run(Boolean b) {
     if (!b) {
 	lock_->acquire();
@@ -325,8 +324,8 @@ void DisplayImpl::run(Boolean b) {
 	return;
     }
     running_ = true;
-    if (!style_->is_on(Fresco::string_ref("single_threaded"))) {
-	ThreadKit t = fresco_->thread_kit();
+    if (!style_->is_on(Fresco::tmp_string_ref("single_threaded"))) {
+	ThreadKit_var t = fresco_->thread_kit();
 	redisplay_ = t->thread(
 	    new ActionCallback(DisplayImpl)(
 		this, &DisplayImpl::redisplay_thread
@@ -345,18 +344,18 @@ void DisplayImpl::run(Boolean b) {
     Fresco::unref(event);
 }
 
-//+ DisplayImpl(DisplayObj::running)
+//+ DisplayImpl(Display::running)
 Boolean DisplayImpl::running() {
     return running_;
 }
 
-//+ DisplayImpl(DisplayObj::add_filter)
+//+ DisplayImpl(Display::add_filter)
 Tag DisplayImpl::add_filter(GlyphTraversal_in t) {
     lock_->acquire();
     FilterInfo* info = new FilterInfo;
     ++filter_tag_;
     info->tag = filter_tag_;
-    info->inverse.load(t->transform());
+    info->inverse.load(t->current_transform());
     info->inverse.invert();
     info->traversal = GlyphTraversal::_duplicate(t);
     filters_->prepend(info);
@@ -369,7 +368,7 @@ Tag DisplayImpl::add_filter(GlyphTraversal_in t) {
  * given tag.
  */
 
-//+ DisplayImpl(DisplayObj::remove_filter)
+//+ DisplayImpl(Display::remove_filter)
 void DisplayImpl::remove_filter(Tag add_tag) {
     lock_->acquire();
     for (ListUpdater(DisplayImplFilters) i(*filters_); i.more(); i.next()) {
@@ -396,7 +395,7 @@ void DisplayImpl::remove_filter(Tag add_tag) {
  * to check for damage.
  */
 
-//+ DisplayImpl(DisplayObj::need_repair)
+//+ DisplayImpl(Display::need_repair)
 void DisplayImpl::need_repair(Window_in w) {
     lock_->acquire();
     damaged_->append(Window::_duplicate(w));
@@ -406,7 +405,7 @@ void DisplayImpl::need_repair(Window_in w) {
     lock_->release();
 }
 
-//+ DisplayImpl(DisplayObj::repair)
+//+ DisplayImpl(Display::repair)
 void DisplayImpl::repair() {
     lock_->acquire();
     if (damaged_->count() != 0) {
@@ -415,17 +414,17 @@ void DisplayImpl::repair() {
     lock_->release();
 }
 
-//+ DisplayImpl(DisplayObj::flush)
+//+ DisplayImpl(Display::flush)
 void DisplayImpl::flush() {
     XFlush(xdisplay_);
 }
 
-//+ DisplayImpl(DisplayObj::flush_and_wait)
+//+ DisplayImpl(Display::flush_and_wait)
 void DisplayImpl::flush_and_wait() {
     XSync(xdisplay_, 0);
 }
 
-//+ DisplayImpl(DisplayObj::ring_bell)
+//+ DisplayImpl(Display::ring_bell)
 void DisplayImpl::ring_bell(Float pct_loudness) {
     if (pct_loudness >= 0) {
 	long v = long(100.0 * pct_loudness + 0.5);
@@ -436,7 +435,7 @@ void DisplayImpl::ring_bell(Float pct_loudness) {
     }
 }
 
-//+ DisplayImpl(DisplayObj::close)
+//+ DisplayImpl(Display::close)
 void DisplayImpl::close() {
     run(false);
     lock_->acquire();
@@ -454,11 +453,11 @@ XDisplay* DisplayImpl::xdisplay() { return xdisplay_; }
 
 void DisplayImpl::init_style() {
     long priority = -5;
-    DisplayStyleImpl* s = new DisplayStyleImpl(fresco_, this);
+    StyleImpl* s = new StyleImpl(fresco_);
     style_ = s;
-    s->merge(fresco_->style());
+    s->merge(fresco_->fresco_style());
     load_path(X_LIBDIR, "/app-defaults/Fresco", priority);
-    CharString name = fresco_->class_name();
+    CharString_var name = fresco_->class_name();
     if (is_not_nil(name)) {
 	CharStringBuffer buf(name);
 	const char* p = buf.string();
@@ -471,13 +470,13 @@ void DisplayImpl::init_style() {
     }
     const char* list = XResourceManagerString(xdisplay_);
     if (list != nil) {
-	s->impl()->load_list(list, strlen(list), priority);
+	s->impl_.load_list(list, strlen(list), priority);
     } else {
 	load_path(home(), "/.Xdefaults", priority);
     }
     const char* xenv = getenv("XENVIRONMENT");
     if (xenv != nil) {
-	s->impl()->load_file(xenv, priority);
+	s->impl_.load_file(xenv, priority);
     } else {
 	load_path(".Xdefaults-", Host::name(), priority);
     }
@@ -488,7 +487,7 @@ void DisplayImpl::load_path(
 ) {
     char* buf = new char[strlen(head) + strlen(tail) + 1];
     sprintf(buf, "%s%s", head, tail);
-    style_->impl()->load_file(buf, priority);
+    style_->impl_.load_file(buf, priority);
     delete buf;
 }
 
@@ -497,7 +496,7 @@ void DisplayImpl::load_path(
 ) {
     char* buf = new char[strlen(head) + strlen(middle) + strlen(tail) + 1];
     sprintf(buf, "%s%s%s", head, middle, tail);
-    style_->impl()->load_file(buf, priority);
+    style_->impl_.load_file(buf, priority);
     delete buf;
 }
 
@@ -655,8 +654,7 @@ void DisplayImpl::dispatch(EventImpl* e) {
 	if (xe.xclient.message_type == wm_protocols_atom() &&
 	    xe.xclient.data.l[0] == wm_delete_atom()
 	) {
-	    Viewer v = w->main_viewer();
-	    v->close();
+	    _tmp(w->main_viewer())->close();
 	} else {
 	    deliver = true;
 	}
@@ -681,12 +679,12 @@ Boolean DisplayImpl::filtered(EventImpl* e) {
     for (ListItr(DisplayImplFilters) i(*filters_); i.more() && !b; i.next()) {
 	DisplayImpl::FilterInfo* info = i.cur();
 	GlyphTraversalRef t = info->traversal;
-	Viewer v = t->current_viewer();
+	Viewer_var v = t->current_viewer();
 	if (is_not_nil(v)) {
-	    PainterObj p = t->painter();
+	    Painter_var p = t->current_painter();
 	    p->push_clipping();
 	    ev.x = x; ev.y = y; ev.z = 0;
-	    info->inverse.transform(ev);
+	    info->inverse.transform_vertex(ev);
 	    p->clip_rect(ev.x, ev.y, ev.x, ev.y);
 	    b = v->handle(t, e);
 	    p->pop_clipping();
@@ -701,7 +699,7 @@ Boolean DisplayImpl::filtered(EventImpl* e) {
  */
 
 void DisplayImpl::expose(WindowRef w, const XExposeEvent& xe) {
-    ScreenObj s = w->screen();
+    Screen_var s = w->window_screen();
     Window::Placement p;
     w->get_configuration(false, p);
     Coord left = s->to_coord(xe.x);
@@ -720,7 +718,7 @@ void DisplayImpl::expose(WindowRef w, const XExposeEvent& xe) {
  */
 
 void DisplayImpl::configure(WindowRef w, const XConfigureEvent& xe) {
-    ScreenObj s = w->screen();
+    Screen_var s = w->window_screen();
     w->configure_notify(s->to_coord(xe.width), s->to_coord(xe.height));
 }
 
@@ -731,7 +729,7 @@ void DisplayImpl::configure(WindowRef w, const XConfigureEvent& xe) {
  * The synchronization looks wrong because it acquires the lock and
  * never releases it explicitly.  However, the lock will be released
  * whenever redisplay is waiting for more damage.  We assume that
- * DisplayObj::close will terminate the redisplay thread while blocked
+ * Display::close will terminate the redisplay thread while blocked
  * waiting for damage, so the releasing the lock will not be a concern.
  */
 
@@ -825,108 +823,9 @@ void DisplayImpl::unbind(XWindow xid) {
     lock_->release();
 }
 
-/*
- * Display-specific style information.
- */
-
-DisplayStyleImpl::DisplayStyleImpl(Fresco* f, DisplayImpl* d) : impl_(f) {
-    impl_.style_ = this;
-    impl_.lock_ = nil;
-    display_ = d;
-}
-
-DisplayStyleImpl::~DisplayStyleImpl() { }
-
-//+ DisplayStyleImpl(FrescoObject::=object_.)
-Long DisplayStyleImpl::ref__(Long references) {
-    return object_.ref__(references);
-}
-Tag DisplayStyleImpl::attach(FrescoObject_in observer) {
-    return object_.attach(observer);
-}
-void DisplayStyleImpl::detach(Tag attach_tag) {
-    object_.detach(attach_tag);
-}
-void DisplayStyleImpl::disconnect() {
-    object_.disconnect();
-}
-void DisplayStyleImpl::notify_observers() {
-    object_.notify_observers();
-}
-void DisplayStyleImpl::update() {
-    object_.update();
-}
-//+
-
-//+ DisplayStyleImpl(StyleObj::=impl_.)
-StyleObjRef DisplayStyleImpl::_c_new_style() {
-    return impl_._c_new_style();
-}
-StyleObjRef DisplayStyleImpl::_c_parent_style() {
-    return impl_._c_parent_style();
-}
-void DisplayStyleImpl::link_parent(StyleObj_in parent) {
-    impl_.link_parent(parent);
-}
-void DisplayStyleImpl::unlink_parent() {
-    impl_.unlink_parent();
-}
-Tag DisplayStyleImpl::link_child(StyleObj_in child) {
-    return impl_.link_child(child);
-}
-void DisplayStyleImpl::unlink_child(Tag link_tag) {
-    impl_.unlink_child(link_tag);
-}
-void DisplayStyleImpl::merge(StyleObj_in s) {
-    impl_.merge(s);
-}
-CharStringRef DisplayStyleImpl::_c_name() {
-    return impl_._c_name();
-}
-void DisplayStyleImpl::_c_name(CharString_in _p) {
-    impl_._c_name(_p);
-}
-void DisplayStyleImpl::alias(CharString_in s) {
-    impl_.alias(s);
-}
-Boolean DisplayStyleImpl::is_on(CharString_in name) {
-    return impl_.is_on(name);
-}
-StyleValueRef DisplayStyleImpl::_c_bind(CharString_in name) {
-    return impl_._c_bind(name);
-}
-void DisplayStyleImpl::unbind(CharString_in name) {
-    impl_.unbind(name);
-}
-StyleValueRef DisplayStyleImpl::_c_resolve(CharString_in name) {
-    return impl_._c_resolve(name);
-}
-StyleValueRef DisplayStyleImpl::_c_resolve_wildcard(CharString_in name, StyleObj_in start) {
-    return impl_._c_resolve_wildcard(name, start);
-}
-Long DisplayStyleImpl::match(CharString_in name) {
-    return impl_.match(name);
-}
-void DisplayStyleImpl::visit_aliases(StyleVisitor_in v) {
-    impl_.visit_aliases(v);
-}
-void DisplayStyleImpl::visit_attributes(StyleVisitor_in v) {
-    impl_.visit_attributes(v);
-}
-void DisplayStyleImpl::visit_styles(StyleVisitor_in v) {
-    impl_.visit_styles(v);
-}
-void DisplayStyleImpl::lock() {
-    impl_.lock();
-}
-void DisplayStyleImpl::unlock() {
-    impl_.unlock();
-}
-//+
-
-//+ DisplayStyleImpl(DisplayStyle::auto_repeat=b)
-void DisplayStyleImpl::auto_repeat(Boolean b) {
-    XDisplay* dpy = display_->xdisplay();
+//+ DisplayImpl(Display::auto_repeat=b)
+void DisplayImpl::auto_repeat(Boolean b) {
+    XDisplay* dpy = xdisplay_;
     if (b) {
 	XAutoRepeatOn(dpy);
     } else {
@@ -934,51 +833,62 @@ void DisplayStyleImpl::auto_repeat(Boolean b) {
     }
 }
 
-//+ DisplayStyleImpl(DisplayStyle::auto_repeat?)
-Boolean DisplayStyleImpl::auto_repeat() {
+//+ DisplayImpl(Display::auto_repeat?)
+Boolean DisplayImpl::auto_repeat() {
     XKeyboardState k;
-    XGetKeyboardControl(display_->xdisplay(), &k);
+    XGetKeyboardControl(xdisplay_, &k);
     return k.global_auto_repeat == AutoRepeatModeOn;
 }
 
-//+ DisplayStyleImpl(DisplayStyle::key_click_volume=v)
-void DisplayStyleImpl::key_click_volume(Float v) {
+//+ DisplayImpl(Display::key_click_volume=v)
+void DisplayImpl::key_click_volume(Float v) {
     XKeyboardControl k;
     k.key_click_percent = int(100.0 * v + 0.5);
-    XChangeKeyboardControl(display_->xdisplay(), KBKeyClickPercent, &k);
+    XChangeKeyboardControl(xdisplay_, KBKeyClickPercent, &k);
 }
 
-//+ DisplayStyleImpl(DisplayStyle::key_click_volume?)
-Float DisplayStyleImpl::key_click_volume() {
+//+ DisplayImpl(Display::key_click_volume?)
+Float DisplayImpl::key_click_volume() {
     XKeyboardState k;
-    XGetKeyboardControl(display_->xdisplay(), &k);
+    XGetKeyboardControl(xdisplay_, &k);
     return float(k.key_click_percent) * 0.01;
 }
 
-//+ DisplayStyleImpl(DisplayStyle::pointer_acceleration=a)
-void DisplayStyleImpl::pointer_acceleration(Float a) {
+//+ DisplayImpl(Display::pointer_acceleration=a)
+void DisplayImpl::pointer_acceleration(Float a) {
     XChangePointerControl(
-	display_->xdisplay(), True, False, int(100.0 * a + 0.5), 100, 0
+	xdisplay_, True, False, int(100.0 * a + 0.5), 100, 0
     );
 }
 
-//+ DisplayStyleImpl(DisplayStyle::pointer_acceleration?)
-Float DisplayStyleImpl::pointer_acceleration() {
+//+ DisplayImpl(Display::pointer_acceleration?)
+Float DisplayImpl::pointer_acceleration() {
     int a1, a2, t;
-    XGetPointerControl(display_->xdisplay(), &a1, &a2, &t);
+    XGetPointerControl(xdisplay_, &a1, &a2, &t);
     return float(a1) / float(a2);
 }
 
-//+ DisplayStyleImpl(DisplayStyle::pointer_threshold=t)
-void DisplayStyleImpl::pointer_threshold(Long t) {
-    XChangePointerControl(display_->xdisplay(), False, True, 0, 0, int(t));
+//+ DisplayImpl(Display::pointer_threshold=t)
+void DisplayImpl::pointer_threshold(Long t) {
+    XChangePointerControl(xdisplay_, False, True, 0, 0, int(t));
 }
 
-//+ DisplayStyleImpl(DisplayStyle::pointer_threshold?)
-Long DisplayStyleImpl::pointer_threshold() {
+//+ DisplayImpl(Display::pointer_threshold?)
+Long DisplayImpl::pointer_threshold() {
     int a1, a2, t;
-    XGetPointerControl(display_->xdisplay(), &a1, &a2, &t);
+    XGetPointerControl(xdisplay_, &a1, &a2, &t);
     return long(t);
+}
+
+//+ DisplayImpl(Display::pointer_double_click_threshold=t)
+void DisplayImpl::pointer_double_click_threshold(Float t) {
+    double_click_ = t;
+    double_click_msec_ = Long(1000 * t + 0.5);
+}
+
+//+ DisplayImpl(Display::pointer_double_click_threshold?)
+Float DisplayImpl::pointer_double_click_threshold() {
+    return double_click_;
 }
 
 /*
@@ -1071,6 +981,11 @@ Event::TimeStamp EventImpl::time() {
 	break;
     }
     return t;
+}
+
+//+ EventImpl(Event::double_click)
+Boolean EventImpl::double_click(Event::TimeStamp previous) {
+    return time() - previous < display_->double_click_threshold_msec();
 }
 
 //+ EventImpl(Event::positional)
@@ -1237,7 +1152,7 @@ void EventImpl::locate() {
 	    break;
 	}
 	if (position) {
-	    ScreenObj s = window_->screen();
+	    Screen_var s = window_->window_screen();
 	    Window::Placement p;
 	    window_->get_configuration(false, p);
 	    x_ = s->to_coord(x);
@@ -1307,7 +1222,7 @@ ScreenImpl::ScreenImpl(Fresco* f, DisplayImpl* d, long n) {
     root_ = RootWindow(dpy, n);
     visuals_ = new ScreenVisualList;
     default_visual_ = nil;
-    ScreenImpl::VisualInfo* info = find_visual(d->style());
+    ScreenImpl::VisualInfo* info = find_visual(d->display_style());
     if (info == nil) {
 	info = new ScreenImpl::VisualInfo;
 	info->visual = nil;
@@ -1355,7 +1270,7 @@ void ScreenImpl::update() {
 }
 //+
 
-//+ ScreenImpl(ScreenObj::dpi=c)
+//+ ScreenImpl(Screen::dpi=c)
 void ScreenImpl::dpi(Coord c) {
     if (!Math::equal(c, float(0), float(1e-4))) {
 	pixels_ = 72.0 / c;
@@ -1363,42 +1278,42 @@ void ScreenImpl::dpi(Coord c) {
     }
 }
 
-//+ ScreenImpl(ScreenObj::dpi?)
+//+ ScreenImpl(Screen::dpi?)
 Coord ScreenImpl::dpi() {
     return 72.0 / pixels_;
 }
 
-//+ ScreenImpl(ScreenObj::display)
-DisplayObjRef ScreenImpl::_c_display() {
-    return DisplayObj::_duplicate(display_);
+//+ ScreenImpl(Screen::screen_display)
+Display_return ScreenImpl::screen_display() {
+    return Display::_duplicate(display_);
 }
 
-//+ ScreenImpl(ScreenObj::width)
+//+ ScreenImpl(Screen::width)
 Coord ScreenImpl::width() {
     return width_;
 }
 
-//+ ScreenImpl(ScreenObj::height)
+//+ ScreenImpl(Screen::height)
 Coord ScreenImpl::height() {
     return height_;
 }
 
-//+ ScreenImpl(ScreenObj::to_pixels)
+//+ ScreenImpl(Screen::to_pixels)
 PixelCoord ScreenImpl::to_pixels(Coord c) {
     return PixelCoord( c * points_ + ((c > 0) ? 0.5 : -0.5) );
 }
 
-//+ ScreenImpl(ScreenObj::to_coord)
+//+ ScreenImpl(Screen::to_coord)
 Coord ScreenImpl::to_coord(PixelCoord p) {
     return Coord(p) * pixels_;
 }
 
-//+ ScreenImpl(ScreenObj::to_pixels_coord)
+//+ ScreenImpl(Screen::to_pixels_coord)
 Coord ScreenImpl::to_pixels_coord(Coord c) {
     return to_coord(to_pixels(c));
 }
 
-//+ ScreenImpl(ScreenObj::move_pointer)
+//+ ScreenImpl(Screen::move_pointer)
 void ScreenImpl::move_pointer(Coord x, Coord y) {
     XWarpPointer(
 	display_->xdisplay(), None, root_, 0, 0, 0, 0,
@@ -1406,28 +1321,28 @@ void ScreenImpl::move_pointer(Coord x, Coord y) {
     );
 }
 
-//+ ScreenImpl(ScreenObj::application)
-WindowRef ScreenImpl::_c_application(Viewer_in v) {
+//+ ScreenImpl(Screen::application)
+Window_return ScreenImpl::application(Viewer_in v) {
     return new ApplicationWindow(display_, this, v);
 }
 
-//+ ScreenImpl(ScreenObj::top_level)
-WindowRef ScreenImpl::_c_top_level(Viewer_in v, Window_in group_leader) {
+//+ ScreenImpl(Screen::top_level)
+Window_return ScreenImpl::top_level(Viewer_in v, Window_in group_leader) {
     return new TopLevelWindow(display_, this, v, group_leader);
 }
 
-//+ ScreenImpl(ScreenObj::transient)
-WindowRef ScreenImpl::_c_transient(Viewer_in v, Window_in transient_for) {
+//+ ScreenImpl(Screen::transient)
+Window_return ScreenImpl::transient(Viewer_in v, Window_in transient_for) {
     return new TransientWindow(display_, this, v, transient_for);
 }
 
-//+ ScreenImpl(ScreenObj::popup)
-WindowRef ScreenImpl::_c_popup(Viewer_in v) {
+//+ ScreenImpl(Screen::popup)
+Window_return ScreenImpl::popup(Viewer_in v) {
     return new PopupWindow(display_, this, v);
 }
 
-//+ ScreenImpl(ScreenObj::icon)
-WindowRef ScreenImpl::_c_icon(Viewer_in v) {
+//+ ScreenImpl(Screen::icon)
+Window_return ScreenImpl::icon(Viewer_in v) {
     return new IconWindow(display_, this, v);
 }
 
@@ -1437,7 +1352,7 @@ ScreenImpl::VisualInfo* ScreenImpl::default_visual() {
     return default_visual_;
 }
 
-ScreenImpl::VisualInfo* ScreenImpl::find_visual(StyleObjRef s) {
+ScreenImpl::VisualInfo* ScreenImpl::find_visual(StyleRef s) {
     ScreenImpl::VisualInfo* info = lookup_overlay(s);
     if (info != nil) {
 	return info;
@@ -1459,9 +1374,9 @@ ScreenImpl::VisualInfo* ScreenImpl::find_visual(StyleObjRef s) {
     return info;
 }
 
-ScreenImpl::VisualInfo* ScreenImpl::lookup_overlay(StyleObjRef s) {
+ScreenImpl::VisualInfo* ScreenImpl::lookup_overlay(StyleRef s) {
     ScreenImpl::VisualInfo* info = nil;
-    StyleValue a = s->resolve(Fresco::string_ref("overlay"));
+    StyleValue_var a = s->resolve(Fresco::tmp_string_ref("overlay"));
     if (is_not_nil(a)) {
 	long layer;
 	if (find_layer(a, layer)) {
@@ -1501,8 +1416,8 @@ Boolean ScreenImpl::find_layer(StyleValueRef a, long& layer) {
     if (a->read_integer(layer)) {
 	b = true;
     } else {
-	CharString v;
-	if (a->read_string(v)) {
+	CharString_var v;
+	if (a->read_string(v._out())) {
 	    CharStringBuffer buf(v);
 	    const char* p = buf.string();
 	    if (strcasecmp(p, "true") == 0 || strcasecmp(p, "yes") == 0) {
@@ -1569,9 +1484,9 @@ Boolean ScreenImpl::find_overlay(
  * that matches a known X visual id.
  */
 
-Boolean ScreenImpl::lookup_visual_id(StyleObjRef s, XVisualInfo& xinfo) {
+Boolean ScreenImpl::lookup_visual_id(StyleRef s, XVisualInfo& xinfo) {
     Boolean b = false;
-    StyleValue a = s->resolve(Fresco::string_ref("visual_id"));
+    StyleValue_var a = s->resolve(Fresco::tmp_string_ref("visual_id"));
     if (a != nil) {
 	long id;
 	if (a->read_integer(id)) {
@@ -1587,14 +1502,11 @@ Boolean ScreenImpl::lookup_visual_id(StyleObjRef s, XVisualInfo& xinfo) {
  * that matches a known X visual.
  */
 
-Boolean ScreenImpl::lookup_visual(StyleObjRef s, XVisualInfo& xinfo) {
+Boolean ScreenImpl::lookup_visual(StyleRef s, XVisualInfo& xinfo) {
     Boolean b = false;
-    StyleValue a = s->resolve(Fresco::string_ref("visual"));
-    if (is_not_nil(a)) {
-	CharString v;
-	if (a->read_string(v)) {
-	    b = find_visual_by_class_name(v, xinfo);
-	}
+    CharString_var v = Fresco::get_tmp_string(s, "visual");
+    if (is_not_nil(v)) {
+	b = find_visual_by_class_name(v, xinfo);
     }
     return b;
 }
@@ -1729,10 +1641,10 @@ unsigned int ScreenImpl::MSB(unsigned long i) {
 }
 
 unsigned long ScreenImpl::xor(
-    const ScreenImpl::VisualInfo& info, StyleObjRef s
+    const ScreenImpl::VisualInfo& info, StyleRef s
 ) {
     unsigned long p;
-    StyleValue a = s->resolve(Fresco::string_ref("xor_pixel"));
+    StyleValue_var a = s->resolve(Fresco::tmp_string_ref("xor_pixel"));
     if (is_not_nil(a)) {
 	long n;
 	p = a->read_integer(n) ? n : 1;
@@ -1886,7 +1798,9 @@ double ScreenImpl::distance(
 
 void ScreenImpl::set_dpi() {
     Boolean use_default = true;
-    StyleValue a = display_->style()->resolve(Fresco::string_ref("dpi"));
+    StyleValue_var a = _tmp(display_->display_style())->resolve(
+	Fresco::tmp_string_ref("dpi")
+    );
     if (is_not_nil(a)) {
 	Coord c;
 	if (a->read_coord(c) && !Math::equal(c, float(0), float(1e-2))) {

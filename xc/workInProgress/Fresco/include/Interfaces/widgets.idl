@@ -284,18 +284,50 @@ interface WidgetKit : FrescoObject {
 	//. A radio button has a telltale group so that only one button
 	//. in a group will be chosen at any given time.
 
+    //- bounded_float
+    Adjustment bounded_float(in float lower, in float upper, in float initial);
+	//. Return an adjustment for a floating point value
+	//. with given bounds and initial value.
+
     /* adjusters */
+    //- slider
     Viewer slider(in Axis a, in Adjustment adj);
+	//. Return a slider displayed along the given axis that
+	//. modifies the given adjustment.
+
+    //- scroll_bar
     Viewer scroll_bar(in Axis a, in Adjustment adj);
+	//. Return a scroll bar displayed along the given axis that
+	//. modifies the given adjustment.  A scroll bar is just a slider
+	//. with movers on either side that adjust in fixed increments.
+
+    //- panner
     Viewer panner(in Adjustment x, in Adjustment y);
+	//. Return a panner that is displayed as a rectangular thumb
+	//. in a two-dimensional area.  The thumb's X position adjusts
+	//. the first adjustment parameter; the thumb's y position
+	//. adjusts the second parameter.
 
     Button zoomer(
 	in Coord scale, in Adjustment x, in Adjustment y, in Adjustment z
     );
+
+    //- up_mover, down_mover, left_mover, right_mover
     Button up_mover(in Adjustment a);
     Button down_mover(in Adjustment a);
     Button left_mover(in Adjustment a);
     Button right_mover(in Adjustment a);
+	//. Movers are buttons that modify an adjustment by a fixed
+	//. amount.  The buttons show an arrow pointing up, down, left,
+	//. or right.  The right and down movers increment the
+	//. adjustment's current setting.  The left and up movers
+	//. decrement the setting.
+
+    //- viewer_group
+    Viewer viewer_group(in Glyph g);
+	//. Return a viewer with the given glyph as its body.
+	//. The viewer may contain other viewers and will
+	//. interpret tab to move focus in child order.
 };
 
 #endif

@@ -40,7 +40,7 @@ public:
     Boolean visit_alias(CharStringRef name); //+ StyleVisitor::visit_alias
     Boolean visit_attribute(StyleValueRef a); //+ StyleVisitor::visit_attribute
 
-    static void print(StyleObjRef);
+    static void print(StyleRef);
 };
 
 static Option options[] = {
@@ -51,12 +51,12 @@ static Option options[] = {
 
 int main(int argc, char** argv) {
     Fresco* f = Fresco_open("StyleTest", argc, argv, options);
-    StyleObj style = f->style();
+    Style_var style = f->fresco_style();
     Boolean verbose = style->is_on(Fresco::string_ref("verbose"));
     if (verbose) {
 	StylePrinter::print(style);
     }
-    style = f->drawing_kit()->style();
+    style = _tmp(f->drawing_kit())->drawing_style();
     if (verbose) {
 	StylePrinter::print(style);
     }
@@ -69,8 +69,9 @@ int main(int argc, char** argv) {
 	char* new_buf = new char[n + 1];
 	strcpy(new_buf, buf);
 	char* str = new_buf;
-	StyleObj s = style->new_style();
-	s->merge(style);
+	Style_var root = style->new_style();
+	root->merge(style);
+	Style_var s = root;
 	for (;;) {
 	    if (verbose) {
 		StylePrinter::print(s);
@@ -79,7 +80,7 @@ int main(int argc, char** argv) {
 	    if (i == nil) {
 		break;
 	    }
-	    StyleObj child = s->new_style();
+	    Style_var child = s->new_style();
 	    child->link_parent(s);
 	    s = child;
 	    char* names = str;
@@ -90,16 +91,16 @@ int main(int argc, char** argv) {
 		if (j == nil) {
 		    break;
 		}
-		s->alias(new CharStringImpl(j + 1));
+		s->alias(_tmp(new CharStringImpl(j + 1)));
 		*j = '\0';
 	    }
-	    s->alias(new CharStringImpl(names));
+	    s->alias(_tmp(new CharStringImpl(names)));
 	}
 	if (*str != '\0') {
 	    printf("%s = ", buf);
-	    StyleValue a = s->resolve(new CharStringImpl(str));
-	    CharString v;
-	    if (is_not_nil(a) && a->read_string(v)) {
+	    StyleValue_var a = s->resolve(_tmp(new CharStringImpl(str)));
+	    CharString_var v;
+	    if (is_not_nil(a) && a->read_string(v._out())) {
 		CharStringBuffer buf(v);
 		printf("\"%.*s\"\n", buf.length(), buf.string());
 	    } else {
@@ -126,8 +127,8 @@ Boolean StylePrinter::visit_alias(CharStringRef name) {
 Boolean StylePrinter::visit_attribute(StyleValueRef a) {
     CharStringBuffer name(a->name());
     printf("%.*s[%d] = '", name.length(), name.string(), a->priority());
-    CharString s;
-    if (a->read_string(s)) {
+    CharString_var s;
+    if (a->read_string(s._out())) {
 	CharStringBuffer value(s);
 	printf("%.*s", value.length(), value.string());
     } else {
@@ -138,15 +139,15 @@ Boolean StylePrinter::visit_attribute(StyleValueRef a) {
     return true;
 }
 
-void StylePrinter::print(StyleObjRef s) {
-    CharString name = s->name();
+void StylePrinter::print(StyleRef s) {
+    CharString_var name = s->name();
     if (is_nil(name)) {
 	printf("Style <noname>\n");
     } else {
 	CharStringBuffer buf(name);
 	printf("Style %.*s\n", buf.length(), buf.string());
     }
-    StyleVisitor p = new StylePrinter;
+    StyleVisitor_var p = new StylePrinter;
     s->visit_aliases(p);
     s->visit_attributes(p);
     printf("\n");

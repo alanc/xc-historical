@@ -105,7 +105,7 @@ Fresco* Fresco_open(
     const char* name, int& argc, char** argv, Option* options
 ) {
     FrescoImpl* f = new FrescoImpl(name, argc, argv, options);
-    f->connect(f->_c_open_default_display());
+    f->connect(f->open_default_display());
     return f;
 }
 
@@ -114,7 +114,9 @@ Fresco* Fresco_open_display(
     const char* name, int& argc, char** argv, Option* options
 ) {
     FrescoImpl* f = new FrescoImpl(name, argc, argv, options);
-    f->connect(f->_c_open_display(Fresco::string_ref(display_name)));
+    f->connect(
+	f->open_display(_tmp(Fresco::string_ref(display_name)))
+    );
     return f;
 }
 
@@ -246,12 +248,21 @@ void LockedFrescoObjectImpl::notify_observers() {
 Fresco::Fresco() { }
 Fresco::~Fresco() { }
 
-CharStringRef Fresco::_c_string_ref(const char* ptr) {
+CharStringRef Fresco::string_ref(const char* ptr) {
     return CharStringImpl::create_static(ptr);
 }
 
-CharStringRef Fresco::_c_string_copy(const char* ptr) {
+CharStringRef Fresco::string_copy(const char* ptr) {
     return new CharStringImpl(ptr);
+}
+
+CharStringRef Fresco::get_string(StyleRef s, const char* name) {
+    CharStringRef r = nil;
+    StyleValue_var a = s->resolve(Fresco::tmp_string_ref(name));
+    if (is_not_nil(a)) {
+	a->read_string(r);
+    }
+    return r;
 }
 
 void Fresco::ref(BaseObjectRef r) {
@@ -265,6 +276,41 @@ void Fresco::unref(BaseObjectRef r) {
 	delete r;
     }
 }
+
+#if defined(sgi)
+
+extern "C" int sginap(long);
+
+Boolean Fresco::delay(Float seconds) {
+    long n = long(100.0 * seconds + 0.5);
+    if (n <= 2) {
+	n = 3;
+    }
+    return sginap(n) == 0;
+}
+
+#else
+
+#include <X11/Fresco/OS/types.h>
+#include <sys/time.h>
+
+#if defined(AIXV3) || defined(sony)
+#include <sys/select.h>
+#endif
+
+#if defined(sony)
+/* Sony has select in libsocket, but no prototype in /usr/include */
+extern "C" int select(int, fd_set*, fd_set*, fd_set*, struct timeval*);
+#endif
+
+Boolean Fresco::delay(Float seconds) {
+    struct timeval tv;
+    tv.tv_sec = time_t(seconds);
+    tv.tv_usec = time_t(1000000.0 * (seconds - float(tv.tv_sec)) + 0.5);
+    return select(0, nil, nil, nil, &tv) == 0;
+}
+
+#endif
 
 /* class FrescoImpl */
 
@@ -329,112 +375,102 @@ void FrescoImpl::update() {
 }
 //+
 
-CharStringRef FrescoImpl::_c_class_name() {
+CharStringRef FrescoImpl::class_name() {
     return CharString::_duplicate(class_name_);
 }
 
 long FrescoImpl::argc() { return argc_; }
 char** FrescoImpl::argv() { return argv_; }
 
-StyleObjRef FrescoImpl::_c_style() {
-    return StyleObj::_duplicate(style_);
+StyleRef FrescoImpl::fresco_style() {
+    return Style::_duplicate(style_);
 }
 
-RequestObjRef FrescoImpl::_c_create_request(BaseObjectRef obj) {
+RequestObjRef FrescoImpl::create_request(BaseObjectRef obj) {
     return new RequestObjImpl(obj);
 }
 
-void FrescoImpl::main(ViewerRef v, GlyphRef g) {
-    ScreenObj s = display_->default_screen();
+void FrescoImpl::run(ViewerRef v, GlyphRef g) {
+    Screen_var s = display_->default_screen();
     ViewerRef nv;
     if (is_nil(g)) {
 	nv = v;
     } else {
-	nv = new ViewerImpl(this);
+	nv = new ViewerImpl(this, true);
 	nv->body(g);
 	if (is_not_nil(v)) {
 	    nv->append_viewer(v);
 	}
     }
-    Window w = s->application(nv);
+    Window_var w = s->application(nv);
     w->map();
     display_->run(true);
 }
 
-void FrescoImpl::_c_drawing_kit(DrawingKitRef k) {
+void FrescoImpl::drawing_kit(DrawingKitRef k) {
     Fresco::unref(drawing_kit_);
     drawing_kit_ = DrawingKit::_duplicate(k);
 }
 
-DrawingKit Fresco::drawing_kit() { return _c_drawing_kit(); }
-
-DrawingKitRef FrescoImpl::_c_drawing_kit() {
+DrawingKitRef FrescoImpl::drawing_kit() {
     return DrawingKit::_duplicate(drawing_kit_);
 }
 
-void FrescoImpl::_c_figure_kit(FigureKitRef k) {
+void FrescoImpl::figure_kit(FigureKitRef k) {
     Fresco::unref(figure_kit_);
     figure_kit_ = FigureKit::_duplicate(k);
 }
 
-FigureKit Fresco::figure_kit() { return _c_figure_kit(); }
-
-FigureKitRef FrescoImpl::_c_figure_kit() {
+FigureKitRef FrescoImpl::figure_kit() {
     if (figure_kit_ == nil) {
 	figure_kit_ = create_figure_kit();
     }
     return FigureKit::_duplicate(figure_kit_);
 }
 
-void FrescoImpl::_c_layout_kit(LayoutKitRef k) {
+void FrescoImpl::layout_kit(LayoutKitRef k) {
     Fresco::unref(layout_kit_);
     layout_kit_ = LayoutKit::_duplicate(k);
 }
 
-LayoutKit Fresco::layout_kit() { return _c_layout_kit(); }
-
-LayoutKitRef FrescoImpl::_c_layout_kit() {
+LayoutKitRef FrescoImpl::layout_kit() {
     if (layout_kit_ == nil) {
 	layout_kit_ = create_layout_kit();
     }
     return LayoutKit::_duplicate(layout_kit_);
 }
 
-void FrescoImpl::_c_thread_kit(ThreadKitRef k) {
+void FrescoImpl::thread_kit(ThreadKitRef k) {
     Fresco::unref(thread_kit_);
     thread_kit_ = ThreadKit::_duplicate(k);
 }
 
-ThreadKit Fresco::thread_kit() { return _c_thread_kit(); }
-
-ThreadKitRef FrescoImpl::_c_thread_kit() {
+ThreadKitRef FrescoImpl::thread_kit() {
     if (thread_kit_ == nil) {
 	thread_kit_ = create_thread_kit();
     }
     return ThreadKit::_duplicate(thread_kit_);
 }
 
-void FrescoImpl::_c_widget_kit(WidgetKitRef k) {
+void FrescoImpl::widget_kit(WidgetKitRef k) {
     Fresco::unref(widget_kit_);
     widget_kit_ = WidgetKit::_duplicate(k);
 }
 
-WidgetKit Fresco::widget_kit() { return _c_widget_kit(); }
-
-WidgetKitRef FrescoImpl::_c_widget_kit() {
+WidgetKitRef FrescoImpl::widget_kit() {
     if (widget_kit_ == nil) {
 	widget_kit_ = create_widget_kit();
     }
     return WidgetKit::_duplicate(widget_kit_);
 }
 
-void FrescoImpl::connect(DisplayObjRef d) {
+void FrescoImpl::connect(DisplayRef d) {
     if (d == nil) {
 	fprintf(stderr, "Can't open DISPLAY\n");
 	exit(1);
     }
     display_ = d;
-    drawing_kit_ = d->_c_drawing_kit();
+    drawing_kit_ = d->drawing_kit();
 }
 
 void FrescoImpl::create_root_style(
@@ -442,12 +478,14 @@ void FrescoImpl::create_root_style(
 ) {
     style_ = new StyleImpl(this);
 
-    style_->alias(Fresco::string_ref(name));
+    style_->alias(_tmp(Fresco::string_ref(name)));
     find_name(argc, argv);
 
     for (char** attr = standard_attributes; *attr != nil; attr += 2) {
-	StyleValue a = style_->bind(CharString(new CharStringImpl(attr[0])));
-	a->write_string(CharString(new CharStringImpl(attr[1])));
+	StyleValue_var a = style_->bind(
+	    _tmp(Fresco::string_ref(attr[0]))
+	);
+	a->write_string(_tmp(Fresco::string_ref(attr[1])));
 	a->priority(-10);
     }
     if (options != nil) {
@@ -488,7 +526,7 @@ void FrescoImpl::find_name(int argc, char** argv) {
 	    }
 	}
     }
-    style_->name(Fresco::string_ref(value));
+    style_->name(_tmp(Fresco::string_ref(value)));
 }
 
 /*
@@ -562,10 +600,10 @@ void FrescoImpl::extract(Option* o, int& i, int argc, char** argv) {
 	value_length = strlen(value);
 	break;
     }
-    StyleValue a = style_->bind(
-	CharString(new CharStringImpl(name, name_length))
+    StyleValue_var a = style_->bind(
+	CharString_var(new CharStringImpl(name, name_length))
     );
-    a->write_string(CharString(new CharStringImpl(value, value_length)));
+    a->write_string(CharString_var(new CharStringImpl(value, value_length)));
     a->priority(0);
 }
 

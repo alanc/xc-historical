@@ -5,36 +5,30 @@
 
 #include <X11/Fresco/Ox/base.h>
 
-class NamingContextType;
-typedef NamingContextType* NamingContextRef;
-typedef NamingContextRef NamingContext_in;
 class NamingContext;
-class NamingContext_tmp;
+typedef NamingContext* NamingContextRef;
+typedef NamingContextRef NamingContext_in;
+typedef NamingContextRef NamingContext_out, NamingContext_inout;
+typedef NamingContextRef NamingContext_return;
 class NamingContext_var;
 
-class NamingContext {
+extern BaseObjectRef _NamingContextStub_create(Exchange*);
+
+class NamingContext : public BaseObject {
+protected:
+    NamingContext();
+    virtual ~NamingContext();
 public:
-    NamingContextRef _obj_;
+    NamingContextRef _obj() { return this; };
+    static NamingContextRef  _return_ref(NamingContext_return r) { return r; }
 
-    NamingContext() { _obj_ = 0; }
-    NamingContext(NamingContextRef p) { _obj_ = p; }
-    NamingContext& operator =(NamingContextRef p);
-    NamingContext(const NamingContext&);
-    NamingContext& operator =(const NamingContext& r);
-    NamingContext(const NamingContext_tmp&);
-    NamingContext& operator =(const NamingContext_tmp&);
-    NamingContext(const NamingContext_var&);
-    NamingContext& operator =(const NamingContext_var&);
-    ~NamingContext();
+    virtual void* _this();
+    virtual TypeObjId _tid();
 
-    NamingContextRef operator ->() { return _obj_; }
-
-    operator NamingContext_in() const { return _obj_; }
-    static NamingContextRef _narrow(BaseObjectRef p);
-    static NamingContext_tmp _narrow(const BaseObject& r);
-
-    static NamingContextRef _duplicate(NamingContextRef obj);
-    static NamingContext_tmp _duplicate(const NamingContext& r);
+    static NamingContextRef _narrow(BaseObjectRef);
+    static NamingContextRef _duplicate(NamingContextRef obj) {
+        return (NamingContextRef)_BaseObject__duplicate(obj, &_NamingContextStub_create);
+    }
     typedef string NameComponent;
     class Name {
     public:
@@ -97,98 +91,49 @@ public:
         void _put(MarshalBuffer&) const;
         static Exception* _get(MarshalBuffer&);
     };
-};
-
-class NamingContext_tmp : public NamingContext {
-public:
-    NamingContext_tmp(NamingContextRef p) { _obj_ = p; }
-    NamingContext_tmp(const NamingContext& r);
-    NamingContext_tmp(const NamingContext_tmp& r);
-    ~NamingContext_tmp();
+    virtual BaseObject_return resolve(const Name& n, Env* _env = 0);
+    virtual BindingInfoList list(const Name& n, Env* _env = 0);
 };
 
 class NamingContext_var {
-public:
-    NamingContextRef _obj_;
-
-    NamingContext_var(NamingContextRef p) { _obj_ = p; }
-    operator NamingContextRef() const { return _obj_; }
-    NamingContextRef operator ->() { return _obj_; }
-};
-
-class NamingContextType : public BaseObjectType {
 protected:
-    NamingContextType();
-    virtual ~NamingContextType();
+    NamingContextRef _obj_;
 public:
-    BaseObject_tmp resolve(const NamingContext::Name& n, Env* _env = 0);
-    virtual BaseObjectRef _c_resolve(const NamingContext::Name& n, Env* _env = 0);
-    virtual NamingContext::BindingInfoList list(const NamingContext::Name& n, Env* _env = 0);
-    NamingContextRef _obj() { return this; }
-    virtual TypeObjId _tid();
+    NamingContext_var() { _obj_ = 0; };
+    NamingContext_var(NamingContextRef p) { _obj_ = p; }
+    NamingContext_var(const NamingContext_var& r) {
+        _obj_ = NamingContext::_duplicate(r._obj_);
+    }
+    ~NamingContext_var() { _BaseObject__release(_obj_); }
+
+    NamingContext_var& operator =(NamingContextRef p) {
+        _BaseObject__release(_obj_);
+        _obj_ = NamingContext::_duplicate(p);
+        return *this;
+    }
+    NamingContext_var& operator =(const NamingContext_var& r) {
+        _BaseObject__release(_obj_);
+        _obj_ = NamingContext::_duplicate(r._obj_);
+        return *this;
+    }
+
+    NamingContextRef _obj() const { return _obj_; }
+    NamingContextRef& _out() { return _obj_; }
+    operator NamingContextRef() const { return _obj_; }
+    NamingContextRef operator ->() const { return _obj_; }
 };
 
-class NamingContextStub : public NamingContextType {
+inline NamingContext_var _tmp(NamingContextRef p) { return NamingContext_var(p); }
+
+class NamingContextStub : public NamingContext {
 public:
     NamingContextStub(Exchange*);
     ~NamingContextStub();
 
-    static BaseObjectRef _create(Exchange*);
     Exchange* _exchange();
 protected:
     Exchange* exch_;
 };
 
-inline NamingContextRef NamingContext::_duplicate(NamingContextRef obj) {
-    return (NamingContextRef)_BaseObject__duplicate(obj, &NamingContextStub::_create);
-}
-inline NamingContext& NamingContext::operator =(NamingContextRef p) {
-    _BaseObject__release(_obj_);
-    _obj_ = NamingContext::_duplicate(p);
-    return *this;
-}
-inline NamingContext::NamingContext(const NamingContext& r) {
-    _obj_ = NamingContext::_duplicate(r._obj_);
-}
-inline NamingContext& NamingContext::operator =(const NamingContext& r) {
-    _BaseObject__release(_obj_);
-    _obj_ = NamingContext::_duplicate(r._obj_);
-    return *this;
-}
-inline NamingContext::NamingContext(const NamingContext_tmp& r) {
-    _obj_ = r._obj_;
-    ((NamingContext_tmp*)&r)->_obj_ = 0;
-}
-inline NamingContext& NamingContext::operator =(const NamingContext_tmp& r) {
-    _BaseObject__release(_obj_);
-    _obj_ = r._obj_;
-    ((NamingContext_tmp*)&r)->_obj_ = 0;
-    return *this;
-}
-inline NamingContext::NamingContext(const NamingContext_var& e) {
-    _obj_ = NamingContext::_duplicate(e._obj_);
-}
-inline NamingContext& NamingContext::operator =(const NamingContext_var& e) {
-    _BaseObject__release(_obj_);
-    _obj_ = NamingContext::_duplicate(e._obj_);
-    return *this;
-}
-inline NamingContext::~NamingContext() {
-    _BaseObject__release(_obj_);
-}
-inline NamingContext_tmp NamingContext::_narrow(const BaseObject& r) {
-    return _narrow(r._obj_);
-}
-inline NamingContext_tmp NamingContext::_duplicate(const NamingContext& r) {
-    return _duplicate(r._obj_);
-}
-inline NamingContext_tmp::NamingContext_tmp(const NamingContext& r) {
-    _obj_ = NamingContext::_duplicate(r._obj_);
-}
-inline NamingContext_tmp::NamingContext_tmp(const NamingContext_tmp& r) {
-    _obj_ = r._obj_;
-    ((NamingContext_tmp*)&r)->_obj_ = 0;
-}
-inline NamingContext_tmp::~NamingContext_tmp() { }
 
 #endif

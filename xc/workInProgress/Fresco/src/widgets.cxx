@@ -32,10 +32,15 @@
 #include <X11/Fresco/layouts.h>
 #include <X11/Fresco/types.h>
 #include <X11/Fresco/widgets.h>
+#include <X11/Fresco/Impls/action.h>
+#include <X11/Fresco/Impls/polyglyph.h>
 #include <X11/Fresco/Impls/region.h>
 #include <X11/Fresco/Impls/widgetkit.h>
 #include <X11/Fresco/OS/list.h>
+#include <X11/Fresco/OS/math.h>
 #include <math.h>
+
+#define default_minimum_thumb_size 28.0
 
 ButtonImpl::ButtonImpl(
     Fresco* f, TelltaleRef t, ActionRef a
@@ -45,7 +50,7 @@ ButtonImpl::ButtonImpl(
     tag_ = 0;
     state(t);
     click_action(a);
-    alias(Fresco::string_ref("Button"));
+    alias(Fresco::tmp_string_ref("Button"));
 }
 
 ButtonImpl::~ButtonImpl() {
@@ -78,17 +83,17 @@ void ButtonImpl::notify_observers() { ActiveViewer::notify_observers(); }
 void ButtonImpl::update() { need_redraw(); }
 
 //+ ButtonImpl(Glyph::=ActiveViewer::)
-GlyphRef ButtonImpl::_c_clone_glyph() {
-    return ActiveViewer::_c_clone_glyph();
+Glyph_return ButtonImpl::clone_glyph() {
+    return ActiveViewer::clone_glyph();
 }
-StyleObjRef ButtonImpl::_c_style() {
-    return ActiveViewer::_c_style();
+Style_return ButtonImpl::glyph_style() {
+    return ActiveViewer::glyph_style();
 }
-void ButtonImpl::_c_style(StyleObj_in _p) {
-    ActiveViewer::_c_style(_p);
+void ButtonImpl::glyph_style(Style_in _p) {
+    ActiveViewer::glyph_style(_p);
 }
-TransformObjRef ButtonImpl::_c_transform() {
-    return ActiveViewer::_c_transform();
+Transform_return ButtonImpl::transformation() {
+    return ActiveViewer::transformation();
 }
 void ButtonImpl::request(Glyph::Requisition& r) {
     ActiveViewer::request(r);
@@ -96,8 +101,8 @@ void ButtonImpl::request(Glyph::Requisition& r) {
 void ButtonImpl::extension(const Glyph::AllocationInfo& a, Region_in r) {
     ActiveViewer::extension(a, r);
 }
-RegionRef ButtonImpl::_c_shape() {
-    return ActiveViewer::_c_shape();
+void ButtonImpl::shape(Region_in r) {
+    ActiveViewer::shape(r);
 }
 void ButtonImpl::traverse(GlyphTraversal_in t) {
     ActiveViewer::traverse(t);
@@ -108,17 +113,17 @@ void ButtonImpl::draw(GlyphTraversal_in t) {
 void ButtonImpl::pick(GlyphTraversal_in t) {
     ActiveViewer::pick(t);
 }
-GlyphRef ButtonImpl::_c_body() {
-    return ActiveViewer::_c_body();
+Glyph_return ButtonImpl::body() {
+    return ActiveViewer::body();
 }
-void ButtonImpl::_c_body(Glyph_in _p) {
-    ActiveViewer::_c_body(_p);
+void ButtonImpl::body(Glyph_in _p) {
+    ActiveViewer::body(_p);
 }
-GlyphOffsetRef ButtonImpl::_c_append(Glyph_in g) {
-    return ActiveViewer::_c_append(g);
+void ButtonImpl::append(Glyph_in g) {
+    ActiveViewer::append(g);
 }
-GlyphOffsetRef ButtonImpl::_c_prepend(Glyph_in g) {
-    return ActiveViewer::_c_prepend(g);
+void ButtonImpl::prepend(Glyph_in g) {
+    ActiveViewer::prepend(g);
 }
 Tag ButtonImpl::add_parent(GlyphOffset_in parent_offset) {
     return ActiveViewer::add_parent(parent_offset);
@@ -126,16 +131,16 @@ Tag ButtonImpl::add_parent(GlyphOffset_in parent_offset) {
 void ButtonImpl::remove_parent(Tag add_tag) {
     ActiveViewer::remove_parent(add_tag);
 }
-void ButtonImpl::visit_children(GlyphVisitor_in v) {
-    ActiveViewer::visit_children(v);
+GlyphOffset_return ButtonImpl::first_child_offset() {
+    return ActiveViewer::first_child_offset();
 }
-void ButtonImpl::visit_children_reversed(GlyphVisitor_in v) {
-    ActiveViewer::visit_children_reversed(v);
+GlyphOffset_return ButtonImpl::last_child_offset() {
+    return ActiveViewer::last_child_offset();
 }
-void ButtonImpl::visit_parents(GlyphVisitor_in v) {
-    ActiveViewer::visit_parents(v);
+void ButtonImpl::parent_offsets(Glyph::OffsetSeq& parents) {
+    ActiveViewer::parent_offsets(parents);
 }
-void ButtonImpl::allocations(Glyph::AllocationInfoList& a) {
+void ButtonImpl::allocations(Glyph::AllocationInfoSeq& a) {
     ActiveViewer::allocations(a);
 }
 void ButtonImpl::need_redraw() {
@@ -153,20 +158,20 @@ Boolean ButtonImpl::restore_trail(GlyphTraversal_in t) {
 //+
 
 //+ ButtonImpl(Viewer::=ActiveViewer::)
-ViewerRef ButtonImpl::_c_parent_viewer() {
-    return ActiveViewer::_c_parent_viewer();
+Viewer_return ButtonImpl::parent_viewer() {
+    return ActiveViewer::parent_viewer();
 }
-ViewerRef ButtonImpl::_c_next_viewer() {
-    return ActiveViewer::_c_next_viewer();
+Viewer_return ButtonImpl::next_viewer() {
+    return ActiveViewer::next_viewer();
 }
-ViewerRef ButtonImpl::_c_prev_viewer() {
-    return ActiveViewer::_c_prev_viewer();
+Viewer_return ButtonImpl::prev_viewer() {
+    return ActiveViewer::prev_viewer();
 }
-ViewerRef ButtonImpl::_c_first_viewer() {
-    return ActiveViewer::_c_first_viewer();
+Viewer_return ButtonImpl::first_viewer() {
+    return ActiveViewer::first_viewer();
 }
-ViewerRef ButtonImpl::_c_last_viewer() {
-    return ActiveViewer::_c_last_viewer();
+Viewer_return ButtonImpl::last_viewer() {
+    return ActiveViewer::last_viewer();
 }
 void ButtonImpl::append_viewer(Viewer_in v) {
     ActiveViewer::append_viewer(v);
@@ -192,8 +197,8 @@ void ButtonImpl::set_first_viewer(Viewer_in v) {
 void ButtonImpl::set_last_viewer(Viewer_in v) {
     ActiveViewer::set_last_viewer(v);
 }
-FocusRef ButtonImpl::_c_request_focus(Viewer_in requestor, Boolean temporary) {
-    return ActiveViewer::_c_request_focus(requestor, temporary);
+Focus_return ButtonImpl::request_focus(Viewer_in requestor, Boolean temporary) {
+    return ActiveViewer::request_focus(requestor, temporary);
 }
 Boolean ButtonImpl::receive_focus(Focus_in f, Boolean primary) {
     return ActiveViewer::receive_focus(f, primary);
@@ -222,24 +227,24 @@ void ButtonImpl::close() {
 //+
 
 //+ ButtonImpl(Button::state=t)
-void ButtonImpl::_c_state(Telltale_in t) {
+void ButtonImpl::state(Telltale_in t) {
     detach_state();
     state_ = Telltale::_duplicate(t);
     tag_ = state_->attach(ButtonRef(this));
 }
 
 //+ ButtonImpl(Button::state?)
-TelltaleRef ButtonImpl::_c_state() {
+TelltaleRef ButtonImpl::state() {
     return Telltale::_duplicate(state_);
 }
 
 //+ ButtonImpl(Button::click_action=a)
-void ButtonImpl::_c_click_action(Action_in a) {
+void ButtonImpl::click_action(Action_in a) {
     action_ = Action::_duplicate(a);
 }
 
 //+ ButtonImpl(Button::click_action?)
-ActionRef ButtonImpl::_c_click_action() {
+ActionRef ButtonImpl::click_action() {
     return Action::_duplicate(action_);
 }
 
@@ -286,17 +291,6 @@ Boolean ButtonImpl::release(GlyphTraversalRef t, EventRef) {
 	}
     }
     return true;
-}
-
-/*
- * Unlike ViewerImpl, which does a pick on its contents to see if
- * the traversal area intersects with the viewer's appearance,
- * ButtonImpl simply checks to see if the traversal area intersects
- * with the button's allocation.
- */
-
-Boolean ButtonImpl::inside(GlyphTraversalRef t) {
-    return t->painter()->is_visible(t->allocation());
 }
 
 void ButtonImpl::click() {
@@ -354,13 +348,13 @@ Boolean TelltaleImpl::test(Telltale::Flag f) {
 }
 
 //+ TelltaleImpl(Telltale::current=g)
-void TelltaleImpl::_c_current(Telltale_in g) {
+void TelltaleImpl::current(Telltale_in g) {
     Fresco::unref(current_);
-    current_ = g;
+    current_ = Telltale::_duplicate(g);
 }
 
 //+ TelltaleImpl(Telltale::current?)
-TelltaleRef TelltaleImpl::_c_current() {
+TelltaleRef TelltaleImpl::current() {
     return Telltale::_duplicate(current_);
 }
 
@@ -371,7 +365,7 @@ void TelltaleImpl::modify(Telltale::Flag f, Boolean on) {
 	flags_ = newflags;
 	notify_observers();
 	if (on && f == Telltale::chosen && is_not_nil(current_)) {
-	    Telltale t = current_->current();
+	    Telltale_var t = current_->current();
 	    if (is_not_nil(t)) {
 		t->clear(Telltale::chosen);
 	    }
@@ -404,7 +398,7 @@ static const int medium_yellow = 12;
 static const unsigned int checkmark_width = 32;
 static const unsigned int checkmark_height = 12;
 
-static char checkmark_bits[] = {
+static unsigned char checkmark_bits[] = {
     0x00, 0x00, 0x3e, 0x00, 0x00, 0xc0, 0x0f, 0x00,
     0x04, 0xf0, 0x03, 0x00, 0x1e, 0xf8, 0x00, 0x00,
     0x3f, 0x3e, 0x00, 0x00, 0xbf, 0x1f, 0x00, 0x00,
@@ -416,7 +410,7 @@ static char checkmark_bits[] = {
 static const unsigned int shadow1_width = 32;
 static const unsigned int shadow1_height = 13;
 
-static char shadow1_bits[] = {
+static unsigned char shadow1_bits[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0xc0, 0x00, 0x00, 0x00, 0xe0, 0x00, 0x00,
@@ -429,7 +423,7 @@ static char shadow1_bits[] = {
 static const unsigned int shadow2_width = 32;
 static const unsigned int shadow2_height = 5;
 
-static char shadow2_bits[] = {
+static unsigned char shadow2_bits[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x00,
     0x00, 0x00, 0x3c, 0x00, 0x00, 0x00, 0x0f, 0x00,
     0x00, 0x00, 0x03, 0x00
@@ -445,14 +439,13 @@ public:
     ~WKFrame();
 
     void draw(GlyphTraversal_in t); //+ Glyph::draw
-    void pick(GlyphTraversal_in t); //+ Glyph::pick
     virtual void draw_frame(GlyphTraversalRef t);
 
     static void fill_rect(
-	PainterObjRef p, const Vertex& lower, const Vertex& upper, ColorRef
+	PainterRef p, const Vertex& lower, const Vertex& upper, ColorRef
     );
     static void shade(
-	PainterObjRef p, const Vertex& lower, const Vertex& upper,
+	PainterRef p, const Vertex& lower, const Vertex& upper,
 	WidgetKitImpl::Info* info, const int* colors, int ncolors, Coord* t
     );
 protected:
@@ -598,22 +591,20 @@ static StyleData kit_attributes[] = {
 
 WidgetKitImpl::WidgetKitImpl(Fresco* f) {
     fresco_ = f;
-    StyleObj s = f->style();
-    style_ = s->_c_new_style();
-    style_->alias(Fresco::string_ref("WidgetKit"));
+    Style_var s = f->fresco_style();
+    style_ = s->new_style();
+    style_->alias(Fresco::tmp_string_ref("WidgetKit"));
     style_->link_parent(s);
     for (StyleData* d = kit_attributes; d->path != nil; d++) {
-	StyleValue a = s->bind(Fresco::string_ref(d->path));
+	StyleValue_var a = s->bind(Fresco::tmp_string_ref(d->path));
 	if (a->uninitialized() || a->priority() <= -10) {
-	    a->write_string(Fresco::string_ref(d->value));
+	    a->write_string(Fresco::tmp_string_ref(d->value));
 	}
     }
     load();
 }
 
-WidgetKitImpl::~WidgetKitImpl() {
-    Fresco::unref(style_);
-}
+WidgetKitImpl::~WidgetKitImpl() { }
 
 //+ WidgetKitImpl(FrescoObject::=object_.)
 Long WidgetKitImpl::ref__(Long references) {
@@ -637,7 +628,7 @@ void WidgetKitImpl::update() {
 //+
 
 //+ WidgetKitImpl(WidgetKit::outset_frame)
-GlyphRef WidgetKitImpl::_c_outset_frame(Glyph_in g) {
+Glyph_return WidgetKitImpl::outset_frame(Glyph_in g) {
     return new WKFrame(
 	g,
 	new TelltaleImpl(TelltaleImpl::enabled_bit | TelltaleImpl::active_bit),
@@ -646,7 +637,7 @@ GlyphRef WidgetKitImpl::_c_outset_frame(Glyph_in g) {
 }
 
 //+ WidgetKitImpl(WidgetKit::inset_frame)
-GlyphRef WidgetKitImpl::_c_inset_frame(Glyph_in g) {
+Glyph_return WidgetKitImpl::inset_frame(Glyph_in g) {
     return new WKFrame(
 	g,
 	new TelltaleImpl(TelltaleImpl::enabled_bit | TelltaleImpl::chosen_bit),
@@ -655,7 +646,7 @@ GlyphRef WidgetKitImpl::_c_inset_frame(Glyph_in g) {
 }
 
 //+ WidgetKitImpl(WidgetKit::bright_inset_frame)
-GlyphRef WidgetKitImpl::_c_bright_inset_frame(Glyph_in g) {
+Glyph_return WidgetKitImpl::bright_inset_frame(Glyph_in g) {
     return new WKFrame(
 	g,
 	new TelltaleImpl(
@@ -667,45 +658,45 @@ GlyphRef WidgetKitImpl::_c_bright_inset_frame(Glyph_in g) {
 }
 
 //+ WidgetKitImpl(WidgetKit::label)
-ViewerRef WidgetKitImpl::_c_label(CharString_in s) {
+Viewer_return WidgetKitImpl::label(CharString_in s) {
     return nil;
 }
 
 //+ WidgetKitImpl(WidgetKit::menubar)
-MenuRef WidgetKitImpl::_c_menubar() {
+Menu_return WidgetKitImpl::menubar() {
     return nil;
 }
 
 //+ WidgetKitImpl(WidgetKit::pulldown)
-MenuRef WidgetKitImpl::_c_pulldown() {
+Menu_return WidgetKitImpl::pulldown() {
     return nil;
 }
 
 //+ WidgetKitImpl(WidgetKit::pullright)
-MenuRef WidgetKitImpl::_c_pullright() { return nil; }
+Menu_return WidgetKitImpl::pullright() { return nil; }
 
 //+ WidgetKitImpl(WidgetKit::menubar_item)
-MenuItemRef WidgetKitImpl::_c_menubar_item(Glyph_in g) { return nil; }
+MenuItem_return WidgetKitImpl::menubar_item(Glyph_in g) { return nil; }
 
 //+ WidgetKitImpl(WidgetKit::menu_item)
-MenuItemRef WidgetKitImpl::_c_menu_item(Glyph_in g) { return nil; }
+MenuItem_return WidgetKitImpl::menu_item(Glyph_in g) { return nil; }
 
 //+ WidgetKitImpl(WidgetKit::check_menu_item)
-MenuItemRef WidgetKitImpl::_c_check_menu_item(Glyph_in g) { return nil; }
+MenuItem_return WidgetKitImpl::check_menu_item(Glyph_in g) { return nil; }
 
 //+ WidgetKitImpl(WidgetKit::radio_menu_item)
-MenuItemRef WidgetKitImpl::_c_radio_menu_item(Glyph_in g, Telltale_in group) { return nil; }
+MenuItem_return WidgetKitImpl::radio_menu_item(Glyph_in g, Telltale_in group) { return nil; }
 
 //+ WidgetKitImpl(WidgetKit::menu_item_separator)
-MenuItemRef WidgetKitImpl::_c_menu_item_separator() { return nil; }
+MenuItem_return WidgetKitImpl::menu_item_separator() { return nil; }
 
 //+ WidgetKitImpl(WidgetKit::telltale_group)
-TelltaleRef WidgetKitImpl::_c_telltale_group() {
+Telltale_return WidgetKitImpl::telltale_group() {
     return new TelltaleImpl;
 }
 
 //+ WidgetKitImpl(WidgetKit::push_button)
-ButtonRef WidgetKitImpl::_c_push_button(Glyph_in g, Action_in a) {
+Button_return WidgetKitImpl::push_button(Glyph_in g, Action_in a) {
     TelltaleImpl* t = new TelltaleImpl(TelltaleImpl::enabled_bit);
     ButtonRef b = new ButtonImpl(fresco_, t, a);
     b->body(new WKPushButtonFrame(g, t, &info_));
@@ -713,99 +704,233 @@ ButtonRef WidgetKitImpl::_c_push_button(Glyph_in g, Action_in a) {
 }
 
 //+ WidgetKitImpl(WidgetKit::default_button)
-ButtonRef WidgetKitImpl::_c_default_button(Glyph_in g, Action_in a) {
-    LayoutKit layouts = fresco_->layout_kit();
+Button_return WidgetKitImpl::default_button(Glyph_in g, Action_in a) {
+    LayoutKit_var layouts = fresco_->layout_kit();
     FontRef f = info_.font;
-    Glyph hbox = layouts->hbox();
+    Glyph_var hbox = layouts->hbox();
     hbox->append(g);
-    hbox->append(layouts->hspace(3.0));
-    hbox->append(new WKDefaultArrow(&info_, f));
-    return _c_push_button(hbox, a);
+    hbox->append(_tmp(layouts->hspace(3.0)));
+    hbox->append(_tmp(new WKDefaultArrow(&info_, f)));
+    return push_button(hbox, a);
 }
 
 //+ WidgetKitImpl(WidgetKit::check_box)
-ButtonRef WidgetKitImpl::_c_check_box(Glyph_in g, Action_in a) {
+Button_return WidgetKitImpl::check_box(Glyph_in g, Action_in a) {
     TelltaleImpl* t = new TelltaleImpl(
 	TelltaleImpl::enabled_bit | TelltaleImpl::toggle_bit
     );
     ButtonRef b = new ButtonImpl(fresco_, t, a);
-    LayoutKit layouts = fresco_->layout_kit();
-    Glyph box = layouts->hbox();
+    LayoutKit_var layouts = fresco_->layout_kit();
+    Glyph_var box = layouts->hbox();
     box->append(
-	layouts->vcenter(
-	    Glyph(
-		new WKButtonFrame(
-		    Glyph(new WKCheckmark(&info_, t)), t, &info_
+	_tmp(
+	    layouts->vcenter(
+		_tmp(
+		    new WKButtonFrame(
+			_tmp(new WKCheckmark(&info_, t)), t, &info_
+		    )
 		)
 	    )
 	)
     );
-    box->append(layouts->hspace(6.0));
-    box->append(layouts->vcenter(g));
+    box->append(_tmp(layouts->hspace(6.0)));
+    box->append(_tmp(layouts->vcenter(g)));
     b->body(box);
     return b;
 }
 
 //+ WidgetKitImpl(WidgetKit::palette_button)
-ButtonRef WidgetKitImpl::_c_palette_button(Glyph_in g, Action_in a) {
+Button_return WidgetKitImpl::palette_button(Glyph_in g, Action_in a) {
     TelltaleImpl* t = new TelltaleImpl(
 	TelltaleImpl::enabled_bit | TelltaleImpl::toggle_bit
     );
     ButtonRef b = new ButtonImpl(fresco_, t, a);
-    LayoutKit layouts = fresco_->layout_kit();
-    Glyph box = layouts->hbox();
-    box->append(layouts->hspace(3.0));
-    box->append(Glyph(new WKIndicator(&info_, t)));
-    box->append(layouts->hspace(6.0));
+    LayoutKit_var layouts = fresco_->layout_kit();
+    Glyph_var box = layouts->hbox();
+    box->append(_tmp(layouts->hspace(3.0)));
+    box->append(_tmp(new WKIndicator(&info_, t)));
+    box->append(_tmp(layouts->hspace(6.0)));
     box->append(g);
     b->body(
-	Glyph(new WKPushButtonFrame(box, t, &info_, button_border, 0.0, 0.5))
+	_tmp(
+	    new WKPushButtonFrame(box, t, &info_, button_border, 0.0, 0.5)
+	)
     );
     return b;
 }
 
 //+ WidgetKitImpl(WidgetKit::radio_button)
-ButtonRef WidgetKitImpl::_c_radio_button(Glyph_in g, Action_in a, Telltale_in group) {
+Button_return WidgetKitImpl::radio_button(Glyph_in g, Action_in a, Telltale_in group) {
     TelltaleImpl* t = new TelltaleImpl(
 	TelltaleImpl::enabled_bit | TelltaleImpl::choosable_bit
     );
     t->current(group);
     ButtonRef b = new ButtonImpl(fresco_, t, a);
-    LayoutKit layouts = fresco_->layout_kit();
-    Glyph box = layouts->hbox();
+    LayoutKit_var layouts = fresco_->layout_kit();
+    Glyph_var box = layouts->hbox();
     FontRef f = info_.font;
-    box->append(layouts->vcenter(Glyph(new WKRadioFlag(&info_, t, f))));
-    box->append(layouts->hspace(6.0));
-    box->append(layouts->vcenter(g));
+    box->append(
+	_tmp(layouts->vcenter(_tmp(new WKRadioFlag(&info_, t, f))))
+    );
+    box->append(_tmp(layouts->hspace(6.0)));
+    box->append(_tmp(layouts->vcenter(g)));
     b->body(box);
     return b;
 }
 
 //+ WidgetKitImpl(WidgetKit::slider)
-ViewerRef WidgetKitImpl::_c_slider(Axis a, Adjustment_in adj) {
-    return nil;
+Viewer_return WidgetKitImpl::slider(Axis a, Adjustment_in adj) {
+    Slider* slider;
+    LayoutKit_var layouts = fresco_->layout_kit();
+    switch (a) {
+    case X_axis:
+	slider = new XSlider(fresco_, style_, adj);
+	break;
+    case Y_axis:
+	slider = new YSlider(fresco_, style_, adj);
+	break;
+    default:
+	return nil;
+    }
+    make_thumb(slider, a);
+    TelltaleImpl* t = new TelltaleImpl(TelltaleImpl::enabled_bit);
+    ViewerRef v = slider->viewer();
+    v->body(_tmp(new WKFrame(slider, t, &info_, info_.thickness)));
+    return v;
 }
 
 //+ WidgetKitImpl(WidgetKit::scroll_bar)
-ViewerRef WidgetKitImpl::_c_scroll_bar(Axis a, Adjustment_in adj) { return nil; }
+Viewer_return WidgetKitImpl::scroll_bar(Axis a, Adjustment_in adj) {
+    Coord xspan, yspan;
+    Glyph_var box, body;
+    Viewer_var mover1, mover2;
+    Slider* slider;
+    Boolean hmargin, vmargin;
+    LayoutKit_var layouts = fresco_->layout_kit();
+    switch (a) {
+    case X_axis:
+	xspan = info_.mover_size;
+	yspan = info_.slider_size;
+	box = layouts->hbox();
+	body = layouts->vfixed(box, yspan);
+	mover1 = left_mover(adj);
+	slider = new XSlider(fresco_, style_, adj);
+	mover2 = right_mover(adj);
+	hmargin = false;
+	vmargin = true;
+	break;
+    case Y_axis:
+	xspan = info_.slider_size;
+	yspan = info_.mover_size;
+	box = layouts->vbox();
+	body = layouts->hfixed(box, xspan);
+	mover1 = up_mover(adj);
+	slider = new YSlider(fresco_, style_, adj);
+	mover2 = down_mover(adj);
+	hmargin = true;
+	vmargin = false;
+	break;
+    default:
+	return nil;
+    }
+
+    make_thumb(slider, a);
+    Viewer_var slider_viewer = slider->viewer();
+    slider_viewer->body(
+	_tmp(new WKFrame(
+	    slider,
+	    new TelltaleImpl(TelltaleImpl::enabled_bit),
+	    &info_, info_.thickness, 0.0, 0.0, hmargin, vmargin
+	))
+    );
+    box->append(_tmp(layouts->fixed(mover1, xspan, yspan)));
+    box->append(slider_viewer);
+    box->append(_tmp(layouts->fixed(mover2, xspan, yspan)));
+    Viewer_var v = viewer_group(body);
+    mover1->append_viewer(v);
+    slider_viewer->append_viewer(v);
+    mover2->append_viewer(v);
+    return v;
+}
 
 //+ WidgetKitImpl(WidgetKit::panner)
-ViewerRef WidgetKitImpl::_c_panner(Adjustment_in x, Adjustment_in y) { return nil; }
+Viewer_return WidgetKitImpl::panner(Adjustment_in x, Adjustment_in y) {
+    Style_var style = style_->new_style();
+    style->alias(Fresco::tmp_string_ref("Panner"));
+    style->link_parent(style_);
+    Slider* s = new XYSlider(fresco_, style, x, y);
+    ViewerRef v = s->viewer();
+    v->body(s);
+    make_thumb(s, Z_axis);
+    return v;
+}
 
 //+ WidgetKitImpl(WidgetKit::zoomer)
-ButtonRef WidgetKitImpl::_c_zoomer(Coord scale, Adjustment_in x, Adjustment_in y, Adjustment_in z) { return nil; }
+Button_return WidgetKitImpl::zoomer(Coord scale, Adjustment_in x, Adjustment_in y, Adjustment_in z) {
+    return nil;
+}
 
 //+ WidgetKitImpl(WidgetKit::up_mover)
-ButtonRef WidgetKitImpl::_c_up_mover(Adjustment_in a) { return nil; }
+Button_return WidgetKitImpl::up_mover(Adjustment_in a) {
+    TelltaleImpl* t = new TelltaleImpl(TelltaleImpl::enabled_bit);
+    Button_return b = new ForwardScroller(fresco_, style_, t, a);
+    b->body(
+	_tmp(new WKButtonFrame(
+	    new UpArrow(info_.color[dark_gray]), t, &info_, arrow_border
+	))
+    );
+    return b;
+}
 
 //+ WidgetKitImpl(WidgetKit::down_mover)
-ButtonRef WidgetKitImpl::_c_down_mover(Adjustment_in a) { return nil; }
+Button_return WidgetKitImpl::down_mover(Adjustment_in a) {
+    TelltaleImpl* t = new TelltaleImpl(TelltaleImpl::enabled_bit);
+    Button_return b = new BackwardScroller(fresco_, style_, t, a);
+    b->body(
+	_tmp(new WKButtonFrame(
+	    new DownArrow(info_.color[dark_gray]), t, &info_, arrow_border
+	))
+    );
+    return b;
+}
 
 //+ WidgetKitImpl(WidgetKit::left_mover)
-ButtonRef WidgetKitImpl::_c_left_mover(Adjustment_in a) { return nil; }
+Button_return WidgetKitImpl::left_mover(Adjustment_in a) {
+    TelltaleImpl* t = new TelltaleImpl(TelltaleImpl::enabled_bit);
+    Button_return b = new BackwardScroller(fresco_, style_, t, a);
+    b->body(
+	_tmp(new WKButtonFrame(
+	    new LeftArrow(info_.color[dark_gray]), t, &info_, arrow_border
+	))
+    );
+    return b;
+}
 
 //+ WidgetKitImpl(WidgetKit::right_mover)
-ButtonRef WidgetKitImpl::_c_right_mover(Adjustment_in a) { return nil; }
+Button_return WidgetKitImpl::right_mover(Adjustment_in a) {
+    TelltaleImpl* t = new TelltaleImpl(TelltaleImpl::enabled_bit);
+    Button_return b = new ForwardScroller(fresco_, style_, t, a);
+    b->body(
+	_tmp(new WKButtonFrame(
+	    new RightArrow(info_.color[dark_gray]), t, &info_, arrow_border
+	))
+    );
+    return b;
+}
+
+//+ WidgetKitImpl(WidgetKit::viewer_group)
+Viewer_return WidgetKitImpl::viewer_group(Glyph_in g) {
+    Viewer_return v = new ViewerImpl(fresco_, true);
+    if (is_not_nil(g)) {
+	v->body(g);
+    }
+    return v;
+}
+
+//+ WidgetKitImpl(WidgetKit::bounded_float)
+Adjustment_return WidgetKitImpl::bounded_float(Float lower, Float upper, Float initial) {
+    return new BoundedFloat(lower, upper, initial);
+}
 
 ColorRef WidgetKitImpl::brightness(ColorRef c, float adjust) {
     Color::Intensity r, g, b;
@@ -820,7 +945,7 @@ ColorRef WidgetKitImpl::brightness(ColorRef c, float adjust) {
 	g *= f;
 	b *= f;
     }
-    return fresco_->drawing_kit()->_c_color_rgb(r, g, b);
+    return _tmp(fresco_->drawing_kit())->color_rgb(r, g, b);
 }
 
 void WidgetKitImpl::load() {
@@ -832,36 +957,36 @@ void WidgetKitImpl::load() {
     load_coord("sliderSize", i->slider_size);
     load_coord("minButtonWidth", i->min_button_width);
 
-    DrawingKit d = fresco_->drawing_kit();
-    i->font = d->_c_default_font(style_);
-    ColorRef bg = d->_c_background(style_);
-    if (is_nil(bg)) {
-	bg = d->_c_color_rgb(0.7, 0.7, 0.7);
-    }
+    DrawingKit_var d = fresco_->drawing_kit();
+    i->font = d->default_font(style_);
     i->num_colors = 13;
-    ColorRef* c = new ColorRef[i->num_colors];
+    Color_var* c = new Color_var[i->num_colors];
     i->color = c;
+    c[light_gray] = d->background(style_);
+    if (is_nil(c[light_gray])) {
+	c[light_gray] = d->color_rgb(0.7, 0.7, 0.7);
+    }
+    ColorRef bg = c[light_gray];
     c[black] = brightness(bg, -0.85);
     c[very_dark_gray] = brightness(bg, -0.66);
     c[dark_gray] = brightness(bg, -0.5);
     c[medium_gray] = brightness(bg, -0.33);
-    c[light_gray] = bg;
     c[very_light_gray] = brightness(bg, 0.45);
     c[white] = brightness(bg, 0.7);
     /* gray out not implemented correctly */
     c[gray_out] = Color::_duplicate(bg);
     /* shadow not implemented correctly */
     c[shadow] = Color::_duplicate(c[black]);
-    c[yellow] = d->_c_color_rgb(1.0, 1.0, 0.0);
-    c[light_yellow] = d->_c_color_rgb(1.0, 1.0, 0.875);
+    c[yellow] = d->color_rgb(1.0, 1.0, 0.0);
+    c[light_yellow] = d->color_rgb(1.0, 1.0, 0.875);
     c[medium_yellow] = brightness(i->color[yellow], -0.3);
     c[dark_yellow] = brightness(i->color[yellow], -0.5);
 
-    i->checkmark_color = d->_c_resolve_color(
-	style_, Fresco::string_ref("checkmarkColor")
+    i->checkmark_color = d->resolve_color(
+	style_, Fresco::tmp_string_ref("checkmarkColor")
     );
     if (is_nil(i->checkmark_color)) {
-	i->checkmark_color = d->_c_color_rgb(0.9, 0.0, 0.0);
+	i->checkmark_color = d->color_rgb(0.9, 0.0, 0.0);
     }
     i->checkmark = make_bitmap(
 	d, checkmark_bits, checkmark_width, checkmark_height
@@ -874,17 +999,15 @@ void WidgetKitImpl::load() {
     );
 }
 
-RasterRef WidgetKitImpl::make_bitmap(
-    DrawingKitRef d, const char* data,
+Raster_return WidgetKitImpl::make_bitmap(
+    DrawingKitRef d, unsigned char* data,
     unsigned int width, unsigned int height
 ) {
-    DrawingKit::Data seq;
-
-    /* This length computation is wrong, but matches RasterBitmap */
-    seq._length = (width * height + sizeof(long) - 1) / sizeof(long);
+    DrawingKit::Data8 seq;
+    seq._length = (height * width + 7) / 8;
     seq._maximum = seq._length;
-    seq._buffer = (long*)data;
-    RasterRef r = d->_c_bitmap_data(seq, height, width, 13, 0);
+    seq._buffer = data;
+    Raster_return r = d->bitmap_from_data(seq, height, width, 0, 0);
 
     /* Don't let destructor free data */
     seq._buffer = nil;
@@ -893,14 +1016,14 @@ RasterRef WidgetKitImpl::make_bitmap(
 }
 
 void WidgetKitImpl::load_coord(const char* name, Coord& c) {
-    StyleValue a = style_->resolve(Fresco::string_ref(name));
+    StyleValue_var a = style_->resolve(Fresco::tmp_string_ref(name));
     if (is_not_nil(a)) {
 	a->read_coord(c);
     }
 }
 
 void WidgetKitImpl::load_float(const char* name, float& f) {
-    StyleValue a = style_->resolve(Fresco::string_ref(name));
+    StyleValue_var a = style_->resolve(Fresco::tmp_string_ref(name));
     if (is_not_nil(a)) {
 	double d;
 	if (a->read_real(d)) {
@@ -910,15 +1033,29 @@ void WidgetKitImpl::load_float(const char* name, float& f) {
 }
 
 void WidgetKitImpl::unload() {
-    WidgetKitImpl::Info* i = &info_;
-    for (long c = 0; c < i->num_colors; c++) {
-	Fresco::unref(i->color[c]);
+    delete [] info_.color;
+}
+
+void WidgetKitImpl::make_thumb(Slider* slider, Axis a) {
+    long r;
+    StyleValue_var v = style_->resolve(Fresco::tmp_string_ref("thumbRidges"));
+    if (is_not_nil(v)) {
+	long l;
+	if (v->read_integer(l)) {
+	    r = l;
+	}
     }
-    delete [] i->color;
-    Fresco::unref(i->checkmark);
-    Fresco::unref(i->checkmark_color);
-    Fresco::unref(i->shadow1);
-    Fresco::unref(i->shadow2);
+    slider->normal_thumb(
+	new WKThumb(&info_, a, r, new TelltaleImpl(TelltaleImpl::enabled_bit))
+    );
+    slider->visible_thumb(
+	new WKThumb(&info_, a, r, new TelltaleImpl(TelltaleImpl::visible_bit))
+    );
+    TelltaleImpl* t = new TelltaleImpl(
+	TelltaleImpl::enabled_bit | TelltaleImpl::active_bit |
+	TelltaleImpl::chosen_bit
+    );
+    slider->old_thumb(new WKFrame(nil, t, &info_, info_.thickness));
 }
 
 /* class WKFrame */
@@ -939,20 +1076,13 @@ void WKFrame::draw(GlyphTraversal_in t) {
     draw_frame(t);
     if (!state_->test(Telltale::enabled)) {
 	Coord th = info_->thickness;
-	PainterObj p = t->painter();
+	Painter_var p = t->current_painter();
 	Vertex v[3];
 	t->bounds(v[0], v[1], v[2]);
 	v[0].x += th; v[0].y += th;
 	v[1].x -= th; v[1].y -= th;
 	// need fill patterns or alpha blending here
 	fill_rect(p, v[0], v[1], info_->color[gray_out]);
-    }
-}
-
-//+ WKFrame(Glyph::pick)
-void WKFrame::pick(GlyphTraversal_in t) {
-    if (t->painter()->is_visible(t->allocation())) {
-	t->hit();
     }
 }
 
@@ -1000,7 +1130,7 @@ static int* frame_colors[] = {
 };
 
 void WKFrame::draw_frame(GlyphTraversalRef t) {
-    PainterObj p = t->painter();
+    Painter_var p = t->current_painter();
     Vertex v[3];
     t->bounds(v[0], v[1], v[2]);
     int* colors = frame_colors[state_->flags()];
@@ -1024,14 +1154,14 @@ void WKFrame::draw_frame(GlyphTraversalRef t) {
 }
 
 void WKFrame::fill_rect(
-    PainterObjRef p, const Vertex& lower, const Vertex& upper, ColorRef c
+    PainterRef p, const Vertex& lower, const Vertex& upper, ColorRef c
 ) {
     Beveler::set_color(p, c);
     p->fill_rect(lower.x, lower.y, upper.x, upper.y);
 }
 
 void WKFrame::shade(
-    PainterObjRef p, const Vertex& lower, const Vertex& upper,
+    PainterRef p, const Vertex& lower, const Vertex& upper,
     WidgetKitImpl::Info* info, const int* colors, int ncolors, Coord* th
 ) {
     Coord x0 = lower.x, y0 = lower.y, x1 = upper.x, y1 = upper.y;
@@ -1105,7 +1235,7 @@ static int* button_colors[] = {
 };
 
 void WKButtonFrame::draw_frame(GlyphTraversalRef t) {
-    PainterObj p = t->painter();
+    Painter_var p = t->current_painter();
     Vertex v[3];
     t->bounds(v[0], v[1], v[2]);
     Coord t1 = p->to_pixels_coord(1.0);
@@ -1151,7 +1281,7 @@ WKMenuItemFrame::WKMenuItemFrame(
 WKMenuItemFrame::~WKMenuItemFrame() { }
 
 void WKMenuItemFrame::draw_frame(GlyphTraversalRef t) {
-    PainterObj p = t->painter();
+    Painter_var p = t->current_painter();
     Vertex v[3];
     t->bounds(v[0], v[1], v[2]);
     if (state_->test(Telltale::active) || state_->test(Telltale::running)) {
@@ -1199,10 +1329,11 @@ void WKCheckmark::request(Glyph::Requisition& r) {
 //+ WKCheckmark(Glyph::draw)
 void WKCheckmark::draw(GlyphTraversal_in t) {
     if (state_->test(Telltale::chosen)) {
-	WidgetKitImpl::Info* i = info_;
+	Painter_var p = t->current_painter();
+	Region_var a = t->allocation();
 	Vertex o;
-	t->origin(o);
-	PainterObj p = t->painter();
+	a->origin(o);
+	WidgetKitImpl::Info* i = info_;
 	Beveler::set_color(p, i->color[dark_gray]);
 	p->stencil(i->shadow1, o.x, o.y);
 	p->stencil(i->shadow2, o.x, o.y);
@@ -1270,15 +1401,19 @@ static int* indicator_colors[] = {
 //+ WKIndicator(Glyph::draw)
 void WKIndicator::draw(GlyphTraversal_in t) {
     WidgetKitImpl::Info* i = info_;
-    PainterObj p = t->painter();
+    Painter_var p = t->current_painter();
     int* c = indicator_colors[state_->flags()];
-    Coord t1 = p->to_pixels_coord(1.0);
-    Coord t2 = t1 + t1;
     Vertex v0, v1, v;
     t->bounds(v0, v1, v);
+    Coord h = p->to_pixels_coord(0.2 * (v1.y - v0.y));
+    Coord t1 = p->to_pixels_coord(1.0);
+    Coord t2 = t1 + t1;
+    if (h < t2) {
+	h = t2;
+    }
     Beveler::rect(
 	p, t1, i->color[c[0]], i->color[c[1]], i->color[c[2]],
-	v0.x, v0.y + t2, v1.x, v1.y - t2
+	v0.x, v0.y + h, v1.x, v1.y - h
     );
 }
 
@@ -1287,8 +1422,9 @@ void WKIndicator::draw(GlyphTraversal_in t) {
 WKRadioFlag::WKRadioFlag(
     WidgetKitImpl::Info* i, TelltaleImpl* t, FontRef f
 ) : WKGlyph(i) {
+    Fresco::ref(t);
     state_ = t;
-    font_ = f;
+    font_ = Font::_duplicate(f);
 }
 
 WKRadioFlag::~WKRadioFlag() {
@@ -1343,7 +1479,7 @@ static int* radio_colors[] = {
 //+ WKRadioFlag(Glyph::draw)
 void WKRadioFlag::draw(GlyphTraversal_in t) {
     WidgetKitImpl::Info* i = info_;
-    PainterObj p = t->painter();
+    Painter_var p = t->current_painter();
     int* colors = radio_colors[state_->flags()];
     Vertex v0, v1, v;
     t->bounds(v0, v1, v);
@@ -1403,7 +1539,7 @@ void WKThumb::draw(GlyphTraversal_in t) {
     }
     Vertex v0, v1, v;
     t->bounds(v0, v1, v);
-    PainterObj p = t->painter();
+    Painter_var p = t->current_painter();
     Coord p1 = p->to_pixels_coord(1.0);
     Coord p2 = p1 + p1, p3 = p2 + p1, p4 = p3 + p1, p5 = p4 + p1;
     Beveler::set_color(p, i->color[very_dark_gray]);
@@ -1451,7 +1587,7 @@ void WKThumb::draw(GlyphTraversal_in t) {
 	c[0] = i->color[white];
 	c[1] = i->color[very_dark_gray];
 	for (r = 0; r < 6; r++) {
-	    left[0] = v0.x; right[0] = v1.x;
+	    left[r] = v0.x; right[r] = v1.x;
 	}
 	bottom[0] = mid + p4; top[0] = mid + p5;
 	bottom[1] = mid + p3; top[1] = mid + p4;
@@ -1506,7 +1642,7 @@ void WKDefaultArrow::draw(GlyphTraversal_in t) {
     Coord top = bottom + 0.9 * ascent_;
     Coord y0 = 0.5 * (bottom + top);
 
-    PainterObj p = t->painter();
+    Painter_var p = t->current_painter();
     Beveler::set_color(p, i->color[black]);
     p->begin_path();
     p->move_to(left, y0);
@@ -1557,29 +1693,6 @@ void Beveler::request(Glyph::Requisition& r) {
     }
 }
 
-/*
- * To compute our extension quickly, we make two simplifying
- * assumptions.  First, we assume that a beveler does not have
- * a transform.  Second, we assume that the glyph inside a beveler
- * does not draw outside the beveler.  This assumption is not checked,
- * but for the kinds of objects we normally have in a beveler
- * should be safe.
- */
-
-//+ Beveler(Glyph::extension)
-void Beveler::extension(const Glyph::AllocationInfo& a, Region_in r) {
-    if (is_not_nil(a.allocation)) {
-	if (is_nil(a.transform)) {
-	    r->merge_union(a.allocation);
-	} else {
-	    RegionImpl tmp;
-	    tmp.copy(a.allocation);
-	    tmp.transform(a.transform);
-	    r->merge_union(&tmp);
-	}
-    }
-}
-
 //+ Beveler(Glyph::traverse)
 void Beveler::traverse(GlyphTraversal_in t) {
     switch (t->op()) {
@@ -1605,17 +1718,20 @@ void Beveler::traverse(GlyphTraversal_in t) {
 
 RegionRef Beveler::allocate_body(GlyphTraversalRef t) {
     Glyph::Requisition req;
+    GlyphImpl::init_requisition(req);
     MonoGlyph::request(req);
     RegionImpl* a = allocation_;
+    a->defined_ = true;
+    Region_var given = t->allocation();
     Region::BoundingSpan s;
 
-    t->span(X_axis, s);
+    given->span(X_axis, s);
     allocate_span(req.x, s, hmargin_ ? thickness_ : 0, xalign_);
     a->lower_.x = s.begin;
     a->upper_.x = s.end;
     a->xalign_ = s.align;
 
-    t->span(Y_axis, s);
+    given->span(Y_axis, s);
     allocate_span(req.y, s, vmargin_ ? thickness_ : 0, yalign_);
     a->lower_.y = s.begin;
     a->upper_.y = s.end;
@@ -1639,11 +1755,11 @@ void Beveler::allocate_span(
     s.end = s.begin + s.length;
 }
 
-void Beveler::set_color(PainterObjRef p, ColorRef c) {
-    p->color_attr(c);
+void Beveler::set_color(PainterRef p, ColorRef c) {
+    p->current_color(c);
 }
 
-void Beveler::fill_path(PainterObjRef p, Vertex* v, long n) {
+void Beveler::fill_path(PainterRef p, Vertex* v, long n) {
     p->begin_path();
     p->move_to(v[0].x, v[0].y);
     for (long i = 1; i < n; i++) {
@@ -1654,7 +1770,7 @@ void Beveler::fill_path(PainterObjRef p, Vertex* v, long n) {
 }
 
 void Beveler::rect(
-    PainterObjRef p, Coord thickness,
+    PainterRef p, Coord thickness,
     ColorRef light, ColorRef medium, ColorRef dark,
     Coord left, Coord bottom, Coord right, Coord top
 ) {
@@ -1707,7 +1823,7 @@ void Beveler::rect(
  */
 
 void Beveler::left_arrow(
-    PainterObjRef p, Coord thickness,
+    PainterRef p, Coord thickness,
     ColorRef light, ColorRef medium, ColorRef dark,
     Coord left, Coord bottom, Coord right, Coord top
 ) {
@@ -1746,7 +1862,7 @@ void Beveler::left_arrow(
 }
 
 void Beveler::right_arrow(
-    PainterObjRef p, Coord thickness,
+    PainterRef p, Coord thickness,
     ColorRef light, ColorRef medium, ColorRef dark,
     Coord left, Coord bottom, Coord right, Coord top
 ) {
@@ -1785,7 +1901,7 @@ void Beveler::right_arrow(
 }
 
 void Beveler::up_arrow(
-    PainterObjRef p, Coord thickness,
+    PainterRef p, Coord thickness,
     ColorRef light, ColorRef medium, ColorRef dark,
     Coord left, Coord bottom, Coord right, Coord top
 ) {
@@ -1824,7 +1940,7 @@ void Beveler::up_arrow(
 }
 
 void Beveler::down_arrow(
-    PainterObjRef p, Coord thickness,
+    PainterRef p, Coord thickness,
     ColorRef light, ColorRef medium, ColorRef dark,
     Coord left, Coord bottom, Coord right, Coord top
 ) {
@@ -1863,7 +1979,7 @@ void Beveler::down_arrow(
 }
 
 void Beveler::diamond(
-    PainterObjRef p, Coord thickness,
+    PainterRef p, Coord thickness,
     ColorRef light, ColorRef medium, ColorRef dark,
     Coord left, Coord bottom, Coord right, Coord top
 ) {
@@ -1903,4 +2019,829 @@ void Beveler::diamond(
     v[4].x = x_mid; v[4].y = top_inside;
     v[5].x = left_inside; v[5].y = y_mid;
     fill_path(p, v, 6);
+}
+
+/* class Stepper */
+
+declareActionCallback(Stepper)
+implementActionCallback(Stepper)
+
+Stepper::Stepper(
+    Fresco* f, StyleRef s, TelltaleRef t, ActionRef a
+) : ButtonImpl(f, t, a) {
+    float seconds = 0.25;
+    StyleValue_var v = s->resolve(Fresco::tmp_string_ref("autorepeatStart"));
+    if (is_not_nil(v)) {
+	double d;
+	if (v->read_real(d)) {
+	    seconds = float(d);
+	}
+    }
+    start_delay_ = long(seconds * 100);
+    seconds = 0.05;
+    v = s->resolve(Fresco::tmp_string_ref("autorepeatDelay"));
+    if (is_not_nil(v)) {
+	double d;
+	if (v->read_real(d)) {
+	    seconds = float(d);
+	}
+    }
+    next_delay_ = long(seconds * 100);
+    threads_ = f->thread_kit();
+    lock_ = threads_->lock();
+    ticker_ = nil;
+}
+
+Stepper::~Stepper() { }
+
+Boolean Stepper::press(GlyphTraversal_in t, Event_in e) {
+    Boolean b = ButtonImpl::press(t, e);
+    start_stepping();
+    return b;
+}
+
+Boolean Stepper::release(GlyphTraversal_in t, Event_in e) {
+    stop_stepping();
+    return ButtonImpl::release(t, e);
+}
+
+void Stepper::start_stepping() {
+    lock_->acquire();
+    state_->set(Telltale::stepping);
+    lock_->release();
+    adjust();
+    if (start_delay_ > 10) {
+	ticker_ = threads_->thread(
+	    new ActionCallback(Stepper)(this, &Stepper::tick)
+	);
+	if (is_not_nil(ticker_)) {
+	    ticker_->run();
+	}
+    }
+}
+
+void Stepper::stop_stepping() {
+    if (is_not_nil(ticker_)) {
+	ticker_->terminate();
+	ticker_ = nil;
+    }
+    state_->clear(Telltale::stepping);
+}
+
+/*
+ * This should be a pure virtual, but that can tickle a cfront bug.
+ */
+void Stepper::adjust() { }
+
+void Stepper::tick() {
+    Fresco::delay(float(start_delay_ * 0.01));
+    float next_delay = float(next_delay_ * 0.01);
+    Boolean stepping = true;
+    while (stepping) {
+	lock_->acquire();
+	stepping = state_->test(Telltale::stepping);
+	lock_->release();
+	if (stepping) {
+	    adjust();
+	}
+	Fresco::delay(next_delay);
+    }
+}
+
+#define implementAdjustStepper(Name,scroll) \
+Name::Name( \
+    Fresco* f, Style_in s, Telltale_in t, Adjustment_in a \
+) : Stepper(f, s, t) { \
+    adjustment_ = a; \
+} \
+\
+Name::~Name() { } \
+\
+void Name::adjust() { adjustment_->scroll(); }
+
+implementAdjustStepper(ForwardScroller,scroll_forward)
+implementAdjustStepper(BackwardScroller,scroll_backward)
+implementAdjustStepper(ForwardPager,page_forward)
+implementAdjustStepper(BackwardPager,page_backward)
+
+#define implementArrowGlyph(Name) \
+Name::Name(Color_in c) { \
+    color_ = c; \
+} \
+\
+Name::~Name() { } \
+
+implementArrowGlyph(UpArrow)
+implementArrowGlyph(DownArrow)
+implementArrowGlyph(LeftArrow)
+implementArrowGlyph(RightArrow)
+
+//+ UpArrow(Glyph::draw)
+void UpArrow::draw(GlyphTraversal_in t) {
+    Vertex lower, upper, center;
+    t->bounds(lower, upper, center);
+
+    Painter_var p = t->current_painter();
+    p->current_color(color_);
+    Vertex v[3];
+    v[0].x = lower.x; v[0].y = lower.y;
+    v[1].x = upper.x; v[1].y = lower.y;
+    v[2].x = (lower.x + upper.x) * 0.5; v[2].y = upper.y;
+    Beveler::fill_path(p, v, 3);
+}
+
+//+ DownArrow(Glyph::draw)
+void DownArrow::draw(GlyphTraversal_in t) {
+    Vertex lower, upper, center;
+    t->bounds(lower, upper, center);
+
+    Painter_var p = t->current_painter();
+    p->current_color(color_);
+    Vertex v[3];
+    v[0].x = lower.x; v[0].y = upper.y;
+    v[1].x = upper.x; v[1].y = upper.y;
+    v[2].x = (lower.x + upper.x) * 0.5; v[2].y = lower.y;
+    Beveler::fill_path(p, v, 3);
+}
+
+//+ LeftArrow(Glyph::draw)
+void LeftArrow::draw(GlyphTraversal_in t) {
+    Vertex lower, upper, center;
+    t->bounds(lower, upper, center);
+
+    Painter_var p = t->current_painter();
+    p->current_color(color_);
+    Vertex v[3];
+    v[0].x = upper.x; v[0].y = lower.y;
+    v[1].x = upper.x; v[1].y = upper.y;
+    v[2].x = lower.x; v[2].y = (lower.y + upper.y) * 0.5;
+    Beveler::fill_path(p, v, 3);
+}
+
+//+ RightArrow(Glyph::draw)
+void RightArrow::draw(GlyphTraversal_in t) {
+    Vertex lower, upper, center;
+    t->bounds(lower, upper, center);
+
+    Painter_var p = t->current_painter();
+    p->current_color(color_);
+    Vertex v[3];
+    v[0].x = lower.x; v[0].y = lower.y;
+    v[1].x = lower.x; v[1].y = upper.y;
+    v[2].x = upper.x; v[2].y = (lower.y + upper.y) * 0.5;
+    Beveler::fill_path(p, v, 3);
+}
+
+/* class SliderViewer */
+
+SliderViewer::SliderViewer(Fresco* f, Slider* slider) : ActiveViewer(f) {
+    Fresco::ref(slider);
+    slider_ = slider;
+    dragging_ = false;
+    aborted_ = false;
+    xoffset_ = 0.0;
+    yoffset_ = 0.0;
+    stepper_ = nil;
+}
+
+SliderViewer::~SliderViewer() {
+    Fresco::unref(slider_);
+    Fresco::unref(ButtonRef(stepper_));
+}
+
+Boolean SliderViewer::move(GlyphTraversalRef t, EventRef e) {
+    slider_->move_thumb(t, e);
+    return ActiveViewer::move(t, e);
+}
+
+Boolean SliderViewer::press(GlyphTraversalRef t, EventRef e) {
+    const left = 1, middle = 2, right = 3;
+    Event::ButtonIndex b = e->pointer_button();
+    if (b == right) {
+	return false;
+    }
+
+    Coord x = e->pointer_x();
+    Coord y = e->pointer_y();
+    Vertex s0, s1, t0, t1;
+    Region_var r = t->allocation();
+    r->bounds(s0, s1);
+    Region_var thumb = slider_->thumb_allocation(r);
+    thumb->bounds(t0, t1);
+    long rel = slider_->hit_thumb(t, e);
+    if (rel == 0) {
+	dragging_ = true;
+	slider_->begin_adjustment();
+	xoffset_ = s0.x + x - t0.x;
+	yoffset_ = s0.y + y - t0.y;
+    } else if (b == left) {
+	stepper_ = (rel == 1) ?
+	    slider_->forward_stepper() : slider_->backward_stepper();
+	if (stepper_ != nil) {
+	    stepper_->start_stepping();
+	}
+    } else {
+	/* middle => drag */
+	dragging_ = true;
+	slider_->begin_adjustment();
+	xoffset_ = s0.x + (t1.x - t0.x) * 0.5;
+	yoffset_ = s0.y + (t1.y - t0.y) * 0.5;
+	slider_->move_to(x - xoffset_, y - yoffset_);
+	move(t, e);
+    }
+    return true;
+}
+
+Boolean SliderViewer::drag(GlyphTraversal_in, Event_in e) {
+    if (!aborted_ && dragging_) {
+	slider_->show_old_thumb();
+	slider_->move_to(e->pointer_x() - xoffset_, e->pointer_y() - yoffset_);
+    }
+    return true;
+}
+
+Boolean SliderViewer::release(GlyphTraversal_in t, Event_in e) {
+    if (dragging_) {
+	dragging_ = false;
+	slider_->release_thumb();
+	if (aborted_) {
+	    aborted_ = false;
+	} else {
+	    slider_->move_to(
+		e->pointer_x() - xoffset_, e->pointer_y() - yoffset_
+	    );
+	    move(t, e);
+	    slider_->commit_adjustment();
+	}
+    } else if (stepper_ != nil) {
+	stepper_->stop_stepping();
+	Fresco::unref(ButtonRef(stepper_));
+	stepper_ = nil;
+	move(t, e);
+    }
+    return true;
+}
+
+/* class Slider */
+
+Slider::Slider(
+    Fresco* f, StyleRef style
+) : viewer_(f, this),
+    old_thumb_index(0), normal_thumb_index(1), visible_thumb_index(2)
+{
+    layouts_ = f->layout_kit();
+    normal_thumb_ = nil;
+    visible_thumb_ = nil;
+    min_thumb_size_ = default_minimum_thumb_size;
+    StyleValue_var v = style->resolve(Fresco::tmp_string_ref("minThumbSize"));
+    if (is_not_nil(v)) {
+	Coord c;
+	if (v->read_coord(c)) {
+	    min_thumb_size_ = c;
+	}
+    }
+    showing_visible_ = false;
+    showing_old_thumb_ = false;
+    forward_ = nil;
+    backward_ = nil;
+}
+
+Slider::~Slider() {
+    Fresco::unref(normal_thumb_);
+    Fresco::unref(visible_thumb_);
+    Fresco::unref(old_thumb_);
+    Fresco::unref(ButtonRef(forward_));
+    Fresco::unref(ButtonRef(backward_));
+}
+
+void Slider::normal_thumb(Glyph_in g) {
+    Fresco::unref(normal_thumb_);
+    normal_thumb_ = new PolyGlyphOffset(this, normal_thumb_index, g);
+}
+
+void Slider::visible_thumb(Glyph_in g) {
+    Fresco::unref(visible_thumb_);
+    visible_thumb_ = new PolyGlyphOffset(this, visible_thumb_index, g);
+}
+
+void Slider::old_thumb(Glyph_in g) {
+    Fresco::unref(old_thumb_);
+    old_thumb_ = new PolyGlyphOffset(this, old_thumb_index, g);
+}
+
+Stepper* Slider::forward_stepper() {
+    Fresco::ref(ButtonRef(forward_));
+    return forward_;
+}
+
+Stepper* Slider::backward_stepper() {
+    Fresco::ref(ButtonRef(backward_));
+    return backward_;
+}
+
+ViewerRef Slider::viewer() {
+    return Viewer::_duplicate(&viewer_);
+}
+
+//+ Slider(Glyph::request)
+void Slider::request(Glyph::Requisition& r) {
+    r.x.defined = true;
+    r.x.natural = 22.0;
+    r.x.maximum = layouts_->fil();
+    r.x.minimum = 0.0;
+    r.x.align = 0.0;
+    r.y = r.x;
+}
+
+//+ Slider(Glyph::draw)
+void Slider::draw(GlyphTraversal_in t) {
+    Painter_var p = t->current_painter();
+    if (t->allocation_is_visible()) {
+	Vertex v0, v1, v;
+	t->bounds(v0, v1, v);
+	p->push_clipping();
+	p->clip_rect(v0.x, v0.y, v1.x, v1.y);
+	if (showing_old_thumb_) {
+	    t->traverse_child(
+		old_thumb_, old_thumb_allocation(_tmp(t->allocation()))
+	    );
+	}
+	t->traverse_child(
+	    showing_visible_ ? visible_thumb_ : normal_thumb_,
+	    thumb_allocation(_tmp(t->allocation()))
+	);
+	p->pop_clipping();
+    }
+}
+
+void Slider::child_allocation(Long i, Glyph::AllocationInfo& a) {
+    if (i == old_thumb_index) {
+	a.allocation = old_thumb_allocation(a.allocation);
+    } else {
+	a.allocation = thumb_allocation(a.allocation);
+    }
+}
+
+void Slider::update() {
+    if (adjustments_changed()) {
+	redraw_thumb();
+    }
+}
+
+void Slider::move_thumb(GlyphTraversal_in t, Event_in e) {
+    if (is_not_nil(visible_thumb_)) {
+	if (hit_thumb(t, e) == 0) {
+	    if (!showing_visible_) {
+		showing_visible_ = true;
+		redraw_thumb();
+	    }
+	} else {
+	    if (showing_visible_) {
+		showing_visible_ = false;
+		redraw_thumb();
+	    }
+	}
+    }
+}
+
+Long Slider::hit_thumb(GlyphTraversal_in t, Event_in) {
+    Painter_var p = t->current_painter();
+    Region_var r = p->visible();
+    Vertex ev, v;
+    r->bounds(ev, v);
+    Coord x = ev.x, y = ev.y;
+    Region_var thumb = thumb_allocation(t->allocation());
+    Vertex t0, t1;
+    thumb->bounds(t0, t1);
+    if (x >= t0.x && x < t1.x && y >= t0.y && y < t1.y) {
+	return 0;
+    }
+    if (x < t0.x || y < t0.y) {
+	return -1;
+    }
+    return 1;
+}
+
+void Slider::show_old_thumb() {
+    if (!showing_old_thumb_ && is_not_nil(old_thumb_)) {
+	showing_old_thumb_ = true;
+    }
+}
+
+void Slider::release_thumb() {
+    if (showing_old_thumb_) {
+	showing_old_thumb_ = false;
+	_tmp(old_thumb_->child())->need_redraw();
+    }
+    redraw_thumb();
+}
+
+void Slider::redraw_thumb() {
+    GlyphOffsetRef thumb = showing_visible_ ? visible_thumb_ : normal_thumb_;
+    _tmp(thumb->child())->need_redraw();
+}
+
+/*
+ * These should be pure virtual, but that tickles a cfront bug.
+ */
+
+Region_return Slider::thumb_allocation(Region_in r) { return r; }
+void Slider::move_to(Coord, Coord) { }
+void Slider::begin_adjustment() { }
+void Slider::commit_adjustment() { }
+
+void Slider::forward_stepper(Stepper* s) {
+    Fresco::unref(ButtonRef(forward_));
+    Fresco::ref(ButtonRef(s));
+    forward_ = s;
+}
+
+void Slider::backward_stepper(Stepper* s) {
+    Fresco::unref(ButtonRef(backward_));
+    Fresco::ref(ButtonRef(s));
+    backward_ = s;
+}
+
+void Slider::allot_thumb_major_axis(
+    Coord slider_size, Coord slider_lower, Adjustment::Settings& s,
+    float& scale, Coord& lower, Coord& upper, float& align
+) {
+    Coord length = s.length;
+    Coord cur_length = s.cur_length;
+    Coord thumb_size;
+    Coord thumb_start;
+    if (Math::equal(length, float(0.0), float(1e-3)) ||
+	Math::equal(length, cur_length, float(1e-3))
+    ) {
+	thumb_size = slider_size;
+	thumb_start = 0.0;
+	scale = 1.0;
+    } else {
+	thumb_size = slider_size * cur_length / length;
+	if (thumb_size > slider_size) {
+	    thumb_size = slider_size;
+	    thumb_start = 0.0;
+	    scale = 1.0;
+	} else {
+	    if (thumb_size < min_thumb_size_) {
+		thumb_size = min_thumb_size_;
+	    }
+	    scale = (slider_size - thumb_size) / (length - cur_length);
+	    thumb_start = scale * (s.cur_lower - s.lower);
+	}
+    }
+    lower = slider_lower + thumb_start;
+    upper = lower + thumb_size;
+    align = 0.0;
+}
+
+void Slider::allot_thumb_minor_axis(
+    Coord lower, Coord upper, Coord& new_lower, Coord& new_upper, float& align
+) {
+    new_lower = lower;
+    new_upper = upper;
+    align = 0.0;
+}
+
+Boolean Slider::changed(Adjustment_in a, Adjustment::Settings& s) {
+    Adjustment::Settings new_s;
+    a->get_settings(new_s);
+    float tol = float(1e-3);
+    Boolean different = (
+	!Math::equal(new_s.lower, s.lower, tol) ||
+	!Math::equal(new_s.upper, s.upper, tol) ||
+	!Math::equal(new_s.length, s.length, tol) ||
+	!Math::equal(new_s.cur_lower, s.cur_lower, tol) ||
+	!Math::equal(new_s.cur_upper, s.cur_upper, tol) ||
+	!Math::equal(new_s.cur_length, s.cur_length, tol)
+    );
+    if (different) {
+	s = new_s;
+    }
+    return different;
+}
+
+/*
+ * These should be pure virtual functions, but that tickles a cfront bug.
+ */
+
+Region_return Slider::old_thumb_allocation(Region_in r) { return r; }
+Boolean Slider::adjustments_changed() { return false; }
+
+/* class XSlider */
+
+XSlider::XSlider(Fresco* f, StyleRef s, AdjustmentRef a) : Slider(f, s) {
+    adjustment_ = a;
+    tag_ = a->attach(this);
+    xscale_ = 1.0;
+    a->get_settings(settings_);
+    old_settings_ = settings_;
+
+    Telltale_var t = new TelltaleImpl;
+    forward_stepper(new ForwardPager(f, s, t, a));
+    backward_stepper(new BackwardPager(f, s, t, a));
+}
+
+XSlider::~XSlider() {
+    if (is_not_nil(adjustment_)) {
+	adjustment_->detach(tag_);
+    }
+}
+
+void XSlider::move_to(Coord x, Coord) {
+    Adjustment::Settings s;
+    adjustment_->get_settings(s);
+    adjustment_->scroll_to(s.lower + x / xscale_);
+}
+
+RegionRef XSlider::old_thumb_allocation(RegionRef a) {
+    return allocate_thumb(a, old_settings_);
+}
+
+RegionRef XSlider::thumb_allocation(RegionRef a) {
+    return allocate_thumb(a, settings_);
+}
+
+RegionRef XSlider::allocate_thumb(RegionRef given, Adjustment::Settings& s) {
+    RegionImpl* a = new RegionImpl;
+    Vertex v0, v1;
+    given->bounds(v0, v1);
+    allot_thumb_major_axis(
+	v1.x - v0.x, v0.x, s, xscale_, a->lower_.x, a->upper_.x, a->xalign_
+    );
+    allot_thumb_minor_axis(v0.y, v1.y, a->lower_.y, a->upper_.y, a->yalign_);
+    a->defined_ = true;
+    return a;
+}
+
+void XSlider::disconnect() { adjustment_ = nil; }
+
+void XSlider::begin_adjustment() {
+    old_settings_ = settings_;
+    adjustment_->begin();
+}
+
+void XSlider::commit_adjustment() {
+    adjustment_->commit();
+}
+
+Boolean XSlider::adjustments_changed() {
+    return changed(adjustment_, settings_);
+}
+
+/* class YSlider */
+
+YSlider::YSlider(Fresco* f, StyleRef s, AdjustmentRef a) : Slider(f, s) {
+    adjustment_ = a;
+    tag_ = a->attach(this);
+    yscale_ = 1.0;
+    a->get_settings(settings_);
+    old_settings_ = settings_;
+
+    Telltale_var t = new TelltaleImpl;
+    forward_stepper(new ForwardPager(f, s, t, a));
+    backward_stepper(new BackwardPager(f, s, t, a));
+}
+
+YSlider::~YSlider() {
+    if (is_not_nil(adjustment_)) {
+	adjustment_->detach(tag_);
+    }
+}
+
+void YSlider::move_to(Coord, Coord y) {
+    Adjustment::Settings s;
+    adjustment_->get_settings(s);
+    adjustment_->scroll_to(s.lower + y / yscale_);
+}
+
+RegionRef YSlider::old_thumb_allocation(RegionRef a) {
+    return allocate_thumb(a, old_settings_);
+}
+
+RegionRef YSlider::thumb_allocation(RegionRef a) {
+    return allocate_thumb(a, settings_);
+}
+
+RegionRef YSlider::allocate_thumb(RegionRef given, Adjustment::Settings& s) {
+    RegionImpl* a = new RegionImpl;
+    Vertex v0, v1;
+    given->bounds(v0, v1);
+    allot_thumb_major_axis(
+	v1.y - v0.y, v0.y, s, yscale_, a->lower_.y, a->upper_.y, a->yalign_
+    );
+    allot_thumb_minor_axis(v0.x, v1.x, a->lower_.x, a->upper_.x, a->xalign_);
+    a->defined_ = true;
+    return a;
+}
+
+void YSlider::disconnect() { adjustment_ = nil; }
+
+void YSlider::begin_adjustment() {
+    old_settings_ = settings_;
+    adjustment_->begin();
+}
+
+void YSlider::commit_adjustment() {
+    adjustment_->commit();
+}
+
+Boolean YSlider::adjustments_changed() {
+    return changed(adjustment_, settings_);
+}
+
+/* class XYSlider */
+
+XYSlider::XYSlider(
+    Fresco* f, StyleRef s, AdjustmentRef x, AdjustmentRef y
+) : Slider(f, s) {
+    x_adjustment_ = x;
+    y_adjustment_ = y;
+    x_tag_ = x->attach(this);
+    y_tag_ = y->attach(this);
+    xscale_ = 1.0;
+    yscale_ = 1.0;
+    x->get_settings(x_settings_);
+    y->get_settings(y_settings_);
+    x_old_settings_ = x_settings_;
+    y_old_settings_ = y_settings_;
+}
+
+XYSlider::~XYSlider() {
+    if (is_not_nil(x_adjustment_)) {
+	x_adjustment_->detach(x_tag_);
+    }
+    if (is_not_nil(y_adjustment_)) {
+	y_adjustment_->detach(y_tag_);
+    }
+}
+
+void XYSlider::move_to(Coord x, Coord y) {
+    Adjustment::Settings s;
+    x_adjustment_->get_settings(s);
+    x_adjustment_->scroll_to(s.lower + x / xscale_);
+
+    y_adjustment_->get_settings(s);
+    y_adjustment_->scroll_to(s.lower + y / yscale_);
+}
+
+RegionRef XYSlider::old_thumb_allocation(RegionRef a) {
+    return allocate_thumb(a, x_old_settings_, y_old_settings_);
+}
+
+RegionRef XYSlider::thumb_allocation(RegionRef a) {
+    return allocate_thumb(a, x_settings_, y_settings_);
+}
+
+RegionRef XYSlider::allocate_thumb(
+    RegionRef given, Adjustment::Settings& x_s, Adjustment::Settings& y_s
+) {
+    RegionImpl* a = new RegionImpl;
+    Vertex v0, v1;
+    given->bounds(v0, v1);
+    allot_thumb_major_axis(
+	v1.x - v0.x, v0.x, x_s, xscale_, a->lower_.x, a->upper_.x, a->xalign_
+    );
+    allot_thumb_major_axis(
+	v1.y - v0.y, v0.y, y_s, yscale_, a->lower_.y, a->upper_.y, a->yalign_
+    );
+    a->defined_ = true;
+    return a;
+}
+void XYSlider::disconnect() {
+    x_adjustment_ = nil;
+    y_adjustment_ = nil;
+}
+
+void XYSlider::begin_adjustment() {
+    x_old_settings_ = x_settings_;
+    y_old_settings_ = y_settings_;
+    x_adjustment_->begin();
+    y_adjustment_->begin();
+}
+
+void XYSlider::commit_adjustment() {
+    x_adjustment_->commit();
+    y_adjustment_->commit();
+}
+
+Boolean XYSlider::adjustments_changed() {
+    Boolean x = changed(x_adjustment_, x_settings_);
+    Boolean y = changed(y_adjustment_, y_settings_);
+    return x || y;
+}
+
+/* class BoundedFloat */
+
+BoundedFloat::BoundedFloat(Coord lower, Coord upper, Coord value) {
+    lower_ = lower;
+    span_ = upper - lower;
+    scroll_incr_ = span_ * 0.04;
+    page_incr_ = span_ * 0.2;
+    value_ = value;
+}
+
+BoundedFloat::~BoundedFloat() { }
+
+//+ BoundedFloat(FrescoObject::=object_.)
+Long BoundedFloat::ref__(Long references) {
+    return object_.ref__(references);
+}
+Tag BoundedFloat::attach(FrescoObject_in observer) {
+    return object_.attach(observer);
+}
+void BoundedFloat::detach(Tag attach_tag) {
+    object_.detach(attach_tag);
+}
+void BoundedFloat::disconnect() {
+    object_.disconnect();
+}
+void BoundedFloat::notify_observers() {
+    object_.notify_observers();
+}
+void BoundedFloat::update() {
+    object_.update();
+}
+//+
+
+//+ BoundedFloat(Adjustment::small_scroll=s)
+void BoundedFloat::small_scroll(Coord s) { scroll_incr_ = s; }
+
+//+ BoundedFloat(Adjustment::small_scroll?)
+Coord BoundedFloat::small_scroll() { return scroll_incr_; }
+
+//+ BoundedFloat(Adjustment::large_scroll=p)
+void BoundedFloat::large_scroll(Coord p) { page_incr_ = p; }
+
+//+ BoundedFloat(Adjustment::large_scroll?)
+Coord BoundedFloat::large_scroll() { return page_incr_; }
+
+//+ BoundedFloat(Adjustment::get_settings)
+void BoundedFloat::get_settings(Adjustment::Settings& s) {
+    s.lower = lower_;
+    s.upper = lower_ + span_;
+    s.length = span_;
+    s.cur_lower = value_;
+    s.cur_upper = value_;
+    s.cur_length = 0;
+}
+
+//+ BoundedFloat(Adjustment::begin)
+void BoundedFloat::begin() { get_settings(saved_); }
+
+//+ BoundedFloat(Adjustment::commit)
+void BoundedFloat::commit() { }
+
+//+ BoundedFloat(Adjustment::cancel)
+void BoundedFloat::cancel() {
+    lower_ = saved_.lower;
+    span_ = saved_.length;
+    value_ = saved_.cur_lower;
+}
+
+//+ BoundedFloat(Adjustment::scroll_forward)
+void BoundedFloat::scroll_forward() {
+    scroll_to(value_ + scroll_incr_);
+}
+
+//+ BoundedFloat(Adjustment::scroll_backward)
+void BoundedFloat::scroll_backward() {
+    scroll_to(value_ - scroll_incr_);
+}
+
+//+ BoundedFloat(Adjustment::page_forward)
+void BoundedFloat::page_forward() {
+    scroll_to(value_ + page_incr_);
+}
+
+//+ BoundedFloat(Adjustment::page_backward)
+void BoundedFloat::page_backward() {
+    scroll_to(value_ - page_incr_);
+}
+
+//+ BoundedFloat(Adjustment::scroll_to)
+void BoundedFloat::scroll_to(Coord lower) {
+    constrain(lower);
+    if (lower != value_) {
+	value_ = lower;
+	notify_observers();
+    }
+}
+
+//+ BoundedFloat(Adjustment::scroll_by)
+void BoundedFloat::scroll_by(Coord delta) {
+    scroll_to(value_ + delta);
+}
+
+//+ BoundedFloat(Adjustment::scale_to)
+void BoundedFloat::scale_to(Coord) { }
+
+//+ BoundedFloat(Adjustment::constrain)
+void BoundedFloat::constrain(Coord& c) {
+    Coord a = lower_, b = a + span_;
+    if (c < a) {
+	c = a;
+    } else if (c > b){
+	c = b;
+    }
 }

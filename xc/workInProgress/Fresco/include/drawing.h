@@ -6,387 +6,128 @@
 #include <X11/Fresco/_enter.h>
 #include <X11/Fresco/types.h>
 
-class BrushType;
-typedef BrushType* BrushRef;
-typedef BrushRef Brush_in;
 class Brush;
-class Brush_tmp;
+typedef Brush* BrushRef;
+typedef BrushRef Brush_in;
+typedef BrushRef Brush_out, Brush_inout;
+typedef BrushRef Brush_return;
 class Brush_var;
 
-class Brush {
-public:
-    BrushRef _obj_;
+class Font;
+typedef Font* FontRef;
+typedef FontRef Font_in;
+typedef FontRef Font_out, Font_inout;
+typedef FontRef Font_return;
+class Font_var;
 
-    Brush() { _obj_ = 0; }
-    Brush(BrushRef p) { _obj_ = p; }
-    Brush& operator =(BrushRef p);
-    Brush(const Brush&);
-    Brush& operator =(const Brush& r);
-    Brush(const Brush_tmp&);
-    Brush& operator =(const Brush_tmp&);
-    Brush(const Brush_var&);
-    Brush& operator =(const Brush_var&);
-    ~Brush();
+class Pattern;
+typedef Pattern* PatternRef;
+typedef PatternRef Pattern_in;
+typedef PatternRef Pattern_out, Pattern_inout;
+typedef PatternRef Pattern_return;
+class Pattern_var;
 
-    BrushRef operator ->() { return _obj_; }
+class Raster;
+typedef Raster* RasterRef;
+typedef RasterRef Raster_in;
+typedef RasterRef Raster_out, Raster_inout;
+typedef RasterRef Raster_return;
+class Raster_var;
 
-    operator Brush_in() const { return _obj_; }
-    operator FrescoObject() const;
-    static BrushRef _narrow(BaseObjectRef p);
-    static Brush_tmp _narrow(const BaseObject& r);
-
-    static BrushRef _duplicate(BrushRef obj);
-    static Brush_tmp _duplicate(const Brush& r);
-};
-
-class Brush_tmp : public Brush {
-public:
-    Brush_tmp(BrushRef p) { _obj_ = p; }
-    Brush_tmp(const Brush& r);
-    Brush_tmp(const Brush_tmp& r);
-    ~Brush_tmp();
-};
-
-class Brush_var {
-public:
-    BrushRef _obj_;
-
-    Brush_var(BrushRef p) { _obj_ = p; }
-    operator BrushRef() const { return _obj_; }
-    BrushRef operator ->() { return _obj_; }
-};
-
-class BrushType : public FrescoObjectType {
-protected:
-    BrushType();
-    virtual ~BrushType();
-public:
-    virtual Boolean equal(Brush_in b);
-    virtual ULong hash();
-    BrushRef _obj() { return this; }
-    void* _this();
-    virtual TypeObjId _tid();
-};
-
-class BrushStub : public BrushType {
-public:
-    BrushStub(Exchange*);
-    ~BrushStub();
-
-    static BaseObjectRef _create(Exchange*);
-    Exchange* _exchange();
-protected:
-    Exchange* exch_;
-};
-
-class ColorType;
-typedef ColorType* ColorRef;
-typedef ColorRef Color_in;
 class Color;
-class Color_tmp;
+typedef Color* ColorRef;
+typedef ColorRef Color_in;
+typedef ColorRef Color_out, Color_inout;
+typedef ColorRef Color_return;
 class Color_var;
 
-class Color {
+extern BaseObjectRef _XfColorStub_create(Exchange*);
+
+class Color : public FrescoObject {
+protected:
+    Color();
+    virtual ~Color();
 public:
-    ColorRef _obj_;
+    ColorRef _obj() { return this; };
+    static ColorRef  _return_ref(Color_return r) { return r; }
 
-    Color() { _obj_ = 0; }
-    Color(ColorRef p) { _obj_ = p; }
-    Color& operator =(ColorRef p);
-    Color(const Color&);
-    Color& operator =(const Color& r);
-    Color(const Color_tmp&);
-    Color& operator =(const Color_tmp&);
-    Color(const Color_var&);
-    Color& operator =(const Color_var&);
-    ~Color();
+    virtual void* _this();
+    virtual TypeObjId _tid();
 
-    ColorRef operator ->() { return _obj_; }
-
-    operator Color_in() const { return _obj_; }
-    operator FrescoObject() const;
-    static ColorRef _narrow(BaseObjectRef p);
-    static Color_tmp _narrow(const BaseObject& r);
-
-    static ColorRef _duplicate(ColorRef obj);
-    static Color_tmp _duplicate(const Color& r);
+    static ColorRef _narrow(BaseObjectRef);
+    static ColorRef _duplicate(ColorRef obj) {
+        return (ColorRef)_BaseObject__duplicate(obj, &_XfColorStub_create);
+    }
     typedef Float Intensity;
-};
-
-class Color_tmp : public Color {
-public:
-    Color_tmp(ColorRef p) { _obj_ = p; }
-    Color_tmp(const Color& r);
-    Color_tmp(const Color_tmp& r);
-    ~Color_tmp();
+    virtual void rgb(Intensity& r, Intensity& g, Intensity& b);
+    virtual Boolean equal(Color_in c);
+    virtual ULong hash();
 };
 
 class Color_var {
-public:
-    ColorRef _obj_;
-
-    Color_var(ColorRef p) { _obj_ = p; }
-    operator ColorRef() const { return _obj_; }
-    ColorRef operator ->() { return _obj_; }
-};
-
-class ColorType : public FrescoObjectType {
 protected:
-    ColorType();
-    virtual ~ColorType();
+    ColorRef _obj_;
 public:
-    virtual void rgb(Color::Intensity& r, Color::Intensity& g, Color::Intensity& b);
-    virtual Boolean equal(Color_in c);
-    virtual ULong hash();
-    ColorRef _obj() { return this; }
-    void* _this();
-    virtual TypeObjId _tid();
+    Color_var() { _obj_ = 0; };
+    Color_var(ColorRef p) { _obj_ = p; }
+    Color_var(const Color_var& r) {
+        _obj_ = Color::_duplicate(r._obj_);
+    }
+    ~Color_var() { _BaseObject__release(_obj_); }
+
+    Color_var& operator =(ColorRef p) {
+        _BaseObject__release(_obj_);
+        _obj_ = Color::_duplicate(p);
+        return *this;
+    }
+    Color_var& operator =(const Color_var& r) {
+        _BaseObject__release(_obj_);
+        _obj_ = Color::_duplicate(r._obj_);
+        return *this;
+    }
+
+    ColorRef _obj() const { return _obj_; }
+    ColorRef& _out() { return _obj_; }
+    operator ColorRef() const { return _obj_; }
+    ColorRef operator ->() const { return _obj_; }
 };
 
-class ColorStub : public ColorType {
+inline Color_var _tmp(ColorRef p) { return Color_var(p); }
+
+class ColorStub : public Color {
 public:
     ColorStub(Exchange*);
     ~ColorStub();
 
-    static BaseObjectRef _create(Exchange*);
     Exchange* _exchange();
 protected:
     Exchange* exch_;
 };
 
-class FontType;
-typedef FontType* FontRef;
-typedef FontRef Font_in;
-class Font;
-class Font_tmp;
-class Font_var;
+class Painter;
+typedef Painter* PainterRef;
+typedef PainterRef Painter_in;
+typedef PainterRef Painter_out, Painter_inout;
+typedef PainterRef Painter_return;
+class Painter_var;
 
-class Font {
-public:
-    FontRef _obj_;
+extern BaseObjectRef _XfPainterStub_create(Exchange*);
 
-    Font() { _obj_ = 0; }
-    Font(FontRef p) { _obj_ = p; }
-    Font& operator =(FontRef p);
-    Font(const Font&);
-    Font& operator =(const Font& r);
-    Font(const Font_tmp&);
-    Font& operator =(const Font_tmp&);
-    Font(const Font_var&);
-    Font& operator =(const Font_var&);
-    ~Font();
-
-    FontRef operator ->() { return _obj_; }
-
-    operator Font_in() const { return _obj_; }
-    operator FrescoObject() const;
-    static FontRef _narrow(BaseObjectRef p);
-    static Font_tmp _narrow(const BaseObject& r);
-
-    static FontRef _duplicate(FontRef obj);
-    static Font_tmp _duplicate(const Font& r);
-    struct Info {
-        Coord width, height;
-        Coord left_bearing, right_bearing;
-        Coord ascent, descent;
-        Coord font_ascent, font_descent;
-    };
-};
-
-class Font_tmp : public Font {
-public:
-    Font_tmp(FontRef p) { _obj_ = p; }
-    Font_tmp(const Font& r);
-    Font_tmp(const Font_tmp& r);
-    ~Font_tmp();
-};
-
-class Font_var {
-public:
-    FontRef _obj_;
-
-    Font_var(FontRef p) { _obj_ = p; }
-    operator FontRef() const { return _obj_; }
-    FontRef operator ->() { return _obj_; }
-};
-
-class FontType : public FrescoObjectType {
+class Painter : public FrescoObject {
 protected:
-    FontType();
-    virtual ~FontType();
+    Painter();
+    virtual ~Painter();
 public:
-    virtual Boolean equal(Font_in f);
-    virtual ULong hash();
-    CharString_tmp name() {
-        return _c_name();
-    }
-    virtual CharStringRef _c_name();
-    CharString_tmp encoding() {
-        return _c_encoding();
-    }
-    virtual CharStringRef _c_encoding();
-    virtual Coord point_size();
-    virtual void font_info(Font::Info& i);
-    virtual void char_info(CharCode c, Font::Info& i);
-    virtual void string_info(CharString_in s, Font::Info& i);
-    FontRef _obj() { return this; }
-    void* _this();
+    PainterRef _obj() { return this; };
+    static PainterRef  _return_ref(Painter_return r) { return r; }
+
+    virtual void* _this();
     virtual TypeObjId _tid();
-};
 
-class FontStub : public FontType {
-public:
-    FontStub(Exchange*);
-    ~FontStub();
-
-    static BaseObjectRef _create(Exchange*);
-    Exchange* _exchange();
-protected:
-    Exchange* exch_;
-};
-
-class RasterType;
-typedef RasterType* RasterRef;
-typedef RasterRef Raster_in;
-class Raster;
-class Raster_tmp;
-class Raster_var;
-
-class Raster {
-public:
-    RasterRef _obj_;
-
-    Raster() { _obj_ = 0; }
-    Raster(RasterRef p) { _obj_ = p; }
-    Raster& operator =(RasterRef p);
-    Raster(const Raster&);
-    Raster& operator =(const Raster& r);
-    Raster(const Raster_tmp&);
-    Raster& operator =(const Raster_tmp&);
-    Raster(const Raster_var&);
-    Raster& operator =(const Raster_var&);
-    ~Raster();
-
-    RasterRef operator ->() { return _obj_; }
-
-    operator Raster_in() const { return _obj_; }
-    operator FrescoObject() const;
-    static RasterRef _narrow(BaseObjectRef p);
-    static Raster_tmp _narrow(const BaseObject& r);
-
-    static RasterRef _duplicate(RasterRef obj);
-    static Raster_tmp _duplicate(const Raster& r);
-    typedef Long Index;
-    struct Element {
-        Boolean on;
-        ColorRef pixel;
-        Float blend;
-    };
-};
-
-class Raster_tmp : public Raster {
-public:
-    Raster_tmp(RasterRef p) { _obj_ = p; }
-    Raster_tmp(const Raster& r);
-    Raster_tmp(const Raster_tmp& r);
-    ~Raster_tmp();
-};
-
-class Raster_var {
-public:
-    RasterRef _obj_;
-
-    Raster_var(RasterRef p) { _obj_ = p; }
-    operator RasterRef() const { return _obj_; }
-    RasterRef operator ->() { return _obj_; }
-};
-
-class RasterType : public FrescoObjectType {
-protected:
-    RasterType();
-    virtual ~RasterType();
-public:
-    virtual Boolean equal(Raster_in r);
-    virtual ULong hash();
-    virtual Raster::Index rows();
-    virtual Raster::Index columns();
-    virtual Raster::Index origin_x();
-    virtual Raster::Index origin_y();
-    virtual void peek(Raster::Index row, Raster::Index column, Raster::Element& e);
-    virtual void poke(Raster::Index row, Raster::Index column, const Raster::Element& e);
-    virtual Coord scale();
-    virtual void scale(Coord _p);
-    RasterRef _obj() { return this; }
-    void* _this();
-    virtual TypeObjId _tid();
-};
-
-class RasterStub : public RasterType {
-public:
-    RasterStub(Exchange*);
-    ~RasterStub();
-
-    static BaseObjectRef _create(Exchange*);
-    Exchange* _exchange();
-protected:
-    Exchange* exch_;
-};
-
-class PainterObjType;
-typedef PainterObjType* PainterObjRef;
-typedef PainterObjRef PainterObj_in;
-class PainterObj;
-class PainterObj_tmp;
-class PainterObj_var;
-
-class PainterObj {
-public:
-    PainterObjRef _obj_;
-
-    PainterObj() { _obj_ = 0; }
-    PainterObj(PainterObjRef p) { _obj_ = p; }
-    PainterObj& operator =(PainterObjRef p);
-    PainterObj(const PainterObj&);
-    PainterObj& operator =(const PainterObj& r);
-    PainterObj(const PainterObj_tmp&);
-    PainterObj& operator =(const PainterObj_tmp&);
-    PainterObj(const PainterObj_var&);
-    PainterObj& operator =(const PainterObj_var&);
-    ~PainterObj();
-
-    PainterObjRef operator ->() { return _obj_; }
-
-    operator PainterObj_in() const { return _obj_; }
-    operator FrescoObject() const;
-    static PainterObjRef _narrow(BaseObjectRef p);
-    static PainterObj_tmp _narrow(const BaseObject& r);
-
-    static PainterObjRef _duplicate(PainterObjRef obj);
-    static PainterObj_tmp _duplicate(const PainterObj& r);
-};
-
-class PainterObj_tmp : public PainterObj {
-public:
-    PainterObj_tmp(PainterObjRef p) { _obj_ = p; }
-    PainterObj_tmp(const PainterObj& r);
-    PainterObj_tmp(const PainterObj_tmp& r);
-    ~PainterObj_tmp();
-};
-
-class PainterObj_var {
-public:
-    PainterObjRef _obj_;
-
-    PainterObj_var(PainterObjRef p) { _obj_ = p; }
-    operator PainterObjRef() const { return _obj_; }
-    PainterObjRef operator ->() { return _obj_; }
-};
-
-class PainterObjType : public FrescoObjectType {
-protected:
-    PainterObjType();
-    virtual ~PainterObjType();
-public:
+    static PainterRef _narrow(BaseObjectRef);
+    static PainterRef _duplicate(PainterRef obj) {
+        return (PainterRef)_BaseObject__duplicate(obj, &_XfPainterStub_create);
+    }
     virtual Coord to_coord(PixelCoord p);
     virtual PixelCoord to_pixels(Coord c);
     virtual Coord to_pixels_coord(Coord c);
@@ -395,30 +136,14 @@ public:
     virtual void line_to(Coord x, Coord y);
     virtual void curve_to(Coord x, Coord y, Coord x1, Coord y1, Coord x2, Coord y2);
     virtual void close_path();
-    Brush_tmp brush_attr() {
-        return _c_brush_attr();
-    }
-    virtual BrushRef _c_brush_attr();
-    void brush_attr(Brush_in _p) {
-        _c_brush_attr(_p);
-    }
-    virtual void _c_brush_attr(Brush_in _p);
-    Color_tmp color_attr() {
-        return _c_color_attr();
-    }
-    virtual ColorRef _c_color_attr();
-    void color_attr(Color_in _p) {
-        _c_color_attr(_p);
-    }
-    virtual void _c_color_attr(Color_in _p);
-    Font_tmp font_attr() {
-        return _c_font_attr();
-    }
-    virtual FontRef _c_font_attr();
-    void font_attr(Font_in _p) {
-        _c_font_attr(_p);
-    }
-    virtual void _c_font_attr(Font_in _p);
+    virtual Brush_return current_brush();
+    virtual void current_brush(Brush_in _p);
+    virtual Color_return current_color();
+    virtual void current_color(Color_in _p);
+    virtual Font_return current_font();
+    virtual void current_font(Font_in _p);
+    virtual Pattern_return current_pattern();
+    virtual void current_pattern(Pattern_in _p);
     virtual void stroke();
     virtual void fill();
     virtual void line(Coord x0, Coord y0, Coord x1, Coord y1);
@@ -427,535 +152,445 @@ public:
     virtual void character(CharCode ch, Coord width, Coord x, Coord y);
     virtual void image(Raster_in r, Coord x, Coord y);
     virtual void stencil(Raster_in r, Coord x, Coord y);
-    TransformObj_tmp matrix() {
-        return _c_matrix();
-    }
-    virtual TransformObjRef _c_matrix();
-    void matrix(TransformObj_in _p) {
-        _c_matrix(_p);
-    }
-    virtual void _c_matrix(TransformObj_in _p);
+    virtual Transform_return current_matrix();
+    virtual void current_matrix(Transform_in _p);
     virtual void push_matrix();
     virtual void pop_matrix();
-    virtual void transform(TransformObj_in t);
+    virtual void premultiply(Transform_in t);
     virtual void clip();
     virtual void clip_rect(Coord x0, Coord y0, Coord x1, Coord y1);
     virtual void push_clipping();
     virtual void pop_clipping();
     virtual Boolean is_visible(Region_in r);
-    Region_tmp visible() {
-        return _c_visible();
-    }
-    virtual RegionRef _c_visible();
+    virtual Region_return visible();
     virtual void comment(CharString_in s);
     virtual void page_number(CharString_in s);
-    PainterObjRef _obj() { return this; }
-    void* _this();
-    virtual TypeObjId _tid();
 };
 
-class PainterObjStub : public PainterObjType {
+class Painter_var {
+protected:
+    PainterRef _obj_;
 public:
-    PainterObjStub(Exchange*);
-    ~PainterObjStub();
+    Painter_var() { _obj_ = 0; };
+    Painter_var(PainterRef p) { _obj_ = p; }
+    Painter_var(const Painter_var& r) {
+        _obj_ = Painter::_duplicate(r._obj_);
+    }
+    ~Painter_var() { _BaseObject__release(_obj_); }
 
-    static BaseObjectRef _create(Exchange*);
+    Painter_var& operator =(PainterRef p) {
+        _BaseObject__release(_obj_);
+        _obj_ = Painter::_duplicate(p);
+        return *this;
+    }
+    Painter_var& operator =(const Painter_var& r) {
+        _BaseObject__release(_obj_);
+        _obj_ = Painter::_duplicate(r._obj_);
+        return *this;
+    }
+
+    PainterRef _obj() const { return _obj_; }
+    PainterRef& _out() { return _obj_; }
+    operator PainterRef() const { return _obj_; }
+    PainterRef operator ->() const { return _obj_; }
+};
+
+inline Painter_var _tmp(PainterRef p) { return Painter_var(p); }
+
+class PainterStub : public Painter {
+public:
+    PainterStub(Exchange*);
+    ~PainterStub();
+
     Exchange* _exchange();
 protected:
     Exchange* exch_;
 };
 
-class DrawingKitType;
-typedef DrawingKitType* DrawingKitRef;
-typedef DrawingKitRef DrawingKit_in;
+extern BaseObjectRef _XfRasterStub_create(Exchange*);
+
+class Raster : public FrescoObject {
+protected:
+    Raster();
+    virtual ~Raster();
+public:
+    RasterRef _obj() { return this; };
+    static RasterRef  _return_ref(Raster_return r) { return r; }
+
+    virtual void* _this();
+    virtual TypeObjId _tid();
+
+    static RasterRef _narrow(BaseObjectRef);
+    static RasterRef _duplicate(RasterRef obj) {
+        return (RasterRef)_BaseObject__duplicate(obj, &_XfRasterStub_create);
+    }
+    typedef Long Index;
+    struct Element {
+        Boolean on;
+        ColorRef pixel;
+        Float blend;
+    };
+    virtual Boolean equal(Raster_in r);
+    virtual ULong hash();
+    virtual Index rows();
+    virtual Index columns();
+    virtual Index origin_x();
+    virtual Index origin_y();
+    virtual void peek(Index row, Index column, Element& e);
+    virtual void poke(Index row, Index column, const Element& e);
+    virtual Coord scale();
+    virtual void scale(Coord _p);
+};
+
+class Raster_var {
+protected:
+    RasterRef _obj_;
+public:
+    Raster_var() { _obj_ = 0; };
+    Raster_var(RasterRef p) { _obj_ = p; }
+    Raster_var(const Raster_var& r) {
+        _obj_ = Raster::_duplicate(r._obj_);
+    }
+    ~Raster_var() { _BaseObject__release(_obj_); }
+
+    Raster_var& operator =(RasterRef p) {
+        _BaseObject__release(_obj_);
+        _obj_ = Raster::_duplicate(p);
+        return *this;
+    }
+    Raster_var& operator =(const Raster_var& r) {
+        _BaseObject__release(_obj_);
+        _obj_ = Raster::_duplicate(r._obj_);
+        return *this;
+    }
+
+    RasterRef _obj() const { return _obj_; }
+    RasterRef& _out() { return _obj_; }
+    operator RasterRef() const { return _obj_; }
+    RasterRef operator ->() const { return _obj_; }
+};
+
+inline Raster_var _tmp(RasterRef p) { return Raster_var(p); }
+
+class RasterStub : public Raster {
+public:
+    RasterStub(Exchange*);
+    ~RasterStub();
+
+    Exchange* _exchange();
+protected:
+    Exchange* exch_;
+};
+
 class DrawingKit;
-class DrawingKit_tmp;
+typedef DrawingKit* DrawingKitRef;
+typedef DrawingKitRef DrawingKit_in;
+typedef DrawingKitRef DrawingKit_out, DrawingKit_inout;
+typedef DrawingKitRef DrawingKit_return;
 class DrawingKit_var;
 
-class DrawingKit {
+extern BaseObjectRef _XfDrawingKitStub_create(Exchange*);
+
+class DrawingKit : public FrescoObject {
+protected:
+    DrawingKit();
+    virtual ~DrawingKit();
 public:
-    DrawingKitRef _obj_;
+    DrawingKitRef _obj() { return this; };
+    static DrawingKitRef  _return_ref(DrawingKit_return r) { return r; }
 
-    DrawingKit() { _obj_ = 0; }
-    DrawingKit(DrawingKitRef p) { _obj_ = p; }
-    DrawingKit& operator =(DrawingKitRef p);
-    DrawingKit(const DrawingKit&);
-    DrawingKit& operator =(const DrawingKit& r);
-    DrawingKit(const DrawingKit_tmp&);
-    DrawingKit& operator =(const DrawingKit_tmp&);
-    DrawingKit(const DrawingKit_var&);
-    DrawingKit& operator =(const DrawingKit_var&);
-    ~DrawingKit();
+    virtual void* _this();
+    virtual TypeObjId _tid();
 
-    DrawingKitRef operator ->() { return _obj_; }
+    static DrawingKitRef _narrow(BaseObjectRef);
+    static DrawingKitRef _duplicate(DrawingKitRef obj) {
+        return (DrawingKitRef)_BaseObject__duplicate(obj, &_XfDrawingKitStub_create);
+    }
+    class Data8 {
+    public:
+        long _maximum, _length; Octet* _buffer;
 
-    operator DrawingKit_in() const { return _obj_; }
-    operator FrescoObject() const;
-    static DrawingKitRef _narrow(BaseObjectRef p);
-    static DrawingKit_tmp _narrow(const BaseObject& r);
-
-    static DrawingKitRef _duplicate(DrawingKitRef obj);
-    static DrawingKit_tmp _duplicate(const DrawingKit& r);
-    class Data {
+        Data8() { _maximum = _length = 0; _buffer = 0; }
+        Data8(long m, long n, Octet* e) {
+            _maximum = m; _length = n; _buffer = e;
+        }
+        Data8(const Data8& _s) { _buffer = 0; *this = _s; }
+        Data8& operator =(const Data8&);
+        ~Data8() { delete [] _buffer; }
+    };
+    class Data32 {
     public:
         long _maximum, _length; Long* _buffer;
 
-        Data() { _maximum = _length = 0; _buffer = 0; }
-        Data(long m, long n, Long* e) {
+        Data32() { _maximum = _length = 0; _buffer = 0; }
+        Data32(long m, long n, Long* e) {
             _maximum = m; _length = n; _buffer = e;
         }
-        Data(const Data& _s) { _buffer = 0; *this = _s; }
-        Data& operator =(const Data&);
-        ~Data() { delete [] _buffer; }
+        Data32(const Data32& _s) { _buffer = 0; *this = _s; }
+        Data32& operator =(const Data32&);
+        ~Data32() { delete [] _buffer; }
     };
-};
-
-class DrawingKit_tmp : public DrawingKit {
-public:
-    DrawingKit_tmp(DrawingKitRef p) { _obj_ = p; }
-    DrawingKit_tmp(const DrawingKit& r);
-    DrawingKit_tmp(const DrawingKit_tmp& r);
-    ~DrawingKit_tmp();
+    virtual Style_return drawing_style();
+    virtual Brush_return simple_brush(Coord width);
+    virtual Brush_return dither_brush(Coord width, Long p);
+    virtual Brush_return patterned_brush(Coord width, const Data32& p);
+    virtual Pattern_return solid_pattern();
+    virtual Pattern_return halftone_pattern();
+    virtual Pattern_return stipple(const Data32& d);
+    virtual Pattern_return stipple_4x4(ULong p);
+    virtual Color_return color_rgb(Color::Intensity r, Color::Intensity g, Color::Intensity b);
+    virtual Color_return find_color(CharString_in name);
+    virtual Color_return resolve_color(Style_in s, CharString_in name);
+    virtual Color_return foreground(Style_in s);
+    virtual Color_return background(Style_in s);
+    virtual Font_return find_font(CharString_in fullname);
+    virtual Font_return find_font_match(CharString_in font_family, CharString_in font_style, Coord ptsize);
+    virtual Font_return resolve_font(Style_in s, CharString_in name);
+    virtual Font_return default_font(Style_in s);
+    virtual Raster_return bitmap_from_data(const Data8& d, Raster::Index rows, Raster::Index columns, Raster::Index origin_row, Raster::Index origin_column);
+    virtual Raster_return bitmap_from_char(Font_in f, CharCode c);
+    virtual Raster_return raster_open(CharString_in name);
+    virtual Transform_return transform_matrix(Transform::Matrix m);
+    virtual Transform_return identity_matrix();
+    virtual Painter_return printer(CharString_in output);
 };
 
 class DrawingKit_var {
-public:
-    DrawingKitRef _obj_;
-
-    DrawingKit_var(DrawingKitRef p) { _obj_ = p; }
-    operator DrawingKitRef() const { return _obj_; }
-    DrawingKitRef operator ->() { return _obj_; }
-};
-
-class DrawingKitType : public FrescoObjectType {
 protected:
-    DrawingKitType();
-    virtual ~DrawingKitType();
+    DrawingKitRef _obj_;
 public:
-    StyleObj_tmp style() {
-        return _c_style();
+    DrawingKit_var() { _obj_ = 0; };
+    DrawingKit_var(DrawingKitRef p) { _obj_ = p; }
+    DrawingKit_var(const DrawingKit_var& r) {
+        _obj_ = DrawingKit::_duplicate(r._obj_);
     }
-    virtual StyleObjRef _c_style();
-    Brush_tmp simple_brush(Coord width) {
-        return _c_simple_brush(width);
+    ~DrawingKit_var() { _BaseObject__release(_obj_); }
+
+    DrawingKit_var& operator =(DrawingKitRef p) {
+        _BaseObject__release(_obj_);
+        _obj_ = DrawingKit::_duplicate(p);
+        return *this;
     }
-    virtual BrushRef _c_simple_brush(Coord width);
-    Brush_tmp dither_brush(Coord width, Long pattern) {
-        return _c_dither_brush(width, pattern);
+    DrawingKit_var& operator =(const DrawingKit_var& r) {
+        _BaseObject__release(_obj_);
+        _obj_ = DrawingKit::_duplicate(r._obj_);
+        return *this;
     }
-    virtual BrushRef _c_dither_brush(Coord width, Long pattern);
-    Brush_tmp patterned_brush(Coord width, const DrawingKit::Data& pattern) {
-        return _c_patterned_brush(width, pattern);
-    }
-    virtual BrushRef _c_patterned_brush(Coord width, const DrawingKit::Data& pattern);
-    Color_tmp color_rgb(Color::Intensity r, Color::Intensity g, Color::Intensity b) {
-        return _c_color_rgb(r, g, b);
-    }
-    virtual ColorRef _c_color_rgb(Color::Intensity r, Color::Intensity g, Color::Intensity b);
-    Color_tmp find_color(CharString_in name) {
-        return _c_find_color(name);
-    }
-    virtual ColorRef _c_find_color(CharString_in name);
-    Color_tmp resolve_color(StyleObj_in s, CharString_in name) {
-        return _c_resolve_color(s, name);
-    }
-    virtual ColorRef _c_resolve_color(StyleObj_in s, CharString_in name);
-    Color_tmp foreground(StyleObj_in s) {
-        return _c_foreground(s);
-    }
-    virtual ColorRef _c_foreground(StyleObj_in s);
-    Color_tmp background(StyleObj_in s) {
-        return _c_background(s);
-    }
-    virtual ColorRef _c_background(StyleObj_in s);
-    Font_tmp find_font(CharString_in fullname) {
-        return _c_find_font(fullname);
-    }
-    virtual FontRef _c_find_font(CharString_in fullname);
-    Font_tmp find_font_match(CharString_in family, CharString_in style, Coord ptsize) {
-        return _c_find_font_match(family, style, ptsize);
-    }
-    virtual FontRef _c_find_font_match(CharString_in family, CharString_in style, Coord ptsize);
-    Font_tmp resolve_font(StyleObj_in s, CharString_in name) {
-        return _c_resolve_font(s, name);
-    }
-    virtual FontRef _c_resolve_font(StyleObj_in s, CharString_in name);
-    Font_tmp default_font(StyleObj_in s) {
-        return _c_default_font(s);
-    }
-    virtual FontRef _c_default_font(StyleObj_in s);
-    Raster_tmp bitmap_file(CharString_in filename) {
-        return _c_bitmap_file(filename);
-    }
-    virtual RasterRef _c_bitmap_file(CharString_in filename);
-    Raster_tmp bitmap_data(const DrawingKit::Data& data, Raster::Index rows, Raster::Index columns, Raster::Index origin_row, Raster::Index origin_column) {
-        return _c_bitmap_data(data, rows, columns, origin_row, origin_column);
-    }
-    virtual RasterRef _c_bitmap_data(const DrawingKit::Data& data, Raster::Index rows, Raster::Index columns, Raster::Index origin_row, Raster::Index origin_column);
-    Raster_tmp bitmap_char(Font_in f, CharCode c) {
-        return _c_bitmap_char(f, c);
-    }
-    virtual RasterRef _c_bitmap_char(Font_in f, CharCode c);
-    Raster_tmp raster_tiff(CharString_in filename) {
-        return _c_raster_tiff(filename);
-    }
-    virtual RasterRef _c_raster_tiff(CharString_in filename);
-    TransformObj_tmp transform(TransformObj::Matrix m) {
-        return _c_transform(m);
-    }
-    virtual TransformObjRef _c_transform(TransformObj::Matrix m);
-    TransformObj_tmp identity_transform() {
-        return _c_identity_transform();
-    }
-    virtual TransformObjRef _c_identity_transform();
-    PainterObj_tmp printer(CharString_in output) {
-        return _c_printer(output);
-    }
-    virtual PainterObjRef _c_printer(CharString_in output);
-    DrawingKitRef _obj() { return this; }
-    void* _this();
-    virtual TypeObjId _tid();
+
+    DrawingKitRef _obj() const { return _obj_; }
+    DrawingKitRef& _out() { return _obj_; }
+    operator DrawingKitRef() const { return _obj_; }
+    DrawingKitRef operator ->() const { return _obj_; }
 };
 
-class DrawingKitStub : public DrawingKitType {
+inline DrawingKit_var _tmp(DrawingKitRef p) { return DrawingKit_var(p); }
+
+class DrawingKitStub : public DrawingKit {
 public:
     DrawingKitStub(Exchange*);
     ~DrawingKitStub();
 
-    static BaseObjectRef _create(Exchange*);
     Exchange* _exchange();
 protected:
     Exchange* exch_;
 };
 
-inline BrushRef Brush::_duplicate(BrushRef obj) {
-    return (BrushRef)_BaseObject__duplicate(obj, &BrushStub::_create);
-}
-inline Brush& Brush::operator =(BrushRef p) {
-    _BaseObject__release(_obj_);
-    _obj_ = Brush::_duplicate(p);
-    return *this;
-}
-inline Brush::Brush(const Brush& r) {
-    _obj_ = Brush::_duplicate(r._obj_);
-}
-inline Brush& Brush::operator =(const Brush& r) {
-    _BaseObject__release(_obj_);
-    _obj_ = Brush::_duplicate(r._obj_);
-    return *this;
-}
-inline Brush::Brush(const Brush_tmp& r) {
-    _obj_ = r._obj_;
-    ((Brush_tmp*)&r)->_obj_ = 0;
-}
-inline Brush& Brush::operator =(const Brush_tmp& r) {
-    _BaseObject__release(_obj_);
-    _obj_ = r._obj_;
-    ((Brush_tmp*)&r)->_obj_ = 0;
-    return *this;
-}
-inline Brush::Brush(const Brush_var& e) {
-    _obj_ = Brush::_duplicate(e._obj_);
-}
-inline Brush& Brush::operator =(const Brush_var& e) {
-    _BaseObject__release(_obj_);
-    _obj_ = Brush::_duplicate(e._obj_);
-    return *this;
-}
-inline Brush::~Brush() {
-    _BaseObject__release(_obj_);
-}
-inline Brush_tmp Brush::_narrow(const BaseObject& r) {
-    return _narrow(r._obj_);
-}
-inline Brush_tmp Brush::_duplicate(const Brush& r) {
-    return _duplicate(r._obj_);
-}
-inline Brush::operator FrescoObject() const {
-    return FrescoObject_tmp((FrescoObjectRef)_BaseObject__duplicate((FrescoObjectRef)_obj_, &FrescoObjectStub::_create));
-}
-inline Brush_tmp::Brush_tmp(const Brush& r) {
-    _obj_ = Brush::_duplicate(r._obj_);
-}
-inline Brush_tmp::Brush_tmp(const Brush_tmp& r) {
-    _obj_ = r._obj_;
-    ((Brush_tmp*)&r)->_obj_ = 0;
-}
-inline Brush_tmp::~Brush_tmp() { }
+extern BaseObjectRef _XfBrushStub_create(Exchange*);
 
-inline ColorRef Color::_duplicate(ColorRef obj) {
-    return (ColorRef)_BaseObject__duplicate(obj, &ColorStub::_create);
-}
-inline Color& Color::operator =(ColorRef p) {
-    _BaseObject__release(_obj_);
-    _obj_ = Color::_duplicate(p);
-    return *this;
-}
-inline Color::Color(const Color& r) {
-    _obj_ = Color::_duplicate(r._obj_);
-}
-inline Color& Color::operator =(const Color& r) {
-    _BaseObject__release(_obj_);
-    _obj_ = Color::_duplicate(r._obj_);
-    return *this;
-}
-inline Color::Color(const Color_tmp& r) {
-    _obj_ = r._obj_;
-    ((Color_tmp*)&r)->_obj_ = 0;
-}
-inline Color& Color::operator =(const Color_tmp& r) {
-    _BaseObject__release(_obj_);
-    _obj_ = r._obj_;
-    ((Color_tmp*)&r)->_obj_ = 0;
-    return *this;
-}
-inline Color::Color(const Color_var& e) {
-    _obj_ = Color::_duplicate(e._obj_);
-}
-inline Color& Color::operator =(const Color_var& e) {
-    _BaseObject__release(_obj_);
-    _obj_ = Color::_duplicate(e._obj_);
-    return *this;
-}
-inline Color::~Color() {
-    _BaseObject__release(_obj_);
-}
-inline Color_tmp Color::_narrow(const BaseObject& r) {
-    return _narrow(r._obj_);
-}
-inline Color_tmp Color::_duplicate(const Color& r) {
-    return _duplicate(r._obj_);
-}
-inline Color::operator FrescoObject() const {
-    return FrescoObject_tmp((FrescoObjectRef)_BaseObject__duplicate((FrescoObjectRef)_obj_, &FrescoObjectStub::_create));
-}
-inline Color_tmp::Color_tmp(const Color& r) {
-    _obj_ = Color::_duplicate(r._obj_);
-}
-inline Color_tmp::Color_tmp(const Color_tmp& r) {
-    _obj_ = r._obj_;
-    ((Color_tmp*)&r)->_obj_ = 0;
-}
-inline Color_tmp::~Color_tmp() { }
+class Brush : public FrescoObject {
+protected:
+    Brush();
+    virtual ~Brush();
+public:
+    BrushRef _obj() { return this; };
+    static BrushRef  _return_ref(Brush_return r) { return r; }
 
-inline FontRef Font::_duplicate(FontRef obj) {
-    return (FontRef)_BaseObject__duplicate(obj, &FontStub::_create);
-}
-inline Font& Font::operator =(FontRef p) {
-    _BaseObject__release(_obj_);
-    _obj_ = Font::_duplicate(p);
-    return *this;
-}
-inline Font::Font(const Font& r) {
-    _obj_ = Font::_duplicate(r._obj_);
-}
-inline Font& Font::operator =(const Font& r) {
-    _BaseObject__release(_obj_);
-    _obj_ = Font::_duplicate(r._obj_);
-    return *this;
-}
-inline Font::Font(const Font_tmp& r) {
-    _obj_ = r._obj_;
-    ((Font_tmp*)&r)->_obj_ = 0;
-}
-inline Font& Font::operator =(const Font_tmp& r) {
-    _BaseObject__release(_obj_);
-    _obj_ = r._obj_;
-    ((Font_tmp*)&r)->_obj_ = 0;
-    return *this;
-}
-inline Font::Font(const Font_var& e) {
-    _obj_ = Font::_duplicate(e._obj_);
-}
-inline Font& Font::operator =(const Font_var& e) {
-    _BaseObject__release(_obj_);
-    _obj_ = Font::_duplicate(e._obj_);
-    return *this;
-}
-inline Font::~Font() {
-    _BaseObject__release(_obj_);
-}
-inline Font_tmp Font::_narrow(const BaseObject& r) {
-    return _narrow(r._obj_);
-}
-inline Font_tmp Font::_duplicate(const Font& r) {
-    return _duplicate(r._obj_);
-}
-inline Font::operator FrescoObject() const {
-    return FrescoObject_tmp((FrescoObjectRef)_BaseObject__duplicate((FrescoObjectRef)_obj_, &FrescoObjectStub::_create));
-}
-inline Font_tmp::Font_tmp(const Font& r) {
-    _obj_ = Font::_duplicate(r._obj_);
-}
-inline Font_tmp::Font_tmp(const Font_tmp& r) {
-    _obj_ = r._obj_;
-    ((Font_tmp*)&r)->_obj_ = 0;
-}
-inline Font_tmp::~Font_tmp() { }
+    virtual void* _this();
+    virtual TypeObjId _tid();
 
-inline RasterRef Raster::_duplicate(RasterRef obj) {
-    return (RasterRef)_BaseObject__duplicate(obj, &RasterStub::_create);
-}
-inline Raster& Raster::operator =(RasterRef p) {
-    _BaseObject__release(_obj_);
-    _obj_ = Raster::_duplicate(p);
-    return *this;
-}
-inline Raster::Raster(const Raster& r) {
-    _obj_ = Raster::_duplicate(r._obj_);
-}
-inline Raster& Raster::operator =(const Raster& r) {
-    _BaseObject__release(_obj_);
-    _obj_ = Raster::_duplicate(r._obj_);
-    return *this;
-}
-inline Raster::Raster(const Raster_tmp& r) {
-    _obj_ = r._obj_;
-    ((Raster_tmp*)&r)->_obj_ = 0;
-}
-inline Raster& Raster::operator =(const Raster_tmp& r) {
-    _BaseObject__release(_obj_);
-    _obj_ = r._obj_;
-    ((Raster_tmp*)&r)->_obj_ = 0;
-    return *this;
-}
-inline Raster::Raster(const Raster_var& e) {
-    _obj_ = Raster::_duplicate(e._obj_);
-}
-inline Raster& Raster::operator =(const Raster_var& e) {
-    _BaseObject__release(_obj_);
-    _obj_ = Raster::_duplicate(e._obj_);
-    return *this;
-}
-inline Raster::~Raster() {
-    _BaseObject__release(_obj_);
-}
-inline Raster_tmp Raster::_narrow(const BaseObject& r) {
-    return _narrow(r._obj_);
-}
-inline Raster_tmp Raster::_duplicate(const Raster& r) {
-    return _duplicate(r._obj_);
-}
-inline Raster::operator FrescoObject() const {
-    return FrescoObject_tmp((FrescoObjectRef)_BaseObject__duplicate((FrescoObjectRef)_obj_, &FrescoObjectStub::_create));
-}
-inline Raster_tmp::Raster_tmp(const Raster& r) {
-    _obj_ = Raster::_duplicate(r._obj_);
-}
-inline Raster_tmp::Raster_tmp(const Raster_tmp& r) {
-    _obj_ = r._obj_;
-    ((Raster_tmp*)&r)->_obj_ = 0;
-}
-inline Raster_tmp::~Raster_tmp() { }
+    static BrushRef _narrow(BaseObjectRef);
+    static BrushRef _duplicate(BrushRef obj) {
+        return (BrushRef)_BaseObject__duplicate(obj, &_XfBrushStub_create);
+    }
+    virtual Coord width();
+    virtual Boolean equal(Brush_in b);
+    virtual ULong hash();
+};
 
-inline PainterObjRef PainterObj::_duplicate(PainterObjRef obj) {
-    return (PainterObjRef)_BaseObject__duplicate(obj, &PainterObjStub::_create);
-}
-inline PainterObj& PainterObj::operator =(PainterObjRef p) {
-    _BaseObject__release(_obj_);
-    _obj_ = PainterObj::_duplicate(p);
-    return *this;
-}
-inline PainterObj::PainterObj(const PainterObj& r) {
-    _obj_ = PainterObj::_duplicate(r._obj_);
-}
-inline PainterObj& PainterObj::operator =(const PainterObj& r) {
-    _BaseObject__release(_obj_);
-    _obj_ = PainterObj::_duplicate(r._obj_);
-    return *this;
-}
-inline PainterObj::PainterObj(const PainterObj_tmp& r) {
-    _obj_ = r._obj_;
-    ((PainterObj_tmp*)&r)->_obj_ = 0;
-}
-inline PainterObj& PainterObj::operator =(const PainterObj_tmp& r) {
-    _BaseObject__release(_obj_);
-    _obj_ = r._obj_;
-    ((PainterObj_tmp*)&r)->_obj_ = 0;
-    return *this;
-}
-inline PainterObj::PainterObj(const PainterObj_var& e) {
-    _obj_ = PainterObj::_duplicate(e._obj_);
-}
-inline PainterObj& PainterObj::operator =(const PainterObj_var& e) {
-    _BaseObject__release(_obj_);
-    _obj_ = PainterObj::_duplicate(e._obj_);
-    return *this;
-}
-inline PainterObj::~PainterObj() {
-    _BaseObject__release(_obj_);
-}
-inline PainterObj_tmp PainterObj::_narrow(const BaseObject& r) {
-    return _narrow(r._obj_);
-}
-inline PainterObj_tmp PainterObj::_duplicate(const PainterObj& r) {
-    return _duplicate(r._obj_);
-}
-inline PainterObj::operator FrescoObject() const {
-    return FrescoObject_tmp((FrescoObjectRef)_BaseObject__duplicate((FrescoObjectRef)_obj_, &FrescoObjectStub::_create));
-}
-inline PainterObj_tmp::PainterObj_tmp(const PainterObj& r) {
-    _obj_ = PainterObj::_duplicate(r._obj_);
-}
-inline PainterObj_tmp::PainterObj_tmp(const PainterObj_tmp& r) {
-    _obj_ = r._obj_;
-    ((PainterObj_tmp*)&r)->_obj_ = 0;
-}
-inline PainterObj_tmp::~PainterObj_tmp() { }
+class Brush_var {
+protected:
+    BrushRef _obj_;
+public:
+    Brush_var() { _obj_ = 0; };
+    Brush_var(BrushRef p) { _obj_ = p; }
+    Brush_var(const Brush_var& r) {
+        _obj_ = Brush::_duplicate(r._obj_);
+    }
+    ~Brush_var() { _BaseObject__release(_obj_); }
 
-inline DrawingKitRef DrawingKit::_duplicate(DrawingKitRef obj) {
-    return (DrawingKitRef)_BaseObject__duplicate(obj, &DrawingKitStub::_create);
-}
-inline DrawingKit& DrawingKit::operator =(DrawingKitRef p) {
-    _BaseObject__release(_obj_);
-    _obj_ = DrawingKit::_duplicate(p);
-    return *this;
-}
-inline DrawingKit::DrawingKit(const DrawingKit& r) {
-    _obj_ = DrawingKit::_duplicate(r._obj_);
-}
-inline DrawingKit& DrawingKit::operator =(const DrawingKit& r) {
-    _BaseObject__release(_obj_);
-    _obj_ = DrawingKit::_duplicate(r._obj_);
-    return *this;
-}
-inline DrawingKit::DrawingKit(const DrawingKit_tmp& r) {
-    _obj_ = r._obj_;
-    ((DrawingKit_tmp*)&r)->_obj_ = 0;
-}
-inline DrawingKit& DrawingKit::operator =(const DrawingKit_tmp& r) {
-    _BaseObject__release(_obj_);
-    _obj_ = r._obj_;
-    ((DrawingKit_tmp*)&r)->_obj_ = 0;
-    return *this;
-}
-inline DrawingKit::DrawingKit(const DrawingKit_var& e) {
-    _obj_ = DrawingKit::_duplicate(e._obj_);
-}
-inline DrawingKit& DrawingKit::operator =(const DrawingKit_var& e) {
-    _BaseObject__release(_obj_);
-    _obj_ = DrawingKit::_duplicate(e._obj_);
-    return *this;
-}
-inline DrawingKit::~DrawingKit() {
-    _BaseObject__release(_obj_);
-}
-inline DrawingKit_tmp DrawingKit::_narrow(const BaseObject& r) {
-    return _narrow(r._obj_);
-}
-inline DrawingKit_tmp DrawingKit::_duplicate(const DrawingKit& r) {
-    return _duplicate(r._obj_);
-}
-inline DrawingKit::operator FrescoObject() const {
-    return FrescoObject_tmp((FrescoObjectRef)_BaseObject__duplicate((FrescoObjectRef)_obj_, &FrescoObjectStub::_create));
-}
-inline DrawingKit_tmp::DrawingKit_tmp(const DrawingKit& r) {
-    _obj_ = DrawingKit::_duplicate(r._obj_);
-}
-inline DrawingKit_tmp::DrawingKit_tmp(const DrawingKit_tmp& r) {
-    _obj_ = r._obj_;
-    ((DrawingKit_tmp*)&r)->_obj_ = 0;
-}
-inline DrawingKit_tmp::~DrawingKit_tmp() { }
+    Brush_var& operator =(BrushRef p) {
+        _BaseObject__release(_obj_);
+        _obj_ = Brush::_duplicate(p);
+        return *this;
+    }
+    Brush_var& operator =(const Brush_var& r) {
+        _BaseObject__release(_obj_);
+        _obj_ = Brush::_duplicate(r._obj_);
+        return *this;
+    }
+
+    BrushRef _obj() const { return _obj_; }
+    BrushRef& _out() { return _obj_; }
+    operator BrushRef() const { return _obj_; }
+    BrushRef operator ->() const { return _obj_; }
+};
+
+inline Brush_var _tmp(BrushRef p) { return Brush_var(p); }
+
+class BrushStub : public Brush {
+public:
+    BrushStub(Exchange*);
+    ~BrushStub();
+
+    Exchange* _exchange();
+protected:
+    Exchange* exch_;
+};
+
+extern BaseObjectRef _XfFontStub_create(Exchange*);
+
+class Font : public FrescoObject {
+protected:
+    Font();
+    virtual ~Font();
+public:
+    FontRef _obj() { return this; };
+    static FontRef  _return_ref(Font_return r) { return r; }
+
+    virtual void* _this();
+    virtual TypeObjId _tid();
+
+    static FontRef _narrow(BaseObjectRef);
+    static FontRef _duplicate(FontRef obj) {
+        return (FontRef)_BaseObject__duplicate(obj, &_XfFontStub_create);
+    }
+    struct Info {
+        Coord width, height;
+        Coord left_bearing, right_bearing;
+        Coord ascent, descent;
+        Coord font_ascent, font_descent;
+    };
+    virtual Boolean equal(Font_in f);
+    virtual ULong hash();
+    virtual CharString_return name();
+    virtual CharString_return encoding();
+    virtual Coord point_size();
+    virtual void font_info(Font::Info& i);
+    virtual void char_info(CharCode c, Font::Info& i);
+    virtual void string_info(CharString_in s, Font::Info& i);
+};
+
+class Font_var {
+protected:
+    FontRef _obj_;
+public:
+    Font_var() { _obj_ = 0; };
+    Font_var(FontRef p) { _obj_ = p; }
+    Font_var(const Font_var& r) {
+        _obj_ = Font::_duplicate(r._obj_);
+    }
+    ~Font_var() { _BaseObject__release(_obj_); }
+
+    Font_var& operator =(FontRef p) {
+        _BaseObject__release(_obj_);
+        _obj_ = Font::_duplicate(p);
+        return *this;
+    }
+    Font_var& operator =(const Font_var& r) {
+        _BaseObject__release(_obj_);
+        _obj_ = Font::_duplicate(r._obj_);
+        return *this;
+    }
+
+    FontRef _obj() const { return _obj_; }
+    FontRef& _out() { return _obj_; }
+    operator FontRef() const { return _obj_; }
+    FontRef operator ->() const { return _obj_; }
+};
+
+inline Font_var _tmp(FontRef p) { return Font_var(p); }
+
+class FontStub : public Font {
+public:
+    FontStub(Exchange*);
+    ~FontStub();
+
+    Exchange* _exchange();
+protected:
+    Exchange* exch_;
+};
+
+extern BaseObjectRef _XfPatternStub_create(Exchange*);
+
+class Pattern : public FrescoObject {
+protected:
+    Pattern();
+    virtual ~Pattern();
+public:
+    PatternRef _obj() { return this; };
+    static PatternRef  _return_ref(Pattern_return r) { return r; }
+
+    virtual void* _this();
+    virtual TypeObjId _tid();
+
+    static PatternRef _narrow(BaseObjectRef);
+    static PatternRef _duplicate(PatternRef obj) {
+        return (PatternRef)_BaseObject__duplicate(obj, &_XfPatternStub_create);
+    }
+    virtual Boolean equal(Pattern_in p);
+    virtual ULong hash();
+    virtual void stipple(DrawingKit::Data32& d);
+};
+
+class Pattern_var {
+protected:
+    PatternRef _obj_;
+public:
+    Pattern_var() { _obj_ = 0; };
+    Pattern_var(PatternRef p) { _obj_ = p; }
+    Pattern_var(const Pattern_var& r) {
+        _obj_ = Pattern::_duplicate(r._obj_);
+    }
+    ~Pattern_var() { _BaseObject__release(_obj_); }
+
+    Pattern_var& operator =(PatternRef p) {
+        _BaseObject__release(_obj_);
+        _obj_ = Pattern::_duplicate(p);
+        return *this;
+    }
+    Pattern_var& operator =(const Pattern_var& r) {
+        _BaseObject__release(_obj_);
+        _obj_ = Pattern::_duplicate(r._obj_);
+        return *this;
+    }
+
+    PatternRef _obj() const { return _obj_; }
+    PatternRef& _out() { return _obj_; }
+    operator PatternRef() const { return _obj_; }
+    PatternRef operator ->() const { return _obj_; }
+};
+
+inline Pattern_var _tmp(PatternRef p) { return Pattern_var(p); }
+
+class PatternStub : public Pattern {
+public:
+    PatternStub(Exchange*);
+    ~PatternStub();
+
+    Exchange* _exchange();
+protected:
+    Exchange* exch_;
+};
+
 
 #endif
