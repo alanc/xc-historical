@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.16 89/07/16 16:11:36 jim Exp $
+ * $XConsortium: Login.c,v 1.17 89/10/03 16:26:41 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -326,6 +326,7 @@ DeleteBackwardChar (ctx, event)
     LoginWidget ctx;
     XEvent	*event;
 {
+    Debug ("DeleteBackwardChar\n");
     XorCursor (ctx);
     RemoveFail (ctx);
     if (ctx->login.cursor > 0) {
@@ -473,6 +474,7 @@ FinishField (ctx, event)
     LoginWidget	ctx;
     XEvent	*event;
 {
+    Debug ("FinishField\n");
     XorCursor (ctx);
     RemoveFail (ctx);
     switch (ctx->login.state) {
@@ -589,6 +591,8 @@ InsertChar (ctx, event)
     int  len;
 
     len = XLookupString (event, strbuf, sizeof (strbuf), 0, 0);
+    strbuf[len] = '\0';
+    Debug ("InsertChar (%d chars) %s\n", len, strbuf);
     if (len + ctx->login.cursor >= NAME_LEN - 1)
     	len = NAME_LEN - ctx->login.cursor - 2;
     if (len == 0)
