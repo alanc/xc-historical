@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.104 91/04/09 15:23:56 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.105 91/04/09 19:11:44 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -411,13 +411,15 @@ install:: srcname							@@\
  */
 #ifndef InstallNonExecFile
 #define	InstallNonExecFile(file,dest)					@@\
-InstallNamedNonExec(file,file,dest)
+install:: file								@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	$(INSTALL) -c $(INSTDATFLAGS) file $(DESTDIR)dest
 #endif /* InstallNonExecFile */
 
 
 /*
- * InstallNonExec - generate rules to install a data file using any special
- * install flags
+ * InstallNonExec - generate rules to install a data file, but does not
+ * try to create the destination directory (deprecated)
  */
 #ifndef InstallNonExec
 #define	InstallNonExec(file,dest)					@@\
