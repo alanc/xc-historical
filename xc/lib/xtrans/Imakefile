@@ -9,13 +9,13 @@ SRCS = transport.c
 
 all::
 
-tests: ProgramTargetName(clienttest) ProgramTargetName(servtest) ProgramTargetName(displaytest) ProgramTargetName(bindanytest) ProgramTargetName(parsetest)
+tests: ProgramTargetName(clienttest) ProgramTargetName(servtest) ProgramTargetName(dpytest) ProgramTargetName(bindanytst) ProgramTargetName(parsetest)
 
 NormalProgramTarget(clienttest,$(OBJS) clienttest.o,NullParameter,NullParameter,NullParameter)
 NormalProgramTarget(servtest,$(OBJS) servtest.o,NullParameter,NullParameter,NullParameter)
 CenterProgramTarget(servtest,servtest.c $(SRCS),servtest.o $(OBJS),NullParameter,NullParameter)
-NormalProgramTarget(displaytest,displaytest.o,NullParameter,$(XONLYLIB),NullParameter)
-NormalProgramTarget(bindanytest,$(OBJS) bindanytest.o,NullParameter,NullParameter,NullParameter)
+NormalProgramTarget(dpytest,dpytest.o,NullParameter,$(XONLYLIB),NullParameter)
+NormalProgramTarget(bindanytst,$(OBJS) bindanytst.o,NullParameter,NullParameter,NullParameter)
 NormalProgramTarget(parsetest,$(OBJS) parsetest.o,NullParameter,NullParameter,NullParameter)
 
 DependTarget()
