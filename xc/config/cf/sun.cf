@@ -12,12 +12,8 @@
 #define HasNdbm		  YES
 #define XsunServer Xsun
 
-/* #define HasGcc YES */		/* very useful for server, though */
-#ifdef mc68000
-#define HasGcc YES			/* XXX - turn this off for R4 */
-#else
-#define HasGcc NO
-#endif
+/* gcc is *VERY USEFUL*, especially for the server, on a Sun 3 */
+/* #define HasGcc YES */
 
 #define SystemV           NO
 #define HasPutenv YES
@@ -42,32 +38,19 @@
 #define i386Architecture
 #endif
 
-#if HasGcc
-#define ServerCcCmd gcc -DNOSTDHDRS -fstrength-reduce -fpcc-struct-return 
-#define CcCmd cc
-#define ServerCCOptions /* */
-#endif
-
-#ifdef mc68000
-#define DefaultCCOptions -f68881 -pipe		/* remove in R4 */
-#else
-#define DefaultCCOptions -pipe			/* remove in R4 */
-#endif
+/* you may find one or both of these options useful on your system */
+/* #define DefaultCCOptions -f68881 -pipe */
 
 #define LibraryCCOptions /* don't want special floating point */
 #define LibraryDefines  /**/
 /* see below for ServerDefines */
 
 
-/**/# platform:  $XConsortium: sun.cf,v 1.35 89/10/26 17:33:08 jim Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.36 89/11/11 17:20:34 rws Exp $
 /**/# operating system:  OSName
 
 #if OSMajorVersion == 3 && OSMinorVersion <= 2
 #define OptimizedCDebugFlags /* as nothing */
-#endif
-
-#if HasGcc
-#define ServerCDebugFlags -O -g
 #endif
 
 #define UseSunWindowsInServer	NO	/* link in SunWindows support? */
