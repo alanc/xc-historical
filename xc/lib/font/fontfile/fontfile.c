@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfile.c,v 1.16 93/09/18 16:48:04 rws Exp $
+ * $XConsortium: fontfile.c,v 1.17 94/02/03 10:07:09 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -986,12 +986,7 @@ static int  font_file_type;
 
 FontFileRegisterFpeFunctions()
 {
-    static Bool beenhere = FALSE;
-
-    if (!beenhere) {
-	FontFileRegisterFontFileFunctions ();
-	beenhere = TRUE;
-    }
+    FontFileRegisterFontFileFunctions ();
     font_file_type = RegisterFPEFunctions(FontFileNameCheck,
 					  FontFileInitFPE,
 					  FontFileFreeFPE,
