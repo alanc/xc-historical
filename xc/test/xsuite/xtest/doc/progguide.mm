@@ -1,13 +1,7 @@
-.\" $XConsortium: progguide.mm,v 1.1 92/06/11 15:32:30 rws Exp $
+.\" $XConsortium: progguide.mm,v 1.2 92/06/30 20:01:31 rws Exp $
 '
-.ds dN "\s-1MIT\s0-3-02.3
-'
-.ds dD Programmers Guide for the X test suite (release 1.1)
+.ds dD Programmers Guide for the X Test Suite
 .so 00.header
-.ds xT X\ test suite
-.ds xW X\ Window System
-.ds xP X\ Protocol tests
-.ds xL Xlib tests
 '\"
 '\" Start and end of a user-typed display
 '\"
@@ -39,13 +33,11 @@
 ..
 '\"	###
 .H 1 "Introduction"
-This document is a Programmers Guide to the revised
-\*(xT produced during stage two of the 
-test suite development project.
+This document is a Programmers Guide to the \*(xT.
 .P
 Instructions for installing and running the
-revised \*(xT are contained in the document
-"User Guide for the \*(xT (release 1.1)".
+\*(xT are contained in the document
+"User Guide for the \*(xT".
 It is not
 necessary to read the Programmers Guide in order to install and run the test
 suite.
@@ -57,14 +49,14 @@ programmer, familiar
 with the \*(xW, to modify or extend the \*(xT to add additional tests.
 .P
 Before reading this document, it is necessary to read
-the document "User Guide for the \*(xT (release 1.1)".
+the document "User Guide for the \*(xT".
 This is because the nomenclature used in this
 document is explained in the "User Guide". Appendix F of that document is 
 a glossary, which explains the meaning of 
 some terms which may not be in common usage.
 .P
 The directory structure used within the \*(xT is described further in 
-"Appendix A - Contents of release 1.1" in
+"Appendix A - Contents of \*(xR" in
 the "User Guide". You should be familiar with that 
 appendix before reading further.
 .H 1 "Contents of this guide"

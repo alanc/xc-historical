@@ -1,4 +1,4 @@
-.\" $XConsortium: 00.header,v 1.3 92/07/02 14:36:10 gildea Exp $
+.\" $XConsortium: 00.header,v 1.4 92/07/03 15:46:44 gildea Exp $
 .de TP
 .sp 1
 .tl \\*(}t
@@ -15,13 +15,16 @@
 .ds rC "UniSoft Group Limited
 .ds xW "X\ Window System
 .ds xT "X\ Test Suite
+.ds xP X\ Protocol tests
+.ds xL Xlib tests
+.ds xR "Release\ 1.2
 .ds cH "0"
 .nr Hs 4
 .S 18
 .B
 .DS 2
 Xlib and X Protocol Test Suite
-(Release 1.2)
+\*(xR
 
 \*(dD
 .DE
