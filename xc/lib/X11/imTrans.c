@@ -1,4 +1,4 @@
-/* $XConsortium: imTrans.c,v 1.3 94/03/18 11:29:37 mor Exp $ */
+/* $XConsortium: imTrans.c,v 1.4 94/03/26 17:01:02 rws Exp kaleb $ */
 /******************************************************************
 
            Copyright 1992 by Sun Microsystems, Inc.
@@ -34,7 +34,6 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/Xmd.h>
 #define NEED_EVENTS
 #include "Xlibint.h"
-#include "Xlibnet.h"
 #include <X11/Xtrans.h>
 #include "Xlcint.h"
 #include "Ximint.h"
