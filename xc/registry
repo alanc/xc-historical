@@ -1,4 +1,4 @@
-/* $XConsortium: registry,v 1.88 93/08/31 16:34:14 rws Exp $ */
+/* $XConsortium: registry,v 1.89 93/09/10 09:52:54 rws Exp $ */
 
 				  X Registry
 
@@ -7,11 +7,10 @@ aid in avoiding conflicts and to aid in sharing of such items.  Requests to
 register items, or questions about registration, should be addressed to
 	xregistry@x.org
 or to
-	X Consortium
 	Registry
-	One Memorial Drive
-	PO Box 546
-	Cambridge MA 02142-0004
+	X Consortium
+	1 Memorial Dr
+	Cambridge MA 02142-1301
 	USA
 
 Electronic mail will be acknowledged upon receipt.  Please allow up to 4 weeks
@@ -391,6 +390,7 @@ Value	Name					Reference
 0	Internet				[23]
 1	DECnet					[23]
 2	Chaos					[23]
+252	LocalHost				[105]
 253	Kerberos5Principal			[94]
 254	Netname					[57]
 
@@ -1409,6 +1409,10 @@ REFERENCES
 	for WM Tamil fonts
 
 [104]	X Consortium
-	One Memorial Drive
-	PO Box 546
-	Cambridge MA 02142-0004
+	1 Memorial Dr
+	Cambridge MA 02142-1301
+
+[105]	Stephen Gildea
+	X Consortium
+	1 Memorial Dr
+	Cambridge MA 02142-1301
