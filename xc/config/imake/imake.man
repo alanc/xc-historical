@@ -1,10 +1,12 @@
-.\" $XConsortium: imake.man,v 1.13 91/07/29 22:24:11 gildea Exp $
+.\" $XConsortium: imake.man,v 1.14 91/07/30 10:50:45 gildea Exp $
 .TH IMAKE 1 "Release 5" "X Version 11"
 .SH NAME
 imake \- C preprocessor interface to the make utility
 .SH SYNOPSIS
-\fBimake \fP[\-D\fIdefine\fP] [\-I\fIdir\fP] [\-T\fItemplate\fP]
-[\-f \fIfilename\fP] [\-s \fIfilename\fP] [\-e] [\-v]
+\fBimake\fP [ \fB\-D\fP\fIdefine\fP ] [ \fB\-I\fP\fIdir\fP ]
+[ \fB\-T\fP\fItemplate\fP ]
+[ \fB\-f\fP \fIfilename\fP ] [ \fB\-s\fP \fIfilename\fP ] [ \fB\-e\fP ]
+[ \fB\-v\fP ]
 .SH DESCRIPTION
 .I Imake
 is used to 
@@ -65,7 +67,7 @@ where \fIImake.tmpl\fP and \fIImakefile\fP may be overridden by the
 \fI\-T\fP and \fI\-f\fP command options, respectively.
 .PP
 The IMAKE_TEMPLATE typically
-reads in file containing machine-dependent parameters 
+reads in a file containing machine-dependent parameters 
 (specified as \fIcpp\fP symbols), a site-specific parameters file,
 a file defining variables,
 a file
@@ -148,9 +150,10 @@ The indentation shows what files include what other files.
 .sp
 .ta 3i
     Imake.tmpl	generic variables
+        site.def	site-specific, BeforeVendorCF defined
         *.cf	machine-specific
             *Lib.rules	shared library rules
-        site.def	site-specific
+        site.def	site-specific, AfterVendorCF defined
         Project.tmpl	X-specific variables
             *Lib.tmpl	shared library variables
         Imake.rules	rules
@@ -158,6 +161,17 @@ The indentation shows what files include what other files.
         Library.tmpl	library rules
         Server.tmpl	server rules
 .fi
+.LP
+Note that \fIsite.def\fP gets included twice, once before the
+\fI*.cf\fP file and once after.  Although most site customizations
+should be specified after the \fI*.cf\fP file, some, such as the
+choice of compiler, need to be specified before, because other
+variable settings may depend on them.
+.LP
+The first time \fIsite.def\fP is included, the variable BeforeVendorCF
+is defined, and the second time, the variable AfterVendorCF is
+defined.  All code in \fIsite.def\fP should be inside an #ifdef for
+one of these symbols.
 .SH FILES
 .ta 3i
 /usr/tmp/tmp-imake.\fInnnnnn\fP	temporary input file for cpp
