@@ -1,0 +1,134 @@
+.\" $NCDId: @(#)fs.man,v 1.3 1991/07/09 14:15:59 lemke Exp $
+.TH FS 1 "Release 5" "X Version 11"
+.SH NAME
+fs \- X font server
+.SH SYNOPSIS
+.B "fs"
+[\-s \fIserver_number\fP]
+[-cf \fIconfiguration_file\fP]
+[-p \fItcp_port\fP]
+.SH DESCRIPTION
+.PP
+.I Fs
+is the X Window System font server.  It supplies fonts to X Window
+System display servers.
+.SH "STARTING THE SERVER"
+The server is usually run by a system administrator, and started via 
+boot files like \fI/etc/rc.local\fR.  Users may also wish to start
+private font servers for specific sets of fonts.
+.SH "OPTIONS"
+.TP 8
+.B \-s server_number
+Specifies the TCP port (offset from the default 7000) that the
+server will listen for requests.
+.TP 8
+.B \-cf configuration_file
+Specifies the configuration file the font server will use.
+.TP 8
+.B \-p tcp_port
+Specifies the TCP port number on which the server will listen for connections.
+.SH "SIGNALS"
+.SH "SIGNALS"
+.TP 8
+.I SIGTERM
+This causes the font server to exit cleanly.
+.TP 8
+.I SIGUSR1
+This signal is used to cause the server to re-read its configuration file.
+.I SIGUSR2
+This signal is used to cause the server to flush any cached data it
+may have.
+.SH "CONFIGURATION"
+The configuration language is a basic keyword value list.
+Each keyword is followed by an '=' and then the desired value.
+.PP
+Recognized keywords include:
+.sp
+.ta .6i 1.5i
+.nf
+#		in the first column, a comment character
+.sp
+.\" cache-size (cardinal) 
+.\" 		Size in bytes of the font server cache.
+.sp
+catalogue (list of string)
+		Ordered list of font path element names.
+.sp
+alternate-servers (list of string)
+		List of alternate servers for this font server.
+.sp
+client-limit (cardinal)
+		Number of clients this font server will support 
+		before refusing service.  This is useful for tuning 
+		the load on each individual font server.
+.sp
+clone-self (boolean)
+ 		Whether this font server should attempt to clone itself
+ 		when it reachs the client-limit.
+.sp
+default-point-size (cardinal)
+		The default pointsize (in decipoints) for fonts that 
+		don't specify.
+.sp
+default-resolutions (list of resolutions)
+		Resolutions the server supports by default.
+		This information may be used as a hint for 
+		pre-rendering, and substituted for scaled fonts 
+		which do not specify a resolution.
+.sp
+error-file (string)
+		Filename of the error file.  All warnings and errors
+		will be logged here.
+.sp
+port (cardinal)
+		TCP port on which the server will listen for connections.
+.sp
+use-syslog (boolean)
+		Whether syslog(3) (on supported systems) is to be used 
+		for errors.
+.\" .sp
+.\" trusted-clients (list of string)
+.\" 		Those clients the fontserver will talk to.  Others
+.\" 		will be refused for the initial connection.  An empty
+.\" 		list means the server will talk to any client.
+.fi
+.SH "EXAMPLE"
+.nf
+#
+# sample font server configuration file
+#
+
+# allow a max of 10 clients to connect to this font server
+client-limit = 10
+
+# when a font server reaches its limit, start up a new one
+clone-self = on
+
+# alternate font servers for clients to use
+alternate-servers = hansen:7001,hansen:7002
+
+# where to look for fonts
+# the first is a set of Speedo outlines, the second is a set of 
+# misc SNF bitmaps and the last is a set of 100dpi PCF bitmaps
+#
+catalogue = speedo:/usr/lib/fonts/speedo,
+	snf:/usr/lib/X11/ncd/fonts/misc,
+	pcf:/usr/lib/X11/ncd/fonts/100dpi/
+
+# in 12 points, decipoints
+default-point-size = 120
+
+# 100 x 100 and 75 x 75
+default-resolutions = 100,100,75,75
+.fi
+.sp
+.SH "SEE ALSO"
+X(1), \fIFont server implementation overview\fB
+.SH COPYRIGHT
+Copyright 1991, Network Computing Devices, Inc
+Copyright 1991, Massachusetts Institute of Technology
+.br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHOR
+Dave Lemke, Network Computing Devices, Inc
+Keith Packard, Massachusetts Institute of Technology
