@@ -1,4 +1,4 @@
-/* $Header: popup.c,v 2.3 88/02/06 10:04:42 swick Exp $ */
+/* $Header: popup.c,v 2.4 88/02/22 10:37:31 swick Exp $ */
 /* popup.c -- Handle pop-up widgets. */
 
 #include "xmh.h"
@@ -95,19 +95,30 @@ XEvent *event;
 }
 
 
-void DestroyPromptWidget()
+/* ARGSUSED */
+void DestroyPromptWidget(widget, client_data, call_data)
+    Widget widget;		/* unused */
+    caddr_t client_data;	/* scrn */
+    caddr_t call_data;		/* unused */
 {
     if (promptwidget) {
+	Scrn scrn = (Scrn)client_data;
+	XtSetKeyboardFocus(scrn->parent, scrn->viewwidget);
 	XtDestroyWidget(promptwidget);
 	promptwidget = NULL;
     }
 }
 
 
-void TellPrompt()
+/* ARGSUSED */
+void TellPrompt(widget, client_data, call_data)
+    Widget widget;
+    caddr_t client_data;	/* scrn */
+    caddr_t call_data;
+
 {
     (*promptfunction)(XtDialogGetValueString(promptwidget));
-    DestroyPromptWidget();
+    DestroyPromptWidget(widget, client_data, call_data);
 }
 
 MakePrompt(scrn, prompt, func)
@@ -115,12 +126,20 @@ Scrn scrn;
 char *prompt;
 void (*func)();
 {
-    DestroyPromptWidget();
+    static Arg args[] = {
+	{XtNlabel, NULL},
+	{XtNvalue, NULL},
+    };
+    args[0].value = (XtArgVal)prompt;
+    args[1].value = (XtArgVal)"";
+    DestroyPromptWidget((Widget)NULL, (caddr_t)scrn, NULL);
     promptwidget = XtCreateWidget( "prompt", dialogWidgetClass, scrn->widget,
-				   NULL, (Cardinal)0 );
-    XtDialogAddButton(promptwidget, "goAhead", TellPrompt, (caddr_t)NULL);
-    XtDialogAddButton(promptwidget, "cancel", DestroyPromptWidget, (caddr_t)NULL);
+				   args, (Cardinal)2 );
+    XtDialogAddButton(promptwidget, "goAhead", TellPrompt, (caddr_t)scrn);
+    XtDialogAddButton(promptwidget, "cancel", DestroyPromptWidget, (caddr_t)scrn);
     XtRealizeWidget(promptwidget);
+    XtSetKeyboardFocus(promptwidget, XtNameToWidget(promptwidget,"value"));
+    XtSetKeyboardFocus(scrn->parent, (Widget)None);
     CenterWidget(scrn->widget, promptwidget);
     XtMapWidget( promptwidget );
     promptfunction = func;
