@@ -6,7 +6,7 @@ SRCS =	 mfbgc.c mfbwindow.c mfbfont.c \
          mfbbitblt.c mfbgetsp.c mfbpolypnt.c \
 	 mfbplygblt.c mfbimggblt.c mfbcmap.c \
 	 mfbpntarea.c mfbtile.c \
-         mfbtegblt.c mfbmisc.c
+         mfbtegblt.c mfbmisc.c mfbbstore.c
 
 OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 	 mfbfillrct.o mfbpntwin.o maskbits.o mfbpixmap.o \
@@ -17,7 +17,7 @@ OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 	 mfbpgbwht.o mfbpgbblak.o mfbpgbinv.o \
 	 mfbigbwht.o mfbigbblak.o mfbcmap.o \
 	 mfbpawhite.o mfbpablack.o mfbpainv.o mfbtile.o \
-         mfbtewhite.o mfbteblack.o mfbmisc.o
+         mfbtewhite.o mfbteblack.o mfbmisc.o mfbbstore.o
 
 STD_DEFINES = ServerDefines
 CDEBUGFLAGS = ServerCDebugFlags
