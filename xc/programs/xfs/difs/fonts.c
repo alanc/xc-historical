@@ -1,4 +1,4 @@
-/* $XConsortium: fonts.c,v 1.14 92/11/18 21:30:07 gildea Exp $ */
+/* $XConsortium: fonts.c,v 1.15 93/07/15 17:35:46 gildea Exp $ */
 /*
  * font control
  */
@@ -494,7 +494,7 @@ close_font(pfont)
 	if (fontPatternCache)
 	    RemoveCachedFontPattern(fontPatternCache, pfont);
 	fpe = pfont->fpe;
-	idlist = (FontIDListPtr) pfont->svrPrivate;
+	idlist = (FontIDListPtr*) pfont->svrPrivate;
 	for (i = 0; i < MAXCLIENTS; i++) {
 	    ids = idlist[i];
 	    if (ids) {
