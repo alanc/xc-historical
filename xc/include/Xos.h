@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.45 91/07/09 18:23:30 gildea Exp $
+ * $XConsortium: Xos.h,v 1.46 91/07/19 23:22:51 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -83,6 +83,9 @@
 #ifdef CRAY
 #include <unistd.h>
 #endif /* CRAY */
+#ifdef MOTOROLA
+#include <unistd.h>
+#endif /* MOTOROLA */
 #ifdef SYSV386
 #include <unistd.h>
 #endif /* SYSV386 */
