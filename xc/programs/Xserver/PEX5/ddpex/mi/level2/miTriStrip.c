@@ -1,4 +1,4 @@
-/* $XConsortium: miTriStrip.c,v 5.2 91/05/01 14:41:03 hersh Exp $ */
+/* $XConsortium: miTriStrip.c,v 5.3 91/07/01 08:43:39 rws Exp $ */
 
 
 /***********************************************************
@@ -1141,7 +1141,7 @@ miLightTriStrip(pRend, pddc, input_vert, input_fct, output_vert, output_fct)
 	   * further down the pipeline.
 	   */
 	  if ( (DD_IsVertNormal(input_vert->type)) ||
-	       (DD_IsVertNormal(input_vert->type)) ) {
+	       (DD_IsVertColour(input_vert->type)) ) {
 	    if (status = miFilterPath(pddc, input_vert, output_vert, 
 				      ((1 << 3) | 1) ))
 	      return(status);
