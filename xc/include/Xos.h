@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.59 94/03/29 15:01:28 gildea Exp $
+ * $XConsortium: Xos.h,v 1.60 94/03/29 16:56:26 gildea Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -149,7 +149,7 @@ struct timezone {
 };
 #endif /* _SEQUENT_ */
 
-#define X_GETTIMEOFDAY(t) gettimeofday(t, (char*)0)
+#define X_GETTIMEOFDAY(t) gettimeofday(t, (struct timezone*)0)
 
 #else /* not SYSV */
 
@@ -185,7 +185,7 @@ struct timeval {
 #if defined(SVR4) || defined(VMS)
 #define X_GETTIMEOFDAY(t) gettimeofday(t)
 #else
-#define X_GETTIMEOFDAY(t) gettimeofday(t, (char*)0)
+#define X_GETTIMEOFDAY(t) gettimeofday(t, (struct timezone*)0)
 #endif
 
 #endif /* WIN32 else */
