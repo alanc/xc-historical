@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: miwindow.c,v 1.14 87/09/11 07:20:06 toddb Exp $ */
+/* $Header: miwindow.c,v 1.15 88/03/15 18:22:13 rws Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "region.h"
@@ -62,6 +62,20 @@ miClearToBackground(pWin, x, y, w, h, generateExposures)
         box.y2 = box.y1 + pWin->clientWinSize.height - y;
 
     pReg = (* pWin->drawable.pScreen->RegionCreate)(&box, 1);
+    if ((pWin->backingStore != NotUseful) &&
+	(pWin->backStorage != (BackingStorePtr)NULL))
+    {
+	/*
+	 * If the window has backing-store on, call through the
+	 * ClearToBackground vector to handle the special semantics
+	 * (i.e. things backing store is to be cleared out and
+	 * an Expose event is to be generated for those areas in backing
+	 * store if generateExposures is TRUE).
+	 */
+	(* pWin->backStorage->ClearToBackground)(pWin, x, y, w, h,
+						 generateExposures);
+    }
+
     if (generateExposures)
     {
         (* pWin->drawable.pScreen->Intersect)(pWin->exposed, pReg, pWin->clipList);
