@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.44 88/07/05 16:07:43 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.45 88/07/11 16:52:31 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -82,7 +82,7 @@ extern char *calloc();
 extern char *ttyname();
 extern void exit();
 extern void sleep();
-extern void bcopy();
+extern void Bcopy();
 extern void vhangup();
 extern long lseek();
 
@@ -1167,7 +1167,7 @@ spawn ()
 		 * NULL terminating entry.
 		 */
 		envnew = (char **) calloc ((unsigned) i + (4 + 1), sizeof(char *));
-		bcopy((char *)environ, (char *)envnew, i * sizeof(char *));
+		Bcopy((char *)environ, (char *)envnew, i * sizeof(char *));
 		environ = envnew;
 		Setenv ("TERM=", TermName);
 		if(!TermName)

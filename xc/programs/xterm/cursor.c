@@ -1,9 +1,9 @@
 /*
- *	$Header: cursor.c,v 1.7 87/12/19 09:59:58 rws Exp $
+ *	$Header: cursor.c,v 1.1 88/02/10 13:08:04 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_cursor_c = "$Header: cursor.c,v 1.7 87/12/19 09:59:58 rws Exp $";
+static char *rcsid_cursor_c = "$Header: cursor.c,v 1.1 88/02/10 13:08:04 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -35,7 +35,7 @@ static char *rcsid_cursor_c = "$Header: cursor.c,v 1.7 87/12/19 09:59:58 rws Exp
 
 
 #ifndef lint
-static char rcs_id[] = "$Header: cursor.c,v 1.7 87/12/19 09:59:58 rws Exp $";
+static char rcs_id[] = "$Header: cursor.c,v 1.1 88/02/10 13:08:04 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -43,7 +43,7 @@ static char rcs_id[] = "$Header: cursor.c,v 1.7 87/12/19 09:59:58 rws Exp $";
 #include <sys/ioctl.h>
 #include "ptyx.h"
 
-extern void bcopy();
+extern void Bcopy();
 
 /*
  * Moves the cursor to the specified position, checking for bounds.
@@ -218,7 +218,7 @@ register SavedCursor *sc;
 	sc->flags = term->flags;
 	sc->curgl = screen->curgl;
 	sc->curgr = screen->curgr;
-	bcopy(screen->gsets, sc->gsets, sizeof(screen->gsets));
+	Bcopy(screen->gsets, sc->gsets, sizeof(screen->gsets));
 }
 
 /*
@@ -230,7 +230,7 @@ register SavedCursor *sc;
 {
 	register TScreen *screen = &term->screen;
 
-	bcopy(sc->gsets, screen->gsets, sizeof(screen->gsets));
+	Bcopy(sc->gsets, screen->gsets, sizeof(screen->gsets));
 	screen->curgl = sc->curgl;
 	screen->curgr = sc->curgr;
 	term->flags &= ~(BOLD|INVERSE|UNDERLINE);
