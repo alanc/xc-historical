@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.h,v 1.5 91/06/20 15:52:34 keith Exp $ */
+/* $XConsortium$ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -23,7 +23,7 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  *
- * $NCDId: @(#)fsio.h,v 1.2 1991/05/24 15:03:09 lemke Exp $
+ * $NCDId: @(#)fsio.h,v 1.4 1991/07/03 17:52:30 lemke Exp $
  */
 
 #ifndef	_FSIO_H_
@@ -32,9 +32,9 @@
 #define	REQUEST_LOG_SIZE	100
 
 typedef struct _fs_fpe_alternate {
-    char    *name;
-    Bool    subset;
-} FSFpeAltRec, *FSFpeAltPtr;
+    char       *name;
+    Bool        subset;
+}           FSFpeAltRec, *FSFpeAltPtr;
 
 #define FS_RECONNECT_WAIT	5
 #define FS_MAX_RECONNECT_WAIT	80
@@ -43,11 +43,12 @@ typedef struct _fs_fpe_alternate {
 typedef struct _fs_fpe_data {
     int         fs_fd;
     int         current_seq;
-    char	*servername;
+    char       *servername;
+    char       *requestedname;	/* client's name for this connection */
 
-    int		generation;
-    int		numAlts;
-    FSFpeAltPtr	alts;
+    int         generation;
+    int         numAlts;
+    FSFpeAltPtr alts;
 
 #ifdef DEBUG
     int         reqindex;
@@ -57,9 +58,9 @@ typedef struct _fs_fpe_data {
 /* XXX massive crock to get around stupid #include interferences */
     pointer     blocked_requests;
 /* Data for reconnect - put it here to avoid allocate failure nightmare */
-    long		time_to_try;
-    long		reconnect_delay;
-    struct _fs_fpe_data	*next_reconnect;
+    long        time_to_try;
+    long        reconnect_delay;
+    struct _fs_fpe_data *next_reconnect;
 }           FSFpeRec, *FSFpePtr;
 
 FSFpePtr    _fs_open_server();

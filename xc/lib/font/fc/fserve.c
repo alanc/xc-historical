@@ -24,7 +24,7 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  *
- * $NCDId: @(#)fserve.c,v 1.7 1991/06/10 17:42:44 lemke Exp $
+ * $NCDId: @(#)fserve.c,v 1.19 1991/07/10 14:20:31 lemke Exp $
  */
 /*
  * font server specific font access
@@ -41,6 +41,10 @@
 
 #ifdef NCD
 #include	<ncd/nvram.h>
+#endif
+
+#ifndef MIN
+#define MIN(a,b)    ((a)<(b)?(a):(b))
 #endif
 
 extern int  errno;
@@ -60,17 +64,17 @@ extern unsigned long fs_fd_mask[];
 static int  fs_block_handler();
 static int  fs_wakeup();
 
-static FSFpePtr   awaiting_reconnect;
+static FSFpePtr awaiting_reconnect;
 
-void	    _fs_connection_died ();
-static void _fs_restart_connection ();
+void        _fs_connection_died();
+static void _fs_restart_connection();
 static void _fs_try_reconnect();
-static int  fs_send_query_info ();
-static int  fs_send_query_extents ();
-static int  fs_send_query_bitmaps ();
-static int  fs_send_close_font ();
-static int  fs_read_extents ();
-static int  fs_read_bitmaps ();
+static int  fs_send_query_info();
+static int  fs_send_query_extents();
+static int  fs_send_query_bitmaps();
+static int  fs_send_close_font();
+static int  fs_read_extents();
+static int  fs_read_bitmaps();
 
 /*
  * Font server access
@@ -112,9 +116,7 @@ static Bool
 fs_name_check(name)
     char       *name;
 {
-    if (name[0] == ':')
-	return TRUE;
-    return FALSE;
+    return (!strncmp(name, "tcp/", MIN(4, strlen(name))));
 }
 
 /*
@@ -124,24 +126,113 @@ static int
 fs_send_init_packets(conn)
     FSFpePtr    conn;
 {
-    fsSetResolutionReq req;
+    fsSetResolutionReq srreq;
+    fsSetCataloguesReq screq;
+    fsListCataloguesReq lcreq;
+    fsListCataloguesReply lcreply;
+    int         num_cats,
+                clen,
+                len;
+    char       *client_cat = (char *) 0,
+               *catalogues = (char *) 0,
+               *cp,
+               *sp,
+               *end;
     int         num_res;
     fsResolution *res;
     extern fsResolution *GetClientResolutions();
+    int         err = Successful;
+
+#define	CATALOGUE_SEP	'+'	/* this is in flux... */
 
     res = GetClientResolutions(&num_res);
-    if (num_res == 0)
-	return Successful;
-    req.reqType = FS_SetResolution;
-    req.num_resolutions = num_res;
-    req.length = (sizeof(fsSetResolutionReq) +
-		  (num_res * sizeof(fsResolution)) + 3) >> 2;
+    if (num_res) {
+	srreq.reqType = FS_SetResolution;
+	srreq.num_resolutions = num_res;
+	srreq.length = (sizeof(fsSetResolutionReq) +
+			(num_res * sizeof(fsResolution)) + 3) >> 2;
 
-    _fs_add_req_log(conn, FS_SetResolution);
-    _fs_write(conn, (char *) &req, sizeof(fsSetResolutionReq));
-    _fs_write_pad(conn, (char *) res, (num_res * sizeof(fsResolution)));
+	_fs_add_req_log(conn, FS_SetResolution);
+	_fs_write(conn, (char *) &srreq, sizeof(fsSetResolutionReq));
+	_fs_write_pad(conn, (char *) res, (num_res * sizeof(fsResolution)));
+    }
+    sp = rindex(conn->servername, '/');
 
-    return Successful;
+    /* don't get tricked by a non-existant catalogue list */
+    if (sp == index(conn->servername, '/')) {
+	/*
+	 * try original name -- this might be an alternate with no catalogues
+	 */
+	sp = rindex(conn->requestedname, '/');
+	if (sp == index(conn->requestedname, '/'))
+		sp = (char *) 0;
+    }
+    if (sp) {			/* turn cats into counted list */
+	sp++;
+	/* allocate more than enough room */
+	cp = client_cat = (char *) xalloc(strlen(conn->servername));
+	if (!cp) {
+	    err = BadAlloc;
+	    goto fail;
+	}
+	num_cats = 0;
+	while (*sp) {
+	    end = index(sp, CATALOGUE_SEP);
+	    if (!end)
+		end = sp + strlen(sp);
+	    *cp++ = len = end - sp;
+	    num_cats++;
+	    bcopy(sp, cp, len);
+	    sp += len;
+	    if (*sp == CATALOGUE_SEP)
+		sp++;
+	    cp += len;
+	}
+	clen = cp - client_cat;
+	/* our list checked out, so send it */
+	screq.reqType = FS_SetCatalogues;
+	screq.num_catalogues = num_cats;
+	screq.length = (sizeof(fsSetCataloguesReq) + clen + 3) >> 2;
+
+	_fs_add_req_log(conn, FS_SetCatalogues);
+	_fs_write(conn, (char *) &screq, sizeof(fsSetCataloguesReq));
+	_fs_write_pad(conn, (char *) catalogues, clen);
+
+	/*
+	 * now sync up with the font server, to see if an error was generated
+	 * by a bogus catalogue
+	 */
+	lcreq.reqType = FS_ListCatalogues;
+	lcreq.length = (sizeof(fsListCataloguesReq)) >> 2;
+	lcreq.maxNames = 0;
+	lcreq.nbytes = 0;
+	_fs_add_req_log(conn, FS_SetCatalogues);
+	_fs_write(conn, (char *) &lcreq, sizeof(fsListCataloguesReq));
+
+	/*
+	 * next bit will either by the ListCats reply, or an error followed by
+	 * the reply
+	 */
+	if (_fs_read(conn, (char *) &lcreply, sizeof(fsReplyHeader)) == -1) {
+	    err = BadFontPath;
+	    goto fail;
+	}
+	if (lcreply.type == FS_Error &&
+		((fsError *) & lcreply)->major_opcode == FS_SetCatalogues) {
+	    _fs_eat_rest_of_error(conn, (fsError *) & lcreply);
+	    /* get ListCats response */
+	    (void) _fs_read(conn, (char *) &lcreply,
+			    sizeof(fsListCataloguesReply));
+	    err = BadFontPath;
+	    goto fail;
+	}
+	/* must be reply, swallow the rest of it */
+	_fs_eat_rest_of_error(conn, (fsError *) & lcreply);
+    }
+fail:
+    xfree(client_cat);
+    xfree(catalogues);
+    return err;
 }
 
 /*
@@ -157,22 +248,31 @@ fs_init_fpe(fpe, format)
 {
     FSFpePtr    conn;
     char       *name;
+    int         err;
 
     /* open font server */
     /* create FS specific fpe info */
     errno = 0;
-    name = index(fpe->name, ':');
 
-    if (name)
+    name = fpe->name;
+
+    /* hack for old style names */
+    if (*name == ':')
 	name++;			/* skip ':' */
-    else
-	name = fpe->name;
 
     conn = _fs_open_server(name);
     if (conn) {
+	conn->requestedname = fpe->name; /* stash this for later init use */
 	fpe->private = (pointer) conn;
-	if (init_fs_handlers(fpe, fs_block_handler) !=
-		Successful)
+	err = fs_send_init_packets(conn);
+	if (err != Successful) {
+	    (void) close(conn->fs_fd);
+	    xfree(conn->servername);
+	    xfree(conn->alts);
+	    xfree(conn);
+	    return err;
+	}
+	if (init_fs_handlers(fpe, fs_block_handler) != Successful)
 	    return AllocError;
 	_fs_set_bit(fs_fd_mask, conn->fs_fd);
 
@@ -181,7 +281,7 @@ fs_init_fpe(fpe, format)
 	    printf("Connected to font server \"%s\"\n", name);
 #endif
 
-	return fs_send_init_packets(conn);
+	return err;
     }
 
 #ifdef DEBUG
@@ -212,27 +312,27 @@ fs_free_fpe(fpe)
     FontPathElementPtr fpe;
 {
     FSFpePtr    conn = (FSFpePtr) fpe->private;
-    FSFpePtr	recon, *prev;
+    FSFpePtr    recon,
+               *prev;
 
     prev = &awaiting_reconnect;
-    while (recon = *prev)
-    {
-	if (conn == recon)
-	{
+    while (recon = *prev) {
+	if (conn == recon) {
 	    *prev = recon->next_reconnect;
 	    break;
 	}
 	prev = &recon->next_reconnect;
     }
-    
+
     /* close font server */
     (void) close(conn->fs_fd);
 
     _fs_bit_clear(fs_fd_mask, conn->fs_fd);
     remove_fs_handlers(fpe, fs_block_handler, !_fs_any_bit_set(fs_fd_mask));
 
-    xfree (conn->alts);
-    xfree (conn);
+    xfree(conn->alts);
+    xfree(conn->servername);
+    xfree(conn);
     fpe->private = (pointer) 0;
 
 #ifdef NCD
@@ -252,14 +352,14 @@ fs_new_block_rec(fpe, client, type)
     FSBlockDataPtr blockrec,
                 br;
     FSFpePtr    fsfpe = (FSFpePtr) fpe->private;
-    int		size;
+    int         size;
 
     blockrec = (FSBlockDataPtr) xalloc(sizeof(FSBlockDataRec));
     if (!blockrec)
 	return (FSBlockDataPtr) 0;
     switch (type) {
     case FS_OPEN_FONT:
-	size = sizeof (FSBlockedFontRec);
+	size = sizeof(FSBlockedFontRec);
 	break;
     case FS_LOAD_GLYPHS:
 	size = sizeof(FSBlockedGlyphRec);
@@ -343,7 +443,7 @@ fs_free_font(bfont)
     /* xfree better be able to handle NULL */
     xfree(fsfont->encoding);
     xfree(fsfont->bitmaps);
-    DeleteFontClientID (fsd->fontid);
+    DeleteFontClientID(fsd->fontid);
     xfree(fsfont);
     xfree(pfont->info.isStringProp);
     xfree(pfont->info.props);
@@ -363,7 +463,7 @@ fs_cleanup_font(bfont)
     /* make sure the FS knows we choked on it */
     fs_send_close_font(fsd->fpe, bfont->fontid);
 
-    fs_free_font (bfont);
+    fs_free_font(bfont);
     bfont->errcode = AllocError;
 }
 
@@ -372,13 +472,12 @@ fs_read_open_font(fpe, blockrec)
     FontPathElementPtr fpe;
     FSBlockDataPtr blockrec;
 {
-    FontPtr		    newfont;
-    FSBlockedFontPtr	    bfont = (FSBlockedFontPtr) blockrec->data;
-    FSFpePtr		    conn = (FSFpePtr) fpe->private;
-    FSFontDataPtr	    fsd = (FSFontDataPtr) (bfont->pfont->fpePrivate);
-    fsOpenBitmapFontReply   rep;
-    FSBlockDataPtr	    blockOrig;
-    FSBlockedFontPtr	    origBfont;
+    FontPtr     newfont;
+    FSBlockedFontPtr bfont = (FSBlockedFontPtr) blockrec->data;
+    FSFpePtr    conn = (FSFpePtr) fpe->private;
+    fsOpenBitmapFontReply rep;
+    FSBlockDataPtr blockOrig;
+    FSBlockedFontPtr origBfont;
 
     /* pull out the OpenFont reply */
     bcopy((char *) &blockrec->header, (char *) &rep, sizeof(fsReplyHeader));
@@ -388,39 +487,35 @@ fs_read_open_font(fpe, blockrec)
 	return BadFontName;
     } else {			/* get rest of reply */
 	if (_fs_read(conn, (char *) &rep + sizeof(fsReplyHeader),
-		 sizeof(fsOpenBitmapFontReply) - sizeof(fsReplyHeader)) == -1)
-	{
+	      sizeof(fsOpenBitmapFontReply) - sizeof(fsReplyHeader)) == -1) {
 	    /* when re-established, we'll allocate the font again */
-	    fs_free_font (bfont);
+	    fs_free_font(bfont);
 	    return StillWorking;
 	}
     }
 
     /* make sure the sequence number is correct */
-    if (rep.originalid) {
-	newfont = find_old_font(rep.originalid);
+    if (rep.otherid) {
+	newfont = find_old_font(rep.otherid);
 	if (!newfont) {
 	    /* XXX - something nasty happened */
 	    return BadFontName;
 	}
-
 	(void) fs_send_close_font(fpe, bfont->fontid);
 
-	fs_free_font (bfont);
-	bfont->fontid = rep.originalid;
+	fs_free_font(bfont);
+	bfont->fontid = rep.otherid;
 	bfont->pfont = newfont;
 	bfont->state = FS_DONE_REPLY;
 	/*
- 	 * look for a blocked request to open the same font
+	 * look for a blocked request to open the same font
 	 */
 	for (blockOrig = (FSBlockDataPtr) conn->blocked_requests;
-	     blockOrig;
-	     blockOrig = blockOrig->next)
-	{
+		blockOrig;
+		blockOrig = blockOrig->next) {
 	    if (blockOrig != blockrec && blockOrig->type == FS_OPEN_FONT) {
 		origBfont = (FSBlockedFontPtr) blockOrig->data;
-		if (origBfont->fontid == rep.originalid)
-		{
+		if (origBfont->fontid == rep.otherid) {
 		    blockrec->depending = blockOrig->depending;
 		    blockOrig->depending = blockrec;
 		    bfont->state = FS_DEPENDING;
@@ -453,18 +548,15 @@ fs_read_query_info(fpe, blockrec)
     /* pull out the QueryXInfo reply */
     bcopy((char *) &blockrec->header, (char *) &rep, sizeof(fsReplyHeader));
     if (_fs_read(conn, (char *) &rep + sizeof(fsReplyHeader),
-	     sizeof(fsQueryXInfoReply) - sizeof(fsReplyHeader)) == -1)
-    {
-	fs_free_font (bfont);
+		 sizeof(fsQueryXInfoReply) - sizeof(fsReplyHeader)) == -1) {
+	fs_free_font(bfont);
 	return StillWorking;
     }
-
     /* move the data over */
     (void) fs_convert_header(&rep.header, &bfont->pfont->info);
 
-    if (_fs_read(conn, (char *) &pi, sizeof(fsPropInfo)) == -1)
-    {
-	fs_free_font (bfont);
+    if (_fs_read(conn, (char *) &pi, sizeof(fsPropInfo)) == -1) {
+	fs_free_font(bfont);
 	return StillWorking;
     }
     prop_len = pi.num_offsets * sizeof(fsPropOffset);
@@ -480,11 +572,10 @@ fs_read_query_info(fpe, blockrec)
 	return AllocError;
     }
     if (_fs_read_pad(conn, (char *) po, prop_len) == -1 ||
-	_fs_read_pad(conn, (char *) pd, pi.data_len) == -1)
-    {
-	xfree (pd);
-	xfree (po);
-	fs_free_font (bfont);
+	    _fs_read_pad(conn, (char *) pd, pi.data_len) == -1) {
+	xfree(pd);
+	xfree(po);
+	fs_free_font(bfont);
 	return StillWorking;
     }
     (void) fs_convert_props(&pi, po, pd, &bfont->pfont->info);
@@ -515,12 +606,10 @@ fs_read_extent_info(fpe, blockrec)
     /* read the QueryXExtents reply */
     bcopy((char *) &blockrec->header, (char *) &rep, sizeof(fsReplyHeader));
     if (_fs_read(conn, (char *) &rep + sizeof(fsReplyHeader),
-	     sizeof(fsQueryXExtents8Reply) - sizeof(fsReplyHeader)) == -1)
-    {
-	fs_free_font (bfont);
+	      sizeof(fsQueryXExtents8Reply) - sizeof(fsReplyHeader)) == -1) {
+	fs_free_font(bfont);
 	return StillWorking;
     }
-
     /* move the data over */
     ci = pCI = (CharInfoPtr) xalloc(sizeof(CharInfoRec) * rep.num_extents);
 /* XXX this could be done with an ALLOCATE_LOCAL */
@@ -537,9 +626,9 @@ fs_read_extent_info(fpe, blockrec)
 /* XXX - hack - use real default char */
     fsfont->pDefault = &pCI[0];
 
-    if (_fs_read_pad(conn, (char *) fsci, sizeof(fsCharInfo) * rep.num_extents) == -1)
-    {
-	fs_free_font (bfont);
+    if (_fs_read_pad(conn, (char *) fsci,
+		     sizeof(fsCharInfo) * rep.num_extents) == -1) {
+	fs_free_font(bfont);
 	return StillWorking;
     }
     for (i = 0, fscip = fsci; i < rep.num_extents; i++, ci++, fscip++) {
@@ -568,16 +657,15 @@ fs_do_open_font(fpe, blockrec, readheader)
 {
     FSBlockedFontPtr bfont = (FSBlockedFontPtr) blockrec->data;
     FSFpePtr    conn = (FSFpePtr) fpe->private;
-    int		err;
+    int         err;
 
     switch (bfont->state) {
     case FS_OPEN_REPLY:
 	if (readheader) {
 	    /* get the next header */
 	    if (_fs_read(conn, (char *) &blockrec->header,
-			 sizeof(fsReplyHeader)) == -1)
-	    {
-		fs_free_font (bfont);
+			 sizeof(fsReplyHeader)) == -1) {
+		fs_free_font(bfont);
 		err = StillWorking;
 		break;
 	    }
@@ -602,9 +690,8 @@ fs_do_open_font(fpe, blockrec, readheader)
 	    break;
 	} else {
 	    if (_fs_read(conn, (char *) &blockrec->header,
-			 sizeof(fsReplyHeader)) == -1)
-	    {
-		fs_free_font (bfont);
+			 sizeof(fsReplyHeader)) == -1) {
+		fs_free_font(bfont);
 		err = StillWorking;
 		break;
 	    }
@@ -612,8 +699,7 @@ fs_do_open_font(fpe, blockrec, readheader)
 	/* fall through */
     case FS_INFO_REPLY:
 	bfont->errcode = fs_read_query_info(fpe, blockrec);
-	if (bfont->errcode != StillWorking)
-	{
+	if (bfont->errcode != StillWorking) {
 	    err = bfont->errcode;
 	    break;
 	}
@@ -623,9 +709,8 @@ fs_do_open_font(fpe, blockrec, readheader)
 	    /* if more data to read, fall thru, else return */
 	} else {
 	    if (_fs_read(conn, (char *) &blockrec->header,
-			 sizeof(fsReplyHeader)))
-	    {
-		fs_free_font (bfont);
+			 sizeof(fsReplyHeader))) {
+		fs_free_font(bfont);
 		err = StillWorking;
 		break;
 	    }
@@ -633,8 +718,7 @@ fs_do_open_font(fpe, blockrec, readheader)
 	/* fall through */
     case FS_EXTENT_REPLY:
 	bfont->errcode = fs_read_extent_info(fpe, blockrec);
-	if (bfont->errcode != StillWorking)
-	{
+	if (bfont->errcode != StillWorking) {
 	    err = bfont->errcode;
 	    break;
 	}
@@ -643,9 +727,8 @@ fs_do_open_font(fpe, blockrec, readheader)
 	    break;
 	} else if (bfont->flags & FontLoadBitmaps) {
 	    if (_fs_read(conn, (char *) &blockrec->header,
-			 sizeof(fsReplyHeader)))
-	    {
-		fs_free_font (bfont);
+			 sizeof(fsReplyHeader))) {
+		fs_free_font(bfont);
 		err = StillWorking;
 		break;
 	    }
@@ -657,16 +740,14 @@ fs_do_open_font(fpe, blockrec, readheader)
 	}
 	err = bfont->errcode;
 	break;
-    case FS_DEPENDING:	/* "cant" happen */
+    case FS_DEPENDING:		/* "cant" happen */
 	err = bfont->errcode;
     default:
 	err = bfont->errcode;
 	break;
     }
-    if (err != StillWorking)
-    {
-	while (blockrec = blockrec->depending)
-	{
+    if (err != StillWorking) {
+	while (blockrec = blockrec->depending) {
 	    bfont = (FSBlockedFontPtr) blockrec->data;
 	    bfont->errcode = err;
 	}
@@ -681,17 +762,16 @@ fs_block_handler(data, wt, LastSelectMask)
     struct timeval **wt;
     long       *LastSelectMask;
 {
-    static struct timeval  recon_timeout;
-    long    now, soonest;
-    FSFpePtr	recon;
+    static struct timeval recon_timeout;
+    long        now,
+                soonest;
+    FSFpePtr    recon;
 
     _fs_or_bits(LastSelectMask, LastSelectMask, fs_fd_mask);
-    if (recon = awaiting_reconnect)
-    {
-	now = time ((long *) 0);
+    if (recon = awaiting_reconnect) {
+	now = time((long *) 0);
 	soonest = recon->time_to_try;
-	while (recon = recon->next_reconnect)
-	{
+	while (recon = recon->next_reconnect) {
 	    if (recon->time_to_try < soonest)
 		soonest = recon->time_to_try;
 	}
@@ -700,12 +780,9 @@ fs_block_handler(data, wt, LastSelectMask)
 	soonest = soonest - now;
 	recon_timeout.tv_sec = soonest;
 	recon_timeout.tv_usec = 0;
-	if (*wt == (struct timeval *) 0)
-	{
+	if (*wt == (struct timeval *) 0) {
 	    *wt = &recon_timeout;
-	}
-	else if ((*wt)->tv_sec > soonest)
-	{
+	} else if ((*wt)->tv_sec > soonest) {
 	    **wt = recon_timeout;
 	}
     }
@@ -714,8 +791,8 @@ fs_block_handler(data, wt, LastSelectMask)
 
 static void
 fs_handle_unexpected(conn, rep)
-    FSFpePtr	    conn;
-    fsReplyHeader   *rep;
+    FSFpePtr    conn;
+    fsReplyHeader *rep;
 {
     if (rep->type == FS_Event && rep->pad == KeepAlive) {
 	fsNoopReq   req;
@@ -744,7 +821,8 @@ fs_wakeup(fpe, LastSelectMask)
     /* see if there's any data to be read */
     if (_fs_is_bit_set(LastSelectMask, conn->fs_fd)) {
 
-#ifdef NOTDEF /* bogus - doesn't deal with EOF very well, now does it ... */
+#ifdef NOTDEF			/* bogus - doesn't deal with EOF very well,
+				 * now does it ... */
 	/*
 	 * make sure it isn't spurious - mouse events seem to trigger extra
 	 * problems
@@ -753,19 +831,18 @@ fs_wakeup(fpe, LastSelectMask)
 	    return FALSE;
 	}
 #endif
+
 	/* get the header */
 	if (_fs_read(conn, (char *) &rep, sizeof(fsReplyHeader)) == -1)
 	    return FALSE;
 
 	/* find the matching block record */
-	
-	for (br = (FSBlockDataPtr) conn->blocked_requests; br; br = br->next)
- 	{
+
+	for (br = (FSBlockDataPtr) conn->blocked_requests; br; br = br->next) {
 	    if (br->sequence_number == (rep.sequenceNumber - 1))
 		break;
 	}
-	if (!br) 
-	{
+	if (!br) {
 	    fs_handle_unexpected(conn, &rep);
 	    return FALSE;
 	}
@@ -797,10 +874,8 @@ fs_wakeup(fpe, LastSelectMask)
 	    break;
 	}
 
-	if (err != StillWorking)
-	{
-	    while (blockrec)
-	    {
+	if (err != StillWorking) {
+	    while (blockrec) {
 		ClientSignal(blockrec->client);
 		blockrec = blockrec->depending;
 	    }
@@ -809,12 +884,9 @@ fs_wakeup(fpe, LastSelectMask)
 	 * Xx we could loop here and eat any additional replies, but it should
 	 * feel more responsive for other clients if we come back later
 	 */
+    } else if (awaiting_reconnect) {
+	_fs_try_reconnect();
     }
-    else if (awaiting_reconnect)
-    {
-	_fs_try_reconnect ();
-    }
-
     return FALSE;
 }
 
@@ -823,14 +895,14 @@ fs_wakeup(fpe, LastSelectMask)
  */
 
 void
-_fs_connection_died (conn)
-    FSFpePtr	    conn;
+_fs_connection_died(conn)
+    FSFpePtr    conn;
 {
     if (conn->fs_fd == -1)
 	return;
-    _fs_bit_clear (fs_fd_mask, conn->fs_fd);
-    close (conn->fs_fd);
-    conn->time_to_try = time ((long *) 0) + FS_RECONNECT_WAIT;
+    _fs_bit_clear(fs_fd_mask, conn->fs_fd);
+    close(conn->fs_fd);
+    conn->time_to_try = time((long *) 0) + FS_RECONNECT_WAIT;
     conn->reconnect_delay = FS_RECONNECT_WAIT;
     conn->fs_fd = -1;
     conn->next_reconnect = awaiting_reconnect;
@@ -838,43 +910,38 @@ _fs_connection_died (conn)
 }
 
 static void
-_fs_restart_connection (conn)
-    FSFpePtr	conn;
+_fs_restart_connection(conn)
+    FSFpePtr    conn;
 {
-    FSBlockDataPtr  block;
+    FSBlockDataPtr block;
 
     conn->current_seq = 0;
     _fs_set_bit(fs_fd_mask, conn->fs_fd);
-    fs_send_init_packets (conn);
-    while (block = (FSBlockDataPtr) conn->blocked_requests)
-    {
+    fs_send_init_packets(conn);
+    while (block = (FSBlockDataPtr) conn->blocked_requests) {
 	ClientSignal(block->client);
-	fs_remove_blockrec (conn, block);
+	fs_remove_blockrec(conn, block);
     }
 }
 
 static void
-_fs_try_reconnect ()
+_fs_try_reconnect()
 {
-    FSFpePtr		conn, *prev;
-    long		now;
+    FSFpePtr    conn,
+               *prev;
+    long        now;
 
     prev = &awaiting_reconnect;
-    now = time ((long *) 0);
-    while (conn = *prev)
-    {
-	if (now - conn->time_to_try > 0)
-	{
-	    if (_fs_reopen_server (conn))
-	    {
+    now = time((long *) 0);
+    while (conn = *prev) {
+	if (now - conn->time_to_try > 0) {
+	    if (_fs_reopen_server(conn)) {
 		*prev = conn->next_reconnect;
-		_fs_restart_connection (conn);
-	    }
-	    else
-	    {
+		_fs_restart_connection(conn);
+	    } else {
 		if (conn->reconnect_delay < FS_MAX_RECONNECT_WAIT)
 		    conn->reconnect_delay *= 2;
-		now = time ((long *) 0);
+		now = time((long *) 0);
 		conn->time_to_try = now + conn->reconnect_delay;
 	    }
 	}
@@ -909,7 +976,7 @@ fs_send_open_font(client, fpe, flags, name, namelen, format, fmask, id, ppfont)
     unsigned char buf[256];
     XID         newid;
 
-    newid = GetNewFontClientID ();
+    newid = GetNewFontClientID();
 
     /* make the font */
     newfont = (FontPtr) xalloc(sizeof(FontRec));
@@ -991,7 +1058,7 @@ lowmem:
 	if (blockedfont->errcode == Successful) {
 	    *ppfont = blockedfont->pfont;
 	} else {
-	    fs_cleanup_font (blockedfont);
+	    fs_cleanup_font(blockedfont);
 	}
 	fs_remove_blockrec(conn, blockrec);
     }
@@ -1102,7 +1169,7 @@ fs_open_font(client, fpe, flags, name, namelen, format, fmask, id, ppfont,
 	    if (err == Successful) {
 		*ppfont = blockedfont->pfont;
 	    } else {
-		xfree(blockedfont->pfont);
+		fs_cleanup_font(blockedfont);
 	    }
 	    /* cleanup */
 	    fs_remove_blockrec(conn, blockrec);
@@ -1144,7 +1211,7 @@ fs_close_font(fpe, pfont)
 
     /* XXX we may get called after the resource DB has been cleaned out */
     if (find_old_font(fsd->fontid))
-	DeleteFontClientID (fsd->fontid);
+	DeleteFontClientID(fsd->fontid);
     if (conn->generation == fsd->generation)
 	fs_send_close_font(fpe, fsd->fontid);
     (*pfont->unload_font) (pfont);
@@ -1183,12 +1250,10 @@ fs_read_glyphs(fpe, blockrec)
 	return AllocError;
     }
     if (_fs_read(conn, (char *) &rep + sizeof(fsReplyHeader),
-	     sizeof(fsQueryXBitmaps8Reply) - sizeof(fsReplyHeader)) == -1)
-    {
-	fs_free_font (bfont);
+	      sizeof(fsQueryXBitmaps8Reply) - sizeof(fsReplyHeader)) == -1) {
+	fs_free_font(bfont);
 	return StillWorking;
     }
-
     /* allocate space for glyphs */
     offset_size = sizeof(fsOffset) * rep.num_chars;
     glyph_size = (rep.length << 2) - sizeof(fsQueryXBitmaps8Reply)
@@ -1208,12 +1273,10 @@ fs_read_glyphs(fpe, blockrec)
 	return AllocError;
     }
     /* read offsets */
-    if (_fs_read_pad(conn, (char *) ppbits, offset_size) == -1)
-    {
+    if (_fs_read_pad(conn, (char *) ppbits, offset_size) == -1) {
 	fs_free_font(bfont);
 	return StillWorking;
     }
-
     /* adjust them */
     for (i = 0; i < rep.num_chars; i++) {
 	ppbits[i].position = ppbits[i].position + (int) pbitmaps;
@@ -1221,12 +1284,10 @@ fs_read_glyphs(fpe, blockrec)
     }
 
     /* read glyphs according to the range */
-    if (_fs_read_pad(conn, (char *) pbitmaps, glyph_size) == -1)
-    {
-	fs_free_font (bfont);
+    if (_fs_read_pad(conn, (char *) pbitmaps, glyph_size) == -1) {
+	fs_free_font(bfont);
 	return StillWorking;
     }
-
     fsdata->bitmaps = pbitmaps;
 
     xfree(ppbits);
@@ -1348,12 +1409,10 @@ fs_read_extents(fpe, blockrec)
 	return AllocError;
     }
     if (_fs_read(conn, (char *) &rep + sizeof(fsReplyHeader),
-	     sizeof(fsQueryXExtents8Reply) - sizeof(fsReplyHeader)) == -1)
-    {
+	      sizeof(fsQueryXExtents8Reply) - sizeof(fsReplyHeader)) == -1) {
 	/* XXX what to free, what to free */
 	return StillWorking;
     }
-
     /* allocate space for glyphs */
     bextent->nextents = rep.num_extents;
     size = rep.num_extents * sizeof(fsCharInfo);
@@ -1363,12 +1422,10 @@ fs_read_extents(fpe, blockrec)
 	return AllocError;
     }
     /* read extents */
-    if (_fs_read_pad(conn, (char *) extents, size) == -1)
-    {
+    if (_fs_read_pad(conn, (char *) extents, size) == -1) {
 	/* XXX what to free? */
 	return StillWorking;
     }
-
     bextent->extents = extents;
 
     bextent->done = TRUE;
@@ -1483,12 +1540,10 @@ fs_read_bitmaps(fpe, blockrec)
 	return AllocError;
     }
     if (_fs_read(conn, (char *) &rep + sizeof(fsReplyHeader),
-	     sizeof(fsQueryXBitmaps8Reply) - sizeof(fsReplyHeader)) == -1)
-    {
+	      sizeof(fsQueryXBitmaps8Reply) - sizeof(fsReplyHeader)) == -1) {
 	/* XXX what to free? */
 	return StillWorking;
     }
-
     /* allocate space for glyphs */
     bbitmap->nglyphs = rep.num_chars;
     offset_size = sizeof(fsOffset) * rep.num_chars;
@@ -1504,21 +1559,17 @@ fs_read_bitmaps(fpe, blockrec)
 	return AllocError;
     }
     /* read offsets */
-    if (_fs_read_pad(conn, (char *) ppbits, offset_size) == -1)
-    {
+    if (_fs_read_pad(conn, (char *) ppbits, offset_size) == -1) {
 	/* XXX what to free? */
 	return StillWorking;
     }
-
     bbitmap->offsets = ppbits;
 
     /* read glyphs according to the range */
-    if (_fs_read_pad(conn, (char *) pbitmaps, glyph_size) == -1)
-    {
+    if (_fs_read_pad(conn, (char *) pbitmaps, glyph_size) == -1) {
 	/* XXX what to free? */
 	return StillWorking;
     }
-
     bbitmap->gdata = pbitmaps;
 
     bbitmap->done = TRUE;
@@ -1636,12 +1687,10 @@ fs_read_list(fpe, blockrec)
 	return AllocError;
     }
     if (_fs_read(conn, (char *) &rep + sizeof(fsReplyHeader),
-	     sizeof(fsListFontsReply) - sizeof(fsReplyHeader)) == -1)
-    {
+		 sizeof(fsListFontsReply) - sizeof(fsReplyHeader)) == -1) {
 	/* nothing to free (i think) */
 	return StillWorking;
     }
-
     length = (rep.length << 2) - sizeof(fsListFontsReply);
     data = (char *) xalloc(length);
     if (!data) {
@@ -1649,12 +1698,10 @@ fs_read_list(fpe, blockrec)
 	return AllocError;
     }
     /* read the list */
-    if (_fs_read_pad(conn, data, length) == -1)
-    {
+    if (_fs_read_pad(conn, data, length) == -1) {
 	/* nothing to free (i think) */
 	return StillWorking;
     }
-
     /* copy data into FontPathRecord */
     dp = data;
     for (i = 0; i < rep.nFonts; i++) {
@@ -1777,11 +1824,9 @@ fs_read_list_info(fpe, blockrec)
 	return AllocError;
     }
     if (_fs_read(conn, (char *) &rep + sizeof(fsReplyHeader),
-	     sizeof(fsListFontsWithXInfoReply) - sizeof(fsReplyHeader)) == -1)
-    {
+	  sizeof(fsListFontsWithXInfoReply) - sizeof(fsReplyHeader)) == -1) {
 	goto done;
     }
-
     if (rep.nameLength == 0)
 	goto done;
 
@@ -1798,11 +1843,9 @@ fs_read_list_info(fpe, blockrec)
 	return AllocError;
     }
     if (_fs_read_pad(conn, name, rep.nameLength) == -1 ||
-	_fs_read_pad(conn, (char *) &pi, sizeof(fsPropInfo)) == -1)
-    {
+	    _fs_read_pad(conn, (char *) &pi, sizeof(fsPropInfo)) == -1) {
 	goto done;
     }
-
     po = (fsPropOffset *) xalloc(sizeof(fsPropOffset) * pi.num_offsets);
     pd = (pointer) xalloc(pi.data_len);
     if (!po || !pd) {
@@ -1814,11 +1857,10 @@ fs_read_list_info(fpe, blockrec)
     }
     if (_fs_read_pad(conn, (char *) po,
 		     (pi.num_offsets * sizeof(fsPropOffset))) == -1 ||
-	_fs_read_pad(conn, (char *) pd, pi.data_len) == -1)
-    {
-	xfree (name);
-	xfree (po);
-	xfree (pd);
+	    _fs_read_pad(conn, (char *) pd, pi.data_len) == -1) {
+	xfree(name);
+	xfree(po);
+	xfree(pd);
 	goto done;
     }
     fs_convert_lfwi_reply(binfo->pfi, &rep, &pi, po, pd);
@@ -1942,17 +1984,17 @@ fs_next_list_with_info(client, fpe, namep, namelenp, pFontInfo, numFonts,
  * Called when client exits
  */
 
-fs_client_died (client, fpe)
-    pointer		client;
-    FontPathElementPtr	fpe;
+fs_client_died(client, fpe)
+    pointer     client;
+    FontPathElementPtr fpe;
 {
-    FSFpePtr	    conn = (FSFpePtr) fpe->private;
-    FSBlockDataPtr  blockrec, depending;
+    FSFpePtr    conn = (FSFpePtr) fpe->private;
+    FSBlockDataPtr blockrec,
+                depending;
 
     /* see if the result is already there */
     blockrec = (FSBlockDataPtr) conn->blocked_requests;
-    while (blockrec) 
-    {
+    while (blockrec) {
 	if (blockrec->client == client)
 	    break;
 	blockrec = blockrec->next;
@@ -1960,13 +2002,12 @@ fs_client_died (client, fpe)
     if (!blockrec)
 	return;
     /* replace the client pointers in this block rec with the chained one */
-    if (depending = blockrec->depending)
-    {
+    if (depending = blockrec->depending) {
 	blockrec->client = depending->client;
 	blockrec->depending = depending->depending;
 	blockrec = depending;
     }
-    fs_remove_blockrec (conn, blockrec);
+    fs_remove_blockrec(conn, blockrec);
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.c,v 1.17 91/06/25 15:59:06 rws Exp $ */
+/* $XConsortium$ */
 /*
  *
  * Copyright 1990 Network Computing Devices
@@ -24,13 +24,18 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  *
- * $NCDId: @(#)fsio.c,v 1.3 1991/05/28 15:48:48 lemke Exp $
+ * $NCDId: @(#)fsio.c,v 1.7 1991/07/02 13:13:43 lemke Exp $
  */
 /*
  * font server i/o routines
  */
 
 #include	<X11/Xos.h>
+
+#ifdef NCD
+#include	<fcntl.h>
+#endif
+
 #include	"FS.h"
 #include	"FSproto.h"
 #include	<stdio.h>
@@ -48,14 +53,17 @@ extern int  errno;
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
  * systems are broken and return EWOULDBLOCK when they should return EAGAIN
  */
+
 #if defined(EAGAIN) && defined(EWOULDBLOCK)
 #define ETEST(err) (err == EAGAIN || err == EWOULDBLOCK)
 #else
+
 #ifdef EAGAIN
 #define ETEST(err) (err == EAGAIN)
 #else
 #define ETEST(err) (err == EWOULDBLOCK)
 #endif
+
 #endif
 
 static int  padlength[4] = {0, 3, 2, 1};
@@ -71,12 +79,14 @@ _fs_name_to_address(servername, inaddr)
     char        hostname[256];
     char       *sp;
     unsigned long hostinetaddr;
+    extern struct hostent *gethostbyname();
     struct hostent *hp;
 
     /* XXX - do any service name lookup to get a hostname */
 
-    /* XXX - hack to convert ':' name to normal one */
     (void) strncpy(hostname, servername, sizeof(hostname));
+
+    /* get port */
     if ((sp = index(hostname, ':')) == NULL)
 	return -1;
 
@@ -89,9 +99,9 @@ _fs_name_to_address(servername, inaddr)
 
     /* find host address */
     sp = hostname;
-    if (*sp == ':')
-	sp++;
-
+    if (!strncmp(hostname, "tcp/", 4)) {
+	sp += 4;
+    }
 /* XXX -- this is all TCP specific.  other transports need to hack */
     hostinetaddr = inet_addr(sp);
     if (hostinetaddr == -1) {
@@ -118,9 +128,10 @@ _fs_name_to_address(servername, inaddr)
 #define SIGNAL_T void
 #endif
 
-static SIGNAL_T
-_fs_alarm (foo)
-    int	foo;
+/* ARGSUSED */
+static      SIGNAL_T
+_fs_alarm(foo)
+    int         foo;
 {
     return;
 }
@@ -128,14 +139,15 @@ _fs_alarm (foo)
 static int
 _fs_connect(servername, timeout)
     char       *servername;
-    int		timeout;
+    int         timeout;
 {
     int         fd;
     struct sockaddr *addr;
     struct sockaddr_in inaddr;
-    unsigned	oldTime;
-    SIGNAL_T	(*oldAlarm)();
-    int		ret;
+    unsigned    oldTime;
+
+    SIGNAL_T(*oldAlarm) ();
+    int         ret;
 
     if (_fs_name_to_address(servername, &inaddr) < 0)
 	return -1;
@@ -144,32 +156,33 @@ _fs_connect(servername, timeout)
     if ((fd = socket((int) addr->sa_family, SOCK_STREAM, 0)) < 0)
 	return -1;
 
-    oldTime = alarm ((unsigned) 0);
-    oldAlarm = signal (SIGALRM, _fs_alarm);
-    alarm ((unsigned) timeout);
+    oldTime = alarm((unsigned) 0);
+    oldAlarm = signal(SIGALRM, _fs_alarm);
+    alarm((unsigned) timeout);
     ret = connect(fd, addr, sizeof(struct sockaddr_in));
-    alarm ((unsigned) 0);
-    signal (SIGALRM, oldAlarm);
-    alarm (oldTime);
-    if (ret == -1)
-    {
+    alarm((unsigned) 0);
+    signal(SIGALRM, oldAlarm);
+    alarm(oldTime);
+    if (ret == -1) {
 	(void) close(fd);
 	return -1;
     }
-
-
     /* ultrix reads hang on Unix sockets, hpux reads fail */
+
 #if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux))
-    (void) fcntl (fd, F_SETFL, O_NONBLOCK);
+    (void) fcntl(fd, F_SETFL, O_NONBLOCK);
 #else
+
 #ifdef FIOSNBIO
     {
-	int arg = 1;
-	ioctl (fd, FIOSNBIO, &arg);
+	int         arg = 1;
+
+	ioctl(fd, FIOSNBIO, &arg);
     }
 #else
-    (void) fcntl (fd, F_SETFL, FNDELAY);
+    (void) fcntl(fd, F_SETFL, FNDELAY);
 #endif
+
 #endif
 
     return fd;
@@ -177,29 +190,32 @@ _fs_connect(servername, timeout)
 
 static int  generationCount;
 
+/* ARGSUSED */
 static Bool
-_fs_setup_connection (conn, timeout)
-    FSFpePtr	conn;
-    int		timeout;
+_fs_setup_connection(conn, servername, timeout)
+    FSFpePtr    conn;
+    char       *servername;
+    int         timeout;
 {
-    fsConnClientPrefix	prefix;
-    fsConnSetup		rep;
-    int			setuplength;
-    fsConnSetupAccept	conn_accept;
-    int			endian;
-    int			i;
-    int			alt_len;
-    char		*auth_data = NULL,
-			*vendor_string = NULL,
-			*alt_data = NULL,
-			*alt_tmp,
-			*alt_dst;
-    FSFpeAltPtr		alts;
-    int			nalts;
+    fsConnClientPrefix prefix;
+    fsConnSetup rep;
+    int         setuplength;
+    fsConnSetupAccept conn_accept;
+    int         endian;
+    int         i;
+    int         alt_len;
+    char       *auth_data = NULL,
+               *vendor_string = NULL,
+               *alt_data = NULL,
+               *alt_dst;
+    FSFpeAltPtr alts;
+    int         nalts;
 
-    conn->fs_fd = _fs_connect(conn->servername, 5);
+    conn->fs_fd = _fs_connect(servername, 5);
     if (conn->fs_fd < 0)
 	return FALSE;
+    conn->servername = (char *) xalloc(strlen(servername) + 1);
+    strcpy(conn->servername, servername);
 
     conn->generation = ++generationCount;
 
@@ -226,83 +242,70 @@ _fs_setup_connection (conn, timeout)
 
     alts = 0;
     /* parse alternate list */
-    if (nalts = rep.num_alternates)
-    {
+    if (nalts = rep.num_alternates) {
 	setuplength = rep.alternate_len << 2;
-	alts = (FSFpeAltPtr) xalloc (nalts * sizeof (FSFpeAltRec) +
-					   setuplength);
-	if (!alts)
-	{
-	    close (conn->fs_fd);
+	alts = (FSFpeAltPtr) xalloc(nalts * sizeof(FSFpeAltRec) +
+				    setuplength);
+	if (!alts) {
+	    close(conn->fs_fd);
 	    errno = ENOMEM;
 	    return FALSE;
 	}
 	alt_data = (char *) (alts + nalts);
-	if (_fs_read(conn, (char *) alt_data, setuplength) == -1)
-	{
-	    xfree (alts);
+	if (_fs_read(conn, (char *) alt_data, setuplength) == -1) {
+	    xfree(alts);
 	    return FALSE;
 	}
 	alt_dst = alt_data;
-	for (i = 0; i < nalts; i++)
-	{
+	for (i = 0; i < nalts; i++) {
 	    alts[i].subset = alt_data[0];
 	    alt_len = alt_data[1];
 	    alts[i].name = alt_dst;
-	    bcopy (alt_data + 2, alt_dst, alt_len);
+	    bcopy(alt_data + 2, alt_dst, alt_len);
 	    alt_dst[alt_len] = '\0';
 	    alt_dst += (alt_len + 1);
-	    alt_data += (2 + alt_len + padlength [(2 + alt_len) & 3]);
+	    alt_data += (2 + alt_len + padlength[(2 + alt_len) & 3]);
 	}
     }
     if (conn->alts)
-	xfree (conn->alts);
+	xfree(conn->alts);
     conn->alts = alts;
     conn->numAlts = nalts;
 
     setuplength = rep.auth_len << 2;
     if (setuplength &&
-	    !(auth_data = (char *) xalloc((unsigned int) setuplength))) 
-    {
-	close (conn->fs_fd);
+	    !(auth_data = (char *) xalloc((unsigned int) setuplength))) {
+	close(conn->fs_fd);
 	errno = ENOMEM;
 	return FALSE;
     }
-    if (_fs_read(conn, (char *) auth_data, setuplength) == -1)
-    {
-	xfree (auth_data);
+    if (_fs_read(conn, (char *) auth_data, setuplength) == -1) {
+	xfree(auth_data);
 	return FALSE;
     }
-
-    if (rep.status != AuthSuccess) 
-    {
+    if (rep.status != AuthSuccess) {
 	xfree(auth_data);
-	close (conn->fs_fd);
+	close(conn->fs_fd);
 	errno = EPERM;
 	return FALSE;
     }
     /* get rest */
-    if (_fs_read(conn, (char *) &conn_accept, (long) sizeof(fsConnSetupAccept)) == -1)
-    {
-	xfree (auth_data);
+    if (_fs_read(conn, (char *) &conn_accept, (long) sizeof(fsConnSetupAccept)) == -1) {
+	xfree(auth_data);
 	return FALSE;
     }
-
     if ((vendor_string = (char *)
-	 xalloc((unsigned) conn_accept.vendor_len + 1)) == NULL) 
-    {
-	xfree (auth_data);
-	close (conn->fs_fd);
+	 xalloc((unsigned) conn_accept.vendor_len + 1)) == NULL) {
+	xfree(auth_data);
+	close(conn->fs_fd);
 	errno = ENOMEM;
 	return FALSE;
     }
-    if (_fs_read_pad(conn, (char *) vendor_string, conn_accept.vendor_len) == -1)
-    {
-	xfree (vendor_string);
-	xfree (auth_data);
+    if (_fs_read_pad(conn, (char *) vendor_string, conn_accept.vendor_len) == -1) {
+	xfree(vendor_string);
+	xfree(auth_data);
 	return FALSE;
     }
-
     xfree(auth_data);
     xfree(vendor_string);
 
@@ -310,14 +313,14 @@ _fs_setup_connection (conn, timeout)
 }
 
 static Bool
-_fs_try_alternates (conn, timeout)
-    FSFpePtr	conn;
-    int		timeout;
+_fs_try_alternates(conn, timeout)
+    FSFpePtr    conn;
+    int         timeout;
 {
-    int	    i;
+    int         i;
 
     for (i = 0; i < conn->numAlts; i++)
-	if (_fs_setup_connection (conn, conn->alts[i].name, timeout))
+	if (_fs_setup_connection(conn, conn->alts[i].name, timeout))
 	    return TRUE;
     return FALSE;
 }
@@ -330,24 +333,17 @@ _fs_open_server(servername)
     char       *servername;
 {
     FSFpePtr    conn;
-    int		len;
 
-    len = strlen (servername);
-    conn = (FSFpePtr) xalloc(sizeof(FSFpeRec) + len + 1);
-    if (!conn) 
-    {
+    conn = (FSFpePtr) xalloc(sizeof(FSFpeRec));
+    if (!conn) {
 	errno = ENOMEM;
 	return (FSFpePtr) NULL;
     }
     bzero((char *) conn, sizeof(FSFpeRec));
-    conn->servername = (char *) (conn + 1);
-    strcpy (conn->servername, servername);
-    if (!_fs_setup_connection (conn, FS_OPEN_TIMEOUT))
-    {
-	if (!_fs_try_alternates (conn, FS_OPEN_TIMEOUT))
-	{
-	    xfree (conn->alts);
-	    xfree (conn);
+    if (!_fs_setup_connection(conn, servername, FS_OPEN_TIMEOUT)) {
+	if (!_fs_try_alternates(conn, FS_OPEN_TIMEOUT)) {
+	    xfree(conn->alts);
+	    xfree(conn);
 	    return (FSFpePtr) NULL;
 	}
     }
@@ -356,11 +352,11 @@ _fs_open_server(servername)
 
 Bool
 _fs_reopen_server(conn)
-    FSFpePtr	conn;
+    FSFpePtr    conn;
 {
-    if (_fs_setup_connection (conn, FS_REOPEN_TIMEOUT))
+    if (_fs_setup_connection(conn, conn->servername, FS_REOPEN_TIMEOUT))
 	return TRUE;
-    if (_fs_try_alternates (conn, FS_REOPEN_TIMEOUT))
+    if (_fs_try_alternates(conn, FS_REOPEN_TIMEOUT))
 	return TRUE;
     return FALSE;
 }
@@ -392,17 +388,16 @@ _fs_read(conn, data, size)
 	} else if (ETEST(errno)) {
 	    /* in a perfect world, this shouldn't happen */
 	    /* ... but then, its less than perfect... */
-	    if (_fs_wait_for_readable(conn) == -1)	/* check for error */
-	    {
-		_fs_connection_died (conn);
+	    if (_fs_wait_for_readable(conn) == -1) {	/* check for error */
+		_fs_connection_died(conn);
 		errno = EPIPE;
 		return -1;
 	    }
 	} else if (errno == EINTR) {
 	    continue;
-	} else {	    /* something bad happened */
+	} else {		/* something bad happened */
 	    if (conn->fs_fd > 0)
-		_fs_connection_died (conn);
+		_fs_connection_died(conn);
 	    errno = EPIPE;
 	    return -1;
 	}
@@ -430,7 +425,7 @@ _fs_write(conn, data, size)
 	if (bytes_written > 0) {
 	    size -= bytes_written;
 	    data += bytes_written;
-	} else if (ETEST (errno)) {
+	} else if (ETEST(errno)) {
 	    /* XXX -- we assume this can't happen */
 
 #ifdef DEBUG
@@ -438,8 +433,8 @@ _fs_write(conn, data, size)
 #endif
 	} else if (errno == EINTR) {
 	    continue;
-	} else {	    /* something bad happened */
-	    _fs_connection_died (conn);
+	} else {		/* something bad happened */
+	    _fs_connection_died(conn);
 	    errno = EPIPE;
 	    return -1;
 	}
@@ -554,14 +549,15 @@ int
 _fs_any_bit_set(mask)
     unsigned long *mask;
 {
+
 #ifdef ANYSET
     return ANYSET(mask);
 #else
-    int i;
+    int         i;
 
-    for (i=0; i<MSKCNT; i++)
-      if (mask[i])
-          return (1);
+    for (i = 0; i < MSKCNT; i++)
+	if (mask[i])
+	    return (1);
     return (0);
 #endif
 }
@@ -586,10 +582,11 @@ _fs_drain_bytes(conn, len)
 #endif
 
     while (len > 0) {
-	if (_fs_read(conn, buf, (len < 128) ? len : 128) < 0)
+	if (_fs_read(conn, buf, MIN(len, 128)) < 0)
 	    return -1;
 	len -= 128;
     }
+    return 0;
 }
 
 _fs_drain_bytes_pad(conn, len)
