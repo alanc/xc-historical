@@ -1,4 +1,4 @@
-.TH LNDIR L
+.TH LNDIR 1 "Release 5" "X Version 11"
 .SH NAME
 lndir \- create a shadow directory of symbolic links to another directory tree
 .SH SYNOPSIS
