@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.53 91/03/14 16:47:54 converse Exp $
+ * $XConsortium: Mailbox.c,v 1.54 91/04/04 16:15:44 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -31,19 +31,14 @@
 #include <pwd.h>			/* for getting username */
 
 #ifndef X_NOT_POSIX
+#define _POSIX_SOURCE
 # include <sys/wait.h>
+#undef _POSIX_SOURCE
 # define waitCode(w)	WEXITSTATUS(w)
 # define waitSig(w)	WIFSIGNALED(w)
 typedef int		waitType;
 # define INTWAITTYPE
 #else /* ! X_NOT_POSIX */
-#ifdef SVR4
-# include <sys/wait.h>
-# define waitCode(w)	WEXITSTATUS(w)
-# define waitSig(w)	WIFSIGNALED(w)
-typedef int		waitType;
-# define INTWAITTYPE
-#else /* not SVR4 */
 #ifdef SYSV
 # define waitCode(w)	(((w) >> 8) & 0x7f)
 # define waitSig(w)	((w) & 0xff)
@@ -55,7 +50,6 @@ typedef int		waitType;
 # define waitSig(w)	((w).w_T.w_Termsig)
 typedef union wait	waitType;
 #endif /* SYSV else */
-#endif /* SVR4 else */
 #endif /* ! X_NOT_POSIX else */
 
 #include <X11/bitmaps/mailfull>		/* for flag up (mail present) bits */
