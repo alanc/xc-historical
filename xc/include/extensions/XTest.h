@@ -1,4 +1,4 @@
-/* $XConsortium: XTest.h,v 1.2 92/02/01 15:05:45 rws Exp $ */
+/* $XConsortium: XTest.h,v 1.3 92/03/19 11:28:19 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -19,6 +19,21 @@ without express or implied warranty.
 #define _XTEST_H_
 
 #include <X11/Xfuncproto.h>
+
+#define X_XTestGetVersion	0
+#define X_XTestCompareCursor	1
+#define X_XTestFakeInput	2
+
+#define XTestNumberEvents	0
+
+#define XTestNumberErrors	0
+
+#define XTestMajorVersion	2
+#define XTestMinorVersion	1
+
+#define XTestExtensionName	"XTEST"
+
+#ifndef _XTEST_SERVER_
 
 _XFUNCPROTOBEGIN
 
@@ -105,5 +120,7 @@ Status XTestDiscard(
 );
 
 _XFUNCPROTOEND
+
+#endif /* _XTEST_SERVER_ */
 
 #endif
