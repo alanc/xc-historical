@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: dixstruct.h,v 1.7 87/08/27 12:54:56 susan Exp $ */
+/* $Header: dixstruct.h,v 1.7 87/09/11 07:49:48 toddb Exp $ */
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
 
@@ -57,9 +57,9 @@ typedef struct _Client {
     int clientGone;
     int noClientException;       /* this client died or needs to be killed*/
     DrawablePtr lastDrawable;
-    int lastDrawableID;
+    Drawable lastDrawableID;
     GCPtr lastGC;
-    int lastGCID;    
+    GContext lastGCID;    
     pointer *saveSet;
     int numSaved;
     int requestLog[MAX_REQUEST_LOG];
