@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: fontmisc.h,v 1.1 91/05/11 09:12:03 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -28,8 +28,10 @@
 
 typedef unsigned char	*pointer;
 typedef int		Bool;
+#ifndef X_PROTOCOL
 typedef unsigned long	Atom;
 typedef unsigned long	XID;
+#endif
 
 #ifndef None
 #define None	0l
