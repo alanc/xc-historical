@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Clock.c,v 1.30 88/04/09 14:16:32 rws Exp $";
+static char rcsid[] = "$Header: Clock.c,v 1.31 88/05/18 16:02:04 keith Exp $";
 #endif lint
 
 
@@ -255,12 +255,16 @@ static void Resize (gw)
     ClockWidget w = (ClockWidget) gw;
     /* don't do this computation if window hasn't been realized yet. */
     if (XtIsRealized(gw) && w->clock.analog) {
-        w->clock.radius = (min(w->core.width, w->core.height)-(2 * w->clock.padding)) / 2;
+	/* need signed value since Dimension is unsigned */
+	int radius = ((int) min(w->core.width, w->core.height) - (int) (2 * w->clock.padding)) / 2;
+        w->clock.radius = (Dimension) max (radius, 1);
+
         w->clock.second_hand_length = ((SECOND_HAND_FRACT * w->clock.radius) / 100);
         w->clock.minute_hand_length = ((MINUTE_HAND_FRACT * w->clock.radius) / 100);
         w->clock.hour_hand_length = ((HOUR_HAND_FRACT * w->clock.radius) / 100);
         w->clock.hand_width = ((HAND_WIDTH_FRACT * w->clock.radius) / 100);
         w->clock.second_hand_width = ((SECOND_WIDTH_FRACT * w->clock.radius) / 100);
+
         w->clock.centerX = w->core.width / 2;
         w->clock.centerY = w->core.height / 2;
     }
