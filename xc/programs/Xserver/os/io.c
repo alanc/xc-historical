@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: io.c,v 1.39 88/07/19 19:00:15 toddb Exp $ */
+/* $Header: io.c,v 1.40 88/07/20 13:23:11 toddb Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -114,7 +114,7 @@ ReadRequestFromClient(who, status, oldbuf)
         { YieldControlNoInput();		\
 	  return((char *) NULL ); }
 
-    OsComm oc = (OsComm)who->osPrivate;
+    OsCommPtr oc = (OsCommPtr)who->osPrivate;
     int client = oc->fd;
     int result, gotnow, needed;
     register ConnectionInput *pBuff;
@@ -261,12 +261,8 @@ ReadRequestFromClient(who, status, oldbuf)
      *  can get into the queue.   
      */
 
-    if (++timesThisConnection == MAX_TIMES_PER)
-    {
-	YieldControl();
-    }
-    else if (pBuff->bufcnt + pBuff->buffer
-	     >= pBuff->bufptr + needed + sizeof(xReq)) 
+    timesThisConnection++;
+    if (pBuff->bufcnt + pBuff->buffer >= pBuff->bufptr + needed + sizeof(xReq)) 
     {
 	request = (xReq *)(pBuff->bufptr + needed);
         if ((pBuff->bufcnt + pBuff->buffer) >= 
@@ -277,6 +273,8 @@ ReadRequestFromClient(who, status, oldbuf)
     }
     else
 	YieldControlNoInput();
+    if (timesThisConnection == MAX_TIMES_PER)
+	YieldControl();
 
     return((char *)pBuff->bufptr);
 
@@ -301,7 +299,7 @@ static int padlength[4] = {0, 3, 2, 1};
 static int
 FlushClient(who, oc, extraBuf, extraCount)
     ClientPtr who;
-    OsComm oc;
+    OsCommPtr oc;
     unsigned char *extraBuf;
     int extraCount;
 {
@@ -309,10 +307,11 @@ FlushClient(who, oc, extraBuf, extraCount)
     int connection = oc->fd,
     	total, n, i, notWritten, written,
 	mask[mskcnt],
-	iovCnt = 0;
+	iovCnt = 0,
+	padBytes = 0;
     struct timeval outtime;
     struct iovec iov[3];
-    char pad[3];
+    char padBuffer[3];
     unsigned char *buf = oc->buf;
 
     total = 0;
@@ -329,8 +328,8 @@ FlushClient(who, oc, extraBuf, extraCount)
 	iov[iovCnt++].iov_base = (caddr_t)extraBuf;
 	if (extraCount & 3)
 	{
-	    total += iov[iovCnt].iov_len = padlength[extraCount & 3];
-	    iov[iovCnt++].iov_base = pad;
+	    total += iov[iovCnt].iov_len = padBytes = padlength[extraCount & 3];
+	    iov[iovCnt++].iov_base = padBuffer;
 	}
     }
 
@@ -392,9 +391,10 @@ FlushClient(who, oc, extraBuf, extraCount)
 	{
 	    /* simply add the "extra" buffer to the current buffer */
 	    extraBuf += notWritten;
+	    extraCount -= written - oc->count; /* does not include pad */
 	    oc->count = 0;
 	}
-	if ((n = oc->count + notWritten) > oc->bufsize)
+	if ((n = oc->count + extraCount + padBytes) > oc->bufsize)
 	{
 	    /* allocate at least enough to contain it plus one
 	       OutputBufferSize */
@@ -418,6 +418,11 @@ FlushClient(who, oc, extraBuf, extraCount)
 		return(-1);
 	    }
 	}
+	if (extraCount)
+ 	{
+	    bcopy (extraBuf, oc->buf + oc->count, extraCount);
+	    oc->count += extraCount + padBytes;
+	}
 	return extraCount; /* return only the amount explicitly requested */
     }
 
@@ -426,7 +431,7 @@ FlushClient(who, oc, extraBuf, extraCount)
     if (oc->bufsize > OutputBufferSize)
     {
 	oc->bufsize = OutputBufferSize;
-	oc->buf = (unsigned char *)Xalloc(OutputBufferSize);
+	oc->buf = (unsigned char *)Xrealloc(oc->buf, OutputBufferSize);
 	if (oc->buf == NULL) /* nearly impossible */
 	    goto outOfMem;
     }
@@ -447,7 +452,7 @@ void
 FlushAllOutput()
 {
     register int index, base, mask;
-    OsComm oc;
+    OsCommPtr oc;
     register ClientPtr client;
 
     if (! NewOutputPending)
@@ -473,7 +478,7 @@ FlushAllOutput()
 		continue;
 	    if (client->clientGone)
 		continue;
-	    oc = (OsComm)client->osPrivate;
+	    oc = (OsCommPtr)client->osPrivate;
 	    if (GETBIT(ClientsWithInput, client->index))
 	    {
 		BITSET(OutputPending, oc->fd); /* set the bit again */
@@ -516,8 +521,8 @@ WriteToClient (who, count, buf)
     char *buf;
     int count;
 {
-    OsComm oc = (OsComm)who->osPrivate;
-    int padthis;
+    OsCommPtr oc = (OsCommPtr)who->osPrivate;
+    int padBytes;
 
     if (oc->fd == -1) 
     {
@@ -533,9 +538,9 @@ WriteToClient (who, count, buf)
 	return(-1);
     }
 
-    padthis =  padlength[count & 3];
+    padBytes =  padlength[count & 3];
 
-    if (oc->count + count > oc->bufsize)
+    if (oc->count + count + padBytes > oc->bufsize)
     {
 	BITCLEAR(OutputPending, oc->fd);
 	CriticalOutputPending = FALSE;
@@ -546,7 +551,7 @@ WriteToClient (who, count, buf)
     NewOutputPending = TRUE;
     BITSET(OutputPending, oc->fd);
     bcopy(buf, oc->buf + oc->count, count);
-    oc->count += count + padthis;
+    oc->count += count + padBytes;
     
     return(count);
 }

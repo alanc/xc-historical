@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.73 88/07/20 13:24:26 xguest Locked $ */
+/* $Header: connection.c,v 1.74 88/07/20 13:52:20 xguest Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -543,12 +543,12 @@ ErrorF("Didn't make connection: Out of file descriptors for connections\n");
 			next = NextAvailableClient();
 			if (next != (ClientPtr)NULL)
 			{
-			   OsComm priv;
+			   OsCommPtr priv;
 
 			   newclients[(*nnew)++] = next;
 			   next->swapped = swapped;
 			   ConnectionTranslation[newconn] = next;
-			   priv =  (OsComm)Xalloc(sizeof(OsCommRec));
+			   priv =  (OsCommPtr)Xalloc(sizeof(OsCommRec));
 			   priv->fd = newconn;
 			   priv->buf = (unsigned char *)
 					Xalloc(OutputBufferSize);
@@ -686,7 +686,7 @@ CheckConnections()
 CloseDownConnection(client)
     ClientPtr client;
 {
-    OsComm oc = (OsComm)client->osPrivate;
+    OsCommPtr oc = (OsCommPtr)client->osPrivate;
 
     ConnectionTranslation[oc->fd] = (ClientPtr)NULL;
     CloseDownFileDescriptor(oc->fd);
@@ -724,7 +724,7 @@ RemoveEnabledDevice(fd)
 OnlyListenToOneClient(client)
     ClientPtr client;
 {
-    OsComm oc = (OsComm)client->osPrivate;
+    OsCommPtr oc = (OsCommPtr)client->osPrivate;
     int connection = oc->fd;
 
     if (! GrabDone)

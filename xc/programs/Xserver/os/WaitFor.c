@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: WaitFor.c,v 1.27 88/05/21 13:35:26 rws Exp $ */
+/* $Header: WaitFor.c,v 1.28 88/07/19 18:06:00 toddb Exp $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -87,6 +87,22 @@ int isItTimeToYield = 1;
  *****************/
 
 static int timeTilFrob = 0;	/* while screen saving */
+
+#if (mskcnt>4)
+/*
+ * This is a macro if mskcnt <= 4
+ */
+ANYSET(src)
+    long	*src;
+{
+    int i;
+
+    for (i=0; i<mskcnt; i++)
+	if (src[ i ])
+	    return (TRUE);
+    return (FALSE);
+}
+#endif
 
 WaitForSomething(pClientsReady, nready, pNewClients, nnew)
     ClientPtr *pClientsReady;

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: osdep.h,v 1.9 87/11/09 13:58:54 rws Exp $ */
+/* $Header: osdep.h,v 1.10 88/07/19 18:06:49 toddb Exp $ */
 
 #ifndef NULL
 #define NULL 0
@@ -127,7 +127,11 @@ SOFTWARE.
 		      { int cri;			\
 		      for (cri=0; cri<mskcnt; cri++)	\
 		          dst[cri] &= ~b1[cri];  }
-#define ANYSET(src) (src[0] || src[1] || src[2] || src[3] || src[4])
+/*
+ * If mskcnt>4, then ANYSET is a routine defined in WaitFor.c.
+ *
+ * #define ANYSET(src) (src[0] || src[1] || src[2] || src[3] || src[4] ...)
+ */
 #endif
 
 typedef struct _connectionInput {
@@ -144,7 +148,7 @@ typedef struct _osComm {
     unsigned char *buf;
     int bufsize;
     int count;
-} OsCommRec, *OsComm;
+} OsCommRec, *OsCommPtr;
 
 void FlushAllOutput();
 void FlushIfCriticalOutputPending();
