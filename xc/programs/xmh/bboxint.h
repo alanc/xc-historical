@@ -1,4 +1,4 @@
-/* $XConsortium: bboxint.h,v 2.7 89/06/28 17:00:58 converse Exp $ 
+/* $XConsortium: bboxint.h,v 2.8 89/07/07 18:04:28 converse Exp $ 
  *
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -34,8 +34,6 @@ typedef struct _ButtonRec {
     ButtonBox	buttonbox;	/* Button box containing this button. */
     char	*name;		/* Name of the button. */
     char	*menu_name;	/* Name of the menu, for folder buttons only */
-    void	(*func)();	/* Function to be called when this 
-				   button is pressed. (command buttons only) */
 } ButtonRec;
 
 typedef struct _XmhButtonBoxRec {

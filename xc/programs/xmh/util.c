@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: util.c,v 2.25 89/06/30 15:45:57 swick Exp $";
+    "$XConsortium: util.c,v 2.26 89/07/11 16:18:36 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -13,18 +13,18 @@ static char rcs_id[] =
  * DIGITAL MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THIS SOFTWARE FOR
  * ANY PURPOSE.  IT IS SUPPLIED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY.
  *
- * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT RIGHTS,
- * APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN ADDITION TO THAT
- * SET FORTH ABOVE.
+ * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
+ * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
+ * ADDITION TO THAT SET FORTH ABOVE.
  *
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
  * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting documentation,
- * and that the name of Digital Equipment Corporation not be used in advertising
- * or publicity pertaining to distribution of the software without specific,
- * written prior permission.
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Digital Equipment Corporation not be
+ * used in advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.
  */
 
 /* util.c -- little miscellaneous utilities. */
@@ -33,6 +33,8 @@ static char rcs_id[] =
 #include <sys/stat.h>
 #include <errno.h>
 #include <ctype.h>
+
+#define abs(x)		((x) < 0 ? (-(x)) : (x))
 
 char *SysErrorMsg (n)
     int n;
@@ -257,7 +259,7 @@ RenameAndCheck(from, to)
 }
 
 
-char *MallocACopy(str)
+char *MallocACopy(str)	/* made OBSOLETE by XtNewString */
   char *str;
 {
     return strcpy(XtMalloc((unsigned) strlen(str)+1),str);
@@ -322,6 +324,46 @@ char *file;
     return buf.st_size;
 }
 
+
+
+Boolean	IsSubFolder(foldername)
+    char	*foldername;
+{
+    return (index(foldername, '/')) ? True : False;
+}
+
+
+char	*MakeParentFolderName(foldername)
+    char	*foldername;
+{
+    char	temp[500];
+    char	*c;
+
+    c = index(strcpy(temp, foldername), '/');
+    *c = '\0';
+    return XtNewString(temp);
+}
+
+
+char	*MakeSubFolderName(foldername)
+    char	*foldername;
+{
+    char	temp[500];
+    char	*c;
+
+    c = index(strcpy(temp, foldername), '/');
+    c++;
+    return XtNewString(c);
+}
+
+
+void SetCurrentFolderName(scrn, foldername)
+    Scrn	scrn;
+    char	*foldername;
+{
+    scrn->curfolder = foldername;
+    ChangeLabel((Widget) scrn->folderlabel, foldername);
+}
 
 
 ChangeLabel(widget, str)
@@ -422,11 +464,11 @@ Toc SelectedToc(scrn)
 Scrn scrn;
 {
     Toc	toc;
-    char	*foldername = GetCurrentFolderName(scrn);
 
     /* tocs of subfolders are created upon the first reference */
-    if ((toc = TocGetNamed(foldername)) == NULL) 
-        toc = TocCreate(foldername);
+
+    if ((toc = TocGetNamed(scrn->curfolder)) == NULL) 
+        toc = TocCreate(scrn->curfolder);
     return toc;
 }
 

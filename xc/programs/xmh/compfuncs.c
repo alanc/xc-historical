@@ -35,6 +35,24 @@ static char rcs_id[] =
    template. */
 
 /*ARGSUSED*/
+void DoCompReset(widget, client_data, call_data)
+    Widget	widget;		/* unused */
+    caddr_t	client_data;
+    caddr_t	call_data;	/* unused */
+{
+    Scrn	scrn = (Scrn) client_data;
+    Msg		msg;
+
+    if (MsgSetScrn((Msg) NULL, scrn, DoCompReset, (caddr_t) scrn) ==
+	NEEDS_CONFIRMATION) return;
+    msg = TocMakeNewMsg(DraftsFolder);
+    MsgLoadComposition(msg);
+    MsgSetTemporary(msg);
+    MsgSetReapable(msg);
+    (void) MsgSetScrn(msg, scrn, (XtCallbackProc) NULL, (caddr_t) NULL);
+}
+
+/*ARGSUSED*/
 void CompReset(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
@@ -42,14 +60,7 @@ void CompReset(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    Msg msg;
-    if (MsgSetScrn((Msg) NULL, scrn))
-	return;
-    msg = TocMakeNewMsg(DraftsFolder);
-    MsgLoadComposition(msg);
-    MsgSetTemporary(msg);
-    MsgSetReapable(msg);
-    (void) MsgSetScrn(msg, scrn);
+    DoCompReset(w, (caddr_t) scrn, (caddr_t) NULL);
 }
 
 
@@ -102,6 +113,6 @@ CreateForward(mlist)
     msg = TocMakeNewMsg(DraftsFolder);
     MsgLoadForward(scrn, msg, mlist);
     MsgSetTemporary(msg);
-    (void) MsgSetScrn(msg, scrn);
+    MsgSetScrnForComp(msg, scrn);
     MapScrn(scrn);
 }

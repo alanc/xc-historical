@@ -13,18 +13,18 @@ static char rcs_id[] =
  * DIGITAL MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THIS SOFTWARE FOR
  * ANY PURPOSE.  IT IS SUPPLIED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY.
  *
- * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT RIGHTS,
- * APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN ADDITION TO THAT
- * SET FORTH ABOVE.
+ * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
+ * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
+ * ADDITION TO THAT SET FORTH ABOVE.
  *
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
  * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting documentation,
- * and that the name of Digital Equipment Corporation not be used in advertising
- * or publicity pertaining to distribution of the software without specific,
- * written prior permission.
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Digital Equipment Corporation not be
+ * used in advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.
  */
 
 /* toc.c -- handle things in the toc widget. */
@@ -91,7 +91,7 @@ static void LoadCheckFiles()
 	    if (*ptr2 == 0) continue;
 	    for (i=0 ; i<numFolders ; i++) {
 		if (strcmp(ptr, folderList[i]->foldername) == 0) {
-		    folderList[i]->incfile = MallocACopy(ptr2);
+		    folderList[i]->incfile = XtNewString(ptr2);
 		    break;
 		}
 	    }
@@ -111,7 +111,7 @@ static void LoadCheckFiles()
 	    }
 	}
 	if (ptr)
-	    InitialFolder->incfile = MallocACopy(ptr);
+	    InitialFolder->incfile = XtNewString(ptr);
     }
 }
 	    
@@ -129,16 +129,19 @@ void TocInit()
     numFolders = scandir(app_resources.mailDir, &namelist, IsDir, alphasort);
     if (numFolders < 0) {
 	(void) mkdir(app_resources.mailDir, 0700);
-	numFolders = scandir(app_resources.mailDir, &namelist, IsDir, alphasort);
+	numFolders = scandir(app_resources.mailDir, &namelist, IsDir,
+			     alphasort);
 	if (numFolders < 0)
 	    Punt("Can't create or read mail directory!");
     }
-    MakeSureFolderExists(&namelist, &numFolders, app_resources.initialFolderName);
-    MakeSureFolderExists(&namelist, &numFolders, app_resources.draftsFolderName);
-    folderList = (Toc *) XtMalloc((unsigned) numFolders * sizeof(Toc));
+    MakeSureFolderExists(&namelist, &numFolders,
+			 app_resources.initialFolderName);
+    MakeSureFolderExists(&namelist, &numFolders,
+			 app_resources.draftsFolderName);
+    folderList = (Toc *) XtMalloc((Cardinal)numFolders * sizeof(Toc));
     for (i=0 ; i<numFolders ; i++) {
 	toc = folderList[i] = TUMalloc();
-	toc->foldername = MallocACopy(namelist[i]->d_name);
+	toc->foldername = XtNewString(namelist[i]->d_name);
 	XtFree((char *)namelist[i]);
     }
     InitialFolder = TocGetNamed(app_resources.initialFolderName);
@@ -157,7 +160,7 @@ Toc TocCreate(foldername)
     register int i, j;
     Toc		toc = TUMalloc();
 
-    toc->foldername = MallocACopy(foldername);
+    toc->foldername = XtNewString(foldername);
     for (i=0; i < numFolders; i++)
 	if (strcmp(foldername, folderList[i]->foldername) < 0) break;
     folderList = (Toc *) XtRealloc((char *) folderList,
@@ -223,6 +226,41 @@ void TocCheckForNewMail()
 }
 
 
+/* Intended to support mutual exclusion on deleting folders, so that you
+ * cannot have two confirm popups at the same time on the same folder.
+ *
+ * You can have confirm popups on different folders simultaneously.
+ * However, I did not protect the user from popping up a delete confirm
+ * popup on folder A, then popping up a delete confirm popup on folder
+ * A/subA, then deleting A, then deleting A/subA -- which of course is 
+ * already gone, and will cause xmh to Punt.
+ *
+ * TocClearDeletePending is a callback from the No confirmation button
+ * of the confirm popup.
+ */
+
+Boolean TocTestAndSetDeletePending(toc)
+    Toc	toc;
+{
+    Boolean flag;
+
+    flag = toc->delete_pending;
+    toc->delete_pending = True;
+    return flag;
+}
+
+/*ARGSUSED*/
+void TocClearDeletePending(widget, client_data, call_data)
+    Widget	widget;		/* unused */
+    caddr_t	client_data;
+    caddr_t	call_data;	/* unused */
+{
+    Toc	toc = (Toc) client_data;
+    toc->delete_pending = False;
+}
+
+
+
 /* Recursively delete an entire directory.  Nasty. */
 
 static void NukeDirectory(path)
@@ -244,7 +282,7 @@ Toc toc;
     int i, j, w;
     if (toc == NULL) return;
     TUGetFullFolderInfo(toc);
-    if (TocConfirmCataclysm(toc)) return;
+    if (TocConfirmCataclysm(toc, (XtCallbackProc)NULL, (caddr_t)NULL)) return;
     TocSetScrn(toc, (Scrn) NULL);
     w = -1;
     for (i=0 ; i<numFolders ; i++) {
@@ -652,7 +690,7 @@ Toc toc;
 char *TocMakeFolderName(toc)
 Toc toc;
 {
-    char* name = XtMalloc( strlen(toc->path) + 2 );
+    char* name = XtMalloc((Cardinal) (strlen(toc->path) + 2) );
     (void)sprintf( name, "+%s", toc->path );
     return name;
 }
@@ -681,6 +719,8 @@ char *name;
 /* Throw out all changes to this toc, and close all views of msgs in it.
    Requires confirmation by the user. */
 
+
+#ifdef OBSOLETE_CODE	/* %%% dmc */
 int TocConfirmCataclysm(toc)
 Toc toc;
 {
@@ -697,20 +737,89 @@ Toc toc;
 	if (!Confirm(toc->scrn[0], str))
 	    return DELETEABORTED;
     }
+
     for (i=0 ; i<toc->nummsgs ; i++)
 	MsgSetFate(toc->msgs[i], Fignore, (Toc)NULL);
     for (i=0 ; i<toc->nummsgs ; i++)
 	if (MsgSetScrn(toc->msgs[i], (Scrn) NULL)) return DELETEABORTED;
+
     return 0;
 }
+#endif
 
+
+/*ARGSUSED*/
+static void TocCataclysmOkay(widget, client_data, call_data)
+    Widget	widget;		/* unused */
+    caddr_t	client_data;
+    caddr_t	call_data;	/* unused */
+{
+    Toc			toc = (Toc) client_data;
+    register int	i;
+
+    for (i=0; i < toc->nummsgs; i++)
+	MsgSetFate(toc->msgs[i], Fignore, (Toc)NULL);
+#ifdef OBSOLETE_CODE	/* %%% dmc */
+    /* doesn't make sense to have this here. */
+    for (i=0; i < toc->nummsgs; i++)
+	MsgSetScrn(toc->msgs[i], (Scrn)NULL, (XtCallbackProc)NULL, 
+		   (caddr_t) NULL);
+#endif
+}
+	
+TocConfirmCataclysm(toc, callback, client_data)
+    Toc			toc;
+    XtCallbackProc	callback;
+    caddr_t		client_data;
+{	
+    register int	i;
+    int			found = False;
+    static XtCallbackRec yes_callbacks[] = {
+	{TocCataclysmOkay,	(caddr_t)NULL},
+	{(XtCallbackProc)NULL,	(caddr_t)NULL},
+	{(XtCallbackProc)NULL,	(caddr_t)NULL}
+    };
+
+    if (toc == NULL) 
+	return NULL;
+
+    for (i=0 ; i<toc->nummsgs && !found ; i++)
+	if (toc->msgs[i]->fate != Fignore) found = True;
+
+    if (found) {
+	char		str[300];
+	(void)sprintf(str,"Are you sure you want to remove all changes to %s?",
+		      toc->foldername);
+	yes_callbacks[0].closure = (caddr_t) toc;
+	yes_callbacks[1].callback = callback;
+	yes_callbacks[1].closure = client_data;
+	PopupConfirm(str, yes_callbacks, (XtCallbackList)NULL);
+	return NEEDS_CONFIRMATION;
+    }
+    else {
+#ifdef OBSOLETE_CODE	/* %%% dmc */
+	for (i=0 ; i<toc->nummsgs ; i++)
+	    MsgSetFate(toc->msgs[i], Fignore, (Toc)NULL);
+#endif 
+	for (i=0 ; i<toc->nummsgs ; i++)
+	    if (MsgSetScrn(toc->msgs[i], (Scrn) NULL, callback, client_data))
+		return NEEDS_CONFIRMATION;
+	return 0;
+    }
+}
+    
+    
 
 
 /* Commit all the changes in this toc; all messages will meet their 'fate'. */
 
-void TocCommitChanges(toc)
-Toc toc;
+/*ARGSUSED*/
+void TocCommitChanges(widget, client_data, call_data)
+    Widget	widget;		/* unused */
+    caddr_t	client_data;	
+    caddr_t	call_data;	/* unused */
 {
+    Toc toc = (Toc) client_data;
     Msg msg;
     int i, cur;
     char str[100], **argv;
@@ -723,7 +832,8 @@ Toc toc;
 	msg = toc->msgs[i];
 	fate = MsgGetFate(msg, (Toc *)NULL);
 	if (fate != Fignore && fate != Fcopy)
-	    if (MsgSetScrn(msg, (Scrn) NULL))
+	    if (MsgSetScrn(msg, (Scrn) NULL, TocCommitChanges, (caddr_t) toc)
+		== NEEDS_CONFIRMATION)
 	        return;
     }
     XFlush(XtDisplay(toc->scrn[0]->parent));
@@ -741,14 +851,14 @@ Toc toc;
 		argv = MakeArgv(2);
 		switch (curfate) {
 		  case Fdelete:
-		    argv[0] = MallocACopy("rmm");
+		    argv[0] = XtNewString("rmm");
 		    argv[1] = TocMakeFolderName(toc);
 		    cur = 2;
 		    curdesttoc = NULL;
 		    break;
 		  case Fmove:
 		  case Fcopy:
-		    argv[0] = MallocACopy("refile");
+		    argv[0] = XtNewString("refile");
 		    cur = 1;
 		    curdesttoc = desttoc;
 		    break;
@@ -758,7 +868,7 @@ Toc toc;
 		  curfate == fate && desttoc == curdesttoc) {
 		argv = ResizeArgv(argv, cur + 1);
 		(void) sprintf(str, "%d", MsgGetId(msg));
-		argv[cur++] = MallocACopy(str);
+		argv[cur++] = XtNewString(str);
 		MsgSetFate(msg, Fignore, (Toc)NULL);
 		if (curdesttoc) {
 		    (void) TUAppendToc(curdesttoc, MsgGetScanLine(msg));
@@ -779,9 +889,9 @@ Toc toc;
 	      case Fmove:
 	      case Fcopy:
 		argv = ResizeArgv(argv, cur + 4);
-		argv[cur++] = MallocACopy(curfate == Fmove ? "-nolink"
+		argv[cur++] = XtNewString(curfate == Fmove ? "-nolink"
 				       			   : "-link");
-		argv[cur++] = MallocACopy("-src");
+		argv[cur++] = XtNewString("-src");
 		argv[cur++] = TocMakeFolderName(toc);
 		argv[cur++] = TocMakeFolderName(curdesttoc);
 		break;
@@ -936,7 +1046,7 @@ int msgid;
     if (toc->msgs[h]->msgid == msgid) return toc->msgs[h];
     if (app_resources.debug) {
 	char str[100];
-	(void)sprintf(str,
+	(void) sprintf(str,
 		      "TocMsgFromId search failed! hi=%d, lo=%d, msgid=%d\n",
 		      h, l, msgid);
 	DEBUG( str );

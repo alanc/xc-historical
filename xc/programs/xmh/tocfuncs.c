@@ -13,18 +13,18 @@ static char rcs_id[] =
  * DIGITAL MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THIS SOFTWARE FOR
  * ANY PURPOSE.  IT IS SUPPLIED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY.
  *
- * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT RIGHTS,
- * APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN ADDITION TO THAT
- * SET FORTH ABOVE.
+ * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
+ * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
+ * ADDITION TO THAT SET FORTH ABOVE.
  *
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
  * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting documentation,
- * and that the name of Digital Equipment Corporation not be used in advertising
- * or publicity pertaining to distribution of the software without specific,
- * written prior permission.
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Digital Equipment Corporation not be
+ * used in advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.
  */
 
 /* tocfuncs.c -- action procedures concerning things in the toc widget. */
@@ -34,13 +34,12 @@ static char rcs_id[] =
 #define MAX_SYSTEM_LEN 510
 
 /*ARGSUSED*/
-void NextView(w, event, params, num_params)
-    Widget	w;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+void DoNextView(widget, client_data, call_data)
+    Widget	widget;		/* unused */
+    caddr_t	client_data;
+    caddr_t	call_data;	/* unused */
 {
-    Scrn scrn = ScrnFromWidget(w);
+    Scrn scrn = (Scrn) client_data;
     Toc toc = scrn->toc;
     MsgList mlist;
     FateType fate;
@@ -61,7 +60,8 @@ void NextView(w, event, params, num_params)
 	}
     }
     if (msg) {
-	if (!MsgSetScrn(msg, scrn)) {
+	if (MsgSetScrn(msg, scrn, DoNextView, (caddr_t) scrn)
+	    != NEEDS_CONFIRMATION) {
 	    TocUnsetSelection(toc);
 	    TocSetCurMsg(toc, msg);
 	}
@@ -69,15 +69,25 @@ void NextView(w, event, params, num_params)
     FreeMsgList(mlist);
 }
 
-
 /*ARGSUSED*/
-void PrevView(w, event, params, num_params)
+void NextView(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
+    DoNextView(w, (caddr_t) scrn, (caddr_t) NULL);
+}
+
+
+/*ARGSUSED*/
+void DoPrevView(widget, client_data, call_data)
+    Widget	widget;		/* unused */
+    caddr_t	client_data;	
+    caddr_t	call_data;	/* unused */
+{
+    Scrn scrn = (Scrn) client_data;
     Toc toc = scrn->toc;
     MsgList mlist;
     FateType fate;
@@ -98,7 +108,8 @@ void PrevView(w, event, params, num_params)
 	}
     }
     if (msg) {
-	if (!MsgSetScrn(msg, scrn)) {
+	if (MsgSetScrn(msg, scrn, DoPrevView, (caddr_t) scrn) 
+	    != NEEDS_CONFIRMATION) {
 	    TocUnsetSelection(toc);
 	    TocSetCurMsg(toc, msg);
 	}
@@ -106,6 +117,17 @@ void PrevView(w, event, params, num_params)
     FreeMsgList(mlist);
 }
 
+
+/*ARGSUSED*/
+void PrevView(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
+{
+    Scrn scrn = ScrnFromWidget(w);
+    DoPrevView(w, (caddr_t) scrn, (caddr_t) NULL);
+}
 
 /*ARGSUSED*/
 void ViewNew(w, event, params, num_params)
@@ -122,7 +144,8 @@ void ViewNew(w, event, params, num_params)
     mlist = CurMsgListOrCurMsg(toc);
     if (mlist->nummsgs) {
 	vscrn = NewViewScrn();
-	(void) MsgSetScrn(mlist->msglist[0], vscrn);
+	(void) MsgSetScrn(mlist->msglist[0], vscrn, (XtCallbackProc) NULL,
+			  (caddr_t) NULL);
 	MapScrn(vscrn);
     }
     FreeMsgList(mlist);
@@ -169,7 +192,7 @@ void TocUseAsComposition(w, event, params, num_params)
 	    MsgLoadCopy(msg, mlist->msglist[0]);
 	    MsgSetTemporary(msg);
 	}
-	(void)MsgSetScrnForComp(msg, vscrn);
+	MsgSetScrnForComp(msg, vscrn);
 	MapScrn(vscrn);
     }
     FreeMsgList(mlist);
@@ -271,8 +294,7 @@ void CommitChanges(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    if (scrn->toc == NULL) return;
-    TocCommitChanges(scrn->toc);
+    TocCommitChanges(w, (caddr_t) scrn->toc, (caddr_t) NULL);
 }
 
 
@@ -315,6 +337,32 @@ void PrintMessages(w, event, params, num_params)
 
 
 /*ARGSUSED*/
+void DoPack(widget, client_data, call_data)
+    Widget	widget;
+    caddr_t	client_data;
+    caddr_t	call_data;	/* unused */
+{
+    Scrn	scrn = (Scrn) client_data;
+    Toc		toc = scrn->toc;
+    char	**argv;
+    
+    if (toc == NULL) return;
+
+    if (TocConfirmCataclysm(toc, (XtCallbackProc)DoPack, (caddr_t)scrn))
+	return;
+    argv = MakeArgv(4);
+    argv[0] = "folder";
+    argv[1] = TocMakeFolderName(toc);
+    argv[2] = "-pack";
+    argv[3] = "-fast";
+    DoCommand(argv, (char *) NULL, (char *) NULL);
+    XtFree(argv[1]);
+    XtFree((char *) argv);
+    TocForceRescan(toc);
+}
+
+
+/*ARGSUSED*/
 void Pack(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
@@ -322,15 +370,26 @@ void Pack(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
+    DoPack(w, (caddr_t)scrn, (caddr_t)NULL);
+}
+
+
+/*ARGSUSED*/
+void DoSort(widget, client_data, call_data)
+    Widget	widget;
+    caddr_t	client_data;
+    caddr_t	call_data;
+{
+    Scrn scrn = (Scrn) client_data;
     Toc toc = scrn->toc;
     char **argv;
     if (toc == NULL) return;
-    if (TocConfirmCataclysm(toc)) return;
-    argv = MakeArgv(4);
-    argv[0] = "folder";
+    if (TocConfirmCataclysm(toc, (XtCallbackProc)DoSort, client_data))
+	return;
+    argv = MakeArgv(3);
+    argv[0] = "sortm";
     argv[1] = TocMakeFolderName(toc);
-    argv[2] = "-pack";
-    argv[3] = "-fast";
+    argv[2] = "-noverbose";
     DoCommand(argv, (char *) NULL, (char *) NULL);
     XtFree(argv[1]);
     XtFree((char *) argv);
@@ -346,20 +405,8 @@ void Sort(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    Toc toc = scrn->toc;
-    char **argv;
-    if (toc == NULL) return;
-    if (TocConfirmCataclysm(toc)) return;
-    argv = MakeArgv(3);
-    argv[0] = "sortm";
-    argv[1] = TocMakeFolderName(toc);
-    argv[2] = "-noverbose";
-    DoCommand(argv, (char *) NULL, (char *) NULL);
-    XtFree(argv[1]);
-    XtFree((char *) argv);
-    TocForceRescan(toc);
+    DoSort(w, (caddr_t)scrn, (caddr_t)NULL);
 }
-
 
 
 /*ARGSUSED*/
@@ -413,7 +460,7 @@ void TocReply(w, event, params, num_params)
 	msg = TocMakeNewMsg(DraftsFolder);
 	MsgSetTemporary(msg);
 	MsgLoadReply(msg, mlist->msglist[0]);
-	(void)MsgSetScrnForComp(msg, nscrn);
+	MsgSetScrnForComp(msg, nscrn);
 	MapScrn(nscrn);
     }
     FreeMsgList(mlist);
@@ -441,8 +488,8 @@ void PickMessages(w, event, params, num_params)
     DEBUG("Realizing Pick...")
     XtRealizeWidget(nscrn->parent);
     DEBUG(" done.\n")
-    XDefineCursor( theDisplay, XtWindow(nscrn->parent),
-		   app_resources.cursor );
+    XDefineCursor(XtDisplay(nscrn->parent), XtWindow(nscrn->parent),
+		  app_resources.cursor );
     MapScrn(nscrn);
 }
 
@@ -510,11 +557,11 @@ TwiddleOperation op;
     }
     for (i = 0; i < mlist->nummsgs; i++) {
 	(void) sprintf(str, "%d", MsgGetId(mlist->msglist[i]));
-	argv[6 + i] = MallocACopy(str);
+	argv[6 + i] = XtNewString(str);
     }
     DoCommand(argv, (char *) NULL, (char *) NULL);
     for (i = 0; i < mlist->nummsgs; i++)
-        free((char *) argv[6 + i]);
+        XtFree((char *) argv[6 + i]);
     XtFree(argv[1]);
     XtFree((char *) argv);
     FreeMsgList(mlist);

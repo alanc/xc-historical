@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: screen.c,v 2.39 89/07/11 16:17:27 converse Exp $";
+    "$XConsortium: screen.c,v 2.40 89/07/12 16:23:47 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -117,7 +117,8 @@ Scrn scrn;
 		    MsgSetCallOnChange(scrn->msg, EnableCallback,
 				       (caddr_t) scrn);
 		else 
-		    MsgSetCallOnChange(scrn->msg, NULL, (caddr_t) NULL);
+		    MsgSetCallOnChange(scrn->msg, (XtCallbackProc) NULL,
+				       (caddr_t) NULL);
 
 	    } else {
 		SetButton(scrn->viewbuttons, "send", FALSE);
@@ -334,8 +335,8 @@ ScrnKind kind;
 	XtRealizeWidget(scrn->parent);
 	DEBUG(" done.\n")
 	XtSetKeyboardFocus( scrn->parent, scrn->viewwidget );
-	XDefineCursor( theDisplay, XtWindow(scrn->parent),
-		       app_resources.cursor );
+	XDefineCursor(XtDisplay(scrn->parent), XtWindow(scrn->parent),
+		      app_resources.cursor );
     }
     scrn->mapped = (numScrns == 1);
     return scrn;
@@ -368,7 +369,6 @@ void DestroyScrn(scrn)
   Scrn scrn;
 {
     XtPopdown(scrn->parent);
-    DestroyConfirmWidget();
     TocSetScrn((Toc) NULL, scrn);
     MsgSetScrnForce((Msg) NULL, scrn);
     scrn->mapped = FALSE;

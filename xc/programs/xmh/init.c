@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: init.c,v 2.27 89/07/09 16:21:40 converse Exp $";
+    "$XConsortium: init.c,v 2.28 89/07/12 16:23:43 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -257,9 +257,8 @@ char **argv;
     XtSetValues(toplevel, shell_args, XtNumber(shell_args));
 
     theDisplay = XtDisplay(toplevel);
-    theScreen = DefaultScreen(theDisplay);
 
-    homeDir = MallocACopy(getenv("HOME"));
+    homeDir = XtNewString(getenv("HOME"));
 
     XtGetApplicationResources( toplevel, (caddr_t)&app_resources,
 			       resources, XtNumber(resources),
@@ -293,12 +292,12 @@ char **argv;
 	(void) sprintf(str2, "%s/%s", homeDir, str);
 
     (void) sprintf(str, "%s/draft", str2);
-    draftFile = MallocACopy(str);
+    draftFile = XtNewString(str);
     (void) sprintf(str, "%s/xmhdraft", str2);
-    xmhDraftFile = MallocACopy(str);
+    xmhDraftFile = XtNewString(str);
 
     if (app_resources.mailDir == NULL)
-	app_resources.mailDir = MallocACopy(str2);
+	app_resources.mailDir = XtNewString(str2);
 
     NullSource = CreateFileSource(toplevel, "/dev/null", FALSE);
 
@@ -306,8 +305,8 @@ char **argv;
     if (l > 0 && app_resources.defMhPath[l] == '/')
 	app_resources.defMhPath[l] = 0;
 
-    rootwidth = DisplayWidth(theDisplay, theScreen);
-    rootheight = DisplayHeight(theDisplay, theScreen);
+    rootwidth = DisplayWidth(theDisplay, DefaultScreen(theDisplay));
+    rootheight = DisplayHeight(theDisplay, DefaultScreen(theDisplay));
 
     app_resources.defTocGeometry =
 	FixUpGeometry(app_resources.defTocGeometry,
@@ -324,7 +323,6 @@ char **argv;
 
     numScrns = 0;
     scrnList = (Scrn *) XtMalloc((unsigned) 1);
-    LastButtonPressed = NULL;
     NoMenuForButton = (Widget) &static_variable;
 
     TocInit();

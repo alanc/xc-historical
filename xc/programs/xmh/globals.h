@@ -13,18 +13,18 @@
  * DIGITAL MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THIS SOFTWARE FOR
  * ANY PURPOSE.  IT IS SUPPLIED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY.
  *
- * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT RIGHTS,
- * APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN ADDITION TO THAT
- * SET FORTH ABOVE.
+ * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
+ * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
+ * ADDITION TO THAT SET FORTH ABOVE.
  *
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
  * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting documentation,
- * and that the name of Digital Equipment Corporation not be used in advertising
- * or publicity pertaining to distribution of the software without specific,
- * written prior permission.
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Digital Equipment Corporation not be
+ * used in advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.
  */
 
 #ifdef MAIN
@@ -35,12 +35,9 @@
 ext int *dptr;
 
 ext Display	*theDisplay;	/* Display variable. */
-ext int		theScreen;	/* Which screen we're using. */
 ext Widget	toplevel;	/* The top level widget (A hack %%%). */
-
 ext char	*progName;	/* Program name. */
 ext char	*homeDir;	/* User's home directory. */
-ext char	*displayName;	/* Name of the X display. */
 
 ext struct _resources {
     Boolean	debug;
@@ -84,8 +81,6 @@ ext Toc		DraftsFolder;	/* Toc containing drafts. */
 
 ext Scrn	*scrnList;	/* Array of scrns in use. */
 ext int		numScrns;	/* Number of scrns in above array. */
-
-ext Button	LastButtonPressed;
 
 ext Widget	NoMenuForButton;	/* Flag menu widget value: no menu */
 

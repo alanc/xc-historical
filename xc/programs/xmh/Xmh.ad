@@ -37,87 +37,91 @@ Xmh*reset.label:		New Headers
 Xmh.notice.Dialog.Text.BorderWidth: 0
 Xmh.notice.Dialog.Text.TextSink.Font: -*-courier-bold-r-*--*-120-*-*-*-*-iso8859-1
 Xmh.notice.Dialog.confirm.label: Acknowledged
-Xmh.notice.BorderWidth:		10
+Xmh.notice.BorderWidth:		2
+Xmh.confirm.yes.label:		Yes
+Xmh.confirm.no.label:		No
+Xmh*prompt.goAhead.label:	Go Ahead
+Xmh*prompt.cancel.label:	Cancel
 
 Xmh*folderButtons.close.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()CloseScrn()unset()\n
+	<Btn1Down>,<Btn1Up>:	CloseScrn()unset()\n
 Xmh*folderButtons.compose.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()ComposeMessage()unset()\n
+	<Btn1Down>,<Btn1Up>:	ComposeMessage()unset()\n
 Xmh*folderButtons.open.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()OpenFolder()unset()\n
+	<Btn1Down>,<Btn1Up>:	OpenFolder()unset()\n
 Xmh*folderButtons.openInNew.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()OpenFolderInNewWindow()unset()\n
+	<Btn1Down>,<Btn1Up>:	OpenFolderInNewWindow()unset()\n
 Xmh*folderButtons.create.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()CreateFolder()unset()\n
+	<Btn1Down>,<Btn1Up>:	CreateFolder()unset()\n
 Xmh*folderButtons.delete.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()DeleteFolder()unset()\n
+	<Btn1Down>,<Btn1Up>:	DeleteFolder()unset()\n
 Xmh*tocButtons.inc.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()Incorporate()unset()\n
+	<Btn1Down>,<Btn1Up>:	Incorporate()unset()\n
 Xmh*tocButtons.next.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()NextView()unset()\n
+	<Btn1Down>,<Btn1Up>:	NextView()unset()\n
 Xmh*tocButtons.prev.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()PrevView()unset()\n
+	<Btn1Down>,<Btn1Up>:	PrevView()unset()\n
 Xmh*tocButtons.delete.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()MarkDelete()unset()\n
+	<Btn1Down>,<Btn1Up>:	MarkDelete()unset()\n
 Xmh*tocButtons.move.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()MarkMove()unset()\n
+	<Btn1Down>,<Btn1Up>:	MarkMove()unset()\n
 Xmh*tocButtons.copy.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()MarkCopy()unset()\n
+	<Btn1Down>,<Btn1Up>:	MarkCopy()unset()\n
 Xmh*tocButtons.unmark.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()MarkUnmarked()unset()\n
+	<Btn1Down>,<Btn1Up>:	MarkUnmarked()unset()\n
 Xmh*tocButtons.viewNew.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()ViewNew()unset()\n
+	<Btn1Down>,<Btn1Up>:	ViewNew()unset()\n
 Xmh*tocButtons.reply.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()TocReply()unset()\n
+	<Btn1Down>,<Btn1Up>:	TocReply()unset()\n
 Xmh*tocButtons.forward.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()TocForward()unset()\n
+	<Btn1Down>,<Btn1Up>:	TocForward()unset()\n
 Xmh*tocButtons.useAsComp.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()TocUseAsComposition()unset()\n
+	<Btn1Down>,<Btn1Up>:	TocUseAsComposition()unset()\n
 Xmh*tocButtons.commit.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()CommitChanges()unset()\n
+	<Btn1Down>,<Btn1Up>:	CommitChanges()unset()\n
 Xmh*tocButtons.print.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()PrintMessages()unset()\n
+	<Btn1Down>,<Btn1Up>:	PrintMessages()unset()\n
 Xmh*tocButtons.pack.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()Pack()unset()\n
+	<Btn1Down>,<Btn1Up>:	Pack()unset()\n
 Xmh*tocButtons.sort.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()Sort()unset()\n
+	<Btn1Down>,<Btn1Up>:	Sort()unset()\n
 Xmh*tocButtons.rescan.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()Rescan()unset()\n
+	<Btn1Down>,<Btn1Up>:	Rescan()unset()\n
 Xmh*tocButtons.pick.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()Pick()unset()\n
+	<Btn1Down>,<Btn1Up>:	Pick()unset()\n
 Xmh*tocButtons.openSeq.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()OpenSequence()unset()\n
+	<Btn1Down>,<Btn1Up>:	OpenSequence()unset()\n
 Xmh*tocButtons.addToSeq.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()AddToSequence()unset()\n
+	<Btn1Down>,<Btn1Up>:	AddToSequence()unset()\n
 Xmh*tocButtons.removeFromSeq.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()RemoveFromSequence()unset()\n
+	<Btn1Down>,<Btn1Up>:	RemoveFromSequence()unset()\n
 Xmh*tocButtons.deleteSeq.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()DeleteSequence()unset()\n
+	<Btn1Down>,<Btn1Up>:	DeleteSequence()unset()\n
 Xmh*viewButtons.close.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()CloseView()unset()\n
+	<Btn1Down>,<Btn1Up>:	CloseView()unset()\n
 Xmh*viewButtons.reply.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()ViewReply()unset()\n
+	<Btn1Down>,<Btn1Up>:	ViewReply()unset()\n
 Xmh*viewButtons.forward.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()ViewForward()unset()\n
+	<Btn1Down>,<Btn1Up>:	ViewForward()unset()\n
 Xmh*viewButtons.useAsComp.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()ViewUseAsComposition()unset()\n
+	<Btn1Down>,<Btn1Up>:	ViewUseAsComposition()unset()\n
 Xmh*viewButtons.edit.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()EditView()unset()\n
+	<Btn1Down>,<Btn1Up>:	EditView()unset()\n
 Xmh*viewButtons.save.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()SaveView()unset()\n
+	<Btn1Down>,<Btn1Up>:	SaveView()unset()\n
 Xmh*viewButtons.print.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()PrintView()unset()\n
+	<Btn1Down>,<Btn1Up>:	PrintView()unset()\n
 Xmh*compButtons.close.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()CloseView()unset()\n
+	<Btn1Down>,<Btn1Up>:	CloseView()unset()\n
 Xmh*compButtons.send.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()SendDraft()unset()\n
+	<Btn1Down>,<Btn1Up>:	SendDraft()unset()\n
 Xmh*compButtons.reset.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()CompReset()unset()\n
+	<Btn1Down>,<Btn1Up>:	CompReset()unset()\n
 Xmh*compButtons.compose.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()ComposeMessage()unset()\n
+	<Btn1Down>,<Btn1Up>:	ComposeMessage()unset()\n
 Xmh*compButtons.save.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()SaveDraft()unset()\n
+	<Btn1Down>,<Btn1Up>:	SaveDraft()unset()\n
 Xmh*compButtons.insert.translations:#override\
-	<Btn1Down>,<Btn1Up>:	notify()MsgInsertAssoc()unset()\n
+	<Btn1Down>,<Btn1Up>:	MsgInsertAssoc()unset()\n
 
 

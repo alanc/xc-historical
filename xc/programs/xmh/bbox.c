@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] = 
-    "$XConsortium: bbox.c,v 2.25 89/07/07 18:04:19 converse Exp $";
+    "$XConsortium: bbox.c,v 2.26 89/07/09 16:22:01 converse Exp $";
 #endif
 /*
  *
@@ -42,6 +42,7 @@ static char rcs_id[] =
 #include "bboxint.h"
 
 /* ------------------------  Creation ----------------------------------- */
+
 /*
  * Create a new button box.  The widget for it will be a child of the given
  * scrn's widget, and it will be added to the scrn's pane. 
@@ -53,7 +54,7 @@ static ButtonBox buttonboxCreate(scrn, name, button_type)
   WidgetClass button_type;	/* command, toggle (radio), or menu buttons */
 {
     static Arg arglist[] = {
-	{XtNallowVert, True},
+	{XtNallowVert,	True},
 	{XtNskipAdjust, True},
     };
     ButtonBox buttonbox;
@@ -107,24 +108,21 @@ ButtonBox BBoxMenuCreate(scrn, name)
 
 /* Create a new button, and add it to a buttonbox. */
 
-void BBoxAddButton(buttonbox, name, func, position, enabled)
+void BBoxAddButton(buttonbox, name, position, enabled)
 ButtonBox buttonbox;
 char *name;			/* Name of button. */
-void (*func)();			/* Func to call when button pressed. */
 int position;			/* Position to put button in box. */
 int enabled;			/* Whether button is initially enabled. */
 {
-    extern void DoButtonPress();
-    extern void MenuAddEntry();
-    Button button;
-    int i;
-    static XtCallbackRec callback[] = { {DoButtonPress, NULL}, {NULL, NULL} };
-    Arg arglist[5];
-    char	menuName[300];
+    Button		button;
+    register int	i;
+    Arg			 arglist[5];
+    char		menuName[300];
 
     /* Add menu entries, not new buttons, for new subfolders */
 
     if (buttonbox->button_type == menuButtonWidgetClass) {
+	extern void MenuAddEntry();
 	char	*c;
 	if (c = index(name, '/')) {	
 	    c[0] = '\0';
@@ -145,7 +143,7 @@ int enabled;			/* Whether button is initially enabled. */
     button = buttonbox->button[position] = XtNew(ButtonRec);
     bzero((char *) button, sizeof(ButtonRec));
     button->buttonbox = buttonbox;
-    button->name = MallocACopy(name);
+    button->name = XtNewString(name);
 
     i = 0;
     if (!enabled) {
@@ -161,16 +159,11 @@ int enabled;			/* Whether button is initially enabled. */
 	XtSetArg(arglist[i], XtNradioGroup, radio_group);	i++;
 	XtSetArg(arglist[i], XtNradioData, button->name);	i++;
     }
-    else if (buttonbox->button_type == commandWidgetClass) {
-	callback[0].callback = (XtCallbackProc) DoButtonPress;
-	callback[0].closure = (caddr_t)button;
-	XtSetArg(arglist[i], XtNcallback, callback);		i++;
-    }
     else if (buttonbox->button_type == menuButtonWidgetClass) {
 	button->menu = NULL;
 	strcpy(menuName, name);
 	strcpy(menuName + strlen(name), "Menu");
-	button->menu_name = MallocACopy(menuName);
+	button->menu_name = XtNewString(menuName);
 	/* %%% MenuButton requires malloc of the menuName */
 	XtSetArg(arglist[i], XtNmenuName, button->menu_name);	i++;   
     }
@@ -187,7 +180,6 @@ int enabled;			/* Whether button is initially enabled. */
                                ("<LeaveWindow>:reset()leave()\n\
 			         <BtnDown>:set()folder-menu()\n\
                                  <BtnUp>:folder-button()reset()\n"));
-    button->func = func;
 }
 
 
@@ -368,8 +360,7 @@ Button button;
 		    reradio = TRUE;
 	    }
 	    else if (buttonbox->button_type == menuButtonWidgetClass) {
-		if (strcmp(GetCurrentFolderName(buttonbox->scrn),
-			   button->name) == 0)
+		if (strcmp(buttonbox->scrn->curfolder, button->name) == 0)
 		    reradio = TRUE;
 		if (button->menu != NULL &&
 		    button->menu != NoMenuForButton)
@@ -384,13 +375,11 @@ Button button;
     if (found) {
 	buttonbox->numbuttons--;
 	if (reradio && buttonbox->numbuttons) {
-	    if (buttonbox->button_type == toggleWidgetClass) {
+	    if (buttonbox->button_type == toggleWidgetClass)
 		BBoxSetRadio(buttonbox->button[0]);
-	    }
-	    else if (buttonbox->button_type == menuButtonWidgetClass) {
-		SetCurrentFolderName(buttonbox->scrn,
+	    else if (buttonbox->button_type == menuButtonWidgetClass)
+		SetCurrentFolderName(buttonbox->scrn, 
 				     buttonbox->button[0]->name);
-	    }
 	}
     }
 }
@@ -411,7 +400,7 @@ void BBoxDeleteMenuEntry(button, foldername)
 	button->menu = NoMenuForButton;
     }
     else {
-	char *subfolder = GetSubFolderName(foldername);
+	char *subfolder = MakeSubFolderName(foldername);
 	if (strcmp(button->name, subfolder) == 0) {
 	    char name[200];
 	    name[0] = '_';
@@ -424,6 +413,7 @@ void BBoxDeleteMenuEntry(button, foldername)
     }
     SetCurrentFolderName(button->buttonbox->scrn, button->name);
 }
+
 
 /* Destroy the given buttonbox. */
 

@@ -1,4 +1,4 @@
-/* $XConsortium: toc.h,v 2.5 89/05/04 15:13:23 converse Exp $ */
+/* $XConsortium: toc.h,v 2.6 89/06/28 16:52:19 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -10,18 +10,18 @@
  * DIGITAL MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THIS SOFTWARE FOR
  * ANY PURPOSE.  IT IS SUPPLIED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY.
  *
- * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT RIGHTS,
- * APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN ADDITION TO THAT
- * SET FORTH ABOVE.
+ * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
+ * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
+ * ADDITION TO THAT SET FORTH ABOVE.
  *
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
  * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting documentation,
- * and that the name of Digital Equipment Corporation not be used in advertising
- * or publicity pertaining to distribution of the software without specific,
- * written prior permission.
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Digital Equipment Corporation not be
+ * used in advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.
  */
 
 #ifndef _toc_h
@@ -30,6 +30,8 @@
 extern void TocInit();
 extern Toc TocCreateFolder();
 extern Toc TocCreate();
+extern Boolean TocTestAndSetDeletePending();
+extern void TocClearDeletePending();
 extern void TocDeleteFolder();
 extern void TocCheckForNewMail();
 extern void TocSetScrn();

@@ -30,7 +30,7 @@
 extern char *MsgFileName();
 extern int MsgSaveChanges();
 extern int MsgSetScrn();
-extern int MsgSetScrnForComp();
+extern void MsgSetScrnForComp();
 extern void MsgSetScrnForce();
 extern void MsgSetFate();
 extern FateType MsgGetFate();

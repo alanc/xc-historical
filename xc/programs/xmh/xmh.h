@@ -51,6 +51,7 @@
 #include <X11/Xaw/VPaned.h>
 
 #define DELETEABORTED	-1
+#define NEEDS_CONFIRMATION	-1
 #define MARKPOS		4
 
 #define xMargin 2
@@ -125,7 +126,6 @@ typedef struct {
 
 
 #include "globals.h"
-#include "macros.h"
 #include "externs.h"
 #include "mlist.h"
 #include "bbox.h"

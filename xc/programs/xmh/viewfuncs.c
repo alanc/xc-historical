@@ -32,6 +32,20 @@ static char rcs_id[] =
 
 
 /*ARGSUSED*/
+void DoCloseView(widget, client_data, call_data)
+    Widget	widget;		/* unused */
+    caddr_t	client_data;
+    caddr_t	call_data;	/* unused */
+{
+    Scrn scrn = (Scrn) client_data;
+    if (MsgSetScrn((Msg) NULL, scrn, DoCloseView, (caddr_t) scrn)
+	== NEEDS_CONFIRMATION)
+	return;
+    DestroyScrn(scrn);
+}
+    
+
+/*ARGSUSED*/
 void CloseView(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
@@ -39,8 +53,7 @@ void CloseView(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    if (MsgSetScrn((Msg) NULL, scrn)) return;
-    DestroyScrn(scrn);
+    DoCloseView(w, (caddr_t) scrn, (caddr_t) NULL);
 }
 
 
@@ -60,7 +73,7 @@ void ViewReply(w, event, params, num_params)
     msg = TocMakeNewMsg(DraftsFolder);
     MsgSetTemporary(msg);
     MsgLoadReply(msg, scrn->msg);
-    (void) MsgSetScrnForComp(msg, nscrn);
+    MsgSetScrnForComp(msg, nscrn);
     MapScrn(nscrn);
 }
 
@@ -100,7 +113,7 @@ void ViewUseAsComposition(w, event, params, num_params)
 	MsgLoadCopy(msg, scrn->msg);
 	MsgSetTemporary(msg);
     }
-    (void) MsgSetScrnForComp(msg, nscrn);
+    MsgSetScrnForComp(msg, nscrn);
     MapScrn(nscrn);
 }
 

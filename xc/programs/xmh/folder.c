@@ -32,71 +32,20 @@ static char rcs_id[] =
 #include "xmh.h"
 
 
-char *GetCurrentFolderName(scrn)
-    Scrn	scrn;
-{
-    return scrn->curfolder;
-}
-
-
-void SetCurrentFolderName(scrn, foldername)
-    Scrn	scrn;
-    char	*foldername;
-{
-    scrn->curfolder = foldername;
-    ChangeLabel((Widget) scrn->folderlabel, foldername);
-}
-
-
-char	*IsSubFolder(foldername)
-    char	*foldername;
-{
-    return index(foldername, '/');
-}
-
-
-char	*GetParentFolderName(foldername)
-    char	*foldername;
-{
-    char	temp[500];
-    char	*c, *p;
-    (void) strcpy(temp, foldername);
-    c = index(temp, '/');
-    *c = '\0';
-    p = XtMalloc(strlen(temp)+1);
-    (void) strcpy(p, temp);
-    return p;
-}
-
-
-char	*GetSubFolderName(foldername)
-    char	*foldername;
-{
-    char	temp[500];
-    char	*c, *p;
-    (void) strcpy(temp, foldername);
-    c = index(temp, '/');
-    c++;
-    p = XtMalloc(strlen(c) + 1);
-    (void) strcpy(p, c);
-    return p;
-}
-
-
 /* Close this toc&view scrn.  If this is the last toc&view, quit xmh. */
 
 /*ARGSUSED*/
-void CloseScrn(w, event, params, num_params)
-    Widget	w;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+void DoCloseScrn(widget, client_data, call_data)
+    Widget	widget;
+    caddr_t	client_data;
+    caddr_t	call_data;
 {
-    Scrn scrn = ScrnFromWidget(w);
-    extern void exit();
-    Toc toc;
+    Scrn	scrn = (Scrn) client_data;
     register int i, count;
-    Display *dpy;
+    Toc		toc;
+    Display	*dpy;
+    extern void exit();
+
     count = 0;
     for (i=0 ; i<numScrns ; i++)
 	if (scrnList[i]->kind == STtocAndView && scrnList[i]->mapped)
@@ -104,15 +53,17 @@ void CloseScrn(w, event, params, num_params)
     if (count <= 1) {
 	for (i = numScrns - 1; i >= 0; i--)
 	    if (scrnList[i] != scrn) {
-		if (MsgSetScrn((Msg) NULL, scrnList[i]))
+		if (MsgSetScrn((Msg) NULL, scrnList[i], DoCloseScrn, 
+			       (caddr_t) scrn) == NEEDS_CONFIRMATION)
 		    return;
 	    }
 	for (i = 0; i < numFolders; i++) {
 	    toc = folderList[i];
-	    if (TocConfirmCataclysm(toc))
+	    if (TocConfirmCataclysm(toc, (XtCallbackProc) DoCloseScrn,
+				    (caddr_t)scrn))
 		return;
 	}
-/*	if (MsgSetScrn((Msg) NULL, scrn))
+/*	if (MsgSetScrn((Msg) NULL, scrn))  I think this can be deleted.
 	    return;
 */
 /*	for (i = 0; i < numFolders; i++) {
@@ -127,11 +78,22 @@ void CloseScrn(w, event, params, num_params)
 	exit(0);
     }
     else {
-	if (MsgSetScrn((Msg) NULL, scrn)) return;
-	DestroyScrn(scrn);
+	if (MsgSetScrn((Msg) NULL, scrn, DoCloseScrn, (caddr_t) scrn)
+	    == NEEDS_CONFIRMATION) return;
+	DestroyScrn(scrn);	/* doesn't destroy first toc&view scrn */
     }
 }
 
+/*ARGSUSED*/
+void CloseScrn(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
+{
+    Scrn scrn = ScrnFromWidget(w);
+    DoCloseScrn(w, (caddr_t) scrn, (caddr_t) NULL);
+}
 
 /* Open the selected folder in this screen. */
 
@@ -163,7 +125,7 @@ void ComposeMessage(w, event, params, num_params)
     MsgLoadComposition(msg);
     MsgSetTemporary(msg);
     MsgSetReapable(msg);
-    (void) MsgSetScrnForComp(msg, scrn);
+    MsgSetScrnForComp(msg, scrn);
     MapScrn(scrn);
 }
 
@@ -186,64 +148,13 @@ void OpenFolderInNewWindow(w, event, params, num_params)
 
 
 
-/* Create a new xmh folder. */
-
-/*ARGSUSED*/
-void CreateFolder(w, event, params, num_params)
-    Widget	w;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
-{
-    Scrn scrn = ScrnFromWidget(w);
-    void CreateNewFolder();
-    MakePrompt(scrn, "Create folder named:", CreateNewFolder);
-}
-
-
-/* Delete the selected folder.  Requires confirmation! */
-
-/*ARGSUSED*/
-void DeleteFolder(w, event, params, num_params)
-    Widget	w;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
-{
-    Scrn scrn = ScrnFromWidget(w);
-    char *foldername, str[100];
-    int i;
-    Toc toc;
-    toc = SelectedToc(scrn);
-    if (TocConfirmCataclysm(toc)) return;
-    foldername = GetCurrentFolderName(scrn);
-    (void) sprintf(str, "Are you sure you want to destroy %s?", foldername);
-    if (!Confirm(scrn, str)) return;
-    TocSetScrn(toc, (Scrn) NULL);
-    TocDeleteFolder(toc);
-    for (i=0 ; i<numScrns ; i++)
-	if (scrnList[i]->folderbuttons) {
-	    if (IsSubFolder(foldername)) {
-		char *parentfolder = GetParentFolderName(foldername);
-		BBoxDeleteMenuEntry
-		    (BBoxFindButtonNamed(scrnList[i]->folderbuttons,
-					 parentfolder), foldername);
-		XtFree(parentfolder);
-	    }
-	    else
-		BBoxDeleteButton(BBoxFindButtonNamed
-				 (scrnList[i]->folderbuttons, foldername));
-	}
-}
-
-
 /* Create a new folder with the given name. */
 
 void CreateNewFolder(name)
-  char *name;
+    char	*name;
 {
-    Toc toc;
-    int i, position;
+    Toc		toc;
+    int		i, position;
 
     for (i=0 ; name[i] > ' ' ; i++) ;
     name[i] = 0;
@@ -265,3 +176,123 @@ void CreateNewFolder(name)
 	    BBoxAddButton(scrnList[i]->folderbuttons, name,
 			  NoOp, position, TRUE);
 }
+
+
+/* Create a new folder.  Requires the user to name the new folder. */
+
+/*ARGSUSED*/
+void CreateFolder(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
+{
+    PopupPrompt("Create folder named:", CreateNewFolder);
+}
+
+
+
+/*ARGSUSED*/
+void CheckAndConfirmDeleteFolder(widget, client_data, call_data)
+    Widget	widget;		/* unreliable; sometimes NULL */
+    caddr_t	client_data;
+    caddr_t	call_data;	/* unused */
+{
+    Toc		toc = (Toc) client_data;
+    char	*foldername;
+    char	str[300];
+    void CheckAndDeleteFolder();
+    static XtCallbackRec yes_callbacks[] = {
+	{CheckAndDeleteFolder,	(caddr_t) NULL},
+	{(XtCallbackProc) NULL,	(caddr_t) NULL}
+    };
+    static XtCallbackRec no_callbacks[] = {
+	{TocClearDeletePending,	(caddr_t) NULL},
+	{(XtCallbackProc) NULL,	(caddr_t) NULL}
+    };
+
+    /* check */
+    if (TocConfirmCataclysm(toc, (XtCallbackProc) CheckAndConfirmDeleteFolder,
+			    (caddr_t) toc) == NEEDS_CONFIRMATION)
+	return;
+
+    /* confirm */
+    foldername = TocName(toc);
+    yes_callbacks[0].closure = (caddr_t) toc;
+    no_callbacks[0].closure =  (caddr_t) toc;
+    (void) sprintf(str, "Are you sure you want to destroy %s?", foldername);
+    PopupConfirm(str, yes_callbacks, no_callbacks);
+}
+
+
+
+/*ARGSUSED*/
+void CheckAndDeleteFolder(widget, client_data, call_data)
+    Widget	widget;
+    caddr_t	client_data;
+    caddr_t	call_data;	/* unused */
+{
+    int 	i;
+    Toc		toc = (Toc) client_data;
+    char	*foldername;
+    
+    /* check */
+    if (TocConfirmCataclysm(toc, (XtCallbackProc) CheckAndConfirmDeleteFolder,
+			    (caddr_t) toc) == NEEDS_CONFIRMATION)
+	return;
+
+    /* delete */
+    foldername = TocName(toc);
+    TocSetScrn(toc, (Scrn) NULL);
+    TocDeleteFolder(toc);
+    for (i=0 ; i<numScrns ; i++)
+	if (scrnList[i]->folderbuttons) {
+	    char	*p;
+
+	    if (p = index(foldername, '/')) {
+		char	parentfolder[300];
+		(void) strcpy(parentfolder, foldername);
+		p = index(parentfolder, '/');
+		*p = '\0';
+
+		BBoxDeleteMenuEntry
+		    (BBoxFindButtonNamed(scrnList[i]->folderbuttons,
+					 parentfolder), foldername);
+	    }
+	    else
+		BBoxDeleteButton(BBoxFindButtonNamed
+				 (scrnList[i]->folderbuttons, foldername));
+	}
+    XtFree(foldername);
+}
+
+
+/* Delete the selected folder.  Requires confirmation! */
+
+/*ARGSUSED*/
+void DeleteFolder(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
+{
+    Scrn	scrn;
+    Toc		toc;
+
+    scrn = ScrnFromWidget(w);
+    toc = SelectedToc(scrn);
+
+    /* Prevent more than one confirmation popup on the same folder. 
+     * TestAndSet returns true if there is a delete pending on this folder.
+     */
+    if (TocTestAndSetDeletePending(toc))	{
+	Feep();
+	return;
+    }
+
+    CheckAndConfirmDeleteFolder(w, (caddr_t) toc, (caddr_t) NULL);
+}
+
+
+
+

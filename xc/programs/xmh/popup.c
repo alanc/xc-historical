@@ -1,4 +1,33 @@
-/* $XConsortium: popup.c,v 2.10 89/06/12 18:14:56 converse Exp $ */
+#if !defined(lint) && !defined(SABER)
+static char rcs_id[]=
+    "$XConsortium: popup.c,v 2.10 89/06/12 18:14:56 converse Exp $";
+#endif
+
+/*
+ *			  COPYRIGHT 1989
+ *		   DIGITAL EQUIPMENT CORPORATION
+ *		       MAYNARD, MASSACHUSETTS
+ *			ALL RIGHTS RESERVED.
+ *
+ * THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE WITHOUT NOTICE AND
+ * SHOULD NOT BE CONSTRUED AS A COMMITMENT BY DIGITAL EQUIPMENT CORPORATION.
+ * DIGITAL MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THIS SOFTWARE FOR
+ * ANY PURPOSE.  IT IS SUPPLIED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY.
+ *
+ * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
+ * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
+ * ADDITION TO THAT SET FORTH ABOVE.
+ *
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Digital Equipment Corporation not be
+ * used in advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.
+ */
+
 /* popup.c -- Handle pop-up widgets. */
 
 #include "xmh.h"
@@ -11,33 +40,94 @@ typedef struct _PopupStatus {
 	struct _LastInput lastInput;
 } PopupStatusRec, *PopupStatus;
 
-/*
-static Widget confirmwidget = NULL;
-static char *confirmstring;
 
-static Widget confirmparent;
-static count = 0;
+static void DeterminePopupPosition(x_ptr, y_ptr)
+    Position	*x_ptr, *y_ptr;
+{
+    Arg		args[3];
+    Widget	source;
+    Dimension	width, height;
 
-static Widget promptwidget;
-static int (*promptfunc)();
-static char promptstring[210];
+    if (lastInput.win != -1) {
+	source = XtWindowToWidget( XtDisplay(toplevel), lastInput.win);
+    }
+    else
+	source = toplevel;	/* %%% need to keep track of last screen */
 
-extern TellPrompt();
-void DestroyPromptWidget();
+    if (source != (Widget)NULL) {
+	XtSetArg( args[0], XtNwidth, &width );
+	XtSetArg( args[1], XtNheight, &height );
+	XtGetValues( source, args, TWO );
+	XtTranslateCoords( source, (Position)0, (Position)0, x_ptr, y_ptr);
+	*x_ptr += width/2;
+	*y_ptr += height/2;
+    } else {
+	*x_ptr = lastInput.x;
+	*y_ptr = lastInput.y;
+    }
+}
 
-ArgList arglist, promptarglist;
-*/
 
-static Scrn lastscrn = NULL;
-static char laststr[500];
+static void PositionThePopup(popup, x, y)
+    Widget	popup;
+    Position	x, y;
+{
+    /* Hack.  Fix up the position of the popup.  The xmh app defaults file
+     * contains an Xmh*Geometry specification; the effects of that on 
+     * popups, and the lack of any user-supplied geometry specification for
+     * popups, are mitigated here, by giving the popup shell a position.
+     * (Xmh*Geometry is needed in case there is no user-supplied default.)
+     */
 
-static Widget confirmwidget = NULL;
-static int buttoncount = 0;
-static Widget promptwidget = NULL;
-static void (*promptfunction)();
+    Arg		args[3];
+    String 	g1, g2;
+    XtSetArg( args[0], XtNgeometry, &g1 );
+    XtGetValues( toplevel, args, ONE );
+    XtSetArg( args[0], XtNgeometry, &g2 );
+    XtGetValues( popup, args, ONE );
+
+    if (g2 == NULL || g2 == g1) { /* if same db entry, then ... */
+	XtSetArg( args[0], XtNgeometry, (String) NULL);
+	XtSetArg( args[1], XtNx, x);
+	XtSetArg( args[2], XtNy, y);
+	XtSetValues( popup, args, THREE);
+    }
+}
 
 
-void CenterWidget(parent, child)
+/* Insure that the popup is wholly showing on the screen. */
+
+static void InsureVisibility(popup, dialog, x, y)
+    Widget	popup, dialog;
+    Position	x, y;
+{
+    static Position	root_x, root_y;
+    Dimension	width, height, border;
+    Arg		args[3];	
+
+
+    XtSetArg( args[0], XtNwidth, &width );
+    XtSetArg( args[1], XtNheight, &height );
+    XtSetArg( args[2], XtNborderWidth, &border );
+    XtGetValues( popup, args, THREE );
+
+    border <<= 1;
+    XtTranslateCoords( dialog, (Position)0, (Position)0, &root_x, &root_y);
+    if ((root_x + width + border) > WidthOfScreen(XtScreen(toplevel))) {
+	root_x = WidthOfScreen(XtScreen(toplevel)) - width - border;
+    } else root_x = x;
+    if ((root_y + height + border) > HeightOfScreen(XtScreen(toplevel))) {
+	root_y = HeightOfScreen(XtScreen(toplevel)) - height - border;
+    } else root_y = y;
+
+    if (root_x != x || root_y != y) {
+	XtSetArg( args[0], XtNx, root_x );
+	XtSetArg( args[1], XtNy, root_y );
+	XtSetValues( popup, args, TWO );
+    }
+}
+
+void CenterWidget(parent, child)  /* the pick popup still uses this */
 Widget parent, child;
 {
     int x, y;
@@ -48,201 +138,74 @@ Widget parent, child;
 }
 
 
-void DestroyConfirmWidget()
+/*ARGSUSED*/
+static void DestroyPopupPrompt(widget, client_data, call_data)
+    Widget		widget;		/* unused */
+    caddr_t		client_data;
+    caddr_t		call_data;	/* unused */
 {
-    lastscrn = NULL;
-    *laststr = 0;
-    if (confirmwidget) {
-	XtDestroyWidget(confirmwidget);
-	confirmwidget = NULL;
-    }
+    Widget		popup = (Widget) client_data;
+    XtPopdown(popup);
+    XtDestroyWidget(popup);
 }
 
 
-int Confirm(scrn, str)
-Scrn scrn;
-char *str;
+/*ARGSUSED*/
+static void TellPrompt(goAheadButton, client_data, call_data)
+    Widget		goAheadButton;	/* unused */
+    caddr_t		client_data;
+    caddr_t		call_data;	/* unused */
 {
-    Arg args[1];
-    extern void RedoLastButton();
-    if (lastscrn == scrn && strcmp(str, laststr) == 0) {
-	DestroyConfirmWidget();
-	return TRUE;
-    }
-    DestroyConfirmWidget();
-    lastscrn = scrn;
-    scrn = LastButtonScreen();
-    (void) strcpy(laststr, str);
-    XtSetArg( args[0], XtNlabel, str );
-    confirmwidget = XtCreateWidget( "confirm", dialogWidgetClass,
-				    scrn->widget, args, ONE );
-    XawDialogAddButton(confirmwidget, "yes", RedoLastButton, (caddr_t)NULL);
-    XawDialogAddButton(confirmwidget, "no", DestroyConfirmWidget,(caddr_t)NULL);
-    XtRealizeWidget( confirmwidget );
-    CenterWidget(scrn->widget, confirmwidget);
-    XtMapWidget( confirmwidget );
-    buttoncount = 0;
-    return FALSE;
+    /* call the affirmative callback with the string typed in by the user */
+
+    XtCallbackList	callbacks = (XtCallbackList) client_data;
+    XtCallbackProc	function = callbacks[0].callback;
+    Widget		dialog = (Widget) callbacks[0].closure;
+
+    (*function) (XawDialogGetValueString(dialog));
 }
 
 
-HandleConfirmEvent(event)
-XEvent *event;
+void PopupPrompt(question, goAheadCallback)
+    char		*question;		/* the prompting string */
+    XtCallbackProc	goAheadCallback;	/* CreateNewFolder() */
 {
-    if (confirmwidget &&
-	    (event->type == ButtonRelease || event->type == KeyPress)) {
-	if (++buttoncount > 1)
-	    DestroyConfirmWidget();
-    }
-}
-
-
-/* ARGSUSED */
-void DestroyPromptWidget(widget, client_data, call_data)
-    Widget widget;		/* unused */
-    caddr_t client_data;	/* scrn */
-    caddr_t call_data;		/* unused */
-{
-    if (promptwidget) {
-	Scrn scrn = (Scrn)client_data;
-	XtSetKeyboardFocus(scrn->parent, scrn->viewwidget);
-	XtDestroyWidget(promptwidget);
-	promptwidget = NULL;
-    }
-}
-
-
-/* ARGSUSED */
-void TellPrompt(widget, client_data, call_data)
-    Widget widget;
-    caddr_t client_data;	/* scrn */
-    caddr_t call_data;
-
-{
-    (*promptfunction)(XawDialogGetValueString(promptwidget));
-    DestroyPromptWidget(widget, client_data, call_data);
-}
-
-MakePrompt(scrn, prompt, func)
-Scrn scrn;
-char *prompt;
-void (*func)();
-{
-    static Arg args[] = {
-	{XtNlabel, NULL},
-	{XtNvalue, NULL},
+    Arg			args[2];
+    Widget		popup;
+    Widget		dialog;
+    Position		x, y;
+    static XtCallbackRec go_callbacks[] = {
+	{(XtCallbackProc) TellPrompt,		(caddr_t) NULL},
+	{(XtCallbackProc) DestroyPopupPrompt,	(caddr_t) NULL},
+	{(XtCallbackProc) NULL,			(caddr_t) NULL}
     };
-    args[0].value = (XtArgVal)prompt;
-    args[1].value = (XtArgVal)"";
-    DestroyPromptWidget((Widget)NULL, (caddr_t)scrn, NULL);
-    promptwidget = XtCreateWidget( "prompt", dialogWidgetClass, scrn->widget,
-				   args, TWO );
-    XawDialogAddButton(promptwidget, "goAhead", TellPrompt, (caddr_t)scrn);
-    XawDialogAddButton(promptwidget, "cancel", DestroyPromptWidget, (caddr_t)scrn);
-    XtRealizeWidget(promptwidget);
-    XtSetKeyboardFocus(promptwidget, XtNameToWidget(promptwidget,"value"));
-    XtSetKeyboardFocus(scrn->parent, (Widget)None);
-    CenterWidget(scrn->widget, promptwidget);
-    XtMapWidget( promptwidget );
-    promptfunction = func;
-}
+    static XtCallbackRec tell_prompt_closure[] = {
+	{(XtCallbackProc) NULL,			(caddr_t) NULL},
+	{(XtCallbackProc) NULL,			(caddr_t) NULL}
+    };
 
-/* void */
-PopupNotice( message, callback, closure )
-    char*		message;
-    XtCallbackProc	callback;
-    Pointer		closure;
-{
-    PopupStatus popup_status = (PopupStatus)closure;
-    Arg args[5];
-    Widget dialog;
-    Widget source;
-    Position x, y, root_x, root_y;
-    Dimension width, height, border;
-    char command[65], label[128];
-    static void FreePopupStatus();
+    DeterminePopupPosition(&x, &y);
+    XtSetArg(args[0], XtNallowShellResize, True);
+    popup = XtCreatePopupShell("prompt", transientShellWidgetClass, toplevel,
+			       args, ONE);
+    PositionThePopup(popup, x, y);
 
-    if (popup_status == (PopupStatus)NULL) {
-	popup_status = XtNew(PopupStatusRec);
-	popup_status->lastInput = lastInput;
-    }
-    if (sscanf( message, "%64s", command ) != 1)
-	strcpy( command, "system" );
-    else {
-	int l = strlen(command);
-	if (l && command[--l] == ':')
-	    command[l] = '\0';
-    }
+    XtSetArg(args[0], XtNlabel, question);
+    XtSetArg(args[1], XtNvalue, "");
+    dialog = XtCreateManagedWidget("dialog", dialogWidgetClass, popup, args,
+				   TWO);
+    tell_prompt_closure[0].callback = goAheadCallback;
+    tell_prompt_closure[0].closure = (caddr_t) dialog;
+    go_callbacks[0].closure = (caddr_t) tell_prompt_closure;
+    go_callbacks[1].closure = (caddr_t) popup;
+    XtSetArg(args[0], XtNcallback, go_callbacks);
+    XtCreateManagedWidget("goAhead", commandWidgetClass, dialog, args, ONE);
+    XawDialogAddButton(dialog, "cancel", DestroyPopupPrompt, (caddr_t)popup);
 
-    sprintf( label, "%.64s command returned:", command );
-    if (lastInput.win != -1) {
-	source = XtWindowToWidget( XtDisplay(toplevel),
-				   popup_status->lastInput.win
-				  );
-    }
-    else
-	source = toplevel;	/* %%% need to keep track of last screen */
-
-    if (source != (Widget)NULL) {
-	XtSetArg( args[0], XtNwidth, &width );
-	XtSetArg( args[1], XtNheight, &height );
-	XtGetValues( source, args, TWO );
-	XtTranslateCoords( source, (Position)0, (Position)0, &x, &y );
-	x += width/2;
-	y += height/2;
-    } else {
-	x = popup_status->lastInput.x;
-	y = popup_status->lastInput.y;
-    }
-    XtSetArg( args[0], XtNallowShellResize, True );
-    popup_status->popup =
-	XtCreatePopupShell( "notice", transientShellWidgetClass,
-			    toplevel, args, ONE );
-    {
-	/* hack; now fix up the geometry if old resources */
-	String g1, g2;
-	XtSetArg( args[0], XtNgeometry, &g1 );
-	XtGetValues( toplevel, args, ONE );
-
-	XtSetArg( args[0], XtNgeometry, &g2 );
-	XtGetValues( popup_status->popup, args, ONE );
-
-	if (g2 == NULL || g2 == g1) { /* if same db entry, then ... */
-	    char geometry[64];
-	    sprintf( geometry, "+%d+%d", x, y );
-	    XtSetArg( args[0], XtNgeometry, geometry );
-	    XtSetValues( popup_status->popup, args, ONE );
-	}
-    }
-    XtSetArg( args[0], XtNlabel, label );
-    XtSetArg( args[1], XtNvalue, message );
-    dialog =
-	XtCreateManagedWidget( "dialog", dialogWidgetClass,
-			       popup_status->popup, args, TWO );
-    XawDialogAddButton( dialog, "confirm",
-		       (callback != (XtCallbackProc)NULL)
-		          ? callback : (XtCallbackProc)FreePopupStatus,
-		       (Pointer)popup_status
-		      );
-    XtRealizeWidget( popup_status->popup );
-    XtSetArg( args[0], XtNwidth, &width );
-    XtSetArg( args[1], XtNheight, &height );
-    XtSetArg( args[2], XtNborderWidth, &border );
-    XtGetValues( popup_status->popup, args, THREE );
-    border <<= 1;
-    XtTranslateCoords( dialog, (Position)0, (Position)0, &root_x, &root_y);
-    if ((root_x + width + border) > WidthOfScreen(XtScreen(toplevel))) {
-	root_x = WidthOfScreen(XtScreen(toplevel)) - width - border;
-    } else root_x = x;
-    if ((root_y + height + border) > HeightOfScreen(XtScreen(toplevel))) {
-	root_y = HeightOfScreen(XtScreen(toplevel)) - height - border;
-    } else root_y = y;
-    if (root_x != x || root_y != y) {
-	XtSetArg( args[0], XtNx, root_x );
-	XtSetArg( args[1], XtNy, root_y );
-	XtSetValues( popup_status->popup, args, TWO );
-    }
-    XtPopup(popup_status->popup, XtGrabNone);
+    XtRealizeWidget(popup);
+    InsureVisibility(popup, dialog, x, y);
+    XDefineCursor(XtDisplay(popup), XtWindow(popup), app_resources.cursor);
+    XtPopup(popup, XtGrabNone);
 }
 
 
@@ -257,3 +220,110 @@ static void FreePopupStatus( w, closure, call_data )
     XtDestroyWidget(popup->popup);
     XtFree(closure);
 }
+
+
+void PopupNotice( message, callback, closure )
+    char*		message;
+    XtCallbackProc	callback;
+    Pointer		closure;
+{
+    PopupStatus popup_status = (PopupStatus)closure;
+    Arg args[5];
+    Widget dialog;
+    Position x, y;
+    char command[65], label[128];
+
+    if (popup_status == (PopupStatus)NULL) {
+	popup_status = XtNew(PopupStatusRec);
+	popup_status->lastInput = lastInput;
+    }
+    if (sscanf( message, "%64s", command ) != 1)
+	(void) strcpy( command, "system" );
+    else {
+	int l = strlen(command);
+	if (l && command[--l] == ':')
+	    command[l] = '\0';
+    }
+    (void) sprintf( label, "%.64s command returned:", command );
+
+    DeterminePopupPosition(&x, &y);
+    XtSetArg( args[0], XtNallowShellResize, True );
+    popup_status->popup = XtCreatePopupShell( "notice",
+			     transientShellWidgetClass, toplevel, args, ONE );
+    PositionThePopup(popup_status->popup, x, y);
+
+    XtSetArg( args[0], XtNlabel, label );
+    XtSetArg( args[1], XtNvalue, message );
+    dialog = XtCreateManagedWidget( "dialog", dialogWidgetClass,
+				   popup_status->popup, args, TWO );
+    XawDialogAddButton( dialog, "confirm",
+		       (callback != (XtCallbackProc)NULL)
+		          ? callback : (XtCallbackProc)FreePopupStatus,
+		       (Pointer)popup_status
+		      );
+    XtRealizeWidget( popup_status->popup );
+    InsureVisibility(popup_status->popup, dialog, x, y);
+    XDefineCursor(XtDisplay(popup_status->popup),
+		  XtWindow(popup_status->popup), app_resources.cursor);
+    XtPopup(popup_status->popup, XtGrabNone);
+}
+
+
+/*ARGSUSED*/
+static void DestroyPopupConfirm(widget, closure, call_data)    
+    Widget	widget;
+    Pointer	closure;
+    Pointer	call_data;	/* not used */
+{
+    Widget	popup = (Widget) closure;
+    XtPopdown(popup);
+    XtDestroyWidget(popup);
+}
+
+
+void PopupConfirm(question, affirm_callbacks, negate_callbacks)
+    String		question;
+    XtCallbackList	affirm_callbacks;
+    XtCallbackList	negate_callbacks;
+{
+    Arg		args[1];
+    Widget	popup;
+    Widget	dialog;
+    Widget	button;	
+    Position	x, y;
+    static XtCallbackRec callbacks[] = {
+	{DestroyPopupConfirm,	(caddr_t) NULL},
+	{(XtCallbackProc) NULL,	(caddr_t) NULL}
+    };
+
+    DeterminePopupPosition(&x, &y);
+    XtSetArg(args[0], XtNallowShellResize, True);
+    popup = XtCreatePopupShell("confirm", transientShellWidgetClass,
+			       toplevel, args, ONE);
+    PositionThePopup(popup, x, y);
+
+    XtSetArg(args[0], XtNlabel, question);
+    dialog = XtCreateManagedWidget("dialog", dialogWidgetClass, popup, args,
+				   ONE);
+    
+    callbacks[0].closure = (caddr_t) popup;
+    XtSetArg(args[0], XtNcallback, callbacks);
+    button = XtCreateManagedWidget("yes", commandWidgetClass, dialog, 
+				   args, ONE);
+    if (affirm_callbacks)
+	XtAddCallbacks(button, XtNcallback, affirm_callbacks);
+
+
+    button = XtCreateManagedWidget("no", commandWidgetClass, dialog, 
+				   args, ZERO);
+    XtAddCallback(button, XtNcallback, DestroyPopupConfirm, (caddr_t) popup);
+    if (negate_callbacks)
+	XtAddCallbacks(button, XtNcallback, negate_callbacks);
+
+    XtRealizeWidget(popup);
+    InsureVisibility(popup, dialog, x, y);
+    XDefineCursor(XtDisplay(popup), XtWindow(popup), app_resources.cursor);
+    XtPopup(popup, XtGrabNone);
+}
+
+	

@@ -1,4 +1,4 @@
-/* $XConsortium: tocintrnl.h,v 2.8 89/05/11 19:26:55 converse Exp $ */
+/* $XConsortium: tocintrnl.h,v 2.9 89/06/30 15:19:29 kit Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -10,18 +10,18 @@
  * DIGITAL MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THIS SOFTWARE FOR
  * ANY PURPOSE.  IT IS SUPPLIED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY.
  *
- * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT RIGHTS,
- * APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN ADDITION TO THAT
- * SET FORTH ABOVE.
+ * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
+ * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
+ * ADDITION TO THAT SET FORTH ABOVE.
  *
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
  * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting documentation,
- * and that the name of Digital Equipment Corporation not be used in advertising
- * or publicity pertaining to distribution of the software without specific,
- * written prior permission.
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Digital Equipment Corporation not be
+ * used in advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.
  */
 
 /* Includes for modules implementing toc stuff. */
@@ -86,6 +86,7 @@ typedef struct _TocRec {
 				   currently inhibited. */
    Boolean	haschanged;	/* Whether it's changed in the process of */
 				/* the current commit. */
+   Boolean	delete_pending;	/* Is a delete folder operation pending? */
    char		*incfile;	/* Which file to incorporate from (if any). */
    int		mailpending;	/* True if we're currently displaying
 				   mail-pending info for this folder. */
