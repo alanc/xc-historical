@@ -74,6 +74,8 @@ MakeDirectories(install, $(DIRS_TO_CREATE))
 
 MakeDirectories(install.man, $(MANPATH) $(MANDIR) $(LIBMANDIR))
 InstallManPage(X,$(MANDIR))
+InstallManPageLong(Consortium,$(MANDIR),XConsortium)
+InstallManPageLong(Standards,$(MANDIR),XStandards)
 
 
 /**/# don't name your log file make.log when you run this ...
