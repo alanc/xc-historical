@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.48 90/03/01 13:41:53 jim Exp $
+ * $XConsortium: viewres.c,v 1.49 90/03/01 19:17:39 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -55,6 +55,8 @@ extern char *malloc(), *calloc();
 typedef struct {
     char **resource_labels;		/* names of res added by widget */
     Cardinal nnewresources;		/* number res added by widget */
+    Cardinal nnewconstraints;		/* number res added by widget */
+    Cardinal nnew;			/* number new */
     Widget instance;			/* Label widget in box in tree */
     Widget resource_lw;			/* List widget showing resources */
     int selection_index;		/* -1 or index into selection_list */
@@ -255,21 +257,39 @@ static Boolean set_resource_labels (node)
     XmuWidgetNode *node;
 {
     int i;
-    XtResourceList res = node->resources;
-    XmuWidgetNode **wn = node->resourcewn;
-    ViewresData *d = VData(node);
     char **cur;
+    XtResourceList res;
+    XmuWidgetNode **wn;
+    ViewresData *d = VData(node);
 
     if (!d->resource_labels) {
 	d->resource_labels =
-	  (char **) calloc ((unsigned) d->nnewresources * 3,
+	  (char **) calloc ((unsigned) d->nnew * 3,
 			    (unsigned) sizeof (char *));
 	if (!d->resource_labels) return FALSE;
     }
 
     cur = d->resource_labels;
+    res = node->resources;
+    wn = node->resourcewn;
     for (i = 0; i < node->nresources; i++, res++, wn++) {
-	if (*wn == node) {		/* should be nnewresources matches */
+	if (*wn == node) {		/* should match number above */
+	    *cur++ = res->resource_name;
+	    *cur++ = res->resource_class;
+	    *cur++ = res->resource_type;
+	}
+    }
+    if (node->nconstraints > 0) {
+	char *s;
+
+	*cur++ = s = "";
+	*cur++ = s;
+	*cur++ = s;
+    }
+    res = node->constraints;
+    wn = node->constraintwn;
+    for (i = 0; i < node->nconstraints; i++, res++, wn++) {
+	if (*wn == node) {		/* should match number above */
 	    *cur++ = res->resource_name;
 	    *cur++ = res->resource_class;
 	    *cur++ = res->resource_type;
@@ -287,7 +307,10 @@ static ViewresData *create_viewres_data (node)
 
     if (d) {
 	d->resource_labels = (char **) NULL;
-	d->nnewresources = XmuWnCountOwnedResources (node, node);
+	d->nnewresources = XmuWnCountOwnedResources (node, node, False);
+	d->nnewconstraints = XmuWnCountOwnedResources (node, node, True);
+	d->nnew = (d->nnewresources + (d->nnewconstraints 
+				       ? d->nnewconstraints + 1 : 0));
 	d->instance = (Widget) NULL;
 	d->resource_lw = (Widget) NULL;
 	d->selection_index = -1;
@@ -407,13 +430,13 @@ static Boolean create_resource_lw (node)
     Cardinal n;
     ViewresData *d = VData(node);
 
-    if (d->nnewresources == 0) return FALSE;
+    if (d->nnew == 0) return FALSE;
 
     if (!d->resource_labels &&
 	!set_resource_labels (node)) return FALSE;
 
     n = 0;
-    XtSetArg (args[n], XtNnumberStrings, 3 * d->nnewresources); n++;
+    XtSetArg (args[n], XtNnumberStrings, 3 * d->nnew); n++;
     XtSetArg (args[n], XtNlist, d->resource_labels); n++;
     XtSetArg (args[n], XtNdefaultColumns, 3); n++;
     XtSetArg (args[n], XtNforceColumns, TRUE); n++;
@@ -440,7 +463,7 @@ static void update_selection_items ()
 	 * already being shown).  If node has widget and is managed,
 	 * then may be hidden.
 	 */
-	if (d->nnewresources > 0) {
+	if (d->nnew > 0) {
 	    if (IsShowing(node)) {
 		hide = TRUE;
 	    } else {
@@ -621,7 +644,7 @@ static void select_callback (gw, closure, data)
 
       case SELECT_HAS_RESOURCES:	/* put all w/ rescnt > 0 on sel_list */
 	for (i = 0, node = widget_list; i < nwidgets; i++, node++) {
-	    if (VData(node)->nnewresources > 0)
+	    if (VData(node)->nnew > 0)
 	      add_to_selected_list (node, TRUE);
 	}
 	break;
