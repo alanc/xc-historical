@@ -1,5 +1,5 @@
 /*
- * $XConsortium: GenKey.c,v 1.2 91/01/11 13:07:55 rws Exp $
+ * $XConsortium: GenKey.c,v 1.3 91/01/23 22:13:42 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -38,6 +38,13 @@ static getbits (data, dst)
     dst[3] = (data >> 24) & 0xff;
 }
 
+#ifdef X_NOT_STDC_ENV
+#define Time_t long
+extern Time_t time ();
+#else
+#define Time_t time_t
+#endif
+
 #if defined(SYSV) || defined(SVR4)
 #define srandom srand48
 #define random lrand48
@@ -51,7 +58,7 @@ XdmcpGenerateKey (key)
 {
     long    lowbits, highbits;
 
-    srandom (getpid() ^ time (0));
+    srandom ((int)getpid() ^ time((Time_t)0));
     lowbits = random ();
     highbits = random ();
     getbits (lowbits, key->data);
