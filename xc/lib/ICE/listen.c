@@ -1,4 +1,4 @@
-/* $XConsortium: listen.c,v 1.13 94/03/18 15:59:17 mor Exp $ */
+/* $XConsortium: listen.c,v 1.14 94/04/17 20:15:34 mor Exp $ */
 /******************************************************************************
 
 
@@ -46,8 +46,6 @@ char		*errorStringRet;
     struct _IceListenObj	*listenObjs;
     char			*networkId;
     int				fd, transCount, partial, i, j;
-    int				family, addrlen;
-    Xtransaddr			*addr;
     Status			status = 1;
     XtransConnInfo		*transConns = NULL;
 
@@ -77,11 +75,7 @@ char		*errorStringRet;
 
     for (i = 0; i < transCount; i++)
     {
-	_IceTransGetMyAddr (transConns[i], &family, &addrlen, &addr);
-
-	networkId = _IceTransGetMyNetworkId (family, addrlen, addr);
-
-	free (addr);
+	networkId = _IceTransGetMyNetworkId (transConns[i]);
 
 	if (networkId)
 	{
@@ -214,15 +208,34 @@ IceListenObj	*listenObjs;
 	return (NULL);
     else
     {
+	int doneCount = 0;
+
 	list[0] = '\0';
-	for (i = 0; i < count - 1; i++)
+
+	for (i = 0; i < count; i++)
 	{
-	    strcat (list, listenObjs[i]->network_id);
-	    strcat (list, ",");
+	    if (_IceTransIsLocal (listenObjs[i]->trans_conn))
+	    {
+		strcat (list, listenObjs[i]->network_id);
+		doneCount++;
+		if (doneCount < count)
+		    strcat (list, ",");
+	    }
 	}
 
-	strcat (list, listenObjs[count - 1]->network_id);
-	list[strlen (list)] = '\0';
+	if (doneCount < count)
+	{
+	    for (i = 0; i < count; i++)
+	    {
+		if (!_IceTransIsLocal (listenObjs[i]->trans_conn))
+		{
+		    strcat (list, listenObjs[i]->network_id);
+		    doneCount++;
+		    if (doneCount < count)
+			strcat (list, ",");
+		}
+	    }
+	}
 
 	return (list);
     }
