@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef XMD_H
 #define XMD_H 1
-/* $XConsortium: Xmd.h,v 1.33 88/09/12 11:06:15 jim Exp $ */
+/* $XConsortium: Xmd.h,v 1.34 88/10/22 10:15:47 jim Exp $ */
 /*
  *  Xmd.h: MACHINE DEPENDENT DECLARATIONS.
  */
@@ -109,9 +109,9 @@ typedef unsigned char            BOOL;
 #define cvtINT8toInt(val)   (((val) & 0x00000080) ? ((val) | 0xffffffffffffff00) : (val))
 #define cvtINT16toInt(val)  (((val) & 0x00008000) ? ((val) | 0xffffffffffff0000) : (val))
 #define cvtINT32toInt(val)  (((val) & 0x80000000) ? ((val) | 0xffffffff00000000) : (val))
-#define cvtINT8toLong(val)  cvtINT8ToInt(val)
-#define cvtINT16toLong(val) cvtINT16ToInt(val)
-#define cvtINT32toLong(val) cvtINT32ToInt(val)
+#define cvtINT8toLong(val)  cvtINT8toInt(val)
+#define cvtINT16toLong(val) cvtINT16toInt(val)
+#define cvtINT32toLong(val) cvtINT32toInt(val)
 #else
 #define cvtINT8toInt(val) (val)
 #define cvtINT16toInt(val) (val)
