@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.84 88/09/13 17:01:29 jim Exp $ */
+/* $XConsortium: connection.c,v 1.85 88/09/19 12:21:28 jim Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -314,7 +314,7 @@ ResetWellKnownSockets ()
     if (unixDomainConnection != -1 &&
 	(WellKnownConnections & (1L << unixDomainConnection))) {
 	(void) close (unixDomainConnection);
-	WellKnownConnections &= ~unixDomainConnection;
+	WellKnownConnections &= ~(1L << unixDomainConnection);
 	unixDomainConnection = open_unix_socket ();
 	if (unixDomainConnection != -1)
 	  WellKnownConnections |= (1L << unixDomainConnection);
