@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.85 89/11/19 15:34:21 jim Exp $
+ * $XConsortium: twm.c,v 1.86 89/11/20 16:42:47 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,16 +38,12 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.85 89/11/19 15:34:21 jim Exp $";
+"$XConsortium: twm.c,v 1.86 89/11/20 16:42:47 jim Exp $";
 #endif
 
 #include <stdio.h>
 #include <signal.h>
 #include <fcntl.h>
-#ifdef REAL_TIME
-#include <sys/rtprio.h>
-#include <sys/lock.h>
-#endif
 #include "twm.h"
 #include "add_window.h"
 #include "gc.h"
@@ -144,20 +140,6 @@ main(argc, argv, environ)
     XSetWindowAttributes attributes;	/* attributes for create windows */
     SigProc old_handler;
     int numManaged, firstscrn, lastscrn, scrnum;
-
-#ifdef REAL_TIME
-    int prior;
-
-    prior = rtprio(0, 5);
-    if (prior == -1)
-	fprintf(stderr, "twm: real time priority failed\n");
-    else
-	fprintf(stderr, "twm: real time priority set (%d)\n", prior);
-    if (plock(PROCLOCK))
-	fprintf(stderr, "twm: process not locked\n");
-    else
-	fprintf(stderr, "twm: process locked\n");
-#endif /* REAL_TIME */
 
     ProgramName = argv[0];
     Argc = argc;
