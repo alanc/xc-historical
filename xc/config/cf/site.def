@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.115 94/03/30 16:04:04 dpw Exp $
+XCOMM site:  $XConsortium: site.def,v 1.116 94/03/31 14:53:05 dpw Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -44,8 +44,12 @@ XCOMM site:  $XConsortium: site.def,v 1.115 94/03/30 16:04:04 dpw Exp $
 #define HasCplusplus YES
 #endif
 #ifdef HasCenterLineCplusplus
+#ifndef CplusplusCmd
 #define CplusplusCmd /obj/CenterLine/bin/CC
+#endif
+#ifndef DefaultCplusplusOptions
 #define DefaultCplusplusOptions -Xa
+#endif
 #ifdef SVR4
 #define CplusplusDependIncludes -I/obj/CenterLine/clc++/sparc-solaris2/incl
 #else
@@ -58,9 +62,12 @@ XCOMM site:  $XConsortium: site.def,v 1.115 94/03/30 16:04:04 dpw Exp $
 #ifndef HasCplusplus
 #define HasCplusplus YES
 #endif
+#ifndef CplusplusCmd
 #define CplusplusCmd /obj/CenterLine/bin/CC
+#endif
+#ifndef CplusplusStandardDefines
 #define CplusplusStandardDefines -D__ANSI_CPP__
-#define DefaultCplusplusDebugFlags -g
+#endif
 #endif
 
 #if defined(BSD386Architecture) || defined(SVR4Architecture)
