@@ -444,6 +444,21 @@ Specifies the name of the font to use for displaying menu items.
 .B "menuPad (\fPclass\fB MenuPad)"
 Specifies the number of pixels between menu items and the menu border.  The
 default is 3.
+.sp
+.PP
+The following resources are useful when specified for the Athena Scrollbar
+widget:
+.TP 8
+.B "thickness (\fPclass\fB Thickness)"
+Specifies the width in pixels of the scrollbar.
+.TP 8
+.B "background (\fPclass\fB Background)"
+Specifies the color to use for the background of the scrollbar.
+.TP 8
+.B "foreground (\fPclass\fB Foreground)"
+Specifies the color to use for the foreground of the scrollbar.  The ``thumb''
+of the scrollbar is a simple checkerboard pattern alternating pixels for
+foreground and background color.
 .SH EMULATIONS
 The VT102 emulation is fairly complete, but does not support the blinking
 character attribute nor the double-wide and double-size character sets.
