@@ -1,4 +1,4 @@
-/* $XConsortium: Threads.c,v 1.11 93/09/11 14:45:30 kaleb Exp $ */
+/* $XConsortium: Threads.c,v 1.12 93/09/15 15:09:33 kaleb Exp $ */
 
 /************************************************************
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -370,11 +370,16 @@ IsTopThread(app)
     XtAppContext app;
 #endif
 {
+    LockPtr app_lock = app->lock_info;
+    Boolean retval;
+
+    xmutex_lock(app_lock->mutex);
     assert(xthread_equal((app->lock_info->holder), (xthread_self()) ) );
     assert(app->stack->sp >= 0);
-
-    return ( (xthread_equal( (app->stack->st[app->stack->sp].t), 
-			(xthread_self()) )) ? TRUE : FALSE);
+    retval = (xthread_equal( (app->stack->st[app->stack->sp].t), 
+			(xthread_self()) )) ? TRUE : FALSE;
+    xmutex_unlock(app_lock->mutex);
+    return retval;
 }
 
 static void
