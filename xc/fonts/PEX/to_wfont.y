@@ -1,5 +1,5 @@
 %{
-/* $XConsortium: to_wfont.y,v 5.3 91/04/04 16:00:26 gildea Exp $ */
+/* $XConsortium: to_wfont.y,v 5.4 91/10/31 08:59:03 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -327,7 +327,9 @@ check_num_ch()
 
 yyerror()
 {
+#ifndef bsdi
 	extern int      yylineno;
+#endif
 #	define ERR_SIZE (sizeof(err_string) / sizeof(char *))
 	static char    *err_string[] = {
 		"Cannot open file",
@@ -348,7 +350,11 @@ yyerror()
 		str = err_string[yyerrno-1];
 	else
 		str = "Syntax error";
+#ifdef bsdi
+		fprintf(stderr, "%s.\n", str);
+#else
 		fprintf(stderr, "line %d: %s.\n", yylineno, str);
+#endif
 	freeall();
 	(void) unlink(fname);
 	exit(1);
