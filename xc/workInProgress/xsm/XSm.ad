@@ -3,7 +3,7 @@
 *chooseSessionMessageLabel.label:	Press button again to confirm...
 *chooseSessionLoadButton.label:		Load Session
 *chooseSessionDeleteButton.label:	Delete Session
-*chooseSessionFailSafeButton.label:	Fail Safe
+*chooseSessionFailSafeButton.label:	Default/Fail Safe
 *chooseSessionCancelButton.label:	Cancel
 
 *clientInfoButton.label:	Client List
@@ -22,8 +22,8 @@
 
 *saveTypeLabel.label:		Save Type     
 *saveTypeNone.label:		None
-*saveTypeGlobal.label:		Global
 *saveTypeLocal.label:		Local
+*saveTypeGlobal.label:		Global
 *saveTypeBoth.label:		Both
 
 *interactStyleLabel.label:	Interact Style
