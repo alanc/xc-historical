@@ -1,5 +1,5 @@
 /*
-* $XConsortium: LabelP.h,v 1.24 89/06/08 18:05:01 swick Exp $
+* $XConsortium: TextSrcP.h,v 1.14 89/09/01 14:28:37 kit Exp $
 */
 
 
@@ -94,12 +94,13 @@ typedef struct _TextSrcRec {
 typedef Boolean (*_XawBooleanFunc)();
 typedef int (*_XawIntFunc)();
 typedef XawTextPosition (*_XawTextPositionFunc)();
+typedef void (*_XawTextVoidFunc)();
 
 #define XtInheritRead                 ((_XawTextPositionFunc) _XtInherit)
 #define XtInheritReplace              ((_XawIntFunc) _XtInherit)
 #define XtInheritScan                 ((_XawTextPositionFunc) _XtInherit)
 #define XtInheritSearch               ((_XawTextPositionFunc) _XtInherit)
-#define XtInheritSetSelection         _XtInherit
+#define XtInheritSetSelection         ((_XawTextVoidFunc) _XtInherit)
 #define XtInheritConvertSelection     ((_XawBooleanFunc) _XtInherit)
 
 #endif /* _XawTextSrcP_h */
