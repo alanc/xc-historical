@@ -46,8 +46,7 @@ SOFTWARE.
 #endif
 #include <time.h>
 #include <sys/stat.h>
-
-/* lifted from Xt/VarargsI.h */
+#include <ctype.h>    /* for isspace */
 #if NeedVarargsPrototypes
 #include <stdarg.h>
 #endif
