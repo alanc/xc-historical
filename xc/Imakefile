@@ -61,7 +61,7 @@ install::
 	-mkdir $(MANDIR)
 	-mkdir $(LIBMANDIR)
 
-#ifdef ClientSideOnly
+#ifndef ClientSideOnly
 install::
 	-mkdir $(FONTDIR)
 #endif
