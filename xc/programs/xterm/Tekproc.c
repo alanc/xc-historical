@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.105 91/05/17 18:36:28 gildea Exp $
+ * $XConsortium: Tekproc.c,v 1.106 91/06/24 20:44:38 gildea Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -187,7 +187,7 @@ static XtActionsRec actionsList[] = {
     { "popup-menu",		HandlePopupMenu },
     /* menu actions */
     { "allow-send-events",	HandleAllowSends },
-    { "set-visual-bell",	HandleVisualBell },
+    { "set-visual-bell",	HandleSetVisualBell },
     { "set-logging",		HandleLogging },
     { "redraw",			HandleRedraw },
     { "send-signal",		HandleSendSignal },

@@ -1,4 +1,4 @@
-/* $XConsortium: menu.c,v 1.58 91/05/11 22:46:25 gildea Exp $ */
+/* $XConsortium: menu.c,v 1.59 91/05/31 19:47:08 gildea Exp $ */
 /*
 Copyright 1989 Massachusetts Institute of Technology
 
@@ -869,7 +869,7 @@ void HandleAllowSends(w, event, params, param_count)
 		   params, *param_count, w, NULL, NULL);
 }
 
-void HandleVisualBell(w, event, params, param_count)
+void HandleSetVisualBell(w, event, params, param_count)
     Widget w;
     XEvent *event;
     String *params;

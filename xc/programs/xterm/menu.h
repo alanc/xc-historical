@@ -1,4 +1,4 @@
-/* $XConsortium: menu.h,v 1.21 91/05/11 23:26:57 gildea Exp $ */
+/* $XConsortium: menu.h,v 1.22 91/05/31 19:47:15 gildea Exp $ */
 
 /* Copyright 1989 Massachusetts Institute of Technology */
 
@@ -25,7 +25,7 @@ extern MenuEntry fontMenuEntries[];
 extern Arg menuArgs[];
 
 extern void HandleAllowSends();
-extern void HandleVisualBell();
+extern void HandleSetVisualBell();
 extern void HandleLogging();
 extern void HandleRedraw();
 extern void HandleSendSignal();
