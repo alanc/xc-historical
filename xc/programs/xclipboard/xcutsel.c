@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcutsel.c,v 1.14 91/02/16 21:52:14 dave Exp $
+ * $XConsortium: xcutsel.c,v 1.15 91/02/17 12:05:27 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -138,7 +138,8 @@ static Boolean ConvertSelection(w, selection, target,
     }
     if (*target == XA_STRING || *target == XA_TEXT(d)) {
 	*type = XA_STRING;
-	*value = options.value;
+	*value = XtMalloc((Cardinal) options.length);
+	bcopy(options.value, (char *) *value, options.length);
 	*length = options.length;
 	*format = 8;
 	return True;
@@ -204,8 +205,10 @@ static void LoseSelection(w, selection)
     Widget w;
     Atom *selection;
 {
-    XtFree( options.value );
-    options.value = NULL;
+    if (options.value) {
+	XFree( options.value );
+	options.value = NULL;
+    }
     SetButton(&state, False);
 }
 
@@ -239,7 +242,7 @@ static void GetBuffer(w, closure, callData)
     XtPointer closure;
     XtPointer callData;		/* unused */
 {
-    XtFree( options.value );
+    if (options.value) XFree( options.value );
     options.value =
 	XFetchBuffer(XtDisplay(w), &options.length, options.buffer);
     if (options.value != NULL) {
