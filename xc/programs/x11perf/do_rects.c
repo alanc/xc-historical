@@ -34,6 +34,7 @@ int InitRectangles(xp, p, reps)
 {
     int i;
     int size = p->special;
+    int step;
     int x, y;
     int rows;
 
@@ -43,18 +44,26 @@ int InitRectangles(xp, p, reps)
     x = 0;
     y = 0;
     rows = 0;
+    if (xp->pack) {
+	/* Pack rectangles as close as possible, mainly for debugging faster
+	   tiling, stippling routines in a server */
+	step = size;
+    } else {
+	/* Try to exercise all alignments...any odd number is okay */
+	step = size + 1 + (size % 2);
+    }
 
     for (i = 0; i != p->objects; i++) {
 	rects[i].x = x;
         rects[i].y = y;
 	rects[i].width = rects[i].height = size;
 
-	y += size;
+	y += step;
 	rows++;
 	if (y + size > HEIGHT || rows == MAXROWS) {
 	    rows = 0;
 	    y = 0;
-	    x += size;
+	    x += step;
 	    if (x + size > WIDTH) {
 		x = 0;
 	    }
