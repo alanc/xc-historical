@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pcfread.c,v 1.13 93/09/17 18:26:52 gildea Exp $
+ * $XConsortium: pcfread.c,v 1.14 94/02/03 17:48:11 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -419,7 +419,8 @@ pcfReadFont(pFont, file, bit, byte, glyph, scan)
     for (i = 0; i < GLYPHPADOPTIONS; i++)
 	bitmapSizes[i] = pcfGetINT32(file, format);
     sizebitmaps = bitmapSizes[PCF_GLYPH_PAD_INDEX(format)];
-    bitmaps = (char *) xalloc(sizebitmaps);
+    /* guard against completely empty font */
+    bitmaps = (char *) xalloc(sizebitmaps ? sizebitmaps : 1);
     if (!bitmaps)
 	goto Bail;
     FontFileRead(file, bitmaps, sizebitmaps);
