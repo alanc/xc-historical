@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: TMparse.c,v 1.59 88/04/09 15:58:27 rws Exp $";
+static char rcsid[] = "$Header: TMparse.c,v 1.60 88/04/11 15:20:26 rws Exp $";
 #endif lint
 
 /***********************************************************
@@ -578,7 +578,7 @@ static KeySym StringToKeySym(str)
     if (!*(str+1)) {
 	/* XXX why downcase A-Z, but not capitals in all character sets??? */
 	if ('A' <= *str && *str <= 'Z')
-	    return XK_a + (*str - 'A' + 'a');
+	    return XK_a + (*str - 'A');
 	if (' ' <= *str && *str <= '~')
 	    return XK_space + (*str - ' ');
     }
