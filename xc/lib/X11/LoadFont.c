@@ -1,13 +1,19 @@
 #include "copyright.h"
 
-/* $XConsortium: XLoadFont.c,v 11.7 87/10/29 23:59:39 newman Exp $ */
+/* $XConsortium: XLoadFont.c,v 11.8 88/09/06 16:09:01 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
 
+#if NeedFunctionPrototypes
+Font XLoadFont (
+    register Display *dpy,
+    const char *name)
+#else
 Font XLoadFont (dpy, name)
     register Display *dpy;
     char *name;
+#endif
 {
     register long nbytes;
     Font fid;

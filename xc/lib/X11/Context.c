@@ -1,4 +1,4 @@
-/* $XConsortium: Context.c,v 1.5 89/11/08 17:06:04 converse Exp $ */
+/* $XConsortium: Context.c,v 1.6 89/11/08 18:55:45 converse Exp $ */
 /* static char *sccsid = "@(#)Context.c	1.5	2/24/87"; */
 
 
@@ -51,7 +51,11 @@ SOFTWARE.
 typedef struct _TableEntryRec {	/* Stores one entry. */
     Window 			window;
     XContext			context;
+#if NeedFunctionPrototypes
+    const void			*data;
+#else
     caddr_t			data;
+#endif
     struct _TableEntryRec	*next;
 } TableEntryRec, *TableEntry;
 
@@ -172,11 +176,19 @@ Display *display;
    Possible errors are Out-of-memory.
 */   
 
+#if NeedFunctionPrototypes
+int XSaveContext(
+register Display *display,
+register Window window,
+register XContext context,
+const void* data)
+#else
 int XSaveContext(display, window, context, data)
 register Display *display;
 register Window window;
 register XContext context;
 caddr_t data;
+#endif
 {
     register int CurHash;
     register TableEntry CurEntry;
@@ -220,7 +232,7 @@ caddr_t *data;			/* RETURN */
 	 CurEntry = CurEntry->next)
     {
 	if (CurEntry->window == window && CurEntry->context == context) {
-	    *data = CurEntry->data;
+	    *data = (caddr_t)(CurEntry->data);
 	    return 0;
 	}
     }

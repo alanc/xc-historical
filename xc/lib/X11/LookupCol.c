@@ -1,16 +1,25 @@
 #include "copyright.h"
 
-/* $XConsortium: XLookupCol.c,v 11.7 87/10/29 23:59:45 newman Exp $ */
+/* $XConsortium: XLookupCol.c,v 11.8 88/09/06 16:09:08 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #define NEED_REPLIES
 #include "Xlibint.h"
 
+#if NeedFunctionPrototypes
+Status XLookupColor (
+	register Display *dpy,
+        Colormap cmap,
+	register const char *spec,
+	XColor *def,
+	XColor *scr)
+#else
 Status XLookupColor (dpy, cmap, spec, def, scr)
 	register Display *dpy;
         Colormap cmap;
 	register char *spec;
 	XColor *def, *scr;
+#endif
 {
 	register int n;
 	xLookupColorReply reply;

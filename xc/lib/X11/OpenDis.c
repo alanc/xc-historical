@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.91 89/11/19 13:12:36 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.92 89/12/10 21:41:54 keith Exp $
  */
 
 #include "copyright.h"
@@ -84,8 +84,13 @@ extern Bool _XUnknownWireEvent();
  * Connects to a server, creates a Display object and returns a pointer to
  * the newly created Display back to the caller.
  */
+#if NeedFunctionPrototypes
+Display *XOpenDisplay (
+	register const char *display)
+#else
 Display *XOpenDisplay (display)
 	register char *display;
+#endif
 {
 	register Display *dpy;		/* New Display object being created. */
 	register int i;
@@ -132,7 +137,7 @@ Display *XOpenDisplay (display)
 	}
 	else {
 		/* Display is non-NULL, copy the pointer */
-		display_name = display;
+		display_name = (char *)display;
 	}
 
 /*

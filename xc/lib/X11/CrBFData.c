@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XCrBFData.c,v 1.6 88/09/06 16:05:38 jim Exp $ */
+/* $XConsortium: XCrBFData.c,v 1.7 89/11/08 17:06:27 converse Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 #include "Xlib.h"
@@ -22,11 +22,20 @@
  *    xoffset=0
  *    no extra bytes per line
  */  
+#if NeedFunctionPrototypes
+Pixmap XCreateBitmapFromData(
+     Display *display,
+     Drawable d,
+     const char *data,
+     unsigned int width,
+     unsigned int height)
+#else
 Pixmap XCreateBitmapFromData(display, d, data, width, height)
      Display *display;
      Drawable d;
      char *data;
      unsigned int width, height;
+#endif
 {
     XImage ximage;
     GC gc;
@@ -40,7 +49,7 @@ Pixmap XCreateBitmapFromData(display, d, data, width, height)
     ximage.depth = 1;
     ximage.xoffset = 0;
     ximage.format = ZPixmap;
-    ximage.data = data;
+    ximage.data = (char *)data;
     ximage.byte_order = LSBFirst;
     ximage.bitmap_unit = 8;
     ximage.bitmap_bit_order = LSBFirst;

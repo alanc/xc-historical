@@ -1,7 +1,7 @@
 #include "copyright.h"
 
 /* Copyright 	Massachusetts Institute of Technology  1985, 1986, 1987 */
-/* $XConsortium: XParseGeom.c,v 11.12 88/02/06 15:33:15 jim Exp $ */
+/* $XConsortium: XParseGeom.c,v 11.13 88/09/06 16:09:29 jim Exp $ */
 
 #include "Xlibint.h"
 #include "Xutil.h"
@@ -62,10 +62,19 @@ char **NextString;
 	return (-Result);
 }
 
+#if NeedFunctionPrototypes
+int XParseGeometry (
+const char *string,
+int *x,
+int *y,
+unsigned int *width,    /* RETURN */
+unsigned int *height)    /* RETURN */
+#else
 int XParseGeometry (string, x, y, width, height)
 char *string;
 int *x, *y;
 unsigned int *width, *height;    /* RETURN */
+#endif
 {
 	int mask = NoValue;
 	register char *strind;
@@ -77,7 +86,7 @@ unsigned int *width, *height;    /* RETURN */
 	if (*string == '=')
 		string++;  /* ignore possible '=' at beg of geometry spec */
 
-	strind = string;
+	strind = (char *)string;
 	if (*strind != '+' && *strind != '-' && *strind != 'x') {
 		tempWidth = ReadInteger(strind, &nextCharacter);
 		if (strind == nextCharacter) 

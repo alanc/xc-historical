@@ -1,17 +1,26 @@
 #include "copyright.h"
 
-/* $XConsortium: XQuExt.c,v 11.13 87/10/29 23:59:58 newman Exp $ */
+/* $XConsortium: XQuExt.c,v 11.14 88/09/06 16:09:56 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
 #include "Xlibint.h"
 
+#if NeedFunctionPrototypes
+Bool XQueryExtension(
+    register Display *dpy,
+    const char *name,
+    int *major_opcode,  /* RETURN */
+    int *first_event,   /* RETURN */
+    int *first_error)	/* RETURN */
+#else
 Bool XQueryExtension(dpy, name, major_opcode, first_event, first_error)
     register Display *dpy;
     char *name;
     int *major_opcode;  /* RETURN */
     int *first_event;   /* RETURN */
     int *first_error;	/* RETURN */
+#endif
 {       
     xQueryExtensionReply rep;
     register xQueryExtensionReq *req;

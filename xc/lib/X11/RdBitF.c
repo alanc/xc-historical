@@ -99,6 +99,17 @@ static NextInt (fstream)
 }
 
 
+#if NeedFunctionPrototypes
+int XReadBitmapFile (
+    Display *display,
+    Drawable d,
+    const char *filename,
+    unsigned int *width,                /* RETURNED */
+    unsigned int *height,               /* RETURNED */
+    Pixmap *pixmap,                     /* RETURNED */
+    int *x_hot,                         /* RETURNED */
+    int *y_hot)                         /* RETURNED */
+#else
 int XReadBitmapFile (display, d, filename, width, height, pixmap, x_hot, y_hot)
     Display *display;
     Drawable d;
@@ -106,6 +117,7 @@ int XReadBitmapFile (display, d, filename, width, height, pixmap, x_hot, y_hot)
     unsigned int *width, *height;       /* RETURNED */
     Pixmap *pixmap;                     /* RETURNED */
     int *x_hot, *y_hot;                 /* RETURNED */
+#endif
 {
     Pixmap pix;				/* value to return */
     FILE *fstream;			/* handle on file  */

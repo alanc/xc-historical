@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XKeyBind.c,v 11.56 89/12/09 22:17:34 rws Exp $ */
+/* $XConsortium: XKeyBind.c,v 11.57 89/12/10 10:14:27 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -385,6 +385,15 @@ XLookupString (event, buffer, nbytes, keysym, status)
 			    buffer, nbytes);
 }
 
+#if NeedFunctionPrototypes
+XRebindKeysym (
+    Display *dpy,
+    KeySym keysym,
+    KeySym *mlist,
+    int nm,		/* number of modifiers in mlist */
+    const unsigned char *str,
+    int nbytes)
+#else
 XRebindKeysym (dpy, keysym, mlist, nm, str, nbytes)
     Display *dpy;
     KeySym keysym;
@@ -392,6 +401,7 @@ XRebindKeysym (dpy, keysym, mlist, nm, str, nbytes)
     int nm;		/* number of modifiers in mlist */
     unsigned char *str;
     int nbytes;
+#endif
 {
     register struct XKeytrans *tmp, *p;
     int nb;

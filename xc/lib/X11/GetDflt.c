@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XGetDflt.c,v 1.17 89/12/07 21:35:59 converse Exp $
+ * $XConsortium: XGetDflt.c,v 1.18 89/12/08 10:58:44 rws Exp $
  */
 
 /***********************************************************
@@ -112,11 +112,17 @@ static XrmDatabase InitDefaults (dpy)
 #endif
 }
 
+#if NeedFunctionPrototypes
+char *XGetDefault(
+	Display *dpy,			/* display for defaults.... */
+	register const char *name,	/* name of option program wants */
+	char const *prog)		/* name of program for option	*/
+#else
 char *XGetDefault(dpy, prog, name)
 	Display *dpy;			/* display for defaults.... */
 	register char *name;		/* name of option program wants */
 	char *prog;			/* name of program for option	*/
-
+#endif
 {					/* to get, for example, "font"  */
 	XrmName names[3];
 	XrmClass classes[3];
@@ -131,7 +137,7 @@ char *XGetDefault(dpy, prog, name)
 	if (progname)
 	    progname++;
 	else
-	    progname = prog;
+	    progname = (char *)prog;
 
 	/*
 	 * see if database has ever been initialized.  Lookups can be done

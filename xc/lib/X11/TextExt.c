@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XTextExt.c,v 11.22 89/06/07 13:44:09 jim Exp $
+ * $XConsortium: XTextExt.c,v 11.23 89/10/08 14:45:36 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  */
@@ -40,12 +40,23 @@
  * first row of the font (i.e. byte1 == 0), we can do some optimizations beyond
  * what is done in XTextExtents16.
  */
+#if NeedFunctionPrototypes
+XTextExtents (
+    XFontStruct *fs,
+    const char *string,
+    int nchars,
+    int *dir,           /* RETURN font information */
+    int *font_ascent,   /* RETURN font information */
+    int *font_descent,  /* RETURN font information */
+    register XCharStruct *overall)	/* RETURN character information */
+#else
 XTextExtents (fs, string, nchars, dir, font_ascent, font_descent, overall)
     XFontStruct *fs;
     char *string;
     int nchars;
     int *dir, *font_ascent, *font_descent;  /* RETURN font information */
     register XCharStruct *overall;	/* RETURN character information */
+#endif
 {
     int i;				/* iterator */
     Bool singlerow = (fs->max_byte1 == 0);  /* optimization */
@@ -111,10 +122,17 @@ XTextExtents (fs, string, nchars, dir, font_ascent, font_descent, overall)
  * XTextWidth - compute the width of a string of eightbit bytes.  This is a 
  * subset of XTextExtents.
  */
+#if NeedFunctionPrototypes
+int XTextWidth (
+    XFontStruct *fs,
+    const char *string,
+    int count)
+#else
 int XTextWidth (fs, string, count)
     XFontStruct *fs;
     char *string;
     int count;
+#endif
 {
     int i;				/* iterator */
     Bool singlerow = (fs->max_byte1 == 0);  /* optimization */

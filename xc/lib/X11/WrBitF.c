@@ -57,12 +57,23 @@ int *resultsize;
    
 #define BYTES_PER_OUTPUT_LINE 12
 
+#if NeedFunctionPrototypes
+int XWriteBitmapFile(
+     Display *display,
+     const char *filename,
+     Pixmap bitmap,
+     unsigned int width,
+     unsigned int height,
+     int x_hot,
+     int y_hot)
+#else
 int XWriteBitmapFile(display, filename, bitmap, width, height, x_hot, y_hot)
      Display *display;
      char *filename;
      Pixmap bitmap;
      unsigned int width, height;
      int x_hot, y_hot;
+#endif
 {
   char *data, *ptr;
   int size, byte;
@@ -72,7 +83,7 @@ int XWriteBitmapFile(display, filename, bitmap, width, height, x_hot, y_hot)
   char *name;
 
   if (!(name = rindex(filename, '/')))
-    name = filename;
+    name = (char *)filename;
   else
     name++;
 

@@ -1,10 +1,21 @@
 #include "copyright.h"
 
-/* $XConsortium: XChProp.c,v 11.17 89/05/30 10:14:13 rws Exp $ */
+/* $XConsortium: XChProp.c,v 11.18 89/05/30 11:44:21 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
 
+#if NeedFunctionPrototypes
+XChangeProperty (
+    register Display *dpy,
+    Window w,
+    Atom property,
+    Atom type,
+    int format,  /* 8, 16, or 32 */
+    int mode,  /* PropModeReplace, PropModePrepend, PropModeAppend */
+    const unsigned char *data,
+    int nelements)
+#else
 XChangeProperty (dpy, w, property, type, format, mode, data, nelements)
     register Display *dpy;
     Window w;
@@ -13,6 +24,7 @@ XChangeProperty (dpy, w, property, type, format, mode, data, nelements)
     int mode;  /* PropModeReplace, PropModePrepend, PropModeAppend */
     unsigned char *data;
     int nelements;
+#endif
     {
     register xChangePropertyReq *req;
     register long len;

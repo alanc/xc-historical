@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ParseCmd.c,v 1.17 89/07/20 10:05:44 jim Exp $
+ * $XConsortium: ParseCmd.c,v 1.18 89/07/20 15:38:26 jim Exp $
  */
 
 /***********************************************************
@@ -50,6 +50,15 @@ static void _XReportParseError(arg, msg)
     exit(1);
 }
 
+#if NeedFunctionPrototypes
+void XrmParseCommand(
+    XrmDatabase		*pdb,		/* data base */
+    register XrmOptionDescList options, /* pointer to table of valid options */
+    int			num_options,	/* number of options		     */
+    const char		*prefix,	/* name to prefix resources with     */
+    int			*argc,		/* address of argument count 	     */
+    char		**argv)		/* argument list (command line)	     */
+#else
 void XrmParseCommand(pdb, options, num_options, prefix, argc, argv)
     XrmDatabase		*pdb;		/* data base */
     register XrmOptionDescList options; /* pointer to table of valid options */
@@ -57,6 +66,7 @@ void XrmParseCommand(pdb, options, num_options, prefix, argc, argv)
     char		*prefix;	/* name to prefix resources with     */
     int			*argc;		/* address of argument count 	     */
     char		**argv;		/* argument list (command line)	     */
+#endif
 {
     int 		foundOption;
     char		**argsave;

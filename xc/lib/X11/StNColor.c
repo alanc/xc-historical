@@ -1,16 +1,25 @@
 #include "copyright.h"
 
-/* $XConsortium: XStNColor.c,v 11.9 87/10/30 00:00:23 newman Exp $ */
+/* $XConsortium: XStNColor.c,v 11.10 88/09/06 16:10:59 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
 
+#if NeedFunctionPrototypes
+XStoreNamedColor(
+register Display *dpy,
+Colormap cmap,
+const char *name, /* STRING8 */
+unsigned long pixel, /* CARD32 */
+int flags)  /* DoRed, DoGreen, DoBlue */
+#else
 XStoreNamedColor(dpy, cmap, name, pixel, flags)
 register Display *dpy;
 Colormap cmap;
-unsigned long pixel; /* CARD32 */
 char *name; /* STRING8 */
+unsigned long pixel; /* CARD32 */
 int flags;  /* DoRed, DoGreen, DoBlue */
+#endif
 {
     unsigned int nbytes;
     register xStoreNamedColorReq *req;

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XInitExt.c,v 11.21 89/11/13 14:57:13 converse Exp $ */
+/* $XConsortium: XInitExt.c,v 11.22 89/12/08 18:08:59 converse Exp $ */
 /* Copyright  Massachusetts Institute of Technology 1987 */
 
 #include "Xlibint.h"
@@ -15,9 +15,15 @@ extern Status _XUnknownNativeEvent();
  * at appropriate times.
  */
 
+#if NeedFunctionPrototypes
+XExtCodes *XInitExtension (
+	Display *dpy,
+	const char *name)
+#else
 XExtCodes *XInitExtension (dpy, name)
 	Display *dpy;
 	char *name;
+#endif
 {
 	XExtCodes codes;	/* temp. place for extension information. */
 	register _XExtension *ext;/* need a place to build it all */

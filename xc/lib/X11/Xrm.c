@@ -1,6 +1,6 @@
 
 /*
- * $XConsortium: Xrm.c,v 1.30 89/11/14 16:20:16 converse Exp $
+ * $XConsortium: Xrm.c,v 1.31 89/11/28 12:29:41 rws Exp $
  */
 
 /***********************************************************
@@ -108,9 +108,15 @@ static int     maxResourceQuark = -1;
 #define IsResourceQuark(q)  ((q) <= maxResourceQuark && resourceQuarks[q])
 
 
+#if NeedFunctionPrototypes
+void XrmStringToQuarkList(
+    register const char  *name,
+    register XrmQuarkList quarks)   /* RETURN */
+#else
 void XrmStringToQuarkList(name, quarks)
     register char 	 *name;
     register XrmQuarkList quarks;   /* RETURN */
+#endif
 {
     register int    i;
     register char   ch;
@@ -139,10 +145,17 @@ void XrmStringToQuarkList(name, quarks)
     *quarks = NULLQUARK;
 }
 
+#if NeedFunctionPrototypes
+void XrmStringToBindingQuarkList(
+    register const char	   *name,
+    register XrmBindingList bindings,   /* RETURN */
+    register XrmQuarkList   quarks)     /* RETURN */
+#else
 void XrmStringToBindingQuarkList(name, bindings, quarks)
     register char	    *name;
     register XrmBindingList bindings;   /* RETURN */
     register XrmQuarkList   quarks;     /* RETURN */
+#endif
 {
     register int	i;
     register XrmBinding binding;
@@ -803,11 +816,19 @@ void XrmQPutResource(pdb, bindings, quarks, type, value)
     PutEntry(*pdb, bindings, quarks, type, value);
 } /* XrmQPutResource */
 
+#if NeedFunctionPrototypes
+void XrmPutResource(
+    XrmDatabase     *pdb,
+    const char	    *specifier,
+    const char	    *type,
+    XrmValuePtr	    value)
+#else
 void XrmPutResource(pdb, specifier, type, value)
     XrmDatabase     *pdb;
     char	    *specifier;
     char	    *type;
     XrmValuePtr	    value;
+#endif
 {
     XrmBinding	    bindings[100];
     XrmQuark	    quarks[100];
@@ -817,11 +838,19 @@ void XrmPutResource(pdb, specifier, type, value)
     PutEntry(*pdb, bindings, quarks, XrmStringToQuark(type), value);
 } /* XrmPutResource */
 
+#if NeedFunctionPrototypes
+void XrmQPutStringResource(
+    XrmDatabase     *pdb,
+    XrmBindingList  bindings,
+    XrmQuarkList    quarks,
+    const char	    *str)
+#else
 void XrmQPutStringResource(pdb, bindings, quarks, str)
     XrmDatabase     *pdb;
     XrmBindingList  bindings;
     XrmQuarkList    quarks;
     char	    *str;
+#endif
 {
     XrmValue	value;
 
@@ -957,10 +986,17 @@ static void PutLineResources(pdb, get_line, closure)
 } /* PutLineResources */
 
 
+#if NeedFunctionPrototypes
+void XrmPutStringResource(
+    XrmDatabase *pdb,
+    const char	*specifier,
+    const char	*str)
+#else
 void XrmPutStringResource(pdb, specifier, str)
     XrmDatabase *pdb;
     char	*specifier;
     char	*str;
+#endif
 {
     XrmValue	value;
     XrmBinding	bindings[100];
@@ -974,15 +1010,26 @@ void XrmPutStringResource(pdb, specifier, str)
 } /* XrmPutStringResource */
 
 
+#if NeedFunctionPrototypes
+void XrmPutLineResource(
+    XrmDatabase *pdb,
+    const char	*line)
+#else
 void XrmPutLineResource(pdb, line)
     XrmDatabase *pdb;
     char	*line;
+#endif
 {
     PutLineResources(pdb, getstring, (caddr_t) &line);
 } 
 
+#if NeedFunctionPrototypes
+XrmDatabase XrmGetStringDatabase(
+    const char	    *data)
+#else
 XrmDatabase XrmGetStringDatabase(data)
     char	    *data;
+#endif
 {
     XrmDatabase     db;
 
@@ -991,8 +1038,13 @@ XrmDatabase XrmGetStringDatabase(data)
     return db;
 }
 
+#if NeedFunctionPrototypes
+XrmDatabase XrmGetFileDatabase(
+    const char 	    *fileName)
+#else
 XrmDatabase XrmGetFileDatabase(fileName)
     char 	    *fileName;
+#endif
 {
     register FILE   *file;
     XrmDatabase     db;
@@ -1011,9 +1063,15 @@ XrmDatabase XrmGetFileDatabase(fileName)
     return db;
 }
 
+#if NeedFunctionPrototypes
+void XrmPutFileDatabase(
+    XrmDatabase db,
+    const char 	*fileName)
+#else
 void XrmPutFileDatabase(db, fileName)
     XrmDatabase db;
     char 	*fileName;
+#endif
 {
     FILE	*file;
     
@@ -1057,12 +1115,21 @@ Bool XrmQGetResource(db, names, classes, pType, pValue)
     return False;
 }
 
+#if NeedFunctionPrototypes
+Bool XrmGetResource(db, name_str, class_str, pType_str, pValue)
+    XrmHashBucket       db;
+    const char		*name_str;
+    const char		*class_str;
+    XrmString		*pType_str;  /* RETURN */
+    XrmValuePtr		pValue;      /* RETURN */
+#else
 Bool XrmGetResource(db, name_str, class_str, pType_str, pValue)
     XrmHashBucket       db;
     XrmString		name_str;
     XrmString		class_str;
     XrmString		*pType_str;  /* RETURN */
     XrmValuePtr		pValue;      /* RETURN */
+#endif
 {
     XrmName		names[100];
     XrmClass		classes[100];

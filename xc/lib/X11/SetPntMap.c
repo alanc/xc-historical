@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XSetPntMap.c,v 11.9 88/09/06 16:10:23 jim Exp $ */
+/* $XConsortium: XSetPntMap.c,v 11.10 89/12/09 19:14:11 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -8,10 +8,17 @@
 #include "Xlibint.h"
 /* returns either  DeviceMappingSuccess or DeviceMappingBusy  */
 
+#if NeedFunctionPrototypes
+int XSetPointerMapping (
+    register Display *dpy,
+    const unsigned char *map,
+    int nmaps)
+#else
 int XSetPointerMapping (dpy, map, nmaps)
     register Display *dpy;
     unsigned char *map;
     int nmaps;
+#endif
     {
     register xSetPointerMappingReq *req;
     xSetPointerMappingReply rep;

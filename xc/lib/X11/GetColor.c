@@ -1,17 +1,26 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetColor.c,v 11.13 87/10/29 23:59:26 newman Exp $ */
+/* $XConsortium: XGetColor.c,v 11.14 88/09/06 16:07:43 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
 #include "Xlibint.h"
 
+#if NeedFunctionPrototypes
+Status XAllocNamedColor(
+register Display *dpy,
+Colormap cmap,
+const char *colorname, /* STRING8 */
+XColor *hard_def, /* RETURN */
+XColor *exact_def) /* RETURN */
+#else
 Status XAllocNamedColor(dpy, cmap, colorname, hard_def, exact_def)
 register Display *dpy;
 Colormap cmap;
 char *colorname; /* STRING8 */
 XColor *hard_def; /* RETURN */
 XColor *exact_def; /* RETURN */
+#endif
 {
 
     long nbytes;

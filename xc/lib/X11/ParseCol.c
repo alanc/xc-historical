@@ -1,16 +1,24 @@
 #include "copyright.h"
 
-/* $XConsortium: XParseCol.c,v 11.16 88/09/06 16:09:27 jim Exp $ */
+/* $XConsortium: XParseCol.c,v 11.17 89/10/08 14:36:05 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #define NEED_REPLIES
 #include "Xlibint.h"
 
+#if NeedFunctionPrototypes
+Status XParseColor (
+	register Display *dpy,
+        Colormap cmap,
+	register const char *spec,
+	XColor *def)
+#else
 Status XParseColor (dpy, cmap, spec, def)
 	register Display *dpy;
         Colormap cmap;
 	register char *spec;
 	XColor *def;
+#endif
 {
 	register int n, i;
 	int r, g, b;

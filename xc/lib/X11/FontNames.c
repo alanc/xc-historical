@@ -1,15 +1,23 @@
 #include "copyright.h"
 
-/* $XConsortium: XFontNames.c,v 11.19 88/09/06 16:07:25 jim Exp $ */
+/* $XConsortium: XFontNames.c,v 11.20 89/11/08 17:06:39 converse Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"
 
+#if NeedFunctionPrototypes
+char **XListFonts(
+register Display *dpy,
+const char *pattern,  /* null-terminated */
+int maxNames,
+int *actualCount)	/* RETURN */
+#else
 char **XListFonts(dpy, pattern, maxNames, actualCount)
 register Display *dpy;
 char *pattern;  /* null-terminated */
 int maxNames;
 int *actualCount;	/* RETURN */
+#endif
 {       
     register long nbytes;
     register int i;

@@ -1,15 +1,22 @@
 #include "copyright.h"
 
-/* $XConsortium: XIntAtom.c,v 11.11 87/10/29 23:59:32 newman Exp $ */
+/* $XConsortium: XIntAtom.c,v 11.12 88/09/06 16:08:47 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
 #include "Xlibint.h"
 
+#if NeedFunctionPrototypes
+Atom XInternAtom (
+    register Display *dpy,
+    const char *name,
+    Bool onlyIfExists)
+#else
 Atom XInternAtom (dpy, name, onlyIfExists)
     register Display *dpy;
     char *name;
     Bool onlyIfExists;
+#endif
 {
     register long nbytes;
     xInternAtomReply rep;

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XSetHints.c,v 11.33 89/11/08 17:08:13 converse Exp $ */
+/* $XConsortium: XSetHints.c,v 11.34 89/12/09 19:14:46 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -186,6 +186,17 @@ XSetCommand (dpy, w, argv, argc)
  *	WM_NORMAL_HINTS	  type: WM_SIZE_HINTS 	format: 32
  */
 	
+#if NeedFunctionPrototypes
+XSetStandardProperties (
+    	Display *dpy,
+    	Window w,		/* window to decorate */
+    	const char *name,	/* name of application */
+    	const char *icon_string,/* name string for icon */
+	Pixmap icon_pixmap,	/* pixmap to use as icon, or None */
+    	char **argv,		/* command to be used to restart application */
+    	int argc,		/* count of arguments */
+    	XSizeHints *hints)	/* size hints for window in its normal state */
+#else
 XSetStandardProperties (dpy, w, name, icon_string, icon_pixmap, argv, argc, hints)
     	Display *dpy;
     	Window w;		/* window to decorate */
@@ -195,6 +206,7 @@ XSetStandardProperties (dpy, w, name, icon_string, icon_pixmap, argv, argc, hint
     	char **argv;		/* command to be used to restart application */
     	int argc;		/* count of arguments */
     	XSizeHints *hints;	/* size hints for window in its normal state */
+#endif
 {
 	XWMHints phints;
 	phints.flags = 0;

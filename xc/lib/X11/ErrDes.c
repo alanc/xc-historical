@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XErrDes.c,v 11.36 89/10/08 14:30:50 rws Exp $
+ * $XConsortium: XErrDes.c,v 11.37 89/11/28 12:28:35 rws Exp $
  */
 
 /***********************************************************
@@ -86,13 +86,24 @@ XGetErrorText(dpy, code, buffer, nbytes)
     return;
 }
 
+#if NeedFunctionPrototypes
+/*ARGSUSED*/
+XGetErrorDatabaseText(
+    Display *dpy,
+    register const char *name,
+    register const char *type,
+    const char *defaultp,
+    char *buffer,
+    int nbytes)
+#else
 /*ARGSUSED*/
 XGetErrorDatabaseText(dpy, name, type, defaultp, buffer, nbytes)
+    Display *dpy;
     register char *name, *type;
     char *defaultp;
-    Display *dpy;
     char *buffer;
     int nbytes;
+#endif
 {
 
     static XrmDatabase db;

@@ -1,4 +1,4 @@
-/* $XConsortium: XStBytes.c,v 11.15 88/09/06 16:10:55 jim Exp $ */
+/* $XConsortium: XStBytes.c,v 11.16 89/12/09 19:14:36 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -55,21 +55,36 @@ char *XFetchBytes (dpy, nbytes)
     return (XFetchBuffer (dpy, nbytes, 0));
 }
 
+#if NeedFunctionPrototypes
+XStoreBuffer (
+    register Display *dpy,
+    const char *bytes,
+    int nbytes,
+    register int buffer)
+#else
 XStoreBuffer (dpy, bytes, nbytes, buffer)
     register Display *dpy;
     char *bytes;
     int nbytes;
     register int buffer;
+#endif
 {
     if ((buffer < 0) || (buffer > 7)) return;
     XChangeProperty(dpy, RootWindow(dpy, 0), n_to_atom[buffer], 
 	XA_STRING, 8, PropModeReplace, (unsigned char *) bytes, nbytes);
 }
 
+#if NeedFunctionPrototypes
+XStoreBytes (
+    register Display *dpy,
+    const char *bytes,
+    int nbytes)
+#else
 XStoreBytes (dpy, bytes, nbytes)
     register Display *dpy;
     char *bytes;
     int nbytes;
+#endif
 {
     XStoreBuffer (dpy, bytes, nbytes, 0);
 }

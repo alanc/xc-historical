@@ -1,16 +1,25 @@
 #include "copyright.h"
 
-/* $XConsortium: XSetDashes.c,v 11.8 87/08/24 18:54:40 newman Exp $ */
+/* $XConsortium: XSetDashes.c,v 11.9 88/09/06 16:10:28 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
 
+#if NeedFunctionPrototypes
+XSetDashes (
+    register Display *dpy,
+    GC gc,
+    int dash_offset,
+    const char *list,
+    int n)
+#else
 XSetDashes (dpy, gc, dash_offset, list, n)
     register Display *dpy;
     GC gc;
     int dash_offset;
     char *list;
     int n;
+#endif
     {
     register xSetDashesReq *req;
 

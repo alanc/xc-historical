@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Quarks.c,v 1.15 89/11/08 17:06:24 converse Exp $
+ * $XConsortium: Quarks.c,v 1.16 89/11/19 14:06:56 rws Exp $
  */
 
 /***********************************************************
@@ -111,8 +111,13 @@ static int XrmAllocMoreQuarkToStringTable()
     return 1;
 }
 
+#if NeedFunctionPrototypes
+XrmQuark XrmStringToQuark(
+    const register XrmString name)
+#else
 XrmQuark XrmStringToQuark(name)
     register XrmString name;
+#endif
 {
     register Signature 	sig = 0;
     register Signature	scale = 27;

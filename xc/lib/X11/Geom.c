@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium$ */
+/* $XConsortium: XGeom.c,v 1.5 88/10/06 11:58:52 jim Exp $ */
 /* Copyright Massachusetts Institute of Technology 1985 */
 
 #include "Xlibint.h"
@@ -12,6 +12,22 @@
  * returns 0 if there was some problem, else the position bitmask.
  */
 
+#if NeedFunctionPrototypes
+int XGeometry (
+     Display *dpy,			/* user's display connection */
+     int screen,			/* screen on which to do computation */
+     const char *pos,			/* user provided geometry spec */
+     const char *def,			/* default geometry spec for window */
+     unsigned int bwidth,		/* border width */
+     unsigned int fwidth,		/* size of position units */
+     unsigned int fheight,
+     int xadd,				/* any additional interior space */
+     int yadd,
+     register int *x,			/* always set on successful RETURN */
+     register int *y,			/* always set on successful RETURN */
+     register int *width,		/* always set on successful RETURN */
+     register int *height)		/* always set on successful RETURN */
+#else
 int XGeometry (dpy, screen, pos, def, bwidth, fwidth, fheight, xadd, yadd, x, y, width, height)
      Display *dpy;			/* user's display connection */
      int screen;			/* screen on which to do computation */
@@ -20,7 +36,8 @@ int XGeometry (dpy, screen, pos, def, bwidth, fwidth, fheight, xadd, yadd, x, y,
      unsigned int bwidth;		/* border width */
      unsigned int fwidth, fheight;	/* size of position units */
      int xadd, yadd;			/* any additional interior space */
-     register *x, *y, *width, *height;	/* always set on successful RETURN */
+     register int *x, *y, *width, *height;/* always set on successful RETURN */
+#endif
 {
 	int px, py;			/* returned values from parse */
 	unsigned int pwidth, pheight;	/* returned values from parse */
