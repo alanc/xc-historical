@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8line.c,v 1.14 91/04/09 19:25:11 keith Exp $
+ * $XConsortium: cfb8line.c,v 1.15 91/04/10 11:42:14 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -76,6 +76,9 @@
 #  define WIDTH_FAST  1024
 # endif
 
+# ifdef Mips
+#  define WIDTH_FAST 4096
+# endif
 # ifdef WIDTH_FAST
 #  if WIDTH_FAST == 1024
 #   define FAST_MUL(y)	((y) << 10)
@@ -91,6 +94,10 @@
 
 #  if WIDTH_FAST == 2048
 #   define FAST_MUL(y)	((y) << 11)
+#  endif
+
+#  if WIDTH_FAST == 4096
+#   define FAST_MUL(y)	((y) << 12)
 #  endif
 # endif
 
