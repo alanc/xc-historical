@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.69 88/05/24 10:21:49 rws Exp $ */
+/* $Header: connection.c,v 1.70 88/07/04 10:48:58 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -593,17 +593,23 @@ ErrorF("Didn't make connection: Out of file descriptors for connections\n");
 }
 
 /************
- *   CloseDwonFileDescriptor:
+ *   CloseDownFileDescriptor:
  *     Remove this file descriptor and it's inputbuffers, etc.
  ************/
 
 void
 CloseDownFileDescriptor(connection)
-    long connection;
+    int connection;
 {
     close(connection);
 
-    inputBuffers[connection].bufptr = inputBuffers[connection].buffer;
+    if (inputBuffers[connection].size)
+    {
+	Xfree(inputBuffers[connection].buffer);
+	inputBuffers[connection].buffer = (char *) NULL;
+	inputBuffers[connection].bufptr = (char *) NULL;
+	inputBuffers[connection].size = 0;
+    }
     inputBuffers[connection].bufcnt = 0;
     inputBuffers[connection].lenLastReq = 0;
     inputBuffers[connection].used = 0;
