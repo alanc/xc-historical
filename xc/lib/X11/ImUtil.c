@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XImUtil.c,v 11.32 89/03/27 13:55:02 jim Exp $ */
+/* $XConsortium: XImUtil.c,v 11.33 89/05/15 14:17:13 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -396,9 +396,14 @@ static unsigned long _XGetPixel8 (ximage, x, y)
     int x;
     int y;
 {
+	unsigned char pixel;
+
 	if ((ximage->format == ZPixmap) && (ximage->bits_per_pixel == 8)) {
-	    return ((unsigned char *)ximage->data)
+	    pixel = ((unsigned char *)ximage->data)
 			[y * ximage->bytes_per_line + x];
+	    if (ximage->depth != 8)
+		pixel &= low_bits_table[ximage->depth];
+	    return pixel;
 	} else {
 	    _XInitImageFuncPtrs(ximage);
 	    return XGetPixel(ximage, x, y);
