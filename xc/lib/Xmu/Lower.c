@@ -1,5 +1,5 @@
 static char rcsid[] =
-	"$XConsortium: Lower.c,v 1.1 88/12/22 15:49:24 rws Exp $";
+	"$XConsortium: Lower.c,v 1.2 89/09/22 15:33:15 jim Exp $";
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -96,5 +96,5 @@ int XmuCompareISOLatin1 (first, second)
 	    if (a != b) break;
 	}
     }
-    return (((int) *bp) - ((int) *ap));
+    return (((int) *ap) - ((int) *bp));
 }
