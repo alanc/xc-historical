@@ -1,4 +1,4 @@
-.\" $XConsortium: library.ms,v 1.11 94/04/17 23:56:35 rws Exp $
+.\" $XConsortium: library.ms,v 1.12 94/04/18 14:24:59 rws Exp $
 .\" Input Extension
 .EH ''''
 .OH ''''
@@ -66,8 +66,8 @@ in this Software without prior written authorization from the X Consortium.
 .bp 1
 .EH '\fBX Input Extension Library Specification\fP''\fBX11, Release 6\fP'
 .OH '\fBX Input Extension Library Specification\fP''\fBX11, Release 6\fP'
-.EF ''\fB % \fP''
-.OF ''\fB % \fP''
+.EF ''\fB\\\\n(PN\fP''
+.OF ''\fB\\\\n(PN\fP''
 .\"  Force the heading counter for level 1 to one
 .\"
 .\"
@@ -350,7 +350,7 @@ The specified device must support input class \fBKeys\fP (as reported in the
 \fBBadMatch\fP error.
 .LP
 .DS
-\f(C
+\fC
 int
 XChangeKeyboardDevice (display, device)
     Display *display;
@@ -392,7 +392,7 @@ If the specified device reports absolute positional information, and the
 server implementation does not allow such a device to be used as the 
 X pointer, the request will fail with a \fBBadDevice\fP error.
 .DS
-\f(C
+\fC
 int
 XChangePointerDevice (display, device, xaxis, yaxis)
     Display *display;
@@ -471,7 +471,7 @@ To grab an extension device, use the \fBXGrabDevice\fP function.
 The device must have previously been opened using the
 \fBXOpenDevice\fP function.
 .DS
-\f(C
+\fC
 int
 XGrabDevice (display, device, grab_window, owner_events, 
     event_count, event_list, this_device_mode, 
@@ -600,7 +600,7 @@ Errors returned by this function:  \fBBadDevice\fP, \fBBadWindow\fP,
 .sp 2
 To release a grab of an extension device, use \fBXUngrabDevice\fP.
 .DS
-\f(C
+\fC
 int
 XUngrabDevice (display, device, time)
         Display *display;
@@ -648,7 +648,7 @@ error.
 If the specified device does not support input class \fBKeys\fP,
 the request will fail with a \fBBadMatch\fP error.
 .DS
-\f(C
+\fC
 int
 XGrabDeviceKey (display, device, keycode, modifiers, modifier_device
     grab_window, owner_events, event_count, event_list, 
@@ -766,7 +766,7 @@ request.
 To release a passive grab of a single key on an extension device, 
 use \fBXUngrabDeviceKey\fP.
 .DS
-\f(C
+\fC
 int
 XUngrabDeviceKey (display, device, keycode, modifiers, 
     modifier_device, ungrab_window)
@@ -825,7 +825,7 @@ The specified device must have previously been opened using the
 error.  If the specified device does not support input class \fBButtons\fP,
 the request will fail with a \fBBadMatch\fP error.
 .DS
-\f(C
+\fC
 int
 XGrabDeviceButton (display, device, button, modifiers, 
     modifier_device, grab_window, owner_events, event_count, 
@@ -943,7 +943,7 @@ established if there is a conflicting grab for any combination.
 To release a passive grab of a button on an extension device, use 
 \fBXUngrabDeviceButton\fP.
 .DS
-\f(C
+\fC
 int
 XUngrabDeviceButton (display, device, button, modifiers, 
     modifier_device, ungrab_window)
@@ -1001,7 +1001,7 @@ Thawing A Device
 To allow further events to be processed when a device has been frozen,
 use \fBXAllowDeviceEvents\fR.
 .DS
-\f(C
+\fC
 int
 XAllowDeviceEvents (display, device, event_mode, time)
         Display *display;
@@ -1126,7 +1126,7 @@ is provided for extension devices.
 To get the current focus state, revert state, and focus time of an extension device,
 use \fBXGetDeviceFocus\fP.
 .DS
-\f(C
+\fC
 int
 XGetDeviceFocus (display, device, focus_return, revert_to_return,
     focus_time_return)
@@ -1165,7 +1165,7 @@ Errors returned by this function:  \fBBadDevice\fP, \fBBadMatch\fP.
 .sp 2
 To set the focus of an extension device, use \fBXSetDeviceFocus\fP.
 .DS
-\f(C
+\fC
 int
 XSetDeviceFocus (display, device, focus, revert_to, time)
         Display *display;
@@ -1257,7 +1257,7 @@ To determine the current feedback settings of an extension input device,
 use \fBXGetFeedbackControl\fP.
 .LP
 .DS
-\f(C
+\fC
 XFeedbackState
 *XGetFeedbackControl (display, device, num_feedbacks_return)
         Display          *display;
@@ -1284,7 +1284,7 @@ variable length, but the first three fields are common to all.
 The common fields are as follows:
 .LP
 .DS
-\f(C
+\fC
 typedef struct {
     XID     class;
     int     length;
@@ -1312,7 +1312,7 @@ using the \fBXKbdFeedbackState\fP structure.
 The members of that structure are as follows:
 .LP
 .DS
-\f(C
+\fC
 typedef struct {
     XID     class;
     int     length;
@@ -1360,7 +1360,7 @@ using he \fBXPtrFeedbackState\fP structure.
 The members of that structure are as follows:
 .LP
 .DS
-\f(C
+\fC
 typedef struct {
     XID     class;
     int     length;
@@ -1386,7 +1386,7 @@ the feedback:
 The minimum and maximum values that they can display are reported.
 .LP
 .DS
-\f(C
+\fC
 typedef struct {
     XID     class;
     int     length;
@@ -1414,7 +1414,7 @@ set of key symbols that the feedback can display, as well as the
 maximum number of symbols that can be displayed.
 .LP
 .DS
-\f(C
+\fC
 typedef struct {
     XID     class;
     int     length;
@@ -1443,7 +1443,7 @@ The meaning of the fields is the same as that of the corresponding fields in
 the \fBXKbdFeedbackState\fP structure.
 .LP
 .DS
-\f(C
+\fC
 typedef struct {
     XID     class;
     int     length;
@@ -1465,7 +1465,7 @@ Class \fBLedFeedback\fP is provided for implementations that do not choose to do
 so, and for devices that support multiple led feedbacks.
 .LP
 .DS
-\f(C
+\fC
 typedef struct {
     XID     class;
     int     length;
@@ -1481,7 +1481,7 @@ Errors returned by this function: \fBBadDevice\fP, \fBBadMatch\fP.
 To free the information returned by the \fBXGetFeedbackControl\fP function,
 use \fBXFreeFeedbackList\fP.
 .DS
-\f(C
+\fC
 void
 XFreeFeedbackList (list)
         XFeedbackState *list;
@@ -1506,7 +1506,7 @@ for the feedback.
 Which values are modified depends on the valuemask passed.
 .LP
 .DS
-\f(C
+\fC
 int
 XChangeFeedbackControl (display, device, valuemask, value)
         Display          *display;
@@ -1537,7 +1537,7 @@ These are of variable length, but the first
 two fields are common to all.  The common fields are as follows:
 .LP
 .DS
-\f(C
+\fC
 typedef struct {
     XID    class;
     int    length;
@@ -1551,7 +1551,7 @@ provided by the core keyboard using the \fBKbdFeedbackControl\fP structure.
 The members of that structure are:
 .LP
 .DS
-\f(C
+\fC
 typedef struct {
     XID     class;
     int     length;
@@ -1594,7 +1594,7 @@ Feedback class \fBPtrFeedback\fP controls feedbacks equivalent to those
 provided by the core pointer using the \fBPtrFeedbackControl\fP structure.
 The members of that structure are:
 .DS
-\f(C
+\fC
 typedef struct {
     XID     class;
     int     length;
@@ -1642,7 +1642,7 @@ on input devices, using the \fBIntegerFeedbackControl\fP structure.
 The members of that structure are:
 .LP
 .DS
-\f(C
+\fC
 typedef struct {
     XID     class;
     int     length;
@@ -1663,7 +1663,7 @@ on input devices, using the \fBStringFeedbackControl\fP structure.
 The members of that structure are:
 .LP
 .DS
-\f(C
+\fC
 typedef struct {
     XID     class;
     int     length;
@@ -1684,7 +1684,7 @@ Feedback class \fBBellFeedback\fP controls a bell on an input device,
 using the \fBBellFeedbackControl\fP structure.
 The members of that structure are:
 .DS
-\f(C
+\fC
 typedef struct {
     XID     class;
     int     length;
@@ -1711,7 +1711,7 @@ Feedback class \fBLedFeedback\fP controls lights on an input device,
 using the \fBLedFeedbackControl\fP structure.
 The members of that structure are:
 .DS
-\f(C
+\fC
 typedef struct {
     XID     class;
     int     length;
@@ -1738,7 +1738,7 @@ Ringing a Bell on an Input Device
 .LP
 To ring a bell on a extension input device, use \fBXDeviceBell\fP.
 .DS
-\f(C
+\fC
 int
 XDeviceBell (display, device, feedbackclass, feedbackid, percent)
         Display *display;
@@ -1795,7 +1795,7 @@ To get the key mapping of an extension device that supports input class
 \fBKeys\fP, use 
 \fBXGetDeviceKeyMapping\fP.
 .DS
-\f(C
+\fC
 KeySym
 *XGetDeviceKeyMapping (display, device, first_keycode_wanted, 
     keycode_count, keysyms_per_keycode_return)
@@ -1875,7 +1875,7 @@ To change the keyboard mapping of an extension device that supports input
 class \fBKeys\fP, use 
 \fBXChangeDeviceKeyMapping\fP.
 .DS
-\f(C
+\fC
 int
 XChangeDeviceKeyMapping (display, device, first_keycode, 
     keysyms_per_keycode, keysyms, num_codes)
@@ -1935,7 +1935,7 @@ To obtain the keycodes that are used as modifiers on an
 extension device that supports input class \fBKeys\fP, use
 \fBXGetDeviceModifierMapping\fP.
 .DS
-\f(C
+\fC
 XModifierKeymap 
 *XGetDeviceModifierMapping (display, device)
         Display *display;
@@ -1964,7 +1964,7 @@ Errors returned by this function: \fBBadDevice\fP, \fBBadMatch\fP.
 To set which keycodes that are to be used as modifiers for an extension
 device, use \fBXSetDeviceModifierMapping\fP.
 .DS
-\f(C
+\fC
 int 
 XSetDeviceModifierMapping (display, device, modmap)
         Display         *display;
@@ -2033,7 +2033,7 @@ Controlling Button Mapping
 To set the mapping of the buttons on an extension device, use
 \fBXSetDeviceButtonMapping\fP.
 .DS
-\f(C
+\fC
 int
 XSetDeviceButtonMapping (display, device, map, nmap)
         Display          *display;
@@ -2081,7 +2081,7 @@ and \fBBadValue\fP errors.
 To get the button mapping, use \fBXGetDeviceButtonMapping\fP.
 .sp 2
 .DS
-\f(C
+\fC
 int
 XGetDeviceButtonMapping (display, device, map_return, nmap)
         Display          *display;
@@ -2124,7 +2124,7 @@ Obtaining The State Of A Device
 To obtain information that describes the state of the keys, buttons and 
 valuators of an extension device, use \fBXQueryDeviceState\fP.
 .DS
-\f(C
+\fC
 XDeviceState 
 *XQueryDeviceState (display, device)
         Display *display;
@@ -2145,7 +2145,7 @@ The \fBXQueryDeviceState\fP function returns a pointer to an
 structures that describe the state of the keys, buttons, and valuators 
 on the device.
 .DS
-\f(C
+\fC
 typedef struct {
         XID		device_id;
         int		num_classes;
@@ -2158,7 +2158,7 @@ typedef struct {
 The structures are of variable length, but the first 
 two fields are common to all.  The common fields are as follows:
 .DS
-\f(C
+\fC
 typedef struct
     {
     unsigned char	class;
@@ -2181,7 +2181,7 @@ on the device.  The \fBmode\fP
 field is a mask whose bits report the data mode and other state information
 for the device.  The following bits are currently defined:
 .DS
-\f(C
+\fC
 	DeviceMode	1 << 0	  Relative = 0, Absolute = 1
 	ProximityState	1 << 1    InProximity = 0, OutOfProximity = 1
 \fP
@@ -2191,7 +2191,7 @@ describe the current value of the valuators.  If the mode is \fBRelative\fP,
 these values are undefined.
 .LP
 .DS
-\f(C
+\fC
 typedef struct {
     unsigned char	class;
     unsigned char	length;
@@ -2208,7 +2208,7 @@ on the device.  Byte N (from 0) contains the
 bits for key 8N to 8N+7 with the least significant bit in the
 byte representing key 8N.
 .DS
-\f(C
+\fC
 typedef struct {
     unsigned char	class;
     unsigned char	length;
@@ -2223,7 +2223,7 @@ on the device.  Byte N (from 0) contains the
 bits for button 8N to 8N+7 with the least significant bit in the
 byte representing button 8N.
 .DS
-\f(C
+\fC
 typedef struct {
     unsigned char	class;
     unsigned char	length;
@@ -2239,7 +2239,7 @@ function.
 Errors returned by this function: \fBBadDevice\fP.
 .LP
 .DS
-\f(C
+\fC
 void
 XFreeDeviceState (state)
         XDeviceState *state;
@@ -2424,7 +2424,7 @@ the x,y and x_root,y_root fields is the location of the core X pointer.
 .LP
 The XDeviceKeyEvent structure is defined as follows:
 .DS
-\f(C
+\fC
 .ps 8
 typedef struct 
     {
@@ -2478,7 +2478,7 @@ the axes_count field contains 0.
 The location reported in 
 the x,y and x_root,y_root fields is the location of the core X pointer.
 .DS
-\f(C
+\fC
 .ps 8
 typedef struct {
     int           type;         /* of event */
@@ -2530,7 +2530,7 @@ of axes reported in the axes_count field, and the first axis reported
 in the current event in the first_axis field.
 .LP
 .DS
-\f(C
+\fC
 .ps 8
 typedef struct 
     {
@@ -2573,7 +2573,7 @@ focus changes of extension devices in the same manner as core focus
 events are generated.
 .LP
 .DS
-\f(C
+\fC
 .ps 8
 typedef struct 
     {
@@ -2616,7 +2616,7 @@ If the device supports input class Valuators, the mode field in the
 proximity state and other state information.  The
 following bits are currently defined:
 .DS
-\f(C
+\fC
 	0x01		Relative = 0, Absolute = 1
 	0x02		InProximity = 0, OutOfProximity = 1
 \fP
@@ -2626,7 +2626,7 @@ If the device supports more valuators than can be reported in a single
 \fBXEvent\fP, multiple \fBXDeviceStateNotify\fP events will be generated.
 .LP
 .DS
-\f(C
+\fC
 .ps 8
 typedef struct
     {
@@ -2650,7 +2650,7 @@ typedef struct {
 .DE
 .LP
 .DS
-\f(C
+\fC
 .ps 8
 typedef struct {
     unsigned char	class;
@@ -2664,7 +2664,7 @@ typedef struct {
 .DE
 .LP
 .DS
-\f(C
+\fC
 .ps 8
 typedef struct {
     unsigned char	class;
@@ -2677,7 +2677,7 @@ typedef struct {
 .DE
 .LP
 .DS
-\f(C
+\fC
 .ps 8
 typedef struct {
     unsigned char	class;
@@ -2699,7 +2699,7 @@ It notifies client programs when the mapping of keys,
 modifiers, or buttons on an extension device has changed.
 .LP
 .DS
-\f(C
+\fC
 typedef struct {
     int            type;
     unsigned long  serial;	
@@ -2724,7 +2724,7 @@ This event has no equivalent in the core protocol.  It notifies client
 programs when one of the core devices has been changed.
 .LP
 .DS
-\f(C
+\fC
 typedef struct {
     int            type;
     unsigned long  serial;
@@ -2762,7 +2762,7 @@ but is not reporting absolute mode data,
 the axes_count field contains 0.
 .LP
 .DS
-\f(C
+\fC
 .ps 8
 typedef struct 
     {
@@ -2796,7 +2796,7 @@ Determining The Extension Version
 .XE
 .LP
 .DS
-\f(C
+\fC
 XExtensionVersion
 *XGetExtensionVersion (display, name)
         Display *display;
@@ -2821,7 +2821,7 @@ version of the extension supported by the server.  The structure is
 defined as follows:
 .LP
 .DS
-\f(C
+\fC
 typedef struct
     {
     Bool  present;   
@@ -2853,7 +2853,7 @@ can then be compared with the device types returned by the
 \fBXListInputDevices\fP request.
 .LP
 .DS
-\f(C
+\fC
 XDeviceInfo 
 *XListInputDevices (display, ndevices)
         Display *display;
@@ -2905,7 +2905,7 @@ structure.
 .LP
 The \fBXDeviceInfo\fP structure contains the following information:
 .DS
-\f(C
+\fC
 typedef struct _XDeviceInfo
     {
     XID                 id;        
@@ -2921,7 +2921,7 @@ typedef struct _XDeviceInfo
 The structures pointed to by the \fBXDeviceInfo\fP structure contain
 the following information:
 .DS
-\f(C
+\fC
 typedef struct _XKeyInfo
     {
     XID                 class;
@@ -2952,7 +2952,7 @@ typedef struct	_XValuatorInfo
 The \fBXAxisInfo\fP structure pointed to by the \fBXValuatorInfo\fP structure 
 contains the following information.
 .DS
-\f(C
+\fC
 typedef struct _XAxisInfo {
     int 	resolution;
     int 	min_value;
@@ -2963,7 +2963,7 @@ typedef struct _XAxisInfo {
 .LP
 The following atom names are defined in the file \fBXI.h\fP:
 .DS
-\f(C
+\fC
 \fBMOUSE\fP	
 \fBTABLET\fP
 \fBKEYBOARD\fP	
@@ -2994,7 +2994,7 @@ You should use \fBXFreeDeviceList\fP to free the data returned by
 \fBXListInputDevices\fP.  
 .LP
 .DS 
-\f(C 
+\fC 
 void
 XFreeDeviceList (list) 
 	XDeviceInfo *list; 
@@ -3022,7 +3022,7 @@ the server open that device.  This is done via the \fBXOpenDevice\fP
 request.  That request is defined as follows:
 .LP
 .DS
-\f(C
+\fC
 XDevice 
 *XOpenDevice(display, device_id)
         Display *display;
@@ -3043,7 +3043,7 @@ This function opens the device for the requesting client and returns an
 \fBXDevice\fP structure on success.  That structure is defined as follows:
 .LP
 .DS
-\f(C
+\fC
 typedef struct {
         XID                    device_id;
         int                    num_classes;
@@ -3060,7 +3060,7 @@ by the input device.
 The XInputClassInfo structure is defined as follows:
 .LP
 .DS
-\f(C
+\fC
 typedef struct {
         unsigned char input_class;
         unsigned char event_type_base;
@@ -3074,7 +3074,7 @@ input extension.  The name of the macro corresponds to the desired event,
 and the macro is passed the structure that describes the device from which
 input is desired, i.e.
 .DS
-\f(C
+\fC
 	DeviceKeyPress (XDevice *device, event_type, event_class)
 \fP
 .DE
@@ -3104,7 +3104,7 @@ If a client program terminates without closing a device, the server will
 automatically close that device on behalf of the client.  This does not
 affect any other clients that may be accessing that device.
 .DS
-\f(C
+\fC
 int
 XCloseDevice(display, device)
         Display *display;
@@ -3135,7 +3135,7 @@ data.  To change the mode of a device from relative to absolute, use the
 \fBXSetDeviceMode\fP function.  The valid values are \fBAbsolute\fP or 
 \fBRelative\fP.
 .DS
-\f(C
+\fC
 int
 XSetDeviceMode (display, device, mode)
         Display *display;
@@ -3182,7 +3182,7 @@ to a starting value after the mode of the device is changed to \fBAbsolute\fP.
 To initialize the valuators on such a device, use the \fBXSetDeviceValuators\fP
 function.
 .DS
-\f(C
+\fC
 Status
 XSetDeviceValuators (display, device, valuators, first_valuator, 
         num_valuators)
@@ -3211,7 +3211,7 @@ input device.  Valuators are numbered beginning with zero.  Only the valuators
 in the range specified by first_valuator and num_valuators are set.  If the
 number of valuators supported by the device is less than the expression
 .DS
-\f(C
+\fC
       first_valuator + num_valuators, 
 \fP
 .DE
@@ -3243,7 +3243,7 @@ by data structures unique to that device control.
 To query a device control use XGetDeviceControl.  
 .LP     
 .DS
-\f(C
+\fC
 XDeviceControl
 *XGetDeviceControl (display, device, control)
 	Display *display;
@@ -3275,7 +3275,7 @@ mapped by a structure appropriate for that control.  The first
 two fields are common to all device controls:
 .LP
 .DS
-\f(C
+\fC
 typedef struct {
       XID     control;
       int     length;
@@ -3291,7 +3291,7 @@ defined in the following structure:
 include:
 .LP
 .DS
-\f(C
+\fC
 typedef struct {
       XID     control;
       int     length;
@@ -3339,7 +3339,7 @@ by data structures unique to that device control.
 To change a device control use XChangeDeviceControl.  
 .LP     
 .DS
-\f(C
+\fC
 Status
 XChangeDeviceControl (display, device, control, value)
 	Display *display;
@@ -3381,7 +3381,7 @@ structure appropriate for that control.  The first two fields are
 common to all device controls:
 .LP
 .DS
-\f(C
+\fC
 typedef struct {
       XID     control;
       int     length;
@@ -3396,7 +3396,7 @@ The information that can be changed by the DEVICE_RESOLUTION
 control is defined in the following structure:
 .LP
 .DS
-\f(C
+\fC
 typedef struct {
       XID     control;
       int     length;
@@ -3423,7 +3423,7 @@ BadValue error.  If the number of valuators supported by the device
 is less than the expression 
 .LP   
 .DS
-\f(C
+\fC
       first_valuator + num_valuators, 
 \fP
 .DE
@@ -3443,7 +3443,7 @@ a list of classes that define the desired event types and devices, a count
 of the number of elements in the list, and the id of the window from which 
 events are desired.
 .DS
-\f(C
+\fC
 int
 XSelectExtensionEvent (display, window, event_list, event_count)
         Display     *display;
@@ -3474,7 +3474,7 @@ returned obtained by invoking a macro with the pointer to a Device
 structure returned by the \fBXOpenDevice\fP request.
 For example, the DeviceKeyPress macro, invoked in the form:
 .DS
-\f(C
+\fC
 	DeviceKeyPress (XDevice *device, event_type, event_class)
 \fP
 .DE
@@ -3507,7 +3507,7 @@ Determining Selected Device Events
 To determine which extension events are currently selected from a given
 window, use \fBXGetSelectedExtensionEvents\fP.
 .DS
-\f(C
+\fC
 int
 XGetSelectedExtensionEvents (display, window, this_client_count, 
         this_client, all_clients_count, all_clients)
@@ -3575,7 +3575,7 @@ specified XEventClass is invalid because suppression of that event is not
 allowed, a \fBBadClass\fP error will result.
 .LP
 .DS
-\f(C
+\fC
 int
 XChangeDeviceDontPropagateList (display, window, event_count, 
         events, mode)
@@ -3611,7 +3611,7 @@ This function can return \fBBadWindow\fP, \fBBadClass\fP, and
 do_not_propagate list of extension events for the specified window.
 .LP
 .DS
-\f(C
+\fC
 XEventClass
 *XGetDeviceDontPropagateList (display, window, event_count)
 	Display *display;
@@ -3647,7 +3647,7 @@ Sending An Event
 to another client.
 .LP
 .DS
-\f(C
+\fC
 int
 XSendExtensionEvent (display, device, window, propagate, 
         event_count, event_list, event)
@@ -3735,7 +3735,7 @@ Getting Motion History
 .XE
 .LP
 .DS
-\f(C
+\fC
 XDeviceTimeCoord 
 *XGetDeviceMotionEvents (display, device, start, stop, 
         nevents_return, mode_return, axis_count_return);
@@ -3779,7 +3779,7 @@ are returned.
 .LP
 The return type for this function is a structure defined as follows:
 .DS
-\f(C
+\fC
 typedef struct {
         Time time;
         unsigned int *data;
@@ -3816,7 +3816,7 @@ function.
 Errors returned by this function:  \fBBadDevice\fP, \fBBadMatch\fP.
 .LP
 .DS
-\f(C
+\fC
 void
 XFreeDeviceMotionEvents (events)
         XDeviceTimeCoord *events;
@@ -3845,7 +3845,7 @@ The following information is contained in the \fB<X11/extensions/XInput.h>\fP
 and \fB<X11/extensions/XI.h>\fP header files:
 .DS 0
 .cs CW 20
-\f(C
+\fC
 .ps 8
 /* Definitions used by the library and client */
 
@@ -4703,5 +4703,8 @@ typedef struct {
 #endif /* _XI_H_ */
 \fP
 .DE
-.bp
+.\" print Table of Contents
+.if o .bp \" blank page to make count even
+.bp 1
+.af PN i
 .PX
