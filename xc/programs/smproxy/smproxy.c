@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.5 94/06/16 16:34:08 mor Exp $ */
+/* $XConsortium: smproxy.c,v 1.6 94/06/17 10:13:13 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -1056,8 +1056,17 @@ SmcConn smcConn;
 SmPointer clientData;
 
 {
-    XtRemoveInput (proxy_iceInputId);
     ok_to_die = 1;
+
+    /* should really use phase 2 stuff here!!!!!!!!!!!!! */
+
+    if (die_count == proxy_count)
+    {
+	SmcCloseConnection (proxy_smcConn, 0, NULL);
+	exit();
+    }
+    else
+	XtRemoveInput (proxy_iceInputId);
 }
 
 
