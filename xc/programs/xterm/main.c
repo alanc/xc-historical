@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.203 92/11/20 19:04:37 rws Exp $";
+static char *rid="$XConsortium: main.c,v 1.204 93/02/08 16:53:21 gildea Exp $";
 #endif /* lint */
 
 /*
@@ -2778,11 +2778,13 @@ static SIGNAL_T reapchild (n)
 {
     int pid;
 
+    pid = wait(NULL);
+
 #ifdef USE_SYSV_SIGNALS
+    /* cannot re-enable signal before waiting for child
+       because then SVR4 loops.  Sigh.  HP-UX 9.01 too. */
     (void) signal(SIGCHLD, reapchild);
 #endif
-
-    pid = wait(NULL);
 
     do {
 	if (pid == term->screen.pid) {
