@@ -615,7 +615,9 @@ LintLibraryTarget(X11,*.c)
 
 BuildIncludes($(HEADERS),.,.)
 InstallMultiple($(HEADERS),$(INCDIR))
+#if InstallXcmsTxt
 InstallNonExecFile(Xcms.txt,$(LIBDIR))
+#endif
 InstallNonExecFile(XErrorDB,$(LIBDIR))
 InstallNonExecFile(XKeysymDB,$(LIBDIR))
 InstallLintLibrary(X11,$(LINTLIBDIR))
