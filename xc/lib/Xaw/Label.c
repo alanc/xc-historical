@@ -41,11 +41,9 @@ static char *sccsid = "@(#)Label.c	1.15	2/25/87";
 
 #include <stdio.h>
 #include <string.h>
-#include "Xlib.h"
-#include "Xresource.h"	/* register type converter */
+#include "Intrinsic.h"
 #include "Xrm.h"	/* quarks */
 #include "Conversion.h" /* lower case proc */
-#include "Intrinsic.h"
 #include "Label.h"
 #include "LabelPrivate.h"
 #include "Atoms.h"
@@ -72,7 +70,7 @@ typedef struct {
 #define XtRjustify		"Justify"
 
 static Resource resources[] = {
-    {XtNforeground, XtCForeColor, XrmRPixel, sizeof(Pixel),
+    {XtNforeground, XtCForeground, XrmRPixel, sizeof(Pixel),
 	Offset(LabelWidget, label.foreground), XrmRString, "Black"},
     {XtNfont,  XtCFont, XrmRFontStruct, sizeof(XFontStruct *),
 	Offset(LabelWidget, label.font),XrmRString, "Fixed"},
@@ -112,8 +110,6 @@ LabelWidgetClassData labelWidgetClassData = {
     /* accepts_focus	*/	FALSE,
     /* accept_focus	*/	NULL,
 };
-
-LabelWidgetClass labelWidgetClass = &labelWidgetClassData;
 
 /****************************************************************
  *
@@ -261,10 +257,12 @@ void Realize(w, valueMask, attributes)
 static void Redisplay(w)
     Widget w;
 {
+   LabelWidget lw = (LabelWidget) w;
+
    XDrawString(
-	w->core.display, w->core.window, w->label.gc,
-	(LabelWidget) w->label.labelX, (LabelWidget) w->label.labeY,
-	(LabelWidget) w->label.label, (LabelWidget) w->label.labelLen);
+	w->core.display, w->core.window, lw->label.gc,
+	lw->label.labelX, lw->label.labelY,
+	lw->label.label, lw->label.labelLen);
 }
 
 
@@ -285,14 +283,13 @@ void SetValues(old, new)
     WidgetGeometry	reqGeo;
 
     if (newlw->label.label == NULL) {
-	unsigned int len = strlen(lw->core.name);
-	lw->label.label = XtMalloc(len+1);
-	(void) strcpy(lw->label.label, lw->core.name);
+	/* the string will be copied below... */
+	newlw->label.label = newlw->core.name;
     }
 
-    if (oldlw->label.label != newlw->label.label)
+    if ((oldlw->label.label != newlw->label.label)
 	|| (oldlw->label.font != newlw->label.font)
-	|| (oldlw->label.justify != newlw->label.justify) {
+	|| (oldlw->label.justify != newlw->label.justify)) {
 
 	SetTextWidthAndHeight(newlw);
 

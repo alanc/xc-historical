@@ -53,7 +53,7 @@ typedef enum {
  
 /* New fields for the Label widget class record */
 
-typedef void LabelClass;
+typedef struct {int foo;} LabelClass;
 
 /* Full class record declaration */
 typedef struct {
