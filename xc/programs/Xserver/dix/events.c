@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.170 89/03/11 16:51:41 rws Exp $ */
+/* $XConsortium: events.c,v 1.171 89/03/15 13:36:20 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -145,10 +145,9 @@ extern void WriteEventsToClient();
 static Bool CheckDeviceGrabs();
 
 extern GrabPtr CreateGrab();		/* Defined in grabs.c */
-extern void  DeleteGrab();
 extern Bool GrabMatchesSecond();
-extern void DeletePassiveGrabFromList();
-extern Bool AddPassiveGrabToWindowList();
+extern Bool DeletePassiveGrabFromList();
+extern int AddPassiveGrabToList();
 
 static ScreenPtr currentScreen;
 
@@ -534,7 +533,7 @@ DeactivatePointerGrab(mouse)
 	ConfineCursorToWindow(ROOT, 0, 0, FALSE);
     PostNewCursor();
     if (grab->cursor)
-	FreeCursor(grab->cursor, 0);
+	FreeCursor(grab->cursor, (Cursor)0);
     ComputeFreezes(keybd, mouse);
 }
 
@@ -1071,7 +1070,7 @@ XYToWindow(x, y)
 		spriteTrace = (WindowPtr *)xrealloc(
 		    spriteTrace, spriteTraceSize*sizeof(WindowPtr));
 		if (!spriteTrace)
-		    FatalError("could not realloc spriteTrace");
+		    FatalError("could not realloc spriteTrace"); /* XXX */
 	    }
 	    spriteTrace[spriteTraceGood] = pWin;
 	    pWin = spriteTrace[spriteTraceGood++]->firstChild;
@@ -1679,28 +1678,6 @@ OtherClientGone(pWin, id)
 }
 
 int
-PassiveClientGone(pWin, id)
-    WindowPtr pWin;
-    XID   id;
-{
-    register GrabPtr *next;
-    register GrabPtr grab;
-
-    for (next = (GrabPtr *)&(pWin->passiveGrabs);
-	 *next; next = &((*next)->next))
-    {
-	if ((grab = *next)->resource == id)
-	{
-	    *next = grab->next;
-	    DeleteGrab(grab);
-	    return(Success);
-	}
-    }
-    FatalError("client not on passive grab list");
-    /*NOTREACHED*/
-}
-
-int
 EventSelectForWindow(pWin, client, mask)
 	WindowPtr pWin;
 	ClientPtr client;
@@ -2163,7 +2140,7 @@ ProcSetInputFocus(client)
 	    focusTrace = (WindowPtr *)xrealloc(
 		    focusTrace, focusTraceSize*sizeof(WindowPtr));
 	    if (!focusTrace)
-		FatalError("could not realloc focusTrace");
+		FatalError("could not realloc focusTrace"); /* XXX */
 	}
 
  	focusTraceGood = depth;
@@ -2319,7 +2296,7 @@ ProcChangeActivePointerGrab(client)
 	     (CompareTimeStamps(time, device->grabTime) == EARLIER))
 	return Success;
     if (grab->cursor)
-	FreeCursor(grab->cursor, 0);
+	FreeCursor(grab->cursor, (Cursor)0);
     grab->cursor = newCursor;
     if (newCursor)
 	newCursor->refcnt++;
@@ -3740,8 +3717,8 @@ ProcUngrabKey(client)
     temporaryGrab.detail.exact = stuff->key;
     temporaryGrab.detail.pMask = NULL;
 
-    DeletePassiveGrabFromList(&temporaryGrab, FALSE);
-
+    if (!DeletePassiveGrabFromList(&temporaryGrab))
+	return(BadAlloc);
     return(Success);
 }
 
@@ -3752,7 +3729,6 @@ ProcGrabKey(client)
     WindowPtr pWin;
     REQUEST(xGrabKeyReq);
     GrabPtr grab;
-    GrabPtr temporaryGrab;
 
     REQUEST_SIZE_MATCH(xGrabKeyReq);
     if (((stuff->key > curKeySyms.maxKeyCode) || (stuff->key < curKeySyms.minKeyCode))
@@ -3765,29 +3741,13 @@ ProcGrabKey(client)
     if (!pWin)
 	return BadWindow;
 
-    temporaryGrab = CreateGrab(client, inputInfo.keyboard, pWin, 
+    grab = CreateGrab(client, inputInfo.keyboard, pWin, 
 	(Mask)(KeyPressMask | KeyReleaseMask), (Bool)stuff->ownerEvents,
 	(Bool)stuff->keyboardMode, (Bool)stuff->pointerMode,
 	stuff->modifiers, stuff->key, NullWindow, NullCursor);
-
-    for (grab = PASSIVEGRABS(pWin); grab; grab = grab->next)
-    {
-	if (GrabMatchesSecond(temporaryGrab, grab))
-	{
-	    if (client != grab->client)
-	    {
-		DeleteGrab(temporaryGrab);
-		return BadAccess;
-	    }
-	}
-    }
-
-    if (!AddPassiveGrabToWindowList(temporaryGrab))
+    if (!grab)
 	return BadAlloc;
-
-    DeletePassiveGrabFromList(temporaryGrab, TRUE);
-
-    return(Success);
+    return AddPassiveGrabToList(grab);
 }
 
 int
@@ -3796,9 +3756,8 @@ ProcGrabButton(client)
 {
     WindowPtr pWin, confineTo;
     REQUEST(xGrabButtonReq);
-    GrabPtr grab;
     CursorPtr cursor;
-    GrabPtr temporaryGrab;
+    GrabPtr grab;
 
     REQUEST_SIZE_MATCH(xGrabButtonReq);
     if ((stuff->pointerMode != GrabModeSync) &&
@@ -3837,31 +3796,14 @@ ProcGrabButton(client)
 	}
     }
 
-
-    temporaryGrab = CreateGrab(client, inputInfo.pointer, pWin, 
+    grab = CreateGrab(client, inputInfo.pointer, pWin, 
 	(Mask)(stuff->eventMask | ButtonPressMask | ButtonReleaseMask),
 	(Bool)stuff->ownerEvents, (Bool) stuff->keyboardMode,
 	(Bool)stuff->pointerMode, stuff->modifiers, stuff->button,
 	confineTo, cursor);
-
-    for (grab = PASSIVEGRABS(pWin); grab; grab = grab->next)
-    {
-	if (GrabMatchesSecond(temporaryGrab, grab))
-	{
-	    if (client != grab->client)
-	    {
-		DeleteGrab(temporaryGrab);
-		return BadAccess;
-	    }
-	}
-    }
-
-    if (!AddPassiveGrabToWindowList(temporaryGrab))
+    if (!grab)
 	return BadAlloc;
-
-    DeletePassiveGrabFromList(temporaryGrab, TRUE);
-
-    return(Success);
+    return AddPassiveGrabToList(grab);
 }
 
 int
@@ -3885,8 +3827,8 @@ ProcUngrabButton(client)
     temporaryGrab.detail.exact = stuff->button;
     temporaryGrab.detail.pMask = NULL;
 
-    DeletePassiveGrabFromList(&temporaryGrab, FALSE);
-
+    if (!DeletePassiveGrabFromList(&temporaryGrab))
+	return(BadAlloc);
     return(Success);
 }
 
