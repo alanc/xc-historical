@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: FSErrDis.c,v 1.2 91/05/13 15:11:29 gildea Exp $ */
 
 /* @(#)FSErrDis.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -24,8 +24,8 @@
  */
 
 #include <stdio.h>
-#include <X11/Xos.h>
 #include "FSlibint.h"
+#include <X11/Xos.h>
 
 char       *FSErrorList[] = {
      /* FSBadRequest	 */ "BadRequest, invalid request code or no such operation",

@@ -1,4 +1,4 @@
-/* $XConsortium: FSConnServ.c,v 1.17 93/07/06 15:16:59 gildea Exp $ */
+/* $XConsortium: FSConnServ.c,v 1.18 93/08/20 16:28:53 rws Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;
@@ -24,8 +24,8 @@
  */
 
 #include	<stdio.h>
-#include	<X11/Xos.h>
 #include	"FSlibint.h"
+#include	<X11/Xos.h>
 #ifndef WIN32
 #include	<sys/socket.h>
 #endif
