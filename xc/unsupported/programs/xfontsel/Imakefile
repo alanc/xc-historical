@@ -1,0 +1,7 @@
+           SRCS = fntchoosr.c
+           OBJS = fntchoosr.o
+LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+
+ComplexProgramTarget(fntchoosr)
+
+InstallAppDefaults(FntChoosr)

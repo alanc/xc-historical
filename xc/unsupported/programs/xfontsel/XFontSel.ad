@@ -1,0 +1,83 @@
+*appDefaultsVersion:	1
+
+FntChooser.cursor:	left_arrow
+*allowShellResize:	true
+
+*commandBox.ShowGrip:	false
+*commandBox*top:	chainTop
+*commandBox*bottom:	chainTop
+
+*quitButton.Label:	quit
+*quitButton.left:	chainLeft
+*quitButton.right:	chainLeft
+
+*ownButton.Label:	select
+*ownButton.fromHoriz:	quitButton
+*ownButton.left:	chainLeft
+*ownButton.right:	chainLeft
+
+*countLabel.BorderWidth: 0
+*countLabel.Justify:	right
+*countLabel.Label:	999999 fonts match
+*countLabel.left:	chainRight
+*countLabel.right:	chainRight
+
+*fieldBox.Orientation:	horizontal
+*fieldBox.HSpace:	0
+*fieldBox.HSpace:	0
+
+*dash.label:		-
+*dash.borderWidth:	0
+*dash.internalHeight:	0
+*dash.internalWidth:	0
+
+*fieldBox*MenuButton.BorderWidth:	0
+*fieldBox*MenuButton.internalHeight:	0
+*fieldBox*MenuButton.internalWidth:	0
+*fieldBox*MenuButton.shapeStyle:	rectangle
+
+#ifdef LONG_NAMES
+*fieldBox*field0.Label:	foundry
+*fieldBox*field1.Label: family
+*fieldBox*field2.Label: weight
+*fieldBox*field3.Label: slant
+*fieldBox*field4.Label: set width
+*fieldBox*field5.Label: add style
+*fieldBox*field6.Label: pixel size
+*fieldBox*field7.Label: point size
+*fieldBox*field8.Label: resolutionX
+*fieldBox*field9.Label: resolutionY
+*fieldBox*field10.Label: spacing
+*fieldBox*field11.Label: avg width
+*fieldBox*field12.Label: registry
+*fieldBox*field13.Label: encoding
+#else
+*fieldBox*field0.Label:	fndry
+*fieldBox*field1.Label: fmly
+*fieldBox*field2.Label: wght
+*fieldBox*field3.Label: slant
+*fieldBox*field4.Label: sWdth
+*fieldBox*field5.Label: adstyl
+*fieldBox*field6.Label: pxlsz
+*fieldBox*field7.Label: ptSz
+*fieldBox*field8.Label: resx
+*fieldBox*field9.Label: resy
+*fieldBox*field10.Label: spc
+*fieldBox*field11.Label: avgWdth
+*fieldBox*field12.Label: rgstry
+*fieldBox*field13.Label: encdng
+#endif
+
+!*field1*menu*courier.Font:
+
+*fontName*skipAdjust:	true
+
+*sampleText*EditType:	edit
+*sampleText*String: ABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstuvwxyz
+
+*sampleText*Label: ABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstuvwxyz
+*sampleText*allowResize: true
+*sampleText*Height:	 50
+
+*MenuButton.translations: #override \
+	<Btn2Down>:	set() notify() unset()
