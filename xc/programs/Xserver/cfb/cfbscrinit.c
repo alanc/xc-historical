@@ -97,8 +97,6 @@ cfbCloseScreen (index, pScreen)
 
     for (i = 0; i < NUMDEPTHS; i++)
 	xfree (depths[i].vids);
-    for (i = 0; i < NUMVISUALS; i++)
-	FreeResource (visuals[i].vid, RC_NONE);
     xfree (pScreen->devPrivate);
     return TRUE;
 }
