@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.198 91/07/12 13:45:25 rws Exp $ */
+/* $XConsortium: Initialize.c,v 1.199 91/07/23 12:16:38 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -53,9 +53,6 @@ extern void _XtConvertInitialize();
  * If used as a shared library, generate code under a different name so that
  * the stub routines in sharedlib.c get loaded into the application binary.
  */
-#ifdef SUNSHLIB
-#define _XtInherit __XtInherit
-#endif
 #define XtToolkitInitialize _XtToolkitInitialize
 #define XtAppInitialize _XtAppInitialize
 #define XtInitialize _XtInitialize
@@ -141,6 +138,15 @@ static int _XtGetHostname (buf, maxlen)
     return len;
 }
 
+
+#ifdef SUNSHLIB
+void _XtInherit()
+{
+    extern void __XtInherit();
+    __XtInherit();
+}
+#define _XtInherit __XtInherit
+#endif
 
 void _XtInherit()
 {
