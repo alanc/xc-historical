@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xclipboard.c,v 1.19 90/11/07 09:53:38 dave Exp $
+ * $XConsortium: xclipboard.c,v 1.20 91/01/09 17:20:45 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -25,7 +25,7 @@
  * Reauthored by: Keith Packard, MIT X Consortium.
  */
 
-/* $XConsortium: xclipboard.c,v 1.19 90/11/07 09:53:38 dave Exp $ */
+/* $XConsortium: xclipboard.c,v 1.20 91/01/09 17:20:45 rws Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -181,8 +181,13 @@ set_button_state ()
     XtSetValues (indexLabel, &arg, ONE);
 }
 
+/* ARGSUSED */
 static void
-NextCurrentClip ()
+NextCurrentClip (w, ev, parms, np)
+    Widget	w;
+    XEvent	*ev;
+    String	*parms;
+    Cardinal	*np;
 {
     if (currentClip->next)
     {
@@ -193,8 +198,13 @@ NextCurrentClip ()
     }
 }
 
+/* ARGSUSED */
 static void
-PrevCurrentClip ()
+PrevCurrentClip (w, ev, parms, np)
+    Widget	w;
+    XEvent	*ev;
+    String	*parms;
+    Cardinal	*np;
 {
     if (currentClip->prev)
     {
@@ -205,8 +215,13 @@ PrevCurrentClip ()
     }
 }
 
+/* ARGSUSED */
 static void
-DeleteCurrentClip ()
+DeleteCurrentClip (w, ev, parms, np)
+    Widget	w;
+    XEvent	*ev;
+    String	*parms;
+    Cardinal	*np;
 {
     ClipPtr newCurrent;
 
@@ -225,8 +240,13 @@ DeleteCurrentClip ()
     set_button_state ();
 }
 
+/* ARGSUSED */
 static void
-Quit ()
+Quit (w, ev, parms, np)
+    Widget	w;
+    XEvent	*ev;
+    String	*parms;
+    Cardinal	*np;
 {
     XtCloseDisplay  (XtDisplay (text));
     exit (0);
@@ -249,14 +269,14 @@ CenterWidgetAtPoint (w, x, y)
 	x = 0;
     else {
 	int scr_width = WidthOfScreen (XtScreen(w));
-	if (x + width > scr_width)
+	if (x + (int)width > scr_width)
 	    x = scr_width - width;
     }
     if (y < 0)
 	y = 0;
     else {
 	int scr_height = HeightOfScreen (XtScreen(w));
-	if (y + height > scr_height)
+	if (y + (int)height > scr_height)
 	    y = scr_height - height;
     }
     XtSetArg(args[0], XtNx, x);
@@ -342,20 +362,35 @@ AcceptSaveFile (w, e, argv, argc)
     }
 }
 
+/* ARGSUSED */
 static void
-CancelSaveFile ()
+CancelSaveFile (w, ev, parms, np)
+    Widget	w;
+    XEvent	*ev;
+    String	*parms;
+    Cardinal	*np;
 {
     XtPopdown (fileDialogShell);
 }
 
+/* ARGSUSED */
 static void
-FailContinue ()
+FailContinue (w, ev, parms, np)
+    Widget	w;
+    XEvent	*ev;
+    String	*parms;
+    Cardinal	*np;
 {
     XtPopdown (failDialogShell);
 }
 
+/* ARGUSED */
 static void
-NewCurrentClip ()
+NewCurrentClip (w, ev, parms, np)
+    Widget	w;
+    XEvent	*ev;
+    String	*parms;
+    Cardinal	*np;
 {
     NewCurrentClipContents ("", 0);
 }
@@ -426,9 +461,9 @@ static Atom	ManagerAtom, ClipboardAtom;
 static void 
 InsertClipboard(w, client_data, selection, type, value, length, format)
 Widget w;
-caddr_t client_data;
+XtPointer client_data;
 Atom *selection, *type;
-caddr_t value;
+XtPointer value;
 unsigned long *length;
 int *format;
 {
@@ -454,7 +489,7 @@ static Boolean ConvertSelection(w, selection, target,
 				type, value, length, format)
     Widget w;
     Atom *selection, *target, *type;
-    caddr_t *value;
+    XtPointer *value;
     unsigned long *length;
     int *format;
 {
@@ -531,7 +566,7 @@ static Boolean ConvertSelection(w, selection, target,
     }
     
     if (XmuConvertStandardSelection(w, req->time, selection, target, type,
-				    value, length, format))
+				    (caddr_t *)value, length, format))
 	return True;
 
     return False;
@@ -550,7 +585,7 @@ static Boolean RefuseSelection(w, selection, target,
 			       type, value, length, format)
     Widget w;
     Atom *selection, *target, *type;
-    caddr_t *value;
+    XtPointer *value;
     unsigned long *length;
     int *format;
 {
@@ -583,15 +618,17 @@ char **argv;
 {
     Arg args[4];
     Cardinal n;
+    XtAppContext xtcontext;
     Widget parent, quit, delete, new, save;
 
-    top = XtInitialize( "xclipboard", "XClipboard", table, XtNumber(table),
-			 (Cardinal*) &argc, argv);
+    top = XtAppInitialize( &xtcontext, "XClipboard", table, XtNumber(table),
+			  &argc, argv, NULL, NULL, 0);
 
     XtGetApplicationResources(top, (XtPointer)&userOptions, resources, 
 			      XtNumber(resources), NULL, 0);
 
-    XtAddActions (xclipboard_actions, XtNumber (xclipboard_actions));
+    XtAppAddActions (xtcontext,
+		     xclipboard_actions, XtNumber (xclipboard_actions));
     /* CLIPBOARD_MANAGER is a non-standard mechanism */
     ManagerAtom = XInternAtom(XtDisplay(top), "CLIPBOARD_MANAGER", False);
     ClipboardAtom = XA_CLIPBOARD(XtDisplay(top));
@@ -657,5 +694,5 @@ char **argv;
       XInternAtom(XtDisplay(top), "WM_DELETE_WINDOW", False);
     (void) XSetWMProtocols (XtDisplay(top), XtWindow(top),
                             &wm_delete_window, 1);
-    XtMainLoop();
+    XtAppMainLoop(xtcontext);
 }
