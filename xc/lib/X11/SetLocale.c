@@ -1,5 +1,5 @@
 /*
- * $XConsortium: SetLocale.c,v 1.33 92/04/22 11:48:46 rws Exp $
+ * $XConsortium: SetLocale.c,v 1.34 93/09/07 20:06:13 rws Exp $
  */
 
 /*
@@ -106,43 +106,71 @@ _Xsetlocale(category, name)
  * returned by setlocale.
  */
 
+char *
+_XlcMapOSLocaleName(osname, siname)
+    char *osname;
+    char *siname;
+{
+#if defined(hpux) || defined(__bsdi__) || defined(sun) || defined(SVR4) || defined(sgi) || defined(__osf__) || defined(AIXV3) || defined(ultrix) || defined(WIN32)
 #ifdef hpux
+#define SKIPCOUNT 2
+#define STARTCHAR ':'
+#define ENDCHAR ';'
+#else
+#ifdef ultrix
+#define SKIPCOUNT 2
+#define STARTCHAR '\001'
+#define ENDCHAR '\001'
+#else
+#ifdef WIN32
+#define SKIPCOUNT 1
+#define STARTCHAR '='
+#define ENDCHAR ';'
+#else
+#if defined(__osf__) || defined(AIXV3)
+#define STARTCHAR ' '
+#define ENDCHAR ' '
+#else
+#if !defined(sun) || defined(SVR4)
+#define STARTCHAR '/'
+#endif
+#define ENDCHAR '/'
+#endif
+#endif
+#endif
+#endif
 
-char *
-_XlcMapOSLocaleName(osname, siname)
-    char *osname;
-    char *siname;
-{
-    char *start;
-    char *end;
-    int   len;
+    char           *start;
+    char           *end;
+    int             len;
+#ifdef SKIPCOUNT
+    int		    n;
+#endif
 
-    start = strchr(osname, ':');
-    if (!start) {
-	strcpy(siname, osname);
-	return osname;
+    start = osname;
+#ifdef SKIPCOUNT
+    for (n = SKIPCOUNT;
+	 --n >= 0 && start && (start = strchr (start, STARTCHAR));
+	 start++)
+	;
+#endif
+#ifdef STARTCHAR
+    if (start && (start = strchr (start, STARTCHAR))) {
+#endif
+	start++;
+	if (end = strchr (start, ENDCHAR)) {
+	    len = end - start;
+	    strncpy(siname, start, len);
+	    *(siname + len) = '\0';
+	    return siname;
+#ifdef STARTCHAR
+	}
+#endif
     }
-    start++;
-    end = strchr(start, ';');
-    if (!end)
-	return osname;
-    len = end - start;
-    strncpy(siname, start, len);
-    siname[len] = '\0';
-    return siname;
-}
-
-#else /* hpux */
-
-/*ARGSUSED*/
-char *
-_XlcMapOSLocaleName(osname, siname)
-    char *osname;
-    char *siname;
-{
+#undef STARTCHAR
+#undef ENDCHAR
+#endif
     return osname;
 }
-
-#endif /* hpux */
 
 #endif  /* X_LOCALE */
