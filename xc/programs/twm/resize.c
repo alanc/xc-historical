@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.33 89/07/06 11:30:18 jim Exp $
+ * $XConsortium: resize.c,v 1.34 89/07/06 12:17:13 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.33 89/07/06 11:30:18 jim Exp $";
+"$XConsortium: resize.c,v 1.34 89/07/06 12:17:13 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -71,33 +71,46 @@ static int last_width;
 static int last_height;
 
 
-static void do_auto_clamp (tmp_win)
+static void do_auto_clamp (tmp_win, evp)
     TwmWindow *tmp_win;
+    XEvent *evp;
 {
     Window junkRoot;
-    int x, y, junkbw;
+    int x, y, h, v, junkbw;
     unsigned int junkMask;
 
-    if (XQueryPointer (dpy, Scr->Root, &junkRoot, &junkRoot,
-		       &x, &y, &junkbw, &junkbw, &junkMask)) {
-	int h = ((x - dragx) / (dragWidth / 3));
-	int v = ((y - dragy - tmp_win->title_height) / (dragHeight / 3));
-	
-	if (h <= 0) {
-	    clampLeft = 1;
-	    clampDX = (x - dragx);
-	} else if (h >= 2) {
-	    clampRight = 1;
-	    clampDX = (x - dragx - dragWidth);
-	}
+    switch (evp->type) {
+      case ButtonPress:
+	x = evp->xbutton.x_root;
+	y = evp->xbutton.y_root;
+	break;
+      case KeyPress:
+	x = evp->xkey.x_root;
+	y = evp->xkey.y_root;
+	break;
+      default:
+	if (!XQueryPointer (dpy, Scr->Root, &junkRoot, &junkRoot,
+			    &x, &y, &junkbw, &junkbw, &junkMask))
+	  return;
+    }
 
-	if (v <= 0) {
-	    clampTop = 1;
-	    clampDY = (y - dragy);
-	} else if (v >= 2) {
-	    clampBottom = 1;
-	    clampDY = (y - dragy - dragHeight);
-	}
+    h = ((x - dragx) / (dragWidth / 3));
+    v = ((y - dragy - tmp_win->title_height) / (dragHeight / 3));
+	
+    if (h <= 0) {
+	clampLeft = 1;
+	clampDX = (x - dragx);
+    } else if (h >= 2) {
+	clampRight = 1;
+	clampDX = (x - dragx - dragWidth);
+    }
+
+    if (v <= 0) {
+	clampTop = 1;
+	clampDY = (y - dragy);
+    } else if (v >= 2) {
+	clampBottom = 1;
+	clampDY = (y - dragy - dragHeight);
     }
 }
 
@@ -142,7 +155,8 @@ Bool fromtitlebar;
     origHeight = dragHeight;
     clampTop = clampBottom = clampLeft = clampRight = clampDX = clampDY = 0;
 
-    if (Scr->AutoRelativeResize && !fromtitlebar) do_auto_clamp (tmp_win);
+    if (Scr->AutoRelativeResize && !fromtitlebar)
+      do_auto_clamp (tmp_win, evp);
 
     XMoveWindow(dpy, Scr->SizeWindow, 0, 0);
     XMapRaised(dpy, Scr->SizeWindow);
