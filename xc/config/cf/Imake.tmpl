@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.116 91/05/04 22:19:32 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.117 91/05/04 22:23:29 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -344,6 +344,9 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #ifndef NeedVarargsPrototypes
 #define NeedVarargsPrototypes	NO
 #endif
+#ifndef NeedNestedPrototypes
+#define NeedNestedPrototypes	NO
+#endif
 #ifndef NeedFunctionPrototypes
 #define NeedFunctionPrototypes NeedVarargsPrototypes
 #endif
@@ -650,19 +653,31 @@ XCOMM site-specific configuration parameters - edit site.def to change
 /*
  * The following supports forcing of function prototypes
  */
+#if NeedFunctionPrototypes && NeedVarargsPrototypes && NeedConstPrototypes && NeedNestedPrototypes
+#define _funcprotodef -DFUNCPROTO=15
+#else
+#if NeedFunctionPrototypes && NeedVarargsPrototypes && NeedNestedPrototypes
+#define _funcprotodef -DFUNCPROTO=11
+#else
+#if NeedFunctionPrototypes && NeedNestedPrototypes
+#define _funcprotodef -DFUNCPROTO=9
+#else
 #if NeedFunctionPrototypes && NeedVarargsPrototypes && NeedConstPrototypes
 #define _funcprotodef -DFUNCPROTO=7
 #else
-#if NeedFunctionPrototypes && NeedVarargsPrototypes
-#define _funcprotodef -DFUNCPROTO=3
-#else
 #if NeedFunctionPrototypes && NeedConstPrototypes
 #define _funcprotodef -DFUNCPROTO=5
+#else
+#if NeedFunctionPrototypes && NeedVarargsPrototypes
+#define _funcprotodef -DFUNCPROTO=3
 #else
 #if NeedFunctionPrototypes
 #define _funcprotodef -DFUNCPROTO
 #else
 #define _funcprotodef /**/
+#endif
+#endif
+#endif
 #endif
 #endif
 #endif
