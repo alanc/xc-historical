@@ -1786,30 +1786,6 @@
 
 
 ;;-----------------------------------------------------------------------------
-;; Printing routines.
-;;-----------------------------------------------------------------------------
-
-#-lispm
-(defmacro printing-object ((object stream) &body body)
-  `(let* ((.object. ,object)
-	  (.stream. ,stream))
-     (princ "#<" .stream.)
-     (prin1 (type-of .object.) .stream.)
-     ,@(and body `((princ " " .stream.)))
-     ,@body
-     #+lcl3.0
-     (let ((*print-base* 16))
-       (princ " " .stream.)
-       (princ (sys:%pointer .object.) .stream.))
-     (princ ">" .stream.)))
-
-#+lispm
-(defmacro printing-object ((object stream) &body body)
-  `(si:printing-random-object (,object ,stream :typep)
-     ,@body))
-
-
-;;-----------------------------------------------------------------------------
 ;; Error handlers
 ;;    Hack up KMP error signaling using zetalisp until the real thing comes 
 ;;    along
