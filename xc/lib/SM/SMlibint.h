@@ -1,4 +1,4 @@
-/* $XConsortium: SMlibint.h,v 1.16 94/03/18 16:04:52 mor Exp $ */
+/* $XConsortium: SMlibint.h,v 1.17 94/03/30 21:07:54 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -416,10 +416,11 @@ struct _SmcConn {
 
 
     /*
-     * Did we receive a SaveYourself with Shutdown = True?
+     * Some state.
      */
 
-    Bool		shutdown_in_progress;
+    char		save_yourself_in_progress;
+    char		shutdown_in_progress;
 };
 
 
