@@ -1,5 +1,5 @@
 /*
-* $XConsortium: ToggleP.h,v 1.21 88/09/27 11:19:53 swick Exp $
+* $XConsortium: ToggleP.h,v 1.1 89/01/12 18:49:01 kit Exp $
 */
 
 
@@ -106,6 +106,6 @@ typedef struct _ToggleRec {
     TogglePart       toggle;
 } ToggleRec;
 
-#endif _XtToggleP_h
+#endif /* _XtToggleP_h */
 
 

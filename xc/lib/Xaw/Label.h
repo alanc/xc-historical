@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Label.h,v 1.19 88/09/29 13:34:45 swick Exp $
+* $XConsortium: Label.h,v 1.20 88/10/23 13:45:42 swick Exp $
 */
 
 
@@ -86,5 +86,5 @@ extern WidgetClass labelWidgetClass;
 typedef struct _LabelClassRec *LabelWidgetClass;
 typedef struct _LabelRec      *LabelWidget;
 
-#endif _XtLabel_h
+#endif /* _XtLabel_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

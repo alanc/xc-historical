@@ -1,4 +1,4 @@
-/* $XConsortium: Form.h,v 1.16 88/10/23 13:39:30 swick Exp $ */
+/* $XConsortium: Form.h,v 1.17 89/03/16 11:25:14 swick Exp $ */
 
 
 /***********************************************************
@@ -111,5 +111,5 @@ typedef struct _FormRec		*FormWidget;
 
 extern WidgetClass formWidgetClass;
  
-#endif _Form_h
+#endif /* _Form_h */
 

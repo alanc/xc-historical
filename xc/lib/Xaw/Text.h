@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Text.h,v 1.15 88/09/19 15:45:37 swick Exp $
+* $XConsortium: Text.h,v 1.16 88/10/23 14:36:28 swick Exp $
 */
 
 
@@ -214,5 +214,5 @@ extern void XtStringSourceDestroy(); /* src */
     /* XtTextSource src;	*/
 
 
-#endif _XtText_h
+#endif /* _XtText_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

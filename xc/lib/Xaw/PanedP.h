@@ -1,6 +1,6 @@
 /***********************************************************
 
-  $XConsortium: PanedP.h,v 1.1 89/03/06 18:11:48 kit Exp $
+  $XConsortium: PanedP.h,v 1.2 89/03/09 16:24:26 kit Exp $
 
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -168,5 +168,5 @@ typedef struct _PanedRec {
     PanedPart     paned;
 } PanedRec;
 
-#endif _PanedP_h
+#endif /* _PanedP_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: SimpleP.h,v 1.6 88/09/06 09:46:44 swick Exp $ */
+/* $XConsortium: SimpleP.h,v 1.7 88/09/06 16:42:24 jim Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 #ifndef _SimpleP_h
@@ -35,4 +35,4 @@ typedef struct _SimpleRec {
     SimplePart	simple;
 } SimpleRec;
 
-#endif  _SimpleP_h
+#endif /* _SimpleP_h */

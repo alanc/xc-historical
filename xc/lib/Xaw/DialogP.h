@@ -1,4 +1,4 @@
-/* $XConsortium: DialogP.h,v 1.7 88/09/06 09:44:44 swick Exp $ */
+/* $XConsortium: DialogP.h,v 1.8 88/09/06 16:41:16 jim Exp $ */
 
 
 /***********************************************************
@@ -70,4 +70,4 @@ typedef struct _DialogConstraintsRec {
     DialogConstraintsPart dialog;
 } DialogConstraintsRec, *DialogConstraints;
 
-#endif _DialogP_h
+#endif /* _DialogP_h */

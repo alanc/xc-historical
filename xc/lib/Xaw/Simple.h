@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: Simple.h,v 1.5 88/09/06 16:42:22 jim Exp $ */
+/* $XConsortium: Simple.h,v 1.6 88/10/23 14:31:50 swick Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 #ifndef _Simple_h
@@ -43,4 +43,4 @@ typedef struct _SimpleRec	*SimpleWidget;
 
 extern WidgetClass simpleWidgetClass;
 
-#endif  _Simple_h
+#endif /* _Simple_h */

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: GripP.h,v 1.11 88/09/06 16:41:33 jim Exp $
+* $XConsortium: GripP.h,v 1.12 89/03/06 16:32:34 kit Exp $
 */
 
 
@@ -75,5 +75,5 @@ typedef struct _GripRec {
    GripPart    grip;
 } GripRec;
 
-#endif _XtGripP_h
+#endif /* _XtGripP_h */
 

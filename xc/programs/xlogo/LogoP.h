@@ -1,5 +1,5 @@
 /*
-* $XConsortium: LogoP.h,v 1.3 88/09/06 09:46:13 swick Exp $
+* $XConsortium: LogoP.h,v 1.4 88/09/06 16:42:06 jim Exp $
 */
 
 /*
@@ -45,4 +45,4 @@ typedef struct _LogoClassRec {
 
 extern LogoClassRec logoClassRec;
 
-#endif _XtLogoP_h
+#endif /* _XtLogoP_h */

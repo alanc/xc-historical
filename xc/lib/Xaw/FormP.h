@@ -1,4 +1,4 @@
-/* $XConsortium: FormP.h,v 1.11 88/09/06 09:44:50 swick Exp $ */
+/* $XConsortium: FormP.h,v 1.12 88/09/06 16:41:26 jim Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 
@@ -75,4 +75,4 @@ typedef struct _FormConstraintsRec {
     FormConstraintsPart	form;
 } FormConstraintsRec, *FormConstraints;
 
-#endif _FormP_h
+#endif /* _FormP_h */

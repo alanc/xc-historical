@@ -1,5 +1,5 @@
 /*
-* $XConsortium: BoxP.h,v 1.12 88/09/06 09:44:07 swick Exp $
+* $XConsortium: BoxP.h,v 1.13 88/09/06 16:40:55 jim Exp $
 */
 
 
@@ -77,4 +77,4 @@ typedef struct _BoxRec {
     BoxPart 	    box;
 } BoxRec;
 
-#endif _BoxP_h
+#endif /* _BoxP_h */

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ViewportP.h,v 1.7 88/09/06 09:47:13 swick Exp $
+ * $XConsortium: ViewportP.h,v 1.8 88/09/06 16:42:50 jim Exp $
  * Private declarations for ViewportWidgetClass
  */
 
@@ -78,4 +78,4 @@ typedef struct _ViewportConstraintsRec {
     ViewportConstraintsPart	viewport;
 } ViewportConstraintsRec, *ViewportConstraints;
 
-#endif _ViewportP_h
+#endif /* _ViewportP_h */

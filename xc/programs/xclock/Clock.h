@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Clock.h,v 1.22 88/10/23 13:10:07 swick Exp $
+* $XConsortium: Clock.h,v 1.23 88/10/23 13:25:38 swick Exp $
 */
 
 
@@ -87,5 +87,5 @@ typedef struct _ClockClassRec *ClockWidgetClass;    /* completely defined in Clo
 
 extern WidgetClass clockWidgetClass;
 
-#endif _XtClock_h
+#endif /* _XtClock_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

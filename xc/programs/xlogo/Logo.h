@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Logo.h,v 1.6 88/09/06 16:42:02 jim Exp $
+* $XConsortium: Logo.h,v 1.7 88/10/23 14:04:52 swick Exp $
 */
 
 /*
@@ -44,4 +44,4 @@ typedef struct _LogoClassRec *LogoWidgetClass;
 
 extern WidgetClass logoWidgetClass;
 
-#endif _XtLogo_h
+#endif /* _XtLogo_h */

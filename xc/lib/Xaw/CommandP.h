@@ -1,5 +1,5 @@
 /*
-* $XConsortium: CommandP.h,v 1.22 89/01/12 18:46:26 kit Exp $
+* $XConsortium: CommandP.h,v 1.23 89/01/12 19:32:19 kit Exp $
 */
 
 
@@ -108,6 +108,6 @@ typedef struct _CommandRec {
     CommandPart      command;
 } CommandRec;
 
-#endif _XtCommandP_h
+#endif /* _XtCommandP_h */
 
 

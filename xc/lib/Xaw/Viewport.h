@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Viewport.h,v 1.6 88/09/06 16:42:49 jim Exp $
+ * $XConsortium: Viewport.h,v 1.7 88/10/23 14:43:56 swick Exp $
  * Public definitions for Viewport widget
  */
 
@@ -66,4 +66,4 @@ extern WidgetClass viewportWidgetClass;
 typedef struct _ViewportClassRec *ViewportWidgetClass;
 typedef struct _ViewportRec	 *ViewportWidget;
 
-#endif _Viewport_h
+#endif /* _Viewport_h */

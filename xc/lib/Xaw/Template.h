@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: Template.h,v 1.1 88/10/23 14:32:46 swick Exp $ */
+/* $XConsortium: Template.h,v 1.2 88/10/25 17:22:09 swick Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987, 1988 */
 
 #ifndef _Template_h
@@ -44,4 +44,4 @@ typedef struct _TemplateRec*		TemplateWidget;
 
 extern WidgetClass templateWidgetClass;
 
-#endif  _Template_h
+#endif /* _Template_h */

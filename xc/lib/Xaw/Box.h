@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Box.h,v 1.14 88/10/23 13:08:31 swick Exp $
+* $XConsortium: Box.h,v 1.15 88/10/23 13:22:34 swick Exp $
 */
 
 
@@ -66,4 +66,4 @@ extern WidgetClass boxWidgetClass;
 typedef struct _BoxClassRec *BoxWidgetClass;
 typedef struct _BoxRec      *BoxWidget;
 
-#endif _XtBox_h
+#endif /* _XtBox_h */

@@ -1,4 +1,4 @@
-/* $XConsortium: Dialog.h,v 1.10 88/09/06 16:41:14 jim Exp $ */
+/* $XConsortium: Dialog.h,v 1.11 88/10/23 13:33:05 swick Exp $ */
 
 
 /***********************************************************
@@ -77,5 +77,5 @@ extern char *XtDialogGetValueString(); /* dpy, window */
     /* Display *dpy; */
     /* Window window; */
 
-#endif _Dialog_h
+#endif /* _Dialog_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

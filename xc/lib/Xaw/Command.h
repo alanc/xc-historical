@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Command.h,v 1.17 88/10/23 13:28:49 swick Exp $
+* $XConsortium: Command.h,v 1.18 88/10/31 11:29:07 swick Exp $
 */
 
 
@@ -77,5 +77,5 @@ typedef struct _CommandClassRec   *CommandWidgetClass;
 typedef struct _CommandRec        *CommandWidget;
 
 
-#endif _XtCommand_h
+#endif /* _XtCommand_h */
 /* DON'T ADD STUFF AFTER THIS */

@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: AsciiTextP.h,v 1.9 88/10/04 16:05:11 swick Exp $ */
+/* $XConsortium: AsciiTextP.h,v 1.10 88/10/18 12:25:24 swick Exp $ */
 
 
 /***********************************************************
@@ -80,4 +80,4 @@ typedef struct _AsciiDiskRec {
     AsciiDiskPart	ascii_disk;
 } AsciiDiskRec;
 
-#endif  _AsciiTextP_h
+#endif /* _AsciiTextP_h */

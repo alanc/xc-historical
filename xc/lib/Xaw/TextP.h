@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.27 88/10/18 12:24:25 swick Exp $
+* $XConsortium: TextP.h,v 1.28 88/10/18 13:12:54 swick Exp $
 */
 
 
@@ -145,4 +145,4 @@ typedef struct _TextRec {
 } TextRec;
 
 
-#endif _XtTextP_h
+#endif /* _XtTextP_h */

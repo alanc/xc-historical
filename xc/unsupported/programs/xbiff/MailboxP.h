@@ -1,5 +1,5 @@
 /*
- * $XConsortium: MailboxP.h,v 1.10 88/09/26 18:50:08 jim Exp $
+ * $XConsortium: MailboxP.h,v 1.11 88/09/30 08:44:55 swick Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -59,4 +59,4 @@ typedef struct _MailboxClassRec {	/* full class record declaration */
 
 extern MailboxClassRec mailboxClassRec;	 /* class pointer */
 
-#endif _XtMailboxP_h
+#endif /* _XtMailboxP_h */

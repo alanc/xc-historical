@@ -7,9 +7,9 @@
  *	By:		Chris D. Peterson
  *                      MIT - Project Athena
  *
- *      $Author: jim $
+ *      $Author: swick $
  *      $oHeader: ListP.h,v 1.3 88/08/30 16:37:03 kit Exp $
- *      $XConsortium: ListP.h,v 1.8 88/09/06 18:14:45 jim Exp $
+ *      $XConsortium: ListP.h,v 1.9 88/10/18 12:25:49 swick Exp $
  *	
  */
 
@@ -116,4 +116,4 @@ typedef struct _ListRec {
     ListPart	list;
 } ListRec;
 
-#endif _XtListP_h
+#endif /* _XtListP_h */

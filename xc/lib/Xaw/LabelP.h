@@ -1,5 +1,5 @@
 /*
-* $XConsortium: LabelP.h,v 1.20 88/09/26 18:03:10 swick Exp $
+* $XConsortium: LabelP.h,v 1.21 88/09/29 13:34:51 swick Exp $
 */
 
 
@@ -92,4 +92,4 @@ typedef struct _LabelRec {
     LabelPart	label;
 } LabelRec;
 
-#endif _XtLabelP_h
+#endif /* _XtLabelP_h */

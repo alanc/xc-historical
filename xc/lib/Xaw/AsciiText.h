@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: AsciiText.h,v 1.10 88/10/23 13:06:01 swick Exp $ */
+/* $XConsortium: AsciiText.h,v 1.11 88/10/23 13:20:46 swick Exp $ */
 
 
 /***********************************************************
@@ -84,4 +84,4 @@ typedef struct _AsciiDiskRec		*AsciiDiskWidget;
 
 extern WidgetClass asciiDiskWidgetClass;
 
-#endif  _AsciiText_h
+#endif /* _AsciiText_h */

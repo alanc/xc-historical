@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.27 88/10/18 12:24:25 swick Exp $
+* $XConsortium: TextSrcP.h,v 1.1 88/10/18 13:13:08 swick Exp $
 */
 
 
@@ -90,4 +90,4 @@ typedef enum  {Normal, Selected }highlightType;
 #define EditError	XawEditError
 #define PositionError	XawPositionError
 
-#endif _XtTextSrcP_h
+#endif /* _XtTextSrcP_h */

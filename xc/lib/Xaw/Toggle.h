@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Toggle.h,v 1.1 89/01/12 18:49:00 kit Exp $
+ * $XConsortium: Toggle.h,v 1.2 89/02/13 14:39:05 kit Exp $
  */
 
 /***********************************************************
@@ -159,5 +159,5 @@ extern WidgetClass               toggleWidgetClass;
 typedef struct _ToggleClassRec   *ToggleWidgetClass;
 typedef struct _ToggleRec        *ToggleWidget;
 
-#endif _XtToggle_h
+#endif /* _XtToggle_h */
 /* DON'T ADD STUFF AFTER THIS */

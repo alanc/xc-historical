@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.h,v 1.11 88/09/26 18:50:01 jim Exp $
+ * $XConsortium: Mailbox.h,v 1.12 88/09/30 08:44:24 swick Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -43,5 +43,5 @@ typedef struct _MailboxClassRec *MailboxWidgetClass;  /* see MailboxP.h */
 
 extern WidgetClass mailboxWidgetClass;
 
-#endif _XtMailbox_h
+#endif /* _XtMailbox_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

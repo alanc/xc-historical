@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Paned.h,v 1.1 89/03/06 18:11:45 kit Exp $
+* $XConsortium: Paned.h,v 1.2 89/03/09 16:24:24 kit Exp $
 */
 
 
@@ -158,5 +158,5 @@ extern void XtPanedGetMinMax( /* panedWidget, min, max */ );
 extern int XtPanedGetNumSub( /* w */ );
     /* Widget w;		*/
 
-#endif _XtPaned_h
+#endif /* _XtPaned_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

@@ -1,4 +1,4 @@
-/* $XConsortium: Cardinals.h,v 1.3 88/09/06 09:44:10 swick Exp $ */
+/* $XConsortium: Cardinals.h,v 1.4 88/09/06 16:40:57 jim Exp $ */
 /*
 
 Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
@@ -32,4 +32,4 @@ without express or implied warranty.
 #define NINE	((Cardinal)9)
 #define TEN	((Cardinal)10)
 
-#endif _Cardinals_h
+#endif /* _Cardinals_h */

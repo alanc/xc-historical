@@ -7,9 +7,9 @@
  *	By:		Chris D. Peterson
  *                      MIT - Project Athena
  *
- *      $Author: jim $
+ *      $Author: swick $
  *      $oHeader: List.h,v 1.4 88/08/30 16:36:53 kit Exp $
- *      $XConsortium: List.h,v 1.8 88/09/06 18:14:38 jim Exp $
+ *      $XConsortium: List.h,v 1.9 88/10/23 13:59:59 swick Exp $
  *	
  *
  */
@@ -198,5 +198,5 @@ extern XtListReturnStruct * XtListShowCurrent(); /* w */
 
 #define XT_LIST_NONE -1	
 
-#endif _XtList_h
+#endif /* _XtList_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

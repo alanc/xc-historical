@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Grip.h,v 1.11 88/10/23 13:42:18 swick Exp $
+* $XConsortium: Grip.h,v 1.12 89/03/06 16:32:32 kit Exp $
 */
 
 
@@ -77,4 +77,4 @@ extern WidgetClass gripWidgetClass;
 typedef struct _GripClassRec *GripWidgetClass;
 typedef struct _GripRec      *GripWidget;
 
-#endif _XtGrip_h
+#endif /* _XtGrip_h */
