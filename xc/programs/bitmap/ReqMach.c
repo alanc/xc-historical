@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ReqMach.c,v 1.2 90/10/31 18:26:36 dave Exp $
+ * $XConsortium: ReqMach.c,v 1.3 90/11/01 19:34:49 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *

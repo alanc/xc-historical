@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitEdit.c,v 1.10 90/10/31 18:25:49 dave Exp $
+ * $XConsortium: BitEdit.c,v 1.11 90/11/01 19:33:55 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -59,12 +59,6 @@ where options include:\n\
      -basename basename\n\
 \n\
 The default WIDTHxHEIGHT is 16x16.\n";
-
-static char *info ="\n\
-Bitmap Was Written by Davor Matic\n\
-       X Consortium AnneX\n\
-For bugs and suggestions write to:\n\
-      dmatic@expo.lcs.mit.edu";
 
 static XrmOptionDescRec options[] = {
   {
@@ -268,7 +262,6 @@ Widget
     top_widget, 
     parent_widget,
     formy_widget,
-    infoButton_widget,
     fileButton_widget, fileMenu_widget,
     editButton_widget, editMenu_widget,
     status_widget,
@@ -279,7 +272,7 @@ Widget
     image_widget;
 Boolean image_visible = False;
 Pixmap check_mark;
-Dialog info_dialog, input_dialog, error_dialog, qsave_dialog;
+Dialog input_dialog, error_dialog, qsave_dialog;
 Time btime;
 String filename = "", basename = "", format = "";
 char message[80];
@@ -862,13 +855,6 @@ void ShowImage(w)
 }
 
 
-
-void InfoCallback()
-{
-    PopupDialog(info_dialog, info,
-		NULL, NULL, XtGrabExclusive);
-}
-   
 void main(argc, argv)
     int    argc;
     char  *argv[];
@@ -902,12 +888,6 @@ void main(argc, argv)
     formy_widget = XtCreateManagedWidget("formy", formWidgetClass,
 				       parent_widget, NULL, 0);
 
-    infoButton_widget = XtCreateManagedWidget("infoButton",
-					commandWidgetClass, 
-					formy_widget, NULL, 0);
-
-    XtAddCallback(infoButton_widget, XtNcallback, InfoCallback, NULL);
-    
     fileMenu_widget = XtCreatePopupShell("fileMenu", 
 					 simpleMenuWidgetClass, 
 					 formy_widget, NULL, 0);
@@ -1005,7 +985,6 @@ void main(argc, argv)
 
     FixStatus();
 
-    info_dialog = CreateDialog(top_widget, "info", Okay);
     input_dialog = CreateDialog(top_widget, "input", Okay | Cancel);
     error_dialog = CreateDialog(top_widget, "error", Abort | Retry);    
     qsave_dialog = CreateDialog(top_widget, "qsave", Yes | No | Cancel);

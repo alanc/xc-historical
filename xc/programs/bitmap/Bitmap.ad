@@ -63,10 +63,6 @@ bitmap*highlight: white
 
 bitmap*bitmap.stippled:                 on
 
-*info*label.font:-adobe-helvetica-bold-r-normal--*-100-*-*-p-*-iso8859-1
-*info*icon:				xlogo64
-*info*label.height:			150
-
 *TransientShell.width:			300
 
 *input*icon:				Term
@@ -80,12 +76,6 @@ bitmap*bitmap.stippled:                 on
 *Dialog.cancel.label:			Cancel
 *Dialog.retry.label:			Retry
 
-*infoButton.width:			48
-*infoButton.label:			Info
-
-*infoPopup.width:			300
-*infoPopup.height:			100
-
 *MenuButton.width:			48
 
 *SimpleMenu.width:			0
@@ -94,7 +84,6 @@ bitmap*bitmap.stippled:                 on
 *SimpleMenu.line.height:		0
 
 *fileButton.label:			File
-*fileButton.fromHoriz: 			infoButton
 *fileButton.menuName:			fileMenu
 
 *editButton.label:			Edit
