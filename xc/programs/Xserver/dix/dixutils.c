@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: dixutils.c,v 1.36 91/02/06 21:11:31 keith Exp $ */
+/* $XConsortium: dixutils.c,v 1.37 91/02/14 19:35:29 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -242,6 +242,7 @@ static Bool		inHandler;
 static Bool		handlerDeleted;
 
 /* called from the OS layer */
+void
 BlockHandler(pTimeout, pReadmask)
 pointer	pTimeout;	/* DIX doesn't want to know how OS represents time */
 pointer pReadmask;	/* nor how it represents the set of descriptors */
@@ -271,7 +272,7 @@ pointer pReadmask;	/* nor how it represents the set of descriptors */
     --inHandler;
 }
 
-
+void
 WakeupHandler(result, pReadmask)
 unsigned long	result;	/* 32 bits of undefined result from the wait */
 pointer pReadmask;	/* the resulting descriptor mask */
