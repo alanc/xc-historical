@@ -1,5 +1,5 @@
 /*
- * $XConsortium: stipplemips.s,v 1.4 90/11/30 15:25:41 keith Exp $
+ * $XConsortium: stipplemips.s,v 1.5 90/12/01 11:28:57 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -34,10 +34,16 @@
 #ifdef MIPSEL
 # define BitsR		sll
 # define BitsL		srl
+# define BO(o)		o
+# define HO(o)		o
+# define WO(o)		o
 # define FourBits(dest,bits)	and	dest, bits, 0xf
 #else
 # define BitsR	srl
 # define BitsL	sll
+# define BO(o)		3-o
+# define HO(o)		2-o
+# define WO(o)		o
 # define FourBits(dest,bits)	srl	dest, bits, 28
 #endif
 
@@ -129,77 +135,77 @@ CaseBegin:
  	addu	count, count, -1
 
 	bnez	bits, ForEachBits		/* 1 */
-	sb	value, 0(atemp)
+	sb	value, BO(0)(atemp)
 	b	NextLine1
  	addu	count, count, -1
 					
 	bnez	bits, ForEachBits		/* 2 */
-	sb	value, 1(atemp)
+	sb	value, BO(1)(atemp)
 	b	NextLine1
  	addu	count, count, -1
 					
 	bnez	bits, ForEachBits		/* 3 */
-	sh	value, 0(atemp)
+	sh	value, HO(0)(atemp)
 	b	NextLine1
  	addu	count, count, -1
 					
 	bnez	bits, ForEachBits		/* 4 */
-	sb	value, 2(atemp)
+	sb	value, BO(2)(atemp)
 	b	NextLine1
  	addu	count, count, -1
 					
-	sb	value, 0(atemp)			/* 5 */
+	sb	value, BO(0)(atemp)		/* 5 */
 	b	NextBits
-	sb	value, 2(atemp)
+	sb	value, BO(2)(atemp)
 	nop
 					
-	sb	value, 1(atemp)			/* 6 */
+	sb	value, BO(1)(atemp)		/* 6 */
 	b	NextBits
-	sb	value, 2(atemp)
+	sb	value, BO(2)(atemp)
 	nop
 					
 	bnez	bits, ForEachBits		/* 7 */
-	swl	value, 2(atemp)
+	swl	value, BO(2)(atemp)		/* untested on MSB */
 	b	NextLine1
  	addu	count, count, -1
 					
 	bnez	bits, ForEachBits		/* 8 */
-	sb	value, 3(atemp)
+	sb	value, BO(3)(atemp)
 	b	NextLine1
  	addu	count, count, -1
 					
-	sb	value, 0(atemp)			/* 9 */
+	sb	value, BO(0)(atemp)		/* 9 */
 	b	NextBits
-	sb	value, 3(atemp)
+	sb	value, BO(3)(atemp)
 	nop
 					
-	sb	value, 1(atemp)			/* a */
+	sb	value, BO(1)(atemp)		/* a */
 	b	NextBits
-	sb	value, 3(atemp)
+	sb	value, BO(3)(atemp)
 	nop
 					
-	sh	value, 0(atemp)			/* b */
+	sh	value, HO(0)(atemp)		/* b */
 	b	NextBits
-	sb	value, 3(atemp)
+	sb	value, BO(3)(atemp)
 	nop
 					
 	bnez	bits, ForEachBits		/* c */
-	sh	value, 2(atemp)
+	sh	value, HO(2)(atemp)
 	b	NextLine1
  	addu	count, count, -1
 					
-	sb	value, 0(atemp)			/* d */
+	sb	value, BO(0)(atemp)		/* d */
 	b	NextBits
-	sh	value, 2(atemp)
+	sh	value, HO(2)(atemp)
 	nop
 					
 	bnez	bits, ForEachBits		/* e */
-	swr	value, 1(atemp)
+	swr	value, BO(1)(atemp)		/* untested on MSB */
 	b	NextLine1
  	addu	count, count, -1
 					
 	bnez	bits, ForEachBits		/* f */
-	sw	value, 0(atemp)
+	sw	value, WO(0)(atemp)
 	b	NextLine1
  	addu	count, count, -1
 
