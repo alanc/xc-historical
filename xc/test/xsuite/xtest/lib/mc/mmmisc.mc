@@ -2,16 +2,16 @@
 # Miscellaneous housekeeping functions.
 #
 
-# clean up object and junk files.
+# clean up and remove remakable sources, objects and junk files.
 #
 clean:
 	$(RM) Test $(OFILES) $(LOFILES) $(LINKOBJ) $(LINKEXEC) core\
-		MTest m$(LINKEXEC) $(MOFILES) CONFIG Makefile.bak $(AUXCLEAN)
+		MTest m$(LINKEXEC) $(MOFILES) CONFIG Makefile.bak $(AUXCLEAN)\
+		MTest.c Test.c mlink.c link.c Makefile *.err
 
-# clobber - clean up and remove remakable sources.
+# clobber - aka clean.
 #
-clobber: clean
-	$(RM) MTest.c Test.c mlink.c link.c Makefile
+clobber:	clean
 
 # Lint makerules
 #
