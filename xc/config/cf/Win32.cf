@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.cf,v 1.4 93/08/11 09:03:39 rws Exp $
+XCOMM platform:  $XConsortium: Win32.cf,v 1.5 93/08/11 10:13:06 rws Exp $
 
 #define OSName			Microsoft Windows NT 3.1beta
 XCOMM operating system:  OSName
@@ -6,11 +6,14 @@ XCOMM operating system:  OSName
 #define OSMinorVersion		1
 
 #define BootstrapCFlags		-DWIN32
+#define StandardDefines		-DWIN32
 #define CpCmd copy
 #define LnCmd copy
 #define MvCmd ren
 #define RmCmd del
 #define CcCmd cl
+#define ArCmdBase lib32
+#define ArCmd ArCmdBase
 #define MkdirHierCmd mkdir
 #define DefaultCCOptions -nologo -batch -Za
 #define ExtraLibraries libc.lib kernel32.lib
@@ -18,8 +21,11 @@ XCOMM operating system:  OSName
 #define LdCmd link32
 #define HasSymLinks		NO
 #define HasPutenv		YES
+#define BuildServer		NO
+#define ConnectionFlags		-DTCPCONN
 #ifndef UseInstalled
 #define ImakeCmd $(IMAKESRC:/=\)\imake
 #endif
+#define FilesToClean *.bak *.obj *.lib make.log
 
 #include <Win32.rules>
