@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.47 91/07/24 11:47:18 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.48 91/09/16 17:17:44 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -14,6 +14,7 @@ Name						Reference
 "CRAB"						[84]
 "CRUC"						[30]
 "DG"						[48]
+"ES"						[75]
 "FXD"						[55]
 "IBM"						[33]
 "ICS"						[31]
@@ -218,6 +219,7 @@ String						Reference
 "Crab Advanced Technologies Ltd"		[84]
 "Crucible"					[30]
 "Data General Corporation"			[48]
+"Evans & Sutherland"				[75]
 "International Business Machines"		[33]
 "Matsushita Electric Industrial Co., Ltd."	[52]
 "MIT X Consortium"				[8]
@@ -249,6 +251,13 @@ Name						Reference
 "ARDENT-XTitan"					[2], [4]
 "bezier"					[34]
 "DEC-XTRAP"					[51]
+"ESMultiScreenExtension"			[75]
+"ESSetBitsExtension"				[75]
+"ESTraverse3DExtension"				[75]
+"ESVideoModeExtension"				[75]
+"ESLayersExtension"				[75]
+"ESCursorAttrExtension"				[75]
+"ESPickExtension"				[75]
 "MIT-SHM"					[8]
 "MIT-SUNDRY-NONSTANDARD"			[8]
 "Multi-Buffering"				[8], [10]
@@ -432,6 +441,7 @@ Name						Reference
 "Apple"						[22]
 "Bitstream"					[25]
 "DEC"						[27]
+"eands"						[75]
 "FujiXerox"					[64]
 "IBM"						[33]
 "MISC"						[8]
@@ -624,6 +634,7 @@ Name						Reference
 Name						Reference
 ----						---------
 "Clock"						[47]
+"Csm"						[75]
 "Exterm"					[45]
 "Listres"					[47]
 "Medit"						[45]
