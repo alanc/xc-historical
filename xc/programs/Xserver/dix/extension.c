@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: extension.c,v 1.48 89/07/03 19:51:28 rws Exp $ */
+/* $XConsortium: extension.c,v 1.49 91/12/10 11:26:36 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -284,12 +284,12 @@ ProcListExtensions(client)
         {
 	    int len;
             *bufptr++ = len = strlen(extensions[i]->name);
-	    bcopy(extensions[i]->name, bufptr,  len);
+	    memmove(bufptr, extensions[i]->name,  len);
 	    bufptr += len;
 	    for (j = extensions[i]->num_aliases; --j >= 0;)
 	    {
 		*bufptr++ = len = strlen(extensions[i]->aliases[j]);
-		bcopy(extensions[i]->aliases[j], bufptr,  len);
+		memmove(bufptr, extensions[i]->aliases[j],  len);
 		bufptr += len;
 	    }
 	}
