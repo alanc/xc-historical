@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.34 94/04/01 19:20:40 erik Exp $
+XCOMM $XConsortium: Imakefile,v 5.35 94/04/07 15:58:15 rws Exp $
 #include <Server.tmpl>
 
 #if HasShm
@@ -13,10 +13,10 @@ XCOMM $XConsortium: Imakefile,v 5.34 94/04/01 19:20:40 erik Exp $
 #endif
        SRCS = shape.c $(SHMSRCS) mbuf.c mbufpx.c mbufbf.c	\
               mitmisc.c xtest.c xtest1di.c xtest1dd.c sleepuntil.c	\
-	      bigreq.c sync.c xcmisc.c $(XKBSRCS) record.c
+	      bigreq.c sync.c xcmisc.c $(XKBSRCS)
        OBJS = shape.o $(SHMOBJS) mbuf.o mbufpx.o mbufbf.o	\
               mitmisc.o xtest.o xtest1di.o xtest1dd.o sleepuntil.o	\
-              bigreq.o sync.o xcmisc.o $(XKBOBJS) record.o
+              bigreq.o sync.o xcmisc.o $(XKBOBJS)
    INCLUDES = -I../include -I$(INCLUDESRC) -I$(EXTINCSRC)
    LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln
 
