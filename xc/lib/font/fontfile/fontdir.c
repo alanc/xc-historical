@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontdir.c,v 1.1 91/05/10 14:46:30 keith Exp $
+ * $XConsortium: fontdir.c,v 1.2 91/05/11 14:24:25 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -482,6 +482,8 @@ FontFileAddFontFile (dir, fontName, fileName)
 	    int num;
 
 	    extra->defaults.point = GetDefaultPointSize();
+	    extra->defaults.pixel = -1;
+	    extra->defaults.width = -1;
 	    if (vals.x <= 0 || vals.y <= 0)
 	    {
 	    	resolution = GetClientResolutions (&num);
