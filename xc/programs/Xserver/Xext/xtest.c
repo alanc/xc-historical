@@ -1,4 +1,4 @@
-/* $XConsortium: xtest.c,v 1.17 93/02/18 13:09:20 rws Exp $ */
+/* $XConsortium: xtest.c,v 1.18 93/03/05 18:24:39 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -29,6 +29,7 @@ without express or implied warranty.
 #include "XTest.h"
 #include "xteststr.h"
 #ifdef XINPUT
+#include "XI.h"
 #include "XIproto.h"
 #define EXTENSION_EVENT_BASE	64
 #endif /* XINPUT */
@@ -288,7 +289,12 @@ ProcXTestFakeInput(client)
 #ifdef XINPUT
 	if (extension)
 	{
-	    if (ev->u.u.detail == xTrue)
+	    if (ev->u.u.detail != xFalse && ev->u.u.detail != xTrue)
+	    {
+		client->errorValue = ev->u.u.detail;
+		return BadValue;
+	    }
+	    if (ev->u.u.detail == xTrue && dev->valuator->mode == Absolute)
 	    {
 		values = dev->valuator->axisVal + dv->first_valuator;
 		for (n = 1; n < nev; n++)
@@ -311,11 +317,6 @@ ProcXTestFakeInput(client)
 		    }
 		    values += 6;
 		}
-	    }
-	    else if (ev->u.u.detail != xFalse)
-	    {
-		client->errorValue = ev->u.u.detail;
-		return BadValue;
 	    }
 	    break;
 	}
