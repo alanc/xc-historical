@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: xf86.h,v 1.1 94/10/05 13:34:15 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.8 1994/09/23 10:12:58 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -47,6 +48,7 @@ typedef struct _DispM {
   int           VSyncEnd;
   int           VTotal;
   int           Flags;
+  int		SynthClock;         /* Actual clock freq to be programmed */
 } DisplayModeRec, *DisplayModePtr;
 
 #define V_PHSYNC    0x0001
@@ -57,15 +59,12 @@ typedef struct _DispM {
 #define V_DBLSCAN   0x0020
 #define V_CSYNC     0x0040
 #define V_PIXMUX    0x0100
+#define V_DBLCLK    0x0200
 
-#define MAXCLOCKS   32
+#define MAXCLOCKS   128
 
 /* Set default max allowed clock to 90MHz */
 #define DEFAULT_MAX_CLOCK	90000
-
-typedef struct {
-  unsigned char red, green, blue;
-} RgbRec, *RgbPtr;
 
 /*
  * the graphic device
@@ -96,14 +95,18 @@ typedef struct {
   Bool           (* SwitchMode)();
   void           (* PrintIdent)();
   int            depth;
+  xrgb		 weight;
   int            bitsPerPixel;
   int            defaultVisual;
   int            virtualX,virtualY; 
+  int		 displayWidth;
   int            frameX0, frameY0, frameX1, frameY1;
   OFlagSet       options;
   OFlagSet       clockOptions;
   OFlagSet	 xconfigFlag;
   char           *chipset;
+  char           *ramdac;
+  int            dacSpeed;
   int            clocks;
   int            clock[MAXCLOCKS];
   int            maxClock;
@@ -113,15 +116,26 @@ typedef struct {
   int            width, height;            /* real display dimensions */
   unsigned long  speedup;                  /* Use SpeedUp code */
   DisplayModePtr modes;
+  DisplayModePtr pModes;          /* GJA -- mode records for this screen. */
   char           *clockprog;
   int            textclock;
   Bool           bankedMono;	  /* display supports banking for mono server */
   char           *name;
-  RgbRec         blackColour;
-  RgbRec         whiteColour;
+  xrgb           blackColour;
+  xrgb           whiteColour;
   int            *validTokens;
   char           *patchLevel;
+  unsigned int   IObase;          /* AGX - video card I/O reg base    */
+  unsigned int   DACbase;         /* AGX - dac I/O reg base           */
+  unsigned int   COPbase;         /* AGX - coprocessor memory base    */
+  unsigned int   POSbase;         /* AGX - I/O address of POS regs    */
+  unsigned int   instance;        /* AGX - video card instance number */
 } ScrnInfoRec, *ScrnInfoPtr;
+
+typedef struct {
+  int           token;                /* id of the token */
+  char          *name;                /* pointer to the LOWERCASED name */
+} SymTabRec, *SymTabPtr;
 
 #define VGA_DRIVER  1
 #define V256_DRIVER 2
@@ -175,7 +189,7 @@ typedef struct {
 				 SPEEDUP_BITBLT | SPEEDUP_LINE | \
                                  SPEEDUP_TEGBLT8 | SPEEDUP_RECTSTIP)
 
-/* SpeedUp flags used if SpeedUp is not in Xconfig */
+/* SpeedUp flags used if SpeedUp is not in XF86Config */
 #define SPEEDUP_DEFAULT		SPEEDUP_ALL
 
 extern Bool        xf86VTSema;

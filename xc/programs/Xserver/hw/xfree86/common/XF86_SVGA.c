@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: XF86_SVGA.c,v 1.1 94/10/05 13:34:15 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_SVGA.c,v 3.4 1994/09/07 15:51:45 dawes Exp $ */
 #include "X.h"
 #include "os.h"
 
@@ -18,7 +19,7 @@ int  xf86MaxScreens = sizeof(xf86Screens) / sizeof(ScrnInfoPtr);
 
 int xf86ScreenNames[] =
 {
-  VGA256,
+  SVGA,
   -1
 };
 
@@ -32,7 +33,6 @@ int vga256ValidTokens[] =
   DIRECTCOLOR,
   CHIPSET,
   CLOCKS,
-  DISPLAYSIZE,
   MODES,
   OPTION,
   VIDEORAM,
@@ -42,11 +42,9 @@ int vga256ValidTokens[] =
   NOSPEEDUP,
   CLOCKPROG,
   BIOSBASE,
+  MEMBASE,
   -1
 };
 
-/* Dummy function for PEX in LinkKit and mono server */
+#include "xf86ExtInit.h"
 
-#if defined(LINKKIT) && !defined(PEXEXT)
-PexExtensionInit() {}
-#endif

@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: XF86_8514.c,v 1.1 94/10/05 13:34:15 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_8514.c,v 3.2 1994/09/07 15:51:38 dawes Exp $ */
 #include "X.h"
 #include "os.h"
 
@@ -32,7 +33,6 @@ int ibm8514ValidTokens[] =
   DIRECTCOLOR,
   CHIPSET,
   CLOCKS,
-  DISPLAYSIZE,
   MODES,
   OPTION,
   VIDEORAM,
@@ -43,8 +43,5 @@ int ibm8514ValidTokens[] =
   -1
 };
 
-/* Dummy function for PEX in LinkKit and mono server */
+#include "xf86ExtInit.h"
 
-#if defined(LINKKIT) && !defined(PEXEXT)
-PexExtensionInit() {}
-#endif

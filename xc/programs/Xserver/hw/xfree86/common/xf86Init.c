@@ -1,5 +1,6 @@
 /*
- * $XConsortium: xf86Init.c,v 1.2 91/08/20 15:39:58 gildea Exp $
+ * $XConsortium: xf86Init.c,v 1.1 94/10/05 13:34:15 kaleb Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.9 1994/09/23 10:13:05 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -24,6 +25,7 @@
 
 #include "X.h"
 #include "Xmd.h"
+#include "Xproto.h"
 #include "input.h"
 #include "servermd.h"
 #include "scrnintstr.h"
@@ -44,15 +46,21 @@ extern int xtest_command_key;
 Bool xf86Exiting = FALSE;
 Bool xf86Resetting = FALSE;
 Bool xf86ProbeFailed = TRUE;
+Bool xf86ScreensOpen = FALSE;
 Bool xf86Verbose = TRUE;
 Bool xf86fpFlag = FALSE;
 Bool xf86coFlag = FALSE;
 char xf86ConfigFile[PATH_MAX] = "";
+int  xf86bpp = -1;
+xrgb xf86weight = { 0, 0, 0 } ;	/* RGB weighting at 16 bpp */
+double xf86rGamma=1.0, xf86gGamma=1.0, xf86bGamma=1.0;
+unsigned char xf86rGammaMap[256], xf86gGammaMap[256], xf86bGammaMap[256];
 
 static void xf86PrintConfig();
 
 extern ScrnInfoPtr xf86Screens[];
 extern int xf86MaxScreens;
+extern double pow();
 
 xf86InfoRec xf86Info;
 int         xf86ScreenIndex;
@@ -84,7 +92,7 @@ InitOutput(pScreenInfo, argc, argv)
 
     xf86OpenConsole();
 
-#if !defined(AMOEBA) && !defined(_MINIX)
+#if !defined(AMOEBA) && !defined(MINIX)
     /*
      * If VTInit was set, run that program with consoleFd as stdin and stdout
      */
@@ -112,10 +120,16 @@ InitOutput(pScreenInfo, argc, argv)
           wait(NULL);
       }
     }
-#endif /* !AMOEBA && !_MINIX */
+#endif /* !AMOEBA && !MINIX */
 
-    /* Do this after Xconfig is read (it's normally in OsInit()) */
+    /* Do this after XF86Config is read (it's normally in OsInit()) */
     OsInitColors();
+
+    for (i=0; i<256; i++) {
+       xf86rGammaMap[i] = (int)(pow(i/255.0,xf86rGamma)*255.0+0.5);
+       xf86gGammaMap[i] = (int)(pow(i/255.0,xf86gGamma)*255.0+0.5);
+       xf86bGammaMap[i] = (int)(pow(i/255.0,xf86bGamma)*255.0+0.5);
+    }
 
     xf86Config(TRUE); /* Probe displays, and resolve modes */
 
@@ -364,7 +378,7 @@ AbortDDX()
   /* Need the sleep when starting X from within another X session */
   sleep(1);
 #endif
-  if (xf86VTSema)
+  if (xf86VTSema && xf86ScreensOpen)
     for ( i=0;
           i < xf86MaxScreens && xf86Screens[i] && xf86Screens[i]->configured;
           i++ )
@@ -393,12 +407,12 @@ ddxProcessArgument (argc, argv, i)
      char *argv[];
      int i;
 {
-  if (!strcmp(argv[i], "-xconfig"))
+  if (getuid() == 0 && !strcmp(argv[i], "-xf86config"))
   {
     if (!argv[i+1])
       return 0;
     if (strlen(argv[i+1]) >= PATH_MAX)
-      FatalError("Xconfig path name too long\n");
+      FatalError("XF86Config path name too long\n");
     strcpy(xf86ConfigFile, argv[i+1]);
     return 2;
   }
@@ -435,6 +449,61 @@ ddxProcessArgument (argc, argv, i)
     xf86coFlag = TRUE;
     return 0;
   }
+#ifndef XF86MONOVGA
+  if (!strcmp(argv[i], "-bpp"))
+  {
+    int bpp;
+    if (++i >= argc)
+      return 0;
+    if (sscanf(argv[i], "%d", &bpp) == 1)
+    {
+      xf86bpp = bpp;
+      return 2;
+    }
+    else
+    {
+      ErrorF("Invalid bpp\n");
+      return 0;
+    }
+  }
+  if (!strcmp(argv[i], "-weight"))
+  {
+    int red, green, blue;
+    if (++i >= argc)
+      return 0;
+    if (sscanf(argv[i], "%1d%1d%1d", &red, &green, &blue) == 3)
+    {
+      xf86weight.red = red;
+      xf86weight.green = green;
+      xf86weight.blue = blue;
+      return 2;
+    }
+    else
+    {
+      ErrorF("Invalid weighting\n");
+      return 0;
+    }
+  }
+  if (!strcmp(argv[i], "-gamma")  || !strcmp(argv[i], "-rgamma") || 
+      !strcmp(argv[i], "-ggamma") || !strcmp(argv[i], "-bgamma"))
+  {
+    double gamma;
+    if (++i >= argc)
+      return 0;
+    if (sscanf(argv[i], "%lf", &gamma) == 1) {
+       if (gamma < 0.1 || gamma > 10) {
+	  ErrorF("gamma out of range, only  0.1 < gamma_value < 10  is valid\n");
+	  return 0;
+       }
+       if (!strcmp(argv[i-1], "-gamma")) 
+	  xf86rGamma = xf86gGamma = xf86bGamma = 1.0 / gamma;
+       else if (!strcmp(argv[i-1], "-rgamma")) xf86rGamma = 1.0 / gamma;
+       else if (!strcmp(argv[i-1], "-ggamma")) xf86gGamma = 1.0 / gamma;
+       else if (!strcmp(argv[i-1], "-bgamma")) xf86bGamma = 1.0 / gamma;
+       return 2;
+    }
+  }
+#endif /* XF86MONOVGA */
   return xf86ProcessArgument(argc, argv, i);
 }
 
@@ -451,10 +520,19 @@ ddxUseMsg()
   ErrorF("\n");
   ErrorF("\n");
   ErrorF("Device Dependent Usage\n");
-  ErrorF("-xconfig file          specify a configuration file\n");
+  if (getuid() == 0)
+    ErrorF("-xf86config file       specify a configuration file\n");
   ErrorF("-probeonly             probe for devices, then exit\n");
   ErrorF("-verbose               verbose startup messages\n");
   ErrorF("-quiet                 minimal startup messages\n");
+#ifndef XF86MONOVGA
+  ErrorF("-bpp n                 set number of bits per pixel. Default: 8\n");
+  ErrorF("-gamma f               set gamma value (0.1 < f < 10.0) Default: 1.0\n");
+  ErrorF("-rgamma f              set gamma value for red phase\n");
+  ErrorF("-ggamma f              set gamma value for green phase\n");
+  ErrorF("-bgamma f              set gamma value for blue phase\n");
+  ErrorF("-weight nnn            set RGB weighting at 16 bpp.  Default: 565\n");
+#endif /* XF86MONOVGA */
   ErrorF(
    "-showconfig            show which drivers are included in the server\n");
   xf86UseMsg();

@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: xf86Io.c,v 1.1 94/10/05 13:34:15 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.2 1994/09/27 10:29:34 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -61,7 +62,7 @@ xf86KbdBell(percent, pKeyboard, ctrl, unused)
 #define LED_SCR	IOP_LED_SCROLL
 #endif
 
-#ifdef _MINIX
+#ifdef MINIX
 #define LED_CAP KBD_LEDS_CAPS
 #define LED_NUM KBD_LEDS_NUM
 #define LED_SCR KBD_LEDS_SCROLL
@@ -146,12 +147,24 @@ Bool init;
    * exeplicitely unrelease all keyboard keys before the input-devices
    * are reenabled.
    */
-  for (i = keyc->curKeySyms.minKeyCode; i < keyc->curKeySyms.maxKeyCode; i++)
+  for (i = keyc->curKeySyms.minKeyCode, map = keyc->curKeySyms.map;
+       i < keyc->curKeySyms.maxKeyCode;
+       i++, map += keyc->curKeySyms.mapWidth)
     if (KeyPressed(i))
       {
-	kevent.u.u.detail = i;
-	kevent.u.u.type = KeyRelease;
-	(* pKeyboard->processInputProc)(&kevent, (DeviceIntPtr)pKeyboard, 1);
+        switch (*map) {
+	/* Don't release the lock keys */
+        case XK_Caps_Lock:
+        case XK_Shift_Lock:
+        case XK_Num_Lock:
+        case XK_Scroll_Lock:
+        case XK_Kana_Lock:
+	  break;
+        default:
+	  kevent.u.u.detail = i;
+	  kevent.u.u.type = KeyRelease;
+	  (* pKeyboard->processInputProc)(&kevent, (DeviceIntPtr)pKeyboard, 1);
+        }
       }
 #endif /* MACH386 */
   
@@ -175,7 +188,7 @@ Bool init;
 #ifdef LED_CAP
       leds = xf86Info.leds;
 
-      for (i = keyc->curKeySyms.minKeyCode;
+      for (i = keyc->curKeySyms.minKeyCode, map = keyc->curKeySyms.map;
            i < keyc->curKeySyms.maxKeyCode;
            i++, map += keyc->curKeySyms.mapWidth)
 
@@ -405,7 +418,7 @@ xf86MseProc(pPointer, what)
       mousefd = xf86MouseOff(what == DEVICE_CLOSE);
 
       if (mousefd != -1)
-        RemoveEnabledDevice(xf86Info.mseFd);
+        RemoveEnabledDevice(mousefd);
 
       pPointer->on = FALSE;
       usleep(300000);
@@ -425,7 +438,7 @@ xf86MseEvents()
   xf86MouseEvents();
 }
 
-#if !defined(AMOEBA) && !(defined (sun) && defined(i386) && defined (SVR4))
+#if !defined(AMOEBA) && !(defined (sun) && defined(i386) && defined (SVR4)) && !defined(MINIX)
 /*
  * These are getting tossed in here until I can think of where
  * they really belong
@@ -438,7 +451,7 @@ GetTimeInMillis()
     gettimeofday(&tp, 0);
     return(tp.tv_sec * 1000) + (tp.tv_usec / 1000);
 }
-#endif /* !AMOEBA && !(sun || SVR4) */
+#endif /* !AMOEBA && !(sun || SVR4) && !MINIX */
 
 void
 OsVendorInit()
