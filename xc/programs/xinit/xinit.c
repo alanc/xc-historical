@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.26 88/09/06 17:36:06 jim Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.27 88/09/13 18:29:33 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -42,8 +42,6 @@ char *server_names[] = {
 #ifdef vax				/* Digital */
     "Xqvss       Digital monochrome display on Microvax II or III series",
     "Xqdss       Digital color display on Microvax II or III series",
-    "Xsm         Digital monochrome display on Vaxstation 2000",
-    "Xsg         Digital color display on Vaxstation 2000",
 #endif
 #ifdef sun				/* Sun */
     "Xsun        Sun monochrome and color displays on Sun 2, 3, or 4 series",
