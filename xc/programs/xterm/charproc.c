@@ -1,5 +1,5 @@
 /*
- * $Header: charproc.c,v 1.17 88/02/18 16:49:21 jim Exp $
+ * $Header: charproc.c,v 1.18 88/02/18 17:07:45 jim Exp $
  */
 
 
@@ -58,7 +58,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.17 88/02/18 16:49:21 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.18 88/02/18 17:07:45 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1805,42 +1805,7 @@ XSetWindowAttributes *values;
 	screen->curgr = 2;			/* G2 => GR.		*/
 	screen->curss = 0;			/* No single shift.	*/
 
-#ifdef notyet
-	wmhints.flags = StateHint | InputHint;
-	wmhints.input = True;
-	if (iconstartup) wmhints.initial_state = IconicState;
-	else wmhints.initial_state = NormalState;
-        if(icon_geom) {
-	   wmhints.icon_x = 1; wmhints.icon_y = 1; width = 1; height = 1;
-	   pr = XParseGeometry(
-	       icon_geom,
-	       &wmhints.icon_x, &wmhints.icon_y, 
-	       &width, &height);
-           if((pr & XValue) && (pr & XNegative))
-              wmhints.icon_x += 
-		 DisplayWidth(screen->display,DefaultScreen(screen->display)) 
-		  - width - 2 * screen->borderwidth;
-           if((pr & YValue) && (pr & YNegative))
-              wmhints.icon_y += 
-	         DisplayHeight(screen->display,DefaultScreen(screen->display))
-		  - height - 2 * screen->borderwidth;
-	   if ((XValue&pr) && (YValue&pr)) 
-	    wmhints.flags |= IconPositionHint;
-        }
-	XSetWMHints(screen->display, VWindow(screen), &wmhints);
-#endif notyet
-
 	XDefineCursor(screen->display, VWindow(screen), screen->curs );
-#ifdef notyet
-	XStoreName (screen->display, VWindow(screen), screen->titlename);
-
-	XChangeProperty(
-	    screen->display, VWindow(screen),
-	    XA_WM_ICON_NAME, XA_STRING,
-	    8, PropModeReplace,
-	    (unsigned char *)screen->iconname, screen->iconnamelen);
-
-#endif notyet
 
         screen->cur_col = screen->cur_row = 0;
 	screen->max_col = Width(screen)  / screen->fullVwin.f_width - 1;
@@ -1874,6 +1839,7 @@ XSetWindowAttributes *values;
 		ScrollBarOn(screen, TRUE);
 	}
 	CursorSave (term, &screen->sc);
+	VTUnselect();
 	return;
 }
 
