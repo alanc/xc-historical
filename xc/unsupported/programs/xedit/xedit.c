@@ -1,4 +1,4 @@
-/* $XConsortium: xedit.c,v 1.26 91/01/10 21:31:27 gildea Exp $ */
+/* $XConsortium: xedit.c,v 1.27 91/02/17 15:48:25 dave Exp $ */
  
 /*
  *			  COPYRIGHT 1987
@@ -65,6 +65,7 @@ char **argv;
   Widget top;
   String filename = NULL;
 
+  XtSetLanguageProc(NULL, NULL, NULL);
   top = XtAppInitialize(&appcon, "Xedit", NULL, 0, &argc, argv, NULL, NULL, 0);
 
   XtAppAddActions(appcon, actions, XtNumber(actions));
