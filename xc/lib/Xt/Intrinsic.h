@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.142 90/12/11 12:01:27 rws Exp $
+* $XConsortium: Intrinsic.h,v 1.143 90/12/12 14:52:00 rws Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -1677,7 +1677,7 @@ extern Widget XtAppInitialize(
     Cardinal 		/* num_options */,
     Cardinal*		/* argc_in_out */,
     String*		/* argv_in_out */,
-    _Xconst String*	/* fallback_resources */,
+    _Xconst String _Xconst * /* fallback_resources */,
     ArgList 		/* args */,
     Cardinal 		/* num_args */
 #endif
