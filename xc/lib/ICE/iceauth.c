@@ -1,4 +1,4 @@
-/* $XConsortium: iceauth.c,v 1.7 93/11/24 15:24:02 mor Exp $ */
+/* $XConsortium: iceauth.c,v 1.8 93/11/30 15:29:00 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -19,13 +19,16 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 static int binaryEqual ();
 
+static int was_called_state;
+
+
 
 IcePoAuthStatus
-_IcePoMagicCookie1Proc (authStatePtr, connectionString, cleanUp, swap,
+_IcePoMagicCookie1Proc (authStatePtr, address, cleanUp, swap,
     authDataLen, authData, replyDataLenRet, replyDataRet, errorStringRet)
 
 IcePointer	*authStatePtr;
-char		*connectionString;
+char		*address;
 Bool 		cleanUp;
 Bool		swap;
 int     	authDataLen;
@@ -35,13 +38,12 @@ IcePointer	*replyDataRet;
 char    	**errorStringRet;
 
 {
-    if (cleanUp && *authStatePtr != NULL)
+    if (cleanUp)
     {
 	/*
-	 * Free state.  We're done.
+	 * We didn't allocate any state.  We're done.
 	 */
 
-	IceDisposeAuthFileEntry ((IceAuthFileEntry *) *authStatePtr);
 	return (IcePoAuthDoneCleanup);
     }
 
@@ -50,29 +52,34 @@ char    	**errorStringRet;
     if (*authStatePtr == NULL)
     {
 	/*
-	 * This is the first time we're being called.  Check the
-	 * .ICEauthority file for the first occurence of
-	 * ICE-MAGIC-COOKIE-1 that matches connectionString.
+	 * This is the first time we're being called.  Search the
+	 * authentication data for the first occurence of
+	 * ICE-MAGIC-COOKIE-1 that matches address.
 	 */
 
-	IceAuthFileEntry *entry = IceGetAuthFileEntry (
-	    "ICE", connectionString, "ICE-MAGIC-COOKIE-1");
+	unsigned short  length;
+	char		*data;
 
-	if (!entry)
+	IceGetPoAuthData ("ICE", address, "ICE-MAGIC-COOKIE-1",
+	    &length, &data);
+
+	if (!data)
 	{
-	    char *tempstr = "Could not find correct ICE-MAGIC-COOKIE-1 entry in .ICEauthority file";
+	    char *tempstr =
+		"Could not find correct ICE-MAGIC-COOKIE-1 authentication";
 
 	    *errorStringRet = (char *) malloc (strlen (tempstr) + 1);
-	    strcpy (*errorStringRet, tempstr);
+	    if (*errorStringRet)
+		strcpy (*errorStringRet, tempstr);
 
 	    return (IcePoAuthFailed);
 	}
 	else
 	{
-	    *authStatePtr = (IcePointer) entry;
+	    *authStatePtr = (IcePointer) &was_called_state;
 
-	    *replyDataLenRet = entry->auth_data_length;
-	    *replyDataRet = entry->auth_data;
+	    *replyDataLenRet = length;
+	    *replyDataRet = data;
 
 	    return (IcePoAuthHaveReply);
 	}
@@ -87,8 +94,8 @@ char    	**errorStringRet;
 	char *tempstr = "ICE-MAGIC-COOKIE-1 authentication internal error";
 
 	*errorStringRet = (char *) malloc (strlen (tempstr) + 1);
-	strcpy (*errorStringRet, tempstr);
-	IceDisposeAuthFileEntry ((IceAuthFileEntry *) *authStatePtr);
+	if (*errorStringRet)
+	    strcpy (*errorStringRet, tempstr);
 
 	return (IcePoAuthFailed);
     }
@@ -97,11 +104,11 @@ char    	**errorStringRet;
 
 
 IcePaAuthStatus
-_IcePaMagicCookie1Proc (authStatePtr, listenObj, swap,
+_IcePaMagicCookie1Proc (authStatePtr, address, swap,
     replyDataLen, replyData, authDataLenRet, authDataRet, errorStringRet)
 
 IcePointer	*authStatePtr;
-IceListenObj	listenObj;
+char		*address;
 Bool		swap;
 int     	replyDataLen;
 IcePointer	replyData;
@@ -119,20 +126,51 @@ char    	**errorStringRet;
     if (*authStatePtr == NULL)
     {
 	/*
-	 * This is the first time we're being called.  Check the
-	 * authentication data set by IceSetAuthenticationData()
-	 * for the first occurence of ICE-MAGIC-COOKIE-1 that
-	 * matches listenObj->network_id.  The reason we don't check the
-	 * .ICEauthority file is because this would be a security
-	 * hole.  The client could just write an entry into the
-	 * .ICEauthority file knowing that the accepting side would use
-	 * it in authentication.
+	 * This is the first time we're being called.  We don't have
+	 * any data to pass to the other client.
 	 */
 
-	entry = IceGetAuthenticationData (listenObj,
-	    "ICE", "ICE-MAGIC-COOKIE-1");
+	*authStatePtr = (IcePointer) &was_called_state;
 
-	if (!entry)
+	return (IcePaAuthContinue);
+    }
+    else
+    {
+	/*
+	 * Search the authentication data for the first occurence of
+	 * ICE-MAGIC-COOKIE-1 that matches address.
+	 */
+
+	unsigned short  length;
+	char		*data;
+
+	IceGetPaAuthData ("ICE", address, "ICE-MAGIC-COOKIE-1",
+	    &length, &data);
+
+	if (data)
+	{
+	    IcePaAuthStatus stat;
+
+	    if (replyDataLen == length &&
+	        binaryEqual (replyData, data, replyDataLen))
+	    {
+		stat = IcePaAuthAccepted;
+	    }
+	    else
+	    {
+		char *tempstr = "ICE-MAGIC-COOKIE-1 authentication rejected";
+
+		*errorStringRet = (char *) malloc (strlen (tempstr) + 1);
+		if (*errorStringRet)
+		    strcpy (*errorStringRet, tempstr);
+
+		stat = IcePaAuthRejected;
+	    }
+
+	    free (data);
+	    return (stat);
+	}
+	else
 	{
 	    /*
 	     * We should never get here because in the ConnectionReply
@@ -144,34 +182,10 @@ char    	**errorStringRet;
 		"ICE-MAGIC-COOKIE-1 authentication internal error";
 
 	    *errorStringRet = (char *) malloc (strlen (tempstr) + 1);
-	    strcpy (*errorStringRet, tempstr);
+	    if (*errorStringRet)
+		strcpy (*errorStringRet, tempstr);
 
 	    return (IcePaAuthFailed);
-	}
-	else
-	{
-	    *authStatePtr = (IcePointer) entry;
-
-	    return (IcePaAuthContinue);
-	}
-    }
-    else
-    {
-	entry = (IceAuthDataEntry *) *authStatePtr;
-
-	if (replyDataLen == entry->auth_data_length &&
-	    binaryEqual (replyData, entry->auth_data, replyDataLen))
-	{
-	    return (IcePaAuthAccepted);
-	}
-	else
-	{
-	    char *tempstr = "ICE-MAGIC-COOKIE-1 authentication rejected";
-
-	    *errorStringRet = (char *) malloc (strlen (tempstr) + 1);
-	    strcpy (*errorStringRet, tempstr);
-
-	    return (IcePaAuthRejected);
 	}
     }
 }
