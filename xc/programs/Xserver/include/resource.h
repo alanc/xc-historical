@@ -1,4 +1,4 @@
-/* $XConsortium: resource.h,v 1.13 93/07/12 09:44:41 dpw Exp $ */
+/* $XConsortium: resource.h,v 1.14 93/09/03 08:26:15 dpw Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -150,7 +150,7 @@ extern void FreeClientResources(
 #endif
 );
 
-extern int FreeAllResources(
+extern void FreeAllResources(
 #if NeedFunctionPrototypes
 void
 #endif

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.89 93/07/12 09:23:38 dpw Exp $ */
+/* $XConsortium: resource.c,v 1.90 93/09/03 13:18:52 dpw Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -391,7 +391,7 @@ FreeResource(id, skipDeleteFuncType)
 	eltptr = &clientTable[cid].elements;
 
 	prev = head;
-	while (res = *prev)
+	while ( (res = *prev) )
 	{
 	    if (res->id == id)
 	    {
@@ -436,7 +436,7 @@ FreeResourceByType(id, type, skipFree)
 	head = &clientTable[cid].resources[Hash(cid, id)];
 
 	prev = head;
-	while (res = *prev)
+	while ( (res = *prev) )
 	{
 	    if (res->id == id && res->type == type)
 	    {
@@ -506,7 +506,7 @@ FreeClientNeverRetainResources(client)
     for (j=0; j < clientTable[client->index].buckets; j++) 
     {
 	prev = &resources[j];
-        while (this = *prev)
+        while ( (this = *prev) )
 	{
 	    RESTYPE rtype = this->type;
 	    if (rtype & RC_NEVERRETAIN)
@@ -569,6 +569,7 @@ FreeClientResources(client)
     clientTable[client->index].buckets = 0;
 }
 
+void
 FreeAllResources()
 {
     int	i;
