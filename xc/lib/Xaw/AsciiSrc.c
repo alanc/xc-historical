@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSrc.c,v 1.43 90/12/26 16:35:24 rws Exp $ */
+/* $XConsortium: AsciiSrc.c,v 1.44 91/01/06 16:08:28 rws Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -56,7 +56,7 @@
 
 static int magic_value = MAGIC_VALUE;
 
-#define offset(field) XtOffset(AsciiSrcObject, ascii_src.field)
+#define offset(field) XtOffsetOf(AsciiSrcRec, ascii_src.field)
 
 static XtResource resources[] = {
     {XtNstring, XtCString, XtRString, sizeof (char *),
@@ -79,6 +79,7 @@ static XtResource resources[] = {
        offset(filename), XtRString, NULL},
 #endif /* ASCII_DISK */
 };
+#undef offset
 
 static XawTextPosition Scan(), Search(), ReadText();
 static int ReplaceText();

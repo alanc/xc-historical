@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSink.c,v 1.54 90/12/31 10:18:50 gildea Exp $ */
+/* $XConsortium: AsciiSink.c,v 1.54 90/12/31 13:22:51 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -48,7 +48,7 @@ static Boolean SetValues();
 static void DisplayText(), InsertCursor(), FindPosition();
 static void FindDistance(), Resolve(), GetCursorBounds();
 
-#define offset(field) XtOffset(AsciiSinkObject, ascii_sink.field)
+#define offset(field) XtOffsetOf(AsciiSinkRec, ascii_sink.field)
 
 static XtResource resources[] = {
     {XtNecho, XtCOutput, XtRBoolean, sizeof(Boolean),
