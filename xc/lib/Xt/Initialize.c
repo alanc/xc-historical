@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.220 94/04/17 20:14:13 converse Exp kaleb $ */
+/* $XConsortium: Initialize.c,v 1.221 94/11/30 16:23:20 kaleb Exp kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -278,8 +278,10 @@ static String XtGetRootDirName(buf, slash)
 #else
      int uid;
      extern int getuid();
-#ifndef SYSV386
+#ifndef i386
+# ifndef SYSV
      extern struct passwd *getpwuid(), *getpwnam();
+# endif
 #endif
 #endif
 #if defined(sun) && defined(SVR4) && defined(XTHREADS)
