@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.167 93/11/15 11:18:31 kaleb Exp $
+XCOMM $XConsortium: Imakefile,v 1.168 94/01/11 12:34:55 mor Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoDebugLib DebugLibX11
@@ -647,6 +647,8 @@ SRCS3 = \
 	FSWrap.c \
 	ICWrap.c \
 	IMWrap.c \
+	OCWrap.c \
+	OMWrap.c \
 	lcWrap.c \
 	mbWMProps.c \
 	mbWrap.c \
@@ -725,6 +727,8 @@ OBJS3 = \
 	FSWrap.o \
 	ICWrap.o \
 	IMWrap.o \
+	OCWrap.o \
+	OMWrap.o \
 	lcWrap.o \
 	mbWMProps.o \
 	mbWrap.o \
@@ -756,6 +760,7 @@ IMTCPOBJ = imTrTcp.o
 LCSRCS = \
 	SetLocale.c \
 	$(LCDEPSYMSRCS) \
+	imCallbk.c \
 	imConv.c \
 	imDefFlt.c \
 	imDefIc.c \
@@ -766,6 +771,7 @@ LCSRCS = \
 	imExten.c \
 	imImSw.c \
 	imInsClbk.c \
+	imInt.c \
 	imLcFlt.c \
 	imLcGIc.c \
 	imLcIc.c \
@@ -778,18 +784,19 @@ LCSRCS = \
 	imThaiFlt.c \
 	imThaiIc.c \
 	imThaiIm.c \
+	imTrSocket.c \
+	imTrX.c \
+	imTransR.c \
 	$(IMDNETSRC) \
 	$(IMSTRMSRC) \
 	$(IMTCPSRC) \
-	imTrX.c \
-	imTransR.c \
-	imInt.c \
 	lcCT.c \
 	lcCharSet.c \
 	lcConv.c \
 	lcDB.c \
 	lcDefConv.c \
 	lcEuc.c \
+	lcFile.c \
 	lcGenConv.c \
 	lcGeneric.c \
 	lcInit.c \
@@ -800,8 +807,9 @@ LCSRCS = \
 	lcSjis.c \
 	lcStd.c \
 	lcTxtPr.c \
-	lcUtil.c \
 	lcUTF.c \
+	lcUtil.c \
+	omDefault.c \
 	omGeneric.c \
 	omImText.c \
 	omText.c \
@@ -822,6 +830,7 @@ LCDEPOBJS = aixlcLoad.o
 LCOBJS = \
 	SetLocale.o \
 	$(LCDEPOBJS) \
+	imCallbk.o \
 	imConv.o \
 	imDefFlt.o \
 	imDefIc.o \
@@ -832,6 +841,7 @@ LCOBJS = \
 	imExten.o \
 	imImSw.o \
 	imInsClbk.o \
+	imInt.o \
 	imLcFlt.o \
 	imLcGIc.o \
 	imLcIc.o \
@@ -844,18 +854,19 @@ LCOBJS = \
 	imThaiFlt.o \
 	imThaiIc.o \
 	imThaiIm.o \
+	imTrSocket.o \
+	imTrX.o \
+	imTransR.o \
 	$(IMDNETOBJ) \
 	$(IMSTRMOBJ) \
 	$(IMTCPOBJ) \
-	imTrX.o \
-	imTransR.o \
-	imInt.o \
 	lcCT.o \
 	lcCharSet.o \
 	lcConv.o \
 	lcDB.o \
 	lcDefConv.o \
 	lcEuc.o \
+	lcFile.o \
 	lcGenConv.o \
 	lcGeneric.o \
 	lcInit.o \
@@ -866,8 +877,9 @@ LCOBJS = \
 	lcSjis.o \
 	lcStd.o \
 	lcTxtPr.o \
-	lcUtil.o \
 	lcUTF.o \
+	lcUtil.o \
+	omDefault.o \
 	omGeneric.o \
 	omImText.o \
 	omText.o \
@@ -898,7 +910,7 @@ SpecialCLibObjectRule(imTransR,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(imTrDnet,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(imTrSrm,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(imTrTcp,$(ICONFIGFILES),$(CONN_DEFINES) $(SOCK_DEFINES))
-SpecialCLibObjectRule(lcUtil,$(ICONFIGFILES),$(XLC_DEFINES))
+SpecialCLibObjectRule(lcFile,$(ICONFIGFILES),$(XLC_DEFINES))
 #if BuildXKBlib
 SpecialCLibObjectRule(XKBCvt,$(_NOOP_),$(RCONST_DEFINES))
 SpecialCLibObjectRule(KeyBind,$(ICONFIGFILES),$(XKB_DEFINES))
