@@ -1,7 +1,7 @@
-XCOMM $XConsortium: Imakefile,v 1.4 93/09/17 16:41:03 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.5 93/09/17 16:42:14 rws Exp $
 
   WCHAR32 = HasWChar32
-   TBLDIR = $(LOCALEDIR)/tbl_data
+   TBLDIR = $(XLOCALEDIR)/tbl_data
 
 #define LTarget(name)							@@\
 all:: name.i								@@\
