@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.13 91/02/20 19:40:00 keith Exp $ */
+/* $XConsortium: dixfonts.c,v 1.14 91/02/22 15:39:41 keith Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -147,6 +147,8 @@ FontWakeup(data, count, LastSelectMask)
     int         i;
     FontPathElementPtr fpe;
 
+    if (count < 0)
+	return Success;	/* ignore -1 return from select XXX */
     /* wake up any fpe's that may be waiting for information */
     for (i = 0; i < num_slept_fpes; i++) {
 	fpe = slept_fpes[i];
@@ -169,12 +171,11 @@ doOpenFont(client, c)
     char	*alias, *newname;
     int		newlen;
 
-start_again:
     while (c->current_fpe < c->num_fpes) {
 	fpe = c->fpe_list[c->current_fpe];
 	err = (*fpe_functions[fpe->type].open_font)
 	    ((pointer) client, fpe, c->flags,
-	     c->fontname, c->fnamelen, &pfont, &alias,
+	     c->fontname, c->fnamelen, c->fontid, &pfont, &alias,
 	     BITMAP_BIT_ORDER, IMAGE_BYTE_ORDER, GLYPHPADBYTES, 1);
 
 	if (err == BadName && alias) {
@@ -191,7 +192,6 @@ start_again:
 	    c->current_fpe = 0;
 	    continue;
 	}
-
 	if (err == BadName) {
 	    c->current_fpe++;
 	    continue;
@@ -412,7 +412,7 @@ doListFontsHelper(client, c, func)
     FontPathElementPtr	fpe;
     int			err;
 
-    /* try each fpe in turn, returning if one wnats to be blocked */
+    /* try each fpe in turn, returning if one wants to be blocked */
     while (c->current_fpe < c->num_fpes && c->names->nnames < c->maxnames) {
 	fpe = c->fpe_list[c->current_fpe];
 
@@ -762,6 +762,11 @@ doStartListFontsWithInfo (client, lfc)
     c->names = lfc->names;
     c->current_name = 0;
     c->slept = lfc->slept;
+    if (c->slept)
+    {
+	ClientWakeup (client);
+	c->slept = FALSE;
+    }
     c->name = c->names->names[0];
     c->namelen = c->names->length[0];
     c->reply = 0;
@@ -1052,7 +1057,7 @@ register_fpe_functions(name_check, open_func, close_func, wakeup_func, list_func
 
 InitFonts()
 {
-/*    fs_register_fpe_functions(); */
+    fs_register_fpe_functions();
     FontFileRegisterFpeFunctions();
 }
 
@@ -1061,4 +1066,60 @@ FreeFonts()
     xfree(fpe_functions);
     num_fpe_types = 0;
     fpe_functions = (FPEFunctions *) 0;
+}
+
+/* convenience functions for FS interface */
+
+FontPtr
+find_old_font(id)
+    XID         id;
+{
+    return (FontPtr) LookupIDByType(id);
+}
+
+static int  fs_handlers_installed = 0;
+static unsigned int last_server_gen;
+
+init_fs_handlers(fpe, block_handler)
+    FontPathElementPtr fpe;
+    int         (*block_handler) ();
+{
+    /* if server has reset, make sure the b&w handlers are reinstalled */
+    if (last_server_gen < serverGeneration) {
+	last_server_gen = serverGeneration;
+	fs_handlers_installed = 0;
+    }
+    if (fs_handlers_installed == 0) {
+
+#ifdef DEBUG
+	fprintf(stderr, "adding FS b & w handlers\n");
+#endif
+
+	if (!RegisterBlockAndWakeupHandlers(block_handler,
+					    FontWakeup, (pointer) 0))
+	    return BadAlloc;
+	fs_handlers_installed++;
+    }
+    QueueFontWakeup(fpe);
+    return Success;
+}
+
+remove_fs_handlers(fpe, block_handler, all)
+    FontPathElementPtr fpe;
+    int         (*block_handler) ();
+    Bool        all;
+{
+    if (all) {
+	/* remove the handlers if no one else is using them */
+	if (--fs_handlers_installed == 0) {
+
+#ifdef DEBUG
+	    fprintf(stderr, "removing FS b & w handlers\n");
+#endif
+
+	    RemoveBlockAndWakeupHandlers(block_handler, FontWakeup,
+					 (pointer) 0);
+	}
+    }
+    RemoveFontWakeup(fpe);
 }
