@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.26 91/06/05 14:50:24 dave Exp $
+ * $XConsortium: misc.c,v 1.27 91/07/21 20:35:42 converse Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -56,19 +56,33 @@ char * string;
   Arg wargs[3];
   Dimension topX, topY;
   char buffer[BUFSIZ];
+  Widget positionto;
+  Boolean hasPosition;
 
   sprintf( buffer, "Xman Warning: %s", string);
-  n=0;
-  XtSetArg(wargs[n], XtNx, &topX); n++;
-  XtSetArg(wargs[n], XtNy, &topY); n++;
-  XtGetValues(top, wargs, n);
+  hasPosition = FALSE;
+  if (man_globals->This_Manpage)
+    positionto = man_globals->This_Manpage;
+  else
+    positionto = top;
+  if (top)
+  {
+    n=0;
+    XtSetArg(wargs[n], XtNx, &topX); n++;
+    XtSetArg(wargs[n], XtNy, &topY); n++;
+    XtGetValues(top, wargs, n);
+    hasPosition = TRUE;
+  }
 
   if (man_globals != NULL) 
     ChangeLabel(man_globals->label, buffer);
   if (man_globals->label == NULL) {
     n=0;
-    XtSetArg(wargs[n], XtNx, topX); n++;
-    XtSetArg(wargs[n], XtNy, topY); n++;
+    if (hasPosition)
+    {
+      XtSetArg(wargs[n], XtNx, topX); n++;
+      XtSetArg(wargs[n], XtNy, topY); n++;
+    }
     XtSetArg(wargs[n], XtNtransientFor, top); n++;
     warnShell = XtCreatePopupShell("warnShell", transientShellWidgetClass, 
 				   initial_widget, wargs, n);
