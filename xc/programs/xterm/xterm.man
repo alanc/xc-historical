@@ -1474,6 +1474,9 @@ This action resets the Tektronix window and is also invoked by the
 This action copies the escape codes used to generate the current window
 contents to a file in the current directory beginning with the name COPY.
 It is also invoked from the \fItekcopy\fP entry in \fItekMenu\fP.
+.TP 8
+.B "visual-bell()"
+This action flashes the window quickly.
 .PP
 The Tektronix window also has the following action:
 .TP 8
