@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.239 89/04/09 16:05:50 rws Exp $ */
+/* $XConsortium: window.c,v 1.240 89/04/19 19:25:46 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2801,6 +2801,7 @@ SetShape(pWin)
     } 
     if (pWin->realized)
 	WindowsRestructured ();
+    CheckCursorConfinement(pWin);
 }
 #endif
 
