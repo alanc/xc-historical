@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XImUtil.c,v 11.27 88/09/20 23:34:23 jim Exp $ */
+/* $XConsortium: XImUtil.c,v 11.28 88/12/28 18:24:58 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -621,7 +621,6 @@ static XImage *_XSubImage (ximage, x, y, width, height)
 }
 
 
-#ifdef notdef
 /*
  * SetImage
  * 
@@ -666,7 +665,6 @@ int _XSetImage (srcimg, dstimg, x, y)
 	}
 	return 1;
 }
-#endif
 
 /*
  * AddPixel
