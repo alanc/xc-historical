@@ -105,6 +105,10 @@ ALL1 = Xluna
 ALL1 = Xmips
 #endif
 
+#if X386Server
+ALL1 = X386
+#endif
+
 #if XnonServer
 ALL2 = Xnon
 #endif
@@ -321,6 +325,20 @@ MIPSSYSLIBS = $(SYSLIBS) -lc /usr/lib/libc.a
  
 ServerTarget(Xmips,$(MIPSDIRS),$(MIPSOBJS),$(MIPSLIBS),$(MIPSSYSLIBS))
 #endif /* XmipsServer */
+
+
+#if X386Server
+XCOMM
+XCOMM X386 server
+XCOMM
+SUBDIRS0 = CFBSubdirs ddx/x386
+X386DIRS = $(SUBDIRS0) $(DEPDIRS)
+X386OBJS = ddx/x386/x386Init.o
+X386LIBS = ddx/x386/libx386.a CFBLibs
+X386SYSLIBS = $(SYSLIBS) -lc /usr/lib/libc.a
+
+ServerTarget(X386,$(X386DIRS),$(X386OBJS),$(X386LIBS),$(X386SYSLIBS))
+#endif /* X386Server */
 
 
 #if XnonServer
