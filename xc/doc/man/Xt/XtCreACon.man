@@ -162,9 +162,6 @@ The
 .ZN XtWidgetToApplicationContext
 function returns the application context for the specified widget.
 .LP
-The semantics of calling
-.ZN XtToolkitInitialize
-more than once are undefined.
 .SH "SEE ALSO"
 XtDisplayInitialize(3Xt)
 .br
