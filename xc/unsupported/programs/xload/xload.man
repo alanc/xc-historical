@@ -5,7 +5,7 @@ xload - load average display for X
 .ta 6n
 \fBxload\fP	[-\fItoolkitoption\fP ...] [-scale \fIinteger\fP] [-update \fIseconds\fP] [-hl \fIcolor\fP] [-highlight \fIcolor\fP] 
 .br
-	[-jumpscroll \fIpixels\fP] [-label \fIstring\fP] [-nolabel]
+	[-jumpscroll \fIpixels\fP] [-label \fIstring\fP] [-nolabel] [-lights]
 .SH DESCRIPTION
 The 
 .I xload 
@@ -21,7 +21,7 @@ following additional options:
 .B \-hl \fIcolor\fP or \-highlight \fIcolor\fP
 This option specifies the color of the scale lines.  
 .TP 8
-.B \-jumpscroll \FPnumber of pixels\fP
+.B \-jumpscroll \fPnumber of pixels\fP
 The number of pixels to shift the graph to the left when the graph
 reaches the right edge of the window.  The default value is 1/2 the width
 of the current window.  Smooth scrolling can be achieved by setting it to 1.
@@ -32,6 +32,13 @@ The string to put into the label above the load average.
 .B \-nolabel
 If this command line option is specified then no label will be
 displayed above the load graph.
+.TP 8
+.B \-lights
+When specified, this option causes
+.I xload
+to display the current load average by using the keyboard leds; for
+a load average of \fIn\fP, xload lights the first \fIn\fP keyboard leds.
+This option turns off the usual screen display.
 .TP 8
 .B \-scale \fIinteger\fP
 This option specifies the minimum number of tick marks in the histogram,
