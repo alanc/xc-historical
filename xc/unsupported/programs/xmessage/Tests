@@ -1,4 +1,5 @@
 #! /bin/sh -v
+# $XConsortium$
 xmessage this is standard usage, message on the command line
 echo this is a message from standard input | xmessage -file -
 xmessage -file Imakefile -buttons print,me -print

@@ -1,4 +1,6 @@
 /*
+ * $XConsortium$
+ *
  * xmessage - utility for querying users
  *
  * Copyright 1988,1991 Massachusetts Institute of Technology

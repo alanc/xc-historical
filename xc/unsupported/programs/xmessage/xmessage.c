@@ -1,8 +1,11 @@
+#ifndef lint
+static char *rid="$XConsortium$";
+#endif /* lint */
 /*
  * xmessage - utility for querying users
  *
  * Copyright 1988,1991 Massachusetts Institute of Technology
- * Time-stamp: <91/08/27 18:33:26 gildea>
+ * Time-stamp: <94/04/11 14:47:15 gildea>
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
@@ -16,7 +19,9 @@
  *
  * Originally written by Chris D. Peterson, MIT Project Athena, 1988.
  * Updated by Jim Fulton, MIT X Consortium.
- * Current version by Stephen Gildea <gildea@expo.lcs.mit.edu>, August 1991.
+ * Currently maintained by Stephen Gildea <gildea@x.org>.
+ *
+ * Works with X11 Release 5 or 6.
  */
 
 #include <X11/Intrinsic.h>
