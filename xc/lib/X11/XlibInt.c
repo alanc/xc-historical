@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.56 87/10/29 19:02:05 rws Locked $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.58 88/01/30 19:15:00 rws Exp $";
 #endif
 
 /*
@@ -263,6 +263,44 @@ register Display *dpy;
 }
 
 /*
+ * The hard part about this is that we only get 16 bits from a reply.  Well,
+ * then, we have three values that will march along, with the following
+ * invariant:
+ *	dpy->last_request_read <= rep->sequenceNumber <= dpy->request
+ * The right choice for rep->sequenceNumber is the largest that
+ * still meets these constraints.
+ */
+static unsigned long
+_SetLastRequestRead(dpy, rep)
+    register Display *dpy;
+    register xGenericReply *rep;
+{
+    register unsigned long	newseq, lastseq;
+
+    /*
+     * KeymapNotify has no sequence number, but is always guaranteed
+     * to immediately follow another event.
+     */
+    if (rep->type == KeymapNotify)
+	return(dpy->last_request_read);
+
+    newseq = (dpy->last_request_read & ~((unsigned long)0xffff)) |
+	     rep->sequenceNumber;
+    lastseq = dpy->last_request_read;
+    while (newseq < lastseq) {
+	newseq += 0x10000;
+	if (newseq > dpy->request) {
+	    (void) fprintf(stderr, "sequence lost!\n");
+	    newseq -= 0x10000;
+	    break;
+	}
+    }
+
+    dpy->last_request_read = newseq;
+    return(newseq);
+}
+
+/*
  * _XReply - Wait for a reply packet and copy its contents into the
  * specified rep.  Mean while we must handle error and event packets that
  * we may encounter.
@@ -280,6 +318,7 @@ Status _XReply (dpy, rep, extra, discard)
 
 	    case X_Reply:
 	        /* Reply recieved. */
+		dpy->last_request_read = dpy->request;
 		if (extra == 0) {
 		    if (discard && (rep->generic.length > 0))
 		       /* unexpectedly long reply! */
@@ -316,7 +355,10 @@ Status _XReply (dpy, rep, extra, discard)
 		register Bool ret = False;
 		int ret_code;
 		xError *err = (xError *) rep;
-		if (err->sequenceNumber == dpy->request)
+		unsigned long serial;
+
+		serial = _SetLastRequestRead(dpy, (xGenericReply *)rep);
+		if (serial == dpy->request)
 			/* do not die on "no such font", "can't allocate",
 			   "can't grab" failures */
 			switch ((int)err->errorCode) {
@@ -351,7 +393,7 @@ Status _XReply (dpy, rep, extra, discard)
 			    break;
 			}
 		_XError(dpy, err);
-		if (err->sequenceNumber == dpy->request)
+		if (serial == dpy->request)
 		    return(0);
 		}
 		break;
@@ -449,8 +491,11 @@ register XEvent *re;	/* pointer to where event should be reformatted */
 register xEvent *event;	/* wire protocol event */
 {
 
-	((XAnyEvent *)re)->display = dpy;	
-	re->type = event->u.u.type;
+	re->type = event->u.u.type & 0x7f;
+	((XAnyEvent *)re)->serial = _SetLastRequestRead(dpy,
+					(xGenericReply *)event);
+	((XAnyEvent *)re)->send_event = ((event->u.u.type & 0x80) != 0);
+	((XAnyEvent *)re)->display = dpy;
 	
 	/* Ignore the leading bit of the event type since it is set when a
 		client sends an event rather than the server. */
@@ -840,7 +885,7 @@ int _XError (dpy, rep)
 
     event.display = dpy;
     event.type = X_Error;
-    event.serial = rep->sequenceNumber;
+    event.serial = _SetLastRequestRead(dpy, (xGenericReply *)rep);
     event.resourceid = rep->resourceID;
     event.error_code = rep->errorCode;
     event.request_code = rep->majorCode;
