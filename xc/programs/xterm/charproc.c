@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.149 91/04/26 14:43:52 gildea Exp $
+ * $XConsortium: charproc.c,v 1.150 91/04/26 15:03:54 gildea Exp $
  */
 
 /*
@@ -1599,11 +1599,13 @@ dpmodes(term, func)
 			Bell();
 #endif /* ALLOWLOGFILEONOFF */
 			break;
-		case 47:		/* alternate buffer		*/
-			if(func == bitset)
+		case 47:		/* alternate buffer */
+			if (!term->misc.titeInhibit) {
+			    if(func == bitset)
 				ToAlternate(screen);
-			else
+			    else
 				FromAlternate(screen);
+			}
 			break;
 		case 1000:		/* xtem bogus sequence		*/
 			if(func == bitset)
@@ -1797,12 +1799,14 @@ XtermWidget term;
 #endif /* ALLOWLOGFILEONOFF */
 			/* update_logging done by StartLog and CloseLog */
 			break;
-		case 47:		/* alternate buffer		*/
-			if(screen->save_modes[15])
+		case 47:		/* alternate buffer */
+			if (!term->misc.titeInhibit) {
+			    if(screen->save_modes[15])
 				ToAlternate(screen);
-			else
+			    else
 				FromAlternate(screen);
-			/* update_altscreen done by ToAlt and FromAlt */
+			    /* update_altscreen done by ToAlt and FromAlt */
+			}
 			break;
 		case 1000:		/* mouse bogus sequence		*/
 		case 1001:
