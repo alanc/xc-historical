@@ -7,7 +7,6 @@ XCOMM Clean this up later by putting in Project.tmpl!! -jas
 #define DoProfileLib ProfileLibpcthreads
 #include <Library.tmpl>
 
-   INSTALLFLAGS = $(INSTINCFLAGS)
        LINTLIBS = $(LINTXLIB)
 
 HEADERS = \
