@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Logo.c,v 1.14 90/04/17 15:55:20 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Logo.c,v 1.15 90/04/17 18:02:41 jim Exp $";
 #endif
 
 /*
@@ -87,6 +87,23 @@ LogoClassRec logoClassRec = {
 WidgetClass logoWidgetClass = (WidgetClass) &logoClassRec;
 
 
+/*****************************************************************************
+ *									     *
+ *			   private utility routines			     *
+ *									     *
+ *****************************************************************************/
+
+static void create_gcs (w)
+    LogoWidget w;
+{
+    XGCValues v;
+
+    v.foreground = w->logo.fgpixel;
+    w->logo.foreGC = XtGetGC ((Widget) w, GCForeground, &v);
+    v.foreground = w->core.background_pixel;
+    w->logo.backGC = XtGetGC ((Widget) w, GCForeground, &v);
+}
+
 static void check_shape (w)
     LogoWidget w;
 {
@@ -99,7 +116,6 @@ static void check_shape (w)
 	  w->logo.shape_window = FALSE;
     }
 }
-
 
 static void unset_shape (w)
     LogoWidget w;
@@ -122,6 +138,7 @@ static void unset_shape (w)
     }
     XChangeWindowAttributes (dpy, win, mask, &attr);
     XShapeCombineMask (dpy, win, ShapeBounding, 0, 0, None, ShapeSet);
+    if (!w->logo.foreGC) create_gcs (w);
     w->logo.need_shaping = w->logo.shape_window;
 #endif
 }
@@ -168,12 +185,17 @@ static void set_shape (w)
 }
 
 
+/*****************************************************************************
+ *									     *
+ *				 class methods				     *
+ *									     *
+ *****************************************************************************/
+
 /* ARGSUSED */
 static void Initialize (request, new)
     Widget request, new;
 {
     LogoWidget w = (LogoWidget)new;
-    XGCValues  gcv;
 
     if (w->logo.reverse_video) {
 	Pixel fg = w->logo.fgpixel;
@@ -188,11 +210,8 @@ static void Initialize (request, new)
     if (w->core.width < 1) w->core.width = 100;
     if (w->core.height < 1) w->core.height = 100;
 
-    gcv.foreground = w->logo.fgpixel;
-    w->logo.foreGC = XtGetGC((Widget)w, GCForeground, &gcv);
-    gcv.foreground = w->core.background_pixel;
-    w->logo.backGC = XtGetGC((Widget)w, GCForeground, &gcv);
-
+    w->logo.foreGC = (GC) NULL;
+    w->logo.backGC = (GC) NULL;
     check_shape (w);
     w->logo.need_shaping = w->logo.shape_window;
 }
@@ -201,8 +220,14 @@ static void Destroy (gw)
     Widget gw;
 {
     LogoWidget w = (LogoWidget) gw;
-    if (w->logo.foreGC) XtDestroyGC (w->logo.foreGC);
-    if (w->logo.backGC) XtDestroyGC (w->logo.backGC);
+    if (w->logo.foreGC) {
+	XtDestroyGC (w->logo.foreGC);
+	w->logo.foreGC = (GC) NULL;
+    }
+    if (w->logo.backGC) {
+	XtDestroyGC (w->logo.backGC);
+	w->logo.backGC = (GC) NULL;
+    }
 }
 
 static void Realize (gw, valuemaskp, attr)
@@ -216,8 +241,9 @@ static void Realize (gw, valuemaskp, attr)
     if (w->logo.shape_window) {
 	attr->background_pixel = w->logo.fgpixel;  /* going to shape */
 	*valuemaskp |= CWBackPixel;
-    }
+    } else
 #endif
+      create_gcs (w);
     (*XtSuperclass(gw)->core_class.realize) (gw, valuemaskp, attr);
 }
 
@@ -257,25 +283,23 @@ static Boolean SetValues (gcurrent, grequest, gnew)
     LogoWidget current = (LogoWidget) gcurrent;
     LogoWidget new = (LogoWidget) gnew;
     Boolean redisplay = FALSE;
-    XGCValues	gcv;
+
+   check_shape (new);			/* validate shape_window */
 
     if ((new->logo.fgpixel != current->logo.fgpixel) ||
 	(new->core.background_pixel != current->core.background_pixel)) {
 	Destroy (gcurrent);
-	gcv.foreground = new->logo.fgpixel;
-	new->logo.foreGC = XtGetGC(gnew, GCForeground, &gcv);
-	gcv.foreground = new->core.background_pixel;
-	new->logo.backGC = XtGetGC(gnew, GCForeground, &gcv);
+	if (!new->logo.shape_window) create_gcs (new);
 	redisplay = TRUE;
     }
    
-   check_shape (new);
    if (new->logo.shape_window != current->logo.shape_window) {
        if (new->logo.shape_window) {
+	   Destroy (new);		/* no longer need GCs */
 	   set_shape (new);
 	   redisplay = FALSE;
        } else {
-	   unset_shape (new);
+	   unset_shape (new);		/* creates new GCs */
 	   redisplay = TRUE;
        }
    }
