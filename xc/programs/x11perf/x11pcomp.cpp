@@ -36,17 +36,19 @@ case $1 in
 	shift;
 	;;
 esac
-/**/# Get either the provided label file, or construct one from the first
-/**/# x11perf output file given.
+/**/# Get either the provided label file, or construct one from all the
+/**/# files given.
 case $1 in
 -l)	cp $2 $tmp/labels
 	shift; shift
 	;;
-*)	awk '$2 == "reps" || $2 == "trep" { \
-	    print $0; \
-	    next; \
-        } \
-	' $1 | sed 's/^.*: //' | uniq > $tmp/labels
+*)	for file in "$@"; do
+		awk '$2 == "reps" || $2 == "trep" { print $0; next; }' $file |
+ 		sed 's/^.*: //' |
+ 		sed 's/ /_/g' |
+ 		awk 'NR > 1 	{ printf ("%s %s\n", prev, $0); }
+				{ prev = $0; }'
+	done | tsort 2>/dev/null | sed 's/_/ /g' > $tmp/labels
 	;;
 esac
 /**/# Go through all files, and create a corresponding rate file for each
@@ -56,8 +58,8 @@ do
 /**/# Get lines with average numbers, fill in any tests that may be missing
 /**/# then extract the rate field
 	base=`basename $i`
-	(echo "     $n  "; \
-	 echo '--------'; \
+	(echo "     $n  "
+	 echo '--------'
 	 awk '$2 == "reps" || $2 == "trep" {
 		line = $0;
 		next;
@@ -67,17 +69,17 @@ do
 		line="";
 		next;
 	    }
-	 ' $i > $tmp/$base.avg; \
-	 fillblnk $tmp/$base.avg $tmp/labels |
+	 ' $i > $tmp/$n.avg
+	 fillblnk $tmp/$n.avg $tmp/labels |
 	 sed 's/( *\([0-9]*\)/(\1/'   |
 	 awk '$2 == "reps" || $2 == "trep" {
-		n = substr($6,2,length($6)-7);
-		printf "%8s\n", n;
-    	}
-	') > $tmp/rates/$base
-	echo "$n: $base"
+	 					n = substr($6,2,length($6)-7);
+						printf "%8s\n", n;
+    	 				   }'
+	) > $tmp/rates/$n
+	echo "$n: $i"
+	allfiles="$allfiles$tmp/rates/$n "
 	n=`expr $n + 1`
-	allfiles="$allfiles$base "
 done
 case x$ratio in
 x)
@@ -91,7 +93,6 @@ x1)
 	;;
 esac
 echo ''
-(echo Operation; echo '---------'; cat $tmp/labels) | \
-(cd $tmp/rates; paste $allfiles -) | \
-sed 's/	/  /g' | $ratio
+(echo Operation; echo '---------'; cat $tmp/labels) |
+paste $allfiles - | sed 's/	/  /g' | $ratio
 rm -rf $tmp
