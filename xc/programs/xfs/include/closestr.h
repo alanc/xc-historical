@@ -1,4 +1,4 @@
-/* $XConsortium: closestr.h,v 1.5 94/04/12 21:59:20 dpw Exp $ */
+/* $XConsortium: closestr.h,v 1.6 94/04/17 19:55:55 dpw Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 
@@ -58,6 +58,9 @@ in this Software without prior written authorization from the X Consortium.
 #include	"font.h"
 
 /* closure structures */
+
+/* OpenFont */
+
 typedef struct _OFclosure {
     ClientPtr   client;
     short       current_fpe;
@@ -75,6 +78,8 @@ typedef struct _OFclosure {
     FontPtr	non_cachable_font;
 }           OFclosureRec;
 
+/* QueryExtents */
+
 typedef struct _QEclosure {
     ClientPtr   client;
     int         nranges;
@@ -83,6 +88,8 @@ typedef struct _QEclosure {
     Mask        flags;
     Bool        slept;
 }           QEclosureRec;
+
+/* QueryBitmaps */
 
 typedef struct _QBclosure {
     ClientPtr   client;
@@ -94,8 +101,10 @@ typedef struct _QBclosure {
     Bool        slept;
 }           QBclosureRec;
 
+/* ListFontsWithInfo */
+
 typedef struct _LFWIstate {
-    char       *pattern;
+    char        pattern[256];  /* max len of font name */
     int         patlen;
     int         current_fpe;
     int         max_names;
