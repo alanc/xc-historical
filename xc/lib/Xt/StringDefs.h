@@ -1,5 +1,5 @@
 /*
-* $XConsortium: StringDefs.h,v 1.39 88/09/16 08:20:08 swick Exp $
+* $XConsortium: StringDefs.h,v 1.40 88/09/26 11:54:39 swick Exp $
 * $oHeader: StringDefs.h,v 1.3 88/08/19 16:39:44 asente Exp $
 */
 
@@ -38,6 +38,7 @@ SOFTWARE.
 #define XtNancestorSensitive	"ancestorSensitive"
 #define XtNbackground		"background"
 #define XtNbackgroundPixmap     "backgroundPixmap"
+#define XtNbitmap		"bitmap"
 #define XtNborderColor		"borderColor"
 #define XtNborder		"borderColor"
 #define XtNborderPixmap		"borderPixmap"
@@ -115,6 +116,7 @@ SOFTWARE.
 /* Class types */ 
 #define XtCAccelerators         "Accelerators"
 #define XtCBackground		"Background"
+#define XtCBitmap		"Bitmap"
 #define XtCBoolean		"Boolean"
 #define XtCBorderColor		"BorderColor"
 #define XtCBorderWidth		"BorderWidth"
