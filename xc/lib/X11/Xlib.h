@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.195 91/04/06 13:11:03 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.196 91/04/06 15:13:30 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -42,10 +42,10 @@
 #include <X11/Xfuncproto.h>
 #include <X11/Xosdefs.h>
 
-#ifndef X_NOT_STDC_ENV
-#include <stddef.h>
-#else
+#if defined(XWCHAR) || defined(X_NOT_STDC_ENV)
 typedef unsigned int wchar_t;
+#else
+#include <stddef.h>
 #endif
 
 typedef char *XPointer;
