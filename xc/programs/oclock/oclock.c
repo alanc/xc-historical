@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: oclock.c,v 1.5 89/05/02 18:04:48 keith Exp $";
+static char rcsid[] = "$XConsortium: oclock.c,v 1.6 89/07/21 13:44:46 jim Exp $";
 #endif /* lint */
 
 #include <X11/Intrinsic.h>
@@ -10,7 +10,7 @@ static char rcsid[] = "$XConsortium: oclock.c,v 1.5 89/05/02 18:04:48 keith Exp 
 #include <stdio.h> 
 
 #include "oclock.bit"
-#include "oclock_mask.bit"
+#include "oclmask.bit"
 
 extern void exit();
 
@@ -73,7 +73,7 @@ void main(argc, argv)
     XtSetArg (arg[i], XtNiconMask,
 	      XCreateBitmapFromData (XtDisplay(toplevel),
 				     XtScreen(toplevel)->root,
-				     oclock_mask_bits, oclock_mask_width, oclock_mask_height));
+				     oclmask_bits, oclmask_width, oclmask_height));
     i++;
     XtSetValues (toplevel, arg, i);
 
