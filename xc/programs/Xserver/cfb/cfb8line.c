@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8line.c,v 1.21 92/05/04 15:14:23 keith Exp $
+ * $XConsortium: cfb8line.c,v 1.22 92/05/04 15:38:21 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -698,7 +698,7 @@ cfbClipPoint (oc, xp, yp, dx, dy, boxp, first)
 	    /* see comment above */
 	    if (first)
 		utmp -= (dx - dy) << 1;
-	    utmp = utmp / (dx << 1);
+	    utmp = utmp / (dy << 1);
 	}
 	else
 	    utmp = round (utmp, dy);
