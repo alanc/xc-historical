@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.39 91/05/06 23:53:47 gildea Exp $
+ * $XConsortium: auth.c,v 1.40 91/05/11 15:32:57 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -34,7 +34,15 @@
 # include <sys/ioctl.h>
 #endif /* !ESIX */
 
-#ifdef SYSV386
+#ifdef TCPCONN
+# include <netinet/in.h>
+#endif
+#ifdef DNETCONN
+# include <netdnet/dn.h>
+# include <netdnet/dnetdb.h>
+#endif
+
+#if defined(SYSV) && defined(SYSV386)
 # include <sys/utsname.h>
 # include <sys/stream.h>
 # ifdef ISC
@@ -54,13 +62,6 @@
 # include <sys/sockio.h>
 #endif
 #include <net/if.h>
-#ifdef TCPCONN
-# include <netinet/in.h>
-#endif
-#ifdef DNETCONN
-# include <netdnet/dn.h>
-# include <netdnet/dnetdb.h>
-#endif
 
 extern int	MitInitAuth ();
 extern Xauth	*MitGetAuth ();
