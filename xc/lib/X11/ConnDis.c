@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $XConsortium: XConnDis.c,v 11.34 88/09/02 14:47:39 jim Exp $ */
+/* $XConsortium: XConnDis.c,v 11.35 88/09/06 16:05:06 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -12,6 +12,10 @@
 #include <sys/socket.h>
 #ifndef hpux
 #include <netinet/tcp.h>
+#endif
+
+#ifdef hpux
+#include <sys/utsname.h>
 #endif
 
 #ifdef UNIXCONN
@@ -137,8 +141,20 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num)
 #ifdef UNIXCONN
 		;	/* Do nothing if UNIX DOMAIN. Will be handled below. */
 #else
+#ifdef hpux
+	    /*
+	     * same host name crock as in server and xinit.
+	     */
+	    {
+		struct utsname name;
+
+		uname(&name);
+		strcpy(displaybuf, name.nodename);
+	    }
+#else
 		(void) gethostname (displaybuf, sizeof(displaybuf));
-#endif
+#endif /* hpux */
+#endif /* UNIXCONN else TCPCONN (assumed) */
 
 #ifdef DNETCONN
 	if (dnet) {
