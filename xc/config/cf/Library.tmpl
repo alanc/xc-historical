@@ -9,7 +9,7 @@
  * LibName, SoRev, HasSharedData, and optionally HugeLibrary and IncSubdir
  */
 
-XCOMM $XConsortium: Library.tmpl,v 1.30 94/03/29 15:42:14 gildea Exp $
+XCOMM $XConsortium: Library.tmpl,v 1.31 94/05/13 15:51:08 matt Exp $
 
 #ifndef LibraryCplusplusOptions
 #if DoSharedLib && defined(SharedLibraryCplusplusOptions)
@@ -224,9 +224,9 @@ InstallSharedLibraryData($(LIBNAME),$(SoRev),$(SHLIBDIR))
 #if DoNormalLib
 #if HugeLibrary
 #if DoSharedLib && SeparateSharedCompile
-UnsharedLibraryTarget3(X11,$(OBJS1),$(OBJS2),$(OBJS3),unshared,..)
+UnsharedLibraryTarget3($(LIBNAME),$(OBJS1),$(OBJS2),$(OBJS3),unshared,..)
 #else
-NormalLibraryTarget3(X11,$(OBJS1),$(OBJS2),$(OBJS3))
+NormalLibraryTarget3($(LIBNAME),$(OBJS1),$(OBJS2),$(OBJS3))
 #endif
 #else
 #if DoSharedLib && SeparateSharedCompile
