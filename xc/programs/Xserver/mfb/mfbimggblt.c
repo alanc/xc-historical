@@ -1,4 +1,3 @@
-/* $Header$ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -392,7 +391,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		    maskpartialbits(xoff, w, startmask);
 		    while (h--)
 		    {
-			getbits((int *)pglyph, glyphCol, w, tmpSrc);
+			getshiftedleftbits(pglyph, glyphCol, w, tmpSrc);
 			*pdst OPEQ (SCRRIGHT(tmpSrc, xoff) & startmask);
 			pglyph += widthGlyph;
 			pdst += widthDst;
@@ -404,7 +403,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		    nFirst = 32 - xoff;
 		    while (h--)
 		    {
-			getbits((int *)pglyph, glyphCol, w, tmpSrc);
+			getshiftedleftbits(pglyph, glyphCol, w, tmpSrc);
 			*pdst OPEQ (SCRRIGHT(tmpSrc, xoff) & startmask);
 			*(pdst+1) OPEQ (SCRLEFT(tmpSrc, nFirst) & endmask);
 			pglyph += widthGlyph;
