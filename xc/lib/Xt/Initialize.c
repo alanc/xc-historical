@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.111 88/02/14 14:53:33 rws Exp $";
+static char rcsid[] = "$Header: Initialize.c,v 1.112 88/02/14 17:56:48 jim Exp $";
 #endif
 
 /*
@@ -52,26 +52,26 @@ static char rcsid[] = "$Header: Initialize.c,v 1.111 88/02/14 14:53:33 rws Exp $
 static XrmOptionDescRec opTable[] = {
 {"+rv",		"*reverseVideo", XrmoptionNoArg,	(caddr_t) "off"},
 {"-background",	"*background",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-bd",		"*border",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-bd",		"*borderColor",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-bg",		"*background",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-border",	".borderWidth",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-bordercolor","*border",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-bw",		".borderWidth",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-display",	".display",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-borderwidth","*TopLevelShell.borderWidth", XrmoptionSepArg, (caddr_t) NULL},
+{"-bordercolor","*borderColor",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-bw",		"*TopLevelShell.borderWidth", XrmoptionSepArg, (caddr_t) NULL},
+{"-display",	".display",     XrmoptionSepArg,	(caddr_t) NULL},
 {"-fg",		"*foreground",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-fn",		"*font",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-font",	"*font",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-foreground",	"*foreground",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-geometry",	".geometry",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-iconic",	".iconic",	XrmoptionNoArg,		(caddr_t) "on"},
+{"-geometry",	".TopLevelShell.geometry", XrmoptionSepArg, (caddr_t) NULL},
+{"-iconic",	".TopLevelShell.iconic",   XrmoptionNoArg,  (caddr_t) "on"},
 {"-name",	".name",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-reverse",	"*reverseVideo", XrmoptionNoArg,	(caddr_t) "on"},
 {"-rv",		"*reverseVideo", XrmoptionNoArg,	(caddr_t) "on"},
 {"-synchronous",".synchronous", XrmoptionNoArg,		(caddr_t) "on"},
-{"-title",	".title",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-title",	".TopLevelShell.title",	XrmoptionSepArg,(caddr_t) NULL},
 {"-xrm",	NULL,		XrmoptionResArg,	(caddr_t) NULL},
 #ifndef TRASHEQUALGEOMETRY
-{"=",		".geometry",	XrmoptionIsArg,		(caddr_t) NULL},
+{"=",		".TopLevelShell.geometry", XrmoptionIsArg, (caddr_t) NULL},
 #endif
 };
 
@@ -98,10 +98,12 @@ extern void _XtResourceListInitialize();
     _XtEventInitialize();
     _XtTranslateInitialize();
 }
+
 Atom XtHasInput;
 Atom XtTimerExpired;
 extern Atom WM_CONFIGURE_DENIED;
 extern Atom WM_MOVED;
+
 static void
 init_atoms(dpy)
 Display *dpy;
@@ -323,9 +325,9 @@ ComputeAbbrevLen(string, name, len)
  */
 
 Widget
-XtInitialize(name, classname, urlist, num_urs, argc, argv)
-    char *name;
-    char *classname;
+XtInitialize(shell_name, classname, urlist, num_urs, argc, argv)
+    char *shell_name;		/* initial shell instance name */
+    char *classname;		/* application class */
     XrmOptionDescRec *urlist;
     Cardinal num_urs;
     Cardinal *argc;
@@ -352,14 +354,13 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	int min_display_len = 0;
 	int min_name_len = 0;
 	int min_sync_len = 0;
+	char *name;		/* application instance name */
 
-	if( name == NULL) {
-	  	ptr = rindex(argv[0], '/');
-		if(ptr)
-		  name = ++ ptr;
-		else
-		  name = argv[0];
-	}
+	name = rindex(argv[0], '/');
+	if(name)
+	    name++;
+	else
+	    name = argv[0];
 
 	/* save away argv and argc so I can set the properties latter */
 
@@ -439,11 +440,7 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	XtApplicationClass = XrmStringToClass( classname );
 	DO_Initialize();
 #ifndef XAPPLOADDIR
-#ifndef VMS
-#define XAPPLOADDIR  "/usr/lib/X/app-defaults/"
-#else
-#define XAPPLOADDIR  "SYS$LIBRARY:"
-#endif /* VMS */
+#define XAPPLOADDIR  "/usr/lib/X11/app-defaults/"
 #endif /* XAPPLOADDIR */
 	(void) strcpy(filename, XAPPLOADDIR);
 	(void) strcat(filename, classname);
@@ -466,11 +463,7 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	     Unlike most classes the shell widget class has no classname
 	     The name is supplied in the call to XtInitialize.
 	 */
-	(void) strcpy(
-	    applicationShellWidgetClass->core_class.class_name
-	        = (String)XtMalloc((unsigned)strlen(classname)+1),
-	       classname);
-        root = XtCreateApplicationShell(name, applicationShellWidgetClass,
+        root = XtCreateApplicationShell(shell_name, applicationShellWidgetClass,
                   args,num_args);
 
 
