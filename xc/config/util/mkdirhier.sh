@@ -1,4 +1,4 @@
-:
+#!/bin/sh
 
 #
 # create a heirarchy of directories
