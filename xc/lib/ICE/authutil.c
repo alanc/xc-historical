@@ -1,4 +1,4 @@
-/* $XConsortium: authutil.c,v 1.2 93/11/25 13:21:29 mor Exp $ */
+/* $XConsortium: authutil.c,v 1.3 93/11/25 14:48:42 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -109,7 +109,7 @@ long	dead;
     long	now;
     int		creat_fd = -1;
 
-    if (strlen (file_name) > 1022)
+    if ((int) strlen (file_name) > 1022)
 	return (IceAuthLockError);
 
     strcpy (creat_name, file_name);
@@ -184,7 +184,7 @@ char	*file_name;
 #ifndef WIN32
     char	creat_name[1025], link_name[1025];
 
-    if (strlen (file_name) > 1022)
+    if ((int) strlen (file_name) > 1022)
 	return;
 
     strcpy (creat_name, file_name);
