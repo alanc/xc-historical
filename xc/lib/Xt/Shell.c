@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.61 89/09/19 08:37:30 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.62 89/09/19 12:25:46 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -39,9 +39,7 @@ SOFTWARE.
 
 #include <X11/Xatom.h>
 
-extern void XSetWMNormalHints(); /* this was not declared in Xlib.h... */
 extern void XSetTransientForHint(); /* this was not declared in Xlib.h... */
-extern void XSetClassHint(); /* this was not declared in Xlib.h... */
 
 #include "IntrinsicI.h"
 #include "StringDefs.h"
@@ -53,7 +51,7 @@ extern void XSetClassHint(); /* this was not declared in Xlib.h... */
 #define WM_CONFIGURE_DENIED(w) (((WMShellWidget) (w))->wm.wm_configure_denied)
 #define WM_MOVED(w) (((WMShellWidget) (w))->wm.wm_moved)
 
-#define BIGSIZE ((Dimension)32123)
+#define BIGSIZE ((Dimension)32767)
 
 /***************************************************************************
  *
@@ -97,7 +95,9 @@ static XtResource shellResources[]=
 	    Offset(shell.popdown_callback), XtRCallback, (XtPointer) NULL},
 	{ XtNoverrideRedirect, XtCOverrideRedirect,
 	    XtRBoolean, sizeof(Boolean), Offset(shell.override_redirect),
-	    XtRImmediate, (XtPointer)False}
+	    XtRImmediate, (XtPointer)False},
+	{ XtNvisual, XtCVisual, XtRVisual, sizeof(Visual*),
+	    Offset(shell.visual), XtRImmediate, CopyFromParent}
 };
 
 static void ClassPartInitialize(), Initialize();
@@ -240,6 +240,8 @@ static XtResource wmResources[]=
 {
 	{ XtNtitle, XtCTitle, XtRString, sizeof(char *),
 	    Offset(wm.title), XtRString, NULL},
+	{ XtNtitleEncoding, XtCEncoding, XtRAtom, sizeof(Atom),
+	    Offset(wm.title_encoding), XtRImmediate, (XtPointer)XA_STRING},
 	{ XtNwmTimeout, XtCWmTimeout, XtRInt, sizeof(int),
 	    Offset(wm.wm_timeout), XtRImmediate, (XtPointer)5000},
 	{ XtNwaitForWm, XtCWaitForWm, XtRBoolean, sizeof(Boolean),
@@ -248,13 +250,13 @@ static XtResource wmResources[]=
 	    Offset(wm.transient), XtRImmediate, (XtPointer)False},
 /* size_hints minus things stored in core */
 	{ XtNbaseWidth, XtCBaseWidth, XtRInt, sizeof(int),
-	    Offset(wm.size_hints.base_width),
+	    Offset(wm.base_width),
 	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
 	{ XtNbaseHeight, XtCBaseHeight, XtRInt, sizeof(int),
-	    Offset(wm.size_hints.base_height),
+	    Offset(wm.base_height),
 	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
 	{ XtNwinGravity, XtCWinGravity, XtRInt, sizeof(int),
-	    Offset(wm.size_hints.win_gravity),
+	    Offset(wm.win_gravity),
 	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
 	{ XtNminWidth, XtCMinWidth, XtRInt, sizeof(int),
 	    Offset(wm.size_hints.min_width),
@@ -367,10 +369,15 @@ externaldef(wmshellwidgetclass) WidgetClass wmShellWidgetClass = (WidgetClass) (
  *
  ***************************************************************************/
 
+#undef Offset
+#define Offset(x)	(XtOffset(TransientShellWidget, x))
+
 static XtResource transientResources[]=
 {
 	{ XtNtransient, XtCTransient, XtRBoolean, sizeof(Boolean),
 	    Offset(wm.transient), XtRImmediate, (XtPointer)True},
+	{ XtNtransientFor, XtCTransientFor, XtRWidget, sizeof(Widget),
+	    Offset(transient.transient_for), XtRWidget, NULL},
 	{ XtNsaveUnder, XtCSaveUnder, XtRBoolean, sizeof(Boolean),
 	    Offset(shell.save_under), XtRImmediate, (XtPointer)True},
 };
@@ -442,6 +449,9 @@ static XtResource topLevelResources[]=
 {
 	{ XtNiconName, XtCIconName, XtRString, sizeof(XtPointer),
 	    Offset(topLevel.icon_name), XtRString, (XtPointer) NULL},
+	{ XtNiconNameEncoding, XtCEncoding, XtRAtom, sizeof(Atom),
+	    Offset(topLevel.icon_name_encoding), XtRImmediate,
+	    (XtPointer)XA_STRING},
 	{ XtNiconic, XtCIconic, XtRBoolean, sizeof(Boolean),
 	    Offset(topLevel.iconic), XtRImmediate, (XtPointer)False}
 };
@@ -581,6 +591,60 @@ externaldef(applicationshellwidgetclass) WidgetClass applicationShellWidgetClass
 /****************************************************************************
  * Whew!
  ****************************************************************************/
+
+static void ComputeWMSizeHints(w, hints)
+    WMShellWidget w;
+    XSizeHints *hints;
+{
+    register long flags;
+    hints->flags = flags = w->wm.size_hints.flags;
+#define copy(field) hints->field = w->wm.size_hints.field
+    if (flags & (USPosition | PPosition)) {
+	copy(x);
+	copy(y);
+    }
+    if (flags & (USSize | PSize)) {
+	copy(width);
+	copy(height);
+    }
+    if (flags & PMinSize) {
+	copy(min_width);
+	copy(min_height);
+    }
+    if (flags & PMaxSize) {
+	copy(max_width);
+	copy(max_height);
+    }
+    if (flags & PResizeInc) {
+	copy(width_inc);
+	copy(height_inc);
+    }
+    if (flags & PAspect) {
+	copy(min_aspect.x);
+	copy(min_aspect.y);
+	copy(max_aspect.x);
+	copy(max_aspect.y);
+    }
+#undef copy
+#define copy(field) hints->field = w->wm.field
+    if (flags & PBaseSize) {
+	copy(base_width);
+	copy(base_height);
+    }
+    if (flags & PWinGravity)
+	copy(win_gravity);
+#undef copy
+}
+
+static void _SetWMSizeHints(w)
+    WMShellWidget w;
+{
+    XSizeHints *size_hints = XAllocSizeHints();
+
+    if (size_hints == NULL) _XtAllocError("XAllocSizeHints");
+    ComputeWMSizeHints(w, size_hints);
+    XSetWMNormalHints(XtDisplay((Widget)w), XtWindow((Widget)w), size_hints);
+}
 
 static ShellClassExtension _FindClassExtension(widget_class)
     WidgetClass widget_class;
@@ -844,7 +908,7 @@ static void Realize(wid, vmask, attr)
 		wid->core.screen->root, (int)wid->core.x, (int)wid->core.y,
 		(unsigned int)wid->core.width, (unsigned int)wid->core.height,
 		(unsigned int)wid->core.border_width, (int) wid->core.depth,
-		(unsigned int) InputOutput, (Visual *) CopyFromParent,
+		(unsigned int) InputOutput, w->shell.visual,
 		mask, attr);
 
 	if (wid->core.num_popups > 0 && w->core.parent == NULL) {
@@ -854,21 +918,47 @@ static void Realize(wid, vmask, attr)
 	_popup_set_prop(w);
 }
 
-/* Why isn't this in the library? */
-
-static void SetHostName(dpy, w, name)
-	register Display *dpy;
-	Window w;
-	char *name;
+static void EvaluateWMHints(w)
+    WMShellWidget w;
 {
-	XChangeProperty(dpy, w, XA_WM_CLIENT_MACHINE, XA_STRING, 
-		8, PropModeReplace, (unsigned char *)name, strlen(name));
+	XWMHints *hintp = &w->wm.wm_hints;
+
+	hintp->flags = StateHint | InputHint;
+
+	if (XtIsTopLevelShell((Widget)w)
+	    && ((TopLevelShellWidget)w)->topLevel.iconic) {
+	    hintp->initial_state = IconicState;
+	}
+	if (hintp->icon_x == XtUnspecifiedShellInt)
+	    hintp->icon_x = -1;
+	else
+	    hintp->flags |= IconPositionHint;
+
+	if (hintp->icon_y == XtUnspecifiedShellInt)
+	    hintp->icon_y = -1;
+	else
+	    hintp->flags |= IconPositionHint;
+
+	if (hintp->icon_pixmap != NULL) hintp->flags |= IconPixmapHint;
+	if (hintp->icon_mask != NULL)   hintp->flags |= IconMaskHint;
+	if (hintp->icon_window != NULL) hintp->flags |= IconWindowHint;
+
+	if(hintp->window_group == XtUnspecifiedWindow) {
+	    if(w->core.parent) {
+		Widget p;
+		for (p = w->core.parent; p->core.parent; p = p->core.parent);
+		hintp->window_group = XtWindow(p);
+		hintp->flags |=  WindowGroupHint;
+	    }
+	} else if (hintp->window_group != XtUnspecifiedWindowGroup)
+	    hintp->flags |=  WindowGroupHint;
 }
+
 
 static void EvaluateSizeHints(w)
     WMShellWidget w;
 {
-	XSizeHints *sizep = &w->wm.size_hints;
+	struct _OldXSizeHints *sizep = &w->wm.size_hints;
 
 	sizep->x = w->core.x;
 	sizep->y = w->core.y;
@@ -883,13 +973,13 @@ static void EvaluateSizeHints(w)
 	    || sizep->max_aspect.y != XtUnspecifiedShellInt) {
 	    sizep->flags |= PAspect;
 	}
-	if(sizep->base_width != XtUnspecifiedShellInt
-	   || sizep->base_height != XtUnspecifiedShellInt) {
+	if(w->wm.base_width != XtUnspecifiedShellInt
+	   || w->wm.base_height != XtUnspecifiedShellInt) {
 	    sizep->flags |= PBaseSize;
-	    if (sizep->base_width == XtUnspecifiedShellInt)
-		sizep->base_width = 0;
-	    if (sizep->base_height == XtUnspecifiedShellInt)
-		sizep->base_height = 0;
+	    if (w->wm.base_width == XtUnspecifiedShellInt)
+		w->wm.base_width = 0;
+	    if (w->wm.base_height == XtUnspecifiedShellInt)
+		w->wm.base_height = 0;
 	}
 	if (sizep->width_inc != XtUnspecifiedShellInt
 	    || sizep->height_inc != XtUnspecifiedShellInt) {
@@ -918,92 +1008,73 @@ static void EvaluateSizeHints(w)
 static void _popup_set_prop(w)
 	ShellWidget w;
 {
-	Window win;
-	Display *dpy = XtDisplay(w);
-	Widget	ptr;
-	XClassHint classhint;
+	Widget p;
 	WMShellWidget wmshell = (WMShellWidget) w;
 	TopLevelShellWidget tlshell = (TopLevelShellWidget) w;
 	ApplicationShellWidget appshell = (ApplicationShellWidget) w;
-	register XWMHints *hintp;
-	static char *hostname;
-	static Boolean gothost = FALSE;
-	Widget wid;
+	XTextProperty icon_name;
+	XTextProperty window_name;
+	char **argv;
+	int argc;
+	XSizeHints *size_hints;
+	Window window_group;
+	XClassHint classhint;
 
-	win = XtWindow(w);
+	if (!XtIsWMShell((Widget)w) || w->shell.override_redirect) return;
 
-	if (!gothost) {
-	    char hostbuf[1000];
-	    (void) _XtGetHostname (hostbuf, sizeof hostbuf);
-	    hostname = XtNewString(hostbuf);
-	    gothost = TRUE;
+	if ((size_hints = XAllocSizeHints()) == NULL)
+	    _XtAllocError("XAllocSizeHints");
+
+	window_name.value = (unsigned char*)wmshell->wm.title;
+	window_name.encoding = wmshell->wm.title_encoding;
+	window_name.format = 8;
+	window_name.nitems = strlen(window_name.value) + 1;
+
+	if (XtIsTopLevelShell((Widget)w)) {
+	    icon_name.value = (unsigned char*)tlshell->topLevel.icon_name;
+	    icon_name.encoding = tlshell->topLevel.icon_name_encoding;
+	    icon_name.format = 8;
+	    icon_name.nitems = strlen(icon_name.value) + 1;
 	}
 
-	if (XtIsSubclass((Widget)w, wmShellWidgetClass) &&
-		!w->shell.override_redirect) {
-	    XStoreName(dpy, win, wmshell->wm.title);
+	EvaluateWMHints(wmshell);
+	EvaluateSizeHints(wmshell);
+	ComputeWMSizeHints(wmshell, size_hints);
 
-	    if (XtIsSubclass((Widget)w, topLevelShellWidgetClass)) {
-		XSetIconName(dpy, win, tlshell->topLevel.icon_name);
+	if (wmshell->wm.transient
+	    && (window_group = wmshell->wm.wm_hints.window_group)
+	       != XtUnspecifiedWindowGroup) {
 
-	    }
-
-	    hintp = &wmshell->wm.wm_hints;
-
-	    hintp->flags = StateHint | InputHint;
-
-	    if (XtIsSubclass((Widget)w, topLevelShellWidgetClass) &&
-		    tlshell->topLevel.iconic) {
-		hintp->initial_state = IconicState;
-	    }
-	    if(hintp->icon_x != XtUnspecifiedShellInt
-	       || hintp->icon_y != XtUnspecifiedShellInt) {
-		hintp->flags |= IconPositionHint;
-	    }
-	    if(hintp->icon_pixmap != NULL) hintp->flags |= IconPixmapHint;
-	    if(hintp->icon_mask != NULL)   hintp->flags |= IconMaskHint;
-	    if(hintp->icon_window != NULL) hintp->flags |= IconWindowHint;
-
-	    if(hintp->window_group == XtUnspecifiedWindow) {
-		if(w->core.parent) {
-		    for (ptr = w->core.parent; ptr->core.parent;
-			    ptr = ptr->core.parent) {}
-		    hintp->window_group = XtWindow(ptr);
-		    hintp->flags |=  WindowGroupHint;
-		}
-	    } else if (hintp->window_group != XtUnspecifiedWindowGroup)
-		hintp->flags |=  WindowGroupHint;
-
-	    XSetWMHints(dpy, win, hintp);
-
-	    EvaluateSizeHints(wmshell);
-    
-	    XSetWMNormalHints(dpy, win, &wmshell->wm.size_hints);
-
-	    if (wmshell->wm.transient
-		&& hintp->window_group != XtUnspecifiedWindowGroup) {
-		XSetTransientForHint(dpy, win, hintp->window_group);
-	    }
-
-	    classhint.res_name = w->core.name;
-	    /* For the class, look up to the top of the tree */
-	    for (wid = (Widget) w; wid->core.parent != NULL;
-		    wid = wid->core.parent) {}
-    
-	    if (XtIsSubclass(wid, applicationShellWidgetClass)) {
-		classhint.res_class =
-			((ApplicationShellWidget) wid)->application.class;
-	    } else classhint.res_class = XtClass(wid)->core_class.class_name;
-    
-	    XSetClassHint(dpy, win, &classhint);
-	    SetHostName(dpy, win, hostname);
+	    XSetTransientForHint(XtDisplay((Widget)w),
+				 XtWindow((Widget)w),
+				 window_group
+				 );
 	}
 
-	if(XtIsSubclass((Widget)w, applicationShellWidgetClass) &&
-		appshell->application.argc != -1) {
-	    XSetCommand(dpy, win, appshell->application.argv,
-		    appshell->application.argc);
+	classhint.res_name = w->core.name;
+	/* For the class, look up to the top of the tree */
+	for (p = (Widget)w; p->core.parent != NULL; p = p->core.parent);
+	if (XtIsApplicationShell(p)) {
+	    classhint.res_class =
+		((ApplicationShellWidget)p)->application.class;
+	} else classhint.res_class = XtClass(p)->core_class.class_name;
+
+	if (XtIsApplicationShell((Widget)w)
+	    && (argc = appshell->application.argc) != -1)
+	    argv = (char**)appshell->application.argv;
+	else {
+	    argv = NULL;
+	    argc = 0;
 	}
+
+	XSetWMProperties(XtDisplay((Widget)w), XtWindow((Widget)w),
+			 &window_name,
+			 (XtIsTopLevelShell((Widget)w)) ? &icon_name : NULL,
+			 argv, argc,
+			 size_hints,
+			 &wmshell->wm.wm_hints,
+			 &classhint);
+	XFree((char*)size_hints);
 }
 
 /* ARGSUSED */
@@ -1049,7 +1120,8 @@ static void EventHandler(wid, closure, event)
 		if (XtIsSubclass(wid, wmShellWidgetClass) &&
 			!wmshell->wm.wait_for_wm) {
 		    /* Consider trusting the wm again */
-		    register XSizeHints *hintp = &wmshell->wm.size_hints;
+		    register struct _OldXSizeHints *hintp
+			= &wmshell->wm.size_hints;
 #define EQ(x) (hintp->x == w->core.x)
 		    if (EQ(x) && EQ(y) && EQ(width) && EQ(height)) {
 			wmshell->wm.wait_for_wm = TRUE;
@@ -1176,7 +1248,7 @@ static void ChangeManaged(wid)
     if (!XtIsRealized ((Widget) wid)) {
 	Boolean is_wmshell = XtIsSubclass(wid, wmShellWidgetClass);
 	int x, y, width, height, win_gravity = -1, flag;
-	XSizeHints hints, *hintsP;
+	struct _OldXSizeHints hints, *hintsP;
 
 	if (w->core.width == 0 && w->core.height == 0 && childwid != NULL) {
 	    /* we inherit our child's attributes */
@@ -1195,8 +1267,8 @@ static void ChangeManaged(wid)
 		EvaluateSizeHints((WMShellWidget)w);
 		hintsP = &((WMShellWidget)w)->wm.size_hints;
 		if (hintsP->flags & PBaseSize) {
-		    width -= hintsP->base_width;
-		    height -= hintsP->base_height;
+		    width -= ((WMShellWidget)w)->wm.base_width;
+		    height -= ((WMShellWidget)w)->wm.base_height;
 		}
 		else if (hintsP->flags & PMinSize) {
 		    width -= hintsP->min_width;
@@ -1229,11 +1301,11 @@ static void ChangeManaged(wid)
 
 	if (is_wmshell) {
 	    WMShellWidget wmshell = (WMShellWidget) w;
-	    if (wmshell->wm.size_hints.win_gravity == XtUnspecifiedShellInt) {
+	    if (wmshell->wm.win_gravity == XtUnspecifiedShellInt) {
 		if (win_gravity != -1)
-		    wmshell->wm.size_hints.win_gravity = win_gravity;
+		    wmshell->wm.win_gravity = win_gravity;
 		else
-		    wmshell->wm.size_hints.win_gravity = NorthWestGravity;
+		    wmshell->wm.win_gravity = NorthWestGravity;
 	    }
 	    wmshell->wm.size_hints.flags |= PWinGravity;
 	    if ((flag & (XValue|YValue)) == (XValue|YValue))
@@ -1407,7 +1479,7 @@ static _wait_for_response(w, values, event)
 	}
 }
 
-
+/*ARGSUSED*/
 static XtGeometryResult RootGeometryManager(w, request, reply)
     Widget w;
     XtWidgetGeometry *request, *reply;
@@ -1417,7 +1489,7 @@ static XtGeometryResult RootGeometryManager(w, request, reply)
     WMShellWidget wmshell = (WMShellWidget)w;
     XEvent event;
     Boolean wm = XtIsWMShell(w);
-    register XSizeHints *hintp;
+    register struct _OldXSizeHints *hintp;
     int oldx, oldy;
 
     if (wm) {
@@ -1474,9 +1546,9 @@ static XtGeometryResult RootGeometryManager(w, request, reply)
 
     if (!XtIsRealized(w)) return XtGeometryDone;
 
-    if (!wmshell->shell.override_redirect &&
-	    mask & (CWX | CWY | CWWidth | CWHeight | CWBorderWidth)) {
-	XSetWMNormalHints(XtDisplay(w), XtWindow(w), hintp);
+    if (wm && !wmshell->shell.override_redirect
+	&& mask & (CWX | CWY | CWWidth | CWHeight | CWBorderWidth)) {
+	_SetWMSizeHints(wmshell);
     }
 
     XConfigureWindow(XtDisplay(w), XtWindow(w), mask, &values);
@@ -1588,101 +1660,61 @@ static Boolean WMSetValues(old, ref, new)
 {
 	WMShellWidget nwmshell = (WMShellWidget) new;
 	WMShellWidget owmshell = (WMShellWidget) old;
-	Boolean size = FALSE;
-	register XSizeHints *osize, *nsize;
-	register XWMHints *ohints, *nhints;
+	Boolean set_prop
+	    = XtIsRealized(new) && !nwmshell->shell.override_redirect;
+	Boolean title_changed;
 
-	nsize = &nwmshell->wm.size_hints;
-	osize = &owmshell->wm.size_hints;
+	EvaluateSizeHints(nwmshell);
 
-	nsize->flags = 0;
+#define NEQ(f) (nwmshell->wm.size_hints.f != owmshell->wm.size_hints.f)
 
-#define EQS(x) (nsize->x == osize->x)
+	if (set_prop
+	    && (NEQ(flags) || NEQ(min_width) || NEQ(min_height)
+		|| NEQ(max_width) || NEQ(max_height)
+		|| NEQ(width_inc) || NEQ(height_inc)
+		|| NEQ(min_aspect.x) || NEQ(min_aspect.y)
+		|| NEQ(max_aspect.x) || NEQ(max_aspect.y)
+#undef NEQ
+#define NEQ(f) (nwmshell->wm.f != owmshell->wm.f)
 
-	if (! EQS(min_width) || ! EQS(min_height)) {
-	    if (nsize->min_width != XtUnspecifiedShellInt
-		|| nsize->min_height != XtUnspecifiedShellInt) {
-		nsize->flags |= PMinSize;
-		if (nsize->min_width == XtUnspecifiedShellInt)
-		    nsize->min_width = 1;
-		if (nsize->min_height == XtUnspecifiedShellInt)
-		    nsize->min_height = 1;
-	    }
-	    size = TRUE;
+		|| NEQ(base_width) || NEQ(base_height) || NEQ(win_gravity))) {
+	    _SetWMSizeHints(nwmshell);
 	}
-
-	if ( ! EQS(max_width) || ! EQS(max_height) ) {
-	    if (nsize->max_width != XtUnspecifiedShellInt
-		|| nsize->max_height != XtUnspecifiedShellInt) {
-		nsize->flags |= PMaxSize;
-		if (nsize->max_width == XtUnspecifiedShellInt)
-		    nsize->max_width = BIGSIZE;
-		if (nsize->max_height == XtUnspecifiedShellInt)
-		    nsize->max_height = BIGSIZE;
-	    }
-	    size = TRUE;
-	}
-
-	if ( ! EQS(width_inc) || ! EQS(height_inc) ) {
-	    if (nsize->width_inc != XtUnspecifiedShellInt
-		|| nsize->height_inc != XtUnspecifiedShellInt) {
-		nsize->flags |= PResizeInc;
-	    }
-	    size = TRUE;
-	}
-
-	if ( ! EQS(min_aspect.x) ||! EQS(min_aspect.y) ||
-		! EQS(max_aspect.x) ||! EQS(max_aspect.y)) {
-		
-	    if (nsize->min_aspect.x != XtUnspecifiedShellInt
-		|| nsize->min_aspect.y != XtUnspecifiedShellInt
-		|| nsize->max_aspect.x != XtUnspecifiedShellInt
-		|| nsize->max_aspect.y != XtUnspecifiedShellInt) {
-		nsize->flags |= PAspect;
-	    }
-	    size = TRUE;
-	}
-
-	if (size) {
-	    nsize->x = new->core.x;
-	    nsize->y = new->core.y;
-	    nsize->width = new->core.width;
-	    nsize->height = new->core.height;
-	    nsize->flags |= PPosition | PSize;
-	    if (XtIsRealized(new) && !nwmshell->shell.override_redirect) {
-		XSetWMNormalHints(XtDisplay(new), XtWindow(new), nsize);
-	    }			    
-	}
+#undef NEQ
 
 	if (nwmshell->wm.title != owmshell->wm.title) {
 	    XtFree(owmshell->wm.title);
 	    nwmshell->wm.title = XtNewString(nwmshell->wm.title);
-	    if (XtIsRealized(new) && !nwmshell->shell.override_redirect) {
-		XStoreName(XtDisplay(new), XtWindow(new), nwmshell->wm.title);
-	    }
+	    title_changed = True;
+	} else
+	    title_changed = False;
+
+	if (set_prop
+	    && (title_changed ||
+		nwmshell->wm.title_encoding != owmshell->wm.title_encoding)) {
+
+	    XTextProperty title;
+	    title.value = (unsigned char*)nwmshell->wm.title;
+	    title.encoding = nwmshell->wm.title_encoding;
+	    title.format = 8;
+	    title.nitems = strlen(nwmshell->wm.title) + 1;
+	    XSetWMName(XtDisplay(new), XtWindow(new), &title);
 	}
 
-	ohints = &owmshell->wm.wm_hints;
-	nhints = &nwmshell->wm.wm_hints;
+	EvaluateWMHints(nwmshell);
 
-#define EQW(x)	(ohints->x == nhints->x)
+#define NEQ(f)	(nwmshell->wm.wm_hints.f != owmshell->wm.wm_hints.f)
 
-	nhints->flags = 0;
-	if (! EQW(initial_state)) nhints->flags |= StateHint;
-	if (! EQW (icon_x) || ! EQW (icon_y)) nhints->flags |= IconPositionHint;
-	if (! EQW(icon_pixmap)) nhints->flags |= IconPixmapHint;
-	if (! EQW(input)) nhints->flags |= InputHint;
-	if (! EQW(icon_mask)) nhints->flags |= IconMaskHint;
-	if (! EQW(icon_window)) nhints->flags |= IconWindowHint;
-	if (! EQW(window_group)
-	    && nhints->window_group != XtUnspecifiedWindowGroup)
-	    nhints->flags |= WindowGroupHint;
-
-	if (nhints->flags && XtIsRealized(new) &&
-		!nwmshell->shell.override_redirect) {
+	if (set_prop
+	    && (NEQ(flags) || NEQ(input) || NEQ(initial_state)
+		|| NEQ(icon_x) || NEQ(icon_y)
+		|| NEQ(icon_pixmap) || NEQ(icon_mask) || NEQ(icon_window)
+		|| NEQ(window_group))) {
 
 	    XSetWMHints(XtDisplay(new), XtWindow(new), &nwmshell->wm.wm_hints);
 	}
+#undef NEQ
+
 	return FALSE;
 }
 
@@ -1692,15 +1724,27 @@ static Boolean TopLevelSetValues(old, ref, new)
 {
 	TopLevelShellWidget otlshell = (TopLevelShellWidget) old;
 	TopLevelShellWidget ntlshell = (TopLevelShellWidget) new;
+	Boolean name_changed;
 
  	if (otlshell->topLevel.icon_name != ntlshell->topLevel.icon_name) {
 	    XtFree(otlshell->topLevel.icon_name);
 	    ntlshell->topLevel.icon_name = XtNewString(
 		ntlshell->topLevel.icon_name);
-	    if (XtIsRealized(new) && !ntlshell->shell.override_redirect) {
-		XSetIconName(XtDisplay(new), XtWindow(new),
-		    ntlshell->topLevel.icon_name);
-	    }
+	    name_changed = True;
+	} else
+	    name_changed = False;
+
+	if (XtIsRealized(new) && !ntlshell->shell.override_redirect
+	    && (name_changed ||
+		otlshell->topLevel.icon_name_encoding
+		   != ntlshell->topLevel.icon_name_encoding)) {
+
+	    XTextProperty icon_name;
+	    icon_name.value = (unsigned char *)ntlshell->topLevel.icon_name;
+	    icon_name.encoding = ntlshell->topLevel.icon_name_encoding;
+	    icon_name.format = 8;
+	    icon_name.nitems = strlen(icon_name.value) + 1;
+	    XSetWMName(XtDisplay(new), XtWindow(new), &icon_name);
 	}
 	return FALSE;
 }
