@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XImText16.c,v 11.12 87/08/26 16:22:01 jg Exp $ */
+/* $Header: XImText16.c,v 11.12 87/09/01 14:52:21 toddb Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -16,7 +16,7 @@ XDrawImageString16(dpy, d, gc, x, y, string, length)
     register xImageText16Req *req;
     XChar2b *CharacterOffset = string;
     int FirstTimeThrough = True;
-    int lastX;
+    int lastX = 0;
 
     LockDisplay(dpy);
     FlushGC(dpy, gc);
