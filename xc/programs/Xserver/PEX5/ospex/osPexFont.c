@@ -1,4 +1,4 @@
-/* $XConsortium: osPexFont.c,v 5.2 91/02/18 09:06:20 rws Exp $ */
+/* $XConsortium: osPexFont.c,v 5.3 91/02/18 21:29:53 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -24,23 +24,21 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include <stdio.h>
 #include <X11/Xos.h>
+#include <stdio.h>
 #include "mipex.h"
 #include "miFont.h"
 #include "PEXErr.h"
 #define XK_LATIN1
 #include "keysymdef.h"
+
+#ifndef X_NOT_POSIX
+#include <dirent.h>
+#else
 #ifdef SYSV
 #include <dirent.h>
 #else
-#ifdef SVR4
-#include <dirent.h>
-#else
 #ifdef USG
-#include <dirent.h>
-#else
-#ifdef _POSIX_SOURCE
 #include <dirent.h>
 #else
 #include <sys/dir.h>
@@ -50,7 +48,8 @@ SOFTWARE.
 #endif
 #endif
 #endif
-#endif
+
+extern char *getenv();
 
 /* A convenient shorthand. */
 typedef struct dirent	 ENTRY;
@@ -76,7 +75,6 @@ pex_get_font_directory_path()
 {
     static int	 already_determined = 0;
     static char *font_dir_path = NULL;
-    extern char *getenv();
     
     if (!already_determined) {
 	if (getenv("PEX_FONTPATH")) {
