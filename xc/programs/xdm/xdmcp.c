@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: xdmcp.c,v 1.9 93/09/20 18:03:33 hersh Exp $
+ * $XConsortium: xdmcp.c,v 1.10 93/09/23 14:38:44 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -295,7 +295,11 @@ NetworkAddressToName(connectionType, connectionAddress, displayNumber)
 
 	    localhost = localHostname ();
 
-	    if (hostent)
+	    /* 
+	     * protect against bogus host names 
+	     */
+	    if (hostent && hostent->h_name && hostent->h_name[0]
+			&& (hostent->h_name[0] != '.'))
 	    {
 		if (!strcmp (localhost, hostent->h_name))
 		{
