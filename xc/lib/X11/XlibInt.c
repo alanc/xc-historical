@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.160 92/01/20 12:26:01 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.161 92/01/27 09:29:07 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1464,6 +1464,7 @@ static int _XPrintDefaultError (dpy, event, fp)
     char number[32];
     char *mtype = "XlibMessage";
     register _XExtension *ext = (_XExtension *)NULL;
+    _XExtension *bext = (_XExtension *)NULL;
     XGetErrorText(dpy, event->error_code, buffer, BUFSIZ);
     XGetErrorDatabaseText(dpy, mtype, "XError", "X Error", mesg, BUFSIZ);
     (void) fprintf(fp, "%s:  %s\n  ", mesg, buffer);
@@ -1508,16 +1509,24 @@ static int _XPrintDefaultError (dpy, event, fp)
 	    if (ext->error_string) 
 		(*ext->error_string)(dpy, event->error_code, &ext->codes,
 				     buffer, BUFSIZ);
-	    if (buffer[0])
+	    if (buffer[0]) {
+		bext = ext;
 		break;
+	    }
+	    if (ext->codes.first_error &&
+		ext->codes.first_error < event->error_code &&
+		(!bext || ext->codes.first_error > bext->codes.first_error))
+		bext = ext;
 	}    
-	if (buffer[0])
-	    sprintf(buffer, "%s.%d", ext->name,
-		    event->error_code - ext->codes.first_error);
-	else
-	    strcpy(buffer, "Value");
-	XGetErrorDatabaseText(dpy, mtype, buffer, "", mesg, BUFSIZ);
-	if (*mesg) {
+	mesg[0] = '\0';
+	if (bext) {
+	    sprintf(buffer, "%s.%d", bext->name,
+		    event->error_code - bext->codes.first_error);
+	    XGetErrorDatabaseText(dpy, mtype, buffer, "", mesg, BUFSIZ);
+	}
+	if (!mesg[0])
+	    XGetErrorDatabaseText(dpy, mtype, "Value", "", mesg, BUFSIZ);
+	if (mesg[0]) {
 	    (void) fprintf(fp, mesg, event->resourceid);
 	    fputs("\n  ", fp);
 	}
