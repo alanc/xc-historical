@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.24 91/04/02 11:22:17 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.25 91/04/15 18:00:14 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -51,11 +51,13 @@
 #endif
 #endif
 
-#ifdef umips
-#ifdef SYSTYPE_SYSV
-#define imake_ccflags "-DSYSV -I../../lib/X/mips -I/usr/include/bsd ../../lib/X/mips/mipssysvc.c -lbsd"
-#endif
-#endif
+#ifdef Mips
+#  if defined(SYSTYPE_BSD) || defined(BSD) || defined(BSD43)
+#    define imake_ccflags "-DMips -DBSD43"
+#  else 
+#    define imake_ccflags "-DMips -DSYSV"
+#  endif
+#endif 
 
 #ifdef luna
 #define imake_ccflags "-Dluna"
@@ -69,7 +71,7 @@
  *     descriptor onto another, define such a mechanism here (if you don't
  *     already fall under the existing category(ies).
  */
-#if defined(SYSV) && !defined(CRAY) && !defined(umips)
+#if defined(SYSV) && !defined(CRAY) && !defined(Mips)
 #define	dup2(fd1,fd2)	((fd1 == fd2) ? fd1 : (close(fd2), \
 					       fcntl(fd1, F_DUPFD, fd2)))
 #endif
@@ -164,16 +166,13 @@ char *cpp_argv[ARGUMENTS] = {
 	"-Dluna",	/* OMRON luna 68K and 88K */
 	"-DXCOMM=\\#",
 #endif
-#ifdef umips            /* Actual MIPS, Inc. machines, not just mips CPU */
-        "-Dumips",
-        "-Dmips",
-        "-Dhost_mips",
-#ifdef SYSTYPE_BSD43
-        "-DSYSTYPE_BSD43",
-#endif
-#ifdef SYSTYPE_SYSV
-        "-DSYSTYPE_SYSV",
-#endif
+#ifdef Mips
+	"-DMips",	/* Define and use Mips for Mips Co. OS/mach. */
+# if defined(SYSTYPE_BSD) || defined(BSD) || defined(BSD43)
+	"-DBSD43",	/* Mips RISCOS supports two environments */
+# else
+	"-DSYSV",	/* System V environment is the default */
+# endif
 #endif
 };
 #else /* else MAKEDEPEND */
