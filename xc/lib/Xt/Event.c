@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.82 88/09/06 16:27:49 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.83 88/09/26 08:56:02 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif lint
 
@@ -58,13 +58,15 @@ EventMask XtBuildEventMask(widget)
     return mask;
 }
 
-static void RemoveEventHandler(widget, eventMask, other, proc, closure, raw)
+static void RemoveEventHandler(widget, eventMask, other, proc, closure, raw,
+			       check_closure)
     Widget	widget;
     EventMask   eventMask;
     Boolean	other;
     XtEventHandler proc;
     Opaque	closure;
     Boolean	raw;
+    Boolean	check_closure;
 {
     XtEventRec *p, **pp;
     EventMask oldMask = XtBuildEventMask(widget);
@@ -73,7 +75,8 @@ static void RemoveEventHandler(widget, eventMask, other, proc, closure, raw)
     p = *pp;
 
     /* find it */
-    while (p != NULL && (p->proc != proc || p->closure != closure)) {
+    while (p != NULL &&
+	   (p->proc != proc || (check_closure && p->closure != closure))) {
 	pp = &p->next;
 	p = *pp;
     }
@@ -108,13 +111,15 @@ static void RemoveEventHandler(widget, eventMask, other, proc, closure, raw)
     }
 }
 
-static void AddEventHandler(widget, eventMask, other, proc, closure, raw)
+static void AddEventHandler(widget, eventMask, other, proc, closure, raw,
+			    check_closure)
     Widget	    widget;
     EventMask   eventMask;
     Boolean         other;
     XtEventHandler  proc;
     Opaque	closure;
     Boolean	raw;
+    Boolean	check_closure;
 {
    register XtEventRec *p,**pp;
    EventMask oldMask;
@@ -125,7 +130,8 @@ static void AddEventHandler(widget, eventMask, other, proc, closure, raw)
 
    pp = & widget->core.event_table;
    p = *pp;
-   while (p != NULL && (p->proc != proc || p->closure != closure)) {
+   while (p != NULL &&
+	  (p->proc != proc || (check_closure && p->closure != closure))) {
          pp = &p->next;
          p = *pp;
    }
@@ -149,6 +155,7 @@ static void AddEventHandler(widget, eventMask, other, proc, closure, raw)
 	p->non_filter = p->non_filter || other;
 	p->select |= ! raw;
 	p->raw |= raw;
+	if (!check_closure) p->closure = closure;
     }
 
     if (XtIsRealized(widget) && ! raw) {
@@ -176,7 +183,7 @@ void XtRemoveEventHandler(widget, eventMask, other, proc, closure)
     XtEventHandler proc;
     Opaque	closure;
 {
-    RemoveEventHandler(widget, eventMask, other, proc, closure, FALSE);
+    RemoveEventHandler(widget, eventMask, other, proc, closure, FALSE, TRUE);
 }
 
 
@@ -187,7 +194,7 @@ void XtAddEventHandler(widget, eventMask, other, proc, closure)
     XtEventHandler  proc;
     Opaque	closure;
 {
-    AddEventHandler(widget, eventMask, other, proc, closure, FALSE);
+    AddEventHandler(widget, eventMask, other, proc, closure, FALSE, TRUE);
 }
 
 
@@ -198,7 +205,7 @@ void XtRemoveRawEventHandler(widget, eventMask, other, proc, closure)
     XtEventHandler proc;
     Opaque	closure;
 {
-    RemoveEventHandler(widget, eventMask, other, proc, closure, TRUE);
+    RemoveEventHandler(widget, eventMask, other, proc, closure, TRUE, TRUE);
 }
 
 
@@ -209,7 +216,7 @@ void XtAddRawEventHandler(widget, eventMask, other, proc, closure)
     XtEventHandler  proc;
     Opaque	closure;
 {
-    AddEventHandler(widget, eventMask, other, proc, closure, TRUE);
+    AddEventHandler(widget, eventMask, other, proc, closure, TRUE, TRUE);
 }
 
 
@@ -1059,24 +1066,40 @@ static void AddForwardingHandler(w, descendant)
     eventMask = XtBuildEventMask(descendant);
     eventMask &= KeyPressMask | KeyReleaseMask;
     if (eventMask != 0) {
-	XtAddEventHandler(w, eventMask, False, 
-		ForwardEvent, (caddr_t)descendant);
-	/* If the widget is the shell parent of the descendent, the server
-	   will send the focus notify for us -- we dont't need to */
-	if (w != XtParent(descendant) || !XtIsSubclass(w, shellWidgetClass)) {
-	    /* is the pointer already inside? */
-	    XQueryPointer(XtDisplay(w), XtWindow(w),
-		    &root, &child, &root_x, &root_y, &win_x, &win_y, &mask );
-	    /* We need to take borders into consideration */
-	    left = top = -((int) w->core.border_width);
-	    right = (int) (w->core.width + (w->core.border_width << 1));
-	    bottom = (int) (w->core.height + (w->core.border_width << 1));
-	    if (win_x >= left && win_x < right &&
-		win_y >= top && win_y < bottom) {
-		if (InsertFocusEntry(w, descendant)) {
-		    SendFocusNotify( descendant, FocusIn );
+	Boolean have_focus = False;
+	register GrabRec *gl;
+	AddEventHandler(w, eventMask, False, 
+		ForwardEvent, (caddr_t)descendant, FALSE, FALSE);
+	/* if we already have the focus, we'll have to change the target */
+	for (gl = focusList; gl != NULL; gl = gl->next) {
+	    if (gl->widget == w) {
+		if (gl->keyboard_focus == descendant)
+		    return;	/* simple optimization; list is unchanged */
+		else {
+		    have_focus = True;
+		    break;
 		}
 	    }
+	}
+	if (!have_focus) {
+	    /* If the widget is the shell parent of the descendent, the server
+	       will send the focus notify for us -- we don't need to */
+	    if (w != XtParent(descendant) ||
+		!XtIsSubclass(w, shellWidgetClass)) {
+		/* is the pointer already inside? */
+		XQueryPointer(XtDisplay(w), XtWindow(w), &root, &child,
+			      &root_x, &root_y, &win_x, &win_y, &mask );
+		/* We need to take borders into consideration */
+		left = top = -((int) w->core.border_width);
+		right = (int) (w->core.width + (w->core.border_width << 1));
+		bottom = (int) (w->core.height + (w->core.border_width << 1));
+		if (win_x >= left && win_x < right &&
+		    win_y >= top && win_y < bottom)
+		      have_focus = True;
+	    }
+	}
+	if (have_focus && InsertFocusEntry(w, descendant)) {
+	    SendFocusNotify( descendant, FocusIn );
 	}
     }
 }
@@ -1089,8 +1112,8 @@ static void QueryEventMask(widget, client_data, event)
 {
     if (event->type == MapNotify) {
 	AddForwardingHandler((Widget) client_data, widget);
-	XtRemoveEventHandler(widget, XtAllEvents, True,
-		QueryEventMask, client_data);
+	RemoveEventHandler(widget, XtAllEvents, True,
+		QueryEventMask, client_data, FALSE, FALSE);
     }
 }
 
@@ -1101,7 +1124,8 @@ void XtSetKeyboardFocus(widget, descendant)
     EventMask mask;
 
     if (descendant == (Widget)None) {
-	XtRemoveEventHandler(widget, XtAllEvents, True, HandleFocus, NULL);
+	RemoveEventHandler(widget, XtAllEvents, True, HandleFocus, NULL,
+			   FALSE, FALSE); /* not raw, don't check closure */
 	RemoveGrab(widget, True);
 	return;
     }
@@ -1113,13 +1137,14 @@ void XtSetKeyboardFocus(widget, descendant)
 	mask |= EnterWindowMask | LeaveWindowMask;
     }
 
-    XtAddEventHandler(widget, mask, False, HandleFocus, (caddr_t)descendant);
+    AddEventHandler(widget, mask, False, HandleFocus, (caddr_t)descendant,
+		    FALSE, FALSE);
 
     /* If his translations aren't installed, we'll have to wait 'till later */
 
     if (XtIsRealized(descendant)) AddForwardingHandler(widget, descendant);
-    else XtAddEventHandler(descendant, StructureNotifyMask, False,
-		QueryEventMask, (caddr_t)widget);
+    else AddEventHandler(descendant, StructureNotifyMask, False,
+		QueryEventMask, (caddr_t)widget, FALSE, FALSE);
 }
 
 static SendFocusNotify(child, type)
