@@ -10,7 +10,6 @@ static char rcsid[] = "$Header: AsciiText.c,v 1.4 88/02/05 23:18:28 swick Locked
 #include "AsciiTextP.h"
 
 /* from Text.c */
-#define DEFAULTVALUE ~0
 
 extern void ForceBuildLineTable(); /* in Text.c */
 
@@ -129,8 +128,8 @@ static void StringInitialize(request, new)
 {
     /* superclass Initialize can't set the following,
      * as it didn't know the source or sink when it was called */
-    if (request->core.height == DEFAULTVALUE)
-	new->core.height = DEFAULTVALUE;
+    if (request->core.height == DEFAULT_TEXT_HEIGHT)
+	new->core.height = DEFAULT_TEXT_HEIGHT;
 }
 
 static void StringCreateSourceSink(widget, args, num_args)
@@ -144,7 +143,7 @@ static void StringCreateSourceSink(widget, args, num_args)
     w->text.sink = XtAsciiSinkCreate( w->core.parent, args, *num_args );
 
 
-    if (w->core.height == DEFAULTVALUE)
+    if (w->core.height == DEFAULT_TEXT_HEIGHT)
         w->core.height = (2*yMargin) + 2 + (*w->text.sink->MaxHeight)(w, 1);
 
     w->text.lastPos = /* GETLASTPOS */
@@ -189,8 +188,8 @@ static void DiskInitialize(request, new)
 {
     /* superclass Initialize can't set the following,
      * as it didn't know the source or sink when it was called */
-    if (request->core.height == DEFAULTVALUE)
-	new->core.height = DEFAULTVALUE;
+    if (request->core.height == DEFAULT_TEXT_HEIGHT)
+	new->core.height = DEFAULT_TEXT_HEIGHT;
 }
 
 static void DiskCreateSourceSink(widget, args, num_args)
@@ -207,7 +206,7 @@ static void DiskCreateSourceSink(widget, args, num_args)
       (*w->text.source->Scan) ( w->text.source, 0, XtstAll,
 			        XtsdRight, 1, TRUE );
 
-    if (w->core.height == DEFAULTVALUE)
+    if (w->core.height == DEFAULT_TEXT_HEIGHT)
         w->core.height = (2*yMargin) + 2 + (*w->text.sink->MaxHeight)(w, 1);
 
     ForceBuildLineTable( (TextWidget)w );
