@@ -1,6 +1,6 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.190 94/03/29 15:42:09 gildea Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.191 94/03/30 12:19:43 gildea Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -44,6 +44,7 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.190 94/03/29 15:42:09 gildea Exp $
  * ComplexProgramTarget_1	(program,locallib,syslib)
  * ComplexProgramTarget_2	(program,locallib,syslib)
  * ComplexProgramTarget_3	(program,locallib,syslib)
+ * ServerTargetWithFlags	(server,subdirs,objects,libs,syslibs,flags)
  * ServerTarget			(server,subdirs,objects,libs,syslibs)
  * MoveToBakFile		(file)
  * RMoveToBakFile		(file)
@@ -648,10 +649,10 @@ CplusplusProgramTargetHelper(program,SRCS3,OBJS3,DEPLIBS3,locallib,syslib)
 #endif /* RMoveToBakFile */
 
 /*
- * ServerTarget - generate rules to compile, link, and relink an X server.
+ * ServerTargetWithFlags - generate rules to compile, link, and relink a server
  */
-#ifndef ServerTarget
-#define	ServerTarget(server,subdirs,objects,libs,syslibs)		@@\
+#ifndef ServerTargetWithFlags
+#define	ServerTargetWithFlags(server,subdirs,objects,libs,syslibs,flags) @@\
 AllTarget(server)							@@\
 ProgramTargetName(server): subdirs objects libs				@@\
 	MoveToBakFile($@)						@@\
@@ -670,12 +671,19 @@ PurifyLinkTarget(Concat(load,server),server,objects libs $(LDLIBS) syslibs) @@\
 ProofProgramTarget(server,subdirs objects libs,objects libs $(LDLIBS) syslibs) @@\
 ProofLinkTarget(Concat(load,server),server,objects libs $(LDLIBS) syslibs) @@\
 									@@\
-InstallProgram(server,$(BINDIR))					@@\
+InstallProgramWithFlags(server,$(BINDIR),flags)				@@\
 									@@\
 clean::									@@\
 	RemoveFile(ProgramTargetName(server))
-#endif /* ServerTarget */
+#endif /* ServerTargetWithFlags */
 
+/*
+ * ServerTarget - rules to compile, link, and relink a normal server
+ */
+#ifndef ServerTarget
+#define	ServerTarget(server,subdirs,objects,libs,syslibs)		@@\
+ServerTargetWithFlags(server,subdirs,objects,libs,syslibs,$(_NULLCMD_))
+#endif /* ServerTarget */
 
 #if DoRanlibCmd
 #define RanLibrary(args) $(RANLIB) args
