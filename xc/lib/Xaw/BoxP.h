@@ -1,5 +1,5 @@
 /*
-* $Header: BoxP.h,v 1.7 88/02/14 13:58:41 rws Exp $
+* $Header: BoxP.h,v 1.8 88/02/14 18:44:28 swick Exp $
 */
 
 /*
@@ -42,9 +42,7 @@
 #include <X11/CompositeP.h>
 
 /* New fields for the Box widget class record */
-typedef struct {
-    XtWidgetProc	do_layout;
-} BoxClassPart;
+typedef struct {int empty;} BoxClassPart;
 
 /* Full class record declaration */
 typedef struct _BoxClassRec {
@@ -58,6 +56,9 @@ extern BoxClassRec boxClassRec;
 /* New fields for the Box widget record */
 typedef struct {
     Dimension   h_space, v_space;
+    Dimension	preferred_width, preferred_height;
+    Dimension	last_query_width, last_query_height;
+    XtGeometryMask last_query_mode;
 } BoxPart;
 
 
