@@ -3,7 +3,7 @@
 
 
 VERSION:
-    R4beta
+    R4
 
 CLIENT MACHINE and OPERATING SYSTEM:
     [e.g. Sun 3/280 running SunOS 4.0.3, Microvax II running Ultrix 3.1, ...]
@@ -12,10 +12,10 @@ DISPLAY TYPE:
     [e.g. Digital QVSS, Sun CG4, HP Topcat, IBM APA16, Apollo 4 plane, ...]
 
 WINDOW MANAGER:
-    [e.g. uwm, twm, awm, wm, rtl, ...]
+    [e.g. twm, gwm, tekwm, olwm, mwm, ...]
 
 AREA:
-    [e.g. Xlib, xterm, uwm, server, doc, config, ...]
+    [e.g. server, Xlib, Xt, Xaw, twm, xterm, xmh, config, ...]
 
 SYNOPSIS:
     [brief description of the problem and where it is located]
