@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.13 92/11/17 10:53:46 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.14 93/08/24 18:41:15 rws Exp $
 XCOMM 
 XCOMM Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 XCOMM 
@@ -40,7 +40,7 @@ CDEBUGFLAGS = PexFontCDebugFlags
      YFLAGS = -d
 
   LINTFLAGS = -u
-       LIBS = -ll -lm
+       LIBS = -ll MathLibrary
 
       FONTS = Roman Roman_M 
 
