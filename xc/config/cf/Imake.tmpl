@@ -4,7 +4,7 @@
 
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.162 93/02/01 16:48:59 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.163 93/02/08 11:13:06 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -504,6 +504,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef DebuggableCDebugFlags
 #define DebuggableCDebugFlags -g
+#endif
+#ifndef ProfiledCDebugFlags
+#define ProfiledCDebugFlags -pg
 #endif
 #ifndef NoOpCDebugFlags
 #define NoOpCDebugFlags /* as nothing */
