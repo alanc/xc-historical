@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.2 88/08/21 20:06:43 rws Exp $ */
+/* $XConsortium: dixfonts.c,v 1.3 88/09/06 15:41:42 jim Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -44,16 +44,17 @@ extern FontPtr 	defaultFont;
 /*
  * adding RT_FONT prevents conflict with default cursor font
  */
+Bool
 SetDefaultFont( defaultfontname)
     char *	defaultfontname;
 {
     FontPtr	pf;
 
-    if ((pf =OpenFont( (unsigned)strlen( defaultfontname), defaultfontname))
-	== NullFont)
+   pf = OpenFont( (unsigned)strlen( defaultfontname), defaultfontname);
+    if (!pf ||
+	!AddResource( FakeClientID(0), RT_FONT, (pointer)pf, CloseFont,
+		     RC_CORE))
 	return FALSE;
-
-    AddResource( FakeClientID(0), RT_FONT, (pointer)pf, CloseFont, RC_CORE);
     defaultFont = pf;
     return TRUE;
 }
@@ -393,20 +394,20 @@ QueryGlyphExtents(font, charinfo, count, info)
     }
 }
 
-void
+Bool
 QueryTextExtents(font, count, chars, info)
     FontPtr font;
     unsigned long count;
     unsigned char *chars;
     ExtentInfoRec *info;
 {
-    CharInfoPtr *charinfo =
-	(CharInfoPtr *)ALLOCATE_LOCAL(count*sizeof(CharInfoPtr));
+    CharInfoPtr *charinfo;
     unsigned long n;
     CharInfoPtr	oldCI;
 
+    charinfo = (CharInfoPtr *)ALLOCATE_LOCAL(count*sizeof(CharInfoPtr));
     if(!charinfo)
-	return;
+	return FALSE;
     oldCI = font->pCI;
     font->pCI = font->pInkCI;
     /* temporarily stuff in Ink metrics */
@@ -420,4 +421,5 @@ QueryTextExtents(font, count, chars, info)
     QueryGlyphExtents(font, charinfo, n, info);
 
     DEALLOCATE_LOCAL(charinfo);
+    return TRUE;
 }
