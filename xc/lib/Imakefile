@@ -1,7 +1,7 @@
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
-SUBDIRS = Xau X oldX Xt Xmu Xaw
+SUBDIRS = Xau X oldX Xt Xmu Xaw Xct
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
