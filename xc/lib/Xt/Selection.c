@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.50 90/08/22 14:19:56 swick Exp $ */
+/* $XConsortium: Selection.c,v 1.51 90/08/27 15:27:24 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -211,6 +211,7 @@ Atom selection;
     ctx->prop_list = GetPropList(dpy);
     ctx->is_active = FALSE;
     ctx->free_when_done = FALSE;
+    ctx->was_disowned = FALSE;
     (void)XSaveContext(dpy, (Window)selection, selectContext, (caddr_t)ctx);
     return ctx;
 }
@@ -255,13 +256,14 @@ Time time;
 {
     if ((ctx->widget == widget) &&
 	(ctx->selection == selection) && /* paranoia */
+	!ctx->was_disowned &&
 	((time == CurrentTime) || (time >= ctx->time)))
     {
 	XtRemoveEventHandler(widget, (EventMask) NULL, TRUE,
 			     HandleSelectionEvents, (XtPointer)ctx); 
 	XtRemoveCallback(widget, XtNdestroyCallback, 
 			 WidgetDestroyed, (XtPointer)ctx); 
-	ctx->widget = NULL; /* widget officially loses ownership */
+	ctx->was_disowned = TRUE; /* widget officially loses ownership */
 	/* now inform widget */
 	if (ctx->loses) { 
 	    if (ctx->incremental)  
@@ -640,7 +642,7 @@ Boolean *cont;
 	ev.target = event->xselectionrequest.target;
 	if (event->xselectionrequest.property == None) /* obsolete requestor */
 	   event->xselectionrequest.property = event->xselectionrequest.target;
-	if (!(ctx->widget)
+	if (!(ctx->widget) || ctx->was_disowned
 	   || ((event->xselectionrequest.time != CurrentTime)
 	        && (event->xselectionrequest.time < ctx->time)))
 	    ev.property = None;
@@ -706,29 +708,32 @@ Boolean incremental;
     if (!XtIsRealized(widget)) return False;
 
     ctx = FindCtx(XtDisplay(widget), selection);
-    if (ctx->widget != widget || ctx->time != time)
+    if (ctx->widget != widget || ctx->time != time ||
+	ctx->is_active || ctx->was_disowned)
     {
 	window = XtWindow(widget);
         XSetSelectionOwner(ctx->dpy, selection, window, time);
         if (XGetSelectionOwner(ctx->dpy, selection) != window)
 	    return FALSE;
-    	if (ctx->widget != widget)
- 	{
+    	if (ctx->widget != widget || ctx->was_disowned) {
 	    XtAddEventHandler(widget, (EventMask)NULL, TRUE,
 			      HandleSelectionEvents, (XtPointer)ctx);
 	    XtAddCallback(widget, XtNdestroyCallback,
 			  WidgetDestroyed, (XtPointer)ctx);
-
-	    if (ctx->is_active) {
-		oldctx = *ctx;
-		old_context = TRUE;
-		ctx->free_when_done = TRUE;
-		ctx = NewContext(XtDisplay(widget), selection);
-	    } else if (ctx->widget) {
+	}
+	if (ctx->is_active) {
+	    oldctx = *ctx;
+	    old_context = TRUE;
+	    ctx->free_when_done = TRUE;
+	    ctx = NewContext(XtDisplay(widget), selection);
+	} else
+	    if (ctx->widget &&
+		ctx->widget != widget &&
+		!ctx->was_disowned)
+	    {
 		oldctx = *ctx;
 		old_context = TRUE;
 	    }
-	}
 	ctx->widget = widget;	/* Selection offically changes hands. */
 	ctx->time = time;
     }
@@ -738,6 +743,7 @@ Boolean incremental;
     ctx->owner_cancel = cancel;
     ctx->incremental = incremental;
     ctx->owner_closure = closure;
+    ctx->was_disowned = FALSE;
 
     if (old_context)
 	(void) LoseSelection(&oldctx, oldctx.widget, selection, oldctx.time);
@@ -1236,7 +1242,6 @@ Boolean incremental;
 	       HandleNone(widget, callback, closure, selection);
 	   }
 	   else {
-	        ctx->is_active = TRUE;
 		if (incremental) {
 		  Boolean allSent = FALSE;
 	          while (!allSent) {
@@ -1286,17 +1291,12 @@ Boolean incremental;
 				(ctx->widget, &selection, &target, 
 				 (XtRequestId*)&req, ctx->owner_closure);
 	      else XtFree((char*)value);
-	      if (ctx->free_when_done)
-		  XtFree((char*)ctx);
-	      else
-		  ctx->is_active = FALSE;
 	  }
 	} else { /* not incremental owner */
 	  if (!(*ctx->convert)(ctx->widget, &selection, &target, 
 			     &resulttype, &value, &length, &format)) {
 	    HandleNone(widget, callback, closure, selection);
 	  } else {
-	      ctx->is_active = TRUE;
 	      if (ctx->notify && (value != NULL)) {
                 int bytelength = BYTELENGTH(length,format);
 	        /* both sides think they own this storage; better copy */
@@ -1309,10 +1309,6 @@ Boolean incremental;
 			  value, &length, &format);
 	      if (ctx->notify)
 	         (*ctx->notify)(ctx->widget, &selection, &target);
-	      if (ctx->free_when_done)
-		  XtFree((char*)ctx);
-	      else
-		  ctx->is_active = FALSE;
 	  }
       }
 }
@@ -1331,16 +1327,22 @@ Boolean incremental;
     CallBackInfo info;
 
     ctx = FindCtx(XtDisplay(widget), selection);
-    if (ctx->widget) {
+    if (ctx->widget && !ctx->was_disowned) {
 	RequestRec req;
 	ctx->req = &req;
 	req.ctx = ctx;
 	req.event.type = 0;
 	req.event.requestor = XtWindow(widget);
 	req.event.time = time;
+	ctx->is_active = TRUE;
 	DoLocalTransfer(&req, selection, target, widget,
 			callback, closure, incremental);
-	ctx->req = NULL;
+	if (ctx->free_when_done)
+	    XtFree((char*)ctx);
+	else {
+	    ctx->is_active = FALSE;
+	    ctx->req = NULL;
+	}
     }
     else {
 	info = MakeInfo(ctx, callback, &closure, 1, widget,
@@ -1397,17 +1399,23 @@ Boolean incremental;
 
     if (count == 0) return;
     ctx = FindCtx(XtDisplay(widget), selection);
-    if (ctx->widget) {
+    if (ctx->widget && !ctx->was_disowned) {
 	RequestRec req;
 	ctx->req = &req;
 	req.ctx = ctx;
 	req.event.type = 0;
 	req.event.requestor = XtWindow(widget);
 	req.event.time = time;
+	ctx->is_active = TRUE;
 	for (; count; count--, targets++, closures++ )
 	    DoLocalTransfer(&req, selection, *targets, widget,
 			    callback, *closures, incremental);
-	ctx->req = NULL;
+	if (ctx->free_when_done)
+	    XtFree((char*)ctx);
+	else {
+	    ctx->is_active = FALSE;
+	    ctx->req = NULL;
+	}
     } else {
 	info = MakeInfo(ctx, callback, closures, count, widget,
 			time, incremental);
