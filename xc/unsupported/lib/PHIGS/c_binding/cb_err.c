@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cb_err.c,v 5.1 91/02/16 09:47:42 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -80,14 +80,6 @@ pset_err_hand( new_err_hand, old_err_hand )
     *old_err_hand = phg_errhandle;
     phg_errhandle = new_err_hand;
 }
-
-#ifdef SYSV
-extern char *strchr();
-extern char *strrchr();
-#else
-extern char *index();
-extern char *rindex();
-#endif
 
 extern char *phg_path();
 
@@ -180,15 +172,9 @@ phg_cb_format_err_msg( binding, errnum, funcnum, buf )
      * look for function name.
      */
     if (err_lookup_string (funcmsgfile, funcnum, funcbuf, MSG_BUF_SIZE)) {
-#ifdef SYSV
 	funcname = strchr (funcbuf, ':')+1;
 	/* null out newline in function name string */
 	msgnl = strrchr (funcname, '\n');
-#else
-	funcname = index (funcbuf, ':')+1;
-	/* null out newline in function name string */
-	msgnl = rindex (funcname, '\n');
-#endif
 	if (msgnl)
 	    *msgnl = NULL;
     }
@@ -197,20 +183,12 @@ phg_cb_format_err_msg( binding, errnum, funcnum, buf )
      * look for error message. 
      */
     if (err_lookup_string (errmsgfile, errnum, msgbuf, MSG_BUF_SIZE)) {
-#ifdef SYSV
 	msgtext = strchr (msgbuf, ':'); /* find delimiter */
-#else
-	msgtext = index (msgbuf, ':'); /* find delimiter */
-#endif
 	*msgtext = NULL; 		/* end msgname string */
 	++msgtext;			/* advance to message text */
 
 	/* null out newline in message string */
-#ifdef SYSV
 	msgnl = strrchr (msgtext, '\n');
-#else
-	msgnl = rindex (msgtext, '\n');
-#endif
 	if (msgnl)
 	    *msgnl = NULL;
 
