@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.229 93/09/27 19:44:01 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.230 94/01/20 17:43:17 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -1380,6 +1380,12 @@ typedef	struct _XIMICAttributesList {
 } XIMICAttributesList;
 
 _XFUNCPROTOBEGIN
+
+#if defined(WIN32) && !defined(_XLIBINT_)
+#define _Xdebug (*_Xdebug_p)
+#endif
+
+extern int _Xdebug;
 
 extern XFontStruct *XLoadQueryFont(
 #if NeedFunctionPrototypes
