@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.125 91/02/06 21:12:02 keith Exp $ */
+/* $XConsortium: connection.c,v 1.126 91/02/14 19:36:23 keith Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -365,7 +365,7 @@ CreateWellKnownSockets()
 
     for (i=0; i<MAXSOCKS; i++) ConnectionTranslation[i] = 0;
     
-#ifdef	hpux
+#if defined(hpux) || defined(SVR4)
 	lastfdesc = _NFILE - 1;
 #else
 	lastfdesc = getdtablesize() - 1;
