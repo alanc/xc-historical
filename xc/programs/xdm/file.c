@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: file.c,v 1.9 89/08/31 11:34:56 keith Exp $
+ * $XConsortium: file.c,v 1.10 89/10/09 14:57:29 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -84,7 +84,7 @@ splitIntoWords (s)
 	    }
 	    args = newargs;
 	}
-	args[nargs] = malloc (s - wordStart);
+	args[nargs] = malloc (s - wordStart + 1);
 	if (!args[nargs])
 	{
 	    freeArgs (args);
