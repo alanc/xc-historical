@@ -284,9 +284,12 @@
 	  (without-interrupts
 	    (values (gcontext-internal-clip local-state)
 		    (gcontext-internal-clip-mask local-state)))
-	(values
-	  (or (second clip-mask) (decode-type (or (member :none) pixmap) (first clip-mask)))
-	  (decode-type (or null (member :unsorted :y-sorted :yx-sorted :yx-banded)) clip))))))
+	(if (null clip)
+	    (values (decode-type (or (member :none) pixmap) clip-mask)
+		    nil)
+	  (values (second clip)
+		  (decode-type (or null (member :unsorted :y-sorted :yx-sorted :yx-banded))
+			       (first clip))))))))
 
 (defsetf gcontext-clip-mask (gcontext &optional ordering) (clip-mask)
   ;; A bit strange, but retains setf form.
@@ -299,32 +302,40 @@
 	   (type (or null (member :unsorted :y-sorted :yx-sorted :yx-banded)) ordering)
 	   (type (or (member :none) pixmap rect-seq) clip-mask))
   (unless clip-mask (x-type-error clip-mask '(or (member :none) pixmap rect-seq)))
-  (let ((clip (encode-type (or null (member :unsorted :y-sorted :yx-sorted :yx-banded))
-			   ordering)))
-    (multiple-value-bind (clip-mask decache-p)
-	(typecase clip-mask
-	  (pixmap (values (list (pixmap-id clip-mask)) t))
-	  ((member :none) (values '(0) nil))
-	  (sequence (values (list nil (copy-seq clip-mask)) nil))
-	  (otherwise (x-type-error clip-mask '(or (member :none) pixmap rect-seq))))
-      (modify-gcontext (gcontext local-state)
-	(without-interrupts
-	  (setf (gcontext-internal-clip local-state) clip
-		(gcontext-internal-clip-mask local-state) clip-mask)
-	  (when decache-p
-	    ;; write-through clip-mask pixmap, because the protocol allows the
-	    ;; server to copy the pixmap contents at the time of the store,
-	    ;; rather than continuing to share with the pixmap.
-	    (setf (gcontext-internal-clip-mask (gcontext-server-state gcontext)) nil))))))
+  (multiple-value-bind (clip-mask clip decache-p)
+      (typecase clip-mask
+	(pixmap (values (pixmap-id clip-mask) nil t))
+	((member :none) (values 0 nil nil))
+	(sequence
+	  (values nil
+		  (list (encode-type
+			  (or null (member :unsorted :y-sorted :yx-sorted :yx-banded))
+			  ordering)
+			(copy-seq clip-mask))
+		  nil))
+	(otherwise (x-type-error clip-mask '(or (member :none) pixmap rect-seq))))
+    (modify-gcontext (gcontext local-state)
+      (without-interrupts
+	(setf (gcontext-internal-clip local-state) clip
+	      (gcontext-internal-clip-mask local-state) clip-mask)
+	(when decache-p
+	  ;; write-through clip-mask pixmap, because the protocol allows the
+	  ;; server to copy the pixmap contents at the time of the store,
+	  ;; rather than continuing to share with the pixmap.
+	  (setf (gcontext-internal-clip-mask (gcontext-server-state gcontext)) nil)))))
   clip-mask)
 
 (defun gcontext-dashes (gcontext)
   (declare (type gcontext gcontext))
   (declare (values (or null card8 sequence)))
   (access-gcontext (gcontext local-state)
-    (without-interrupts 
-      (or (gcontext-internal-dashes local-state)
-	  (gcontext-internal-dash local-state)))))
+    (multiple-value-bind (dash dashes)
+	(without-interrupts 
+	  (values (gcontext-internal-dash local-state)
+		  (gcontext-internal-dashes local-state)))
+      (if (null dash)
+	  dashes
+	dash))))
 
 (defsetf gcontext-dashes set-gcontext-dashes)
 
@@ -439,38 +450,30 @@
 	  (funcall (gcontext-extension-set-function (car extension)) gcontext local)))
 
       ;; Update clipping rectangles
-      (multiple-value-bind (local-clip local-clip-mask)
-	  (without-interrupts
-	    (values (gcontext-internal-clip local-state)
-		    (gcontext-internal-clip-mask local-state)))
-	(unless (equalp (second local-clip-mask)
-			(second (gcontext-internal-clip-mask server-state)))
-	  (setf (gcontext-internal-clip server-state) local-clip
-		(gcontext-internal-clip-mask server-state) local-clip-mask)
+      (let ((local-clip (gcontext-internal-clip local-state)))
+	(unless (equalp local-clip 
+			(gcontext-internal-clip server-state))
+	  (setf (gcontext-internal-clip server-state) local-clip)
 	  (with-buffer-request (display *x-setcliprectangles*)
-	    (data local-clip)
+	    (data (first local-clip))
 	    (gcontext gcontext)
 	    ;; XXX treat nil correctly
 	    (card16 (or (gcontext-internal-clip-x local-state) 0)
 		    (or (gcontext-internal-clip-y local-state) 0))
 	    ;; XXX this has both int16 and card16 values
-	    ((sequence :format int16) (second local-clip-mask)))))
+	    ((sequence :format int16) (second local-clip)))))
 
       ;; Update dashes
-      (multiple-value-bind (local-dash local-dashes)
-	  (without-interrupts
-	    (values (gcontext-internal-dash local-state)
-		    (gcontext-internal-dashes local-state)))
-	(unless (equalp local-dashes 
-			(gcontext-internal-dashes server-state))
-	  (setf (gcontext-internal-dash server-state) local-dash
-		(gcontext-internal-dashes server-state) local-dashes)
+      (let ((local-dash (gcontext-internal-dash local-state)))
+	(unless (equalp local-dash
+			(gcontext-internal-dash server-state))
+	  (setf (gcontext-internal-dash server-state) local-dash)
 	  (with-buffer-request (display *x-setdashes*)
 	    (gcontext gcontext)
 	    ;; XXX treat nil correctly
 	    (card16 (or (gcontext-internal-dash-offset local-state) 0)
-		    (length local-dashes))
-	    ((sequence :format card8) local-dashes))))))) 
+		    (length local-dash))
+	    ((sequence :format card8) local-dash))))))) 
 
 (defun force-gcontext-changes (gcontext)
   ;; Force any delayed changes.
