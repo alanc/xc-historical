@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.39 89/05/10 23:52:16 keith Exp $ */
+/* $XConsortium: servermd.h,v 1.40 89/07/03 14:59:52 rws Exp $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -138,15 +138,15 @@ SOFTWARE.
 
 #define IMAGE_BYTE_ORDER	LSBFirst        /* Values for the PMAX only */
 #define BITMAP_BIT_ORDER	LSBFirst
-#define	GLYPHPADBYTES		1
-#define GETLEFTBITS_ALIGNMENT	4
+#define	GLYPHPADBYTES		4
+#define GETLEFTBITS_ALIGNMENT	1
 
 #        else
 
 #define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the MIPS only */
 #define BITMAP_BIT_ORDER	MSBFirst
-#define	GLYPHPADBYTES		1
-#define GETLEFTBITS_ALIGNMENT	4
+#define	GLYPHPADBYTES		4
+#define GETLEFTBITS_ALIGNMENT	1
 
 #        endif
 #       endif
