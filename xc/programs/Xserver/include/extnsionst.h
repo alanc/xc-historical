@@ -1,4 +1,4 @@
-/* $XConsortium: extnsionst.h,v 1.6 89/03/11 15:10:09 rws Exp $ */
+/* $XConsortium: extnsionst.h,v 1.7 89/06/21 16:24:03 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -37,7 +37,10 @@ typedef struct _ExtensionEntry {
     int num_aliases;
     char **aliases;
     pointer extPrivate;
+    unsigned short (* MinorOpcode)();	/* called for errors */
 } ExtensionEntry;
+
+extern void (* EventSwapVector[128]) ();
 
 typedef void (* ExtensionLookupProc)();
 
@@ -97,7 +100,7 @@ extern Bool AddExtensionAlias();
 extern ExtensionLookupProc LookupProc();
 extern Bool RegisterProc();
 extern Bool RegisterScreenProc();
-
-/*  List of extension procs go here */
+extern unsigned short MinorOpcodeOfRequest();
+extern unsigned short StandardMinorOpcode();
 
 #endif /* EXTENSIONSTRUCT_H */
