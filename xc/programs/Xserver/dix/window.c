@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.29 89/07/24 10:01:03 rws Exp $ */
+/* $XConsortium: window.c,v 5.30 89/07/24 10:26:20 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3237,7 +3237,7 @@ MarkOverlappedWindows(pWin, pFirst)
 	pChild = pWin;
 	while (1)
 	{
-	    if (pChild->mapped)
+	    if (pChild->viewable)
 	    {
 		MarkWindow(pChild);
 		if (pChild->firstChild)
@@ -3262,7 +3262,7 @@ MarkOverlappedWindows(pWin, pFirst)
 	pLast = pChild->parent->lastChild;
 	while (1)
 	{
-	    if (pChild->mapped && (*RectIn)(&pChild->borderSize, box))
+	    if (pChild->viewable && (*RectIn)(&pChild->borderSize, box))
 	    {
 		MarkWindow(pChild);
 		anyMarked = TRUE;
