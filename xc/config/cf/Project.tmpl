@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.11 89/01/19 16:44:48 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.12 89/02/09 12:46:36 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -203,6 +203,17 @@
 #ifndef DefaultSystemShell		/* for xdm to set in SHELL */
 #define DefaultSystemShell BourneShell
 #endif
+#ifndef DependDir
+#ifdef UseCCMakeDepend			/* use slow cc -E script */
+#define DependDir $(SCRIPTSSRC)
+#else
+#define DependDir $(UTILSRC)/makedepend
+#endif
+#endif
+#ifndef DependCmd
+#define DependCmd $(DEPENDSRC)/makedepend
+#endif
+
 
 #if NeedBerklibInXlib
 #define BandAidLibraryNeeded		YES
@@ -220,7 +231,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.11 89/01/19 16:44:48 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.12 89/02/09 12:46:36 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -257,7 +268,7 @@ Berklib.c: sysV/Berklib.c					@@\
            DEPEND = makedepend		/* assume BINDIR in path */
 #else
             IMAKE = $(IMAKESRC)/imake
-           DEPEND = $(DEPENDSRC)/makedepend
+           DEPEND = DependCmd
 #endif
               RGB = $(RGBSRC)/rgb
                FC = $(BDFTOSNFSRC)/bdftosnf
@@ -277,7 +288,7 @@ Berklib.c: sysV/Berklib.c					@@\
        CONTRIBSRC = $(TOP)/contrib
            DOCSRC = $(TOP)/doc
            RGBSRC = $(TOP)/rgb
-        DEPENDSRC = $(SCRIPTSSRC)	/* use script instead of program now */
+        DEPENDSRC = DependDir
          IMAKESRC = $(UTILSRC)/imake
          XAUTHSRC = $(LIBSRC)/Xau
           XLIBSRC = $(LIBSRC)/X
