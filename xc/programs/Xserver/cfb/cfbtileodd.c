@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbtileodd.c,v 1.11 91/04/10 11:41:50 keith Exp $ */
+/* $XConsortium: cfbtileodd.c,v 1.12 91/06/28 12:44:19 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -65,8 +65,12 @@ purpose.  It is provided "as is" without express or implied warranty.
     	if (nlwSrc == 0) {\
 	    ResetTileBits\
     	} \
-	tmp = bits; \
-	bits = *pSrc++; \
+	if (nlwSrc == 1) {\
+	    LastTileBits\
+	} else {\
+	    tmp = bits; \
+	    bits = *pSrc++; \
+	}\
     }\
     nlwSrc--; \
 }
@@ -214,6 +218,7 @@ MROP_NAME(cfbFillBoxTileOdd) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
 	    nlw = nlwMiddle;
 	    while (nlw)
 	    {
+#if MROP == Mcopy
 		if (nlwSrc > 1)
 		{
 		    nlwPart = nlw;
@@ -250,6 +255,7 @@ MROP_NAME(cfbFillBoxTileOdd) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
 		    }
 		}
 		else
+#endif
 		{
 		    NextTileBits
 		    if (rightShift != 32)
@@ -257,13 +263,12 @@ MROP_NAME(cfbFillBoxTileOdd) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
 			*pDst = MROP_SOLID(BitLeft(tmp, leftShift) |
 					   BitRight(bits, rightShift),
 					   *pDst);
-			++pDst;
 		    }
 		    else
 		    {
 			*pDst = MROP_SOLID (tmp, *pDst);
-			++pDst;
 		    }
+		    ++pDst;
 		    nlw--;
 		}
 	    }
@@ -421,105 +426,30 @@ MROP_NAME(cfbFillSpanTileOdd) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
 	    *pDst = MROP_MASK (tmp, *pDst, startmask);
 	    ++pDst;
 	}
-	if (tileEndPart)
+	while (nlw)
 	{
-	    while (nlw)
+#if MROP == Mcopy
+	    if (nlwSrc > 1)
 	    {
-		if (nlwSrc > 1)
+		nlwPart = nlw;
+		if (nlwPart >= nlwSrc)
+		    nlwPart = nlwSrc - 1;
+		nlw -= nlwPart;
+		nlwSrc -= nlwPart;
+		if (rightShift != 32)
 		{
-		    nlwPart = nlw;
-		    if (nlwPart >= nlwSrc)
-			nlwPart = nlwSrc - 1;
-		    nlw -= nlwPart;
-		    nlwSrc -= nlwPart;
-		    if (rightShift != 32)
-		    {
-			while (nlwPart--)
-			{
-			    tmp = bits;
-			    bits = *pSrc++;
-			    *pDst = MROP_SOLID(BitLeft(tmp, leftShift) |
-					      BitRight (bits, rightShift),
-					      *pDst);
-			    ++pDst;
-			}
-		    }
-		    else
-		    {
-			if (nlwPart)
-			{
-			    *pDst = MROP_SOLID (bits, *pDst);
-			    ++pDst;
-			    nlwPart--;
-			    while (nlwPart--)
-			    {
-				*pDst = MROP_SOLID(*pSrc, *pDst);
-				++pDst; ++pSrc;
-			    }
-			    bits = *pSrc++;
-			}
-		    }
-		}
-		else
-		{
-		    NextTileBits
-		    if (rightShift != 32)
-		    {
-			*pDst = MROP_SOLID(BitLeft(tmp, leftShift) |
-					   BitRight(bits, rightShift),
-					   *pDst);
-			++pDst;
-		    }
-		    else
-		    {
-			*pDst = MROP_SOLID (tmp, *pDst);
-			++pDst;
-		    }
-		    nlw--;
-		}
-	    }
-	}
-	else
-	{
-	    if (leftShift)
-	    {
-		while (nlw)
-		{
-		    if (nlwSrc == 0)
-		    {
-			nlwSrc = widthSrc;
-			pSrc = pSrcLine;
-		    }
-		    nlwPart = nlw;
-		    if (nlwPart > nlwSrc)
-			nlwPart = nlwSrc;
-		    nlw -= nlwPart;
-		    nlwSrc -= nlwPart;
 		    while (nlwPart--)
 		    {
 			tmp = bits;
 			bits = *pSrc++;
 			*pDst = MROP_SOLID(BitLeft(tmp, leftShift) |
-					   BitRight(bits, rightShift),
-					   *pDst);
+					  BitRight (bits, rightShift),
+					  *pDst);
 			++pDst;
 		    }
 		}
-	    }
-	    else
-	    {
-		while (nlw)
+		else
 		{
-		    if (nlwSrc == 0)
-		    {
-			nlwSrc = widthSrc;
-			pSrc = pSrcLine;
-		    }
-		    nlwPart = nlw;
-		    if (nlwPart > nlwSrc)
-			nlwPart = nlwSrc;
-		    nlw -= nlwPart;
-		    nlwSrc -= nlwPart;
 		    if (nlwPart)
 		    {
 			*pDst = MROP_SOLID (bits, *pDst);
@@ -527,12 +457,30 @@ MROP_NAME(cfbFillSpanTileOdd) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
 			nlwPart--;
 			while (nlwPart--)
 			{
-			    *pDst = MROP_SOLID (*pSrc, *pDst);
+			    *pDst = MROP_SOLID(*pSrc, *pDst);
 			    ++pDst; ++pSrc;
 			}
 			bits = *pSrc++;
 		    }
 		}
+	    }
+	    else
+#endif
+	    {
+		NextTileBits
+		if (rightShift != 32)
+		{
+		    *pDst = MROP_SOLID(BitLeft(tmp, leftShift) |
+				       BitRight(bits, rightShift),
+				       *pDst);
+		    ++pDst;
+		}
+		else
+		{
+		    *pDst = MROP_SOLID (tmp, *pDst);
+		    ++pDst;
+		}
+		nlw--;
 	    }
 	}
 	if (endmask)
@@ -652,6 +600,7 @@ MROP_NAME(cfbFillBoxTile32s) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
 		    nlTemp -= nl;
 		    srcRemaining -= nl;
 
+#if MROP == Mcopy
 #ifdef LARGE_INSTRUCTION_CACHE
 #ifdef FAST_CONSTANT_OFFSET_MODE
 
@@ -683,6 +632,12 @@ psrc += UNROLL;
 		    DuffL(nl, label1,
 			    *pdst = MROP_SOLID (*psrc, *pdst);
 			    pdst++; psrc++;)
+#endif
+#else
+		    while (nl--) {
+			    *pdst = MROP_SOLID (*psrc, *pdst);
+			    pdst++; psrc++;
+		    }
 #endif
 		    if (!srcRemaining)
 		    {
@@ -747,6 +702,7 @@ psrc += UNROLL;
 		    nlTemp -= nl;
 		    srcRemaining -= nl;
     
+#if MROP == Mcopy
 #ifdef LARGE_INSTRUCTION_CACHE
 		    bits1 = bits;
     
@@ -796,6 +752,14 @@ psrc += UNROLL;
 		    	*pdst = MROP_SOLID (bits1 | BitRight(bits, rightShift), *pdst);
 		    	pdst++;
 		    )
+#endif
+#else
+		    while (nl--) {
+		    	bits1 = BitLeft(bits, leftShift);
+		    	bits = *psrc++;
+		    	*pdst = MROP_SOLID (bits1 | BitRight(bits, rightShift), *pdst);
+		    	pdst++;
+		    }
 #endif
 		    if (!srcRemaining)
 		    {
@@ -926,6 +890,7 @@ MROP_NAME(cfbFillSpanTile32s) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
 		nlTemp -= nl;
 		srcRemaining -= nl;
 
+#if MROP == Mcopy
 #ifdef LARGE_INSTRUCTION_CACHE
 #ifdef FAST_CONSTANT_OFFSET_MODE
 
@@ -957,6 +922,12 @@ psrc += UNROLL;
 		DuffL(nl, label1,
 			*pdst = MROP_SOLID (*psrc, *pdst);
 			pdst++; psrc++;)
+#endif
+#else
+		while (nl--) {
+			*pdst = MROP_SOLID (*psrc, *pdst);
+			pdst++; psrc++;
+		}
 #endif
 		if (!srcRemaining)
 		{
@@ -1009,6 +980,7 @@ psrc += UNROLL;
 		nlTemp -= nl;
 		srcRemaining -= nl;
 
+#if MROP == Mcopy
 #ifdef LARGE_INSTRUCTION_CACHE
 		bits1 = bits;
 
@@ -1058,6 +1030,14 @@ pdst++;
 		    *pdst = MROP_SOLID (bits1 | BitRight(bits, rightShift), *pdst);
 		    pdst++;
 		)
+#endif
+#else
+		while (nl--) {
+		    bits1 = BitLeft(bits,leftShift);
+		    bits = *psrc++;
+		    *pdst = MROP_SOLID(bits1|BitRight(bits,rightShift), *pdst);
+		    pdst++;
+		}
 #endif
 		if (!srcRemaining)
 		{
