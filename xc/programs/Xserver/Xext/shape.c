@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 5.8 89/10/06 11:18:32 keith Exp $ */
+/* $XConsortium: shape.c,v 5.9 89/10/08 19:24:14 jim Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -117,6 +117,12 @@ RegionOperate (client, pWin, kind, destRgnp, srcRgn, op, xoff, yoff, create)
 
     if (xoff || yoff)
 	(*pScreen->TranslateRegion) (srcRgn, xoff, yoff);
+    if (!pWin->parent)
+    {
+	if (srcRgn)
+	    (*pScreen->RegionDestroy) (srcRgn);
+	return Success;
+    }
     switch (op) {
     case ShapeSet:
 	if (*destRgnp)
@@ -662,7 +668,6 @@ SendShapeNotify (pWin, which)
     xShapeNotifyEvent	se;
     BoxRec		extents;
     RegionPtr		region;
-    register int	n;
     BYTE		shaped;
 
     pHead = (ShapeEventPtr *) LookupIDByType(pWin->drawable.id, EventType);
