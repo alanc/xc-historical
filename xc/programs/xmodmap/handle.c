@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: handle.c,v 1.14 88/10/09 15:46:56 rws Exp $
+ * $XConsortium: handle.c,v 1.15 88/10/09 15:56:53 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1061,7 +1061,7 @@ void print_opcode (op)
 	printf ("\n");
 	break;
       case doAddModifier:
-	printf ("add %s =", modifier_table[op->addmodifier.modifier]);
+	printf ("add %s =", modifier_table[op->addmodifier.modifier].name);
 	for (i = 0; i < op->addmodifier.count; i++) {
 	    char *name = XKeysymToString (op->addmodifier.keysyms[i]);
 	    printf (" %s", name ? name : "BADKEYSYM");
@@ -1070,14 +1070,14 @@ void print_opcode (op)
 	break;
       case doRemoveModifier:
 	printf ("remove %s = ",
-		modifier_table[op->removemodifier.modifier]);
+		modifier_table[op->removemodifier.modifier].name);
 	for (i = 0; i < op->removemodifier.count; i++) {
 	    printf (" 0x%lx", (long) op->removemodifier.keycodes[i]);
 	}
 	printf ("\n");
 	break;
       case doClearModifier:
-	printf ("clear %s\n", modifier_table[op->clearmodifier.modifier]);
+	printf ("clear %s\n", modifier_table[op->clearmodifier.modifier].name);
 	break;
       default:
 	printf ("! unknown opcode %d\n", op->generic.type);
