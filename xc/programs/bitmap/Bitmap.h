@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.h,v 1.9 91/01/04 13:22:42 dmatic Exp $
+ * $XConsortium: Bitmap.h,v 1.10 91/02/08 18:18:31 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -127,7 +127,9 @@
 #define XtCFilename "Filename"
 #define XtCBasename "Basename"
 #define XtCFrame "Frame"
+#ifndef XtCMargin
 #define XtCMargin "Margin"
+#endif
 #define XtCProportional "Proportional"
 
 #define XtRButtonFunction "ButtonFunction"
