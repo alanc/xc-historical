@@ -1,7 +1,6 @@
 SRCS1 =	\
 	sunInit.c \
 	sunBW2.c \
-	sunBW2zoid.c \
 	sunCursor.c \
 	sunIo.c \
 	sunKbd.c \
@@ -20,7 +19,6 @@ OFILES = sunInit.o
 
 OBJS = \
 	sunBW2.o \
-	sunBW2zoid.o \
 	sunCursor.o \
 	sunIo.o \
 	sunKbd.o \

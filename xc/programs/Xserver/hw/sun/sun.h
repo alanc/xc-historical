@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$XConsortium: sun.h,v 5.4 89/07/18 18:16:08 rws Exp $ SPRITE (Berkeley)"
+ *	"$XConsortium: sun.h,v 5.5 89/07/26 12:13:44 rws Exp $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
@@ -73,9 +73,6 @@ extern int  errno;
 #include    "dix.h"
 #include    "mfb.h"
 #include    "mi.h"
-#ifdef ZOIDS
-#include    "zoid.h"
-#endif ZOIDS
 
 /*
  * MAXEVENTS is the maximum number of events the mouse and keyboard functions
@@ -199,17 +196,10 @@ typedef struct {
 extern Bool sunSupportsDepth8;
 extern unsigned long sunGeneration;
 
-/*
- * ZOIDS should only ever be defined if SUN_WINDOWS is defined.
- */
 typedef struct _sunFbDataRec {
     Bool    (*probeProc)();	/* probe procedure for this fb */
     char    *devName;		/* device filename */
     Bool    (*createProc)();	/* create procedure for this fb */
-#ifdef ZOIDS
-    Pixrect *pr;		/* set for bwtwo's only */
-    Pixrect *scratch_pr;	/* set for bwtwo's only */
-#endif ZOIDS
 } sunFbDataRec;
 
 extern sunFbDataRec sunFbData[];
@@ -265,19 +255,6 @@ extern struct timeval autoRepeatDeltaTv;
 			(tv).tv_usec -= 1000000; \
 			(tv).tv_sec += 1; \
 		}
-
-/*
- * Sun specific extensions:
- *	trapezoids
- */
-#ifdef ZOIDS
-extern void	  sunBW2SolidXZoids();
-extern void	  sunBW2SolidYZoids();
-extern void	  sunBW2TiledXZoids();
-extern void	  sunBW2TiledYZoids();
-extern void	  sunBW2StipXZoids();
-extern void	  sunBW2StipYZoids();
-#endif ZOIDS
 
 /*-
  * TVTOMILLI(tv)
