@@ -1,4 +1,4 @@
-/* $XConsortium: miStruct.c,v 5.8 92/04/23 18:49:52 hersh Exp $ */
+/* $XConsortium: miStruct.c,v 5.9 92/05/07 17:08:09 hersh Exp $ */
 
 
 /***********************************************************
@@ -2392,7 +2392,7 @@ ValidateStructurePath(pPath)
     diStructHandle  pStruct, pNextStruct;
     miStructPtr     pstruct;
     ddULONG         offset;
-    int             i;
+    int             i, j;
 
     if (pPath->type == DD_ELEMENT_REF) {
 	ddElementRef   *pSCPath;
@@ -2430,6 +2430,10 @@ ValidateStructurePath(pPath)
 	pickId = 0;
 
 	for (i = pPath->numObj; i > 0; i--, pPickPath++) {
+
+	    /* dont' check what the last element is */
+	    if (i == 1) break;
+
 	    pStruct = pPickPath->structure;
 	    if (pNextStruct != pStruct) return (PEXERR(PEXPathError));
 
@@ -2444,16 +2448,13 @@ ValidateStructurePath(pPath)
 	     */
 	    MISTR_FIND_EL(pstruct, 1, p_element);
 
-	    for (; offset > 0; offset--) {
+	    for (j = 1; j <  offset; j++ ) {
 		if (MISTR_EL_TYPE(p_element) == PEXOCPickId)
 		    pickId = MISTR_GET_PICK_ID(p_element);
 		p_element = MISTR_NEXT_EL(p_element);
 	    }
 
 	    if (pickId != pPickPath->pickid) return (PEXERR(PEXPathError));
-
-	    /* dont' check what the last element is */
-	    if (i == 1) break;
 
 	    if (MISTR_EL_TYPE(p_element) != PEXOCExecuteStructure)
 		return (PEXERR(PEXPathError));
