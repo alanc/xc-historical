@@ -336,19 +336,16 @@
 
 #+ti
 (progn
-  (define-keysym #\break (keysym 255 019))	; :tty
   (define-keysym #\terminal (keysym 255 032))	; :function
   (define-keysym #\system (keysym 255 096))	; :function
-;;(define-keysym #\home (keysym 255 080))		; :cursor
+  (define-keysym #\center-arrow (keysym 255 80))
   (define-keysym #\left-arrow (keysym 255 081))	; :cursor
   (define-keysym #\up-arrow (keysym 255 082))	; :cursor
   (define-keysym #\right-arrow (keysym 255 083))	; :cursor
   (define-keysym #\down-arrow (keysym 255 084))	; :cursor
-  (define-keysym #\left (keysym 255 085))	; :cursor	;Prior, Previous
-  (define-keysym #\middle (keysym 255 086))	; :cursor	;Next
   (define-keysym #\end (keysym 255 087))	; :cursor
-  (define-keysym #\right (keysym 255 088))	; :cursor	;Begin
   (define-keysym #\undo (keysym 255 101))	; :function
+  (define-keysym #\break (keysym 255 107))
   (define-keysym #\keypad-space (keysym 255 128))	; :keypad
   (define-keysym #\keypad-tab (keysym 255 137))	; :keypad
   (define-keysym #\keypad-enter (keysym 255 141))	; :keypad
@@ -379,6 +376,13 @@
   (define-keysym #\f2 (keysym 255 193))		; :function
   (define-keysym #\f3 (keysym 255 194))		; :function
   (define-keysym #\f4 (keysym 255 195))		; :function
+  (define-keysym #\network (keysym 255 214))
+  (define-keysym #\status (keysym 255 215))
+  (define-keysym #\clear-screen (keysym 255 217))
+  (define-keysym #\left (keysym 255 218))
+  (define-keysym #\middle (keysym 255 219))
+  (define-keysym #\right (keysym 255 220))
+  (define-keysym #\resume (keysym 255 221))
   (define-keysym #\vt (keysym 009 233))		; :special ;; same as #\delete
   )
 
@@ -389,9 +393,7 @@
   (define-keysym #\Quote (keysym 142))		; :latin-1
   (define-keysym #\Hold-output (keysym 143))	; :latin-1
   (define-keysym #\Stop-output (keysym 144))	; :latin-1
-  (define-keysym #\Status (keysym 147))		; :latin-1
   (define-keysym #\Center (keysym 156))		; :latin-1
-  (define-keysym #\Network (keysym 158))	; :latin-1
   (define-keysym #\no-break-space (keysym 160))	; :latin-1
 
   (define-keysym #\circle-plus (keysym 13))	; :latin-1
