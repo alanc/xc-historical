@@ -1,3 +1,7 @@
+#define DoNormalLib NormalLibXmu
+#define DoSharedLib SharedLibXmu
+#define DoDebugLib DebugLibXmu
+#define DoProfileLib ProfileLibXmu
 #include <Library.tmpl>
 
 XCOMM
@@ -133,70 +137,41 @@ OBJS = \
 
 UNSHAREDOBJS = sharedlib.o
 
-all::
+LibraryObjectRule()
 
-#if SharedLibXmu
-# if DebugLibXmu
-SharedAndDebuggedLibraryObjectRule()
-SpecialSharedAndDebuggedObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
-SpecialSharedAndDebuggedObjectRule(LocBitmap.o,$(ICONFIGFILES),$(BITDEFS))
-# else
-SharedLibraryObjectRule()
-SpecialSharedObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
-SpecialSharedObjectRule(LocBitmap.o,$(ICONFIGFILES),$(BITDEFS))
-# endif
+SpecialLibObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
+SpecialLibObjectRule(LocBitmap.o,$(ICONFIGFILES),$(BITDEFS))
+
+#if DoSharedLib
+#if DoNormalLib
+SharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS),shared,.)
 #else
-# if DebugLibXmu && ProfileLibXmu
-DebuggedAndProfiledLibraryObjectRule()
-SpecialDebuggedAndProfiledObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
-SpecialDebuggedAndProfiledObjectRule(LocBitmap.o,$(ICONFIGFILES),$(BITDEFS))
-# else
-#  if DebugLibXmu 
-DebuggedLibraryObjectRule()
-SpecialDebuggedObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
-SpecialDebuggedObjectRule(LocBitmap.o,$(ICONFIGFILES),$(BITDEFS))
-#  else
-#   if ProfileLibXmu
-ProfiledLibraryObjectRule()
-SpecialProfiledObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
-SpecialProfiledObjectRule(LocBitmap.o,$(ICONFIGFILES),$(BITDEFS))
-#   else
-NormalLibraryObjectRule()
-SpecialObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
-SpecialObjectRule(LocBitmap.o,$(ICONFIGFILES),$(BITDEFS))
-#   endif
-#  endif
-# endif
+SharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS),.,.)
 #endif
-
-#if SharedLibXmu
-NormalSharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS))
-
-SpecialSharedObjectRule(sharedlib.o,,-I$(TOOLKITSRC))
+SpecialLibObjectRule(sharedlib.o,,-I$(TOOLKITSRC))
 depend:: xtsharedlib.c
 xtsharedlib.c: $(TOOLKITSRC)/sharedlib.c
 	$(RM) $@
 	$(LN) $? $@
-
-NormalSharedLibraryDataTarget(Xmu,$(SOXMUREV),$(UNSHAREDOBJS))
+SharedLibraryDataTarget(Xmu,$(SOXMUREV),$(UNSHAREDOBJS))
 InstallSharedLibrary(Xmu,$(SOXMUREV),$(USRLIBDIR))
 InstallSharedLibraryData(Xmu,$(SOXMUREV),$(USRLIBDIR))
 #endif
-
-
+#if DoNormalLib
 NormalLibraryTarget(Xmu,$(OBJS))
-LintLibraryTarget(Xmu,$(SRCS))
 InstallLibrary(Xmu,$(USRLIBDIR))
-InstallLintLibrary(Xmu,$(LINTLIBDIR))
-
-#if ProfileLibXmu 
+#endif
+#if DoProfileLib
 ProfiledLibraryTarget(Xmu,$(OBJS))
 InstallLibrary(Xmu_p,$(USRLIBDIR))
 #endif
-
-#if DebugLibXmu
+#if DoDebugLib
 DebuggedLibraryTarget(Xmu,$(OBJS))
+InstallLibrary(Xmu_g,$(USRLIBDIR))
 #endif
+
+LintLibraryTarget(Xmu,$(SRCS))
+InstallLintLibrary(Xmu,$(LINTLIBDIR))
 
 BuildIncludes($(HEADERS),Xmu,..)
 

@@ -1,3 +1,7 @@
+#define DoNormalLib NormalLibXt
+#define DoSharedLib SharedLibXt
+#define DoDebugLib DebugLibXt
+#define DoProfileLib ProfileLibXt
 #include <Library.tmpl>
 
 /* config options */
@@ -146,65 +150,36 @@ OBJS = \
 
 UNSHAREDOBJS = sharedlib.o
 
-all::
+LibraryObjectRule()
 
-#if SharedLibXt 
-# if DebugLibXt
-SharedAndDebuggedLibraryObjectRule()
-SpecialSharedAndDebuggedObjectRule(Intrinsic.o,$(ICONFIGFILES),$(SRCH_DEFINES))
-SpecialSharedAndDebuggedObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
-# else
-SharedLibraryObjectRule()
-SpecialSharedObjectRule(Intrinsic.o,$(ICONFIGFILES),$(SRCH_DEFINES))
-SpecialSharedObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
-# endif
+SpecialLibObjectRule(Intrinsic.o,$(ICONFIGFILES),$(SRCH_DEFINES))
+SpecialLibObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
+
+#if DoSharedLib
+#if DoNormalLib
+SharedLibraryTarget(Xt,$(SOXTREV),$(OBJS),shared,..)
 #else
-# if DebugLibXt && ProfileLibXt
-DebuggedAndProfiledLibraryObjectRule()
-SpecialDebuggedAndProfiledObjectRule(Intrinsic.o,$(ICONFIGFILES),$(SRCH_DEFINES))
-SpecialDebuggedAndProfiledObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
-# else
-#  if DebugLibXt
-DebuggedLibraryObjectRule()
-SpecialDebuggedObjectRule(Intrinsic.o,$(ICONFIGFILES),$(SRCH_DEFINES))
-SpecialDebuggedObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
-#  else
-#   if ProfileLibXt
-ProfiledLibraryObjectRule()
-SpecialProfiledObjectRule(Intrinsic.o,$(ICONFIGFILES),$(SRCH_DEFINES))
-SpecialProfiledObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
-#   else
-NormalLibraryObjectRule()
-SpecialObjectRule(Intrinsic.o,$(ICONFIGFILES),$(SRCH_DEFINES))
-SpecialObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
-#   endif
-#  endif
-# endif
+SharedLibraryTarget(Xt,$(SOXTREV),$(OBJS),.,.)
 #endif
-
-/*
- * always generate unshared library too 
- */
-#if SharedLibXt
-NormalSharedLibraryTarget(Xt,$(SOXTREV),$(OBJS))
-NormalSharedLibraryDataTarget(Xt,$(SOXTREV),$(UNSHAREDOBJS))
+SharedLibraryDataTarget(Xt,$(SOXTREV),$(UNSHAREDOBJS))
 InstallSharedLibrary(Xt,$(SOXTREV),$(USRLIBDIR))
 InstallSharedLibraryData(Xt,$(SOXTREV),$(USRLIBDIR))
 #endif
+#if DoNormalLib
 NormalLibraryTarget(Xt,$(OBJS))
 InstallLibrary(Xt,$(USRLIBDIR))
-
-LintLibraryTarget(Xt,$(SRCS))
-InstallLintLibrary(Xt,$(LINTLIBDIR))
-
+#endif
 #if ProfileLibXt
 ProfiledLibraryTarget(Xt,$(OBJS))
 InstallLibrary(Xt_p,$(USRLIBDIR))
 #endif
-
 #if DebugLibXt
 DebuggedLibraryTarget(Xt,$(OBJS))
+InstallLibrary(Xt_g,$(USRLIBDIR))
 #endif
+
+LintLibraryTarget(Xt,$(SRCS))
+InstallLintLibrary(Xt,$(LINTLIBDIR))
 
 BuildIncludes($(HEADERS),.,.)
 InstallMultiple($(HEADERS),$(INCDIR))
