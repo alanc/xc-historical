@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t	-*- Nroff -*-
-.\" $XConsortium: xlfd.tbl.ms,v 1.28 94/03/25 14:50:55 gildea Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.29 94/04/06 15:03:34 gildea Exp $
 .de sC			\" start change
 .mc \s+5\(br\s0\"	\" make tall enough to span paragraph skip
 ..
@@ -291,6 +291,11 @@ is logically composed of two strings: a
 .PN FontNameRegistry
 prefix that is followed by a 
 .PN FontNameSuffix .
+.sC
+The
+.PN FontName
+uses the ISO 8859-1 encoding.
+.eC
 The 
 .PN FontNameRegistry
 is an
@@ -303,9 +308,11 @@ syntax and semantics.
 All font names that conform to this specification are to use a 
 .PN FontNameRegistry
 prefix, which is defined to be the string \*Q\-\*U
-(that is, ISO 8859-1 HYPHEN\*-Column/Row 02/13).
+.sC
+(HYPHEN).
 All 
 .PN FontNameRegistry 
+.eC
 prefixes of the form: +\fIversion\fP\-,
 where the specified version indicates some future XLFD specification, 
 are reserved by the X Consortium for future extensions to XLFD font names.
@@ -370,16 +377,10 @@ T}	T{
 STRING8 \- the XLFD version that defines an extension 
 to the font name syntax (for example, \*Q1.4\*U)
 T}
-T{
-XFNExtPrefix ::=
-T}	T{
-OCTET \- the value of ISO 8859-1 PLUS (Column/Row 02/11)
-T}
-T{
-XFNDelim ::=
-T}	T{
-OCTET \- the value of ISO 8859-1 HYPHEN (Column/Row 02/13)
-T}
+.sC
+XFNExtPrefix ::=	OCTET \- \*Q+\*U (PLUS)
+XFNDelim ::=	OCTET \- \*Q-\*U (HYPHEN)
+.eC
 T{
 PrivFontNameRegistry ::=
 T}	T{
@@ -391,16 +392,19 @@ PrivFontNameSuffix ::=	STRING8
 .LP
 Field values are constructed as strings of ISO 8859-1 graphic characters, 
 excluding the following:
+.sC
 .IP \(bu 5
-HYPHEN (02/13), the XLFD font name delimiter character
+\*Q-\*U (HYPHEN), the XLFD font name delimiter character
 .IP \(bu 5
-QUESTION MARK (03/15) and ASTERISK (02/10), the X protocol 
+\*Q?\*U (QUESTION MARK) and \*Q*\*U (ASTERISK), the X protocol 
 font name wildcard characters
 .IP \(bu 5
-COMMA (02/12), used by Xlib to separate XLFD font names in a font set.
+\*Q,\*U (COMMA), used by Xlib to separate XLFD font names in a font set.
 .IP \(bu 5
-QUOTATION MARK (02/02), used by some commercial products to quote a
+\*Q\fC"\fP\*U (QUOTATION MARK), used by some commercial products to quote a
 font name.
+.br
+.eC
 .LP
 Alphabetic case distinctions are allowed but are for human readability 
 concerns only.
@@ -828,7 +832,9 @@ StdNumber ::=	STRING8\-referenced standard number
 OrganizationId ::=	T{
 STRING8\-the registered name or acronym of the organization
 T}
-Dot ::=	\*Q\.\*U\-ISO 8859-1 FULL STOP (Column/Row 2/14)
+.sC
+Dot ::=	OCTET\-\*Q\.\*U (FULL STOP)
+.eC
 Year ::=	STRING8\-numeric year (for example, 1989)
 .TE
 .NL
@@ -1000,14 +1006,21 @@ The goal is to provide client applications with enough font information
 to be able to make automatic formatting and display decisions 
 with good typographic results.
 .LP
+.sC
+Font property names use the ISO 8859-1 encoding.
+.br
+.eC
+.LP
 Additional standard X font property definitions may be defined in the 
 future and private properties may exist in X fonts at any time.
 Private font properties should be defined to conform to the general mechanism 
 defined in the X protocol to prevent overlap of name space and ambiguous 
 property names, that is, private font property names are of the form: 
-ISO 8859-1 UNDERSCORE (Column/Row 05/15), 
-followed by the organizational identifier, followed by UNDERSCORE, 
+.sC
+\*Q_\*U (UNDERSCORE), 
+followed by the organizational identifier, followed by \*Q_\*U (UNDERSCORE), 
 and terminated with the property name.
+.eC
 .LP
 The Backus-Naur Form syntax description of X font properties is as follows:
 .IN "Font Properties" "BNF Syntax"
@@ -1037,7 +1050,10 @@ NOTICE | DESTINATION
 | FONT_TYPE | FONT_VERSION | RASTERIZER_NAME | RASTERIZER_VERSION
 T}
 Underscore ::=	T{
-OCTET\-the value of ISO 8859-1 UNDERSCORE character (Column/Row 05/15)
+.sC
+OCTET\-\*Q_\*U (UNDERSCORE)
+.br
+.eC
 T}
 OrganizationId ::=	T{
 STRING8\-the registered name of the organization
@@ -2069,10 +2085,14 @@ FONT_VERSION
 FONT_VERSION is a human-understandable string (of type ATOM)
 which describes the formal or informal version of the font.
 \fBNone\fP is a valid value.
+.br
+.sC
 .NH 3
-RASTERSIZER_NAME
+RASTERIZER_NAME
+.br
+.eC
 .XS
-\*(SN RASTERSIZER_NAME
+\*(SN RASTERIZER_NAME
 .XE
 .LP
 RASTERIZER_NAME is a human-understandable string (of type ATOM)
@@ -2095,7 +2115,9 @@ the case-sensitive, human-understandable product name
 of the rasterizer.  Words within this
 name should be separated by a single SPACE.
 T}
-Space ::=	OCTET\-the value of ISO 8859-1 SPACE (Column/Row 02/00)
+.sC
+Space ::=	OCTET\-\*Q \*U (SPACE)
+.eC
 .TE
 .NL
 .LP
@@ -2112,10 +2134,14 @@ Examples:
 .LP
 If RASTERIZER_NAME is not defined, or is \fBNone\fP, no
 rasterization operation has been applied to the FONT_TYPE.
+.br
+.sC
 .NH 3
-RASTERSIZER_VERSION
+RASTERIZER_VERSION
+.br
+.eC
 .XS
-\*(SN RASTERSIZER_VERSION
+\*(SN RASTERIZER_VERSION
 .XE
 .LP
 RASTERIZER_VERSION is a human-understandable string (of type
