@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.32 93/01/12 15:38:36 gildea Exp $
+ * $XConsortium: greet.c,v 1.33 93/09/18 20:27:33 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -23,14 +23,24 @@
  *
  */
 
-# include <X11/Intrinsic.h>
-# include <X11/StringDefs.h>
-# include <X11/Shell.h>
+#include <X11/Intrinsic.h>
+#include <X11/StringDefs.h>
+#include <X11/Shell.h>
 
-# include <X11/Xaw/Command.h>
+#include <X11/Xaw/Command.h>
 
-# include "Login.h"
-# include "dm.h"
+#include "dm.h"
+#include "greet.h"
+#include "Login.h"
+
+#ifdef SECURE_RPC
+#include <rpc/rpc.h>
+#include <rpc/key_prot.h>
+#endif
+
+#ifdef K5AUTH
+#include <krb5/krb5.h>
+#endif
 
 extern Display	*dpy;
 
@@ -57,6 +67,7 @@ GreetPingServer (closure, intervalId)
 }
 
 /*ARGSUSED*/
+static void
 GreetDone (w, data, status)
     Widget	w;
     LoginData	*data;
@@ -90,9 +101,9 @@ GreetDone (w, data, status)
     }
 }
 
-Display *
+static Display *
 InitGreet (d)
-struct display	*d;
+    struct display	*d;
 {
     Arg		arglist[10];
     int		i;
@@ -147,8 +158,9 @@ struct display	*d;
     return dpy;
 }
 
+static
 CloseGreet (d)
-struct display	*d;
+    struct display	*d;
 {
     Boolean	    allow;
     Arg	    arglist[1];
@@ -172,9 +184,10 @@ struct display	*d;
     Debug ("Greet connection closed\n");
 }
 
+static int
 Greet (d, greet)
-struct display		*d;
-struct greet_info	*greet;
+    struct display *d;
+    struct greet_info *greet;
 {
     XEvent		event;
     Arg		arglist[1];
@@ -202,11 +215,106 @@ struct greet_info	*greet;
 }
 
 
+static void
 FailedLogin (d, greet)
-struct display	*d;
-struct greet_info	*greet;
+    struct display	*d;
+    struct greet_info	*greet;
 {
     DrawFail (login);
     bzero (greet->name, strlen(greet->name));
     bzero (greet->password, strlen(greet->password));
+}
+
+
+greet_user_rtn GreetUser(d, dpy, verify, greet)
+    struct display          *d;
+    Display                 ** dpy;
+    struct verify_info      *verify;
+    struct greet_info       *greet;
+{
+    int i;
+
+    *dpy = InitGreet (d);
+    /*
+     * Run the setup script - note this usually will not work when
+     * the server is grabbed, so we don't even bother trying.
+     */
+    if (!d->grabServer)
+	SetupDisplay (d);
+    if (!*dpy) {
+	LogError ("Cannot reopen display %s for greet window\n", d->name);
+	exit (RESERVER_DISPLAY);
+    }
+    for (;;) {
+	/*
+	 * Greet user, requesting name/password
+	 */
+	code = Greet (d, greet);
+	if (code != 0)
+	{
+	    CloseGreet (d);
+	    SessionExit (d, code, FALSE);
+	}
+	/*
+	 * Verify user
+	 */
+	if (Verify (d, greet, verify))
+	    break;
+	else
+	    FailedLogin (d, greet);
+    }
+    DeleteXloginResources (d, *dpy);
+    CloseGreet (d);
+    Debug ("Greet loop finished\n");
+    /*
+     * Run system-wide initialization file
+     */
+    if (source (verify->systemEnviron, d->startup) != 0)
+    {
+	Debug ("Startup program %s exited with non-zero status\n",
+		d->startup);
+	SessionExit (d, OBEYSESS_DISPLAY, FALSE);
+    }
+    /*
+     * for user-based authorization schemes,
+     * add the user to the server's allowed "hosts" list.
+     */
+    for (i = 0; i < d->authNum; i++)
+    {
+#ifdef SECURE_RPC
+	if (d->authorizations[i]->name_length == 9 &&
+	    memcmp(d->authorizations[i]->name, "SUN-DES-1", 9) == 0)
+	{
+	    XHostAddress	addr;
+	    char		netname[MAXNETNAMELEN+1];
+	    char		domainname[MAXNETNAMELEN+1];
+    
+	    getdomainname(domainname, sizeof domainname);
+	    user2netname (netname, verify->uid, domainname);
+	    addr.family = FamilyNetname;
+	    addr.length = strlen (netname);
+	    addr.address = netname;
+	    XAddHost (*dpy, &addr);
+	}
+#endif
+#ifdef K5AUTH
+	if (d->authorizations[i]->name_length == 14 &&
+	    memcmp(d->authorizations[i]->name, "MIT-KERBEROS-5", 14) == 0)
+	{
+	    /* Update server's auth file with user-specific info.
+	     * Don't need to AddHost because X server will do that
+	     * automatically when it reads the cache we are about
+	     * to point it at.
+	     */
+	    extern Xauth *Krb5GetAuthForUid();
+
+	    XauDisposeAuth (d->authorizations[i]);
+	    d->authorizations[i] =
+		Krb5GetAuthForUid(14, "MIT-KERBEROS-5", verify->uid);
+	    SaveServerAuthorizations (d, d->authorizations, d->authNum);
+	} 
+#endif
+    }
+
+    return Greet_Success;
 }
