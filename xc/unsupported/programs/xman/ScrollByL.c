@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.c,v 1.19 91/03/19 17:38:12 converse Exp $
+ * $XConsortium: ScrollByL.c,v 1.20 91/05/28 11:05:45 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -770,8 +770,8 @@ Cardinal *num_args;
 #define ADD_MORE_MEM 100	/* first guesses for allocations. */
 #define CHAR_PER_LINE 40
 
-char title[BUFSIZ];
-Boolean saveTitle;
+static char title[BUFSIZ];
+static Boolean saveTitle;
 
 /*	Function Name: LoadFile
  *	Description: Loads the current file into the internal memory.
