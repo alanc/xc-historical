@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.125 89/11/11 17:31:57 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.126 89/11/13 15:02:09 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -946,7 +946,7 @@ TextWidget ctx;
 	DestroyVScrollBar(ctx);
   
     if (ctx->text.vbar != NULL) 
-      XawScrollBarSetThumb(ctx->text.vbar, first, last - first);
+      XawScrollbarSetThumb(ctx->text.vbar, first, last - first);
   
     if ( (ctx->text.vbar == NULL) != temp) {
       _XawTextNeedsUpdating(ctx, zeroPosition, ctx->text.lastPos);
@@ -958,7 +958,7 @@ TextWidget ctx;
     if (ctx->text.scroll_vert == XawtextScrollWhenNeeded)
       DestroyVScrollBar(ctx);
     else if (ctx->text.scroll_vert == XawtextScrollAlways)
-      XawScrollBarSetThumb(ctx->text.vbar, 0.0, 1.0);
+      XawScrollbarSetThumb(ctx->text.vbar, 0.0, 1.0);
 }
 
 /*
@@ -993,7 +993,7 @@ TextWidget ctx;
   if (ctx->text.hbar != NULL) {
     first = ctx->text.r_margin.left - ctx->text.margin.left;
     first /= last;
-    XawScrollBarSetThumb(ctx->text.hbar, first, widest); 
+    XawScrollbarSetThumb(ctx->text.hbar, first, widest); 
   }
   else if (ctx->text.margin.left != ctx->text.r_margin.left) {
     ctx->text.margin.left = ctx->text.r_margin.left;

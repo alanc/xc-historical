@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.c,v 1.7 89/05/06 21:16:11 kit Exp $
- * $Header: ScrollByL.c,v 1.7 89/05/06 21:16:11 kit Exp $
+ * $XConsortium: ScrollByL.c,v 1.8 89/05/16 13:54:33 kit Exp $
+ * $Header: ScrollByL.c,v 1.8 89/05/16 13:54:33 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -522,7 +522,7 @@ Widget w;
   if (shown > 1.0)
     shown = 1.0;
 
-  XawScrollBarSetThumb( sblw->scroll.bar, (float) -1, shown );
+  XawScrollbarSetThumb( sblw->scroll.bar, (float) -1, shown );
 }
 
 /*	Function Name: SetThumb
@@ -542,7 +542,7 @@ Widget w;
     return;
 
   location = (float) sblw->scroll.line_pointer / (float) sblw->scroll.lines; 
-  XawScrollBarSetThumb( sblw->scroll.bar, location , (float) -1 );
+  XawScrollbarSetThumb( sblw->scroll.bar, location , (float) -1 );
 }
 
 /*	Function Name: VerticalJump.

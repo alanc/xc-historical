@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.44 89/08/24 15:27:56 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.45 89/10/09 16:20:35 jim Exp $";
 #endif /* lint */
 
 
@@ -366,7 +366,7 @@ static void SetBar(w, top, length, total)
     Position top;
     Dimension length, total;
 {
-    XawScrollBarSetThumb(w, (float) top / total, (float) length / total );
+    XawScrollbarSetThumb(w, (float) top / total, (float) length / total );
 }
 
 static void RedrawThumbs(w)
