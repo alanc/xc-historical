@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: ico.c,v 1.1 87/09/11 08:23:25 toddb Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -30,8 +30,14 @@ SOFTWARE.
  *	-r		display on root window instead of creating a new one
  *	=wxh+x+y	X geometry for new window (default 600x600 centered)
  *	host:display	X display on which to run
+ * (plus a host of others, try -help)
  *****************************************************************************/
-
+/* Additions by jimmc@sci:
+ *  faces and colors
+ *  double buffering on the display
+ *  additional polyhedra
+ *  sleep switch
+ */
 
 
 #include <X11/Xlib.h>
@@ -39,22 +45,60 @@ SOFTWARE.
 #include <X11/Xutil.h>
 #include <stdio.h>
 
-
-
-typedef struct
-	{
-	double x, y, z;
-	} Point3D;
-
 typedef double Transform3D[4][4];
 
+#include "polyinfo.h"	/* define format of one polyhedron */
 
+/* Now include all the files which define the actual polyhedra */
+Polyinfo polys[] = {
+#include "allobjs.h"
+};
+int polysize = sizeof(polys)/sizeof(polys[0]);
+
+typedef struct {
+	int prevX, prevY;
+	unsigned long *plane_masks;	/* points into dbpair.plane_masks */
+	unsigned long enplanemask;	/* what we enable for drawing */
+	XColor *colors;		/* size = 2 ** totalplanes */
+	unsigned long *pixels;	/* size = 2 ** planesperbuf */
+} DBufInfo;
+
+typedef struct {
+	int planesperbuf;
+	int pixelsperbuf;	/* = 1<<planesperbuf */
+	int totalplanes;	/* = 2*planesperbuf */
+	int totalpixels;	/* = 1<<totalplanes */
+	unsigned long *plane_masks;	/* size = totalplanes */
+	unsigned long pixels[1];
+	int dbufnum;
+	DBufInfo bufs[2];
+	DBufInfo *drawbuf, *dpybuf;
+} DBufPair;
+
+DBufPair dbpair;
+
+XColor bgcolor,fgcolor;
 
 extern GC XCreateGC();
 extern long time();
 extern long random();
 
 Display *dpy;
+Window win;
+int winWidth, winHeight;
+Colormap cmap;
+GC gc;
+
+int dsync = 0;
+int dblbuf = 0;
+int sleepcount = 0;
+int isleepcount = 5;
+int numcolors = 0;
+char **colornames;	/* points into argv */
+int dofaces = 0;
+int doedges = 1;
+
+Polyinfo *findpoly();
 
 /******************************************************************************
  * Description
@@ -73,12 +117,12 @@ char **argv;
 	int invert = 0;
 	int dash = 0;
 
-	Window win;
 	int winX, winY, winW, winH;
 	XSetWindowAttributes xswa;
+	XWindowAttributes xwa;
 
-	GC gc;
 
+	Polyinfo *poly;		/* the poly to draw */
 	int icoX, icoY;
 	int icoDeltaX, icoDeltaY;
 	int icoW, icoH;
@@ -87,6 +131,8 @@ char **argv;
 	XGCValues xgcv;
 
 	/* Process arguments: */
+
+	poly = findpoly("icosahedron");	/* default */
 
 	while (*++argv)
 		{
@@ -98,10 +144,51 @@ char **argv;
 			useRoot = 1;
 		else if (!strcmp (*argv, "-d"))
 			dash = atoi(*++argv);
+		else if (!strcmp(*argv, "-colors")) {
+			colornames = ++argv;
+			for ( ; *argv && *argv[0]!='-'; argv++) ;
+			numcolors = argv - colornames;
+			--argv;
+		}
+		else if (!strcmp (*argv, "-dbl"))
+			dblbuf = 1;
+		else if (!strcmp(*argv, "-noedges"))
+			doedges = 0;
+		else if (!strcmp(*argv, "-faces"))
+			dofaces = 1;
 		else if (!strcmp(*argv, "-i"))
 			invert = 1;
+		else if (!strcmp (*argv, "-sleep"))
+			sleepcount = atoi(*++argv);
+		else if (!strcmp (*argv, "-isleep"))
+			isleepcount = atoi(*++argv);
+		else if (!strcmp (*argv, "-obj"))
+			poly = findpoly(*++argv);
+		else if (!strcmp(*argv, "-dsync"))
+			dsync = 1;
+		else if (!strcmp(*argv, "-objhelp")) {
+			giveObjHelp();
+			exit(1);
+		}
+		else {	/* unknown arg */
+printf("usage: ico [host:display.screen] [=geom] \
+[-r] [-d pattern] [-i] [-dbl] [-faces] [-noedges] \
+[-sleep n] [-obj object] [-objhelp] [-colors color-list]\n");
+printf("-r   use root window\n");
+printf("-d   use dashed lines (supply a bit pattern)\n");
+printf("-i   inverted\n");
+printf("-dbl use double buffering on the display\n");
+printf("-faces  draw faces\n");
+printf("-noedges  don't draw edges\n");
+printf("-obj object   specify what object to draw\n");
+printf("-objhelp      give help on what objects are available\n");
+printf("-sleep n  sleep for n seconds between each frame\n");
+printf("-colors color-list  list of colors to use on faces\n");
+exit(1);
+			}
 		}
 
+	if (!dofaces && !doedges) icoFatal("nothing to draw");
 
 	if (!(dpy= XOpenDisplay(display)))
 	        {
@@ -150,6 +237,11 @@ char **argv;
 		XChangeProperty(dpy, win, XA_WM_NAME, XA_STRING, 8, 
 				PropModeReplace, "Ico", 3);
 		XMapWindow(dpy, win);
+		if (XGetWindowAttributes(dpy,win,&xwa)==0) {
+			icoFatal("cant get window attributes (size)");
+		}
+		winWidth = xwa.width;
+		winHeight = xwa.height;
 		}
 
 
@@ -165,6 +257,25 @@ char **argv;
 		xgcv.dashes = dash;
 		XChangeGC(dpy, gc, GCLineStyle | GCDashList, &xgcv);
 		}
+
+	if (dofaces && numcolors>=1) {
+	    int i,t,bits;
+		bits = 0;
+		for (t=numcolors; t; t=t>>1) bits++;
+		initDBufs(fg,bg,bits);
+		/* don't set the background color */
+		for (i=0; i<numcolors; i++) {
+			setBufColname(i+1,colornames[i]);
+		}
+		setDisplayBuf(dblbuf?1:0);	/* insert new colors */
+	}
+	else if (dblbuf || dofaces) {
+		initDBufs(fg,bg,1);
+	}
+	if (!numcolors) numcolors=1;
+
+	if (dsync)
+		XSync(dpy, 0);
 
 	/* Get the initial position, size, and speed of the bounding-box: */
 
@@ -202,89 +313,100 @@ char **argv;
 			icoDeltaY = - icoDeltaY;
 			}
 
-		drawIco(win, gc, icoX, icoY, icoW, icoH, prevX, prevY);
+		drawPoly(poly, win, gc, icoX, icoY, icoW, icoH, prevX, prevY);
 		}
 	}
 
+giveObjHelp()
+{
+int i;
+Polyinfo *poly;
+	printf("%-16s%-12s  #Vert.  #Edges  #Faces  %-16s\n",
+		"Name", "ShortName", "Dual");
+	for (i=0; i<polysize; i++) {
+		poly = polys+i;
+		printf("%-16s%-12s%6d%8d%8d    %-16s\n",
+			poly->longname, poly->shortname,
+			poly->numverts, poly->numedges, poly->numfaces,
+			poly->dual);
+	}
+}
 
+Polyinfo *
+findpoly(name)
+char *name;
+{
+int i;
+Polyinfo *poly;
+	for (i=0; i<polysize; i++) {
+		poly = polys+i;
+		if (strcmp(name,poly->longname)==0 ||
+		    strcmp(name,poly->shortname)==0) return poly;
+	}
+	icoFatal("can't find object %s", name);
+}
+
+icoClearArea(x,y,w,h)
+int x,y,w,h;
+{
+	if (dblbuf || dofaces) {
+		XSetForeground(dpy, gc, dbpair.drawbuf->pixels[0]);
+			/* use background as foreground color for fill */
+		XFillRectangle(dpy,win,gc,x,y,w,h);
+	}
+	else {
+		XClearArea(dpy,win,x,y,w,h,0);
+	}
+}
 
 /******************************************************************************
  * Description
- *	Undraw previous icosahedron (by erasing its bounding box).
- *	Rotate and draw the new icosahedron.
+ *	Undraw previous polyhedron (by erasing its bounding box).
+ *	Rotate and draw the new polyhedron.
  *
  * Input
+ *	poly		the polyhedron to draw
  *	win		window on which to draw
  *	gc		X11 graphics context to be used for drawing
  *	icoX, icoY	position of upper left of bounding-box
  *	icoW, icoH	size of bounding-box
  *	prevX, prevY	position of previous bounding-box
  *****************************************************************************/
+char drawn[MAXNV][MAXNV];
 
-drawIco(win, gc, icoX, icoY, icoW, icoH, prevX, prevY)
+drawPoly(poly, win, gc, icoX, icoY, icoW, icoH, prevX, prevY)
+Polyinfo *poly;
 Window win;
 GC gc;
 int icoX, icoY, icoW, icoH;
 int prevX, prevY;
 	{
 	static int initialized = 0;
-	static Point3D v[] =	/* icosahedron vertices */
-		{
-		{ 0.00000000,  0.00000000, -0.95105650},
-		{ 0.00000000,  0.85065080, -0.42532537},
-		{ 0.80901698,  0.26286556, -0.42532537},
-		{ 0.50000000, -0.68819095, -0.42532537},
-		{-0.50000000, -0.68819095, -0.42532537},
-		{-0.80901698,  0.26286556, -0.42532537},
-		{ 0.50000000,  0.68819095,  0.42532537},
-		{ 0.80901698, -0.26286556,  0.42532537},
-		{ 0.00000000, -0.85065080,  0.42532537},
-		{-0.80901698, -0.26286556,  0.42532537},
-		{-0.50000000,  0.68819095,  0.42532537},
-		{ 0.00000000,  0.00000000,  0.95105650}
-		};
-	static int f[] =	/* icosahedron faces (indices in v) */
-		{
-		 0,  2,  1,
-		 0,  3,  2,
-		 0,  4,  3,
-		 0,  5,  4,
-		 0,  1,  5,
-		 1,  6, 10,
-		 1,  2,  6,
-		 2,  7,  6,
-		 2,  3,  7,
-		 3,  8,  7,
-		 3,  4,  8,
-		 4,  9,  8,
-		 4,  5,  9,
-		 5, 10,  9,
-		 5,  1, 10,
-		10,  6, 11,
-		 6,  7, 11,
-		 7,  8, 11,
-		 8,  9, 11,
-		 9, 10, 11
-		};
-#	define NV (sizeof(v) / sizeof(v[0]))
-#	define NF (sizeof(f) / (3 * sizeof(f[0])))
+
+	Point3D *v = poly->v;
+	int *f = poly->f;
+	int NV = poly->numverts;
+	int NF = poly->numfaces;
 
 	static Transform3D xform;
-	static Point3D xv[2][NV];
+	static Point3D xv[2][MAXNV];
 	static int buffer;
 	register int p0;
 	register int p1;
-	register int p2;
 	register XPoint *pv2;
 	XSegment *pe;
-	char drawn[NV][NV];
 	register Point3D *pxv;
 	static double wo2, ho2;
-	XPoint v2[NV];
-	XSegment edges[30];
+	XPoint v2[MAXNV];
+	XSegment edges[MAXEDGES];
 	register int i;
+	int j,k;
 	register int *pf;
+	int facecolor;
 
+	int pcount;
+	double pxvz;
+	XPoint ppts[MAXEDGESPERPOLY];
 
 	/* Set up points, transforms, etc.:  */
 
@@ -333,57 +455,261 @@ int prevX, prevY;
 	pf = f;
 	pe = edges;
 	bzero(drawn, sizeof(drawn));
-	for (i = NF - 1; i >= 0; --i)
+
+	if (dblbuf)
+		setDrawBuf(dbpair.dbufnum);
+			/* switch drawing buffers if double buffered */
+	if (dofaces) {	/* for faces, need to clear before FillPoly */
+		if (dblbuf)
+			icoClearArea(
+				dbpair.drawbuf->prevX, dbpair.drawbuf->prevY,
+				icoW + 1, icoH + 1);
+		icoClearArea(prevX, prevY, icoW + 1, icoH + 1);
+	}
+
+	if (dsync)
+		XSync(dpy, 0);
+
+	for (i = NF - 1; i >= 0; --i, pf += pcount)
 		{
-		p0 = *pf++;
-		p1 = *pf++;
-		p2 = *pf++;
 
-		/* If facet faces away from viewer, don't consider it: */
-		if (pxv[p0].z + pxv[p1].z + pxv[p2].z < 0.0)
-			continue;
-
-		if (!drawn[p0][p1])
-			{
-			drawn[p0][p1] = 1;
-			drawn[p1][p0] = 1;
-			pe->x1 = pv2[p0].x;
-			pe->y1 = pv2[p0].y;
-			pe->x2 = pv2[p1].x;
-			pe->y2 = pv2[p1].y;
-			++pe;
-			}
-		if (!drawn[p1][p2])
-			{
-			drawn[p1][p2] = 1;
-			drawn[p2][p1] = 1;
-			pe->x1 = pv2[p1].x;
-			pe->y1 = pv2[p1].y;
-			pe->x2 = pv2[p2].x;
-			pe->y2 = pv2[p2].y;
-			++pe;
-			}
-		if (!drawn[p2][p0])
-			{
-			drawn[p2][p0] = 1;
-			drawn[p0][p2] = 1;
-			pe->x1 = pv2[p2].x;
-			pe->y1 = pv2[p2].y;
-			pe->x2 = pv2[p0].x;
-			pe->y2 = pv2[p0].y;
-			++pe;
-			}
+		pcount = *pf++;	/* number of edges for this face */
+		pxvz = 0.0;
+		for (j=0; j<pcount; j++) {
+			p0 = pf[j];
+			pxvz += pxv[p0].z;
 		}
 
+		/* If facet faces away from viewer, don't consider it: */
+		if (pxvz<0.0)
+			continue;
+
+		if (dofaces) {
+			if (numcolors)
+				facecolor = i%numcolors + 1;
+			else	facecolor = 1;
+			XSetForeground(dpy, gc,
+				dbpair.drawbuf->pixels[facecolor]);
+			for (j=0; j<pcount; j++) {
+				p0 = pf[j];
+				ppts[j].x = pv2[p0].x;
+				ppts[j].y = pv2[p0].y;
+			}
+			XFillPolygon(dpy, win, gc, ppts, pcount,
+				Convex, CoordModeOrigin);
+		}
+
+		if (doedges) {
+			for (j=0; j<pcount; j++) {
+				if (j<pcount-1) k=j+1;
+				else k=0;
+				p0 = pf[j];
+				p1 = pf[k];
+				if (!drawn[p0][p1]) {
+					drawn[p0][p1] = 1;
+					drawn[p1][p0] = 1;
+					pe->x1 = pv2[p0].x;
+					pe->y1 = pv2[p0].y;
+					pe->x2 = pv2[p1].x;
+					pe->y2 = pv2[p1].y;
+					++pe;
+				}
+			}
+		}
+		}
 
 	/* Erase previous, draw current icosahedrons; sync for smoothness. */
 
-	XClearArea(dpy, win, prevX, prevY, icoW + 1, icoH + 1, 0);
-	XDrawSegments(dpy, win, gc, edges, pe - edges);
-	XSync(dpy, 0);
+	if (doedges) {
+		if (dofaces) {
+			XSetForeground(dpy, gc, dbpair.drawbuf->pixels[0]);
+				/* use background as foreground color */
+		}
+		else {
+			if (dblbuf)
+				icoClearArea(dbpair.drawbuf->prevX,
+					dbpair.drawbuf->prevY,
+					icoW + 1, icoH + 1);
+			icoClearArea(prevX, prevY, icoW + 1, icoH + 1);
+			if (dblbuf || dofaces)
+				XSetForeground(dpy, gc, dbpair.drawbuf->pixels[
+					dbpair.pixelsperbuf-1]);
+		}
+		XDrawSegments(dpy, win, gc, edges, pe - edges);
 	}
 
+	if (dsync)
+		XSync(dpy, 0);
 
+	if (dblbuf) {
+		dbpair.drawbuf->prevX = icoX;
+		dbpair.drawbuf->prevY = icoY;
+		setDisplayBuf(dbpair.dbufnum);
+	}
+	XSync(dpy, 0);
+	if (dblbuf)
+		dbpair.dbufnum = 1 - dbpair.dbufnum;
+	if (sleepcount) sleep(sleepcount);
+	}
+
+char *xalloc(nbytes)
+int nbytes;
+{
+char *p, *malloc();
+
+	p = malloc((unsigned int)nbytes);
+	if (p) return p;
+	fprintf(stderr,"ico: no more memory\n");
+	exit(1);
+}
+
+initDBufs(fg,bg,planesperbuf)
+int fg,bg;
+int planesperbuf;
+{
+int i,j,jj,j0,j1,k,m,t;
+DBufInfo *b, *otherb;
+
+	dbpair.planesperbuf = planesperbuf;
+	dbpair.pixelsperbuf = 1<<planesperbuf;
+	dbpair.totalplanes = (dblbuf?2:1)*planesperbuf;
+	dbpair.totalpixels = 1<<dbpair.totalplanes;
+	dbpair.plane_masks = (unsigned long *)
+		xalloc(dbpair.totalplanes * sizeof(unsigned long));
+	dbpair.dbufnum = 0;
+	for (i=0; i<(dblbuf?2:1); i++) {
+		b = dbpair.bufs+i;
+		b->plane_masks = dbpair.plane_masks + (i*planesperbuf);
+		b->colors = (XColor *)
+			xalloc(dbpair.totalpixels * sizeof(XColor));
+		b->pixels = (unsigned long *)
+			xalloc(dbpair.pixelsperbuf * sizeof(unsigned long));
+	}
+
+	cmap = XDefaultColormap(dpy,DefaultScreen(dpy));
+	if (!cmap) {
+		icoFatal("can't get default colormap");
+	}
+	t = XAllocColorCells(dpy,cmap,0,
+		dbpair.plane_masks,dbpair.totalplanes, dbpair.pixels,1);
+			/* allocate color planes */
+	if (t==0) {
+		icoFatal("can't allocate color planes");
+	}
+
+	fgcolor.pixel = fg;
+	bgcolor.pixel = bg;
+	XQueryColor(dpy,cmap,&fgcolor);
+	XQueryColor(dpy,cmap,&bgcolor);
+
+	setBufColor(0,&bgcolor);
+	setBufColor(1,&fgcolor);
+	for (i=0; i<(dblbuf?2:1); i++) {
+		b = dbpair.bufs+i;
+		if (dblbuf)
+			otherb = dbpair.bufs+(1-i);
+		for (j0=0; j0<(dblbuf?dbpair.pixelsperbuf:1); j0++) {
+		    for (j1=0; j1<dbpair.pixelsperbuf; j1++) {
+			j = (j0<<dbpair.planesperbuf)|j1;
+			if (i==0) jj=j;
+			else jj= (j1<<dbpair.planesperbuf)|j0;
+			b->colors[jj].pixel = dbpair.pixels[0];
+			for (k=0, m=j; m; k++, m=m>>1) {
+				if (m&1)
+				   b->colors[jj].pixel |= dbpair.plane_masks[k];
+			}
+			b->colors[jj].flags = DoRed | DoGreen | DoBlue;
+		    }
+		}
+		b->prevX = b->prevY = 0;
+		b->enplanemask = 0;
+		for (j=0; j<planesperbuf; j++) {
+			b->enplanemask |= b->plane_masks[j];
+		}
+		for (j=0; j<dbpair.pixelsperbuf; j++) {
+			b->pixels[j] = dbpair.pixels[0];
+			for (k=0, m=j; m; k++, m=m>>1) {
+				if (m&1)
+				   b->pixels[j] |= b->plane_masks[k];
+			}
+		}
+	}
+
+	setDrawBuf(0);
+
+	XSetBackground(dpy, gc, dbpair.bufs[0].pixels[0]);
+	XSetPlaneMask(dpy, gc, AllPlanes);
+	icoClearArea(0, 0, winWidth, winHeight); /* clear entire window */
+	sleep(isleepcount);	/*** doesn't work without this!!! */
+	XSync(dpy,0);
+
+	setDisplayBuf(dblbuf?1:0);
+}
+
+setBufColname(n,colname)
+int n;
+char *colname;
+{
+int t;
+XColor dcolor, color;
+
+	t = XLookupColor(dpy,cmap,colname,&dcolor,&color);
+	if (t==0) {	/* no such color */
+		icoFatal("no such color %s",colname);
+	}
+	setBufColor(n,&color);
+}
+
+setBufColor(n,color)
+int n;		/* color index */
+XColor *color;	/* color to set */
+{
+int i,j,cx;
+DBufInfo *b;
+unsigned long pix;
+
+	for (i=0; i<(dblbuf?2:1); i++) {
+		b = dbpair.bufs+i;
+		for (j=0; j<(dblbuf?dbpair.pixelsperbuf:1); j++) {
+			cx = n + j*dbpair.pixelsperbuf;
+			pix = b->colors[cx].pixel;
+			b->colors[cx] = *color;
+			b->colors[cx].pixel = pix;
+			b->colors[cx].flags = DoRed | DoGreen | DoBlue;
+		}
+	}
+}
+
+setDrawBuf(n)
+int n;
+{
+XGCValues xgcv;
+unsigned long mask;
+
+	dbpair.drawbuf = dbpair.bufs+n;
+	xgcv.plane_mask = dbpair.drawbuf->enplanemask;
+	xgcv.foreground = dbpair.drawbuf->pixels[dbpair.pixelsperbuf-1];
+	xgcv.background = dbpair.drawbuf->pixels[0];
+	mask = GCForeground | GCBackground;
+	if (dblbuf) mask |= GCPlaneMask;
+	XChangeGC(dpy, gc, mask, &xgcv);
+}
+
+setDisplayBuf(n)
+int n;
+{
+	dbpair.dpybuf= dbpair.bufs+n;
+	XStoreColors(dpy,cmap,dbpair.dpybuf->colors,dbpair.totalpixels);
+}
+
+icoFatal(fmt,a0)
+char *fmt;
+{
+	fprintf(stderr,"ico: ");
+	fprintf(stderr,fmt,a0);
+	fprintf(stderr,"\n");
+	exit(1);
+}
 
 /******************************************************************************
  * Description
