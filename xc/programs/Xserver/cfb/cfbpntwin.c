@@ -62,12 +62,13 @@ cfbPaintWindow(pWin, pRegion, what)
 	case BackgroundPixmap:
 	    if (pPrivWin->fastBackground)
 	    {
-		cfbPaintArea32 (pWin, pRegion, what);
+		cfbFillBoxTile32 (pWin, REGION_NUM_RECTS(pRegion), REGION_RECTS(pRegion),
+				  pPrivWin->pRotatedBackground);
 		return;
 	    }
 	    break;
 	case BackgroundPixel:
-	    cfbFillBox (pWin, REGION_NUM_RECTS(pRegion), REGION_RECTS(pRegion),
+	    cfbFillBoxSolid (pWin, REGION_NUM_RECTS(pRegion), REGION_RECTS(pRegion),
 		pWin->background.pixel, TRUE);
 	    return;
     	}
@@ -75,171 +76,19 @@ cfbPaintWindow(pWin, pRegion, what)
     case PW_BORDER:
 	if (pWin->borderIsPixel)
 	{
-	    cfbFillBox (pWin, REGION_NUM_RECTS(pRegion), REGION_RECTS(pRegion),
+	    cfbFillBoxSolid (pWin, REGION_NUM_RECTS(pRegion), REGION_RECTS(pRegion),
 		pWin->border.pixel, TRUE);
 	    return;
 	}
 	else if (pPrivWin->fastBorder)
 	{
-	    cfbPaintArea32 (pWin, pRegion, what);
+	    cfbFillBoxTile32 (pWin, REGION_NUM_RECTS(pRegion), REGION_RECTS(pRegion),
+				  pPrivWin->pRotatedBorder);
 	    return;
 	}
 	break;
     }
     miPaintWindow (pWin, pRegion, what);
-}
-
-/* Tile area with a 32 bit wide tile */
-static void
-cfbPaintArea32(pWin, pRegion, what)
-    WindowPtr pWin;
-    RegionPtr pRegion;
-    int what;		
-{
-    int nbox;		/* number of boxes to fill */
-    register BoxPtr pbox;	/* pointer to list of boxes to fill */
-    int srcpix;	
-    int *psrc;		/* pointer to bits in tile, if needed */
-    int tileHeight;	/* height of the tile */
-
-    PixmapPtr pPixmap;
-    int nlwScreen;	/* width in longwords of the screen's pixmap */
-    int w;		/* width of current box */
-    register int h;	/* height of current box */
-    int startmask;
-    int endmask;	/* masks for reggedy bits at either end of line */
-    int nlwMiddle;	/* number of longwords between sides of boxes */
-    register int nlwExtra;	
-		        /* to get from right of box to left of next span */
-    
-    register int nlw;	/* loop version of nlwMiddle */
-    register int *p;	/* pointer to bits we're writing */
-    int y;		/* current scan line */
-
-
-    int *pbits;		/* pointer to start of screen */
-    cfbPrivWin *pPrivWin;
-
-    if ( pWin->drawable.depth != PSZ )
-	FatalError( "cfbPaintArea32: invalid depth\n" );
-
-    pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
-
-    if (what == PW_BACKGROUND)
-    {
-	tileHeight = pWin->background.pixmap->drawable.height;
-	psrc = (int *)(pPrivWin->pRotatedBackground->devPrivate.ptr);
-    } 
-    else
-    {
-        tileHeight = pWin->border.pixmap->drawable.height;
-	psrc = (int *)(pPrivWin->pRotatedBorder->devPrivate.ptr);
-    } 
-
-    pPixmap = (PixmapPtr)(pWin->drawable.pScreen->devPrivate);
-    pbits = (int *)pPixmap->devPrivate.ptr;
-    nlwScreen = (pPixmap->devKind) >> 2;
-    nbox = REGION_NUM_RECTS(pRegion);
-    pbox = REGION_RECTS(pRegion);
-
-    while (nbox--)
-    {
-	w = pbox->x2 - pbox->x1;
-	h = pbox->y2 - pbox->y1;
-	y = pbox->y1;
-	p = pbits + (pbox->y1 * nlwScreen) + (pbox->x1 >> PWSH);
-
-	if ( ((pbox->x1 & PIM) + w) < PPW)
-	{
-	    maskpartialbits(pbox->x1, w, startmask);
-	    nlwExtra = nlwScreen;
-	    while (h--)
-	    {
-		if (tileHeight)
-		{
-		    srcpix = psrc[y%tileHeight];
-		    y++;
-		}
-		*p = (*p & ~startmask) | (srcpix & startmask);
-		p += nlwExtra;
-	    }
-	}
-	else
-	{
-	    maskbits(pbox->x1, w, startmask, endmask, nlwMiddle);
-	    nlwExtra = nlwScreen - nlwMiddle;
-
-	    if (startmask && endmask)
-	    {
-		nlwExtra -= 1;
-		while (h--)
-		{
-		    if (tileHeight)
-		    {
-			srcpix = psrc[y%tileHeight];
-			y++;
-		    }
-		    nlw = nlwMiddle;
-		    *p = (*p & ~startmask) | (srcpix & startmask);
-		    p++;
-		    while (nlw--)
-			*p++ = srcpix;
-		    *p = (*p & ~endmask) | (srcpix & endmask);
-		    p += nlwExtra;
-		}
-	    }
-	    else if (startmask && !endmask)
-	    {
-		nlwExtra -= 1;
-		while (h--)
-		{
-		    if (tileHeight)
-		    {
-			srcpix = psrc[y%tileHeight];
-			y++;
-		    }
-		    nlw = nlwMiddle;
-		    *p = (*p & ~startmask) | (srcpix & startmask);
-		    p++;
-		    while (nlw--)
-			*p++ = srcpix;
-		    p += nlwExtra;
-		}
-	    }
-	    else if (!startmask && endmask)
-	    {
-		while (h--)
-		{
-		    if (tileHeight)
-		    {
-			srcpix = psrc[y%tileHeight];
-			y++;
-		    }
-		    nlw = nlwMiddle;
-		    while (nlw--)
-			*p++ = srcpix;
-		    *p = (*p & ~endmask) | (srcpix & endmask);
-		    p += nlwExtra;
-		}
-	    }
-	    else /* no ragged bits at either end */
-	    {
-		while (h--)
-		{
-		    if (tileHeight)
-		    {
-			srcpix = psrc[y%tileHeight];
-			y++;
-		    }
-		    nlw = nlwMiddle;
-		    while (nlw--)
-			*p++ = srcpix;
-		    p += nlwExtra;
-		}
-	    }
-	}
-        pbox++;
-    }
 }
 
 static void

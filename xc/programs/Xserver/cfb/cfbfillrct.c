@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: Exp $ */
+/* $XConsortium: cfbfillrct.c,v 5.1 89/07/26 10:41:36 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -31,7 +31,8 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include "cfb.h"
 #include "cfbmskbits.h"
 
-cfbFillBox (pDrawable, nBox, pBox, pixel, isCopy)
+void
+cfbFillBoxSolid (pDrawable, nBox, pBox, pixel, isCopy)
     DrawablePtr	    pDrawable;
     BoxPtr	    pBox;
     unsigned long   pixel;
@@ -73,14 +74,14 @@ cfbFillBox (pDrawable, nBox, pBox, pixel, isCopy)
 	    pdst = pdstRect;
 	    if (isCopy)
 	    {
-	    	while (--h >= 0) {
+	    	while (h--) {
 		    *pdst = (*pdst & ~leftMask) | (fill & leftMask);
 		    pdst += widthDst;
 	    	}
 	    }
 	    else
 	    {
-	    	while (--h >= 0) {
+	    	while (h--) {
 		    *pdst = (*pdst & ~leftMask) | ((fill ^ *pdst) & leftMask);
 		    pdst += widthDst;
 	    	}
@@ -95,12 +96,12 @@ cfbFillBox (pDrawable, nBox, pBox, pixel, isCopy)
 		{
 		    if (rightMask)
 		    {
-    	    	    	while (--h >= 0) {
+    	    	    	while (h--) {
 	    	    	    pdst = pdstRect;
 	    	    	    *pdst = (*pdst & ~leftMask) | (fill & leftMask);
 		    	    pdst++;
 	    	    	    m = nmiddle;
-	    	    	    while (--m >= 0)
+	    	    	    while (m--)
 	    	    	    	*pdst++ = fill;
 	    	    	    *pdst = (*pdst & ~rightMask) | (fill & rightMask);
 		    	    pdstRect += widthDst;
@@ -108,12 +109,12 @@ cfbFillBox (pDrawable, nBox, pBox, pixel, isCopy)
 		    }
 		    else
 		    {
-    	    	    	while (--h >= 0) {
+    	    	    	while (h--) {
 	    	    	    pdst = pdstRect;
 	    	    	    *pdst = (*pdst & ~leftMask) | (fill & leftMask);
 		    	    pdst++;
 	    	    	    m = nmiddle;
-	    	    	    while (--m >= 0)
+	    	    	    while (m--)
 	    	    	    	*pdst++ = fill;
 		    	    pdstRect += widthDst;
     	    	    	}
@@ -123,10 +124,10 @@ cfbFillBox (pDrawable, nBox, pBox, pixel, isCopy)
 		{
 		    if (rightMask)
 		    {
-    	    	    	while (--h >= 0) {
+    	    	    	while (h--) {
 	    	    	    pdst = pdstRect;
 	    	    	    m = nmiddle;
-	    	    	    while (--m >= 0)
+	    	    	    while (m--)
 	    	    	    	*pdst++ = fill;
 	    	    	    *pdst = (*pdst & ~rightMask) | (fill & rightMask);
 		    	    pdstRect += widthDst;
@@ -134,11 +135,11 @@ cfbFillBox (pDrawable, nBox, pBox, pixel, isCopy)
 		    }
 		    else
 		    {
-			while (--h >= 0)
+			while (h--)
 			{
 			    pdst = pdstRect;
 			    m = nmiddle;
-			    while (--m >= 0)
+			    while (m--)
 				*pdst++ = fill;
 			    pdstRect += widthDst;
 			}
@@ -147,7 +148,7 @@ cfbFillBox (pDrawable, nBox, pBox, pixel, isCopy)
 	    }
 	    else
 	    {
-    	    	while (--h >= 0) {
+    	    	while (h--) {
 	    	    pdst = pdstRect;
 	    	    if (leftMask)
 		    {
@@ -155,7 +156,7 @@ cfbFillBox (pDrawable, nBox, pBox, pixel, isCopy)
 		    	pdst++;
 		    }
 	    	    m = nmiddle;
-	    	    while (--m >= 0)
+	    	    while (m--)
 	    	    	*pdst++ ^= fill;
 	    	    if (rightMask)
 	    	    	*pdst = (*pdst & ~rightMask) | ((fill ^ *pdst) & rightMask);
@@ -163,6 +164,145 @@ cfbFillBox (pDrawable, nBox, pBox, pixel, isCopy)
     	    	}
 	    }
 	}
+    }
+}
+
+void
+cfbFillBoxTile32 (pDrawable, nBox, pBox, tile)
+    DrawablePtr	    pDrawable;
+    int		    nBox;	/* number of boxes to fill */
+    register BoxPtr pBox;	/* pointer to list of boxes to fill */
+    PixmapPtr	    tile;	/* rotated, expanded tile */
+{
+    int srcpix;	
+    int *psrc;		/* pointer to bits in tile, if needed */
+    int tileHeight;	/* height of the tile */
+
+    int nlwDst;		/* width in longwords of the dest pixmap */
+    int w;		/* width of current box */
+    register int h;	/* height of current box */
+    unsigned long startmask;
+    unsigned long endmask;	/* masks for reggedy bits at either end of line */
+    int nlwMiddle;	/* number of longwords between sides of boxes */
+    register int nlwExtra;	
+		        /* to get from right of box to left of next span */
+    
+    register int nlw;	/* loop version of nlwMiddle */
+    register unsigned long *p;	/* pointer to bits we're writing */
+    int y;		/* current scan line */
+    int srcy;		/* current tile position */
+
+    unsigned long *pbits;/* pointer to start of pixmap */
+
+    tileHeight = tile->drawable.height;
+    psrc = (int *)tile->devPrivate.ptr;
+
+    if (pDrawable->type == DRAWABLE_WINDOW)
+    {
+	pbits = (unsigned long *)
+		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
+	nlwDst = (int)
+		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
+    }
+    else
+    {
+	pbits = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
+	nlwDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
+    }
+
+    while (nBox--)
+    {
+	w = pBox->x2 - pBox->x1;
+	h = pBox->y2 - pBox->y1;
+	y = pBox->y1;
+	p = pbits + (pBox->y1 * nlwDst) + (pBox->x1 >> PWSH);
+	srcy = y % tileHeight;
+
+	if ( ((pBox->x1 & PIM) + w) < PPW)
+	{
+	    maskpartialbits(pBox->x1, w, startmask);
+	    nlwExtra = nlwDst;
+	    while (h--)
+	    {
+		srcpix = psrc[srcy];
+		++srcy;
+		if (srcy == tileHeight)
+		    srcy = 0;
+		*p = (*p & ~startmask) | (srcpix & startmask);
+		p += nlwExtra;
+	    }
+	}
+	else
+	{
+	    maskbits(pBox->x1, w, startmask, endmask, nlwMiddle);
+	    nlwExtra = nlwDst - nlwMiddle;
+
+	    if (startmask && endmask)
+	    {
+		nlwExtra -= 1;
+		while (h--)
+		{
+		    srcpix = psrc[srcy];
+		    ++srcy;
+		    if (srcy == tileHeight)
+		        srcy = 0;
+		    nlw = nlwMiddle;
+		    *p = (*p & ~startmask) | (srcpix & startmask);
+		    p++;
+		    while (nlw--)
+			*p++ = srcpix;
+		    *p = (*p & ~endmask) | (srcpix & endmask);
+		    p += nlwExtra;
+		}
+	    }
+	    else if (startmask && !endmask)
+	    {
+		nlwExtra -= 1;
+		while (h--)
+		{
+		    srcpix = psrc[srcy];
+		    ++srcy;
+		    if (srcy == tileHeight)
+		        srcy = 0;
+		    nlw = nlwMiddle;
+		    *p = (*p & ~startmask) | (srcpix & startmask);
+		    p++;
+		    while (nlw--)
+			*p++ = srcpix;
+		    p += nlwExtra;
+		}
+	    }
+	    else if (!startmask && endmask)
+	    {
+		while (h--)
+		{
+		    srcpix = psrc[srcy];
+		    ++srcy;
+		    if (srcy == tileHeight)
+		        srcy = 0;
+		    nlw = nlwMiddle;
+		    while (nlw--)
+			*p++ = srcpix;
+		    *p = (*p & ~endmask) | (srcpix & endmask);
+		    p += nlwExtra;
+		}
+	    }
+	    else /* no ragged bits at either end */
+	    {
+		while (h--)
+		{
+		    srcpix = psrc[srcy];
+		    ++srcy;
+		    if (srcy == tileHeight)
+		        srcy = 0;
+		    nlw = nlwMiddle;
+		    while (nlw--)
+			*p++ = srcpix;
+		    p += nlwExtra;
+		}
+	    }
+	}
+        pBox++;
     }
 }
 
@@ -185,6 +325,8 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     int numRects;
     Bool isCopy;
     Pixel pixel;
+    Bool fillTiled;
+    PixmapPtr	pTile;
 
     priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
     prgnClip = priv->pCompositeClip;
@@ -195,13 +337,23 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     if (!pboxClippedBase)
 	return;
 
+    if (pGC->fillStyle == FillTiled)
+    {
+	pTile = ((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
+							pRotatedTile;
+	fillTiled = TRUE;
+    }
+    else
+    {
+    	isCopy = pGC->alu == GXcopy;
+    	pixel = pGC->fgPixel;
+    	if (pGC->alu == GXinvert)
+	    pixel = pGC->planemask;
+	fillTiled = FALSE;
+    }
     prect = prectInit;
     xorg = pDrawable->x;
     yorg = pDrawable->y;
-    isCopy = pGC->alu == GXcopy;
-    pixel = pGC->fgPixel;
-    if (pGC->alu == GXinvert)
-	pixel = pGC->planemask;
     if (xorg || yorg)
     {
         prect = prectInit;
@@ -257,7 +409,10 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	  case rgnOUT:
 	    break;
 	  case rgnIN:
-	    cfbFillBox (pDrawable, 1, &box, pixel, isCopy);
+	    if (fillTiled)
+		cfbFillBoxTile32 (pDrawable, 1, &box, pTile);
+	    else
+		cfbFillBoxSolid (pDrawable, 1, &box, pixel, isCopy);
 	    break;
 	  case rgnPART:
 	    pboxClipped = pboxClippedBase;
@@ -282,8 +437,12 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 		    pboxClipped++;
 	        }
 	    }
-	    cfbFillBox (pDrawable, pboxClipped-pboxClippedBase, 
-		   pboxClippedBase, pixel, isCopy);
+	    if (fillTiled)
+		cfbFillBoxTile32 (pDrawable, pboxClipped-pboxClippedBase, 
+				 pboxClippedBase, pTile);
+	    else
+		cfbFillBoxSolid (pDrawable, pboxClipped-pboxClippedBase, 
+				 pboxClippedBase, pixel, isCopy);
 	    break;
 	}
     }

@@ -170,6 +170,8 @@ cfbCreateGC(pGC)
     pPriv->rop = pGC->alu;
     pPriv->fExpose = TRUE;
     pPriv->freeCompClip = FALSE;
+    pPriv->pRotatedTile = (PixmapPtr) NULL;
+    pPriv->pRotatedStipple = (PixmapPtr) NULL;
     return TRUE;
 }
 
@@ -243,8 +245,13 @@ cfbValidateGC(pGC, changes, pDrawable)
     int         mask;		/* stateChanges */
     int         index;		/* used for stepping through bitfields */
     int         new_line, new_text, new_fillspans, new_fillrct;
+    int		new_rotate;
+    int		xrot, yrot;
     /* flags for changing the proc vector */
     cfbPrivGCPtr devPriv;
+
+    new_rotate = pGC->lastWinOrg.x != pDrawable->x ||
+		 pGC->lastWinOrg.y != pDrawable->y;
 
     pGC->lastWinOrg.x = pDrawable->x;
     pGC->lastWinOrg.y = pDrawable->y;
@@ -410,20 +417,9 @@ cfbValidateGC(pGC, changes, pDrawable)
 	case GCFillRule:
 	    break;
 	case GCTile:
-	    if (!pGC->tileIsPixel)
-	    {
-		int width = pGC->tile.pixmap->drawable.width * PSZ;
-		PixmapPtr ntile;
-
-		if ((width <= 32) && !(width & (width - 1)) &&
-		    (ntile = cfbCopyPixmap(pGC->tile.pixmap)))
-		{
-		    (void)cfbPadPixmap(ntile);
-		    cfbDestroyPixmap(pGC->tile.pixmap);
-		    pGC->tile.pixmap = ntile;
-		}
-	    }
 	    new_fillspans = TRUE;
+	    new_fillrct = TRUE;
+	    break;
 	    break;
 
 	case GCStipple:
@@ -441,6 +437,14 @@ cfbValidateGC(pGC, changes, pDrawable)
 		}
 	    }
 	    new_fillspans = TRUE;
+	    break;
+
+	case GCTileStipXOrigin:
+	    new_rotate = TRUE;
+	    break;
+
+	case GCTileStipYOrigin:
+	    new_rotate = TRUE;
 	    break;
 
 	case GCFont:
@@ -473,6 +477,41 @@ cfbValidateGC(pGC, changes, pDrawable)
      */
     if (pDrawable->serialNumber != (pGC->serialNumber & (DRAWABLE_SERIAL_BITS))) {
 	new_fillspans = TRUE;	/* deal with FillSpans later */
+    }
+
+    if (new_rotate || new_fillspans)
+    {
+	xrot = pGC->patOrg.x + pDrawable->x;
+	yrot = pGC->patOrg.y + pDrawable->y;
+
+	if (devPriv->pRotatedTile)
+	{
+	    cfbDestroyPixmap (devPriv->pRotatedTile);
+	    devPriv->pRotatedTile = (PixmapPtr) NULL;
+	}
+
+	switch (pGC->fillStyle)
+	{
+	case FillTiled:
+	    if (!pGC->tileIsPixel)
+	    {
+		int width = pGC->tile.pixmap->drawable.width * PSZ;
+
+		if ((width <= 32) && !(width & (width - 1)))
+		{
+		    devPriv->pRotatedTile = cfbCopyPixmap (pGC->tile.pixmap);
+		    if (devPriv->pRotatedTile)
+		    {
+			(void)cfbPadPixmap(devPriv->pRotatedTile);
+			if (xrot)
+			    cfbXRotatePixmap(devPriv->pRotatedTile, xrot);
+			if (yrot)
+			    cfbYRotatePixmap(devPriv->pRotatedTile, yrot);
+		    }
+		}
+	    }
+	    break;
+	}
     }
 
     if (new_line || new_fillspans || new_text || new_fillrct)
@@ -581,12 +620,23 @@ cfbValidateGC(pGC, changes, pDrawable)
 
     if (new_fillrct) {
 	pGC->ops->PolyFillRect = miPolyFillRect;
-	if (pGC->fillStyle == FillSolid &&
-	    (((pGC->alu == GXcopy || pGC->alu == GXxor) &&
-	      ((pGC->planemask & PMSK) == PMSK)) ||
-	     pGC->alu == GXinvert))
+	switch (pGC->fillStyle)
 	{
-	    pGC->ops->PolyFillRect = cfbPolyFillRect;
+	case FillSolid:
+	    if (((pGC->alu == GXcopy || pGC->alu == GXxor) &&
+		((pGC->planemask & PMSK) == PMSK)) ||
+		pGC->alu == GXinvert)
+	    {
+		pGC->ops->PolyFillRect = cfbPolyFillRect;
+	    }
+	    break;
+	case FillTiled:
+	    if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK &&
+	        devPriv->pRotatedTile)
+	    {
+		pGC->ops->PolyFillRect = cfbPolyFillRect;
+	    }
+	    break;
 	}
     }
 }
