@@ -1,4 +1,4 @@
-/* $XConsortium: Clock.c,v 1.64 91/07/23 12:22:43 rws Exp $ */
+/* $XConsortium: Clock.c,v 1.65 91/08/14 12:12:56 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -160,8 +160,10 @@ static void ClassInitialize()
 }
 
 /* ARGSUSED */
-static void Initialize (request, new)
+static void Initialize (request, new, args, num_args)
     Widget request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
     ClockWidget w = (ClockWidget)new;
     XtGCMask		valuemask;
@@ -760,8 +762,10 @@ double x;
 }
 
 /* ARGSUSED */
-static Boolean SetValues (gcurrent, grequest, gnew)
+static Boolean SetValues (gcurrent, grequest, gnew, args, num_args)
     Widget gcurrent, grequest, gnew;
+    ArgList args;
+    Cardinal *num_args;
 {
       ClockWidget current = (ClockWidget) gcurrent;
       ClockWidget new = (ClockWidget) gnew;
