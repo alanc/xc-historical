@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pcfread.c,v 1.3 91/05/26 16:47:43 rws Exp $
+ * $XConsortium: pcfread.c,v 1.4 91/05/30 19:07:21 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -461,21 +461,7 @@ pcfReadFont(pFont, file, bit, byte, glyph, scan)
 	bitmaps = padbitmaps;
     }
     for (i = 0; i < nbitmaps; i++)
-    {
-	xCharInfo  *metric;
-	metric = &metrics[i].metrics;
-	if (metric->ascent == -metric->descent)
-	{
-	    static char	empty[4];
-	    metric->descent = 1 - metric->ascent;
-	    metric->leftSideBearing = metric->rightSideBearing = 0;
-	    metrics[i].bits = empty;
-	}
-	else
-	{
-	    metrics[i].bits = bitmaps + offsets[i];
-	}
-    }
+	metrics[i].bits = bitmaps + offsets[i];
 
     xfree(offsets);
 
