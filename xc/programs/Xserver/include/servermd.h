@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.42 89/07/21 13:58:03 keith Exp $ */
+/* $XConsortium: servermd.h,v 1.43 89/07/27 17:02:07 keith Exp $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -67,7 +67,34 @@ SOFTWARE.
  * hand, even if you have chosen GLYPHPADBYTES == 1 to save space, you may
  * also decide that the computing involved in aligning the pointer is more
  * costly than an odd-address access; you choose GETLEFTBITS_ALIGNMENT == 1.
- * 
+ *
+ * Next, choose the tuning parameters which are appropriate for your
+ * hardware; these modify the behaviour of the raw frame buffer code
+ * in ddx/mfb and ddx/cfb.  Defining these incorrectly will not cause
+ * the server to run incorrectly, but defining these correctly will
+ * cause some noticeable speed improvements:
+ *
+ *  AVOID_FRAME_BUFFER_READ - (8-bit cfb only)
+ *	When stippling pixels on the screen (polytext and pushpixels),
+ *	don't read long words from the display and mask in the
+ *	appropriate values.  Rather, perform multiple byte/short/long
+ *	writes as appropriate.  This option uses many more instructions
+ *	but runs much faster when the destination is much slower than
+ *	the CPU and at least 1 level of write buffer is availible (2
+ *	is much better).  Defined currently for SPARC and MIPS.
+ *
+ *  FAST_CONSTANT_OFFSET_MODE - (cfb and mfb)
+ *	This define is used on machines which have no auto-increment
+ *	addressing mode, but do have an effectively free constant-offset
+ *	addressing mode. MIPS and SPARC use this currently.
+ *	
+ *  LARGE_INSTRUCTION_CACHE -
+ *	This define increases the number of times some loops are
+ *	unrolled.  On 68020 machines (with 256 bytes of i-cache),
+ *	this define will slow execution down as instructions miss
+ *	the cache frequently.  On machines with real i-caches, this
+ *	reduces loop overhead, causing a slight performance improvement.
+ *	Currently defined for MIPS and SPARC
  */
 
 #ifdef vax
@@ -88,8 +115,14 @@ SOFTWARE.
 #define BITMAP_BIT_ORDER	MSBFirst
 # endif
 
+#   ifdef sparc
+#    define AVOID_MEMORY_READ
+#    define FAST_CONSTANT_OFFSET_MODE
+#    define LARGE_INSTRUCTION_CACHE
+#   endif
+
 #define	GLYPHPADBYTES		4
-#define GETLEFTBITS_ALIGNMENT	4
+#define GETLEFTBITS_ALIGNMENT	1
 
 # else
 #  ifdef apollo
@@ -114,7 +147,7 @@ SOFTWARE.
 #define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the HP only */
 #define BITMAP_BIT_ORDER	MSBFirst
 #define	GLYPHPADBYTES		4
-#define	GETLEFTBITS_ALIGNMENT	4
+#define	GETLEFTBITS_ALIGNMENT	1
 
 #    else
 #     if defined(M4315) || defined(M4317) || defined(M4319) || defined(M4330)
@@ -149,6 +182,11 @@ SOFTWARE.
 #define GETLEFTBITS_ALIGNMENT	1
 
 #        endif
+
+#        define AVOID_MEMORY_READ
+#        define FAST_CONSTANT_OFFSET_MODE
+#        define LARGE_INSTRUCTION_CACHE
+
 #       endif
 #      endif
 #     endif
