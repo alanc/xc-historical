@@ -1,4 +1,4 @@
-/* $XConsortium: cp_rcom.c,v 5.3 91/03/28 17:10:37 rws Exp $ */
+/* $XConsortium: cp_rcom.c,v 5.4 91/03/29 09:33:16 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -29,7 +29,6 @@ SOFTWARE.
 #include "phg.h"
 #include "cp.h"
 #include "cp_priv.h"
-#include <memory.h>
 
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
  * systems are broken and return EWOULDBLOCK when they should return EAGAIN
