@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.215 94/03/08 23:07:32 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.216 94/03/12 17:55:05 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -44,12 +44,12 @@ xthread_t (*_Xthread_self_fn)() = NULL;
 #define XThread_Self()	((*_Xthread_self_fn)())
 
 #define UnlockNextReplyReader(d) if ((d)->lock) \
-    (*(d)->lock->pop_reader)((d),NULL, &(d)->lock->reply_awaiters,&(d)->lock->reply_awaiters_tail)
+    (*(d)->lock->pop_reader)((d),&(d)->lock->reply_awaiters,&(d)->lock->reply_awaiters_tail)
 
 #define QueueReplyReaderLock(d) ((d)->lock ? \
-    (*(d)->lock->push_reader)(&(d)->lock->reply_awaiters_tail) : NULL)
+    (*(d)->lock->push_reader)(d,&(d)->lock->reply_awaiters_tail) : NULL)
 #define QueueEventReaderLock(d) ((d)->lock ? \
-    (*(d)->lock->push_reader)(&(d)->lock->event_awaiters_tail) : NULL)
+    (*(d)->lock->push_reader)(d,&(d)->lock->event_awaiters_tail) : NULL)
 
 #if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
 #define InternalLockDisplay(d,wskip) if ((d)->lock) \
@@ -62,7 +62,7 @@ xthread_t (*_Xthread_self_fn)() = NULL;
 #else /* XTHREADS else */
 
 #define UnlockNextReplyReader(d)   
-#define UnlockNextEventReader(d,c)
+#define UnlockNextEventReader(d)
 #define InternalLockDisplay(d,wskip)
 
 #endif /* XTHREADS else */ 
@@ -689,7 +689,7 @@ _XEventsQueued (dpy, mode)
 	    cvl = QueueEventReaderLock(dpy);
 	}
 
-	if (dpy->lock && cvl && dpy->lock->reply_awaiters) {
+	while (dpy->lock && cvl && dpy->lock->reply_first) {
 	    /* note which events we have already seen so we'll know
 	       if _XReply (in another thread) reads one */
 	    entry_event_serial_num = dpy->next_event_serial_num;
@@ -697,7 +697,7 @@ _XEventsQueued (dpy, mode)
 	    /* did _XReply read an event we can return? */
 	    if (_XNewerQueuedEvent(dpy, entry_event_serial_num))
 	    {
-		UnlockNextEventReader(dpy, cvl);
+		UnlockNextEventReader(dpy);
 		return 0;
 	    }
 	}
@@ -748,7 +748,7 @@ _XEventsQueued (dpy, mode)
 #endif /* XCONN_CHECK_FREQ */
 	if (!(len = pend)) {
 	    /* _XFlush can enqueue events */
-	    UnlockNextEventReader(dpy, cvl);
+	    UnlockNextEventReader(dpy);
 	    return(dpy->qlen);
 	}
       /* Force a read if there is not enough data.  Otherwise,
@@ -784,14 +784,15 @@ _XEventsQueued (dpy, mode)
 #ifdef XTHREADS
 	/* what did we actually read: reply or event? */
 	if (dpy->lock && dpy->lock->reply_awaiters) {
-	    if (((xReply *)read_buf)->generic.type == X_Reply)
+	    if (((xReply *)read_buf)->generic.type == X_Reply ||
+		((xReply *)read_buf)->generic.type == X_Error)
 	    {
 		dpy->lock->reply_was_read = True;
+		dpy->lock->reply_first = True;
 		if (read_buf != (char *)dpy->lock->reply_awaiters->buf)
 		    memcpy(dpy->lock->reply_awaiters->buf, read_buf,
 			   len);
-		ConditionSignal(dpy, dpy->lock->reply_awaiters->cv);
-		UnlockNextEventReader(dpy, cvl);
+		UnlockNextEventReader(dpy);
 		return(dpy->qlen); /* we read, so we can return */
 	    } else if (read_buf != buf.buf)
 		memcpy(buf.buf, read_buf, len);
@@ -815,7 +816,7 @@ _XEventsQueued (dpy, mode)
 	    }
 	} ENDITERATE
 
-	UnlockNextEventReader(dpy, cvl);
+	UnlockNextEventReader(dpy);
 	return(dpy->qlen);
 }
 
@@ -855,19 +856,19 @@ _XReadEvents(dpy)
 	    || (!xthread_equal(self, dpy->lock->conni_thread)
 		&& !xthread_equal(self, dpy->lock->locking_thread)))
 	    cvl = QueueEventReaderLock(dpy);
+#endif /* XTHREADS */
 
-	/* if it is not our turn to read an event off the wire,
-	   wait til we're at head of list */
-	if (dpy->lock && cvl &&
-	    (dpy->lock->event_awaiters != cvl || dpy->lock->reply_awaiters)) {
-	    ConditionWait(dpy, cvl->cv);
-	    /* have we read an event we can return? */
-	    if (_XNewerQueuedEvent(dpy, entry_event_serial_num))
-		goto got_event;
-	}
-#endif /* XTHREADS*/
-
-	for (;;) {
+	do {
+#ifdef XTHREADS
+	    /* if it is not our turn to read an event off the wire,
+	       wait til we're at head of list */
+	    if (dpy->lock && cvl &&
+		(dpy->lock->event_awaiters != cvl ||
+		 dpy->lock->reply_first)) {
+		ConditionWait(dpy, cvl->cv);
+		continue;
+	    }
+#endif /* XTHREADS */
 	    /* find out how much data can be read */
 	    if (_X11TransBytesReadable(dpy->trans_conn, &pend) < 0)
 	    	_XIOError(dpy);
@@ -923,7 +924,18 @@ _XReadEvents(dpy)
 	    if (i == -2) {
 		/* special flag from _XRead to say that internal connection has
 		   done XPutBackEvent.  Which we can use so we're done. */
-		goto got_event;
+	      got_event:
+#ifdef XTHREADS
+		if (dpy->lock && dpy->lock->lock_wait) {
+		    if (dpy->lock->event_awaiters != cvl)
+			/* since it is not us, must be user lock thread */
+			ConditionSignal(dpy,
+					dpy->lock->event_awaiters->cv);
+		    (*dpy->lock->lock_wait)(dpy);
+		    continue;
+		}
+#endif
+		break;
 	    }
 #ifdef XTHREADS
 	    if (xthread_have_id(self))
@@ -931,15 +943,15 @@ _XReadEvents(dpy)
 
 	    /* what did we actually read: reply or event? */
 	    if (dpy->lock && dpy->lock->reply_awaiters) {
-		if (((xReply *)read_buf)->generic.type == X_Reply)
+		if (((xReply *)read_buf)->generic.type == X_Reply ||
+		    ((xReply *)read_buf)->generic.type == X_Error)
 		{
 		    dpy->lock->reply_was_read = True;
+		    dpy->lock->reply_first = True;
 		    if (read_buf != (char *)dpy->lock->reply_awaiters->buf)
 			memcpy(dpy->lock->reply_awaiters->buf,
 			       read_buf, len);
 		    ConditionSignal(dpy, dpy->lock->reply_awaiters->cv);
-		    /* useless to us, so keep trying */
-		    ConditionWait(dpy, cvl->cv);
 		    continue;
 		} else if (read_buf != buf.buf)
 		    memcpy(buf.buf, read_buf, len);
@@ -962,24 +974,9 @@ _XReadEvents(dpy)
 		    len -= SIZEOF(xReply);
 		}
 	    } ENDITERATE;
+	} while (!_XNewerQueuedEvent(dpy, entry_event_serial_num));
 
-	    if (!_XNewerQueuedEvent(dpy, entry_event_serial_num))
-		continue;
-
-	got_event:
-	    UnlockNextEventReader(dpy, cvl);
-#ifdef XTHREADS
-	    /* If XLockDisplay was called while we were in _XRead,
-	       the thread we just unlocked is that thread,
-	       so we'll have to wait for it. */
-	    if (dpy->lock && dpy->lock->lock_wait) {
-		(*dpy->lock->lock_wait)(dpy);
-		if (!_XNewerQueuedEvent(dpy, entry_event_serial_num))
-		    continue;
-	    }
-#endif
-	    break;
-	}
+	UnlockNextEventReader(dpy);
 }
 
 /* 
@@ -1543,7 +1540,11 @@ _XReply (dpy, rep, extra, discard)
 #ifdef XTHREADS
     /* create our condition variable and append to list */
     cvl = QueueReplyReaderLock(dpy);
-    if (cvl) cvl->buf = rep;
+    if (cvl) {
+	cvl->buf = rep;
+	if (dpy->lock->reply_awaiters == cvl && !dpy->lock->event_awaiters)
+	    dpy->lock->reply_first = True;
+    }
 
 #ifdef XTHREADS_DEBUG
     printf("_XReply called in thread %x, adding %x to cvl\n",
@@ -1557,8 +1558,7 @@ _XReply (dpy, rep, extra, discard)
      * hand control back to us next.
      */
     if(dpy->lock &&
-       (dpy->lock->reply_awaiters != cvl ||
-	(!dpy->lock->reply_was_read && dpy->lock->event_awaiters))) {
+       (dpy->lock->reply_awaiters != cvl || !dpy->lock->reply_first)) {
 	ConditionWait(dpy, cvl->cv);
     }
     dpy->flags |= XlibDisplayReply;
