@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xlcint.h,v 11.2 91/04/06 16:06:00 rws Exp $
+ * $XConsortium: Xlcint.h,v 11.3 91/04/06 18:44:14 rws Exp $
  */
 
 /*
@@ -151,7 +151,7 @@ typedef struct {
 	);
     XFontSet (*create_fontset)(
 #if NeedFunctionPrototypes
-	XLCd, Display*, char*, char***, int*, char**
+	XLCd, Display*, char*, char**, int, char***, int*
 #endif
 	);
     XIM (*open_im)(
@@ -299,16 +299,6 @@ typedef struct {
     XIC (*create_ic)(
 #if NeedFunctionPrototypes
 	XIM, XIMArg*
-#endif
-	);
-    void (*add_ic)(
-#if NeedFunctionPrototypes
-	XIM, XIC
-#endif
-	);
-    void (*remove_ic)(
-#if NeedFunctionPrototypes
-	XIM, XIC
 #endif
 	);
 } XIMMethodsRec, *XIMMethods;
@@ -473,17 +463,10 @@ extern void _XCopyToArg(
 #endif
 );
 
-extern void _XAddIC(
+extern char ** _XParseBaseFontNameList(
 #if NeedFunctionPrototypes
-    XIM		/* im */,
-    XIC		/* ic */
-#endif
-);
-
-extern void _XRemoveIC(
-#if NeedFunctionPrototypes
-    XIM		/* im */,
-    XIC		/* ic */
+    char*		/* str */,
+    int*		/* num */
 #endif
 );
 
