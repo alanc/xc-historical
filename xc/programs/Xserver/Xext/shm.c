@@ -17,7 +17,7 @@ without any express or implied warranty.
 
 /* EXPERIMENTAL! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
 
-/* $XConsortium: shm.c,v 1.7 91/05/12 17:13:30 rws Exp $ */
+/* $XConsortium: shm.c,v 1.8 91/05/12 17:54:53 rws Exp $ */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -681,6 +681,7 @@ SProcShmAttach(client)
     register int n;
     REQUEST(xShmAttachReq);
     swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xShmAttachReq);
     swapl(&stuff->shmseg, n);
     swapl(&stuff->shmid, n);
     return ProcShmAttach(client);
@@ -693,6 +694,7 @@ SProcShmDetach(client)
     register int n;
     REQUEST(xShmDetachReq);
     swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xShmDetachReq);
     swapl(&stuff->shmseg, n);
     return ProcShmDetach(client);
 }
@@ -704,6 +706,7 @@ SProcShmPutImage(client)
     register int n;
     REQUEST(xShmPutImageReq);
     swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xShmPutImageReq);
     swapl(&stuff->drawable, n);
     swapl(&stuff->gc, n);
     swaps(&stuff->totalWidth, n);
@@ -726,6 +729,7 @@ SProcShmGetImage(client)
     register int n;
     REQUEST(xShmGetImageReq);
     swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xShmGetImageReq);
     swapl(&stuff->drawable, n);
     swaps(&stuff->x, n);
     swaps(&stuff->y, n);
@@ -744,6 +748,7 @@ SProcShmCreatePixmap(client)
     register int n;
     REQUEST(xShmCreatePixmapReq);
     swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xShmCreatePixmapReq);
     swapl(&stuff->drawable, n);
     swaps(&stuff->width, n);
     swaps(&stuff->height, n);

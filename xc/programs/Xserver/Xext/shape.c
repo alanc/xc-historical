@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 5.13 90/06/07 13:21:40 rws Exp $ */
+/* $XConsortium: shape.c,v 5.14 91/03/13 09:48:50 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -900,6 +900,7 @@ SProcShapeRectangles (client)
     REQUEST (xShapeRectanglesReq);
 
     swaps (&stuff->length, n);
+    REQUEST_AT_LEAST_SIZE (xShapeRectanglesReq);
     swapl (&stuff->dest, n);
     swaps (&stuff->xOff, n);
     swaps (&stuff->yOff, n);
@@ -915,6 +916,7 @@ SProcShapeMask (client)
     REQUEST (xShapeMaskReq);
 
     swaps (&stuff->length, n);
+    REQUEST_SIZE_MATCH (xShapeMaskReq);
     swapl (&stuff->dest, n);
     swaps (&stuff->xOff, n);
     swaps (&stuff->yOff, n);
@@ -930,6 +932,7 @@ SProcShapeCombine (client)
     REQUEST (xShapeCombineReq);
 
     swaps (&stuff->length, n);
+    REQUEST_SIZE_MATCH (xShapeCombineReq);
     swapl (&stuff->dest, n);
     swaps (&stuff->xOff, n);
     swaps (&stuff->yOff, n);
@@ -945,6 +948,7 @@ SProcShapeOffset (client)
     REQUEST (xShapeOffsetReq);
 
     swaps (&stuff->length, n);
+    REQUEST_SIZE_MATCH (xShapeOffsetReq);
     swapl (&stuff->dest, n);
     swaps (&stuff->xOff, n);
     swaps (&stuff->yOff, n);
@@ -959,6 +963,7 @@ SProcShapeQueryExtents (client)
     REQUEST (xShapeQueryExtentsReq);
 
     swaps (&stuff->length, n);
+    REQUEST_SIZE_MATCH (xShapeQueryExtentsReq);
     swapl (&stuff->window, n);
     return ProcShapeQueryExtents (client);
 }
@@ -971,6 +976,7 @@ SProcShapeSelectInput (client)
     REQUEST (xShapeSelectInputReq);
 
     swaps (&stuff->length, n);
+    REQUEST_SIZE_MATCH (xShapeSelectInputReq);
     swapl (&stuff->window, n);
     return ProcShapeSelectInput (client);
 }
@@ -983,6 +989,7 @@ SProcShapeInputSelected (client)
     REQUEST (xShapeInputSelectedReq);
 
     swaps (&stuff->length, n);
+    REQUEST_SIZE_MATCH (xShapeInputSelectedReq);
     swapl (&stuff->window, n);
     return ProcShapeInputSelected (client);
 }
@@ -995,6 +1002,7 @@ SProcShapeGetRectangles (client)
     register char   n;
 
     swaps (&stuff->length, n);
+    REQUEST_SIZE_MATCH(xShapeGetRectanglesReq);
     swapl (&stuff->window, n);
     return ProcShapeGetRectangles (client);
 }
