@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XLockDis.c,v 1.1 93/06/21 17:27:18 gildea Exp $
+ * $XConsortium: XLockDis.c,v 1.2 93/06/25 16:27:30 gildea Exp $
  *
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -25,24 +25,26 @@
  * XLockDis.c - multi-thread application-level locking routines
  */
 
+#include "Xlibint.h"
+
 #ifdef XTHREADS
 
-#include "Xlibint.h"
 #include "locking.h"
 
 static void _XFancyLockDisplay();
 static void _XDisplayLockWait();
 
+#endif /* XTHREADS */
+
 #if NeedFunctionPrototypes
-Status XLockDisplay(
+void XLockDisplay(
     register Display* dpy)
 #else
-Status XLockDisplay(dpy)
+void XLockDisplay(dpy)
     register Display* dpy;
 #endif
 {
-    cthread_t self = cthread_self();
-
+#ifdef XTHREADS
     LockDisplay(dpy);
     if (dpy->lock) {
 	/* substitute fancier, slower lock function */
@@ -52,18 +54,20 @@ Status XLockDisplay(dpy)
 	if (dpy->lock->locking_thread) {
 	    /* XXX - we are in XLockDisplay, error.  Print message? */
 	}
-	dpy->lock->locking_thread = self;
+	dpy->lock->locking_thread = cthread_self();
     }
+#endif
 }
 
 #if NeedFunctionPrototypes
-Status XUnlockDisplay(
+void XUnlockDisplay(
     register Display* dpy)
 #else
-Status XUnlockDisplay(dpy)
+void XUnlockDisplay(dpy)
     register Display* dpy;
 #endif
 {
+#ifdef XTHREADS
     if (dpy->lock) {
 	if (!dpy->lock->locking_thread) {
 	    /* XXX - we are not in XLockDisplay, error.  Print message? */
@@ -75,7 +79,10 @@ Status XUnlockDisplay(dpy)
 	dpy->lock->locking_thread = 0;
     }
     UnlockDisplay(dpy);
+#endif
 }
+
+#ifdef XTHREADS
 
 /*
  * wait for thread with user-level display lock to release it.
@@ -107,6 +114,4 @@ static void _XFancyLockDisplay(dpy, file, line)
     _XDisplayLockWait(dpy);
 }
 
-#else /* XTHREADS */
-static int unused;		/* always create a symbol table */
 #endif /* XTHREADS */
