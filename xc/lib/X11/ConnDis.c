@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.50 89/06/21 10:45:26 jim Exp $
+ * $XConsortium: XConnDis.c,v 11.51 89/06/21 14:49:47 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -35,10 +35,6 @@
 
 #ifndef X_CONNECTION_RETRIES		/* number retries on ECONNREFUSED */
 #define X_CONNECTION_RETRIES 5
-#endif
-
-#ifndef STREAMSCONN
-#define DO_RETRIES
 #endif
 
 extern char *getenv();
@@ -268,22 +264,12 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
      * being a server listening at all, which is why we have to not retry
      * too many times).
      */
-#ifdef DO_RETRIES
     if ((p = getenv ("XRETRIES")) != NULL) {
 	retries = atoi (p);
     }
-    do {
-#endif
-	errno = 0;
-	fd = (*connfunc) (phostname, idisplay, familyp, saddrlenp, saddrp);
-#ifdef DO_RETRIES
-	if (fd >= 0 || errno != ECONNREFUSED) break;
-	sleep (1);
-    } while (retries-- > 0);
-#endif
-    if (fd < 0) {
-	goto bad;
-    }
+    if ((fd = (*connfunc) (phostname, idisplay, retries,
+			   familyp, saddrlenp, saddrp)) < 0)
+      goto bad;
 
 
     /*
@@ -374,10 +360,11 @@ void bcopy();
 
 
 #ifdef DNETCONN
-static int MakeDECnetConnection (phostname, idisplay,
+static int MakeDECnetConnection (phostname, idisplay, retries,
 				 familyp, saddrlenp, saddrp)
     char *phostname;
     int idisplay;
+    int retries;
     int *familyp;			/* RETURN */
     int *saddrlenp;			/* RETURN */
     char **saddrp;			/* RETURN */
@@ -396,7 +383,8 @@ static int MakeDECnetConnection (phostname, idisplay,
     sprintf (objname, "X$X%d", idisplay);
 
     /*
-     * Attempt to open the DECnet connection, return -1 if fails.
+     * Attempt to open the DECnet connection, return -1 if fails; ought to
+     * do some retries here....
      */
     if ((fd = dnet_conn (phostname, objname, SOCK_STREAM, 0, 0, 0, 0)) < 0) {
 	return -1;
@@ -433,10 +421,11 @@ static int MakeDECnetConnection (phostname, idisplay,
 #define X_UNIX_PATH "/tmp/.X11-unix/X"
 #endif /* X_UNIX_PATH */
 
-static int MakeUNIXSocketConnection (phostname, idisplay,
+static int MakeUNIXSocketConnection (phostname, idisplay, retries,
 				     familyp, saddrlenp, saddrp)
     char *phostname;
     int idisplay;
+    int retries;
     int *familyp;			/* RETURN */
     int *saddrlenp;			/* RETURN */
     char **saddrp;			/* RETURN */
@@ -455,14 +444,23 @@ static int MakeUNIXSocketConnection (phostname, idisplay,
     /*
      * Open the network connection.
      */
-    if ((fd = socket ((int) addr->sa_family, SOCK_STREAM, 0)) < 0) {
-	return -1;
-    }
+    do {
+	if ((fd = socket ((int) addr->sa_family, SOCK_STREAM, 0)) < 0) {
+	    return -1;
+	}
 
-    if (connect (fd, addr, addrlen) == -1) {
-	(void) close (fd);
-	return -1;
-    }
+	if (connect (fd, addr, addrlen) < 0) {
+	    int olderrno = errno;
+	    (void) close (fd);
+	    if (olderrno != ENOENT) {	/* other than no such socket */
+		errno = olderrno;
+		return -1;
+	    }
+	    sleep (1);
+	} else {
+	    break;
+	}
+    } while (retries-- > 0);
 
     /*
      * Don't need to get auth info since we're local
@@ -473,10 +471,11 @@ static int MakeUNIXSocketConnection (phostname, idisplay,
 
 
 #ifdef TCPCONN
-static int MakeTCPConnection (phostname, idisplay,
+static int MakeTCPConnection (phostname, idisplay, retries,
 			      familyp, saddrlenp, saddrp)
     char *phostname;
     int idisplay;
+    int retries;
     int *familyp;			/* RETURN */
     int *saddrlenp;			/* RETURN */
     char **saddrp;			/* RETURN */
@@ -553,28 +552,37 @@ static int MakeTCPConnection (phostname, idisplay,
     /*
      * Open the network connection.
      */
-    if ((fd = socket ((int) addr->sa_family, SOCK_STREAM, 0)) < 0) {
-	return -1;
-    }
+    do {
+	if ((fd = socket ((int) addr->sa_family, SOCK_STREAM, 0)) < 0) {
+	    return -1;
+	}
 
-    /*
-     * turn off TCP coalescence
-     */
+	/*
+	 * turn off TCP coalescence
+	 */
 #ifdef TCP_NODELAY
-    {
-	int mi = 1;
-	setsockopt (fd, IPPROTO_TCP, TCP_NODELAY, &mi, sizeof (int));
-    }
+	{
+	    int tmp = 1;
+	    setsockopt (fd, IPPROTO_TCP, TCP_NODELAY, &tmp, sizeof (int));
+	}
 #endif
 
-    /*
-     * connect to the socket; if there is no X server or if the backlog has
-     * been reached, then ECONNREFUSED will be returned.
-     */
-    if (connect (fd, addr, addrlen) == -1) {
-	(void) close (fd);
-	return -1;
-    }
+	/*
+	 * connect to the socket; if there is no X server or if the backlog has
+	 * been reached, then ECONNREFUSED will be returned.
+	 */
+	if (connect (fd, addr, addrlen) < 0) {
+	    int olderrno = errno;
+	    (void) close (fd);
+	    if (olderrno != ECONNREFUSED) {  /* anything but no server ready */
+		errno = olderrno;
+		return -1;
+	    }
+	    sleep (1);
+	} else {
+	    break;
+	}
+    } while (retries-- > 0);
 
 
     /*
