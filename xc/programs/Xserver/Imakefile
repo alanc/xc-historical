@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.188 94/12/01 16:37:18 kaleb Exp kaleb $
+XCOMM $XConsortium: Imakefile,v 1.189 94/12/01 16:46:45 kaleb Exp kaleb $
 /*
  * Server Master Makefile
  */
@@ -565,6 +565,26 @@ SetUIDServerTarget(XF86_Mach32,$(XF86MACH32SUBDIRS),$(XF86MACH32OBJS),$(XF86MACH
 #define ServerToInstall XF86_Mach32
 #endif
 #endif	/* XF86Mach32Server */
+
+
+#if XF86Mach64Server
+XCOMM
+XCOMM XFree86 Mach64 Server
+XCOMM
+MFBDIR   = mfb
+CFB8DIR  = cfb
+CFB16DIR = cfb16
+CFB32DIR = cfb32
+DDXDIR1  = hw/xfree86
+XF86MACH64SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
+XF86MACH64OBJS = $(XF86COMSRC)/XF86_Mach64.o
+XF86MACH64LIBS = $(XF86ACCELSRC)/mach64/libmach64.a $(XF86LIBS) CFBLibs
+XF86MACH64SYSLIBS = $(SYSLIBS)
+SetUIDServerTarget(XF86_Mach64,$(XF86MACH64SUBDIRS),$(XF86MACH64OBJS),$(XF86MACH64LIBS),$(XF86MACH64SYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF86_Mach64
+#endif
+#endif        /* XF86Mach64Server */
 
 
 #if XF86P9000Server
