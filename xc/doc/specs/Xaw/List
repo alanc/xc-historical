@@ -58,7 +58,8 @@ borderWidth	BorderWidth	Dimension		1
 callback	Callback	Callback		NULL
 colormap	Colormap	Pointer		Parent's Colormap
 columnSpacing	Spacing	Dimension		6
-cursor	Cursor	Cursor		None
+cursor	Cursor	Cursor		XC_left_ptr
+cursorName	Cursor	String		NULL
 defaultColumns	Columns	int		2
 depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
@@ -74,6 +75,8 @@ longest	Longest	int	A	computed at runtime
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 numberStrings	NumberStrings	int	A	computed for NULL terminated list
 pasteBuffer	Boolean	Boolean		False
+pointerColor	Foreground	Pixel		XtDefaultForeground
+pointerColorBackground	Background	Pixel		XtDefaultBackground
 rowSpacing	Spacing	Dimension		2
 verticalList	Boolean	Boolean		False
 screen	Screen	Pointer	R	Parent's Screen
@@ -108,6 +111,7 @@ selected and is described in detail in the \fBList Callbacks\fP section.
 The amount of space, in pixels, between each of the rows and columns
 in the list. 
 .Cu
+.Pn
 .IP \fBdefaultColumns\fP 1.5i
 The default number of columns.  This value is used when neither the
 width nor the height of the List widget is specified or when
@@ -149,6 +153,8 @@ terminated.
 .IP \fBpasteBuffer\fP 1.5i
 If this resource is set to \fBTrue\fP then the name of the currently
 selected list element will be put into \fBCUT_BUFFER_0\fP.
+.Pf
+.Pb
 .Sc
 .Se
 .Tr
