@@ -33,8 +33,8 @@ static void _EatData32();
  */
 #include <sys/socket.h>
 
-static int
-readv(fd, iov, iovcnt)
+int
+_FSReadV(fd, iov, iovcnt)
     int         fd;
     struct iovec *iov;
     int         iovcnt;
@@ -51,8 +51,8 @@ readv(fd, iov, iovcnt)
     return (recvmsg(fd, &hdr, 0));
 }
 
-static int
-writev(fd, iov, iovcnt)
+int
+_FSWriteV(fd, iov, iovcnt)
     int         fd;
     struct iovec *iov;
     int         iovcnt;
