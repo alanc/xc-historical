@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: swapreq.c,v 1.23 87/08/03 17:35:17 newman Locked $ */
+/* $Header: swapreq.c,v 1.24 87/08/06 15:35:17 newman Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -746,7 +746,8 @@ SProcCopyPlane(client)
     return((* ProcVector[X_CopyPlane])(client));
 }
 
-/* The following routine is used for all Poly drawing requests */
+/* The following routine is used for all Poly drawing requests
+   (except FillPoly, which uses a different request format) */
 int
 SProcPoly(client)
     register ClientPtr client;
@@ -761,61 +762,9 @@ SProcPoly(client)
     return((* ProcVector[stuff->reqType])(client));
 }
 
-int
-SProcPolyLine(client)
-    register ClientPtr client;
-{
-    register char n;
-
-    REQUEST(xPolyLineReq);
-    swaps(&stuff->length, n);
-    swapl(&stuff->drawable, n);
-    swapl(&stuff->gc, n);
-    SwapRestS(stuff);
-    return((* ProcVector[X_PolyLine])(client));
-}
-
-int
-SProcPolySegment(client)
-    register ClientPtr client;
-{
-    register char n;
-
-    REQUEST(xPolySegmentReq);
-    swaps(&stuff->length, n);
-    swapl(&stuff->drawable, n);
-    swapl(&stuff->gc, n);
-    SwapRestS(stuff);
-    return((* ProcVector[X_PolySegment])(client));
-}
-
-int
-SProcPolyRectangle (client)
-    register ClientPtr client;
-{
-    register char n;
-
-    REQUEST(xPolyRectangleReq);
-    swaps(&stuff->length, n);
-    swapl(&stuff->drawable, n);
-    swapl(&stuff->gc, n);
-    SwapRestS(stuff);
-    return((* ProcVector[X_PolyRectangle])(client));
-}
-
-int
-SProcPolyArc(client)
-    register ClientPtr client;
-{
-    register char n;
-    REQUEST(xPolyArcReq);
-    swaps(&stuff->length, n);
-    swapl(&stuff->drawable, n);
-    swapl(&stuff->gc, n);
-    SwapRestS(stuff);
-    return((* ProcVector[X_PolyArc])(client));
-}
-
+/* cannot use SProcPoly for this one, because xFillPolyReq
+   is longer than xPolyPointReq, and we don't want to swap
+   the difference as shorts! */
 int
 SProcFillPoly(client)
     register ClientPtr client;
@@ -828,35 +777,6 @@ SProcFillPoly(client)
     swapl(&stuff->gc, n);
     SwapRestS(stuff);
     return((* ProcVector[X_FillPoly])(client));
-
-}
-
-int
-SProcPolyFillRectangle(client)
-    register ClientPtr client;
-{
-    register char n;
-
-    REQUEST(xPolyFillRectangleReq);
-    swaps(&stuff->length, n);
-    swapl(&stuff->drawable, n);
-    swapl(&stuff->gc, n);
-    SwapRestS(stuff);
-    return((* ProcVector[X_PolyFillRectangle])(client));
-}
-
-int
-SProcPolyFillArc               (client)
-    register ClientPtr client;
-{
-    register char n;
-
-    REQUEST(xPolyFillArcReq);
-    swaps(&stuff->length, n);
-    swapl(&stuff->drawable, n);
-    swapl(&stuff->gc, n);
-    SwapRestS(stuff);
-    return((* ProcVector[X_PolyFillArc])(client));
 }
 
 int
