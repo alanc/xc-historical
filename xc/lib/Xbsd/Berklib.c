@@ -1,4 +1,4 @@
-/* $XConsortium: Berklib.c,v 1.18 93/07/15 18:01:15 gildea Exp $ */
+/* $XConsortium: Berklib.c,v 1.19 93/09/18 21:10:51 rws Exp $ */
 
 /*
  * These are routines found in BSD but not on all other systems.  The core
@@ -18,9 +18,11 @@
 #endif
 
 #ifdef macII
-/* silly bcopy in A/UX 2.0.1 does not handle overlaps */
+/* silly bcopy in A/UX does not handle overlaps */
 #define WANT_BFUNCS
+#define WANT_MEMMOVE
 #define NO_BZERO
+#define WANT_RANDOM
 #endif
 
 #ifdef SVR4
@@ -36,6 +38,7 @@
 #ifdef SYSV386
 #ifdef SYSV
 #define WANT_FFS
+#define WANT_MEMMOVE
 #endif
 #endif
 
@@ -136,6 +139,26 @@ void bzero (b, length)
 #endif
 #endif
 #endif /* WANT_BFUNCS */
+
+#ifdef WANT_MEMMOVE
+char *memmove (b1, b2, length)
+    register char *b1, *b2;
+    register int length;
+{
+    char *sb1 = b1;
+
+    if (b2 < b1) {
+	b1 += length;
+	b2 += length;
+	while (length--)
+	    *--b1 = *--b2;
+    } else {
+	while (length--)
+	    *b1++ = *b2++;
+    }
+    return sb1;
+}
+#endif
 
 #ifdef WANT_FFS
 int
