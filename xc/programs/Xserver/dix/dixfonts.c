@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.21 91/05/29 15:26:43 keith Exp $ */
+/* $XConsortium: dixfonts.c,v 1.22 91/06/14 18:05:53 keith Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -224,6 +224,16 @@ doOpenFont(client, c)
                *newname;
     int         newlen;
 
+    if (client->clientGone)
+    {
+	if (c->current_fpe < c->num_fpes)
+	{
+	    fpe = c->fpe_list[c->current_fpe];
+	    (*fpe_functions[fpe->type].client_died) ((pointer) client, fpe);
+	}
+	err = Successful;
+	goto bail;
+    }
     while (c->current_fpe < c->num_fpes) {
 	fpe = c->fpe_list[c->current_fpe];
 	err = (*fpe_functions[fpe->type].open_font)
@@ -262,22 +272,15 @@ doOpenFont(client, c)
 	}
 	break;
     }
-#ifdef kludge	 /* :-) */
-    if (err == BadFontName) {
-	err = FontOpenScaled(c->num_fpes, c->fpe_list,
-			     c->fontname, c->fnamelen, &pfont,
-		       BITMAP_BIT_ORDER, IMAGE_BYTE_ORDER, GLYPHPADBYTES, 1);
-    }
-#endif
     if (err != Successful)
-	goto dropout;
+	goto bail;
     if (!pfont) {
 	err = BadFontName;
-	goto dropout;
+	goto bail;
     }
     if (!AddResource(c->fontid, RT_FONT, (pointer) pfont)) {
 	err = AllocError;
-	goto dropout;
+	goto bail;
     }
     if (pfont->refcnt == 0) {
 	for (i = 0; i < screenInfo.numScreens; i++) {
@@ -292,7 +295,7 @@ doOpenFont(client, c)
     if (patternCache)
 	CacheFontPattern (patternCache, c->origFontName,
 			  c->origFontNameLen, pfont);
-dropout:
+bail:
     if (err != Successful && c->client != serverClient) {
 	SendErrorToClient(c->client, X_OpenFont, 0,
 			  c->fontid, FontToXError(err));
@@ -486,37 +489,6 @@ QueryFont(pFont, pReply, nProtoCCIStructs)
     return;
 }
 
-static int
-doListFontsHelper(client, c, func)
-    ClientPtr   client;
-    LFclosurePtr c;
-    Bool        (*func) ();
-{
-    FontPathElementPtr fpe;
-    int         err = Successful;
-
-    /* try each fpe in turn, returning if one wants to be blocked */
-    while (c->current_fpe < c->num_fpes && c->names->nnames < c->max_names) {
-	fpe = c->fpe_list[c->current_fpe];
-
-	err = (*fpe_functions[fpe->type].list_fonts)
-	    (c->client, fpe, c->pattern, c->patlen,
-	     c->max_names - c->names->nnames, c->names);
-
-	if (err == Suspended) {
-	    if (!c->slept) {
-		c->slept = TRUE;
-		ClientSleep(client, func, c);
-	    }
-	    return Suspended;
-	}
-	if (err != Successful)
-	    break;
-	c->current_fpe++;
-    }
-    return err;
-}
-
 static Bool
 doListFonts(client, c)
     ClientPtr   client;
@@ -533,10 +505,36 @@ doListFonts(client, c)
                *bufferStart;
     int         count;
 
-    err = doListFontsHelper(client, c, doListFonts);
-    if (err == Suspended)
-	return TRUE;
+    if (client->clientGone)
+    {
+	if (c->current_fpe < c->num_fpes)
+	{
+	    fpe = c->fpe_list[c->current_fpe];
+	    (*fpe_functions[fpe->type].client_died) ((pointer) client, fpe);
+	}
+	err = Successful;
+	goto bail;
+    }
+    /* try each fpe in turn, returning if one wants to be blocked */
+    while (c->current_fpe < c->num_fpes && c->names->nnames < c->max_names) 
+    {
+	fpe = c->fpe_list[c->current_fpe];
 
+	err = (*fpe_functions[fpe->type].list_fonts)
+	    (c->client, fpe, c->pattern, c->patlen,
+	     c->max_names - c->names->nnames, c->names);
+
+	if (err == Suspended) {
+	    if (!c->slept) {
+		c->slept = TRUE;
+		ClientSleep(client, doListFonts, c);
+	    }
+	    return TRUE;
+	}
+	if (err != Successful)
+	    break;
+	c->current_fpe++;
+    }
     if (err != Successful) {
 	SendErrorToClient(client, X_ListFonts, 0, 0, FontToXError(err));
 	goto bail;
@@ -663,6 +661,16 @@ doListFontsWithInfo(client, c)
     xFontProp		*pFP;
     int			i;
 
+    if (client->clientGone)
+    {
+	if (c->current.current_fpe < c->num_fpes)
+	{
+	    fpe = c->fpe_list[c->current.current_fpe];
+	    (*fpe_functions[fpe->type].client_died) ((pointer) client, fpe);
+	}
+	err = Successful;
+	goto bail;
+    }
     while (c->current.current_fpe < c->num_fpes) 
     {
 	fpe = c->fpe_list[c->current.current_fpe];
@@ -814,6 +822,7 @@ doListFontsWithInfo(client, c)
     }
     if (err != Successful)
 	SendErrorToClient(client, X_ListFontsWithInfo, 0, 0, FontToXError(err));
+bail:
     if (c->slept)
 	ClientWakeup(client);
     for (i = 0; i < c->num_fpes; i++)
@@ -1176,9 +1185,15 @@ StoreFontClientFont(pfont, id)
     FontPtr     pfont;
     Font        id;
 {
-    return AddResource(id, RT_FONT, (pointer)pfont);
+    return AddResource(id, RT_NONE, (pointer)pfont);
 }
 	
+DeleteFontClientID (id)
+    Font	id;
+{
+    FreeResource (id, RT_NONE);
+}
+
 /*
  * returns the type index of the new fpe
  *
@@ -1188,7 +1203,7 @@ StoreFontClientFont(pfont, id)
 int
 RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
 	   open_func, close_func, list_func, start_lfwi_func, next_lfwi_func,
-		     wakeup_func, render_names)
+		     wakeup_func, render_names, client_died)
     Bool        (*name_func) ();
     int         (*init_func) ();
     int         (*free_func) ();
@@ -1199,6 +1214,7 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
     int         (*start_lfwi_func) ();
     int         (*next_lfwi_func) ();
     int         (*wakeup_func) ();
+    int		(*client_died) ();
     FontNamesPtr render_names;
 {
     FPEFunctions *new;
@@ -1222,6 +1238,7 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
     fpe_functions[num_fpe_types].init_fpe = init_func;
     fpe_functions[num_fpe_types].free_fpe = free_func;
     fpe_functions[num_fpe_types].reset_fpe = reset_func;
+    fpe_functions[num_fpe_types].client_died = client_died;
 
     fpe_functions[num_fpe_types].renderer_names = render_names;
     return num_fpe_types++;
@@ -1241,13 +1258,11 @@ FreeFonts()
 
 /* convenience functions for FS interface */
 
-/* ARGSUSED */
 FontPtr
-find_old_font(client, id)
-    ClientPtr	client;
+find_old_font(id)
     XID         id;
 {
-    return (FontPtr) LookupIDByType(id, RT_FONT);
+    return (FontPtr) LookupIDByType(id, RT_NONE);
 }
 
 static int  fs_handlers_installed = 0;
