@@ -183,9 +183,9 @@
 #define XtRGeometry		XrmRGeometry
 #define XtRInt			XrmRInt
 #define XtROrientation		"Orientation"
-#define XtRPixel		"Pixel"
-#define XtRPixmap		"Pixmap"
-#define XtRPointer		"Pointer"
+#define XtRPixel		XrmRPixel
+#define XtRPixmap		XrmRPixmap
+#define XtRPointer		XrmRPointer
 #define XtRString               XrmRString
 #define XtRTextPosition 	"XtTextPosition"
 #define XtRWindow		XrmRWindow
