@@ -2,6 +2,7 @@
 #include <X11/Xutil.h>
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
 
 #include <X11/Xatom.h>
 
@@ -10,8 +11,7 @@
 
 #define MAXSTR 10000
 
-#define isdigit(c) ((c)>='0' && (c)<='9')
-#define isletter(c) (((c)>='a' && (c)<='z') || ((c)>='A' && (c)<='Z'))
+#define min(a,b)  ((a) < (b) ? (a) : (b))
 
 /*
  *
@@ -251,7 +251,7 @@ _default_mapping _default_mappings[] = {
 ?m4(\t\tstarting position for icon: $6, $7\n)" },
 	{ XA_WM_SIZE_HINTS, "32mii", ":\n\
 ?m0(\t\tuser specified location: $1, $2\n)\
-?m2(\t\tprogram specified lcoation: $1, $2\n)\
+?m2(\t\tprogram specified location: $1, $2\n)\
 ?m1(\t\tuser specified size: $3 by $4\n)\
 ?m3(\t\tprogram specified size: $3 by $4\n)\
 ?m4(\t\tprogram specified minimum size: $5 by $6\n)\
@@ -669,7 +669,7 @@ long Mask_Word(thunks, format)
 int Is_A_DFormat(string)
      char *string;
 {
-  return( string[0] && string[0]!='-' && !isletter(string[0]) );
+  return( string[0] && string[0]!='-' && !isalpha(string[0]) );
 }
 
 char *Handle_Backslash(dformat)
@@ -863,7 +863,7 @@ long Extract_Value(pointer, length, size, signed)
 		mask = 0xff;
 		break;
 	      case 16:
-		value = (long) * (int *) *pointer;
+		value = (long) * (short *) *pointer;
 		*pointer += 2;
 		*length -= 2;
 		mask = 0xffff;
@@ -1176,7 +1176,7 @@ char *Get_Window_Property_Data_And_Type(atom, length, type, size)
 	char *prop;
 	int status;
 	
-	status = XGetWindowProperty(dpy, target_win, atom, 0, max_len/4,
+	status = XGetWindowProperty(dpy, target_win, atom, 0, (max_len+3)/4,
 				    False, AnyPropertyType, &actual_type,
 				    &actual_format, &nitems, &bytes_after,
 				    &prop);
@@ -1185,9 +1185,7 @@ char *Get_Window_Property_Data_And_Type(atom, length, type, size)
 	if (status!=Success)
 	  Fatal_Error("XGetWindowProperty failed!");
 	
-	if (actual_format==0)
-	  return(0);
-	*length = nitems * actual_format/8;
+	*length = min(nitems * actual_format/8, max_len);
 	*type = actual_type;
 	*size = actual_format;
 	return(prop);
@@ -1220,8 +1218,9 @@ Show_Prop(format, dformat, prop)
 	  return;
   }
 
-  if (!(data = Get_Property_Data_And_Type(atom, &length, &type, &size))) {
-	  puts(": not defined.");
+  data = Get_Property_Data_And_Type(atom, &length, &type, &size);
+  if (!size) {
+          puts(": not defined.");
 	  return;
   }
 
