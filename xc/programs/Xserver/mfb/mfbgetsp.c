@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgetsp.c,v 1.20 88/09/06 14:53:35 jim Exp $ */
+/* $XConsortium: mfbgetsp.c,v 1.21 89/03/16 14:47:20 jim Exp $ */
 #include "X.h"
 #include "Xmd.h"
 
@@ -77,10 +77,8 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
      * XXX: Should probably only do this if going to use backing-store
      */
     pwidthPadded = (int *)ALLOCATE_LOCAL(nspans * sizeof(int));
-    if (pwidthPadded == (int *)NULL)
-    {
-	return(NULL);
-    }
+    if (!pwidthPadded)
+	return (unsigned int *)NULL;
 
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
@@ -94,7 +92,12 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
 	psrcBase = (unsigned int *)(((PixmapPtr)pDrawable)->devPrivate);
 	widthSrc = (int)(((PixmapPtr)pDrawable)->devKind);
     }
-    pdstStart = (unsigned int *)Xalloc(nspans * PixmapBytePad(wMax, 1));
+    pdstStart = (unsigned int *)xalloc(nspans * PixmapBytePad(wMax, 1));
+    if (!pdstStart)
+    {
+	DEALLOCATE_LOCAL(pwidthPadded);
+	return (unsigned int*)NULL;
+    }
     pdst = pdstStart;
 
     i = 0;
@@ -179,24 +182,19 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
     if ((pDrawable->type == DRAWABLE_WINDOW) &&
 	(((WindowPtr)pDrawable)->backingStore != NotUseful))
     {
-	PixmapPtr pPixmap;
+	PixmapRec pixmap;
 
-	pPixmap = (PixmapPtr)ALLOCATE_LOCAL(sizeof(PixmapRec));
-	if ((pPixmap != (PixmapPtr)NULL) && (pwidthPadded != (int *)NULL))
-	{
-	    pPixmap->drawable.type = DRAWABLE_PIXMAP;
-	    pPixmap->drawable.pScreen = pDrawable->pScreen;
-	    pPixmap->drawable.depth = 1;
-	    pPixmap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-	    pPixmap->devKind = PixmapBytePad(wMax, 1) * nspans;
-	    pPixmap->width = pPixmap->devKind << 3;
-	    pPixmap->height = 1;
-	    pPixmap->refcnt = 1;
-	    pPixmap->devPrivate = (pointer)pdstStart;
-	    miBSGetSpans(pDrawable, pPixmap, wMax, pptInit, pwidthInit,
-			 pwidthPadded, nspans);
-	}
-	DEALLOCATE_LOCAL(pPixmap);
+	pixmap.drawable.type = DRAWABLE_PIXMAP;
+	pixmap.drawable.pScreen = pDrawable->pScreen;
+	pixmap.drawable.depth = 1;
+	pixmap.drawable.serialNumber = NEXT_SERIAL_NUMBER;
+	pixmap.devKind = PixmapBytePad(wMax, 1) * nspans;
+	pixmap.width = pixmap.devKind << 3;
+	pixmap.height = 1;
+	pixmap.refcnt = 1;
+	pixmap.devPrivate = (pointer)pdstStart;
+	miBSGetSpans(pDrawable, &pixmap, wMax, pptInit, pwidthInit,
+		     pwidthPadded, nspans);
     }
 
     DEALLOCATE_LOCAL(pwidthPadded);
