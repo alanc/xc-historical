@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.24 89/11/17 18:43:11 keith Exp $
+ * $XConsortium: session.c,v 1.25 89/11/18 12:44:22 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -52,8 +52,11 @@ catchAlrm ()
 SessionPingFailed (d)
     struct display  *d;
 {
-    AbortClient (clientPid);
-    source (&verify, d->reset);
+    if (clientPid > 1)
+    {
+    	AbortClient (clientPid);
+    	source (&verify, d->reset);
+    }
     SessionExit (d, RESERVER_DISPLAY);
 }
 
