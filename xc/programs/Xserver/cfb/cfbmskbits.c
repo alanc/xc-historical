@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.c,v 4.7 91/12/19 14:17:00 keith Exp $ */
+/* $XConsortium: cfbmskbits.c,v 4.8 91/12/19 18:36:27 keith Exp $ */
 
 /*
  * ==========================================================================
@@ -76,8 +76,8 @@ unsigned int cfbstarttab[] =
 	cfbBits(0x00FFFFFF),
 	cfbBits(0x000FFFFF),
 	cfbBits(0x0000FFFF),
-	cfbBits(0x00000FFF)
-	cfbBits(0x000000FF)
+	cfbBits(0x00000FFF),
+	cfbBits(0x000000FF),
 	cfbBits(0x0000000F)
     };
 unsigned int cfbendtab[] =
@@ -88,7 +88,7 @@ unsigned int cfbendtab[] =
 	cfbBits(0xFFF00000),
 	cfbBits(0xFFFF0000),
 	cfbBits(0xFFFFF000),
-	cfbBits(0xFFFFFF00)
+	cfbBits(0xFFFFFF00),
 	cfbBits(0xFFFFFFF0)
     };
 #endif
@@ -146,7 +146,7 @@ unsigned int cfbstartpartial[] =
 	cfbBits(0x000FFFFF),
 	cfbBits(0x0000FFFF),
 	cfbBits(0x00000FFF),
-	cfbBits(0x000000FF)
+	cfbBits(0x000000FF),
 	cfbBits(0x0000000F)
     };
 
@@ -158,7 +158,7 @@ unsigned int cfbendpartial[] =
 	cfbBits(0xFFF00000),
 	cfbBits(0xFFFF0000),
 	cfbBits(0xFFFFF000),
-	cfbBits(0xFFFFFF00)
+	cfbBits(0xFFFFFF00),
 	cfbBits(0xFFFFFFF0)
     };
 #endif
@@ -290,16 +290,16 @@ unsigned int QuartetBitsTable[] = {
     0x000000F8,                         /* 5 - 11111000 */
     0x000000FC,                         /* 6 - 11111100 */
     0x000000FE,                         /* 7 - 11111110 */
-    0x000000FF,                         /* 8 - 11111111 */
+    0x000000FF                          /* 8 - 11111111 */
 #else /* (BITMAP_BIT_ORDER == LSBFirst */
     0x00000000,                         /* 0 - 00000000 */
     0x00000001,                         /* 1 - 00000001 */
     0x00000003,                         /* 2 - 00000011 */
     0x00000007,                         /* 3 - 00000111 */
-    0x0000000F                          /* 4 - 00001111 */
-    0x0000001F                          /* 5 - 00011111 */
-    0x0000003F                          /* 6 - 00111111 */
-    0x0000007F                          /* 7 - 01111111 */
+    0x0000000F,                         /* 4 - 00001111 */
+    0x0000001F,                         /* 5 - 00011111 */
+    0x0000003F,                         /* 6 - 00111111 */
+    0x0000007F,                         /* 7 - 01111111 */
     0x000000FF                          /* 8 - 11111111 */
 #endif /* (BITMAP_BIT_ORDER == MSBFirst) */
 };
