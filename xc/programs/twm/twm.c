@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.82 89/11/06 16:16:20 jim Exp $
+ * $XConsortium: twm.c,v 1.83 89/11/16 14:35:06 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.82 89/11/06 16:16:20 jim Exp $";
+"$XConsortium: twm.c,v 1.83 89/11/16 14:35:06 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -386,6 +386,7 @@ main(argc, argv, environ)
 
 	/* Parse it once for each screen. */
 	ParseTwmrc(InitFile);
+	if (Scr->SqueezeTitle == -1) Scr->SqueezeTitle = FALSE;
 	if (!Scr->HaveFonts) CreateFonts();
 	CreateGCs();
 	MakeMenus();
@@ -600,7 +601,7 @@ InitVariables()
     Scr->InterpolateMenuColors = FALSE;
     Scr->NoIconManagers = FALSE;
     Scr->ClientBorderWidth = FALSE;
-    Scr->SqueezeTitle = FALSE;
+    Scr->SqueezeTitle = -1;
     Scr->FirstRegion = NULL;
     Scr->LastRegion = NULL;
     Scr->FirstTime = TRUE;

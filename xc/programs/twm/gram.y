@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.72 89/11/16 10:56:44 jim Exp $
+ * $XConsortium: gram.y,v 1.73 89/11/16 14:34:54 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.72 89/11/16 10:56:44 jim Exp $";
+"$XConsortium: gram.y,v 1.73 89/11/16 14:34:54 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -448,7 +448,12 @@ squeeze		: SQUEEZE_TITLE {
 				    if (HasShape) Scr->SqueezeTitle = TRUE;
 #endif
 				}
-		| SQUEEZE_TITLE { list = &Scr->SqueezeTitleL; }
+		| SQUEEZE_TITLE { list = &Scr->SqueezeTitleL; 
+#ifdef SHAPE
+				  if (HasShape && Scr->SqueezeTitle == -1)
+				    Scr->SqueezeTitle = TRUE;
+#endif
+				}
 		  LB win_sqz_entries RB
 		| DONT_SQUEEZE_TITLE { Scr->SqueezeTitle = FALSE; }
 		| DONT_SQUEEZE_TITLE { list = &Scr->DontSqueezeTitleL; }

@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.109 89/11/15 14:27:33 jim Exp $
+ * $XConsortium: add_window.c,v 1.110 89/11/16 14:34:50 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.109 89/11/15 14:27:33 jim Exp $";
+"$XConsortium: add_window.c,v 1.110 89/11/16 14:34:50 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -524,6 +524,8 @@ IconMgr *iconp;
     xwc.y = tmp_win->attr.y + tmp_win->attr.border_width;
     xwc.width = tmp_win->attr.width;
     xwc.height = tmp_win->attr.height;
+    tmp_win->title_width = tmp_win->attr.width;
+
     if (tmp_win->frame_bw)
     {
 	xwc.border_width = 0;
@@ -626,8 +628,6 @@ IconMgr *iconp;
 				    Scr->d_depth, CopyFromParent,
 				    Scr->d_visual, valuemask, &attributes);
     
-    ComputeTitleLocation (tmp_win);
-
     if (tmp_win->title_height)
     {
 	valuemask = (CWEventMask | CWBorderPixel | CWBackPixel);
@@ -635,16 +635,17 @@ IconMgr *iconp;
 				 ButtonReleaseMask | ExposureMask);
 	attributes.border_pixel = tmp_win->border;
 	attributes.background_pixel = tmp_win->title.back;
-	tmp_win->title_w = XCreateWindow (dpy, tmp_win->frame,
-					  tmp_win->title_x, tmp_win->title_y,
+	tmp_win->title_w = XCreateWindow (dpy, tmp_win->frame, 0, 0,
 					  tmp_win->attr.width, 
 					  Scr->TitleHeight, tmp_win->title_bw,
 					  Scr->d_depth, CopyFromParent,
 					  Scr->d_visual, valuemask,
 					  &attributes);
     }
-    else
+    else {
 	tmp_win->title_w = 0;
+	tmp_win->squeeze_info = NULL;
+    }
 
     if (tmp_win->highlight)
     {
@@ -694,9 +695,11 @@ IconMgr *iconp;
 	Scr->TBInfo.inited = True;
     }
 
-    if (tmp_win->title_height)
-    {
-	CreateTitleButtons(tmp_win);
+    if (tmp_win->title_w) {
+	CreateTitleButtons (tmp_win);
+	ComputeTitleLocation (tmp_win);
+	XMoveWindow (dpy, tmp_win->title_w,
+		     tmp_win->title_x, tmp_win->title_y);
 	XDefineCursor(dpy, tmp_win->title_w, Scr->TitleCursor);
     }
 
@@ -727,7 +730,7 @@ IconMgr *iconp;
 			    &boundingShaped, &xws, &yws, &wws, &hws,
 			    &clipShaped, &xbs, &ybs, &wbs, &hbs);
 	tmp_win->wShaped = boundingShaped;
-	tmp_win->fShaped = -1;
+	tmp_win->fShaped = (tmp_win->squeeze_info ? -1 : 0);
     }
 #endif
 
@@ -1216,15 +1219,24 @@ void ComputeWindowTitleOffsets (tmp_win, width, squeeze)
     return;
 }
 
+
+/*
+ * ComputeTitleLocation - calculate the position of the title window; we need
+ * to take the title_bw into account since we want (0,0) of the title window
+ * to line up with (0,0) of the frame window.
+ */
 void ComputeTitleLocation (tmp)
-    TwmWindow *tmp;
+    register TwmWindow *tmp;
 {
+    tmp->title_x = -tmp->title_bw;
+    tmp->title_y = -tmp->title_bw;
+
 #ifdef SHAPE
-    SqueezeInfo *si = tmp->squeeze_info;
-    
-    if (si) {
+    if (tmp->squeeze_info) {
+	register SqueezeInfo *si = tmp->squeeze_info;
 	int basex;
-	int maxwidth = tmp->frame_width - 2 * tmp->title_bw;
+	int maxwidth = tmp->frame_width - 2 * tmp->frame_bw;
+	int tw = tmp->title_width - 2 * tmp->title_bw;
 
 	/*
 	 * figure label base from squeeze info (justification fraction)
@@ -1241,8 +1253,8 @@ void ComputeTitleLocation (tmp)
 		}
 	    }
 	} else {			/* num/denom is fraction */
-	    basex = (((si->num * maxwidth) / si->denom) +
-		     (si->num < 0) ? maxwidth : 0);
+	    basex = ((si->num * maxwidth) / si->denom);
+	    if (si->num < 0) basex += maxwidth;
 	}
 
 	/*
@@ -1250,22 +1262,19 @@ void ComputeTitleLocation (tmp)
 	 */
 	switch (si->justify) {
 	  case J_CENTER:
-	    basex -= tmp->title_width / 2;
+	    basex -= tw / 2;
 	    break;
 	  case J_RIGHT:
-	    basex -= tmp->title_width - 1;
+	    basex -= tw - 1;
 	    break;
 	}
-	if (basex > maxwidth - tmp->title_width + 1)
-	  basex = maxwidth - tmp->title_width + 1;
+	if (basex > maxwidth - tw + 1)
+	  basex = maxwidth - tw + 1;
 	if (basex < 0) basex = 0;
 
-	tmp->title_x = basex - tmp->frame_bw;
-    } else
-#else
-    tmp->title_x = -tmp->frame_bw;
+	tmp->title_x = basex - tmp->title_bw;
+    }
 #endif
-    tmp->title_y = -tmp->frame_bw;
 }
 
 
