@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.159 93/09/04 16:57:05 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.160 93/09/04 22:08:17 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -463,8 +463,10 @@ Xnon: $(SUBDIRS0) $(DEPDIRS)
 
 SUBDIRS = $(SUBDIRS0) $(SUBDIRS1) $(SUBDIRS2) $(SUBDIRS3) $(SUBDIRS4)
 
+#ifdef realServer
 install::
 	-(cd $(DESTDIR)$(BINDIR); $(RM) X; $(LN) $(ALL1) X)
+#endif
 
 #define IHaveSubdirs
 
