@@ -1,4 +1,4 @@
-# $XConsortium: $
+# $XConsortium: jump_funcs,v 1.2 94/12/07 10:45:51 kaleb Exp kaleb $
 # $XFree86: xc/lib/Xt/jump_funcs,v 3.1 1994/05/04 14:56:46 dawes Exp $
 #
 00000000 T _XtAppAddActionHook  libXt          ActionHook
@@ -671,3 +671,5 @@
 00000000 T _XTestFakeProximityEvent libXtst        XTest
 00000000 T _XTestFakeDeviceMotionEvent libXtst        XTest
 00000000 T _XTestGrabControl    libXtst        XTest
+00000000 T __XtFreeArgList	libXt          Varargs
+00000000 T __XtClearAncestorCache libXt        Keyboard
