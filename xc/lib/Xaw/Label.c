@@ -1,7 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.81 90/09/06 17:51:26 converse Exp $";
-#endif /* lint */
-
+/* $XConsortium: Label.c,v 1.82 90/12/12 15:37:06 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -178,7 +175,9 @@ static void SetTextWidthAndHeight(lw)
 	lw->label.label_width = 0;
 	for (label = lw->label.label; nl != NULL; nl = index(label, '\n')) {
 	    int width = XTextWidth(fs, label, (int)(nl - label));
-	    if (width > lw->label.label_width) lw->label.label_width = width;
+
+	    if (width > (int)lw->label.label_width)
+		lw->label.label_width = width;
 	    label = nl + 1;
 	    if (*label)
 		lw->label.label_height +=
@@ -186,7 +185,9 @@ static void SetTextWidthAndHeight(lw)
 	}
 	if (*label) {
 	    int width = XTextWidth(fs, label, strlen(label));
-	    if (width > lw->label.label_width) lw->label.label_width = width;
+
+	    if (width > (int) lw->label.label_width)
+		lw->label.label_width = width;
 	}
     } else {
 	lw->label.label_len = strlen(lw->label.label);
@@ -394,14 +395,15 @@ static void _Reposition(lw, width, height, dx, dy)
 
 	case XtJustifyCenter :
 	default:
-	    newPos = (width - lw->label.label_width) / 2;
+	    newPos = (int)(width - lw->label.label_width) / 2;
 	    break;
     }
     if (newPos < (Position)leftedge)
 	newPos = leftedge;
     *dx = newPos - lw->label.label_x;
     lw->label.label_x = newPos;
-    *dy = (newPos = (height - lw->label.label_height) / 2) - lw->label.label_y;
+    *dy = (newPos = (int)(height - lw->label.label_height) / 2)
+	  - lw->label.label_y;
     lw->label.label_y = newPos;
     return;
 }

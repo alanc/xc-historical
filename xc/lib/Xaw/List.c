@@ -1,6 +1,4 @@
-#if ( !defined(lint) && !defined(SABER))
-  static char Xrcs_id[] = "$XConsortium: List.c,v 1.28 90/04/30 17:03:53 converse Exp $";
-#endif
+/* $XConsortium: List.c,v 1.29 90/05/08 15:16:32 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -682,8 +680,8 @@ Dimension *width, *height;
  * of the widget to fit the current list exactly.
  */
     else if (!xfree) {
-        lw->list.ncols = ( (*width - 2 * lw->list.internal_width)
-	                    / lw->list.col_width);
+        lw->list.ncols = ( (int)(*width - 2 * lw->list.internal_width)
+	                    / (int)lw->list.col_width);
 	if (lw->list.ncols <= 0) lw->list.ncols = 1;
 	lw->list.nrows = ( ( lw->list.nitems - 1) / lw->list.ncols) + 1 ;
 	if ( yfree ) {
@@ -698,8 +696,8 @@ Dimension *width, *height;
  * number of columns.
  */
     else if (!yfree) {		/* xfree must be TRUE. */
-        lw->list.nrows = (*height - 2 * lw->list.internal_height) 
-	               / lw->list.row_height;
+        lw->list.nrows = (int)(*height - 2 * lw->list.internal_height) 
+	                 / (int)lw->list.row_height;
 	if (lw->list.nrows <= 0) lw->list.nrows = 1;
 	lw->list.ncols = (( lw->list.nitems - 1 ) / lw->list.nrows) + 1;
 	*width = lw->list.ncols * lw->list.col_width 
