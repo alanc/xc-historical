@@ -37,6 +37,7 @@ extern void bzero();
 static GrabRec *grabList;
 static GrabRec *freeGrabs;
 static Boolean OnlyKeyboardGrabs;
+static Boolean FocusTraceGood;
 
 
 EventMask _XtBuildEventMask(widget)
@@ -524,6 +525,10 @@ static Boolean OnGrabList (widget)
 static Widget FindKeyboardFocus(widget)
     Widget widget;
 {
+    /* If a modal cascade exists, this routine
+       assumes that widget is in the active subset.
+     */
+    static Widget focus_trace_widget, focus_target_widget;
     register GrabRec* gl;
 #define FOCUS_TRACE_SIZE 100
     GrabRec* focus_trace[FOCUS_TRACE_SIZE];
@@ -531,10 +536,13 @@ static Widget FindKeyboardFocus(widget)
     enum {non_exclusive, first_pass, dont_check} exclusive = non_exclusive;
     register Widget w, focus_widget = widget;
 
+    if (FocusTraceGood && widget == focus_trace_widget)
+	return focus_target_widget;
+    focus_trace_widget = widget;
     for (num_focus_entries = 0, gl = grabList; gl != NULL; gl = gl->next) {
 	if (gl->keyboard_focus != NULL) num_focus_entries++;
     }
-    if (num_focus_entries == 0) return focus_widget;
+    if (num_focus_entries == 0) return focus_target_widget = widget;
     /* assert: a grab for a widget always occurs on the list before
      * a keyboard focus entry for the same widget
      */
@@ -560,7 +568,6 @@ static Widget FindKeyboardFocus(widget)
 	if (i == num_focus_entries) break;
 	if (exclusive == first_pass) exclusive = dont_check;
     }
-    focus_widget = widget;
     if (i > 0) {
 	focus_widget = focus_trace[--i]->keyboard_focus;
 	while (i > 0) {
@@ -572,8 +579,8 @@ static Widget FindKeyboardFocus(widget)
      * is not a descendant of the focus widget
      */
     for (w = widget; w != NULL && w != focus_widget; w = XtParent(w));
-    if (w == focus_widget) return w;
-    else		   return focus_widget;
+    FocusTraceGood = True;
+    return focus_target_widget = (w == focus_widget) ? widget : focus_widget;
 }
 
 
@@ -685,7 +692,10 @@ static void AddGrab(widget, exclusive, spring_loaded, keyboard_focus)
     gl->spring_loaded = spring_loaded;
     gl->keyboard_focus= keyboard_focus;
 
-    if (keyboard_focus == (Widget)NULL) OnlyKeyboardGrabs = False;
+    if (keyboard_focus == (Widget)NULL)
+	OnlyKeyboardGrabs = False;
+    else if (gl->exclusive)
+	FocusTraceGood = False;
 
     XtAddCallback(
 		  (keyboard_focus != NULL) ? keyboard_focus : widget,
@@ -796,6 +806,7 @@ static Boolean RemoveGrab(widget, keyboard_focus)
 	    else
 		prev = &gl->next;
 	}
+	if (gl->exclusive) FocusTraceGood = False;
     }
     else /* if keyboard_focus */ {
 	focus_widget = gl->keyboard_focus;
@@ -842,6 +853,7 @@ void _XtEventInitialize()
     freeGrabs = NULL;
     DestroyList = NULL;
     OnlyKeyboardGrabs = True;
+    FocusTraceGood = False;
     nullRegion = XCreateRegion();
     exposeRegion = XCreateRegion();
     InitializeHash();
@@ -849,8 +861,8 @@ void _XtEventInitialize()
 
 
 /* ARGSUSED */
-static void ForwardEvent(widget, client_data, event)
-    Widget widget;
+static void ForwardEvent(ancestor, client_data, event)
+    Widget ancestor;
     caddr_t client_data;
     XEvent *event;
 {
@@ -859,10 +871,11 @@ static void ForwardEvent(widget, client_data, event)
        focus during a grab */
     EventMask mask;
     GrabType grabType;
+    register Widget widget = FindKeyboardFocus( (Widget)client_data );
 
     if ShouldDispatch {
 	ConvertTypeToMask(event->xany.type, &mask, &grabType);
-	DispatchEvent(event, (Widget)client_data, mask);
+	DispatchEvent(event, widget, mask);
     }
 }
 
@@ -1048,6 +1061,7 @@ void XtSetKeyboardFocus(widget, descendant)
 		);
 	}
     }
+    FocusTraceGood = False;
 }
 
 
