@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.35 90/04/13 17:38:52 jim Exp $
+ * $XConsortium: Tree.c,v 1.36 90/04/30 17:06:11 converse Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -179,10 +179,13 @@ static void initialize_dimensions (listp, sizep, n)
     if (n > *sizep) {
 	*listp = (Dimension *) XtRealloc((char *) *listp,
 					 (unsigned int) (n*sizeof(Dimension)));
-	*sizep = ((*listp) ? n : 0);
-	if (!*listp) return;
+	if (!*listp) {
+	    *sizep = 0;
+	    return;
+	}
+	for (i = *sizep, l = (*listp) + i; i < n; i++, l++) *l = 0;
+	*sizep = n;
     }
-    for (i = *sizep, l = (*listp) + i; i < n; i++, l++) *l = 0;
     return;
 }
 
@@ -682,7 +685,7 @@ static void compute_bounding_box_subtree (tree, w, depth)
      */
     if (depth >= tree->tree.n_largest) {
 	initialize_dimensions (&tree->tree.largest,
-			       &tree->tree.n_largest, depth);
+			       &tree->tree.n_largest, depth + 1);
     }
     newwidth = ((horiz ? w->core.width : w->core.height) + bw2);
     if (tree->tree.largest[depth] < newwidth)
