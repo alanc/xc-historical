@@ -2,8 +2,10 @@
        INCLUDES = -I. -I$(TOP) -I$(INCLUDESRC)
         DEFINES = ConnectionFlags
    INSTALLFLAGS = -m 0644
+#if BandAidLibrary
         AIDSRCS = BandAidLibrarySources
         AIDOBJS = BandAidLibraryObjects
+#endif
            SRCS = *.c $(AIDSRCS)
         HEADERS = Xlib.h Xutil.h
        LINTLIBS = -lc
@@ -268,7 +270,7 @@ depend:: ks_names.h
 
 DependTarget()
 
-#if BandAidLibraries
+#if BandAidLibrary
 BandAidLibraryMake()
 #endif
 
