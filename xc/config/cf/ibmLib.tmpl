@@ -1,4 +1,4 @@
-XCOMM $XConsortium: ibmLib.tmpl,v 1.12 93/10/11 12:40:45 rws Exp $
+XCOMM $XConsortium: ibmLib.tmpl,v 1.13 93/12/24 10:37:07 rws Exp $
 
 /*
  * AIX shared library template
@@ -11,9 +11,9 @@ XCOMM $XConsortium: ibmLib.tmpl,v 1.12 93/10/11 12:40:45 rws Exp $
 #define SharedXmuReqs $(XTOOLLIB) $(XLIB)
 #define SharedOldXReqs $(XLIBONLY)
 #if ThreadedX
-#define SharedXtReqs $(XLIBONLY) -lpthreads
+#define SharedXtReqs $(XLIBONLY) $(SMLIB) $(ICELIB) -lpthreads
 #else
-#define SharedXtReqs $(XLIBONLY)
+#define SharedXtReqs $(XLIBONLY) $(SMLIB) $(ICELIB) 
 #endif
 #define SharedXawReqs $(XMULIB) $(XTOOLLIB) $(XLIB)
 #define SharedXiReqs $(XLIB)
