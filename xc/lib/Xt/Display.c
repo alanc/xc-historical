@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.38 89/10/09 13:37:16 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.39 89/12/15 17:22:46 swick Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif /*lint*/
 
@@ -401,8 +401,14 @@ char* _XtHeapAlloc(heap, bytes)
 		    bytes, heap );
 #endif
 	    heap_loc = XtMalloc(bytes + sizeof(char*));
-	    *(char**)heap_loc = *(char**)heap->start;
-	    *(char**)heap->start = heap_loc;
+	    if (heap->start) {
+		*(char**)heap_loc = *(char**)heap->start;
+		*(char**)heap->start = heap_loc;
+	    }
+	    else {
+		*(char**)heap_loc = NULL;
+		heap->start = heap_loc;
+	    }
 	    return heap_loc;
 	}
 	/* else discard remainder of this segment */
