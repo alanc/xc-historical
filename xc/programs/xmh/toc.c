@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: toc.c,v 2.12 88/01/25 13:57:13 swick Locked $";
+static char rcs_id[] = "$Header: toc.c,v 2.13 88/01/29 16:37:23 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -283,7 +283,7 @@ Scrn scrn;
     if (toc == NULL) {
 	TUResetTocLabel(scrn);
 	TURedisplayToc(scrn);
-	StoreName(scrn, progName);
+	StoreWindowName(scrn, progName);
 	EnableProperButtons(scrn);
     } else {
 	toc->num_scrns++;
@@ -292,7 +292,7 @@ Scrn scrn;
 	toc->scrn[toc->num_scrns - 1] = scrn;
 	TUEnsureScanIsValidAndOpen(toc);
 	TUResetTocLabel(scrn);
-	StoreName(scrn, toc->foldername);
+	StoreWindowName(scrn, toc->foldername);
 	TURedisplayToc(scrn);
 
 	BBoxSetRadio(scrn->folderbuttons,
