@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.122 91/07/21 17:06:21 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.123 91/07/28 11:52:14 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -528,6 +528,8 @@ static void StoreLateBindings(keysymL,notL,keysymR,notR,lateBindings)
         *lateBindings = temp;
         temp[count].knot = notL;
         temp[count].pair = pair;
+	if (count == 0)
+	    temp[count].ref_count = 1;
         temp[count++].keysym = keysymL;
         if (keysymR){
             temp[count].knot = notR;
@@ -1136,6 +1138,14 @@ static String ParseQuotedStringEvent(str, event,error)
     return str;
 }
 
+
+static EventSeqRec timerEventRec = {
+    {0, 0, NULL, _XtEventTimerEventType, 0L, 0L, NULL},
+    /* (StatePtr) -1 */ NULL,
+    NULL,
+    NULL
+};
+
 static void RepeatDown(eventP, reps, actionsP)
     EventPtr *eventP;
     int reps;
@@ -1146,13 +1156,6 @@ static void RepeatDown(eventP, reps, actionsP)
     EventPtr upEvent = &upEventRec;
     register int i;
 
-    static EventSeqRec timerEventRec = {
-	{0, 0,NULL, _XtEventTimerEventType, 0L, 0L,NULL},
-	/* (StatePtr) -1 */ NULL,
-	NULL,
-	NULL
-    };
-
     downEvent = event = *eventP;
     *upEvent = *downEvent;
     upEvent->event.eventType = ((event->event.eventType == ButtonPress) ?
@@ -1162,6 +1165,9 @@ static void RepeatDown(eventP, reps, actionsP)
         && (upEvent->event.modifiers | upEvent->event.modifierMask))
 	upEvent->event.modifiers
 	    |= buttonModifierMasks[event->event.eventCode];
+
+    if (event->event.lateModifiers)
+	event->event.lateModifiers->ref_count += (reps - 1) * 2;
 
     for (i=1; i<reps; i++) {
 
@@ -1197,13 +1203,6 @@ static void RepeatDownPlus(eventP, reps, actionsP)
     EventPtr upEvent = &upEventRec;
     register int i;
 
-    static EventSeqRec timerEventRec = {
-	{0, 0,NULL, _XtEventTimerEventType, 0L, 0L,NULL},
-	/* (StatePtr) -1 */ NULL,
-	NULL,
-	NULL
-    };
-
     downEvent = event = *eventP;
     *upEvent = *downEvent;
     upEvent->event.eventType = ((event->event.eventType == ButtonPress) ?
@@ -1213,6 +1212,9 @@ static void RepeatDownPlus(eventP, reps, actionsP)
         && (upEvent->event.modifiers | upEvent->event.modifierMask))
 	upEvent->event.modifiers
 	    |= buttonModifierMasks[event->event.eventCode];
+
+    if (event->event.lateModifiers)
+	event->event.lateModifiers->ref_count += reps * 2 - 1;
 
     for (i=0; i<reps; i++) {
 
@@ -1251,13 +1253,6 @@ static void RepeatUp(eventP, reps, actionsP)
     EventPtr upEvent = &upEventRec;
     register int i;
 
-    static EventSeqRec timerEventRec = {
-	{0, 0,NULL, _XtEventTimerEventType, 0L, 0L,NULL},
-	/* (StatePtr) -1 */ NULL,
-	NULL,
-	NULL
-    };
-
     /* the event currently sitting in *eventP is an "up" event */
     /* we want to make it a "down" event followed by an "up" event, */
     /* so that sequence matching on the "state" side works correctly. */
@@ -1271,6 +1266,9 @@ static void RepeatUp(eventP, reps, actionsP)
         && (downEvent->event.modifiers | downEvent->event.modifierMask))
 	downEvent->event.modifiers
 	    &= ~buttonModifierMasks[event->event.eventCode];
+
+    if (event->event.lateModifiers)
+	event->event.lateModifiers->ref_count += reps * 2 - 1;
 
     /* up */
     event->next = XtNew(EventSeqRec);
@@ -1311,13 +1309,6 @@ static void RepeatUpPlus(eventP, reps, actionsP)
     EventPtr upEvent = &upEventRec;
     register int i;
 
-    static EventSeqRec timerEventRec = {
-	{0, 0,NULL, _XtEventTimerEventType, 0L, 0L,NULL},
-	/* (StatePtr) -1 */ NULL,
-	NULL,
-	NULL
-    };
-
     /* the event currently sitting in *eventP is an "up" event */
     /* we want to make it a "down" event followed by an "up" event, */
     /* so that sequence matching on the "state" side works correctly. */
@@ -1331,6 +1322,9 @@ static void RepeatUpPlus(eventP, reps, actionsP)
         && (downEvent->event.modifiers | downEvent->event.modifierMask))
 	downEvent->event.modifiers
 	    &= ~buttonModifierMasks[event->event.eventCode];
+
+    if (event->event.lateModifiers)
+	event->event.lateModifiers->ref_count += reps * 2;
 
     for (i=0; i<reps; i++) {
 
@@ -1366,6 +1360,9 @@ static void RepeatOther(eventP, reps, actionsP)
 
     tempEvent = event = *eventP;
 
+    if (event->event.lateModifiers)
+	event->event.lateModifiers->ref_count += reps - 1;
+
     for (i=1; i<reps; i++) {
 	event->next = XtNew(EventSeqRec);
 	event = event->next;
@@ -1385,6 +1382,9 @@ static void RepeatOtherPlus(eventP, reps, actionsP)
     register int i;
 
     tempEvent = event = *eventP;
+
+    if (event->event.lateModifiers)
+	event->event.lateModifiers->ref_count += reps - 1;
 
     for (i=1; i<reps; i++) {
 	event->next = XtNew(EventSeqRec);
@@ -1439,7 +1439,7 @@ static String ParseRepeat(str, eventP, actionsP)
     ScanFor(right_paren, ')');
     if (isascii(*str) && isdigit(*str)) {
 	String start = str;
-	char repStr[100];
+	char repStr[7];
 	int len;
 
 	ScanNumeric(str);
