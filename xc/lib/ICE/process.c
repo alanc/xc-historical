@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.23 93/12/06 18:41:09 mor Exp $ */
+/* $XConsortium: process.c,v 1.24 93/12/07 11:04:13 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -99,8 +99,8 @@ IceReplyWaitInfo *replyWait;
 	    int endian = 1;
 
 	    iceConn->swap =
-	        (((*(char *) &endian) && byteOrder == IceBigEndian) ||
-	         !(*(char *) &endian) && byteOrder == IceLittleEndian);
+	        (((*(char *) &endian) && byteOrder == IceMSBfirst) ||
+	         !(*(char *) &endian) && byteOrder == IceLSBfirst);
 
 	    iceConn->waiting_for_byteorder = 0;
 	}
@@ -320,7 +320,7 @@ int 	versionIndex;
     char			*pData;
     int				extra;
 
-    extra = XPCS_BYTES (IceVendorString) + XPCS_BYTES (IceReleaseString);
+    extra = STRING_BYTES (IceVendorString) + STRING_BYTES (IceReleaseString);
 
     IceGetHeaderExtra (iceConn, 0, ICE_ConnectionReply,
 	SIZEOF (iceConnectionReplyMsg), WORD64COUNT (extra),
@@ -328,8 +328,8 @@ int 	versionIndex;
 
     pMsg->versionIndex = versionIndex;
 
-    STORE_XPCS (pData, IceVendorString);
-    STORE_XPCS (pData, IceReleaseString);
+    STORE_STRING (pData, IceVendorString);
+    STORE_STRING (pData, IceReleaseString);
 
     IceFlush (iceConn);
 
@@ -353,7 +353,7 @@ char 	*release;
     char		*pData;
     int			extra;
 
-    extra = XPCS_BYTES (vendor) + XPCS_BYTES (release);
+    extra = STRING_BYTES (vendor) + STRING_BYTES (release);
 
     IceGetHeaderExtra (iceConn, 0, ICE_ProtocolReply,
 	SIZEOF (iceProtocolReplyMsg), WORD64COUNT (extra),
@@ -362,8 +362,8 @@ char 	*release;
     pMsg->protocolOpcode = myOpcode;
     pMsg->versionIndex = versionIndex;
 
-    STORE_XPCS (pData, vendor);
-    STORE_XPCS (pData, release);
+    STORE_STRING (pData, vendor);
+    STORE_STRING (pData, release);
 
     IceFlush (iceConn);
 
@@ -458,7 +458,7 @@ IceReplyWaitInfo *replyWait;
 	    case IceAuthRejected:
 
 		prefix = "Authentication Rejected, reason : ";
-		EXTRACT_XPCS (pData, swap, temp);
+		EXTRACT_STRING (pData, swap, temp);
 		errorStr = (char *) malloc (
 		    strlen (prefix) + strlen (temp) + 1);
 		sprintf (errorStr, "%s%s", prefix, temp);
@@ -468,7 +468,7 @@ IceReplyWaitInfo *replyWait;
 	    case IceAuthFailed:
 
 		prefix = "Authentication Failed, reason : ";
-		EXTRACT_XPCS (pData, swap, temp);
+		EXTRACT_STRING (pData, swap, temp);
 		errorStr = (char *) malloc (
 		    strlen (prefix) + strlen (temp) + 1);
 		sprintf (errorStr, "%s%s", prefix, temp);
@@ -517,7 +517,7 @@ IceReplyWaitInfo *replyWait;
 	    case IceAuthRejected:
 
 		prefix = "Authentication Rejected, reason : ";
-		EXTRACT_XPCS (pData, swap, temp);
+		EXTRACT_STRING (pData, swap, temp);
 		errorStr = (char *) malloc (
 		    strlen (prefix) + strlen (temp) + 1);
 		sprintf (errorStr, "%s%s", prefix, temp);
@@ -527,7 +527,7 @@ IceReplyWaitInfo *replyWait;
 	    case IceAuthFailed:
 
 		prefix = "Authentication Failed, reason : ";
-		EXTRACT_XPCS (pData, swap, temp);
+		EXTRACT_STRING (pData, swap, temp);
 		errorStr = (char *) malloc (
 		    strlen (prefix) + strlen (temp) + 1);
 		sprintf (errorStr, "%s%s", prefix, temp);
@@ -537,7 +537,7 @@ IceReplyWaitInfo *replyWait;
 	    case IceProtocolDuplicate:
 
 		prefix = "Protocol was already registered : ";
-		EXTRACT_XPCS (pData, swap, temp);
+		EXTRACT_STRING (pData, swap, temp);
 		errorStr = (char *) malloc (
 		    strlen (prefix) + strlen (temp) + 1);
 		sprintf (errorStr, "%s%s", prefix, temp);
@@ -554,7 +554,7 @@ IceReplyWaitInfo *replyWait;
 	    case IceUnknownProtocol:
 
 		prefix = "Unknown Protocol : ";
-		EXTRACT_XPCS (pData, swap, temp);
+		EXTRACT_STRING (pData, swap, temp);
 		errorStr = (char *) malloc (
 		    strlen (prefix) + strlen (temp) + 1);
 		sprintf (errorStr, "%s%s", prefix, temp);
@@ -650,13 +650,13 @@ Bool			swap;
 
     pData = pStart;
 
-    EXTRACT_XPCS (pData, swap, vendor);
-    EXTRACT_XPCS (pData, swap, release);
+    EXTRACT_STRING (pData, swap, vendor);
+    EXTRACT_STRING (pData, swap, release);
 
     if ((hisAuthCount = message->authCount) > 0)
     {
 	hisAuthNames = (char **) malloc (hisAuthCount * sizeof (char *));
-	EXTRACT_LISTOF_XPCS (pData, swap, hisAuthCount, hisAuthNames);
+	EXTRACT_LISTOF_STRING (pData, swap, hisAuthCount, hisAuthNames);
     }
 
     hisVersionCount = message->versionCount;
@@ -1395,8 +1395,8 @@ IceReplyWaitInfo 	*replyWait;
 	reply->type = ICE_CONNECTION_REPLY;
         reply->connection_reply.version_index = message->versionIndex;
 
-	EXTRACT_XPCS (pData, swap, reply->connection_reply.vendor);
-	EXTRACT_XPCS (pData, swap, reply->connection_reply.release);
+	EXTRACT_STRING (pData, swap, reply->connection_reply.vendor);
+	EXTRACT_STRING (pData, swap, reply->connection_reply.release);
 
 	replyReady = True;
     }
@@ -1470,7 +1470,7 @@ Bool			swap;
 	return;
     }
 
-    EXTRACT_XPCS (pData, swap, protocolName);
+    EXTRACT_STRING (pData, swap, protocolName);
 
     if (iceConn->process_msg_info)
     {
@@ -1507,13 +1507,13 @@ Bool			swap;
 	return;
     }
 
-    EXTRACT_XPCS (pData, swap, vendor);
-    EXTRACT_XPCS (pData, swap, release);
+    EXTRACT_STRING (pData, swap, vendor);
+    EXTRACT_STRING (pData, swap, release);
 
     if ((hisAuthCount = message->authCount) > 0)
     {
 	hisAuthNames = (char **) malloc (hisAuthCount * sizeof (char *));
-	EXTRACT_LISTOF_XPCS (pData, swap, hisAuthCount, hisAuthNames);
+	EXTRACT_LISTOF_STRING (pData, swap, hisAuthCount, hisAuthNames);
     }
 
     hisVersionCount = message->versionCount;
@@ -1780,8 +1780,8 @@ IceReplyWaitInfo 	*replyWait;
 	reply->major_opcode = message->protocolOpcode;
         reply->version_index = message->versionIndex;
 
-	EXTRACT_XPCS (pData, swap, reply->vendor);
-	EXTRACT_XPCS (pData, swap, reply->release);
+	EXTRACT_STRING (pData, swap, reply->vendor);
+	EXTRACT_STRING (pData, swap, reply->release);
 
 	replyReady = True;
     }
