@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.60 88/09/06 16:29:22 jim Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.61 88/09/26 09:30:45 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -1002,6 +1002,7 @@ void _XtBindActions(widget,tm,index)
     if (unbound != 0) ReportUnboundActions(tm, stateTable);
 }
 
+static
 void _XtBindAccActions(widget,stateTable,index,accBindings)
     Widget	    widget;
     XtTranslations  stateTable;
@@ -1492,31 +1493,42 @@ void XtInstallAccelerators(destination,source)
     Widget destination,source;
 {
     char str[100];
-    XtTranslations temp;
     XtBoundAccActions accBindings;
     if ((!XtIsWindowObject(source)) ||
         source->core.accelerators == NULL) return;
-    if (source->core.accelerators != NULL 
-        && source->core.accelerators->accProcTbl == NULL)
+/*    if (source->core.accelerators->accProcTbl == NULL)
+ *  The spec is not clear on when actions specified in accelerators are bound;
+ *  The most useful (and easiest) thing seems to be to bind them at this time
+ *  (rather than at Realize).  Under the current code the preceeding test
+ *  seems always to be True, thus guaranteeing accBindings is always set
+ *  before being used below.
+ */
         _XtBindAccActions(source,source->core.accelerators,0,&accBindings);
-    _XtInitializeStateTable(&temp);
-    temp->clickTime = source->core.accelerators->clickTime;
-    if (source->core.accelerators->operation == XtTableOverride) {
-        MergeTables(temp,source->core.accelerators,FALSE,accBindings);
-        MergeTables(temp, destination->core.tm.translations,FALSE,
-               destination->core.tm.translations->accProcTbl);
+    if (destination->core.tm.translations == NULL) {
+	destination->core.tm.translations = source->core.accelerators;
+	destination->core.tm.translations->accProcTbl = accBindings;
     }
-    else { 
-        MergeTables(temp, destination->core.tm.translations,FALSE,
-               destination->core.tm.translations->accProcTbl);
-        MergeTables(temp,source->core.accelerators,FALSE,accBindings);
+    else {
+	XtTranslations temp;
+	_XtInitializeStateTable(&temp);
+	temp->clickTime = source->core.accelerators->clickTime;
+	if (source->core.accelerators->operation == XtTableOverride) {
+	    MergeTables(temp,source->core.accelerators,FALSE,accBindings);
+	    MergeTables(temp, destination->core.tm.translations,FALSE,
+		   destination->core.tm.translations->accProcTbl);
+	}
+	else { 
+	    MergeTables(temp, destination->core.tm.translations,FALSE,
+		   destination->core.tm.translations->accProcTbl);
+	    MergeTables(temp,source->core.accelerators,FALSE,accBindings);
+	}
+	destination->core.tm.translations = temp;
     }
-    destination->core.tm.translations = temp;
     if (XtIsRealized(destination))
         _XtInstallTranslations(destination,
              destination->core.tm.translations);
     XtAddCallback(source, XtNdestroyCallback,
-        RemoveAccelerators,(caddr_t)temp);
+        RemoveAccelerators,(caddr_t)destination->core.tm.translations);
     if (XtClass(source)->core_class.display_accelerator != NULL){
          str[0] = '\0';
          (void) PrintEvent(&str[0],
