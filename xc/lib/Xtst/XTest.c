@@ -1,8 +1,8 @@
-/* $XConsortium: XTest.c,v 1.7 92/04/20 13:14:52 rws Exp $ */
+/* $XConsortium: XTest.c,v 1.8 92/12/17 11:45:41 rws Exp $ */
 /*
 
 Copyright 1990, 1991 by UniSoft Group Limited
-Copyright 1992 by the Massachusetts Institute of Technology
+Copyright 1992, 1993 by the Massachusetts Institute of Technology
 
 Permission to use, copy, modify, distribute, and sell this software and its
 documentation for any purpose is hereby granted without fee, provided that
@@ -22,6 +22,8 @@ without express or implied warranty.
 #include "xteststr.h"
 #include "Xext.h"
 #include "extutil.h"
+#include "XInput.h"
+#include "XIproto.h"
 
 static XExtensionInfo _xtest_info_data;
 static XExtensionInfo *xtest_info = &_xtest_info_data;
@@ -29,6 +31,10 @@ static /* const */ char *xtest_extension_name = XTestExtensionName;
 
 #define XTestCheckExtension(dpy,i,val) \
   XextCheckExtension (dpy, i, xtest_extension_name, val)
+
+#define XTestICheckExtension(dpy,i,val) \
+  XextCheckExtension (dpy, i, xtest_extension_name, val); \
+  if (!i->data) return val
 
 /*****************************************************************************
  *                                                                           *
@@ -51,10 +57,21 @@ static /* const */ XExtensionHooks xtest_extension_hooks = {
     NULL				/* error_string */
 };
 
+static caddr_t
+get_xinput_base(dpy)
+    Display *dpy;
+{
+    int major_opcode, first_event, first_error;
+    first_event = 0;
+
+    XQueryExtension(dpy, INAME, &major_opcode, &first_event, &first_error);
+    return (caddr_t)first_event;
+}
+
 static XEXT_GENERATE_FIND_DISPLAY (find_display, xtest_info,
 				   xtest_extension_name, 
 				   &xtest_extension_hooks, XTestNumberEvents,
-				   NULL)
+				   get_xinput_base(dpy))
 
 static XEXT_GENERATE_CLOSE_DISPLAY (close_display, xtest_info)
 
@@ -229,6 +246,211 @@ XTestFakeRelativeMotionEvent(dpy, dx, dy, delay)
     req->rootX = dx;
     req->rootY = dy;
     req->time = delay;
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return 1;
+}
+
+XTestFakeDeviceKeyEvent(dpy, dev, keycode, is_press, axes, n_axes, delay)
+    Display *dpy;
+    XDevice *dev;
+    unsigned int keycode;
+    Bool is_press;
+    int *axes;
+    int n_axes;
+    unsigned long delay;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    register xXTestFakeInputReq *req;
+    deviceValuator ev;
+
+    XTestICheckExtension (dpy, info, 0);
+
+    LockDisplay(dpy);
+    GetReq(XTestFakeInput, req);
+    req->reqType = info->codes->major_opcode;
+    req->xtReqType = X_XTestFakeInput;
+    req->type = is_press ? XI_DeviceKeyPress : XI_DeviceKeyRelease;
+    req->type += (int)info->data;
+    req->detail = keycode;
+    req->time = delay;
+    req->deviceid = dev->device_id;
+    if (n_axes) {
+	req->deviceid |= MORE_EVENTS;
+	ev.type = XI_DeviceValuator + (int)info->data;
+	ev.deviceid = dev->device_id;
+	ev.num_valuators = n_axes;
+	ev.first_valuator = 0;
+	req->length += SIZEOF(xEvent) >> 2;
+	switch (n_axes)
+	{
+	case 6:
+	    ev.valuator5 = *(axes+5);
+	case 5:
+	    ev.valuator4 = *(axes+4);
+	case 4:
+	    ev.valuator3 = *(axes+3);
+	case 3:
+	    ev.valuator2 = *(axes+2);
+	case 2:
+	    ev.valuator1 = *(axes+1);
+	case 1:
+	    ev.valuator0 = *axes;
+	}
+	Data(dpy, (char *)&ev, SIZEOF(xEvent));
+    }
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return 1;
+}
+
+XTestFakeDeviceButtonEvent(dpy, dev, button, is_press, axes, n_axes, delay)
+    Display *dpy;
+    XDevice *dev;
+    unsigned int button;
+    Bool is_press;
+    int *axes;
+    int n_axes;
+    unsigned long delay;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    register xXTestFakeInputReq *req;
+    deviceValuator ev;
+
+    XTestICheckExtension (dpy, info, 0);
+
+    LockDisplay(dpy);
+    GetReq(XTestFakeInput, req);
+    req->reqType = info->codes->major_opcode;
+    req->xtReqType = X_XTestFakeInput;
+    req->type = is_press ? XI_DeviceButtonPress : XI_DeviceButtonRelease;
+    req->type += (int)info->data;
+    req->detail = button;
+    req->time = delay;
+    req->deviceid = dev->device_id;
+    if (n_axes) {
+	req->deviceid |= MORE_EVENTS;
+	ev.type = XI_DeviceValuator + (int)info->data;
+	ev.deviceid = dev->device_id;
+	ev.num_valuators = n_axes;
+	ev.first_valuator = 0;
+	req->length += SIZEOF(xEvent) >> 2;
+	switch (n_axes)
+	{
+	case 6:
+	    ev.valuator5 = *(axes+5);
+	case 5:
+	    ev.valuator4 = *(axes+4);
+	case 4:
+	    ev.valuator3 = *(axes+3);
+	case 3:
+	    ev.valuator2 = *(axes+2);
+	case 2:
+	    ev.valuator1 = *(axes+1);
+	case 1:
+	    ev.valuator0 = *axes;
+	}
+	Data(dpy, (char *)&ev, SIZEOF(xEvent));
+    }
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return 1;
+}
+
+XTestFakeProximityEvent(dpy, dev, in_prox, axes, n_axes, delay)
+    Display *dpy;
+    XDevice *dev;
+    Bool in_prox;
+    int *axes;
+    int n_axes;
+    unsigned long delay;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    register xXTestFakeInputReq *req;
+    deviceValuator ev;
+
+    XTestICheckExtension (dpy, info, 0);
+
+    LockDisplay(dpy);
+    GetReq(XTestFakeInput, req);
+    req->reqType = info->codes->major_opcode;
+    req->xtReqType = X_XTestFakeInput;
+    req->type = in_prox ? XI_ProximityIn : XI_ProximityOut;
+    req->type += (int)info->data;
+    req->time = delay;
+    req->deviceid = dev->device_id;
+    if (n_axes) {
+	req->deviceid |= MORE_EVENTS;
+	ev.type = XI_DeviceValuator + (int)info->data;
+	ev.deviceid = dev->device_id;
+	ev.num_valuators = n_axes;
+	ev.first_valuator = 0;
+	req->length += SIZEOF(xEvent) >> 2;
+	switch (n_axes)
+	{
+	case 6:
+	    ev.valuator5 = *(axes+5);
+	case 5:
+	    ev.valuator4 = *(axes+4);
+	case 4:
+	    ev.valuator3 = *(axes+3);
+	case 3:
+	    ev.valuator2 = *(axes+2);
+	case 2:
+	    ev.valuator1 = *(axes+1);
+	case 1:
+	    ev.valuator0 = *axes;
+	}
+	Data(dpy, (char *)&ev, SIZEOF(xEvent));
+    }
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return 1;
+}
+
+XTestFakeDeviceMotionEvent(dpy, dev, is_relative, axes, n_axes, delay)
+    Display *dpy;
+    XDevice *dev;
+    Bool is_relative;
+    int *axes;
+    int n_axes;
+    unsigned long delay;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    register xXTestFakeInputReq *req;
+    deviceValuator ev;
+
+    XTestICheckExtension (dpy, info, 0);
+
+    LockDisplay(dpy);
+    GetReq(XTestFakeInput, req);
+    req->reqType = info->codes->major_opcode;
+    req->xtReqType = X_XTestFakeInput;
+    req->type = XI_DeviceMotionNotify + (int)info->data;
+    req->detail = is_relative;
+    req->time = delay;
+    req->deviceid = dev->device_id | MORE_EVENTS;
+    ev.type = XI_DeviceValuator + (int)info->data;
+    ev.deviceid = dev->device_id;
+    ev.num_valuators = n_axes;
+    ev.first_valuator = 0;
+    req->length += SIZEOF(xEvent) >> 2;
+    switch (n_axes)
+    {
+    case 6:
+	ev.valuator5 = *(axes+5);
+    case 5:
+	ev.valuator4 = *(axes+4);
+    case 4:
+	ev.valuator3 = *(axes+3);
+    case 3:
+	ev.valuator2 = *(axes+2);
+    case 2:
+	ev.valuator1 = *(axes+1);
+    case 1:
+	ev.valuator0 = *axes;
+    }
+    Data(dpy, (char *)&ev, SIZEOF(xEvent));
     UnlockDisplay(dpy);
     SyncHandle();
     return 1;
