@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.124 92/02/21 12:34:32 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.125 92/05/13 15:43:14 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1046,10 +1046,6 @@ static void EvaluateWMHints(w)
 
 	hintp->flags = StateHint | InputHint;
 
-	if (XtIsTopLevelShell((Widget)w)
-	    && ((TopLevelShellWidget)w)->topLevel.iconic) {
-	    hintp->initial_state = IconicState;
-	}
 	if (hintp->icon_x == XtUnspecifiedShellInt)
 	    hintp->icon_x = -1;
 	else
