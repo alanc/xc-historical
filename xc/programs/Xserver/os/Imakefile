@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.47 91/07/16 23:02:24 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.48 91/07/24 18:36:18 keith Exp $
 #include <Server.tmpl>
 
 #if (SystemV || SystemV4) && !HasSockets
@@ -86,11 +86,11 @@ NormalLibraryTarget(os,$(OBJS))
 LintLibraryTarget(os,$(SRCS))
 NormalLintTarget($(SRCS))
 
-# these depend on ConnectionFlags
+XCOMM these depend on ConnectionFlags
 access.o: $(ICONFIGFILES)
 connection.o: $(ICONFIGFILES)
 
-# these depend on HASXDMAUTH
+XCOMM these depend on HASXDMAUTH
 auth.o xdmcp.o: $(ICONFIGFILES)
 
 #ifdef HPArchitecture

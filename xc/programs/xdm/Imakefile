@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.56 91/07/24 00:07:01 keith Exp $
+XCOMM $XConsortium: Imakefile,v 1.57 91/07/29 17:14:15 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -99,7 +99,7 @@ InstallAppDefaults(Chooser)
 
 SpecialObjectRule(resource.o, $(ICONFIGFILES), $(RES_DEFINES))
 
-# these files depend on HASXDMAUTH
+XCOMM these files depend on HASXDMAUTH
 auth.o policy.o: $(ICONFIGFILES)
 
 #ifdef IHaveSubdirs

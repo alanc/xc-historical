@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.13 91/07/24 17:20:00 dave Exp $
+XCOMM $XConsortium: Imakefile,v 1.14 91/07/27 13:29:56 rws Exp $
 XCOMM
 XCOMM Copyright 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium
 XCOMM
@@ -41,9 +41,9 @@ OBJS =   basestat.o bif_lex.o bifbuild.o bifconfig.o bifparse.o bld_prim.o \
 
 
 
-# USING_PHIGS Build gpc for PHIGS_API
-# HAVEPIXELS  Turns on code not particular to the SI, used in conjuction
-#		with specialized GDP's or GSE's not supported by PEX_API
+XCOMM USING_PHIGS Build gpc for PHIGS_API
+XCOMM HAVEPIXELS  Turns on code not particular to the SI, used in conjuction
+XCOMM		with specialized GDP's or GSE's not supported by PEX_API
 
 DEFINES = -DUSING_PHIGS 
 
