@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranslcl.c,v 1.10 94/02/06 16:03:24 mor Exp $ */
+/* $XConsortium: Xtranslcl.c,v 1.11 94/02/09 16:48:05 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -101,7 +101,11 @@ typedef SIGNAL_T (*PFV)();
 
 extern PFV signal();
 
-extern char *ptsname(int);
+extern char *ptsname(
+#if NeedFunctionPrototypes
+    int
+#endif
+);
 
 static void _dummy(sig)
 
@@ -1349,11 +1353,37 @@ XtransConnInfo	newciptr;
 
 typedef struct _LOCALtrans2dev {
     char	*transname;
-    int	(*devcotsopenclient)(XtransConnInfo ,char * /*port*/);
-    int	(*devcotsopenserver)(XtransConnInfo ,char * /*port*/);
-    int	(*devcltsopenclient)(XtransConnInfo ,char * /*port*/);
-    int	(*devcltsopenserver)(XtransConnInfo ,char * /*port*/);
-    int	(*devaccept)(XtransConnInfo,XtransConnInfo);
+
+    int	(*devcotsopenclient)(
+#if NeedFunctionPrototypes
+	XtransConnInfo, char * /*port*/
+#endif
+);
+
+    int	(*devcotsopenserver)(
+#if NeedFunctionPrototypes
+	XtransConnInfo, char * /*port*/
+#endif
+);
+
+    int	(*devcltsopenclient)(
+#if NeedFunctionPrototypes
+	XtransConnInfo, char * /*port*/
+#endif
+);
+
+    int	(*devcltsopenserver)(
+#if NeedFunctionPrototypes
+	XtransConnInfo, char * /*port*/
+#endif
+);
+
+    int	(*devaccept)(
+#if NeedFunctionPrototypes
+	XtransConnInfo, XtransConnInfo
+#endif
+);
+
 } LOCALtrans2dev;
 
 static LOCALtrans2dev LOCALtrans2devtab[] = {
@@ -1380,7 +1410,9 @@ static	char	*workingXLOCAL=NULL;
 static	char	*freeXLOCAL=NULL;
 
 static void
-TRANS(LocalInitTransports)(char *protocol)
+TRANS(LocalInitTransports)(protocol)
+
+char *protocol;
 
 {
     PRMSG(3,"TRANS(LocalInitTransports)(%s)\n", protocol, 0,0 );
@@ -1449,7 +1481,12 @@ TRANS(LocalGetNextTransport)()
 }
 
 static XtransConnInfo
-TRANS(LocalOpenClient)(int type, char *protocol, char *host, char *port)
+TRANS(LocalOpenClient)(type, protocol, host, port)
+
+int  type;
+char *protocol;
+char *host;
+char *port;
 
 {
     int	fd = -1;
@@ -1521,7 +1558,12 @@ TRANS(LocalOpenClient)(int type, char *protocol, char *host, char *port)
 }
 
 static XtransConnInfo
-TRANS(LocalOpenServer)(int type, char *protocol, char *host, char *port)
+TRANS(LocalOpenServer)(type, protocol, host, port)
+
+int  type;
+char *protocol;
+char *host;
+char *port;
 
 {
     int	i,fd = -1;
@@ -1583,7 +1625,12 @@ TRANS(LocalOpenServer)(int type, char *protocol, char *host, char *port)
  */
 
 static XtransConnInfo
-TRANS(LocalOpenCOTSClient)(Xtransport *thistrans, char *protocol, char *host, char *port)
+TRANS(LocalOpenCOTSClient)(thistrans, protocol, host, port)
+
+Xtransport *thistrans;
+char *protocol;
+char *host;
+char *port;
 
 {
     PRMSG(2,"TRANS(LocalOpenCOTSClient)(%s,%s,%s)\n",protocol,host,port);
@@ -1592,7 +1639,12 @@ TRANS(LocalOpenCOTSClient)(Xtransport *thistrans, char *protocol, char *host, ch
 }
 
 static XtransConnInfo
-TRANS(LocalOpenCOTSServer)(Xtransport *thistrans, char *protocol, char *host, char *port)
+TRANS(LocalOpenCOTSServer)(thistrans, protocol, host, port)
+
+Xtransport *thistrans;
+char *protocol;
+char *host;
+char *port;
 
 {
     PRMSG(2,"TRANS(LocalOpenCOTSServer)(%s,%s,%s)\n",protocol,host,port);
@@ -1601,7 +1653,12 @@ TRANS(LocalOpenCOTSServer)(Xtransport *thistrans, char *protocol, char *host, ch
 }
 
 static XtransConnInfo
-TRANS(LocalOpenCLTSClient)(Xtransport *thistrans, char *protocol, char *host, char *port)
+TRANS(LocalOpenCLTSClient)(thistrans, protocol, host, port)
+
+Xtransport *thistrans;
+char *protocol;
+char *host;
+char *port;
 
 {
     PRMSG(2,"TRANS(LocalOpenCLTSClient)(%s,%s,%s)\n",protocol,host,port);
@@ -1610,7 +1667,12 @@ TRANS(LocalOpenCLTSClient)(Xtransport *thistrans, char *protocol, char *host, ch
 }
 
 static XtransConnInfo
-TRANS(LocalOpenCLTSServer)(Xtransport *thistrans, char *protocol, char *host, char *port)
+TRANS(LocalOpenCLTSServer)(thistrans, protocol, host, port)
+
+Xtransport *thistrans;
+char *protocol;
+char *host;
+char *port;
 
 {
     PRMSG(2,"TRANS(LocalOpenCLTSServer)(%s,%s,%s)\n",protocol,host,port);
@@ -1619,7 +1681,11 @@ TRANS(LocalOpenCLTSServer)(Xtransport *thistrans, char *protocol, char *host, ch
 }
 
 static
-TRANS(LocalSetOption)(XtransConnInfo ciptr, int option, int arg)
+TRANS(LocalSetOption)(ciptr, option, arg)
+
+XtransConnInfo ciptr;
+int option;
+int arg;
 
 {
     PRMSG(2,"TRANS(LocalSetOption)(%d,%d,%d)\n",ciptr->fd,option,arg);
@@ -1628,7 +1694,10 @@ TRANS(LocalSetOption)(XtransConnInfo ciptr, int option, int arg)
 }
 
 static
-TRANS(LocalCreateListener)(XtransConnInfo ciptr, char *port)
+TRANS(LocalCreateListener)(ciptr, port)
+
+XtransConnInfo ciptr;
+char *port;
 
 {
     PRMSG(2,"TRANS(LocalCreateListener)(%x->%d,%s)\n",ciptr,ciptr->fd,port);
@@ -1637,7 +1706,9 @@ TRANS(LocalCreateListener)(XtransConnInfo ciptr, char *port)
 }
 
 static XtransConnInfo
-TRANS(LocalAccept)(XtransConnInfo ciptr)
+TRANS(LocalAccept)(ciptr)
+
+XtransConnInfo ciptr;
 
 {
     XtransConnInfo	newciptr;
@@ -1668,7 +1739,11 @@ TRANS(LocalAccept)(XtransConnInfo ciptr)
 }
 
 static
-TRANS(LocalConnect)(XtransConnInfo ciptr, char *host, char *port)
+TRANS(LocalConnect)(ciptr, host, port)
+
+XtransConnInfo ciptr;
+char *host;
+char *port;
 
 {
     PRMSG(2,"TRANS(LocalConnect)(%x->%d,%s)\n", ciptr, ciptr->fd, port);
@@ -1677,7 +1752,10 @@ TRANS(LocalConnect)(XtransConnInfo ciptr, char *host, char *port)
 }
 
 static int
-TRANS(LocalBytesReadable)(XtransConnInfo ciptr, BytesReadable_t *pend )
+TRANS(LocalBytesReadable)(ciptr, pend )
+
+XtransConnInfo ciptr;
+BytesReadable_t *pend;
 
 {
     PRMSG(2,"TRANS(LocalBytesReadable)(%x->%d,%x)\n", ciptr, ciptr->fd, pend);
@@ -1686,7 +1764,11 @@ TRANS(LocalBytesReadable)(XtransConnInfo ciptr, BytesReadable_t *pend )
 }
 
 static int
-TRANS(LocalRead)(XtransConnInfo ciptr, char *buf, int size)
+TRANS(LocalRead)(ciptr, buf, size)
+
+XtransConnInfo ciptr;
+char *buf;
+int size;
 
 {
     PRMSG(2,"TRANS(LocalRead)(%d,%x,%d)\n", ciptr->fd, buf, size );
@@ -1695,7 +1777,11 @@ TRANS(LocalRead)(XtransConnInfo ciptr, char *buf, int size)
 }
 
 static int
-TRANS(LocalWrite)(XtransConnInfo ciptr, char *buf, int size)
+TRANS(LocalWrite)(ciptr, buf, size)
+
+XtransConnInfo ciptr;
+char *buf;
+int size;
 
 {
     PRMSG(2,"TRANS(LocalWrite)(%d,%x,%d)\n", ciptr->fd, buf, size );
@@ -1704,7 +1790,11 @@ TRANS(LocalWrite)(XtransConnInfo ciptr, char *buf, int size)
 }
 
 static int
-TRANS(LocalReadv)(XtransConnInfo ciptr, struct iovec *buf, int size)
+TRANS(LocalReadv)(ciptr, buf, size)
+
+XtransConnInfo 	ciptr;
+struct iovec 	*buf;
+int 		size;
 
 {
     PRMSG(2,"TRANS(LocalReadv)(%d,%x,%d)\n", ciptr->fd, buf, size );
@@ -1713,7 +1803,11 @@ TRANS(LocalReadv)(XtransConnInfo ciptr, struct iovec *buf, int size)
 }
 
 static int
-TRANS(LocalWritev)(XtransConnInfo ciptr, struct iovec *buf, int size)
+TRANS(LocalWritev)(ciptr, buf, size)
+
+XtransConnInfo 	ciptr;
+struct iovec 	*buf;
+int 		size;
 
 {
     PRMSG(2,"TRANS(LocalWritev)(%d,%x,%d)\n", ciptr->fd, buf, size );
@@ -1722,7 +1816,9 @@ TRANS(LocalWritev)(XtransConnInfo ciptr, struct iovec *buf, int size)
 }
 
 static int
-TRANS(LocalDisconnect)(XtransConnInfo ciptr)
+TRANS(LocalDisconnect)(ciptr)
+
+XtransConnInfo ciptr;
 
 {
     PRMSG(2,"TRANS(LocalDisconnect)(%x->%d)\n", ciptr, ciptr->fd, 0);
@@ -1731,7 +1827,9 @@ TRANS(LocalDisconnect)(XtransConnInfo ciptr)
 }
 
 static int
-TRANS(LocalClose)(XtransConnInfo ciptr)
+TRANS(LocalClose)(ciptr)
+
+XtransConnInfo ciptr;
 
 {
     struct sockaddr_un      *sockname=(struct sockaddr_un *) ciptr->addr;
@@ -1756,13 +1854,17 @@ TRANS(LocalClose)(XtransConnInfo ciptr)
 }
 
 static
-TRANS(LocalNameToAddr)(XtransConnInfo ciptr /*???what else???*/ )
+TRANS(LocalNameToAddr)(ciptr /* ???what else??? */)
+
+XtransConnInfo ciptr;
 
 {
 }
 
 static
-TRANS(LocalAddrToName)(XtransConnInfo ciptr /*???what else???*/ )
+TRANS(LocalAddrToName)(ciptr /* ???what else??? */)
+
+XtransConnInfo ciptr;
 
 {
 }
