@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: sunGX.c,v 1.21 93/09/26 10:19:38 rws Exp $";
+static char *rid="$XConsortium: sunGX.c,v 1.22 93/10/29 17:40:25 kaleb Exp $";
 #endif /* lint */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
@@ -44,6 +44,7 @@ static char *rid="$XConsortium: sunGX.c,v 1.21 93/09/26 10:19:38 rws Exp $";
 
 #include	"sun.h"
 #include	"sunGX.h"
+#include	"migc.h"
 
 #define sunGXFillSpan(gx,y,x1,x2,r) {\
     (gx)->apointy = (y); \
@@ -1965,21 +1966,16 @@ sunGXCheckFill (pGC, pDrawable)
 }
 
 void	sunGXValidateGC ();
-void	cfbChangeGC ();
-void	cfbCopyGC ();
 void	sunGXDestroyGC ();
-void	cfbChangeClip ();
-void	cfbDestroyClip();
-void	cfbCopyClip();
 
 GCFuncs	sunGXGCFuncs = {
     sunGXValidateGC,
-    cfbChangeGC,
-    cfbCopyGC,
+    miChangeGC,
+    miCopyGC,
     sunGXDestroyGC,
-    cfbChangeClip,
-    cfbDestroyClip,
-    cfbCopyClip
+    miChangeClip,
+    miDestroyClip,
+    miCopyClip
 };
 
 GCOps	sunGXTEOps1Rect = {
@@ -2002,9 +1998,9 @@ GCOps	sunGXTEOps1Rect = {
     miImageText16,
     sunGXTEGlyphBlt,
     sunGXPolyTEGlyphBlt,
-    cfbPushPixels8,
+    cfbPushPixels8
 #ifdef NEED_LINEHELPER
-    NULL,
+    ,NULL
 #endif
 };
 
@@ -2028,9 +2024,9 @@ GCOps	sunGXTEOps = {
     miImageText16,
     sunGXTEGlyphBlt,
     sunGXPolyTEGlyphBlt,
-    cfbPushPixels8,
+    cfbPushPixels8
 #ifdef NEED_LINEHELPER
-    NULL,
+    ,NULL
 #endif
 };
 
@@ -2054,9 +2050,9 @@ GCOps	sunGXNonTEOps1Rect = {
     miImageText16,
     miImageGlyphBlt,
     sunGXPolyGlyphBlt,
-    cfbPushPixels8,
+    cfbPushPixels8
 #ifdef NEED_LINEHELPER
-    NULL,
+    ,NULL
 #endif
 };
 
@@ -2080,13 +2076,11 @@ GCOps	sunGXNonTEOps = {
     miImageText16,
     miImageGlyphBlt,
     sunGXPolyGlyphBlt,
-    cfbPushPixels8,
+    cfbPushPixels8
 #ifdef NEED_LINEHELPER
-    NULL,
+    ,NULL
 #endif
 };
-
-#define PPW 4
 
 #define FONTWIDTH(font)	(FONTMAXBOUNDS(font,rightSideBearing) - \
 			 FONTMINBOUNDS(font,leftSideBearing))
@@ -2151,7 +2145,7 @@ sunGXValidateGC (pGC, changes, pDrawable)
 	{
 	    extern GCOps    cfbNonTEOps;
 
-	    cfbDestroyOps (pGC->ops);
+	    miDestroyGCOps (pGC->ops);
 	    pGC->ops = &cfbNonTEOps;
 	    changes = (1 << GCLastBit+1) - 1;
 	    pGC->stateChanges = changes;
@@ -2190,73 +2184,7 @@ sunGXValidateGC (pGC, changes, pDrawable)
 	(pDrawable->serialNumber != (pGC->serialNumber & DRAWABLE_SERIAL_BITS))
 	)
     {
-	ScreenPtr pScreen = pGC->pScreen;
-	RegionPtr   pregWin;
-	Bool        freeTmpClip, freeCompClip;
-
-	if (pGC->subWindowMode == IncludeInferiors) {
-	    pregWin = NotClippedByChildren((WindowPtr) pDrawable);
-	    freeTmpClip = TRUE;
-	}
-	else {
-	    pregWin = &((WindowPtr) pDrawable)->clipList;
-	    freeTmpClip = FALSE;
-	}
-	freeCompClip = devPriv->freeCompClip;
-
-	/*
-	 * if there is no client clip, we can get by with just keeping
-	 * the pointer we got, and remembering whether or not should
-	 * destroy (or maybe re-use) it later.  this way, we avoid
-	 * unnecessary copying of regions.  (this wins especially if
-	 * many clients clip by children and have no client clip.) 
-	 */
-	if (pGC->clientClipType == CT_NONE) {
-	    if (freeCompClip)
-		(*pScreen->RegionDestroy) (devPriv->pCompositeClip);
-	    devPriv->pCompositeClip = pregWin;
-	    devPriv->freeCompClip = freeTmpClip;
-	}
-	else {
-	    /*
-	     * we need one 'real' region to put into the composite
-	     * clip. if pregWin the current composite clip are real,
-	     * we can get rid of one. if pregWin is real and the
-	     * current composite clip isn't, use pregWin for the
-	     * composite clip. if the current composite clip is real
-	     * and pregWin isn't, use the current composite clip. if
-	     * neither is real, create a new region. 
-	     */
-
-	    (*pScreen->TranslateRegion)(pGC->clientClip,
-					pDrawable->x + pGC->clipOrg.x,
-					pDrawable->y + pGC->clipOrg.y);
-					      
-	    if (freeCompClip)
-	    {
-		(*pGC->pScreen->Intersect)(devPriv->pCompositeClip,
-					   pregWin, pGC->clientClip);
-		if (freeTmpClip)
-		    (*pScreen->RegionDestroy)(pregWin);
-	    }
-	    else if (freeTmpClip)
-	    {
-		(*pScreen->Intersect)(pregWin, pregWin, pGC->clientClip);
-		devPriv->pCompositeClip = pregWin;
-	    }
-	    else
-	    {
-		devPriv->pCompositeClip = (*pScreen->RegionCreate)(NullBox,
-								   0);
-		(*pScreen->Intersect)(devPriv->pCompositeClip,
-				      pregWin, pGC->clientClip);
-	    }
-	    devPriv->freeCompClip = TRUE;
-	    (*pScreen->TranslateRegion)(pGC->clientClip,
-					-(pDrawable->x + pGC->clipOrg.x),
-					-(pDrawable->y + pGC->clipOrg.y));
-					      
-	}
+	miComputeCompositeClip(pGC, pDrawable);
 	oneRect = REGION_NUM_RECTS(devPriv->pCompositeClip) == 1;
 	if (oneRect != devPriv->oneRect)
 	{
@@ -2440,7 +2368,7 @@ sunGXValidateGC (pGC, changes, pDrawable)
 	if (newops = sunGXMatchCommon (pGC, devPriv))
  	{
 	    if (pGC->ops->devPrivate.val)
-		cfbDestroyOps (pGC->ops);
+		miDestroyGCOps (pGC->ops);
 	    pGC->ops = newops;
 	    new_rrop = new_line = new_fillspans = new_text = new_fillarea = 0;
 	}
@@ -2448,7 +2376,7 @@ sunGXValidateGC (pGC, changes, pDrawable)
  	{
 	    if (!pGC->ops->devPrivate.val)
 	    {
-		pGC->ops = cfbCreateOps (pGC->ops);
+		pGC->ops = miCreateGCOps (pGC->ops);
 		pGC->ops->devPrivate.val = 1;
 	    }
 	}
@@ -2610,7 +2538,7 @@ sunGXDestroyGC (pGC)
 
     if (gxPriv->stipple)
 	xfree (gxPriv->stipple);
-    cfbDestroyGC (pGC);
+    miDestroyGC (pGC);
 }
 
 sunGXCreateGC (pGC)
