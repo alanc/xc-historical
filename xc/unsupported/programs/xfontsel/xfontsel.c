@@ -1,4 +1,4 @@
-/* $XConsortium: xfontsel.c,v 1.32 91/06/22 19:37:57 rws Exp $
+/* $XConsortium: xfontsel.c,v 1.33 91/06/22 21:33:52 rws Exp $
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
 Massachusetts Institute of Technology
@@ -1344,7 +1344,7 @@ Boolean ConvertSelection(w, selection, target, type, value, length, format)
      * internally.  CurrentTime will never be used.
      */
     if (XmuConvertStandardSelection(w, CurrentTime, selection, target, type,
-				    (caddr_t *) value, length, format))
+				    (XPointer *) value, length, format))
 	return True;
 
     if (*target == XA_STRING) {

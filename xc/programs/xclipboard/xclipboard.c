@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xclipboard.c,v 1.24 91/07/22 14:35:16 converse Exp $
+ * $XConsortium: xclipboard.c,v 1.25 91/07/22 15:53:36 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -522,7 +522,7 @@ static Boolean ConvertSelection(w, selection, target,
 	Atom* std_targets;
 	unsigned long std_length;
 	XmuConvertStandardSelection(w, req->time, selection, target, type,
-				  (caddr_t*)&std_targets, &std_length, format);
+				  (XPointer*)&std_targets, &std_length, format);
 	*value = XtMalloc(sizeof(Atom)*(std_length + 5));
 	targetP = *(Atom**)value;
 	*targetP++ = XA_STRING;
@@ -549,7 +549,7 @@ static Boolean ConvertSelection(w, selection, target,
     	else			/* *target == XA_LENGTH(d) */
       	  *temp = (long) TextLength (text);
     	
-    	*value = (caddr_t) temp;
+    	*value = (XPointer) temp;
     	*type = XA_INTEGER;
     	*length = 1L;
     	*format = 32;
@@ -563,7 +563,7 @@ static Boolean ConvertSelection(w, selection, target,
     	temp = (long *) XtMalloc(2 * sizeof(long));
     	temp[0] = (long) 0;
     	temp[1] = TextLength (text);
-    	*value = (caddr_t) temp;
+    	*value = (XPointer) temp;
     	*type = XA_SPAN(d);
     	*length = 2L;
     	*format = 32;
@@ -586,7 +586,7 @@ static Boolean ConvertSelection(w, selection, target,
     }
     
     if (XmuConvertStandardSelection(w, req->time, selection, target, type,
-				    (caddr_t *)value, length, format))
+				    (XPointer *)value, length, format))
 	return True;
 
     return False;

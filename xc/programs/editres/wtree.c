@@ -1,5 +1,5 @@
 /*
- * $XConsortium: wtree.c,v 1.15 92/03/20 18:12:43 dave Exp $
+ * $XConsortium: wtree.c,v 1.16 93/04/22 14:13:01 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -128,7 +128,7 @@ WNode * top;
 					args, num_args);
 
     if (XSaveContext(XtDisplay(top->widget), (Window) top->widget, 
-		     NODE_INFO, (caddr_t) top) != 0) {
+		     NODE_INFO, (XPointer) top) != 0) {
 	sprintf( msg, res_labels[29], top->name);
 	SetMessage(global_screen_data.info_label, msg);
     }	

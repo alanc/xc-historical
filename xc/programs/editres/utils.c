@@ -1,5 +1,5 @@
 /*
- * $XConsortium: utils.c,v 1.18 92/03/20 18:12:36 dave Exp $
+ * $XConsortium: utils.c,v 1.19 93/04/22 14:13:00 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -350,7 +350,7 @@ XtPointer data;
     file_info->data = data;
 
     if  (XSaveContext(XtDisplay(dialog), (Window) dialog, file_dialog_context, 
-		      (caddr_t) file_info) != 0) {
+		      (XPointer) file_info) != 0) {
 	SetMessage(global_screen_data.info_label,
 	    "Error while trying to save Context\nAborting file dialog popup.");
 	XtDestroyWidget(shell);
@@ -460,7 +460,7 @@ Widget w;
 XtPointer client_data, junk;
 {
     Widget dialog = XtParent(w);
-    caddr_t file_info_ptr;
+    XPointer file_info_ptr;
     FileDialogInfo * file_info;
 
     if (XFindContext(XtDisplay(dialog), (Window) dialog, file_dialog_context,

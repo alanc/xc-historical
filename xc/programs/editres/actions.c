@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.c,v 1.5 92/03/03 14:34:04 dave Exp $
+ * $XConsortium: actions.c,v 1.13 92/03/20 18:12:46 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -340,7 +340,7 @@ FindTreeNodeFromWidget(w)
 Widget w;
 {
     int ret_val;
-    caddr_t data_return;
+    XPointer data_return;
 
     /*
      * Yes, I really am casting a widget to a window  ** TRUST ME ***
