@@ -1,6 +1,6 @@
 #ifndef lint
-static char rcsid[] = "$Header: Xrm.c,v 1.12 88/06/03 10:42:48 swick Exp $";
-#endif lint
+static char rcsid[] = "$Header: Xrm.c,v 1.13 88/06/14 16:40:44 swick Exp $";
+#endif /* lint */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -344,7 +344,7 @@ static char *getstring(buf, nchars, dp)
 
 	if (src == NULL) return NULL;
 	if (*src == '\0') return NULL;
-	while (--nchars >= 0) {
+	while (--nchars > 0) {
 		*dst++ = c = *src++;
 		if (c == '\n') {
 			*dp = src;
@@ -355,6 +355,8 @@ static char *getstring(buf, nchars, dp)
 			return (buf);
 		}
 	}
+	*dst = '\0';
+	*dp = src;
 	return buf;
 }
 
@@ -643,30 +645,58 @@ static void PutLineResources(pdb, get_line, closure)
 {
     register char   *s, *ts, ch;
     char	buf[5000];
+    char        *pbuf = buf;
+    int		pbuf_size = sizeof(buf);
+    Bool	have_entire_value;
     register char   *nameStr, *valStr;
     XrmBinding	    bindings[100];
     XrmQuark	    quarks[100];
     XrmValue	    value;
 
+#define CheckForFullBuffer()						   \
+    if (s - pbuf == pbuf_size - 1) { /* if line filled buffer */	   \
+	char *obuf = pbuf;						   \
+	if (pbuf == buf) {						   \
+	    int osize = pbuf_size;					   \
+	    pbuf = Xmalloc(pbuf_size *= 2);				   \
+	    bcopy(buf, pbuf, osize);					   \
+	}								   \
+	else								   \
+	    pbuf = Xrealloc(pbuf, pbuf_size *= 2);			   \
+	s = pbuf + (s - obuf);						   \
+	ts = pbuf + (ts - obuf);					   \
+	nameStr = pbuf + (nameStr - obuf);				   \
+	valStr = pbuf + (valStr - obuf);				   \
+	if ((char *)(*get_line)(s, pbuf_size - (s-pbuf), closure) != NULL) \
+	    have_entire_value = False;					   \
+    }
+
+
     for (;;) {
-	s = (char *)(*get_line)(buf, sizeof(buf), closure);
-	if (s == NULL) return;
+	s = (char *)(*get_line)(pbuf, pbuf_size, closure);
+	if (s == NULL) break;
 
 	/* Scan to start of resource name/class specification */
 	for (; ((ch = *s) != '\n') && isspace(ch); s++) {};
 	if ((ch == '\0') || (ch == '\n') || (ch == '#')) continue;
     
-	/* Scan to end of resource name/class specification */
-	for (nameStr = s, ts = s-1; ; s++) {
-	    if ((ch = *s) == '\0' || ch == '\n')
-		break;
-	    if (ch == ':') {
-		s++;
-		break;
+	nameStr = valStr = s;
+	ts = s - 1;
+	do {
+	    have_entire_value = True;
+	    /* Scan to end of resource name/class specification */
+	    for (; ; s++) {
+		if ((ch = *s) == '\0' || ch == '\n')
+		    break;
+		if (ch == ':') {
+		    s++;
+		    break;
+		}
+		if (! isspace(ch))
+		    ts = s;
 	    }
-	    if (! isspace(ch))
-		ts = s;
-	}
+	    CheckForFullBuffer();
+	} while (! have_entire_value);
     
 	/* Remove trailing white space from name/class */
 	ts[1] = '\0';
@@ -674,26 +704,30 @@ static void PutLineResources(pdb, get_line, closure)
 	/* Scan to start of resource value */
 	for (; *s != '\n' && isspace(*s); s++) {};
     
-	/* Scan to end of resource value */
-	for (valStr = ts = s; ((ch = *s) != '\0' && ch != '\n');s++) {
-	    if (ch == '\\') {
-		if (s[1] == 'n') {	    /* \n becomes LF */
-		    *ts = '\n';
-		    ts++;
-		    s++;
-		} else if (s[1] == '\n') {  /* \LF means continue next line */
-		    if ((char *)(*get_line)(s+1, sizeof(buf) - (s-buf), closure) == NULL)
-		    break;
+	valStr = ts = s;
+	do {
+	    have_entire_value = True;
+	    /* Scan to end of resource value */
+	    for (; ((ch = *s) != '\0' && ch != '\n');s++) {
+		if (ch == '\\') {
+		    if (*++s == 'n') {	    /* \n becomes LF */
+			*ts = '\n';
+			ts++;
+		    } else if (*s == '\n') {  /* \LF means continue next line */
+			if ((char *)(*get_line)(s, pbuf_size - (s-pbuf), closure) == NULL)
+			    break;
+			s--;
+		    } else if (*s != '\0') {
+			*ts = *s;
+			ts++;
+		    } else break;
 		} else {
-		    *ts = s[1];
+		    *ts = ch;
 		    ts++;
-		    s++;
 		}
-	    } else {
-		*ts = ch;
-		ts++;
-	    }
-	};
+	    };
+	    CheckForFullBuffer();
+	} while (! have_entire_value);
 	*ts = '\0';
     
 	/* Store it in database */
@@ -703,6 +737,8 @@ static void PutLineResources(pdb, get_line, closure)
 	XrmStringToBindingQuarkList(nameStr, bindings, quarks);
 	XrmQPutResource(pdb, bindings, quarks, XrmQString, &value);
     } /* for lines left to process */
+    if (pbuf != buf) Xfree(pbuf);
+#undef CheckForFulBuffer
 } /* PutLineResources */
   
 void XrmPutStringResource(pdb, specifier, str)
