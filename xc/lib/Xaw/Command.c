@@ -1,4 +1,4 @@
-/* $XConsortium: Command.c,v 1.73 90/12/01 13:00:34 rws Exp $ */
+/* $XConsortium: Command.c,v 1.74 90/12/31 10:53:49 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -60,7 +60,7 @@ static char defaultTranslations[] =
      <Btn1Down>:	set()			\n\
      <Btn1Up>:		notify() unset()	";
 
-#define offset(field) XtOffset(CommandWidget, field)
+#define offset(field) XtOffsetOf(CommandRec, field)
 static XtResource resources[] = { 
 
    {XtNcallback, XtCCallback, XtRCallback, sizeof(XtPointer), 

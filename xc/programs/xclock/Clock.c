@@ -1,4 +1,4 @@
-/* $XConsortium: Clock.c,v 1.55 90/12/31 10:43:24 gildea Exp $ */
+/* $XConsortium: Clock.c,v 1.55 90/12/31 13:29:44 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -57,8 +57,8 @@ static erase_hands(), round();
 
 /* Initialization of defaults */
 
-#define offset(field) XtOffset(ClockWidget,clock.field)
-#define goffset(field) XtOffset(Widget,core.field)
+#define offset(field) XtOffsetOf(ClockRec, clock.field)
+#define goffset(field) XtOffsetOf(WidgetRec, core.field)
 
 static XtResource resources[] = {
     {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),

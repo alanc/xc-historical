@@ -1,5 +1,4 @@
-/* $XConsortium: Dialog.c,v 1.42 90/12/12 15:37:15 rws Exp $ */
-
+/* $XConsortium: Dialog.c,v 1.43 91/01/06 16:08:33 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -55,11 +54,11 @@ SOFTWARE.
 
 static XtResource resources[] = {
   {XtNlabel, XtCLabel, XtRString, sizeof(String),
-     XtOffset(DialogWidget, dialog.label), XtRString, NULL},
+     XtOffsetOf(DialogRec, dialog.label), XtRString, NULL},
   {XtNvalue, XtCValue, XtRString, sizeof(String),
-     XtOffset(DialogWidget, dialog.value), XtRString, NULL},
+     XtOffsetOf(DialogRec, dialog.value), XtRString, NULL},
   {XtNicon, XtCIcon, XtRBitmap, sizeof(Pixmap),
-     XtOffset(DialogWidget, dialog.icon), XtRImmediate, 0},
+     XtOffsetOf(DialogRec, dialog.icon), XtRImmediate, 0},
 };
 
 static void Initialize(), ConstraintInitialize(), CreateDialogValueWidget();
