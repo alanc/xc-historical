@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.114 91/07/22 22:16:48 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.115 91/07/23 15:16:28 keith Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -44,6 +44,7 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.114 91/07/22 22:16:48 rws Exp $
  *     	InstallAppDefaultsLong			(file,class)
  *	DependDependency			()
  *     	DependTarget				()
+ *     	DependTarget3				(srcs1,srcs2,srcs3)
  *     	CleanTarget				()
  *     	TagsTarget				()
  *	ImakeDependency				(target)
@@ -612,6 +613,20 @@ DependDependency()							@@\
 depend::								@@\
 	$(DEPEND) $(DEPENDFLAGS) -s "# DO NOT DELETE" -- $(ALLDEFINES) -- $(SRCS)
 #endif /* DependTarget */
+
+
+/*
+ * DependTarget3 - generate rules to compute dependencies for all files given.
+ */
+#ifndef DependTarget3
+#define	DependTarget3(srcs1,srcs2,srcs3)				@@\
+DependDependency()							@@\
+									@@\
+depend::								@@\
+	$(DEPEND) $(DEPENDFLAGS) -s "# DO NOT DELETE" -- $(ALLDEFINES) -- srcs1	@@\
+	$(DEPEND) -a $(DEPENDFLAGS) -s "# DO NOT DELETE" -- $(ALLDEFINES) -- srcs2	@@\
+	$(DEPEND) -a $(DEPENDFLAGS) -s "# DO NOT DELETE" -- $(ALLDEFINES) -- srcs3
+#endif /* DependTarget3 */
 
 
 /*
