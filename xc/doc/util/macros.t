@@ -1,4 +1,4 @@
-.\" $XConsortium: macros.t,v 1.7 94/01/10 15:29:34 gildea Exp $
+.\" $XConsortium: macros.t,v 1.8 94/04/14 17:25:36 gildea Exp $
 .\" macros.t -- macros for X Consortium documents
 .\" Revised and commented by smarks 93.12.20.
 .\"
@@ -116,6 +116,22 @@
 .IN \\$1
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
+..
+.\"
+.\" --- hI --- add index entry for $1 as header file
+.\"
+.de hI
+.IN         <\\$1>
+.IN Files   <\\$1>
+.IN Headers <\\$1>
+..
+.\"
+.\" --- hN --- put $1 in boldface as header and add index entry; $2 abuts
+.\"
+.de hN
+.hI \\$1
+.ie t <\fB\\$1\fR>\\$2
+.el <\fI\\$1\fP>\\$2
 ..
 .\"
 .\" --- NT ---
