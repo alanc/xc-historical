@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sunGX.c,v 1.2 91/07/03 08:23:06 keith Exp $
+ * $XConsortium: sunGX.c,v 1.3 91/07/10 23:17:19 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -2071,7 +2071,12 @@ sunGXValidateGC (pGC, changes, pDrawable)
 	else switch (pGC->fillStyle) {
 	case FillTiled:
 	    if (devPriv->pRotatedPixmap)
-		pGC->ops->FillSpans = cfbTile32FS;
+	    {
+		if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK)
+		    pGC->ops->FillSpans = cfbTile32FSCopy;
+		else
+		    pGC->ops->FillSpans = cfbTile32FSGeneral;
+	    }
 	    else
 		pGC->ops->FillSpans = cfbUnnaturalTileFS;
 	    break;
