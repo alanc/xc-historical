@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: init.c,v 2.17 88/03/07 11:21:43 swick Exp $";
+static char rcs_id[] = "$Header: init.c,v 2.18 88/05/12 16:53:59 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -47,7 +47,7 @@ static XtResource resources[] = {
 	 (Cardinal)&initialFolderName, XtRString, "inbox"},
     {"initialincfile", "InitialIncFile", XtRString, sizeof(char *),
          (Cardinal)&initialIncFile, XtRString, NULL},
-    {"insertfilter", "InsertFilter", XtRString, sizeof(char *),
+    {"replyinsertfilter", "ReplyInsertFilter", XtRString, sizeof(char *),
 	 (Cardinal)&defInsertFilter, XtRString, NULL},
     {"draftsfolder", "DraftsFolder", XtRString, sizeof(char *),
 	 (Cardinal)&draftsFolderName, XtRString, "drafts"},
