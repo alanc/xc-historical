@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Quarks.c,v 1.30 90/12/26 16:25:02 rws Exp $
+ * $XConsortium: Quarks.c,v 1.31 91/01/06 11:43:46 rws Exp $
  */
 
 /***********************************************************
@@ -85,18 +85,10 @@ static XrmQuark nextUniq = -1;	/* next quark from XrmUniqueQuark */
 static char *neverFreeTable = NULL;
 static int  neverFreeTableSize = 0;
 
-char *Xpermalloc(length)
+static char *permalloc(length)
     register unsigned int length;
 {
     char *ret;
-
-#ifdef WORD64
-    /* round to nearest 8-byte boundary */
-    length = (length + 7) & (~7);
-#else
-    /* round to nearest 4-byte boundary */
-    length = (length + 3) & (~3);
-#endif /* WORD64 */
 
     if (neverFreeTableSize < length) {
 	if (length >= NEVERFREETABLESIZE)
@@ -110,6 +102,33 @@ char *Xpermalloc(length)
     neverFreeTable += length;
     neverFreeTableSize -= length;
     return(ret);
+}
+
+#ifdef WORD64
+#define WALIGN 8
+#else
+#define WALIGN 4
+#endif
+
+#define DALIGN sizeof(double)
+
+char *Xpermalloc(length)
+    unsigned int length;
+{
+    int i;
+
+    if (neverFreeTableSize && length < NEVERFREETABLESIZE) {
+#ifndef WORD64
+	if (sizeof(struct _dt1 {char a; double b;}) ==
+	    sizeof(struct _dt2 {double a, b;})) {
+	    if (i = (NEVERFREETABLESIZE - neverFreeTableSize) & (DALIGN-1))
+		neverFreeTableSize -= DALIGN - i;
+	} else
+#endif
+	    if (i = (NEVERFREETABLESIZE - neverFreeTableSize) & (WALIGN-1))
+		neverFreeTableSize -= WALIGN - i;
+    }
+    return permalloc(length);
 }
 
 static Bool
@@ -262,7 +281,7 @@ nomatch:    if (!rehash)
 #ifdef PERMQ
 	name = Xmalloc(len+1);
 #else
-	name = Xpermalloc(len+1);
+	name = permalloc(len+1);
 #endif
 	if (!name)
 	    return NULLQUARK;
