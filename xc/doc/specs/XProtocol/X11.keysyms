@@ -109,8 +109,9 @@ In the Latin-1 to Latin-4 sets,
 all duplicate glyphs occupy the same code position.
 However, duplicates between Greek and Technical do not occupy the same code
 position.  
-Thus, applications wishing to use the technical character set must
-transform the keysym by means of an array.
+Applications wishing to use the Latin-2, Latin-3, Latin-4, Greek, Cyrillic,
+or Technical sets may find it convenient to use arrays to transform the
+keysyms.
 .LP
 There is a difference between European and US usage of the names Pilcrow,
 Paragraph, and Section, as follows:
@@ -487,7 +488,7 @@ _
 002	253	15/13	LATIN SMALL LETTER u WITH BREVE	Latin-3
 002	254	15/14	LATIN SMALL LETTER s WITH CIRCUMFLEX ACCENT	Latin-3
 .sp 2
-003	162	10/02	LATIN SMALL LETTER KRA	Latin-4
+003	162	10/02	SMALL GREENLANDIC LETTER KRA	Latin-4
 003	163	10/03	LATIN CAPITAL LETTER R WITH CEDILLA	Latin-4
 003	165	10/05	LATIN CAPITAL LETTER I WITH TILDE	Latin-4
 003	166	10/06	LATIN CAPITAL LETTER L WITH CEDILLA	Latin-4
@@ -648,7 +649,7 @@ _
 006	169	10/09	CYRILLIC SMALL LETTER LJE	Cyrillic
 006	170	10/10	CYRILLIC SMALL LETTER NJE	Cyrillic
 006	171	10/11	SERBIAN SMALL LETTER TSHE	Cyrillic
-006	172	10/12	MACEDONIAN CYRILLIC SMALL LETTER JIE	Cyrillic
+006	172	10/12	MACEDONIAN CYRILLIC SMALL LETTER KJE	Cyrillic
 006	174	10/14	BYELORUSSIAN SMALL LETTER SHORT U	Cyrillic
 006	175	10/15	CYRILLIC SMALL LETTER DZHE	Cyrillic
 006	176	11/00	NUMERO SIGN	Cyrillic
