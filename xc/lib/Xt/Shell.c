@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.151 94/03/03 13:27:37 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.152 94/03/04 19:40:33 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -929,10 +929,10 @@ static void TopLevelInitialize(req, new, args, num_args)
 	    w->wm.wm_hints.initial_state = IconicState;
 }
 
-
-#define XtInteractNone	0
-#define XtInteractPending 1
-#define XtInteractActive 2
+#define XtSaveInactive 0
+#define XtSaveActive   1
+#define XtInteractPending    2
+#define XtInteractActive     3
 
 #define XtCloneCommandMask	(1L<<0)
 #define XtCurrentDirectoryMask	(1L<<1)
@@ -940,8 +940,8 @@ static void TopLevelInitialize(req, new, args, num_args)
 #define XtEnvironmentMask	(1L<<3)
 #define XtProcessIDMask		(1L<<4)
 #define XtProgramMask		(1L<<5)
-#define XtRestartCommandMask	(1L<<6)
-#define XtResignCommandMask	(1L<<7)
+#define XtResignCommandMask	(1L<<6)
+#define XtRestartCommandMask	(1L<<7)
 #define XtRestartStyleHintMask	(1L<<8)
 #define XtShutdownCommandMask	(1L<<9)
 #define XtUserIDMask		(1L<<10)
@@ -954,6 +954,19 @@ static void StopManagingSession();
 static String *NewStringArray();
 static void FreeStringArray();
 static String *HackParseArgv(); /* XXX */
+
+typedef struct _XtSaveYourselfRec {
+    XtSaveYourself  next;
+    int             save_type;
+    int             interact_style;
+    Boolean         shutdown;
+    Boolean         fast;
+    Boolean         save_success;
+    Boolean         cancel_shutdown;
+    int             interact_dialog_type;
+    int             save_tokens;
+    int             interact_tokens;
+} XtSaveYourselfRec;
 
 /* ARGSUSED */
 static void ApplicationInitialize(req, new, args, num_args)
@@ -978,9 +991,9 @@ static void ApplicationInitialize(req, new, args, num_args)
     if (w->application.current_dir) w->application.current_dir =
 	XtNewString(w->application.current_dir);
 
-    w->application.checkpointing = False;
+    w->application.checkpoint_state = XtSaveInactive;
     w->application.input_id = 0;
-    w->application.extension = NULL;
+    w->application.save = NULL;
 
     if ((w->application.join_session) &&
 	(w->application.argv || w->application.restart_command))
@@ -2423,6 +2436,7 @@ static void ApplicationShellInsertChild(widget)
 
 extern String _XtGetUserName();
 
+static void CallSaveCallbacks();
 static void XtCallSaveCallbacks();
 static void XtCallCancelCallbacks();
 static void XtCallDieCallbacks();
@@ -2623,8 +2637,8 @@ static PropertyRec propertyTable[] = {
   {SmEnvironment,      Offset(application.environment),	     ListPack},
   {SmProcessID,	       0,				     ArrayPack},
   {SmProgram,          Offset(application.program_path),     ArrayPack},
-  {SmRestartCommand,   Offset(application.restart_command),  ListPack},
   {SmResignCommand,    Offset(application.resign_command),   ListPack},
+  {SmRestartCommand,   Offset(application.restart_command),  ListPack},
   {SmRestartStyleHint, Offset(application.restart_style),    CardPack},
   {SmShutdownCommand,  Offset(application.shutdown_command), ListPack},
   {SmUserID,	       0,				     ArrayPack}
@@ -2688,9 +2702,38 @@ static void GetIceEvent(client_data, source, id)
     IceProcessMessage(ice_conn, NULL);
 }
 
+static void CleanUpSave(w)
+    ApplicationShellWidget w;
+{
+    XtSaveYourself next = w->application.save->next;
+    XtFree((char *)w->application.save);
+    w->application.save = next;
+    if (w->application.save)
+	CallSaveCallbacks(w);
+}
+    
+static void CallSaveCallbacks(w)
+    ApplicationShellWidget w;
+{
+    XtCheckpointToken token;
+
+    if (XtHasCallbacks((Widget) w, XtNsaveCallback) != XtCallbackHasSome) {
+	/* if the application makes no attempt to save state, report failure */
+	SmcSaveYourselfDone(w->application.connection, False);
+	CleanUpSave(w);
+    } else {
+	w->application.checkpoint_state = XtSaveActive;
+	token = GetToken((Widget) w, XtSessionCheckpoint);
+	XtCallCallbackList((Widget)w, w->application.save_callbacks,
+			   (XtPointer)token);
+	XtSessionReturnToken(token);
+    }
+}
+
+/*ARGSUSED*/
 static void XtCallSaveCallbacks(connection, client_data, save_type, shutdown,
 				interact, fast)
-    SmcConn	connection;
+    SmcConn	connection;	/* unused */
     SmPointer	client_data;
     int		save_type;
     Bool	shutdown;
@@ -2698,34 +2741,28 @@ static void XtCallSaveCallbacks(connection, client_data, save_type, shutdown,
     Bool	fast;
 {
     ApplicationShellWidget w = (ApplicationShellWidget) client_data;
-    XtCheckpointToken token;
+    XtSaveYourself save;
+    XtSaveYourself prev;
 
-    if (w->application.checkpointing) {
-	/* not done yet; but we don't update state with new parameters */
-	SmcSaveYourselfDone(connection, False);
-	return;
-    }
-    if (XtHasCallbacks((Widget) w, XtNsaveCallback) != XtCallbackHasSome) {
-	/* if the application makes no attempt to save state, report failure */
-	SmcSaveYourselfDone(connection, False);
-    } else {
-	w->application.interact_state = XtInteractNone;
-	w->application.save_tokens = 0;
-	w->application.interact_tokens = 0;
-	w->application.save_type = save_type;
-	w->application.interact_style = interact;
-	w->application.shutdown = shutdown;
-	w->application.fast = fast;
-	w->application.save_success = True;
-	w->application.cancel_shutdown = False;
-	w->application.interact_dialog_type = SmDialogNormal;
-	w->application.checkpointing = True;
-	
-	token = GetToken((Widget) w, XtSessionCheckpoint);
-	XtCallCallbackList((Widget)w, w->application.save_callbacks,
-			   (XtPointer)token);
-	XtSessionReturnToken(token);
-    }
+    save = XtNew(XtSaveYourselfRec);
+    save->next = NULL;
+    save->save_tokens = 0;
+    save->interact_tokens = 0;
+    save->save_type = save_type;
+    save->interact_style = interact;
+    save->shutdown = shutdown;
+    save->fast = fast;
+    save->save_success = True;
+    save->cancel_shutdown = False;
+    save->interact_dialog_type = SmDialogNormal;
+
+    prev = (XtSaveYourself) &w->application.save;
+    while (prev->next)
+	prev = prev->next;
+    prev->next = save;
+
+    if (w->application.checkpoint_state == XtSaveInactive)
+	CallSaveCallbacks(w);
 }
 
 /*ARGSUSED*/
@@ -2747,18 +2784,19 @@ static void XtCallCancelCallbacks(connection, client_data)
 {
     ApplicationShellWidget w = (ApplicationShellWidget) client_data;
 
-    if (w->application.checkpointing) 
-	w->application.cancel_shutdown = True;
+    if (w->application.checkpoint_state) 
+	w->application.save->cancel_shutdown = True;
 
     XtCallCallbackList((Widget)w, w->application.cancel_callbacks,
 		       (XtPointer) NULL);
 
-    if (w->application.interact_state == XtInteractPending) {
+    if (w->application.checkpoint_state == XtInteractPending) {
 	XtRemoveAllCallbacks((Widget)w, XtNinteractCallback);
-	w->application.interact_state = XtInteractNone;
-	if (w->application.save_tokens == 0) {
-	    w->application.checkpointing = False;
+	w->application.checkpoint_state = XtSaveActive;
+	if (w->application.save->save_tokens == 0) {
+	    w->application.checkpoint_state = XtSaveInactive;
 	    SmcSaveYourselfDone(w->application.connection, False);
+	    CleanUpSave(w);
 	}
     }
 }
@@ -2777,7 +2815,7 @@ static void XtInteractPermission(connection, data)
     _XtPeekCallback(w, appshell->application.interact_callbacks,
 		    &callback, &client_data);
     if (callback) {
-	appshell->application.interact_state = XtInteractActive;
+	appshell->application.checkpoint_state = XtInteractActive;
 	token = GetToken(w, XtSessionInteract);
     	XtRemoveCallback(w, XtNinteractCallback, callback, client_data);
 	(*callback)(w, client_data, (XtPointer) token);
@@ -2792,22 +2830,23 @@ static XtCheckpointToken GetToken(widget, type)
 {
     ApplicationShellWidget w = (ApplicationShellWidget) widget;
     XtCheckpointToken token;
+    XtSaveYourself save = w->application.save;
    
     if (type == XtSessionCheckpoint)
-	w->application.save_tokens++;
+	w->application.save->save_tokens++;
     else if (type == XtSessionInteract)
-	w->application.interact_tokens++;
+	w->application.save->interact_tokens++;
     else 
 	return (XtCheckpointToken) NULL;
 
     token = (XtCheckpointToken) XtMalloc(sizeof(XtCheckpointTokenRec));
-    token->save_type = w->application.save_type;
-    token->interact_style = w->application.interact_style;
-    token->shutdown = w->application.shutdown;
-    token->fast = w->application.fast;
-    token->save_success = w->application.save_success;
-    token->cancel_shutdown = w->application.cancel_shutdown;
-    token->interact_dialog_type = w->application.interact_dialog_type;
+    token->save_type = save->save_type;
+    token->interact_style = save->interact_style;
+    token->shutdown = save->shutdown;
+    token->fast = save->fast;
+    token->save_success = save->save_success;
+    token->cancel_shutdown = save->cancel_shutdown;
+    token->interact_dialog_type = save->interact_dialog_type;
     token->widget = widget;
     token->type = type;
     return token;
@@ -2825,7 +2864,7 @@ XtCheckpointToken XtSessionGetToken(widget)
     WIDGET_TO_APPCON(widget);
 
     LOCK_APP(app);
-    if (w->application.checkpointing)
+    if (w->application.checkpoint_state)
 	token = GetToken(widget, XtSessionCheckpoint);
 
     UNLOCK_APP(app);
@@ -2852,47 +2891,48 @@ void XtSessionReturnToken(token)
 		== XtCallbackHasSome);
 
     if (token->save_success == False)
-	w->application.save_success = False;
+	w->application.save->save_success = False;
     if (token->interact_dialog_type == SmDialogError)
-	w->application.interact_dialog_type = SmDialogError;
+	w->application.save->interact_dialog_type = SmDialogError;
 
     if (token->type == XtSessionCheckpoint) {
-	w->application.save_tokens--;
-	if (has_some && w->application.interact_state == XtInteractNone) {
-	    w->application.interact_state = XtInteractPending;
+	w->application.save->save_tokens--;
+	if (has_some && w->application.checkpoint_state == XtSaveActive) {
+	    w->application.checkpoint_state = XtInteractPending;
 	    SmcInteractRequest(w->application.connection,
-			       w->application.interact_dialog_type,
+			       w->application.save->interact_dialog_type,
 			       XtInteractPermission, (SmPointer) w);
 	}
 	XtFree((char*) token);
     } else {
 	if (token->cancel_shutdown == True)
-	    w->application.cancel_shutdown = True;
+	    w->application.save->cancel_shutdown = True;
 	if (has_some) {
-	    token->cancel_shutdown = w->application.cancel_shutdown;
+	    token->cancel_shutdown = w->application.save->cancel_shutdown;
 	    _XtPeekCallback((Widget)w, w->application.interact_callbacks,
 			    &callback, &client_data);
 	    XtRemoveCallback((Widget)w, XtNinteractCallback,
 			     callback, client_data);
 	    (*callback)((Widget)w, client_data, (XtPointer)token);
 	} else {
-	    w->application.interact_tokens--;
-	    if (w->application.interact_tokens == 0) {
-		w->application.interact_state = XtInteractNone;
+	    w->application.save->interact_tokens--;
+	    if (w->application.save->interact_tokens == 0) {
+		w->application.checkpoint_state = XtSaveActive;
 		SmcInteractDone(w->application.connection,
-				w->application.cancel_shutdown);
+				w->application.save->cancel_shutdown);
 	    }
 	    XtFree((char *) token);
 	}
     }
 
-    save_done = (w->application.save_tokens == 0 && 
-		 w->application.interact_state == XtInteractNone);
+    save_done = (w->application.save->save_tokens == 0 && 
+		 w->application.checkpoint_state == XtSaveActive);
 
     if (save_done) {
-	w->application.checkpointing = False;
+	w->application.checkpoint_state = XtSaveInactive;
 	SmcSaveYourselfDone(w->application.connection,
-			    w->application.save_success);
+			    w->application.save->save_success);
+	CleanUpSave(w);
     }
 
     UNLOCK_APP(app);
