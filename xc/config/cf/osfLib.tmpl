@@ -1,4 +1,4 @@
-XCOMM $XConsortium: osfLib.tmpl,v 1.13 93/09/05 13:39:58 rws Exp $
+XCOMM $XConsortium: osfLib.tmpl,v 1.14 93/09/06 19:34:12 rws Exp $
 
 /*
  * OSF/1 shared library template
@@ -9,8 +9,8 @@ XCOMM $XConsortium: osfLib.tmpl,v 1.13 93/09/05 13:39:58 rws Exp $
 #define SharedXawReqs $(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XLIB) -init _XawFixupVendorShell
 #define SharedXmuReqs $(LDPRELIB) $(XTOOLLIB) $(XLIB)
 #define SharedXextReqs $(LDPRELIB) $(XLIBONLY)
-#define SharedXinputReqs $(LDPRELIB) $(XLIB)
+#define SharedXiReqs $(LDPRELIB) $(XLIB)
 #define SharedPexReqs $(LDPRELIB) $(XLIBONLY) MathLibrary
-#define SharedXTestReqs $(LDPRELIB) $(XLIB)
+#define SharedXtstReqs $(LDPRELIB) $(XLIB)
 #define SharedXieReqs $(LDPRELIB) $(XLIBONLY)
 #define SharedSMReqs $(LDPRELIB) $(ICELIB)
