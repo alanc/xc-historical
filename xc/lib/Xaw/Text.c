@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.87 89/05/19 17:18:26 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.88 89/06/19 17:51:09 jim Exp $";
 #endif
 
 
@@ -157,24 +157,23 @@ static void CvtStringToEditMode(args, num_args, fromVal, toVal)
     toVal->addr = NULL;
 };
 
-
-static void ClassInitialize()
+static void 
+ClassInitialize()
 {
     int len1 = strlen (_XawDefaultTextTranslations1);
     int len2 = strlen (_XawDefaultTextTranslations2);
     int len3 = strlen (_XawDefaultTextTranslations3);
     char *buf = XtMalloc (len1 + len2 + len3 + 1);
+    char *cp = buf;
+
+    strcpy (cp, _XawDefaultTextTranslations1); cp += len1;
+    strcpy (cp, _XawDefaultTextTranslations2); cp += len2;
+    strcpy (cp, _XawDefaultTextTranslations3);
+    textWidgetClass->core_class.tm_table = buf;
 
     XtQTextRead   = XrmStringToQuark(XtEtextRead);
     XtQTextAppend = XrmStringToQuark(XtEtextAppend);
     XtQTextEdit   = XrmStringToQuark(XtEtextEdit);
-
-    if (buf) {
-	char *cp = buf;
-	strcpy (cp, _XawDefaultTextTranslations1); cp += len1;
-	strcpy (cp, _XawDefaultTextTranslations2); cp += len2;
-	strcpy (cp, _XawDefaultTextTranslations3);
-    }
 
     XtAddConverter(XtRString, XtREditMode, CvtStringToEditMode, NULL, 0);
 }
@@ -3231,7 +3230,7 @@ TextClassRec textClassRec = {
     /* accept_focus     */      NULL,
     /* version          */	XtVersion,
     /* callback_private */      NULL,
-    /* tm_table         */      NULL,		    /* set in ClassInitialize */
+    /* tm_table         */      NULL,    /* set in ClassInitialize */
     /* query_geometry   */	XtInheritQueryGeometry,
     /* display_accelerator*/	XtInheritDisplayAccelerator,
     /* extension	*/	NULL
