@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.31 94/03/16 15:18:34 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.32 94/03/31 18:10:55 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -1035,11 +1035,13 @@ XtInputId	*id;
 	if (app_resources.verbose)
 	    printf ("IceAcceptConnection failed\n");
     } else {
-	while (IceConnectionStatus (ice_conn) == IceConnectPending) {
+	IceConnectStatus cstatus;
+
+	while ((cstatus = IceConnectionStatus (ice_conn))==IceConnectPending) {
 	    XtAppProcessEvent (appContext, XtIMAll);
 	}
 
-	if (IceConnectionStatus (ice_conn) == IceConnectAccepted) {
+	if (cstatus == IceConnectAccepted) {
 	    if (app_resources.verbose) {
 		printf ("ICE Connection opened by client, IceConn fd = %d, ",
 			IceConnectionNumber (ice_conn));
@@ -1049,7 +1051,14 @@ XtInputId	*id;
 		printf ("\n");
 	    }
 	} else {
-	    if (app_resources.verbose) printf ("ICE Connection rejected!\n");
+	    if (app_resources.verbose)
+	    {
+		if (cstatus == IceConnectIOError)
+		    printf ("IO error opening ICE Connection!\n");
+		else
+		    printf ("ICE Connection rejected!\n");
+	    }
+
 	    IceCloseConnection (ice_conn);
 	}
     }
