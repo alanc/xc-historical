@@ -1,4 +1,4 @@
-/* $XConsortium: XListDev.c,v 1.7 89/12/13 20:26:14 rws Exp $ */
+/* $XConsortium: XListDev.c,v 1.8 90/05/18 10:53:12 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -164,6 +164,7 @@ XDeviceInfo
 			V->motion_buffer = v->motion_buffer_size;
 			V->mode = v->mode;
 			A = (XAxisInfoPtr) ((char *) Any + Any->length); 
+			V->axes = A;
 			a = (xAxisInfoPtr) ((char *) any + 
 				sizeof (xValuatorInfo)); 
 			for (k=0; k<v->num_axes; k++,a++,A++) 
