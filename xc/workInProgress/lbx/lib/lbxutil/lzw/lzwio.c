@@ -23,9 +23,10 @@
  * Author:  Dale Tonogai, Network Computing Devices
  */
 
-/* $XConsortium: lbxfuncs.c,v 1.2 94/02/10 20:08:59 dpw Exp $ */
+/* $XConsortium: lzwio.c,v 1.3 94/02/20 10:33:04 dpw Exp $ */
 
 #include <X11/Xos.h>
+#include <X11/Xfuncs.h>
 #include <errno.h>
 #ifdef X_NOT_STDC_ENV
 extern int errno;
@@ -88,7 +89,7 @@ GetInputPtr(fd, inbuf, reqlen, ppkt)
     }
 
     if (reqlen > inbuf->bufend - inbuf->bufptr) {
-	bcopy(inbuf->bufptr, inbuf->bufbase, inbuf->bufcnt);
+	memmove(inbuf->bufbase, inbuf->bufptr, inbuf->bufcnt);
 	inbuf->bufptr = inbuf->bufbase;
     }
     readbytes = (inbuf->bufend - inbuf->bufptr) - inbuf->bufcnt;
@@ -124,12 +125,12 @@ StuffInput(inbuf, pkt, reqlen)
     last = inbuf->bufptr + inbuf->bufcnt;
     if (reqlen > inbuf->bufend - last)
     {
-	bcopy(inbuf->bufptr, inbuf->bufbase, inbuf->bufcnt);
+	memmove(inbuf->bufbase, inbuf->bufptr, inbuf->bufcnt);
 	inbuf->bufptr = inbuf->bufbase;
 	last = inbuf->bufptr + inbuf->bufcnt;
     }
     readbytes = MIN(reqlen, inbuf->bufend - last);
-    bcopy (pkt, last, readbytes);
+    memmove(last, pkt, readbytes);
     inbuf->bufcnt += readbytes;
     return readbytes;
 }

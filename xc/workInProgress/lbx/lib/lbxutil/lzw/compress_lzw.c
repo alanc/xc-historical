@@ -22,9 +22,10 @@
  */
 /* Copyright 1988, 1989, 1990 Network Computing Devices, Inc.  All rights reserved. */
 
-/* $XConsortium: lbxfuncs.c,v 1.2 94/02/10 20:08:59 dpw Exp $ */
+/* $XConsortium: compress_lzw.c,v 1.3 94/02/20 10:32:58 dpw Exp $ */
 
 #include <X11/Xos.h>
+#include <X11/Xfuncs.h>
 #include <errno.h>
 #ifdef X_NOT_STDC_ENV
 extern int errno;
@@ -49,10 +50,6 @@ void LzwFree();
 
 #define FALSE 0
 #define TRUE 1
-
-#ifdef hpux
-#define bzero(buf,len) memset(buf,'\0',len)
-#endif /* hpux */
 
 #ifndef MIN
 #define MIN(_a, _b) ( ((_a) < (_b)) ? (_a) : (_b))
@@ -1159,7 +1156,7 @@ LzwRead(txport, buffer, buflen)
 	    decompress(priv, newpacket);
 	else {
 	    len = MIN(inputbufend - inputbuf, outputbufend - outputbuf);
-	    bcopy(inputbuf, outputbuf, len);
+	    memmove(outputbuf, inputbuf, len);
 	    inputbuf += len;
 	    outputbuf += len;
 	}
