@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.102 91/03/23 16:45:39 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.103 91/03/23 17:30:10 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -360,9 +360,6 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #define StripInstalledPrograms NO	/* leave symbol table just in case */
 #endif
 
-#ifndef DestDir
-#define DestDir /* as nothing */
-#endif
 #ifndef UsrLibDir			/* if changed under SunOS with shared */
 #define UsrLibDir /usr/lib		/* libs, then need to run ldconfig */
 #endif					/* as root */
@@ -686,7 +683,6 @@ XCOMM site-specific configuration parameters - edit site.def to change
      INSTDATFLAGS = InstDatFlags	/* install flags for data files */
     INSTKMEMFLAGS = InstKmemFlags	/* install flags for /dev/kmem progs */
 
-          DESTDIR = DestDir		/* root of install */
 #ifdef UseInstalled
 #if AlternateIncRoot
      TOP_INCLUDES = -I$(INCROOT)	/* def: for alternative /usr/include */
