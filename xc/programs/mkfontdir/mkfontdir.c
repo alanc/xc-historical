@@ -22,12 +22,29 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: mkfontdir.c,v 1.3 91/04/04 16:40:50 gildea Exp $ */
+/* $XConsortium: mkfontdir.c,v 1.4 91/05/11 10:31:08 keith Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
 #include <stdio.h>
+
+#ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
+#include <limits.h>
+#else
+#define _POSIX_SOURCE
+#include <limits.h>
+#undef _POSIX_SOURCE
+#endif
+#endif
+#ifndef PATH_MAX
 #include <sys/param.h>
+#ifdef MAXPATHLEN
+#define PATH_MAX MAXPATHLEN
+#else
+#define PATH_MAX 1024
+#endif
+#endif
 
 #ifndef X_NOT_POSIX
 #include <dirent.h>
@@ -63,7 +80,7 @@ WriteFontTable(dirName, table)
 {
     int		    i;
     FILE	    *file;
-    char	    full_name[MAXPATHLEN];
+    char	    full_name[PATH_MAX];
     FontEntryPtr    entry;
 
     sprintf (full_name, "%s/%s", dirName, FontDirFile);
@@ -104,7 +121,7 @@ GetFontName(file_name, font_name)
     char	*atom_name;
     char	*atom_value;
 
-    if (BitmapGetInfo (&info, file_name) != Successful)
+    if (BitmapGetInfoBitmap ((FontPathElementPtr) 0, &info, (FontEntryPtr) 0, file_name) != Successful)
 	return FALSE;
 
     for (i = 0; i < info.nprops; i++) 
@@ -159,8 +176,8 @@ ProcessFile (dirName, fileName, table)
     char		*fileName;
     FontTablePtr	table;
 {
-    char	    font_name[MAXPATHLEN];
-    char	    full_name[MAXPATHLEN];
+    char	    font_name[PATH_MAX];
+    char	    full_name[PATH_MAX];
     char	    *existing;
 
     strcpy (full_name, dirName);
@@ -234,7 +251,7 @@ LoadDirectory (dirName, table)
     DIR			*dirp;
     struct dirent	*file;
     FontRendererPtr	renderer;
-    char		fileName[MAXPATHLEN];
+    char		fileName[PATH_MAX];
     int			hash;
     char		*extension;
     NameBucketPtr	*hashTable, bucket, *prev, next;
