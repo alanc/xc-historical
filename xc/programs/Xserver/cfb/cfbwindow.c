@@ -1,4 +1,4 @@
-/* $XConsortium: cfbwindow.c,v 5.14 92/03/13 16:20:59 eswu Exp $ */
+/* $XConsortium: cfbwindow.c,v 5.15 92/03/31 17:52:18 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -44,6 +44,8 @@ cfbCreateWindow(pWin)
     pPrivWin->pRotatedBackground = NullPixmap;
     pPrivWin->fastBackground = FALSE;
     pPrivWin->fastBorder = FALSE;
+    pPrivWin->oldRotate.x = 0;
+    pPrivWin->oldRotate.y = 0;
 
 #ifdef PIXMAP_PER_WINDOW
     /* Setup pointer to Screen pixmap */

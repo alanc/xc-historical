@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.43 92/12/24 12:44:46 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.44 93/07/12 09:24:22 dpw Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3024,10 +3024,11 @@ ProcSetFontPath(client)
 	return(BadLength);
     result = SetFontPath(client, stuff->nFonts, (unsigned char *)&stuff[1],
 			 &error);
-    if (error != -1)
-	client->errorValue = error;
     if (!result)
+    {
 	result = client->noClientException;
+	client->errorValue = error;
+    }
     return (result);
 }
 

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.20 93/06/24 10:04:10 dpw Exp $ */
+/* $XConsortium: gc.c,v 5.21 93/07/12 09:24:06 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -320,6 +320,7 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		if (pid == None)
 		{
 		    clipType = CT_NONE;
+		    pPixmap = NullPixmap;
 		}
 		else
 		{

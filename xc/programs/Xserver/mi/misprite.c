@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.39 93/07/12 09:28:53 dpw Exp $ */
+/* $XConsortium: misprite.c,v 5.40 93/07/12 16:26:17 dpw Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -265,6 +265,12 @@ miSpriteInitialize (pScreen, cursorFuncs, screenFuncs)
     pPriv->pInstalledMap = NULL;
     pPriv->pColormap = NULL;
     pPriv->funcs = cursorFuncs;
+    pPriv->colors[SOURCE_COLOR].red = 0;
+    pPriv->colors[SOURCE_COLOR].green = 0;
+    pPriv->colors[SOURCE_COLOR].blue = 0;
+    pPriv->colors[MASK_COLOR].red = 0;
+    pPriv->colors[MASK_COLOR].green = 0;
+    pPriv->colors[MASK_COLOR].blue = 0;
     pScreen->devPrivates[miSpriteScreenIndex].ptr = (pointer) pPriv;
     pScreen->CloseScreen = miSpriteCloseScreen;
     pScreen->GetImage = miSpriteGetImage;
