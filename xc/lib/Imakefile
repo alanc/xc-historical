@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.18 91/07/22 22:53:06 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.19 93/07/13 17:29:48 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -10,7 +10,7 @@ XCOMM $XConsortium: Imakefile,v 1.18 91/07/22 22:53:06 rws Exp $
 OTHERDIRS = Berk
 #endif
 
-LINTSUBDIRS = Xau X oldX Xt Xmu Xaw Xdmcp
+LINTSUBDIRS = Xau X oldX Xt Xmu Xaw Xdmcp ICE SM
 
 SUBDIRS = $(OTHERDIRS) $(LINTSUBDIRS) nls
 

@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.167 93/07/28 19:03:28 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.168 93/08/17 11:02:34 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -179,6 +179,18 @@ XCOMM $XConsortium: Project.tmpl,v 1.167 93/07/28 19:03:28 rws Exp $
 #endif
 #ifndef ProfileLibXie
 #define ProfileLibXie		NO	/* profiled XIE library */
+#endif
+#ifndef DebugLibICE
+#define DebugLibICE		NO	/* debugged ICE library */
+#endif
+#ifndef ProfileLibICE
+#define ProfileLibICE		NO	/* profiled ICE library */
+#endif
+#ifndef DebugLibSM
+#define DebugLibSM		NO	/* debugged SM library */
+#endif
+#ifndef ProfileLibSM
+#define ProfileLibSM		NO	/* profiled SM library */
 #endif
 #ifndef ThreadedX
 #if HasPosixThreads || HasCThreads
@@ -511,6 +523,18 @@ XCOMM $XConsortium: Project.tmpl,v 1.167 93/07/28 19:03:28 rws Exp $
 #ifndef NormalLibPhigs
 #define NormalLibPhigs (!SharedLibPhigs | ForceNormalLib)
 #endif
+#ifndef SharedLibICE
+#define SharedLibICE HasSharedLibraries
+#endif
+#ifndef NormalLibICE
+#define NormalLibICE (!SharedLibICE | ForceNormalLib)
+#endif
+#ifndef SharedLibSM
+#define SharedLibSM HasSharedLibraries
+#endif
+#ifndef NormalLibSM
+#define NormalLibSM (!SharedLibSM | ForceNormalLib)
+#endif
 
 
 #ifndef DoInstallExtensionsIntoXlib
@@ -652,6 +676,16 @@ SharedLibReferences(PHIGS,phigs,$(PHIGSLIBSRC),SOPHIGSREV,SharedPhigsRev)
 UnsharedLibReferences(PHIGS,phigs,$(PHIGSLIBSRC))
 #endif
 UnsharedLibReferences(XBSD,Xbsd,$(LIBSRC)/Berk)
+#if SharedLibICE
+SharedDSLibReferences(ICE,ICE,$(ICESRC),SOICEREV,SharedICERev)
+#else
+UnsharedLibReferences(ICE,ICE,$(ICESRC))
+#endif
+#if SharedLibSM
+SharedDSLibReferences(SM,SM,$(SMSRC),SOSMREV,SharedSMRev)
+#else
+UnsharedLibReferences(SM,SM,$(SMSRC))
+#endif
 
 #ifndef XawClientDepLibs
 #define XawClientDepLibs $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
