@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: crtwdw.m,v 1.9 92/06/11 16:07:06 rws Exp $
  */
 >>TITLE XCreateWindow CH03
 Window
@@ -85,6 +85,36 @@ XWindowAttributes	atts;
 			valuemask |= CWColormap;
 		}
 	}
+
+        /*
+         * Set the border pixel value if not set to ensure that a depth
+         * mismatch does not occur (since the default BorderPixel is
+         * CopyFromParent) causing a BadMatch.
+	 * We only need to do this for InputOutput windows, of course,
+	 * otherwise we get a BadMatch for an attempted draw on an
+	 * InputOnly window.
+ 	 * Also we must never ever do this if we are using a border pixmap.
+         */
+	if ( (valuemask & CWBorderPixmap) == 0 && 
+		(valuemask & CWBorderPixel) == 0 &&
+		( visual != DefaultVisual(Dsp, DefaultScreen(Dsp)) ||
+	 	 parent != DefaultRootWindow(Dsp) ||
+		 depth != DefaultDepth(Dsp, DefaultScreen(Dsp))
+		))
+	{
+
+		if (class == CopyFromParent)
+			XGetWindowAttributes(display, parent, &atts);
+
+		if (class == InputOutput ||
+			(class == CopyFromParent &&
+			atts.class == InputOutput))
+		{
+
+			attributes->border_pixel = W_FG;
+			valuemask |= CWBorderPixel;
+		}
+        }
 
 	return XCreateWindow(display, parent, x, y, width, height, border_width, depth, class, visual, valuemask, attributes);
 }
