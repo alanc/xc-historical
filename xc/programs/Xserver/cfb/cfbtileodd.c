@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbtileodd.c,v 1.10 90/05/15 18:40:44 keith Exp $ */
+/* $XConsortium: cfbtileodd.c,v 1.11 91/04/10 11:41:50 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -185,7 +185,7 @@ MROP_NAME(cfbFillBoxTileOdd) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
 	    /* XXX only works when narrowShift >= PPW/2 */
 	    if (narrowTile)
 	    {
-		tmp = pSrcLine[0] & narrowMask;
+		tmp = pSrcBase[srcy] & narrowMask; /* source width == 1 */
 		narrow[0] = tmp | SCRRIGHT (tmp, narrowShift);
 		narrow[1] = SCRLEFT (tmp, PPW - narrowShift) |
 			    SCRRIGHT(tmp, 2 * narrowShift - PPW);
@@ -395,7 +395,7 @@ MROP_NAME(cfbFillSpanTileOdd) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
 	/* XXX only works when narrowShift >= PPW/2 */
 	if (narrowTile)
 	{
-	    tmp = pSrcLine[0] & narrowMask;
+	    tmp = pSrcBase[srcy] & narrowMask;	/* source width == 1 */
 	    narrow[0] = tmp | SCRRIGHT (tmp, narrowShift);
 	    narrow[1] = SCRLEFT (tmp, PPW - narrowShift) |
 			SCRRIGHT(tmp, 2 * narrowShift - PPW);
