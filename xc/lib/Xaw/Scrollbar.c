@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Scroll.c,v 1.41 88/09/06 09:57:19 swick Exp $";
+    "$XConsortium: Scroll.c,v 1.42 88/09/06 16:42:16 jim Exp $";
 #endif lint
 
 /***********************************************************
@@ -73,6 +73,8 @@ static XtResource resources[] = {
 	     Offset(scrollbar.scrollProc), XtRCallback, NULL},
   {XtNthumbProc, XtCCallback, XtRCallback, sizeof(caddr_t),
 	     Offset(scrollbar.thumbProc), XtRCallback, NULL},
+  {XtNjumpProc, XtCCallback, XtRCallback, sizeof(caddr_t),
+	     Offset(scrollbar.jumpProc), XtRCallback, NULL},
   {XtNthumb, XtCThumb, XtRPixmap, sizeof(Pixmap),
 	     Offset(scrollbar.thumb), XtRPixmap, NULL},
   {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
@@ -81,17 +83,17 @@ static XtResource resources[] = {
 	     Offset(scrollbar.shown), XtRFloat, (caddr_t)&floatZero},
   {XtNtop, XtCTop, XtRFloat, sizeof(float),
 	     Offset(scrollbar.top), XtRFloat, (caddr_t)&floatZero},
-  {XtNscrollVCursor, XtCScrollVCursor, XtRCursor, sizeof(Cursor),
+  {XtNscrollVCursor, XtCCursor, XtRCursor, sizeof(Cursor),
 	     Offset(scrollbar.verCursor), XtRString, "sb_v_double_arrow"},
-  {XtNscrollHCursor, XtCScrollHCursor, XtRCursor, sizeof(Cursor),
+  {XtNscrollHCursor, XtCCursor, XtRCursor, sizeof(Cursor),
 	     Offset(scrollbar.horCursor), XtRString, "sb_h_double_arrow"},
-  {XtNscrollUCursor, XtCScrollUCursor, XtRCursor, sizeof(Cursor),
+  {XtNscrollUCursor, XtCCursor, XtRCursor, sizeof(Cursor),
 	     Offset(scrollbar.upCursor), XtRString, "sb_up_arrow"},
-  {XtNscrollDCursor, XtCScrollDCursor, XtRCursor, sizeof(Cursor),
+  {XtNscrollDCursor, XtCCursor, XtRCursor, sizeof(Cursor),
 	     Offset(scrollbar.downCursor), XtRString, "sb_down_arrow"},
-  {XtNscrollLCursor, XtCScrollLCursor, XtRCursor, sizeof(Cursor),
+  {XtNscrollLCursor, XtCCursor, XtRCursor, sizeof(Cursor),
 	     Offset(scrollbar.leftCursor), XtRString, "sb_left_arrow"},
-  {XtNscrollRCursor, XtCScrollRCursor, XtRCursor, sizeof(Cursor),
+  {XtNscrollRCursor, XtCCursor, XtRCursor, sizeof(Cursor),
 	     Offset(scrollbar.rightCursor), XtRString, "sb_right_arrow"},
   {XtNreverseVideo, XtCReverseVideo, XtRBoolean, sizeof (Boolean),
 	     Offset(scrollbar.reverse_video), XtRString, "FALSE"},
@@ -411,7 +413,8 @@ static void Redisplay( gw, event, region )
 {
     ScrollbarWidget w = (ScrollbarWidget) gw;
 
-    w->scrollbar.topLoc = -1000; /* Forces entire thumb to be painted. */
+    /* Forces entire thumb to be painted. */
+    w->scrollbar.topLoc = -(w->scrollbar.shownLength);
     PaintThumb( w ); 
 }
 
@@ -642,6 +645,7 @@ static void NotifyThumb( gw, event, params, num_params )
     if (LookAhead(gw, event)) return;
 
     XtCallCallbacks( gw, XtNthumbProc, w->scrollbar.top);
+    XtCallCallbacks( gw, XtNjumpProc, &w->scrollbar.top);
 }
 
 
