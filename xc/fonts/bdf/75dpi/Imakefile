@@ -1,85 +1,111 @@
-SRCS = \
-	courB08.bdf courB10.bdf courB12.bdf courB14.bdf courB18.bdf \
-	courB24.bdf courBO08.bdf courBO10.bdf courBO12.bdf courBO14.bdf \
-	courBO18.bdf courBO24.bdf courO08.bdf courO10.bdf courO12.bdf \
-	courO14.bdf courO18.bdf courO24.bdf courR08.bdf courR10.bdf \
-	courR12.bdf courR14.bdf courR18.bdf courR24.bdf helvB08.bdf \
-	helvB10.bdf helvB12.bdf helvB14.bdf helvB18.bdf helvB24.bdf \
-	helvBO08.bdf helvBO10.bdf helvBO12.bdf helvBO14.bdf helvBO18.bdf \
-	helvBO24.bdf helvO08.bdf helvO10.bdf helvO12.bdf helvO14.bdf \
-	helvO18.bdf helvO24.bdf helvR08.bdf helvR10.bdf helvR12.bdf \
-	helvR14.bdf helvR18.bdf helvR24.bdf ncenB08.bdf ncenB10.bdf \
-	ncenB12.bdf ncenB14.bdf ncenB18.bdf ncenB24.bdf ncenBI08.bdf \
-	ncenBI10.bdf ncenBI12.bdf ncenBI14.bdf ncenBI18.bdf ncenBI24.bdf \
-	ncenI08.bdf ncenI10.bdf ncenI12.bdf ncenI14.bdf ncenI18.bdf \
-	ncenI24.bdf ncenR08.bdf ncenR10.bdf ncenR12.bdf ncenR14.bdf \
-	ncenR18.bdf ncenR24.bdf symb08.bdf symb10.bdf symb12.bdf \
-	symb14.bdf symb18.bdf symb24.bdf timB08.bdf timB10.bdf timB12.bdf \
-	timB14.bdf timB18.bdf timB24.bdf timBI08.bdf timBI10.bdf \
-	timBI12.bdf timBI14.bdf timBI18.bdf timBI24.bdf timI08.bdf \
-	timI10.bdf timI12.bdf timI14.bdf timI18.bdf timI24.bdf timR08.bdf \
-	timR10.bdf timR12.bdf timR14.bdf timR18.bdf timR24.bdf \
-	charB08.bdf charB10.bdf charB12.bdf charB14.bdf charB18.bdf \
-	charB24.bdf charBI08.bdf charBI10.bdf charBI12.bdf charBI14.bdf \
-	charBI18.bdf charBI24.bdf charI08.bdf charI10.bdf charI12.bdf \
-	charI14.bdf charI18.bdf charI24.bdf charR08.bdf charR10.bdf \
-	charR12.bdf charR14.bdf charR18.bdf charR24.bdf \
-	tech14.bdf techB14.bdf term14.bdf termB14.bdf \
-	luBIS08.bdf luBIS10.bdf luBIS12.bdf luBIS14.bdf luBIS18.bdf \
-	luBIS24.bdf luBS08.bdf luBS10.bdf luBS12.bdf luBS14.bdf luBS18.bdf \
-	luBS24.bdf luIS08.bdf luIS10.bdf luIS12.bdf luIS14.bdf luIS18.bdf \
-	luIS24.bdf luRS08.bdf luRS10.bdf luRS12.bdf luRS14.bdf luRS18.bdf \
-	luRS24.bdf lubB08.bdf lubB10.bdf lubB12.bdf lubB14.bdf lubB18.bdf \
-	lubB24.bdf lubBI08.bdf lubBI10.bdf lubBI12.bdf lubBI14.bdf \
-	lubBI18.bdf lubBI24.bdf lubI08.bdf lubI10.bdf lubI12.bdf lubI14.bdf \
-	lubI18.bdf lubI24.bdf lubR08.bdf lubR10.bdf lubR12.bdf lubR14.bdf \
-	lubR18.bdf lubR24.bdf lutBS08.bdf lutBS10.bdf lutBS12.bdf lutBS14.bdf \
-	lutBS18.bdf lutBS24.bdf lutRS08.bdf lutRS10.bdf lutRS12.bdf \
-	lutRS14.bdf lutRS18.bdf lutRS24.bdf \
-	luBIS19.bdf luBS19.bdf luIS19.bdf luRS19.bdf lubB19.bdf lubBI19.bdf \
-	lubI19.bdf lubR19.bdf lutBS19.bdf lutRS19.bdf
+SRCS =	FontSrc(courB08) FontSrc(courB10) FontSrc(courB12) FontSrc(courB14) \
+	FontSrc(courB18) FontSrc(courB24) FontSrc(courBO08) \
+	FontSrc(courBO10) FontSrc(courBO12) FontSrc(courBO14) \
+	FontSrc(courBO18) FontSrc(courBO24) FontSrc(courO08) \
+	FontSrc(courO10) FontSrc(courO12) FontSrc(courO14) FontSrc(courO18) \
+	FontSrc(courO24) FontSrc(courR08) FontSrc(courR10) FontSrc(courR12) \
+	FontSrc(courR14) FontSrc(courR18) FontSrc(courR24) FontSrc(helvB08) \
+	FontSrc(helvB10) FontSrc(helvB12) FontSrc(helvB14) FontSrc(helvB18) \
+	FontSrc(helvB24) FontSrc(helvBO08) FontSrc(helvBO10) \
+	FontSrc(helvBO12) FontSrc(helvBO14) FontSrc(helvBO18) \
+	FontSrc(helvBO24) FontSrc(helvO08) FontSrc(helvO10) FontSrc(helvO12) \
+	FontSrc(helvO14) FontSrc(helvO18) FontSrc(helvO24) FontSrc(helvR08) \
+	FontSrc(helvR10) FontSrc(helvR12) FontSrc(helvR14) FontSrc(helvR18) \
+	FontSrc(helvR24) FontSrc(ncenB08) FontSrc(ncenB10) FontSrc(ncenB12) \
+	FontSrc(ncenB14) FontSrc(ncenB18) FontSrc(ncenB24) FontSrc(ncenBI08) \
+	FontSrc(ncenBI10) FontSrc(ncenBI12) FontSrc(ncenBI14) \
+	FontSrc(ncenBI18) FontSrc(ncenBI24) FontSrc(ncenI08) \
+	FontSrc(ncenI10) FontSrc(ncenI12) FontSrc(ncenI14) FontSrc(ncenI18) \
+	FontSrc(ncenI24) FontSrc(ncenR08) FontSrc(ncenR10) FontSrc(ncenR12) \
+	FontSrc(ncenR14) FontSrc(ncenR18) FontSrc(ncenR24) FontSrc(symb08) \
+	FontSrc(symb10) FontSrc(symb12) FontSrc(symb14) FontSrc(symb18) \
+	FontSrc(symb24) FontSrc(timB08) FontSrc(timB10) FontSrc(timB12) \
+	FontSrc(timB14) FontSrc(timB18) FontSrc(timB24) FontSrc(timBI08) \
+	FontSrc(timBI10) FontSrc(timBI12) FontSrc(timBI14) FontSrc(timBI18) \
+	FontSrc(timBI24) FontSrc(timI08) FontSrc(timI10) FontSrc(timI12) \
+	FontSrc(timI14) FontSrc(timI18) FontSrc(timI24) FontSrc(timR08) \
+	FontSrc(timR10) FontSrc(timR12) FontSrc(timR14) FontSrc(timR18) \
+	FontSrc(timR24) FontSrc(charB08) FontSrc(charB10) FontSrc(charB12) \
+	FontSrc(charB14) FontSrc(charB18) FontSrc(charB24) FontSrc(charBI08) \
+	FontSrc(charBI10) FontSrc(charBI12) FontSrc(charBI14) \
+	FontSrc(charBI18) FontSrc(charBI24) FontSrc(charI08) \
+	FontSrc(charI10) FontSrc(charI12) FontSrc(charI14) FontSrc(charI18) \
+	FontSrc(charI24) FontSrc(charR08) FontSrc(charR10) FontSrc(charR12) \
+	FontSrc(charR14) FontSrc(charR18) FontSrc(charR24) FontSrc(tech14) \
+	FontSrc(techB14) FontSrc(term14) FontSrc(termB14) FontSrc(luBIS08) \
+	FontSrc(luBIS10) FontSrc(luBIS12) FontSrc(luBIS14) FontSrc(luBIS18) \
+	FontSrc(luBIS24) FontSrc(luBS08) FontSrc(luBS10) FontSrc(luBS12) \
+	FontSrc(luBS14) FontSrc(luBS18) FontSrc(luBS24) FontSrc(luIS08) \
+	FontSrc(luIS10) FontSrc(luIS12) FontSrc(luIS14) FontSrc(luIS18) \
+	FontSrc(luIS24) FontSrc(luRS08) FontSrc(luRS10) FontSrc(luRS12) \
+	FontSrc(luRS14) FontSrc(luRS18) FontSrc(luRS24) FontSrc(lubB08) \
+	FontSrc(lubB10) FontSrc(lubB12) FontSrc(lubB14) FontSrc(lubB18) \
+	FontSrc(lubB24) FontSrc(lubBI08) FontSrc(lubBI10) FontSrc(lubBI12) \
+	FontSrc(lubBI14) FontSrc(lubBI18) FontSrc(lubBI24) FontSrc(lubI08) \
+	FontSrc(lubI10) FontSrc(lubI12) FontSrc(lubI14) FontSrc(lubI18) \
+	FontSrc(lubI24) FontSrc(lubR08) FontSrc(lubR10) FontSrc(lubR12) \
+	FontSrc(lubR14) FontSrc(lubR18) FontSrc(lubR24) FontSrc(lutBS08) \
+	FontSrc(lutBS10) FontSrc(lutBS12) FontSrc(lutBS14) FontSrc(lutBS18) \
+	FontSrc(lutBS24) FontSrc(lutRS08) FontSrc(lutRS10) FontSrc(lutRS12) \
+	FontSrc(lutRS14) FontSrc(lutRS18) FontSrc(lutRS24) FontSrc(luBIS19) \
+	FontSrc(luBS19) FontSrc(luIS19) FontSrc(luRS19) FontSrc(lubB19) \
+	FontSrc(lubBI19) FontSrc(lubI19) FontSrc(lubR19) FontSrc(lutBS19) \
+	FontSrc(lutRS19)
 
 
-OBJS = \
-	courB08.snf courB10.snf courB12.snf courB14.snf courB18.snf \
-	courB24.snf courBO08.snf courBO10.snf courBO12.snf courBO14.snf \
-	courBO18.snf courBO24.snf courO08.snf courO10.snf courO12.snf \
-	courO14.snf courO18.snf courO24.snf courR08.snf courR10.snf \
-	courR12.snf courR14.snf courR18.snf courR24.snf helvB08.snf \
-	helvB10.snf helvB12.snf helvB14.snf helvB18.snf helvB24.snf \
-	helvBO08.snf helvBO10.snf helvBO12.snf helvBO14.snf helvBO18.snf \
-	helvBO24.snf helvO08.snf helvO10.snf helvO12.snf helvO14.snf \
-	helvO18.snf helvO24.snf helvR08.snf helvR10.snf helvR12.snf \
-	helvR14.snf helvR18.snf helvR24.snf ncenB08.snf ncenB10.snf \
-	ncenB12.snf ncenB14.snf ncenB18.snf ncenB24.snf ncenBI08.snf \
-	ncenBI10.snf ncenBI12.snf ncenBI14.snf ncenBI18.snf ncenBI24.snf \
-	ncenI08.snf ncenI10.snf ncenI12.snf ncenI14.snf ncenI18.snf \
-	ncenI24.snf ncenR08.snf ncenR10.snf ncenR12.snf ncenR14.snf \
-	ncenR18.snf ncenR24.snf symb08.snf symb10.snf symb12.snf \
-	symb14.snf symb18.snf symb24.snf timB08.snf timB10.snf timB12.snf \
-	timB14.snf timB18.snf timB24.snf timBI08.snf timBI10.snf \
-	timBI12.snf timBI14.snf timBI18.snf timBI24.snf timI08.snf \
-	timI10.snf timI12.snf timI14.snf timI18.snf timI24.snf timR08.snf \
-	timR10.snf timR12.snf timR14.snf timR18.snf timR24.snf \
-	charB08.snf charB10.snf charB12.snf charB14.snf charB18.snf \
-	charB24.snf charBI08.snf charBI10.snf charBI12.snf charBI14.snf \
-	charBI18.snf charBI24.snf charI08.snf charI10.snf charI12.snf \
-	charI14.snf charI18.snf charI24.snf charR08.snf charR10.snf \
-	charR12.snf charR14.snf charR18.snf charR24.snf \
-	tech14.snf techB14.snf term14.snf termB14.snf \
-	luBIS08.snf luBIS10.snf luBIS12.snf luBIS14.snf luBIS18.snf \
-	luBIS24.snf luBS08.snf luBS10.snf luBS12.snf luBS14.snf luBS18.snf \
-	luBS24.snf luIS08.snf luIS10.snf luIS12.snf luIS14.snf luIS18.snf \
-	luIS24.snf luRS08.snf luRS10.snf luRS12.snf luRS14.snf luRS18.snf \
-	luRS24.snf lubB08.snf lubB10.snf lubB12.snf lubB14.snf lubB18.snf \
-	lubB24.snf lubBI08.snf lubBI10.snf lubBI12.snf lubBI14.snf \
-	lubBI18.snf lubBI24.snf lubI08.snf lubI10.snf lubI12.snf lubI14.snf \
-	lubI18.snf lubI24.snf lubR08.snf lubR10.snf lubR12.snf lubR14.snf \
-	lubR18.snf lubR24.snf lutBS08.snf lutBS10.snf lutBS12.snf lutBS14.snf \
-	lutBS18.snf lutBS24.snf lutRS08.snf lutRS10.snf lutRS12.snf \
-	lutRS14.snf lutRS18.snf lutRS24.snf \
-	luBIS19.snf luBS19.snf luIS19.snf luRS19.snf lubB19.snf lubBI19.snf \
-	lubI19.snf lubR19.snf lutBS19.snf lutRS19.snf
+OBJS =	FontObj(courB08) FontObj(courB10) FontObj(courB12) FontObj(courB14) \
+	FontObj(courB18) FontObj(courB24) FontObj(courBO08) \
+	FontObj(courBO10) FontObj(courBO12) FontObj(courBO14) \
+	FontObj(courBO18) FontObj(courBO24) FontObj(courO08) \
+	FontObj(courO10) FontObj(courO12) FontObj(courO14) FontObj(courO18) \
+	FontObj(courO24) FontObj(courR08) FontObj(courR10) FontObj(courR12) \
+	FontObj(courR14) FontObj(courR18) FontObj(courR24) FontObj(helvB08) \
+	FontObj(helvB10) FontObj(helvB12) FontObj(helvB14) FontObj(helvB18) \
+	FontObj(helvB24) FontObj(helvBO08) FontObj(helvBO10) \
+	FontObj(helvBO12) FontObj(helvBO14) FontObj(helvBO18) \
+	FontObj(helvBO24) FontObj(helvO08) FontObj(helvO10) FontObj(helvO12) \
+	FontObj(helvO14) FontObj(helvO18) FontObj(helvO24) FontObj(helvR08) \
+	FontObj(helvR10) FontObj(helvR12) FontObj(helvR14) FontObj(helvR18) \
+	FontObj(helvR24) FontObj(ncenB08) FontObj(ncenB10) FontObj(ncenB12) \
+	FontObj(ncenB14) FontObj(ncenB18) FontObj(ncenB24) FontObj(ncenBI08) \
+	FontObj(ncenBI10) FontObj(ncenBI12) FontObj(ncenBI14) \
+	FontObj(ncenBI18) FontObj(ncenBI24) FontObj(ncenI08) \
+	FontObj(ncenI10) FontObj(ncenI12) FontObj(ncenI14) FontObj(ncenI18) \
+	FontObj(ncenI24) FontObj(ncenR08) FontObj(ncenR10) FontObj(ncenR12) \
+	FontObj(ncenR14) FontObj(ncenR18) FontObj(ncenR24) FontObj(symb08) \
+	FontObj(symb10) FontObj(symb12) FontObj(symb14) FontObj(symb18) \
+	FontObj(symb24) FontObj(timB08) FontObj(timB10) FontObj(timB12) \
+	FontObj(timB14) FontObj(timB18) FontObj(timB24) FontObj(timBI08) \
+	FontObj(timBI10) FontObj(timBI12) FontObj(timBI14) FontObj(timBI18) \
+	FontObj(timBI24) FontObj(timI08) FontObj(timI10) FontObj(timI12) \
+	FontObj(timI14) FontObj(timI18) FontObj(timI24) FontObj(timR08) \
+	FontObj(timR10) FontObj(timR12) FontObj(timR14) FontObj(timR18) \
+	FontObj(timR24) FontObj(charB08) FontObj(charB10) FontObj(charB12) \
+	FontObj(charB14) FontObj(charB18) FontObj(charB24) FontObj(charBI08) \
+	FontObj(charBI10) FontObj(charBI12) FontObj(charBI14) \
+	FontObj(charBI18) FontObj(charBI24) FontObj(charI08) \
+	FontObj(charI10) FontObj(charI12) FontObj(charI14) FontObj(charI18) \
+	FontObj(charI24) FontObj(charR08) FontObj(charR10) FontObj(charR12) \
+	FontObj(charR14) FontObj(charR18) FontObj(charR24) FontObj(tech14) \
+	FontObj(techB14) FontObj(term14) FontObj(termB14) FontObj(luBIS08) \
+	FontObj(luBIS10) FontObj(luBIS12) FontObj(luBIS14) FontObj(luBIS18) \
+	FontObj(luBIS24) FontObj(luBS08) FontObj(luBS10) FontObj(luBS12) \
+	FontObj(luBS14) FontObj(luBS18) FontObj(luBS24) FontObj(luIS08) \
+	FontObj(luIS10) FontObj(luIS12) FontObj(luIS14) FontObj(luIS18) \
+	FontObj(luIS24) FontObj(luRS08) FontObj(luRS10) FontObj(luRS12) \
+	FontObj(luRS14) FontObj(luRS18) FontObj(luRS24) FontObj(lubB08) \
+	FontObj(lubB10) FontObj(lubB12) FontObj(lubB14) FontObj(lubB18) \
+	FontObj(lubB24) FontObj(lubBI08) FontObj(lubBI10) FontObj(lubBI12) \
+	FontObj(lubBI14) FontObj(lubBI18) FontObj(lubBI24) FontObj(lubI08) \
+	FontObj(lubI10) FontObj(lubI12) FontObj(lubI14) FontObj(lubI18) \
+	FontObj(lubI24) FontObj(lubR08) FontObj(lubR10) FontObj(lubR12) \
+	FontObj(lubR14) FontObj(lubR18) FontObj(lubR24) FontObj(lutBS08) \
+	FontObj(lutBS10) FontObj(lutBS12) FontObj(lutBS14) FontObj(lutBS18) \
+	FontObj(lutBS24) FontObj(lutRS08) FontObj(lutRS10) FontObj(lutRS12) \
+	FontObj(lutRS14) FontObj(lutRS18) FontObj(lutRS24) FontObj(luBIS19) \
+	FontObj(luBS19) FontObj(luIS19) FontObj(luRS19) FontObj(lubB19) \
+	FontObj(lubBI19) FontObj(lubI19) FontObj(lubR19) FontObj(lutBS19) \
+	FontObj(lutRS19)
 
 
 
