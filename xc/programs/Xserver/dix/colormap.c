@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.23 91/12/26 11:33:06 rws Exp $ */
+/* $XConsortium: colormap.c,v 5.24 92/02/18 16:57:14 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -2230,7 +2230,8 @@ StoreColors (pmap, count, defs)
 	    if (pdef->pixel & rgbbad)
 	    {
 		errVal = BadValue;
-		ok = FALSE;
+		clientErrorValue = pdef->pixel;
+		continue;
 	    }
 	    pix = (pdef->pixel & pVisual->redMask) >> pVisual->offsetRed;
 	    if (pix >= numred)
