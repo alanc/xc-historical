@@ -393,7 +393,17 @@
 ; Note that we are explicitly using a different spectrum representation
 ; than what is actually transmitted in the protocol.
 
-(def-clx-class (color (:constructor make-color-internal (red green blue)) (:copier nil))
+(defun print-color (color stream depth)
+  (declare (ignore depth))
+  (printing-object (color stream)
+    (prin1 (color-red color) stream)
+    (princ " " stream)
+    (prin1 (color-green color) stream)
+    (princ " " stream)
+    (prin1 (color-blue color) stream)))
+
+(def-clx-class (color (:constructor make-color-internal (red green blue))
+		      (:copier nil) (:print-function print-color))
   (red 0.0 :type rgb-val)
   (green 0.0 :type rgb-val)
   (blue 0.0 :type rgb-val))
@@ -421,9 +431,21 @@
 (defparameter *atom-cache-size* 200)
 (defparameter *resource-id-map-size* 500)
 
+(defun print-display (display stream depth)
+  (declare (ignore depth))
+  (printing-object (display stream)
+    (princ (display-host display) stream)
+    (princ " " stream)
+    (princ (display-display display) stream)
+    (princ " (" stream)
+    (princ (display-vendor-name display) stream)
+    (princ " R" stream)
+    (prin1 (display-release-number display) stream)
+    (princ ")" stream)))
+
 (def-clx-class (display (:include buffer)
 			(:constructor make-display-internal)
-			(:print-function display-print)
+			(:print-function print-display)
 			(:copier nil))
   (host)					; Server Host
   (display 0 :type integer)			; Display number on host
@@ -508,19 +530,36 @@
 
 ;;(deftype drawable () '(or window pixmap))
 
-(def-clx-class (drawable (:copier nil))
+(defun print-drawable (drawable stream depth)
+  (declare (ignore depth))
+  (printing-object (drawable stream)
+    (prin1 (drawable-id drawable) stream)))
+
+(def-clx-class (drawable (:copier nil) (:print-function print-drawable))
   (id 0 :type resource-id)
   (display nil :type (or null display))
   (plist nil :type list)			; Extension hook
   )
 
-(def-clx-class (window (:include drawable) (:copier nil))
+(def-clx-class (window (:include drawable) (:copier nil)
+		       (:print-function print-drawable))
   )
 
-(def-clx-class (pixmap (:include drawable) (:copier nil))
+(def-clx-class (pixmap (:include drawable) (:copier nil)
+		       (:print-function print-drawable))
   )
 
-(defstruct (visual-info (:copier nil) (:predicate nil))
+(defun print-visual-info (visual-info stream depth)
+  (declare (ignore depth))
+  (printing-object (visual-info stream)
+    (prin1 (visual-info-id visual-info) stream)
+    (princ " " stream)
+    (prin1 (visual-info-bits-per-rgb visual-info) stream)
+    (princ "-bit " stream)
+    (princ (visual-info-class visual-info) stream)))
+
+(defstruct (visual-info (:copier nil) (:predicate nil)
+			(:print-function print-visual-info))
   (id 0 :type resource-id)
   (class :static-gray :type (member :static-gray :static-color :true-color
 				    :gray-scale :pseudo-color :direct-color))
@@ -532,13 +571,26 @@
   (plist nil :type list)			; Extension hook
   )
 
-(def-clx-class (colormap (:copier nil))
+(defun print-colormap (colormap stream depth)
+  (declare (ignore depth))
+  (printing-object (colormap stream)
+    (prin1 (colormap-id colormap) stream)
+    (when (colormap-visual-info colormap)
+      (princ " " stream)
+      (princ (visual-info-class (colormap-visual-info colormap)) stream))))
+
+(def-clx-class (colormap (:copier nil) (:print-function print-colormap))
   (id 0 :type resource-id)
   (display nil :type (or null display))
   (visual-info nil :type (or null visual-info))
   )
 
-(def-clx-class (cursor (:copier nil))
+(defun print-cursor (cursor stream depth)
+  (declare (ignore depth))
+  (printing-object (cursor stream)
+    (prin1 (cursor-id cursor) stream)))
+
+(def-clx-class (cursor (:copier nil) (:print-function print-colormap))
   (id 0 :type resource-id)
   (display nil :type (or null display))
   )
@@ -549,26 +601,26 @@
 (deftype xatom () '(or string symbol))
 
 (defconstant *predefined-atoms*
-	     '#(nil :PRIMARY :SECONDARY :ARC :ATOM :BITMAP
-		    :CARDINAL :COLORMAP :CURSOR
-		    :CUT_BUFFER0 :CUT_BUFFER1 :CUT_BUFFER2 :CUT_BUFFER3
-		    :CUT_BUFFER4 :CUT_BUFFER5 :CUT_BUFFER6 :CUT_BUFFER7
-		    :DRAWABLE :FONT :INTEGER :PIXMAP :POINT :RECTANGLE
-		    :RESOURCE_MANAGER :RGB_COLOR_MAP :RGB_BEST_MAP
-		    :RGB_BLUE_MAP :RGB_DEFAULT_MAP
-		    :RGB_GRAY_MAP :RGB_GREEN_MAP :RGB_RED_MAP :STRING
-		    :VISUALID :WINDOW :WM_COMMAND :WM_HINTS
-		    :WM_CLIENT_MACHINE :WM_ICON_NAME :WM_ICON_SIZE
-		    :WM_NAME :WM_NORMAL_HINTS :WM_SIZE_HINTS
-		    :WM_ZOOM_HINTS :MIN_SPACE :NORM_SPACE :MAX_SPACE
-		    :END_SPACE :SUPERSCRIPT_X :SUPERSCRIPT_Y
-		    :SUBSCRIPT_X :SUBSCRIPT_Y
-		    :UNDERLINE_POSITION :UNDERLINE_THICKNESS
-		    :STRIKEOUT_ASCENT :STRIKEOUT_DESCENT
-		    :ITALIC_ANGLE :X_HEIGHT :QUAD_WIDTH :WEIGHT
-		    :POINT_SIZE :RESOLUTION :COPYRIGHT :NOTICE
-		    :FONT_NAME :FAMILY_NAME :FULL_NAME :CAP_HEIGHT
-		    :WM_CLASS :WM_TRANSIENT_FOR))
+	     '#(nil :primary :secondary :arc :atom :bitmap
+		    :cardinal :colormap :cursor
+		    :cut_buffer0 :cut_buffer1 :cut_buffer2 :cut_buffer3
+		    :cut_buffer4 :cut_buffer5 :cut_buffer6 :cut_buffer7
+		    :drawable :font :integer :pixmap :point :rectangle
+		    :resource_manager :rgb_color_map :rgb_best_map
+		    :rgb_blue_map :rgb_default_map
+		    :rgb_gray_map :rgb_green_map :rgb_red_map :string
+		    :visualid :window :wm_command :wm_hints
+		    :wm_client_machine :wm_icon_name :wm_icon_size
+		    :wm_name :wm_normal_hints :wm_size_hints
+		    :wm_zoom_hints :min_space :norm_space :max_space
+		    :end_space :superscript_x :superscript_y
+		    :subscript_x :subscript_y
+		    :underline_position :underline_thickness
+		    :strikeout_ascent :strikeout_descent
+		    :italic_angle :x_height :quad_width :weight
+		    :point_size :resolution :copyright :notice
+		    :font_name :family_name :full_name :cap_height
+		    :wm_class :wm_transient_for))
 
 (deftype stringable () '(or string symbol))
 
@@ -622,7 +674,12 @@
 
 (deftype gcontext-state () 'simple-vector)
 
-(def-clx-class (gcontext (:copier nil))
+(defun print-gcontext (gcontext stream depth)
+  (declare (ignore depth))
+  (printing-object (gcontext stream)
+    (prin1 (gcontext-id gcontext) stream)))
+
+(def-clx-class (gcontext (:copier nil) (:print-function print-gcontext))
   ;; The accessors convert to CLX data types.
   (id 0 :type resource-id)
   (display nil :type (or null display))
@@ -737,7 +794,20 @@
 	   ,boole-nor ,boole-eqv ,boole-c2 ,boole-orc2
 	   ,boole-c1 ,boole-orc1 ,boole-nand ,boole-set))
 
-(defstruct (screen (:copier nil) (:predicate nil))
+(defun print-screen (screen stream depth)
+  (declare (ignore depth))
+  (printing-object (screen stream)
+    (prin1 (screen-width screen) stream)
+    (princ "x" stream)
+    (prin1 (screen-height screen) stream)
+    (princ "x" stream)
+    (prin1 (screen-root-depth screen) stream)
+    (when (screen-root-visual-info screen)
+      (princ " " stream)
+      (princ (visual-info-class (screen-root-visual-info screen)) stream))))
+
+(defstruct (screen (:copier nil) (:predicate nil)
+		   (:print-function print-screen))
   (root nil :type (or null window))
   (width 0 :type card16)
   (height 0 :type card16)
@@ -781,7 +851,18 @@
   (descent 0 :type int16)
   (properties nil :type font-props))
 
-(def-clx-class (font (:constructor make-font-internal) (:copier nil))
+(defun print-font (font stream depth)
+  (declare (ignore depth))
+  (printing-object (font stream)
+    (if (font-name font)
+	(princ (font-name font) stream)
+      (princ '|(gcontext)| stream))
+    (when (font-id-internal font)
+      (princ " " stream)
+      (prin1 (font-id font) stream))))
+
+(def-clx-class (font (:constructor make-font-internal) (:copier nil)
+		     (:print-function print-font))
   (id-internal nil :type (or null resource-id)) ;; NIL when not opened
   (display nil :type (or null display))
   (reference-count 0 :type fixnum)
@@ -828,8 +909,6 @@
 ;  (declare (type font font)
 ;	   (values <type>)))
 
-(eval-when (eval compile) ;; I'd rather use macrolet, but Symbolics doesn't like it...
-
 (defmacro make-font-info-accessors (useless-name &body fields)
   `(within-definition (,useless-name make-font-info-accessors)
      ,@(mapcan
@@ -844,8 +923,6 @@
 		   (declare (values ,type))
 		   (,accessor (font-font-info font))))))
 	 fields)))
-
-) ;; End eval-when
 
 (make-font-info-accessors ignore
   (direction draw-direction)
@@ -869,8 +946,6 @@
   (declare (values (or null int32)))
   (getf (font-properties font) name))
 
-(eval-when (eval compile) ;; I'd rather use macrolet, but Symbolics doesn't like it...
-
 (defmacro make-mumble-equal (type)
   ;; When cached, EQ works fine, otherwise test resource id's and displays
   (let ((predicate (xintern type '-equal))
@@ -885,8 +960,6 @@
 	   (declare (type ,type a b))
 	   (and (= (,id a) (,id b))
 		(eq (,dpy a) (,dpy b))))))))
-
-) ;; End eval-when
 
 (make-mumble-equal window)
 (make-mumble-equal pixmap)
