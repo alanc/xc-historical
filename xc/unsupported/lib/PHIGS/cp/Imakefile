@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.5 91/02/18 11:41:47 rws Exp $
+# $XConsortium: Imakefile,v 5.6 91/02/19 11:20:47 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -60,8 +60,6 @@ LINTOPTS = -uv
 LINT_LIBS = ../util/llib-lut.ln ../error/llib-lerr.ln ../pex/llib-lpex.ln \
 		../ws_type/llib-lwst.ln ../ws/llib-lws.ln ../input/llib-linp.ln
 XLINT_LIBS = $(LINTXTOOL) $(LINTXLIB)
-LINT_FILTER_FILE = ../include/lint_filter_strings
-LINT_FILTER = fgrep -v -f $(LINT_FILTER_FILE) | cat
 
 all:: DONE
 
@@ -75,18 +73,18 @@ phigsmon: phigsmon.o
 
 
 lint:   $(ASRCS)
-	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) | $(LINT_FILTER)
+	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) 
 
 lint-x: $(ASRCS)
-	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) | $(LINT_FILTER)
+	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) 
 
 lintlib : llib-lcp.ln
 
 llib-lcp.ln : $(ASRCS)
-	$(LINT) $(CSRCS) $(LINTFLAGS) -Ccp | $(LINT_FILTER)
+	$(LINT) $(CSRCS) $(LINTFLAGS) -Ccp 
 
 .c.lint:
-	$(LINT) $< $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) | $(LINT_FILTER)
+	$(LINT) $< $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) 
 
 #ifdef HPArchitecture
 SpecialObjectRule(hpext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))

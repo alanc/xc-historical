@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.10 91/03/24 18:10:44 rws Exp $
+# $XConsortium: Imakefile,v 5.11 91/03/26 14:45:17 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -77,7 +77,7 @@ all:: errnum.h PHIGSerr.txt
 
 includes:: errnum.h
 
-extract: $(HDRS) PHIGSerr.txt PHIGSfnc.txt lintfiltstrs
+extract: $(HDRS) PHIGSerr.txt PHIGSfnc.txt 
 
 errnum.h: errgen.awk phigserr.h
 	awk -f errgen.awk phigserr.h > errnum.h
@@ -85,10 +85,10 @@ errnum.h: errgen.awk phigserr.h
 PHIGSerr.txt: errmsgen.awk phigserr.h
 	awk -f errmsgen.awk phigserr.h > PHIGSerr.txt
 
-lint lint-x : lintfiltstrs
+lint lint-x : 
 	@echo "no include lint needed"
 
-lintlib : lintfiltstrs
+lintlib : 
 	@echo "no include lint library"
 
 #ifdef HPArchitecture
