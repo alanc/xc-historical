@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Quarks.c,v 1.28 90/12/13 23:34:26 rws Exp $
+ * $XConsortium: Quarks.c,v 1.29 90/12/26 09:56:46 rws Exp $
  */
 
 /***********************************************************
@@ -78,8 +78,6 @@ static XrmQuark nextUniq = -1;	/* next quark from XrmUniqueQuark */
 #define SETPERM(q) BYTEREF(q) |= (1 << ((q) & 7))
 #define CLEARPERM(q) BYTEREF(q) &= ~(1 << ((q) & 7))
 #endif
-
-void bzero();
 
 /* Permanent memory allocation */
 
