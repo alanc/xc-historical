@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.41 94/03/28 14:36:37 kaleb Exp $ */
+/* $XConsortium: sunKbd.c,v 5.42 94/03/28 18:23:58 gildea Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -314,12 +314,14 @@ static void pseudoKey(device, down, keycode)
 	}
     }
 }
+#endif
 
 static void DoLEDs(device, ctrl, pPriv)
     DeviceIntPtr    device;	    /* Keyboard to alter */
     KeybdCtrl* ctrl;
     sunKbdPrivPtr pPriv; 
 {
+#ifndef XKB
     if ((ctrl->leds & XLED_CAPS_LOCK) && !(pPriv->leds & XLED_CAPS_LOCK))
 	    pseudoKey(device, TRUE,
 		LookupKeyCode(XK_Caps_Lock, &device->key->curKeySyms));
@@ -351,11 +353,10 @@ static void DoLEDs(device, ctrl, pPriv)
     if (!(ctrl->leds & XLED_COMPOSE) && (pPriv->leds & XLED_COMPOSE))
 	    pseudoKey(device, FALSE,
 		LookupKeyCode(SunXK_Compose, &device->key->curKeySyms));
-
+#endif
     pPriv->leds = ctrl->leds & 0x0f;
     SetLights (ctrl, pPriv->fd);
 }
-#endif
 
 /*-
  *-----------------------------------------------------------------------
@@ -393,10 +394,8 @@ static void sunKbdCtrl (device, ctrl)
     	if (ioctl (pPriv->fd, KIOCCMD, &kbdClickCmd) == -1)
  	    Error("Failed to set keyclick");
     }
-#ifndef XKB
     if (pPriv->type == KB_SUN4 && pPriv->leds != ctrl->leds & 0x0f)
 	DoLEDs(device, ctrl, pPriv);
-#endif
 }
 
 /*-
@@ -869,3 +868,4 @@ void sunWakeupHandler(nscreen, pbdata, err, pReadmask)
     }
 }
 #endif /* ! XKB */
+
