@@ -1,5 +1,5 @@
 /*
-* $XConsortium: ClockP.h,v 1.17 89/03/30 16:05:22 jim Exp $
+* $XConsortium: ClockP.h,v 1.18 89/05/11 01:04:54 kit Exp $
 */
 
 
@@ -30,6 +30,7 @@ SOFTWARE.
 #ifndef _XawClockP_h
 #define _XawClockP_h
 
+#include <X11/Xos.h>		/* Needed for struct tm. */
 #include <X11/Xaw/Clock.h>
 #include <X11/CoreP.h>
 

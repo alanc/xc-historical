@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Clock.c,v 1.48 89/10/09 16:20:00 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Clock.c,v 1.49 89/11/28 15:02:05 kit Exp $";
 #endif /* lint */
 
 
@@ -27,7 +27,6 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
