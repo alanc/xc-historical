@@ -225,7 +225,7 @@ ComputeProps(pInfo, Vals, Filename)
     if (!rc) {
         pInfo->constantWidth = infoint;
     }
-    QueryFontLib(NULL, "FontBBox", infoBBox, &rc);
+    QueryFontLib((char *)0, "FontBBox", infoBBox, &rc);
     if (!rc) {
         pInfo->fontAscent = (infoBBox[3] * Vals->pixel) / 1000;
         pInfo->fontDescent = - (infoBBox[1] * Vals->pixel) / 1000;
