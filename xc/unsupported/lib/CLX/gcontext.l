@@ -468,26 +468,28 @@
 	(unless (equalp local-clip 
 			(gcontext-internal-clip server-state))
 	  (setf (gcontext-internal-clip server-state) local-clip)
-	  (with-buffer-request (display *x-setcliprectangles*)
-	    (data (first local-clip))
-	    (gcontext gcontext)
-	    ;; XXX treat nil correctly
-	    (card16 (or (gcontext-internal-clip-x local-state) 0)
-		    (or (gcontext-internal-clip-y local-state) 0))
-	    ;; XXX this has both int16 and card16 values
-	    ((sequence :format int16) (second local-clip)))))
+	  (unless (null local-clip)
+	    (with-buffer-request (display *x-setcliprectangles*)
+	      (data (first local-clip))
+	      (gcontext gcontext)
+	      ;; XXX treat nil correctly
+	      (card16 (or (gcontext-internal-clip-x local-state) 0)
+		      (or (gcontext-internal-clip-y local-state) 0))
+	      ;; XXX this has both int16 and card16 values
+	      ((sequence :format int16) (second local-clip))))))
 
       ;; Update dashes
       (let ((local-dash (gcontext-internal-dash local-state)))
 	(unless (equalp local-dash
 			(gcontext-internal-dash server-state))
 	  (setf (gcontext-internal-dash server-state) local-dash)
-	  (with-buffer-request (display *x-setdashes*)
-	    (gcontext gcontext)
-	    ;; XXX treat nil correctly
-	    (card16 (or (gcontext-internal-dash-offset local-state) 0)
-		    (length local-dash))
-	    ((sequence :format card8) local-dash))))))) 
+	  (unless (null local-dash)
+	    (with-buffer-request (display *x-setdashes*)
+	      (gcontext gcontext)
+	      ;; XXX treat nil correctly
+	      (card16 (or (gcontext-internal-dash-offset local-state) 0)
+		      (length local-dash))
+	      ((sequence :format card8) local-dash)))))))) 
 
 (defun force-gcontext-changes (gcontext)
   ;; Force any delayed changes.
