@@ -40,7 +40,7 @@ Although both windows may be displayed at the same time, one of them is
 considered the ``active'' window for receiving keyboard input and terminal
 output.  This is the window that contains the text cursor and whose border 
 highlights whenever the pointer is in either window.
-The active window can be choosen through escape sequences,
+The active window can be chosen through escape sequences,
 the ``Modes'' menu in the VT102 window, and the ``Tektronix''
 menu in the 4014 window.
 .SH OPTIONS
@@ -219,7 +219,7 @@ scroll to the bottom.
 .B \-sk
 This option indicates that pressing a key while 
 using the scrollbar to review previous lines of text should
-cause the window to be repositioned automatically in the normal postion at the
+cause the window to be repositioned automatically in the normal position at the
 bottom of the scroll region.
 .TP 8
 .B \+sk
@@ -260,7 +260,7 @@ This option indicates that \fIxterm\fP should write a record into the system
 log file \fI/etc/utmp\fP.
 .TP 8
 .B \-vb
-This option indicates that a visual bell is prefered over an audible one.
+This option indicates that a visual bell is preferred over an audible one.
 Instead of ringing the terminal bell whenever a Control-G is received, the
 window will be flashed.
 .TP 8
@@ -294,11 +294,11 @@ older versions.  They may not be supported in the next release as the X
 Toolkit provides standard options that accomplish the same task.
 .TP 8
 .B "%\fIgeom\fP"
-This option specifies the prefered size and position of the Tektronix window.
+This option specifies the preferred size and position of the Tektronix window.
 It is shorthand for specifying the "\fI*tekGeometry\fP" resource.
 .TP 8
 .B \#\fIgeom\fP
-This option specifies the prefered position of the icon window.
+This option specifies the preferred position of the icon window.
 It is shorthand for specifying the "\fI*iconGeometry\fP" resource.
 .TP 8
 .BI \-T " string"
@@ -358,7 +358,7 @@ This option indicates that reverse video should be simulated by swapping
 the foreground and background colors.
 .TP 8
 .B \-geometry \fIgeometry\fP
-This option specifies the prefered size and position of the VT102 window;
+This option specifies the preferred size and position of the VT102 window;
 see \fIX(1)\fP.
 .TP 8
 .B \-display \fIdisplay\fP
@@ -376,7 +376,7 @@ The program understands all of the core X Toolkit resource names and
 classes as well as:
 .TP 8
 .B "iconGeometry (\fPclass\fB IconGeometry)"
-Specifies the prefered size and position of the application when iconified.
+Specifies the preferred size and position of the application when iconified.
 It is not necessarily obeyed by all window managers.
 .TP 8
 .B "termName (\fPclass\fB TermName)"
@@ -455,10 +455,10 @@ is ``black.''
 Specifies the color to use for the text cursor.  The default is ``black.''
 .TP 8
 .B "geometry (\fPclass\fB Geometry)"
-Specifies the prefered size and position of the VT102 window.
+Specifies the preferred size and position of the VT102 window.
 .TP 8
 .B "tekGeometry (\fPclass\fB Geometry)"
-Specifies the prefered size and position of the Tektronix window.
+Specifies the preferred size and position of the Tektronix window.
 .TP 8
 .B "internalBorder (\fPclass\fB BorderWidth)"
 Specifies the number of pixels between the characters and the window border.
@@ -722,9 +722,9 @@ Pressing any key will send that key and the current coordinate of the
 cross cursor.
 Pressing button one, two, or three will return the letters `l', `m', and
 `r', respectively.
-If the `shift' key is pressed when a pointer buton is pressed, the corresponding
+If the `shift' key is pressed when a pointer button is pressed, the corresponding
 upper case letter is sent.
-To distinquish a pointer button from a key, the high bit of the character is
+To distinguish a pointer button from a key, the high bit of the character is
 set (but this is bit is normally stripped unless the terminal mode is RAW;
 see
 .IR tty (4)
@@ -796,7 +796,7 @@ The
 entry in the command section clears the Tektronix window.
 .SH SECURITY
 .PP
-X environments differ in their security conciousness.  The servers provided
+X environments differ in their security consciousness.  The servers provided
 by MIT use a host-based mechanism to control access to the server (see
 \fIxhost(1)\fP).  If you enable access for a host, and other users are
 also permitted to run clients on that host, there is the possibility that
