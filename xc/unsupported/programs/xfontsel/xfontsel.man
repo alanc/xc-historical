@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: xfontsel.man,v 1.4 89/11/14 19:27:29 swick Exp $
 .de EX		\"Begin example
 .ne 5
 .if n .sp 1
@@ -12,7 +12,7 @@
 .if n .sp 1
 .if t .sp .5
 ..
-.TH xfontsel 1 "14 November 1989" "X Version 11"
+.TH xfontsel 1 "15 November 1989" "X Version 11"
 .SH NAME
 .PP
 xfontsel - point & click interface for selecting X11 font names
@@ -55,6 +55,8 @@ previous choices of other fields were made, only values
 for fonts which matched the previously selected fields will be
 selectable; to make other values selectable, you must deselect
 some other field(s) by choosing the ``*'' entry in that field.
+Unselectable values may be omitted from the menu entirely as
+a configuration option; see the \fBShowUnselectable\fP resource, below.
 Whenever any change is made to a field value, \fIxfontsel\fP will
 assert ownership of the PRIMARY_FONT selection.  Other applications
 (see, e.g., \fIxterm\fP) may then retrieve the selected font specification.
@@ -98,6 +100,23 @@ delimiter; e.g. ``*-m-*'' for monospaced fonts.
 If \fITrue\fP the currently selected font name is printed
 to standard output when the quit button is activated.
 Equivalent to the \fB-print\fP option.
+.PP
+Widget specific resources:
+.PP
+.TP 8
+.B "showUnselectable (\fPclass\fB ShowUnselectable)"
+Specifies, for each field menu, whether or not to show values that
+are not currently selectable, based upon previous field selections.
+If shown, the unselectable values are clearly identified as such
+and do not highlight when the pointer is moved down the menu.
+The full name of this resource is \fBfieldN.menu.options.showUnselectable\fP,
+class \fBMenuButton.SimpleMenu.Options.ShowUnselectable\fP;
+where N is replaced with the field
+number (starting with the left-most field numbered 0).
+The default is True for all but field 11 (average width of characters
+in font) and False for field 11.  If you never want to see
+unselectable entries, '*menu.options.showUnselectable:False' is
+a reasonable thing to specify in a resource file.
 .PP
 .SH FILES
 .PP
