@@ -1,4 +1,4 @@
-/* $XConsortium: xchgkbd.c,v 1.9 90/05/18 14:14:31 rws Exp $ */
+/* $XConsortium: xchgkbd.c,v 1.10 90/05/18 15:23:06 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 

@@ -1,4 +1,4 @@
-/* $XConsortium: xchgptr.c,v 1.10 90/05/18 15:22:41 rws Exp $ */
+/* $XConsortium: xchgptr.c,v 1.11 90/05/18 15:26:28 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -78,7 +78,6 @@ ProcXChangePointerDevice (client)
     register ClientPtr client;
     {
     extern		ChangePointerDevice();
-    int			i;
     DeviceIntPtr 	dev;
     ValuatorClassPtr 	v;
     xChangePointerDeviceReply	rep;
@@ -102,9 +101,9 @@ ProcXChangePointerDevice (client)
 	}
 
     v = dev->valuator;
-    if (v == NULL || v->numAxes < 2 ||
-	stuff->xaxis < 0 ||  stuff->xaxis >= v->numAxes ||
-	stuff->yaxis < 0 ||  stuff->yaxis >= v->numAxes)
+    if (v == NULL || v->numAxes < 2 || 
+	stuff->xaxis >= v->numAxes ||
+	stuff->yaxis >= v->numAxes)
 	{
 	rep.status = -1;
 	SendErrorToClient(client, IReqCode, X_ChangePointerDevice, 0, BadMatch);
@@ -192,7 +191,6 @@ FindInterestedChildren (dev, p1, mask, ev, count)
     int			count;
     {
     WindowPtr p2;
-    int i;
 
     while (p1)
         {

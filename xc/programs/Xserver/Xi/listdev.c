@@ -1,4 +1,4 @@
-/* $XConsortium: xlistdev.c,v 1.8 89/12/02 15:21:20 rws Exp $ */
+/* $XConsortium: xlistdev.c,v 1.9 90/05/18 10:54:47 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -80,9 +80,7 @@ SProcXListInputDevices(client)
 ProcXListInputDevices (client)
     register ClientPtr client;
     {
-    register char	n;
     xListInputDevicesReply	rep;
-    int			i, j;
     int			numdevs;
     int 		namesize = 0;
     int 		size = 0;

@@ -1,4 +1,4 @@
-/* $XConsortium: xclosedev.c,v 1.6 89/10/12 12:16:51 gms Exp $ */
+/* $XConsortium: xclosedev.c,v 1.7 89/12/02 15:20:41 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -121,7 +121,6 @@ DeleteEventsFromChildren(dev, p1, client)
     ClientPtr		client;
     {
     WindowPtr p2;
-    int i;
 
     while (p1)
         {
@@ -144,7 +143,6 @@ DeleteDeviceEvents (dev, pWin, client)
     WindowPtr		pWin;
     ClientPtr		client;
     {
-    int			i;
     InputClientsPtr	others;
     OtherInputMasks	*pOthers;
     GrabPtr		grab;

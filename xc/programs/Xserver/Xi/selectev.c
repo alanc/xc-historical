@@ -1,4 +1,4 @@
-/* $XConsortium: xselectev.c,v 1.7 89/12/02 15:21:28 rws Exp $ */
+/* $XConsortium: xselectev.c,v 1.8 90/05/18 11:03:13 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -86,7 +86,6 @@ ProcXSelectExtensionEvent (client)
     int			ret;
     int			i;
     WindowPtr 		pWin;
-    DeviceIntPtr 	dev;
     struct tmask	tmp[EMASKSIZE];
 
     REQUEST(xSelectExtensionEventReq);

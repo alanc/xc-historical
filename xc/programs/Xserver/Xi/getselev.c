@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: xgetselev.c,v 1.7 90/05/18 11:18:21 rws Exp $ */
+/* $XConsortium: xgetselev.c,v 1.8 90/05/18 11:37:37 rws Exp $ */
 
 /***********************************************************************
  *
@@ -79,7 +79,6 @@ ProcXGetSelectedExtensionEvents(client)
     XEventClass				*buf;
     XEventClass				*tclient;
     XEventClass				*aclient;
-    Mask				*tmask;
     XEventClass 			*ClassFromMask ();
     void				Swap32Write();
     OtherInputMasks			*pOthers;

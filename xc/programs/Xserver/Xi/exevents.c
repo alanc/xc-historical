@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.15 90/05/18 14:15:14 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.16 90/05/18 15:32:51 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -681,25 +681,22 @@ RecalculateDeviceDeliverableEvents(pWin)
     pChild = pWin;
     while (1)
 	{
-	if (wOtherInputMasks(pChild))
+	if (inputMasks = wOtherInputMasks(pChild))
 	    {
-	    for (others = wOtherInputMasks(pChild)->inputClients; others; 
+	    for (others = inputMasks->inputClients; others; 
 		others = others->next)
 		{
 		for (i=0; i<EMASKSIZE; i++)
 		    if (others->mask[i])
-			wOtherInputMasks(pChild)->inputEvents[i] |= 
-				others->mask[i];
+			inputMasks->inputEvents[i] |= others->mask[i];
 		}
 	    for (i=0; i<EMASKSIZE; i++)
-		wOtherInputMasks(pChild)->deliverableEvents[i] =
-		    wOtherInputMasks(pChild)->inputEvents[i];
+		inputMasks->deliverableEvents[i] = inputMasks->inputEvents[i];
 	    if (pChild->parent && wOtherInputMasks(pChild->parent))
 		for (i=0; i<EMASKSIZE; i++)
-		    wOtherInputMasks(pChild)->deliverableEvents[i] |=
-			(wOtherInputMasks(pChild->parent)->deliverableEvents[i] &
-			~wOtherInputMasks(pChild)->dontPropagateMask[i] &
-			PropagateMask[i]);
+		    inputMasks->deliverableEvents[i] |=
+			(wOtherInputMasks(pChild->parent)->deliverableEvents[i] 
+			& ~inputMasks->dontPropagateMask[i] & PropagateMask[i]);
 	    }
 	if (pChild->firstChild)
 	    {
@@ -1143,7 +1140,7 @@ DeviceEventMaskForClient(dev, pWin, client)
     WindowPtr		pWin;
     ClientPtr		client;
     {
-    register InputClientsPtr other, prev;
+    register InputClientsPtr other;
 
     if (!wOtherInputMasks(pWin))
 	return 0;

@@ -1,4 +1,4 @@
-/* $XConsortium: xchgprop.c,v 1.6 89/12/02 15:20:36 rws Exp $ */
+/* $XConsortium: xchgprop.c,v 1.7 90/05/18 11:44:52 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -80,7 +80,7 @@ SProcXChangeDeviceDontPropagateList(client)
 ProcXChangeDeviceDontPropagateList (client)
     register ClientPtr client;
     {
-    int			i, ret;
+    int			i;
     WindowPtr		pWin;
     struct 		tmask tmp[EMASKSIZE];
     OtherInputMasks	*others;
