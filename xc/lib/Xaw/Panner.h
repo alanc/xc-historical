@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.h,v 1.7 90/02/13 10:06:31 jim Exp $
+ * $XConsortium: Panner.h,v 1.8 90/02/13 10:56:19 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -46,6 +46,7 @@
  *  foreground		Foreground	Pixel		XtDefaultForeground
  *  internalBorderWidth	BorderWidth	Dimension	2
  *  lineWidth		LineWidth	Dimension	0
+ *  resize		Boolean		Boolean		TRUE
  *  rubberBand		RubberBand	Boolean		FALSE
  *  shadow		Shadow		Boolean		TRUE
  *  sliderColor		Background	Pixel		XtDefaultBackground
@@ -68,6 +69,7 @@
 #define XtNinternalBorderWidth "internalBorderWidth"
 #define XtNlineWidth "lineWidth"
 #define XtCLineWidth "LineWidth"
+#define XtNresize "resize"
 #define XtNrubberBand "rubberBand"
 #define XtCRubberBand "RubberBand"
 #define XtNshadow "shadow"

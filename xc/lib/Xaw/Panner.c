@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.8 90/02/13 10:06:29 jim Exp $
+ * $XConsortium: Panner.c,v 1.9 90/02/13 10:56:17 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -57,7 +57,9 @@ static XtActionsRec actions[] = {
 #define poff(field) XtOffset(PannerWidget, panner.field)
 static XtResource resources[] = {
     { XtNallowOff, XtCAllowOff, XtRBoolean, sizeof(Boolean),
-	poff(allow_off), XtRImmediate, FALSE },
+	poff(allow_off), XtRImmediate, (XtPointer) FALSE },
+    { XtNresize, XtCBoolean, XtRBoolean, sizeof(Boolean),
+	poff(resize_to_pref), XtRImmediate, (XtPointer) TRUE },
     { XtNcallback, XtCCallback, XtRCallback, sizeof(XtPointer),
 	poff(callbacks), XtRCallback, (XtPointer) NULL },
     { XtNdefaultScale, XtCDefaultScale, XtRDimension, sizeof(Dimension),
@@ -268,12 +270,8 @@ static void scale_knob (pw, location, size)  /* set knob size and/or loc */
     Boolean location, size;
 {
     if (location) {
-	int pad = pw->panner.internal_border;
-
-	pw->panner.knob_x = (Position)
-	  (PANNER_HSCALE (pw, pw->panner.slider_x) + pad);
-	pw->panner.knob_y = (Position)
-	  (PANNER_VSCALE (pw, pw->panner.slider_y) + pad);
+	pw->panner.knob_x = (Position) PANNER_HSCALE (pw, pw->panner.slider_x);
+	pw->panner.knob_y = (Position) PANNER_VSCALE (pw, pw->panner.slider_y);
     }
     if (size) {
 	pw->panner.knob_width = (Dimension)
@@ -300,6 +298,14 @@ static void rescale (pw)
 }
 
 
+static void get_default_size (pw, wp, hp)
+    PannerWidget pw;
+    Dimension *wp, *hp;
+{
+    Dimension pad = pw->panner.internal_border * 2;
+    *wp = PANNER_DSCALE (pw, pw->panner.canvas_width) + pad;
+    *hp = PANNER_DSCALE (pw, pw->panner.canvas_height) + pad;
+}
 
 static Boolean get_event_xy (pw, event, x, y)
     PannerWidget pw;
@@ -362,16 +368,16 @@ static void Initialize (greq, gnew)
     Widget greq, gnew;
 {
     PannerWidget req = (PannerWidget) greq, new = (PannerWidget) gnew;
+    Dimension defwidth, defheight;
 
     if (req->panner.canvas_width < 1) new->panner.canvas_width = 1;
     if (req->panner.canvas_height < 1) new->panner.canvas_height = 1;
     if (req->panner.default_scale < 1)
       new->panner.default_scale = PANNER_DEFAULT_SCALE;
 
-    if (req->core.width < 1)
-      new->core.width = PANNER_DSCALE (req, req->panner.canvas_width);
-    if (req->core.height < 1)
-      new->core.height = PANNER_DSCALE (req, req->panner.canvas_height);
+    get_default_size (req, &defwidth, &defheight);
+    if (req->core.width < 1) new->core.width = defwidth;
+    if (req->core.height < 1) new->core.height = defheight;
 
     new->panner.shadow_gc = NULL;
     reset_shadow_gc (new);		/* foreground */
@@ -471,7 +477,13 @@ static Boolean SetValues (gcur, greq, gnew, args, num_args)
 	if (new->panner.tmp.doing) redisplay = TRUE;
     }
 
-    if (cur->panner.canvas_width != new->panner.canvas_width ||
+    if (new->panner.resize_to_pref &&
+	(cur->panner.canvas_width != new->panner.canvas_width ||
+	 cur->panner.canvas_height != new->panner.canvas_height ||
+	 cur->panner.resize_to_pref != new->panner.resize_to_pref)) {
+	get_default_size (new, &new->core.width, &new->core.height);
+	/* do not need to redisplay since resize will cause expose */
+    } else if (cur->panner.canvas_width != new->panner.canvas_width ||
 	cur->panner.canvas_height != new->panner.canvas_height ||
 	cur->panner.internal_border != new->panner.internal_border) {
 	rescale (new);			/* does a scale_knob as well */
@@ -500,8 +512,7 @@ static XtGeometryResult QueryGeometry (gw, intended, pref)
     int pad = pw->panner.internal_border * 2;
 
     pref->request_mode = (CWWidth | CWHeight);
-    pref->width = PANNER_DSCALE (pw, pw->panner.canvas_width) + pad;
-    pref->height = PANNER_DSCALE (pw, pw->panner.canvas_height) + pad;
+    get_default_size (pw, &pref->width, &pref->height);
 
     if (((intended->request_mode & (CWWidth | CWHeight)) ==
 	 (CWWidth | CWHeight)) &&

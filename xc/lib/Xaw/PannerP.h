@@ -1,5 +1,5 @@
 /*
- * $XConsortium: PannerP.h,v 1.6 90/02/12 16:08:52 jim Exp $
+ * $XConsortium: PannerP.h,v 1.7 90/02/13 10:56:21 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -43,6 +43,7 @@ typedef struct {			/* new fields in widget */
     XtCallbackList callbacks;		/* callback/Callback */
     Boolean shadow;			/* shadow/Shadow */
     Boolean allow_off;			/* allowOff/AllowOff */
+    Boolean resize_to_pref;		/* resizeToPreferred/Boolean */
     Pixel foreground;			/* foreground/Foreground */
     Pixel slider_color;			/* sliderColor/sliderColor */
     Dimension default_scale;		/* defaultScale/DefaultScale */
