@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.64 91/07/13 22:53:37 converse Exp $
+ * $XConsortium: init.c,v 2.65 91/07/16 22:26:49 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -132,6 +132,8 @@ static XtResource resources[] = {
 	 Offset(cursor), XtRString, "left_ptr"},
     {"pointerColor", "PointerColor", XtRPixel, sizeof(Pixel),
 	 Offset(pointer_color), XtRString, XtDefaultForeground},
+    {"showOnInc", "ShowOnInc", XtRBoolean, sizeof(Boolean),
+	 Offset(show_on_inc), XtRImmediate, (XtPointer)True},
     {"stickyMenu", "StickyMenu", XtRBoolean, sizeof(Boolean), 	
 	 Offset(sticky_menu), XtRImmediate, (XtPointer)False},
     {"prefixWmAndIconName", "PrefixWmAndIconName", XtRBoolean, sizeof(Boolean),

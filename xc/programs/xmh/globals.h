@@ -1,5 +1,5 @@
 /*
- *  $XConsortium: globals.h,v 2.35 91/07/12 17:05:34 converse Exp $
+ *  $XConsortium: globals.h,v 2.36 91/07/13 22:52:16 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -75,6 +75,7 @@ ext struct _resources {
     Pixmap	no_mail_icon;		/* no mail icon for wm hints */
     Cursor	cursor;			/* application cursor */
     Pixel	pointer_color;		/* application cursor color */
+    Boolean	show_on_inc;		/* show new message after inc */
     Boolean	sticky_menu;		/* command menu entries are sticky? */
     Boolean	prefix_wm_and_icon_name;/* prefix wm names with progName ? */
     Boolean	reverse_read_order;	/* decrement counter to next msg ? */
