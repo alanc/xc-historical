@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.28 91/01/31 22:02:50 gildea Exp $
+ * $XConsortium: auth.c,v 1.29 91/02/04 19:17:42 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -33,10 +33,8 @@
 # include   <sys/stat.h>
 #ifdef hpux
 # include   <sys/utsname.h>
-# include   <netdb.h>
-#else
-# include    <net/if.h>
 #endif
+# include    <net/if.h>
 #ifdef TCPCONN
 # include   <netinet/in.h>
 #endif
@@ -703,7 +701,6 @@ DefineSelf (fd, file, auth)
 
 /* Define this host for access control.  Find all the hosts the OS knows about 
  * for this fd and add them to the selfhosts list.
- * HPUX version - hpux does not have SIOCGIFCONF ioctl;
  */
 static
 DefineSelf (fd, file, auth)
