@@ -1,4 +1,4 @@
-/* $XConsortium: StripChart.c,v 1.21 91/10/16 21:40:06 eswu Exp $ */
+/* $XConsortium: StripChart.c,v 1.22 93/09/18 18:12:24 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -242,7 +242,8 @@ XtIntervalId *id;		/* unused */
    
    if (value > w->strip_chart.max_value) {
        w->strip_chart.max_value = value;
-       if (w->strip_chart.max_value > w->strip_chart.scale) {
+       if (XtIsRealized((Widget)w) && 
+	   w->strip_chart.max_value > w->strip_chart.scale) {
 	   XClearWindow( XtDisplay (w), XtWindow (w));
 	   w->strip_chart.interval = repaint_window(w, 0, (int) w->core.width);
        }
@@ -359,6 +360,7 @@ Boolean blit;
 
     if (!XtIsRealized((Widget) w)) return;
 
+    if (w->strip_chart.jump_val < 0) w->strip_chart.jump_val = DEFAULT_JUMP;
     if (w->strip_chart.jump_val == DEFAULT_JUMP)
         j = w->core.width >> 1; /* Half the window width. */
     else {
