@@ -62,8 +62,8 @@ Dave Sternlicht, dave@expo.lcs.mit.edu
 .fi
 
 Ralph Swick, swick@athena.mit.edu, an employee of Digital Equipment
-Corporation working at MIT Project Athena, also works directly with
-the Consortium staff.
+Corporation working at MIT Project Athena, also worked directly with
+the Consortium staff on this release.
 
 .SH "POSTAL ADDRESS"
 The MIT X Consortium can be reached by writing to
@@ -155,6 +155,7 @@ O'Reilly & Associates, Inc.
 PCS Computer Systeme GmbH
 Peritek Corp.
 PsiTech, Inc.
+Quarterdeck Office Systems
 Ramtek Corporation
 Samsung Electronics Corp.
 ShoGraphics, Inc.
