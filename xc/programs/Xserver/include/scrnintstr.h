@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 5.8 89/09/11 18:01:40 keith Exp $ */
+/* $XConsortium: scrnintstr.h,v 5.9 89/10/06 14:27:24 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -118,6 +118,7 @@ typedef struct _Screen {
     void (* PaintWindowBorder)();	/* pWin, pRgn, which */
     void (* CopyWindow)();		/* pWin, oldPt, pOldRegion */
     void (* ClearToBackground)();	/* pWin, x,y,w,h, sendExpose */
+    void (* ClipNotify)();              /* pWin, dx, dy */
 
     /* Pixmap procedures */
 
