@@ -1,5 +1,5 @@
 /*
-* $Header$
+* $Header: Intrinsic.h,v 1.31 87/09/11 21:21:38 newman Locked $
 */
 
 /*
@@ -101,10 +101,11 @@ typedef void (*XtInitProc)();
     /* ArgList args */
     /* Cardinal num_args */
 
-/* ||| takes new args, see Joel */
-typedef void (*XtSetValuesProc)();
+typedef Boolean (*XtSetValuesProc)();  /* returns TRUE if redisplay needed */
     /* Widget widget;     */
-    /* Widget new_values; */
+    /* Widget request;	  */
+    /* Widget new;        */
+    /* Boolean last;      */
 
 typedef void (*XtExposeProc)();
     /* Widget    widget; */
@@ -595,7 +596,7 @@ extern Boolean XtPending ();
  *
  ****************************************************************/
 
-#define XtSMDontChange	5 /* don't change the stacking order stack_mode */
+#define XtDontChange	5 /* don't change the stacking order stack_mode */
 
 typedef struct {
     XtGeometryMask request_mode;
@@ -639,11 +640,8 @@ extern GC XtGetGC(); /* widget, valueMask, values */
     /* XtGCMask valueMask; */
     /* XGCValues *values; */
 
-extern void XtDestroyGC (); /* widget, gc */
-    /* Widget widget; */
+extern void XtDestroyGC ();
     /* GC gc; */
-/* we pass in the widget because XFreeGC needs a display, and there isn't */
-/* one stored in the GC record. */
 
 /****************************************************************
  *
