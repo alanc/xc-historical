@@ -1,4 +1,4 @@
-/* $XConsortium: ar_hier.c,v 5.1 91/02/16 09:47:31 rws Exp $ */
+/* $XConsortium: ar_hier.c,v 5.2 91/04/04 12:17:54 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -289,8 +289,8 @@ Pint			depth;
 		    ((pexExecuteStructure *)(ptr))->id == structid) {
 		if (parents.num_elem_refs > ers_size) {
 		    ers_size += 10;
-		    parents.elem_refs = (Pelem_ref *)realloc((malloc_t)parents.elem_refs, 
-							(size_t)(ers_size * sizeof(Pelem_ref)));
+		    parents.elem_refs = (Pelem_ref *)realloc((char *)parents.elem_refs, 
+							(int)(ers_size * sizeof(Pelem_ref)));
 		    if (!parents.elem_refs) {
 			free((char *)buffer);
 			return(FALSE);
@@ -315,7 +315,7 @@ Pint			depth;
 	  ((parents.num_elem_refs != 0) && (order == PORDER_BOTTOM_FIRST) && 
 				depth && (curpath->num_elem_refs == depth))
 	   
-								    ) {
+			) {
 	int retval;
 	
 	if (order == PORDER_TOP_FIRST && depth && curpath->num_elem_refs > depth &&
