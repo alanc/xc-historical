@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.30 91/04/14 15:51:26 keith Exp $ */
+/* $XConsortium: osinit.c,v 1.31 91/05/09 18:39:01 rws Exp $ */
 #include "os.h"
 #undef NULL
 #include <stdio.h>
@@ -37,7 +37,6 @@ SOFTWARE.
 #ifndef SYSV
 #include <sys/resource.h>
 #endif
-#include <time.h>
 
 #ifndef ADMPATH
 #define ADMPATH "/usr/adm/X%smsgs"
@@ -64,7 +63,6 @@ OsInit()
 	/* hack test to decide where to log errors */
 	if (write (2, fname, 0)) 
 	{
-	    long t; 
 	    FILE *err;
 	    sprintf (fname, ADMPATH, display);
 	    /*
@@ -86,8 +84,6 @@ OsInit()
 #else
 	    setlinebuf(stderr);
 #endif
-	    time (&t);
-	    fprintf (stderr, "start %s", ctime(&t));
 	}
 
 #ifndef SYSV
