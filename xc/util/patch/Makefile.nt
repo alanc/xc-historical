@@ -1,4 +1,4 @@
-# $XConsortium: Makefile.nt,v 0.0 94/09/09 20:04:28 kaleb Exp $
+# $XConsortium: Makefile.nt,v 1.1 94/09/09 20:26:16 kaleb Exp kaleb $
 
 # Simple Makefile for MS Windows NT.
 
@@ -24,7 +24,7 @@ patch.exe: $(OBJS)
 	$(CC) $(OBJS) $(LIBS) -o $@ $(LDFLAGS)
 
 .c.obj:
-	del $@
+	if exist $@ del $@
 	$(CC) -c -DHAVE_CONFIG_H -I. $(CPPFLAGS) $(CFLAGS) $<
 
 clean:
