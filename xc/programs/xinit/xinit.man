@@ -52,7 +52,8 @@ add arguments (for example, foreground and background colors) without
 having to retype the whole command line.
 .PP
 If an explicit server name is not given and the first argument following the
-double dash (--) is a digit, \fIxinit\fP will use that number as the display 
+double dash (--) is a colon followed by a digit, \fIxinit\fP will use that 
+number as the display 
 number instead of zero.  All remaining arguments are appended to the server 
 command line.
 .PP
@@ -64,9 +65,8 @@ used.
 This will start up a server named \fIX\fP and run the user's \fI\.xinitrc\fP,
 if it exists, or else start an \fIxterm\fP.
 .TP 8
-.B "xinit -- /usr/bin/X11/Xqdss :0"
-This is how one would start a specific type of server in the default 
-distribution.
+.B "xinit -- /usr/bin/X11/Xqdss :1"
+This is how one could start a specific type of server on an alternate display.
 .TP 8
 .B "xinit -geometry =80x65+10+10 -fn 8x13 -j -fg white -bg navy"
 This will start up a server named \fIX\fP, and will append the given
@@ -76,7 +76,7 @@ arguments to the default \fIxterm\fP command.  It will ignore \fI\.xinitrc\fP.
 This will use the command \fI\.\/Xsun -l -c\fP to start the server and will
 append the arguments \fI-e widgets\fP to the default \fIxterm\fP command.
 .TP 8
-.B "xinit /usr/ucb/rsh fasthost cpupig -display myws:1 -- 1 -a 2 -t 5"
+.B "xinit /usr/ucb/rsh fasthost cpupig -display myws:1 -- :1 -a 2 -t 5"
 This will start a server named \fIX\fP on display 1 with the arguments
 \fI-a 2 -t 5\fP.  It will then start a remote shell on the machine
 \fBfasthost\fP in which it will run the command \fIcpupig\fP, telling it
