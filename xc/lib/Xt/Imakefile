@@ -17,14 +17,14 @@
 HEADERS = \
 	AsciiText.h \
 	Atoms.h \
-	ButtonBox.h \
+	Box.h \
 	Cascade.h \
 	Clock.h \
 	Command.h \
 	Dialog.h \
 	Form.h \
+	Grip.h \
 	Intrinsic.h \
-	Knob.h \
 	Label.h \
 	Load.h \
 	Misc.h \
@@ -43,7 +43,7 @@ SRCS = \
 	ArgList.c \
 	AsciiSink.c \
 	AsciiText.c \
-	ButtonBox.c \
+	Box.c \
 	Cascade.c \
 	Clock.c \
 	Command.c \
@@ -56,9 +56,9 @@ SRCS = \
 	GCManager.c \
 	Geometry.c \
 	GrayPixmap.c \
+	Grip.c \
 	Initialize.c \
 	Intrinsic.c \
-	Knob.c \
 	Label.c \
 	Load.c \
 	NextEvent.c \
@@ -77,7 +77,7 @@ OBJS = \
 	ArgList.o \
 	AsciiSink.o \
 	AsciiText.o \
-	ButtonBox.o \
+	Box.o \
 	Cascade.o \
 	Clock.o \
 	Command.o \
@@ -90,9 +90,9 @@ OBJS = \
 	GCManager.o \
 	Geometry.o \
 	GrayPixmap.o \
+	Grip.o \
 	Initialize.o \
 	Intrinsic.o \
-	Knob.o \
 	Label.o \
 	Load.o \
 	NextEvent.o \
