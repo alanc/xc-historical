@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.35 94/04/07 14:02:00 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.36 94/04/07 18:37:56 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -51,7 +51,8 @@ typedef enum {
 typedef enum {
     IceConnectPending,
     IceConnectAccepted,
-    IceConnectRejected
+    IceConnectRejected,
+    IceConnectIOError
 } IceConnectStatus;
 
 typedef enum {
