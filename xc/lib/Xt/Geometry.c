@@ -1,7 +1,7 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.32 89/01/18 12:38:04 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.33 89/03/16 16:45:42 swick Exp $";
 /* $oHeader: Geometry.c,v 1.3 88/08/23 11:37:50 asente Exp $ */
-#endif lint
+#endif /* lint */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

@@ -1,7 +1,7 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.53 89/06/02 10:20:57 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.54 89/06/02 10:36:01 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
-#endif lint
+#endif /* lint */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -852,7 +852,7 @@ static void _popup_set_prop(w)
 	    (void) strncpy(hostbuf, name.nodename, sizeof(hostbuf));
 #else
 	    (void) gethostname(hostbuf, sizeof(hostbuf));
-#endif /*hpux*/
+#endif /* hpux */
 	    hostname = XtNewString(hostbuf);
 	    gothost = TRUE;
 	}

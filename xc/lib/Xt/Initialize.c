@@ -1,7 +1,7 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.129 89/04/27 17:48:57 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.130 89/06/09 08:15:59 swick Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
-#endif lint
+#endif /* lint */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

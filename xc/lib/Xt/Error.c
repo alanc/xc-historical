@@ -1,7 +1,7 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Error.c,v 1.18 88/09/06 09:49:50 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Error.c,v 1.19 88/09/06 16:27:47 jim Exp $";
 /* $oHeader: Error.c,v 1.6 88/08/31 17:46:14 asente Exp $ */
-#endif lint
+#endif /* lint */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -46,7 +46,7 @@ static XtErrorMsgHandler errorMsgHandler = _XtDefaultErrorMsg;
 static XtErrorMsgHandler warningMsgHandler = _XtDefaultWarningMsg;
 static XtErrorHandler errorHandler = _XtDefaultError;
 static XtErrorMsgHandler warningHandler = _XtDefaultWarning;
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
 
 XrmDatabase *XtGetErrorDatabase()
 {
@@ -54,7 +54,7 @@ XrmDatabase *XtGetErrorDatabase()
     return &errorDB;
 #else
     return XtAppGetErrorDatabase(_XtDefaultAppContext());
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
 }
 
 XrmDatabase *XtAppGetErrorDatabase(app)
@@ -64,7 +64,7 @@ XrmDatabase *XtAppGetErrorDatabase(app)
 	return &errorDB;
 #else
 	return &app->errorDB;
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
 }
 
 void XtGetErrorDatabaseText(name,type,class,defaultp, buffer, nbytes)
@@ -79,7 +79,7 @@ void XtGetErrorDatabaseText(name,type,class,defaultp, buffer, nbytes)
 #else
     XtAppGetErrorDatabaseText(_XtDefaultAppContext(),
 	    name,type,class,defaultp, buffer, nbytes, NULL);
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
 }
 
 void XtAppGetErrorDatabaseText(app, name,type,class,defaultp,
@@ -105,14 +105,14 @@ void XtAppGetErrorDatabaseText(app, name,type,class,defaultp,
         _XtInitErrorHandling (&app->errorDB);
         app->error_inited = TRUE;
     }
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
     (void) sprintf(temp, "%s.%s", name, type);
     if (db == NULL) {
 #ifdef GLOBALERRORS
 	(void) XrmGetResource(errorDB, temp, class, &type_str, &result);
 #else
 	(void) XrmGetResource(app->errorDB, temp, class, &type_str, &result);
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
     } else (void) XrmGetResource(db, temp, class, &type_str, &result);
     if (result.addr) {
         (void) strncpy (buffer, result.addr, nbytes);
@@ -174,7 +174,7 @@ void XtErrorMsg(name,type,class,defaultp,params,num_params)
 #else
     XtAppErrorMsg(_XtDefaultAppContext(),name,type,class,
 	    defaultp,params,num_params);
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
 }
 
 void XtAppErrorMsg(app, name,type,class,defaultp,params,num_params)
@@ -187,7 +187,7 @@ void XtAppErrorMsg(app, name,type,class,defaultp,params,num_params)
     (*errorMsgHandler)(name,type,class,defaultp,params,num_params);
 #else
     (*app->errorMsgHandler)(name,type,class,defaultp,params,num_params);
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
 }
 
 void XtWarningMsg(name,type,class,defaultp,params,num_params)
@@ -200,7 +200,7 @@ void XtWarningMsg(name,type,class,defaultp,params,num_params)
 #else
     XtAppWarningMsg(_XtDefaultAppContext(),name,type,class,
 	    defaultp,params,num_params);
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
 }
 
 void XtAppWarningMsg(app,name,type,class,defaultp,params,num_params)
@@ -213,7 +213,7 @@ void XtAppWarningMsg(app,name,type,class,defaultp,params,num_params)
     (*warningMsgHandler)(name,type,class,defaultp,params,num_params);
 #else
     (*app->warningMsgHandler)(name,type,class,defaultp,params,num_params);
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
 }
 
 void XtSetErrorMsgHandler(handler)
@@ -224,7 +224,7 @@ void XtSetErrorMsgHandler(handler)
     else errorMsgHandler  = _XtDefaultErrorMsg;
 #else
     XtAppSetErrorMsgHandler(_XtDefaultAppContext(), handler);
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
 }
 
 void XtAppSetErrorMsgHandler(app,handler)
@@ -237,7 +237,7 @@ void XtAppSetErrorMsgHandler(app,handler)
 #else
     if (handler != NULL) app->errorMsgHandler = handler;
     else app->errorMsgHandler  = _XtDefaultErrorMsg;
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
 }
 
 void XtSetWarningMsgHandler(handler)
@@ -248,7 +248,7 @@ void XtSetWarningMsgHandler(handler)
     else warningMsgHandler = _XtDefaultWarningMsg;
 #else
     XtAppSetWarningMsgHandler(_XtDefaultAppContext(),handler);
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
 }
 
 void XtAppSetWarningMsgHandler(app,handler)
@@ -261,7 +261,7 @@ void XtAppSetWarningMsgHandler(app,handler)
 #else
     if (handler != NULL) app->warningMsgHandler  = handler;
     else app->warningMsgHandler = _XtDefaultWarningMsg;
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
 }
 
 static void _XtDefaultError(message)
@@ -287,7 +287,7 @@ void XtError(message)
     (*errorHandler)(message);
 #else
     XtAppError(_XtDefaultAppContext(),message);
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
 }
 
 void XtAppError(app,message)
@@ -298,7 +298,7 @@ void XtAppError(app,message)
     (*errorHandler)(message);
 #else
     (*app->errorHandler)(message);
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
 }
 
 void XtWarning(message)
@@ -308,7 +308,7 @@ void XtWarning(message)
     (*warningHandler)(message);
 #else
     XtAppWarning(_XtDefaultAppContext(),message);
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
 }
 
 void XtAppWarning(app,message)
@@ -319,7 +319,7 @@ void XtAppWarning(app,message)
     (*warningHandler)(message);
 #else
     (*app->warningHandler)(message);
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
 }
 
 void XtSetErrorHandler(handler)
@@ -330,7 +330,7 @@ void XtSetErrorHandler(handler)
     else errorHandler  = _XtDefaultError;
 #else
     XtAppSetErrorHandler(_XtDefaultAppContext(),handler);
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
 }
 
 void XtAppSetErrorHandler(app,handler)
@@ -343,7 +343,7 @@ void XtAppSetErrorHandler(app,handler)
 #else
     if (handler != NULL) app->errorHandler = handler;
     else app->errorHandler  = _XtDefaultError;
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
 }
 
 void XtSetWarningHandler(handler)
@@ -354,7 +354,7 @@ void XtSetWarningHandler(handler)
     else warningHandler = _XtDefaultWarning;
 #else
     XtAppSetWarningHandler(_XtDefaultAppContext(),handler);
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
 }
 
 void XtAppSetWarningHandler(app,handler)
@@ -367,7 +367,7 @@ void XtAppSetWarningHandler(app,handler)
 #else
     if (handler != NULL) app->warningHandler  = handler;
     else app->warningHandler = _XtDefaultWarning;
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
 }
 
 void _XtSetDefaultErrorHandlers(errMsg, warnMsg, err, warn)
@@ -379,5 +379,5 @@ void _XtSetDefaultErrorHandlers(errMsg, warnMsg, err, warn)
 	*warnMsg = _XtDefaultWarningMsg;
 	*err = _XtDefaultError;
 	*warn = _XtDefaultWarning;
-#endif GLOBALERRORS
+#endif /* GLOBALERRORS */
 }
