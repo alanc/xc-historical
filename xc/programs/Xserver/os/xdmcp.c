@@ -70,6 +70,16 @@ static XdmcpFatal(), XdmcpWarning();
 static void XdmcpBlockHandler(), XdmcpWakeupHandler();
 
 static short	xdm_udp_port = XDM_UDP_PORT;
+static Bool	OneSession = FALSE;
+
+XdmcpUseMsg ()
+{
+    ErrorF("-query host-name       contact named host for XDMCP\n");
+    ErrorF("-broadcast             broadcast for XDMCP\n");
+    ErrorF("-indirect host-name    contact named host for indirect XDMCP\n");
+    ErrorF("-port port-num         UDP port number to send messages to\n");
+    ErrorF("-once                  Terminate server after one session\n");
+}
 
 int 
 XdmcpOptions(argc, argv, i)
@@ -96,6 +106,10 @@ XdmcpOptions(argc, argv, i)
     if (strcmp(argv[i], "-port") == 0) {
 	++i;
 	xdm_udp_port = atoi(argv[i]);
+	return (i + 1);
+    }
+    if (strcmp(argv[i], "-once") == 0) {
+	OneSession = TRUE;
 	return (i + 1);
     }
     return (i);
@@ -381,7 +395,10 @@ XdmcpCloseDisplay(sock)
 	|| sessionSocket != sock)
 	    return;
     state = XDM_INIT_STATE;
-    dispatchException |= DE_RESET;
+    if (OneSession)
+	dispatchException |= DE_TERMINATE;
+    else
+	dispatchException |= DE_RESET;
     isItTimeToYield = TRUE;
 }
 
