@@ -17,7 +17,7 @@ void ComputeSizes(d, p)
 	childrows = 1;
     } else {
 	childcolumns = COLS;
-	childrows = childwindows/COLS;
+	childrows = (childwindows + COLS - 1) / COLS;
     }
     parentwidth = (CHILDSIZE+CHILDSPACE) * childcolumns;
     parentheight = (CHILDSIZE+CHILDSPACE) * childrows;
@@ -28,19 +28,23 @@ void CreateParents(d, p)
     Parms p;
 {
     Window isolate;
-    int i, x, y;
+    int i;
 
     ComputeSizes(d, p);
 
     parentcolumns = WIDTH / parentwidth;
     parentrows = HEIGHT / parentheight;
-    parentwindows = parentcolumns * parentrows;
-    parents = (Window *)malloc(parentwindows * sizeof(Window));
+    parentwindows = parentcolumns * parentrows; /* Max reps we can fit */
+    if (parentwindows > p->reps) {
+	parentwindows = p->reps;
+    } else {
+	p->reps = parentwindows;
+    }
 
     /* We will do parentwindows sets of childwindows, in order to get better
        timing accuracy.  Creating 4 windows at a millisecond apiece or so
        is a bit faster than the 60 Hz clock. */
-    p->reps = parentwindows;
+    parents = (Window *)malloc(parentwindows * sizeof(Window));
 
     CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, NULL, NULL);
 
@@ -52,20 +56,17 @@ void CreateParents(d, p)
      *  the number of children we are trying to get benchmarks on.
      */
 
-    i = 0;
-    for (x = 0; x < parentcolumns; x++) {
-	for (y = 0; y < parentrows; y++) {
-	    isolate = XCreateSimpleWindow(d, w,
-		x*parentwidth, y*parentheight, parentwidth, parentheight,
-		0, bgPixel, bgPixel);
-	    parents[i] = XCreateSimpleWindow(d, isolate,
-		0, 0, parentwidth, parentheight,
-		0, bgPixel, bgPixel);
-	    i++;
-	}
+    for (i = 0; i < parentwindows; i++) {
+	isolate = XCreateSimpleWindow(d, w,
+	    (i/parentrows)*parentwidth, (i%parentrows)*parentheight,
+	    parentwidth, parentheight, 0, bgPixel, bgPixel);
+	parents[i] = XCreateSimpleWindow(d, isolate,
+	    0, 0, parentwidth, parentheight, 0, bgPixel, bgPixel);
     }
+
     XMapSubwindows(d, w);
 } /* CreateParents */
+
 
 void MapParents(d, p)
     Display *d;
@@ -93,21 +94,15 @@ void CreateChildGroup(d, p, parent)
     Parms p;
     Window  parent;
 {
-    int j, x, y;
+    int j;
 
-    j = 0;
-    for (x = 0; x < childcolumns; x++) {
-	for (y = 0; y < childrows; y++) {
-	    (void) XCreateSimpleWindow (d, parent,
-		(CHILDSIZE+CHILDSPACE) * x + CHILDSPACE/2,
-		(CHILDSIZE+CHILDSPACE) * y + CHILDSPACE/2,
+    for (j = 0; j < childwindows; j++) {
+	(void) XCreateSimpleWindow (d, parent,
+		(CHILDSIZE+CHILDSPACE) * (j/childrows) + CHILDSPACE/2,
+		(CHILDSIZE+CHILDSPACE) * (j%childrows) + CHILDSPACE/2,
 		CHILDSIZE, CHILDSIZE, 0, bgPixel, fgPixel);
-	    j++;
-	    if (j == childwindows)
-		goto Enough;
-	}
     }
-Enough: 
+
     if (p->special)
 	XMapSubwindows (d, parent);
 }
@@ -178,8 +173,9 @@ Bool InitPopups(d, p)
 
     /* Now create simple window to pop up over children */
     xswa.override_redirect = True;
+    /* ||| Make relative to perfwindow */
     popup =  XCreateSimpleWindow (
-	    d, RootWindow(d, 0), 50, 50, parentwidth, parentheight,
+	    d, RootWindow(d, 0), 1, 1, parentwidth, parentheight,
 	    0, fgPixel, bgPixel);
     XChangeWindowAttributes (d, popup, CWOverrideRedirect, &xswa);
     return True;
@@ -190,8 +186,7 @@ void DoPopUps(d, p)
     Parms p;
 {
     int i;
-    for (i = 0; i < p->reps; i++)
-    {
+    for (i = 0; i < p->reps; i++) {
         XMapWindow(d, popup);
 	XUnmapWindow(d, popup);
     }
