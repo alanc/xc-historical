@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.24 92/03/24 14:50:43 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.25 92/03/24 15:38:08 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -658,7 +658,7 @@ get_undofile(undofile)
 	}
 	mark_controls(up[idx].seq, up[idx].seq_len);
 	up[idx].bscount = bscount(up[idx].seq, up[idx].seq_len);
-	if (!bscount) {
+	if (!up[idx].bscount) {
 	    fprintf(stderr, "bad sequence, no bs count, line %d\n", idx + 1);
 	    continue;
 	}
@@ -668,6 +668,22 @@ get_undofile(undofile)
     up[idx].bscount = 0;
     fclose(fp);
     undos = up;
+}
+
+void
+debug_state()
+{
+    int i;
+
+    fprintf(stderr, "in_control_seq: %d\n", in_control_seq);
+    fprintf(stderr, "bscount: %d\n", curbscount);
+    fprintf(stderr, "need_bs: %d\n", need_bs);
+    fprintf(stderr, "history: ");
+    for (i = history_end - 10; i < history_end; i++) {
+	if (i >= 0)
+	    fprintf(stderr, "%d ", history[i]);
+    }
+    fprintf(stderr, "\n");
 }
 
 void
@@ -688,12 +704,8 @@ process(buf, n, len)
 	    } else if (curbscount) {
 		undo_backspaces();
 		if (in_control_seq) {
-		    fprintf(stderr, "still in control seq: ");
-		    for (j = history_end - 10; j < history_end; j++) {
-			if (j >= 0)
-			    fprintf(stderr, "%d ", history[j]);
-		    }
-		    fprintf(stderr, "\n");
+		    fprintf(stderr, "still in control seq\n");
+		    debug_state();
 		    in_control_seq = False;
 		}
 	    }
@@ -767,6 +779,8 @@ process(buf, n, len)
 		do_y(atoi(buf+i+1));
 	    else if (!strcmp(buf+i, "exit"))
 		quit(0);
+	    else if (!strcmp(buf+i, "debug"))
+		debug_state();
 	    else if ((sym = strtoul(buf+i, &endptr, 16)) && !*endptr)
 		do_keysym(sym);
 	    else if (sym = XStringToKeysym(buf+i))
