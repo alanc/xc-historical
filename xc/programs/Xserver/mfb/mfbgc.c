@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.25 91/05/26 09:22:58 rws Exp $ */
+/* $XConsortium: mfbgc.c,v 5.26 92/02/24 19:05:58 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -757,20 +757,8 @@ mfbValidateGC(pGC, changes, pDrawable)
 	    if (pGC->stipple && (pGC->stipple->drawable.width <= 32) &&
 	    	!(pGC->stipple->drawable.width & (pGC->stipple->drawable.width - 1)))
 	    {
-	    	if (pGC->stipple == pGC->pScreen->PixmapPerDepth[0])
-	    	{
-		    if (pGC->stipple->drawable.width != 32)
-			mfbPadPixmap(pGC->stipple);
-		    if (devPriv->pRotatedPixmap)
-			mfbDestroyPixmap(devPriv->pRotatedPixmap);
-		    devPriv->pRotatedPixmap = pGC->stipple;
-		    ++devPriv->pRotatedPixmap->refcnt;
-	    	}
-	    	else
-	    	{
-		    mfbCopyRotatePixmap(pGC->stipple,
-					&devPriv->pRotatedPixmap, xrot, yrot);
-	    	}
+		mfbCopyRotatePixmap(pGC->stipple,
+				    &devPriv->pRotatedPixmap, xrot, yrot);
 		new_pix = TRUE;
 	    }
 	}
