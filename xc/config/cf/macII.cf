@@ -7,15 +7,15 @@
 #define OSName            A/UX 1.1
 #define OSMajorVersion    1
 #define OSMinorVersion    1
-#define StandardDefines   -DmacII -DSYSV
+#define BootstrapCFlags   -DmacII
+#define StandardDefines    -DmacII -DSYSV
+#define StandardCppDefines -DmacII -DSYSV
 #define XmacIIServer      XmacII
-#define BootstripCFlags   -DmacII
 #define CcCmd             cc -B /usr/lib/big/
 #define LnCmd             ln -s
-#define MakeCmd           make
 #define NeedBerklibInXlib YES
 
-/**/# platform:  $XConsortium$
+/**/# platform:  $XConsortium: macII.cf,v 1.2 89/01/11 14:58:28 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
