@@ -1,4 +1,4 @@
-.\" $XConsortium: Consortium.man,v 1.17 91/10/22 14:48:50 rws Exp $
+.\" $XConsortium: Consortium.man,v 1.18 91/11/21 09:43:24 rws Exp $
 .TH XCONSORTIUM 1 "Release 5"  "X Version 11"
 .SH NAME
 MIT X Consortium \- MIT X Consortium information
@@ -181,6 +181,7 @@ Tatung Science and Technology
 Template Graphics Software
 Tyan Computer
 Unipalm XTech
+VisionWare Ltd.
 Visix Software, Inc.
 Visual Information Technologies, Inc.
 Visual Technology, Inc.
