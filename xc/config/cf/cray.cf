@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: cray.cf,v 1.19 90/12/27 20:15:02 rws Exp $
+XCOMM platform:  $XConsortium: cray.cf,v 1.20 90/12/28 12:07:55 rws Exp $
 
 
 /*
@@ -26,7 +26,6 @@ XCOMM platform:  $XConsortium: cray.cf,v 1.19 90/12/27 20:15:02 rws Exp $
 #else
 #define CcCmd			cc
 #endif
-#define ExtensionDefines	-DSHAPE -DMULTIBUFFER -DMITMISC
 
 
 #ifdef CRAY1
