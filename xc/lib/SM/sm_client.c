@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.10 93/09/24 15:56:31 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.11 93/09/28 10:37:34 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -265,6 +265,7 @@ char    **reasonMsgs;
     }
 
     IceProtocolShutdown (iceConn, _SmcOpcode);
+    IceSetShutdownNegotiation (iceConn, False);
     IceCloseConnection (iceConn);
 
     for (i = 0; i < _SmcConnectionCount; i++)
