@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.58 89/05/11 13:54:10 jim Exp $
+ * $XConsortium: events.c,v 1.59 89/05/11 16:17:46 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.58 89/05/11 13:54:10 jim Exp $";
+"$XConsortium: events.c,v 1.59 89/05/11 16:17:46 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -886,7 +886,7 @@ HandleMapRequest()
     {
 	if (Transient(Event.xany.window) && !Scr->DecorateTransients)
 	{
-	    XMapWindow(dpy, Event.xany.window);
+	    XMapRaised(dpy, Event.xany.window);
 	    return;
 	}
 
