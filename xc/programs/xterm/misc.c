@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.53 89/10/27 18:35:44 jim Exp $
+ *	$XConsortium: misc.c,v 1.54 89/10/30 14:50:35 jim Exp $
  */
 
 
@@ -58,7 +58,7 @@ static void DoSpecialEnterNotify();
 static void DoSpecialLeaveNotify();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.53 89/10/27 18:35:44 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.54 89/10/30 14:50:35 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -535,7 +535,7 @@ int (*func)();
 		mode = 10 * mode + (c - '0');
 	if (c != ';') okay = False;
 	cp = buf;
-	while(isprint(c = (*func)()))
+	while(isprint((c = (*func)()) & 0x7f))
 		*cp++ = c;
 	if (c != 7) okay = False;
 	*cp = 0;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.109 89/10/30 17:36:41 jim Exp $
+ * $XConsortium: charproc.c,v 1.110 89/11/09 13:57:40 swick Exp $
  */
 
 
@@ -143,7 +143,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.109 89/10/30 17:36:41 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.110 89/11/09 13:57:40 swick Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -481,7 +481,7 @@ VTparse()
 			top = bcnt > TEXT_BUF_SIZE ? TEXT_BUF_SIZE : bcnt;
 			cp = bptr;
 			*--bptr = c;
-			while(top > 0 && isprint(*cp)) {
+			while(top > 0 && isprint(*cp & 0x7f)) {
 				top--;
 				bcnt--;
 				cp++;
