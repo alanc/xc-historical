@@ -1,5 +1,5 @@
 /*
- * $XConsortium: editres.c,v 1.7 90/07/03 16:06:47 kit Exp $
+ * $XConsortium: editres.c,v 1.8 90/09/27 20:23:38 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -73,6 +73,9 @@ static XtResource editres_resources[] = {
      Offset(save_resources_file), XtRString, (XtPointer) ""},
 };
 
+Atom wm_delete_window;
+Widget toplevel;
+
 void
 main(argc, argv)
 int argc;
@@ -80,7 +83,6 @@ char **argv;
 {
     static void Syntax();
     XtAppContext app_con;
-    Widget toplevel;
 
     toplevel = XtAppInitialize(&app_con, "Editres", NULL, ZERO,
 			       (Cardinal *)&argc, argv, fallback_resources,
@@ -94,7 +96,9 @@ char **argv;
 			      editres_resources, XtNumber(editres_resources),
 			      NULL, (Cardinal) 0);
     global_resources.allocated_save_resources_file = FALSE;
-    
+
+    XtOverrideTranslations
+      (toplevel, XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));  
 
     BuildWidgetTree(toplevel);
 
@@ -106,6 +110,11 @@ char **argv;
     InternAtoms(XtDisplay(toplevel));
 
     XtRealizeWidget(toplevel);
+
+    wm_delete_window = XInternAtom(XtDisplay(toplevel), "WM_DELETE_WINDOW",
+				   False);
+    (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
+                            &wm_delete_window, 1);
     XtAppMainLoop(app_con);
 }
 

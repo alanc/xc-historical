@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.c,v 1.5 90/06/28 12:10:53 kit Exp $
+ * $XConsortium: actions.c,v 1.6 90/06/28 14:39:37 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -190,6 +190,35 @@ Cardinal * num_params;
     _PopdownFileDialog(w, (XtPointer) val, NULL);
 }
 
+/*	Function Name: ActionQuit
+ *	Description: This function prints a message to stdout.
+ *	Arguments: w - ** UNUSED **
+ *                 call_data - ** UNUSED **
+ *                 client_data - ** UNUSED **
+ *	Returns: none
+ */
+
+extern Widget toplevel;
+/* ARGSUSED */
+static void
+ActionQuit(w, event, params, num_params)
+Widget w;
+XEvent * event;
+String * params;
+Cardinal * num_params;
+{
+  if (w==toplevel) {
+    XtDestroyApplicationContext(XtWidgetToApplicationContext(w));
+    exit(0);
+  }
+  else  {
+    if (streq(XtName(w), RESOURCE_BOX))
+      global_resource_box_up = FALSE;
+    XtPopdown(w);
+    XtDestroyWidget(w);
+  }
+}
+
 /*	Function Name: SetApplicationActions
  *	Description: Sets my application actions.
  *	Arguments: app_con - the application context.
@@ -207,6 +236,7 @@ static XtActionsRec actions[] = {
 #endif 
   {"Relabel",      	RelabelAction}, 
   {"PopdownFileDialog", PopdownFileDialogAction},
+  {"quit",              ActionQuit}
 };
 
 void
@@ -214,6 +244,7 @@ SetApplicationActions(app_con)
 XtAppContext app_con;
 {
     XtAppAddActions(app_con, actions, XtNumber(actions));
+    
 }
 
 

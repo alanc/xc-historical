@@ -30,7 +30,7 @@
 
 static void CreateResourceNameForm(), SetToggleGroupLeaders(), CreateLists();
 static void CreateCommandMenu(), CreateTreeCommandMenu(), FreeClientData();
-static void FreeResBox(), CreateValueWidget(), PopupOnNode(), CreateAuthor();
+static void FreeResBox(), CreateValueWidget(), PopupOnNode();
 static Widget CreateTopArea();
 
 extern void GetResourceList(), AnyChosen(), SetResourceString();
@@ -158,10 +158,6 @@ Widget parent;
 
     entry = XtCreateManagedWidget("line", smeLineObjectClass, menu,
 				  NULL, ZERO);
-
-    entry = XtCreateManagedWidget("author", smeBSBObjectClass, menu,
-				    NULL, ZERO);
-    XtAddCallback(entry, XtNcallback, CreateAuthor, NULL);
 
     entry = XtCreateManagedWidget("quit", smeBSBObjectClass, menu,
 				    NULL, ZERO);
@@ -698,6 +694,8 @@ WNode * node;
  *	Returns: none.
  */
 
+extern Atom wm_delete_window;
+
 static void
 PopupOnNode(node, shell)
 WNode * node;
@@ -716,8 +714,14 @@ Widget shell;
     XtTranslateCoords(node->widget, 
 		      (Position) (width/2 + bw), (Position) (height/2 + bw),
 		      &x, &y);
-
+    
+    XtOverrideTranslations
+      (shell, XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
     XtRealizeWidget(shell);
+    wm_delete_window = XInternAtom(XtDisplay(shell), "WM_DELETE_WINDOW",
+				   False);
+    (void) XSetWMProtocols (XtDisplay(shell), XtWindow(shell),
+                            &wm_delete_window, 1);
     XtGetValues(shell, args, num_args);	/* use same arg_list. */
 
     x -= (Position) (width/2 + bw);
@@ -793,30 +797,5 @@ XtPointer ptr, junk;
     } 
 }
 
-/*	Function Name: CreateAuthor
- *	Description: Creates the author popup dialog.
- *	Arguments: w - the widget that activated this popup.
- *                 junk, garbage - UNUSED.
- *	Returns: none
- */
-
-/* ARGSUSED */
-static void
-CreateAuthor(w, junk, garbage)
-Widget w;
-XtPointer junk, garbage;
-{
-    Widget parent = XtParent(w), shell, box, button;
-
-    shell = XtCreatePopupShell("authorPopup", transientShellWidgetClass, 
-			       parent, NULL, ZERO);
-
-    box = XtCreateManagedWidget("box", boxWidgetClass, shell, NULL, ZERO);
-    (void) XtCreateManagedWidget("label", labelWidgetClass, box, NULL, ZERO);
-    button= XtCreateManagedWidget("okay", commandWidgetClass, box, NULL, ZERO);
-    XtAddCallback(button, XtNcallback, PopdownResBox, (XtPointer) shell);
-
-    PopupCentered(NULL, shell, XtGrabNone);
-}
 
     
