@@ -46,7 +46,7 @@ SOFTWARE.
 
 #include "MacFont.h"
 #include <ctype.h>
-#include "fontfilest.h"
+#include "fntfilst.h"
 /* use bitmap structure */
 #include "bitmap.h"
 

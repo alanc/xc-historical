@@ -45,7 +45,7 @@ IMPLIED.
  * Author: Dave Lemke, Network Computing Devices, Inc
  *
  */
-#include	"fontfilest.h"
+#include	"fntfilst.h"
 extern Boolean CGetOutlinePreferred();
 extern Boolean CGetPreserveGlyph();
 
