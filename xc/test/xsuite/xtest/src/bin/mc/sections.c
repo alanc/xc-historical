@@ -13,7 +13,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: sections.c,v 1.11 92/06/11 15:38:23 rws Exp $
+ * $XConsortium: sections.c,v 1.12 93/07/09 14:35:42 mor Exp $
  *
  * Author: Steve Ratcliffe, UniSoft Ltd.
  */
@@ -328,6 +328,7 @@ int 	sec;
 {
 char	*line;
 char	*str;
+int	i;
 
 	State.sectype = sec;
 
@@ -390,7 +391,8 @@ char	*str;
 		}
 
 		/* Check for xprotocol test */
-		if (strcmp(State.chap, "XPROTO") == 0)
+		i = strlen(State.chap);
+		if (i > 5 && strcmp(State.chap + i - 5, "PROTO") == 0)
 			State.xproto = 1;
 
 		break;
