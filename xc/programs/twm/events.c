@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.173 91/01/10 09:54:08 rws Exp $
+ * $XConsortium: events.c,v 1.174 91/01/10 14:26:27 dave Exp $
  *
  * twm event handling
  *
@@ -2531,12 +2531,16 @@ InstallWindowColormaps (type, tmp)
 
     state = CM_INSTALLED;
 
-    for (i = n = 0; i < number_cwins; i++) {
+      for (i = n = 0; i < number_cwins; i++) {
 	cwin = cwins[i];
 	cmap = cwin->colormap;
 	cmap->state |= CM_INSTALLABLE;
 	cmap->state &= ~CM_INSTALL;
 	cmap->w = cwin->w;
+      }
+      for (i = n = 0; i < number_cwins; i++) {
+  	cwin = cwins[i];
+  	cmap = cwin->colormap;
 	if (cwin->visibility != VisibilityFullyObscured &&
 	    n < Scr->cmapInfo.maxCmaps) {
 	    row = scoreboard + (i*(i-1)/2);
