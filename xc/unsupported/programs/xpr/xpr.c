@@ -1,4 +1,4 @@
-/* $XConsortium: xpr.c,v 1.57 93/12/11 17:58:15 rws Exp $ */
+/* $XConsortium: xpr.c,v 1.58 94/04/17 20:44:05 rws Exp kaleb $ */
 /*
 
 Copyright (c) 1985  X Consortium
@@ -233,8 +233,16 @@ char **argv;
     fullread(0, w_name, (int) (win.header_size - sizeof win));
     
     if(win.ncolors) {
+	XWDColor xwdcolor;
 	colors = (XColor *)malloc((unsigned) (win.ncolors * sizeof(XColor)));
-	fullread(0, (char *)colors, (int) (win.ncolors * sizeof(XColor)));
+	for (i = 0; i < win.ncolors; i++) {
+	    fullread(0, (char*)&xwdcolor, (int) sizeof xwdcolor);
+	    colors[i].pixel = xwdcolor.pixel;
+	    colors[i].red = xwdcolor.red;
+	    colors[i].green = xwdcolor.green;
+	    colors[i].blue = xwdcolor.blue;
+	    colors[i].flags = xwdcolor.flags;
+ 	}
 	if (*(char *) &swaptest) {
 	    for (i = 0; i < win.ncolors; i++) {
 		_swaplong((char *) &colors[i].pixel, (long)sizeof(long));
