@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.78 93/01/07 19:37:05 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.79 93/04/13 11:50:36 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -16,6 +16,7 @@ Name						Reference
 "CRUC"						[30]
 "DEC"						[82]
 "DG"						[48]
+"DME"						[7]
 "ES"						[75]
 "FXD"						[55]
 "FUJITSU"					[87]
