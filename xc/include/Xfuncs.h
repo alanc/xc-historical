@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xfuncs.h,v 1.9 92/10/18 16:31:21 rws Exp $
+ * $XConsortium: Xfuncs.h,v 1.10 93/08/23 18:59:26 gildea Exp $
  * 
  * Copyright 1990 by the Massachusetts Institute of Technology
  *
@@ -29,6 +29,7 @@ int bcmp();
 #else
 #if (__STDC__ && !defined(X_NOT_STDC_ENV) && !defined(sun) && !defined(macII) && !defined(apollo)) || defined(SVR4) || defined(hpux) || defined(_IBMR2)
 #include <string.h>
+#define _XFUNCS_H_INCLUDED_STRING_H
 #define bcopy(b1,b2,len) memmove(b2, b1, (size_t)(len))
 #define bzero(b,len) memset(b, 0, (size_t)(len))
 #define bcmp(b1,b2,len) memcmp(b1, b2, (size_t)(len))
@@ -58,7 +59,9 @@ int bcmp();
 
 #if !defined(X_NOT_STDC_ENV) && (!defined(sun) || defined(SVR4))
 /* the ANSI C way */
+#ifndef _XFUNCS_H_INCLUDED_STRING_H
 #include <string.h>
+#endif
 #undef bzero
 #define bzero(b,len) memset(b,0,len)
 #else /* else X_NOT_STDC_ENV or SunOS 4 */
