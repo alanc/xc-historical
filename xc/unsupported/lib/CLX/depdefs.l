@@ -42,6 +42,10 @@
 		font
 		xatom))
 
+(defmacro resource-id-map-test ()
+  #+excl '#'equal
+  #-excl (if #.(> #x1fffffff most-positive-fixnum) '#'eql '#'eq))
+
 ;;; This is a bit of a crock, but I'm told some systems barf at numbers as features.
 #+symbolics
 (eval-when (eval compile load)
