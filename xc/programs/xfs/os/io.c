@@ -1,4 +1,4 @@
-/* $XConsortium: io.c,v 1.4 91/05/13 16:50:59 gildea Exp $ */
+/* $XConsortium: io.c,v 1.5 91/06/21 18:19:12 keith Exp $ */
 /*
  * i/o functions
  *
@@ -156,7 +156,7 @@ ReadRequest(client)
 	    if (needed > oci->size) {
 		char       *ibuf;
 
-		ibuf = (char *) fsrealloc(oci, needed);
+		ibuf = (char *) fsrealloc(oci->buffer, needed);
 		if (!ibuf) {
 		    yield_control_death();
 		    return -1;
