@@ -1,4 +1,4 @@
-/* $XConsortium: cpm_tlkt.c,v 5.1 91/02/16 09:48:40 rws Exp $ */
+/* $XConsortium: cpm_tlkt.c,v 5.2 91/07/24 14:41:48 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -115,6 +115,84 @@ String fallbacks[] = {
     "*valuator6*skipAdjust:  TRUE",
     "*valuator6*showGrip:  FALSE",
 
+    "*valuator7.pane.orientation:  horizontal",
+    "*valuator7*scrollbar.orientation:  horizontal",
+    "*valuator7*scrollbar.length:  50",
+    "*valuator7*scrollbar.translations: \
+          <Btn1Down>:	StartScroll(Continuous) MoveThumb() NotifyThumb() \\n\
+	  <Btn1Motion>:	MoveThumb() NotifyThumb() \\n\
+	  <Btn1Up>:	NotifyScroll(Proportional) RequestSatisfied() \
+			EndScroll() \
+	  ",
+    "*valuator7*scrollbar.skipAdjust:  FALSE",
+    "*valuator7*skipAdjust:  TRUE",
+    "*valuator7*showGrip:  FALSE",
+
+    "*valuator8.pane.orientation:  horizontal",
+    "*valuator8*scrollbar.orientation:  horizontal",
+    "*valuator8*scrollbar.length:  50",
+    "*valuator8*scrollbar.translations: \
+          <Btn1Down>:	StartScroll(Continuous) MoveThumb() NotifyThumb() \\n\
+	  <Btn1Motion>:	MoveThumb() NotifyThumb() \\n\
+	  <Btn1Up>:	NotifyScroll(Proportional) RequestSatisfied() \
+			EndScroll() \
+	  ",
+    "*valuator8*scrollbar.skipAdjust:  FALSE",
+    "*valuator8*skipAdjust:  TRUE",
+    "*valuator8*showGrip:  FALSE",
+
+    "*valuator9.pane.orientation:  horizontal",
+    "*valuator9*scrollbar.orientation:  horizontal",
+    "*valuator9*scrollbar.length:  50",
+    "*valuator9*scrollbar.translations: \
+          <Btn1Down>:	StartScroll(Continuous) MoveThumb() NotifyThumb() \\n\
+	  <Btn1Motion>:	MoveThumb() NotifyThumb() \\n\
+	  <Btn1Up>:	NotifyScroll(Proportional) RequestSatisfied() \
+			EndScroll() \
+	  ",
+    "*valuator9*scrollbar.skipAdjust:  FALSE",
+    "*valuator9*skipAdjust:  TRUE",
+    "*valuator9*showGrip:  FALSE",
+
+    "*valuator10.pane.orientation:  horizontal",
+    "*valuator10*scrollbar.orientation:  horizontal",
+    "*valuator10*scrollbar.length:  50",
+    "*valuator10*scrollbar.translations: \
+          <Btn1Down>:	StartScroll(Continuous) MoveThumb() NotifyThumb() \\n\
+	  <Btn1Motion>:	MoveThumb() NotifyThumb() \\n\
+	  <Btn1Up>:	NotifyScroll(Proportional) RequestSatisfied() \
+			EndScroll() \
+	  ",
+    "*valuator10*scrollbar.skipAdjust:  FALSE",
+    "*valuator10*skipAdjust:  TRUE",
+    "*valuator10*showGrip:  FALSE",
+
+    "*valuator11.pane.orientation:  horizontal",
+    "*valuator11*scrollbar.orientation:  horizontal",
+    "*valuator11*scrollbar.length:  50",
+    "*valuator11*scrollbar.translations: \
+          <Btn1Down>:	StartScroll(Continuous) MoveThumb() NotifyThumb() \\n\
+	  <Btn1Motion>:	MoveThumb() NotifyThumb() \\n\
+	  <Btn1Up>:	NotifyScroll(Proportional) RequestSatisfied() \
+			EndScroll() \
+	  ",
+    "*valuator11*scrollbar.skipAdjust:  FALSE",
+    "*valuator11*skipAdjust:  TRUE",
+    "*valuator11*showGrip:  FALSE",
+
+    "*valuator12.pane.orientation:  horizontal",
+    "*valuator12*scrollbar.orientation:  horizontal",
+    "*valuator12*scrollbar.length:  50",
+    "*valuator12*scrollbar.translations: \
+          <Btn1Down>:	StartScroll(Continuous) MoveThumb() NotifyThumb() \\n\
+	  <Btn1Motion>:	MoveThumb() NotifyThumb() \\n\
+	  <Btn1Up>:	NotifyScroll(Proportional) RequestSatisfied() \
+			EndScroll() \
+	  ",
+    "*valuator12*scrollbar.skipAdjust:  FALSE",
+    "*valuator12*skipAdjust:  TRUE",
+    "*valuator12*showGrip:  FALSE",
+
     "*choice1*allowHoriz:  TRUE",
     "*choice1*allowHoriz:  TRUE",
     "*choice1*allowHoriz:  TRUE",
@@ -122,6 +200,23 @@ String fallbacks[] = {
     "*choice1*list.translations: \
           <Btn1Down>,<Btn1Up>:	Set() Notify() RequestSatisfied() \
 	  ",
+
+    "*choice2*allowHoriz:  TRUE",
+    "*choice2*allowHoriz:  TRUE",
+    "*choice2*allowHoriz:  TRUE",
+    "*choice2*allowVert:  TRUE",
+    "*choice2*list.translations: \
+          <Btn1Down>,<Btn1Up>:	Set() Notify() RequestSatisfied() \
+	  ",
+
+    "*choice3*allowHoriz:  TRUE",
+    "*choice3*allowHoriz:  TRUE",
+    "*choice3*allowHoriz:  TRUE",
+    "*choice3*allowVert:  TRUE",
+    "*choice3*list.translations: \
+          <Btn1Down>,<Btn1Up>:	Set() Notify() RequestSatisfied() \
+	  ",
+
     "*string1*Text*width: 		400", 
     "*string1*Text*height: 		50", 
     "*string1*Text*editType:          edit",
