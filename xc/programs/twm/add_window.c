@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.119 89/11/28 11:32:55 jim Exp $
+ * $XConsortium: add_window.c,v 1.120 89/11/30 11:43:41 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.119 89/11/28 11:32:55 jim Exp $";
+"$XConsortium: add_window.c,v 1.120 89/11/30 11:43:41 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -661,9 +661,7 @@ IconMgr *iconp;
 	    tmp_win->border_tile.fore, tmp_win->border_tile.back,
 	    Scr->d_depth);
 
-	XSetWindowBorderPixmap(dpy, tmp_win->frame, tmp_win->gray);
-	if (tmp_win->title_w)
-	    XSetWindowBorderPixmap(dpy, tmp_win->title_w, tmp_win->gray);
+	SetBorder (tmp_win, False);
     }
     else
 	tmp_win->gray = None;

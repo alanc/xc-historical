@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.129 89/11/29 14:48:02 jim Exp $
+ * $XConsortium: menus.c,v 1.130 89/11/30 16:55:28 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.129 89/11/29 14:48:02 jim Exp $";
+"$XConsortium: menus.c,v 1.130 89/11/30 16:55:28 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1673,28 +1673,17 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    }
 	    else
 	    {
-		if (Scr->Focus != NULL)
-		{
-		    if (Scr->Focus->highlight)
-		    {
-			XSetWindowBorderPixmap(dpy, Scr->Focus->frame, 
-			    Scr->Focus->gray);
-			if (Scr->Focus->title_w)
-			    XSetWindowBorderPixmap(dpy, Scr->Focus->title_w, 
-				Scr->Focus->gray);
-		    }
+		if (Scr->Focus != NULL) {
+		    SetBorder (Scr->Focus, False);
 		    if (Scr->Focus->hilite_w)
-			XUnmapWindow(dpy, Scr->Focus->hilite_w);
+		      XUnmapWindow (dpy, Scr->Focus->hilite_w);
 		}
 
-		XGetWindowAttributes(dpy, tmp_win->w, &attr);
+		XGetWindowAttributes (dpy, tmp_win->w, &attr);
 		tmp_win->attr.colormap = attr.colormap;
-		InstallAColormap(dpy, tmp_win->attr.colormap);
-		if (tmp_win->hilite_w)
-		    XMapWindow(dpy, tmp_win->hilite_w);
-		XSetWindowBorder(dpy, tmp_win->frame, tmp_win->border);
-		if (tmp_win->title_w)
-		    XSetWindowBorder(dpy, tmp_win->title_w, tmp_win->border);
+		InstallAColormap (dpy, tmp_win->attr.colormap);
+		if (tmp_win->hilite_w) XMapWindow (dpy, tmp_win->hilite_w);
+		SetBorder (tmp_win, True);
 		SetFocus (tmp_win);
 		Scr->FocusRoot = FALSE;
 		Scr->Focus = tmp_win;
@@ -2200,15 +2189,8 @@ FocusOnRoot()
     SetFocus (NULL);
     if (Scr->Focus != NULL)
     {
-	if (Scr->Focus->highlight)
-	{
-	    XSetWindowBorderPixmap(dpy, Scr->Focus->frame, Scr->Focus->gray);
-	    if (Scr->Focus->title_w)
-		XSetWindowBorderPixmap(dpy, Scr->Focus->title_w,
-		    Scr->Focus->gray);
-	}
-	if (Scr->Focus->hilite_w)
-	    XUnmapWindow(dpy, Scr->Focus->hilite_w);
+	SetBorder (Scr->Focus, False);
+	if (Scr->Focus->hilite_w) XUnmapWindow (dpy, Scr->Focus->hilite_w);
     }
     InstallAColormap(dpy, Scr->CMap);
     Scr->Focus = NULL;
@@ -2344,13 +2326,7 @@ int def_x, def_y;
 		if (t->icon_w)
 		    XUnmapWindow(dpy, t->icon_w);
 		SetMapStateProp(t, IconicState);
-		if (tmp_win->highlight)
-		{
-		    XSetWindowBorderPixmap(dpy, tmp_win->frame, tmp_win->gray);
-		    if (tmp_win->title_w)
-			XSetWindowBorderPixmap(dpy,tmp_win->title_w,
-			    tmp_win->gray);
-		}
+		SetBorder (t, False);
 		if (t == Scr->Focus)
 		{
 		    SetFocus (NULL);
@@ -2378,13 +2354,7 @@ int def_x, def_y;
     XUnmapWindow(dpy, tmp_win->frame);
     SetMapStateProp(tmp_win, IconicState);
 
-    if (tmp_win->highlight)
-    {
-	XSetWindowBorderPixmap(dpy, tmp_win->frame, tmp_win->gray);
-	if (tmp_win->title_w)
-	    XSetWindowBorderPixmap(dpy, tmp_win->title_w, tmp_win->gray);
-    }
-
+    SetBorder (tmp_win, False);
     if (tmp_win == Scr->Focus)
     {
 	SetFocus (NULL);
@@ -2577,6 +2547,18 @@ HideIconManager ()
     Scr->iconmgr.twm_win->icon = TRUE;
 }
 
+
+SetBorder (tmp, onoroff)
+    TwmWindow *tmp;
+    Bool onoroff;
+{
+    if (tmp->highlight) {
+	Pixmap pix = onoroff ? tmp->border : tmp->gray;
+
+	XSetWindowBorderPixmap (dpy, tmp->frame, pix);
+	if (tmp->title_w) XSetWindowBorderPixmap (dpy, tmp->title_w, pix);
+    }
+}
 
 /*
  * warping routines

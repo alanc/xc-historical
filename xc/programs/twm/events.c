@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.118 89/11/28 15:42:51 jim Exp $
+ * $XConsortium: events.c,v 1.119 89/11/30 16:55:24 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.118 89/11/28 15:42:51 jim Exp $";
+"$XConsortium: events.c,v 1.119 89/11/30 16:55:24 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1653,11 +1653,7 @@ HandleEnterNotify()
 			if (Tmp_win->hilite_w)				/* 1 */
 			  XMapWindow (dpy, Tmp_win->hilite_w);
 			InstallAColormap (dpy, Scr->CMap);		/* 2 */
-			XSetWindowBorder (dpy, Tmp_win->frame,		/* 3 */
-					  Tmp_win->border);
-			if (Tmp_win->title_w)				/* 3 */
-			  XSetWindowBorder (dpy, Tmp_win->title_w,
-					    Tmp_win->border);
+			SetBorder (Tmp_win, True);			/* 3 */
 			if (Tmp_win->title_w && Scr->TitleFocus)	/* 4 */
 			  SetFocus (Tmp_win);
 			if (Tmp_win->protocols & DoesWmTakeFocus)	/* 5 */
@@ -1740,14 +1736,7 @@ HandleLeaveNotify()
 		    if (Tmp_win->list) NotActiveIconManager(Tmp_win->list);
 		    if (Tmp_win->hilite_w)
 			XUnmapWindow(dpy, Tmp_win->hilite_w);
-		    if (Tmp_win->highlight)
-		    {
-			XSetWindowBorderPixmap(dpy, 
-			   Tmp_win->frame, Tmp_win->gray);
-			if (Tmp_win->title_w)
-			    XSetWindowBorderPixmap(dpy,
-			       Tmp_win->title_w,Tmp_win->gray);
-		    }
+		    SetBorder (Tmp_win, False);
 		    if (Scr->TitleFocus ||
 			Tmp_win->protocols & DoesWmTakeFocus)
 		      SetFocus (NULL);
