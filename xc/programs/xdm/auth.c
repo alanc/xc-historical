@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.17 89/12/14 09:42:18 rws Exp $
+ * $XConsortium: auth.c,v 1.18 90/02/12 17:56:36 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -744,7 +744,10 @@ struct verify_info	*verify;
 	home = getEnv (verify->userEnviron, "HOME");
 	lockStatus = LOCK_ERROR;
 	if (home) {
-	    sprintf (home_name, "%s/.Xauthority", home);
+	    strcpy (home_name, home);
+	    if (home[strlen(home) - 1] != '/')
+		strcat (home_name, "/");
+	    strcat (home_name, ".Xauthority");
 	    Debug ("XauLockAuth %s\n", home_name);
 	    lockStatus = XauLockAuth (home_name, 1, 2, 10);
 	    Debug ("Lock is %d\n", lockStatus);
