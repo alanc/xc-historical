@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtCall-Callbacks XtHas-Callbacks wid-get
+.hw XtCall-Callbacks XtHas-Callbacks XtCall-Callbacks-List wid-get
 .na
 .de Ds
 .nf
@@ -99,13 +99,21 @@
 .ny0
 .TH XtCallCallbacks 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtCallCallbacks, XtHasCallbacks \- process callbacks
+XtCallCallbacks, XtCallCallbackList, XtHasCallbacks \- process callbacks
 .SH SYNTAX
 void XtCallCallbacks(\fIw\fP, \fIcallback_name\fP, \fIcall_data\fP)
 .br
       Widget \fIw\fP;
 .br
       String \fIcallback_name\fP;
+.br
+      XtPointer \fIcall_data\fP;
+.LP
+void XtCallCallbackList(\fIw\fP, \fIcallbacks\fP, \fIcall_data\fP)
+.br
+      Widget \fIw\fP;
+.br
+      XtCallbackList \fIcallbacks\fP;
 .br
       XtPointer \fIcall_data\fP;
 .LP
@@ -124,6 +132,8 @@ Specifies the callback list\*(Cn.
 .IP \fIcall_data\fP 1i
 Specifies a callback-list specific data value to pass to each of the callback
 procedure in the list.
+.IP \fIcallbacks\fP 1i
+Specifies the callback list to be executed.
 .IP \fIw\fP 1i
 Specifies the widget.
 .SH DESCRIPTION
@@ -131,6 +141,14 @@ The
 .ZN XtCallCallbacks
 function calls each procedure that is registered in the specified widget's
 callback list.
+.LP
+If \fIcallbacks\fP is not NULL,
+.ZN XtCallCallbackList
+calls each of the callback procedures in the list, passing client data
+and \fIcall_data\fP. The \fIcallbacks\fP parameter must specify the
+contents of a widget or object resource declared with representation
+type
+.ZN XtRCallback .
 .LP
 The
 .ZN XtHasCallbacks
