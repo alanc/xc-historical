@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.9 89/12/15 10:07:23 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.10 89/12/15 23:20:59 swick Exp $";
 #endif
 
 /********************************************************
@@ -656,7 +656,7 @@ static void AddFocusHandler(widget, descendant, pwi, pdi, oldEventMask)
 	     * is a focus candidate, then see if it is a
 	     * descendant of the focus path
 	     */
-	    if (maybe && (InActiveSubtree(w, pdi)))
+	    if (maybe && (InActiveSubtree(w)))
 		pwi->haveFocus = TRUE;
 	}
     }
