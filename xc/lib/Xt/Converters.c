@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.86 93/08/19 08:40:32 kaleb Exp $ */
+/* $XConsortium: Converters.c,v 1.87 93/08/27 16:27:12 kaleb Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -51,9 +51,6 @@ static Const String XtNmissingCharsetList = "missingCharsetList";
 #define XtQDisplay	XrmPermStringToQuark(XtRDisplay)
 #define XtQFile		XrmPermStringToQuark(XtRFile)
 #define XtQFloat	XrmPermStringToQuark(XtRFloat)
-#ifdef STRING_TO_GEOMETRY
-#define XtQGeometry	XrmPermStringToQuark(XtRGeometry)
-#endif
 #define XtQInitialState	XrmPermStringToQuark(XtRInitialState)
 #define XtQPixmap	XrmPermStringToQuark(XtRPixmap)
 #define XtQShort	XrmPermStringToQuark(XtRShort)
@@ -1283,26 +1280,6 @@ Boolean XtCvtIntToPixmap(dpy, args, num_args, fromVal, toVal, closure_ret)
     done(Pixmap, *(Pixmap*)fromVal->addr);
 }
 
-#ifdef STRING_TO_GEOMETRY	/* not in the specification */
-/*ARGSUSED*/
-static Boolean
-CvtStringToGeometry(dpy, args, num_args, fromVal, toVal, closure_ret)
-    Display*	dpy;
-    XrmValuePtr args;
-    Cardinal    *num_args;
-    XrmValuePtr	fromVal;
-    XrmValuePtr	toVal;
-    XtPointer	*closure_ret;
-{
-    if (*num_args != 0)
-	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
-		  XtNwrongParameters,"cvtStringToGeometry",XtCXtToolkitError,
-                  "String to Geometry conversion needs no extra arguments",
-                   (String *) NULL, (Cardinal *)NULL);
-    done(String, *(String*)fromVal->addr);
-}
-#endif
-
 #ifdef MOTIFBC
 void LowerCase(source, dest)
     register char  *source, *dest;
@@ -1602,10 +1579,6 @@ void _XtAddDefaultConverters(table)
    Add2(_XtQString, XtQFontStruct,XtCvtStringToFontStruct,
 	displayConvertArg, XtNumber(displayConvertArg),
 	XtCacheByDisplay, FreeFontStruct);
-
-#ifdef STRING_TO_GEOMETRY /* Not in the specification */
-    Add(_XtQString, XtQGeometry,  CvtStringToGeometry, NULL, 0, XtCacheNone);
-#endif
 
     Add(_XtQString, XtQGravity,   XtCvtStringToGravity, NULL, 0, XtCacheNone);
     Add(_XtQString, XtQInitialState, XtCvtStringToInitialState, NULL, 0,
