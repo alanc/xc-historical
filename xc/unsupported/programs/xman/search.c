@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: search.c,v 1.16 91/06/05 10:19:39 dave Exp $
+ * $XConsortium: search.c,v 1.17 91/06/05 14:50:32 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *

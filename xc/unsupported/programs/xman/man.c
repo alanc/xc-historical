@@ -1,7 +1,7 @@
 /*
  * xman - X Window System manual page display program.
  *
- * $XConsortium: man.c,v 1.22 91/04/04 16:56:45 gildea Exp $
+ * $XConsortium: man.c,v 1.23 91/06/03 17:00:19 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -461,8 +461,9 @@ static int
 CmpEntryLabel(e1, e2) 
 char **e1, **e2;
 {
-  char *l1, *l2;
-  int result;
+  char *l1, *l2, *p1, *p2, *subl1, *subl2;
+  
+  int i, len1, len2, result;
 
 /*
  * What we really want to compare is the actual names of the manual pages,
@@ -473,10 +474,23 @@ char **e1, **e2;
     PrintError("Internal error while sorting manual pages.");
   if ( (l2 = rindex(*e2, '/')) == NULL)
     PrintError("Internal error while sorting manual pages.");
+  if ( (p1 = rindex(*e1, '.')) == NULL)
+    PrintError("Internal error while sorting manual pages.");
+  if ( (p2 = rindex(*e2, '.')) == NULL)
+    PrintError("Internal error while sorting manual pages.");
+  len1 = p1 - l1; len2 = p2 - l2;
+#define min(x, y) (x > y ? y : x)
+  for (i=0; i<min(len1, len2); i++) {
+    if (*l1 > *l2)
+      return 1;
+    else if (*l2 > *l1)
+      return -1;
+    l1++; l2++;
+  } 
+  if (len1 > len2) return 1; 
+  else if (len1 == len2) return 0;
+  else return -1;
 
-  if (result = XmuCompareISOLatin1(l1, l2))
-      return result;
-  return strcmp(l1, l2);
 }
 
 
