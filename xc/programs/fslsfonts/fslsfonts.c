@@ -1,4 +1,4 @@
-/* $XConsortium: fslsfonts.c,v 1.4 93/07/06 15:24:38 gildea Exp $ */
+/* $XConsortium: fslsfonts.c,v 1.5 93/08/22 12:28:21 rws Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -457,7 +457,7 @@ show_font_props(list)
 	printf("%s\t", buf);
 	switch (po->type) {
 	case PropTypeString:
-	    strncpy(buf, pd + po->value.position, po->value.length);
+	    strncpy(buf, (char *)pd + po->value.position, po->value.length);
 	    buf[po->value.length] = '\0';
 	    printf("%s\n", buf);
 	    break;
