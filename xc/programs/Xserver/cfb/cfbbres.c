@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbres.c,v 1.6 89/10/04 16:23:20 keith Exp $ */
+/* $XConsortium: cfbbres.c,v 1.7 89/10/09 14:52:03 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -35,7 +35,7 @@ SOFTWARE.
 
 cfbBresS(rop, pixel, planemask, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1, e2, len)
 int rop;
-register unsigned long pixel;
+unsigned long pixel;
 unsigned long planemask;
 int *addrl;		/* pointer to base of bitmap */
 int nlwidth;		/* width in longwords of bitmap */
@@ -46,7 +46,7 @@ int x1, y1;		/* initial point */
 register int e;		/* error accumulator */
 register int e1;	/* bresenham increments */
 int e2;
-int len;	/* length of line */
+int len;		/* length of line */
 {
     register int    e3 = e2-e1;
 
@@ -148,7 +148,8 @@ int len;	/* length of line */
 	}
     }
 #else
-    register unsigned long   tmp, bit, leftbit, rightbit;
+    register unsigned long   tmp, bit;
+    unsigned long leftbit, rightbit;
 
     /* point to longword containing first point */
     addrl = (addrl + (y1 * nlwidth) + (x1 >> PWSH));

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbline.c,v 1.10 89/10/10 19:08:59 keith Exp $ */
+/* $XConsortium: cfbline.c,v 1.11 89/10/13 17:04:39 keith Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -99,7 +99,7 @@ cfbSegmentSS (pDrawable, pGC, nseg, pSeg)
     DrawablePtr	pDrawable;
     GCPtr	pGC;
     int		nseg;
-    xSegment	*pSeg;
+    register xSegment	*pSeg;
 #else
 cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     DrawablePtr pDrawable;
@@ -114,7 +114,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     BoxPtr pboxInit;
     register BoxPtr pbox;
 #ifndef POLYSEGMENT
-    DDXPointPtr ppt;		/* pointer to list of translated points */
+    register DDXPointPtr ppt;	/* pointer to list of translated points */
 #endif
 
     unsigned int oc1;		/* outcode of point 1 */
@@ -134,7 +134,8 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 
 				/* a bunch of temporaries */
     int tmp;
-    int x1, x2, y1, y2;
+    register int y1, y2;
+    register int x1, x2;
     RegionPtr cclip;
     unsigned long   pixel;
     int		    alu;
@@ -493,13 +494,13 @@ void
 #ifdef POLYSEGMENT
 cfbSegmentSD (pDrawable, pGC, nseg, pSeg)
     DrawablePtr	pDrawable;
-    GCPtr	pGC;
+    register GCPtr	pGC;
     int		nseg;
-    xSegment	*pSeg;
+    register xSegment	*pSeg;
 #else
 cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     DrawablePtr pDrawable;
-    GCPtr pGC;
+    register GCPtr pGC;
     int mode;		/* Origin or Previous */
     int npt;		/* number of points */
     DDXPointPtr pptInit;
@@ -510,11 +511,11 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     BoxPtr pboxInit;
     register BoxPtr pbox;
 #ifndef POLYSEGMENT
-    DDXPointPtr ppt;		/* pointer to list of translated points */
+    register DDXPointPtr ppt;	/* pointer to list of translated points */
 #endif
 
-    unsigned int oc1;		/* outcode of point 1 */
-    unsigned int oc2;		/* outcode of point 2 */
+    register unsigned int oc1;		/* outcode of point 1 */
+    register unsigned int oc2;		/* outcode of point 2 */
 
     int *addrl;		/* address of destination pixmap */
     int nlwidth;		/* width in longwords of destination pixmap */
