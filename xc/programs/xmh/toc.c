@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: toc.c,v 2.13 88/01/29 16:37:23 swick Exp $";
+static char rcs_id[] = "$Header: toc.c,v 2.14 88/02/22 21:35:43 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -190,7 +190,7 @@ void TocCheckForNewMail()
 		for (j=0 ; j<numScrns ; j++) {
 		    scrn = scrnList[j];
 		    if (scrn->kind == STtocAndView) {
-			if (toc == InitialFolder) {
+			if (mailWaitingFlag && toc == InitialFolder) {
 			    arglist[0].value = (XtArgVal)
 				hasmail ? NewMailPixmap : NoMailPixmap;
 			    XtSetValues(scrn->parent,
