@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: ixx.cf,v 1.1 94/03/18 14:09:57 matt Exp $
 XCOMM
 XCOMM Definitions for using interface translator
 XCOMM
@@ -27,7 +27,7 @@ IXINCLUDES = IXIncludes
 
 #ifndef MakeIDLHeader
 #define MakeIDLHeader(name_idl,name_h,flags)				@@\
-all:: name_h								@@\
+headers:: name_h							@@\
 name_h: name_idl							@@\
 	@$(RM) name_h ix-name_h						@@\
 	@echo "Generating name_h from name_idl"				@@\
