@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Clock.c,v 1.18 91/01/09 18:31:09 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -161,7 +161,7 @@ static void Initialize (greq, gnew)
     if (w->clock.shape_window && !XShapeQueryExtension (XtDisplay (w), 
 							&shape_event_base, 
 							&shape_error_base))
-	w->clock.shape_window = False;
+    w->clock.shape_window = False;
     w->clock.shape_mask = 0;
     w->clock.shapeGC = 0;
     w->clock.shape_width = 0;
@@ -432,8 +432,9 @@ static void new_time (client_data, id)
 	 * take a while and we'd like the clock to keep up
 	 * with time changes.
 	 */
-	w->clock.interval_id = XtAddTimeOut ((60 - tm->tm_sec) * 1000, new_time,
-				client_data);
+	w->clock.interval_id = 
+	    XtAppAddTimeOut (XtWidgetToApplicationContext((Widget) w),
+			     (60 - tm->tm_sec) * 1000, new_time, client_data);
 	compute_hands (w);
 	if (w->clock.transparent)
 	    Resize (w);
