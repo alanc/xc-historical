@@ -1,6 +1,6 @@
 /**/#!/bin/sh
 /**/#
-/**/# $XConsortium$
+/**/# $XConsortium: mergelib.cpp,v 1.1 89/10/17 12:05:40 jim Exp $
 /**/# 
 /**/# Copyright 1989 Massachusetts Institute of Technology
 /**/# 
@@ -90,8 +90,8 @@ done
 /**/#
 /**/# Merge in the object modules, ranlib (if appropriate) and cleanup
 /**/#
-ar cq ${upto}$tolib *.o
-ranlib ${upto}$tolib
+ARCMD ${upto}$tolib *.o
+RANLIB ${upto}$tolib
 cd $origdir
 rm -rf $tmpdir
 
