@@ -3,7 +3,7 @@
 \fIxmh\fR \- X window interface to the mh Mail Handler
 .SH SYNOPSIS
 .B xmh
-[-path \fImailpath\fR]
+[-path \fImailpath\fR] [-initial \fIfoldername\fR] [-flag]
 .SH DESCRIPTION
 \fIXmh\fR is a program that provides a window-oriented front end to the mh
 Mail Handler. It is designed to take advantage of a large graphical
@@ -569,6 +569,8 @@ state.
 .SH CUSTOMIZING XMH
 As with all standard X applications, \fIxmh\fR may be customized through entries
 in your .Xdefaults file.  The following .Xdefaults entries are defined:
+[Note: the entry names must be entered in either all lower-case, or in
+the exact case shown below.]
 .TP 8
 .B BackGround
 Background color.  Currently, this will effect only buttons.  (Default is
@@ -577,6 +579,12 @@ white.)
 .TP 8
 .B ButtonFont
 What font to use for button names.  (Default is ``timrom10''.)
+.PP
+.TP 8
+.B CheckNewMail
+If True, \fIxmh\fP will check at regular intervals to see if new mail
+has arrived for any of the folders.  A visual indication will be given
+if new mail is waiting to be retrieved.
 .PP
 .TP 8
 .B CompButtonLines
@@ -640,6 +648,13 @@ What font to use for the title bars. (Default is ``timrom10i''.)
 The full path prefix for locating your mail folders.  May also be set
 with the command-line option, \fB-path\fR. (Default is the
 ``Path'' component in $HOME/.mh_profile, or ``$HOME/Mail'' if none.)
+.PP
+.TP 8
+.B MailWaitingFlag
+If True, \fIxmh\fR will attempt to set an indication in it's icon when
+new mail is waiting to be retrieved.  If this option is True, then
+CheckNewMail is assumed to be True as well.  The ``-flag'' command line
+option is a quick way to turn MailWaitingFlag on.
 .PP
 .TP 8
 .B MhPath
