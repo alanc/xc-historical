@@ -55,96 +55,99 @@
 
 (deftype char-info-vec () '(simple-array int16 (6)))
 
-(eval-when (eval compile) ;; I'd rather use macrolet, but Symbolics doesn't like it...
-
-(defmacro def-char-info-accessors (useless-name &body fields)
-  `(within-definition (,useless-name def-char-info-accessors)
-     ,@(do ((field fields (cdr field))
-	    (n 0 (1+ n))
-	    (name) (type)
-	    (result nil))
-	   ((endp field) result)
-	 (setq name (xintern 'char- (caar field)))
-	 (setq type (cadar field))
-	 (flet ((from (form)
-		  (if (eq type 'int16)
-		      form
-		      `(,(xintern 'int16-> type) ,form))))
-	   (push
-	     `(defun ,name (font index)
-		(declare (type font font)
-			 (type array-index index))
-		(declare (values (or null ,type)))
-		(when (and (font-name font)
-			   (index>= (font-max-char font) index (font-min-char font)))
-		  (the ,type
-		       ,(from
-			  `(the int16
-				(let ((char-info-vector (font-char-infos font)))
-				  (declare (type char-info-vec char-info-vector))
-				  (if (index-zerop (length char-info-vector))
-				      ;; Fixed width font
-				      (aref (the char-info-vec (font-max-bounds font)) ,n)
-				    ;; Variable width font
-				    (aref char-info-vector
-					  (index+ (index* 6 (index- index
-								    (font-min-char font)))
-						  ,n)))))))))
-	     result)
-	   (push `(proclaim '(inline ,name)) result)
-	   (setq name (xintern 'min-char- (caar field)))
-	   (push
-	     `(defun ,name (font)
-		(declare (type font font))
-		(declare (values (or null ,type)))
-		(when (font-name font)
-		  (the ,type ,(from `(the int16
+(macrolet ((def-char-info-accessors (useless-name &body fields)
+	    `(within-definition (,useless-name def-char-info-accessors)
+	       ,@(do ((field fields (cdr field))
+		      (n 0 (1+ n))
+		      (name) (type)
+		      (result nil))
+		     ((endp field) result)
+		   (setq name (xintern 'char- (caar field)))
+		   (setq type (cadar field))
+		   (flet ((from (form)
+			    (if (eq type 'int16)
+				form
+				`(,(xintern 'int16-> type) ,form))))
+		     (push
+		       `(defun ,name (font index)
+			  (declare (type font font)
+				   (type array-index index))
+			  (declare (values (or null ,type)))
+			  (when (and (font-name font)
+				     (index>= (font-max-char font) index (font-min-char font)))
+			    (the ,type
+				 ,(from
+				    `(the int16
+					  (let ((char-info-vector (font-char-infos font)))
+					    (declare (type char-info-vec char-info-vector))
+					    (if (index-zerop (length char-info-vector))
+						;; Fixed width font
+						(aref (the char-info-vec
+							   (font-max-bounds font))
+						      ,n)
+						;; Variable width font
+						(aref char-info-vector
+						      (index+
+							(index*
+							  6
+							  (index-
+							    index
+							    (font-min-char font)))
+							,n)))))))))
+		       result)
+		     (setq name (xintern 'min-char- (caar field)))
+		     (push
+		       `(defun ,name (font)
+			  (declare (type font font))
+			  (declare (values (or null ,type)))
+			  (when (font-name font)
+			    (the ,type
+				 ,(from
+				    `(the int16
 					  (aref (the char-info-vec (font-min-bounds font))
 						,n))))))
-	     result)
-	   (push `(proclaim '(inline ,name)) result)
-	   (setq name (xintern 'max-char- (caar field)))
-	   (push
-	     `(defun ,name (font)
-		(declare (type font font))
-		(declare (values (or null ,type)))
-		(when (font-name font)
-		  (the ,type ,(from `(the int16
+		       result)
+		     (setq name (xintern 'max-char- (caar field)))
+		     (push
+		       `(defun ,name (font)
+			  (declare (type font font))
+			  (declare (values (or null ,type)))
+			  (when (font-name font)
+			    (the ,type
+				 ,(from
+				    `(the int16
 					  (aref (the char-info-vec (font-max-bounds font))
 						,n))))))
-	     result)
-	   (push `(proclaim '(inline ,name)) result)))
+		       result)))
 	  
-     (defun make-char-info
-	    (&key ,@(mapcar
-		      #'(lambda (field)
-			  `(,(car field) (required-arg ,(car field))))
-		      fields))
-       (declare ,@(mapcar #'(lambda (field) `(type ,@(reverse field))) fields))
-       (let ((result (make-array ,(length fields) :element-type 'int16)))
-	 (declare (type char-info-vec result)
-		  (array-register result))
-	 ,@(do* ((field fields (cdr field))
-		 (var (caar field) (caar field))
-		 (type (cadar field) (cadar field))
-		 (n 0 (1+ n))
-		 (result nil))
-		((endp field) (nreverse result))
-	     (push `(setf (aref result ,n)
-			  ,(if (eq type 'int16)
-			       var
-			       `(,(xintern type '->int16) ,var)))
-		   result))
-	 result))))
-) ;; End eval-when
-
-(def-char-info-accessors ignore
-  (left-bearing int16)
-  (right-bearing int16)
-  (width int16)
-  (ascent int16)
-  (descent int16)
-  (attributes card16))
+	       (defun make-char-info
+		      (&key ,@(mapcar
+				#'(lambda (field)
+				    `(,(car field) (required-arg ,(car field))))
+				fields))
+		 (declare ,@(mapcar #'(lambda (field) `(type ,@(reverse field))) fields))
+		 (let ((result (make-array ,(length fields) :element-type 'int16)))
+		   (declare (type char-info-vec result)
+			    (array-register result))
+		   ,@(do* ((field fields (cdr field))
+			   (var (caar field) (caar field))
+			   (type (cadar field) (cadar field))
+			   (n 0 (1+ n))
+			   (result nil))
+			  ((endp field) (nreverse result))
+		       (push `(setf (aref result ,n)
+				    ,(if (eq type 'int16)
+					 var
+					 `(,(xintern type '->int16) ,var)))
+			     result))
+		   result)))))
+  (def-char-info-accessors ignore
+    (left-bearing int16)
+    (right-bearing int16)
+    (width int16)
+    (ascent int16)
+    (descent int16)
+    (attributes card16)))
     
 (defun open-font (display name)
   ;; Font objects may be cached and reference counted locally within the display

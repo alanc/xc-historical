@@ -560,159 +560,138 @@
 ;;; This stuff transforms chars to ascii codes in card8's and back.
 ;;; You might have to hack it a little to get it to work for your machine.
 
-(eval-when (eval compile)
-(defparameter *char-to-ascii-alist*
-	      '#.`(#-lispm
-		   ;; The normal ascii codes for the control characters.
-		   ,@`((#\Return . 13)
-		       (#\Linefeed . 10)
-		       (#\Rubout . 127)
-		       (#\Page . 12)
-		       (#\Tab . 9)
-		       (#\Backspace . 8)
-		       (#\Newline . 10)
-		       (#\Space . 32))
-		   ;; One the lispm, #\Newline is #\Return, but we'd really like
-		   ;; #\Newline to translate to ascii code 10, so we swap the
-		   ;; Ascii codes for #\Return and #\Linefeed. We also provide
-		   ;; mappings from the counterparts of these control characters
-		   ;; so that the character mapping from the lisp machine
-		   ;; character set to ascii is invertible.
-		   #+lispm
-		   ,@`((#\Return . 10)   (,(code-char  10) . ,(char-code #\Return))
-		       (#\Linefeed . 13) (,(code-char  13) . ,(char-code #\Linefeed))
-		       (#\Rubout . 127)  (,(code-char 127) . ,(char-code #\Rubout))
-		       (#\Page . 12)     (,(code-char  12) . ,(char-code #\Page))
-		       (#\Tab . 9)       (,(code-char   9) . ,(char-code #\Tab))
-		       (#\Backspace . 8) (,(code-char   8) . ,(char-code #\Backspace))
-		       (#\Newline . 10)  (,(code-char  10) . ,(char-code #\Newline))
-		       (#\Space . 32)    (,(code-char  32) . ,(char-code #\Space)))
-		   ;; The rest of the common lisp charater set with the normal
-		   ;; ascii codes for them.
-		   (#\! . 33) (#\" . 34) (#\# . 35) (#\$ . 36)
-		   (#\% . 37) (#\& . 38) (#\' . 39) (#\( . 40)
-		   (#\) . 41) (#\* . 42) (#\+ . 43) (#\, . 44)
-		   (#\- . 45) (#\. . 46) (#\/ . 47) (#\0 . 48)
-		   (#\1 . 49) (#\2 . 50) (#\3 . 51) (#\4 . 52)
-		   (#\5 . 53) (#\6 . 54) (#\7 . 55) (#\8 . 56)
-		   (#\9 . 57) (#\: . 58) (#\; . 59) (#\< . 60)
-		   (#\= . 61) (#\> . 62) (#\? . 63) (#\@ . 64)
-		   (#\A . 65) (#\B . 66) (#\C . 67) (#\D . 68)
-		   (#\E . 69) (#\F . 70) (#\G . 71) (#\H . 72)
-		   (#\I . 73) (#\J . 74) (#\K . 75) (#\L . 76)
-		   (#\M . 77) (#\N . 78) (#\O . 79) (#\P . 80)
-		   (#\Q . 81) (#\R . 82) (#\S . 83) (#\T . 84)
-		   (#\U . 85) (#\V . 86) (#\W . 87) (#\X . 88)
-		   (#\Y . 89) (#\Z . 90) (#\[ . 91) (#\\ . 92)
-		   (#\] . 93) (#\^ . 94) (#\_ . 95) (#\` . 96)
-		   (#\a . 97) (#\b . 98) (#\c . 99) (#\d . 100)
-		   (#\e . 101) (#\f . 102) (#\g . 103) (#\h . 104)
-		   (#\i . 105) (#\j . 106) (#\k . 107) (#\l . 108)
-		   (#\m . 109) (#\n . 110) (#\o . 111) (#\p . 112)
-		   (#\q . 113) (#\r . 114) (#\s . 115) (#\t . 116)
-		   (#\u . 117) (#\v . 118) (#\w . 119) (#\x . 120)
-		   (#\y . 121) (#\z . 122) (#\{ . 123) (#\| . 124)
-		   (#\} . 125) (#\~ . 126)))
-
-
-(pushnew :clx-ascii *features*)
-(dolist (pair *char-to-ascii-alist*)
-  (when (not (= (char-code (car pair)) (cdr pair)))
-    (return (setq *features* (delete :clx-ascii *features*)))))
-
-)
-
 (proclaim '(inline char->card8 card8->char))
 
-#-clx-ascii
-(progn
-  
-(defparameter *char-to-card8-translation-table*
-	      '#.(let ((array (make-array
-				(let ((max-char-code 255))
-				  (dolist (pair *char-to-ascii-alist*)
-				    (setq max-char-code
-					  (max max-char-code (char-code (car pair)))))
-				  (1+ max-char-code))
-				:element-type 'card8)))
-		   (dotimes (i (length array))
-		     (setf (aref array i) (mod i 256)))
-		   (dolist (pair *char-to-ascii-alist*)
-		     (setf (aref array (char-code (car pair))) (cdr pair)))
-		   array))
-
-(defparameter *card8-to-char-translation-table*
-	      '#.(let ((array (make-string 256)))
-		   (dotimes (i (length array))
-		     (setf (aref array i) (code-char (mod i 256))))
-		   (dolist (pair *char-to-ascii-alist*)
-		     (setf (aref array (cdr pair)) (car pair)))
-		   array))
-
-#-Genera
-(progn
-  
-(defun char->card8 (char)
-  (declare (type string-char char))
-  #.(declare-buffun)
-  (the card8 (aref (the (simple-array card8 (*)) *char-to-card8-translation-table*)
-		   (the array-index (char-code char)))))
-
-(defun card8->char (card8)
-  (declare (type card8 card8))
-  #.(declare-buffun)
-  (the string-char (aref (the simple-string *card8-to-char-translation-table*) card8)))
-
-)
-
-#+Genera
-(progn
-
-(defun char->card8 (char)
-  (declare lt:(side-effects reader reducible))
-  (aref *char-to-card8-translation-table* (char-code char)))
-
-(defun card8->char (card8)
-  (declare lt:(side-effects reader reducible))
-  (aref *card8-to-char-translation-table* card8))
-
-)
-
-(defun check-character-mapping-consistency ()
-  (dotimes (i 256)
-    (unless (= i (char->card8 (card8->char i)))
-      (warn "The card8->char mapping is not invertible through char->card8.  Info:~%~S"
-	    (list i (card8->char i) (char->card8 (card8->char i))))
-      (return nil)))
-  (dotimes (i (length *char-to-card8-translation-table*))
-    (let ((char (code-char i)))
-      (unless (eql char (card8->char (char->card8 char)))
-	(warn "The char->card8 mapping is not invertible through card8->char.  Info:~%~S"
-	      (list char (char->card8 char) (card8->char (char->card8 char))))
-	(return nil)))))
-
-(check-character-mapping-consistency)
-
-)
-
-#+clx-ascii
-(progn
- 
-(defun char->card8 (char)
-  (declare (type string-char char))
-  #.(declare-buffun)
-  (the card8 (char-code char)))
-
-(defun card8->char (card8)
-  (declare (type card8 card8))
-  #.(declare-buffun)
-  (the string-char (code-char card8)))
-
-(eval-when (eval compile)
-  (setq *features* (delete :clx-ascii *features*)))
-
-)
-
+(macrolet ((char-translators ()
+	     (let ((alist
+		     `(#-lispm
+		       ;; The normal ascii codes for the control characters.
+		       ,@`((#\Return . 13)
+			   (#\Linefeed . 10)
+			   (#\Rubout . 127)
+			   (#\Page . 12)
+			   (#\Tab . 9)
+			   (#\Backspace . 8)
+			   (#\Newline . 10)
+			   (#\Space . 32))
+		       ;; One the lispm, #\Newline is #\Return, but we'd really like
+		       ;; #\Newline to translate to ascii code 10, so we swap the
+		       ;; Ascii codes for #\Return and #\Linefeed. We also provide
+		       ;; mappings from the counterparts of these control characters
+		       ;; so that the character mapping from the lisp machine
+		       ;; character set to ascii is invertible.
+		       #+lispm
+		       ,@`((#\Return . 10)   (,(code-char  10) . ,(char-code #\Return))
+			   (#\Linefeed . 13) (,(code-char  13) . ,(char-code #\Linefeed))
+			   (#\Rubout . 127)  (,(code-char 127) . ,(char-code #\Rubout))
+			   (#\Page . 12)     (,(code-char  12) . ,(char-code #\Page))
+			   (#\Tab . 9)       (,(code-char   9) . ,(char-code #\Tab))
+			   (#\Backspace . 8) (,(code-char   8) . ,(char-code #\Backspace))
+			   (#\Newline . 10)  (,(code-char  10) . ,(char-code #\Newline))
+			   (#\Space . 32)    (,(code-char  32) . ,(char-code #\Space)))
+		       ;; The rest of the common lisp charater set with the normal
+		       ;; ascii codes for them.
+		       (#\! . 33) (#\" . 34) (#\# . 35) (#\$ . 36)
+		       (#\% . 37) (#\& . 38) (#\' . 39) (#\( . 40)
+		       (#\) . 41) (#\* . 42) (#\+ . 43) (#\, . 44)
+		       (#\- . 45) (#\. . 46) (#\/ . 47) (#\0 . 48)
+		       (#\1 . 49) (#\2 . 50) (#\3 . 51) (#\4 . 52)
+		       (#\5 . 53) (#\6 . 54) (#\7 . 55) (#\8 . 56)
+		       (#\9 . 57) (#\: . 58) (#\; . 59) (#\< . 60)
+		       (#\= . 61) (#\> . 62) (#\? . 63) (#\@ . 64)
+		       (#\A . 65) (#\B . 66) (#\C . 67) (#\D . 68)
+		       (#\E . 69) (#\F . 70) (#\G . 71) (#\H . 72)
+		       (#\I . 73) (#\J . 74) (#\K . 75) (#\L . 76)
+		       (#\M . 77) (#\N . 78) (#\O . 79) (#\P . 80)
+		       (#\Q . 81) (#\R . 82) (#\S . 83) (#\T . 84)
+		       (#\U . 85) (#\V . 86) (#\W . 87) (#\X . 88)
+		       (#\Y . 89) (#\Z . 90) (#\[ . 91) (#\\ . 92)
+		       (#\] . 93) (#\^ . 94) (#\_ . 95) (#\` . 96)
+		       (#\a . 97) (#\b . 98) (#\c . 99) (#\d . 100)
+		       (#\e . 101) (#\f . 102) (#\g . 103) (#\h . 104)
+		       (#\i . 105) (#\j . 106) (#\k . 107) (#\l . 108)
+		       (#\m . 109) (#\n . 110) (#\o . 111) (#\p . 112)
+		       (#\q . 113) (#\r . 114) (#\s . 115) (#\t . 116)
+		       (#\u . 117) (#\v . 118) (#\w . 119) (#\x . 120)
+		       (#\y . 121) (#\z . 122) (#\{ . 123) (#\| . 124)
+		       (#\} . 125) (#\~ . 126))))
+	       (cond ((dolist (pair alist nil)
+			(when (not (= (char-code (car pair)) (cdr pair)))
+			  (return t)))
+		      `(progn
+			 (defconstant *char-to-card8-translation-table*
+				      ',(let ((array (make-array
+						       (let ((max-char-code 255))
+							 (dolist (pair alist)
+							   (setq max-char-code
+								 (max max-char-code
+								      (char-code (car pair)))))
+							 (1+ max-char-code))
+						       :element-type 'card8)))
+					  (dotimes (i (length array))
+					    (setf (aref array i) (mod i 256)))
+					  (dolist (pair alist)
+					    (setf (aref array (char-code (car pair)))
+						  (cdr pair)))
+					  array))
+			 (defconstant *card8-to-char-translation-table*
+				      ',(let ((array (make-string 256)))
+					  (dotimes (i (length array))
+					    (setf (aref array i) (code-char i)))
+					  (dolist (pair alist)
+					    (setf (aref array (cdr pair)) (car pair)))
+					  array))
+			 #-Genera
+			 (progn
+  			   (defun char->card8 (char)
+			     (declare (type string-char char))
+			     #.(declare-buffun)
+			     (the card8 (aref (the (simple-array card8 (*))
+						   *char-to-card8-translation-table*)
+					      (the array-index (char-code char)))))
+			   (defun card8->char (card8)
+			     (declare (type card8 card8))
+			     #.(declare-buffun)
+			     (the string-char
+				  (aref (the simple-string *card8-to-char-translation-table*)
+					card8)))
+			   )
+			 #+Genera
+			 (progn
+			   (defun char->card8 (char)
+			     (declare lt:(side-effects reader reducible))
+			     (aref *char-to-card8-translation-table* (char-code char)))
+			   (defun card8->char (card8)
+			     (declare lt:(side-effects reader reducible))
+			     (aref *card8-to-char-translation-table* card8))
+			   )
+			 (dotimes (i 256)
+			   (unless (= i (char->card8 (card8->char i)))
+			     (warn "The card8->char mapping is not invertible through char->card8.  Info:~%~S"
+				   (list i
+					 (card8->char i)
+					 (char->card8 (card8->char i))))
+			     (return nil)))
+			 (dotimes (i (length *char-to-card8-translation-table*))
+			   (let ((char (code-char i)))
+			     (unless (eql char (card8->char (char->card8 char)))
+			       (warn "The char->card8 mapping is not invertible through card8->char.  Info:~%~S"
+				     (list char
+					   (char->card8 char)
+					   (card8->char (char->card8 char))))
+			       (return nil))))))
+		     (t
+		      `(progn
+			 (defun char->card8 (char)
+			   (declare (type string-char char))
+			   #.(declare-buffun)
+			   (the card8 (char-code char)))
+			 (defun card8->char (card8)
+			   (declare (type card8 card8))
+			   #.(declare-buffun)
+			   (the string-char (code-char card8)))
+			 ))))))
+  (char-translators))
 
 ;;-----------------------------------------------------------------------------
 ;; Process Locking
@@ -734,11 +713,11 @@
 (defun make-process-lock (name)
   (mp:make-process-lock :name name))
 
-#+(and LispM (not CLX-Genera-New-Scheduler))
+#+(and LispM (not Genera))
 (defun make-process-lock (name)
   (vector nil name))
 
-#+CLX-Genera-New-Scheduler
+#+Genera
 (defun make-process-lock (name)
   (process:make-lock name :flavor 'clx-lock))
 
@@ -755,7 +734,7 @@
   (declare (ignore locator display whostate timeout))
   `(progn ,@body))
 
-#+CLX-Genera-New-Scheduler
+#+Genera
 (defmacro holding-lock ((locator display &optional whostate &key timeout)
 			&body body)
   (declare (ignore whostate))
@@ -764,7 +743,7 @@
        (scl:let-if .debug-io. ((*debug-io* .debug-io.))
 	 ,@body))))
 
-#+(and lispm (not CLX-Genera-New-Scheduler))
+#+(and lispm (not Genera))
 (defmacro holding-lock ((locator display &optional whostate &key timeout)
 			&body body)
   (declare (ignore display))
@@ -885,13 +864,13 @@
   (or (apply predicate predicate-args)
       (error "Program tried to wait with no scheduler.")))
 
-#+CLX-Genera-New-Scheduler
+#+Genera
 (defun process-block (whostate predicate &rest predicate-args)
   (declare (type function predicate)
 	   (downward-funarg predicate))
   (apply #'process:block-process whostate predicate predicate-args))
 
-#+(and lispm (not CLX-Genera-New-Scheduler))
+#+(and lispm (not Genera))
 (defun process-block (whostate predicate &rest predicate-args)
   (declare (type function predicate)
 	   (downward-funarg predicate))
@@ -913,7 +892,7 @@
 
 (proclaim '(inline process-wakeup))
 
-#-(or excl CLX-Genera-New-Scheduler)
+#-(or excl Genera)
 (defun process-wakeup (process)
   (declare (ignore process))
   nil)
@@ -929,7 +908,7 @@
       (if (> (mp::process-priority process) (mp::process-priority curproc))
 	  (mp::process-allow-schedule process)))))
 
-#+CLX-Genera-New-Scheduler
+#+Genera
 (defun process-wakeup (process)
   (process:wakeup process))
 
@@ -963,11 +942,11 @@
 (defmacro without-interrupts (&body body)
   `(progn ,@body))
 
-#+(and lispm (not CLX-Genera-New-Scheduler))
+#+(and lispm (not Genera))
 (defmacro without-interrupts (&body body)
   `(sys:without-interrupts ,@body))
 
-#+CLX-Genera-New-Scheduler
+#+Genera
 (defmacro without-interrupts (&body body)
   `(process:with-no-other-processes ,@body))
 
@@ -1406,17 +1385,14 @@
     (cond ((null stream))
 	  ((scl:send stream :listen) nil)
 	  ((eql timeout 0) :timeout)
-	  ((null timeout)
-	   #+CLX-Genera-new-scheduler (si:stream-input-block stream "CLX Input")
-	   #-CLX-Genera-new-scheduler (scl:send stream :input-wait "CLX Input"))
+	  ((null timeout) (si:stream-input-block stream "CLX Input"))
 	  (t
 	   (scl:condition-bind ((neti:protocol-timeout
 				  #'(lambda (error)
 				      (when (eq stream (scl:send error :stream))
 					(return-from buffer-input-wait-default :timeout)))))
 	     (neti:with-stream-timeout (stream :input timeout)
-	       #+CLX-Genera-new-scheduler (si:stream-input-block stream "CLX Input")
-	       #-CLX-Genera-new-scheduler (scl:send stream :input-wait "CLX Input")))))
+	       (si:stream-input-block stream "CLX Input")))))
     nil))
 
 #+explorer

@@ -26,7 +26,6 @@
 ;;; #+ features used in this file
 ;;;   lispm
 ;;;   genera
-;;;   CLX-Genera-New-Scheduler
 ;;;   lucid
 ;;;   lcl3.0
 ;;;   apollo
@@ -111,15 +110,6 @@
   )
 
 
-;;; Symbolics Genera has two different schedulers, one in 7.2 and the other in
-;;; 7.3 and 7.4.  Define a feature so we can use different code for them.
-#+Genera
-(eval-when (compile load eval)
-  (multiple-value-bind (ignore status)
-      (find-symbol "WITH-LOCK" (find-package 'process))
-    (when (eq status :external)
-      (pushnew :clx-genera-new-scheduler *features*))))
-
 #+Genera
 (scl:defsystem CLX
     (:default-pathname "SYS:X11;CLX;"
@@ -131,7 +121,7 @@
      :source-category :basic)
   (:module doc ("doc")
 	   (:type :lisp-example))
-  (:module depdefs ("depdefs" #+CLX-Genera-New-Scheduler "generalock"))
+  (:module depdefs ("depdefs" "generalock"))
   (:module clx ("clx")
 	   (:uses-definitions-from depdefs))
   (:module dependent ("dependent")

@@ -955,41 +955,34 @@
 ;  (declare (type font font)
 ;	   (values <type>)))
 
-(eval-when (eval compile) ;; I'd rather use macrolet, but Symbolics doesn't like it...
-
-(defmacro make-font-info-accessors (useless-name &body fields)
-  `(within-definition (,useless-name make-font-info-accessors)
-     ,@(mapcan
-	 #'(lambda (field)
-	     (let* ((type (second field))
-		    (n (string (first field)))
-		    (name (xintern 'font- n))
-		    (accessor (xintern 'font-info- n)))
-	       `((proclaim '(inline ,name))
-		 (defun ,name (font)
-		   (declare (type font font))
-		   (declare (values ,type))
-		   (,accessor (font-font-info font))))))
-	 fields)))
-
-) ;; End eval-when
-
-(make-font-info-accessors ignore
-  (direction draw-direction)
-  (min-char card16)
-  (max-char card16)
-  (min-byte1 card8)
-  (max-byte1 card8)
-  (min-byte2 card8)
-  (max-byte2 card8)
-  (all-chars-exist-p boolean)
-  (default-char card16)
-  (min-bounds vector)
-  (max-bounds vector)
-  (ascent int16)
-  (descent int16)
-  (properties font-props))
-
+(macrolet ((make-font-info-accessors (useless-name &body fields)
+	     `(within-definition (,useless-name make-font-info-accessors)
+		,@(mapcar
+		    #'(lambda (field)
+			(let* ((type (second field))
+			       (n (string (first field)))
+			       (name (xintern 'font- n))
+			       (accessor (xintern 'font-info- n)))
+			  `(defun ,name (font)
+			     (declare (type font font))
+			     (declare (values ,type))
+			     (,accessor (font-font-info font)))))
+		    fields))))
+  (make-font-info-accessors ignore
+    (direction draw-direction)
+    (min-char card16)
+    (max-char card16)
+    (min-byte1 card8)
+    (max-byte1 card8)
+    (min-byte2 card8)
+    (max-byte2 card8)
+    (all-chars-exist-p boolean)
+    (default-char card16)
+    (min-bounds vector)
+    (max-bounds vector)
+    (ascent int16)
+    (descent int16)
+    (properties font-props)))
 
 (defun font-property (font name)
   (declare (type font font)
@@ -997,32 +990,27 @@
   (declare (values (or null int32)))
   (getf (font-properties font) name))
 
-(eval-when (eval compile) ;; I'd rather use macrolet, but Symbolics doesn't like it...
-
-(defmacro make-mumble-equal (type)
-  ;; When cached, EQ works fine, otherwise test resource id's and displays
-  (let ((predicate (xintern type '-equal))
-	(id (xintern type '-id))
-	(dpy (xintern type '-display)))
-    (if (member type *clx-cached-types*)
-	`(within-definition (,type make-mumble-equal)
-	   (proclaim '(inline ,predicate))
-	   (defun ,predicate (a b) (eq a b)))
-      `(within-definition (,type make-mumble-equal)
-	 (defun ,predicate (a b)
-	   (declare (type ,type a b))
-	   (and (= (,id a) (,id b))
-		(eq (,dpy a) (,dpy b))))))))
-
-) ;; End eval-when
-
-(make-mumble-equal window)
-(make-mumble-equal pixmap)
-(make-mumble-equal cursor)
-(make-mumble-equal font)
-(make-mumble-equal gcontext)
-(make-mumble-equal colormap)
-(make-mumble-equal drawable)
+(macrolet ((make-mumble-equal (type)
+	     ;; When cached, EQ works fine, otherwise test resource id's and displays
+	     (let ((predicate (xintern type '-equal))
+		   (id (xintern type '-id))
+		   (dpy (xintern type '-display)))
+	       (if (member type *clx-cached-types*)
+		   `(within-definition (,type make-mumble-equal)
+		      (proclaim '(inline ,predicate))
+		      (defun ,predicate (a b) (eq a b)))
+		   `(within-definition (,type make-mumble-equal)
+		      (defun ,predicate (a b)
+			(declare (type ,type a b))
+			(and (= (,id a) (,id b))
+			     (eq (,dpy a) (,dpy b)))))))))
+  (make-mumble-equal window)
+  (make-mumble-equal pixmap)
+  (make-mumble-equal cursor)
+  (make-mumble-equal font)
+  (make-mumble-equal gcontext)
+  (make-mumble-equal colormap)
+  (make-mumble-equal drawable))
 
 ;;;
 ;;; Event-mask encode/decode functions
