@@ -1,5 +1,5 @@
-- .\" Use tbl and -ms and macros.t
-- .\" $XConsortium: xlfd.tbl.ms,v 1.2 91/06/17 16:20:32 rws Exp $
+.\" Use tbl and -ms and macros.t
+.\" $XConsortium: xlfd.tbl.ms,v 1.3 91/06/17 16:28:43 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
