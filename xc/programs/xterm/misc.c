@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.46 89/09/07 10:36:17 jim Exp $
+ *	$XConsortium: misc.c,v 1.47 89/09/07 10:49:07 jim Exp $
  */
 
 
@@ -41,6 +41,8 @@
 
 #include <X11/Shell.h>
 #include <X11/Xmu/Error.h>
+#include <X11/Xmu/SysUtil.h>
+#include <X11/Xmu/WinUtil.h>
 
 #include "data.h"
 #include "error.h"
@@ -53,7 +55,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.46 89/09/07 10:36:17 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.47 89/09/07 10:49:07 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -476,7 +478,6 @@ logpipe()
 		CloseLog(screen);
 }
 
-
 do_osc(func)
 int (*func)();
 {
@@ -486,6 +487,7 @@ int (*func)();
 	char buf[512];
 	extern char *malloc();
 	Bool okay = True;
+	int len;
 
 	/* 
 	 * lines should be of the form <ESC> ] number ; string <BEL>
@@ -524,11 +526,19 @@ int (*func)();
 		screen->logfile = cp;
 		break;
 
+#ifdef ALLOW_WRITEBACK
 	 case 100:	/* send back display name */
 		unparsefputs (DisplayString(screen->display), screen->respond);
 		unparseputc ('\r', screen->respond);
 		break;
 
+	 case 101:	/* send back host name */
+		len = XmuGetHostname (buf, sizeof buf);
+		buf[(sizeof buf) - 1] = '\0';
+		unparsefputs (buf, screen->respond);
+		unparseputc ('\r', screen->respond);
+		break;
+#endif /* ALLOW_WRITEBACK */
 	}
 }
 
@@ -708,17 +718,7 @@ static void withdraw_window (dpy, w, scr)
     Window w;
     int scr;
 {
-    static XSizeHints *shp = NULL;
-    long supp;
-
-    if (!shp) shp = XAllocSizeHints();
-
-    if (shp && XGetWMNormalHints (dpy, w, shp, &supp)) {
-	shp->flags &= ~(PPosition|PSize);	/* tell it user pref */
-	shp->flags |= (USPosition|USSize);
-				   
-	XSetWMNormalHints (dpy, w, shp);
-    }
+    (void) XmuUpdateMapHints (dpy, w, NULL);
     XWithdrawWindow (dpy, w, scr);
     return;
 }
