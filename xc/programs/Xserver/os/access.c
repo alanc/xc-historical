@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.30 89/03/14 08:33:31 rws Exp $ */
+/* $XConsortium: access.c,v 1.31 89/04/09 16:03:25 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -522,6 +522,8 @@ GetHosts (data, pnHosts, pLen, pEnabled)
 	    acopy (host->addr, ptr, len);
 	    ptr += ((len + 3) >> 2) << 2;
         }
+    } else {
+	*data = NULL;
     }
     *pnHosts = nHosts;
     *pLen = n;
