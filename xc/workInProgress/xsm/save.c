@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.15 94/12/14 20:00:58 mor Exp mor $ */
+/* $XConsortium: save.c,v 1.16 94/12/16 17:33:20 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -26,6 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 ******************************************************************************/
 
 #include "xsm.h"
+#include "save.h"
 #include "saveutil.h"
 
 #include <X11/Shell.h>
@@ -288,6 +289,9 @@ DoSave ()
     shutdownCancelled = False;
     phase2InProgress = False;
 
+    if (ListCount (RunningList) == 0)
+	FinishUpSave ();
+
     for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
     {
 	client = (ClientRec *) cl->thing;
@@ -511,6 +515,9 @@ FinishUpSave ()
     }
     else if (wantShutdown)
     {
+	if (ListCount (RunningList) == 0)
+	    EndSession (0);
+
 	shutdownInProgress = True;
 
 	for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
@@ -1277,15 +1284,18 @@ XtPointer 	client_data;
 XtPointer 	callData;
 
 {
+    List	*cl;
+    ClientRec 	*client;
+
+    if (ListCount (RunningList) == 0)
+	EndSession (0);
+
     /*
      * For any client that was not restarted by the session
      * manager (previous ID was NULL), if we did not issue a
      * checkpoint to this client, remove the client's checkpoint
      * file using the discard command.
      */
-
-    List	*cl;
-    ClientRec 	*client;
 
     for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
     {
