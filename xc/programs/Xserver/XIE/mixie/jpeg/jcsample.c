@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jcsample.c,v 1.1 93/10/26 09:56:32 rws Exp $ */
 /* Module jcsample.c */
 
 /****************************************************************************
@@ -88,7 +88,7 @@ terms and conditions:
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 downsample_init (compress_info_ptr cinfo)
 #else
 downsample_init (cinfo)
@@ -110,7 +110,7 @@ downsample_init (compress_info_ptr cinfo)
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 int_downsample (compress_info_ptr cinfo, int which_component,
 		long input_cols, int input_rows,
 		long output_cols, int output_rows,
@@ -190,7 +190,7 @@ int_downsample (compress_info_ptr cinfo, int which_component,
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 h2v1_downsample (compress_info_ptr cinfo, int which_component,
 		 long input_cols, int input_rows,
 		 long output_cols, int output_rows,
@@ -257,7 +257,7 @@ h2v1_downsample (compress_info_ptr cinfo, int which_component,
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 h2v2_downsample (compress_info_ptr cinfo, int which_component,
 		 long input_cols, int input_rows,
 		 long output_cols, int output_rows,
@@ -328,7 +328,7 @@ h2v2_downsample (compress_info_ptr cinfo, int which_component,
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 fullsize_downsample (compress_info_ptr cinfo, int which_component,
 		     long input_cols, int input_rows,
 		     long output_cols, int output_rows,
@@ -380,7 +380,7 @@ fullsize_downsample (compress_info_ptr cinfo, int which_component,
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 h2v2_smooth_downsample (compress_info_ptr cinfo, int which_component,
 			long input_cols, int input_rows,
 			long output_cols, int output_rows,
@@ -519,7 +519,7 @@ h2v2_smooth_downsample (compress_info_ptr cinfo, int which_component,
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 fullsize_smooth_downsample (compress_info_ptr cinfo, int which_component,
 			    long input_cols, int input_rows,
 			    long output_cols, int output_rows,
@@ -624,7 +624,7 @@ fullsize_smooth_downsample (compress_info_ptr cinfo, int which_component,
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 downsample_term (compress_info_ptr cinfo)
 #else
 downsample_term (cinfo)
@@ -646,7 +646,7 @@ downsample_term (compress_info_ptr cinfo)
 
 GLOBAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jseldownsample (compress_info_ptr cinfo)
 #else
 jseldownsample (cinfo)

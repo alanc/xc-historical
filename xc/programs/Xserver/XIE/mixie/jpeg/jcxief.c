@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jcxief.c,v 1.1 93/10/26 09:55:30 rws Exp $ */
 /* Module jcxief.c */
 
 /****************************************************************************
@@ -55,7 +55,7 @@ terms and conditions:
 #include <console.h>		/* command-line reader for Macintosh */
 #endif
 
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 GLOBAL void
 jselrXIE (compress_info_ptr);
 GLOBAL void	
@@ -73,7 +73,7 @@ add_huff_table (compress_info_ptr, HUFF_TBL **, const UINT8 *, const UINT8 *);
 /******************************************************************************/
 
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 load_quant_tables (compress_info_ptr cinfo, 
 			UINT8 * q_table, int nq_table, int scale_factor)
 #else
@@ -118,7 +118,7 @@ load_quant_tables (cinfo, q_table, nq_table, scale_factor)
 }
 
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 load_ac_tables (compress_info_ptr cinfo, 
 			UINT8 * ac_table, int nac_table)
 #else
@@ -177,7 +177,7 @@ load_ac_tables (cinfo, ac_table, nac_table)
 }
 
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 load_dc_tables (compress_info_ptr cinfo, 
 			UINT8 * dc_table, int ndc_table)
 #else
@@ -238,7 +238,7 @@ load_dc_tables (cinfo, dc_table, ndc_table)
 /******************************************************************************/
 
 GLOBAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 JC_INIT (compress_info_ptr cinfo,
 	compress_methods_ptr cmethods, external_methods_ptr emethods)
 #else
@@ -261,7 +261,7 @@ JC_INIT (cinfo, cmethods, emethods)
 }
 
 GLOBAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 JC_BEGINFRAME (compress_info_ptr cinfo,
 	long components, long width, long height,
 	UINT8 * q_table, int nq_table, 
@@ -334,7 +334,7 @@ JC_BEGINFRAME (cinfo, components, width, height,
 }
 
 GLOBAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 JC_ENDFRAME (compress_info_ptr cinfo)
 #else
 JC_ENDFRAME (cinfo)
@@ -364,7 +364,7 @@ JC_ENDFRAME (cinfo)
 }
 
 GLOBAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 JC_SCANLINE_RGB (compress_info_ptr cinfo, 
 	int * scanline, JSAMPROW ptr0, JSAMPROW ptr1, JSAMPROW ptr2)
 #else
@@ -406,7 +406,7 @@ JC_SCANLINE_RGB (cinfo, scanline, ptr0, ptr1, ptr2)
 }
 
 GLOBAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 JC_SCANLINE_GRAY (compress_info_ptr cinfo, int * scanline, JSAMPROW ptr0)
 #else
 JC_SCANLINE_GRAY (cinfo, scanline, ptr0)

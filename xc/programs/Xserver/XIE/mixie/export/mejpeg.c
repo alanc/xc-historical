@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mejpeg.c,v 1.1 93/10/26 09:49:56 rws Exp $ */
 /**** module mejpeg.c ****/
 /******************************************************************************
 				NOTICE
@@ -393,13 +393,13 @@ int status;
 	coming back properly.
 ***/
 
-    (void)GetCurrentSrc(void,flo,pet,sbnd);
+    (void)GetCurrentSrc(pointer,flo,pet,sbnd);
     if (dbnd->final) {
 	/* be forgiving if extra data gets passed to us */
   	FreeData(flo,pet,sbnd,sbnd->maxGlobal);
 	return(TRUE);
     }
-    while (dst = GetDstBytes(BytePixel,flo,pet,dbnd,dbnd->current,
+    while (dst = GetDstBytes(BytePixel *,flo,pet,dbnd,dbnd->current,
   		state->strip_req_newbytes,FLUSH)) {
       if (state->flush_output) {
 

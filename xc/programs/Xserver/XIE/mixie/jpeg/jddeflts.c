@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jddeflts.c,v 1.1 93/10/26 09:56:04 rws Exp $ */
 /* Module jddeflts.c */
 
 /****************************************************************************
@@ -159,7 +159,7 @@ read_jpeg_data (decompress_info_ptr cinfo)
 
 GLOBAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 j_d_defaults (decompress_info_ptr cinfo, boolean standard_buffering)
 #else
 j_d_defaults (cinfo, standard_buffering)

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jfwddct.c,v 1.1 93/10/26 09:56:17 rws Exp $ */
 /* Module jfwddct.c */
 
 /****************************************************************************
@@ -205,7 +205,7 @@ terms and conditions:
 
 GLOBAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 j_fwd_dct (DCTBLOCK data)
 #else
 j_fwd_dct (data)

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mijpeg.c,v 1.1 93/10/26 09:45:55 rws Exp $ */
 /**** module mijpeg.c ****/
 /******************************************************************************
 				NOTICE
@@ -324,7 +324,7 @@ int 	(*decodptr)() = texpvt->decodptr;
 	return(TRUE);
   }
 
-  src= GetSrcBytes(BytePixel,flo,pet,sbnd,sbnd->current,sbnd->available,KEEP);
+  src= GetSrcBytes(BytePixel *,flo,pet,sbnd,sbnd->current,sbnd->available,KEEP);
 
 	if ( state->needs_input_strip )  {
 	   /* NOTE:  state->needs_input_strip is ONLY set after checking */
@@ -348,12 +348,12 @@ int 	(*decodptr)() = texpvt->decodptr;
       * We have some data to decode, anything to write to?
       */
 
-      while (dst = GetDst(BytePixel,flo,pet,dbnd,state->o_line,FLUSH)) {
+      while (dst = GetDst(BytePixel *,flo,pet,dbnd,state->o_line,FLUSH)) {
 
 	/* if tripleband interleaved data, make sure other bands cool	*/
   	if (dbnd1)
-	  if (!(dst1=GetDst(BytePixel,flo,pet,dbnd1,state->o_line,FLUSH)) ||
-      	      !(dst2=GetDst(BytePixel,flo,pet,dbnd2,state->o_line,FLUSH)) )
+	  if (!(dst1=GetDst(BytePixel *,flo,pet,dbnd1,state->o_line,FLUSH)) ||
+      	      !(dst2=GetDst(BytePixel *,flo,pet,dbnd2,state->o_line,FLUSH)) )
 		ImplementationError(flo,ped, return(FALSE));
 
 	/*

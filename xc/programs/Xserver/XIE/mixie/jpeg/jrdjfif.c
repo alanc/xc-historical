@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jrdjfif.c,v 1.1 93/10/26 09:55:50 rws Exp $ */
 /* Module jrdjfif.c */
 
 /****************************************************************************
@@ -161,7 +161,7 @@ typedef enum {			/* JPEG marker codes */
 
 LOCAL INT32
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 get_2bytes (decompress_info_ptr cinfo)
 #else
 get_2bytes (cinfo)
@@ -189,7 +189,7 @@ get_2bytes (decompress_info_ptr cinfo)
 
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 skip_variable (decompress_info_ptr cinfo, int code)
 #else
 skip_variable (cinfo, code)
@@ -229,7 +229,7 @@ skip_variable (decompress_info_ptr cinfo, int code)
 
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 get_dht (decompress_info_ptr cinfo)
 #else
 get_dht (cinfo)
@@ -345,7 +345,7 @@ get_dht (decompress_info_ptr cinfo)
 
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 get_dac (decompress_info_ptr cinfo)
 #else
 get_dac (cinfo)
@@ -413,7 +413,7 @@ get_dac (decompress_info_ptr cinfo)
 
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 get_dqt (decompress_info_ptr cinfo)
 #else
 get_dqt (cinfo)
@@ -515,7 +515,7 @@ get_dqt (decompress_info_ptr cinfo)
 
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 get_dri (decompress_info_ptr cinfo)
 #else
 get_dri (cinfo)
@@ -554,7 +554,7 @@ get_dri (decompress_info_ptr cinfo)
 
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 get_app0 (decompress_info_ptr cinfo)
 #else
 get_app0 (cinfo)
@@ -656,7 +656,7 @@ get_app0 (decompress_info_ptr cinfo)
 
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 get_sof (decompress_info_ptr cinfo, int code)
 #else
 get_sof (cinfo, code)
@@ -796,7 +796,7 @@ get_sof (decompress_info_ptr cinfo, int code)
 
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 get_sos (decompress_info_ptr cinfo)
 #else
 get_sos (cinfo)
@@ -887,7 +887,7 @@ get_sos (decompress_info_ptr cinfo)
 
 LOCAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 get_soi (decompress_info_ptr cinfo)
 #else
 get_soi (cinfo)
@@ -925,7 +925,7 @@ get_soi (decompress_info_ptr cinfo)
 
 LOCAL int
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 next_marker (decompress_info_ptr cinfo)
 #else
 next_marker (cinfo)
@@ -978,7 +978,7 @@ next_marker (decompress_info_ptr cinfo)
 
 LOCAL JPEG_MARKER
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 process_tables (decompress_info_ptr cinfo)
 #else
 process_tables (cinfo)
@@ -1102,7 +1102,7 @@ process_tables (decompress_info_ptr cinfo)
 
 #ifdef XIE_SUPPORTED
 METHODDEF int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 read_file_header (decompress_info_ptr cinfo)
 #else
 read_file_header (cinfo)
@@ -1231,7 +1231,7 @@ read_file_header (decompress_info_ptr cinfo)
 
 #ifdef XIE_SUPPORTED
 METHODDEF int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 read_scan_header (decompress_info_ptr cinfo)
 #else
 read_scan_header (cinfo)
@@ -1325,7 +1325,7 @@ read_scan_header (decompress_info_ptr cinfo)
 
 #ifdef XIE_SUPPORTED
 METHODDEF int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 resync_to_restart (decompress_info_ptr cinfo, int marker)
 #else
 resync_to_restart (cinfo, marker)
@@ -1404,7 +1404,7 @@ resync_to_restart (decompress_info_ptr cinfo, int marker)
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 read_scan_trailer (decompress_info_ptr cinfo)
 #else
 read_scan_trailer (cinfo)
@@ -1424,7 +1424,7 @@ read_scan_trailer (decompress_info_ptr cinfo)
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 read_file_trailer (decompress_info_ptr cinfo)
 #else
 read_file_trailer (cinfo)
@@ -1448,7 +1448,7 @@ read_file_trailer (decompress_info_ptr cinfo)
 
 GLOBAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jselrjfif (decompress_info_ptr cinfo)
 #else
 jselrjfif (cinfo)

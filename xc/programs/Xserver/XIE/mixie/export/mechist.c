@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mechist.c,v 1.1 93/10/26 09:49:18 rws Exp $ */
 /**** module mechist.c ****/
 /******************************************************************************
 				NOTICE
@@ -108,7 +108,7 @@ static ddElemVecRec ECHistVec = {
 /* declarations for private structures and actions procs ... */
 
 typedef struct {
-    void	*histdata;
+    pointer	histdata;
     CARD32	 histsize;
     void	(*histproc) ();
 } miECHistRec, *miECHistPtr;
@@ -174,7 +174,7 @@ static int InitializeECHist(flo,ped)
     SetDepthFromLevels(iband->format->levels, nclip);
     pvt->histsize = nclip = 1 << nclip;
 
-    if (!(pvt->histdata = (void *) XieCalloc(nclip * sizeof(CARD32))))
+    if (!(pvt->histdata = (pointer ) XieCalloc(nclip * sizeof(CARD32))))
 	AllocError(flo,ped,return(FALSE));
 
     return InitReceptor(flo,ped,&rcp[SRCt1],NO_DATAMAP,1,1,0) && 
@@ -197,9 +197,9 @@ static int ActivateECHist(flo,ped,pet)
   receptorPtr	rcp = pet->receptor;
   bandPtr	sbnd = &rcp->band[0];
   bandPtr	dbnd = &pet->emitter[0];
-  void	*src;
+  pointer src;
   
-  src = GetCurrentSrc(void,flo,pet,sbnd);
+  src = GetCurrentSrc(pointer,flo,pet,sbnd);
   while(src && SyncDomain(flo,ped,sbnd,FLUSH)) {
     INT32 x = 0, dx;
     while (dx = GetRun(flo,pet,sbnd)) {
@@ -209,7 +209,7 @@ static int ActivateECHist(flo,ped,pet)
       } else 
 	x -= dx;
     }
-    src = GetNextSrc(void,flo,pet,sbnd,FLUSH);
+    src = GetNextSrc(pointer,flo,pet,sbnd,FLUSH);
   }
   FreeData(flo,pet,sbnd,sbnd->current);
   
@@ -221,16 +221,16 @@ static int ActivateECHist(flo,ped,pet)
     xieTypHistogramData *histpair;
     
     /* Count populated cells */
-    for (ilev = 0, hist = pvt->histdata; ilev < nlev; ilev++, hist++)
+    for (ilev = 0, hist = (CARD32*)pvt->histdata; ilev < nlev; ilev++, hist++)
       if (*hist) 
 	nhist++;
     
     if(nhist) {
-      if(!(histpair = GetDstBytes(xieTypHistogramData,flo,pet,dbnd,0,
+      if(!(histpair = GetDstBytes(xieTypHistogramData *,flo,pet,dbnd,0,
 				  nhist * sizeof(xieTypHistogramData),KEEP)))
 	return FALSE;
       
-      for (ilev = 0, hist = pvt->histdata; ilev < nlev; ilev++, hist++)
+      for (ilev = 0, hist = (CARD32*)pvt->histdata; ilev < nlev; ilev++, hist++)
 	if (*hist) {
 	  histpair->count = *hist;
 	  histpair->value =  ilev;
@@ -276,7 +276,7 @@ static int ResetECHist(flo,ped)
 
     /* free any dynamic private data */
     if (pvt->histdata)
-	pvt->histdata = (void *) XieFree(pvt->histdata);
+	pvt->histdata = (pointer ) XieFree(pvt->histdata);
 
     ResetReceptors(ped);
     ResetEmitter(ped);
@@ -311,7 +311,7 @@ static int DestroyECHist(flo,ped)
 ------------------------------------------------------------------------*/
 
 void doHistQ(svoid,hist,clip,x,dx)
-    void	*svoid;
+    pointer	svoid;
     CARD32	*hist, clip, x, dx;
 {
     QuadPixel *src = (QuadPixel *) svoid;
@@ -321,7 +321,7 @@ void doHistQ(svoid,hist,clip,x,dx)
 }
 
 void doHistP(svoid,hist,clip,x,dx)
-    void	*svoid;
+   pointer	svoid;
     CARD32	*hist, clip, x, dx;
 {
     PairPixel *src = (PairPixel *) svoid;
@@ -331,7 +331,7 @@ void doHistP(svoid,hist,clip,x,dx)
 }
 
 void doHistB(svoid,hist,clip,x,dx)
-    void	*svoid;
+   pointer	svoid;
     CARD32	*hist, clip, x, dx;
 {
     BytePixel *src = (BytePixel *) svoid;
@@ -341,7 +341,7 @@ void doHistB(svoid,hist,clip,x,dx)
 }
 
 void doHistb(svoid,hist,clip,x,dx)
-    void	*svoid;
+   pointer	svoid;
     CARD32	*hist, clip, x, dx;
 {
     LogInt *src = (LogInt *) svoid;

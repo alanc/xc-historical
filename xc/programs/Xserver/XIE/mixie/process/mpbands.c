@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mpbands.c,v 1.1 93/10/26 09:48:32 rws Exp $ */
 /**** module mpbands.c ****/
 /******************************************************************************
 				NOTICE
@@ -163,13 +163,13 @@ static int ActivateBandSel(flo,ped,pet)
   
   /* pass the chosen receptor band to our output band
    */
-  if(GetCurrentSrc(void,flo,pet,sbnd)) {
+  if(GetCurrentSrc(pointer,flo,pet,sbnd)) {
     do {
       /* pass a clone of the current src strip downstream
        */
       if(!PassStrip(flo,pet,dbnd,sbnd->strip))
 	return(FALSE);
-    } while(GetSrc(void,flo,pet,sbnd,sbnd->maxLocal,FLUSH));
+    } while(GetSrc(pointer,flo,pet,sbnd,sbnd->maxLocal,FLUSH));
 
     FreeData(flo,pet,sbnd,sbnd->maxLocal);
   }

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pctrgb.c,v 1.1 93/10/26 10:02:06 rws Exp $ */
 /**** module pctrgb.c ****/
 /******************************************************************************
 				NOTICE
@@ -185,7 +185,7 @@ CARD16	tsize;
 
    VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
 
-   if (!(ped->techPvt = (void *)XieMalloc(sizeof(pTecCIEToRGBDefRec))))
+   if (!(ped->techPvt = (pointer )XieMalloc(sizeof(pTecCIEToRGBDefRec))))
 	FloAllocError(flo, ped->phototag,xieElemConvertToRGB, return(TRUE));
 
    pvt = (pTecCIEToRGBDefPtr)ped->techPvt;
@@ -232,7 +232,7 @@ CARD16	tsize;
 
    VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
 
-   if (!(ped->techPvt = (void *)XieMalloc(sizeof(pTecYCbCrToRGBDefRec))))
+   if (!(ped->techPvt = (pointer )XieMalloc(sizeof(pTecYCbCrToRGBDefRec))))
 	FloAllocError(flo, ped->phototag,xieElemConvertToRGB, return(TRUE));
 
    pvt = (pTecYCbCrToRGBDefPtr)ped->techPvt;
@@ -273,7 +273,7 @@ CARD16	tsize;
 
    VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
 
-   if (!(ped->techPvt = (void *)XieMalloc(sizeof(pTecYCCToRGBDefRec))))
+   if (!(ped->techPvt = (pointer )XieMalloc(sizeof(pTecYCCToRGBDefRec))))
 	FloAllocError(flo, ped->phototag,xieElemConvertToRGB, return(TRUE));
 
    pvt = (pTecYCCToRGBDefPtr)ped->techPvt;
@@ -309,7 +309,7 @@ CARD16	tsize;
 Bool CopyPWhiteAdjustNone(flo, ped, sparms, pvtf, tv, tsize, isDefault) 
 floDefPtr  flo;
 peDefPtr   ped;
-void *sparms;
+pointer sparms;
 double *pvtf;
 techVecPtr tv;
 CARD16	tsize;

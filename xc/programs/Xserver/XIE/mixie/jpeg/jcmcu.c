@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jcmcu.c,v 1.1 93/10/26 09:55:57 rws Exp $ */
 /* Module jcmcu.c */
 
 /****************************************************************************
@@ -97,7 +97,7 @@ static const short ZAG[DCTSIZE2] = {
 
 LOCAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 extract_block (JSAMPARRAY input_data, int start_row, long start_col,
 	       JBLOCK output_data, QUANT_TBL_PTR quanttbl)
 #else
@@ -198,7 +198,7 @@ extract_block (JSAMPARRAY input_data, int start_row, long start_col,
 
 #ifdef XIE_SUPPORTED
 METHODDEF int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 extract_MCUs (compress_info_ptr cinfo,
 	      JSAMPIMAGE image_data,
 	      int num_mcu_rows,
@@ -303,7 +303,7 @@ extract_MCUs (compress_info_ptr cinfo,
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 extract_init (compress_info_ptr cinfo)
 #else
 extract_init (cinfo)
@@ -326,7 +326,7 @@ extract_init (compress_info_ptr cinfo)
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 extract_term (compress_info_ptr cinfo)
 #else
 extract_term (cinfo)
@@ -353,7 +353,7 @@ extract_term (compress_info_ptr cinfo)
 
 GLOBAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jselcmcu (compress_info_ptr cinfo)
 #else
 jselcmcu (cinfo)

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jwrjfif.c,v 1.1 93/10/26 09:55:15 rws Exp $ */
 /* Module jwrjfif.c */
 
 /****************************************************************************
@@ -149,7 +149,7 @@ typedef enum {			/* JPEG marker codes */
 
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 emit_marker (compress_info_ptr cinfo, JPEG_MARKER mark)
 #else
 emit_marker (cinfo, mark)
@@ -172,7 +172,7 @@ emit_marker (compress_info_ptr cinfo, JPEG_MARKER mark)
 
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 emit_2bytes (compress_info_ptr cinfo, int value)
 #else
 emit_2bytes (cinfo, value)
@@ -195,7 +195,7 @@ emit_2bytes (compress_info_ptr cinfo, int value)
 
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 emit_dqt (compress_info_ptr cinfo, int index)
 #else
 emit_dqt (cinfo, index)
@@ -244,7 +244,7 @@ emit_dqt (compress_info_ptr cinfo, int index)
 
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 emit_dht (compress_info_ptr cinfo, int index, boolean is_ac)
 #else
 emit_dht (cinfo, index, is_ac)
@@ -311,7 +311,7 @@ emit_dht (compress_info_ptr cinfo, int index, boolean is_ac)
 
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 emit_dac (compress_info_ptr cinfo)
 #else
 emit_dac (cinfo)
@@ -371,7 +371,7 @@ emit_dac (compress_info_ptr cinfo)
 
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 emit_dri (compress_info_ptr cinfo)
 #else
 emit_dri (cinfo)
@@ -406,7 +406,7 @@ emit_dri (compress_info_ptr cinfo)
 
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 emit_sof (compress_info_ptr cinfo, JPEG_MARKER code)
 #else
 emit_sof (cinfo, code)
@@ -474,7 +474,7 @@ emit_sof (compress_info_ptr cinfo, JPEG_MARKER code)
 
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 emit_sos (compress_info_ptr cinfo)
 #else
 emit_sos (cinfo)
@@ -519,7 +519,7 @@ emit_sos (compress_info_ptr cinfo)
 
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 emit_jfif_app0 (compress_info_ptr cinfo)
 #else
 emit_jfif_app0 (cinfo)
@@ -587,7 +587,7 @@ emit_jfif_app0 (compress_info_ptr cinfo)
 
 #ifdef XIE_SUPPORTED
 LOCAL boolean
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 set_location(compress_info_ptr cinfo, int l)
 #else
 set_location(cinfo, l)
@@ -606,7 +606,7 @@ set_location(cinfo, l)
 }
 
 METHODDEF int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 write_file_header (compress_info_ptr cinfo)
 #else
 write_file_header (cinfo)
@@ -746,7 +746,7 @@ write_file_header (compress_info_ptr cinfo)
 
 #ifdef XIE_SUPPORTED
 METHODDEF int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 write_scan_header (compress_info_ptr cinfo)
 #else
 write_scan_header (cinfo)
@@ -852,7 +852,7 @@ write_scan_header (compress_info_ptr cinfo)
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 write_jpeg_data (compress_info_ptr cinfo, char *dataptr, int datacount)
 #else
 write_jpeg_data (cinfo, dataptr, datacount)
@@ -880,7 +880,7 @@ write_jpeg_data (compress_info_ptr cinfo, char *dataptr, int datacount)
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 write_scan_trailer (compress_info_ptr cinfo)
 #else
 write_scan_trailer (cinfo)
@@ -900,7 +900,7 @@ write_scan_trailer (compress_info_ptr cinfo)
 
 #ifdef XIE_SUPPORTED
 METHODDEF int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 write_file_trailer (compress_info_ptr cinfo)
 #else
 write_file_trailer (cinfo)
@@ -938,7 +938,7 @@ write_file_trailer (compress_info_ptr cinfo)
 
 GLOBAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jselwjfif (compress_info_ptr cinfo)
 #else
 jselwjfif (cinfo)

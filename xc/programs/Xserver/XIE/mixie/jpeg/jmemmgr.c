@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jmemmgr.c,v 1.1 93/10/26 09:56:51 rws Exp $ */
 /* Module jmemmgr.c */
 
 /****************************************************************************
@@ -150,8 +150,8 @@ static external_methods_ptr methods; /* saved for access to error_exit */
  * They don't have to be accurate, but the printed statistics will be
  * off a little bit if they are not.
  */
-#define MALLOC_OVERHEAD  (SIZEOF(void *)) /* overhead for jget_small() */
-#define MALLOC_FAR_OVERHEAD  (SIZEOF(void FAR *)) /* for jget_large() */
+#define MALLOC_OVERHEAD  (SIZEOF(pointer )) /* overhead for jget_small() */
+#define MALLOC_FAR_OVERHEAD  (SIZEOF(pointer)) /* for jget_large() */
 
 static long total_num_small = 0;	/* total # of small objects alloced */
 static long total_bytes_small = 0;	/* total bytes requested */
@@ -232,8 +232,8 @@ out_of_memory (int which)
 
 
 #ifdef XIE_SUPPORTED
-METHODDEF void *
-#ifdef NeedFunctionPrototypes
+METHODDEF pointer 
+#if NeedFunctionPrototypes
 c_alloc_small (compress_info_ptr cinfo, size_t sizeofobject)
 #else
 c_alloc_small (cinfo, sizeofobject)
@@ -248,17 +248,17 @@ c_alloc_small (cinfo, sizeofobject)
 
   result = (small_ptr) jget_small(sizeofobject);
   if (result == NULL)
-    return (void *) result;
+    return (pointer ) result;
 
   result->next = cinfo->small_list;
   cinfo->small_list = result;
   result++;			/* advance past header */
 
-  return (void *) result;
+  return (pointer ) result;
 }
 
-METHODDEF void *
-#ifdef NeedFunctionPrototypes
+METHODDEF pointer 
+#if NeedFunctionPrototypes
 d_alloc_small (decompress_info_ptr cinfo, size_t sizeofobject)
 #else
 d_alloc_small (cinfo, sizeofobject)
@@ -273,13 +273,13 @@ d_alloc_small (cinfo, sizeofobject)
 
   result = (small_ptr) jget_small(sizeofobject);
   if (result == NULL)
-    return (void *) result;
+    return (pointer ) result;
 
   result->next = cinfo->small_list;
   cinfo->small_list = result;
   result++;			/* advance past header */
 
-  return (void *) result;
+  return (pointer ) result;
 }
 
 #else
@@ -292,7 +292,7 @@ typedef union small_struct {
 
 static small_ptr small_list;	/* head of list */
 
-METHODDEF void *
+METHODDEF pointer 
 alloc_small (size_t sizeofobject)
 /* Allocate a "small" object */
 {
@@ -315,18 +315,18 @@ alloc_small (size_t sizeofobject)
   small_list = result;
   result++;			/* advance past header */
 
-  return (void *) result;
+  return (pointer ) result;
 }
 #endif	/* XIE_SUPPORTED */
 
 #ifdef XIE_SUPPORTED
 METHODDEF int
-#ifdef NeedFunctionPrototypes
-c_free_small (compress_info_ptr cinfo, void *ptr)
+#if NeedFunctionPrototypes
+c_free_small (compress_info_ptr cinfo, pointer ptr)
 #else
 c_free_small (cinfo, ptr)
 	compress_info_ptr cinfo;
-	void *ptr;
+	pointer ptr;
 #endif	/* NeedFunctionPrototypes */
 /* Free a "small" object */
 {
@@ -345,17 +345,17 @@ c_free_small (cinfo, ptr)
   }
   *llink = hdr->next;
 
-  jfree_small((void *) hdr);
+  jfree_small((pointer ) hdr);
   return(0);
 }
 
 METHODDEF int
-#ifdef NeedFunctionPrototypes
-d_free_small (decompress_info_ptr cinfo, void *ptr)
+#if NeedFunctionPrototypes
+d_free_small (decompress_info_ptr cinfo, pointer ptr)
 #else
 d_free_small (cinfo, ptr)
 	decompress_info_ptr cinfo;
-	void *ptr;
+	pointer ptr;
 #endif	/* NeedFunctionPrototypes */
 /* Free a "small" object */
 {
@@ -374,12 +374,12 @@ d_free_small (cinfo, ptr)
   }
   *llink = hdr->next;
 
-  jfree_small((void *) hdr);
+  jfree_small((pointer ) hdr);
   return(0);
 }
 #else
 METHODDEF void
-free_small (void *ptr)
+free_small (pointer ptr)
 /* Free a "small" object */
 {
   small_ptr hdr;
@@ -397,7 +397,7 @@ free_small (void *ptr)
   }
   *llink = hdr->next;
 
-  jfree_small((void *) hdr);
+  jfree_small((pointer ) hdr);
 
 #ifdef MEM_STATS
   cur_num_small--;
@@ -424,7 +424,7 @@ typedef union medium_struct {
 static medium_ptr medium_list;	/* head of list */
 
 
-METHODDEF void FAR *
+METHODDEF pointer
 alloc_medium (size_t sizeofobject)
 /* Allocate a "medium-size" object */
 {
@@ -447,12 +447,12 @@ alloc_medium (size_t sizeofobject)
   medium_list = result;
   result++;			/* advance past header */
 
-  return (void FAR *) result;
+  return (pointer) result;
 }
 
 
 METHODDEF void
-free_medium (void FAR *ptr)
+free_medium (pointer ptr)
 /* Free a "medium-size" object */
 {
   medium_ptr hdr;
@@ -470,7 +470,7 @@ free_medium (void FAR *ptr)
   }
   *llink = hdr->next;
 
-  jfree_large((void FAR *) hdr);
+  jfree_large((pointer) hdr);
 
 #ifdef MEM_STATS
   cur_num_medium--;
@@ -495,7 +495,7 @@ free_medium (void FAR *ptr)
 
 #ifdef XIE_SUPPORTED
 METHODDEF JSAMPARRAY
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 c_alloc_small_sarray (compress_info_ptr cinfo,
 	long samplesperrow, long numrows)
 #else
@@ -514,7 +514,7 @@ c_alloc_small_sarray (cinfo, samplesperrow, numrows)
   /* Calculate max # of rows allowed in one allocation chunk */
   rowsperchunk = MAX_ALLOC_CHUNK / (samplesperrow * SIZEOF(JSAMPLE));
   if (rowsperchunk <= 0)
-    return (void *) NULL;
+    return (JSAMPARRAY) NULL;
 
   /* Get space for header and row pointers; this is always "near" on 80x86 */
   hdr = (small_sarray_ptr) c_alloc_small(cinfo,
@@ -536,7 +536,7 @@ c_alloc_small_sarray (cinfo, samplesperrow, numrows)
     workspace = (JSAMPROW) jget_large((size_t) (rowsperchunk * samplesperrow
 						* SIZEOF(JSAMPLE)));
     if (workspace == NULL)
-      return (void *) workspace;
+      return (JSAMPARRAY) workspace;
     for (i = rowsperchunk; i > 0; i--) {
       result[currow++] = workspace;
       workspace += samplesperrow;
@@ -548,7 +548,7 @@ c_alloc_small_sarray (cinfo, samplesperrow, numrows)
 }
 
 METHODDEF JSAMPARRAY
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 d_alloc_small_sarray (decompress_info_ptr cinfo,
 	long samplesperrow, long numrows)
 #else
@@ -567,7 +567,7 @@ d_alloc_small_sarray (cinfo, samplesperrow, numrows)
   /* Calculate max # of rows allowed in one allocation chunk */
   rowsperchunk = MAX_ALLOC_CHUNK / (samplesperrow * SIZEOF(JSAMPLE));
   if (rowsperchunk <= 0)
-    return (void *) NULL;
+    return (JSAMPARRAY) NULL;
 
   /* Get space for header and row pointers; this is always "near" on 80x86 */
   hdr = (small_sarray_ptr) d_alloc_small(cinfo,
@@ -589,7 +589,7 @@ d_alloc_small_sarray (cinfo, samplesperrow, numrows)
     workspace = (JSAMPROW) jget_large((size_t) (rowsperchunk * samplesperrow
 						* SIZEOF(JSAMPLE)));
     if (workspace == NULL)
-      return (void *) workspace;
+      return (JSAMPARRAY) workspace;
     for (i = rowsperchunk; i > 0; i--) {
       result[currow++] = workspace;
       workspace += samplesperrow;
@@ -670,7 +670,7 @@ alloc_small_sarray (long samplesperrow, long numrows)
 
 #ifdef XIE_SUPPORTED
 METHODDEF int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 c_free_small_sarray (compress_info_ptr cinfo, JSAMPARRAY ptr)
 #else
 c_free_small_sarray (cinfo, ptr)
@@ -698,15 +698,15 @@ c_free_small_sarray (cinfo, ptr)
   /* Free the rows themselves; on 80x86 these are "far" */
   /* Note we only free the row-group headers! */
   for (i = 0; i < hdr->numrows; i += hdr->rowsperchunk) {
-    jfree_large((void FAR *) ptr[i]);
+    jfree_large((pointer) ptr[i]);
   }
 
   /* Free header and row pointers */
-  return(c_free_small(cinfo, (void *) hdr));
+  return(c_free_small(cinfo, (pointer ) hdr));
 }
 
 METHODDEF int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 d_free_small_sarray (decompress_info_ptr cinfo, JSAMPARRAY ptr)
 #else
 d_free_small_sarray (cinfo, ptr)
@@ -734,11 +734,11 @@ d_free_small_sarray (cinfo, ptr)
   /* Free the rows themselves; on 80x86 these are "far" */
   /* Note we only free the row-group headers! */
   for (i = 0; i < hdr->numrows; i += hdr->rowsperchunk) {
-    jfree_large((void FAR *) ptr[i]);
+    jfree_large((pointer) ptr[i]);
   }
 
   /* Free header and row pointers */
-  return(d_free_small(cinfo, (void *) hdr));
+  return(d_free_small(cinfo, (pointer ) hdr));
 }
 
 #else
@@ -765,11 +765,11 @@ free_small_sarray (JSAMPARRAY ptr)
   /* Free the rows themselves; on 80x86 these are "far" */
   /* Note we only free the row-group headers! */
   for (i = 0; i < hdr->numrows; i += hdr->rowsperchunk) {
-    jfree_large((void FAR *) ptr[i]);
+    jfree_large((pointer) ptr[i]);
   }
 
   /* Free header and row pointers */
-  free_small((void *) hdr);
+  free_small((pointer ) hdr);
 
 #ifdef MEM_STATS
   cur_num_sarray--;
@@ -786,7 +786,7 @@ free_small_sarray (JSAMPARRAY ptr)
 
 #ifdef XIE_SUPPORTED
 METHODDEF JBLOCKARRAY
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 c_alloc_small_barray (compress_info_ptr cinfo, 
 	long blocksperrow, long numrows)
 #else
@@ -805,7 +805,7 @@ c_alloc_small_barray (cinfo, blocksperrow, numrows)
   /* Calculate max # of rows allowed in one allocation chunk */
   rowsperchunk = MAX_ALLOC_CHUNK / (blocksperrow * SIZEOF(JBLOCK));
   if (rowsperchunk <= 0)
-    return (void *) NULL;
+    return (JBLOCKARRAY) NULL;
 
   /* Get space for header and row pointers; this is always "near" on 80x86 */
   hdr = (small_barray_ptr) c_alloc_small(cinfo,
@@ -827,7 +827,7 @@ c_alloc_small_barray (cinfo, blocksperrow, numrows)
     workspace = (JBLOCKROW) jget_large((size_t) (rowsperchunk * blocksperrow
 						 * SIZEOF(JBLOCK)));
     if (workspace == NULL)
-      return (void *) workspace;
+      return (JBLOCKARRAY) workspace;
     for (i = rowsperchunk; i > 0; i--) {
       result[currow++] = workspace;
       workspace += blocksperrow;
@@ -839,7 +839,7 @@ c_alloc_small_barray (cinfo, blocksperrow, numrows)
 }
 
 METHODDEF JBLOCKARRAY
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 d_alloc_small_barray (decompress_info_ptr cinfo, 
 	long blocksperrow, long numrows)
 #else
@@ -858,7 +858,7 @@ d_alloc_small_barray (cinfo, blocksperrow, numrows)
   /* Calculate max # of rows allowed in one allocation chunk */
   rowsperchunk = MAX_ALLOC_CHUNK / (blocksperrow * SIZEOF(JBLOCK));
   if (rowsperchunk <= 0)
-    return (void *) NULL;
+    return (JBLOCKARRAY) NULL;
 
   /* Get space for header and row pointers; this is always "near" on 80x86 */
   hdr = (small_barray_ptr) d_alloc_small(cinfo,
@@ -880,7 +880,7 @@ d_alloc_small_barray (cinfo, blocksperrow, numrows)
     workspace = (JBLOCKROW) jget_large((size_t) (rowsperchunk * blocksperrow
 						 * SIZEOF(JBLOCK)));
     if (workspace == NULL)
-      return (void *) workspace;
+      return (JBLOCKARRAY) workspace;
     for (i = rowsperchunk; i > 0; i--) {
       result[currow++] = workspace;
       workspace += blocksperrow;
@@ -962,7 +962,7 @@ alloc_small_barray (long blocksperrow, long numrows)
 
 #ifdef XIE_SUPPORTED
 METHODDEF int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 c_free_small_barray (compress_info_ptr cinfo, JBLOCKARRAY ptr)
 #else
 c_free_small_barray (cinfo, ptr)
@@ -990,15 +990,15 @@ c_free_small_barray (cinfo, ptr)
   /* Free the rows themselves; on 80x86 these are "far" */
   /* Note we only free the row-group headers! */
   for (i = 0; i < hdr->numrows; i += hdr->rowsperchunk) {
-    jfree_large((void FAR *) ptr[i]);
+    jfree_large((pointer) ptr[i]);
   }
 
   /* Free header and row pointers */
-  return(c_free_small(cinfo, (void *) hdr));
+  return(c_free_small(cinfo, (pointer ) hdr));
 }
 
 METHODDEF int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 d_free_small_barray (decompress_info_ptr cinfo, JBLOCKARRAY ptr)
 #else
 d_free_small_barray (cinfo, ptr)
@@ -1026,11 +1026,11 @@ d_free_small_barray (cinfo, ptr)
   /* Free the rows themselves; on 80x86 these are "far" */
   /* Note we only free the row-group headers! */
   for (i = 0; i < hdr->numrows; i += hdr->rowsperchunk) {
-    jfree_large((void FAR *) ptr[i]);
+    jfree_large((pointer) ptr[i]);
   }
 
   /* Free header and row pointers */
-  return(d_free_small(cinfo, (void *) hdr));
+  return(d_free_small(cinfo, (pointer ) hdr));
 }
 
 #else
@@ -1057,11 +1057,11 @@ free_small_barray (JBLOCKARRAY ptr)
   /* Free the rows themselves; on 80x86 these are "far" */
   /* Note we only free the row-group headers! */
   for (i = 0; i < hdr->numrows; i += hdr->rowsperchunk) {
-    jfree_large((void FAR *) ptr[i]);
+    jfree_large((pointer) ptr[i]);
   }
 
   /* Free header and row pointers */
-  free_small((void *) hdr);
+  free_small((pointer ) hdr);
 
 #ifdef MEM_STATS
   cur_num_barray--;
@@ -1338,11 +1338,11 @@ do_sarray_io (big_sarray_ptr ptr, boolean writing)
     byte_count = rows * bytesperrow;
     if (writing)
       (*ptr->b_s_info.write_backing_store) (& ptr->b_s_info,
-					    (void FAR *) ptr->mem_buffer[i],
+					    (pointer) ptr->mem_buffer[i],
 					    file_offset, byte_count);
     else
       (*ptr->b_s_info.read_backing_store) (& ptr->b_s_info,
-					   (void FAR *) ptr->mem_buffer[i],
+					   (pointer) ptr->mem_buffer[i],
 					   file_offset, byte_count);
     file_offset += byte_count;
   }
@@ -1368,11 +1368,11 @@ do_barray_io (big_barray_ptr ptr, boolean writing)
     byte_count = rows * bytesperrow;
     if (writing)
       (*ptr->b_s_info.write_backing_store) (& ptr->b_s_info,
-					    (void FAR *) ptr->mem_buffer[i],
+					    (pointer) ptr->mem_buffer[i],
 					    file_offset, byte_count);
     else
       (*ptr->b_s_info.read_backing_store) (& ptr->b_s_info,
-					   (void FAR *) ptr->mem_buffer[i],
+					   (pointer) ptr->mem_buffer[i],
 					   file_offset, byte_count);
     file_offset += byte_count;
   }
@@ -1502,7 +1502,7 @@ free_big_sarray (big_sarray_ptr ptr)
   if (ptr->mem_buffer != NULL)	/* just in case never realized */
     free_small_sarray(ptr->mem_buffer);
 
-  free_small((void *) ptr);	/* free the control block too */
+  free_small((pointer ) ptr);	/* free the control block too */
 }
 
 
@@ -1527,7 +1527,7 @@ free_big_barray (big_barray_ptr ptr)
   if (ptr->mem_buffer != NULL)	/* just in case never realized */
     free_small_barray(ptr->mem_buffer);
 
-  free_small((void *) ptr);	/* free the control block too */
+  free_small((pointer ) ptr);	/* free the control block too */
 }
 
 #endif	/* XIE_SUPPORTED */
@@ -1538,7 +1538,7 @@ free_big_barray (big_barray_ptr ptr)
 
 #ifdef XIE_SUPPORTED
 METHODDEF int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 c_free_all (compress_info_ptr cinfo)
 #else
 c_free_all (cinfo)
@@ -1560,7 +1560,7 @@ c_free_all (cinfo)
   /* Free any remaining small objects */
   while (cinfo->small_list != NULL) {
     if ((c_free_small(cinfo,
-    	(void *) (cinfo->small_list + 1))) < 0)
+    	(pointer ) (cinfo->small_list + 1))) < 0)
       return(XIE_ERR);
   }
 
@@ -1570,7 +1570,7 @@ c_free_all (cinfo)
 }
 
 METHODDEF int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 d_free_all (decompress_info_ptr cinfo)
 #else
 d_free_all (cinfo)
@@ -1592,7 +1592,7 @@ d_free_all (cinfo)
   /* Free any remaining small objects */
   while (cinfo->small_list != NULL) {
     if ((d_free_small(cinfo,
-    	(void *) (cinfo->small_list + 1))) < 0)
+    	(pointer ) (cinfo->small_list + 1))) < 0)
       return(XIE_ERR);
   }
 
@@ -1618,10 +1618,10 @@ free_all (void)
     free_small_barray((JBLOCKARRAY) (small_barray_list + 1));
   /* Free any remaining small objects */
   while (small_list != NULL)
-    free_small((void *) (small_list + 1));
+    free_small((pointer ) (small_list + 1));
 #ifdef NEED_ALLOC_MEDIUM
   while (medium_list != NULL)
-    free_medium((void FAR *) (medium_list + 1));
+    free_medium((pointer) (medium_list + 1));
 #endif
 
   jmem_term();			/* system-dependent cleanup */
@@ -1642,7 +1642,7 @@ free_all (void)
 
 #ifdef XIE_SUPPORTED
 GLOBAL void
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jcselmemmgr (compress_info_ptr cinfo, external_methods_ptr emethods)
 #else
 jcselmemmgr (cinfo, emethods)
@@ -1669,7 +1669,7 @@ jcselmemmgr (cinfo, emethods)
 }
 
 GLOBAL void
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jdselmemmgr (decompress_info_ptr cinfo, external_methods_ptr emethods)
 #else
 jdselmemmgr (cinfo, emethods)

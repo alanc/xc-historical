@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: phist.c,v 1.1 93/10/26 10:01:04 rws Exp $ */
 /**** module phist.c ****/
 /******************************************************************************
 				NOTICE
@@ -161,7 +161,7 @@ xieFlo        *pe;
 Bool CopyPHistogramFlat(flo, ped, sparms, rparms, tsize) 
 floDefPtr  flo;
 peDefPtr   ped;
-void *sparms, *rparms;
+pointer sparms, rparms;
 CARD16	   tsize;
 {
      return (tsize == 0);
@@ -182,7 +182,7 @@ CARD16	   tsize;
      VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
 
      if (!(ped->techPvt = 
-			(void *)XieMalloc(sizeof(pTecHistogramGaussianDefRec))))
+			(pointer )XieMalloc(sizeof(pTecHistogramGaussianDefRec))))
          FloAllocError(flo, ped->phototag, xieElemMatchHistogram, return(TRUE));
 
      pvt = (pTecHistogramGaussianDefPtr)ped->techPvt;
@@ -213,7 +213,7 @@ CARD16	   tsize;
      VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
 
      if (!(ped->techPvt = 
-		(void *)XieMalloc(sizeof(pTecHistogramHyperbolicDefRec))))
+		(pointer )XieMalloc(sizeof(pTecHistogramHyperbolicDefRec))))
          FloAllocError(flo, ped->phototag, xieElemMatchHistogram, return(TRUE));
 
      pvt = (pTecHistogramHyperbolicDefPtr)ped->techPvt;

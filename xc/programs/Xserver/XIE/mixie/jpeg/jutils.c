@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jutils.c,v 1.1 93/10/26 09:57:04 rws Exp $ */
 /* Module jutils.c */
 
 /****************************************************************************
@@ -65,7 +65,7 @@ terms and conditions:
 
 GLOBAL long
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jround_up (long a, long b)
 #else
 jround_up (a, b)
@@ -96,15 +96,15 @@ jround_up (long a, long b)
 #define FMEMZERO(target,size)	MEMZERO(target,size)
 #else				/* 80x86 case, define if we can */
 #ifdef USE_FMEM
-#define FMEMCOPY(dest,src,size)	_fmemcpy((void FAR *)(dest), (const void FAR *)(src), (size_t)(size))
-#define FMEMZERO(target,size)	_fmemset((void FAR *)(target), 0, (size_t)(size))
+#define FMEMCOPY(dest,src,size)	_fmemcpy((pointer)(dest), (const pointer)(src), (size_t)(size))
+#define FMEMZERO(target,size)	_fmemset((pointer)(target), 0, (size_t)(size))
 #endif
 #endif
 
 
 GLOBAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jcopy_sample_rows (JSAMPARRAY input_array, int source_row,
 		   JSAMPARRAY output_array, int dest_row,
 		   int num_rows, long num_cols)
@@ -156,7 +156,7 @@ jcopy_sample_rows (JSAMPARRAY input_array, int source_row,
 
 GLOBAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jcopy_block_row (JBLOCKROW input_row, JBLOCKROW output_row, long num_blocks)
 #else
 jcopy_block_row (input_row, output_row, num_blocks)
@@ -186,15 +186,15 @@ jcopy_block_row (JBLOCKROW input_row, JBLOCKROW output_row, long num_blocks)
 
 GLOBAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
-jzero_far (void FAR * target, size_t bytestozero)
+#if NeedFunctionPrototypes
+jzero_far (pointer target, size_t bytestozero)
 #else
 jzero_far (target, bytestozero)
-	void FAR * target;
+	pointer target;
 	size_t bytestozero;
 #endif	/* NeedFunctionPrototypes */
 #else
-jzero_far (void FAR * target, size_t bytestozero)
+jzero_far (pointer target, size_t bytestozero)
 #endif	/* XIE_SUPPORTED */
 /* Zero out a chunk of FAR memory. */
 /* This might be sample-array data, block-array data, or alloc_medium data. */

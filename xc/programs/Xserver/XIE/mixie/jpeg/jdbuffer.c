@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jdbuffer.c,v 1.1 93/10/26 09:57:10 rws Exp $ */
 /*** 	jdbuffer.c - transfer data from input strip to decode buffer
 
 	Ben Fahy, AGE Logic, Oct 1993

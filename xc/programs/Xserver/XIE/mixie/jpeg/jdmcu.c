@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jdmcu.c,v 1.1 93/10/26 09:55:36 rws Exp $ */
 /* Module jdmcu.c */
 
 /****************************************************************************
@@ -69,7 +69,7 @@ terms and conditions:
 
 #ifdef XIE_SUPPORTED
 METHODDEF int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 disassemble_noninterleaved_MCU (decompress_info_ptr cinfo,
 				JBLOCKIMAGE image_data)
 #else
@@ -90,7 +90,7 @@ disassemble_noninterleaved_MCU (cinfo, image_data)
     start = 0;
     /* Pre-zero the target area to speed up entropy decoder */
     /* (we assume wholesale zeroing is faster than retail) */
-    jzero_far((void FAR *) image_data[0][0],
+    jzero_far((pointer) image_data[0][0],
 	    (size_t) (cinfo->MCUs_per_row * SIZEOF(JBLOCK)));
   }
   for (mcuindex = start; mcuindex < cinfo->MCUs_per_row; mcuindex++) {
@@ -122,7 +122,7 @@ disassemble_noninterleaved_MCU (decompress_info_ptr cinfo,
 
   /* Pre-zero the target area to speed up entropy decoder */
   /* (we assume wholesale zeroing is faster than retail) */
-  jzero_far((void FAR *) image_data[0][0],
+  jzero_far((pointer) image_data[0][0],
 	    (size_t) (cinfo->MCUs_per_row * SIZEOF(JBLOCK)));
 
   for (mcuindex = 0; mcuindex < cinfo->MCUs_per_row; mcuindex++) {
@@ -142,7 +142,7 @@ disassemble_noninterleaved_MCU (decompress_info_ptr cinfo,
 
 #ifdef XIE_SUPPORTED
 METHODDEF int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 disassemble_interleaved_MCU (decompress_info_ptr cinfo,
 			     JBLOCKIMAGE image_data)
 #else
@@ -167,7 +167,7 @@ disassemble_interleaved_MCU (cinfo,	image_data)
     for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
       compptr = cinfo->cur_comp_info[ci];
       for (ypos = 0; ypos < compptr->MCU_height; ypos++) {
-        jzero_far((void FAR *) image_data[ci][ypos],
+        jzero_far((pointer) image_data[ci][ypos],
 	    (size_t) (cinfo->MCUs_per_row * compptr->MCU_width * SIZEOF(JBLOCK)));
       }
     }
@@ -217,7 +217,7 @@ disassemble_interleaved_MCU (decompress_info_ptr cinfo,
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
     compptr = cinfo->cur_comp_info[ci];
     for (ypos = 0; ypos < compptr->MCU_height; ypos++) {
-      jzero_far((void FAR *) image_data[ci][ypos],
+      jzero_far((pointer) image_data[ci][ypos],
 		(size_t) (cinfo->MCUs_per_row * compptr->MCU_width * SIZEOF(JBLOCK)));
     }
   }
@@ -253,7 +253,7 @@ disassemble_interleaved_MCU (decompress_info_ptr cinfo,
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 reverse_DCT (decompress_info_ptr cinfo,
 	     JBLOCKIMAGE coeff_data, JSAMPIMAGE output_data, int start_row)
 #else
@@ -345,7 +345,7 @@ reverse_DCT (decompress_info_ptr cinfo,
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 disassemble_init (decompress_info_ptr cinfo)
 #else
 disassemble_init (cinfo)
@@ -365,7 +365,7 @@ disassemble_init (decompress_info_ptr cinfo)
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 disassemble_term (decompress_info_ptr cinfo)
 #else
 disassemble_term (cinfo)
@@ -386,7 +386,7 @@ disassemble_term (decompress_info_ptr cinfo)
 
 GLOBAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jseldmcu (decompress_info_ptr cinfo)
 #else
 jseldmcu (cinfo)

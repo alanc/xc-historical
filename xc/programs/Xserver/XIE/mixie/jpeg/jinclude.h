@@ -1,4 +1,4 @@
-/* $XConsortium: jinclude.h,v 1.2 93/10/26 13:53:21 rws Exp $ */
+/* $XConsortium: jinclude.h,v 1.3 93/10/26 18:01:52 rws Exp $ */
 /* Module jinclude.h */
 
 /****************************************************************************
@@ -67,6 +67,7 @@ terms and conditions:
 #define XIE_SUPPORTED
 #include <X11/Xos.h>
 #include <stdio.h>
+#include "misc.h" /* for pointer ;*/
 
 #ifndef X_NOT_STDC_ENV
 #define INCLUDES_ARE_ANSI

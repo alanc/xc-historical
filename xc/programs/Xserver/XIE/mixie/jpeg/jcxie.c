@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jcxie.c,v 1.1 93/10/26 09:54:47 rws Exp $ */
 /* Module jcxie.c */
 
 /****************************************************************************
@@ -71,8 +71,8 @@ terms and conditions:
 #define FMEMZERO(target,size)	MEMZERO(target,size)
 #else				/* 80x86 case, define if we can */
 #ifdef USE_FMEM
-#define FMEMCOPY(dest,src,size)	_fmemcpy((void FAR *)(dest), (const void FAR *)(src), (size_t)(size))
-#define FMEMZERO(target,size)	_fmemset((void FAR *)(target), 0, (size_t)(size))
+#define FMEMCOPY(dest,src,size)	_fmemcpy((pointer)(dest), (const pointer)(src), (size_t)(size))
+#define FMEMZERO(target,size)	_fmemset((pointer)(target), 0, (size_t)(size))
 #endif
 #endif
 
@@ -83,7 +83,7 @@ terms and conditions:
  */
 
 METHODDEF void
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 c_ui_method_selection (compress_info_ptr cinfo)
 #else
 c_ui_method_selection (cinfo)
@@ -98,7 +98,7 @@ c_ui_method_selection (cinfo)
 }
 
 METHODDEF void
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 c_per_scan_method_selection (compress_info_ptr cinfo)
 #else
 c_per_scan_method_selection (cinfo)
@@ -115,7 +115,7 @@ c_per_scan_method_selection (cinfo)
 }
 
 LOCAL void
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 c_initial_method_selection (compress_info_ptr cinfo)
 #else
 c_initial_method_selection (cinfo)
@@ -135,7 +135,7 @@ c_initial_method_selection (cinfo)
 }
 
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 initial_setup (compress_info_ptr cinfo)
 #else
 initial_setup (cinfo)
@@ -179,7 +179,7 @@ initial_setup (cinfo)
  */
 
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 interleaved_scan_setup (compress_info_ptr cinfo)
 #else
 interleaved_scan_setup (cinfo)
@@ -243,7 +243,7 @@ interleaved_scan_setup (cinfo)
 }
 
 LOCAL void
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 noninterleaved_scan_setup (compress_info_ptr cinfo)
 #else
 noninterleaved_scan_setup (cinfo)
@@ -283,7 +283,7 @@ noninterleaved_scan_setup (cinfo)
 
 
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 alloc_sampling_buffer (compress_info_ptr cinfo, JSAMPIMAGE fullsize_data[2],
 		       long fullsize_width)
 #else
@@ -336,7 +336,7 @@ alloc_sampling_buffer (cinfo, fullsize_data, fullsize_width)
 
 
 LOCAL void
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 downsample (compress_info_ptr cinfo,
 	    JSAMPIMAGE fullsize_data, JSAMPIMAGE sampled_data,
 	    long fullsize_width,
@@ -401,7 +401,7 @@ downsample (cinfo,
 }
 
 METHODDEF int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jcXIE_init (compress_info_ptr cinfo)
 #else
 jcXIE_init (cinfo)
@@ -501,7 +501,7 @@ jcXIE_init (cinfo)
 }
 
 LOCAL void
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jcopy_pixel_rows (JSAMPARRAY input_array,
 		JSAMPIMAGE output_array, int dest_row,
 		int num_rows, long num_cols)
@@ -542,7 +542,7 @@ jcopy_pixel_rows (input_array,
 }
 
 GLOBAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jcXIE_get (compress_info_ptr cinfo,
 		int row_to_process, JSAMPARRAY pixel_row)
 #else
@@ -616,7 +616,7 @@ jcXIE_get (cinfo, row_to_process, pixel_row)
 }
   
 METHODDEF int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jcXIE_term (compress_info_ptr cinfo)
 #else
 jcXIE_term (cinfo)
@@ -650,7 +650,7 @@ jcXIE_term (cinfo)
 }
 
 GLOBAL void
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jselrXIE (compress_info_ptr cinfo)
 #else
 jselrXIE (cinfo)

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jmemsys.c,v 1.1 93/10/26 09:55:08 rws Exp $ */
 /* Module jmemsys.c */
 
 /****************************************************************************
@@ -80,8 +80,8 @@ terms and conditions:
 #ifdef INCLUDES_ARE_ANSI
 #include <stdlib.h>		/* to declare malloc(), free() */
 #else
-extern void * malloc PP((size_t size));
-extern void free PP((void *ptr));
+extern pointer malloc PP((size_t size));
+extern void free PP(pointer ptr));
 #endif
 #endif  /* _XIEC_MEMORY */
 
@@ -95,9 +95,9 @@ static external_methods_ptr methods; /* saved for access to error_exit */
  * routines malloc() and free().
  */
 
-GLOBAL void *
+GLOBAL pointer
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jget_small (size_t sizeofobject)
 #else
 jget_small (sizeofobject)
@@ -107,19 +107,19 @@ jget_small (sizeofobject)
 jget_small (size_t sizeofobject)
 #endif	/* XIE_SUPPORTED */
 {
-  return (void *) malloc(sizeofobject);
+  return (pointer) malloc(sizeofobject);
 }
 
 GLOBAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
-jfree_small (void * object)
+#if NeedFunctionPrototypes
+jfree_small (pointer object)
 #else
 jfree_small (object)
-	void * object;
+	pointer object;
 #endif	/* NeedFunctionPrototypes */
 #else
-jfree_small (void * object)
+jfree_small (pointer object)
 #endif	/* XIE_SUPPORTED */
 {
   free(object);
@@ -138,7 +138,7 @@ jfree_small (void * object)
 
 GLOBAL long
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jmem_available (long min_bytes_needed, long max_bytes_needed)
 #else
 jmem_available (min_bytes_needed, max_bytes_needed)
@@ -160,7 +160,7 @@ jmem_available (long min_bytes_needed, long max_bytes_needed)
 
 GLOBAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jopen_backing_store (backing_store_ptr info, long total_bytes_needed)
 #else
 jopen_backing_store (info, total_bytes_needed)
@@ -194,7 +194,7 @@ jmem_init (external_methods_ptr emethods)
 
 GLOBAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jmem_term (void)
 #else
 jmem_term ()

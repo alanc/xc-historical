@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jchuff.c,v 1.1 93/10/26 09:55:23 rws Exp $ */
 /* Module jchuff.c */
 
 /****************************************************************************
@@ -77,7 +77,7 @@ static int bytes_in_buffer;
 
 LOCAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 fix_huff_tbl (HUFF_TBL * htbl)
 #else
 fix_huff_tbl (htbl)
@@ -141,7 +141,7 @@ fix_huff_tbl (HUFF_TBL * htbl)
 
 #ifdef XIE_SUPPORTED
 LOCAL void
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 flush_bytes (void)
 #else
 flush_bytes ()
@@ -181,7 +181,7 @@ flush_bytes (void)
 INLINE
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 emit_bits (UINT16 code, int size)
 #else
 emit_bits (code, size)
@@ -245,7 +245,7 @@ emit_bits (UINT16 code, int size)
 
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 flush_bits (void)
 #else
 flush_bits ()
@@ -277,7 +277,7 @@ flush_bits (void)
 
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 encode_one_block (JBLOCK block, HUFF_TBL *dctbl, HUFF_TBL *actbl)
 #else
 encode_one_block (block, dctbl, actbl)
@@ -411,7 +411,7 @@ encode_one_block (JBLOCK block, HUFF_TBL *dctbl, HUFF_TBL *actbl)
 
 #ifdef XIE_SUPPORTED
 METHODDEF int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 huff_init (compress_info_ptr xinfo)
 #else
 huff_init (xinfo)
@@ -475,7 +475,7 @@ huff_init (compress_info_ptr xinfo)
 
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 emit_restart (compress_info_ptr cinfo)
 #else
 emit_restart (cinfo)
@@ -519,7 +519,7 @@ emit_restart (compress_info_ptr cinfo)
  */
 #ifdef XIE_SUPPORTED
 METHODDEF int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 huff_encode (compress_info_ptr xinfo, JBLOCK *MCU_data)
 #else
 huff_encode (xinfo, MCU_data)
@@ -604,7 +604,7 @@ huff_encode (compress_info_ptr xinfo, JBLOCK *MCU_data)
 
 #ifdef XIE_SUPPORTED
 METHODDEF int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 huff_term (compress_info_ptr xinfo)
 #else
 huff_term (xinfo)
@@ -632,7 +632,7 @@ huff_term (compress_info_ptr xinfo)
 #ifdef XIE_SUPPORTED
   return(0);
 #else
-  (*cinfo->emethods->free_small) ((void *) output_buffer);
+  (*cinfo->emethods->free_small) ((pointer ) output_buffer);
 #endif	/* XIE_SUPPORTED */
 }
 
@@ -946,7 +946,7 @@ huff_optimize (compress_info_ptr xinfo, MCU_output_caller_ptr source_method)
       /* Compute the optimal Huffman encoding */
       gen_huff_coding(cinfo, *htblptr, dc_count_ptrs[tbl]);
       /* Release the count table */
-      (*cinfo->emethods->free_small) ((void *) dc_count_ptrs[tbl]);
+      (*cinfo->emethods->free_small) ((pointer ) dc_count_ptrs[tbl]);
     }
     if (ac_count_ptrs[tbl] != NULL) {
       htblptr = & cinfo->ac_huff_tbl_ptrs[tbl];
@@ -957,7 +957,7 @@ huff_optimize (compress_info_ptr xinfo, MCU_output_caller_ptr source_method)
       /* Compute the optimal Huffman encoding */
       gen_huff_coding(cinfo, *htblptr, ac_count_ptrs[tbl]);
       /* Release the count table */
-      (*cinfo->emethods->free_small) ((void *) ac_count_ptrs[tbl]);
+      (*cinfo->emethods->free_small) ((pointer ) ac_count_ptrs[tbl]);
     }
   }
 }
@@ -973,7 +973,7 @@ huff_optimize (compress_info_ptr xinfo, MCU_output_caller_ptr source_method)
 
 GLOBAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jselchuffman (compress_info_ptr cinfo)
 #else
 jselchuffman (cinfo)

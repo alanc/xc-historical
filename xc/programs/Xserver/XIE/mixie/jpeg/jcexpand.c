@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jcexpand.c,v 1.1 93/10/26 09:54:54 rws Exp $ */
 /* Module jcexpand.c */
 
 /****************************************************************************
@@ -70,7 +70,7 @@ terms and conditions:
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 edge_expand (compress_info_ptr cinfo,
 	     long input_cols, int input_rows,
 	     long output_cols, int output_rows,
@@ -135,7 +135,7 @@ edge_expand (compress_info_ptr cinfo,
 
 GLOBAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jselexpand (compress_info_ptr cinfo)
 #else
 jselexpand (cinfo)

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jpegdata.h,v 1.1 93/10/26 09:54:33 rws Exp $ */
 /* Module jpegdata.h */
 
 /****************************************************************************
@@ -56,7 +56,6 @@ terms and conditions:
  *
  * This file defines shared data structures for the various JPEG modules.
  */
-
 
 /*
  * You might need to change some of the following declarations if you are
@@ -775,18 +774,18 @@ struct External_methods_struct {
 	/* NB: alloc routines never return NULL. They exit to */
 	/* error_exit if not successful. */
 #ifdef XIE_SUPPORTED
-	METHOD(void *, c_alloc_small, (compress_info_ptr cinfo, 
+	METHOD(pointer, c_alloc_small, (compress_info_ptr cinfo, 
 						size_t sizeofobject));
-	METHOD(int, c_free_small, (compress_info_ptr cinfo, void *ptr));
-	METHOD(void *, d_alloc_small, (decompress_info_ptr cinfo, 
+	METHOD(int, c_free_small, (compress_info_ptr cinfo, pointer ptr));
+	METHOD(pointer, d_alloc_small, (decompress_info_ptr cinfo, 
 						size_t sizeofobject));
-	METHOD(int, d_free_small, (decompress_info_ptr cinfo, void *ptr));
+	METHOD(int, d_free_small, (decompress_info_ptr cinfo, pointer ptr));
 #else
-	METHOD(void *, alloc_small, (size_t sizeofobject));
-	METHOD(void, free_small, (void *ptr));
+	METHOD(pointer, alloc_small, (size_t sizeofobject));
+	METHOD(void, free_small, (pointer ptr));
 #endif  /* XIE_SUPPORTED */
-	METHOD(void FAR *, alloc_medium, (size_t sizeofobject));
-	METHOD(void, free_medium, (void FAR *ptr));
+	METHOD(pointer, alloc_medium, (size_t sizeofobject));
+	METHOD(void, free_medium, (pointer ptr));
 #ifdef XIE_SUPPORTED
 	METHOD(JSAMPARRAY, c_alloc_small_sarray, (compress_info_ptr cinfo,
 						long samplesperrow,	long numrows));
@@ -1170,7 +1169,7 @@ EXTERN void jcopy_sample_rows PP((JSAMPARRAY input_array, int source_row,
 				  int num_rows, long num_cols));
 EXTERN void jcopy_block_row PP((JBLOCKROW input_row, JBLOCKROW output_row,
 				long num_blocks));
-EXTERN void jzero_far PP((void FAR * target, size_t bytestozero));
+EXTERN void jzero_far PP((pointer target, size_t bytestozero));
 
 /* method selection routines for compression modules */
 EXTERN void jselcpipeline PP((compress_info_ptr cinfo)); /* jcpipe.c */

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mpcomp.c,v 1.1 93/10/26 09:48:26 rws Exp $ */
 /**** module mpcomp.c ****/
 /******************************************************************************
 				NOTICE
@@ -208,14 +208,14 @@ static int ActivateCompareM(flo,ped,pet)
 	CARD32 npix = pvt->width;
 	LogInt *svoid, *dvoid;
 
-    	if (!(svoid = GetCurrentSrc(void,flo,pet,sband)) ||
-	    !(dvoid = GetCurrentDst(void,flo,pet,dband))) continue;
+    	if (!(svoid = GetCurrentSrc(pointer,flo,pet,sband)) ||
+	    !(dvoid = GetCurrentDst(pointer,flo,pet,dband))) continue;
 
 	do {
 	    /* NOTE: could pass in replicated constant strip here */
 	    (*(pvt->action)) (dvoid, svoid, pvt, npix);
-	    svoid = GetNextSrc(void,flo,pet,sband,FLUSH);
-	    dvoid = GetNextDst(void,flo,pet,dband,FLUSH);
+	    svoid = GetNextSrc(pointer,flo,pet,sband,FLUSH);
+	    dvoid = GetNextDst(pointer,flo,pet,dband,FLUSH);
 	} while (!ferrCode(flo) && svoid && dvoid) ;
 
 	FreeData(flo, pet, sband, sband->current);
@@ -239,13 +239,13 @@ static int ActivateCompareD(flo,ped,pet)
     for(band = 0; band < nbands; band++, pvt++, sband++, tband++, dband++) {
 	LogInt *svoid, *tvoid, *dvoid;
 
-    	if (!(svoid = GetCurrentSrc(void,flo,pet,sband)) ||
-	    !(tvoid = GetCurrentSrc(void,flo,pet,tband)) ||
-	    !(dvoid = GetCurrentDst(void,flo,pet,dband))   ) {
+    	if (!(svoid = GetCurrentSrc(pointer,flo,pet,sband)) ||
+	    !(tvoid = GetCurrentSrc(pointer,flo,pet,tband)) ||
+	    !(dvoid = GetCurrentDst(pointer,flo,pet,dband))   ) {
 	    if (sband->final && tband->final) {
 		/* Generate constant fill of 0 for remainder of image */
 		while ((dband->current < dband->format->height) &&
-	    	       (dvoid = GetCurrentDst(void,flo,pet,dband))) {
+	    	       (dvoid = GetCurrentDst(pointer,flo,pet,dband))) {
 			action_clear(dvoid,dband->format->pitch,0);
 			if (PutData(flo,pet,dband,dband->current+1))
 			    break;
@@ -258,9 +258,9 @@ static int ActivateCompareD(flo,ped,pet)
 	    (*(pvt->action)) (dvoid, svoid, tvoid, pvt->endix);
 	    if (pvt->action2)
 		(*(pvt->action2)) (dvoid, pvt->endrun, pvt->endix);
-	    svoid = GetNextSrc(void,flo,pet,sband,FLUSH);
-	    tvoid = GetNextSrc(void,flo,pet,tband,FLUSH);
-	    dvoid = GetNextDst(void,flo,pet,dband,FLUSH);
+	    svoid = GetNextSrc(pointer,flo,pet,sband,FLUSH);
+	    tvoid = GetNextSrc(pointer,flo,pet,tband,FLUSH);
+	    dvoid = GetNextDst(pointer,flo,pet,dband,FLUSH);
 	} while (!ferrCode(flo) && svoid && tvoid && dvoid) ;
 
 	if(!svoid && sband->final) {	/* when sr1 runs out, kill sr2 too  */
@@ -289,10 +289,10 @@ static int ActivateCompareMROI(flo,ped,pet)
     bandPtr dband     = &(pet->emitter[0]);
 
     for(band = 0; band < nbands; band++, pvt++, sband++, dband++) {
-	void *svoid, *dvoid;
+	pointer svoid, dvoid;
 
-    	if (!(svoid = GetCurrentSrc(void,flo,pet,sband)) ||
-	    !(dvoid = GetCurrentDst(void,flo,pet,dband))) continue;
+    	if (!(svoid = GetCurrentSrc(pointer,flo,pet,sband)) ||
+	    !(dvoid = GetCurrentDst(pointer,flo,pet,dband))) continue;
 
 	while (!ferrCode(flo) && svoid && dvoid && 
 				SyncDomain(flo,ped,dband,FLUSH)) {
@@ -311,8 +311,8 @@ static int ActivateCompareMROI(flo,ped,pet)
 		    ix -= run;
 		}
 	    }
-	    svoid = GetNextSrc(void,flo,pet,sband,FLUSH);
-	    dvoid = GetNextDst(void,flo,pet,dband,FLUSH);
+	    svoid = GetNextSrc(pointer,flo,pet,sband,FLUSH);
+	    dvoid = GetNextDst(pointer,flo,pet,dband,FLUSH);
 	}
 
 	FreeData(flo, pet, sband, sband->current);
@@ -332,16 +332,16 @@ static int ActivateCompareDROI(flo,ped,pet)
     bandPtr dband     = &(pet->emitter[0]);
 
     for(band = 0; band < nbands; band++, pvt++, sband++, tband++, dband++) {
-	void *svoid, *tvoid, *dvoid;
+	pointer svoid, tvoid, dvoid;
 	CARD32 w = pvt->width;
 
-    	if (!(svoid = GetCurrentSrc(void,flo,pet,sband)) ||
-    	    !(tvoid = GetCurrentSrc(void,flo,pet,tband)) ||
-	    !(dvoid = GetCurrentDst(void,flo,pet,dband))) {
+    	if (!(svoid = GetCurrentSrc(pointer,flo,pet,sband)) ||
+    	    !(tvoid = GetCurrentSrc(pointer,flo,pet,tband)) ||
+	    !(dvoid = GetCurrentDst(pointer,flo,pet,dband))) {
 	    if (sband->final && tband->final) {
 		/* Generate constant fill of 0 for remainder of image */
 		while ((dband->current < dband->format->height) &&
-	    	       (dvoid = GetCurrentDst(void,flo,pet,dband))) {
+	    	       (dvoid = GetCurrentDst(pointer,flo,pet,dband))) {
 			action_clear(dvoid,dband->format->pitch,0);
 			if (PutData(flo,pet,dband,dband->current+1))
 			    break;
@@ -375,9 +375,9 @@ static int ActivateCompareDROI(flo,ped,pet)
 		    ix -= run; 
 		}
 	    }
-	    svoid = GetNextSrc(void,flo,pet,sband,FLUSH);
-	    tvoid = GetNextSrc(void,flo,pet,tband,FLUSH);
-	    dvoid = GetNextDst(void,flo,pet,dband,FLUSH);
+	    svoid = GetNextSrc(pointer,flo,pet,sband,FLUSH);
+	    tvoid = GetNextSrc(pointer,flo,pet,tband,FLUSH);
+	    dvoid = GetNextDst(pointer,flo,pet,dband,FLUSH);
 	}
 
 	if(!svoid && sband->final) {
@@ -407,18 +407,18 @@ static int ActivateCompareTripleM(flo,ped,pet)
     bandPtr	 dband = &(pet->emitter[0]);
     CARD8 	   msk = ((xieFloCompare *) ped->elemRaw)->bandMask;
     BOOL	 equal = ((xieFloCompare *) ped->elemRaw)->operator == xieValEQ;
-    register void  *s0 = (void *) 1;
-    register void  *s1 = (void *) 1;
-    register void  *s2 = (void *) 1;
-    register void *dvoid;
+    register pointer s0 = (pointer ) 1;
+    register pointer s1 = (pointer ) 1;
+    register pointer s2 = (pointer ) 1;
+    register pointer dvoid;
 
-    if ((msk & 1) && !(s0 = GetCurrentSrc(void,flo,pet,sband)))
+    if ((msk & 1) && !(s0 = GetCurrentSrc(pointer,flo,pet,sband)))
 	goto done; sband++;
-    if ((msk & 2) && !(s1 = GetCurrentSrc(void,flo,pet,sband)))
+    if ((msk & 2) && !(s1 = GetCurrentSrc(pointer,flo,pet,sband)))
 	goto done; sband++;
-    if ((msk & 4) && !(s2 = GetCurrentSrc(void,flo,pet,sband)))
+    if ((msk & 4) && !(s2 = GetCurrentSrc(pointer,flo,pet,sband)))
 	goto done; sband -= 2;
-    if(!(dvoid = GetCurrentDst(void,flo,pet,dband)))
+    if(!(dvoid = GetCurrentDst(pointer,flo,pet,dband)))
 	goto done;
 
     /*
@@ -451,10 +451,10 @@ static int ActivateCompareTripleM(flo,ped,pet)
 	    }
 	}
 
-	if (msk & 1) s0 = GetNextSrc(void,flo,pet,sband,FLUSH); sband++;
-	if (msk & 2) s1 = GetNextSrc(void,flo,pet,sband,FLUSH); sband++;
-	if (msk & 4) s2 = GetNextSrc(void,flo,pet,sband,FLUSH); sband -= 2;
-	dvoid = GetNextDst(void,flo,pet,dband,FLUSH);
+	if (msk & 1) s0 = GetNextSrc(pointer,flo,pet,sband,FLUSH); sband++;
+	if (msk & 2) s1 = GetNextSrc(pointer,flo,pet,sband,FLUSH); sband++;
+	if (msk & 4) s2 = GetNextSrc(pointer,flo,pet,sband,FLUSH); sband -= 2;
+	dvoid = GetNextDst(pointer,flo,pet,dband,FLUSH);
     }
 
     if (msk & 1) FreeData(flo,pet,sband,sband->current); sband++;
@@ -476,18 +476,18 @@ static int ActivateCompareTripleD(flo,ped,pet)
     CARD8	   msk = ((xieFloCompare *) ped->elemRaw)->bandMask;
     BOOL  	 equal = ((xieFloCompare *) ped->elemRaw)->operator == xieValEQ;
     CARD32 	     w = pvt->width;
-    register void  *s0 = (void *) 1;
-    register void  *s1 = (void *) 1;
-    register void  *s2 = (void *) 1;
-    register void  *t0 = (void *) 1;
-    register void  *t1 = (void *) 1;
-    register void  *t2 = (void *) 1;
-    register void *dvoid;
+    register pointer s0 = (pointer ) 1;
+    register pointer s1 = (pointer ) 1;
+    register pointer s2 = (pointer ) 1;
+    register pointer t0 = (pointer ) 1;
+    register pointer t1 = (pointer ) 1;
+    register pointer t2 = (pointer ) 1;
+    register pointer dvoid;
 
     if (pvt->final) {  /* generate constant fill */
 	/* Generate constant fill of 0 for remainder of image */
 	while ((dband->current < dband->format->height) &&
-	       (dvoid = GetCurrentDst(void,flo,pet,dband))) {
+	       (dvoid = GetCurrentDst(pointer,flo,pet,dband))) {
 		action_clear(dvoid,dband->format->pitch,0);
 		if (PutData(flo,pet,dband,dband->current+1))
 		    break;
@@ -495,14 +495,14 @@ static int ActivateCompareTripleD(flo,ped,pet)
 	return TRUE;
     }
 
-    if (msk & 1) s0 = GetCurrentSrc(void,flo,pet,sband); sband++;
-    if (msk & 2) s1 = GetCurrentSrc(void,flo,pet,sband); sband++;
-    if (msk & 4) s2 = GetCurrentSrc(void,flo,pet,sband); sband -= 2;
-    if (msk & 1) t0 = GetCurrentSrc(void,flo,pet,tband); tband++;
-    if (msk & 2) t1 = GetCurrentSrc(void,flo,pet,tband); tband++;
-    if (msk & 4) t2 = GetCurrentSrc(void,flo,pet,tband); tband -= 2;
+    if (msk & 1) s0 = GetCurrentSrc(pointer,flo,pet,sband); sband++;
+    if (msk & 2) s1 = GetCurrentSrc(pointer,flo,pet,sband); sband++;
+    if (msk & 4) s2 = GetCurrentSrc(pointer,flo,pet,sband); sband -= 2;
+    if (msk & 1) t0 = GetCurrentSrc(pointer,flo,pet,tband); tband++;
+    if (msk & 2) t1 = GetCurrentSrc(pointer,flo,pet,tband); tband++;
+    if (msk & 4) t2 = GetCurrentSrc(pointer,flo,pet,tband); tband -= 2;
 
-    dvoid = GetCurrentDst(void,flo,pet,dband);
+    dvoid = GetCurrentDst(pointer,flo,pet,dband);
 
     while (!ferrCode(flo) && s0 && s1 && s2 && t0 && t1 && t2 && dvoid && 
 			SyncDomain(flo,ped,dband,FLUSH)) {
@@ -532,13 +532,13 @@ static int ActivateCompareTripleD(flo,ped,pet)
 	    }
 	}
 
-	if (msk & 1) s0 = GetNextSrc(void,flo,pet,sband,FLUSH); sband++;
-	if (msk & 2) s1 = GetNextSrc(void,flo,pet,sband,FLUSH); sband++;
-	if (msk & 4) s2 = GetNextSrc(void,flo,pet,sband,FLUSH); sband -= 2;
-	if (msk & 1) t0 = GetNextSrc(void,flo,pet,tband,FLUSH); tband++;
-	if (msk & 2) t1 = GetNextSrc(void,flo,pet,tband,FLUSH); tband++;
-	if (msk & 4) t2 = GetNextSrc(void,flo,pet,tband,FLUSH); tband -= 2;
-	dvoid = GetNextDst(void,flo,pet,dband,FLUSH);
+	if (msk & 1) s0 = GetNextSrc(pointer,flo,pet,sband,FLUSH); sband++;
+	if (msk & 2) s1 = GetNextSrc(pointer,flo,pet,sband,FLUSH); sband++;
+	if (msk & 4) s2 = GetNextSrc(pointer,flo,pet,sband,FLUSH); sband -= 2;
+	if (msk & 1) t0 = GetNextSrc(pointer,flo,pet,tband,FLUSH); tband++;
+	if (msk & 2) t1 = GetNextSrc(pointer,flo,pet,tband,FLUSH); tband++;
+	if (msk & 4) t2 = GetNextSrc(pointer,flo,pet,tband,FLUSH); tband -= 2;
+	dvoid = GetNextDst(pointer,flo,pet,dband,FLUSH);
     }
 
     if (msk & 1) FreeData(flo,pet,sband,sband->current); sband++;
@@ -622,7 +622,7 @@ static int DestroyCompare(flo,ped)
 #define MakeBit(name1, name2, op) 					\
 static void name1(dst,src1,pvt,nx)					\
     LogInt *dst;							\
-    void   *src1;							\
+    pointer src1;							\
     mpComparePvtPtr pvt;						\
     CARD32 nx;								\
 {									\
@@ -635,7 +635,7 @@ static void name1(dst,src1,pvt,nx)					\
 }									\
 static void name2(dst,src1,src2,nx)					\
     LogInt *dst;							\
-    void   *src1, *src2;						\
+    pointer src1, src2;							\
     CARD32 nx;								\
 {									\
     LogInt S1, *src = (LogInt *) src1;					\
@@ -650,7 +650,7 @@ static void name2(dst,src1,src2,nx)					\
 #define MakePix(name1, name2, itype, cnst_name, op)			\
 static void name1(dst,src1,pvt,nx)					\
     LogInt *dst;							\
-    void   *src1;							\
+    pointer src1;							\
     mpComparePvtPtr pvt;						\
     CARD32 nx;								\
 {									\
@@ -670,7 +670,7 @@ static void name1(dst,src1,pvt,nx)					\
 }									\
 static void name2(dst,src1,src2,nx)					\
     LogInt *dst;							\
-    void   *src1, *src2;						\
+    pointer src1, src2;							\
     CARD32 nx;								\
 {									\
     itype *src = (itype *) src1;					\
@@ -755,7 +755,7 @@ static void (*action_dyad[5][6])() = {
 #define RakeBit(name1, name2, op) 					\
 static void name1(dst,src1,pvt,dx,x)					\
     LogInt *dst;							\
-    void   *src1;							\
+    pointer src1;							\
     mpComparePvtPtr pvt;						\
     INT32  dx, x;							\
 {									\
@@ -791,7 +791,7 @@ static void name1(dst,src1,pvt,dx,x)					\
 }									\
 static void name2(dst,src1,src2,dx,x)					\
     LogInt *dst;							\
-    void   *src1, *src2;						\
+    pointer src1, src2;							\
     INT32  dx, x;							\
 {									\
     CARD32 M, D, px = LOGINDX(x);					\
@@ -828,7 +828,7 @@ static void name2(dst,src1,src2,dx,x)					\
 #define RakePix(name1, name2, itype, cnst_name, op)			\
 static void name1(dst,src1,pvt,dx,x)					\
     LogInt *dst;							\
-    void   *src1;							\
+    pointer src1;							\
     mpComparePvtPtr pvt;						\
     INT32  dx, x;							\
 {									\
@@ -855,7 +855,7 @@ static void name1(dst,src1,pvt,dx,x)					\
 }									\
 static void name2(dst,src1,src2,dx,x)					\
     LogInt *dst;							\
-    void   *src1, *src2;						\
+    pointer src1, src2;							\
     INT32  dx, x;							\
 {									\
     itype *src = ((itype *) src1) + x;					\
@@ -1020,7 +1020,7 @@ static void (*action_dyadROI[5][6])() = {
 #define TakeBit(name1, name2)	 					\
 static void name1(dst,src1,pvt,dx,x)					\
     LogInt *dst;							\
-    void   *src1;							\
+    pointer src1;							\
     mpComparePvtPtr pvt;						\
     INT32  dx, x;							\
 {									\
@@ -1028,7 +1028,7 @@ tb_name1_body()								\
 }									\
 static void name2(dst,src1,src2,dx,x)					\
     LogInt *dst;							\
-    void   *src1, *src2;						\
+    pointer src1, src2;							\
     INT32  dx, x;							\
 {									\
 tb_name2_body()								\
@@ -1037,7 +1037,7 @@ tb_name2_body()								\
 #define TakePix(name1, name2, itype, cnst_name)				\
 static void name1(dst,src1,pvt,dx,x)					\
     LogInt *dst;							\
-    void   *src1;							\
+    pointer src1;							\
     mpComparePvtPtr pvt;						\
     INT32  dx, x;							\
 {									\
@@ -1067,7 +1067,7 @@ static void name1(dst,src1,pvt,dx,x)					\
 }									\
 static void name2(dst,src1,src2,dx,x)					\
     LogInt *dst;							\
-    void   *src1, *src2;						\
+    pointer src1, src2;							\
     INT32  dx, x;							\
 {									\
     itype *src = ((itype *) src1) + x;					\

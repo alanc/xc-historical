@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jrevdct.c,v 1.1 93/10/26 09:56:24 rws Exp $ */
 /* Module jrevdct.c */
 
 /****************************************************************************
@@ -204,7 +204,7 @@ terms and conditions:
 
 GLOBAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 j_rev_dct (DCTBLOCK data)
 #else
 j_rev_dct (data)

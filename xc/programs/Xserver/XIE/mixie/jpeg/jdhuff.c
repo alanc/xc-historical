@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jdhuff.c,v 1.1 93/10/26 09:55:43 rws Exp $ */
 /* Module jdhuff.c */
 
 /****************************************************************************
@@ -76,7 +76,7 @@ static boolean printed_eod;	/* flag to suppress multiple end-of-data msgs */
 
 LOCAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 fix_huff_tbl (HUFF_TBL * htbl)
 #else
 fix_huff_tbl (htbl)
@@ -171,7 +171,7 @@ static const int bmask[16] =	/* bmask[n] is mask for n rightmost bits */
 
 LOCAL int
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 fill_bit_buffer (int nbits)
 #else
 fill_bit_buffer (nbits)
@@ -252,7 +252,7 @@ fill_bit_buffer (int nbits)
 INLINE
 LOCAL int
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 huff_DECODE (HUFF_TBL * htbl)
 #else
 huff_DECODE (htbl)
@@ -321,7 +321,7 @@ static const int extend_offset[16] = /* entry n is (-1 << n) + 1 */
 
 #ifdef XIE_SUPPORTED
 METHODDEF int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 huff_decoder_init (decompress_info_ptr cinfo)
 #else
 huff_decoder_init (cinfo)
@@ -382,7 +382,7 @@ huff_decoder_init (decompress_info_ptr cinfo)
 
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 process_restart (decompress_info_ptr cinfo)
 #else
 process_restart (cinfo)
@@ -489,7 +489,7 @@ static const short ZAG[DCTSIZE2+16] = {
 
 #ifdef XIE_SUPPORTED
 METHODDEF int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 huff_decode_mcu (decompress_info_ptr cinfo, JBLOCKROW *MCU_data)
 #else
 huff_decode_mcu (cinfo, MCU_data)
@@ -613,7 +613,7 @@ huff_decode_mcu (decompress_info_ptr cinfo, JBLOCKROW *MCU_data)
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 huff_decoder_term (decompress_info_ptr cinfo)
 #else
 huff_decoder_term (cinfo)
@@ -633,7 +633,7 @@ huff_decoder_term (decompress_info_ptr cinfo)
 
 GLOBAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jseldhuffman (decompress_info_ptr cinfo)
 #else
 jseldhuffman (cinfo)

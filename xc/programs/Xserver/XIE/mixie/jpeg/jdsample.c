@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jdsample.c,v 1.1 93/10/26 09:56:11 rws Exp $ */
 /* Module jdsample.c */
 
 /****************************************************************************
@@ -72,7 +72,7 @@ terms and conditions:
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 upsample_init (decompress_info_ptr cinfo)
 #else
 upsample_init (cinfo)
@@ -101,7 +101,7 @@ upsample_init (decompress_info_ptr cinfo)
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 int_upsample (decompress_info_ptr cinfo, int which_component,
 	      long input_cols, int input_rows,
 	      long output_cols, int output_rows,
@@ -182,7 +182,7 @@ int_upsample (decompress_info_ptr cinfo, int which_component,
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 h2v1_upsample (decompress_info_ptr cinfo, int which_component,
 	       long input_cols, int input_rows,
 	       long output_cols, int output_rows,
@@ -265,7 +265,7 @@ h2v1_upsample (decompress_info_ptr cinfo, int which_component,
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 h2v2_upsample (decompress_info_ptr cinfo, int which_component,
 	       long input_cols, int input_rows,
 	       long output_cols, int output_rows,
@@ -366,7 +366,7 @@ h2v2_upsample (decompress_info_ptr cinfo, int which_component,
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 fullsize_upsample (decompress_info_ptr cinfo, int which_component,
 		   long input_cols, int input_rows,
 		   long output_cols, int output_rows,
@@ -415,7 +415,7 @@ fullsize_upsample (decompress_info_ptr cinfo, int which_component,
 
 METHODDEF void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 upsample_term (decompress_info_ptr cinfo)
 #else
 upsample_term (cinfo)
@@ -437,7 +437,7 @@ upsample_term (decompress_info_ptr cinfo)
 
 GLOBAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jselupsample (decompress_info_ptr cinfo)
 #else
 jselupsample (cinfo)

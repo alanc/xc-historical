@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jcdeflts.c,v 1.1 93/10/26 09:54:40 rws Exp $ */
 /* Module jcdeflts.c */
 
 /****************************************************************************
@@ -93,7 +93,7 @@ progress_monitor (compress_info_ptr cinfo, long loopcounter, long looplimit)
 
 #ifdef XIE_SUPPORTED
 GLOBAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 add_huff_table (compress_info_ptr cinfo,
 		HUFF_TBL **htblptr, const UINT8 *bits, const UINT8 *val)
 #else
@@ -139,7 +139,7 @@ add_huff_table (compress_info_ptr cinfo,
 
 #ifdef XIE_SUPPORTED
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 std_huff_tables (compress_info_ptr cinfo)
 #else
 std_huff_tables (cinfo)
@@ -245,7 +245,7 @@ std_huff_tables (compress_info_ptr cinfo)
 
 #ifdef XIE_SUPPORTED
 GLOBAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 j_add_quant_table (compress_info_ptr cinfo, int which_tbl,
 		   const QUANT_VAL *basic_table, int scale_factor,
 		   boolean force_baseline)
@@ -305,7 +305,7 @@ j_add_quant_table (compress_info_ptr cinfo, int which_tbl,
 
 GLOBAL int
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 j_quality_scaling (int quality)
 #else
 j_quality_scaling (quality)
@@ -340,7 +340,7 @@ j_quality_scaling (int quality)
 
 #ifdef XIE_SUPPORTED
 GLOBAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 j_set_quality (compress_info_ptr cinfo, int quality, boolean force_baseline)
 #else
 j_set_quality (cinfo, quality, force_baseline)
@@ -436,7 +436,7 @@ j_set_quality (compress_info_ptr cinfo, int quality, boolean force_baseline)
 
 #ifdef XIE_SUPPORTED
 GLOBAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 j_c_defaults (compress_info_ptr cinfo, int quality, boolean force_baseline)
 #else
 j_c_defaults (cinfo, quality, force_baseline)
@@ -569,7 +569,7 @@ j_c_defaults (compress_info_ptr cinfo, int quality, boolean force_baseline)
 
 GLOBAL void
 #ifdef XIE_SUPPORTED
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 j_monochrome_default (compress_info_ptr cinfo)
 #else
 j_monochrome_default (cinfo)

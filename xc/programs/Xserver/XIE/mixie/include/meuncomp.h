@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: meuncomp.h,v 1.1 93/10/26 09:50:28 rws Exp $ */
 /**** module miuncomp.h ****/
 /******************************************************************************
 				NOTICE
@@ -64,7 +64,7 @@ typedef struct _meuncompdef {
   CARD8    pad;
   CARD32   width;
   CARD32   pitch;
-  void    *buf;
+  pointer  buf;
 } meUncompRec, *meUncompPtr;
 
 #ifdef _XIEC_MEUNCOMP

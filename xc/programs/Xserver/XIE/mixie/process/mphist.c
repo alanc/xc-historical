@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mphist.c,v 1.1 93/10/26 09:47:01 rws Exp $ */
 /**** module mphist.c ****/
 /******************************************************************************
 				NOTICE
@@ -210,9 +210,9 @@ static int ActivateMatchHist(flo,ped,pet)
 
 
     if (pvt->histphase == 1) {
-	void *src;
+	pointer src;
 
-	src = GetCurrentSrc(void,flo,pet,sbnd);
+	src = GetCurrentSrc(pointer,flo,pet,sbnd);
 	while(!ferrCode(flo) && src && SyncDomain(flo,ped,sbnd,KEEP)) {
 	    INT32 x = 0, dx;
 	    while (dx = GetRun(flo,pet,sbnd)) {
@@ -222,7 +222,7 @@ static int ActivateMatchHist(flo,ped,pet)
 		} else 
 		    x -= dx;
 	    }
-	    src = GetNextSrc(void,flo,pet,sbnd,KEEP);
+	    src = GetNextSrc(pointer,flo,pet,sbnd,KEEP);
 	}
 
 	/* Is it time to switch to phase2 */
@@ -288,15 +288,15 @@ static int ActivateMatchHist(flo,ped,pet)
 	/* Reset src to start from scratch.
 	** The domain automatically resyncs in the SyncDomain call.
 	*/
-	(void) GetSrc(void,flo,pet,sbnd,0,KEEP);
+	(void) GetSrc(pointer,flo,pet,sbnd,0,KEEP);
 	pvt->histphase = 3;
     }
     /* now processing to create actual outputs */
     if (pvt->histphase == 3) {
-	void *src, *dst;
+	pointer src, dst;
 
-	src = GetCurrentSrc(void,flo,pet,sbnd);
-	dst = GetCurrentDst(void,flo,pet,dbnd);
+	src = GetCurrentSrc(pointer,flo,pet,sbnd);
+	dst = GetCurrentDst(pointer,flo,pet,dbnd);
 	while(!ferrCode(flo) && src && dst && SyncDomain(flo,ped,dbnd,FLUSH)) {
 	    INT32 x = 0, dx;
 	    if (src != dst) memcpy (dst, src, dbnd->pitch);
@@ -307,8 +307,8 @@ static int ActivateMatchHist(flo,ped,pet)
 		} else 
 		    x -= dx;
 	    }
-	    src = GetNextSrc(void,flo,pet,sbnd,FLUSH);
-	    dst = GetNextDst(void,flo,pet,dbnd,FLUSH);
+	    src = GetNextSrc(pointer,flo,pet,sbnd,FLUSH);
+	    dst = GetNextDst(pointer,flo,pet,dbnd,FLUSH);
 	}
 	FreeData(flo,pet,sbnd,sbnd->current);
 
@@ -367,7 +367,7 @@ static int DestroyMatchHist(flo,ped)
 
 static void
 doHistQ(svoid,hist,clip,x,dx)
-    void	*svoid;
+    pointer	svoid;
     CARD32	*hist, clip, x, dx;
 {
     QuadPixel *src = (QuadPixel *) svoid;
@@ -378,7 +378,7 @@ doHistQ(svoid,hist,clip,x,dx)
 
 static void
 doHistP(svoid,hist,clip,x,dx)
-    void	*svoid;
+    pointer	svoid;
     CARD32	*hist, clip, x, dx;
 {
     PairPixel *src = (PairPixel *) svoid;
@@ -389,7 +389,7 @@ doHistP(svoid,hist,clip,x,dx)
 
 static void
 doHistB(svoid,hist,clip,x,dx)
-    void	*svoid;
+    pointer	svoid;
     CARD32	*hist, clip, x, dx;
 {
     BytePixel *src = (BytePixel *) svoid;
@@ -406,7 +406,7 @@ doHistB(svoid,hist,clip,x,dx)
 
 static void
 doLutQ(dvoid,lut,clip,x,dx)
-    void	*dvoid;
+    pointer	dvoid;
     CARD32	*lut, clip, x, dx;
 {
     QuadPixel	*dst = (QuadPixel *) dvoid;
@@ -417,7 +417,7 @@ doLutQ(dvoid,lut,clip,x,dx)
 
 static void
 doLutP(dvoid,lut,clip,x,dx)
-    void	*dvoid;
+    pointer	dvoid;
     CARD32	*lut, clip, x, dx;
 {
     PairPixel	*dst = (PairPixel *) dvoid;
@@ -428,7 +428,7 @@ doLutP(dvoid,lut,clip,x,dx)
 
 static void
 doLutB(dvoid,lut,clip,x,dx)
-    void	*dvoid;
+    pointer	dvoid;
     CARD32	*lut, clip, x, dx;
 {
     BytePixel	*dst = (BytePixel *) dvoid;

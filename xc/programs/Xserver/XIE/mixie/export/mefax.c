@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mefax.c,v 1.1 93/10/26 09:50:03 rws Exp $ */
 /**** module mefax.c ****/
 /******************************************************************************
 				NOTICE
@@ -221,7 +221,7 @@ int pbytes,max_lines_in;
 		AllocError(flo, ped, return(FALSE));
 	  }
 	  epvt->align_eol = g31dtec->alignEol;
-	  state->private = (void *) epvt;
+	  state->private = (pointer ) epvt;
 
 	  texpvt->encodptr = encode_g31d; 
 	}
@@ -247,7 +247,7 @@ int pbytes,max_lines_in;
 	  epvt->k 		= g32dtec->kFactor;
 	  epvt->align_eol 	= g32dtec->alignEol;
 	  epvt->uncompressed 	= g32dtec->uncompressed;
-	  state->private = (void *) epvt;
+	  state->private = (pointer ) epvt;
 	}
 	texpvt->encodptr = encode_g32d; 
 	break;
@@ -275,7 +275,7 @@ int pbytes,max_lines_in;
 
 	  epvt->uncompressed = ((xieTecEncodeG42D *)tec)->uncompressed;
 	  epvt->really_g4 = 1;
-	  state->private = (void *) epvt;
+	  state->private = (pointer ) epvt;
 	}
 	texpvt->encodptr = encode_g32d; 
 	break;
@@ -296,7 +296,7 @@ int pbytes,max_lines_in;
 		FreeFaxData(flo,ped);
 		AllocError(flo, ped, return(FALSE));
 	  }
-	  state->private = (void *) epvt;
+	  state->private = (pointer ) epvt;
 	}
 	texpvt->encodptr = encode_tiff2; 
 	break;
@@ -320,7 +320,7 @@ int pbytes,max_lines_in;
 		FreeFaxData(flo,ped);
 		AllocError(flo, ped, return(FALSE));
 	  }
-	  state->private = (void *) epvt;
+	  state->private = (pointer ) epvt;
 	}
 	texpvt->encodptr = encode_tiffpb; 
 	break;
@@ -463,14 +463,14 @@ int nl_mappable;
 	coming back properly.
 ***/
 
-    src = GetCurrentSrc(void,flo,pet,sbnd);
+    src = GetCurrentSrc(pointer,flo,pet,sbnd);
 
     if (dbnd->final) {
 	/* be forgiving if extra data gets passed to us */
   	FreeData(flo,pet,sbnd,sbnd->maxGlobal);
 	return(TRUE);
     }
-    while (dst = GetDstBytes(BytePixel,flo,pet,dbnd,dbnd->current,
+    while (dst = GetDstBytes(BytePixel *,flo,pet,dbnd,dbnd->current,
   		texpvt->strip_req_newbytes,KEEP)) {
 
 	if (!state->strip) {
@@ -515,7 +515,7 @@ int nl_mappable;
 	            PutData(flo,pet,dbnd,dbnd->maxGlobal);
 			/* flush current strip */
 		    /* ask for one more strip of length 1 */
-    		    dst=GetDstBytes(BytePixel,flo,pet,
+    		    dst=GetDstBytes(BytePixel *,flo,pet,
 					dbnd,dbnd->current,1,KEEP);
 		    *dst = state->stager >> 24;
 		}

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pcfrgb.c,v 1.1 93/10/26 10:02:00 rws Exp $ */
 /**** module pcfrgb.c ****/
 /******************************************************************************
 				NOTICE
@@ -177,7 +177,7 @@ CARD16	tsize;
 
    VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
 
-   if (!(ped->techPvt = (void *)XieMalloc(sizeof(pTecRGBToCIEDefRec))))
+   if (!(ped->techPvt = (pointer )XieMalloc(sizeof(pTecRGBToCIEDefRec))))
 	FloAllocError(flo, ped->phototag,xieElemConvertFromRGB, return(TRUE));
 
    pvt = (pTecRGBToCIEDefPtr)ped->techPvt;
@@ -215,7 +215,7 @@ CARD16	tsize;
 
    VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
 
-   if (!(ped->techPvt = (void *)XieMalloc(sizeof(pTecRGBToYCbCrDefRec))))
+   if (!(ped->techPvt = (pointer )XieMalloc(sizeof(pTecRGBToYCbCrDefRec))))
 	FloAllocError(flo, ped->phototag,xieElemConvertFromRGB, return(TRUE));
 
    pvt = (pTecRGBToYCbCrDefPtr)ped->techPvt;
@@ -247,7 +247,7 @@ CARD16	tsize;
 
    VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
 
-   if (!(ped->techPvt = (void *)XieMalloc(sizeof(pTecRGBToYCCDefRec))))
+   if (!(ped->techPvt = (pointer )XieMalloc(sizeof(pTecRGBToYCCDefRec))))
 	FloAllocError(flo, ped->phototag,xieElemConvertFromRGB, return(TRUE));
 
    pvt = (pTecRGBToYCCDefPtr)ped->techPvt;

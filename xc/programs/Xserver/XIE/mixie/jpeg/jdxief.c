@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jdxief.c,v 1.1 93/10/26 09:55:01 rws Exp $ */
 /* Module jdxief.c */
 
 /****************************************************************************
@@ -49,7 +49,7 @@ terms and conditions:
 
 #include "jinclude.h"
 
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 GLOBAL int jdXIE_init(decompress_info_ptr);
 GLOBAL int jdXIE_get(decompress_info_ptr);
 GLOBAL int jdXIE_term(decompress_info_ptr);
@@ -59,7 +59,7 @@ GLOBAL void jseldXIE(decompress_info_ptr);
 /**********************************************************************/
 
 GLOBAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 JD_INIT(decompress_info_ptr cinfo,
 	decompress_methods_ptr dcmethods, external_methods_ptr emethods)
 #else
@@ -82,7 +82,7 @@ JD_INIT(cinfo, dcmethods, emethods)
 /**********************************************************************/
 
 GLOBAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 JD_BEGINFRAME(decompress_info_ptr cinfo)
 #else
 JD_BEGINFRAME(cinfo)
@@ -97,7 +97,7 @@ JD_BEGINFRAME(cinfo)
 /**********************************************************************/
 
 GLOBAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 JD_PROCESS(decompress_info_ptr cinfo)
 #else
 JD_PROCESS(cinfo)
@@ -110,7 +110,7 @@ JD_PROCESS(cinfo)
 /**********************************************************************/
 
 GLOBAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 JD_ENDFRAME(decompress_info_ptr cinfo)
 #else
 JD_ENDFRAME(cinfo)

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miuncomp.h,v 1.1 93/10/26 09:51:35 rws Exp $ */
 /**** module miuncomp.h ****/
 /******************************************************************************
 				NOTICE
@@ -61,7 +61,7 @@ typedef struct _miuncompdef {
   CARD8	 bitOff;	    /* more that we can chew? 			*/
   BOOL	 unaligned;	    /* Flag used by band by pixel decoding 	*/
   CARD8	 pad;
-  void  *buf;
+  pointer buf;
 } miUncompRec, *miUncompPtr;
 
 #ifdef _XIEC_MIUNCOMP

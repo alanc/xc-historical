@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jdxie.c,v 1.1 93/10/26 09:56:38 rws Exp $ */
 /* Module jdxie.c */
 
 /****************************************************************************
@@ -56,7 +56,7 @@ terms and conditions:
 #include "jinclude.h"
 
 METHODDEF void
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 d_ui_method_selection (decompress_info_ptr cinfo)
 #else
 d_ui_method_selection (cinfo)
@@ -85,13 +85,13 @@ d_ui_method_selection (cinfo)
 #define FMEMZERO(target,size)	MEMZERO(target,size)
 #else				/* 80x86 case, define if we can */
 #ifdef USE_FMEM
-#define FMEMCOPY(dest,src,size)	_fmemcpy((void FAR *)(dest), (const void FAR *)(src), (size_t)(size))
-#define FMEMZERO(target,size)	_fmemset((void FAR *)(target), 0, (size_t)(size))
+#define FMEMCOPY(dest,src,size)	_fmemcpy((pointer)(dest), (const pointer)(src), (size_t)(size))
+#define FMEMZERO(target,size)	_fmemset((pointer)(target), 0, (size_t)(size))
 #endif
 #endif
 
 METHODDEF void
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 d_per_scan_method_selection (decompress_info_ptr cinfo)
 #else
 d_per_scan_method_selection (cinfo)
@@ -107,7 +107,7 @@ d_per_scan_method_selection (cinfo)
 
 
 LOCAL void
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 d_initial_method_selection (decompress_info_ptr cinfo)
 #else
 d_initial_method_selection (cinfo)
@@ -128,7 +128,7 @@ d_initial_method_selection (cinfo)
 
 
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 initial_setup (decompress_info_ptr cinfo)
 #else
 initial_setup (cinfo)
@@ -203,7 +203,7 @@ initial_setup (cinfo)
  */
 
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 interleaved_scan_setup (decompress_info_ptr cinfo)
 #else
 interleaved_scan_setup (cinfo)
@@ -261,7 +261,7 @@ interleaved_scan_setup (cinfo)
 
 
 LOCAL void
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 noninterleaved_scan_setup (decompress_info_ptr cinfo)
 #else
 noninterleaved_scan_setup (cinfo)
@@ -293,7 +293,7 @@ noninterleaved_scan_setup (cinfo)
 }
 
 GLOBAL JSAMPIMAGE
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 alloc_sampimage (decompress_info_ptr cinfo,
 		 int num_comps, long num_rows, long num_cols)
 #else
@@ -322,7 +322,7 @@ alloc_sampimage (cinfo,	num_comps, num_rows, num_cols)
 }
 
 LOCAL JBLOCKIMAGE
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 alloc_MCU_row (decompress_info_ptr cinfo)
 #else
 alloc_MCU_row (cinfo)
@@ -348,7 +348,7 @@ alloc_MCU_row (cinfo)
 }
 
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 alloc_sampling_buffer (decompress_info_ptr cinfo, JSAMPIMAGE sampled_data[2])
 #else
 alloc_sampling_buffer (cinfo, sampled_data)
@@ -417,7 +417,7 @@ alloc_sampling_buffer (cinfo, sampled_data)
  */
 
 LOCAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 prepare_range_limit_table (decompress_info_ptr cinfo)
 #else
 prepare_range_limit_table (cinfo)
@@ -442,7 +442,7 @@ prepare_range_limit_table (cinfo)
 }
 
 LOCAL void
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 duplicate_row (JSAMPARRAY image_data,
 	       long num_cols, int source_row, int num_rows)
 #else
@@ -465,7 +465,7 @@ duplicate_row (image_data, num_cols, source_row, num_rows)
 }
 
 LOCAL void
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 expand (decompress_info_ptr cinfo,
 	JSAMPIMAGE sampled_data, JSAMPIMAGE fullsize_data,
 	long fullsize_width,
@@ -529,7 +529,7 @@ expand (cinfo,
 }
 
 LOCAL void
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jdcopy_pixel_rows (decompress_info_ptr cinfo, 
          JSAMPIMAGE input_array, JSAMPIMAGE output_array,
          int num_components, int num_rows, long num_cols)
@@ -573,7 +573,7 @@ jdcopy_pixel_rows (cinfo,
 }
 
 GLOBAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jdXIE_init (decompress_info_ptr cinfo)
 #else
 jdXIE_init (cinfo)
@@ -696,7 +696,7 @@ jdXIE_init (cinfo)
 
 
 GLOBAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jdXIE_get (decompress_info_ptr cinfo)
 #else
 jdXIE_get (cinfo)
@@ -800,7 +800,7 @@ jdXIE_get (cinfo)
 }  /* jdXIE_get */
 
 GLOBAL int
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jdXIE_term (decompress_info_ptr cinfo)
 #else
 jdXIE_term (cinfo)
@@ -825,7 +825,7 @@ jdXIE_term (cinfo)
 
 
 GLOBAL void
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 jseldXIE (decompress_info_ptr cinfo)
 #else
 jseldXIE (cinfo)

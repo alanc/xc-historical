@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mprgb.c,v 1.1 93/10/26 09:46:15 rws Exp $ */
 /**** module mprgb.c ****/
 /******************************************************************************
 				NOTICE
@@ -144,9 +144,9 @@ typedef struct _mprgbdef {
     void	(*action) ();		/* every one needs these */
     void	(*post)   ();		/* clipping, or CIELab, for floats */
     CARD32	iclip[3];		/* clip values for integers */
-    void	*(*cvt_in[3])();	/* !0 if need to expand input */
-    void	*(*cvt_out[3])();	/* !0 if need to compress output */
-    void	*aux_buf[3];		/* used for cvt_in/cvt_out */
+    pointer	(*cvt_in[3])();	/* !0 if need to expand input */
+    pointer	(*cvt_out[3])();	/* !0 if need to compress output */
+    pointer	aux_buf[3];		/* used for cvt_in/cvt_out */
     RGBFloat	matrix[12];
     INT32	imatrix[12];
 } mpRGBPvtRec, *mpRGBPvtPtr;
@@ -274,14 +274,14 @@ ActivateRGB(flo,ped,pet)
     bandPtr	sband = &(pet->receptor[SRCt1].band[0]);
     bandPtr	dband = &(pet->emitter[0]);
     CARD32	 npix = sband->format->width;
-    void    *svoid[3], *dvoid[3], *stvoid[3], *dtvoid[3];
+    pointer svoid[3], dvoid[3], stvoid[3], dtvoid[3];
     CARD32	    b;
     BOOL	 stop;
 
     for (b = 0; b < 3; b++, sband++, dband++) {
-	if (!(svoid[b] = GetCurrentSrc(void,flo,pet,sband)))
+	if (!(svoid[b] = GetCurrentSrc(pointer,flo,pet,sband)))
             return TRUE;
-	if (!(dvoid[b] = GetCurrentDst(void,flo,pet,dband)))
+	if (!(dvoid[b] = GetCurrentDst(pointer,flo,pet,dband)))
 	    return TRUE;
 	stvoid[b] = pvt->cvt_in[b]
 		? (*pvt->cvt_in[b]) (pvt->aux_buf[b], svoid[b], pvt, npix)
@@ -298,8 +298,8 @@ ActivateRGB(flo,ped,pet)
 	for (b = 0, stop = FALSE; b < 3; b++, sband++, dband++) {
 	    if (pvt->cvt_out[b])
 		(*pvt->cvt_out[b]) (dvoid[b], dtvoid[b], pvt, npix);
-	    stop |= !(svoid[b] = GetNextSrc(void,flo,pet,sband,FLUSH));
-	    stop |= !(dvoid[b] = GetNextDst(void,flo,pet,dband,FLUSH));
+	    stop |= !(svoid[b] = GetNextSrc(pointer,flo,pet,sband,FLUSH));
+	    stop |= !(dvoid[b] = GetNextDst(pointer,flo,pet,dband,FLUSH));
 	    if (!stop) {
 		dtvoid[b] = pvt->cvt_out[b] ? dtvoid[b] : dvoid[b];
 		stvoid[b] = pvt->cvt_in[b]
@@ -371,7 +371,7 @@ DestroyRGB(flo,ped)
  * 
  * NOTE: Investigate use of stock cbrt() function in libc.
  * NOTE: Borrowed from lib/X/XcmsMath.h
- * NOTE: $XConsortium: XcmsMath.c,v 1.7 91/06/27 10:52:38 dave Exp $
+ * NOTE: $XConsortium: mprgb.c,v 1.1 93/10/26 09:46:15 rws Exp $
  * NOTE: Copyright 1990 Massachusetts Institute of Technology
  *
  * NOTE: Investigate use of stock cbrt() function in libc.
@@ -422,9 +422,9 @@ _XcmsCubeRoot(a)
 /* (*(pvt->action))  (dvoid, svoid, pvt, npix); */
 /* (*(pvt->post))    (dvoid, npix); */
 
-static void *
+static pointer
 cvt_bit_to_pair(dvoid,svoid,pvt,npix)
-    void *dvoid, *svoid;
+    pointer dvoid, svoid;
     mpRGBPvtPtr pvt;
     CARD32	npix;
 {
@@ -440,9 +440,9 @@ cvt_bit_to_pair(dvoid,svoid,pvt,npix)
     return dvoid;
 }
 
-static void *
+static pointer
 cvt_byte_to_pair(dvoid,svoid,pvt,npix)
-    void *dvoid, *svoid;
+    pointer dvoid, svoid;
     mpRGBPvtPtr pvt;
     CARD32	npix;
 {
@@ -453,9 +453,9 @@ cvt_byte_to_pair(dvoid,svoid,pvt,npix)
     return dvoid;
 }
 
-static void *
+static pointer
 cvt_pair_to_byte(dvoid,svoid,pvt,npix)
-    void *dvoid, *svoid;
+    pointer dvoid, svoid;
     mpRGBPvtPtr pvt;
     CARD32	npix;
 {
@@ -466,9 +466,9 @@ cvt_pair_to_byte(dvoid,svoid,pvt,npix)
     return dvoid;
 }
 
-static void *
+static pointer
 cvt_pair_to_bit(dvoid,svoid,pvt,npix)
-    void *dvoid, *svoid;
+    pointer dvoid, svoid;
     mpRGBPvtPtr pvt;
     CARD32	npix;
 {
@@ -1175,9 +1175,9 @@ CheckRGB(flo,ped,fromrgb)
     CARD32 c, cmin, cmax, l, lmin, lmax;
     CARD32 band;
 
-    pvt->cvt_in[0]  = pvt->cvt_in[1]  = pvt->cvt_in[2]  = (void * (*)()) 0;
-    pvt->cvt_out[0] = pvt->cvt_out[1] = pvt->cvt_out[2] = (void * (*)()) 0;
-    pvt->aux_buf[0] = pvt->aux_buf[1] = pvt->aux_buf[2] = (void *) 0;
+    pvt->cvt_in[0]  = pvt->cvt_in[1]  = pvt->cvt_in[2]  = (pointer (*)()) 0;
+    pvt->cvt_out[0] = pvt->cvt_out[1] = pvt->cvt_out[2] = (pointer (*)()) 0;
+    pvt->aux_buf[0] = pvt->aux_buf[1] = pvt->aux_buf[2] = (pointer) 0;
 
     if (IsntConstrained(iband->format->class)) {
 	/* Already set up to activate floating routine */
@@ -1236,7 +1236,7 @@ CheckRGB(flo,ped,fromrgb)
 		pvt->cvt_in[band] = levels < (1<<1)
 			? cvt_bit_to_pair
 			: cvt_byte_to_pair;
-		pvt->aux_buf[band] = (void *)
+		pvt->aux_buf[band] = (pointer)
 			XieMalloc( iband->format->width * sizeof(PairPixel));
 		if (!pvt->aux_buf[band])
 			AllocError(flo,ped,return);
@@ -1288,13 +1288,13 @@ CheckRGB(flo,ped,fromrgb)
 	levels = iband->format->levels; 
 	pvt->cvt_in[band]  = levels <= (1<<1) ? cvt_bit_to_pair :
 			     levels <= (1<<8) ? cvt_byte_to_pair :
-					        (void * (*)()) 0;
+					        (pointer (*)()) 0;
 	levels = oband->format->levels; 
 	pvt->cvt_out[band] = levels <= (1<<1) ? cvt_pair_to_bit :
 			     levels <= (1<<8) ? cvt_pair_to_byte :
-					        (void * (*)()) 0;
+					        (pointer (*)()) 0;
 	if ( pvt->cvt_in[band] || pvt->cvt_out[band]) {
-	    pvt->aux_buf[band] = (void *)
+	    pvt->aux_buf[band] = (pointer)
 		XieMalloc( iband->format->width * sizeof(PairPixel));
 	    if (!pvt->aux_buf[band])
 		AllocError(flo,ped,return);
@@ -1313,12 +1313,12 @@ ClearRGB(flo,ped)
     if (!pvt)
 	return;
 
-    pvt->cvt_in[0]  = pvt->cvt_in[1]  = pvt->cvt_in[2]  = (void * (*)()) 0;
-    pvt->cvt_out[0] = pvt->cvt_out[1] = pvt->cvt_out[2] = (void * (*)()) 0;
+    pvt->cvt_in[0]  = pvt->cvt_in[1]  = pvt->cvt_in[2]  = (pointer (*)()) 0;
+    pvt->cvt_out[0] = pvt->cvt_out[1] = pvt->cvt_out[2] = (pointer (*)()) 0;
 
-    if (pvt->aux_buf[0]) pvt->aux_buf[0] = (void *) XieFree(pvt->aux_buf[0]);
-    if (pvt->aux_buf[1]) pvt->aux_buf[1] = (void *) XieFree(pvt->aux_buf[1]);
-    if (pvt->aux_buf[2]) pvt->aux_buf[2] = (void *) XieFree(pvt->aux_buf[2]);
+    if (pvt->aux_buf[0]) pvt->aux_buf[0] = (pointer) XieFree(pvt->aux_buf[0]);
+    if (pvt->aux_buf[1]) pvt->aux_buf[1] = (pointer) XieFree(pvt->aux_buf[1]);
+    if (pvt->aux_buf[2]) pvt->aux_buf[2] = (pointer) XieFree(pvt->aux_buf[2]);
 }
 	
 /* end module mprgb.c */

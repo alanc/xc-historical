@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: jmemsys.h,v 1.1 93/10/26 09:54:27 rws Exp $ */
 /* Module jmemsys.h */
 
 /****************************************************************************
@@ -73,8 +73,8 @@ terms and conditions:
  * On an 80x86 machine using small-data memory model, these manage near heap.
  */
 
-EXTERN void * jget_small PP((size_t sizeofobject));
-EXTERN void jfree_small PP((void * object));
+EXTERN pointer jget_small PP((size_t sizeofobject));
+EXTERN void jfree_small PP((pointer object));
 
 /*
  * These two functions are used to allocate and release large chunks of
@@ -84,8 +84,8 @@ EXTERN void jfree_small PP((void * object));
  */
 
 #ifdef NEED_FAR_POINTERS	/* typically not needed except on 80x86 */
-EXTERN void FAR * jget_large PP((size_t sizeofobject));
-EXTERN void jfree_large PP((void FAR * object));
+EXTERN pointer jget_large PP((size_t sizeofobject));
+EXTERN void jfree_large PP((pointer object));
 #else
 #define jget_large(sizeofobject)	jget_small(sizeofobject)
 #define jfree_large(object)		jfree_small(object)
@@ -138,10 +138,10 @@ typedef struct backing_store_struct * backing_store_ptr;
 typedef struct backing_store_struct {
 	/* Methods for reading/writing/closing this backing-store object */
 	METHOD(void, read_backing_store, (backing_store_ptr info,
-					  void FAR * buffer_address,
+					  pointer buffer_address,
 					  long file_offset, long byte_count));
 	METHOD(void, write_backing_store, (backing_store_ptr info,
-					   void FAR * buffer_address,
+					   pointer buffer_address,
 					   long file_offset, long byte_count));
 	METHOD(void, close_backing_store, (backing_store_ptr info));
 	/* Private fields for system-dependent backing-store management */

@@ -1,4 +1,4 @@
-/* $XConsortium: fencode.h,v 1.1 93/07/19 10:17:03 rws Exp $ */
+/* $XConsortium: fencode.h,v 1.1 93/10/26 09:53:11 rws Exp $ */
 /**** module fencode.h ****/
 /******************************************************************************
 				NOTICE
@@ -48,6 +48,7 @@ terms and conditions:
 
 ******************************************************************************/
 
+#include "misc.h" /* for pointer */
 
 /***	entry points */
 int encode_g4();
@@ -113,7 +114,7 @@ typedef struct _fax_encode_state {
 			 /* "pretend" strip for handling strip edges	*/
 	BitStream bits;	 /* definition of bitstream, current strip	*/
 
-	void *private;	 /* private data, depends on encoding scheme	*/
+	pointer private;/* private data, depends on encoding scheme	*/
 
 	int goal;	 /* our current goal				*/
 	int a0_pos;	 /* starting changing position on coding line	*/
@@ -190,7 +191,7 @@ typedef struct _g32d_epvt {
 
 #define save_state_and_return(state) 					\
 	{								\
-	    state->private 	= (char *) epvt;			\
+	    state->private 	= (pointer) epvt;			\
 	    epvt->counts 	= counts;				\
 	    epvt->above 	= above;				\
 	    epvt->nvals 	= nvals;				\
@@ -267,7 +268,7 @@ typedef struct _g32d_epvt {
 
 #define save_state_and_return(state) 					\
 	{								\
-	    state->private 	= (char *) epvt;			\
+	    state->private 	= (pointer) epvt;			\
 	    epvt->counts 	= counts;				\
 	    epvt->nvals 	= nvals;				\
 	    epvt->index 	= index;				\
@@ -309,7 +310,7 @@ typedef struct _g32d_epvt {
 
 #define save_state_and_return(state) 					\
 	{								\
-	    state->private 	= (char *) epvt;			\
+	    state->private 	= (pointer) epvt;			\
 	    epvt->index 	= index;				\
 	    epvt->start 	= start;				\
 	    epvt->nlits 	= nlits;				\
