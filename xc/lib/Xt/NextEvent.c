@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: NextEvent.c,v 1.25 87/11/01 16:42:57 haynes BL5 $";
+static char rcsid[] = "$Header: NextEvent.c,v 1.25 87/11/01 16:42:57 swick Locked $";
 #endif lint
 
 /*
@@ -59,6 +59,8 @@ static char rcsid[] = "$Header: NextEvent.c,v 1.25 87/11/01 16:42:57 haynes BL5 
 #define  TIMER_EVENT_FLAG        13
 #define  TIMER_EVENT_MASK	1 << TIMER_EVENT_FLAG
 #endif
+
+extern int errno;
 
 /*
  * Private definitions
