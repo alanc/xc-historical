@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.32 91/07/01 12:02:59 xguest Exp $
+ * $XConsortium: imakemdep.h,v 1.33 91/07/09 14:37:14 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -70,6 +70,10 @@
 # else
 #  define imake_ccflags "-DSYSV"
 # endif
+#endif
+
+#ifdef __convex__
+#define imake_ccflags "-fn -tm c1"
 #endif
 
 #else /* not CCIMAKE */
