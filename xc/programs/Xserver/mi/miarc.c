@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.37 92/04/20 17:12:04 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.38 92/04/21 15:40:59 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -3225,11 +3225,11 @@ arcSpan (y, def, bounds, acc)
 static double	arcXcenter, arcYcenter;
 static int	arcXoffset, arcYoffset;
 
-static struct finalSpan	**finalSpans;
-static int		finalMiny, finalMaxy;
-static int		finalSize;
+static struct finalSpan	**finalSpans = NULL;
+static int		finalMiny = 0, finalMaxy = -1;
+static int		finalSize = 0;
 
-static int		nspans;		/* total spans, not just y coords */
+static int		nspans = 0;	/* total spans, not just y coords */
 
 struct finalSpan {
 	struct finalSpan	*next;
@@ -3314,7 +3314,7 @@ fillSpans (pDrawable, pGC)
 	{
 	    i = 0;
 	    f = finalSpans;
-	    for (spany = finalMiny; spany < finalMaxy; spany++, f++) {
+	    for (spany = finalMiny; spany <= finalMaxy; spany++, f++) {
 		    for (span = *f; span; span=span->next) {
 			    if (span->max <= span->min)
 				    continue;
@@ -3331,14 +3331,14 @@ fillSpans (pDrawable, pGC)
 	xfree (xSpans);
 	xfree (xWidths);
 	finalMiny = 0;
-	finalMaxy = 0;
+	finalMaxy = -1;
 	finalSize = 0;
 	nspans = 0;
 }
 
-# define SPAN_REALLOC	1024
+# define SPAN_REALLOC	100
 
-# define findSpan(y) ((finalMiny <= (y) && (y) < finalMaxy) ? \
+# define findSpan(y) ((finalMiny <= (y) && (y) <= finalMaxy) ? \
 			  &finalSpans[(y) - finalMiny] : \
 			  realFindSpan (y))
 
@@ -3350,12 +3350,16 @@ realFindSpan (y)
 	int			change;
 	int			i;
 
-	if (y < finalMiny || y >= finalMaxy) {
+	if (y < finalMiny || y > finalMaxy) {
+		if (!finalSize) {
+			finalMaxy = y - (SPAN_REALLOC - 1);
+			finalMiny = finalMaxy + 1;
+		}
 		if (y < finalMiny)
 			change = finalMiny - y;
 		else
 			change = y - finalMaxy;
-		if (change >= SPAN_REALLOC)
+		if (change > SPAN_REALLOC)
 			change += SPAN_REALLOC;
 		else
 			change = SPAN_REALLOC;
@@ -3379,7 +3383,7 @@ realFindSpan (y)
 		if ((i = finalMiny - newMiny) > 0)
 			bzero ((char *)newSpans, i * sizeof (struct finalSpan *));
 		if ((i = newMaxy - finalMaxy) > 0)
-			bzero ((char *)(newSpans + finalMaxy - newMiny),
+			bzero ((char *)(newSpans + newSize - i),
 			       i * sizeof (struct finalSpan *));
 		finalSpans = newSpans;
 		finalMaxy = newMaxy;
@@ -3739,7 +3743,7 @@ drawArc (x0, y0, w, h, l, a0, a1, right, left)
 		 * find left-most point
 		 */
 		for (i = 0; i < bandno; i++)
-			if (band[i].a0 < q0) {
+			if (band[i].a0 <= q0) {
 				q0 = band[i].a0;
 				q1 = band[i].a1;
 				mask = band[i].mask;
@@ -3775,7 +3779,7 @@ drawArc (x0, y0, w, h, l, a0, a1, right, left)
 				 * check if this band is empty
 				 */
 				if (band[i].a0 == band[i].a1)
-					band[i].a1 = band[i].a0 = 90 * 64;
+					band[i].a1 = band[i].a0 = 90 * 64 + 1;
 			}
 	}
 	computeAcc (&def, &acc);
@@ -3785,23 +3789,23 @@ drawArc (x0, y0, w, h, l, a0, a1, right, left)
  		if (mask & (1 << rightq)) {
 			if (sweep[j].a0 == righta)
 				passRight = right;
-			if (sweep[j].a1 == righta) {
+			else if (sweep[j].a1 == righta) {
 				passLeft = right;
 				flipRight = 1;
 			}
 		}
 		if (mask & (1 << leftq)) {
-			if (sweep[j].a0 == lefta) {
-				if (passRight)
-					copyEnd = 1;
-				passRight = left;
-				flipLeft = 1;
-			}
 			if (sweep[j].a1 == lefta)
 			{
 				if (passLeft)
 					copyEnd = 1;
 				passLeft = left;
+			}
+			else if (sweep[j].a0 == lefta) {
+				if (passRight)
+					copyEnd = 1;
+				passRight = left;
+				flipLeft = 1;
 			}
 		}
 		drawQuadrant (&def, &acc, sweep[j].a0, sweep[j].a1, mask, 
