@@ -1,4 +1,4 @@
-/* $XConsortium: session.c,v 1.3 94/07/18 15:27:48 mor Exp $ */
+/* $XConsortium: session.c,v 1.4 94/07/19 12:37:11 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -48,10 +48,51 @@ GetClientID (window)
 Window window;
 
 {
+    char *client_id = NULL;
+    Window client_leader;
     XTextProperty tp;
-    Bool hasIt = 0;
+    Atom actual_type;
+    int actual_format;
+    unsigned long nitems;
+    unsigned long nbytes;
+    unsigned long bytes_after;
+    unsigned char *prop = NULL;
 
-    if (XGetTextProperty (dpy, window, &tp, _XA_SM_CLIENT_ID))
+    if (XGetWindowProperty (dpy, window, _XA_WM_CLIENT_LEADER,
+	0L, 1L, False, AnyPropertyType,	&actual_type, &actual_format,
+	&nitems, &bytes_after, &prop) == Success)
+    {
+	if (actual_type == XA_WINDOW && actual_format == 32 &&
+	    nitems == 1 && bytes_after == 0)
+	{
+	    client_leader = *((Window *) prop);
+
+	    if (XGetTextProperty (dpy, client_leader, &tp, _XA_SM_CLIENT_ID))
+	    {
+		if (tp.encoding == XA_STRING &&
+		    tp.format == 8 && tp.nitems != 0)
+		    client_id = (char *) tp.value;
+	    }
+	}
+
+	if (prop)
+	    XFree (prop);
+    }
+    
+    return client_id;
+}
+
+
+
+char *
+GetWindowRole (window)
+
+Window window;
+
+{
+    XTextProperty tp;
+
+    if (XGetTextProperty (dpy, window, &tp, _XA_WM_WINDOW_ROLE))
     {
 	if (tp.encoding == XA_STRING && tp.format == 8 && tp.nitems != 0)
 	    return ((char *) tp.value);
@@ -179,22 +220,32 @@ char	**stringp;
 
 
 /*
- * An entry in the .twmwc (window config) file looks like this:
+ * An entry in the saved window config file looks like this:
  *
  * FIELD				BYTES
  * -----                                ----
- * client ID len			1
- * client ID				LIST of bytes
- * WM_CLASS "res name" length		1
- * WM_CLASS "res name"			LIST of bytes
- * WM_CLASS "res class" length          1
- * WM_CLASS "res class"                 LIST of bytes
- * WM_NAME length			1
- * WM_NAME				LIST of bytes
- * WM_COMMAND arg count			1
- * For each arg in WM_COMMAND
- *    arg length			1
- *    arg				LIST of bytes
+ * SM_CLIENT_ID ID len			1	       (may be 0)
+ * SM_CLIENT_ID				LIST of bytes  (may be NULL)
+ *
+ * WM_WINDOW_ROLE length		1	       (may be 0)
+ * WM_WINDOW_ROLE			LIST of bytes  (may be NULL)
+ *
+ * if no WM_WINDOW_ROLE (length = 0)
+ *
+ *   WM_CLASS "res name" length		1
+ *   WM_CLASS "res name"		LIST of bytes
+ *   WM_CLASS "res class" length        1
+ *   WM_CLASS "res class"               LIST of bytes
+ *   WM_NAME length			1
+ *   WM_NAME				LIST of bytes
+ *
+ *   if no SM_CLIENT_ID
+ *
+ *     WM_COMMAND arg count		1
+ *     For each arg in WM_COMMAND
+ *        arg length			1
+ *        arg				LIST of bytes
+ *
  * Iconified bool			1
  * Geom x				2
  * Geom y				2
@@ -203,11 +254,12 @@ char	**stringp;
  */
 
 int
-WriteWinConfigEntry (configFile, theWindow, clientId)
+WriteWinConfigEntry (configFile, theWindow, clientId, windowRole)
 
 FILE *configFile;
 TwmWindow *theWindow;
 char *clientId;
+char *windowRole;
 
 {
     char **wm_command;
@@ -215,30 +267,37 @@ char *clientId;
 
     if (!write_counted_string (configFile, clientId))
 	return 0;
-    if (!write_counted_string (configFile, theWindow->class.res_name))
-	return 0;
-    if (!write_counted_string (configFile, theWindow->class.res_class))
-	return 0;
-    if (!write_counted_string (configFile, theWindow->name))
-	return 0;
-    
-    wm_command = NULL;
-    wm_command_count = 0;
-    XGetCommand (dpy, theWindow->w, &wm_command, &wm_command_count);
 
-    if (!wm_command || wm_command_count == 0)
+    if (!write_counted_string (configFile, windowRole))
+	return 0;
+
+    if (!windowRole)
     {
-	if (!write_byte (configFile, 0))
+	if (!write_counted_string (configFile, theWindow->class.res_name))
 	    return 0;
-    }
-    else
-    {
-	if (!write_byte (configFile, (char) wm_command_count))
+	if (!write_counted_string (configFile, theWindow->class.res_class))
 	    return 0;
-	for (i = 0; i < wm_command_count; i++)
-	    if (!write_counted_string (configFile, wm_command[i]))
+	if (!write_counted_string (configFile, theWindow->name))
+	    return 0;
+    
+	wm_command = NULL;
+	wm_command_count = 0;
+	XGetCommand (dpy, theWindow->w, &wm_command, &wm_command_count);
+
+	if (!clientId || !wm_command || wm_command_count == 0)
+	{
+	    if (!write_byte (configFile, 0))
 		return 0;
-	XFreeStringList (wm_command);
+	}
+	else
+	{
+	    if (!write_byte (configFile, (char) wm_command_count))
+		return 0;
+	    for (i = 0; i < wm_command_count; i++)
+		if (!write_counted_string (configFile, wm_command[i]))
+		    return 0;
+	    XFreeStringList (wm_command);
+	}
     }
 
     if (!write_byte (configFile, theWindow->icon ? 1 : 0))
@@ -274,6 +333,7 @@ TWMWinConfigEntry **pentry;
 
     entry->tag = 0;
     entry->client_id = NULL;
+    entry->window_role = NULL;
     entry->class.res_name = NULL;
     entry->class.res_class = NULL;
     entry->wm_name = NULL;
@@ -282,30 +342,37 @@ TWMWinConfigEntry **pentry;
 
     if (!read_counted_string (configFile, &entry->client_id))
 	goto give_up;
-    if (!read_counted_string (configFile, &entry->class.res_name))
-	goto give_up;
-    if (!read_counted_string (configFile, &entry->class.res_class))
-	goto give_up;
-    if (!read_counted_string (configFile, &entry->wm_name))
-	goto give_up;
-    
-    if (!read_byte (configFile, &byte))
-	goto give_up;
-    entry->wm_command_count = byte;
 
-    if (entry->wm_command_count == 0)
-	entry->wm_command = NULL;
-    else
+    if (!read_counted_string (configFile, &entry->window_role))
+	goto give_up;
+
+    if (!entry->window_role)
     {
-	entry->wm_command = (char **) malloc (entry->wm_command_count *
-	    sizeof (char *));
-
-	if (!entry->wm_command)
+	if (!read_counted_string (configFile, &entry->class.res_name))
 	    goto give_up;
+	if (!read_counted_string (configFile, &entry->class.res_class))
+	    goto give_up;
+	if (!read_counted_string (configFile, &entry->wm_name))
+	    goto give_up;
+    
+	if (!read_byte (configFile, &byte))
+	    goto give_up;
+	entry->wm_command_count = byte;
+	
+	if (entry->wm_command_count == 0)
+	    entry->wm_command = NULL;
+	else
+	{
+	    entry->wm_command = (char **) malloc (entry->wm_command_count *
+	        sizeof (char *));
 
-	for (i = 0; i < entry->wm_command_count; i++)
-	    if (!read_counted_string (configFile, &entry->wm_command[i]))
+	    if (!entry->wm_command)
 		goto give_up;
+
+	    for (i = 0; i < entry->wm_command_count; i++)
+		if (!read_counted_string (configFile, &entry->wm_command[i]))
+		    goto give_up;
+	}
     }
 
     if (!read_byte (configFile, &byte))
@@ -327,6 +394,8 @@ give_up:
 
     if (entry->client_id)
 	free (entry->client_id);
+    if (entry->window_role)
+	free (entry->window_role);
     if (entry->class.res_name)
 	free (entry->class.res_name);
     if (entry->class.res_class)
@@ -387,11 +456,12 @@ unsigned short *x, *y, *width, *height;
 Bool *iconified;
 
 {
-    char *clientId;
+    char *clientId, *windowRole;
     TWMWinConfigEntry *ptr;
     int found = 0;
 
     clientId = GetClientID (theWindow->w);
+    windowRole = GetWindowRole (theWindow->w);
 
     ptr = winConfigHead;
     while (ptr && !found)
@@ -400,40 +470,54 @@ Bool *iconified;
 	    (clientId && ptr->client_id &&
 	    strcmp (clientId, ptr->client_id) == 0);
 
-	if (!ptr->tag && client_id_match &&
-	    strcmp (theWindow->class.res_name, ptr->class.res_name) == 0 &&
-	    strcmp (theWindow->class.res_class, ptr->class.res_class) == 0 &&
-	    strcmp (theWindow->name, ptr->wm_name) == 0)
+	if (!ptr->tag && client_id_match)
 	{
-	    if (clientId)
+	    if (windowRole || ptr->window_role)
 	    {
-		/*
-		 * If a client ID was present, we should not check WM_COMMAND
-		 * because Xt will put a -xtsessionID arg on the command line.
-		 */
-
-		found = 1;
+		found = (windowRole && ptr->window_role &&
+		    strcmp (windowRole, ptr->window_role) == 0);
 	    }
 	    else
 	    {
-		/*
-		 * For non-XSMP clients, also check WM_COMMAND.
-		 */
-
-		char **wm_command = NULL;
-		int wm_command_count = 0, i;
-
-		XGetCommand (dpy, theWindow->w,
-		    &wm_command, &wm_command_count);
-
-		if (wm_command_count == ptr->wm_command_count)
+		if (strcmp (theWindow->class.res_name,
+		        ptr->class.res_name) == 0 &&
+		    strcmp (theWindow->class.res_class,
+			ptr->class.res_class) == 0 &&
+	    	    strcmp (theWindow->name, ptr->wm_name) == 0)
 		{
-		    for (i = 0; i < wm_command_count; i++)
-			if (strcmp (wm_command[i], ptr->wm_command[i]) != 0)
-			    break;
+		    if (clientId)
+		    {
+			/*
+			 * If a client ID was present, we should not check
+			 * WM_COMMAND because Xt will put a -xtsessionID arg
+			 * on the command line.
+			 */
 
-		    if (i == wm_command_count)
 			found = 1;
+		    }
+		    else
+		    {
+			/*
+			 * For non-XSMP clients, also check WM_COMMAND.
+			 */
+
+			char **wm_command = NULL;
+			int wm_command_count = 0, i;
+
+			XGetCommand (dpy, theWindow->w,
+		            &wm_command, &wm_command_count);
+
+			if (wm_command_count == ptr->wm_command_count)
+			{
+			    for (i = 0; i < wm_command_count; i++)
+				if (strcmp (wm_command[i],
+				    ptr->wm_command[i]) != 0)
+				    break;
+
+			    if (i == wm_command_count)
+				found = 1;
+			}
+		    }
 		}
 	    }
 	}
@@ -454,7 +538,11 @@ Bool *iconified;
     else
 	*iconified = 0;
 
-    XFree (clientId);
+    if (clientId)
+	XFree (clientId);
+
+    if (windowRole)
+	XFree (windowRole);
 
     return found;
 }
@@ -471,12 +559,12 @@ SmPointer clientData;
     int scrnum;
     ScreenInfo *theScreen;
     TwmWindow *theWindow;
-    char *clientId;
+    char *clientId, *windowRole;
     FILE *configFile;
     char *path, *filename;
     Bool success = True;
-    SmProp prop1, prop2, prop3, prop4, prop5, prop6, *props[6];
-    SmPropValue prop3val, prop4val, prop5val, prop6val;
+    SmProp prop1, prop2, prop3, prop4, prop5, *props[5];
+    SmPropValue prop3val, prop4val, prop5val;
     char discardCommand[80], userId[20];
     int numVals, i;
     char yes = 1;
@@ -502,12 +590,17 @@ SmPointer clientData;
 	    while (theWindow && success)
 	    {
 		clientId = GetClientID (theWindow->w);
+		windowRole = GetWindowRole (theWindow->w);
 
-		if (!WriteWinConfigEntry (configFile, theWindow, clientId))
+		if (!WriteWinConfigEntry (configFile, theWindow,
+		    clientId, windowRole))
 		    success = False;
 
 		if (clientId)
 		    XFree (clientId);
+
+		if (windowRole)
+		    XFree (windowRole);
 
 		theWindow = theWindow->next;
 	    }
@@ -580,21 +673,13 @@ SmPointer clientData;
     prop5val.value = (SmPointer) userId;
     prop5val.length = strlen (userId);
 
-    prop6.name = "_XC_IsManager";
-    prop6.type = SmCARD8;
-    prop6.num_vals = 1;
-    prop6.vals = &prop6val;
-    prop6val.value = (SmPointer) &yes;
-    prop6val.length = 1;
-
     props[0] = &prop1;
     props[1] = &prop2;
     props[2] = &prop3;
     props[3] = &prop4;
     props[4] = &prop5;
-    props[5] = &prop6;
 
-    SmcSetProperties (smcConn, 6, props);
+    SmcSetProperties (smcConn, 5, props);
     free (prop1.vals);
 
     SmcSaveYourselfDone (smcConn, success);
