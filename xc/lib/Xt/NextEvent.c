@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.111 93/07/10 12:32:46 kaleb Exp $ */
+/* $XConsortium: NextEvent.c,v 1.112 93/07/10 12:38:21 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -166,14 +166,13 @@ static void AdjustHowLong (howlong, start_time)
  */
 #if NeedFunctionPrototypes
 int _XtWaitForSomething(
-	XtAppContext app
+	XtAppContext app,
 	_XtBoolean ignoreEvents,
 	_XtBoolean ignoreTimers,
 	_XtBoolean ignoreInputs,
 	_XtBoolean ignoreSignals,
 	_XtBoolean block,
-	unsigned long *howlong,
-        )
+	unsigned long *howlong)
 #else
 int _XtWaitForSomething(app,
 			ignoreEvents, ignoreTimers, ignoreInputs, ignoreSignals,
@@ -529,7 +528,7 @@ XtSignalId XtAppAddSignal(app, proc, closure)
 	sptr->se_closure = closure;
 	sptr->se_proc = proc;
 	sptr->app = app;
-	sptr->se_notice = False;
+	sptr->se_notice = FALSE;
 	app->signalQueue = sptr;
 	return (XtSignalId) sptr;
 }
@@ -555,7 +554,7 @@ void XtNoticeSignal(id)
 	XtSignalId id;
 {
 	SignalEventRec *sid = (SignalEventRec*) id;
-	sid->se_notice = True;
+	sid->se_notice = TRUE;
 }
 
 XtInputId XtAddInput( source, Condition, proc, closure)
@@ -725,7 +724,7 @@ static void DoOtherSources(app)
 	    SignalEventRec *se_ptr = app->signalQueue;
 	    while (se_ptr != NULL) {
 		if (se_ptr->se_notice) {
-		    se_ptr->se_notice = False;
+		    se_ptr->se_notice = FALSE;
 		    if (se_ptr->se_proc != NULL)
 			SeCallProc(se_ptr);
 		}
@@ -851,8 +850,8 @@ void XtAppProcessEvent(app, mask)
 		SignalEventRec *se_ptr = app->signalQueue;
 		while (se_ptr != NULL) {
 		    if (se_ptr->se_notice) {
-			se_ptr->se_notice = True;
-			SeCalllProc(se_ptr);
+			se_ptr->se_notice = FALSE;
+			SeCallProc(se_ptr);
 			return;
 		    }
 		    se_ptr = se_ptr->se_next;
@@ -1007,7 +1006,7 @@ static Boolean PeekOtherSources(app)
 	    SignalEventRec *se_ptr = app->signalQueue;
 	    while (se_ptr != NULL) {
 		if (se_ptr->se_notice)
-		    return True;
+		    return TRUE;
 		se_ptr = se_ptr->se_next;
 	    }
 	}
