@@ -1,4 +1,4 @@
-/* $XConsortium: svgaBank.c,v 1.4 93/09/20 12:00:25 rws Exp $ */
+/* $XConsortium: svgaBank.c,v 1.5 93/09/20 12:05:03 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -562,6 +562,9 @@ svgaBankCopyWindow(
   FreeScratchGC(pGC);
 
   (*pScreen->RegionDestroy)(pRgnDst);
+
+  if (pBoxNew2) DEALLOCATE_LOCAL(pBoxNew2);
+  if (pBoxNew1) DEALLOCATE_LOCAL(pBoxNew1);
 }
 
 
@@ -1180,6 +1183,9 @@ svgaBankCopyArea(
 
     FreeScratchPixmapHeader(pSrcShadow);
 
+    if (pQueueNew2) DEALLOCATE_LOCAL(pQueueNew2);
+    if (pQueueNew1) DEALLOCATE_LOCAL(pQueueNew1);
+
     DEALLOCATE_LOCAL(Queue);
 
     if (fExpose && !fastExpose)
@@ -1666,8 +1672,6 @@ svgaBankScreenInit(
 	Error("couldn't map videomemory");
 	return FALSE;
       }
-
-  ErrorF("%08x, %08x\n", winAImage, winBImage);
 
   /*
    * Find out which banking type we have
