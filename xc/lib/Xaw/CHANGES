@@ -1,0 +1,16 @@
+The following changes have been made to this directory since R2:
+
+     o  the Athena widgets now use the R3 Intrinsics.
+
+     o  Scrollbar does color and reverse video properly.
+
+     o  AsciiSink has been fixed to not do a bad left-bearing computation.
+
+     o  Clock now handles exposures without causing its interval timer to
+	close to zero.
+
+     o  Load now uses resource XtNhighlight to specify the label and scale
+	color.
+
+     o  Extra spaces in Text have been removed to make it work on compilers
+	with small internal table space.
