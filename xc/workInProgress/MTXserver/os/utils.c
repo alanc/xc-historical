@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.3 94/01/10 11:19:18 rob Exp $ */
+/* $XConsortium: utils.c,v 1.4 94/01/11 20:54:39 rob Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -727,7 +727,14 @@ unsigned long *
 Xalloc (amount)
     unsigned long amount;
 {
+#ifdef XTHREADS
+#ifdef AIXV3
+    void	*malloc();
+#endif /* AIXV3 */
+#else
     char	*malloc();
+#endif /* XTHREADS */
+
     register pointer  ptr;
 	
     if ((long)amount <= 0)
@@ -755,7 +762,14 @@ unsigned long *
 XNFalloc (amount)
     unsigned long amount;
 {
-    char             *malloc();
+#ifdef XTHREADS
+#ifdef AIXV3
+    void        *malloc();
+#endif /* AIXV3 */
+#else
+    char        *malloc();
+#endif /* XTHREADS */
+
     register pointer ptr;
 
     if ((long)amount <= 0)
@@ -810,8 +824,16 @@ Xrealloc (ptr, amount)
     register pointer ptr;
     unsigned long amount;
 {
+#ifdef XTHREADS
+#ifdef AIXV3
+    void *malloc();
+    void *realloc();
+#endif /* AIXV3 */
+#else
     char *malloc();
     char *realloc();
+#endif /* XTHREADS */
+
 
 #ifdef MEMBUG
     if (!Must_have_memory && Memory_fail &&
@@ -1001,10 +1023,10 @@ ErrorF(
 #else /* not AIXV3 */
     fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
 #endif /* AIXV3 */
-#endif
 #ifdef XTHREADS
     MTX_MUTEX_UNLOCK (&PrintfMutex);
 #endif
+#endif /* XTHREADS */
 }
 
 #ifdef AIXV3
