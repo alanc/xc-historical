@@ -1,4 +1,4 @@
-/* $XConsortium: xwud.c,v 1.45 91/05/10 11:03:20 rws Exp $ */
+/* $XConsortium: xwud.c,v 1.47 91/07/14 13:47:04 rws Exp $ */
 /* Copyright 1985, 1986, 1988 Massachusetts Institute of Technology */
 
 /*
@@ -91,7 +91,7 @@ main(argc, argv)
     XSizeHints hints;
     XTextProperty textprop;
     XClassHint class_hint;
-    XColor *colors, color;
+    XColor *colors, color, igncolor;
     Window image_win;
     Colormap colormap;
     XEvent event;
@@ -482,16 +482,14 @@ main(argc, argv)
 
     if (out_image->depth == 1) {
 	if (fgname &&
-	    XParseColor(dpy, colormap, fgname, &color) &&
-	    XAllocColor(dpy, colormap, &color))
+	    XAllocNamedColor(dpy, colormap, fgname, &color, &igncolor))
 	    gc_val.foreground = color.pixel;
 	else if ((ncolors == 2) && XAllocColor(dpy, colormap, &colors[1]))
 	    gc_val.foreground = colors[1].pixel;
 	else
 	    gc_val.foreground = BlackPixel (dpy, screen);
 	if (bgname &&
-	    XParseColor(dpy, colormap, bgname, &color) &&
-	    XAllocColor(dpy, colormap, &color))
+	    XAllocNamedColor(dpy, colormap, bgname, &color, &igncolor))
 	    gc_val.background = color.pixel;
 	else if ((ncolors == 2) && XAllocColor(dpy, colormap, &colors[0]))
 	    gc_val.background = colors[0].pixel;
