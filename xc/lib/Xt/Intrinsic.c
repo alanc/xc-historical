@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.150 90/07/12 17:50:41 swick Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.151 90/08/03 11:16:06 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -382,7 +382,7 @@ static Widget MatchWildChildren(names, bindings, children, num,
     int in_depth, *out_depth, *found_depth;
 {
     register Cardinal   i;
-    Widget w, result;
+    Widget w, result = NULL;
     int d, min = 10000;
 
     for (i = 0; i < num; i++) {
