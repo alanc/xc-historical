@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XMacros.c,v 11.22 89/03/28 18:14:14 jim Exp $ */
+/* $XConsortium: XMacros.c,v 11.23 89/04/25 08:43:04 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 #include "Xlibint.h"
@@ -201,7 +201,7 @@ XImage *XSubImage(ximage, x, y, width, height)
 #undef XAddPixel
 int XAddPixel(ximage, value)
 	XImage *ximage;
-	unsigned long value;
+	long value;
 {
 	return((*((ximage)->f.add_pixel))((ximage), (value)));
 }
