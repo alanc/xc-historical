@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef XMD_H
 #define XMD_H 1
-/* $Header: Xmd.h,v 1.28 88/08/15 11:50:30 jim Exp $ */
+/* $Header: Xmd.h,v 1.29 88/08/15 17:32:53 jim Exp $ */
 /*
  *  Xmd.h: MACHINE DEPENDENT DECLARATIONS.
  */
@@ -104,8 +104,13 @@ typedef unsigned char            BOOL;
 #define SIZEOF(x) sizeof_/**/x
 #endif /* if ANSI C compiler else not */
 
+#ifdef CRAY
+#define NEXTPTR(p,t)  (((char *) p) + SIZEOF(t))
+#define INCPTR(p,t) p =  (((char *) p) + SIZEOF(t))
+#else
 #define NEXTPTR(p,t) (t *) (((char *) p) + SIZEOF(t))
 #define INCPTR(p,t) p = (t *) (((char *) p) + SIZEOF(t))
+#endif
 
 #define sizeof_xSegment 8
 #define sizeof_xPoint 4
