@@ -1,4 +1,4 @@
-/* $XConsortium: TextTr.c,v 1.11 89/10/19 15:00:38 kit Exp $ */
+/* $XConsortium: TextTr.c,v 1.12 89/10/19 15:02:22 kit Exp $ */
 
 char *_XawDefaultTextTranslations1 =
 "\
@@ -31,7 +31,7 @@ Meta<Key>I:	insert-file() \n\
 Meta<Key>K:	kill-to-end-of-paragraph() \n\
 Meta<Key>Q:     form-paragraph() \n\
 Meta<Key>V:	previous-page() \n\
-Meta<Key>Y:	insert-selection(CUT_BUFFER0) \n\
+Meta<Key>Y:	insert-selection(PRIMARY, CUT_BUFFER0) \n\
 Meta<Key>Z:	scroll-one-line-down() \n\
 :Meta<Key>d:	delete-next-word() \n\
 :Meta<Key>D:	kill-word() \n\
