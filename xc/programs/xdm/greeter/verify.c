@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.28 94/02/03 08:28:06 gildea Exp $
+ * $XConsortium: verify.c,v 1.29 94/03/31 22:35:05 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -139,8 +139,10 @@ struct verify_info	*verify;
 #ifdef USESHADOW
 	struct spwd	*sp;
 #endif
+#ifndef SVR4			/* where shared lib decls handle this */
 	char		*crypt ();
 	char		**systemEnv (), **parseArgs ();
+#endif
 	char		*shell, *home;
 	char		**argv;
 
