@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.72 88/05/03 19:44:25 swick Exp $";
+static char rcsid[] = "$Header: Event.c,v 1.73 88/05/24 10:25:44 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -273,11 +273,12 @@ void _XtUnregisterWindow(window, widget)
 static void ExpandTable()
 {
     HashTable	oldTable = table;
-    unsigned int i;
+    unsigned int i, newsize;
 
     i = oldTable->size * 2;
-    table = (HashTable) XtMalloc(
-	(unsigned) sizeof(HashTableRec)+i*sizeof(HashRec));
+    newsize = sizeof(HashTableRec) + i*sizeof(HashRec);
+    table = (HashTable) XtMalloc(newsize);
+    bzero((char*)table, newsize);
     table->size = i;
     table->count = oldTable->count;
     for (i = 0; i<oldTable->size; i++) {
