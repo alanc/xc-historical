@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.29 88/01/02 15:43:44 rws Exp $ */
+/* $Header: dispatch.c,v 1.30 88/01/02 17:38:54 rws Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2504,7 +2504,8 @@ ProcCreateCursor( client)
     register PixmapPtr 	msk;
     unsigned char *	srcbits;
     unsigned char *	mskbits;
-    int		width, height;
+    long		width, height;
+    long		n;
     CursorMetricRec cm;
 
 
@@ -2516,14 +2517,22 @@ ProcCreateCursor( client)
     src = (PixmapPtr)LookupID( stuff->source, RT_PIXMAP, RC_CORE);
     msk = (PixmapPtr)LookupID( stuff->mask, RT_PIXMAP, RC_CORE);
     if (   src == (PixmapPtr)NULL)
+    {
+	client->errorValue = stuff->source;
 	return (BadPixmap);
+    }
     if ( msk == (PixmapPtr)NULL)
-	msk = src;
-
-    if (  src->width != msk->width
-       || src->height != msk->height
-       || src->drawable.depth != 1
-       || msk->drawable.depth != 1)
+    {
+	if (stuff->mask != None)
+	{
+	    client->errorValue = stuff->mask;
+	    return (BadPixmap);
+	}
+    }
+    else if (  src->width != msk->width
+	    || src->height != msk->height
+	    || src->drawable.depth != 1
+	    || msk->drawable.depth != 1)
 	return (BadMatch);
 
     width = src->width;
@@ -2533,13 +2542,21 @@ ProcCreateCursor( client)
       || stuff->y > height )
 	return (BadMatch);
 
-    srcbits = (unsigned char *)xalloc( PixmapBytePad(width, 1)*height); 
-    mskbits = (unsigned char *)xalloc( PixmapBytePad(width, 1)*height); 
+    n = PixmapBytePad(width, 1)*height;
+    srcbits = (unsigned char *)xalloc(n);
+    mskbits = (unsigned char *)xalloc(n);
 
     (* src->drawable.pScreen->GetImage)( src, 0, 0, width, height,
-					 XYBitmap, 0xffffffff, srcbits);
-    (* msk->drawable.pScreen->GetImage)( msk, 0, 0, width, height,
-					 XYBitmap, 0xffffffff, mskbits);
+					 XYBitmap, 1, srcbits);
+    if ( msk == (PixmapPtr)NULL)
+    {
+	register unsigned char *bits = mskbits;
+	while (--n >= 0)
+	    *bits++ = ~0;
+    }
+    else
+	(* msk->drawable.pScreen->GetImage)( msk, 0, 0, width, height,
+					     XYBitmap, 1, mskbits);
     cm.width = width;
     cm.height = height;
     cm.xhot = stuff->x;
@@ -2580,27 +2597,45 @@ ProcCreateGlyphCursor( client)
 	client->errorValue = stuff->source;
 	return(BadFont);
     }
-
-    if (maskfont == (FontPtr) NULL)
+    if (!CursorMetricsFromGlyph(sourcefont, stuff->sourceChar, &cm))
     {
-	client->errorValue = stuff->mask;
-	return(BadFont);
-    }
-
-    if (!CursorMetricsFromGlyph(maskfont, stuff->maskChar, &cm))
-    {
-	client->errorValue = stuff->mask;
+	client->errorValue = stuff->sourceChar;
 	return BadValue;
     }
+    if (maskfont == (FontPtr) NULL)
+    {
+	register long n;
+	register unsigned char *bits;
 
+	if (stuff->mask != None)
+	{
+	    client->errorValue = stuff->mask;
+	    return(BadFont);
+	}
+	n = PixmapBytePad(cm.width, 1)*cm.height;
+	bits = mskbits = (unsigned char *)xalloc(n);
+	while (--n >= 0)
+	    *bits++ = ~0;
+    }
+    else
+    {
+	if (!CursorMetricsFromGlyph(maskfont, stuff->maskChar, &cm))
+	{
+	    client->errorValue = stuff->maskChar;
+	    return BadValue;
+	}
+	if (res = ServerBitsFromGlyph(stuff->mask, 
+				      maskfont, stuff->maskChar,
+				      &cm, &mskbits))
+	    return res;
+    }
     if (res = ServerBitsFromGlyph(stuff->source, 
 				  sourcefont, stuff->sourceChar,
 				  &cm, &srcbits))
+    {
+	xfree(mskbits);
 	return res;
-    if (res = ServerBitsFromGlyph(stuff->mask, 
-				  maskfont, stuff->maskChar,
-				  &cm, &mskbits))
-	return res;
+    }
 
     pCursor = AllocCursor(srcbits, mskbits, &cm,
 	    stuff->foreRed, stuff->foreGreen, stuff->foreBlue,
