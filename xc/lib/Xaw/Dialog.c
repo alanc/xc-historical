@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.31 89/07/10 17:33:46 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.32 89/08/25 18:35:32 kit Exp $";
 #endif /* lint */
 
 
@@ -199,12 +199,6 @@ Widget current, request, new;
     DialogWidget old = (DialogWidget)current;
     Arg args[5];
     Cardinal num_args;
-
-    if (w->dialog.max_length != old->dialog.max_length) {
-        XtWarning(
-		"Dialog Widget does not support changes in XtNmaximumLength.");
-        w->dialog.max_length = old->dialog.max_length;
-    }
 
     if (w->dialog.icon != old->dialog.icon) {
 	if (w->dialog.icon != (Pixmap)0) {
