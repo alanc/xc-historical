@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.34 89/09/19 11:40:55 keith Exp $ */
+/* $XConsortium: window.c,v 5.35 89/10/02 08:10:16 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -524,6 +524,7 @@ SetWindowToDefaults(pWin)
 
     pWin->eventMask = 0;
     pWin->deliverableEvents = 0;
+    pWin->dontPropagate = 0;
 }
 
 static void
@@ -1176,7 +1177,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
     Mask tmask;
     unsigned int val;
     int error;
-    int checkOptional = 0;
+    Bool checkOptional = FALSE;
 
     if ((pWin->drawable.class == InputOnly) && (vmask & (~INPUTONLY_LEGAL_MASK)))
         return BadMatch;
@@ -1349,7 +1350,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		}
 		pWin->optional->backingBitPlanes = (CARD32) *pVlist;
 		if ((CARD32)*pVlist == ~0L)
-		    checkOptional = 1;
+		    checkOptional = TRUE;
 	    }
 	    pVlist++;
 	    break;
@@ -1362,7 +1363,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		}
 		pWin->optional->backingPixel = (CARD32) *pVlist;
 		if (!*pVlist)
-		    checkOptional = 1;
+		    checkOptional = TRUE;
 	    }
 	    pVlist++;
 	    break;
@@ -1409,7 +1410,8 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	    pVlist++;
 	    break;
 	  case CWDontPropagate:
-	    result =  EventSuppressForWindow(pWin, client, (Mask )*pVlist);
+	    result = EventSuppressForWindow(pWin, client, (Mask )*pVlist,
+					    &checkOptional);
 	    if (result)
 	    {
 		error = result;
@@ -1470,7 +1472,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		    }
 		}
 		else if (pWin->parent && cmap == wColormap (pWin->parent))
-		    checkOptional = 1;
+		    checkOptional = TRUE;
 
 		/*
 		 * propagate the original colormap to any children
@@ -1554,7 +1556,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 			if (pWin->optional->cursor)
 			    FreeCursor (pWin->optional->cursor, (Cursor)0);
 			pWin->optional->cursor = (CursorPtr) None;
-			checkOptional = 1;
+			checkOptional = TRUE;
 		    }
 		} else {
 		    if (!pWin->optional)
@@ -1566,7 +1568,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 			}
 		    }
 		    else if (pWin->parent && pCursor == wCursor (pWin->parent))
-			checkOptional = 1;
+			checkOptional = TRUE;
 		    if (pWin->optional->cursor != (CursorPtr) None)
 			FreeCursor (pWin->optional->cursor, (Cursor)0);
 		    pWin->optional->cursor = pCursor;
@@ -1823,10 +1825,11 @@ WindowPtr   pWin;
 }
 
 static void
-MoveWindow(pWin, x, y, pNextSib)
+MoveWindow(pWin, x, y, pNextSib, kind)
     WindowPtr pWin;
     short x,y;
     WindowPtr pNextSib;
+    VTKind kind;
 {
     WindowPtr pParent;
     Bool WasViewable = (Bool)(pWin->viewable);
@@ -1884,7 +1887,7 @@ MoveWindow(pWin, x, y, pNextSib)
 
 	if (anyMarked)
 	{
-	    (* pScreen->ValidateTree)(pParent, NullWindow, VTMove);
+	    (* pScreen->ValidateTree)(pParent, NullWindow, kind);
 	    (* pWin->drawable.pScreen->CopyWindow)(pWin, oldpt, oldRegion);
 	    (* pScreen->RegionDestroy)(oldRegion);
 	    /* XXX need to retile border if ParentRelative origin */
@@ -2945,7 +2948,8 @@ ActuallyDoSomething:
 	    pWin->borderWidth = bw;
     }
     if (action == MOVE_WIN)
-        MoveWindow(pWin, x, y, pSib);
+        MoveWindow(pWin, x, y, pSib,
+		   (mask & CWBorderWidth) ? VTOther : VTMove);
     else if (action == RESIZE_WIN)
         SlideAndSizeWindow(pWin, x, y, w, h, pSib);
     else if (mask & CWStackMode)
@@ -3814,7 +3818,7 @@ SaveScreens(on, mode)
 	            MoveWindow(pWin,
 			       (short)(-(random() % RANDOM_WIDTH)),
 			       (short)(-(random() % RANDOM_WIDTH)),
-		               pWin->nextSib);
+		               pWin->nextSib, VTMove);
 #ifndef NOLOGOHACK
 		    if (logoScreenSaver)
 			DrawLogo(pWin);
@@ -3989,7 +3993,7 @@ CheckWindowOptionalNeed (w)
     if (!w->parent)
 	return;
     optional = w->optional;
-    if (optional->dontPropagateMask != 0)
+    if (optional->dontPropagateMask != DontPropagateMasks[w->dontPropagate])
 	return;
     if (optional->otherEventMasks != 0)
 	return;
@@ -4038,7 +4042,7 @@ MakeWindowOptional (pWin)
     optional = (WindowOptPtr) xalloc (sizeof (WindowOptRec));
     if (!optional)
 	return FALSE;
-    optional->dontPropagateMask = 0;
+    optional->dontPropagateMask = DontPropagateMasks[pWin->dontPropagate];
     optional->otherEventMasks = 0;
     optional->otherClients = NULL;
     optional->passiveGrabs = NULL;
