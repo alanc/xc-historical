@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.1 93/12/31 15:12:57 kaleb Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 94/02/10 11:58:17 matt Exp $
 
 IDLS =	object.idl
 
@@ -10,6 +10,6 @@ BuildIncludes($(IDLS),Fresco/Ox/Interfaces,../../..)
 
 InstallMultipleFlags($(IDLS),$(DEST),$(INSTINCFLAGS))
 
-depend::
+headers::
 
-clean::
+clean_headers::
