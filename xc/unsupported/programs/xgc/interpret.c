@@ -35,7 +35,7 @@ extern void change_text();
 void interpret(string)
      String string;
 {
-  char word1[20], word2[20];
+  char word1[20], word2[80];
   int i;
 
   sscanf(string,"%s",word1);
