@@ -1,4 +1,4 @@
-/* $XConsortium: XawI18n.h,v 1.9 94/04/02 16:01:05 rws Exp $ */
+/* $XConsortium: XawI18n.h,v 1.10 94/04/17 20:13:30 rws Exp $ */
 
 /************************************************************
 
@@ -59,7 +59,7 @@ extern int _Xaw_iswspace(wchar_t);
 #define wcslen(c) _Xwcslen(c)
 #define wcscpy(d,s) _Xwcscpy(d,s)
 #define wcsncpy(d,s,l) _Xwcsncpy(d,s,l)
-#if defined(macII) || defined(__sxg__)
+#ifdef USE_XMBTOWC
 #define mbtowc(wc,s,l) _Xmbtowc(wc,s,l)
 #endif
 #endif
