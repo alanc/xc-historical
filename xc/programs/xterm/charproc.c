@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.60 88/10/10 13:02:12 swick Exp $
+ * $XConsortium: charproc.c,v 1.61 88/11/16 13:45:47 rws Exp $
  */
 
 
@@ -100,6 +100,7 @@ static void VTallocbuf();
 #define	XtNtekStartup		"tekStartup"
 #define XtNtiteInhibit		"titeInhibit"
 #define	XtNvisualBell		"visualBell"
+#define XtNallowSendEvents	"allowSendEvents"
 
 #define XtCAlwaysHighlight	"AlwaysHighlight"
 #define	XtCC132			"C132"
@@ -128,11 +129,12 @@ static void VTallocbuf();
 #define	XtCTekStartup		"TekStartup"
 #define XtCTiteInhibit		"TiteInhibit"
 #define	XtCVisualBell		"VisualBell"
+#define XtCAllowSendEvents	"AllowSendEvents"
 
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.60 88/10/10 13:02:12 swick Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.61 88/11/16 13:45:47 rws Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -325,6 +327,9 @@ static XtResource resources[] = {
 	XtRBoolean, (caddr_t) &defaultFALSE},
 {XtNvisualBell, XtCVisualBell, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.visualbell),
+	XtRBoolean, (caddr_t) &defaultFALSE},
+{XtNallowSendEvents, XtCAllowSendEvents, XtRBoolean, sizeof(Boolean),
+	XtOffset(XtermWidget, screen.allowSendEvents),
 	XtRBoolean, (caddr_t) &defaultFALSE}
 };
 
