@@ -13,7 +13,6 @@ EXPORTS = \
 IMPORTS = \
 	$(OLDXMENUSRC)/XMenu.h \
 	$(OLDXLIBSRC)/X10.h \
-	$(XRMSRC)/Quarks.h \
 	$(XRMSRC)/Xresource.h \
 	$(XLIBSRC)/Xlib.h \
 	$(XLIBSRC)/Xutil.h \
@@ -21,17 +20,24 @@ IMPORTS = \
 	$(TOOLKITSRC)/AsciiText.h \
 	$(TOOLKITSRC)/Atoms.h \
 	$(TOOLKITSRC)/Box.h \
+	$(TOOLKITSRC)/Cardinals.h \
 	$(TOOLKITSRC)/Cascade.h \
 	$(TOOLKITSRC)/Clock.h \
 	$(TOOLKITSRC)/Command.h \
+	$(TOOLKITSRC)/Composite.h \
+	$(TOOLKITSRC)/Constraint.h \
+	$(TOOLKITSRC)/Convert.h \
+	$(TOOLKITSRC)/Core.h \
 	$(TOOLKITSRC)/Dialog.h \
 	$(TOOLKITSRC)/Form.h \
 	$(TOOLKITSRC)/Grip.h \
 	$(TOOLKITSRC)/Intrinsic.h \
+	$(TOOLKITSRC)/IntrinsicP.h \
 	$(TOOLKITSRC)/Label.h \
 	$(TOOLKITSRC)/Load.h \
 	$(TOOLKITSRC)/Misc.h \
 	$(TOOLKITSRC)/Popup.h \
+	$(TOOLKITSRC)/Quarks.h \
 	$(TOOLKITSRC)/Scroll.h \
 	$(TOOLKITSRC)/Shell.h \
 	$(TOOLKITSRC)/Simple.h \
