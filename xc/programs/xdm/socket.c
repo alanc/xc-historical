@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.29 91/08/25 10:47:56 keith Exp $
+ * $XConsortium: socket.c,v 1.30 92/08/10 20:47:23 eswu Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -27,10 +27,13 @@
 #ifdef XDMCP
 #ifndef STREAMSCONN
 
+#include <errno.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/un.h>
 #include <netdb.h>
+
+extern int	errno;
 
 extern int	xdmcpFd;
 extern int	chooserFd;
@@ -48,7 +51,7 @@ CreateWellKnownSockets ()
     Debug ("creating socket %d\n", request_port);
     xdmcpFd = socket (AF_INET, SOCK_DGRAM, 0);
     if (xdmcpFd == -1) {
-	LogError ("socket creation failed\n");
+	LogError ("XDMCP socket creation failed, errno %d\n", errno);
 	return;
     }
     name = localHostname ();
@@ -64,7 +67,7 @@ CreateWellKnownSockets ()
     sock_addr.sin_addr.s_addr = htonl (INADDR_ANY);
     if (bind (xdmcpFd, &sock_addr, sizeof (sock_addr)) == -1)
     {
-	LogError ("error binding socket address %d\n", request_port);
+	LogError ("error %d binding socket address %d\n", errno, request_port);
 	close (xdmcpFd);
 	xdmcpFd = -1;
 	return;
@@ -76,7 +79,7 @@ CreateWellKnownSockets ()
     Debug ("Created chooser socket %d\n", chooserFd);
     if (chooserFd == -1)
     {
-	LogError ("chooser socket creation failed\n");
+	LogError ("chooser socket creation failed, errno %d\n", errno);
 	return;
     }
     listen (chooserFd, 5);
