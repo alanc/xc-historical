@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.21 89/06/09 10:21:39 jim Exp $
+ * $XConsortium: resize.c,v 1.22 89/06/12 15:32:38 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.21 89/06/09 10:21:39 jim Exp $";
+"$XConsortium: resize.c,v 1.22 89/06/12 15:32:38 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -301,10 +301,19 @@ int height;
     dheight = height - tmp_win->title_height - 2*tmp_win->bw;
     dwidth = width - 2*tmp_win->bw;
 
-    if (tmp_win->hints.flags&PMinSize && tmp_win->hints.flags & PResizeInc)
+    /*
+     * ICCCM says that PMinSize is the default is no PBaseSize is given,
+     * and vice-versa.
+     */
+    if (tmp_win->hints.flags&(PMinSize|PBaseSize) && tmp_win->hints.flags & PResizeInc)
     {
-        dwidth -= tmp_win->hints.min_width;
-        dheight -= tmp_win->hints.min_height;
+	if (tmp_win->hints.flags & PBaseSize) {
+	    dwidth -= tmp_win->hints.base_width;
+	    dheight -= tmp_win->hints.base_height;
+	} else {
+	    dwidth -= tmp_win->hints.base_width;
+	    dheight -= tmp_win->hints.base_height;
+	}
     }
 
     if (tmp_win->hints.flags & PResizeInc)
@@ -315,6 +324,11 @@ int height;
 
     sprintf(str, "%d x %d", dwidth, dheight);
 
+    /*
+     * XXX - This is hideously expensive.  It should just choose a max number
+     * of digits and show that so that we aren't doing massive numbers of 
+     * resizes.
+     */
     width = XTextWidth(Scr->SizeFont.font, str, strlen(str)) + 20;
     strcat(str, "        ");
     XResizeWindow(dpy, Scr->SizeWindow, width, Scr->SizeFont.height + 4);
