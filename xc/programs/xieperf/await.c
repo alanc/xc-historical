@@ -1,4 +1,4 @@
-/* $XConsortium: await.c,v 1.2 93/10/26 10:05:26 rws Exp $ */
+/* $XConsortium: await.c,v 1.3 93/10/30 13:49:13 rws Exp $ */
 
 /**** module await.c ****/
 /******************************************************************************
@@ -48,6 +48,9 @@ terms and conditions:
 	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
   
 *****************************************************************************/
+#ifdef WIN32
+#include <X11/Xthreads.h>
+#endif
 #include "xieperf.h"
 #include <stdio.h>
 #include <signal.h>
@@ -154,6 +157,22 @@ int InitAwait(xp, p, reps)
 	return( reps );
 }
 
+AbortFlo(xp)
+    XParms xp;
+{
+	XieExtensionInfo *xieInfo;
+
+	xp->d = ( Display * ) Open_Display( xp->displayName );
+	if ( XieInitialize( xp->d, &xieInfo ) ) 
+	{
+		/* abort the flo */
+
+		XieAbort( xp->d, 0, flo );
+	}
+	XCloseDisplay( xp->d );	
+}
+
+#ifdef SIGALRM
 #ifdef SIGNALRETURNSINT
 int
 #else
@@ -162,7 +181,6 @@ void
 AwaitHandler(sig)
     int sig;
 {
-	XieExtensionInfo *xieInfo;
 	int	pid;
 
 	/* 
@@ -201,16 +219,7 @@ AwaitHandler(sig)
 	}
 	else if ( pid == 0 )			/* child */
 	{
-		/* connect to server */
-
-		xplocal->d = ( Display * ) Open_Display( xplocal->displayName );
-		if ( XieInitialize( xplocal->d, &xieInfo ) ) 
-		{
-			/* abort the flo */
-
-			XieAbort( xplocal->d, 0, flo );
-		}
-		XCloseDisplay( xplocal->d );	
+	        AbortFlo(xplocal);
 		exit( 0 );
 	}
 	else					/* parent */
@@ -222,6 +231,28 @@ AwaitHandler(sig)
 		alarm( GetTimeout() );
 	}	
 }
+#endif
+
+#ifdef WIN32
+struct _data {XParms xp; Parms p;};
+
+void ChildProc(data)
+    struct _data *data;
+{
+	XieExtensionInfo *xieInfo;
+	struct _XParms _xp;
+	XParms  xp = &_xp;
+	Parms   p = data->p;
+	*xp = *data->xp;
+	xp->d = ( Display * ) Open_Display( xp->displayName );
+	if ( XieInitialize( xp->d, &xieInfo ) )
+	{
+		PumpTheClientData( xp, p, flo, 0, 1,
+			lut, lutSize, 0 );
+	}
+	XCloseDisplay(xp->d);
+}
+#endif
 
 void DoAwait(xp, p, reps)
     XParms  xp;
@@ -234,6 +265,11 @@ void DoAwait(xp, p, reps)
         XiePhotofloState state;
         XiePhototag *expected, *avail;
         unsigned int nexpected, navail;
+#ifdef WIN32
+	struct _data data;
+	HANDLE child;
+	DWORD threadId;
+#endif
 
 	/* this is fun! */
 
@@ -242,6 +278,29 @@ void DoAwait(xp, p, reps)
 		XieExecutePhotoflo( xp->d, flo, 0 );
 		XSync( xp->d, 0 );
 		XieAwait( xp->d, 0, flo );
+#ifdef WIN32
+		data.xp = xp;
+		data.p = p;
+		child = CreateThread(NULL, 0,
+				     (LPTHREAD_START_ROUTINE)ChildProc,
+				     (LPVOID)&data, 0, &threadId);
+		if (WaitForSingleObject(child, GetTimeout() * 1000) ==
+		    WAIT_TIMEOUT)
+		{
+			HANDLE child2;
+			fprintf(stderr, "transfer timed out\n");
+			child2 = CreateThread(NULL, 0,
+					      (LPTHREAD_START_ROUTINE)AbortFlo,
+					      (LPVOID)xplocal, 0, &threadId);
+			if (WaitForSingleObject(child2, GetTimeout() * 1000) ==
+			    WAIT_TIMEOUT)
+			{
+				fprintf(stderr, "abort timed out\n");
+				TerminateThread(child2, 0);
+			}
+			TerminateThread(child, 0);
+		}
+#else
 		if ( ( pid = fork() ) == -1 )	/* gasp */
 		{
 			fprintf( stderr, "couldn't fork\n" );
@@ -262,9 +321,11 @@ void DoAwait(xp, p, reps)
 		}
 		else				/* parent */
 		{
+#ifdef SIGALRM
 			signal( SIGALRM, AwaitHandler );
 			alarm( GetTimeout() );		
-
+#endif
+#endif /* WIN32 */
 			/* if we query the photoflo and it is active, then
 			   XieAwait didn't really do what we wanted it to */
 
@@ -284,6 +345,7 @@ void DoAwait(xp, p, reps)
 					"Flo state was not inactive\n" );
 				break;
 			}
+#ifndef WIN32
 			wait( &status );
 			if ( status & 0xff )
 			{
@@ -293,8 +355,10 @@ void DoAwait(xp, p, reps)
 		}
 
 		/* whew! somehow we got through this mess unscathed */
-
+#ifdef SIGALRM
 		alarm( 0 );	
+#endif
+#endif
     	}
 }
 
