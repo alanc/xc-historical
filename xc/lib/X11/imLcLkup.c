@@ -1,4 +1,4 @@
-/* $XConsortium: imLcLkup.c,v 1.1 93/09/17 13:27:13 rws Exp $ */
+/* $XConsortium: imLcLkup.c,v 1.2 93/09/18 11:00:55 rws Exp $ */
 /******************************************************************
 
               Copyright 1992 by Fuji Xerox Co., Ltd.
@@ -135,7 +135,8 @@ _XimLocalWcLookupString(ic, ev, buffer, wlen, keysym, status)
 	    if(status) *status = XBufferOverflow;
 	    return (ret);
 	}
-	memcpy(buffer, ic->private.local.composed->wc, ret * sizeof(wchar_t));
+	memcpy((char *)buffer, (char *)ic->private.local.composed->wc,
+	       ret * sizeof(wchar_t));
 	if(keysym) *keysym = NoSymbol;
 	if(status) *status = XLookupChars;
 	return (ret);

@@ -1,4 +1,4 @@
-/* $XConsortium: imTrX.c,v 1.2 93/09/18 10:14:43 rws Exp $ */
+/* $XConsortium: imTrX.c,v 1.3 93/09/18 11:01:14 rws Exp $ */
 /******************************************************************
 
            Copyright 1992 by Sun Microsystems, Inc.
@@ -81,7 +81,7 @@ _GetReadData(im, event, len, data, prop)
 	    XFree(buf);
 	    return False;
 	}
-	memcpy(reply_data, buf, reply_length);
+	memcpy(reply_data, (char *)buf, reply_length);
 	XFree(buf);
     }
 
@@ -220,7 +220,7 @@ _XimXSend(im, len, data)
     } else {
 	event.xclient.format = 8;
 	p = (CARD8 *)&event.xclient.data.b[0];
-	memcpy(p, data, len);
+	memcpy((char *)p, data, len);
     }
 
     XSendEvent(im->core.display, spec->ims_connect_wid,
