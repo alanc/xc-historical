@@ -1,4 +1,4 @@
-/* $XConsortium: log.c,v 1.1 94/12/12 20:09:36 mor Exp mor $ */
+/* $XConsortium: log.c,v 1.2 94/12/16 17:29:59 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -27,6 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #include "xsm.h"
 #include "save.h"
+#include "popup.h"
 
 #include <X11/Shell.h>
 #include <X11/Xaw/Form.h>
@@ -48,22 +49,17 @@ XtPointer client_data;
 XtPointer callData;
 
 {
+    static int first_time = 1;
+
     if (!client_log_visible)
     {
-	Position x, y, rootx, rooty;
-	char geom[16];
+	PopupPopup (mainWindow, logPopup,
+	    False, first_time, 50, 50, "DelLogWinAction()");
 
-	XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
-	XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
-
-	sprintf (geom, "+%d+%d", rootx + 50, rooty + 50);
-
-	XtVaSetValues (logPopup,
-	    XtNgeometry, geom,
-            NULL);
-
-	XtPopup (logPopup, XtGrabNone);
 	client_log_visible = 1;
+
+	if (first_time)
+	    first_time = 0;
     }
 }
 
@@ -102,6 +98,20 @@ char *str;
 
 
 
+static void
+DelLogWinAction (w, event, params, num_params)
+
+Widget w;
+XEvent *event;
+String *params;
+Cardinal *num_params;
+
+{
+    XtCallCallbacks (logOkButton, XtNcallback, NULL);
+}
+
+
+
 void
 create_log_popup ()
 
@@ -109,6 +119,12 @@ create_log_popup ()
     /*
      * Pop up for session log
      */
+
+    static XtActionsRec actions[] = {
+        {"DelLogWinAction", DelLogWinAction}
+    };
+
+    XtAppAddActions (appContext, actions, XtNumber (actions));
 
     logPopup = XtVaCreatePopupShell ("logPopup",
 	topLevelShellWidgetClass, topLevel,
