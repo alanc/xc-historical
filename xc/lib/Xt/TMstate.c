@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.131 91/01/23 09:44:25 rws Exp $ */
+/* $XConsortium: TMstate.c,v 1.132 91/01/30 21:33:44 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1687,8 +1687,11 @@ static XtTranslations UnmergeTranslations(widget, xlations, unmergeXlations,
 		    for (j = 0;
 			 j < xlations->composers[i]->numStateTrees;
 			 j++) {
-			newBindings[(*numNewBindingsRtn)++] =
-			  oldBindings[k + j];
+			if (xlations->composers[i]->
+			    stateTreeTbl[j]->simple.isAccelerator)
+			  newBindings[*numNewBindingsRtn] =
+			    oldBindings[k + j];
+			(*numNewBindingsRtn)++;
 		    }
 		    k += xlations->composers[i]->numStateTrees;
 		}
@@ -1749,17 +1752,13 @@ static XtTranslations MergeTranslations(widget, oldXlations, newXlations,
     for (i = 0, numNew = 0; i < 2; i++) {
 	if (bindPair[i].xlations)
 	  for (j = 0; j < bindPair[i].xlations->numStateTrees; j++, numNew++) {
-	      if (bindPair[i].bindings)
-		newBindings[numNew] = bindPair[i].bindings[j];
-	      else {
-		  if (bindPair[i].xlations->
-		      stateTreeTbl[j]->simple.isAccelerator) 
-		    {
-			newBindings[numNew].widget = source;
-			newBindings[numNew].aXlations = 
-			  bindPair[i].xlations;
-		    }
-	      }
+	      if (bindPair[i].xlations->
+		  stateTreeTbl[j]->simple.isAccelerator) 
+		{
+		    newBindings[numNew].widget = source;
+		    newBindings[numNew].aXlations = 
+		      bindPair[i].xlations;
+		}
 	  }
     }
     *numNewRtn = numNew;
@@ -1804,11 +1803,6 @@ static TMBindData MakeBindData(bindings, numBindings)
 		(char *)&cBindData->bindTbl[0],
 		numBindings * sizeof(TMComplexBindProcsRec));
     }
-    else {
-	TMSimpleBindData sBindData = (TMSimpleBindData)bindData;
-	XtBZero((char *)&sBindData->bindTbl[0],
-		numBindings * sizeof(TMSimpleBindProcsRec));
-    }
     return bindData;
 }
 
@@ -1824,10 +1818,9 @@ static Boolean ComposeTranslations(dest, operation, source, newXlations)
     XtTranslations newXlations;
 {
     XtTranslations 	newTable, oldXlations;
-    TMBindData		bindData =
-      (TMBindData)dest->core.tm.proc_table;
-    TMComplexBindProcs	oldBindings;
-    TMShortCard		numOldBindings;
+    TMBindData		bindData;
+    TMComplexBindProcs	oldBindings = NULL;
+    TMShortCard		numOldBindings = 0;
     TMShortCard		numNewBindings = 0, numBytes;
     TMComplexBindProcsRec stackBindings[16], *newBindings;
 
@@ -1847,14 +1840,47 @@ static Boolean ComposeTranslations(dest, operation, source, newXlations)
     if (!(oldXlations = dest->core.tm.translations))
       operation = XtTableReplace;
 
-    if (bindData && bindData->simple.isComplex) {
+    /* 
+     * try to avoid generation of duplicate state trees. If the source
+     * isn't simple (1 state Tree) then it's too much hassle
+     */
+    if (((operation == XtTableAugment) || 
+	 (operation == XtTableOverride)) &&
+	(newXlations->numStateTrees == 1)) {
+	Cardinal	i;
+	for (i = 0; i < oldXlations->numStateTrees; i++)
+	  if (oldXlations->stateTreeTbl[i] ==
+	      newXlations->stateTreeTbl[0])
+	    break;
+	if (i < oldXlations->numStateTrees) {
+	    if (operation == XtTableAugment) {
+		/* 
+		 * we don't need to do anything since it's already
+		 * there 
+		 */
+		return True;
+	    }
+	    else {/* operation == XtTableOverride */
+		/*
+		 * We'll get rid of the duplicate trees throughout the
+		 * and leave it with a pruned translation table. This
+		 * will only work if the same table has been merged
+		 * into this table (or one of it's composers
+		 */
+		_XtUnmergeTranslations(dest, newXlations);
+		/*
+		 * reset oldXlations so we're back in sync
+		 */
+		if (!(oldXlations = dest->core.tm.translations))
+		  operation = XtTableReplace;
+	    }
+	}
+    }
+
+    if (bindData = (TMBindData)dest->core.tm.proc_table ) {
 	TMComplexBindData cBindData = (TMComplexBindData)bindData;
 	numOldBindings = oldXlations->numStateTrees;
 	oldBindings = &cBindData->bindTbl[0];
-    }
-    else {
-	numOldBindings = 0;
-	oldBindings = NULL;
     }
 
     numBytes =(((oldXlations ? oldXlations->numStateTrees : 0)
