@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.47 91/06/11 11:39:41 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.48 91/07/02 21:02:29 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2425,7 +2425,7 @@ miBSAllocate(pWin)
     if (pWin->drawable.pScreen->backingStoreSupport == NotUseful)
 	return;
     pScreen = pWin->drawable.pScreen;
-    if (!(pBackingStore = pWin->backStorage))
+    if (!(pBackingStore = (miBSWindowPtr)pWin->backStorage))
     {
 
 	pBackingStore = (miBSWindowPtr)xalloc(sizeof(miBSWindowRec));
