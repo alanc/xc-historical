@@ -1,4 +1,4 @@
-/* $XConsortium: PEXprotost.h,v 5.3 91/07/01 16:19:04 hersh Exp $ */
+/* $XConsortium: PEXprotost.h,v 5.4 92/03/04 14:08:13 hersh Exp $ */
 
 
 /***********************************************************
@@ -548,7 +548,7 @@ typedef struct {
     pexVector3D	    direction;
     CARD16	    numberIntersections B16;
     CARD16	    pad B16;
-    /* LISTof pexCoord3D( numIntersections ) */
+    /* LISTof PEXFLOAT( numberIntersections ) */
 } pexPSC_LevelCurves;			/*  type 4: MC
 					    type 5: WC */
 
