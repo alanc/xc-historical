@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: cfbfillsp.c,v 1.1 87/07/13 17:55:29 toddb Locked $ */
 /*
  * The Sun X drivers are a product of Sun Microsystems, Inc. and are provided
  * for unrestricted use provided that this legend is included on all tape
@@ -122,8 +122,7 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int rop;			/* reduced rasterop */
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
-    int temp;
-    int rrop;
+    int fill, rrop;
 
     switch (pDrawable->depth) {
 	case 1:
@@ -189,6 +188,7 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     }
 
     rop = pGC->alu;
+    fill = PFILL(pGC->fgPixel);
 
     while (n--)
     {
@@ -196,30 +196,28 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
 	if (*pwidth)
 	{
-	    if ( ((ppt->x & PIM) + *pwidth) <= PPW)	/* XXX <=? or <? */
+	    if ( ((ppt->x & PIM) + *pwidth) <= PPW)
 	    {
 		/* all bits inside same longword */
-		putbitsrop( PFILL(pGC->fgPixel), ppt->x & PIM, *pwidth,
+		putbitsrop( fill, ppt->x & PIM, *pwidth,
 		    addrl, pGC->planemask, rop );
 	    }
 	    else
 	    {
 		maskbits(ppt->x, *pwidth, startmask, endmask, nlmiddle);
 		if ( startmask ) {
-		    temp = startmask & PFILL(pGC->fgPixel);
-		    putbitsrop( temp, ppt->x & PIM, PPW-(ppt->x&PIM),
-			addrl, pGC->planemask, rop);
+		    putbitsrop( fill, ppt->x & PIM,
+			PPW-(ppt->x&PIM), addrl, pGC->planemask, rop);
 		    ++addrl;
 		}
 		while ( nlmiddle-- ) {
-		    putbitsrop( PFILL(pGC->fgPixel), 0, PPW,
+		    putbitsrop( fill, 0, PPW,
 			addrl, pGC->planemask, rop );
 		    ++addrl;
 		}
 		if ( endmask ) {
-		    temp = endmask & PFILL(pGC->fgPixel);
-		    putbitsrop( temp, 0, ((ppt->x + *pwidth)&PIM),
-			addrl, pGC->planemask, rop );
+		    putbitsrop( fill, 0, 
+			((ppt->x + *pwidth)&PIM), addrl, pGC->planemask, rop );
 		}
 	    }
 	}
