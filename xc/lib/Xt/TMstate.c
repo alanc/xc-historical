@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.140 91/04/11 16:06:14 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.141 91/04/12 15:34:52 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1239,16 +1239,7 @@ void _XtRemoveTranslations(widget)
       RemoveFromMappingCallbacks(widget, (XtPointer)&widget->core.tm, NULL);
 }
 
-void _XtDestroyTMData(widget)
-    Widget	widget;
-{
-    XtUninstallTranslations(widget);
-    XtFree((char *)widget->core.tm.proc_table);
-}
-/*** Public procedures ***/
-
-
-void XtUninstallTranslations(widget)
+static void _XtUninstallTranslations(widget)
     Widget widget;
 {
     XtTranslations	xlations = widget->core.tm.translations;
@@ -1259,6 +1250,29 @@ void XtUninstallTranslations(widget)
     _XtRemoveTranslations(widget);
     widget->core.tm.translations = NULL;
     FreeContext((TMContext *)&widget->core.tm.current_state);
+}
+
+void _XtDestroyTMData(widget)
+    Widget	widget;
+{
+    _XtUninstallTranslations(widget);
+    XtFree((char *)widget->core.tm.proc_table);
+}
+/*** Public procedures ***/
+
+
+void XtUninstallTranslations(widget)
+    Widget widget;
+{
+    EventMask	oldMask;
+
+    if (! widget->core.tm.translations)
+	return;
+    oldMask = widget->core.tm.translations->eventMask;
+    _XtUninstallTranslations(widget);
+    if (XtIsRealized(widget) && oldMask)
+	XSelectInput(XtDisplay(widget), XtWindow(widget), 
+		     XtBuildEventMask(widget));
 }
 
 #if NeedFunctionPrototypes
@@ -1773,6 +1787,7 @@ static Boolean ComposeTranslations(dest, operation, source, newXlations)
     XtTranslations newXlations;
 {
     XtTranslations 	newTable, oldXlations;
+    EventMask		oldMask;
     TMBindData		bindData;
     TMComplexBindProcs	oldBindings = NULL;
     TMShortCard		numNewBindings = 0, numBytes;
@@ -1869,8 +1884,12 @@ static Boolean ComposeTranslations(dest, operation, source, newXlations)
 				     newBindings,
 				     &numNewBindings);
     }
-    if (XtIsRealized(dest))
-      XtUninstallTranslations(dest);
+    if (XtIsRealized(dest)) {
+	oldMask = 0;
+	if (oldXlations)
+	    oldMask = oldXlations->eventMask;
+	_XtUninstallTranslations(dest);
+    }
     
     dest->core.tm.proc_table = 
       (XtActionProc *) MakeBindData(newBindings, numNewBindings);
@@ -1879,12 +1898,17 @@ static Boolean ComposeTranslations(dest, operation, source, newXlations)
 	XtFree((char *)bindData);
 	bindData = NULL;
     }
+
+    dest->core.tm.translations = newTable;
+
     if (XtIsRealized(dest)) {
-	dest->core.tm.translations = newTable;
+	EventMask mask = 0;
 	_XtInstallTranslations(dest);
-    }
-    else {
-	dest->core.tm.translations = newTable;
+	if (newTable)
+	    mask = newTable->eventMask;
+	if (mask != oldMask)
+	    XSelectInput(XtDisplay(dest), XtWindow(dest), 
+			 XtBuildEventMask(dest));
     }
     XtStackFree((char *)newBindings, (char *)stackBindings);
     return(newTable != NULL);
