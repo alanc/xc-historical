@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.7 89/11/10 16:41:43 kit Exp $";
+static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.8 89/11/11 14:53:49 kit Exp $";
 #endif
 
 /***********************************************************
@@ -255,10 +255,13 @@ XtIntervalId id;		/* unused */
 	* Fill in the graph lines we just painted over.
 	*/
 
-       w->strip_chart.points[0].x = w->strip_chart.interval;
-       XDrawPoints(XtDisplay(w), XtWindow(w), w->strip_chart.hiGC,
-		   w->strip_chart.points, w->strip_chart.scale - 1,
-		   CoordModePrevious);
+       if (w->strip_chart.points != NULL) {
+	   w->strip_chart.points[0].x = w->strip_chart.interval;
+	   XDrawPoints(XtDisplay(w), XtWindow(w), w->strip_chart.hiGC,
+		       w->strip_chart.points, w->strip_chart.scale - 1,
+		       CoordModePrevious);
+       }
+
        XFlush(XtDisplay(w));		    /* Flush output buffers */
    }
    w->strip_chart.interval++;		    /* Next point */
@@ -326,7 +329,7 @@ int left, width;
 
 	/* Draw graph reference lines */
 	for (i = 1; i < w->strip_chart.scale; i++) {
-	    j = (i * w->core.height) / w->strip_chart.scale;
+	    j = i * (w->core.height / w->strip_chart.scale);
 	    XDrawLine(dpy, win, w->strip_chart.hiGC, left, j, scalewidth, j);
 	}
     }
