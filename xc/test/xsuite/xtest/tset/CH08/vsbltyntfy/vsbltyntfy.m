@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: vsbltyntfy.m,v 1.9 92/06/11 17:26:22 rws Exp $
  */
 >>TITLE VisibilityNotify CH08
 >>EXTERN
@@ -62,20 +62,20 @@ then the xname event is delivered after
 any hierarchy event.
 >>STRATEGY
 Create client.
-Create window large enough to be partially obscurred by each top-level
-window in a "standard" window hierarchy.
 Build and create window hierarchy.
-Select for VisibilityNotify events on eventw.
-Select for MapNotify events on root window.
-Generate VisibilityNotify and MapNotify events.
+Create window large enough to be obscure each top-level
+window in a "standard" window hierarchy.
+Select for VisibilityNotify events on all hierarchy windows.
+Select for UnmapNotify events on event window.
+Generate VisibilityNotify and UnmapNotify events.
 Initialize for expected events.
 Harvest events from event queue.
 Verify that expected events were delivered.
 Verify that all VisibilityNotify events are delivered after all
-MapNotify events.
+UnmapNotify events.
 >>CODE
 Display	*display;
-Winh	*eventw, *sibling, *rootw;
+Winh	*eventw;
 XEvent	event;
 Winhg	winhg;
 int	status;
@@ -83,11 +83,11 @@ int	status;
 #ifdef	OTHERMASK
 #undef	OTHERMASK
 #endif
-#define	OTHERMASK	SubstructureNotifyMask
+#define	OTHERMASK	StructureNotifyMask
 #ifdef	OTHEREVENT
 #undef	OTHEREVENT
 #endif
-#define	OTHEREVENT	MapNotify
+#define	OTHEREVENT	UnmapNotify
 
 /* Create client. */
 	/*
@@ -102,59 +102,65 @@ int	status;
 	}
 	else
 		CHECK;
-/* Create window large enough to be partially obscurred by each top-level */
-/* window in a "standard" window hierarchy. */
-	winhg.area.x = 1;
-	winhg.area.y = 1;
-	winhg.area.width = DisplayWidth(display, DefaultScreen(display));
-	winhg.area.height = DisplayHeight(display, DefaultScreen(display));
-	/*
-	 * if too large then it will extend off edge of screen and
-	 * be (permanently) partially obscurred
-	 */
-	winhg.area.width -= 4;
-	winhg.area.height -= 4;
-	winhg.border_width = 1;
-	eventw = winh_adopt(display, (Winh *) NULL, 0L, (XSetWindowAttributes *) NULL, &winhg, WINH_MAP);
-	if (eventw == (Winh *) NULL) {
-		report("Could not create first window");
-		return;
-	}
-	else
-		CHECK;
 /* Build and create window hierarchy. */
-	if (winh(display, 1, WINH_NOMASK)) {
+	if (winh(display, 2, WINH_MAP)) {
 		report("Could not build window hierarchy");
 		return;
 	}
 	else
 		CHECK;
-/* Select for VisibilityNotify events on eventw. */
-	if (winh_selectinput(display, eventw, MASK))
+/* Create window large enough to obscure each top-level */
+/* window in a "standard" window hierarchy. */
+	winhg.area.x = 0;
+	winhg.area.y = 0;
+	winhg.area.width = DisplayWidth(display, DefaultScreen(display));
+	winhg.area.height = DisplayHeight(display, DefaultScreen(display));
+	winhg.border_width = 0;
+	eventw = winh_adopt(display, (Winh *) NULL, 0L, (XSetWindowAttributes *) NULL, &winhg, WINH_NOMASK);
+	if (eventw == (Winh *) NULL) {
+		report("Could not create event window");
+		return;
+	}
+	else
+		CHECK;
+	if (winh_create(display, eventw, WINH_MAP))
 		return;
 	else
 		CHECK;
-/* Select for MapNotify events on root window. */
-	rootw = guardian;
-	if (winh_selectinput(display, rootw, OTHERMASK))
+/* Select for VisibilityNotify events on all hierarchy windows. */
+	if (winh_selectinput(display, (Winh *)NULL, MASK))
 		return;
 	else
 		CHECK;
-	sibling = eventw->nextsibling;
-/* Generate VisibilityNotify and MapNotify events. */
+/* Select for UnmapNotify events on event window. */
+	if (winh_selectinput(display, eventw, OTHERMASK))
+		return;
+	else
+		CHECK;
+/* Select for no events on root windows. */
+	if (winh_selectinput(display, guardian, NoEventMask))
+		return;
+	else
+		CHECK;
+	if (guardian->nextsibling &&
+	    winh_selectinput(display, guardian->nextsibling, NoEventMask))
+		return;
+	else
+		CHECK;
+/* Generate VisibilityNotify and UnmapNotify events. */
 	XSync(display, True);
-	XMapWindow(display, sibling->window);
+	XUnmapWindow(display, eventw->window);
 	XSync(display, False);
 /* Initialize for expected events. */
 	event.xany.type = OTHEREVENT;
-	event.xany.window = rootw->window;
-	if (winh_plant(rootw, &event, OTHERMASK, WINH_NOMASK))
+	event.xany.window = eventw->window;
+	if (winh_plant(eventw, &event, OTHERMASK, WINH_NOMASK))
 		return;
 	else
 		CHECK;
 	event.xany.type = EVENT;
-	event.xany.window = eventw->window;
-	if (winh_plant(eventw, &event, MASK, WINH_NOMASK))
+	event.xany.window = WINH_BAD;
+	if (winh_plant((Winh *)NULL, &event, MASK, WINH_NOMASK))
 		return;
 	else
 		CHECK;
@@ -176,7 +182,7 @@ int	status;
 	else
 		CHECK;
 /* Verify that all VisibilityNotify events are delivered after all */
-/* MapNotify events. */
+/* UnmapNotify events. */
 	status = winh_ordercheck(OTHEREVENT, EVENT);
 	if (status == -1)
 		return;
@@ -185,32 +191,29 @@ int	status;
 	else
 		CHECK;
 
-	CHECKPASS(10);
+	CHECKPASS(13);
 >>ASSERTION Good A
 When a xname event is generated,
 then the xname event is delivered before any
 .S Expose
 events on that window.
 >>STRATEGY
-Create window large enough to be partially obscurred by each top-level
-window in a "standard" window hierarchy.
+Create client.
 Build and create window hierarchy.
-Create and map a window.
-Select for VisibilityNotify and Expose events on eventw.
-Generate VisibilityNotify and MapNotify events.
+Select for VisibilityNotify and Expose events on all windows.
+Generate VisibilityNotify and Expose events.
 Initialize for expected events.
 Harvest events from event queue.
 Ignore Expose events.
 Verify that expected events were delivered.
-Verify that all VisibilityNotify events are delivered before all
+Verify that VisibilityNotify events are delivered before
 Expose events.
 >>CODE
-Display	*display = Dsp;
+Display	*display;
 Winh	*eventw;
 XEvent	event;
-Winhg	winhg;
-Window	w;
 int	status;
+Winhe	*winhe, *winhe2;
 
 #ifdef	OTHERMASK
 #undef	OTHERMASK
@@ -221,48 +224,52 @@ int	status;
 #endif
 #define	OTHEREVENT	Expose
 
-/* Create window large enough to be partially obscurred by each top-level */
-/* window in a "standard" window hierarchy. */
-	winhg.area.x = 1;
-	winhg.area.y = 1;
-	winhg.area.width = DisplayWidth(display, DefaultScreen(display));
-	winhg.area.height = DisplayHeight(display, DefaultScreen(display));
+/* Create client. */
 	/*
-	 * if too large then it will extend off edge of screen and
-	 * be (permanently) partially obscurred
+	 * Can not use Dsp because we are selecting on root window.
+	 * We could instead de-select on root window prior to returning,
+	 * but this is actually easier.
 	 */
-	winhg.area.width -= 4;
-	winhg.area.height -= 4;
-	winhg.border_width = 1;
-	eventw = winh_adopt(display, (Winh *) NULL, 0L, (XSetWindowAttributes *) NULL, &winhg, WINH_MAP);
-	if (eventw == (Winh *) NULL) {
-		report("Could not create first window");
+	display = opendisplay();
+	if (display == (Display *) NULL) {
+		delete("Could not open display.");
 		return;
 	}
 	else
 		CHECK;
 /* Build and create window hierarchy. */
-	if (winh(display, 0, WINH_NOMASK)) {
+	if (winh(display, 2, WINH_MAP)) {
 		report("Could not build window hierarchy");
 		return;
 	}
 	else
 		CHECK;
-/* Create and map a window. */
-	w = mkwin(display, (XVisualInfo *) NULL, (struct area *) NULL, True);
-/* Select for VisibilityNotify and Expose events on eventw. */
-	if (winh_selectinput(display, eventw, MASK|OTHERMASK))
+/* Select for VisibilityNotify and Expose events on all windows. */
+	if (winh_selectinput(display, (Winh *)NULL, MASK|OTHERMASK))
 		return;
 	else
 		CHECK;
-/* Generate VisibilityNotify and MapNotify events. */
+/* Select for no events on root windows. */
+	if (winh_selectinput(display, guardian, NoEventMask))
+		return;
+	else
+		CHECK;
+	if (guardian->nextsibling &&
+	    winh_selectinput(display, guardian->nextsibling, NoEventMask))
+		return;
+	else
+		CHECK;
+/* Generate VisibilityNotify and Expose events. */
+	for (eventw = guardian->firstchild; eventw; eventw = eventw->nextsibling)
+		XUnmapWindow(display, eventw->window);
 	XSync(display, True);
-	XUnmapWindow(display, w);
+	for (eventw = guardian->firstchild; eventw; eventw = eventw->nextsibling)
+		XMapWindow(display, eventw->window);
 	XSync(display, False);
 /* Initialize for expected events. */
 	event.xany.type = EVENT;
-	event.xany.window = eventw->window;
-	if (winh_plant(eventw, &event, MASK, WINH_NOMASK))
+	event.xany.window = WINH_BAD;
+	if (winh_plant((Winh *)NULL, &event, MASK, WINH_NOMASK))
 		return;
 	else
 		CHECK;
@@ -291,17 +298,36 @@ int	status;
 	}
 	else
 		CHECK;
-/* Verify that all VisibilityNotify events are delivered before all */
+/* Verify that VisibilityNotify events are delivered before */
 /* Expose events. */
-	status = winh_ordercheck(EVENT, OTHEREVENT);
-	if (status == -1)
-		return;
-	else if (status)
-		FAIL;
-	else
-		CHECK;
-
-	CHECKPASS(8);
+	status = 0;
+	for (winhe = winh_qdel; winhe; winhe = winhe->next) {
+		if (winhe->event->type == VisibilityNotify) {
+			for (winhe2 = winh_qdel; winhe2 != winhe; winhe2 = winhe2->next) {
+				if (winhe2->event->type == Expose &&
+				    winhe2->event->xexpose.window ==
+				    winhe->event->xvisibility.window) {
+					report("Expose event delivered before Visibility event on window 0x%x", winhe->event->xvisibility.window);
+					FAIL;
+				}
+			}
+			if (!status) {
+				CHECK;
+				status = 1;
+			}
+			for (winhe2 = winhe->next; winhe2; winhe2 = winhe2->next) {
+				if (winhe2->event->type == Expose &&
+				    winhe2->event->xexpose.window ==
+				    winhe->event->xvisibility.window)
+					break;
+			}
+			if (!winhe2) {
+				report("Expose event not delivered on window 0x%x", winhe->event->xvisibility.window);
+				FAIL;
+			}
+		}
+	}
+	CHECKPASS(10);
 >>ASSERTION Good A
 When a xname event is generated,
 then
