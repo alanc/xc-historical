@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.4 89/12/14 12:34:53 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.5 89/12/14 12:36:18 swick Exp $";
 #endif
 
 /********************************************************
@@ -107,7 +107,6 @@ static Widget _FindFocusWidget(widget, trace, traceDepth, activeCheck)
     Cardinal	traceDepth;
     Boolean	activeCheck;
 {
-    register Widget w;
     int i;
     int src;
     Widget dst;
@@ -318,7 +317,7 @@ static Widget 	FindKeyDestination(widget, event,
 				  /* ignore lca */
 				  pseudoTraceDepth--;
 			      }
-			    if (grab = CheckServerGrabs(event,
+			    if (grab = CheckServerGrabs((XEvent*)event,
 							pseudoTrace,
 							pseudoTraceDepth, pdi))
 			      {
@@ -363,7 +362,7 @@ Widget _XtProcessKeyboardEvent(event, widget, pdi)
 	case KeyPress:
 	  {
 	      if (!IsServerGrab(device->grabType) && 
-		  (newGrab = CheckServerGrabs(event,
+		  (newGrab = CheckServerGrabs((XEvent*)event,
 					      pdi->trace,
 					      pdi->traceDepth, pdi)))
 		{
@@ -422,9 +421,8 @@ static Widget GetShell(widget)
  * Check that widget really has Xt focus due to it having recieved an
  * event 
  */
-static Boolean InActiveSubtree(widget, pdi)
+static Boolean InActiveSubtree(widget)
     Widget	widget;
-    XtPerDisplayInput pdi;
 {
     static Widget	*pathTrace = NULL;
     static Cardinal     pathTraceDepth = 0;
@@ -542,7 +540,7 @@ void _XtHandleFocus(widget, client_data, event)
 	  Widget	descendant = pwi->focusKid;
 
 	  if ((oldFocalPoint == XtUnrelated) &&
-	      InActiveSubtree(widget, pdi))
+	      InActiveSubtree(widget))
 	    {
 		pdi->focusWidget = NULL; /* invalidate the cache */
 		pwi->haveFocus = TRUE;
@@ -563,11 +561,11 @@ void _XtHandleFocus(widget, client_data, event)
 	    {
 		if (add)
 		  {
-		      _XtSendCrossingEvent(descendant, FocusIn, pdi);
+		      _XtSendCrossingEvent(descendant, FocusIn);
 		  }
 		else
 		  {
-		      _XtSendCrossingEvent(descendant, FocusOut, pdi);
+		      _XtSendCrossingEvent(descendant, FocusOut);
 		  }
 	    }
       }
@@ -625,7 +623,7 @@ void XtSetKeyboardFocus(widget, descendant)
 		(oldWindowedDesc != windowedDesc) && 
 #endif
 		pwi->haveFocus) {
-		_XtSendCrossingEvent( oldWindowedDesc, FocusOut, pdi );
+		_XtSendCrossingEvent( oldWindowedDesc, FocusOut);
 	    }
 	}
 	
@@ -732,7 +730,7 @@ void XtSetKeyboardFocus(widget, descendant)
 		pwi->haveFocus)
 	      {
 		  pdi->focusWidget = NULL; /* invalidate the cache */
-		  _XtSendCrossingEvent( windowedDesc, FocusIn, pdi );
+		  _XtSendCrossingEvent( windowedDesc, FocusIn);
 	      }
 	}
     }
