@@ -1,4 +1,4 @@
-/* $XConsortium: ar_ops.c,v 5.2 91/02/18 20:48:30 rws Exp $ */
+/* $XConsortium: ar_ops.c,v 5.3 91/03/29 10:47:04 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -48,10 +48,10 @@ SOFTWARE.
 static CARD32 ar_int_pad = 0x55555555;
 
 #define WRITE_PAD(fd, length)            \
-    (write(fd, &ar_int_pad, PADDING(length)) != PADDING(length))
+    (write(fd, (char *)&ar_int_pad, (int)PADDING(length)) != PADDING(length))
 
 #define READ_PAD(fd, length)             \
-    (read(fd, &ar_int_pad, PADDING(length)) != PADDING(length))
+    (read(fd, (char *)&ar_int_pad, (int)PADDING(length)) != PADDING(length))
 
 
 /*****************************************************************
@@ -66,10 +66,10 @@ Ar_handle   arh;
     begar.opcode = PHG_AR_BAF;
     begar.length = strlen(arh->fname) > 255 ? 255 : strlen(arh->fname);
     
-    if (write(arh->fd, &begar, sizeof(begar)) != sizeof(begar))
+    if (write(arh->fd, (char *)&begar, sizeof(begar)) != sizeof(begar))
 	return(1);
     
-    if (write(arh->fd, arh->fname, begar.length) != begar.length)
+    if (write(arh->fd, arh->fname, (int)begar.length) != begar.length)
 	return(1);
     
     if (WRITE_PAD(arh->fd, begar.length))
@@ -86,7 +86,7 @@ Ar_handle   arh;
     char name[256];
     Phg_ar_begin_archive    begar;
     
-    if (read(arh->fd, &begar, sizeof(begar)) != sizeof(begar))
+    if (read(arh->fd, (char *)&begar, sizeof(begar)) != sizeof(begar))
 	return(1);
 	
     if (read(arh->fd, name, (int)begar.length) != begar.length)
@@ -125,7 +125,7 @@ Ar_handle   arh;
     phg_ar_convert_afd(&d);
  
     /* Write the afd element */
-    if (write(arh->fd, &d, sizeof(d)) != sizeof(d)) 
+    if (write(arh->fd, (char *)&d, sizeof(d)) != sizeof(d)) 
 	return(1);
 	
     if (write(arh->fd, text, txtlen) != txtlen) 
@@ -144,7 +144,7 @@ Ar_handle   arh;
     char *text;
     Phg_ar_descriptor d;
 
-    if ((read(arh->fd, &d, sizeof(d)) != sizeof(d)) || 
+    if ((read(arh->fd, (char *)&d, sizeof(d)) != sizeof(d)) || 
 			(d.opcode != PHG_AR_AFD))
 	return(1);
  
@@ -164,7 +164,7 @@ Ar_handle   arh;
         if (!text)
 	    return(1);
  
-        if (read(arh->fd, text, d.length) != d.length) {
+        if (read(arh->fd, text, (int)d.length) != d.length) {
             free(text);
             return(1);
         }
@@ -221,7 +221,7 @@ Ar_handle   arh;
     toc->head.numAvail = TOCSIZE;
     toc->head.nextpos  = 0;
     
-    toc->entry = (Phg_ar_index_entry *)malloc(toc->head.length);
+    toc->entry = (Phg_ar_index_entry *)malloc((unsigned)toc->head.length);
  
     if( !toc->entry ) return((Phg_ar_toc *)NULL);
  
@@ -260,28 +260,30 @@ Ar_handle   arh;
 					    PHG_AR_HOST_FLOAT_FORMAT);
  
     /* Save position of first AFI block */
-    arh->afiOffset =  lseek(fd, 0, L_INCR);
+    arh->afiOffset =  lseek(fd, (off_t)0, L_INCR);
  
     /* Read the first AFI block */
     if (!(toc = create_and_insert_toc_element(arh)))
 	return(1);
 
-    if (read(fd, &toc->head, sizeof(Phg_ar_index)) != sizeof(Phg_ar_index)) {
+    if (read(fd, (char *)&toc->head, sizeof(Phg_ar_index)) 
+		!= sizeof(Phg_ar_index)) {
         phg_ar_free_toc(arh);
-	return(1);
+			return(1);
     }
        
     /* Convert to host format */
     phg_ar_convert_afi(&toc->head);
  
-    if (!(toc->entry = (Phg_ar_index_entry *) malloc(toc->head.length)) ||
-         (read(fd, toc->entry, toc->head.length) != toc->head.length)) {
+    if (!(toc->entry =(Phg_ar_index_entry *) malloc((unsigned)toc->head.length))
+		|| (read(fd,(char *)toc->entry, (int)toc->head.length) != toc->head.length))
+		{
         phg_ar_free_toc(arh);
-	return(1);
+			return(1);
     }
        
     /* Convert to host format */
-    phg_ar_convert_afie(toc->head.numUsed, toc->entry);
+    phg_ar_convert_afie((int)toc->head.numUsed, toc->entry);
  
     /* Read remaining AFI elements, chain them together in memory */
     while( toc->head.nextpos != 0 ) {
@@ -291,7 +293,7 @@ Ar_handle   arh;
  
         /* Get memory for this block */
 	if (!(tmp = create_and_insert_toc_element(arh)) ||
-	     (read(fd, tmp, sizeof(Phg_ar_index)) != sizeof(Phg_ar_index))) {
+	     (read(fd, (char *)tmp, sizeof(Phg_ar_index)) != sizeof(Phg_ar_index))) {
             phg_ar_free_toc(arh);          /* Free this archive */
 	    return(1);
         }
@@ -299,16 +301,16 @@ Ar_handle   arh;
         /* Convert to host format */
         phg_ar_convert_afi(&tmp->head);
  
-        tmp->entry = (Phg_ar_index_entry *) malloc(tmp->head.length);
+        tmp->entry = (Phg_ar_index_entry *) malloc((unsigned)tmp->head.length);
  
         if (!tmp->entry ||
-	    (read(fd, tmp->entry, tmp->head.length) != tmp->head.length)) {
+	    (read(fd,(char *)tmp->entry,(int)tmp->head.length) != tmp->head.length)) {
             phg_ar_free_toc(arh);
 	    return(1);
         }
  
         /* Convert to host format */
-        phg_ar_convert_afie(tmp->head.numUsed, tmp->entry);
+        phg_ar_convert_afie((int)tmp->head.numUsed, tmp->entry);
  
         toc = tmp;
     }
@@ -347,24 +349,25 @@ Ar_handle   arh;
             afiptr = &afi;
             phg_ar_convert_afi(afiptr);
  
-            entries = (Phg_ar_index_entry *)malloc(toc->head.length);
+            entries = (Phg_ar_index_entry *)malloc((unsigned)toc->head.length);
 	    
             if (!entries ) return(1);
 	    
 	    bcopy( (char *)(toc->entry), (char *)(entries),
 		   (int)(toc->head.length));
 
-            phg_ar_convert_afie(toc->head.numAvail, entries);
+            phg_ar_convert_afie((int)toc->head.numAvail, entries);
         } else {
             afiptr  = &toc->head;
             entries = toc->entry;
         }
  
-        if (write(arh->fd, afiptr, sizeof(Phg_ar_index)) != 
+        if (write(arh->fd, (char *)afiptr, sizeof(Phg_ar_index)) != 
 		    sizeof(Phg_ar_index) )
             return(1);
  
-        if (write(arh->fd, entries, toc->head.length) != toc->head.length )
+        if (write(arh->fd, (char *)entries, (int)toc->head.length) 
+				!= toc->head.length )
             return(1);
  
         /* Free any allocated space */
@@ -395,10 +398,10 @@ Ar_handle     arh;
     int fd = arh->fd;
  
     /* Find EOA element position */
-    nbytes = lseek(fd, -4, L_XTND);
+    nbytes = lseek(fd, (off_t)-4, L_XTND);
  
     /* Insure the last element is EOA */
-    if (read(fd, &opcode, sizeof(short)) != sizeof(short)) 
+    if (read(fd, (char *)&opcode, sizeof(short)) != sizeof(short)) 
 	return(1);
 
     if (opcode != PHG_AR_EOA) 
@@ -422,7 +425,7 @@ Ar_handle     arh;
 	sprintf(tmp_file, "pex-si.archive.%d", getpid());
 	(void) unlink(tmp_file);
 	new_fd = open(tmp_file, O_RDWR | O_CREAT);
-	lseek(fd, 0, L_SET);
+	lseek(fd, (off_t)0, L_SET);
 	
 	for (i = 0; i < nbytes / CHUNKSIZE; i++) {
 	  
@@ -452,7 +455,7 @@ Ar_handle     arh;
 	  return(1);
 
 	arh->fd = open(arh->fname, O_RDWR); /* now reopen the file and... */
-	lseek(fd, 0, L_XTND);	            /* ...goto the end of the file */
+	lseek(fd, (off_t)0, L_XTND);	            /* ...goto the end of the file */
     }
        
 #else /* !UTEKV */
@@ -473,10 +476,10 @@ int fd;
     int opcode = PHG_AR_EOA << 16;
  
     /* Find end of file */
-    (void) lseek(fd, 0, L_XTND);
+    (void) lseek(fd, (off_t)0, L_XTND);
  
     /* Write the EOA element */
-    if (write(fd, &opcode, sizeof(int)) != sizeof(int)) 
+    if (write(fd, (char *)&opcode, sizeof(int)) != sizeof(int)) 
 	return(1);
  
     return(0);
@@ -510,21 +513,21 @@ caddr_t		    mem;
 					   PHG_AR_HOST_BYTE_ORDER);
  
     /* Seek to BSE */
-    if (lseek(arh->fd, entry->position, L_SET) != entry->position )
+    if (lseek(arh->fd, (off_t)entry->position, L_SET) != entry->position )
         return(1);
  
     /* Read BSE */
-    if (read(arh->fd, &begstr, sizeof(begstr)) != sizeof(begstr) )
+    if (read(arh->fd, (char *)&begstr, sizeof(begstr)) != sizeof(begstr) )
         return(1);
  
     phg_ar_convert_bse(&begstr);
  
     /* read this structure */
-    if (read(arh->fd, mem, begstr.length) != begstr.length )
+    if (read(arh->fd, mem, (int)begstr.length) != begstr.length )
         return(1);
  
     /* Convert to host format */
-    phg_ar_convert_elements(entry->nelts, mem, PHG_AR_READING_ARCHIVE);
+    phg_ar_convert_elements((int)entry->nelts, mem, PHG_AR_READING_ARCHIVE);
  
     return(0);
 }
@@ -550,10 +553,10 @@ Phg_ar_index_entry  *entry;
     phg_ar_convert_afs(&f);
  
     /* Seek to this blocks position */
-    (void) lseek(fd, entry->position, L_SET);
+    (void) lseek(fd, (off_t)entry->position, L_SET);
  
     /* Update the block */
-    (void) write(fd, &f, sizeof(f));
+    (void) write(fd, (char *)&f, sizeof(f));
  
     return;
 }
@@ -595,14 +598,15 @@ Ar_handle arh;
      * binary format.
      */
     toc = phg_ar_init_toc(arh);
-    lastToc->head.nextpos = lseek(arh->fd, 0, L_XTND);   /* End of file */
+    lastToc->head.nextpos = lseek(arh->fd, (off_t)0, L_XTND);   /* End of file */
 
     /* Ensure space for AFI element */
-    if( write(arh->fd, &(toc->head), sizeof(Phg_ar_index)) != 
+    if( write(arh->fd, (char *)&(toc->head), sizeof(Phg_ar_index)) != 
 				     sizeof(Phg_ar_index))
         return(NULL);
  
-    if( write(arh->fd, toc->entry, toc->head.length) != toc->head.length)
+    if( write(arh->fd, (char *)toc->entry, (int)toc->head.length) 
+		!= toc->head.length)
         return(NULL);
 	
     toc->head.numUsed = 1;
@@ -667,7 +671,7 @@ Pint nbytes;
 	
     entry->type      = PHG_AR_FREE_SPACE;
     entry->length    = nbytes;
-    entry->position  = lseek(arh->fd, 0, L_XTND);    /* End of file */
+    entry->position  = lseek(arh->fd, (off_t)0, L_XTND);    /* End of file */
     
     return(entry);
 }
@@ -712,10 +716,10 @@ caddr_t	    mem;
        
     /* Install correct set of format conversion routines */
     phg_ar_set_conversion(PHG_AR_HOST_FLOAT_FORMAT | PHG_AR_HOST_BYTE_ORDER, 
-			  (int)arh->format);
+				(int)arh->format);
      
     /* Seek to str block */
-    (void) lseek(arh->fd, entry->position, L_SET);
+    (void) lseek(arh->fd, (off_t)entry->position, L_SET);
  
     begstr.opcode = PHG_AR_BSE;
     begstr.length = nbytes;
@@ -724,16 +728,16 @@ caddr_t	    mem;
  
     phg_ar_convert_bse(&begstr);
     
-    if (write(arh->fd, &begstr, sizeof(begstr)) != sizeof(begstr) )
+    if (write(arh->fd, (char *)&begstr, sizeof(begstr)) != sizeof(begstr) )
         return(1);
  
     /* convert to archive format */
-    phg_ar_convert_elements(entry->nelts, mem, PHG_AR_WRITING_ARCHIVE);
+    phg_ar_convert_elements((int)entry->nelts, mem, PHG_AR_WRITING_ARCHIVE);
 
     if (write(arh->fd, mem, nbytes) != nbytes )
         return(1);
  
-    if (write(arh->fd, &endstr, sizeof(endstr)) != sizeof(endstr) )
+    if (write(arh->fd, (char *)&endstr, sizeof(endstr)) != sizeof(endstr) )
         return(1);
  
     return(0);
