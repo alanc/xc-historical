@@ -25,7 +25,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XConsortium: cfbscrinit.c,v 5.21 91/12/19 18:36:51 keith Exp $ */
+/* $XConsortium: cfbscrinit.c,v 5.22 91/12/27 18:41:16 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -67,7 +67,11 @@ cfbCloseScreen (index, pScreen)
 	xfree (depths[d].vids);
     xfree (depths);
     xfree (pScreen->visuals);
+#ifdef CFB_NEED_SCREEN_PRIVATE
+    xfree (pScreen->devPrivates[cfbScreenPrivateIndex].ptr);
+#else
     xfree (pScreen->devPrivate);
+#endif
     return TRUE;
 }
 
