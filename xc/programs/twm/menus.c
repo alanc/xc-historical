@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.98 89/08/15 11:48:14 jim Exp $
+ * $XConsortium: menus.c,v 1.99 89/08/15 12:10:08 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.98 89/08/15 11:48:14 jim Exp $";
+"$XConsortium: menus.c,v 1.99 89/08/15 12:10:08 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2414,26 +2414,6 @@ WarpToScreen (n, inc)
 }
 
 
-static void InstallWindowColormap (tmp_win, newi)
-    TwmWindow *tmp_win;
-    int newi;
-{
-    XWindowAttributes attr;
-
-    if (newi < 0) {
-	newi = tmp_win->number_cmap_windows - 1;
-    } else if (newi >= tmp_win->number_cmap_windows) {
-	newi = 0;
-    }
-
-    if (XGetWindowAttributes (dpy, tmp_win->cmap_windows[newi], &attr)) {
-	tmp_win->attr.colormap = attr.colormap;
-	tmp_win->current_cmap_window = newi;
-	InstallAColormap (dpy, attr.colormap);
-    }
-}
-
-
 /*
  * BumpWindowColormap - adjust the colormap according to WM_COLORMAP_WINDOWS;
  * this makes use of the fact that we inserted the top level window's colormap
@@ -2445,8 +2425,20 @@ BumpWindowColormap (tmp_win, inc)
     int inc;
 {
     if (tmp_win->cmap_windows) {
-	InstallWindowColormap (tmp_win, 
-			       inc ? tmp_win->current_cmap_window + inc : 0);
+	XWindowAttributes attr;
+	int newi = (inc ? tmp_win->current_cmap_window + inc : 0);
+
+	if (newi < 0) {
+	    newi = tmp_win->number_cmap_windows - 1;
+	} else if (newi >= tmp_win->number_cmap_windows) {
+	    newi = 0;
+	}
+
+	if (XGetWindowAttributes (dpy, tmp_win->cmap_windows[newi], &attr)) {
+	    tmp_win->attr.colormap = attr.colormap;
+	    tmp_win->current_cmap_window = newi;
+	    InstallAColormap (dpy, attr.colormap);
+	}
     }
 }
 
