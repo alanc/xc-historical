@@ -12,7 +12,7 @@
 
 \s+1\fBX Window System\fP\s-1
 
-\s+1\fBX Version 11, Release \*(Rn\fP\s-1
+\s+1\fBX Version 11, Release 3\fP\s-1
 .sp 6
 .ce 4
 \s-1Ralph R. Swick
@@ -104,7 +104,7 @@ External Research Group
 MIT Project Athena
 .De
 .bp 1
-.EH '\fBX Toolkit Widgets\fP''\fBX11, Release 2\fP'
-.OH '\fBX Toolkit Widgets\fP''\fBX11, Release 2\fP'
+.EH '\fBX Toolkit Widgets\fP''\fBX11, Release 3\fP'
+.OH '\fBX Toolkit Widgets\fP''\fBX11, Release 3\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
