@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: tocutil.c,v 2.26 89/07/21 18:56:22 converse Exp $";
+    "$XConsortium: tocutil.c,v 2.27 89/08/03 17:21:22 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -97,12 +97,7 @@ Toc toc;
 void TUScanFileForToc(toc)
   Toc toc;
 {
-    static Arg arglist[] = {
-	{XtNlabel, NULL},
-	{XtNx, (XtArgVal) 30},
-	{XtNy, (XtArgVal) 20}
-    };
-    Widget parent, popup = NULL;
+    Widget parent;
     Position x, y;
     Scrn scrn;
     char  **argv, str[100];
@@ -113,7 +108,7 @@ void TUScanFileForToc(toc)
 	parent = (Widget) scrn->tocwidget;
 	(void) sprintf(str, "Rescanning %s", toc->foldername);
 	XtTranslateCoords(parent, 30, 15, &x, &y);
-	popup = PopupAlert(str, parent, x, y);
+	PopupAlert(str, parent, x, y);
 
 	argv = MakeArgv(4);
 	argv[0] = "scan";
@@ -125,7 +120,7 @@ void TUScanFileForToc(toc)
 	XtFree(argv[1]);
 	XtFree((char *) argv);
 
-	DestroyPopupAlert(popup);
+	PopdownAlert();
 	toc->validity = valid;
 	toc->curmsg = NULL;	/* Get cur msg somehow! %%% */
     }
@@ -198,7 +193,10 @@ void TURedisplayToc(scrn)
 	    }
 	    XawTextDisableRedisplay(scrn->tocwidget, TRUE);
 	    source = XawTextGetSource(scrn->tocwidget);
-	    if (source != toc->source)
+
+/* %%% dmc 8/14/89 
+ *	    if (source != toc->source)
+ */
 		XawTextSetSource(scrn->tocwidget, toc->source,
 				 (XawTextPosition) 0);
 	    TocSetCurMsg(toc, TocGetCurMsg(toc));
@@ -382,6 +380,7 @@ void TULoadTocFile(toc)
     (void) myfclose(fid);
     if (toc->source == NULL)
 	toc->source = TSourceCreate(toc);
+    toc->source->widget = (Widget) toc->widgets[0];
     for (i=0 ; i<numScrns ; i++) {
 	msg = scrnList[i]->msg;
 	if (msg && msg->toc == toc) {
