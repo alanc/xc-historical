@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.3 93/10/26 15:17:56 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.4 93/10/26 19:18:51 rws Exp $ */
 
 int   verbosity_Group_xielib ;
 int   verbosity_Group_xielib_user_level ;
@@ -100,7 +100,7 @@ static Bool runEvents = False;
 static Bool showLabels = False;   /* Hear me now and believe me later,
 				     when 'True', is helpful if test 
 				     dies in calibration */ 
-				     
+static Bool showTechs = False;
 
 static int visualClass = -1;
 
@@ -383,6 +383,7 @@ void usage()
 "    -DirectColor              use a DirectColor visual",
 "    -WMSafe                   let window manager install colormap",
 "    -lessboring               very subjective selection of less boring tests",
+"    -showtechs                print supported techniques",
 "    -showlabels               print test label to screen before calibration",
 "    -showevents               for error and event tests, display as received",
 "    -events                   include event tests",
@@ -950,6 +951,8 @@ main(argc, argv)
                 usage ();
 	} else if (strcmp(argv[i], "-loCal") == 0) {
 		loCal = True;
+	} else if (strcmp(argv[i], "-showtechs") == 0) {
+		showTechs = True;
 	} else if (strcmp(argv[i], "-showlabels") == 0) {
 		showLabels = True;
 	} else if (strcmp(argv[i], "-events") == 0) {
@@ -1221,7 +1224,8 @@ main(argc, argv)
     (void) CalibrateTest(&xparms, &syncTest, 1, &syncTime);
     printf("Sync time adjustment is %6.4f msecs.\n\n", syncTime/1000);
 
-    ListAllTechs( &xparms );
+    if (showTechs)
+	ListAllTechs( &xparms );
 
     if ( loadTests == False )
     {
