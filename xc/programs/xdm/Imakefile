@@ -25,7 +25,10 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) \
           SRCS4 = sessreg.c
           OBJS4 = sessreg.o
        PROGRAMS = xdm xdmshell sessreg
-        DEFINES = -DBINDIR=\"$(BINDIR)\" -DXDMDIR=\"$(XDMDIR)\" $(OTHERDEFS) ConnectionFlags
+#if !HasVoidSignalReturn
+     SIGDEFS = -DSIGNALRETURNSINT
+#endif
+        DEFINES = -DBINDIR=\"$(BINDIR)\" -DXDMDIR=\"$(XDMDIR)\" $(SIGDEFS) ConnectionFlags
 
 /**/#
 /**/# Special definitions for compiling default resources; these parameters
