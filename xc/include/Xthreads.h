@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xthreads.h,v 1.5 93/08/26 09:23:12 rws Exp $
+ * $XConsortium: Xthreads.h,v 1.6 93/09/11 09:35:50 rws Exp $
  *
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -106,6 +106,7 @@ extern xthread_t _Xthread_self();
 #define xmutex_malloc() (xmutex_t)xmalloc(sizeof(CRITICAL_SECTION))
 #define xmutex_init(m) InitializeCriticalSection(m)
 #define xmutex_clear(m) DeleteCriticalSection(m)
+#define _XMUTEX_NESTS
 #define xmutex_lock(m) EnterCriticalSection(m)
 #define xmutex_unlock(m) LeaveCriticalSection(m)
 #define xcondition_malloc() (xcondition_t)xmalloc(sizeof(struct _xcondition_t))
