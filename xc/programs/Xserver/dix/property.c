@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: property.c,v 5.0 89/06/09 14:59:27 keith Exp $ */
+/* $XConsortium: property.c,v 5.1 89/07/06 13:25:20 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -314,15 +314,14 @@ DeleteProperty(pWin, propName)
         {
             prevProp->next = pProp->next;
         }
-	xfree(pProp->data);
-        xfree(pProp);
-
 	event.u.u.type = PropertyNotify;
 	event.u.property.window = pWin->drawable.id;
 	event.u.property.state = PropertyDelete;
         event.u.property.atom = pProp->propertyName;
 	event.u.property.time = currentTime.milliseconds;
 	DeliverEvents(pWin, &event, 1, (WindowPtr)NULL);
+	xfree(pProp->data);
+        xfree(pProp);
     }
     return(Success);
 }
@@ -460,14 +459,14 @@ ProcGetProperty(client)
 		    }
 	            else
                         prevProp->next = pProp->next;
-		    xfree(pProp->data);
-                    xfree(pProp);
 		    event.u.u.type = PropertyNotify;
 		    event.u.property.window = pWin->drawable.id;
 		    event.u.property.state = PropertyDelete;
 		    event.u.property.atom = pProp->propertyName;
 		    event.u.property.time = currentTime.milliseconds;
 		    DeliverEvents(pWin, &event, 1, (WindowPtr)NULL);
+		    xfree(pProp->data);
+                    xfree(pProp);
 		}
 	    }
             else 
