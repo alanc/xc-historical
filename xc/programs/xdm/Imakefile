@@ -96,6 +96,13 @@ ComplexProgramTarget_3(chooser,XawClientLibs $(TOP)/lib/Xdmcp/libXdmcp.a, /**/)
 
 SpecialObjectRule(resource.o, $(ICONFIGFILES), $(RES_DEFINES))
 
+# these files depend on HASDES
+auth.o: $(ICONFIGFILES)
+policy.o: $(ICONFIGFILES)
+#if HasDESLibrary
+xdmauth.o: $(ICONFIGFILES)
+#endif
+
 #ifdef IHaveSubdirs
 MakeDirectories(install,$(XDMDIR))
 MakeSubdirs($(SUBDIRS))
