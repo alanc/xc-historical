@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: site.h,v 1.21 92/10/19 21:41:40 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -30,7 +30,7 @@ SOFTWARE.
  * server executable.
  */
 #ifndef VENDOR_STRING
-#define VENDOR_STRING "MIT X Consortium"
+#define VENDOR_STRING "X Consortium"
 #endif
 
 /*
@@ -39,7 +39,7 @@ SOFTWARE.
  * by the vendor.
  */
 #ifndef VENDOR_RELEASE
-#define VENDOR_RELEASE	5000
+#define VENDOR_RELEASE	6000
 #endif
 
 /*
