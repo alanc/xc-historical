@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.13 89/08/31 19:15:09 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.14 89/10/03 08:43:32 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3198,7 +3198,11 @@ CloseDownClient(client)
 	    clients[client->index] = NullClient;
 	    if ((client->requestVector != InitialVector) &&
 		(--nClients == 0))
+#ifdef GPROF
+		dispatchException |= DE_TERMINATE;
+#else
 		dispatchException |= DE_RESET;
+#endif
 	    xfree(client);
 	}
 	else
