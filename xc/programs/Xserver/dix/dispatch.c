@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.34 91/07/18 22:41:32 keith Exp $ */
+/* $XConsortium: dispatch.c,v 5.35 91/09/25 11:00:41 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -168,8 +168,8 @@ FlushClientCaches(id)
 	{
             if (client->lastDrawableID == id)
 	    {
-                client->lastDrawableID = INVALID;
-		client->lastDrawable = (DrawablePtr)NULL;
+		client->lastDrawableID = WindowTable[0]->drawable.id;
+		client->lastDrawable = (DrawablePtr)WindowTable[0];
 	    }
             else if (client->lastGCID == id)
 	    {
@@ -3226,8 +3226,8 @@ NextAvailableClient(ospriv)
     client->clientAsMask = ((Mask)i) << CLIENTOFFSET;
     client->closeDownMode = DestroyAll;
     client->clientGone = FALSE;
-    client->lastDrawable = (DrawablePtr) NULL;
-    client->lastDrawableID = INVALID;
+    client->lastDrawable = (DrawablePtr)WindowTable[0];
+    client->lastDrawableID = WindowTable[0]->drawable.id;
     client->lastGC = (GCPtr) NULL;
     client->lastGCID = INVALID;
     client->numSaved = 0;

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.85 91/05/09 16:10:12 rws Exp $ */
+/* $XConsortium: resource.c,v 1.86 91/06/21 18:17:21 keith Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -53,10 +53,12 @@ SOFTWARE.
 #include "resource.h"
 #include "dixstruct.h" 
 #include "opaque.h"
+#include "windowstr.h"
 
 extern void HandleSaveSet();
 extern void FlushClientCaches();
 static void RebuildTable();
+extern WindowPtr *WindowTable;
 
 #define SERVER_MINID 32
 
@@ -408,8 +410,8 @@ FreeResource(id, skipDeleteFuncType)
         }
 	if(clients[cid] && (id == clients[cid]->lastDrawableID))
 	{
-	    clients[cid]->lastDrawable = (DrawablePtr) NULL;
-	    clients[cid]->lastDrawableID = INVALID;
+	    clients[cid]->lastDrawable = (DrawablePtr)WindowTable[0];
+	    clients[cid]->lastDrawableID = WindowTable[0]->drawable.id;
 	}
     }
     if (!gotOne)
@@ -447,8 +449,8 @@ FreeResourceByType(id, type, skipFree)
         }
 	if(clients[cid] && (id == clients[cid]->lastDrawableID))
 	{
-	    clients[cid]->lastDrawable = (DrawablePtr) NULL;
-	    clients[cid]->lastDrawableID = INVALID;
+	    clients[cid]->lastDrawable = (DrawablePtr)WindowTable[0];
+	    clients[cid]->lastDrawableID = WindowTable[0]->drawable.id;
 	}
     }
 }
