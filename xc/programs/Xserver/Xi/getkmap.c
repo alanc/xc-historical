@@ -1,4 +1,4 @@
-/* $XConsortium: xgetkmap.c,v 1.3 89/10/10 16:10:08 gms Exp $ */
+/* $XConsortium: xgetkmap.c,v 1.4 89/12/02 15:21:00 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -122,7 +122,8 @@ ProcXGetDeviceKeyMapping(client)
     WriteSwappedDataToClient(
 	client,
 	k->mapWidth * stuff->count * sizeof(KeySym),
-	&k->map[stuff->firstKeyCode - k->minKeyCode]);
+	&k->map[(stuff->firstKeyCode - k->minKeyCode) *
+	k->mapWidth]);
 
     return Success;
     }
