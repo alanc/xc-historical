@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.cf,v 1.22 93/08/18 20:28:57 rws Exp $
+XCOMM platform:  $XConsortium: Win32.cf,v 1.23 93/08/26 09:00:50 rws Exp $
 
 #define OSName			Microsoft Windows NT 3.1
 XCOMM operating system:  OSName
@@ -34,6 +34,8 @@ XCOMM operating system:  OSName
 #define BuildServer		NO
 #define ConnectionFlags		-DTCPCONN
 #define StdIncDir /mstools/h
+#define LdPreLib /**/
+#define LdPostLib /**/
 #ifndef UseInstalled
 #define ImakeCmd $(IMAKESRC:/=\)\imake
 #define DependCmd $(DEPENDSRC:/=\)\makedepend
