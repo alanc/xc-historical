@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.45 89/01/03 15:46:24 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.46 89/01/04 11:48:37 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -121,7 +121,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.45 89/01/03 15:46:24 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.46 89/01/04 11:48:37 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -1166,8 +1166,8 @@ static void TekRealize (gw, valuemaskp, values)
     if ((XValue&pr) || (YValue&pr))
       sizehints.flags |= USSize|USPosition;
     else sizehints.flags |= PSize|PPosition;
-    tw->core.width = sizehints.width = width;
-    tw->core.height = sizehints.height = height;
+    sizehints.width = width;
+    sizehints.height = height;
     if ((WidthValue&pr) || (HeightValue&pr))
       sizehints.flags |= USSize;
     else sizehints.flags |= PSize;
