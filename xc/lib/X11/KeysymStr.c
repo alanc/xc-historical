@@ -1,4 +1,4 @@
-/* $XConsortium: XKeysymStr.c,v 11.3 90/12/26 10:24:53 rws Exp $ */
+/* $XConsortium: XKeysymStr.c,v 11.4 91/01/06 11:46:43 rws Exp $ */
 /* Copyright 1990 Massachusetts Institute of Technology */
 
 /*
@@ -94,7 +94,7 @@ char *XKeysymToString(ks)
 
     if (keysymdb = _XInitKeysymDB())
     {
-	char buf[8];
+	char buf[9];
 	XrmValue resval;
 	XrmQuark empty = NULLQUARK;
 	GRNData data;
