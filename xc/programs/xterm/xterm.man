@@ -662,17 +662,16 @@ resize(1), X(1), pty(4), tty(4)
 \fIXTERM WILL HANG FOREVER IF YOU TRY TO PASTE TOO MUCH TEXT AT ONE TIME!!!\fP
 It is both producer and consumer for the pty and screws itself.
 .PP
+Variable-width fonts are not handled reasonably.
+.PP
 This program needs a rewrite very badly.  It should be split into very
 modular sections, with the various emulator being completely separate
 widgets that don't know about each other.  Ideally, you'd like to be able to
 pick and choose emulator widgets and stick them into a single control widget.
 .PP
-There is currently no way for a
-.I xterm
-window not to highlight itself when the pointer cursor enters it
-while another window is the keyboard focus.  This is also a questionable
-feature in the first place since it really is the job of the window manager
-to make this decision.
+The focus is considered lost if some other client (e.g., the window manager)
+grabs the pointer; it is difficult to do better without an addition to the
+protocol.
 .PP
 There needs to be a dialog box to allow entry of log file name
 and the COPY file name.
