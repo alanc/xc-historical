@@ -1,0 +1,17 @@
+#ifdef BandAidCompiler
+#include BandAidCompiler
+#endif
+
+#ifdef MacIIArchitecture
+        DEFINES = -DIEEE
+#endif /* MacIIArchitecture */
+
+LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+  SYS_LIBRARIES = -lm
+           SRCS = actions.c math.c xcalc.c 
+           OBJS = actions.o math.o xcalc.o 
+       INCLUDES = -I$(TOOLKITSRC) -I$(TOP)
+
+ComplexProgramTarget(xcalc)
+
+InstallAppDefaults(XCalc)
