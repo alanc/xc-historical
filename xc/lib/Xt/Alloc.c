@@ -37,7 +37,9 @@ char *XtMalloc(size)
 {
     char *ptr;
 
-    if ((ptr = malloc(size)) == NULL) XtError("Cannot perform malloc");
+    if ((ptr = malloc(size)) == NULL)
+	XtError("Cannot perform malloc");
+
     return(ptr);
 }
 
