@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuLock.c,v 1.11 93/09/17 11:02:17 rws Exp $
+ * $XConsortium: AuLock.c,v 1.12 94/01/21 22:13:28 dpw Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -33,7 +33,9 @@ extern Time_t time ();
 #ifndef X_NOT_POSIX
 #include <unistd.h>
 #else
+#ifndef WIN32
 extern unsigned	sleep ();
+#endif
 #endif
 
 #if NeedFunctionPrototypes
