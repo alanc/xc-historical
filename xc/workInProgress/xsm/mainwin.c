@@ -1,4 +1,4 @@
-/* $XConsortium: mainwin.c,v 1.2 94/07/18 15:04:40 mor Exp mor $ */
+/* $XConsortium: mainwin.c,v 1.3 94/08/10 15:00:17 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -80,7 +80,8 @@ create_main_window ()
     XtAddCallback (checkPointButton, XtNcallback, CheckPointXtProc, 0);
 
     shutdownButton = XtVaCreateManagedWidget (
-	"shutdownButton", commandWidgetClass, mainWindow,
+	"shutdownButton", menuButtonWidgetClass, mainWindow,
+	XtNmenuName, "shutdownMenu",
         XtNfromHoriz, checkPointButton,
         XtNfromVert, clientInfoButton,
 	XtNresizable, True,
@@ -89,5 +90,18 @@ create_main_window ()
 	XtNbottom, XawChainTop,
 	NULL);
 
-    XtAddCallback (shutdownButton, XtNcallback, ShutdownXtProc, 0);
+    shutdownMenu = XtVaCreatePopupShell (
+	"shutdownMenu", simpleMenuWidgetClass, mainWindow,
+	NULL);
+
+    shutdownSave = XtVaCreateManagedWidget (
+	"shutdownSave", smeBSBObjectClass, shutdownMenu,
+	NULL);
+
+    shutdownDontSave = XtVaCreateManagedWidget (
+	"shutdownDontSave", smeBSBObjectClass, shutdownMenu,
+	NULL);
+
+    XtAddCallback (shutdownSave, XtNcallback, ShutdownSaveXtProc, 0);
+    XtAddCallback (shutdownDontSave, XtNcallback, ShutdownDontSaveXtProc, 0);
 }
