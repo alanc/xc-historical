@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.172 89/03/16 14:44:42 rws Exp $ */
+/* $XConsortium: events.c,v 1.173 89/03/18 16:19:53 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1123,14 +1123,15 @@ WindowsRestructured()
 
 void
 DefineInitialRootWindow(win)
-    WindowPtr win;
+    register WindowPtr win;
 {
-    register CursorPtr c = win->cursor;
-
+    currentScreen = win->drawable.pScreen;
     sprite.hot.x = currentScreen->width / 2;
     sprite.hot.y = currentScreen->height / 2;
+    sprite.hotLimits.x2 = currentScreen->width;
+    sprite.hotLimits.y2 = currentScreen->height;
     sprite.win = win;
-    sprite.current = c;
+    sprite.current = win->cursor;
     spriteTraceGood = 1;
     ROOT = win;
     (*currentScreen->CursorLimits) (
@@ -1139,7 +1140,7 @@ DefineInitialRootWindow(win)
 	currentScreen, &sprite.physLimits);
     (*currentScreen->SetCursorPosition) (
 	currentScreen, sprite.hot.x, sprite.hot.y, FALSE);
-    (*currentScreen->DisplayCursor) (currentScreen, c);
+    (*currentScreen->DisplayCursor) (currentScreen, win->cursor);
 }
 
 /*
@@ -2482,7 +2483,7 @@ InitEvents()
     curKeySyms.maxKeyCode = 0;
     curKeySyms.mapWidth = 0;
 
-    currentScreen = screenInfo.screens[0];
+    currentScreen = (ScreenPtr)NULL;
     inputInfo.numDevices = 0;
     if (spriteTraceSize == 0)
     {
@@ -2505,8 +2506,8 @@ InitEvents()
     sprite.current = NullCursor;
     sprite.hotLimits.x1 = 0;
     sprite.hotLimits.y1 = 0;
-    sprite.hotLimits.x2 = currentScreen->width;
-    sprite.hotLimits.y2 = currentScreen->height;
+    sprite.hotLimits.x2 = 0;
+    sprite.hotLimits.y2 = 0;
     motionHintWindow = NullWindow;
     syncEvents.replayDev = (DeviceIntPtr)NULL;
     syncEvents.pending.forw = &syncEvents.pending;
