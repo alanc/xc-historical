@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.3 94/01/11 18:35:50 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.4 94/01/11 20:43:12 rob Exp $
 #define DoThreadedServer XServerThreaded
 #include <Server.tmpl>
 
@@ -72,7 +72,6 @@ LinkSourceFile(grabs.c,$(SERVERSRC)/dix)
 LinkSourceFile(swaprep.c,$(SERVERSRC)/dix)
 LinkSourceFile(swapreq.c,$(SERVERSRC)/dix)
 LinkSourceFile(initatoms.c,$(SERVERSRC)/dix)
-LinkSourceFile(dixfonts.c,$(SERVERSRC)/dix)
 LinkSourceFile(privates.c,$(SERVERSRC)/dix)
 LinkSourceFile(pixmap.c,$(SERVERSRC)/dix)
 
