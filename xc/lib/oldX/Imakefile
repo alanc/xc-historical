@@ -38,7 +38,7 @@ NormalLibraryObjectRule()
 #endif
 
 #if SharedOldLibX
-NormalSharedLibraryTarget(oldX,$(SOOLDXREV),$(OBJS),)
+NormalSharedLibraryTarget(oldX,$(SOOLDXREV),$(OBJS))
 InstallSharedLibrary(oldX,$(SOOLDXREV),$(USRLIBDIR))
 #endif
 NormalLibraryTarget(oldX,$(OBJS))

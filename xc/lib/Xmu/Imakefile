@@ -131,7 +131,7 @@ SpecialObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(OS_NAME_DEFINES))
 #endif
 
 #if SharedLibXmu
-NormalSharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS),)
+NormalSharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS))
 InstallSharedLibrary(Xmu,$(SOXMUREV),$(USRLIBDIR))
 #endif
 

@@ -325,7 +325,7 @@ SpecialObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
  * always generate unshared library too
  */
 #if SharedLibX
-NormalSharedLibraryTarget(X11,$(SOXLIBREV),$(OBJS),)
+NormalSharedLibraryTarget(X11,$(SOXLIBREV),$(OBJS))
 InstallSharedLibrary(X11,$(SOXLIBREV),$(USRLIBDIR))
 #endif
 NormalLibraryTarget2(X11,$(OBJS1),$(OBJS2))
