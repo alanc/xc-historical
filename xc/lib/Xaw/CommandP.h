@@ -1,5 +1,5 @@
 /*
-* $Header: CommandP.h,v 1.11 87/10/29 14:44:41 swick Locked $
+* $Header: CommandP.h,v 1.12 87/12/01 15:36:36 swick Locked $
 */
 
 /*
@@ -32,8 +32,11 @@
  * Date:	Thu Aug 27 1987
  */
 
-#ifndef _XtCommandPrivate_h
-#define _XtCommandPrivate_h
+#ifndef _XtCommandP_h
+#define _XtCommandP_h
+
+#include <X/Command.h>
+#include "LabelP.h"
 
 /***********************************************************************
  *
@@ -57,8 +60,9 @@ typedef struct _CommandClass
    /* Full class record declaration */
 typedef struct _CommandClassRec {
     CoreClassPart	core_class;
+    SimpleClassPart	simple_class;
     LabelClassPart	label_class;
-    CommandClassPart     command_class;
+    CommandClassPart    command_class;
 } CommandClassRec;
 
 extern CommandClassRec commandClassRec;
@@ -71,16 +75,20 @@ extern CommandClassRec commandClassRec;
 
     /* New fields for the Command widget record */
 typedef struct {
+    /* resources */
+    Dimension   highlight_thickness;
+    XtCallbackList callbacks;
+
+    /* private state */
     Pixmap      gray_pixmap;
     GC          highlight_GC;
     GC          inverse_GC;
     GC          inverse_text_GC;
-    Dimension   highlight_thickness;
-    XtCallbackList callbacks;
     Boolean     set;
     Boolean     highlighted;
     Boolean     display_set;
     Boolean     display_highlighted;
+    Cursor	cursor;
 } CommandPart;
 
 
@@ -90,10 +98,11 @@ typedef struct {
    /* Full widget declaration */
 typedef struct _CommandRec {
     CorePart         core;
+    SimplePart	     simple;
     LabelPart	     label;
     CommandPart      command;
 } CommandRec;
 
-#endif _XtCommandPrivate_h
-/* DON'T ADD STUFF AFTER THIS #endif */
+#endif _XtCommandP_h
+
 
