@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.6 88/11/17 19:13:52 keith Exp $
+ * $XConsortium: verify.c,v 1.7 88/11/23 17:00:44 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -54,9 +54,11 @@ struct verify_info	*verify;
 	Debug ("Verify %s %s\n", greet->name, greet->password);
 	if (strcmp (crypt (greet->password, p->pw_passwd), p->pw_passwd)) {
 		Debug ("verify failed\n");
+		bzero(greet->password, strlen(greet->password));
 		return 0;
 	}
 	Debug ("verify succeeded\n");
+	bzero(greet->password, strlen(greet->password));
 	verify->uid = p->pw_uid;
 #ifdef NGROUPS
 	getGroups (greet->name, verify, p->pw_gid);
