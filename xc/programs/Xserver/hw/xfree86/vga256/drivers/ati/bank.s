@@ -1,3 +1,4 @@
+/* $XConsortium: $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/bank.s,v 3.2 1994/10/29 22:45:42 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
