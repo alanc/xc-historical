@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $Header: $ */
+/* $Header: dixfonts.c,v 1.1 88/08/16 12:11:45 keith Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -37,7 +37,8 @@ SOFTWARE.
 #include "misc.h"
 #include "opaque.h"
 
-static FontPtr 	pFontHead = NullFont;	/* XXX still need to be kept linked? */
+#define QUERYCHARINFO(pci, pr)  *(pr) = (pci)->metrics
+
 extern FontPtr 	defaultFont;
 
 /*
@@ -147,6 +148,10 @@ DescribeFont(pfontname, lenfname, pfi, ppfp)
 	return FALSE;
     if (pfont != NullFont) {	/* need to get it myself */
 	*pfi = *pfont->pFI;
+	if (pfi->inkMetrics) {
+	    pfi->minbounds = *pfont->pInkMin;
+	    pfi->maxbounds = *pfont->pInkMax;
+	}
 	if (pfi->nProps != 0) {
 	    *ppfp = (DIXFontPropPtr)xalloc(sizeof(DIXFontProp)*pfi->nProps);
 	    if (*ppfp == NullDIXFontProp)
@@ -154,7 +159,6 @@ DescribeFont(pfontname, lenfname, pfi, ppfp)
 	    bcopy((char *)pfont->pFP, (char *)*ppfp,
 		sizeof(DIXFontProp) *pfi->nProps);
 	}
-	return TRUE;
     }
 
     return TRUE;
@@ -173,8 +177,6 @@ QueryFont( pf, pr, nprotoxcistructs)
     xFontProp *	prfp;
     xCharInfo *	prci;
 
-    void	queryCharInfo();
-
     /* pr->length set in dispatch */
     pr->minCharOrByte2 = pfi->firstCol;
     pr->defaultChar = pfi->chDefault;
@@ -186,8 +188,8 @@ QueryFont( pf, pr, nprotoxcistructs)
     pr->fontAscent = pfi->fontAscent;
     pr->fontDescent = pfi->fontDescent;
 
-    queryCharInfo( &pfi->minbounds, &pr->minBounds); 
-    queryCharInfo( &pfi->maxbounds, &pr->maxBounds); 
+    QUERYCHARINFO( pf->pInkMin, &pr->minBounds); 
+    QUERYCHARINFO( pf->pInkMax, &pr->maxBounds); 
 
     pr->nFontProps = pfi->nProps; 
     pr->nCharInfos = nprotoxcistructs; 
@@ -204,19 +206,19 @@ QueryFont( pf, pr, nprotoxcistructs)
     }
 
     for ( ct=0,
-	    pci = &pf->pCI[0],
+	    pci = &pf->pInkCI[0],
 	    prci=(xCharInfo *)(prfp);
 	  ct<nprotoxcistructs;
 	  ct++, pci++, prci++)
-	queryCharInfo( pci, prci);
+	QUERYCHARINFO( pci, prci);
 }
 
-/* static */ void
+void
 queryCharInfo( pci, pr)
     CharInfoPtr 		pci;
     xCharInfo *		pr;	/* protocol packet to fill in */
 {
-    *pr = pci->metrics;
+    QUERYCHARINFO(pci, pr);
 }
 
 /* text support routines. A charinfo array builder, and a bounding */
@@ -335,7 +337,6 @@ GetGlyphs(font, count, chars, fontEncoding, glyphcount, glyphs)
 }
 
 
-
 void
 QueryGlyphExtents(font, charinfo, count, info)
     FontPtr font;
@@ -402,16 +403,21 @@ QueryTextExtents(font, count, chars, info)
     CharInfoPtr *charinfo =
 	(CharInfoPtr *)ALLOCATE_LOCAL(count*sizeof(CharInfoPtr));
     unsigned long n;
+    CharInfoPtr	oldCI;
 
     if(!charinfo)
 	return;
+    oldCI = font->pCI;
+    font->pCI = font->pInkCI;
+    /* temporarily stuff in Ink metrics */
     if (font->pFI->lastRow == 0)
 	GetGlyphs(font, count, chars, Linear16Bit, &n, charinfo);
     else
 	GetGlyphs(font, count, chars, TwoD16Bit, &n, charinfo);
+    /* restore real glyph metrics */
+    font->pCI = oldCI;
 
     QueryGlyphExtents(font, charinfo, n, info);
 
     DEALLOCATE_LOCAL(charinfo);
 }
-
