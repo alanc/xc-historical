@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.36 91/02/28 09:36:41 rws Exp $
+ * $XConsortium: auth.c,v 1.37 91/04/01 10:28:27 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -47,8 +47,6 @@
 # include    <netdnet/dnetdb.h>
 #endif
 # include    <X11/X.h>
-
-extern char	*mktemp ();
 
 extern int	MitInitAuth ();
 extern Xauth	*MitGetAuth ();
@@ -901,7 +899,7 @@ struct verify_info	*verify;
 	}
 	if (lockStatus != LOCK_SUCCESS) {
 	    sprintf (backup_name, "%s/.XauthXXXXXX", d->userAuthDir);
-	    mktemp (backup_name);
+	    (void) mktemp (backup_name);
 	    lockStatus = XauLockAuth (backup_name, 1, 2, 10);
 	    Debug ("backup lock is %d\n", lockStatus);
 	    if (lockStatus == LOCK_SUCCESS) {
