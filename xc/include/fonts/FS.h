@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: FS.h,v 1.4 91/05/13 16:45:26 gildea Exp $ */
 /* 
  * Copyright 1990, 1991 Network Computing Devices; 
  * Portions Copyright 1987 by Digital Equipment Corporation and the 
@@ -20,16 +20,13 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * @(#)FS.h	3.2	91/04/11
- *
  */
 #ifndef _FS_H_
 #define	_FS_H_
 
 #include <fsmasks.h>
 
-#define	FS_PROTOCOL		1
+#define	FS_PROTOCOL		2
 #define	FS_PROTOCOL_MINOR	0
 
 typedef unsigned long FSID;
