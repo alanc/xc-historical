@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.18 92/03/23 17:02:04 keith Exp $ */
+/* $XConsortium: fserve.c,v 1.19 92/04/13 14:38:52 gildea Exp $ */
 /*
  *
  * Copyright 1990 Network Computing Devices
@@ -41,6 +41,10 @@
 
 #ifdef NCD
 #include	<ncd/nvram.h>
+#endif
+
+#ifndef NULL
+#define NULL 0
 #endif
 
 #ifndef MIN
