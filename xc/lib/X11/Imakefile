@@ -509,78 +509,121 @@ SRCH_DEFINES = -DXFILESEARCHPATHDEFAULT=\"$(XFILESEARCHPATHDEFAULT)\"
 
 LCSRCS = \
 	XIMProto.h \
-	XimpMCov.h \
 	Ximplc.h \
+	XimpCT.c \
 	XimpCallbk.c \
 	XimpConv.c \
 	XimpCrFS.c \
+	XimpDefCnv.c \
+	XimpDrStr.c \
+	XimpEUC.c \
+	XimpExten.c \
 	XimpIC.c \
+	XimpICG.c \
+	XimpICS.c \
 	XimpIM.c \
 	XimpLCUtil.c \
 	XimpLCd.c \
-	XimpLdFt.c \
 	XimpLkup.c \
 	XimpMCT.c \
 	XimpMDrS.c \
 	XimpMEsc.c \
 	XimpMExt.c \
-	XimpSLC.c \
-	XimpTDrw.c \
-	XimpTExt.c \
-	XimpTWth.c \
+	XimpMPer.c \
+	XimpMPrTxt.c \
+	XimpMTxtPr.c \
+	XimpPrTxt.c \
+	XimpTxtPr.c \
+	XimpRm.c \
+	XimpSJIS.c \
+	XimpTxtEsc.c \
+	XimpTxtExt.c \
+	XimpTxtPer.c \
 	XimpWCT.c \
 	XimpWDrS.c \
 	XimpWEsc.c \
-	XimpWExt.c
+	XimpWExt.c \
+	XimpWPer.c \
+	XimpWPrTxt.c \
+	XimpWTxtPr.c \
+	XimpXConv.c \
+	Ximpint.c
 
 LCOBJS = \
+	XimpCT.o \
 	XimpCallbk.o \
 	XimpConv.o \
 	XimpCrFS.o \
+	XimpDefCnv.o \
+	XimpEUC.o \
+	XimpExten.o \
 	XimpIC.o \
+	XimpICG.o \
+	XimpICS.o \
 	XimpIM.o \
 	XimpLCUtil.o \
 	XimpLCd.o \
-	XimpLdFt.o \
 	XimpLkup.o \
 	XimpMCT.o \
 	XimpMDrS.o \
 	XimpMEsc.o \
 	XimpMExt.o \
-	XimpSLC.o \
-	XimpTDrw.o \
-	XimpTExt.o \
-	XimpTWth.o \
+	XimpMPer.o \
+	XimpMPrTxt.o \
+	XimpMTxtPr.o \
+	XimpRm.o \
+	XimpSJIS.o \
 	XimpWCT.o \
 	XimpWDrS.o \
 	XimpWEsc.o \
-	XimpWExt.o
+	XimpWExt.o \
+	XimpWPer.o \
+	XimpWPrTxt.o \
+	XimpWTxtPr.o \
+	XimpXConv.o \
+	Ximpint.o
 
 #define LCRules()							@@\
 LinkSourceFile(XIMProto.h,Ximp)						@@\
-LinkSourceFile(XimpMCov.h,Ximp)						@@\
 LinkSourceFile(Ximplc.h,Ximp)						@@\
+LinkSourceFile(XimpCT.c,Ximp)						@@\
 LinkSourceFile(XimpCallbk.c,Ximp)					@@\
 LinkSourceFile(XimpConv.c,Ximp)						@@\
 LinkSourceFile(XimpCrFS.c,Ximp)						@@\
+LinkSourceFile(XimpDefCnv.c,Ximp)					@@\
+LinkSourceFile(XimpDrStr.c,Ximp)					@@\
+LinkSourceFile(XimpEUC.c,Ximp)						@@\
+LinkSourceFile(XimpExten.c,Ximp)					@@\
 LinkSourceFile(XimpIC.c,Ximp)						@@\
+LinkSourceFile(XimpICG.c,Ximp)						@@\
+LinkSourceFile(XimpICS.c,Ximp)						@@\
 LinkSourceFile(XimpIM.c,Ximp)						@@\
 LinkSourceFile(XimpLCUtil.c,Ximp)					@@\
 LinkSourceFile(XimpLCd.c,Ximp)						@@\
-LinkSourceFile(XimpLdFt.c,Ximp)						@@\
 LinkSourceFile(XimpLkup.c,Ximp)						@@\
 LinkSourceFile(XimpMCT.c,Ximp)						@@\
 LinkSourceFile(XimpMDrS.c,Ximp)						@@\
 LinkSourceFile(XimpMEsc.c,Ximp)						@@\
 LinkSourceFile(XimpMExt.c,Ximp)						@@\
-LinkSourceFile(XimpSLC.c,Ximp)						@@\
-LinkSourceFile(XimpTDrw.c,Ximp)						@@\
-LinkSourceFile(XimpTExt.c,Ximp)						@@\
-LinkSourceFile(XimpTWth.c,Ximp)						@@\
+LinkSourceFile(XimpMPer.c,Ximp)						@@\
+LinkSourceFile(XimpMPrTxt.c,Ximp)					@@\
+LinkSourceFile(XimpMTxtPr.c,Ximp)					@@\
+LinkSourceFile(XimpPrTxt.c,Ximp)					@@\
+LinkSourceFile(XimpRm.c,Ximp)						@@\
+LinkSourceFile(XimpSJIS.c,Ximp)						@@\
+LinkSourceFile(XimpTxtPr.c,Ximp)					@@\
+LinkSourceFile(XimpTxtEsc.c,Ximp)					@@\
+LinkSourceFile(XimpTxtExt.c,Ximp)					@@\
+LinkSourceFile(XimpTxtPer.c,Ximp)					@@\
 LinkSourceFile(XimpWCT.c,Ximp)						@@\
 LinkSourceFile(XimpWDrS.c,Ximp)						@@\
 LinkSourceFile(XimpWEsc.c,Ximp)						@@\
 LinkSourceFile(XimpWExt.c,Ximp)						@@\
+LinkSourceFile(XimpWPer.c,Ximp)						@@\
+LinkSourceFile(XimpWPrTxt.c,Ximp)					@@\
+LinkSourceFile(XimpWTxtPr.c,Ximp)					@@\
+LinkSourceFile(XimpXConv.c,Ximp)					@@\
+LinkSourceFile(Ximpint.c,Ximp)						@@\
 SpecialLibObjectRule(XimpLCUtil.o,$(ICONFIGFILES),$(SRCH_DEFINES))
 
 #endif /* BuildXimp */
