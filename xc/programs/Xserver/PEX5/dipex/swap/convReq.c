@@ -1,4 +1,4 @@
-/* $XConsortium: convReq.c,v 5.1 91/02/16 09:57:09 rws Exp $ */
+/* $XConsortium: convReq.c,v 5.2 91/03/15 18:37:10 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1100,10 +1100,6 @@ pexGetPickMeasureReq	*strmPtr;
     SWAP_CARD16 (strmPtr->length);
     SWAP_PICK_MEASURE (strmPtr->pm);
     SWAP_BITMASK (strmPtr->itemMask);
-
-    SWAP_FUNC_PREFIX(SwapPickMeasAttr) (    swapPtr, strmPtr->itemMask,
-					    (unsigned char *)(strmPtr+1));
-
     CALL_REQUEST;
 }
 
@@ -1338,36 +1334,53 @@ unsigned char	*ptr;
 	sc_data += sizeof(CARD32);	    /* include pad */
     }
 
-    if (im & PEXSCStartPath) {
-	int len, i;
+    if (im & PEXSCModelClipFlag) {
+	sc_data += sizeof (CARD32);	    /* no swapping needed for CARD8 */
+    }
+
+    if (im & PEXSCStartPath) 
+    {
+	int		len, i;
+	pexElementRef	*pe;
 	SWAP_CARD32 ((*((CARD32 *)sc_data)));
-	len = (int)(*sc_data);
+	len = *((CARD32 *) sc_data);
 	sc_data += sizeof(CARD32);
-	for (i=0; i<len; i++, sc_data += sizeof(pexElementRef)) {
-	    SWAP_ELEMENT_REF ((*((pexElementRef *)sc_data)));
+	for (i=0, pe = (pexElementRef *) sc_data; i<len; i++, pe++)
+	{
+	    SWAP_ELEMENT_REF (*pe);
 	}
-    };
+	sc_data = (unsigned char *) pe;
+    }
 
-    if (im & PEXSCNormalList) {
-	int len, i;
+    if (im & PEXSCNormalList) 
+    {
+	int	len, i;
+	CARD32	*ns;
 	SWAP_CARD32 ((*((CARD32 *)sc_data)));
-	len = (int)(*sc_data);
-	for (i=0; i<len; i++, sc_data += sizeof(CARD32)) {
-	    SWAP_NAME ((*((CARD32 *)sc_data)));
+	len = *((CARD32 *) sc_data);
+	sc_data += sizeof (CARD32);
+	for (i=0, ns = (CARD32 *) sc_data; i < len; i++, ns += 2)
+	{
+	    SWAP_NAMESET (ns[0]);
+	    SWAP_NAMESET (ns[1]);
 	}
+	sc_data = (unsigned char *) ns;
+    }
 
-    };
-
-    if (im & PEXSCInvertedList) {
-	int len, i;
+    if (im & PEXSCInvertedList) 
+    {
+	int	len, i;
+	CARD32	*ns;
 	SWAP_CARD32 ((*((CARD32 *)sc_data)));
-	len = (int)(*sc_data);
-	for (i=0; i<len; i++, sc_data += sizeof(CARD32)) {
-	    SWAP_NAME ((*((CARD32 *)sc_data)));
+	len = *((CARD32 *) sc_data);
+	sc_data += sizeof (CARD32);
+	for (i=0, ns = (CARD32 *) sc_data; i < len; i++, ns += 2)
+	{
+	    SWAP_NAMESET (ns[0]);
+	    SWAP_NAMESET (ns[1]);
 	}
-
-    };
-
+	sc_data = (unsigned char *) ns;
+    }
 }
 
 CARD8 *

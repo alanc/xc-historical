@@ -1,4 +1,4 @@
-/* $XConsortium: uconvRep.c,v 5.1 91/02/16 09:57:19 rws Exp $ */
+/* $XConsortium: uconvRep.c,v 5.2 91/03/15 18:54:28 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -317,7 +317,7 @@ pexGetElementInfoReply	*reply;
     SWAP_CARD32 (reply->length);	/* not 0 */
 
     for ( i=0, pe=(pexElementInfo *)(reply+1); i < reply->numInfo; i++, pe++)
-	SWAP_ELEMENT_INFO((*pe));
+	SWAP_ELEMENT_INFO (*pe);
 
     SWAP_CARD32 (reply->numInfo);
 
@@ -395,18 +395,19 @@ pexFetchElementsReply	*reply;
     int i;
     pexElementInfo *pe;
     CARD32 *curCmd;
+    int	length;
 
     SWAP_CARD16 (reply->sequenceNumber);
     SWAP_CARD32 (reply->length);	/* not 0 */
 
-    if (cntxtPtr->pexSwapReplyOC) {
-	for (i=0, curCmd = (CARD32 *)(reply+1);
-	     i<reply->numElements;
-	     i++, curCmd += pe->length){
-	  pe = (pexElementInfo *)curCmd;
-	  if (cntxtPtr->pexSwapReplyOC)
-		cntxtPtr->pexSwapReplyOC[ reply->type ]( swapPtr, pe );
-	};
+    for (i=0, curCmd = (CARD32 *)(reply+1);
+	 i<reply->numElements;
+	 i++, curCmd += length)
+    {
+	pe = (pexElementInfo *)curCmd;
+	cntxtPtr->pexSwapReplyOC[ pe->elementType ] (swapPtr, pe);
+	length = pe->length;
+	SWAP_ELEMENT_INFO (*pe);
     }
 
     SWAP_CARD32 (reply->numElements);
@@ -863,7 +864,7 @@ pexGetImpDepConstantsReq    *strmPtr;
 pexGetImpDepConstantsReply  *reply;
 {
     pexSwap *swapPtr = cntxtPtr->swap;
-    CARD16 *pnames = (CARD16 *)(reply+1);
+    CARD16 *pnames = (CARD16 *)(strmPtr+1);
     CARD32 i;
     CARD32 *ptr = (CARD32 *)(reply+1);
     FLOAT *pf;
@@ -1060,35 +1061,41 @@ unsigned char	*ptr;
 	sc_data += sizeof(CARD32);	    /* include pad */
     }
 
+    if (im & PEXSCModelClipFlag) {
+	sc_data += sizeof (CARD32);	    /* no swapping needed for CARD8 */
+    }
+
     if (im & PEXSCStartPath) {
 	int len, i;
-	len = (int)(*sc_data);
+	len = *((CARD32 *) sc_data);
 	SWAP_CARD32 ((*((CARD32 *)sc_data)));
 	sc_data += sizeof(CARD32);
 	for (i=0; i<len; i++, sc_data += sizeof(pexElementRef)) {
 	    SWAP_ELEMENT_REF ((*((pexElementRef *)sc_data)));
 	}
-    };
+    }
 
     if (im & PEXSCNormalList) {
 	int len, i;
-	len = (int)(*sc_data);
+	len = *((CARD32 *) sc_data);
 	SWAP_CARD32 ((*((CARD32 *)sc_data)));
-	for (i=0; i<len; i++, sc_data += sizeof(CARD32)) {
-	    SWAP_NAME ((*((CARD32 *)sc_data)));
+	sc_data += sizeof(CARD32);
+	for (i=0; i<len*2; i++, sc_data += sizeof(CARD32)) {
+	    SWAP_NAMESET ((*((CARD32 *)sc_data)));
 	}
 
-    };
+    }
 
     if (im & PEXSCInvertedList) {
 	int len, i;
-	len = (int)(*sc_data);
+	len = *((CARD32 *) sc_data);
 	SWAP_CARD32 ((*((CARD32 *)sc_data)));
-	for (i=0; i<len; i++, sc_data += sizeof(CARD32)) {
+	sc_data += sizeof(CARD32);
+	for (i=0; i<len*2; i++, sc_data += sizeof(CARD32)) {
 	    SWAP_NAME ((*((CARD32 *)sc_data)));
 	}
 
-    };
+    }
 
 }
 
@@ -1126,7 +1133,7 @@ unsigned char	*p_data;
     unsigned char *ptr = p_data;
 
     if (im & PEXPMStatus) {
-	SWAP_CARD32((*((CARD32 *)ptr)));
+	SWAP_CARD16((*((CARD16 *)ptr)));
 	ptr += sizeof(CARD32);
     }
 
@@ -1134,8 +1141,9 @@ unsigned char	*p_data;
 	CARD32 i;
 	CARD32 numRefs = *((CARD32 *)ptr);
 	pexPickPath *pp;
-	ptr += sizeof(CARD32);
+
 	SWAP_CARD32((*((CARD32 *)ptr)));
+	ptr += sizeof(CARD32);
 	for (i=0, pp = (pexPickPath *)ptr; i<numRefs; i++, pp++) {
 	    SWAP_PICK_PATH((*pp));
 	}
