@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mach_io.c,v 1.1 94/03/28 21:29:27 dpw Exp kaleb $ */
 /*
  * Copyright 1992 by Robert Baron <Robert.Baron@ernst.mach.cs.cmu.edu>
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -111,8 +111,12 @@ int xf86GetKbdLeds()
 #endif
 }
 
+#if NeedFunctionPrototypes
+void xf86SetKbdRepeat(char rad)
+#else
 void xf86SetKbdRepeat(rad)
 char rad;
+#endif
 {
 	return;
 }

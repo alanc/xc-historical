@@ -1,4 +1,4 @@
-/* $XConsortium: am_io.c,v 1.1 94/03/28 21:27:35 dpw Exp gildea $ */
+/* $XConsortium: am_io.c,v 1.2 95/06/09 20:57:00 gildea Exp kaleb $ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -95,8 +95,12 @@ int xf86GetKbdLeds()
 	return cur_leds;
 }
 
+#if NeedFunctionPrototypes
+void xf86SetKbdRepeat(char rad)
+#else
 void xf86SetKbdRepeat(rad)
 char rad;
+#endif
 {
 	return;
 }
