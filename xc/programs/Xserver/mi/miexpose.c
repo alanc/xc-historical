@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 5.1 89/06/12 16:26:27 keith Exp $ */
+/* $XConsortium: miexpose.c,v 5.2 89/06/16 16:56:19 keith Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -353,12 +353,10 @@ miSendNoExpose(pGC)
 #endif
 
 void 
-miWindowExposures(pWin)
+miWindowExposures(pWin, prgn)
     WindowPtr pWin;
-{
     register RegionPtr prgn;
-
-    prgn = pWin->exposed;
+{
     if (prgn->numRects)
     {
 	xEvent *pEvent;
@@ -375,13 +373,13 @@ miWindowExposures(pWin)
 	     * in some cases, backing store will cause a different
 	     * region to be exposed than needs to be repainted
 	     * (like when a window is mapped).  RestoreAreas is
-	     * allowed to return a region other than pWin->exposed,
+	     * allowed to return a region other than prgn,
 	     * in which case this routine will free the resultant
 	     * region.  If exposures is null, then no events will
-	     * be sent to the client; if pWin->exposed is empty
+	     * be sent to the client; if prgn is empty
 	     * no areas will be repainted.
 	     */
-	    exposures = (*pWin->backStorage->funcs->RestoreAreas)(pWin);
+	    exposures = (*pWin->backStorage->funcs->RestoreAreas)(pWin, prgn);
 	if (exposures && (exposures->numRects > RECTLIMIT))
 	{
 	    /*
