@@ -1,4 +1,4 @@
-.\" $XConsortium: userguide.mm,v 1.1 92/06/11 15:33:53 rws Exp $
+.\" $XConsortium: userguide.mm,v 1.2 92/06/30 20:02:34 rws Exp $
 '
 .ds dN "\s-1MIT\s0-3-01.3
 '
@@ -486,7 +486,7 @@ Eg: APILIB=${TETLIB}/libapi.a
 .cE
 .LE
 .H 3 "Configuration parameters for the \*(xT"
-Only the first one of these parameters requires changing unless
+Only the first two of these parameters require changing unless
 directories have been moved from their default locations.
 .VL 15 0
 .LI \s-1XTESTHOST\s0
@@ -501,6 +501,11 @@ This parameter is only used in the Makefile of the test for XGetDefault.
 Eg. XTESTHOST=`hostname`
 Eg. XTESTHOST=`uname -n`
 Eg. XTESTHOST=triton
+.cE
+.LI \s-1XTESTFONTDIR\s0
+The directory in which to install the test fonts.
+.cS
+Eg: XTESTFONTDIR=/usr/lib/X11/fonts/xtest
 .cE
 .LI \s-1XTESTROOT\s0
 The directory that is the root of the \*(xT.
@@ -1151,35 +1156,24 @@ Move to the directory \fC$TET_ROOT/xtest/fonts\fP.
 cd $TET_ROOT/xtest/fonts
 .cE
 .LI
-Compile the seven \fC.bdf\fP files into \fC.snf\fP format.
+Compile the seven \fCbdf\fP files into \fCsnf\fP or \fCpcf\fP format,
+as appropriate for your system.
 .cS
-bdftosnf xtfont0.bdf > xtfont0.snf
-bdftosnf xtfont1.bdf > xtfont1.snf
-bdftosnf xtfont2.bdf > xtfont2.snf
-bdftosnf xtfont3.bdf > xtfont3.snf
-bdftosnf xtfont4.bdf > xtfont4.snf
-bdftosnf xtfont5.bdf > xtfont5.snf
-bdftosnf xtfont6.bdf > xtfont6.snf
+pmake comp_snf
 .cE
-This can also be achieved more easily by using the command 
+or
 .cS
-pmake bdfcomp
+pmake comp_pcf
 .cE
 .LI
-Copy the \fC.snf\fP files into a server font directory. This 
-is normally done by creating a new font directory (for example,
-/usr/lib/X11/fonts/xtest).
+Copy the compiled fonts into the server font directory
+(the \fCXTESTFONTDIR\fP configuration parameter).
 .cS
-mkdir /usr/lib/X11/fonts/xtest
-cp *.snf /usr/lib/X11/fonts/xtest
+pmake install_snf
 .cE
-.LI
-Remake the index in the new server font directory.
-On some systems this may be done by executing 
-the \fCmkfontdir\fP command in the new server font directory.
+or
 .cS
-cd /usr/lib/X11/fonts/xtest
-mkfontdir
+pmake install_pcf
 .cE
 .LE
 .H 2 "Building the \fCmc\fP utility"
