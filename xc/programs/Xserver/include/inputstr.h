@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: inputstr.h,v 1.11 87/08/18 19:58:13 toddb Exp $ */
+/* $Header: inputstr.h,v 1.12 87/08/21 16:15:39 ham Exp $ */
 
 #ifndef INPUTSTRUCT_H
 #define INPUTSTRUCT_H
@@ -46,6 +46,16 @@ typedef struct _DeviceIntRec *DeviceIntPtr;
  * that is not much waste since there are at most 2 active grabs (keyboard
  * and pointer) going at once in the server.
  */
+
+#define MasksPerDetailMask 8		/* 256 keycodes and 256 possible
+						modifier combinations, but only	
+						3 buttons. */
+
+  typedef struct _DetailRec {		/* Grab details may be bit masks */
+	int exact;
+	Mask *pMask;
+  } DetailRec;
+
   typedef struct _GrabRec {
     GrabPtr		next;		/* for chain of passive grabs */
     int			resource;
@@ -54,16 +64,16 @@ typedef struct _DeviceIntRec *DeviceIntPtr;
     WindowPtr		window;
     Bool		ownerEvents;
     Bool		keyboardMode, pointerMode;
-    Mask		modifiers;
+    DetailRec		modifiersDetail;
     Mask		eventMask;
     union {
 	struct {
-	    int		button;
+	    DetailRec 	buttonDetail;
 	    WindowPtr	confineTo;
 	    CursorPtr	cursor;
 	} ptr;
 	struct {
-	    int		key;
+	    DetailRec	keyDetail;
 	} keybd;
     } u;
 } GrabRec;
