@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.12 90/05/03 17:23:30 keith Exp $ */
+/* $XConsortium: colormap.c,v 5.13 90/07/03 08:58:47 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -809,17 +809,17 @@ FakeAllocColor (pmap, item)
 	pixB = (item->pixel & pVisual->blueMask) >> pVisual->offsetBlue; 
 	if (FindColor(pmap, pmap->red, NUMRED(pVisual), &rgb, &pixR, REDMAP,
 		      -1, RedComp) != Success)
-	    pixR = FindBestPixel(pmap->red, NUMRED(pVisual), &rgb, REDMAP);
+	    pixR = FindBestPixel(pmap->red, NUMRED(pVisual), &rgb, REDMAP)
+			<< pVisual->offsetRed;
 	if (FindColor(pmap, pmap->green, NUMGREEN(pVisual), &rgb, &pixG,
 		      GREENMAP, -1, GreenComp) != Success)
 	    pixG = FindBestPixel(pmap->green, NUMGREEN(pVisual), &rgb,
-				 GREENMAP);
+				 GREENMAP) << pVisual->offsetGreen;
 	if (FindColor(pmap, pmap->blue, NUMBLUE(pVisual), &rgb, &pixB, BLUEMAP,
 		      -1, BlueComp) != Success)
-	    pixB = FindBestPixel(pmap->blue, NUMBLUE(pVisual), &rgb, BLUEMAP);
-	item->pixel = (pixR << pVisual->offsetRed) |
-		      (pixG << pVisual->offsetGreen) |
-		      (pixB << pVisual->offsetBlue);
+	    pixB = FindBestPixel(pmap->blue, NUMBLUE(pVisual), &rgb, BLUEMAP)
+			<< pVisual->offsetBlue;
+	item->pixel = pixR | pixG | pixB;
 	break;
 
     case TrueColor:
@@ -1121,34 +1121,38 @@ FindColor (pmap, pentFirst, size, prgb, pPixel, channel, client, comp)
 	pent->refcnt = 1;
 #endif
 
-    def.flags = 0;
     switch (channel)
     {
       case PSEUDOMAP:
+        pent->co.local.red = prgb->red;
         pent->co.local.green = prgb->green;
         pent->co.local.blue = prgb->blue;
+        def.red = prgb->red;
 	def.green = prgb->green;
 	def.blue = prgb->blue;
-	def.flags |= DoGreen;
-	def.flags |= DoBlue;
-	/* For PseudoColor we load all three values for the pixel,
-	 * but only put it in 1 map, the red one */
+	def.flags = (DoRed|DoGreen|DoBlue);
+	if (client >= 0)
+	    pmap->freeRed--;
+	def.pixel = Free;
+	break;
 
-	/* So Fall through */
       case REDMAP:
         pent->co.local.red = prgb->red;
         def.red = prgb->red;
-	def.flags |= DoRed;
+	def.green = pmap->green[0].co.local.green;
+	def.blue = pmap->blue[0].co.local.blue;
+	def.flags = DoRed;
 	if (client >= 0)
 	    pmap->freeRed--;
-	def.pixel = (channel == PSEUDOMAP) ? Free
-					   : Free << pmap->pVisual->offsetRed;
+	def.pixel = Free << pmap->pVisual->offsetRed;
 	break;
 
       case GREENMAP:
 	pent->co.local.green = prgb->green;
+	def.red = pmap->red[0].co.local.red;
         def.green = prgb->green;
-	def.flags |= DoGreen;
+	def.blue = pmap->blue[0].co.local.blue;
+	def.flags = DoGreen;
 	if (client >= 0)
 	    pmap->freeGreen--;
 	def.pixel = Free << pmap->pVisual->offsetGreen;
@@ -1156,8 +1160,10 @@ FindColor (pmap, pentFirst, size, prgb, pPixel, channel, client, comp)
 
       case BLUEMAP:
 	pent->co.local.blue = prgb->blue;
+	def.red = pmap->red[0].co.local.red;
+	def.green = pmap->green[0].co.local.green;
 	def.blue = prgb->blue;
-	def.flags |= DoBlue;
+	def.flags = DoBlue;
 	if (client >= 0)
 	    pmap->freeBlue--;
 	def.pixel = Free << pmap->pVisual->offsetBlue;
