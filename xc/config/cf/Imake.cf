@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imake.cf,v 1.16 94/12/05 17:19:52 kaleb Exp kaleb $
+XCOMM $XConsortium: Imake.cf,v 1.17 94/12/07 10:12:48 kaleb Exp kaleb $
 /*
  * To add support for another platform:
  * 
@@ -131,6 +131,7 @@ XCOMM $XConsortium: Imake.cf,v 1.16 94/12/05 17:19:52 kaleb Exp kaleb $
 #undef USL
 #undef SVR4
 #define SVR4Architecture
+#define i386Architecture
 #endif /* USL */
 
 #ifdef NCR
@@ -139,6 +140,7 @@ XCOMM $XConsortium: Imake.cf,v 1.16 94/12/05 17:19:52 kaleb Exp kaleb $
 #undef NCR
 #undef SVR4
 #define SVR4Architecture
+#define i386Architecture
 #endif /* NCR */
 
 #ifdef apollo
@@ -284,7 +286,6 @@ XCOMM $XConsortium: Imake.cf,v 1.16 94/12/05 17:19:52 kaleb Exp kaleb $
 #ifdef SVR4
 # ifdef i386
 #  define i386Architecture
-#  define i386SVR4Architecture
 # endif
 # define SVR4Architecture
 # define MacroIncludeFile <svr4.cf>
@@ -303,8 +304,8 @@ XCOMM $XConsortium: Imake.cf,v 1.16 94/12/05 17:19:52 kaleb Exp kaleb $
 #ifdef SYSV386
 # ifdef SVR4
 #  define i386Architecture
-#  define i386SVR4Architecture
 #  define SVR4Architecture
+#  define i386SVR4Architecture
 #  define MacroIncludeFile <svr4.cf>
 #  define MacroFile svr4.cf
 #  undef SVR4
