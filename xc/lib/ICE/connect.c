@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.9 93/09/12 14:18:53 mor Exp $ */
+/* $XConsortium: connect.c,v 1.10 93/09/14 15:33:53 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -88,7 +88,7 @@ char *errorStringRet;
     if ((iceConn->fd = ConnectToPeer (networkIdsList,
 	&iceConn->connection_string)) < 0)
     {
-	_IceFreeConnection (iceConn, True);
+	free ((char *) iceConn);
 	strncpy (errorStringRet, "Could not open network socket", errorLength);
 	return (NULL);
     }
