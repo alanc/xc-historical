@@ -1,4 +1,4 @@
-/* "$XConsortium: TMstate.c,v 1.104 90/07/02 10:47:42 swick Exp $"; */
+/* "$XConsortium: TMstate.c,v 1.105 90/07/03 08:12:54 swick Exp $"; */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1228,10 +1228,15 @@ void XtUninstallTranslations(widget)
     Widget widget;
 {
     _XtRemoveTranslations(widget);
+    if (widget->core.tm.translations &&
+	widget->core.tm.translations->accProcTbl) {
+	  XtFree((char*)widget->core.tm.translations);
+    }
     widget->core.tm.translations = NULL;
-    if (widget->core.tm.proc_table != NULL)
+    if (widget->core.tm.proc_table != NULL) {
         XtFree((char *)widget->core.tm.proc_table);
-    widget->core.tm.proc_table = NULL;
+	widget->core.tm.proc_table = NULL;
+    }
     widget->core.tm.current_state = NULL;
 }
 
@@ -1402,6 +1407,7 @@ static XtTranslations _XtBindAccActions(widget, translateData)
     Widget	    widget;
     XtTranslations  translateData;
 {
+    StateTablePtr stateTable = translateData->stateTable;
     register Widget	    w;
     register WidgetClass    class;
     register ActionList     actionList;
@@ -1410,13 +1416,10 @@ static XtTranslations _XtBindAccActions(widget, translateData)
     XtAppContext app;
     Cardinal index;
     XtTranslations accTempTable;
-    StateTablePtr stateTable;
 
-    if (translateData == NULL) return NULL;
     w = widget;
     unbound = -1; /* initialize to non-zero */
     index  = 0;
-    stateTable = translateData->stateTable;
     accTempTable = (XtTranslations) XtCalloc(
 	     1,
              (stateTable->accNumQuarks * (Cardinal)sizeof(XtBoundAccActionRec))
@@ -1700,16 +1703,13 @@ static void MergeStates(old, new, override, indexMap,
 }
 
 
-static void MergeTables(oldT, newT, override)
-    register XtTranslations oldT, newT;
+static void MergeTables(old, new, override)
+    register StateTablePtr old, new;
     Boolean override;
 {
-    register StateTablePtr old, new;
     register Cardinal i,j;
     Cardinal *indexMap,*quarkIndexMap,*accQuarkIndexMap;
 
-    old = oldT->stateTable;
-    new = newT->stateTable;
     if (new == NULL) return;
     if (old == NULL) {
 	XtWarningMsg(XtNtranslationError,"mergingNullTable",XtCXtToolkitError,
@@ -1819,7 +1819,8 @@ Boolean _XtCvtMergeTranslations(dpy, args, num_args, from, to, closure_ret)
     XrmValuePtr from,to;
     XtPointer	*closure_ret;
 {
-    XtTranslations old, new, merged;
+    StateTablePtr old, new;
+    XtTranslations merged;
     TMkind operation;
 
     if (*num_args != 0)
@@ -1836,24 +1837,26 @@ Boolean _XtCvtMergeTranslations(dpy, args, num_args, from, to, closure_ret)
     new = ((TMConvertRec*)from->addr)->new;
     operation = ((TMConvertRec*)from->addr)->operation;
 
-    if (old == NULL)
+
+    if (old == NULL) {
 #ifdef REFCNT_TRANSLATIONS
-    {
 	_XtInitializeStateTable(&merged);
-	MergeTables(merged, new, FALSE);
-    }
+	MergeTables(merged->stateTable, new, FALSE);
 #else
-	merged = new;
+	merged = XtNew(TranslationData);
+	merged->stateTable = new;
+	merged->accProcTbl = NULL;
 #endif
+    }
     else {
 	_XtInitializeStateTable(&merged);
 	if (operation == override) {
-	    MergeTables(merged, new, FALSE);
-	    MergeTables(merged, old, FALSE);
+	    MergeTables(merged->stateTable, new, FALSE);
+	    MergeTables(merged->stateTable, old, FALSE);
 	}
 	else if (operation == augment) {
-	    MergeTables(merged, old, FALSE);
-	    MergeTables(merged, new, FALSE);
+	    MergeTables(merged->stateTable, old, FALSE);
+	    MergeTables(merged->stateTable, new, FALSE);
 	}
     }
 
@@ -1921,15 +1924,17 @@ Widget acceleratorSource; /* Non-NULL if new_translations are an unbound
     static Boolean initialized = FALSE;
 
     if (!initialized) {
-	from_type = XrmStringToRepresentation(_XtRTranslationTablePair);
+	from_type = XrmStringToRepresentation(_XtRStateTablePair);
 	to_type = XrmStringToRepresentation(XtRTranslationTable);
 	initialized = TRUE;
     }
 
     from.addr = (XtPointer)&convert_rec;
     from.size = sizeof(TMConvertRec);
-    convert_rec.old = widget->core.tm.translations;
-    convert_rec.new = new_translations;
+    convert_rec.old = widget->core.tm.translations
+			? widget->core.tm.translations->stateTable
+			: NULL;
+    convert_rec.new = new_translations->stateTable;
     convert_rec.operation = operation;
     to.addr = (XtPointer) &newTable;
     to.size = sizeof(XtTranslations);
@@ -1978,6 +1983,28 @@ Widget acceleratorSource; /* Non-NULL if new_translations are an unbound
     return(newTable);
 }
 
+/*
+ * Return a copy of the translation table if it contains a bound
+ * action proc table, else return the original.
+ */
+XtTranslations _XtCondCopyTranslations(translations)
+    XtTranslations translations;
+{
+    XtTranslations copy;
+    Cardinal size;
+
+    if (translations == NULL || translations->accProcTbl == NULL)
+	return translations;
+    
+    size = translations->stateTable->
+	accNumQuarks * sizeof(XtBoundAccActionRec);
+
+    copy = (XtTranslations)XtMalloc(size + sizeof(TranslationData));
+    copy->stateTable = translations->stateTable;
+    copy->accProcTbl = (XtBoundAccActions)(copy + 1);
+    bcopy(translations->accProcTbl, copy->accProcTbl, size);
+    return copy;
+}
 
 void XtOverrideTranslations(widget, new)
     Widget widget;
@@ -1994,8 +2021,13 @@ void XtOverrideTranslations(widget, new)
            _XtBindActions(widget, &widget->core.tm);
            _XtInstallTranslations(widget,newTable);
     }
-    else 
+    else {
+	if (widget->core.tm.translations &&
+	    widget->core.tm.translations->accProcTbl) {
+	      XtFree((char*)widget->core.tm.translations);
+	}
 	widget->core.tm.translations = newTable;
+    }
 }
 
 /* ARGSUSED */
@@ -2106,6 +2138,9 @@ void XtInstallAccelerators(destination, source)
 	if (new_table == NULL)
 	    return;
 
+	if (destination->core.tm.translations->accProcTbl)
+	    XtFree((char*)destination->core.tm.translations);
+
 	destination->core.tm.translations = new_table;
     }
     if (XtIsRealized(destination))
@@ -2173,8 +2208,13 @@ void XtAugmentTranslations(widget, new)
            _XtBindActions(widget, &widget->core.tm);
            _XtInstallTranslations(widget,newTable);
     }
-    else 
+    else {
+	if (widget->core.tm.translations &&
+	    widget->core.tm.translations->accProcTbl) {
+	      XtFree((char*)widget->core.tm.translations);
+	}
 	widget->core.tm.translations = newTable;
+    }
 }
 
 static Boolean LookAheadForCycleOrMulticlick(state, eot, countP, nextLevelP)
