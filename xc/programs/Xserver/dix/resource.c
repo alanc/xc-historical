@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.76 89/07/25 11:08:00 rws Exp $ */
+/* $XConsortium: resource.c,v 1.77 89/09/10 14:05:45 keith Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -342,6 +342,49 @@ FreeResource(id, skipDeleteFuncType)
     }
     if (!gotOne)
 	FatalError("Freeing resource id=%X which isn't there", id);
+}
+void
+FreeResourceByType(id, type, skipFree)
+    XID id;
+    RESTYPE type;
+    Bool    skipFree;
+{
+    int		cid;
+    register    ResourcePtr res;
+    register	ResourcePtr *prev, *head;
+    register	int *eltptr;
+    int		elements;
+
+    if (((cid = CLIENT_ID(id)) < MAXCLIENTS) && clientTable[cid].buckets)
+    {
+	head = &clientTable[cid].resources[Hash(cid, id)];
+	eltptr = &clientTable[cid].elements;
+
+	prev = head;
+	while (res = *prev)
+	{
+	    if (res->id == id && res->type == type)
+	    {
+		*prev = res->next;
+		elements = --*eltptr;
+		if (type & RC_CACHED)
+		    FlushClientCaches(res->id);
+		if (!skipFree)
+		    (*DeleteFuncs[type & TypeMask])(res->value, res->id);
+		xfree(res);
+		if (*eltptr != elements)
+		    prev = head; /* prev may no longer be valid */
+		break;
+	    }
+	    else
+		prev = &res->next;
+        }
+	if(clients[cid] && (id == clients[cid]->lastDrawableID))
+	{
+	    clients[cid]->lastDrawable = (DrawablePtr) NULL;
+	    clients[cid]->lastDrawableID = INVALID;
+	}
+    }
 }
 
 /*
