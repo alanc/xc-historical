@@ -1,5 +1,5 @@
 /*
-* $Header: Intrinsic.h,v 1.59 87/11/11 16:01:28 swick Locked $
+* $Header: Intrinsic.h,v 1.60 87/12/02 15:47:54 swick Locked $
 */
 
 /*
@@ -351,6 +351,13 @@ extern Boolean XtIsSubclass ();
 #define XtSuperclass(widget)	(XtClass(widget)->core_class.superclass)
 #define XtIsManaged(widget)     ((widget)->core.managed)
 extern Widget XtCreateWidget ();
+    /* String	    name;	    */
+    /* WidgetClass  widgetClass;    */
+    /* Widget       parent;	    */
+    /* ArgList      args;	    */
+    /* Cardinal     num_args;       */
+
+extern Widget XtCreateManagedWidget ();
     /* String	    name;	    */
     /* WidgetClass  widgetClass;    */
     /* Widget       parent;	    */

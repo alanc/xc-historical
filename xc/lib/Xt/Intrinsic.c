@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.88 87/12/01 09:10:14 swick Locked $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.89 87/12/02 15:50:39 swick Locked $";
 #endif lint
 
 /*
@@ -467,6 +467,23 @@ Widget XtCreateWidget(name,widgetClass,parent,args,num_args)
 
     return (widget);
 }
+
+Widget XtCreateManagedWidget(name,widgetClass,parent,args,num_args)
+    char        *name;
+    WidgetClass widgetClass;
+    Widget      parent;
+    ArgList     args;
+    Cardinal    num_args;
+{
+    Widget widget =
+
+    XtCreateWidget( name, widgetClass, parent, args, num_args );
+    XtManageChild( widget );
+
+    return widget;
+}
+
+
 Widget XtCreatePopupShell(name, widgetClass, parent, args, num_args)
     char *name;
     WidgetClass widgetClass;
