@@ -1,4 +1,4 @@
-/* $XConsortium: lcSjis.c,v 1.4 93/09/20 14:52:23 rws Exp $ */
+/* $XConsortium: lcSjis.c,v 1.5 93/09/23 12:31:29 rws Exp $ */
 /****************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -325,7 +325,10 @@ sjis_wcstombs(conv, from, from_left, to, to_left, args, num_args)
 	do {
 	    length--;
 
-	    tmp = BIT8OFF((wch>>length * wc_shift)) | side;
+	    tmp =
+	      BIT8OFF( (wch>>(wchar_t)( (unsigned long)length * wc_shift) ) )
+	        | (wchar_t)side;
+
 
 	    if ((byte1 && kanji) || kana)
 		tmp = BIT8ON(tmp);
