@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xexevents.c,v 1.37 92/11/14 11:48:31 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -329,7 +329,7 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
 	    }
 	if ((k=dev->key) != NULL)
 	    {
-	    if (k->curKeySyms.maxKeyCode > 32)
+	    if ((k->curKeySyms.maxKeyCode - k->curKeySyms.minKeyCode) > 32)
 		evcount++;
 	    if ((b != NULL) && (b->numButtons != NULL))
 		evcount++;
