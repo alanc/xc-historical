@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.110 93/02/10 15:47:39 converse Exp $ */
+/* $XConsortium: NextEvent.c,v 1.111 93/07/10 12:32:46 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -66,7 +66,11 @@ static SignalEventRec* freeSignalRecs;
 #define FIXUP_TIMEVAL(t)
 #endif /*NEEDS_NTPD_FIXUP*/
 
-
+#if defined(SVR4)
+#define GETTIMEOFDAY(t) (void) gettimeofday(t)
+#else
+#define GETTIMEOFDAY(t) (void) gettimeofday(t,(struct timezone*)NULL)
+#endif
 
 /*
  * Private routines
@@ -115,7 +119,7 @@ static void AdjustHowLong (howlong, start_time)
 	struct timeval new_time, time_spent, lstart_time;
 
 	lstart_time = *start_time;
-	(void) gettimeofday (&new_time, NULL);
+	GETTIMEOFDAY (&new_time);
 	FIXUP_TIMEVAL(new_time);
 	TIMEDELTA(time_spent, new_time, lstart_time);
 	if(*howlong <= (time_spent.tv_sec*1000+time_spent.tv_usec/1000))
@@ -196,7 +200,7 @@ int _XtWaitForSomething(app,
 	int nfound, i, d;
 	
  	if (block) {
-		(void) gettimeofday (&cur_time, NULL);
+		GETTIMEOFDAY (&cur_time);
 		FIXUP_TIMEVAL(cur_time);
 		start_time = cur_time;
 		if(howlong == NULL) { /* special case for ever */
@@ -264,7 +268,7 @@ int _XtWaitForSomething(app,
 			    if (block) {
 				if (wait_time_ptr == NULL) /*howlong == NULL*/
 				    continue;
-				(void)gettimeofday (&new_time, NULL);
+				GETTIMEOFDAY (&new_time);
 				FIXUP_TIMEVAL(new_time);
 				TIMEDELTA(time_spent, new_time, cur_time);
 				cur_time = new_time;
@@ -429,7 +433,7 @@ XtIntervalId XtAppAddTimeOut(app, interval, proc, closure)
 	tptr->app = app;
 	tptr->te_timer_value.tv_sec = interval/1000;
 	tptr->te_timer_value.tv_usec = (interval%1000)*1000;
-        (void) gettimeofday(&current_time, NULL);
+        GETTIMEOFDAY (&current_time);
 	FIXUP_TIMEVAL(current_time);
         ADD_TIME(tptr->te_timer_value,tptr->te_timer_value,current_time);
 	QueueTimerEvent(app, tptr);
@@ -704,7 +708,7 @@ static void DoOtherSources(app)
 	    DrainQueue();
 	}
 	if (app->timerQueue != NULL) {	/* check timeout queue */
-	    (void) gettimeofday (&cur_time, NULL);
+	    GETTIMEOFDAY (&cur_time);
 	    FIXUP_TIMEVAL(cur_time);
 	    while(IS_AT_OR_AFTER (app->timerQueue->te_timer_value, cur_time)) {
 		te_ptr = app->timerQueue;
@@ -856,7 +860,7 @@ void XtAppProcessEvent(app, mask)
 	    }
 
 	    if (mask & XtIMTimer && app->timerQueue != NULL) {
-		(void) gettimeofday (&cur_time, NULL);
+		GETTIMEOFDAY (&cur_time);
 		FIXUP_TIMEVAL(cur_time);
 		if (IS_AT_OR_AFTER(app->timerQueue->te_timer_value, cur_time)){
 		    TimerEventRec *te_ptr = app->timerQueue;
@@ -969,7 +973,7 @@ XtInputMask XtAppPending(app)
  * Check for pending alternate input
  */
 	if (app->timerQueue != NULL) {	/* check timeout queue */ 
-	    (void) gettimeofday (&cur_time, NULL);
+	    GETTIMEOFDAY (&cur_time);
 	    FIXUP_TIMEVAL(cur_time);
 	    if ((IS_AT_OR_AFTER(app->timerQueue->te_timer_value, cur_time))  &&
                 (app->timerQueue->te_proc != 0)) {
@@ -1017,7 +1021,7 @@ static Boolean PeekOtherSources(app)
 	}
 
 	if (app->timerQueue != NULL) {	/* check timeout queue */
-	    (void) gettimeofday (&cur_time, NULL);
+	    GETTIMEOFDAY (&cur_time);
 	    FIXUP_TIMEVAL(cur_time);
 	    if (IS_AT_OR_AFTER (app->timerQueue->te_timer_value, cur_time))
 		return TRUE;
