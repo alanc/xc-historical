@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.45 91/04/02 11:35:32 rws Exp $
+ * $XConsortium: dm.h,v 1.46 91/05/06 23:53:41 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -31,9 +31,7 @@
 
 /* If XDMCP symbol defined, compile to run XDMCP protocol */
 
-#ifndef STREAMSCONN
 #define XDMCP
-#endif
 
 #ifdef XDMCP
 # include	<X11/Xdmcp.h>
@@ -148,9 +146,9 @@ struct display {
 #ifdef XDMCP
 	/* XDMCP state */
 	CARD32		sessionID;	/* ID of active session */
-	struct sockaddr	*peer;		/* sockaddr of display peer */
-	int		peerlen;	/* length of peer name */
-	struct sockaddr	*from;		/* XDMCP port of display */
+	XdmcpNetaddr    peer;		/* display peer address */
+	int		peerlen;	/* length of peer address */
+	XdmcpNetaddr    from;		/* XDMCP port of display */
 	int		fromlen;
 	CARD16		displayNumber;
 	int		useChooser;	/* Run the chooser for this display */
@@ -207,7 +205,7 @@ struct display {
 
 struct protoDisplay {
 	struct protoDisplay	*next;
-	struct sockaddr		*address;   /* UDP address */
+	XdmcpNetaddr		address;   /* UDP address */
 	int			addrlen;    /* UDP address length */
 	unsigned long		date;	    /* creation date */
 	CARD16			displayNumber;
