@@ -1,4 +1,4 @@
-/* $XConsortium: tables.c,v 1.2 91/05/13 16:56:24 gildea Exp $ */
+/* $XConsortium: tables.c,v 1.3 91/07/16 20:23:45 keith Exp $ */
 /*
  * all the dispatch, error, event and reply vectors
  */
@@ -23,15 +23,12 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * $NCDId: @(#)tables.c,v 4.2 1991/06/27 16:34:38 lemke Exp $
- *
  */
 #include	"globals.h"
 
 extern int  ProcInitialConnection(), ProcEstablishConnection();
 
-extern int  ProcSetAuthorization(), ProcGetAuthorization(),
+extern int  ProcSetAuthorization(),
             ProcSetResolution(), ProcGetResolution(), ProcNoop(),
             ProcListExtensions(), ProcQueryExtension(),
             ProcListFonts(), ProcListFontsWithXInfo(),
@@ -43,8 +40,8 @@ extern int  ProcSetAuthorization(), ProcGetAuthorization(),
 
 extern int  SProcSimpleRequest(), SProcResourceRequest(),
 	    SProcListCatalogues(),
-            SProcSetResolution(), SProcGetResolution(),
-            SProcListExtensions(), SProcQueryExtension(),
+            SProcSetResolution(),
+            SProcQueryExtension(),
             SProcListFonts(), SProcListFontsWithXInfo(),
             SProcOpenBitmapFont(), SProcQueryXExtents8(),
             SProcQueryXBitmaps8(),
@@ -104,7 +101,7 @@ int         (*SwappedProcVector[NUM_PROC_VECTORS]) () =
 {
     SProcSimpleRequest,		/* 0 */
     SProcSimpleRequest,
-    ProcQueryExtension,
+    SProcQueryExtension,
     SProcListCatalogues,
     SProcSimpleRequest,		/* SetCatalogues */
     SProcSimpleRequest,		/* 5 */
