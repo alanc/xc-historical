@@ -8,6 +8,7 @@
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include "xgc.h"
+#include "tile"
 
 void change_text();
 void GC_change_function();
@@ -212,8 +213,12 @@ GC_change_foreground(foreground,feedback)
 {
   char text[40];
 
+  XSetForeground(X.dpy,X.miscgc,foreground);
+  XCopyPlane(X.dpy,X.stipple,X.tile,X.miscgc,0,0,tile_width,tile_height,0,0,1);
   XSetForeground(X.dpy,X.gc,foreground);
   X.gcv.foreground = foreground;
+  XSetTile(X.dpy,X.gc,X.tile);
+  XSetTile(X.dpy,X.miscgc,X.tile);
   if (feedback) {
     sprintf(text,"%d",foreground);
     change_text(foregroundtext,text);
@@ -227,8 +232,12 @@ GC_change_background(background,feedback)
 {
   char text[40];
 
+  XSetBackground(X.dpy,X.miscgc,background);
+  XCopyPlane(X.dpy,X.stipple,X.tile,X.miscgc,0,0,tile_width,tile_height,0,0,1);
   XSetBackground(X.dpy,X.gc,background);
   X.gcv.background = background;
+  XSetTile(X.dpy,X.gc,X.tile);
+  XSetTile(X.dpy,X.miscgc,X.tile);
 
   /* Update the background of the test window NOW. */
 
