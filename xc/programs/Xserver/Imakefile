@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.187 94/11/28 11:52:03 kaleb Exp kaleb $
+XCOMM $XConsortium: Imakefile,v 1.188 94/12/01 16:37:18 kaleb Exp kaleb $
 /*
  * Server Master Makefile
  */
@@ -434,13 +434,16 @@ SetUIDServerTarget(XF86_SVGA,$(XF86SVGASUBDIRS),$(XF86SVGAOBJS),$(XF86SVGALIBS),
 XCOMM
 XCOMM XFree86 VGA 16 color Server
 XCOMM
-MFBDIR  = mfb
-CFB8DIR = cfb
 DDXDIR1 = hw/xfree86
-XF86VGA16SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
+#if XF86VGA16DualServer
+XF86VGA16MONOOBJS = $(XF86SRC)/mono/monoConf.o
+XF86VGA16MONOLIBS = $(MONODRIVERSRC)/libmonodrv.a $(XF86SRC)/mono/libmono.a
+#endif
+XF86VGA16SUBDIRS = $(STDDIRS) $(DDXDIR1) $(DEPDIRS)
 XF86VGA16OBJS = $(XF86COMSRC)/XF86_VGA16.o $(XF86SRC)/vga16/vga16Conf.o \
-                $(XF86SRC)/vga16/misc/vga16misc.o
-XF86VGA16LIBS = $(VGA16DRIVERSRC)/libdriver16.a $(XF86SRC)/vga16/libvga16.a $(XF86MLIBS) NoMFBBareLibs $(OTHEREXTS)
+                $(XF86SRC)/vga16/misc/vga16misc.o $(XF86VGA16MONOOBJS)
+XF86VGA16LIBS = $(VGA16DRIVERSRC)/libdriver16.a $(XF86SRC)/vga16/libvga16.a \
+		$(XF86VGA16MONOLIBS) $(XF86MLIBS) NoMFBBareLibs $(OTHEREXTS)
 XF86VGA16SYSLIBS = $(SYSLIBS)
 SetUIDServerTarget(XF86_VGA16,$(XF86VGA16SUBDIRS),$(XF86VGA16OBJS),$(XF86VGA16LIBS),$(XF86VGA16SYSLIBS))
 #ifndef ServerToInstall
