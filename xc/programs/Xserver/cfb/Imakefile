@@ -22,6 +22,11 @@ STIPPLESRC = stipplemips.s stipplemipste.s
 STIPPLEOBJ = stipplemips.o stipplemipste.o
 STIPPLEDEF = -DHAS_STIPPLE_CODE
 #endif
+#ifdef SparcArchitecture
+STIPPLESRC = stipplesparc.s stipplesparcte.s
+STIPPLEOBJ = stipplesparc.o stipplesparcte.o
+STIPPLEDEF = -DHAS_STIPPLE_CODE
+#endif
 
 OBJS =   cfbgc.o cfbrrop.o cfbwindow.o \
 	 cfbgetsp.o cfbfillrct.o \
@@ -63,6 +68,17 @@ stipplemipste.s: stipplemips.s
 
 stipplemipste.o: stipplemipste.s
 	$(AS) -o $@ -DTETEXT stipplemipste.s
+#endif
+#ifdef SparcArchitecture
+stipplesparcte.s: stipplesparc.s
+	$(RM) $@
+	$(LN) stipplesparc.s stipplesparcte.s
+
+stipplesparc.o: stipplesparc.s
+	$(CPP) stipplesparc.s | $(AS) -o $@ -
+
+stipplesparcte.o: stipplesparcte.s
+	$(CPP) -DTETEXT stipplesparcte.s | $(AS) -o $@ -
 #endif
 
 ObjectFromSpecialSource(cfbseg,cfbline,-DPOLYSEGMENT)
