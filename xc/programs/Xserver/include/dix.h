@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.54 89/03/23 09:17:28 rws Exp $ */
+/* $XConsortium: dix.h,v 1.55 89/03/23 11:54:16 rws Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -50,6 +50,69 @@ SOFTWARE.
     if (((sizeof(req) >> 2) > stuff->length) || \
         (((sizeof(req) + (n) + 3) >> 2) != stuff->length)) \
          return(BadLength)
+
+#define LEGAL_NEW_RESOURCE(id,client)\
+    if (!LegalNewID(id,client)) \
+    {\
+	client->errorValue = id;\
+        return(BadIDChoice);\
+    }
+
+#define LOOKUP_DRAWABLE(did, client)\
+    ((client->lastDrawableID == did) ? \
+     client->lastDrawable : (DrawablePtr)LookupDrawable(did, client))
+
+#define VERIFY_GC(pGC, rid, client)\
+    if (client->lastGCID == rid)\
+        pGC = client->lastGC;\
+    else\
+	pGC = (GC *)LookupIDByType(rid, RT_GC);\
+    if (!pGC)\
+    {\
+	client->errorValue = rid;\
+	return (BadGC);\
+    }
+
+#define VALIDATE_DRAWABLE_AND_GC(drawID, pDraw, pGC, client)\
+    if ((client->lastDrawableID != drawID) || (client->lastGCID != stuff->gc))\
+    {\
+        if (client->lastDrawableID != drawID)\
+    	    pDraw = (DrawablePtr)LookupIDByClass(drawID, RC_DRAWABLE);\
+        else\
+	    pDraw = client->lastDrawable;\
+        if (client->lastGCID != stuff->gc)\
+	    pGC = (GC *)LookupIDByType(stuff->gc, RT_GC);\
+        else\
+            pGC = client->lastGC;\
+	if (pDraw && pGC)\
+	{\
+	    if ((pDraw->type == UNDRAWABLE_WINDOW) ||\
+		(pGC->depth != pDraw->depth) ||\
+		(pGC->pScreen != pDraw->pScreen))\
+		return (BadMatch);\
+	    client->lastDrawable = pDraw;\
+	    client->lastDrawableID = drawID;\
+            client->lastGC = pGC;\
+            client->lastGCID = stuff->gc;\
+	}\
+    }\
+    else\
+    {\
+        pGC = client->lastGC;\
+        pDraw = client->lastDrawable;\
+    }\
+    if (!pDraw)\
+    {\
+        client->errorValue = drawID; \
+	return (BadDrawable);\
+    }\
+    if (!pGC)\
+    {\
+        client->errorValue = stuff->gc;\
+        return (BadGC);\
+    }\
+    if (pGC->serialNumber != pDraw->serialNumber)\
+	ValidateGC(pDraw, pGC);
 
 #define WriteReplyToClient(pClient, size, pReply) \
    if ((pClient)->swapped) \
