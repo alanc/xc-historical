@@ -42,8 +42,6 @@
 
 struct protoDisplay	*protoDisplays;
 
-extern void	free();
-
 addressEqual (a1, len1, a2, len2)
 struct sockaddr	*a1, *a2;
 int		len1, len2;
