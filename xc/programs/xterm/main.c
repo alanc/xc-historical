@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.202 92/08/05 12:52:06 rws Exp $";
+static char *rid="$XConsortium: main.c,v 1.203 92/11/20 19:04:37 rws Exp $";
 #endif /* lint */
 
 /*
@@ -2624,6 +2624,11 @@ Exit(n)
 	int fd;			/* for /etc/wtmp */
 	int i;
 #endif
+
+#ifdef PUCC_PTYD
+	closepty(ttydev, ptydev, (resource.utmpInhibit ?  OPTY_NOP : OPTY_LOGIN), Ptyfd);
+#endif /* PUCC_PTYD */
+
 	/* cleanup the utmp entry we forged earlier */
 	if (!resource.utmpInhibit
 #ifdef USE_HANDSHAKE		/* without handshake, no way to know */
@@ -2740,70 +2745,55 @@ register char *oldtc, *newtc;
 #endif /* USE_SYSV_ENVVARS */
 }
 
-/* ARGSUSED */
-static SIGNAL_T reapchild (n)
-    int n;
+/*
+ * Does a non-blocking wait for a child process.  If the system
+ * doesn't support non-blocking wait, do nothing.
+ * Returns the pid of the child, or 0 or -1 if none or error.
+ */
+int
+nonblocking_wait()
 {
 #ifdef USE_POSIX_WAIT
         pid_t pid;
 
 	pid = waitpid(-1, NULL, WNOHANG);
-	if (pid <= 0) {
-#ifdef USE_SYSV_SIGNALS
-		(void) signal(SIGCHLD, reapchild);
-#endif /* USE_SYSV_SIGNALS */
-		SIGNAL_RETURN;
-	}
 #else /* USE_POSIX_WAIT */
 #if defined(USE_SYSV_SIGNALS) && (defined(CRAY) || !defined(SIGTSTP))
-	int status, pid;
-
-	pid = wait(&status);
-	if (pid == -1) {
-		(void) signal(SIGCHLD, reapchild);
-		SIGNAL_RETURN;
-	}
+	/* cannot do non-blocking wait */
+	int pid = 0;
 #else	/* defined(USE_SYSV_SIGNALS) && (defined(CRAY) || !defined(SIGTSTP)) */
 	union wait status;
 	register int pid;
-	
-#ifdef DEBUG
-	if (debug) fputs ("Exiting\n", stderr);
-#endif	/* DEBUG */
-	pid  = wait3 (&status, WNOHANG, (struct rusage *)NULL);
-	if (!pid) {
-#ifdef USE_SYSV_SIGNALS
-		(void) signal(SIGCHLD, reapchild);
-#endif /* USE_SYSV_SIGNALS */
-		SIGNAL_RETURN;
-	}
+
+	pid = wait3 (&status, WNOHANG, (struct rusage *)NULL);
 #endif /* defined(USE_SYSV_SIGNALS) && !defined(SIGTSTP) */
 #endif /* USE_POSIX_WAIT else */
 
-#ifdef PUCC_PTYD
-		closepty(ttydev, ptydev, (resource.utmpInhibit ?  OPTY_NOP : OPTY_LOGIN), Ptyfd);
-#endif /* PUCC_PTYD */
+	return pid;
+}
 
-	if (pid != term->screen.pid) {
+/* ARGSUSED */
+static SIGNAL_T reapchild (n)
+    int n;
+{
+    int pid;
+
 #ifdef USE_SYSV_SIGNALS
-		(void) signal(SIGCHLD, reapchild);
-#endif	/* USE_SYSV_SIGNALS */
-		SIGNAL_RETURN;
+    (void) signal(SIGCHLD, reapchild);
+#endif
+
+    pid = wait(NULL);
+
+    do {
+	if (pid == term->screen.pid) {
+#ifdef DEBUG
+	    if (debug) fputs ("Exiting\n", stderr);
+#endif
+	    Cleanup (0);
 	}
-	
-	/*
-	 * Use pid instead of process group (which would have to get before
-	 * the wait call above) so that we don't accidentally hose other
-	 * applications.  Otherwise, somebody could write a program which put
-	 * itself in somebody else's process group.  Also, we call Exit instead
-	 * of Cleanup so that we don't do a killpg on -1 by accident.  Some
-	 * operating systems seem to do very nasty things with that.
-	 */
-	if (pid > 1) {
-	    kill_process_group (pid, SIGHUP);
-	}
-	Exit (0);
-	SIGNAL_RETURN;
+    } while ( (pid=nonblocking_wait()) > 0);
+
+    SIGNAL_RETURN;
 }
 
 /* VARARGS1 */
