@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Event.c,v 1.76 88/09/04 12:18:08 swick Exp $";
+    "$XConsortium: Event.c,v 1.77 88/09/04 14:50:02 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif lint
 
@@ -834,10 +834,12 @@ static void RemoveGrab(widget, keyboard_focus)
     }
 
     if (gl == NULL) {
-	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-		"grabError","xtRemoveGrab","XtToolkitError",
-          "XtRemoveGrab asked to remove a widget not on the list",
-            (String *)NULL, (Cardinal *)NULL);
+	if (!keyboard_focus) {
+	    XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+		       "grabError","xtRemoveGrab","XtToolkitError",
+		       "XtRemoveGrab asked to remove a widget not on the list",
+		       (String *)NULL, (Cardinal *)NULL);
+	}
 	return;
     }
 
