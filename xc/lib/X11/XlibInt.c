@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.185 93/09/18 09:31:22 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.185 93/09/18 14:30:20 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -903,6 +903,26 @@ _XRead (dpy, data, size)
        }
 #endif /* XTHREADS*/
 }
+
+#ifdef LONG64
+_XRead32 (dpy, data, len)
+    Display *dpy;
+    register long *data;
+    long len;
+{
+    register int *buf;
+    register long i;
+
+    if (len) {
+	_XRead(dpy, (char *)data, len);
+	i = len >> 2;
+	buf = (int *)data + i;
+	data += i;
+	while (--i >= 0)
+	    *data-- = *buf--;
+    }
+}
+#endif /* LONG64 */
 
 #ifdef WORD64
 
@@ -2641,6 +2661,33 @@ void Data (dpy, data, len)
 #endif /* DataRoutineIsProcedure */
 
 
+#ifdef LONG64
+_XData32 (dpy, data, len)
+    Display *dpy;
+    register long *data;
+    unsigned len;
+{
+    register int *buf;
+    register long i;
+
+    while (len) {
+	buf = (int *)dpy->bufptr;
+	i = dpy->bufmax - (char *)buf;
+	if (!i) {
+	    _XFlush(dpy);
+	    continue;
+	}
+	if (len < i)
+	    i = len;
+	dpy->bufptr = (char *)buf + i;
+	len -= i;
+	i >>= 2;
+	while (--i >= 0)
+	    *buf++ = *data++;
+    }
+}
+#endif /* LONG64 */
+
 #ifdef WORD64
 
 /*
@@ -2689,7 +2736,7 @@ static doData16(dpy, data, len, packbuffer)
         Data(dpy, packbuffer, len);
 }
 
-Data16 (dpy, data, len)
+_XData16 (dpy, data, len)
     Display *dpy;
     short *data;
     unsigned len;
@@ -2742,7 +2789,7 @@ static doData32 (dpy, data, len, packbuffer)
         Data(dpy, packbuffer, len);
 }
 
-Data32 (dpy, data, len)
+_XData32 (dpy, data, len)
     Display *dpy;
     long *data;
     unsigned len;
