@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.1 93/07/19 10:07:59 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 93/07/19 13:31:16 rws Exp $
 XCOMM build device independent processing element objects
 #include <Server.tmpl>
 
@@ -33,7 +33,7 @@ XCOMM build device independent processing element objects
 		puncnst.o
 
 
-   INCLUDES = -I../../include -I$(SERVERSRC)/include -I$(INCLUDESRC) -I$(INCLUDESRC)/extensions
+   INCLUDES = -I../../include -I$(SERVERSRC)/include -I$(INCLUDESRC) -I$(EXTINCSRC)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()

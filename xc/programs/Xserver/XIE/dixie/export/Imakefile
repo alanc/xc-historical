@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.1 93/07/19 10:06:04 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 93/07/19 13:30:30 rws Exp $
 XCOMM build device independent export element objects
 #include <Server.tmpl>
 
@@ -21,7 +21,7 @@ XCOMM build device independent export element objects
 		eroi.o
 
 
-   INCLUDES = -I../../include -I$(SERVERSRC)/include -I$(INCLUDESRC) -I$(INCLUDESRC)/extensions
+   INCLUDES = -I../../include -I$(SERVERSRC)/include -I$(INCLUDESRC) -I$(EXTINCSRC)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()

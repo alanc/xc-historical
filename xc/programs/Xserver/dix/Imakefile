@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.38 92/05/28 12:19:17 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.39 93/06/24 10:05:54 dpw Exp $
 #include <Server.tmpl>
 
 SRCS = atom.c colormap.c cursor.c devices.c dispatch.c dixutils.c events.c \
@@ -10,7 +10,7 @@ OBJS = atom.o colormap.o cursor.o devices.o dispatch.o dixutils.o events.o \
 	main.o property.o resource.o swaprep.o swapreq.o \
 	tables.o window.o initatoms.o dixfonts.o privates.o pixmap.o
 
-    INCLUDES = -I. -I../include -I$(INCLUDESRC) -I$(FONTSRC)/include
+    INCLUDES = -I../include -I$(INCLUDESRC) -I$(FONTINCSRC)
     LINTLIBS = ../os/llib-los.ln
 
 /*

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.4 91/07/17 16:10:31 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.5 91/07/24 15:40:19 rws Exp $
 #include <Server.tmpl>
 
        SRCS = 	xallowev.c \
@@ -77,8 +77,8 @@ XCOMM $XConsortium: Imakefile,v 1.4 91/07/17 16:10:31 gildea Exp $
 		xungrdev.o \
 		xungrdevb.o \
 		xungrdevk.o 
-   INCLUDES = -I../../include -I../../../server/include -I$(INCLUDESRC)
-   LINTLIBS = ../../../server/dix/llib-ldix.ln ../../../server/os/4.2bsd/llib-los.ln
+   INCLUDES = -I../include -I$(EXTINCSRC) -I$(INCLUDESRC)
+   LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln
 
 NormalLibraryTarget(xinput,$(OBJS))
 NormalLibraryObjectRule()

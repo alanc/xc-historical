@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.7 91/07/24 17:01:28 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.8 92/03/04 14:18:33 hersh Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -35,16 +35,13 @@ XCOMM PERFORMANCE OF THIS SOFTWARE.
 
  CDEBUGFLAGS = PexDipexCDebugFlags
      DEFINES = PexDipexDefines
-    INCLUDES = -I. -I./include -I../../../include -I$(INCLUDESRC) \
-		-I$(SERVERSRC)/include \
-		-I$(SERVERSRC)/ddx/hp/hp -I$(SERVERSRC)/ddx/hp/mfb
 
-    LINTLIBS = ../../../../../server/dix/llib-ldix.ln \
-		../../../../../server/os/4.2bsd/llib-los.ln \
+    LINTLIBS = ../../../dix/llib-ldix.ln \
+		../../../os/llib-los.ln \
 		../objects/llib-lobj.ln
 
-   PEXSRVINC = ./../../include
-  PEXINCLUDE = ./../../../../include/PEX
+   PEXSRVINC = ../../include
+  PEXINCLUDE = $(EXTINCSRC)/PEX
     INCLUDES = -I. -I$(PEXSRVINC) -I$(PEXINCLUDE) -I$(INCLUDESRC) \
 		-I$(SERVERSRC)/include
 

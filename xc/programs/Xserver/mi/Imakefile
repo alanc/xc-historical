@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.17 92/05/28 12:21:15 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.18 92/05/28 13:07:45 rws Exp $
 #include <Server.tmpl>
 
 SRCS =  mivaltree.c mipolyseg.c mipolyrect.c \
@@ -21,8 +21,8 @@ OBJS =	mivaltree.o mipolyseg.o mipolyrect.o \
 	midash.o mibstore.o miinitext.o mieq.o \
 	mipointer.o misprite.o midispcur.o miscrinit.o miclipn.o
 
-INCLUDES = -I. -I../../include -I$(INCLUDESRC) -I$(FONTSRC)/include
-LINTLIBS = ../../dix/llib-ldix.ln ../../os/llib-los.ln
+INCLUDES = -I. -I../include -I$(INCLUDESRC) -I$(FONTINCSRC)
+LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(mi,$(OBJS))

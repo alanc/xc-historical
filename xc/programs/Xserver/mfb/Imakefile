@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.33 92/02/24 19:05:52 keith Exp $
+XCOMM $XConsortium: Imakefile,v 1.34 92/05/28 12:23:48 rws Exp $
 #include <Server.tmpl>
 
 SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \
@@ -28,11 +28,11 @@ OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
          mfbtewhite.o mfbteblack.o mfbmisc.o mfbbstore.o \
          mfbplywhite.o mfbplyblack.o mfbplyinv.o
 
-INCLUDES = -I. -I../mi -I../../include -I$(INCLUDESRC) -I$(FONTSRC)/include
+INCLUDES = -I. -I../mi -I../include -I$(INCLUDESRC) -I$(FONTINCSRC)
 LINTDEFS = -DMFBPOLYGLYPHBLT=mfbPolyGlyphBltWhite \
 	   -DMFBIMAGEGLYPHBLT=mfbImageGlyphBltWhite \
 	   -DEQWHOLEWORD=\=\~0 -DOPEQ=\|=
-LINTLIBS = ../../dix/llib-ldix.ln ../../os/llib-los.ln ../mi/llib-lmi.ln
+LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln ../mi/llib-lmi.ln
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(mfb,$(OBJS))

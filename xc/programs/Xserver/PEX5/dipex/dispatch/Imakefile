@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.3 91/02/18 11:32:08 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.4 91/07/24 17:00:06 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -25,10 +25,6 @@ XCOMM PERFORMANCE OF THIS SOFTWARE.
 
 #include <Server.tmpl>
 
-#ifndef PassCDebugFlags
-#define PassCDebugFlags
-#endif
-
 #ifndef PexDipexCDebugFlags
 #define PexDipexCDebugFlags ServerCDebugFlags
 #endif
@@ -38,20 +34,17 @@ ST_STUBS = -DSTORE_CMDS
 
  CDEBUGFLAGS = PexDipexCDebugFlags
      DEFINES = PexDipexDefines
-    INCLUDES = -I. -I./include -I../../../include -I$(INCLUDESRC) \
-		-I$(SERVERSRC)/include \
-		-I$(SERVERSRC)/ddx/hp/hp -I$(SERVERSRC)/ddx/hp/mfb
 
-    LINTLIBS = ../../../../../server/dix/llib-ldix.ln \
-		../../../../../server/os/4.2bsd/llib-los.ln \
+    LINTLIBS = ../../../dix/llib-ldix.ln \
+		../../../os/llib-los.ln \
 		../../ddpex/mi/level4/llib-ldp4.ln \
 		../../ddpex/mi/shared/llib-ldps.ln \
 		../swap/llib-ldsw.ln \
 		../objects/llib-lobj.ln
 
-   PEXSRVINC = ./../../include
-  PEXINCLUDE = ./../../../../include/PEX
-    INCLUDES = -I. -I$(PEXSRVINC) -I$(PEXINCLUDE) -I$(INCLUDESRC) \
+   PEXSRVINC = ../../include
+  PEXINCLUDE = $(EXTINCSRC)/PEX
+    INCLUDES = -I$(PEXSRVINC) -I$(PEXINCLUDE) -I$(INCLUDESRC) \
 		-I$(SERVERSRC)/include
 
 

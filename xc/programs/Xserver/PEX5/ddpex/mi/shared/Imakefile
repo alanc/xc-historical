@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.3 91/02/18 11:36:22 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.4 91/07/24 16:59:20 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -37,7 +37,7 @@ XCOMM	PEX_DEFAULT_FONTPATH defines the default path to PEX fonts
 CDEBUGFLAGS = PexDdpexCDebugFlags
 
   PEXSERVINC = ../../../include
-  PEXINCLUDE = ../../../../../include/PEX
+  PEXINCLUDE = $(EXTINCSRC)/PEX
 DDPEXINCLUDE = ../include
 
 INCLUDES = -I. \
