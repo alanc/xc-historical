@@ -1,8 +1,15 @@
 : "@(#) /usr/lib/X11/.x11start		Shell Script for X11R2"
 xset m 4 2
-uwm &
+twm &
+sleep 1
 xclock -analog -update 60 =96x96-2-2 &
+sleep 1
 xload =96x96-100-2 &
+sleep 1
+xlogo -g =96x96-200-0 &
+sleep 1
 xterm =80x24+40+88 &
+sleep 1
 xterm =80x24+60+108 &
+sleep 1
 exec $SHELL
