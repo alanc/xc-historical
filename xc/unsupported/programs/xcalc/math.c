@@ -1,4 +1,4 @@
-/* $XConsortium: math.c,v 1.10 91/02/16 16:07:07 converse Exp $ 
+/* $XConsortium: math.c,v 1.11 91/02/16 16:28:42 converse Exp $ 
  *
  *  math.c  -  mathematics functions for a hand calculator under X
  *
@@ -143,10 +143,13 @@ int pre_op(keynum)
 }
 
 #ifndef IEEE
-void fail_op(i) 
-int i;
+
+/* cannot assign result of setjmp under ANSI C, use global instead */
+static int SignalCode;
+
+void fail_op()
 {
-    switch (i) {
+    switch (SignalCode) {
 #ifdef FPE_FLTDIV_TRAP
       case FPE_FLTDIV_TRAP:  strcpy(dispstr,"div by zero"); break;
 #endif
@@ -909,6 +912,7 @@ signal_t fperr(sig,code,scp)
 #ifdef SYSV
     signal(SIGFPE,fperr);
 #endif
-    longjmp(env,code);
+    SignalCode = code;
+    longjmp(env,1);
 }
 #endif
