@@ -1,4 +1,4 @@
-/* $XConsortium: access.c,v 1.66 94/02/05 16:17:36 rws Exp $ */
+/* $XConsortium: access.c,v 1.68 94/03/17 18:27:19 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -198,6 +198,7 @@ DefineSelf (fd)
     } saddr;
 	
     struct	sockaddr_in	*inetaddr;
+    struct sockaddr_in broad_addr;
 
 #ifdef __386BSD__
     if (gethostname (name, sizeof name) < 0)
@@ -237,7 +238,25 @@ DefineSelf (fd)
 		    host->next = selfhosts;
 		    selfhosts = host;
 		}
+#ifdef XDMCP
+		/*
+		 *  If this is an Internet Address, but not the localhost
+		 *  address (127.0.0.1), register it.
+		 */
+		if (family == FamilyInternet &&
+		    !(len == 4 && addr[0] == 127 && addr[1] == 0 &&
+		      addr[2] == 0 && addr[3] == 1)
+		   )
+		{
+		    XdmcpRegisterConnection (family, (char *)addr, len);
+		    broad_addr = *inetaddr;
+		    ((struct sockaddr_in *) &broad_addr)->sin_addr.s_addr =
+			htonl (INADDR_BROADCAST);
+		    XdmcpRegisterBroadcastAddress ((struct sockaddr_in *)
+						   &broad_addr);
+		}
 	    }
+#endif /* XDMCP */
 	}
     }
     /*
