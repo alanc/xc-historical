@@ -1,4 +1,4 @@
-/* $XConsortium: site.h,v 1.21 92/10/19 21:41:40 rws Exp $ */
+/* $XConsortium: site.h,v 1.22 93/09/05 16:18:09 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -71,7 +71,11 @@ SOFTWARE.
 #define DEFAULT_BELL		50
 #define DEFAULT_BELL_PITCH	400
 #define DEFAULT_BELL_DURATION	100
+#ifdef XKB
+#define DEFAULT_AUTOREPEAT	TRUE
+#else
 #define DEFAULT_AUTOREPEAT	FALSE
+#endif
 #ifdef hpux
 #define DEFAULT_AUTOREPEATS	{\
         0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,\
