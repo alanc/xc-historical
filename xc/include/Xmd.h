@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef XMD_H
 #define XMD_H 1
-/* $XConsortium: Xmd.h,v 1.44 93/02/08 09:45:14 rws Exp $ */
+/* $XConsortium: Xmd.h,v 1.45 93/02/22 19:03:41 rws Exp $ */
 /*
  *  Xmd.h: MACHINE DEPENDENT DECLARATIONS.
  */
@@ -34,7 +34,9 @@ SOFTWARE.
 #ifdef CRAY
 #define WORD64				/* 64-bit architecture */
 #endif
-
+#ifdef __alpha
+#define LONG64				/* 32/64-bit architecture */
+#endif
 
 /*
  * Stuff to handle large architecture machines; the constants were generated
@@ -72,6 +74,8 @@ SOFTWARE.
  * (or even unsigned) according to ANSI C.
  */
 #ifdef WORD64
+typedef long INT64;
+typedef unsigned long CARD64;
 #define B32 :32
 #define B16 :16
 #ifdef UNSIGNEDBITFIELDS
@@ -89,7 +93,12 @@ typedef int INT16;
 #else
 #define B32
 #define B16
+#ifdef LONG64
+typedef long INT64;
+typedef int INT32;
+#else
 typedef long INT32;
+#endif
 typedef short INT16;
 #endif
 
@@ -99,15 +108,20 @@ typedef signed char    INT8;
 typedef char           INT8;
 #endif
 
+#ifdef LONG64
+typedef unsigned long CARD64;
+typedef unsigned int CARD32;
+#else
 typedef unsigned long CARD32;
+#endif
 typedef unsigned short CARD16;
 typedef unsigned char  CARD8;
 
-typedef unsigned long		BITS32;
-typedef unsigned short		BITS16;
-typedef unsigned char		BYTE;
+typedef CARD32		BITS32;
+typedef CARD16		BITS16;
+typedef CARD8		BYTE;
 
-typedef unsigned char            BOOL;
+typedef CARD8           BOOL;
 
 
 /*
