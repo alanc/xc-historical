@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.11 91/02/20 22:09:16 converse Exp $ */
+/* $XConsortium: TMaction.c,v 1.12 91/05/04 18:29:13 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -708,7 +708,7 @@ void XtGetActionList(widget_class, actions_return, num_actions_return)
     *num_actions_return = 0;
 
     if (! widget_class->core_class.class_inited)
-	XtInitializeWidgetClass(widget_class);
+	return;
     if (! (widget_class->core_class.class_inited & WidgetClassFlag))
 	return;
     *num_actions_return = widget_class->core_class.num_actions;
