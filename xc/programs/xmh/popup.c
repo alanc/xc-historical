@@ -1,5 +1,5 @@
 /*
- * $XConsortium: popup.c,v 2.27 90/04/17 15:04:08 swick Exp $
+ * $XConsortium: popup.c,v 2.28 91/01/10 22:29:51 gildea Exp $
  *
  *
  *			  COPYRIGHT 1989
@@ -29,7 +29,6 @@
 
 #include "xmh.h"
 #include <X11/Xaw/Cardinals.h>
-
 
 typedef struct _PopupStatus {
 	Widget popup;
@@ -178,6 +177,53 @@ void DestroyPopup(widget, client_data, call_data)
     XtDestroyWidget(popup);
 }
 
+void XmhWMDeletePopup(w, event, params, num)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num;
+{
+    String	shellName;
+    String	buttonName;
+    Widget	button;
+
+    if (event->type != ClientMessage ||
+	event->xclient.message_type != wm_protocols ||
+	event->xclient.data.l[0] != wm_delete_window)
+	return;
+
+    shellName = XtName(w);
+    buttonName = NULL;
+    if (strcmp(shellName, "prompt") == 0)
+	buttonName = "*cancel";
+    else if (strcmp(shellName, "notice") == 0)
+	buttonName = "*confirm";
+    else if (strcmp(shellName, "confirm") == 0)
+	buttonName = "*no";
+    else if (strcmp(shellName, "error") == 0)
+	buttonName = "*OK";
+    if (! buttonName) return;	/* WM may kill us */
+    button = XtNameToWidget(w, buttonName);
+    if (! button) return;
+    XtCallActionProc(button, "set", event, params, *num);
+    XtCallActionProc(button, "notify", event, params, *num);
+    XtCallActionProc(button, "unset", event, params, *num);
+}
+
+static void TheUsual(popup)
+    Widget	popup;	/* shell */
+{
+    static XtTranslations WMProtocolTranslations = NULL;
+    if (!WMProtocolTranslations)
+	WMProtocolTranslations = XtParseTranslationTable
+	    ("<Message>WM_PROTOCOLS: XmhWMDeletePopup()\n");
+    XtInstallAllAccelerators(popup, popup);
+    XtAugmentTranslations(popup, WMProtocolTranslations);
+    XtRealizeWidget(popup);
+    XDefineCursor(XtDisplay(popup), XtWindow(popup), app_resources.cursor);
+    (void) XSetWMProtocols(XtDisplay(popup), XtWindow(popup),
+			   &wm_delete_window, 1);
+}
 
 #define OKAY_NAME "okay"
 
@@ -203,11 +249,7 @@ void PopupPrompt(question, okayCallback)
     Widget		value;
     Position		x, y;
     Boolean		positioned;
-
-    static String text_translations =
-	"<Key>Return: XmhPromptOkayAction()\n\
-         Ctrl<Key>R:  no-op(RingBell)\n\
-         Ctrl<Key>S:  no-op(RingBell)\n";
+    static XtTranslations PromptTextTranslations = NULL;
 
     DeterminePopupPosition(&x, &y);
     XtSetArg(args[0], XtNallowShellResize, True);
@@ -224,14 +266,17 @@ void PopupPrompt(question, okayCallback)
     XtSetValues( XtNameToWidget(dialog, "label"), args, ONE);
     value = XtNameToWidget(dialog, "value");
     XtSetValues( value, args, ONE);
-    XtOverrideTranslations(value, XtParseTranslationTable(text_translations));
+    if (! PromptTextTranslations)
+	PromptTextTranslations = XtParseTranslationTable
+	    ("<Key>Return: XmhPromptOkayAction()\n\
+              Ctrl<Key>R:  no-op(RingBell)\n\
+              Ctrl<Key>S:  no-op(RingBell)\n");
+    XtOverrideTranslations(value, PromptTextTranslations);
 
     XawDialogAddButton(dialog, OKAY_NAME, okayCallback, (XtPointer) dialog);
     XawDialogAddButton(dialog, "cancel", DestroyPopup, (XtPointer) popup);
-    XtInstallAllAccelerators(popup, popup);
-    XtRealizeWidget(popup);
+    TheUsual(popup);
     InsureVisibility(popup, dialog, x, y, positioned ? False : True, False);
-    XDefineCursor(XtDisplay(popup), XtWindow(popup), app_resources.cursor);
     XtPopup(popup, XtGrabNone);
 }
 
@@ -300,11 +345,8 @@ void PopupNotice( message, callback, closure )
 		       (XtPointer) popup_status
 		      );
 
-    XtRealizeWidget( popup_status->popup );
-    XtInstallAllAccelerators(popup_status->popup, popup_status->popup);
+    TheUsual(popup_status->popup);
     InsureVisibility(popup_status->popup, dialog, x, y, False, False);
-    XDefineCursor(XtDisplay(popup_status->popup),
-		  XtWindow(popup_status->popup), app_resources.cursor);
     XtPopup(popup_status->popup, XtGrabNone);
 }
 
@@ -352,11 +394,9 @@ void PopupConfirm(center_widget, question, affirm_callbacks, negate_callbacks)
     if (negate_callbacks)
 	XtAddCallbacks(button, XtNcallback, negate_callbacks);
 
-    XtRealizeWidget(popup);
-    XtInstallAllAccelerators(popup, popup);
+    TheUsual(popup);
     CenterPopupPosition(center_widget, popup, x, y);
     InsureVisibility(popup, dialog, x, y, False, False);
-    XDefineCursor(XtDisplay(popup), XtWindow(popup), app_resources.cursor);
     XtPopup(popup, XtGrabNone);
 }
 
@@ -387,12 +427,8 @@ void PopupError(message)
     callbacks[0].closure = (XtPointer) error_popup;
     XtSetArg(args[0], XtNcallback, callbacks);
     XawDialogAddButton(dialog, "OK", DestroyPopup, (XtPointer) error_popup);
-    
-    XtRealizeWidget(error_popup);
-    XtInstallAllAccelerators(error_popup, error_popup);
+    TheUsual(error_popup);
     InsureVisibility(error_popup, dialog, x, y,
 		     positioned ? False : True, positioned ? False : True);
-    XDefineCursor(XtDisplay(error_popup), XtWindow(error_popup), 
-		  app_resources.cursor);
     XtPopup(error_popup, XtGrabNone);
 }
