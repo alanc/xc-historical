@@ -122,6 +122,9 @@ static XtResource resources[]=
 	    XtOffset(TopLevelWidget, top.title), XrmRString, NULL},
 /*	{ XtNinitial, XtCInitial, XrmRInitialstate, sizeof(int),
 	    XtOffset(TopLevelWidget, top.initial), XrmRString, "Normal"} */
+	{ XtNinitial, XtCInitial, XrmRInt, sizeof(int),
+	    XtOffset(TopLevelWidget, top.initial), XrmRString, "0"}
+			/* ||| Temp hack to provide initialization. */
 };
 static void Initialize();
 static void Realize();
@@ -638,8 +641,8 @@ XtInitialize(name, classname, urlist, urlistCount, argc, argv)
 char *name;
 char *classname;
 XrmOptionDescRec *urlist;
-int	urlistCount;
-Cardinal  *argc;
+Cardinal urlistCount;
+Cardinal *argc;
 char *argv[];
 {
 	char  displayName[256];
