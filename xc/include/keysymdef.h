@@ -1,4 +1,4 @@
-/* $Header: keysymdef.h,v 1.1 87/08/30 20:38:26 susan Exp $ */
+/* $Header: keysymdef.h,v 1.2 87/09/01 16:41:18 toddb Locked $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -44,7 +44,6 @@ SOFTWARE.
 
 /* International & multi-key character composition */
 
-#define XK_Compose		0xFF20	/* Multi-key character compose */
 #define XK_Multi_key		0xFF20  /* Multi-key character compose */
 #define XK_Kanji		0xFF21	/* Kanji split-space, Kanji convert, ... */
 
@@ -75,6 +74,7 @@ SOFTWARE.
 #define XK_Help			0xFF6A	/* Help, ? */
 #define XK_Break		0xFF6B
 #define XK_Mode_switch		0xFF7E	/* Kana switch, Hebrew switch ...*/
+#define XK_script_switch        0xFF7E  /* Alias for mode_switch */
 #define XK_Num_Lock		0xFF7F
 
 /* Keypad Functions, keypad numbers cleverly chosen to map to ascii */
@@ -597,6 +597,7 @@ SOFTWARE.
 #define XK_kana_N                                      0x4dd      
 #define XK_voicedsound                                 0x4de
 #define XK_semivoicedsound                             0x4df
+#define XK_kana_switch          0xFF7E  /* Alias for mode_switch */
 #endif XK_KATAKANA
 
 /*
@@ -653,6 +654,7 @@ SOFTWARE.
 #define XK_Arabic_kasra                                0x5f0                 
 #define XK_Arabic_shadda                               0x5f1                 
 #define XK_Arabic_sukun                                0x5f2                 
+#define XK_Arabic_switch        0xFF7E  /* Alias for mode_switch */
 #endif XK_ARABIC
 
 /*
@@ -832,6 +834,7 @@ SOFTWARE.
 #define XK_Greek_chi                                   0x7f7           
 #define XK_Greek_psi                                   0x7f8           
 #define XK_Greek_omega                                 0x7f9           
+#define XK_Greek_switch         0xFF7E  /* Alias for mode_switch */
 #endif XK_GREEK
                                                        
 /*
@@ -1074,5 +1077,6 @@ SOFTWARE.
 #define XK_hebrew_resh                                 0xcf8                
 #define XK_hebrew_shin                                 0xcf9                
 #define XK_hebrew_taf                                  0xcfa     
+#define XK_Hebrew_switch        0xFF7E  /* Alias for mode_switch */
 #endif XK_HEBREW
 
