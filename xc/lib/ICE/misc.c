@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.21 94/03/18 10:55:31 mor Exp $ */
+/* $XConsortium: misc.c,v 1.22 94/03/18 15:59:19 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -245,7 +245,12 @@ register char	 *ptr;
     nleft = nbytes;
     while (nleft > 0)
     {
-	int nread = _IceTransRead (iceConn->trans_conn, ptr, (int) nleft);
+	int nread;
+
+	if (iceConn->io_ok)
+	    nread = _IceTransRead (iceConn->trans_conn, ptr, (int) nleft);
+	else
+	    return (1);
 
 	if (nread <= 0)
 	{
@@ -259,7 +264,8 @@ register char	 *ptr;
 		 * the other side closed the connection.
 		 */
 
-		_IceFreeConnection (iceConn, False);
+		_IceConnectionClosed (iceConn);	    /* invoke watch procs */
+		_IceFreeConnection (iceConn);
 
 		return (0);
 	    }
@@ -269,6 +275,8 @@ register char	 *ptr;
 		 * Fatal IO error.  First notify each protocol's IceIOErrorProc
 		 * callback, then invoke the application IO error handler.
 		 */
+
+		iceConn->io_ok = False;
 
 		if (iceConn->process_msg_info)
 		{
@@ -295,15 +303,7 @@ register char	 *ptr;
 		}
 
 		(*_IceIOErrorHandler) (iceConn);
-
-
-		/*
-		 * All IO error handlers must either exit() or do
-		 * a long jump.  If we reached this point, we have
-		 * no choice but to exit().
-		 */
-
-		exit (1);
+		return (1);
 	    }
 	}
 
@@ -359,7 +359,12 @@ register char	 *ptr;
     nleft = nbytes;
     while (nleft > 0)
     {
-	int nwritten = _IceTransWrite (iceConn->trans_conn, ptr, (int) nleft);
+	int nwritten;
+
+	if (iceConn->io_ok)
+	    nwritten = _IceTransWrite (iceConn->trans_conn, ptr, (int) nleft);
+	else
+	    return;
 
 	if (nwritten <= 0)
 	{
@@ -370,6 +375,8 @@ register char	 *ptr;
 	     * Fatal IO error.  First notify each protocol's IceIOErrorProc
 	     * callback, then invoke the application IO error handler.
 	     */
+
+	    iceConn->io_ok = False;
 
 	    if (iceConn->process_msg_info)
 	    {
@@ -396,15 +403,7 @@ register char	 *ptr;
 	    }
 
 	    (*_IceIOErrorHandler) (iceConn);
-
-
-	    /*
-	     * All IO error handlers must either exit() or do
-	     * a long jump.  If we reached this point, we have
-	     * no choice but to exit().
-	     */
-
-	    exit (1);
+	    return;
 	}
 
 	nleft -= nwritten;
