@@ -1,7 +1,7 @@
 /*
  * get_load - get system load
  *
- * $XConsortium: get_load.c,v 1.30 92/08/13 18:18:14 rws Exp $
+ * $XConsortium: get_load.c,v 1.31 92/11/20 19:12:38 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -366,6 +366,58 @@ void GetLoadPoint( w, closure, call_data )
 }
 
 #else /* not __OSF1__ */
+
+#ifdef bsdi
+#include <kvm.h>
+
+static struct nlist nl[] = {
+  { "_averunnable" },
+#define X_AVERUNNABLE 0
+  { "_fscale" },
+#define X_FSCALE      1
+  { "" },
+};
+static kvm_t *kd;
+static int fscale;
+
+void InitLoadPoint()
+{
+  fixpt_t averunnable[3];  /* unused really */
+
+  if ((kd = kvm_openfiles(NULL, NULL, NULL, O_RDONLY, NULL)) == NULL)
+    xload_error("can't open kvm files");
+
+  if (kvm_nlist(kd, nl) != 0)
+    xload_error("can't read name list");
+
+  if (kvm_read(kd, (off_t)nl[X_AVERUNNABLE].n_value, (char *)averunnable,
+	       sizeof(averunnable)) != sizeof(averunnable))
+    xload_error("couldn't obtain _averunnable variable");
+
+  if (kvm_read(kd, (off_t)nl[X_FSCALE].n_value, (char *)&fscale,
+	       sizeof(fscale)) != sizeof(fscale))
+    xload_error("couldn't obtain _fscale variable");
+
+  return;
+}
+
+void GetLoadPoint(w, closure, call_data)
+     Widget w;          /* unused */
+     caddr_t closure;   /* unused */
+     caddr_t call_data; /* ptr to (double) return value */
+{
+  double *loadavg = (double *)call_data;
+  fixpt_t t;
+
+  if (kvm_read(kd, (off_t)nl[X_AVERUNNABLE].n_value, (char *)&t,
+	       sizeof(t)) != sizeof(t))
+    xload_error("couldn't obtain load average");
+
+  *loadavg = (double)t/fscale;
+
+  return;
+}
+#else
 
 #ifndef KMEM_FILE
 #define KMEM_FILE "/dev/kmem"
@@ -749,6 +801,7 @@ void GetLoadPoint( w, closure, call_data )
 #endif /* sun else */
 	return;
 }
+#endif /* bsdi else */
 #endif /* __OSF1__ else */
 #endif /* LOADSTUB else */
 #endif /* KVM_ROUTINES else */
@@ -758,8 +811,11 @@ static xload_error(str1, str2)
 char *str1, *str2;
 {
     (void) fprintf(stderr,"xload: %s %s\n", str1, str2);
+#ifdef bsdi
+    if (kd)
+	kvm_close(kd);
+#endif
     exit(-1);
 }
 
 #endif /* apollo else */
-
