@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.14 89/11/03 14:44:48 keith Exp $
+ * $XConsortium: auth.c,v 1.15 89/11/18 12:42:15 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -52,18 +52,30 @@ extern char	*mktemp ();
 extern int	MitInitAuth ();
 extern Xauth	*MitGetAuth ();
 
+#ifdef HASDES
+extern int	XdmInitAuth ();
+extern Xauth	*XdmGetAuth ();
+extern int	XdmGetXdmcpAuth ();
+#endif
+
 struct AuthProtocol {
     unsigned short  name_length;
     char	    *name;
     int		    (*InitAuth)();
     Xauth	    *(*GetAuth)();
+    int		    (*GetXdmcpAuth)();
     int		    inited;
 };
 
 static struct AuthProtocol AuthProtocols[] = {
 { (unsigned short) 18,	"MIT-MAGIC-COOKIE-1",
-    MitInitAuth, MitGetAuth,
+    MitInitAuth, MitGetAuth, NULL,
+},
+#ifdef HASDES
+{ (unsigned short) 19,	"XDM-AUTHORIZATION-1",
+    XdmInitAuth, XdmGetAuth, XdmGetXdmcpAuth,
 }
+#endif
 };
 
 #define NUM_AUTHORIZATION (sizeof (AuthProtocols) / sizeof (AuthProtocols[0]))
@@ -122,12 +134,42 @@ char		*name;
     return auth;
 }
 
-SetProtoDisplayAuthorization (pdpy, namelen, name)
+SetProtoDisplayAuthorization (pdpy,
+    authorizationNameLen, authorizationName)
     struct protoDisplay	*pdpy;
-    unsigned short	namelen;
-    char		*name;
+    unsigned short	authorizationNameLen;
+    char		*authorizationName;
 {
-    pdpy->authorization = GenerateAuthorization (namelen, name);
+    struct AuthProtocol	*a;
+    Xauth   *auth;
+
+    a = findProtocol (authorizationNameLen, authorizationName);
+    pdpy->xdmcpAuthorization = pdpy->fileAuthorization = 0;
+    if (a)
+    {
+	if (!a->inited)
+	{
+	    (*a->InitAuth) (authorizationNameLen, authorizationName);
+	    a->inited = TRUE;
+	}
+	if (a->GetXdmcpAuth)
+	{
+	    (*a->GetXdmcpAuth) (pdpy, authorizationNameLen, authorizationName);
+	    auth = pdpy->xdmcpAuthorization;
+	}
+	else
+	{
+	    auth = (*a->GetAuth) (authorizationNameLen, authorizationName);
+	    pdpy->fileAuthorization = auth;
+	    pdpy->xdmcpAuthorization = 0;
+	}
+	if (auth)
+	    Debug ("Got 0x%x (%d %*.*s)\n", auth,
+		auth->name_length, auth->name_length,
+ 		auth->name_length, auth->name);
+	else
+	    Debug ("Got (null)\n");
+    }
 }
 
 SaveServerAuthorization (d, auth)
