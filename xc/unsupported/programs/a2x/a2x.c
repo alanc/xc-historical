@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.94 92/09/29 09:24:02 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.95 92/09/29 10:39:07 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -501,7 +501,7 @@ map_sym(i, j)
 	    sym = 127;
 	    break;
 	}
-    if (sym < 128 && (!j || !keycodes[sym])) {
+    if (sym > 0 && sym < 128 && (!j || !keycodes[sym])) {
 	keycodes[sym] = i;
 	modifiers[sym] = j ? ShiftMask : 0;
     }
