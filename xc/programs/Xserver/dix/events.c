@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.192 89/06/09 14:55:33 keith Exp $ */
+/* $XConsortium: events.c,v 5.0 89/06/09 14:58:55 keith Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1743,7 +1743,7 @@ ProcessOtherEvent (xE, pDevice)
     DevicePtr pDevice;
 {
 /*	XXX What should be done here ?
-    Bool propogate = filters[xE->type];
+    Bool propagate = filters[xE->type];
 */
 }
 
@@ -3704,9 +3704,9 @@ ProcGetMotionEvents(client)
 		inputInfo.numMotionEvents * sizeof(xTimecoord));
 	if (!coords)
 	    return BadAlloc;
-	/* XXX this needs a screen arg */
 	count = (*mouse->u.ptr.GetMotionProc) (
-		mouse, coords, start.milliseconds, stop.milliseconds);
+		mouse, coords, start.milliseconds, stop.milliseconds,
+		pWin->drawable.pScreen);
 	xmin = pWin->drawable.x - wBorderWidth (pWin);
 	xmax = pWin->drawable.x + (int)pWin->drawable.width +
 		wBorderWidth (pWin);
