@@ -1,3 +1,5 @@
+/* Copyright 1989 Massachusetts Institute of Technology */
+
 #include "copyright.h"
 
 #include <stdio.h>
