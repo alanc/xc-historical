@@ -66,6 +66,8 @@ HEADERS = \
 	TextSrcP.h \
 	Toggle.h \
 	ToggleP.h \
+	Tree.h \
+	TreeP.h \
 	Viewport.h \
 	ViewportP.h \
 	VPaned.h \
@@ -101,6 +103,7 @@ SRCS = \
         TextPop.c \
 	TextTr.c \
 	Toggle.c \
+	Tree.c \
 	Vendor.c \
 	Viewport.c \
 	XawInit.c 
