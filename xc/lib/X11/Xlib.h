@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.136 88/02/03 19:25:03 rws Exp $ */
+/* $Header: Xlib.h,v 11.137 88/02/09 17:52:35 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -433,7 +433,7 @@ typedef struct _XDisplay {
 	int release;		/* release of the server */
 	struct _XSQEvent *head, *tail;	/* Input event queue. */
 	int qlen;		/* Length of input event queue */
-	unsigned long last_request_read; /* sequence number of last event read */
+	unsigned long last_request_read; /* seq number of last event read */
 	unsigned long request;	/* sequence number of last request. */
 	char *last_req;		/* beginning of last request, or dummy */
 	char *buffer;		/* Output buffer starting address. */
