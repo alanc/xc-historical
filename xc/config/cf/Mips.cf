@@ -9,7 +9,7 @@
 #define OSMajorVersion    4
 #define OSMinorVersion    50
 
-/**/# platform:  $XConsortium: Mips.cf,v 1.6 91/07/19 23:23:09 keith Exp $
+/**/# platform:  $XConsortium: Mips.cf,v 1.7 91/07/21 21:42:12 rws Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
@@ -32,7 +32,6 @@
 #define InstallCmd $(ETCDIR)/mipsinstall
 #define MakeCmd make MakeEnv
 #define DoRanlibCmd 0
-#define BuildPex NO
 #define AllocateLocalDefines -DINCLUDE_ALLOCA_H
 
 /*****************************************************************************
