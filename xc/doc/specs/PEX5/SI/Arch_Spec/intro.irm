@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: intro.irm,v 5.1 91/02/16 09:36:38 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -23,8 +23,8 @@
 .\"## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 .\"## PERFORMANCE OF THIS SOFTWARE.
 .DN "PEX-SI Architecture Specification" 
-.EF 'PEX5R1beta'29 February 1991''
-.OF ''29 February 1991'PEX5R1beta'
+.EF 'X11R5'
+.OF 'X11R5'
 .PL FULL
 .\"
 .H C "Introduction"
