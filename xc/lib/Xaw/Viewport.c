@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.40 89/05/11 01:07:09 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.41 89/05/11 19:10:32 converse Exp $";
 #endif /* lint */
 
 
@@ -35,27 +35,26 @@ SOFTWARE.
 #include <X11/Xaw/ViewportP.h>
 
 static void ScrollUpDownProc(), ThumbProc();
-
-static Boolean defFalse = False;
+static Boolean GetGeometry();
 
 #define offset(field) XtOffset(ViewportWidget,viewport.field)
 static XtResource resources[] = {
     {XtNforceBars, XtCBoolean, XtRBoolean, sizeof(Boolean),
-	 offset(forcebars), XtRBoolean, (caddr_t)&defFalse },
+	 offset(forcebars), XtRImmediate, (caddr_t)False},
     {XtNallowHoriz, XtCBoolean, XtRBoolean, sizeof(Boolean),
-	 offset(allowhoriz), XtRBoolean, (caddr_t)&defFalse },
+	 offset(allowhoriz), XtRImmediate, (caddr_t)False},
     {XtNallowVert, XtCBoolean, XtRBoolean, sizeof(Boolean),
-	 offset(allowvert), XtRBoolean, (caddr_t)&defFalse },
+	 offset(allowvert), XtRImmediate, (caddr_t)False},
     {XtNuseBottom, XtCBoolean, XtRBoolean, sizeof(Boolean),
-	 offset(usebottom), XtRBoolean, (caddr_t)&defFalse },
+	 offset(usebottom), XtRImmediate, (caddr_t)False},
     {XtNuseRight, XtCBoolean, XtRBoolean, sizeof(Boolean),
-	 offset(useright), XtRBoolean, (caddr_t)&defFalse },
+	 offset(useright), XtRImmediate, (caddr_t)False},
 };
 #undef offset
 
 static void Initialize(), ConstraintInitialize(),
     Realize(), Resize(), ChangeManaged();
-static Boolean SetValues(), DoLayout();
+static Boolean SetValues(), Layout();
 static XtGeometryResult GeometryManager(), PreferredGeometry();
 
 #define superclass	(&formClassRec)
@@ -111,7 +110,7 @@ ViewportClassRec viewportClassRec = {
     /* extension          */	NULL
   },
   { /* form_class fields */
-    /* empty		  */	0
+    /* layout		  */	Layout
   },
   { /* viewport_class fields */
     /* empty		  */	0
@@ -348,10 +347,9 @@ static void ChangeManaged(widget)
 			XtMapWidget( child );
 		}
 	    }
-	    /* %%% DoLayout should be FormClass method */
-	    DoLayout( widget, child->core.width, child->core.height );
-	    /* always want to resize, as we may no longer need bars */
-	    (*widget->core.widget_class->core_class.resize)( widget );
+	    GetGeometry( widget, child->core.width, child->core.height );
+	    (*((ViewportWidgetClass)w->core.widget_class)->form_class.layout)
+		( (FormWidget)w, w->core.width, w->core.height );
 	    /* %%% do we need to hide this child from Form?  */
 	}
     }
@@ -681,7 +679,16 @@ static void Resize(widget)
 }
 
 
-/* Semi-public routines */
+/* ARGSUSED */
+static Boolean Layout(w, width, height)
+    FormWidget w;
+    Dimension width, height;
+{
+    ComputeLayout( (Widget)w, /*query=*/True, /*destroy=*/True );
+    w->form.preferred_width = w->core.width;
+    w->form.preferred_height = w->core.height;
+    return False;
+}
 
 
 static void ScrollUpDownProc(widget, closure, call_data)
@@ -752,10 +759,11 @@ static XtGeometryResult GeometryManager(child, request, reply)
 
     allowed = *request;
 
-    /* %%% DoLayout should be a FormClass method */
-    reconfigured = DoLayout( (Widget)w,
-			     (rWidth ? request->width : w->core.width),
-			     (rHeight ? request->height : w->core.height) );
+
+    reconfigured = GetGeometry( (Widget)w,
+			        (rWidth ? request->width : w->core.width),
+			        (rHeight ? request->height : w->core.height)
+			      );
 
     height_remaining = w->core.height;
     if (rWidth && w->core.width != request->width) {
@@ -813,8 +821,7 @@ static XtGeometryResult GeometryManager(child, request, reply)
   }
 
 
-/* %%% DoLayout should be a FormClass method */
-static Boolean DoLayout(w, width, height)
+static Boolean GetGeometry(w, width, height)
     Widget w;
     Dimension width, height;
 {
