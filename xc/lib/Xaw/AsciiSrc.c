@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.21 89/08/28 14:30:27 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.16 89/09/01 14:28:26 kit Exp $";
 #endif 
 
 /*
@@ -262,16 +262,7 @@ XawTextBlock *text;
 
   src->ascii_src.changes = TRUE; /* We have changed the buffer. */
 
-#ifndef notdef			/* This code only will call the first
-				   function in the callback list, I plan
-				   to fix this when the correct R4 Xt
-				   function comes along. CDP 7-5-89. */
-
-   if ( (src->ascii_src.callback != NULL) && 
-        (src->ascii_src.callback[0].callback != NULL) ) 
-     (src->ascii_src.callback[0].callback) (XtParent(w),
-  	                            src->ascii_src.callback[0].closure, NULL);
-#endif
+  XtCallCallbacks(w, XtNcallback, NULL);
 
 /* 
  * Remove Old Stuff. 
