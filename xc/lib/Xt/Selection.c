@@ -1,7 +1,4 @@
-#ifndef lint
-static char Xrcsid[] =
-    "$XConsortium: Selection.c,v 1.46 90/03/19 13:03:42 swick Exp $";
-#endif
+/* $XConsortium: Selection.c,v 1.47 90/04/04 11:28:27 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -234,14 +231,14 @@ XtPointer closure, data;
 
 /* Selection Owner code */
 
+static void HandleSelectionEvents();
+
 static Boolean LoseSelection(ctx, widget, selection, time)
 Select ctx;
 Widget widget;
 Atom selection;
 Time time;
 {
-    static void HandleSelectionEvents();
-
     if ((ctx->widget == widget) &&
 	(ctx->selection == selection) && /* paranoia */
 	((time == CurrentTime) || (time >= ctx->time)))
@@ -578,10 +575,11 @@ Boolean *incremental;
 }
 
 /*ARGSUSED*/
-static void HandleSelectionEvents(widget, closure, event)
+static void HandleSelectionEvents(widget, closure, event, cont)
 Widget widget;
 XtPointer closure;
 XEvent *event;
+Boolean *cont;
 {
     Select eventCtx, ctx;
     XSelectionEvent ev;
@@ -780,10 +778,11 @@ static Boolean IsINCRtype(info, window, prop)
     return (type == info->ctx->prop_list->incremental_atom);
 }
 
-static void ReqCleanup(widget, closure, ev)
+static void ReqCleanup(widget, closure, ev, cont)
 Widget widget;
 XtPointer closure;
 XEvent *ev;
+Boolean *cont;
 {
     CallBackInfo info = (CallBackInfo)closure;
     unsigned long bytesafter, length;
@@ -880,10 +879,12 @@ XtIntervalId   *id;
 
 }
 
-static void HandleGetIncrement(widget, closure, ev)
+/*ARGSUSED*/
+static void HandleGetIncrement(widget, closure, ev, cont)
 Widget widget;
 XtPointer closure;
 XEvent *ev;
+Boolean *cont;
 {
     XPropertyEvent *event = (XPropertyEvent *) ev;
     CallBackInfo info = (CallBackInfo) closure;
@@ -892,7 +893,6 @@ XEvent *ev;
     unsigned long bytesafter;
     unsigned long length;
     int bad;
-    static void HandleSelectionReplies();
 
     if ((event->state != PropertyNewValue) || (event->atom != info->property))
 	 return;
@@ -913,7 +913,7 @@ XEvent *ev;
 			  &info->type, 
 			  (info->offset == 0 ? value : info->value), 
 			  &u_offset, &info->format);
-       if (info->offset) XFree(value);
+       if (info->offset = u_offset) XFree(value);
        XtRemoveEventHandler(widget, (EventMask) PropertyChangeMask, FALSE, 
 		HandleGetIncrement, (XtPointer) info);
        FreeSelectionProperty(event->display, info->property);
@@ -1087,10 +1087,12 @@ static unsigned long GetSizeOfIncr(widget, ctx, property)
 }
 
 
-static void HandleSelectionReplies(widget, closure, ev)
+/*ARGSUSED*/
+static void HandleSelectionReplies(widget, closure, ev, cont)
 Widget widget;
 XtPointer closure;
 XEvent *ev;
+Boolean *cont;
 {
     XSelectionEvent *event = (XSelectionEvent *) ev;
     Display *dpy = event->display;
@@ -1448,6 +1450,9 @@ XSelectionRequestEvent *XtGetSelectionRequest( widget, selection, id )
     if (req == NULL) {
 	/* non-incremental owner; only one request can be
 	 * outstanding at a time, so it's safe to keep ptr in ctx */
+#ifdef lint
+	ctx = NULL;
+#endif
 	req = ctx->req;
     }
 
