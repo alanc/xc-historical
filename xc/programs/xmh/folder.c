@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.35 91/07/02 17:35:57 converse Exp $
+ * $XConsortium: folder.c,v 2.36 91/07/05 15:19:31 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -143,7 +143,10 @@ void DoOpenFolder(widget, client_data, call_data)
 
     Scrn	scrn = (Scrn) client_data;
     Toc		toc  = SelectedToc(scrn);
-    TocSetScrn(toc, scrn);
+    if (TocFolderExists(toc))
+	TocSetScrn(toc, scrn);
+    else
+	PopupError(scrn->parent, "Cannot open selected folder.");
 }
 
 
@@ -151,8 +154,8 @@ void DoOpenFolder(widget, client_data, call_data)
 void XmhOpenFolder(w, event, params, num_params)
     Widget	w;
     XEvent	*event;		/* unused */
-    String	*params;	/* unused */
-    Cardinal	*num_params;	/* unused */
+    String	*params;
+    Cardinal	*num_params;
 {
     Scrn	scrn = ScrnFromWidget(w);
 
@@ -201,7 +204,7 @@ void DoComposeMessage(widget, client_data, call_data)
    
 /*ARGSUSED*/
 void XmhComposeMessage(w, event, params, num_params)
-    Widget	w;		/* unused */
+    Widget	w;
     XEvent	*event;		/* unused */
     String	*params;	/* unused */
     Cardinal	*num_params;	/* unused */
@@ -220,9 +223,12 @@ void DoOpenFolderInNewWindow(widget, client_data, call_data)
 {
     Scrn	scrn = (Scrn) client_data;
     Toc 	toc = SelectedToc(scrn);
-    scrn = CreateNewScrn(STtocAndView);
-    TocSetScrn(toc, scrn);
-    MapScrn(scrn);
+    if (TocFolderExists(toc)) {
+	scrn = CreateNewScrn(STtocAndView);
+	TocSetScrn(toc, scrn);
+	MapScrn(scrn);
+    } else 
+	PopupError(scrn->parent, "Cannot open selected folder.");
 }
 
 
@@ -485,6 +491,13 @@ void DoDeleteFolder(w, client_data, call_data)
     Scrn	scrn = (Scrn) client_data;
     Toc		toc  = SelectedToc(scrn);
     DeleteData	deleteData;
+
+    if (! TocFolderExists(toc)) {
+	/* Too hard to clean up xmh when the folder doesn't exist anymore. */
+	PopupError(scrn->parent,
+		   "Cannot open selected folder for confirmation to delete.");
+	return;
+    }
 
     /* Prevent more than one confirmation popup on the same folder. 
      * TestAndSet returns true if there is a delete pending on this folder.
