@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.27 91/05/04 22:15:23 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.28 91/05/08 11:48:50 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -61,6 +61,10 @@
 
 #ifdef luna
 #define imake_ccflags "-Dluna"
+#endif
+
+#ifdef SYSV386
+#define imake_ccflags "-DSYSV -DUSG"
 #endif
 
 #else /* not CCIMAKE */
@@ -178,14 +182,35 @@ char *cpp_argv[ARGUMENTS] = {
 # endif
 #endif /* Mips */
 #ifdef MOTOROLA
-       "-DMOTOROLA",    /* Motorola Delta Systems */
+	"-DMOTOROLA",    /* Motorola Delta Systems */
 # ifdef SYSV
-       "-DSYSV", 
+	"-DSYSV", 
 # endif
 # ifdef SVR4
-       "-DSVR4",
+	"-DSVR4",
 # endif
 #endif /* MOTOROLA */
+#ifdef SYSV386
+	"-DSYSV386",
+# ifdef ISC              /* System V/386 folks */
+	"-DISC",
+# endif
+# ifdef ISC22
+	"-DISC22",
+# endif
+# ifdef SCO
+	"-DSCO",
+# endif
+# ifdef ESIX
+	"-DESIX",
+# endif
+# ifdef ATT
+	"-DATT",
+# endif
+# ifdef DELL
+	"-DDELL",
+#endif
+#endif
 };
 #else /* else MAKEDEPEND */
 /*
