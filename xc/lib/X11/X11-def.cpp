@@ -640,6 +640,7 @@ EXPORTS
  XwcTextPropertyToTextList
  _XAllocID
  _XAllocScratch
+ _XAllocTemp
  _XAsyncErrorHandler
  _XConnectDisplay
  _XDeqAsyncHandler
@@ -647,6 +648,7 @@ EXPORTS
  _XError
  _XFlushIt
  _XFlushGCCache
+ _XFreeTemp
  _XGetAsyncData
  _XGetAsyncReply
  _XIOError
