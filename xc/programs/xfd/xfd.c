@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.10 89/06/08 10:05:59 jim Exp $
+ * $XConsortium: xfd.c,v 1.11 89/06/08 13:42:31 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -59,6 +59,37 @@ static XtActionsRec xfd_actions[] = {
 static char *button_list[] = { "quit", "prev", "next", NULL };
 
 
+#define DEF_SELECT_FORMAT "character 0x%02x%02x (%d,%d)"
+#define DEF_METRICS_FORMAT "width %d, left %d, right %d, ascent %d, descent %d"
+#define DEF_RANGE_FORMAT "range:  0x%02x%02x (%u,%u) thru 0x%02x%02x (%u,%u)"
+#define DEF_START_FORMAT "upper left:  0x%04x (%d,%d)"
+#define DEF_NOCHAR_FORMAT "no such character 0x%02x%02x (%u,%u)"
+
+static struct _xfd_resources {
+  char *select_format;
+  char *metrics_format;
+  char *range_format;
+  char *start_format;
+  char *nochar_format;
+} xfd_resources;
+
+static XtResource Resources[] = {
+#define offset(field) XtOffset(struct _xfd_resources *, field)
+  { "selectFormat", "SelectFormat", XtRString, sizeof(char *), 
+      offset(select_format), XtRString, DEF_SELECT_FORMAT },
+  { "metricsFormat", "MetricsFormat", XtRString, sizeof(char *), 
+      offset(metrics_format), XtRString, DEF_METRICS_FORMAT },
+  { "rangeFormat", "RangeFormat", XtRString, sizeof(char *), 
+      offset(range_format), XtRString, DEF_RANGE_FORMAT },
+  { "startFormat", "StartFormat", XtRString, sizeof(char *), 
+      offset(start_format), XtRString, DEF_START_FORMAT },
+  { "nocharFormat", "NocharFormat", XtRString, sizeof(char *), 
+      offset(nochar_format), XtRString, DEF_NOCHAR_FORMAT },
+#undef offset
+};
+
+
+
 usage()
 {
     fprintf (stderr,
@@ -68,7 +99,7 @@ usage()
 }
 
 
-static Widget selectLabel, rangeLabel, startLabel, fontGrid;
+static Widget selectLabel, metricsLabel, rangeLabel, startLabel, fontGrid;
 
 main (argc, argv) 
     int argc;
@@ -93,6 +124,9 @@ main (argc, argv)
     XtAppAddActions (XtWidgetToApplicationContext (toplevel),
                      xfd_actions, XtNumber (xfd_actions));
 
+    XtGetApplicationResources (toplevel, (caddr_t) &xfd_resources, Resources,
+			       XtNumber (Resources), NULL, ZERO);
+
 
     /* pane wrapping everything */
     pane = XtCreateManagedWidget ("pane", panedWidgetClass, toplevel,
@@ -111,7 +145,10 @@ main (argc, argv)
 
     /* and labels in which to put information */
     selectLabel = XtCreateManagedWidget ("select", labelWidgetClass,
-					    pane, NULL, ZERO);
+					 pane, NULL, ZERO);
+
+    metricsLabel = XtCreateManagedWidget ("metrics", labelWidgetClass,
+					  pane, NULL, ZERO);
 
     rangeLabel = XtCreateManagedWidget ("range", labelWidgetClass, pane, 
 					NULL, ZERO);
@@ -143,7 +180,7 @@ main (argc, argv)
 
     i = 0;
     XtSetArg (av[i], XtNlabel, buf); i++;
-    sprintf (buf, "range:  0x%02x%02x (%u,%u) thru 0x%02x%02x (%u,%u)",
+    sprintf (buf, xfd_resources.range_format, 
 	     fs->min_byte1, fs->min_char_or_byte2,
 	     fs->min_byte1, fs->min_char_or_byte2,
 	     fs->max_byte1, fs->max_char_or_byte2,
@@ -177,24 +214,26 @@ static void SelectChar (w, closure, data)
     XtSetArg (arg, XtNlabel, buf);
 
     if (n < minn || n > maxn) {
-	sprintf (buf, "no such character 0x%02x%02x (%u,%u)", 
+	sprintf (buf, xfd_resources.nochar_format,
 		 (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2,
 		 (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2);
 	XtSetValues (selectLabel, &arg, ONE);
+	buf[0] = '\0';
+	XtSetValues (metricsLabel, &arg, ONE);
 	return;
     }
 
     XTextExtents16 (fs, &p->thechar, 1, &direction, &fontascent, &fontdescent,
 		    &metrics);
-    sprintf (buf, "character 0x%02x%02x (%d,%d)",
+    sprintf (buf, xfd_resources.select_format,
 	     (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2,
 	     (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2);
     XtSetValues (selectLabel, &arg, ONE);
 
-    sprintf (buf, "width %d, left %d, right %d, ascent %d, descent %d",
+    sprintf (buf, xfd_resources.metrics_format,
 	     metrics.width, metrics.lbearing, metrics.rbearing,
 	     metrics.ascent, metrics.descent);
-    XtSetValues (rangeLabel, &arg, ONE);
+    XtSetValues (metricsLabel, &arg, ONE);
 
     return;
 }
@@ -239,7 +278,7 @@ static void change_page (page)
 	unsigned int col = (unsigned int) (newstart & 0xff);
 
 	XtSetArg (arg, XtNlabel, buf);
-	sprintf (buf, "upper left:  0x%04x (%d,%d)", newstart, row, col);
+	sprintf (buf, xfd_resources.start_format, newstart, row, col);
 	XtSetValues (startLabel, &arg, ONE);
     }
 }

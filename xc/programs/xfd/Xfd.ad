@@ -8,6 +8,7 @@ Xfd*prev.Label: Prev
 Xfd*next.Label: Next
 
 Xfd*select.Label: Select a character
+Xfd*metrics.Label: 
 Xfd*select.Justify: center
 Xfd*range.Justify: left
 Xfd*start.Justify: left
