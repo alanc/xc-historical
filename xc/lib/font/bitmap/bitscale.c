@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitscale.c,v 1.22 94/02/08 12:29:57 gildea Exp $
+ * $XConsortium: bitscale.c,v 1.23 94/02/10 19:45:28 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -274,7 +274,7 @@ if (m >= 1.0) \
 else \
     score += (8 * s) * m;
 
-FontEntryPtr
+static FontEntryPtr
 FindBestToScale(fpe, entry, vals, best, dxp, dyp, sdxp, sdyp, fpep)
     FontPathElementPtr	fpe;
     FontEntryPtr	entry;
@@ -723,7 +723,7 @@ compute_xform_matrix(vals, dx, dy, xform, inv_xform, xmult, ymult)
  *  ScaleFont
  *  returns a pointer to the new scaled font, or NULL (due to AllocError).
  */
-FontPtr
+static FontPtr
 ScaleFont(opf, widthMult, heightMult, sWidthMult, sHeightMult, vals,
 	  newWidthMult, newHeightMult, sWidth)
     FontPtr     opf;		/* originating font */
