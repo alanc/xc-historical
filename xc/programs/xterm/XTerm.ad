@@ -1,12 +1,9 @@
 XTerm*SimpleMenu*labelFont: *-*-helvetica-bold-r-normal--*-120-*-*-*-*-iso*-*
 XTerm*SimpleMenu*HorizontalMargins: 16
 XTerm*SimpleMenu*Cursor: left_ptr
-XTerm*SimpleMenu*VerticalSpace: 2
 XTerm*SimpleMenu*translations:	#override \
 	<BtnUp>:	MenuPopdown() notify() unhighlight()
 
-
-XTerm*SimpleMenu*line0*Type: blank
 
 XTerm*mainMenu.Label:  Main Options
 XTerm*mainMenu*securekbd*Label:  Secure Keyboard
