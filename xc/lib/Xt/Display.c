@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.3 89/07/20 14:37:39 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.21 89/07/21 12:06:11 swick Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif /*lint*/
 
@@ -225,6 +225,9 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 	pd->name = XrmStringToName(name);
 	pd->class = XrmStringToClass(classname);
 	pd->being_destroyed = False;
+	pd->GClist = NULL;
+	pd->drawables = NULL;
+	pd->drawable_count = 0;
 	_XtHeapInit(&pd->heap);
 
 	_XtDisplayInitialize(dpy, app, name, classname, urlist, 
@@ -439,6 +442,7 @@ static void CloseDisplay(dpy)
 	xtpd = &(pd->perDpy);
 
         if (xtpd != NULL) {
+	    extern void _XtGClistFree();
 	    XtDeleteFromAppContext(dpy, xtpd->appContext);
             XtFree((char *) xtpd->keysyms);
             XtFree((char *) xtpd->modKeysyms);
@@ -451,6 +455,8 @@ static void CloseDisplay(dpy)
 	    XDestroyRegion(xtpd->region);
 	    _XtCacheFlushTag(xtpd->appContext, (caddr_t)&xtpd->heap);
 	    _XtHeapFree(&xtpd->heap);
+	    _XtGClistFree(xtpd->GClist);
+	    XtFree((char *) xtpd->drawables);
         }
 	XtFree((char*)pd);
 	XrmDestroyDatabase(dpy->db);
