@@ -924,6 +924,8 @@
 		   (,accessor (font-font-info font))))))
 	 fields)))
 
+(eval-when (eval compile) ;; I'd rather use macrolet, but Symbolics doesn't like it...
+
 (make-font-info-accessors ignore
   (direction draw-direction)
   (min-char card16)
@@ -940,11 +942,16 @@
   (descent int16)
   (properties font-props))
 
+) ;; End eval-when
+
+
 (defun font-property (font name)
   (declare (type font font)
 	   (type keyword name))
   (declare (values (or null int32)))
   (getf (font-properties font) name))
+
+(eval-when (eval compile) ;; I'd rather use macrolet, but Symbolics doesn't like it...
 
 (defmacro make-mumble-equal (type)
   ;; When cached, EQ works fine, otherwise test resource id's and displays
@@ -960,6 +967,8 @@
 	   (declare (type ,type a b))
 	   (and (= (,id a) (,id b))
 		(eq (,dpy a) (,dpy b))))))))
+
+) ;; End eval-when
 
 (make-mumble-equal window)
 (make-mumble-equal pixmap)
