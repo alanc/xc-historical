@@ -16,21 +16,21 @@ the following strings; \fB\\$1\fP.
 .de Ac \"accelerators
 .IP accelerators 1.5i
 A list of event to action bindings to be executed by this widget, even
-though the event occurred in another widget.  See Section 10.4 in the
-\fI\*(xT\fP.
+though the event occurred in another widget.  (See the \fI\*(xT\fP for
+details).
 ..
 .de As \"ancestorSensitive
 .IP ancestorSensitive 1.5i
 The sensitivity state of the ancestors of this widget.  A widget is
 insensitive if either it or any of its ancestors is insensitive.
-This resource should not be changed with \fBXtSetValues\fP.  It may,
-however, be queried.
+This resource should not be changed with \fBXtSetValues\fP, although it
+may be queried.
 ..
 .de Bg \"background
 .ie 'Bold'\\$1' .IP \fBbackground\fP 1.5i
 .el .IP background 1.5i
-An index into this widget's colormap specifying the background color of the
-widget's window.
+A pixel value which indexs the widget's colormap to derive the
+background color of the widget's window.
 ..
 .de Gp \"backgroundPixmap
 .IP backgroundPixmap 1.5i
@@ -40,8 +40,8 @@ used instead of the background color.
 ..
 .de Bc \"borderColor
 .IP borderColor 1.5i
-An index into this widget's colormap specifying the border color of the
-widget's window.
+A pixel value which indexs the widget's colormap to derive the border
+color of the widget's window.
 ..
 .de Bp \"borderPixmap
 .IP borderPixmap 1.5i
@@ -105,8 +105,8 @@ The location of the upper left outside corner of this widget in its parent.
 .de Cu \"cursor
 .ie 'Bold'\\$1' .IP \fBcursor\fP 1.5i
 .el .IP cursor 1.5i
-The cursor that will be displayed as the pointer whenever the pointer is
-in this widget.
+The image that will be displayed as the pointer cursor whenever it is in
+this widget.
 ..
 .de Ib \"insensitiveBorder
 .ie 'Bold'\\$1' .IP \fBinsensitiveBorder\fP 1.5i
@@ -120,14 +120,14 @@ insensitive.
 .de Bm \"bitmap
 .ie 'Bold'\\$1' .IP \fBbitmap\fP 1.5i
 .el .IP bitmap 1.5i
-A bitmap to display instead of a label.  The default size of the
+A bitmap to display instead of the \fBlabel\fP.  The default size of the
 widget will be just large enough to contain the bitmap and the widget's
 internal width and height.  The resource converter for this resource
-constructs bitmaps from the contents of files, given a file name.  See
-\fBConverting Bitmaps\fP for details on the string to bitmap conversion.
-If this bitmap is one bit deep then the 1's will be rendered in the
-foreground color, and the 0's in the background color.  If \fBbitmap\fP
-has a depth greater than one, it is copied directly into the window.
+constructs bitmaps from the contents of files.  (See \fBConverting
+Bitmaps\fP for details.)  If this bitmap is one bit deep then the 1's
+will be rendered in the foreground color, and the 0's in the background
+color.  If \fBbitmap\fP has a depth greater than one, it is copied
+directly into the window.
 ..
 .de Lf \"Label font
 .ie 'Bold'\\$1' .IP \fBfont\fP 1.5i
@@ -137,8 +137,9 @@ The text font to use when displaying the \fBlabel\fP.
 .de Lg \"Label foreground
 .ie 'Bold'\\$1' .IP \fBforeground\fP 1.5i
 .el .IP foreground 1.5i
-The color index to be used to draw the \fBlabel\fP.  This color is also
-used to render all 1's a \fBbitmap\fP one plane deep.
+A pixel value which indexes the widget's colormap to derive the
+foreground color of the widget's window.  This color is also 
+used to render all 1's in a \fBbitmap\fP one plane deep.
 ..
 .de Ih \"internalHeight
 .ie 'Bold'\\$1' .IP \fBinternalHeight\fP 1.5i
@@ -147,8 +148,8 @@ used to render all 1's a \fBbitmap\fP one plane deep.
 .ns
 .ie 'Bold'\\$1' .IP \fBinternalWidth\fP 1.5i
 .el .IP internalWidth 1.5i
-The minimum amount of space to leave between the \fBlabel\fP or \fBbitmap\fP
-and the vertical and horizontal edges of the window.
+The minimum amount of space to leave between the \fBlabel\fP or
+\fBbitmap\fP and the vertical and horizontal edges of the window.
 ..
 .de Ju \"justify
 .ie 'Bold'\\$1' .IP \fBjustify\fP 1.5i
@@ -164,8 +165,8 @@ is larger than necessary to display the \fBlabel\fP.
 .ie 'Bold'\\$1' .IP \fBlabel\fP 1.5i
 .el .IP label 1.5i
 Specifies the Latin1 text string to be displayed in the widget's window
-if no bitmap is specified.  The default is the widget name of the Command
-widget.  Newline characters will cause line breaks.
+if no bitmap is specified.  The default is the name of this widget.
+Newline characters will cause line breaks.
 ..
 .de Re \"resize
 .ie 'Bold'\\$1' .IP \fBresize\fP 1.5i
@@ -173,7 +174,7 @@ widget.  Newline characters will cause line breaks.
 Specifies whether the widget should attempt to resize to its
 preferred dimensions whenever its resources are modified with
 \fBXtSetValues\fP.  This attempt to resize may be denied by the parent
-of this widget.  Also, the parent is always free to resize the widget
+of this widget.  The parent is always free to resize the widget
 regardless of the state of this resource.
 ..
 
@@ -182,7 +183,7 @@ regardless of the state of this resource.
 .de Cb \"callback
 .ie 'Bold'\\$1' .IP \fBcallback\fP 1.5i
 .el .IP callback 1.5i
-A list of routines to be called when the \fBNotify\fP action is invoked.
+A list of routines to be called when the \fBnotify\fP action is invoked.
 ..
 .de Cr \"cornerRoundPercent
 .ie 'Bold'\\$1' .IP \fBcornerRoundPercent\fP 1.5i
@@ -205,11 +206,11 @@ selected.  The default value is 2 pixels if the \fBshapeStyle\fP is
 .el .IP shapeStyle 1.5i
 Nonrectangular buttons may be created using this resource.
 Nonrectangular buttons are supported only on a server that supports the
-\fBShape Extension\fP.  If nonrectangular Toggle widgets are specified
+\fBShape Extension\fP.  If nonrectangular buttons are specified
 for a server lacking this extension, the shape is ignored and the
-widgets will be rectangular.  This widget currently supports the
-following shapes: \fBXmuShapeRectangle\fP, \fBXmuShapeOval\fP,
-\fBXmuShapeEllipse\fP, and \fBXmuShapeRoundedRectangle\fP. 
+widgets will be rectangular.  The following shapes are currently
+supported: \fBXmuShapeRectangle\fP, \fBXmuShapeOval\fP,
+\fBXmuShapeEllipse\fP, and \fBXmuShapeRoundedRectangle\fP.
 .Rs "rectangle, oval, ellipse, \fPand\fP roundedRectangle"
 ..
 
