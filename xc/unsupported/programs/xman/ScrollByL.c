@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.c,v 1.25 91/07/21 11:31:45 rws Exp $
- * $Header: ScrollByL.c,v 1.25 91/07/21 11:31:45 rws Exp $
+ * $XConsortium: ScrollByL.c,v 1.26 91/07/26 15:28:05 dave Exp $
+ * $Header: ScrollByL.c,v 1.26 91/07/26 15:28:05 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -375,7 +375,7 @@ int new_line;
 Boolean force_redisp;
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
-  int num_lines = w->core.height / sblw->scroll.font_height + 1;
+  int num_lines = (int)w->core.height / sblw->scroll.font_height + 1;
   int max_lines, old_line;
   Boolean move_thumb = FALSE;
 
@@ -388,7 +388,7 @@ Boolean force_redisp;
     move_thumb = TRUE;
   }
   else {
-    max_lines = sblw->scroll.lines - w->core.height / sblw->scroll.font_height;
+    max_lines = sblw->scroll.lines - (int)w->core.height / sblw->scroll.font_height;
     AssignMax(max_lines, 0);
 
     if ( new_line > max_lines ) {
@@ -469,7 +469,7 @@ int old_y, new_y, height;
     return;
   }
 
-  if (height + old_y > w->core.height)
+  if ((int)height + (int)old_y > (int)w->core.height)
     height = w->core.height - old_y;
 
   XCopyArea(XtDisplay(w), XtWindow(w), XtWindow(w), sblw->scroll.move_gc,
@@ -592,12 +592,16 @@ int pos;
   SetThumb( (Widget) sblw);
 }
 
+int h_width;			/* main font width */
+
 /* ARGSUSED */
 static void 
 Initialize(req, new)
 Widget req, new;
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) new;
+  unsigned long figWidth;
+  Atom atomNum;
 
   sblw->scroll.top_line = NULL;
   sblw->scroll.line_pointer = 0;
@@ -606,6 +610,16 @@ Widget req, new;
 
   sblw->scroll.font_height = (sblw->scroll.normal_font->max_bounds.ascent + 
 			      sblw->scroll.normal_font->max_bounds.descent); 
+
+  atomNum = XInternAtom(XtDisplay(req), "FIGURE_WIDTH", False);
+
+  if (XGetFontProperty(sblw->scroll.normal_font, atomNum, &figWidth))
+      h_width = figWidth;
+  else
+    h_width = XTextWidth(sblw->scroll.normal_font, "$", 1);
+
+
+
 } /* Initialize. */
 
 /*	Function Name: CreateGCs
@@ -908,11 +922,10 @@ int  start_line, num_lines, location;
  * widest character in the font.
  */
   XFontStruct * h_font;
-  int h_width, h_col, h_fix;
+  int h_col, h_fix;
   char * h_c;
 
   h_font = sblw->scroll.normal_font;
-  h_width = (6 * h_font->max_bounds.width) / 10; /* a guess */
 
 /*
  * Nothing loaded, take no action.
@@ -928,7 +941,7 @@ int  start_line, num_lines, location;
   c = *(sblw->scroll.top_line + start_line);
 
  /* Width of a tab stop. */
-  width =  XTextWidth(sblw->scroll.normal_font, "        ", 8);
+  width = 8 * h_width;
 
 /*
  * Because XDrawString uses the bottom of the text as a position
