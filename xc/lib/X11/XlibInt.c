@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.209 94/01/29 18:30:00 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.210 94/02/05 16:45:56 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -43,32 +43,28 @@ xthread_t (*_Xthread_self_fn)() = NULL;
 
 #define XThread_Self()	((*_Xthread_self_fn)())
 
-#define UnlockNextReplyReader(d) if ((d)->lock_fns) \
-    (*(d)->lock_fns->pop_reader)((d),NULL, &(d)->lock->reply_awaiters,&(d)->lock->reply_awaiters_tail)
+#define UnlockNextReplyReader(d) if ((d)->lock) \
+    (*(d)->lock->pop_reader)((d),NULL, &(d)->lock->reply_awaiters,&(d)->lock->reply_awaiters_tail)
 
-#define QueueReplyReaderLock(d) ((d)->lock_fns ? \
-    (*(d)->lock_fns->push_reader)(&(d)->lock->reply_awaiters_tail) : NULL)
-#define QueueEventReaderLock(d) ((d)->lock_fns ? \
-    (*(d)->lock_fns->push_reader)(&(d)->lock->event_awaiters_tail) : NULL)
+#define QueueReplyReaderLock(d) ((d)->lock ? \
+    (*(d)->lock->push_reader)(&(d)->lock->reply_awaiters_tail) : NULL)
+#define QueueEventReaderLock(d) ((d)->lock ? \
+    (*(d)->lock->push_reader)(&(d)->lock->event_awaiters_tail) : NULL)
 
-#define DisplayLockWait(d) if ((d)->lock_fns && (d)->lock_fns->lock_wait) \
-    (*(d)->lock_fns->lock_wait)(d)
+#define DisplayLockWait(d) if ((d)->lock && (d)->lock->lock_wait) \
+    (*(d)->lock->lock_wait)(d)
 #if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
-#define InternalLockDisplay(d) if ((d)->lock_fns) \
-    (*(d)->lock_fns->internal_lock_display)(d,__FILE__,__LINE__)
+#define InternalLockDisplay(d) if ((d)->lock) \
+    (*(d)->lock->internal_lock_display)(d,__FILE__,__LINE__)
 #else
-#define InternalLockDisplay(d) if ((d)->lock_fns) \
-    (*(d)->lock_fns->internal_lock_display)(d)
+#define InternalLockDisplay(d) if ((d)->lock) \
+    (*(d)->lock->internal_lock_display)(d)
 #endif
 
 #else /* XTHREADS else */
 
 #define UnlockNextReplyReader(d)   
 #define UnlockNextEventReader(d,c)
-#define QueueReplyReaderLock(d) NULL
-#define QueueEventReaderLock(d) NULL
-#define ConditionWait(d,c)
-#define ConditionSignal(d,c)
 #define DisplayLockWait(d)
 #define InternalLockDisplay(d)
 
@@ -224,7 +220,8 @@ _XWaitForWritable(dpy
 	   
 	if (!dpy->lock ||
 	    (!dpy->lock->event_awaiters &&
-	     (!dpy->lock->reply_awaiters || dpy->lock->reply_awaiters->cv == cv)))
+	     (!dpy->lock->reply_awaiters ||
+	      dpy->lock->reply_awaiters->cv == cv)))
 #endif
 #ifdef USE_POLL
 	    filedes.events = POLLIN;
@@ -250,11 +247,13 @@ _XWaitForWritable(dpy
 		_XIOError(dpy);
 	} while (nfound <= 0);
 
+	if (
 #ifdef USE_POLL
-	if (filedes.revents & POLLIN)
+	    filedes.revents & POLLIN
 #else
-	if (GETBIT(r_mask, dpy->fd))
+	    GETBIT(r_mask, dpy->fd)
 #endif
+	    )
 	{
 	    _XAlignedBuffer buf;
 	    BytesReadable_t pend;
@@ -268,7 +267,12 @@ _XWaitForWritable(dpy
 
 	    /* must read at least one xEvent; if none is pending, then
 	       we'll just block waiting for it */
-	    if (len < SIZEOF(xReply)) len = SIZEOF(xReply);
+	    if (len < SIZEOF(xReply)
+#ifdef XTHREADS
+		|| dpy->async_handlers
+#endif
+		)
+		len = SIZEOF(xReply);
 		
 	    /* but we won't read more than the max buffer size */
 	    if (len > BUFSIZE) len = BUFSIZE;
@@ -294,13 +298,24 @@ _XWaitForWritable(dpy
 		    len -= SIZEOF(xReply);
 		}
 	    } ENDITERATE
+#ifdef XTHREADS
+	    if (dpy->lock && dpy->lock->event_awaiters)
+		ConditionSignal(dpy, dpy->lock->event_awaiters->cv);
+#endif
 	}
 #ifdef USE_POLL
 	if (filedes.revents & (POLLOUT|POLLHUP))
 #else
 	if (GETBIT(w_mask, dpy->fd))
 #endif
+	{
+#ifdef XTHREADS
+	    if (dpy->lock) {
+		ConditionBroadcast(dpy, dpy->lock->writers);
+	    }
+#endif
 	    return;
+	}
     }
 }
 
@@ -543,6 +558,7 @@ static _XFlushInt (dpy, cv)
 	register Display *dpy;
         register xcondition_t cv;
 {
+	char *nextindex;
 #endif /* XTHREADS*/
 	register long size, todo;
 	register int write_stat;
@@ -550,47 +566,58 @@ static _XFlushInt (dpy, cv)
 	_XExtension *ext;
 
 	if (dpy->flags & XlibDisplayIOError) return 0;
-
+#ifdef XTHREADS
+	while (dpy->flags & XlibDisplayWriting) {
+	    ConditionWait(dpy, dpy->lock->writers);
+	}
+#endif
 	size = todo = dpy->bufptr - dpy->buffer;
-	bufindex = dpy->bufptr = dpy->buffer;
+	if (!size) return 0;
+#ifdef XTHREADS
+	dpy->flags |= XlibDisplayWriting;
+	/* make sure no one else can put in data */
+	dpy->bufptr = dpy->bufmax;
+#endif
 	for (ext = dpy->flushes; ext; ext = ext->next_flush)
-	    (*ext->before_flush)(dpy, &ext->codes, bufindex, size);
+	    (*ext->before_flush)(dpy, &ext->codes, dpy->buffer, size);
+	bufindex = dpy->buffer;
 	/*
 	 * While write has not written the entire buffer, keep looping
-	 * until the entire buffer is written.  bufindex will be incremented
-	 * and size decremented as buffer is written out.
+	 * until the entire buffer is written.  bufindex will be
+	 * incremented and size decremented as buffer is written out.
 	 */
 	while (size) {
 	    ESET(0);
-	    write_stat = _X11TransWrite(dpy->trans_conn, bufindex, (int) todo);
+	    write_stat = _X11TransWrite(dpy->trans_conn,
+					bufindex, (int) todo);
 	    if (write_stat >= 0) {
 		size -= write_stat;
 		todo = size;
 		bufindex += write_stat;
 	    } else if (ETEST()) {
+		_XWaitForWritable(dpy
 #ifdef XTHREADS
-		_XWaitForWritable(dpy, cv);
-#else
-		_XWaitForWritable(dpy);
+				  , cv
 #endif
+				  );
 #ifdef SUNSYSV
 	    } else if (ECHECK(0)) {
+		_XWaitForWritable(dpy
 #ifdef XTHREADS
-		_XWaitForWritable(dpy, cv);
-#else
-		_XWaitForWritable(dpy);
+				  , cv
 #endif
+				  );
 #endif
 #ifdef ESZTEST
 	    } else if (ESZTEST()) {
 		if (todo > 1) 
 		    todo >>= 1;
 		else {
+		    _XWaitForWritable(dpy
 #ifdef XTHREADS
-		    _XWaitForWritable(dpy, cv);
-#else
-		    _XWaitForWritable(dpy);
+				      , cv
 #endif
+				      );
 		}
 #endif
 	    } else if (!ECHECK(EINTR)) {
@@ -606,6 +633,10 @@ static _XFlushInt (dpy, cv)
 	    dpy->synchandler = _XSeqSyncFunction;
 	    dpy->flags |= XlibDisplayPrivSync;
 	}
+	dpy->bufptr = dpy->buffer;
+#ifdef XTHREADS
+	dpy->flags &= ~XlibDisplayWriting;
+#endif
 	return 0;
 }
 
@@ -652,7 +683,7 @@ _XEventsQueued (dpy, mode)
 	entry_event_serial_num = dpy->next_event_serial_num;
 
 	if (dpy->lock && dpy->lock->reply_awaiters) { /* event_awaiters must have only us */
-	    ConditionWait(dpy, cvl);
+	    ConditionWait(dpy, cvl->cv);
 	}
 	
 	/* did _XReply read an event we can return? */
@@ -725,7 +756,11 @@ _XEventsQueued (dpy, mode)
 	{
 	    read_buf = buf.buf;
 	    
-	    if (len < SIZEOF(xReply))
+	    if (len < SIZEOF(xReply)
+#ifdef XTHREADS
+		|| dpy->async_handlers
+#endif
+		)
 		len = SIZEOF(xReply);
 	    else if (len > BUFSIZE)
 		len = BUFSIZE;
@@ -746,7 +781,7 @@ _XEventsQueued (dpy, mode)
 		if (read_buf != (char *)dpy->lock->reply_awaiters->buf)
 		    memcpy(dpy->lock->reply_awaiters->buf, read_buf,
 			   len);
-		ConditionSignal(dpy, dpy->lock->reply_awaiters);
+		ConditionSignal(dpy, dpy->lock->reply_awaiters->cv);
 		UnlockNextEventReader(dpy, cvl);
 		return(dpy->qlen); /* we read, so we can return */
 	    } else if (read_buf != buf.buf)
@@ -824,7 +859,7 @@ _XReadEvents(dpy)
 	       wait til we're at head of list */
 	    if (first_time && dpy->lock && cvl &&
 		(dpy->lock->event_awaiters != cvl || dpy->lock->reply_awaiters)) {
-		ConditionWait(dpy, cvl);
+		ConditionWait(dpy, cvl->cv);
 	    }
 
 	    /* did _XReply read an event we can return? */
@@ -833,7 +868,7 @@ _XReadEvents(dpy)
 		goto got_event;
 	    }
 	    if (!first_time)
-		ConditionWait(dpy, cvl);
+		ConditionWait(dpy, cvl->cv);
 
 	    first_time = False;
 #endif /* XTHREADS*/
@@ -845,7 +880,11 @@ _XReadEvents(dpy)
 
 	    /* must read at least one xEvent; if none is pending, then
 	       we'll just flush and block waiting for it */
-	    if (len < SIZEOF(xEvent)) {
+	    if (len < SIZEOF(xEvent)
+#ifdef XTHREADS
+		|| dpy->async_handlers
+#endif
+		) {
 	    	len = SIZEOF(xEvent);
 		/* don't flush until the first time we would block */
 		if (not_yet_flushed) {
@@ -905,7 +944,7 @@ _XReadEvents(dpy)
 		    if (read_buf != (char *)dpy->lock->reply_awaiters->buf)
 			memcpy(dpy->lock->reply_awaiters->buf,
 			       read_buf, len);
-		    ConditionSignal(dpy, dpy->lock->reply_awaiters);
+		    ConditionSignal(dpy, dpy->lock->reply_awaiters->cv);
 		    /* useless to us, so keep trying */
 		    continue;
 		} else if (read_buf != buf.buf)
@@ -1225,21 +1264,25 @@ _XSend (dpy, data, size)
 	static char pad[3] = {0, 0, 0};
            /* XText8 and XText16 require that the padding bytes be zero! */
 
-	long skip = 0;
-	long dpybufsize = (dpy->bufptr - dpy->buffer);
-	long padsize = padlength[size & 3];
-	long total = dpybufsize + size + padsize;
-	long todo = total;
+	long skip, dbufsize, padsize, total, todo;
 	_XExtension *ext;
 
-	if (dpy->flags & XlibDisplayIOError) return 0;
-
+	if (!size || (dpy->flags & XlibDisplayIOError)) return 0;
+	dbufsize = dpy->bufptr - dpy->buffer;
+#ifdef XTHREADS
+	dpy->flags |= XlibDisplayWriting;
+	/* make sure no one else can put in data */
+	dpy->bufptr = dpy->bufmax;
+#endif
+	padsize = padlength[size & 3];
 	for (ext = dpy->flushes; ext; ext = ext->next_flush) {
-	    (*ext->before_flush)(dpy, &ext->codes, dpy->bufptr, dpybufsize);
+	    (*ext->before_flush)(dpy, &ext->codes, dpy->buffer, dbufsize);
 	    (*ext->before_flush)(dpy, &ext->codes, data, size);
 	    if (padsize)
 		(*ext->before_flush)(dpy, &ext->codes, pad, padsize);
 	}
+	skip = 0;
+	todo = total = dbufsize + size + padsize;
 
 	/*
 	 * There are 3 pieces that may need to be written out:
@@ -1284,7 +1327,7 @@ _XSend (dpy, data, size)
 		before = 0; \
 	    }
 
-	    InsertIOV (dpy->buffer, dpybufsize)
+	    InsertIOV (dpy->buffer, dbufsize)
 	    InsertIOV (data, size)
 	    InsertIOV (pad, padsize)
     
@@ -1294,37 +1337,35 @@ _XSend (dpy, data, size)
 		total -= len;
 		todo = total;
 	    } else if (ETEST()) {
+		_XWaitForWritable(dpy
 #ifdef XTHREADS
-		_XWaitForWritable(dpy, NULL);
-#else
-		_XWaitForWritable(dpy);
+				  , NULL
 #endif
+				  );
 #ifdef SUNSYSV
 	    } else if (ECHECK(0)) {
+		_XWaitForWritable(dpy
 #ifdef XTHREADS
-		_XWaitForWritable(dpy, NULL);
-#else
-		_XWaitForWritable(dpy);
+				  , NULL
 #endif
+				  );
 #endif
 #ifdef ESZTEST
 	    } else if (ESZTEST()) {
 		if (todo > 1) 
 		  todo >>= 1;
 		else {
+		    _XWaitForWritable(dpy
 #ifdef XTHREADS
-		    _XWaitForWritable(dpy, NULL);
-#else
-		    _XWaitForWritable(dpy);
-#endif /* XTHREADS*/
+				      , NULL
+#endif
+				      );
 		}
 #endif
 	    } else if (!ECHECK(EINTR)) {
 		_XIOError(dpy);
 	    }
 	}
-
-	dpy->bufptr = dpy->buffer;
 	dpy->last_req = (char *) & _dummy_request;
 	if ((dpy->request - dpy->last_request_read) >= SEQLIMIT &&
 	    !(dpy->flags & XlibDisplayPrivSync)) {
@@ -1332,6 +1373,10 @@ _XSend (dpy, data, size)
 	    dpy->synchandler = _XSeqSyncFunction;
 	    dpy->flags |= XlibDisplayPrivSync;
 	}
+	dpy->bufptr = dpy->buffer;
+#ifdef XTHREADS
+	dpy->flags &= ~XlibDisplayWriting;
+#endif
 	return 0;
 }
 
@@ -1487,23 +1532,24 @@ _XReply (dpy, rep, extra, discard)
 #ifdef XTHREADS
     /* create our condition variable and append to list */
     cvl = QueueReplyReaderLock(dpy);
+    if (cvl) cvl->buf = rep;
 
 #ifdef XTHREADS_DEBUG
     printf("_XReply called in thread %x, adding %x to cvl\n",
 	   XThread_Self(), cvl);
 #endif
 
-    dpy->flags |= XlibDisplayReply;
-    _XFlushInt(dpy, cvl ? cvl->cv : NULL);
-    dpy->flags &= ~XlibDisplayReply;
-
     /* if it is not our turn to read a reply off the wire,
-       wait til we're at head of list */
+     * wait til we're at head of list.  if there is an event waiter,
+     * and our reply hasn't been read, they'll be in select and will
+     * hand control back to us next.
+     */
     if(dpy->lock &&
-       (dpy->lock->reply_awaiters != cvl  ||  dpy->lock->event_awaiters)) {
-	cvl->buf = rep;
-	ConditionWait(dpy, cvl);
+       (dpy->lock->reply_awaiters != cvl ||
+	(!dpy->lock->reply_was_read && dpy->lock->event_awaiters))) {
+	ConditionWait(dpy, cvl->cv);
     }
+    _XFlushInt(dpy, cvl ? cvl->cv : NULL);
     dpy->flags |= XlibDisplayReply;
 #else /* XTHREADS else */
     _XFlush(dpy);
@@ -1628,6 +1674,10 @@ _XReply (dpy, rep, extra, discard)
 		break;
 	    default:
 		_XEnq(dpy, (xEvent *) rep);
+#ifdef XTHREADS
+		if (dpy->lock && dpy->lock->event_awaiters)
+		    ConditionSignal(dpy, dpy->lock->event_awaiters->cv);
+#endif
 		break;
 	    }
 	}
@@ -2719,14 +2769,14 @@ int _XError (dpy, rep)
 	int rtn_val;
 #ifdef XTHREADS
 	if (dpy->lock)
-	    (*dpy->lock_fns->user_lock_display)(dpy);
+	    (*dpy->lock->user_lock_display)(dpy);
 	UnlockDisplay(dpy);
 #endif /* XTHREADS */
 	rtn_val = (*_XErrorFunction)(dpy, &event);	/* upcall */
 #ifdef XTHREADS
 	LockDisplay(dpy);
 	if (dpy->lock)
-	    (*dpy->lock_fns->user_unlock_display)(dpy);
+	    (*dpy->lock->user_unlock_display)(dpy);
 #endif /* XTHREADS */
 	return rtn_val;
     } else {
