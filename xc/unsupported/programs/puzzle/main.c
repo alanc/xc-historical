@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: main.c,v 1.14 91/02/18 17:41:46 converse Exp $ */
 
 /* Puzzle - (C) Copyright 1987, 1988 Don Bennett.
  *
@@ -699,6 +699,12 @@ Reset()
  * specified on the command line;
  */
 
+#if defined(USG) && !defined(Cray)	/* tv_usec never changes */
+#define MIN_DELTA_T 100L
+#else					/* don't divide by zero */
+#define MIN_DELTA_T 1L
+#endif
+
 /** delta-t in miliseconds **/
 #define DeltaT(tv2,tv1)				\
     ( ((tv2.tv_sec  - tv1.tv_sec )*1000L)	\
@@ -733,6 +739,7 @@ CalculateSpeed()
 	XSync(dpy,0);
 	gettimeofday(&tv2, &tz);
 	delta = DeltaT(tv2,tv1);
+	delta = max(MIN_DELTA_T, delta);
 	if (delta >= 0) MoveSteps++;	/* crock for broken systems */
     }
 
@@ -749,7 +756,9 @@ CalculateSpeed()
     }
     XFlush(dpy);
     gettimeofday(&tv2, &tz);
-    MoveSteps = (((long)MoveSteps) * timePerTile)/DeltaT(tv2,tv1);
+    delta = DeltaT(tv2, tv1);
+    delta = max(MIN_DELTA_T, delta);
+    MoveSteps = (((long)MoveSteps) * timePerTile)/(delta ? delta : 1L);
     if (MoveSteps <= 0)
 	MoveSteps = 1;
 }
