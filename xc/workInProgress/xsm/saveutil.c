@@ -1,4 +1,4 @@
-/* $XConsortium: saveutil.c,v 1.21 94/08/25 17:26:05 mor Exp mor $ */
+/* $XConsortium: saveutil.c,v 1.22 94/11/14 15:33:19 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -30,6 +30,7 @@ in this Software without prior written authorization from the X Consortium.
 char 		 session_save_file[PATH_MAX];
 Bool	 	 getline();
 
+extern Widget manualRestartCommands;
 
 
 void
