@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cp_priv.h,v 5.1 91/02/16 09:48:41 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -145,6 +145,45 @@ typedef struct {
     int		size;
     char	**dpp;		/* where to put the data pointer */
 } Cp_recv_vec;
+
+#if (MSKCNT==1)
+#define BITMASK(i) (1 << (i))
+#define MASKIDX(i) 0
+#endif
+#if (MSKCNT>1)
+#define BITMASK(i) (1 << ((i) & 31))
+#define MASKIDX(i) ((i) >> 5)
+#endif
+
+#define MASKWORD(buf, i) buf[MASKIDX(i)]
+#define BITSET(buf, i) MASKWORD(buf, i) |= BITMASK(i)
+#define BITCLEAR(buf, i) MASKWORD(buf, i) &= ~BITMASK(i)
+
+#if (MSKCNT==1)
+#define COPYBITS(src, dst) dst[0] = src[0]
+#define CLEARBITS(buf) buf[0] = 0
+#endif
+#if (MSKCNT==2)
+#define COPYBITS(src, dst) { dst[0] = src[0]; dst[1] = src[1]; }
+#define CLEARBITS(buf) { buf[0] = 0; buf[1] = 0; }
+#endif
+#if (MSKCNT==3)
+#define COPYBITS(src, dst) { dst[0] = src[0]; dst[1] = src[1]; \
+			     dst[2] = src[2]; }
+#define CLEARBITS(buf) { buf[0] = 0; buf[1] = 0; buf[2] = 0; }
+#endif
+#if (MSKCNT==4)
+#define COPYBITS(src, dst) dst[0] = src[0]; dst[1] = src[1]; \
+			   dst[2] = src[2]; dst[3] = src[3]
+#define CLEARBITS(buf) buf[0] = 0; buf[1] = 0; buf[2] = 0; buf[3] = 0
+#endif
+
+#if (MSKCNT>4)
+#define COPYBITS(src, dst) bcopy((caddr_t) src, (caddr_t) dst,\
+				 MSKCNT*sizeof(long))
+#define CLEARBITS(buf) bzero((caddr_t) buf, MSKCNT*sizeof(long))
+#endif
+
 
 extern void
     phg_cp_open_ws(),
