@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.36 91/05/28 17:08:00 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.37 91/05/28 22:12:04 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -685,6 +685,7 @@ Value	Name					Reference
 2	GfxBase, Inc.				[74]
 3	Silicon Graphics Computer Systems	[6]
 4	Evans & Sutherland			[75]
+5	Sun Microsystems, Inc.			[76]
 
 
 REFERENCES
@@ -1028,4 +1029,10 @@ REFERENCES
 	580 Arapeen Dr.
 	P.O. Box 58700
 	Salt Lake City, UT 84158
+
+[76]	Cheryl Huntington
+	MS. MTV21-04
+	Sun Microsystems
+	2550 Garcia Ave.
+	Mountain View, CA.  94043-1100
 Sumitomo Electric Workstation Corp.	[77]
