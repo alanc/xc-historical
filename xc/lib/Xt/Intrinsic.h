@@ -1,4 +1,4 @@
-e/*
+/*
  *	sccsid:	%W%	%G%
  */
 
@@ -28,8 +28,6 @@ e/*
 #ifndef _Xtintrinsic_h
 #define _Xtintrinsic_h
 
-#include <X11/Xresource.h>
-#include <X11/Xutil.h>
 
 /****************************************************************
  ****************************************************************
@@ -40,7 +38,64 @@ e/*
  ***                                                          ***
  ****************************************************************
  ****************************************************************/
+/****************************************************************
+ *
+ * Miscellaneous definitions
+ *
+ ****************************************************************/
 
+
+#include "/usr/src/x11/include/Xlib.h"
+#include "/usr/src/x11/include/Xresource.h"
+#include	<sys/types.h>
+
+#ifndef NULL
+#define NULL 0
+#endif
+
+
+#ifndef FALSE
+#define FALSE 0
+#define TRUE  1
+#endif
+
+#define XtNumber(arr)			(sizeof(arr) / sizeof(arr[0]))
+
+typedef char *String;
+typedef caddr_t         EventTable;
+typedef unsigned long   Cardinal;
+typedef int             Boolean;
+typedef char*           Opaque;
+typedef Opaque          Translations;
+typedef Opaque          CallbackList;
+typedef Opaque          XrmExtra;
+typedef unsigned long   XtIntervalId;
+typedef unsigned long   GeometryMask;
+typedef unsigned long   GCMask;     /* Mask of values that are used by widget*/
+typedef unsigned long   EventMask;
+typedef unsigned long   Pixel;	    /* Index into colormap	      */
+typedef int		Position;   /* Offset from 0 coordinate	      */
+typedef unsigned int	Dimension;  /* Size in pixels		      */
+typedef void (*WidgetProc)(); /* widget */
+typedef void (*SetValuesProc)();
+
+typedef void (*WidgetExposeProc)();
+    /* Widget    widget; */
+    /* XEvent    *event; */
+
+typedef void (*WidgetChildrenProc)();
+    /* WidgetList children; */
+    /* Cardinal childCount; */
+
+typedef void (*WidgetGeometryProc) ();
+    /* Widget    widget; */
+    /* WidgetGeometry geometry; */
+
+typedef void (*XtGeometryHandler)();
+    /*  widget, requestBox, replyBox */
+    /* Widget		    widget */
+    /* WidgetGeometry       *request */
+    /* WidgetGeometry	    *reply   */
 
 /****************************************************************
  *
@@ -53,21 +108,20 @@ e/*
  * ArgLists rely heavily on the above typedef.
  *
  ****************************************************************/
-
 typedef char *XtArgVal;
 
 /***************************************************************
- * Widget Core Data Structure
+ * Widget Core Data Structures
  *
  *
  **************************************************************/
 
  typedef struct _Core {
-        WidgetClass     widget_class;   /* pointer to Core Class data */
+        struct _Class    *widget_class;   /* pointer to Core Class data */
 	Display		*dpy;		/* widget display connection */
-	Screen		screen		/* widget screen */
+	Screen		screen;		/* widget screen */
 	Window		window;		/* window ID */
-	Widget		parent;		/* parent widget */
+	struct _WidgetData	*parent;/* parent widget */
         String          name;
 	XrmName		xrm_name;
         Boolean         managed;        /* is this widget controlled by geometry manager */
@@ -88,8 +142,13 @@ typedef char *XtArgVal;
         Translations    translations;    /* private to Translation Manager */
         CallbackList    destroy_callbacks; /* who to call if this widget destroyed */
         Boolean         being_destroyed;  /* marked for deletion */
-} core;
+} Core;
 
+ typedef struct _WidgetData {
+        Core    core;
+ } WidgetData, *Widget;
+
+typedef Widget *WidgetList;
 /******************************************************************
  *
  * Core Class Structure. Widgets, regardless of their class, will have
@@ -100,25 +159,23 @@ typedef char *XtArgVal;
  ********************************************************************/
 
  typedef struct _Class {
-        WidgetClass    superclass;    /* pointer to superclass Class struct */
+        struct _Class   *superclass;    /* pointer to superclass Class struct */
         String         class_name;    
-        String         default_instance_name;
         Cardinal       size;          /* size for pickling */
         WidgetProc     initialize;    /* create a widget of this class */
         WidgetProc     realize;       /* realize a widget of this class */
-	XtActionList   actions;       /* tokens to widget semantics bindings */
-        XtResourceList resources;     /* resources for this class */
+	struct _XtActionsRec *actions;       /* tokens to widget semantics bindings */
+        struct _Resource *resources;     /* resources for this class */
         Cardinal       num_resource;  /* number of resources in class list */
         XrmExtra       xrm_extra;     /* private for resource manager */
         XrmClass       xrm_class;     /* resource class */
         Boolean        visible_interest; 
 	WidgetProc	destroy;	/* proc called to delete widget */
-	WidgetProc	resize;		/* proc called to inform widget of position/dimension change */
-	WidgetProc	expose		/* proc to call when window is exposed */
-	WidgetArgProc	set_values;	/* proc called to set widget values */
+	WidgetGeometryProc reconfigure;	/* proc called to inform widget of position/dimension change */
+	WidgetExposeProc expose;	/* proc to call when window is exposed */
+	SetValuesProc	set_values;	/* proc called to set widget values */
 	Boolean		accepts_focus;	/* does widget accept focus */
 	WidgetProc	accept_focus;	/* proc called to give widget the focus */
-	Boolean		composite;	/* is this a composite widget */
   } CoreClass, *WidgetClass;
 
 /*********************************************************************
@@ -139,13 +196,13 @@ typedef char *XtArgVal;
  *
  * Additional instance variables for widgets of (super)class 'Composite' 
  *
- ************************************************************************
+ ************************************************************************/
 
 typedef struct _composite {
-      WidgetChildren   children;  /* list of widget children (managed and unmanaged) */
-      Cardinal         num_children; /* total number of widget children */
-      Cardinal         num_managed_children; /* number of geometry managed children */
-  } Composite;      
+      WidgetList   children;  /* list of widget children (managed and unmanaged) */
+      Cardinal     num_children; /* total number of widget children */
+      Cardinal     num_managed_children; /* number of geometry managed children */
+} Composite;      
 	
 
 /*************************************************************************
@@ -154,12 +211,6 @@ typedef struct _composite {
  *
  *************************************************************************/
 
-extern WidgetClass coreClass; 
-extern WidgetClass compositeClass; 
-
-typedef void (*WidgetExposeProc)();
-    /* Widget    widget; */
-    /* XEvent    *event; */
 
 extern Boolean XtIsSubclass ();
     /* Widget widget; */
@@ -191,9 +242,6 @@ extern void XtWidgetSetSensitive ();
  *
  **********************************************************\
 
-typedef void (*WidgetChildrenProc)();
-    /* WidgetList children; */
-    /* Cardinal childCount; */
 
 extern void XtCompositeAddChildren ();
     /* WidgetList children; */
@@ -216,7 +264,7 @@ extern void XtCompositeRemoveChild ();
  *
  **************************************************************/
 
-typdef void (*Callback)();
+typedef void (*Callback)();
     /* Widget widget; */
     /* caddr_t closure; */
 
@@ -243,42 +291,11 @@ extern void XtCallCallbacks ();
 
 /****************************************************************
  *
- * Miscellaneous definitions
- *
- ****************************************************************/
-
-#include	<sys/types.h>
-
-#ifndef NULL
-#define NULL 0
-#endif
-
-#define Boolean int
-#ifndef FALSE
-#define FALSE 0
-#define TRUE  1
-#endif
-
-#define XtNumber(arr)			(sizeof(arr) / sizeof(arr[0]))
-
-typedef char *String;
-
-typedef unsigned long   GCMask;     /* Mask of values that are used by widget*/
-typedef unsigned long   Pixel;	    /* Index into colormap	      */
-typedef int		Position;   /* Offset from 0 coordinate	      */
-typedef unsigned int	Dimension;  /* Size in pixels		      */
-typedef Widget[]        WidgetList;
-typedef void (*WidgetProc)(/* w */); /* Widget w */
-
-
-
-/****************************************************************
- *
  * Toolkit initialization
  *
  ****************************************************************/
 
-extern void    XtInitialize();
+extern Display  XtInitialize();
     /* XrmOptionsDescRec    options; */
     /* Cardinal             opt_count; */
     /* char               **argv;  */
@@ -286,7 +303,7 @@ extern void    XtInitialize();
     /* XrmName              name; */
     /* XrmClass             class; */
     /* XrmResourceDatabase  rdb; */
-    /* Widget              *root; */
+    /* Widget              *root; */ /*returns top-level application widget */
 
 /****************************************************************
  *
@@ -366,7 +383,7 @@ extern void XtRemoveEventHandler(); /* widget, proc, closure */
 extern void XtDispatchEvent(); /* event */
     /* XEvent	*event; */
 
-extern void XtMainLoop ();
+extern void XtMainLoop();
 
 /****************************************************************
  *
@@ -374,14 +391,14 @@ extern void XtMainLoop ();
  *
  ****************************************************************/
 
-extern XtIntervalId XtAddTimeout ();
+extern XtIntervalId XtAddTimeout();
     /* Widget widget; */
     /* unsigned long interval; */
 
-extern void XtRemoveTimeOut ();
+extern void XtRemoveTimeOut();
     /* XtIntervalId timer; */
 
-extern unsigned long XtGetTimeOut ();
+extern unsigned long XtGetTimeOut();
     /* XtIntervalId   timer; */
 
 extern void XtAddInput(); /* widget, source, condition */
@@ -411,12 +428,6 @@ extern XtSetCompressMotion ();
  *
  ****************************************************************/
 
-
-#define    XtgeometryMove		/* Move window to wb.x, wb.y		*/
-#define    XtgeometryResize		/* Resize window to wb.width, wb.height */
-#define    XtgeometryStacking		/* Restack
-
-
 typedef struct {
     GeometryMask request_mode;
     Position x, y;
@@ -432,15 +443,6 @@ typedef enum  {
 } XtGeometryReturnCode;
 
 
-typedef void (*WidgetGeometryProc) ();
-    /* Widget    widget; */
-    /* WidgetGeometry geometry; */
-
-typedef void (*XtGeometryHandler)();
-    /*  widget, requestBox, replyBox */
-    /* Widget		    widget */
-    /* WidgetGeometry       *request */
-    /* WidgetGeometry	    *reply   */
 
 
 extern XtGeometryReturnCode XtMakeGeometryRequest();
@@ -519,17 +521,19 @@ extern Widget XtNameToWidget ();
 
 typedef caddr_t XtEventsPtr;
 
-typedef struct {
+typedef struct _XtActionsRec{
     char    *string;
     caddr_t value;
 } XtActionsRec, *XtActionsPtr;
 
 /* Different classes of action tokens */
 
-typedef enum {XttokenChar, XttokenString,XttokenProc,\
-       XttokenAtom,XttokenNumber} TokenType;
+typedef enum {XttokenChar, XttokenString,XttokenProc,
+       XttokenAtom,XttokenNumber} XtTokenType;
 
-typdef struct _XtActionTokenRec {
+typedef XrmQuark XtAction;
+
+typedef struct _XtActionTokenRec {
     XtTokenType type;
     union {
        char c;
@@ -544,9 +548,6 @@ extern caddr_t XtInterpretAtom ();
     /* XtAction action; */
 
 /* List of tokens. */
-
-typedef XrmQuark XtAction;
-#define XtAtomToAction(atom)    ((XtAction) XrmAtomToQuark(atom))
 
 
 extern XtEventsPtr XtSetActionBindings();
