@@ -34,7 +34,7 @@ a bitmap image.
 A list of strings in row column form that may be selected.  A callback 
 routine can be called that will be passed the name of the item selected.
 .IP \fBScrollbar\fP
-A rectangluar area containing a \fIthumb\fP that may be slid up and down
+A rectangular area containing a \fIthumb\fP that may be slid up and down
 the region. 
 .IP \fBSimple\fP 1i
 The base class for most of the simple widgets.  Provides a rectangular
