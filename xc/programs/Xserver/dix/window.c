@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.45 89/11/26 17:13:26 rws Exp $ */
+/* $XConsortium: window.c,v 5.46 89/11/30 15:31:28 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2229,6 +2229,8 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	(*pScreen->RegionCopy) (&pWin->valdata->after.exposed, &pWin->clipList);
     }
 
+    GravityTranslate (x, y, oldx, oldy, dw, dh, pWin->bitGravity, &nx, &ny);
+
     if (pWin->backStorage &&
 	((pWin->backingStore == Always) || WasViewable))
     {
@@ -2238,8 +2240,10 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	    bsExposed = (* pScreen->TranslateBackingStore)
 				(pWin, 0, 0, NullRegion);
 	else
+	{
 	    bsExposed = (* pScreen->TranslateBackingStore)
-				(pWin, x - oldx, y - oldy, pRegion);
+				(pWin, nx - x, ny - y, pRegion);
+	}
     }
 
     if (WasViewable)
@@ -2253,7 +2257,6 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	    /*
 	     * clip to new clipList
 	     */
-	    GravityTranslate (x, y, oldx, oldy, dw, dh, pWin->bitGravity, &nx, &ny);
 	    (*pScreen->RegionCopy) (pRegion, oldWinClip);
 	    (*pScreen->TranslateRegion) (pRegion, nx - oldx, ny - oldy);
 	    (*pScreen->Intersect) (oldWinClip, pRegion, &pWin->clipList);
