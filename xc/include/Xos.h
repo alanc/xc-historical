@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.32 91/03/13 20:21:21 rws Exp $
+ * $XConsortium: Xos.h,v 1.33 91/03/23 14:45:49 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -35,6 +35,8 @@
 
 #else /* _POSIX_SOURCE */
 
+#include <X11/Xosdefs.h>
+
 /*
  * Get major data types (esp. caddr_t)
  */
@@ -43,14 +45,14 @@
 #ifndef __TYPES__
 #ifdef CRAY
 #define word word_t
-#endif
+#endif /* CRAY */
 #include <sys/types.h>			/* forgot to protect it... */
 #define __TYPES__
 #ifdef CRAY
 #undef word
-#endif
+#endif /* CRAY */
 #endif /* __TYPES__ */
-#else
+#else /* USG */
 #include <sys/types.h>
 #endif /* USG */
 
@@ -61,18 +63,10 @@
  * need to have #defines here.
  */
 
-#ifdef SYSV
-#define _X_POSIX_STYLE_STRING_H
-#endif
-#ifdef SVR4
-#define _X_POSIX_STYLE_STRING_H
-#endif
-
-#ifdef _X_POSIX_STYLE_STRING_H
+#ifndef X_NOT_STDC_ENV
 #include <string.h>
 #define index strchr
 #define rindex strrchr
-#undef _X_POSIX_STYLE_STRING_H
 #else
 #include <strings.h>
 #define strchr index
@@ -83,20 +77,10 @@
 /*
  * Get open(2) constants
  */
-#ifdef SYSV
-#ifdef sun
-#include <unistd.h>
-#endif
-#ifndef macII
-#include <fcntl.h>
-#endif
-#endif /* SYSV */
-#ifdef SVR4
-#include <fcntl.h>
-#include <unistd.h>
-#endif
+#ifdef X_NOT_POSIX
 #include <sys/file.h>
-#ifdef USG
+#else
+#include <fcntl.h>
 #include <unistd.h>
 #endif
 
