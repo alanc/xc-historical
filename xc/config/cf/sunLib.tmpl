@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sunLib.tmpl,v 1.44 91/02/13 10:25:34 rws Exp $
+XCOMM $XConsortium: sunLib.tmpl,v 1.2 91/02/13 10:40:50 rws Exp $
 
 /*
  * SunOS shared library template
@@ -22,6 +22,9 @@ XCOMM $XConsortium: sunLib.tmpl,v 1.44 91/02/13 10:25:34 rws Exp $
 #ifndef SharedXextRev
 #define SharedXextRev 4.0
 #endif
+
+SHLIBLDFLAGS = SharedLibraryLoadFlags
+PICFLAGS = PositionIndependentCFlags
 
 /*
  * and now a little bit of magic for using imake without source tree; if we
