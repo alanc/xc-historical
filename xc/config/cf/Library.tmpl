@@ -9,7 +9,7 @@
  * LibName, SoRev, HasSharedData, and optionally HugeLibrary and IncSubdir
  */
 
-XCOMM $XConsortium: Library.tmpl,v 1.25 93/09/29 11:38:02 kaleb Exp $
+XCOMM $XConsortium: Library.tmpl,v 1.27 93/12/31 14:57:45 kaleb Exp $
 
 #ifndef LibraryCplusplusOptions
 #if DoSharedLib && defined(SharedLibraryCplusplusOptions)
@@ -170,9 +170,6 @@ includes::								@@\
 	_NormalObjCompile($(_NOOP_))					@@\
 	_SharedObjCompile($(_NOOP_))					@@\
 									@@\
-.SRCsuf.i:								@@\
-	CPPOnlyCompile($(_NOOP_))					@@\
-									@@\
 clean::									@@\
 	_DebuggedCleanDir()						@@\
 	_ProfiledCleanDir()						@@\
@@ -193,6 +190,9 @@ objs: depends								@@\
 #ifndef SpecialCLibObjectRule
 #define SpecialCLibObjectRule(basename,depends,options)			@@\
 SpecialLibObjectRule(basename.Osuf,basename.SRCsuf depends,options)	@@\
+									@@\
+basename.i: basename.SRCsuf depends					@@\
+	CPPOnlyCompile(basename.SRCsuf,options)				@@\
 									@@\
 CenterLoadTarget(debug_src,basename.SRCsuf,NullParameter,$(ALLDEFINES) options)
 #endif /* SpecialCLibObjectRule */
