@@ -1,5 +1,5 @@
 /*
-* $XConsortium: fd.h,v 1.12 89/05/03 17:16:53 kit Exp $
+* $XConsortium: fd.h,v 1.13 89/05/14 11:51:38 rws Exp $
 * $oHeader: fd.h,v 1.4 88/08/26 14:49:54 asente Exp $
 */
 
@@ -27,8 +27,13 @@ SOFTWARE.
 
 ******************************************************************/
 
-#ifndef __fd_set
-#define __fd_set
+#ifndef _Xt_fd_set
+#define _Xt_fd_set
+
+#if defined(CRAY) && !defined(FD_SETSIZE)
+#include <sys/select.h>		/* defines FD stuff except howmany() */
+#endif
+
 #ifndef NBBY
 #define	NBBY	8		/* number of bits in a byte */
 #endif
@@ -66,4 +71,5 @@ typedef	struct Fd_set {
 #ifndef FD_ZERO
 #define FD_ZERO(p)	bzero((char *)(p), sizeof(*(p)))
 #endif
-#endif
+
+#endif /*_Xt_fd_set*/
