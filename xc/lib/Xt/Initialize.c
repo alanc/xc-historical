@@ -161,6 +161,8 @@ TopLevelClassRec topLevelClassRec = {
     /* move_focus_to_prev */    NULL
 };
 
+WidgetClass topLevelWidgetClass = (WidgetClass) (&topLevelClassRec);
+
 /****************************************************************
  *
  * Private Procedures
