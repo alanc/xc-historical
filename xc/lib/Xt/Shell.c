@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.41 88/09/14 07:44:16 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.42 88/09/22 16:03:36 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif lint
 
@@ -912,6 +912,7 @@ static void EventHandler(wid, closure, event)
 	register ShellWidget w = (ShellWidget) wid;
 	WMShellWidget wmshell = (WMShellWidget) w;
 	Boolean  sizechanged = FALSE;
+	Boolean  hintschanged = FALSE;
 	unsigned int width, height, border_width, tmpdepth;
 	int tmpx, tmpy, tmp2x, tmp2y;
 	Window tmproot, tmpchild;
@@ -929,6 +930,7 @@ static void EventHandler(wid, closure, event)
 #define NEQ(x)	( w->core.x != event->xconfigure.x )
 		if( NEQ(width) || NEQ(height) || NEQ(border_width) ) {
 			sizechanged = TRUE;
+			hintschanged = TRUE;
 		}
 #undef NEQ
 		w->core.width = event->xconfigure.width;
@@ -994,6 +996,7 @@ static void EventHandler(wid, closure, event)
 			    w->core.height = height;
 			    w->core.border_width = border_width;
 			    sizechanged = TRUE;
+			    hintschanged = TRUE;
 		    }
 
 		    break;
@@ -1002,10 +1005,10 @@ static void EventHandler(wid, closure, event)
 		    w->core.x = event->xclient.data.s[0];
 		    w->core.y  = event->xclient.data.s[1];
 		    if (XtIsSubclass((Widget)w, wmShellWidgetClass)) {
-			WMShellWidget wmshell = (WMShellWidget) w;
 			/* Any window manager which sends this must be 
 			   good guy.  Let's reset our flag. */
 			wmshell->wm.wait_for_wm = TRUE;
+			hintschanged = TRUE;
 		    }
 		}
 		break;
@@ -1014,8 +1017,19 @@ static void EventHandler(wid, closure, event)
 		 return;
 	 } 
 
-	 if (sizechanged && 
-                 XtClass(w)->core_class.resize != (XtWidgetProc) NULL)
+	 if (hintschanged && XtIsSubclass(wid, wmShellWidgetClass)) {
+	     register XSizeHints *hints = &wmshell->wm.size_hints;
+	     hints->flags |= USSize | USPosition;
+	     hints->flags &= ~(PSize | PPosition);
+	     hints->x = w->core.x;
+	     hints->y = w->core.y;
+	     hints->width = w->core.width;
+	     hints->height = w->core.height;
+	     XSetNormalHints(XtDisplay(w), XtWindow(w), hints);
+	 }
+
+	 if (sizechanged &&
+	     XtClass(w)->core_class.resize != (XtWidgetProc) NULL)
                     (*(XtClass(w)->core_class.resize))(w);
 
 }
