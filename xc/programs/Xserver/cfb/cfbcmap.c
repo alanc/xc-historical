@@ -142,12 +142,12 @@ cfbInitializeColormap(pmap)
 {
     register unsigned i;
     register VisualPtr pVisual;
-    unsigned lim, max, shift;
+    unsigned lim, maxent, shift;
 
     pVisual = pmap->pVisual;
     lim = (1 << pVisual->bitsPerRGBValue) - 1;
     shift = 16 - pVisual->bitsPerRGBValue;
-    max = pVisual->ColormapEntries - 1;
+    maxent = pVisual->ColormapEntries - 1;
     if (pVisual->class == TrueColor)
     {
 	unsigned limr, limg, limb;
@@ -155,7 +155,7 @@ cfbInitializeColormap(pmap)
 	limr = pVisual->redMask >> pVisual->offsetRed;
 	limg = pVisual->greenMask >> pVisual->offsetGreen;
 	limb = pVisual->blueMask >> pVisual->offsetBlue;
-	for(i = 0; i <= max; i++)
+	for(i = 0; i <= maxent; i++)
 	{
 	    /* rescale to [0..65535] then rgb bits */
 	    pmap->red[i].co.local.red =
@@ -173,7 +173,7 @@ cfbInitializeColormap(pmap)
 	limr = pVisual->redMask >> pVisual->offsetRed;
 	limg = pVisual->greenMask >> pVisual->offsetGreen;
 	limb = pVisual->blueMask >> pVisual->offsetBlue;
-	for(i = 0; i <= max; i++)
+	for(i = 0; i <= maxent; i++)
 	{
 	    /* rescale to [0..65535] then rgb bits */
 	    pmap->red[i].co.local.red =
@@ -189,10 +189,10 @@ cfbInitializeColormap(pmap)
     }
     else if (pVisual->class == StaticGray)
     {
-	for(i = 0; i <= max; i++)
+	for(i = 0; i <= maxent; i++)
 	{
 	    /* rescale to [0..65535] then rgb bits */
-	    pmap->red[i].co.local.red = ((((i * 65535) / max) >> shift)
+	    pmap->red[i].co.local.red = ((((i * 65535) / maxent) >> shift)
 					 * 65535) / lim;
 	    pmap->red[i].co.local.green = pmap->red[i].co.local.red;
 	    pmap->red[i].co.local.blue = pmap->red[i].co.local.red;
