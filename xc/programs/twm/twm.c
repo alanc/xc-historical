@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.58 89/07/07 13:07:01 jim Exp $
+ * $XConsortium: twm.c,v 1.59 89/07/14 12:26:56 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.58 89/07/07 13:07:01 jim Exp $";
+"$XConsortium: twm.c,v 1.59 89/07/14 12:26:56 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -365,8 +365,10 @@ main(argc, argv, environ)
 
 	TitleBarX = (Scr->FramePadding + Scr->TitleBarFont.height + 
 		     Scr->TitlePadding);
-	Scr->TitleHeight = Scr->TitleBarFont.height + Scr->FramePadding * 2;
 	Scr->TitleBarFont.y += Scr->FramePadding;
+	Scr->TitleHeight = Scr->TitleBarFont.height + Scr->FramePadding * 2;
+	/* make title height be odd so buttons look nice and centered */
+	if (!(Scr->TitleHeight & 1)) Scr->TitleHeight++;
 
 	XGrabServer(dpy);
 	XSync(dpy, 0);

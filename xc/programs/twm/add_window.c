@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.78 89/07/14 11:10:28 jim Exp $
+ * $XConsortium: add_window.c,v 1.79 89/07/14 13:55:01 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.78 89/07/14 11:10:28 jim Exp $";
+"$XConsortium: add_window.c,v 1.79 89/07/14 13:55:01 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -1037,10 +1037,7 @@ TwmWindow *tmp_win;
 	 * draw the logo large so that it gets as dense as possible; then white
 	 * out the edges so that they look crisp
 	 */
-	w = - (TITLEBUTTON_BORDERWIDTH + 1);
-	XmuDrawLogo (dpy, Scr->iconifyPm, gc, gcBack, w, w,
-		     h + TITLEBUTTON_BORDERWIDTH * 2 + 1, 
-		     h + TITLEBUTTON_BORDERWIDTH * 2 + 1);
+	XmuDrawLogo (dpy, Scr->iconifyPm, gc, gcBack, -1, -1, h + 2, h + 2);
 	XDrawRectangle (dpy, Scr->iconifyPm, gcBack, 0, 0, h - 1, h - 1);
 	XFreeGC (dpy, gcBack);
 
