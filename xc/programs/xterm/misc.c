@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.44 89/07/18 11:56:58 jim Exp $
+ *	$XConsortium: misc.c,v 1.45 89/07/21 16:11:43 jim Exp $
  */
 
 
@@ -53,7 +53,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.44 89/07/18 11:56:58 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.45 89/07/21 16:11:43 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -515,7 +515,6 @@ int (*func)();
 		Changetitle(buf);
 		break;
 
-
 	 case 46:	/* new log file */
 		if((cp = malloc((unsigned)strlen(buf) + 1)) == NULL)
 			break;
@@ -524,6 +523,11 @@ int (*func)();
 			free(screen->logfile);
 		screen->logfile = cp;
 		break;
+
+	 case 100:	/* send back display name */
+		unparsefputs (DisplayString(screen->display), screen->respond);
+		break;
+
 	}
 }
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.92 89/08/10 13:36:43 jim Exp $
+ * $XConsortium: charproc.c,v 1.93 89/08/10 14:07:23 jim Exp $
  */
 
 
@@ -139,7 +139,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.92 89/08/10 13:36:43 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.93 89/08/10 14:07:23 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1713,6 +1713,16 @@ int fd;
 	if (write(fd, buf, i) != i)
 		Panic("unparseputc: error writing character\n", 0);
 }
+
+unparsefputs (s, fd)
+    register char *s;
+    int fd;
+{
+    if (s) {
+	while (*s) unparseputc (*s++, fd);
+    }
+}
+
 
 ToAlternate(screen)
 register TScreen *screen;
