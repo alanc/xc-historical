@@ -1,4 +1,4 @@
-/* $XConsortium: XKeysymStr.c,v 11.6 91/04/08 17:10:37 rws Exp $ */
+/* $XConsortium: XKeysymStr.c,v 11.7 91/05/04 14:03:22 rws Exp $ */
 /* Copyright 1990 Massachusetts Institute of Technology */
 
 /*
@@ -38,7 +38,17 @@ typedef struct _GRNData {
     XrmValuePtr value;
 } GRNData;
 
+#if NeedFunctionPrototypes
 /*ARGSUSED*/
+static Bool SameValue(
+    XrmDatabase*	db,
+    XrmBindingList      bindings,
+    XrmQuarkList	quarks,
+    XrmRepresentation*  type,
+    XrmValuePtr		value,
+    XPointer		data
+)
+#else
 static Bool SameValue(db, bindings, quarks, type, value, data)
     XrmDatabase		*db;
     XrmBindingList      bindings;
@@ -46,6 +56,7 @@ static Bool SameValue(db, bindings, quarks, type, value, data)
     XrmRepresentation   *type;
     XrmValuePtr		value;
     XPointer		data;
+#endif
 {
     GRNData *gd = (GRNData *)data;
 
