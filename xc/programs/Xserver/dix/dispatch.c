@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.35 88/01/30 09:59:44 rws Exp $ */
+/* $Header: dispatch.c,v 1.36 88/02/02 10:03:59 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -78,6 +78,14 @@ static int nextFreeClientID=1;	   /* 0 is for the server */
 
 static int	nClients = 0;	/* number active clients */
 
+
+/* Various of the DIX function interfaces were not designed to allow
+ * the client->errorValue to be set on BadValue and other errors.
+ * Rather than changing interfaces and breaking untold code we introduce
+ * a new global that dispatch can use.
+ */
+XID clientErrorValue;   /* XXX this is a kludge */
+
 #define SAME_SCREENS(a, b) (\
     (a.pScreen == b.pScreen))
 
@@ -88,11 +96,13 @@ static int	nClients = 0;	/* number active clients */
     } \
 }
 
-#define LEGAL_NEW_RESOURCE(id)\
+#define LEGAL_NEW_RESOURCE(id,client)\
     if ((LookupID(id, RT_ANY, RC_CORE) != 0) || (id & SERVER_BIT) \
 	|| (client->clientAsMask != CLIENT_BITS(id)))\
-        return(BadIDChoice)
-
+    {\
+	client->errorValue = id;\
+        return(BadIDChoice);\
+    }
 
 #define LOOKUP_DRAWABLE(did, client)\
     ((client->lastDrawableID == did) ? \
@@ -353,7 +363,7 @@ ProcCreateWindow(client)
 
     REQUEST_AT_LEAST_SIZE(xCreateWindowReq);
     
-    LEGAL_NEW_RESOURCE(stuff->wid); 
+    LEGAL_NEW_RESOURCE(stuff->wid, client);
     if (!(pParent = (WindowPtr)LookupWindow(stuff->parent, client)))
         return BadWindow;
     len = stuff->length -  (sizeof(xCreateWindowReq) >> 2);
@@ -782,7 +792,10 @@ ProcDeleteProperty(client)
 	    return(result);
     }
     else 
+    {
+	client->errorValue = stuff->property;
 	return (BadAtom);
+    }
 }
 
 
@@ -862,7 +875,10 @@ ProcSetSelectionOwner(client)
 	return (client->noClientException);
     }
     else 
+    {
+	client->errorValue = stuff->selection;
         return (BadAtom);
+    }
 }
 
 int
@@ -891,7 +907,10 @@ ProcGetSelectionOwner(client)
         return(client->noClientException);
     }
     else            
+    {
+	client->errorValue = stuff->id;
         return (BadAtom); 
+    }
 }
 
 int
@@ -944,7 +963,10 @@ ProcConvertSelection(client)
 	return (client->noClientException);
     }
     else 
+    {
+	client->errorValue = stuff->property;
         return (BadAtom);
+    }
 }
 
 int
@@ -1035,7 +1057,7 @@ ProcOpenFont(client)
 
     REQUEST_AT_LEAST_SIZE(xOpenFontReq);
     client->errorValue = stuff->fid;
-    LEGAL_NEW_RESOURCE(stuff->fid);
+    LEGAL_NEW_RESOURCE(stuff->fid, client);
     if ( pFont = OpenFont( stuff->nbytes, (char *)&stuff[1]))
     {
 	AddResource( stuff->fid, RT_FONT, (pointer)pFont, CloseFont,RC_CORE);
@@ -1060,7 +1082,10 @@ ProcCloseFont(client)
 	return(client->noClientException);
     }
     else
+    {
+	client->errorValue = stuff->id;
         return (BadFont);
+    }
 }
 
 int
@@ -1080,7 +1105,10 @@ ProcQueryFont(client)
 	  /* can't use VERIFY_GC because it might return BadGC */
 	pGC = (GC *) LookupID(stuff->id, RT_GC, RC_CORE);
         if (!pGC)
+	{
+	    client->errorValue = stuff->id;
             return(BadFont);     /* procotol spec says only error is BadFont */
+	}
 	pFont = pGC->font;
     }
 
@@ -1136,7 +1164,10 @@ ProcQueryTextExtents(client)
     {
         pGC = (GC *)LookupID( stuff->fid, RT_GC, RC_CORE);
         if (!pGC)
+	{
+	    client->errorValue = stuff->fid;
             return(BadFont);
+	}
 	pFont = pGC->font;
     }
     length = stuff->length - (sizeof(xQueryTextExtentsReq) >> 2);
@@ -1266,7 +1297,7 @@ ProcCreatePixmap(client)
 
     REQUEST_AT_LEAST_SIZE(xCreatePixmapReq);
     client->errorValue = stuff->pid;
-    LEGAL_NEW_RESOURCE(stuff->pid);
+    LEGAL_NEW_RESOURCE(stuff->pid, client);
     if (!(pDraw = LOOKUP_DRAWABLE(stuff->drawable, client)))
     {        /* can be inputonly */
         if (!(pDraw = (DrawablePtr)LookupWindow(stuff->drawable, client))) 
@@ -1337,9 +1368,12 @@ ProcCreateGC(client)
 
     REQUEST_AT_LEAST_SIZE(xCreateGCReq);
     client->errorValue = stuff->gc;
-    LEGAL_NEW_RESOURCE(stuff->gc);
+    LEGAL_NEW_RESOURCE(stuff->gc, client);
     if (!(pDraw = LOOKUP_DRAWABLE( stuff->drawable, client) ))
+    {
+	client->errorValue = stuff->drawable;
         return (BadDrawable);
+    }
     len = stuff->length -  (sizeof(xCreateGCReq) >> 2);
     if (len != Ones(stuff->mask))
         return BadLength;
@@ -1374,7 +1408,10 @@ ProcChangeGC(client)
     if (client->noClientException != Success)
         return(client->noClientException);
     else
+    {
+	client->errorValue = clientErrorValue;
         return(result);
+    }
 }
 
 int
@@ -1416,7 +1453,10 @@ ProcSetDashes(client)
     if (client->noClientException != Success)
         return(client->noClientException);
     else
+    {
+	client->errorValue = clientErrorValue;
         return(result);
+    }
 }
 
 int
@@ -1501,7 +1541,10 @@ ProcCopyArea(client)
     if (stuff->dstDrawable != stuff->srcDrawable)
     {
         if (!(pSrc = LOOKUP_DRAWABLE(stuff->srcDrawable, client)))
+	{
+	    client->errorValue = stuff->srcDrawable;
             return(BadDrawable);
+	}
 	if ((pDst->pScreen != pSrc->pScreen) || (pDst->depth != pSrc->depth))
 	{
 	    client->errorValue = stuff->dstDrawable;
@@ -1538,7 +1581,10 @@ ProcCopyPlane(client)
     if (stuff->dstDrawable != stuff->srcDrawable)
     {
         if (!(psrcDraw = LOOKUP_DRAWABLE(stuff->srcDrawable, client)))
+	{
+	    client->errorValue = stuff->srcDrawable;
             return(BadDrawable);
+	}
 	if (pdstDraw->pScreen != psrcDraw->pScreen)
 	{
 	    client->errorValue = stuff->dstDrawable;
@@ -1800,7 +1846,10 @@ ProcGetImage(client)
         return(BadValue);
     }
     if(!(pDraw = LOOKUP_DRAWABLE(stuff->drawable, client) ))
+    {
+	client->errorValue = stuff->drawable;
 	return (BadDrawable);
+    }
     if(pDraw->type == DRAWABLE_WINDOW)
     {
       if( /* check for being on screen */
@@ -2049,7 +2098,7 @@ ProcCreateColormap(client)
         return(BadValue);
     }
     mid = stuff->mid;
-    LEGAL_NEW_RESOURCE(mid);    
+    LEGAL_NEW_RESOURCE(mid, client);
     pWin = (WindowPtr)LookupWindow(stuff->window, client);
     if (!pWin)
         return(BadWindow);
@@ -2103,7 +2152,7 @@ ProcCopyColormapAndFree(client)
 
     REQUEST_SIZE_MATCH(xCopyColormapAndFreeReq);
     mid = stuff->mid;
-    LEGAL_NEW_RESOURCE(mid);
+    LEGAL_NEW_RESOURCE(mid, client);
     if(pSrcMap = (ColormapPtr )LookupID(stuff->srcCmap, RT_COLORMAP, RC_CORE))
     {
 	result = CopyColormapAndFree(mid, pSrcMap, client->index);
@@ -2407,7 +2456,10 @@ ProcFreeColors          (client)
         if (client->noClientException != Success)
             return(client->noClientException);
         else
+	{
+	    client->errorValue = clientErrorValue;
             return(retval);
+	}
 
     }
     else
@@ -2440,7 +2492,10 @@ ProcStoreColors               (client)
         if (client->noClientException != Success)
             return(client->noClientException);
         else
+	{
+	    client->errorValue = clientErrorValue;
             return(retval);
+	}
     }
     else
     {
@@ -2510,7 +2565,10 @@ ProcQueryColors(client)
 	    if (client->noClientException != Success)
                 return(client->noClientException);
 	    else
+	    {
+		client->errorValue = clientErrorValue;
 	        return (retval);
+	    }
 	}
 	qcr.type = X_Reply;
 	qcr.length = (count * sizeof(xrgb)) >> 2;
@@ -2585,7 +2643,7 @@ ProcCreateCursor( client)
     REQUEST(xCreateCursorReq);
 
     REQUEST_SIZE_MATCH(xCreateCursorReq);
-    LEGAL_NEW_RESOURCE(stuff->cid);
+    LEGAL_NEW_RESOURCE(stuff->cid, client);
 
     src = (PixmapPtr)LookupID( stuff->source, RT_PIXMAP, RC_CORE);
     msk = (PixmapPtr)LookupID( stuff->mask, RT_PIXMAP, RC_CORE);
@@ -2660,7 +2718,7 @@ ProcCreateGlyphCursor( client)
     REQUEST(xCreateGlyphCursorReq);
 
     REQUEST_SIZE_MATCH(xCreateGlyphCursorReq);
-    LEGAL_NEW_RESOURCE(stuff->cid);
+    LEGAL_NEW_RESOURCE(stuff->cid, client);
 
     sourcefont = (FontPtr) LookupID(stuff->source, RT_FONT, RC_CORE);
     maskfont = (FontPtr) LookupID(stuff->mask, RT_FONT, RC_CORE);
@@ -2735,6 +2793,7 @@ ProcFreeCursor(client)
     }
     else 
     {
+	client->errorValue = stuff->id;
 	return (BadCursor);
     }
 }
