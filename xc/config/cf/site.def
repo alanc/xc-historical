@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.50 92/05/22 11:52:28 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.51 92/05/22 13:43:23 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -45,6 +45,9 @@ XCOMM site:  $XConsortium: site.def,v 1.50 92/05/22 11:52:28 rws Exp $
 #endif /* BeforeVendorCF */
 
 #ifdef AfterVendorCF
+
+#define BuildScreenSaverExt	YES
+#define BuildScreenSaverLib	YES
 
 #if defined(SGIArchitecture)
 /* this is to disable dynamic loading without changing ddx Imakefiles */
