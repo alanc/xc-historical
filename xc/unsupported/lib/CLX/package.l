@@ -51,7 +51,7 @@
 #+(and excl (not ansi-common-lisp)) 
 (import
   '(
-    excl::defcmacro
+    excl::arglist
     excl::dynamic-extent
     excl::if*
     excl::type-error
