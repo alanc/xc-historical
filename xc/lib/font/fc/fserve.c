@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.23 92/05/18 18:00:38 rws Exp $ */
+/* $XConsortium: fserve.c,v 1.24 92/05/29 18:01:43 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -677,7 +677,7 @@ fs_read_extent_info(fpe, blockrec)
 	return StillWorking;
     }
     /* move the data over */
-    /* need  separate inkMetrics for fixed font server protocol version */
+    /* need separate inkMetrics for fixed font server protocol version */
     numInfos =  rep.num_extents;
     if (bfont->pfont->info.terminalFont && conn->fsMajorVersion > 1)
     {
@@ -1416,6 +1416,8 @@ fs_read_glyphs(fpe, blockrec)
 	else
 	    bits = 0;
 	fsdata->encoding[i].bits = bits;
+	/* copy the pointer into inkMetrics so _fs_get_metrics can use it */
+	fsdata->inkMetrics[i].bits = bits;
     }
 
     /* read glyphs according to the range */

@@ -1,10 +1,10 @@
-/* $XConsortium: fservestr.h,v 1.6 91/06/21 18:15:45 keith Exp $ */
+/* $XConsortium: fservestr.h,v 1.7 92/05/12 18:07:36 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
+ * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the name of Network Computing Devices not be
  * used in advertising or publicity pertaining to distribution of the
@@ -46,7 +46,7 @@
 typedef struct _fs_font {
     CharInfoPtr pDefault;
     CharInfoPtr encoding;
-    CharInfoPtr inkMetrics;	/* pointer to bitmap unused */
+    CharInfoPtr inkMetrics;
     pointer     bitmaps;
 }           FSFontRec, *FSFontPtr;
 
