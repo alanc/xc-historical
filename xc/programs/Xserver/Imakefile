@@ -28,7 +28,7 @@
       OTHEREXTS = $(EXTENSIONSRC)/server/xinput/libxinput.a
 #endif
 
-        DEPDIRS = $(EXTENSIONSRC)/server $(FONTSRC)/lib/font
+        DEPDIRS = $(FONTSRC)/lib/font $(EXTENSIONSRC)/server
      EXTENSIONS = $(OTHEREXTS) $(EXTENSIONSRC)/server/libext.a $(PEXLIBS)
          XAULIB = $(XAUTHSRC)/libXau.a
        XDMCPLIB = $(XDMCPLIBSRC)/libXdmcp.a
