@@ -83,7 +83,8 @@
    (:fasload depdefs clx dependent macros fonts bufmac buffer display fonts))
   (:compile-load text
    (:fasload depdefs clx dependent macros fonts bufmac buffer display gcontext fonts))
-  (:compile-load attributes
+  (:compile-load-init attributes
+   (dependent)					;<- There may be other modules needed here.
    (:fasload depdefs clx dependent macros bufmac buffer display))
   (:compile-load translate
    (:fasload depdefs clx dependent macros bufmac buffer display))
