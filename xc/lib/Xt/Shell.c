@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Shell.c,v 1.27 88/08/31 09:24:52 swick Exp $";
+    "$XConsortium: Shell.c,v 1.28 88/09/02 12:47:04 swick Exp $";
 /* $oHeader: Shell.c,v 1.6 88/08/19 16:49:51 asente Exp $ */
 #endif lint
 
@@ -600,32 +600,11 @@ static void Initialize(req, new)
 {
 	ShellWidget w = (ShellWidget) new;
 	int flag;
-	int x, y, width, height;
 
 	w->shell.popped_up = FALSE;
-	w->shell.client_specified = FALSE;
-
-	if(w->shell.geometry != NULL) {
-	    flag = XParseGeometry(w->shell.geometry, &x, &y, &width, &height);
-	    if (flag & XValue) w->core.x = x;
-	    if (flag & YValue) w->core.y = y;
-	    if (flag & WidthValue) w->core.width = width;
-	    if (flag & HeightValue) w->core.height = height;
-	    
-	    if(flag & XNegative) {
-		w->core.x = w->core.screen->width - w->core.width + w->core.x;
-	    }
-	    if(flag & YNegative) {
-		w->core.y = w->core.screen->height - w->core.height + w->core.y;
-	    }
-	} 	
-
-	if(w->core.width != 0 && w->core.height != 0) {
-	    w->shell.client_specified = TRUE;
-        }
 
 	XtAddEventHandler(new, (EventMask) StructureNotifyMask,
-		TRUE, EventHandler, (Opaque) NULL);
+		TRUE, EventHandler, (caddr_t) NULL);
 }
 
 /* ARGSUSED */
@@ -648,10 +627,6 @@ static void WMInitialize(req, new)
 	}
 	w->wm.size_hints.flags = 0;
 	w->wm.wm_hints.flags = 0;
-
-	if(w->shell.geometry != NULL) {
-	    w->wm.size_hints.flags |= USPosition | USSize;
-	}
 
 	/* Find the values of the atoms, somewhere... */
 
@@ -841,8 +816,7 @@ static void _popup_set_prop(w)
 	    sizep->y = w->core.y;
 	    sizep->width = w->core.width;
 	    sizep->height = w->core.height;
-	    if (w->shell.geometry != NULL) sizep->flags |= USSize | USPosition;
-	    else sizep->flags |= PSize | PPosition;
+	    sizep->flags |= PSize | PPosition;
 
 	    if (sizep->min_aspect.x != -1 || sizep->min_aspect.y != -1 || 
 		    sizep->max_aspect.x != -1 || sizep->max_aspect.y != -1) {
@@ -1048,8 +1022,26 @@ static void ChangeManaged(wid)
     childwid = w->composite.children[0];
 
     if (!XtIsRealized ((Widget) wid)) {
-	if ((w->core.width == 0	&& w->core.height == 0) ||
-	    ! w->shell.client_specified) {
+	int x, y, width, height, flag;
+	if(w->shell.geometry != NULL) {
+	    flag = XParseGeometry(w->shell.geometry, &x, &y, &width, &height);
+	    if (flag & XValue) w->core.x = (Position)x;
+	    if (flag & YValue) w->core.y = (Position)y;
+	    if (flag & WidthValue) w->core.width = (Dimension)width;
+	    if (flag & HeightValue) w->core.height = (Dimension)height;
+	}
+	else
+	    flag = 0;
+
+	if (XtIsSubclass(w, wmShellWidgetClass)) {
+	    WMShellWidget wmshell = (WMShellWidget) w;
+	    if (flag & (XValue|YValue))
+		wmshell->wm.size_hints.flags |= USSize|USPosition;
+	    if (flag & (WidthValue|HeightValue))
+		wmshell->wm.size_hints.flags |= USSize;
+	}
+
+	if (w->core.width == 0 && w->core.height == 0) {
 	    /* we inherit our child's attributes */
 	    w->core.width = childwid->core.width;
 	    w->core.height = childwid->core.height;
@@ -1058,6 +1050,13 @@ static void ChangeManaged(wid)
 		wmshell->wm.size_hints.flags |= PSize;
 	    }
 	} else needresize = TRUE;
+
+	if(flag & XNegative) 
+	    w->core.x += WidthOfScreen(XtScreen(w))
+			 - w->core.width - (2*w->core.border_width);
+	if(flag & YNegative) 
+	    w->core.y += HeightOfScreen(XtScreen(w))
+			 - w->core.height - (2*w->core.border_width);
 
 	if (childwid->core.border_width != 0) needresize = TRUE;
 
@@ -1068,11 +1067,9 @@ static void ChangeManaged(wid)
 	}
     }
 
-    if(childwid->core.x !=  -childwid->core.border_width || 
-	    childwid->core.y !=  -childwid->core.border_width) {
-	XtMoveWidget (childwid, (int)(-childwid->core.border_width),
-		(int)(-childwid->core.border_width));
-    }
+    XtMoveWidget (childwid,
+		  (int)(-childwid->core.border_width),
+		  (int)(-childwid->core.border_width));
 }
 
 /*
@@ -1091,8 +1088,7 @@ static XtGeometryResult GeometryManager( wid, request, reply )
 	ShellWidget shell = (ShellWidget)(wid->core.parent);
 	XWindowChanges xwc;
 
-	if(shell->shell.allow_shell_resize == FALSE &&
-	   (shell->shell.client_specified == TRUE || XtIsRealized(wid)))
+	if(shell->shell.allow_shell_resize == FALSE && XtIsRealized(wid))
 		return(XtGeometryNo);
 
 	if(!XtIsRealized((Widget)shell)){
