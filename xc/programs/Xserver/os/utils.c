@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.94 91/03/27 16:13:47 gildea Exp $ */
+/* $XConsortium: utils.c,v 1.95 91/04/14 15:45:46 keith Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -523,7 +523,7 @@ Xalloc (amount)
     char		*malloc();
     register pointer  ptr;
 	
-    if(!amount)
+    if ((long)amount <= 0)
 	return (unsigned long *)NULL;
     /* aligned extra on long word boundary */
     amount = (amount + 3) & ~3;
@@ -575,9 +575,10 @@ Xrealloc (ptr, amount)
 #ifdef MEMBUG
     if (MemoryValidate)
 	ValidateAllActiveMemory ();
-    if (!amount)
+    if ((long)amount <= 0)
     {
-	Xfree(ptr);
+	if (!amount)
+	    Xfree(ptr);
 	return (unsigned long *)NULL;
     }
     if (!Must_have_memory && Memory_fail &&
@@ -594,9 +595,9 @@ Xrealloc (ptr, amount)
     if (ptr)
 	return SetupBlock (ptr, amount);
 #else
-    if (!amount)
+    if ((long)amount <= 0)
     {
-	if (ptr)
+	if (ptr && !amount)
 	    free(ptr);
 	return (unsigned long *)NULL;
     }
