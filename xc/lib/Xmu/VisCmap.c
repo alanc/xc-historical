@@ -1,4 +1,4 @@
-/* $XConsortium: VisCmap.c,v 1.6 89/05/19 14:35:05 converse Exp $ 
+/* $XConsortium: VisCmap.c,v 1.7 89/05/22 17:59:02 converse Exp $ 
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
@@ -27,8 +27,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
-
-extern void XmuDeleteStandardColormap();
+#include <X11/Xmu/Xmu.h>
 
 /*
  * To create all of the appropriate standard colormaps for a given visual on

@@ -1,4 +1,4 @@
-/* $XConsortium: AllCmap.c,v 1.2 89/03/20 14:54:13 converse Exp $
+/* $XConsortium: AllCmap.c,v 1.3 89/05/19 14:35:00 converse Exp $
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
@@ -26,6 +26,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
+#include <X11/Xmu/Xmu.h>
  
 static XVisualInfo *getDeepestVisual();
 
