@@ -1,4 +1,4 @@
-/* $XConsortium: choose.c,v 1.17 94/12/12 20:05:56 mor Exp mor $ */
+/* $XConsortium: choose.c,v 1.18 94/12/12 21:18:40 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -52,12 +52,11 @@ Widget chooseSessionCancelButton;
 
 
 int
-GetSessionNames (include_locking_info_in_name,
-	count_ret, names_ret, locked_ret)
+GetSessionNames (count_ret, short_names_ret, long_names_ret, locked_ret)
 
-Bool include_locking_info_in_name;
 int *count_ret;
-String **names_ret;
+String **short_names_ret;
+String **long_names_ret;
 Bool **locked_ret;
 
 {
@@ -75,8 +74,10 @@ Bool **locked_ret;
     }
     
     *count_ret = 0;
-    *names_ret = NULL;
+    *short_names_ret = NULL;
     *locked_ret = NULL;
+    if (long_names_ret)
+	*long_names_ret = NULL;
 
     if ((dir = opendir (path)) == NULL)
 	return 0;
@@ -90,12 +91,17 @@ Bool **locked_ret;
     }
 
     if (count == 0 ||
-       (*names_ret = (String *) XtMalloc (count * sizeof (String))) == NULL ||
-       (*locked_ret = (Bool *) XtMalloc (count * sizeof (Bool))) == NULL)
+       ((*short_names_ret = (String *) XtMalloc (
+           count * sizeof (String))) == NULL) ||
+       (long_names_ret && (*long_names_ret =
+           (String *) XtMalloc (count * sizeof (String))) == NULL) ||
+       ((*locked_ret = (Bool *) XtMalloc (count * sizeof (Bool))) == NULL))
     {
 	closedir (dir);
-	if (*names_ret)
-	    XtFree ((char *) *names_ret);
+	if (*short_names_ret)
+	    XtFree ((char *) *short_names_ret);
+	if (long_names_ret && *long_names_ret)
+	    XtFree ((char *) *long_names_ret);
 	return 0;
     }
 
@@ -109,28 +115,35 @@ Bool **locked_ret;
 	    char *id = NULL;
 	    Bool locked = CheckSessionLocked (name, True, &id);
 
-	    if (!locked || !include_locking_info_in_name)
+	    (*short_names_ret)[*count_ret] = XtNewString (name);
+	    (*locked_ret)[*count_ret] = locked;
+
+	    if (long_names_ret)
 	    {
-		(*names_ret)[*count_ret] = XtNewString (name);
-		(*locked_ret)[(*count_ret)++] = locked;
+		if (!locked)
+		{
+		    (*long_names_ret)[*count_ret] =
+			(*short_names_ret)[*count_ret];
+		}
+		else
+		{
+		    char *host = ((char *) strchr (id, '/')) + 1;
+		    char *colon = (char *) strchr (host, ':');
+
+		    *colon = '\0';
+
+		    (*long_names_ret)[*count_ret] =
+		        XtMalloc (strlen (name) + strlen (host) + 14);
+
+		    sprintf ((*long_names_ret)[*count_ret],
+		        "%s (locked at %s)", name, host);
+		    *colon = ':';
+
+		    XtFree (id);
+		}
 	    }
-	    else
-	    {
-		char *host = ((char *) strchr (id, '/')) + 1;
-		char *colon = (char *) strchr (host, ':');
 
-		*colon = '\0';
-
-		(*names_ret)[*count_ret] =
-		    XtMalloc (strlen (name) + strlen (host) + 14);
-		(*locked_ret)[*count_ret] = True;
-
-		sprintf ((*names_ret)[(*count_ret)++],
-		    "%s (locked at %s)", name, host);
-		*colon = ':';
-
-		XtFree (id);
-	    }
+	    (*count_ret)++;
 	}
     }
 
@@ -142,19 +155,28 @@ Bool **locked_ret;
 
 
 void
-FreeSessionNames (count, names, lockFlags)
+FreeSessionNames (count, namesShort, namesLong, lockFlags)
 
 int count;
-String *names;
+String *namesShort;
+String *namesLong;
 Bool *lockFlags;
 
 {
     int i;
 
     for (i = 0; i < count; i++)
-	XtFree ((char *) names[i]);
+	XtFree ((char *) namesShort[i]);
+    XtFree ((char *) namesShort);
 
-    XtFree ((char *) names);
+    if (namesLong)
+    {
+	for (i = 0; i < count; i++)
+	    if (lockFlags[i])
+		XtFree ((char *) namesLong[i]);
+	XtFree ((char *) namesLong);
+    }
+
     XtFree ((char *) lockFlags);
 }
 
@@ -167,7 +189,7 @@ int number;
 Bool highlight;
 
 {
-    Bool locked = sessionLocked[number];
+    Bool locked = sessionsLocked[number];
 
     if (highlight)
 	XawListHighlight (chooseSessionListWidget, number);
@@ -236,7 +258,7 @@ ChooseSession ()
      * Add the session names to the list
      */
 
-    AddSessionNames (sessionNameCount, sessionNames);
+    AddSessionNames (sessionNameCount, sessionNamesLong);
 
 
     /*
@@ -376,7 +398,8 @@ XtPointer 	callData;
 
     XtFree ((char *) current);
 
-    FreeSessionNames (sessionNameCount, sessionNames, sessionLocked);
+    FreeSessionNames (sessionNameCount,
+	sessionNamesShort, sessionNamesLong, sessionsLocked);
 
 
     /*
@@ -433,13 +456,18 @@ XtPointer 	callData;
 
 	    for (i = 0; i < sessionNameCount; i++)
 	    {
-		if (strcmp (sessionNames[i], name) == 0)
+		if (strcmp (sessionNamesLong[i], name) == 0)
 		{
-		    XtFree ((char *) sessionNames[i]);
+		    XtFree ((char *) sessionNamesShort[i]);
+
+		    if (sessionsLocked[i])
+			XtFree ((char *) sessionNamesLong[i]);
+
 		    for (j = i; j < sessionNameCount - 1; j++)
 		    {
-			sessionNames[j] = sessionNames[j + 1];
-			sessionLocked[j] = sessionLocked[j + 1];
+			sessionNamesLong[j] = sessionNamesLong[j + 1];
+			sessionNamesShort[j] = sessionNamesShort[j + 1];
+			sessionsLocked[j] = sessionsLocked[j + 1];
 		    }
 		    sessionNameCount--;
 		    break;
@@ -459,7 +487,7 @@ XtPointer 	callData;
 		    NULL);
 
 		XawListChange (chooseSessionListWidget,
-		    sessionNames, sessionNameCount, longest, True);
+		    sessionNamesLong, sessionNameCount, longest, True);
 	    }
 	}
 
@@ -505,7 +533,8 @@ XtPointer 	callData;
 
     session_name = XtNewString (FAILSAFE_SESSION_NAME);
 
-    FreeSessionNames (sessionNameCount, sessionNames, sessionLocked);
+    FreeSessionNames (sessionNameCount,
+	sessionNamesShort, sessionNamesLong, sessionsLocked);
 
 
     /*
