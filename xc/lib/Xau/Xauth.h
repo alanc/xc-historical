@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: Xauth.h,v 1.3 89/06/16 18:06:38 keith Exp $
+ * $XConsortium: Xauth.h,v 1.4 89/12/12 17:15:08 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -127,6 +127,28 @@ unsigned int	/* name_length */,
 unsigned short	/* name_length */,
 #endif
 const char*	/* name */
+#endif
+);
+
+Xauth *XauGetBestAuthByAddr(
+#if NeedFunctionPrototypes
+#if NeedWidePrototypes
+unsigned int	/* family */,
+unsigned int	/* address_length */,
+#else
+unsigned short	/* family */,
+unsigned short	/* address_length */,
+#endif
+const char*	/* address */,
+#if NeedWidePrototypes
+unsigned int	/* number_length */,
+#else
+unsigned short	/* number_length */,
+#endif
+const char*	/* number */,
+int		/* types_length */,
+const char**	/* type_names */,
+const int*	/* type_lengths */
 #endif
 );
 

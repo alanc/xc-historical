@@ -11,10 +11,10 @@
 HEADERS = \
 	Xauth.h
 
-SRCS =	AuDispose.c AuFileName.c AuGetAddr.c AuLock.c \
+SRCS =	AuDispose.c AuFileName.c AuGetAddr.c AuGetBest.c AuLock.c \
 	AuRead.c AuUnlock.c AuWrite.c
 
-OBJS =	AuDispose.o AuFileName.o AuGetAddr.o AuLock.o \
+OBJS =	AuDispose.o AuFileName.o AuGetAddr.o AuGetBest.o AuLock.o \
 	AuRead.o AuUnlock.o AuWrite.o
 
 all::
