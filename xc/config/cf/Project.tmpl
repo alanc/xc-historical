@@ -1,6 +1,6 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.239 94/04/07 15:44:51 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.240 94/04/08 19:01:43 rws Exp $
 
 /****************************************************************************
  *                                                                          *
@@ -649,7 +649,7 @@ UnsharedLibReferences(XAW,Xaw,$(AWIDGETSRC))
 #ifndef ProfileLibXtf
 #define ProfileLibXtf		NO	/* profiled widget library */
 #endif
-       XTFSRC = $(LIBSRC)/Xtf
+       XTFSRC = $(TOP)/workInProgress/Xtf
 #if SharedLibXtf
 #ifndef SharedXtfRev
 #define SharedXtfRev 0.7
@@ -671,7 +671,7 @@ UnsharedLibReferences(XTF,Xtf,$(XTFSRC))
 #ifndef ProfileLibFresco
 #define ProfileLibFresco	NO	/* profiled widget library */
 #endif
-       FRESCOSRC = $(LIBSRC)/Fresco
+       FRESCOSRC = $(TOP)/workInProgress/Fresco
 #if SharedLibFresco
 #ifndef SharedFrescoRev
 #define SharedFrescoRev 0.7
