@@ -1,4 +1,4 @@
-/* $XConsortium: phigs.h,v 5.4 91/04/14 12:10:26 rws Exp $ */
+/* $XConsortium: phigs.h,v 5.5 91/05/07 15:59:00 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -2021,7 +2021,7 @@ typedef struct {
     XrmDatabase	rmdb;	  /* a valid database */
     struct {
 	char		*name;
-	char		*class;
+	char		*class_name;
     }		appl_id;  /* for resolving database attributes */
     struct {
 	int		*argc_p;
