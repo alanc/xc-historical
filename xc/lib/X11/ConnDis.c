@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.83 91/05/12 10:58:33 rws Exp $
+ * $XConsortium: XConnDis.c,v 11.84 91/07/18 16:07:35 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -37,7 +37,7 @@
 #include <netdnet/dnetdb.h>
 #endif
 
-#ifdef USL_COMPAT
+#ifdef STREAMSCONN
 #define select _XSelect
 #endif
 
