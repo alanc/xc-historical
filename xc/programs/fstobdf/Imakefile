@@ -1,5 +1,5 @@
-LOCAL_LIBRARIES = $(FONTSRC)/lib/fs/libFS.a $(XLIB)
-DEPLIBS = $(FONTSRC)/lib/fs/libFS.a $(DEPXLIB)
+LOCAL_LIBRARIES = $(FSLIBSRC)/libFS.a $(XLIB)
+DEPLIBS = $(FSLIBSRC)/libFS.a $(DEPXLIB)
 INCLUDES = -I$(FONTSRC)/include
 
            SRCS = chars.c fstobdf.c header.c props.c
