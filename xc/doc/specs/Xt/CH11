@@ -1,4 +1,4 @@
-.\" $XConsortium: CH11,v 1.6 91/07/31 20:24:37 swick Exp $
+.\" $XConsortium: CH11,v 1.7 91/08/26 13:40:14 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -504,7 +504,7 @@ Managing Selections
 .XE
 .LP
 Arbitrary widgets in multiple applications can communicate 
-with each other by means of the \*(tk global selection mechanism,
+with each other by means of the \*(xI global selection mechanism,
 which conforms to the specifications in the \fI\*(xC\fP.
 The \*(xI supply functions for providing and receiving selection data in
 one logical piece (atomic transfers)

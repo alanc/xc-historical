@@ -1,4 +1,4 @@
-.\" $XConsortium: CH01,v 1.5 91/07/31 20:23:22 swick Exp $
+.\" $XConsortium: CH01,v 1.6 91/08/26 13:25:48 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -1946,7 +1946,7 @@ once-only runtime initialization.
 Because the C language does not have initialization procedures
 that are invoked automatically when a program starts up,
 a widget class can declare a class_initialize procedure
-that will be automatically called exactly once by the \*(tk.
+that will be automatically called exactly once by the \*(xI.
 A class initialization procedure pointer is of type
 .PN XtProc :
 .IN "class_initialize procedure" "" "@DEF@"
