@@ -1,4 +1,4 @@
-/* $XConsortium: checktree.c,v 1.4 93/09/24 16:04:16 rws Exp $ */
+/* $XConsortium: checktree.c,v 1.5 94/02/20 16:14:29 rws Exp $ */
 
 /*
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -55,11 +55,11 @@ without express or implied warranty.
 extern int errno;
 #endif
 
-int dorcs = 1;
-int do83 = 1;
-int doro = 1;
-int dodot = 1;
-int dotwiddle = 1;
+int dorcs = 1;			/* check RCS file */
+int do83 = 1;			/* check for 8+3 clash */
+int doro = 1;			/* disallow writable (checked out) files */
+int dodot = 1;			/* disallow .files */
+int dotwiddle = 1;		/* disallow file~ */
 
 int dontcare(fn)
     char *fn;
@@ -261,8 +261,11 @@ checkdir(dir)
 	    strcpy(s, dp->d_name);
 	    if (i >= max) {
 		max += 25;
-		names = (char **)realloc((char *)names,
-					 (max + 1) * sizeof(char *));
+		if (names)
+		    names = (char **)realloc((char *)names,
+					     (max + 1) * sizeof(char *));
+		else
+		    names = (char **)malloc((max + 1) * sizeof(char *));
 	    }
 	    names[i++] = s;
 	}
