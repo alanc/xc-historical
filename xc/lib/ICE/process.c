@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.38 94/04/12 15:01:44 mor Exp $ */
+/* $XConsortium: process.c,v 1.39 94/04/17 20:15:37 mor Exp $ */
 /******************************************************************************
 
 
@@ -2189,7 +2189,18 @@ IceReplyWaitInfo 	*replyWait;
 	    IcePoAuthProc authProc = myProtocol->auth_procs[
 		iceConn->protosetup_to_you->my_auth_index];
 
-	    (*authProc) (iceConn, &iceConn->protosetup_to_you->my_auth_state,
+#ifdef SVR4
+
+/*
+ * authProc is never NULL, but the cc compiler on UNIX System V/386
+ * Release 4.2 Version 1 screws up an optimization.  Unless there is
+ * some sort of reference to authProc before the function call, the
+ * function call will seg fault.
+ */
+	    if (authProc)
+#endif
+		(*authProc) (iceConn,
+		&iceConn->protosetup_to_you->my_auth_state,
 		True /* clean up */, False /* swap */,
 	        0, NULL, NULL, NULL, NULL);
 	}
