@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbfillsp.c,v 1.26 87/08/17 13:16:55 drewry Exp $ */
+/* $Header: mfbfillsp.c,v 1.26 87/08/26 21:46:00 toddb Locked $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -860,7 +860,7 @@ int fSorted;
 			pdst++;
 		}
 
-		else if((((x - xSrc) & 0x1f) + w) < 32)
+		else if(((x & 0x1f) + w) < 32)
 		{
 		    getbits(psrc, 0, w, tmpSrc);
 		    putbitsrop(tmpSrc, x & 0x1f, w, pdst, rop);
@@ -1023,7 +1023,7 @@ int fSorted;
 			pdst++;
 		}
 
-		else if((((x - xSrc) & 0x1f) + w) < 32)
+		else if(((x & 0x1f) + w) < 32)
 		{
 		    getbits(psrc, 0, w, tmpSrc);
 		    putbitsrrop(tmpSrc, x & 0x1f, w, pdst, rop);
