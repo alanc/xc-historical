@@ -1,4 +1,4 @@
-/* $XConsortium: VarCreate.c,v 1.30 94/04/17 20:15:01 converse Exp $ */
+/* $XConsortium: VarCreate.c,v 1.31 94/06/07 11:17:18 kaleb Exp converse $ */
 
 /*
 
@@ -273,9 +273,8 @@ void XtVaSetValues(widget, va_alist)
 
     _XtVaToArgList(widget, var, total_count, &args, &num_args);
     XtSetValues(widget, args, num_args);
-    if (args != NULL) {
-	XtFree((XtPointer)args);
-    }
+    _XtFreeArgList(args, total_count, typed_count);
+
     UNLOCK_APP(app);
     va_end(var);
 }

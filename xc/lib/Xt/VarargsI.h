@@ -1,4 +1,4 @@
-/* $XConsortium: VarargsI.h,v 1.15 94/01/10 20:26:41 converse Exp $ */
+/* $XConsortium: VarargsI.h,v 1.16 94/04/17 20:15:03 converse Exp $ */
 
 /*
 
@@ -61,6 +61,12 @@ extern void _XtVaToTypedArgList(
 extern XtTypedArgList _XtVaCreateTypedArgList(
 #if NeedFunctionPrototypes
     va_list /*var*/, int /*count*/
+#endif
+);
+
+extern void _XtFreeArgList(
+#if NeedFunctionPrototypes
+    ArgList /*args*/, int /*total_count*/, int /*typed_count*/
 #endif
 );
 
