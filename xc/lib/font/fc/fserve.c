@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.37 94/02/07 16:56:57 gildea Exp $ */
+/* $XConsortium: fserve.c,v 1.38 94/02/14 17:42:50 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -90,6 +90,7 @@ static int  fs_send_query_bitmaps();
 static int  fs_send_close_font();
 static void fs_client_died();
 static void _fs_client_access();
+static void _fs_client_resolution();
 
 char _fs_glyph_undefined;
 char _fs_glyph_requested;
@@ -139,6 +140,29 @@ fs_name_check(name)
 	!strncmp(name, "tcp/", MIN(4, (int) strlen(name))) ||
         !strncmp(name, "local/", MIN(6, (int) strlen(name))) ||
         !strncmp(name, "decnet/", MIN(7, (int) strlen(name))));
+}
+
+static void
+_fs_client_resolution(conn)
+    FSFpePtr    conn;
+{
+    fsSetResolutionReq srreq;
+    int         num_res;
+    fsResolution *res, *GetClientResolutions();
+
+    res = GetClientResolutions(&num_res);
+
+    if (num_res) {
+	srreq.reqType = FS_SetResolution;
+	srreq.num_resolutions = num_res;
+	srreq.length = (SIZEOF(fsSetResolutionReq) +
+			(num_res * SIZEOF(fsResolution)) + 3) >> 2;
+
+	_fs_add_req_log(conn, FS_SetResolution);
+	if (_fs_write(conn, (char *) &srreq, SIZEOF(fsSetResolutionReq)) != -1)
+	    (void)_fs_write_pad(conn, (char *) res,
+				(num_res * SIZEOF(fsResolution)));
+    }
 }
 
 /*
@@ -1371,6 +1395,7 @@ fs_send_open_font(client, fpe, flags, name, namelen, format, fmask, id, ppfont)
     if (namelen > sizeof (buf) - 1)
 	return BadFontName;
     _fs_client_access (conn, client, (flags & FontOpenSync) != 0);
+    _fs_client_resolution(conn);
 
 
     if (!(flags & FontReopen))
@@ -2193,6 +2218,7 @@ fs_send_list_fonts(client, fpe, pattern, patlen, maxnames, newnames)
     fsListFontsReq req;
 
     _fs_client_access (conn, client, FALSE);
+    _fs_client_resolution(conn);
 
     /* make a new block record, and add it to the end of the list */
     blockrec = fs_new_block_rec(fpe, client, FS_LIST_FONTS);
@@ -2406,6 +2432,7 @@ fs_start_list_with_info(client, fpe, pattern, len, maxnames, pdata)
     FSFpePtr    conn = (FSFpePtr) fpe->private;
 
     _fs_client_access (conn, client, FALSE);
+    _fs_client_resolution(conn);
 
     /* make a new block record, and add it to the end of the list */
     blockrec = fs_new_block_rec(fpe, client, FS_LIST_WITH_INFO);
