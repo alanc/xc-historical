@@ -1,6 +1,6 @@
 
 
-/* $XConsortium$ */
+/* $XConsortium: debugger.c,v 5.1 91/02/16 09:59:51 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -86,6 +86,8 @@ static ALIASSTR *hashtbl[HASHSIZE];/* pointer alias hash table */
 
 
 static char *	emalloc();
+static fatal();
+static char *strsave();
 char *	calloc();
 
 static FILESTRLST flst = {NULL,NULL}; /* list of debugging structure */
@@ -721,7 +723,6 @@ install(name,actualname)
         char *name,*actualname;
 {
         ALIASSTR *ap, *Lookup();
-        char *strsave();
         int hashval;
 
         if (ap=Lookup(name))   {
