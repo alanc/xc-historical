@@ -1,18 +1,9 @@
-.\" $XConsortium$
+.\" $XConsortium: xim.ms,v 1.3 94/04/14 21:07:49 rws Exp $
 .\" To print this out, type tbl macros.t ThisFile | troff -ms
 .EH ''''
 .OH ''''
 .EF ''''
 .OF ''''
-.ie t \{
-.fp 6 I
-.fp 7 C
-.fp 8 CB \}
-.el \{
-.fp 6 B
-.fp 7 R
-.fp 8 B
-\}
 .ps 11
 .nr PS 11
 \&
@@ -20,9 +11,9 @@
 .TL
 \s+3\fBThe Input Method Protocol\fP\s-3
 .sp
-\fBX Consortium Standard\fR
+\fBX Consortium Standard\fP
 .sp
-\fBX Version 11, Release 6\fR
+\fBX Version 11, Release 6\fP
 .sp 3
 .AU
 Masahiko Narita
@@ -968,45 +959,45 @@ State transitions for the client
 .R
 .RS
 .LP
-\f6init_status\fP:
+\fIinit_status\fP:
 .RS
-Use authorization function \(-> \f6client_ask\fP
+Use authorization function \(-> \fIclient_ask\fP
 .br
-Not use authorization function \(-> \f6client_no_check\fP
+Not use authorization function \(-> \fIclient_no_check\fP
 .RE
 .sp
 .LP
-\f6start\fP:
+\fIstart\fP:
 .RS
 Send 
 .PN XIM_CONNECT
 .RS
-If \f6client_ask\fP \(-> \f6client_wait1\fP
+If \fIclient_ask\fP \(-> \fIclient_wait1\fP
 .br
-If \f6client_no_check\fP, client-auth-protocol-names may be omited \(-> \f6client_wait2\fP
+If \fIclient_no_check\fP, client-auth-protocol-names may be omited \(-> \fIclient_wait2\fP
 .RE
 .RE
 .sp
 .LP
-\f6client_wait1\fP:
+\fIclient_wait1\fP:
 .RS
 Receive 
 .PN XIM_AUTH_REQUIRED
-\(-> \f6client_check\fP
+\(-> \fIclient_check\fP
 .br
-Receive <other> \(-> \f6client_NG\fP
+Receive <other> \(-> \fIclient_NG\fP
 .RE
 .sp
 .LP
-\f6client_check\fP:
+\fIclient_check\fP:
 .RS
 If no more auth needed, send 
 .PN XIM_AUTH_REPLY
-\(-> \f6client_wait2\fP
+\(-> \fIclient_wait2\fP
 .br
 If good auth data, send 
 .PN XIM_AUTH_NEXT
-\(-> \f6client_wait1\fP
+\(-> \fIclient_wait1\fP
 .br
 If bad auth data, send 
 .PN XIM_AUTH_NG
@@ -1014,7 +1005,7 @@ If bad auth data, send
 .RE
 .sp
 .LP
-\f6client_wait2\fP:
+\fIclient_wait2\fP:
 .RS
 Receive 
 .PN XIM_CONNECT_REPLY
@@ -1022,29 +1013,29 @@ Receive
 .br
 Receive 
 .PN XIM_AUTH_SETUP 
-\(-> \f6client_more\fP
+\(-> \fIclient_more\fP
 .br
 Receive 
 .PN XIM_AUTH_NEXT
-\(-> \f6client_more\fP
+\(-> \fIclient_more\fP
 .br
 Receive 
 .PN XIM_AUTH_NG
 \(-> give up on this protocol
 .br
-Receive <other> \(-> \f6client_NG\fP
+Receive <other> \(-> \fIclient_NG\fP
 .RE
 .sp
 .LP
-\f6client_more\fP:
+\fIclient_more\fP:
 .RS
 Send 
 .PN XIM_AUTH_REQUIRED
-\(-> \f6client_wait2\fP
+\(-> \fIclient_wait2\fP
 .RE
 .sp
 .LP
-\f6client_NG\fP:
+\fIclient_NG\fP:
 .RS
 Send 
 .PN XIM_AUTH_NG
@@ -1058,85 +1049,85 @@ State transitions for the IM Server
 .R
 .RS
 .LP
-\f6init-status\fP:
+\fIinit-status\fP:
 .RS
-Use authorization function \(-> \f6server_ask\fP
+Use authorization function \(-> \fIserver_ask\fP
 .br
-Not use authorization function \(-> \f6server_no_check\fP
+Not use authorization function \(-> \fIserver_no_check\fP
 .RE
 .sp
 .LP
-\f6start\fP:
+\fIstart\fP:
 .RS
 Receive 
 .PN XIM_CONNECT
-\(-> \f6start2\fP
+\(-> \fIstart2\fP
 .br
-Receive <other> \(-> \f6server_NG\fP
+Receive <other> \(-> \fIserver_NG\fP
 .RE
 .sp
 .LP
-\f6start2\fP:
+\fIstart2\fP:
 .RS
-If \f6client_ask\fP, send 
+If \fIclient_ask\fP, send 
 .PN XIM_AUTH_REQUIRED
-\(-> \f6server_wait1\fP
+\(-> \fIserver_wait1\fP
 .br
-If \f6client_no_check\fP and \f6server_ask\fP, send 
+If \fIclient_no_check\fP and \fIserver_ask\fP, send 
 .PN XIM_AUTH_SETUP
-\(-> \f6server_wait2\fP
+\(-> \fIserver_wait2\fP
 .br
-If \f6client_no_check\fP and \f6server_no_check\fP, send 
+If \fIclient_no_check\fP and \fIserver_no_check\fP, send 
 .PN XIM_CONNECT_REPLY
 \(-> connect
 .RE
 .sp
 .LP
-\f6server_wait1\fP:
+\fIserver_wait1\fP:
 .RS
 Receive 
 .PN XIM_AUTH_REPLY
-\(-> \f6server2\fP
+\(-> \fIserver2\fP
 .br
 Receive 
 .PN XIM_AUTH_NEXT
-\(-> \f6server_more\fP
+\(-> \fIserver_more\fP
 .br
-Receive <other> \(-> \f6server_NG\fP
+Receive <other> \(-> \fIserver_NG\fP
 .RE
 .sp
 .LP
-\f6server_more\fP
+\fIserver_more\fP
 .RS
 Send 
 .PN XIM_AUTH_REQUIRED
-\(-> \f6server_wait1\fP
+\(-> \fIserver_wait1\fP
 .RE
 .sp
 .LP
-\f6server2\fP
+\fIserver2\fP
 .RS
-If \f6server_ask\fP, send 
+If \fIserver_ask\fP, send 
 .PN XIM_AUTH_SETUP
-\(-> \f6server_wait2\fP
+\(-> \fIserver_wait2\fP
 .br
-If \f6server_no_check\fP, send 
+If \fIserver_no_check\fP, send 
 .PN XIM_CONNECT_REPLY 
 \(-> connect
 .RE
 .sp
 .LP
-\f6server_wait2\fP
+\fIserver_wait2\fP
 .RS
 Receive 
 .PN XIM_AUTH_REQUIRED
-\(-> \f6server_check\fP
+\(-> \fIserver_check\fP
 .br
-Receive <other> \(-> \f6server_NG\fP
+Receive <other> \(-> \fIserver_NG\fP
 .RE
 .sp
 .LP
-\f6server_check\fP
+\fIserver_check\fP
 .RS
 If no more auth data, send 
 .PN XIM_CONNECT_REPLY
@@ -1148,11 +1139,11 @@ If bad auth data, send
 .br
 If good auth data, send 
 .PN XIM_AUTH_NEXT
-\(-> \f6server_wait2\fP
+\(-> \fIserver_wait2\fP
 .RE
 .sp
 .LP
-\f6server_NG\fP
+\fIserver_NG\fP
 .RS
 Send 
 .PN XIM_AUTH_NG
@@ -2678,7 +2669,7 @@ byte length to multiply the XIMStringConversionType
 T}
 .TE
 .RE
-.SP
+.sp
 .LP
 .PN XIM_STR_CONVERSION 
 message may be used to start the string conversion from the IM 
@@ -3131,20 +3122,20 @@ The preregistered formats for transport-specific names are as follows:
 .RS
 The following syntax should be used for system internal domain names:
 .DS
-<\f6local name\fP>  ::= ``local/''<\f6hostname\fP>``:''<\f6pathname\fP>
+<\fIlocal name\fP>  ::= ``local/''<\fIhostname\fP>``:''<\fIpathname\fP>
 .DE
 .LP
-Where <\f6pathname\fP> is a path name of socket address.
+Where <\fIpathname\fP> is a path name of socket address.
 .LP
-IM Server's name should be set to <\f6pathname\fP> to run multiple IM Server 
+IM Server's name should be set to <\fIpathname\fP> to run multiple IM Server 
 at the same time
 .LP
 The following syntax should be used for Internet domain names:
 .DS
-<\f6TCP name\fP>  ::=  ``tcp/''<\f6hostname\fP>``:''<\f6ipportnumber\fP>
+<\fITCP name\fP>  ::=  ``tcp/''<\fIhostname\fP>``:''<\fIipportnumber\fP>
 .DE
-where <\f6hostname\fP> is either symbolic (such as expo.lcs.mit.edu) or 
-numeric decimal (such as 18.30.0.212).  The <\f6ipportnumber\fP> is the 
+where <\fIhostname\fP> is either symbolic (such as expo.lcs.mit.edu) or 
+numeric decimal (such as 18.30.0.212).  The <\fIipportnumber\fP> is the 
 port on which the IM Server is listening for connections.  
 For example:
 .DS
@@ -3158,10 +3149,10 @@ tcp/18.30.0.212:7890
 .RS
 The following syntax should be used for DECnet names:
 .DS
-<\f6DECnet name\fP>  ::=  ``decnet/''<\f6nodename\fP>``::IMSERVER$''<\f6objname\f7>
+<\fIDECnet name\fP>  ::=  ``decnet/''<\fInodename\fP>``::IMSERVER$''<\fIobjname\fP>
 .DE
-where <\f6nodename\fP> is either symbolic (such as SRVNOD) or the numeric 
-decimal form of the DECnet address (such as 44.70).  The <\f6objname\fP> 
+where <\fInodename\fP> is either symbolic (such as SRVNOD) or the numeric 
+decimal form of the DECnet address (such as 44.70).  The <\fIobjname\fP> 
 is normal, case-insensitive DECnet object name. For example:
 .DS
 DECNET/SRVNOD::IMSERVER$DEFAULT
@@ -3174,7 +3165,7 @@ decnet/44.70::IMSERVER$other
 .RS
 The following syntax should be used for X names:
 .DS
-<\f6X name\fP>  ::=  ``X/''
+<\fIX name\fP>  ::=  ``X/''
 .DE
 .RE
 .RE
@@ -3740,16 +3731,16 @@ layer, an interface layer and a transport layer. The purpose of this
 layering is to make the protocol independent of transport implementation.
 Each function of these layers are:
 .RS 3
-.IP "\f6The protocol layer\fP"
+.IP "\fIThe protocol layer\fP"
 .br
 implements overall function of XIM and calls the interface layer
 functions when it needs to communicate to IM Server. 
-.IP "\f6The interface layer\fP"
+.IP "\fIThe interface layer\fP"
 .br
 separates the implementation of the transport layer from the protocol
 layer, in other words, it provides implementation independent hook for
 the transport layer functions.
-.IP "\f6The transport layer\fP"
+.IP "\fIThe transport layer\fP"
 .br
 handles actual data communication with IM Server. It is done by a set
 of several functions named transporters.
@@ -4238,7 +4229,6 @@ long:data.l[1]:read/write property ATOM
 .sp 6p
 _
 .TE
-.RE
 .RE
 .RE
 .LP
