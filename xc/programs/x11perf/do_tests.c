@@ -138,7 +138,7 @@ Test test[] = {
 		{10, 20, 0}},
   {"-dots", "Dot",
 		InitDots, DoDots, NullProc, EndDots, False, False,
-		{100, POLY}},
+		{250, POLY}},
   {"-windows", "Create Window, MapSubwindows",
 		InitWins, DoWins, DeleteSubs, EndWins, True, False,
 		{1, 4, True}},
