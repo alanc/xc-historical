@@ -1,7 +1,7 @@
 /*
  * get_load - get system load
  *
- * $XConsortium: get_load.c,v 1.23 91/07/12 18:00:01 rws Exp $
+ * $XConsortium: get_load.c,v 1.24 91/07/13 16:28:19 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -98,6 +98,14 @@ struct lavnum {
 
 #ifdef sgi
 #define FSCALE	1024.0
+#endif
+
+#if defined(sony) && OSMAJORVERSION == 4
+#ifdef mips
+#include <sys/fixpoint.h>
+#else
+#include <sys/param.h>
+#endif
 #endif
 
 #ifdef SVR4
@@ -590,9 +598,25 @@ void GetLoadPoint( w, closure, call_data )
         oldloadavg = *loadavg;
 	}
 #      else /* not MOTOROLA */
+#     if defined(sony) && OSMAJORVERSION == 4
+#      ifdef mips
+	{
+		fix temp;
+		(void) read(kmem, (char *)&temp, sizeof(fix));
+		*loadavg = FIX_TO_DBL(temp);
+	}
+#      else /* not mips */
+	{
+		long temp;
+		(void) read(kmem, (char *)&temp, sizeof(long));
+		*loadavg = (double)temp/FSCALE;
+	}
+#      endif /* mips */
+#     else /* not sony NEWSOS4 */
 	(void) read(kmem, (char *)loadavg, sizeof(double));
-#      endif /* MOTOROLA */
-#    endif /* AIXV3 */
+#        endif /* sony NEWOS4 */
+#      endif /* MOTOROLA else */
+#    endif /* AIXV3 else */
 #  endif /* umips else */
 # endif /* macII else */
 #endif /* sun else */
