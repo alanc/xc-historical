@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.108 91/02/05 13:40:38 dave Exp $
+ * $XConsortium: XOpenDis.c,v 11.109 91/02/05 14:43:06 keith Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -34,6 +34,10 @@ without express or implied warranty.
 #endif
 #endif
 
+#ifdef SECURE_RPC
+#include <rpc/rpc.h>
+#endif
+
 #include <stdio.h>
 
 extern int _Xdebug;
@@ -61,6 +65,9 @@ static char *xauth_data = NULL;	 /* NULL means get default data */
  */
 
 static char *default_xauth_names[] = {
+#ifdef SECURE_RPC
+    "SECURE-RPC",
+#endif
 #ifdef HASDES
     "XDM-AUTHORIZATION-1",
 #endif
@@ -68,6 +75,9 @@ static char *default_xauth_names[] = {
 };
 
 static int default_xauth_lengths[] = {
+#ifdef SECURE_RPC
+    10,	    /* strlen ("SECURE-RPC") */
+#endif
 #ifdef HASDES
     19,	    /* strlen ("XDM-AUTHORIZATION-1") */
 #endif
@@ -136,6 +146,37 @@ void XSetAuthorization (name, namelen, data, datalen)
     return;
 }
 
+#ifdef SECURE_RPC
+/*
+ * Create an encrypted credential that we can send to the
+ * X server.
+ */
+static int
+authdes_ezencode(servername, window, cred_out, len)
+        char           *servername;
+        int             window;
+	char	       *cred_out;
+        int            *len;
+{
+        AUTH           *a;
+        XDR             xdr;
+
+        a = authdes_create(servername, window, NULL, NULL);
+        if (a == (AUTH *)NULL) {
+                perror("authdes_create");
+                return 0;
+        }
+        xdrmem_create(&xdr, cred_out, *len, XDR_ENCODE);
+        if (AUTH_MARSHALL(a, &xdr) == FALSE) {
+                perror("authdes_marshal");
+                AUTH_DESTROY(a);
+                return 0;
+        }
+        *len = xdr_getpos(&xdr);
+        AUTH_DESTROY(a);
+	return 1;
+}
+#endif
 
 extern Bool _XWireToEvent();
 extern Status _XUnknownNativeEvent();
@@ -185,6 +226,9 @@ Display *XOpenDisplay (display)
 	extern int _XConnectDisplay();
 	extern char *getenv();
 	extern XID _XAllocID();
+#ifdef SECURE_RPC
+	char	rpc_cred[MAX_AUTH_BYTES];
+#endif
  
 #ifdef HASDES
 	char    encrypted_data[192/8];
@@ -345,6 +389,32 @@ Display *XOpenDisplay (display)
 	    conn_auth_datalen = j;
 	}
 #endif /* HASDES */
+#ifdef SECURE_RPC
+        /*
+         * The SECURE-RPC authorization protocol uses the
+         * "secure RPC" mechanism in SunOS 4.0+.
+         */
+        if (conn_auth_namelen == 10 && !strncmp(conn_auth_name,
+            "SECURE-RPC", 10)) {
+            static char servernetname[MAXNETNAMELEN + 1];
+
+            /*
+             * Copy over the server's netname from the authorization
+             * data field filled in by XauGetAuthByAddr().
+             */
+            if (conn_auth_datalen > MAXNETNAMELEN) {
+                return 0;
+            }
+            bcopy(conn_auth_data, servernetname, conn_auth_datalen);
+            servernetname[conn_auth_datalen] = '\0';
+
+	    conn_auth_datalen = sizeof (rpc_cred);
+            if (authdes_ezencode(servernetname, 100, rpc_cred, &conn_auth_datalen))
+		conn_auth_data = rpc_cred;
+	    else
+		conn_auth_data = NULL;
+        }
+#endif
 	if (server_addr) (void) Xfree (server_addr);
 /*
  * The xConnClientPrefix describes the initial connection setup information
