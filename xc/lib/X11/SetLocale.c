@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.28 91/04/08 11:50:11 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.29 91/04/10 10:27:11 rws Exp $
  */
 
 /*
@@ -37,7 +37,7 @@
 #include <X11/Xlocale.h>
 #include <X11/Xos.h>
 
-#ifdef XLOCALE
+#ifdef X_LOCALE
 
 /* alternative setlocale() for when the OS does not provide one */
 
@@ -86,7 +86,7 @@ _Xsetlocale(category, name)
     return locale_name;
 }
 
-#else /* XLOCALE */
+#else /* X_LOCALE */
 
 /*
  * _XlcMapOSLocaleName is an implementation dependent routine that derives
@@ -131,4 +131,4 @@ _XlcMapOSLocaleName(osname, siname)
 
 #endif /* hpux */
 
-#endif  /* XLOCALE */
+#endif  /* X_LOCALE */

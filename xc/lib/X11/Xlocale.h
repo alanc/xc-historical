@@ -1,4 +1,4 @@
-/* $XConsortium: Xlocale.h,v 1.6 91/04/08 09:28:09 rws Exp $ */
+/* $XConsortium: Xlocale.h,v 1.7 91/04/10 10:23:57 rws Exp $ */
 
 #ifndef _XLOCALE_H_
 #define _XLOCALE_H_
@@ -6,13 +6,13 @@
 #include <X11/Xfuncproto.h>
 #include <X11/Xosdefs.h>
 
-#ifndef XLOCALE
+#ifndef X_LOCALE
 #ifdef X_NOT_STDC_ENV
-#define XLOCALE
+#define X_LOCALE
 #endif
 #endif
 
-#ifndef XLOCALE
+#ifndef X_LOCALE
 #include <locale.h>
 #else
 
@@ -38,6 +38,6 @@ _XFUNCPROTOEND
 #define NULL 0
 #endif
 
-#endif /* XLOCALE */
+#endif /* X_LOCALE */
 
 #endif /* _XLOCALE_H_ */
