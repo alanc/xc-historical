@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.169 93/10/12 09:13:44 rws Exp $ */
+/* $XConsortium: connection.c,v 1.170 93/12/06 15:21:13 kaleb Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -883,7 +883,8 @@ open_pts_local()
     }
   
     if ((fd = open(DEV_PTMX, O_RDWR)) < 0) {
-	Error("open_pts_local(): can't open \"%s\"",DEV_PTMX);
+	Error("open_pts_local(): open failed");
+	ErrorF("open_pts_local(): can't open \"%s\"",DEV_PTMX);
 	return(-1);
     }
   
@@ -896,6 +897,7 @@ open_pts_local()
     }
 
     if (open(path, O_RDWR) < 0) {
+	Error("open_pts_local(): open failed");
 	ErrorF("open_pts_local(): can't open %s\n", path);
 	close(fd);
 	return(-1);
