@@ -1,6 +1,5 @@
-.\" $XConsortium: ddx.tbl.ms,v 1.30 91/04/23 15:59:09 keith Exp $
-.EF 'Porting Layer Definition'- % -'April 22, 1991'
-.OF 'Porting Layer Definition'- % -'April 22, 1991'
+.EF 'Porting Layer Definition'- % -'June 23, 1993'
+.OF 'Porting Layer Definition'- % -'June 23, 1993'
 .EH '''
 .OH '''
 .TL
@@ -26,6 +25,12 @@ Massachusetts Institute of Technology
 Revised for Release 4 and Release 5 by
 .AU
 Keith Packard
+.AI
+MIT X Consortium
+.sp
+Revised for Release 6 by
+.AU
+David P. Wiggins
 .AI
 MIT X Consortium
 
@@ -351,7 +356,7 @@ You must supply some of the pieces for proper scheduling between clients.
 		int *pClientReady;
 .fi
 .LP
-WaitForSomething is the scheduler procedure you must write that will
+WaitForSomething is the scheduler procedure yo must write that will
 suspend your server process until something needs to be done.   
 This call should
 make the server suspend until one or more of the following occurs:
@@ -477,7 +482,7 @@ be called before the Screen handlers:
 .LP
 The WaitForSomething on the sample server also has a built
 in screen saver that darkens the screen if no input happens for a period of time.
-The sample server implementation is in server/os/4.2bsd/WaitFor.c.
+The sample server implementation is in server/os/WaitFor.c.
 .LP
 Note that WaitForSomething() may be called when you already have several
 outstanding things (events, requests, or new clients) queued up.
@@ -544,7 +549,7 @@ These two routines are
 called from the initialize cases of the
 Input Procedures that are stored in the DeviceRec (the
 routine passed to AddInputDevice()).
-The sample server implementation is in server/os/4.2bsd/connection.c.
+The sample server implementation is in server/os/connection.c.
 .nf
 
 	Bool isItTimeToYield;
@@ -684,7 +689,7 @@ routine is called from the main loop:
 	ResetWellKnownSockets()
 .fi
 Sample implementations of both of these routines are found in 
-server/os/4.2bsd/connection.c.
+server/os/connection.c.
 .LP
 For more details, see the section called "Connection Setup" in the X protocol specification.
 
@@ -732,7 +737,7 @@ DIX may modify it in place but will not otherwise cause damage.
 Of course, the request must be contiguous; you must 
 shuffle it around in your buffers if not.
 
-The sample server implementation is in server/os/4.2bsd/io.c.
+The sample server implementation is in server/os/io.c.
 
 .XS
 Inserting Data for Clients
@@ -780,7 +785,7 @@ ClientPtr "who".
 It returns the number of bytes written, but for simplicity,
 the number returned must be either the same value as the number
 requested, or -1, signaling an error.
-The sample server implementation is in server/os/4.2bsd/io.c.
+The sample server implementation is in server/os/io.c.
 .LP
 .nf
 	SendErrorToClient(client, majorCode, minorCode, resId, errorCode)
@@ -810,7 +815,7 @@ FlushAllOutput() unconditionally flushes all output to clients;
 FlushIfCriticalOutputPending() flushes output only if
 SetCriticalOutputPending() has be called since the last time output
 was flushed.
-The sample server implementation is in server/os/4.2bsd/io.c and
+The sample server implementation is in server/os/io.c and
 actually ignores requests to flush output on a per-client basis
 if it knows that there
 are requests in that client's input queue.
@@ -933,7 +938,7 @@ a chance to reset the hardware, and then
 terminate the server; it must not return.
 .LP
 The sample server implementation for these routines
-is in server/os/4.2bsd/util.c.
+is in server/os/util.c.
 
 .NH 1
 DDX LAYER
@@ -2557,6 +2562,19 @@ pScreen is the screen to save.
 	    ScreenPtr pScreen;
 .fi
 When the server is reset, it calls this routine for each screen.
+.nf
+
+	Bool pScreen->CreateScreenResources(pScreen)		/* NEW IN R6 */
+	    ScreenPtr pScreen;
+.fi
+If this routine is not NULL, it will be called once per screen per
+server initialization/reset after all modules have had a chance to
+register their devPrivates on all structures that support them (see
+the section on devPrivates below).  If you need to create any of these
+resources as part of your screen initialization, you should do so in
+this function instead of in the screen init function passed to AddScreen
+to guarantee that the resources have a complete set of devPrivates.
+This routine returns TRUE if successful.
 .NH 2
 Drawables
 .XS
@@ -2583,16 +2601,17 @@ size of the drawable.
 There are, in fact, no other fields that a window drawable and pixmap
 drawable have in common besides those mentioned here.
 
-Both PixmapRecs and WindowRecs are structs that start with a drawable and
-continue on with more fields.  Pixmaps have devPrivate pointers, which are
-assumed to point to DDX specific data, while windows have an array of
-devPrivates unions, one entry of which will probably be used for DDX
-specific data.  Entries in this array are allocated using
-AllocateWindowPrivateIndex() (see Wrappers and Privates below).  This is
-done because different graphics hardware has different requirements for
-management; if the graphics is always handled by a processor with an
-independent address space, there is no point having a pointer to the bit
-image itself.
+Both PixmapRecs and WindowRecs are structs that start with a drawable
+and continue on with more fields.  Pixmaps have devPrivate pointers
+which usually point to the pixmap data but could conceivably be
+used for anything that DDX wants.  Both windows and pixmaps have an
+array of devPrivates unions, one entry of which will probably be used
+for DDX specific data.  Entries in this array are allocated using
+Allocate{Window|Pixmap}PrivateIndex() (see Wrappers and devPrivates
+below).  This is done because different graphics hardware has
+different requirements for management; if the graphics is always
+handled by a processor with an independent address space, there is no
+point having a pointer to the bit image itself.
 
 The definition of a drawable and a pixmap can be found in the file
 server/include/pixmapstr.h.
@@ -2616,20 +2635,20 @@ rectangular array of pixel values.
 
 Note that the pixmap data structure is reference-counted.
 
-The server
-implementation is free to put the pixmap image data anywhere it sees fit,
-according to its graphics hardware setup.
-Many implementations will simply have the data dynamically
-allocated in the server's address space.
+The server implementation is free to put the pixmap data
+anywhere it sees fit, according to its graphics hardware setup.  Many
+implementations will simply have the data dynamically allocated in the
+server's address space.  More sophisticated implementations may put the
+data in undisplayed framebuffer storage.
 
-The pixmap data structure has two fields that are private to the device.
-Although you can use them for anything you want, they have intended purposes.
-devKind is intended to be a device specific indication of the pixmap location (host
-memory, off-screen, etc.).    In the
-sample server, since all pixmaps are in memory, devKind stores the
-width of the pixmap in bitmap scanline units.
-devPrivate is probably a pointer to
-the bits in the pixmap plus other device specific information.
+In addition to dynamic devPrivates (see the section on devPrivates
+below), the pixmap data structure has two fields that are private to
+the device.  Although you can use them for anything you want, they
+have intended purposes.  devKind is intended to be a device specific
+indication of the pixmap location (host memory, off-screen, etc.).  In
+the sample server, since all pixmaps are in memory, devKind stores the
+width of the pixmap in bitmap scanline units.  devPrivate is probably
+a pointer to the bits in the pixmap.
 
 A bitmap is a pixmap that is one bit deep.
 .nf
@@ -2639,11 +2658,15 @@ A bitmap is a pixmap that is one bit deep.
 		int width, height, depth;
 .fi
 This ScreenRec procedure must create a pixmap of the size
-requested.
+requested.  
 It must allocate a PixmapRec and fill in all of the fields.
 The reference count field must be set to 1.
-If successful, it returns a pointer to it; if not, it returns NULL.
-See server/ddx/mfb/mfbpixmap.c for the server implementation.
+If width or height are zero, no space should be allocated
+for the pixmap data, and if the implementation is using the
+devPrivate field as a pointer to the pixmap data, it should be
+set to NULL.
+If successful, it returns a pointer to the new pixmap; if not, it returns NULL.
+See server/ddx/mfb/mfbpixmap.c for the sample server implementation.
 .nf
 
 	Bool pScreen->DestroyPixmap(pPixmap)
@@ -2653,8 +2676,55 @@ This ScreenRec procedure must "destroy" a pixmap.
 It should decrement the reference count and, if zero, it 
 must deallocate the PixmapRec and all attached devPrivate blocks.
 If successful, it returns TRUE. 
-See server/ddx/mfb/mfbpixmap.c for the server implementation.
+See server/ddx/mfb/mfbpixmap.c for the sample server implementation.
+.nf
 
+	Bool							/* NEW IN R6 */
+	pScreen->ModifyPixmapHeader(pPixmap, width, height, depth, bitsPerPixel, devKind, pPixData) 
+		PixmapPtr   pPixmap;
+		int	    width;
+		int	    height;
+		int	    depth;
+		int	    bitsPerPixel;
+		int	    devKind;
+		pointer     pPixData;
+.fi
+This routine takes a pixmap header (the PixmapRec plus all the dynamic
+devPrivates) and initializes the fields of the PixmapRec to the
+parameters of the same name.  pPixmap must have been created via
+pScreen->CreatePixmap, probably with a zero width or height to avoid
+allocating space for the pixmap data.  pPixData is assumed to be the
+pixmap data; it will be stored in an implementation-dependent place
+(usually pPixmap->devPrivate.ptr).  This routine returns
+TRUE if successful.  See server/ddx/mi/miscrinit.c for the sample
+server implementation.
+.nf
+
+	PixmapPtr						/* NEW IN R6 */
+	GetScratchPixmapHeader(pScreen, width, height, depth, bitsPerPixel, devKind, pPixData)
+		ScreenPtr   pScreen;
+		int	    width;
+		int	    height;
+		int	    depth;
+		int	    bitsPerPixel;
+		int	    devKind;
+		pointer     pPixData;
+
+	void FreeScratchPixmapHeader(pPixmap)
+		PixmapPtr pPixmap;
+.fi
+DDX should use these two DIX routines when it has a buffer of raw
+image data that it wants to manipulate as a pixmap temporarily,
+usually so that some other part of the server can be leveraged to
+perform some operation on the data.  The data should be passed in
+pPixData, and will be stored in an implementation-dependent place
+(usually pPixmap->devPrivate.ptr). The other
+fields go into the corresponding PixmapRec fields.
+If successful, GetScratchPixmapHeader returns a valid PixmapPtr which can
+be used anywhere the server expects a pixmap, else
+it returns NULL.  The pixmap should be released when no longer needed
+(usually within the same function that allocated it)
+with FreeScratchPixmapHeader.
 .NH 3
 Windows
 .XS
@@ -2777,7 +2847,7 @@ hints to DDX only;
 they do not change the window tree, which is only changed by DIX.
 .nf
 
-	void pScreen->CreateWindow(pWin)
+	Bool pScreen->CreateWindow(pWin)
 		WindowPtr pWin;
 .fi
 This routine is a hook for when DIX creates a window.
@@ -2812,10 +2882,10 @@ border are handled by CopyWindow(), below.
 See server/ddx/mfb/mfbwindow.c for the sample server implementation.
 .nf
 
-	void pScreen->RealizeWindow(pWin);
+	Bool pScreen->RealizeWindow(pWin);
 		WindowPtr pWin;
 
-	void  pScreen->UnrealizeWindow(pWin);
+	Bool  pScreen->UnrealizeWindow(pWin);
 		WindowPtr pWin;
 .fi
 These routines are hooks for when DIX maps (makes visible) and unmaps (makes invisible)
@@ -2835,7 +2905,6 @@ to perform some of these.
 		WindowPtr pWin;
 		long vmask;
 .fi
-
 ChangeWindowAttributes is called whenever DIX changes window attributes, such as the
 size, front-to-back ordering, title, or anything of lesser severity that
 affects the window itself.
@@ -2844,11 +2913,10 @@ for quickly putting up background and border tiles.  (See description of the
 set of routines stored in the WindowRec.)
 .nf
 
-	int pScreen->ValidateTree(pParent,  pChild, top, anyMarked)
+	int pScreen->ValidateTree(pParent,  pChild, kind)
 		WindowPtr pParent, pChild;
-		Bool top, anyMarked;
+		VTKind kind;
 .fi
-
 ValidateTree calculates the clipping region for the parent window and
 all of its children.
 This routine must be provided. The sample
@@ -2856,12 +2924,25 @@ server has a machine-independent version in server/ddx/mi/mivaltree.c.  This
 is a very difficult routine to replace.
 .nf
 
-	void pScreen->WindowExposures(pWin, pRegion)
+	void pScreen->PostValidateTree(pParent,  pChild, kind)
+		WindowPtr pParent, pChild;
+		VTKind kind;
+.fi
+If this routine is not NULL, DIX calls it shortly after calling
+ValidateTree, passing it the same arguments.  This is useful for
+managing multi-layered framebuffers.
+The sample server sets this to NULL.
+.nf
+
+	void pScreen->WindowExposures(pWin, pRegion, pBSRegion)
 		WindowPtr pWin;
 		RegionPtr pRegion;
+		RegionPtr pBSRegion;
 .fi
 The WindowExposures() routine
 paints the border and generates exposure events for the window.
+pRegion is an unoccluded region of the window, and pBSRegion is an
+occluded region that has backing store.
 Since exposure events include a rectangle describing what was exposed, 
 this routine may have to send back a series of exposure events, one for
 each rectangle of the region.  
@@ -2950,7 +3031,7 @@ inherited (see the Protocol document for the exact semantics).
 
 	void pScreen->CopyWindow(pWin, oldpt, oldRegion);
 		WindowPtr pWin;
-		POINT oldpt;
+		DDXPointRec oldpt;
 		RegionPtr oldRegion;
 .fi
 
@@ -3004,7 +3085,7 @@ rather then relative to the bits as the are on the screen when the function
 is invoked.
 .nf
 
-	RegionPtr pBackingStore->RestoreAreas(pWin, pRegion)
+	RegionPtr pScreen->RestoreAreas(pWin, pRegion)
 		WindowPtr pWin;
 		RegionPtr pRegion;
 .fi
@@ -3018,15 +3099,18 @@ pRegion is set to the area of the window which should be painted with
 the window background.
 .nf
 
-	void pBackingStore->TranslateBackingStore(pWin, dx, dy, oldClip)
+	RegionPtr pScreen->TranslateBackingStore(pWin, dx, dy, oldClip, oldx, oldy)
 		WindowPtr pWin;
 		int dx, dy;
 		RegionPtr oldClip;
+		int oldx, oldy;
 .fi
 This is called when the window is moved or resized so that the backing
 store can be translated if necessary.  oldClip is the old cliplist for
 the window, which is used to save doomed areas if the window is moved
-underneath its parent as a result of bitgravity.
+underneath its parent as a result of bitgravity.  The returned region
+represents occluded areas of the window for which the backing store
+contents are invalid.
 
 .NH 2
 Graphics Contexts and Validation
@@ -3351,6 +3435,7 @@ In the sample server, the pointer to the client clip region is set to NULL
 by this routine after destroying the region, so that other software
 (including ChangeClip() above) will recognize that there is no client clip region.
 .nf
+
 	void pGC->funcs->CopyClip(pgcDst, pgcSrc)
 		GCPtr pgcDst, pgcSrc;
 .fi
@@ -3545,12 +3630,12 @@ An example implementation is mfbCopyPlane() in
 server/ddx/mfb/mfbbitblt.c.
 .nf
 
-	pGC->ops->PolyPoint(dst, pGC, mode, n, pPoint)
+	void pGC->ops->PolyPoint(dst, pGC, mode, n, pPoint)
 		DrawablePtr dst;
 		GCPtr pGC;
 		int mode;
 		int n;
-		POINT *pPoint;
+		DDXPointPtr pPoint;
 .fi
 PolyPoint draws a set of one-pixel dots (foreground color)
 at the locations given in the array.
@@ -3562,12 +3647,12 @@ Example implementations are mfbPolyPoint() in server/ddx/mfb/mfbpolypnt.c and
 miPolyPoint in server/ddx/mi/mipolypnt.c.
 .nf
 
-	pGC->ops->Polylines(dst, pGC, mode, n, pPoint)
+	void pGC->ops->Polylines(dst, pGC, mode, n, pPoint)
 		DrawablePtr dst;
 		GCPtr pGC;
 		int mode;
 		int n;
-		POINT *pPoint;
+		DDXPointPtr pPoint;
 .fi
 Similar to PolyPoint, Polylines draws lines between the locations given in the array.
 Zero-width lines are NOT meant to be really zero width; this is the client's way of 
@@ -3580,11 +3665,11 @@ Example implementations are miWideLine() and miWideDash() in
 ddx/mi/miwideline.c and miZeroLine() in ddx/mi/mizerline.c.
 .nf
 
-	pGC->ops->PolySegment(dst, pGC, n, pPoint)
+	void pGC->ops->PolySegment(dst, pGC, n, pPoint)
 		DrawablePtr dst;
 		GCPtr pGC;
 		int n;
-		POINT *pPoint;
+		DDXPointPtr pPoint;
 .fi
 PolySegments draws unconnected
 lines between pairs of points in the array; the array must be of
@@ -3593,18 +3678,18 @@ even size; no interconnecting lines are drawn.
 An example implementation is miPolySegment() in mipolyseg.c.
 .nf
 
-	pGC->ops->PolyRectangle(dst, pGC, n, pRect)
+	void pGC->ops->PolyRectangle(dst, pGC, n, pRect)
 		DrawablePtr dst;
 		GCPtr pGC;
 		int n;
-		RECT *pRect;
+		xRectangle *pRect;
 .fi
 PolyRectangle draws outlines of rectangles for each rectangle in the array.
 
 An example implementation is miPolyRectangle() in server/ddx/mi/mipolyrect.c.
 .nf
 
-	pGC->ops->PolyArc(dst, pGC, n, pArc)
+	void pGC->ops->PolyArc(dst, pGC, n, pArc)
 		DrawablePtr dst;
 		GCPtr pGC;
 		int n;
@@ -3617,13 +3702,13 @@ Example implementations are miZeroPolyArc in server/ddx/mi/mizerarc. and
 miPolyArc() in server/ddx/mi/miarc.c.
 .nf
 
-	pGC->ops->FillPolygon(dst, pGC, shape, mode, count, pPoint)
+	void pGC->ops->FillPolygon(dst, pGC, shape, mode, count, pPoint)
 		DrawablePtr dst;
 		GCPtr pGC;
 		int shape;
 		int mode;
 		int count;
-		POINT *pPoint;
+		DDXPointPtr pPoint;
 .fi
 FillPolygon fills a polygon specified by the points in the array
 with the appropriate fill style.
@@ -3639,11 +3724,11 @@ whether the points are each relative to the last or are absolute.
 An example implementation is miFillPolygon() in server/ddx/mi/mipoly.c.
 .nf
 
-	pGC->ops->PolyFillRect(dst, pGC, n, pRect)
+	void pGC->ops->PolyFillRect(dst, pGC, n, pRect)
 		DrawablePtr dst;
 		GCPtr pGC;
 		int n;
-		RECT *pRect;
+		xRectangle *pRect;
 .fi
 PolyFillRect fills multiple rectangles.
 
@@ -3651,11 +3736,11 @@ Example implementations are mfbPolyFillRect() in server/ddx/mfb/mfbfillrct.c and
 miPolyFillRect() in server/ddx/mi/mifillrct.c.
 .nf
 
-	pGC->ops->PolyFillArc(dst, pGC, n, pArc)
+	void pGC->ops->PolyFillArc(dst, pGC, n, pArc)
 		DrawablePtr dst;
 		GCPtr pGC;
 		int n;
-		ARC *pArc;
+		xArc *pArc;
 .fi
 PolyFillArc fills a shape for each arc in the
 list that is bounded by the arc and one or two
@@ -3664,7 +3749,7 @@ line segments with the current fill style.
 An example implementation is miPolyFillArc() in server/ddx/mi/mifillarc.c.
 .nf
 
-	pGC->ops->PutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pBinImage)
+	void pGC->ops->PutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pBinImage)
 		DrawablePtr dst;
 		GCPtr pGC;
 		int x, y, w, h;
@@ -3687,7 +3772,7 @@ to the destination.
 An example implementation is miPutImage() in server/ddx/mfb/mibitblt.c.
 .nf
 
-	pScreen->GetImage(src, x, y, w, h, format, planeMask, pBinImage)
+	void pScreen->GetImage(src, x, y, w, h, format, planeMask, pBinImage)
 		 DrawablePtr src;
 		 int x, y, w, h;
 		 long format;
@@ -3713,7 +3798,7 @@ is the format for a single plane of an XYPixmap.
 An example implementation is miGetImage() in server/ddx/mi/mibitblt.c.
 .nf
 
-	pGC->ops->ImageText8(pDraw, pGC, x, y, count, chars)
+	void pGC->ops->ImageText8(pDraw, pGC, x, y, count, chars)
 		DrawablePtr pDraw;
 		GCPtr pGC;
 		int x, y;
@@ -3728,7 +3813,7 @@ The coordinates specify the baseline and start of the text.
 An example implementation is miImageText8() in server/ddx/mi/mipolytext.c.
 .nf
 
-	pGC->ops->PolyText8(pDraw, pGC, x, y, count, chars)
+	int pGC->ops->PolyText8(pDraw, pGC, x, y, count, chars)
 		DrawablePtr pDraw;
 		GCPtr pGC;
 		int x, y;
@@ -3743,14 +3828,14 @@ See the X protocol specification for more details.
 An example implementation is miPolyText8() in server/ddx/mi/mipolytext.c.
 .nf
 
-	pGC->ops->PolyText16(pDraw, pGC, x, y, count, chars)
+	int pGC->ops->PolyText16(pDraw, pGC, x, y, count, chars)
 		DrawablePtr pDraw;
 		GCPtr pGC;
 		int x, y;
 		int count;
 		unsigned short *chars;
 
-	pGC->ops->ImageText16(pDraw, pGC, x, y, count, chars)
+	void pGC->ops->ImageText16(pDraw, pGC, x, y, count, chars)
 		DrawablePtr pDraw;
 		GCPtr pGC;
 		int x, y;
@@ -3910,11 +3995,11 @@ the number of spans to do, and two pointers to arrays that indicate the list
 of starting points and the list of widths of spans.
 .nf
 
-	pGC->ops->FillSpans(dst, pGC, nSpans, pPoints, pWidths, sorted)
+	void pGC->ops->FillSpans(dst, pGC, nSpans, pPoints, pWidths, sorted)
 		DrawablePtr dst;
 		GCPtr pGC;
 		int nSpans;
-		POINT *pPoints;
+		DDXPointPtr pPoints;
 		int *pWidths;
 		int sorted;
 .fi
@@ -3937,7 +4022,7 @@ and stipple, patOrg, fgPixel and bgPixel (for fillStyle OpaqueStipple).
 		DrawablePtr pDrawable;
 		GCPtr pGC;
 		unsigned int *pSrc;
-		POINT *pPoints;
+		DDXPointPtr pPoints;
 		int *pWidths;
 		int nSpans;
 		int sorted;
@@ -3962,10 +4047,10 @@ and reload the procedure pointers
 at validate time, as with the other output functions.
 .nf
 
-	unsigned int *pScreen->GetSpans(pDrawable, wMax, pPoints, pWidths, nSpans)
+	void pScreen->GetSpans(pDrawable, wMax, pPoints, pWidths, nSpans)
 		DrawablePtr pDrawable;
 		int wMax;
-		POINT *pPoints;
+		DDXPointPtr pPoints;
 		int *pWidths;
 		int nSpans;
 .fi
@@ -4184,7 +4269,7 @@ devPrivates
 .XE
 .LP
 devPrivates are arrays of values attached to various data structures
-(Screens, GCs and Windows currently).  These arrays are sized dynamically at
+(Screens, GCs, Windows, and Pixmaps currently).  These arrays are sized dynamically at
 server startup (and reset) time as various modules allocate portions of
 them.  They can be used for any purpose; each array entry is actually a
 union, DevUnion, of common useful types (pointer, long and unsigned long).
@@ -4265,17 +4350,24 @@ initialization.  A typical allocation sequence for WindowPrivates would be:
     }
 .fi
 .NH
-GC devPrivates
+GC and Pixmap devPrivates
 .XS
-GC devPrivates
+GC and Pixmap devPrivates
 .XE
 .LP
-The calls for GC's mirror the Window calls exactly; they have the same
-requirements and limitations:
+The calls for GCs and Pixmaps mirror the Window calls exactly; they have the
+same requirements and limitations:
 .nf
 	int AllocateGCPrivateIndex ()
 
 	Bool AllocateGCPrivate (pScreen, index, amount)
+		ScreenPtr pScreen;
+		int index;
+		unsigned amount;
+
+	int AllocatePixmapPrivateIndex ()			/* NEW IN R6 */
+
+	Bool AllocatePixmapPrivate (pScreen, index, amount)	/* NEW IN R6 */
 		ScreenPtr pScreen;
 		int index;
 		unsigned amount;
@@ -4596,6 +4688,7 @@ CopyPlane	mi	GC op
 CopyWindow	ddx	Window
 CreateGC	ddx	Screen
 CreatePixmap	ddx	Screen
+CreateScreenResources	ddx	Screen
 CreateWellKnowSockets	4.2
 CreateWindow	ddx	Screen
 CursorLimits	hd	Screen
@@ -4621,8 +4714,10 @@ Procedure	Port	Struct
 _
 FlushAllOutput	4.2
 FlushIfCriticalOutputPending	4.2
+FreeScratchPixmapHeader	dix
 GetImage	mi	Screen
 GetMotionEvents	hd	Device
+GetScratchPixmapHeader	dix
 GetSpans	ddx	Screen
 GetStaticColormap	ddx	Screen
 ImageGlyphBlt	mi	GC op
@@ -4641,6 +4736,7 @@ LineHelper	mi	GC op
 ListInstalledColormaps	ddx	Screen
 LookupKeyboardDevice	dix	
 LookupPointerDevice	dix	
+ModifyPixmapheader	mi	Screen
 NextAvailableClient	dix
 OsInit	4.2	
 PaintWindowBackground	mi	Window
