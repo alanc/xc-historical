@@ -1,4 +1,4 @@
-/* $Header: resource.h,v 1.2 87/12/30 18:13:35 rws Locked $ */
+/* $Header: resource.h,v 1.3 87/12/30 18:33:32 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -61,10 +61,11 @@ SOFTWARE.
 #define FAKE_CLIENT_ID(c, i) FakeClientID(c)
 
 /* Invalid resource id */
-#define INVALID	(-1)
+#define INVALID	(0)
 
 unsigned short CreateNewResourceType();
 short CreateNewResourceClass();
+unsigned long FakeClientID();
 void AddResource();
 void FreeResource();
 void FreeClientResources();
