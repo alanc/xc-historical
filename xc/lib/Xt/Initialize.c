@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.147 89/10/08 14:25:04 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.148 89/10/08 14:32:13 jim Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif /* lint */
 
@@ -43,7 +43,7 @@ SOFTWARE.
 #include "ShellP.h"
 #include "Quarks.h"
 
-#ifdef SUNSHLIB
+#if defined(SUNSHLIB) && defined(SHAREDCODE)
 /*
  * If used as a shared library, generate code under a different name so that
  * the stub routines in sharedlib.c get loaded into the application binary.
@@ -52,7 +52,7 @@ SOFTWARE.
 #define XtToolkitInitialize _XtToolkitInitialize
 #define XtAppInitialize _XtAppInitialize
 #define XtInitialize _XtInitialize
-#endif /* SUNSHLIB */
+#endif /* SUNSHLIB && SHAREDCODE */
 
 
 #ifdef hpux

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sharedlib.c,v 1.5 89/10/08 14:26:32 jim Exp $
+ * $XConsortium: sharedlib.c,v 1.6 89/10/09 14:09:04 jim Exp $
  * 
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -8,7 +8,7 @@
  * generating shared code so that this gets copied into the application binary.
  */
 
-#if !defined(SHAREDCODE) && defined(SUNSHLIB)
+#if defined(SUNSHLIB) && !defined(SHAREDCODE)
 #include "IntrinsicI.h"
 
 /*
