@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XSetPntMap.c,v 11.3 87/06/10 23:14:10 jg Exp $ */
+/* $Header: XSetPntMap.c,v 11.3 87/09/11 08:10:00 jim Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -36,7 +36,7 @@ XChangeKeyboardMapping (dpy, first_keycode, keysyms_per_keycode,
     KeySym *keysyms;
     int nkeycodes;
     {
-    register int nbytes;
+    register long nbytes;
     register xChangeKeyboardMappingReq *req;
 
     LockDisplay(dpy);
