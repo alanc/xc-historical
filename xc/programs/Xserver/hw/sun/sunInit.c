@@ -1,4 +1,5 @@
-/*-
+/* $XConsortium$ */
+/*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
  *
@@ -731,7 +732,7 @@ badfb:
 #else
 	ErrorF("Not configured to run inside SunWindows\n");
 	fd = -1;
-#endif	SUN_WINDOWS
+#endif /* SUN_WINDOWS */
     } else if (name) {
 	fd = open(name, O_RDWR, 0);
         if (fd < 0) {
