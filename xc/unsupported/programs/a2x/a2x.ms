@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.28 92/10/02 10:19:04 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.29 92/10/04 11:05:19 rws Exp $
 .de Ds
 .RS
 .nf
@@ -156,7 +156,7 @@ followed by a single control character, and {c\-t} followed by a string of
 characters terminated by another {c\-t}.  Control sequences are described in
 detail below.
 .LP
-\fBa2x\fP also interprets the backspace character ({c-h} or {Backspace})
+\fBa2x\fP also interprets the backspace character ({c\-h} or {Backspace})
 specially.  When you make corrections through DragonDictate, e.g., you use
 "choose \fI<n>\fP", DragonDictate will output backspaces to "undo" the
 previous choice before outputting the characters for the new choice (if any).
@@ -479,7 +479,7 @@ the corresponding \fI<undo-sequence>\fP just as if it had come from
 DragonDictate.
 .LP
 As a simple example, the undo entries for emacs-style forward/backward
-character motion ({c-f} and {c\-b}) are:
+character motion ({c\-f} and {c\-b}) are:
 .Ds
 ^T^Cb:^T^Cf
 ^T^Cf:^T^Cb
@@ -773,7 +773,7 @@ add-word /t "[bad paste single]" "{c-@}{c-e}{c-t}{c-m}{c-w}{c-t}{c-j}Cpdrafts:{c
 .LP
 This macro selects text in the current window (assume that {c\-@} sets a mark
 at the current text position, {c\-e} moves to the end of the text line, and
-{c-t}{c-m}{c-w} selects the text between the mark and the current text
+{c\-t}{c\-m}{c\-w} selects the text between the mark and the current text
 position), then jumps to a top-level window with "drafts:" as a name prefix,
 and then pastes the selection into that window (assume that {c\-t}{c\-m}{c\-y}
 causes a paste).  Unfortunately, if you try this, you probably discover that
@@ -858,9 +858,15 @@ add-word /t "[delete macro]" "{c-t}{c-f}d0{c-t}" invisible
 Server Grabs
 .LP
 If an application grabs exclusive control of the server (using the Xlib
-function XGrabServer), \fBa2x\fP will not be able to function; protocol
-requests from \fBa2x\fP will be suspended just as other X clients will have
-their requests suspended.  This may be a problem, depending on whether the
+function XGrabServer), \fBa2x\fP might not be able to function; protocol
+requests from \fBa2x\fP might be suspended just as other X clients will have
+their requests suspended.  Newer versions of the DEC-XTRAP (version 3.2a)
+and XTEST (version 2.2) extensions provide a mechanism to make \fBa2x\fP
+impervious to server grabs, so this will not be a problem when using a new
+enough version of one of these extensions.
+.LP
+If the extension you are using does not permit \fBa2x\fP to be impervious
+to server grabs, this may be a problem, depending on whether the
 applications you use grab the server during the time you need to generate
 input.  For example, many window managers will grab the server when they
 resize or move windows, or perhaps even when displaying menus.  In that case,
@@ -903,13 +909,23 @@ For example:
 .Ds
 add-word /t "[dragon quit]" "{c-t}{c-e}{Dcom}dkey {Enter}{Dcom}" invisible
 .De
-(The "dkey" dcom simply forces the DragonDictate menu to pop down.)  If
-\fBa2x\fP seems to be doing strange things, you can dump recent history of
+(The "dkey" dcom simply forces the DragonDictate menu to pop down.)
+.LP
+If \fBa2x\fP seems to be doing strange things, you can dump recent history of
 characters received using the control sequence:
 .Ds
 {c-t}{c-p}
 .De
 This will print out on your PC screen.
+.LP
+You can send characters to your PC screen using the control sequence:
+.Ds
+{c-t}{c-v}\fI<string>\fP{c-t}
+.De
+For example, to clear the PC screen:
+.Ds
+add-word /t "[dragon clear]" "{c-t}{c-v}{Esc}[H{Esc}[2J{c-t}{Dcom}dkey {Enter}{Dcom}" invisible
+.De
 .LP
 You can generate a {c\-t} with the control sequence:
 .Ds
