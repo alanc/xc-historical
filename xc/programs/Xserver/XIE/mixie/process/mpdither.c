@@ -1,4 +1,4 @@
-/* $XConsortium: mpdither.c,v 1.1 93/10/26 09:47:14 rws Exp $ */
+/* $XConsortium: mpdither.c,v 1.2 93/10/31 09:48:14 dpw Exp $ */
 /**** module mpdither.c ****/
 /******************************************************************************
 				NOTICE
@@ -496,10 +496,10 @@ static int ActivateDitherErrorDiffusion(flo,ped,pet)
     int band, nbands = pet->receptor[SRCtag].inFlo->bands;
 
     for(band = 0; band < nbands; band++, pvt++, iband++, oband++) {
-	register void *inp, *outp;
+	register pointer inp, outp;
 
-	if (!(inp  = GetCurrentSrc(void,flo,pet,iband)) ||
-	    !(outp = GetCurrentDst(void,flo,pet,oband))) continue;
+	if (!(inp  = GetCurrentSrc(pointer,flo,pet,iband)) ||
+	    !(outp = GetCurrentDst(pointer,flo,pet,oband))) continue;
 
 	do {
 		(*(pvt->action)) (inp, outp, pvt);
@@ -510,8 +510,8 @@ static int ActivateDitherErrorDiffusion(flo,ped,pet)
 		    pvt->current  = pvt->previous;
 		    pvt->previous = curr;
 		}
-		inp  = GetNextSrc(void,flo,pet,iband,FLUSH);
-		outp = GetNextDst(void,flo,pet,oband,FLUSH);
+		inp  = GetNextSrc(pointer,flo,pet,iband,FLUSH);
+		outp = GetNextDst(pointer,flo,pet,oband,FLUSH);
 
 	} while (inp && outp) ;
 
@@ -535,16 +535,16 @@ static int ActivateDitherOrdered(flo,ped,pet)
     int band, nbands = pet->receptor[SRCtag].inFlo->bands;
 
     for(band = 0; band < nbands; band++, pvt++, iband++, oband++) {
-	register void *inp, *outp;
+	register pointer inp, outp;
 
-	if (!(inp  = GetCurrentSrc(void,flo,pet,iband)) ||
-	    !(outp = GetCurrentDst(void,flo,pet,oband))) continue;
+	if (!(inp  = GetCurrentSrc(pointer,flo,pet,iband)) ||
+	    !(outp = GetCurrentDst(pointer,flo,pet,oband))) continue;
 
 	do {
 		(*(pvt->action)) (inp, outp, pvt, oband->current);
 
-		inp  = GetNextSrc(void,flo,pet,iband,FLUSH);
-		outp = GetNextDst(void,flo,pet,oband,FLUSH);
+		inp  = GetNextSrc(pointer,flo,pet,iband,FLUSH);
+		outp = GetNextDst(pointer,flo,pet,oband,FLUSH);
 
 	} while (inp && outp) ;
 
@@ -624,7 +624,7 @@ static int DestroyDither(flo,ped)
 */
 
 static void EdDitherbb(inp,outp,pvt)
-	void *inp; void *outp; mpDitherEDDefPtr pvt;
+	pointer inp; pointer outp; mpDitherEDDefPtr pvt;
 {
 	bzero((char *)outp, (pvt->width+7)>>3);
 }
@@ -636,7 +636,7 @@ static void EdDitherbb(inp,outp,pvt)
 
 #define MakeEdBit(fn_name,itype,otype)					\
 static void fn_name(INP,OUTP,pvt) 					\
-	void *INP; void *OUTP; mpDitherEDDefPtr pvt;			\
+	pointer INP; pointer OUTP; mpDitherEDDefPtr pvt;			\
 {									\
 	register itype *inp = (itype *) INP;				\
 	register LogInt *outp = (LogInt *) OUTP;			\
@@ -671,7 +671,7 @@ static void fn_name(INP,OUTP,pvt) 					\
 
 #define MakeEdPix(fn_name,itype,otype)					\
 static void fn_name(INP,OUTP,pvt) 					\
-	void *INP; void *OUTP; mpDitherEDDefPtr pvt;			\
+	pointer INP; pointer OUTP; mpDitherEDDefPtr pvt;			\
 {									\
 	register itype *inp = (itype *) INP;				\
 	register otype *outp = (otype *) OUTP, actual;			\
@@ -715,7 +715,7 @@ MakeEdPix	(EdDitherQQ,QuadPixel,QuadPixel)
 
 #define MakeOrdBit(fn_name,itype,otype)					\
 static void fn_name(INP,OUTP,pvt,ycur)					\
-	void *INP; void *OUTP; mpDitherOrdDefPtr pvt; int ycur;		\
+	pointer INP; pointer OUTP; mpDitherOrdDefPtr pvt; int ycur;		\
 {									\
 	register itype *inp = (itype *) INP;				\
 	register LogInt *outp = (LogInt *) OUTP;			\
@@ -756,7 +756,7 @@ static void fn_name(INP,OUTP,pvt,ycur)					\
 
 #define MakeOrdPix(fn_name,itype,otype)					\
 static void fn_name(INP,OUTP,pvt,ycur)					\
-	void *INP; void *OUTP; mpDitherOrdDefPtr pvt; int ycur;		\
+	pointer INP; pointer OUTP; mpDitherOrdDefPtr pvt; int ycur;		\
 {									\
 	register itype *inp = (itype *) INP;				\
 	register otype *outp = (otype *) OUTP;				\
