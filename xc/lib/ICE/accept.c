@@ -1,4 +1,4 @@
-/* $XConsortium: accept.c,v 1.11 93/09/22 11:51:38 mor Exp $ */
+/* $XConsortium: accept.c,v 1.12 93/11/18 11:36:18 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -301,6 +301,19 @@ IceAuthDataEntry	*entries;
 
 
 
+void
+IceSetHostBasedAuthProc (proc, clientData)
+
+IceHostBasedAuthProc	proc;
+IcePointer		clientData;
+
+{
+    _IceHostBasedAuthProc = proc;
+    _IceHostBasedAuthProcClientData = clientData;
+}
+
+
+
 IceConn
 IceAcceptConnection (fd)
 
@@ -390,7 +403,10 @@ int fd;
     iceConn->scratch = NULL;
     iceConn->scratch_size = 0;
 
-    iceConn->iceConn_type = 2;
+    if (fd == _IceUnixDomainConnection)
+	iceConn->iceConn_type = ICE_CONN_FROM_LOCAL_ACCEPT;
+    else
+	iceConn->iceConn_type = ICE_CONN_FROM_ACCEPT;
 
     iceConn->open_ref_count = 1;
     iceConn->proto_ref_count = 0;
