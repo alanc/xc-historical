@@ -55,6 +55,7 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
  */
 
 #include    "sun.h"
+#include    <servermd.h>
 #include    "dixstruct.h"
 #include    "dix.h"
 #include    "opaque.h"
@@ -64,9 +65,11 @@ extern void sunKbdProc();
 extern Bool sunBW2Probe();
 extern Bool sunCG2CProbe();
 extern Bool sunCG4CProbe();
+extern void ProcessInputEvents();
 
 extern void SetInputCheck();
 extern char *strncpy();
+extern GCPtr CreateScratchGC();
 
 #define	XDEVICE	"XDEVICE"
 #define	PARENT	"WINDOW_GFX"
@@ -330,6 +333,16 @@ sunScreenInit (pScreen)
     pScreen->PointerNonInterestBox = 	sunPointerNonInterestBox;
     pScreen->ConstrainCursor = 	    	sunConstrainCursor;
     pScreen->RecolorCursor = 	    	sunRecolorCursor;
+
+    /*
+     *	Block/Unblock handlers
+     */
+    pScreen->BlockHandler = NoopDDA;
+#ifndef	notdef
+    pScreen->WakeupHandler = NoopDDA;
+#else
+    pScreen->WakeupHandler = ProcessInputEvents;
+#endif
 
 }
 
