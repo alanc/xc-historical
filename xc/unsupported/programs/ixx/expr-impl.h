@@ -795,7 +795,7 @@ public:
     Boolean set_source(Generator*);
 };
 
-#if defined(__STDC__) || defined(__ANSI_CPP__)
+#if !defined(UNIXCPP)
 #define __ExprIteratorMemberFunction(T) T##_ExprIteratorMemberFunction
 #define ExprIteratorMemberFunction(T) __ExprIteratorMemberFunction(T)
 #else

@@ -31,7 +31,7 @@
 
 #include <X11/Fresco/_enter.h>
 
-#if defined(__STDC__) || defined(__ANSI_CPP__)
+#if !defined(UNIXCPP)
 #define __TableEntry(Table) Table##_Entry
 #define TableEntry(Table) __TableEntry(Table)
 #define __TableIterator(Table) Table##_Iterator

@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.126 94/04/07 15:45:21 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.127 94/05/13 16:01:18 dpw Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -40,89 +40,73 @@ XCOMM site:  $XConsortium: site.def,v 1.126 94/04/07 15:45:21 rws Exp $
 #include <host.def>
 
 /*
- * Set up C++ and Fresco build parameters.  We set the default C++ compiler
+ * Set up C++ compilers parameters.  We set the default C++ compiler
  * and flags for each platform so you can turn on Fresco builds by setting
- * BuildFresco to YES in host.def; by default we turn Fresco builds OFF on
- * SunOS 4 machines because SunOS 4 machines and HP machines would have to
- * compete for the single CenterLine C++ compiler license if we built it on
- * both.  When we have additional compilers and/or licenses, we can fix this.
+ * BuildFresco to YES in host.def; by default we turn Fresco builds OFF to
+ * save build time on some machines (not every machine needs to build it),
+ * and to avoid contention for scarce C++ compiler licenses.  We turn it
+ * on explicitly in the host.def files for hosts where we really want to
+ * build it.
  */
 
 #ifdef SunArchitecture
-#ifdef SVR4
 
-#ifndef HasCplusplus 
-#define HasCplusplus YES
-#endif
-#if !defined(HasSunCplusplus) && !defined(HasCenterLineCplusplus) && !defined(HasGcc2ForCplusplus)
+#ifdef SVR4
+#if !defined(HasSunCplusplus) && !defined(HasCenterLineCplusplus)
 #define HasSunCplusplus YES
 #define CplusplusCompilerMajorVersion 4
 #endif
 #ifdef HasSunCplusplus
+#define CplusplusCmd /opt/SUNWspro/bin/CC
 #define CplusplusDependIncludes -I/opt/SUNWspro/SC3.0/include/CC
 #endif
 #ifdef HasCenterLineCplusplus
-#ifndef	CplusplusCmd
 #define CplusplusCmd /obj/CenterLine/bin/CC
-#endif
-#ifndef	CplusplusDependIncludes
 #define CplusplusDependIncludes -I/obj/CenterLine/clc++/sparc-solaris2/incl
-#endif
-#ifndef DefaultCplusplusOptions
-#define DefaultCplusplusOptions -Xa
-#endif
 #endif
 
 #else /* !SVR4 */
 
-#ifndef HasCplusplus 
-#define HasCplusplus YES
-#endif
-#if !defined(HasSunCplusplus) && !defined(HasCenterLineCplusplus) && !defined(HasGcc2ForCplusplus)
-#define HasCenterLineCplusplus YES
+#if !defined(HasSunCplusplus) && !defined(HasCenterLineCplusplus)
+#define HasSunCplusplus YES
 #endif
 #ifdef HasSunCplusplus
-#define CplusplusDependIncludes -I/obj/lang/SC2.0.1/include/CC_413
+#define CplusplusCmd /usr/lang/CC
+#define CplusplusDependIncludes -I/usr/lang/SC2.0.1/include/CC_413
 #endif
 #ifdef HasCenterLineCplusplus
-#ifndef	CplusplusCmd
 #define CplusplusCmd /obj/CenterLine/bin/CC
-#endif
-#ifndef	CplusplusDependIncludes
 #define CplusplusDependIncludes -I/obj/CenterLine/clc++/sparc-sunos4/incl
 #endif
-#ifndef DefaultCplusplusOptions
-#define DefaultCplusplusOptions -Xa
+#endif /* SVR4 */
+
+#ifndef BuildFresco
+#define BuildFresco NO
 #endif
+
+#endif /* SunArchitecture */
+
+
+
+#ifdef HPArchitecture
+
+#if !defined(HasHPCplusplus) && !defined(HasCenterLineCplusplus)
+#define HasHPCplusplus YES
+#endif
+#ifdef HasHPCplusplus
+#define CplusplusCmd /usr/bin/CC
+#endif
+#ifdef HasCenterLineCplusplus
+#define CplusplusCmd /obj/CenterLine/bin/CC
+#define CplusplusDependIncludes -I/obj/CenterLine/clc++/pa-hpux8/incl
 #endif
 
 #ifndef BuildFresco
 #define BuildFresco NO
 #endif
 
-#endif /* SVR4 */
-#endif /* SunArchitecture */
+#endif /* HPArchitecture */
 
-
-#ifdef HPArchitecture
-#ifndef HasCplusplus
-#define HasCplusplus YES
-#endif
-#ifndef CplusplusCmd
-#ifndef	CplusplusCmd
-#define CplusplusCmd /obj/CenterLine/bin/CC
-#endif
-#ifndef	CplusplusDependIncludes
-#define CplusplusDependIncludes -I/obj/CenterLine/clc++/pa-hpux8/incl
-#endif
-#endif
-#ifndef CplusplusStandardDefines
-#define CplusplusStandardDefines -D__ANSI_CPP__
-#endif
-#ifndef OptimizedCplusplusDebugFlags
-#define OptimizedCplusplusDebugFlags -O
-#endif
-#endif
 
 
 #if defined(BSD386Architecture) || defined(SVR4Architecture)
@@ -247,6 +231,14 @@ clean::									@@\
 #define XVirtualFramebufferServer YES
 #define ServerExtraDefines -D_XSERVER64
 #define ServerOSDefines -DDDXTIME
+#endif
+
+/* Stephen uses xlbiff */
+#ifndef XlbiffMailPath
+#define XlbiffMailPath /site/spool/mail/%s
+#endif
+#ifndef XmhLibDir
+#define XmhLibDir /usr/local/lib/mh
 #endif
 
 #include <host.def>

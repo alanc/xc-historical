@@ -25,7 +25,7 @@
 #ifndef xf__scope_h
 #define xf__scope_h
 
-#if defined(__STDC__) || defined(__ANSI_CPP__)
+#if !defined(UNIXCPP)
 #define _lib_fresco(name) Xf##name
 #else
 #define _lib_fresco(name) Xf/**/name

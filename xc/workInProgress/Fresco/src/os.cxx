@@ -1,5 +1,5 @@
 /*
- * $XConsortium: os.cxx,v 1.3 94/03/07 14:58:32 matt Exp $
+ * $XConsortium: os.cxx,v 1.9 94/04/01 16:48:03 matt Exp $
  */
 
 /*
@@ -57,20 +57,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <sysent.h>
-#include <unistd.h>
-
-/*
- * DEC C++ headers don't prototype getpw* functions?
- */
-
-#ifdef __DECCXX
-extern "C" {
-    extern struct passwd* getpwent();
-    extern struct passwd* getpwnam(const char*);
-    extern struct passwd* getpwuid(uid_t);
-}
+#if !defined(__DECCXX) && !defined(__hpux)
+#include <sysent.h>		/* DEC and HP don't ahve sysent.h */
 #endif
+#include <unistd.h>
 
 #ifndef S_ISDIR
 #define S_ISDIR(mode) (((mode) & S_IFMT) == S_IFDIR)

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: osfLib.tmpl,v 1.16 94/01/18 14:59:12 rws Exp $
+XCOMM $XConsortium: osfLib.tmpl,v 1.17 94/01/29 11:47:36 rws Exp $
 
 /*
  * OSF/1 shared library template
@@ -22,3 +22,12 @@ XCOMM $XConsortium: osfLib.tmpl,v 1.16 94/01/18 14:59:12 rws Exp $
 #define SharedXtstReqs $(LDPRELIB) $(XLIB)
 #define SharedXieReqs $(LDPRELIB) $(XLIBONLY)
 #define SharedSMReqs $(LDPRELIB) $(ICELIB)
+
+#if ThreadedX && ModernOSF1
+#define FrescoSysLibs  -lpthreads -lmach CplusplusLibC MathLibrary
+#else
+#define FrescoSysLibs  CplusplusLibC MathLibrary
+#endif
+
+#define SharedFrescoReqs $(LDPRELIB) $(XLIBONLY) FrescoSysLibs
+#define SharedXtfReqs $(LDPRELIB) $(FRESCOLIB) $(XTOOLLIB) $(XLIB) FrescoSysLibs

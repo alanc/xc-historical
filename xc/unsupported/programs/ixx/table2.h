@@ -31,7 +31,7 @@
 
 #include "types.h"
 
-#if defined(__STDC__) || defined(__ANSI_CPP__)
+#if !defined(UNIXCPP)
 #define __Table2Entry(Table2) Table2##_Entry
 #define Table2Entry(Table2) __Table2Entry(Table2)
 #define __Table2Iterator(Table2) Table2##_Iterator

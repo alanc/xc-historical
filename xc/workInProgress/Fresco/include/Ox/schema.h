@@ -129,7 +129,7 @@ protected:
  * is _<type>_type.
  */
 
-#if defined(__STDC__) || defined(__ANSI_CPP__)
+#if !defined(UNIXCPP)
 #define __TypeIdVar(T) _##T##_##tid
 #define TypeIdVar(T) __TypeIdVar(T)
 #define __TypeVar(T) _##T##_##type

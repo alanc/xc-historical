@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.41 94/03/26 17:14:27 rws Exp $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.42 94/04/01 19:59:12 kaleb Exp $
 
 #define OSName			IRIX 5.2
 XCOMM operating system:  OSName
@@ -51,6 +51,11 @@ XCOMM operating system:  OSName
 #define DefaultCCOptions sgiCCOptions SymbolTables
 #define PexCCOptions sgiCCOptions PexSymbolTables
 #define ServerCCOptions sgiCCOptions ServerSymbolTables
+
+/* For SGI C++ compiler, need to search extra dirs in make depend */
+#ifndef CplusplusDependIncludes
+#define CplusplusDependIncludes -I/usr/include/CC
+#endif
 
 /* At SGI, we don't need this */
 #define ConstructMFLAGS		NO	/* build MFLAGS from MAKEFLAGS */

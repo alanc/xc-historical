@@ -334,7 +334,7 @@ void App::finish() {
     stage("finish");
 }
 
-#if !defined(AIXV3)
+#if !defined(AIXV3) && !defined(__DECCXX)
 extern "C" {
     void* sbrk(int);
 }

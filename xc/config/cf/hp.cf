@@ -1,10 +1,52 @@
-XCOMM platform:  $XConsortium: hp.cf,v 1.66 94/03/26 17:09:58 kaleb Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.67 94/04/01 20:00:21 kaleb Exp $
 
 #define OSName                 HP-UX 9.1
 XCOMM operating system:  OSName
 #define OSMajorVersion         9
 #define OSMinorVersion         1
 #define OSTeenyVersion         0
+
+
+/*
+ * C++ compiler setup.  This file knows what options to use with 
+ * certain compilers, including HP C++ and CenterLine C++.
+ * 
+ * For HP C++, define HasHPCplusplus to YES in site.def.  
+ * For CenterLine C++, define HasCenterLineCplusplus to YES in site.def.
+ * For other compilers, define HasCplusplus to YES in site.def, and 
+ *    check to see if you need to provide values for CplusplusOptions
+ *    and/or DefaultCplusplusOptions.
+ *
+ * In any case, you may also need to set CplusplusDependIncludes.
+ */
+
+#if HasHPCplusplus
+#ifndef HasCplusplus
+#define HasCplusplus YES
+#endif
+#ifndef DefaultCplusplusOptions
+#define DefaultCplusplusOptions -Aa
+#endif
+#ifndef CplusplusOptions
+#define CplusplusOptions -Aa
+#endif
+#ifndef CplusplusDependIncludes 
+#define CplusplusDependIncludes -I/usr/include/CC
+#endif
+#endif
+
+#if HasCenterLineCplusplus
+#ifndef HasCplusplus
+#define HasCplusplus YES
+#endif
+#ifndef OptimizedCplusplusDebugFlags
+#define OptimizedCplusplusDebugFlags -O
+#endif
+#ifndef CplusplusDependIncludes 
+#define CplusplusDependIncludes -I/usr/local/CenterLine/clc++/pa-hpux8/incl
+#endif
+#endif
+
 
 #define SystemV                YES
 #define Malloc0ReturnsNull     YES

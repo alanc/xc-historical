@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.36 94/04/07 15:47:14 rws Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.37 94/04/09 20:45:31 rws Exp $
 /* only tested with Digital OSF/1 */
 
 #ifdef AlphaArchitecture
@@ -34,6 +34,23 @@ XCOMM operating system:  OSName
 
 #if ThreadedX
 #define ThreadsLibraries -lpthreads -lmach -lc_r
+#endif
+
+/*
+ * For OSF/1 platforms, we must define both the location of the compiler
+ * and the location of its standard C++ library.  The library location
+ * is needed to resolve dependent library symbols when we build our own
+ * C++ shared libraries like libFresco
+ */
+
+#ifndef CplusplusCmd
+#define CplusplusCmd /usr/bin/cxx
+#endif
+#ifndef CplusplusDependIncludes 
+#define CplusplusDependIncludes -D__DECCXX -I/usr/include
+#endif
+#ifndef CplusplusLibC
+#define CplusplusLibC -L/usr/lib/cmplrs/cxx -lcxx
 #endif
 
 #include <osfLib.rules>
