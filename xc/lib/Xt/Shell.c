@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.152 94/03/04 19:40:33 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.153 94/03/08 11:11:10 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1015,7 +1015,7 @@ static void ApplicationInitialize(req, new, args, num_args)
 		: NULL;
 
     if (w->application.connection)
-	SetSessionProperties(w, True, 0L);
+	SetSessionProperties(w, True, 0L, 0L);
 }
 
 static void Resize(w)
@@ -2224,7 +2224,7 @@ static Boolean TopLevelSetValues(oldW, refW, newW, args, num_args)
     return False;
 }
 
-#define XT_NUM_SM_PROPS 11
+
 /*ARGSUSED*/
 static Boolean ApplicationSetValues(current, request, new, args, num_args)
     Widget current, request, new;
@@ -2233,9 +2233,9 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 {
     ApplicationShellWidget nw = (ApplicationShellWidget) new;
     ApplicationShellWidget cw = (ApplicationShellWidget) current;
-    char *delete_props[XT_NUM_SM_PROPS];
-    int num_props = 0;
     unsigned long set_mask = 0L;
+    unsigned long unset_mask = 0L;
+    Boolean initialize;
 
     if (cw->application.argv != nw->application.argv) {
 	nw->application.argv = NewStringArray(nw->application.argv);
@@ -2275,7 +2275,7 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	    nw->application.clone_command =
 		NewStringArray(nw->application.clone_command);
 	    set_mask |= XtCloneCommandMask;
-	} else delete_props[num_props++] = SmCloneCommand;
+	} else unset_mask |= XtCloneCommandMask;
 	FreeStringArray(cw->application.clone_command);
     }
 
@@ -2284,7 +2284,7 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	    nw->application.current_dir = 
 		XtNewString(nw->application.current_dir);
 	    set_mask |= XtCurrentDirectoryMask;
-	} else delete_props[num_props++] = SmCurrentDirectory;
+	} else unset_mask |= XtCurrentDirectoryMask;
 	XtFree((char *) cw->application.current_dir);
     }
 
@@ -2293,7 +2293,7 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	    nw->application.discard_command =
 		NewStringArray(nw->application.discard_command);
 	    set_mask |=  XtDiscardCommandMask;
-	} else delete_props[num_props++] = SmDiscardCommand;
+	} else unset_mask |= XtDiscardCommandMask;
 	FreeStringArray(cw->application.discard_command);
     }
 
@@ -2302,7 +2302,7 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	    nw->application.environment = 
 		NewStringArray(nw->application.environment);
 	    set_mask |= XtEnvironmentMask;
-	} else delete_props[num_props++] = SmEnvironment;
+	} else unset_mask |= XtEnvironmentMask;
 	FreeStringArray(cw->application.environment);
     }
 
@@ -2311,7 +2311,7 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	    nw->application.program_path = 
 		XtNewString(nw->application.program_path);
 	    set_mask |= XtProgramMask;
-	} else delete_props[num_props++] = SmProgram;
+	} else unset_mask |= XtProgramMask;
 	XtFree((char *) cw->application.program_path);
     }
 
@@ -2320,7 +2320,7 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	    nw->application.resign_command =
 		NewStringArray(nw->application.resign_command);
 	    set_mask |= XtResignCommandMask;
-	} else delete_props[num_props++] = SmResignCommand;
+	} else set_mask |= XtResignCommandMask;
 	FreeStringArray(cw->application.resign_command);
     }
 
@@ -2329,7 +2329,7 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	    nw->application.restart_command =
 		NewStringArray(nw->application.restart_command);
 	    set_mask |= XtRestartCommandMask;
-	} else delete_props[num_props++] = SmRestartCommand;
+	} else unset_mask |= XtRestartCommandMask;
 	FreeStringArray(cw->application.restart_command);
     }
 
@@ -2341,17 +2341,13 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	    nw->application.shutdown_command =
 		NewStringArray(nw->application.shutdown_command);
 	    set_mask |= XtShutdownCommandMask;
-	} else delete_props[num_props++] = SmShutdownCommand;
+	} else unset_mask |= XtShutdownCommandMask;
 	FreeStringArray(cw->application.shutdown_command);
     }
 
-    if (nw->application.connection) {
-	if (num_props) 
-	    SmcDeleteProperties(nw->application.connection, num_props,
-				delete_props);
-	if (set_mask)
-	    SetSessionProperties(new, False, set_mask);
-    }
+    initialize = (cw->application.connection != nw->application.connection);
+    if (nw->application.connection && (set_mask || unset_mask || initialize))
+	SetSessionProperties(new, initialize, set_mask, unset_mask);
     return False;
 }
 
@@ -2645,10 +2641,13 @@ static PropertyRec propertyTable[] = {
 };
 #undef Offset
 
-static void SetSessionProperties(w, initialize, set_mask)
+#define XT_NUM_SM_PROPS 11
+
+static void SetSessionProperties(w, initialize, set_mask, unset_mask)
     ApplicationShellWidget w;
     Boolean initialize;
     unsigned long set_mask;
+    unsigned long unset_mask;
 {
     PropertyTable p = propertyTable;
     int n;
@@ -2657,6 +2656,7 @@ static void SetSessionProperties(w, initialize, set_mask)
     String user_name;
     unsigned long mask;
     SmProp *props[XT_NUM_SM_PROPS];
+    char *pnames[XT_NUM_SM_PROPS];
 
     if (w->application.connection == NULL)
 	return;
@@ -2676,20 +2676,30 @@ static void SetSessionProperties(w, initialize, set_mask)
 	user_name = _XtGetUserName();
 	if (user_name)
 	    props[num_props++] = ArrayPack(SmUserID, &user_name);
-    } else {
-	/* set only what we're told to set */
+	SmcSetProperties(w->application.connection, num_props, props);
+	FreePacks(props, num_props);
+	return;
+    } 
+
+    if (set_mask) {
 	mask = 1L;
-	for (n = XtNumber(propertyTable); n; n--, p++) {
+	for (n = XtNumber(propertyTable); n; n--, p++, mask <<= 1)
 	    if (mask & set_mask) {
 		addr = (XtPointer *) ((char *) w + p->offset);
 		props[num_props++] = (*(p->proc))(p->name, (XtPointer)addr);
 	    }
-	    mask = mask << 1;
-	}
+	SmcSetProperties(w->application.connection, num_props, props);
+	FreePacks(props, num_props);
     }
 
-    SmcSetProperties(w->application.connection, num_props, props);
-    FreePacks(props, num_props);
+    if (unset_mask) {
+	mask = 1L;
+	num_props = 0;
+	for (n = XtNumber(propertyTable); n; n--, p++, mask <<= 1)
+	    if (mask & unset_mask) 
+		pnames[num_props++] = p->name;
+	SmcDeleteProperties(w->application.connection, num_props, pnames);
+    }
 }
 
 /*ARGSUSED*/
