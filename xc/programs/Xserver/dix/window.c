@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.12 89/07/12 17:16:02 keith Exp $ */
+/* $XConsortium: window.c,v 5.13 89/07/13 10:13:48 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -553,6 +553,7 @@ CreateRootWindow(screen)
     WindowPtr	pWin;
     BoxRec	box;
     ScreenPtr	pScreen;
+    PixmapFormatRec *format;
 
     pWin = (WindowPtr)xalloc(sizeof(WindowRec));
     if (!pWin)
@@ -576,6 +577,11 @@ CreateRootWindow(screen)
     pWin->drawable.type = DRAWABLE_WINDOW;
 
     pWin->drawable.depth = pScreen->rootDepth;
+    for (format = screenInfo.formats;
+	 format->depth != pScreen->rootDepth;
+	 format++)
+	;
+    pWin->drawable.bitsPerPixel = format->bitsPerPixel;
 
     pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 
@@ -745,6 +751,8 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     int idepth, ivisual;
     Bool fOK;
     DepthPtr pDepth;
+    PixmapFormatRec *format;
+    VisualID visualParent;
 
     if (class == CopyFromParent)
 	class = pParent->drawable.class;
@@ -769,33 +777,37 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     }
 
     pScreen = pParent->drawable.pScreen;
-    /* Find out if the depth and visual are acceptable for this Screen */
-    fOK = FALSE;
+
     if ((class == InputOutput) && (depth == 0))
         depth = pParent->drawable.depth;
-
+    visualParent = wVisual (pParent);
     if (visual == CopyFromParent)
-        visual = wVisual (pParent);
+	visual = visualParent;
 
-    for(idepth = 0; idepth < pScreen->numDepths; idepth++)
+    /* Find out if the depth and visual are acceptable for this Screen */
+    if ((visual != visualParent) || (depth != pParent->drawable.depth))
     {
-	pDepth = (DepthPtr) &pScreen->allowedDepths[idepth];
-	if ((depth == pDepth->depth) || (depth == 0))
+	fOK = FALSE;
+	for(idepth = 0; idepth < pScreen->numDepths; idepth++)
 	{
-	    for (ivisual = 0; ivisual < pDepth->numVids; ivisual++)
+	    pDepth = (DepthPtr) &pScreen->allowedDepths[idepth];
+	    if ((depth == pDepth->depth) || (depth == 0))
 	    {
-		if (visual == pDepth->vids[ivisual])
+		for (ivisual = 0; ivisual < pDepth->numVids; ivisual++)
 		{
-		    fOK = TRUE;
-		    break;
+		    if (visual == pDepth->vids[ivisual])
+		    {
+			fOK = TRUE;
+			break;
+		    }
 		}
 	    }
 	}
-    }
-    if (fOK == FALSE)
-    {
-	*error = BadMatch;
-	return NullWindow;
+	if (fOK == FALSE)
+	{
+	    *error = BadMatch;
+	    return NullWindow;
+	}
     }
 
     if (((vmask & (CWBorderPixmap | CWBorderPixel)) == 0) &&
@@ -808,7 +820,7 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 
     if (((vmask & CWColormap) == 0) &&
 	(class != InputOnly) &&
-	((visual != wVisual (pParent)) || (wColormap (pParent) == None)))
+	((visual != visualParent) || (wColormap (pParent) == None)))
     {
 	*error = BadMatch;
         return NullWindow;
@@ -829,6 +841,14 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     }
     pWin->drawable = pParent->drawable;
     pWin->drawable.depth = depth;
+    if (depth == pParent->drawable.depth)
+	pWin->drawable.bitsPerPixel = pParent->drawable.bitsPerPixel;
+    else
+    {
+	for (format = screenInfo.formats; format->depth != depth; format++)
+	    ;
+	pWin->drawable.bitsPerPixel = format->bitsPerPixel;
+    }
     if (class == InputOnly)
         pWin->drawable.type = (short) UNDRAWABLE_WINDOW;
     pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
@@ -838,7 +858,8 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 
     SetWindowToDefaults(pWin);
 
-    if (visual != wVisual (pParent)) {
+    if (visual != visualParent)
+    {
 	if (!MakeWindowOptional (pWin))
 	{
 	    xfree (pWin);
