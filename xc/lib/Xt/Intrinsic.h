@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.174 91/09/09 16:25:56 converse Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.175 92/03/02 16:43:31 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -107,6 +107,7 @@ typedef unsigned long	XtValueMask;
 typedef unsigned long	XtIntervalId;
 typedef unsigned long	XtInputId;
 typedef unsigned long	XtWorkProcId;
+typedef unsigned long	XtSignalId;
 typedef unsigned int	XtGeometryMask;
 typedef unsigned long	XtGCMask;   /* Mask of values that are used by widget*/
 typedef unsigned long	Pixel;	    /* Index into colormap		*/
@@ -321,6 +322,13 @@ typedef void (*XtInputCallbackProc)(
     XtPointer 		/* closure */,
     int*		/* source */,
     XtInputId*		/* id */
+#endif
+);
+
+typedef void (*XtSignalCallbackProc)(
+#if NeedFunctionPrototypes
+    XtPointer		/* closure */,
+    XtSignalId*		/* id */
 #endif
 );
 
@@ -1139,6 +1147,26 @@ extern void XtRemoveInput(
 #endif
 );
 
+extern XtInputId XtAppAddSignal(
+#if NeedFunctionPrototypes
+    XtAppContext       	/* app_context */,
+    XtSignalCallbackProc /* proc */,
+    XtPointer 		/* closure */
+#endif
+);
+
+extern void XtRemoveSignal(
+#if NeedFunctionPrototypes
+    XtSignalId 		/* id */
+#endif
+);
+
+extern void XtNoticeSignal(
+#if NeedFunctionPrototypes
+    XtSignalId		/* id */
+#endif
+);
+
 extern void XtNextEvent( /* obsolete */
 #if NeedFunctionPrototypes
     XEvent* 		/* event */
@@ -1155,7 +1183,8 @@ extern void XtAppNextEvent(
 #define XtIMXEvent		1
 #define XtIMTimer		2
 #define XtIMAlternateInput	4
-#define XtIMAll (XtIMXEvent | XtIMTimer | XtIMAlternateInput)
+#define XtIMSignal		8
+#define XtIMAll (XtIMXEvent | XtIMTimer | XtIMAlternateInput | XtIMSignal)
 
 extern XtInputMask XtPending( /* obsolete */
 #if NeedFunctionPrototypes

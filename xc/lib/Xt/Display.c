@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.88 93/03/12 13:31:29 converse Exp $ */
+/* $XConsortium: Display.c,v 1.89 93/03/15 15:27:35 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -300,6 +300,7 @@ XtAppContext XtCreateApplicationContext()
 	app->count = app->max = app->last = 0;
 	app->timerQueue = NULL;
 	app->workQueue = NULL;
+	app->signalQueue = NULL;
 	app->input_list = NULL;
 	app->outstandingQueue = NULL;
 	app->errorDB = NULL;
@@ -348,6 +349,7 @@ static void DestroyAppContext(app)
 	}
 	while (app->timerQueue) XtRemoveTimeOut((XtIntervalId)app->timerQueue);
 	while (app->workQueue) XtRemoveWorkProc((XtWorkProcId)app->workQueue);
+	while (app->signalQueue) XtRemoveSignal((XtSignalId)app->signalQueue);
 	if (app->input_list) _XtRemoveAllInputs(app);
 	XtFree((char*)app->destroy_list);
 	_XtHeapFree(&app->heap);
