@@ -1,13 +1,13 @@
 /* 
  * $header: xset.c,v 1.18 87/07/11 08:47:46 dkk Locked $ 
- * $Locker: rws $ 
+ * $Locker: jim $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.22 87/09/12 23:14:10 rws Locked $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.23 87/12/21 12:10:14 jim Locked $";
 #endif
 
 #include <X11/Xos.h>
@@ -50,8 +50,8 @@ XColor def;
 int numpixels = 0;
 char *disp = '\0';
 Display *dpy;
-if (argc == 1)  usage(argv[0]); /* To be replaced by window-interface */
 progName = argv[0];
+if (argc == 1)  usage(argv[0]); /* To be replaced by window-interface */
 for (i = 1; i < argc; ) {
   arg = argv[i++];
   if (index(arg, ':')) {     /*  Set display name if given by user.  */
@@ -266,7 +266,7 @@ for (i = 1; i < argc; ) {
     usage(argv[0]);
 }
 
-XFlush(dpy);
+XCloseDisplay (dpy);
 
 exit(0);    /*  Done.  We can go home now.  */
 }
@@ -430,15 +430,19 @@ unsigned long pixels[512];
 caddr_t colors[512];
 int numpixels;
 {
-  char *spec;   /*%%%%%*/
   XColor def;
-  if(DisplayCells(dpy, DefaultScreen(dpy)) >= 2) {
+  int scr = DefaultScreen (dpy);
+  Colormap cmap = DefaultColormap (dpy, scr);
+
+  if(DisplayCells(dpy, scr) >= 2) {
     while (--numpixels >= 0) {
       def.pixel = pixels[numpixels];
-      if (XParseColor(dpy, colors[numpixels], spec, &def))
-	XStoreColor(&def);
+      if (XParseColor (dpy, cmap, colors[numpixels], &def))
+	XStoreColor(dpy, cmap, &def);
       else
-	fprintf(stderr, "%s: No such color\n", colors[numpixels]);
+	fprintf(stderr, 
+		"%s:  No such color '%s' in colormap %ld = 0x%lx\n",
+		progName, colors[numpixels], cmap, cmap);
     }
   }
   return;
