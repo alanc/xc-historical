@@ -1,5 +1,5 @@
 /*
- *	$Header: scrollbar.c,v 1.8 88/03/31 12:53:39 swick Exp $
+ *	$Header: scrollbar.c,v 1.9 88/03/31 15:03:33 swick Exp $
  */
 
 #include <X11/copyright.h>
@@ -42,7 +42,7 @@
 extern void bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$Header: scrollbar.c,v 1.8 88/03/31 12:53:39 swick Exp $";
+static char rcs_id[] = "$Header: scrollbar.c,v 1.9 88/03/31 15:03:33 swick Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -72,7 +72,9 @@ static void ResizeScreen(xw, min_width, min_height )
 	XSetWindowAttributes newAttributes;
 	XWindowAttributes oldAttributes;
 	XEvent event;
-        Dimension junk;  /* for values returned by XtMakeResizeRequest */
+	XtGeometryResult geomreqresult;
+	Dimension oldWidth, oldHeight;
+	Dimension reqWidth, reqHeight, repWidth, repHeight;
 	static Arg argList[] = {
 	    {XtNminWidth,	0},
 	    {XtNminHeight,	0},
@@ -121,17 +123,21 @@ static void ResizeScreen(xw, min_width, min_height )
 	XChangeWindowAttributes( screen->display, TextWindow(screen),
 	     CWEventMask|CWBitGravity, &newAttributes );
 
-	(void) XtMakeResizeRequest((Widget)xw,
-	    (unsigned) (screen->max_col + 1) * FontWidth(screen) + min_width,
-	    (unsigned) FontHeight(screen) * (screen->max_row + 1) + min_height,
-            &junk, &junk);
+	oldWidth = xw->core.width;
+	oldHeight = xw->core.height;
+	reqWidth = (screen->max_col + 1) * FontWidth(screen) + min_width;
+	reqHeight = FontHeight(screen) * (screen->max_row + 1) + min_height;
+	geomreqresult = XtMakeResizeRequest ((Widget)xw, reqWidth, reqHeight,
+					     &repWidth, &repHeight);
 
 #ifndef nothack
 	XSetNormalHints(screen->display, XtWindow(XtParent(xw)), &sizehints);
 #endif
 
-	/* wait for a window manager to actually do it */
-	XIfEvent( screen->display, &event, IsEventType, ConfigureNotify );
+	if (oldWidth != reqWidth || oldHeight != reqHeight) {
+	    /* wait for a window manager to actually do it */
+	    XIfEvent (screen->display, &event, IsEventType, ConfigureNotify);
+	}
 
 	newAttributes.event_mask = oldAttributes.your_event_mask;
 	newAttributes.bit_gravity = NorthWestGravity;
