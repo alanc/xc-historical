@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Toggle.h,v 1.7 89/12/11 15:23:02 kit Exp $
+ * $XConsortium: Toggle.h,v 1.8 90/04/30 17:04:06 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -109,6 +109,10 @@ typedef struct _ToggleRec        *ToggleWidget;
  * Public Functions
  *
  ************************************************************/
+
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
    
 /*	Function Name: XawToggleChangeRadioGroup
  *	Description: Allows a toggle widget to change radio lists.
@@ -163,6 +167,10 @@ extern void XawToggleUnsetCurrent(
     Widget		/* radio_group */
 #endif
 );
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #ifdef XAW_BC
 /*************************************************************
