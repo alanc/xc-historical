@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.9 92/02/11 13:06:43 eswu Exp $ */
+/* $XConsortium: dispatch.c,v 1.10 92/05/06 17:41:18 gildea Exp $ */
 /*
  * protocol dispatcher
  */
@@ -179,6 +179,8 @@ ProcInitialConnection(client)
 	client->swapped = TRUE;
 	SwapConnClientPrefix(prefix);
     }
+    client->major_version = prefix->major_version;
+    client->minor_version = prefix->minor_version;
     stuff->reqType = 2;
     stuff->length += (prefix->auth_len >> 2);
     if (client->swapped) {
@@ -246,7 +248,11 @@ ProcEstablishConnection(client)
 	return FSBadAlloc;
     }
     csp.status = auth_accept;
-    csp.major_version = FS_PROTOCOL;
+    if (client->major_version == 1)
+	/* we implement backwards compatibility for version 1.0 */
+	csp.major_version = client->major_version;
+    else
+	csp.major_version = FS_PROTOCOL;
     csp.minor_version = FS_PROTOCOL_MINOR;
     csp.num_alternates = num_alts;
     csp.alternate_len = altlen;
@@ -748,7 +754,7 @@ ProcQueryXInfo(client)
     reply.sequenceNumber = client->sequence;
 
     /* get the header */
-    err = LoadFontHeader(&cfp->font->info, &reply.header, &prop_info);
+    err = LoadXFontInfo(client, &cfp->font->info, &reply.header, &prop_info);
 
     switch (err)
     {
@@ -759,7 +765,7 @@ ProcQueryXInfo(client)
 	return err;
 	break;
     default:
-	ErrorF("ProcQueryXInfo: unexpected return val %d from LoadFontHeader",
+	ErrorF("ProcQueryXInfo: unexpected return val %d from LoadXFontInfo",
 	       err);
 	SendErrToClient(client, FSBadImplementation, (pointer) 0);
 	return err;
