@@ -1,4 +1,4 @@
-/* $XConsortium: button.c,v 1.60 91/03/13 17:36:51 gildea Exp $ */
+/* $XConsortium: button.c,v 1.61 91/04/15 13:53:24 gildea Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -63,6 +63,11 @@ static void SelectionReceived();
 static void TrackDown();
 static void ComputeSelect();
 static void EditorButton();
+static void ExtendExtend();
+static void ReHiliteText();
+static void SelectSet();
+static void StartSelect();
+static void TrackText();
 static int Length();
 static char *SaveText();
 
@@ -340,9 +345,10 @@ Cardinal *num_params;
 }
 
 
+static void
 SetSelectUnit(buttonDownTime, defaultUnit)
-unsigned long buttonDownTime;
-SelectUnit defaultUnit;
+    unsigned long buttonDownTime;
+    SelectUnit defaultUnit;
 {
 /* Do arithmetic as integers, but compare as unsigned solves clock wraparound */
 	if ((long unsigned)((long int)buttonDownTime - lastButtonUpTime)
@@ -438,8 +444,9 @@ int func, startrow, startcol, firstrow, lastrow;
 	StartSelect(startrow, startcol);
 }
 
+static void
 StartSelect(startrow, startcol)
-int startrow, startcol;
+    int startrow, startcol;
 {
 	TScreen *screen = &term->screen;
 
@@ -526,10 +533,11 @@ Cardinal *num_params;
 
 static void SaltTextAway();
 
+static void
 SelectSet (event, params, num_params)
-XEvent	*event;
-String	*params;
-Cardinal    num_params;
+    XEvent	*event;
+    String	*params;
+    Cardinal    num_params;
 {
 	/* Only do select stuff if non-null select */
 	if (startSRow != endSRow || startSCol != endSCol) {
@@ -597,8 +605,9 @@ Bool use_cursor_loc;
 	ComputeSelect(startERow, startECol, endERow, endECol, True);
 }
 
+static void
 ExtendExtend (row, col)
-int row, col;
+    int row, col;
 {
 	int coord = Coordinate(row, col);
 	
@@ -756,9 +765,11 @@ LastTextCol(row)
 	register int i;
 	register Char *ch;
 
-	for(i = screen->max_col,
-	 ch = screen->buf[2 * (row + screen->topline)] + i ;
-	 i > 0 && (*ch == ' ' || *ch == 0); ch--, i--);
+	for ( i = screen->max_col,
+	        ch = screen->buf[2 * (row + screen->topline) + 1] + i ;
+	      i > 0 && !(*ch & CHARDRAWN) ;
+	      ch--, i--)
+	    ;
 	return(i);
 }	
 
@@ -947,9 +958,10 @@ ComputeSelect(startRow, startCol, endRow, endCol, extend)
 }
 
 
+static void
 TrackText(frow, fcol, trow, tcol)
-register int frow, fcol, trow, tcol;
-/* Guaranteed (frow, fcol) <= (trow, tcol) */
+    register int frow, fcol, trow, tcol;
+    /* Guaranteed (frow, fcol) <= (trow, tcol) */
 {
 	register int from, to;
 	register TScreen *screen = &term->screen;
@@ -991,9 +1003,10 @@ register int frow, fcol, trow, tcol;
 	screen->endHCoord = to;
 }
 
+static void
 ReHiliteText(frow, fcol, trow, tcol)
-register int frow, fcol, trow, tcol;
-/* Guaranteed that (frow, fcol) <= (trow, tcol) */
+    register int frow, fcol, trow, tcol;
+    /* Guaranteed that (frow, fcol) <= (trow, tcol) */
 {
 	register TScreen *screen = &term->screen;
 	register int i;
@@ -1335,18 +1348,16 @@ SaveText(screen, row, scol, ecol, lp, eol)
 	register int i = 0;
 	register Char *ch = screen->buf[2 * (row + screen->topline)];
 	Char attr;
-	int oldecol = ecol;
 	register int c;
 
-	*eol = 1;
+	*eol = 0;
 	if ((i = Length(screen, row, scol, ecol)) == 0) return(lp);
 	ecol = scol + i;
-	*eol = (ecol < oldecol) ? 1 : 0;
 	if (*eol == 0) {
-		if(ScrnGetAttributes(screen, row + screen->topline, ecol - 1, &attr, 1) == 1) {
-			*eol = (attr & ENDLINE) ? 1 : 0;
+		if(ScrnGetAttributes(screen, row + screen->topline, 0, &attr, 1) == 1) {
+			*eol = (attr & LINEWRAPPED) ? 0 : 1;
 		} else {
-			/* If we can't get the attributes, assume ENDLINE */
+			/* If we can't get the attributes, assume no wrap */
 			/* CANTHAPPEN */
 			(void)fprintf(stderr, "%s: no attributes for %d, %d\n",
 				xterm_name, row, ecol - 1);
@@ -1354,7 +1365,9 @@ SaveText(screen, row, scol, ecol, lp, eol)
 		}
 	}
 	for (i = scol; i < ecol; i++) {
-		if ((c = ch[i]) == 0)
+	        c = ch[i];
+/* I have no idea why this was being done.  -gildea
+		if (c == 0)
 			c = ' ';
 		else if(c < ' ') {
 			if(c == '\036')
@@ -1363,6 +1376,7 @@ SaveText(screen, row, scol, ecol, lp, eol)
 				c += 0x5f;
 		} else if(c == 0x7f)
 			c = 0x5f;
+*/
 		*lp++ = c;
 	}
 	return(lp);
