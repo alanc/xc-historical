@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER))
-  static char Xrcs_id[] = "$XConsortium: List.c,v 1.18 89/05/17 15:41:55 kit Exp $";
+  static char Xrcs_id[] = "$XConsortium: List.c,v 1.19 89/05/17 17:31:34 kit Exp $";
 #endif
 
 /***********************************************************
@@ -47,7 +47,7 @@ SOFTWARE.
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 
-#include <X11/Xmu/Xmu.h>
+#include <X11/Xmu/Drawing.h>
 
 #include <X11/Xaw/ListP.h>
 
