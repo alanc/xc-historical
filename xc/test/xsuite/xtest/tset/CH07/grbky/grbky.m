@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: grbky.m,v 1.9 92/06/11 17:13:08 rws Exp $
  */
 >>TITLE XGrabKey CH07
 void
@@ -61,10 +61,23 @@ static void set_kcs(dpy)
 	maxkc = kmax;
 }
 
+#define	NMODS	8	/* Number of modifiers */
+
 static int grab_key_code(dpy)
 	Display *dpy;
 {
+	XModifierKeymap	*curmap;
+	int i,key;
+
 	set_kcs(dpy);
+	curmap = XGetModifierMapping(dpy);
+	for (key=minkc;key<=maxkc;key++) {
+	    for (i = NMODS*curmap->max_keypermod; --i >= 0; )
+		if (curmap->modifiermap[i] == key)
+		    break;
+	    if (i < 0) /* not a modifier, return it*/
+		return key;
+	}
 	return minkc;
 }
 
