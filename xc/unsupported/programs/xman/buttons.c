@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.6 89/02/15 18:43:21 kit Exp $
- * $Header: buttons.c,v 1.6 89/02/15 18:43:21 kit Exp $
+ * $XConsortium: buttons.c,v 1.7 89/02/15 20:00:23 kit Exp $
+ * $Header: buttons.c,v 1.7 89/02/15 20:00:23 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -122,6 +122,7 @@ void
 CreateManpage()
 {
   ManpageGlobals * man_globals;	/* The psuedo global structure. */
+  static void StartManpage();
 
   man_globals = InitPsuedoGlobals();
   CreateManpageWidget(man_globals, MANNAME, TRUE);
