@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.233 94/03/25 19:02:15 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.232 94/03/09 10:51:49 matt Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -1050,66 +1050,18 @@ typedef struct {
 #define XNRequiredCharSet "requiredCharSet"
 #define XNQueryOrientation "queryOrientation"
 #define XNBaseFontName "baseFontName"
+#define XNOMAutomatic "omAutomatic"
 #define XNMissingCharSet "missingCharSet"
 #define XNDefaultString "defaultString"
-#define XNPostEditCallback "postEditCallback"
 #define XNOrientation "orientation"
 #define XNDirectionalDependentDrawing "directionalDependentDrawing"
 #define XNContextualDrawing "contextualDrawing"
 #define XNFontInfo "fontInfo"
-#define XNWidth "width"
-#define XNDrawingGravity "drawingGravity"
-
-typedef struct {
-    XPointer client_data;
-    XOMProc callback;
-} XOMCallback;
 
 typedef struct {
     int charset_count;
     char **charset_list;
 } XOMCharSetList;
-
-typedef short XOMPostEditPosition;
-
-#define XOMPostEditBuffer	1
-#define XOMPostEditLine		2
-#define XOMPostEditWord		3
-#define XOMPostEditChar		4
-
-typedef unsigned short XOMPostEditType;
-
-#define XOMPostEditSubstitution	1
-#define XOMPostEditRetrieval	2
-
-typedef unsigned short XOMPostEditOperation;
-
-#define XOMPostEditLeftEdge	(1L<<0)
-#define XOMPostEditRightEdge	(1L<<1)
-#define XOMPostEditTopEdge	(1L<<2)
-#define XOMPostEditBottomEdge	(1L<<3)
-#define XOMPostEditConcealed	(1L<<4)
-#define XOMPostEditWrapped	(1L<<5)
-
-typedef unsigned long XOMPostEditFeedback;
-
-typedef struct _XOMPostEditText {
-    unsigned short length;
-    XOMPostEditFeedback *feedback;
-    Bool encoding_is_wchar;
-    union {
-	char *mbs;
-	wchar_t *wcs;
-    } string;
-} XOMPostEditText;
-
-typedef struct _XOMPostEditCallbackStruct {
-    XOMPostEditPosition position;
-    XOMPostEditType type;
-    XOMPostEditOperation operation;
-    unsigned short length;
-    XOMPostEditText *text;
-} XOMPostEditCallbackStruct;
 
 typedef enum {
     XOMOrientation_LTR_TTB,
@@ -1129,15 +1081,6 @@ typedef struct {
     XFontStruct **font_struct_list;
     char **font_name_list;
 } XOMFontInfo;
-
-typedef unsigned long XOMDrawingGravity;
-
-#define XOMGravityLeft		(1L<<0)
-#define XOMGravityRight		(1L<<1)
-#define XOMGravityTop		(1L<<2)
-#define XOMGravityBottom	(1L<<3)
-#define XOMGravityConcealed	(1L<<4)
-#define XOMGravityWrapped	(1L<<5)
 
 typedef void (*XIMProc)();
 
