@@ -5,12 +5,17 @@
 **
 */
 
+#include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Label.h>
 #include <X11/Xaw/Scroll.h>
 #include <X11/StringDefs.h>
 #include "xgc.h"
+
+extern void interpret();
+
+extern XtAppContext appcontext;
 
 #define SCROLLBAR_LENGTH 125
 #define SLIDER_LENGTH 0.2	/* proportion of scrollbar taken up
@@ -19,6 +24,10 @@
 static Widget label;		/* the label */
 static Widget slider;		/* the scrollbar */
 static Widget percent;	/* label with chosen percentage */
+
+static float fraction;		/* what percent has been chosen */
+static int   oldpercent = -1;	/* so we only update when the slider has
+				   been moved */
 
 /* slider_jump(w,data,position)
 ** ----------------------------
@@ -83,20 +92,40 @@ slider_scroll(w, data, position)
      caddr_t position;
 {}
 
-/* create_testfrac_choice(w,stored)
+/*ARGSUSED*/
+static void
+update(w,event,params,num_params)
+     Widget w;
+     XEvent *event;
+     String *params;
+     int *num_params;
+{
+  char buf[80];
+  int newpercent;
+
+  newpercent = (int)(fraction * 100.0);
+  if (newpercent != oldpercent) {
+    sprintf(buf, "percent %d\n", (int)(fraction * 100.0));
+    interpret(buf);
+    oldpercent = newpercent;
+  }
+}
+
+/* create_testfrac_choice(w)
 ** -------------------------
 ** Inside w (a form widget), creates:
 **   1. A label "Percentage of Test"
 **   2. A scrollbar for the user to choose the percentage (from 0 to 100)
 **   3. A label with the current percentage displayed on it.
 ** The percentage starts at 100.
-** The current percentage is stored in *stored.
+**
+** When the pointer leaves the scrollbar, a string is sent to interpret()
+** so that it knows the position of the scrollbar.
 */
 
 void
-create_testfrac_choice(w,stored)
+create_testfrac_choice(w)
      Widget w;
-     float *stored;
 {
   static XtCallbackRec jumpcallbacks[] = {
     {(XtCallbackProc) slider_jump, NULL},
@@ -131,10 +160,17 @@ create_testfrac_choice(w,stored)
     {XtNscrollProc,      (XtArgVal) NULL}
   };
     
+  static char *translationtable = "<Leave>: Update()";
+
+  static XtActionsRec actiontable[] = {
+    {"Update",  (XtActionProc) update},
+    {NULL,      NULL}
+  };
+
   /* Let the scrollbar know where to store information where we
   ** can see it */
 
-  jumpcallbacks[0].closure = (caddr_t) stored;
+  jumpcallbacks[0].closure = (caddr_t) &fraction;
 
   label = XtCreateManagedWidget("Percentage of Test",labelWidgetClass,w,
 				labelargs,XtNumber(labelargs));
@@ -151,7 +187,18 @@ create_testfrac_choice(w,stored)
   slider = XtCreateManagedWidget("Slider",scrollbarWidgetClass,w,
 				 scrollargs,XtNumber(scrollargs));
 
+  XtAppAddActions(appcontext,actiontable,XtNumber(actiontable));
+  XtOverrideTranslations(slider,XtParseTranslationTable(translationtable));
+
   /* Start the thumb out at 100% */
 
   XawScrollBarSetThumb(slider, 1.0 - SLIDER_LENGTH, SLIDER_LENGTH);
+}
+
+void
+update_slider(newpercent)
+     int newpercent;
+{
+  fraction = (float) newpercent / 100.0;
+  XawScrollBarSetThumb(slider, fraction / (1.0-SLIDER_LENGTH), SLIDER_LENGTH);
 }
