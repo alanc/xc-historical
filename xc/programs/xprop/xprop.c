@@ -1,4 +1,4 @@
-/* $XConsortium: xprop.c,v 1.35 91/04/02 19:32:12 gildea Exp $*/
+/* $XConsortium: xprop.c,v 1.36 91/05/04 19:42:29 rws Exp $*/
 /*
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -486,24 +486,24 @@ Read_Mappings(stream)
 static char _formatting_buffer[MAXSTR+100];
 static char _formatting_buffer2[10];
 
-char *Format_Hex(word)
-     long word;
+char *Format_Hex(wrd)
+     long wrd;
 {
-  sprintf(_formatting_buffer2, "0x%lx", word);
+  sprintf(_formatting_buffer2, "0x%lx", wrd);
   return(_formatting_buffer2);
 }
 
-char *Format_Unsigned(word)
-     long word;
+char *Format_Unsigned(wrd)
+     long wrd;
 {
-  sprintf(_formatting_buffer2, "%lu", word);
+  sprintf(_formatting_buffer2, "%lu", wrd);
   return(_formatting_buffer2);
 }
 
-char *Format_Signed(word)
-     long word;
+char *Format_Signed(wrd)
+     long wrd;
 {
-  sprintf(_formatting_buffer2, "%ld", word);
+  sprintf(_formatting_buffer2, "%ld", wrd);
   return(_formatting_buffer2);
 }
 
@@ -538,15 +538,15 @@ char *Format_Atom(atom)
   return(_formatting_buffer);
 }
 
-char *Format_Mask_Word(word)
-     long word;
+char *Format_Mask_Word(wrd)
+     long wrd;
 {
   long bit_mask, bit;
   int seen = 0;
 
   strcpy(_formatting_buffer, "{MASK: ");
   for (bit=0, bit_mask=1; bit<=sizeof(long)*8; bit++, bit_mask<<=1) {
-    if (bit_mask & word) {
+    if (bit_mask & wrd) {
       if (seen) {
 	strcat(_formatting_buffer, ", ");
       }
