@@ -34,16 +34,16 @@ HEADERS = \
 	LogoP.h \
 	Mailbox.h \
 	MailboxP.h \
-	MenuButton.h \
-	MenuButtonP.h \
+	MButton.h \
+	MButtonP.h \
 	Paned.h \
 	PanedP.h \
 	Scroll.h \
 	ScrollP.h \
 	Simple.h \
 	SimpleP.h \
-	SimpleMenu.h \
-	SimpleMenuP.h \
+	SimpMenu.h \
+	SimpMenuP.h \
 	Template.c \
 	Template.h \
 	TemplateP.h \
@@ -71,11 +71,11 @@ SRCS = \
 	Load.c \
 	Logo.c \
 	Mailbox.c \
-	MenuButton.c \
+	MButton.c \
 	Paned.c \
 	Scroll.c \
 	Simple.c \
-	SimpleMenu.c \
+	SimpMenu.c \
 	Text.c \
 	TextTr.c \
 	Toggle.c \
@@ -97,11 +97,11 @@ OBJS = \
 	Load.o \
 	Logo.o \
 	Mailbox.o \
-	MenuButton.o \
+	MButton.o \
 	Paned.o \
 	Scroll.o \
 	Simple.o \
-	SimpleMenu.o \
+	SimpMenu.o \
 	Text.o \
 	TextTr.o \
 	Toggle.o \

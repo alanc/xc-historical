@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.10 89/05/26 16:33:03 kit Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.11 89/05/30 13:28:16 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -40,10 +40,12 @@ SOFTWARE.
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 
-#include <X11/Xaw/SimpleMenuP.h>
+#include <X11/Xaw/SimpMenuP.h>
 #include <X11/Xmu/Xmu.h>
 
 #define streq(a, b)        ( strcmp((a), (b)) == 0 )
+
+#define LabelHeight(w)     ((w)->simple_menu.label_height)
 
 #define offset(field) XtOffset(SimpleMenuWidget, simple_menu.field)
 
@@ -58,12 +60,14 @@ static XtResource menu_resources[] = {
      offset(column_width), XtRImmediate, (caddr_t) 0},
   {XtNresize,  XtCResize, XtRBoolean, sizeof(Boolean),
      offset(auto_resize), XtRImmediate, (caddr_t) TRUE},
-  {XtNverticalSpace,  XtCVerticalSpace, XtRDimension, sizeof(Dimension),
-     offset(vertical_space), XtRImmediate, (caddr_t) 4},
+  {XtNmenuOnScreen,  XtCMenuOnScreen, XtRBoolean, sizeof(Boolean),
+     offset(menu_on_screen), XtRImmediate, (caddr_t) TRUE},
+  {XtNverticalSpacePercent,  XtCVerticalSpacePercent, XtRInt, sizeof(int),
+     offset(vertical_space), XtRImmediate, (caddr_t) 25},
   {XtNtopMargin,  XtCVerticalMargins, XtRDimension, sizeof(Dimension),
-     offset(top_margin), XtRImmediate, (caddr_t) MAGIC_DIMENSION},
+     offset(top_margin), XtRImmediate, (caddr_t) 0},
   {XtNbottomMargin,  XtCVerticalMargins, XtRDimension, sizeof(Dimension),
-     offset(bottom_margin), XtRImmediate, (caddr_t) MAGIC_DIMENSION},
+     offset(bottom_margin), XtRImmediate, (caddr_t) 0},
   {XtNleftMargin,  XtCHorizontalMargins, XtRDimension, sizeof(Dimension),
      offset(left_margin), XtRImmediate, (caddr_t) 4},
   {XtNrightMargin,  XtCHorizontalMargins, XtRDimension, sizeof(Dimension),
@@ -71,9 +75,17 @@ static XtResource menu_resources[] = {
   {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
      offset(foreground), XtRString, "XtDefaultForeground"},
   {XtNfont,  XtCFont, XtRFontStruct, sizeof(XFontStruct *),
-     offset(font),XtRString, "XtDefaultFont"},
+     offset(font), XtRString, "XtDefaultFont"},
+  {XtNlabelFont,  XtCFont, XtRFontStruct, sizeof(XFontStruct *),
+     offset(label_font), XtRString, "XtDefaultFont"},
+  {XtNlabelSeparatorType, XtCLabelSeparatorType, 
+     XtRSimpleMenuType, sizeof(XawMenuEntryType),
+     offset(label_sep_type), XtRImmediate, (caddr_t) XawMenuBlank},
   {XtNpopupOnEntry,  XtCPopupOnEntry, XtRString, sizeof(String),
      offset(popup_entry), XtRString, NULL},
+  {XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
+     offset(backing_store), 
+     XtRImmediate, (caddr_t) (Always + WhenMapped + NotUseful)},
 };  
 #undef offset
 
@@ -204,6 +216,8 @@ ClassInitialize()
 {
   XtAddConverter( XtRString, XtRSimpleMenuType, XawCvtStringToMenuType,
 		 NULL, (Cardinal) 0 );
+  XtAddConverter( XtRString, XtRBackingStore, XmuCvtStringToBackingStore,
+		 NULL, 0 );
   XmuAddInitializer( AddPositionAction, NULL);
 }
 
@@ -257,21 +271,10 @@ Widget request, new;
 
   XmuCallInitializers(XtWidgetToApplicationContext(new));
 
-/*
- * If top or bottom margins are unset then use 0
- */
-
-  if (smw->simple_menu.top_margin == MAGIC_DIMENSION)
-    smw->simple_menu.top_margin = 0;
-
-  if (smw->simple_menu.bottom_margin == MAGIC_DIMENSION)
-    smw->simple_menu.bottom_margin = 0;
-
   smw->simple_menu.entry_set = NO_ENTRY;
   smw->simple_menu.entries = NULL;
   smw->simple_menu.recursive_set_values = FALSE;
-  smw->simple_menu.num_entries = 
-                       (Cardinal) ( (smw->simple_menu.label == NULL) ? 0 : 1 );
+  smw->simple_menu.num_entries = 0;
 
 /*
  * Add a popup_callback routine for changing the cursor.
@@ -325,35 +328,47 @@ Region region;
  */
 
   if (smw->simple_menu.label != NULL ) {
-    switch(XRectInRegion(region, 0, y, width, height)) {
+    Dimension label_height = LabelHeight(smw);
+
+    if (smw->simple_menu.label_sep_type != XawMenuNone)
+      label_height -= smw->simple_menu.row_height;
+      
+    switch (XRectInRegion(region, 0, y, width, label_height)) {
     case RectangleIn:
     case RectanglePart:
+      {
+	int x_temp = smw->simple_menu.left_margin +
+	            (smw->simple_menu.column_width - 
+		     smw->simple_menu.label_width)/2;
 
-      if (XtIsSensitive(w)) {
-	XFillRectangle(XtDisplay(w), XtWindow(w), smw->simple_menu.norm_gc,
-		       0, y, width, height);
-	gc = smw->simple_menu.rev_gc;
+	int l_font_ascent = smw->simple_menu.label_font->max_bounds.ascent;
+	int l_font_descent = smw->simple_menu.label_font->max_bounds.descent;
+
+	y_temp = y + (label_height + l_font_ascent - l_font_descent)/2;
+
+	XDrawString(XtDisplay(w), XtWindow(w), smw->simple_menu.label_gc,
+		    x_temp, y_temp,
+		    smw->simple_menu.label, strlen(smw->simple_menu.label));
       }
-      else
-	gc = smw->simple_menu.norm_grey_gc;
-	
-      /*
-       * compute y position for string -- parcel out the
-       * difference between the font height and the row height
-       * equally above and below the entry
-       */
-
-      y_temp = y + (height - (font_ascent + font_descent)) / 2 + font_ascent;
-
-      XDrawString(XtDisplay(w), XtWindow(w), gc,
-		  smw->simple_menu.left_margin, y_temp,
-		  smw->simple_menu.label, strlen(smw->simple_menu.label));
       break;
     default:
       break;
     }
 
-    y += height;
+    if (smw->simple_menu.label_sep_type == XawMenuSeparator) {
+      switch(XRectInRegion(region, 0, y + label_height, width, height)) {
+      case RectangleIn:
+      case RectanglePart:
+	y_temp = y + label_height + height / 2;
+	XDrawLine(XtDisplay(w), XtWindow(w), smw->simple_menu.norm_gc,
+		  0, y_temp, width, y_temp);
+	break;
+      default:
+	break;
+      }
+    }
+	
+    y += LabelHeight(smw);
   }
 
  /*
@@ -424,11 +439,22 @@ Widget w;
 XtValueMask * mask;
 XSetWindowAttributes * attrs;
 {
+  SimpleMenuWidget smw = (SimpleMenuWidget) w;
+
   CreateGCs(w);
   CalculateNewSize(w);
 
-  attrs->cursor = ((SimpleMenuWidget)w)->simple_menu.cursor;
+  attrs->cursor = smw->simple_menu.cursor;
   *mask |= CWCursor;
+  if ((smw->simple_menu.backing_store == Always) ||
+      (smw->simple_menu.backing_store == NotUseful) ||
+      (smw->simple_menu.backing_store == WhenMapped) ) {
+    *mask |= CWBackingStore;
+    attrs->backing_store = smw->simple_menu.backing_store;
+  }
+  else
+    *mask &= ~CWBackingStore;
+
   (*superclass->core_class.realize) (w, mask, attrs);
 }
 
@@ -480,14 +506,10 @@ Widget current, request, new;
     ret_val = TRUE;
   }
   
-  if (smw_old->simple_menu.label != smw_new->simple_menu.label) {
-    CalculateNewSize(new);
-    RefreshEntry(new, NULL, XawErefreshLabel);
-  }
-
   if ((smw_old->simple_menu.left_margin != smw_new->simple_menu.left_margin) ||
       (smw_old->simple_menu.right_margin!=smw_new->simple_menu.right_margin) ||
       (smw_old->simple_menu.top_margin != smw_new->simple_menu.top_margin)   ||
+      (smw_old->simple_menu.label != smw_new->simple_menu.label)             ||
       (smw_old->simple_menu.vertical_space != 
        smw_new->simple_menu.vertical_space)                                  ||
       (smw_old->simple_menu.bottom_margin != 
@@ -495,6 +517,7 @@ Widget current, request, new;
     CalculateNewSize(new);
     ret_val = TRUE;
   }
+
   return(ret_val);
 }
 
@@ -592,9 +615,8 @@ XPoint * location;
 {
   SimpleMenuWidget smw = (SimpleMenuWidget) w;
   XPoint t_point;
-  Arg arglist[2];
-  Cardinal num_args = 0;
   Position x, y;
+  static void MoveMenu();
 
   if (location == NULL) {
     Window junk1, junk2;
@@ -628,21 +650,63 @@ XPoint * location;
     int i = 0;
     MenuEntry * temp;
     Boolean found_it;
+    XrmQuark q_name = XrmStringToQuark(smw->simple_menu.popup_entry);
 
     for ( temp = smw->simple_menu.entries ; temp != NULL ;
 	 temp = temp->next, i++)
-      if ( streq(temp->name, smw->simple_menu.popup_entry) ) {
+      if ( temp->name == q_name ) {
 	found_it = TRUE;
 	break;
       }
 
     if (found_it) {
       if (smw->simple_menu.label != NULL)
-	y -= (Position) smw->simple_menu.row_height;
+	y -= (Position) LabelHeight(smw);
       y -= (Position) (i * smw->simple_menu.row_height);
     }
   }
   
+  MoveMenu(w, x, y);
+}
+
+/*	Function Name: MoveMenu
+ *	Description: Actually moves the menu, may force it to
+ *                   to be fully visable if menu_on_screen is TRUE.
+ *	Arguments: w - the simple menu widget.
+ *                 x, y - the current location of the widget.
+ *	Returns: none 
+ */
+
+static void
+MoveMenu(w, x, y)
+Widget w;
+Position x, y;
+{
+  Arg arglist[2];
+  Cardinal num_args = 0;
+  SimpleMenuWidget smw = (SimpleMenuWidget) w;
+
+  if (smw->simple_menu.menu_on_screen) {
+    int width = w->core.width + 2 * w->core.border_width;
+    int height = w->core.height + 2 * w->core.border_width;
+
+    if (x < 0) 
+      x = 0;
+    else {
+      int scr_width = WidthOfScreen(XtScreen(w));
+      if (x + width > scr_width)
+	x = scr_width - width;
+    }
+    
+    if (y < 0)
+      y = 0;
+    else {
+      int scr_height = HeightOfScreen(XtScreen(w));
+      if (y + height > scr_height)
+	y = scr_height - height;
+    }
+  }
+
   XtSetArg(arglist[num_args], XtNx, x); num_args++;
   XtSetArg(arglist[num_args], XtNy, y); num_args++;
   XtSetValues(w, arglist, num_args);
@@ -903,7 +967,7 @@ Cardinal num_args;
   MenuEntry * entry;
 
   entry = GetMenuEntry(w, NULL);
-  entry->name = XtNewString(name);
+  entry->name = XrmStringToQuark(name);
   SetEntryInfo(w, entry, args, num_args);
   if (XtIsRealized(w))
     CalculateNewSize(w);
@@ -954,7 +1018,7 @@ Cardinal num_args;
   ChangeEntryInfo(w, entry, args, num_args);
   if (XtIsRealized(w))
     CalculateNewSize(w);	/* This only changes the width. */
-  RefreshEntry(w, name, XawErefreshEntry);
+  RefreshEntry(w, entry->name, XawErefreshEntry);
 }
 
   
@@ -1072,10 +1136,12 @@ Widget w;
 
   if ( (smw->simple_menu.auto_resize) ||
        (smw->simple_menu.column_width == 0) ) {
-    if (smw->simple_menu.label != NULL)
-      widest = (Dimension) XTextWidth(smw->simple_menu.font, 
+    if (smw->simple_menu.label != NULL) {
+      widest = (Dimension) XTextWidth(smw->simple_menu.label_font, 
 				      smw->simple_menu.label, 
 				      strlen(smw->simple_menu.label));
+      smw->simple_menu.label_width = widest;
+    }
     
     for ( entry = smw->simple_menu.entries ; entry != NULL ;
 	 entry = entry->next ) {
@@ -1109,13 +1175,31 @@ Widget w;
   SimpleMenuWidget smw = (SimpleMenuWidget) w;
   Dimension height;
 
-  if ( (smw->simple_menu.auto_resize) || (smw->simple_menu.row_height == 0) )
-    smw->simple_menu.row_height = (smw->simple_menu.font->max_bounds.ascent +
-				   smw->simple_menu.font->max_bounds.descent) +
-				   smw->simple_menu.vertical_space;
+  if ( (smw->simple_menu.auto_resize) || (smw->simple_menu.row_height == 0) ) {
+    height = (smw->simple_menu.font->max_bounds.ascent +
+	      smw->simple_menu.font->max_bounds.descent);
+
+    smw->simple_menu.row_height = ( height *
+				   (100 + 
+				    smw->simple_menu.vertical_space) ) / 100;
+  }
+
+  if (smw->simple_menu.label != NULL) {
+    height = (smw->simple_menu.label_font->max_bounds.ascent +
+	       smw->simple_menu.label_font->max_bounds.descent);
+    smw->simple_menu.label_height = ( height *
+				     (100 + 
+				      smw->simple_menu.vertical_space) ) / 100;
+    if (smw->simple_menu.label_sep_type != XawMenuNone)
+      smw->simple_menu.label_height += smw->simple_menu.row_height;
+  }
+  else
+    smw->simple_menu.label_height = 0;
 
   height = smw->simple_menu.num_entries * smw->simple_menu.row_height +
-	   smw->simple_menu.top_margin + smw->simple_menu.bottom_margin;
+	   smw->simple_menu.top_margin + smw->simple_menu.bottom_margin +
+	   LabelHeight(smw);
+
   return(height);
 }
 
@@ -1140,7 +1224,8 @@ MenuEntry * entry;
   if ( !XtIsRealized(w) ) return;
 
   if (smw->simple_menu.label != NULL)
-    y += height;
+    y += LabelHeight(smw);
+
   for ( temp_entry = smw->simple_menu.entries ; 
         (temp_entry != NULL) && (entry != temp_entry) ;
         temp_entry = temp_entry->next ) 
@@ -1229,13 +1314,13 @@ Boolean is_left;
 	char buf[BUFSIZ];
 	sprintf(buf, "SimpleMenu Widget: %s %s \"%s\".", "Could",
 		"not get Left Bitmap geometry information for menu entry ",
-		entry->name);
+		XrmQuarkToString(entry->name));
 	XtAppError(XtWidgetToApplicationContext(w), buf);
       }
       if (depth != 1) {
 	char buf[BUFSIZ];
 	sprintf(buf, "SimpleMenu Widget: %s \"%s\".", 
-		"Left Bitmap of entry ", entry->name, 
+		"Left Bitmap of entry ", XrmQuarkToString(entry->name), 
 		" is not one bit deep.");
 	XtAppError(XtWidgetToApplicationContext(w), buf);
       }
@@ -1248,13 +1333,13 @@ Boolean is_left;
       char buf[BUFSIZ];
       sprintf(buf, "SimpleMenu Widget: %s \"%s\".", 
 	     "Could not get Right Bitmap geometry information for menu entry ",
-	      entry->name);
+	      XrmQuarkToString(entry->name));
       XtAppError(XtWidgetToApplicationContext(w), buf);
     }
     if (depth != 1) {
       char buf[BUFSIZ];
       sprintf(buf, "SimpleMenu Widget: %s \"%s\".", 
-	      "Right Bitmap of entry ", entry->name, 
+	      "Right Bitmap of entry ", XrmQuarkToString(entry->name), 
 	      " is not one bit deep.");
       XtAppError(XtWidgetToApplicationContext(w), buf);
     }
@@ -1264,16 +1349,15 @@ Boolean is_left;
 /*      Function Name: RefreshEntry.
  *      Description: Refreshes the entry passed to it.
  *      Arguments: w - the simple menu widget.
- *                 name - name of the entry to refresh, or NULL.
- *                 type - if true then refresh label only.
+ *                 quark - name of the entry to refresh.
+ *                 type - which thing to refresh.
  *      Returns: none.
- *      NOTES:     if name == NULL then refresh the entire menu.
  */
 
 static void
-RefreshEntry(w, name, type)
+RefreshEntry(w, quark, type)
 Widget w;
-char * name;
+XrmQuark quark;
 XawRefreshTypes type;
 {
   SimpleMenuWidget smw = (SimpleMenuWidget) w;
@@ -1293,14 +1377,15 @@ XawRefreshTypes type;
   case XawErefreshEntry:
 
     if (smw->simple_menu.label != NULL)
-      y += row_height;		/* Leave space for label. */
+      y += LabelHeight(smw);		/* Leave space for label. */
+
     for ( entry = smw->simple_menu.entries ; entry != NULL ;
 	 entry = entry->next ) {
-      if (streq(name, entry->name)) break;
+      if ( quark == entry->name ) break;
       y += row_height;
     }
   case XawErefreshLabel:	/* fall through. */
-    height = row_height;
+    height = LabelHeight(smw);
     break;
   default:
     XtAppError( XtWidgetToApplicationContext(w), "Unknow refresh type.");
@@ -1331,6 +1416,7 @@ char * name;
   SimpleMenuWidget smw = (SimpleMenuWidget) w;
   MenuEntry * entry, *new_entry;
   char buf[BUFSIZ];
+  XrmQuark q_name;
 
   if (name == NULL) {
     new_entry = (MenuEntry *) XtMalloc( sizeof(MenuEntry));
@@ -1338,17 +1424,17 @@ char * name;
     if (smw->simple_menu.entries == NULL)
       smw->simple_menu.entries = new_entry;
     else {
-      for ( entry = smw->simple_menu.entries ; entry->next != NULL ;
-	   entry = entry->next ) {}
-      entry->next = new_entry;
+      smw->simple_menu.tail->next = new_entry;
     }
+    smw->simple_menu.tail = new_entry;
     smw->simple_menu.num_entries++;
     return(new_entry);
   }
 
+  q_name = XrmStringToQuark(name);
   for ( entry = smw->simple_menu.entries ; entry != NULL ;
         entry = entry->next )
-    if (streq(name, entry->name)) return(entry);
+    if (q_name == entry->name) return(entry);
 
 /*
  * Could not find name.
@@ -1375,11 +1461,12 @@ char * name;
   SimpleMenuWidget smw = (SimpleMenuWidget) w;
   MenuEntry * entry, * prev;
   char buf[BUFSIZ];
+  XrmQuark q_name = XrmStringToQuark(name);
 
   prev = NULL;
   for ( entry = smw->simple_menu.entries ; entry != NULL ;
         entry = entry->next ) {
-    if ( streq(entry->name, name) ) {
+    if ( entry->name == q_name ) {
       if (prev == NULL)
 	smw->simple_menu.entries = entry->next;
       else
@@ -1406,7 +1493,6 @@ static void
 DestroyEntry(entry)
 MenuEntry * entry;
 {
-  XtFree(entry->name);
   if (entry->callbacks != NULL)
     XtFree(entry->callbacks);
   XtFree(entry);
@@ -1427,12 +1513,14 @@ MenuEntry * entry;
 ArgList args;
 Cardinal num_args;
 {
-  XtGetSubresources(w, (char *) entry,
-		    entry->name, XAW_MENU_ENTRY, entry_resources, 
+  char * name = XrmQuarkToString(entry->name);
+
+  XtGetSubresources(w, (caddr_t) entry,
+		    name, XAW_MENU_ENTRY, entry_resources, 
 		    XtNumber(entry_resources), args, num_args);
 
   if (entry->label == NULL)
-    entry->label = entry->name;
+    entry->label = name;
 
   MaybeCopyCallbacks(entry);
   GetBitmapInfo(w, entry, TRUE); /* Get info on left and right bitmaps. */
@@ -1461,7 +1549,7 @@ Cardinal num_args;
 		 args, num_args);
 
   if (entry->label == NULL)
-    entry->label = entry->name;
+    entry->label = XrmQuarkToString(entry->name);
 
   if (entry->callbacks != old_entry.callbacks) {
     if (old_entry.callbacks != NULL)
@@ -1524,7 +1612,11 @@ Widget w;
   values.background = smw->core.background_pixel;
   smw->simple_menu.norm_gc = XtGetGC(w, mask, &values);
 
+  values.font = smw->simple_menu.label_font->fid;
+  smw->simple_menu.label_gc = XtGetGC(w, mask, &values);
+
   values.fill_style = FillTiled;
+  values.font = smw->simple_menu.font->fid;
   values.tile    = XmuCreateStippledPixmap(XtScreen(w), 
 					   smw->simple_menu.foreground,
 					   smw->core.background_pixel,
@@ -1551,6 +1643,7 @@ Widget w;
   SimpleMenuWidget smw = (SimpleMenuWidget) w;
 
   XtReleaseGC(w, smw->simple_menu.norm_gc);
+  XtReleaseGC(w, smw->simple_menu.label_gc);
   XtReleaseGC(w, smw->simple_menu.norm_grey_gc);
   XtReleaseGC(w, smw->simple_menu.rev_gc);
   XtReleaseGC(w, smw->simple_menu.invert_gc);
@@ -1599,7 +1692,7 @@ XEvent * event;
 
   y = smw->simple_menu.top_margin;
   if (smw->simple_menu.label != NULL)
-    y += smw->simple_menu.row_height;
+    y += LabelHeight(smw);
 
   if (y <= y_loc) {
     for ( entry = smw->simple_menu.entries ; entry != NULL ;
@@ -1622,9 +1715,6 @@ XEvent * event;
  *      Returns: none
  */
 
-#define done(address) \
-        { 
-
 /* ARGSUSED */
 static void
 XawCvtStringToMenuType(args, num_args, fromVal, toVal)
@@ -1634,31 +1724,26 @@ XawCvtStringToMenuType(args, num_args, fromVal, toVal)
     XrmValuePtr toVal;
 {
   static XawMenuEntryType type;
-  XrmQuark  XawQMenuBlank;
-  XrmQuark  XawQMenuSeparator;
-  XrmQuark  XawQMenuText;
-  XrmQuark  q;
-  char      lowerName[BUFSIZ];
-  
-  XawQMenuBlank      = XrmStringToQuark(XtEblank);
-  XawQMenuSeparator  = XrmStringToQuark(XtEseparator);
-  XawQMenuText       = XrmStringToQuark(XtEtext);
-  
+  XrmQuark q;
+  char lowerName[BUFSIZ];
+
   XmuCopyISOLatin1Lowered(lowerName, (char *) fromVal->addr);
   q = XrmStringToQuark(lowerName);
 
-  if (q == XawQMenuBlank) 
+  if (q == XrmStringToQuark(XtEblank)) 
     type = XawMenuBlank;
-  else if (q == XawQMenuSeparator)
+  else if (q == XrmStringToQuark(XtEnone)) 
+    type = XawMenuNone;
+  else if (q == XrmStringToQuark(XtEseparator))
     type = XawMenuSeparator;
-  else if (q == XawQMenuText) 
+  else if (q == XrmStringToQuark(XtEtext)) 
     type = XawMenuText;
   else {
 /*
  * Reusing a buffer here.
  */
     sprintf(lowerName, 
-	    "Could not convert the string %s into a menu entry type.", 
+	    "Could not convert the string '%s' into a menu entry type.", 
 	    (char *) fromVal->addr);
     XtWarning(lowerName);
     return;

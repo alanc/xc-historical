@@ -1,5 +1,5 @@
 /*
-* $XConsortium: MenuButton.h,v 1.2 89/05/02 21:18:18 kit Exp $
+* $XConsortium: MenuButton.h,v 1.3 89/05/11 01:05:59 kit Exp $
 */
 
 /***********************************************************

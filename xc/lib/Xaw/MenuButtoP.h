@@ -1,5 +1,5 @@
 /*
-* $XConsortium: MenuButtonP.h,v 1.2 89/05/02 21:18:21 kit Exp $
+* $XConsortium: MenuButtonP.h,v 1.3 89/05/11 01:06:01 kit Exp $
 */
 
 
@@ -49,7 +49,7 @@ SOFTWARE.
 #ifndef _XawMenuButtonP_h
 #define _XawtMenuButtonP_h
 
-#include <X11/Xaw/MenuButton.h>
+#include <X11/Xaw/MButton.h>
 #include <X11/Xaw/CommandP.h>
 
 /************************************
