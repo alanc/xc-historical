@@ -1,4 +1,4 @@
-/* $XConsortium: XStrKeysym.c,v 11.12 91/01/06 11:48:23 rws Exp $ */
+/* $XConsortium: XStrKeysym.c,v 11.13 91/04/08 17:10:57 rws Exp $ */
 /* Copyright 1985, 1987, 1990 Massachusetts Institute of Technology */
 
 /*
@@ -16,6 +16,9 @@ without express or implied warranty.
 #include "Xlibint.h"
 #include <X11/Xresource.h>
 #include <X11/keysymdef.h>
+#ifdef X_NOT_STDC_ENV
+extern char *getenv();
+#endif
 
 extern XrmQuark _XrmInternalStringToQuark();
 
@@ -43,8 +46,13 @@ _XInitKeysymDB()
 {
     if (!initialized)
     {
+	char *dbname;
+
 	XrmInitialize();
-	keysymdb = XrmGetFileDatabase(KEYSYMDB);
+	dbname = getenv("XKEYSYMDB");
+	if (!dbname)
+	    dbname = KEYSYMDB;
+	keysymdb = XrmGetFileDatabase(dbname);
 	if (keysymdb)
 	    Qkeysym[0] = XrmStringToQuark("Keysym");
 	initialized = True;
