@@ -1,4 +1,4 @@
-/* $XConsortium: Geometry.c,v 1.49 90/09/05 10:26:16 swick Exp $ */
+/* $XConsortium: Geometry.c,v 1.50 90/12/12 14:51:28 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -356,9 +356,9 @@ void XtResizeWidget(w, width, height, borderWidth)
 		Widget pw = _XtWindowedAncestor(w);
 		old_width += (old_borderWidth << 1);
 		old_height += (old_borderWidth << 1);
-		if ((width + (borderWidth << 1)) > old_width)
+		if ((Dimension)(width + (borderWidth << 1)) > old_width)
 		    old_width = width + (borderWidth << 1);
-		if ((height + (borderWidth << 1)) > old_height)
+		if ((Dimension)(height + (borderWidth << 1)) > old_height)
 		    old_height = height + (borderWidth << 1);
 		XClearArea( XtDisplay(pw), XtWindow(pw),
 			    (int)w->core.x, (int)w->core.y,
