@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.162 94/04/02 17:13:26 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.163 94/04/08 15:41:41 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -343,8 +343,8 @@ static XtResource wmResources[]=
 	    Offset(wm.client_leader), XtRWidget, NULL},
 	{ XtNwindowRole, XtCWindowRole, XtRString, sizeof(String),
 	    Offset(wm.window_role), XtRString, (XtPointer) NULL},
-	{ XtNvisible, XtCVisible, XtRBoolean, sizeof(Boolean),
-	    Offset(wm.visible), XtRImmediate, (XtPointer) False}
+	{ XtNurgency, XtCUrgency, XtRBoolean, sizeof(Boolean),
+	    Offset(wm.urgency), XtRImmediate, (XtPointer) False}
 };
 
 static void WMInitialize();
@@ -1278,7 +1278,7 @@ static void EvaluateWMHints(w)
 	} else if (hintp->window_group != XtUnspecifiedWindowGroup)
 	    hintp->flags |=  WindowGroupHint;
 
-	if (w->wm.visible) hintp->flags |= XVisibleHint;
+	if (w->wm.urgency) hintp->flags |= XUrgencyHint;
 }
 
 
