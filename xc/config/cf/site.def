@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.30 91/07/27 14:58:50 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.31 91/07/27 15:14:19 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -36,7 +36,7 @@ XCOMM site:  $XConsortium: site.def,v 1.30 91/07/27 14:58:50 rws Exp $
 program: objects deplibs						@@\
 	RemoveTargetProgram($@)						@@\
 	$(CC) -o $@ objects $(LDOPTIONS) locallibs $(LDLIBS) syslibs $(EXTRA_LOAD_FLAGS) @@\
-	root chown root $@						@@\
+	root /etc/chown root $@						@@\
 	root chmod 4755 $@						@@\
 									@@\
 clean::									@@\
