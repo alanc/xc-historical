@@ -1,4 +1,4 @@
-/* $XConsortium: dixfontstr.h,v 1.4 88/08/21 20:03:18 rws Exp $ */
+/* $XConsortium: dixfontstr.h,v 1.5 88/09/06 15:49:24 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -66,6 +66,6 @@ extern Bool	DescribeFont();
 extern void	ServerBitmapFromGlyph();
 extern Bool	CursorMetricsFromGlyph();
 extern void	GetGlyphs();
-extern void	QueryTextExtents();
+extern Bool	QueryTextExtents();
 
 #endif /* DIXFONTSTRUCT_H */
