@@ -1,5 +1,5 @@
 ##
-# $XConsortium$
+# $XConsortium: README,v 5.2 91/02/16 09:45:45 rws Exp $
 ##
 ## 
 ## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -50,12 +50,9 @@ This directory also contains the document troff source files. The document
 consists of 5 files:
 
 	cover.ug -- The cover sheet
-	user_guide.ug -- All of the User Guide chapters
+	user_guide -- All of the User Guide chapters
 	server_app.ug -- The server functional description
 	archive_app.ug -- The archive file information
-
-Note: When the document is built it reads in the installation appendix from the
-Rel_Notes directory: ../Rel_Notes/install_app.
 
 In addition, this directory contains this README and a Makefile.  The targets
 included in the Makefile are:

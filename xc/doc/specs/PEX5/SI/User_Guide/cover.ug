@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: cover.ug,v 5.2 91/02/16 09:45:40 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -28,12 +28,12 @@
 .\" Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc.  
 .\"   
 .\"   
-.EF ''29 February 1991''
-.OF ''29 February 1991''  
+.EF ''X11R5''
+.OF ''X11R5''  
 .ds p "PEX
 .LP
 .ce 1
-\fB\s+3PEX-SI\s-1 User Guide v. \(*W\s-2\fR
+\fB\s+3PEX-SI\s-1 User Guide
 .AU  
 Marty Hess  
 .AU  

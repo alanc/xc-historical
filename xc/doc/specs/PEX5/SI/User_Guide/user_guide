@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: user_guide,v 5.2 91/02/16 09:45:46 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -23,8 +23,8 @@
 .\"## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 .\"## PERFORMANCE OF THIS SOFTWARE.
 .PL FULL
-.EF 'PEX5R1beta'29 February 1991''
-.OF ''29 February 1991'PEX5R1beta'
+.EF ''X11R5''
+.OF ''X11R5''
 .T#
 .DN "PEX-SI User Guide"
 .H C "Getting Started" start
@@ -45,8 +45,6 @@ and the clients and test programs provided with the release.
 .LP
 The appendices include:
 .BP
-The \s-1PEX-SI\s+1 installation instructions (copied from the Release Notes)
-.BP
 The functionality and implementation-specific parameters of
 the \s-1PEX-ME\s+1
 .BP
@@ -54,7 +52,7 @@ A description of the archive format used for \s-1PEX-API PHIGS\s+1 archival.
 .H 2 "Documents" 
 .LP
 The \s-1PEX-SI\s+1 provides several documents.  All of them can be found in subdirectories
-of the \fL\s-1extensions/doc/PEX\fR\s+1 directory.
+of the \fL\s-1extensions/doc/PEX/SI\fR\s+1 directory.
 .IP "\fI\s-1PEX-SI\s+1 User Guide\fR"
 .IX "User Guide" "" "\fIUser Guide\fR"
 .IX "Documentation" "User Guide" "" "\fIUser Guide\fR"
@@ -108,10 +106,8 @@ interested in porting and using various levels of the \s-1PEX-SI\s+1 code:
 .LP
 .nf
 .ta 1.5i +1.5i
-Class I Nerd	\fICompiler\fR	(Twinkie Eater)
-.IX "Nerd" "Class I"
+\fICompiler\fR	
 .IX "User Types" "Compiler"
-.IX "Twinkie Eater"
 .fi
 .RS
 This person is interested in getting \s-1PEX-SI\s+1 compiled \fIas is\fR,
@@ -121,11 +117,8 @@ The \fIUser Guide\fR is the document most useful to this person.
 .LP
 .nf
 .ta 1.5i +1.5i
-Class II Nerd	\fICustomizer\fR	(Jolt Cola or TAB Drinker)
-.IX "Nerd" "Class II"
+\fICustomizer\fR
 .IX "User Types" "Customizer"
-.IX "Jolt Cola Drinker"
-.IX "TAB Drinker"
 .fi
 .RS
 This person is interested in easy modifications of \s-1PEX-SI\s+1.
@@ -137,10 +130,8 @@ on customization in the \fIPorting Guide\fR.
 .LP
 .nf
 .ta 1.5i +1.5i
-Class III Nerd	\fIPorter\fR	(Mountain Climber)
-.IX "Nerd" "Class III"
+\fIPorter\fR
 .IX "User Types" "Porter"
-.IX "Mountain Climber"
 .fi
 .RS
 This person is interested in porting \s-1PEX-SI\s+1 to specific software
@@ -152,15 +143,13 @@ and the \fIPorting Guide\fR.
 .LP
 .nf
 .ta 1.5i +1.5i
-Class IV Nerd	\fIStarts Over\fR	(Cynic)
-.IX "Nerd" "Class IV"
-.IX "User Types" "Starts Over"
-.IX "Cynic"
+\fIModifier\fR
+.IX "User Types" "Modifier"
 .fi
 .RS
 This person wants to change or add significant capabilities to \s-1PEX\s+1.
 This person should join the \s-1PEX\s+1 architecture team and mold the
-\s-1PEX\s+1 Protocol to address his needs.
+\s-1PEX\s+1 Protocol to address their needs.
 .RE
 .LP
 All of the documentation and code assumes that the reader is familiar with the C
@@ -168,36 +157,6 @@ programming language, the \s-1X11\s+1 Window System, \s-1PHIGS\s+1, \s-1PHIGS PL
 and \s-1PEX\s+1.
 References for information on these subjects are given in Section
 .XR @NumberOf(add_ref).
-.H 2 "Printing the Documents"
-.IX "Documentation" "print instructions"
-.LP
-All documents are located in subdirectories of \fL\s-1extensions/doc/PEX\fR\s+1.
-They are provided in PostScript form and can be printed in most environments with 
-the command
-.IP
-\fL\s-1host% \f(LBlpr *.ps\fR\s+1
-.LP
-The document directories also contain the source troff\** files.
-.FS
-\fItroff\fR is a formatting program that resides on most Unix systems.
-For more information, type \s-1\fLman troff\fR\s+1 at your prompt.
-.FE
-The troff files use a macro package called \fIpex.macros\fR.
-\fIpex.macros\fR refers to  several other files when processing.
-All these files reside in the \fL\s-1extensions/doc/PEX\fR\s+1 directory, 
-and are produced when you build \s-1PEX-SI\s+1.
-Each document directory contains a Makefile that will transform the troff files into
-\fIdit\fR (device-independent troff) files with the suffix \fL\s-1.dit\fR\s+1.
-You may have to modify the path to the troff program before making the documents.
-You can build each document by typing the following command in the appropriate directory:
-.IP
-\fL\s-1host% \f(LBmake\fR\s+1
-.LP
-You will need to provide a mechanism for converting the \fIdit\fR formatted files into 
-Post Script files (or your favorite file format) before printing.
-.LP
-Read the \fL\s-1README\fR\s+1 file in each of the document directories for 
-more information about using the document files.
 .H 2 "Additional References" add_ref
 .IX "Documentation" "additional references"
 .LP
@@ -235,90 +194,33 @@ Part 1:\ \ Functional Description\fP
 This chapter familiarizes you with the directory hierarchy of \s-1PEX-SI\s+1.
 It describes the \s-1PEX-SI\s+1 files and libraries. 
 It also assumes that you are ``\s-1X\s+1-literate.''
-.H 2 "Tree Layout"
-.LP
-Figure
-.XR @NumberOf(menu)
-shows the top levels of the source hierarchy of \s-1PEX-SI\s+1.
-The \s-1PEX-SI\s+1 source tree should be placed, in its entirety,
-within the \s-1X11R4\s+1 source tree under the \fL\s-1extensions\s+1\fR subdirectory
-of the \s-1X11\s+1 root (\fL\s-1TOPDIR\s+1\fR).
-Some of the subdirectories beneath the \s-1PEX-SI\s+1 \fL\s-1extensions\fR\s+1
-directory already exist in the \s-1X11R4\s+1 source tree.
-The \s-1PEX-SI\s+1 source code is separated from existing (and future) source in
-all of the subdirectories into yet another subdirectory, named
-\fL\s-1PEX\s+1\fR in each case. 
-.LP
-The \s-1PEX-SI\s+1 installation scripts allow the \s-1PEX-SI\s+1 source to be installed
-either \fIin-place\fR, within the actual \s-1X\s+1 source tree, or \fIsymlink\fR,
-in another area with symbolic links to the actual \s-1PEX-SI\s+1 source tree.
-(See Appendix A for more information.)
-.LP
-Each of the directories shown below is discussed briefly in the remaining sections
-of this chapter.
 .sp .2
 .PS
 #
 #------------------Tree Layout Diagram------------------#
 #
-#######--clients--#######
-Clients:
-	box ht .3i wid .7i "\fL\s-1clients\s+1\fR"
-line up .25i from Clients.n               # MUST BE FIRST LINE #
-move down .25i from Clients.s
-Pex_c:
-	box ht .2i wid .4i "\fL\s-1PEX\s+1\fR"
-line down .25i from Clients.s to Pex_c.n 
-##########--doc--###########
-move right .375i from Clients.e
-Doc:
-	box ht .3i wid .5i "\fL\s-1doc\s+1\fR"
-line up .25i from Doc.n
-move down .25i from Doc.s
-Pex_d:
-	box ht .2i wid .4i "\fL\s-1PEX\s+1\fR"
-line down .25i from Doc.s to Pex_d.n 
-########--fonts--##########
-move right .375i from Doc.e
-Fonts:
-	box ht .3i wid .5i "\fL\s-1fonts\s+1\fR"
-line up .25i from Fonts.n
-move down .25i from Fonts.s
-Pex_f:
-	box ht .2i wid .4i "\fL\s-1PEX\s+1\fR"
-line down .25i from Fonts.s to Pex_f.n 
 ########--include-##########
-move right .375i from Fonts.e
 Include:
 	box ht .3i wid .7i "\fL\s-1include\s+1\fR"
-move up .5i from Include.n
-Top:
-	box ht .3i wid 1.375i "\fL\s-1extensions\s+1\fR"
-line down from Top.s to Include.n
+line up .25i from Include.n
 move down .25i from Include.s
 Pex_i:
 	box ht .2i wid .4i "\fL\s-1PEX\s+1\fR"
 line down .25i from Include.s to Pex_i.n 
 #######--lib--##########
-move right .375i from Include.e
+move right .5i from Include.e
 Lib:	
 	box ht .3i wid .5i "\fL\s-1lib\s+1\fR"
-line up .25i from Lib.n
+move up .5i from Lib.n
+Top:
+	box ht .3i wid 1.375i "\fL\s-1extensions\s+1\fR"
+line down from Top.s to Lib.n
 move down .25i from Lib.s
 Pex_l:
 	box ht .2i wid .4i "\fL\s-1PEX\s+1\fR"
 line down .25i from Lib.s to Pex_l.n 
-#########--release--############
-move right .375i from Lib.e
-Release:	
-	box ht .3i wid .7i "\fL\s-1release\s+1\fR"
-line up .25i from Release.n
-move down .25i from Release.s
-Pex_r:
-	box ht .2i wid .4i "\fL\s-1PEX\s+1\fR"
-line down .25i from Release.s to Pex_r.n 
 #########--server--############
-move right .375i from Release.e
+move right .5i from Lib.e
 Server:	
 	box ht .3i wid .7i "\fL\s-1server\s+1\fR"
 line up .25i from Server.n
@@ -327,95 +229,33 @@ Pex_s:
 	box ht .2i wid .4i "\fL\s-1PEX\s+1\fR"
 line down .25i from Server.s to Pex_s.n 
 ########--test--##########
-move right .375i from Server.e
+move right .5i from Server.e
 Test:	
 	box ht .3i wid .5i "\fL\s-1test\s+1\fR"
 line up .25i from Test.n                          #####  These two lines 
 line from top of first line to top of last line   #### have to stay together
 move down .25i from Test.s
 Pex_t:
-	box ht .2i wid .4i "\fL\s-1PEX\s+1\fR"
+	box ht .2i wid .6i "\fL\s-1InsPEX\s+1\fR"
 line down .25i from Test.s to Pex_t.n 
 .PE
-.sp .4i
+.sp .3i
 .FN "PEX-SI Directory Hierarchy" menu
 .IX "directories" "extensions" "" "\fL\s-1extensions\fR\s+1"
-.bp
-.H 2 "\f(LBclients\fR"
-.IX "directories" "clients" "" "\fL\s-1clients\s+1\fR"
-.PS
-#
-#------------------Tree Layout Diagram------------------#
-#
-#######--clients--#######
-Clients:
-	box ht .3i wid .7i "\fL\s-1clients\s+1\fR"
-line up .25i from Clients.n               # MUST BE FIRST LINE #
-move down .25i from Clients.s
-Pex_c:
-	box ht .2i wid .4i "\fL\s-1PEX\s+1\fR"
-line down .25i from Clients.s to Pex_c.n 
-move down .5i from Pex_c.s 
-move left 1.75i
-Auto_box:
-	box ht .2i wid .7i "\fL\s-1auto_box\s+1\fR"
-line up .25i from Auto_box.n
-move right .25i from Auto_box.e
-Beach_ball:
-	box ht .2i wid .9i "\fL\s-1beach_ball\s+1\fR"
-line up .25i from Beach_ball.n
-move right .25i from Beach_ball.e
-Examples:
-	box ht .2i wid .7i "\fL\s-1examples\s+1\fR"
-line up .25i from Examples.n
-move right .25i from Examples.e
-Pexscope:
-	box ht .2i wid .7i "\fL\s-1pexscope\s+1\fR"
-line up .25i from Pexscope.n
-move right .25i from Pexscope.e
-Pyramid:
-	box ht .2i wid .7i "\fL\s-1pyramid\s+1\fR"
-line up .25i from Pyramid.n
-move right .25i from Pyramid.e
-line from end of 5th last line to end of last line
-line down .15i from Pex_c.s 
-.PE
-.FN "\fL\s-1clients\fP\s+1 source tree" client_tree
-.IX "directories" "clients" "" "\fL\s-1clients\fR\s+1"
-.IX "directories" "clients/examples" "" "\fL\s-1clients/examples\fR\s+1"
-.IX "directories" "clients/auto_box" "" "\fL\s-1clients/auto_box\fR\s+1"
-.IX "directories" "clients/beach_ball" "" "\fL\s-1clients/beach_ball\fR\s+1"
-.IX "directories" "clients/pexscope" "" "\fL\s-1clients/pexscope\fR\s+1"
-.IX "directories" "clients/pyramid" "" "\fL\s-1clients/pyramid\fR\s+1"
-.LP
-The \fL\s-1clients\fR\s+1 subdirectory contains the sources to
-\s-1PEX\s+1 client programs.
-There is one subdirectory for each client program provided with \s-1PEX-SI\s+1. 
-In addition, the \fL\s-1PEX/examples\fR\s+1 subdirectory contains examples of
-client \s-1PHIGS\s+1 programs.
-.LP
-The client programs \fIauto_box\fR, \fIbeach_ball\fR, \fIpyramid\fR, and \fIpexscope\fR,
-and the \fL\s-1examples\fR\s+1 subdirectory are described in further detail
-in Chapter
-.XR @NumberOf(clients).
-.H 2 "\f(LBdoc\fR"
+.sp 
+.H 2 "\f(LBmit/doc/extensions/PEX/SI\fR"
 .IX "directories" "doc" "" "\fL\s-1doc\s+1\fR"
 .IX "directories" "Arch_Spec" "" "\fL\s-1Arch_Spec\s+1\fR"
 .IX "directories" "User_Guide" "" "\fL\s-1User_Guide\s+1\fR"
 .IX "directories" "Portg_Guide" "" "\fL\s-1Portg_Guide\s+1\fR"
 .IX "directories" "PHIGS" "" "\fL\s-1PHIGS\s+1\fR"
-.IX "directories" "Rel_Notes" "" "\fL\s-1Rel_Notes\s+1\fR"
 .PS
 ##########--doc--###########
 Doc:
 	box ht .3i wid .5i "\fL\s-1doc\s+1\fR"
 line up .25i from Doc.n
-move down .25i from Doc.s
-Pex_d:
-	box ht .2i wid .4i "\fL\s-1PEX\s+1\fR"
-line down .25i from Doc.s to Pex_d.n 
-move down .5i from Pex_d.s
-move left 1.6i
+move down .5i from Doc.s 
+move left 1.4i
 Arch_Spec:
 	box ht .2i wid .8i "\fL\s-1Arch_Spec\s+1\fR"
 line up .25i from Arch_Spec.n
@@ -431,12 +271,8 @@ move right .15i from Portg_Guide.e
 PHIGS:
 	box ht .2i wid .8i "\fL\s-1PHIGS\s+1\fR"
 line up .25i from PHIGS.n
-move right .15i from PHIGS.e
-Rel_Notes:
-	box ht .2i wid .8i "\fL\s-1Rel_Notes\s+1\fR"
-line up .25i from Rel_Notes.n
-line from end of 5th last line to end of last line
-line down .15i from Pex_d.s
+line from end of 4th last line to end of last line
+line down .15i from Doc.s
 .PE
 .FN "\fL\s-1doc\fP\s+1 source tree" doc_tree
 .LP
@@ -444,8 +280,8 @@ The \fL\s-1doc\fR\s+1 subdirectory contains the source for, and PostScript versi
 of, all of the \s-1PEX-SI\s+1 documentation.
 There is a subdirectory for each document and a \s-1README\s+1 file in each
 document subdirectory that provides more information on the contents of that subdirectory.
-The \s-1PEX-SI\s+1 documentation is also discussed in Chapter 1 of this document.
-.H 2 "\f(LBfonts\fR"
+.bp
+.H 2 "\f(LBmit/fonts/PEX\fR"
 .IX "directories" "fonts" "" "\fL\s-1fonts\s+1\fR"
 .LP
 This subdirectory contains the source for the \s-1PEX-SI\s+1 font compiler
@@ -454,13 +290,13 @@ These programs are designed to enable a \s-1PEX-SI\s+1 user to define stroke
 fonts, and to use them within a \s-1PEX\s+1 client.
 Refer to the \fIPEX-SI Porting Guide\fR for more information on using the 
 \s-1PEX-SI\s+1 predefined fonts, and on creating new fonts.
-.H 2 "\f(LBinclude\fR"
+.H 2 "\f(LBmit/extensions/include/PEX\fR"
 .IX "directories" "include" "" "\fL\s-1include\s+1\fR"
 .LP
-This subdirectory contains the base, client, server, and shared \fL\s-1include\fR\s+1 files.
+This subdirectory contains the client, server, and shared \fL\s-1include\fR\s+1 files.
 These files define the constants and protocol structures used by the client library
 and the server for creating and reading \s-1PEX\s+1 packets.
-.H 2 "\f(LBlib\fR"
+.H 2 "\f(LB/mit/extensions/lib/PEX\fR"
 .IX "directories" "lib" "" "\fL\s-1lib\s+1\fR"
 .PS
 #######--lib--##########
@@ -568,16 +404,7 @@ and modification.
 .LP
 For more information on the contents of these subdirectories,
 see the \fI\s-1PEX-SI\s+1 Porting Guide\fR.
-.H 2 "\f(LBrelease\fP"
-.LP
-The \fL\s-1release\fR\s+1 subdirectory contains information pertinent
-to this release.  It contains a plain text version of the installation
-instructions (extracted from the version in the \fIRelease Notes\fR),
-installation scripts, and copies of the \s-1X11\s+1 configuration files
-that must be modified to build \s-1PEX\s+1 and to suit your implementation environment.
-Finally, this directory contains a \s-1\fLPEX/bugs\fR\s+1 subdirectory that
-contains pertinent bug report history information.
-.H 2 "\f(LBserver\fP"
+.H 2 "\f(LBmit/extensions/server/PEX\fP"
 .IX "directories" "server" "" "\fL\s-1server\s+1\fR"
 .IX "directories" "ddpex" "" "\fL\s-1ddpex\s+1\fR"
 .IX "directories" "dipex" "" "\fL\s-1dipex\s+1\fR"
@@ -667,11 +494,6 @@ Shared:
 	box ht .2i wid .6i "\fL\s-1shared\s+1\fR"
 line up .25i from Shared.n
 line from end of 7th last line to end of last line
-#------ Expansion of ospex directory -----#
-move down .25i from Ospex.s
-Bsd:
-	box ht .2i wid .6i "\fL\s-14.2bsd\s+1\fR"
-line down .25i from Ospex.s to Bsd.n 
 .PE
 .FN "\fL\s-1server\fP\s+1 source tree" server_tree
 .LP
@@ -726,32 +548,19 @@ floating-point conversion code.
 .LP
 The \s-1\fLospex\fR\s+1 subdirectory is designed to contain subdirectories for
 specific operating system code.
-The \s-1PEX-SI\s+1 code only provides operating system specific code for 
-the 4.2 \s-1BSD\s+1 version of Unix.
-.H 2 "\f(LBtest\fR"
+.H 2 "\f(LBmit/extensions/test/InsPEX\fR"
 .PS
 ########--test--##########
 Test:	
 	box ht .3i wid .5i "\fL\s-1test\s+1\fR"
 line up .25i from Test.n
-move down .25i from Test.s
-Pex_t:
-	box ht .2i wid .4i "\fL\s-1PEX\s+1\fR"
-line down .25i from Test.s to Pex_t.n 
-move down .5i from Pex_t.s 
-move left .5i
+move down .5i from Test.s
 Inspex:
 	box ht .2i wid .7i "\fL\s-1InsPEX\s+1\fR"
-line up .25i from Inspex.n
-move right 1.5i from Inspex.e
-Gpc:
-	box ht .2i wid .4i "\fL\s-1gpc\s+1\fR"
-line up .25i from Gpc.n
-line from end of 2nd last line to end of last line
-line down .15i from Pex_t.s 
+line down .5i from Test.s to Inspex.n 
 #------ Expansion of Inspex directory ------#
 move down .5i from Inspex.s
-move left 1i
+move left .5i
 Include:
 	box ht .2i wid .6i "\fL\s-1include\s+1\fR"
 line up .25i from Include.n
@@ -765,34 +574,11 @@ Tools:
 line up .25i from Tools.n
 line from end of 3rd last line to end of last line
 line down .15i from Inspex.s 
-#------ Expansion of gpc directory ------#
-move down .5i from Gpc.s
-move left .03i
-Benchmarks:
-	box ht .2i wid .9i "\fL\s-1benchmarks\s+1\fR"
-line up .25i from Benchmarks.n
-move right .15i from Benchmarks.e
-Objects:
-	box ht .2i wid .6i "\fL\s-1objects\s+1\fR"
-line up .25i from Objects.n
-move right .15i from Objects.e
-Tests:
-	box ht .2i wid .6i "\fL\s-1tests\s+1\fR"
-line up .25i from Tests.n
-line from end of 3rd last line to end of last line
-line down .15i from Gpc.s
 .PE
 .FN "\fL\s-1test\fP\s+1 source tree" test_tree
 .LP
-The \fL\s-1test\fR\s+1 directory contains sources for programs that explicitly
-test the functionality of \s-1PEX-SI\s+1.
-It contains a subdirectory for the Ins\s-1PEX\s+1 test suite and a
-subdirectory for the Graphics Performance Characterization (\s-1GPC\s+1)
-benchmarking programs.
-.H 3 "\f(LBInsPEX\fR"
-.IX "directories" "InsPEX" "" "\s-1\fLInsPEX\fR\s+1"
-.IX "InsPEX" "" "Ins\s-1PEX\s+1"
-.IX "test suite"
+This \fL\s-1test\fR\s+1 directory contains sources 
+for the Ins\s-1PEX\s+1 test suite.
 .LP
 Ins\s-1PEX\s+1 is an automated test suite that uses the \s-1PHIGS/PHIGS PLUS\s+1
 language binding to test the \s-1PEX-SI\s+1 implementation.
@@ -804,10 +590,8 @@ There is also a \s-1README\s+1 in the \s-1\fLInsPEX\s+1\fR directory
 that covers the information that is in this document.
 .LP
 The main execution script, \fL\s-1inspex.sh\fR\s+1, resides in the InsPEX directory. 
-The three subdirectories shown in Figure
-.XR @NumberOf(test_tree)
+The three subdirectories include, tools, and testcases
 contain supporting programs for the main execution script.
-.IX "directories" "InsPEX/include" "" "\fL\s-1InsPEX/include\s+1\fR"
 The \fL\s-1InsPEX/include\s+1\fR subdirectory contains
 implementation-dependent \fL\s-1include\fR\s+1 files.
 These files should be modified to suit a particular implementation before the suite is run.
@@ -827,17 +611,18 @@ and \fL\s-1pexint\fR\s+1 contains the InsPEX-specific source for the interpreter
 .\".IX "images"
 .\"A set of reference images.
 .LP
-.H 3 "\f(LBgpc\fR"
+.H 2 "\f(LBmit/demos/gpc\fR"
 .IX "benchmarking"
 .IX "directories" "gpc" "" "\fL\s-1gpc\s+1\fR"
 .IX "directories" "gpc/benchmarks" "" "\fL\s-1gpc/benchmarks\s+1\fR"
 .IX "directories" "gpc/objects" "" "\fL\s-1gpc/objects\s+1\fR"
 .IX "directories" "gpc/tests" "" "\fL\s-1gpc/tests\s+1\fR"
+.sp 2
 This directory contains the source for the Graphics Performance Characterization
 (\s-1GPC\s+1) programs.  It has three subdirectories:\ \ 
 \fL\s-1benchmarks\fR\s+1 contains the \s-1GPC\s+1 approved benchmarking
 files that can be used for gauging the performance of your
-implementation; \fL\s-1objects\fR\s+1 contains the data files used by the benchmarking
+implementation; \fL\s-1objects\fR\s+1 contains other demo
 programs; and \fL\s-1tests\fR\s+1 contains reference images that can be used to verify an 
 implementation, and documentation describing the images.
 A \s-1README\s+1 file describing use limitaitons and how to use the benchmarking
@@ -858,7 +643,7 @@ It uses \s-1PHIGS\s+1 and \s-1PHIGS PLUS\s+1 as the
 Application Programmer's Interface to the \s-1PEX\s+1 protocol (\s-1PEX-API\s+1).
 The complete set of functions available in the \s-1PEX-API\s+1 are
 described in the \fI\s-1PEX-SI\s+1 Graphics Library Manual Pages\fR.
-The binding for \s-1PEX-API\s+1 nearly conforms to the \s-1DIS\s+1 \s-1PHIGS\s+1 C Binding 
+The binding for \s-1PEX-API\s+1 nearly conforms to the \s-1IS\s+1 \s-1PHIGS\s+1 C Binding 
 (ISO DIS 9593-4:199x(E), 1 August 1990); however, some deviations have been made.
 This information (as well as other important information) is described in the 
 \s-1INTRO PHIGS\s+1 manual page.
@@ -890,13 +675,12 @@ A run-time support file needed by \s-1PEX-API\s+1.
 The header file that must be included when you are using the library.
 \fL\s-1phigs.h\fR\s+1 itself includes some \s-1X\s+1 header files.
 .LP
-After \fIinstalling\fR and building the \s-1PEX-SI\s+1 release (see Appendix 
-A for instructions),
-the \s-1PEX-API\s+1 library and the \s-1PM\s+1 and support files can be found in
+The \s-1PM\s+1 and support files can be found in
 the (default) subdirectory \fL\s-1/usr/lib/X11/PEX\s+1\fR, 
 and the header file \fL\s-1phigs.h\fR\s+1 can be found
-in \fL\s-1/usr/include/X11/PEX/phigs\s+1\fR.
-See the \fL\s-1Imakefile\fR\s+1 in the various \fL\s-1clients/PEX\s+1\fR subdirectories
+in \fL\s-1/usr/include/X11/phigs\s+1\fR.
+See the \fL\s-1Imakefile\fR\s+1 in the various \fL\s-1mit/demos/auto_box\s+1\fR 
+or \fL\s-1mit/demos/beach_ball\s+1\fR subdirectories
 for examples of building \s-1PEX-SI\s+1 clients.
 .IX "phigsmon"
 .LP
@@ -909,19 +693,17 @@ for examples of building \s-1PEX-SI\s+1 clients.
 \f(BINote:\fR\ \ If you did not \fL\s-1make install\fR\s+1 when you built
 the \s-1PEX-SI\s+1, you will find the \s-1API\s+1 library and
 the \fL\s-1PHIGSfnc.txt\fR\s+1 and \fL\s-1PHIGSerr.txt\fR\s+1 files in 
-the \fL\s-1extensions/lib/PEX\s+1\fR subdirectory, and
+the \fL\s-1mit/extensions/lib/PEX\s+1\fR subdirectory, and
 the \s-1PM\s+1 and the \fL\s-1phigs.h\fR\s+1 file
-in the \fL\s-1.../lib/PEX/lib\fR\s+1 subdirectory below it.
+in the \fL\s-1mit/extensions/lib/PEX/lib\fR\s+1 subdirectory below it.
 .LP
 \f(BINote:\fR
 You must provide \fL\s-1include\fR\s+1 paths for the \s-1X\s+1 and \s-1PEX\s+1 
 header files when you compile your clients.
 You also need to link the \s-1PEX\s+1 library and the standard \s-1X\s+1 library, 
 \fL\s-1libX11.a\fR\s+1, with your clients when you build them.
-When you run a client, the \s-1API\s+1 looks for the run-time files in 
-their installed locations by default.
-If they are not found there, \s-1PEX-API\s+1 looks for the 
-environment variable \s-1PEXAPIDIR\s+1 for a path to them.
+If the PEXAPIDIR environment variable is set the API looks for the run-time
+files there, otherwise it looks in the \fL\s-1/usr/lib/X11/PEX\fR\s+1 directory.
 .IX "PEXAPIDIR" "" "\s-1PEXAPIDIR\s+1"
 If this environment variable does not exist, or the files are not in that directory, an 
 the \s-1OPEN PHIGS\s+1 function generates an error message and the client exits.
@@ -964,8 +746,8 @@ The \s-1PEX-SI\s+1 server code provides a Model Extension (\s-1PEX-ME\s+1)
 to the standard \s-1X\s+1 server.
 It is made up of several libraries that are described in the 
 \fIArchitecture Specification\fR and the \fIPorting Guide\fR.
-These libraries are linked with your \s-1X\s+1 server if you have followed the
-installation and build instructions correctly.
+These libraries are linked with your \s-1X\s+1 server if you have chosen
+to do so at build time.
 See the section on potential problems in the \fIPorting Guide\fR if you 
 have had problems building the \s-1PEX-SI\s+1 server.
 .LP
@@ -973,7 +755,7 @@ have had problems building the \s-1PEX-SI\s+1 server.
 See the man pages provided for the server with the \s-1X\s+1 release
 for additional information.
 \s-1PEX-ME\s+1 looks for and loads a default \s-1PEX\s+1 font when the server is started.
-This font is placed in the default directory \fL\s-1/usr/lib/fonts/PEX\s+1\fR 
+This font is placed in the default directory \fL\s-1/usr/lib/X11/fonts/PEX\s+1\fR 
 when a \fL\s-1make install\fR\s+1 is done.
 If the font is not found there, \s-1PEX-ME\s+1 looks for the environment
 variable \s-1PEX_FONTPATH\s+1 for a path to the font.  If the font cannot
@@ -1084,16 +866,6 @@ the test suite, invoke the Inspector and verify or reject
 any images that do not match the references; then, do another
 run of Ins\s-1PEX\s+1 that takes into account the results of
 the Inspector session.
-.LP
-Inspector is implemented using the XView toolkit supplied
-on the contrib tape for X11R4.
-All toolkit-specific code is isolated in
-two files by a toolkit-independent interface, so porting
-to other toolkits should be straightforward.
-Note that the tool does not itself use \s-1PEX\s+1 \(em it only uses toolkit and Xlib
-functions for image display and user interaction.  Thus, it need
-not be run on the server or system under test: it can be run
-any time, on any machine running an \s-1X\s+1 server.
 .H 2 "Building the Suite"
 .IX "pexint"
 .IX "libinspex.a"
@@ -1118,10 +890,15 @@ note that it is vital to supply \fL\s-1CPPFLAGS=-DNEWT\fR\s+1 as an
 argument to make in order for the interpreter to be built correctly.
 .H 3 "Compiling Inspector"
 .LP
-The Inspector is built using the XView toolkit.
-The XView toolkit is available in the contribution tape
-provided with the X11R4 release under \fL\s-1contrib/toolkits/XView\s+1\fR.
-A \s-1README\s+1 file gives instructions on how to build it.
+Versions of Inspector are available using the XView toolkit supplied
+on the contrib tape for X11R4, or the Athena Widgets.
+All toolkit-specific code is isolated in
+two files by a toolkit-independent interface, so porting
+to other toolkits should be straightforward.
+Note that the tool does not itself use \s-1PEX\s+1 \(em it only uses toolkit and Xlib
+functions for image display and user interaction.  Thus, it need
+not be run on the server or system under test: it can be run
+any time, on any machine running an \s-1X\s+1 server.
 .LP
 .IX "INSPEXDEST" "" "\s-1INSPEXDEST\s+1"
 .IX "XVIEWHOME" "" "\s-1XVIEWHOME\s+1"
@@ -1155,7 +932,7 @@ These, and the other file path variables, should be absolute paths.
 .IX "inspex.sh"
 Path to the Ins\s-1PEX\s+1 test suite's directory, where \fL\s-1inspex.sh\fR\s+1
 and the associated subdirectories are.  In the \s-1PEX-SI\s+1 source tree,
-\s-1INSPEXHOME\s+1 is the directory \fL\s-1extensions/test/PEX/InsPEX\s+1\fR.
+\s-1INSPEXHOME\s+1 is the directory \fL\s-1extensions/test/InsPEX\s+1\fR.
 .IP "\s-1INSPEXDEST\s+1" 
 .IX "INSPEXDEST" "" "\s-1INSPEXDEST\s+1" 
 Destination directory for test suite output.  Compilations,
@@ -1181,7 +958,7 @@ is \s-1\fL$\s-1INSPEXHOME\s+1/refimages\s+1\fR.
 .IX "PEXLIBDIR" "" "\s-1PEXLIBDIR\s+1" 
 .IX "PEXINCDIR" "" "\s-1PEXINCDIR\s+1" 
 Directories containing the \s-1PEX\s+1 include and library files.
-These default to \fL\s-1../../../lib/PEX\s+1\fR and \fL\s-1../../../lib/PEX/include\s+1\fR,
+These default to \fL\s-1../../lib/PEX\s+1\fR and \fL\s-1../../../X11/phigs\s+1\fR,
 respectively (absolute paths are derived from these relative
 ones by \fL\s-1inspex.sh\fR\s+1).
 Note that the suite expects the \s-1PHIGS\s+1 include files to
@@ -1393,7 +1170,7 @@ influence the rendering of primitives.  A window
 manager may be necessary, however, if the \s-1PEX\s+1 library is \s-1ICCCM\s+1
 compliant and depends on the window manager to load its color map.
 .LP
-\s-1PEX-SI\s+1 provides two scripts in the \fL\s-1test/PEX/InsPEX\fR\s+1 directory
+\s-1PEX-SI\s+1 provides two scripts in the \fL\s-1mit/extensions/test/InsPEX\fR\s+1 directory
 that will help you to set up the runtime environment for Ins\s-1PEX\s+1:  
 .IP \fIstartpex\fR 13
 This script sets the environment variables and executes the command that starts the server.
@@ -1434,7 +1211,7 @@ executed in the new process, for example:
 \fL\s-1host% \f(LBnewpgrp inspex.sh -a archive strcon\fR\s+1
 .LP
 This utility is a short C program residing
-in \fL\s-1.../test/PEX/InsPEX\s+1\fR.  \fL\s-1newgrp\fR\s+1 can be
+in \fL\s-1.../test/InsPEX\s+1\fR.  \fL\s-1newgrp\fR\s+1 can be
 compiled with the following command:
 .IP
 \s-1\fLhost% \f(LBcc newpgrp.c -o $\s-1INSPEXDEST\s+1/newpgrp\fR\s+1
@@ -1724,6 +1501,7 @@ South Pasadena, CA. 91030
 .br
 (213)255-0900
 .RE
+.bp
 .LP
 The \s-1PLB\s+1 programs consist of three parts:
 .NP
@@ -1754,7 +1532,7 @@ sequence.  The program delivered with \s-1PEX-SI\s+1 is called \fIplbpex\fR.
 .LP 
 If the \fIplbpex\fR program has not been built automatically, you can
 create it by typing \fL\s-1make all\fR\s+1 in
-the \fL\s-1.../extensions/PEX/test/gpc\s+1\fR directory. 
+the \fL\s-1mit/demos/gpc\s+1\fR directory. 
 The executable created is named \fL\s-1plbpex\fR\s+1.
 .LP
 To run the \s-1GPC\s+1 program, you must be in the \fL\s-1objects\fR\s+1 subdirectory,
@@ -1865,16 +1643,16 @@ support files used by the \s-1PEX-API\s+1 are located.
 (See Chapter 
 .XR @NumberOf(graph_lib)
 for a description of these files.)
-.H 2 "Examples"
-.IX "directories" "clients/examples" "" "\fL\s-1clients/examples\fR\s+1"
-.IX "examples"
-.IX "clients" "examples"
+.H 2 "Demos"
+.IX "directories" "mit/demos" "" "\fL\s-1mit/demos\fR\s+1"
+.IX "demos"
+.IX "clients" "demos"
 This directory contains simple \s-1PHIGS\s+1 test programs developed by the 
 \s-1PEX-SI\s+1 team, including those presented at the
 5th Annual X Conference, Boston, January 14-19, 1991.
-All of these programs can be used as examples of \s-1PHIGS\s+1 applications.
-.H 2 "Auto Box"
-.IX directories "clients/auto_box" "" "\fL\s-1clients/auto_box\fR\s+1"
+All of these programs can be used as demos of \s-1PHIGS\s+1 applications.
+.H 3 "Auto Box"
+.IX directories "demos/auto_box" "" "\fL\s-1demos/auto_box\fR\s+1"
 .IX "auto_box"
 .IX "clients" "auto_box" "" "\fIauto_box\fR"
 .LP
@@ -1885,17 +1663,19 @@ Four views of the cube are presented in four quadrants, each with a different ro
 applied.  In the first and fourth quadrants the back faces and front faces are
 respectively culled out, demonstrating one of the \s-1PHIGS PLUS\s+1 features.
 \fIauto_box\fR uses only \s-1PHIGS\s+1 indexed colours.
-Type \fL\s-1auto_box\fR\s+1 to run the program.
+To run the program move to the directory \fL\s-1mit/demos/auto_box\fR\s+1 
+and type \fL\s-1auto_box\fR\s+1.
 It exits after all views and rotations are completed once.
-.H 2 "Beach Ball"
-.IX "directories" "clients/beach_ball" "" "\fL\s-1clients/beach_ball\fR\s+1"
+.H 3 "Beach Ball"
+.IX "directories" "demos/beach_ball" "" "\fL\s-1demos/beach_ball\fR\s+1"
 .IX "beach_ball"
 .IX "clients" "beach_ball" "" "\fIbeach_ball\fR"
 .LP
 \fIbeach_ball\fR is a simple program that displays a bouncing multicolored
 pseudo-sphere (a beach ball).
 It uses filled polygons for the faces of the beach ball.
-Type \fL\s-1beach_ball\s+1\fR to run this program.
+To run the program move to the directory \fL\s-1mit/demos/beach_ball\fR\s+1 
+and type \fL\s-1beach_ball\fR\s+1.
 You must type \fL\s-1Control-C\fR\s+1 to exit this program, as it will run
 in a continuous loop.
 .LP
@@ -1903,116 +1683,3 @@ On server implementations that have not been optimized, it may be hard
 to visualize the bouncing motion of the ball.
 Because \s-1PEX\s+1 requests may be buffered in queues, there may be a delay
 between typing \fL\s-1Control-C\fR\s+1 and the client exiting.
-.H 2 "Pyramid"
-.IX "directories" "clients/pyramid" "" "\fL\s-1clients/pyramid\s+1\fR"
-.IX "pyramid"
-.IX "clients" "pyramid" "" "\fIpyramid\fR"
-.LP
-\fIpyramid\fR is an interactive tool that builds simplistic arrays of
-pyramids (four-sided regular polyhedra) or cubes, and views them under
-different lighting, viewing, and surface material conditions.
-\fIpyramid\fR exercises most of the functionality associated with
-triangle strip and quad mesh lighting and shading.
-It utilizes the \s-1XVIEW\s+1 toolkit\** for its interactive control panels.
-.IX "XVIEW" "" "\s-1XVIEW\s+1"
-.FS
-\s-1XVIEW\s+1 is provided on the \s-1X11R4\s+1 distribution
-tape in the \fL\s-1contrib\fR\s+1 subdirectory.
-.FE
-The control panels allow you to individually set up to six light
-sources of any type (positional, ambient, or directional), and also allow
-you to interactively update nearly all \s-1PHIGS\s+1 viewing parameters.
-.LP
-Additionally, a modelling-space grid is visible to help you determine
-orientation during execution. 
-.LP
-To start \fIpyramid\fR, type \fL\s-1pex-pyramid\fR\s+1 in the \fL\s-1...pyramid\fR\s+1
-subdirectory.
-To exit the program type \fL\s-1Control-C\s+1\fR either in the window
-from which it was started or directly in the \fIpyramid\fR display window.
-You can also kill the process in super-user mode.
-.H 2 "Pexscope"
-.IX "directories" "clients/pexscope" "" "\fL\s-1clients/pexscope\s+1\fR"
-.IX "pexscope"
-.IX "clients" "pexscope" "" "\fIpexscope\fR"
-.IX "xscope"
-.LP
-This program is an extended version of the \fIxscope\fR client provided on the
-contrib tape of the X11R4 release.
-It monitors the connections between a \s-1PEX\s+1 server and a client program.
-The requests and replies exchanged between the server and client are displayed.
-Instructions for using \fIxscope\fR are provided in the \s-1README\s+1 file
-in the \fL\s-1clients/PEX/pexscope\fR\s+1 directory.
-Instructions for using \fIpexscope\fR are below.
-The instructions assume that you are connecting to the default display server.
-.LP
-It is best to work from two windows when using \fIpexscope\fR.
-\fIpexscope\fR can be run in one window (window A) and the client you are
-communicating with can run in another window (window B).
-.NP
-In window A, \fL\s-1cd\fR\s+1 to the \fL\s-1extensions/clients/PEX/pexscope\fR\s+1
-directory.
-Start \fIpexscope\fR by typing 
-.RS
-.IP
-\s-1\fLhost% \f(LBpexscope\fR\s+1
-.RE
-.IP
-You will not see anything happening until you start the client.
-.br
-\f(BINote:\fR\ \
-For best results, start \fIpexscope\fR before running the client.
-.NP
-Next, go to window B and type
-.RS
-.IP
-\s-1\fLhost% \f(LBsetenv DISPLAY <hostname-pexscope>:1\fR\s+1  
-.RE
-.IP
-to set the environment variable to display 1.  (<hostname-pexscope> is the name
-of the host of window A, the host that is running \fIpexscope\fR.)
-.NP
-Now, start the client in window B.
-You will see the exchange between the client and the server displayed in window A. 
-.LP
-The following is an example of the \s-1PEX\s+1 traffic that you will see
-in the window running \fIpexscope\fR.
-(\s-1 PEX\s+1 requests and replies are preceded by X requests and replies.)
-.BS
-.LS 1
- 0.16: Client -->    8 bytes
-	........PEX_REQUEST: GetExtensionInfo
-	.............length: 2
-     Protocol Major Version: 5
-     Protocol Minor Version: 0
- 0.18: 					  64 bytes <-- X11 Server
-	..........PEX_REPLY: GetExtensionInfo
-	.............length: 8
-     Protocol Major Version: 5
-     Protocol Minor Version: 0
-	     Release Number: 0
-      Length of Vendor Name: 29
-		Subset info: 0
- 0.19: Client -->   20 bytes
-	........PEX_REQUEST: GetImpDepConstants
-	.............length: 5
- 0.19: 					  40 bytes <-- X11 Server
-	..........PEX_REPLY: GetImpDepConstants
-	.............length: 2
- 0.39: Client -->   20 bytes
-	........PEX_REQUEST: GetEnumeratedTypeInfo
-	.............length: 5
-	        Drawable Id: 524398
- 0.99: 					  40 bytes <-- X11 Server
-	..........PEX_REPLY: GetEnumeratedTypeInfo
-	.............length: 2
-   .
-   .
-   .
-36.41: Client --> EOF
-.LE
-.BE
-.LP
-\fIpexscope\fR will continue to run until you type \fL\s-1Control-C\fR\s+1 in window A.
-You can run several clients in succession in window B and \fIpexscope\fR will 
-continue monitoring the connection.
