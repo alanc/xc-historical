@@ -39,9 +39,9 @@
 #endif
 
 #if HasPutenv
-      PUTENVDEF = -DNOPUTENV
-#else
       PUTENVDEF = 
+#else
+      PUTENVDEF = -DNOPUTENV
 #endif
 
        PROGRAMS = twm
