@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLkCol.c,v 1.4 91/02/11 18:16:28 dave Exp $ */
+/* $XConsortium: XcmsLkCol.c,v 1.5 91/02/12 16:13:17 dave Exp $ */
 
 /*
  * (c) Copyright 1989 1990 1991 Tektronix Inc.
@@ -40,7 +40,6 @@
  */
 extern void _XColor_to_XcmsRGB();
 extern void _XcmsRGB_to_XColor();
-extern char *XResolvePathname();
 extern char *getenv();
 
 
