@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: WaitFor.c,v 1.28 88/07/19 18:06:00 toddb Exp $ */
+/* $Header: WaitFor.c,v 1.29 88/07/20 17:17:59 toddb Exp $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -199,6 +199,8 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
 		    NewOutputPending = TRUE;
 		    ORBITS(OutputPending, clientsWritable, OutputPending);
 		    UNSETBITS(ClientsWriteBlocked, clientsWritable);
+		    if (! ANYSET(ClientsWriteBlocked))
+			AnyClientsWriteBlocked = FALSE;
 		}
 
 		MASKANDSETBITS(clientsReadable, LastSelectMask, AllClients); 
