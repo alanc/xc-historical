@@ -1,5 +1,6 @@
 /*
-* $Header: Vendor.h,v 1.6 88/01/25 16:25:11 asente Exp $
+* $xHeader: Vendor.h,v 1.2 88/08/18 15:56:44 asente Exp $
+* $oHeader: Vendor.h,v 1.2 88/08/18 15:56:44 asente Exp $
 */
 
 /***********************************************************
@@ -39,7 +40,7 @@ SOFTWARE.
 
 typedef struct _VendorShellClassRec *VendorShellWidgetClass;
 
-globalref WidgetClass vendorShellWidgetClass;
+externalref WidgetClass vendorShellWidgetClass;
 
 #endif _XtVendor_h
 /* DON'T ADD STUFF AFTER THIS #endif */
