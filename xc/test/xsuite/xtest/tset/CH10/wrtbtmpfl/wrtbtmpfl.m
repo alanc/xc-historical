@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: wrtbtmpfl.m,v 1.7 92/06/11 17:44:00 rws Exp $
  */
 >>TITLE XWriteBitmapFile CH10
 int
@@ -247,7 +247,8 @@ int ret;
 /* Verify that a BitmapOpenFailed error occurred. */
 	if (ret != BitmapOpenFailed) {
 		FAIL;
-		report("%s did not return expected value.");
+		report("%s did not return expected value.",
+		       TestName);
 		report("Expected %d (BitmapOpenFailed)", BitmapOpenFailed);
 		report("Returned %d", ret);
 	} else
