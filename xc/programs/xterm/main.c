@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.129 89/10/27 12:18:06 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.130 89/11/03 17:23:53 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -1339,6 +1339,9 @@ spawn ()
 #endif	/* USE_SYSV_PGRP */
 			}
 
+#ifdef TIOCSCTTY
+			ioctl(tty, TIOCSCTTY, 0);
+#endif
 			/* let our master know that the open failed */
 			handshake.status = PTY_BAD;
 			handshake.error = errno;
@@ -1581,6 +1584,10 @@ spawn ()
 		}
 
 #ifndef	USE_SYSV_PGRP
+#ifdef TIOCSCTTY
+		setsid();
+		ioctl(0, TIOCSCTTY, 0);
+#endif
 		ioctl(0, TIOCSPGRP, (char *)&pgrp);
 		setpgrp(0,0);
 		close(open(ttydev, O_WRONLY, 0));
