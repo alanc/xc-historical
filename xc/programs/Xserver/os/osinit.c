@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.23 89/03/30 17:42:25 rws Exp $ */
+/* $XConsortium: osinit.c,v 1.24 89/03/31 08:31:56 rws Exp $ */
 #include "os.h"
 #include "opaque.h"
 #undef NULL
@@ -49,7 +49,7 @@ int	havergb = 0;
 extern char *display;
 #ifndef SYSV
 int limitDataSpace = -1;
-int limitStackSpace = 0;
+int limitStackSpace = -1;
 #endif
 
 OsInit()
