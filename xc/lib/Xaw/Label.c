@@ -1,6 +1,6 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.48 88/09/05 18:30:20 rws Exp $";
-static char rcsid[] = "$Header: Label.c,v 1.48 88/09/05 18:30:20 rws Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.49 88/09/06 09:56:10 swick Exp $";
+static char rcsid[] = "$Header: Label.c,v 1.49 88/09/06 09:56:10 swick Exp $";
 #endif lint
 
 
@@ -319,7 +319,7 @@ static Boolean SetValues(current, request, new)
        before calling Resize() */
     if ((curlw->core.width != newlw->core.width ||
 	 curlw->core.height != newlw->core.height) &&
-	(XtMakeResizeRequest(current, newlw->core.width, newlw->core.height,
+	(XtMakeResizeRequest(new, newlw->core.width, newlw->core.height,
 			     &newlw->core.width, &newlw->core.height)
 	 == XtGeometryNo)) {
 	newlw->core.width = curlw->core.width;
