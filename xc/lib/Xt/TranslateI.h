@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.1 91/01/09 19:20:45 converse Exp $ */
+/* $XConsortium: TranslateI.h,v 1.29 91/01/10 14:12:36 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -216,7 +216,7 @@ typedef struct _TMConvertRec {
     XtTranslations	new; /* table to merge from */
 } TMConvertRec;
 
-#define _XtEventTimerEventType ((TMShortCard)~0)
+#define _XtEventTimerEventType ((TMLongCard)~0L)
 #define KeysymModMask		(1L<<27) /* private to TM */
 #define AnyButtonMask		(1L<<28) /* private to TM */
 
