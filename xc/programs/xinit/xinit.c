@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.48 91/05/14 13:33:54 gildea Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.49 91/07/18 12:07:58 rws Exp $";
 #endif /* lint */
 
 /* Copyright    Massachusetts Institute of Technology    1986	*/
@@ -135,7 +135,7 @@ SIGVAL sigCatch(sig)
 	signal(SIGHUP, SIG_IGN);
 	signal(SIGPIPE, SIG_IGN);
 	Error("unexpected signal %d\r\n", sig);
-	shutdown(serverpid, clientpid);
+	shutdown();
 	exit(1);
 }
 
@@ -306,8 +306,8 @@ register char **argv;
 	signal(SIGPIPE, sigCatch);
 	signal(SIGALRM, sigAlarm);
 	signal(SIGUSR1, sigUsr1);
-	if ((serverpid = startServer(server)) > 0
-	 && (clientpid = startClient(client)) > 0) {
+	if (startServer(server) > 0
+	 && startClient(client) > 0) {
 		pid = -1;
 		while (pid != clientpid && pid != serverpid)
 			pid = wait(NULL);
@@ -317,7 +317,7 @@ register char **argv;
 	signal(SIGHUP, SIG_IGN);
 	signal(SIGPIPE, SIG_IGN);
 
-	shutdown(serverpid, clientpid);
+	shutdown();
 
 	if (serverpid < 0 )
 		Fatal("Server error.\n");
@@ -331,8 +331,7 @@ register char **argv;
  *	waitforserver - wait for X server to start up
  */
 
-waitforserver(serverpid)
-	int	serverpid;
+waitforserver()
 {
 	int	ncycles	 = 120;		/* # of cycles to wait */
 	int	cycles;			/* Wait cycle count */
@@ -343,7 +342,7 @@ waitforserver(serverpid)
 		}
 		else {
 #define MSG "X server to begin accepting connections"
-		    if (!processTimeout (serverpid, 1, MSG)) 
+		    if (!processTimeout (1, MSG)) 
 		      break;
 #undef MSG
 		}
@@ -356,8 +355,8 @@ waitforserver(serverpid)
 /*
  * return TRUE if we timeout waiting for pid to exit, FALSE otherwise.
  */
-processTimeout(pid, timeout, string)
-	int	pid, timeout;
+processTimeout(timeout, string)
+	int	timeout;
 	char	*string;
 {
 	int	i = 0, pidfound = -1;
@@ -371,10 +370,10 @@ processTimeout(pid, timeout, string)
 		alarm(0);
 #else /* SYSV */
 #if defined(SVR4) || defined(_POSIX_SOURCE)
-		if ((pidfound = waitpid(pid, &status, WNOHANG)) == pid)
+		if ((pidfound = waitpid(serverpid, &status, WNOHANG)) == serverpid)
 			break;
 #else
-		if ((pidfound = wait3(&status, WNOHANG, NULL)) == pid)
+		if ((pidfound = wait3(&status, WNOHANG, NULL)) == serverpid)
 			break;
 #endif
 #endif /* SYSV */
@@ -392,14 +391,12 @@ processTimeout(pid, timeout, string)
 	}
 	if ( i > 0 ) fputc( '\n', stderr );     /* tidy up after message */
 	laststring = string;
-	return( pid != pidfound );
+	return( serverpid != pidfound );
 }
 
 startServer(server)
 	char *server[];
 {
-	int	serverpid;
-
 	serverpid = vfork();
 	switch(serverpid) {
 	case 0:
@@ -456,7 +453,7 @@ startServer(server)
 #endif
 
 		errno = 0;
-		if (! processTimeout(serverpid, 0, "")) {
+		if (! processTimeout(0, "")) {
 			serverpid = -1;
 			break;
 		}
@@ -472,9 +469,9 @@ startServer(server)
 		pause ();
 		alarm (0);
 
-		if (waitforserver(serverpid) == 0) {
+		if (waitforserver() == 0) {
 			Error("unable to connect to X server\r\n");
-			shutdown(serverpid, -1);
+			shutdown();
 			serverpid = -1;
 		}
 		break;
@@ -486,8 +483,6 @@ startServer(server)
 startClient(client)
 	char *client[];
 {
-	int	clientpid;
-
 	if ((clientpid = vfork()) == 0) {
 		setuid(getuid());
 		setpgrp(0, getpid());
@@ -519,8 +514,7 @@ static int ignorexio (dpy)
 }
 
 static
-shutdown(serverpid, clientpid)
-	int	serverpid, clientpid;
+shutdown()
 {
 	/* have kept display opened, so close it now */
 	if (clientpid > 0) {
@@ -546,7 +540,7 @@ shutdown(serverpid, clientpid)
 		if (errno == ESRCH)
 			return;
 	}
-	if (! processTimeout(serverpid, 10, "X server to shut down")) {
+	if (! processTimeout(10, "X server to shut down")) {
 	    fprintf (stderr, "\r\n");
 	    return;
 	}
@@ -560,7 +554,7 @@ shutdown(serverpid, clientpid)
 		if (errno == ESRCH)
 			return;
 	}
-	if (processTimeout(serverpid, 3, "server to die")) {
+	if (processTimeout(3, "server to die")) {
 		fprintf (stderr, "\r\n");
 		Fatal("Can't kill server\r\n");
 	}
