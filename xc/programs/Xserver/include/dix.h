@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.69 93/11/16 10:56:34 rob Exp $ */
+/* $XConsortium: dix.h,v 1.70 93/11/18 20:35:52 rob Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -128,32 +128,30 @@ SOFTWARE.
 /* MTX changes the way reply structures are declared to minimize #ifdef's */
 #ifdef MTX
 
-#define REPLY(_type,_name)				\
+#define REPLY_DECL(_type,_name)				\
 	PooledMessagePtr msg;				\
 	_type *_name = GetReplyMessage(_type, &msg)
 
-#define REP_SET(structure,field,value)			\
-	structure->field = (value)
-
-#define REP_FIELD(structure,field)			\
-	structure->field
-
-#define MTX_REP_SET(structure,field,value)		\
-	REP_SET(structure,field,value)
+#define MTX_REP_CHECK_RETURN(_name,_error_value)	\
+	if (!_name)					\
+		return _error_value
 
 #else /* MTX */
 
-#define REPLY(_type,_name)				\
-	_type _name
+#define REPLY_DECL(_type,_name)				\
+	_type _reply_buf_, *_name = &_reply_buf_
 
-#define REP_FIELD(structure,field)			\
-	structure.field
+#define MTX_REP_CHECK_RETURN(_name,_error_value)	/* nothing */
 
-#define REP_SET(structure,field,value)			\
-	structure.field = (value)
+#endif /* MTX */
 
-#define MTX_REP_SET(structure,field,value)	/* nothing */
-
+/* MTX cannot use local memory for data of global message pool */
+#ifdef MTX
+#define MTX_LOCAL_ALLOC xalloc
+#define MTX_LOCAL_FREE xfree
+#else /* MTX */
+#define MTX_LOCAL_ALLOC ALLOCATE_LOCAL
+#define MTX_LOCAL_FREE DEALLOCATE_LOCAL
 #endif /* MTX */
 
 #ifdef MTX
