@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.125 90/06/05 14:56:57 jim Exp $
+ * $XConsortium: charproc.c,v 1.126 90/06/07 15:49:59 jim Exp $
  */
 
 
@@ -153,7 +153,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.125 90/06/05 14:56:57 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.126 90/06/07 15:49:59 jim Exp $";
 #endif	/* lint */
 
 static int nparam;
@@ -2217,6 +2217,7 @@ XSetWindowAttributes *values;
 
 	XSetWMNormalHints (XtDisplay(term), term->core.parent->core.window,
 			   &sizehints);
+	XFlush (XtDisplay(term));	/* get it out to window manager */
 
 	values->bit_gravity = NorthWestGravity;
 	term->screen.fullVwin.window = term->core.window =

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.79 90/06/05 14:56:48 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.80 90/06/07 15:49:52 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -110,7 +110,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.79 90/06/05 14:56:48 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.80 90/06/07 15:49:52 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
@@ -1259,6 +1259,7 @@ static void TekRealize (gw, valuemaskp, values)
 
     XSetWMNormalHints (XtDisplay(tw), tw->core.parent->core.window,
 		       &sizehints);
+    XFlush (XtDisplay(tw));	/* get it out to window manager */
 
     values->win_gravity = NorthWestGravity;
     values->background_pixel = screen->Tbackground;
