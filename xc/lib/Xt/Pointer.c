@@ -1,4 +1,4 @@
-/* $XConsortium: Pointer.c,v 1.2 90/07/26 10:20:40 swick Exp $ */
+/* $XConsortium: Pointer.c,v 1.3 91/01/06 13:30:43 rws Exp $ */
 
 /********************************************************
 
@@ -69,7 +69,8 @@ Widget _XtProcessPointerEvent(event, widget, pdi)
 	case ButtonRelease:
 	  {
 	      if ((device->grabType == XtPassiveServerGrab) && 
-		  !(event->state & AllButtonsMask))
+		  !(event->state & ~(Button1Mask << (event->button - 1)) &
+		    AllButtonsMask))
 		deactivateGrab = TRUE;
 	  }
 	  break;
