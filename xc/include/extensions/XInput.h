@@ -1,4 +1,4 @@
-/* $Header: XInput.h,v 1.13 91/07/17 16:34:54 rws Exp $ */
+/* $Header: XInput.h,v 1.14 91/07/24 15:33:51 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -113,13 +113,13 @@ SOFTWARE.
 #define DeviceButton3Motion(d,type,_class) \
     { _class =  ((XDevice *) d)->device_id << 8 | _deviceButton3Motion;}
 
-#define DeviceButton4Motion(d,type,class) \
+#define DeviceButton4Motion(d,type, _class) \
     { _class =  ((XDevice *) d)->device_id << 8 | _deviceButton4Motion;}
 
 #define DeviceButton5Motion(d,type,_class) \
     { _class =  ((XDevice *) d)->device_id << 8 | _deviceButton5Motion;}
 
-#define DeviceButtonMotion(d,type,class) \
+#define DeviceButtonMotion(d,type, _class) \
     { _class =  ((XDevice *) d)->device_id << 8 | _deviceButtonMotion;}
 
 #define DeviceOwnerGrabButton(d,type,_class) \
