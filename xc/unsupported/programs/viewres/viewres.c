@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.54 90/03/09 14:50:12 jim Exp $
+ * $XConsortium: viewres.c,v 1.55 90/03/09 18:03:08 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -87,8 +87,6 @@ char *ProgramName;
 static int NumberShowing = 0;
 
 static char *help_message[] = {
-    "-lbw number      label border width in pixels",
-    "-lw number       line width in pixels",
     "-top name        object to be top of tree",
     "-variable        show variable name instead of class name",
     "-vertical        list the tree vertically",
@@ -96,8 +94,6 @@ static char *help_message[] = {
 };
 
 static XrmOptionDescRec Options[] = {
-    { "-lbw", "*Tree*Toggle*BorderWidth", XrmoptionSepArg, (caddr_t) NULL },
-    { "-lw", "*Tree.LineWidth", XrmoptionSepArg, (caddr_t) NULL },
     { "-top", "*topObject", XrmoptionSepArg, (caddr_t) NULL },
     { "-variable", "*showVariable", XrmoptionNoArg, (caddr_t) "on" },
     { "-vertical", "*Tree.Orientation", XrmoptionNoArg, (caddr_t) "vertical" },
