@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: krb5auth.c,v 1.1 94/01/14 19:41:17 gildea Exp $
+ * $XConsortium: krb5auth.c,v 1.2 94/01/16 19:48:24 gildea Exp $
  *
  * Copyright 1994 Massachusetts Institute of Technology
  *
@@ -38,14 +38,53 @@ Krb5InitAuth (name_len, name)
     krb5_init_ets();		/* initialize error_message() tables */
 }
 
+/*
+ * Returns malloc'ed string that is the credentials cache name.
+ * name should be freed by caller.
+ */
+char *
+Krb5CCacheName(dname)
+    char *dname;
+{
+    char *name;
+    char *tmpdir;
+
+    tmpdir = getenv("TMPDIR");
+    if (!tmpdir)
+	tmpdir = "/tmp";
+    name = malloc(strlen(tmpdir) + strlen(dname) + 20);
+    if (!name)
+	return NULL;
+    sprintf(name, "FILE:%s/K5C", tmpdir);
+    CleanUpFileName(dname, name+strlen(name), strlen(dname)+1);
+    return name;
+}
+
+krb5_error_code
+Krb5DisplayCCache(dname, ccache_return)
+    char *dname;
+    krb5_ccache *ccache_return;
+{
+    krb5_error_code code;
+    char *name;
+
+    name = Krb5CCacheName(dname);
+    if (!name)
+	return ENOMEM;
+    Debug("resolving Kerberos cache %s\n", name);
+    code = krb5_cc_resolve(name, ccache_return);
+    free(name);
+    return code;
+}
+
 Xauth *
-Krb5GetAuthForUid(namelen, name, uid)
+Krb5GetAuthFor(namelen, name, dname)
     unsigned short namelen;
     char *name;
-    int uid;
+    char *dname;
 {
     Xauth   *new;
-    char filename_buf[30];
+    char *filename;
     struct stat statbuf;
 
     new = (Xauth *) malloc (sizeof *new);
@@ -57,22 +96,19 @@ Krb5GetAuthForUid(namelen, name, uid)
     new->number_length = 0;
     new->number = 0;
 
-    /*
-     * we'd like to use krb5_cc_default_name() here, but it
-     * doesn't take a UID as an argument, sigh.
-     * If uid < 0, no one has logged in yet.
-     */
-    if (uid >= 0)
+    if (dname)
     {
-	sprintf(filename_buf, "/tmp/krb5cc_%d", uid);
-	new->data = (char *) malloc (8 + strlen(filename_buf) + 1);
+	filename = Krb5CCacheName(dname);
+	new->data = (char *) malloc (3 + strlen(filename) + 1);
 	if (!new->data)
 	{
+	    free (filename);
 	    free ((char *) new);
 	    return (Xauth *) 0;
 	}
-	strcpy(new->data, "UU:FILE:");
-	strcat(new->data, filename_buf);
+	strcpy(new->data, "UU:");
+	strcat(new->data, filename);
+	free (filename);
 	new->data_length = strlen(new->data);
     }
     else
@@ -99,9 +135,8 @@ Krb5GetAuth (namelen, name)
     unsigned short  namelen;
     char	    *name;
 {
-    return Krb5GetAuthForUid(namelen, name, -1);
+    return Krb5GetAuthFor(namelen, name, NULL);
 }
-
 
 int preauth_search_list[] = {
 	0,			
@@ -115,11 +150,12 @@ int preauth_search_list[] = {
  * Returns 0 if successful, 1 if not.
  */
 int
-Krb5Init(name, passwd)
+Krb5Init(name, passwd, d)
     char *name;
     char *passwd;
+    struct display *d;		/* k5_ccache filled in if successful */
 {
-    krb5_ccache ccache = NULL;
+    krb5_ccache ccache;
     krb5_error_code code;
     krb5_principal me;
     krb5_creds my_creds;
@@ -128,12 +164,10 @@ Krb5Init(name, passwd)
     krb5_timestamp now;
     int	i;
 
-    if (ccache == NULL) {
-	 if (code = krb5_cc_default(&ccache)) {
-	      LogError("%s while getting default Krb5 ccache\n",
-		       error_message(code));
-	      return 1;
-	 }
+    if (code = Krb5DisplayCCache(d->name, &ccache)) {
+	LogError("%s while getting Krb5 ccache for \"%s\"\n",
+		 error_message(code), d->name);
+	return 1;
     }
 
     if (code = krb5_parse_name (name, &me)) {
@@ -150,7 +184,7 @@ Krb5Init(name, passwd)
     }
 
     memset((char *)&my_creds, 0, sizeof(my_creds));
-    
+
     my_creds.client = me;
 
     if (code = krb5_build_principal_ext(&server,
@@ -195,10 +229,10 @@ Krb5Init(name, passwd)
 	    code != KRB5KRB_ERR_GENERIC)
 	    break;
     }
-    
+
     krb5_free_principal(server);
     krb5_free_addresses(my_addresses);
-    
+
     if (code) {
 	char *my_name = NULL;
 	int code2 = krb5_unparse_name(me, &my_name);
@@ -213,5 +247,6 @@ Krb5Init(name, passwd)
 	    free (my_name);
 	return 1;
     }
+    krb5_cc_close(ccache);
     return 0;
 }
