@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.36 90/04/11 17:05:13 jim Exp $
+ * $XConsortium: Panner.c,v 1.37 90/09/15 12:16:02 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -178,12 +178,14 @@ static void reset_shadow_gc (pw)	/* used when resources change */
 
     if (pw->panner.shadow_gc) XtReleaseGC ((Widget) pw, pw->panner.shadow_gc);
 
-    pixels[0] = pw->panner.shadow_color;
-    pixels[1] = pw->panner.foreground;
-    pixels[2] = pw->core.background_pixel;
+    pixels[0] = pw->panner.foreground;
+    pixels[1] = pw->core.background_pixel;
+    pixels[2] = pw->panner.shadow_color;
     if (!pw->panner.stipple_name &&
 	!XmuDistinguishablePixels (XtDisplay (pw), pw->core.colormap,
-				    pixels, 3))
+				    pixels, 3) &&
+	XmuDistinguishablePixels (XtDisplay (pw), pw->core.colormap,
+				    pixels, 2))
     {
 	valuemask = GCTile | GCFillStyle;
 	values.fill_style = FillTiled;
@@ -194,6 +196,10 @@ static void reset_shadow_gc (pw)	/* used when resources change */
     }
     else
     {
+	if (!pw->panner.line_width &&
+	    !XmuDistinguishablePixels (XtDisplay (pw), pw->core.colormap,
+				       pixels, 2))
+	    pw->panner.line_width = 1;
 	valuemask = GCForeground;
 	values.foreground = pw->panner.shadow_color;
     }
@@ -279,8 +285,7 @@ static void move_shadow (pw)
     register PannerWidget pw;
 {
     if (pw->panner.shadow_thickness > 0) {
-	int lw = (pw->panner.shadow_thickness +
-		  (pw->panner.line_width < 1 ? 1 : pw->panner.line_width) * 2);
+	int lw = pw->panner.shadow_thickness + pw->panner.line_width * 2;
 	int pad = pw->panner.internal_border;
 
 	if (pw->panner.knob_height > lw && pw->panner.knob_width > lw) {
@@ -557,7 +562,7 @@ static void Redisplay (gw, event, region)
     Display *dpy = XtDisplay(gw);
     Window w = XtWindow(gw);
     int pad = pw->panner.internal_border;
-    Dimension lw = (pw->panner.line_width < 1 ? 1 : pw->panner.line_width);
+    Dimension lw = pw->panner.line_width;
     Dimension extra = pw->panner.shadow_thickness + lw * 2;
     int kx = pw->panner.knob_x + pad, ky = pw->panner.knob_y + pad;
 
@@ -574,9 +579,12 @@ static void Redisplay (gw, event, region)
     XFillRectangle (dpy, w, pw->panner.slider_gc, kx, ky,
 		    pw->panner.knob_width - 1, pw->panner.knob_height - 1);
 
-    XDrawRectangle (dpy, w, pw->panner.shadow_gc, kx, ky,
-		    (unsigned int) (pw->panner.knob_width - 1), 
-		    (unsigned int) (pw->panner.knob_height - 1));
+    if (lw)
+    {
+    	XDrawRectangle (dpy, w, pw->panner.shadow_gc, kx, ky,
+		    	(unsigned int) (pw->panner.knob_width - 1), 
+		    	(unsigned int) (pw->panner.knob_height - 1));
+    }
 
     if (pw->panner.shadow_valid) {
 	XFillRectangles (dpy, w, pw->panner.shadow_gc,
