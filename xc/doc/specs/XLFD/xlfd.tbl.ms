@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t
-.\" $XConsortium: xlfd.tbl.ms,v 1.14 93/12/28 14:43:49 gildea Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.15 93/12/28 15:15:00 gildea Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -731,7 +731,7 @@ the font's glyph repertoire), as maintained by the X Consortium character
 set registry.
 CHARSET_REGISTRY is an x-registered-name that identifies 
 the registration authority that owns the specified encoding.
-CHARSET_ENCODING is a registered-name that identifies the coded character set 
+CHARSET_ENCODING is a registered name that identifies the coded character set 
 as defined by that registration authority.
 .LP
 Although the X protocol does not explicitly have any knowledge about 
@@ -1512,7 +1512,7 @@ UNDERLINE_THICKNESS
 \*(SN UNDERLINE_THICKNESS
 .XE
 .LP
-UNDERLINE_POSITION is an unsigned integer value (of type CARD32)
+UNDERLINE_THICKNESS is an unsigned integer value (of type CARD32)
 that gives the recommended underline thickness, in pixels.
 .LP
 UNDERLINE_THICKNESS can be approximated if not provided as a font property, 
