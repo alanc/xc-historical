@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.51 93/08/17 17:29:17 rws Exp $
+ * $XConsortium: Xos.h,v 1.52 93/08/18 10:41:42 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -149,7 +149,12 @@ struct timezone {
 #else
 #ifdef WIN32
 #include <time.h>
-/* do not get struct timeval, at least for now */
+#if !defined(_WINSOCKAPI_) && !defined(_WILLWINSOCK_)
+struct timeval {
+    long    tv_sec;         /* seconds */
+    long    tv_usec;        /* and microseconds */
+};
+#endif
 #else
 #include <sys/time.h>
 #endif
