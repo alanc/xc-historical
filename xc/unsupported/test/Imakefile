@@ -1,4 +1,11 @@
-# $XConsortium: Imakefile,v 1.17 89/12/18 09:19:28 rws Exp $
+# $XConsortium: Imakefile,v 1.18 90/06/07 11:04:18 rws Exp $
+
+#if BuildPexClients
+#define IHaveSubdirs
+#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+      SUBDIRS = PEX
+#endif
+
     DEFINES = ExtensionDefines
 IMAKE_DEFINES = $(DEFINES)
   SHAPESRCS = shapetest.c
@@ -17,9 +24,9 @@ IMAKE_DEFINES = $(DEFINES)
        OBJS = $(SHAPEOBJS) $(SHMOBJS) $(MBUFOBJS)
 
 #ifdef MITSHM
-all: shapetest shmtest xmbufinfo
+all:: shapetest shmtest xmbufinfo
 #else
-all: shapetest xmbufinfo
+all:: shapetest xmbufinfo
 #endif
 
 NormalProgramTarget(xmbufinfo,$(MBUFOBJS),$(DEPXLIB),$(XLIB), /**/)
@@ -29,3 +36,8 @@ NormalProgramTarget(shmtest,$(SHMOBJS),$(DEPXLIB),$(XLIB), /**/)
 #endif
 
 DependTarget()
+
+#ifdef IHaveSubdirs
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+#endif

@@ -1,8 +1,12 @@
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
+#if BuildPexExt
+PEXDIRS = PEX
+#endif
+
 /* tools must be built before bdf */
-        SUBDIRS = include lib tools bdf
+        SUBDIRS = include lib tools bdf $(PEXDIRS)
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
