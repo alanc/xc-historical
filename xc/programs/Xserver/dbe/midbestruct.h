@@ -1,5 +1,4 @@
-/* $XConsortium: copyright.h,v 1.14 95/04/13 16:08:25 dpw Exp $ */
-
+/* $XConsortium: Xdbeproto.h,v 1.1 95/05/25 17:29:33 dpw Exp dpw $ */
 /******************************************************************************
  * 
  * Copyright (c) 1994, 1995  Hewlett-Packard Company
@@ -28,7 +27,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization from the Hewlett-Packard Company.
  * 
- * $Header: midbestruct.h,v 55.1.1.1 95/03/10 15:33:46 todd Exp $
+ * $Header: midbestruct.h,v 55.2 95/05/18 14:14:18 yip Exp $
  *
  *     Header file for users of machine-independent DBE code
  * 
@@ -42,13 +41,19 @@
 /* DEFINES */
 
 #define MI_DBE_WINDOW_PRIV_PRIV(pDbeWindowPriv) \
-    ((miDbeWindowPrivPrivIndex < 0) ? \
+    (((miDbeWindowPrivPrivIndex < 0) || (!pDbeWindowPriv)) ? \
     NULL : \
     ((MiDbeWindowPrivPrivPtr) \
      ((pDbeWindowPriv)->devPrivates[miDbeWindowPrivPrivIndex].ptr)))
 
 #define MI_DBE_WINDOW_PRIV_PRIV_FROM_WINDOW(pWin)\
     MI_DBE_WINDOW_PRIV_PRIV(DBE_WINDOW_PRIV(pWin))
+
+#define MI_DBE_SCREEN_PRIV_PRIV(pDbeScreenPriv) \
+    (((miDbeScreenPrivPrivIndex < 0) || (!pDbeScreenPriv)) ? \
+    NULL : \
+    ((MiDbeScreenPrivPrivPtr) \
+     ((pDbeScreenPriv)->devPrivates[miDbeScreenPrivPrivIndex].ptr)))
 
 
 /* TYPEDEFS */
@@ -63,6 +68,17 @@ typedef struct _MiDbeWindowPrivPrivRec
     DbeWindowPrivPtr	pDbeWindowPriv;
 
 } MiDbeWindowPrivPrivRec, *MiDbeWindowPrivPrivPtr;
+
+typedef struct _MiDbeScreenPrivPrivRec
+{
+    /* Place machine-specific fields in here.
+     * Since this is mi code, we do not have anything here except a pointer
+     * back to the screen private.
+     */
+
+    DbeScreenPrivPtr	pDbeScreenPriv;
+
+} MiDbeScreenPrivPrivRec, *MiDbeScreenPrivPrivPtr;
 
 #endif /* MIDBE_STRUCT_H */
 

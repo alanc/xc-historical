@@ -1,5 +1,4 @@
-/* $XConsortium: copyright.h,v 1.14 95/04/13 16:08:25 dpw Exp $ */
-
+/* $XConsortium: Xdbeproto.h,v 1.1 95/05/25 17:29:33 dpw Exp dpw $ */
 /******************************************************************************
  * 
  * Copyright (c) 1994, 1995  Hewlett-Packard Company
@@ -72,16 +71,6 @@
 #define X_DbeGetVisualInfo              6
 #define X_DbeGetBackBufferAttributes    7
 
-#if defined(__STDC__) && !defined(UNIXCPP)
-#define DbeGetReq(name,req,info) GetReq (name, req); \
-	req->reqType = info->codes->major_opcode; \
-	req->dbeReqType = X_##name;
-#else
-#define DbeGetReq(name,req,info) GetReq (name, req); \
-	req->reqType = info->codes->major_opcode; \
-	req->dbeReqType = X_/**/name;
-#endif
-
 #define xDbeSwapAction	CARD8
 #define xDbeBackBuffer	CARD32
 
@@ -91,6 +80,11 @@
 /* TYPEDEFS */
 
 /* Client data types */
+
+/* XdbeVisualInfo and XdbeScreenVisualInfo are defined in this file,
+ * "Xdbeproto.h", rather than "Xdbe.h" because the server uses these data
+ * types.
+ */
 
 typedef struct
 {
@@ -128,6 +122,7 @@ typedef struct
     CARD16	pad1 B16;
 
 } xDbeVisInfo;
+#define sz_xDbeVisInfo 8
 
 typedef struct
 {
@@ -191,7 +186,7 @@ typedef struct
 typedef struct
 {
     CARD8		reqType;	/* major-opcode: codes->major_opcode */
-    CARD8		dbeReqType;	/* X_DbeTurnOffDoubleBuffering (2)   */
+    CARD8		dbeReqType;	/* X_DbeDeallocateBackBufferName (2) */
     CARD16		length B16;	/* request length: (2)               */
     xDbeBackBuffer	buffer B32;	/* back buffer name                  */
 

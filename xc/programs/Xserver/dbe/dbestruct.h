@@ -1,5 +1,4 @@
-/* $XConsortium: copyright.h,v 1.14 95/04/13 16:08:25 dpw Exp $ */
-
+/* $XConsortium: Xdbeproto.h,v 1.1 95/05/25 17:29:33 dpw Exp dpw $ */
 /******************************************************************************
  * 
  * Copyright (c) 1994, 1995  Hewlett-Packard Company
@@ -28,7 +27,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization from the Hewlett-Packard Company.
  * 
- * $Header: dbestruct.h,v 55.1.1.9 95/04/26 23:04:54 yip Exp $
+ * $Header: dbestruct.h,v 55.11 95/05/18 14:12:47 yip Exp $
  *
  *     Header file for DIX-related DBE
  *
@@ -51,7 +50,7 @@
 #define DBE_SCREEN_PRIV(pScreen) \
     ((dbeScreenPrivIndex < 0) ? \
      NULL : \
-     ((DbeScreenPrivPtr) ((pScreen)->devPrivates[dbeScreenPrivIndex].ptr)))
+     ((DbeScreenPrivPtr)((pScreen)->devPrivates[dbeScreenPrivIndex].ptr)))
 
 #define DBE_SCREEN_PRIV_FROM_DRAWABLE(pDrawable) \
     DBE_SCREEN_PRIV((pDrawable)->pScreen)
@@ -161,9 +160,14 @@ typedef struct _DbeWindowPrivRec
 typedef struct _DbeScreenPrivRec
 {
     /* Info for creating window privs */
-    int          privPrivLen;    /* Length of privates in DbeWindowPrivRec   */
-    unsigned int *privPrivSizes; /* Array of private record sizes            */
-    unsigned int totalPrivSize;  /* PrivRec + size of all priv priv ptrs     */
+    int          winPrivPrivLen;    /* Length of privs in DbeWindowPrivRec   */
+    unsigned int *winPrivPrivSizes; /* Array of private record sizes         */
+    unsigned int totalWinPrivSize;  /* PrivRec + size of all priv priv ptrs  */
+
+    /* Info for creating screen privs */
+    int          scrnPrivPrivLen;    /* Length of privs in DbeScreenPrivRec  */
+    unsigned int *scrnPrivPrivSizes; /* Array of private record sizes        */
+    unsigned int totalScrnPrivSize;  /* PrivRec + size of all priv priv ptrs */
 
     /* Resources created by DIX to be used by DDX */
     RESTYPE	dbeDrawableResType;
@@ -174,7 +178,8 @@ typedef struct _DbeScreenPrivRec
     int		dbeWindowPrivIndex;
 
     /* Wrapped functions
-     * It is the responsibilty of the DDX layer to wrap the screen pointers.
+     * It is the responsibilty of the DDX layer to wrap PositionWindow().
+     * DbeExtensionInit wraps DestroyWindow().
      */
     Bool	(*PositionWindow)();	/* pWin, x, y */
     Bool	(*DestroyWindow)();	/* pWin */
@@ -184,6 +189,9 @@ typedef struct _DbeScreenPrivRec
     DbeWindowPrivPtr (*AllocWinPriv)();            /* pScreen                */
     int              (*AllocWinPrivPrivIndex)();   /*                        */
     Bool             (*AllocWinPrivPriv)();        /* pScreen, index, amount */
+    struct _DbeScreenPrivRec *(*AllocScrnPriv)();  /* pDbeScreenPriv         */
+    int              (*AllocScrnPrivPrivIndex)();  /*                        */
+    Bool             (*AllocScrnPrivPriv)();       /* pScreen, index, amount */
 
     /* Per-screen DDX routines */
     Bool	(*GetVisualInfo)();		  /* pScreen, pVisInfo       */
@@ -194,6 +202,10 @@ typedef struct _DbeScreenPrivRec
     void	(*EndIdiom)();		          /* client                  */
     void	(*WinPrivDelete)();		  /* pDbeWindowPriv, bufID   */
     void	(*ResetProc)();		          /* pScreen                 */
+
+    /* Device-specific private information.
+     */
+    DevUnion	*devPrivates;
 
 } DbeScreenPrivRec, *DbeScreenPrivPtr;
 

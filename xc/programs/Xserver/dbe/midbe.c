@@ -1,5 +1,4 @@
-/* $XConsortium: copyright.h,v 1.14 95/04/13 16:08:25 dpw Exp $ */
-
+/* $XConsortium: Xdbeproto.h,v 1.1 95/05/25 17:29:33 dpw Exp dpw $ */
 /******************************************************************************
  * 
  * Copyright (c) 1994, 1995  Hewlett-Packard Company
@@ -28,7 +27,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization from the Hewlett-Packard Company.
  * 
- * $Header: midbe.c,v 55.11 95/04/27 02:06:46 yip Exp $
+ * $Header: midbe.c,v 55.16 95/05/19 14:53:50 yip Exp $
  *
  *     Machine-independent DBE code
  *
@@ -66,8 +65,9 @@
 
 /* GLOBALS */
 
-static int	miDbeWindowPrivPrivGeneration =  0;
-static int	miDbeWindowPrivPrivIndex      = -1;
+static int	miDbePrivPrivGeneration  =  0;
+static int	miDbeWindowPrivPrivIndex = -1;
+static int      miDbeScreenPrivPrivIndex = -1;
 RESTYPE		dbeDrawableResType;
 RESTYPE		dbeWindowPrivResType;
 int		dbeScreenPrivIndex = -1;
@@ -75,7 +75,6 @@ int		dbeWindowPrivIndex = -1;
 
 
 /* EXTERNS */
-
 
 /* FORWARDS */
 
@@ -135,6 +134,9 @@ miDbeInit(
     ScreenPtr		pScreen,
     DbeScreenPrivPtr	pDbeScreenPriv)
 {
+    MiDbeScreenPrivPrivPtr	pDbeScreenPrivPriv;
+
+
     /* Copy resource types created by DIX */
     dbeDrawableResType   = pDbeScreenPriv->dbeDrawableResType;
     dbeWindowPrivResType = pDbeScreenPriv->dbeWindowPrivResType;
@@ -143,20 +145,65 @@ miDbeInit(
     dbeScreenPrivIndex = pDbeScreenPriv->dbeScreenPrivIndex;
     dbeWindowPrivIndex = pDbeScreenPriv->dbeWindowPrivIndex;
 
-    /* Reset the window private if generations do not match. */
-    if (miDbeWindowPrivPrivGeneration != serverGeneration)
+    /* Reset the screen and window priv privs if generations do not match. */
+    if (miDbePrivPrivGeneration != serverGeneration)
     {
-	miDbeWindowPrivPrivIndex = (*pDbeScreenPriv->AllocWinPrivPrivIndex)(
-            pScreen);
-	miDbeWindowPrivPrivGeneration = serverGeneration;
+        /*
+         **********************************************************************
+         ** Allocate the screen priv priv.
+         **********************************************************************
+         */
 
-        /* Allocate the window priv priv. */
+        miDbeScreenPrivPrivIndex = (*pDbeScreenPriv->AllocScrnPrivPrivIndex)(
+            pScreen);
+
+        if (!(*pDbeScreenPriv->AllocScrnPrivPriv)(pScreen,
+            miDbeScreenPrivPrivIndex, sizeof(MiDbeScreenPrivPrivRec)))
+        {
+            return(FALSE);
+        }
+
+        if (!(pDbeScreenPriv=(*pDbeScreenPriv->AllocScrnPriv)(pDbeScreenPriv)))
+        {
+            return(FALSE);
+        }
+
+        if (!(pDbeScreenPrivPriv = (MiDbeScreenPrivPrivPtr)xalloc(
+                                   sizeof(MiDbeScreenPrivPrivRec))))
+        {
+            return(FALSE);
+        }
+
+        /* Reset the pointer to the screen priv in case it changed from the
+         * AllocScrnPriv() call.
+         */
+        pScreen->devPrivates[dbeScreenPrivIndex].ptr=(pointer)pDbeScreenPriv;
+
+        pDbeScreenPriv->devPrivates[miDbeScreenPrivPrivIndex].ptr =
+            (pointer)pDbeScreenPrivPriv;
+
+        pDbeScreenPrivPriv = MI_DBE_SCREEN_PRIV_PRIV(pDbeScreenPriv);
+        pDbeScreenPrivPriv->pDbeScreenPriv = pDbeScreenPriv;
+
+        /*
+         **********************************************************************
+         ** Allocate the window priv priv.
+         **********************************************************************
+         */
+
+        miDbeWindowPrivPrivIndex = (*pDbeScreenPriv->AllocWinPrivPrivIndex)(
+            pScreen);
+
         if (!(*pDbeScreenPriv->AllocWinPrivPriv)(pScreen,
             miDbeWindowPrivPrivIndex, sizeof(MiDbeWindowPrivPrivRec)))
         {
             return(FALSE);
         }
-    }
+
+        /* Make sure we only do this code once. */
+	miDbePrivPrivGeneration = serverGeneration;
+
+    } /* if -- Reset priv privs. */
 
     /* Wrap functions. */
     pDbeScreenPriv->PositionWindow = pScreen->PositionWindow;
@@ -164,7 +211,7 @@ miDbeInit(
 
     /* Initialize the per-screen DBE function pointers. */
     pDbeScreenPriv->GetVisualInfo         = miDbeGetVisualInfo;
-    pDbeScreenPriv->AllocBackBufferName   = miDbeAllocBackBufferName;
+    pDbeScreenPriv->AllocBackBufferName   = (int (*)())miDbeAllocBackBufferName;
     pDbeScreenPriv->SwapBuffers           = miDbeSwapBuffers;
     pDbeScreenPriv->BeginIdiom            = miDbeBeginIdiom;
     pDbeScreenPriv->EndIdiom              = miDbeEndIdiom;
@@ -336,7 +383,7 @@ miDbeAllocBackBufferName(
             (pointer)pDbeWindowPriv->pPixmapBack))
         {
             /* free the buffer and the drawable resource */
-            FreeResource(bufId, 0);
+            FreeResource(bufId, RT_NONE);
             return(BadAlloc);
         }
 
@@ -350,12 +397,12 @@ miDbeAllocBackBufferName(
         pGC = GetScratchGC(pWin->drawable.depth, pWin->drawable.pScreen);
         if ((*pDbeScreenPriv->SetupBackgroundPainter)(pWin, pGC))
         {
-            ValidateGC(pDbeWindowPriv->pPixmapBack, pGC);
+            ValidateGC((DrawablePtr)pDbeWindowPriv->pPixmapBack, pGC);
             clearRect.x = clearRect.y = 0;
             clearRect.width  = pDbeWindowPriv->pPixmapBack->drawable.width;
             clearRect.height = pDbeWindowPriv->pPixmapBack->drawable.height;
-            (*pGC->ops->PolyFillRect)(pDbeWindowPriv->pPixmapBack, pGC, 1,
-                                      &clearRect);
+            (*pGC->ops->PolyFillRect)((DrawablePtr)pDbeWindowPriv->pPixmapBack,
+                                      pGC, 1, &clearRect);
         }
         FreeScratchGC(pGC);
 
@@ -471,9 +518,10 @@ miDbeSwapBuffers(
                 break;
 
             case XdbeUntouched:
-                ValidateGC(pDbeWindowPriv->pPixmapFront, pGC);
-                (*pGC->ops->CopyArea)(pWin, pDbeWindowPriv->pPixmapFront, pGC,
-                    0, 0, pWin->drawable.width, pWin->drawable.height, 0, 0);
+                ValidateGC((DrawablePtr)pDbeWindowPriv->pPixmapFront, pGC);
+                (*pGC->ops->CopyArea)((DrawablePtr)pWin,
+                          (DrawablePtr)pDbeWindowPriv->pPixmapFront, pGC, 0, 0,
+                          pWin->drawable.width, pWin->drawable.height, 0, 0);
                 break;
 
             case XdbeCopied:
@@ -489,9 +537,11 @@ miDbeSwapBuffers(
          **********************************************************************
          */
 
-        ValidateGC(pWin, pGC);
-        (*pGC->ops->CopyArea)(pDbeWindowPriv->pPixmapBack, pWin, pGC, 0, 0,
-            pWin->drawable.width, pWin->drawable.height, 0, 0);
+        ValidateGC((DrawablePtr)pWin, pGC);
+        (*pGC->ops->CopyArea)((DrawablePtr)pDbeWindowPriv->pPixmapBack,
+			      (DrawablePtr)pWin,
+                              pGC, 0, 0, pWin->drawable.width,
+                              pWin->drawable.height, 0, 0);
 
         /*
          **********************************************************************
@@ -509,15 +559,16 @@ miDbeSwapBuffers(
             case XdbeBackground:
                 if ((*pDbeScreenPriv->SetupBackgroundPainter)(pWin, pGC))
                 {
-                    ValidateGC(pDbeWindowPriv->pPixmapBack, pGC);
+                    ValidateGC((DrawablePtr)pDbeWindowPriv->pPixmapBack, pGC);
                     clearRect.x = 0;
                     clearRect.y = 0;
                     clearRect.width =
                         pDbeWindowPriv->pPixmapBack->drawable.width;
                     clearRect.height =
                         pDbeWindowPriv->pPixmapBack->drawable.height;
-                    (*pGC->ops->PolyFillRect)(pDbeWindowPriv->pPixmapBack, pGC,
-                        1, &clearRect);
+                    (*pGC->ops->PolyFillRect)(
+                        (DrawablePtr)pDbeWindowPriv->pPixmapBack, pGC, 1,
+                        &clearRect);
                 }
                 break;
 
@@ -636,7 +687,6 @@ miDbeWinPrivDelete(
     XID			bufId)
 {
     DbeBufferIdPtr		pID, pDbeBufferId = NULL;
-    MiDbeWindowPrivPrivPtr	pDbeWindowPrivPriv;
 
 
     /*
@@ -798,9 +848,7 @@ miDbePositionWindow(
 
     /*
      **************************************************************************
-     **
      ** 1. Unwrap the member routine.
-     **
      **************************************************************************
      */
      
@@ -810,19 +858,15 @@ miDbePositionWindow(
 
     /*
      **************************************************************************
-     **
      ** 2. Do any work necessary before the member routine is called.
      **
      **    In this case we do not need to do anything.
-     **
      **************************************************************************
      */
      
     /*
      **************************************************************************
-     **
      ** 3. Call the member routine, saving its result if necessary.
-     **
      **************************************************************************
      */
      
@@ -830,26 +874,28 @@ miDbePositionWindow(
 
     /*
      **************************************************************************
-     **
-     ** 4. Do any work necessary after the member routine has been called.
-     **
+     ** 4. Rewrap the member routine, restoring the wrapper value first in case
+     **    the wrapper (or something that it wrapped) change this value.
+     **************************************************************************
+     */
+
+    pDbeScreenPriv->PositionWindow = pScreen->PositionWindow;
+    pScreen->PositionWindow = miDbePositionWindow;
+
+    /*
+     **************************************************************************
+     ** 5. Do any work necessary after the member routine has been called.
      **************************************************************************
      */
      
     if (!(pDbeWindowPriv = DBE_WINDOW_PRIV(pWin)))
     {
-        /* Rewrap the member routine. */
-        pScreen->PositionWindow = miDbePositionWindow;
-
 	return(ret);
     }
 
     if (pDbeWindowPriv->width  == pWin->drawable.width &&
         pDbeWindowPriv->height == pWin->drawable.height)
     {
-        /* Rewrap the member routine. */
-        pScreen->PositionWindow = miDbePositionWindow;
-
 	return(ret);
     }
 
@@ -863,8 +909,9 @@ miDbePositionWindow(
 
     GravityTranslate (0, 0, -dx, -dy, dw, dh, pWin->bitGravity, &destx, &desty);
 
-    clear = pDbeWindowPriv->width < width || pDbeWindowPriv->height < height ||
-	    pWin->bitGravity == ForgetGravity;
+    clear = ((pDbeWindowPriv->width  < (unsigned short)width ) ||
+             (pDbeWindowPriv->height < (unsigned short)height) ||
+             (pWin->bitGravity == ForgetGravity));
 
     sourcex = 0;
     sourcey = 0;
@@ -945,15 +992,11 @@ miDbePositionWindow(
             /* miDbeWinPrivDelete() will free the window private if there no
              * more buffer IDs associated with this window.
              */
-            FreeResource(pDbeWindowPriv->idList.id, 0);
+            FreeResource(pDbeWindowPriv->idList.id, RT_NONE);
             pDbeWindowPriv = DBE_WINDOW_PRIV(pWin);
         }
 
         FreeScratchGC(pGC);
-
-        /* Rewrap the member routine. */
-        pScreen->PositionWindow = miDbePositionWindow;
-
         return(FALSE);
     }
 
@@ -961,24 +1004,28 @@ miDbePositionWindow(
     {
         /* Clear out the new DBE buffer pixmaps. */
 
-        ValidateGC(pPixmapFront, pGC);
+        ValidateGC((DrawablePtr)pPixmapFront, pGC);
 
 	/* I suppose this could avoid quite a bit of work if
 	 * it computed the minimal area required.
 	 */
 	if (clear)
         {
-	    (*pGC->ops->PolyFillRect)(pPixmapFront, pGC, 1, &clearRect);
-	    (*pGC->ops->PolyFillRect)(pPixmapBack , pGC, 1, &clearRect);
+	    (*pGC->ops->PolyFillRect)((DrawablePtr)pPixmapFront, pGC, 1,
+                                      &clearRect);
+	    (*pGC->ops->PolyFillRect)((DrawablePtr)pPixmapBack , pGC, 1,
+                                      &clearRect);
         }
 
         /* Copy the contents of the old DBE pixmaps to the new pixmaps. */
 	if (pWin->bitGravity != ForgetGravity)
 	{
-	    (*pGC->ops->CopyArea)(pDbeWindowPriv->pPixmapFront, pPixmapFront,
-                pGC, sourcex, sourcey, savewidth, saveheight, destx, desty);
-	    (*pGC->ops->CopyArea)(pDbeWindowPriv->pPixmapBack, pPixmapBack,
-                pGC, sourcex, sourcey, savewidth, saveheight, destx, desty);
+	    (*pGC->ops->CopyArea)((DrawablePtr)pDbeWindowPriv->pPixmapFront,
+                                  (DrawablePtr)pPixmapFront, pGC, sourcex, sourcey,
+                                  savewidth, saveheight, destx, desty);
+	    (*pGC->ops->CopyArea)((DrawablePtr)pDbeWindowPriv->pPixmapBack,
+                                  (DrawablePtr)pPixmapBack, pGC, sourcex, sourcey,
+                                  savewidth, saveheight, destx, desty);
 	}
 
         /* Destroy the old pixmaps, and point the DBE window priv to the new
@@ -997,16 +1044,6 @@ miDbePositionWindow(
         FreeScratchGC(pGC);
     }
 
-    /*
-     **************************************************************************
-     **
-     ** 5. Rewrap the member routine.
-     **
-     **************************************************************************
-     */
-     
-    pScreen->PositionWindow = miDbePositionWindow;
-    
     return(ret);
 
 } /* miDbePositionWindow() */
