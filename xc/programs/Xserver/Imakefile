@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.170 94/01/19 17:46:58 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.171 94/01/21 22:07:48 dpw Exp $
 /*
  * Server Master Makefile
  */
@@ -37,9 +37,15 @@ XCOMM $XConsortium: Imakefile,v 1.170 94/01/19 17:46:58 gildea Exp $
       XIEEXT =  XIE/dixie/libdixie.a XIE/mixie/libmixie.a 
       XIEDIR = XIE
 #endif
-      OTHEREXTS = Xext/libext.a $(XINPUTEXT) $(XIEEXT)
-        EXTDIRS = Xext $(XIDIR) $(XIEDIR) $(PEXDIR)
-        DEPDIRS = $(FONTLIBSRC)
+#if BuildLBX
+      LBXDIR      = lbx
+      LBXEXT      = $(LBXDIR)/liblbx.a
+      LBXUTILDIR  = $(LIBSRC)/lbxutil
+      LBXUTILLIB  = $(LBXUTILDIR)/liblbxutil.a
+#endif
+      OTHEREXTS = Xext/libext.a $(XINPUTEXT) $(XIEEXT) $(LBXEXT) $(LBXUTILLIB)
+        EXTDIRS = Xext $(XIDIR) $(XIEDIR) $(PEXDIR) $(LBXDIR)
+        DEPDIRS = $(FONTLIBSRC) $(LBXUTILDIR)
      EXTENSIONS = $(OTHEREXTS) $(PEXLIBS)
          XAULIB = $(XAUTHSRC)/libXau.a
 #if HasKrb5
