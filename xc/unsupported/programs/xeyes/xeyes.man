@@ -46,3 +46,6 @@ Copyright 1988, Massachusetts Institute of Technology.
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Keith Packard, MIT X Consortium
+.br
+Copied from the NeWS version written (apparantly) by Jeremy Huxtable as seen
+at SIGGRAPH '88
