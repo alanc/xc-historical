@@ -13,10 +13,10 @@
 #if defined(HPArchitecture) && OSMajorVersion <= 6 && OSMajorVersion <= 2
 #define SignalReturnProcType int
 #endif
-#if defined(SunArchitecture) && OSMajorVersion <= 3
+#if defined(SunArchitecture)
+#if OSMajorVersion <= 3
 #define SignalReturnProcType int
-#endif
-#if defined(SunArchitecture) && OSMajorVersion >= 4
+#else
 #define SignalReturnProcType void
 #endif
 #if defined(MacIIArchitecture)
@@ -66,11 +66,6 @@ all:: $(PROGRAMS)
 depend:: gram.h
 
 ComplexProgramTarget_1(twm,$(LOCAL_LIBRARIES),)
-
-InstallNonExec(Sample.twmrc, $(LIBDIR))
-InstallNonExec(Expert.twmrc, $(LIBDIR))
-InstallNonExec(Toms.twmrc, $(LIBDIR))
-InstallNonExec(xterm.icon, $(INCDIR)/bitmaps)
 
 gram.h gram.c: gram.y
 	yacc -d gram.y
