@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.47 94/07/08 14:06:06 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.48 94/07/12 12:34:22 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -245,6 +245,10 @@ char **argv;
 	XtVaSetValues (chooseSessionPopup,
 	    XtNx, x,
 	    XtNy, y,
+	    NULL);
+
+	XtVaSetValues (chooseSessionListWidget,
+	    XtNlongest, width,
 	    NULL);
 
 	XtPopup (chooseSessionPopup, XtGrabNone);
