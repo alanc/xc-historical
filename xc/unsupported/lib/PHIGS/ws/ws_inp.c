@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ws_inp.c,v 5.1 91/02/16 09:50:26 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -315,7 +315,7 @@ init_stroke( ws, iws, dev, args, two_d )
 	    return;
 	}
 	init_dwbl_pts = (XPoint *)(init_wc_pts + init->num_points);
-	bcopy( init->points, init_wc_pts, init->num_points * sizeof(Ppoint3) );
+	bcopy( (char *)init->points, (char *)init_wc_pts, init->num_points * sizeof(Ppoint3) );
 
 	if ( two_d ) {
 	    /* Fill in the Z value. */
@@ -822,7 +822,7 @@ init_all_devices( ws, iws, idt )
     }
 
     for ( i = 0; i < iws->num_devs.stroke; i++ ) {
-	init_sin_stroke( ws, iws, &iws->devs.stroke[i], (Ppoint3*)NULL );
+	init_sin_stroke( ws, iws, &iws->devs.stroke[i], (XPoint *)NULL );
     }
 
     for ( i = 0; i < iws->num_devs.pick; i++ ) {
@@ -1751,8 +1751,8 @@ overlay_parent_resize( display, parent, overlay, event )
     Window	overlay;
     XEvent	*event;
 {
-    XResizeWindow( display, overlay, event->xconfigure.width,
-	event->xconfigure.height );
+    XResizeWindow( display, overlay, (unsigned int)event->xconfigure.width,
+									(unsigned int)event->xconfigure.height );
 }
 
 
@@ -1786,7 +1786,7 @@ phg_wsx_create_overlay( ws )
 	    (caddr_t)win, overlay_parent_resize );
 
 	/* Let the input device initialization select events. */
-	XSelectInput( display, win, (unsigned long)0 );
+	XSelectInput( display, win, (long)0 );
 	XMapWindow( display, win );
 	XFlush( display );
     } else {

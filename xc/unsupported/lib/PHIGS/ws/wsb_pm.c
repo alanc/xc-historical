@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: wsb_pm.c,v 5.1 91/02/16 09:50:35 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -85,8 +85,8 @@ wsb_handle_exposure( display, window, ws, first_event )
     if ( num_rects = phg_wsx_build_exposure_rects( display, window, ws,
 	    first_event, &pex_rects, &x_rects ) > 0 ) {
 	/* Store the rect count at the head of the list. */
-	if ( !(card32_p = (CARD32 *)malloc( num_rects * sizeof(pexDeviceRect)
-		+ sizeof(CARD32) )) ) {
+	if ( !(card32_p = (CARD32 *)malloc( (unsigned)(num_rects * 
+								sizeof(pexDeviceRect) + sizeof(CARD32) )))) {
 	    ERR_BUF( ws->erh, ERR900 );
 	    return;
 	}
@@ -102,7 +102,7 @@ wsb_handle_exposure( display, window, ws, first_event )
 
 	/* Reset the renderer's clip list. */ 
 	*card32_p = 0;
-	(void)PEXChangeRenderer( display, ws->rid, rmask, sizeof(CARD32),
+	(void)PEXChangeRenderer( display, ws->rid, rmask, (CARD32)sizeof(CARD32),
 	    (char *)card32_p );
 	free( (char *)card32_p );
     }
@@ -154,7 +154,7 @@ phg_wsb_pm_open_ws( cph, cp_args, ret, css_srvr )
     Ws			*ws;
     Display		*display;
     Phg_pex_ext_info	pex_info;
-    unsigned long	event_mask = 0;
+    long	event_mask = 0;
 
     if ( args->type->base_type == WST_BASE_TYPE_X_DRAWABLE ) {
 	/* Need to connect to the display before opening the workstation. */

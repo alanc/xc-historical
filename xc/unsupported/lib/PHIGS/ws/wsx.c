@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: wsx.c,v 5.1 91/02/16 09:50:33 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -75,7 +75,7 @@ phg_wsx_setup_tool( ws, conn_info, wst )
     }
     /* Need the depth of this visual */
     template.visualid = best_visual.visualid;
-    best_info = XGetVisualInfo(display, VisualIDMask, &template, &nvisuals);
+    best_info = XGetVisualInfo(display, (long)VisualIDMask, &template, &nvisuals);
     attrs.border_pixel	   = WhitePixel(display, DefaultScreen(display));
     attrs.background_pixel = BlackPixel(display, DefaultScreen(display));
     attrs.colormap = cmap;
@@ -99,11 +99,11 @@ phg_wsx_setup_tool( ws, conn_info, wst )
     size_hints.height = xdt->tool.height;
     XSetStandardProperties( display, drawable_id, xdt->tool.label,
 	xdt->tool.icon_label, None, NULL, 0, &size_hints );
-    XSelectInput( display, drawable_id, (unsigned long)ExposureMask );
+    XSelectInput( display, drawable_id, (long)ExposureMask );
     XMapWindow( display, drawable_id );
     XSync( display, False );
     XWindowEvent( display, drawable_id, ExposureMask, &event );
-    XSelectInput( display, drawable_id, (unsigned long)0 );
+    XSelectInput( display, drawable_id, (long)0 );
     ws->drawable_id = drawable_id;
 
     return 1;

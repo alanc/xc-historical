@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: wsa.c,v 5.1 91/02/16 09:50:29 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -329,7 +329,7 @@ phg_wsa_drawable_pick( ws, args, ret )
     Phg_ret			*ret;
 {
     Ws_inp_pick		dev;
-    pexDeviceCoord2D	dc_pt;
+    pexDeviceCoord	dc_pt;
     CARD16		status;
     CARD32		depth;
     pexPickPath		*path;
@@ -338,7 +338,7 @@ phg_wsa_drawable_pick( ws, args, ret )
 
     register int	i;
 
-    bzero( &dev, sizeof(dev) );
+    bzero( (char *)&dev, sizeof(dev) );
     ret->err = 0;
     ret->data.drawable_pick.status = PIN_STATUS_NONE;
     ret->data.drawable_pick.pick.depth = 0;

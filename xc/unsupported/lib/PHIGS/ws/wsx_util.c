@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: wsx_util.c,v 5.1 91/02/16 09:50:34 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -121,7 +121,7 @@ get_best_visual:
 	 *  Note: colour mapping is only supported on PseudoColor visuals
          */
         template.screen = DefaultScreen(dpy); 
-        available_visuals = XGetVisualInfo(dpy, VisualScreenMask,
+        available_visuals = XGetVisualInfo(dpy, (long)VisualScreenMask,
 				       &template, &nvisuals);
 
         the_best = &available_visuals[0];
@@ -456,7 +456,7 @@ set_colour_approx_table:
     if ( *ncolors )
 	XChangeProperty( dpy, DefaultRootWindow(dpy), pex_map,
 	                 XA_RGB_COLOR_MAP, 32, PropModeReplace,
-	                 (char *)&std, sizeof(XStandardColormap)/4 );
+	                 (unsigned char *)&std, sizeof(XStandardColormap)/4 );
 
     /* keep track of how many true colours were defined */
 

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: wsa_pm.c,v 5.1 91/02/16 09:50:28 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -193,7 +193,7 @@ phg_wsa_pm_open_ws( cph, cp_args, ret, css_srvr )
     XWindowAttributes   wattr;
     Phg_args_open_ws	*args = &cp_args->data.open_ws;
     Ws			*ws;
-    unsigned long	event_mask = 0;
+    long	event_mask = 0;
 
     if ( !(ws = phg_wsx_create( cph, args, css_srvr )) ) {
 	return ws;

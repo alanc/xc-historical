@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: wsb.c,v 5.1 91/02/16 09:50:31 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1944,7 +1944,7 @@ phg_wsb_map_initial_points( ws, view_index, num_pts, wc_pts, dwbl_pts )
     }
 
     if ( npc_pts && npc_pts != scratch )
-	free( npc_pts );
+	free( (char *)npc_pts );
 
     return ( *num_pts > 0 ? 1 : 0 );
 }
@@ -2281,6 +2281,6 @@ phg_wsb_redraw_regions( ws, args )
 
     /* Reset the renderer's clip list. */ 
     *card32_p = 0;
-    (void)PEXChangeRenderer( ws->display, ws->rid, rmask, sizeof(CARD32),
+    (void)PEXChangeRenderer( ws->display, ws->rid, rmask,(CARD32)sizeof(CARD32),
 	(char *)card32_p );
 }
