@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: svgaBank.c,v 1.1 93/09/18 16:08:29 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -141,8 +141,11 @@ static ulong   svgaBankGeneration = 0;
 static GCFuncs svgaBankGCFuncs;
 static GCOps   svgaBankGCOps;
 
+#define BANK_SCRPRIVLVAL(pScreen) \
+  (pScreen)->devPrivates[svgaBankScreenIndex].ptr
+
 #define BANK_SCRPRIVATE(pScreen) \
-  ((svgaBankScreenPtr)((pScreen)->devPrivates[svgaBankScreenIndex].ptr))
+  ((svgaBankScreenPtr)(BANK_SCRPRIVLVAL(pScreen)))
 
 #define BANK_GCPRIVATE(pGC) \
   ((svgaBankGCPtr)((pGC)->devPrivates[svgaBankGCIndex].ptr))
@@ -239,10 +242,10 @@ svgaBankCloseScreen(
       (*pScreen->RegionDestroy)(pScreenPriv->pBanks[i]);
 
   if (pScreenPriv->dstBase)
-    munmap(pScreenPriv->dstBase, pScreenPriv->winSize);
+    munmap((caddr_t)pScreenPriv->dstBase, pScreenPriv->winSize);
 
   if (pScreenPriv->srcBase)
-    munmap(pScreenPriv->srcBase, pScreenPriv->winSize);
+    munmap((caddr_t)pScreenPriv->srcBase, pScreenPriv->winSize);
 
   Xfree(pScreenPriv);
   return (*pScreen->CloseScreen)(index, pScreen);
@@ -255,9 +258,9 @@ svgaBankGetImage(
     int         sy,
     int         w,
     int         h,
-    int         format,
+    uint        format,
     ulong       planemask,
-    unchar      *pImage
+    pointer     pImage
 )
 {
   ScreenPtr pScreen = pDrawable->pScreen;
@@ -310,7 +313,7 @@ svgaBankGetImage(
 			       csy2 - csy1,
 			       format,
 			       planemask,
-			       (pImage +
+			       (pointer)((char *)pImage +
 				((csy1 - sy) * rowOffset) + (csx1 - sx)));
 	}
       }
@@ -327,7 +330,7 @@ svgaBankGetSpans(
     DDXPointPtr	ppt,
     int		*pwidth,
     int		nspans,
-    unchar      *pImage
+    uint       *pImage
 )
 {
   ScreenPtr pScreen = pDrawable->pScreen;
@@ -372,12 +375,13 @@ svgaBankGetSpans(
 
 	      (*pScreen->GetSpans)(pDrawable,
 				   wMax, &pt, &width, 1,
-				   (pImage + (cx1 - ppt->x)));
+				   (uint *)((char *)pImage + (cx1 - ppt->x)));
 	    }
 	  }
 	}
 
-	pImage += PixmapBytePad(*pwidth, pDrawable->depth);
+	pImage = (uint *)((char *)pImage +
+			  PixmapBytePad(*pwidth, pDrawable->depth));
       }
   }
 
@@ -770,7 +774,7 @@ static void
 svgaBankSetSpans(
     DrawablePtr	pDrawable,
     GCPtr	pGC,
-    int		*psrc,
+    uint	*psrc,
     DDXPointPtr ppt,
     int		*pwidth,
     int		nspans,
@@ -797,7 +801,7 @@ svgaBankPutImage(
     int	    	h,
     int         leftPad,		
     int     	format,
-    unchar      *pImage
+    char       *pImage
 )
 {
   OP_SIMPLE(pDrawable,
@@ -838,7 +842,7 @@ svgaBankCopyArea(
   PixmapPtr     pSrcShadow, pScreenPixmap;
   RegionPtr     ret, prgnSrcClip;
   RegionRec     rgnDst;
-  unchar        *pImage;
+  char          *pImage;
   ScreenPtr     pScreen = pGC->pScreen;
   svgaBlitQueue *pQueue, *pQueueNew1, *pQueueNew2, *Queue;
   svgaBlitQueue *pQueueTmp, *pQueueNext, *pQueueBase;
@@ -1061,7 +1065,7 @@ svgaBankCopyArea(
       /* FALLTHRU */
 
     case BANK_SINGLE:
-      pImage = (unchar*)ALLOCATE_LOCAL(PixmapBytePad(w, pSrc->depth)*h);
+      pImage = (char*)ALLOCATE_LOCAL(PixmapBytePad(w, pSrc->depth)*h);
 
       while(nQueue--) {
 	
@@ -1073,7 +1077,8 @@ svgaBankCopyArea(
 
 	  SET_SINGLE_BANK(pScreenPixmap, pQueue->srcBankNo);
 
-	  (pGC->ops->CopyArea)(pScreenPixmap, pScreenPixmap, pGC,
+	  (pGC->ops->CopyArea)((DrawablePtr)pScreenPixmap,
+			       (DrawablePtr)pScreenPixmap, pGC,
 			       pQueue->x1 - dx,
 			       pQueue->y1 - dy,
 			       pQueue->x2 - pQueue->x1,
@@ -1092,8 +1097,8 @@ svgaBankCopyArea(
 	  SET_SOURCE_BANK     (pSrcShadow,    pQueue->srcBankNo);
 	  SET_DESTINATION_BANK(pScreenPixmap, pQueue->dstBankNo);
 
-	  (pGC->ops->CopyArea)(pSrcShadow,
-			       pScreenPixmap,
+	  (pGC->ops->CopyArea)((DrawablePtr)pSrcShadow,
+			       (DrawablePtr)pScreenPixmap,
 			       pGC,
 			       pQueue->x1 - dx,
 			       pQueue->y1 - dy,
@@ -1106,14 +1111,14 @@ svgaBankCopyArea(
 	}
 	else {
 
-	  (*pScreen->GetImage)(pScreenPixmap, 
+	  (*pScreen->GetImage)((DrawablePtr)pScreenPixmap, 
 			       pQueue->x1 - dx,
 			       pQueue->y1 - dy,
 			       pQueue->x2 - pQueue->x1,
 			       pQueue->y2 - pQueue->y1,
-			       ZPixmap, ~0L, pImage);
+			       ZPixmap, ~0L, (pointer)pImage);
 
-	  (*pGC->ops->PutImage)(pScreenPixmap, pGC, pDst->depth,
+	  (*pGC->ops->PutImage)((DrawablePtr)pScreenPixmap, pGC, pDst->depth,
 				pQueue->x1,
 				pQueue->y1,
 				pQueue->x2 - pQueue->x1,
@@ -1140,7 +1145,8 @@ svgaBankCopyArea(
 
 	  SET_SINGLE_BANK(pScreenPixmap, pQueue->srcBankNo);
 
-	  (pGC->ops->CopyArea)(pScreenPixmap, pScreenPixmap, pGC,
+	  (pGC->ops->CopyArea)((DrawablePtr)pScreenPixmap,
+			       (DrawablePtr)pScreenPixmap, pGC,
 			       pQueue->x1 - dx,
 			       pQueue->y1 - dy,
 			       pQueue->x2 - pQueue->x1,
@@ -1152,8 +1158,8 @@ svgaBankCopyArea(
 	  SET_SOURCE_BANK     (pSrcShadow,    pQueue->srcBankNo);
 	  SET_DESTINATION_BANK(pScreenPixmap, pQueue->dstBankNo);
 
-	  (pGC->ops->CopyArea)(pSrcShadow,
-			       pScreenPixmap,
+	  (pGC->ops->CopyArea)((DrawablePtr)pSrcShadow,
+			       (DrawablePtr)pScreenPixmap,
 			       pGC,
 			       pQueue->x1 - dx,
 			       pQueue->y1 - dy,
@@ -1450,9 +1456,9 @@ svgaBankImageGlyphBlt(
     GC 		 *pGC,
     int 	 x,
     int          y,
-    int          nglyph,
+    uint         nglyph,
     CharInfoPtr  *ppci,
-    pointer 	 pglyphBase
+    char 	 *pglyphBase
 )
 {
   OP_SIMPLE(pDrawable,
@@ -1468,9 +1474,9 @@ svgaBankPolyGlyphBlt(
     GC 		 *pGC,
     int 	 x,
     int          y,
-    int          nglyph,
+    uint         nglyph,
     CharInfoPtr  *ppci,
-    pointer 	 pglyphBase
+    char 	 *pglyphBase
 )
 {
   OP_SIMPLE(pDrawable,
@@ -1770,7 +1776,7 @@ svgaBankScreenInit(
   pScreenPriv->CloseScreen = pScreen->CloseScreen;
   pScreen->CloseScreen     = svgaBankCloseScreen;
 
-  BANK_SCRPRIVATE(pScreen) = pScreenPriv;
+  BANK_SCRPRIVLVAL(pScreen) = (pointer)pScreenPriv;
 
   pScreenPriv->GetImage              = pScreen->GetImage;
   pScreenPriv->GetSpans              = pScreen->GetSpans;

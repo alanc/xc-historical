@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: svgaColor.c,v 1.1 93/09/18 16:08:56 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -62,7 +62,7 @@ lookup(
   char       *str = name;
 
   if (!(name = (char*)ALLOCATE_LOCAL(len +1))) return NULL;
-  CopyISOLatin1Lowered(name, str, len);
+  CopyISOLatin1Lowered((unsigned char *)name, (unsigned char *)str, len);
   name[len] = '\0';
 
   for(str = name; *str; str++) hashkey = *str + (hashkey << 1);
