@@ -1,4 +1,4 @@
-/* $XConsortium: iceauth.c,v 1.10 93/12/07 11:04:09 mor Exp $ */
+/* $XConsortium: iceauth.c,v 1.11 94/02/07 19:14:00 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -19,10 +19,72 @@ Author: Ralph Mor, X Consortium
 
 #include <X11/ICE/ICElib.h>
 #include <X11/ICE/ICElibint.h>
+#include <X11/ICE/ICEutil.h>
+
+#ifdef X_NOT_STDC_ENV
+#define Time_t long
+extern Time_t time ();
+#else
+#include <time.h>
+#define Time_t time_t
+#endif
 
 static int binaryEqual ();
 
 static int was_called_state;
+
+/*
+ * MIT-MAGIC-COOKIE-1 is a sample authentication method implemented by
+ * the SI.  It is not part of standard ICElib.
+ */
+
+
+char *
+IceGenerateMagicCookie (len)
+
+int len;
+
+{
+    char    *auth;
+    long    ldata[2];
+    int	    seed;
+    int	    value;
+    int	    i;
+    
+    if ((auth = (char *) malloc (len + 1)) == NULL)
+	return (NULL);
+
+#ifdef ITIMER_REAL
+    {
+	struct timeval  now;
+#if defined(SVR4) || defined(WIN32) || defined(VMS)
+	gettimeofday (&now);
+#else
+	struct timezone zone;
+	gettimeofday (&now, &zone);
+#endif
+	ldata[0] = now.tv_sec;
+	ldata[1] = now.tv_usec;
+    }
+#else
+    {
+	long    time ();
+
+	ldata[0] = time ((long *) 0);
+	ldata[1] = getpid ();
+    }
+#endif
+    seed = (ldata[0]) + (ldata[1] << 16);
+    srand (seed);
+    for (i = 0; i < len; i++)
+    {
+	value = rand ();
+	auth[i] = value & 0xff;
+    }
+    auth[len] = '\0';
+
+    return (auth);
+}
 
 
 
@@ -63,7 +125,7 @@ char    	**errorStringRet;
 	unsigned short  length;
 	char		*data;
 
-	IceGetPoAuthData ("ICE", address, "MIT-MAGIC-COOKIE-1",
+	_IceGetPoAuthData ("ICE", address, "MIT-MAGIC-COOKIE-1",
 	    &length, &data);
 
 	if (!data)
@@ -147,7 +209,7 @@ char    	**errorStringRet;
 	unsigned short  length;
 	char		*data;
 
-	IceGetPaAuthData ("ICE", address, "MIT-MAGIC-COOKIE-1",
+	_IceGetPaAuthData ("ICE", address, "MIT-MAGIC-COOKIE-1",
 	    &length, &data);
 
 	if (data)
