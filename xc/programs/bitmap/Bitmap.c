@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.24 91/01/15 13:33:38 dmatic Exp $
+ * $XConsortium: Bitmap.c,v 1.25 91/01/19 16:16:05 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -38,9 +38,9 @@
 #include <math.h>
 
 #define XtStrlen(s)                   ((s) ? strlen(s) : 0)
-#define abs(x)                        (((x) > 0) ? (x) : -(x))
-#define min(x, y)                     (((x) < (y)) ? (x) : (y))
-#define max(x, y)                     (((x) > (y)) ? (x) : (y))
+#define abs(x)                        ((((int)(x)) > 0) ? (x) : -(x))
+#define min(x, y)                     ((((int)(x)) < (int)(y)) ? (x) : (y))
+#define max(x, y)                     ((((int)(x)) > (int)(y)) ? (x) : (y))
 
 Boolean DEBUG;
 
@@ -381,7 +381,7 @@ XImage *CreateBitmapImage(BW, data, width, height)
 					       DefaultScreen(XtDisplay(BW))),
 				 1, XYBitmap, 0, 
 				 data, width, height,
-				 8, (width + 7) / 8);
+				 8, ((int)width + 7) / 8);
 
     image->height = height;
     image->width = width;
@@ -393,7 +393,7 @@ XImage *CreateBitmapImage(BW, data, width, height)
     image->bitmap_unit = 8;
     image->bitmap_bit_order = LSBFirst;
     image->bitmap_pad = 8;
-    image->bytes_per_line = (width + 7) / 8;
+    image->bytes_per_line = ((int)width + 7) / 8;
 
     return image;
 }
@@ -431,7 +431,7 @@ void BWChangeNotify(w, client_data, call_data)
 	(*BW->bitmap.notify)(w, client_data, call_data);
 }
 
-void BWNotify(w, proc)
+void BWNotify(w, proc)		/* ARGSUSED */
      Widget   w;
      void   (*proc)();
 {
@@ -649,7 +649,7 @@ int XmuWriteBitmapDataToFile (filename, basename,
  *
  */
 
-
+				/* ARGSUSED */
 static void CvtStringToButtonFunction(args, num_args, from_val, to_val)
     XrmValuePtr args;		/* not used */
     Cardinal    *num_args;      /* not used */
@@ -658,7 +658,6 @@ static void CvtStringToButtonFunction(args, num_args, from_val, to_val)
 {
   static button_function;
   char lower_name[80];
-  int i;
  
   XmuCopyISOLatin1Lowered (lower_name, (char*)from_val->addr);
   
@@ -723,6 +722,8 @@ static void SetSizeFromSizeResource(bw)
     XtWarning("Cannot parse the size resource.  BitmapWidget");
   }
 }
+
+void TransferImageData();
 
 /* ARGSUSED */
 static void Initialize(request, new, argv, argc)
@@ -1000,7 +1001,7 @@ void BWChangeBasename(w, str)
 }
 
 
-int BWReadFile(w, filename, basename)
+int BWReadFile(w, filename, basename) /* ARGSUSED */
     Widget w;
     String filename, basename;
 {
@@ -1712,7 +1713,7 @@ void BWDashed(w, _switch)
 	BWSwitchDashed(w);
 }
 
-static Boolean SetValues(old, request, new, args, num_args)
+static Boolean SetValues(old, request, new, args, num_args) /* ARGSUSED */
      Widget old, request, new;
      ArgList args;
      Cardinal num_args;
@@ -1740,7 +1741,7 @@ static Boolean SetValues(old, request, new, args, num_args)
     resize = True;
 
   if (NE(bitmap.filename) || NE(bitmap.basename)  || NE(bitmap.size))
-    BWChangeNotify(old);
+    BWChangeNotify(old, NULL, NULL);
 
   if (NE(bitmap.filename))
     if (newbw->bitmap.filename) {

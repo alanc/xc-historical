@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Graphics.c,v 1.7 91/01/06 12:11:38 rws Exp $
+ * $XConsortium: Graphics.c,v 1.8 91/01/09 16:55:31 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -364,12 +364,12 @@ void BWDrawRectangle(w, from_x, from_y, to_x, to_y, value)
     delta = max(width, height);
     
     if (!QueryZero(width, height)) {
-	for (i = 0; i < delta; i++) {
-	    if (i < width) {
+	for (i = 0; (int)i < (int)delta; i++) {
+	    if ((int)i < (int)width) {
 		BWDrawPoint(w, from_x + i, from_y, value);
 		BWDrawPoint(w, to_x - i, to_y, value);
 	    }
-	    if (i < height) {
+	    if ((int)i < (int)height) {
 		BWDrawPoint(w, from_x, to_y - i, value);
 		BWDrawPoint(w, to_x, from_y + i, value);
 	    }
@@ -409,7 +409,7 @@ void BWDrawCircle(w, origin_x, origin_y, point_x, point_y, value)
     
     dx = abs(point_x - origin_x);
     dy = abs(point_y - origin_y);
-    radius = sqrt((double) (dx * dx + dy * dy));
+    radius = sqrt((double) ((int)dx * (int)dx + (int)dy * (int)dy));
     if (radius < 1.0) {
 	BWDrawPoint(w, origin_x, origin_y, value);
     }
@@ -420,7 +420,7 @@ void BWDrawCircle(w, origin_x, origin_y, point_x, point_y, value)
 	BWDrawPoint(w, origin_x, origin_y + (Position) floor(radius), value);
     }
     half = radius / sqrt(2.0);
-    for(i = 1; i <= half; i++) {
+    for(i = 1; (int)i <= (int)half; i++) {
 	delta = sqrt(radius * radius - i * i);
 	BWDrawPoint(w, origin_x - delta, origin_y - i, value);
 	BWDrawPoint(w, origin_x - delta, origin_y + i, value);
@@ -447,7 +447,7 @@ void BWDrawFilledCircle(w, origin_x, origin_y, point_x, point_y, value)
     
     dx = abs(point_x - origin_x);
     dy = abs(point_y - origin_y);
-    radius = sqrt((double) (dx * dx + dy * dy));
+    radius = sqrt((double) ((int)dx * (int)dx + (int)dy * (int)dy));
     for(j = origin_x - (Position) floor(radius); 
 	j <= origin_x + (Position) floor(radius); j++)
 	BWDrawPoint(w, j, origin_y, value);
@@ -799,8 +799,8 @@ void BWFold(w)
     
     for (x = 0; x < BW->bitmap.image->width; x++)
 	for (y = 0; y < BW->bitmap.image->height; y++) {
-	    new_x = (x + horiz) % BW->bitmap.image->width;
-	    new_y = (y + vert) % BW->bitmap.image->height;
+	    new_x = (int)(x + horiz) % (int)BW->bitmap.image->width;
+	    new_y = (int)(y + vert) % (int)BW->bitmap.image->height;
 	    if(GetBit(BW->bitmap.image, new_x, new_y) != 
 	       GetBit(storage, x, y))
 		InvertPoint(BW, new_x, new_y);
@@ -809,11 +809,14 @@ void BWFold(w)
     DestroyBitmapImage(&storage);
 
     if (QuerySet(BW->bitmap.hot.x, BW->bitmap.hot.y))
-	BWSetHotSpot(w, 
-		     (Position) 
-		     ((BW->bitmap.hot.x + horiz) % BW->bitmap.image->width),
-		     (Position)
-		     ((BW->bitmap.hot.y + vert) % BW->bitmap.image->height));
+      BWSetHotSpot(w, 
+		   (Position) 
+		   ((int)(BW->bitmap.hot.x+horiz)
+		    %(int)BW->bitmap.image->width),
+		   (Position)
+		   ((int)(BW->bitmap.hot.y+vert)
+		    %(int)BW->bitmap.image->height)
+		   );
 }
 
 
@@ -1512,14 +1515,14 @@ void BWHighlightAxes(w)
     XDrawLine(XtDisplay(BW), XtWindow(BW),
 	      BW->bitmap.axes_gc,
 	      InWindowX(BW, 0),
-	      InWindowY(BW, BW->bitmap.height / 2.0),
+	      InWindowY(BW, (float)BW->bitmap.height / 2.0),
 	      InWindowX(BW, BW->bitmap.width),
-	      InWindowY(BW, BW->bitmap.height / 2.0));
+	      InWindowY(BW, (float)BW->bitmap.height / 2.0));
     XDrawLine(XtDisplay(BW), XtWindow(BW),
 	      BW->bitmap.axes_gc,
-	      InWindowX(BW, BW->bitmap.width / 2.0),
+	      InWindowX(BW, (float)BW->bitmap.width / 2.0),
 	      InWindowY(BW, 0),
-	      InWindowX(BW, BW->bitmap.width / 2.0),
+	      InWindowX(BW, (float)BW->bitmap.width / 2.0),
 	      InWindowY(BW, BW->bitmap.height));
 }
     
@@ -1570,8 +1573,8 @@ XImage *ScaleBitmapImage(BW, src, scale_x, scale_y)
 	for (x = 0; x < src->width; x++)
 	    for (y = 0; y < src->height; y++) {
 	        pixel = GetBit(src, x, y);
-		for (w = 0; w < table.width[x]; w++)
-		    for (h = 0; h < table.height[y]; h++)
+		for (w = 0; (int)w < (int)table.width[x]; w++)
+		    for (h = 0; (int)h < (int)table.height[y]; h++)
 			if (pixel) SetBit(dst, 
 					table.x[x] + w, 
 					table.y[y] + h);

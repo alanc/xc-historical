@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Handlers.c,v 1.5 90/12/12 17:19:02 rws Exp $
+ * $XConsortium: Handlers.c,v 1.6 91/01/06 12:12:49 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -37,9 +37,9 @@
 #include <math.h>
 
 #define XtStrlen(s)                   ((s) ? strlen(s) : 0)
-#define abs(x)                        (((x) > 0) ? (x) : -(x))
-#define min(x, y)                     (((x) < (y)) ? (x) : (y))
-#define max(x, y)                     (((x) > (y)) ? (x) : (y))
+#define abs(x)                        (((int)(x) > 0) ? (x) : -(x))
+#define min(x, y)                     (((int)(x) < (int)(y)) ? (x) : (y))
+#define max(x, y)                     (((int)(x) > (int)(y)) ? (x) : (y))
 
 #include "Requests.h"
 
@@ -54,11 +54,13 @@ extern Boolean DEBUG;
      (InBitmapY(BW, y) == (square_y)))
 
 
-void DragOnePointHandler(w, status, event)
+void DragOnePointHandler(w, client_data, event, cont) /* ARGSUSED */
      Widget       w;
-     BWStatus    *status;
+     XtPointer    client_data;
      XEvent      *event;
+     Boolean     *cont;
 {
+    BWStatus *status = (BWStatus *)client_data;
     BitmapWidget BW = (BitmapWidget) w;
 
     if (DEBUG)
@@ -145,11 +147,13 @@ void DragOnePointTerminate(w, status, client_data)
     
 }
 
-void OnePointHandler(w, status, event)
+void OnePointHandler(w, client_data, event, cont) /* ARGSUSED */
     Widget       w;
-    BWStatus    *status;
+    XtPointer    client_data;
     XEvent      *event;
+    Boolean     *cont;
 {
+    BWStatus    *status = (BWStatus *)client_data;
     BitmapWidget BW = (BitmapWidget) w;
     
     if (DEBUG)
@@ -309,13 +313,14 @@ void OnePointTerminateTransparent(w, status, draw)
 }
 
 
-void TwoPointsHandler(w, status, event)
+void TwoPointsHandler(w, client_data, event, cont) /* ARGSUSED */
     Widget      w;
-    BWStatus   *status;
+    XtPointer  client_data;
     XEvent     *event;
+    Boolean    *cont;
 {
     BitmapWidget BW = (BitmapWidget) w;
-
+    BWStatus   *status = (BWStatus *)client_data;
     if (DEBUG)
 	fprintf(stderr, "2PH ");
     
@@ -563,12 +568,14 @@ void Paste(w, at_x, at_y, value)
 }
 
 
-void DragTwoPointsHandler(w, status, event)
+void DragTwoPointsHandler(w, client_data, event, cont) /* ARGSUSED */
     Widget      w;
-    BWStatus   *status;
+    XtPointer   client_data;
     XEvent     *event;
+    Boolean    *cont;
 {
     BitmapWidget BW = (BitmapWidget) w;
+    BWStatus   *status = (BWStatus *)client_data;
 
     if (DEBUG)
 	fprintf(stderr, "D2PH ");
