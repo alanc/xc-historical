@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicI.h,v 1.52 93/09/25 10:13:16 rws Exp $ */
+/* $XConsortium: IntrinsicI.h,v 1.53 93/09/25 10:38:57 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -39,9 +39,9 @@ SOFTWARE.
 #include "ObjectP.h"
 #include "RectObjP.h"
 
+#include "ConvertI.h"
 #include "TranslateI.h"
 #include "CallbackI.h"
-#include "ConvertI.h"
 #include "EventI.h"
 #include "PassivGraI.h"
 #include "ThreadsI.h"
