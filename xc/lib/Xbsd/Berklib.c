@@ -1,4 +1,4 @@
-/* $XConsortium: Berklib.c,v 1.20 93/09/18 22:10:22 rws Exp $ */
+/* $XConsortium: Berklib.c,v 1.21 93/09/19 10:25:17 rws Exp $ */
 
 /*
  * These are routines found in BSD but not on all other systems.  The core
@@ -275,22 +275,26 @@ int gettimeofday (tvp, tzp)
      * Sequent has microsecond resolution. Need to link with -lseq
      */
     get_process_stats (tvp, -1, NULL, NULL);
+#ifndef SVR4
     if (tzp)
     {
         tzset ();
         tzp->tz_minuteswest = timezone / 60;
         tzp->tz_dsttime = daylight;
     }
+#endif /* SVR4 */
     return (0);
 #else /* _SEQUENT_ */
     time (&tvp->tv_sec);
     tvp->tv_usec = 0L;
 
+#ifndef SVR4
     if (tzp) {
 	fprintf( stderr,
 		 "Warning: gettimeofday() emulation does not return timezone\n"
 		);
     }
+#endif /* SVR4 */
 #endif /* _SEQUENT_ */
 }
 #endif /* WANT_GTOD */
