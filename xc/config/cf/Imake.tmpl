@@ -4,7 +4,7 @@
 
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.186 93/09/04 15:57:22 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.187 93/09/06 13:11:44 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -774,6 +774,24 @@ _NULLCMD_ = @ echo -n
 #define NdbmDefines /**/
 #endif
 #endif
+#ifndef LdPreLib
+#if !defined(UseInstalled)
+#define LdPreLib -L$(BUILDLIBDIR)
+#else
+#if AlternateUsrLibDir && !HasLdRunPath
+#define LdPreLib -L$(USRLIBDIR)
+#else
+#define LdPreLib /**/
+#endif
+#endif
+#endif
+#ifndef LdPostLib
+#if !defined(UseInstalled) && AlternateUsrLibDir && !HasLdRunPath
+#define LdPostLib -L$(USRLIBDIR)
+#else
+#define LdPostLib /**/
+#endif
+#endif
 #ifndef MathLibrary
 #define MathLibrary -lm
 #endif
@@ -1070,16 +1088,8 @@ PICFLAGS = PositionIndependentCFlags
        ALLDEFINES = $(ALLINCLUDES) $(STD_DEFINES) $(EXTRA_DEFINES) $(PROTO_DEFINES) $(DEFINES)
            CFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(ALLDEFINES)
         LINTFLAGS = $(LINTOPTS) -DLINT $(ALLDEFINES) $(DEPEND_DEFINES)
-#if !defined(UseInstalled)
-         LDPRELIB = -L$(BUILDLIBDIR)
-#if AlternateUsrLibDir && !HasLdRunPath
-        LDPOSTLIB = -L$(USRLIBDIR)
-#endif
-#else
-#if AlternateUsrLibDir && !HasLdRunPath
-         LDPRELIB = -L$(USRLIBDIR)
-#endif
-#endif
+         LDPRELIB = LdPreLib
+        LDPOSTLIB = LdPostLib
         LDOPTIONS = $(CDEBUGFLAGS) $(CCOPTIONS) $(EXTRA_LDOPTIONS) $(LOCAL_LDFLAGS) $(LDPRELIB)
            LDLIBS = $(LDPOSTLIB) $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
 #if AlternateUsrLibDir && HasLdRunPath
