@@ -1,9 +1,9 @@
 #! /bin/sh
-#$XConsortium: Xmark.sh,v 1.2 93/03/25 17:04:21 rws Exp $
-#$Header: Xmark.sh,v 1.2 93/03/25 17:04:21 rws Exp $
+#$XConsortium: Xmark.sh,v 1.3 93/04/11 16:18:16 rws Exp $
+#XPC Header: Xmark,v 1.15 93/04/12 10:10:07 hmgr Exp
 #
 ############################################################
-# Xmark version $Revision: 1.2 $
+# Xmark version XPC Revision: 1.15
 #
 # Usage: Xmark datafile
 #
@@ -29,11 +29,10 @@
 #	   checking of input data.
 # 3/15/93  Removed usage of '-F' in grep for compatibility reasons
 # 3/16/93  Corrected usage of substr() and used two greps versus fgrep
-# 4/11/93  Eliminate use of functions
+# 4/12/93  Eliminated use of functions and \n in echo
 #
 ############################################################
 # Copyright (c) 1993 by Hewlett-Packard Company
-#
 #
 # Permission to use, copy, modify, and  distribute  this  software and its
 # documentation  for  any  purpose  and  without  fee is  hereby  granted,
@@ -42,7 +41,6 @@
 # supporting  documentation, and that the name of  Hewlett-Packard  not be
 # used in  advertising  or publicity  pertaining  to  distribution  of the
 # software without specific, written prior permission.
-#
 #
 ############################################################
 # Instructions:
@@ -75,7 +73,7 @@
 #   X11R5 Xsun
 #   Standard with SunOS 4.1.2
 #   SunOs 4.1.2
-#   CG3 dumb color frame buffer
+#   CG3 dumb Color Frame Buffer
 #
 ############################################################
 ############################################################
@@ -108,7 +106,8 @@ then
     echo "WARNING: datafile contains $LC1, not "$LC2" or "$LC3" 'trep' results;" >& 2
     if [ "$LC1" -gt "$LC2" ]
     then
-	echo "extra results are probably OK.\n" >& 2
+	echo "extra results are probably OK." >& 2
+	echo ""
     fi
 fi
  
@@ -574,7 +573,7 @@ cat > awkfile.$$ <<'EOS'
 	printf("name:%s\n",substr($0,1,index($0,"server")-2));
     }
     {
-	split($0,parts,":");		# get rate and name
+	split($0,parts,":");			# get rate and name
 	start = index(parts[1],"(") + 1;	# find left parentheses
 	end = index(parts[1],"/");		# find terminating '/'
 	rate = substr(parts[1],start,end-start);# get ops/sec
@@ -603,7 +602,8 @@ rm -f awkfile.$$				# cleanup
 sumofweights=`grep sumof rates.$$ | awk -F: ' { print($2) }' - `
 if [ "$sumofweights" -ne "4566" ]
 then
-    echo "ERROR: sum of weights =$sumofweights, not equal to 4566.0;\nABORTING!"
+    echo "ERROR: sum of weights =$sumofweights, not equal to 4566.0;"
+    echo "ABORTING!"
     rm -f rates.$$ temp.$$
     exit 1
 fi
