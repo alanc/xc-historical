@@ -250,7 +250,7 @@ GetLK201Mappings(pKeySyms, pModMap)
 }
 
 static int
-ffbKeybdProc(pDevice, onoff)
+vfbKeybdProc(pDevice, onoff)
     DeviceIntPtr pDevice;
     int onoff;
 {
@@ -279,7 +279,7 @@ ffbKeybdProc(pDevice, onoff)
 }
 
 static int
-ffbMouseProc(pDevice, onoff)
+vfbMouseProc(pDevice, onoff)
     DeviceIntPtr pDevice;
     int onoff;
 {
@@ -316,8 +316,8 @@ InitInput(argc, argv)
     char *argv[];
 {
     DevicePtr p, k;
-    p = AddInputDevice(ffbMouseProc, TRUE);
-    k = AddInputDevice(ffbKeybdProc, TRUE);
+    p = AddInputDevice(vfbMouseProc, TRUE);
+    k = AddInputDevice(vfbKeybdProc, TRUE);
     RegisterPointerDevice(p);
     RegisterKeyboardDevice(k);
     miRegisterPointerDevice(screenInfo.screens[0], p);
