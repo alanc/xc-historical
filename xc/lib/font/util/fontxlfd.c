@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontxlfd.c,v 1.1 91/05/10 16:51:54 keith Exp $
+ * $XConsortium: fontxlfd.c,v 1.2 91/05/11 16:05:06 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -57,6 +57,7 @@ FontParseXLFDName(fname, vals, subst)
                *ptr3,
                *ptr4;
     FontScalableRec tmpvals;
+    char	*index();
     char        replaceChar = '0';
     char        tmpBuf[1024];
     int         spacingLen;
