@@ -23,16 +23,10 @@ if [ -f Makefile ]; then
 fi
 
 if [ "$topdir" = "" ]; then
-    arginst=-DUseInstalled
-    argtopdir=
-    argcurdir=
-    argdir=CONFIGDIRSPEC
+    args="-DUseInstalled "CONFIGDIRSPEC
 else
-    arginst=
-    argtopdir=-DTOPDIR=$topdir
-    argcurdir=-DCURDIR=$curdir
-    argdir=-I$topdir/config
+    args="-DTOPDIR=$topdir -DCURDIR=$curdir -I$topdir/config"
 fi
 
-echo imake $arginst $argtopdir $argcurdir $argdir
-imake $arginst $argtopdir $argcurdir $argdir
+echo imake $args
+imake $args
