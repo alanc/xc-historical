@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.29 89/12/06 19:32:31 keith Exp $
+ * $XConsortium: dm.c,v 1.30 89/12/07 20:30:45 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -28,8 +28,10 @@
 # include	<sys/stat.h>
 # include	<errno.h>
 # include	<varargs.h>
+#ifdef SYSV
 #ifndef F_TLOCK
 # include	<unistd.h>
+#endif
 #endif
 # include	"dm.h"
 
@@ -561,6 +563,7 @@ StorePid ()
 	if (fscanf (pidFilePtr, "%d", &oldpid) != 1)
 	    oldpid = -1;
 	fseek (pidFilePtr, 0l, 0);
+#ifdef SYSV
 	if (lockfPidFile)
 	{
 	    if (lockf (pidFd, F_TLOCK, 0) == -1)
@@ -571,7 +574,7 @@ StorePid ()
 		    return -1;
 	    }
 	}
-#ifndef SYSV
+#else
 	if (flockPidFile)
 	{
 	    if (flock (pidFd, LOCK_EX|LOCK_NB) == -1)
@@ -590,9 +593,10 @@ StorePid ()
 
 UnlockPidFile ()
 {
+#ifdef SYSV
     if (lockfPidFile)
 	lockf (pidFd, F_ULOCK, 0);
-#ifndef SYSV
+#else
     if (flockPidFile)
 	flock (pidFd, LOCK_UN);
 #endif
