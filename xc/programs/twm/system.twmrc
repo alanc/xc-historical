@@ -1,5 +1,5 @@
 #
-# $XConsortium: system.twmrc,v 1.6 89/11/30 18:32:57 jim Exp $
+# $XConsortium: system.twmrc,v 1.7 89/12/01 11:23:47 jim Exp $
 # 
 # Default twm configuration file; needs to be kept small to conserve string
 # space in systems whose compilers don't handle medium-sized strings.
@@ -11,6 +11,7 @@
 #
 
 NoGrabServer
+RestartPreviousState
 DecorateTransients
 TitleFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
 ResizeFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
