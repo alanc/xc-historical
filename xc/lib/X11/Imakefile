@@ -14,9 +14,9 @@
      EDB_DEFINES = -DERRORDB=\"$(LIBDIR)/XErrorDB\"
      KDB_DEFINES = -DKEYSYMDB=\"$(LIBDIR)/XKeysymDB\"
    INSTALLFLAGS = $(INSTINCFLAGS)
-#if BandAidLibraryNeeded
-        AIDSRCS = BandAidLibrarySources
-        AIDOBJS = BandAidLibraryObjects
+#if NeedBerklibInXlib
+        AIDSRCS = Berklib.c
+        AIDOBJS = Berklib.o
 #endif
        AUTHOBJS = AuDispose.o AuGetBest.o AuFileName.o AuRead.o 
        AUTHSRCS = AuDispose.c AuGetBest.c AuFileName.c AuRead.c 
@@ -391,9 +391,12 @@ DebuggedLibraryTarget(X11,$(OBJS))
 AliasedLibraryTarget(X11_d,X_d)
 #endif
 
-#if BandAidLibraryNeeded
-BandAidLibraryMake()
-depend::  BandAidLibrarySources
+#if NeedBerklibInXlib
+Berklib.c: sysV/Berklib.c
+	-$(RM) Berklib.c
+	-$(LN) sysV/Berklib.c .
+
+depend::  $(AIDSRCS)
 #endif
 
 AuDispose.c:  $(XAUTHSRC)/AuDispose.c
