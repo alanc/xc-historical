@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Shell.c,v 1.33 88/09/03 09:39:01 swick Exp $";
+    "$XConsortium: Shell.c,v 1.34 88/09/03 10:04:58 swick Exp $";
 /* $oHeader: Shell.c,v 1.6 88/08/19 16:49:51 asente Exp $ */
 #endif lint
 
@@ -1131,10 +1131,10 @@ static XtGeometryResult GeometryManager( wid, request, reply )
 
 	    if (request->request_mode & CWWidth) {
 		wid->core.width = request->width;
-	    } else request->width = xwc.width;
+	    }
 	    if (request->request_mode & CWHeight) {
 		wid->core.height = request->height;
-	    } else request->height = xwc.height;
+	    }
 	    if (request->request_mode & CWBorderWidth) {
 		wid->core.x = wid->core.y = -request->border_width;
 	    }
@@ -1282,7 +1282,7 @@ Cardinal mask;
 			hintp->flags |= PSize;
 			hintp->width = values->width;
 		} else w->core.width = values->width;
-	} else values->width = w->core.width;
+	} else values->width = w->core.width; /* for _wait_for_response */
 	if (mask & CWHeight) {
 		if (w->core.height == values->height) mask &= ~CWHeight;
 		else if (wm) {
@@ -1290,7 +1290,7 @@ Cardinal mask;
 			hintp->flags |= PSize;
 			hintp->height = values->height;
 		} else w->core.height = values->height;
-	} else values->height = w->core.height;
+	} else values->height = w->core.height; /* for _wait_for_response */
 
 	if (mask == 0) return TRUE;
 
