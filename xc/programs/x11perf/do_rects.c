@@ -27,16 +27,22 @@ void InitRects(d, p)
 
     if (width == 50) 
     {
-        p->objects = 100;
         cols = 10;
     }
     rects = (XRectangle *)malloc(p->objects * sizeof(XRectangle));
     i = 0;
     for (x=0; x < cols; x++)
         for (y = 0; y < p->objects/cols; y++) {
+#ifdef spacedrectangles
+	    /* This code actually lets you see the separate rectangles... */
 	    rects[i].x = x*(width + 1);
             rects[i].y = y*(width + 1);
-            rects[i].width = rects[i].height = width;
+#else
+	    /* ... but this code makes stipple/tile alignment bugs obvious. */
+	    rects[i].x = x*(width);
+            rects[i].y = y*(width);
+#endif
+	    rects[i].width = rects[i].height = width;
 	    i++;
 	}
     CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &bggc, &fggc);
