@@ -1,4 +1,4 @@
-/* $XConsortium: Logo.c,v 1.21 91/02/17 15:15:32 converse Exp $ */
+/* $XConsortium: Logo.c,v 1.22 91/02/19 19:21:29 converse Exp $ */
 
 /*
 Copyright 1988 by the Massachusetts Institute of Technology
@@ -49,7 +49,7 @@ LogoClassRec logoClassRec = {
     /* num_actions		*/	0,
     /* resources		*/	resources,
     /* resource_count		*/	XtNumber(resources),
-    /* xrm_class		*/	NULL,
+    /* xrm_class		*/	NULLQUARK,
     /* compress_motion		*/	TRUE,
     /* compress_exposure	*/	TRUE,
     /* compress_enterleave	*/	TRUE,

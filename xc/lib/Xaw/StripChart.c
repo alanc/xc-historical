@@ -1,4 +1,4 @@
-/* $XConsortium: StripChart.c,v 1.17 91/01/02 10:21:50 gildea Exp $ */
+/* $XConsortium: StripChart.c,v 1.18 91/02/17 16:15:25 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -77,7 +77,7 @@ StripChartClassRec stripChartClassRec = {
     /* num_actions		*/	0,
     /* resources		*/	resources,
     /* num_resources		*/	XtNumber(resources),
-    /* xrm_class		*/	NULL,
+    /* xrm_class		*/	NULLQUARK,
     /* compress_motion		*/	TRUE,
     /* compress_exposure	*/	XtExposeCompressMultiple |
 	                                XtExposeGraphicsExposeMerged,
