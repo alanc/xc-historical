@@ -1,4 +1,4 @@
-.\" $XConsortium: ddx.tbl.ms,v 1.37 94/04/09 20:53:11 dpw Exp $"
+.\" $XConsortium: ddx.tbl.ms,v 1.38 94/04/11 14:56:03 dpw Exp $"
 .EF 'Porting Layer Definition'- % -'April 8, 1994'
 .OF 'Porting Layer Definition'- % -'April 8, 1994'
 .EH '''
@@ -33,8 +33,30 @@ Revised for Release 6 by
 .AU
 David P. Wiggins
 .AI
-MIT X Consortium
-
+X Consortium
+.LP
+.bp
+\&
+.sp 15
+Copyright \(co 1994 X Consortium
+.LP
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the ``Software''), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+.LP
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+.LP
+THE SOFTWARE IS PROVIDED ``AS IS'', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+.bp
 .LP
 The following document explains the
 structure of the X Window System display server and the interfaces among the larger pieces.
@@ -74,7 +96,7 @@ LK201 and DEC are trademarks of Digital Equipment Corporation.
 Macintosh and Apple are trademarks of Apple Computer, Inc.
 PostScript is a trademark of Adobe Systems, Inc.
 Ethernet is a trademark of Xerox Corporation.
-The X Window System is a trademark of Massachusetts Institute of Technology.
+X Window System is a trademark of X Consortium, Inc.
 Cray is a trademark of Cray Research, Inc.
 
 .LP
