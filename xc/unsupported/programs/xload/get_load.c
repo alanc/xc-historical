@@ -1,7 +1,7 @@
 /*
  * get_load - get system load
  *
- * $XConsortium: get_load.c,v 1.18 91/03/26 16:43:34 gildea Exp $
+ * $XConsortium: get_load.c,v 1.19 91/04/02 14:59:54 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -86,6 +86,10 @@ struct lavnum {
 
 #ifdef sequent
 #define FSCALE	1000.0
+#endif
+
+#ifdef sgi
+#define FSCALE	1024.0
 #endif
 
 #ifdef SVR4
@@ -414,7 +418,7 @@ void GetLoadPoint( w, closure, call_data )
 	(void) lseek(kmem, loadavg_seek, 0);
 #endif
 
-#if defined(sun) || defined (UTEK) || defined(sequent) || defined(alliant) || defined(SVR4)
+#if defined(sun) || defined (UTEK) || defined(sequent) || defined(alliant) || defined(SVR4) || defined(sgi)
 	{
 		long temp;
 		(void) read(kmem, (char *)&temp, sizeof(long));
