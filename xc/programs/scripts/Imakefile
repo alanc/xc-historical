@@ -6,7 +6,9 @@ CppScriptTarget(xmkmf, xmkmf.cpp, -DCONFIGDIRSPEC=-I$(CONFIGDIR), $(ICONFIGFILES
 CppScriptTarget(makedepend, mdepend.cpp, -DPREPROC='"'"$(PREPROCESSCMD)"'"', $(ICONFIGFILES))
 
 InstallProgram(xmkmf,$(BINDIR))
+#if UseCCMakeDepend
 InstallProgram(makedepend,$(BINDIR))
+#endif
 
 clean::
 	$(RM) $(PROGRAMS)
