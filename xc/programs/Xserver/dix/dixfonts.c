@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.5 89/03/18 16:24:09 rws Exp $ */
+/* $XConsortium: dixfonts.c,v 1.6 89/03/23 09:31:08 rws Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -103,9 +103,11 @@ OpenFont(lenfname, pfontname)
 /*
  * Decrement font's ref count, and free storage if ref count equals zero
  */
+/*ARGSUSED*/
 int
-CloseFont( pfont)
+CloseFont(pfont, fid)
     FontPtr 	pfont;
+    Font	fid;
 {
     int		nscr;
     ScreenPtr	pscr;

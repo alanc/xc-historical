@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 1.119 89/03/20 11:08:57 rws Exp $ */
+/* $XConsortium: gc.c,v 1.120 89/03/22 14:03:07 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -267,7 +267,7 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		{
 		    pFont->refcnt++;
 		    if (pGC->font)
-    		        CloseFont( pGC->font);
+    		        CloseFont(pGC->font, (Font)0);
 		    pGC->font = pFont;
 		 }
 		else
@@ -640,7 +640,7 @@ CopyGC(pgcSrc, pgcDst, mask)
 		if (pgcDst->font == pgcSrc->font)
 		    break;
 		if (pgcDst->font)
-		    CloseFont(pgcDst->font);
+		    CloseFont(pgcDst->font, (Font)0);
 		if ((pgcDst->font = pgcSrc->font) != NullFont)
 		    (pgcDst->font)->refcnt++;
 		break;
@@ -721,7 +721,7 @@ FreeGC(pGC, gid)
 {
     GCInterestPtr	pQ, pQInit, pQnext;
 
-    CloseFont(pGC->font);
+    CloseFont(pGC->font, (Font)0);
     (* pGC->DestroyClip)(pGC);
 
     (* pGC->pScreen->DestroyPixmap)(pGC->tile);

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 1.153 89/03/24 07:30:22 rws Exp $ */
+/* $XConsortium: main.c,v 1.154 89/03/30 08:55:27 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -247,7 +247,7 @@ main(argc, argv)
 	}
 	xfree(WindowTable);
 
-        CloseFont(defaultFont);
+        CloseFont(defaultFont, (Font)0);
         defaultFont = (FontPtr)NULL;
 
 	if (GivingUp)
