@@ -21,7 +21,7 @@ TitleFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
 MenuFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
 IconFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*-*-*-*"
 IconManagerFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*"
-ResizeFont "fixed"
+ResizeFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*"
 NoSaveUnders
 XORvalue 1
 ConstrainedMoveTime 0
