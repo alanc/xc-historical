@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parse.c,v 1.11 89/10/08 14:23:25 rws Exp $
+ * $XConsortium: parse.c,v 1.12 89/11/03 10:21:24 jim Exp $
  */
 #include "def.h"
 #include	<sys/signal.h>
@@ -173,7 +173,7 @@ gobble(filep, file, file_red)
 /*
  * Decide what type of # directive this line is.
  */
-deftype(line, filep, file_red, file, parse_it)
+int deftype (line, filep, file_red, file, parse_it)
 	register char	*line;
 	register struct filepointer *filep;
 	register struct inclist *file_red, *file;
@@ -211,16 +211,22 @@ deftype(line, filep, file_red, file, parse_it)
 	    /*
 	     * parse an expression.
 	     */
+#ifdef DEBUG
 	    debug0("%s, line %d: #elif %s ",
 		   file->i_file, filep->f_line, p);
+#endif
 	    if (zero_value(p, filep, file_red))
 	    {
+#ifdef DEBUG
 		debug0("false...\n");
+#endif
 		return(ELIFFALSE);
 	    }
 	    else
 	    {
+#ifdef DEBUG
 		debug0("true...\n");
+#endif
 		return(ret);
 	    }
 	}
@@ -238,15 +244,19 @@ deftype(line, filep, file_red, file, parse_it)
 		/*
 		 * parse an expression.
 		 */
+#ifdef DEBUG
 		debug0("%s, line %d: #if %s\n",
 			file->i_file, filep->f_line, p);
+#endif
 		if (zero_value(p, filep, file_red))
 			ret = IFFALSE;
 		break;
 	case IFDEF:
 	case IFNDEF:
+#ifdef DEBUG
 		debug0("%s, line %d: #%s %s\n",
 			file->i_file, filep->f_line, directives[ret], p);
+#endif
 	case UNDEF:
 		/*
 		 * separate the name of a single symbol.
@@ -256,18 +266,22 @@ deftype(line, filep, file_red, file, parse_it)
 		*line = '\0';
 		break;
 	case INCLUDE:
+#ifdef DEBUG
 		debug2("%s, line %d: #include %s\n",
 			file->i_file, filep->f_line, p);
+#endif
 
 		/* Support ANSI macro substitution */
 		{
 		    struct symtab *sym = isdefined(p, file_red);
 		    while (sym) {
 			p = sym->s_value;
+#ifdef DEBUG
 			debug3("%s : #includes SYMBOL %s = %s\n",
 			       file->i_incstring,
 			       sym -> s_name,
 			       sym -> s_value);
+#endif
 			/* mark file as having included a 'soft include' */
 			file->i_included_sym = TRUE; 
 			sym = isdefined(p, file_red);
@@ -304,8 +318,10 @@ deftype(line, filep, file_red, file, parse_it)
 	case IDENT:
 	case SCCS:
 	case EJECT:
+#ifdef DEBUG
 		debug0("%s, line %d: #%s\n",
 			file->i_file, filep->f_line, directives[ret]);
+#endif
 		/*
 		 * nothing to do.
 		 */
