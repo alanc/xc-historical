@@ -1,4 +1,4 @@
-/* $XConsortium: makekeys.c,v 11.5 91/04/24 18:39:28 gildea Exp $ */
+/* $XConsortium: makekeys.c,v 11.6 91/05/01 14:29:38 rws Exp $ */
 /*
 Copyright 1990 by the Massachusetts Institute of Technology
 
@@ -61,7 +61,7 @@ main()
     int num_found;
     KeySym val;
 
-    for (ksnum = 0; 1; (void)gets(buf)) {
+    for (ksnum = 0; 1; (void)fgets(buf, sizeof(buf), stdin)) {
 	i = scanf("#define XK_%s 0x%lx", buf, &info[ksnum].val);
 	if (i == EOF)
 	    break;
