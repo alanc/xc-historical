@@ -1,4 +1,4 @@
-/* $XConsortium: choose.c,v 1.19 94/12/13 20:42:27 mor Exp mor $ */
+/* $XConsortium: choose.c,v 1.20 94/12/14 20:00:30 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -29,7 +29,28 @@ in this Software without prior written authorization from the X Consortium.
 #include "saveutil.h"
 #include "lock.h"
 #include <sys/types.h>
+
+#include <X11/Shell.h>
+#include <X11/Xaw/Form.h>
+#include <X11/Xaw/List.h>
+#include <X11/Xaw/Command.h>
+
+#ifndef X_NOT_POSIX
 #include <dirent.h>
+#else
+#ifdef SYSV
+#include <dirent.h>
+#else
+#ifdef USG
+#include <dirent.h>
+#else
+#include <sys/dir.h>
+#ifndef dirent
+#define dirent direct
+#endif
+#endif
+#endif
+#endif
 
 static Pixel save_message_foreground;
 static Pixel save_message_background;
