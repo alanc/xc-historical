@@ -116,6 +116,8 @@ ProcessInputEvents ()
 						 * events */
 			    nKE;    	    	/* Original number of
 						 * keyboard events */
+    Bool		    PtrAgain,		/* need to (re)read */
+			    KbdAgain;		/* need to (re)read */
     DevicePtr		    pPointer;
     DevicePtr		    pKeyboard;
     register PtrPrivPtr     ptrPriv;
@@ -218,16 +220,10 @@ ProcessInputEvents ()
 	ptrPriv = (PtrPrivPtr)pPointer->devicePrivate;
 	kbdPriv = (KbPrivPtr)pKeyboard->devicePrivate;
 	
-	/*
-	 * Get events from both the pointer and the keyboard, storing the number
-	 * of events gotten in nPE and nKE and keeping the start of both arrays
-	 * in pE and kE
-	 */
-	ptrEvents = (* ptrPriv->GetEvents) (pPointer, &nPE);
-	kbdEvents = (* kbdPriv->GetEvents) (pKeyboard, &nKE);
-	
-	numPtrEvents = nPE;
-	numKbdEvents = nKE;
+	numPtrEvents = 0;
+	PtrAgain = TRUE;
+	numKbdEvents = 0;
+	KbdAgain = TRUE;
 	lastEvent = (Firm_event *)0;
 
 	/*
@@ -236,7 +232,22 @@ ProcessInputEvents ()
 	 * for processing. The DDXEvent will be sent to ProcessInput by the
 	 * function called.
 	 */
-	while (numPtrEvents || numKbdEvents) {
+	while (1) {
+	    /*
+	     * Get events from both the pointer and the keyboard, storing the number
+	     * of events gotten in nPE and nKE and keeping the start of both arrays
+	     * in pE and kE
+	     */
+	    if ((numPtrEvents == 0) && PtrAgain) {
+		ptrEvents = (* ptrPriv->GetEvents) (pPointer, &nPE, &PtrAgain);
+		numPtrEvents = nPE;
+	    }
+	    if ((numKbdEvents == 0) && KbdAgain) {
+		kbdEvents = (* kbdPriv->GetEvents) (pKeyboard, &nKE, &KbdAgain);
+		numKbdEvents = nKE;
+	    }
+	    if ((numPtrEvents == 0) && (numKbdEvents == 0))
+		break;
 	    if (numPtrEvents && numKbdEvents) {
 		if (timercmp (&kbdEvents->time, &ptrEvents->time, <)) {
 		    if (lastType == Ptr) {
@@ -281,8 +292,8 @@ ProcessInputEvents ()
 	    }
 	}
 	
-	(* kbdPriv->DoneEvents) (pKeyboard);
-	(* ptrPriv->DoneEvents) (pPointer);
+	(* kbdPriv->DoneEvents) (pKeyboard, TRUE);
+	(* ptrPriv->DoneEvents) (pPointer, TRUE);
 
     }
 

@@ -235,15 +235,17 @@ sunMouseGetMotionEvents (buff, start, stop)
  * Results:
  *	A pointer to an array of Firm_events or (Firm_event *)0 if no events
  *	The number of events contained in the array.
+ *	A boolean as to whether more events might be available.
  *
  * Side Effects:
  *	None.
  *-----------------------------------------------------------------------
  */
 static Firm_event *
-sunMouseGetEvents (pMouse, pNumEvents)
+sunMouseGetEvents (pMouse, pNumEvents, pAgain)
     DevicePtr	  pMouse;	    /* Mouse to read */
     int	    	  *pNumEvents;	    /* Place to return number of events */
+    Bool	  *pAgain;	    /* whether more might be available */
 {
     int	    	  nBytes;	    /* number of bytes of events available. */
     register PtrPrivPtr	  pPriv;
@@ -256,12 +258,14 @@ sunMouseGetEvents (pMouse, pNumEvents)
     if (nBytes < 0) {
 	if (errno == EWOULDBLOCK) {
 	    *pNumEvents = 0;
+	    *pAgain = FALSE;
 	} else {
 	    Error ("Reading mouse");
 	    FatalError ("Could not read from mouse");
 	}
     } else {
 	*pNumEvents = nBytes / sizeof (Firm_event);
+	*pAgain = (nBytes == sizeof (evBuf));
     }
     return (evBuf);
 }

@@ -394,6 +394,7 @@ bad:
  * Results:
  *	A pointer to an array of Firm_events or (Firm_event *)0 if no events
  *	The number of events contained in the array.
+ *	A boolean as to whether more events might be available.
  *	If there are no keyboard events ready and autoRepeatKeyDown > 0,
  *	then *pNumEvents is set to 1 and Firm_event id is set to
  *	AUTOREPEAT_EVENTID.  In sunKbdProcessEvent, if autoRepeatKeyDown > 0
@@ -405,9 +406,10 @@ bad:
  *-----------------------------------------------------------------------
  */
 static Firm_event *
-sunKbdGetEvents (pKeyboard, pNumEvents)
+sunKbdGetEvents (pKeyboard, pNumEvents, pAgain)
     DevicePtr	  pKeyboard;	    /* Keyboard to read */
     int	    	  *pNumEvents;	    /* Place to return number of events */
+    Bool	  *pAgain;	    /* whether more might be available */
 {
     int	    	  nBytes;	    /* number of bytes of events available. */
     KbPrivPtr	  pPriv;
@@ -419,12 +421,14 @@ sunKbdGetEvents (pKeyboard, pNumEvents)
     if (nBytes < 0) {
 	if (errno == EWOULDBLOCK) {
 	    *pNumEvents = 0;
+	    *pAgain = FALSE;
 	} else {
 	    Error ("Reading keyboard");
 	    FatalError ("Could not read the keyboard");
 	}
     } else {
 	*pNumEvents = nBytes / sizeof (Firm_event);
+	*pAgain = (nBytes == sizeof (evBuf));
     }
 
     if (autoRepeatKeyDown && autoRepeatReady &&
