@@ -1,4 +1,4 @@
-/* $XConsortium: cb_wst.c,v 5.3 91/04/04 17:05:32 hersh Exp $ */
+/* $XConsortium: cb_wst.c,v 5.4 91/04/11 12:01:41 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -40,12 +40,12 @@ SOFTWARE.
 
 #if NeedVarargsPrototypes
 caddr_t
-phigs_ws_type_set( register Wst *wst, ... )
+phigs_ws_type_set( Wst *wst, ... )
 #else
 /*VARARGS2*/
 caddr_t
 phigs_ws_type_set( wst, va_alist )
-    register Wst	*wst;
+    Wst	*wst;
     va_dcl
 #endif
 {
@@ -70,7 +70,6 @@ phigs_ws_type_set( wst, va_alist )
     return status;
 }
 
-/*VARARGS2*/
 caddr_t
 phigs_ws_type_get( wst, attr, arg)
     Wst			*wst;
