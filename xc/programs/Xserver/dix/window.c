@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.204 88/07/01 16:50:31 keith Exp $ */
+/* $Header: window.c,v 1.205 88/07/06 10:56:41 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -65,9 +65,6 @@ typedef struct _ScreenSaverStuff {
 #define SCREEN_IS_TILED     1
 #define SCREEN_ISNT_SAVED   2
 
-#define DONT_USE_GRAVITY 0
-#define USE_GRAVITY   1
-
 extern int ScreenSaverBlanking, ScreenSaverAllowExposures;
 int screenIsSaved = SCREEN_SAVER_OFF;
 
@@ -88,6 +85,289 @@ static Bool MarkSiblingsBelowMe();
 
 #define INPUTONLY_LEGAL_MASK (CWWinGravity | CWEventMask | \
 			      CWDontPropagate | CWOverrideRedirect | CWCursor )
+
+#define BOXES_OVERLAP(b1, b2) \
+      (!( ((b1)->x2 <= (b2)->x1)  || \
+        ( ((b1)->x1 >= (b2)->x2)) || \
+        ( ((b1)->y2 <= (b2)->y1)) || \
+        ( ((b1)->y1 >= (b2)->y2)) ) )
+
+/*
+ * For SaveUnders using backing-store. The idea is that when a window is mapped
+ * with saveUnder set TRUE, any windows it obscures will have its backing
+ * store turned on by or'ing in SAVE_UNDER_BIT, thus making it != NotUseful but
+ * not Always. The backing-store code must be written to allow for this
+ * (i.e. it should not depend on backingStore being one of the three defined
+ * constants, but should treat backingStore as a boolean. In the case of Always
+ * when a window is being unmapped, it should only examine the lower three
+ * bits).
+ *
+ * SAVE_UNDER_CHANGE_BIT is used when backing-store no longer needs to be on
+ * to implement save-unders. It is used because backing-store may be thrown
+ * away if turned off before the window is exposed. SAVE_UNDER_CHANGE_BIT marks
+ * windows whose backing-store should be switched back to the way they were
+ * before when it is safe to do so (i.e. when the window has been exposed).
+ */
+
+/*
+ * this is the configuration parameter "NO_BACK_SAVE"
+ * it means that any existant backing store should not 
+ * be used to implement save unders.
+ */
+
+#ifndef NO_BACK_SAVE
+#define DO_SAVE_UNDERS(pWin)	((pWin)->drawable.pScreen->saveUnderSupport ==\
+				 SAVE_UNDER_BIT)
+#endif
+#ifdef DO_SAVE_UNDERS
+
+#define SAVE_UNDER_BIT	    	0x40
+#define SAVE_UNDER_CHANGE_BIT	0x20
+
+
+
+/*-
+ *-----------------------------------------------------------------------
+ * CheckSubSaveUnder --
+ *	Check all the inferiors of a window for coverage by saveUnder
+ *	windows. Called from ChangeSaveUnder and CheckSaveUnder.
+ *
+ * Results:
+ *	None.
+ *
+ * Side Effects:
+ *	Windows may have backing-store turned on or off.
+ *
+ *-----------------------------------------------------------------------
+ */
+void
+CheckSubSaveUnder(pParent, pRegion)
+    WindowPtr	  	pParent;    	/* Parent to check */
+    RegionPtr	  	pRegion;    	/* Initial area obscured by saveUnder */
+{
+    register WindowPtr	pChild;	    	/* Current child */
+    ScreenPtr	  	pScreen;    	/* Screen to use */
+    RegionPtr	  	pSubRegion; 	/* Area of children obscured */
+
+    pScreen = pParent->drawable.pScreen;
+    if (pParent->firstChild)
+    {
+	pSubRegion = (* pScreen->RegionCreate) (NullBox, 1);
+	
+	for (pChild = pParent->firstChild;
+	     pChild != NullWindow;
+	     pChild = pChild->nextSib)
+	{
+	    /*
+	     * Copy the region (so it may be modified in the recursion) and
+	     * check this child. Note we don't bother finding the intersection
+	     * since it is probably faster for RectIn to skip over the extra
+	     * rectangles than for us to find the intersection
+	     */
+	    if (pChild->viewable)
+	    {
+		(* pScreen->RegionCopy) (pSubRegion, pRegion);
+		CheckSubSaveUnder(pChild, pSubRegion);
+
+		/*
+		 * If the child is a save-under window, we want it to obscure
+		 * the parent as well as its siblings, so we add its extents
+		 * to the obscured region.
+		 */
+		if (pChild->saveUnder)
+		{
+		    (* pScreen->Union) (pRegion, pRegion, pChild->borderSize);
+		}
+	    }
+	}
+
+	(* pScreen->RegionDestroy) (pSubRegion);
+    }
+
+    switch ((*pScreen->RectIn) (pRegion,
+				(*pScreen->RegionExtents)(pParent->borderSize)))
+    {
+	case rgnOUT:
+	    if (pParent->backingStore & SAVE_UNDER_BIT)
+	    {
+		/*
+		 * Want to turn off backing store, but not until the window
+		 * has had a chance to be refreshed from the backing-store,
+		 * so set the change bit in backingStore and we'll actually
+		 * do the change when DoChangeSaveUnder is called
+		 */
+		pParent->backingStore ^= (SAVE_UNDER_BIT|SAVE_UNDER_CHANGE_BIT);
+	    }
+	    break;
+	default:
+	    if (!(pParent->backingStore & SAVE_UNDER_BIT))
+	    {
+		pParent->backingStore |= SAVE_UNDER_BIT;
+		(* pScreen->ChangeWindowAttributes) (pParent, CWBackingStore);
+	    }
+	    break;
+    }
+}
+
+/*-
+ *-----------------------------------------------------------------------
+ * CheckSaveUnder --
+ *	See if a window's backing-store state should be changed because
+ *	it is or is not obscured by a sibling or child window with saveUnder.
+ *
+ * Results:
+ *	None.
+ *
+ * Side Effects:
+ *	If the window's state should be changed, it is.
+ *
+ *-----------------------------------------------------------------------
+ */
+void
+CheckSaveUnder (pWin)
+    register WindowPtr	pWin;	    	/* Window to check */
+{
+    register RegionPtr	pRegion;    	/* Extent of siblings with saveUnder */
+    register WindowPtr	pSib;
+    ScreenPtr	  	pScreen;
+
+    
+    pScreen = pWin->drawable.pScreen;
+
+    pRegion = (* pScreen->RegionCreate) (NullBox, 1);
+
+    /*
+     * First form a region of all the siblings above this one that have
+     * saveUnder set TRUE.
+     * XXX: Should this be done all the way up the tree?
+     */
+    for (pSib = pWin->parent->firstChild; pSib != pWin; pSib = pSib->nextSib)
+    {
+	if (pSib->saveUnder && pSib->viewable)
+	{
+	    (* pScreen->Union) (pRegion, pRegion, pSib->borderSize);
+	}
+    }
+
+    /*
+     * Now find the piece of that area that overlaps this window and check
+     * to make sure the window isn't obscured by children as well. Note that
+     * this also takes care of any newly-obscured or -exposed inferiors
+     */
+    (* pScreen->Intersect) (pRegion, pRegion, pWin->borderSize);
+    CheckSubSaveUnder(pWin, pRegion);
+    (* pScreen->RegionDestroy) (pRegion);
+}
+
+
+/*-
+ *-----------------------------------------------------------------------
+ * ChangeSaveUnder --
+ *	Change the save-under state of a tree of windows. Called when
+ *	a window with saveUnder TRUE is mapped/unmapped/reconfigured.
+ *	
+ * Results:
+ *	None.
+ *
+ * Side Effects:
+ *	Windows may have backing-store turned on or off.
+ *
+ *-----------------------------------------------------------------------
+ */
+void
+ChangeSaveUnder(pWin, first)
+    WindowPtr	  	pWin;
+    WindowPtr  	  	first; 	    	/* First window to check.
+					 * Used when pWin was restacked */
+{
+    register WindowPtr	pSib;	    	/* Sibling being examined */
+    register RegionPtr	saveUnder;  	/* Area obscured by saveUnder windows */
+    ScreenPtr	  	pScreen;
+    RegionPtr     	subSaveUnder;
+    
+
+    pScreen = pWin->drawable.pScreen;
+
+    if (first == NullWindow)
+    {
+	/*
+	 * If on the bottom of the heap, don't need to do anything
+	 */
+	return;
+    }
+
+    saveUnder = (* pScreen->RegionCreate) (NullBox, 1);
+
+    /*
+     * First form the region of save-under windows above the first window
+     * to check.
+     */
+    for (pSib = pWin->parent->firstChild; pSib != first; pSib = pSib->nextSib)
+    {
+	if (pSib->saveUnder && pSib->viewable)
+	{
+	    (* pScreen->Union) (saveUnder, saveUnder, pSib->borderSize);
+	}
+    }
+
+    subSaveUnder = (* pScreen->RegionCreate) (NullBox, 1);
+
+    /*
+     * Now check the trees of all siblings of this window, building up the
+     * saveUnder area as we go along.
+     */
+    while (pSib != NullWindow)
+    {
+	if (pSib->viewable)
+	{
+	    (* pScreen->Intersect) (subSaveUnder, saveUnder, pSib->borderSize);
+	    CheckSubSaveUnder(pSib, subSaveUnder);
+	    
+	    if (pSib->saveUnder)
+	    {
+		(* pScreen->Union) (saveUnder, saveUnder, pSib->borderSize);
+	    }
+	}
+	pSib = pSib->nextSib;
+    }
+
+    (* pScreen->RegionDestroy) (subSaveUnder);
+    (* pScreen->RegionDestroy) (saveUnder);
+}
+	    
+/*-
+ *-----------------------------------------------------------------------
+ * DoChangeSaveUnder --
+ *	Actually turn backing-store off for those windows that no longer
+ *	need to have it on.
+ *
+ * Results:
+ *	None.
+ *
+ * Side Effects:
+ *	Backing-store and SAVE_UNDER_CHANGE_BIT are turned off for those
+ *	windows affected.
+ *
+ *-----------------------------------------------------------------------
+ */
+void
+DoChangeSaveUnder(pWin)
+    WindowPtr	  	pWin;
+{
+    register WindowPtr	pSib;
+    
+    for (pSib = pWin; pSib != NullWindow; pSib = pSib->nextSib)
+    {
+	if (pSib->backingStore & SAVE_UNDER_CHANGE_BIT)
+	{
+	    pSib->backingStore &= ~SAVE_UNDER_CHANGE_BIT;
+	    (*pSib->drawable.pScreen->ChangeWindowAttributes)(pSib,
+							      CWBackingStore);
+	}
+	DoChangeSaveUnder(pSib->firstChild);
+    }
+}
+#endif /* DO_SAVE_UNDER */
 
 #ifdef notdef
 /******
@@ -185,9 +465,9 @@ DoObscures(pWin)
 {
     WindowPtr pSib;
 
-    if (!pWin->backStorage || (pWin->backingStore == NotUseful))
-        return ;
-    if ((* pWin->drawable.pScreen->RegionNotEmpty)(pWin->backStorage->obscured))
+    if ((pWin->backStorage != (BackingStorePtr)NULL) &&
+	(pWin->backingStore != NotUseful) &&
+	(* pWin->drawable.pScreen->RegionNotEmpty)(pWin->backStorage->obscured))
     {
         (*pWin->backStorage->SaveDoomedAreas)( pWin );
         (* pWin->drawable.pScreen->RegionEmpty)(pWin->backStorage->obscured);
@@ -250,6 +530,10 @@ InitProcedures(pWin)
 
 }
 
+
+/* hack for forcing backing store on all windows */
+int	defaultBackingStore = NotUseful;
+
 static void
 SetWindowToDefaults(pWin, pScreen)
     WindowPtr pWin;
@@ -263,6 +547,7 @@ SetWindowToDefaults(pWin, pScreen)
 
     pWin->backingStore = NotUseful;
     pWin->backStorage = (BackingStorePtr) NULL;
+    pWin->devBackingStore = (pointer) NULL;
 
     pWin->mapped = FALSE;           /* off */
     pWin->realized = FALSE;     /* off */
@@ -419,28 +704,45 @@ CreateRootWindow(screen)
     pWin->class = InputOutput;
     pWin->visual = pScreen->rootVisual;
 
+    pWin->backgroundTile = (PixmapPtr)USE_BACKGROUND_PIXEL;
     pWin->backgroundPixel = pScreen->whitePixel;
 
+    pWin->borderTile = (PixmapPtr)USE_BORDER_PIXEL;
     pWin->borderPixel = pScreen->blackPixel;
     pWin->borderWidth = 0;
 
     AddResource(pWin->wid, RT_WINDOW, (pointer)pWin, DeleteWindow, RC_CORE);
 
-    MakeRootTile(pWin);
-    pWin->borderTile = (PixmapPtr)USE_BORDER_PIXEL;
-
     /* re-validate GC for use with root Window */
 
     (*pScreen->CreateWindow)(pWin);
     (*pScreen->PositionWindow)(pWin, 0, 0);
-    MapWindow(pWin, DONT_HANDLE_EXPOSURES, BITS_DISCARDED, 
-	      DONT_SEND_NOTIFICATION, serverClient);
 
+    MakeRootTile(pWin);
     /* We SHOULD check for an error value here XXX */
     (*pScreen->ChangeWindowAttributes)(pWin, CWBackPixmap | CWBorderPixel);
-
-    (*pWin->PaintWindowBackground)(pWin, pWin->clipList, PW_BACKGROUND);
     (void)EventSelectForWindow(pWin, serverClient, (Mask)0); /* can't fail */
+
+    MapWindow(pWin, DONT_HANDLE_EXPOSURES, BITS_DISCARDED, 
+	      DONT_SEND_NOTIFICATION, serverClient);
+    (*pWin->PaintWindowBackground)(pWin, pWin->clipList, PW_BACKGROUND);
+
+    pWin->backingStore = defaultBackingStore;
+    /* We SHOULD check for an error value here XXX */
+    (*pScreen->ChangeWindowAttributes)(pWin, CWBackingStore);
+
+#ifdef DO_SAVE_UNDERS
+    if ((pScreen->backingStoreSupport != NotUseful) &&
+	(pScreen->saveUnderSupport == NotUseful))
+    {
+	/*
+	 * If the screen has backing-store but no save-unders, let the
+	 * clients know we can support save-unders using backing-store.
+	 */
+	pScreen->saveUnderSupport = SAVE_UNDER_BIT;
+    }
+#endif /* DO_SAVE_UNDERS */
+		
     return(Success);
 }
 
@@ -681,6 +983,11 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
         (void)EventSelectForWindow(pWin, client, (Mask)0); /* can't fail */
 	DeleteWindow(pWin, wid);
 	return (WindowPtr)NULL;
+    }
+    if (!(vmask & CWBackingStore) && (defaultBackingStore != NotUseful))
+    {
+        XID value = defaultBackingStore;
+	(void)ChangeWindowAttributes(pWin, CWBackingStore, &value, pWin->client);
     }
 
     WindowHasNewCursor(pWin);
@@ -997,7 +1304,14 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		client->errorValue = val;
 		goto PatchUp;
 	    }
+#ifdef DO_SAVE_UNDERS
+	    /*
+	     * Maintain the saveUnder bit when backing-store changed
+	     */
+	    pWin->backingStore = val | (pWin->backingStore & SAVE_UNDER_BIT);
+#else
 	    pWin->backingStore = val;
+#endif /* DO_SAVE_UNDERS */
 	    break;
 	  case CWBackingPlanes: 
 	    pWin->backingBitPlanes = (CARD32) *pVlist;
@@ -1016,7 +1330,25 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		client->errorValue = val;
 		goto PatchUp;
 	    }
+#ifdef DO_SAVE_UNDERS
+	    if ((pWin->saveUnder != val) && (pWin->viewable) &&
+		DO_SAVE_UNDERS(pWin))
+	    {
+		/*
+		 * Re-check all siblings and inferiors for obscurity or
+		 * exposition (hee hee).
+		 */
+		pWin->saveUnder = val;
+		ChangeSaveUnder(pWin, pWin->nextSib);
+		DoChangeSaveUnder(pWin->nextSib);
+	    }
+	    else
+	    {
+		pWin->saveUnder = val;
+	    }
+#else 
 	    pWin->saveUnder = val;
+#endif /* DO_SAVE_UNDERS */
 	    break;
 	  case CWEventMask:
 	    result = EventSelectForWindow(pWin, client, (Mask )*pVlist);
@@ -1166,7 +1498,11 @@ GetWindowAttributes(pWin, client)
     wa.type = X_Reply;
     wa.bitGravity = pWin->bitGravity;
     wa.winGravity = pWin->winGravity;
+#ifdef DO_SAVE_UNDERS
+    wa.backingStore = pWin->backingStore & ~(SAVE_UNDER_BIT);
+#else
     wa.backingStore  = pWin->backingStore;
+#endif /* DO_SAVE_UNDERS */
     wa.length = (sizeof(xGetWindowAttributesReply) - 
 		 sizeof(xGenericReply)) >> 2;
     wa.sequenceNumber = client->sequence;
@@ -1327,7 +1663,20 @@ MoveWindow(pWin, x, y, pNextSib)
     {
 
         anyMarked = MarkSiblingsBelowMe(windowToValidate, pBox) || anyMarked;
-            
+#ifdef DO_SAVE_UNDERS
+	if (DO_SAVE_UNDERS(pWin))
+	{
+	    if (pWin->saveUnder)
+	    {
+		ChangeSaveUnder(pWin, windowToValidate);
+	    }
+	    else
+	    {
+		CheckSaveUnder(pWin);
+	    }
+	}
+#endif /* DO_SAVE_UNDERS */
+
         (* pScreen->ValidateTree)(pParent, (WindowPtr)NULL, TRUE, anyMarked);
 	
 	DoObscures(pParent); 
@@ -1335,6 +1684,12 @@ MoveWindow(pWin, x, y, pNextSib)
 	(* pScreen->RegionDestroy)(oldRegion);
 	/* XXX need to retile border if ParentRelative origin */
 	HandleExposures(pParent); 
+#ifdef DO_SAVE_UNDERS
+	if (DO_SAVE_UNDERS(pWin))
+	{
+	    DoChangeSaveUnder(windowToValidate);
+	}
+#endif /* DO_SAVE_UNDERS */
     }    
 }
 
@@ -1533,6 +1888,19 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
         RegionPtr pRegion;
 
 	anyMarked = MarkSiblingsBelowMe(pFirstChange, pBox) || anyMarked;
+#ifdef DO_SAVE_UNDERS
+	if (DO_SAVE_UNDERS(pWin))
+	{
+	    if (pWin->saveUnder)
+	    {
+		ChangeSaveUnder(pWin, pFirstChange);
+	    }
+	    else
+	    {
+		CheckSaveUnder(pWin);
+	    }
+	}
+#endif /* DO_SAVE_UNDERS */
 
 	if (pWin->bitGravity == ForgetGravity)
 	{
@@ -1540,9 +1908,22 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	    /* CopyWindow will step on borders, so re-paint them */
 	    (* pScreen->Subtract)(pWin->borderExposed, 
 			 pWin->borderClip, pWin->winSize);
-	    /* XXX this is unacceptable overkill */
-	    TraverseTree(pWin, ExposeAll, (pointer)pScreen); 
+#ifdef notdef
+	    /* XXX this is unacceptable overkill
+	     * It is also wrong, since a bitGravity of Forget in the parent
+	     * should not affect the children -- ardeb
+	     */
+	    TraverseTree(pWin, ExposeAll, pScreen);
+#else
+	    (* pScreen->RegionCopy) (pWin->exposed, pWin->clipList);
+#endif notdef
+ 
 	    DoObscures(pParent); 
+	    if (pWin->backStorage && (pWin->backingStore != NotUseful))
+	    {
+                (* pWin->backStorage->TranslateBackingStore) (pWin, 0, 0,
+							      (RegionPtr)NULL);
+	    }
 	    HandleExposures(pParent);
 	}
 	else
@@ -1591,13 +1972,14 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	    }
 
 	    (* pScreen->ValidateTree)(pParent, pFirstChange, TRUE, anyMarked);
+
 	    DoObscures(pParent);
 	    if (pWin->backStorage && (pWin->backingStore != NotUseful))
 	    {
-		ErrorF("Going to translate backing store %d %d\n",
-		       oldx - x, oldy - y);
                 (* pWin->backStorage->TranslateBackingStore) (pWin, 
-							      oldx - x, oldy - y);
+							      x - oldx,
+							      y - oldy,
+							      pRegion);
 	    }
             oldpt.x = oldx - x + pWin->absCorner.x;
 	    oldpt.y = oldy - y + pWin->absCorner.y;
@@ -1620,6 +2002,12 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	    HandleExposures(pParent);
 	    (* pScreen->RegionDestroy)(oldRegion);
 	}
+#ifdef DO_SAVE_UNDERS
+	if (DO_SAVE_UNDERS(pWin))
+	{
+	    DoChangeSaveUnder(pFirstChange);
+	}
+#endif /* DO_SAVE_UNDERS */
     }
 }
 
@@ -1659,6 +2047,12 @@ ChangeBorderWidth(pWin, width)
         else        
             pBox = (* pScreen->RegionExtents)(pWin->borderSize);
         anyMarked = MarkSiblingsBelowMe(pWin, pBox);
+#ifdef DO_SAVE_UNDERS
+	if (pWin->saveUnder && DO_SAVE_UNDERS(pWin))
+	{
+	    ChangeSaveUnder(pWin, pWin->nextSib);
+	}
+#endif /* DO_SAVE_UNDERS */
 
         (* pScreen->ValidateTree)(pParent,(anyMarked ? pWin : (WindowPtr)NULL),
 					     TRUE, anyMarked );  
@@ -1673,6 +2067,12 @@ ChangeBorderWidth(pWin, width)
 	}
 	else
             HandleExposures(pParent);
+#ifdef DO_SAVE_UNDERS
+	if (DO_SAVE_UNDERS(pWin))
+	{
+	    DoChangeSaveUnder(pWin->nextSib);
+	}
+#endif /* DO_SAVE_UNDERS */
     }
 }
 
@@ -1738,11 +2138,6 @@ WindowExtents(pWin, pBox)
 	return(pBox);
 }
 
-#define BOXES_OVERLAP(b1, b2) \
-      (!( ((b1)->x2 <= (b2)->x1)  || \
-        ( ((b1)->x1 >= (b2)->x2)) || \
-        ( ((b1)->y2 <= (b2)->y1)) || \
-        ( ((b1)->y1 >= (b2)->y2)) ) )
 
 static Bool
 AnyWindowOverlapsMe(pWin, pHead, box)
@@ -1933,10 +2328,29 @@ ReflectStackChange(pWin, pSib)
     {
         box = (* pWin->drawable.pScreen->RegionExtents)(pWin->borderSize);
         anyMarked = MarkSiblingsBelowMe(pFirstChange, box);
+#ifdef DO_SAVE_UNDERS
+	if (DO_SAVE_UNDERS(pWin))
+	{
+	    if (pWin->saveUnder)
+	    {
+		ChangeSaveUnder(pWin, pFirstChange);
+	    }
+	    else
+	    {
+		CheckSaveUnder(pWin);
+	    }
+	}
+#endif /* DO_SAVE_UNDERS */
         (* pWin->drawable.pScreen->ValidateTree)(pParent, pFirstChange,
 					 TRUE, anyMarked);
 	DoObscures(pParent);
 	HandleExposures(pParent);
+#ifdef DO_SAVE_UNDERS
+	if (DO_SAVE_UNDERS(pWin))
+	{
+	    DoChangeSaveUnder(pFirstChange);
+	}
+#endif /* DO_SAVE_UNDERS */
     }
 }
 
@@ -2484,7 +2898,22 @@ MapWindow(pWin, SendExposures, BitsAvailable, SendNotification, client)
 	  (*pWin->drawable.pScreen->RegionCopy)(pParent->clipList,
 						pParent->winSize);
 	}
+	/* end of kludge */
 #endif
+
+#ifdef DO_SAVE_UNDERS
+	if (DO_SAVE_UNDERS(pWin))
+	{
+	    if (pWin->saveUnder)
+	    {
+		ChangeSaveUnder(pWin, pWin->nextSib);
+	    }
+	    else
+	    {
+		CheckSaveUnder(pWin);
+	    }
+	}
+#endif /* DO_SAVE_UNDERS */
 
 	/* anyMarked must be TRUE to force visibility events on all windows */
 	(* pScreen->ValidateTree)(pParent, pWin, TRUE, TRUE);
@@ -2508,6 +2937,12 @@ MapWindow(pWin, SendExposures, BitsAvailable, SendNotification, client)
 		HandleExposures(pWin);
 	    }
 	}
+#ifdef DO_SAVE_UNDERS
+	if (DO_SAVE_UNDERS(pWin))
+	{
+	    DoChangeSaveUnder(pWin->nextSib);
+	}
+#endif /* DO_SAVE_UNDERS */
     }
     else
     {
@@ -2553,18 +2988,31 @@ UnrealizeChildren(pWin)
     WindowPtr pSib;
     void (*RegionEmpty)();
     Bool (*Unrealize)();
+    int (*Union)();
     
     pSib = pWin;
     if (pWin)
     {
         RegionEmpty = pWin->drawable.pScreen->RegionEmpty;
         Unrealize = pWin->drawable.pScreen->UnrealizeWindow;
+	Union = pWin->drawable.pScreen->Union;
     }
     while (pSib)
     {
 	pSib->realized = pSib->viewable = FALSE;
 	pSib->visibility = VisibilityNotViewable;
         (* Unrealize)(pSib);
+
+	if (pSib->backStorage && (pSib->backingStore != NotUseful))
+	{
+	    /*
+	     * Allow backing-store to grab stuff off the screen before
+	     * the bits go away
+	     */
+	    (* Union) (pSib->backStorage->obscured,
+		       pSib->backStorage->obscured,
+		       pSib->clipList);
+	}
 	        /* to force exposures later */
         (* RegionEmpty)(pSib->clipList);    
         (* RegionEmpty)(pSib->borderClip);
@@ -2621,10 +3069,25 @@ UnmapWindow(pWin, SendExposures, SendNotification, fromConfigure)
             UnrealizeChildren(pWin->firstChild);
         (* pWin->drawable.pScreen->ValidateTree)(pParent, pWin, 
 						 TRUE, anyMarked);
+	/*
+	 * For backingStore == Always, we must allow the backing-store
+	 * implementation to grab the bits off the screen before the window
+	 * is unmapped.
+	 */
+	DoObscures(pParent);
+	
         if (SendExposures)
         {
 	    HandleExposures(pParent);
 	}
+#ifdef DO_SAVE_UNDERS
+	if (pWin->saveUnder && DO_SAVE_UNDERS(pWin))
+	{
+	    ChangeSaveUnder(pWin, pWin->nextSib);
+	    DoChangeSaveUnder(pWin->nextSib);
+	}
+	pWin->backingStore &= ~SAVE_UNDER_BIT;
+#endif /* DO_SAVE_UNDERS */
     }        
     return(Success);
 }
@@ -2642,6 +3105,7 @@ UnmapSubwindows(pWin, sendExposures)
     register WindowPtr pChild, pHead;
     xEvent event;
     Bool (*UnrealizeWindow)();
+    int (*Union)();
     Bool wasMapped = (Bool)pWin->realized;
     Bool anyMarked;
     BoxPtr box;
@@ -2652,7 +3116,8 @@ UnmapSubwindows(pWin, sendExposures)
 	anyMarked = MarkSiblingsBelowMe(pWin->firstChild, box);
     }
 
-    UnrealizeWindow = pWin->drawable.pScreen->UnrealizeWindow;    
+    UnrealizeWindow = pWin->drawable.pScreen->UnrealizeWindow;
+    Union = pWin->drawable.pScreen->Union;
     pHead = RealChildHead(pWin);
     for (pChild = pWin->lastChild; pChild != pHead; pChild = pChild->prevSib)
     {
@@ -2670,6 +3135,20 @@ UnmapSubwindows(pWin, sendExposures)
     		/* We SHOULD check for an error value here XXX */
                 (* UnrealizeWindow)(pChild);
                 DeleteWindowFromAnyEvents(pChild, FALSE);
+#ifdef DO_SAVE_UNDERS
+		pChild->backingStore &= ~SAVE_UNDER_BIT;
+		pChild->backingStore |= SAVE_UNDER_CHANGE_BIT;
+#endif /* DO_SAVE_UNDERS */
+		if (pChild->backStorage && (pChild->backingStore != NotUseful))
+		{
+		    /*
+		     * Need to allow backing-store a chance to snag bits from
+		     * the screen if backingStore == Always
+		     */
+		    (* Union) (pChild->backStorage->obscured,
+			       pChild->backStorage->obscured,
+			       pChild->clipList);
+		}
 	        if (pChild->firstChild)
                     UnrealizeChildren(pChild->firstChild);
 	    }
@@ -2680,8 +3159,17 @@ UnmapSubwindows(pWin, sendExposures)
 	(* pWin->drawable.pScreen->ValidateTree)(pWin, pHead,
 						 TRUE, anyMarked);
 	if (sendExposures)
+	{
+	    DoObscures(pWin);
 	    HandleExposures(pWin);
+	}
     }
+#ifdef DO_SAVE_UNDERS
+    if (DO_SAVE_UNDERS(pWin))
+    {
+	DoChangeSaveUnder(pWin->firstChild);
+    }
+#endif /* DO_SAVE_UNDERS */
 }
 
 
