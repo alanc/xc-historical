@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.75 89/01/16 11:35:31 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.76 89/01/16 13:56:57 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -81,8 +81,7 @@ extern char *ClientAuthorized();
 static void KillAllClients();
 static void DeleteClientFromAnySelections();
 
-/* buffers for clients. legal values below */
-static int nextFreeClientID;	   /* 0 is for the server */
+static int nextFreeClientID; /* always MIN free client ID */
 
 static int	nClients;	/* number active clients */
 
@@ -3138,41 +3137,47 @@ void
 CloseDownClient(client)
     register ClientPtr client;
 {
-      /* ungrab server if grabbing client dies */
-    if (grabbingClient &&  (onlyClient == client))
+    if (!client->clientGone)
     {
-	grabbingClient = FALSE;
-	ListenToAllClients();
-    }
-    DeleteClientFromAnySelections(client);
-    ReleaseActiveGrabs(client);
+	/* ungrab server if grabbing client dies */
+	if (grabbingClient &&  (onlyClient == client))
+	{
+	    grabbingClient = FALSE;
+	    ListenToAllClients();
+	}
+	DeleteClientFromAnySelections(client);
+	ReleaseActiveGrabs(client);
     
-    if (client->closeDownMode == DestroyAll)
-    {
-        client->clientGone = TRUE;  /* so events aren't sent to client */
-        CloseDownConnection(client);
-        FreeClientResources(client);
-	nextFreeClientID = client->index;
-	clients[client->index] = NullClient;
-	if ((client->requestVector != InitialVector) &&
-	    (--nClients == 0))
-	    clientsDoomed = TRUE;
-        xfree(client);
-    }
-            /* really kill resources this time */
-    else if (client->clientGone)
-    {
-        FreeClientResources(client);
-	nextFreeClientID = client->index;
-	clients[client->index] = NullClient;
-        xfree(client);
+	if (client->closeDownMode == DestroyAll)
+	{
+	    client->clientGone = TRUE;  /* so events aren't sent to client */
+	    CloseDownConnection(client);
+	    FreeClientResources(client);
+	    if (client->index < nextFreeClientID)
+		nextFreeClientID = client->index;
+	    clients[client->index] = NullClient;
+	    if ((client->requestVector != InitialVector) &&
+		(--nClients == 0))
+		clientsDoomed = TRUE;
+	    xfree(client);
+	}
+	else
+	{
+	    client->clientGone = TRUE;
+	    CloseDownConnection(client);
+	    --nClients;
+	}
     }
     else
     {
-        client->clientGone = TRUE;
-        CloseDownConnection(client);
-	--nClients;
+	/* really kill resources this time */
+        FreeClientResources(client);
+	if (client->index < nextFreeClientID)
+	    nextFreeClientID = client->index;
+	clients[client->index] = NullClient;
+        xfree(client);
     }
+
     while (!clients[currentMaxClients-1])
       currentMaxClients--;
 }
@@ -3203,12 +3208,7 @@ CloseDownRetainedResources()
         client = clients[i];
         if (client && (client->closeDownMode == RetainTemporary)
 	    && (client->clientGone))
-	{
-            FreeClientResources(client);
-            nextFreeClientID = i;
-	    xfree(client);
-	    clients[i] = NullClient;
-	}
+	    CloseDownClient(client);
     }
 }
 
@@ -3228,26 +3228,13 @@ NextAvailableClient(ospriv)
     xReq data;
 
     i = nextFreeClientID;
-    while (clients[i])
-    {
-	i++;
-	if (i >= currentMaxClients)
-	    i = 1;
-	if (i != nextFreeClientID)
-	    continue;
-	if (currentMaxClients == MAXCLIENTS)
-	    return (ClientPtr) NULL;
-	i = currentMaxClients;
-	break;
-    }
-    nextFreeClientID = i + 1;
-    if (nextFreeClientID >= currentMaxClients)
-    {
-	currentMaxClients = nextFreeClientID;
-	nextFreeClientID = 1;
-    }
-
-    clients[i] = client =  (ClientPtr)xalloc(sizeof(ClientRec));
+    if (i == MAXCLIENTS)
+	return (ClientPtr)NULL;
+    clients[i] = client = (ClientPtr)xalloc(sizeof(ClientRec));
+    if (i == currentMaxClients)
+	currentMaxClients++;
+    while ((nextFreeClientID < MAXCLIENTS) && clients[nextFreeClientID])
+	nextFreeClientID++;
     client->index = i;
     client->sequence = 0; 
     client->clientAsMask = ((Mask)i) << CLIENTOFFSET;
