@@ -1,7 +1,6 @@
 /*
-* $XConsortium: Grip.h,v 1.14 89/05/11 01:05:25 kit Exp $
-*/
-
+ * $XConsortium: Grip.h,v 1.15 89/07/21 01:51:29 kit Exp $
+ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -68,7 +67,8 @@ typedef struct {
   XEvent *event;		/* the event causing the GripAction */
   String *params;		/* the TranslationTable params */
   Cardinal num_params;		/* count of params */
-} GripCallDataRec, *GripCallData;
+} XawGripCallDataRec, *XawGripCallData,
+    GripCallDataRec, *GripCallData; /* supported for R4 compatibility */
 
 /* Class Record Constant */
 

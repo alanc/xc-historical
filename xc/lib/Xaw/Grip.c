@@ -1,4 +1,4 @@
-/* $XConsortium: Grip.c,v 1.29 91/02/17 15:08:41 converse Exp $ */
+/* $XConsortium: Grip.c,v 1.30 91/02/20 20:01:22 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -72,7 +72,7 @@ GripClassRec gripClassRec = {
     /* realize            */   XtInheritRealize,
     /* actions            */   actionsList,
     /* num_actions        */   XtNumber(actionsList),
-    /* resourses          */   resources,
+    /* resources          */   resources,
     /* resource_count     */   XtNumber(resources),
     /* xrm_class          */   NULLQUARK,
     /* compress_motion    */   TRUE,
@@ -108,7 +108,7 @@ static void GripAction( widget, event, params, num_params )
     String *params;
     Cardinal *num_params;
 {
-    GripCallDataRec call_data;
+    XawGripCallDataRec call_data;
 
     call_data.event = event;
     call_data.params = params;
