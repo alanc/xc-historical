@@ -164,6 +164,37 @@ typedef struct {
     PixmapPtr	pRotatedBorder;
     } cfbPrivWin;
 
+/* Common macros for extracting drawing information */
+
+#define cfbGetByteWidth(pDrawable) (((pDrawable)->type == DRAWABLE_WINDOW) ? \
+    (int) (((PixmapPtr)((pDrawable)->pScreen->devPrivate))->devKind) : \
+    (int)(((PixmapPtr)pDrawable)->devKind))
+    
+#define cfbGetByteWidthAndPointer(pDrawable, width, pointer) { \
+    if ((pDrawable)->type == DRAWABLE_WINDOW) { \
+	(pointer) = (char *) \
+		(((PixmapPtr)((pDrawable)->pScreen->devPrivate))->devPrivate.ptr); \
+	(width) = (int) \
+		(((PixmapPtr)((pDrawable)->pScreen->devPrivate))->devKind); \
+    } else { \
+	(pointer) = (char *)(((PixmapPtr)pDrawable)->devPrivate.ptr); \
+	(width) = (int)(((PixmapPtr)pDrawable)->devKind); \
+    } \
+}
+
+#define cfbGetLongWidthAndPointer(pDrawable, width, pointer) { \
+    if ((pDrawable)->type == DRAWABLE_WINDOW) { \
+	(pointer) = (unsigned long *) \
+		(((PixmapPtr)((pDrawable)->pScreen->devPrivate))->devPrivate.ptr); \
+	(width) = (int) \
+		(((PixmapPtr)((pDrawable)->pScreen->devPrivate))->devKind) >> 2; \
+    } else { \
+	(pointer) = (unsigned long *) \
+		(((PixmapPtr)pDrawable)->devPrivate.ptr); \
+	(width) = (int)(((PixmapPtr)pDrawable)->devKind) >> 2; \
+    } \
+}
+
 /* precomputed information about each glyph for GlyphBlt code.
    this saves recalculating the per glyph information for each
 box.
