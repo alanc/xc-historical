@@ -66,6 +66,7 @@ extern void miPolyFillArc();
 extern void cfbDestroyGC();
 extern void cfbValidateGC();
 extern void cfbDestroyClip();
+extern void cfbCopyClip();
 extern void cfbChangeClip();
 extern void cfbCopyGCDest();
 

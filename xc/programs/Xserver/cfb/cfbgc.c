@@ -98,6 +98,7 @@ cfbCreateGC(pGC)
     pGC->LineHelper = miMiter;
     pGC->ChangeClip = cfbChangeClip;
     pGC->DestroyClip = cfbDestroyClip;
+    pGC->CopyClip = cfbCopyClip;
 
     /* cfb wants to translate before scan convesion */
     pGC->miTranslate = 1;
@@ -628,7 +629,7 @@ cfbChangeClip(pGC, type, pvalue, nrects)
     case PSZ:
 	break;
     default:
-	ErrorF("cfbCreateGC: unsupported depth: %d\n", pGC->depth);
+	ErrorF("cfbChangeClip: unsupported depth: %d\n", pGC->depth);
 	return;
     }
     cfbDestroyClip(pGC);
@@ -648,6 +649,37 @@ cfbChangeClip(pGC, type, pvalue, nrects)
     }
     pGC->clientClipType = (pGC->clientClip) ? CT_REGION : CT_NONE;
     pGC->stateChanges |= (GCClipXOrigin | GCClipYOrigin | GCClipMask);
+}
+
+void
+cfbCopyClip (pgcDst, pgcSrc)
+    GCPtr pgcDst, pgcSrc;
+{
+    RegionPtr prgnNew;
+
+    switch (pgcSrc->depth) {
+    case 1:
+	mfbCopyClip(pgcDst, pgcSrc);
+	return;
+    case PSZ:
+	break;
+    default:
+	ErrorF("cfbCopyClip: unsupported depth: %d\n", pgcSrc->depth);
+	return;
+    }
+    switch(pgcSrc->clientClipType)
+    {
+      case CT_NONE:
+      case CT_PIXMAP:
+        cfbChangeClip(pgcDst, pgcSrc->clientClipType, pgcSrc->clientClip, 0);
+        break;
+      case CT_REGION:
+        prgnNew = (*pgcSrc->pScreen->RegionCreate)(NULL, 1);
+        (*pgcSrc->pScreen->RegionCopy)(prgnNew,
+                                       (RegionPtr)(pgcSrc->clientClip));
+        cfbChangeClip(pgcDst, CT_REGION, prgnNew, 0);
+        break;
+    }
 }
 
 void
