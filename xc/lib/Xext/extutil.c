@@ -1,5 +1,5 @@
 /*
- * $XConsortium: extutil.c,v 1.10 91/07/12 10:28:36 rws Exp $
+ * $XConsortium: extutil.c,v 1.11 91/11/09 15:41:23 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -91,7 +91,7 @@ XExtDisplayInfo *XextAddDisplay (extinfo, dpy, ext_name, hooks, nevents, data)
     char *ext_name;
     XExtensionHooks *hooks;
     int nevents;
-    caddr_t data;
+    XPointer data;
 {
     XExtDisplayInfo *dpyinfo;
 

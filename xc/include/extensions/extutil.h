@@ -1,5 +1,5 @@
 /*
- * $XConsortium: extutil.h,v 1.11 89/12/09 21:02:02 rws Exp $
+ * $XConsortium: extutil.h,v 1.11 89/12/09 21:12:33 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -41,7 +41,7 @@ typedef struct _XExtDisplayInfo {
     struct _XExtDisplayInfo *next;	/* keep a linked list */
     Display *display;			/* which display this is */
     XExtCodes *codes;			/* the extension protocol codes */
-    caddr_t data;			/* extra data for extension to use */
+    XPointer data;			/* extra data for extension to use */
 } XExtDisplayInfo;
 
 typedef struct _XExtensionInfo {
