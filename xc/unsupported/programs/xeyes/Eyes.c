@@ -1,4 +1,4 @@
-/* $XConsortium: Eyes.c,v 1.24 91/05/22 19:48:00 converse Exp $ */
+/* $XConsortium: Eyes.c,v 1.25 91/07/18 16:49:02 rws Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -35,6 +35,10 @@
 # include "EyesP.h"
 # include <math.h>
 # include <X11/extensions/shape.h>
+
+#if (defined(SVR4) || defined(SYSV) && defined(SYSV386)) && __STDC__
+extern double hypot(double, double);
+#endif
 
 #define offset(field) XtOffsetOf(EyesRec, eyes.field)
 #define goffset(field) XtOffsetOf(WidgetRec, core.field)
