@@ -1,5 +1,5 @@
-.\" $XConsortium: Xau.man,v 1.8 94/04/11 14:25:48 gildea Exp $
-.TH XAU 3 "Release 6" "X Version 11"
+.\" $XConsortium: Xau.man,v 1.9 94/04/13 19:49:49 mor Exp $
+.TH Xau 3 "Release 6" "X Version 11"
 .SH NAME
 XauFileName, XauReadAuth, XauLockAuth, XauUnlockAuth, XauWriteAuth,
 XauGetAuthByAddr, XauGetBestAuthByAddr \- X authority database routines
