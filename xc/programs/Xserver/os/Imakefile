@@ -45,6 +45,7 @@ BOOTSTRAPCFLAGS =
 #else
      OS_DEFINES =
 #endif /* SpecialMalloc */
+    DBM_DEFINES = NdbmDefines
         DEFINES = ConnectionFlags $(OS_DEFINES) $(DESDEFS)
        INCLUDES = -I.  -I../../include -I$(INCLUDESRC) -I$(TOP)/lib/Xau
     EXT_DEFINES = ExtensionDefines
@@ -104,9 +105,10 @@ alloca.o:  $(PWLIB)
 	ar x $(PWLIB) alloca.o
 #endif /* NEED_ALLOCA_FROM_LIBPW */
 
-SpecialObjectRule(osinit.o, $(ICONFIGFILES), -DADMPATH=\"$(ADMDIR)/X\%smsgs\")
+SpecialObjectRule(osinit.o, $(ICONFIGFILES), -DADMPATH=\"$(ADMDIR)/X\%smsgs\" $(DBM_DEFINES))
 SpecialObjectRule(WaitFor.o, $(ICONFIGFILES), $(EXT_DEFINES))
 SpecialObjectRule(fonttype.o, $(ICONFIGFILES), $(FONT_DEFINES))
+SpecialObjectRule(oscolor.o, $(ICONFIGFILES), $(DBM_DEFINES))
 
 #if HasSaberC
 saber_src:
