@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.73 93/10/07 15:23:05 gildea Exp swick $
+ * $XConsortium: init.c,v 2.74 94/08/26 18:08:33 swick Exp rws $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -495,5 +495,5 @@ char **argv;
     MapScrn(scrn);
 
     XtAddCallback(toplevel, XtNsaveCallback, DoSaveYourself, (XtPointer)NULL);
-    XtVaSetValues(toplevel, XtNjoinSession, (XtArgVal)True);
+    XtVaSetValues(toplevel, XtNjoinSession, (XtArgVal)True, NULL);
 }
