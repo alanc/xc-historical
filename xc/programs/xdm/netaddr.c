@@ -1,7 +1,7 @@
 /*
  * xdm - X display manager
  *
- * $XConsortium: netaddr.c,v 1.5 92/08/24 13:17:57 gildea Exp $
+ * $XConsortium: netaddr.c,v 1.6 93/09/20 18:03:36 hersh Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -167,7 +167,8 @@ int ConvertAddr (saddr, len, addr)
         break;
     }
 #endif /* STREAMSCONN else */
-    Debug ("ConvertAddr returning %d\n", retval);
+    Debug ("ConvertAddr returning %d for family %d\n", retval,
+	   NetaddrFamily(saddr));
     return retval;
 }
 
