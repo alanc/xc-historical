@@ -478,6 +478,11 @@ a background color half way between green and white.
 This variable is a list of windows on which a title bar should be placed.
 This variable, used in conjunction with the \fBNoTitle\fP variable
 enables you to create a list of windows which will have a title bar.
+.TP "\fBMaxWindowSize\fP \fIstring\fP" 8
+This variable contains a geometry specification in which the width and height
+indicate the maximum size for a given window.  The default is to allow windows
+to be roughly 30,000 pixels on a side, but this variable can be used to
+restrict windows to the size of the screen.
 .IP "\fBMenuBackground\fP \fIstring\fP" 8
 This variable sets the background color of menus.
 It can only be specified inside of a 
