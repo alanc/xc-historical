@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.117 91/05/10 16:58:35 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.118 91/05/11 14:55:15 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1914,6 +1914,21 @@ static String CheckForPoundSign(str, defaultOp, actualOpRtn)
     }
     *actualOpRtn = opType;
     return str;
+}
+
+static void _XtSetTMOperation(xlations, op)
+    XtTranslations	xlations;
+    _XtTranslateOp	op;
+{
+    switch(op) {
+      case XtTableReplace:
+      case XtTableAugment:
+      case XtTableOverride:
+	xlations->operation = op;
+	break;
+      default:
+	XtWarning("invalid tm operation");
+    }
 }
 
 static XtTranslations ParseTranslationTable(source, isAccelerator, defaultOp)
