@@ -1,4 +1,4 @@
-/* $XConsortium: miPickPrim.c,v 5.3 91/05/12 16:11:35 rws Exp $ */
+/* $XConsortium: miPickPrim.c,v 5.4 91/07/01 08:44:39 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -41,7 +41,7 @@ SOFTWARE.
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
 extern ocTableType InitExecuteOCTable[];
-extern int tx_el_to_path();
+extern int atx_el_to_path();
 extern void text2_xform();
 extern void text3_xform();
 
@@ -373,7 +373,7 @@ miPickAnnoText2D(pRend, pExecuteOC)
     miListHeader      *cc_path, *clip_path;
     listofddPoint     *sp;
     XID		       temp;
-    ddpex3rtn	       status;
+    int		       status;
     ddUSHORT           aflag, LUTstatus;
     ddCoord4D          MC_Origin, CC_Origin, NPC_Origin;
     ddUSHORT           oc;         /* Outcode for 4D point clipping */
@@ -398,7 +398,10 @@ miPickAnnoText2D(pRend, pExecuteOC)
 					    of clipping volume */
       CLIP_POINT4D(&MC_Origin, oc, MI_MCLIP);
 
-      if (oc) return (Success); /* origin model clipped out */
+      if (oc) {
+	  pDDC->Static.pick.status = PEXNoPick;
+	  return (Success); /* origin model clipped out */
+      }
     }
 
     /* Get the current view index and the corresponding transforms */
@@ -422,8 +425,10 @@ miPickAnnoText2D(pRend, pExecuteOC)
     if ((ClipNPCPoint4D (pRend, &NPC_Origin, &oc)) == PEXLookupTableError)
 	return (PEXLookupTableError);
     if (oc) {
-      return (Success);  /* Don't pick anything; origin clipped out */
+	pDDC->Static.pick.status = PEXNoPick;
+	return (Success);  /* Don't pick anything; origin clipped out */
     }
+
 
     /* Keep the NPC_Origin computed above for later use */
 
@@ -451,15 +456,26 @@ miPickAnnoText2D(pRend, pExecuteOC)
     numChars = 0;
     pMono = pText;
     for (i=0; i<numEncodings; i++) {
+      int bytes = pMono->numChars * ((pMono->characterSetWidth == PEXCSByte) ?
+	  sizeof(CARD8) : ((pMono->characterSetWidth == PEXCSShort) ?
+	  sizeof(CARD16) : sizeof(CARD32)));
       numChars += (ddULONG)pMono->numChars;
-      pMono++;
+      pMono = (pexMonoEncoding *) ((char *) (pMono + 1) +
+	  bytes + PADDING (bytes));
     }
+
+    if (numChars == 0)
+    {
+	pDDC->Static.pick.status = PEXNoPick;
+	return (Success);
+    }
+
 
     /* Convert text string into required paths */
 
-    if (!(count = atx_el_to_path (pRend, pDDC, numEncodings, pText,
-				 numChars, &text_el, &align))) {
-      return (BadValue);
+    if ((status = atx_el_to_path (pRend, pDDC, numEncodings, pText,
+	numChars, &text_el, &align, &count)) != Success) {
+      return (status);
     }
 
     /* Compute the required Character Space to Modelling Space Transform */
@@ -726,7 +742,7 @@ miPickAnnoText3D(pRend, pExecuteOC)
     miListHeader      *cc_path, *clip_path;
     listofddPoint     *sp;
     XID		       temp;
-    ddpex3rtn	       status;
+    int		       status;
     ddUSHORT           aflag, LUTstatus;
     static ddVector3D   Directions[2] = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0};
     ddCoord3D           *pDirections = (ddCoord3D *)Directions;
@@ -753,7 +769,10 @@ miPickAnnoText3D(pRend, pExecuteOC)
 					    of clipping volume */
       CLIP_POINT4D(&MC_Origin, oc, MI_MCLIP);
 
-      if (oc) return (Success); /* origin model clipped out */
+      if (oc) {
+	  pDDC->Static.pick.status = PEXNoPick;
+	  return (Success); /* origin model clipped out */
+      }
     }
 
     /* Get the current view index and the corresponding transforms */
@@ -777,7 +796,8 @@ miPickAnnoText3D(pRend, pExecuteOC)
     if ((ClipNPCPoint4D (pRend, &NPC_Origin, &oc)) == PEXLookupTableError)
 	return (PEXLookupTableError);
     if (oc) {
-      return (Success);  /* Don't pick anything; origin clipped out */
+	pDDC->Static.pick.status = PEXNoPick;
+	return (Success);  /* Don't pick anything; origin clipped out */
     }
 
     /* Keep the NPC_Origin computed above for later use */
@@ -806,15 +826,26 @@ miPickAnnoText3D(pRend, pExecuteOC)
     numChars = 0;
     pMono = pText;
     for (i=0; i<numEncodings; i++) {
+      int bytes = pMono->numChars * ((pMono->characterSetWidth == PEXCSByte) ?
+	  sizeof(CARD8) : ((pMono->characterSetWidth == PEXCSShort) ?
+	  sizeof(CARD16) : sizeof(CARD32)));
       numChars += (ddULONG)pMono->numChars;
-      pMono++;
+      pMono = (pexMonoEncoding *) ((char *) (pMono + 1) +
+	  bytes + PADDING (bytes));
     }
+
+    if (numChars == 0)
+    {
+	pDDC->Static.pick.status = PEXNoPick;
+	return (Success);
+    }
+
 
     /* Convert text string into required paths */
 
-    if (!(count = atx_el_to_path (pRend, pDDC, numEncodings, pText,
-				 numChars, &text_el, &align))) {
-      return (BadValue);
+    if ((status = atx_el_to_path (pRend, pDDC, numEncodings, pText,
+	numChars, &text_el, &align, &count)) != Success) {
+      return (status);
     }
 
     /* Compute the required Character Space to Modelling Space Transform */

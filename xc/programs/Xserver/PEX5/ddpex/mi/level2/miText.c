@@ -1,4 +1,4 @@
-/* $XConsortium: miText.c,v 5.7 92/11/24 13:24:18 mor Exp $ */
+/* $XConsortium: miText.c,v 5.8 92/12/02 09:28:19 mor Exp $ */
 
 
 /***********************************************************
@@ -49,8 +49,9 @@ SOFTWARE.
 
 extern ddpex3rtn ComputeMCVolume();
 
-int
-tx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
+ddpex2rtn
+tx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el,
+	align_pt, count_ret)
 /* in */
     ddRendererPtr           pRend;        /* Renderer handle */
     miDDContext             *pddc;        /* Context handle */
@@ -60,6 +61,7 @@ tx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
 /* out */
     miTextElement           *tx_el;       /* text element data */
     ddCoord2D               *align_pt;    /* text alignment */
+    ddULONG		    *count_ret;   /* return character count */
 {
 /* Define required temporary variables */
 
@@ -73,7 +75,6 @@ tx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
     register ddPointer	     ptr, save_ptr;
     miTextFontEntry          *ptr1;
     pexMonoEncoding	    *mono_enc;
-    register int             cnt=0;
     int			     fragnum, charnum, some_characters, signum, bytes;
     CARD32		     charval;
     diFontHandle	     font_handle;
@@ -85,9 +86,10 @@ tx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
     float	     	     xmin, xmax, ymin, ymax;
     ddTextFontEntry	    *fontEntry;
     ddUSHORT                 es, clip_mode;
-    ddpex3rtn                status;
     extern void              micalc_cpt_and_align();
     
+    *count_ret = 0;
+
     fontIndex = pddc->Static.attrs->textFont;
     expansion = ABS(pddc->Static.attrs->charExpansion);
     spacing = pddc->Static.attrs->charSpacing;
@@ -253,7 +255,7 @@ tx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
 	if (path==PEXPathUp || path==PEXPathDown)
 	  cur.x -= -char_data->right * 0.5 * expansion;
 		
-	CharPtr++; cnt++;  /* Update pointer and count */
+	CharPtr++; (*count_ret)++;  /* Update pointer and count */
 
       }  /* for each character */
 	    
@@ -280,12 +282,13 @@ tx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
       cpt.x = cpt.y = align_pt->x = align_pt->y = 0.0;
     }
 	
-    return (cnt);  /* Return the number of characters found */
+    return (Success);
 }				 
 
 
-int
-atx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
+ddpex2rtn
+atx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el,
+	align_pt, count_ret)
 /* in */
     ddRendererPtr           pRend;        /* Renderer handle */
     miDDContext             *pddc;        /* Context handle */
@@ -295,6 +298,7 @@ atx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
 /* out */
     miTextElement           *tx_el;       /* text element data */
     ddCoord2D               *align_pt;    /* text alignment */
+    ddULONG		    *count_ret;   /* return character count */
 {
 /* Define required temporary variables */
 
@@ -308,7 +312,6 @@ atx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
     register ddPointer	     ptr, save_ptr;
     miTextFontEntry          *ptr1;
     pexMonoEncoding	    *mono_enc;
-    register int             cnt=0;
     int			     fragnum, charnum, some_characters, signum, bytes;
     CARD32		     charval;
     diFontHandle	     font_handle;
@@ -320,9 +323,10 @@ atx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
     float	     	     xmin, xmax, ymin, ymax;
     ddTextFontEntry	    *fontEntry;
     ddUSHORT                 es;
-    ddpex3rtn                status;
     extern void              micalc_cpt_and_align();
     
+    *count_ret = 0;
+
     fontIndex = pddc->Static.attrs->textFont;
     expansion = ABS(pddc->Static.attrs->charExpansion);
     spacing = pddc->Static.attrs->charSpacing;
@@ -488,7 +492,7 @@ atx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
 	if (path==PEXPathUp || path==PEXPathDown)
 	  cur.x -= -char_data->right * 0.5 * expansion;
 		
-	CharPtr++; cnt++;  /* Update pointer and count */
+	CharPtr++; (*count_ret)++;  /* Update pointer and count */
 
       }  /* for each character */
 	    
@@ -515,7 +519,7 @@ atx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
       cpt.x = cpt.y = align_pt->x = align_pt->y = 0.0;
     }
 	
-    return (cnt);  /* Return the number of characters found */
+    return (Success);
 }				 
 
 
@@ -791,7 +795,7 @@ miText3D(pRend, pExecuteOC)
     miListHeader	*mc_path, *mclip_path, *cc_path, *clip_path, *dc_path;
     listofddPoint	*sp;
     XID		        temp;
-    ddpex3rtn		status;
+    int			status;
     ddUSHORT            aflag, clip_mode;
 
     /* Set the annotation text flag to zero */
@@ -821,9 +825,9 @@ miText3D(pRend, pExecuteOC)
 
     /* Convert text string into required paths */
 
-    if (!(count = tx_el_to_path (pRend, pddc, numEncodings, pText,
-				 numChars, &text_el, &align))) {
-      return (BadValue);
+    if ((status = tx_el_to_path (pRend, pddc, numEncodings, pText,
+	numChars, &text_el, &align, &count)) != Success) {
+      return (status);
     }
 
     /* Compute the required Character Space to Modelling Space Transform */
@@ -1071,7 +1075,7 @@ miText2D(pRend, pExecuteOC)
     miListHeader	*mc_path, *mclip_path, *cc_path, *clip_path, *dc_path;
     listofddPoint	*sp;
     XID		        temp;
-    ddpex3rtn		status;
+    int			status;
     ddUSHORT            aflag, clip_mode;
 
     /* Set the annotation text flag to zero */
@@ -1101,9 +1105,9 @@ miText2D(pRend, pExecuteOC)
 
     /* Convert text string into required paths */
 
-    if (!(count = tx_el_to_path (pRend, pddc, numEncodings, pText,
-				 numChars, &text_el, &align))) {
-      return (BadValue);
+    if ((status = tx_el_to_path (pRend, pddc, numEncodings, pText,
+	numChars, &text_el, &align, &count)) != Success) {
+      return (status);
     }
 
     /* Compute the required Character Space to Modelling Space Transform */
@@ -1354,7 +1358,7 @@ miAnnoText3D(pRend, pExecuteOC)
     miListHeader	*mc_path, *mclip_path, *cc_path, *clip_path, *dc_path;
     listofddPoint	*sp;
     XID		        temp;
-    ddpex3rtn		status;
+    int			status;
     ddUSHORT            aflag;
     static ddVector3D   Directions[2] = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0};
     ddCoord3D           *pDirections = (ddCoord3D *)Directions;
@@ -1435,9 +1439,9 @@ miAnnoText3D(pRend, pExecuteOC)
 
     /* Convert text string into required paths */
 
-    if (!(count = atx_el_to_path (pRend, pddc, numEncodings, pText,
-				 numChars, &text_el, &align))) {
-      return (BadValue);
+    if ((status = atx_el_to_path (pRend, pddc, numEncodings, pText,
+	numChars, &text_el, &align, &count)) != Success) {
+      return (status);
     }
 
     /* Compute the required Character Space to Modelling Space Transform */
@@ -1775,7 +1779,7 @@ miAnnoText2D(pRend, pExecuteOC)
     miListHeader	*mc_path, *mclip_path, *cc_path, *clip_path, *dc_path;
     listofddPoint	*sp;
     XID		        temp;
-    ddpex3rtn		status;
+    int			status;
     ddUSHORT            aflag;
     miListHeader        Connector;
     ddCoord4D           CC_Offset;  /* Offset in Clipping Coordinates */
@@ -1854,9 +1858,9 @@ miAnnoText2D(pRend, pExecuteOC)
 
     /* Convert text string into required paths */
 
-    if (!(count = atx_el_to_path (pRend, pddc, numEncodings, pText,
-				 numChars, &text_el, &align))) {
-      return (BadValue);
+    if ((status = atx_el_to_path (pRend, pddc, numEncodings, pText,
+	numChars, &text_el, &align, &count)) != Success) {
+      return (status);
     }
 
     /* Compute the required Character Space to Modelling Space Transform */
