@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.137 91/06/29 16:19:21 rws Exp $ */
+/* $XConsortium: connection.c,v 1.138 91/06/29 16:54:01 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -887,7 +887,6 @@ ListenToAllClients()
  ****************/
 
 static long IgnoredClientsWithInput[mskcnt];
-static long IgnoredSavedClientsWithInput[mskcnt];
 
 IgnoreClient (client)
     ClientPtr	client;
@@ -895,20 +894,23 @@ IgnoreClient (client)
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
     int connection = oc->fd;
 
-    if (GETBIT (ClientsWithInput, connection))
-	BITSET(IgnoredClientsWithInput, connection);
+    if (!GrabInProgress || GrabInProgress == client->index)
+    {
+    	if (GETBIT (ClientsWithInput, connection))
+	    BITSET(IgnoredClientsWithInput, connection);
+    	else
+	    BITCLEAR(IgnoredClientsWithInput, connection);
+    	BITCLEAR(ClientsWithInput, connection);
+    	BITCLEAR(AllSockets, connection);
+    	BITCLEAR(AllClients, connection);
+	BITCLEAR(LastSelectMask, connection);
+    }
     else
-	BITCLEAR(IgnoredClientsWithInput, connection);
-    BITCLEAR(ClientsWithInput, connection);
-    BITCLEAR(AllSockets, connection);
-    BITCLEAR(AllClients, connection);
-    BITCLEAR(LastSelectMask, connection);
-    if (GrabInProgress)
     {
     	if (GETBIT (SavedClientsWithInput, connection))
-	    BITSET(IgnoredSavedClientsWithInput, connection);
+	    BITSET(IgnoredClientsWithInput, connection);
     	else
-	    BITCLEAR(IgnoredSavedClientsWithInput, connection);
+	    BITCLEAR(IgnoredClientsWithInput, connection);
 	BITCLEAR(SavedClientsWithInput, connection);
 	BITCLEAR(SavedAllSockets, connection);
 	BITCLEAR(SavedAllClients, connection);
@@ -939,7 +941,7 @@ AttendClient (client)
     {
 	BITSET(SavedAllClients, connection);
 	BITSET(SavedAllSockets, connection);
-	if (GETBIT(IgnoredSavedClientsWithInput, connection))
+	if (GETBIT(IgnoredClientsWithInput, connection))
 	    BITSET(SavedClientsWithInput, connection);
     }
 }
