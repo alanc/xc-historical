@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.213 94/02/23 21:38:37 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.214 94/02/24 14:33:38 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -652,7 +652,7 @@ _XEventsQueued (dpy, mode)
 	char *read_buf;
 #ifdef XTHREADS
 	int entry_event_serial_num;
-	struct _XCVList *cvl;
+	struct _XCVList *cvl = NULL;
 	xthread_t self;
 
 #ifdef XTHREADS_DEBUG
