@@ -400,24 +400,15 @@ sunMouseProcessEvent (pMouse, fe)
                 /* disable color plane if it's current */
                 index = pPriv->pScreen->myNum;
                 (*sunFbs[index].EnterLeave) (pPriv->pScreen, 1);
-                if (pPriv->x < 0) { 
-                     if (pPriv->pScreen->myNum != 0)
-                        (pPriv->pScreen)--;
-                     else
-                         pPriv->pScreen = screenInfo.screens[screenInfo.numScreens -1];
- 
-                     pPriv->x += pPriv->pScreen->width;
-                }
-                else {
-                    pPriv->x -= pPriv->pScreen->width;
-
-                    if (pPriv->pScreen->myNum != screenInfo.numScreens -1)
-                        (pPriv->pScreen)++;
-                    else
-                         pPriv->pScreen = screenInfo.screens[0];
-                }
-
-                index = pPriv->pScreen->myNum;
+                if (pPriv->x < 0)
+		     index = (index ? index : screenInfo.numScreens) - 1;
+		else
+		     index = (index + 1) % screenInfo.numScreens;
+		pPriv->pScreen = screenInfo.screens[index];
+		if (pPriv->x < 0)
+		    pPriv->x += pPriv->pScreen->width;
+		else
+		    pPriv->x -= pPriv->pScreen->width;
                 /* enable color plane if new current screen */
                 (*sunFbs[index].EnterLeave) (pPriv->pScreen, 0);
             }
