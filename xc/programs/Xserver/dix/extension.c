@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: extension.c,v 1.45 89/03/23 09:14:02 rws Exp $ */
+/* $XConsortium: extension.c,v 1.46 89/03/23 20:01:53 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -71,6 +71,8 @@ ExtensionEntry *AddExtension(name, NumEvents, NumErrors, MainProc,
     if (!ext)
 	return((ExtensionEntry *) NULL);
     ext->name = (char *)xalloc(strlen(name) + 1);
+    ext->num_aliases = 0;
+    ext->aliases = (char **)NULL;
     if (!ext->name)
     {
 	xfree(ext);
@@ -119,15 +121,39 @@ ExtensionEntry *AddExtension(name, NumEvents, NumErrors, MainProc,
     return(ext);
 }
 
+Bool AddExtensionAlias(alias, ext)
+    char *alias;
+    ExtensionEntry *ext;
+{
+    char *name;
+    char **aliases;
+
+    aliases = (char **)xrealloc(ext->aliases,
+				(ext->num_aliases + 1) * sizeof(char *));
+    if (!aliases)
+	return FALSE;
+    ext->aliases = aliases;
+    name = (char *)xalloc(strlen(alias) + 1);
+    if (!name)
+	return FALSE;
+    strcpy(name,  alias);
+    ext->aliases[ext->num_aliases] = name;
+    ext->num_aliases++;
+    return TRUE;
+}
+
 CloseDownExtensions()
 {
-    register int i;
+    register int i,j;
 
     for (i = NumExtensions - 1; i >= 0; i--)
     {
 	(* extensions[i]->CloseDown)(extensions[i]);
 	NumExtensions = i;
 	xfree(extensions[i]->name);
+	for (j = extensions[i]->num_aliases; --j >= 0;)
+	    xfree(extensions[i]->aliases[j]);
+	xfree(extensions[i]->aliases);
 	xfree(extensions[i]);
     }
     xfree(extensions);
@@ -155,7 +181,7 @@ ProcQueryExtension(client)
     ClientPtr client;
 {
     xQueryExtensionReply reply;
-    int i;
+    int i, j;
     REQUEST(xQueryExtensionReq);
 
     REQUEST_AT_LEAST_SIZE(xQueryExtensionReq);
@@ -175,6 +201,14 @@ ProcQueryExtension(client)
                  !strncmp((char *)&stuff[1], extensions[i]->name,
 			  (int)stuff->nbytes))
                  break;
+	    for (j = extensions[i]->num_aliases; --j >= 0;)
+	    {
+		if ((strlen(extensions[i]->aliases[j]) == stuff->nbytes) &&
+		     !strncmp((char *)&stuff[1], extensions[i]->aliases[j],
+			      (int)stuff->nbytes))
+		     break;
+	    }
+	    if (j >= 0) break;
 	}
         if (i == NumExtensions)
             reply.present = xFalse;
@@ -209,11 +243,15 @@ ProcListExtensions(client)
 
     if ( NumExtensions )
     {
-        register int i;	
+        register int i, j;
 
         for (i=0;  i<NumExtensions; i++)
+	{
 	    total_length += strlen(extensions[i]->name) + 1;
-
+	    reply.nExtensions += extensions[i]->num_aliases;
+	    for (j = extensions[i]->num_aliases; --j >= 0;)
+		total_length += strlen(extensions[i]->aliases[j]) + 1;
+	}
         reply.length = (total_length + 3) >> 2;
 	buffer = bufptr = (char *)ALLOCATE_LOCAL(total_length);
 	if (!buffer)
@@ -224,6 +262,12 @@ ProcListExtensions(client)
             *bufptr++ = len = strlen(extensions[i]->name);
 	    bcopy(extensions[i]->name, bufptr,  len);
 	    bufptr += len;
+	    for (j = extensions[i]->num_aliases; --j >= 0;)
+	    {
+		*bufptr++ = len = strlen(extensions[i]->aliases[j]);
+		bcopy(extensions[i]->aliases[j], bufptr,  len);
+		bufptr += len;
+	    }
 	}
     }
     WriteReplyToClient(client, sizeof(xListExtensionsReply), &reply);
