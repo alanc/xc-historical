@@ -4,8 +4,8 @@
 #define DoProfileLib ProfileLibX
 #include <Library.tmpl>
 
-#ifndef MotifContextBug
-#define MotifContextBug NO
+#ifndef MotifBugHacks
+#define MotifBugHacks NO
 #endif
 
 #ifndef BuildXimp
@@ -597,7 +597,7 @@ SpecialLibObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialLibObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialLibObjectRule(XcmsColNm.o,$(ICONFIGFILES),$(CMS_DEFINES))
 SpecialLibObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
-#if MotifContextBug
+#if MotifBugHacks
 SpecialLibObjectRule(Context.o,$(ICONFIGFILES),$(MBUG_DEFINES))
 #endif
 
