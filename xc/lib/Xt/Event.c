@@ -1,6 +1,7 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: Event.c,v 1.8 88/08/25 14:38:21 asente Exp $";
-/* $oHeader: Event.c,v 1.8 88/08/25 14:38:21 asente Exp $ */
+static char rcsid[] =
+    "$XConsortium: Event.c,v 1.76 88/09/04 12:18:08 swick Exp $";
+/* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif lint
 
 /***********************************************************
@@ -242,8 +243,9 @@ void _XtRegisterWindow(window, widget)
 
     while (hp != NULL) {
         if (hp->window == window && hp->display == XtDisplay(widget)) {
-	    if (hp->widget != hp->widget)
-		XtWarningMsg("registerWindowError","xtRegisterWindow",
+	    if (hp->widget != widget)
+		XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+			"registerWindowError","xtRegisterWindow",
                          "XtToolkitError",
                         "Attempt to change already registered window.",
                           (String *)NULL, (Cardinal *)NULL);
@@ -274,7 +276,8 @@ void _XtUnregisterWindow(window, widget)
     while (hp != NULL) {
         if (hp->window == window && hp->display == XtDisplay(widget)) {
 	    if (hp->widget != widget) {
-                XtWarningMsg("registerWindowError","xtUnregisterWindow",
+                XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+			"registerWindowError","xtUnregisterWindow",
                          "XtToolkitError",
                         "Attempt to unregister invalid window.",
                           (String *)NULL, (Cardinal *)NULL);
@@ -758,7 +761,8 @@ void XtAddGrab(widget, exclusive, spring_loaded)
     register    GrabList gl;
 
     if (spring_loaded && !exclusive) {
-	XtWarningMsg ("grabError", "grabDestroyCallback", "XtToolkitError",
+	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+		"grabError", "grabDestroyCallback", "XtToolkitError",
 		"XtAddGrab requires exclusive grab if spring_loaded is TRUE",
 		(String *) NULL, (Cardinal *) NULL);
 	exclusive = TRUE;
@@ -830,7 +834,8 @@ static void RemoveGrab(widget, keyboard_focus)
     }
 
     if (gl == NULL) {
-	XtWarningMsg("grabError","xtRemoveGrab","XtToolkitError",
+	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+		"grabError","xtRemoveGrab","XtToolkitError",
           "XtRemoveGrab asked to remove a widget not on the list",
             (String *)NULL, (Cardinal *)NULL);
 	return;
