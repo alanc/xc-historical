@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: globals.c,v 1.50 91/05/14 12:25:28 rws Exp $ */
+/* $XConsortium: globals.c,v 1.51 92/03/13 15:40:57 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -62,13 +62,13 @@ unsigned long globalSerialNumber = 0;
 unsigned long serverGeneration = 0;
 
 /* these next four are initialized in main.c */
-long ScreenSaverTime;
-long ScreenSaverInterval;
+CARD32 ScreenSaverTime;
+CARD32 ScreenSaverInterval;
 int  ScreenSaverBlanking;
 int  ScreenSaverAllowExposures;
 
-long defaultScreenSaverTime = DEFAULT_SCREEN_SAVER_TIME;
-long defaultScreenSaverInterval = DEFAULT_SCREEN_SAVER_INTERVAL;
+CARD32 defaultScreenSaverTime = DEFAULT_SCREEN_SAVER_TIME;
+CARD32 defaultScreenSaverInterval = DEFAULT_SCREEN_SAVER_INTERVAL;
 int  defaultScreenSaverBlanking = DEFAULT_SCREEN_SAVER_BLANKING;
 int  defaultScreenSaverAllowExposures = DEFAULT_SCREEN_SAVER_EXPOSURES;
 #ifndef NOLOGOHACK
@@ -97,6 +97,6 @@ int monitorResolution = 0;
 
 char *display;
 
-long TimeOutValue = DEFAULT_TIMEOUT * MILLI_PER_SECOND;
+CARD32 TimeOutValue = DEFAULT_TIMEOUT * MILLI_PER_SECOND;
 int	argcGlobal;
 char	**argvGlobal;
