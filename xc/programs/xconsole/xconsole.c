@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: xconsole.c,v 1.1 90/12/06 19:34:38 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -43,7 +43,10 @@
 #include <X11/Xaw/Box.h>
 
 #include <X11/Xos.h>
+#include <X11/Xfuncs.h>
 #include <sys/stat.h>
+
+static long	TextLength ();
 
 static Widget	top, text;
 
@@ -65,6 +68,7 @@ static struct _app_resources {
     Boolean stripNonprint;
     Boolean notify;
     Boolean daemon;
+    Boolean verbose;
 } app_resources;
 
 #define offset(field) XtOffset(struct _app_resources*, field)
@@ -78,6 +82,8 @@ static XtResource  resources[] = {
 	offset (stripNonprint), XtRString, "TRUE" },
     {"daemon",		"Daemon",	    XtRBoolean,	sizeof (Boolean),
 	offset (daemon), XtRString, "FALSE"},
+    {"verbose",		"Verbose",	    XtRBoolean,	sizeof (Boolean),
+	offset (verbose),XtRString, "FALSE"},
 };
 #undef offset
 
@@ -86,6 +92,7 @@ static XrmOptionDescRec options[] = {
     {"-notify",	    "*notify",		XrmoptionNoArg,	    "TRUE"},
     {"-nonotify",   "*notify",		XrmoptionNoArg,	    "FALSE"},
     {"-daemon",	    "*daemon",		XrmoptionNoArg,	    "TRUE"},
+    {"-verbose",    "*verbose",		XrmoptionNoArg,	    "TRUE"},
 };
 
 #ifdef ultrix
@@ -93,13 +100,14 @@ static XrmOptionDescRec options[] = {
 #define FILE_NAME   "/dev/xcons"
 #endif
 
-#ifdef sun
-#define USE_PTY
+#ifndef USE_FILE
 #include    <sys/ioctl.h>
 
+#ifdef TIOCCONS
+#define USE_PTY
 static int  tty_fd, pty_fd;
 static char ttydev[64], ptydev[64];
-
+#endif
 #endif
 
 static
@@ -131,6 +139,14 @@ OpenConsole ()
 		}
 #endif
 	    }
+	    if (input && app_resources.verbose)
+	    {
+		char	*hostname;
+		TextAppend (text, "Console log for ", 16);
+		hostname = mit_console_name + MIT_CONSOLE_LEN;
+		TextAppend (text, hostname, strlen (hostname));
+		TextAppend (text, "\n", 1);
+	    }
 	}
 	else
 	{
@@ -140,6 +156,7 @@ OpenConsole ()
 	{
 	    TextAppend (text, "Couldn't open ", 14);
 	    TextAppend (text, app_resources.file, strlen (app_resources.file));
+	    TextAppend (text, "\n", 1);
 	}
     }
     else
@@ -147,7 +164,7 @@ OpenConsole ()
 
     if (input)
     {
-	input_id = XtAddInput (fileno (input), XtInputReadMask,
+	input_id = XtAddInput (fileno (input), (XtPointer) XtInputReadMask,
 			       inputReady, (XtPointer) text);
     }
 }
@@ -421,7 +438,7 @@ main (argc, argv)
 
     top = XtInitialize ("xconsole", "XConsole", options, XtNumber (options),
 			&argc, argv);
-    XtGetApplicationResources (top, &app_resources, resources,
+    XtGetApplicationResources (top, (XtPointer)&app_resources, resources,
 			       XtNumber (resources), NULL, 0);
 
     if (app_resources.daemon)
