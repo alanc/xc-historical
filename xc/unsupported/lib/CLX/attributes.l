@@ -369,13 +369,6 @@
   (with-attributes (window :sizes 16)
     (member16-get 12 :copy :input-output :input-only)))
 
-(defmacro window-background (window)
-  (declare (type window window)
-	   (ignore window))
-  (declare (values (or (member :none :parent-relative) pixel pixmap)))
-  (warn"~S can only be set" 'window-background)
-  :none)
-
 (defun set-window-background (window background)
   (declare (type window window)
 	   (type (or (member :none :parent-relative) pixel pixmap) background))
@@ -390,13 +383,6 @@
   background)
 
 (defsetf window-background set-window-background)
-
-(defmacro window-border (window)
-  (declare (type window window)
-	   (ignore window))
-  (declare (values (or (member :copy) pixel pixmap)))
-  (warn "~S can only be set" 'window-border)
-  :copy)
 
 (defun set-window-border (window border)
   (declare (type window window)
@@ -662,14 +648,6 @@
   width)
 
 (defsetf drawable-border-width set-drawable-border-width)
-
-(defmacro window-priority (window &optional sibling)
-  (declare (type window window)
-	   (type (or null window) sibling)
-	   (ignore window sibling))
-  (declare (values (member :above :below :top-if :bottom-if :opposite)))
-  (warn "~S can only be set" 'window-priority)
-  :above)
 
 (defun set-window-priority (mode window sibling)
   (declare (type (member :above :below :top-if :bottom-if :opposite) mode)
