@@ -22,10 +22,9 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: swapreq.c,v 1.24 87/08/06 15:35:17 newman Locked $ */
+/* $Header: swapreq.c,v 1.3 87/08/14 12:22:56 newman Locked $ */
 
 #include "X.h"
-#define NEED_REPLIES
 #define NEED_EVENTS
 #include "Xproto.h"
 #include "Xprotostr.h"
@@ -33,6 +32,7 @@ SOFTWARE.
 #include "dixstruct.h"
 
 extern int (* ProcVector[256]) ();
+extern void (* EventSwapVector[128]) ();  /* for SendEvent */
 
 /* Thanks to Jack Palevich for testing and subsequently rewriting all this */
 
@@ -240,177 +240,20 @@ SProcSendEvent(client)
     register ClientPtr client;
 {
     register char n;
-    xEvent *event;
+    xEvent eventT;
+    void (*proc)();
     REQUEST(xSendEventReq);
     swaps(&stuff->length, n);
     swapl(&stuff->destination, n);
     swapl(&stuff->eventMask, n);
-    /* Swap event */
-    event = &stuff->event;
-    swaps(&event->u.u.sequenceNumber, n);
-    switch ( event->u.u.type )
-    {
-	    /* type keyButtonPointer */
-	case KeyPress:
-	case KeyRelease:
-	case ButtonPress:
-	case ButtonRelease:
-	case MotionNotify:
-	/* and, by coincidence, the same code will work for enterLeave */
-	case EnterNotify:
-	case LeaveNotify:
-	    swapl(&event->u.keyButtonPointer.time, n);
-	    swapl(&event->u.keyButtonPointer.root, n);
-	    swapl(&event->u.keyButtonPointer.event, n);
-	    swapl(&event->u.keyButtonPointer.child, n);
-	    swaps(&event->u.keyButtonPointer.rootX, n);
-	    swaps(&event->u.keyButtonPointer.rootY, n);
-	    swaps(&event->u.keyButtonPointer.eventX, n);
-	    swaps(&event->u.keyButtonPointer.eventY, n);
-	    swaps(&event->u.keyButtonPointer.state, n);
-	    break;
-	/* focus */
-	case FocusIn:
-	case FocusOut:
-	    swapl(&event->u.focus.window, n);
-	    break;
-	case KeymapNotify:
-	    break;
-	case Expose:
-	    swapl(&event->u.expose.window, n);
-	    swaps(&event->u.expose.x, n);
-	    swaps(&event->u.expose.y, n);
-	    swaps(&event->u.expose.width, n);
-	    swaps(&event->u.expose.height, n);
-	    swaps(&event->u.expose.count, n);
-	    break;
-	case GraphicsExpose:
-	    swapl(&event->u.graphicsExposure.drawable, n);
-	    swaps(&event->u.graphicsExposure.x, n);
-	    swaps(&event->u.graphicsExposure.y, n);
-	    swaps(&event->u.graphicsExposure.width, n);
-	    swaps(&event->u.graphicsExposure.height, n);
-	    swaps(&event->u.graphicsExposure.minorEvent, n);
-	    swaps(&event->u.graphicsExposure.count, n);
-	    break;	    
-	case NoExpose:
-	    swapl(&event->u.noExposure.drawable, n);
-	    swaps(&event->u.noExposure.minorEvent, n);
-	    break;
-	case VisibilityNotify:
-	    swapl(&event->u.visibility.window, n);
-	    break;
-	case CreateNotify:
-	    swapl(&event->u.createNotify.parent, n);
-	    swapl(&event->u.createNotify.window, n);
-	    swaps(&event->u.createNotify.x, n);
-	    swaps(&event->u.createNotify.y, n);
-	    swaps(&event->u.createNotify.width, n);
-	    swaps(&event->u.createNotify.height, n);
-	    swaps(&event->u.createNotify.borderWidth, n);
-	    break;
-	/* All four of these events can be swapped in the same way. */
-	case DestroyNotify:
-	case UnmapNotify:
-	case MapNotify:
-	case MapRequest:
-	    swapl(&event->u.destroyNotify.event, n);
-	    swapl(&event->u.destroyNotify.window, n);
-	    break;
-	case ReparentNotify:
-	    swapl(&event->u.reparent.event, n);
-	    swapl(&event->u.reparent.window, n);
-	    swapl(&event->u.reparent.parent, n);
-	    swaps(&event->u.reparent.x, n);
-	    swaps(&event->u.reparent.y, n);
-	    break;
-	case ConfigureNotify:
-	    swapl(&event->u.configureNotify.event, n);
-	    swapl(&event->u.configureNotify.window, n);
-	    swapl(&event->u.configureNotify.aboveSibling, n);
-	    swaps(&event->u.configureNotify.x, n);
-	    swaps(&event->u.configureNotify.y, n);
-	    swaps(&event->u.configureNotify.width, n);
-	    swaps(&event->u.configureNotify.height, n);
-	    swaps(&event->u.configureNotify.borderWidth, n);
-	    break;
-	case ConfigureRequest:
-	    swapl(&event->u.configureRequest.parent, n);
-	    swapl(&event->u.configureRequest.window, n);
-	    swapl(&event->u.configureRequest.sibling, n);
-	    swaps(&event->u.configureRequest.x, n);
-	    swaps(&event->u.configureRequest.y, n);
-	    swaps(&event->u.configureRequest.width, n);
-	    swaps(&event->u.configureRequest.height, n);
-	    swaps(&event->u.configureRequest.borderWidth, n);
-	    swaps(&event->u.configureRequest.valueMask, n);	    
-	    break;
-	case GravityNotify:
-	    swapl(&event->u.gravity.event, n);
-	    swapl(&event->u.gravity.window, n);
-	    swaps(&event->u.gravity.x, n);
-	    swaps(&event->u.gravity.y, n);
-	    break;
-	case ResizeRequest:
-	    swapl(&event->u.resizeRequest.window, n);
-	    swaps(&event->u.resizeRequest.width, n);
-	    swaps(&event->u.resizeRequest.height, n);
-	    break;
-	/* the next two events have identical swapping requirements */
-	case CirculateNotify:
-	case CirculateRequest:
-	case PropertyNotify:
-	case SelectionClear:
-	    swapl(&event->u.circulate.event, n);
-	    swapl(&event->u.circulate.window, n);
-	    swapl(&event->u.circulate.parent, n);
-	    break;
-	case SelectionRequest:
-	    swapl(&event->u.selectionRequest.time, n);
-	    swapl(&event->u.selectionRequest.owner, n);
-	    swapl(&event->u.selectionRequest.requestor, n);
-	    swapl(&event->u.selectionRequest.selection, n);
-	    swapl(&event->u.selectionRequest.target, n);
-	    swapl(&event->u.selectionRequest.property, n);
-	    break;
-	case SelectionNotify:
-	    swapl(&event->u.selectionNotify.time, n);
-	    swapl(&event->u.selectionNotify.requestor, n);
-	    swapl(&event->u.selectionNotify.selection, n);
-	    swapl(&event->u.selectionNotify.target, n);
-	    swapl(&event->u.selectionNotify.property, n);
-	    break;
-	case ColormapNotify:
-	    swapl(&event->u.colormap.window, n);
-	    swapl(&event->u.colormap.colormap, n);
-	    break;
-	case ClientMessage:
-	    swapl(&event->u.clientMessage.window, n);
-	    swapl(&event->u.clientMessage.u.l.type, n);  
 
-	    if (event->u.u.detail == 32)
-	    {
-	        swapl(&event->u.clientMessage.u.l.longs0, n);
-	        swapl(&event->u.clientMessage.u.l.longs1, n);
-	        swapl(&event->u.clientMessage.u.l.longs2, n);
-	        swapl(&event->u.clientMessage.u.l.longs3, n);
-	        swapl(&event->u.clientMessage.u.l.longs4, n);
-	    }
-	    else if (event->u.u.detail == 16)
-	    {
-	        swaps(&event->u.clientMessage.u.s.shorts0, n);
-	        swaps(&event->u.clientMessage.u.s.shorts1, n);
-	        swaps(&event->u.clientMessage.u.s.shorts2, n);
-	        swaps(&event->u.clientMessage.u.s.shorts3, n);
-	        swaps(&event->u.clientMessage.u.s.shorts4, n);
-	        swaps(&event->u.clientMessage.u.s.shorts5, n);
-	        swaps(&event->u.clientMessage.u.s.shorts6, n);
-	        swaps(&event->u.clientMessage.u.s.shorts7, n);
-	        swaps(&event->u.clientMessage.u.s.shorts8, n);
-	        swaps(&event->u.clientMessage.u.s.shorts9, n);
-	    }
-    	    break;
-    }
+    /* Swap event */
+    proc = EventSwapVector[stuff->event.u.u.type & 0177];
+    if (!proc)   /* no swapping proc; invalid event type? */
+       return (BadValue);
+    (*proc)(&stuff->event, &eventT);
+    stuff->event = eventT;
+
     return((* ProcVector[X_SendEvent])(client));
 }
 
