@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.70 91/02/18 13:12:31 rws Exp $
+ * $XConsortium: viewres.c,v 1.71 91/03/11 17:31:01 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -97,9 +97,9 @@ static char *help_message[] = {
 };
 
 static XrmOptionDescRec Options[] = {
-    { "-top", "*topObject", XrmoptionSepArg, (caddr_t) NULL },
-    { "-variable", "*showVariable", XrmoptionNoArg, (caddr_t) "on" },
-    { "-vertical", "*Tree.Gravity", XrmoptionNoArg, (caddr_t) "north" }
+    { "-top", "*topObject", XrmoptionSepArg, (XPointer) NULL },
+    { "-variable", "*showVariable", XrmoptionNoArg, (XPointer) "on" },
+    { "-vertical", "*Tree.Gravity", XrmoptionNoArg, (XPointer) "north" }
 };
 
 
@@ -114,9 +114,9 @@ static OptionsRec options;
 
 static XtResource Resources[] = {
     { "topObject", "TopObject", XtRString, sizeof(char *),
-	Offset(top_object), XtRString, (caddr_t) "object" },
+	Offset(top_object), XtRString, (XtPointer) "object" },
     { "showVariable", "ShowVariable", XtRBoolean, sizeof(Boolean),
-	Offset(show_variable), XtRImmediate, (caddr_t) FALSE },
+	Offset(show_variable), XtRImmediate, (XtPointer) FALSE },
 };
 
 #undef Offset
@@ -434,8 +434,8 @@ static void add_subtree_to_selected_list (node, updatewidget)
 /* ARGSUSED */
 static void variable_labeltype_callback (gw, closure, data)
     Widget gw;
-    caddr_t closure;			/* TRUE or FALSE */
-    caddr_t data;
+    XtPointer closure;			/* TRUE or FALSE */
+    XtPointer data;
 {
     set_labeltype_menu ((Boolean) closure, True);
 }
@@ -443,8 +443,8 @@ static void variable_labeltype_callback (gw, closure, data)
 /* ARGSUSED */
 static void gravity_callback (gw, closure, data)
     Widget gw;
-    caddr_t closure;			/* TRUE or FALSE */
-    caddr_t data;
+    XtPointer closure;			/* TRUE or FALSE */
+    XtPointer data;
 {
     set_orientation_menu ((XtGravity) closure, True);
 }
@@ -549,8 +549,8 @@ static void do_resources (node, op, updatewidget)
 /* ARGSUSED */
 static void show_resources_callback (gw, closure, data)
     Widget gw;				/* menu or toggle button */
-    caddr_t closure;			/* BOOL_OFF, BOOL_ON, BOOL_TOGGLE */
-    caddr_t data;			/* undefined */
+    XtPointer closure;			/* BOOL_OFF, BOOL_ON, BOOL_TOGGLE */
+    XtPointer data;			/* undefined */
 {
     int op = (int) closure;
     XmuWidgetNode *node = widget_to_node (gw);
@@ -577,8 +577,8 @@ static void show_resources_callback (gw, closure, data)
 /* ARGSUSED */
 static void select_callback (gw, closure, data)
     Widget gw;				/* entry widget */
-    caddr_t closure;			/* TRUE or FALSE */
-    caddr_t data;			/* undefined */
+    XtPointer closure;			/* TRUE or FALSE */
+    XtPointer data;			/* undefined */
 {
     register int i;
     int nselected = selected_list.n_elements;
@@ -716,8 +716,8 @@ static void toggle_callback (gw, closure, data)
 /* ARGSUSED */
 static void panner_callback (gw, closure, data)
     Widget gw;				/* panner widget */
-    caddr_t closure;			/* porthole widget */
-    caddr_t data;			/* report */
+    XtPointer closure;			/* porthole widget */
+    XtPointer data;			/* report */
 {
     XawPannerReport *rep = (XawPannerReport *) data;
     Arg args[2];
@@ -732,8 +732,8 @@ static void panner_callback (gw, closure, data)
 /* ARGSUSED */
 static void porthole_callback (gw, closure, data)
     Widget gw;				/* porthole widget */
-    caddr_t closure;			/* panner widget */
-    caddr_t data;			/* report */
+    XtPointer closure;			/* panner widget */
+    XtPointer data;			/* report */
 {
     Widget panner = (Widget) closure;
     XawPannerReport *rep = (XawPannerReport *) data;
@@ -777,7 +777,7 @@ static void build_tree (node, tree, super)
 				  node->label : XmuWnClassname(node))); n++;
     XtSetArg (args[n], XtNcallback, callback_rec); n++;
 
-    callback_rec[0].closure = (caddr_t) node;
+    callback_rec[0].closure = (XtPointer) node;
     w = XtCreateManagedWidget (node->label, toggleWidgetClass, box, args, n);
     d->instance = w;
 
@@ -886,7 +886,7 @@ main (argc, argv)
     initialize_widgetnode_list (&selected_list.elements,
 				&selected_list.max_elements, 10);
 
-    XtGetApplicationResources (toplevel, (caddr_t) &options,
+    XtGetApplicationResources (toplevel, (XtPointer) &options,
 			       Resources, XtNumber(Resources), NULL, ZERO);
     XmuWnInitializeNodes (widget_list, nwidgets);
 
@@ -933,7 +933,7 @@ main (argc, argv)
     XtSetArg (args[0], XtNcallback, callback_rec);
 
 #define MAKE_VIEW(n,v,name) \
-    callback_rec[0].closure = (caddr_t) v; \
+    callback_rec[0].closure = (XtPointer) v; \
     view_widgets[n] = XtCreateManagedWidget (name, smeBSBObjectClass, \
 					     viewMenu, args, ONE)
     callback_rec[0].callback = (XtCallbackProc) gravity_callback;
@@ -966,7 +966,7 @@ main (argc, argv)
     XtSetArg (args[0], XtNcallback, callback_rec);
     callback_rec[0].callback = (XtCallbackProc) select_callback;
 #define MAKE_SELECT(n,name) \
-    callback_rec[0].closure = (caddr_t) n; \
+    callback_rec[0].closure = (XtPointer) n; \
     select_widgets[n] = XtCreateManagedWidget (name, smeBSBObjectClass, \
 					       selectMenu, args, ONE)
     MAKE_SELECT (SELECT_NOTHING, "unselect");
@@ -1131,9 +1131,9 @@ static void ActionSetOrientation (w, event, params, num_params)
 	XrmValue fromval, toval;
 
 	fromval.size = sizeof (String);
-	fromval.addr = (XtPointer) params[0];
+	fromval.addr = (XPointer) params[0];
 	toval.size = sizeof (XtGravity);
-	toval.addr = (XtPointer) &newgrav;
+	toval.addr = (XPointer) &newgrav;
 	XtConvertAndStore (treeWidget, XtRString, &fromval,
 			   XtRGravity, &toval);
     }
@@ -1181,7 +1181,7 @@ static void do_single_arg (w, params, nparams, table, nentries, proc)
     /*
      * use any old widget
      */
-    (*proc) (w, (caddr_t) obj, (caddr_t) NULL);
+    (*proc) (w, (XtPointer) obj, (XtPointer) NULL);
 }
 
 
@@ -1205,7 +1205,7 @@ static void ActionResources (w, event, params, num_params)
     Cardinal *num_params;
 {
     if (*num_params == 0) {
-	show_resources_callback (w, (caddr_t) BOOL_TOGGLE, (caddr_t) NULL);
+	show_resources_callback (w, (XtPointer) BOOL_TOGGLE, (XtPointer) NULL);
     } else {
 	do_single_arg (w, params, *num_params, boolean_nametable,
 		       (int) XtNumber(boolean_nametable),
