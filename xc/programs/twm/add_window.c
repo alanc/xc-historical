@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.57 89/06/30 19:33:10 jim Exp $
+ * $XConsortium: add_window.c,v 1.58 89/06/30 20:22:22 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.57 89/06/30 19:33:10 jim Exp $";
+"$XConsortium: add_window.c,v 1.58 89/06/30 20:22:22 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -1026,7 +1026,8 @@ TwmWindow *tmp_win;
 	XSetForeground (dpy, gcBack, 0);
 
 	/*
-	 * draw the logo large so that it gets as dense as possible
+	 * draw the logo large so that it gets as dense as possible; then white
+	 * out the edges so that they look crisp
 	 */
 	XmuDrawLogo (dpy, Scr->iconifyPm, gc, gcBack, 0, 0,
 		     Scr->TitleHeight, Scr->TitleHeight);
@@ -1040,27 +1041,20 @@ TwmWindow *tmp_win;
 			Scr->TitleHeight - 5, Scr->TitleHeight - 5);
 	XFreeGC (dpy, gcBack);
 
-	/* now the resize button */
-	XDrawRectangle(dpy, Scr->resizePm, gc, 2, 2,
-	    Scr->TitleHeight - 5, Scr->TitleHeight - 5);
-	w = (Scr->TitleHeight - 4) / 3;
-	x1 = 2;
-	y1 = 2+w;
-	x2 = Scr->TitleHeight - 3 - w;
-	y2 = y1;
-	XDrawLine(dpy, Scr->resizePm, gc, x1, y1, x2, y2);
-	x1 = x2;
-	y2 = Scr->TitleHeight - 3;
-	XDrawLine(dpy, Scr->resizePm, gc, x1, y1, x2, y2);
-	x1 = 2;
-	y1 = 2+(2*w);
-	x2 = Scr->TitleHeight - 3 - (2*w);
-	y2 = y1;
-	XDrawLine(dpy, Scr->resizePm, gc, x1, y1, x2, y2);
-	x1 = x2;
-	y2 = Scr->TitleHeight - 3;
-	XDrawLine(dpy, Scr->resizePm, gc, x1, y1, x2, y2);
+	/*
+	 * draw the resize button
+	 */
+	XDrawRectangle (dpy, Scr->resizePm, gc, 2, 2, Scr->TitleHeight - 5, 
+			Scr->TitleHeight - 5);
+	w = ((Scr->TitleHeight - 4) / 3) + 1;
+	XDrawRectangle (dpy, Scr->resizePm, gc, 2, 2, w, w);
 
+	w += w - 1;
+	XDrawRectangle (dpy, Scr->resizePm, gc, 2, 2, w, w);
+
+	/*
+	 * done drawing
+	 */
 	XFreeGC(dpy, gc);
     }
 
