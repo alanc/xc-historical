@@ -55,7 +55,7 @@ XtGeometryReturnCode XtMakeGeometryRequest (widget, request, reply)
     XtGeometryHandler manager;
     XtGeometryReturnCode returnCode;
 
-    if (! XtIsSubClass(widget->core.parent, compositeWidgetClass)) {
+    if (! XtIsSubclass(widget->core.parent, compositeWidgetClass)) {
 	/* Should never happen - XtCreateWidget should have checked */
 	XtError("XtMakeGeometryRequest - parent not composite");
     }
