@@ -45,14 +45,13 @@
 #if HasGcc
 #define ServerCcCmd gcc -DNOSTDHDRS -fstrength-reduce -fpcc-struct-return 
 #define CcCmd cc
+#define ServerCCOptions /* */
 #endif
 
-#if !HasGcc
 #ifdef mc68000
 #define DefaultCCOptions -f68881 -pipe		/* remove in R4 */
 #else
 #define DefaultCCOptions -pipe			/* remove in R4 */
-#endif
 #endif
 
 #define LibraryCCOptions /* don't want special floating point */
@@ -60,7 +59,7 @@
 /* see below for ServerDefines */
 
 
-/**/# platform:  $XConsortium: sun.cf,v 1.34 89/10/20 16:10:12 rws Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.35 89/10/26 17:33:08 jim Exp $
 /**/# operating system:  OSName
 
 #if OSMajorVersion == 3 && OSMinorVersion <= 2
