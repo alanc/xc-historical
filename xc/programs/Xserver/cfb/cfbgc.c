@@ -691,7 +691,7 @@ cfbChangeClip(pGC, type, pvalue, nrects)
     cfbDestroyClip(pGC);
     if(type == CT_PIXMAP)
     {
-	pGC->clientClip = (pointer) mfbPixmapToRegion(pvalue);
+	pGC->clientClip = (pointer) mfbPixmapToRegion((PixmapPtr)pvalue);
 	(*pGC->pScreen->DestroyPixmap)(pvalue);
     }
     else if (type == CT_REGION) {

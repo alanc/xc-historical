@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 1.39 89/03/22 10:50:17 rws Exp $ */
+/* $XConsortium: miexpose.c,v 1.40 89/03/23 18:25:20 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -482,7 +482,7 @@ static GCPtr	screenContext[MAXSCREENS];
 static
 tossGC (pGC, id)
 GCPtr pGC;
-GC id;
+GContext id;
 {
     int i;
 

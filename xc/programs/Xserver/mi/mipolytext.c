@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ************************************************************************/
-/* $XConsortium: mipolytext.c,v 1.13 88/10/25 13:44:53 keith Exp $ */
+/* $XConsortium: mipolytext.c,v 1.14 89/03/23 18:21:30 rws Exp $ */
 /*
  * mipolytext.c - text routines
  *
@@ -41,9 +41,9 @@ SOFTWARE.
 static unsigned int
 miWidth(n, charinfo)
     CharInfoPtr charinfo[];
-    unsigned int n;
+    unsigned long n;
 {
-    unsigned int i;
+    unsigned long i;
     unsigned int w = 0;
 
     for (i=0; i < n; i++) w += charinfo[i]->metrics.characterWidth;

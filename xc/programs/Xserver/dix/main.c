@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 1.152 89/03/23 09:15:11 rws Exp $ */
+/* $XConsortium: main.c,v 1.152 89/03/23 09:19:55 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -64,7 +64,7 @@ extern Bool InitClientResources();
 static Bool CreateConnectionBlock();
 extern Bool CreateGCperDepthArray();
 extern Bool CreateDefaultStipple();
-extern void ResetWellKnownConnections();
+extern void ResetWellKnownSockets();
 
 PaddingInfo PixmapWidthPaddingInfo[33];
 int connBlockScreenStart;
