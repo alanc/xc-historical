@@ -1,4 +1,4 @@
-/* $XConsortium: Clock.c,v 1.60 91/04/01 20:35:23 gildea Exp $ */
+/* $XConsortium: Clock.c,v 1.61 91/05/22 16:39:48 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,6 +30,12 @@ SOFTWARE.
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/ClockP.h>
 #include <X11/Xosdefs.h>
+
+#if __STDC__
+#define Const const
+#else
+#define Const /**/
+#endif
 
 #ifdef X_NOT_STDC_ENV
 extern struct tm *localtime();
@@ -377,7 +383,7 @@ static void clock_tic(client_data, id)
 			     */
 			    DrawHand(w,
 				w->clock.minute_hand_length, w->clock.hand_width,
-				((double) tm.tm_min)/60.0
+				tm.tm_min * 12
 			    );
 			    if(w->clock.Hdpixel != w->core.background_pixel)
 				XFillPolygon( dpy,
@@ -392,8 +398,7 @@ static void clock_tic(client_data, id)
 			    w->clock.hour = w->clock.segbuffptr;
 			    DrawHand(w, 
 				w->clock.hour_hand_length, w->clock.hand_width,
-				((((double)tm.tm_hour) + 
-				    (((double)tm.tm_min)/60.0)) / 12.0)
+				tm.tm_hour * 60 + tm.tm_min
 			    );
 			    if(w->clock.Hdpixel != w->core.background_pixel) {
 			      XFillPolygon(dpy,
@@ -416,7 +421,7 @@ static void clock_tic(client_data, id)
 				w->clock.second_hand_length - 2, 
 				w->clock.second_hand_width,
 				w->clock.minute_hand_length + 2,
-				((double) tm.tm_sec)/60.0
+				tm.tm_sec * 12
 			    );
 			    if(w->clock.Hdpixel != w->core.background_pixel)
 				XFillPolygon( dpy,
@@ -493,12 +498,65 @@ struct tm	*tm;
     }
 }
 
+float Const Sines[] = {
+.000000, .008727, .017452, .026177, .034899, .043619, .052336, .061049,
+.069756, .078459, .087156, .095846, .104528, .113203, .121869, .130526,
+.139173, .147809, .156434, .165048, .173648, .182236, .190809, .199368,
+.207912, .216440, .224951, .233445, .241922, .250380, .258819, .267238,
+.275637, .284015, .292372, .300706, .309017, .317305, .325568, .333807,
+.342020, .350207, .358368, .366501, .374607, .382683, .390731, .398749,
+.406737, .414693, .422618, .430511, .438371, .446198, .453990, .461749,
+.469472, .477159, .484810, .492424, .500000, .507538, .515038, .522499,
+.529919, .537300, .544639, .551937, .559193, .566406, .573576, .580703,
+.587785, .594823, .601815, .608761, .615661, .622515, .629320, .636078,
+.642788, .649448, .656059, .662620, .669131, .675590, .681998, .688355,
+.694658, .700909, .707107
+};
+
+float Const Cosines[] = {
+1.00000, .999962, .999848, .999657, .999391, .999048, .998630, .998135,
+.997564, .996917, .996195, .995396, .994522, .993572, .992546, .991445,
+.990268, .989016, .987688, .986286, .984808, .983255, .981627, .979925,
+.978148, .976296, .974370, .972370, .970296, .968148, .965926, .963630,
+.961262, .958820, .956305, .953717, .951057, .948324, .945519, .942641,
+.939693, .936672, .933580, .930418, .927184, .923880, .920505, .917060,
+.913545, .909961, .906308, .902585, .898794, .894934, .891007, .887011,
+.882948, .878817, .874620, .870356, .866025, .861629, .857167, .852640,
+.848048, .843391, .838671, .833886, .829038, .824126, .819152, .814116,
+.809017, .803857, .798636, .793353, .788011, .782608, .777146, .771625,
+.766044, .760406, .754710, .748956, .743145, .737277, .731354, .725374,
+.719340, .713250, .707107
+};
+
+static void ClockAngle(tick_units, sinp, cosp)
+    int tick_units;
+    double *sinp, *cosp;
+{
+    int reduced, upper;
+
+    reduced = tick_units % 90;
+    upper = tick_units / 90;
+    if (upper & 1)
+	reduced = 90 - reduced;
+    if ((upper + 1) & 2) {
+	*sinp = Cosines[reduced];
+	*cosp = Sines[reduced];
+    } else {
+	*sinp = Sines[reduced];
+	*cosp = Cosines[reduced];
+    }
+    if (upper >= 2 && upper < 6)
+	*cosp = -*cosp;
+    if (upper >= 4)
+	*sinp = -*sinp;
+}
+
 /*
  * DrawLine - Draws a line.
  *
  * blank_length is the distance from the center which the line begins.
  * length is the maximum length of the hand.
- * Fraction_of_a_circle is a fraction between 0 and 1 (inclusive) indicating
+ * Tick_units is a number between zero and 12*60 indicating
  * how far around the circle (clockwise) from high noon.
  *
  * The blank_length feature is because I wanted to draw tick-marks around the
@@ -506,20 +564,17 @@ struct tm	*tm;
  * to the perimeter, then erasing all but the outside most pixels doesn't
  * work because of round-off error (sigh).
  */
-static void DrawLine(w, blank_length, length, fraction_of_a_circle)
+static void DrawLine(w, blank_length, length, tick_units)
 ClockWidget w;
 Dimension blank_length;
 Dimension length;
-double fraction_of_a_circle;
+int tick_units;
 {
 	double dblank_length = (double)blank_length, dlength = (double)length;
 	double angle, cosangle, sinangle;
-	double cos();
-	double sin();
 	int cx = w->clock.centerX, cy = w->clock.centerY, x1, y1, x2, y2;
 
 	/*
-	 *  A full circle is 2 PI radians.
 	 *  Angles are measured from 12 o'clock, clockwise increasing.
 	 *  Since in X, +x is to the right and +y is downward:
 	 *
@@ -527,9 +582,7 @@ double fraction_of_a_circle;
 	 *	y = y0 - r * cos(theta)
 	 *
 	 */
-	angle = TWOPI * fraction_of_a_circle;
-	cosangle = cos(angle);
-	sinangle = sin(angle);
+	ClockAngle(tick_units, &sinangle, &cosangle);
 
 	/* break this out so that stupid compilers can cope */
 	x1 = cx + (int)(dblank_length * sinangle);
@@ -544,24 +597,21 @@ double fraction_of_a_circle;
  *
  * length is the maximum length of the hand.
  * width is the half-width of the hand.
- * Fraction_of_a_circle is a fraction between 0 and 1 (inclusive) indicating
+ * Tick_units is a number between zero and 12*60 indicating
  * how far around the circle (clockwise) from high noon.
  *
  */
-static void DrawHand(w, length, width, fraction_of_a_circle)
+static void DrawHand(w, length, width, tick_units)
 ClockWidget w;
 Dimension length, width;
-double fraction_of_a_circle;
+int tick_units;
 {
 
-	register double angle, cosangle, sinangle;
+	double cosangle, sinangle;
 	register double ws, wc;
 	Position x, y, x1, y1, x2, y2;
-	double cos();
-	double sin();
 
 	/*
-	 *  A full circle is 2 PI radians.
 	 *  Angles are measured from 12 o'clock, clockwise increasing.
 	 *  Since in X, +x is to the right and +y is downward:
 	 *
@@ -569,9 +619,7 @@ double fraction_of_a_circle;
 	 *	y = y0 - r * cos(theta)
 	 *
 	 */
-	angle = TWOPI * fraction_of_a_circle;
-	cosangle = cos(angle);
-	sinangle = sin(angle);
+	ClockAngle(tick_units, &sinangle, &cosangle);
 	/*
 	 * Order of points when drawing the hand.
 	 *
@@ -602,25 +650,22 @@ double fraction_of_a_circle;
  * length is the maximum length of the hand.
  * width is the half-width of the hand.
  * offset is direct distance from center to tail end.
- * Fraction_of_a_circle is a fraction between 0 and 1 (inclusive) indicating
+ * Tick_units is a number between zero and 12*60 indicating
  * how far around the circle (clockwise) from high noon.
  *
  */
-static void DrawSecond(w, length, width, offset, fraction_of_a_circle)
+static void DrawSecond(w, length, width, offset, tick_units)
 ClockWidget w;
 Dimension length, width, offset;
-double fraction_of_a_circle;
+int tick_units;
 {
 
-	register double angle, cosangle, sinangle;
+	double cosangle, sinangle;
 	register double ms, mc, ws, wc;
 	register int mid;
 	Position x, y;
-	double cos();
-	double sin();
 
 	/*
-	 *  A full circle is 2 PI radians.
 	 *  Angles are measured from 12 o'clock, clockwise increasing.
 	 *  Since in X, +x is to the right and +y is downward:
 	 *
@@ -628,9 +673,7 @@ double fraction_of_a_circle;
 	 *	y = y0 - r * cos(theta)
 	 *
 	 */
-	angle = TWOPI * fraction_of_a_circle;
-	cosangle = cos(angle);
-	sinangle = sin(angle);
+	ClockAngle(tick_units, &sinangle, &cosangle);
 	/*
 	 * Order of points when drawing the hand.
 	 *
@@ -698,7 +741,7 @@ ClockWidget w;
 		DrawLine(w, ( (i % 5) == 0 ? 
 			     w->clock.second_hand_length :
 			     (w->clock.radius - delta) ),
-			 w->clock.radius, ((double) i)/60.);
+			 w->clock.radius, i * 12);
 	/*
 	 * Go ahead and draw it.
 	 */
