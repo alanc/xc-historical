@@ -1,4 +1,4 @@
-/* $Header: XExtInt.c,v 1.19 91/05/12 18:39:58 rws Exp $ */
+/* $Header: XExtInt.c,v 1.20 91/07/16 16:40:04 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -439,12 +439,9 @@ XInputWireToEvent (dpy, re, event)
 		v = (XValuatorStatus *) any;
 		i = v->num_valuators;
 		j = xev->num_valuators;
-		if (j > 6) j = 6;
+		if (j > 3) j = 3;
 		switch (j)
 		    {
-		    case 6: v->valuators[i + 5] = xev->valuator5;
-		    case 5: v->valuators[i + 4] = xev->valuator4;
-		    case 4: v->valuators[i + 3] = xev->valuator3;
 		    case 3: v->valuators[i + 2] = xev->valuator2;
 		    case 2: v->valuators[i + 1] = xev->valuator1;
 		    case 1: v->valuators[i + 0] = xev->valuator0;
@@ -511,7 +508,9 @@ XInputWireToEvent (dpy, re, event)
 	        vev->class = ValuatorClass;
 	        vev->length = sizeof (XValuatorStatus);
 	        vev->num_valuators = sev->num_valuators;
-		switch (sev->num_valuators)
+		j = sev->num_valuators;
+		if (j > 3) j = 3;
+		switch (j)
 		    {
 		    case 3: vev->valuators[2] = sev->valuator2;
 		    case 2: vev->valuators[1] = sev->valuator1;
