@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.143 89/12/12 18:56:02 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.144 89/12/12 19:19:41 swick Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif /* lint */
 
@@ -34,6 +34,8 @@ SOFTWARE.
 #ifndef VMS
 #include <sys/stat.h>
 #endif /* VMS */
+
+String XtCXtToolkitError = "XtToolkitError";
 
 Boolean XtIsSubclass(widget, widgetClass)
     Widget    widget;

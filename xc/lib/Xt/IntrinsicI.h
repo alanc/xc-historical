@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicI.h,v 1.39 89/11/15 12:24:52 swick Exp $
+* $XConsortium: IntrinsicI.h,v 1.40 90/03/19 12:50:46 swick Exp $
 * $oHeader: IntrinsicI.h,v 1.5 88/08/31 16:21:08 asente Exp $
 */
 
@@ -166,6 +166,8 @@ extern int bcmp();
 #ifndef ERRORDB
 #define ERRORDB "/usr/lib/X11/XtErrorDB"
 #endif
+
+extern String XtCXtToolkitError;
 
 extern void _XtAllocError(
 #if NeedFunctionPrototypes
