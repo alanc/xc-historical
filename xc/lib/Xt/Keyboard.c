@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.5 89/12/14 12:36:18 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.6 89/12/14 17:07:37 swick Exp $";
 #endif
 
 /********************************************************
@@ -36,7 +36,7 @@ SOFTWARE.
 
 #define _GetWindowedAncestor(w) (XtIsWidget(w) ? w : _XtWindowedAncestor(w))
 extern void _XtFillAncestorList();
-extern void _XtSendCrossingEvent();
+extern void _XtSendFocusEvent();
 
 static XtServerGrabPtr CheckServerGrabs(event, trace,
 					traceDepth, pdi)
@@ -561,11 +561,11 @@ void _XtHandleFocus(widget, client_data, event)
 	    {
 		if (add)
 		  {
-		      _XtSendCrossingEvent(descendant, FocusIn);
+		      _XtSendFocusEvent(descendant, FocusIn);
 		  }
 		else
 		  {
-		      _XtSendCrossingEvent(descendant, FocusOut);
+		      _XtSendFocusEvent(descendant, FocusOut);
 		  }
 	    }
       }
@@ -623,7 +623,7 @@ void XtSetKeyboardFocus(widget, descendant)
 		(oldWindowedDesc != windowedDesc) && 
 #endif
 		pwi->haveFocus) {
-		_XtSendCrossingEvent( oldWindowedDesc, FocusOut);
+		_XtSendFocusEvent( oldWindowedDesc, FocusOut);
 	    }
 	}
 	
@@ -730,7 +730,7 @@ void XtSetKeyboardFocus(widget, descendant)
 		pwi->haveFocus)
 	      {
 		  pdi->focusWidget = NULL; /* invalidate the cache */
-		  _XtSendCrossingEvent( windowedDesc, FocusIn);
+		  _XtSendFocusEvent( windowedDesc, FocusIn);
 	      }
 	}
     }
