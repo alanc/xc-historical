@@ -316,6 +316,8 @@
 
 (defmacro index-plusp (number) `(plusp ,number))
 (defmacro index-zerop (number) `(zerop ,number))
+(defmacro index-evenp (number) `(evenp ,number))
+(defmacro index-oddp  (number) `(oddp  ,number))
 
 (defmacro index> (&rest numbers) `(> ,@numbers))
 (defmacro index= (&rest numbers) `(= ,@numbers))
