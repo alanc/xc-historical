@@ -38,13 +38,15 @@ Things to check before building:
 	SunOSMinorVersion parameters to the right values.
 
 2)	util/imake.includes/Imake.tmpl - check LIBDIR, FONTDIR, etc.
+	and define LibDir, FontDir, etc. in site.def as required.
 
-3)	Make sure the fonts/Makefile uses the pad flag on the font
-	compiler to pad the glyphs to 4-byte boundaries.
+3)	If you want to use X on top of suntools or NeWS, change
+	UseSunWindowsInServer to YES in Sun.macros.
 
-4)	If you want the non-portable zoids extension, add -DZOIDS to CFLAGS.
-	The non-portable zoids have worse performance than portable zoids
-	but prove that the extension mechanism works for output.
+4)	If you want any extensions, define them in ExtensionDefines in
+	Sun.macros.  If you want the non-portable zoids, use -DZOIDS.
+	The non-portable zoids have worse performance than portable
+	zoids but prove that the extension mechanism works for output.
 
 
 Then build the system by:
