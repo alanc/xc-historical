@@ -1,4 +1,4 @@
-/* $XConsortium: readfile.c,v 1.3 94/04/17 20:45:56 gildea Exp $ */
+/* $XConsortium: readfile.c,v 1.4 94/06/03 15:58:34 gildea Exp gildea $ */
 /*
 
 Copyright (c) 1988, 1991  X Consortium
@@ -39,14 +39,14 @@ extern char *malloc();
  * get_data_from_file - read data from a file into a single buffer; meant 
  * for small files containing messages.
  */
-static char *get_data_from_file (filename, len)
+static char *get_data_from_file (filename, len_return)
     char *filename;
-    int *len;			/* return */
+    int *len_return;
 {
     FILE *fp;
     struct stat statbuf;
     char *cp;
-
+    int count;
 
     if (stat (filename, &statbuf) != 0 || statbuf.st_size < 0) {
 	perror(filename);
@@ -66,15 +66,16 @@ static char *get_data_from_file (filename, len)
 	return NULL;
     }
 
-    if (fread (cp, 1, statbuf.st_size, fp) != statbuf.st_size) {
+    count = fread (cp, 1, statbuf.st_size, fp);
+    if (count == 0 && statbuf.st_size != 0) {
 	perror(filename);
 	(void) free (cp);
 	(void) fclose (fp);
 	return NULL;
     }
 
-    cp[statbuf.st_size] = '\0';		/* since we allocated one extra */
-    *len = statbuf.st_size;
+    cp[count] = '\0';		/* since we allocated one extra */
+    *len_return = count;
     (void) fclose (fp);
     return cp;
 }
