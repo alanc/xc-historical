@@ -35,11 +35,10 @@
 #define i386Architecture
 #endif
 
-
-#ifdef SparcArchitecture
-#define DefaultCCOptions -pipe			/* remove in R4 */
-#else
+#ifdef mc68000
 #define DefaultCCOptions -f68881 -pipe		/* remove in R4 */
+#else
+#define DefaultCCOptions -pipe			/* remove in R4 */
 #endif
 
 #define LibraryCCOptions /* don't want special floating point */
@@ -47,7 +46,7 @@
 /* see below for ServerDefines */
 
 
-/**/# platform:  $XConsortium: sun.cf,v 1.21 89/07/12 10:18:11 jim Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.22 89/07/18 15:39:34 jim Exp $
 /**/# operating system:  OSName
 
 #if SunOSPlatform
