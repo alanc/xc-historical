@@ -1,20 +1,15 @@
 /*
- * $XConsortium: main.c,v 1.49 91/04/10 09:55:08 rws Exp $
+ * $XConsortium: main.c,v 1.50 91/04/10 16:07:14 rws Exp $
  */
-#ifdef SVR4
-#define _POSIX_SOURCE
-#endif
-#ifdef sgi
-#define _POSIX_SOURCE
-#endif
-
 #include "def.h"
 #ifdef hpux
 #define sigvec sigvector
 #endif /* hpux */
 
+#ifndef X_NOT_POSIX
+#define _POSIX_SOURCE
+#endif
 #include <signal.h>
-
 
 #ifdef DEBUG
 int	_debugmask;
