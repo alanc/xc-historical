@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Form.c,v 1.18 88/09/06 09:55:48 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Form.c,v 1.19 88/09/06 16:41:20 jim Exp $";
 #endif lint
 
 
@@ -29,7 +29,8 @@ SOFTWARE.
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include <X11/FormP.h>
+#include <X11/Xmu.h>
+#include "FormP.h"
 
 /* Private Definitions */
 
@@ -71,7 +72,7 @@ static XtResource formConstraintResources[] = {
 };
 #undef Offset
 
-static void Initialize(), Resize();
+static void ClassInitialize(), Initialize(), Resize();
 static void ConstraintInitialize();
 static Boolean SetValues(), ConstraintSetValues();
 static XtGeometryResult GeometryManager();
@@ -82,7 +83,7 @@ FormClassRec formClassRec = {
     /* superclass         */    (WidgetClass) &constraintClassRec,
     /* class_name         */    "Form",
     /* widget_size        */    sizeof(FormRec),
-    /* class_initialize   */    NULL,
+    /* class_initialize   */    ClassInitialize,
     /* class_part_init    */    NULL,
     /* class_inited       */    FALSE,
     /* initialize         */    Initialize,
@@ -140,6 +141,70 @@ WidgetClass formWidgetClass = (WidgetClass)&formClassRec;
  * Private Procedures
  *
  ****************************************************************/
+
+
+static XrmQuark	XtQChainLeft, XtQChainRight, XtQChainTop,
+		XtQChainBottom, XtQRubber;
+
+#define	done(address, type) \
+	{ toVal->size = sizeof(type); \
+	  toVal->addr = (caddr_t) address; \
+	  return; \
+	}
+
+/* ARGSUSED */
+static void _CvtStringToEdgeType(args, num_args, fromVal, toVal)
+    XrmValuePtr args;		/* unused */
+    Cardinal    *num_args;      /* unused */
+    XrmValuePtr fromVal;
+    XrmValuePtr toVal;
+{
+    static XtEdgeType edgeType;
+    XrmQuark q;
+    char lowerName[1000];
+
+    LowerCase((char*)fromVal->addr, lowerName);
+    q = XrmStringToQuark(lowerName);
+    if (q == XtQChainLeft) {
+	edgeType = XtChainLeft;
+	done(&edgeType, XtEdgeType);
+    }
+    if (q == XtQChainRight) {
+	edgeType = XtChainRight;
+	done(&edgeType, XtEdgeType);
+    }
+    if (q == XtQChainTop) {
+	edgeType = XtChainTop;
+	done(&edgeType, XtEdgeType);
+    }
+    if (q == XtQChainBottom) {
+	edgeType = XtChainBottom;
+	done(&edgeType, XtEdgeType);
+    }
+    if (q == XtQRubber) {
+	edgeType = XtRubber;
+	done(&edgeType, XtEdgeType);
+    }
+    XtStringConversionWarning(fromVal->addr, "edgeType");
+    toVal->addr = NULL;
+    toVal->size = 0;
+}
+
+static void ClassInitialize()
+{
+    static XtConvertArgRec parentCvtArgs[] = {
+	{XtBaseOffset, (caddr_t)XtOffset(Widget, core.parent), sizeof(Widget)}
+    };
+    XtQChainLeft   = XrmStringToQuark("chainleft");
+    XtQChainRight  = XrmStringToQuark("chainright");
+    XtQChainTop    = XrmStringToQuark("chaintop");
+    XtQChainBottom = XrmStringToQuark("chainbottom");
+    XtQRubber      = XrmStringToQuark("rubber");
+
+    XtAddConverter( XtRString, XtREdgeType, _CvtStringToEdgeType, NULL, 0 );
+    XtAddConverter( XtRString, XtRWidget, XmuCvtStringToWidget,
+		    parentCvtArgs, XtNumber(parentCvtArgs) );
+}
 
 
 /* ARGSUSED */
