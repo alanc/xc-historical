@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.1 93/09/18 16:08:15 rws Exp $
 XCOMM
 XCOMM Copyright 1993,94 by Thomas Roell, Germany.
 XCOMM Copyright 1993,94 by SGCS (Snitily Graphics Consulting Services), USA.
@@ -30,8 +30,12 @@ XCOMM
 SRCS =	svgaBank.c svgaColor.c svgaFb.c svgaInit.c svgaIo.c svgaKbd.c \
 	svgaSVPMI.c svgaVT.c
 
+#if NeedSvga386
+ASOBJ = svga398.o
+#endif
+
 OBJS =	svgaBank.o svgaColor.o svgaFb.o svgaInit.o svgaIo.o svgaKbd.o \
-	svgaSVPMI.o svgaVT.o
+	svgaSVPMI.o svgaVT.o $(ASOBJ)
 
 INCLUDES = -I. -I../../mi -I../../mfb -I../../cfb -I../../include -I../../os \
 	   -I$(INCLUDESRC) -I$(FONTINCSRC)
