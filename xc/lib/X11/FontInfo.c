@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XFontInfo.c,v 11.13 88/08/11 14:33:01 jim Exp $ */
+/* $XConsortium: XFontInfo.c,v 11.14 88/09/06 16:07:22 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -121,6 +121,8 @@ int actualCount;
 	}
 	if (info != NULL) {
 		for (i = 0; i < actualCount; i++) {
+			if (info[i].per_char != NULL)
+				Xfree ((char *) info[i].per_char);
 			if (info[i].properties != NULL) 
 				Xfree ((char *) info[i].properties);
 			}
