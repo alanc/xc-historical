@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.49 90/12/31 16:59:04 rws Exp $ */
+/* $XConsortium: Convert.c,v 1.50 90/12/31 18:49:59 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -695,6 +695,7 @@ _XtCallConverter(dpy, converter,
 				to->size = p->to.size;
 				return False;
 			    }
+			    to->size = p->to.size;
 			    if (p->to_is_value) {
 				XtBCopy(&p->to.addr, to->addr, to->size);
 			    } else {
