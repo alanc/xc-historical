@@ -1,4 +1,4 @@
-/* $XConsortium: Label.c,v 1.87 91/06/22 19:35:20 rws Exp $ */
+/* $XConsortium: Label.c,v 1.88 91/06/22 20:13:59 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -60,7 +60,7 @@ static XtResource resources[] = {
     {XtNlabel,  XtCLabel, XtRString, sizeof(String),
 	offset(label.label), XtRString, NULL},
     {XtNencoding, XtCEncoding, XtRUnsignedChar, sizeof(unsigned char),
-	offset(label.encoding), XtRImmediate, (XtPointer)0},
+	offset(label.encoding), XtRImmediate, (XtPointer)XawTextEncoding8bit},
     {XtNjustify, XtCJustify, XtRJustify, sizeof(XtJustify),
 	offset(label.justify), XtRImmediate, (XtPointer)XtJustifyCenter},
     {XtNinternalWidth, XtCWidth, XtRDimension,  sizeof(Dimension),
