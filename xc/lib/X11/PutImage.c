@@ -1,13 +1,14 @@
 #include "copyright.h"
 
-/* $Header: XPutImage.c,v 11.37 87/12/12 17:45:32 rws Locked $ */
+/* $Header: XPutImage.c,v 11.38 87/12/13 12:27:36 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
 #include "Xlibint.h"
 #include <errno.h>
 
-#define ROUNDUP(nbytes, pad) ((((nbytes) + ((pad)-1)) / (pad)) * (pad))
+/* assumes pad is a power of 2 */
+#define ROUNDUP(nbytes, pad) (((nbytes) + ((pad) - 1)) & ~(long)((pad) - 1))
 
 /* this is used elsewhere */
 unsigned char _reverse_byte[0x100] = {
@@ -92,13 +93,12 @@ NoSwap (src, dest, srclen, srcinc, destinc, height)
     unsigned int height;
 {
     long h = height;
-    long length = (srclen < destinc) ? srclen : destinc;
 
     if (srcinc == destinc)
 	bcopy((char *)src, (char *)dest, (int)(srcinc * (h - 1) + srclen));
     else
 	for (; --h >= 0; src += srcinc, dest += destinc)
-	    bcopy((char *)src, (char *)dest, (int)length);
+	    bcopy((char *)src, (char *)dest, (int)srclen);
 }
 
 static int
@@ -107,14 +107,18 @@ SwapTwoBytes (src, dest, srclen, srcinc, destinc, height)
     long srclen, srcinc, destinc;
     unsigned int height;
 {
-    long length = (srclen < destinc) ? srclen : destinc;
+    long length = ROUNDUP(srclen, 2);
     register long h, n;
 
     srcinc -= length;
     destinc -= length;
     for (h = height; --h >= 0; src += srcinc, dest += destinc) {
+	if ((h == 0) && (srclen != length)) {
+	    length -= 2;
+	    *(dest + length + 1) = *(src + length);
+	}
 	for (n = length; n > 0; n -= 2, src += 2) {
-	    *dest++ = *(src+1);
+	    *dest++ = *(src + 1);
 	    *dest++ = *src;
 	}
     }
@@ -126,12 +130,18 @@ SwapThreeBytes (src, dest, srclen, srcinc, destinc, height)
     long srclen, srcinc, destinc;
     unsigned int height;
 {
-    long length = (srclen < destinc) ? srclen : destinc;
+    long length = ((srclen + 2) / 3) * 3;
     register long h, n;
 
     srcinc -= length;
     destinc -= length;
     for (h = height; --h >= 0; src += srcinc, dest += destinc) {
+	if ((h == 0) && (srclen != length)) {
+	    length -= 3;
+	    if ((srclen - length) == 2)
+		*(dest + length + 1) = *(src + length + 1);
+	    *(dest + length + 2) = *(src + length);
+	}
 	for (n = length; n > 0; n -= 3, src += 3) {
 	    *dest++ = *(src + 2);
 	    *dest++ = *(src + 1);
@@ -146,18 +156,27 @@ SwapFourBytes (src, dest, srclen, srcinc, destinc, height)
     long srclen, srcinc, destinc;
     unsigned int height;
 {
-    long length = (srclen < destinc) ? srclen : destinc;
+    long length = ROUNDUP(srclen, 4);
     register long h, n;
 
     srcinc -= length;
     destinc -= length;
-    for (h = height; --h >= 0; src += srcinc, dest += destinc)
+    for (h = height; --h >= 0; src += srcinc, dest += destinc) {
+	if ((h == 0) && (srclen != length)) {
+	    length -= 4;
+	    if ((srclen - length) == 3)
+		*(dest + length + 1) = *(src + length + 2);
+	    if (srclen & 2)
+		*(dest + length + 2) = *(src + length + 1);
+	    *(dest + length + 3) = *(src + length);
+	}
 	for (n = length; n > 0; n -= 4, src += 4) {
 	    *dest++ = *(src + 3);
 	    *dest++ = *(src + 2);
 	    *dest++ = *(src + 1);
 	    *dest++ = *src;
 	}
+    }
 }
 
 static int
@@ -166,12 +185,20 @@ SwapWords (src, dest, srclen, srcinc, destinc, height)
     long srclen, srcinc, destinc;
     unsigned int height;
 {
-    long length = (srclen < destinc) ? srclen : destinc;
+    long length = ROUNDUP(srclen, 4);
     register long h, n;
 
     srcinc -= length;
     destinc -= length;
     for (h = height; --h >= 0; src += srcinc, dest += destinc)
+	if ((h == 0) && (srclen != length)) {
+	    length -= 4;
+	    if ((srclen - length) == 3)
+		*(dest + length) = *(src + length + 2);
+	    if (srclen & 2)
+		*(dest + length + 3) = *(src + length + 1);
+	    *(dest + length + 2) = *(src + length);
+	}
 	for (n = length; n > 0; n -= 4, src += 2) {
 	    *dest++ = *(src + 2);
 	    *dest++ = *(src + 3);
@@ -187,14 +214,13 @@ SwapNibbles (src, dest, srclen, srcinc, destinc, height)
     long srclen, srcinc, destinc;
     unsigned int height;
 {
-    long length = (srclen < destinc) ? srclen : destinc;
     register long h, n;
     register unsigned char c;
 
-    srcinc -= length;
-    destinc -= length;
+    srcinc -= srclen;
+    destinc -= srclen;
     for (h = height; --h >= 0; src += srcinc, dest += destinc)
-	for (n = length; --n >= 0; ) {
+	for (n = srclen; --n >= 0; ) {
 	    c = *src++;
 	    *dest++ = ((c & 0xf) << 4) | ((c & 0xf0) >> 4);
 	}
@@ -206,14 +232,13 @@ SwapBits (src, dest, srclen, srcinc, destinc, height)
     long srclen, srcinc, destinc;
     unsigned int height;
 {
-    long length = (srclen < destinc) ? srclen : destinc;
     register long h, n;
     register unsigned char *rev = _reverse_byte;
 
-    srcinc -= length;
-    destinc -= length;
+    srcinc -= srclen;
+    destinc -= srclen;
     for (h = height; --h >= 0; src += srcinc, dest += destinc)
-	for (n = length; --n >= 0; )
+	for (n = srclen; --n >= 0; )
 	    *dest++ = rev[*src++];
 }
 
@@ -223,13 +248,17 @@ SwapBitsAndTwoBytes (src, dest, srclen, srcinc, destinc, height)
     long srclen, srcinc, destinc;
     unsigned int height;
 {
-    long length = (srclen < destinc) ? srclen : destinc;
+    long length = ROUNDUP(srclen, 2);
     register long h, n;
     register unsigned char *rev = _reverse_byte;
 
     srcinc -= length;
     destinc -= length;
     for (h = height; --h >= 0; src += srcinc, dest += destinc)
+	if ((h == 0) && (srclen != length)) {
+	    length -= 2;
+	    *(dest + length + 1) = rev[*(src + length)];
+	}
 	for (n = length; n > 0; n -= 2, src += 2) {
 	    *dest++ = rev[*(src + 1)];
 	    *dest++ = rev[*src];
@@ -242,13 +271,21 @@ SwapBitsAndFourBytes (src, dest, srclen, srcinc, destinc, height)
     long srclen, srcinc, destinc;
     unsigned int height;
 {
-    long length = (srclen < destinc) ? srclen : destinc;
+    long length = ROUNDUP(srclen, 4);
     register long h, n;
     register unsigned char *rev = _reverse_byte;
 
     srcinc -= length;
     destinc -= length;
     for (h = height; --h >= 0; src += srcinc, dest += destinc)
+	if ((h == 0) && (srclen != length)) {
+	    length -= 4;
+	    if ((srclen - length) == 3)
+		*(dest + length + 1) = rev[*(src + length + 2)];
+	    if (srclen & 2)
+		*(dest + length + 2) = rev[*(src + length + 1)];
+	    *(dest + length + 3) = rev[*(src + length)];
+	}
 	for (n = length; n > 0; n -= 4, src += 4) {
 	    *dest++ = rev[*(src + 3)];
 	    *dest++ = rev[*(src + 2)];
@@ -263,13 +300,21 @@ SwapBitsAndWords (src, dest, srclen, srcinc, destinc, height)
     long srclen, srcinc, destinc;
     unsigned int height;
 {
-    long length = (srclen < destinc) ? srclen : destinc;
+    long length = ROUNDUP(srclen, 4);
     register long h, n;
     register unsigned char *rev = _reverse_byte;
 
     srcinc -= length;
     destinc -= length;
     for (h = height; --h >= 0; src += srcinc, dest += destinc)
+	if ((h == 0) && (srclen != length)) {
+	    length -= 4;
+	    if ((srclen - length) == 3)
+		*(dest + length) = rev[*(src + length + 2)];
+	    if (srclen & 2)
+		*(dest + length + 3) = rev[*(src + length + 1)];
+	    *(dest + length + 2) = rev[*(src + length)];
+	}
 	for (n = length; n > 0; n -= 4, src += 2) {
 	    *dest++ = rev[*(src + 2)];
 	    *dest++ = rev[*(src + 3)];
@@ -381,12 +426,13 @@ SendXYImage(dpy, req, image, req_xoffset, req_yoffset)
 {
     register int j;
     long total_xoffset, bytes_per_src, bytes_per_dest, length;
-    long bytes_per_src_plane, bytes_per_dest_plane;
-    char *src, *dest, *buf;
+    long bytes_per_line, bytes_per_src_plane, bytes_per_dest_plane;
+    char *src, *dest, *buf, *temp;
+    char *extra = (char *)NULL;
     register int (*swapfunc)();
 
     total_xoffset = image->xoffset + req_xoffset;
-    req->leftPad = total_xoffset % dpy->bitmap_pad;
+    req->leftPad = total_xoffset & (dpy->bitmap_unit - 1);
     total_xoffset = (total_xoffset - req->leftPad) >> 3;
     /* The protocol requires left-pad of zero on all ZPixmap, even
      * though the 1-bit case is identical to bitmap format.  This is a
@@ -396,7 +442,8 @@ SendXYImage(dpy, req, image, req_xoffset, req_yoffset)
      */
     if ((req->leftPad != 0) && (req->format == ZPixmap))
 	req->format = XYPixmap;
-    bytes_per_dest = ROUNDUP(req->width + req->leftPad, dpy->bitmap_pad) >> 3;
+    bytes_per_dest = ROUNDUP((long)req->width + req->leftPad,
+			     dpy->bitmap_pad) >> 3;
     bytes_per_dest_plane = bytes_per_dest * req->height;
     length = bytes_per_dest_plane * image->depth;
     req->length += (length + 3) >> 2;
@@ -423,20 +470,61 @@ SendXYImage(dpy, req, image, req_xoffset, req_yoffset)
 	return;
     }
 
-    length = (length + 3) & ~3L;
+    length = ROUNDUP(length, 4);
     if ((dpy->bufptr + length) > dpy->bufmax)
 	buf = _XAllocScratch(dpy, (unsigned long)(length));
     else
 	buf = dpy->bufptr;
-    bytes_per_src = ROUNDUP(req->width + req->leftPad, image->bitmap_pad) >> 3;
-    bytes_per_src_plane = image->bytes_per_line * image->height;
+    bytes_per_src = ((long)req->width + req->leftPad + 7) >> 3;
+    bytes_per_line = image->bytes_per_line;
+    bytes_per_src_plane = bytes_per_line * image->height;
+    total_xoffset &= (image->bitmap_unit - 1) >> 3;
+
+    if ((total_xoffset > 0) &&
+	(image->byte_order != image->bitmap_bit_order)) {
+	char *temp;
+	long bytes_per_temp_plane, temp_length;
+
+	bytes_per_line = bytes_per_src + total_xoffset;
+	src -= total_xoffset;
+	bytes_per_temp_plane = bytes_per_line * req->height;
+	temp_length = ROUNDUP(bytes_per_temp_plane * image->depth, 4);
+	if (buf == dpy->bufptr)
+	    temp = _XAllocScratch(dpy, (unsigned long)temp_length);
+	else
+	    extra = temp = Xmalloc(temp_length);
+	swapfunc = SwapFunction[ComposeIndex(image->bitmap_unit,
+					     image->bitmap_bit_order,
+					     image->byte_order)]
+			       [ComposeIndex(image->bitmap_unit,
+					     dpy->byte_order,
+					     dpy->byte_order)];
+	for (dest = temp, j = image->depth;
+	     --j >= 0;
+	     src += bytes_per_src_plane, dest += bytes_per_temp_plane)
+	    (*swapfunc)((unsigned char *)src, (unsigned char *)dest,
+			bytes_per_line, (long)image->bytes_per_line,
+			bytes_per_line, req->height);
+	swapfunc = SwapFunction[ComposeIndex(image->bitmap_unit,
+					     dpy->byte_order,
+					     dpy->byte_order)]
+			       [ComposeIndex(dpy->bitmap_unit,
+					     dpy->bitmap_bit_order,
+					     dpy->byte_order)];
+	src = temp + total_xoffset;
+	bytes_per_src_plane = bytes_per_temp_plane;
+    }
 
     for (dest = buf, j = image->depth;
 	 --j >= 0;
 	 src += bytes_per_src_plane, dest += bytes_per_dest_plane)
 	(*swapfunc)((unsigned char *)src, (unsigned char *)dest,
-		    bytes_per_src, (long)image->bytes_per_line,
+		    bytes_per_src, bytes_per_line,
 		    bytes_per_dest, req->height);
+
+    if (extra)
+	Xfree(extra);
+
     if (buf == dpy->bufptr)
 	dpy->bufptr += length;
     else
@@ -456,9 +544,8 @@ SendZImage(dpy, req, image, req_xoffset, req_yoffset,
     unsigned char *src, *dest;
 
     req->leftPad = 0;
-    bytes_per_src = ROUNDUP(req->width * image->bits_per_pixel,
-			    image->bitmap_pad) >> 3;
-    bytes_per_dest = ROUNDUP(req->width * dest_bits_per_pixel,
+    bytes_per_src = ((long)req->width * image->bits_per_pixel) >> 3;
+    bytes_per_dest = ROUNDUP((long)req->width * dest_bits_per_pixel,
 			     dest_scanline_pad) >> 3;
     length = bytes_per_dest * req->height;
     req->length += (length + 3) >> 2;
@@ -478,7 +565,7 @@ SendZImage(dpy, req, image, req_xoffset, req_yoffset,
 	return;
     }
 
-    length = (length + 3) & ~3L;
+    length = ROUNDUP(length, 4);
     if ((dpy->bufptr + length) <= dpy->bufmax)
 	dest = (unsigned char *)dpy->bufptr;
     else
@@ -557,12 +644,12 @@ PutSubImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y,
 		- sizeof(xPutImageReq);
 
     if ((image->depth == 1) || (image->format != ZPixmap)) {
-	left_pad = (image->xoffset + req_xoffset) % dpy->bitmap_pad;
-	BytesPerRow = (ROUNDUP(req_width + left_pad, dpy->bitmap_pad) >> 3)
-			* image->depth;
+	left_pad = (image->xoffset + req_xoffset) & (dpy->bitmap_unit - 1);
+	BytesPerRow = (ROUNDUP((long)req_width + left_pad,
+			       dpy->bitmap_pad) >> 3) * image->depth;
     } else {
 	left_pad = 0;
-	BytesPerRow = ROUNDUP(req_width * dest_bits_per_pixel,
+	BytesPerRow = ROUNDUP((long)req_width * dest_bits_per_pixel,
 			      dest_scanline_pad) >> 3;
     }
 
