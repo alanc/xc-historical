@@ -1,4 +1,4 @@
-/* $XConsortium: bigreq.c,v 1.12 92/04/20 13:15:13 rws Exp $ */
+/* $XConsortium: bigreq.c,v 1.1 92/09/07 13:56:26 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -61,6 +61,7 @@ ProcBigReqGetVersion(client)
     rep.minorVersion = XBigReqMinorVersion;
     if (client->swapped) {
     	swaps(&rep.sequenceNumber, n);
+	swaps(&rep.majorVersion, n);
 	swaps(&rep.minorVersion, n);
     }
     WriteToClient(client, sizeof(xBigReqGetVersionReply), (char *)&rep);
@@ -132,6 +133,7 @@ SProcBigReqGetVersion(client)
 
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xBigReqGetVersionReq);
+    swaps(&stuff->majorVersion, n);
     swaps(&stuff->minorVersion, n);
     return ProcBigReqGetVersion(client);
 }
