@@ -990,11 +990,13 @@
 	    (setf ,place ,new-value)
 	    t))))
 
-;;;-----------------------------------------------------------------------------
+;;;----------------------------------------------------------------------------
 ;;; IO Error Recovery
 ;;;	All I/O operations are done within a WRAP-BUF-OUTPUT macro.
 ;;;	It prevents multiple mindless errors when the network craters.
 ;;;
+;;;----------------------------------------------------------------------------
+
 #-Genera
 (defmacro wrap-buf-output ((buffer) &body body)
   ;; Error recovery wrapper
@@ -1041,13 +1043,13 @@
        ,@body)))
 
 
-;;;-----------------------------------------------------------------------------
+;;;----------------------------------------------------------------------------
 ;;; System dependent IO primitives
 ;;;	Functions for opening, reading writing forcing-output and closing 
 ;;;	the stream to the server.
-;;;-----------------------------------------------------------------------------
+;;;----------------------------------------------------------------------------
 
-;;; open-x-stream - create a stream for communicating to the appropriate X
+;;; OPEN-X-STREAM - create a stream for communicating to the appropriate X
 ;;; server
 
 #-(or explorer Genera lucid kcl excl)
@@ -1559,9 +1561,9 @@
       (fd-char-avail-p fd))))
 
 
-;;;-----------------------------------------------------------------------------
+;;;----------------------------------------------------------------------------
 ;;; System dependent speed hacks
-;;;-----------------------------------------------------------------------------
+;;;----------------------------------------------------------------------------
 
 ;;
 ;; WITH-STACK-LIST is used by WITH-STATE as a memory saving feature.
@@ -1709,7 +1711,7 @@
 	 (restore-gcontext-temp-state ,gc ,temp-mask ,temp-gc))
        (deallocate-gcontext-state ,saved-state))))
 
-;;; -----------------------------------------------------------------------------
+;;;----------------------------------------------------------------------------
 ;;; How error detection should CLX do?
 ;;; Several levels are possible:
 ;;;
@@ -1731,7 +1733,7 @@
 ;;; How extensive should the error checking be?  For example, if the server
 ;;; expects a CARD16, is is sufficient for CLX to check for integer, or
 ;;; should it also check for non-negative and less than 65536?
-;;;-----------------------------------------------------------------------------
+;;;----------------------------------------------------------------------------
  
 ;; The *TYPE-CHECK?* constant controls how much error checking is done.
 ;; Possible values are:
@@ -1783,10 +1785,35 @@
   (x-error 'type-error :object object :type type :type-string error-string))
 
 
-;;-------------------------------------------------------------------------------
+;;-----------------------------------------------------------------------------
+;; Printing routines.
+;;-----------------------------------------------------------------------------
+
+#-lispm
+(defmacro printing-object ((object stream) &body body)
+  `(let* ((.object. ,object)
+	  (.stream. ,stream))
+     (princ "#<" .stream.)
+     (prin1 (type-of .object.) .stream.)
+     ,@(and body `((princ " " .stream.)))
+     ,@body
+     #+lcl3.0
+     (let ((*print-base* 16))
+       (princ " " .stream.)
+       (princ (sys:%pointer .object.) .stream.))
+     (princ ">" .stream.)))
+
+#+lispm
+(defmacro printing-object ((object stream) &body body)
+  `(si:printing-random-object (,object ,stream :typep)
+     ,@body))
+
+
+;;-----------------------------------------------------------------------------
 ;; Error handlers
-;;    Hack up KMP error signaling using zetalisp until the real thing comes along
-;;-------------------------------------------------------------------------------
+;;    Hack up KMP error signaling using zetalisp until the real thing comes 
+;;    along
+;;-----------------------------------------------------------------------------
 
 #+(or allegro lcl3.0)
 (eval-when (eval compile load)
@@ -1951,7 +1978,7 @@
 	   (type stream stream)
 	   (ignore depth))
   (if *print-escape*
-      (format stream "#<~a>" (type-of condition))
+      (printing-object (condition stream))
     (funcall (x-error-report-function condition) condition stream))
   condition)
   
@@ -2067,26 +2094,6 @@
 
 
 ;;-----------------------------------------------------------------------------
-;; Printing routines.
-;;-----------------------------------------------------------------------------
-
-#-lispm
-(defun display-print (display stream depth)
-  depth ;; not used
-  (format stream "#<DISPLAY ~a ~d>"
-	  (display-host display)
-	  (display-display display)))
-
-#+lispm
-(defun display-print (display stream depth)
-  depth ;; not used
-  (si:printing-random-object (display stream :typep)
-    (princ (display-host display) stream)
-    (princ " " stream)
-    (princ (display-display display) stream)))
-
-
-;;-----------------------------------------------------------------------------
 ;; Whether to use closures for requests or not.
 ;;-----------------------------------------------------------------------------
 
@@ -2103,43 +2110,6 @@
 ;;-----------------------------------------------------------------------------
 ;; Resource stuff
 ;;-----------------------------------------------------------------------------
-
-;;; STRINGABLE-EQUAL - compare two stringables.  Ignore case whan comparing a
-;;; string to a symbol.
-
-;; This is in the inner-loop of the resource search.
-;; Try to be as fast as possible.
-#+explorer
-(proclaim '(inline stringable-equal))
-
-#+explorer
-(defun stringable-equal (a b)
-  ;; Compare two stringables.
-  ;; Ignore case when comparing to a symbol.
-  (declare (type stringable a b))
-  (declare (values boolean))
-  (if (symbolp a)
-      (if (symbolp b)
-	  (equal (the string (symbol-name a)) (the string (symbol-name b)))
-	(si:%string-equal (the string (symbol-name a)) 0 (the string b) 0 nil))
-    (if (symbolp b)
-	(si:%string-equal (the string a) 0 (the string (symbol-name b)) 0 nil)
-      (equal a b))))
-
-#-explorer
-(defun stringable-equal (a b)
-  ;; Compare two stringables.
-  ;; Ignore case when comparing to a symbol.
-  (declare (type stringable a b))
-  (declare (values boolean))
-  (if (symbolp a)
-      (if (symbolp b)
-	  (string= (the string (symbol-name a)) (the string (symbol-name b)))
-	(string-equal (the string (symbol-name a)) (the string b)))
-    (if (symbolp b)
-	(string-equal (the string a) (the string (symbol-name b)))
-      (string= (the string a) (the string b)))))
-
 
 
 ;;; DEFAULT-RESOURCE-PATHNAME - The pathname of the resources file to load if
@@ -2170,11 +2140,11 @@
 			 #-excl (machine-instance)))))))
 
 
-;;-------------------------------------------------------------------------------
+;;-----------------------------------------------------------------------------
 ;; Image stuff
-;;-------------------------------------------------------------------------------
+;;-----------------------------------------------------------------------------
 
-(deftype pixarray-1-element-type ()
+v(deftype pixarray-1-element-type ()
   'bit)
 
 (deftype pixarray-4-element-type ()
