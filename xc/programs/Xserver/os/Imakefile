@@ -6,8 +6,14 @@
 #ifdef HPArchitecture
 #define OtherSources hpsocket.c 
 #define OtherObjects hpsocket.o dbm.o alloca.o
+#define NEED_ALLOCA_FROM_LIBPW
 #endif
 
+#ifdef MacIIArchitecture
+#define OtherSources
+#define OtherObjects alloca.o
+#define NEED_ALLOCA_FROM_LIBPW
+#endif
 
 /*
  * do not modify the following two definitions
@@ -40,9 +46,12 @@ BOOTSTRAPCFLAGS =
 
 #ifdef HPArchitecture
          DBMLIB = /usr/lib/libdbm.a
-          PWLIB = /lib/libPW.a
     XLIBSYSVDIR = $(TOP)/lib/X/sysV
 #endif /* HPArchitecture */
+
+#ifdef NEED_ALLOCA_FROM_LIBPW
+          PWLIB = /lib/libPW.a
+#endif /* NEED_ALLOCA_FROM_LIBPW */
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(os,$(OBJS))
@@ -68,7 +77,9 @@ dbm.o:  $(DBMLIB)
 	(cd dbm; rm -f *.o; ar -x $(DBMLIB); \
 	ld -r -o a.out.o -h _bcopy ndbm.o; \
 	mv a.out.o ndbm.o; ld -r -o ../dbm.o *.o)
+#endif /* HPArchitecture */
 
+#ifdef NEED_ALLOCA_FROM_LIBPW
 /**/#
 /**/# And this one is to get the version of alloca that lives in /lib/libPW.a
 /**/# without getting all of the rest of the stuff in there.
@@ -76,7 +87,7 @@ dbm.o:  $(DBMLIB)
 alloca.o:  $(PWLIB)
 	rm -f alloca.o
 	ar x $(PWLIB) alloca.o
-#endif /* HPArchitecture */
+#endif /* NEED_ALLOCA_FROM_LIBPW */
 
 SpecialObjectRule(osinit.o, $(IRULESRC)/$(MACROFILE), -DADMPATH=\"$(ADMDIR)/X\%smsgs\")
 SpecialObjectRule(WaitFor.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
