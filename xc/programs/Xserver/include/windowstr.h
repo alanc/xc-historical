@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 5.13 89/10/04 10:27:15 rws Exp $ */
+/* $XConsortium: windowstr.h,v 5.14 92/02/13 15:54:18 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -92,7 +92,7 @@ typedef struct _Window {
     WindowOptPtr	optional;
     unsigned		backgroundState:2; /* None, Relative, Pixel, Pixmap */
     unsigned		borderIsPixel:1;
-    unsigned		cursorIsNone:1;	/* else same as parent */
+    unsigned		cursorIsNone:1;	/* else real cursor (might inherit) */
     unsigned		backingStore:2;
     unsigned		saveUnder:1;
     unsigned		DIXsaveUnder:1;
