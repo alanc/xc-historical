@@ -322,6 +322,9 @@ WidgetClassRec xtermClassRec = {
     /* version            */    XtVersion,
     /* callback_offsets   */    NULL,
     /* tm_table           */    NULL,				
+    /* query_geometry     */    XtInheritQueryGeometry,
+    /* display_accelerator*/    XtInheritDisplayAccelerator,
+    /* extension          */    NULL
   }
 };
 

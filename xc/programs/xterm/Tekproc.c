@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.36 88/07/29 14:49:31 jim Exp $
+ * $Header: Tekproc.c,v 1.37 88/08/18 21:45:34 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -119,7 +119,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.36 88/07/29 14:49:31 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.37 88/08/18 21:45:34 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -167,13 +167,13 @@ extern void HandleLeaveWindow();
 extern void HandleFocusChange();
 extern void TekButtonPressed();
 
-static int defOne = 1;
+static Dimension defOne = 1;
 
 static XtResource resources[] = {
-    {XtNwidth, XtCWidth, XtRInt, sizeof(int),
-	 XtOffset(Widget, core.width), XtRInt, (caddr_t)&defOne},
-    {XtNheight, XtCHeight, XtRInt, sizeof(int),
-	 XtOffset(Widget, core.height), XtRInt, (caddr_t)&defOne},
+    {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
+	 XtOffset(Widget, core.width), XtRDimension, (caddr_t)&defOne},
+    {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
+	 XtOffset(Widget, core.height), XtRDimension, (caddr_t)&defOne},
 };
 
 static void TekInitialize(), TekRealize(), TekConfigure();
@@ -210,7 +210,10 @@ WidgetClassRec tekClassRec = {
     /* accept_focus	  */	NULL,
     /* version            */    XtVersion,
     /* callback_offsets   */    NULL,
-    /* tm_table           */    NULL,				
+    /* tm_table           */    NULL,
+    /* query_geometry     */    XtInheritQueryGeometry,
+    /* display_accelerator*/    XtInheritDisplayAccelerator,
+    /* extension          */    NULL
   }
 };
 #define tekWidgetClass ((WidgetClass)&tekClassRec)
