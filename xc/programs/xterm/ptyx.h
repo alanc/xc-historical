@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.21 89/01/06 15:58:14 jim Exp $
+ *	$XConsortium: ptyx.h,v 1.22 89/03/01 20:00:38 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -347,6 +347,7 @@ typedef struct {
 	Atom*		selection_atoms; /* which selections we own */
 	Cardinal	sel_atoms_size;	/*  how many atoms allocated */
 	Cardinal	selection_count; /* how many atoms in use */
+	Boolean		eight_bits;	/* use 8th bit instead of ESC prefix */
 } TScreen;
 
 /* meaning of bits in screen.select flag */

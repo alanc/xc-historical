@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.67 89/03/01 20:00:22 jim Exp $
+ * $XConsortium: charproc.c,v 1.68 89/03/02 11:25:41 keith Exp $
  */
 
 
@@ -75,6 +75,7 @@ static void VTallocbuf();
 #define	XtNcursorColor		"cursorColor"
 #define XtNcutNewline		"cutNewline"
 #define XtNcutToBeginningOfLine	"cutToBeginningOfLine"
+#define XtNeightBitInput	"eightBitInput"
 #define XtNgeometry		"geometry"
 #define XtNtekGeometry		"tekGeometry"
 #define	XtNinternalBorder	"internalBorder"
@@ -109,6 +110,7 @@ static void VTallocbuf();
 #define	XtCCurses		"Curses"
 #define XtCCutNewline		"CutNewline"
 #define XtCCutToBeginningOfLine	"CutToBeginningOfLine"
+#define XtCEightBitInput	"EightBitInput"
 #define XtCGeometry		"Geometry"
 #define	XtCJumpScroll		"JumpScroll"
 #define	XtCLogfile		"Logfile"
@@ -136,7 +138,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.67 89/03/01 20:00:22 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.68 89/03/02 11:25:41 keith Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -160,7 +162,7 @@ extern int scstable[];
 
 
 /* event handlers */
-extern void HandleKeyPressed();
+extern void HandleKeyPressed(), HandleEightBitKeyPressed();
 extern void HandleStringEvent();
 extern void HandleEnterWindow();
 extern void HandleLeaveWindow();
@@ -196,7 +198,8 @@ static  int	defaultMultiClickTime = MULTICLICKTIME;
 
 static char defaultTranslations[] =
 "\
-	    <KeyPress>:		insert()	\n\
+       ~Meta<KeyPress>: 	insert-seven-bit()	\n\
+        Meta<KeyPress>: 	insert-eight-bit()	\n\
  Ctrl ~Meta <Btn1Down>:		mode-menu()	\n\
       ~Meta <Btn1Down>:		select-start()	\n\
       ~Meta <Btn1Motion>:	select-extend() \n\
@@ -212,7 +215,9 @@ static char defaultTranslations[] =
 static XtActionsRec actionsList[] = { 
     { "bell",		  HandleBell },
     { "ignore",		  HandleIgnore },
-    { "insert",		  HandleKeyPressed },
+    { "insert",		  HandleKeyPressed },  /* alias for insert-seven-bit */
+    { "insert-seven-bit", HandleKeyPressed },
+    { "insert-eight-bit", HandleEightBitKeyPressed },
     { "insert-selection", HandleInsertSelection },
     { "keymap", 	  HandleKeymapChange },
     { "mode-menu",	  HandleModeMenu },
@@ -257,6 +262,9 @@ static XtResource resources[] = {
 {XtNcursorColor, XtCForeground, XtRPixel, sizeof(Pixel),
 	XtOffset(XtermWidget, screen.cursorcolor),
 	XtRString, "Black"},
+{XtNeightBitInput, XtCEightBitInput, XtRBoolean, sizeof(Boolean),
+	XtOffset(XtermWidget, screen.eight_bits), 
+	XtRBoolean, (caddr_t) &defaultTRUE},
 {XtNgeometry,XtCGeometry, XtRString, sizeof(char *),
 	XtOffset(XtermWidget, misc.geo_metry),
 	XtRString, (caddr_t) NULL},
@@ -1916,6 +1924,7 @@ static void VTInitialize (request, new)
    new->screen.cutToBeginningOfLine = request->screen.cutToBeginningOfLine;
    new->screen.always_highlight = request->screen.always_highlight;
    new->screen.pointer_cursor = request->screen.pointer_cursor;
+   new->screen.eight_bits = request->screen.eight_bits;
    new->misc.titeInhibit = request->misc.titeInhibit;
 
     /*

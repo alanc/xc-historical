@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.29 89/01/04 12:25:17 jim Exp $
+ *	$XConsortium: misc.c,v 1.30 89/03/01 20:00:34 jim Exp $
  */
 
 
@@ -54,7 +54,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.29 89/01/04 12:25:17 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.30 89/03/01 20:00:34 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -108,7 +108,21 @@ void HandleKeyPressed(w, event, params, nparams)
 #ifdef ACTIVEWINDOWINPUTONLY
     if (w == (screen->TekEmu ? (Widget)tekWidget : (Widget)term))
 #endif
-	Input (&term->keyboard, screen, event);
+	Input (&term->keyboard, screen, event, False);
+}
+/* ARGSUSED */
+void HandleEightBitKeyPressed(w, event, params, nparams)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *nparams;
+{
+    register TScreen *screen = &term->screen;
+
+#ifdef ACTIVEWINDOWINPUTONLY
+    if (w == (screen->TekEmu ? (Widget)tekWidget : (Widget)term))
+#endif
+	Input (&term->keyboard, screen, event, True);
 }
 
 /* ARGSUSED */

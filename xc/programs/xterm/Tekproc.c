@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.48 89/01/18 16:29:39 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.49 89/03/01 19:59:35 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -121,7 +121,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.48 89/01/18 16:29:39 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.49 89/03/01 19:59:35 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -163,7 +163,7 @@ static int *curstate = Talptable;
 static int *Tparsestate = Talptable;
 
 /* event handlers */
-extern void HandleKeyPressed();
+extern void HandleKeyPressed(), HandleEightBitKeyPressed();
 extern void HandleStringEvent();
 extern void HandleEnterWindow();
 extern void HandleLeaveWindow();
@@ -171,12 +171,15 @@ extern void HandleFocusChange();
 extern void HandleSecure();
 extern void TekButtonPressed();
 
-static char defaultTranslations[] = 
-    "<KeyPress>: insert()";
+static char defaultTranslations[] = "\
+       ~Meta<KeyPress>: 	insert-seven-bit()	\n\
+        Meta<KeyPress>: 	insert-eight-bit()";
 
 static XtActionsRec actionsList[] = { 
     { "string",	HandleStringEvent },
-    { "insert",	HandleKeyPressed },
+    { "insert",	HandleKeyPressed },	/* alias for insert-seven-bit */
+    { "insert-seven-bit",	HandleKeyPressed },
+    { "insert-eight-bit",	HandleEightBitKeyPressed },
     { "secure", HandleSecure }
 };
 

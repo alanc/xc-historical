@@ -1,9 +1,9 @@
 /*
- *	$XConsortium: input.c,v 1.5 88/09/06 17:08:05 jim Exp $
+ *	$XConsortium: input.c,v 1.6 89/03/02 09:54:09 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_input_c = "$XConsortium: input.c,v 1.5 88/09/06 17:08:05 jim Exp $";
+static char *rcsid_input_c = "$XConsortium: input.c,v 1.6 89/03/02 09:54:09 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -34,7 +34,7 @@ static char *rcsid_input_c = "$XConsortium: input.c,v 1.5 88/09/06 17:08:05 jim 
 /* input.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: input.c,v 1.5 88/09/06 17:08:05 jim Exp $";
+static char rcs_id[] = "$XConsortium: input.c,v 1.6 89/03/02 09:54:09 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -44,8 +44,6 @@ static char rcs_id[] = "$XConsortium: input.c,v 1.5 88/09/06 17:08:05 jim Exp $"
 #include <X11/Xutil.h>
 #include <stdio.h>
 #include "ptyx.h"
-
-int MetaMode = 0;	/* prefix with ESC when Meta Key is down */
 
 static XComposeStatus compose_status = {NULL, 0};
 static char *kypd_num = " XXXXXXXX\tXXX\rXXXxxxxXXXXXXXXXXXXXXXXXXXXX*+,-.\\0123456789XXX=";
@@ -78,10 +76,11 @@ register TScreen *screen;
 	}
 }
 
-Input (keyboard, screen, event)
+Input (keyboard, screen, event, eightbit)
 register TKeyboard	*keyboard;
 register TScreen		*screen;
 register XKeyPressedEvent *event;
+Bool eightbit;
 {
 
 #define STRBUFSIZE 100
@@ -149,14 +148,12 @@ register XKeyPressedEvent *event;
 			TekGINoff();
 			nbytes--;
 		}
-		/* XXX - need to locate meta key */
-		if (nbytes == 1 && event->state & Mod1Mask) {
-			*string |= 0x80;
+		if ((nbytes == 1) && eightbit) {
+		    if (screen->eight_bits)
+		      *string |= 0x80;	/* turn on eighth bit */
+		    else
+		      unparseputc (033, pty);  /* escape */
 		}
-/*
-		if ((nbytes == 1) && MetaMode && (event->state & Mod1Mask))
-			unparseputc(033, pty);
- */
 		while (nbytes-- > 0)
 			unparseputc(*string++, pty);
 		key = TRUE;
