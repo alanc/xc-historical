@@ -1,5 +1,5 @@
 STARTFONT 2.1
-COMMENT "$NCDId: @(#)9x15B.bdf,v 14.9 1991/06/24 12:19:53 jim Exp $"
+COMMENT "$NCDId: @(#)9x15B.bdf,v 14.10 1991/06/26 12:27:08 jim Exp $"
 COMMENT ""
 COMMENT "Designed and made by"
 COMMENT "Thomas Bagli (pyramid!pcsbst!tom@uunet.UU.NET)"
@@ -40,16 +40,16 @@ BBX 9 15 0 -3
 BITMAP
 0000
 0000
-2a00
-5500
-2a00
-5500
-2a00
-5500
-2a00
-5500
-2a00
-5500
+0000
+0000
+0000
+0000
+0000
+0000
+0000
+0000
+0000
+0000
 0000
 0000
 0000

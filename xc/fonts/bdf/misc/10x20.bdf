@@ -1,6 +1,6 @@
 STARTFONT 2.1
 COMMENT ""
-COMMENT "$NCDId: @(#)10x20.bdf,v 1.6 1991/06/24 11:55:30 jim Exp $"
+COMMENT "$NCDId: @(#)10x20.bdf,v 1.8 1991/06/26 12:01:57 jim Exp $"
 COMMENT  ""
 COMMENT  "Copyright 1989-1991 Network Computing Devices, Inc."
 COMMENT  "NCD is a registered trademark of Network Computing Devices, Inc."
@@ -57,19 +57,19 @@ BBX 10 20 0 -4
 BITMAP
 0000
 0000
-5500
-2a80
-5500
-2a80
-5500
-2a80
-5500
-2a80
-5500
-2a80
-5500
-2a80
-5500
+0000
+0000
+0000
+0000
+0000
+0000
+0000
+0000
+0000
+0000
+0000
+0000
+0000
 0000
 0000
 0000
