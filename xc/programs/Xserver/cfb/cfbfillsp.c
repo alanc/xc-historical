@@ -50,7 +50,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 5.8 90/01/10 11:50:53 keith Exp $ */
+/* $XConsortium: cfbfillsp.c,v 5.10 90/01/31 12:31:25 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -63,6 +63,8 @@ SOFTWARE.
 
 #include "cfb.h"
 #include "cfbmskbits.h"
+
+#include "mergerop.h"
 
 #if PPW == 4
 #include "cfb8bit.h"
@@ -295,6 +297,9 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 }
 
 
+extern void cfbFillUnnaturalTileFSCopy ();
+extern void cfbFillUnnaturalTileFSGeneral ();
+
 /* Fill spans with tiles that aren't 32 bits wide */
 void
 cfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
@@ -305,6 +310,43 @@ DDXPointPtr pptInit;		/* pointer to list of start points */
 int *pwidthInit;		/* pointer to list of n widths */
 int fSorted;
 {
+    int n;			/* number of spans to fill */
+    register DDXPointPtr ppt;	/* pointer to list of start points */
+    register int *pwidth;	/* pointer to list of n widths */
+    void    (*fill)();
+    int	xrot, yrot;
+
+    if (!(pGC->planemask))
+	return;
+
+    fill = cfbFillUnnaturalTileFSGeneral;
+    if ((pGC->planemask & PMSK) == PMSK)
+    {
+	if (pGC->alu == GXcopy)
+	    fill = cfbFillUnnaturalTileFSCopy;
+    }
+    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    if(!ppt || !pwidth)
+    {
+	if (ppt) DEALLOCATE_LOCAL(ppt);
+	if (pwidth) DEALLOCATE_LOCAL(pwidth);
+	return;
+    }
+    n = miClipSpans(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
+		     pptInit, pwidthInit, nInit, 
+		     ppt, pwidth, fSorted);
+
+    xrot = pDrawable->x + pGC->patOrg.x;
+    yrot = pDrawable->y + pGC->patOrg.y;
+
+    (*fill) (pDrawable, n, ppt, pwidth, pGC->tile.pixmap, xrot, yrot, pGC->alu, pGC->planemask);
+
+    DEALLOCATE_LOCAL(ppt);
+    DEALLOCATE_LOCAL(pwidth);
+
+#ifdef NOTDEF
     int		iline;		/* first line of tile to use */
 				/* next three parameters are post-clip */
     int n;			/* number of spans to fill */
@@ -481,6 +523,7 @@ int fSorted;
     }
     DEALLOCATE_LOCAL(pptFree);
     DEALLOCATE_LOCAL(pwidthFree);
+#endif
 }
 
 #if PPW == 4
@@ -900,6 +943,7 @@ cfbTile32FS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     PixmapPtr pTile;
     int *psrc;		/* pointer to bits in tile, if needed */
     int tileHeight;	/* height of the tile */
+    MROP_DECLARE ()
 
     if (!(planemask = pGC->planemask))
 	return;
@@ -939,42 +983,79 @@ cfbTile32FS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 							pRotatedPixmap;
     tileHeight = pTile->drawable.height;
     psrc = (int *) pTile->devPrivate.ptr;
-    if (rop == GXcopy && (planemask & PMSK) == PMSK && !(tileHeight & (tileHeight-1)))
+    if (rop == GXcopy && (planemask & PMSK) == PMSK)
     {
-	tileHeight--;
-	while (n--)
+	if (!(tileHeight & (tileHeight-1)))
 	{
-	    x = ppt->x;
-	    y = ppt->y;
-	    addrl = addrlBase + (y * nlwidth);
-	    fill = psrc[y & tileHeight];
-	    ++ppt;
-	    width = *pwidth++;
-	    if (!width)
-		continue;
-	    if ( ((x & PIM) + width) <= PPW)
+	    tileHeight--;
+	    while (n--)
 	    {
-		addrl += x >> PWSH;
-		maskpartialbits(x, width, startmask);
-		*addrl = (*addrl & ~startmask) | (fill & startmask);
+	    	x = ppt->x;
+	    	y = ppt->y;
+	    	addrl = addrlBase + (y * nlwidth);
+	    	fill = psrc[y & tileHeight];
+	    	++ppt;
+	    	width = *pwidth++;
+	    	if (!width)
+		    continue;
+	    	if ( ((x & PIM) + width) <= PPW)
+	    	{
+		    addrl += x >> PWSH;
+		    maskpartialbits(x, width, startmask);
+		    *addrl = (*addrl & ~startmask) | (fill & startmask);
+	    	}
+	    	else
+	    	{
+		    addrl += x >> PWSH;
+		    maskbits(x, width, startmask, endmask, nlmiddle);
+		    if ( startmask ) {
+		    	*addrl = *addrl & ~startmask | fill & startmask;
+		    	++addrl;
+		    }
+		    while ( nlmiddle-- )
+		    	*addrl++ = fill;
+		    if ( endmask )
+		    	*addrl = *addrl & ~endmask | fill & endmask;
+	    	}
 	    }
-	    else
+	}
+	else
+	{
+	    while (n--)
 	    {
-		addrl += x >> PWSH;
-		maskbits(x, width, startmask, endmask, nlmiddle);
-		if ( startmask ) {
-		    *addrl = *addrl & ~startmask | fill & startmask;
-		    ++addrl;
-		}
-		while ( nlmiddle-- )
-		    *addrl++ = fill;
-		if ( endmask )
-		    *addrl = *addrl & ~endmask | fill & endmask;
+	    	x = ppt->x;
+	    	y = ppt->y;
+	    	addrl = addrlBase + (y * nlwidth);
+	    	fill = psrc[y % tileHeight];
+	    	++ppt;
+	    	width = *pwidth++;
+	    	if (!width)
+		    continue;
+	    	if ( ((x & PIM) + width) <= PPW)
+	    	{
+		    addrl += x >> PWSH;
+		    maskpartialbits(x, width, startmask);
+		    *addrl = (*addrl & ~startmask) | (fill & startmask);
+	    	}
+	    	else
+	    	{
+		    addrl += x >> PWSH;
+		    maskbits(x, width, startmask, endmask, nlmiddle);
+		    if ( startmask ) {
+		    	*addrl = *addrl & ~startmask | fill & startmask;
+		    	++addrl;
+		    }
+		    while ( nlmiddle-- )
+		    	*addrl++ = fill;
+		    if ( endmask )
+		    	*addrl = *addrl & ~endmask | fill & endmask;
+	    	}
 	    }
 	}
     }
     else
     {
+	MROP_INITIALIZE(pGC->alu, pGC->planemask);
     	while (n--)
     	{
 	    x = ppt->x;
@@ -988,25 +1069,21 @@ cfbTile32FS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	    	if ( ((x & PIM) + width) <= PPW)
 	    	{
 		    maskpartialbits(x, width, startmask);
-		    *addrl = *addrl & ~(planemask & startmask) |
-			     DoRop(rop, fill, *addrl) & (planemask & startmask);
+		    *addrl = MROP_MASK (fill, *addrl, startmask);
 	    	}
 	    	else
 	    	{
 		    maskbits(x, width, startmask, endmask, nlmiddle);
 		    if ( startmask ) {
-			*addrl = *addrl & ~(planemask & startmask) |
-			         DoRop (rop, fill, *addrl) & (planemask & startmask);
+			*addrl = MROP_MASK (fill, *addrl, startmask);
 		    	++addrl;
 		    }
 		    while ( nlmiddle-- ) {
-			*addrl = (*addrl & ~planemask) |
-				 DoRop (rop, fill, *addrl) & planemask;
+			*addrl = MROP_SOLID (fill, *addrl);
 		    	++addrl;
 		    }
 		    if ( endmask ) {
-			*addrl = *addrl & ~(planemask & endmask) |
-			         DoRop (rop, fill, *addrl) & (planemask & endmask);
+			*addrl = MROP_MASK (fill, *addrl, endmask);
 		    }
 	    	}
 	    }

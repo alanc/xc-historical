@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.34 90/01/31 12:31:31 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.35 90/02/22 18:43:20 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -730,19 +730,15 @@ cfbValidateGC(pGC, changes, pDrawable)
     } /* end of new_fillspans */
 
     if (new_fillrct) {
-	pGC->ops->PolyFillRect = miPolyFillRect;
 	pGC->ops->PolyFillArc = miPolyFillArc;
 	pGC->ops->PushPixels = mfbPushPixels;
-	if (pGC->fillStyle == FillSolid ||
-#if PPW == 4
-	    pGC->fillStyle != FillTiled ||
-#endif
-	    (pGC->fillStyle == FillTiled &&
-	     (devPriv->pRotatedPixmap ||
-	      (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK))))
+#if PPW != 4
+	pGC->ops->PolyFillRect = miPolyFillRect;
+	if (pGC->fillStyle == FillSolid || pGC->fillStyle == FillTiled)
 	{
 	    pGC->ops->PolyFillRect = cfbPolyFillRect;
 	}
+#endif
 #if PPW == 4
 	if (pGC->fillStyle == FillSolid && devPriv->rop == GXcopy)
 	    pGC->ops->PushPixels = cfbPushPixels8;
