@@ -27,4 +27,7 @@ NormalLintTarget($(SRCS))
 
 SpecialObjectRule(miinitext.o, $(ICONFIGFILES), $(EXT_DEFINES))
 
+saber_src:
+	#load $(CFLAGS) $(EXT_DEFINES) $(SRCS)
+
 DependTarget()
