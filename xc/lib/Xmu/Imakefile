@@ -16,6 +16,7 @@ SRCS = \
 	Atoms.c \
 	CrPixFBit.c \
 	CvtStdSel.c \
+	DefErr.c \
 	FToCback.c \
 	Lookup.c \
 	Lower.c \
@@ -31,6 +32,7 @@ OBJS = \
 	Atoms.o \
 	CrPixFBit.o \
 	CvtStdSel.o \
+	DefErr.o \
 	FToCback.o \
 	Lookup.o \
 	Lower.o \
