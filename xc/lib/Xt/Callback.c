@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Callback.c,v 1.10 88/09/21 13:03:56 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Callback.c,v 1.11 88/10/18 10:42:18 swick Exp $";
 /* $oHeader: Callback.c,v 1.4 88/09/01 11:08:37 asente Exp $ */
 #endif lint
 
@@ -239,7 +239,8 @@ void _XtRemoveAllCallbacks (callbacks)
 void _XtFreeCallbackList(callbacks)
     CallbackStruct *callbacks;	/* may not be NULL */
 {
-    _XtRemoveAllCallbacks(callbacks->internal_form);
+    if (callbacks->internal_form != NULL)
+	_XtRemoveAllCallbacks(callbacks->internal_form);
     XtFree(callbacks->external_form);
     XtFree(callbacks);
 } /* XtFreeCallbackList */
@@ -261,6 +262,7 @@ void XtRemoveAllCallbacks(widget, name)
     }
     if (*callbacks != NULL) {
 	_XtFreeCallbackList(*callbacks);
+	*callbacks = (CallbackStruct*)NULL;
     }
 } /* XtRemoveAllCallbacks */
 
