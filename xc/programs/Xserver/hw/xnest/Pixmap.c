@@ -1,4 +1,4 @@
-/* $XConsortium: Pixmap.c,v 1.1 93/07/12 15:28:39 rws Exp $ */
+/* $XConsortium: Pixmap.c,v 1.2 94/01/07 09:52:47 dpw Exp ray $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -22,10 +22,7 @@ is" without express or implied warranty.
 #include "servermd.h"
 #include "mi.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #include "Screen.h"

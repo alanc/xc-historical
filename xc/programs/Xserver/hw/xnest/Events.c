@@ -1,4 +1,4 @@
-/* $XConsortium: Events.c,v 1.2 93/09/23 18:57:11 rws Exp $ */
+/* $XConsortium: Events.c,v 1.3 94/01/07 09:52:34 dpw Exp ray $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -22,10 +22,7 @@ is" without express or implied warranty.
 #include "windowstr.h"
 #include "servermd.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #include "Screen.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: Screen.c,v 1.3 93/09/29 17:40:17 dpw Exp $ */
+/* $XConsortium: Screen.c,v 1.4 94/02/06 17:52:40 rws Exp ray $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -21,10 +21,7 @@ is" without express or implied warranty.
 #include "colormapst.h"
 #include "resource.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #include "Screen.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.1 93/07/12 15:28:06 rws Exp $ */
+/* $XConsortium: Display.c,v 1.2 94/02/06 17:51:11 rws Exp ray $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -13,9 +13,6 @@ is" without express or implied warranty.
 
 */
 
-#ifdef _XSERVER64
-#undef _XSERVER64
-#endif
 
 #include "X.h"
 #include "Xproto.h"
@@ -25,10 +22,7 @@ is" without express or implied warranty.
 #include "scrnintstr.h"
 #include "servermd.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #include "Init.h"

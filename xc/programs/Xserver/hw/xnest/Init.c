@@ -1,4 +1,4 @@
-/* $XConsortium: Init.c,v 1.1 93/07/12 15:28:32 rws Exp $ */
+/* $XConsortium: Init.c,v 1.2 93/12/13 17:40:05 dpw Exp ray $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -21,10 +21,7 @@ is" without express or implied warranty.
 #include "windowstr.h"
 #include "servermd.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #include "Screen.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.1 93/07/12 15:28:36 rws Exp $ */
+/* $XConsortium: Keyboard.c,v 1.2 94/02/23 15:56:46 dpw Exp ray $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -22,10 +22,7 @@ is" without express or implied warranty.
 #include "scrnintstr.h"
 #include "servermd.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #include "Screen.h"
@@ -95,10 +92,26 @@ int xnestKeyboardProc(pDev, onoff, argc, argv)
     case DEVICE_INIT: 
       modifier_keymap = XGetModifierMapping(xnestDisplay);
       XDisplayKeycodes(xnestDisplay, &min_keycode, &max_keycode);
+#ifdef _XSERVER64
+      {
+	KeySym64 *keymap64;
+	int i, len;
+	keymap64 = XGetKeyboardMapping(xnestDisplay,
+				     min_keycode,
+				     max_keycode - min_keycode + 1,
+				     &mapWidth);
+	len = (max_keycode - min_keycode + 1) * mapWidth;
+	keymap = (KeySym *)xalloc(len * sizeof(KeySym));
+	for(i = 0; i < len; ++i)
+	  keymap[i] = keymap64[i];
+	XFree(keymap64);
+      }
+#else
       keymap = XGetKeyboardMapping(xnestDisplay, 
 				   min_keycode,
 				   max_keycode - min_keycode + 1,
 				   &mapWidth);
+#endif
       
       for (i = 0; i < 256; i++)
 	modmap[i] = 0;

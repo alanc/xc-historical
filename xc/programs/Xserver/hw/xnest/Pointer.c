@@ -1,4 +1,4 @@
-/* $XConsortium: xnestPointer.c,v 1.1 93/06/23 16:23:37 dmatic Exp $ */
+/* $XConsortium: Pointer.c,v 1.1 93/07/12 15:28:43 rws Exp ray $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -21,10 +21,7 @@ is" without express or implied warranty.
 #include "servermd.h"
 #include "mipointer.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #include "Screen.h"

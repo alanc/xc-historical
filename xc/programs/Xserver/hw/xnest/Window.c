@@ -1,4 +1,4 @@
-/* $XConsortium: Window.c,v 1.4 94/02/06 17:53:04 rws Exp $ */
+/* $XConsortium: Window.c,v 1.5 94/02/16 11:53:17 rws Exp ray $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -22,11 +22,7 @@ is" without express or implied warranty.
 #include "scrnintstr.h"
 #include "region.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#include <X11/extensions/shape.h>
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #include "Screen.h"

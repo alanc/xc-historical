@@ -1,4 +1,4 @@
-/* $XConsortium: GC.c,v 1.5 94/02/06 17:52:15 rws Exp $ */
+/* $XConsortium: GC.c,v 1.6 94/03/31 17:50:26 dpw Exp ray $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -22,10 +22,7 @@ is" without express or implied warranty.
 #include "mistruct.h"
 #include "region.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #include "GC.h" 

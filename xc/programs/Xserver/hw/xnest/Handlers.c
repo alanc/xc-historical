@@ -1,4 +1,4 @@
-/* $XConsortium: xnestHandlers.c,v 1.1 93/06/23 16:23:33 dmatic Exp $ */
+/* $XConsortium: Handlers.c,v 1.1 93/07/12 15:28:29 rws Exp ray $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -21,10 +21,7 @@ is" without express or implied warranty.
 #include "windowstr.h"
 #include "servermd.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #include "Handlers.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: xnestArgs.c,v 1.1 93/06/23 16:23:24 dmatic Exp $ */
+/* $XConsortium: Args.c,v 1.1 93/07/12 15:27:49 rws Exp ray $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -20,10 +20,7 @@ is" without express or implied warranty.
 #include "scrnintstr.h"
 #include "servermd.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #include "Args.h"

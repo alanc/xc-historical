@@ -1,4 +1,4 @@
-/* $XConsortium: Color.c,v 1.3 94/02/06 17:49:05 rws Exp $ */
+/* $XConsortium: Color.c,v 1.4 94/03/31 17:48:44 dpw Exp ray $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -20,10 +20,8 @@ is" without express or implied warranty.
 #include "colormapst.h"
 #include "resource.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
+
 
 #include "Display.h"
 #include "Screen.h"
@@ -210,9 +208,23 @@ void xnestSetInstalledColormapWindows(pScreen)
   if (!xnestSameInstalledColormapWindows(icws.windows, icws.numWindows)) {
     if (xnestOldInstalledColormapWindows)
       xfree(xnestOldInstalledColormapWindows);
-    
+
+#ifdef _XSERVER64
+    {
+      int i;
+      Window64 *windows = (Window64 *)xalloc(icws.numWindows * 
+				     sizeof(Window64));
+
+      for(i = 0; i < icws.numWindows; ++i)
+	  windows[i] = icws.windows[i];
+      XSetWMColormapWindows(xnestDisplay, xnestDefaultWindows[pScreen->myNum],
+			    windows, icws.numWindows);
+      xfree(windows);
+    }
+#else
     XSetWMColormapWindows(xnestDisplay, xnestDefaultWindows[pScreen->myNum],
 			  icws.windows, icws.numWindows);
+#endif
 
     xnestOldInstalledColormapWindows = icws.windows;
     xnestNumOldInstalledColormapWindows = icws.numWindows;
@@ -253,9 +265,20 @@ void xnestSetScreenSaverColormapWindow(pScreen)
 {
   if (xnestOldInstalledColormapWindows)
     xfree(xnestOldInstalledColormapWindows);
-   
+  
+#ifdef _XSERVER64
+  {
+    Window64 window;
+
+    window = xnestScreenSaverWindows[pScreen->myNum];
+    XSetWMColormapWindows(xnestDisplay, xnestDefaultWindows[pScreen->myNum],
+			  &window, 1);
+    xnestScreenSaverWindows[pScreen->myNum] = window;
+  }
+#else
   XSetWMColormapWindows(xnestDisplay, xnestDefaultWindows[pScreen->myNum],
 			&xnestScreenSaverWindows[pScreen->myNum], 1);
+#endif /* _XSERVER64 */
   
   xnestOldInstalledColormapWindows = NULL;
   xnestNumOldInstalledColormapWindows = 0;
@@ -366,8 +389,26 @@ void xnestStoreColors(pCmap, nColors, pColors)
      xColorItem *pColors;
 {
   if (pCmap->pVisual->class & DynamicClass)
+#ifdef _XSERVER64
+  {
+    int i;
+    XColor *pColors64 = (XColor *)xalloc(nColors * sizeof(XColor) );
+
+    for(i = 0; i < nColors; ++i)
+    {
+      pColors64[i].pixel = pColors[i].pixel;
+      pColors64[i].red = pColors[i].red;
+      pColors64[i].green = pColors[i].green;
+      pColors64[i].blue = pColors[i].blue;
+      pColors64[i].flags = pColors[i].flags;
+    }
+    XStoreColors(xnestDisplay, xnestColormap(pCmap), pColors64, nColors);
+    xfree(pColors64);
+  }
+#else
     XStoreColors(xnestDisplay, xnestColormap(pCmap),
 		 (XColor *)pColors, nColors);
+#endif
 }
 
 void xnestResolveColor(pRed, pGreen, pBlue, pVisual)

@@ -1,4 +1,4 @@
-/* $XConsortium: GCOps.c,v 1.6 94/01/07 09:52:44 dpw Exp $ */
+/* $XConsortium: GCOps.c,v 1.7 94/03/31 17:49:50 dpw Exp ray $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -23,10 +23,7 @@ is" without express or implied warranty.
 #include "region.h"
 #include "servermd.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #include "Screen.h"
@@ -101,7 +98,9 @@ void xnestPutImage(pDrawable, pGC, depth, x, y, w, h, leftPad, format, pImage)
   
   ximage = XCreateImage(xnestDisplay, xnestDefaultVisual(pDrawable->pScreen), 
 			depth, format, leftPad, (char *)pImage, 
-			w, h, BitmapPad(xnestDisplay), 0);
+			w, h, BitmapPad(xnestDisplay), 
+			(format == ZPixmap) ? 
+			    PixmapBytePad(w, depth) : BitmapBytePad(w));
   
   if (ximage) {
       XPutImage(xnestDisplay, xnestDrawable(pDrawable), xnestGC(pGC), 

@@ -1,4 +1,4 @@
-/* $XConsortium: xnestFont.c,v 1.1 93/06/23 16:23:30 dmatic Exp $ */
+/* $XConsortium: Font.c,v 1.1 93/07/12 15:28:18 rws Exp ray $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -21,10 +21,7 @@ is" without express or implied warranty.
 #include "fontstruct.h"
 #include "scrnintstr.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #include "Font.h"

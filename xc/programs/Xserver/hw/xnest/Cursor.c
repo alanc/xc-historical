@@ -1,4 +1,4 @@
-/* $XConsortium: Cursor.c,v 1.2 94/02/06 17:49:44 rws Exp $ */
+/* $XConsortium: Cursor.c,v 1.3 94/03/31 17:49:09 dpw Exp ray $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -22,10 +22,7 @@ is" without express or implied warranty.
 #include "scrnintstr.h"
 #include "servermd.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #include "Screen.h"
@@ -37,7 +34,12 @@ void xnestConstrainCursor(pScreen, pBox)
      ScreenPtr pScreen;
      BoxPtr pBox;
 {
+#ifdef _XSERVER64
+  Window64 wroot;
+#else
   Window wroot;
+#endif
+
   int wx, wy;
   unsigned int wwidth, wheight;
   unsigned int wborderwidth;
