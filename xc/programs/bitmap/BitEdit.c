@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitEdit.c,v 1.5 90/04/22 14:57:48 dmatic Exp $
+ * $XConsortium: BitEdit.c,v 1.6 90/04/25 08:30:28 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -172,6 +172,8 @@ static ButtonRec file_menu[] = {
   {SaveAs, "saveAs", True},
 #define Resize 24
   {Resize, "resize", True},
+#define Rescale 79
+  {Rescale, "rescale", True},
 #define Filename 74
   {Filename, "filename", True},
 #define Basename 73
@@ -595,6 +597,26 @@ void TheCallback(w, id)
 		sprintf(message, "Wrong format: %s", format);
 		if (PopupDialog(error_dialog, message, NULL, NULL) == Retry)
 		    goto RetryResize;
+	    }
+	}
+	break;
+
+    case Rescale:
+	format = "";
+    RetryRescale:
+	if (PopupDialog(input_dialog, "Rescale to WIDTHxHEIGHT:", format, 
+			&format) == Okay) {
+	    sscanf(format, "%d%c%d", &width, &x, &height);
+	    if ((width >0) && (height > 0) && (x == 'x')) {
+		BWRescale(bitmap_widget, (Dimension)width, (Dimension)height);
+		BWChangeNotify(bitmap_widget, NULL, NULL);
+		BWSetChanged(bitmap_widget);
+		FixStatus();
+	    }
+	    else {
+		sprintf(message, "Wrong format: %s", format);
+		if (PopupDialog(error_dialog, message, NULL, NULL) == Retry)
+		    goto RetryRescale;
 	    }
 	}
 	break;

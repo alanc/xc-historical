@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Dialog.c,v 1.1 90/03/29 15:21:43 dmatic Exp $
+ * $XConsortium: Dialog.c,v 1.2 90/04/25 08:30:54 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -149,10 +149,16 @@ int PopupDialog(popup, message, suggestion, answer)
 
   XtPopup(popup->shell_widget, XtGrabExclusive);
 
+  XFlush(XtDisplay(popup->shell_widget));
+
+  XSetInputFocus(XtDisplay(popup->dialog_widget), 
+		 XtWindow(popup->dialog_widget),
+		 RevertToParent, CurrentTime);
+  
   while ((selected & popup->options) == Empty) {
-    XEvent event;
-    XtNextEvent(&event);
-    XtDispatchEvent(&event);
+      XEvent event;
+      XtNextEvent(&event);
+      XtDispatchEvent(&event);
   }
 
   PopdownDialog(popup, answer);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitmapP.h,v 1.4 90/04/22 15:13:21 dmatic Exp $
+ * $XConsortium: BitmapP.h,v 1.5 90/04/25 08:30:51 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -135,8 +135,50 @@ typedef struct _BitmapRec {
   BitmapPart    bitmap;
 } BitmapRec;
 
+/* Private functions */
+
+#define Length(width, height)\
+	(int)((int)(((width) + 7) / 8) * (height))
+
+#define InBitmapX(BW, x)\
+	(Position) (min((Position)((max(BW->bitmap.horizOffset, x)  -\
+				   BW->bitmap.horizOffset) /\
+				   BW->bitmap.squareW), BW->bitmap.width - 1))
+    
+#define InBitmapY(BW, y)\
+	(Position) (min((Position)((max(BW->bitmap.vertOffset, y)  -\
+				   BW->bitmap.vertOffset) /\
+				   BW->bitmap.squareH), BW->bitmap.height - 1))
+    
+#define InWindowX(BW, x)\
+	(Position) (BW->bitmap.horizOffset + ((x) * BW->bitmap.squareW))
+
+#define InWindowY(BW, y)\
+	(Position) (BW->bitmap.vertOffset + ((y) * BW->bitmap.squareH))
+     
+#define GetPixmap(BW, image)\
+    XCreateBitmapFromData(XtDisplay(BW), XtWindow(BW),\
+			  image->data, image->width, image->height)
+
+
+#define QuerySet(x, y) (((x) != NotSet) && ((y) != NotSet))
+
+#define bit int
+
+#define QueryZero(x, y) (((x) == 0) || ((y) == 0))
+
+#define Swap(x, y) {Position t; t = x; x = y; y = t;}
+
+#define QuerySwap(x, y) if(x > y) Swap(x, y)
+
+#define QueryInBitmap(BW, x, y)\
+  (((x) >= 0) && ((x) < BW->bitmap.image->width) &&\
+   ((y) >= 0) && ((y) < BW->bitmap.image->height))
+
+#define Value(BW, button)   (BW->bitmap.button_action[button - 1])
+
+#define CreateCleanData(length) XtCalloc(length, sizeof(char))
+XImage *CreateBitmapImage();
+void DestroyBitmapImage();
+
 #endif /* _BitmapP_h */
-
-
-
-
