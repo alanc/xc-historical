@@ -1,4 +1,4 @@
-/* $XConsortium: ShellP.h,v 1.38 94/04/01 16:04:24 converse Exp $ */
+/* $XConsortium: ShellP.h,v 1.39 94/04/08 15:39:18 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -163,7 +163,7 @@ typedef struct {
 	int 	    wm_timeout;
 	Boolean	    wait_for_wm;
 	Boolean	    transient;
-	Boolean     visible;
+	Boolean     urgency;
 	Widget      client_leader;
 	String      window_role;
 	struct _OldXSizeHints {	/* pre-R4 Xlib structure */
