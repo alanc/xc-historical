@@ -1,4 +1,4 @@
-/* $XConsortium: lbxmain.c,v 1.15 95/03/21 20:03:18 mor Exp $ */
+/* $XConsortium: lbxmain.c,v 1.16 95/04/04 21:20:43 dpw Exp mor $ */
 /*
  * $NCDId: @(#)lbxmain.c,v 1.61 1994/11/18 20:32:36 lemke Exp $
  * $NCDOr: lbxmain.c,v 1.4 1993/12/06 18:47:18 keithp Exp keithp $
@@ -143,7 +143,7 @@ LbxExtensionInit()
 	BadLbxClientCode = extEntry->errorBase;
 	EventSwapVector[LbxEventCode] = SLbxEvent;
         LbxDixInit();
-	motionCache = (lbxMotionCache *) malloc (sizeof (lbxMotionCache));
+	motionCache = (lbxMotionCache *) xalloc (sizeof (lbxMotionCache));
 	bzero (motionCache, sizeof (lbxMotionCache));
     }
 }
