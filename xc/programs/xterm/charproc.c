@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.114 89/11/15 11:54:06 jim Exp $
+ * $XConsortium: charproc.c,v 1.115 89/11/16 08:51:35 jim Exp $
  */
 
 
@@ -143,7 +143,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.114 89/11/15 11:54:06 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.115 89/11/16 08:51:35 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2585,9 +2585,15 @@ void DoSetSelectedFont(w, client_data, selection, type, value, length, format)
     unsigned long *length;
     int *format;
 {
+    int len;
     if (*type != XA_STRING || *format != 8) { Bell(); return; }
-    if (!LoadNewFont(&term->screen, value, NULL, True, fontMenu_fontescape))
-	Bell();
+    len = strlen(value);
+    if (len > 0) {
+	if (value[len-1] == '\n') value[len-1] = '\0';
+	if (!LoadNewFont (&term->screen, value, NULL, True, 
+			  fontMenu_fontescape))
+	  Bell();
+    }
 }
 
 void FindFontSelection (atom_name, justprobe)
