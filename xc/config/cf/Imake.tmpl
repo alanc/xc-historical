@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.100 91/03/13 19:14:02 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.102 91/03/23 16:44:14 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -346,8 +346,11 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #define HasShm			NO
 #endif
 #endif
+#ifndef NeedVarargsPrototypes
+#define NeedVarargsPrototypes	NO
+#endif
 #ifndef NeedFunctionPrototypes
-#define NeedFunctionPrototypes NO
+#define NeedFunctionPrototypes NeedVarargsPrototypes
 #endif
 #ifndef NeedWidePrototypes
 #define NeedWidePrototypes	YES	/* mix and match ANSI-C, non-ANSI */
@@ -361,10 +364,10 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #define DestDir /* as nothing */
 #endif
 #ifndef UsrLibDir			/* if changed under SunOS with shared */
-#define UsrLibDir $(DESTDIR)/usr/lib	/* libs, then need to run ldconfig */
+#define UsrLibDir /usr/lib		/* libs, then need to run ldconfig */
 #endif					/* as root */
 #ifndef IncRoot
-#define IncRoot $(DESTDIR)/usr/include
+#define IncRoot /usr/include
 #define AlternateIncRoot NO
 #else
 #define AlternateIncRoot YES
@@ -473,7 +476,7 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #define PreProcessCmd CcCmd -E
 #endif
 #ifndef InstallCmd
-#if SystemV
+#if SystemV | SystemV4
 #ifdef UseInstalled
 #define InstallCmd $(BINDIR)/bsdinst		/* hack should be in project */
 #else
@@ -653,7 +656,11 @@ XCOMM site-specific configuration parameters - edit site.def to change
  * The following supports forcing of function prototypes
  */
 #if NeedFunctionPrototypes
+#if NeedVarargsPrototypes
+#define _funcprotodef -DFUNCPROTO=2
+#else
 #define _funcprotodef -DFUNCPROTO
+#endif
 #else
 #define _funcprotodef /**/
 #endif
