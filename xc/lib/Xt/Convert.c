@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Convert.c,v 1.14 88/09/06 16:27:21 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Convert.c,v 1.15 88/09/09 12:57:50 swick Exp $";
 /* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -325,8 +325,9 @@ void XtDirectConvert(converter, args, num_args, from, to)
     CacheEnter(converter, args, num_args, from, to, hash);
 }
 
-void _XtConvert(widget, from_type, from, to_type, to)
+void _XtConvert(widget, app, from_type, from, to_type, to)
              Widget		widget;
+	     XtAppContext	app;
     register XrmRepresentation	from_type;
 	     XrmValuePtr	from;
     register XrmRepresentation	to_type;
@@ -337,7 +338,6 @@ void _XtConvert(widget, from_type, from, to_type, to)
     XrmValue		stack_args[20], *args;
     String              params[2];
     Cardinal		num_params = 0;
-    XtAppContext	app = XtWidgetToApplicationContext(widget);
 
     /* Look for type converter */
     p = app->converterTable[ProcHash(from_type, to_type) & CONVERTHASHMASK];
@@ -379,7 +379,8 @@ void XtConvert(widget, from_type_str, from, to_type_str, to)
     from_type = XrmStringToRepresentation(from_type_str);
     to_type = XrmStringToRepresentation(to_type_str);
     if (from_type != to_type)
-	_XtConvert(widget, from_type, from, to_type, to);
+	_XtConvert(widget, XtWidgetToApplicationContext(widget),
+		   from_type, from, to_type, to);
     else
 	(*to) = *from;
 }

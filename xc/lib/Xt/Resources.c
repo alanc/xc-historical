@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.55 88/09/06 16:28:46 jim Exp $";
+    "$XConsortium: Resources.c,v 1.57 88/09/21 12:42:02 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -527,6 +527,7 @@ static void GetResources(widget, base, names, classes,
 	int	int_val;
 	long	long_val;
 	char*	char_ptr;
+	XtAppContext app = XtWidgetToApplicationContext(widget);
 
 	for (res = table, j = 0; j < num_resources; j++, res++) {
 	    if (! found[j]) {
@@ -536,7 +537,8 @@ static void GetResources(widget, base, names, classes,
 			rx->xrm_name, rx->xrm_class, &rawType, pv)) {
 		    if (rawType != xrm_type) {
 			rawValue = *pv;
-			_XtConvert(widget, rawType, &rawValue, xrm_type, pv);
+			_XtConvert(widget, app, rawType, &rawValue,
+				   xrm_type, pv);
 		    }
 		} else pv->addr = NULL;
 		if (pv->addr == NULL && rx->xrm_default_addr != NULL) {
@@ -573,7 +575,7 @@ static void GetResources(widget, base, names, classes,
 			} else {
 			    rawValue.size = sizeof(caddr_t);
 			}
-			_XtConvert(widget, xrm_default_type,
+			_XtConvert(widget, app, xrm_default_type,
 				    &rawValue, xrm_type, pv);
 		    }
 		}
