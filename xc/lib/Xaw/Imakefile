@@ -7,6 +7,8 @@
        LINTLIBS = $(LINTXLIB) $(LINTXTOOL)
 
 HEADERS = \
+	AsciiSrc.h \
+	AsciiSrcP.h \
 	AsciiText.h \
 	AsciiTextP.h \
 	Box.h \
@@ -56,12 +58,12 @@ HEADERS = \
 
 SRCS = \
 	AsciiSink.c \
+	AsciiSrc.c \
 	AsciiText.c \
 	Box.c \
 	Clock.c \
 	Command.c \
 	Dialog.c \
-	DiskSrc.c \
 	Form.c \
 	Grip.c \
 	Label.c \
@@ -74,7 +76,6 @@ SRCS = \
 	Scroll.c \
 	Simple.c \
 	SimpleMenu.c \
-	StringSrc.c \
 	Text.c \
 	TextTr.c \
 	Toggle.c \
@@ -83,12 +84,12 @@ SRCS = \
 
 OBJS = \
 	AsciiSink.o \
+	AsciiSrc.o \
 	AsciiText.o \
 	Box.o \
 	Clock.o \
 	Command.o \
 	Dialog.o \
-	DiskSrc.o \
 	Form.o \
 	Grip.o \
 	Label.o \
@@ -101,7 +102,6 @@ OBJS = \
 	Scroll.o \
 	Simple.o \
 	SimpleMenu.o \
-	StringSrc.o \
 	Text.o \
 	TextTr.o \
 	Toggle.o \
