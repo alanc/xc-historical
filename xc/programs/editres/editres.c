@@ -1,5 +1,5 @@
 /*
- * $XConsortium: editres.c,v 1.8 90/09/27 20:23:38 rws Exp $
+ * $XConsortium: editres.c,v 1.9 90/11/06 16:17:58 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -47,12 +47,10 @@ ScreenData global_screen_data;
 Widget global_tree_parent;
 AppResources global_resources;
 
-/*
- * external function definitions.
- */
-
 extern void InternAtoms(), SetMessage(), BuildWidgetTree();
 extern void SetApplicationActions();
+
+static void Syntax();
 
 String fallback_resources[] = { 
     NULL,
@@ -81,7 +79,6 @@ main(argc, argv)
 int argc;
 char **argv;
 {
-    static void Syntax();
     XtAppContext app_con;
 
     toplevel = XtAppInitialize(&app_con, "Editres", NULL, ZERO,

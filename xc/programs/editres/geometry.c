@@ -1,5 +1,5 @@
 /*
- * $XConsortium: geometry.c,v 1.9 90/09/27 19:57:06 rws Exp $
+ * $XConsortium: geometry.c,v 1.10 90/09/29 09:58:16 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -37,7 +37,10 @@ extern void GetAllStrings(), InsertWidgetFromNode();
 extern int HandleXErrors();
 extern WNode * FindNode();
 
+static WNode *FindWidgetFromWindow(), *FindWidgetFromWindowGivenNode();
 static void CreateFlashWidget(), FlashWidgets();
+static void AddToFlashList(), _AddToFlashList();
+static void FlashWidgetsOn(), FlashWidgetsOff(), FlashWidgetsCleanup();
 
 /*	Function Name: _FindWidget
  *	Description: Finds a widget in the tree and shows it to the user.
@@ -51,7 +54,6 @@ Widget w;
 {
     char msg[BUFSIZ];
     WNode * node;
-    static WNode *FindWidgetFromWindow();
     Window win, GetClientWindow();
     int x, y;			/* location of event in root coordinates. */
 
@@ -90,8 +92,6 @@ FindWidgetFromWindow(tree_info, win)
 TreeInfo * tree_info;
 Window win;
 {
-    static WNode *FindWidgetFromWindowGivenNode();
-
     if (tree_info == NULL)
 	return(NULL);
 
@@ -206,11 +206,10 @@ HandleFlashWidget(event)
 Event * event;
 {
     GetGeomEvent * geom_event = (GetGeomEvent *) event;
-    static void AddToFlashList();
     char * errors = NULL;
     int i;
 
-    for (i = 0; i < geom_event->num_entries; i++) 
+    for (i = 0; i < (int)geom_event->num_entries; i++) 
 	AddToFlashList(global_tree_info, geom_event->info + i, &errors);
 
     FlashWidgets(global_tree_info);
@@ -233,7 +232,6 @@ GetGeomInfo * geom_info;
 char ** errors;
 {
     WNode * node;
-    static void _AddToFlashList();
     char buf[BUFSIZ];
 
     node = FindNode(tree_info->top_node, 
@@ -393,7 +391,6 @@ TreeInfo * tree_info;
 {
     int i;
     unsigned long wait, half_flash;
-    static void FlashWidgetsOn(), FlashWidgetsOff(), FlashWidgetsCleanup();
     XtAppContext ac = XtWidgetToApplicationContext(tree_info->tree_widget);
 
     if (tree_info->flash_widgets == NULL) /* no widgets to flash. */

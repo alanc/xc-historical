@@ -1,5 +1,5 @@
 /*
- * $XConsortium: setvalues.c,v 1.1 90/06/28 12:10:42 kit Exp $
+ * $XConsortium: setvalues.c,v 1.2 91/01/09 17:01:49 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -58,7 +58,7 @@ Event * event;
     if (sv_event->num_entries == 0) 
 	return(XtNewString("SetValues was Successful."));
 
-    for (i = 0 ; i < sv_event->num_entries ; i++) {
+    for (i = 0 ; i < (int)sv_event->num_entries ; i++) {
 	node = FindNode(global_tree_info->top_node,
 			sv_event->info[i].widgets.ids, 
 			sv_event->info[i].widgets.num_widgets);

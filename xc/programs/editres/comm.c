@@ -1,3 +1,18 @@
+/* $XConsortium$ */
+/*
+ * Copyright 1990 Massachusetts Institute of Technology
+ * 
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ */
+
 /*
  * This file contains the code to communicate with the client that is
  * being edited.
@@ -35,6 +50,10 @@ extern int HandleXErrors();
 static void TellUserAboutMessage(), BuildHeader(), FreeEvent();
 static Event * BuildEvent();
 static char * DispatchEvent();
+static void GetClientValue();
+static void ClientTimedOut(), LoseSelection(), SelectionDone();
+static Boolean ConvertCommand();
+
 
 /*	Function Name: ClientTimedOut
  *	Description: Called if the client takes too long to take our selection.
@@ -153,8 +172,6 @@ char * msg;
 {
     XClientMessageEvent client_event;
     Display * dpy = XtDisplay(w);
-    static void ClientTimedOut(), LoseSelection(), SelectionDone();
-    static Boolean ConvertCommand();
     
     if (msg == NULL) 
 	msg = "Click the mouse pointer on any Xaw client.";
@@ -288,8 +305,11 @@ int * format_ret;
  *	Returns: none.
  */
 
+/* ARGSUSED */
 static void
-SelectionDone()
+SelectionDone(w, sel, targ)
+    Widget w;
+    Atom *sel, *targ;
 {
     /* Keep the toolkit from automaticaly freeing the selection value */
 }
@@ -307,8 +327,6 @@ LoseSelection(w, sel)
 Widget w;
 Atom * sel;
 {
-    static void GetClientValue();
-
     if (global_client.timeout != 0) {
 	XtRemoveTimeOut(global_client.timeout);
 	global_client.timeout = 0;
@@ -514,7 +532,7 @@ ProtocolStream * stream;
 		                XtCalloc(sizeof(WidgetTreeInfo),
 					 send_event->num_entries);
 
-	    for (i = 0; i < send_event->num_entries; i++) {
+	    for (i = 0; i < (int)send_event->num_entries; i++) {
 		WidgetTreeInfo * info = send_event->info + i;
 		if (!(_EresRetrieveWidgetInfo(stream, &(info->widgets)) &&
 		      _EresRetrieveString8(stream, &(info->name)) &&
@@ -538,7 +556,7 @@ ProtocolStream * stream;
 	    sv_event->info = (SetValuesInfo *) XtCalloc(sizeof(SetValuesInfo),
 							sv_event->num_entries);
 
-	    for (i = 0; i < sv_event->num_entries; i++) {
+	    for (i = 0; i < (int)sv_event->num_entries; i++) {
 		SetValuesInfo * info = sv_event->info + i;
 		if (!(_EresRetrieveWidgetInfo(stream, &(info->widgets)) &&
 		      _EresRetrieveString8(stream, &(info->message))))
@@ -561,7 +579,7 @@ ProtocolStream * stream;
 		                   XtCalloc(sizeof(GetResourcesInfo),
 					    res_event->num_entries);
 
-	    for (i = 0; i < res_event->num_entries; i++) {
+	    for (i = 0; i < (int)res_event->num_entries; i++) {
 		GetResourcesInfo * res_info = res_event->info + i;
 		if (!(_EresRetrieveWidgetInfo(stream, &(res_info->widgets)) &&
 		      _EresRetrieveBoolean(stream, &(res_info->error))))
@@ -612,7 +630,7 @@ ProtocolStream * stream;
 	    geom_event->info = (GetGeomInfo *) XtCalloc(sizeof(GetGeomInfo),
 						      geom_event->num_entries);
 
-	    for (i = 0; i < geom_event->num_entries; i++) {
+	    for (i = 0; i < (int)geom_event->num_entries; i++) {
 		GetGeomInfo * info = geom_event->info + i;
 		if (!(_EresRetrieveWidgetInfo(stream, &(info->widgets)) &&
 		      _EresRetrieveBoolean(stream, &(info->error))))
