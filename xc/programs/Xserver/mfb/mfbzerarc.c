@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbzerarc.c,v 5.3 89/09/11 09:38:34 rws Exp $ */
+/* $XConsortium: mfbzerarc.c,v 5.4 89/09/14 16:27:02 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -62,6 +62,7 @@ mfbZeroArcSS(pDraw, pGC, arc)
     xArc *arc;
 {
     miZeroArcRec info;
+    Bool do360;
     register int x, y, a, b, d, mask;
     register int k1, k3, dx1, dy1;
     int *addrl;
@@ -89,7 +90,7 @@ mfbZeroArcSS(pDraw, pGC, arc)
 	addrl = (int *)(((PixmapPtr)pDraw)->devPrivate.ptr);
 	nlwidth = (int)(((PixmapPtr)pDraw)->devKind) >> 2;
     }
-    miZeroArcSetup(arc, &info);
+    do360 = miZeroArcSetup(arc, &info, TRUE);
     yorgl = addrl + ((info.yorg + pDraw->y) * nlwidth);
     yorgol = addrl + ((info.yorgo + pDraw->y) * nlwidth);
     info.xorg += pDraw->x;
@@ -113,8 +114,7 @@ mfbZeroArcSS(pDraw, pGC, arc)
     }
     if (!info.endx)
 	mask = info.endMask;
-    if ((mask == 0xf) && (info.startx < 0) &&
-	(arc->width == arc->height) && !(arc->width & 1))
+    if (do360 && (arc->width == arc->height) && !(arc->width & 1))
     {
 	int xoffset = nlwidth;
 	int *yorghl = yorgl + (info.h * nlwidth);
@@ -186,7 +186,7 @@ mfbZeroArcSS(pDraw, pGC, arc)
 	x = info.w;
 	yoffset = info.h * nlwidth;
     }
-    else if ((mask == 0xf) && (info.startx < 0))
+    else if (do360)
     {
 	while (y < info.h)
 	{
