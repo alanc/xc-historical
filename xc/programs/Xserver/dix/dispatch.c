@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.76 89/01/16 13:56:57 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.77 89/01/17 08:05:51 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2485,9 +2485,6 @@ ProcStoreColors               (client)
 	int	count;
         int     retval;
 
-        if(pcmp->flags & AllAllocated)
-	    if(CLIENT_ID(stuff->cmap) != client->index)
-	        return(BadAccess);
         count =
 	  ((stuff->length << 2) - sizeof(xStoreColorsReq)) / sizeof(xColorItem);
 	retval = StoreColors(pcmp, count, (xColorItem *)&stuff[1]);
@@ -2519,10 +2516,6 @@ ProcStoreNamedColor           (client)
     {
 	xColorItem	def;
         int             retval;
-
-        if(pcmp->flags & AllAllocated)
-	    if(CLIENT_ID(stuff->cmap) != client->index)
-	        return(BadAccess);
 
 	if(OsLookupColor(pcmp->pScreen->myNum, (char *)&stuff[1],
 	                 stuff->nbytes, &def.red, &def.green, &def.blue))
