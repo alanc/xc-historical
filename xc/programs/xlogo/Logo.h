@@ -1,5 +1,5 @@
 /*
-* $Header: Logo.h,v 1.2 88/08/12 13:39:57 swick Exp $
+* $XConsortium: Logo.h,v 1.2 88/08/30 10:13:17 swick Exp $
 */
 
 /*

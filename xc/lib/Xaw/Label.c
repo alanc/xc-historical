@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Label.c,v 1.48 88/08/25 15:26:08 swick Exp $";
+static char rcsid[] = "$XConsortium: Label.c,v 1.46 88/08/30 10:09:08 swick Exp $";
 #endif lint
 
 

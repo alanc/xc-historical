@@ -1,5 +1,5 @@
 /*
-* $Header: ClockP.h,v 1.12 88/07/11 13:27:36 jim Exp $
+* $XConsortium: ClockP.h,v 1.13 88/08/14 10:42:27 keith Exp $
 */
 
 

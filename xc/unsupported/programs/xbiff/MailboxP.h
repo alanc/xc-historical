@@ -1,6 +1,6 @@
 /*
  * $Source: /usr/expo/X/src/lib/Xaw/RCS/MailboxP.h,v $
- * $Header: MailboxP.h,v 1.3 88/03/03 16:03:08 swick Exp $
+ * $XConsortium: MailboxP.h,v 1.4 88/03/03 16:23:34 swick Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *

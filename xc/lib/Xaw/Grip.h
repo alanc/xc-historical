@@ -1,5 +1,5 @@
 /*
-* $Header: Grip.h,v 1.8 88/08/16 11:08:19 swick Exp $
+* $XConsortium: Grip.h,v 1.7 88/08/30 10:03:27 swick Exp $
 */
 
 

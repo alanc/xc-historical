@@ -1,4 +1,4 @@
-/* $Header: Cardinals.h,v 1.1 88/02/05 23:32:05 swick Exp $ */
+/* $XConsortium: Cardinals.h,v 1.1 88/02/05 23:32:05 swick Exp $ */
 /*
 
 Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology

@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $Header: Simple.h,v 1.1 88/01/28 07:50:41 swick Exp $ */
+/* $XConsortium: Simple.h,v 1.2 88/02/14 14:09:59 rws Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 #ifndef _Simple_h

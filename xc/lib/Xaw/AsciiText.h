@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $Header: AsciiText.h,v 1.5 88/02/14 13:58:30 rws Exp $ */
+/* $XConsortium: AsciiText.h,v 1.6 88/02/25 12:12:17 swick Exp $ */
 
 
 /***********************************************************

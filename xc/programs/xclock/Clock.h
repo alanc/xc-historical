@@ -1,5 +1,5 @@
 /*
-* $Header: Clock.h,v 1.15 88/08/30 17:00:55 swick Exp $
+* $XConsortium: Clock.h,v 1.16 88/08/30 17:32:47 swick Exp $
 */
 
 

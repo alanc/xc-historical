@@ -1,5 +1,5 @@
 /*
-* $Header: BoxP.h,v 1.9 88/02/23 10:04:04 swick Exp $
+* $XConsortium: BoxP.h,v 1.10 88/02/25 12:22:25 swick Exp $
 */
 
 

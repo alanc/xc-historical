@@ -1,4 +1,4 @@
-/* $Header: FormP.h,v 1.8 88/02/20 20:00:15 rws Exp $ */
+/* $XConsortium: FormP.h,v 1.9 88/02/26 09:15:04 swick Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 
