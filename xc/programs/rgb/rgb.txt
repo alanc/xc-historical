@@ -178,12 +178,12 @@
   0 238 238		cyan2
   0 205 205		cyan3
   0 139 139		cyan4
-224 255 255		light cyan
-224 255 255		LightCyan
-224 255 255		LightCyan1
-209 238 238		LightCyan2
-180 205 205		LightCyan3
-122 139 139		LightCyan4
+224 245 245		light cyan
+224 245 245		LightCyan
+224 245 245		LightCyan1
+209 230 230		LightCyan2
+180 200 200		LightCyan3
+122 159 159		LightCyan4
 127 255 212		aquamarine
 102 205 170		medium aquamarine
 102 205 170		MediumAquamarine
@@ -289,12 +289,12 @@
 238 238 175		MediumGoldenrod2
 205 205 151		MediumGoldenrod3
 139 139 103		MediumGoldenrod4
-255 255 224		light yellow
-255 255 224		LightYellow
-255 255 224		LightYellow1
-238 238 209		LightYellow2
+245 245 224		light yellow
+245 245 224		LightYellow
+245 245 224		LightYellow1
+230 230 209		LightYellow2
 205 205 180		LightYellow3
-139 139 122		LightYellow4
+160 160 122		LightYellow4
 245 222 179		wheat
 255 231 186		wheat1
 238 216 174		wheat2
@@ -330,10 +330,10 @@
 238 118  33		Chocolate2
 205 102  29		Chocolate3
 139  69  19		Chocolate4
-255 160 122		light salmon
-255 160 122		LightSalmon
-255 160 122		LightSalmon1
-238 149 114		LightSalmon2
+245 160 122		light salmon
+245 160 122		LightSalmon
+245 160 122		LightSalmon1
+230 149 114		LightSalmon2
 205 129  98		LightSalmon3
 139  87  66		LightSalmon4
 255 140 105		salmon
@@ -400,18 +400,18 @@
 238  18 137		pink2
 205  16 118		pink3
 139  10  80		pink4
-255  90 167		light pink
-255  90 167		LightPink
-255  90 167		LightPink1
-238  84 156		LightPink2
+245  90 167		light pink
+245  90 167		LightPink
+245  90 167		LightPink1
+230  84 156		LightPink2
 205  72 134		LightPink3
-139  49  91		LightPink4
-255 170 200		pale pink
-255 170 200		PalePink
-255 170 200		PalePink1
-238 159 187		PalePink2
+159  49  91		LightPink4
+245 170 200		pale pink
+245 170 200		PalePink
+245 170 200		PalePink1
+230 159 187		PalePink2
 205 137 161		PalePink3
-139  93 109		PalePink4
+159  93 109		PalePink4
 219 112 147		pale violet red
 219 112 147		PaleVioletRed
 255 130 171		PaleVioletRed1
