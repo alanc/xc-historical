@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.1 94/02/22 14:28:34 mor Exp $ */
+/* $XConsortium: save.c,v 1.2 94/02/22 15:44:17 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -160,7 +160,7 @@ write_save()
 		{
 		    char *card8 = prop->vals->value;
 		    int value = *card8;
-		    fprintf(f, "\t%d\n", prop->vals[0].value);
+		    fprintf(f, "\t%d\n", value);
 		}
 		else
 		{
