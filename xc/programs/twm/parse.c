@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.19 89/11/17 16:42:50 jim Exp $
+ * $XConsortium: parse.c,v 1.20 89/11/20 15:57:03 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.19 89/11/17 16:42:50 jim Exp $";
+"$XConsortium: parse.c,v 1.20 89/11/20 15:57:03 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -119,7 +119,7 @@ int ParseTwmrc(filename)
 	if (filename) {
 	    fprintf (stderr, 
 		     "%s:  unable to open twmrc file \"%s\"; using defaults\n",
-		     "twm", filename);
+		     ProgramName, filename);
 	}
 	ParseString (defaultTwmrc);	/* use default bindings */
 	return 0;
@@ -139,7 +139,8 @@ int ParseTwmrc(filename)
 
     if (ParseError)
     {
-	fprintf (stderr, "twm:  errors found in \"%s\"\n", cp);
+	fprintf (stderr, "%s:  errors found in twmrc file \"%s\"\n", 
+		 ProgramName, cp);
 	return 0;
     }
     return 1;

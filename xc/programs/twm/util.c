@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.27 89/11/01 17:27:38 jim Exp $
+ * $XConsortium: util.c,v 1.28 89/11/19 15:33:50 jim Exp $
  *
  * utility routines for twm
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.27 89/11/01 17:27:38 jim Exp $";
+"$XConsortium: util.c,v 1.28 89/11/19 15:33:50 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -378,8 +378,8 @@ Pixmap FindBitmap (name, widthp, heightp)
 
     bigname = ExpandFilename (name);
     if (!bigname) {
-	fprintf (stderr, "twm:  unable to expand bitmap filename \"%s\"\n",
-		 name);
+	fprintf (stderr, "%s:  unable to expand bitmap filename \"%s\"\n",
+		 ProgramName, name);
 	return None;
     }
 
@@ -391,8 +391,8 @@ Pixmap FindBitmap (name, widthp, heightp)
 				   2);
 	if (!bigname) {
 	    fprintf (stderr,
-		     "twm:  unable to allocate memory for \"%s/%s\"\n",
-		     Scr->IconDirectory, name);
+		     "%s:  unable to allocate memory for \"%s/%s\"\n",
+		     ProgramName, Scr->IconDirectory, name);
 	    return None;
 	}
 	sprintf (bigname, "%s/%s", Scr->IconDirectory, name);
@@ -403,7 +403,8 @@ Pixmap FindBitmap (name, widthp, heightp)
     }
     if (bigname != name) free (bigname);
     if (pm == None) {
-	fprintf (stderr, "twm:  unable to find bitmap \"%s\"\n", name);
+	fprintf (stderr, "%s:  unable to find bitmap \"%s\"\n", 
+		 ProgramName, name);
     }
 
     return pm;
@@ -433,8 +434,8 @@ InsertRGBColormap (a, maps, nmaps, replace)
     if (!sc) {				/* no existing, allocate new */
 	sc = (StdCmap *) malloc (sizeof (StdCmap));
 	if (!sc) {
-	    fprintf (stderr, "twm: unable to allocate %d bytes for StdCmap\n",
-		     sizeof (StdCmap));
+	    fprintf (stderr, "%s:  unable to allocate %d bytes for StdCmap\n",
+		     ProgramName, sizeof (StdCmap));
 	    return;
 	}
     }
@@ -532,7 +533,8 @@ char *name;
 	    stat = XParseColor (dpy, Scr->CMap, name, &color);
 	if (!stat)
 	{
-	    fprintf (stderr, "twm: invalid color \"%s\"\n", name);
+	    fprintf (stderr, "%s:  invalid color name \"%s\"\n", 
+		     ProgramName, name);
 	    return;
 	}
 
@@ -573,7 +575,8 @@ char *name;
 					    stdcmap->blue_max + 0.5) *
 			    stdcmap->blue_mult));
         } else {
-	    fprintf (stderr, "twm: couldn't allocate color \"%s\"\n", name);
+	    fprintf (stderr, "%s:  unable to allocate color \"%s\"\n", 
+		     ProgramName, name);
 	    return;
 	}
     }
@@ -596,8 +599,8 @@ MyFont *font;
 	}
 	if ((font->font = XLoadQueryFont(dpy, deffontname)) == NULL)
 	{
-	    fprintf(stderr, "twm: couldn't open font \"%s\" or \"%s\"\n",
-		    font->name, deffontname);
+	    fprintf (stderr, "%s:  unable to open fonts \"%s\" or \"%s\"\n",
+		     ProgramName, font->name, deffontname);
 	    exit(1);
 	}
 

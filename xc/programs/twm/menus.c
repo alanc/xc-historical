@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.117 89/11/15 21:19:00 jim Exp $
+ * $XConsortium: menus.c,v 1.118 89/11/19 15:34:14 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.117 89/11/15 21:19:00 jim Exp $";
+"$XConsortium: menus.c,v 1.118 89/11/19 15:34:14 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -218,8 +218,8 @@ int MakeTitleButton (bm, width, height, func, action, menuroot, rightside,
 
     if (!tb) {
 	fprintf (stderr,
-		 "twm:  unable to allocate %d bytes for title button\n",
-		 sizeof(TitleButton));
+		 "%s:  unable to allocate %d bytes for title button\n",
+		 ProgramName, sizeof(TitleButton));
 	return 0;
     }
 
@@ -1173,9 +1173,9 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
     case F_RESTART:
 	XSync (dpy, 0);
 	Reborder ();
-	execvp(*Argv, Argv, Environ);
 	XSync (dpy, 0);
-	fprintf(stderr, "%s:  restart failed\n", *Argv);
+	execvp(*Argv, Argv, Environ);
+	fprintf (stderr, "%s:  unable to restart:  %s\n", ProgramName, *Argv);
 	break;
 
     case F_UPICONMGR:
@@ -1536,7 +1536,8 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 
 	    if ((mroot = FindMenuRoot(action)) == NULL)
 	    {
-		fprintf(stderr, "twm: couldn't find function \"%s\"\n", action);
+		fprintf (stderr, "%s: couldn't find function \"%s\"\n", 
+			 ProgramName, action);
 		return TRUE;
 	    }
 
@@ -1780,14 +1781,15 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		}
 		else
 		{
-		    fprintf(stderr, "twm: couldn't open \"%s\"\n", tmp);
+		    fprintf (stderr, "%s:  unable to open cut file \"%s\"\n", 
+			     ProgramName, tmp);
 		}
 	    }
 	    XFree(ptr);
 	}
 	else
 	{
-	    fprintf(stderr, "twm: nothing in the cut buffer\n");
+	    fprintf(stderr, "%s:  cut buffer is empty\n", ProgramName);
 	}
 	break;
 
@@ -1876,7 +1878,8 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	}
 	else
 	{
-	    fprintf(stderr, "twm: couldn't open \"%s\"\n", action);
+	    fprintf (stderr, "%s:  unable to open file \"%s\"\n", 
+		     ProgramName, action);
 	}
 	break;
 
@@ -1889,7 +1892,9 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    ptr = (char *)malloc(len+1);
 	    if (ptr == NULL)
 	    {
-		fprintf(stderr, "twm: out of memory\n");
+		fprintf (stderr, 
+		 "%s:  unable to allocate %d bytes to source file \"%s\"\n", 
+			 ProgramName, len+1, action);
 		exit(1);
 	    }
 	    strcpy(ptr, action);
@@ -2498,7 +2503,8 @@ WarpToScreen (n, inc)
 		n += inc;
 		continue;
 	    }
-	    fprintf (stderr, "twm:  can't warp to unmanaged screen %d\n", n);
+	    fprintf (stderr, "%s:  unable to warp to unmanaged screen %d\n", 
+		     ProgramName, n);
 	    XBell (dpy, 0);
 	    return;
 	}

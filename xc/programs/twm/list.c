@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: list.c,v 1.14 89/10/27 14:01:21 jim Exp $
+ * $XConsortium: list.c,v 1.15 89/11/13 17:02:52 jim Exp $
  *
  * TWM code to deal with the name lists for the NoTitle list and
  * the AutoRaise list
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: list.c,v 1.14 89/10/27 14:01:21 jim Exp $";
+"$XConsortium: list.c,v 1.15 89/11/13 17:02:52 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -80,7 +80,9 @@ char *ptr;
     nptr = (name_list *)malloc(sizeof(name_list));
     if (nptr == NULL)
     {
-	fprintf(stderr, "twm: out of memory\n");
+	twmrc_error_prefix();
+	fprintf (stderr, "unable to allocate %d bytes for name_list\n",
+		 sizeof(name_list));
 	Done();
     }
 

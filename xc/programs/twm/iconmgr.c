@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.31 89/11/13 18:11:21 jim Exp $
+ * $XConsortium: iconmgr.c,v 1.32 89/11/19 15:34:09 jim Exp $
  *
  * Icon Manager routines
  *
@@ -273,8 +273,9 @@ int dir;
 
     if (!got_it)
     {
-	fprintf(stderr, "twm: couldn't find window (%d, %d)\n", 
-	    new_row, new_col);
+	fprintf (stderr, 
+		 "%s:  unable to find window (%d, %d) in icon manager\n", 
+		 ProgramName, new_row, new_col);
 	return;
     }
 

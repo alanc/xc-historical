@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: cursor.c,v 1.4 89/07/18 17:15:41 jim Exp $
+ * $XConsortium: cursor.c,v 1.5 89/07/19 15:57:50 jim Exp $
  *
  * cursor creation code
  *
@@ -135,7 +135,8 @@ Cursor *cp, str;
 	    return;
 	}
     }
-    fprintf(stderr, "twm: couldn't find font cursor \"%s\"\n", str);
+    fprintf (stderr, "%s:  unable to find font cursor \"%s\"\n", 
+	     ProgramName, str);
 }
 
 NewBitmapCursor(cp, source, mask)
@@ -164,9 +165,9 @@ char *source, *mask;
     XGetGeometry(dpy, mpm, &JunkRoot, &mx, &my, &mw, &mh, &JunkBW, &JunkDepth);
     if (sw != mw || sh != mh)
     {
-	fprintf(stderr, "twm: cursor bitmaps \"%s\" and \"%s\" are\n",
-	    source, mask);
-	fprintf(stderr, "     not the same size\n");
+	fprintf (stderr, 
+		 "%s:  cursor bitmaps \"%s\" and \"%s\" not the same size\n",
+		 ProgramName, source, mask);
 	return;
     }
     *cp = XCreatePixmapCursor(dpy, spm, mpm, &fore, &back, hotx,hoty);

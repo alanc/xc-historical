@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.112 89/11/16 18:40:37 jim Exp $
+ * $XConsortium: add_window.c,v 1.113 89/11/19 15:33:52 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.112 89/11/16 18:40:37 jim Exp $";
+"$XConsortium: add_window.c,v 1.113 89/11/19 15:33:52 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -1312,7 +1312,8 @@ static void CreateTitleButtons(tmp_win)
     if (nb > 0) {
 	tmp_win->titlebuttons = (TBWindow *) malloc (nb * sizeof(TBWindow));
 	if (!tmp_win->titlebuttons) {
-	    fprintf (stderr, "twm:  unable to allocate %d titlebuttons\n", nb);
+	    fprintf (stderr, "%s:  unable to allocate %d titlebuttons\n", 
+		     ProgramName, nb);
 	} else {
 	    TBWindow *tbw;
 	    int boxwidth = (Scr->TBInfo.width + Scr->TBInfo.pad);
@@ -1487,12 +1488,14 @@ static void InsertResizeAndIconify ()
      */
     if (!MakeTitleButton (iconify_pm, h, h, F_ICONIFY, "", NULL,
 			  False, False)) {
-	fprintf (stderr, "twm:  unable to add iconify button\n");
+	fprintf (stderr, "%s:  unable to add iconify button to window\n",
+		 ProgramName);
     }
 
     if (!MakeTitleButton (resize_pm, h, h, F_RESIZE, "", NULL,
 			  True, True)) {
-	fprintf (stderr, "twm:  unable to add resize button\n");
+	fprintf (stderr, "%s:  unable to add resize button to window\n", 
+		 ProgramName);
     }
     return;
 }

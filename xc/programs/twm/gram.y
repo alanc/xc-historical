@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.76 89/11/19 15:34:07 jim Exp $
+ * $XConsortium: gram.y,v 1.77 89/11/20 15:56:58 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.76 89/11/19 15:34:07 jim Exp $";
+"$XConsortium: gram.y,v 1.77 89/11/20 15:56:58 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -793,5 +793,5 @@ static Bool CheckColormapArg (s)
 
 twmrc_error_prefix ()
 {
-    fprintf (stderr, "twm:  line %d:  ", yylineno);
+    fprintf (stderr, "%s:  line %d:  ", ProgramName, yylineno);
 }
