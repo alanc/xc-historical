@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.12 88/10/06 07:33:40 swick Exp $
+ *	$XConsortium: button.c,v 1.13 88/10/06 09:09:27 swick Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.12 88/10/06 07:33:40 swick Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.13 88/10/06 09:09:27 swick Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -763,6 +763,7 @@ register int frow, fcol, trow, tcol;
 {
 	register int from, to;
 	register TScreen *screen = &term->screen;
+	int old_startrow, old_startcol, old_endrow, old_endcol;
 
 	/* (frow, fcol) may have been scrolled off top of display */
 	if (frow < 0)
@@ -772,44 +773,44 @@ register int frow, fcol, trow, tcol;
 		trow = screen->max_row+1;
 		tcol = 0;
 	}
-	from = Coordinate(frow, fcol);
-	to = Coordinate(trow, tcol);
-	if (to <= screen->startHCoord || from > screen->endHCoord) {
-		/* No overlap whatsoever between old and new hilite */
-		HiliteText(screen->startHRow, screen->startHCol,
-			   screen->endHRow, screen->endHCol, FALSE);
-		HiliteText(frow, fcol, trow, tcol, TRUE);
-	} else {
-		if (from < screen->startHCoord) {
-			/* Extend left end */
-			HiliteText(frow, fcol, screen->startHRow,
-				   screen->startHCol, TRUE); 
-		} else if (from > screen->startHCoord) {
-			/* Shorten left end */
-			HiliteText(screen->startHRow, screen->startHCol,
-				   frow, fcol, FALSE);
-		}
-		if (to > screen->endHCoord) {
-			/* Extend right end */
-			HiliteText(screen->endHRow, screen->endHCol,
-				   trow, tcol, TRUE); 
-		} else if (to < screen->endHCoord) {
-			/* Shorten right end */
-			HiliteText(trow, tcol, screen->endHRow,
-				   screen->endHCol, FALSE);
-		}
-	}
+	old_startrow = screen->startHRow;
+	old_startcol = screen->startHCol;
+	old_endrow = screen->endHRow;
+	old_endcol = screen->endHCol;
+	if (frow == old_startrow && fcol == old_startcol &&
+	    trow == old_endrow   && tcol == old_endcol) return;
 	screen->startHRow = frow;
 	screen->startHCol = fcol;
 	screen->endHRow   = trow;
 	screen->endHCol   = tcol;
+	from = Coordinate(frow, fcol);
+	to = Coordinate(trow, tcol);
+	if (to <= screen->startHCoord || from > screen->endHCoord) {
+	    /* No overlap whatsoever between old and new hilite */
+	    ReHiliteText(old_startrow, old_startcol, old_endrow, old_endcol);
+	    ReHiliteText(frow, fcol, trow, tcol);
+	} else {
+	    if (from < screen->startHCoord) {
+		    /* Extend left end */
+		    ReHiliteText(frow, fcol, old_startrow, old_startcol);
+	    } else if (from > screen->startHCoord) {
+		    /* Shorten left end */
+		    ReHiliteText(old_startrow, old_startcol, frow, fcol);
+	    }
+	    if (to > screen->endHCoord) {
+		    /* Extend right end */
+		    ReHiliteText(old_endrow, old_endcol, trow, tcol);
+	    } else if (to < screen->endHCoord) {
+		    /* Shorten right end */
+		    ReHiliteText(trow, tcol, old_endrow, old_endcol);
+	    }
+	}
 	screen->startHCoord = from;
 	screen->endHCoord = to;
 }
 
-HiliteText(frow, fcol, trow, tcol, hilite)
+ReHiliteText(frow, fcol, trow, tcol)
 register int frow, fcol, trow, tcol;
-int hilite;
 /* Guaranteed that (frow, fcol) <= (trow, tcol) */
 {
 	register TScreen *screen = &term->screen;
@@ -822,81 +823,19 @@ int hilite;
 	if (trow > screen->max_row) trow = screen->max_row;
 	if (frow == trow && fcol == tcol)
 		return;
-	if(hilite) {
-		tempgc = screen->normalGC;
-		screen->normalGC = screen->reverseGC;
-		screen->reverseGC = tempgc;
-		tempgc = screen->normalboldGC;
-		screen->normalboldGC = screen->reverseboldGC;
-		screen->reverseboldGC = tempgc;
 
-
-		i = screen->foreground;
-		screen->foreground = term->core.background_pixel;
-		term->core.background_pixel = i;
-		XSetWindowBackground(screen->display,VWindow(screen),term->core.background_pixel);
-
-	}
 	if(frow != trow) {	/* do multiple rows */
-		if((i = screen->max_col - fcol + 1) > 0) {	/* first row */
-			XClearArea(
-			    screen->display,
-			    VWindow(screen),
-			    (int) CursorX(screen, fcol),
-			    (int) frow * FontHeight(screen) + screen->border,
-			    (unsigned) i*FontWidth(screen),
-			    (unsigned) FontHeight(screen),
-			    FALSE);
-			ScrnRefresh(screen, frow, fcol, 1, i);
+		if((i = screen->max_col - fcol + 1) > 0) {     /* first row */
+		    ScrnRefresh(screen, frow, fcol, 1, i, True);
 		}
-		if((i = trow - frow - 1) > 0) {			/* middle rows*/
-			j = screen->max_col + 1;
-			XClearArea(
-			    screen->display,
-			    VWindow(screen),
-			    (int) screen->border + screen->scrollbar,
-			    (int) (frow+1)*FontHeight(screen) + screen->border,
-			    (unsigned) j * FontWidth(screen),
-			    (unsigned) i * FontHeight(screen),
-			    FALSE);
-			ScrnRefresh(screen, frow + 1, 0, i, j);
+		if((i = trow - frow - 1) > 0) {		       /* middle rows*/
+		    ScrnRefresh(screen, frow+1, 0,i, screen->max_col+1, True);
 		}
-		if(tcol > 0 && trow <= screen->max_row) {	/* last row */
-			XClearArea(
-			    screen->display,
-			    VWindow(screen),
-			    (int) screen->border + screen->scrollbar,
-			    (int) trow * FontHeight(screen) + screen->border,
-			    (unsigned) tcol * FontWidth(screen),
-			    (unsigned) FontHeight(screen),
-			    FALSE);
-			ScrnRefresh(screen, trow, 0, 1, tcol);
+		if(tcol > 0 && trow <= screen->max_row) {      /* last row */
+		    ScrnRefresh(screen, trow, 0, 1, tcol, True);
 		}
 	} else {		/* do single row */
-		i = tcol - fcol;
-		XClearArea(
-		    screen->display,
-		    VWindow(screen), 
-		    (int) CursorX(screen, fcol),
-		    (int) frow * FontHeight(screen) + screen->border,
-		    (unsigned) i * FontWidth(screen),
-		    (unsigned) FontHeight(screen),
-		    FALSE);
-		ScrnRefresh(screen, frow, fcol, 1, tcol - fcol);
-	}
-	if(hilite) {
-		tempgc = screen->normalGC;
-		screen->normalGC = screen->reverseGC;
-		screen->reverseGC = tempgc;
-		tempgc = screen->normalboldGC;
-		screen->normalboldGC = screen->reverseboldGC;
-		screen->reverseboldGC = tempgc;
-
-		i = screen->foreground;
-		screen->foreground = term->core.background_pixel;
-		term->core.background_pixel = i;
-		XSetWindowBackground(screen->display,VWindow(screen),term->core.background_pixel);
-
+		ScrnRefresh(screen, frow, fcol, 1, tcol - fcol, True);
 	}
 }
 
