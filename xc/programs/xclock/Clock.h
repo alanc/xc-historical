@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Clock.h,v 1.26 89/07/16 14:36:23 jim Exp $
+* $XConsortium: Clock.h,v 1.27 89/07/20 14:52:47 jim Exp $
 */
 
 
@@ -66,14 +66,9 @@ SOFTWARE.
 
 /* Resource names used to the clock widget */
 
-		/* Int: how often to update hands? */
-#define XtNupdate "update"
-
 		/* color of hands */
 #define XtNhand "hands"
 
-		/* color of hand outline */
-#define XtNhighlight "highlight"
 
 		/* Boolean: digital if FALSE */
 #define XtNanalog "analog"
