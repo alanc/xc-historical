@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.29 89/07/16 14:46:14 jim Exp $
+ * $XConsortium: Mailbox.c,v 1.30 89/07/16 14:46:35 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -210,11 +210,7 @@ static void Initialize (request, new)
 
     w->mailbox.gc = get_mailbox_gc (w);
     w->mailbox.interval_id = (XtIntervalId) 0;
-    w->mailbox.full.bitmap = None;
-    w->mailbox.full.mask = None;
     w->mailbox.full.pixmap = None;
-    w->mailbox.empty.bitmap = None;
-    w->mailbox.empty.mask = None;
     w->mailbox.empty.pixmap = None;
 
     return;
@@ -397,11 +393,11 @@ static void Destroy (gw)
     if (w->mailbox.interval_id) XtRemoveTimeOut (w->mailbox.interval_id);
     XtDestroyGC (w->mailbox.gc);
 #define freepix(p) if (p) XFreePixmap (dpy, p)
-    freepix (w->mailbox.full.bitmap);
-    freepix (w->mailbox.full.mask);
+    freepix (w->mailbox.full.bitmap);		/* until cvter does ref cnt */
+    freepix (w->mailbox.full.mask);		/* until cvter does ref cnt */
     freepix (w->mailbox.full.pixmap);
-    freepix (w->mailbox.empty.bitmap);
-    freepix (w->mailbox.empty.mask);
+    freepix (w->mailbox.empty.bitmap);		/* until cvter does ref cnt */
+    freepix (w->mailbox.empty.mask);		/* until cvter does ref cnt */
     freepix (w->mailbox.empty.pixmap);
 #ifdef SHAPE
     freepix (w->mailbox.shape_cache.mask);
