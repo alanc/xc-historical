@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.182 87/11/20 09:29:08 rws Locked $ */
+/* $Header: window.c,v 1.183 87/11/28 13:09:44 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -270,7 +270,6 @@ SetWindowToDefaults(pWin, pScreen)
 
     pWin->otherClients = (pointer)NULL;
     pWin->passiveGrabs = (pointer)NULL;
-    pWin->colormap = (Colormap)CopyFromParent;
 
     pWin->exposed = (* pScreen->RegionCreate)(NULL, 1);
     pWin->borderExposed = (* pScreen->RegionCreate)(NULL, 1);
@@ -517,6 +516,14 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
         return (WindowPtr)NULL;
     }
 
+    if (((vmask & CWColormap) == 0) &&
+	(class != InputOnly) &&
+	((visual != pParent->visual) || (pParent->colormap == None)))
+    {
+	*error = BadMatch;
+        return (WindowPtr)NULL;
+    }
+
     pWin = (WindowPtr) Xalloc( sizeof(WindowRec) );
     InitProcedures(pWin);
     pWin->drawable = pParent->drawable;
@@ -530,6 +537,11 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     pWin->class = class;
 
     SetWindowToDefaults(pWin, pScreen);
+
+    if ((class == InputOnly) || (visual != pParent->visual))
+	pWin->colormap = None;
+    else
+	pWin->colormap = pParent->colormap;
 
     pWin->cursor = (CursorPtr)None;
 
@@ -1019,12 +1031,15 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	    cmap = (Colormap ) *pVlist;
 	    if (cmap == CopyFromParent)
 	    {
-		cmap = (pWin->parent) ? pWin->parent->colormap : None;
-		if (cmap == None)
-		{
-		    error = BadMatch;
-		    goto PatchUp;
-		}
+		if (pWin->parent && (pWin->visual == pWin->parent->visual))
+		    cmap = pWin->parent->colormap;
+		else
+		    cmap = None;
+	    }
+	    if (cmap == None)
+	    {
+		error = BadMatch;
+		goto PatchUp;
 	    }
 	    pCmap = (ColormapPtr)LookupID(cmap, RT_COLORMAP, RC_CORE);
 	    if (pCmap)
@@ -1122,7 +1137,6 @@ GetWindowAttributes(pWin, client)
     ClientPtr client;
 {
     xGetWindowAttributesReply wa;
-    WindowPtr pWinT;
 
     wa.type = X_Reply;
     wa.bitGravity = pWin->bitGravity;
@@ -1142,11 +1156,9 @@ GetWindowAttributes(pWin, client)
     else
         wa.mapState = IsUnviewable;
 
-    pWinT = pWin;
-    while (pWinT->colormap == (Colormap)CopyFromParent)
-        pWinT = pWinT->parent;	
-    wa.colormap =  pWinT->colormap;
-    wa.mapInstalled = IsMapInstalled(wa.colormap, pWin);
+    wa.colormap =  pWin->colormap;
+    wa.mapInstalled = (wa.colormap == None) ? xFalse
+					    : IsMapInstalled(wa.colormap, pWin);
 
     wa.yourEventMask = EventMaskForClient(pWin, client, &wa.allEventMasks);
     wa.doNotPropagateMask = pWin->dontPropagateMask ;
