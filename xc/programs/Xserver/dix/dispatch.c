@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.56 88/08/10 20:13:00 rws Exp $ */
+/* $Header: dispatch.c,v 1.57 88/08/11 17:36:32 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -303,7 +303,8 @@ Dispatch()
 		    client->requestLogIndex = 0;
 		client->requestLog[client->requestLogIndex] = request->reqType;
 		client->requestLogIndex++;
-		if (request->length > MAX_REQUEST_SIZE)
+		if ((client->swapped ? lswaps(request->length) :
+				       request->length) > MAX_REQUEST_SIZE)
 		    ErrorStatus = BadLength;
 		else
 		    ErrorStatus = (* (client->swapped ? SwappedProcVector :
