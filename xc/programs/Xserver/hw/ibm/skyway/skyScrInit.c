@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyScrInit.c,v 1.4 91/12/11 21:25:52 eswu Exp $ 
+ * $XConsortium: skyScrInit.c,v 1.5 92/01/27 18:03:20 eswu Exp $ 
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991 
  *
@@ -35,11 +35,22 @@
 #include <sys/rcm_win.h>
 #include <sys/aixgsc.h>
 
+#define NEED_REPLIES
+#define NEED_EVENTS
 #include "X.h"
-#include "screenint.h"
+#include "Xproto.h"
+#include "misc.h"
+#include "os.h"
+#include "windowstr.h"
 #include "scrnintstr.h"
 #include "pixmapstr.h"
+#include "extnsionst.h"
+#include "dixstruct.h"
+#include "resource.h"
+#include "opaque.h"
+#include "inputstr.h"
 #include "cursorstr.h"
+#include "servermd.h"
 #include "ibmScreen.h"
 #include "ibmTrace.h"
 
@@ -53,6 +64,10 @@
 #include "skyReg.h"
 #include "skyPriv.h"
 
+#ifdef SKY_MBUF_HACK
+#define _MULTIBUF_SERVER_
+#include "multibufst.h"
+#endif
 
 static unsigned long ddpGeneration=0;
 unsigned long ddpGCPrivateIndex;
@@ -183,20 +198,28 @@ skyScreenInit(scrnNum, pScreen, argc, argv)
     *                                                                        *
     *************************************************************************/
 
+#ifdef SKY_MBUF_HACK
+    if (!cfbSetupScreen(pScreen, SKY_VRAM_START[scrnNum],
+			SKY_WIDTH, SKY_HEIGHT, 92, 92, SKY_WIDTH*2))
+	return FALSE;
+#else
     if (!cfbSetupScreen(pScreen, SKY_VRAM_START[scrnNum],
 			SKY_WIDTH, SKY_HEIGHT, 92, 92, SKY_WIDTH))
 	return FALSE;
 
     pScreen->CreateGC = skyCreateGC;
+#endif
 
     pScreen->RealizeCursor = skyRealizeCursor;
     pScreen->UnrealizeCursor = skyUnrealizeCursor;
     pScreen->DisplayCursor = skyDisplayCursor;
     pScreen->RecolorCursor = miRecolorCursor;
 
+#ifndef SKY_MBUF_HACK
     pScreen->PaintWindowBackground = miPaintWindow;
     pScreen->PaintWindowBorder = miPaintWindow;
     pScreen->CopyWindow = skyCopyWindow;
+#endif
 
     pScreen->InstallColormap = skyInstallColormap;
     pScreen->UninstallColormap = skyUninstallColormap;
@@ -205,9 +228,16 @@ skyScreenInit(scrnNum, pScreen, argc, argv)
 
     pScreen->QueryBestSize = skyQueryBestSize;
 
+    printf("w,h=%d,%d\n", SKY_WIDTH, SKY_HEIGHT);
+#ifdef SKY_MBUF_HACK
+    if (!cfbFinishScreenInit(pScreen, SKY_VRAM_START[scrnNum],
+	       SKY_WIDTH, SKY_HEIGHT, 92, 92, SKY_WIDTH*2))
+	return FALSE;
+#else
     if (!cfbFinishScreenInit(pScreen, SKY_VRAM_START[scrnNum],
 	       SKY_WIDTH, SKY_HEIGHT, 92, 92, SKY_WIDTH))
 	return FALSE;
+#endif
 
 
     if (!cfbCreateDefColormap(pScreen))
@@ -242,6 +272,96 @@ skyScreenInit(scrnNum, pScreen, argc, argv)
     pScreen->PointerNonInterestBox = AIXPointerNonInterestBox;
     pScreen->ConstrainCursor = AIXConstrainCursor;
 
+#ifdef SKY_MBUF_HACK
+    {
+	PixmapPtr pPixmap, selectPlane;
+	DevUnion *frameBuffer;
+	xMbufBufferInfo	*pInfo;
+	int		nInfo;
+	DepthPtr	pDepth;
+	int		i,j,k;
+
+
+	/* Create second buffer */
+
+
+	pPixmap = (PixmapPtr ) xalloc(sizeof(PixmapRec));
+	if (!pPixmap)
+	    return FALSE;
+	pPixmap->drawable.type = DRAWABLE_PIXMAP;
+	pPixmap->drawable.depth = pScreen->rootDepth;
+	pPixmap->drawable.pScreen = pScreen;
+	pPixmap->drawable.serialNumber = 0;
+	pPixmap->drawable.x = 0;
+	pPixmap->drawable.y = 0;
+	pPixmap->drawable.width = SKY_WIDTH;
+	pPixmap->drawable.height = SKY_HEIGHT;
+	pPixmap->refcnt = 1;
+	pPixmap->devPrivate.ptr = (pointer)(SKY_VRAM_START[scrnNum]
+	    + SKY_HEIGHT*SKY_WIDTH*2);
+	pPixmap->devKind = PixmapBytePad(SKY_WIDTH*2,
+					 pScreen->rootDepth);
+
+	frameBuffer = (DevUnion *) xalloc(2*sizeof(DevUnion));
+	if (!frameBuffer)
+	    return FALSE;
+
+	frameBuffer[0].ptr = pScreen->devPrivate;
+	frameBuffer[1].ptr = (pointer) pPixmap;
+
+
+	/* Create selectPlane */
+
+	selectPlane = (PixmapPtr ) xalloc(sizeof(PixmapRec));
+	if (!selectPlane)
+	    return FALSE;
+	selectPlane->drawable.type = DRAWABLE_PIXMAP;
+	selectPlane->drawable.depth = pScreen->rootDepth;
+	selectPlane->drawable.pScreen = pScreen;
+	selectPlane->drawable.serialNumber = 0;
+	selectPlane->drawable.x = 0;
+	selectPlane->drawable.y = 0;
+	selectPlane->drawable.width = SKY_WIDTH;
+	selectPlane->drawable.height = SKY_HEIGHT;
+	selectPlane->refcnt = 1;
+	selectPlane->devPrivate.ptr = (pointer)
+	    (SKY_VRAM_START[scrnNum] + SKY_WIDTH);
+	selectPlane->devKind = PixmapBytePad(SKY_WIDTH*2,
+					 pScreen->rootDepth);
+
+	/* Mbuf supports every depth and visual combination
+	 * that the screen does.
+	 */
+	
+	nInfo = 0;
+	for (i = 0; i < pScreen->numDepths; i++)
+	{
+	    pDepth = &pScreen->allowedDepths[i];
+	    nInfo += pDepth->numVids;
+	}
+
+	pInfo = (xMbufBufferInfo *)
+	    xalloc (pScreen->numVisuals * sizeof (xMbufBufferInfo));
+	if (!pInfo)
+	    return FALSE;
+
+	k = 0;
+	for (i = 0; i < pScreen->numDepths; i++)
+	{
+	    pDepth = &pScreen->allowedDepths[i];
+	    for (j = 0; j < pDepth->numVids; j++)
+	    {
+		pInfo[k].visualID = pDepth->vids[j];
+		pInfo[k].maxBuffers = 2;
+		pInfo[k].depth = pDepth->depth;
+		k++;
+	    }
+	}
+
+	RegisterDoubleBufferHardware(pScreen, nInfo, pInfo,
+				     frameBuffer, selectPlane, NULL, NULL);
+    }
+#endif
     return TRUE;
 }
 

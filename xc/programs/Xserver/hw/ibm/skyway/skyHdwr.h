@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyHdwr.h,v 1.4 91/12/11 21:25:05 eswu Exp $
+ * $XConsortium: skyHdwr.h,v 1.5 92/01/27 18:03:02 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -143,8 +143,13 @@ extern ulong		SKY_TILESTIPID_CTR[];	/* TileStip ID counter       */
 *                                                                            *
 *****************************************************************************/
 
+#ifdef SKY_MBUF_HACK
+#define SKY_WIDTH            (1280/2)
+#define SKY_HEIGHT           (1024/2)
+#else
 #define SKY_WIDTH            1280
 #define SKY_HEIGHT           1024
+#endif
 
 #define SKY_INVISO_SIZE		(SC_VRAM_END_OFF - SC_INVIS_VRAM_OFF + 1)
 #define SKY_TILESTIP_AREAS	0x8
