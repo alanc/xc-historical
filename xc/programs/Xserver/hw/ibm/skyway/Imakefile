@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.4 91/07/16 22:51:23 gildea Exp $
 
 #include <Server.tmpl>
 
@@ -11,7 +11,8 @@ SRCS =	 	skyInfo.c	\
 		skyScrInit.c    \
 		skyCmap.c       \
 		skyProbe.c	\
-		skySGC.c
+		skySGC.c	\
+		skyBitBlt.c
 
 OBJS =	 	skyInfo.o       \
 		skyIO.o	        \
@@ -22,7 +23,8 @@ OBJS =	 	skyInfo.o       \
 		skyScrInit.o    \
 		skyCmap.o       \
 		skyProbe.o	\
-		skySGC.o
+		skySGC.o	\
+		skyBitBlt.o
 
 INCLUDES = -I../ -I../OPERATING_SYSTEM -I../../mfb -I../../cfb -I../ppc -I../../../include -I$(INCLUDESRC) -I../common -I../../mi -I../../../../fonts/include
 STD_DEFINES = ServerDefines
