@@ -1,4 +1,4 @@
-/* $XConsortium: importcl.c,v 1.3 93/10/26 15:09:35 rws Exp $ */
+/* $XConsortium: importcl.c,v 1.4 93/10/27 21:52:25 rws Exp $ */
 
 /**** module importcl.c ****/
 /******************************************************************************
@@ -520,7 +520,7 @@ void DoImportClientLUT(xp, p, reps)
 		XieExecutePhotoflo( xp->d, flo, flo_notify );
 		XSync( xp->d, 0 );
                 PumpTheClientData( xp, p, flo, 0, 1,
-                        lut, lutSize, 0 );
+                        (char *)lut, lutSize, 0 );
               	WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo, 0, False ); 
     	}
 }
@@ -536,7 +536,7 @@ void DoImportClientROI(xp, p, reps)
 		XieExecutePhotoflo( xp->d, flo, flo_notify );
 		XSync( xp->d, 0 );
                 PumpTheClientData( xp, p, flo, 0, 1,
-                        rects, rectsSize * sizeof( XieRectangle ), 0 );
+                        (char *)rects, rectsSize * sizeof( XieRectangle ), 0 );
                	WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo, 0, False ); 
     	}
 }
