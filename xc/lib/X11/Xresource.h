@@ -1,4 +1,4 @@
-/* $XConsortium: Xresource.h,v 1.31 90/12/11 22:39:42 rws Exp $ */
+/* $XConsortium: Xresource.h,v 1.32 91/02/17 13:00:28 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -166,7 +166,7 @@ typedef XrmQuark     XrmRepresentation;
 
 typedef struct {
     unsigned int    size;
-    caddr_t	    addr;
+    XPointer	    addr;
 } XrmValue, *XrmValuePtr;
 
 
@@ -348,10 +348,10 @@ extern Bool XrmEnumerateDatabase(
 	     XrmQuarkList	/* quarks */,
 	     XrmRepresentation*	/* type */,
 	     XrmValue*		/* value */,
-	     caddr_t		/* closure */
+	     XPointer		/* closure */
 #endif
 	     )		/* proc */,
-    caddr_t		/* closure */
+    XPointer		/* closure */
 #endif
 );
 
@@ -378,7 +378,7 @@ typedef struct {
     char	    *option;	    /* Option abbreviation in argv	    */
     char	    *specifier;     /* Resource specifier		    */
     XrmOptionKind   argKind;	    /* Which style of option it is	    */
-    caddr_t	    value;	    /* Value to provide if XrmoptionNoArg   */
+    XPointer	    value;	    /* Value to provide if XrmoptionNoArg   */
 } XrmOptionDescRec, *XrmOptionDescList;
 
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.63 91/02/17 12:51:51 rws Exp $ */
+/* $XConsortium: Xutil.h,v 11.64 91/02/19 08:49:32 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -165,7 +165,7 @@ typedef struct {
  * Compose sequence status structure, used in calling XLookupString.
  */
 typedef struct _XComposeStatus {
-    char *compose_ptr;		/* state table pointer */
+    XPointer compose_ptr;	/* state table pointer */
     int chars_matched;		/* match state */
 } XComposeStatus;
 
@@ -298,7 +298,7 @@ extern int XFindContext(
     Display*		/* display */,
     Window		/* w */,
     XContext		/* context */,
-    caddr_t*		/* data_return */
+    XPointer*		/* data_return */
 #endif
 );
 
