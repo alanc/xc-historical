@@ -42,9 +42,8 @@ static char *sccsid = "@(#)Initialize.c	1.0	8/2787";
  This is a set of default records describing the command line arguments that
  Xlib will parse and set into the resource data base.
  
- This list is appiled before the users list to enforce these defaults.  This is
- policy, which the toolkit avoids but I hate differening programs at this
- level.
+ This list is applied before the users list to enforce these defaults.  This is
+ policy, which the toolkit avoids but I hate differing programs at this level.
 */
 
 static XrmOptionDescRec opTable[] = {
@@ -123,6 +122,7 @@ static void Initialize();
 static void Realize();
 static void SetValues();
 static void Destroy();
+static void InsertChild();
 static void ChangeManaged(); /* XXX */
 static XtGeometryReturnCode GeometryManager();
 static void EventHandler();
@@ -156,7 +156,7 @@ TopLevelClassRec topLevelClassRec = {
     /* accept_focus       */    NULL,
     /* geometry_manager   */    GeometryManager,
     /* change_managed     */    ChangeManaged,
-    /* insert_child	  */	CompositeInsertChild,
+    /* insert_child	  */	InsertChild,
     /* move_focus_to_next */    NULL,
     /* move_focus_to_prev */    NULL
 };
@@ -402,6 +402,14 @@ Widget wid;
 		XtFree(w->top.classname);
 }
 
+static void InsertChild(w)
+    Widget w;
+{
+    CompositeInsertChild(w);
+    XtCompositeAddChild(w);	/* Add to managed set now */
+}
+
+
 static void 
 ChangeManaged(wid)
 CompositeWidget wid;
@@ -545,7 +553,7 @@ Widget *old, *new;
 
 Display *
 XtInitialize(urlist, urlistCount, argc, argv, name, classname, root)
-Resource *urlist;
+XrmOptionDescRec *urlist;
 int	urlistCount;
 Cardinal  *argc;
 char *argv[];
