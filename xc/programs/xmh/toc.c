@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.c,v 2.36 90/01/22 17:37:59 swick Exp $
+ * $XConsortium: toc.c,v 2.37 91/01/09 09:04:58 swick Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -539,20 +539,14 @@ void TocForceRescan(toc)
     Toc	toc;
 {
     register int i;
-    if (toc->num_scrns) {
-	toc->viewedseq = toc->seqlist[0];
-	for (i=0 ; i<toc->num_scrns ; i++)
-	    TUResetTocLabel(toc->scrn[i]);
-	TUScanFileForToc(toc);
-	TULoadTocFile(toc);
-	for (i=0 ; i<toc->num_scrns ; i++)
-	    TURedisplayToc(toc->scrn[i]);
-    } else {
-	TUGetFullFolderInfo(toc);
-	(void) unlink(toc->scanfile);
-	toc->lastreaddate = 0;
-	toc->validity = invalid;
-    }
+
+    toc->viewedseq = toc->seqlist[0];
+    for (i=0 ; i<toc->num_scrns ; i++)
+	TUResetTocLabel(toc->scrn[i]);
+    TUScanFileForToc(toc);
+    TULoadTocFile(toc);
+    for (i=0 ; i<toc->num_scrns ; i++)
+	TURedisplayToc(toc->scrn[i]);
 }
 
 
