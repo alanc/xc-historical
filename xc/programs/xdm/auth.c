@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.40 91/05/11 15:32:57 gildea Exp $
+ * $XConsortium: auth.c,v 1.41 91/07/09 15:50:09 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -550,7 +550,8 @@ writeAuth (file, auth)
     FILE	*file;
     Xauth	*auth;
 {
-	dumpAuth (auth);
+        Debug ("writeAuth: doWrite = %d\n", doWrite);
+	dumpAuth (auth);	/* does Debug only */
 	if (doWrite)
 	    XauWriteAuth (file, auth);
 }
@@ -566,7 +567,7 @@ writeAddr (family, addr_length, addr, file, auth)
 	auth->family = (unsigned short) family;
 	auth->address_length = addr_length;
 	auth->address = addr;
-	Debug ("Writing and saving an entry\n");
+	Debug ("writeAddr: writing and saving an entry\n");
 	writeAuth (file, auth);
 	saveEntry (auth);
 }
@@ -595,42 +596,6 @@ DefineLocal (file, auth)
 	gethostname(displayname, sizeof(displayname));
 #endif
 	writeAddr (FamilyLocal, strlen (displayname), displayname, file, auth);
-}
-
-/* code stolen from server/os/4.2bsd/access.c */
-
-static
-ConvertAddr (saddr, len, addr)
-    register struct sockaddr	*saddr;
-    int				*len;
-    char			**addr;
-{
-    if (len == 0)
-        return (0);
-    switch (saddr->sa_family)
-    {
-      case AF_UNSPEC:
-#ifndef hpux
-      case AF_UNIX:
-#endif
-        return (0);
-#ifdef TCPCONN
-      case AF_INET:
-        *len = sizeof (struct in_addr);
-        *addr = (char *) &(((struct sockaddr_in *) saddr)->sin_addr);
-        return (AF_INET);
-#endif
-
-#ifdef DNETCONN
-      case AF_DECnet:
-        *len = sizeof (struct dn_naddr);
-        *addr = (char *) &(((struct sockaddr_dn *) saddr)->sdn_add);
-        return (AF_DECnet);
-#endif
-      default:
-        break;
-    }
-    return (-1);
 }
 
 #ifdef STREAMSCONN
@@ -697,7 +662,7 @@ DefineSelf (fd, file, auth)
 	} else
 #endif
 	{
-        	if (ConvertAddr (&ifr->ifr_addr, &len, &addr) <= 0)
+        	if (ConvertAddr (&ifr->ifr_addr, &len, &addr) < 0)
 	    	    continue;
 		/*
 		 * don't write out 'localhost' entries, as
@@ -756,7 +721,7 @@ DefineSelf (fd, file, auth)
 	inetaddr = (struct sockaddr_in *) (&(saddr.sa));
 	bcopy ( (char *) hp->h_addr, (char *) &(inetaddr->sin_addr), (int) hp->h_length);
 	family = ConvertAddr ( &(saddr.sa), &len, &addr);
-	if ( family > 0) {
+	if ( family >= 0) {
 	    writeAddr (FamilyInternet, sizeof (inetaddr->sin_addr),
 			(char *) (&inetaddr->sin_addr), file, auth);
 	}
@@ -803,7 +768,8 @@ writeLocalAuth (file, auth, name)
     char	*name;
 {
     int	fd;
-    Debug ("writeLocalAuth\n");
+
+    Debug ("writeLocalAuth: %s %.*s\n", name, auth->name_length, auth->name);
     setAuthNumber (auth, name);
 #ifdef TCPCONN
     fd = socket (AF_INET, SOCK_STREAM, 0);
@@ -831,32 +797,11 @@ writeRemoteAuth (file, auth, peer, peerlen, name)
     int	    family = FamilyLocal;
     char    *addr;
     
+    Debug ("writeRemoteAuth: %s %.*s\n", name, auth->name_length, auth->name);
     if (!peer || peerlen < 2)
 	return;
     setAuthNumber (auth, name);
-    switch (ConvertAddr (peer, &peerlen, &addr))
-    {
-#ifdef AF_UNIX
-    case AF_UNIX:
-	family = FamilyLocal;
-	break;
-#endif
-#ifdef AF_INET
-    case AF_INET:
-	family = FamilyInternet;
-	break;
-#endif
-#ifdef AF_DECnet
-    case AF_DECnet:
-	family = FamilyDECnet;
-	break;
-#endif
-#ifdef AF_CHAOS
-    case AF_CHAOS:
-	family = FamilyChaos;
-	break;
-#endif
-    }
+    family = ConvertAddr (peer, &peerlen, &addr);
     Debug ("writeRemoteAuth: family %d\n", family);
     if (family != FamilyLocal)
     {
@@ -937,6 +882,7 @@ struct verify_info	*verify;
 	}
 	initAddrs ();
 	doWrite = 1;
+	Debug ("%d authorization protocols for %s\n", d->authNum, d->name);
 	/*
 	 * Write MIT-MAGIC-COOKIE-1 authorization first, so that
 	 * R4 clients which only knew that, and used the first
@@ -958,6 +904,7 @@ struct verify_info	*verify;
 		break;
 	    }
 	}
+	/* now write other authorizations */
 	for (i = 0; i < d->authNum; i++)
 	{
 	    if (i != magicCookie)
