@@ -2,7 +2,7 @@
  *  Hacked from Tony Della Fera's much hacked clock program.
  */
 #ifndef lint
-static char rcsid[] = "$XHeader: xclock.c,v 1.16 88/05/18 16:03:58 keith Exp $";
+static char rcsid[] = "$XConsortium: xclock.c,v 1.16 88/05/18 16:03:58 keith Exp $";
 #endif  lint
 
 #include <X11/Xatom.h>

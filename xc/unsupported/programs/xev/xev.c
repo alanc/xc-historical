@@ -1,7 +1,7 @@
 /*
  * xev - event diagnostics
  *
- * $XHeader: xev.c,v 1.4 88/07/22 12:03:16 jim Exp $
+ * $XConsortium$
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *

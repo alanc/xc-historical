@@ -1,5 +1,5 @@
 #
-# $XHeader$
+# $XConsortium$
 #
 # List of symbols that need to be defined for VTparse.h.  If you need to 
 # change any of the CASE_ macros, make the change here and rerun the command

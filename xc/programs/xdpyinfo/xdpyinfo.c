@@ -1,5 +1,5 @@
 /*
- * $XHeader: xdpyinfo.c,v 1.6 88/07/12 12:09:54 jim Exp $
+ * $XConsortium$
  * 
  * xdpyinfo - print information about X display connecton
  *

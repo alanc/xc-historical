@@ -1,12 +1,12 @@
 /* 
- * $XHeader: xset.c,v 1.34 88/07/15 12:06:19 jim Exp $ 
+ * $XConsortium: xset.c,v 1.34 88/07/15 12:06:19 jim Exp $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$XHeader: xset.c,v 1.34 88/07/15 12:06:19 jim Exp $";
+static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.34 88/07/15 12:06:19 jim Exp $";
 #endif
 
 #include <X11/Xos.h>

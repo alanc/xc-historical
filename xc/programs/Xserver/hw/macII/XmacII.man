@@ -1,4 +1,4 @@
-.\" $Header: XmacII.man,v 1.3 88/08/11 14:37:26 x Exp $
+.\" $XConsortium: XmacII.man,v 1.3 88/08/25 09:20:25 xguest Exp $
 .TH XMACII 1 "8 August 1988" "X Version 11 Release 3"
 .SH NAME
 XmacII \- Macintosh II server for X Version 11 Release 3

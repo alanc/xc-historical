@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.51 88/09/02 09:30:49 swick Exp $
+ * $XConsortium: charproc.c,v 1.52 88/09/04 20:13:06 rws Exp $
  */
 
 
@@ -128,7 +128,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XHeader: charproc.c,v 1.45 88/08/08 12:49:42 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.45 88/08/08 12:49:42 jim Exp $";
 #endif	/* lint */
 
 static long arg;

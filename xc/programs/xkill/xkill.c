@@ -1,7 +1,7 @@
 /*
  * xkill - simple program for destroying unwanted clients
  *
- * $XHeader: xkill.c,v 1.3 88/07/15 10:34:59 jim Exp $
+ * $XConsortium$
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *

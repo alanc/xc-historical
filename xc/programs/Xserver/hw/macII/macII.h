@@ -34,7 +34,7 @@ IMPLIED.
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$Header: macII.h,v 1.12 88/08/14 01:33:05 x Exp $ SPRITE (Berkeley)"
+ * $XConsortium$
  */
 #ifndef _MACII_H_
 #define _MACII_H_
