@@ -30,6 +30,7 @@ SRCS = \
 	mailfullmsk \
 	mensetmanus \
 	menu8 \
+	menu12 \
 	menu16 \
 	noletters \
 	opendot \
