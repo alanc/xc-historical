@@ -1,105 +1,47 @@
-XCOMM $XConsortium$
-#ifdef XlibI18nPath
-  XLIBI18N_PATH = XlibI18nPath
-#else
-  XLIBI18N_PATH = $(LIBDIR)/locale
-#endif
+XCOMM $XConsortium: Imakefile,v 1.1 93/09/17 13:34:03 rws Exp $
 
-#if SystemV4
-        WCHAR32 = YES
-#else
-        WCHAR32 = NO
-#endif
+  WCHAR32 = HasWChar32
+   TBLDIR = $(LOCALEDIR)/tbl_data
 
-       DESTNAME = XLC_LOCALE
-       TBL_DATA_DIR = tbl_data
-
-      LOCALE_00 = C
-      LOCALE_01 = iso8859-1
-      LOCALE_02 = iso8859-2
-      LOCALE_03 = iso8859-3
-      LOCALE_04 = iso8859-4
-      LOCALE_05 = iso8859-5
-      LOCALE_06 = iso8859-6
-      LOCALE_07 = iso8859-7
-      LOCALE_08 = iso8859-8
-      LOCALE_09 = iso8859-9
-      LOCALE_10 = ja
-      LOCALE_11 = ja.JIS
-      LOCALE_12 = ja.SJIS
-      LOCALE_13 = ko
-      LOCALE_14 = zh
-      LOCALE_15 = zh_TW
-      LOCALE_16 = th_TH.TACTIS
-      LOCALE_17 = en_US.utf
-
-      TABLE_1   = tab8859_1
-      TABLE_2   = tab8859_2
-      TABLE_3   = tab8859_3
-      TABLE_4   = tab8859_4
-      TABLE_5   = tab8859_5
-      TABLE_6   = tab8859_6
-      TABLE_7   = tab8859_7
-      TABLE_8   = tab8859_8
-      TABLE_9   = tab8859_9
-      TABLE_JIS = jis0208
-      TABLE_KSC = ksc5601
-      TABLE_GB  = gb2312
+#define LTarget(name)							@@\
+CppFileTarget(name.i,name,-DWCHAR32=$(WCHAR32),NullParameter)		@@\
+InstallNamedNonExec(name.i,XLC_LOCALE,$(XLOCALEDIR)/name)
 
 all::
 
-CppFileTarget($(LOCALE_00).i,$(LOCALE_00),-DWCHAR32=$(WCHAR32),NullParameter)
-CppFileTarget($(LOCALE_01).i,$(LOCALE_01),-DWCHAR32=$(WCHAR32),NullParameter)
-CppFileTarget($(LOCALE_02).i,$(LOCALE_02),-DWCHAR32=$(WCHAR32),NullParameter)
-CppFileTarget($(LOCALE_03).i,$(LOCALE_03),-DWCHAR32=$(WCHAR32),NullParameter)
-CppFileTarget($(LOCALE_04).i,$(LOCALE_04),-DWCHAR32=$(WCHAR32),NullParameter)
-CppFileTarget($(LOCALE_05).i,$(LOCALE_05),-DWCHAR32=$(WCHAR32),NullParameter)
-CppFileTarget($(LOCALE_06).i,$(LOCALE_06),-DWCHAR32=$(WCHAR32),NullParameter)
-CppFileTarget($(LOCALE_07).i,$(LOCALE_07),-DWCHAR32=$(WCHAR32),NullParameter)
-CppFileTarget($(LOCALE_08).i,$(LOCALE_08),-DWCHAR32=$(WCHAR32),NullParameter)
-CppFileTarget($(LOCALE_09).i,$(LOCALE_09),-DWCHAR32=$(WCHAR32),NullParameter)
-CppFileTarget($(LOCALE_10).i,$(LOCALE_10),-DWCHAR32=$(WCHAR32),NullParameter)
-CppFileTarget($(LOCALE_11).i,$(LOCALE_11),-DWCHAR32=$(WCHAR32),NullParameter)
-CppFileTarget($(LOCALE_12).i,$(LOCALE_12),-DWCHAR32=$(WCHAR32),NullParameter)
-CppFileTarget($(LOCALE_13).i,$(LOCALE_13),-DWCHAR32=$(WCHAR32),NullParameter)
-CppFileTarget($(LOCALE_14).i,$(LOCALE_14),-DWCHAR32=$(WCHAR32),NullParameter)
-CppFileTarget($(LOCALE_15).i,$(LOCALE_15),-DWCHAR32=$(WCHAR32),NullParameter)
-CppFileTarget($(LOCALE_16).i,$(LOCALE_16),-DWCHAR32=$(WCHAR32),NullParameter)
-CppFileTarget($(LOCALE_17).i,$(LOCALE_17),-DWCHAR32=$(WCHAR32),NullParameter)
+LTarget(C)
+LTarget(iso8859-1)
+LTarget(iso8859-2)
+LTarget(iso8859-3)
+LTarget(iso8859-4)
+LTarget(iso8859-5)
+LTarget(iso8859-6)
+LTarget(iso8859-7)
+LTarget(iso8859-8)
+LTarget(iso8859-9)
+LTarget(ja)
+LTarget(ja.JIS)
+LTarget(ja.SJIS)
+LTarget(ko)
+LTarget(zh)
+LTarget(zh_TW)
+LTarget(th_TH.TACTIS)
+LTarget(en_US.utf)
 
-InstallNamedNonExec($(LOCALE_00).i,$(DESTNAME),$(XLIBI18N_PATH)/$(LOCALE_00))
-InstallNamedNonExec($(LOCALE_01).i,$(DESTNAME),$(XLIBI18N_PATH)/$(LOCALE_01))
-InstallNamedNonExec($(LOCALE_02).i,$(DESTNAME),$(XLIBI18N_PATH)/$(LOCALE_02))
-InstallNamedNonExec($(LOCALE_03).i,$(DESTNAME),$(XLIBI18N_PATH)/$(LOCALE_03))
-InstallNamedNonExec($(LOCALE_04).i,$(DESTNAME),$(XLIBI18N_PATH)/$(LOCALE_04))
-InstallNamedNonExec($(LOCALE_05).i,$(DESTNAME),$(XLIBI18N_PATH)/$(LOCALE_05))
-InstallNamedNonExec($(LOCALE_06).i,$(DESTNAME),$(XLIBI18N_PATH)/$(LOCALE_06))
-InstallNamedNonExec($(LOCALE_07).i,$(DESTNAME),$(XLIBI18N_PATH)/$(LOCALE_07))
-InstallNamedNonExec($(LOCALE_08).i,$(DESTNAME),$(XLIBI18N_PATH)/$(LOCALE_08))
-InstallNamedNonExec($(LOCALE_09).i,$(DESTNAME),$(XLIBI18N_PATH)/$(LOCALE_09))
-InstallNamedNonExec($(LOCALE_10).i,$(DESTNAME),$(XLIBI18N_PATH)/$(LOCALE_10))
-InstallNamedNonExec($(LOCALE_11).i,$(DESTNAME),$(XLIBI18N_PATH)/$(LOCALE_11))
-InstallNamedNonExec($(LOCALE_12).i,$(DESTNAME),$(XLIBI18N_PATH)/$(LOCALE_12))
-InstallNamedNonExec($(LOCALE_13).i,$(DESTNAME),$(XLIBI18N_PATH)/$(LOCALE_13))
-InstallNamedNonExec($(LOCALE_14).i,$(DESTNAME),$(XLIBI18N_PATH)/$(LOCALE_14))
-InstallNamedNonExec($(LOCALE_15).i,$(DESTNAME),$(XLIBI18N_PATH)/$(LOCALE_15))
-InstallNamedNonExec($(LOCALE_16).i,$(DESTNAME),$(XLIBI18N_PATH)/$(LOCALE_16))
-InstallNamedNonExec($(LOCALE_17).i,$(DESTNAME),$(XLIBI18N_PATH)/$(LOCALE_17))
-
-InstallNamedNonExec($(TABLE_1),$(TABLE_1),$(XLIBI18N_PATH)/$(TBL_DATA_DIR))
-InstallNamedNonExec($(TABLE_2),$(TABLE_2),$(XLIBI18N_PATH)/$(TBL_DATA_DIR))
-InstallNamedNonExec($(TABLE_3),$(TABLE_3),$(XLIBI18N_PATH)/$(TBL_DATA_DIR))
-InstallNamedNonExec($(TABLE_4),$(TABLE_4),$(XLIBI18N_PATH)/$(TBL_DATA_DIR))
-InstallNamedNonExec($(TABLE_5),$(TABLE_5),$(XLIBI18N_PATH)/$(TBL_DATA_DIR))
-InstallNamedNonExec($(TABLE_6),$(TABLE_6),$(XLIBI18N_PATH)/$(TBL_DATA_DIR))
-InstallNamedNonExec($(TABLE_7),$(TABLE_7),$(XLIBI18N_PATH)/$(TBL_DATA_DIR))
-InstallNamedNonExec($(TABLE_8),$(TABLE_8),$(XLIBI18N_PATH)/$(TBL_DATA_DIR))
-InstallNamedNonExec($(TABLE_9),$(TABLE_9),$(XLIBI18N_PATH)/$(TBL_DATA_DIR))
-InstallNamedNonExec($(TABLE_JIS),$(TABLE_JIS),$(XLIBI18N_PATH)/$(TBL_DATA_DIR))
-InstallNamedNonExec($(TABLE_KSC),$(TABLE_KSC),$(XLIBI18N_PATH)/$(TBL_DATA_DIR))
-InstallNamedNonExec($(TABLE_GB),$(TABLE_GB),$(XLIBI18N_PATH)/$(TBL_DATA_DIR))
+InstallNonExec(tab8859_1,$(TBLDIR))
+InstallNonExec(tab8859_2,$(TBLDIR))
+InstallNonExec(tab8859_3,$(TBLDIR))
+InstallNonExec(tab8859_4,$(TBLDIR))
+InstallNonExec(tab8859_5,$(TBLDIR))
+InstallNonExec(tab8859_6,$(TBLDIR))
+InstallNonExec(tab8859_7,$(TBLDIR))
+InstallNonExec(tab8859_8,$(TBLDIR))
+InstallNonExec(tab8859_9,$(TBLDIR))
+InstallNonExec(jis0208,$(TBLDIR))
+InstallNonExec(ksc5601,$(TBLDIR))
+InstallNonExec(gb2312,$(TBLDIR))
 
 depend::
 
 clean::
-	$(RM) *.i
+	RemoveFiles(*.i)
