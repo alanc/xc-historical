@@ -1,5 +1,5 @@
 /*
- * $XConsortium: GetHost.c,v 1.3 93/08/16 14:11:21 rws Exp $
+ * $XConsortium: GetHost.c,v 1.4 93/08/18 15:10:17 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -34,6 +34,12 @@ int XmuGetHostname (buf, maxlen)
     int maxlen;
 {
     int len;
+#ifdef WIN32
+    static WSADATA wsadata;
+
+    if (!wsadata.wVersion && WSAStartup(MAKEWORD(1,1), &wsadata))
+	return -1;
+#endif
 
 #ifdef USG
 #define NEED_UTSNAME
