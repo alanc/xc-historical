@@ -24,7 +24,7 @@ include/	include files shared by multiple directories
 lib/		all libraries
 nls/		localization files
 programs/	all programs, including the X server
-registry	X registry
+registry	X Registry
 test/		X Test Suite and other test suites
 unsupported/	things that were in R5 that will probably move to contrib
 util/		patch, compress, other utilities
@@ -35,7 +35,7 @@ filesystems.  Conflicts remain for various header (.h) files.
 
 2. Building the release
 
-Hopefully you know the drill by now, so this will be brief.  Edit
+You presumably know the drill by now, so this will be brief.  Edit
 xc/config/cf/site.def to suit your needs.  Check the appropriate
 xc/config/cf/vendor.cf file to make sure that OSMajorVersion, OSMinorVersion,
 and OSTeeyVersion are set correctly (change them if necessary).
@@ -70,7 +70,7 @@ since R5.
 
 We have fixed a lot of bugs, but there are still a lot we haven't fixed.  We
 hope to fix a lot more bugs before beta.  The open bug database is included
-in this release.
+in this release as bugs/.
 
 Please send bug reports about this release to xbugs@x.org.
 
@@ -111,7 +111,7 @@ for beta is to get the X libraries working as DLLs and to get xterm working.
 
 6. Configuration files
 
-The configuration files have changed quite a bit, hopefully in a mostly
+The configuration files have changed quite a bit, we hope in a mostly
 compatible fashion.  The main config files are now in xc/config/cf, imake
 sources are in xc/config/imake, and makedepend sources are in
 xc/config/makedepend.  The lndir program (for creating link trees) is in
@@ -264,7 +264,7 @@ future.
 XtAppAddSignal, XtRemoveSignal, XtNoticeSignal.
 
   XtAppAddSignal allows an application to add callback procedures that will be
-  called when a signal is "noticed." XtNoticeSignal is called by the
+  called when a signal is "noticed."  XtNoticeSignal is called by the
   application whenever it wants Xt to "notice" that a signal has been
   received, e.g. from a UNIX signal(2) handler.  XtRemoveSignal is the inverse
   of XtAppAddSignal.
@@ -301,6 +301,11 @@ XtProcessUnlock.
   them.  These functions exist as no-ops on systems which do not support
   threads.  Thread support has been minimally tested on SunOS 5.2, OSF/1 1.0,
   Mach 2.5 Vers 2.00.1, and Microsoft Windows NT 3.1.
+
+XtResolvePathname
+
+  Implements %D substitution, which substitutes the implementation-specific
+  default path.
 
 Choice of poll or select for I/O multiplexing.
 
@@ -342,15 +347,15 @@ outline font have been moved to xc/fonts/bdf/unnec_{75,100}dpi.
 
 17. Font library
 
-The proposed XLFD changes for matrix transformations, artificial emboldening,
-and charset subsetting are implemented.
+The XLFD changes for matrix transformations, and proposed changes for
+artificial emboldening and charset subsetting, are implemented.
 
 
 18. Font server
 
 The font server has been renamed from fs to xfs to avoid confusion with
 an AFS program.  The default port has changed from 7000 (used by AFS)
-to 7100, and has been registered with the Internet IAC.
+to 7100, and has been registered with the Internet IANA.
 
 
 19. X server
