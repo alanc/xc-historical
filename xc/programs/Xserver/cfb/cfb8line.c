@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8line.c,v 1.16 91/05/03 17:02:14 keith Exp $
+ * $XConsortium: cfb8line.c,v 1.17 91/05/24 17:31:40 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -334,6 +334,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 	    stepmajor = e3;
 	}
 
+	e = -x1_or_len;
 #ifdef POLYSEGMENT
 	if (!capStyle)
 	    x1_or_len--;
@@ -347,7 +348,6 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 #endif
 
 	y1_or_e1 = y1_or_e1 << 1;
-	e = -x1_or_len;
 	e3 = e << 1;
 
 #define body {\
