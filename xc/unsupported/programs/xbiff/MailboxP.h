@@ -1,5 +1,5 @@
 /*
- * $XConsortium: MailboxP.h,v 1.16 89/05/11 01:05:56 kit Exp $
+ * $XConsortium: MailboxP.h,v 1.17 90/04/11 17:03:00 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -34,7 +34,6 @@ typedef struct {			/* new fields for mailbox widget */
     Pixel foreground_pixel;		/* color index of normal state fg */
     String filename;			/* filename to watch */
     String check_command;		/* command to exec for mail check */
-    Boolean reverseVideo;		/* do reverse video? */
     Boolean flipit;			/* do flip of full pixmap */
     int volume;				/* bell volume */
     Boolean once_only;			/* ring bell only once on new mail */
