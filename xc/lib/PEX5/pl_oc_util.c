@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_util.c,v 1.4 92/06/12 12:32:57 mor Exp $ */
+/* $XConsortium: pl_oc_util.c,v 1.5 92/06/30 14:25:50 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology,
@@ -776,7 +776,6 @@ INPUT PEXOCData		*oc_data;
 
 	{
 	    int lenofColor, lenofFacetList, lenofVertexList;
-	    int numVertices, i;
 
     	    lenofColor =
 	        GetColorLength (oc_data->data.TriangleStrip.color_type);
@@ -798,7 +797,6 @@ INPUT PEXOCData		*oc_data;
 
 	{
 	    int lenofColor, lenofFacetList, lenofVertexList;
-	    int numVertices, i;
 
     	    lenofColor =
 	        GetColorLength (oc_data->data.QuadrilateralMesh.color_type);
@@ -828,8 +826,8 @@ INPUT PEXOCData		*oc_data;
 	    PEXConnectivityData *pConnectivity;
 	    int 	lenofColor, lenofFacet, lenofVertex;
 	    int 	sizeofEdge, sofaLength;
-	    int 	numContours, numFillAreaSets, numIndices, numVertices;
-	    int 	count, i, j;
+	    int 	numContours, numFillAreaSets;
+	    int		numIndices, numVertices, i;
 
 	    numFillAreaSets = oc_data->data.SetOfFillAreaSets.set_count;
 	    numIndices = oc_data->data.SetOfFillAreaSets.index_count;
@@ -1404,7 +1402,6 @@ INPUT char		*encoded_ocs;
 	case PEXOCFillArea:
 
 	{
-	    pexFillArea 	*oc = (pexFillArea *) ptr;
 	    int 		count;
     
 	    count = (sizeof (CARD32) * (elemInfo->length - 2)) /
@@ -1417,7 +1414,6 @@ INPUT char		*encoded_ocs;
 	case PEXOCFillArea2D:
 
 	{
-	    pexFillArea2D 	*oc = (pexFillArea2D *) ptr;
 	    int 		count;
     
 	    count = (sizeof (CARD32) * (elemInfo->length - 2)) /
@@ -1607,7 +1603,6 @@ INPUT char		*encoded_ocs;
 	    int			sizeofVertexList;
 	    int			sizeofUKnotList;
 	    int			sizeofVKnotList;
-	    int			sizeofTrimData;
 	    pexTrimCurve	*trim;
 	    int			count, i, j;
 

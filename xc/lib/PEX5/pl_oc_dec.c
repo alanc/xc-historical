@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_decode.c,v 1.1 92/06/12 15:27:19 mor Exp $ */
+/* $XConsortium: pl_oc_dec.c,v 1.2 92/06/30 14:00:08 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology,
@@ -1397,7 +1397,6 @@ PEXOCData	*ocDest;
     int			sizeofVertexList;
     int			sizeofUKnotList;
     int			sizeofVKnotList;
-    int			sizeofTrimData;
     PEXListOfTrimCurve	*pList;
     pexTrimCurve	*trimSrc;
     PEXTrimCurve	*trimDest;
