@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miNCurve.c,v 5.1 91/02/16 09:55:45 rws Exp $ */
 
 
 /***********************************************************
@@ -146,7 +146,9 @@ miNurbsCurve(pRend, pExecuteOC)
 static 
 void
 multiply_basis_func_control_pts( pt_type, order, span, pts, C, poly )
-    int		pt_type, order, span;
+    ddPointType    pt_type;
+    ddUSHORT	order; 
+    int         span;
     char	*pts;			/* control points */
     double	C[MAXORD][MAXORD];	/* span basis matrix */
     double	poly[4][MAXORD];	/* computed polynomial basis mtx */
@@ -202,8 +204,8 @@ multiply_basis_func_control_pts( pt_type, order, span, pts, C, poly )
 static 
 void
 compute_fwd_matrix2D( pt_type, order, dt, poly )
-    int		pt_type;
-    int		order; 
+    ddPointType    pt_type;
+    ddUSHORT	order; 
     float	dt;
     double	poly[MAXORD][MAXORD]; 
 {
@@ -259,7 +261,8 @@ compute_fwd_matrix2D( pt_type, order, dt, poly )
 static 
 void
 ofd_curve( pt_type, order, knot, num_segs, dt, A, pts )
-    int			pt_type, order;
+    ddPointType    pt_type;
+    ddUSHORT	order; 
     ddFLOAT		*knot;
     int			num_segs;
     float		dt;
@@ -329,11 +332,11 @@ nu_compute_nurb_curve( pddc, curve, aptype, apval, curve_list )
     ddFLOAT		apval;
     miListHeader	**curve_list;
 {
-    int		 order = curve->order;
+    ddUSHORT		 order = curve->order;
     int		 i;
 
     miListHeader *control_points = &curve->points;
-    float	 *rknots=0;		/* reciprocal of knot diff */
+    ddFLOAT	 (*rknots)[MAXORD]=0;		/* reciprocal of knot diff */
     double	 C[MAXORD][MAXORD];	/* bspline to poly matrix */
     double	 A[4][MAXORD];		/* xyzw curve coefficients */
     int		 numKnots;		/* number of knots aftetr insertion */
@@ -377,9 +380,9 @@ nu_compute_nurb_curve( pddc, curve, aptype, apval, curve_list )
 
 	if ( !mi_nu_insert_knots( order, control_points->type,
 				  curve->numKnots, curve->pKnots, 
-				  control_points->ddList->pts.ptr, 
+				 (ddFLOAT *)(control_points->ddList->pts.ptr), 
 				  &numnewKnots, knots, 
-				  cpts ) )
+				  (ddFLOAT *)cpts ) )
 	    goto no_mem;
 
 	numKnots = numnewKnots;
@@ -461,7 +464,7 @@ nu_compute_nurb_curve( pddc, curve, aptype, apval, curve_list )
 		    num_subsegs = apval + 1; /* assume it's been clamped */
 		}
 
-		if ( !( rknots = (float *)
+		if ( !( rknots = (ddFLOAT (*)[MAXORD])
 		    Xalloc( MAXORD * numKnots * sizeof(float))) )
 		    goto no_mem;
 
@@ -482,7 +485,8 @@ nu_compute_nurb_curve( pddc, curve, aptype, apval, curve_list )
 			mi_nu_compute_nurb_basis_function( order, i,
 							   knots, rknots, C );
 			multiply_basis_func_control_pts( control_points->type,
-							 order, i, cpts, C, A );
+							 order, i, 
+							 (char *)cpts, C, A );
 			compute_fwd_matrix2D( control_points->type,order,dt,A );
 
 			MI_ALLOCLISTOFDDPOINT(pddlist, num_subsegs + 1, 
@@ -491,7 +495,7 @@ nu_compute_nurb_curve( pddc, curve, aptype, apval, curve_list )
 			  return(BadAlloc);
 
 			ofd_curve( control_points->type, order, &knots[i], 
-				   num_subsegs, dt, A, out_pts );
+				   num_subsegs, dt, A, (char *)out_pts );
 
 			(pddlist++)->numPoints = num_subsegs + 1;
 			(*curve_list)->numLists += 1;
@@ -532,7 +536,7 @@ ddpex3rtn
 compute_adaptive_crv_interval( pddc, curve, xform, apxval )
     miDDContext		*pddc;
     miNurbStruct	*curve;
-    ddFLOAT		*xform;
+    ddFLOAT		xform[4][4];
     ddFLOAT		*apxval;
 {
     ddFLOAT		a_coeff, b_coeff, c_coeff, denom, z1, z2, z3;
@@ -570,11 +574,8 @@ compute_adaptive_crv_interval( pddc, curve, xform, apxval )
     }
 
     if ( xform ) {
-      if (status = miTransform( pddc,
-				&curve->points, &tmp_list,
-				xform,
-				NULL,
-				DD_HOMOGENOUS_POINT))
+      if (status = miTransform( pddc, &curve->points, &tmp_list, 
+				xform, NULL4x4, DD_HOMOGENOUS_POINT))
 	return (status);
 
       /* Normalize result by w */
@@ -683,7 +684,7 @@ tessellate_curve( pddc, curve, curve_list, xform )
     miDDContext	 	*pddc;
     miNurbStruct	*curve;
     miListHeader	**curve_list;
-   ddFLOAT		*xform;
+   ddFLOAT		xform[4][4];
 {
     int			approx_type;
     ddFLOAT		approx_value;

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miSOFAS.c,v 5.1 91/02/16 09:55:44 rws Exp $ */
 
 
 /***********************************************************
@@ -175,7 +175,7 @@ miSOFAS(pRend, pExecuteOC)
 
 	/* Copy facet data for FAS */
 	if (in_fct) {
-	  bcopy(in_fct, out_fct, facet_size);
+	  bcopy((char *)in_fct, (char *)out_fct, facet_size);
 	  out_fct += facet_size;
 	  in_fct += facet_size;
 	}

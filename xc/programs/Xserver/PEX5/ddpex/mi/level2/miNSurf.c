@@ -1,4 +1,4 @@
-/* $XConsortium: miNSurf.c,v 5.2 91/02/18 21:23:43 rws Exp $ */
+/* $XConsortium: miNSurf.c,v 5.3 91/03/15 18:24:01 hersh Exp $ */
 
 #define TRIMING 1
 
@@ -396,7 +396,7 @@ build_surf_reps( pddc, surface, state, trans )
     miDDContext         *pddc;
     miNurbSurfaceStruct *surface;
     Nurb_surf_state	*state;
-    ddFLOAT		*trans;
+    ddFLOAT		trans[4][4];
 {
     /* calls */
     static ddpex3rtn compute_adaptive_surf_interval();
@@ -473,7 +473,7 @@ compute_adaptive_surf_interval( pddc, surface, state, trans )
     miDDContext         *pddc;
     miNurbSurfaceStruct *surface;
     Nurb_surf_state	*state;
-    ddFLOAT		*trans;
+    ddFLOAT		trans[4][4];
 {
 /*  calls  */
     double	sqrt();
@@ -529,11 +529,8 @@ compute_adaptive_surf_interval( pddc, surface, state, trans )
 
       /* Transform to WC prior to applying lighting */
       out_type = input->type;
-      if (status = miTransform( pddc,
-				input, &temp,
-				trans,
-				NULL,
-				DD_SetVert4D(out_type)))
+      if (status = miTransform( pddc, input, &temp,
+			        trans, NULL4x4, DD_SetVert4D(out_type)))
           return (status);
       input = temp;
     }
@@ -581,7 +578,7 @@ compute_adaptive_surf_interval( pddc, surface, state, trans )
           for ( i = 0, pin = ctlpts, pa = lower; 
 		i < nu; 
 		i++, pa++, pin += point_size ) {
-	    bcopy(pin, pa, point_size);
+	    bcopy(pin, (char *)pa, point_size);
 	    pa->w = 1.0;
 	  }
 	}

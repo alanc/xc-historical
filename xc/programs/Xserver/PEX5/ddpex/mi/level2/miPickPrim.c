@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miPickPrim.c,v 5.1 91/02/16 09:55:48 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -41,7 +41,6 @@ SOFTWARE.
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
 extern ocTableType InitExecuteOCTable[];
-extern ddFLOAT ident4x4[];
 extern int tx_el_to_path();
 extern void text2_xform();
 extern void text3_xform();
@@ -277,7 +276,8 @@ ClipNPCPoint4D (pRend, in_pt, oc)
 /* Local variables */
     ddCoord3D          npc_pt;
     ddNpcSubvolume    *cliplimits;
-    int                j, status;
+    int                j;
+    ddUSHORT 	       status;
     miViewEntry       *view_entry;
     ddUSHORT           cur_index;
 
@@ -293,7 +293,7 @@ ClipNPCPoint4D (pRend, in_pt, oc)
 	          ->pPCAttr->viewIndex;
 
     if ((InquireLUTEntryAddress (PEXViewLUT, pRend->lut[PEXViewLUT],
-				 cur_index, &status, &view_entry))
+				 cur_index, &status, (ddPointer *)&view_entry))
 	== PEXLookupTableError)
 	return (PEXLookupTableError);
 
@@ -373,7 +373,7 @@ miPickAnnoText2D(pRend, pExecuteOC)
     listofddPoint     *sp;
     XID		       temp;
     ddpex3rtn	       status;
-    ddUSHORT           aflag;
+    ddUSHORT           aflag, LUTstatus;
     ddCoord4D          MC_Origin, CC_Origin, NPC_Origin;
     ddUSHORT           oc;         /* Outcode for 4D point clipping */
     ddUSHORT           Pick_Flag, cur_index;
@@ -405,7 +405,7 @@ miPickAnnoText2D(pRend, pExecuteOC)
     cur_index = pDDC->Dynamic->pPCAttr->viewIndex;
 
     if ((InquireLUTEntryAddress (PEXViewLUT, pRend->lut[PEXViewLUT],
-				 cur_index, &status, &view_entry))
+				 cur_index, &LUTstatus, (ddPointer *)&view_entry))
 	== PEXLookupTableError)
 	return (PEXLookupTableError);
 
@@ -596,7 +596,7 @@ miPickAnnoText2D(pRend, pExecuteOC)
 
 	/* Buffer the tc_to_npc_xform first */
 
-	bcopy (buf2_xform, tc_to_npc_xform, 16*sizeof(ddFLOAT));
+	bcopy ((char *)buf2_xform, (char *)tc_to_npc_xform, 16*sizeof(ddFLOAT));
 
 	/* Apply the per character translation and scaling by */
 	/* directly modifying the concerned matrix elements.  */
@@ -618,10 +618,9 @@ miPickAnnoText2D(pRend, pExecuteOC)
 	/* Transform and clip the paths corresponding to current */
 	/* character.                                            */
 
-	if (status = miTransform(pDDC, 
-				 text_el.paths->path, &cc_path, 
+	if (status = miTransform(pDDC, text_el.paths->path, &cc_path, 
 				 buf_xform,
-				 NULL,
+				 NULL4x4,
 				 DD_HOMOGENOUS_POINT))
 	    return (status);
 
@@ -726,7 +725,7 @@ miPickAnnoText3D(pRend, pExecuteOC)
     listofddPoint     *sp;
     XID		       temp;
     ddpex3rtn	       status;
-    ddUSHORT           aflag;
+    ddUSHORT           aflag, LUTstatus;
     static ddVector3D   Directions[2] = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0};
     ddCoord3D           *pDirections = (ddCoord3D *)Directions;
     ddCoord4D          MC_Origin, CC_Origin, NPC_Origin;
@@ -760,7 +759,7 @@ miPickAnnoText3D(pRend, pExecuteOC)
     cur_index = pDDC->Dynamic->pPCAttr->viewIndex;
 
     if ((InquireLUTEntryAddress (PEXViewLUT, pRend->lut[PEXViewLUT],
-				 cur_index, &status, &view_entry))
+				 cur_index, &LUTstatus, (ddPointer *)&view_entry))
 	== PEXLookupTableError)
 	return (PEXLookupTableError);
 
@@ -954,7 +953,7 @@ miPickAnnoText3D(pRend, pExecuteOC)
 
 	/* Buffer the tc_to_npc_xform first */
 
-	bcopy (buf2_xform, tc_to_npc_xform, 16*sizeof(ddFLOAT));
+	bcopy ((char *)buf2_xform, (char *)tc_to_npc_xform, 16*sizeof(ddFLOAT));
 
 	/* Apply the per character translation and scaling by */
 	/* directly modifying the concerned matrix elements.  */
@@ -976,10 +975,9 @@ miPickAnnoText3D(pRend, pExecuteOC)
 	/* Transform and clip the paths corresponding to current */
 	/* character.                                            */
 
-	if (status = miTransform(pDDC, 
-				 text_el.paths->path, &cc_path, 
+	if (status = miTransform(pDDC, text_el.paths->path, &cc_path, 
 				 buf_xform,
-				 NULL,
+				 NULL4x4,
 				 DD_HOMOGENOUS_POINT))
 	    return (status);
 
@@ -1058,7 +1056,7 @@ miPickPrimitives(pRend, pExecuteOC)
       ddViewEntry       *view;
       ddFLOAT            buf1_xform[4][4];
       ddUSHORT           cur_index;
-      int                status;
+      ddUSHORT           status;
 
       /* Get the pick aperture and convert into NPC, if required. */
 
@@ -1086,7 +1084,7 @@ miPickPrimitives(pRend, pExecuteOC)
       cur_index = pDDC->Dynamic->pPCAttr->viewIndex;
 
       if ((InquireLUTEntryAddress (PEXViewLUT, pRend->lut[PEXViewLUT],
-				   cur_index, &status, &view_entry))
+				   cur_index, &status, (ddPointer *)&view_entry))
 	  == PEXLookupTableError)
 	  return (PEXLookupTableError);
 

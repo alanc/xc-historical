@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miPolyLine.c,v 5.1 91/02/16 09:55:17 rws Exp $ */
 
 
 /***********************************************************
@@ -39,7 +39,6 @@ SOFTWARE.
 
 #include <stdio.h>
 
-extern ddFLOAT  ident4x4[];
 
 /*++
  |
@@ -104,11 +103,10 @@ miPolyLines(pRend, pExecuteOC)
 
       /* Tranform points to 4D for clipping */
       out_type = color_list->type;
-      if (status = miTransform(pddc,
-                                 color_list, &mc_clist,
-                                 ident4x4,
-                                 ident4x4,
-                                 DD_SetVert4D(out_type)))
+      if (status = miTransform(pddc, color_list, &mc_clist,
+			      	 ident4x4,
+				 ident4x4,
+				 DD_SetVert4D(out_type)))
           return (status);
 
 
@@ -123,11 +121,10 @@ miPolyLines(pRend, pExecuteOC)
 
     /* Transform and clip the paths created */
     out_type = mc_list->type;
-    if (status = miTransform(pddc, 
-				 mc_list, &cc_list, 
-				 pddc->Dynamic->mc_to_cc_xform,
-				 NULL,
-				 DD_SetVert4D(out_type)))
+    if (status = miTransform(pddc, mc_list, &cc_list, 
+			       pddc->Dynamic->mc_to_cc_xform,
+			       NULL4x4,
+			       DD_SetVert4D(out_type)))
 	  return (status);
 
     if (status = miClipPolyLines(pddc, cc_list, &clip_list, clip_mode)) 
@@ -143,10 +140,9 @@ miPolyLines(pRend, pExecuteOC)
     out_type = clip_list->type;
     DD_SetVert2D(out_type);
     DD_SetVertShort(out_type);
-    if (status = miTransform(pddc, 
-				 clip_list, &dc_list, 
-				 pddc->Dynamic->cc_to_dc_xform,
-				 NULL,
+    if (status = miTransform(pddc, clip_list, &dc_list, 
+			      	 pddc->Dynamic->cc_to_dc_xform, 
+				 NULL4x4, 
 				 out_type))
 	  return (status);
 
@@ -396,7 +392,7 @@ miDepthCuePLine(pRend, input_vert, output_vert)
     ddFLOAT                     pt_depth;
     ddULONG                     colourindex;
     ddColourSpecifier           intcolour;
-    ddpex3rtn                   status;
+    ddUSHORT                    status;
     ddDepthCueEntry             *dcue_entry;
 
     /* look for empty list header */
@@ -434,7 +430,7 @@ miDepthCuePLine(pRend, input_vert, output_vert)
                         == PEXIndexedColour)) {
       if ((InquireLUTEntryAddress (PEXColourLUT, pRend->lut[PEXColourLUT],
              pddc->Static.attrs->lineColour.colour.indexed.index,
-             &status, &pintcolour)) == PEXLookupTableError)
+             &status, (ddPointer *)&pintcolour)) == PEXLookupTableError)
           return (PEXLookupTableError);
     }
  

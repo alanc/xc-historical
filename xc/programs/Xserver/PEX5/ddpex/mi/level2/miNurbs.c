@@ -1,4 +1,4 @@
-/* $XConsortium: miNurbs.c,v 5.1 91/02/16 09:55:47 rws Exp $ */
+/* $XConsortium: miNurbs.c,v 5.2 91/03/31 16:48:26 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -86,7 +86,7 @@ double mi_nu_ptofd[MAXORD][MAXORD] = {
 
 void
 mi_nu_preprocess_knots( order, nk, knots, rp )
-    int		order;
+    ddUSHORT		order;
     int		nk;
     ddFLOAT	*knots;
     ddFLOAT	rp[][MAXORD];	/* reciprocal of knots diff */
@@ -127,7 +127,7 @@ mi_nu_preprocess_knots( order, nk, knots, rp )
 
 void
 mi_nu_compute_nurb_basis_function( order, span, knots, kr, C )
-    int		order;
+    ddUSHORT	order;
     int		span;
     ddFLOAT	*knots;
     ddFLOAT	kr[][MAXORD]; /* reciprocal of knots diff */
@@ -193,9 +193,9 @@ int
 mi_nu_insert_knots( order, pt_type, 
 		    numinknots, oknots, opoints, 
 		    numoutknots, nknots, npoints )
-    int		order;
-    int		pt_type;
-    int		numinknots;
+    ddUSHORT		order;
+    ddPointType		pt_type;
+    ddUSHORT		numinknots;
     ddFLOAT	*oknots;	/* original knots */
     ddFLOAT	*opoints;	/* original control points */
     int		*numoutknots;
@@ -216,20 +216,20 @@ mi_nu_insert_knots( order, pt_type,
     /* Check to see if new knots needed. Copy and return if not. */
     if ( *numoutknots <= 0 ) {
 	*numoutknots = numinknots;
-	bcopy( oknots, nknots, numinknots * sizeof(ddFLOAT) );
+	bcopy( (char *)oknots, (char *)nknots, (int)numinknots * sizeof(ddFLOAT) );
 	return 1;
     }
 
     /* Copy old control points into new space. */
     num_pts = numinknots - order;
     if ( DD_IsVert2D(pt_type) ) {
-	bcopy( opoints, npoints, num_pts * sizeof(ddCoord2D));
+	bcopy( (char *)opoints, (char *)npoints, num_pts * sizeof(ddCoord2D));
 	npts2 = (ddCoord2D *)npoints;
     } else if ( DD_IsVert3D(pt_type) ) {
-	bcopy( opoints, npoints, num_pts * sizeof(ddCoord3D));
+	bcopy( (char *)opoints, (char *)npoints, num_pts * sizeof(ddCoord3D));
 	npts3 = (ddCoord3D *)npoints;
     } else if ( DD_IsVert4D(pt_type) ) {
-	bcopy( opoints, npoints, num_pts * sizeof(ddCoord4D));
+	bcopy( (char *)opoints, (char *)npoints, num_pts * sizeof(ddCoord4D));
 	npts4 = (ddCoord4D *)npoints;
     } else return (1);
 
@@ -240,7 +240,7 @@ mi_nu_insert_knots( order, pt_type,
     /* Insert new knots and control points, starting from the end of the
      * original lists.
      */
-    bcopy( oknots, tmpknots, numinknots * sizeof(ddFLOAT) );
+    bcopy( (char *)oknots, (char *)tmpknots, (int)numinknots * sizeof(ddFLOAT) );
     numtmpknots = numinknots;
     ink = *numoutknots;
     iok = numinknots - 1;
@@ -262,14 +262,17 @@ mi_nu_insert_knots( order, pt_type,
 	/* Move control points down to make space for inserted ones.
 	 * Use bcopy(3) so that the overlap is handled.
 	 */
+	 /* note that the funky &blah[...] notation is equivalent
+	    to blah+...  since blah is a pointer. JSH 4-10-91
+	 */
 	if ( DD_IsVert2D(pt_type) )
-	    bcopy( &npts2[iok + 1], &npts2[iok + 1 + mult],
+	    bcopy( (char *)(&npts2[iok + 1]), (char *)(&npts2[iok + 1 + mult]),
 		((num_pts - iok) - 1) * sizeof(ddCoord2D) );
 	else if ( DD_IsVert3D(pt_type) )
-	    bcopy( &npts3[iok + 1], &npts3[iok + 1 + mult],
+	    bcopy( (char *)(&npts3[iok + 1]), (char *)(&npts3[iok + 1 + mult]),
 		((num_pts - iok) - 1) * sizeof(ddCoord3D) );
 	else
-	    bcopy( &npts4[iok + 1], &npts4[iok + 1 + mult],
+	    bcopy( (char *)(&npts4[iok + 1]), (char *)(&npts4[iok + 1 + mult]),
 		((num_pts - iok) - 1) * sizeof(ddCoord4D) );
 
 	/* Do de Boor to insert new knot with multiplicity `mult'. */
@@ -345,8 +348,8 @@ mi_nu_insert_knots( order, pt_type,
 
     /* copy results into output buffers */
     *numoutknots = numtmpknots; /* resulting total knots */
-    bcopy( tmpknots, nknots, numtmpknots * sizeof(ddFLOAT) );
+    bcopy( (char *)tmpknots, (char *)nknots, numtmpknots * sizeof(ddFLOAT) );
 
-    free( tmpknots );
+    free( (char *)tmpknots );
     return 1;
 }

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miSearch.c,v 5.1 91/02/16 09:55:56 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -41,7 +41,6 @@ SOFTWARE.
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
 extern ocTableType InitExecuteOCTable[];
-extern ddFLOAT ident4x4[];
 
 /*
  * Function Name: compute_search_volume

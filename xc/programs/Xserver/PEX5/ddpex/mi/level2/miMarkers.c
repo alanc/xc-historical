@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miMarkers.c,v 5.1 91/02/16 09:55:29 rws Exp $ */
 
 
 /***********************************************************
@@ -39,7 +39,6 @@ SOFTWARE.
 
 #include <stdio.h>
 
-extern ddFLOAT  ident4x4[];
 
 
 /*++
@@ -86,11 +85,10 @@ miPolyMarker(pRend, pExecuteOC)
 
       /* Tranform points to 4D for clipping */
       out_type = input_list->type;
-      if (status = miTransform(pddc,
-                                 input_list, &mc_clist,
-                                 ident4x4,
-                                 ident4x4,
-                                 DD_SetVert4D(out_type)))
+      if (status = miTransform(pddc, input_list, &mc_clist,
+				 ident4x4,
+				 ident4x4,
+				 DD_SetVert4D(out_type)))
           return (status);
 
       if (status = miClipPointList(pddc, mc_clist, &mc_list, clip_mode)) 
@@ -104,11 +102,10 @@ miPolyMarker(pRend, pExecuteOC)
     /* 
      * Transform and clip the input list of marker positions. 
      */
-    if (status = miTransform(pddc, 
-				 mc_list, &cc_list, 
-				 pddc->Dynamic->mc_to_cc_xform,
-				 NULL,
-				 DD_HOMOGENOUS_POINT))
+    if (status = miTransform(pddc, mc_list, &cc_list, 
+			     pddc->Dynamic->mc_to_cc_xform,
+			     NULL4x4,
+			     DD_HOMOGENOUS_POINT))
    	return (status);
 
     /* Note that miClipPointList discards clipped points */
@@ -116,11 +113,10 @@ miPolyMarker(pRend, pExecuteOC)
 		return(status);
 
     /* Transform to DC coordinates */
-    if (status = miTransform(pddc, 
-				 clip_list, &dc_list, 
-				 pddc->Dynamic->cc_to_dc_xform,
-				 NULL,
-				 DD_2DS_POINT))
+    if (status = miTransform(pddc, clip_list, &dc_list, 
+		 	     pddc->Dynamic->cc_to_dc_xform,
+			     NULL4x4,
+			     DD_2DS_POINT))
 	  return (status);
 
 

@@ -1,4 +1,4 @@
-/* $XConsortium: miText.c,v 5.1 91/02/16 09:55:27 rws Exp $ */
+/* $XConsortium: miText.c,v 5.2 91/03/19 20:59:38 hersh Exp $ */
 
 
 /***********************************************************
@@ -47,7 +47,6 @@ SOFTWARE.
 #define PADDING(n) ( (n)%4 ? (4 - (n)%4) : 0)
 #endif 
 
-extern ddFLOAT ident4x4[];
 extern ddpex3rtn ComputeMCVolume();
 
 int
@@ -102,8 +101,8 @@ tx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
     
     /* Inquire the Font table to get the ddTextFontEntry member */
 
-    if ((InquireLUTEntryAddress (PEXTextFontLUT, fontTable, fontIndex, &es, &ptr1))
-	== PEXLookupTableError)
+    if ((InquireLUTEntryAddress (PEXTextFontLUT, fontTable, fontIndex, &es, 
+				(ddPointer *)&ptr1)) == PEXLookupTableError)
       return (PEXLookupTableError);
 
     fontEntry = &ptr1->entry;
@@ -329,8 +328,8 @@ atx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
     
     /* Inquire the Font table to get the ddTextFontEntry member */
 
-    if ((InquireLUTEntryAddress (PEXTextFontLUT, fontTable, fontIndex, &es, &ptr1))
-	== PEXLookupTableError)
+    if ((InquireLUTEntryAddress (PEXTextFontLUT, fontTable, fontIndex, &es, 
+				(ddPointer *)&ptr1)) == PEXLookupTableError)
       return (PEXLookupTableError);
 
     fontEntry = &ptr1->entry;
@@ -893,7 +892,7 @@ miText3D(pRend, pExecuteOC)
 
 	  /* Buffer the tc_to_mc_xform first */
 
-	  bcopy (text_el.xform, tc_to_mc_xform, 16*sizeof(ddFLOAT));
+	  bcopy ((char *)text_el.xform, (char *)tc_to_mc_xform, 16*sizeof(ddFLOAT));
 
 	  /* Apply the per character translation and scaling by directly */
 	  /* modifying the concerned matrix elements.                    */
@@ -909,10 +908,9 @@ miText3D(pRend, pExecuteOC)
 	  }
 	  /* Transform the character strokes into Model space */
 
-	  if (status = miTransform(pddc, 
-				   text_el.paths->path, &mc_path, 
-				   tc_to_mc_xform,
-				   NULL,
+	  if (status = miTransform(pddc, text_el.paths->path, &mc_path, 
+			 	   tc_to_mc_xform,
+				   NULL4x4,
 				   DD_HOMOGENOUS_POINT))
 	      return (status);
 
@@ -925,7 +923,7 @@ miText3D(pRend, pExecuteOC)
 
       /* Buffer the tc_to_cc_xform first */
 
-      bcopy (buf_xform, tc_to_cc_xform, 16*sizeof(ddFLOAT));
+      bcopy ((char *)buf_xform, (char *)tc_to_cc_xform, 16*sizeof(ddFLOAT));
 
       /* Apply the per character translation and scaling by directly */
       /* modifying the concerned matrix elements.                    */
@@ -946,10 +944,9 @@ miText3D(pRend, pExecuteOC)
 
 	  /* Note that we are already in Model space here */
 
-	  if (status = miTransform(pddc, 
-				   mclip_path, &cc_path, 
+	  if (status = miTransform(pddc, mclip_path, &cc_path, 
 				   pddc->Dynamic->mc_to_cc_xform,
-				   NULL,
+				   NULL4x4,
 				   DD_HOMOGENOUS_POINT))
 	      return (status);
       }
@@ -957,10 +954,9 @@ miText3D(pRend, pExecuteOC)
 
 	  /* Note that we are still in text local space here ! */
 
-	  if (status = miTransform(pddc, 
-				   mclip_path, &cc_path, 
+	  if (status = miTransform(pddc, mclip_path, &cc_path, 
 				   tc_to_cc_xform,
-				   NULL,
+				   NULL4x4,
 				   DD_HOMOGENOUS_POINT))
 	      return (status);
       }
@@ -971,10 +967,9 @@ miText3D(pRend, pExecuteOC)
 
       /* Transform to DC coordinates */
 
-      if (status = miTransform(pddc, 
-			       clip_path, &dc_path, 
+      if (status = miTransform(pddc, clip_path, &dc_path, 
 			       pddc->Dynamic->cc_to_dc_xform,
-			       NULL,
+			       NULL4x4,
 			       DD_2DS_POINT))
           return (status);
 
@@ -1161,7 +1156,7 @@ miText2D(pRend, pExecuteOC)
 
 	  /* Buffer the tc_to_mc_xform first */
 
-	  bcopy (text_el.xform, tc_to_mc_xform, 16*sizeof(ddFLOAT));
+	  bcopy ((char *)text_el.xform, (char *)tc_to_mc_xform, 16*sizeof(ddFLOAT));
 
 	  /* Apply the per character translation and scaling by directly */
 	  /* modifying the concerned matrix elements.                    */
@@ -1177,10 +1172,9 @@ miText2D(pRend, pExecuteOC)
 	  }
 	  /* Transform the character strokes into Model space */
 
-	  if (status = miTransform(pddc, 
-				   text_el.paths->path, &mc_path, 
+	  if (status = miTransform(pddc, text_el.paths->path, &mc_path, 
 				   tc_to_mc_xform,
-				   NULL,
+				   NULL4x4,
 				   DD_HOMOGENOUS_POINT))
 	      return (status);
 
@@ -1193,7 +1187,7 @@ miText2D(pRend, pExecuteOC)
 
       /* Buffer the tc_to_cc_xform first */
 
-      bcopy (buf_xform, tc_to_cc_xform, 16*sizeof(ddFLOAT));
+      bcopy ((char *)buf_xform, (char *)tc_to_cc_xform, 16*sizeof(ddFLOAT));
 
       /* Apply the per character translation and scaling by directly */
       /* modifying the concerned matrix elements.                    */
@@ -1214,10 +1208,9 @@ miText2D(pRend, pExecuteOC)
 
 	  /* Note that we are already in Model space here */
 
-	  if (status = miTransform(pddc, 
-				   mclip_path, &cc_path, 
+	  if (status = miTransform(pddc, mclip_path, &cc_path, 
 				   pddc->Dynamic->mc_to_cc_xform,
-				   NULL,
+				   NULL4x4,
 				   DD_HOMOGENOUS_POINT))
 	      return (status);
 
@@ -1226,10 +1219,9 @@ miText2D(pRend, pExecuteOC)
 
 	  /* Note that we are still in text local space here ! */
 
-	  if (status = miTransform(pddc, 
-				   mclip_path, &cc_path, 
+	  if (status = miTransform(pddc, mclip_path, &cc_path, 
 				   tc_to_cc_xform,
-				   NULL,
+				   NULL4x4,
 				   DD_HOMOGENOUS_POINT))
 	      return (status);
       }
@@ -1240,10 +1232,9 @@ miText2D(pRend, pExecuteOC)
 
       /* Transform to DC coordinates */
 
-      if (status = miTransform(pddc, 
-			       clip_path, &dc_path, 
+      if (status = miTransform(pddc, clip_path, &dc_path, 
 			       pddc->Dynamic->cc_to_dc_xform,
-			       NULL,
+			       NULL4x4,
 			       DD_2DS_POINT))
           return (status);
 
@@ -1507,7 +1498,7 @@ miAnnoText3D(pRend, pExecuteOC)
 
 	  /* Buffer the tc_to_mc_xform first */
 
-	  bcopy (text_el.xform, tc_to_mc_xform, 16*sizeof(ddFLOAT));
+	  bcopy ((char *)text_el.xform, (char *)tc_to_mc_xform, 16*sizeof(ddFLOAT));
 
 	  /* Apply the per character translation and scaling by directly */
 	  /* modifying the concerned matrix elements.                    */
@@ -1523,10 +1514,9 @@ miAnnoText3D(pRend, pExecuteOC)
 	  }
 	  /* Transform the character strokes into Model space */
 
-	  if (status = miTransform(pddc, 
-				   text_el.paths->path, &mc_path, 
+	  if (status = miTransform(pddc, text_el.paths->path, &mc_path, 
 				   tc_to_mc_xform,
-				   NULL,
+				   NULL4x4,
 				   DD_HOMOGENOUS_POINT))
 	      return (status);
 
@@ -1539,7 +1529,7 @@ miAnnoText3D(pRend, pExecuteOC)
 
       /* Buffer the tc_to_cc_xform first */
 
-      bcopy (buf_xform, tc_to_cc_xform, 16*sizeof(ddFLOAT));
+      bcopy ((char *)buf_xform, (char *)tc_to_cc_xform, 16*sizeof(ddFLOAT));
 
       /* Apply the per character translation and scaling by directly */
       /* modifying the concerned matrix elements.                    */
@@ -1560,10 +1550,9 @@ miAnnoText3D(pRend, pExecuteOC)
 
 	  /* Note that we are already in Model space here */
 
-	  if (status = miTransform(pddc, 
-				   mclip_path, &cc_path, 
+	  if (status = miTransform(pddc, mclip_path, &cc_path, 
 				   pddc->Dynamic->mc_to_cc_xform,
-				   NULL,
+				   NULL4x4,
 				   DD_HOMOGENOUS_POINT))
 	      return (status);
       }
@@ -1571,10 +1560,9 @@ miAnnoText3D(pRend, pExecuteOC)
 
 	  /* Note that we are still in text local space here ! */
 
-	  if (status = miTransform(pddc, 
-				   mclip_path, &cc_path, 
+	  if (status = miTransform(pddc, mclip_path, &cc_path, 
 				   tc_to_cc_xform,
-				   NULL,
+				   NULL4x4,
 				   DD_HOMOGENOUS_POINT))
 	      return (status);
       }
@@ -1587,10 +1575,9 @@ miAnnoText3D(pRend, pExecuteOC)
 
       /* Transform to DC coordinates */
 
-      if (status = miTransform(pddc, 
-			       clip_path, &dc_path, 
+      if (status = miTransform(pddc, clip_path, &dc_path, 
 			       pddc->Dynamic->cc_to_dc_xform,
-			       NULL,
+			       NULL4x4,
 			       DD_2DS_POINT))
           return (status);
 
@@ -1634,10 +1621,9 @@ miAnnoText3D(pRend, pExecuteOC)
 
       /* Transform and clip the connector polyline */
 
-      if (status = miTransform(pddc, 
-			       &Connector, &cc_path, 
-		               pddc->Dynamic->mc_to_cc_xform,
-			       NULL,
+      if (status = miTransform(pddc, &Connector, &cc_path, 
+			       pddc->Dynamic->mc_to_cc_xform,
+			       NULL4x4,
 			       DD_HOMOGENOUS_POINT))
 	return (status);
 
@@ -1657,10 +1643,9 @@ miAnnoText3D(pRend, pExecuteOC)
 
       /* Transform to DC coordinates */
 
-      if (status = miTransform(pddc, 
-			       clip_path, &dc_path, 
+      if (status = miTransform(pddc, clip_path, &dc_path, 
 			       pddc->Dynamic->cc_to_dc_xform,
-			       NULL,
+			       NULL4x4,
 			       DD_2DS_POINT))
 	  return (status);
 
@@ -1920,7 +1905,7 @@ miAnnoText2D(pRend, pExecuteOC)
 
 	  /* Buffer the tc_to_mc_xform first */
 
-	  bcopy (text_el.xform, tc_to_mc_xform, 16*sizeof(ddFLOAT));
+	  bcopy ((char *)text_el.xform, (char *)tc_to_mc_xform, 16*sizeof(ddFLOAT));
 
 	  /* Apply the per character translation and scaling by directly */
 	  /* modifying the concerned matrix elements.                    */
@@ -1936,10 +1921,9 @@ miAnnoText2D(pRend, pExecuteOC)
 	  }
 	  /* Transform the character strokes into Model space */
 
-	  if (status = miTransform(pddc, 
-				   text_el.paths->path, &mc_path, 
+	  if (status = miTransform(pddc, text_el.paths->path, &mc_path, 
 				   tc_to_mc_xform,
-				   NULL,
+				   NULL4x4,
 				   DD_HOMOGENOUS_POINT))
 	      return (status);
 
@@ -1952,7 +1936,7 @@ miAnnoText2D(pRend, pExecuteOC)
 
       /* Buffer the tc_to_cc_xform first */
 
-      bcopy (buf_xform, tc_to_cc_xform, 16*sizeof(ddFLOAT));
+      bcopy ((char *)buf_xform, (char *)tc_to_cc_xform, 16*sizeof(ddFLOAT));
 
       /* Apply the per character translation and scaling by directly */
       /* modifying the concerned matrix elements.                    */
@@ -1973,10 +1957,9 @@ miAnnoText2D(pRend, pExecuteOC)
 
 	  /* Note that we are already in Model space here */
 
-	  if (status = miTransform(pddc, 
-				   mclip_path, &cc_path, 
+	  if (status = miTransform(pddc, mclip_path, &cc_path, 
 				   pddc->Dynamic->mc_to_cc_xform,
-				   NULL,
+				   NULL4x4,
 				   DD_HOMOGENOUS_POINT))
 	      return (status);
 
@@ -1985,10 +1968,9 @@ miAnnoText2D(pRend, pExecuteOC)
 
 	  /* Note that we are still in text local space here ! */
 
-	  if (status = miTransform(pddc, 
-				   mclip_path, &cc_path, 
+	  if (status = miTransform(pddc, mclip_path, &cc_path, 
 				   tc_to_cc_xform,
-				   NULL,
+				   NULL4x4,
 				   DD_HOMOGENOUS_POINT))
 	      return (status);
       }
@@ -2001,10 +1983,9 @@ miAnnoText2D(pRend, pExecuteOC)
 
       /* Transform to DC coordinates */
 
-      if (status = miTransform(pddc, 
-			       clip_path, &dc_path, 
+      if (status = miTransform(pddc, clip_path, &dc_path, 
 			       pddc->Dynamic->cc_to_dc_xform,
-			       NULL,
+			       NULL4x4,
 			       DD_2DS_POINT))
           return (status);
 
@@ -2044,10 +2025,9 @@ miAnnoText2D(pRend, pExecuteOC)
 
       /* Transform and clip the connector polyline */
 
-      if (status = miTransform(pddc, 
-			       &Connector, &cc_path, 
-		               pddc->Dynamic->mc_to_cc_xform,
-			       NULL,
+      if (status = miTransform(pddc, &Connector, &cc_path, 
+			       pddc->Dynamic->mc_to_cc_xform, 
+			       NULL4x4, 
 			       DD_HOMOGENOUS_POINT))
 	return (status);
 
@@ -2066,10 +2046,9 @@ miAnnoText2D(pRend, pExecuteOC)
 
       /* Transform to DC coordinates */
 
-      if (status = miTransform(pddc, 
-			       clip_path, &dc_path, 
+      if (status = miTransform(pddc, clip_path, &dc_path, 
 			       pddc->Dynamic->cc_to_dc_xform,
-			       NULL,
+			       NULL4x4,
 			       DD_2DS_POINT))
 	  return (status);
 

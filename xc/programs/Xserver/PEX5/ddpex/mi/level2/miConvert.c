@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miConvert.c,v 5.1 91/02/16 09:55:25 rws Exp $ */
 
 
 /***********************************************************
@@ -54,12 +54,12 @@ ddRgbFloatColour	**out_col;
 {
     extern ColorConversionTableType	ColourConversionRoutine[];
     miColourEntry			*pintcolour;
-    ddpex3rtn				status;
+    ddUSHORT		     	 	status;
 
     InquireLUTEntryAddress (PEXColourLUT, pRend->lut[PEXColourLUT],
 			    ((*in_col)++)->index,
 			    &status, 
-			    &pintcolour);
+			    (ddPointer *)&pintcolour);
 
     /* Insure that LUT entry is in correct color model */
     if (pintcolour->entry.colourType != PEXRgbFloatColour)
@@ -584,7 +584,7 @@ ddULONG			*colourindex;	/* output colour index */
       if ((InquireLUTEntryAddress (PEXColourApproxLUT,
 				   pRend->lut[PEXColourApproxLUT],
 				   colourApproxIndex,
-				   &status, &pLUT))
+				   &status, (ddPointer *)&pLUT))
 	   == PEXLookupTableError)
 	return (PEXLookupTableError);
 

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miLight.c,v 5.1 91/02/16 09:55:33 rws Exp $ */
 
 
 /***********************************************************
@@ -471,7 +471,7 @@ ddpex3rtn ComputeWCEyePosition(pRend, pddc)
 	/* Get the view table entry at current view index first */
 	if ((InquireLUTEntryAddress (PEXViewLUT, pRend->lut[PEXViewLUT],
 				     pddc->Dynamic->pPCAttr->viewIndex,
-				     &status, &pLUT))
+				     &status, (ddPointer *)&pLUT))
 	    == PEXLookupTableError)
 	  return (PEXLookupTableError);
 
@@ -540,7 +540,7 @@ ddpex3rtn Compute_CC_Dcue(pRend, pddc)
         /* Get current depth cueing information */
         if ((InquireLUTEntryAddress (PEXDepthCueLUT, pRend->lut[PEXDepthCueLUT],
              pddc->Dynamic->pPCAttr->depthCueIndex,
-             &status, &dcue_entry)) == PEXLookupTableError)
+             &status, (ddPointer *)&dcue_entry)) == PEXLookupTableError)
           return (PEXLookupTableError);
 
 	/* Compute cc versions of front and back planes

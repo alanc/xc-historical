@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ddContext.c,v 5.1 91/02/16 09:55:54 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -37,7 +37,6 @@ SOFTWARE.
 /* External variables used */
 
 extern void     miMatMult();
-extern ddFLOAT  ident4x4[];
 extern RendTableType RenderPrimitiveTable[];
 extern RendTableType PickPrimitiveTable[];
 
@@ -616,7 +615,7 @@ ValidateDDContextAttrs(pRend, pddc, tables, namesets, attrs)
 	    if ((InquireLUTEntryAddress(PEXMarkerBundleLUT,
 					pRend->lut[PEXMarkerBundleLUT],
 					pddc->Dynamic->pPCAttr->markerIndex,
-				    &status, (ddPointer *) (&markerbundle)))
+					&status, (ddPointer *) (&markerbundle)))
 		== PEXLookupTableError)
 		return (PEXLookupTableError);
 	}
@@ -955,7 +954,7 @@ ValidateDDContextAttrs(pRend, pddc, tables, namesets, attrs)
 	extern ddpex3rtn miBldViewport_xform();
 
 	miBldViewport_xform(pRend, pRend->pDrawable, 
-			    &pddc->Static.misc.viewport_xform[0][0], pddc );
+			    pddc->Static.misc.viewport_xform, pddc );
     }
     return (Success);
 }

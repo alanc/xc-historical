@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miBldXform.c,v 5.1 91/02/16 09:55:43 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -37,7 +37,6 @@ extern	void		miMatMult();
 extern  void		miMatCopy();
 extern  ddpex3rtn	InquireLUTEntryAddress();
 
-extern  ddFLOAT		ident4x4[];
 
 /*++
  |
@@ -56,7 +55,7 @@ ddpex3rtn
 miBldViewport_xform(pRend, pDrawable, xform, pddc )
     ddRendererPtr       pRend;	   /* renderer handle */
     DrawablePtr		pDrawable; /* pointer to X drawable */
-    ddFLOAT		xform[][4]; /* returned transform */
+    ddFLOAT		xform[4][4]; /* returned transform */
     miDDContext		*pddc;	   /* dd context handle */
 {
 

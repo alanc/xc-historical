@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miNSTrim.c,v 5.1 91/02/16 09:55:50 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -968,7 +968,7 @@ static void
 linear_interpolate( alpha, rat, normflag, a, b, out )
     double			alpha;
     char			rat;
-    int				normflag;
+    unsigned			normflag;
     register Nurb_edge_point	*a, *b, *out;
 {
     out->pt.x = a->pt.x + (b->pt.x - a->pt.x) * alpha;
@@ -997,7 +997,7 @@ static void
 bilinear( alpha, beta, rat, normflag, a, b, c, d, out )
     double		alpha, beta;
     char		rat;
-    int			normflag;
+    unsigned		normflag;
     Nurb_edge_point	*a, *b, *c, *d;
     Nurb_edge_point	*out;
 {
@@ -1023,7 +1023,7 @@ bilinear( alpha, beta, rat, normflag, a, b, c, d, out )
 static int
 append_pt( tdata, normflag, rat, u, v, epa, epb, epc, epd )
     Nurb_trim_data	*tdata;
-    int			normflag;
+    unsigned		normflag;
     char		rat;
     double		u, v;
     int			epa, epb, epc, epd;
@@ -1080,7 +1080,7 @@ append_pt( tdata, normflag, rat, u, v, epa, epb, epc, epd )
 static int
 insert_pt( tdata, normflag, rat, u, v, epa, epb, edge, branch )
     Nurb_trim_data	*tdata;
-    int			normflag;
+    unsigned		normflag;
     char		rat;
     int			epa, epb;
     double		u, v;
@@ -1173,7 +1173,7 @@ static void
 traverse( state, surface, output, ddSOFAS, el, winding )
     Nurb_surf_state		*state;
     miNurbSurfaceStruct		*surface;
-    void			(*output)();
+    ddpex3rtn			(*output)();
     miSOFASStruct		*ddSOFAS;
     int				el;
     int				winding;
@@ -1322,7 +1322,7 @@ phg_nt_trim_rect( state, surface, rect, output, ddSOFAS )
     Nurb_surf_state		*state;
     miNurbSurfaceStruct		*surface;
     Nurb_edge_point		**rect;
-    void			(*output)();
+    ddpex3rtn			(*output)();
     miSOFASStruct		*ddSOFAS;
 {
     double		u0, u1, v0, v1;	/* rectangle in u,v space */
