@@ -3,9 +3,13 @@
  */
 
 # include	<stdio.h>
+# include	<X11/Xos.h>
+#ifndef SYSV
 # include	<sys/wait.h>
+#endif
 # include	<sys/signal.h>
 # include	"dm.h"
+# include	"buf.h"
 
 # define FORK_RETRY	5
 
@@ -62,8 +66,15 @@ CleanChildren ()
 {
 	int		pid;
 	struct display	*d;
+#ifdef SYSV
+	int		status;
+#else
 	union wait	status;
+#endif
 
+#ifdef SYSV
+	signal (SIGCHLD, CleanChildren);
+#endif
 	Debug ("CleanChildren\n");
 	pid = wait (&status);
 	Debug ("pid: %d\n", pid);
