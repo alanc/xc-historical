@@ -1,4 +1,4 @@
-/* $XConsortium: sm_process.c,v 1.12 93/09/26 18:15:00 mor Exp $ */
+/* $XConsortium: sm_process.c,v 1.13 93/09/27 21:11:50 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -198,7 +198,7 @@ IceReplyWaitInfo *replyWait;
 	    smPropertiesReplyMsg 	*pMsg;
 	    char 			*pData;
 	    int				numProps;
-	    SmProp			*props;
+	    SmProp			**props = NULL;
 	    _SmcPropReplyWait 		*next;
 
 	    IceReadCompleteMessage (iceConn, SIZEOF (smPropertiesReplyMsg),
@@ -444,7 +444,7 @@ Bool		 swap;
     {
 	smSetPropertiesMsg 	*pMsg;
 	char 			*pData;
-	SmProp			*props = NULL;
+	SmProp			**props = NULL;
 	int 			numProps;
 	
 	IceReadCompleteMessage (iceConn, SIZEOF (smSetPropertiesMsg),
