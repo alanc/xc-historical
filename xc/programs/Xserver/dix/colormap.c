@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.26 93/07/12 09:23:18 dpw Exp $ */
+/* $XConsortium: colormap.c,v 5.27 93/07/12 16:31:31 dpw Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -939,6 +939,7 @@ FakeAllocColor (pmap, item)
     switch (class) {
     case GrayScale:
     case PseudoColor:
+	item->pixel = 0;
 	if (FindColor(pmap, pmap->red, entries, &rgb, &item->pixel, PSEUDOMAP,
 		      -1, AllComp) == Success)
 	    break;
