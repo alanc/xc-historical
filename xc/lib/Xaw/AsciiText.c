@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.36 89/12/11 14:42:56 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.37 90/04/26 15:22:47 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -156,8 +156,11 @@ static void
 Destroy(w)
 Widget w;
 {
-  XtDestroyWidget( ((AsciiWidget)w)->text.source);
-  XtDestroyWidget( ((AsciiWidget)w)->text.sink );
+    if (w == XtParent(((AsciiWidget)w)->text.source))
+	XtDestroyWidget( ((AsciiWidget)w)->text.source );
+
+    if (w == XtParent(((AsciiWidget)w)->text.sink))
+	XtDestroyWidget( ((AsciiWidget)w)->text.sink );
 }
 
 #ifdef ASCII_STRING
