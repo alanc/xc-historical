@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.13 89/10/04 08:45:26 swick Exp $ */
+/* $XConsortium: TranslateI.h,v 1.14 89/10/05 13:52:08 swick Exp $ */
 /* $oHeader: TranslateI.h,v 1.2 88/08/18 15:56:37 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -113,7 +113,6 @@ typedef struct _TranslationData {
 } TranslationData;
 
 #define _XtEventTimerEventType ((unsigned long)-1L)
-#define StandardMask (ShiftMask | LockMask)
 #define KeysymModMask		(1<<27) /* private to TM */
 #define AnyButtonMask		(1<<28)	/* private to TM */
 
@@ -170,9 +169,7 @@ extern Boolean _XtMatchUsingDontCareMods();
 extern Boolean _XtRegularMatch();
 extern Boolean _XtMatchAtom();
 extern void _XtConvertCase();
-extern ModToKeysymTable* _XtBuildModsToKeysymTable();
-extern void  _XtBuildKeysymTable();
-extern XModifierKeymap *_XtBuildModifierTable();
+extern void _XtBuildKeysymTables();
 
 extern void _XtPopupInitialize();
 
