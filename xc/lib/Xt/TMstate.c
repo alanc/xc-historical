@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.153 91/07/21 17:47:41 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.154 91/07/21 18:52:37 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1998,9 +1998,9 @@ XtTranslations _XtGetTranslationValue(w)
 static void RemoveStateTree(tree)
     TMStateTree	tree;
 {
+#ifdef REFCNT_TRANSLATIONS    
     TMComplexStateTree stateTree = (TMComplexStateTree)tree;
 
-#ifdef REFCNT_TRANSLATIONS    
     if (--stateTree->refCount == 0) {
 	/*
 	 * should we free/refcount the match recs ?
