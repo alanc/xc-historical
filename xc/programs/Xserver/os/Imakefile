@@ -1,8 +1,12 @@
 #include <Server.tmpl>
 
+#if (SystemV || SystemV4) && !HasSockets
+#undef ConnectionFlags
+#define ConnectionFlags -DTCPCONN -DUNIXCONN
+#endif
+
 /*
  * If you have any extra files to be put into the library, define them here.
- * Note that System V boxes should use os/sysV to get Berklib.c.
  */
 
 #ifdef HPArchitecture
