@@ -1,3 +1,4 @@
+# $XConsortium$
 #
 # Build a standalone version of the test case.
 #

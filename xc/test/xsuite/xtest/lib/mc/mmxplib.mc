@@ -1,3 +1,4 @@
+# $XConsortium$
 # 
 # This part of the makefile checks for the existance of the libraries
 # and creates them if necessary.

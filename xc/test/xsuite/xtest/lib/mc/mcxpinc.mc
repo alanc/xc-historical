@@ -1,4 +1,4 @@
-
+/* $XConsortium$ */
 
 #include	<stdlib.h>
 #include	"xtest.h"
