@@ -1,4 +1,4 @@
-/* $XConsortium: imDefIm.c,v 1.1 93/09/17 13:25:52 rws Exp $ */
+/* $XConsortium: imDefIm.c,v 1.2 93/09/18 10:14:18 rws Exp $ */
 /******************************************************************
 
          Copyright 1990, 1991, 1992 by Sun Microsystems, Inc.
@@ -210,7 +210,7 @@ _CheckSNEvent(display, xevent, arg)
     XPointer		 arg;
 {
     XSelectionEvent	*event = (XSelectionEvent *)xevent;
-    Window		 window = (Window)arg;
+    Window		 window = *(Window*)arg;
 
     if((event->type == SelectionNotify) && (window == event->requestor))
 	return True;
@@ -232,7 +232,7 @@ _XimGetSelectionNotify(display, window, target, ret_address)
     unsigned long	  nitems, bytes_after;
 
     for(;;) {
-	XIfEvent(display, &event, _CheckSNEvent, (XPointer)window);
+	XIfEvent(display, &event, _CheckSNEvent, (XPointer)&window);
 	if((ev->type == SelectionNotify) && (window == ev->requestor))
 	    break;
     }
@@ -806,10 +806,6 @@ _XimProtoIMFree(im)
 	Xfree(im->private.proto.im_onkeylist);
     if(im->private.proto.im_offkeylist)
 	Xfree(im->private.proto.im_offkeylist);
-    if(im->private.proto.im_attribute_name)
-        Xfree(im->private.proto.im_attribute_name);
-    if(im->private.proto.ic_attribute_name)
-        Xfree(im->private.proto.ic_attribute_name);
     if(im->private.proto.intrproto)
 	_XimFreeProtoIntrCallback(im);
     if(im->private.proto.pending)
