@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Porthole.c,v 1.4 90/03/01 13:52:49 jim Exp $
+ * $XConsortium: Porthole.c,v 1.5 90/03/01 19:05:52 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -21,6 +21,9 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  Jim Fulton, MIT X Consortium
+ * 
+ * This widget is a trivial clipping widget.  It is typically used with a
+ * panner or scrollbar to navigate.
  */
 
 #include <X11/IntrinsicP.h>		/* get basic toolkit stuff */
@@ -126,11 +129,15 @@ static void SendReport (pw, changed)
 }
 
 static Widget find_child (pw)
-    PortholeWidget pw;
+    register PortholeWidget pw;
 {
     register Widget *children;
-    int i;
+    register int i;
 
+    /*
+     * Find the managed child on which we should operate.  Ignore multiple
+     * managed children.
+     */
     for (i = 0, children = pw->composite.children;
 	 i < pw->composite.num_children; i++, children++) {
 	if (XtIsManaged(*children)) return *children;
@@ -149,19 +156,28 @@ static void layout_child (pw, child, geomp, xp, yp, widthp, heightp)
 {
     Position minx, miny;
 
-    *xp = child->core.x;
+    *xp = child->core.x;		/* default to current values */
     *yp = child->core.y;
     *widthp = child->core.width;
     *heightp = child->core.height;
-    if (geomp) {
+    if (geomp) {			/* mix in any requested changes */
 	if (geomp->request_mode & CWX) *xp = geomp->x;
 	if (geomp->request_mode & CWY) *yp = geomp->y;
 	if (geomp->request_mode & CWWidth) *widthp = geomp->width;
 	if (geomp->request_mode & CWHeight) *heightp = geomp->height;
     }
 
+    /*
+     * Make sure that the child is at least as large as the porthole; there
+     * is no maximum size.
+     */
     if (*widthp < pw->core.width) *widthp = pw->core.width;
     if (*heightp < pw->core.height) *heightp = pw->core.height;
+
+    /*
+     * Make sure that the child is still on the screen.  Note that this must
+     * be done *after* the size computation so that we know where to put it.
+     */
     minx = ((Position) pw->core.width) - ((Position) *widthp);
     miny = ((Position) pw->core.height) - ((Position) *heightp);
 
@@ -171,6 +187,7 @@ static void layout_child (pw, child, geomp, xp, yp, widthp, heightp)
     if (*xp > 0) *xp = 0;		/* keep at upper left corner */
     if (*yp > 0) *yp = 0;
 }
+
 
 
 /*****************************************************************************
@@ -273,12 +290,14 @@ static XtGeometryResult GeometryManager (w, req, reply)
 
 
     /*
-     * if we failed on anything, simply return without touching widget
+     * If we failed on anything, simply return without touching widget
      */
     if (!okay) return XtGeometryAlmost;
 
     /*
-     * if not just doing a query, update widget and send report
+     * If not just doing a query, update widget and send report.  Note that
+     * we will often set fields that weren't requested because we want to keep
+     * the child visible.
      */
     if (!(req->request_mode & XtCWQueryOnly)) {
 	unsigned int changed = 0;
@@ -310,7 +329,7 @@ static void ChangeManaged (gw)
     Widget gw;
 {
     PortholeWidget pw = (PortholeWidget) gw;
-    Widget child = find_child (pw);
+    Widget child = find_child (pw);	/* ignore extra children */
 
     if (child) {
 	child->core.border_width = 0;
