@@ -1,0 +1,17 @@
+        DEPLIBS = XawClientDepLibs
+LOCAL_LIBRARIES = XawClientLibs $(SMLIB) $(ICELIB)
+
+           SRCS1 = xsm.c xtwatch.c list.c
+           OBJS1 = xsm.o xtwatch.o list.o
+          PROGS1 = xsm
+
+           SRCS2 = xsmclient.c xtwatch.c
+           OBJS2 = xsmclient.o xtwatch.o
+          PROGS2 = xsmclient
+
+            SRCS = $(SRCS1) $(SRCS2)
+            OBJS = $(OBJS1) $(OBJS2)
+        PROGRAMS = $(PROGS1) $(PROGS2)
+
+ComplexProgramTarget_1(xsm,$(LOCAL_LIBRARIES),NullParameter)
+ComplexProgramTarget_2(xsmclient,$(LOCAL_LIBRARIES),NullParameter)
