@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.55 92/09/11 14:19:59 rws Exp $
+ * $XConsortium: xrdb.c,v 11.56 92/09/11 17:14:49 rws Exp $
  */
 
 /*
@@ -233,8 +233,7 @@ void GetEntries(entries, buff, bequiet)
     for ( ; str < buff->buff + buff->used;
 	  str = line + 1, lineno += lines_skipped) {
 	line = FindFirst(str, '\n', &lines_skipped);
-	if (!bequiet)
-	    lineno++;
+	lineno++;
 	if (!line)
 	    break; 
 	if (*str == '!')
@@ -282,7 +281,7 @@ void GetEntries(entries, buff, bequiet)
 	strncpy(temp, colon, length);
 	temp[length] = '\0';
 	entry.value = temp;
-	entry.lineno = lineno;
+	entry.lineno = bequiet ? 0 : lineno;
 
 	AddEntry(entries, &entry);
     }
