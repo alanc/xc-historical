@@ -1,3 +1,5 @@
+/* $XConsortium: Dvi.c,v 1.11 90/12/02 18:17:35 keith Exp $ */
+
 /*
  * DviChar.c
  *
@@ -19,6 +21,7 @@ static struct map_list	*world;
 static int	standard_maps_loaded = 0;
 static void	load_standard_maps ();
 static int	hash_name ();
+static void	dispose_hash(), compute_hash();
 
 DviCharNameMap *
 DviFindMap (encoding)
@@ -39,7 +42,6 @@ DviRegisterMap (map)
 	DviCharNameMap	*map;
 {
 	struct map_list	*m;
-	static dispose_hash(), compute_hash();
 
 	if (!standard_maps_loaded)
 		load_standard_maps ();
@@ -56,7 +58,7 @@ DviRegisterMap (map)
 	compute_hash (map);
 }
 
-static
+static void
 dispose_hash (map)
 	DviCharNameMap	*map;
 {
@@ -86,7 +88,7 @@ hash_name (name)
 	return i;
 }
 
-static
+static void
 compute_hash (map)
 	DviCharNameMap	*map;
 {
