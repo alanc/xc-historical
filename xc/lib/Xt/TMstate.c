@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.70 89/04/24 16:38:35 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.71 89/06/02 10:51:34 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -274,7 +274,7 @@ static Boolean ComputeLateBindings(event,eventSeq,computed,computedMask)
     dpy = eventSeq->dpy;
     perDisplay = _XtGetPerDisplay(dpy);
     if (perDisplay == NULL) {
-        XtAppWarningMsg(_XtDisplayToApplicationContext(dpy),
+        XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
 		"displayError","invalidDisplay","XtToolkitError",
             "Can't find display structure",
             (String *)NULL, (Cardinal *)NULL);
@@ -1480,13 +1480,14 @@ void _XtAugmentTranslations(old, new,merged)
 }
 
 /*ARGSUSED*/
-static void _MergeTranslations (args, num_args, from, to)
+Boolean _XtCvtMergeTranslations(dpy, args, num_args, from, to, closure_ret)
+    Display	*dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
     XrmValuePtr from,to;
+    caddr_t	*closure_ret;
 {
-    static XtTranslations merged;
-    XtTranslations old,new;
+    XtTranslations old, new, merged;
     TMkind operation;
 
     if (*num_args != 0)
@@ -1494,6 +1495,11 @@ static void _MergeTranslations (args, num_args, from, to)
              "MergeTM to TranslationTable needs no extra arguments",
                (String *)NULL, (Cardinal *)NULL);
 
+    if (to->addr != NULL && to->size < sizeof(XtTranslations)) {
+	to->size = sizeof(XtTranslations);
+	return False;
+    }
+	
     old = ((TMConvertRec*)from->addr)->old;
     new = ((TMConvertRec*)from->addr)->new;
     operation = ((TMConvertRec*)from->addr)->operation;
@@ -1502,8 +1508,17 @@ static void _MergeTranslations (args, num_args, from, to)
     else
     if (operation == augment)
     _XtAugmentTranslations(old,new,&merged);
-     to->addr= (caddr_t)&merged;
-     to->size=sizeof(XtTranslations);
+
+    if (to->addr != NULL) {
+	*(XtTranslations*)to->addr = merged;
+    }
+    else {
+	static XtTranslations staticStateTable;
+	staticStateTable = merged;
+	to->addr= (caddr_t)&staticStateTable;
+	to->size = sizeof(XtTranslations);
+    }
+    return True;
 }
 
 void XtOverrideTranslations(widget, new)
@@ -1516,17 +1531,20 @@ void XtOverrideTranslations(widget, new)
     XrmValue from,to;
     TMConvertRec foo;
     XtTranslations newTable;
+    XtCacheRef cache_ref;
     from.addr = (caddr_t)&foo;
     from.size = sizeof(TMConvertRec);
     foo.old = widget->core.tm.translations;
     foo.new = new;
     foo.operation = override;
+    to.addr = (caddr_t)&newTable;
+    to.size = sizeof(XtTranslations);
+    if ( ! XtCallConverter( XtDisplay(widget), _XtCvtMergeTranslations,
+			    (XrmValuePtr)NULL, (Cardinal)0, &from, &to,
+			    &cache_ref ))
+	return;
 
-    XtDirectConvert((XtConverter) _MergeTranslations, (XrmValuePtr) NULL,
-	    0, &from, &to);
-/*    _XtOverrideTranslations(widget->core.tm.translations, new);*/
-      newTable = (*(XtTranslations*)to.addr);
-     if (XtIsRealized(widget)) {
+    if (XtIsRealized(widget)) {
             XtUninstallTranslations((Widget)widget);
            ((WindowObj)widget)->win_obj.tm.translations = newTable;
            _XtBindActions(widget,&((WindowObj)widget)->win_obj.tm,0);
@@ -1534,7 +1552,57 @@ void XtOverrideTranslations(widget, new)
     }
     else ((WindowObj)widget)->win_obj.tm.translations = newTable;
 
+    if (cache_ref != NULL) {
+	XtAddCallback( widget, XtNdestroyCallback,
+		       XtCallbackReleaseCacheRef, cache_ref );
+    }
 }
+
+/* ARGSUSED */
+void _XtFreeTranslations(app, toVal, closure, args, num_args)
+    XtAppContext app;
+    XrmValuePtr	toVal;
+    caddr_t	closure;
+    XrmValuePtr	args;
+    Cardinal	*num_args;
+{
+    XtTranslations stateTable;
+    register StatePtr state;
+    register EventObjPtr eventObj;
+    register int i;
+    register ActionPtr action;
+
+    if (*num_args != 0)
+	XtAppWarningMsg(app,
+	  "invalidParameters","freeTranslations","XtToolkitError",
+          "Freeing XtTranslations requires no extra arguments",
+	  (String *)NULL, (Cardinal *)NULL);
+
+    stateTable = *(XtTranslations*)toVal->addr;
+    for (i = stateTable->numEvents, eventObj = stateTable->eventObjTbl; i;) {
+	XtFree( (char*)eventObj->event.lateModifiers );
+	i--; eventObj++;
+    }
+    XtFree( (char*)stateTable->eventObjTbl );
+    XtFree( (char*)stateTable->quarkTable );
+    XtFree( (char*)stateTable->accQuarkTable );
+    XtFree( (char*)stateTable->accProcTbl );
+    for (state = stateTable->head; state;) {
+	register StatePtr nextState = state->forw;
+	for (action = state->actions; action;) {
+	    ActionPtr nextAction = action->next;
+	    XtFree( action->token );
+	    for (i = action->num_params; i;) {
+		XtFree( action->params[--i] );
+	    }
+	    XtFree( (char*)action->params );
+	    action = nextAction;
+	}
+	XtFree( (char*)state );
+	state = nextState;
+    }
+}
+
 /* ARGSUSED */
 static void RemoveAccelerators(widget,closure,data)
     Widget widget;
@@ -1654,15 +1722,19 @@ void XtAugmentTranslations(widget, new)
     XrmValue from,to;
     TMConvertRec foo;
     XtTranslations newTable;
+    XtCacheRef cache_ref;
     from.addr = (caddr_t)&foo;
     from.size = sizeof(TMConvertRec);
     foo.old = widget->core.tm.translations;
     foo.new = new;
     foo.operation = augment;
+    to.addr = (caddr_t)&newTable;
+    to.size = sizeof(XtTranslations);
+    if ( ! XtCallConverter( XtDisplay(widget), _XtCvtMergeTranslations,
+			    (XrmValue*)NULL, (Cardinal)0, &from, &to,
+			    &cache_ref ))
+	return;
 
-    XtDirectConvert((XtConverter) _MergeTranslations, (XrmValuePtr) NULL,
-	    0, &from, &to);
-    newTable = (*(XtTranslations*)to.addr);
     if (XtIsRealized(widget)) {
         XtUninstallTranslations((Widget)widget);
         ((WindowObj)widget)->win_obj.tm.translations = newTable;
@@ -1671,6 +1743,10 @@ void XtAugmentTranslations(widget, new)
     }
     else ((WindowObj)widget)->win_obj.tm.translations = newTable;
 
+    if (cache_ref != NULL) {
+	XtAddCallback( widget, XtNdestroyCallback,
+		       XtCallbackReleaseCacheRef, cache_ref );
+    }
 }
 
 static void PrintState(buf, len, str, state, quarkTable, eot)
@@ -1958,6 +2034,7 @@ ModToKeysymTable *_XtBuildModsToKeysymTable(dpy,pd)
             }
         }
     }
+    XFree(modKeymap);
     return table;
 
 }
