@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.c,v 2.45 91/07/05 18:27:12 converse Exp $
+ * $XConsortium: toc.c,v 2.46 91/07/07 18:35:21 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -44,7 +44,6 @@ char *name;
     if (stat(str, &buf) /* failed */) return False;
     return (buf.st_mode & S_IFMT) == S_IFDIR;
 }
-
 
 
 static void MakeSureFolderExists(namelistptr, numfoldersptr, name)
@@ -93,6 +92,19 @@ static void MakeSureSubfolderExists(namelistptr, numfoldersptr, name)
 
     if ((buf.st_mode & S_IFMT) != S_IFDIR)
 	Punt("Can't create new xmh subfolder!");
+}
+
+int TocFolderExists(toc)
+    Toc	toc;
+{
+    struct stat buf;
+    if (! toc->path) {
+	char str[500];
+	(void) sprintf(str, "%s/%s", app_resources.mail_path, toc->foldername);
+	toc->path = XtNewString(str);
+    }
+    return ((stat(toc->path, &buf) == 0) &&
+	    ((buf.st_mode & S_IFMT) == S_IFDIR));
 }
 
 #ifndef DEFAULT_INITIAL_INC_FILE
@@ -298,17 +310,33 @@ void TocClearDeletePending(toc)
 }
 
 
-
 /* Recursively delete an entire directory.  Nasty. */
 
 static void NukeDirectory(path)
-char *path;
+    char *path;
 {
-    char str[500];
-    (void) sprintf(str, "rm -rf %s", path);
-    (void) system(str);
-}
+    struct stat buf;
 
+#ifdef S_IFLNK
+    /* POSIX.1 does not discuss symbolic links. */
+    if (lstat(path, &buf) /* failed */)
+	return;
+    if ((buf.st_mode & S_IFMT) == S_IFLNK) {
+	(void) unlink(path);
+	return;
+    }
+#endif
+    if (stat(path, &buf) /* failed */)
+	return;
+    if (buf.st_mode & S_IWRITE) {
+	char **argv = MakeArgv(3);
+	argv[0] = "/bin/rm";
+	argv[1] = "-rf";
+	argv[2] = path;
+	(void) DoCommand(argv, (char*)NULL, (char*)NULL);
+	XtFree((char*)argv);
+    } 
+}
 
 
 /* Destroy the given folder. */
