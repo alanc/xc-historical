@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Dialog.c,v 1.4 87/12/23 16:31:10 swick Locked $";
+static char rcsid[] = "$Header: Dialog.c,v 1.5 88/01/07 17:18:48 swick Locked $";
 #endif lint
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -182,10 +182,8 @@ Cardinal *num_args;
     DialogConstraints constraint = (DialogConstraints)new->core.constraints;
     Widget *childP;
 
-    if (dw->composite.num_children == 0			/* is labelW? */
-	|| (dw->composite.num_children == 1 &&
-	    XtClass(new) == asciiStringWidgetClass))	/* or valueW? */
-      return;					/* then just use defaults */
+    if (!XtIsSubclass(new, commandWidgetClass))	/* if not a button */
+	return;					/* then just use defaults */
 
     constraint->form.left = constraint->form.right = XtChainLeft;
     constraint->form.vert_base = dw->dialog.valueW
@@ -197,7 +195,8 @@ Cardinal *num_args;
 	     childP >= children; childP-- ) {
 	    if (*childP == dw->dialog.labelW || *childP == dw->dialog.valueW)
 	        break;
-	    if (XtIsManaged(*childP)) {
+	    if (XtIsManaged(*childP) &&
+		XtIsSubclass(*childP, commandWidgetClass)) {
 	        constraint->form.horiz_base = *childP;
 		break;
 	    }
