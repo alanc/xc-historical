@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: colormap.c,v 1.64 88/01/28 16:17:33 rws Exp $ */
+/* $Header: colormap.c,v 1.65 88/02/02 11:24:06 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -1995,7 +1995,8 @@ StoreColors (pmap, count, defs)
     }
     /* Note that we use idef, the count of acceptable entries, and not
      * count, the count of proposed entries */
-    ( *(pmap->pScreen->StoreColors)) (pmap, idef, defs);
+    if (idef != 0)
+	( *(pmap->pScreen->StoreColors)) (pmap, idef, defs);
     return (errVal);
 }
 
