@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: command.c,v 2.22 89/06/05 08:25:11 swick Exp $";
+static char rcs_id[] = "$XConsortium: command.c,v 2.23 89/06/06 10:42:20 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -230,7 +230,8 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
 	if (status->error_pipe[0] >= num_fds)
 	    num_fds = status->error_pipe[0]+1;
 	status->child_pid = pid;
-	DEBUG1( " pid=%d", pid )
+	DEBUG1( " pid=%d ", pid )
+	subProcessRunning = True;
 	while (!childdone) {
 	    while (!(XtAppPending(app) & XtIMXEvent)) {
 		/* this is gross, but the only other way is by
@@ -238,11 +239,15 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
 		 * guaranteed to be able to malloc in a signal handler.
 		 */
 		readfds = fds;
+DEBUG("blocking.\n")
 		(void) select(num_fds, (int *) &readfds,
 			  (int *) NULL, (int *) NULL, (struct timeval *) NULL);
+DEBUG1("unblocked; child%s done.\n", childdone ? "" : " not")
 		if (childdone) break;
 		if (!FD_ISSET(ConnectionNumber(theDisplay), &readfds))
+{DEBUG("reading alternate input...")
 		    XtProcessEvent(XtIMAlternateInput);
+DEBUG("read.\n")}
 	    }
 	    if (childdone) break;
 	    XtAppNextEvent(app, eventP);
@@ -306,7 +311,8 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
 	(void) wait((union wait *) NULL);
 #endif /* !SYSV */
 
-	DEBUG(" done\n")
+	DEBUG("done\n")
+	subProcessRunning = False;
 	if (output_to_pipe) {
 	    CheckReadFromPipe( status->output_pipe[0],
 			       &status->output_buffer,

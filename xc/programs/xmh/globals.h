@@ -1,5 +1,5 @@
 /*
- *  $XConsortium: globals.h,v 2.16 89/05/11 19:26:52 converse Exp $
+ *  $XConsortium: globals.h,v 2.17 89/05/31 10:28:54 swick Exp $
  */
 
 /*
@@ -100,3 +100,5 @@ ext struct _LastInput {
     int x;
     int y;
 } lastInput;
+
+ext Boolean	subProcessRunning; /* interlock for DoCommand/CheckMail */

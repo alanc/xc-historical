@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 2.11 88/09/06 17:23:21 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 2.12 89/05/31 10:29:58 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -65,7 +65,7 @@ static void CheckMail(client_data, id)
 	TocCheckForNewMail();
 	DEBUG(" done)\n")
     }
-    if (count++ % 5 == 0) {
+    if (!subProcessRunning && (count++ % 5 == 0)) {
 	NeedToCheckScans();
 	if (app_resources.defMakeCheckpoints) {
 	    DEBUG("(Checkpointing...")
@@ -86,6 +86,7 @@ char **argv;
     InitializeWorld(argc, argv);
     if (app_resources.defNewMailCheck)
 	TocCheckForNewMail();
+    subProcessRunning = False;
     timerid = XtAddTimeOut((int)60000, CheckMail, NULL);
     lastInput.win = -1;		/* nothing mapped yet */
     for (;;) {
