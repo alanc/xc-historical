@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.13 90/02/05 14:54:00 jim Exp $
+ * $XConsortium: viewres.c,v 1.14 90/02/05 16:34:45 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -96,8 +96,19 @@ static XtActionsRec viewres_actions[] = {
 };
 
 static Widget treeWidget;
-static Widget quitButton, formatButton, formatMenu;
-static Widget variableEntry, classEntry, horizontalEntry, verticalEntry;
+static Widget quitButton, formatButton, formatMenu, selectButton, selectMenu;
+#define FORMAT_VARIABLES 0
+#define FORMAT_CLASSES 1
+#define FORMAT_HORIZONTAL 2
+#define FORMAT_VERTICAL 3
+#define FORMAT_number 4
+static Widget format_widgets[FORMAT_number];
+#define SELECT_PARENTS 0
+#define SELECT_ALL 1
+#define SELECT_WITH_RESOURCES 2
+#define SELECT_WITHOUT_RESOURCES 3
+#define SELECT_number 4
+static Widget select_widgets[SELECT_number], unselectEntry;
 static WidgetNode *topnode;
 
 
@@ -133,6 +144,20 @@ static void horizontal_orientation_callback (gw, closure, data)
     set_orientation_menu ((Boolean) closure, True);
 }
 
+static void select_callback (gw, closure, data)
+    Widget gw;
+    caddr_t closure;			/* TRUE or FALSE */
+    caddr_t data;
+{
+}
+
+static void unselect_callback (gw, closure, data)
+    Widget gw;
+    caddr_t closure;			/* TRUE or FALSE */
+    caddr_t data;
+{
+}
+
 
 main (argc, argv)
     int argc;
@@ -166,6 +191,10 @@ main (argc, argv)
 				 NULL, ZERO);
     quitButton = XtCreateManagedWidget ("quit", commandWidgetClass, box,
 					NULL, ZERO);
+
+    /*
+     * Format menu
+     /*/
     XtSetArg (args[0], XtNmenuName, "formatMenu");
     formatButton = XtCreateManagedWidget ("format", menuButtonWidgetClass, box,
 					  args, ONE);
@@ -173,24 +202,47 @@ main (argc, argv)
 				     formatButton, NULL, ZERO);
     XtSetArg (args[0], XtNcallback, callback_rec);
     callback_rec[0].callback = (XtCallbackProc) variable_labeltype_callback;
-    callback_rec[0].closure = (caddr_t) TRUE;
-    variableEntry = XtCreateManagedWidget ("showVariables", smeBSBObjectClass,
-					   formatMenu, args, ONE);
-    callback_rec[0].closure = (caddr_t) FALSE;
-    classEntry = XtCreateManagedWidget ("showClasses", smeBSBObjectClass,
-					   formatMenu, args, ONE);
+#define MAKE_FORMAT(n,v,name) \
+    callback_rec[0].closure = (caddr_t) v; \
+    format_widgets[n] = XtCreateManagedWidget (name, smeBSBObjectClass, \
+					       formatMenu, args, ONE)
+
+    MAKE_FORMAT (FORMAT_VARIABLES, TRUE, "showVariables");
+    MAKE_FORMAT (FORMAT_CLASSES, FALSE, "showClasses");
 
     (void) XtCreateManagedWidget ("line", smeLineObjectClass, formatMenu,
 				  NULL, ZERO);
-
     callback_rec[0].callback = (XtCallbackProc)horizontal_orientation_callback;
-    callback_rec[0].closure = (caddr_t) TRUE;
-    horizontalEntry = XtCreateManagedWidget ("layoutHorizontal",
-					     smeBSBObjectClass,
-					     formatMenu, args, ONE);
-    callback_rec[0].closure = (caddr_t) FALSE;
-    verticalEntry = XtCreateManagedWidget ("layoutVertical", smeBSBObjectClass,
-					   formatMenu, args, ONE);
+    MAKE_FORMAT (FORMAT_HORIZONTAL, TRUE, "layoutHorizontal");
+    MAKE_FORMAT (FORMAT_VERTICAL, FALSE, "layoutVertical");
+#undef MAKE_FORMAT
+
+    /*
+     * Select menu
+     */
+    XtSetArg (args[0], XtNmenuName, "selectMenu");
+    selectButton = XtCreateManagedWidget ("select", menuButtonWidgetClass, box,
+					  args, ONE);
+    selectMenu = XtCreatePopupShell ("selectMenu", simpleMenuWidgetClass, 
+				     selectButton, NULL, ZERO);
+    XtSetArg (args[0], XtNcallback, callback_rec);
+    callback_rec[0].callback = (XtCallbackProc) select_callback;
+#define MAKE_SELECT(n,name) \
+    callback_rec[0].closure = (caddr_t) n; \
+    select_widgets[n] = XtCreateManagedWidget (name, smeBSBObjectClass, \
+					       selectMenu, args, ONE)
+    MAKE_SELECT (SELECT_PARENTS, "selectParents");
+    MAKE_SELECT (SELECT_ALL, "selectAll");
+    MAKE_SELECT (SELECT_WITH_RESOURCES, "selectWithResources");
+    MAKE_SELECT (SELECT_WITHOUT_RESOURCES, "selectWithoutResources");
+#undef MAKE_SELECT
+
+    (void) XtCreateManagedWidget ("line", smeLineObjectClass, selectMenu,
+				  NULL, ZERO);
+    callback_rec[0].callback = (XtCallbackProc) unselect_callback;
+    unselectEntry = XtCreateManagedWidget ("unselect", smeBSBObjectClass,
+					   selectMenu, args, ONE);
+
 
     XtSetArg (args[0], XtNbackgroundPixmap, None);
     viewport = XtCreateManagedWidget ("viewport", viewportWidgetClass,
@@ -363,7 +415,8 @@ static void set_labeltype_menu (isvar, doall)
     Boolean doall;
 {
     Appresources.show_variable = isvar;
-    set_oneof_sensitive (isvar, classEntry, variableEntry);
+    set_oneof_sensitive (isvar, format_widgets[FORMAT_CLASSES],
+			 format_widgets[FORMAT_VARIABLES]);
 
     if (doall) {
 	XUnmapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
@@ -376,7 +429,8 @@ static void set_labeltype_menu (isvar, doall)
 static void set_orientation_menu (horiz, dosetvalues)
     Boolean horiz, dosetvalues;
 {
-    set_oneof_sensitive (horiz, verticalEntry, horizontalEntry);
+    set_oneof_sensitive (horiz, format_widgets[FORMAT_VERTICAL],
+			 format_widgets[FORMAT_HORIZONTAL]);
 
     if (dosetvalues) {
 	Arg args[1];
