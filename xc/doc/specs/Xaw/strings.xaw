@@ -513,8 +513,8 @@ internal memory, but may be used in place by setting the
 \fBuseStringInPlace\fP resource.  As of X11R4 this is a settable resource.
 .LP
 .NT
-When this resource is queried - using \fBXtGetValues - and
-\fBuseStringInPlace\fP is \fBFalse\fP the string is only valid until
+When this resource is queried - using \fBXtGetValues\fP - and
+\fBuseStringInPlace\fP is \fBFalse\fP, the string is only valid until
 the next time the \fBstring\fP is queried (see Section 5.6.1.1).
 .So \\$1
 ..
