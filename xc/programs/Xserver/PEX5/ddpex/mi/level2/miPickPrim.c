@@ -1,4 +1,4 @@
-/* $XConsortium: miPickPrim.c,v 5.2 91/05/01 14:45:12 hersh Exp $ */
+/* $XConsortium: miPickPrim.c,v 5.3 91/05/12 16:11:35 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -349,6 +349,7 @@ miPickAnnoText2D(pRend, pExecuteOC)
 /* calls */
     extern ddpex3rtn    miTransform();
     extern ddpex3rtn    miClipPolyLines();
+    extern void		miTransformPoint();
 
 /* Define required temporary variables */
 
@@ -701,6 +702,7 @@ miPickAnnoText3D(pRend, pExecuteOC)
 /* calls */
     extern ddpex3rtn    miTransform();
     extern ddpex3rtn    miClipPolyLines();
+    extern void		miTransformPoint();
 
 /* Define required temporary variables */
 
