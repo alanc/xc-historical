@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8line.c,v 1.4 90/06/13 18:25:08 keith Exp $
+ * $XConsortium: cfb8line.c,v 1.8 90/08/31 15:37:16 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -446,7 +446,10 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 
 #endif /* WIDTH_MUL */
 
+
 #ifdef INCLUDE_OTHERS
+
+extern void cfb8ClippedLineCopy(), cfb8ClippedLineXor(), cfb8ClippedLineGeneral(); 
 
 #ifdef POLYSEGMENT
 
@@ -462,14 +465,17 @@ cfb8SegmentSS1Rect (pDrawable, pGC, nseg, pSegInit)
     int		    nseg;
     xSegment	    *pSegInit;
 {
-    int	(*func)();
-    int	drawn;
-    int	nwidth;
+    int	    (*func)();
+    void    (*clip)();
+    int	    drawn;
+    cfbPrivGCPtr    devPriv;
 
-    switch (((cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr)->rop)
+    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
+    switch (devPriv->rop)
     {
     case GXcopy:
 	func = cfb8SegmentSS1RectCopy;
+	clip = cfb8ClippedLineCopy;
 #ifdef WIDTH_FAST
 	if (cfbGetByteWidth (pDrawable) == WIDTH_FAST)
 	    func = cfb8SegmentSS1RectShiftCopy;
@@ -477,9 +483,11 @@ cfb8SegmentSS1Rect (pDrawable, pGC, nseg, pSegInit)
 	break;
     case GXxor:
 	func = cfb8SegmentSS1RectXor;
+	clip = cfb8ClippedLineXor;
 	break;
     default:
 	func = cfb8SegmentSS1RectGeneral;
+	clip = cfb8ClippedLineGeneral;
 	break;
     }
     while (nseg)
@@ -487,9 +495,10 @@ cfb8SegmentSS1Rect (pDrawable, pGC, nseg, pSegInit)
 	drawn = (*func) (pDrawable, pGC, nseg, pSegInit);
 	if (drawn == -1)
 	    break;
-	cfb8DrawClippedLine (pDrawable, pGC,
+	(*clip) (pDrawable, pGC,
 			 pSegInit[drawn-1].x1, pSegInit[drawn-1].y1,
 			 pSegInit[drawn-1].x2, pSegInit[drawn-1].y2,
+			 &devPriv->pCompositeClip->extents,
 			 pGC->capStyle == CapNotLast);
 	pSegInit += drawn;
 	nseg -= drawn;
@@ -511,14 +520,17 @@ cfb8LineSS1Rect (pDrawable, pGC, mode, npt, pptInit)
     int		npt;
     DDXPointPtr	pptInit;
 {
-    int	(*func)();
-    int	drawn;
-    int	nwidth;
+    int	    (*func)();
+    void    (*clip)();
+    int	    drawn;
+    cfbPrivGCPtr    devPriv;
 
-    switch (((cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr)->rop)
+    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
+    switch (devPriv->rop)
     {
     case GXcopy:
 	func = cfb8LineSS1RectCopy;
+	clip = cfb8ClippedLineCopy;
 #ifdef WIDTH_FAST
 	if (mode != CoordModePrevious && cfbGetByteWidth (pDrawable) == WIDTH_FAST)
 	    func = cfb8LineSS1RectShiftCopy;
@@ -526,9 +538,11 @@ cfb8LineSS1Rect (pDrawable, pGC, mode, npt, pptInit)
 	break;
     case GXxor:
 	func = cfb8LineSS1RectXor;
+	clip = cfb8ClippedLineXor;
 	break;
     default:
 	func = cfb8LineSS1RectGeneral;
+	clip = cfb8ClippedLineGeneral;
 	break;
     }
     while (npt)
@@ -536,12 +550,13 @@ cfb8LineSS1Rect (pDrawable, pGC, mode, npt, pptInit)
 	drawn = (*func) (pDrawable, pGC, mode, npt, pptInit);
 	if (drawn == -1)
 	    break;
-	cfb8DrawClippedLine (pDrawable, pGC,
+	(*clip) (pDrawable, pGC,
 			 pptInit[drawn-1].x, pptInit[drawn-1].y,
 			 pptInit[drawn].x, pptInit[drawn].y,
+			 &devPriv->pCompositeClip->extents,
 			 drawn != npt - 1 || pGC->capStyle == CapNotLast);
-	pptInit += drawn + 1;
-	npt -= drawn + 1;
+	pptInit += drawn;
+	npt -= drawn;
     }
 }
 
@@ -550,7 +565,7 @@ cfb8LineSS1Rect (pDrawable, pGC, mode, npt, pptInit)
 #define ceiling(m,n)  (((m)-1)/(n) + 1)
 #define SignTimes(sign,n)   (((sign) < 0) ? -(n) : (n))
 
-cfbClipPoint (oc, xp, yp, dx, dy, boxp, right)
+cfbClipPoint (oc, xp, yp, dx, dy, boxp)
     int	oc;
     int	*xp, *yp;
     BoxPtr  boxp;
@@ -558,141 +573,123 @@ cfbClipPoint (oc, xp, yp, dx, dy, boxp, right)
     int	x, y;
     int	adx, ady, signdx, signdy;
     int	utmp;
-
-    x = *xp;
-    y = *yp;
+    
     signdx = 1;
     if (dx < 0)
     {
-	signdx = -1;
-	dx = -dx;
+    	signdx = -1;
+    	dx = -dx;
     }
     signdy = 1;
     if (dy  < 0)
     {
-	signdy = -1;
-	dy = -dy;
+    	signdy = -1;
+    	dy = -dy;
     }
-    if (oc & OUT_LEFT)
+    if (oc & (OUT_LEFT | OUT_RIGHT))
     {
-      x = boxp->x1;
-      utmp = abs(boxp->x1 - *xp);
-      utmp *= dy;
-      if(dx > dy)
-      {
-	y = *yp + SignTimes(signdy, round(utmp, dx));
-      }
-      else
-      {
-	utmp <<= 1;
-	if (right)
-	    utmp += dy;
+    	if (oc & OUT_LEFT)
+    	{
+	    x = boxp->x1;
+	    utmp = x - *xp;
+    	}
+    	else
+    	{
+	    x = boxp->x2 - 1;
+	    utmp = *xp - x;
+    	}
+    	utmp *= dy;
+	if (dy > dx)
+	{
+	    utmp = (utmp << 1) - dy + 1;
+	    y = *yp + SignTimes(signdy, ceiling(utmp, (dx << 1)));
+	}
 	else
-	    utmp -= dy;
-	y = *yp + SignTimes(signdy, ceiling(utmp, 2*dx));
-	if (right)
-	    y -= signdy;
-      }
+	{
+    	    y = *yp + SignTimes(signdy, round(utmp, dx));
+	}
+	oc = 0;
+	OUTCODES (oc, x, y, boxp);
     }
-    else if (oc & OUT_RIGHT)
+    if (oc & (OUT_ABOVE | OUT_BELOW))
     {
-      x = boxp->x2;
-      utmp = abs(*xp - boxp->x2);
-      utmp *= dy;
-      if (dx > dy)
-      {
-	y = *yp + SignTimes(signdy, round(utmp, dx));
-      }
-      else
-      {
-	utmp <<= 1;
-	if (right)
-	    utmp += dy;
+    	if (oc & OUT_ABOVE)
+    	{
+    	    y = boxp->y1;
+    	    utmp = y - *yp;
+    	}
+    	else
+    	{
+    	    y = boxp->y2 - 1;
+    	    utmp = *yp - y;
+    	}
+	utmp *= dx;
+	if (dx > dy)
+	{
+	    utmp = (utmp << 1) - dx + 1;
+	    x = *xp + SignTimes(signdx, ceiling(utmp, (dy << 1)));
+	}
 	else
-	    utmp -= dy;
-	y = *yp + SignTimes(signdy, ceiling(utmp, 2*dx));
-	if (right)
-	    y -= signdy;
-      }
-    }
-    if (oc & OUT_ABOVE)
-    {
-      y = boxp->y1;
-      utmp = abs(boxp->y1 - *yp);
-      utmp *= dx;
-      if (dx <= dy)
-      {
-	x = *xp + SignTimes(signdx, round(utmp, dy));
-      }
-      else
-      {
-	utmp <<= 1;
-	if (right)
-	    utmp += dx;
-	else
-	    utmp -= dx;
-	x = *xp + SignTimes(signdx, ceiling(utmp, 2*dy));
-	if (right)
-	    x -= signdx;
-      }
-    }
-    else if (oc & OUT_BELOW)
-    {
-      y = boxp->y2;
-      utmp = abs(*yp - boxp->y2);
-      utmp *= dx;
-      if (dx <= dy)
-      {
-	x = *xp + SignTimes(signdx, round(utmp, dy));
-      }
-      else
-      {
-	utmp <<= 1;
-	if (right)
-	    utmp += dx;
-	else
-	    utmp -= dx;
-	x = *xp + SignTimes(signdx, ceiling(utmp, 2*dy));
-	if (right)
-	    x -= signdx;
-      }
+	{
+	    x = *xp + SignTimes(signdx, round(utmp, dy));
+	}
+	oc = 0;
+	OUTCODES (oc, x, y, boxp);
     }
     *xp = x;
     *yp = y;
+    return oc;
 }
 
-cfb8DrawClippedLine (pDrawable, pGC, x1, y1, x2, y2, shorten)
+#endif
+
+#endif
+
+#ifndef POLYSEGMENT
+#ifndef WIDTH_SHIFT
+
+void
+RROP_NAME (cfb8ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
     DrawablePtr	pDrawable;
     GCPtr	pGC;
     int		x1, y1, x2, y2;
+    BoxPtr	boxp;
     Bool	shorten;
 {
     int		    oc1, oc2;
-    int		    signdx, signdy, axis, e, e1, e2, len;
+    int		    signdx, signdy, axis, e, e1, e3, len;
     int		    adx, ady;
-    BoxPtr	    box;
-    cfbPrivGCPtr    devPriv;
-    unsigned long   *addrl;
-    int		    nlwidth;
-    
-    x1 += pDrawable->x;
-    y1 += pDrawable->y;
-    x2 += pDrawable->x;
-    y2 += pDrawable->y;
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
-    box = &devPriv->pCompositeClip->extents;
-    cfbGetLongWidthAndPointer (pDrawable, nlwidth, addrl);
+
+    char	    *addr;
+    int		    nwidth;
+    int		    stepx, stepy;
+    int		    xorg, yorg;
+
+
+    cfbGetByteWidthAndPointer(pDrawable, nwidth, addr);
+
+    xorg = pDrawable->x;
+    yorg = pDrawable->y;
+    x1 += xorg;
+    y1 += yorg;
+    x2 += xorg;
+    y2 += yorg;
+
     signdx = 1;
+    stepx = 1;
     if ((adx = x2 - x1) < 0)
     {
 	adx = -adx;
 	signdx = -1;
+	stepx = -1;
     }
     signdy = 1;
+    stepy = nwidth;
     if ((ady = y2 - y1) < 0)
     {
 	ady = -ady;
 	signdy = -1;
+	stepy = -nwidth;
     }
     axis = X_AXIS;
     if (adx <= ady)
@@ -703,25 +700,27 @@ cfb8DrawClippedLine (pDrawable, pGC, x1, y1, x2, y2, shorten)
 	adx = ady;
 	ady = t;
 
+	t = stepx;
+	stepx = stepy;
+	stepy = t;
+	
 	axis = Y_AXIS;
     }
     e1 = ady << 1;
-    e2 = e1 - (adx << 1);
-    e = e1 - adx;
+    e3 = - (adx << 1);
+    e = - adx;
     len = adx;
     oc1 = 0;
     oc2 = 0;
-    OUTCODES (oc1, x1, y1, box);
-    OUTCODES (oc2, x2, y2, box);
-    if (oc1 & oc2)
-	return;
+    OUTCODES (oc1, x1, y1, boxp);
+    OUTCODES (oc2, x2, y2, boxp);
     if (oc2)
     {
 	int xt = x2, yt = y2;
 	int	dx = x2 - x1, dy = y2 - y1;
 	int change;
 
-	cfbClipPoint (oc2, &xt, &yt, dx, dy, box, TRUE);
+	oc2 = cfbClipPoint (oc2, &xt, &yt, -dx, -dy, boxp);
 	if (axis == Y_AXIS)
 	    change = y2 - yt;
 	else
@@ -729,39 +728,103 @@ cfb8DrawClippedLine (pDrawable, pGC, x1, y1, x2, y2, shorten)
 	if (change < 0)
 	    change = -change;
 	len -= change;
-    }
+    } else if (shorten)
+	--len;
     if (oc1)
     {
 	int	xt = x1, yt = y1;
 	int	dx = x2 - x1, dy = y2 - y1;
 	int	changex, changey;
 
-	cfbClipPoint (oc1, &xt, &yt, dx, dy, box, FALSE);
+	oc1 = cfbClipPoint (oc1, &xt, &yt, dx, dy, boxp);
 	changex = x1 - xt;
 	if (changex < 0)
 	    changex = -changex;
 	changey = y1 - yt;
 	if (changey < 0)
 	    changey = -changey;
-	if (axis == Y_AXIS)
+	if (axis == X_AXIS)
 	{
-	    len -= changey;
-	    e = e + (changey * e2) + ((changex - changey) * e1);
+	    len -= changex;
+	    e = e + changey * e3 + changex * e1;
 	}
 	else
 	{
-	    len -= changex;
-	    e = e + (changex * e2) + ((changey - changex) * e1);
+	    len -= changey;
+	    e = e + changex * e3 + changey * e1;
 	}
 	x1 = xt;
 	y1 = yt;
     }
-    if (shorten && !oc2)
-	--len;
-    cfbBresS (devPriv->rop, devPriv->and, devPriv->xor, addrl, nlwidth,
-	      signdx, signdy, axis, x1, y1, e, e1, e2, len);
-}
+    if (oc1 | oc2)
+	return;
 
+    {
+    register char	*addrb;
+    RROP_DECLARE
+
+    RROP_FETCH_GC(pGC);
+
+    addrb = addr + (y1 * nwidth) + x1;
+
+#ifndef REARRANGE
+    if (!ady)
+    {
+#define body	{ RROP_SOLID(addrb); addrb += stepx; }
+	while (len >= 4)
+	{
+	    body body body body
+	    len -= 4;
+	}
+	switch (len)
+	{
+	case  3: body case 2: body case 1: body
+	}
+#undef body
+    }
+    else
+#endif
+    {
+#define body {\
+	    RROP_SOLID(addrb); \
+	    addrb += stepx; \
+	    e += e1; \
+	    if (e >= 0) \
+	    { \
+		addrb += stepy; \
+		e += e3; \
+	     } \
+	}
+
+#ifdef LARGE_INSTRUCTION_CACHE
+	while (len >= 4)
+	{
+	    body body body body
+	    len -= 4;
+	}
+	switch (len)
+	{
+	case  3: body case 2: body case 1: body
+	}
+#else
+	IMPORTANT_START
+
+	while ((len -= 2) >= 0)
+	{
+	    body body
+	}
+	if (len & 1)
+	    body;
+
+	IMPORTANT_END
+
+#endif
+    }
+    RROP_SOLID(addrb);
+#undef body
+
+    }
+}
 #endif
 
 #endif
