@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sv4Lib.tmpl,v 1.14 93/08/25 15:28:30 rws Exp $
+XCOMM $XConsortium: sv4Lib.tmpl,v 1.15 93/09/04 16:02:40 rws Exp $
 
 /*
  * SVR4 shared library template
@@ -12,4 +12,13 @@ XMULIB = $(XMULIBONLY) -z nodefs
 #endif
 #ifndef XawClientLibs
 #define XawClientLibs $(XAWLIB) $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
+#endif
+
+#if defined(SunArchitecture) && ThreadedX
+#define SharedXlibReqs -lthread
+#if NormalLibXmu
+#define SharedXtReqs -L../$(BUILDLIBDIR) $(XLIBONLY)
+#else
+#define SharedXtReqs -L$(BUILDLIBDIR) $(XLIBONLY)
+#endif
 #endif
