@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Graphics.c,v 1.8 91/01/09 16:55:31 rws Exp $
+ * $XConsortium: Graphics.c,v 1.9 91/01/25 11:04:49 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -1290,7 +1290,7 @@ void BWRestore(w, at_x, at_y, value)
     
     if (BW->bitmap.storage) {
       DrawImageData(BW, BW->bitmap.storage, at_x, at_y, value);
-      DestroyBitmapImage(&BW->bitmap.storage);
+      /*DestroyBitmapImage(&BW->bitmap.storage);*/
     }
 }
 
