@@ -162,7 +162,7 @@ or
 When a variable containing a list of strings representing windows is searched 
 (e.g. to determine whether or not to enable autoraise as shown above), a string
 must be an exact, case-sensitive match to
-the window's name name (given by the WM_NAME window property), resource name 
+the window's name (given by the WM_NAME window property), resource name 
 or class name (both given by the WM_CLASS window property).  The preceding
 example would enable autoraise on windows named ``emacs'' as well as any
 \fIxterm\fP (since they are of class ``XTerm'') or xmh windows 
@@ -641,7 +641,7 @@ may be specified:
 .EE
 The default for \fITitleHighlight\fP is to use an even stipple pattern.
 .IP "\fBRandomPlacement\fP" 8
-This variable indicates that windows with no specified geometry should should
+This variable indicates that windows with no specified geometry should 
 be placed in a pseudo-random location instead of having the user drag out
 an outline.
 .IP "\fBResizeFont\fP \fIstring\fP" 8
@@ -770,7 +770,7 @@ will only be warped when those windows are deiconified.
 This variable specifies a list of windows along which the \fBf.warpring\fP 
 function cycles.
 .IP "\fBWarpUnmapped\fP" 8
-This variable indicates that that the \fBf.warpto\fP function should deiconify
+This variable indicates that the \fBf.warpto\fP function should deiconify
 any iconified windows it encounters.  This is typically used to make a key
 binding that will pop a particular window (such as \fIxmh\fP), no matter
 where it is.  The default is for \fBf.warpto\fP to ignore iconified windows.
