@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunCfb.c,v 1.00 93/07/12 16:28:35 kaleb Exp $ */
+/* $XConsortium: sunCfb.c,v 1.1 93/08/08 18:00:40 kaleb Exp $ */
 
 /*
  * Copyright 1990 Massachusetts Institute of Technology
@@ -427,7 +427,7 @@ Bool sunCG6Init (screen, pScreen, argc, argv)
     sunFbs[screen].EnterLeave = NoopDDA;
     sunSupportsDepth8 = TRUE;
     if (!cfbSetupScreen (pScreen, 
-	    (pointer) sunFbs[screen].fb + CG6_IMAGE_OFFSET,
+	    sunFbs[screen].fb + CG6_IMAGE_OFFSET,
 	    sunFbs[screen].info.fb_width, 
 	    sunFbs[screen].info.fb_height,
 	    monitorResolution, monitorResolution, 
@@ -438,7 +438,7 @@ Bool sunCG6Init (screen, pScreen, argc, argv)
 	return FALSE;
 #endif /* } */
     if (!cfbFinishScreenInit(pScreen,
-	    (pointer) sunFbs[screen].fb + CG6_IMAGE_OFFSET,
+	    sunFbs[screen].fb + CG6_IMAGE_OFFSET,
 	    sunFbs[screen].info.fb_width, 
 	    sunFbs[screen].info.fb_height,
 	    monitorResolution, monitorResolution, 
