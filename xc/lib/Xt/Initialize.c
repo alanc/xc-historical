@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.136 89/09/12 16:47:49 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.137 89/09/18 17:59:13 kit Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif /* lint */
 
@@ -279,7 +279,6 @@ static XrmDatabase GetFallbackResourceDatabase(dpy)
 	    return(NULL);
 	
 	for ( ; *res != NULL ; res++) {
-	    printf("Putting line resource: %s\n", *res);
 	    XrmPutLineResource(&db, *res);
 	}
 
@@ -298,7 +297,6 @@ static void GetInitialResourceDatabase(dpy, classname)
 	   in R3 and since the circumstances are likely rare, and since
 	   there's an easy user work-around, we'll just punt. */
 	/* ||| Xt shouldn't be using dpy->db. */
-
 	dpy->db = XrmGetStringDatabase( "" );
 
 	if ( (rdb = GetAppSystemDefaults(classname)) != NULL) 
@@ -547,7 +545,8 @@ ArgList args_in;
 
     app_con = XtCreateApplicationContext();
 
-    XtAppSetFallbackResources(app_con, fallback_resources);
+    if (fallback_resources != NULL) /* save a procedure call */
+	XtAppSetFallbackResources(app_con, fallback_resources);
 
     dpy = XtOpenDisplay(app_con, (String) NULL, NULL, application_class,
 			options, num_options, argc_in_out, argv_in_out);
@@ -576,6 +575,7 @@ ArgList args_in;
 
 /*	Function Name: XtInitialize
  *	Description: This function can be used to initialize the toolkit.
+ *		     It is obsolete; XtAppInitialize is more useful.
  *	Arguments: name - ** UNUSED **
  *                 classname - name of the application class.
  *                 options, num_options - the command line option info.
