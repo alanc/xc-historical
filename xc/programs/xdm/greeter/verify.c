@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.23 91/07/18 20:38:50 rws Exp $
+ * $XConsortium: verify.c,v 1.24 91/07/18 22:22:45 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -36,16 +36,6 @@
 char *getenv();
 #endif
 
-struct passwd joeblow = {
-	"Nobody", "***************"
-};
-
-#ifdef USESHADOW
-struct spwd spjoeblow = {
-	"Nobody", "**************"
-};
-#endif
-
 static char *envvars[] = {
 #if defined(sony) && !defined(SYSTYPE_SYSV)
     "bootdev",
@@ -78,13 +68,17 @@ struct verify_info	*verify;
 
 	Debug ("Verify %s ...\n", greet->name);
 	p = getpwnam (greet->name);
-	if (!p || strlen (greet->name) == 0)
-		p = &joeblow;
+	if (!p || strlen (greet->name) == 0) {
+		Debug ("getpwnam() failed.\n");
+		bzero(greet->password, strlen(greet->password));
+		return 0;
+	}
 #ifdef USESHADOW
 	sp = getspnam(greet->name);
 	if (sp == NULL) {
-		sp = &spjoeblow;
 		Debug ("getspnam() failed.  Are you root?\n");
+		bzero(greet->password, strlen(greet->password));
+		return 0;
 	}
 	endspent();
 
@@ -93,7 +87,7 @@ struct verify_info	*verify;
 	if (strcmp (crypt (greet->password, p->pw_passwd), p->pw_passwd))
 #endif
 	{
-		Debug ("verify failed\n");
+		Debug ("password verify failed\n");
 		bzero(greet->password, strlen(greet->password));
 		return 0;
 	}
