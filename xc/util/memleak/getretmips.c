@@ -1,3 +1,35 @@
+/*
+ * $XConsortium$
+ *
+ * Copyright 1992 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
+ * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * Author:  Keith Packard, MIT X Consortium
+ */
+
+/* Return stack generation for MIPS processors
+ * This is tricky as MIPS stack frames aren't
+ * easily unrolled -- we look for pc restoration
+ * and stack adjustment instructions beyond the return
+ * address to discover the correct values
+ */
+
 /* lw $31,const($sp) is : 100 011 11101 11111 const */
 /*                        1000 1111 1011 1111       */
 
@@ -39,6 +71,11 @@
 
 #define CALL(f)	    (0x0c000000 | (((int) (f)) >> 2))
 
+/*
+ * This computation is expensive, so we cache the results;
+ * a simple hash function and straight-forward replacement.
+ */
+
 #define HASH_SIZE   256
 
 typedef struct _returnCache {
@@ -52,6 +89,7 @@ static ReturnCacheRec	returnCache[HASH_SIZE];
 #define HASH(ra)    ((((int) (ra)) >> 2) & (HASH_SIZE - 1))
 
 typedef int Bool;
+
 #define TRUE 1
 #define FALSE 0
 
@@ -93,6 +131,7 @@ getStackTrace (results, max)
 	    while ((!found_ra_offset || !found_sp_adjust) && ra < ra_limit)
 	    {
 	    	inst = *ra;
+		/* look for the offset of the PC in the stack frame */
 	    	if ((inst & RESTORE_RETURNVAL_MASK) == RESTORE_RETURNVAL)
 	    	{
 	    	    ra_offset = inst & ~RESTORE_RETURNVAL_MASK;
@@ -134,6 +173,7 @@ getStackTrace (results, max)
 	    rc->raOffset = ra_offset;
 	    rc->spAdjust = sp_adjust;
 	}
+	/* if something went wrong, punt */
 	if (rc->spAdjust <= 0) 
 	{
 	    *results++ = 0;
@@ -150,26 +190,3 @@ getStackTrace (results, max)
 	max--;
     }
 }
-
-#ifdef DEBUG
-main ()
-{
-    foo ();
-}
-
-foo ()
-{
-    bar ();
-}
-
-bar ()
-{
-    unsigned long   trace[16];
-    int		    i;
-
-    getStackTrace (trace, sizeof trace / sizeof trace[0]);
-    for (i = 0; i < 16 && trace[i]; i++) {
-	printf ("%x\n", trace[i]);
-    }
-}
-#endif
