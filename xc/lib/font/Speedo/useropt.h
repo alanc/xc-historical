@@ -1,3 +1,5 @@
+/* $XConsortium$ */
+
 #define	INCL_LCD	1
 #define	STATIC_ALLOC	1
 
