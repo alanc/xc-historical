@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
-XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.159 93/07/13 17:50:34 gildea Exp $
+XCOMM X Window System Build Parameters and Rules
+XCOMM $XConsortium: Project.tmpl,v 1.160 93/07/13 17:58:19 mor Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -12,6 +12,25 @@ XCOMM $XConsortium: Project.tmpl,v 1.159 93/07/13 17:50:34 gildea Exp $
  ****************************************************************************/
 
 #define ProjectX		5	/* do *not* change this line */
+
+/* The following project-specific rules are defined at the end of this file:
+ *
+ * InstallAppDefaults		(class)
+ * InstallAppDefaultsLong	(file,class)
+ * MakeFontsDir			(deplist)
+ * MakeFonts			()
+ * InstallFontObjs		(objs,dest)
+ * InstallFonts			(dest)
+ * InstallFontAliases		(dest)
+ * FontSrc			(basename)
+ * FontBaseObj			(basename)
+ * InstallFontScale		(dest)
+ * UncompressedFontTarget	(basename)
+ * UncompressedFontTarget	(basename)
+ * CompressedFontTarget		(basename)
+ * FontTarget			(basename)
+ * FontObj			(basename)
+ */
 
 /*
  * X-specific things
@@ -668,37 +687,6 @@ XCOMM X Window System make variables; this need to be coordinated with rules
         XIELIBSRC = $(EXTENSIONSRC)/lib/XIElib
       PHIGSLIBSRC = $(EXTENSIONSRC)/lib/PEX
 
-/*
- * _Use - makes a choice based on UseInstalled.
- */
-#ifndef _Use
-#ifdef UseInstalled
-#define _Use(a,b) a
-#else
-#define _Use(a,b) b
-#endif
-#endif
-
-/*
- * _UseCat - combination of _Use and Concat.
- *           exists to avoid problems with some preprocessors
- */
-#ifndef _UseCat
-#if (__STDC__ && !defined(UnixCpp)) || defined(AnsiCpp)
-#ifdef UseInstalled
-#define _UseCat(a,b,c) a##c
-#else
-#define _UseCat(a,b,c) b##c
-#endif
-#else
-#ifdef UseInstalled
-#define _UseCat(a,b,c) a/**/c
-#else
-#define _UseCat(a,b,c) b/**/c
-#endif
-#endif
-#endif
-
 #ifndef ShLibIncludeFile
 /* need this to make ANSI-style preprocessors happy */
 #define ShLibIncludeFile <noop.rules>
@@ -706,81 +694,69 @@ XCOMM X Window System make variables; this need to be coordinated with rules
 
 #include ShLibIncludeFile
 
-#if HasSharedLibraries
-        SOXLIBREV = SharedXlibRev
-          SOXTREV = SharedXtRev
-         SOXAWREV = SharedXawRev
-        SOOLDXREV = SharedOldXRev
-         SOXMUREV = SharedXmuRev
-        SOXEXTREV = SharedXextRev
-      SOXINPUTREV = SharedXinputRev
-       SOXTESTREV = SharedXTestRev
-       SOXTRAPREV = SharedXTrapRev
-         SOPEXREV = SharedPexRev
-         SOXIEREV = SharedXieRev
+#if SharedLibXext
+SharedLibReferences(EXTENSION,Xext,$(EXTENSIONSRC)/lib,SOXEXTREV,SharedXextRev)
+#else
+UnsharedLibReferences(EXTENSION,Xext,$(EXTENSIONSRC)/lib)
 #endif
-
-#if !SharedLibXext
-  DEPEXTENSIONLIB = _UseCat($(USRLIBDIR),$(EXTENSIONSRC)/lib,/libXext.a)
-     EXTENSIONLIB = LoaderLibPrefix _Use(-lXext, $(DEPEXTENSIONLIB))
+LINTEXTENSIONLIB = $(LINTEXTENSION)
+#if SharedLibX
+SharedLibReferences(XONLY,X11,$(XLIBSRC),SOXLIBREV,SharedXlibRev)
+#else
+UnsharedLibReferences(XONLY,X11,$(XLIBSRC))
 #endif
-#if !SharedLibX
-          DEPXLIB = $(DEPEXTENSIONLIB) _UseCat($(USRLIBDIR),$(XLIBSRC),/libX11.a)
-         XLIBONLY = LoaderLibPrefix _Use(-lX11,$(XLIBSRC)/libX11.a)
-             XLIB = $(EXTENSIONLIB) $(XLIBONLY)
+         XLIBONLY = $(XONLYLIB)
+          DEPXLIB = $(DEPEXTENSIONLIB) $(DEPXONLYLIB)
+             XLIB = $(EXTENSIONLIB) $(XONLYLIB)
+         LINTXLIB = $(LINTXONLYLIB)
+UnsharedLibReferences(XAUTH,Xau,$(XAUTHSRC))
+UnsharedLibReferences(XDMCP,Xdmcp,$(XDMCPLIBSRC))
+#if SharedLibXmu
+SharedDSLibReferences(XMU,Xmu,$(XMUSRC),SOXMUREV,SharedXmuRev)
+#else
+UnsharedLibReferences(XMU,Xmu,$(XMUSRC))
 #endif
-      DEPXAUTHLIB = _UseCat($(USRLIBDIR),$(XAUTHSRC),/libXau.a)
-         XAUTHLIB = LoaderLibPrefix _Use(-lXau,$(DEPXAUTHLIB))
-      DEPXDMCPLIB = _UseCat($(USRLIBDIR),$(XDMCPLIBSRC),/libXdmcp.a)
-         XDMCPLIB = LoaderLibPrefix _Use(-lXdmcp,$(DEPXDMCPLIB))
-#if !SharedLibXmu
-        DEPXMULIB = _UseCat($(USRLIBDIR),$(XMUSRC),/libXmu.a)
-           XMULIB = LoaderLibPrefix _Use(-lXmu,$(DEPXMULIB))
+#if SharedOldLibX
+SharedLibReferences(OLDX,oldX,$(OLDXLIBSRC),SOOLDXREV,SharedOldXRev)
+#else
+UnsharedLibReferences(OLDX,oldX,$(OLDXLIBSRC))
 #endif
-#if !SharedOldLibX
-       DEPOLDXLIB = _UseCat($(USRLIBDIR),$(OLDXLIBSRC),/liboldX.a)
-          OLDXLIB = LoaderLibPrefix _Use(-loldX,$(DEPOLDXLIB))
+#if SharedLibXt
+SharedDSLibReferences(XTOOL,Xt,$(TOOLKITSRC),SOXTREV,SharedXtRev)
+#else
+UnsharedLibReferences(XTOOL,Xt,$(TOOLKITSRC))
 #endif
-#if !SharedLibXt
-      DEPXTOOLLIB = _UseCat($(USRLIBDIR),$(TOOLKITSRC),/libXt.a)
-         XTOOLLIB = LoaderLibPrefix _Use(-lXt,$(DEPXTOOLLIB))
+#if SharedLibXaw
+SharedDSLibReferences(XAW,Xaw,$(AWIDGETSRC),SOXAWREV,SharedXawRev)
+#else
+UnsharedLibReferences(XAW,Xaw,$(AWIDGETSRC))
 #endif
-#if !SharedLibXaw
-        DEPXAWLIB = _UseCat($(USRLIBDIR),$(AWIDGETSRC),/libXaw.a)
-           XAWLIB = LoaderLibPrefix _Use(-lXaw,$(DEPXAWLIB))
+#if SharedLibXinput
+SharedLibReferences(XI,Xi,$(XILIBSRC),SOXINPUTREV,SharedXinputRev)
+#else
+UnsharedLibReferences(XI,Xi,$(XILIBSRC))
 #endif
-#if !SharedLibXinput
-        DEPXILIB = _UseCat($(USRLIBDIR),$(XILIBSRC),/libXi.a)
-           XILIB = LoaderLibPrefix _Use(-lXi,$(DEPXILIB))
+#if SharedLibXTest
+SharedLibReferences(XTEST,Xtst,$(XTESTLIBSRC),SOXTESTREV,SharedXTestRev)
+#else
+UnsharedLibReferences(XTEST,Xtst,$(XTESTLIBSRC))
 #endif
-#if !SharedLibXTest
-     DEPXTESTLIB = _UseCat($(USRLIBDIR),$(XTESTLIBSRC),/libXtst.a)
-        XTESTLIB = LoaderLibPrefix _Use(-lXtst,$(DEPXTESTLIB))
+#if SharedLibPex
+SharedLibReferences(PEX,PEX5,$(PEXLIBSRC),SOPEXREV,SharedPexRev)
+#else
+UnsharedLibReferences(PEX,PEX5,$(PEXLIBSRC))
 #endif
-#if !SharedLibPex
-       DEPPEXLIB = _UseCat($(USRLIBDIR),$(PEXLIBSRC),/libPEX5.a)
-          PEXLIB = LoaderLibPrefix _Use(-lPEX5,$(DEPPEXLIB))
+#if SharedLibXie
+SharedLibReferences(XIE,XIE,$(XIELIBSRC),SOXIEREV,SharedXieRev)
+#else
+UnsharedLibReferences(XIE,XIE,$(XIELIBSRC))
 #endif
-#if !SharedLibXie
-       DEPXIELIB = _UseCat($(USRLIBDIR),$(XIELIBSRC),/libXIE.a)
-          XIELIB = LoaderLibPrefix _Use(-lXIE,$(DEPXIELIB))
+#if SharedLibPhigs
+SharedLibReferences(PHIGS,phigs,$(PHIGSLIBSRC),SOPHIGSREV,SharedPhigsRev)
+#else
+UnsharedLibReferences(PHIGS,phigs,$(PHIGSLIBSRC))
 #endif
-#if !SharedLibPhigs
-        DEPPHIGSLIB = _UseCat($(USRLIBDIR),$(PHIGSLIBSRC),/libphigs.a)
-           PHIGSLIB = LoaderLibPrefix _Use(-lphigs,$(DEPPHIGSLIB))
-#endif
-       DEPXBSDLIB = _UseCat($(USRLIBDIR),$(LIBSRC)/Berk,/libXbsd.a)
-          XBSDLIB = LoaderLibPrefix _Use(-lXbsd,$(DEPXBSDLIB))
-
- LINTEXTENSIONLIB = _UseCat($(LINTLIBDIR),$(EXTENSIONSRC)/lib,/llib-lXext.ln)
-         LINTXLIB = _UseCat($(LINTLIBDIR),$(XLIBSRC),/llib-lX11.ln)
-          LINTXMU = _UseCat($(LINTLIBDIR),$(XMUSRC),/llib-lXmu.ln)
-        LINTXTOOL = _UseCat($(LINTLIBDIR),$(TOOLKITSRC),/llib-lXt.ln)
-          LINTXAW = _UseCat($(LINTLIBDIR),$(AWIDGETSRC),/llib-lXaw.ln)
-           LINTXI = _UseCat($(LINTLIBDIR),$(XILIBSRC),/llib-lXi.ln)
-          LINTPEX = _UseCat($(LINTLIBDIR),$(PEXLIBSRC),/llib-lPEX5.ln)
-          LINTXIE = _UseCat($(LINTLIBDIR),$(XIELIBSRC),/llib-lXIE.ln)
-        LINTPHIGS = _UseCat($(LINTLIBDIR),$(PHIGSLIBSRC),/llib-lphigs.ln)
+UnsharedLibReferences(XBSD,Xbsd,$(LIBSRC)/Berk)
 
 #ifndef XawClientDepLibs
 #define XawClientDepLibs $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
@@ -806,3 +782,149 @@ XCOMM X Window System make variables; this need to be coordinated with rules
          DEPLIBS2 = $(DEPLIBS)
          DEPLIBS3 = $(DEPLIBS)
 #endif /* NeedDefaultDepLibs */
+
+
+/*
+ * InstallAppDefaults - generate rules to install appliation default files 
+ * if the InstallAppDefFiles configuration parameter is set.
+ */
+#ifndef InstallAppDefaults
+#if InstallAppDefFiles
+#define	InstallAppDefaults(class)					@@\
+install:: class.ad							@@\
+	MakeDir($(DESTDIR)$(XAPPLOADDIR))				@@\
+	$(INSTALL) -c $(INSTAPPFLAGS) class.ad $(DESTDIR)$(XAPPLOADDIR)/class
+#else
+#define	InstallAppDefaults(class)
+#endif /* InstallAppDefFiles */
+#endif /* InstallAppDefaults */
+
+/*
+ * InstallAppDefaultsLong - generate rules to install appliation default files 
+ * if the InstallAppDefFiles configuration parameter is set.
+ */
+#ifndef InstallAppDefaultsLong
+#if InstallAppDefFiles
+#define	InstallAppDefaultsLong(file,class)				@@\
+install:: file.ad							@@\
+	MakeDir($(DESTDIR)$(XAPPLOADDIR))				@@\
+	$(INSTALL) -c $(INSTAPPFLAGS) file.ad $(DESTDIR)$(XAPPLOADDIR)/class
+#else
+#define	InstallAppDefaultsLong(file,class)
+#endif /* InstallAppDefFiles */
+#endif /* InstallAppDefaultsLong */
+
+/*
+ * MakeFontsDir - generate rules to build fonts.dir database.
+ */
+#ifndef MakeFontsDir
+#define MakeFontsDir(deplist)						@@\
+all:: fonts.dir								@@\
+									@@\
+fonts.dir:  deplist							@@\
+	$(MKFONTDIR) .							@@\
+									@@\
+clean::									@@\
+	$(RM) fonts.dir
+#endif /* MakeFontsDir */
+
+
+/*
+ * MakeFonts - generate rules to build font database.
+ */
+#ifndef MakeFonts
+#define MakeFonts()							@@\
+all::  $(OBJS)								@@\
+									@@\
+MakeFontsDir($(OBJS))							@@\
+									@@\
+clean::									@@\
+	$(RM) *.snf *.snf.Z *.pcf *.pcf.Z
+#endif /* MakeFonts */
+
+
+/*
+ * InstallFontObjs - generate rules to install font files
+ */
+#ifndef InstallFontObjs
+#define InstallFontObjs(objs,dest)					@@\
+InstallMultipleFlags(objs,dest,$(INSTDATFLAGS))				@@\
+									@@\
+install::  fonts.dir							@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	$(INSTALL) -c $(INSTDATFLAGS) fonts.dir $(DESTDIR)dest
+#endif /* InstallFontObjs */
+
+
+/*
+ * InstallFonts - generate rules to install font files
+ */
+#ifndef InstallFonts
+#define InstallFonts(dest)						@@\
+InstallFontObjs($(OBJS),dest)
+#endif /* InstallFonts */
+
+
+/*
+ * InstallFontAliases - generate rules to install font aliases databases. 
+ */
+#ifndef InstallFontAliases
+#define InstallFontAliases(dest)					@@\
+install::  fonts.alias							@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	$(INSTALL) -c $(INSTDATFLAGS) fonts.alias $(DESTDIR)dest
+#endif /* InstallFontAliases */
+
+#ifndef FontSrc
+#define FontSrc(basename) basename.bdf
+#endif
+
+#ifndef FontBaseObj
+#ifdef SnfFonts
+#define FontBaseObj(basename)basename.snf
+#else
+#define FontBaseObj(basename)basename.pcf
+#endif
+#endif
+
+/*
+ * InstallFontScale - generate rules to install font scale database.
+ */
+#ifndef InstallFontScale
+#define InstallFontScale(dest)						@@\
+install::  fonts.scale							@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	$(INSTALL) -c $(INSTDATFLAGS) fonts.scale $(DESTDIR)dest
+#endif /* InstallFontScale */
+
+/*
+ * UncompressedFontTarget
+ */
+#ifndef UncompressedFontTarget
+#ifdef SnfFonts
+#define UncompressedFontTarget(basename)				@@\
+FontBaseObj(basename):  FontSrc(basename)				@@\
+	$(FONTC) $(FONTCFLAGS) $? >$@
+#else
+#define UncompressedFontTarget(basename)				@@\
+FontBaseObj(basename):  FontSrc(basename)				@@\
+	$(FONTC) $(FONTCFLAGS) $? -o $@
+#endif
+#endif /* CompressedFontTarget */
+
+/*
+ * CompressedFontTarget
+ */
+#ifndef CompressedFontTarget
+#define CompressedFontTarget(basename)					@@\
+FontBaseObj(basename).Z:  FontSrc(basename)				@@\
+	$(FONTC) $(FONTCFLAGS) $? | $(COMPRESS) > $@
+#endif /* CompressedFontTarget */
+
+#ifdef CompressAllFonts
+#define FontTarget(basename) CompressedFontTarget(basename)
+#define FontObj(basename) FontBaseObj(basename).Z
+#else
+#define FontTarget(basename) UncompressedFontTarget(basename)
+#define FontObj(basename) FontBaseObj(basename)
+#endif /* CompressAllFonts */
