@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: mispans.c,v 5.0 89/11/05 13:52:26 rws Exp $ */
+/* $XConsortium: mispans.c,v 5.1 91/07/03 17:22:37 keith Exp $ */
 
 #include "misc.h"
 #include "pixmapstr.h"
@@ -49,11 +49,120 @@ void miInitSpanGroup(spanGroup)
     spanGroup->ymax = MINSHORT;
 } /* InitSpanGroup */
 
-void miAppendSpans(spanGroup, spans)
+#define YMIN(spans) (spans->points[0].y)
+#define YMAX(spans)  (spans->points[spans->count-1].y)
+
+void miSubtractSpans (spanGroup, sub)
+    SpanGroup	*spanGroup;
+    Spans	*sub;
+{
+    int		i, subCount, spansCount;
+    int		ymin, ymax, xmin, xmax;
+    Spans	*spans;
+    DDXPointPtr	subPt, subPtNext, spansPt, spansPtNext;
+    int		*subWid, *spansWid;
+    int		extra;
+
+    ymin = YMIN(sub);
+    ymax = YMAX(sub);
+    spans = spanGroup->group;
+    for (i = spanGroup->count; i; i--, spans++) {
+	if (YMIN(spans) <= ymax && ymin <= YMAX(spans)) {
+	    subCount = sub->count;
+	    subPt = sub->points;
+	    subWid = sub->widths;
+	    spansCount = spans->count;
+	    spansPt = spans->points;
+	    spansWid = spans->widths;
+	    extra = 0;
+	    for (;;)
+ 	    {
+		while (spansCount && spansPt->y < subPt->y)
+		{
+		    spansPt++;  spansWid++; spansCount--;
+		}
+		if (!spansCount)
+		    break;
+		while (subCount && subPt->y < spansPt->y)
+		{
+		    subPt++;	subWid++;   subCount--;
+		}
+		if (!subCount)
+		    break;
+		if (subPt->y == spansPt->y)
+		{
+		    xmin = subPt->x;
+		    xmax = xmin + *subWid;
+		    if (xmin >= spansPt->x + *spansWid || spansPt->x >= xmax)
+		    {
+			;
+		    }
+		    else if (xmin <= spansPt->x)
+		    {
+			if (xmax >= spansPt->x + *spansWid) 
+			{
+			    bcopy (spansPt + 1, spansPt, sizeof *spansPt * (spansCount - 1));
+			    bcopy (spansWid + 1, spansWid, sizeof *spansWid * (spansCount - 1));
+			    spansPt--;
+			    spansWid--;
+			    spans->count--;
+			    extra++;
+			}
+			else 
+			{
+			    *spansWid = *spansWid - (xmax - spansPt->x);
+			    spansPt->x = xmax;
+			}
+		    }
+		    else
+		    {
+			if (xmax >= spansPt->x + *spansWid)
+			{
+			    *spansWid = xmin - spansPt->x;
+			}
+			else
+			{
+			    if (!extra) {
+				DDXPointPtr newPt;
+				int	    *newwid;
+
+#define EXTRA 8
+				newPt = (DDXPointPtr) xrealloc (spans->points, (spans->count + EXTRA) * sizeof (DDXPointRec));
+				if (!newPt)
+				    break;
+				spansPt = newPt + (spansPt - spans->points);
+				spans->points = newPt;
+				newwid = (int *) xrealloc (spans->widths, (spans->count + EXTRA) * sizeof (int));
+				if (!newwid)
+				    break;
+				spansWid = newwid + (spansWid - spans->widths);
+				spans->widths = newwid;
+				extra = EXTRA;
+			    }
+			    bcopy (spansPt, spansPt + 1, sizeof *spansPt * (spansCount));
+			    bcopy (spansWid, spansWid + 1, sizeof *spansWid * (spansCount));
+			    spans->count++;
+			    extra--;
+			    *spansWid = xmin - spansPt->x;
+			    spansWid++;
+			    spansPt++;
+			    *spansWid = *spansWid - (xmax - spansPt->x);
+			    spansPt->x = xmax;
+			}
+		    }
+		}
+		spansPt++;  spansWid++; spansCount--;
+	    }
+	}
+    }
+}
+    
+void miAppendSpans(spanGroup, otherGroup, spans)
     SpanGroup   *spanGroup;
+    SpanGroup	*otherGroup;
     Spans       *spans;
 {
-    register    int y;
+    register    int ymin, ymax;
     register    int spansCount;
 
     spansCount = spans->count;
@@ -66,10 +175,16 @@ void miAppendSpans(spanGroup, spans)
 
 	spanGroup->group[spanGroup->count] = *spans;
 	(spanGroup->count)++;
-	y = spans->points[0].y;
-	if (y < spanGroup->ymin) spanGroup->ymin = y;
-	y = spans->points[spansCount - 1].y;
-	if (y > spanGroup->ymax) spanGroup->ymax = y;
+	ymin = spans->points[0].y;
+	if (ymin < spanGroup->ymin) spanGroup->ymin = ymin;
+	ymax = spans->points[spansCount - 1].y;
+	if (ymax > spanGroup->ymax) spanGroup->ymax = ymax;
+	if (otherGroup &&
+	    otherGroup->ymin < ymax &&
+	    ymin < otherGroup->ymax)
+	{
+	    miSubtractSpans (otherGroup, spans);
+	}
     }
     else
     {

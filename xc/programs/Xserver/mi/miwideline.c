@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.44 91/11/13 14:53:37 keith Exp $
+ * $XConsortium: miwideline.c,v 1.45 91/11/20 15:33:19 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -162,14 +162,8 @@ miFillPolyHelper (pDrawable, pGC, pixel, spanData, y, overall_height,
     }
     else
     {
-	SpanGroup   *group;
-
 	spanRec.count = ppt - spanRec.points;
-	if (pixel == pGC->fgPixel)
-	    group = &spanData->fgGroup;
-	else
-	    group = &spanData->bgGroup;
-	miAppendSpans (group, &spanRec);
+	AppendSpanGroup (pGC, pixel, &spanRec, spanData)
     }
 }
 
@@ -238,11 +232,7 @@ miFillRectPolyHelper (pDrawable, pGC, pixel, spanData, x, y, w, h)
 	    y++;
 	}
 	spanRec.count = ppt - spanRec.points;
-	if (pixel == pGC->fgPixel)
-	    group = &spanData->fgGroup;
-	else
-	    group = &spanData->bgGroup;
-	miAppendSpans (group, &spanRec);
+	AppendSpanGroup (pGC, pixel, &spanRec, spanData)
     }
 }
 
@@ -416,6 +406,40 @@ miPolyBuildPoly (vertices, slopes, count, xi, yi, left, right, pnleft, pnright, 
 }
 
 static void
+miLineOnePoint (pDrawable, pGC, pixel, spanData, x, y)
+    DrawablePtr	    pDrawable;
+    GCPtr	    pGC;
+    unsigned long   pixel;
+    SpanDataPtr	    spanData;
+    int		    x, y;
+{
+    DDXPointRec pt;
+    int	    wid;
+    unsigned long	oldPixel;
+
+    MILINESETPIXEL (pDrawable, pGC, pixel, oldPixel);
+    if (pGC->fillStyle == FillSolid)
+    {
+	pt.x = x;
+	pt.y = y;
+	(*pGC->ops->PolyPoint) (pDrawable, pGC, CoordModeOrigin, 1, &pt);
+    }
+    else
+    {
+	wid = 1;
+	if (pGC->miTranslate) 
+	{
+	    x += pDrawable->x;
+	    y += pDrawable->y;
+	}
+	pt.x = x;
+	pt.y = y;
+	(*pGC->ops->FillSpans) (pDrawable, pGC, 1, &pt, &wid, TRUE);
+    }
+    MILINERESETPIXEL (pDrawable, pGC, pixel, oldPixel);
+}
+
+static void
 miLineJoin (pDrawable, pGC, pixel, spanData, pLeft, pRight)
     DrawablePtr	    pDrawable;
     GCPtr	    pGC;
@@ -435,16 +459,31 @@ miLineJoin (pDrawable, pGC, pixel, spanData, pLeft, pRight)
     int		    joinStyle = pGC->joinStyle;
     int		    lw = pGC->lineWidth;
 
-    if (joinStyle == JoinRound)
-    {
-	miLineArc(pDrawable, pGC, pixel, spanData,
-		  pLeft, pRight,
-		  (double)0.0, (double)0.0, TRUE);
-	return;
+    if (lw == 1 && !spanData) {
+	/* Lines going in the same direction have no join */
+	if (pLeft->dx >= 0 == pRight->dx <= 0)
+	    return;
+	if (joinStyle != JoinRound) {
+    	    denom = - pLeft->dx * pRight->dy + pRight->dx * pLeft->dy;
+    	    if (denom == 0)
+	    	return;	/* no join to draw */
+	}
+	if (joinStyle != JoinMiter) {
+	    miLineOnePoint (pDrawable, pGC, pixel, spanData, pLeft->x, pLeft->y);
+	    return;
+	}
+    } else {
+    	if (joinStyle == JoinRound)
+    	{
+	    miLineArc(pDrawable, pGC, pixel, spanData,
+		      pLeft, pRight,
+		      (double)0.0, (double)0.0, TRUE);
+	    return;
+    	}
+    	denom = - pLeft->dx * pRight->dy + pRight->dx * pLeft->dy;
+    	if (denom == 0)
+	    return;	/* no join to draw */
     }
-    denom = - pLeft->dx * pRight->dy + pRight->dx * pLeft->dy;
-    if (denom == 0)
-	return;	/* no join to draw */
 
     swapslopes = 0;
     if (denom > 0)
@@ -1029,14 +1068,8 @@ miLineArc (pDraw, pGC, pixel, spanData, leftFace, rightFace, xorg, yorg, isInt)
     }
     else
     {
-	SpanGroup   *group;
-
 	spanRec.count = n;
-	if (pixel == pGC->fgPixel)
-	    group = &spanData->fgGroup;
-	else
-	    group = &spanData->bgGroup;
-	miAppendSpans (group, &spanRec);
+	AppendSpanGroup (pGC, pixel, &spanRec, spanData)
     }
 }
 
@@ -1428,32 +1461,11 @@ miSetupSpanData (pGC, spanData, npt)
     SpanDataPtr	spanData;
     int		npt;
 {
-    if (npt < 3 && pGC->capStyle != CapRound)
+    if (npt < 3 && pGC->capStyle != CapRound || miSpansEasyRop(pGC->alu))
 	return (SpanDataPtr) NULL;
-    switch(pGC->alu)
-    {
-    case GXclear:	/* 0 */
-    case GXand:		/* src AND dst */
-    case GXcopy:	/* src */
-    case GXandInverted:	/* NOT src AND dst */
-    case GXnoop:	/* dst */
-    case GXor:		/* src OR dst */
-    case GXcopyInverted:/* NOT src */
-    case GXorInverted:	/* NOT src OR dst */
-    case GXset:		/* 1 */
-	spanData = (SpanDataPtr) NULL;
-	break;
-    case GXandReverse:	/* src AND NOT dst */
-    case GXxor:		/* src XOR dst */
-    case GXnor:		/* NOT src AND NOT dst */
-    case GXequiv:	/* NOT src XOR dst */
-    case GXinvert:	/* NOT dst */
-    case GXorReverse:	/* src OR NOT dst */
-    case GXnand:	/* NOT src OR NOT dst */
-	if (pGC->lineStyle == LineDoubleDash)
-	    miInitSpanGroup (&spanData->bgGroup);
-	miInitSpanGroup (&spanData->fgGroup);
-    }
+    if (pGC->lineStyle == LineDoubleDash)
+	miInitSpanGroup (&spanData->bgGroup);
+    miInitSpanGroup (&spanData->fgGroup);
     return spanData;
 }
 
@@ -1562,10 +1574,15 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
 	    	if (selfJoin)
 		    firstFace = leftFace;
 	    	else if (pGC->capStyle == CapRound)
-		    miLineArc (pDrawable, pGC, pixel, spanData,
-			       &leftFace, (LineFacePtr) NULL,
- 			       (double)0.0, (double)0.0,
-			       TRUE);
+		{
+		    if (pGC->lineWidth == 1 && !spanData)
+			miLineOnePoint (pDrawable, pGC, pixel, spanData, x1, y1);
+		    else
+		    	miLineArc (pDrawable, pGC, pixel, spanData,
+			       	   &leftFace, (LineFacePtr) NULL,
+ 			       	   (double)0.0, (double)0.0,
+			       	   TRUE);
+		}
 	    }
 	    else
 	    {
@@ -1582,10 +1599,15 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
 		miLineJoin (pDrawable, pGC, pixel, spanData, &firstFace,
 			    &rightFace);
 	    else if (pGC->capStyle == CapRound)
-		miLineArc (pDrawable, pGC, pixel, spanData,
-			   (LineFacePtr) NULL, &rightFace,
-			   (double)0.0, (double)0.0,
-			   TRUE);
+	    {
+		if (pGC->lineWidth == 1 && !spanData)
+		    miLineOnePoint (pDrawable, pGC, pixel, spanData, x2, y2);
+		else
+		    miLineArc (pDrawable, pGC, pixel, spanData,
+			       (LineFacePtr) NULL, &rightFace,
+			       (double)0.0, (double)0.0,
+			       TRUE);
+	    }
 	}
     }
     /* handle crock where all points are coincedent */

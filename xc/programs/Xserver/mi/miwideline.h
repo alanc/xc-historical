@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.h,v 1.6 90/05/15 18:37:02 keith Exp $
+ * $XConsortium: miwideline.h,v 1.7 90/11/19 15:16:41 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -27,6 +27,22 @@ typedef struct _SpanData {
 } SpanDataRec, *SpanDataPtr;
 
 extern SpanDataPtr  miSetupSpanData ();
+
+#define AppendSpanGroup(pGC, pixel, spanPtr, spanData) { \
+	SpanGroup   *group, *othergroup = NULL; \
+	if (pixel == pGC->fgPixel) \
+	{ \
+	    group = &spanData->fgGroup; \
+	    if (pGC->lineStyle == LineDoubleDash) \
+		othergroup = &spanData->bgGroup; \
+	} \
+	else \
+	{ \
+	    group = &spanData->bgGroup; \
+	    othergroup = &spanData->fgGroup; \
+	} \
+	miAppendSpans (group, othergroup, spanPtr); \
+}
 
 /*
  * Polygon edge description for integer wide-line routines
@@ -111,6 +127,20 @@ typedef struct _LineFace {
 	    	    	    right_x += right_signdx; \
 	    	    	    right_e -= right_dy; \
     	    	    	}
+
+#define MILINESETPIXEL(pDrawable, pGC, pixel, oldPixel) { \
+    oldPixel = pGC->fgPixel; \
+    if (pixel != oldPixel) { \
+	DoChangeGC (pGC, GCForeground, (XID *) &pixel, FALSE); \
+	ValidateGC (pDrawable, pGC); \
+    } \
+}
+#define MILINERESETPIXEL(pDrawable, pGC, pixel, oldPixel) { \
+    if (pixel != oldPixel) { \
+	DoChangeGC (pGC, GCForeground, (XID *) &oldPixel, FALSE); \
+	ValidateGC (pDrawable, pGC); \
+    } \
+}
 
 #ifdef NOINLINEICEIL
 #define ICEIL(x) ((int)ceil(x))
