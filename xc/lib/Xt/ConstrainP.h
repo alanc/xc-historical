@@ -1,4 +1,4 @@
-/* $XConsortium: ConstrainP.h,v 1.12 89/09/12 16:46:59 swick Exp $ */
+/* $XConsortium: ConstrainP.h,v 1.13 89/09/14 10:33:10 swick Exp $ */
 /* $oHeader: ConstrainP.h,v 1.2 88/08/18 15:54:15 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,7 +27,7 @@ SOFTWARE.
 #ifndef _XtConstraintP_h
 #define _XtConstraintP_h
 
-#include "Constraint.h"
+#include <X11/Constraint.h>
 
 typedef struct _ConstraintPart {
     XtPointer   mumble;		/* No new fields, keep C compiler happy */

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicP.h,v 1.42 89/09/14 10:35:23 swick Exp $
+* $XConsortium: IntrinsicP.h,v 1.43 89/09/21 08:34:23 swick Exp $
 * $oHeader: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
 */
 
@@ -30,7 +30,7 @@ SOFTWARE.
 #ifndef _XtintrinsicP_h
 #define _XtintrinsicP_h
 
-#include "Intrinsic.h"
+#include <X11/Intrinsic.h>
 
 typedef unsigned long XtVersionType;
 
@@ -129,9 +129,9 @@ typedef struct _XtTMRec {
 extern Widget _XtWindowedAncestor(); /* internal */
    /* Object object; */
 
-#include "CoreP.h"
-#include "CompositeP.h"
-#include "ConstrainP.h"
+#include <X11/CoreP.h>
+#include <X11/CompositeP.h>
+#include <X11/ConstrainP.h>
 
 #define XtDisplay(widget)	DisplayOfScreen((widget)->core.screen)
 #define XtScreen(widget)	((widget)->core.screen)

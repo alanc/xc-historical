@@ -1,5 +1,5 @@
 /*
-* $XConsortium: VendorP.h,v 1.18 89/09/12 16:49:32 swick Exp $
+* $XConsortium: VendorP.h,v 1.19 89/09/13 17:56:27 swick Exp $
 * $oHeader: VendorP.h,v 1.2 88/08/18 15:56:48 asente Exp $
 */
 
@@ -45,7 +45,7 @@ SOFTWARE.
 #ifndef  _XtVendorPrivate_h
 #define _XtVendorPrivate_h
 
-#include "Vendor.h"
+#include <X11/Vendor.h>
 
 /* New fields for the VendorShell widget class record */
 

@@ -1,4 +1,4 @@
-/* $XConsortium: ObjectP.h,v 1.8 89/09/12 16:48:33 swick Exp $ */
+/* $XConsortium: ObjectP.h,v 1.9 89/09/13 17:56:05 swick Exp $ */
 /* $oHeader: ObjectP.h,v 1.2 88/08/18 15:55:35 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,7 +27,7 @@ SOFTWARE.
 #ifndef _Xt_ObjectP_h_
 #define _Xt_ObjectP_h_
 
-#include "Object.h"
+#include <X11/Object.h>
 
 /**********************************************************
  * Object Instance Data Structures

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: ShellP.h,v 1.27 89/09/21 16:38:52 swick Exp $
+* $XConsortium: ShellP.h,v 1.28 89/10/04 11:46:53 swick Exp $
 * $oHeader: ShellP.h,v 1.2 88/08/18 15:56:19 asente Exp $
 */
 
@@ -39,7 +39,7 @@ SOFTWARE.
 #ifndef _XtShellPrivate_h
 #define _XtShellPrivate_h
 
-#include "Shell.h"
+#include <X11/Shell.h>
 
 /* *****
  * ***** VendorP.h is included later on; it needs fields defined in the first
@@ -192,7 +192,7 @@ typedef  struct {
 	WMShellPart	wm;
 } WMShellRec, *WMShellWidget;
 
-#include "VendorP.h"
+#include <X11/VendorP.h>
 
 /***********************************************************************
  *

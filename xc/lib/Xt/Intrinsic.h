@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.106 89/10/03 17:41:11 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.107 89/10/04 11:01:07 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -111,9 +111,9 @@ typedef char*		XtPointer;
 
 typedef XtPointer	Opaque;
 
-#include "Core.h"
-#include "Composite.h"
-#include "Constraint.h"
+#include <X11/Core.h>
+#include <X11/Composite.h>
+#include <X11/Constraint.h>
 
 /***************************************************************
  *
