@@ -1,6 +1,6 @@
 
 /*
- * $XConsortium: Xrm.c,v 1.37 90/06/14 08:23:53 rws Exp $
+ * $XConsortium: Xrm.c,v 1.38 90/06/15 11:21:35 rws Exp $
  */
 
 /***********************************************************
@@ -36,6 +36,11 @@ SOFTWARE.
 #include	<X11/Xos.h>
 #endif /* SYSV */
 
+#ifdef __STDC__
+#define Const const
+#else
+#define Const /**/
+#endif
 
 /*
 
@@ -106,6 +111,24 @@ static char    *resourceQuarks = NULL;
 static int     maxResourceQuark = -1;
 
 #define IsResourceQuark(q)  ((q) <= maxResourceQuark && resourceQuarks[q])
+
+#define NUM_CHARS 256
+static unsigned short Const _xrmtypes[NUM_CHARS] = {
+    _EOF,0,0,0,0,0,0,0,0,SPACE,					/*   0. */
+    EOL,0,0,0,0,0,0,0,0,0,					/*  10. */
+    0,0,0,0,0,0,0,0,0,0,					/*  20. */
+    0,0,SPACE,COMMENT,0,0,0,0,0,0,				/*  30. */
+    0,0,LOOSE,0,0,0,TIGHT,0,ODIGIT,ODIGIT,
+    ODIGIT,ODIGIT,ODIGIT,ODIGIT,ODIGIT,  			/*  50. */
+    ODIGIT,0,0,SEP,0,						/*  55. */
+    0,0,0,0,0,0,0,0,0,0,					/*  60. */
+    0,0,0,0,0,0,0,0,0,0,					/*  70. */
+    0,0,0,0,0,0,0,0,0,0,					/*  80. */
+    0,0,BSLASH,0,0,0,0,0,0,0,				        /*  90. */
+    0,0,0,0,0,0,0,0,0,0,					/*  100. */
+    N,0,0,0,0,0,0,0,0,0,					/*  110. */
+    /* The rest will be automatically initialized to zero. */
+};
 
 #define CHUNK_SIZE 5100
 
