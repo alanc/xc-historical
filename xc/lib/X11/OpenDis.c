@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.92 89/12/10 21:41:54 keith Exp $
+ * $XConsortium: XOpenDis.c,v 11.93 89/12/11 19:09:51 rws Exp $
  */
 
 #include "copyright.h"
@@ -196,9 +196,9 @@ Display *XOpenDisplay (display)
 					xauth_name);
 	    if (authptr) {
 		conn_auth_namelen = authptr->name_length;
-		conn_auth_name = authptr->name;
+		conn_auth_name = (char *)authptr->name;
 		conn_auth_datalen = authptr->data_length;
-		conn_auth_data = authptr->data;
+		conn_auth_data = (char *)authptr->data;
 	    } else {
 		conn_auth_namelen = 0;
 		conn_auth_name = NULL;
