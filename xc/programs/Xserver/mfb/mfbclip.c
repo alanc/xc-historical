@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbclip.c,v 1.14 87/09/11 07:21:11 rws Locked $ */
+/* $Header: mfbclip.c,v 1.15 87/12/29 18:39:44 rws Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "pixmapstr.h"
@@ -55,7 +55,7 @@ mfbPixmapToRegion(pPix)
 
     if((pReg = (*pPix->drawable.pScreen->RegionCreate)(NULL, 1)) == NullRegion)
 	return NullRegion;
-    rects = (BoxPtr) Xalloc(sizeof(BoxRec));
+    rects = (BoxPtr) xalloc(sizeof(BoxRec));
     FirstRect = rects;
     width = pPix->width;
     pw = (unsigned int  *)pPix->devPrivate;
@@ -183,17 +183,15 @@ mfbPixmapToRegion(pPix)
 	if(!fSame)
 	    irectPrevStart = irectLineStart;
     }
-    Xfree((char *)pReg->rects);
     if(pReg->numRects)
     {
-	pReg->size = pReg->numRects;
+	xfree(pReg->rects);
 	pReg->rects = FirstRect;
     }
     else
     {
-	Xfree((char *) FirstRect);
-	Xfree((char *) pReg);
-	pReg = NullRegion;
+	xfree(FirstRect);
+	pReg->size = 1;
     }
 
     return(pReg);
