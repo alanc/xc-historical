@@ -1,4 +1,4 @@
-/* $XConsortium: FSproto.h,v 1.4 91/07/16 20:32:52 keith Exp $ */
+/* $XConsortium: FSproto.h,v 1.5 91/07/26 21:00:24 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -20,9 +20,6 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * $NCDId: @(#)FSproto.h,v 4.3 1991/06/27 16:30:07 lemke Exp $
- *
  */
 
 #ifndef _FS_PROTO_H_
@@ -114,9 +111,14 @@ typedef struct {
 }           fsCharInfo;
 
 typedef struct {
+    CARD8       high;
+    CARD8       low;
+}           fsChar2b;
+
+typedef struct {
     CARD8       low,
                 high;
-}           fsChar2b;
+}           fsChar2b_version1;
 
 typedef struct {
     fsChar2b    min_char,
