@@ -39,7 +39,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 */
-/* $XConsortium: cfbbitblt.c,v 1.1 93/12/31 11:21:41 rob Exp $ */
+/* $XConsortium: cfbbitblt.c,v 1.2 94/01/04 00:02:06 rob Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -721,7 +721,7 @@ cfbCopyPlane(pSrcDrawable, pDstDrawable,
     cfbPrivGCPtr devPriv;
     StippleRec	 *pstipple;
 #endif
-#endif MTX
+#endif /* MTX */
 
 #if PSZ == 8
 
@@ -742,13 +742,12 @@ cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	
             }
 	    else 
-#endif /* MTX */
+		cfb8CheckOpaqueStipple (pGC->alu, pGC->fgPixel, pGC->bgPixel,
+				    pGC->planemask ,pstipple);
+#else /* MTX */
 	    cfb8CheckOpaqueStipple (pGC->alu, pGC->fgPixel, pGC->bgPixel,
-				    pGC->planemask
-#ifdef MTX
-				    ,pstipple
+				    pGC->planemask);
 #endif /* MTX */
-				    );
     	    ret = cfbBitBlt (pSrcDrawable, pDstDrawable,
 	    	    pGC, srcx, srcy, width, height, dstx, dsty, doBitBlt, bitPlane);
 	}
@@ -808,14 +807,14 @@ cfbCopyPlane(pSrcDrawable, pDstDrawable,
     
 	}
 	else 
-#endif /* MTX */
 	cfb8CheckOpaqueStipple (pGC->alu,
 				pGC->fgPixel, pGC->bgPixel,
-				pGC->planemask
-#ifdef MTX
-				,pstipple
+				pGC->planemask ,pstipple);
+#else /* MTX */
+	cfb8CheckOpaqueStipple (pGC->alu,
+				pGC->fgPixel, pGC->bgPixel,
+				pGC->planemask);
 #endif /* MTX */
-				);
 	/* no exposures here, copy bits from inside a pixmap */
 	(void) cfbBitBlt ((DrawablePtr) pBitmap, pDstDrawable, pGC,
 			    0, 0, width, height, dstx, dsty, cfbCopyPlane1to8, 1);
