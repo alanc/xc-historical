@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.144 92/05/09 13:43:53 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.145 92/05/22 11:43:39 eswu Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -513,11 +513,18 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef HasGcc
 #define HasGcc NO
 #endif
+#ifndef HasGcc2
+#define HasGcc2 NO
+#endif
 #ifndef CcCmd
+#if HasGcc2
+#define CcCmd gcc -fpcc-struct-return 
+#else
 #if HasGcc
 #define CcCmd gcc -fstrength-reduce -fpcc-struct-return 
 #else
 #define CcCmd cc
+#endif
 #endif
 #endif
 #if HasFortran

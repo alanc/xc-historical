@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.50 91/12/26 14:19:31 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.51 92/03/13 16:07:24 rws Exp $
 #include <Server.tmpl>
 
 #if (SystemV || SystemV4) && !HasSockets
@@ -139,7 +139,7 @@ SpecialObjectRule(osinit.o,$(ICONFIGFILES),$(ADM_DEFINES))
 SpecialObjectRule(WaitFor.o,$(ICONFIGFILES),$(EXT_DEFINES))
 SpecialObjectRule(fonttype.o,$(ICONFIGFILES),$(FONT_DEFINES))
 SpecialObjectRule(utils.o,$(ICONFIGFILES),$(TIME_DEFINES))
-#if defined(SparcArchitecture) && HasGcc
+#if defined(SparcArchitecture) && HasGcc && !HasGcc2
 oscolor.o: $(ICONFIGFILES)
 	$(RM) $@
 	cc -c $(DBM_DEFINES) $(CDEBUGFLAGS) $(ALLDEFINES) $*.c
