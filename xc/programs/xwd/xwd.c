@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.32 88/01/31 16:01:40 jim Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.33 88/02/09 12:04:22 jim Exp $";
 #endif
 
 /*%
@@ -296,9 +296,10 @@ Window_Dump(window, out)
  */
 usage()
 {
-    printf("usage: %s [-display host:dpy] [-debug] [-help] %s [-nobdrs] [-out <file>]",
+    fprintf (stderr,
+"usage: %s [-display host:dpy] [-debug] [-help] %s [-nobdrs] [-out <file>]",
 	   program_name, SELECT_USAGE);
-    printf(" [-xy]\n");
+    fprintf (stderr, " [-xy]\n");
     exit(1);
 }
 
