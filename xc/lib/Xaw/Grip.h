@@ -1,5 +1,5 @@
 /*
-* $Header$
+* $Header: Knob.h,v 1.2 87/09/11 21:21:42 swick Locked $
 */
 
 /*
@@ -41,6 +41,14 @@
  * Knob Widget (Used by VPane Widget)
  *
  **************************************************************************/
+
+#define XtNknobTranslations	"knobTranslations"
+
+typedef struct {
+  XEvent *event;		/* the event causing the KnobAction */
+  String *params;		/* the TranslationTable params */
+  Cardinal num_params;		/* count of params */
+} KnobCallDataRec, *KnobCallData;
 
 /* Class Record Constant */
 
