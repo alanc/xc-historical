@@ -1,4 +1,4 @@
-/* $XConsortium: xwd.c,v 1.56 91/07/25 18:00:15 rws Exp $ */
+/* $XConsortium: xwd.c,v 1.57 92/07/31 10:12:20 rws Exp $ */
 
 /* Copyright 1987 Massachusetts Institute of Technology */
 
@@ -167,7 +167,10 @@ main(argc, argv)
     Window_Dump(target_win, out_file);
 
     XCloseDisplay(dpy);
-    fclose(out_file);
+    if (fclose(out_file)) {
+	perror("xwd");
+	exit(1);
+    }
     exit(0);
 }
 
@@ -337,7 +340,7 @@ Window_Dump(window, out)
 
     if (fwrite((char *)&header, sizeof(header), 1, out) != 1 ||
 	fwrite(win_name, win_name_size, 1, out) != 1) {
-	perror("xwd: ");
+	perror("xwd");
 	exit(1);
     }
 
@@ -347,7 +350,7 @@ Window_Dump(window, out)
 
     if (debug) outl("xwd: Dumping %d colors.\n", ncolors);
     if (fwrite((char *) colors, sizeof(XColor), ncolors, out) != ncolors) {
-	perror("xwd: ");
+	perror("xwd");
 	exit(1);
     }
 
@@ -362,9 +365,8 @@ Window_Dump(window, out)
      *  what other functions of xwd will be taken over by this (as yet)
      *  non-existant X function.
      */
-    if (fwrite(image->data, (int) buffer_size, 1, out) != 1 ||
-	fflush(out)) {
-	perror("xwd: ");
+    if (fwrite(image->data, (int) buffer_size, 1, out) != 1) {
+	perror("xwd");
 	exit(1);
     }
 
