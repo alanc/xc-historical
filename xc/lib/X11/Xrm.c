@@ -1,6 +1,6 @@
 
 /*
- * $XConsortium: Xrm.c,v 1.19 88/09/19 13:56:07 jim Exp $
+ * $XConsortium: Xrm.c,v 1.28 89/08/18 16:31:53 jim Exp $
  */
 
 /***********************************************************
@@ -264,7 +264,9 @@ static void PutEntry(bucket, bindings, quarks, type, value)
 		OutOfMemory();
 		return;
 	    }
-	    bzero(&resourceQuarks[maxResourceQuark+1],quark-maxResourceQuark-1);
+	    if (quark-maxResourceQuark-1)
+		bzero(&resourceQuarks[maxResourceQuark+1],
+		      quark-maxResourceQuark-1);
 	    maxResourceQuark = quark;
 	}
 	resourceQuarks[quark] = True;
