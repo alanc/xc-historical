@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Box.c,v 1.29 88/02/24 08:17:04 swick Exp $";
+static char rcsid[] = "$Header: Box.c,v 1.35 88/08/25 15:35:00 swick Exp $";
 #endif lint
 
 
@@ -44,13 +44,11 @@ SOFTWARE.
  *
  ****************************************************************/
 
-static int defFour = 4;
-
 static XtResource resources[] = {
-    {XtNhSpace, XtCHSpace, XtRInt, sizeof(int),
-	 XtOffset(BoxWidget, box.h_space), XtRInt, (caddr_t)&defFour},
-    {XtNvSpace, XtCVSpace, XtRInt, sizeof(int),
-	 XtOffset(BoxWidget, box.v_space), XtRInt, (caddr_t)&defFour},
+    {XtNhSpace, XtCHSpace, XtRDimension, sizeof(Dimension),
+	 XtOffset(BoxWidget, box.h_space), XtRImmediate, (caddr_t)4},
+    {XtNvSpace, XtCVSpace, XtRDimension, sizeof(Dimension),
+	 XtOffset(BoxWidget, box.v_space), XtRImmediate, (caddr_t)4},
 };
 
 /****************************************************************
@@ -100,14 +98,15 @@ BoxClassRec boxClassRec = {
     /* callback_private   */    NULL,
     /* tm_table           */    NULL,
     /* query_geometry     */	PreferredSize,
+    /* display_accelerator*/	XtInheritDisplayAccelerator,
+    /* extension          */	NULL
   },{
 /* composite_class fields */
     /* geometry_manager   */    GeometryManager,
     /* change_managed     */    ChangeManaged,
     /* insert_child	  */	XtInheritInsertChild,
     /* delete_child	  */	XtInheritDeleteChild,
-    /* move_focus_to_next */    NULL,
-    /* move_focus_to_prev */    NULL
+    /* extension          */	NULL
   },{
 /* Box class fields */
     /* empty		  */	0,
@@ -145,6 +144,7 @@ static DoLayout(bbw, width, height, reply_width, reply_height, position)
     register Widget widget;	/* Current widget 			*/
     Mask valuemask;
     XSetWindowAttributes attributes;
+    int num_mapped_children = 0;
  
     /* Box width and height */
     h_space = bbw->box.h_space;
@@ -160,6 +160,7 @@ static DoLayout(bbw, width, height, reply_width, reply_height, position)
     for (i = 0; i < bbw->composite.num_children; i++) {
 	widget = bbw->composite.children[i];
 	if (widget->core.managed) {
+	    if (widget->core.mapped_when_managed) num_mapped_children++;
 	    /* Compute widget width */
 	    bw = widget->core.width + 2*widget->core.border_width + h_space;
 	    if ((lw + bw > width) && (lw > h_space)) {
@@ -189,10 +190,10 @@ static DoLayout(bbw, width, height, reply_width, reply_height, position)
     } /* for */
 
     if (position && XtIsRealized((Widget)bbw)) {
-	if (bbw->composite.num_children == bbw->composite.num_mapped_children)
+	if (bbw->composite.num_children == num_mapped_children)
 	    XMapSubwindows( XtDisplay((Widget)bbw), XtWindow((Widget)bbw) );
 	else {
-	    int i = bbw->composite.num_mapped_children;
+	    int i = num_mapped_children;
 	    register Widget *childP = bbw->composite.children;
 	    for (; i > 0; childP++) {
 		if (XtIsManaged(*childP) &&
@@ -225,7 +226,7 @@ static XtGeometryResult PreferredSize(widget, constraint, preferred)
     XtWidgetGeometry *constraint, *preferred;
 {
     BoxWidget w = (BoxWidget)widget;
-    int width /*, height */;
+    Dimension width /*, height */;
     Dimension preferred_width = w->box.preferred_width;
     Dimension preferred_height = w->box.preferred_height;
 
@@ -273,7 +274,8 @@ static XtGeometryResult PreferredSize(widget, constraint, preferred)
        height = (constraint->request_mode & CWHeight) ? constraint->height
 		       : *preferred_height;
      */
-    DoLayout(w, width, 0, &preferred_width, &preferred_height, FALSE);
+    DoLayout(w, width, (Dimension)0,
+	     &preferred_width, &preferred_height, FALSE);
 
     if (constraint->request_mode & CWHeight &&
 	preferred_height > constraint->height) {
