@@ -12,7 +12,8 @@
        AUTHOBJS = AuDispose.o AuGetAddr.o AuFileName.o AuRead.o 
        AUTHSRCS = AuDispose.c AuGetAddr.c AuFileName.c AuRead.c 
            SRCS = *.c $(AIDSRCS)
-        HEADERS = Xlib.h Xresource.h Xutil.h cursorfont.h
+        HEADERS = Xlib.h Xresource.h Xutil.h cursorfont.h Xlibint.h Xlibos.h \
+			Xstreams.h
        LINTLIBS =
 
 OBJS1 =\
