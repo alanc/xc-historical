@@ -20,3 +20,5 @@ enum orientation {
     UPSIDE_DOWN = 2,
     LANDSCAPE_LEFT = 3
   };
+
+enum device {LN01, LN03, LA100, PS, PP, LJET, PJET, PJETXL};
