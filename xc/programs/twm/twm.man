@@ -34,7 +34,7 @@ contains the window's name, a rectangle that is lit when the window is
 receiving keyboard input, and several function ``buttons''.
 .PP
 Pressing
-the left-most button in the title bar, which looks like small window pane,
+the left-most button in the title bar, which contains an X in a box,
 causes the window to be iconified.
 Pressing
 the right-most button, which looks like a group 
