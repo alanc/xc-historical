@@ -180,7 +180,7 @@
 			 '(or null (member :none :parent-relative) integer pixmap))))))
     (case border
       ((nil) nil)
-      (:copy (setq border-pixmap 1))
+      (:copy (setq border-pixmap 0))
       (otherwise
        (if (type? border 'pixmap)
 	   (setq border-pixmap (pixmap-id border))
@@ -213,7 +213,7 @@
 	    (card32  backing-planes backing-pixel)
 	    ((member :off :on) override-redirect save-under)
 	    (card32 event-mask do-not-propagate-mask)
-	    ((or (member %error :copy) colormap) colormap)
+	    ((or (member :copy) colormap) colormap)
 	    ((or (member :none) cursor) cursor)))
     window))
 
