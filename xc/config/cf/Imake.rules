@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.23 89/04/26 16:08:38 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.24 89/05/10 13:45:06 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -57,6 +57,7 @@
  *     	LintLibraryTarget                        (libname,srclist)
  *      NormalLintTarget                         (srclist)
  *      LintTarget                               ()
+ *      MakeSubincludesForBuild                  (step,dir,srclist)
  *      MakeSubdirs                              (dirs)
  *      NamedMakeSubdirs                         (name,dirs)
  *      DependSubdirs                            (dirs)
@@ -818,8 +819,26 @@ lint1:									@@\
  * LintTarget - generate rules to lint $(SRCS)
  */
 #ifndef LintTarget
-#define LintTarget							@@\
+#define LintTarget()							@@\
 NormalLintTarget($(SRCS))
+#endif
+
+
+#ifndef MakeSubincludesForBuild
+#define MakeSubincludesForBuild(step,dir,srclist)			@@\
+step::  dir srclist							@@\
+	@-(list=`echo srclist | sed -e 's/[^ ]*\///g'`; \		@@\
+		set -x; cd dir; $(RM) $$list)				@@\
+	@for i in srclist; do \						@@\
+		(set -x; cd dir; $(LN) ../$$i .); \			@@\
+	done								@@\
+									@@\
+MakeDirectories(dir,dir)						@@\
+									@@\
+clean::									@@\
+	@-(if [ -d dir ]; then \					@@\
+		list=`echo srclist | sed -e 's/[^ ]*\///g'`; \		@@\
+		set -x; cd dir; $(RM) $$list; else exit 0; fi)
 #endif
 
 
