@@ -1,6 +1,8 @@
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
+    CDEBUGFLAGS = -g
+
         SUBDIRS = clients
 
        INCLUDES = -I. -I$(OLDXRMSRC) -I$(XLIBSRC) -I$(TOP) -I$(TOP)/X11
