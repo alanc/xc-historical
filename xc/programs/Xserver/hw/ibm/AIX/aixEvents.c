@@ -1,5 +1,5 @@
 /*
- * $XConsortium: aixEvents.c,v 1.3 91/07/16 12:59:36 jap Exp $
+ * $XConsortium: aixEvents.c,v 1.4 91/11/22 17:06:59 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -429,7 +429,7 @@ int             key;
 	case Aix_Backspace:
 	        if ((!ibmDontZap)&&(pKey->keStatus[0]&HFUXCTRL)&&
 	                                (pKey->keStatus[0]&HFUXALT)) {
-	            GiveUp();
+	            GiveUp(0);
 	        }
 	        break;
 	default:
