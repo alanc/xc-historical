@@ -681,11 +681,11 @@ Event * event;
 	    
 	    if (info != NULL) {
 		for (i = 0; i < send_event->num_entries; i++, info++) {
-		    XtFree(info->widgets.ids);
+		    XtFree((char *)info->widgets.ids);
 		    XtFree(info->name);
 		    XtFree(info->class);
 		}
-		XtFree(send_event->info);
+		XtFree((char *)send_event->info);
 	    }
 	}
 	break;
@@ -696,10 +696,10 @@ Event * event;
 	    
 	    if (info != NULL) {
 		for (i = 0; i < sv_event->num_entries; i++, info++) {
-		    XtFree(info->widgets.ids);
+		    XtFree((char *)info->widgets.ids);
 		    XtFree(info->message);
 		}
-		XtFree(sv_event->info);
+		XtFree((char *)sv_event->info);
 	    }
 	}
 	break;
@@ -710,7 +710,7 @@ Event * event;
 
 	    if (info != NULL) {
 		for (i = 0; i < get_event->num_entries; i++, info++) {
-		    XtFree(info->widgets.ids);
+		    XtFree((char *)info->widgets.ids);
 		    if (info->error) 
 			XtFree(info->message);
 		    else {
@@ -725,11 +725,11 @@ Event * event;
 				XtFree(res_info->class);
 				XtFree(res_info->type);
 			    }
-			    XtFree(info->res_info);
+			    XtFree((char *)info->res_info);
 			}
 		    }
 		} 
-		XtFree(get_event->info);
+		XtFree((char *)get_event->info);
 	    }
 	}
 	break;
@@ -740,11 +740,11 @@ Event * event;
 
 	    if (info != NULL) {
 		for (i = 0; i < geom_event->num_entries; i++, info++) {
-		    XtFree(info->widgets.ids);
+		    XtFree((char *)info->widgets.ids);
 		    if (info->error) 
 			XtFree(info->message);
 		}
-		XtFree(geom_event->info);
+		XtFree((char *)geom_event->info);
 	    }
 	}
 	break;
@@ -752,7 +752,7 @@ Event * event;
         {
 	    FindChildEvent * find_event = (FindChildEvent *) event;
 	    
-	    XtFree(find_event->widgets.ids);
+	    XtFree((char *)find_event->widgets.ids);
 	}
 	break;
     default:
