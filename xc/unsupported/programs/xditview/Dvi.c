@@ -1,10 +1,7 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.10 90/04/30 16:55:09 converse Exp $";
-#endif /* lint */
+/* $XConsortium: Dvi.c,v 1.11 90/12/02 18:17:35 keith Exp $ */
 
 /*
  * Dvi.c - Dvi display widget
- *
  */
 
 #define XtStrlen(s)	((s) ? strlen(s) : 0)
@@ -329,7 +326,8 @@ QueryGeometry (w, request, geometry_return)
 	DviWidget		dw = (DviWidget) w;
 
 	ret = XtGeometryYes;
-	if (request->width < MY_WIDTH(dw) || request->height < MY_HEIGHT(dw))
+	if ((int)request->width < MY_WIDTH(dw)
+	    || (int)request->height < MY_HEIGHT(dw))
 		ret = XtGeometryAlmost;
 	geometry_return->width = MY_WIDTH(dw);
 	geometry_return->height = MY_HEIGHT(dw);
