@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.21 89/10/31 14:05:03 keith Exp $
+ * $XConsortium: dm.c,v 1.23 89/11/03 14:44:45 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -59,6 +59,7 @@ char	**argv;
      * Step 1 - load configuration parameters
      */
     InitResources (argc, argv);
+    SetConfigFileTime ();
     LoadDMResources ();
     /*
      * Only allow root to run in non-debug mode to avoid problems
@@ -176,6 +177,14 @@ RescanServers ()
     StartDisplays ();
 }
 
+SetConfigFileTime ()
+{
+    struct stat	statb;
+
+    if (stat (config, &statb) != -1)
+	ConfigModTime = statb.st_mtime;
+}
+
 static
 RescanIfMod ()
 {
@@ -183,7 +192,7 @@ RescanIfMod ()
 
     if (stat (config, &statb) != -1)
     {
-	if (statb.st_mtime > ConfigModTime)
+	if (statb.st_mtime != ConfigModTime)
 	{
 	    Debug ("Config file %s has changed, rereading\n", config);
 	    LogInfo ("Rereading configuration file %s\n", config);
@@ -194,7 +203,7 @@ RescanIfMod ()
     }
     if (servers[0] == '/' && stat(servers, &statb) != -1)
     {
-	if (statb.st_mtime > ServersModTime)
+	if (statb.st_mtime != ServersModTime)
 	{
 	    Debug ("Servers file %s has changed, rescanning\n", servers);
 	    LogInfo ("Rereading servers file %s\n", servers);
@@ -270,18 +279,35 @@ WaitForChild ()
 		break;
 	    default:
 		Debug ("Display exited with unknown status %d\n", waitVal(status));
+		LogError ("Unknown session exit code %d from process %d\n",
+			  waitVal (status), pid);
+		StopDisplay (d);
 		break;
 	    case RESERVER_DISPLAY:
 		Debug ("Display exited with RESERVER_DISPLAY\n");
-		if (d->serverPid != -1)
+		if (d->displayType.origin == FromXDMCP)
+		    StopDisplay(d);
+		else if (d->serverPid != -1)
 		{
 		    kill (d->serverPid, SIGTERM);
 		    d->serverPid = -1;
 		}
 		break;
-	    case REMANAGE_DISPLAY:
 	    case SIGTERM * 256 + 1:
+		Debug ("Display exited on SIGTERM\n");
+		if (d->displayType.origin == FromXDMCP)
+		    StopDisplay(d);
+		else if (d->serverPid != -1)
+		    kill (d->serverPid, SIGHUP);
+		break;
+	    case REMANAGE_DISPLAY:
 		Debug ("Display exited with REMANAGE_DISPLAY\n");
+		/*
+ 		 * XDMCP will restart the session if the display
+		 * requests it
+		 */
+		if (d->displayType.origin == FromXDMCP)
+		    StopDisplay(d);
 		break;
 	    }
 	}
@@ -356,13 +382,14 @@ struct display	*d;
     }
     else
     {
-	if (d->authorization)
+	if (d->authorization && d->authFile)
 	    SaveServerAuthorization (d, d->authorization);
     }
     switch (pid = fork ())
     {
     case 0:
 	CleanUpChild ();
+	signal (SIGPIPE, SIG_IGN);
 	if (!ResourcesLoaded)
 	    LoadDisplayResources (d);
 	SetAuthorization (d);

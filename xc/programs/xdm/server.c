@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.21 89/10/31 14:05:03 keith Exp $
+ * $XConsortium: server.c,v 1.1 89/11/03 14:41:43 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -259,4 +259,11 @@ WaitForServer (d)
     }
     Debug ("giving up on server\n");
     LogError ("server open failed for %s, giving up\n", d->name);
+}
+
+ResetServer (d)
+    struct display  *d;
+{
+    if (dpy && d->displayType.origin != FromXDMCP)
+	pseudoReset (dpy);
 }

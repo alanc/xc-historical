@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.21 89/09/08 14:34:18 keith Exp $
+ * $XConsortium: resource.c,v 1.22 89/10/09 14:59:02 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -176,58 +176,63 @@ struct displayResources {
 XrmDatabase	DmResourceDB;
 
 GetResource (name, class, valueType, valuep, default_value)
-char	*name, *class;
-int	valueType;
-char	**valuep;
-char	*default_value;
+    char    *name, *class;
+    int	    valueType;
+    char    **valuep;
+    char    *default_value;
 {
-	char	*type;
-	XrmValue	value;
-	char	*string, *new_string, *strncpy (), *malloc ();
-	char	str_buf[50];
-	int	len;
+    char	*type;
+    XrmValue	value;
+    char	*string, *new_string, *strncpy (), *malloc ();
+    char	str_buf[50];
+    int	len;
 
-	if (DmResourceDB && XrmGetResource (DmResourceDB,
-		name, class,
-		&type, &value))
-	{
-		string = value.addr;
-		len = value.size;
-	} else {
-		string = default_value;
-		len = strlen (string);
+    if (valueType == DM_STRING && *valuep)
+	return;
+
+    if (DmResourceDB && XrmGetResource (DmResourceDB,
+	name, class,
+	&type, &value))
+    {
+	string = value.addr;
+	len = value.size;
+    }
+    else
+    {
+	string = default_value;
+	len = strlen (string);
+    }
+    Debug ("resource %s value %s\n", name, string);
+    switch (valueType) {
+    case DM_STRING:
+	new_string = malloc ((unsigned) (len+1));
+	if (!new_string) {
+		LogOutOfMem ("GetResource");
+		return;
 	}
-	Debug ("resource %s value %s\n", name, string);
-	switch (valueType) {
-	case DM_STRING:
-		new_string = malloc ((unsigned) (len+1));
-		if (!new_string) {
-			LogOutOfMem ("GetResource");
-			return;
-		}
-		strncpy (new_string, string, len);
-		new_string[len] = '\0';
-		*(valuep) = new_string;
-		break;
-	case DM_INT:
-		strncpy (str_buf, string, sizeof (str_buf));
-		str_buf[sizeof (str_buf)-1] = '\0';
-		*((int *) valuep) = atoi (str_buf);
-		break;
-	case DM_BOOL:
-		strncpy (str_buf, string, sizeof (str_buf));
-		str_buf[sizeof (str_buf)-1] = '\0';
-		XmuCopyISOLatin1Lowered (str_buf, str_buf);
-		if (!strcmp (str_buf, "true") ||
-		    !strcmp (str_buf, "on") ||
-		    !strcmp (str_buf, "yes"))
-			*((int *) valuep) = 1;
-		else if (!strcmp (str_buf, "false") ||
-			 !strcmp (str_buf, "off") ||
-			 !strcmp (str_buf, "no"))
-			*((int *) valuep) = 0;
-		break;
-	}
+	strncpy (new_string, string, len);
+	new_string[len] = '\0';
+	*(valuep) = new_string;
+	break;
+    case DM_INT:
+	strncpy (str_buf, string, sizeof (str_buf));
+	str_buf[sizeof (str_buf)-1] = '\0';
+	*((int *) valuep) = atoi (str_buf);
+	break;
+    case DM_BOOL:
+	strncpy (str_buf, string, sizeof (str_buf));
+	str_buf[sizeof (str_buf)-1] = '\0';
+	XmuCopyISOLatin1Lowered (str_buf, str_buf);
+	if (!strcmp (str_buf, "true") ||
+	    !strcmp (str_buf, "on") ||
+	    !strcmp (str_buf, "yes"))
+		*((int *) valuep) = 1;
+	else if (!strcmp (str_buf, "false") ||
+		 !strcmp (str_buf, "off") ||
+		 !strcmp (str_buf, "no"))
+		*((int *) valuep) = 0;
+	break;
+    }
 }
 
 XrmOptionDescRec configTable [] = {

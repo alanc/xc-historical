@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.20 89/09/09 13:01:01 keith Exp $
+ * $XConsortium: session.c,v 1.22 89/11/03 14:44:57 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -36,7 +36,7 @@ static jmp_buf	abortSession;
 static void
 catchTerm ()
 {
-	longjmp (abortSession, 1);
+    longjmp (abortSession, 1);
 }
 
 extern void	exit ();
@@ -44,80 +44,83 @@ extern void	exit ();
 ManageSession (d)
 struct display	*d;
 {
-	struct greet_info	greet;
-	struct verify_info	verify;
-	int			pid;
-	Display			*dpy, *InitGreet ();
+    struct greet_info	greet;
+    struct verify_info	verify;
+    int			pid;
+    Display			*dpy, *InitGreet ();
 
-	Debug ("ManageSession %s\n", d->name);
-	SetTitle(d->name, " session", (char *) 0);
+    Debug ("ManageSession %s\n", d->name);
+    SetTitle(d->name, (char *) 0);
+    /*
+     * Step 5: Load system default Resources
+     */
+    LoadXloginResources (d);
+    Debug ("name now %s\n", d->name);
+    dpy = InitGreet (d);
+    if (d->authorization && d->authFile)
+    {
+	Debug ("Done with authorization file %s, removing\n", d->authFile);
+	(void) unlink (d->authFile);
+    }
+    for (;;) {
 	/*
-	 * Step 5: Load system default Resources
+	 * Greet user, requesting name/password
 	 */
-	LoadXloginResources (d);
-	Debug ("name now %s\n", d->name);
-	dpy = InitGreet (d);
-	if (d->authorization && d->authFile && d->authFile[0])
-	    (void) unlink (d->authFile);
-	for (;;) {
-		/*
-		 * Step 6: Greet user, requesting name/password
-		 */
-		Greet (d, &greet);
-		/*
-		 * Step 7: Verify user
-		 */
-		if (Verify (d, &greet, &verify))
+	Greet (d, &greet);
+	/*
+	 * Verify user
+	 */
+	if (Verify (d, &greet, &verify))
+		break;
+	else
+		FailedLogin (d, &greet);
+	Debug ("after verify, name %s\n", d->name);
+    }
+    DeleteXloginResources (d, dpy);
+    CloseGreet (d);
+    Debug ("Greet loop finished\n");
+    /*
+     * Run system-wide initialization file
+     */
+    if (source (&verify, d->startup) != 0)
+    {
+	Debug ("Startup program %s exited with non-zero status\n",
+		d->startup);
+	SessionExit (d, OBEYSESS_DISPLAY);
+    }
+    clientPid = 0;
+    if (!setjmp (abortSession)) {
+	signal (SIGTERM, catchTerm);
+	/*
+	 * Start the clients, changing uid/groups
+	 *	   setting up environment and running the session
+	 */
+	if (StartClient (&verify, d, &clientPid)) {
+	    Debug ("Client Started\n");
+	    /*
+	     * Wait for session to end,
+	     */
+	    for (;;) {
+		pid = wait ((waitType *) 0);
+		if (pid == clientPid)
 			break;
-		else
-			FailedLogin (d, &greet);
-		Debug ("after verify, name %s\n", d->name);
-	}
-	DeleteXloginResources (d, dpy);
-	CloseGreet (d);
-	Debug ("Greet loop finished\n");
-	/*
-	 * Step 8: Run system-wide initialization file
-	 */
-	if (source (&verify, d->startup) != 0)
-	{
-		Debug ("Startup program %s exited with non-zero status\n",
-			d->startup);
-		SessionExit (OBEYSESS_DISPLAY);
-	}
-	clientPid = 0;
-	if (!setjmp (abortSession)) {
-		signal (SIGTERM, catchTerm);
-		/*
-	 	 * Step 9: Start the clients, changing uid/groups
-	 	 *	   setting up environment and running the session
-	 	 */
-		if (StartClient (&verify, d, &clientPid)) {
-			Debug ("Client Started\n");
-			/*
-		 	 * Step 13: Wait for session to end,
-		 	 */
-			for (;;) {
-				pid = wait ((waitType *) 0);
-				if (pid == clientPid)
-					break;
-			}
-		} else {
-			LogError ("session start failed\n");
-		}
+	    }
 	} else {
-		/*
-		 * when terminating the session, nuke
-		 * the child and then run the reset script
-		 */
-		AbortClient (clientPid);
+	    LogError ("session start failed\n");
 	}
+    } else {
 	/*
-	 * Step 15: run system-wide reset file
+	 * when terminating the session, nuke
+	 * the child and then run the reset script
 	 */
-	Debug ("Source reset program %s\n", d->reset);
-	source (&verify, d->reset);
-	SessionExit (OBEYSESS_DISPLAY);
+	AbortClient (clientPid);
+    }
+    /*
+     * run system-wide reset file
+     */
+    Debug ("Source reset program %s\n", d->reset);
+    source (&verify, d->reset);
+    SessionExit (d, OBEYSESS_DISPLAY);
 }
 
 LoadXloginResources (d)
@@ -158,44 +161,50 @@ SecureDisplay (d, dpy)
 struct display	*d;
 Display		*dpy;
 {
-	Debug ("SecureDisplay %s\n", d->name);
-	signal (SIGALRM, syncTimeout);
-	if (setjmp (syncJump)) {
-		LogError ("WARNING: display %s could not be secured\n",
-				d->name);
-		SessionExit (RESERVER_DISPLAY);
-	}
-	alarm ((unsigned) d->grabTimeout);
-	Debug ("Before XGrabServer %s\n", d->name);
-	XGrabServer (dpy);
-	if (XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync,
-			   GrabModeAsync, CurrentTime) != GrabSuccess)
- 	{
-		alarm (0);
-		signal (SIGALRM, SIG_DFL);
-		LogError ("WARNING: keyboard on display %s could not be secured\n",
-				d->name);
-		SessionExit (RESERVER_DISPLAY);
-	}
-	Debug ("XGrabKeyboard succeeded %s\n", d->name);
+    Debug ("SecureDisplay %s\n", d->name);
+    signal (SIGALRM, syncTimeout);
+    if (setjmp (syncJump)) {
+	LogError ("WARNING: display %s could not be secured\n",
+		   d->name);
+	SessionExit (d, RESERVER_DISPLAY);
+    }
+    alarm ((unsigned) d->grabTimeout);
+    Debug ("Before XGrabServer %s\n", d->name);
+    XGrabServer (dpy);
+    if (XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync,
+		       GrabModeAsync, CurrentTime) != GrabSuccess)
+    {
 	alarm (0);
 	signal (SIGALRM, SIG_DFL);
-	pseudoReset (dpy);
-	Debug ("done secure %s\n", d->name);
+	LogError ("WARNING: keyboard on display %s could not be secured\n",
+		  d->name);
+	SessionExit (d, RESERVER_DISPLAY);
+    }
+    Debug ("XGrabKeyboard succeeded %s\n", d->name);
+    alarm (0);
+    signal (SIGALRM, SIG_DFL);
+    pseudoReset (dpy);
+    Debug ("done secure %s\n", d->name);
 }
 
 UnsecureDisplay (d, dpy)
 struct display	*d;
 Display		*dpy;
 {
-	Debug ("Unsecure display %s\n", d->name);
-	XUngrabServer (dpy);
-	XSync (dpy, 0);
+    Debug ("Unsecure display %s\n", d->name);
+    XUngrabServer (dpy);
+    XSync (dpy, 0);
 }
 
-SessionExit (status)
+SessionExit (d, status)
+    struct display  *d;
 {
-	exit (status);
+    /* make sure the server gets reset after the session is over */
+    if (d->serverPid >= 2)
+	kill (d->serverPid, SIGHUP);
+    else
+	ResetServer (d);
+    exit (status);
 }
 
 StartClient (verify, d, pidp)
@@ -203,61 +212,61 @@ struct verify_info	*verify;
 struct display		*d;
 int			*pidp;
 {
-	char	**f, *home, *getEnv ();
-	char	*failsafeArgv[2];
-	int	pid;
+    char	**f, *home, *getEnv ();
+    char	*failsafeArgv[2];
+    int	pid;
 
-	if (verify->argv) {
-		Debug ("StartSession %s: ", verify->argv[0]);
-		for (f = verify->argv; *f; f++)
-			Debug ("%s ", *f);
-		Debug ("; ");
-	}
-	if (verify->userEnviron) {
-		for (f = verify->userEnviron; *f; f++)
-			Debug ("%s ", *f);
-		Debug ("\n");
-	}
-	switch (pid = fork ()) {
-	case 0:
-		CleanUpChild ();
+    if (verify->argv) {
+	Debug ("StartSession %s: ", verify->argv[0]);
+	for (f = verify->argv; *f; f++)
+		Debug ("%s ", *f);
+	Debug ("; ");
+    }
+    if (verify->userEnviron) {
+	for (f = verify->userEnviron; *f; f++)
+		Debug ("%s ", *f);
+	Debug ("\n");
+    }
+    switch (pid = fork ()) {
+    case 0:
+	CleanUpChild ();
 #ifdef NGROUPS
 
-		setgid (verify->groups[0]);
-		setgroups (verify->ngroups, verify->groups);
+	setgid (verify->groups[0]);
+	setgroups (verify->ngroups, verify->groups);
 #else
-		setgid (verify->gid);
+	setgid (verify->gid);
 #endif
-		setuid (verify->uid);
-		SetUserAuthorization (d, verify);
-		home = getEnv (verify->userEnviron, "HOME");
-		if (home)
-			if (chdir (home) == -1) {
-				LogError ("No home directory %s for user %s, using /\n",
-					  home, getEnv (verify->userEnviron, "USER"));
-				chdir ("/");
-			}
-		if (verify->argv) {
-			Debug ("executing session %s\n", verify->argv[0]);
-			execve (verify->argv[0], verify->argv, verify->userEnviron);
-			LogError ("Session execution failed %s\n", verify->argv[0]);
-			Debug ("exec failed\n");
-		} else {
-			LogError ("Session has no command/arguments\n");
+	setuid (verify->uid);
+	SetUserAuthorization (d, verify);
+	home = getEnv (verify->userEnviron, "HOME");
+	if (home)
+		if (chdir (home) == -1) {
+			LogError ("No home directory %s for user %s, using /\n",
+				  home, getEnv (verify->userEnviron, "USER"));
+			chdir ("/");
 		}
-		failsafeArgv[0] = d->failsafeClient;
-		failsafeArgv[1] = 0;
-		execve (failsafeArgv[0], failsafeArgv, verify->userEnviron);
-		exit (1);
-	case -1:
-		Debug ("StartSession, fork failed\n");
-		LogError ("can't start session for %d, fork failed\n", d->name);
-		return 0;
-	default:
-		Debug ("StartSession, fork suceeded %d\n", pid);
-		*pidp = pid;
-		return 1;
+	if (verify->argv) {
+		Debug ("executing session %s\n", verify->argv[0]);
+		execve (verify->argv[0], verify->argv, verify->userEnviron);
+		LogError ("Session execution failed %s\n", verify->argv[0]);
+		Debug ("exec failed\n");
+	} else {
+		LogError ("Session has no command/arguments\n");
 	}
+	failsafeArgv[0] = d->failsafeClient;
+	failsafeArgv[1] = 0;
+	execve (failsafeArgv[0], failsafeArgv, verify->userEnviron);
+	exit (1);
+    case -1:
+	Debug ("StartSession, fork failed\n");
+	LogError ("can't start session for %d, fork failed\n", d->name);
+	return 0;
+    default:
+	Debug ("StartSession, fork suceeded %d\n", pid);
+	*pidp = pid;
+	return 1;
+    }
 }
 
 static jmp_buf	tenaciousClient;
@@ -278,35 +287,35 @@ extern int  errno;
 AbortClient (pid)
 int	pid;
 {
-	int	sig = SIGTERM;
+    int	sig = SIGTERM;
 #ifdef __STDC__
-	volatile int	i;
+    volatile int	i;
 #else
-	int	i;
+    int	i;
 #endif
-	int	retId;
-	for (i = 0; i < 4; i++) {
-		if (killpg (pid, sig) == -1) {
-			switch (errno) {
-			case EPERM:
-				LogError ("xdm can't kill client\n");
-			case EINVAL:
-			case ESRCH:
-				return;
-			}
-		}
-		if (!setjmp (tenaciousClient)) {
-			(void) signal (SIGALRM, waitAbort);
-			(void) alarm ((unsigned) 10);
-			retId = wait ((waitType *) 0);
-			(void) alarm ((unsigned) 0);
-			(void) signal (SIGALRM, SIG_DFL);
-			if (retId == pid)
-				break;
-		} else
-			signal (SIGALRM, SIG_DFL);
-		sig = SIGKILL;
+    int	retId;
+    for (i = 0; i < 4; i++) {
+	if (killpg (pid, sig) == -1) {
+	    switch (errno) {
+	    case EPERM:
+		LogError ("xdm can't kill client\n");
+	    case EINVAL:
+	    case ESRCH:
+		return;
+	    }
 	}
+	if (!setjmp (tenaciousClient)) {
+	    (void) signal (SIGALRM, waitAbort);
+	    (void) alarm ((unsigned) 10);
+	    retId = wait ((waitType *) 0);
+	    (void) alarm ((unsigned) 0);
+	    (void) signal (SIGALRM, SIG_DFL);
+	    if (retId == pid)
+		break;
+	} else
+	    signal (SIGALRM, SIG_DFL);
+	sig = SIGKILL;
+    }
 }
 
 int
@@ -314,39 +323,39 @@ source (verify, file)
 struct verify_info	*verify;
 char			*file;
 {
-	char	*args[4];
-	int	pid;
-	extern int	errno;
-	waitType	result;
-	char	*getEnv ();
+    char	*args[4];
+    int	pid;
+    extern int	errno;
+    waitType	result;
+    char	*getEnv ();
 
-	Debug ("source %s\n", file);
-	if (file[0] && access (file, 1) == 0) {
-		switch (pid = fork ()) {
-		case 0:
-			CleanUpChild ();
-			if (!(args[0] = getEnv (verify->systemEnviron, "SHELL")))
-				args[0] = "/bin/sh";
-			args[1] = "-c";
-			args[2] = file;
-			args[3] = 0;
-			Debug ("interpreting %s with %s\n", args[2], args[0]);
-			execve (args[0], args, verify->systemEnviron);
-			LogError ("can't execute system shell %s\n", args[0]);
-			exit (1);
-		case -1:
-			Debug ("fork failed\n");
-			LogError ("can't fork to execute %s\n", file);
-			return 1;
-			break;
-		default:
-			while (wait (&result) != pid)
-				;
-			break;
-		}
-		return waitVal (result);
+    Debug ("source %s\n", file);
+    if (file[0] && access (file, 1) == 0) {
+	switch (pid = fork ()) {
+	case 0:
+	    CleanUpChild ();
+	    if (!(args[0] = getEnv (verify->systemEnviron, "SHELL")))
+		    args[0] = "/bin/sh";
+	    args[1] = "-c";
+	    args[2] = file;
+	    args[3] = 0;
+	    Debug ("interpreting %s with %s\n", args[2], args[0]);
+	    execve (args[0], args, verify->systemEnviron);
+	    LogError ("can't execute system shell %s\n", args[0]);
+	    exit (1);
+	case -1:
+	    Debug ("fork failed\n");
+	    LogError ("can't fork to execute %s\n", file);
+	    return 1;
+	    break;
+	default:
+	    while (wait (&result) != pid)
+		    ;
+	    break;
 	}
-	return 0;
+	return waitVal (result);
+    }
+    return 0;
 }
 
 int
@@ -354,67 +363,68 @@ execute (argv, environ)
 char	**argv;
 char	**environ;
 {
-	execve (argv[0], argv, environ);
+    execve (argv[0], argv, environ);
 #ifdef SYSV
-	/*
-	 * shell scripts can't be run in SYSV directly
-	 */
-	if (errno == ENOEXEC) {
-		char	program[1024], *e, *p, *optarg;
-		FILE	*f;
-		char	**newargv, **av;
-		int	argc;
+    /*
+     * shell scripts can't be run in SYSV directly
+     */
+    if (errno == ENOEXEC) {
+	char	program[1024], *e, *p, *optarg;
+	FILE	*f;
+	char	**newargv, **av;
+	int	argc;
 
-		/*
-		 * emulate BSD kernel behaviour -- read
-		 * the first line; check if it starts
-		 * with "#!", in which case it uses
-		 * the rest of the line as the name of
-		 * program to run.  Else use "/bin/sh".
-		 */
-		f = fopen (argv[0], "r");
-		if (!f)
-			return -1;
-		if (fgets (program, sizeof (program) - 1, f) == NULL) {
-			fclose (f);
-			return -1;
-		}
-		fclose (f);
-		e = program + strlen (program) - 1;
-		if (*e == '\n')
-			*e = '\0';
-		if (!strncmp (program, "#!", 2)) {
-			p = program + 2;
-			while (*p && isspace (*p))
-				++p;
-			optarg = p;
-			while (*optarg && !isspace (*optarg))
-				++optarg;
-			if (*optarg) {
-				*optarg = '\0';
-				do
-					++optarg;
-				while (*optarg && isspace (*optarg));
-			} else
-				optarg = 0;
-		} else {
-			p = "/bin/sh";
-			optarg = 0;
-		}
-		Debug ("Shell script execution: %s (optarg %s)\n",
-			p, optarg ? optarg : "(null)");
- 		for (av = argv, argc = 0; *av; av++, argc++)
-			;
-		newargv = (char **) malloc ((argc + (optarg ? 3 : 2)) * sizeof (char *));
-		if (!newargv)
-			return -1;
-		av = newargv;
-		*av++ = p;
-		if (optarg)
-			*av++ = optarg;
-		while (*av++ = *argv++)
-			;
-		execve (newargv[0], newargv, environ);
+	/*
+	 * emulate BSD kernel behaviour -- read
+	 * the first line; check if it starts
+	 * with "#!", in which case it uses
+	 * the rest of the line as the name of
+	 * program to run.  Else use "/bin/sh".
+	 */
+	f = fopen (argv[0], "r");
+	if (!f)
+	    return -1;
+	if (fgets (program, sizeof (program) - 1, f) == NULL)
+ 	{
+	    fclose (f);
+	    return -1;
 	}
+	fclose (f);
+	e = program + strlen (program) - 1;
+	if (*e == '\n')
+	    *e = '\0';
+	if (!strncmp (program, "#!", 2)) {
+	    p = program + 2;
+	    while (*p && isspace (*p))
+		++p;
+	    optarg = p;
+	    while (*optarg && !isspace (*optarg))
+		++optarg;
+	    if (*optarg) {
+		*optarg = '\0';
+		do
+		    ++optarg;
+		while (*optarg && isspace (*optarg));
+	    } else
+		optarg = 0;
+	} else {
+	    p = "/bin/sh";
+	    optarg = 0;
+	}
+	Debug ("Shell script execution: %s (optarg %s)\n",
+		p, optarg ? optarg : "(null)");
+	for (av = argv, argc = 0; *av; av++, argc++)
+		;
+	newargv = (char **) malloc ((argc + (optarg ? 3 : 2)) * sizeof (char *));
+	if (!newargv)
+	    return -1;
+	av = newargv;
+	*av++ = p;
+	if (optarg)
+	    *av++ = optarg;
+	while (*av++ = *argv++)
+	    ;
+	execve (newargv[0], newargv, environ);
+    }
 #endif
 }

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.10 89/10/09 15:00:06 keith Exp $
+ * $XConsortium: socket.c,v 1.11 89/10/31 14:31:20 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *

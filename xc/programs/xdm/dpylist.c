@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dpylist.c,v 1.13 89/10/31 14:25:47 keith Exp $
+ * $XConsortium: dpylist.c,v 1.15 89/11/03 14:44:54 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -110,10 +110,13 @@ FindDisplayByAddress (addr, addrlen, displayNumber)
     return 0;
 }
 
+#define IfFree(x)  if (x) free ((char *) x)
+    
 RemoveDisplay (old)
 struct display	*old;
 {
     struct display	*d, *p;
+    char		**x;
 
     p = 0;
     for (d = displays; d; d = d->next) {
@@ -122,6 +125,30 @@ struct display	*old;
 		p->next = d->next;
 	    else
 		displays = d->next;
+	    IfFree (d->name);
+	    IfFree (d->class);
+	    for (x = d->argv; x && *x; x++)
+		IfFree (*x);
+	    IfFree (d->argv);
+	    IfFree (d->resources);
+	    IfFree (d->xrdb);
+	    IfFree (d->cpp);
+	    IfFree (d->startup);
+	    IfFree (d->reset);
+	    IfFree (d->session);
+	    IfFree (d->userPath);
+	    IfFree (d->systemPath);
+	    IfFree (d->systemShell);
+	    IfFree (d->failsafeClient);
+	    if (d->authorization)
+		XauDisposeAuth (d->authorization);
+	    if (d->authFile)
+		(void) unlink (d->authFile);
+	    IfFree (d->authFile);
+	    IfFree (d->userAuthDir);
+	    IfFree (d->authName);
+	    IfFree (d->peer);
+	    IfFree (d->from);
 	    free ((char *) d);
 	    break;
 	}
