@@ -1566,19 +1566,11 @@ double	a, b;
 	return a < b ? a : b;
 }
 
-boundedLt (value, bounds)
-double	value;
-struct bound	bounds;
-{
-	return bounds.min <= value && value < bounds.max;
-}
+#define boundedLt(value, bounds) \
+	((bounds).min <= (value) && (value) < (bounds).max)
 
-boundedLe (value, bounds)
-double	value;
-struct bound	bounds;
-{
-	return bounds.min <= value && value <= bounds.max;
-}
+#define boundedLe(value, bounds)\
+	((bounds).min <= (value) && (value) <= (bounds).max)
 
 /*
  * this computes the elipse y value associated with the
@@ -2003,8 +1995,6 @@ outerX (outer_y, def, bound, acc)
 		double	x;
 		x = def->w + def->l/2.0;
 		x = Sqrt (x * x - outer_y * outer_y);
-		if (outer_y < 0)
-			x = -x;
 		return x;
 	}
 	if (outer_y == bound->outer.min)
@@ -2035,10 +2025,10 @@ innerXs (inner_y, def, bound, acc, innerX1p, innerX2p)
 	 */
 	if (def->w == def->h) {
 		x1 = def->w - def->l/2.0;
-		x1 = Sqrt (x1 * x1 - inner_y * inner_y);
-		if (inner_y < 0)
-			x1 = -x1;
-		*innerX1p = *innerX2p = x1;
+		x2 = Sqrt (x1 * x1 - inner_y * inner_y);
+		if (x1 < 0)
+			x2 = -x2;
+		*innerX1p = *innerX2p = x2;
 		return;
 	}
 	if (boundedLe (acc->tail_y, bound->elipse)) {
@@ -2170,21 +2160,23 @@ hookX (scan_y, def, bound, acc, left)
 	double	elipse_y, elipse_x, x, xalt;
 	double	maxMin;
 
-	elipse_y = hookElipseY (scan_y, def, bound, acc, left);
-	if (boundedLe (elipse_y, bound->elipse)) {
-		/*
-		 * compute the value of the second
-		 * derivative
-		 */
-		maxMin = elipse_y*elipse_y*elipse_y * acc->h2mw2 -
-		 acc->h2 * scan_y * (3 * elipse_y*elipse_y - 2*acc->h2);
-		if ((left && maxMin > 0) || (!left && maxMin < 0)) {
-			if (elipse_y == 0)
-				return def->w + left ? -def->l/2 : def->l/2;
-			x = (acc->h2 * scan_y - elipse_y * acc->h2mw2) *
-				Sqrt (acc->h2 - elipse_y * elipse_y) /
-			 	(def->h * def->w * elipse_y);
-			return x;
+	if (def->w != def->h) {
+		elipse_y = hookElipseY (scan_y, def, bound, acc, left);
+		if (boundedLe (elipse_y, bound->elipse)) {
+			/*
+		 	 * compute the value of the second
+		 	 * derivative
+		 	 */
+			maxMin = elipse_y*elipse_y*elipse_y * acc->h2mw2 -
+		 	 acc->h2 * scan_y * (3 * elipse_y*elipse_y - 2*acc->h2);
+			if ((left && maxMin > 0) || (!left && maxMin < 0)) {
+				if (elipse_y == 0)
+					return def->w + left ? -def->l/2 : def->l/2;
+				x = (acc->h2 * scan_y - elipse_y * acc->h2mw2) *
+					Sqrt (acc->h2 - elipse_y * elipse_y) /
+			 		(def->h * def->w * elipse_y);
+				return x;
+			}
 		}
 	}
 	if (left) {
@@ -2286,16 +2278,71 @@ struct finalSpan {
 	int			min, max;	/* x values */
 };
 
+static struct finalSpan    *freeFinalSpans, *tmpFinalSpan;
+
+# define allocFinalSpan()   (freeFinalSpans ?\
+				((tmpFinalSpan = freeFinalSpans), \
+				 (freeFinalSpans = freeFinalSpans->next), \
+				 (tmpFinalSpan->next = 0), \
+				 tmpFinalSpan) : \
+			     realAllocSpan ())
+
+# define SPAN_CHUNK_SIZE    1024
+
+struct finalSpanChunk {
+	struct finalSpan	data[SPAN_CHUNK_SIZE];
+	struct finalSpanChunk	*next;
+};
+
+static struct finalSpanChunk	*chunks;
+
+struct finalSpan *
+realAllocSpan ()
+{
+	register struct finalSpanChunk	*newChunk;
+	register struct finalSpan	*span;
+	register int			i;
+
+	newChunk = (struct finalSpanChunk *) Xalloc (sizeof (struct finalSpanChunk));
+	if (!newChunk)
+		return (struct finalSpan *) Xalloc (sizeof (struct finalSpan));
+	newChunk->next = chunks;
+	chunks = newChunk;
+	freeFinalSpans = span = newChunk->data + 1;
+	for (i = 1; i < SPAN_CHUNK_SIZE-1; i++) {
+		span->next = span+1;
+		span++;
+	}
+	span->next = 0;
+	span = newChunk->data;
+	span->next = 0;
+	return span;
+}
+
+disposeFinalSpans ()
+{
+	struct finalSpanChunk	*chunk, *next;
+
+	for (chunk = chunks; chunk; chunk = next) {
+		next = chunk->next;
+		Xfree (chunk);
+	}
+	chunks = 0;
+	freeFinalSpans = 0;
+}
+
 fillSpans (pDrawable, pGC)
     DrawablePtr	pDrawable;
     GCPtr	pGC;
 {
-	struct finalSpan	**f;
-	struct finalSpan	*span, *nextspan;
-	DDXPointPtr		xSpans, xSpan;
-	int			*xWidths, *xWidth;
-	int			i;
-	int			spany;
+	register struct finalSpan	*span;
+	register DDXPointPtr		xSpan;
+	register int			*xWidth;
+	register int			i;
+	register struct finalSpan	**f;
+	register int			spany;
+	DDXPointPtr			xSpans;
+	int				*xWidths;
 
 	if (nspans == 0)
 		return;
@@ -2304,18 +2351,19 @@ fillSpans (pDrawable, pGC)
 	i = 0;
 	f = finalSpans;
 	for (spany = finalMiny; spany < finalMaxy; spany++, f++) {
-		for (span = *f; span; span=nextspan) {
-			nextspan = span->next;
-			if (span->max > span->min) {
-				xSpan->x = span->min;
-				xSpan->y = spany;
-				++xSpan;
-				*xWidth++ = span->max - span->min;
-				++i;
+		for (span = *f; span; span=span->next) {
+			if (span->max <= span->min) {
+				printf ("span width: %d\n", span->max-span->min);
+				continue;
 			}
-			Xfree (span);
+			xSpan->x = span->min;
+			xSpan->y = spany;
+			++xSpan;
+			*xWidth++ = span->max - span->min;
+			++i;
 		}
 	}
+	disposeFinalSpans ();
 	Xfree (finalSpans);
 	(*pGC->FillSpans) (pDrawable, pGC, i, xSpans, xWidths, TRUE);
 	Xfree (xSpans);
@@ -2329,8 +2377,12 @@ fillSpans (pDrawable, pGC)
 
 # define SPAN_REALLOC	2048
 
+# define findSpan(y) ((finalMiny <= (y) && (y) < finalMaxy) ? \
+			  &finalSpans[(y) - finalMiny] : \
+			  realFindSpan (y))
+
 struct finalSpan **
-findSpan (y)
+realFindSpan (y)
 {
 	struct finalSpan	**newSpans;
 	int			newSize, newMiny, newMaxy;
@@ -2396,7 +2448,6 @@ newFinalSpan (y, xmin, xmax)
 					else
 						*f = x->next;
 					--nspans;
-					Xfree (x);
 				} else {
 					x->min = min (x->min, xmin);
 					x->max = max (x->max, xmax);
@@ -2412,7 +2463,7 @@ newFinalSpan (y, xmin, xmax)
 			break;
 	}
 	if (!oldx) {
-		x = (struct finalSpan *) Xalloc (sizeof (struct finalSpan));
+		x = allocFinalSpan ();
 		x->min = xmin;
 		x->max = xmax;
 		x->next = *f;
@@ -2445,54 +2496,52 @@ mirrorSppPoint (quadrant, sppPoint)
 	sppPoint->y = -sppPoint->y;
 }
 
-mirrorSpan (quadrant, y, min, max)
-	double		y;
-	double		min, max;
-{
-	int		spany, xmin, xmax;
-	double		t;
-
-	switch (quadrant) {
-	case 0:
-		break;
-	case 1:
-		t = -max;
-		max = -min;
-		min = t;
-		break;
-	case 2:
-		t = -max;
-		max = -min;
-		min = t;
-		y = -y;
-		break;
-	case 3:
-		y = -y;
-		break;
-	}
-	xmin = (int) ceil (min + arcXcenter) + arcXoffset;
-	xmax = (int) ceil (max + arcXcenter) + arcXoffset;
-	spany = (int) (ceil (arcYcenter - y)) + arcYoffset;
-	if (xmax > xmin)
-		newFinalSpan (spany, xmin, xmax);
-}
+static double	spanY;
 
 static int	quadrantMask;
 
-mergeSpan (y, min, max)
-	double	y, min, max;
+span (left, right)
+	double	left, right;
 {
-	if (quadrantMask & 1)
-		mirrorSpan (0, y, min, max);
-	if (quadrantMask & 2)
-		mirrorSpan (1, y, min, max);
-	if (quadrantMask & 4)
-		mirrorSpan (2, y, min, max);
-	if (quadrantMask & 8)
-		mirrorSpan (3, y, min, max);
-}
+	register int	mask = quadrantMask, bit;
+	register double	min, max, y;
+	int	xmin, xmax, spany;
 
-static double	spanY;
+	while (mask) {
+		bit = lowbit (mask);
+		mask &= ~bit;
+		switch (bit) {
+		case 1:
+			min = left;
+			max = right;
+			y = spanY;
+			break;
+		case 2:
+			min = -right;
+			max = -left;
+			y = spanY;
+			break;
+		case 4:
+			min = -right;
+			max = -left;
+			y = -spanY;
+			break;
+		case 8:
+			min = left;
+			max = right;
+			y = -spanY;
+			break;
+		default:
+			abort ();
+		}
+		xmin = (int) ceil (min + arcXcenter) + arcXoffset;
+		xmax = (int) ceil (max + arcXcenter) + arcXoffset;
+		spany = (int) (ceil (arcYcenter - y)) + arcYoffset;
+
+		if (xmax > xmin)
+			newFinalSpan (spany, xmin, xmax);
+	}
+}
 
 /*
  * split an arc into pieces which are scan-converted
@@ -2750,8 +2799,11 @@ drawQuadrant (def, acc, a0, a1, mask, right, left)
 	/*
 	 * add the pixel at the top of the arc
 	 */
-	if (a1 == 90 * 64 && (quadrantMask & 1) && ((int) (def->w * 2 + def->l)) & 1)
-		mirrorSpan (0, def->h + def->l/2, 0.0, 1.0);
+	if (a1 == 90 * 64 && (mask & 1) && ((int) (def->w * 2 + def->l)) & 1) {
+		quadrantMask = 1;
+		spanY = def->h + def->l/2;
+		span (0.0, 1.0);
+	}
 }
 
 max (x, y)
@@ -2764,8 +2816,3 @@ min (x, y)
 	return x<y? x:y;
 }
 
-span (left, right)
-double	left, right;
-{
-	mergeSpan (spanY, left, right);
-}
