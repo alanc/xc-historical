@@ -1,5 +1,6 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.73 88/05/24 10:25:44 swick Exp $";
+static char rcsid[] = "$xHeader: Event.c,v 1.8 88/08/25 14:38:21 asente Exp $";
+/* $oHeader: Event.c,v 1.8 88/08/25 14:38:21 asente Exp $ */
 #endif lint
 
 /***********************************************************
@@ -26,25 +27,23 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
 #include "IntrinsicI.h"
-#include "Event.h"
-#include <X11/StringDefs.h>
-#include <X11/Shell.h>
+#include "Shell.h"
+#include "StringDefs.h"
+
+static XtAsyncHandler asyncHandler = NULL;
+static Opaque asyncClosure = NULL;
+
+static GrabList focusList;
 extern void bzero();
 
-static GrabRec *grabList;
-static GrabRec *freeGrabs;
-static Boolean OnlyKeyboardGrabs;
-static Boolean FocusTraceGood;
+CallbackList *_XtDestroyList;
 
-
-EventMask _XtBuildEventMask(widget)
+EventMask XtBuildEventMask(widget)
     Widget widget;
 {
-    _XtEventTable ev;
-    EventMask	mask = 0;
+    XtEventTable ev;
+    EventMask	mask = 0L;
 
     for (ev = widget->core.event_table; ev != NULL; ev = ev->next)
 	if (ev->select) mask |= ev->mask;
@@ -61,11 +60,11 @@ static void RemoveEventHandler(widget, eventMask, other, proc, closure, raw)
     EventMask   eventMask;
     Boolean	other;
     XtEventHandler proc;
-    caddr_t	closure;
+    Opaque	closure;
     Boolean	raw;
 {
     XtEventRec *p, **pp;
-    EventMask oldMask = _XtBuildEventMask(widget);
+    EventMask oldMask = XtBuildEventMask(widget);
 
     pp = &widget->core.event_table;
     p = *pp;
@@ -90,11 +89,19 @@ static void RemoveEventHandler(widget, eventMask, other, proc, closure, raw)
     }
 
     /* reset select mask if realized */
-    if (XtIsRealized(widget)) {
-	EventMask mask = _XtBuildEventMask(widget);
+    if (XtIsRealized(widget)&& !widget->core.being_destroyed) {
+	EventMask mask = XtBuildEventMask(widget);
 
-	if (oldMask != mask)
+	if (oldMask != mask) {
 	    XSelectInput(XtDisplay(widget), XtWindow(widget), mask);
+#ifdef notdef
+	    if (asyncHandler != NULL) {
+		XSelectAsyncInput(
+		    XtDisplay(widget), XtWindow(widget), mask,
+		    asyncHandler, (unsigned long) XtDisplay(widget));
+	    }
+#endif /*notdef*/
+	}
     }
 }
 
@@ -103,7 +110,7 @@ static void AddEventHandler(widget, eventMask, other, proc, closure, raw)
     EventMask   eventMask;
     Boolean         other;
     XtEventHandler  proc;
-    caddr_t	closure;
+    Opaque	closure;
     Boolean	raw;
 {
    register XtEventRec *p,**pp;
@@ -111,7 +118,7 @@ static void AddEventHandler(widget, eventMask, other, proc, closure, raw)
 
    if (eventMask == 0 && other == FALSE) return;
 
-   if (XtIsRealized(widget) && ! raw) oldMask = _XtBuildEventMask(widget);
+   if (XtIsRealized(widget) && ! raw) oldMask = XtBuildEventMask(widget);
 
    pp = & widget->core.event_table;
    p = *pp;
@@ -142,10 +149,18 @@ static void AddEventHandler(widget, eventMask, other, proc, closure, raw)
     }
 
     if (XtIsRealized(widget) && ! raw) {
-	EventMask mask = _XtBuildEventMask(widget);
+	EventMask mask = XtBuildEventMask(widget);
 
-	if (oldMask != mask)
+	if (oldMask != mask) {
 	    XSelectInput(XtDisplay(widget), XtWindow(widget), mask);
+#ifdef notdef
+	    if (asyncHandler != NULL) {
+		XSelectAsyncInput(
+		    XtDisplay(widget), XtWindow(widget), mask,
+		    asyncHandler, (unsigned long)XtDisplay(widget));
+	    }
+#endif /*notdef*/
+	}
     }
 
 }
@@ -156,7 +171,7 @@ void XtRemoveEventHandler(widget, eventMask, other, proc, closure)
     EventMask   eventMask;
     Boolean	other;
     XtEventHandler proc;
-    caddr_t	closure;
+    Opaque	closure;
 {
     RemoveEventHandler(widget, eventMask, other, proc, closure, FALSE);
 }
@@ -167,7 +182,7 @@ void XtAddEventHandler(widget, eventMask, other, proc, closure)
     EventMask   eventMask;
     Boolean         other;
     XtEventHandler  proc;
-    caddr_t	closure;
+    Opaque	closure;
 {
     AddEventHandler(widget, eventMask, other, proc, closure, FALSE);
 }
@@ -178,7 +193,7 @@ void XtRemoveRawEventHandler(widget, eventMask, other, proc, closure)
     EventMask   eventMask;
     Boolean	other;
     XtEventHandler proc;
-    caddr_t	closure;
+    Opaque	closure;
 {
     RemoveEventHandler(widget, eventMask, other, proc, closure, TRUE);
 }
@@ -189,9 +204,9 @@ void XtAddRawEventHandler(widget, eventMask, other, proc, closure)
     EventMask   eventMask;
     Boolean         other;
     XtEventHandler  proc;
-    caddr_t	closure;
+    Opaque	closure;
 {
-    AddEventHandler(widget, eventMask, other, proc, closure, FALSE);
+    AddEventHandler(widget, eventMask, other, proc, closure, TRUE);
 }
 
 
@@ -226,9 +241,12 @@ void _XtRegisterWindow(window, widget)
     hp = *hpp;
 
     while (hp != NULL) {
-        if (hp->window == window) {
+        if (hp->window == window && hp->display == XtDisplay(widget)) {
 	    if (hp->widget != hp->widget)
-		XtWarning("Attempt to change already registered window.\n");
+		XtWarningMsg("registerWindowError","xtRegisterWindow",
+                         "XtToolkitError",
+                        "Attempt to change already registered window.",
+                          (String *)NULL, (Cardinal *)NULL);
 	    return;
 	}
         hpp = &hp->next;
@@ -236,6 +254,7 @@ void _XtRegisterWindow(window, widget)
     }
 
     hp = *hpp = XtNew(HashRec);
+    hp->display = XtDisplay(widget);
     hp->window = window;
     hp->widget = widget;
     hp->next = NULL;
@@ -253,9 +272,13 @@ void _XtUnregisterWindow(window, widget)
     hp = *hpp;
 
     while (hp != NULL) {
-        if (hp->window == window) {
+        if (hp->window == window && hp->display == XtDisplay(widget)) {
 	    if (hp->widget != widget) {
-		XtWarning("Unregister-window does not match widget.\n");
+                XtWarningMsg("registerWindowError","xtUnregisterWindow",
+                         "XtToolkitError",
+                        "Attempt to unregister invalid window.",
+                          (String *)NULL, (Cardinal *)NULL);
+
                 return;
                 }
              else /* found entry to delete */
@@ -273,12 +296,12 @@ void _XtUnregisterWindow(window, widget)
 static void ExpandTable()
 {
     HashTable	oldTable = table;
-    unsigned int i, newsize;
+    unsigned int i;
 
     i = oldTable->size * 2;
-    newsize = sizeof(HashTableRec) + i*sizeof(HashRec);
-    table = (HashTable) XtMalloc(newsize);
-    bzero((char*)table, newsize);
+    table = (HashTable) XtCalloc(1,
+	    (unsigned) sizeof(HashTableRec)+i*sizeof(HashRec));
+
     table->size = i;
     table->count = oldTable->count;
     for (i = 0; i<oldTable->size; i++) {
@@ -302,14 +325,10 @@ Widget XtWindowToWidget(display, window)
 {
     register HashPtr hp;
 
-/* display is ignored for now; will be used when multiple displays
-   are supported */
-
-    for (
-        hp = table->entries[(unsigned int)window & (table->size-1)];
-        hp != NULL;
-	hp = hp->next)
-	if (hp->window == window) return hp->widget;
+    for (hp = table->entries[(unsigned int)window & (table->size-1)];
+	    hp != NULL; hp = hp->next) {
+	if (hp->window == window && hp->display == display) return hp->widget;
+    }
 
     return NULL;
 }
@@ -325,40 +344,7 @@ static void InitializeHash()
     table->count = 0;
 }
 
-
-XtAddExposureToRegion(event, region)
-    XEvent   *event;
-    Region   region;
-{
-    XRectangle rect;
-
-    switch (event->type) {
-	case Expose:
-		rect.x = event->xexpose.x;
-		rect.y = event->xexpose.y;
-		rect.width = event->xexpose.width;
-		rect.height = event->xexpose.height;
-		break;
-	case GraphicsExpose:
-		rect.x = event->xgraphicsexpose.x;
-		rect.y = event->xgraphicsexpose.y;
-		rect.width = event->xgraphicsexpose.width;
-		rect.height = event->xgraphicsexpose.height;
-		break;
-	default:
-		return;
-    }
-
-    XUnionRectWithRegion(&rect, region, region);
-}
-
-
-/* %%% Multiple display support will require keeping an exposeRegion
- *     for each open display
- */
-
 static Region nullRegion;
-static Region exposeRegion;
 
 static void DispatchEvent(event, widget, mask)
     register XEvent    *event;
@@ -367,7 +353,7 @@ static void DispatchEvent(event, widget, mask)
 {
     XtEventRec *p;   
     XtEventHandler proc[100];
-    caddr_t closure[100];
+    Opaque closure[100];
     int numprocs, i;
     XEvent nextEvent;
 
@@ -378,18 +364,20 @@ static void DispatchEvent(event, widget, mask)
 		(*expose)(widget, event, (Region)NULL);
 	    }
 	    else {
-		XtAddExposureToRegion(event, exposeRegion);
+		XtPerDisplay pd = _XtGetPerDisplay(event->xany.display);
+		XtAddExposureToRegion(event, pd->region);
 		if (event->xexpose.count == 0) {
 		    /* Patch event to have the new bounding box.  Unless
 		       someone's goofed, it can only be an Expose event */
 		    XRectangle rect;
-		    XClipBox(exposeRegion, &rect);
+		    XClipBox(pd->region, &rect);
 		    event->xexpose.x = rect.x;
 		    event->xexpose.y = rect.y;
 		    event->xexpose.width = rect.width;
 		    event->xexpose.height = rect.height;
-		    (*expose)(widget, event, exposeRegion);
-		    XIntersectRegion( nullRegion, exposeRegion, exposeRegion );
+		    (*expose)(widget, event, pd->region);
+		    (void) XIntersectRegion(
+		        nullRegion, pd->region, pd->region);
 		}
 	    }
 	}
@@ -422,8 +410,26 @@ static void DispatchEvent(event, widget, mask)
 	}
     }
 
-    if (mask == VisibilityChangeMask &&
-            ! widget->core.widget_class->core_class.visible_interest) return;
+    if ((mask == VisibilityChangeMask) &&
+        XtClass(widget)->core_class.visible_interest) {
+	    /* our visibility just changed... */
+	    switch (((XVisibilityEvent *)event)->state) {
+		case VisibilityUnobscured:
+		    widget->core.visible = TRUE;
+		    break;
+
+		case VisibilityPartiallyObscured:
+		    /* what do we want to say here? */
+		    /* well... some of us is visible */
+		    widget->core.visible = TRUE;
+		    break;
+
+		case VisibilityFullyObscured:
+		    widget->core.visible = FALSE;
+		    /* do we want to mark our children obscured? */
+		    break;
+	    }
+	}
 
     /* Have to copy the procs into an array, because calling one of them */
     /* might call XtRemoveEventHandler, which would break our linked list.*/
@@ -441,7 +447,7 @@ static void DispatchEvent(event, widget, mask)
 }
 
 
-typedef enum {pass, ignore, remap} GrabType;
+typedef enum _GrabType {pass, ignore, remap} GrabType;
 
 static void ConvertTypeToMask (eventType, mask, grabType)
     int		eventType;
@@ -508,256 +514,240 @@ static struct {
     (*grabType)  = masks[eventType].grabType;
 };
 
-
-static Boolean OnGrabList (widget)
+static Boolean OnGrabList(widget)
     register Widget widget;
-
 {
     register GrabRec* gl;
-    for (; widget != NULL; widget = (Widget)widget->core.parent)
+    for (; widget != NULL; widget = (Widget)widget->core.parent) {
 	for (gl = grabList; gl != NULL; gl = gl->next) {
-	    if (gl->widget == widget) return True;
+	    if (gl->widget == widget) return TRUE;
 	    if (gl->exclusive) break;
 	}
-    return False;
+    }
+    return FALSE;
 }
 
-
-static Widget FindKeyboardFocus(widget)
-    Widget widget;
+static Widget FindFocusWidget(widget)
+     Widget widget;
 {
-    /* If a modal cascade exists, this routine
-       assumes that widget is in the active subset.
-     */
-    static Widget focus_trace_widget, focus_target_widget;
+#define CACHESIZE 20
     register GrabRec* gl;
-#define FOCUS_TRACE_SIZE 100
-    GrabRec* focus_trace[FOCUS_TRACE_SIZE];
-    int i = 0, num_focus_entries;
-    enum {non_exclusive, first_pass, dont_check} exclusive = non_exclusive;
-    register Widget w, focus_widget = widget;
+    GrabRec *start = focusList;
+    static Widget *anc = NULL;
+    static int ancSize;
+    register Widget w;
+    register int i;
+    int src;
+    Widget dst;
 
-    if (FocusTraceGood && widget == focus_trace_widget)
-	return focus_target_widget;
-    focus_trace_widget = widget;
-    for (num_focus_entries = 0, gl = grabList; gl != NULL; gl = gl->next) {
-	if (gl->keyboard_focus != NULL) num_focus_entries++;
+    if (focusList == NULL) return widget;
+
+    /* First time in, allocate the ancestor list */
+    if (anc == NULL) {
+	anc = (Widget *) XtMalloc(CACHESIZE * sizeof(Widget));
+	ancSize = CACHESIZE;
     }
-    if (num_focus_entries == 0) return focus_target_widget = widget;
-    /* assert: a grab for a widget always occurs on the list before
-     * a keyboard focus entry for the same widget
-     */
-    for (w = widget; w != NULL; w = XtParent(w)) {
-	for (gl = grabList; gl != NULL; gl = gl->next) {
-	    if (gl->widget == w) {
-		if (gl->keyboard_focus != NULL) {
-		    if (i == FOCUS_TRACE_SIZE)
-			XtError("FindKeyboardFocus: nesting depth exceeded.");
-		    focus_trace[i++] = gl;
-		    break;
-		}
-		else if (gl->exclusive) {
-		    if (exclusive == dont_check)
-			break;
-		    else
-			exclusive = first_pass;
-		}
+
+    /* First fill in the ancestor list */
+
+    for (i = 0, w = widget; w != NULL; w = XtParent(w), i++) {
+	if (i == ancSize) {
+	    /* This should rarely happen, but if it does it'll probably
+	       happen again, so grow the ancestor list */
+	    ancSize += CACHESIZE;
+	    anc = (Widget *) XtRealloc(anc, sizeof(Widget) * ancSize);
+	}
+	anc[i] = w;
+    }
+    src = i-1;
+    dst = widget;
+
+    /* For each ancestor, starting at the top, see if it's forwarded */
+
+    while (src >= 0) {
+	for (gl = start; gl != NULL && gl->widget != anc[src]; gl = gl->next) ;
+	if (gl == NULL)	src--;		/* not in list, try next anc. */
+	else {
+	    dst = gl->keyboard_focus;
+	    start = gl->next;		/* Continue from the one we found */
+	    /* See if dst is an ancestor */
+	    for (i = src-1; i > 0 && anc[i] != dst; i--) {}
+	    /* If out of forwarding, send to dst if it's not an ancestor, and
+	       the widget if it is (don't forward events to an ancestor) */
+
+	    if (start == NULL) {
+		if (i <= 0) return dst;
+		else return widget;
 	    }
-	    else if (gl->exclusive && exclusive == dont_check)
-		break;
-	}
-	if (i == num_focus_entries) break;
-	if (exclusive == first_pass) exclusive = dont_check;
-    }
-    if (i > 0) {
-	focus_widget = focus_trace[--i]->keyboard_focus;
-	while (i > 0) {
-	    if (focus_trace[--i]->widget == focus_widget)
-		focus_widget = focus_trace[i]->keyboard_focus;
+	    if (i <= 0) break;		/* We've moved to an uncle */
+	    else src = i;		/* Continue looking from dst */
 	}
     }
-    /* replace with focus widget iff source widget
-     * is not a descendant of the focus widget
-     */
-    for (w = widget; w != NULL && w != focus_widget; w = XtParent(w));
-    FocusTraceGood = True;
-    return focus_target_widget = (w == focus_widget) ? widget : focus_widget;
+
+    /* If we haven't moved into some other branch, forwarding is either
+       to the widget or a descendent */
+
+    for (gl = start; gl != NULL; gl = gl->next) {
+	if (gl->widget == dst) dst = gl->keyboard_focus;
+    }
+
+    return dst;
+#undef CACHESIZE
 }
 
+void DispatchToSpringLoaded(event, widget, mask)
+    XEvent  *event;
+    Widget widget;
+    EventMask   mask;
+{
+    register    GrabList gl;
 
-void XtDispatchEvent (event)
+    for (gl = grabList; gl != NULL; gl = gl->next) {
+	if (gl->spring_loaded) {
+	    if (gl->widget != widget) {
+		/* ||| Should this test for sensitive? */
+		DispatchEvent(event, gl->widget, mask);
+	    }
+	    break;
+	}
+	if (gl->exclusive) break;
+    }
+}
+
+static void DecideToDispatch(event)
     XEvent  *event;
 {
     register    Widget widget;
     EventMask   mask;
     GrabType    grabType;
-    register    GrabList gl;
-
-#define ShouldDispatch \
-    (widget->core.sensitive && widget->core.ancestor_sensitive)
+    GrabList    gl;
+    Widget	dspWidget;
 
     widget = XtWindowToWidget (event->xany.display, event->xany.window);
 
     /* Lint complains about &grabType not matching the declaration.
        Don't bother trying to fix it, it won't work */
-
     ConvertTypeToMask(event->xany.type, &mask, &grabType);
 
     if (widget == NULL) {
-	if (grabType == remap) {
-	    /* event occurred in a non-widget window, but we've promised
-	       also to dispatch it to the nearest spring_loaded widget */
-	    for (gl = grabList; gl != NULL; gl = gl->next) {
-		if (gl->spring_loaded) {
-		    DispatchEvent(event, gl->widget, mask);
-		    return;
-		}
-	    }
-	}
+	if (grabType != remap) return;
+	/* event occurred in a non-widget window, but we've promised also
+	   to dispatch it to the nearest accessible spring_loaded widget */
+	DispatchToSpringLoaded(event, widget, mask);
 	return;
     }
 
-    if (grabType == pass) {
-	DispatchEvent(event, widget, mask);
-
-    } else if (grabList == NULL) {
-	if ShouldDispatch {
+    switch(grabType) {
+	case pass:
 	    DispatchEvent(event, widget, mask);
-	}
+	    return;
 
-    } else if (grabType == remap) {
-        if ((mask & (ButtonPressMask|ButtonReleaseMask) && OnlyKeyboardGrabs)
-	    || OnGrabList(widget)) {
-	    if (mask & (KeyPressMask|KeyReleaseMask))
-		widget = FindKeyboardFocus(widget);
-	    if ShouldDispatch {
-		DispatchEvent(event, widget, mask);
+	case ignore:
+	    if ((grabList == NULL || OnGrabList(widget)) && 
+		    XtIsSensitive(widget)) DispatchEvent(event, widget, mask);
+	    return;
+
+	case remap:
+
+#define IsKeyEvent (mask & (KeyPressMask | KeyReleaseMask))
+
+	    /* If a focus event, see if it has been focussed.  */
+
+	    if (IsKeyEvent) dspWidget = FindFocusWidget(widget);
+	    else dspWidget = widget;
+
+	    if ((grabList == NULL || OnGrabList(dspWidget)) &&
+		    XtIsSensitive(dspWidget)) {
+		DispatchEvent(event, dspWidget, mask);
 	    }
-	}
-	/* Also dispatch to nearest accessible spring_loaded */
-        /* Dispatching the event may invoke a proc that popdowns all
-           the popups and un-registers all the grabs from the grabList,
-           so check for something still on the grabList. */
- 	gl = grabList;
-	while (gl!= NULL) {
-	    if (gl->spring_loaded) {
-		if (gl->widget != widget) {
-		    DispatchEvent(event, gl->widget, mask);
-		}
-		break;
-	    }
-	    if (gl->exclusive) {
-		break;
-	    }
-	    gl = gl->next;
-	} 
-    } else if (OnlyKeyboardGrabs || OnGrabList(widget)) {
-	if ShouldDispatch {
-	    DispatchEvent(event, widget, mask);
-	}
+
+	    /* Also dispatch to nearest accessible spring_loaded.  Note we
+	       use widget here, not dspWidget */
+	    DispatchToSpringLoaded(event, widget, mask);
+	    return;
+
+#undef IsKeyEvent
     }
 }
 
-static Boolean RemoveGrab();
+void XtDispatchEvent (event)
+    XEvent  *event;
+{
+    CallbackList *oldDestroyList, destroyList;
+
+    /* Skip null events from XtNextEvent */
+    if (event->type == 0) return;
+
+    /*
+     * To make recursive XtDispatchEvent work, we need to do phase 2 destroys
+     * only on those widgets destroyed by this particular dispatch.
+     * The "right" way to do this is by passing a local variable through to
+     * each recursive instance, and passing the list to XtDestroy, but that
+     * causes unwieldy proliferation of arguments. We could do all this stuff
+     * with signals (if we had them), but instead we have a global pointer
+     * to the "current" destroy list, and XtDispatchEvent and XtDestroy
+     * conspire to keep it up to date, and use the right one.
+     *
+     * This is pretty gross.
+     */
+
+    oldDestroyList = _XtDestroyList;
+    _XtDestroyList = &destroyList;
+    destroyList = NULL;
+
+    DecideToDispatch(event);
+
+    if (destroyList != NULL) {
+	_XtCallCallbacks (&destroyList, (Opaque) NULL);
+	_XtRemoveAllCallbacks (&destroyList);
+    }
+
+    _XtDestroyList = oldDestroyList;
+
+    if (_XtSafeToDestroy) {
+	if (_XtAppDestroyCount != 0) _XtDestroyAppContexts();
+	if (_XtDpyDestroyCount != 0) _XtCloseDisplays();
+    }
+}
+
+static void RemoveGrab();
 
 /* ARGSUSED */
 static void GrabDestroyCallback(widget, closure, call_data)
     Widget  widget;
-    caddr_t closure;		/* Widget or NULL */
+    caddr_t closure;
     caddr_t call_data;
 {
     /* Remove widget from grab list if it destroyed */
-    if (closure != NULL)	/* removing a keyboard grab on some parent? */
-	(void)RemoveGrab( (Widget)closure, True );
-    else
-	(void)RemoveGrab( widget, False );
+    RemoveGrab(widget, False);
 }
 
-static void AddGrab(widget, exclusive, spring_loaded, keyboard_focus)
+/* ARGSUSED */
+static void FocusDestroyCallback(widget, closure, call_data)
+    Widget  widget;
+    caddr_t closure;		/* Widget */
+    caddr_t call_data;
+{
+    /* Remove widget from grab list if it destroyed */
+    RemoveGrab((Widget)closure, True);
+}
+
+static GrabRec *NewGrabRec(widget, exclusive, spring_loaded, keyboard_focus)
     Widget  widget;
     Boolean exclusive;
     Boolean spring_loaded;
-    Widget  keyboard_focus;
+    Widget keyboard_focus;
 {
     register GrabList    gl;
 
-    if (freeGrabs == NULL)
-	gl	      = /* XtNew(GrabRec) */
-			(GrabRec*)Xpermalloc((unsigned int)sizeof(GrabRec));
-    else {
-	gl = freeGrabs;
-	freeGrabs = freeGrabs->next;
-    }
-    gl->next	      = grabList;
-    grabList	      = gl;
+    gl		      = XtNew(GrabRec);
+    gl->next	      = NULL;
     gl->widget        = widget;
     gl->exclusive     = exclusive;
     gl->spring_loaded = spring_loaded;
     gl->keyboard_focus= keyboard_focus;
 
-    if (keyboard_focus == (Widget)NULL)
-	OnlyKeyboardGrabs = False;
-    else if (gl->exclusive)
-	FocusTraceGood = False;
-
-    XtAddCallback(
-		  (keyboard_focus != NULL) ? keyboard_focus : widget,
-		  XtNdestroyCallback, GrabDestroyCallback,
-		  (caddr_t)(keyboard_focus != NULL) ? widget : NULL
-		 );
-}
-
-/* add a grab record to the list, or replace the focus widget in an
-   existing grab record.  Returns True if the action was not a no-op.
- */
-static Boolean InsertKeyboardGrab(widget, keyboard_focus)
-    Widget  widget;
-    Widget  keyboard_focus;
-{
-    register GrabRec *gl;
-    register Widget w;
-    GrabRec* ge;
-    Boolean found = False;
-
-    if (grabList == NULL) {
-	AddGrab( widget, False, False, keyboard_focus );
-	return True;
-    }
-    /* look for a keyboard grab entry for the same parent; if none,
-       reposition this entry after any other entries for the same tree */
-    for (w = widget; w != NULL && !found; w = w->core.parent) {
-	for (gl = grabList; gl != NULL; gl = gl->next)
-	    if (gl->widget == w) {
-		found = True;
-		break;
-	    }
-    }
-    if (found)
-	if (gl->widget == widget && gl->keyboard_focus != NULL) 
-	    if (gl->keyboard_focus == keyboard_focus)
-		return False;
-	    else {
-		SendFocusNotify(gl->keyboard_focus, FocusOut);
-		gl->keyboard_focus = keyboard_focus;
-	    }
-	else {
-	    AddGrab( widget, False, False, keyboard_focus );
-	    ge = grabList;
-	    grabList = grabList->next;
-	    ge->next = gl->next;
-	    gl->next = ge;
-	}
-    else { /* insert a new grab at end of list */
-	AddGrab( widget, False, False, keyboard_focus );
-	if (grabList->next != NULL) {
-	    ge = grabList;
-	    grabList = grabList->next;
-	    ge->next = NULL;
-	    for (gl = grabList; gl->next != NULL; gl = gl->next);
-	    gl->next = ge;
-	}
-    }
-    return True;
+    return gl;
 }
 
 void XtAddGrab(widget, exclusive, spring_loaded)
@@ -765,88 +755,124 @@ void XtAddGrab(widget, exclusive, spring_loaded)
     Boolean exclusive;
     Boolean spring_loaded;
 {
+    register    GrabList gl;
+
     if (spring_loaded && !exclusive) {
-	XtWarning("XtAddGrab requires exclusive grab if spring_loaded is TRUE");
+	XtWarningMsg ("grabError", "grabDestroyCallback", "XtToolkitError",
+		"XtAddGrab requires exclusive grab if spring_loaded is TRUE",
+		(String *) NULL, (Cardinal *) NULL);
 	exclusive = TRUE;
     }
 
-    AddGrab(widget, exclusive, spring_loaded, (Widget)NULL);
+    gl = NewGrabRec(widget, exclusive, spring_loaded, NULL);
+    gl->next = grabList;
+    grabList = gl;
+
+    XtAddCallback (widget, XtNdestroyCallback, 
+	    GrabDestroyCallback, (Opaque) NULL);
 }
 
-
-static Boolean RemoveGrab(widget, keyboard_focus)
-    Widget widget;
-    Boolean keyboard_focus;
-    /* returns False if no grab entry was found, True otherwise */
+/* add a focus record to the list, or replace the focus widget in an
+   existing grab record.  Returns True if the action was not a no-op.
+ */
+static Boolean InsertFocusEntry(widget, keyboard_focus)
+    Widget  widget;
+    Widget  keyboard_focus;
 {
-    register GrabList gl;
-    register GrabList* prev;
-    Widget focus_widget;
+    register GrabRec *gl, *prev;
+    GrabRec* ge;
+    Widget w;
 
-    OnlyKeyboardGrabs = True;
-    for (prev = &grabList, gl = grabList; gl != NULL; gl = gl->next) {
-	if (gl->widget == widget)
-	    if (keyboard_focus == (gl->keyboard_focus != NULL))
-		break;
-	if (gl->keyboard_focus == (Widget)NULL) OnlyKeyboardGrabs = False;
-	prev = &gl->next;
-    }
-
-    if (gl == NULL) {
-	if (!keyboard_focus)
-	    XtWarning("XtRemoveGrab asked to remove a widget not on the grab list");
-	return False;
-    }
-
-    if (!keyboard_focus) {	/* remove all non-kbd grabs up to this'n */
-	Boolean done;
-	OnlyKeyboardGrabs = True;
-	for (prev = &grabList, gl = grabList, done = False; !done; gl = *prev){
-	    if (gl->keyboard_focus == (Widget)NULL) {
-		*prev = gl->next;
-		gl->next = freeGrabs;
-		freeGrabs = gl;
-		if (gl->widget == widget) done = True;
-	    }
-	    else
-		prev = &gl->next;
+    for (gl = focusList; gl != NULL; gl = gl->next) {
+	if (gl->widget == widget) {
+	    if (gl->keyboard_focus == keyboard_focus) return False;
+	    else gl->keyboard_focus = keyboard_focus;
+	    return True;
 	}
-	if (freeGrabs->exclusive) FocusTraceGood = False;
     }
-    else /* if keyboard_focus */ {
-	focus_widget = gl->keyboard_focus;
-	*prev = gl->next;
-	gl->next = freeGrabs;
-	freeGrabs = gl;
-	gl = *prev;
+
+    /* Create a new record and insert it before the first entry with a widget
+       that is a child of widget.  This enforces the invariant that if A is an
+       ancestor of B, A will precede B on the list. */
+
+    ge = NewGrabRec(widget, False, False, keyboard_focus);
+
+    for (prev = NULL, gl = focusList; gl != NULL; prev = gl, gl = gl->next) {
+	for (w = gl->widget; w != NULL && w != widget; w = w->core.parent) {}
+	if (w == widget) break;
     }
-    while (gl && OnlyKeyboardGrabs) {
-	if (gl->keyboard_focus == (Widget)NULL)
-	    OnlyKeyboardGrabs = False;
-	gl = gl->next;
-    }
-    XtRemoveCallback(
-		     keyboard_focus ? focus_widget : widget,
-		     XtNdestroyCallback, GrabDestroyCallback,
-		     (caddr_t)(keyboard_focus ? widget : NULL)
-		    );
+
+    if (prev == NULL) focusList = ge;
+    else prev->next = ge;
+    ge->next = gl;
+
+    XtAddCallback(keyboard_focus, XtNdestroyCallback,
+	    FocusDestroyCallback, (caddr_t)widget);
+
     return True;
 }
 
+static void RemoveGrab(widget, keyboard_focus)
+    Widget  widget;
+    Boolean keyboard_focus;
+{
+    GrabList *whichList;
+    register GrabList gl, prev, next;
+    register Boolean done;
+
+    if (keyboard_focus) whichList = &focusList;
+    else whichList = &grabList;
+
+    for (prev = NULL, gl = *whichList; gl != NULL; prev = gl, gl = gl->next) {
+	if (gl->widget == widget) {
+	    if (!keyboard_focus || gl->keyboard_focus != NULL) break;
+	}
+    }
+
+    if (gl == NULL) {
+	XtWarningMsg("grabError","xtRemoveGrab","XtToolkitError",
+          "XtRemoveGrab asked to remove a widget not on the list",
+            (String *)NULL, (Cardinal *)NULL);
+	return;
+    }
+
+    if (keyboard_focus) {
+	if (gl == focusList) focusList = gl->next;
+	else prev->next = gl->next;
+	XtRemoveCallback(gl->keyboard_focus, XtNdestroyCallback,
+		FocusDestroyCallback, widget);
+	XtFree((char *)gl);
+	return;
+    }
+
+    do {
+	gl = grabList;
+	done = (gl->widget == widget);
+	grabList = gl->next;
+	XtRemoveCallback(gl->widget, XtNdestroyCallback,
+		GrabDestroyCallback, (Opaque)NULL);
+	XtFree((char *)gl);
+    } while (! done);
+}
 
 void XtRemoveGrab(widget)
     Widget  widget;
 {
-    (void)RemoveGrab(widget, False);
+    RemoveGrab(widget, False);
 }
 
-
 void XtMainLoop()
+{
+	XtAppMainLoop(_XtDefaultAppContext());
+}
+
+void XtAppMainLoop(app)
+	XtAppContext app;
 {
     XEvent event;
 
     for (;;) {
-    	XtNextEvent(&event);
+    	XtAppNextEvent(app, &event);
 	XtDispatchEvent(&event);
     }
 }
@@ -854,20 +880,98 @@ void XtMainLoop()
 
 void _XtEventInitialize()
 {
-    grabList = NULL;
-    freeGrabs = NULL;
-    DestroyList = NULL;
-    OnlyKeyboardGrabs = True;
-    FocusTraceGood = False;
+    grabList = focusList = NULL;
+    _XtDestroyList = NULL;
     nullRegion = XCreateRegion();
-    exposeRegion = XCreateRegion();
     InitializeHash();
 }
 
+void XtAddExposureToRegion(event, region)
+    XEvent   *event;
+    Region   region;
+{
+    XRectangle rect;
+
+    switch (event->type) {
+	case Expose:
+		rect.x = event->xexpose.x;
+		rect.y = event->xexpose.y;
+		rect.width = event->xexpose.width;
+		rect.height = event->xexpose.height;
+		break;
+	case GraphicsExpose:
+		rect.x = event->xgraphicsexpose.x;
+		rect.y = event->xgraphicsexpose.y;
+		rect.width = event->xgraphicsexpose.width;
+		rect.height = event->xgraphicsexpose.height;
+		break;
+	default:
+		return;
+    }
+
+    XUnionRectWithRegion(&rect, region, region);
+}
+
+
+void _XtFreeEventTable(event_table)
+    XtEventTable *event_table;
+{
+    register XtEventTable event;
+
+    event = *event_table;
+    while (event != NULL) {
+	register XtEventTable next = event->next;
+	XtFree((char *) event);
+	event = next;
+    }
+}
+
+
+/*ARGSUSED*/
+void _XtAsyncMainLoop(closure)
+    Opaque closure;
+{
+    XEvent event;
+
+    XtNextEvent(&event);
+    XtDispatchEvent(&event);
+    XFlush(event.xany.display);
+}
+
+void XtMakeToolkitAsync() {
+    XtSetAsyncEventHandler(_XtAsyncMainLoop, (Opaque) NULL);
+}
+
+
+void XtSetAsyncEventHandler(handler, closure)
+    XtAsyncHandler handler;
+    Opaque closure;
+{
+    asyncHandler = handler;
+    asyncClosure = closure;
+}
+
+
+extern void _XtRegisterAsyncHandlers(widget)
+    Widget widget;
+{
+    EventMask mask;
+
+    if (asyncHandler == NULL) return;
+
+    mask = XtBuildEventMask(widget);
+#ifdef notdef
+    XSelectAsyncInput(
+	XtDisplay(widget), XtWindow(widget), mask,
+	asyncHandler, (unsigned long)XtDisplay(widget));
+#endif /*notdef*/
+}
+
+/* Stuff for XtSetKeyboardFocus */
 
 /* ARGSUSED */
-static void ForwardEvent(ancestor, client_data, event)
-    Widget ancestor;
+static void ForwardEvent(widget, client_data, event)
+    Widget widget;
     caddr_t client_data;
     XEvent *event;
 {
@@ -876,14 +980,12 @@ static void ForwardEvent(ancestor, client_data, event)
        focus during a grab */
     EventMask mask;
     GrabType grabType;
-    register Widget widget = FindKeyboardFocus( (Widget)client_data );
 
-    if ShouldDispatch {
+    if (XtIsSensitive(widget)) {
 	ConvertTypeToMask(event->xany.type, &mask, &grabType);
-	DispatchEvent(event, widget, mask);
+	DispatchEvent(event, (Widget)client_data, mask);
     }
 }
-
 
 /* ARGSUSED */
 static void HandleFocus(widget, client_data, event)
@@ -891,107 +993,66 @@ static void HandleFocus(widget, client_data, event)
     caddr_t client_data;	/* child who wants focus */
     XEvent *event;
 {
-    enum {add, remove} which;
+    Boolean add;
     Widget descendant = (Widget)client_data;
+
     switch( event->type ) {
       case EnterNotify:
       case LeaveNotify:
 		if (!event->xcrossing.focus ||
 /* a protocol bug causes us to not receive notification that we've lost
    the focus when the pointer leaves during a grab
-		    event->xcrossing.mode != NotifyNormal ||
+			event->xcrossing.mode != NotifyNormal ||
 */
-		    event->xcrossing.detail == NotifyInferior)
-		    return;
-		if (event->type == EnterNotify) which = add;
-		else				which = remove;
+			event->xcrossing.detail == NotifyInferior) return;
+		add = (event->type == EnterNotify);
 		break;
       case FocusIn:
       case FocusOut:
 		if ((event->xfocus.mode != NotifyNormal &&
 		     event->xfocus.mode != NotifyWhileGrabbed) ||
-		    event->xfocus.detail == NotifyInferior)
-		    return;
-		if (event->type == FocusIn) which = add;
-		else			    which = remove;
+		    event->xfocus.detail == NotifyInferior) return;
+		add = (event->type == FocusIn);
+		break;
     }
-    if (which == add)
-	InsertKeyboardGrab( widget, descendant );
-    else
-	(void)RemoveGrab( widget, True );
 
-    SendFocusNotify( descendant, (which == add) ? FocusIn : FocusOut );
+    if (add) (void) InsertFocusEntry(widget, descendant);
+    else RemoveGrab(widget, True);
+
+    SendFocusNotify(descendant, add ? FocusIn : FocusOut);
 }
 
-
-static void AddForwardingHandler(widget, descendant)
-    Widget widget, descendant;
+static void AddForwardingHandler(w, descendant)
+    Widget w, descendant;
 {
-    Window root, child;
+    Window win, root, child;
     int root_x, root_y, win_x, win_y;
+    int left, right, top, bottom;
     unsigned int mask;
     EventMask eventMask;
-    register XtEventRec* p = widget->core.event_table;
-    Boolean might_have_focus = False;
-    Boolean had_focus_already = False;
-    register XtEventHandler proc = ForwardEvent; /* compiler bug */
 
-    /* %%%
-       Until we implement a mechanism for propagating keyboard event
-       interest to all ancestors for which the descendant may be the
-       focus target, the following optimization requires
-       XtSetKeyboardFocus calls to be executed from the inside out.
-     */
-    eventMask = _XtBuildEventMask(descendant);
+    eventMask = XtBuildEventMask(descendant);
     eventMask &= KeyPressMask | KeyReleaseMask;
-
-    while (p != NULL && p->proc != proc) p = p->next;
-    if (p != NULL) {
-	might_have_focus = True;
-	if (p->mask == eventMask)
-	    p->closure = (caddr_t)descendant;
-	else {
-	    XtRemoveEventHandler(widget, XtAllEvents, False,
-				 ForwardEvent, p->closure);
-	    p = NULL;
-	}
-    }
-    if (p == NULL && eventMask != 0) {
-	XtAddEventHandler
-	    (
-	     widget,
-	     eventMask,
-	     False,
-	     ForwardEvent,
-	     (caddr_t)descendant
-	    );
-    }
-    if (might_have_focus) {
-	/* optimization to avoid QueryPointer */
-	register GrabRec *gl;
-	for (gl = grabList; gl != NULL; gl = gl->next) {
-	    if (gl->widget == widget && gl->keyboard_focus != NULL) {
-		had_focus_already = True;
-		break;
+    if (eventMask != 0) {
+	XtAddEventHandler(w, eventMask, False, 
+		ForwardEvent, (caddr_t)descendant);
+	/* If the widget is the shell parent of the descendent, the server
+	   will send the focus notify for us -- we dont't need to */
+	if (w != XtParent(descendant) || !XtIsSubclass(w, shellWidgetClass)) {
+	    /* is the pointer already inside? */
+	    XQueryPointer(XtDisplay(w), XtWindow(w),
+		    &root, &child, &root_x, &root_y, &win_x, &win_y, &mask );
+	    /* We need to take borders into consideration */
+	    left = top = -((int) w->core.border_width);
+	    right = (int) (w->core.width + (w->core.border_width << 1));
+	    bottom = (int) (w->core.height + (w->core.border_width << 1));
+	    if (win_x >= left && win_x < right &&
+		win_y >= top && win_y < bottom) {
+		if (InsertFocusEntry(w, descendant)) {
+		    SendFocusNotify( descendant, FocusIn );
+		}
 	    }
 	}
-    }
-    if (!had_focus_already
-	&& eventMask != 0
-	&& (widget != XtParent(descendant) ||
-	    !XtIsSubclass(widget, shellWidgetClass))) {
-	/* is the pointer already inside? */
-	XQueryPointer( XtDisplay(widget), XtWindow(widget),
-		       &root, &child, &root_x, &root_y,
-		       &win_x, &win_y, &mask );
-	if (win_x >= 0 && win_x < widget->core.width &&
-	    win_y >= 0 && win_y < widget->core.height) {
-	    had_focus_already = True;
-	}
-    }
-    if (had_focus_already) {
-	if (InsertKeyboardGrab( widget, descendant ))
-	    SendFocusNotify( descendant, FocusIn );
     }
 }
 
@@ -1002,90 +1063,39 @@ static void QueryEventMask(widget, client_data, event)
     XEvent *event;
 {
     if (event->type == MapNotify) {
-	/* make sure ancestor still wants focus set here */
-	register XtEventRec* p = ((Widget)client_data)->core.event_table;
-	register XtEventHandler proc = HandleFocus; /* compiler bug */
-	while (p != NULL && p->proc != proc) p = p->next;
-	if (p != NULL && p->closure == (caddr_t)widget)
-	    AddForwardingHandler((Widget)client_data, widget);
-	XtRemoveEventHandler( widget, XtAllEvents, False,
-			      QueryEventMask, client_data );
+	AddForwardingHandler((Widget) client_data, widget);
+	XtRemoveEventHandler(widget, XtAllEvents, True,
+		QueryEventMask, client_data);
     }
 }
-
 
 void XtSetKeyboardFocus(widget, descendant)
     Widget widget;
     Widget descendant;
 {
-    if (descendant == (Widget)None) {
-/*	XtRemoveEventHandler(widget, XtAllEvents, True, HandleFocus, NULL);
-	XtRemoveEventHandler(widget, XtAllEvents, True, ForwardEvent, NULL);
-*/
-	register XtEventRec* p;
-	register XtEventHandler proc;
-	p = widget->core.event_table;
-	proc = HandleFocus;	/* compiler bug */
-	while (p != NULL && p->proc != proc) p = p->next;
-	if (p != NULL) {
-	    descendant = (Widget)p->closure;
-	    XtRemoveEventHandler(widget, XtAllEvents, False,
-				 HandleFocus, p->closure);
-	}
-	p = widget->core.event_table;
-	proc = ForwardEvent;	/* compiler bug */
-	while (p != NULL && p->proc != proc) p = p->next;
-	if (p != NULL) {
-	    XtRemoveEventHandler(widget, XtAllEvents, False,
-				 ForwardEvent, p->closure);
-	}
-	if (RemoveGrab( widget, True ) && descendant != (Widget)None)
-	    SendFocusNotify( descendant, FocusOut );
-    }
-    else {
-	Boolean is_shell = XtIsSubclass(widget, shellWidgetClass);
-	register XtEventRec* p = widget->core.event_table;
-	register XtEventHandler proc = HandleFocus; /* compiler bug */
-	EventMask eventMask =
-	    FocusChangeMask |
-		/* shells are always occluded by their children */
-		((widget == XtParent(descendant) && is_shell)
-			    ? 0 : EnterWindowMask | LeaveWindowMask);
-	while (p != NULL && p->proc != proc) p = p->next;
-	if (is_shell && p != NULL && p->mask != eventMask) {
-	    XtRemoveEventHandler(widget, XtAllEvents, False,
-				 HandleFocus, p->closure);
-	    p = NULL;
-	}
-	if (p == NULL)
-	    XtAddEventHandler
-		(
-		 widget,
-		 eventMask,
-		 False,
-		 HandleFocus,
-		 (caddr_t)descendant
-		);
-	else {
-	    p->closure = (caddr_t)descendant;
-	}
-	if (XtIsRealized(descendant)) {	/* are his translations installed? */
-	    AddForwardingHandler(widget, descendant);
-	}
-	else {			/* we'll have to wait 'till later */
-	    XtAddEventHandler
-		(
-		 descendant,
-		 StructureNotifyMask,
-		 False,
-		 QueryEventMask,
-		 (caddr_t)widget
-		);
-	}
-    }
-    FocusTraceGood = False;
-}
+    EventMask mask;
 
+    if (descendant == (Widget)None) {
+	XtRemoveEventHandler(widget, XtAllEvents, True, HandleFocus, NULL);
+	RemoveGrab(widget, True);
+	return;
+    }
+
+    /* shells are always occluded by their children */
+    mask = FocusChangeMask;
+    if (widget != XtParent(descendant) || 
+	    !XtIsSubclass(widget, shellWidgetClass)) {
+	mask |= EnterWindowMask | LeaveWindowMask;
+    }
+
+    XtAddEventHandler(widget, mask, False, HandleFocus, (caddr_t)descendant);
+
+    /* If his translations aren't installed, we'll have to wait 'till later */
+
+    if (XtIsRealized(descendant)) AddForwardingHandler(widget, descendant);
+    else XtAddEventHandler(descendant, StructureNotifyMask, False,
+		QueryEventMask, (caddr_t)widget);
+}
 
 static SendFocusNotify(child, type)
     Widget child;
@@ -1095,7 +1105,7 @@ static SendFocusNotify(child, type)
     EventMask mask;
     GrabType grabType;
 
-    if (_XtBuildEventMask(child) & FocusChangeMask) {
+    if (XtBuildEventMask(child) && FocusChangeMask) {
 	event.xfocus.serial = LastKnownRequestProcessed(XtDisplay(child));
 	event.xfocus.send_event = True;
 	event.xfocus.display = XtDisplay(child);
