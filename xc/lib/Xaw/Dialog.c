@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.39 90/04/30 17:05:48 converse Exp $";
+static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.40 90/05/08 15:23:22 converse Exp $";
 #endif /* lint */
 
 
@@ -241,7 +241,7 @@ Cardinal *in_num_args;
 		    form.horiz_base = w->dialog.iconW;
 		XtManageChild(w->dialog.iconW);
 	    }
-	} else {
+	} else if (old->dialog.icon != (Pixmap)0) {
 	    ((DialogConstraints)w->dialog.labelW->core.constraints)->
 		    form.horiz_base = (Widget)NULL;
 	    XtDestroyWidget(old->dialog.iconW);
