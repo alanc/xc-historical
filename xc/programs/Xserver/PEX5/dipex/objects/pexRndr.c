@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.19 92/11/19 16:23:41 hersh Exp $ */
+/* $XConsortium: pexRndr.c,v 5.20 92/11/20 16:46:26 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -144,7 +144,7 @@ pexCreateRendererReq    *strmPtr;
     ddPickPath		fakeStrpp, sIDpp;
 
 	
-    if (prend = (ddRendererStr *) LookupIDByType (strmPtr->rdr, PEXRendType))
+    if (!LegalNewID(strmPtr->rdr, cntxtPtr->client))
 	PEX_ERR_EXIT(BadIDChoice,strmPtr->rdr,cntxtPtr);
 
     prend = (ddRendererStr *) Xalloc ((unsigned long)(sizeof(ddRendererStr)));

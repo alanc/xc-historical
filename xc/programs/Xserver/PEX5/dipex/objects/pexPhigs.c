@@ -1,4 +1,4 @@
-/* $XConsortium: pexPhigs.c,v 5.2 92/05/01 17:49:17 hersh Exp $ */
+/* $XConsortium: pexPhigs.c,v 5.3 92/10/15 16:12:19 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -104,7 +104,7 @@ pexCreatePhigsWksReq    *strmPtr;
     diNSHandle ns = 0;
     DrawablePtr pdraw = 0;
 
-    if (pw = (dipexPhigsWks *)LookupIDByType(strmPtr->wks, PEXWksType))
+    if (!LegalNewID(strmPtr->wks, cntxtPtr->client))
 	PEX_ERR_EXIT(BadIDChoice,strmPtr->wks,cntxtPtr);
 
     LU_DRAWABLE(strmPtr->drawable, pdraw);
@@ -164,8 +164,8 @@ pexCreatePhigsWksReq    *strmPtr;
     tables.bufferMode = strmPtr->bufferMode;
 
     /* workstation-drawable cross-references */
-    if (!((wks_draw) = (dipexWksDrawable *) LookupIDByType(strmPtr->drawable,
-							PEXWksDrawableType))) {
+    if (!LegalNewID(strmPtr->drawable, cntxtPtr->client)) {
+
 	wks_draw =
 	    (dipexWksDrawable *) Xalloc ((unsigned long)(sizeof(dipexWksDrawable)
 						+ sizeof(dipexWksDrawableLink)));

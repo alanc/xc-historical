@@ -1,4 +1,4 @@
-/* $XConsortium: pexPc.c,v 5.7 92/06/02 18:13:33 mor Exp $ */
+/* $XConsortium: pexPc.c,v 5.8 92/11/16 13:31:02 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -518,7 +518,7 @@ pexCreatePipelineContextReq	*strmPtr;
     ddPCStr *pc;
     extern	void	DefaultPC();
 
-    if (pc = (ddPCStr *) LookupIDByType (strmPtr->pc, PEXPipeType))
+    if (!LegalNewID(strmPtr->pc, cntxtPtr->client))
 	PEX_ERR_EXIT(BadIDChoice,strmPtr->pc,cntxtPtr);
 
     pc = (ddPCStr *)Xalloc((unsigned long)(sizeof(ddPCStr) + sizeof(ddPCAttr)));

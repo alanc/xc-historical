@@ -1,4 +1,4 @@
-/* $XConsortium: pexStr.c,v 5.1 91/02/16 09:56:50 rws Exp $ */
+/* $XConsortium: pexStr.c,v 5.2 91/03/15 18:26:57 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -73,7 +73,7 @@ pexCreateStructureReq   *strmPtr;
     ErrorCode DeleteStructure ();
     diStructHandle sh;
 
-    if (sh = (diStructHandle) LookupIDByType (strmPtr->id, PEXStructType))
+    if (!LegalNewID(strmPtr->id, cntxtPtr->client))
 	PEX_ERR_EXIT(BadIDChoice,strmPtr->id,cntxtPtr);
 
     sh = (diStructHandle)Xalloc((unsigned long)sizeof(ddStructResource));

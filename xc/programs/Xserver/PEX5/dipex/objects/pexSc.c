@@ -1,4 +1,4 @@
-/* $XConsortium: pexSc.c,v 5.4 92/05/12 18:37:30 mor Exp $ */
+/* $XConsortium: pexSc.c,v 5.5 92/06/02 18:12:19 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -255,7 +255,7 @@ pexCreateSearchContextReq *strmPtr;
     ddSCStr *psc;
     unsigned char *ptr;
 
-    if ( (psc = (ddSCStr *) LookupIDByType (strmPtr->sc, PEXSearchType)))
+    if (!LegalNewID(strmPtr->sc, cntxtPtr->client))
 	PEX_ERR_EXIT(BadIDChoice,strmPtr->sc,cntxtPtr);
 
     CHECK_FP_FORMAT (strmPtr->fpFormat);

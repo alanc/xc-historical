@@ -1,4 +1,4 @@
-/* $XConsortium: pexLut.c,v 5.1 91/02/16 09:56:53 rws Exp $ */
+/* $XConsortium: pexLut.c,v 5.2 92/11/24 13:10:20 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -74,8 +74,8 @@ pexCreateLookupTableReq	*strmPtr;	/* stream pointer 	*/
     if (!VALID_TABLETYPE(strmPtr->tableType))
 	PEX_ERR_EXIT(BadValue,strmPtr->tableType,cntxtPtr);
 
-    lutptr = (diLUTHandle) LookupIDByType (strmPtr->lut, PEXLutType);
-    if (lutptr) PEX_ERR_EXIT(BadIDChoice,strmPtr->lut,cntxtPtr); 
+    if (!LegalNewID(strmPtr->lut, cntxtPtr->client))
+	PEX_ERR_EXIT(BadIDChoice,strmPtr->lut,cntxtPtr);
 
     LU_DRAWABLE(strmPtr->drawableExample, pdraw);
 

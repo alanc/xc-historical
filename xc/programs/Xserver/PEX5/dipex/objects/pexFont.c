@@ -1,4 +1,4 @@
-/* $XConsortium: pexFont.c,v 5.4 91/12/09 17:14:26 converse Exp $ */
+/* $XConsortium: pexFont.c,v 5.5 92/11/24 13:08:37 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -92,7 +92,8 @@ pexOpenFontReq  *strmPtr;
     extern void CopyISOLatin1Lowered();
 
     /* oh, who cares if it's already been opened under this id */
-    if (!(dif = (dipexFont *) LookupIDByType (strmPtr->font, PEXFontType) )) {
+	if (!LegalNewID(strmPtr->font,  cntxtPtr->client)) 
+	    PEX_ERR_EXIT(BadIDChoice,strmPtr->font,cntxtPtr);
 
 	/* has this server already loaded this font */
 	CopyISOLatin1Lowered(	fName, (unsigned char *)(strmPtr+1),
@@ -129,7 +130,7 @@ pexOpenFontReq  *strmPtr;
 
 	ADDRESOURCE(strmPtr->font, PEXFontType, dif);
 
-	} }
+	} 
 
     return(err);
 

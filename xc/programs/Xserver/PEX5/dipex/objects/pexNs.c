@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pexNs.c,v 5.1 91/02/16 09:56:49 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -53,8 +53,9 @@ pexCreateNameSetReq     *strmPtr;
     ErrorCode FreeNameSet (), CreateNameSet ();
     diNSHandle nsptr;
 
-    if (nsptr = (diNSHandle) LookupIDByType (strmPtr->id, PEXNameType))
+    if (!LegalNewID(strmPtr->id, cntxtPtr->client))
 	PEX_ERR_EXIT(BadIDChoice,strmPtr->id,cntxtPtr);
+
 
     nsptr = (diNSHandle) Xalloc ((unsigned long)sizeof(ddNSResource));
     if (!nsptr) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
