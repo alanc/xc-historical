@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibInt.c,v 1.13 93/09/26 21:55:35 rws Exp $ */
+/* $XConsortium: FSlibInt.c,v 1.14 94/01/31 11:29:07 mor Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -1219,7 +1219,9 @@ _FSFreeQ()
 #define NEED_UTSNAME
 #endif
 #ifdef SVR4
+#ifndef _SEQUENT_
 #define NEED_UTSNAME
+#endif
 #endif
 
 #ifdef NEED_UTSNAME
