@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: dispatch.c,v 1.3 94/01/06 23:02:40 rob Exp $ */
+/* $XConsortium: dispatch.c,v 1.4 94/01/10 12:01:30 rob Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -761,7 +761,7 @@ ProcGetGeometry(client)
     register ClientPtr client;
 {
     REPLY_DECL(xGetGeometryReply,rep);
-    register DrawablePtr pDraw;
+    DrawablePtr pDraw;
     REQUEST(xResourceReq);
 
     REQUEST_SIZE_MATCH(xResourceReq);
@@ -2732,10 +2732,10 @@ ProcListInstalledColormaps(client)
         return BadAlloc;
     }
 
-    numMaps = (*pWin->drawable.pScreen->ListInstalledColormaps)
+    nummaps = (*pWin->drawable.pScreen->ListInstalledColormaps)
                          (pWin->drawable.pScreen, colorMaps);
 
-    sizeMaps = numMaps * sizeof(Colormap);
+    sizeMaps = nummaps * sizeof(Colormap);
     replyMaps = (char *) xalloc(sizeMaps);
     if (!replyMaps)
     {
@@ -2752,8 +2752,8 @@ ProcListInstalledColormaps(client)
     preply->type = X_Reply;
     preply->sequenceNumber = client->sequence;
 
-    preply->nColormaps = numMaps;
-    preply->length = numMaps;
+    preply->nColormaps = nummaps;
+    preply->length = nummaps;
 
     msg->pReplyData = replyMaps;
     msg->freeReplyData = TRUE;
