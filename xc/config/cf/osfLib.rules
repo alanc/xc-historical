@@ -1,4 +1,4 @@
-XCOMM $XConsortium: osfLib.rules,v 1.8 93/09/11 17:57:54 rws Exp $
+XCOMM $XConsortium: osfLib.rules,v 1.9 94/01/18 14:58:49 rws Exp $
 
 /*
  * OSF/1 shared library rules
@@ -56,8 +56,10 @@ install:: Concat(lib,libname.so.rev) 					@@\
 #ifndef PackageName(libname)
 #if ModernOSF1
 #define PackageName(libname) /**/
+#define Objects(objlist) -all objlist -none 
 #else
 #define PackageName(libname) -package libname
+#define Objects(objlist) objlist
 #endif
 #endif
 #if ThreadedX && ModernOSF1
@@ -78,7 +80,9 @@ AllTarget(Concat(lib,libname.so.rev))					@@\
 									@@\
 Concat(lib,libname.so.rev):  solist					@@\
 	$(RM) $@~							@@\
-	(cd down; $(LD) -o up/$@~ $(SHLIBLDFLAGS) PackageName($@) -soname $@ solist $(REQUIREDLIBS) BaseShLibReqs) @@\
+	(cd down; $(LD) -o up/$@~ $(SHLIBLDFLAGS) PackageName($@) \	@@\
+		-soname $@ Objects(solist) \				@@\
+		$(REQUIREDLIBS) BaseShLibReqs) 				@@\
 	$(RM) $@ 							@@\
 	$(MV) $@~ $@							@@\
 	$(RM) Concat(lib,libname.so)					@@\
@@ -94,7 +98,9 @@ AllTarget(Concat(lib,libname.so.rev))					@@\
 									@@\
 Concat(lib,libname.so.rev):  solist					@@\
 	$(RM) $@~							@@\
-	$(LD) -o $@~ $(SHLIBLDFLAGS) PackageName($@) -soname $@ solist $(REQUIREDLIBS) BaseShLibReqs @@\
+	$(LD) -o $@~ $(SHLIBLDFLAGS) PackageName($@) \			@@\
+		-soname $@ Objects(solist) \				@@\
+		$(REQUIREDLIBS) BaseShLibReqs 				@@\
 	$(RM) $@ 							@@\
 	$(MV) $@~ $@							@@\
 	$(RM) Concat(lib,libname.so)					@@\
