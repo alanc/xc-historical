@@ -22,7 +22,7 @@
  * $NCDId: @(#)lbxfuncs.c,v 1.31 1994/03/24 17:54:54 lemke Exp $
  */
 
-/* $XConsortium: lbxfuncs.c,v 1.4 94/03/08 20:51:22 dpw Exp $ */
+/* $XConsortium: lbxfuncs.c,v 1.5 94/03/27 13:42:04 dpw Exp mor $ */
 
 /*
  * top level LBX request & reply handling
@@ -1732,6 +1732,10 @@ DoLBXReply(client, data, len)
 	    break;
 	case X_LbxQueryTag:
 	    remove_it = GetQueryTagReply(client, (char *) reply);
+	    ret = FALSE;
+	    break;
+	case X_LbxGetImage:
+	    remove_it = GetLbxImageReply(client, (char *) reply);
 	    ret = FALSE;
 	    break;
 	default:
