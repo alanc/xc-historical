@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 3.3 93/08/08 13:15:18 rws Exp $
+XCOMM $XConsortium: Imakefile,v 3.4 93/09/04 17:27:25 rws Exp $
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -24,6 +24,8 @@ LOBJS = \
 
 DEFINES = $(ANSI_DEFINES)
 
+LIB_DEFINES = -DLIBDIR=\"$(LIBDIR)\"
+
 INCLUDES = -I. -I./include -I./input -I../../mfb -I../../cfb -I../../mi \
 	-I../../include -I$(INCLUDESRC) -I$(EXTINCSRC)
 
@@ -37,5 +39,6 @@ DependSubdirs($(SUBDIRS))
 
 NormalLibraryObjectRule()
 NormalRelocatableTarget(hp,$(OBJS))
+SpecialCObjectRule(hpInit,$(ICONFIGFILES),$(LIB_DEFINES))
 DependTarget()
 
