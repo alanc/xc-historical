@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.64 90/03/05 16:29:01 jim Exp $
+ * $XConsortium: resize.c,v 1.65 90/03/05 16:47:07 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.64 90/03/05 16:29:01 jim Exp $";
+"$XConsortium: resize.c,v 1.65 90/03/05 16:47:07 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -628,7 +628,7 @@ void SetupWindow (tmp_win, x, y, w, h, bw)
     XEvent client_event;
     XWindowChanges frame_wc, xwc;
     unsigned long frame_mask, xwcm;
-    int title_width;
+    int title_width, title_height;
     int sendEvent;
 #ifdef SHAPE
     int reShape;
@@ -665,6 +665,7 @@ void SetupWindow (tmp_win, x, y, w, h, bw)
 
     xwcm = CWWidth;
     title_width = xwc.width = w;
+    title_height = Scr->TitleHeight + bw;
 
     ComputeWindowTitleOffsets (tmp_win, xwc.width, True);
 
@@ -678,6 +679,7 @@ void SetupWindow (tmp_win, x, y, w, h, bw)
 	    xwc.width = title_width;
 	    if (tmp_win->frame_height != h ||
 	    	tmp_win->frame_width != w ||
+		tmp_win->frame_bw != bw ||
 	    	title_width != tmp_win->title_width)
 	    	reShape = TRUE;
 	}
@@ -690,8 +692,18 @@ void SetupWindow (tmp_win, x, y, w, h, bw)
 #endif
 
     tmp_win->title_width = title_width;
-    if (tmp_win->title_w)
+    if (tmp_win->title_height) tmp_win->title_height = title_height;
+
+    if (tmp_win->title_w) {
+	if (bw != tmp_win->frame_bw) {
+	    xwc.border_width = bw;
+	    tmp_win->title_x = xwc.x = -bw;
+	    tmp_win->title_y = xwc.y = -bw;
+	    xwcm |= (CWX | CWY | CWBorderWidth);
+	}
+	
 	XConfigureWindow(dpy, tmp_win->title_w, xwcm, &xwc);
+    }
 
     tmp_win->attr.width = w;
     tmp_win->attr.height = h - tmp_win->title_height;
@@ -700,7 +712,7 @@ void SetupWindow (tmp_win, x, y, w, h, bw)
 		       w, h - tmp_win->title_height);
 
     /* 
-     * fix up frame
+     * fix up frame and assign size/location values in tmp_win
      */
     frame_mask = 0;
     if (bw != tmp_win->frame_bw) {
@@ -744,12 +756,13 @@ void SetupWindow (tmp_win, x, y, w, h, bw)
         client_event.xconfigure.display = dpy;
         client_event.xconfigure.event = tmp_win->w;
         client_event.xconfigure.window = tmp_win->w;
-        client_event.xconfigure.x = x+tmp_win->frame_bw;
-        client_event.xconfigure.y = y+tmp_win->frame_bw + tmp_win->title_height;
+        client_event.xconfigure.x = (x + tmp_win->frame_bw - tmp_win->old_bw);
+        client_event.xconfigure.y = (y + tmp_win->frame_bw +
+				     tmp_win->title_height - tmp_win->old_bw);
         client_event.xconfigure.width = tmp_win->frame_width;
         client_event.xconfigure.height = tmp_win->frame_height -
                 tmp_win->title_height;
-        client_event.xconfigure.border_width = 0;
+        client_event.xconfigure.border_width = tmp_win->old_bw;
         /* Real ConfigureNotify events say we're above title window, so ... */
 	/* what if we don't have a title ????? */
         client_event.xconfigure.above = tmp_win->frame;

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.127 90/03/05 16:43:39 jim Exp $
+ * $XConsortium: events.c,v 1.128 90/03/05 17:31:53 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.127 90/03/05 16:43:39 jim Exp $";
+"$XConsortium: events.c,v 1.128 90/03/05 17:31:53 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2079,11 +2079,14 @@ HandleConfigureRequest()
     GetGravityOffsets (Tmp_win, &gravx, &gravy);
 
     if (cre->value_mask & CWBorderWidth) {
-	int bwdelta = cre->border_width - Tmp_win->old_bw;
+	int bwdelta = cre->border_width - Tmp_win->old_bw;  /* posit growth */
 	if (bwdelta && Scr->ClientBorderWidth) {  /* if change allowed */
 	    x += gravx * bwdelta;	/* change default values only */
 	    y += gravy * bwdelta;	/* ditto */
 	    bw = cre->border_width;
+	    if (Tmp_win->title_height) height += bwdelta;
+	    x += (gravx < 0) ? bwdelta : -bwdelta;
+	    y += (gravy < 0) ? bwdelta : -bwdelta;
 	}
 	Tmp_win->old_bw = cre->border_width;  /* for restoring */
     }
@@ -2092,14 +2095,14 @@ HandleConfigureRequest()
 	x = cre->x - bw;
     }
     if (cre->value_mask & CWY) {
-	y = cre->y - ((gravy >= 0) ? Tmp_win->title_height : 0) - bw;
+	y = cre->y - ((gravy < 0) ? 0 : Tmp_win->title_height) - bw;
     }
 
     if (cre->value_mask & CWWidth) {
 	width = cre->width;
     }
     if (cre->value_mask & CWHeight) {
-	height = cre->height + Tmp_win->title_height;
+	height = cre->height + Scr->TitleHeight + bw;
     }
 
     if (width != Tmp_win->frame_width || height != Tmp_win->frame_height)
@@ -2107,7 +2110,10 @@ HandleConfigureRequest()
 
     /*
      * SetupWindow (x,y) are the location of the upper-left outer corner and
-     * are passed directly to XMoveResizeWindow (frame).
+     * are passed directly to XMoveResizeWindow (frame).  The (width,height)
+     * are the inner size of the frame.  The inner width is the same as the 
+     * requested client window width; the inner height is the same as the
+     * requested client window height plus any title bar slop.
      */
     SetupWindow (Tmp_win, x, y, width, height, bw);
 }
