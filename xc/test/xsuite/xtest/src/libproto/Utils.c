@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: Utils.c,v 1.3 92/06/11 15:53:08 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -38,14 +38,6 @@
  *  SOFTWARE.                                                                *
  * ***************************************************************************
  */
-
-/*
- *	$Header: Utils.c 1.4 89/04/17 $
- */
-
-#ifndef lint
-static char rcsid[]="$Header: Utils.c 1.4 89/04/17 $";
-#endif
 
 /* UNIX/DYNIX library for X Server tests.  
  *

@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: ShowErr.c,v 1.3 92/06/11 15:52:00 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -38,14 +38,6 @@
  *  SOFTWARE.                                                                *
  * ***************************************************************************
  */
-
-/*
- *	$Header: ShowErr.c 1.7 89/04/17 $
- */
-
-#ifndef lint
-static char rcsid[]="$Header: ShowErr.c 1.7 89/04/17 $";
-#endif
 
 #include "XstlibInt.h"
 

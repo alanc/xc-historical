@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: Log.c,v 1.6 92/06/11 15:50:40 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -38,14 +38,6 @@
  *  SOFTWARE.                                                                *
  * ***************************************************************************
  */
-
-/*
- *	$Header: Log.c 1.8 89/04/17 $
- */
-
-#ifndef lint
-static char rcsid[] = "$Header: Log.c 1.8 89/04/17 $";
-#endif
 
 #include "XstlibInt.h"
 #include "stdlib.h"

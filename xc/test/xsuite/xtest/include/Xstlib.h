@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: Xstlib.h,v 1.11 92/07/01 10:59:42 rws Exp $
+ * $XConsortium: Xstlib.h,v 1.12 92/12/21 09:22:37 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -37,10 +37,6 @@
  *  ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS      *
  *  SOFTWARE.                                                                *
  * ***************************************************************************
- */
-
-/*
- *	$Header: Xstlib.h,v 1.11 92/07/01 10:59:42 rws Exp $
  */
 
 /*

@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: DataMove.c,v 1.3 92/06/11 15:50:10 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -39,15 +39,7 @@
  * ***************************************************************************
  */
 
-/*
- *	$Header: DataMove.c 1.11 89/04/17 $
- */
-
 extern unsigned char native_byte_sex ();
-
-#ifndef lint
-static char rcsid[]="$Header: DataMove.c 1.11 89/04/17 $";
-#endif
 
 #include "XstlibInt.h"
 #include "DataMove.h"

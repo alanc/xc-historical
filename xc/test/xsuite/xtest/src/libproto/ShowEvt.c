@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: ShowEvt.c,v 1.4 92/06/11 15:52:08 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -38,14 +38,6 @@
  *  SOFTWARE.                                                                *
  * ***************************************************************************
  */
-
-/*
- *	$Header: ShowEvt.c 1.6 89/04/17 $
- */
-
-#ifndef lint
-static char rcsid[]="$Header: ShowEvt.c 1.6 89/04/17 $";
-#endif
 
 #include "XstlibInt.h"
 

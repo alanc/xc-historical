@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: RcvErr.c,v 1.2 92/06/11 15:51:07 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -38,14 +38,6 @@
  *  SOFTWARE.                                                                *
  * ***************************************************************************
  */
-
-/*
- *	$Header: RcvErr.c 1.4 89/04/17 $
- */
-
-#ifndef lint
-static char rcsid[]="$Header: RcvErr.c 1.4 89/04/17 $";
-#endif
 
 #include "XstlibInt.h"
 #include "DataMove.h"

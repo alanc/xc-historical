@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: Xstos.h,v 1.5 92/06/11 15:31:47 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -39,14 +39,7 @@
  * ***************************************************************************
  */
 
-/*
- *	$Header: Xstos.h 1.3 88/07/28 $
- */
-
-/* Header file for UNIX library for X Server tests.  
- *
- * $Header: Xstos.h 1.3 88/07/28 $
- */
+/* Header file for UNIX library for X Server tests. */
 
 /*
  * System header files.

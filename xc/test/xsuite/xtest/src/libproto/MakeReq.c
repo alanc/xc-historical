@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: MakeReq.c,v 1.17 92/06/11 15:50:48 rws Exp $
+ * $XConsortium: MakeReq.c,v 1.18 92/12/21 09:22:01 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -38,14 +38,6 @@
  *  SOFTWARE.                                                                *
  * ***************************************************************************
  */
-
-/*
- *	$Header: MakeReq.c,v 1.17 92/06/11 15:50:48 rws Exp $
- */
-
-#ifndef lint
-static char rcsid[]="$Header: MakeReq.c,v 1.17 92/06/11 15:50:48 rws Exp $";
-#endif
 
 #include "DataMove.h"
 #include "XstlibInt.h"

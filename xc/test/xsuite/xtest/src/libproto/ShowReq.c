@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: ShowReq.c,v 1.7 92/06/11 15:52:29 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -38,14 +38,6 @@
  *  SOFTWARE.                                                                *
  * ***************************************************************************
  */
-
-/*
- *	$Header: ShowReq.c 1.10 89/02/23 $
- */
-
-#ifndef lint
-static char rcsid[]="$Header: ShowReq.c 1.10 89/02/23 $";
-#endif
 
 #include "XstlibInt.h"
 

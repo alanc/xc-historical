@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: SendSup.c,v 1.10 92/06/11 15:51:53 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -38,14 +38,6 @@
  *  SOFTWARE.                                                                *
  * ***************************************************************************
  */
-
-/*
- *	$Header: SendSup.c 1.5 89/04/17 $
- */
-
-#ifndef lint
-static char rcsid[]="$Header: SendSup.c 1.5 89/04/17 $";
-#endif
 
 #include "XstlibInt.h"
 #include "DataMove.h"

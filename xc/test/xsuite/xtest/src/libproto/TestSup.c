@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: TestSup.c,v 1.2 92/06/11 15:52:53 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -38,14 +38,6 @@
  *  SOFTWARE.                                                                *
  * ***************************************************************************
  */
-
-/*
- *	$Header: TestSup.c 1.9 89/04/17 $
- */
-
-#ifndef lint
-static char rcsid[]="$Header: TestSup.c 1.9 89/04/17 $";
-#endif
 
 #include <stdio.h>
 #include "Xstlib.h"

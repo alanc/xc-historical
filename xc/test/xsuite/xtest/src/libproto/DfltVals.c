@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: DfltVals.c,v 1.5 92/06/11 15:50:24 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -38,14 +38,6 @@
  *  SOFTWARE.                                                                *
  * ***************************************************************************
  */
-
-/*
- *	$Header: DfltVals.c 1.4 89/04/17 $
- */
-
-#ifndef lint
-static char rcsid[]="$Header: DfltVals.c 1.4 89/04/17 $";
-#endif
 
 #include "XstlibInt.h"
 

@@ -13,7 +13,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: SendReq.c,v 1.9 92/06/11 15:51:45 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -39,14 +39,6 @@
  *  SOFTWARE.                                                                *
  * ***************************************************************************
  */
-
-/*
- *	$Header: SendReq.c 1.15 89/04/17 $
- */
-
-#ifndef lint
-static char rcsid[]="$Header: SendReq.c 1.15 89/04/17 $";
-#endif
 
 #include "XstlibInt.h"
 #include "DataMove.h"

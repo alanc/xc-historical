@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: Expect.c,v 1.15 92/06/11 15:50:31 rws Exp $
+ * $XConsortium: Expect.c,v 1.16 92/12/21 09:21:20 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -38,14 +38,6 @@
  *  SOFTWARE.                                                                *
  * ***************************************************************************
  */
-
-/*
- *	$Header: Expect.c,v 1.15 92/06/11 15:50:31 rws Exp $
- */
-
-#ifndef lint
-static char rcsid[] = "$Header: Expect.c,v 1.15 92/06/11 15:50:31 rws Exp $";
-#endif
 
 #include "XstlibInt.h"
 

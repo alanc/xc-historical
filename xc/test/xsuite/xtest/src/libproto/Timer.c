@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: Timer.c,v 1.9 92/06/11 15:53:00 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -38,14 +38,6 @@
  *  SOFTWARE.                                                                *
  * ***************************************************************************
  */
-
-/*
- *	$Header: Timer.c 1.8 89/04/17 $
- */
-
-#ifndef lint
-static char rcsid[] = "$Header: Timer.c 1.8 89/04/17 $";
-#endif
 
 /* UNIX/DYNIX library for X Server tests.  
  *

@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: Validate.c,v 1.5 92/06/11 15:53:24 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -38,14 +38,6 @@
  *  SOFTWARE.                                                                *
  * ***************************************************************************
  */
-
-/*
- *	$Header: Validate.c 1.1 89/02/23 $
- */
-
-#ifndef lint
-static char rcsid[]="$Header: Validate.c 1.1 89/02/23 $";
-#endif
 
 #include "Xstlib.h"
 #include <X11/X.h>

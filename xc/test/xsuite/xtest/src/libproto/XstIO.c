@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: XstIO.c,v 1.8 92/06/11 15:53:15 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -38,14 +38,6 @@
  *  SOFTWARE.                                                                *
  * ***************************************************************************
  */
-
-/*
- *	$Header: XstIO.c 1.6 89/04/17 $
- */
-
-#ifndef lint
-static char rcsid[]="$Header: XstIO.c 1.6 89/04/17 $";
-#endif
 
 #include "XstlibInt.h"
 #include "XstosInt.h"
