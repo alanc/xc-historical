@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.40 91/04/16 09:02:34 rws Exp $
+ * $XConsortium: Xos.h,v 1.41 91/05/04 12:00:56 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -39,7 +39,13 @@
 #define __TYPES__
 #endif /* __TYPES__ */
 #else /* USG */
+#if !defined(_POSIX_SOURCE) || !defined(MOTOROLA)
 #include <sys/types.h>
+#else
+#undef _POSIX_SOURCE
+#include <sys/types.h>
+#define _POSIX_SOURCE
+#endif
 #endif /* USG */
 
 
