@@ -1,4 +1,4 @@
-/* $XConsortium: Composite.c,v 1.15 90/12/31 17:03:49 rws Exp $ */
+/* $XConsortium: Composite.c,v 1.16 91/01/06 13:32:04 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,11 +30,11 @@ SOFTWARE.
 
 static XtResource resources[] = {
     {XtNchildren, XtCReadOnly, XtRWidgetList, sizeof(WidgetList),
-     XtOffset(CompositeWidget, composite.children), XtRImmediate, NULL},
+     XtOffsetOf(CompositeRec, composite.children), XtRImmediate, NULL},
     {XtNnumChildren, XtCReadOnly, XtRCardinal, sizeof(Cardinal),
-     XtOffset(CompositeWidget, composite.num_children), XtRImmediate, 0},
+     XtOffsetOf(CompositeRec, composite.num_children), XtRImmediate, 0},
     {XtNinsertPosition, XtCInsertPosition, XtRFunction, sizeof(XtOrderProc),
-     XtOffset(CompositeWidget, composite.insert_position), XtRImmediate, NULL},
+     XtOffsetOf(CompositeRec, composite.insert_position), XtRImmediate, NULL},
 };
 
 void CompositeClassPartInitialize();
