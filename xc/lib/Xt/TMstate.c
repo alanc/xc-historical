@@ -260,7 +260,6 @@ EventObjPtr EventMapObjectCreate(translations, eventSeq)
   EventSeqPtr eventSeq;
 {
     EventObjPtr new;
-    int i;
 
     if (FindEvent(translations, eventSeq) >= 0)
 	return translations->eventObjTbl;

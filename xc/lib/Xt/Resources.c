@@ -461,7 +461,7 @@ static void XrmSetValues(base, resources, num_resources, args, num_args)
     /* Resource lists are assumed to be in compiled form already via the
        initial XtGetResources, XtGetSubresources calls */
 
-    for (arg = args ; --num_args >= 0; arg++) {
+    for (arg = args ; --num_args != 0; arg++) {
 	argName = StringToName(arg->name);
 	for (xrmres = (XrmResourceList) resources, i = 0;
 	     i < num_resources;
