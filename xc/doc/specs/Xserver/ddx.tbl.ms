@@ -1,4 +1,4 @@
-.\" $Header: ddx.doc.tbl.ms,v 1.4 87/09/12 23:34:52 swick Locked $
+.\" $Header: ddx.doc.tbl.ms,v 1.5 87/09/15 08:17:39 swick Exp $
 .EF 'Porting Layer Definition'- % -'September 12, 1987'
 .OF 'Porting Layer Definition'- % -'September 12, 1987'
 .EH '''
@@ -819,12 +819,12 @@ Font Files
 	int FiClose(fid)
 		FID fid;
 .fi
-These routines are analogous to DIX runtime library routines.
+These routines are analogous to DDX SNF runtime library routines.
 FID is an OS specific type.  
 The open routine takes a font filename, as returned by ExpandFontName().
 In other words, if font filenames really are not filenames, then these routines
 should not open real files.
-You must supply them for DIX.
+You must supply them if you use the DDX SNF library.
 Refer to a C runtime library reference manual for more details.
 .nf
 
@@ -1023,7 +1023,7 @@ if the pointing device has moved since the last notify.
 Intermediate pointing device moves are stored in a special GetMotionEvents buffer,
 because most client programs are not interested in them.
 
-The sample server implementation is in server/ddx/qvss/qvss_io.c.
+The sample server implementation is in server/ddx/dec/qvss/qvss_io.c.
 
 .NH 3
 Telling DIX When Input is Pending
@@ -1078,7 +1078,7 @@ something pending.
 The DDX layer of the sample server calls SetInputCheck()
 once when the
 server's private internal queue is initialized 
-(server/include/qvss/qvss_io.c, qvssMouseProc).
+(server/ddx/dec/qvss/qvss_io.c, qvssMouseProc).
 It passes pointers to the queue's head and tail.
 
 .nf
@@ -1089,7 +1089,7 @@ events.  But DIX sometimes needs to know the
 time and the OS layer needs to know the time since the last hardware
 input event in
 order for the screen saver to work.   TimeSinceLastEvent() returns
-the this time in milliseconds.  (See server/ddx/qvss/qvss_io.c)
+the this time in milliseconds.  (See server/ddx/dec/qvss/qvss_io.c)
 
 .NH 3
 Controlling Input Devices
@@ -1102,7 +1102,7 @@ things with the keyboard and pointing device.
 They can have any name you wish because 
 you pass the procedure pointers to DIX routines.
 
-The sample server implementations are in server/ddx/qvss/qvss_io.c.
+The sample server implementations are in server/ddx/dec/qvss/qvss_io.c.
 
 .nf
 
@@ -1182,7 +1182,7 @@ input subsystem in DDX.
 It must call AddInputDevice() for each device that might generate events.
 In addition, you must register the main keyboard and pointing devices by
 calling RegisterPointerDevice() and RegisterKeyboardDevice().
-The sample server implementation is in server/ddx/qvss/init.c.
+The sample server implementation is in server/ddx/dec/qvss/init.c.
 .nf
 
 	DevicePtr AddInputDevice(deviceProc, autoStart)
@@ -1278,7 +1278,7 @@ DEVICE_CLOSE - At DEVICE_CLOSE (terminate or reset) time, the device should
 be totally closed down.
 .LP
 The sample server implementations for keyboard and mouse are in
-server/ddx/qvss/qvss_io.c.
+server/ddx/dec/qvss/qvss_io.c.
 .nf
 
 	void InitPointerDeviceStruct(device, map, mapLength, GetMotionEvents, ControlProc)
@@ -1522,7 +1522,7 @@ You should also set certain implementation-dependent numbers and
 procedures in your
 screenInfo, which determines
 the pixmap and scanline padding rules for all screens in the server.
-(See the QVSS sample server implementation in ddx/qvss/init.c.)
+(See the QVSS sample server implementation in server/ddx/ddx/qvss/init.c.)
 .nf
 
 	int AddScreen(scrInitProc, argc, argv)
@@ -1566,7 +1566,7 @@ The initialization procedure should fill in all the screen procedures
 for that screen (windowing functions, region functions, etc.) and certain
 screen attributes for that screen.
 .LP
-See server/ddx/qvss/init.c and server/ddx/mfb/mfbscrinit.c for more details.
+See server/ddx/dec/qvss/init.c and server/ddx/mfb/mfbscrinit.c for more details.
 
 .NH 3
 Region Routines in the ScreenRec
@@ -1797,7 +1797,7 @@ the cursor image should be able to flutter as fast as the user moves it
 across the screen.
 
 The sample server implementations of most of these routines are in 
-server/ddx/qvss/qvss_io.c.
+server/ddx/dec/qvss/qvss_io.c.
 
 You must implement the following routines for your hardware:
 .nf
@@ -2109,7 +2109,8 @@ set to no-op procedures.
 .LP
 This routine is called by the DIX CreateColormap routine after it has allocated
 all the data for the new colormap and just before it returns to the dispatcher.
-It is the DDX layer's chance to initialize the colormap.  See the following
+It is the DDX layer's chance to initialize the colormap, particularly if it is
+a static map.  See the following
 section for more details on initializing colormaps.
 Notice that the colormap has a devPriv field from which you can hang any
 colormap specific storage you need.  Since each colormap might need special
@@ -2163,19 +2164,13 @@ server/dix/colormap.c.)
 
 	int pScreen->ListInstalledColormaps(pScreen, pCmapList)
 		ScreenPtr pScreen;
-		ColormapPtr pCmapList;
+		Colormap *pCmapList;
 .fi
 .LP
-ListInstalledColormaps fills the pCMapList in with pointers to installed maps and returns a count
-of installed maps.
-pCmapList will point to an array of size MaxInstalledMaps that was allocated by the caller.
-.nf
-
-	ColormapPtr pScreen->GetStaticColormap(pVisual)
-		VisualPtr pVisual;
-.fi
-Given a visual (one of the visuals that the server declared it could handle), you should return a
-hard-wired colormap.
+ListInstalledColormaps fills the pCMapList in with the resource ids
+of the installed maps and returns a count of installed maps.
+pCmapList will point to an array of size MaxInstalledMaps that was allocated
+by the caller.
 .nf
 
 	void pScreen->StoreColors (pmap, ndef, pdefs)
@@ -2237,9 +2232,20 @@ If the colormap is static, which you can tell by looking at the class field,
 you will want to fill in each color cell to match the hardwares notion of the
 color for that pixel.
 If the colormap is the default for the screen, which you can tell by looking
-at the flags field, you will want to allocate BlackPixel and WhitePixel
-to match the values you set in the pScreen structure.
+at the IsDefault bit in the flags field, you should allocate BlackPixel
+and WhitePixel to match the values you set in the pScreen structure.
 (Of course, you picked those values to begin with.)
+.LP
+You can also wait and use AllocColor() to allocate blackPixel 
+and whitePixel after the default colormap has been created.
+If the default colormap is static and you initialized it in
+pScreen->CreateColormap, then use can use AllocColor afterwards
+to choose pixel values with the closest rgb values to those
+desired for blackPixel and whitePixel.
+If the default colormap is dynamic and uninitialized, then
+the rgb values you request will be obeyed, and AllocColor will
+again choose pixel values for you.
+These pixel values can then be stored into the screen.
 .LP
 There are two ways to fill in the colormap.
 The simplest way is to use AllocColor.  
@@ -2263,8 +2269,10 @@ If you don't care which pixel is used, or would like them sequentially
 allocated from entry 0, set *pPix to 0.  This will find the first free
 pixel and use that.
 .LP
-AllocColor will take care of all the bookkeeping and will call StoreColors
-to get the hardware colormap changed.
+AllocColor will take care of all the  bookkeeping  and  will
+call StoreColors to get the colormap rgb values initialized.
+The hardware colormap will be changed whenever this colormap
+is installed.
 .LP
 If for some reason AllocColor doesn't do what you want, you can do your
 own bookkeeping and call StoreColors yourself.  This is much more difficult
@@ -2385,6 +2393,99 @@ beginning.
 The strings array is NOT padded to a 4-byte boundary.
 
 .NH 4
+Font Loading and Manipulation
+.XS
+Font Loading and Manipulation
+.XE
+.LP
+
+There are a number of routines used by the server to deal with loading
+and manipulating fonts.  Routines to deal with SNF format are
+supplied (in server/ddx/snf), but you can replace these if you want to
+do conversion from other formats.
+.nf
+
+	SetDefaultFont(defaultfontname)
+		char *defaultfontname;
+.fi
+SetDefaultFont establishes the default font in graphics contexts.
+.nf
+
+	FontPtr OpenFont(lenfname, pfilename)
+		unsigned lenfname;
+		char *pfilename;
+.fi
+OpenFont is the primary routine for loading a font.
+It should call ExpandFontName, and should try to share
+any existing font structure for the font.  It must also
+call RealizeFont for each screen.
+.nf
+
+	int CloseFont(pfont)
+		FontPtr pfont;
+.fi
+CloseFont is used to close a font.  It should free the
+storage if the font is no longer used (if decrementing
+the reference count makes it zero).
+.nf
+
+	Bool DescribeFont(pfontname, lenfname, pfi, ppfp)
+		char *pfontname;
+		int lenfname;
+		FontInfoPtr pfi;
+		DIXFontPropPtr *ppfp;
+.fi
+DescribeFont gets used by ListFontsWithInfo to extract
+metric and property information from the font.  It should
+return False if the font does not exist.  The font name
+should be expanded with ExpandFontName.
+.nf
+
+	void QueryFont(pf, pr, nprotoxcistructs)
+		FontPtr pf;
+		xQueryFontReply *pr;
+		int nprotoxcistructs;
+.fi
+QueryFont should fill in the reply structure with all
+the appropriate information.  The caller must have
+allocated sufficient space after the reply structure
+to hold all of the font properties.
+.nf
+
+	void GetGlyphs(font, count, chars, fontEncoding, glyphcount, glyphs)
+		FontPtr font;
+		unsigned long count;
+		register unsigned char *chars;
+		FontEncoding fontEncoding;
+		unsigned long *glyphcount;
+		CharInfoPtr glyphs[];
+.fi
+GetGlyphs extracts glyph information for the given characters
+from the font, which is assumed to have the specified glyph encoding.
+The glyphs array is preallocated by the caller.  The glyphcount
+should be set to the number of glyphs stored.
+.nf
+
+	void QueryGlyphExtents(font, charinfo, count, info)
+		FontPtr font;
+		CharInfoPtr *charinfo;
+		unsigned long count;
+		register ExtentInfoRec *info;
+.fi
+QueryGlyphExtents should calculate the extents (according to the
+rules given in the protocol for QueryTextExtent) of the string
+represented by the list of charinfos.
+.nf
+
+void QueryTextExtents(font, count, chars, info)
+		FontPtr font;
+		unsigned long count;
+		unsigned char *chars;
+		ExtentInfoRec *info;
+.fi
+QueryTextExtents is a composition of GetGlyphs and QueryGlyphExtents.
+
+.NH 4
 Font Realization
 .XS
 Font Realization
@@ -2460,7 +2561,7 @@ The sample server implementation is in server/ddx/mfb/mfbmisc.c.
 .fi
 SaveScreen() is used for Screen Saver support (see WaitForSomething()).
 pScreen is the screen to save.
-See also server/ddx/qvss/qvss_io.c, and server/os/4.2bsd/WaitFor.c.
+See also server/ddx/dec/qvss/qvss_io.c, and server/os/4.2bsd/WaitFor.c.
 .nf
 
 	Bool pScreen->CloseScreen(pScreen)
@@ -2793,6 +2894,22 @@ ValidateTree calculates the clipping region for the parent window and
 all of its children.
 This routine must be provided. The sample
 server has a machine-independent version in server/ddx/mi/mivaltree.c.
+.nf
+
+	void pScreen->WindowExposures(pWin, pRegion)
+		WindowPtr pWin;
+		RegionPtr pRegion;
+.fi
+The WindowExposures() routine
+paints the border and generates exposure events for the window.
+Since exposure events include a rectangle describing what was exposed, 
+this routine may have to send back a series of exposure events, one for
+each rectangle of the region.  
+The count field in the expose event is a hint to the
+client as to the number of
+regions that are after this one.
+This routine must be provided. The sample
+server has a machine-independent version in server/ddx/mi/miexpose.c.
 
 .NH 4
 Window Procedures in the WindowRec
@@ -2833,20 +2950,6 @@ rectangle in question (probably using PaintWindowBackground).
 If w or h is zero, it clears all the way to the right or lower edge of the window.
 
 The sample server implementation is in server/ddx/mi/miwindow.c.
-.nf
-
-	void pWindow->WindowExposures(pWin, pRegion)
-		WindowPtr pWin;
-		RegionPtr pRegion;
-.fi
-The WindowExposures() routine
-paints the border and generates exposure events for the window.
-Since exposure events include a rectangle describing what was exposed, 
-this routine may have to send back a series of exposure events, one for
-each rectangle of the region.  
-The count field in the expose event is a hint to the
-client as to the number of
-regions that are after this one.
 .nf
 
 	void pWindow->PaintWindowBackground(pWin, region, kind)
@@ -4088,7 +4191,7 @@ dix	portable to all systems; do not attempt to rewrite (server/dix)
 4.2	written for 4.2/4.3bsd Unix or equivalent (server/os/4.2bsd)
 mfb	routine provided in server/ddx/mfb
 mi	routine provided in server/ddx/mi
-hd	hardware dependent (example in server/ddx/qvss)
+hd	hardware dependent (example in server/ddx/dec/qvss)
 none	not implemented in sample implementation
 .TE
 .TS
