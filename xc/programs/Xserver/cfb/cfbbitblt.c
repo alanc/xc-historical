@@ -79,6 +79,162 @@ destination.  this is a simple translation.
     do graphics exposures
 */
 
+void
+cfbCopyArea(pSrcDrawable, pDstDrawable,
+            pGC, srcx, srcy, width, height, dstx, dsty)
+register DrawablePtr pSrcDrawable;
+register DrawablePtr pDstDrawable;
+GC *pGC;
+int srcx, srcy;
+int width, height;
+int dstx, dsty;
+{
+    BoxRec srcBox;
+    RegionPtr prgnSrcClip;      /* may be a new region, or just a copy */
+    int realSrcClip = 0;        /* non-0 if we've created a src clip */
+ 
+    RegionPtr prgnDst;
+    DDXPointPtr pptSrc;
+    register DDXPointPtr ppt;
+    register BoxPtr pbox;
+    int i;
+    register int dx;
+    register int dy;
+    xRectangle origSource;
+    DDXPointRec origDest;
+
+    origSource.x = srcx;
+    origSource.y = srcy;
+    origSource.width = width;
+    origSource.height = height;
+    origDest.x = dstx;
+    origDest.y = dsty;
+
+    /*
+       clip the left and top edges of the source
+    */
+    if (srcx < 0)
+    {
+        width += srcx;
+        srcx = 0;
+    }
+    if (srcy < 0)
+    {
+        height += srcy;
+        srcy = 0;
+    }
+
+    /* clip the source */
+
+    if (pSrcDrawable->type == DRAWABLE_PIXMAP)
+    {
+        if ((pSrcDrawable == pDstDrawable) &&
+            (pGC->clientClipType == CT_NONE))
+        {
+            prgnSrcClip = ((cfbPrivGC *)(pGC->devPriv))->pCompositeClip;
+        }
+        else
+        {
+            BoxRec box;
+
+            box.x1 = 0;
+            box.y1 = 0;
+            box.x2 = ((PixmapPtr)pSrcDrawable)->width;
+            box.y2 = ((PixmapPtr)pSrcDrawable)->height;
+
+            prgnSrcClip = (*pGC->pScreen->RegionCreate)(&box, 1);
+            realSrcClip = 1;
+        }
+    }    
+    else
+    {   
+        srcx += ((WindowPtr)pSrcDrawable)->absCorner.x;
+        srcy += ((WindowPtr)pSrcDrawable)->absCorner.y;
+        if (pGC->subWindowMode == IncludeInferiors)
+        {
+            if ((pSrcDrawable == pDstDrawable) &&
+                (pGC->clientClipType == CT_NONE))
+            {
+                prgnSrcClip = ((cfbPrivGC *)(pGC->devPriv))->pCompositeClip;
+            }
+            else
+            {   
+                prgnSrcClip = NotClippedByChildren((WindowPtr)pSrcDrawable);
+                realSrcClip = 1;
+            }
+        }
+        else
+        {
+            prgnSrcClip = ((WindowPtr)pSrcDrawable)->clipList;
+        }
+    }    
+
+    srcBox.x1 = srcx;
+    srcBox.y1 = srcy;
+    srcBox.x2 = srcx + width;
+    srcBox.y2 = srcy + height;
+
+    prgnDst = (*pGC->pScreen->RegionCreate)(&srcBox, 1);
+    (*pGC->pScreen->Intersect)(prgnDst, prgnDst, prgnSrcClip);
+
+    if (pDstDrawable->type == DRAWABLE_WINDOW)
+    {
+        if (!((WindowPtr)pDstDrawable)->realized)
+        {
+            miSendNoExpose(pGC);
+            (*pGC->pScreen->RegionDestroy)(prgnDst);
+            if (realSrcClip)
+                (*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+            return;
+        }
+        dstx += ((WindowPtr)pDstDrawable)->absCorner.x;
+        dsty += ((WindowPtr)pDstDrawable)->absCorner.y;
+    }
+
+    dx = srcx - dstx;
+    dy = srcy - dsty;
+
+    /* clip the shape of the dst to the destination composite clip */
+    (*pGC->pScreen->TranslateRegion)(prgnDst, -dx, -dy);
+    (*pGC->pScreen->Intersect)(prgnDst,
+                prgnDst,
+                ((cfbPrivGC *)(pGC->devPriv))->pCompositeClip);
+
+    if (prgnDst->numRects)
+    {
+	if(!(pptSrc = (DDXPointPtr)ALLOCATE_LOCAL( prgnDst->numRects *
+	    sizeof(DDXPointRec))))
+	{
+	    (*pGC->pScreen->RegionDestroy)(prgnDst);
+	    if (realSrcClip)
+		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+	    return;
+	}
+	pbox = prgnDst->rects;
+	ppt = pptSrc;
+	for (i=0; i<prgnDst->numRects; i++, pbox++, ppt++)
+	{
+	    ppt->x = pbox->x1 + dx;
+	    ppt->y = pbox->y1 + dy;
+	}
+    
+	cfbDoBitblt(pSrcDrawable, pDstDrawable, pGC->alu, prgnDst, pptSrc);
+    
+	DEALLOCATE_LOCAL(pptSrc);
+    }
+
+    if (((cfbPrivGC *)(pGC->devPriv))->fExpose)
+	miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
+			  origSource.x, origSource.y,
+			  origSource.width, origSource.height,
+			  origDest.x, origDest.y);
+
+    (*pGC->pScreen->RegionDestroy)(prgnDst);
+    if (realSrcClip)
+        (*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+}
+
+
 /* macro for bitblt to avoid a switch on the alu per scanline 
    comments are in the real code in cfbDoBitblt.
    we need tmpDst for things less than 1 word wide becuase
@@ -215,7 +371,6 @@ while (nbox--) \
     pptSrc++; \
 }
 
-
 /* DoBitblt() does multiple rectangle moves into the rectangles
    DISCLAIMER:
    this code can be made much faster; this implementation is
