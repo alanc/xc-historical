@@ -42,7 +42,7 @@ main(argc, argv)
 int argc;
 char **argv;    
 {
-	int	argcnt, i;
+	int	argcnt = 0, i;
 
 	INIT_NAME;
 
@@ -50,6 +50,7 @@ char **argv;
 	Setup_Display_And_Screen(&argc, argv);
 	for (argv++, argc--; argc; argv++, argc--) {
 		if (argv[0][0] == '-') {
+			if (argcnt > 0) usage ();
 			for (i=1; argv[0][i]; i++)
 				switch(argv[0][i]) {
 				case 'l':
@@ -162,6 +163,14 @@ show_fonts()
 		printf("\n");
 		for (i=0; i<font_cnt; i++) {
 			pfi = font_list[i].info;
+			if (!pfi) {
+			    fprintf (stderr, 
+		    	     "%s:  no font information for font \"%s\".\n",
+				     program_name, 
+				     font_list[i].name ? 
+				     font_list[i].name : "");
+			    continue;
+			}
 			switch(pfi->direction) {
 			case FontLeftToRight: string = "-->"; break;
 			case FontRightToLeft: string = "<--"; break;
