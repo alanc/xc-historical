@@ -1,7 +1,10 @@
 /*
- * $Header: main.c,v 1.8 87/12/22 12:24:38 rws Exp $
+ * $Header: main.c,v 1.9 88/02/16 19:25:04 rws Exp $
  *
  * $Log:	main.c,v $
+ * Revision 1.9  88/02/16  19:25:04  rws
+ * more defines
+ * 
  * Revision 1.8  87/12/22  12:24:38  rws
  * build in some defines used in various sources
  * 
@@ -115,7 +118,6 @@ main(argc, argv)
 	register char	**fp = filelist;
 	register char	**incp = includedirs;
 	register char	*p;
-	register int	i;
 	register struct inclist	*ip;
 	char	*makefile = NULL;
 	struct filepointer	*filecontent;
@@ -307,7 +309,6 @@ char *getline(filep)
 			*eof,	/* end of file pointer */
 			*bol;	/* beginning of line pointer */
 	register	lineno;	/* line number */
-	register	boolean	interesting = FALSE;
 
 	p = filep->f_p;
 	eof = filep->f_end;
