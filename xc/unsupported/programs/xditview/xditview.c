@@ -5,7 +5,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xditview.c,v 1.14 89/10/08 14:03:08 rws Exp $";
+static char rcsid[] = "$XConsortium: xditview.c,v 1.15 89/10/11 11:38:43 jim Exp $";
 #endif /* lint */
 
 #include <X11/Xatom.h>
@@ -105,10 +105,9 @@ void main(argc, argv)
     Arg		    arg;
     Pixmap	    icon_pixmap = None;
     char	    *file_name = 0;
-    static void	    commandCall();
     int		    i;
     static Arg	    labelArgs[] = {
-			{XtNlabel, (int) pageLabel},
+			{XtNlabel, (XtArgVal) pageLabel},
     };
     Arg		    topLevelArgs[2];
     int		    height;
@@ -235,7 +234,7 @@ char	*name;
     current_file = new_file;
 }
 
-static fileBuf[1024];
+static char fileBuf[1024];
 
 ResetMenuEntry (entry)
     Widget  entry;
