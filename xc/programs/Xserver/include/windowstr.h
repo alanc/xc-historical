@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 5.9 89/07/13 17:34:40 keith Exp $ */
+/* $XConsortium: windowstr.h,v 5.10 89/07/16 11:43:31 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -76,7 +76,7 @@ typedef struct _Window {
     WindowPtr		lastChild;	/* bottom-most child */
     RegionRec		clipList;	/* clipping rectangle for output */
     RegionRec		borderClip;	/* NotClippedByChildren + border */
-    ValidatePtr		valdata;
+    union _Validate	*valdata;
     RegionRec		winSize;
     RegionRec		borderSize;
     DDXPointRec		origin;		/* position relative to parent */
