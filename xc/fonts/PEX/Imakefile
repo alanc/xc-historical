@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.2 91/02/16 09:46:34 rws Exp $
+# $XConsortium: Imakefile,v 5.3 91/02/16 11:30:39 rws Exp $
 ## 
 ## Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 ## 
@@ -50,15 +50,15 @@ CDEBUGFLAGS = PexFontCDebugFlags
 #Binary (run-time) versions
 FONTS_BINARY = Roman.phont Roman_M.phont
 
-       SRCS = to_wfont.y lex.c
+       SRCS = to_wfont.c lex.c
        OBJS = to_wfont.o lex.o
 
 all:: to_wfont $(FONTS_BINARY)
 
-gram.h gram.c: to_wfont.y
+to_wfont.h to_wfont.c: to_wfont.y
 	yacc -d to_wfont.y
-	$(MV) y.tab.c gram.c
-	$(MV) y.tab.h gram.h
+	$(MV) y.tab.c to_wfont.c
+	$(MV) y.tab.h to_wfont.h
 
 SingleProgramTarget(to_wfont,$(OBJS), $(LIBS), /**/)
 
@@ -66,9 +66,9 @@ SingleProgramTarget(to_wfont,$(OBJS), $(LIBS), /**/)
 	to_wfont -o $@ $<
 
 clean:: 
-	$(RM) $(FONTS_BINARY) lex.c y.tab.h y.tab.c gram.h gram.c
+	$(RM) $(FONTS_BINARY) lex.c y.tab.h y.tab.c to_wfont.h to_wfont.c
 
-depend:: lex.c gram.c
+depend:: lex.c to_wfont.c
 
 DependTarget()
 
