@@ -145,7 +145,8 @@ target::								@@\
 		dirs="$$dirs \$$($${i}DIRS)"; \				@@\
 	done; \								@@\
 	$(MAKE) $(MFLAGS) Real/**/target \				@@\
-		"SERVERSUBDIRS=$$dirs"					@@\
+		"SERVERSUBDIRS=$$dirs" \				@@\
+		LINT=$(LINT) DESTDIR=$(DESTDIR)				@@\
 									@@\
 Real/**/target:								@@\
 	@subdirs=`ls -d $(SERVERSUBDIRS) | sort -u`; \			@@\
