@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.160 91/01/10 14:09:25 converse Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.161 91/01/10 21:08:09 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -274,7 +274,6 @@ static void UnrealizeWidget(widget)
     register CompositeWidget	cw;
     register Cardinal		i;
     register WidgetList		children;
-    extern void _XtRemoveTranslations();
 
     if (!XtIsWidget(widget) || !XtIsRealized(widget)) return;
 
