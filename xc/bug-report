@@ -15,7 +15,7 @@ WINDOW MANAGER:
     [e.g. twm, gwm, tekwm, olwm, mwm, ...]
 
 COMPILER:
-    [e.g. native cc, native ANSI cc, gcc, ...]
+    [e.g. native cc, native ANSI cc, gcc 1.37.1, ...]
 
 AREA:
     [e.g. server, Xlib, Xt, Xaw, PEX, twm, xterm, xmh, config, ...]
