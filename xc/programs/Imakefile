@@ -1,0 +1,9 @@
+#define IHaveSubdirs
+#define PassCDebugFlags
+
+SUBDIRS = xfd/simple-lib bitmap ico muncher paint plaid refresh uwm wm xcalc \
+	xclock xedit xfd xhost xinit xload xlsfonts xpr xprop xset xsetroot \
+	xterm xwd xwininfo xwud
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
