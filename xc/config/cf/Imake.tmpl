@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.152 92/05/29 18:01:43 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.153 92/05/29 18:07:59 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -69,6 +69,10 @@ XCOMM
 #ifdef sparc
 #undef sparc
 #define SparcArchitecture
+#endif
+#ifdef mc68000
+#undef mc68000
+#define Sun3Architecture
 #endif
 #ifdef i386
 #undef i386
@@ -284,6 +288,10 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define BeforeVendorCF
 #include <site.def>
 #undef BeforeVendorCF
+
+#if defined(HasGcc2) && !defined(HasGcc)
+#define HasGcc HasGcc2
+#endif
 
 XCOMM -------------------------------------------------------------------------
 XCOMM platform-specific configuration parameters - edit MacroFile to change
