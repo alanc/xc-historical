@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.12 92/03/18 17:12:14 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.13 92/03/18 18:11:57 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -52,6 +52,8 @@ released automatically at next button or non-modifier key.
 #define _POSIX_SOURCE
 #include <signal.h>
 
+#define keysym_char '\024' /* control T */
+
 Display *dpy;
 unsigned short modifiers[256];
 KeyCode keycodes[256];
@@ -71,55 +73,61 @@ int moving_y = 0;
 int (*olderror)();
 int (*oldioerror)();
 
-usage()
+void
+    usage()
 {
     printf("a2x: [-d display] [-e] [-b]\n");
     exit(1);
 }
 
-reset()
+void
+    reset()
 {
     if (istty)
 	tcsetattr(0, TCSANOW, &oldterm);
 }
 
-quit(val)
+void
+    quit(val)
 {
     reset();
     exit(val);
 }
 
 void
-catch(sig)
-    int	sig;
+    catch(sig)
+int	sig;
 {
     fprintf(stderr, "a2x: interrupt received, exiting\n");
     quit(1);
 }
 
-error(Dpy, err)
-    Display *Dpy;
-    XErrorEvent *err;
+int
+    error(Dpy, err)
+Display *Dpy;
+XErrorEvent *err;
 {
     reset();
-    (*olderror)(Dpy, err);
+    return (*olderror)(Dpy, err);
 }
 
-ioerror(Dpy)
-    Display *Dpy;
+int
+    ioerror(Dpy)
+Display *Dpy;
 {
     reset();
-    (*oldioerror)(Dpy);
+    return (*oldioerror)(Dpy);
 }
 
-reset_mapping()
+void
+    reset_mapping()
 {
     int minkey, maxkey;
     register int i, j;
     KeySym sym;
     register int c;
     XModifierKeymap *mmap;
-
+    
     XDisplayKeycodes(dpy, &minkey, &maxkey);
     bzero((char *)modifiers, sizeof(modifiers));
     bzero((char *)keycodes, sizeof(keycodes));
@@ -165,28 +173,35 @@ reset_mapping()
     }
     mmap = XGetModifierMapping(dpy);
     j = 0;
-    shift = mmap->modifiermap[j];
+    shift = 0;
     for (i = 0; i < mmap->max_keypermod; i++, j++)
-	if (mmap->modifiermap[j]) modmask[mmap->modifiermap[j]] = ShiftMask;
+	if (mmap->modifiermap[j])
+	    modmask[shift = mmap->modifiermap[j]] = ShiftMask;
     j += mmap->max_keypermod; /* lock */
-    control = mmap->modifiermap[j];
+    control = 0;
     for (i = 0; i < mmap->max_keypermod; i++, j++)
-	if (mmap->modifiermap[j]) modmask[mmap->modifiermap[j]] = ControlMask;
-    mod1 = mmap->modifiermap[j];
+	if (mmap->modifiermap[j])
+	    modmask[control = mmap->modifiermap[j]] = ControlMask;
+    mod1 = 0;
     for (i = 0; i < mmap->max_keypermod; i++, j++)
-	if (mmap->modifiermap[j]) modmask[mmap->modifiermap[j]] = Mod1Mask;
-    mod2 = mmap->modifiermap[j];
+	if (mmap->modifiermap[j])
+	    modmask[mod1 = mmap->modifiermap[j]] = Mod1Mask;
+    mod2 = 0;
     for (i = 0; i < mmap->max_keypermod; i++, j++)
-	if (mmap->modifiermap[j]) modmask[mmap->modifiermap[j]] = Mod2Mask;
-    mod3 = mmap->modifiermap[j];
+	if (mmap->modifiermap[j])
+	    modmask[mod2 = mmap->modifiermap[j]] = Mod2Mask;
+    mod3 = 0;
     for (i = 0; i < mmap->max_keypermod; i++, j++)
-	if (mmap->modifiermap[j]) modmask[mmap->modifiermap[j]] = Mod3Mask;
-    mod4 = mmap->modifiermap[j];
+	if (mmap->modifiermap[j])
+	    modmask[mod3 = mmap->modifiermap[j]] = Mod3Mask;
+    mod4 = 0;
     for (i = 0; i < mmap->max_keypermod; i++, j++)
-	if (mmap->modifiermap[j]) modmask[mmap->modifiermap[j]] = Mod4Mask;
-    mod5 = mmap->modifiermap[j];
+	if (mmap->modifiermap[j])
+	    modmask[mod4 = mmap->modifiermap[j]] = Mod4Mask;
+    mod5 = 0;
     for (i = 0; i < mmap->max_keypermod; i++, j++)
-	if (mmap->modifiermap[j]) modmask[mmap->modifiermap[j]] = Mod5Mask;
+	if (mmap->modifiermap[j])
+	    modmask[mod5 = mmap->modifiermap[j]] = Mod5Mask;
     XFreeModifiermap(mmap);
     i = XKeysymToKeycode(dpy, XK_Meta_L);
     if (!i)
@@ -215,6 +230,7 @@ reset_mapping()
     }
 }
 
+void
 setup_tempmods()
 {
     if (tempmods) {
@@ -236,6 +252,7 @@ setup_tempmods()
     }
 }
 
+void
 teardown_tempmods()
 {
     if (tempmods) {
@@ -258,6 +275,7 @@ teardown_tempmods()
     }
 }
 
+void
 do_key(key, mods)
     int key;
     unsigned short mods;
@@ -295,12 +313,14 @@ do_key(key, mods)
     teardown_tempmods();
 }
 
+void
 dochar(c)
-    int c;
+    unsigned char c;
 {
     do_key(keycodes[c], modifiers[c]);
 }
 
+void
 do_keysym(sym)
     KeySym sym;
 {
@@ -311,6 +331,7 @@ do_keysym(sym)
     do_key(last_keycode, 0);
 }
 
+void
 do_button(button)
     int button;
 {
@@ -328,12 +349,14 @@ do_button(button)
     teardown_tempmods();
 }
 
+void
 move_pointer(dx, dy)
     int dx, dy;
 {
-    XWarpPointer(dpy, None, None, 0, 0, 0, 0, dx, dy);
+    XTestFakeRelativeMotionEvent(dpy, dx, dy, 0);
 }
 
+void
 do_x(delta)
     int delta;
 {
@@ -343,6 +366,7 @@ do_x(delta)
 	move_pointer(delta, 0);
 }
 
+void
 do_y(delta)
     int delta;
 {
@@ -352,23 +376,14 @@ do_y(delta)
 	move_pointer(0, delta);
 }
 
+void
 do_warp(screen, x, y)
     int screen, x, y;
 {
-    Window root;
-
-    if (screen < 0 || screen >= ScreenCount(dpy)) {
-	Window child;
-	int rx, ry, wx, wy;
-	unsigned int state;
-
-	XQueryPointer(dpy, DefaultRootWindow(dpy), &root, &child, &rx, &ry,
-		      &wx, &wy, &state);
-    } else
-	root = RootWindow(dpy, screen);
-    XWarpPointer(dpy, None, root, 0, 0, 0, 0, x, y);
+    XTestFakeMotionEvent(dpy, screen, x, y, 0);
 }
 
+void
 start_moving()
 {
     moving = 1;
@@ -376,6 +391,7 @@ start_moving()
     moving_y = 0;
 }
 
+void
 stop_moving()
 {
     moving = 0;
@@ -383,6 +399,7 @@ stop_moving()
     moving_y = 0;
 }
 
+void
 slow_down()
 {
     if (moving_x < 0)
@@ -395,6 +412,7 @@ slow_down()
 	moving_y = 1;
 }
 
+void
 quiesce()
 {
     if (curmods & ControlMask)
@@ -415,7 +433,6 @@ main(argc, argv)
     char *dname = NULL;
     char buf[1024];
     XEvent ev;
-    char keysym_char = '\024'; /* control T */
     KeySym sym;
     char *endptr;
     int mask[10];
@@ -509,7 +526,7 @@ main(argc, argv)
 	    quit(0);
 	for (i = 0; i < n; i++) {
 	    if (buf[i] != keysym_char) {
-		dochar(buf[i]);
+		dochar(((unsigned char *)buf)[i]);
 		continue;
 	    }
 	    i++;
