@@ -1,4 +1,4 @@
-/* $XConsortium: CallbackI.h,v 1.13 90/12/29 12:12:48 rws Exp $ */
+/* $XConsortium: CallbackI.h,v 1.14 93/09/11 16:18:05 rws Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -44,6 +44,12 @@ typedef struct internalCallbackRec {
     /* XtCallbackList */
 } InternalCallbackRec, *InternalCallbackList;
 
+typedef Boolean (*_XtConditionProc)(
+#if NeedFunctionPrototypes
+    XtPointer	/* data */
+#endif
+);
+
 extern void _XtAddCallback(
 #if NeedFunctionPrototypes
     InternalCallbackList*	/* callbacks */,
@@ -83,5 +89,14 @@ extern void _XtRemoveCallback(
     InternalCallbackList*	/* callbacks */,
     XtCallbackProc		/* callback */,
     XtPointer			/* closure */
+#endif
+);
+
+extern void _XtCallConditionalCallbackList(
+#if NeedFunctionPrototypes
+    Widget			/* widget */,
+    XtCallbackList		/* callbacks */,
+    XtPointer			/* call_data */,
+    _XtConditionProc		/* cond_proc */
 #endif
 );
