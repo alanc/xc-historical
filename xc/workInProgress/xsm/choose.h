@@ -1,4 +1,4 @@
-/* $XConsortium: choose.h,v 1.1 94/07/07 16:47:33 mor Exp $ */
+/* $XConsortium: choose.h,v 1.2 94/07/07 19:48:51 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -27,4 +27,5 @@ in this Software without prior written authorization from the X Consortium.
 
 extern void create_choose_session_popup ();
 extern int GetSessionNames ();
+extern void FreeSessionNames ();
 extern void AddSessionNames ();
