@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.34 91/06/15 18:48:03 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.35 91/06/16 16:25:21 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -37,6 +37,9 @@ SOFTWARE.
 #include "mifillarc.h"
 #include "Xfuncproto.h"
 
+#if defined(SVR4) && __STDC__
+extern double hypot(double, double);
+#endif
 double	miDsin(), miDcos(), miDasin(), miDatan2();
 double	cbrt(
 #if NeedFunctionPrototypes

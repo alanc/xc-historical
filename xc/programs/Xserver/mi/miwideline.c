@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.37 91/05/30 20:54:11 keith Exp $
+ * $XConsortium: miwideline.c,v 1.38 91/07/01 17:02:36 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -28,6 +28,10 @@
 #include "gcstruct.h"
 #include "miscstruct.h"
 #include "miwideline.h"
+
+#if defined(SVR4) && __STDC__
+extern double hypot(double, double);
+#endif
 
 #ifdef ICEILTEMPDECL
 ICEILTEMPDECL
