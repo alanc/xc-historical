@@ -401,7 +401,7 @@
 (defun set-window-border (window border)
   (declare (type window window)
 	   (type (or (member :copy) pixel pixmap) border))
-  (cond ((eq border :copy) (change-window-attribute window 2 1))
+  (cond ((eq border :copy) (change-window-attribute window 2 0))
 	((type? border 'pixmap) ;; Border pixmap
 	 (change-window-attribute window 2 (pixmap-id border)))
 	((integerp border) ;; Border pixel
