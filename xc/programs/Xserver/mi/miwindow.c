@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miwindow.c,v 5.6 90/05/03 16:47:13 keith Exp $ */
+/* $XConsortium: miwindow.c,v 5.7 91/03/11 17:06:52 keith Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "region.h"
@@ -74,7 +74,10 @@ miClearToBackground(pWin, x, y, w, h, generateExposures)
 	y2 = extents->y2;
 
     if (x2 <= x1 || y2 <= y1)
-	return;
+    {
+	x2 = x1 = 0;
+	y2 = y1 = 0;
+    }
 
     box.x1 = x1;
     box.x2 = x2;
