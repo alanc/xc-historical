@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: miRender.h,v 5.1 91/02/16 09:54:40 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -305,5 +305,8 @@ typedef struct _miDDContext {
  */
 #define MI_NEXTTEMPFACETLIST(pddc)					   \
 &((pddc)->Static.misc.facets[(++(pddc)->Static.misc.facetIndex)&(MI_MAXTEMPFACETLISTS-1)])
+
+#define NULL4x4 (float (*)[4])0
+extern ddFLOAT ident4x4[4][4];
 
 #endif	/* MI_RENDER_H */
