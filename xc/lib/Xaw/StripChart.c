@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.3 89/08/24 12:00:45 kit Exp $";
+static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.4 89/08/24 15:24:15 kit Exp $";
 #endif
 
 /***********************************************************
@@ -79,7 +79,8 @@ StripChartClassRec stripChartClassRec = {
     /* num_resources		*/	XtNumber(resources),
     /* xrm_class		*/	NULL,
     /* compress_motion		*/	TRUE,
-    /* compress_exposure	*/	TRUE,
+    /* compress_exposure	*/	XtExposeCompressMultiple |
+	                                XtExposeGraphicsExposeMerged,
     /* compress_enterleave	*/	TRUE,
     /* visible_interest		*/	FALSE,
     /* destroy			*/	Destroy,
@@ -166,7 +167,7 @@ static void Initialize (greq, gnew)
     else
         w->strip_chart.interval_id = NULL;
 
-    CreateGC(w, ALL_GCS);
+    CreateGC(w, (unsigned int) ALL_GCS);
 
     w->strip_chart.scale = w->strip_chart.min_scale;
     w->strip_chart.interval = 0;
@@ -181,7 +182,7 @@ static void Destroy (gw)
      if (w->strip_chart.interval_id != NULL) 
          XtRemoveTimeOut (w->strip_chart.interval_id);
 
-     DestroyGC(w, ALL_GCS);
+     DestroyGC(w, (unsigned int) ALL_GCS);
 }
 
 /*
@@ -191,13 +192,17 @@ static void Destroy (gw)
  */
 
 /* ARGSUSED */
-static void Redisplay(gw, event, region)
-     Widget gw;
+static void Redisplay(w, event, region)
+     Widget w;
      XEvent *event;
      Region region;
 {
-    (void) repaint_window ((StripChartWidget)gw, event->xexpose.x,
-			   event->xexpose.width);
+    if (event->type == GraphicsExpose)
+	(void) repaint_window ((StripChartWidget)w, event->xgraphicsexpose.x,
+			       event->xgraphicsexpose.width);
+    else
+	(void) repaint_window ((StripChartWidget)w, event->xexpose.x,
+			       event->xexpose.width);
 }
 
 /* ARGSUSED */
