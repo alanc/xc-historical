@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.169 89/12/09 21:18:24 jim Exp $ */
+/* $XConsortium: Xlib.h,v 11.170 89/12/10 10:13:00 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -37,7 +37,7 @@
 #include <X11/X.h>
 
 #ifndef NeedFunctionPrototypes
-#if defined(FUNCPROTO) || defined(__STDC__) || defined(__cplusplus)
+#if defined(FUNCPROTO) || defined(__STDC__) || defined(__cplusplus) || defined(c_cplusplus)
 #define NeedFunctionPrototypes 1
 #else
 #define NeedFunctionPrototypes 0
@@ -351,11 +351,19 @@ typedef struct _XImage {
     char *obdata;		/* hook for the object routines to hang on */
     struct funcs {		/* image manipulation routines */
 	struct _XImage *(*create_image)();
+#if NeedFunctionPrototypes
+	int (*destroy_image)        (struct _XImage *)();
+	unsigned long (*get_pixel)  (struct _XImage *, int, int);
+	int (*put_pixel)            (struct _XImage *, int, int, unsigned long);
+	struct _XImage *(*sub_image)(struct _XImage *, int, int, unsigned int, unsigned int);
+	int (*add_pixel)            (struct _XImage *, long);
+#else
 	int (*destroy_image)();
 	unsigned long (*get_pixel)();
 	int (*put_pixel)();
 	struct _XImage *(*sub_image)();
 	int (*add_pixel)();
+#endif
 	} f;
 } XImage;
 
@@ -1625,14 +1633,25 @@ extern int (*XSetErrorHandler(
               XErrorEvent*	        /* error_event */
             )		/* handler */
 #endif
-))();
+))(
+#if NeedFunctionPrototypes
+    int (*) ( Display*                  /* display */,
+              XErrorEvent*              /* error_event */
+            )           /* handler */
+#endif
+);
 
 extern int (*XSetIOErrorHandler(
 #if NeedFunctionPrototypes
     int (*) ( Display*			/* display */
             )		/* handler */
 #endif
-))();
+))(
+#if NeedFunctionPrototypes
+    int (*) ( Display*                  /* display */,
+            )           /* handler */
+#endif
+);
 
 extern XPixmapFormatValues *XListPixmapFormats(
 #if NeedFunctionPrototypes
