@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.13 89/11/17 18:43:17 keith Exp $
+ * $XConsortium: socket.c,v 1.14 89/12/06 19:38:08 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -509,6 +509,7 @@ static unsigned long	globalSessionID;
 static ARRAY8 outOfMemory = { (CARD16) 13, (CARD8Ptr) "Out of memory" };
 static ARRAY8 noValidAddr = { (CARD16) 16, (CARD8Ptr) "No valid address" };
 static ARRAY8 noValidAuth = { (CARD16) 22, (CARD8Ptr) "No valid authorization" };
+static ARRAY8 noAuthentic = { (CARD16) 29, (CARD8Ptr) "XDM has no authentication key" };
 
 request_respond (from, fromlen, length)
     struct sockaddr *from;
@@ -568,70 +569,82 @@ request_respond (from, fromlen, length)
 	{
 	    reason = &noValidAddr;
 	    pdpy = 0;
+	    goto decline;
 	}
-	else if (!(pdpy = FindProtoDisplay (from, fromlen, displayNumber)))
+	if (pdpy = FindProtoDisplay (from, fromlen, displayNumber))
+	    goto accept;
+	reason = Accept (from, fromlen, displayNumber);
+	if (reason)
+	    goto decline;
+	i = SelectConnectionTypeIndex (&connectionTypes,
+				       &connectionAddresses);
+	if (i < 0)
 	{
-	    /*
-	     * place hooks in here for authentication
-	     */
-	    reason = Accept (from, fromlen, displayNumber);
-	    if (!reason)
+	    reason = &noValidAddr;
+	    goto decline;
+	}
+	if (authorizationNames.length == 0)
+	    j = 0;
+	else
+	    j = SelectAuthorizationTypeIndex (&authenticationName,
+					      &authorizationNames);
+	if (j < 0)
+	{
+	    reason = &noValidAuth;
+	    goto decline;
+	}
+	connectionAddress = &connectionAddresses.data[i];
+	pdpy = NewProtoDisplay (from, fromlen,
+				displayNumber,
+				connectionTypes.data[i],
+				connectionAddress,
+				NextSessionID());
+	if (!pdpy)
+	{
+	    reason = &outOfMemory;
+	    goto decline;
+	}
+	if (!CheckAuthentication (pdpy,
+				  &manufacturerDisplayID,
+				  &authenticationName,
+				  &authenticationData))
+	{
+	    reason = &noAuthentic;
+	    goto decline;
+	}
+	if (j < authorizationNames.length)
+	{
+	    Xauth   *auth;
+	    SetProtoDisplayAuthorization (pdpy,
+		(unsigned short) authorizationNames.data[j].length,
+		(char *) authorizationNames.data[j].data);
+	    auth = pdpy->xdmcpAuthorization;
+	    if (!auth)
+		auth = pdpy->fileAuthorization;
+	    if (auth)
 	    {
-	    	i = SelectConnectionTypeIndex (&connectionTypes,
-					       &connectionAddresses);
-	    	if (i < 0)
-	    	{
-		    reason = &noValidAddr;
-	    	}
-		else
-		{
-		    if (authorizationNames.length == 0)
-			j = 0;
-		    else
-			j = SelectAuthorizationTypeIndex (&authorizationNames);
-		    if (j < 0)
-		    {
-			reason = &noValidAuth;
-		    }
-		    else
-		    {
-	    	    	connectionAddress = &connectionAddresses.data[i];
-	    	    	pdpy = NewProtoDisplay (from, fromlen,
-				    	    	displayNumber,
-					    	connectionTypes.data[i],
-				    	    	connectionAddress,
-				    	    	NextSessionID());
-	    	    	if (!pdpy)
-		    	    reason = &outOfMemory;
-		    	else if (j < authorizationNames.length)
-		    	{
-			    Xauth   *auth;
-			    SetProtoDisplayAuthorization (pdpy,
-				(unsigned short) authorizationNames.data[i].length,
-				(char *) authorizationNames.data[i].data);
-			    auth = pdpy->authorization;
-			    if (auth)
-			    {
-				authorizationName.length = auth->name_length;
-				authorizationName.data = (CARD8Ptr) auth->name;
-				authorizationData.length = auth->data_length;
-				authorizationData.data = (CARD8Ptr) auth->data;
-			    }
-		    	}
-		    }
-		}
+		authorizationName.length = auth->name_length;
+		authorizationName.data = (CARD8Ptr) auth->name;
+		authorizationData.length = auth->data_length;
+		authorizationData.data = (CARD8Ptr) auth->data;
 	    }
 	}
 	if (pdpy)
+	{
+accept:	    ;
 	    send_accept (from, fromlen, pdpy->sessionID,
 				        &authenticationName,
 					&authenticationData,
 					&authorizationName,
 					&authorizationData);
+	}
 	else
+	{
+decline:    ;
 	    send_decline (from, fromlen, &authenticationName,
 				 &authenticationData,
 				 reason);
+	}
     }
 abort:
     XdmcpDisposeARRAY16 (&connectionTypes);
@@ -788,7 +801,7 @@ manage (from, fromlen, length)
 	    d->from = from_save;
 	    d->fromlen = fromlen;
 	    d->displayNumber = pdpy->displayNumber;
-	    d->authorization = pdpy->authorization;
+	    d->authorization = pdpy->fileAuthorization;
 	    if (d->authorization)
 		d->authorize = TRUE;
 	    if (remoteAuthDir)
@@ -802,7 +815,7 @@ manage (from, fromlen, length)
 		sprintf (d->authFile, "%s/AuthXXXXXX", remoteAuthDir);
 		(void) mktemp (d->authFile);
 	    }
-	    pdpy->authorization = 0;
+	    pdpy->fileAuthorization = 0;
 	    DisposeProtoDisplay (pdpy);
 	    Debug ("Starting display %s,%s\n", d->name, d->class);
 	    StartDisplay (d);
