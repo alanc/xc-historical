@@ -1,4 +1,4 @@
-/* $XConsortium: sunIo.c,v 5.12 93/08/06 15:52:46 kaleb Exp $ */
+/* $XConsortium: sunIo.c,v 5.13 93/08/08 18:19:55 kaleb Exp $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.
@@ -216,6 +216,10 @@ ddxProcessArgument (argc, argv, i)
 	sunAutoRepeatDelay = 1000 * (long)atoi(argv[i]);
 	return 2;
     }
+    if (strcmp (argv[i], "-swapLkeys") == 0) {	/* -swapLkeys */
+	sunSwapLkeys = TRUE;
+	return 1;
+    }
     if (strcmp (argv[i], "-debug") == 0) {	/* -debug */
 	return 1;
     }
@@ -254,11 +258,10 @@ ddxUseMsg()
 {
     ErrorF("-ar1 int            set autorepeat initiate time\n");
     ErrorF("-ar2 int            set autorepeat interval time\n");
-    ErrorF("-kbd opt            set specified keyboard option\n");
-    ErrorF("-protect x[,y[...]] protect the specified keycodes\n");
+    ErrorF("-swapLkeys          swap keysyms on L1..L10\n");
     ErrorF("-debug              disable non-blocking console mode\n");
     ErrorF("-dev fn[:fn][:fn]   name of device[s] to open\n");
     ErrorF("-mono               force monochrome-only screen\n");
     ErrorF("-zaphod             disable active Zaphod mode\n");
-    ErrorF("-fbinfo             tell more about the found frame buffer\n");
+    ErrorF("-fbinfo             tell more about the found frame buffer(s)\n");
 }
