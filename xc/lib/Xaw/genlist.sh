@@ -5,6 +5,7 @@ nm $* | egrep '(Widget|Obj|Object)Class' | \
 awk '{ if ($2 == "D" || $2 == "G") print $3; }' | sed -e 's/^_//' | \
 (cat - ; echo "objectClass") | sort -u | egrep -v 'ClassRec$' | \
 egrep -v 'vPanedWidgetClass$' | \
+egrep -v 'ascii(Disk|String)WidgetClass$' | \
 awk '
 {
     printf "extern WidgetClass %s;\n", $1;
