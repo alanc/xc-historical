@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.145 94/10/10 18:59:29 kaleb Exp kaleb $ */
+/* $XConsortium: NextEvent.c,v 1.146 95/04/05 19:58:01 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -521,6 +521,8 @@ int _XtWaitForSomething(app,
     int nfds, dpy_no, found_input, dd;
 #ifdef XTHREADS
     Boolean push_thread = TRUE;
+    Boolean pushed_thread = FALSE;
+    int level = 0;
 #endif
 #ifdef USE_POLL
     struct pollfd fdlist[XT_DEFAULT_FDLIST_SIZE];
@@ -554,8 +556,8 @@ int _XtWaitForSomething(app,
 
     InitFds (app, ignoreEvents, ignoreInputs, &wf);
 
-WaitLoop:
     while (1) {
+WaitLoop:
 	AdjustTimes (app, block, howlong, ignoreTimers, &wt);
 
 	if (block && app->block_hook_list) {
@@ -568,20 +570,9 @@ WaitLoop:
 
 #ifdef XTHREADS /* { */
 	if (drop_lock) {
-	    int yield = 0;
-	    if (push_thread) {
-		PUSH_THREAD(app);
-		push_thread = FALSE;
-	    }
-	    yield = YIELD_APP_LOCK(app);
+	    YIELD_APP_LOCK(app, &push_thread, &pushed_thread, &level);
 	    nfds = IoWait (&wt, &wf); 
-
-	    if (!IS_TOP_THREAD(app))
-		goto WaitLoop;
-
-	    RESTORE_APP_LOCK(app, yield);
-	    POP_THREAD(app);
-	    push_thread = TRUE;
+	    RESTORE_APP_LOCK(app, level, &pushed_thread);
 	} else
 #endif /* } */
 	nfds = IoWait (&wt, &wf);

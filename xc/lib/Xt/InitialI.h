@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.82 94/04/17 20:14:11 kaleb Exp kaleb $ */
+/* $XConsortium: InitialI.h,v 1.83 95/04/05 19:58:05 kaleb Exp $ */
 
 /***********************************************************
 
@@ -193,10 +193,6 @@ typedef struct _XtAppStruct {
     ThreadAppYieldLockProc yield_lock;
     ThreadAppRestoreLockProc restore_lock;
     ThreadAppProc free_lock;
-    ThreadAppProc push_thread;
-    ThreadAppProc pop_thread;
-    ThreadAppTopProc is_top_thread;
-    ThreadAppProc wait_thread;
 #endif
 } XtAppStruct;
 

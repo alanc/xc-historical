@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.115 94/04/17 20:13:58 kaleb Exp $ */
+/* $XConsortium: Display.c,v 1.116 94/06/01 15:34:15 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -382,12 +382,9 @@ XtAppContext XtCreateApplicationContext()
 	app->lock_info = NULL;
 	app->lock = NULL;
 	app->unlock = NULL;
+	app->yield_lock = NULL;
 	app->restore_lock = NULL;
 	app->free_lock = NULL;
-	app->push_thread = NULL;
-	app->pop_thread = NULL;
-	app->is_top_thread = NULL;
-	app->wait_thread = NULL;
 #endif
 	INIT_APP_LOCK(app);
 	LOCK_APP(app);
