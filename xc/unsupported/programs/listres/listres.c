@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.22 89/12/10 15:55:50 rws Exp $
+ * $XConsortium: listres.c,v 1.23 90/02/26 11:49:04 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -32,8 +32,8 @@
 #include <X11/Xmu/CharSet.h>
 #include <X11/Xmu/WidgetNode.h>
 
-#define widget_list XmuAthenaWidgetArray  /* or motif or ol or ... */
-#define nwidgets XmuAthenaWidgetCount
+#define widget_list XawWidgetArray  /* or motif or ol or ... */
+#define nwidgets XawWidgetCount
 
 
 static XrmOptionDescRec Options[] = {
