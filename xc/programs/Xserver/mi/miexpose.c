@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 1.35 88/09/06 14:49:08 jim Exp $ */
+/* $XConsortium: miexpose.c,v 1.36 88/10/15 12:18:11 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -48,6 +48,9 @@ extern WindowRec WindowTable[];
 the region package can call this.
 */
 
+#ifndef RECTLIMIT
+#define RECTLIMIT 25		/* pick a number, any number > 8 */
+#endif
 
 /* miHandleExposures 
     generate a region for exposures for areas that were copied from obscured or
@@ -89,6 +92,8 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 				   the window background
 				*/
     WindowPtr pSrcWin;
+    BoxRec expBox;
+    Bool extents;
 
     /* avoid work if we can */
     if (!pGC->graphicsExposures &&
@@ -201,6 +206,41 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
     /* intersect with visible areas of dest */
     (*pscr->Intersect)(prgnExposed, prgnExposed, prgnDstClip);
 
+    /*
+     * If we have LOTS of rectangles, we decide to take the extents
+     * and force an exposure on that.  This should require much less
+     * work overall, on both client and server.  This is cheating, but
+     * isn't prohibited by the protocol ("spontaneous combustion" :-)
+     * for windows.
+     */
+    extents = pGC->graphicsExposures &&
+	      (prgnExposed->numRects > RECTLIMIT) &&
+	      (pDstDrawable->type == DRAWABLE_WINDOW);
+#ifdef SHAPE
+    /*
+     * If you try to CopyArea the extents of a shaped window, compacting the
+     * exposed region will undo all our work!
+     */
+    if (extents && pSrcWin && pSrcWin->windowShape &&
+	((*pscr->RectIn)(pSrcWin->windowShape, &srcBox) != rgnIN))
+	    extents = FALSE;
+#endif
+    if (extents)
+    {
+	WindowPtr pWin = (WindowPtr)pDstDrawable;
+
+	expBox = *(*pscr->RegionExtents)(prgnExposed);
+	(*pscr->RegionReset)(prgnExposed, &expBox);
+	/* need to clear out new areas of backing store */
+	if ((pWin->backingStore != NotUseful) && pWin->backStorage)
+	    (* pWin->backStorage->ClearToBackground)(
+					 pWin,
+					 expBox.x1,
+					 expBox.y1,
+					 expBox.x2 - expBox.x1,
+					 expBox.y2 - expBox.y1,
+					 FALSE);
+    }
     if ((pDstDrawable->type == DRAWABLE_WINDOW) &&
 	(((WindowPtr)pDstDrawable)->backgroundTile != None))
     {
@@ -210,11 +250,19 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	(*pscr->TranslateRegion)(prgnExposed, 
 				 pWin->absCorner.x, pWin->absCorner.y);
 
+	if (extents)
+	{
+	    /* PaintWindowBackground doesn't clip, so we have to */
+	    (*pscr->Intersect)(prgnExposed, prgnExposed, pWin->clipList);
+	}
 	(*pWin->PaintWindowBackground)(pDstDrawable, prgnExposed, 
 				       PW_BACKGROUND);
 
-	(*pscr->TranslateRegion)(prgnExposed,
- 				 -pWin->absCorner.x, -pWin->absCorner.y);
+	if (extents)
+	    (*pscr->RegionReset)(prgnExposed, &expBox);
+	else
+	    (*pscr->TranslateRegion)(prgnExposed,
+				     -pWin->absCorner.x, -pWin->absCorner.y);
     }
     if (prgnDstClip != prgnSrcClip)
 	(*pscr->RegionDestroy)(prgnDstClip);
@@ -339,6 +387,36 @@ miWindowExposures(pWin)
 							    pWin->absCorner.x,
 							    pWin->absCorner.y);
 	    }
+	}
+	if (exposures && (exposures->numRects > RECTLIMIT))
+	{
+	    /*
+	     * If we have LOTS of rectangles, we decide to take the extents
+	     * and force an exposure on that.  This should require much less
+	     * work overall, on both client and server.  This is cheating, but
+	     * isn't prohibited by the protocol ("spontaneous combustion" :-).
+	     */
+	    BoxRec box;
+
+	    box = *(* pWin->drawable.pScreen->RegionExtents)(exposures);
+	    if (exposures == prgn) {
+		exposures = (* pWin->drawable.pScreen->RegionCreate)(&box, 1);
+		(* pWin->drawable.pScreen->RegionReset)(prgn, &box);
+	    } else {
+		(* pWin->drawable.pScreen->RegionReset)(exposures, &box);
+		(* pWin->drawable.pScreen->Union)(prgn, prgn, exposures);
+	    }
+	    /* PaintWindowBackground doesn't clip, so we have to */
+	    (* pWin->drawable.pScreen->Intersect)(prgn, prgn, pWin->clipList);
+	    /* need to clear out new areas of backing store, too */
+	    if ((pWin->backingStore != NotUseful) && pWin->backStorage)
+		(* pWin->backStorage->ClearToBackground)(
+					     pWin,
+					     box.x1 - pWin->absCorner.x,
+					     box.y1 - pWin->absCorner.y,
+					     box.x2 - box.x1,
+					     box.y2 - box.y1,
+					     FALSE);
 	}
         (*pWin->PaintWindowBackground)(pWin, prgn, PW_BACKGROUND);
 	if (exposures)
