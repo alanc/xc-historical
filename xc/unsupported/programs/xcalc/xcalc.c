@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcalc.c,v 1.12 91/01/09 20:31:13 gildea Exp $
+ * $XConsortium: xcalc.c,v 1.13 91/02/11 20:04:56 converse Exp $
  *
  * xcalc.c  -  a hand calculator for the X Window system
  * 
@@ -87,11 +87,9 @@ static struct resources {
     Boolean	rpn;		/* reverse polish notation (HP mode) */
     Boolean	stipple;	/* background stipple */
     Cursor	cursor;
-} App_Resources;
+} appResources;
 
-
-#define offset(field) XtOffset(struct resources *, field)
-
+#define offset(field) XtOffsetOf(struct resources, field)
 static XtResource Resources[] = {
 {"rpn",		"Rpn",		XtRBoolean,	sizeof(Boolean),
      offset(rpn),	XtRImmediate,	(XtPointer) False},
@@ -100,6 +98,8 @@ static XtResource Resources[] = {
 {"cursor",	"Cursor",	XtRCursor,	sizeof(Cursor),
      offset(cursor),	XtRCursor,	(XtPointer)NULL}
 };
+#undef offset
+
 
 void main(argc, argv)
     int		argc;
@@ -118,7 +118,7 @@ void main(argc, argv)
     XtSetArg(args[0], XtNinput, True);
     XtSetValues(toplevel, args, ONE);
 
-    XtGetApplicationResources(toplevel, (XtPointer)&App_Resources, Resources,
+    XtGetApplicationResources(toplevel, (XtPointer)&appResources, Resources,
 			      XtNumber(Resources), (ArgList) NULL, ZERO);
 
     create_calculator(toplevel);
@@ -133,9 +133,9 @@ void main(argc, argv)
     dpy = XtDisplay(toplevel);
     wm_delete_window = XInternAtom(dpy, "WM_DELETE_WINDOW", False);
     (void) XSetWMProtocols(dpy, XtWindow(toplevel), &wm_delete_window, 1);
-    XDefineCursor(dpy, XtWindow(toplevel), App_Resources.cursor);
+    XDefineCursor(dpy, XtWindow(toplevel), appResources.cursor);
 
-    if (App_Resources.stipple || (CellsOfScreen(XtScreen(toplevel)) <= 2))
+    if (appResources.stipple || (CellsOfScreen(XtScreen(toplevel)) <= 2))
     {
 	Screen	*screen = XtScreen(toplevel);
 	Pixmap	backgroundPix;
@@ -162,7 +162,7 @@ void create_calculator(shell)
     void create_display();
     void create_keypad();
 
-    rpn = App_Resources.rpn;
+    rpn = appResources.rpn;
     calculator = XtCreateManagedWidget(rpn ? "hp" : "ti", formWidgetClass,
 				       shell, (ArgList) NULL, ZERO);
     create_display(calculator);
@@ -242,7 +242,7 @@ void create_keypad(parent)
     register int i;
     int		 n = XtNumber(Keyboard);
 
-    if (App_Resources.rpn) n--; 	/* HP has 39 buttons, TI has 40 */
+    if (appResources.rpn) n--; 	/* HP has 39 buttons, TI has 40 */
 
     for (i=0; i < n; i++)
 	XtCreateManagedWidget(Keyboard[i], commandWidgetClass, parent,
