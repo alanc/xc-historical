@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.70 91/11/21 19:18:45 rws Exp $
+ * $XConsortium: Xrm.c,v 1.71 91/12/10 12:13:57 rws Exp $
  */
 
 /***********************************************************
@@ -2132,8 +2132,12 @@ Bool XrmQGetSearchList(db, names, classes, searchList, listLength)
     if (db) {
 	table = db->table;
 	if (*names) {
-	    if (table && !table->leaf &&
-		SearchNEntry(table, names, classes, &closure))
+	    if (table && !table->leaf) {
+		if (SearchNEntry(table, names, classes, &closure))
+		    return False;
+	    } else if (table && table->hasloose &&
+		       AppendLooseLEntry((LTable)table, names, classes,
+					 &closure))
 		return False;
 	} else {
 	    if (table && !table->leaf)
@@ -2398,10 +2402,8 @@ Bool XrmQGetResource(db, names, classes, pType, pValue)
 	    if (table && !table->leaf) {
 		if (GetNEntry(table, names, classes, &closure))
 		    return True;
-		table = table->next;
-	    }
-	    if (table && table->hasloose &&
-		GetLooseVEntry((LTable)table, names, classes, &closure))
+	    } else if (table && table->hasloose &&
+		       GetLooseVEntry((LTable)table, names, classes, &closure))
 		return True;
 	} else {
 	    if (table && !table->leaf)
