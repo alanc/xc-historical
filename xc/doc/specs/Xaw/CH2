@@ -53,12 +53,10 @@ a tree of widgets created by this application.
 .IN "XtAppInitialize" "" "@DEF@"
 .IN "fallback resources" "" "@DEF@"
 .FD 0
-Widget XtAppInitialize(\fIapp_con_return\fP, \fIapplication_class\fP, \
+Widget XtAppInitialize(\fIapp_context_return\fP, \fIapplication_class\fP, \
 \fIoptions\fP, \fInum_options\fP, \fIargc_in_out\fP, \fIargv_in_out\fP, \fIfallback_resources\fP, \fIargs\fP, \fInum_args\fP)
 .br
-      \fIargc_in_out\fP, \fIargv_in_out\fP)
-.br
-      XtAppContext * \fIapp_con_return\fP;    
+      XtAppContext *\fIapp_context_return\fP;    
 .br
       String \fIapplication_class\fP;
 .br
@@ -66,19 +64,19 @@ Widget XtAppInitialize(\fIapp_con_return\fP, \fIapplication_class\fP, \
 .br
       Cardinal \fInum_options\fP;
 .br
-      Cardinal *\fIargc_in_out\fP;
+      int *\fIargc_in_out\fP;
+.br
+      String *\fIargv_in_out\fP[];
 .br
       String *\fIfallback_resources\fP;
-.br
-      String \fIargv_in_out\fP[];
 .br
       ArgList \fIargs\fP;
 .br
       Cardinal \fInum_args\fP;
 .FN
 .IP \fIapp_con_return\fP 1.5i
-Returns the application context of this application.
-.IP \fIapplication_class\ \ \ \fP 1.5i
+Returns the application context of this application, if non-NULL.
+.IP \fIapplication_class\fP 1.5i
 Specifies the class name of this application,
 which is usually the generic name for all instances of this application.
 A useful convention is to form the class name by capitalizing the
@@ -390,11 +388,11 @@ X Server to this client.  A function call that will process the
 events is \fBXtAppMainLoop\fP.
 .IN "XtAppMainLoop" "" "@DEF@"
 .FD 0
-void XtAppMainLoop(\fIapp_con\fP)
+void XtAppMainLoop(\fIapp_context\fP)
 .br
-      XtAppContext \fIapp_con\fP;
+      XtAppContext \fIapp_context\fP;
 .FN
-.IP \fIapp_con\fP 1i
+.IP \fIapp_context\fP 1i
 Specifies the application context of this application.  The value is
 normally returned by \fBXtAppInitialize\fP.
 .LP
@@ -606,9 +604,9 @@ void \fICallbackProc\fP(\fIw\fP, \fIclient_data\fP, \fIcall_data\fP)
 .br
       Widget \fIw\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .br
-      caddr_t \fIcall_data\fP;
+      XtPointer \fIcall_data\fP;
 .FN
 .IP \fIw\fP 1i
 Specifies widget for which the callback is registered.
@@ -644,7 +642,7 @@ The list is of type
 .ta .5i 3i
 typedef struct {
 	XtCallbackProc callback;
-	caddr_t closure;
+	XtPointer closure;
 } XtCallbackRec, *XtCallbackList;
 .De
 .LP
@@ -671,7 +669,7 @@ void XtAddCallback(\fIw\fP, \fIcallback_name, \fP\fIcallback\fP, \
 .br
       XtCallbackProc \fIcallback\fP;
 .br
-      caddr_t \fIclient_data\fP;
+      XtPointer \fIclient_data\fP;
 .FN
 .IP \fIw\fP 1i
 Specifies the widget to add the callback to.
@@ -769,7 +767,7 @@ for example:
 .Ds 0
 XtCreateManagedWidget(\fIname\fP, \fIclass\fP, \fIparent\fP, \fIargs\fP, \fInum_args\fP);
 XtRealizeWidget(\fIshell\fP);
-XtAppMainLoop(\fIapp_con\fP);
+XtAppMainLoop(\fIapp_context\fP);
 .De
 .IP
 For information about this function, see the \fI\*(xT\fP.
