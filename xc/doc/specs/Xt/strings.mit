@@ -13,4 +13,4 @@
 .ds oC Must be \fBobjectClass\fP or any subclass thereof.
 .ds rC Must be \fBrectObjClass\fP or any subclass thereof.
 .hw XtMake-Geometry-Request XtQuery-Geometry wid-get Composite-Part \
-Rect-Obj-Rec XtIsOverrideShell
+Rect-Obj-Rec XtIsOverrideShell super-class
