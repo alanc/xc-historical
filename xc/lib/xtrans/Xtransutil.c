@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransutil.c,v 1.12 94/02/17 15:25:23 mor Exp $ */
+/* $XConsortium: Xtransutil.c,v 1.13 94/03/29 14:28:28 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -41,6 +41,7 @@
 #define FamilyInternet		0
 #define FamilyDECnet		1
 #define FamilyChaos		2
+#define FamilyAmoeba		33
 #define FamilyLocalHost		252
 #define FamilyKrb5Principal	253
 #define FamilyNetname		254
@@ -124,6 +125,21 @@ Xtransaddr	*addrp;
 	break;
     }
 #endif /* defined(UNIXCONN) || defined(LOCALCONN) */
+
+#if defined(AMRPCCONN)
+    case AF_AMOEBA:
+    {
+	*familyp=FamilyAmoeba;
+	break;
+    }
+#endif
+#if defined(AMTCPCONN) && !(defined(TCPCONN) || defined(STREAMSCONN))
+    case AF_INET:
+    {
+	*familyp=FamilyInternet;
+	break;
+    }
+#endif
 
     default:
 	PRMSG(1,"TRANS(ConvertFamily) Unknown family type %d\n",
@@ -347,6 +363,27 @@ Xtransaddr	*peer_addr;
 	break;
     }
 #endif /* defined(DNETCONN) */
+
+#if defined(AMRPCCONN)
+    case AF_AMOEBA:
+    {
+	strcpy (prefix, "amcon/");
+	addr = "Amoeba"; /* not really used */
+	break;
+    }
+#endif
+#if defined(AMTCPCONN) && !(defined(TCPCONN) || defined(STREAMSCONN))
+    case AF_INET:
+    {
+	strcpy (prefix, "tcp/");
+	if (gethostname (addrbuf, sizeof (addrbuf)) == 0) {
+	    addr = addrbuf;
+	} else {
+	    addr = "";
+	}
+	break;
+    }
+#endif
 
     default:
 	return (NULL);
