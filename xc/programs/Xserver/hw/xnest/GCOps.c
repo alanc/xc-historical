@@ -1,4 +1,4 @@
-/* $XConsortium: xnestGCOps.c,v 1.1 93/06/23 16:23:32 dmatic Exp $ */
+/* $XConsortium: GCOps.c,v 1.1 93/07/12 15:28:26 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -103,10 +103,11 @@ void xnestPutImage(pDrawable, pGC, depth, x, y, w, h, leftPad, format, pImage)
 			depth, format, leftPad / depth, (char *)pImage, 
 			w, h, BitmapPad(xnestDisplay), 0);
   
-  XPutImage(xnestDisplay, xnestDrawable(pDrawable), xnestGC(pGC), 
-	    ximage, 0, 0, x, y, w, h);
-
-  XFree(ximage);
+  if (ximage) {
+      XPutImage(xnestDisplay, xnestDrawable(pDrawable), xnestGC(pGC), 
+		ximage, 0, 0, x, y, w, h);
+      XFree(ximage);
+  }
 }
 
 void xnestGetImage(pDrawable, x, y, w, h, format, planeMask, pImage)
@@ -122,11 +123,13 @@ void xnestGetImage(pDrawable, x, y, w, h, format, planeMask, pImage)
   ximage = XGetImage(xnestDisplay, xnestDrawable(pDrawable),
                      x, y, w, h, planeMask, format);
 
-  length = ximage->bytes_per_line * ximage->height;
+  if (ximage) {
+      length = ximage->bytes_per_line * ximage->height;
   
-  bcopy(ximage->data, pImage, length);
+      bcopy(ximage->data, pImage, length);
   
-  XDestroyImage(ximage);
+      XDestroyImage(ximage);
+  }
 }
 
 static Bool xnestBitBlitPredicate(display, event, args)
