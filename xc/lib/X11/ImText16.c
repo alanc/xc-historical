@@ -1,4 +1,4 @@
-/* $XConsortium: XImText16.c,v 11.17 91/01/06 11:46:32 rws Exp $ */
+/* $XConsortium: XImText16.c,v 11.18 91/07/11 21:42:25 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -13,6 +13,7 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
+#define NEED_REPLIES
 #include "Xlibint.h"
 
 #if NeedFunctionPrototypes
@@ -35,12 +36,24 @@ XDrawImageString16(dpy, d, gc, x, y, string, length)
 #endif
 {   
     register xImageText16Req *req;
+    xQueryTextExtentsReq *qreq;
+    xQueryTextExtentsReply rep;
     XChar2b *CharacterOffset = (XChar2b *)string;
     int FirstTimeThrough = True;
     int lastX = 0;
+    char *buf;
+    unsigned char *ptr;
+    XChar2b *str;
+    int i;
 
     LockDisplay(dpy);
     FlushGC(dpy, gc);
+    if (length > 255 &&
+	! (buf = _XAllocScratch (dpy, (unsigned long) 512))) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return;
+    }
 
     while (length > 0) 
     {
@@ -55,31 +68,21 @@ XDrawImageString16(dpy, d, gc, x, y, string, length)
         }
 	else
 	{
-	    int direction, ascent, descent;
-	    XCharStruct overall;
-	    XFontStruct *FontStruct;
-            
-	    UnlockDisplay(dpy);
-	
-	    overall.width = 0;
-	    FontStruct = XQueryFont(dpy, gc->gid);
-
-	    if (FontStruct) {
-		XTextExtents16(FontStruct, CharacterOffset - 255, 255,
-		    &direction, &ascent, &descent, &overall);
-
-		if (FontStruct->per_char)
-		    Xfree ((char *) FontStruct->per_char);
-		if (FontStruct->properties)
-		    Xfree ((char *) FontStruct->properties);
-		Xfree((char *)FontStruct);
+	    GetReq(QueryTextExtents, qreq);
+	    qreq->fid = gc->gid;
+	    qreq->length += (510 + 3)>>2;
+	    qreq->oddLength = 1;
+	    str = CharacterOffset - 255;
+	    for (ptr = (unsigned char *)buf, i = 255; --i >= 0; str++) {
+		*ptr++ = str->byte1;
+		*ptr++ = str->byte2;
 	    }
+	    Data (dpy, buf, 510);
+	    if (!_XReply (dpy, (xReply *)&rep, 0, xTrue))
+		break;
 
-	    LockDisplay(dpy);
-
-	    x = lastX + overall.width;
+	    x = lastX + cvtINT32toInt (rep.overallWidth);
 	}
-
 
         GetReq (ImageText16, req);
         req->length += ((Unit << 1) + 3) >> 2;

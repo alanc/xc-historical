@@ -1,4 +1,4 @@
-/* $XConsortium: XImText.c,v 11.15 91/01/06 11:46:31 rws Exp $ */
+/* $XConsortium: XImText.c,v 11.16 91/07/11 21:42:14 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -13,6 +13,7 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
+#define NEED_REPLIES
 #include "Xlibint.h"
 
 #if NeedFunctionPrototypes
@@ -35,12 +36,22 @@ XDrawImageString(dpy, d, gc, x, y, string, length)
 #endif
 {   
     register xImageText8Req *req;
+    xQueryTextExtentsReq *qreq;
+    xQueryTextExtentsReply rep;
     char *CharacterOffset = (char *)string;
     int FirstTimeThrough = True;
     int lastX = 0;
+    char *buf, *ptr, *str;
+    int i;
 
     LockDisplay(dpy);
     FlushGC(dpy, gc);
+    if (length > 255 &&
+	! (buf = _XAllocScratch (dpy, (unsigned long) 512))) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return;
+    }
 
     while (length > 0) 
     {
@@ -55,31 +66,21 @@ XDrawImageString(dpy, d, gc, x, y, string, length)
         }
 	else
 	{
-	    int direction, ascent, descent;
-	    XCharStruct overall;
-	    XFontStruct *FontStruct;
-            
-	    UnlockDisplay(dpy);
-	
-	    overall.width = 0;
-	    FontStruct = XQueryFont(dpy, gc->gid);
-
-	    if (FontStruct) {
-		XTextExtents(FontStruct, CharacterOffset - 255, 255,
-		    &direction, &ascent, &descent, &overall);
-
-		if (FontStruct->per_char)
-		    Xfree ((char *) FontStruct->per_char);
-		if (FontStruct->properties)
-		    Xfree ((char *) FontStruct->properties);
-		Xfree((char *)FontStruct);
+	    GetReq(QueryTextExtents, qreq);
+	    qreq->fid = gc->gid;
+	    qreq->length += (510 + 3)>>2;
+	    qreq->oddLength = 1;
+	    str = CharacterOffset - 255;
+	    for (ptr = buf, i = 255; --i >= 0; ) {
+		*ptr++ = 0;
+		*ptr++ = *str++;
 	    }
+	    Data (dpy, buf, 510);
+	    if (!_XReply (dpy, (xReply *)&rep, 0, xTrue))
+		break;
 
-	    LockDisplay(dpy);
-
-	    x = lastX + overall.width;
+	    x = lastX + cvtINT32toInt (rep.overallWidth);
 	}
-
 
         GetReq (ImageText8, req);
         req->length += (Unit + 3) >> 2;
