@@ -7,6 +7,18 @@ all resolutions will probably want to have around:
 
 	Sun Open Look glyph fonts
 
+	Kanji and Kana fonts
+
+The Kanji and Kana fonts are as follows:
+
+	k14		kanji 14 pt font
+	7x14rk		JIS roman and kana font
+	7x14		ASCII fonts with same size for 7x14rk
+	8x16rk		JIS roman and kana font
+	8x16		ASCII fonts
+	12x24rk		JIS roman and kana font
+	12x24		ASCII fonts
+
 
 Aliases for the Lucida fonts used by XView can be found in ../{75,100}dpi.
 They are based on the following "generic" aliases:
