@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.18 91/07/17 16:46:06 rws Exp $ */
+/* $XConsortium: devices.c,v 5.19 91/07/17 19:26:02 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -901,15 +901,16 @@ ProcChangeKeyboardMapping(client)
     if (len != (stuff->keyCodes * stuff->keySymsPerKeyCode))
             return BadLength;
     if ((stuff->firstKeyCode < curKeySyms->minKeyCode) ||
-	(stuff->firstKeyCode + stuff->keyCodes - 1 > curKeySyms->maxKeyCode))
+	(stuff->firstKeyCode > curKeySyms->maxKeyCode))
     {
 	    client->errorValue = stuff->firstKeyCode;
 	    return BadValue;
     }
-    if (stuff->keySymsPerKeyCode == 0)
+    if ((stuff->firstKeyCode + stuff->keyCodes - 1 > curKeySyms->maxKeyCode) ||
+	(stuff->keySymsPerKeyCode == 0))
     {
-	    client->errorValue = 0;
-            return BadValue;
+	    client->errorValue = stuff->keySymsPerKeyCode;
+	    return BadValue;
     }
     keysyms.minKeyCode = stuff->firstKeyCode;
     keysyms.maxKeyCode = stuff->firstKeyCode + stuff->keyCodes - 1;
