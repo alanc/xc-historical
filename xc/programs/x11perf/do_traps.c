@@ -2,7 +2,7 @@
 
 #define NUM_POINTS 4  /* 4 points to a trapezoid */
 static XPoint *points;
-static GC whitegc, blackgc;
+static GC bggc, fggc;
 static Window w[4];
 static XRectangle ws[3] = {
     {100, 100, 200, 200},
@@ -35,7 +35,7 @@ void InitTraps(d, p)
         points[i].y = points[i-3].y;
         i++;
     }
-    CreatePerfStuff(d, 1, WIDTH, HEIGHT, w, &whitegc, &blackgc);
+    CreatePerfStuff(d, 1, WIDTH, HEIGHT, w, &bggc, &fggc);
     for (i = 0; i < p->special; i++)
 	w[i+1] = CreatePerfWindow(
 	    d, ws[i].x, ws[i].y, ws[i].width, ws[i].height);
@@ -50,7 +50,7 @@ void DoTraps(d, p)
     int i, j;
     XPoint *curPoint;
 
-    pgc = whitegc;
+    pgc = bggc;
     for (i=0; i<p->reps; i++)
     {
         curPoint = points;
@@ -59,10 +59,10 @@ void DoTraps(d, p)
 			 CoordModeOrigin);
             curPoint += NUM_POINTS;
 	  }
-        if (pgc == whitegc)
-            pgc = blackgc;
+        if (pgc == bggc)
+            pgc = fggc;
         else
-            pgc = whitegc;
+            pgc = bggc;
     }
 }
 
@@ -74,8 +74,8 @@ void EndTraps(d, p)
     for (i = 0; i < 4; i++)
 	if (w[i] != None)
 	    XDestroyWindow(d, w[i]);
-    XFreeGC(d, whitegc);
-    XFreeGC(d, blackgc);
+    XFreeGC(d, bggc);
+    XFreeGC(d, fggc);
     free(points);
 }
 
