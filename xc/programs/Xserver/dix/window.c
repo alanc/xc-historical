@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.2 89/07/04 16:18:01 rws Exp $ */
+/* $XConsortium: window.c,v 5.3 89/07/04 21:03:55 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -40,8 +40,6 @@ SOFTWARE.
 #include "dixstruct.h"
 #include "gcstruct.h"
 #include "servermd.h"
-
-typedef enum { VTOther, VTStack, VTMove, VTUnmap, VTMap } VTKind;
 
 /******
  * Window stuff for server 
@@ -413,43 +411,6 @@ WalkTree(pScreen, func, data)
     pointer data;
 {
     return(TraverseTree(WindowTable[pScreen->myNum], func, data));
-}
-
-/*****
- *  DoObscures(pWin)
- *    
- *****/
-
-static void
-DoObscures(pWin)
-    WindowPtr pWin;
-{
-    register WindowPtr pChild;
-    Bool (* RegionNotEmpty)();
-    void (* RegionEmpty)();
-
-    pChild = pWin;
-    RegionNotEmpty = pChild->drawable.pScreen->RegionNotEmpty;
-    RegionEmpty = pChild->drawable.pScreen->RegionEmpty;
-    while (1)
-    {
-	if (pChild->backStorage &&
-	    (*RegionNotEmpty)(pChild->backStorage->obscured))
-	{
-	    (*pChild->backStorage->funcs->SaveDoomedAreas)(pChild);
-	    (*RegionEmpty)(pChild->backStorage->obscured);
-	}
-	if (pChild->firstChild)
-	{
-	    pChild = pChild->firstChild;
-	    continue;
-	}
-	while (!pChild->nextSib && (pChild != pWin))
-	    pChild = pChild->parent;
-	if (pChild == pWin)
-	    break;
-	pChild = pChild->nextSib;
-    }
 }
 
 /*****
@@ -1792,7 +1753,6 @@ MoveWindow(pWin, x, y, pNextSib)
 	if (anyMarked)
 	{
 	    (* pScreen->ValidateTree)(pParent, NullWindow, VTMove);
-	    DoObscures(pParent);
 	    (* pWin->funcs->CopyWindow)(pWin, oldpt, oldRegion);
 	    (* pScreen->RegionDestroy)(oldRegion);
 	    /* XXX need to retile border if ParentRelative origin */
@@ -1811,7 +1771,7 @@ static void
 gravityTranslate (x, y, oldx, oldy, dw, dh, gravity, destx, desty)
 int	x, y;		/* new window position */
 int	oldx, oldy;	/* old window position */
-int	gravity;
+unsigned gravity;
 int	*destx, *desty;	/* position relative to gravity */
 {
     switch (gravity) {
@@ -1974,7 +1934,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
     WindowPtr pFirstChange;
     WindowPtr pChild;
     RegionPtr	gravitate[StaticGravity + 1];
-    int		g;
+    unsigned	g;
     int		nx, ny;		/* destination x,y */
     RegionPtr	pRegion;
     RegionPtr	destClip;	/* portions of destination already written */
@@ -2057,7 +2017,6 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	if (anyMarked)
 	{
 	    (* pScreen->ValidateTree)(pParent, pFirstChange, VTOther);
-	    DoObscures(pParent);
 	    /*
 	     * always redraw the border as CopyWindow will mash it
 	     */
@@ -2238,7 +2197,6 @@ ChangeBorderWidth(pWin, width)
 	    (* pScreen->ValidateTree)(pParent, pWin, VTOther);
 	    if (width > oldwidth)
 	    {
-		DoObscures(pParent);
 		(* pScreen->Subtract)(pWin->valdata->borderExposed,
 				      pWin->borderClip, pWin->winSize);
 		(* pWin->funcs->PaintWindowBorder)(pWin,
@@ -2572,7 +2530,6 @@ ReflectStackChange(pWin, pSib, kind)
 	{
 	    (* pWin->drawable.pScreen->ValidateTree)(pParent, pFirstChange,
 						     kind);
-	    DoObscures(pParent);
 	    HandleExposures(pParent);
 	}
 #ifdef DO_SAVE_UNDERS
@@ -2871,7 +2828,6 @@ SetShape(pWin)
 	if (anyMarked)
 	{
 	    (* pScreen->ValidateTree)(pParent, NullWindow, VTOther);
-	    DoObscures(pParent);
 	    (*pScreen->Intersect) (newBorder, newBorder, pWin->borderClip);
 	    (*pScreen->Union) (pWin->valdata->borderExposed,
 			       pWin->valdata->borderExposed, newBorder);
@@ -3250,7 +3206,6 @@ MapWindow(pWin, client)
 	    if (anyMarked)
 	    {
 		(* pScreen->ValidateTree)(pParent, pWin, VTMap);
-		DoObscures(pParent);
 		HandleExposures(pParent);
 	    }
 #ifdef DO_SAVE_UNDERS
@@ -3302,14 +3257,12 @@ UnrealizeChildren(pWin)
     register WindowPtr pChild;
     void (*RegionEmpty)();
     Bool (*Unrealize)();
-    int (*Union)();
 
     pChild = pWin->firstChild;
     if (!pChild)
 	return;
     RegionEmpty = pChild->drawable.pScreen->RegionEmpty;
     Unrealize = pChild->drawable.pScreen->UnrealizeWindow;
-    Union = pChild->drawable.pScreen->Union;
     while (1)
     {
 	if (pChild->realized)
@@ -3322,16 +3275,9 @@ UnrealizeChildren(pWin)
 	    {
 		pChild->viewable = FALSE;
 		if (pChild->backStorage)
-		{
-		    /*
-		     * Allow backing-store to grab stuff off the screen before
-		     * the bits go away
-		     */
-		    (* Union) (pChild->backStorage->obscured,
-			       pChild->backStorage->obscured,
-			       pChild->clipList);
-		}
-			/* to force exposures later */
+		    (*pChild->backStorage->funcs->SaveDoomedAreas)(
+					    pChild, pChild->clipList, 0, 0);
+		/* to force exposures later */
 		(* RegionEmpty)(pChild->clipList);
 		(* RegionEmpty)(pChild->borderClip);
 		pChild->drawable.serialNumber = NEXT_SERIAL_NUMBER;
@@ -3392,12 +3338,6 @@ UnmapWindow(pWin, fromConfigure)
 	if (!fromConfigure && anyMarked)
 	{
 	    (* pWin->drawable.pScreen->ValidateTree)(pParent, pWin, VTUnmap);
-	    /*
-	     * For backingStore == Always, we must allow the backing-store
-	     * implementation to grab the bits off the screen before the window
-	     * is unmapped.
-	     */
-	    DoObscures(pParent);
 	    HandleExposures(pParent);
 	}
 #ifdef DO_SAVE_UNDERS
@@ -3426,7 +3366,6 @@ UnmapSubwindows(pWin)
     register WindowPtr pChild, pHead;
     xEvent event;
     Bool (*UnrealizeWindow)();
-    int (*Union)();
     Bool wasRealized = (Bool)pWin->realized;
     Bool wasViewable = (Bool)pWin->viewable;
     Bool anyMarked = FALSE;
@@ -3435,23 +3374,22 @@ UnmapSubwindows(pWin)
 	return;
 
     UnrealizeWindow = pWin->drawable.pScreen->UnrealizeWindow;
-    Union = pWin->drawable.pScreen->Union;
     pHead = RealChildHead(pWin);
     for (pChild = pWin->lastChild; pChild != pHead; pChild = pChild->prevSib)
     {
 	if (pChild->mapped)
         {
-	    if (wasViewable)
-	    {
-		MarkSubtree(pChild);
-		anyMarked = TRUE;
-	    }
 	    event.u.u.type = UnmapNotify;
 	    event.u.unmapNotify.window = pChild->drawable.id;
 	    event.u.unmapNotify.fromConfigure = xFalse;
 	    DeliverEvents(pChild, &event, 1, NullWindow);
+	    if (pChild->viewable)
+	    {
+		MarkSubtree(pChild);
+		anyMarked = TRUE;
+	    }
 	    pChild->mapped = FALSE;
-            if (wasRealized)
+            if (pChild->realized)
 	    {
     	        pChild->realized = pChild->viewable = FALSE;
 		pChild->visibility = VisibilityNotViewable;
@@ -3465,16 +3403,9 @@ UnmapSubwindows(pWin)
 #ifdef DO_SAVE_UNDERS
 		pChild->DIXsaveUnder = FALSE;
 #endif /* DO_SAVE_UNDERS */
-		if (pChild->backStorage && (pChild->backingStore == Always))
-		{
-		    /*
-		     * Need to allow backing-store a chance to snag bits from
-		     * the screen if backingStore == Always
-		     */
-		    (* Union) (pChild->backStorage->obscured,
-			       pChild->backStorage->obscured,
-			       pChild->clipList);
-		}
+		if (pChild->backStorage)
+		    (*pChild->backStorage->funcs->SaveDoomedAreas)(
+					    pChild, pChild->clipList, 0, 0);
 	    }
 	}
     }
@@ -3483,7 +3414,6 @@ UnmapSubwindows(pWin)
 	if (anyMarked)
 	{
 	    (* pWin->drawable.pScreen->ValidateTree)(pWin, pHead, VTUnmap);
-	    DoObscures(pWin);
 	    HandleExposures(pWin);
 	}
 #ifdef DO_SAVE_UNDERS
