@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XFilterEv.c,v 1.2 91/02/14 16:22:07 rws Exp $
+ * $XConsortium: XFilterEv.c,v 1.3 91/02/19 19:37:52 rws Exp $
  */
 
  /*
@@ -38,7 +38,7 @@
 #else
 #define Const /**/
 #endif
-extern long Const _event_to_mask[];
+extern long Const _Xevent_to_mask[];
 
 /*
  * Look up if there is a specified filter for the event.
@@ -59,7 +59,7 @@ XFilterEvent(ev, window)
 	win = ev->xany.window;
     if (ev->type >= LASTEvent)
 	return False;
-    mask = _event_to_mask[ev->type];
+    mask = _Xevent_to_mask[ev->type];
 
     for (p = ev->xany.display->im_filters; p != NULL; p = p->next) {
 	if (win == p->window) {
