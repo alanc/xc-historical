@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Converters.h,v 1.9 90/05/11 15:30:55 jim Exp $
+ * $XConsortium: Converters.h,v 1.10 90/12/19 18:04:17 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -89,31 +89,6 @@ extern Boolean XmuCvtStringToColorCursor(
 #define XtNpointerColor "pointerColor"
 #define XtNpointerColorBackground "pointerColorBackground"
 
-
-/******************************************************************************
- * XmuCvtStringToFontStruct
- */
-
-extern Boolean XmuCvtStringToFontStruct (
-#if NeedFunctionPrototypes
-    Display*		/* dpy */,
-    XrmValue*		/* args */,
-    Cardinal*		/* num_args */,
-    XrmValuePtr		/* fromVal */,
-    XrmValuePtr		/* toVal */,
-    XtPointer*		/* converter_data */
-#endif
-);
-
-extern void XmuSetStringToFontStructConverter (
-#if NeedFunctionPrototypes
-#if NeedWidePrototypes
-    int			/* trydefaults */
-#else
-    Boolean		/* trydefaults */
-#endif
-#endif
-);
 
 /******************************************************************************
  * XmuCvtStringToGravity
