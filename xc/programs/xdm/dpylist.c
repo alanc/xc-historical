@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dpylist.c,v 1.18 90/03/29 11:37:36 keith Exp $
+ * $XConsortium: dpylist.c,v 1.19 90/09/13 18:28:38 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -219,6 +219,7 @@ char		*class;
     d->authorize = FALSE;
     d->authorizations = NULL;
     d->authNum = 0;
+    d->authNameNum = 0;
     d->clientAuthFile = NULL;
     d->authFile = NULL;
     d->userAuthDir = NULL;
