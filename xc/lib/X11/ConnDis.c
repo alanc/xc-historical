@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $XConsortium: XConnDis.c,v 11.39 88/11/23 13:45:33 rws Exp $ */
+/* $XConsortium: XConnDis.c,v 11.40 88/11/29 14:24:17 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -11,8 +11,11 @@
 #include "Xlibint.h"
 #include <X11/Xauth.h>
 #include <sys/socket.h>
+
 #ifndef hpux
+#ifndef apollo			/* nest ifndefs because makedepend is broken */
 #include <netinet/tcp.h>
+#endif
 #endif
 
 #ifdef hpux
