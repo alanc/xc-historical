@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.100 89/11/03 19:03:24 jim Exp $
+ * $XConsortium: add_window.c,v 1.101 89/11/05 17:46:48 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.100 89/11/03 19:03:24 jim Exp $";
+"$XConsortium: add_window.c,v 1.101 89/11/05 17:46:48 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -65,6 +65,9 @@ int AddingH;
 
 static int PlaceX = 50;
 static int PlaceY = 50;
+static void CreateTitleButtons();
+static void InsertResizeAndIconify(), ComputeCommonTitleOffsets();
+void ComputeWindowTitleOffsets();
 
 char NoName[] = "Untitled"; /* name if no name is specified */
 
@@ -107,6 +110,8 @@ GetGravityOffsets (tmp, xp, yp)
 	*yp = gravity_offsets[g].y;
     }
 }
+
+
 
 
 /***********************************************************************
@@ -630,6 +635,38 @@ IconMgr *iconp;
 	tmp_win->gray = None;
 
 	
+    if (!Scr->TBInfo.inited) {
+	TitleButton *tb;
+	int h;
+
+	Scr->TBInfo.width = h = (Scr->TitleHeight - 2 *
+				 (Scr->FramePadding + Scr->ButtonIndent + 1));
+	Scr->TBInfo.pad = ((Scr->TitlePadding > 1)
+			   ? ((Scr->TitlePadding + 1) / 2) : 1);
+	if (!Scr->NoDefaults) InsertResizeAndIconify ();
+	ComputeCommonTitleOffsets ();
+	for (tb = Scr->TBInfo.head; tb; tb = tb->next) {
+	    tb->dstx = (h - tb->width + 1) / 2;
+	    if (tb->dstx < 0) {		/* clip to minimize copying */
+		tb->srcx = -(tb->dstx);
+		tb->width = h;
+		tb->dstx = 0;
+	    } else {
+		tb->srcx = 0;
+	    }
+	    tb->dsty = (h - tb->height + 1) / 2;
+	    if (tb->dsty < 0) {
+		tb->srcy = -(tb->dsty);
+		tb->height = h;
+		tb->dsty = 0;
+	    } else {
+		tb->srcy = 0;
+	    }
+	}
+
+	Scr->TBInfo.inited = True;
+    }
+
     if (tmp_win->title_height)
     {
 	CreateTitleButtons(tmp_win);
@@ -1005,73 +1042,6 @@ TwmWindow *tmp_win;
     }
 }
 
-static void InsertResizeAndIconify (tmp_win)
-    TwmWindow *tmp_win;
-{
-    Pixmap iconify_pm, resize_pm;
-    int h = Scr->TBInfo.width;
-    XSegment segs[4];
-    GC gc, gcBack;
-    int w;
-
-    /*
-     * create the pixmaps
-     */
-
-    iconify_pm = XCreatePixmap (dpy, tmp_win->title_w, h, h, 1);
-    gc = XCreateGC (dpy, iconify_pm, 0L, NULL);
-    XSetForeground(dpy, gc, 0);
-    XFillRectangle (dpy, iconify_pm, gc, 0, 0, h, h);
-
-    resize_pm = XCreatePixmap (dpy, tmp_win->title_w, h, h, 1);
-    XFillRectangle (dpy, resize_pm, gc, 0, 0, h, h);
-
-    /* now draw the images in */
-    XSetForeground(dpy, gc, 1);
-
-    /* first the iconify button */
-    gcBack = XCreateGC (dpy, iconify_pm, 0L, NULL);
-    XSetForeground (dpy, gcBack, 0);
-
-    /*
-     * draw the logo large so that it gets as dense as possible; then white
-     * out the edges so that they look crisp
-     */
-    XmuDrawLogo (dpy, iconify_pm, gc, gcBack, -1, -1, h + 2, h + 2);
-    XDrawRectangle (dpy, iconify_pm, gcBack, 0, 0, h - 1, h - 1);
-    XFreeGC (dpy, gcBack);
-
-    /*
-     * draw the resize button, 
-     */
-    w = (h * 2) / 3;
-    segs[0].x1 = w; segs[0].y1 = 0; segs[0].x2 = w; segs[0].y2 = w;
-    segs[1].x1 = 0; segs[1].y1 = w; segs[1].x2 = w; segs[1].y2 = w;
-    w = w / 2;
-    segs[2].x1 = w; segs[2].y1 = 0; segs[2].x2 = w; segs[2].y2 = w;
-    segs[3].x1 = 0; segs[3].y1 = w; segs[3].x2 = w; segs[3].y2 = w;
-    XDrawSegments (dpy, resize_pm, gc, segs, 4);
-
-    /*
-     * done drawing
-     */
-    XFreeGC(dpy, gc);
-
-
-    /*
-     * add them to the titlebar
-     */
-    if (!MakeTitleButton (iconify_pm, h, h, F_ICONIFY, "", NULL,
-			  False, False)) {
-	fprintf (stderr, "twm:  unable to add iconify button\n");
-    }
-
-    if (!MakeTitleButton (resize_pm, h, h, F_RESIZE, "", NULL,
-			  True, True)) {
-	fprintf (stderr, "twm:  unable to add resize button\n");
-    }
-    return;
-}
 
 
 static Window CreateHighlightWindow (tmp_win)
@@ -1134,7 +1104,8 @@ static Window CreateHighlightWindow (tmp_win)
     }
 
     w = XCreateWindow (dpy, tmp_win->title_w, 0, Scr->FramePadding,
-		       SQUEEZED_HIGHLIGHT, h, 0, Scr->d_depth, CopyFromParent,
+		       Scr->TBInfo.width + Scr->TBInfo.border * 2, h, 0,
+		       Scr->d_depth, CopyFromParent,
 		       Scr->d_visual, valuemask, &attributes);
     if (pm) XFreePixmap (dpy, pm);
     return w;
@@ -1169,7 +1140,8 @@ void ComputeWindowTitleOffsets (tmp_win, width, squeeze)
     tmp_win->rightx = width - 1 - Scr->TBInfo.rightoff;
     if (squeeze && Scr->SqueezeTitle) {
 	int rx = (tmp_win->highlightx + 
-		  (tmp_win->hilite_w ? SQUEEZED_HIGHLIGHT : 0) +
+		  (tmp_win->hilite_w
+		    ? Scr->TBInfo.width + Scr->TBInfo.border * 2 : 0) +
 		  (Scr->TBInfo.nright > 0 ? Scr->TitlePadding : 0) +
 		  Scr->FramePadding);
 	if (rx < tmp_win->rightx) tmp_win->rightx = rx;
@@ -1177,12 +1149,12 @@ void ComputeWindowTitleOffsets (tmp_win, width, squeeze)
     return;
 }
 
-CreateTitleButtons(tmp_win)
+static void CreateTitleButtons(tmp_win)
     TwmWindow *tmp_win;
 {
     unsigned long valuemask;		/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
-    int leftx, rightx, y, h;
+    int leftx, rightx, y, h = Scr->TBInfo.width;
     GC gc;
     TitleButton *tb;
     int nb;
@@ -1193,38 +1165,6 @@ CreateTitleButtons(tmp_win)
 	return;
     }
 
-    if (!Scr->TBInfo.inited) {
-	TitleButton *tb;
-
-	Scr->TBInfo.width = h = (Scr->TitleHeight - 2 *
-				 (Scr->FramePadding + Scr->ButtonIndent + 1));
-	Scr->TBInfo.pad = ((Scr->TitlePadding > 1)
-			   ? ((Scr->TitlePadding + 1) / 2) : 1);
-	if (!Scr->NoDefaults)
-	  InsertResizeAndIconify (tmp_win);
-	ComputeCommonTitleOffsets ();
-	for (tb = Scr->TBInfo.head; tb; tb = tb->next) {
-	    tb->dstx = (h - tb->width + 1) / 2;
-	    if (tb->dstx < 0) {		/* clip to minimize copying */
-		tb->srcx = -(tb->dstx);
-		tb->width = h;
-		tb->dstx = 0;
-	    } else {
-		tb->srcx = 0;
-	    }
-	    tb->dsty = (h - tb->height + 1) / 2;
-	    if (tb->dsty < 0) {
-		tb->srcy = -(tb->dsty);
-		tb->height = h;
-		tb->dsty = 0;
-	    } else {
-		tb->srcy = 0;
-	    }
-	}
-
-	Scr->TBInfo.inited = True;
-    } else
-      h = Scr->TBInfo.width;
 
     /*
      * create the title bar windows; let the event handler deal with painting
@@ -1364,6 +1304,74 @@ FetchWmColormapWindows (tmp)
 	    tmp->cmap_windows = wl;
 	    tmp->number_cmap_windows++;
 	}
+    }
+    return;
+}
+
+
+static void InsertResizeAndIconify ()
+{
+    Pixmap iconify_pm, resize_pm;
+    int h = Scr->TBInfo.width;
+    XSegment segs[4];
+    GC gc, gcBack;
+    int w;
+
+    /*
+     * create the pixmaps
+     */
+
+    iconify_pm = XCreatePixmap (dpy, Scr->Root, h, h, 1);
+    gc = XCreateGC (dpy, iconify_pm, 0L, NULL);
+    XSetForeground(dpy, gc, 0);
+    XFillRectangle (dpy, iconify_pm, gc, 0, 0, h, h);
+
+    resize_pm = XCreatePixmap (dpy, Scr->Root, h, h, 1);
+    XFillRectangle (dpy, resize_pm, gc, 0, 0, h, h);
+
+    /* now draw the images in */
+    XSetForeground(dpy, gc, 1);
+
+    /* first the iconify button */
+    gcBack = XCreateGC (dpy, iconify_pm, 0L, NULL);
+    XSetForeground (dpy, gcBack, 0);
+
+    /*
+     * draw the logo large so that it gets as dense as possible; then white
+     * out the edges so that they look crisp
+     */
+    XmuDrawLogo (dpy, iconify_pm, gc, gcBack, -1, -1, h + 2, h + 2);
+    XDrawRectangle (dpy, iconify_pm, gcBack, 0, 0, h - 1, h - 1);
+    XFreeGC (dpy, gcBack);
+
+    /*
+     * draw the resize button, 
+     */
+    w = (h * 2) / 3;
+    segs[0].x1 = w; segs[0].y1 = 0; segs[0].x2 = w; segs[0].y2 = w;
+    segs[1].x1 = 0; segs[1].y1 = w; segs[1].x2 = w; segs[1].y2 = w;
+    w = w / 2;
+    segs[2].x1 = w; segs[2].y1 = 0; segs[2].x2 = w; segs[2].y2 = w;
+    segs[3].x1 = 0; segs[3].y1 = w; segs[3].x2 = w; segs[3].y2 = w;
+    XDrawSegments (dpy, resize_pm, gc, segs, 4);
+
+    /*
+     * done drawing
+     */
+    XFreeGC(dpy, gc);
+
+
+    /*
+     * add them to the titlebar
+     */
+    if (!MakeTitleButton (iconify_pm, h, h, F_ICONIFY, "", NULL,
+			  False, False)) {
+	fprintf (stderr, "twm:  unable to add iconify button\n");
+    }
+
+    if (!MakeTitleButton (resize_pm, h, h, F_RESIZE, "", NULL,
+			  True, True)) {
+	fprintf (stderr, "twm:  unable to add resize button\n");
     }
     return;
 }
