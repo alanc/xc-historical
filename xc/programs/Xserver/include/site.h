@@ -46,7 +46,7 @@ SOFTWARE.
  * normal build ALWAYS overrides them using a special rule given in
  * server/dix/Imakefile.  If you want to change either of these constants, 
  * you should set the DefaultFontPath or DefaultRGBDatabase configuration 
- * parameters in util/imake.includes/site.def or util/imake.includes/*.macros.
+ * parameters.
  * DO NOT CHANGE THESE VALUES OR THE DIX IMAKEFILE!
  */
 #ifndef COMPILEDDEFAULTFONTPATH
@@ -75,6 +75,11 @@ SOFTWARE.
 	0, 0, 0, 0, 0, 0, 0, 0,\
 	0, 0, 0, 0, 0, 0, 0, 0 }
 #define DEFAULT_LEDS		0x0        /* all off */
+#define DEFAULT_LEDS_MASK	0xffffffff /* 32 */
+#define DEFAULT_INT_RESOLUTION		1000
+#define DEFAULT_INT_MIN_VALUE		0
+#define DEFAULT_INT_MAX_VALUE		100
+#define DEFAULT_INT_DISPLAYED		0
 
 #define DEFAULT_PTR_NUMERATOR	2
 #define DEFAULT_PTR_DENOMINATOR	1
