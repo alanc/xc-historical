@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.17 94/11/30 17:54:05 mor Exp mor $ */
+/* $XConsortium: globals.c,v 1.18 94/12/12 19:58:35 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -34,8 +34,6 @@ List		*WaitForSaveDoneList;
 List		*FailedSaveList;
 List		*WaitForInteractList;
 List		*WaitForPhase2List;
-
-int		saveWaitCount = 0;
 
 Bool		wantShutdown = False;
 Bool		shutdownInProgress = False;
