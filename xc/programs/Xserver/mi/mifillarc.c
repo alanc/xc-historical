@@ -15,15 +15,18 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.c,v 5.0 89/09/20 18:55:54 rws Exp $ */
+/* $XConsortium: mifillarc.c,v 5.0 89/10/20 08:46:19 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
 #include "miscstruct.h"
 #include "gcstruct.h"
 #include "pixmapstr.h"
+#include "mifpoly.h"
 #include "mi.h"
 #include "mifillarc.h"
+
+# define todeg(xAngle)	(((double) (xAngle)) / 64.0)
 
 void
 miFillArcSetup(arc, info)
@@ -101,6 +104,7 @@ miFillArcSetup(arc, info)
 	n++; \
     }
 
+static void
 miFillEllipseI(pDraw, pGC, arc)
     DrawablePtr pDraw;
     GCPtr pGC;
@@ -159,6 +163,7 @@ miFillEllipseI(pDraw, pGC, arc)
 }
 
 /* should use 64-bit integers */
+static void
 miFillEllipseD(pDraw, pGC, arc)
     DrawablePtr pDraw;
     GCPtr pGC;
@@ -227,4 +232,86 @@ miFillEllipseD(pDraw, pGC, arc)
     (*pGC->ops->FillSpans)(pDraw, pGC, n, points, widths, FALSE);
     DEALLOCATE_LOCAL(widths);
     DEALLOCATE_LOCAL(points);
+}
+
+/* MIPOLYFILLARC -- The public entry for the PolyFillArc request.
+ * Since we don't have to worry about overlapping segments, we can just
+ * fill each arc as it comes.  As above, we convert the arc into a set of
+ * line segments and then fill the resulting polygon.
+ */
+void
+miPolyFillArc(pDraw, pGC, narcs, parcs)
+    DrawablePtr	pDraw;
+    GCPtr	pGC;
+    int		narcs;
+    xArc	*parcs;
+{
+    int	i, cpt;
+    SppPointPtr pPts;
+    SppArcRec	sppArc;
+    int		angle1, angle2, a;
+    register xArc *arc;
+
+    for(i = narcs, arc = parcs; --i >= 0; arc++)
+    {
+	angle2 = arc->angle2;
+	if ((angle2 >= FULLCIRCLE) || (angle2 <= -FULLCIRCLE))
+	{
+	    if (miCanFillArc(arc))
+		miFillEllipseI(pDraw, pGC, arc);
+	    else
+		miFillEllipseD(pDraw, pGC, arc);
+	    continue;
+	}
+	angle1 = arc->angle1;
+	if (angle1 >= FULLCIRCLE)
+		angle1 = angle1 % FULLCIRCLE;
+	else if (angle1 <= -FULLCIRCLE)
+		angle1 = - (-angle1 % FULLCIRCLE);
+	sppArc.x = arc->x;
+	sppArc.y = arc->y;
+	sppArc.width = arc->width;
+	sppArc.height = arc->height;
+	sppArc.angle1 = todeg (angle1);
+	sppArc.angle2 = todeg (angle2);
+        if(pGC->arcMode == ArcPieSlice)
+	{
+	    /*
+	     * more than half a circle isn't convex anymore,
+	     * split the arc into two pieces.
+	     */
+	    if (abs (angle2) > FULLCIRCLE / 2) {
+		pPts = (SppPointPtr) NULL;
+		a = angle2 > 0 ? FULLCIRCLE / 2 : - FULLCIRCLE / 2;
+		sppArc.angle2 = todeg (a);
+		if (cpt = miGetArcPts(&sppArc, 0, &pPts))
+		    miFillSppPoly(pDraw, pGC, cpt, pPts, 0, 0, 0.0, 0.0);
+		xfree (pPts);
+		angle1 += a;
+		if (angle1 >= FULLCIRCLE)
+		    angle1 -= FULLCIRCLE;
+		else if (angle1 <= -FULLCIRCLE)
+		    angle1 += FULLCIRCLE;
+		angle2 -= a;
+		sppArc.angle1 = todeg(angle1);
+		sppArc.angle2 = todeg(angle2);
+	    }
+	    if (!(pPts = (SppPointPtr)xalloc(sizeof(SppPointRec))))
+		return;
+	    if(cpt = miGetArcPts(&sppArc, 1, &pPts))
+	    {
+		pPts[0].x = sppArc.x + sppArc.width/2;
+		pPts[0].y = sppArc.y + sppArc.height /2;
+		miFillSppPoly(pDraw, pGC, cpt + 1, pPts, 0, 0, 0.0, 0.0);
+	    }
+	    xfree(pPts);
+	}
+        else /* Chord */
+	{
+	    pPts = (SppPointPtr)NULL;
+	    if(cpt = miGetArcPts(&sppArc, 0, &pPts))
+		miFillSppPoly(pDraw, pGC, cpt, pPts, 0, 0, 0.0, 0.0);
+	    xfree(pPts);
+	}
+    }
 }
