@@ -1,6 +1,5 @@
-/*	@(#)Imakefile	4.1	91/05/02	*/
-
 #include <Server.tmpl>
+#define	IHaveSubdirs
 
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)' 'CC=$(CC)' 'CCOPTIONS=$(CCOPTIONS)'
 
@@ -22,14 +21,11 @@ FSLIBS = $(DIFSLIB) $(FONTLIB) $(DIFSLIB) $(OSLIB) $(SYSLIBS)
 
 SUBDIRS = $(FSDIRS)
 
-ServerTarget(fs, $(FSDIRS), , $(FSLIBS), $(SYSLIBS))
+all:: fs
 
-all::	fs
-
-#define	IHaveSubdirs
+ServerTarget(fs,$(FSDIRS),NullParameter,$(FSLIBS),$(SYSLIBS))
 
 DependSubdirs($(FSDIRS))
-MakeSubdirs($(FSDIRS))
 
 $(FSDIRS):	FRC
 	@cd $@; echo "making $@" ;	\
