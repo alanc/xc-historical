@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.59 89/09/14 10:10:53 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.60 89/09/18 07:59:10 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -1448,8 +1448,13 @@ static XtGeometryResult RootGeometryManager(w, request, reply)
 		    hintp->height = values.height = request->height;
 	    } else w->core.height = values.height = request->height;
     } else values.height = w->core.height; /* for _wait_for_response */
-    values.stack_mode = request->stack_mode;
-    values.sibling = XtWindow(request->sibling);
+    if (mask & CWStackMode) {
+	values.stack_mode = request->stack_mode;
+	if (mask & CWSibling)
+	    values.sibling = XtWindow(request->sibling);
+    }
+
+    if (!XtIsRealized(w)) return XtGeometryDone;
 
     if (!wmshell->shell.override_redirect &&
 	    mask & (CWX | CWY | CWWidth | CWHeight | CWBorderWidth)) {
