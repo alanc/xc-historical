@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.96 93/09/20 17:42:14 hersh Exp $
+ *	$XConsortium: misc.c,v 1.97 93/10/28 14:51:17 gildea Exp $
  */
 
 /*
@@ -56,8 +56,6 @@ extern jmp_buf VTend;
 extern char *malloc();
 extern char *getenv();
 #endif
-
-extern int child_wait();
 
 static void DoSpecialEnterNotify();
 static void DoSpecialLeaveNotify();
