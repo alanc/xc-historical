@@ -28,18 +28,13 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.75 90/09/17 10:15:14 converse Exp $
+ * $XConsortium: resize.c,v 1.76 90/12/01 13:05:57 rws Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
  * 11-Dec-87 Thomas E. LaStrange                File created
  *
  ***********************************************************************/
-
-#if !defined(lint) && !defined(SABER)
-static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.75 90/09/17 10:15:14 converse Exp $";
-#endif
 
 #include <stdio.h>
 #include "twm.h"

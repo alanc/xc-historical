@@ -28,18 +28,13 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.118 90/12/01 13:05:29 rws Exp $
+ * $XConsortium: twm.c,v 1.119 90/12/13 11:43:56 dave Exp $
  *
  * twm - "Tom's Window Manager"
  *
  * 27-Oct-87 Thomas E. LaStrange	File created
  * 10-Oct-90 David M. Sternlicht        Storing saved colors on root
  ***********************************************************************/
-
-#if !defined(lint) && !defined(SABER)
-static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.118 90/12/01 13:05:29 rws Exp $";
-#endif
 
 #include <stdio.h>
 #include <signal.h>

@@ -28,18 +28,13 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.46 90/11/15 11:39:42 dave Exp $
+ * $XConsortium: parse.c,v 1.47 90/12/11 14:03:28 dave Exp $
  *
  * parse the .twmrc file
  *
  * 17-Nov-87 Thomas E. LaStrange       File created
  * 10-Oct-90 David M. Sternlicht       Storing saved colors on root
  ***********************************************************************/
-
-#if !defined(lint) && !defined(SABER)
-static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.46 90/11/15 11:39:42 dave Exp $";
-#endif
 
 #include <stdio.h>
 #include <X11/Xos.h>

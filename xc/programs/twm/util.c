@@ -28,18 +28,13 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.40 90/04/30 16:56:10 converse Exp $
+ * $XConsortium: util.c,v 1.41 90/09/20 18:08:07 converse Exp $
  *
  * utility routines for twm
  *
  * 28-Oct-87 Thomas E. LaStrange	File created
  *
  ***********************************************************************/
-
-#if !defined(lint) && !defined(SABER)
-static char RCSinfo[]=
-"$XConsortium: util.c,v 1.40 90/04/30 16:56:10 converse Exp $";
-#endif
 
 #include <stdio.h>
 #include "twm.h"
