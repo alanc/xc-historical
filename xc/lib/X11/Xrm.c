@@ -1,6 +1,6 @@
 
 /*
- * $XConsortium: Xrm.c,v 1.36 90/06/12 11:58:13 kit Exp $
+ * $XConsortium: Xrm.c,v 1.37 90/06/14 08:23:53 rws Exp $
  */
 
 /***********************************************************
@@ -951,7 +951,7 @@ register char * str;
 	ptr = buffer;
 	*t_bindings = XrmBindTightly;	
 	for(;;) {
-	    if (!xrm_is_end_of_quark(bits) || xrm_is_space(bits)) {
+	    if (!xrm_is_tight_or_loose(bits)) {
 		while (!xrm_is_end_of_quark(bits)) {
 		    *ptr++ = c;
 		    sig = (sig << 1) + c; /* Compute the signature. */
