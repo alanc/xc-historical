@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.20 91/05/03 15:29:02 rws Exp $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.21 91/05/08 10:13:26 jap Exp $
 
 #ifdef RsArchitecture
 #define OSName		AIX 3.1.5
@@ -38,7 +38,11 @@ XCOMM operating system:  OSName
 #define XibmServer 		Xibm
 #define ibmIncludeSKYWAY	YES
 #define OPERATING_SYSTEM 	AIX /* directory name under server/ddx/ibm/ */
-#define UsrLibDir 		/usr/local/lib
+#define UsrLibDir               /usr/local/lib
+#define LoaderLibPrefix         -L/usr/local/lib
+#define IncRoot                 /usr/local/include
+#define BinDir                  /usr/local/bin
+#define InstallCmd              /usr/ucb/install
 #include <ibmLib.rules>
 
 #else
