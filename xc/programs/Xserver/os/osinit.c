@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.40 91/11/29 15:21:07 rws Exp $ */
+/* $XConsortium: osinit.c,v 1.41 92/03/31 17:50:38 keith Exp $ */
 #include "X.h"
 #include "os.h"
 #include "osdep.h"
@@ -56,6 +56,7 @@ int limitStackSpace = -1;
 int limitNoFile = -1;
 #endif
 
+#ifndef DDXOSINIT
 OsInit()
 {
     static Bool been_here = FALSE;
@@ -157,3 +158,8 @@ OsInit()
 
     OsInitColors();
 }
+#else
+#ifndef lint
+static int dummy;			/* avoid warning from ranlib */
+#endif
+#endif /* DDXOSINIT */
