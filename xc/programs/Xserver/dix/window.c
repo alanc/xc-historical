@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.86 92/03/19 16:30:05 rws Exp $ */
+/* $XConsortium: window.c,v 5.87 92/03/31 17:49:24 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2281,6 +2281,8 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	if (HasBorder (pWin))
 	{
 	    int	offx, offy, dx, dy;
+
+	    /* kruft to avoid double translates for each gravity */
 	    offx = 0;
 	    offy = 0;
 	    for (g = 0; g <= StaticGravity; g++)
@@ -2288,11 +2290,13 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 		if (!gravitate[g])
 		    continue;
 
-		/* align winSize to gravitate[g] */
+		/* align winSize to gravitate[g].
+		 * winSize is in new coordinates,
+		 * gravitate[g] is still in old coordinates */
 		GravityTranslate (x, y, oldx, oldy, dw, dh, g, &nx, &ny);
 		
-		dx = (nx - oldx) - offx;
-		dy = (ny - oldy) - offy;
+		dx = (oldx - nx) - offx;
+		dy = (oldy - ny) - offy;
 		if (dx || dy)
 		{
 		    (*pScreen->TranslateRegion) (&pWin->winSize, dx, dy);
