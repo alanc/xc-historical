@@ -86,7 +86,7 @@ Xmh*folders*SimpleMenu.Translations:#override\n\
 
 Xmh*toc.Translations: #override\n\
 	<Btn2Down>: select-start()\n\
-	<Btn2Up>:select-end()XmhViewNextMessage()\n\
+	<Btn2Up>:select-end(PRIMARY)XmhViewNextMessage()\n\
 	Ctrl<Key>R:	no-op(RingBell)\n\
 	Ctrl<Key>S:	no-op(RingBell)\n
 
