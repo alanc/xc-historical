@@ -1,5 +1,5 @@
 /*
- * $XHeader: charproc.c,v 1.45 88/08/08 12:49:42 jim Exp $
+ * $XConsortium: charproc.c,v 1.45 88/08/08 12:49:42 jim Exp $
  */
 
 
@@ -160,6 +160,11 @@ extern void HandleFocusChange();
 extern void VTButtonPressed();
 extern void VTMouseMoved();
 extern void VTButtonReleased();
+       void HandleKeymapChange();
+static void HandleInsertSelection();
+static void HandleSelectStart();
+static void HandleSelectExtend();
+static void HandleSelectEnd();
 
 
 /*
@@ -181,8 +186,13 @@ static char defaultTranslations[] =
     "<KeyPress>: insert()";
 
 static XtActionsRec actionsList[] = { 
-    { "string",	HandleStringEvent },
-    { "insert",	HandleKeyPressed },
+    { "string",		HandleStringEvent },
+    { "insert",		HandleKeyPressed },
+    { "keymap", 	HandleKeymapChange },
+    { "selection",	HandleInsertSelection },
+    { "select-start",	HandleSelectStart },	/* NYI */
+    { "select-extend",	HandleSelectExtend },	/* NYI */
+    { "select-end",	HandleSelectEnd },	/* NYI */
 };
 
 static XtResource resources[] = {
@@ -2788,4 +2798,81 @@ int set_character_class (s)
     }
 
     return (0);
+}
+
+/* ARGSUSED */
+void HandleKeymapChange(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    static XtTranslations keymap, original;
+    static XtResource resources[] = {
+	{ XtNtranslations, XtCTranslations, XtRTranslationTable,
+	      sizeof(XtTranslations), 0, XtRTranslationTable, (caddr_t)NULL}
+    };
+    char mapName[1000];
+    char mapClass[1000];
+
+    if (*param_count != 1) return;
+
+    if (original == NULL) original = w->core.tm.translations;
+
+    if (strcmp(params[0], "None") == 0) {
+	XtOverrideTranslations(w, original);
+	return;
+    }
+    (void) sprintf( mapName, "%sKeymap", params[0] );
+    (void) strcpy( mapClass, mapName );
+    if (islower(mapClass[0])) mapClass[0] = toupper(mapClass[0]);
+    XtGetSubresources( w, &keymap, mapName, mapClass,
+		       resources, (Cardinal)1, NULL, (Cardinal)0 );
+    if (keymap != NULL)
+	XtOverrideTranslations(w, keymap);
+}
+
+
+/* ARGSUSED */
+static void HandleInsertSelection(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    /* %%% Bogus implementation */
+    UnSaltText(event);
+}
+
+
+/* ARGSUSED */
+static void HandleSelectStart(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    /* NYI */
+}
+
+
+/* ARGSUSED */
+static void HandleSelectExtend(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    /* NYI */
+}
+
+
+/* ARGSUSED */
+static void HandleSelectEnd(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    /* NYI */
 }
