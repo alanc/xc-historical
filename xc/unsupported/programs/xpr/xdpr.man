@@ -1,4 +1,4 @@
-.\" $XConsortium: xdpr.man,v 1.8 88/05/10 09:37:15 swick Exp $
+.\" $XConsortium: xdpr.man,v 1.9 88/09/06 17:20:30 jim Exp $
 .TH XDPR 1 "10 May 1988" "X Version 11"
 .SH NAME
 xdpr \- dump an X window directly to a printer
@@ -59,11 +59,39 @@ gets the host and display number to use from the environment
 variable ``DISPLAY''.
 One can, however, specify them explicitly; see \fIX\fP(1).
 .TP
-.B -device \fIprinter-device\fP
-Specifies the device type of the printer.  Available printer devices
-are "ln03" for the DEC LN03, "pp" for the IBM 3812 PagePrinter, and
-"ps" for any postscript printer (e.g. DEC LN03R or LPS40).  The
-default is "ln03".
+.B -device \fIdevtype\fP
+Specifies the device on which the file will be printed.  Currently supported:
+.RS 12
+.PD 0
+.TP
+.B la100
+Digital LA100
+.TP
+.B ljet
+\s-1HP\s+1 LaserJet series and other monochrome PCL devices
+such as ThinkJet, QuietJet, RuggedWriter, \s-1HP\s+12560 series,
+and \s-1HP\s+12930 series printers
+.TP
+.B ln03
+Digital LN03
+.TP
+.B pjet
+HP PaintJet (color mode)
+.TP
+.B pjetxl
+HP HP PaintJet XL Color Graphics Printer (color mode)
+.TP
+.B pp
+IBM PP3812
+.TP
+.B ps
+PostScript printer
+.PD
+.RE
+.IP
+The default device is the \fILN03\fP, for historical reasons.
+\fB-device lw\fP (LaserWriter) is equivalent to -device ps and is
+provided only for backwards compatibility.
 .TP
 .B -help
 This option displays the list of options known to xdpr.
