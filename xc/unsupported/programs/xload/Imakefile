@@ -1,6 +1,6 @@
-       INCLUDES = -I$(OLDXRMSRC) -I$(TOP) -I$(TOP)/X11
+       INCLUDES = -I$(XRMSRC) -I$(TOP) -I$(TOP)/X11
            OBJS = xload.o
            SRCS = xload.c
 
-SingleProgramTarget(xload,$(OBJS),$(XTOOLLIB) $(OLDXRMLIB) $(XLIB),)
+SingleProgramTarget(xload,$(OBJS),$(XTOOLLIB) $(XRMLIB) $(XLIB),)
 DependTarget()
