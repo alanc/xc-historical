@@ -1,4 +1,4 @@
-.\" $XConsortium: CH11,v 1.15 94/04/18 15:57:31 kaleb Exp $
+.\" $XConsortium: CH11,v 1.16 94/04/18 16:40:18 converse Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -409,7 +409,7 @@ valid.  If \fIdepth\fP is zero the depth is taken from the
 widget ancestor of the specified object.
 
 The \fIvalue_mask\fP argument specifies fields of the GC
-that will be initialized with the respective member of the
+that are initialized with the respective member of the
 \fIvalues\fP structure.  The \fIdynamic_mask\fP argument specifies fields
 that the caller intends to modify during program execution.
 The caller must insure that the corresponding GC field is set
@@ -689,9 +689,9 @@ byte-swap the data if necessary.
 This procedure does not need to worry about responding to the
 MULTIPLE or the TIMESTAMP target values (see Section 2.6.2 in the \fI\*(xC\fP).
 A selection request with
-the MULTIPLE target type will be transparently transformed into a
+the MULTIPLE target type is transparently transformed into a
 series of calls to this procedure, one for each target type, and a
-selection request with the TIMESTAMP target value will be answered
+selection request with the TIMESTAMP target value is answered
 automatically by the \*(xI using the time specified in the
 call to
 .PN XtOwnSelection
@@ -916,7 +916,7 @@ The
 .PN XtGetSelectionValue
 function requests the value of the selection converted to 
 the target type. 
-The specified callback will be called at some time after 
+The specified callback is called at some time after 
 .PN XtGetSelectionValue 
 is called, when the selection data is received from the X server.
 It may be called before or after 
@@ -1055,7 +1055,7 @@ the convert_proc must allocate storage using
 .PN XtRealloc ,
 or
 .PN XtCalloc ,
-and the value specified will be freed by the
+and the value specified is freed by the
 \*(xI when the transfer is complete.
 .sp
 .LP
@@ -1100,7 +1100,7 @@ After a widget has called
 .PN XtDisownSelection ,
 its convert procedure is not called even if a request arrives later 
 with a timestamp during the period that this widget owned the selection.
-However, its done procedure will be called if a conversion that started 
+However, its done procedure is called if a conversion that started 
 before the call to
 .PN XtDisownSelection
 finishes after the call to
@@ -1548,13 +1548,13 @@ the convert_callback procedure must allocate storage using
 .PN XtRealloc ,
 or
 .PN XtCalloc ,
-and the final value specified will be freed by the
+and the final value specified is freed by the
 \*(xI when the transfer is complete.  After a selection transfer
 has started, only one of the done_callback or cancel_callback
-procedures will be invoked to indicate completion of the transfer.
+procedures is invoked to indicate completion of the transfer.
 .LP
 The lose_callback procedure does not indicate completion of any in-progress
-transfers; it will be invoked at the time a
+transfers; it is invoked at the time a
 .PN SelectionClear
 event is dispatched regardless of any active transfers, which are still
 expected to continue.
@@ -1596,7 +1596,7 @@ Specifies the widget making the request.  \*(cI
 .IP \fIselection\fP 1i
 Specifies the atom that names the selection.
 .IP \fItype\fP 1i
-Specifies the type of the property in which the parameters will be passed.
+Specifies the type of the property in which the parameters are passed.
 .IP \fIvalue\fP 1i
 Specifies a pointer to the parameters.
 .IP \fIlength\fP 1i
@@ -1675,16 +1675,16 @@ Specifies the requestor id in the case of incremental selections,
 or NULL in the case of atomic transfers.
 .IP \fItype_return\fP 1i
 Specifies a pointer to an atom in which the property type
-of the parameters will be stored.
+of the parameters are stored.
 .IP \fIvalue_return\fP 1i
 Specifies a pointer into which a pointer to the parameters are to be stored.
-A NULL will be stored if no parameters accompany the request.
+A NULL is stored if no parameters accompany the request.
 .IP \fIlength_return\fP 1i
 Specifies a pointer into which the number of data elements
-in \fIvalue_return\fP of size indicated by \fIformat_return\fP will be stored.
+in \fIvalue_return\fP of size indicated by \fIformat_return\fP are stored.
 .IP \fIformat_return\fP 1i
 Specifies a pointer into which the size in bits of the parameter data
-in the elements of \fIvalue\fP will be stored.
+in the elements of \fIvalue\fP is stored.
 .LP
 .PN XtGetSelectionParameter
 may only be called from within an
@@ -1726,7 +1726,7 @@ and
 .PN XtGetSelectionValuesIncremental ,
 with the requestor and selection as specified to 
 .PN XtCreateSelectionRequest
-will be bundled into a single selection request with
+is bundled into a single selection request with
 multiple targets.  The request is actually initiated by calling 
 .PN XtSendSelectionRequest .
 .sp
@@ -1826,11 +1826,11 @@ Atom XtReservePropertyAtom(\fIw\fP)
 .FN
 .IP \fIw\fP 1i
 Specifies the widget for which a selection request
-involving the property will be made.  \*(cI
+involving the property is made.  \*(cI
 .LP
 This function returns an atom that may be used as a property name in
 conversion requests from widget \fIw\fP.
-The atom returned will be unique to the client.
+The atom returned is unique to the client.
 .sp
 .FD 0
 void XtReleasePropertyAtom(\fIw\fP, \fIatom\fP)
@@ -1844,7 +1844,7 @@ Specifies the widget used to reserve the atom.
 .IP \fIatom\fP 1i
 The atom whose reservation is to be released.
 .LP
-If the property exists on the widget's window, it will be deleted.
+If the property exists on the widget's window, it is deleted.
 If the property was created on some other window, it is the client's
 responsibility to delete the property.
 
@@ -2043,7 +2043,7 @@ Handling Errors
 \fB\*(SN Handling Errors\fP
 .XE
 .LP
-The \*(xI allow a client to register procedures that will be called
+The \*(xI allow a client to register procedures that is called
 whenever a fatal or nonfatal error occurs.
 These facilities are intended for both error reporting and logging
 and for error correction or recovery.
@@ -2058,7 +2058,7 @@ A low-level interface that takes a simple string to display.
 .LP
 The high-level functions construct a string to pass to the lower-level
 interface.
-The strings may be specified in application code and will be
+The strings may be specified in application code and are
 overridden by the contents of an external system-wide file,
 the ``error database file''.  The location and name of this file is
 implementation dependent.
@@ -2488,7 +2488,7 @@ void XtSetWMColormapWindows(\fIwidget\fP, \fIlist\fP, \fIcount\fP)
 .FN
 .IP \fIwidget\fP 1i
 Specifies the widget on whose window the \s-1WM_COLORMAP_WINDOWS\s+1
-property will be stored.  \*(cI
+property is stored.  \*(cI
 .IP \fIlist\fP 1i
 Specifies a list of widgets whose windows are potentially to be
 listed in the \s-1WM_COLORMAP_WINDOWS\s+1 property.
@@ -2560,7 +2560,7 @@ typedef Boolean (*XtFilePredicate)(String);
 .IP \fIfilename\fP 1i
 Specifies a potential filename.
 .LP
-A file predicate procedure will be called with a string that is
+A file predicate procedure is called with a string that is
 potentially a file name.  It should return
 .PN True 
 if this string specifies a file that is appropriate for the intended use and 
@@ -2628,7 +2628,7 @@ return from the predicate,
 returns NULL.
 .LP
 If the \fIpredicate\fP parameter is NULL, an internal procedure that checks
-if the file exists, is readable, and is not a directory will be used.
+if the file exists, is readable, and is not a directory is used.
 .LP
 It is the responsibility of the caller to free the returned string using
 .PN XtFree
@@ -2717,16 +2717,16 @@ The value of the implementation-specific default path.
 .LP
 If a path is passed to
 .PN XtResolvePathname ,
-it will be passed along to
+it is passed along to
 .PN XtFindFile .
 If the \fIpath\fP argument is NULL, the value of the
 .PN \s-1XFILESEARCHPATH\s+1
 .IN "XFILESEARCHPATH" "" "@DEF@"
-environment variable will be passed to
+environment variable is passed to
 .PN XtFindFile .
 If
 .PN \s-1XFILESEARCHPATH\s+1
-is not defined, an implementation-specific default path will be used
+is not defined, an implementation-specific default path is used
 which contains at least 6 entries.  These entries
 must contain the following substitutions:
 
@@ -2744,8 +2744,8 @@ The order of these six entries within the path must be as given above.
 The order and use of substitutions within a given entry is implementation
 dependent.
 If the path begins
-with a colon, it will be preceded by %N%S.  If the path includes two
-adjacent colons, \fB%N%S\fP will be inserted between them.
+with a colon, it is preceded by %N%S.  If the path includes two
+adjacent colons, \fB%N%S\fP is inserted between them.
 .LP
 The \fItype\fP parameter is intended to be a category of files, usually
 being translated into a directory in the pathname.  Possible values
@@ -2763,11 +2763,11 @@ A suggested value for the default path on POSIX-based systems is
 /usr/lib/X11/%l/%T/%N%S:/usr/lib/X11/%T/%N%S
 
 .LP
-Using this example, if the user has specified a language, it will be
-used as a subdirectory of /usr/lib/X11 that will be searched for other
-files.  If the desired file is not found there, the lookup will be
+Using this example, if the user has specified a language, it is
+used as a subdirectory of /usr/lib/X11 that is searched for other
+files.  If the desired file is not found there, the lookup is
 tried again using just the language part of the specification.  If the
-file is not there, it will be looked for in /usr/lib/X11.  The \fItype\fP
+file is not there, it is looked for in /usr/lib/X11.  The \fItype\fP
 parameter is used as a subdirectory of the language directory or of
 /usr/lib/X11, and \fIsuffix\fP is appended to the file name.
 .LP
@@ -2802,7 +2802,7 @@ Hooks for External Agents
 .XE
 .LP
 Hooks are places in the \*(xI where an application may register
-functions which will be called at a particular control point.
+functions which are called at a particular control point.
 These functions are intended to be used to provide notification
 of an "\*(tk event", e.g. widget creation, to an external agent,
 e.g. an interactive resource editor, drag-and-drop server, or
@@ -2903,7 +2903,7 @@ _
 .LP
 Descriptions of each of these resources:
 .LP
-The XtNcreateHook callback list will be called from:
+The XtNcreateHook callback list is called from:
 .PN XtCreateWidget ,
 .PN XtCreateManagedWidget ,
 .PN XtCreatePopupShell ,
@@ -2932,7 +2932,7 @@ The \fItype\fP is set to
 are the arguments passed to the create function. The callbacks are 
 called before returning from the the create function.
 .LP
-The XtNchangeHook callback list will be called from:
+The XtNchangeHook callback list is called from:
 .IP
 .PN XtSetValues ,
 .PN XtVaSetValues
@@ -3125,7 +3125,7 @@ modified.
 .LP
 When the ChangeHook callbacks are called as a result of a call to
 .PN XtUninstallTranslations
-The \fItype\fP will be
+The \fItype\fP is
 .PN XtHuninstallTranslations
 and \fIwidget\fP is the widget whose translations are being uninstalled.
 The callbacks are called after the widget's translations have been 
@@ -3205,7 +3205,7 @@ XtCallCallbacks(XtHooksOfDisplay(dpy), XtNchangeHook, call_data);
 .De
 .sp
 .LP
-The XtNconfigureHook callback list will be called any time the \*(xI
+The XtNconfigureHook callback list is called any time the \*(xI
 move, resize, or configure a widget, and when
 .PN XtResizeWindow
 is called.
@@ -3231,7 +3231,7 @@ When the ConfigureHook callbacks are called the \fItype\fP is
 \fIchanges\fP reflect the changes made to the widget. The callbacks 
 are called after changes have been made to the widget.
 .LP
-The XtNgeometryHook callback list will be called from 
+The XtNgeometryHook callback list is called from 
 .PN XtMakeGeometryRequest
 and
 .PN XtMakeResizeRequest
@@ -3265,7 +3265,7 @@ are called after geometry negotiation, \fItype\fP is
 is the requested geometry, \fIreply\fP is the resulting geometry granted, 
 and \fIresult\fP is the value returned from the geometry negotiation.
 .LP
-The XtNdestroyHook callback list will be called when a widget is destroyed.
+The XtNdestroyHook callback list is called when a widget is destroyed.
 The \fIcall_data parameter\fP may be cast to type
 .PN XtDestroyHookData .
 .IN "XtDestroyHookData" "" "@DFEF@"
