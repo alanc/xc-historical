@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.64 92/02/14 16:57:06 converse Exp $ */
+/* $XConsortium: Convert.c,v 1.65 92/02/27 17:08:12 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -446,7 +446,7 @@ void _XtConverterCacheStats()
 	    for (p = cacheHashTable[i]; p; p = p->next) {
 		(void) fprintf(stdout, "    Size: %3d  Refs: %3d  '",
 			       p->from.size,
-			       p->has_ext ? CEXT(p)->ref_count) : 0;
+			       p->has_ext ? CEXT(p)->ref_count : 0);
 		(void) fprintf(stdout, "'\n");
 	    }
 	    (void) fprintf(stdout, "\n");
