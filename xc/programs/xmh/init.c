@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: init.c,v 2.15 88/02/23 20:05:21 swick Exp $";
+static char rcs_id[] = "$Header: init.c,v 2.16 88/03/07 11:06:55 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -146,7 +146,7 @@ char **argv;
     if (ptr) progName = ptr + 1;
     else progName = argv[0];
 
-    toplevel = XtInitialize(progName, "Xmh", table, XtNumber(table),
+    toplevel = XtInitialize("main", "Xmh", table, XtNumber(table),
 			    &argc, argv);
     if (argc > 1) Syntax(progName);
     theDisplay = XtDisplay(toplevel);
