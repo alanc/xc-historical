@@ -13,7 +13,7 @@
 #  make no representations about the suitability of this software for any
 #  purpose.  It is provided "as is" without express or implied warranty.
 # 
-# $XConsortium$
+# $XConsortium: rpt,v 1.8 92/06/11 18:01:47 rws Exp $
 #
 
 # A simple report generator for development use
@@ -49,6 +49,9 @@ do
 		;;
 	-s)
 		DOSUM=0
+		;;
+	-S)
+		DOGLOBAL=1
 		;;
 	-f)
 		usefile=$2
@@ -100,6 +103,7 @@ BEGIN {
 	dodebug='$DODEBUG';
 	dopass='$DOPASS';
 	dosumm='$DOSUM';
+	doglobal='$DOGLOBAL';
 	firsttime = 1;
 
 	PASS = 0
@@ -229,6 +233,7 @@ $1 == 220 {
 	# Increment the count of this class of result.
 	#
 	result[res]++;
+	gresult[res]++;
 
 	if (res == PASS || res == UNTESTED || res == UNSUPPORTED || res == NOTINUSE) {
 		# The test did not fail.
@@ -266,7 +271,38 @@ $1 == 15 {
 
 
 END {
-
+	if (doglobal) {
+		print ""
+		print ""
+		print ""
+		line = "Overall Summary of Results"
+		print line
+		print substr("------------------------------", 1, length(line));
+		total = 0
+		printf "%-12s %d\n", "PASS", gresult[PASS]
+		total += gresult[PASS]
+		printf "%-12s %d\n", "FAIL", gresult[FAIL]
+		total += gresult[FAIL]
+		if (gresult[UNRESOLVED] != 0)
+			printf "%-12s %d\n", "UNRESOLVED", gresult[UNRESOLVED]
+		total += gresult[UNRESOLVED]
+		if (gresult[NOTINUSE] != 0)
+			printf "%-12s %d\n", "NOTINUSE", gresult[NOTINUSE]
+		total += gresult[NOTINUSE]
+		if (gresult[UNSUPPORTED] != 0)
+			printf "%-12s %d\n", "UNSUPPORTED", gresult[UNSUPPORTED]
+		total += gresult[UNSUPPORTED]
+		if (gresult[UNTESTED] != 0)
+			printf "%-12s %d\n", "UNTESTED", gresult[UNTESTED]
+		total += gresult[UNTESTED]
+		if (gresult[UNINITIATED] != 0)
+			printf "%-12s %d\n", "UNINITIATED", gresult[UNINITIATED]
+		total += gresult[UNINITIATED]
+		if (gresult[NORESULT] != 0)
+			printf "%-12s %d\n", "NORESULT", gresult[NORESULT]
+		total += gresult[NORESULT]
+		printf "%-12s %d\n\n", "Total", total
+	}	
 }
 
 '
