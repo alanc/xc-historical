@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.19 89/09/20 15:01:19 keith Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.20 89/09/23 17:02:52 rws Exp $ SPRITE (Berkeley)";
 #endif
 
 #include    "X.h"
@@ -253,7 +253,7 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     if (pChild = pParent->firstChild)
     {
 	(*pScreen->RegionInit) (&childUniverse, NullBox, 0);
-	(*pScreen->RegionInit) (&childUnion, NullBox, 200);
+	(*pScreen->RegionInit) (&childUnion, NullBox, 0);
 	if ((pChild->drawable.y < pParent->lastChild->drawable.y) ||
 	    ((pChild->drawable.y == pParent->lastChild->drawable.y) &&
 	     (pChild->drawable.x < pParent->lastChild->drawable.x)))
@@ -441,7 +441,7 @@ miValidateTree (pParent, pChild, kind)
      * is the area which can be divied up among the marked
      * children in their new configuration.
      */
-    (*pScreen->RegionInit) (&totalClip, NullBox, (kind == VTUnmap) ? 0 : 200);
+    (*pScreen->RegionInit) (&totalClip, NullBox, 0);
     viewvals = 0;
     if ((pChild->drawable.y < pParent->lastChild->drawable.y) ||
 	((pChild->drawable.y == pParent->lastChild->drawable.y) &&
@@ -488,7 +488,7 @@ miValidateTree (pParent, pChild, kind)
     if (kind != VTStack)
     {
 	(* pScreen->Union) (&totalClip, &totalClip, &pParent->clipList);
-	if (viewvals > 3)
+	if (viewvals > 1)
 	{
 	    /*
 	     * precompute childUnion to discover whether any of them
@@ -497,7 +497,7 @@ miValidateTree (pParent, pChild, kind)
 	     * lower than the cost of multiple Subtracts in the
 	     * loop below.
 	     */
-	    (*pScreen->RegionInit) (&childUnion, NullBox, 200);
+	    (*pScreen->RegionInit) (&childUnion, NullBox, 0);
 	    if (forward)
 	    {
 		for (pWin = pChild; pWin; pWin = pWin->nextSib)
