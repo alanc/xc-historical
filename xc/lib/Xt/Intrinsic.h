@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.196 94/04/01 20:51:21 kaleb Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.197 94/04/02 10:35:18 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2026,6 +2026,7 @@ extern void XtGetConstraintResourceList(
 #define XtUnspecifiedShellInt	(-1)
 #define XtUnspecifiedWindow	((Window)2)
 #define XtUnspecifiedWindowGroup ((Window)3)
+#define XtCurrentDirectory	"XtCurrentDirectory"
 #define XtDefaultForeground	"XtDefaultForeground"
 #define XtDefaultBackground	"XtDefaultBackground"
 #define XtDefaultFont		"XtDefaultFont"
@@ -2069,9 +2070,12 @@ typedef struct _XtCheckpointTokenRec {
     int		interact_style;
     Boolean	shutdown;
     Boolean	fast;
-    Boolean	save_success;		/* return */
-    Boolean	cancel_shutdown;	/* return */
+    Boolean	cancel_shutdown;
+    int		phase;
     int		interact_dialog_type;	/* return */
+    Boolean	request_cancel;		/* return */
+    Boolean	request_next_phase;	/* return */
+    Boolean	save_success;		/* return */
     int		type;		/* implementation private */
     Widget	widget;		/* implementation private */
 } XtCheckpointTokenRec, *XtCheckpointToken;
