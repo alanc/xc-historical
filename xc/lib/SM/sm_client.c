@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.20 94/03/07 17:08:37 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.21 94/03/15 13:40:18 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -456,6 +456,35 @@ Bool 	cancelShutdown;
 	SIZEOF (smInteractDoneMsg), smInteractDoneMsg, pMsg);
 
     pMsg->cancelShutdown = cancelShutdown;
+
+    IceFlush (iceConn);
+}
+
+
+
+void
+SmcRequestSaveYourself (smcConn, saveType, shutdown, interactStyle,
+	fast, global)
+
+SmcConn smcConn;
+int	saveType;
+Bool 	shutdown;
+int	interactStyle;
+Bool	fast;
+Bool	global;
+
+{
+    IceConn			iceConn = smcConn->iceConn;
+    smSaveYourselfRequestMsg	*pMsg;
+
+    IceGetHeader (iceConn, _SmcOpcode, SM_SaveYourselfRequest,
+	SIZEOF (smSaveYourselfRequestMsg), smSaveYourselfRequestMsg, pMsg);
+
+    pMsg->saveType = saveType;
+    pMsg->shutdown = shutdown;
+    pMsg->interactStyle = interactStyle;
+    pMsg->fast = fast;
+    pMsg->global = global;
 
     IceFlush (iceConn);
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: SMlib.h,v 1.15 93/12/30 11:08:28 mor Exp $ */
+/* $XConsortium: SMlib.h,v 1.16 94/01/31 11:04:07 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -377,6 +377,17 @@ extern void SmcInteractDone (
 #if NeedFunctionPrototypes
     SmcConn		/* smcConn */,
     Bool 		/* cancelShutdown */
+#endif
+);
+
+extern void SmcRequestSaveYourself (
+#if NeedFunctionPrototypes
+    SmcConn		/* smcConn */,
+    int			/* saveType */,
+    Bool 		/* shutdown */,
+    int			/* interactStyle */,
+    Bool		/* fast */,
+    Bool		/* global */
 #endif
 );
 
