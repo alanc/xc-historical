@@ -83,7 +83,7 @@ struct display	*d;
 	{
 		Debug ("Startup program %s exited with non-zero status\n",
 			d->startup);
-		SessionExit (OBEYTERM_DISPLAY);
+		SessionExit (OBEYSESS_DISPLAY);
 	}
 	clientPid = 0;
 	if (!setjmp (abortSession)) {
@@ -117,7 +117,7 @@ struct display	*d;
 	 */
 	Debug ("Source reset program %s\n", d->reset);
 	source (&verify, d->reset);
-	SessionExit (OBEYTERM_DISPLAY);
+	SessionExit (OBEYSESS_DISPLAY);
 }
 
 LoadXloginResources (d)
@@ -163,7 +163,7 @@ Display		*dpy;
 	if (setjmp (syncJump)) {
 		LogError ("WARNING: display %s could not be secured\n",
 				d->name);
-		SessionExit (ABORT_DISPLAY);
+		SessionExit (RESERVER_DISPLAY);
 	}
 	alarm ((unsigned) d->grabTimeout);
 	Debug ("Before XGrabServer %s\n", d->name);
@@ -175,7 +175,7 @@ Display		*dpy;
 		signal (SIGALRM, SIG_DFL);
 		LogError ("WARNING: keyboard on display %s could not be secured\n",
 				d->name);
-		SessionExit (ABORT_DISPLAY);
+		SessionExit (RESERVER_DISPLAY);
 	}
 	Debug ("XGrabKeyboard succeeded %s\n", d->name);
 	alarm (0);

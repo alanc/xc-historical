@@ -57,14 +57,14 @@ GreetDone (w, data, status)
 		done = 1;
 		break;
 	case NOTIFY_ABORT:
-		Debug ("ABORT_DISPLAY\n");
-		exit (ABORT_DISPLAY);
+		Debug ("RESERVER_DISPLAY\n");
+		exit (RESERVER_DISPLAY);
 	case NOTIFY_RESTART:
-		Debug ("RESTART_DISPLAY\n");
-		exit (RESTART_DISPLAY);
+		Debug ("REMANAGE_DISPLAY\n");
+		exit (REMANAGE_DISPLAY);
 	case NOTIFY_ABORT_DISPLAY:
-		Debug ("DISABLE_DISPLAY\n");
-		exit (DISABLE_DISPLAY);
+		Debug ("UNMANAGE_DISPLAY\n");
+		exit (UNMANAGE_DISPLAY);
 	}
 }
 

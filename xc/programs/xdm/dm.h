@@ -101,6 +101,7 @@ struct display {
 	char		**argv;		/* program name and arguments */
 	DisplayStatus	status;		/* current status */
 	int		pid;		/* process id of child */
+	int		serverPid;	/* process id of server (-1 if none) */
 	FileState	state;		/* state during HUP processing */
 	char		*resources;	/* resource file */
 	char		*xrdb;		/* xrdb program */
@@ -166,18 +167,12 @@ struct verify_info {
 	char		**systemEnviron;/* environment for startup/reset */
 };
 
-/* session exit status definitions. */
-
-# define OBEYTERM_DISPLAY	0	/* obey terminateServer resource */
-# define RESTART_DISPLAY	1	/* force session restart */
-# define ABORT_DISPLAY		2	/* force server restart */
-# define DISABLE_DISPLAY	3	/* unmanage this display */
-
 /* display manager exit status definitions */
 
 # define OBEYSESS_DISPLAY	0	/* obey multipleSessions resource */
 # define REMANAGE_DISPLAY	1	/* force remanage */
 # define UNMANAGE_DISPLAY	2	/* force deletion */
+# define RESERVER_DISPLAY	3	/* force server termination */
 
 extern char	*config;
 
@@ -194,6 +189,7 @@ extern struct display	*FindDisplayByName (),
 			*FindDisplayBySessionID (),
 			*FindDisplayByAddress (),
 			*FindDisplayByPid (),
+			*FindDisplayByServerPid (),
 			*NewDisplay ();
 
 extern struct protoDisplay	*FindProtoDisplay (),

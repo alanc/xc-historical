@@ -97,21 +97,6 @@ ValidAuthorization (name_length, name)
     return FALSE;
 }
 
-InitAuthorization (name_length, name)
-unsigned short	name_length;
-char		*name;
-{
-    struct AuthProtocol	*a;
-
-    Debug ("InitAuthorization\n");
-    a = findProtocol (name_length, name);
-    if (a && !a->inited)
-    {
-	(*a->InitAuth) (name_length, name);
-	a->inited = TRUE;
-    }
-}
-
 Xauth *
 GenerateAuthorization (name_length, name)
 unsigned short	name_length;
@@ -123,8 +108,13 @@ char		*name;
     Debug ("GenerateAuthorization %*.*s\n",
 	    name_length, name_length, name);
     a = findProtocol (name_length, name);
-    if (a && a->inited)
+    if (a)
     {
+	if (!a->inited)
+	{
+	    (*a->InitAuth) (name_length, name);
+	    a->inited = TRUE;
+	}
 	auth = (*a->GetAuth) (name_length, name);
 	if (auth)
 	    Debug ("Got 0x%x (%d %*.*s)\n", auth,
@@ -141,56 +131,72 @@ SetProtoDisplayAuthorization (pdpy, namelen, name)
     unsigned short	namelen;
     char		*name;
 {
-    Xauth   *auth;
-
-    InitAuthorization (namelen, name);
-    auth = GenerateAuthorization (namelen, name);
-    pdpy->authorization = auth;
+    pdpy->authorization = GenerateAuthorization (namelen, name);
 }
 
-SetServerAuthorization (d)
-struct display	*d;
+SaveServerAuthorization (d, auth)
+    struct display  *d;
+    Xauth	    *auth;
 {
     FILE	*auth_file;
+    int		mask;
+    int		ret;
+
+    mask = umask (0077);
+    (void) unlink (d->authFile);
+    auth_file = fopen (d->authFile, "w");
+    umask (mask);
+    if (!auth_file) {
+	LogError ("Cannot open server authorization file %s\n", d->authFile);
+	ret = FALSE;
+    }
+    else
+    {
+    	Debug ("File: %s auth: %x\n", d->authFile, auth);
+    	if (!XauWriteAuth (auth_file, auth) || fflush (auth_file) == EOF)
+    	{
+	    LogError ("Cannot write server authorization file %s\n",
+		       d->authFile);
+	    ret = FALSE;
+    	}
+	else
+	    ret = TRUE;
+	fclose (auth_file);
+    }
+    return ret;
+}
+
+SetLocalAuthorization (d)
+    struct display	*d;
+{
     Xauth	*auth;
     int	mask;
 
+    if (d->authorization)
+    {
+	XauDisposeAuth (d->authorization);
+	d->authorization = (Xauth *) NULL;
+    }
+    if (d->authName && !d->authNameLen)
+    	d->authNameLen = strlen (d->authName);
+    auth = GenerateAuthorization (d->authNameLen, d->authName);
+    if (!auth)
+	return;
+    if (SaveServerAuthorization (d, auth))
+	d->authorization = auth;
+    else
+	XauDisposeAuth (auth);
+}
+
+SetAuthorization (d)
+    struct display  *d;
+{
+    Xauth   *auth;
+
     auth = d->authorization;
-    if (!auth)
-    {
-	if (d->displayType.origin == FromFile && d->authFile)
-    	    auth = GenerateAuthorization (d->authNameLen, d->authName);
-    }
-    if (!auth)
-	return 0;
-    if (d->authFile)
-    {
-    	mask = umask (0077);
-    	(void) unlink (d->authFile);
-    	auth_file = fopen (d->authFile, "w");
-    	umask (mask);
-    	if (!auth_file) {
-    	    LogError ("Cannot open server authorization file %s\n",
-		    	    d->authFile);
-    	    XauDisposeAuth (auth);
-    	    return 0;
-    	}
-    	Debug ("File: %s auth: %x\n", d->authFile, auth);
-    	if (!XauWriteAuth (auth_file, auth) || fflush (auth_file) == EOF) {
-	    LogError ("Cannot write server authorization file %s\n",
-			    d->authFile);
-	    fclose (auth_file);
-	    XauDisposeAuth (auth);
-	    return 0;
-    	}
-    	fclose (auth_file);
-	if (!d->authorization)
-	    d->authorization = auth;
-    }
-    XSetAuthorization (auth->name, (int) auth->name_length,
-		       auth->data, (int) auth->data_length);
-    Debug ("Success\n");
-    return 1;
+    if (auth)
+	XSetAuthorization (auth->name, (int) auth->name_length,
+			   auth->data, (int) auth->data_length);
 }
 
 static

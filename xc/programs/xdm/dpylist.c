@@ -69,6 +69,18 @@ int	pid;
 }
 
 struct display *
+FindDisplayByServerPid (serverPid)
+int	serverPid;
+{
+	struct display	*d;
+
+	for (d = displays; d; d = d->next)
+		if (serverPid == d->serverPid)
+			return d;
+	return 0;
+}
+
+struct display *
 FindDisplayBySessionID (sessionID)
     CARD32  sessionID;
 {
@@ -101,20 +113,20 @@ FindDisplayByAddress (addr, addrlen, displayNumber)
 RemoveDisplay (old)
 struct display	*old;
 {
-	struct display	*d, *p;
+    struct display	*d, *p;
 
-	p = 0;
-	for (d = displays; d; d = d->next) {
-		if (d == old) {
-			if (p)
-				p->next = d->next;
-			else
-				displays = d->next;
-			free ((char *) d);
-			break;
-		}
-		p = d;
+    p = 0;
+    for (d = displays; d; d = d->next) {
+	if (d == old) {
+	    if (p)
+		p->next = d->next;
+	    else
+		displays = d->next;
+	    free ((char *) d);
+	    break;
 	}
+	p = d;
+    }
 }
 
 struct display *
@@ -122,69 +134,70 @@ NewDisplay (name, class)
 char		*name;
 char		*class;
 {
-	struct display	*d;
+    struct display	*d;
 
-	d = (struct display *) malloc (sizeof (struct display));
-	if (!d) {
-		LogOutOfMem ("NewDisplay");
-		return 0;
+    d = (struct display *) malloc (sizeof (struct display));
+    if (!d) {
+	LogOutOfMem ("NewDisplay");
+	return 0;
+    }
+    d->next = displays;
+    d->name = malloc ((unsigned) (strlen (name) + 1));
+    if (!d->name) {
+	LogOutOfMem ("NewDisplay");
+	free ((char *) d);
+	return 0;
+    }
+    strcpy (d->name, name);
+    if (class)
+    {
+	d->class = malloc ((unsigned) (strlen (class) + 1));
+	if (!d->class) {
+	    LogOutOfMem ("NewDisplay");
+	    free (d->name);
+	    free ((char *) d);
+	    return 0;
 	}
-	d->next = displays;
-	d->name = malloc ((unsigned) (strlen (name) + 1));
-	if (!d->name) {
-		LogOutOfMem ("NewDisplay");
-		free ((char *) d);
-		return 0;
-	}
-	strcpy (d->name, name);
-	if (class)
-	{
-		d->class = malloc ((unsigned) (strlen (class) + 1));
-		if (!d->class) {
-			LogOutOfMem ("NewDisplay");
-			free (d->name);
-			free ((char *) d);
-			return 0;
-		}
-		strcpy (d->class, class);
-	}
-	else
-	{
-		d->class = (char *) 0;
-	}
-	/* initialize every field to avoid possible problems */
-	d->argv = 0;
-	d->status = notRunning;
-	d->pid = -1;
-	d->state = NewEntry;
-	d->resources = NULL;
-	d->xrdb = NULL;
-	d->cpp = NULL;
-	d->startup = NULL;
-	d->reset = NULL;
-	d->session = NULL;
-	d->userPath = NULL;
-	d->systemPath = NULL;
-	d->systemShell = NULL;
-	d->failsafeClient = NULL;
-	d->authorize = FALSE;
-	d->authorization = NULL;
-	d->authFile = NULL;
-	d->userAuthDir = NULL;
-	d->authName = NULL;
-	d->authNameLen = 0;
-	d->openDelay = 0;
-	d->openRepeat = 0;
-	d->openTimeout = 0;
-	d->startAttempts = 0;
-	d->terminateServer = 0;
-	d->grabTimeout = 0;
-	d->sessionID = 0;
-	d->peer = 0;
-	d->peerlen = 0;
-	d->from = 0;
-	d->fromlen = 0;
-	d->displayNumber = 0;
-	displays = d;
-	return d;
+	strcpy (d->class, class);
+    }
+    else
+    {
+	d->class = (char *) 0;
+    }
+    /* initialize every field to avoid possible problems */
+    d->argv = 0;
+    d->status = notRunning;
+    d->pid = -1;
+    d->serverPid = -1;
+    d->state = NewEntry;
+    d->resources = NULL;
+    d->xrdb = NULL;
+    d->cpp = NULL;
+    d->startup = NULL;
+    d->reset = NULL;
+    d->session = NULL;
+    d->userPath = NULL;
+    d->systemPath = NULL;
+    d->systemShell = NULL;
+    d->failsafeClient = NULL;
+    d->authorize = FALSE;
+    d->authorization = NULL;
+    d->authFile = NULL;
+    d->userAuthDir = NULL;
+    d->authName = NULL;
+    d->authNameLen = 0;
+    d->openDelay = 0;
+    d->openRepeat = 0;
+    d->openTimeout = 0;
+    d->startAttempts = 0;
+    d->terminateServer = 0;
+    d->grabTimeout = 0;
+    d->sessionID = 0;
+    d->peer = 0;
+    d->peerlen = 0;
+    d->from = 0;
+    d->fromlen = 0;
+    d->displayNumber = 0;
+    displays = d;
+    return d;
 }

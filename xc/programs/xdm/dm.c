@@ -35,6 +35,7 @@ static void	RescanServers ();
 int		Rescan;
 static long	ServersModTime, ConfigModTime;
 static void	TerminateAll (), RescanNotify ();
+static void	StopDisplay ();
 
 #ifndef NOXDMTITLE
 static char *Title;
@@ -260,19 +261,42 @@ WaitForChild ()
 	    switch (waitVal (status)) {
 	    case UNMANAGE_DISPLAY:
 		Debug ("Display exited with UNMANAGE_DISPLAY\n");
-		RemoveDisplay (d);
+		StopDisplay (d);
 		break;
 	    case OBEYSESS_DISPLAY:
 		Debug ("Display exited with OBEYSESS_DISPLAY\n");
 		if (d->displayType.lifetime != Permanent)
-		    RemoveDisplay (d);
+		    StopDisplay (d);
 		break;
 	    default:
 		Debug ("Display exited with unknown status %d\n", waitVal(status));
 		break;
+	    case RESERVER_DISPLAY:
+		Debug ("Display exited with RESERVER_DISPLAY\n");
+		if (d->serverPid != -1)
+		{
+		    kill (d->serverPid, SIGTERM);
+		    d->serverPid = -1;
+		}
+		break;
 	    case REMANAGE_DISPLAY:
+	    case SIGTERM * 256 + 1:
 		Debug ("Display exited with REMANAGE_DISPLAY\n");
 		break;
+	    }
+	}
+	else
+	{
+	    d = FindDisplayByServerPid (pid);
+	    if (d) {
+		LogError ("Server for display %s terminated unexpectedly\n", d->name);
+		d->serverPid = -1;
+		/*
+		 * nuke the session; it won't be much use anymore
+		 * anyhow.  When it exits, the appropriate stuff
+		 * will occur
+		 */
+		kill (d->pid, SIGTERM);
 	    }
 	}
     }
@@ -310,16 +334,41 @@ StartDisplay (d)
 struct display	*d;
 {
     int	pid;
+    int	ResourcesLoaded = FALSE;
 
     Debug ("StartDisplay %s\n", d->name);
+    if (d->displayType.location == Local)
+    {
+	LoadDisplayResources (d);
+	ResourcesLoaded = TRUE;
+    	if (d->authorize)
+    	{
+	    Debug ("SetServerAuthorization %s, file %s, auth %s\n",
+		    d->name, d->authFile, d->authName);
+	    SetLocalAuthorization (d);
+    	}
+	if (d->serverPid == -1 && !StartServer (d))
+	{
+	    LogError ("Server for display %s can't be started, session disabled\n", d->name);
+	    RemoveDisplay (d);
+	    return;
+	}
+    }
+    else
+    {
+	if (d->authorization)
+	    SaveServerAuthorization (d, d->authorization);
+    }
     switch (pid = fork ())
     {
     case 0:
 	CleanUpChild ();
-	LoadDisplayResources (d);
-	if (d->authName)
-		d->authNameLen = strlen (d->authName);
-	ManageDisplay (d);
+	if (!ResourcesLoaded)
+	    LoadDisplayResources (d);
+	SetAuthorization (d);
+	if (!WaitForServer (d))
+	    exit (RESERVER_DISPLAY);
+	ManageSession (d);
 	exit (REMANAGE_DISPLAY);
     case -1:
 	break;
@@ -331,16 +380,27 @@ struct display	*d;
     }
 }
 
+static void
+StopDisplay (d)
+    struct display	*d;
+{
+    int	serverPid = d->serverPid;
+
+    RemoveDisplay (d);
+    if (serverPid >= 2)
+	kill (serverPid, SIGTERM);
+}
+
 void
 TerminateDisplay (d)
-struct display	*d;
+    struct display	*d;
 {
-    DisplayStatus	status;
-    int		pid;
+    DisplayStatus   status;
+    int		    pid;
 
     status = d->status;
     pid = d->pid;
-    RemoveDisplay (d);
+    StopDisplay (d);
     if (status == running) {
 	if (pid < 2)
 	    abort ();
@@ -354,75 +414,76 @@ static int	max;
 RegisterCloseOnFork (fd)
 int	fd;
 {
-	FD_SET (fd, &CloseMask);
-	if (fd > max)
-		max = fd;
+    FD_SET (fd, &CloseMask);
+    if (fd > max)
+	max = fd;
 }
 
 ClearCloseOnFork (fd)
 int	fd;
 {
-	FD_CLR (fd, &CloseMask);
-	if (fd == max) {
-		while (--fd >= 0)
-			if (FD_ISSET (fd, &CloseMask))
-				break;
-		max = fd;
-	}
+    FD_CLR (fd, &CloseMask);
+    if (fd == max) {
+	while (--fd >= 0)
+	    if (FD_ISSET (fd, &CloseMask))
+		break;
+	max = fd;
+    }
 }
 
 CloseOnFork ()
 {
-	int	fd;
+    int	fd;
 
-	for (fd = 0; fd <= max; fd++)
-		if (FD_ISSET (fd, &CloseMask))
-			close (fd);
-	FD_ZERO (&CloseMask);
-	max = 0;
+    for (fd = 0; fd <= max; fd++)
+	if (FD_ISSET (fd, &CloseMask))
+	    close (fd);
+    FD_ZERO (&CloseMask);
+    max = 0;
 }
 
 StorePid ()
 {
-	FILE	*f;
+    FILE	*f;
 
-	if (pidFile[0] != '\0') {
-		f = fopen (pidFile, "w");
-		if (!f) {
-			LogError ("process-id file %s cannot be opened\n",
-				  pidFile);
-		} else {
-			fprintf (f, "%d\n", getpid ());
-			fclose (f);
-		}
+    if (pidFile[0] != '\0') {
+	f = fopen (pidFile, "w");
+	if (!f) {
+	    LogError ("process-id file %s cannot be opened\n",
+		      pidFile);
+	} else {
+	    fprintf (f, "%d\n", getpid ());
+	    fclose (f);
 	}
+    }
 }
 
 SetTitle (va_alist)
 va_dcl
 {
 #ifndef NOXDMTITLE
-	char	*p = Title;
-	int	left = TitleLen;
-	int	len;
-	char	*s;
-	va_list	args;
+    char	*p = Title;
+    int	left = TitleLen;
+    int	len;
+    char	*s;
+    va_list	args;
 
-	va_start(args);
-	*p++ = '-';
-	--left;
-	while (s = va_arg (args, char *)) {
-	    while (*s && left > 0)
-	    {
-		*p++ = *s++;
-		left--;
-	    }
-	}
-	while (left > 0)
+    va_start(args);
+    *p++ = '-';
+    --left;
+    while (s = va_arg (args, char *))
+    {
+	while (*s && left > 0)
 	{
-	    *p++ = ' ';
-	    --left;
+	    *p++ = *s++;
+	    left--;
 	}
-	va_end(args);
+    }
+    while (left > 0)
+    {
+	*p++ = ' ';
+	--left;
+    }
+    va_end(args);
 #endif	
 }
