@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.75 93/03/29 18:28:39 rws Exp $
+ * $XConsortium: Xrm.c,v 1.76 93/07/05 13:05:51 rws Exp $
  */
 
 /***********************************************************
@@ -1491,8 +1491,8 @@ char * filename;
 	return (char *)NULL;
     }
 
-    if (ReadFile(fd, filebuf, size) != size) { /* If we didn't read the
-						  correct number of bytes. */
+    size = ReadFile(fd, filebuf, size);
+    if (size < 0) {
 	CloseFile(fd);
 	Xfree(filebuf);
 	return (char *)NULL;
