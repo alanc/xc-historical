@@ -101,6 +101,8 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     pScreen->visuals = visuals;
 
     pPixmap = (PixmapPtr ) xalloc(sizeof(PixmapRec));
+    if (!pPixmap)
+	return FALSE;
     pPixmap->drawable.type = DRAWABLE_PIXMAP;
     pPixmap->drawable.depth = 8;
     pPixmap->drawable.pScreen = pScreen;
@@ -169,8 +171,14 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     for (i = 0; i < NUMVISUALS; i++) {
 	visuals[i].vid = FakeClientID(0);
 	visuals[i].screen = index;
-	AddResource(visuals[i].vid, RT_VISUALID, (pointer)&visuals[i],
-		    NoopDDA, RC_CORE);
+	if (!AddResource(visuals[i].vid, RT_VISUALID, (pointer)&visuals[i],
+			 NoopDDA, RC_CORE))
+	{
+	    while (--i >= 0)
+		FreeResource(visuals[i].vid, RC_NONE);
+	    xfree(pPixmap);
+	    return FALSE;
+	}
     }
     pScreen->rootVisual = visuals[ROOTVISUAL].vid;
 
@@ -179,6 +187,15 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
 	if (depths[i].numVids > 0) {
 	    depths[i].vids = pVids = (VisualID *) xalloc(sizeof (VisualID) *
 							 depths[i].numVids);
+	    if (!pVids)
+	    {
+		while (--i >= 0)
+		    xfree(depths[i].vids);
+		for (i = 0; i < NUMVISUALS; i++)
+		    FreeResource(visuals[i].vid, RC_NONE);
+		xfree(pPixmap);
+		return FALSE;
+	    }
 	    /* XXX - here we offer only the 8-bit visual */
 	    pVids[0] = visuals[ROOTVISUAL].vid;
 	}
@@ -188,20 +205,25 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     switch (visuals[ROOTVISUAL].class) {
     case StaticGray:
     case StaticColor:
-	CreateColormap(pScreen->defColormap, pScreen, &visuals[ROOTVISUAL],
-		       &cmap, AllocAll, 0);
+	i = CreateColormap(pScreen->defColormap, pScreen, &visuals[ROOTVISUAL],
+			   &cmap, AllocAll, 0);
 	break;
     case PseudoColor:
     case GrayScale:
-	CreateColormap(pScreen->defColormap, pScreen, &visuals[ROOTVISUAL], 
-		       &cmap, AllocNone, 0);
+	i = CreateColormap(pScreen->defColormap, pScreen, &visuals[ROOTVISUAL],
+			   &cmap, AllocNone, 0);
 	break;
     case TrueColor:
     case DirectColor:
 	FatalError("Bad visual in cfbScreenInit\n");
     }
-    if (!cmap)
-	FatalError("Can't create colormap in cfbScreenInit\n");
-    return( TRUE );
+    if (i == Success)
+	return TRUE;
+    for (i = 0; i < NUMDEPTHS; i++)
+	xfree(depths[i].vids);
+    for (i = 0; i < NUMVISUALS; i++)
+	FreeResource(visuals[i].vid, RC_NONE);
+    xfree(pPixmap);
+    return FALSE;
 }
 
