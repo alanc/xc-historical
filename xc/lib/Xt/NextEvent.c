@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: NextEvent.c,v 1.49 88/09/04 12:20:53 swick Exp $";
+    "$XConsortium: NextEvent.c,v 1.50 88/09/04 15:08:48 swick Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif lint
 
@@ -493,7 +493,7 @@ static void DoOtherSources(app)
 	    (void) gettimeofday (&cur_time, &cur_timezone);
 	    while(IS_AFTER (app->timerQueue->te_timer_value, cur_time)) {
 		te_ptr = app->timerQueue;
-		app->timerQueue = app->timerQueue->te_next;
+		app->timerQueue = te_ptr->te_next;
 		te_ptr->te_next = NULL;
                if (te_ptr->te_proc != 0)
 		  TeCallProc(te_ptr);
