@@ -27,6 +27,7 @@
  * font server specific font access
  */
 
+#include	<X11/Xos.h>
 #include	"fontmisc.h"
 #include	"fontstruct.h"
 #include	"FS.h"
@@ -34,6 +35,7 @@
 #include	"fservestr.h"
 #include	"assert.h"
 #include	<errno.h>
+#include	<stdio.h>
 
 #define	check_conn(conn)	if (conn->fs_fd == -1) return AllocError
 
@@ -71,6 +73,34 @@ static int  fs_wakeup();
  * arrived and return it.
  */
 
+
+/*
+ * sends the stuff that's meaningful to a newly opened or reset FS
+ */
+static int
+fs_send_init_packets(fpe)
+    FontPathElementPtr fpe;
+{
+    FSFpePtr    conn = (FSFpePtr) fpe->private;
+    fsSetResolutionReq req;
+    int         num_res;
+    fsResolution *res;
+    extern fsResolution *GetClientResolutions();
+
+    res = GetClientResolutions(&num_res);
+    if (num_res == 0)
+	return Successful;
+    req.reqType = FS_SetResolution;;
+    req.num_resolutions = num_res;
+    req.length = (sizeof(fsSetResolutionReq) +
+		  (num_res * sizeof(fsResolution)) + 3) >> 2;
+
+    _fs_write(conn, (char *) &req, sizeof(fsSetResolutionReq));
+    _fs_write_pad(conn, (char *) res, (num_res * sizeof(fsResolution)));
+
+    return Successful;
+}
+
 /*
  * the wakeup handlers have to be set when the FPE is open, and not
  * removed until it is freed, in order to handle unexpceted data, like
@@ -101,7 +131,7 @@ fs_init_fpe(fpe, format)
 		Successful)
 	    return AllocError;
 	_fs_set_bit(fs_fd_mask, conn->fs_fd);
-	return Successful;
+	return fs_send_init_packets(fpe);
     } return (errno == ENOMEM) ? AllocError : BadFontPath;
 }
 
@@ -277,8 +307,11 @@ fs_read_open_font(fpe, blockrec)
 	assert(newfont->fpe);
 	assert(newfont->fpePrivate);
 
-	bfont->fontid = rep.originalid;
+#ifdef NOTYET
+	fs_send_close_font(fpe, bfont->fontid);
+#endif
 	xfree(bfont->pfont);
+	bfont->fontid = rep.originalid;
 	bfont->pfont = newfont;
 
 	/* pull off the QueryInfo & QueryExtents errors */
@@ -448,6 +481,38 @@ fs_block_handler(data, wt, LastSelectMask)
     return Successful;
 }
 
+static void
+fs_handle_unexpected(conn)
+    FSFpePtr    conn;
+{
+    fsReplyHeader rep;
+
+#ifdef DEBUG
+    fprintf(stderr, "unexpected wakeup\n");
+#endif
+
+    if (_fs_read(conn, (char *) &rep, sizeof(fsReplyHeader)) == -1) {
+	/* connection got toasted */
+
+#ifdef DEBUG
+	fprintf(stderr, "connection was dropped\n");
+#endif
+
+	conn->fs_fd = -1;
+	return;
+    }
+    if (rep.type == FS_Event && rep.pad == KeepAlive) {
+	fsNoopReq   req;
+
+	/* ping it back */
+	req.reqType = FS_Noop;
+	req.length = sizeof(fsNoopReq) >> 2;
+	_fs_write(conn, (char *) &req, sizeof(fsNoopReq));
+    }
+    /* this should suck up unexpected replies and events */
+    _fs_eat_rest_of_error(conn, (fsError *) & rep);
+}
+
 static int
 fs_wakeup(fpe, LastSelectMask)
     FontPathElementPtr fpe;
@@ -468,30 +533,10 @@ fs_wakeup(fpe, LastSelectMask)
 	 * problems
 	 */
 	if (_fs_data_ready(conn) <= 0) {
-	    return;
+	    return FALSE;
 	}
 	if (!blockrec) {
-	    fsReplyHeader rep;
-
-	    /* XXX must be event, deal with it */
-
-#ifdef DEBUG
-	    fprintf(stderr, "unexpected wakeup\n");
-#endif
-
-	    if (_fs_read(conn, (char *) &rep, sizeof(fsReplyHeader)) == -1) {
-		/* connection got toasted */
-
-#ifdef DEBUG
-		fprintf(stderr, "connection was dropped\n");
-#endif
-
-		conn->fs_fd = -1;
-		return FALSE;
-	    }
-	    /* this should also suck up unexpected replies and events */
-	    _fs_eat_rest_of_error(conn, (fsError *) & rep);
-
+	    fs_handle_unexpected(conn);
 	    return FALSE;
 	}
 	/* go read it, and if we're done, wake up the appropriate client */
@@ -540,6 +585,7 @@ fs_remove_blockrec(conn, blockrec)
 /*
  * sends the actual request out
  */
+/* ARGSUSED */
 static int
 fs_send_open_font(client, fpe, flags, name, namelen, format, fmask, id, ppfont)
     pointer     client;
@@ -565,8 +611,11 @@ fs_send_open_font(client, fpe, flags, name, namelen, format, fmask, id, ppfont)
     fsQueryXBitmaps8Req bitreq;
     int         err = Suspended;
     unsigned char buf[256];
+    XID	newid;
 
     check_conn(conn);
+
+    newid = GetNewFontClientID();
 
     /* make the font */
     newfont = (FontPtr) xalloc(sizeof(FontRec));
@@ -599,10 +648,15 @@ lowmem:
     newfont->fontPrivate = (pointer) fsfont;
 
     blockedfont = (FSBlockedFontPtr) blockrec->data;
-    blockedfont->fontid = id;
+    blockedfont->fontid = newid;
     blockedfont->pfont = newfont;
     blockedfont->state = FS_OPEN_REPLY;
     blockedfont->load_glyphs = FALSE;
+
+    /* save the ID */
+    if (!StoreFontClientFont (blockedfont->pfont, blockedfont->fontid)) {
+	goto lowmem;
+    }
 
     conn->expected_replies += 3;
 
@@ -611,8 +665,7 @@ lowmem:
     bcopy(name, (char *) &buf[1], namelen);
     namelen++;
     openreq.reqType = FS_OpenBitmapFont;
-    /* reuse X id */
-    openreq.fid = id;
+    openreq.fid = newid;
     openreq.format_hint = format;
     openreq.format_mask = fmask;
     openreq.length = (sizeof(fsOpenBitmapFontReq) + namelen + 3) >> 2;
@@ -621,18 +674,18 @@ lowmem:
     _fs_write_pad(conn, (char *) buf, namelen);
 
     inforeq.reqType = FS_QueryXInfo;
-    inforeq.id = id;
+    inforeq.id = newid;
     inforeq.length = sizeof(fsQueryXInfoReq) >> 2;
     _fs_write(conn, (char *) &inforeq, sizeof(fsQueryXInfoReq));
 
     extreq.reqType = FS_QueryXExtents8;
     extreq.range = fsTrue;
-    extreq.fid = id;
+    extreq.fid = newid;
     extreq.num_ranges = 0;
     extreq.length = sizeof(fsQueryXExtents8Req) >> 2;
     _fs_write(conn, (char *) &extreq, sizeof(fsQueryXExtents8Req));
 
-    fsd->fontid = id;
+    fsd->fontid = newid;
     fsd->fpe = fpe;
 
 /* XXX - hack */
@@ -644,7 +697,7 @@ lowmem:
 
 	/* send the request */
 	bitreq.reqType = FS_QueryXBitmaps8;
-	bitreq.fid = id;
+	bitreq.fid = newid;
 	bitreq.format = format;
 	bitreq.range = TRUE;
 	bitreq.length = sizeof(fsQueryXBitmaps8Req) >> 2;
@@ -712,12 +765,10 @@ fs_open_font(client, fpe, flags, name, namelen, format, fmask, id, ppfont,
 
 /* ARGSUSED */
 static int
-fs_close_font(fpe, pfont)
+fs_send_close_font(fpe, id)
     FontPathElementPtr fpe;
-    FontPtr     pfont;
-
+    Font	id;
 {
-    FSFontDataPtr fsd = (FSFontDataPtr) pfont->fpePrivate;
     FSFpePtr    conn = (FSFpePtr) fpe->private;
     fsCloseReq  req;
 
@@ -726,14 +777,25 @@ fs_close_font(fpe, pfont)
     /* tell the font server to close the font */
     req.reqType = FS_CloseFont;
     req.length = sizeof(fsCloseReq) >> 2;
-    req.id = fsd->fontid;
+    req.id = id;
     _fs_write(conn, (char *) &req, sizeof(fsCloseReq));
-
-    (*pfont->unload_font) (pfont);
 
     return Successful;
 }
 
+/* ARGSUSED */
+static int
+fs_close_font(fpe, pfont)
+    FontPathElementPtr fpe;
+    FontPtr     pfont;
+{
+    FSFontDataPtr fsd = (FSFontDataPtr) pfont->fpePrivate;
+
+    fs_send_close_font(fpe, fsd->fontid);
+    (*pfont->unload_font) (pfont);
+
+    return Successful;
+}
 
 static int
 fs_read_glyphs(fpe, blockrec)
@@ -1481,11 +1543,11 @@ fs_next_list_with_info(client, fpe, namep, namelenp, pFontInfo, numFonts,
     }
 }
 
-/* ARGSUSED */
 static int
 fs_reset_fpe(fpe)
     FontPathElementPtr fpe;
 {
+    return fs_send_init_packets(fpe);
 }
 
 /*
