@@ -2,153 +2,242 @@
 
 #include "copyright.h"
 
+/*
+ *	Code to read bitmaps from disk files. Interprets 
+ *	data from X10 and X11 bitmap files and creates
+ *	Pixmap representations of files. Returns Pixmap
+ *	ID and specifics about image.
+ *
+ *	Modified for speedup by Jim Becker, changed image
+ *	data parsing logic (removed some fscanf()s). 
+ *	Aug 5, 1988
+ */
+
 #include <X11/Xos.h>
 #include "Xlib.h"
 #include "Xutil.h"
 #include "Xlibint.h"
 #include <stdio.h>
+#include <ctype.h>
 
-#define MAX_LINE 1000
+
+#define MAX_SIZE	255
+
+/*	shared data for the image read/parse logic	*/
+
+static	short		HexVal[255];		/* conversion value */
+static	short		HexSet		= 0;	/* initialized flag */
 
 
-static cleanup(data, stream)
-  char *data;
-  FILE *stream;
+/*
+ *	Table index for the hex values. Initialized once, first time.
+ *	Used for translation value or delimiter significance lookup.
+ */
+static	SetupHex()
 {
-  if (data)
-    Xfree(data);
-  fclose(stream);
+	/* set the translation entry values that are meaningful */
+
+	HexVal['0']	= 0;	HexVal['1']	= 1;
+	HexVal['2']	= 2;	HexVal['3']	= 3;
+	HexVal['4']	= 4;	HexVal['5']	= 5;
+	HexVal['6']	= 6;	HexVal['7']	= 7;
+	HexVal['8']	= 8;	HexVal['9']	= 9;
+	HexVal['A']	= 10;	HexVal['B']	= 11;
+	HexVal['C']	= 12;	HexVal['D']	= 13;
+	HexVal['E']	= 14;	HexVal['F']	= 15;
+	HexVal['a']	= 10;	HexVal['b']	= 11;
+	HexVal['c']	= 12;	HexVal['d']	= 13;
+	HexVal['e']	= 14;	HexVal['f']	= 15;
+
+	/* delimiters of significance are flagged w/ negative value */
+
+	HexVal[' ']	= -1;	HexVal[',']	= -1;
+	HexVal['}']	= -1;	HexVal['\n']	= -1;
+	HexVal['\t']	= -1;
+	
+	HexSet++;
 }
 
-int XReadBitmapFile(display, d, filename, width, height, bitmap, x_hot, y_hot)
-     Display *display;
-     Drawable d;
-     char *filename;
-     unsigned int *width, *height;   /* RETURNED */
-     Pixmap *bitmap;        /* RETURNED */
-     int *x_hot, *y_hot;    /* RETURNED */
+/*
+ *	read next hex value in the input stream, return -1 if EOF
+ */
+static	NextInt( fstream )
+FILE		*fstream;
 {
-  FILE *stream;
-  char *data = 0;
-  char *ptr;
-  char line[MAX_LINE];
-  int size, bytes;
-  char name_and_type[MAX_LINE];
-  char *type;
-  int value;
-  int version10p;
-  int padding;
-  int bytes_per_line;
-  unsigned int ww = 0;
-  unsigned int hh = 0;
-  int hx = -1;
-  int hy = -1;
-  Pixmap pix;
+	int	ch;
+	int	value	= 0;
+	short	gotone	= 0;
+	short	done	= 0;
 
-  if (!(stream = fopen(filename, "r")))
-    return(BitmapOpenFailed);
+	/* loop, accumulate hex value until find delimiter  */
+	/* skip any initial delimiters found in read stream */
 
-  for (;;) {
-    if (!fgets(line, MAX_LINE, stream))
-      break;
-    if (strlen(line) == MAX_LINE-1) {
-      cleanup(data, stream);
-      return(BitmapFileInvalid);
-    }
+	while( !done ) {
 
-    if (sscanf(line, "#define %s %d", name_and_type, &value) == 2) {
-      if (!(type = rindex(name_and_type, '_')))
-	type = name_and_type;
-      else
-	type++;
-      if (!strcmp("width", type))
-	ww=(unsigned int) value;
-      if (!strcmp("height", type))
-	hh=(unsigned int) value;
-      if (!strcmp("hot", type)) {
-	if (type--==name_and_type || type--==name_and_type)
-	  continue;
-	if (!strcmp("x_hot", type))
-	  hx = value;
-	if (!strcmp("y_hot", type))
-	  hy = value;
-      }
-      continue;
-    }
-    
-    if (sscanf(line, "static short %s = {", name_and_type) == 1)
-      version10p = 1;
-    else if (sscanf(line, "static unsigned char %s = {", name_and_type) == 1)
-      version10p = 0;
-    else if (sscanf(line, "static char %s = {", name_and_type) == 1)
-      version10p = 0;
-    else continue;
+		ch	= getc(fstream);
 
-    if (!(type = rindex(name_and_type, '_')))
-      type = name_and_type;
-    else
-      type++;
-    if (strcmp("bits[]", type))
-      continue;
-    
-    if (!ww || !hh) {
-      cleanup(data, stream);
-      return(BitmapFileInvalid);
-    }
-
-    padding = 0;
-    if ((ww % 16) && ((ww % 16) < 9) && version10p)
-      padding = 1;
-
-    bytes_per_line = (ww+7)/8 + padding;
-    
-    size = bytes_per_line * hh;
-    data = (char *) Xmalloc( size );
-    if (!data) {
-      cleanup(data, stream);
-      return(BitmapNoMemory);
-    }
-
-    if (version10p)
-      for (bytes=0, ptr=data; bytes<size; (bytes += 2)) {
-	if (fscanf(stream, " 0x%x%*[,}]%*[ \n]", &value) != 1) {
-	  cleanup(data, stream);
-	  return(BitmapFileInvalid);
+		if( ch == EOF ) {
+			value	= -1;
+			done++;
+		}
+		else {
+			/* trim high bits, check type and accumulate */
+			if( isxdigit( (ch &= 0xff) ) ) {
+				value	= (value << 4) + HexVal[ch];
+				gotone++;
+			}
+			else
+			if( (HexVal[ch]) < 0 && gotone )
+				done++;
+		}
 	}
-	*(ptr++) = value & 0xff;
-	if (!padding || ((bytes+2) % bytes_per_line))
-	  *(ptr++) = value >> 8;
-      }
-    else
-      for (bytes=0, ptr=data; bytes<size; bytes++, ptr++) {
-	if (fscanf(stream, " 0x%x%*[,}]%*[ \n]", &value) != 1) {
-	  cleanup(data, stream);
-	  return(BitmapFileInvalid);
-	}
-	*ptr=value;
-      }
-    
-  }
 
-  if (!data) {
-    cleanup(data, stream);
-    return(BitmapFileInvalid);
-  }
-
-  pix = XCreateBitmapFromData(display, d, data, ww, hh);
-  if (!pix) {
-    cleanup(data, stream);
-    return(BitmapNoMemory);
-  }
-  *bitmap = pix;
-  *width = ww;
-  *height = hh;
-
-  if (x_hot)
-    *x_hot = hx;
-  if (y_hot)
-    *y_hot = hy;
-
-  cleanup(data, stream);
-  return(BitmapSuccess);
+	return value;
 }
+
+
+int XReadBitmapFile (display, d, filename, width, height, pixmap, x_hot, y_hot)
+    Display *display;
+    Drawable d;
+    char *filename;
+    unsigned int *width, *height;	/* RETURNED */
+    Pixmap *pixmap;			/* RETURNED */
+    int *x_hot, *y_hot;			/* RETURNED */
+{
+	FILE		*fstream;	
+	char		*data		= NULL;
+	char		*ptr;
+	char		line[MAX_SIZE];
+	int		size, bytes;
+	char		name_and_type[MAX_SIZE];
+	char		*type;
+	int		value;
+	int		version10p;
+	int		padding;
+	int		bytes_per_line;
+	Pixmap		pix;
+	unsigned int	ww = 0;
+	unsigned int	hh = 0;
+	int		hx = -1;
+	int		hy = -1;
+
+	/* error cleanup and return macro	*/
+
+#define	RETURN(code)	{if(data) free(data); 	\
+			 fclose(fstream);\
+			 return(code);}
+
+	/* first time initialization */
+	if( !HexSet )
+		SetupHex();
+
+	if (!(fstream = fopen(filename, "r")))
+		return(BitmapOpenFailed);
+
+	while(fgets(line, MAX_SIZE, fstream)) {
+
+		if (strlen(line) == MAX_SIZE-1) 
+			RETURN(BitmapFileInvalid);
+
+		if (sscanf(line,"#define %s %d",name_and_type,&value) == 2) {
+			if (!(type = rindex(name_and_type, '_')))
+				type = name_and_type;
+			else
+				type++;
+
+			if (!strcmp("width", type))
+				ww=(unsigned int) value;
+			if (!strcmp("height", type))
+				hh=(unsigned int) value;
+			if (!strcmp("hot", type)) {
+				if (type--==name_and_type ||
+				    type--==name_and_type)
+					continue;
+				if (!strcmp("x_hot", type))
+					hx = value;
+				if (!strcmp("y_hot", type))
+					hy = value;
+			}
+			continue;
+		}
+    
+		if (sscanf(line, "static short %s = {", name_and_type) == 1)
+			version10p = 1;
+		else 
+		if (sscanf(line, "static unsigned char %s = {",
+			   name_and_type) == 1)
+			version10p = 0;
+		else 
+		if (sscanf(line, "static char %s = {", name_and_type) == 1)
+			version10p = 0;
+		else
+			continue;
+
+		if (!(type = rindex(name_and_type, '_')))
+			type = name_and_type;
+		else
+			type++;
+
+		if (strcmp("bits[]", type))
+			continue;
+    
+		if (!ww || !hh)
+			RETURN(BitmapFileInvalid);
+
+		if ((ww % 16) && ((ww % 16) < 9) && version10p)
+			padding = 1;
+		else
+			padding = 0;
+
+		bytes_per_line = (ww+7)/8 + padding;
+    
+		size = bytes_per_line * hh;
+		data = (char *)Xmalloc( size );
+
+		if (!data) 
+			RETURN(BitmapNoMemory);
+
+		if (version10p)
+			for (bytes=0, ptr=data; bytes<size; (bytes += 2)) {
+				if ( (value = NextInt(fstream)) < 0 )
+					RETURN(BitmapFileInvalid);
+
+				*(ptr++) = value;
+				if (!padding || ((bytes+2) % bytes_per_line))
+					*(ptr++) = value >> 8;
+			}
+		else
+			for (bytes=0, ptr=data; bytes<size; bytes++, ptr++) {
+				if ( (value = NextInt(fstream)) < 0 ) 
+					RETURN(BitmapFileInvalid);
+				*ptr=value;
+			}
+	}
+
+	if( data == NULL ) 
+		RETURN(BitmapFileInvalid);
+
+	/* take data and convert to a pixmap for the user */
+	pix	= XCreateBitmapFromData(display, d, data, ww, hh);
+
+	if( pix == NULL ) 
+		RETURN(BitmapNoMemory);
+
+	*pixmap		= pix;
+	*width		= ww;
+	*height		= hh;
+
+	if( x_hot != NULL )
+		*x_hot		= hx;
+
+	if( y_hot != NULL )
+		*y_hot 		= hy;
+
+	RETURN(BitmapSuccess);
+}
+
+
+
+
+
+
