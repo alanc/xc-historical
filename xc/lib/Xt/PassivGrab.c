@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: PassivGrab.c,v 1.8 90/01/25 09:26:09 swick Exp $";
+static char Xrcsid[] = "$XConsortium: PassivGrab.c,v 1.9 90/01/25 09:44:18 swick Exp $";
 #endif
 
 /********************************************************
@@ -811,7 +811,6 @@ void   UngrabKeyOrButton (widget, keyOrButton, modifiers, isKeyboard)
 			     &tempGrab);
 }
 
-
 void  XtGrabKey (widget, keycode, modifiers, owner_events,
 		 pointer_mode, keyboard_mode)
     Widget	widget;
@@ -820,16 +819,15 @@ void  XtGrabKey (widget, keycode, modifiers, owner_events,
     Boolean	owner_events;
     int 	pointer_mode;
     int 	keyboard_mode;
-    
 {
-    GrabKeyOrButton(widget, keycode, modifiers, owner_events,
+    GrabKeyOrButton(widget, (KeyCode)keycode, modifiers, owner_events,
 		    pointer_mode, keyboard_mode, 
 		    (Mask)0, (Window)None, (Cursor)None, KEYBOARD);
 }
 
 void  XtGrabButton(widget, button, modifiers, owner_events,
-		   pointer_mode, keyboard_mode,
-		   event_mask, confine_to, cursor)
+		   event_mask, pointer_mode, keyboard_mode,
+		   confine_to, cursor)
     Widget	widget;
     int		button;
     Modifiers	modifiers;
@@ -862,7 +860,7 @@ void   XtUngrabKey (widget, keycode, modifiers)
 
 void   XtUngrabButton (widget, button, modifiers)
     Widget	widget;
-    int		button;
+    unsigned int button;
     Modifiers	modifiers;
 {
 
