@@ -1,4 +1,4 @@
-/* $XConsortium: miLight.c,v 5.1 91/02/16 09:55:33 rws Exp $ */
+/* $XConsortium: miLight.c,v 5.2 91/05/01 14:39:31 hersh Exp $ */
 
 
 /***********************************************************
@@ -139,9 +139,12 @@ miApply_Lighting(pRend, pddc, point, mat_color, normal, out_color)
 	     */
 	    case PEXReflectionSpecular:
 
-		CALCULATE_REFLECTION_VECTOR(&refl_vec, n_dot_l,
+		CALCULATE_REFLECTION_VECTOR(&refl_vec, -n_dot_l,
 					    normal,
 					    &lightentry->direction);
+    		refl_vec.x *= -1.0;		
+    		refl_vec.y *= -1.0;		
+    		refl_vec.z *= -1.0;		
 		NORMALIZE_VECTOR (&refl_vec, v_dot_r);
 
 		/*
@@ -170,7 +173,7 @@ miApply_Lighting(pRend, pddc, point, mat_color, normal, out_color)
 		   * Compute the view vector.
 		   */
 		  CALCULATE_DIRECTION_VECTOR(&pddc->Static.misc.eye_pt,
-					     &point,
+					     point,
 					     &view_vec);
 		  NORMALIZE_VECTOR (&view_vec, v_dot_r);
 		}
@@ -279,7 +282,7 @@ miApply_Lighting(pRend, pddc, point, mat_color, normal, out_color)
 		   * Compute the view vector.
 		   */
 		  CALCULATE_DIRECTION_VECTOR(&pddc->Static.misc.eye_pt,
-					     &point,
+					     point,
 					     &view_vec);
 		  NORMALIZE_VECTOR (&view_vec, v_dot_r);
 		}
@@ -341,7 +344,7 @@ miApply_Lighting(pRend, pddc, point, mat_color, normal, out_color)
 	   */
 
 	  CALCULATE_DIRECTION_VECTOR(&lightentry->point,
-				     &point,
+				     point,
 				     &light_vec);
 	  NORMALIZE_VECTOR (&light_vec, distance);
 
@@ -349,7 +352,7 @@ miApply_Lighting(pRend, pddc, point, mat_color, normal, out_color)
 	  DOT_PRODUCT(&lightentry->direction, &light_vec, d_dot_l);
 	  /* Negate because light vec should point other way for this test */
 	  d_dot_l = -d_dot_l;
-	  if (d_dot_l > pLUT->cosSpreadAngle) break;
+	  if (d_dot_l <= pLUT->cosSpreadAngle) break;
 	  d_dot_l = pow(d_dot_l, lightentry->concentration);
 
 	  /* compute reflect view vector */
@@ -395,7 +398,7 @@ miApply_Lighting(pRend, pddc, point, mat_color, normal, out_color)
 		   * Compute the view vector.
 		   */
 		  CALCULATE_DIRECTION_VECTOR(&pddc->Static.misc.eye_pt,
-					     &point,
+					     point,
 					     &view_vec);
 		  NORMALIZE_VECTOR (&view_vec, v_dot_r);
 		}
