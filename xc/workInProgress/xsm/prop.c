@@ -1,4 +1,4 @@
-/* $XConsortium: prop.c,v 1.3 94/11/30 17:55:50 mor Exp mor $ */
+/* $XConsortium: prop.c,v 1.4 94/12/12 20:01:43 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -239,7 +239,7 @@ ClientRec	*client;
 char		*propname;
 
 {
-    List *pl, *pv;
+    List *pl;
 
     for (pl = ListFirst (client->props); pl; pl = ListNext (pl))
     {
