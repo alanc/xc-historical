@@ -83,6 +83,9 @@ screen #1:
 To get the default host, display number, and screen.
 .SH "SEE ALSO"
 X(1), xwininfo(1), xprop(1), xrdb(1)
+.SH BUGS
+There is currently no way to access the Pixmap Format information returned
+by the server in the connection setup.
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
 .br
