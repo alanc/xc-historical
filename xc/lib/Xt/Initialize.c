@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.145 89/10/05 12:34:54 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.146 89/10/08 13:35:08 rws Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif /* lint */
 
@@ -628,6 +628,10 @@ String *specification_list;
  *	Returns: The shell widget.
  */
 	
+#ifdef SUNSHLIB
+#define XtAppInitialize _XtAppInitialize
+#endif
+
 Widget
 XtAppInitialize(app_context_return, application_class, options, num_options,
 		argc_in_out, argv_in_out, fallback_resources, 
@@ -647,6 +651,10 @@ ArgList args_in;
     Arg args[3], *merged_args;
     Cardinal num = 0;
     
+#ifdef SUNSHLIB
+#undef XtAppInitialize
+#endif
+
     XtToolkitInitialize();
     
 /*
@@ -700,6 +708,10 @@ ArgList args_in;
  *	Returns: a shell widget.
  */
 	
+#ifdef SUNSHLIB
+#define XtInitialize _XtInitialize
+#endif
+
 /*ARGSUSED*/
 Widget 
 XtInitialize(name, classname, options, num_options, argc, argv)
@@ -711,6 +723,10 @@ String *argv;
     Widget root;
     XtAppContext app_con;
     register ProcessContext process = _XtGetProcessContext();
+
+#ifdef SUNSHLIB
+#undef XtInitialize
+#endif
 
     root = XtAppInitialize(&app_con, classname, options, num_options,
 			   argc, argv, NULL, NULL, (Cardinal) 0);
