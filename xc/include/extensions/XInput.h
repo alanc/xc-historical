@@ -1,4 +1,4 @@
-/* $XConsortium: XInput.h,v 1.5 89/12/06 20:44:32 rws Exp $ */
+/* $XConsortium: XInput.h,v 1.6 90/05/18 10:49:44 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -129,6 +129,9 @@ SOFTWARE.
 
 #define DeviceButtonPressGrab(d, type, class) \
     { class =  ((XDevice *) d)->device_id << 8 | _deviceButtonGrab;}
+
+#define NoExtensionEvent(d, type, class) \
+    { class =  ((XDevice *) d)->device_id << 8 | _noExtensionEvent;}
 
 #define BadDevice(dpy, error) \
     {XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy); \
