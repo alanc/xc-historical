@@ -1,4 +1,4 @@
-/* $Header: XExtInt.c,v 1.12 90/05/18 16:43:52 rws Exp $ */
+/* $Header: XExtInt.c,v 1.5 90/10/05 12:28:29 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -45,8 +45,8 @@ SOFTWARE.
 static	XExtensionInfo *xinput_info;
 static	/* const */ char *xinput_extension_name = INAME;
 static	int XInputClose();
-static  char *XInputError();
-static Bool XInputWireToEvent();
+static	char *XInputError();
+Bool	XInputWireToEvent();
 Status	XInputEventToWire();
 static	/* const */ XEvent	emptyevent;
 
@@ -79,6 +79,62 @@ XEXT_GENERATE_FIND_DISPLAY (XInput_find_display, xinput_info,
 
 static XEXT_GENERATE_ERROR_STRING (XInputError, xinput_extension_name,
 				   IERRORS, XInputErrorList)
+/*******************************************************************
+ *
+ * Input extension versions.
+ *
+ */
+
+XExtensionVersion versions[] = {{XI_Absent,0,0},
+	{XI_Present, XI_Initial_Release_Major, XI_Initial_Release_Minor},
+	{XI_Present, XI_Add_XDeviceBell_Major, XI_Add_XDeviceBell_Minor}};
+
+/***********************************************************************
+ *
+ * Return errors reported by this extension.
+ *
+ */
+
+_xibaddevice (dpy, error)
+    Display *dpy;
+    int *error;
+    {
+    XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    *error = info->codes->first_error + XI_BadDevice;
+    }
+
+_xibadclass (dpy, error)
+    Display *dpy;
+    int *error;
+    {
+    XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy); 
+    *error = info->codes->first_error + XI_BadClass;
+    }
+
+_xibadevent (dpy, error)
+    Display *dpy;
+    int *error;
+    {
+    XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    *error = info->codes->first_error + XI_BadEvent;
+    }
+
+_xibadmode (dpy, error)
+    Display *dpy;
+    int *error;
+    {
+    XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    *error = info->codes->first_error + XI_BadMode;
+    }
+
+_xidevicebusy (dpy, error)
+    Display *dpy;
+    int *error;
+    {
+    XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy); 
+    *error = info->codes->first_error + XI_DeviceBusy;
+    }
+
 /***********************************************************************
  *
  * Check to see if the input extension is installed in the server.
@@ -86,9 +142,9 @@ static XEXT_GENERATE_ERROR_STRING (XInputError, xinput_extension_name,
  *
  */
 
-CheckExtInit(dpy, major_version)
+CheckExtInit(dpy, version_index)
     register	Display *dpy;
-    register	int	major_version;
+    register	int	version_index;
     {
     XExtensionVersion 	*ext;
     XExtDisplayInfo 	*info = XInput_find_display (dpy);
@@ -102,16 +158,18 @@ CheckExtInit(dpy, major_version)
 	    return (-1);
 	}
 
-    if (major_version > Dont_Check)
+    if (versions[version_index].major_version > Dont_Check)
 	{
 	ext = XGetExtensionVersion (dpy, "XInputExtension");
-	if (ext->major_version < major_version)
+	if ((ext->major_version < versions[version_index].major_version) ||
+	    ((ext->major_version == versions[version_index].major_version) &&
+	     (ext->minor_version < versions[version_index].minor_version)))
 	    {
-	    XFree ((char *)ext);
+	    XFree (ext);
     	    UnlockDisplay(dpy);
 	    return (-1);
 	    }
-	XFree ((char *)ext);
+	XFree (ext);
 	}
     return (0);
     }
@@ -167,6 +225,8 @@ XInputWireToEvent (dpy, re, event)
 
     type = event->u.u.type & 0x7f;
     reltype = (type - info->codes->first_event);
+
+
 
     if (reltype != XI_DeviceValuator && 
 	reltype != XI_DeviceKeystateNotify &&
@@ -347,7 +407,7 @@ XInputWireToEvent (dpy, re, event)
 		for (i=v->num_valuators,j=0; 
 		     i<6 && j<xev->num_valuators; i++,j++)
 		    {
-		    v->valuators[i] = *(ip + i);
+		    v->valuators[i] = *(ip + j);
 		    }
 		v->num_valuators += xev->num_valuators;
 
@@ -381,7 +441,7 @@ XInputWireToEvent (dpy, re, event)
 	    XButtonStatus *bev;
 	    XValuatorStatus *vev;
 	    char *data;
-	    CARD32 *ip B32 = &sev->valuator0;
+	    INT32 *ip B32 = &sev->valuator0;
 
 	    stev->window 		= dpy->current;
 	    stev->deviceid 		= sev->deviceid & DEVICE_BITS;

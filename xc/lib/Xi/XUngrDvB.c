@@ -1,4 +1,4 @@
-/* $XConsortium: XUngrDvB.c,v 1.3 89/09/25 16:21:29 gms Exp $ */
+/* $Header: XUngrDvB.c,v 1.2 90/08/13 17:03:45 root ic1C-80 $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -58,7 +58,10 @@ XUngrabDeviceButton(dpy, dev, button, modifiers, modifier_dev, grab_window)
     req->grabbed_device = dev->device_id;
     req->button = button;
     req->modifiers = modifiers;
-    req->modifier_device = modifier_dev->device_id;
+    if (modifier_dev)
+	req->modifier_device = modifier_dev->device_id;
+    else
+	req->modifier_device = UseXKeyboard;
     req->grabWindow = grab_window;
     UnlockDisplay(dpy);
     SyncHandle();

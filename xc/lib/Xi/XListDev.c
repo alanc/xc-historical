@@ -1,4 +1,4 @@
-/* $XConsortium: XListDev.c,v 1.12 90/05/18 11:31:39 rws Exp $ */
+/* $Header: XListDev.c,v 1.1 90/06/20 14:11:24 xbuild ic1C-80 $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -214,8 +214,23 @@ XDeviceInfo
 	    }
 	}
 
-    XFree ((char *)slist);
+    XFree (slist);
     UnlockDisplay(dpy);
     SyncHandle();
     return (sclist);
+    }
+
+/***********************************************************************
+ *
+ * Free the list of input devices.
+ *
+ */
+
+XFreeDeviceList (list)
+    XDeviceInfo *list;
+    {
+    if (list != NULL) 
+	{
+        XFree ((XDeviceInfo *) list);
+        }
     }

@@ -1,4 +1,4 @@
-/* $XConsortium: XGetFCtl.c,v 1.8 90/05/18 15:21:33 rws Exp $ */
+/* $Header: XGetFCtl.c,v 1.2 90/11/13 13:16:52 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -45,7 +45,8 @@ XFeedbackState
     {
     int	size = 0;
     int	nbytes, i;
-    XFeedbackState *Feedback;
+    XFeedbackState *Feedback = NULL;
+    XFeedbackState *Sav = NULL;
     xFeedbackState *f = NULL;
     xFeedbackState *sav = NULL;
     xGetFeedbackControlReq *req;
@@ -113,16 +114,18 @@ XFeedbackState
 		    size += f->length;
 		    break;
 		}
+	    f = (xFeedbackState *) ((char *) f + f->length);
 	    }
 
 	Feedback = (XFeedbackState *) Xmalloc((unsigned) size);
-
         if (!Feedback)
 	    {
 	    UnlockDisplay(dpy);
 	    SyncHandle();
 	    return (XFeedbackState *) NULL;
 	    }
+	Sav = Feedback;
+
 	f = sav;
 	for (i=0; i<*num_feedbacks; i++)
 	    {
@@ -146,7 +149,6 @@ XFeedbackState
 		    K->global_auto_repeat = k->global_auto_repeat;
 		    bcopy ((char *) &k->auto_repeats[0], 
 			(char *) &K->auto_repeats[0], 32);
-		    f = (xFeedbackState *) ((char *) f + f->length);
 		    break;
 		    }
 		case PtrFeedbackClass:
@@ -162,8 +164,6 @@ XFeedbackState
 		    P->accelNum = p->accelNum;
 		    P->accelDenom = p->accelDenom;
 		    P->threshold = p->threshold;
-
-		    f = (xFeedbackState *) ((char *) f + f->length);
 		    break;
 		    }
 		case IntegerFeedbackClass:
@@ -179,7 +179,6 @@ XFeedbackState
 		    I->resolution = i->resolution;
 		    I->minVal = i->min_value;
 		    I->maxVal = i->max_value;
-		    f = (xFeedbackState *) ((char *) f + f->length);
 		    break;
 		    }
 		case StringFeedbackClass:
@@ -195,7 +194,6 @@ XFeedbackState
 		    S->id = s->id;
 		    S->max_symbols = s->max_symbols;
 		    S->num_syms_supported = s->num_syms_supported;
-		    f = (xFeedbackState *) ((char *) f + f->length);
 		    S->syms_supported = (KeySym *) (S+1);
 		    bcopy ((char *) (s+1), (char *) S->syms_supported,
 			(S->num_syms_supported * sizeof (KeySym)));
@@ -212,7 +210,7 @@ XFeedbackState
 		    L->length = sizeof (XLedFeedbackState);
 		    L->id = l->id;
 		    L->led_values = l->led_values;
-		    f = (xFeedbackState *) ((char *) f + f->length);
+		    L->led_mask = l->led_mask;
 		    break;
 		    }
 		case BellFeedbackClass:
@@ -228,19 +226,20 @@ XFeedbackState
 		    B->percent = b->percent;
 		    B->pitch = b->pitch;
 		    B->duration = b->duration;
-		    f = (xFeedbackState *) ((char *) f + f->length);
 		    break;
 		    }
 		default:
-		    f = (xFeedbackState *) ((char *) f + f->length);
 		    break;
 		}
+	    f = (xFeedbackState *) ((char *) f + f->length);
+	    Feedback = (XFeedbackState *) ((char *) Feedback+Feedback->length);
 	    }
+	XFree (sav);
 	}
 
     UnlockDisplay(dpy);
     SyncHandle();
-    return (Feedback);
+    return (Sav);
     }
 
 XFreeFeedbackList (list)

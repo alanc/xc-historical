@@ -1,4 +1,4 @@
-/* $XConsortium: XQueryDv.c,v 1.6 90/05/18 11:23:49 rws Exp $ */
+/* $Header: XQueryDv.c,v 1.3 90/11/07 15:44:14 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -124,7 +124,7 @@ XDeviceState
 		    K->length = sizeof (XKeyState);
 		    K->num_keys = k->num_keys;
 		    bcopy ((char *) &k->keys[0], (char *) &K->keys[0], 32);
-		    Any = (XInputClass *)((char *) Any + sizeof (XKeyState));
+		    Any = (XInputClass *) (K+1);
 		    }
 		    break;
 		case ButtonClass:
@@ -136,22 +136,22 @@ XDeviceState
 		    B->num_buttons = b->num_buttons;
 		    bcopy ((char *) &b->buttons[0], (char *) &B->buttons[0], 
 			32);
-		    Any = (XInputClass *)((char *) Any + sizeof (XButtonState));
+		    Any = (XInputClass *) (B+1);
 		    }
 		    break;
 		case ValuatorClass:
 		    {
 		    xValuatorState *v = (xValuatorState *) any;
 		    XValuatorState *V = (XValuatorState *) Any;
+		    CARD32 *valuators = (CARD32 *) (v+1);
 		    V->class = v->class;
 		    V->length = sizeof (XValuatorState);
 		    V->num_valuators = v->num_valuators;
 		    V->mode = v->mode;
-		    Any = (XInputClass *) 
-			((char *) Any + sizeof (XValuatorState));
+		    Any = (XInputClass *) (V+1);
 		    V->valuators = (int *) Any;
 		    for (j=0; j<V->num_valuators; j++)
-			*(V->valuators + i) = *((CARD16 *) Any++);
+			*(V->valuators + j) = *valuators++;
 		    Any = (XInputClass *)((char *) Any + 
 			V->num_valuators * sizeof (int));
 		    }

@@ -1,4 +1,4 @@
-/* $XConsortium: XGrDvKey.c,v 1.3 89/09/25 16:20:43 gms Exp $ */
+/* $Header: XGrDvKey.c,v 1.2 90/08/13 17:05:46 gms ic1C-80 $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -66,7 +66,10 @@ XGrabDeviceKey (dpy, dev, key, modifiers, modifier_device,
     req->grabbed_device = dev->device_id;
     req->key = key;
     req->modifiers = modifiers;
-    req->modifier_device = modifier_device->device_id;
+    if (modifier_device)
+	req->modifier_device = modifier_device->device_id;
+    else
+	req->modifier_device = UseXKeyboard;
     req->grabWindow = grab_window;
     req->ownerEvents = owner_events;
     req->event_count = event_count;

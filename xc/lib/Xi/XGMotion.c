@@ -1,4 +1,4 @@
-/* $XConsortium: XGMotion.c,v 1.6 90/05/18 11:23:19 rws Exp $ */
+/* $Header: XGMotion.c,v 1.2 90/11/07 15:36:46 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -50,8 +50,7 @@ XDeviceTimeCoord
     xGetDeviceMotionEventsReq 	*req;
     xGetDeviceMotionEventsReply 	rep;
     XDeviceTimeCoord *tc;
-    int *data;
-    char *bufp, *readp, *savp;
+    int *data, *bufp, *readp, *savp;
     long size, size2;
     int	 i, j;
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
@@ -80,8 +79,8 @@ XDeviceTimeCoord
     size = rep.length << 2;
     size2 = rep.nEvents * 
 	(sizeof (XDeviceTimeCoord) + (rep.axes * sizeof (int)));
-    savp = readp = (char *) Xmalloc (size);
-    bufp = (char *) Xmalloc (size2);
+    savp = readp = (int *) Xmalloc (size);
+    bufp = (int *) Xmalloc (size2);
     if (!bufp || !savp)
 	{
 	*nEvents = 0;
@@ -90,24 +89,16 @@ XDeviceTimeCoord
 	SyncHandle();
 	return (NULL);
 	}
-    _XRead (dpy, (char *) readp, size);
+    _XRead (dpy, (int *) readp, size);
 
     tc = (XDeviceTimeCoord *) bufp;
-    data = (int *) ((char *) bufp + (rep.nEvents * sizeof (XDeviceTimeCoord)));
-    for (i=0; i<*nEvents; i++)
+    data = (int *) (tc + rep.nEvents);
+    for (i=0; i<*nEvents; i++,tc++)
 	{
-	tc->time = *((CARD16 *) readp) << 16;
-	readp += sizeof (CARD16);
-	tc->time |= *((CARD16 *) readp);
-	readp += sizeof (CARD16);
-
-	(tc++)->data = data;
-
+	tc->time = *readp++;
+	tc->data = data;
 	for (j=0; j<*axis_count; j++)
-	    {
-	    *data++ = *((INT16 *) readp);
-	    readp += sizeof (INT16);
-	    }
+	    *data++ = *readp++;
 	}
     XFree (savp);
     UnlockDisplay(dpy);
@@ -115,3 +106,8 @@ XDeviceTimeCoord
     return ((XDeviceTimeCoord *) bufp);
     }
 
+XFreeDeviceMotionEvents (events)
+    XDeviceTimeCoord *events;
+    {
+    XFree (events);
+    }
