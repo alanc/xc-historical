@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.135 89/12/15 11:57:13 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.132 89/12/11 19:36:59 converse Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -477,6 +477,7 @@ Cardinal *num_args;		/* unused */
   bzero((char *) &(ctx->text.origSel), sizeof(XawTextSelection));
   bzero((char *) &(ctx->text.s), sizeof(XawTextSelection)); 
   ctx->text.s.type = XawselectPosition;
+  ctx->text.salt = NULL;
   ctx->text.hbar = ctx->text.vbar = (Widget) NULL;
   ctx->text.lasttime = 0; /* ||| correct? */
   ctx->text.time = 0; /* ||| correct? */
@@ -1350,6 +1351,19 @@ caddr_t closure, callData; /* closuer = TextWidget, callData = percent. */
   _XawTextExecuteUpdate(ctx);
 }
 
+static Boolean
+MatchSelection(selection, s)
+Atom		    selection;
+XawTextSelection    *s;
+{
+    Atom    *match;
+    int	    count;
+
+    for (count = 0, match = s->selections; count < s->atom_count; match++, count++)
+	if (*match == selection)
+	    return True;
+    return False;
+}
 
 static Boolean 
 ConvertSelection(w, selection, target, type, value, length, format)
@@ -1364,6 +1378,9 @@ int *format;
   Widget src = ctx->text.source;
   XawTextEditType edit_mode;
   Arg args[1];
+  XawTextSelectionSalt	*salt = NULL;
+  Atom	*match_type;
+  XawTextSelection  *s;
 
   if (*target == XA_TARGETS(d)) {
     Atom* targetP, * std_targets;
@@ -1403,6 +1420,17 @@ int *format;
   if ( SrcCvtSel(src, selection, target, type, value, length, format) )
     return True;
 
+  if (MatchSelection (*selection, &ctx->text.s))
+    s = &ctx->text.s;
+  else
+  {
+    for (salt = ctx->text.salt; salt; salt->next)
+	if (MatchSelection (*selection, &salt->s))
+	    break;
+    if (!salt)
+	return False;
+    s = &salt->s;
+  }
   if (*target == XA_STRING ||
       *target == XA_TEXT(d) ||
       *target == XA_COMPOUND_TEXT(d)) {
@@ -1410,8 +1438,17 @@ int *format;
       *type = *target;
     else
       *type = XA_STRING;
-    *value = _XawTextGetSTRING(ctx, ctx->text.s.left, ctx->text.s.right);
-    *length = strlen(*value);
+    if (!salt)
+    {
+	*value = _XawTextGetSTRING(ctx, s->left, s->right);
+	*length = strlen(*value);
+    }
+    else
+    {
+	*value = XtMalloc (salt->length + 1);
+	strcpy (*value, salt->contents);
+	*length = salt->length;
+    }
     *format = 8;
     return True;
   }
@@ -1423,7 +1460,7 @@ int *format;
     if (*target == XA_LIST_LENGTH(d))
       *temp = 1L;
     else			/* *target == XA_LENGTH(d) */
-      *temp = (long) (ctx->text.s.right - ctx->text.s.left);
+      *temp = (long) (s->right - s->left);
     
     *value = (caddr_t) temp;
     *type = XA_INTEGER;
@@ -1436,8 +1473,8 @@ int *format;
     long * temp;
     
     temp = (long *) XtMalloc(2 * sizeof(long));
-    temp[0] = (long) (ctx->text.s.left + 1);
-    temp[1] = ctx->text.s.right;
+    temp[0] = (long) (s->left + 1);
+    temp[1] = s->right;
     *value = (caddr_t) temp;
     *type = XA_SPAN(d);
     *length = 2L;
@@ -1448,7 +1485,8 @@ int *format;
   if (*target == XA_DELETE(d)) {
     void _XawTextZapSelection(); /* From TextAction.c */
     
-    _XawTextZapSelection( ctx, (XEvent *) NULL, TRUE);
+    if (!salt)
+	_XawTextZapSelection( ctx, (XEvent *) NULL, TRUE);
     *value = NULL;
     *type = XA_NULL(d);
     *length = 0;
@@ -1496,6 +1534,7 @@ Atom *selection;
   TextWidget ctx = (TextWidget) w;
   register Atom* atomP;
   register int i;
+  XawTextSelectionSalt	*salt, *prevSalt, *nextSalt;
 
   _XawTextPrepareToUpdate(ctx);
 
@@ -1527,6 +1566,90 @@ Atom *selection;
       
   if (ctx->text.old_insert >= 0) /* Update in progress. */
     _XawTextExecuteUpdate(ctx);
+
+    prevSalt = 0;
+    for (salt = ctx->text.salt; salt; salt = nextSalt)
+    {
+    	atomP = salt->s.selections;
+	nextSalt = salt->next;
+    	for (i = 0 ; i < salt->s.atom_count; i++, atomP++)
+	    if (*selection == *atomP)
+		*atomP = (Atom)0;
+    	
+    	while (salt->s.atom_count &&
+	       salt->s.selections[salt->s.atom_count-1] == 0)
+	{
+	    salt->s.atom_count--;
+	}
+    	
+    	/*
+    	 * Must walk the selection list in opposite order from UnsetSelection.
+    	 */
+    	
+    	atomP = salt->s.selections;
+    	for (i = 0 ; i < salt->s.atom_count; i++, atomP++)
+    	    if (*atomP == (Atom)0)
+ 	    {
+      	      *atomP = salt->s.selections[--salt->s.atom_count];
+      	      while (salt->s.atom_count &&
+	     	     salt->s.selections[salt->s.atom_count-1] == 0)
+    	    	salt->s.atom_count--;
+    	    }
+	if (salt->s.atom_count == 0)
+	{
+	    XtFree (salt->s.selections);
+	    XtFree (salt->contents);
+	    if (prevSalt)
+		prevSalt->next = nextSalt;
+	    else
+		ctx->text.salt = nextSalt;
+	    XtFree (salt);
+	}
+	else
+	    prevSalt = salt;
+    }
+}
+
+void
+_XawTextSaltAwaySelection (ctx, selections, num_atoms)
+TextWidget ctx;
+Atom	*selections;
+int	num_atoms;
+{
+    XawTextSelectionSalt    *salt;
+    int			    i, j;
+
+    for (i = 0; i < num_atoms; i++)
+	LoseSelection (ctx, selections + i);
+    if (num_atoms == 0)
+	return;
+    salt = (XawTextSelectionSalt *) XtMalloc (sizeof (XawTextSelectionSalt));
+    if (!salt)
+	return;
+    salt->s.selections = (Atom *) XtMalloc (num_atoms * sizeof (Atom));
+    if (!salt->s.selections)
+    {
+	XtFree (salt);
+	return;
+    }
+    salt->s.left = ctx->text.s.left;
+    salt->s.right = ctx->text.s.right;
+    salt->s.type = ctx->text.s.type;
+    salt->contents = _XawTextGetSTRING(ctx, ctx->text.s.left, ctx->text.s.right);
+    salt->length = strlen (salt->contents);
+    salt->next = ctx->text.salt;
+    ctx->text.salt = salt;
+    j = 0;
+    for (i = 0; i < num_atoms; i++)
+    {
+	if (GetCutBufferNumber (selections[i]) == NOT_A_CUT_BUFFER)
+	{
+	    salt->s.selections[j++] = selections[i];
+	    XtOwnSelection (ctx, selections[i], ctx->text.time,
+			    ConvertSelection, LoseSelection, NULL);
+	}
+    }
+    salt->s.atom_count = j;
 }
 
 void 
@@ -2087,6 +2210,8 @@ XawTextPosition l, r;
 String *list;
 Cardinal nelems;
 {
+  if (nelems == 1 && !strcmp (list[0], "none"))
+    return;
   if (nelems == 0) {
     String defaultSel = "PRIMARY";
     list = &defaultSel;

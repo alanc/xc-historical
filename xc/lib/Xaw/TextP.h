@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.41 89/11/11 16:25:40 kit Exp $
+* $XConsortium: TextP.h,v 1.42 89/11/21 15:48:03 swick Exp $
 */
 
 
@@ -77,6 +77,13 @@ typedef struct {
     int		     array_size;
 } XawTextSelection;
 
+typedef struct _XawTextSelectionSalt {
+    struct _XawTextSelectionSalt    *next;
+    XawTextSelection	s;
+    char		*contents;
+    int			length;
+} XawTextSelectionSalt;
+
 /* Line Tables are n+1 long - last position displayed is in last lt entry */
 typedef struct {
   XawTextPosition	 top;	/* Top of the displayed text.		*/
@@ -140,6 +147,7 @@ typedef struct _TextPart {
     XawTextPosition	insertPos;
     XawTextSelection	s;
     XawTextSelectType	*sarray;	   /* Array to cycle for selections. */
+    XawTextSelectionSalt    *salt;	     /* salted away selections */
     int			options;	     /* wordbreak, scroll, etc. */
     int			dialog_horiz_offset; /* position for popup dialog */
     int			dialog_vert_offset;  /* position for popup dialog */

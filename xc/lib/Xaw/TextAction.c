@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.22 89/12/10 10:50:34 rws Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.23 89/12/10 11:30:43 rws Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -865,6 +865,25 @@ Cardinal *num_params;
 		  XawsmTextExtend, XawactionEnd, params, num_params);
 }
 
+static void
+SelectSave(w, event, params, num_params)
+TextWidget  w;
+XEvent *event;
+String *params;
+Cardinal *num_params;
+{
+    Atom    selections[256];
+    int	    num_atoms;
+
+    StartAction (w, event);
+    num_atoms = *num_params;
+    if (num_atoms > 256)
+	num_atoms = 256;
+    XmuInternStrings(XtDisplay((Widget)w), params, num_atoms, selections);
+    _XawTextSaltAwaySelection (w, selections, num_atoms);
+    EndAction (w);
+}
+
 /************************************************************
  *
  * Misc. Routines.
@@ -1452,6 +1471,7 @@ XtActionsRec textActionsTable[] = {
   {"select-start", 		SelectStart},
   {"select-adjust", 		SelectAdjust},
   {"select-end", 		SelectEnd},
+  {"select-save",		SelectSave},
   {"extend-start", 		ExtendStart},
   {"extend-adjust", 		ExtendAdjust},
   {"extend-end", 		ExtendEnd},
