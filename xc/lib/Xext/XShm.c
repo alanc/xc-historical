@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XShm.c,v 1.8 89/10/08 17:11:26 jim Exp $
+ * $XConsortium: XShm.c,v 1.9 89/12/02 16:14:49 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -45,7 +45,8 @@ static /* const */ char *shm_extension_name = SHMNAME;
  *                                                                           *
  *****************************************************************************/
 
-static int close_display(), error_string();
+static int close_display();
+static char *error_string();
 static Bool wire_to_event();
 static Status event_to_wire();
 static /* const */ XExtensionHooks shm_extension_hooks = {

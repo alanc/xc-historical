@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.19 89/11/01 09:10:50 jim Exp $
+ * $XConsortium: XMultibuf.c,v 1.20 89/11/21 11:43:11 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -48,7 +48,8 @@ static /* const */ char *multibuf_extension_name = MULTIBUFFER_PROTOCOL_NAME;
 /*
  * find_display - locate the display info block
  */
-static int close_display(), error_string();
+static int close_display();
+static char *error_string();
 static Bool wire_to_event();
 static Status event_to_wire();
 static /* const */ XExtensionHooks multibuf_extension_hooks = {
