@@ -1,17 +1,18 @@
+XCOMM platform:  $XConsortium: macII.cf,v 1.26 91/03/26 20:13:31 rws Exp $
+XCOMM operating system:  OSName
+
 /*
  * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
  */
 
-#define SystemV           YES
-
 #define OSName            A/UX 2.0.1
 #define OSMajorVersion    2
 #define OSMinorVersion    0
-/* the server *REALLY* needs GCC for performance */
-#define HasGcc         NO
+/* #define HasGcc         YES */
 #if HasGcc
 #define BootstrapCFlags   -DmacII
 #endif
+#define SystemV            YES
 #define Malloc0ReturnsNull YES
 #define StandardDefines    -DmacII -DSYSV
 #define StandardCppDefines -DmacII -DSYSV
@@ -24,16 +25,9 @@
 #define BuildServer	  YES
 
 #if !HasGcc
-#define CcCmd cc -A 3
+/* -A 3 is good enough if you do not compile PEX client side */
+#define CcCmd cc -A 4
 #endif
-
-XCOMM platform:  $XConsortium: macII.cf,v 1.25 91/03/26 11:55:36 rws Exp $
-XCOMM operating system:  OSName
-
-/*****************************************************************************
- *			  Platform-specfic parameters                        *
- *****************************************************************************/
-
 
 /*
  * If you wish to override the man page directories, do so here using just
@@ -41,4 +35,3 @@ XCOMM operating system:  OSName
  * value so that cpp doesn't get confused.
  */
 #define ManDirectoryRoot	/usr/catman/x_man	
-
