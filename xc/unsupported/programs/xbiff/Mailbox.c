@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.13 88/09/23 12:07:40 jim Exp $
+ * $XConsortium: Mailbox.c,v 1.14 88/09/26 11:20:25 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -72,7 +72,7 @@ static XtResource resources[] = {
 	offset (foreground_pixel), XtRString, "black" },
     { XtNbackground, XtCBackground, XtRPixel, sizeof (Pixel),
 	goffset (background_pixel), XtRString, "white" },
-    { XtNreverseVideo, XtCBoolean, XtRBoolean, sizeof (Boolean),
+    { XtNreverseVideo, XtCReverseVideo, XtRBoolean, sizeof (Boolean),
 	offset (reverseVideo), XtRString, "FALSE" },
     { XtNfile, XtCFile, XtRString, sizeof (String),
 	offset (filename), XtRString, NULL },
@@ -363,7 +363,7 @@ static void check_mailbox (w, force_redraw, reset)
     } else if (mailboxsize != w->mailbox.last_size) {  /* different size */
 	w->mailbox.flag_up = TRUE;
 	force_redraw = TRUE;
-	beep (w);
+	if (w->mailbox.bell) beep (w);
     } 
 
     w->mailbox.last_size = mailboxsize;
@@ -475,6 +475,6 @@ static void redraw_mailbox (w)
 static void beep (w)
     MailboxWidget w;
 {
-    if (w->mailbox.bell) XBell (XtDisplay (w), w->mailbox.volume);
+    XBell (XtDisplay (w), w->mailbox.volume);
     return;
 }
