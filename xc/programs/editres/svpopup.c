@@ -1,5 +1,5 @@
 /*
- * $XConsortium: svpopup.c,v 1.9 91/02/20 19:58:01 converse Exp $
+ * $XConsortium: svpopup.c,v 1.10 91/04/04 21:35:30 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -22,43 +22,6 @@
  *
  * Author:  Chris D. Peterson, MIT X Consortium
  */
-
-/************************************************************
- *
- * If you activate the SetValue popup you will want to add these
- * resources to the app-default file.
- *
- ************************************************************
-
-! For the SetValuesPopup widget
-
-*setValuesPopup*resizable:		True
-*setValuesPopup*left:			ChainLeft
-*setValuesPopup*right:			ChainLeft
-
-*setValuesPopup*label*Label:		Use <Tab> to Change Fields.
-*setValuesPopup*Label*BorderWidth:	0
-
-*setValuesPopup*resourceLabel.Label:	Resource Name:
-*setValuesPopup*valueLabel.Label:	Value:
-
-*setValuesPopup*Text*EditType:		Edit
-*setValuesPopup*Text*resize:		Width
-
-*setValuesPopup*resourceText.Translations: #override \
-  <Key>Return:     	   no-op(RingBell) \n\
-   Ctrl<Key>q,<Key>Tab:    insert-char()    \n\
-   <Btn1Down>:             select-start() SVActiveEntry(Resource) \n\
-   <Key>Tab:               SVActiveEntry(Value)
-
-*setValuesPopup*valueText.Translations: #override \
-   <Key>Return:     	   no-op(RingBell) \n\
-   Ctrl<Key>q,<Key>Tab:    insert-char()     \n\
-   <Btn1Down>:             select-start() SVActiveEntry(Value)\n\
-   <Key>Tab:               SVActiveEntry(Resource)
-
- *
- ************************************************************/
 
 #ifdef SET_VALUES_POPUP
 
