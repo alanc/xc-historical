@@ -14,8 +14,8 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $Header: imake.c,v 1.28 88/07/19 16:06:45 xguest Locked $
- * $Locker: xguest $
+ * $Header: imake.c,v 1.27 88/07/13 17:17:59 rws Exp $
+ * $Locker: rws $
  *
  * Author:
  *	Todd Brunhoff
@@ -105,7 +105,7 @@
 #define	FALSE		0
 #define	ARGUMENTS	50
 
-#if defined(sun) || defined(hpux) || defined(macII)
+#if defined(sun) || defined(hpux)
 #define REDUCED_TO_ASCII_SPACE
 #endif
 #ifdef REDUCED_TO_ASCII_SPACE
