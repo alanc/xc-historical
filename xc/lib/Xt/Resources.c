@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Resources.c,v 1.31 87/12/08 14:20:07 swick Locked $";
+static char rcsid[] = "$Header: Resources.c,v 1.32 88/01/08 08:20:50 swick Locked $";
 #endif lint
 
 /*
@@ -153,7 +153,7 @@ extern void  XtCompileResourceList(resources, num_resources)
 
 /* ||| References to display should be references to screen */
 
-static void XrmGetResources(
+void _XrmGetResources(
     screen, base, names, classes, length, resources, num_resources, args, num_args)
 
     Screen	  *screen;	   /* The widget's screen pointer         */
@@ -324,7 +324,7 @@ static void GetResources(widgetClass, w, names, classes, length, args, num_args)
 	    w, names, classes, length, args, num_args);
     }
     /* Then for this class */
-    XrmGetResources(XtScreen(w), (caddr_t) w, names, classes, length,
+    _XrmGetResources(XtScreen(w), (caddr_t) w, names, classes, length,
         widgetClass->core_class.resources, widgetClass->core_class.num_resources,
 	args, num_args);
 } /* GetResources */
@@ -344,7 +344,7 @@ static void GetConstraintResources(widgetClass, w, names, classes, length, args,
 	    w, names, classes, length, args, num_args);
     }
     /* Then for this class */
-    XrmGetResources(XtScreen(w), (caddr_t)(w->core.constraints),
+    _XrmGetResources(XtScreen(w), (caddr_t)(w->core.constraints),
          names, classes, length,
        ((ConstraintWidgetClass) widgetClass)->constraint_class.resources,
        ((ConstraintWidgetClass) widgetClass)->constraint_class.num_resources,
@@ -402,7 +402,7 @@ void XtGetSubresources
     length++;
 
     /* Fetch resources */
-    XrmGetResources(XtScreen(w), base, names, classes, length,
+    _XrmGetResources(XtScreen(w), base, names, classes, length,
         resources, num_resources, args, num_args);
 }
 
