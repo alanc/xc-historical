@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.48 89/04/12 07:02:55 toml Exp $
+ * $XConsortium: menus.c,v 1.48 89/04/12 18:55:53 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.48 89/04/12 07:02:55 toml Exp $";
+"$XConsortium: menus.c,v 1.48 89/04/12 18:55:53 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -50,9 +50,6 @@ static char RCSinfo[] =
 #include "screen.h"
 
 #define SYNC XSync(dpy, 0);
-#ifdef MAKE_THREED
-#define SHADOW 2
-#endif MAKE_THREED
 
 extern XEvent Event;
 
@@ -217,32 +214,15 @@ MenuItem *mi;
 #endif
     y_offset = mi->item_num * Scr->EntryHeight;
     text_y = y_offset + Scr->MenuFont.y;
-#ifdef MAKE_THREED
-    if (Scr->ThreeDMenus)
-	text_y += SHADOW;
-#endif MAKE_THREED
 
     if (mi->func != F_TITLE)
     {
 	int x, y;
 
 	x = mr->width - 20;
-#ifdef MAKE_THREED
-	if (Scr->ThreeDMenus)
-	    x -= 3;
-#endif MAKE_THREED
 
 	if (mi->state)
 	{
-#ifdef MAKE_THREED
-	    if (Scr->ThreeDMenus)
-	    {
-		XSetForeground(dpy, Scr->NormalGC, mi->back);
-		fore = mi->fore;
-		back = mi->back;
-	    }
-	    else
-#endif MAKE_THREED
 	    {
 		XSetForeground(dpy, Scr->NormalGC, mi->hi_back);
 		fore = mi->hi_fore;
@@ -256,22 +236,6 @@ MenuItem *mi;
 
 	    XDrawImageString(dpy, mr->w, Scr->NormalGC, mi->x,
 		text_y, mi->item, mi->strlen);
-
-#ifdef MAKE_THREED
-	    if (Scr->ThreeDMenus)
-	    {
-		if (Scr->FlatMenus)
-		{
-		    DrawShadows(mr->w, 0, y_offset, 3,0, mr->width-1,
-			Scr->EntryHeight-1, mi->top, mi->bottom);
-		}
-		else
-		{
-		    DrawShadows(mr->w, 0, y_offset, SHADOW,1, mr->width-1,
-			Scr->EntryHeight-1, mi->top, mi->bottom);
-		}
-	    }
-#endif MAKE_THREED
 	}
 	else
 	{
@@ -285,12 +249,6 @@ MenuItem *mi;
 
 	    XDrawImageString(dpy, mr->w, Scr->NormalGC, mi->x,
 		text_y, mi->item, mi->strlen);
-
-#ifdef MAKE_THREED
-	    if (Scr->ThreeDMenus && !Scr->FlatMenus)
-		DrawShadows(mr->w, 0, y_offset, 1,0, mr->width-1,
-		    Scr->EntryHeight-1, mi->top, mi->bottom);
-#endif MAKE_THREED
 	}
 
 	if (mi->func == F_MENU)
@@ -324,14 +282,6 @@ MenuItem *mi;
 	XFillRectangle(dpy, mr->w, Scr->NormalGC, 0, y_offset,
 	    mr->width, Scr->EntryHeight);
 
-#ifdef MAKE_THREED
-	if (Scr->ThreeDMenus)
-	{
-	    DrawShadows(mr->w, 0, y_offset, SHADOW,0, mr->width-1,
-		Scr->EntryHeight-1, mi->top, mi->bottom);
-	}
-	else
-#endif MAKE_THREED
 	{
 	    XSetForeground(dpy, Scr->NormalGC, mi->fore);
 	    /* now draw the dividing lines */
@@ -679,10 +629,6 @@ MenuRoot *mr;
     XSetWindowAttributes attributes;
 
     Scr->EntryHeight = Scr->MenuFont.height + 4;
-#ifdef MAKE_THREED
-    if (Scr->ThreeDMenus)
-	Scr->EntryHeight += (2 * SHADOW);
-#endif MAKE_THREED
 
     /* lets first size the window accordingly */
     if (mr->mapped == NEVER_MAPPED)
@@ -704,17 +650,9 @@ MenuRoot *mr;
 		    cur->strlen);
 		cur->x /= 2;
 	    }
-#ifdef MAKE_THREED
-	    if (Scr->ThreeDMenus)
-		cur->x += SHADOW;
-#endif MAKE_THREED
 	}
 	mr->height = mr->items * Scr->EntryHeight;
 	mr->width += 10;
-#ifdef MAKE_THREED
-	if (Scr->ThreeDMenus)
-	   mr->width += (2 * SHADOW);
-#endif MAKE_THREED
 
 	if (Scr->Shadow)
 	{
@@ -853,8 +791,7 @@ MenuRoot *mr;
 	start = end;
     }
 
-    /* now redo the highlight colors, and calculate top and bottom
-     * colors if we are doing 3D 
+    /* now redo the highlight colors
      */
     for (cur = mr->first; cur != NULL; cur = cur->next)
     {
@@ -868,13 +805,6 @@ MenuRoot *mr;
 	    cur->hi_fore = cur->back;
 	    cur->hi_back = cur->fore;
 	}
-#ifdef MAKE_THREED
-	if (Scr->ThreeDMenus)
-	{
-	    UpShiftColor(cur->back, &cur->top);
-	    DownShiftColor(cur->back, &cur->bottom);
-	}
-#endif MAKE_THREED
     }
 }
 

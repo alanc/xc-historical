@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.36 89/04/11 08:05:08 toml Exp $
+ * $XConsortium: twm.c,v 1.36 89/04/12 18:56:05 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.36 89/04/11 08:05:08 toml Exp $";
+"$XConsortium: twm.c,v 1.36 89/04/12 18:56:05 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -363,13 +363,7 @@ main(argc, argv, environ)
 
 	Scr->TitleHeight = Scr->TitleBarFont.height + 2;
 	Scr->TitleBarFont.y -= 1;
-#ifdef MAKE_THREED
-	if (Scr->ThreeD)
-	{
-	    Scr->TitleHeight += 2;
-	    Scr->TitleBarFont.y += 1;
-	}
-#endif MAKE_THREED
+
 	/* the buttons need to be an odd width and height */
 	if ((Scr->TitleHeight & 1) == 0)
 	{
@@ -458,14 +452,6 @@ main(argc, argv, environ)
 		0, 0, 100, Scr->SizeFont.height + 4, BW,
 		Scr->DefaultC.fore, Scr->DefaultC.back);
 
-#ifdef MAKE_THREED
-	if ((Scr->ThreeD || Scr->ThreeDMenus) && Scr->Monochrome == MONOCHROME)
-	{
-	    Scr->gray = XCreatePixmapFromBitmapData(dpy, Scr->Root,
-		gray_bits, gray_width, gray_height,
-		Scr->Black, Scr->White, Scr->d_depth);
-	}
-#endif MAKE_THREED
 	XUngrabServer(dpy);
 
 	FirstScreen = FALSE;
@@ -548,10 +534,6 @@ InitVariables()
     Scr->IconManagerC.fore = black;
     Scr->IconManagerC.back = white;
     Scr->IconManagerHighlight = black;
-    Scr->TopShadow = white;
-    Scr->BottomShadow = black;
-
-    Scr->ShadowsSpecified = FALSE;
 
     Scr->BorderWidth = BW;
     Scr->IconBorderWidth = BW;
@@ -585,9 +567,6 @@ InitVariables()
     Scr->Shadow = TRUE;
     Scr->ShowVersion = TRUE;
     Scr->InterpolateMenuColors = FALSE;
-    Scr->ThreeD = FALSE;
-    Scr->ThreeDMenus = FALSE;
-    Scr->FlatMenus = FALSE;
     Scr->NoIconManagers = FALSE;
     Scr->FirstRegion = NULL;
     Scr->LastRegion = NULL;

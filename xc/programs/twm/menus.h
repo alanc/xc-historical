@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.h,v 1.11 89/04/07 11:56:44 toml Exp $
+ * $XConsortium: menus.h,v 1.11 89/04/12 18:55:56 jim Exp $
  *
  * twm menus include file
  *
@@ -53,8 +53,6 @@ typedef struct MenuItem
     unsigned back;		/* background color */
     unsigned hi_fore;		/* highlight foreground */
     unsigned hi_back;		/* highlight background */
-    unsigned top;		/* top shadow if 3D */
-    unsigned bottom;		/* bottom shadow if 3D */
     short item_num;		/* item number of this menu */
     short x;			/* x coordinate for text */
     short func;			/* twm built in function */

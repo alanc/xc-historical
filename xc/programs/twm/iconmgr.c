@@ -1,6 +1,6 @@
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.20 89/04/12 14:28:35 toml Exp $
+ * $XConsortium: iconmgr.c,v 1.20 89/04/12 18:55:42 jim Exp $
  *
  * Icon Manager routines
  *
@@ -454,14 +454,6 @@ TwmWindow *tmp_win;
     GetColorFromList(Scr->IconManagerHighlightL, tmp_win->full_name,
 	&tmp_win->class, &tmp->highlight);
 
-#ifdef MAKE_THREED
-    if (Scr->ThreeD)
-    {
-	UpShiftColor(tmp->back, &tmp->top);
-	DownShiftColor(tmp->back, &tmp->bottom);
-    }
-#endif MAKE_THREED
-
     h = Scr->IconManagerFont.height + 10;
     if (h < (siconify_height + 4))
 	h = siconify_height + 4;
@@ -644,32 +636,6 @@ WList *active;
 DrawIconManagerBorder(tmp)
 WList *tmp;
 {
-#ifdef MAKE_THREED
-    if (Scr->ThreeD)
-    {
-	if (tmp->active || tmp->down)
-	{
-	    DrawShadows(tmp->w, 0,0,3,tmp->down,
-		tmp->width-1,
-		tmp->height-1,
-		tmp->top, tmp->bottom);
-	}
-	else
-	{
-	    DrawShadows(tmp->w, 0,0,1,tmp->down,
-		tmp->width-1,
-		tmp->height-1,
-		tmp->top, tmp->bottom);
-	    XSetForeground(dpy, Scr->NormalGC, tmp->back);
-
-	    XDrawRectangle(dpy, tmp->w, Scr->NormalGC, 1, 1,
-		tmp->width-3, tmp->height-3);
-	    XDrawRectangle(dpy, tmp->w, Scr->NormalGC, 2, 2,
-		tmp->width-5, tmp->height-5);
-	}
-    }
-    else
-#endif MAKE_THREED
     {
 	XSetForeground(dpy, Scr->NormalGC, tmp->fore);
 	    XDrawRectangle(dpy, tmp->w, Scr->NormalGC, 2, 2,

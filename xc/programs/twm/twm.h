@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.21 89/04/12 18:56:06 jim Exp $
+ * $XConsortium: twm.h,v 1.22 89/04/12 19:00:11 jim Exp $
  *
  * twm include file
  *
@@ -190,11 +190,7 @@ typedef struct TwmWindow
     int icon_border;		/* border color */
     ColorPair border_tile;
     ColorPair title;
-    unsigned title_top;		/* top color of 3D button */
-    unsigned title_bottom;	/* bottom color of 3D button */
     ColorPair iconc;
-    unsigned icon_top;		/* top color of 3D button */
-    unsigned icon_bottom;	/* bottom color of 3D button */
     short xterm;		/* boolean indicating xterm */
     short iconified;		/* has the window ever been iconified? */
     short icon;			/* is the window an icon now ? */

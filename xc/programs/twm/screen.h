@@ -1,6 +1,6 @@
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.22 89/04/11 08:05:14 toml Exp $
+ * $XConsortium: screen.h,v 1.22 89/04/12 18:56:05 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -41,7 +41,6 @@ typedef struct ScreenInfo
     Pixmap focusPm;		/* the titlebar focus pixmap */
     Pixmap resizePm;		/* the titlebar resize pixmap */
     Pixmap siconifyPm;		/* the icon manager iconify pixmap */
-    Pixmap gray;		/* pixmap for 3D top */
 
     MenuRoot *MenuList;		/* head of the menu list */
     MenuRoot *LastMenu;		/* the last menu (mostly unused?) */
@@ -105,8 +104,6 @@ typedef struct ScreenInfo
 
     unsigned long Black;
     unsigned long White;
-    unsigned long TopShadow;
-    unsigned long BottomShadow;
     MyFont TitleBarFont;	/* title bar font structure */
     MyFont MenuFont;		/* menu font structure */
     MyFont IconFont;		/* icon font structure */
@@ -153,10 +150,6 @@ typedef struct ScreenInfo
     short Shadow;		/* show the menu shadow */
     short ShowVersion;		/*  show the version window on startup */
     short InterpolateMenuColors;/* make pretty menus */
-    short ThreeD;		/* make stuff look 3D */
-    short ThreeDMenus;		/* make stuff look 3D */
-    short FlatMenus;		/* flat 3D menus */
-    short ShadowsSpecified;	/* TopShadow or BottomShadow was parsed */
     short NoIconManagers;	/* Don't create any icon managers */
     short FirstTime;		/* first time we've read .twmrc */
 

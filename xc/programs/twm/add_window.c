@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.33 89/04/12 18:55:30 jim Exp $
+ * $XConsortium: add_window.c,v 1.34 89/04/12 18:59:54 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.33 89/04/12 18:55:30 jim Exp $";
+"$XConsortium: add_window.c,v 1.34 89/04/12 18:59:54 jim Exp $";
 #endif lint
 
 #include <stdio.h>
@@ -441,13 +441,6 @@ IconMgr *iconp;
     GetColorFromList(Scr->IconBackgroundL, tmp_win->full_name, &tmp_win->class,
 	&tmp_win->iconc.back);
 
-#ifdef MAKE_THREED
-    if (Scr->ThreeD)
-    {
-	UpShiftColor(tmp_win->title.back, &tmp_win->title_top);
-	DownShiftColor(tmp_win->title.back, &tmp_win->title_bottom);
-    }
-#endif
 
     /* create windows */
 
@@ -1001,13 +994,6 @@ TwmWindow *tmp_win;
 
 	h = Scr->TitleHeight - 4;
 	x = 2;
-#ifdef MAKE_THREED
-	if (Scr->ThreeD)
-	{
-	    h -= 2;
-	    x += 1;
-	}
-#endif
 
 	tmp_win->hilite_pm = XCreatePixmap(dpy, tmp_win->title_w,
 	    8, h, Scr->d_depth);
@@ -1036,64 +1022,3 @@ TwmWindow *tmp_win;
 	XUnmapWindow(dpy, tmp_win->hilite_w);
 }
 
-#ifdef MAKE_THREED
-UpShiftColor(in, out)
-unsigned in, *out;
-{
-    XColor c;
-
-    if (Scr->ShadowsSpecified)
-	return;
-
-    c.pixel = in;
-    XQueryColor(dpy, Scr->CMap, &c);
-    up(&c.red);
-    up(&c.green);
-    up(&c.blue);
-    c.flags = DoRed | DoGreen | DoBlue;
-    XAllocColor(dpy, Scr->CMap, &c);
-    *out = c.pixel;
-}
-
-DownShiftColor(in, out)
-unsigned in, *out;
-{
-    XColor c;
-
-    if (Scr->ShadowsSpecified)
-	return;
-
-    c.pixel = in;
-    XQueryColor(dpy, Scr->CMap, &c);
-    down(&c.red);
-    down(&c.green);
-    down(&c.blue);
-    c.flags = DoRed | DoGreen | DoBlue;
-    XAllocColor(dpy, Scr->CMap, &c);
-    *out = c.pixel;
-}
-
-up(value)
-short unsigned *value;
-{
-    unsigned tmp;
-
-    tmp = *value + (*value >> 1);
-    if (tmp > 0xffff)
-        tmp = 0xffff;
-
-    *value = tmp;
-}
-
-down(value)
-short unsigned *value;
-{
-    int tmp;
-
-    tmp = *value - (*value >> 1);
-    if (tmp < 0)
-        tmp = 0;
-
-    *value = tmp;
-}
-#endif

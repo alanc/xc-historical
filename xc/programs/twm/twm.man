@@ -163,14 +163,6 @@ The default  is "white".
 This variable specifies the width in pixels of of the border surrounding
 all windows.
 The default is 2.
-.IP "\fBBottomShadow\fP \fIstring\fP" 20
-This variable sets the bottom shadow color for buttons and windows 
-when either the \fBThreeD\fP or \fBThreeDMenus\fP variables are
-specified.  If this variable is specified, bottom shadow colors will
-not be calculated from the background of the window, they will 
-be rendered in the color specified by \fIstring\fP.
-It can only be specified inside of a 
-\fBColor\fP or \fBMonochrome\fP list.
 .IP "\fBColor\fP { \fIcolors\fP }" 20
 This variable is a list of color assignments to be made if the default
 display has a depth greater than one, or in other words, has the ability
@@ -246,11 +238,6 @@ window.
 .IP "\fBDontMoveOff\fP" 20
 If this variable is set, windows will not be allowed to be moved off the
 display.
-.IP "\fBFlatMenus\fP" 20
-This variable is only meaningful if the \fBThreeDMenus\fP variable
-is also specified.  It causes menus to be displayed without 3D
-shading and the active menu item will appear to "jump out" from the
-menu as opposed to be "pushed in."
 .IP "\fBForceIcons\fP" 20
 This variable is only meaningful if a \fBIcons\fP list is defined.  
 It forces the icon bitmaps listed in the \fBIcons\fP list to be
@@ -546,20 +533,6 @@ twm is started.  The default is to not display the icon manager window.
 .IP "\fBSortIconManager\fP" 20 
 This variable causes entries in the icon manager to be sorted alphabetically.
 The default is to simply add new windows to the end of the icon manager.
-.IP "\fBThreeD\fP" 20
-This variable causes the title bar buttons, icon manager entries, and icons
-to have a 3D appearance.  The 3D appearance is obtained by calculating 
-top and bottom shadow colors based on the background color of the button or
-window.  Therefore, colors in the middle
-of a color range produce the best results.  Some good examples are
-Thistle and PaleGreen.
-.IP "\fBThreeDMenus\fP" 20
-This variable gives a 3D appearance to pull down menus in the same way that
-the \fBThreeD\fP variable gives 3D appearance to title bars.  By default
-when the pointer passes over a menu item, it appears to depress.  This
-behavior can be changed with the \fBFlatMenus\fP variable, such that
-the menu appears flat and the active 
-menu item appears to "jump out" from the menu.
 .IP "\fBTitleBackground\fP \fIstring\fP [ { \fIlist\fP } ]" 20
 This variable sets the background color for the title bars.
 It can only be specified inside of a 
@@ -576,14 +549,6 @@ The optional \fIlist\fP is a list of window names and colors so that
 client specific colors may be specified.  See the \fBBorderColor\fP
 variable for a complete description of the \fIlist\fP.
 The default is "black".
-.IP "\fBTopShadow\fP \fIstring\fP" 20
-This variable sets the top shadow color for buttons and windows 
-when either the \fBThreeD\fP or \fBThreeDMenus\fP variables are
-specified.  If this variable is specified, top shadow colors will
-not be calculated from the background of the window, they will 
-be rendered in the color specified by \fIstring\fP.
-It can only be specified inside of a 
-\fBColor\fP or \fBMonochrome\fP list.
 .IP "\fBUnknownIcon\fP \fIstring\fP" 20
 This variable specifies the file name of a bitmap format file to be
 used as the default icon.  This bitmap will be used for the icon of all

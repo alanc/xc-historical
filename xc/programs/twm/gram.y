@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.29 89/04/12 07:03:09 toml Exp $
+ * $XConsortium: gram.y,v 1.29 89/04/12 18:55:41 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -35,7 +35,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.29 89/04/12 07:03:09 toml Exp $";
+"$XConsortium: gram.y,v 1.29 89/04/12 18:55:41 jim Exp $";
 
 #include <stdio.h>
 #include "twm.h"
@@ -97,9 +97,8 @@ extern int yylineno;
 %token <num> BORDER_TILE_FOREGROUND BORDER_TILE_BACKGROUND F_IDENTIFY
 %token <num> F_FORWICONMGR F_BACKICONMGR F_NEXTICONMGR F_PREVICONMGR
 %token <num> START_ICONIFIED NO_MENU_SHADOWS LP RP NO_VERSION
-%token <num> INTERPOLATE_MENUS NO_TITLE_HILITE THREED ICON_BORDERWIDTH
-%token <num> THREED_MENUS FLAT_MENUS F_WARPTOICONMGRE ALL OR
-%token <num> TOP_SHADOW BOTTOM_SHADOW CURSORS CUR_BUTTON CUR_FRAME
+%token <num> INTERPOLATE_MENUS NO_TITLE_HILITE ICON_BORDERWIDTH
+%token <num> F_WARPTOICONMGRE ALL OR CURSORS CUR_BUTTON CUR_FRAME
 %token <num> CUR_TITLE CUR_ICONMGR CUR_ICON NO_ICONMGRS F_SORTICONMGR
 %token <num> CUR_MOVE CUR_RESIZE CUR_WAIT CUR_SELECT CUR_KILL
 %token <num> ICON_REGION NORTH SOUTH EAST WEST
@@ -152,9 +151,6 @@ stmt		: error
 					}
 		| NO_ICONMGRS		{ Scr->NoIconManagers = TRUE; }
 		| OPAQUE_MOVE		{ Scr->OpaqueMove = TRUE; }
-		| FLAT_MENUS		{ Scr->FlatMenus=TRUE; }
-		| THREED		{ Scr->ThreeD=TRUE; }
-		| THREED_MENUS		{ Scr->ThreeDMenus=TRUE; }
 		| INTERPOLATE_MENUS	{ if (Scr->FirstTime)
 					    Scr->InterpolateMenuColors=TRUE; }
 		| WARPCURSOR		{ if (Scr->FirstTime)
@@ -495,15 +491,6 @@ color_entry	: BORDER_COLOR string	{ GetColor(color,
 		  win_color_list
 		| ICONMGR_BACKGROUND string { GetColor(color,
 						&Scr->IconManagerC.back, $2);}
-		| TOP_SHADOW string { GetColor(color, &Scr->TopShadow, $2);
-				      if (color == Scr->Monochrome)
-					Scr->ShadowsSpecified = TRUE; 
-				    }
-		| BOTTOM_SHADOW string {
-				GetColor(color, &Scr->BottomShadow, $2);
-				if (color == Scr->Monochrome)
-				    Scr->ShadowsSpecified = TRUE; 
-				}
 		;
 
 win_color_list	: LB win_color_entries RB

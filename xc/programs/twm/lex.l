@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.24 89/04/12 07:03:05 toml Exp $
+ * $XConsortium: lex.l,v 1.24 89/04/12 18:55:49 jim Exp $
  *
  * .twmrc lex file
  *
@@ -35,7 +35,7 @@
  ***********************************************************************/
 
 static char RCSinfo[]=
-"$XConsortium: lex.l,v 1.24 89/04/12 07:03:05 toml Exp $";
+"$XConsortium: lex.l,v 1.24 89/04/12 18:55:49 jim Exp $";
 
 #include <stdio.h>
 #include "gram.h"
@@ -179,11 +179,6 @@ t.move				{ return F_MOVE; }
 [Ee][Aa][Ss][Tt]				{ return EAST; }
 [Ww][Ee][Ss][Tt]				{ return WEST; }
 [Nn][Oo][Ii][Cc][Oo][Nn][Mm][Aa][Nn][Aa][Gg][Ee][Rr][Ss] { return NO_ICONMGRS;}
-[Tt][Oo][Pp][Ss][Hh][Aa][Dd][Oo][Ww] { return TOP_SHADOW; }
-[Bb][Oo][Tt][Tt][Oo][Mm][Ss][Hh][Aa][Dd][Oo][Ww] { return BOTTOM_SHADOW; }
-[Ff][Ll][Aa][Tt][Mm][Ee][Nn][Uu][Ss] { return FLAT_MENUS; }
-[Tt][Hh][Rr][Ee][Ee][Dd] { return THREED; }
-[Tt][Hh][Rr][Ee][Ee][Dd][Mm][Ee][Nn][Uu][Ss] { return THREED_MENUS; }
 [Ii][Nn][Tt][Ee][Rr][Pp][Oo][Ll][Aa][Tt][Ee][Mm][Ee][Nn][Uu][Cc][Oo][Ll][Oo][Rr][Ss] { return (INTERPOLATE_MENUS); }
 [Nn][Oo][Tt][Ii][Tt][Ll][Ee][Hh][Ii][Gg][Hh][Ll][Ii][Gg][Hh][Tt] { return (NO_TITLE_HILITE); }
 [Nn][Oo][Mm][Ee][Nn][Uu][Ss][Hh][Aa][Dd][Oo][Ww][Ss] { return (NO_MENU_SHADOWS);}

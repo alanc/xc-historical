@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.50 89/04/12 18:55:33 jim Exp $
+ * $XConsortium: events.c,v 1.51 89/04/12 18:59:58 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.50 89/04/12 18:55:33 jim Exp $";
+"$XConsortium: events.c,v 1.51 89/04/12 18:59:58 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -578,17 +578,7 @@ RedoIconName()
 
     Tmp_win->icon_w_height = Tmp_win->icon_height + Scr->IconFont.height + 4;
     Tmp_win->icon_y = Tmp_win->icon_height + Scr->IconFont.height;
-#ifdef MAKE_THREED
-    if (Scr->ThreeD)
-    {
-	Tmp_win->icon_w_width += 4;
-	Tmp_win->icon_w_height += 4;
-	Tmp_win->icon_x += 2;
-	Tmp_win->icon_y += 2;
-	x += 2;
-	y += 2;
-    }
-#endif MAKE_THREED
+
     XResizeWindow(dpy, Tmp_win->icon_w, Tmp_win->icon_w_width,
 	Tmp_win->icon_w_height);
     if (Tmp_win->icon_bm_w)
@@ -706,21 +696,6 @@ HandleExpose()
 	    XDrawImageString(dpy, Tmp_win->title_w, Scr->NormalGC,
 		TitleBarX, Scr->TitleBarFont.y,
 		Tmp_win->name, strlen(Tmp_win->name));
-#ifdef MAKE_THREED
-	    if (Scr->ThreeD)
-	    {
-		int width;
-
-		width = 2 * Scr->TitleHeight;
-#ifndef NOFOCUS
-		width += Scr->TitleHeight;
-#endif
-		DrawShadows(Tmp_win->title_w, Scr->TitleHeight,0,2,0,
-		    Tmp_win->frame_width - width - 1,
-		    Scr->TitleHeight-1,
-		    Tmp_win->title_top, Tmp_win->title_bottom);
-	    }
-#endif MAKE_THREED
 	}
 
 	if (Tmp_win->iconify_w == Event.xany.window)
@@ -728,14 +703,6 @@ HandleExpose()
 	    FB(Tmp_win->title.fore, Tmp_win->title.back);
 	    XCopyPlane(dpy, Scr->iconifyPm, Tmp_win->iconify_w, Scr->NormalGC,
 		0,0, Scr->TitleHeight, Scr->TitleHeight, 0, 0, 1);
-#ifdef MAKE_THREED
-	    if (Scr->ThreeD)
-	    {
-		DrawShadows(Tmp_win->iconify_w, 0,0,2,0,
-		    Scr->TitleHeight-1, Scr->TitleHeight-1,
-		    Tmp_win->title_top, Tmp_win->title_bottom);
-	    }
-#endif MAKE_THREED
 	    return;
 	}
 #ifndef NOFOCUS
@@ -744,14 +711,6 @@ HandleExpose()
 	    FB(Tmp_win->title.fore, Tmp_win->title.back);
 	    XCopyPlane(dpy, Scr->focusPm, Tmp_win->focus_w, Scr->NormalGC,
 		0,0, Scr->TitleHeight, Scr->TitleHeight, 0, 0, 1);
-#ifdef MAKE_THREED
-	    if (Scr->ThreeD)
-	    {
-		DrawShadows(Tmp_win->focus_w, 0,0,2,0,
-		    Scr->TitleHeight-1, Scr->TitleHeight-1,
-		    Tmp_win->title_top, Tmp_win->title_bottom);
-	    }
-#endif MAKE_THREED
 	    return;
 	}
 #endif
@@ -760,14 +719,6 @@ HandleExpose()
 	    FB(Tmp_win->title.fore, Tmp_win->title.back);
 	    XCopyPlane(dpy, Scr->resizePm, Tmp_win->resize_w, Scr->NormalGC,
 		0,0, Scr->TitleHeight, Scr->TitleHeight, 0, 0, 1);
-#ifdef MAKE_THREED
-	    if (Scr->ThreeD)
-	    {
-		DrawShadows(Tmp_win->resize_w, 0,0,2,0,
-		    Scr->TitleHeight-1, Scr->TitleHeight-1,
-		    Tmp_win->title_top, Tmp_win->title_bottom);
-	    }
-#endif
 	    return;
 	}
 
@@ -780,14 +731,6 @@ HandleExpose()
 		Scr->NormalGC,
 		Tmp_win->icon_x, Tmp_win->icon_y,
 		Tmp_win->icon_name, strlen(Tmp_win->icon_name));
-#ifdef MAKE_THREED
-	    if (Scr->ThreeD)
-	    {
-		DrawShadows(Tmp_win->icon_w, 0,0,2,0,
-		    Tmp_win->icon_w_width-1, Tmp_win->icon_w_height-1,
-		    Tmp_win->icon_top, Tmp_win->icon_bottom);
-	    }
-#endif MAKE_THREED
 	    return;
 	}
 
@@ -809,15 +752,6 @@ HandleExpose()
 		XCopyPlane(dpy, Scr->siconifyPm, Tmp_win->list->icon,
 		    Scr->NormalGC,
 		    0,0, siconify_width, siconify_height, 0, 0, 1);
-#ifdef MAKE_THREED
-		if (Scr->ThreeD)
-		{
-		    DrawShadows(Tmp_win->list->icon, 0,0,1,0,
-			siconify_width-1, siconify_height -1,
-			Tmp_win->list->top, Tmp_win->list->bottom);
-		}
-		else
-#endif MAKE_THREED
 		    XDrawRectangle(dpy, Tmp_win->list->icon,
 			Scr->NormalGC, 0, 0, 
 			siconify_width-1, siconify_height-1);
@@ -1260,9 +1194,6 @@ HandleButtonRelease()
 	    DrawIconManagerBorder(DownIconManager);
 	    DownIconManager = NULL;
 	}
-#ifdef MAKE_THREED
-	PushDown(0, 0, 0, 0, 0, 0, 0, 0);
-#endif
 	Cancel = FALSE;
     }
 }
@@ -1327,11 +1258,6 @@ HandleButtonPress()
     {
 	if (Event.xany.window == Tmp_win->iconify_w)
 	{
-#ifdef MAKE_THREED
-	    PushDown(Tmp_win->iconify_w, 0, 0,
-		Scr->TitleHeight-1, Scr->TitleHeight-1, 2,
-		Tmp_win->title_top, Tmp_win->title_bottom);
-#endif
 	    ExecuteFunction(F_ICONIFY, NULL, Event.xany.window,
 		Tmp_win, Event, C_TITLE, FALSE);
 	    return;
@@ -1339,11 +1265,6 @@ HandleButtonPress()
 
 	if (Event.xany.window == Tmp_win->resize_w)
 	{
-#ifdef MAKE_THREED
-	    PushDown(Tmp_win->resize_w, 0, 0,
-		Scr->TitleHeight-1, Scr->TitleHeight-1, 2,
-		Tmp_win->title_top, Tmp_win->title_bottom);
-#endif
 	    ExecuteFunction(F_RESIZE, NULL, Event.xany.window, Tmp_win,
 		Event, C_TITLE, FALSE);
 	    return;
@@ -1352,11 +1273,6 @@ HandleButtonPress()
 #ifndef NOFOCUS
 	if (Event.xany.window == Tmp_win->focus_w)
 	{
-#ifdef MAKE_THREED
-	    PushDown(Tmp_win->focus_w, 0, 0,
-		Scr->TitleHeight-1, Scr->TitleHeight-1, 2,
-		Tmp_win->title_top, Tmp_win->title_bottom);
-#endif
 	    ExecuteFunction(F_FOCUS, NULL, Event.xany.window, Tmp_win,
 		Event, C_TITLE, FALSE);
 	    return;
@@ -1393,25 +1309,12 @@ HandleButtonPress()
 		width += Scr->TitleHeight;
 #endif
 	    Context = C_TITLE;
-#ifdef MAKE_THREED
-	    PushDown(Tmp_win->title_w,
-		Scr->TitleHeight, 0,
-		Tmp_win->frame_width - width - 1,
-		Scr->TitleHeight,
-		2, 
-		Tmp_win->title_top, Tmp_win->title_bottom);
-#endif
 	}
 	else if (Event.xany.window == Tmp_win->w)
 	    Context = C_WINDOW;
 	else if (Event.xany.window == Tmp_win->icon_w)
 	{
 	    Context = C_ICON;
-#ifdef MAKE_THREED
-	    PushDown(Tmp_win->icon_w, 0, 0,
-		Tmp_win->icon_w_width-1, Tmp_win->icon_w_height-1, 2,
-		Tmp_win->icon_top, Tmp_win->icon_bottom);
-#endif
 	}
 	else if (Event.xany.window == Tmp_win->frame)
 	    Context = C_FRAME;
@@ -1419,12 +1322,6 @@ HandleButtonPress()
 	    (Event.xany.window == Tmp_win->list->w ||
 		Event.xany.window == Tmp_win->list->icon))
 	{
-#ifdef MAKE_THREED
-	    if (Event.xany.window == Tmp_win->list->icon)
-		PushDown(Tmp_win->list->icon, 0, 0,
-		    siconify_width-1, siconify_height-1, 1,
-		    Tmp_win->list->top, Tmp_win->list->bottom);
-#endif
 	    Tmp_win->list->down = TRUE;
 	    DrawIconManagerBorder(Tmp_win->list);
 	    DownIconManager = Tmp_win->list;
@@ -1860,147 +1757,4 @@ FindScreenInfo(w)
     return(NULL);
 }
 
-DrawShadows(w, x, y, thickness, state, width, height, topC, bottomC)
-Window w;
-int x, y;
-int thickness, state;
-int width, height;
-unsigned topC, bottomC;
-{
-    XPoint top[3];
-    XPoint bottom[3];
-    int i;
-    unsigned tmp;
-    XGCValues	    gcv;
-    unsigned long   gcm, mask;
-    static GC gc = NULL;
-    unsigned specTop, specBottom;
-
-    if (state)
-    {
-	tmp = topC;
-	topC = bottomC;
-	bottomC = tmp;
-
-	specTop = Scr->BottomShadow;
-	specBottom = Scr->TopShadow;
-    }
-    else
-    {
-	specTop = Scr->TopShadow;
-	specBottom = Scr->BottomShadow;
-    }
-
-    /* let's get fancy */
-
-    for (i = 0; i < thickness; i++)
-    {
-	top[0].x = x;
-	top[0].y = y+height;
-	top[1].x = x;
-	top[1].y = y;
-	top[2].x = width+x;
-	top[2].y = y;
-
-	bottom[0].x = x+1;
-	bottom[0].y = y+height;
-	bottom[1].x = x+width;
-	bottom[1].y = y+height;
-	bottom[2].x = x+width;
-	bottom[2].y = y+1;
-
-	if (!Scr->ShadowsSpecified)
-	{
-	    if (Scr->Monochrome == COLOR)
-	    {
-		XSetForeground(dpy, Scr->NormalGC, topC);
-		XDrawLines(dpy, w, Scr->NormalGC, top, 3, CoordModeOrigin);
-		XSetForeground(dpy, Scr->NormalGC, bottomC);
-		XDrawLines(dpy, w, Scr->NormalGC, bottom, 3, CoordModeOrigin);
-	    }
-	    else
-	    {
-		if (gc == NULL)
-		{
-		    gcv.background = Scr->White;
-		    gcv.foreground = Scr->Black;
-		    gcv.tile = Scr->gray;
-		    gcv.fill_style = FillTiled;
-		    gcv.ts_x_origin = 0;
-		    gcv.ts_y_origin = 0;
-		    gcv.function = GXcopy;
-		    gc = XCreateGC(dpy, w,
-			GCForeground|GCBackground|GCFunction|
-			GCTile|GCFillStyle|GCTileStipXOrigin|GCTileStipYOrigin,
-			&gcv);
-		}
-		XSetForeground(dpy, Scr->NormalGC, Scr->Black);
-		if (state == 0)
-		{
-		    XDrawLines(dpy, w, gc, top, 3, CoordModeOrigin);
-		    XDrawLines(dpy, w, Scr->NormalGC,bottom,3,CoordModeOrigin);
-		}
-		else
-		{
-		    XDrawLines(dpy, w, Scr->NormalGC, top, 3, CoordModeOrigin);
-		    XDrawLines(dpy, w, gc, bottom, 3, CoordModeOrigin);
-		}
-	    }
-	}
-	else
-	{
-	    /* use the specified shadow colors */
-
-	    XSetForeground(dpy, Scr->NormalGC, specTop);
-	    XDrawLines(dpy, w, Scr->NormalGC, top, 3, CoordModeOrigin);
-	    XSetForeground(dpy, Scr->NormalGC, specBottom);
-	    XDrawLines(dpy, w, Scr->NormalGC, bottom, 3, CoordModeOrigin);
-	}
-
-	x++;
-	y++;
-	width -=2;
-	height -=2;
-    }
-}
-
-#ifdef MAKE_THREED
-PushDown(w, x, y, width, height, shadow_width, top, bottom)
-Window w;
-int width, height, shadow_width;
-unsigned top, bottom;
-{
-    static Window last_w = 0;
-    static int last_x, last_y;
-    static int last_width, last_height, last_shadow_width;
-    static unsigned last_top, last_bottom;
-
-    if (!Scr->ThreeD)
-	return;
-
-    if (w == 0)
-    {
-	if (last_w != 0)
-	    DrawShadows(last_w, last_x, last_y,
-		last_shadow_width, 0, last_width, last_height,
-		last_top, last_bottom);
-
-	last_w = 0;
-	return;
-    }
-
-    last_w = w;
-    last_x = x;
-    last_y = y;
-    last_width = width;
-    last_height = height;
-    last_shadow_width = shadow_width;
-    last_top = top;
-    last_bottom = bottom;
-
-    DrawShadows(last_w, last_x, last_y,
-	last_shadow_width, 1, last_width, last_height,
-	last_top, last_bottom);
-}
-#endif
 

@@ -1,6 +1,6 @@
 /**********************************************************************
  *
- * $XConsortium: icons.c,v 1.3 89/04/11 08:05:15 toml Exp $
+ * $XConsortium: icons.c,v 1.3 89/04/12 18:55:47 jim Exp $
  *
  * Icon releated routines
  *
@@ -83,13 +83,6 @@ int def_x, def_y;
     int final_x, final_y;
     int x;
 
-#ifdef MAKE_THREED
-    if (Scr->ThreeD)
-    {
-	UpShiftColor(tmp_win->iconc.back, &tmp_win->icon_top);
-	DownShiftColor(tmp_win->iconc.back, &tmp_win->icon_bottom);
-    }
-#endif MAKE_THREED
 
     FB(tmp_win->iconc.fore, tmp_win->iconc.back);
 
@@ -230,10 +223,6 @@ int def_x, def_y;
 	tmp_win->icon_name, strlen(tmp_win->icon_name));
 
     tmp_win->icon_w_width += 6;
-#ifdef MAKE_THREED
-    if (Scr->ThreeD)
-	tmp_win->icon_w_width += 4;
-#endif MAKE_THREED
     if (tmp_win->icon_w_width < tmp_win->icon_width)
     {
 	tmp_win->icon_x = (tmp_win->icon_width - tmp_win->icon_w_width)/2;
@@ -246,15 +235,6 @@ int def_x, def_y;
     }
     tmp_win->icon_y = tmp_win->icon_height + Scr->IconFont.height;
     tmp_win->icon_w_height = tmp_win->icon_height + Scr->IconFont.height + 4;
-#ifdef MAKE_THREED
-    if (Scr->ThreeD)
-    {
-	tmp_win->icon_w_width += 4;
-	tmp_win->icon_w_height += 4;
-	tmp_win->icon_x += 2;
-	tmp_win->icon_y += 2;
-    }
-#endif MAKE_THREED
 
     if (tmp_win->wmhints && tmp_win->wmhints->flags & IconWindowHint)
     {
@@ -296,11 +276,6 @@ int def_x, def_y;
 	    x = 0;
 	else
 	    x = (tmp_win->icon_w_width - tmp_win->icon_width)/2;
-
-#ifdef MAKE_THREED
-	if (Scr->ThreeD)
-	    y += 2;
-#endif MAKE_THREED
 
 	tmp_win->icon_bm_w = XCreateWindow(dpy, tmp_win->icon_w,
 	    x, y, tmp_win->icon_width, tmp_win->icon_height,
