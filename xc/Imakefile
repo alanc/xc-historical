@@ -35,9 +35,10 @@ install::
 	done
 
 Makefiles: Makefile
-	@$(MAKE) real_makefiles_target NEWTOP=../
+	@$(MAKE) subsubdirMakefiles NEWTOP=../../
+	@$(MAKE) subdirMakefiles NEWTOP=../
 
-real_makefiles_target: 
+subdirMakefiles: 
 	@for i in $(SUBDIRS) ;\
 	do \
 		(set -x; cd $$i; $(IMAKE_CMD) -DTOPDIR=..); \
@@ -46,3 +47,6 @@ real_makefiles_target:
 	do \
 		(set -x; cd $$i; $(MAKE) Makefiles); \
 	done
+
+subsubdirMakefiles: 
+	@(set -x; cd $(FONTSRC)/compiler; $(IMAKE_CMD) -DTOPDIR=../..)
