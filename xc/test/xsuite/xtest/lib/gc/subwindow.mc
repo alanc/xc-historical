@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: subwindow.mc,v 1.12 92/06/29 19:23:39 rws Exp $
+ * $XConsortium: subwindow.mc,v 1.13 92/07/01 11:30:33 rws Exp $
  */
 >>EXTERN
 #ifdef A_WINDOW2
@@ -177,8 +177,10 @@ int 	i, j;
 		 * on to the root window has the same effect.  Move the test
 		 * window to the root window origin.
 		 */
-		{
-		Drawable savdraw;
+		if (vp->depth != DefaultDepth(A_DISPLAY, DefaultScreen(A_DISPLAY)))
+			CHECK;
+		else {
+			Drawable savdraw;
 
 			dclear(A_DISPLAY, A_DRAW);
 			XSetWindowBorderWidth(A_DISPLAY, A_DRAW, 0);
