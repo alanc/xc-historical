@@ -1,4 +1,4 @@
-/* $XConsortium: xtest.c,v 1.19 93/03/09 18:18:31 rws Exp $ */
+/* $XConsortium: xtest.c,v 1.20 93/07/08 14:42:38 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -222,6 +222,13 @@ ProcXTestFakeInput(client)
 	    activateTime.months++;
 	activateTime.milliseconds = ms;
 	ev->u.keyButtonPointer.time = 0;
+
+	/* see mbuf.c:QueueDisplayRequest for code similar to this */
+
+	if (!ClientSleepUntil(client, &activateTime, NULL, NULL))
+	{
+	    return BadAlloc;
+	}
 	/* swap the request back so we can simply re-execute it */
 	if (client->swapped)
 	{
@@ -230,18 +237,6 @@ ProcXTestFakeInput(client)
 	}
 	ResetCurrentRequest (client);
 	client->sequence--;
-	if (!ClientSleepUntil(client, &activateTime, NULL, NULL))
-	{
-	    /* 
-	     * flush this request - must be in this order because
-	     * ResetCurrentRequest adds the client back to 
-	     * clientsWithInput which will cause the client to
-	     * keep going, instead of waiting for the timeout.
-	     */
-	    (void) ReadRequestFromClient (client);
-	    client->sequence++;
-	    return BadAlloc;
-	}
 	return Success;
     }
 #ifdef XINPUT
