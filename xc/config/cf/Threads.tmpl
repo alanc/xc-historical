@@ -1,0 +1,48 @@
+XCOMM $XConsortium$
+
+XCOMM included by application Imakefile if application is multi-threaded
+
+#ifndef ThreadTypeDefines
+#if HasCThreads
+#define ThreadTypeDefines -DCTHREADS
+#else
+#define ThreadTypeDefines /**/
+#endif
+#endif
+#ifndef SystemMTDefines
+#define SystemMTDefines /**/
+#endif
+#ifndef CplusplusSystemMTDefines
+#define CplusplusSystemMTDefines /**/
+#endif
+#ifndef ThreadsCompileFlags
+#define ThreadsCompileFlags /**/
+#endif
+#ifndef ThreadsCplusplusCompileFlags
+#define ThreadsCplusplusCompileFlags /**/
+#endif
+
+#ifndef ThreadsLibraries
+#define ThreadsLibraries /**/
+#endif
+#ifndef ThreadsCplusplusLibraries
+#define ThreadsCplusplusLibraries /**/
+#endif
+#ifndef ThreadsLoadFlags
+#define ThreadsLoadFlags ThreadsCompileFlags
+#endif
+#ifndef ThreadsCplusplusLoadFlags
+#define ThreadsCplusplusLoadFlags ThreadsCplusplusCompileFlags
+#endif
+
+#if ThreadedX
+ THREADS_CFLAGS = ThreadsCompileFlags
+THREADS_DEFINES = XThreadsDefines ThreadTypeDefines
+THREADS_LDFLAGS = ThreadsLoadFlags
+   THREADS_LIBS = ThreadsLibraries
+
+  THREADS_CCFLAGS = ThreadsCplusplusCompileFlags
+THREADS_CCDEFINES = XCplusplusThreadsDefines ThreadTypeDefines
+THREADS_CCLDFLAGS = ThreadsCplusplusLoadFlags
+   THREADS_CCLIBS = ThreadsCplusplusLibraries
+#endif
