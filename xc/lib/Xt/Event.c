@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.94 89/09/12 16:46:54 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.95 89/09/14 16:45:06 kit Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif /* lint */
 
@@ -79,15 +79,15 @@ EventMask XtBuildEventMask(widget)
     return mask;
 }
 
-static void RemoveEventHandler(widget, eventMask, other, proc, closure, raw,
-			       check_closure)
-    Widget	widget;
-    EventMask   eventMask;
-    Boolean	other;
-    XtEventHandler proc;
-    XtPointer	closure;
-    Boolean	raw;
-    Boolean	check_closure;
+static void
+RemoveEventHandler(widget, eventMask, other, proc, closure, raw, check_closure)
+Widget	        widget;
+EventMask       eventMask;
+Boolean	        other;
+XtEventHandler  proc;
+XtPointer	closure;
+Boolean	        raw;
+Boolean	        check_closure;
 {
     XtEventRec *p, **pp;
     EventMask oldMask = XtBuildEventMask(widget);
@@ -95,70 +95,85 @@ static void RemoveEventHandler(widget, eventMask, other, proc, closure, raw,
     pp = &widget->core.event_table;
     p = *pp;
 
+    if (p == NULL) return;	                    /* No Event Handlers. */
+
     /* find it */
-    while (p != NULL &&
-	   (p->proc != proc || (check_closure && p->closure != closure))) {
-	pp = &p->next;
-	p = *pp;
+    while (p->proc != proc || (check_closure && p->closure != closure)) {
+        pp = &p->next;
+        p = *pp;
+	if (p == NULL) return;	                     /* Didn't find it */
     }
-    if (p == NULL) return; /* couldn't find it */
-    if (raw) p->raw = FALSE; else p->select = FALSE;
+
+    if (raw)
+	p->raw = FALSE; 
+    else 
+	p->select = FALSE;
+
     if (p->raw || p->select) return;
 
     /* un-register it */
     p->mask &= ~eventMask;
     if (other) p->non_filter = FALSE;
 
-    if (p->mask == 0 && !p->non_filter) {
-	/* delete it entirely */
-	*pp = p->next;
-	XtFree((char *)p);
+    if (p->mask == 0 && !p->non_filter) {        /* delete it entirely */
+        *pp = p->next;
+	XtFree((char *)p);	
     }
 
-    /* reset select mask if realized */
-    if (XtIsRealized(widget)&& !widget->core.being_destroyed) {
+    /* Reset select mask if realized and not raw. */
+    if ( !raw && XtIsRealized(widget) && !widget->core.being_destroyed) {
 	EventMask mask = XtBuildEventMask(widget);
 
-	if (oldMask != mask) {
+	if (oldMask != mask) 
 	    XSelectInput(XtDisplay(widget), XtWindow(widget), mask);
-#ifdef notdef
-	    if (asyncHandler != NULL) {
-		XSelectAsyncInput(
-		    XtDisplay(widget), XtWindow(widget), mask,
-		    asyncHandler, (unsigned long) XtDisplay(widget));
-	    }
-#endif /*notdef*/
-	}
     }
 }
 
-static void AddEventHandler(widget, eventMask, other, proc, closure, raw,
-			    check_closure)
-    Widget	    widget;
-    EventMask   eventMask;
-    Boolean         other;
-    XtEventHandler  proc;
-    XtPointer	closure;
-    Boolean	raw;
-    Boolean	check_closure;
+/*	Function Name: AddEventHandler
+ *	Description: An Internal routine that does the actual work of
+ *                   adding the event handlers.
+ *	Arguments: widget - widget to register an event handler for.
+ *                 eventMask - events to mask for.
+ *                 other - pass non maskable events to this proceedure.
+ *                 proc - proceedure to register.
+ *                 closure - data to pass to the event hander.
+ *                 position - where to add this event handler.
+ *                 force_new_position - If the element is already in the
+ *                                      list, this will force it to the 
+ *                                      beginning or end depending on position.
+ *                 raw - If FALSE call XSelectInput for events in mask.
+ *                 check_closure - check to see if closures match as
+ *                                 as well as proceedure.
+ *	Returns: none
+ */
+
+static void 
+AddEventHandler(widget, eventMask, other, proc, 
+		closure, position, force_new_position, raw, check_closure)
+Widget	        widget;
+EventMask       eventMask;
+Boolean         other, force_new_position, raw, check_closure;
+XtEventHandler  proc;
+XtPointer	closure;
+XtListPosition  position;
 {
-   register XtEventRec *p,**pp;
-   EventMask oldMask;
+    register XtEventRec *p, *prev;
+    EventMask oldMask;
+    
+    if (eventMask == 0 && other == FALSE) return;
+    
+    if (XtIsRealized(widget) && !raw) oldMask = XtBuildEventMask(widget);
+    
+    p = widget->core.event_table;    
+    prev = NULL;
 
-   if (eventMask == 0 && other == FALSE) return;
-
-   if (XtIsRealized(widget) && ! raw) oldMask = XtBuildEventMask(widget);
-
-   pp = & widget->core.event_table;
-   p = *pp;
-   while (p != NULL &&
-	  (p->proc != proc || (check_closure && p->closure != closure))) {
-         pp = &p->next;
-         p = *pp;
-   }
-
-   if (p == NULL) {
-	/* new proc to add to list */
+    while ((p != NULL) &&
+	   (p->proc != proc || (check_closure && (p->closure != closure)))) {
+	prev = p;
+	p = p->next;
+    }
+    
+    if (p == NULL) {		                /* New proc to add to list */
 	p = XtNew(XtEventRec);
 	p->proc = proc;
 	p->closure = closure;
@@ -166,11 +181,37 @@ static void AddEventHandler(widget, eventMask, other, proc, closure, raw,
 	p->non_filter = other;
 	p->select = ! raw;
 	p->raw = raw;
+	
+	if ( (position == XtListHead) || (prev == NULL) ) {
+	    p->next = widget->core.event_table;
+	    widget->core.event_table = p;
+	}
+	else {			/* position == XtListTail && prev != NULL */
+	    prev->next = p;
+	    p->next = NULL;
+	}
+    } 
+    else {
+	if (force_new_position) {
+	    if (prev != NULL) 
+		prev->next = p->next; /* remove p from its current location. */
+	    else
+		prev = widget->core.event_table = p->next;
 
-	p->next = widget->core.event_table;
-	widget->core.event_table = p;
+	    if (position == XtListHead) {
+		p->next = widget->core.event_table;
+		widget->core.event_table = p;
+	    }
+	    else {		                 /* position == XtListTail */
+	       	/*
+		 * Find the last element in the list.
+		 */
+		for ( ; prev->next != NULL ; prev = prev->next );
+		prev->next = p;
+		p->next = NULL;
+	    }
+	}
 
-    } else {
 	/* update existing proc */
 	p->mask |= eventMask;
 	p->non_filter = p->non_filter || other;
@@ -179,67 +220,80 @@ static void AddEventHandler(widget, eventMask, other, proc, closure, raw,
 	if (!check_closure) p->closure = closure;
     }
 
-    if (XtIsRealized(widget) && ! raw) {
+    if (XtIsRealized(widget) && !raw) {
 	EventMask mask = XtBuildEventMask(widget);
 
-	if (oldMask != mask) {
+	if (oldMask != mask) 
 	    XSelectInput(XtDisplay(widget), XtWindow(widget), mask);
-#ifdef notdef
-	    if (asyncHandler != NULL) {
-		XSelectAsyncInput(
-		    XtDisplay(widget), XtWindow(widget), mask,
-		    asyncHandler, (unsigned long)XtDisplay(widget));
-	    }
-#endif /*notdef*/
-	}
     }
 
 }
 
-
 void XtRemoveEventHandler(widget, eventMask, other, proc, closure)
-    Widget	widget;
-    EventMask   eventMask;
-    Boolean	other;
-    XtEventHandler proc;
-    XtPointer	closure;
+    Widget	    widget;
+    EventMask       eventMask;
+    Boolean	    other;
+    XtEventHandler  proc;
+    XtPointer	    closure;
 {
     RemoveEventHandler(widget, eventMask, other, proc, closure, FALSE, TRUE);
 }
 
-
 void XtAddEventHandler(widget, eventMask, other, proc, closure)
     Widget	    widget;
-    EventMask   eventMask;
+    EventMask       eventMask;
     Boolean         other;
     XtEventHandler  proc;
-    XtPointer	closure;
+    XtPointer	    closure;
 {
-    AddEventHandler(widget, eventMask, other, proc, closure, FALSE, TRUE);
+    AddEventHandler(widget, eventMask, other, 
+		    proc, closure, XtListTail, FALSE, FALSE, TRUE);
 }
 
+void XtInsertEventHandler(widget, eventMask, other, proc, closure, position)
+    Widget	    widget;
+    EventMask       eventMask;
+    Boolean         other;
+    XtEventHandler  proc;
+    XtPointer	    closure;
+    XtListPosition  position;
+{
+    AddEventHandler(widget, eventMask, other, 
+		    proc, closure, position, TRUE, FALSE, TRUE);
+}
 
 void XtRemoveRawEventHandler(widget, eventMask, other, proc, closure)
-    Widget	widget;
-    EventMask   eventMask;
-    Boolean	other;
-    XtEventHandler proc;
-    XtPointer	closure;
+    Widget	    widget;
+    EventMask       eventMask;
+    Boolean	    other;
+    XtEventHandler  proc;
+    XtPointer	    closure;
 {
     RemoveEventHandler(widget, eventMask, other, proc, closure, TRUE, TRUE);
 }
 
+void XtInsertRawEventHandler(widget, eventMask, other, proc, closure, position)
+    Widget	    widget;
+    EventMask       eventMask;
+    Boolean	    other;
+    XtEventHandler  proc;
+    XtPointer	    closure;
+    XtListPosition  position;
+{
+    AddEventHandler(widget, eventMask, other, 
+		    proc, closure, position, TRUE, TRUE, TRUE);
+}
 
 void XtAddRawEventHandler(widget, eventMask, other, proc, closure)
     Widget	    widget;
-    EventMask   eventMask;
+    EventMask       eventMask;
     Boolean         other;
     XtEventHandler  proc;
-    XtPointer	closure;
+    XtPointer	    closure;
 {
-    AddEventHandler(widget, eventMask, other, proc, closure, TRUE, TRUE);
+    AddEventHandler(widget, eventMask, other, 
+		    proc, closure, XtListTail, FALSE, TRUE, TRUE);
 }
-
 
 typedef struct _HashRec *HashPtr;
 
@@ -1251,7 +1305,8 @@ static void AddForwardingHandler(w, descendant)
 	Boolean have_focus = False;
 	register GrabRec *gl;
 	AddEventHandler(w, eventMask, False, 
-		ForwardEvent, (XtPointer)descendant, FALSE, FALSE);
+			ForwardEvent, (XtPointer)descendant,
+			XtListHead, FALSE, FALSE, FALSE);
 	/* if we already have the focus, we'll have to change the target */
 	for (gl = focusList; gl != NULL; gl = gl->next) {
 	    if (gl->widget == w) {
@@ -1343,13 +1398,14 @@ void XtSetKeyboardFocus(widget, descendant)
     }
 
     AddEventHandler(widget, mask, False, HandleFocus, (XtPointer)descendant,
-		    FALSE, FALSE);
+		    XtListHead, FALSE, FALSE, FALSE);
 
     /* If his translations aren't installed, we'll have to wait 'till later */
 
     if (XtIsRealized(descendant)) AddForwardingHandler(widget, descendant);
     else AddEventHandler(descendant, (EventMask)StructureNotifyMask, False,
-		QueryEventMask, (XtPointer)widget, FALSE, FALSE);
+			 QueryEventMask, (XtPointer)widget,
+			 XtListHead, FALSE, FALSE, FALSE);
 }
 
 static SendFocusNotify(child, type)
