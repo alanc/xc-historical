@@ -1,4 +1,4 @@
-/* $XConsortium: point.c,v 1.2 93/10/26 10:06:49 rws Exp $ */
+/* $XConsortium: point.c,v 1.3 93/10/27 21:52:39 rws Exp $ */
 
 /**** module point.c ****/
 /******************************************************************************
@@ -52,7 +52,6 @@ terms and conditions:
 #include "xieperf.h"
 #include <stdio.h>
 
-static XieLTriplet levels;
 static int monoflag = 0;
 
 static XiePhotomap XIEPhotomap;
@@ -205,7 +204,7 @@ int InitPoint(xp, p, reps)
 				rect.width = ( ( PointParms * )p->ts )->width;
 				rect.height = ( ( PointParms * )p->ts )->height;
 
-				if ( ( XIERoi = GetXIERoi( xp, p, rect, 1 ) ) 
+				if ( ( XIERoi = GetXIERoi( xp, p, &rect, 1 ) ) 
 					== ( XieRoi ) NULL )
 				{
 					reps = 0;
@@ -371,7 +370,6 @@ int InitTriplePoint(xp, p, reps)
         int decode_notify;
 	XieLTriplet levels;
 	int cclass, ditherTech;
-	char *ditherTechParms;
 	int threshold;
 	Atom atom;
 
@@ -408,7 +406,6 @@ int InitTriplePoint(xp, p, reps)
         XIERoi = ( XieRoi ) NULL;
 	XIELut = ( XieLut ) NULL;
         flo = ( XiePhotoflo ) NULL;
-	ditherTechParms = ( char * ) NULL;
 
 	flo_elements = 4;
 	if ( useROI == True )
