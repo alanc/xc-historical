@@ -85,7 +85,8 @@ static XtResource resources[] = {
 #undef offset
 #undef goffset
 
-static void Initialize(), Realize(), Destroy(), Resize(), Redisplay(), SetValues();
+static void Initialize(), Realize(), Destroy(), Resize(), Redisplay();
+static Boolean SetValues();
 
 ClockClassRec clockClassRec = {
     { /* core fields */
@@ -623,13 +624,13 @@ double x;
 	return(x >= 0.0 ? (int)(x + .5) : (int)(x - .5));
 }
 
-static void SetValues (gcurrent, grequest, gnew, last)
+static Boolean SetValues (gcurrent, grequest, gnew, last)
     Widget gcurrent, grequest, gnew;
     Boolean last;
 {
       ClockWidget current = (ClockWidget) gcurrent;
       ClockWidget new = (ClockWidget) gnew;
-      int redisplay = FALSE;
+      Boolean redisplay = FALSE;
       XtGCMask valuemask;
       XGCValues	myXGCV;
 
@@ -695,12 +696,10 @@ static void SetValues (gcurrent, grequest, gnew, last)
      if ((new->core.x != current->core.x)
        || (new->core.y != current->core.y)
        || (new->core.width != current->core.width)
-       || (new->core.height != current->core.height))
-         redisplay = TRUE;
-         /* need to make geometry request?? */
+       || (new->core.height != current->core.height)
+       || (new->core.border_width != current->core.border_width))
+         /* need to make geometry request */;
      
-     if(redisplay && last) {
-	XClearWindow(XtDisplay(new), XtWindow(new));
-	Redisplay(gnew);
-        }
+     return (redisplay);
+
 }

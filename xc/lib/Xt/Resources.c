@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Resources.c,v 1.13 87/09/12 15:00:52 newman Locked $";
+static char rcsid[] = "$Header: Resources.c,v 1.14 87/09/13 18:28:36 newman Locked $";
 #endif lint
 
 /*
@@ -492,16 +492,19 @@ static void SetValues(widgetClass, w, args, num_args)
 	args, num_args);
 } /* SetValues */
 
-static void RecurseSetValues (current, request, new, last, class)
+static Boolean RecurseSetValues (current, request, new, last, class)
     Widget current, request, new;
     Boolean last;
     WidgetClass class;
 {
+    Boolean redisplay = FALSE;
     if (class->core_class.superclass)
-       	RecurseSetValues (current, request, new, FALSE,
+       	redisplay = RecurseSetValues (current, request, new, FALSE,
            class->core_class.superclass);
     if (class->core_class.set_values)
-       	(*class->core_class.set_values) (current, request, new, last, class);
+       	redisplay |= (*class->core_class.set_values) (current, request, new,
+           last, class);
+    return (redisplay);
 }
 
 void XtSetValues(w, args, num_args)
@@ -511,6 +514,7 @@ void XtSetValues(w, args, num_args)
 {
     Widget	requestWidget, newWidget;
     Cardinal	widgetSize;
+    Boolean redisplay;
 
     if (num_args == 0) return;
     if ((args == NULL) && (num_args != 0)) {
@@ -529,10 +533,26 @@ void XtSetValues(w, args, num_args)
     bcopy ((char *) requestWidget, (char *) newWidget, widgetSize);
 
     /* Inform widget of changes and deallocate newWidget */
-    RecurseSetValues (w, requestWidget, newWidget, TRUE, w->core.widget_class);
+    redisplay = RecurseSetValues (w, requestWidget, newWidget, TRUE,
+        w->core.widget_class);
+    
+    /* If a SetValues proc made a successful geometry request,
+       then "w" contains the new, correct x, y, width, height fields.
+       Make sure not to smash them when copying "new" back into "w". */
+    newWidget->core.x = w->core.x;
+    newWidget->core.y = w->core.y;
+    newWidget->core.width = w->core.width;
+    newWidget->core.height = w->core.height;
+    newWidget->core.border_width = w->core.border_width;
+
     bcopy ((char *) newWidget, (char *) w, widgetSize);
     XtFree((char *) requestWidget);
     XtFree((char *) newWidget);
+
+    if (redisplay)
+       /* repaint background of window, and force a full exposure event */
+       XClearArea (XtDisplay(w), XtWindow(w), 0, 0, 0, 0, TRUE);
+       
 } /* XtSetValues */
  
 
