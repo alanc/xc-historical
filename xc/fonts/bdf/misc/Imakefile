@@ -11,9 +11,10 @@ OBJS = FontObj(5x8) FontObj(6x9) FontObj(6x10) FontObj(6x12) FontObj(6x13) \
 	FontObj(clR6x8) FontObj(clR7x10) FontObj(clR7x12) FontObj(clR7x14) \
 	FontObj(clR7x8) FontObj(clR8x10) FontObj(clR8x12) FontObj(clR8x13) \
 	FontObj(clR8x14) FontObj(clR8x16) FontObj(clR8x8) FontObj(clR9x15) \
-	FontObj(k14) FontObj(7x14) FontObj(7x14rk) FontObj(12x24) \
-	FontObj(12x24rk) FontObj(8x16) FontObj(8x16rk) FontObj(jiskan16) \
-	FontObj(jiskan24) FontObj(hanglg16) FontObj(hanglm16) FontObj(hanglm24)
+	FontObj(k14) FontObj(7x14) FontObj(7x14B) FontObj(7x14rk) \
+	FontObj(12x24) FontObj(12x24rk) FontObj(8x16) FontObj(8x16rk) \
+	FontObj(jiskan16) FontObj(jiskan24) \
+	FontObj(hanglg16) FontObj(hanglm16) FontObj(hanglm24)
 
 FONTINSTDIR = $(FONTDIR)/misc
 
@@ -74,6 +75,7 @@ FontTarget(clR8x8)
 FontTarget(clR9x15)
 FontTarget(k14)
 FontTarget(7x14)
+FontTarget(7x14B)
 FontTarget(7x14rk)
 FontTarget(12x24)
 FontTarget(12x24rk)
