@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.6 89/12/14 17:07:37 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.7 89/12/14 18:35:09 swick Exp $";
 #endif
 
 /********************************************************
@@ -455,7 +455,7 @@ static Boolean InActiveSubtree(widget)
 /* ARGSUSED */
 void _XtHandleFocus(widget, client_data, event)
     Widget widget;
-    caddr_t client_data;	/* child who wants focus */
+    XtPointer client_data;	/* child who wants focus */
     XEvent *event;
 {
     XtPerDisplayInput 	pdi = _XtGetPerDisplayInput(XtDisplay(widget));
@@ -571,11 +571,128 @@ void _XtHandleFocus(widget, client_data, event)
       }
 }
 
+
+static void AddFocusHandler(widget, descendant, pwi, pdi, oldEventMask)
+    Widget widget, descendant;
+    XtPerWidgetInput pwi;
+    XtPerDisplayInput pdi;
+    EventMask oldEventMask;
+{
+    XtPerWidgetInput	psi;
+    Widget		shell;
+    EventMask	 	eventMask;
+
+    /*
+     * we are having this handler server double duty as the
+     * heir of ForwardEvent in R3. One thing that is needed is
+     * to guarantee that the descendant gets keyevents if
+     * interested 
+     */
+    shell = GetShell(widget);
+    psi = _XtGetPerWidgetInput(shell, TRUE);
+
+    /*
+     * shell borders are not occluded by the child, they're occluded
+     * by reparenting window managers. !!!
+     */
+    eventMask = XtBuildEventMask(descendant) & (KeyPressMask | KeyReleaseMask);
+    eventMask |= FocusChangeMask | EnterWindowMask | LeaveWindowMask;
+
+    oldEventMask &= KeyPressMask | KeyReleaseMask;
+    oldEventMask |= FocusChangeMask | EnterWindowMask | LeaveWindowMask;
+
+    if (oldEventMask & ~eventMask)
+	XtRemoveEventHandler(widget, (oldEventMask & ~eventMask), 
+			     False, _XtHandleFocus, (XtPointer)pwi);
+
+    if (~oldEventMask & eventMask)
+	XtAddEventHandler(widget, (~oldEventMask & eventMask), False, 
+			  _XtHandleFocus, (XtPointer)pwi);
+
+    if (!pwi->haveFocus) {
+	if (psi->haveFocus) {
+	    Window root, child;
+	    int root_x, root_y, win_x, win_y, shellX, shellY;
+	    int left, right, top, bottom;
+	    unsigned int modMask;
+	    Widget 	w = widget;
+	    Boolean	maybe = FALSE;
+
+
+	    /*
+	     * if the pointer is outside the shell or inside
+	     * the window try to see if it would recieve the
+	     * focus 
+	     */
+	    XtTranslateCoords(shell, 0, 0, &shellX, &shellY);
+	    /* We need to take borders into consideration */
+	    left = top = -((int) shell->core.border_width);
+	    right = (int) (shell->core.width + (shell->core.border_width << 1));
+	    bottom = (int) (shell->core.height + (shell->core.border_width << 1));
+
+	    XQueryPointer(XtDisplay(w), XtWindow(w), &root, &child,
+			  &root_x, &root_y, &win_x, &win_y, &modMask );
+
+	    if (root_x >= left && root_x < right &&
+		root_y >= top && root_y < bottom) {
+
+		/* We need to take borders into consideration */
+		left = top = -((int) w->core.border_width);
+		right = (int) (w->core.width + (w->core.border_width << 1));
+		bottom = (int) (w->core.height + (w->core.border_width << 1));
+
+		if (win_x >= left && win_x < right &&
+		    win_y >= top && win_y < bottom)
+		  maybe = TRUE;
+	    }
+	    else maybe = TRUE;
+
+	    /*
+	     * if the hierarchy has the focus and the widget
+	     * is a focus candidate, then see if it is a
+	     * descendant of the focus path
+	     */
+	    if (maybe && (FindFocusWidget(w, pdi) == w))
+	      pwi->haveFocus = TRUE;
+
+	}
+    }
+    if (pwi->haveFocus) {
+	  pdi->focusWidget = NULL; /* invalidate the cache */
+	  _XtSendFocusEvent(descendant, FocusIn);
+    }
+}
+
+
+/* ARGSUSED */
+static void QueryEventMask(widget, client_data, event, cont)
+    Widget widget;		/* child who gets focus */
+    XtPointer client_data;	/* ancestor giving it */
+    XEvent *event;
+    Boolean *cont;		/* unused */
+{
+    /* widget was once the target of an XtSetKeyboardFocus but
+     * was unrealized at the time.   Make sure ancestor still wants
+     * focus set here then install the handler now that we know the
+     * complete event mask.
+     */
+    Widget ancestor = (Widget)client_data;
+    XtPerWidgetInput pwi = _XtGetPerWidgetInput(ancestor, FALSE);
+    if (pwi && pwi->focusKid == widget) {
+	XtPerDisplayInput pdi = _XtGetPerDisplayInput(XtDisplay(widget));
+	AddFocusHandler(ancestor, widget, pwi, pdi, (EventMask)0);
+    }
+    XtRemoveEventHandler(widget, XtAllEvents, True,
+			 QueryEventMask, client_data);
+    pwi->map_handler_added = FALSE;
+}
+
+
 /* ARGSUSED */
 static void FocusDestroyCallback(widget, closure, call_data)
     Widget  widget;
-    caddr_t closure;		/* Widget */
-    caddr_t call_data;
+    XtPointer closure;		/* Widget */
+    XtPointer call_data;
 {
     XtSetKeyboardFocus((Widget)closure, None);
 }
@@ -584,14 +701,12 @@ void XtSetKeyboardFocus(widget, descendant)
     Widget widget;
     Widget descendant;
 {
-    Widget windowedDesc;
     XtPerDisplayInput pdi = _XtGetPerDisplayInput(XtDisplay(widget));
     XtPerWidgetInput pwi = _XtGetPerWidgetInput(widget, TRUE);
     Widget oldDesc = pwi->focusKid;
-    Widget oldWindowedDesc ;
     
-    windowedDesc = descendant ? _GetWindowedAncestor(descendant) : NULL;
-    oldWindowedDesc = oldDesc ? _GetWindowedAncestor(oldDesc) : NULL;
+    if (! XtIsWidget(descendant))
+	descendant = _XtWindowedAncestor(descendant);
     
     if (descendant != oldDesc) {
 	
@@ -603,135 +718,45 @@ void XtSetKeyboardFocus(widget, descendant)
 	
 	if (oldDesc) {
 	    XtRemoveCallback (oldDesc, XtNdestroyCallback, 
-			      FocusDestroyCallback, (caddr_t) widget);
+			      FocusDestroyCallback, (XtPointer) widget);
+
+	    if (pwi->map_handler_added) {
+		XtRemoveEventHandler(descendant, XtAllEvents, True,
+				     QueryEventMask, (XtPointer)widget);
+		pwi->map_handler_added = FALSE;
+	    }
 	    /*
 	     * If there was a forward path then remove the handler if
 	     * the path is being set to null and it isn't a shell.
 	     * shells always have a handler for tracking focus for the
 	     * hierarchy. 
 	     */
-	    if (!XtIsShell(widget) && !windowedDesc)
+	    if (!XtIsShell(widget) && !descendant)
 	      XtRemoveEventHandler(widget, XtAllEvents, True, 
-				   _XtHandleFocus, (caddr_t)pwi);
+				   _XtHandleFocus, (XtPointer)pwi);
 	    /*
 	     * If we had the focus send a focus out to the
 	     * windowed parent if it's not also the new parent (from
 	     * and to are gadgets).
 	     */
-	    if (
-#ifdef NO_DOUBLE_FOCUS		
-		(oldWindowedDesc != windowedDesc) && 
-#endif
-		pwi->haveFocus) {
-		_XtSendFocusEvent( oldWindowedDesc, FocusOut);
+	    if (pwi->haveFocus) {
+		_XtSendFocusEvent( oldDesc, FocusOut);
 	    }
 	}
 	
 	if (!descendant)
 	  pwi->haveFocus = FALSE;
 	else {
-	    XtPerWidgetInput	psi;
-	    Widget		shell;
-	    EventMask	 	mask, eventMask, oldEventMask;
-
 	    XtAddCallback (descendant, XtNdestroyCallback, 
-			   FocusDestroyCallback, (caddr_t) widget);
+			   FocusDestroyCallback, (XtPointer) widget);
 
-	    /*
-	     * shell borders are not occluded by the child, they're occluded
-	     * by reparenting window managers. !!!
-	     */
-	    mask = FocusChangeMask | EnterWindowMask | LeaveWindowMask;
-	    
-	    /*
-	     * we are having this handler server double duty as the
-	     * hier of ForwardEvent in R3. One thing that is needed is
-	     * to guarantee that the descendant gets keyevents if
-	     * interested 
-	     */
-	    shell = GetShell(widget);
-	    psi = _XtGetPerWidgetInput(shell, TRUE);
-	    
-	    eventMask = XtBuildEventMask(windowedDesc);
-	    eventMask &= KeyPressMask | KeyReleaseMask;
-	    eventMask |= mask;
-
-	    if (oldWindowedDesc)
-	      {
-		  oldEventMask = XtBuildEventMask(oldWindowedDesc);
-		  oldEventMask &= KeyPressMask | KeyReleaseMask;
-		  oldEventMask |= mask;
-		  if (oldEventMask != eventMask)
-		    XtRemoveEventHandler(widget, 
-					 oldEventMask, 
-					 False, 
-					 _XtHandleFocus, 
-					 (caddr_t)pwi);
-	      }
-	    else
-	      oldEventMask = 0;
-	    
-	    if (oldEventMask != eventMask)
-	      XtAddEventHandler(widget, eventMask, False, 
-				_XtHandleFocus, (caddr_t)pwi);
-	    
-	    if (!pwi->haveFocus) {
-		if (psi->haveFocus) {
-		    Window root, child;
-		    int root_x, root_y, win_x, win_y, shellX, shellY;
-		    int left, right, top, bottom;
-		    unsigned int modMask;
-		    Widget 	w = widget;
-		    Boolean	maybe = FALSE;
-		    
-		    
-		    /*
-		     * if the pointer is outside the shell or inside
-		     * the window try to see if it would recieve the
-		     * focus 
-		     */
-		    XtTranslateCoords(shell, 0, 0, &shellX, &shellY);
-		    /* We need to take borders into consideration */
-		    left = top = -((int) shell->core.border_width);
-		    right = (int) (shell->core.width + (shell->core.border_width << 1));
-		    bottom = (int) (shell->core.height + (shell->core.border_width << 1));
-		    
-		    XQueryPointer(XtDisplay(w), XtWindow(w), &root, &child,
-				  &root_x, &root_y, &win_x, &win_y, &modMask );
-		    
-		    if (root_x >= left && root_x < right &&
-			root_y >= top && root_y < bottom) {
-			
-			/* We need to take borders into consideration */
-			left = top = -((int) w->core.border_width);
-			right = (int) (w->core.width + (w->core.border_width << 1));
-			bottom = (int) (w->core.height + (w->core.border_width << 1));
-			
-			if (win_x >= left && win_x < right &&
-			    win_y >= top && win_y < bottom)
-			  maybe = TRUE;
-		    }
-		    else maybe = TRUE;
-		    
-		    /*
-		     * if the hierarchy has the focus and the widget
-		     * is a focus candidate, then see if it is a
-		     * descendant of the focus path
-		     */
-		    if (maybe && (FindFocusWidget(w, pdi) == w))
-		      pwi->haveFocus = TRUE;
-		    
-		}
+	    AddFocusHandler(widget, descendant, pwi, pdi,
+			    oldDesc ? XtBuildEventMask(oldDesc) : 0);
+	    if (! XtIsRealized(descendant)) {
+		XtAddEventHandler(descendant, (EventMask)StructureNotifyMask,
+				  False, QueryEventMask, (XtPointer)widget);
+		pwi->map_handler_added = TRUE;
 	    }
-	    if (
-#ifdef NO_DOUBLE_FOCUS
-		(oldWindowedDesc != windowedDesc) &&
-#endif 
-		pwi->haveFocus)
-	      {
-		  pdi->focusWidget = NULL; /* invalidate the cache */
-		  _XtSendFocusEvent( windowedDesc, FocusIn);
-	      }
 	}
     }
 }	
