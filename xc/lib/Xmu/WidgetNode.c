@@ -1,5 +1,5 @@
 /*
- * $XConsortium: WidgetNode.c,v 1.1 90/02/26 11:27:33 jim Exp $
+ * $XConsortium: WidgetNode.c,v 1.2 90/03/06 18:29:29 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -252,16 +252,16 @@ void XmuWnFetchResources (node, toplevel, topnode)
 }
 
 
-int XmuWnCountOwnedResources (node, ownernode)
+int XmuWnCountOwnedResources (node, ownernode, cons)
     XmuWidgetNode *node, *ownernode;
+    Bool cons;
 {
     register int i;
-    XmuWidgetNode **wn = node->resourcewn;
+    XmuWidgetNode **wn = (cons ? node->constraintwn : node->resourcewn);
     int nmatches = 0;
 
-    for (i = 0; i < node->nresources; i++, wn++) {
-	if (*wn == ownernode) nmatches++;
-    }
+    for (i = (cons ? node->nconstraints : node->nresources); i > 0; i--, wn++)
+      if (*wn == ownernode) nmatches++;
     return nmatches;
 }
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: WidgetNode.h,v 1.2 90/02/26 11:30:39 jim Exp $
+ * $XConsortium: WidgetNode.h,v 1.3 90/03/06 18:29:32 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -72,6 +72,7 @@ extern int XmuWnCountOwnedResources (
 #if NeedFunctionPrototypes
     XmuWidgetNode * /* node */,
     XmuWidgetNode * /* ownernode */
+    Bool /* constraints */
 #endif
 );
 
