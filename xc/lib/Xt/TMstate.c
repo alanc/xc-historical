@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.98 90/04/10 15:58:55 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.99 90/04/13 20:20:34 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -1862,6 +1862,51 @@ Boolean _XtCvtMergeTranslations(dpy, args, num_args, from, to, closure_ret)
     return True;
 }
 
+static XtTranslations
+ConvertATranslation(widget, new_translations, operation)
+Widget widget;
+XtTranslations new_translations;
+TMkind operation;
+{
+    XrmValue from, to;
+    TMConvertRec convert_rec;
+    XtTranslations newTable;
+    XtCacheRef cache_ref;
+    ConverterTable table =XtWidgetToApplicationContext(widget)->converterTable;
+    ConverterPtr cP;
+
+    static XrmQuark from_type, to_type;
+    static Boolean initialized = FALSE;
+
+    if (!initialized) {
+	from_type = XrmStringToRepresentation(_XtRTranslationTablePair);
+	to_type = XrmStringToRepresentation(XtRTranslationTable);
+	initialized = TRUE;
+    }
+
+    from.addr = (XtPointer)&convert_rec;
+    from.size = sizeof(TMConvertRec);
+    convert_rec.old = widget->core.tm.translations;
+    convert_rec.new = new_translations;
+    convert_rec.operation = operation;
+    to.addr = (XtPointer) &newTable;
+    to.size = sizeof(XtTranslations);
+
+    cP = table[ProcHash(from_type, to_type) & CONVERTHASHMASK];
+    
+    if ( ! _XtCallConverter( XtDisplay(widget), _XtCvtMergeTranslations,
+			    (XrmValuePtr)NULL, (Cardinal)0, &from, &to,
+			    &cache_ref, cP ))
+	return(NULL);
+
+    if (cache_ref != NULL) {
+	XtAddCallback( widget, XtNdestroyCallback,
+		       XtCallbackReleaseCacheRef, (XtPointer)cache_ref );
+    }
+
+    return(newTable);
+}
+
 void XtOverrideTranslations(widget, new)
     Widget widget;
     XtTranslations new;
@@ -1869,20 +1914,9 @@ void XtOverrideTranslations(widget, new)
 /*
     MergeTables(widget->core.translations, new, TRUE);
 */
-    XrmValue from,to;
-    TMConvertRec foo;
-    XtTranslations newTable;
-    XtCacheRef cache_ref;
-    from.addr = (XtPointer)&foo;
-    from.size = sizeof(TMConvertRec);
-    foo.old = widget->core.tm.translations;
-    foo.new = new;
-    foo.operation = override;
-    to.addr = (XtPointer)&newTable;
-    to.size = sizeof(XtTranslations);
-    if ( ! XtCallConverter( XtDisplay(widget), _XtCvtMergeTranslations,
-			    (XrmValuePtr)NULL, (Cardinal)0, &from, &to,
-			    &cache_ref ))
+    XtTranslations newTable = ConvertATranslation(widget, new, override);
+
+    if (newTable == NULL) 
 	return;
 
     if (XtIsRealized(widget)) {
@@ -1891,12 +1925,8 @@ void XtOverrideTranslations(widget, new)
            _XtBindActions(widget, &widget->core.tm);
            _XtInstallTranslations(widget,newTable);
     }
-    else widget->core.tm.translations = newTable;
-
-    if (cache_ref != NULL) {
-	XtAddCallback( widget, XtNdestroyCallback,
-		       XtCallbackReleaseCacheRef, (XtPointer)cache_ref );
-    }
+    else 
+	widget->core.tm.translations = newTable;
 }
 
 /* ARGSUSED */
@@ -1988,31 +2018,20 @@ void XtInstallAccelerators(destination, source)
     if (destination->core.tm.translations == NULL)
 	destination->core.tm.translations = source->core.accelerators;
     else {
-	XrmValue from, to;
-	TMConvertRec cvt;
-	XtCacheRef cache_ref;
-	XtTranslations temp;
-	from.addr = (XtPointer)&cvt;
-	from.size = sizeof(TMConvertRec);
-	cvt.old = destination->core.tm.translations;
-	cvt.new = source->core.accelerators;
-	to.addr = (XtPointer)&temp;
-	to.size = sizeof(XtTranslations);
+	XtTranslations new_table;
+	TMkind operation;
+
 	if (source->core.accelerators->operation == XtTableOverride)
-	    cvt.operation = override;
+	    operation = override;
 	else
-	    cvt.operation = augment;
-	if ( ! XtCallConverter( XtDisplay(destination),
-			        _XtCvtMergeTranslations,
-			        (XrmValue*)NULL, (Cardinal)0, &from, &to,
-			        &cache_ref )) {
+	    operation = augment;
+	
+	new_table = ConvertATranslation(destination, 
+					source->core.accelerators, operation);
+	if (new_table == NULL)
 	    return;
-	}
-	destination->core.tm.translations = temp;
-	if (cache_ref != NULL) {
-	    XtAddCallback( destination, XtNdestroyCallback,
-			   XtCallbackReleaseCacheRef, (XtPointer)cache_ref );
-	}
+
+	destination->core.tm.translations = new_table;
     }
     if (XtIsRealized(destination))
         _XtInstallTranslations(destination,
@@ -2068,34 +2087,19 @@ void XtAugmentTranslations(widget, new)
     Widget widget;
     XtTranslations new;
 {
-    XrmValue from,to;
-    TMConvertRec foo;
-    XtTranslations newTable;
-    XtCacheRef cache_ref;
-    from.addr = (XtPointer)&foo;
-    from.size = sizeof(TMConvertRec);
-    foo.old = widget->core.tm.translations;
-    foo.new = new;
-    foo.operation = augment;
-    to.addr = (XtPointer)&newTable;
-    to.size = sizeof(XtTranslations);
-    if ( ! XtCallConverter( XtDisplay(widget), _XtCvtMergeTranslations,
-			    (XrmValue*)NULL, (Cardinal)0, &from, &to,
-			    &cache_ref ))
+    XtTranslations newTable = ConvertATranslation(widget, new, override);
+
+    if (newTable == NULL) 
 	return;
 
     if (XtIsRealized(widget)) {
-        XtUninstallTranslations((Widget)widget);
-        widget->core.tm.translations = newTable;
-        _XtBindActions(widget,&widget->core.tm);
-        _XtInstallTranslations(widget,newTable);
+	   XtUninstallTranslations(widget);
+           widget->core.tm.translations = newTable;
+           _XtBindActions(widget, &widget->core.tm);
+           _XtInstallTranslations(widget,newTable);
     }
-    else widget->core.tm.translations = newTable;
-
-    if (cache_ref != NULL) {
-	XtAddCallback( widget, XtNdestroyCallback,
-		       XtCallbackReleaseCacheRef, (XtPointer)cache_ref );
-    }
+    else 
+	widget->core.tm.translations = newTable;
 }
 
 static Boolean LookAheadForCycleOrMulticlick(state, eot, countP, nextLevelP)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Convert.c,v 1.38 89/12/20 16:30:54 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Convert.c,v 1.39 90/04/04 11:27:32 swick Exp $";
 /* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -38,8 +38,6 @@ SOFTWARE.
 
 /* Conversion procedure hash 	table */
 
-typedef struct _ConverterRec *ConverterPtr;
-
 typedef struct _ConverterRec {
     ConverterPtr	next;
     XrmRepresentation	from, to;
@@ -50,10 +48,6 @@ typedef struct _ConverterRec {
     Boolean		new_style;
     XtCacheType		cache_type;
 } ConverterRec;
-
-#define CONVERTHASHSIZE	((unsigned)512)
-#define CONVERTHASHMASK	511
-#define ProcHash(from_type, to_type) (2 * (from_type) + to_type)
 
 /* used for old-style type converter cache only */
 static Heap globalHeap = {NULL, NULL, 0};
@@ -144,6 +138,7 @@ void _XtTableAddConverter(table, from_type, to_type, converter, convert_args, nu
     XtDestructor nullProc = NULL;
 
     pHashEntry= &table[ProcHash(from_type, to_type) & CONVERTHASHMASK];
+ 
     for (p = *pHashEntry; p != NULL; p = p->next) {
 	if (p->from == from_type && p->to == to_type) break;
     }
@@ -583,13 +578,31 @@ XtCallConverter(dpy, converter, args, num_args, from, to, cache_ref_return)
     XrmValuePtr     to;
     XtCacheRef	    *cache_ref_return;
 {
+    ConverterPtr cP;
+    Boolean _XtCallConverter();
+
+    cP = GetConverterEntry( XtDisplayToApplicationContext(dpy), converter );
+    return _XtCallConverter(dpy, converter, args, num_args, from, to, 
+			    cache_ref_return, cP);
+}
+
+Boolean
+_XtCallConverter(dpy, converter,
+		 args, num_args, from, to, cache_ref_return, cP)
+    Display*	    dpy;
+    XtTypeConverter converter;
+    XrmValuePtr     args;
+    Cardinal	    num_args;
+    register XrmValuePtr from;
+    XrmValuePtr     to;
+    XtCacheRef	    *cache_ref_return;
+    register ConverterPtr cP;
+{
     register CachePtr   p;
     register int	hash;
     register Cardinal   i;
-    register ConverterPtr cP;
     XtDestructor nullProc = NULL; /* some compilers broken */
 
-    cP = GetConverterEntry( XtDisplayToApplicationContext(dpy), converter );
     if (cP == NULL
      || ((cP->cache_type == XtCacheNone) && (cP->destructor == nullProc))) {
 	char* closure;
@@ -700,9 +713,9 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
 	    } else args = NULL;
 	    if (p->new_style) {
 		retval =
-		    XtCallConverter(XtDisplayOfObject(widget),
-				    p->converter, args, num_args,
-				    from, to, cache_ref_return);
+		    _XtCallConverter(XtDisplayOfObject(widget),
+				     p->converter, args, num_args,
+				     from, to, cache_ref_return, p);
 	    }
 	    else { /* is old-style (non-app) converter */
 		XrmValue tempTo;
