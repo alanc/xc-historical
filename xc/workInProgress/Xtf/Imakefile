@@ -1,10 +1,14 @@
-XCOMM $XConsortium: Imakefile,v 1.1 93/12/31 15:02:53 kaleb Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 94/02/10 11:59:04 matt Exp $
 #define DoNormalLib NormalLibXtf
 #define DoSharedLib SharedLibXtf
 #define DoDebugLib DebugLibXtf
 #define DoProfileLib ProfileLibXtf
 #define LibName Xtf
 #define SoRev SOXTFREV
+
+#ifdef SharedFrescoReqs
+REQUIREDLIBS = SharedXtfReqs
+#endif
 
   INSTALLFLAGS = $(INSTINCFLAGS)
       LINTLIBS = $(LINTXLIB)
