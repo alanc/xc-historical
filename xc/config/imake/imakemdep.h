@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.12 90/12/11 13:23:16 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.13 90/12/13 22:59:02 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -17,6 +17,10 @@
 #define imake_ccflags "-Wc,-Nd4000,-Ns3000 -DSYSV"
 #endif
 
+#ifdef apollo
+#define imake_ccflags "-DNOSTDHDRS"
+#endif
+
 #ifdef macII
 #define imake_ccflags "-DSYSV"
 #endif
@@ -26,7 +30,7 @@
 #endif
 
 #ifdef att
-#define imake_ccflags "-DSYSV -DUSG"
+#define imake_ccflags "-Xc -DSVR4"
 #endif
 
 #ifdef CRAY
@@ -70,7 +74,7 @@
  *     all colons).  One way to tell if you need this is to see whether or not
  *     your Makefiles have no tabs in them and lots of @@ strings.
  */
-#if defined(sun) || defined(SYSV)
+#if defined(sun) || defined(SYSV) || defined(SVR4)
 #define FIXUP_CPP_WHITESPACE
 #endif
 
