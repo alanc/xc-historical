@@ -1,4 +1,4 @@
-/* $XConsortium: imLcIm.c,v 1.4 94/01/20 18:05:01 rws Exp $ */
+/* $XConsortium: imLcIm.c,v 1.6 94/03/29 22:51:37 rws Exp $ */
 /******************************************************************
 
           Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -62,6 +62,9 @@ _XimCheckIfLocalProcessing(im)
 		return(True);
 	}
 	return(False);
+    } else if(strcmp(im->core.im_name, "local") == 0 ||
+	      strcmp(im->core.im_name, "none" ) == 0 ) {
+	return(True);
     }
     return(False);
 }
