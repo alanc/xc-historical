@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.30 93/07/13 09:41:31 rws Exp $ */
+/* $XConsortium: devices.c,v 5.31 93/09/03 08:05:26 dpw Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -685,7 +685,7 @@ InitKeyboardDeviceStruct(device, pKeySyms, pModifiers, bellProc, controlProc)
 	   InitKbdFeedbackClassDeviceStruct(dev, bellProc, controlProc));
 }
 
-int
+void
 SendMappingNotify(request, firstKeyCode, count)
     unsigned int request, count;
     unsigned int firstKeyCode;

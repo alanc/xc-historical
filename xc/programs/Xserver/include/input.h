@@ -1,4 +1,4 @@
-/* $XConsortium: input.h,v 1.12 92/08/21 15:09:38 rws Exp $ */
+/* $XConsortium: input.h,v 1.13 93/07/12 09:45:06 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -366,7 +366,7 @@ extern Bool InitKeyboardDeviceStruct(
 #endif
 );
 
-extern int SendMappingNotify(
+extern void SendMappingNotify(
 #if NeedFunctionPrototypes
     unsigned int /*request*/,
     unsigned int /*firstKeyCode*/,
