@@ -80,7 +80,7 @@ extern void XtResizeWidget(w)
 	changes.width = w->core.width;
 	changes.height = w->core.height;
 	changes.border_width = w->core.border_width;
-	XConfigureWindow(w->core.display, w->core.window,
+	XConfigureWindow(XtDisplay(w), XtWindow(w),
 	    CWWidth | CWHeight | CWBorderWidth, &changes);
     }
 } /* XtResizeWidget */
@@ -93,7 +93,7 @@ extern void XtMoveWidget(w, x, y)
 	w->core.x = x;
 	w->core.y = y;
 	if (XtWidgetIsRealized(w)) {
-	    XMoveWindow(w->core.display, w->core.window, w->core.x, w->core.y);
+	    XMoveWindow(XtDisplay(w), XtWindow(w), w->core.x, w->core.y);
         }
     }
 } /* XtWidgetMove */
