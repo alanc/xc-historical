@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.98 89/01/04 11:20:37 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.99 89/01/04 14:33:47 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -43,44 +43,38 @@ SOFTWARE.
 #include <pwd.h>
 #include <ctype.h>
 
-/*
- * The macII claims not to be SYSV, but it uses System V terminal control,
- * process groups, and signals.  If it walks like a duck and talks like duck,
- * ....  But, we still want to keep things separate for when other hybrids
- * become supported.
- */
-#ifdef macII
+#ifdef SYSV
 #include <sys/ioctl.h>
 #include <sys/termio.h>
 #include <sys/stat.h>
-#include <sys/ttychars.h>
-#define vhangup() ;
-#define setpgrp2 setpgrp
-#define USE_SYSV_TERMIO
-#define USE_SYSV_UTMP
-#define USE_SYSV_PGRP
-#define USE_SYSV_SIGNALS
-#endif /* macII */
-
-#ifdef SYSV				/* note that macII is *not* SYSV */
-#include <sys/ioctl.h>
-#include <sys/termio.h>
-#ifndef mips
-#include <sys/ptyio.h>
-#endif /* not mips */
-#include <sys/stat.h>
-#ifdef JOBCONTROL
-#include <sys/bsdtty.h>
-#endif	/* JOBCONTROL */
 #define USE_SYSV_TERMIO
 #define USE_SYSV_UTMP
 #define USE_SYSV_SIGNALS
 #define	USE_SYSV_PGRP
-#else	/* else not SYSV */		/* BSD and macII */
+#define USE_SYSV_ENVVARS		/* COLUMNS/LINES vs. TERMCAP */
+/*
+ * now get system-specific includes
+ */
 #ifdef macII
-#undef FIOCLEX
-#undef FIONCLEX
+#include <sys/ttychars.h>		/* macII */
+#undef USE_SYSV_ENVVARS			/* macII */
+#undef FIOCLEX				/* macII */
+#undef FIONCLEX				/* macII */
+#define vhangup() ;			/* macII */
+#define setpgrp2 setpgrp		/* macII */
+#include <sgtty.h>			/* macII */
+#include <sys/wait.h>			/* macII */
+#include <sys/resource.h>		/* macII */
 #endif
+#ifdef hpux
+#include <sys/ptyio.h>			/* hpux */
+#endif
+#ifdef JOBCONTROL
+#include <sys/bsdtty.h>			/* JOBCONTROL */
+#endif
+#endif /* SYSV */
+
+#ifndef SYSV				/* BSD systems */
 #include <sgtty.h>
 #include <sys/wait.h>
 #include <sys/resource.h>
@@ -114,7 +108,7 @@ SOFTWARE.
 #define LASTLOG_FILENAME "/usr/adm/lastlog"  /* only on BSD systems */
 #endif
 #ifndef WTMP_FILENAME
-#if defined(SYSV) || defined(macII)
+#if defined(SYSV)
 #define WTMP_FILENAME "/etc/wtmp"
 #else
 #define WTMP_FILENAME "/usr/adm/wtmp"
@@ -1164,10 +1158,10 @@ spawn ()
 	screen->uid = getuid();
 	screen->gid = getgid();
 
-#if !defined(SYSV) || defined(JOBCONTROL)  /* a reason why macII isn't SYSV */
+#if defined(macII) || !defined(SYSV) || defined(JOBCONTROL)
 	/* so that TIOCSWINSZ || TIOCSIZE doesn't block */
 	signal(SIGTTOU,SIG_IGN);
-#endif	/* !defined(SYSV) || defined(JOBCONTROL) */
+#endif	/* defined(macII) || !defined(SYSV) || defined(JOBCONTROL) */
 
 	if (get_ty) {
 		screen->respond = loginpty;
@@ -1599,28 +1593,28 @@ spawn ()
 		 * calls which may add a new entry to the environment.
 		 * The `1' is for the NULL terminating entry.
 		 */
-#ifdef SYSV				/* macII doesn't do COLUMNS/LINES */
+#ifdef USE_SYSV_ENVVARS
 		envnew = (char **) calloc ((unsigned) i + (5 + 1), sizeof(char *));
-#else /* not SYSV */
+#else
 		envnew = (char **) calloc ((unsigned) i + (4 + 1), sizeof(char *));
-#endif /* SYSV */
+#endif /* USE_SYSV_ENVVARS */
 		Bcopy((char *)environ, (char *)envnew, i * sizeof(char *));
 		environ = envnew;
 		Setenv ("TERM=", TermName);
 		if(!TermName)
 			*newtc = 0;
-#ifdef SYSV				/* macII does not want this */
+#ifdef USE_SYSV_ENVVARS
 		sprintf (numbuf, "%d", screen->max_col + 1);
 		Setenv("COLUMNS=", numbuf);
 		sprintf (numbuf, "%d", screen->max_row + 1);
 		Setenv("LINES=", numbuf);
-#else /* not SYSV (including macII) */
+#else
 		if (term->misc.titeInhibit) {
 		    remove_termcap_entry (newtc, ":ti=");
 		    remove_termcap_entry (newtc, ":te=");
 		}
 		Setenv ("TERMCAP=", newtc);
-#endif	/* SYSV */
+#endif /* USE_SYSV_ENVVAR */
 
 		sprintf (buf, "%lu", screen->TekEmu ? 
 			 ((unsigned long) XtWindow (XtParent(tekWidget))) :
@@ -1856,10 +1850,10 @@ spawn ()
 			 *command_to_exec);
 		} else if (get_ty) {
 			signal(SIGHUP, SIG_IGN);
-#ifdef SYSV				/* macII does NOT want this */
-#ifndef mips
+#if defined(SYSV) && !defined(macII)
+#ifdef TIOCTTY
 			ioctl (0, TIOCTTY, &zero);
-#endif /* not mips */
+#endif
 			execlp (getty_program, "getty", get_ty, "Xwindow", 0);
 #ifdef	USE_SYSV_PGRP
 			/* The exec of getty failed.  We can't just go on and
@@ -1882,7 +1876,7 @@ spawn ()
 #else	/* !SYSV */
 			ioctl (0, TIOCNOTTY, (char *) NULL);
 			execlp (getty_program, "+", "Xwindow", get_ty, 0);
-#endif	/* !SYSV */
+#endif	/* defined(SYSV) && !defined(macII) */
 		}
 		signal(SIGHUP, SIG_DFL);
 
@@ -2104,18 +2098,19 @@ int n;
 	exit(n);
 }
 
+/* ARGSUSED */
 resize(screen, TermName, oldtc, newtc)
 TScreen *screen;
 char *TermName;
 register char *oldtc, *newtc;
 {
+#ifndef USE_SYSV_ENVVARS
 	register char *ptr1, *ptr2;
 	register int i;
 	register int li_first = 0;
 	register char *temp;
 	char *index(), *strindex();
 
-#ifndef SYSV				/* macII *does* want this */
 	if ((ptr1 = strindex (oldtc, "co#")) == NULL){
 		strcat (oldtc, "co#80:");
 		ptr1 = strindex (oldtc, "co#");
@@ -2144,7 +2139,7 @@ register char *oldtc, *newtc;
 	 screen->max_row + 1);
 	ptr2 = index (ptr2, ':');
 	strcat (newtc, ptr2);
-#endif	/* !SYSV */
+#endif /* USE_SYSV_ENVVARS */
 }
 
 static reapchild ()
