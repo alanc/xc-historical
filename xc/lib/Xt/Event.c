@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.64 88/03/03 11:57:06 swick Exp $";
+static char rcsid[] = "$Header: Event.c,v 1.65 88/03/24 16:10:17 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -654,6 +654,7 @@ static Boolean InsertKeyboardGrab(widget, keyboard_focus)
     Widget  keyboard_focus;
 {
     register GrabRec *gl;
+    register Widget w;
     GrabRec* ge;
     Boolean found = False;
 
@@ -662,16 +663,16 @@ static Boolean InsertKeyboardGrab(widget, keyboard_focus)
 	return;
     }
     /* look for a keyboard grab entry for the same parent; if none,
-       reposition this entry after any non-focus entries for the same tree */
-    for (; widget != NULL && !found; widget = widget->core.parent) {
+       reposition this entry after any other entries for the same tree */
+    for (w = widget; w != NULL && !found; w = w->core.parent) {
 	for (gl = grabList; gl != NULL; gl = gl->next)
-	    if (gl->widget == widget) {
+	    if (gl->widget == w) {
 		found = True;
 		break;
 	    }
     }
     if (found)
-	if (gl->keyboard_focus != NULL) 
+	if (gl->widget == widget && gl->keyboard_focus != NULL) 
 	    if (gl->keyboard_focus == keyboard_focus)
 		return False;
 	    else
@@ -685,12 +686,10 @@ static Boolean InsertKeyboardGrab(widget, keyboard_focus)
 	}
     else { /* insert a new grab at end of list */
 	AddGrab( widget, False, False, keyboard_focus );
-	ge = grabList;
-	grabList = grabList->next;
-	ge->next = NULL;
-	if (grabList == NULL)
-	    grabList = ge;
-	else {
+	if (grabList->next != NULL) {
+	    ge = grabList;
+	    grabList = grabList->next;
+	    ge->next = NULL;
 	    for (gl = grabList; gl->next != NULL; gl = gl->next);
 	    gl->next = ge;
 	}
@@ -843,7 +842,7 @@ static void HandleFocus(widget, client_data, event)
 		    event->xfocus.detail == NotifyInferior)
 		    return;
 		if (event->type == FocusIn) which = add;
-		else			   which = remove;
+		else			    which = remove;
     }
     if (which == add)
 	InsertKeyboardGrab( widget, descendant );
