@@ -1,0 +1,14 @@
+/*
+ * Library imakefile info  - this contains any special redefinitions, etc.
+ * that Imakefiles in the various library subtrees will need.
+ */
+
+/**/# $XConsortium: Server.tmpl,v 1.1 89/10/20 09:43:44 jim Exp $
+
+#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)' 'CC=$(CC)' 'CCOPTIONS=$(CCOPTIONS)'
+
+         CC = LibraryCcCmd
+  CCOPTIONS = LibraryCCOptions
+STD_DEFINES = LibraryDefines
+CDEBUGFLAGS = LibraryCDebugFlags
+
