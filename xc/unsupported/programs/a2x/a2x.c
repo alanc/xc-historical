@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.31 92/03/25 15:45:35 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.32 92/03/26 13:02:49 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -919,7 +919,7 @@ main(argc, argv)
 	}
 	if (!(mask[0] & 1))
 	    continue;
-	n = read(0, buf, 1 /* sizeof(buf) */);
+	n = read(0, buf, sizeof(buf));
 	if (n <= 0)
 	    quit(0);
 	process(buf, n, sizeof(buf));
