@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: TMstate.c,v 1.53 88/09/04 12:22:12 swick Exp $";
+    "$XConsortium: TMstate.c,v 1.54 88/09/04 15:34:31 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -283,13 +283,17 @@ Boolean _XtMatchUsingDontCareMods(event,eventSeq)
 
     if ( (computed & computedMask) ==
         (eventSeq->event.modifiers & computedMask) ) {
+	Modifiers least_mod;
         XtTranslateKeycode(eventSeq->dpy,(KeyCode) eventSeq->event.eventCode,
             0,&modifiers_return,&keysym_return);
         if ((keysym_return & event->eventCodeMask)  == event->eventCode ) 
              return TRUE;
         temp = ~computedMask & modifiers_return;
         if (temp == 0) return FALSE;
-        for (i=1;i<256;i++) /* all combinations of 8 modifier bits */
+	for (least_mod = 1; (least_mod & modifiers_return)==0;)
+	    least_mod <<= 1;
+        for (i = modifiers_return; i >= least_mod; i--)
+	    /* all useful combinations of 8 modifier bits */
             if  (temp & i != 0) {
                  XtTranslateKeycode(eventSeq->dpy,(KeyCode)eventSeq->event.eventCode,
                     (Modifiers) i,&modifiers_return,&keysym_return);
