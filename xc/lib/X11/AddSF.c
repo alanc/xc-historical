@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsAddSF.c,v 1.4 91/05/13 23:02:21 rws Exp $" */
+/* $XConsortium: XcmsAddSF.c,v 1.5 91/07/25 01:08:22 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -28,7 +28,7 @@
  *		XcmsAddSF.c
  *
  *	DESCRIPTION
- *		Source for XcmsAddFunctionSett
+ *		Source for XcmsAddFunctionSet
  *
  *
  */
@@ -58,13 +58,13 @@ extern XcmsColorSpace **_XcmsDDColorSpacesInit;
 
 /*
  *	NAME
- *		XcmsAddFunctionSett - Add an Screen Color Characterization
+ *		XcmsAddFunctionSet - Add an Screen Color Characterization
  *					Function Set
  *
  *	SYNOPSIS
  */
 Status
-XcmsAddFunctionSett(pNewFS)
+XcmsAddFunctionSet(pNewFS)
     XcmsFunctionSet *pNewFS;
 /*
  *	DESCRIPTION
