@@ -130,18 +130,18 @@
 
 (comp::def-tr comp::new-tr-typep typep (form type)
    (let (ent)
-      (if* (and (consp type)
-		(eq 'quote (car type))
-		(consp (cdr type)))
+      (excl:if* (and (consp type)
+		     (eq 'quote (car type))
+		     (consp (cdr type)))
 	 then (setq ent (franz:assq (cadr type) type-pred-alist)))
-      (if* ent
+      (excl:if* ent
 	 then `(,(cdr ent) ,form)
-	 else (if* (and (consp type)
-			(eq 'quote (car type))
-			(consp (cdr type)))
+	 else (excl:if* (and (consp type)
+			     (eq 'quote (car type))
+			     (consp (cdr type)))
 		 then (setq ent (franz:assq (cadr type)
 					    excl::type-pred-alist)))
-	      (if* ent
+	      (excl:if* ent
 		 then `(,(cdr ent) ,form)
 		 else (comp::no-transform)))))
 
@@ -151,7 +151,7 @@
 (defun fd-char-avail-p (fd)
   (multiple-value-bind (available-p errcode)
       (comp::.primcall-sargs 'sys::filesys excl::fs-char-avail fd)
-    (if* errcode
+    (excl:if* errcode
        then t
        else available-p)))
 
@@ -173,7 +173,7 @@
 	 (comp::.primcall-sargs 'sys::filesys excl::fs-read-bytes fd vector
 				start-index rest)
        (declare (fixnum numread))
-       (if* errcode
+       (excl:if* errcode
 	  then (if (not (eq errcode
 			    excl::*error-code-interrupted-system-call*))
 		   (return t))
@@ -228,11 +228,11 @@
    ; convert the given element type to one of the symbols which
    ; is in the car of the array-descriptors list
    ;(msg "beginning type is " type 'N)
-   (if* (symbolp type)
-      then (if* (franz:memq type '(t bit string-char fixnum))
+   (excl:if* (symbolp type)
+      then (excl:if* (franz:memq type '(t bit string-char fixnum))
 	      thenret	; it is ok as it is
 	      else (let ((temp (get type 'deftype-expander)))
-		     (if* temp
+		     (excl:if* temp
 			then
 			     (return-from type-array-element-type-to-array
 			       (type-array-element-type-to-array
@@ -246,7 +246,7 @@
     elseif (consp type)
       then (setq type
 		 (case (car type)
-		    (mod (if* (integerp (setq temp (cadr type)))
+		    (mod (excl:if* (integerp (setq temp (cadr type)))
 			    then (cond ((< temp 1) t)
 				       ((<= temp 2) 'bit)
 				       ((<= temp 256) 'ubyte)
@@ -255,7 +255,7 @@
 				       (t t))
 			    else t))
 		    (signed-byte
-		       (if* (integerp (setq temp (cadr type)))
+		       (excl:if* (integerp (setq temp (cadr type)))
 			  then (cond ((<= temp 0) t)
 				     ((<= temp 8) 'byte)
 				     ((<= temp 16) 'word)
@@ -264,7 +264,7 @@
 				     (t  t))
 			  else t))
 		    (unsigned-byte
-		       (if* (integerp (setq temp (cadr type)))
+		       (excl:if* (integerp (setq temp (cadr type)))
 			  then (cond ((<= temp 0) t)
 				     ((<= temp 8) 'ubyte)
 				     ((<= temp 16) 'uword)
@@ -291,16 +291,16 @@
     ((simple-string string)
      (apply #'make-string length rest))
     ((array simple-array vector simple-vector)
-     (if* (listp type)
+     (excl:if* (listp type)
 	 then (apply #'make-array length :element-type (cadr type) rest)
 	 else (apply #'make-array length rest)))
     ((bit-vector simple-bit-vector)
      (apply #'make-array length :element-type 'bit rest))
     (t
      ;; Now, we can either have a user-defined type symbol, or an error.
-     (if* (symbolp type)
+     (excl:if* (symbolp type)
 	then (let ((temp (get type 'excl::deftype-expander)))
-	       (if* temp
+	       (excl:if* temp
 		  then (cond (rest (return-from make-sequence
 				     (make-sequence (funcall temp (list type)) length
 						   :initial-element (cadr rest))))
@@ -373,7 +373,7 @@
 		     (add-to-clock-queue clock-event)
 		     (let ((excl::*without-interrupts* nil))
 		       (multiple-value-list (progn ,@body)))))
-       (if* (eq ret 'with-timeout-internal)
+       (excl:if* (eq ret 'with-timeout-internal)
 	  then (let ((excl::*without-interrupts* nil))
 		 (setq ret (multiple-value-list (progn ,@timeout-body))))
 	  else (remove-from-clock-queue clock-event)))
@@ -387,11 +387,11 @@
   (unless (process-lock-p lock)
     (error "First argument to PROCESS-LOCK must be a process-lock: ~s" lock))
   (without-interrupts
-   (if* (null (process-lock-locker lock))
+   (excl:if* (null (process-lock-locker lock))
       then (setf (process-lock-locker lock) lock-value)
-      else (if* timeout
-	      then (if* (or (eq 0 timeout) ;for speed
-			    (zerop timeout))
+      else (excl:if* timeout
+	      then (excl:if* (or (eq 0 timeout) ;for speed
+				 (zerop timeout))
 		      then nil
 		      else (with-timeout (timeout)
 			     (process-lock-1 lock lock-value whostate)))
@@ -456,7 +456,7 @@
   ;;  -- 28Feb90 smh
   ;; Run the wait function once here both for efficiency and as a
   ;; first line check for errors in the function.
-  (if* (apply function args)
+  (excl:if* (apply function args)
      then t
      else (let ((ret (list nil)))
             (without-interrupts
@@ -480,7 +480,7 @@
     (stream-or-fd &key (wait-function #'listen)
 		       (whostate "waiting for input")
 		       timeout)
-  (let ((fd (if* (excl:fixnump stream-or-fd) then stream-or-fd
+  (let ((fd (excl:if* (excl:fixnump stream-or-fd) then stream-or-fd
 	     elseif (streamp stream-or-fd)
 	       then (excl::stream-input-fn stream-or-fd)
 	       else (error "wait-for-input-available expects a stream or file descriptor: ~s" stream-or-fd))))
@@ -490,13 +490,13 @@
 	(unwind-protect
 	    (progn
 	      (mp::mpwatchfor fd)
-	      (if* timeout
+	      (excl:if* timeout
 		 then (mp::process-wait-with-timeout
 		       whostate timeout wait-function stream-or-fd)
 		 else (mp::process-wait whostate wait-function stream-or-fd)
 		      t))
 	  (mp::mpunwatchfor fd))
-      (if* timeout
+      (excl:if* timeout
 	 then (mp::process-wait-with-timeout
 	       whostate timeout wait-function stream-or-fd)
 	 else (mp::process-wait whostate wait-function stream-or-fd)

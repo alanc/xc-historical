@@ -53,7 +53,6 @@
   '(
     excl::arglist
     excl::dynamic-extent
-    excl::if*
     excl::type-error
     excl::type-error-datum
     excl::type-error-expected-type
@@ -225,7 +224,7 @@
   (:size 3000)
   #+(or kcl ibcl) (:shadow rational)
   #+allegro (:import-from excl without-interrupts)
-  #+excl (:import-from excl if* defcmacro)
+  #+excl (:import-from excl arglist)
   #+Genera (:import-from sys array-register)
   #+Genera (:import-from zwei indentation)
   #+lcl3.0 (:import-from lcl arglist)

@@ -1653,8 +1653,8 @@
   (let ((source-end (length source-sequence)))
     (declare (type array-index source-end))
     
-    (if* (and (eq target-sequence source-sequence)
-	      (> target-start source-start))
+    (excl:if* (and (eq target-sequence source-sequence)
+		   (> target-start source-start))
        then (let ((nelts (min (- target-end target-start)
 			      (- source-end source-start))))
 	      (do ((target-index (+ target-start nelts -1) (1- target-index))
