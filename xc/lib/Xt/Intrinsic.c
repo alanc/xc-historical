@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.97 87/12/22 12:11:17 swick Locked $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.98 87/12/28 10:42:17 swick Locked $";
 #endif lint
 
 /*
@@ -464,8 +464,9 @@ Widget XtCreateWidget(name,widgetClass,parent,args,num_args)
           widget->core.parent->core.sensitive);
      _XtCreate2(widget,args,num_args);
 
-   (*(((CompositeWidgetClass)(widget->core.parent->core.widget_class))
-        ->composite_class.insert_child))(widget, args, &num_args);
+    if (XtIsSubclass(widget->core.parent, (WidgetClass)compositeWidgetClass))
+      (*(((CompositeWidgetClass)(widget->core.parent->core.widget_class))
+	 ->composite_class.insert_child))(widget, args, &num_args);
 
     return (widget);
 }
