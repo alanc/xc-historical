@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.5 93/09/03 16:31:03 mor Exp $ */
+/* $XConsortium: connect.c,v 1.6 93/09/08 20:02:20 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -28,13 +28,6 @@ purpose.  It is provided "as is" without express or implied warranty.
 #define ICE_CONNECTION_RETRIES 5
 
 static int  ConnectToPeer();
-
-IceConn     	_IceConnectionObjs[256];
-char	    	*_IceConnectionStrings[256];
-static int     	_IceConnectionCount = 0;
-
-static _IceWatchProc *_IceWatchProcs = NULL;
-
 
 
 IceConn
@@ -326,73 +319,6 @@ IceConn     iceConn;
 	}
 
 	_IceConnectionCount--;
-    }
-}
-
-
-
-Status
-IceAddConnectionWatch (watchProc, clientData)
-
-IceWatchProc	watchProc;
-IcePointer	clientData;
-
-{
-    /*
-     * watchProc will be called each time an ICE connection is
-     * created/destroyed by ICElib.
-     */
-
-    _IceWatchProc *watch = (_IceWatchProc *) malloc (sizeof (_IceWatchProc));
-    _IceWatchProc *ptr = _IceWatchProcs;
-
-    if (watch == NULL)
-	return (0);
-
-    watch->watch_proc = watchProc;
-    watch->client_data = clientData;
-    watch->next = NULL;
-
-    while (ptr && ptr->next)
-	ptr = ptr->next;
-
-    if (ptr == NULL)
-	_IceWatchProcs = watch;
-    else
-	ptr->next = watch;
-
-    return (1);
-}
-
-
-
-void
-IceRemoveConnectionWatch (watchProc, clientData)
-
-IceWatchProc	watchProc;
-IcePointer	clientData;
-
-{
-    _IceWatchProc *watch = _IceWatchProcs;
-    _IceWatchProc *prev = NULL;
-
-    while (watch && (watch->watch_proc != watchProc ||
-        watch->client_data != clientData))
-    {
-	prev = watch;
-	watch = watch->next;
-    }
-
-    if (watch)
-    {
-	_IceWatchProc *next = watch->next;
-
-	if (prev == NULL)
-	    _IceWatchProcs = next;
-	else
-	    prev->next = next;
-
-	free ((char *) watch);
     }
 }
 
