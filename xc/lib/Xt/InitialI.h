@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.21 89/09/26 17:54:01 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.22 89/09/28 11:34:43 swick Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -141,6 +141,7 @@ extern int _XtwaitForSomething(); /* ignoreTimers, ignoreInputs, ignoreEvents,
     /* XtAppContext app */
 
 typedef struct _XtPerDisplayStruct {
+    CallbackList destroy_callbacks;
     Region region;
     XtCaseProc defaultCaseConverter;
     XtKeyProc defaultKeycodeTranslator;
@@ -164,6 +165,7 @@ typedef struct _XtPerDisplayStruct {
     Time last_timestamp;	       /* from last event dispatched */
     int multi_click_time;	       /* for XtSetMultiClickTime */
     struct _TMContext* tm_context;     /* for XtGetActionKeysym */
+    CallbackList mapping_callbacks;    /* special case for TM */
 } XtPerDisplayStruct, *XtPerDisplay;
 
 extern void _XtPerDisplayInitialize();
