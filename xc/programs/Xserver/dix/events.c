@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.185 89/04/23 17:38:54 rws Exp $ */
+/* $XConsortium: events.c,v 1.186 89/04/25 08:46:01 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -153,6 +153,7 @@ extern Mask EventMaskForClient();
 static Bool CheckMotion();
 extern void WriteEventsToClient();
 static Bool CheckDeviceGrabs();
+extern void NewCurrentScreen();
 
 extern GrabPtr CreateGrab();		/* Defined in grabs.c */
 extern Bool GrabMatchesSecond();
