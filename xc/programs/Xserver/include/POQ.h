@@ -28,7 +28,7 @@
  *
  ************************************************************************/
 
-/* $XConsortium: POQ.h,v 1.1 93/11/12 17:02:46 rob Exp $ */
+/* $XConsortium: POQ.h,v 1.2 93/11/16 10:56:22 rob Exp $ */
 
 #ifndef POQ_H
 #define POQ_H
@@ -283,8 +283,8 @@ typedef struct _Extension {
 #define MTXUnlockDevicesAndPOQ(client)					\
     UnlockDevicesAndPOQ(client)
 #else
-#define MTXLockDevicesAndPOQ
-#define MTXUnlockDevicesAndPOQ
+#define MTXLockDevicesAndPOQ(client, mapping) /* nothing */
+#define MTXUnlockDevicesAndPOQ(client) /* nothing */
 #endif
 
 /***********************************************************************/

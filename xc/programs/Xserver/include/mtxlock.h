@@ -45,16 +45,16 @@
 #include "POQ.h"
 
 #ifndef MTX
-#define MTX_LOCK_DEVICES()
-#define MTX_UNLOCK_DEVICES()
+#define MTX_LOCK_DEVICES() /* nothing */
+#define MTX_UNLOCK_DEVICES() /* nothing */
 #else /* MTX */
 #define MTX_LOCK_DEVICES() LockDevices()
 #define MTX_UNLOCK_DEVICES() UnlockDevices()
 #endif /* MTX */
 
 #ifndef MTX
-#define MTX_MUTEX_LOCK(_arg)
-#define MTX_MUTEX_UNLOCK(_arg)
+#define MTX_MUTEX_LOCK(_arg) /* nothing */
+#define MTX_MUTEX_UNLOCK(_arg) /* nothing */
 #else /* MTX */
 #define MTX_MUTEX_LOCK(_arg) X_MUTEX_LOCK(_arg)
 #define MTX_MUTEX_UNLOCK(_arg) X_MUTEX_UNLOCK(_arg)
@@ -117,7 +117,7 @@
 #ifdef MTX
 #define MTX_UNLOCK_DRAWABLE_AND_GC UNLOCK_DRAWABLE_AND_GC
 #else
-#define MTX_UNLOCK_DRAWABLE_AND_GC
+#define MTX_UNLOCK_DRAWABLE_AND_GC /* nothing */
 #endif
 
 
@@ -236,7 +236,9 @@
 #ifdef MTX
 #define MTX_UNLOCK_TWO_DRAWABLES_AND_GC UNLOCK_TWO_DRAWABLES_AND_GC
 #else
-#define MTX_UNLOCK_TWO_DRAWABLES_AND_GC
+#define MTX_UNLOCK_TWO_DRAWABLES_AND_GC(pSrc, pDst, pGC, 		\
+				        srcID, dstID, gcID, client) 	\
+	    /* nothing */
 #endif
 
 
@@ -294,7 +296,7 @@
 #ifdef MTX
 #define MTX_UNLOCK_WINDOW UNLOCK_WINDOW
 #else
-#define MTX_UNLOCK_WINDOW
+#define MTX_UNLOCK_WINDOW(pWin, winID, client) /* nothing */
 #endif
 
 #define MTX_UNLOCK_WINDOW_IF_FAILURE(pWin, whatStuff,client)		\
@@ -415,7 +417,8 @@
 #ifdef MTX
 #define MTX_UNLOCK_ALL_WINDOWS UNLOCK_ALL_WINDOWS
 #else
-#define MTX_UNLOCK_ALL_WINDOWS
+#define MTX_UNLOCK_ALL_WINDOWS(pWin1, pWin2, winID1, winID2, client)	\
+	/* nothing */
 #endif
 
 
@@ -539,7 +542,7 @@
 #ifdef MTX
 #define MTX_UNLOCK_DRAWABLE UNLOCK_DRAWABLE
 #else
-#define MTX_UNLOCK_DRAWABLE
+#define MTX_UNLOCK_DRAWABLE(pDraw, drawID, client) /* nothing */
 #endif
 /***********************************************************************
  *
@@ -549,7 +552,7 @@
 #ifdef MTX
 #define MTXUnlockDrawable(drawablePtr, id) UnlockDrawable(drawablePtr, id)
 #else
-#define MTXUnlockDrawable(drawablePtr, id)
+#define MTXUnlockDrawable(drawablePtr, id) /* nothing */
 #endif
 
 
@@ -605,7 +608,7 @@
 #ifdef MTX
 #define MTX_UNLOCK_GC UNLOCK_GC
 #else
-#define MTX_UNLOCK_GC
+#define MTX_UNLOCK_GC(pGC, gcID, client) /* nothing */
 #endif
 /***********************************************************************
  *
@@ -615,7 +618,7 @@
 #ifdef MTX
 #define MTXUnlockGC(pGC, gcID)  UnlockGC (pGC, gcID)
 #else
-#define MTXUnlockGC
+#define MTXUnlockGC(pGC, gcID) /* nothing */
 #endif 
 
 
@@ -671,7 +674,7 @@
 #ifdef MTX
 #define MTX_UNLOCK_TWO_GCS UNLOCK_TWO_GCS
 #else
-#define MTX_UNLOCK_TWO_GCS
+#define MTX_UNLOCK_TWO_GCS(pGC1, pGC2, gcID1, gcID2, client) /* nothing */
 #endif
 
 
@@ -732,7 +735,7 @@
 #ifdef MTX
 #define MTX_UNLOCK_COLORMAP UNLOCK_COLORMAP
 #else
-#define MTX_UNLOCK_COLORMAP
+#define MTX_UNLOCK_COLORMAP(pMap, mapID, client) /* nothing */
 #endif
 
 
@@ -821,7 +824,7 @@
 #ifdef MTX
 #define MTX_UNLOCK_FONT UNLOCK_FONT
 #else
-#define MTX_UNLOCK_FONT
+#define MTX_UNLOCK_FONT(pFont, fontID, client) /* nothing */
 #endif
 
 
@@ -895,7 +898,7 @@
 #ifdef MTX
 #define MTX_LOCK_PENDING_OPERATION_QUEUE LOCK_PENDING_OPERATION_QUEUE
 #else
-#define MTX_LOCK_PENDING_OPERATION_QUEUE
+#define MTX_LOCK_PENDING_OPERATION_QUEUE(client, conflictMask) /* nothing */
 #endif
 
 
@@ -917,7 +920,7 @@
 #ifdef MTX
 #define MTX_UNLOCK_PENDING_OPERATION_QUEUE UNLOCK_PENDING_OPERATION_QUEUE
 #else
-#define MTX_UNLOCK_PENDING_OPERATION_QUEUE
+#define MTX_UNLOCK_PENDING_OPERATION_QUEUE(client) /* nothing */
 #endif
 
 

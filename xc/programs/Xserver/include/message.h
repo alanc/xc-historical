@@ -98,7 +98,7 @@ typedef struct
 #ifdef MTX
 #define MTXReturnPooledMessage ReturnPooledMessage(msg)
 #else
-#define MTXReturnPooledMessage
+#define MTXReturnPooledMessage /* nothing */
 #endif
 
 
