@@ -1,5 +1,5 @@
 /*
-* $Header: Atoms.h,v 1.28 88/02/02 08:13:38 swick Exp $
+* $Header: Atoms.h,v 1.29 88/02/14 14:25:23 jim Exp $
 */
 
 /*
@@ -34,7 +34,8 @@
 #define XtNancestorSensitive	"ancestorSensitive"
 #define XtNbackground		"background"
 #define XtNbackgroundPixmap     "backgroundPixmap"
-#define XtNborder		"border"
+#define XtNborder		"borderColor"
+#define XtNborderColor		"borderColor"
 #define XtNborderPixmap		"borderPixmap"
 #define XtNborderWidth		"borderWidth"
 #define XtNcallback		"callback"
