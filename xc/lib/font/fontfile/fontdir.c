@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontdir.c,v 1.8 92/02/11 18:25:39 eswu Exp $
+ * $XConsortium: fontdir.c,v 1.9 92/03/20 15:53:29 eswu Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -324,6 +324,32 @@ PatternMatch(pat, patdashes, string, stringdashes)
     }
 }
 
+int
+FontFileCountDashes (name, namelen)
+    char    *name;
+    int	    namelen;
+{
+    int	ndashes = 0;
+
+    while (namelen--)
+	if (*name++ == '\055')	/* avoid non ascii systems */
+	    ++ndashes;
+    return ndashes;
+}
+
+static char *
+SaveString (s)
+    char    *s;
+{
+    char    *n;
+
+    n = (char *) xalloc (strlen (s) + 1);
+    if (!n)
+	return 0;
+    strcpy (n, s);
+    return n;
+}
+
 FontEntryPtr
 FontFileFindNameInDir(table, pat)
     FontTablePtr    table;
@@ -413,7 +439,7 @@ FontFileAddFontFile (dir, fontName, fileName)
 	entry.name.length = MAXFONTNAMELEN;
     entry.name.name = fontName;
     CopyISOLatin1Lowered (entry.name.name, fontName, entry.name.length);
-    entry.name.ndashes = CountDashes (entry.name.name, entry.name.length);
+    entry.name.ndashes = FontFileCountDashes (entry.name.name, entry.name.length);
     entry.name.name[entry.name.length] = '\0';
     /*
      * Add a bitmap name if the incoming name isn't an XLFD name, or
@@ -551,7 +577,7 @@ FontFileAddFontAlias (dir, aliasName, fontName)
     entry.name.length = strlen (aliasName);
     CopyISOLatin1Lowered (aliasName, aliasName, entry.name.length);
     entry.name.name = aliasName;
-    entry.name.ndashes = CountDashes (entry.name.name, entry.name.length);
+    entry.name.ndashes = FontFileCountDashes (entry.name.name, entry.name.length);
     entry.type = FONT_ENTRY_ALIAS;
     if (!(entry.u.alias.resolved = SaveString (fontName)))
 	return FALSE;
