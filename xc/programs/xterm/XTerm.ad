@@ -1,4 +1,4 @@
-XTerm*SimpleMenu*BackingStore: Always
+XTerm*SimpleMenu*BackingStore: NotUseful
 XTerm*SimpleMenu*labelFont: *-*-helvetica-bold-r-normal--*-120-*-*-*-*-iso*-*
 XTerm*SimpleMenu*HorizontalMargins: 16
 XTerm*SimpleMenu*Cursor: left_ptr
