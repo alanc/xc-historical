@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.216 94/02/04 21:29:49 converse Exp $ */
+/* $XConsortium: Initialize.c,v 1.217 94/02/08 20:21:01 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -172,7 +172,15 @@ void _XtInherit()
 void XtToolkitInitialize()
 {
     extern void _XtResourceListInitialize();
+    static Boolean initialized = False;
 
+    LOCK_PROCESS;
+    if (initialized) {
+	UNLOCK_PROCESS;
+	return;
+    }
+    initialized = True;
+    UNLOCK_PROCESS;
     /* Resource management initialization */
     XrmInitialize();
     _XtResourceListInitialize();
