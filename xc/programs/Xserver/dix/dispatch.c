@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.1 87/08/14 09:11:56 swick Locked $ */
+/* $Header: dispatch.c,v 1.2 87/08/14 09:14:57 swick Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -27,18 +27,13 @@ SOFTWARE.
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include "Xproto.h"
-#include "Xprotostr.h"
 #include "windowstr.h"
 #include "fontstruct.h"
 #include "dixfontstr.h"
 #include "gcstruct.h"
 #include "osstruct.h"
-#include "resource.h"
 #include "selection.h"
 #include "colormapst.h"
-#include "dixstruct.h"
-#include "extension.h"
-#include "input.h"
 #include "cursorstr.h"
 #include "scrnintstr.h"
 #include "opaque.h"
