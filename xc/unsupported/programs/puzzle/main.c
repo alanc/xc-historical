@@ -43,7 +43,7 @@
 #define MIN_TILE_WIDTH		30
 
 #define MAX_STEPS		1000
-#define DEFAULT_SPEED		2
+#define DEFAULT_SPEED		5
 
 #define TITLE_TILES	0
 #define TITLE_TEXT	1
@@ -703,6 +703,7 @@ CalculateSpeed()
     int i, x, y;
     long timePerTile;
     static int firstCall = 1;
+    long delta;
 
     if (!firstCall)
 	return;
@@ -717,12 +718,14 @@ CalculateSpeed()
     bcopy(&tv1, &tv2, sizeof(struct timeval));
 
     MoveSteps = 0;
-    while (DeltaT(tv2,tv1) < timePerTile) {
+    delta = 0L;
+    while (delta < timePerTile) {
 	MoveArea(TileWindow,x,y,x+1,y,TileWidth,TileHeight);
 	RectSet(TileWindow,x,y,1,TileHeight,FgPixel);
-	MoveSteps++;
 	XSync(dpy,0);
 	gettimeofday(&tv2, &tz);
+	delta = DeltaT(tv2,tv1);
+	if (delta >= 0) MoveSteps++;	/* crock for broken systems */
     }
 
     /*
@@ -739,7 +742,7 @@ CalculateSpeed()
     XFlush(dpy);
     gettimeofday(&tv2, &tz);
     MoveSteps = (((long)MoveSteps) * timePerTile)/DeltaT(tv2,tv1);
-    if (MoveSteps == 0)
+    if (MoveSteps <= 0)
 	MoveSteps = 1;
 }
 
