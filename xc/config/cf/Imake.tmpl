@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.96 91/03/12 18:31:43 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.97 91/03/13 14:28:49 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -583,6 +583,9 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #ifndef LoaderLibPrefix
 #define LoaderLibPrefix /**/			/* cray does -l libX11.a */
 #endif
+#ifndef DependFlags
+#define DependFlags /**/
+#endif
 #ifndef TOPDIR
 #define TOPDIR .
 #endif
@@ -691,6 +694,7 @@ XCOMM site-specific configuration parameters - edit site.def to change
            LDLIBS = $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
         LDOPTIONS = $(CDEBUGFLAGS) $(CCOPTIONS) $(LOCAL_LDFLAGS)
    LDCOMBINEFLAGS = LdCombineFlags
+      DEPENDFLAGS = DependFlags
 
         MACROFILE = MacroFile
            RM_CMD = $(RM) FilesToClean
