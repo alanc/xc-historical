@@ -1,7 +1,7 @@
 #ifndef _PEXLIB_H_
 #define _PEXLIB_H_
 
-/* $XConsortium: PEXlib.h,v 1.9 92/08/26 13:05:12 mor Exp $ */
+/* $XConsortium: PEXlib.h,v 1.10 92/10/27 15:42:37 mor Exp $ */
 
 /******************************************************************************/
 /*  Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Mass.      */
@@ -37,21 +37,7 @@
 
 #include <X11/Xlib.h>
 #include <X11/PEX5/PEX.h>
-
-
-#ifndef NeedFunctionPrototypes
-#if defined(FUNCPROTO) || defined(__STDC__) || defined(__cplusplus) || defined(c_plusplus)
-#define NeedFunctionPrototypes  1
-#else
-#define NeedFunctionPrototypes  0
-#endif /* FUNCPROTO, __STDC__, __cplusplus, c_plusplus */
-#endif /* NeedFunctionPrototypes */
-
-
-#ifdef __cplusplus                      /* do not leave open across includes */
-extern "C" {                                    /* for C++ V2.0 */
-#endif
-
+#include <X11/Xfuncproto.h>
 
 /*
  * floating point min and max values
@@ -1740,6 +1726,7 @@ typedef struct {
 #define PEXBadHomoCoord         11
 #define PEXBadSubVolume         12
 
+_XFUNCPROTOBEGIN
 
 /*
  * function declarations
@@ -4434,10 +4421,6 @@ extern unsigned long PEXCountOCs(
 #endif
 );
 
-
-
-#ifdef __cplusplus
-}                                               /* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #endif /* _PEXLIB_H_ */
