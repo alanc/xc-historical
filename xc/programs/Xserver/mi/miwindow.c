@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miwindow.c,v 5.13 94/01/07 09:45:06 dpw Exp $ */
+/* $XConsortium: miwindow.c,v 5.14 94/01/20 12:56:09 rob Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "region.h"
@@ -283,13 +283,15 @@ miPostChangeSaveUnder(pWin, pFirst)
     WindowPtr		pWin;
     WindowPtr		pFirst;
 {
-    register WindowPtr pChild;
-    Bool (* ChangeWindowAttributes)();
+    register WindowPtr pParent, pChild;
+    ChangeWindowAttributesProcPtr ChangeWindowAttributes;
 
-    ChangeWindowAttributes = pWin->drawable.pScreen->ChangeWindowAttributes;
-    if (!pWin->DIXsaveUnder &&
-	(pWin->backingStore == NotUseful) && pWin->backStorage)
-	(*ChangeWindowAttributes)(pWin, CWBackingStore);
+    if (!(pParent = pWin->parent))
+	return;
+    ChangeWindowAttributes = pParent->drawable.pScreen->ChangeWindowAttributes;
+    if (!pParent->DIXsaveUnder &&
+	(pParent->backingStore == NotUseful) && pParent->backStorage)
+	(*ChangeWindowAttributes)(pParent, CWBackingStore);
     if (!(pChild = pFirst))
 	return;
     while (1)
@@ -305,7 +307,7 @@ miPostChangeSaveUnder(pWin, pFirst)
 	while (!pChild->nextSib)
 	{
 	    pChild = pChild->parent;
-	    if (pChild == pWin)
+	    if (pChild == pParent)
 		return;
 	}
 	pChild = pChild->nextSib;
@@ -317,7 +319,6 @@ miMarkWindow(pWin)
     register WindowPtr pWin;
 {
     register ValidatePtr val;
-    extern Bool Must_have_memory;
 
     if (pWin->valdata)
 	return;
@@ -346,7 +347,7 @@ miMarkOverlappedWindows(pWin, pFirst, ppLayerWin)
 
     if (pWin == pFirst)
     {
-	/* Blindly mark pWin and all of it's inferiors.	 This is a slight
+	/* Blindly mark pWin and all of its inferiors.	 This is a slight
 	 * overkill if there are mapped windows that outside pWin's border,
 	 * but it's better than wasting time on RectIn checks.
 	 */
@@ -518,12 +519,7 @@ miMoveWindow(pWin, x, y, pNextSib, kind)
 	}
 #ifdef DO_SAVE_UNDERS
 	if (dosave)
-	    if (pLayerWin == pWin)
-		(*pScreen->PostChangeSaveUnder)(pWin->parent,
-						windowToValidate);
-	    else
-		(*pScreen->PostChangeSaveUnder)(pLayerWin->parent,
-						pLayerWin);
+	    (*pScreen->PostChangeSaveUnder)(pLayerWin, windowToValidate);
 #endif /* DO_SAVE_UNDERS */
 	if (anyMarked && pScreen->PostValidateTree)
 	    (*pScreen->PostValidateTree)(pLayerWin->parent, NullWindow, kind);
@@ -718,10 +714,7 @@ miSlideAndSizeWindow(pWin, x, y, w, h, pSib)
 #ifdef DO_SAVE_UNDERS
 	if (DO_SAVE_UNDERS(pWin))
 	{
-	    if (pLayerWin != pWin)
-		dosave = (*pScreen->ChangeSaveUnder)(pLayerWin, pLayerWin);
-	    else
-		dosave = (*pScreen->ChangeSaveUnder)(pWin, pFirstChange);
+	    dosave = (*pScreen->ChangeSaveUnder)(pLayerWin, pFirstChange);
 	}
 #endif /* DO_SAVE_UNDERS */
 
@@ -909,10 +902,7 @@ miSlideAndSizeWindow(pWin, x, y, w, h, pSib)
 #ifdef DO_SAVE_UNDERS
 	if (dosave)
 	{
-	    if (pLayerWin == pWin)
-		(*pScreen->PostChangeSaveUnder)(pParent, pFirstChange);
-	    else
-		(*pScreen->PostChangeSaveUnder)(pLayerWin->parent, pLayerWin);
+	    (*pScreen->PostChangeSaveUnder)(pLayerWin, pFirstChange);
 	}
 #endif /* DO_SAVE_UNDERS */
 	if (anyMarked && pScreen->PostValidateTree)
@@ -1031,7 +1021,7 @@ miSetShape(pWin)
 	    (*pScreen->HandleExposures)(pLayerWin->parent);
 #ifdef DO_SAVE_UNDERS
 	if (dosave)
-	    (*pScreen->PostChangeSaveUnder)(pLayerWin->parent, pLayerWin);
+	    (*pScreen->PostChangeSaveUnder)(pLayerWin, pLayerWin);
 #endif /* DO_SAVE_UNDERS */
 	if (anyMarked && pScreen->PostValidateTree)
 	    (*pScreen->PostValidateTree)(pLayerWin->parent, NullWindow, VTOther);
@@ -1094,7 +1084,7 @@ miChangeBorderWidth(pWin, width)
 #ifdef DO_SAVE_UNDERS
 	if (DO_SAVE_UNDERS(pWin))
 	{
-	    dosave = (*pScreen->ChangeSaveUnder)(pLayerWin, pLayerWin->nextSib);
+	    dosave = (*pScreen->ChangeSaveUnder)(pLayerWin, pWin->nextSib);
 	}
 #endif /* DO_SAVE_UNDERS */
 
@@ -1105,8 +1095,7 @@ miChangeBorderWidth(pWin, width)
 	}
 #ifdef DO_SAVE_UNDERS
 	if (dosave)
-	    (*pScreen->PostChangeSaveUnder)(pLayerWin->parent,
-					    pLayerWin->nextSib);
+	    (*pScreen->PostChangeSaveUnder)(pLayerWin, pWin->nextSib);
 #endif /* DO_SAVE_UNDERS */
 	if (anyMarked && pScreen->PostValidateTree)
 	    (*pScreen->PostValidateTree)(pLayerWin->parent, pLayerWin,
