@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.149 91/07/09 20:10:36 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.150 91/07/10 09:33:28 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1225,6 +1225,8 @@ register xEvent *event;	/* wire protocol event */
 }
 
 
+#ifndef USL_SHARELIB
+
 static char *_SysErrorMsg (n)
     int n;
 {
@@ -1234,6 +1236,8 @@ static char *_SysErrorMsg (n)
 
     return (s ? s : "no such error");
 }
+
+#endif 	/* USL sharedlibs in don't define for SVR3.2 */
 
 
 /*
@@ -1834,169 +1838,102 @@ int iovcnt;
 	END USER STAMP AREA
 */
 
-extern char _XsTypeOfStream[];
+
+extern char _XsTypeofStream[];
 extern Xstream _XsStream[];
 
-int _XReadV (fd, v, n)
-    int fd;
-    struct iovec *v;
-    int n;
-{
-    int i;				/* iterator */
-    int size = 0;			/* return value */
-
-    /* check inputs */
-    for (i = 0; i < n; i++) {
-	if (v[i].iov_len < 0 || v[i].iov_base == NULL) {
-	    errno = EINVAL;
-	    return -1;
-	}
-    }
-
-    for (i = 0; i < n; i++) {
-	int len;
-	char *p;
-	
-	for (p = v[i].iov_base, len = v[i].iov_len; len > 0; ) {
-	    int rc = ((*_XsStream[_XsTypeOfStream[fd]].ReadFromStream)
-		      (fd, p, len, BUFFERING));
-	    if (rc > 0) {
-		p += rc;
-		len -= rc;
-		size += rc;
-	    } else if (rc < 0 && size == 0) {
-		return -1;
-	    } else {
-		return size;
-	    }
-	}
-    }
-
-    return size;
-}
+#define MAX_WORKAREA 4096
+static char workarea[MAX_WORKAREA];
 
 
-int _XWriteV (fd, v, n)
-    int fd;
-    struct iovec *v;
-    int n;
-{
-    int i;				/* iterator */
-    int size = 0;			/* return value */
-
-    /* check inputs */
-    for (i = 0; i < n; i++) {
-	if (v[i].iov_len < 0 || v[i].iov_base == NULL) {
-	    errno = EINVAL;
-	    return -1;
-	}
-    }
-
-    for (i = 0; i < n; i++) {
-	int len;
-	char *p;
-	
-	for (p = v[i].iov_base, len = v[i].iov_len; len > 0; ) {
-	    int rc = ((*_XsStream[_XsTypeOfStream[fd]].WriteToStream)
-		      (fd, p, len));
-	    if (rc > 0) {
-		p += rc;
-		len -= rc;
-		size += rc;
-	    } else if (rc < 0 && size == 0) {
-		return -1;
-	    } else {
-		return size;
-	    }
-	}
-    }
-
-    return size;
-}
-
-#ifdef SYSV
-
-#include <sys/poll.h>
-
-#define POLLERROR		(POLLHUP | POLLNVAL | POLLERR)
-#define PFD(fds, i, x) \
-{ \
-	if (fds) \
-		if (ev & (x)) \
-			BITSET (fds, i); \
-		else \
-			BITCLEAR (fds, i); \
-}
-#define ERROR(x) \
-{ \
-	errno = x; \
-	return -1; \
-}
-/*
-	simulate BSD select system call with SYSV poll system call
-	note that efds parameter is not fully supported (or understood)
-*/
-
-extern long ulimit();
 
 int
-select (nfds, rfds, wfds, efds, timeout)
-int nfds;
-unsigned long *rfds;
-unsigned long *wfds;
-unsigned long *efds;
-struct timeval *timeout;
+_XReadV (fd, v, n)
+    int		fd;
+    struct iovec v[];
+    int		n;
 {
-	int i, rc, ev, timevalue;
-	struct pollfd pfds[NOFILES_MAX];
-	static long _NOFILE = 0;
+	int i, rc, len, size = 0;
+	char * buf = workarea;
+	char * p;
 
-	if (_NOFILE == 0)
-		_NOFILE = ulimit(4, (long)0);
-
- 	if (nfds > _NOFILE)
-		nfds = _NOFILE;   /* make poll happy */
-
-	for (i = 0; i < nfds; i++)
+	if (n <= 0 || n > 16)
 	{
-		ev = 0;
-
-		if (rfds && GETBIT (rfds, i)) ev |= POLLIN;
-		if (wfds && GETBIT (wfds, i)) ev |= POLLOUT;
-		if (ev || (efds && GETBIT (efds, i)))
-			pfds[i].fd = i;
-		else
-			pfds[i].fd = -1;
-		pfds[i].events = ev;
+		errno = EINVAL;
+		return (-1);
 	}
-	if (timeout)
-		timevalue = timeout->tv_sec * 1000 + timeout->tv_usec / 1000;
-	else
-		timevalue = -1;
-
-	do {
-	    rc = poll (pfds, (unsigned long)nfds, timevalue);
-	} while (rc < 0 && errno == EAGAIN);
-	if (rc > 0)
+	for (i = 0; i < n; ++i)
 	{
-		if (!efds)
-			for (i = 0; i < nfds; ++i)
-			{
-				ev = pfds[i].revents;
-				if (ev & POLLERROR)
-					ERROR (EBADF);
-			}
-
-		for (i = 0; i < nfds; ++i)
+		if ((len = v[i].iov_len) < 0 || v[i].iov_base == NULL)
 		{
-			ev = pfds[i].revents;
-			PFD (rfds, i, POLLIN);
-			PFD (wfds, i, POLLOUT);
-			PFD (efds, i, POLLERROR);
+			errno = EINVAL;
+			return (-1);
+		}
+		size += len;
+	}
+	if ((size > MAX_WORKAREA) && ((buf = malloc (size)) == NULL))
+	{
+		errno = EINVAL;
+		return (-1);
+	}
+	if((rc = (*_XsStream[_XsTypeOfStream[fd]].ReadFromStream)(fd, buf, size,
+							     BUFFERING))> 0)
+	{
+		for (i = 0, p = buf; i < n; ++i)
+		{
+			memcpy (v[i].iov_base, p, len = v[i].iov_len);
+			p += len;
 		}
 	}
-	return rc;
+	if (size > MAX_WORKAREA)
+		free (buf);
+
+	return (rc);
 }
 
-#endif /* SYSV */
+int
+_XWriteV (fd, v, n)
+    int fd;
+    struct iovec v[];
+    int n;
+{
+	int i, rc, len, size = 0;
+	char * buf = workarea;
+	char * p;
+
+	if (n <= 0 || n > 16)
+	{
+		errno = EINVAL;
+		return (-1);
+	}
+	for (i = 0; i < n; ++i)
+	{
+		if ((len = v[i].iov_len) < 0 || v[i].iov_base == NULL)
+		{
+			errno = EINVAL;
+			return (-1);
+		}
+		size += len;
+	}
+
+	if ((size > MAX_WORKAREA) && ((buf = malloc (size)) == NULL))
+	{
+		errno = EINVAL;
+		return (-1);
+	}
+	for (i = 0, p = buf; i < n; ++i)
+	{
+		memcpy (p, v[i].iov_base, len = v[i].iov_len);
+		p += len;
+	}
+	rc = (*_XsStream[_XsTypeOfStream[fd]].WriteToStream)(fd, buf, size);
+
+	if (size > MAX_WORKAREA)
+		free (buf);
+
+	return (rc);
+}
+
+
+
 #endif /* STREAMSCONN */
