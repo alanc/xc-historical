@@ -1,7 +1,7 @@
 .NH 2
 MenuButton Widget
 .XS
-\*(SN MenuButton Widget
+	MenuButton Widget
 .XE
 .IN "MenuButton widget" "" "@DEF@"
 .sp
@@ -9,9 +9,13 @@ MenuButton Widget
 .TA 2.0i
 .ta 2.0i
 Application Header file	<X11/Xaw/MenuButton.h>
-Class Header file	<X11/Xaw/MenuButtoP.h>
+.IN "MenuButton.h" ""
+Class Header file	<X11/Xaw/MenuButtonP.h>
+.IN "MenuButtonP.h" ""
 Class		menuButtonWidgetClass
+.IN "menuButtonWidgetClass" ""
 Class Name	MenuButton
+.IN "MenuButton widget" "class name"
 Superclass	Command
 .De
 .LP
@@ -26,6 +30,9 @@ pop up the menu that has been named in the \fBmenuName\fP resource.
 When creating a MenuButton widget instance, 
 the following resources are retrieved from the argument list
 or from the resource database:
+.NH 3
+Resources
+.IN "MenuButton widget" "resources"
 .ps 9
 .nr PS 9
 .vs 11
@@ -119,6 +126,8 @@ menu is found it will be popped up exclusive and spring_loaded.
 .Xy
 .NH 3
 MenuButton Actions
+.IN "MenuButton widget" "actions"
+.LP
 The MenuButton widget supports the following actions:
 .IP \(bu 5
 Switching the button between the foreground and background

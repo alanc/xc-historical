@@ -61,6 +61,9 @@ To allow easy creation of pulldown menus, a MenuButton widget is
 also provided as part of the Athena widget set.
 .NH 2
 Using the Menus
+.XS
+	Using the Menus
+.XE
 .IN "Menus" "using"
 .LP
 The default configuration for the menus is click-move-release, and it is
