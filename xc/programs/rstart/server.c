@@ -27,7 +27,11 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <X11/Xosdefs.h>
 #include <errno.h>
+#ifdef X_NOT_STDC_ENV
+extern int	errno;
+#endif
 #include <sys/types.h>
 #include <sys/fcntl.h>
 #include <sys/stat.h>
