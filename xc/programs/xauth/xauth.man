@@ -51,9 +51,10 @@ The following commands may be used to manipulate authority files:
 An authorization entry for the indicated display using the given protocol
 and key data is added to the authorization file.  The data is specified as
 an even-lengthed string of hexadecimal digits, each pair representing 
-one octet.  The first
-digit gives the most significant 4 bits of the octet and the second digit
-gives the least significant 4 bits.  A protocol name consisting of just a 
+one octet.  The first digit of each pair gives the most significant 4 bits
+of the octet and the second digit of the pairgives the least significant 4
+bits.  For example, a 32 character hexkey would represent a 128-bit value.
+A protocol name consisting of just a 
 single period is treated as an abbreviation for \fIMIT-MAGIC-COOKIE-1\fP.
 .TP 8
 .B "[n]extract \fIfilename displayname..."
