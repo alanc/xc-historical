@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: oscolor.c,v 1.8 87/09/11 07:50:53 rws Locked $ */
+/* $Header: oscolor.c,v 1.9 87/10/22 11:54:26 rws Locked $ */
 #include <dbm.h>
 #include "rgb.h"
 
@@ -38,7 +38,7 @@ int
 OsLookupColor(screen, name, len, pred, pgreen, pblue)
     int		screen;
     char	*name;
-    int		len;
+    unsigned	len;
     unsigned short	*pred, *pgreen, *pblue;
 
 {

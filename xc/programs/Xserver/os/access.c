@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: access.c,v 1.17 87/08/11 13:22:36 toddb Locked $ */
+/* $Header: access.c,v 1.18 87/09/03 14:24:02 rws Locked $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -89,7 +89,7 @@ DefineSelf (fd)
     register int	n;
     int 		len;
     pointer 		addr;
-    short 		family;
+    int 		family;
     register HOST 	*host;
     register struct ifreq *ifr;
     
@@ -118,7 +118,7 @@ DefineSelf (fd)
 	    ;
         if (host)
 	    continue;
-        host = (HOST *) Xalloc (sizeof (HOST));
+        host = (HOST *) xalloc (sizeof (HOST));
         host->family = family;
         host->len = len;
         bcopy(addr, host->addr, len);
@@ -149,7 +149,7 @@ ResetHosts (display)
     struct nodeent 	*np;
     struct dn_naddr 	dnaddr, *dnaddrp, *dnet_addr();
 #endif
-    short		family;
+    int			family;
     int			len;
     pointer		addr;
     register struct hostent *hp;
@@ -157,11 +157,11 @@ ResetHosts (display)
     while (host = validhosts)
     {
         validhosts = host->next;
-        Xfree ((pointer) host);
+        xfree (host);
     }
     for (self = selfhosts; self; self = self->next)
     {
-        host = (HOST *) Xalloc (sizeof (HOST));
+        host = (HOST *) xalloc (sizeof (HOST));
         *host = *self;
         host->next = validhosts;
         validhosts = host;
@@ -235,7 +235,7 @@ int
 AddHost (client, family, length, pAddr)
     int			client;
     int                 family;
-    int                 length;        /* of bytes in pAddr */
+    unsigned            length;        /* of bytes in pAddr */
     pointer             pAddr;
 {
     int			len;
@@ -253,7 +253,7 @@ AddHost (client, family, length, pAddr)
         if (unixFamily == host->family && !bcmp (pAddr, host->addr, len))
     	    return Success;
     }
-    host = (HOST *) Xalloc (sizeof (HOST));
+    host = (HOST *) xalloc (sizeof (HOST));
     host->family = unixFamily;
     host->len = len;
     bcopy(pAddr, host->addr, len);
@@ -278,7 +278,7 @@ NewHost (family, addr)
         if (family == host->family && !bcmp (addr, host->addr, len))
     	return;
     }
-    host = (HOST *) Xalloc (sizeof (HOST));
+    host = (HOST *) xalloc (sizeof (HOST));
     host->family = family;
     host->len = len;
     bcopy(addr, host->addr, len);
@@ -292,7 +292,7 @@ int
 RemoveHost (client, family, length, pAddr)
     int			client;
     int                 family;
-    int                 length;        /* of bytes in pAddr */
+    unsigned            length;        /* of bytes in pAddr */
     pointer             pAddr;
 {
     int			len,
@@ -312,7 +312,7 @@ RemoveHost (client, family, length, pAddr)
     if (host)
     {
         *prev = host->next;
-        Xfree ((pointer) host);
+        xfree (host);
     }
     return Success;
 }
@@ -336,13 +336,13 @@ GetHosts (data, pnHosts, pEnabled)
     {
         if ((len = CheckFamily (DONT_CHECK, host->family)) < 0)
             return (-1);
-	lengths = (int *) Xrealloc(lengths, (nHosts + 1) * sizeof(int));
+	lengths = (int *) xrealloc(lengths, (nHosts + 1) * sizeof(int));
 	lengths[nHosts++] = len;
 	n += (((len + 3) >> 2) << 2) + sizeof(xHostEntry);
     }
     if (n)
     {
-        *data = ptr = (pointer) Xalloc (n);
+        *data = ptr = (pointer) xalloc (n);
 	nHosts = 0;
         for (host = validhosts; host; host = host->next)
 	{
@@ -356,7 +356,7 @@ GetHosts (data, pnHosts, pEnabled)
         }
     }
     *pnHosts = nHosts;
-    Xfree(lengths);
+    xfree(lengths);
     return (n);
 }
 
@@ -366,7 +366,7 @@ GetHosts (data, pnHosts, pEnabled)
 
 CheckFamily (connection, family)
     int			connection;
-    short		family;
+    int			family;
 {
     struct sockaddr	from;
     int	 		alen;
@@ -418,7 +418,7 @@ InvalidHost (saddr, len)
     register struct sockaddr	*saddr;
     int				len;
 {
-    short 			family;
+    int 			family;
     pointer			addr;
     register HOST 		*host;
     if ((family = ConvertAddr (saddr, len ? &len : 0, &addr)) < 0)
