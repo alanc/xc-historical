@@ -1,4 +1,4 @@
-/* $XConsortium: XInput.h,v 1.1 89/10/13 17:10:49 jim Exp $ */
+/* $XConsortium: XInput.h,v 1.2 89/11/07 19:25:24 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -125,6 +125,7 @@ typedef struct
     unsigned int   state;        /* key or button mask */
     unsigned int   keycode;      /* detail */
     Bool           same_screen;  /* same screen flag */
+    unsigned int   device_state; /* device key or button mask */
     unsigned char  axes_count;
     unsigned char  first_axis;
     int            axis_data[6];
@@ -156,6 +157,7 @@ typedef struct {
     unsigned int  state;        /* key or button mask */
     unsigned int  button;       /* detail */
     Bool          same_screen;  /* same screen flag */
+    unsigned int  device_state; /* device key or button mask */
     unsigned char axes_count;
     unsigned char first_axis;
     int           axis_data[6];
@@ -188,6 +190,7 @@ typedef struct
     unsigned int  state;       /* key or button mask */
     char          is_hint;     /* detail */
     Bool          same_screen; /* same screen flag */
+    unsigned int  device_state; /* device key or button mask */
     unsigned char axes_count;
     unsigned char first_axis;
     int           axis_data[6];
@@ -243,6 +246,7 @@ typedef struct
     int             x_root, y_root;  
     unsigned int    state;           
     Bool            same_screen;     
+    unsigned int    device_state; /* device key or button mask */
     unsigned char   axes_count;
     unsigned char   first_axis;
     int             axis_data[6];

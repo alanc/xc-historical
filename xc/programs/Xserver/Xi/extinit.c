@@ -1,5 +1,5 @@
 #ifdef XINPUT
-/* $XConsortium: xextinit.c,v 1.2 89/10/12 12:20:01 gms Exp $ */
+/* $XConsortium: xextinit.c,v 1.3 89/11/07 19:40:40 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -471,6 +471,7 @@ SEventDeviceValuator (from, to)
 
     *to = *from;
     swaps(&to->sequenceNumber,n);
+    swaps(&to->device_state,n);
     for (i=0; i<6; i++)
 	{
         swapl(&to->valuators[i],n);	/* macro - braces are required	    */

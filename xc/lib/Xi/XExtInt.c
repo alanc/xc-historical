@@ -368,6 +368,7 @@ ExtWireToEvent (dpy, re, event)
 	        save_event.type == _devicekeyRelease)
 		{
 	        XDeviceKeyEvent *kev = (XDeviceKeyEvent*) &save_event;
+		kev->device_state = xev->device_state;
 		if (kev->axes_count == 0)
 		    {
 		    kev->axes_count = xev->num_valuators;
@@ -382,6 +383,7 @@ ExtWireToEvent (dpy, re, event)
 	        save_event.type == _devicebuttonRelease)
 		{
 	        XDeviceButtonEvent *bev = (XDeviceButtonEvent*) &save_event;
+		bev->device_state = xev->device_state;
 		if (bev->axes_count == 0)
 		    {
 		    bev->axes_count = xev->num_valuators;
@@ -397,6 +399,7 @@ ExtWireToEvent (dpy, re, event)
 	    else if (save_event.type == _devicemotionNotify) 
 		{
 	        XDeviceMotionEvent *mev = (XDeviceMotionEvent*) &save_event;
+		mev->device_state = xev->device_state;
 		if (mev->axes_count == 0)
 		    {
 		    mev->axes_count = xev->num_valuators;
@@ -414,6 +417,7 @@ ExtWireToEvent (dpy, re, event)
 		{
 	        XProximityNotifyEvent *pev = 
 			(XProximityNotifyEvent*) &save_event;
+		pev->device_state = xev->device_state;
 		if (pev->axes_count == 0)
 		    {
 		    pev->axes_count = xev->num_valuators;
