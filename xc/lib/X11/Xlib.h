@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.140 88/05/16 12:01:39 rws Exp $ */
+/* $Header: Xlib.h,v 11.141 88/06/19 16:34:17 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -468,6 +468,7 @@ typedef struct _XDisplay {
 	Bool (*event_vec[128])();  /* vector for wire to event */
 	Status (*wire_vec[128])(); /* vector for event to wire */
 	KeySym lock_meaning;	   /* for XLookupString */
+	struct XKeytrans *key_bindings; /* for XLookupString */
 } Display;
 
 #ifndef _XEVENT_
