@@ -2,8 +2,8 @@
 .OH ''''
 .EF ''''
 .OF ''''
-.ps 12
-.nr PS 12
+.ps 10
+.nr PS 10
 \&
 .sp 8
 .ce 1
@@ -33,8 +33,8 @@ information in this document.  It is provided ``as is'' without express or
 implied warranty.  The information in this document is a preliminary
 draft and therefore subject to change, and does not represent an
 approved specification of the MIT X Consortium.
-.ps 12
-.nr PS 12
+.ps 10
+.nr PS 10
 .bp 1
 .EH ''X11 Nonrectangular Window Shape Extension Proposal''
 .OH ''X11 Nonrectangular Window Shape Extension Proposal''
