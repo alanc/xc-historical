@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: osinit.c,v 1.11 88/02/21 17:51:01 rws Exp $ */
+/* $Header: osinit.c,v 1.12 88/02/22 10:42:50 rws Exp $ */
 #include "os.h"
 #include "opaque.h"
 #undef NULL
@@ -30,7 +30,7 @@ SOFTWARE.
 #include <stdio.h>
 
 #ifndef ADMPATH
-#define ADMPATH "/usr/adm/X%dmsgs"
+#define ADMPATH "/usr/adm/X%smsgs"
 #endif
 
 int	havergb = 0;
