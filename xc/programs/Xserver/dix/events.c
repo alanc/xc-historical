@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.70 94/01/30 14:23:47 rws Exp $ */
+/* $XConsortium: events.c,v 5.71 94/01/30 23:42:37 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -3552,15 +3552,14 @@ WriteEventsToClient(pClient, count, events)
     int		count;
     xEvent	*events;
 {
-#ifdef XRECORD 
-    xEvent    *eventFrom;
+    xEvent    eventTo, *eventFrom;
     int       i;
-
+#ifdef XRECORD 
     for(i = 0; i < count; i++)
     {
       eventFrom = &events[i];
 
-      if ( (RecordedEvents[eventFrom->u.u.type]) && 
+      if ( (RecordedEvents[eventFrom->u.u.type & 0177]) && 
 	(eventFrom->u.u.type & EXTENSION_EVENT_BASE 
 		|| eventFrom->u.u.type == X_Error) )
       { 
@@ -3575,9 +3574,6 @@ WriteEventsToClient(pClient, count, events)
 #endif
     if(pClient->swapped)
     {
-        int	i;
-        xEvent	eventTo, *eventFrom;
-
 	for(i = 0; i < count; i++)
 	{
 	    eventFrom = &events[i];
@@ -3592,7 +3588,6 @@ WriteEventsToClient(pClient, count, events)
 #endif
 	}
     }
-
     else
     {
 #ifdef XKB
