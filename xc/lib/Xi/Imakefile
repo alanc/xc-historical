@@ -4,6 +4,10 @@
 #define DoProfileLib ProfileLibXinput
 #include <Library.tmpl>
 
+#ifndef NeedXinputAlias
+#define NeedXinputAlias NO
+#endif
+
 #ifdef RsArchitecture
 REQUIREDLIBS = $(EXTENSIONSRC)/lib/libXext.a $(XLIBSRC)/libX11.a
 #endif
@@ -132,6 +136,9 @@ InstallSharedLibrary(Xi,$(SOXINPUTREV),$(USRLIBDIR))
 #if DoNormalLib
 NormalLibraryTarget(Xi,$(OBJS))
 InstallLibrary(Xi,$(USRLIBDIR))
+#if NeedXinputAlias
+InstallLibraryAlias(Xi,Xinput,$(USRLIBDIR))
+#endif
 #endif
 #if DoProfileLib
 ProfiledLibraryTarget(Xi,$(OBJS))
