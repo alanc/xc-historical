@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.98 87/12/28 10:42:17 swick Locked $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.99 88/01/05 11:59:17 swick Locked $";
 #endif lint
 
 /*
@@ -84,8 +84,8 @@ static void CoreInitialize();
 
 XrmResourceDataBase XtDefaultDB = NULL;
 WidgetClass widgetClass = &widgetClassRec;
-CompositeWidgetClass compositeWidgetClass = &compositeClassRec;
-ConstraintWidgetClass constraintWidgetClass = &constraintClassRec;
+WidgetClass compositeWidgetClass = &compositeClassRec;
+WidgetClass constraintWidgetClass = &constraintClassRec;
 
 /* ||| Should have defaults for Inherit from superclass to work */
 
