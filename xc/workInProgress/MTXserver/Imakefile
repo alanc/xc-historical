@@ -5,10 +5,13 @@
     CDEBUGFLAGS = ServerCDebugFlags
      EXTENSIONS = $(EXTENSIONSRC)/server/libext.a
          EXTDIR = $(EXTENSIONSRC)/server
-     ALLDDXDIRS = ddx/snf ddx/mi ddx/sun ddx/apollo ddx/cfb ddx/mfb ddx/lk201 \
-                  ddx/qvss ddx/qdss ddx/ibm/apa16 ddx/ibm/rt ddx/ibm/aed \
+     ALLDDXDIRS = ddx/snf ddx/mi ddx/cfb ddx/mfb \
+                  ddx/lk201 ddx/qvss ddx/qdss \
+                  ddx/sun \
+                  ddx/apollo \
+                  ddx/ibm \
                   ddx/hp/hp ddx/hp/mfb ddx/hp/cfb ddx/hp/gbx ddx/hp/mob \
-		  ddx/hp/topcat ddx/hp/catseye ddx/hp/ren
+                  ddx/hp/topcat ddx/hp/catseye ddx/hp/ren
       ALLOSDIRS = os/sysV os/4.2bsd os/hpux
         SUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
            UNIX = os/4.2bsd/libos.a
@@ -22,7 +25,7 @@
             SUN = ddx/sun/libsun.a
              HP = ddx/hp/hp/libhp.a
         SYSLIBS = -lm -ldbm
-    ALLPOSSIBLE = Xqvss Xqdss Xsun Xapa16 Xapollo Xhp
+    ALLPOSSIBLE = Xqvss Xqdss Xsun Xibm Xapollo Xhp
 
 #ifndef	XqvssServer
 #define	XqvssServer /* as nothing */
@@ -44,16 +47,12 @@
 #define	XapolloServer /* as nothing */
 #endif
 
-#ifndef	Xapa16Server
-#define	Xapa16Server /* as nothing */
-#endif
-
-#ifndef	XaedServer
-#define	XaedServer /* as nothing */
+#ifndef	XibmServer
+#define	XibmServer /* as nothing */
 #endif
 
 # for now, don't split this across lines, because imake will keep a trailing slash
-ALL = XqvssServer XqdssServer XsunServer XapolloServer Xapa16Server XaedServer XHPServer
+ALL = XqvssServer XqdssServer XsunServer XapolloServer XibmServer XHPServer
 
 #
 # This turns off the default rule for compiling .c files because
@@ -122,29 +121,23 @@ XhpDIRS = $(HPDIRS)
 
 ServerTarget(Xhp,$(EXTDIR) $(HPDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
 
-
 #
-# apa16 server
+# ibm server
 #
-APA16DIRS = dix ddx/snf ddx/mi ddx/mfb ddx/ibm/apa16 ddx/ibm/rt os/4.2bsd
-APA16OBJS = ddx/ibm/rt/rtinit.o ddx/ibm/rt/rtio.o
-APA16LIBS = ddx/ibm/apa16/libapa16.a ddx/ibm/rt/librt.a \
-		$(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
-Xapa16DIRS = $(APA16DIRS)
+#if RtSpecialMalloc
+IBMALLOCLIB = ddx/ibm/rt/librtalloc.a
+#else
+IBMALLOCLIB = 
+#endif
 
-ServerTarget(Xapa16,$(EXTDIR) $(APA16DIRS),$(APA16OBJS),$(APA16LIBS),$(SYSLIBS))
+IBMDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/ibm os/4.2bsd
+IBMOBJS = ddx/ibm/rt/rt.o
+IBMLIBS = ddx/ibm/libibm.a $(IBMALLOCLIB) \
+		$(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
+IBMSYSLIBS = $(SYSLIBS)
+XibmDIRS = $(IBMDIRS)
 
-#
-# aed server
-#
-AEDDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/ibm/aed ddx/ibm/rt os/4.2bsd
-AEDOBJS = ddx/ibm/rt/rtinit.o ddx/ibm/rt/rtio.o
-AEDLIBS = ddx/ibm/aed/libaed.a ddx/ibm/rt/librt.a \
-		$(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
-XaedDIRS = $(AEDDIRS)
-
-ServerTarget(Xaed,$(EXTDIR) $(AEDDIRS),$(AEDOBJS),$(AEDLIBS),$(SYSLIBS))
-
+ServerTarget(Xibm,$(EXTDIR) $(IBMDIRS),$(IBMOBJS),$(IBMLIBS),$(IBMSYSLIBS))
 
 #
 # apollo server
