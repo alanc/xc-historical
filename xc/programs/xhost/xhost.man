@@ -9,18 +9,17 @@ The \fIxhost\fP program
 is used to add and delete hosts to the list of machines that are allowed
 to make connections to the X server.  This provides a rudimentary form of
 privacy control and security.  It is only sufficient for a workstation 
-(single user) environment, though it does limit the worst abuses.  Environments
+(single user) environment, although it does limit the worst abuses.  Environments
 which require more sophisticated measures should use the hooks in the
 protocol for passing authentication data to the server.
 .PP
-The server in the standard release initially allows network connections 
+The server initially allows network connections 
 only from programs running on the same machine or from machines listed in
 the file \fI/etc/X*.hosts\fP (where * is the display number of the server).
 The \fIxhost\fP program is usually run either from a startup file
 or interactively to give access to other users.
 .PP
-In the standard distribution,
-hostnames that are followed by two colons (::) are used in checking DECnet
+Hostnames that are followed by two colons (::) are used in checking DECnet
 connections; all other hostnames are used for TCP/IP connections.
 .SH OPTIONS
 \fIXhost\fP accepts the following command line options described below.  For
@@ -34,9 +33,9 @@ connect to the X server.
 .TP 8
 .BI \- "hostname"
 The given \fIhostname\fP is removed from the list of machines that are allowed
-to connect to the server.  Existing connections are not broken, only new
-connection attempts are affected.
-Note that the current machine is allowed to be removed.  However, further
+to connect to the server.  Existing connections are not broken, but new
+connection attempts will be denied.
+Note that the current machine is allowed to be removed; however, further
 connections (including attempts to add it back) will not be permitted.
 Resetting the server (thereby breaking all connections) 
 is the only way to allow local connections again.
@@ -52,7 +51,9 @@ Access is restricted to only those machines on the list of allowed hosts
 .I nothing
 If no command line arguments are given, the list of hosts that are allowed
 to connect is printed on the standard output along with a message indicating
-whether or not access control is currently enabled.
+whether or not access control is currently enabled.  This is the only that
+may be used from machines other than the one on which the server is
+running.
 .SH FILES
 /etc/X*.hosts
 .SH "SEE ALSO"
