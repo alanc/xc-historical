@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ************************************************************************/
-/* $XConsortium: mipolytext.c,v 1.17 89/05/03 11:18:28 rws Exp $ */
+/* $XConsortium: mipolytext.c,v 5.0 89/06/09 15:08:40 keith Exp $ */
 /*
  * mipolytext.c - text routines
  *
@@ -49,7 +49,7 @@ miPolyText(pDraw, pGC, x, y, count, chars, fontEncoding)
 {
     register CharInfoPtr *charinfo;
     unsigned long n, i;
-    unsigned int w;
+    int w;
 
     if(!(charinfo = (CharInfoPtr *)ALLOCATE_LOCAL(count*sizeof(CharInfoPtr ))))
 	return x ;
@@ -76,7 +76,7 @@ miPolyText8(pDraw, pGC, x, y, count, chars)
 {
     register CharInfoPtr *charinfo;
     unsigned long n, i;
-    unsigned int w;
+    int w;
 
     if(!(charinfo = (CharInfoPtr *)ALLOCATE_LOCAL(count*sizeof(CharInfoPtr ))))
 	return x ;
@@ -103,7 +103,7 @@ miPolyText16(pDraw, pGC, x, y, count, chars)
 {
     register CharInfoPtr *charinfo;
     unsigned long n, i;
-    unsigned int w;
+    int w;
 
     if(!(charinfo = (CharInfoPtr *)ALLOCATE_LOCAL(count*sizeof(CharInfoPtr ))))
 	return x ;
@@ -133,7 +133,7 @@ miImageText(pDraw, pGC, x, y, count, chars, fontEncoding)
     register CharInfoPtr *charinfo;
     unsigned long n, i;
     FontPtr font = pGC->font;
-    unsigned int w;
+    int w;
 
     if(!(charinfo = (CharInfoPtr *)ALLOCATE_LOCAL(count*sizeof(CharInfoPtr))))
 	return x;
