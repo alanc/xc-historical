@@ -1,4 +1,4 @@
-/* $XConsortium: GetAtomNm.c,v 11.18 93/09/01 20:39:02 rws Exp $ */
+/* $XConsortium: GetAtomNm.c,v 11.19 93/09/21 22:58:54 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -91,10 +91,12 @@ char *XGetAtomName(dpy, atom)
 
 typedef struct {
     unsigned long start_seq;
+    unsigned long stop_seq;
     Atom *atoms;
     char **names;
     int idx;
     int count;
+    Status status;
 } _XGetAtomNameState;
 
 static
@@ -110,14 +112,17 @@ Bool _XGetAtomNameHandler(dpy, rep, buf, len, data)
     register xGetAtomNameReply *repl;
 
     state = (_XGetAtomNameState *)data;
-    if (dpy->last_request_read < state->start_seq)
+    if (dpy->last_request_read < state->start_seq ||
+	dpy->last_request_read > state->stop_seq)
 	return False;
     while (state->idx < state->count && state->names[state->idx])
 	state->idx++;
     if (state->idx >= state->count)
 	return False;
-    if (rep->generic.type == X_Error)
+    if (rep->generic.type == X_Error) {
+	state->status = 0;
 	return False;
+    }
     repl = (xGetAtomNameReply *)
 	_XGetAsyncReply(dpy, (char *)&replbuf, rep, buf, len,
 			(SIZEOF(xGetAtomNameReply) - SIZEOF(xReply)) >> 2,
@@ -131,7 +136,7 @@ Bool _XGetAtomNameHandler(dpy, rep, buf, len, data)
     return True;
 }
 
-void
+Status
 XGetAtomNames (dpy, atoms, count, names_return)
     Display *dpy;
     Atom *atoms;
@@ -150,13 +155,16 @@ XGetAtomNames (dpy, atoms, count, names_return)
     async_state.names = names_return;
     async_state.idx = 0;
     async_state.count = count - 1;
+    async_state.status = 1;
     async.next = dpy->async_handlers;
     async.handler = _XGetAtomNameHandler;
     async.data = (XPointer)&async_state;
     dpy->async_handlers = &async;
     for (i = 0; i < count; i++) {
-	if (!(names_return[i] = _XGetAtomName(dpy, atoms[i])))
+	if (!(names_return[i] = _XGetAtomName(dpy, atoms[i]))) {
 	    missed = i;
+	    async_state.stop_seq = dpy->request;
+	}
     }
     if (missed >= 0) {
 	if (_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
@@ -165,12 +173,15 @@ XGetAtomNames (dpy, atoms, count, names_return)
 		names_return[missed][rep.nameLength] = '\0';
 		_XUpdateAtomCache(dpy, names_return[missed], atoms[missed],
 				  0, -1, 0);
-	    } else
+	    } else {
 		_XEatData(dpy, (unsigned long) (rep.nameLength + 3) & ~3);
+		async_state.status = 0;
+	    }
 	}
     }
     DeqAsyncHandler(dpy, &async);
     UnlockDisplay(dpy);
     if (missed >= 0)
 	SyncHandle();
+    return async_state.status;
 }
