@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xmh.h,v 2.27 89/11/16 21:04:29 converse Exp $
+ * $XConsortium: xmh.h,v 2.28 89/11/25 21:07:38 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -45,7 +45,6 @@
 #include <X11/Xaw/Label.h>
 #include <X11/Xaw/SmeLine.h>
 #include <X11/Xaw/MenuButton.h>
-#include <X11/Xaw/Scroll.h>
 #include <X11/Xaw/SimpleMenu.h>
 #include <X11/Xaw/Toggle.h>
 #include <X11/Xaw/Viewport.h>
