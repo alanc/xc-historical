@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.76 93/03/09 16:09:44 converse Exp $ */
+/* $XConsortium: Selection.c,v 1.79 93/05/12 19:45:09 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -361,14 +361,15 @@ XtPointer closure;
 {
     Display *dpy = req->ctx->dpy;
     Window window = req->requestor;
-    Widget widget = req->widget;
+    Widget widget = XtWindowToWidget(dpy, window);
+
+    if (widget != NULL) req->widget = widget;
+    else widget = req->widget;
 
     if (XtWindow(widget) == window)
 	XtAddEventHandler(widget, mask, TRUE, proc, closure);
     else {
-	Widget w = XtWindowToWidget(dpy, window);
 	RequestWindowRec *requestWindowRec;
-	if (w != NULL && w != widget) widget = w;
 	if (selectWindowContext == 0)
 	    selectWindowContext = XUniqueContext();
 	if (XFindContext(dpy, window, selectWindowContext,
