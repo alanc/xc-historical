@@ -48,10 +48,6 @@ without affecting any of the other panes.  When this occurs the pointer
 will change to an arrow that points along the pane border.
 .LP
 The default bindings for the Paned widget's grips are:
-.NH 3
-Resources
-.LP
-.IN "Paned widget" "resources"
 .ps 9
 .nr PS 9
 .vs 11
@@ -78,16 +74,19 @@ _
 .vs 13
 .nr VS 13
 .LP
-.LP
 When creating a Paned widget instance, the following resources are
 retrieved from the argument list or the resource database:
+.LP
+.NH 3
+Resources
+.LP
 .IN "Paned widget" "resources"
 .ps 9
 .nr PS 9
 .vs 11
 .nr VS 11
 .TS H
-lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
+lw(1i) lw(1i) lw(1i) lw(.4i) lw(2i).
 _
 .sp 3p
 .TB
@@ -116,7 +115,6 @@ gripTranslations	Translations	TranslationTable		see below
 height	Height	Dimension	A	Depends on orientation
 horizontalBetweenCursor	Cursor	Cursor		sb_up_arrow
 horizontalGripCursor	Cursor	Cursor		sb_h_double_arrow
-insertPosition	InsertPosition	Function		NULL
 internalBorderColor	BorderColor	Pixel		XtDefaultForeground
 internalBorderWidth	BorderWidth	Dimension		1
 leftCursor	Cursor	Cursor		sb_left_arrow
@@ -195,7 +193,6 @@ The width of the internal borders.  This is the amount of space left
 between the panes.  The class name of this resource allows
 \fIPaned*BorderWidth: 3\fP to set the internal border width for the
 Paned widget.
-.Ip
 .IP \fBleftCursor\fP 1.5i
 .br
 .ns

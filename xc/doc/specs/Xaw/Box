@@ -65,17 +65,16 @@ children	ReadOnly	WidgetList	R	NULL
 colormap	Colormap	Pointer		Parent's Colormap
 depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
-height	Height	Dimension	A	Tall enough to contain all managed children
+height	Height	Dimension	A	see \fBLayout Semantics\fP
 hSpace	HSpace	Dimension		4
-insertPosition	InsertPosition	Function		NULL
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 numChildren	ReadOnly	Cardinal	R	0
-orientation	Orientation	Orientation		XtOrientVertical (vertical)
+orientation	Orientation	Orientation		XtOrientVertical
 screen	Screen	Pointer	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
 vSpace	VSpace	Dimension		4
 translations	Translations	TranslationTable		NULL
-width	Width	Dimension	A	Width of the widest child + 2 * \fBhSpace\fP
+width	Width	Dimension	A	see \fBLayout Semantics\fP
 x	X	Position		0
 y	Y	Position		0
 .sp 3p
@@ -104,7 +103,6 @@ _
 The amount of space, in pixels, to leave between the children.  This
 resource specifies the amount of space left between the outermost
 children and the edge of the box. 
-.Ip
 .Mm
 .Nc
 .IP \fBorientation\fP 1.5i
