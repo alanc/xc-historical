@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.67 94/11/14 15:33:52 mor Exp mor $ */
+/* $XConsortium: xsm.c,v 1.68 94/12/06 14:40:53 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -40,8 +40,8 @@ in this Software without prior written authorization from the X Consortium.
 #include "choose.h"
 #include "mainwin.h"
 #include "info.h"
+#include "log.h"
 #include "save.h"
-#include "name.h"
 #include "auth.h"
 #include "restart.h"
 #include "saveutil.h"
@@ -97,7 +97,7 @@ void sig_child_handler ();
 extern Widget clientInfoPopup;
 extern Widget clientPropPopup;
 extern Widget clientInfoButton;
-extern Widget nameSessionButton;
+extern Widget logButton;
 extern Widget checkPointButton;
 extern Widget shutdownButton;
 extern Widget clientListWidget;
@@ -244,7 +244,8 @@ char **argv;
     create_main_window ();
     create_client_info_popup ();
     create_save_popup ();
-    create_name_session_popup ();
+    create_log_popup ();
+
 
     /*
      * Initalize all lists
@@ -283,7 +284,7 @@ char **argv;
      * names for the user to choose from.
      */
 
-    success = GetSessionNames (&sessionNameCount,
+    success = GetSessionNames (True, &sessionNameCount,
 	&sessionNames, &sessionLocked);
 
     found_command_line_name = 0;
@@ -299,6 +300,8 @@ char **argv;
 
     if (!success || found_command_line_name)
     {
+	FreeSessionNames (sessionNameCount, sessionNames, sessionLocked);
+
 	if (!found_command_line_name)
 	    session_name = XtNewString (DEFAULT_SESSION_NAME);
 
@@ -563,7 +566,7 @@ Bool use_default;
 	XtNwidth, width,
 	NULL);
 
-    XtVaGetValues (nameSessionButton,
+    XtVaGetValues (logButton,
 	XtNwidth, &width,
 	NULL);
 

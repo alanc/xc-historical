@@ -1,4 +1,4 @@
-/* $XConsortium: mainwin.c,v 1.4 94/08/11 18:56:42 mor Exp mor $ */
+/* $XConsortium: mainwin.c,v 1.5 94/11/30 17:57:12 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -28,11 +28,11 @@ in this Software without prior written authorization from the X Consortium.
 #include "xsm.h"
 #include "info.h"
 #include "save.h"
-#include "name.h"
+#include "log.h"
 
 Widget mainWindow;
 Widget   clientInfoButton;
-Widget   nameSessionButton;
+Widget   logButton;
 Widget   checkPointButton;
 Widget   shutdownButton;
 Widget     shutdownMenu;
@@ -59,23 +59,19 @@ create_main_window ()
         XtNfromVert, NULL,
 	XtNresizable, True,
 	XtNjustify, XtJustifyLeft,
-	XtNtop, XawChainTop,
-	XtNbottom, XawChainTop,
 	NULL);
 
     XtAddCallback (clientInfoButton, XtNcallback, ClientInfoXtProc, 0);
 
-    nameSessionButton = XtVaCreateManagedWidget (
-	"nameSessionButton", commandWidgetClass, mainWindow,
+    logButton = XtVaCreateManagedWidget (
+	"logButton", commandWidgetClass, mainWindow,
         XtNfromHoriz, clientInfoButton,
         XtNfromVert, NULL,
 	XtNresizable, True,
 	XtNjustify, XtJustifyLeft,
-	XtNtop, XawChainTop,
-	XtNbottom, XawChainTop,
 	NULL);
 
-    XtAddCallback (nameSessionButton, XtNcallback, NameSessionXtProc, 0);
+    XtAddCallback (logButton, XtNcallback, DisplayLogXtProc, 0);
 
     checkPointButton = XtVaCreateManagedWidget (
 	"checkPointButton", commandWidgetClass, mainWindow,
@@ -83,8 +79,6 @@ create_main_window ()
         XtNfromVert, clientInfoButton,
 	XtNresizable, True,
 	XtNjustify, XtJustifyLeft,
-	XtNtop, XawChainTop,
-	XtNbottom, XawChainTop,
 	NULL);
 
     XtAddCallback (checkPointButton, XtNcallback, CheckPointXtProc, 0);
@@ -96,8 +90,6 @@ create_main_window ()
         XtNfromVert, clientInfoButton,
 	XtNresizable, True,
 	XtNjustify, XtJustifyLeft,
-	XtNtop, XawChainTop,
-	XtNbottom, XawChainTop,
 	NULL);
 
     shutdownMenu = XtVaCreatePopupShell (
