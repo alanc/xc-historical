@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.3 94/03/03 17:16:24 matt Exp $
+XCOMM $XConsortium: Imakefile,v 1.4 94/03/06 14:05:28 matt Exp $
 
 /*
  * TODO:  Figure out what to do with the stubs/ and raster/
@@ -52,7 +52,7 @@ LOCAL_LIBRARIES = FrescoClientLibs
   SYS_LIBRARIES = ThreadsLibraries
 #endif
 
-ALL: $(EXAMPLES)
+all: $(EXAMPLES)
 
 #define CplusplusSource
 NormalCplusplusObjectRule()
