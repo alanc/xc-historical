@@ -1,5 +1,5 @@
 /*
- * $XConsortium: MailboxP.h,v 1.9 88/09/26 11:20:31 jim Exp $
+ * $XConsortium: MailboxP.h,v 1.10 88/09/26 18:50:08 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -31,6 +31,8 @@ typedef struct {			/* new fields for mailbox widget */
     String filename;			/* filename to watch */
     String check_command;		/* command to exec for mail check */
     Boolean reverseVideo;		/* do reverse video? */
+    int volume;				/* bell volume */
+    Boolean once_only;			/* ring bell only once on new mail */
     /* local state */
     GC gc;				/* normal GC to use */
     long last_size;			/* size in bytes of mailboxname */
@@ -38,7 +40,6 @@ typedef struct {			/* new fields for mailbox widget */
     Boolean flag_up;			/* is the flag up? */
     Pixmap flagup_pixmap;		/* for when there is mail */
     Pixmap flagdown_pixmap;		/* for when there isn't mail */
-    int volume;				/* bell volume */
 } MailboxPart;
 
 typedef struct _MailboxRec {		/* full instance record */
