@@ -1,6 +1,6 @@
 #include "copyright.h"
 #ifndef lint
-static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.61 88/08/16 10:37:11 rws Exp $";
+static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.62 88/08/18 11:58:41 jim Exp $";
 #endif
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 
@@ -43,6 +43,7 @@ Display *XOpenDisplay (display)
 	int vendorlen;			/* length of vendor string */
 	char *setup;			/* memory allocated at startup */
 	char displaybuf[256];		/* buffer to receive expanded name */
+	char prop_name[256];		/* buffer to receive property name */
 	int screen_num;			/* screen number */
 	union {
 		xConnSetup *setup;
@@ -91,7 +92,9 @@ Display *XOpenDisplay (display)
  * name in displaybuf.
  */
 
-	if ((dpy->fd = _XConnectDisplay(display_name, displaybuf, &screen_num))
+	displaybuf[0] = prop_name[0] = '\0';
+	if ((dpy->fd = _XConnectDisplay(display_name, displaybuf, 
+					prop_name, &screen_num))
 	     < 0) {
 		Xfree ((char *) dpy);
 		UnlockMutex(&lock);
@@ -389,6 +392,21 @@ Display *XOpenDisplay (display)
 	_XHeadOfDisplayList = dpy;
 	UnlockDisplay(dpy);
 	UnlockMutex(&lock);
+
+/*
+ * get pseudoroot support
+ */
+	if (prop_name[0] != '\0') {
+	    extern Status _XGetPseudoRoot();
+
+	    if (!_XGetPseudoRoot (dpy, prop_name)) {
+		/* XXX bad property name */
+		fprintf (stderr, 
+		 "XOpenDisplay (\"%s\"), no pseudoroot property \"%s\"\n",
+			 display, prop_name);
+	    }
+	}
+
 /*
  * get the resource manager database off the root window.
  */

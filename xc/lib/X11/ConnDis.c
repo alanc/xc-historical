@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $Header: XConnDis.c,v 11.30 88/08/09 16:28:52 jim Exp $ */
+/* $Header: XConnDis.c,v 11.31 88/08/09 17:12:34 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -27,10 +27,10 @@ void bcopy();
  * of the form hostname:number.screen ("::" if DECnet) is returned in a result
  * parameter. The screen number to use is also returned.
  */
-int _XConnectDisplay (display_name, expanded_name, screen_num)
-
+int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num)
     char *display_name;
     char *expanded_name;	/* return */
+    char *prop_name;		/* return */
     int *screen_num;		/* return */
 
 {
@@ -84,11 +84,15 @@ int _XConnectDisplay (display_name, expanded_name, screen_num)
 	 * Build a string of the form <display-number>.<screen-number> in
 	 * numberbuf, using ".0" as the default.
 	 */
-	screen_ptr = display_ptr;
-	numbuf_ptr = numberbuf;
+	screen_ptr = display_ptr;		/* points to #.#.propname */
+	numbuf_ptr = numberbuf;			/* beginning of buffer */
 	while (*screen_ptr != '\0') {
-	    if (*screen_ptr == '.') {
-		dot_ptr = numbuf_ptr;
+	    if (*screen_ptr == '.') {		/* either screen or prop */
+		if (dot_ptr) {			/* then found prop_name */
+		    screen_ptr++;
+		    break;
+		}
+		dot_ptr = numbuf_ptr;		/* found screen_num */
 		*(screen_ptr++) = '\0';
 		*(numbuf_ptr++) = '.';
 	    } else {
@@ -100,7 +104,7 @@ int _XConnectDisplay (display_name, expanded_name, screen_num)
 	 * If the spec doesn't include a screen number, add ".0" (or "0" if
 	 * only "." is present.)
 	 */
-	if (dot_ptr == NULL) {
+	if (dot_ptr == NULL) {			/* no screen num or prop */
 	    dot_ptr = numbuf_ptr;
 	    *(numbuf_ptr++) = '.';
 	    *(numbuf_ptr++) = '0';
@@ -111,9 +115,10 @@ int _XConnectDisplay (display_name, expanded_name, screen_num)
 	*numbuf_ptr = '\0';
 
 	/*
-	 * Return the screen number in the result parameter
+	 * Return the screen number and property names in the result parameters
 	 */
 	*screen_num = atoi(dot_ptr + 1);
+	strcpy (prop_name, screen_ptr);
 
 	/*
 	 * Convert the server number string to an integer.
@@ -258,6 +263,12 @@ int _XConnectDisplay (display_name, expanded_name, screen_num)
 	numbuf_ptr = numberbuf;
 	while (*numbuf_ptr != '\0')
 	    *(display_ptr++) = *(numbuf_ptr++);
+	if (prop_name[0] != '\0') {
+	    char *cp;
+
+	    *(display_ptr++) = '.';
+	    for (cp = prop_name; *cp; cp++) *(display_ptr++) = *cp;
+	}
 	*display_ptr = '\0';
 	(void) strcpy(expanded_name, displaybuf);
 	return(fd);
