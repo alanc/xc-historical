@@ -80,3 +80,6 @@ X(1), xrdb(1), Athena Logo widget
 Copyright 1988, Massachusetts Institute of Technology.
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHORS
+Ollie Jones of Apollo Computer wrote the logo graphics routine,
+based on a graphic design by Danny Chong and Ross Chapman of Apollo Computer.
