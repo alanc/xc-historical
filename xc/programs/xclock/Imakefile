@@ -1,0 +1,5 @@
+LOCAL_LIBRARIES = $(XTOOLLIB) $(OLDXRMLIB) $(XLIB)
+  SYS_LIBRARIES = -lm
+       INCLUDES = -I$(OLDXRMSRC) -I$(TOP) -I$(TOP)/X11
+
+SimpleProgramTarget(xclock)
