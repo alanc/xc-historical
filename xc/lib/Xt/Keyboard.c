@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.2 89/12/14 07:48:33 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.4 89/12/14 12:34:53 swick Exp $";
 #endif
 
 /********************************************************
@@ -60,7 +60,7 @@ static XtServerGrabPtr CheckServerGrabs(event, trace,
 static Boolean IsParent(a, b)
     Widget	a, b;
 {
-    for (b = b->core.parent; b; b = b->core.parent) {
+    for (b = XtParent(b); b; b = XtParent(b)) {
       if (b == a) return TRUE;
       if (XtIsShell(b)) return FALSE;
     }
@@ -86,9 +86,9 @@ static Widget CommonAncestor(a, b, relTypeRtn)
 	  RelRtn(b, XtMyDescendant)
 	}
     else
-      for (b = b->core.parent;
+      for (b = XtParent(b);
 	   b && !XtIsShell(b); 
-	   b = b->core.parent)
+	   b = XtParent(b))
 	if (IsParent(b, a)) 
 	  {
 	      RelRtn(b, XtMyCousin)
