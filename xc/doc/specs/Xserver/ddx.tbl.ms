@@ -1,6 +1,6 @@
-.\" $Header: ddx.doc.tbl.ms,v 1.6 88/02/24 15:27:13 rws Exp $
-.EF 'Porting Layer Definition'- % -'September 12, 1987'
-.OF 'Porting Layer Definition'- % -'September 12, 1987'
+.\" $Header: ddx.doc.tbl.ms,v 1.8 88/02/24 19:29:16 rws Exp $
+.EF 'Porting Layer Definition'- % -'March 1, 1988'
+.OF 'Porting Layer Definition'- % -'March 1, 1988'
 .EH '''
 .OH '''
 .TL
@@ -355,7 +355,7 @@ You must supply some of the pieces for proper scheduling between clients.
 		ClientPtr *pClientReady;
 		int *nReady;
 		ClientPtr *pNewClients;
-                int *nNew;
+		int *nNew;
 .fi
 .LP
 WaitForSomething is the scheduler procedure you must write that will
@@ -409,8 +409,7 @@ The DIX BlockHandler() iterates through the Screens,  for each one calling
 its BlockHandler.  A BlockHandler is declared thus:
 .nf
 
-	void
-	xxxBlockHandler(nscreen, pbdata, pptv, pReadmask)
+	void xxxBlockHandler(nscreen, pbdata, pptv, pReadmask)
 		int nscreen;
 		pointer pbdata;
 		pointer pptv;
@@ -423,8 +422,7 @@ The DIX WakeupHandler() does the same thing,  calling each Screen's
 WakeupHandler.  A WakeupHandler is declared thus:
 .nf
 
-	void
-	xxxWakeupHandler(nscreen, pbdata, err, pReadmask)
+	void xxxWakeupHandler(nscreen, pbdata, err, pReadmask)
 		int nscreen;
 		pointer pbdata;
 		unsigned long err;
@@ -4131,14 +4129,12 @@ in a certain shape defined by a bitmap.  PushPixels is equivalent to
 using a second stipple.  You can thing of it as pushing the fillStyle
 through the stencil which is built by milines and miarcs. 
 
-.TS
-expand;
-l l.
-Suppose the stencil is:	00111100
-and the stipple is:	10101010
-	                           
-PushPixels result:	00101000
-.TE
+.nf
+
+Suppose the stencil is:			00111100
+and the stipple is:			10101010
+PushPixels result:			00101000
+.fi
 
 You have a choice in implementing this routine.
 You can use the mi version which depends ultimately upon FillSpan().
@@ -4307,9 +4303,6 @@ RegionCopy	mi	Screen
 RegionCreate	mi	Screen
 RegionDestroy	mi	Screen
 RegionEmpty	mi	Screen
-RegionExtents	mi	Screen
-RegionNotEmpty	mi	Screen
-RegionReset	mi	Screen
 .TE
 
 .bp
@@ -4319,6 +4312,9 @@ c c c
 l c l.
 Procedure	Port	Struct
 _
+RegionExtents	mi	Screen
+RegionNotEmpty	mi	Screen
+RegionReset	mi	Screen
 ResolveColor	mfb	Screen
 RegisterKeyboardDevice	dix	
 RegisterPointerDevice	dix	
