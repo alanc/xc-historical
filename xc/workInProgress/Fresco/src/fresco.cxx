@@ -1,4 +1,8 @@
 /*
+ * $XConsortium$
+ */
+
+/*
  * Copyright (c) 1992-93 Silicon Graphics, Inc.
  * Copyright (c) 1993 Fujitsu, Ltd.
  *
@@ -255,8 +259,6 @@ void Fresco::ref(BaseObjectRef r) {
 	r->ref__(+1);
     }
 }
-
-void ::operator delete(void*) { }
 
 void Fresco::unref(BaseObjectRef r) {
     if (is_not_nil(r) && r->ref__(-1) <= 0) {
