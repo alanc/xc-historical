@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.133 93/06/25 16:27:57 gildea Exp $
+ * $XConsortium: XOpenDis.c,v 11.134 93/08/22 11:09:34 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -431,7 +431,7 @@ Display *XOpenDisplay (display)
 		    dp->visuals = (Visual *) NULL;
 		}
 	    }
-	    sp->root_visual = _XVIDtoVisual(root_visualID);
+	    sp->root_visual = _XVIDtoVisual(dpy, root_visualID);
 	}
 		
 

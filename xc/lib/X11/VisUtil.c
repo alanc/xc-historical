@@ -1,4 +1,4 @@
-/* $XConsortium: XVisUtil.c,v 11.14 91/06/30 18:15:42 rws Exp $ */
+/* $XConsortium: XVisUtil.c,v 11.15 93/08/22 11:04:41 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -131,7 +131,7 @@ int *nitems;	/* RETURN */
 
               count++;
 
-              vip->visual = _XVIDtoVisual(vp->visualid);
+              vip->visual = _XVIDtoVisual(dpy, vp->visualid);
               vip->visualid = vp->visualid;
               vip->screen = ii;
               vip->depth = dp->depth;
@@ -213,7 +213,7 @@ Status XMatchVisualInfo( dpy, screen, depth, class, visual_info)
           {
             if (vp->class == class) 
               {
-		visual_info->visual = _XVIDtoVisual(vp->visualid);
+		visual_info->visual = _XVIDtoVisual(dpy, vp->visualid);
 		visual_info->visualid = vp->visualid;
 		visual_info->screen = screen;
 		visual_info->depth = depth;
