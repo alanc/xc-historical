@@ -30,8 +30,8 @@
 #ifndef _FSLIB_H_
 #define _FSLIB_H_
 
-#include	"FS.h"
-#include	"FSproto.h"
+#include	<FS.h>
+#include	<FSproto.h>
 
 #define	Bool	int
 #define	Status	int
