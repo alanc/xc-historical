@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.52 91/07/12 17:24:08 converse Exp $
+ * $XConsortium: tocutil.c,v 2.53 91/07/13 17:15:21 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -501,9 +501,13 @@ void TUSaveTocFile(toc)
     if (fid < 0 && toc->length != toc->origlength)
 	fid = myopen(toc->scanfile, O_RDWR, 0666);
     if (fid >= 0) {
+#if defined(SYSV) && (defined(SYSV386) || defined(MOTOROLA))
+	(void) ftruncate_emu(fid, toc->length, toc->scanfile);
+#else
 	(void) ftruncate(fid, toc->length);
-	toc->origlength = toc->length;
 	(void) myclose(fid);
+#endif
+	toc->origlength = toc->length;
     }
     toc->needscachesave = FALSE;
     toc->lastreaddate = LastModifyDate(toc->scanfile);
