@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.30 90/02/22 19:29:01 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.33 90/04/20 16:41:01 kit Exp $";
 #endif 
 
 /*
@@ -604,13 +604,16 @@ XawTextBlock *        text;
 
 /* ARGSUSED */
 static Boolean
-SetValues(current, request, new)
+SetValues(current, request, new, args, num_args)
 Widget current, request, new;
+ArgList args;
+Cardinal * num_args;
 {
   AsciiSrcObject src =      (AsciiSrcObject) new;
   AsciiSrcObject old_src = (AsciiSrcObject) current;
-  Boolean total_reset = FALSE;
+  Boolean total_reset = FALSE, string_set = FALSE;
   FILE * file;
+  int i;
 
   if ( old_src->ascii_src.use_string_in_place != 
        src->ascii_src.use_string_in_place ) {
@@ -620,13 +623,18 @@ Widget current, request, new;
 	   old_src->ascii_src.use_string_in_place;
   }
 
-  if ( (old_src->ascii_src.string != src->ascii_src.string) ||
-       (old_src->ascii_src.type != src->ascii_src.type) ) {
-    if (old_src->ascii_src.string == src->ascii_src.string) {
+  for (i = 0; i < *num_args ; i++ ) 
+      if (streq(args[i].name, XtNstring)) {
+	  string_set = TRUE;
+	  break;
+      }
+  
+  if ( string_set || (old_src->ascii_src.type != src->ascii_src.type) ) {
+    if (string_set) {
       /* Fool it into not freeing the string */
-      src->ascii_src.allocated_string = FALSE; 
+      old_src->ascii_src.allocated_string = FALSE; 
       RemoveOldStringOrFile(old_src);        /* remove old info. */
-      src->ascii_src.allocated_string = TRUE;
+      old_src->ascii_src.allocated_string = TRUE;
     }
     else {
       RemoveOldStringOrFile(old_src);        /* remove old info. */
