@@ -1,6 +1,6 @@
 /**********************************************************************
  *
- * $XConsortium: icons.c,v 1.4 89/04/13 10:01:16 jim Exp $
+ * $XConsortium: icons.c,v 1.5 89/05/10 01:25:54 keith Exp $
  *
  * Icon releated routines
  *
@@ -18,21 +18,6 @@
 #define iconHeight(w)	(Scr->IconBorderWidth * 2 + w->icon_w_height)
 
 static
-displayIconRegions ()
-{
-	Window	r;
-	GC	gc;
-	XGCValues	gcv;
-	int	scr;
-
-	scr = DefaultScreen (dpy);
-	r = RootWindow (dpy, scr);
-	gcv.foreground = WhitePixel (dpy, scr);
-	gcv.background = BlackPixel (dpy, scr);
-	gc = XCreateGC (dpy, r, GCForeground|GCBackground, &gcv);
-}
-
-static
 splitEntry (ie, grav1, grav2, w, h)
     IconEntry	*ie;
     int		grav1, grav2;
@@ -47,6 +32,8 @@ splitEntry (ie, grav1, grav2, w, h)
 	    splitEntry (ie, grav2, grav1, w, ie->h);
 	if (h != ie->h) {
 	    new = (IconEntry *)malloc (sizeof (IconEntry));
+	    new->twm_win = 0;
+	    new->used = 0;
 	    new->next = ie->next;
 	    ie->next = new;
 	    new->x = ie->x;
@@ -66,6 +53,8 @@ splitEntry (ie, grav1, grav2, w, h)
 	    splitEntry (ie, grav2, grav1, ie->w, h);
 	if (w != ie->w) {
 	    new = (IconEntry *)malloc (sizeof (IconEntry));
+	    new->twm_win = 0;
+	    new->used = 0;
 	    new->next = ie->next;
 	    ie->next = new;
 	    new->y = ie->y;
@@ -97,9 +86,6 @@ int *final_x, *final_y;
     IconEntry	*ie, *ne;
     int		x, y, w, h;
 
-    /* start with the default position */
-    *final_x = def_x;
-    *final_y = def_y;
     ie = 0;
     for (ir = Scr->FirstRegion; ir; ir = ir->next) {
 	w = roundUp (iconWidth (tmp_win), ir->stepx);
@@ -117,14 +103,11 @@ int *final_x, *final_y;
 	splitEntry (ie, ir->grav1, ir->grav2, w, h);
 	ie->used = 1;
 	ie->twm_win = tmp_win;
-	x = ie->x;
-	if (ir->grav1 == EAST || ir->grav2 == EAST)
-	    x += ie->w - iconWidth (tmp_win);
-	y = ie->y;
-	if (ir->grav1 == SOUTH || ir->grav2 == SOUTH)
-	    y += ie->h - iconHeight (tmp_win);
-	*final_x = x;
-	*final_y = y;
+	*final_x = ie->x + (ie->w - iconWidth (tmp_win)) / 2;
+	*final_y = ie->y + (ie->h - iconHeight (tmp_win)) / 2;
+    } else {
+	*final_x = def_x;
+	*final_y = def_y;
     }
     return;
 }
@@ -204,6 +187,7 @@ IconDown (tmp_win)
 
     ie = FindIconEntry (tmp_win, &ir);
     if (ie) {
+	ie->twm_win = 0;
 	ie->used = 0;
 	ip = prevIconEntry (ie, ir);
 	in = ie->next;
