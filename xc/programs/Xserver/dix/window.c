@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.91 92/12/24 12:43:54 rws Exp $ */
+/* $XConsortium: window.c,v 5.92 93/02/09 16:32:49 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2961,7 +2961,10 @@ ConfigureWindow(pWin, mask, vlist, client)
 	    GET_CARD8(CWStackMode, smode);
 	    if ((smode != TopIf) && (smode != BottomIf) &&
  		(smode != Opposite) && (smode != Above) && (smode != Below))
-                   return(BadMatch);
+	    {
+		client->errorValue = smode;
+		return(BadValue);
+	    }
 	    break;
 	  default:
 	    client->errorValue = mask;
