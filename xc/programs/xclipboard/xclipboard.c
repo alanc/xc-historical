@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xclipboard.c,v 1.16 90/03/05 11:47:34 keith Exp $
+ * $XConsortium: xclipboard.c,v 1.17 90/05/01 18:40:18 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -25,7 +25,7 @@
  * Reauthored by: Keith Packard, MIT X Consortium.
  */
 
-/* $XConsortium: xclipboard.c,v 1.16 90/03/05 11:47:34 keith Exp $ */
+/* $XConsortium: xclipboard.c,v 1.17 90/05/01 18:40:18 converse Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -107,7 +107,8 @@ RestoreClip (w, clip)
     XtSetValues (source, args, 1);
 }
 
-ClipPtr
+/*ARGSUSED*/
+ClipPtr 
 NewClip (w, old)
     Widget  w;
     ClipPtr old;
@@ -130,6 +131,7 @@ NewClip (w, old)
     return newClip;
 }
 
+/*ARGSUSED*/
 DeleteClip (w, clip)
     Widget  w;
     ClipPtr clip;
@@ -284,6 +286,7 @@ CenterWidgetOnWidget (w, wT)
     CenterWidgetAtPoint (w, (int) rootX, (int) rootY);
 }
 
+/*ARGSUSED*/
 static void
 SaveToFile (w, e, argv, argc)
     Widget  w;
@@ -303,6 +306,7 @@ SaveToFile (w, e, argv, argc)
     XtPopup (fileDialogShell, XtGrabNone);
 }
 
+/*ARGSUSED*/
 static void
 AcceptSaveFile (w, e, argv, argc)
     Widget  w;
@@ -406,8 +410,8 @@ XtActionsRec xclipboard_actions[] = {
 };
 
 static XrmOptionDescRec table[] = {
-    {"-w",	    "*text*wrap",		XrmoptionNoArg,  "Word"},
-    {"-nw",	    "*text*wrap",		XrmoptionNoArg,  "Never"},
+    {"-w",	    "wrap",		XrmoptionNoArg,  "on"},
+/*    {"-nw",	    "wrap",		XrmoptionNoArg,  "False"} */
 };
 
 static void	LoseSelection ();
@@ -415,6 +419,7 @@ static void	InsertClipboard ();
 static Boolean	ConvertSelection();
 static Atom	ManagerAtom, ClipboardAtom;
 
+/*ARGSUSED*/
 static void 
 InsertClipboard(w, client_data, selection, type, value, length, format)
 Widget w;
@@ -557,16 +562,31 @@ static void LoseManager(w, selection)
     XtError("another clipboard has taken over control\n");
 }
 
+typedef struct {
+  Boolean wrap;
+} ResourceData, *ResourceDataPtr;
+
+ResourceData userOptions;
+
+XtResource resources[] = {
+  {"wrap", "Wrap", XtRBoolean, sizeof(Boolean),
+     XtOffset(ResourceDataPtr, wrap), XtRImmediate, (XtPointer)False}
+};
+
 void
 main(argc, argv)
 int argc;
 char **argv;
 {
-    Arg args[2];
+    Arg args[4];
+    Cardinal n;
     Widget parent, quit, delete, new, save;
 
     top = XtInitialize( "xclipboard", "XClipboard", table, XtNumber(table),
 			 (Cardinal*) &argc, argv);
+
+    XtGetApplicationResources(top, (XtPointer)&userOptions, resources, 
+			      XtNumber(resources), NULL, 0);
 
     XtAddActions (xclipboard_actions, XtNumber (xclipboard_actions));
     /* CLIPBOARD_MANAGER is a non-standard mechanism */
@@ -584,10 +604,16 @@ char **argv;
     prevButton = XtCreateManagedWidget("prev", Command, parent, NULL, ZERO);
     indexLabel = XtCreateManagedWidget("index", Label, parent, NULL, ZERO);
 
-    XtSetArg(args[0], XtNtype, XawAsciiString);
-    XtSetArg(args[1], XtNeditType, XawtextEdit);
-    text = XtCreateManagedWidget( "text", Text, parent, args, TWO);
+    n=0;
+    XtSetArg(args[n], XtNtype, XawAsciiString); n++;
+    XtSetArg(args[n], XtNeditType, XawtextEdit); n++;
+    if (userOptions.wrap) {
+	XtSetArg(args[n], XtNwrap, XawtextWrapWord); n++;
+	XtSetArg(args[n], XtNscrollHorizontal, False); n++;
+    }
 
+    text = XtCreateManagedWidget( "text", Text, parent, args, n);
+    
     currentClip = NewClip (text, (ClipPtr) 0);
 
     set_button_state ();
