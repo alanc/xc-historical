@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.26 88/11/16 13:46:24 rws Exp $
+ *	$XConsortium: misc.c,v 1.27 88/11/16 18:14:13 rws Exp $
  */
 
 
@@ -53,7 +53,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.26 88/11/16 13:46:24 rws Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.27 88/11/16 18:14:13 rws Exp $";
 #endif	/* lint */
 
 xevents()
@@ -193,10 +193,16 @@ caddr_t eventdata;
                 selectwindow(screen,
 			     (event->detail == NotifyPointer) ? INWINDOW :
 								FOCUS);
-        else
+        else {
                 unselectwindow(screen,
 			       (event->detail == NotifyPointer) ? INWINDOW :
 								  FOCUS);
+		if (screen->grabbedKbd && (event->mode == NotifyUngrab)) {
+		    screen->grabbedKbd = FALSE;
+		    ReverseVideo(term);
+		    XBell(screen->display, 100);
+		}
+	}
 }
 
 
