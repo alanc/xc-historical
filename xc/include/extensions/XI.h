@@ -1,4 +1,4 @@
-/* $Header: XI.h,v 1.12 91/07/17 16:34:06 rws Exp $ */
+/* $XConsortium: XI.h,v 1.13 91/07/24 15:32:36 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
