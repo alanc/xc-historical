@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.70 89/11/13 18:11:18 jim Exp $
+ * $XConsortium: gram.y,v 1.71 89/11/13 18:22:54 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.70 89/11/13 18:11:18 jim Exp $";
+"$XConsortium: gram.y,v 1.71 89/11/13 18:22:54 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -294,6 +294,7 @@ keys		: /* Empty */
 key		: META			{ mods |= Mod1Mask; }
 		| SHIFT			{ mods |= ShiftMask; }
 		| CONTROL		{ mods |= ControlMask; }
+		| OR			{ }
 		;
 
 contexts	: /* Empty */
