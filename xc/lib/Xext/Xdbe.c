@@ -1,5 +1,4 @@
-/* $XConsortium: copyright.h,v 1.14 95/04/13 16:08:25 dpw Exp $ */
-
+/* $XConsortium: Xdbeproto.h,v 1.1 95/05/25 17:29:33 dpw Exp dpw $ */
 /******************************************************************************
  * 
  * Copyright (c) 1994, 1995  Hewlett-Packard Company
@@ -52,6 +51,15 @@ static char *dbe_extension_name = DBE_PROTOCOL_NAME;
 #define DbeSimpleCheckExtension(dpy,i) \
   XextSimpleCheckExtension (dpy, i, dbe_extension_name)
 
+#if defined(__STDC__) && !defined(UNIXCPP)
+#define DbeGetReq(name,req,info) GetReq (name, req); \
+        req->reqType = info->codes->major_opcode; \
+        req->dbeReqType = X_##name;
+#else
+#define DbeGetReq(name,req,info) GetReq (name, req); \
+        req->reqType = info->codes->major_opcode; \
+        req->dbeReqType = X_/**/name;
+#endif
 
 /*****************************************************************************
  *                                                                           *
@@ -65,17 +73,17 @@ static char *dbe_extension_name = DBE_PROTOCOL_NAME;
 static int close_display();
 static char *error_string();
 static XExtensionHooks dbe_extension_hooks = {
-    NULL,				/* create_gc */
-    NULL,				/* copy_gc */
-    NULL,				/* flush_gc */
-    NULL,				/* free_gc */
-    NULL,				/* create_font */
-    NULL,				/* free_font */
-    close_display,			/* close_display */
-    NULL,				/* wire_to_event */
-    NULL,				/* event_to_wire */
-    NULL,				/* error */
-    error_string,			/* error_string */
+    NULL,                               /* create_gc */
+    NULL,                               /* copy_gc */
+    NULL,                               /* flush_gc */
+    NULL,                               /* free_gc */
+    NULL,                               /* create_font */
+    NULL,                               /* free_font */
+    close_display,                      /* close_display */
+    NULL,                               /* wire_to_event */
+    NULL,                               /* event_to_wire */
+    NULL,                               /* error */
+    error_string,                       /* error_string */
 };
 
 static char *dbe_error_list[] = {
@@ -92,7 +100,6 @@ static XEXT_GENERATE_CLOSE_DISPLAY (close_display, dbe_info)
 static XEXT_GENERATE_ERROR_STRING (error_string, dbe_extension_name,
 				   DbeNumberErrors, 
 				   dbe_error_list)
-
 
 /*****************************************************************************
  *                                                                           *
@@ -157,17 +164,19 @@ Status XdbeQueryExtension (dpy, major_version_return, minor_version_return)
  *	accurate information whenever possible.
  */
 
-/*## If NeedFunctionPrototypes is defined, swap_action parameter causes
- *## compiler failure if the function is defined as
+/*## If NeedFunctionPrototypes is defined, the swap_action parameter causes
+ *## compiler failure without the #ifdef workaround below.  With
+ *## NeedFunctionPrototype enabled, this function is prototyped as
  *##
- *## XdbeBackBuffer XdbeAllocateBackBufferName(dpy, window, swap_action)
+ *## XdbeBackBuffer XdbeAllocateBackBufferName (dpy, window, swap_action)
  *##     Display *dpy;
  *##     Window window;
  *##     XdbeSwapAction swap_action;
  *##
- *## This is because swap_action is defined as an int on the first
- *## line by the compiler, but this type does not match the function
- *## prototype in Xdbe.h which defines swap_action as an unsigned char.
+ *## Without the workaround, an error occurs because swap_action is promoted to
+ *## an int by the compiler when compiling this file.  However, this type does
+ *## not match what is in the function prototype in Xdbe.h.  In Xdbe.h, the
+ *## swap_action parameter is defined as an unsigned char, not an int.
  *##*/
 
 #if NeedFunctionPrototypes
@@ -246,6 +255,7 @@ Status XdbeSwapBuffers (dpy, swap_info, num_windows)
 {
     XExtDisplayInfo *info = find_display (dpy);
     register xDbeSwapBuffersReq *req;
+    int i;
 
     DbeCheckExtension (dpy, info, (Status)0 /* failure */);
 
@@ -253,9 +263,21 @@ Status XdbeSwapBuffers (dpy, swap_info, num_windows)
     DbeGetReq (DbeSwapBuffers, req, info);
     req->length += 2*num_windows;
     req->n = num_windows;
-    PackData32 (dpy, swap_info, num_windows * sizeof(XdbeSwapInfo));
+
+    /* We need to handle 64-bit machines, where we can not use PackData32
+     * directly because info would be lost in translating from 32- to 64-bit.
+     * Instead we send data via a loop that accounts for the translation.
+     */
+    for (i = 0; i < num_windows; i++)
+    {
+        char tmp[4];
+        Data32 (dpy, (long *)&swap_info[i].swap_window, 4);
+        tmp[0] = swap_info[i].swap_action;
+        Data (dpy, (char *)tmp, 4);
+    }
+
     UnlockDisplay (dpy);
-    XSync (dpy, False);
+    SyncHandle ();
 
     /*## always return 1 -- is this correct? */
     return (Status)1; /* success */
@@ -342,7 +364,7 @@ XdbeScreenVisualInfo *XdbeGetVisualInfo (dpy, screen_specifiers, num_screens)
     DbeGetReq(DbeGetVisualInfo, req, info);
     req->length = 2 + *num_screens;
     req->n      = *num_screens;
-    PackData32(dpy, screen_specifiers, (*num_screens * sizeof (Drawable)));
+    Data32 (dpy, screen_specifiers, (*num_screens * sizeof (CARD32)));
 
     if (!_XReply (dpy, (xReply *) &rep, 0, xFalse)) {
         UnlockDisplay (dpy);
@@ -369,9 +391,10 @@ XdbeScreenVisualInfo *XdbeGetVisualInfo (dpy, screen_specifiers, num_screens)
     {
         int nbytes;
         int j;
+	long c;
 
-        _XRead32 (dpy, (char *)&scrVisInfo[i].count, sizeof(int));
-
+        _XRead32 (dpy, (char *)&c, sizeof(CARD32));
+	scrVisInfo[i].count = c;
         nbytes = scrVisInfo[i].count * sizeof(XdbeVisualInfo);
 
         /* if we can not allocate the list of visual/depth info
@@ -389,26 +412,19 @@ XdbeScreenVisualInfo *XdbeGetVisualInfo (dpy, screen_specifiers, num_screens)
             return NULL;
         }
     
-        /* We can not read visual info item in directly because the
-         * reply contains a pad byte.  Therefore, we must read each
-         * component of the visual info item in separately.
+        /* Read the visual info item into the wire structure, then
+         * copy each element into the library structure.  The element
+	 * sizes and/or padding may be different in the two structures.
          */
 
         for (j = 0; j < scrVisInfo[i].count; j++) {
             char data;
+	    xDbeVisInfo xvi;
 
-            _XRead (dpy, (char *)&(scrVisInfo[i].visinfo[j].visual),
-                sizeof(VisualID));
-
-            _XRead (dpy, (char *)&data, sizeof(char));
-            scrVisInfo[i].visinfo[j].depth = (int)data;
-
-            _XRead (dpy, (char *)&data, sizeof(char));
-            scrVisInfo[i].visinfo[j].perflevel = (int)data;
-
-            /* read unused bytes */
-            _XRead (dpy, (char *)&data, sizeof(char));
-            _XRead (dpy, (char *)&data, sizeof(char));
+	    _XRead(dpy, (char *)&xvi, SIZEOF(xDbeVisInfo));
+	    scrVisInfo[i].visinfo[j].visual = xvi.visualID;
+	    scrVisInfo[i].visinfo[j].depth  = xvi.depth;
+	    scrVisInfo[i].visinfo[j].perflevel  = xvi.perfLevel;
         }
 
     }
