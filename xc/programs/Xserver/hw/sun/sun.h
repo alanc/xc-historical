@@ -12,12 +12,13 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$Header: sun.h,v 4.4 87/11/04 09:49:53 rws Exp $ SPRITE (Berkeley)"
+ *	"$Header: sun.h,v 4.5 88/02/29 00:37:21 rws Exp $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
 
 #include    <errno.h>
+extern int  errno;
 #include    <sys/param.h>
 #include    <sys/types.h>
 #include    <sys/time.h>
