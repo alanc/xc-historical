@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.99 89/10/03 08:30:22 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.100 89/10/03 15:28:58 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif /* lint */
 
@@ -863,7 +863,6 @@ static Widget LookupSpringLoaded()
 		return gl->widget;
 	    else
 		return NULL;
-	}
 	if (gl->exclusive) break;
     }
     return NULL;
@@ -939,7 +938,7 @@ static void DecideToDispatch(event)
 	    }
 
 	    /* Also dispatch to nearest accessible spring_loaded. */
-	    if (widget != dspWidget)
+	    if (widget != NULL && widget != dspWidget)
 		DispatchEvent(event, widget, mask);
 
 	    return;
@@ -1265,10 +1264,11 @@ extern void _XtRegisterAsyncHandlers(widget)
 /* Stuff for XtSetKeyboardFocus */
 
 /* ARGSUSED */
-static void ForwardEvent(widget, client_data, event)
+static void ForwardEvent(widget, client_data, event, continue_to_dispatch)
     Widget widget;
     XtPointer client_data;
     XEvent *event;
+    Boolean *continue_to_dispatch; /* unused */
 {
     /* this shouldn't have been necessary, as the keyboard grab will cause
        needed, however, a protocol bug causes us to believe we lost the
@@ -1283,10 +1283,11 @@ static void ForwardEvent(widget, client_data, event)
 }
 
 /* ARGSUSED */
-static void HandleFocus(widget, client_data, event)
+static void HandleFocus(widget, client_data, event, continue_to_dispatch)
     Widget widget;
     XtPointer client_data;	/* child who wants focus */
     XEvent *event;
+    Boolean *continue_to_dispatch; /* unused */
 {
     Boolean add;
     Widget descendant = (Widget)client_data;
@@ -1380,10 +1381,11 @@ static void AddForwardingHandler(w, descendant)
 }
 
 /* ARGSUSED */
-static void QueryEventMask(widget, client_data, event)
+static void QueryEventMask(widget, client_data, event, continue_to_dispatch)
     Widget widget;		/* child who gets focus */
     XtPointer client_data;	/* ancestor giving it */
     XEvent *event;
+    Boolean *continue_to_dispatch; /* unused */
 {
     if (event->type == MapNotify) {
 	/* make sure ancestor still wants focus set here */
