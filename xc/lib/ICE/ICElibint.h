@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.28 94/01/31 10:54:05 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.29 94/02/06 14:27:09 rws Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -434,12 +434,16 @@ typedef struct {
 #define IceWriteData32(_iceConn, _bytes, _data) \
     IceWriteData (_iceConn, _bytes, (char *) _data)
 
-#endif
+#else /* WORD64 */
+
+/* IceWriteData16 and IceWriteData32 defined in misc.c for WORD64 */
+
+#endif /* WORD64 */
 
 
 /*
- * The IceSendData family of macros bypass copying the data to the
- * ICE connection buffer and send the data directly.  If necessary,
+ * The IceSendData macro bypasses copying the data to the
+ * ICE connection buffer and sends the data directly.  If necessary,
  * the ICE connection buffer is first flushed.
  */
 
@@ -449,16 +453,6 @@ typedef struct {
 	IceFlush (_iceConn); \
     _IceWrite (_iceConn, (unsigned long) (_bytes), _data); \
 }
-
-#ifndef WORD64
-
-#define IceSendData16(_iceConn, _bytes, _data) \
-    IceSendData (_iceConn, _bytes, (char *) _data)
-
-#define IceSendData32(_iceConn, _bytes, _data) \
-    IceSendData (_iceConn, _bytes, (char *) _data)
-
-#endif
 
 
 /*
@@ -535,7 +529,11 @@ typedef struct {
 #define IceReadData32(_iceConn, _bytes, _pData) \
     _IceRead (_iceConn, (unsigned long) (_bytes), (char *) _pData); \
 
-#endif
+#else /* WORD64 */
+
+/* IceReadData16 and IceReadData32 defined in misc.c for WORD64 */
+
+#endif /* WORD64 */
 
 
 /*
