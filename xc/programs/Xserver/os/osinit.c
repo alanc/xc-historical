@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.20 88/11/14 12:05:17 keith Exp $ */
+/* $XConsortium: osinit.c,v 1.21 88/11/14 18:12:26 rws Exp $ */
 #include "os.h"
 #include "opaque.h"
 #undef NULL
@@ -75,7 +75,7 @@ OsInit()
 		dup2 (fileno (err), 2);
 		fclose (err);
 	    }
-#if defined(macII) || defined(hpux)
+#ifdef SYSV		/* yes, even though it is 4.2bsd.... */
 	    {
 	    static char buf[BUFSIZ];
 	    setvbuf (stderr, buf, _IOLBF, BUFSIZ);
