@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.29 91/01/09 18:11:38 gildea Exp $
+ * $XConsortium: listres.c,v 1.30 91/01/10 14:09:06 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -45,32 +45,33 @@ static XrmOptionDescRec Options[] = {
   { "-variable", "*showVariable", XrmoptionNoArg, (caddr_t) "on" },
 };
 
-static struct _appresources {
+typedef struct {
     Boolean show_tree;
     Boolean show_all;
     Boolean show_variable;
     Boolean show_superclass;
     char *top_object;
     char *format;
-} Appresources;
+  } OptionsRec;
 
+OptionsRec options;
+
+#define Offset(field) XtOffsetOf(OptionsRec, field)
 
 static XtResource Resources[] = {
-#define offset(field) XtOffset(struct _appresources *, field)
   { "showTree", "ShowTree", XtRBoolean, sizeof(Boolean),
-      offset(show_tree), XtRImmediate, (caddr_t) FALSE },
+      Offset(show_tree), XtRImmediate, (XtPointer) FALSE },
   { "showSuper", "ShowSuper", XtRBoolean, sizeof(Boolean),
-      offset(show_superclass), XtRImmediate, (caddr_t) TRUE },
+      Offset(show_superclass), XtRImmediate, (caddr_t) TRUE },
   { "showVariable", "ShowVariable", XtRBoolean, sizeof(Boolean),
-      offset(show_variable), XtRImmediate, (caddr_t) FALSE },
+      Offset(show_variable), XtRImmediate, (caddr_t) FALSE },
   { "topObject", "TopObject", XtRString, sizeof(char *),
-      offset(top_object), XtRString, (caddr_t) "core" },
+      Offset(top_object), XtRString, (caddr_t) "core" },
   { "resourceFormat", "ResourceFormat", XtRString, sizeof(char *),
-      offset(format), XtRString, (caddr_t) " %-16s %20s  %-20s  %s" },
-#undef offset
+      Offset(format), XtRString, (caddr_t) " %-16s %20s  %-20s  %s" },
 };
 
-
+#undef Offset
 
 char *ProgramName;
 
@@ -247,11 +248,11 @@ main (argc, argv)
 				&argc, argv, NULL, NULL, 0);
     container = XtCreateWidget ("dummy", widgetClass, toplevel, NULL, ZERO);
 
-    XtGetApplicationResources (toplevel, (caddr_t) &Appresources,
+    XtGetApplicationResources (toplevel, (caddr_t) &options,
 			       Resources, XtNumber(Resources), NULL, ZERO);
     XmuWnInitializeNodes (widget_list, nwidgets);
     if (argc == 1) {
-	if (Appresources.show_tree) {
+	if (options.show_tree) {
 	    tree_known_widgets();
 	} else {
 	    list_known_widgets();
@@ -259,7 +260,7 @@ main (argc, argv)
 	exit (0);
     }
 
-    topnode = XmuWnNameToNode (widget_list, nwidgets, Appresources.top_object);
+    topnode = XmuWnNameToNode (widget_list, nwidgets, options.top_object);
     argc--, argv++;			/* skip command */
 
     if (argc > 0 && argv[0][0] == '-') {
@@ -267,9 +268,9 @@ main (argc, argv)
 	if (len >= 2 && strncmp(argv[0], "-all", len) == 0) {
 	    XmuWidgetNode *wn;
 	    for (i = 0, wn = widget_list; i < nwidgets; i++, wn++) {
-		list_resources (wn, Appresources.format, topnode, container,
-				(Bool) Appresources.show_superclass,
-				(Bool) Appresources.show_variable);
+		list_resources (wn, options.format, topnode, container,
+				(Bool) options.show_superclass,
+				(Bool) options.show_variable);
 	    }
 	} else
 	  usage();
@@ -284,9 +285,9 @@ main (argc, argv)
 			 ProgramName, *argv);
 		continue;
 	    }
-	    list_resources (node, Appresources.format, topnode, container,
-			    (Bool) Appresources.show_superclass,
-			    (Bool) Appresources.show_variable);
+	    list_resources (node, options.format, topnode, container,
+			    (Bool) options.show_superclass,
+			    (Bool) options.show_variable);
 	}
     }
     exit (0);
