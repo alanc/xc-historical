@@ -1,4 +1,4 @@
-/* $XConsortium: SelectionI.h,v 1.14 89/11/30 20:18:14 swick Exp $ */
+/* $XConsortium: SelectionI.h,v 1.15 89/12/01 09:57:48 swick Exp $ */
 /* $oHeader: SelectionI.h,v 1.3 88/08/19 14:02:44 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -63,10 +63,11 @@ typedef struct _SelectRec {
     XtLoseSelectionProc loses;
     XtSelectionDoneProc notify;
     XtCancelConvertSelectionProc owner_cancel;
-    Boolean incremental;
     XtPointer owner_closure;
     Atom incremental_atom; 		/* constant */
     Atom indirect_atom; 		/* constant */
+    Request req;			/* state for local non-incr xfer */
+    Boolean incremental;
 } SelectRec;
 
 typedef struct {
