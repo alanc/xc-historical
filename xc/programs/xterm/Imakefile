@@ -5,11 +5,15 @@
           OBJS1 = main.o input.o charproc.o cursor.o util.o tabs.o \
 		  screen.o scrollbar.o button.o Tekproc.o misc.o \
 		  VTPrsTbl.o TekPrsTbl.o data.o menu.o
-       PROGRAMS = xterm
+          SRCS2 = resize.c
+          OBJS2 = resize.o
+       PROGRAMS = resize xterm
    INSTALLFLAGS = -m 4755
        INCLUDES = -I$(TOOLKITSRC) -I$(TOP)
 
 ComplexProgramTarget_1(xterm,$(XTOOLLIB) $(XLIB),-ltermcap)
+
+SingleProgramTarget(resize,$(OBJS2),,-lc -ltermcap)
 
 install:: resize
 	$(INSTALL) -c resize $(BINDIR)
