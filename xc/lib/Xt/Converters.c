@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Converters.c,v 1.44 89/09/26 10:58:27 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Converters.c,v 1.45 89/09/26 18:06:38 swick Exp $";
 /* $oHeader: Converters.c,v 1.6 88/09/01 09:26:23 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -75,20 +75,21 @@ void XtDisplayStringConversionWarning(dpy, from, toType)
 	if (XrmQGetResource( rdb, xrm_name, xrm_class,
 			     &rep_type, &value ))
 	{
-	    if (rep_type == StringToQuark(XtRBoolean) && value.addr)
-		report_it = Report;
+	    if (rep_type == StringToQuark(XtRBoolean))
+		report_it = *(Boolean*)value.addr ? Report : Ignore;
 	    else if (rep_type == StringToQuark(XtRString)) {
 		XrmValue toVal;
 		Boolean report;
-		toVal.addr = &report;
+		toVal.addr = (caddr_t)&report; /* Xresource.h says caddr_t */
 		toVal.size = sizeof(Boolean);
 		if (XtCallConverter(dpy, CvtStringToBoolean, (XrmValuePtr)NULL,
 				    (Cardinal)0, &value, &toVal,
-				    (XtCacheRef*)NULL)
-		  && report)
-		    report_it = Report;
+				    (XtCacheRef*)NULL))
+		    report_it = report ? Report : Ignore;
 	    }
+	    else report_it = Report;
 	}
+	else report_it = Report;
     }
 
     if (report_it == Report) {
