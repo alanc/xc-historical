@@ -55,7 +55,7 @@ from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.3 94/06/16 16:33:00 mor Exp $
+ * $XConsortium: twm.h,v 1.78 94/07/06 16:17:28 mor Exp $
  *
  * twm include file
  *
@@ -315,6 +315,7 @@ typedef struct TWMWinConfigEntry
     struct TWMWinConfigEntry *next;
     int tag;
     char *client_id;
+    char *window_role;
     XClassHint class;
     char *wm_name;
     int wm_command_count;
@@ -408,5 +409,7 @@ extern Atom TwmAtoms[];
 #define _XA_WM_SAVE_YOURSELF		TwmAtoms[6]
 #define _XA_WM_DELETE_WINDOW		TwmAtoms[7]
 #define _XA_SM_CLIENT_ID		TwmAtoms[8]
+#define _XA_WM_CLIENT_LEADER		TwmAtoms[9]
+#define _XA_WM_WINDOW_ROLE		TwmAtoms[10]
 
 #endif /* _TWM_ */
