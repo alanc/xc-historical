@@ -1,6 +1,8 @@
+/*
+ * This file is used by System V based systems.
+ */
 
 #include <sys/types.h>
-#include <sys/uio.h>
 
 /*
  * These are routines fould in BDS and not found in HP-UX.  They are
@@ -127,6 +129,7 @@ register struct qelem *elem;
     /* insert unlocking code here */
 }
 
+
 /*
  * Berkeley random()
  *
@@ -152,11 +155,16 @@ int seed;
    return (srand(seed));
 }
 
+
+#ifdef hpux
+
 /** on hpux 5.n, readv/writev don't work on sockets;
 /** Even on 6.0, we'll keep these routines around for doing
  ** extra large writes; (> 4000); (this caused the Bezier
  ** demo to blow up.)
  **/
+
+#include <sys/uio.h>
 
 #define min(x,y) ((x)>(y)?(y):(x))
 
@@ -187,3 +195,5 @@ register int iovcnt;
     else
 	return(0);
 }
+
+#endif /* hpux */
