@@ -1,8 +1,5 @@
-       INCLUDES = -I$(TOP) -Isimple-lib
-LOCAL_LIBRARIES = $(SLB) $(XLIB)
-            SLB = simple-lib/libslb.a
+LOCAL_LIBRARIES = $(XLIB)
+           SRCS = xprop.c jdisplay.c jowindow.c ostuff.c
+           OBJS = xprop.o jdisplay.o jowindow.o ostuff.o
 
-SimpleProgramTarget(xprop, $(BINDIR))
-
-$(SLB):
-	cd simple-lib; $(MAKE)
+ComplexProgramTarget(xprop, $(BINDIR))
