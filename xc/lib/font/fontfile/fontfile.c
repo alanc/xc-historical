@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfile.c,v 1.12 93/09/04 09:45:06 gildea Exp $
+ * $XConsortium: fontfile.c,v 1.13 93/09/05 10:18:05 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -117,7 +117,6 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
     Bool		noSpecificSize;
     int			nranges;
     fsRange		*ranges;
-    Bool		name_parses = FALSE;
     
     if (namelen >= MAXFONTNAMELEN)
 	return AllocError;
@@ -125,6 +124,7 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
     CopyISOLatin1Lowered (lowerName, name, namelen);
     lowerName[namelen] = '\0';
     tmpName.name = lowerName;
+    tmpName.length = namelen;
     tmpName.ndashes = FontFileCountDashes (lowerName, namelen);
     /* Match XLFD patterns */
     ranges = FontParseRanges(lowerName, &nranges);
@@ -263,7 +263,6 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 	tmpName.ndashes == 14 &&
 	FontParseXLFDName (lowerName, &vals, FONT_XLFD_REPLACE_ZERO))
     {
-	name_parses = TRUE;
         tmpName.length = strlen(lowerName);
 	entry = FontFileFindNameInDir (&dir->nonScalable, &tmpName);
     }
@@ -289,16 +288,104 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 	case FONT_ENTRY_ALIAS:
 	    alias = &entry->u.alias;
 	    *aliasName = alias->resolved;
-	    if (name_parses &&
-		(len = strlen(*aliasName)) <= MAXFONTNAMELEN &&
+	    if ((len = strlen(*aliasName)) <= MAXFONTNAMELEN &&
 		FontFileCountDashes (*aliasName, len) == 14)
 	    {
-		vals.nranges = nranges;
-		vals.ranges = ranges;
-		if (vals.values_supplied)
+		FontScalableRec	tmpVals;
+
+		/* If we're aliasing a scalable name, transfer values
+		   from the name into the destination alias, multiplying
+		   by matrices that appear in the alias. */
+
+		CopyISOLatin1Lowered (lowerName, entry->name.name,
+				      entry->name.length);
+		lowerName[entry->name.length] = '\0';
+
+		if (FontParseXLFDName(lowerName, &tmpVals,
+				      FONT_XLFD_REPLACE_NONE) &&
+		    !tmpVals.values_supplied &&
+		    FontParseXLFDName(*aliasName, &tmpVals,
+				      FONT_XLFD_REPLACE_NONE))
 		{
+		    double *matrix = NULL, tempmatrix[4];
+		    int nameok = 1;
+
+		    vals.nranges = nranges;
+		    vals.ranges = ranges;
+
+		    /* Use a matrix iff exactly one is defined */
+		    if ((tmpVals.values_supplied & PIXELSIZE_MASK) ==
+			PIXELSIZE_ARRAY &&
+			!(tmpVals.values_supplied & POINTSIZE_MASK))
+			matrix = tmpVals.pixel_matrix;
+		    else if ((tmpVals.values_supplied & POINTSIZE_MASK) ==
+			     POINTSIZE_ARRAY &&
+			     !(tmpVals.values_supplied & PIXELSIZE_MASK))
+			matrix = tmpVals.point_matrix;
+
+		    /* If matrix given in the alias, compute new point
+		       and/or pixel matrices */
+		    if (matrix)
+		    {
+			/* Complete the XLFD name to avoid potential
+			   gotchas */
+			if (FontFileCompleteXLFD(&vals, &vals))
+			{
+			    double hypot();
+			    tempmatrix[0] =
+				vals.point_matrix[0] * matrix[0] +
+				vals.point_matrix[1] * matrix[2];
+			    tempmatrix[1] =
+				vals.point_matrix[0] * matrix[1] +
+				vals.point_matrix[1] * matrix[3];
+			    tempmatrix[2] =
+				vals.point_matrix[2] * matrix[0] +
+				vals.point_matrix[3] * matrix[2];
+			    tempmatrix[3] =
+				vals.point_matrix[2] * matrix[1] +
+				vals.point_matrix[3] * matrix[3];
+			    vals.point_matrix[0] = tempmatrix[0];
+			    vals.point_matrix[1] = tempmatrix[1];
+			    vals.point_matrix[2] = tempmatrix[2];
+			    vals.point_matrix[3] = tempmatrix[3];
+
+			    tempmatrix[0] =
+				vals.pixel_matrix[0] * matrix[0] +
+				vals.pixel_matrix[1] * matrix[2];
+			    tempmatrix[1] =
+				vals.pixel_matrix[0] * matrix[1] +
+				vals.pixel_matrix[1] * matrix[3];
+			    tempmatrix[2] =
+				vals.pixel_matrix[2] * matrix[0] +
+				vals.pixel_matrix[3] * matrix[2];
+			    tempmatrix[3] =
+				vals.pixel_matrix[2] * matrix[1] +
+				vals.pixel_matrix[3] * matrix[3];
+			    vals.pixel_matrix[0] = tempmatrix[0];
+			    vals.pixel_matrix[1] = tempmatrix[1];
+			    vals.pixel_matrix[2] = tempmatrix[2];
+			    vals.pixel_matrix[3] = tempmatrix[3];
+
+			    vals.values_supplied =
+				(vals.values_supplied &
+				 ~(PIXELSIZE_MASK | POINTSIZE_MASK)) |
+				PIXELSIZE_ARRAY | POINTSIZE_ARRAY;
+
+			    nameok = hypot(vals.point_matrix[0],
+					   vals.point_matrix[1]) > EPS &&
+				     hypot(vals.point_matrix[2],
+					   vals.point_matrix[3]) > EPS &&
+				     hypot(vals.pixel_matrix[0],
+					   vals.pixel_matrix[1]) > EPS &&
+				     hypot(vals.pixel_matrix[2],
+					   vals.pixel_matrix[3]) > EPS;
+			}
+			else
+			    nameok = 0;
+		    }
+
 		    CopyISOLatin1Lowered (aliasname, *aliasName, len + 1);
-		    if (FontParseXLFDName(aliasname, &vals,
+		    if (nameok && FontParseXLFDName(aliasname, &vals,
 					  FONT_XLFD_REPLACE_VALUE))
 			/* Return a version of the aliasname that has
 			   had the vals stuffed into it.  To avoid
@@ -460,6 +547,28 @@ FontFileListFonts (client, fpe, pat, len, max, names)
 	    if (FontFileCompleteXLFD (&tmpVals, &zeroVals))
 	    {
 		strcpy (zeroChars, scaleNames->names[i]);
+		if ((vals.values_supplied & PIXELSIZE_MASK) ||
+		    !(vals.values_supplied & PIXELSIZE_WILDCARD))
+		{
+		    tmpVals.values_supplied =
+			(tmpVals.values_supplied & ~PIXELSIZE_MASK) |
+			(vals.values_supplied & PIXELSIZE_MASK);
+		    tmpVals.pixel_matrix[0] = vals.pixel_matrix[0];
+		    tmpVals.pixel_matrix[1] = vals.pixel_matrix[1];
+		    tmpVals.pixel_matrix[2] = vals.pixel_matrix[2];
+		    tmpVals.pixel_matrix[3] = vals.pixel_matrix[3];
+		}
+		if ((vals.values_supplied & POINTSIZE_MASK) ||
+		    !(vals.values_supplied & POINTSIZE_WILDCARD))
+		{
+		    tmpVals.values_supplied =
+			(tmpVals.values_supplied & ~POINTSIZE_MASK) |
+			(vals.values_supplied & POINTSIZE_MASK);
+		    tmpVals.point_matrix[0] = vals.point_matrix[0];
+		    tmpVals.point_matrix[1] = vals.point_matrix[1];
+		    tmpVals.point_matrix[2] = vals.point_matrix[2];
+		    tmpVals.point_matrix[3] = vals.point_matrix[3];
+		}
 		if (vals.width <= 0)
 		    tmpVals.width = 0;
 		if (vals.x == 0)

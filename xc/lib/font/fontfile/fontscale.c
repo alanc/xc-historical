@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontscale.c,v 1.7 91/07/22 23:00:50 keith Exp $
+ * $XConsortium: fontscale.c,v 1.8 93/08/24 18:49:21 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -130,12 +130,14 @@ FontFileCompleteXLFD (vals, def)
      * same font.
      */
 
+    res = (fsResolution *) GetClientResolutions(&num_res);
+
     if (!(vals->values_supplied & PIXELSIZE_MASK) ||
 	!(vals->values_supplied & POINTSIZE_MASK))
     {
 	/* If resolution(s) unspecified and cannot be computed from
 	   pixelsize and pointsize, get appropriate defaults. */
-	res = (fsResolution *) GetClientResolutions(&num_res);
+
 	if (num_res)
 	{
 	    if (vals->x <= 0)
@@ -143,13 +145,11 @@ FontFileCompleteXLFD (vals, def)
 	    if (vals->y <= 0)
 		vals->y = res->y_resolution;
 	}
-	else
-	{
-	    if (vals->x <= 0)
-		vals->x = def->x;
-	    if (vals->y <= 0)
-		vals->y = def->y;
-	}
+
+	if (vals->x <= 0)
+	    vals->x = def->x;
+	if (vals->y <= 0)
+	    vals->y = def->y;
     }
     else
     {
@@ -197,12 +197,25 @@ FontFileCompleteXLFD (vals, def)
     if (!(vals->values_supplied & PIXELSIZE_MASK) &&
 	!(vals->values_supplied & POINTSIZE_MASK))
     {
-	vals->point_matrix[0] = def->point_matrix[0];
-	vals->point_matrix[1] = def->point_matrix[1];
-	vals->point_matrix[2] = def->point_matrix[2];
-	vals->point_matrix[3] = def->point_matrix[3];
-	vals->values_supplied = (vals->values_supplied & ~POINTSIZE_MASK) |
-				(def->values_supplied & POINTSIZE_MASK);
+	if (num_res)
+	{
+	    vals->point_matrix[0] =
+	    vals->point_matrix[3] = (double)res->point_size / 10.0;
+	    vals->point_matrix[1] =
+	    vals->point_matrix[2] = 0;
+	    vals->values_supplied = (vals->values_supplied & ~POINTSIZE_MASK) |
+				    POINTSIZE_SCALAR;
+	}
+	else if (def->values_supplied & POINTSIZE_MASK)
+	{
+	    vals->point_matrix[0] = def->point_matrix[0];
+	    vals->point_matrix[1] = def->point_matrix[1];
+	    vals->point_matrix[2] = def->point_matrix[2];
+	    vals->point_matrix[3] = def->point_matrix[3];
+	    vals->values_supplied = (vals->values_supplied & ~POINTSIZE_MASK) |
+				    (def->values_supplied & POINTSIZE_MASK);
+	}
+	else return FALSE;
     }
 
     /* At this point, at least two of the three vertical scale values

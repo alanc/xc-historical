@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontxlfd.h,v 1.2 93/08/24 18:49:25 gildea Exp $
+ * $XConsortium: fontxlfd.h,v 1.3 93/09/04 09:45:05 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -43,10 +43,13 @@
 #define POINTSIZE_SCALAR		0x4
 #define POINTSIZE_ARRAY			0x8
 
-#define ENHANCEMENT_SPECIFY_MASK	0x30
+#define PIXELSIZE_WILDCARD		0x10
+#define POINTSIZE_WILDCARD		0x20
 
-#define EMBOLDENING_SPECIFIED		0x10
-#define CHARSUBSET_SPECIFIED		0x20
+#define ENHANCEMENT_SPECIFY_MASK	0xc0
+
+#define EMBOLDENING_SPECIFIED		0x40
+#define CHARSUBSET_SPECIFIED		0x80
 
 #define EPS		1.0e-20
 #define XLFD_NDIGITS	3		/* Round numbers in pixel and

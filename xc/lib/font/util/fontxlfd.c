@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontxlfd.c,v 1.6 93/09/04 09:45:05 gildea Exp $
+ * $XConsortium: fontxlfd.c,v 1.7 93/09/05 10:42:33 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -260,6 +260,13 @@ int which;
 		   This is done in FontFileCompleteXLFD(). */
 		matrix[0] = matrix[3];
 		matrix[1] = matrix[2] = 0.0;
+	    }
+	    else if (value < 0)
+	    {
+		if (which == POINTSIZE_MASK)
+		    vals->values_supplied |= POINTSIZE_WILDCARD;
+		else
+		    vals->values_supplied |= PIXELSIZE_WILDCARD;
 	    }
 	}
     }

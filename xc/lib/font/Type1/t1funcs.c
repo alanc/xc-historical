@@ -1,4 +1,4 @@
-/* $XConsortium: t1funcs.c,v 1.10 92/05/12 18:07:55 gildea Exp $ */
+/* $XConsortium: t1funcs.c,v 1.11 93/08/24 18:48:56 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -279,7 +279,7 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
 		      small bitmap so we're not mistaken for an undefined
 		      character. */
 		   h = w = 1;
-		   size = paddedW = (w, pad);
+		   size = paddedW = PAD(w, pad);
 		   glyphs[i].bits = (char *)xalloc(size);
                    if (glyphs[i].bits == NULL) {
                        rc = AllocError;
