@@ -2,40 +2,31 @@
  * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
  */
 
-#define OSName            Ultrix-32 3.1
-#define OSMajorVersion    3
+#define OSName            Ultrix-32 4.1
+#define OSMajorVersion    4
 #define OSMinorVersion    1
-#define SystemV NO
-#define HasVoidSignalReturn YES
 #define HasPutenv YES
 #define HasBsearch YES
 #define HasSaberC YES
-
-#undef ExtensionDefines
-#define ExtensionDefines -DSHAPE -DMITSHM -DMULTIBUFFER -DMITMISC
+#define HasShm YES
 
 #ifdef VaxArchitecture
 #define XqvssServer Xqvss
 #define XqdssServer Xqdss
-#define DefaultCCOptions -DXTFUNCPROTO
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
-#define ServerDefines StandardDefines ExtensionDefines -DXDMCP -DNOSTDHDRS -DX11R4
+#define ServerOSDefines -DNOSTDHDRS -DX11R4
 /* gcc is *VERY USEFUL*, especially for the server; GET it */
-#define HasGcc YES
+#define HasGcc NO
 #endif
 
 #ifdef MipsArchitecture
 /* #define XmfbpmaxServer Xmfbpmax - why bother, no one needs it... */
 #define XcfbpmaxServer Xcfbpmax
-#define StandardDefines
+#define NeedFunctionPrototypes YES
 #define DefaultCCOptions
-#define ServerDefines StandardDefines ExtensionDefines -DXDMCP
-#define ServerCDebugFlags -O -g3
-
-/*
- * XXX - temporary hack for Keith since he has a wimpy disk.
- */
-#define BuildExamples NO
+#define ServerCDebugFlags -O
+/* PMAX is fast enough to save the disk space without noticing */
+#define CompressAllFonts
 #endif
 
 #if HasGcc
@@ -43,5 +34,5 @@
 #define ServerCCOptions /* */
 #endif
 
-/**/# platform:  $XConsortium: ultrix.cf,v 1.22 90/03/01 17:43:44 jim Exp $
-/**/# operating system:  OSName
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.23 90/05/15 18:43:40 keith Exp $
+XCOMM operating system:  OSName
