@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.82 93/09/11 16:38:18 rws Exp $ */
+/* $XConsortium: Selection.c,v 1.83 93/09/18 18:18:35 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -124,14 +124,6 @@ static PropList GetPropList(dpy)
 	sarray->incr_atom = XInternAtom(dpy, "INCR", FALSE);
 	sarray->indirect_atom = XInternAtom(dpy, "MULTIPLE", FALSE);
 	sarray->timestamp_atom = XInternAtom(dpy, "TIMESTAMP", FALSE);
-#ifdef DRAFT_ICCCM_COMPATIBILITY
-/*	Should have been INCREMENTAL all along, but Xt has always used
- *	INCR to implement draft ICCCM incremental protocol.  So it stays 
- *	as INCR, in violation of the ICCCM, for historical reasons.  
- *	This code will be removed in a future release.
- */
- 	sarray->incremental_atom = XInternAtom(dpy, "INCR", FALSE);
-#endif
 	sarray->propCount = 1;
 	sarray->list = (SelectionProp)XtMalloc((unsigned) sizeof(SelectionPropRec));
 	sarray->list[0].prop = XInternAtom(dpy, "_XT_SELECTION_0", FALSE);
@@ -1007,11 +999,7 @@ Boolean *cont;
 	if (!MATCH_SELECT(event, info)) return; /* not really for us */
          XtRemoveEventHandler(widget, (EventMask)0, TRUE,
 			   ReqCleanup, (XtPointer) info );
-	if (IsINCRtype(info, XtWindow(widget), event->property)
-#ifdef DRAFT_ICCCM_COMPATIBILITY
-	    || event->target == info->ctx->prop_list->incremental_atom
-#endif
-	    ) {
+	if (IsINCRtype(info, XtWindow(widget), event->property)) {
 	    info->proc = HandleGetIncrement;
 	    XtAddEventHandler(info->widget, (EventMask) PropertyChangeMask, 
 			      FALSE, ReqCleanup, (XtPointer) info);
@@ -1146,15 +1134,7 @@ Boolean *cont;
           if ((BYTELENGTH(length,info->format)+info->offset) 
 			> info->bytelength) {
 	      unsigned int bytes;
-#ifdef DRAFT_ICCCM_COMPATIBILITY 
-	      /* Handle Incremental can be called with a size of 0 */
-	      bytes = ((info->bytelength) 
-		       ? (info->bytelength *= 2)
-		       : (info->bytelength = 
-			  BYTELENGTH(length, info->format) + info->offset));
-#else
 	      bytes = (info->bytelength *= 2);
-#endif
 	      info->value = XtRealloc(info->value, bytes);
           }
           (void) memmove(&info->value[info->offset], value, 
@@ -1196,12 +1176,7 @@ static long IncrPropSize(widget, value, format, length)
      unsigned long length;
 {
     unsigned long size;
-    if (format == 32
-#ifdef DRAFT_ICCCM_COMPATIBILITY
-	/* old code was Endian-dependent; don't bother trying to fix it! */
-	|| (format == 8 && length == 4)
-#endif
-	) {
+    if (format == 32) {
 	if (sizeof(long) == 4)
 	    size = ((long*)value)[length-1]; /* %%% what order for longs? */
 	else {
@@ -1300,31 +1275,6 @@ unsigned long size;
 #endif 
 }
 
-#ifdef DRAFT_ICCCM_COMPATIBILITY
-static unsigned long GetSizeOfIncr(widget, ctx, property)
-     Widget widget;
-     Select ctx;
-     Atom property;
-{
-    /* assert( prop type is INCR ) */
-    unsigned long bytesafter;
-    unsigned long length;
-    int format;
-    Atom type;
-    unsigned char *value;
-    unsigned long size;
-
-    (void)XGetWindowProperty( XtDisplay(widget), XtWindow(widget), property,
-			      0L, 10000000, False, ctx->prop_list->incremental_atom,
-			      &type, &format, &length, &bytesafter, &value);
-
-    size = IncrPropSize(widget, value, format, length);
-    XFree((char *)value);
-    return size;
-}
-#endif
-
-
 /*ARGSUSED*/
 static void HandleSelectionReplies(widget, closure, ev, cont)
 Widget widget;
@@ -1342,9 +1292,6 @@ Boolean *cont;
     int format;
     Atom type;
     XtPointer *c;
-#ifdef DRAFT_ICCCM_COMPATIBILITY
-    Atom *t;
-#endif
 
     if (event->type != SelectionNotify) return;
     if (!MATCH_SELECT(event, info)) return; /* not really for us */
@@ -1357,37 +1304,14 @@ Boolean *cont;
         (void) XGetWindowProperty(dpy, XtWindow(widget), info->property, 0L,
 			   10000000, True, AnyPropertyType, &type, &format,
 			   &length, &bytesafter, (unsigned char **) &pairs);
-#ifdef DRAFT_ICCCM_COMPATIBILITY
-       for (length = length / IndirectPairWordSize, p = pairs, 
-		   c = info->req_closure, t = info->target+1;
-	           length; length--, p++, c++, t++) {
-#else
        for (length = length / IndirectPairWordSize, p = pairs,
 		   c = info->req_closure;
 	           length; length--, p++, c++) {
-#endif
 	    if ((event->property == None) || (format != 32) || 
 		 (p->property == None)) {
 		HandleNone(widget, info->callback, *c, event->selection);
 		if (p->property != None)
                     FreeSelectionProperty(XtDisplay(widget), p->property);
-#ifdef DRAFT_ICCCM_COMPATIBILITY
-	    } else if (p->target == ctx->prop_list->incremental_atom) {
-		CallBackInfo newinfo = XtNew(CallBackInfoRec);
-		newinfo->callback = info->callback;
-		newinfo->req_closure = (XtPointer *)XtNew(XtPointer);
-		*newinfo->req_closure = *c;
-		newinfo->property = p->property;
-		newinfo->widget = info->widget;
-		newinfo->time = info->time;
-		newinfo->target = (Atom *)XtNew(Atom);
-		*newinfo->target = *t;
-		newinfo->ctx = info->ctx;
-		newinfo->incremental = info->incremental;
-		HandleIncremental(dpy, widget, p->property, newinfo,
-				  GetSizeOfIncr(widget, ctx, p->property)
-				  );
-#endif
 	    } else {
 		if (HandleNormal(dpy, widget, p->property, info, *c, 
 				 event->selection)) {
@@ -1406,10 +1330,6 @@ Boolean *cont;
         XtFree((char*)info->req_closure);
         XtFree((char*)info->target); 
         XtFree((char*)info);
-#ifdef DRAFT_ICCCM_COMPATIBILITY
-    } else if (event->target == ctx->prop_list->incremental_atom) {
-	HandleIncremental(dpy, widget, event->property, info, 0);
-#endif
     } else {
 	if (HandleNormal(dpy, widget, event->property, info, 
 			 *info->req_closure, event->selection)) {
