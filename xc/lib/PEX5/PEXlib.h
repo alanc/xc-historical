@@ -1,7 +1,7 @@
 #ifndef _PEXLIB_H_
 #define _PEXLIB_H_
 
-/* $XConsortium: PEXlib.h,v 1.8 92/05/07 23:30:59 mor Exp $ */
+/* $XConsortium: PEXlib.h,v 1.1 92/05/08 15:12:28 mor Exp $ */
 
 /******************************************************************************/
 /*  Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Mass.      */
@@ -98,7 +98,7 @@ typedef unsigned short  PEXShapeHint;
 typedef unsigned char   PEXSwitch;
 typedef unsigned short  PEXTableIndex;
 typedef unsigned short  PEXTableType;
-typedef short  		PEXTypeOrTableIndex;
+typedef unsigned short  PEXTypeOrTableIndex;
 
 #if NeedFunctionPrototypes
 typedef void *PEXPointer;
@@ -584,7 +584,6 @@ typedef struct {
 
 /* encoded text */
 typedef struct {
-    unsigned short	reserved;
     unsigned short      length;
     char                *ch;
 } PEXStringData;
@@ -593,7 +592,9 @@ typedef struct {
     unsigned short	character_set;
     unsigned char       character_set_width;
     unsigned char       encoding_state;
-    PEXStringData       string;
+    unsigned short	reserved;
+    unsigned short      length;
+    char                *ch;
 } PEXEncodedTextData;
 
 typedef struct {
@@ -610,7 +611,7 @@ typedef struct {
 typedef struct {
     PEXSwitch           visibility;
     unsigned char       reserved;
-    unsigned short      curve_order;
+    unsigned short      order;
     PEXCoordType        rationality;
     PEXEnumTypeIndex    approx_method;
     float               tolerance;
@@ -662,7 +663,7 @@ typedef union {
  * pipeline context
  */
 typedef struct {
-    PEXColorType        color_type;
+    PEXColorType        type;
     unsigned short      reserved;
     PEXColor            color;
 } PEXColorSpecifier;
@@ -673,7 +674,7 @@ typedef struct {
 } PEXTextAlignment;
 
 typedef struct {
-    PEXEnumTypeIndex    approx_method;
+    PEXEnumTypeIndex    method;
     unsigned short      reserved;
     float               tolerance;
 } PEXCurveApprox;
@@ -688,7 +689,7 @@ typedef struct {
 } PEXReflectionAttributes;
 
 typedef struct {
-    PEXEnumTypeIndex    approx_method;
+    PEXEnumTypeIndex    method;
     unsigned short      reserved;
     float               u_tolerance;
     float               v_tolerance;
@@ -701,7 +702,7 @@ typedef struct {
 
 typedef struct {
     unsigned short      count;                  /* number of lights */
-    PEXTableIndex       *light_index;
+    PEXTableIndex       *index;
 } PEXListOfLight;
 
 typedef struct {
@@ -767,8 +768,8 @@ typedef struct {
     PEXTableIndex       view_index;
     PEXListOfLight      light_state;
     PEXTableIndex       depth_cue_index;
-    PEXBitmask          enables;
-    PEXBitmask          values;
+    PEXBitmask          asf_enables;
+    PEXBitmask          asf_values;
     long                pick_id;
     unsigned long       hlhsr_id;
     PEXNameSet          name_set;
@@ -783,7 +784,9 @@ typedef struct {
     mask[((attr)) >> 5] |= 1L << ( ((attr)) & 0x1f)
 
 #define PEXSetPCAttributeMaskAll(mask) \
-    mask[0] = mask[1] = mask[2] = 0xffffffff
+    mask[0] = 0xffffffff; \
+    mask[1] = 0xffffffff; \
+    mask[2] = 0x0;
 
 
 /*
@@ -811,6 +814,11 @@ typedef struct {
     short               y;
     float               z;
 } PEXDeviceCoord;
+
+typedef struct {
+    short               x;
+    short               y;
+} PEXDeviceCoord2D;
 
 typedef struct {
     PEXDeviceCoord      min;
@@ -877,11 +885,6 @@ typedef struct {
 typedef PEXNPCSubVolume PEXPDNPCHitVolume;
 
 typedef struct {
-    short               x;
-    short               y;
-} PEXDeviceCoord2D;
-
-typedef struct {
     PEXDeviceCoord2D    position;
     float               distance;
 } PEXPDDCHitBox;
@@ -924,10 +927,9 @@ typedef struct {
     unsigned long       first_glyph;
     unsigned long       last_glyph;
     unsigned long       default_glyph;
-    PEXSwitch           all_exist;
-    PEXSwitch           stroke;
-    unsigned short	reserved;
-    unsigned long       count;                  /* number of properties */
+    Bool                all_exist;
+    Bool                stroke;
+    unsigned short      count;                  /* number of properties */
     PEXFontProp         *prop;
 } PEXFontInfo;
  
@@ -953,14 +955,14 @@ typedef struct {
     PEXEnumTypeIndex    interp_method;
     PEXCurveApprox      curve_approx;
     float               width;
-    PEXColorSpecifier   color;
+    PEXColorSpecifier   line_color;
 } PEXLineBundleEntry;
 
 typedef struct {
     PEXEnumTypeIndex    type;
     short               reserved;
     float               scale;
-    PEXColorSpecifier   color;
+    PEXColorSpecifier   marker_color;
 } PEXMarkerBundleEntry;
 
 typedef struct {
@@ -968,7 +970,7 @@ typedef struct {
     PEXEnumTypeIndex    precision;
     float               char_expansion;
     float               char_spacing;
-    PEXColorSpecifier   color;
+    PEXColorSpecifier   text_color;
 } PEXTextBundleEntry;
 
 typedef struct {
@@ -981,9 +983,9 @@ typedef struct {
     PEXEnumTypeIndex    bf_reflection_model;
     PEXEnumTypeIndex    bf_interp_method;
     PEXSurfaceApprox    surface_approx;
-    PEXColorSpecifier   color;
+    PEXColorSpecifier   surface_color;
     PEXReflectionAttributes   reflection_attr;
-    PEXColorSpecifier   bf_color;
+    PEXColorSpecifier   bf_surface_color;
     PEXReflectionAttributes   bf_reflection_attr;
 } PEXInteriorBundleEntry;
 
@@ -992,14 +994,14 @@ typedef struct {
     unsigned char       reserved;
     PEXEnumTypeIndex    type;
     float               width;
-    PEXColorSpecifier   color;
+    PEXColorSpecifier   edge_color;
 } PEXEdgeBundleEntry;
 
 typedef struct {
     PEXColorType        color_type;
     unsigned short      row_count;
     unsigned short      col_count;
-    char                *color;  /* pointer to 2D array of colors of type: */
+    PEXPointer          color;   /* pointer to 2D array of colors of type: */
                                  /* PEXColorRGB,
                                     PEXColorHSV,
                                     PEXColorHLS,
@@ -1025,7 +1027,7 @@ typedef struct {
     float               spread_angle;
     float               attenuation1;
     float               attenuation2;
-    PEXColorSpecifier   color;
+    PEXColorSpecifier   light_color;
 } PEXLightEntry;
 
 typedef struct {
@@ -1035,7 +1037,7 @@ typedef struct {
     float               back_plane;
     float               front_scaling;
     float               back_scaling;
-    PEXColorSpecifier   color;
+    PEXColorSpecifier   dc_color;
 } PEXDepthCueEntry;
 
 typedef struct {
@@ -1076,7 +1078,7 @@ typedef struct {
 } PEXStructureInfo;
 
 typedef struct {
-    unsigned short      element_type;
+    unsigned short      type;
     unsigned short      length;
 } PEXElementInfo;
 
@@ -1162,7 +1164,8 @@ typedef struct {
     mask[((attr)) >> 5] |= 1L << ( ((attr)) & 0x1f)
 
 #define PEXSetPWAttributeMaskAll(mask) \
-    mask[0] = mask[1] = 0xffffffff
+    mask[0] = 0xffffffff \
+    mask[1] = 0x00000003
 
 typedef struct {
     unsigned char       view_rep;
@@ -1193,8 +1196,8 @@ typedef struct {
  * workstation picking
  */
 typedef struct {
-    unsigned short      pick_status;
-    PEXPickPath         picked_prim;
+    unsigned short      status;
+    PEXPickPath         pick_path;
 } PEXPickMeasureAttributes;
 
 typedef struct {
@@ -1229,11 +1232,11 @@ typedef struct {
 typedef struct {
     int             type;
     Display         *display;      /* Display the event was read from */
-    XID             resourceid;    /* resource id of renderer or structure */
     unsigned long   serial;        /* serial number of failed request */
     unsigned char   error_code;    /* error code of failed request */
     unsigned char   request_code;  /* Major op-code of failed request */
     unsigned char   minor_code;    /* Minor op-code of failed request */
+    XID             resourceid;    /* resource id of renderer or structure */
     unsigned short  op_code;       /* op-code of failed output command */
     unsigned short  count;         /* number of output commands successfully */
                                    /* executed before error */
@@ -2241,8 +2244,7 @@ extern char *PEXEscapeWithReply(
     unsigned long 		/* escape_id */,
     int 		/* length */,
     char *		/* escape_data */,
-    unsigned long *	/* escape_out_id */,
-    int *		/* escape_out_length */				
+    unsigned long *	/* escape_out_length */				
 #endif
 );
 
@@ -2402,12 +2404,6 @@ extern void PEXFreeEnumInfo(
 #endif
 );
 
-extern void PEXFreeEscapeReply(
-#if NeedFunctionPrototypes
-    char *		/* escape_reply */
-#endif
-);
-
 extern void PEXFreeFontInfo(
 #if NeedFunctionPrototypes
     unsigned long 		/* count */,
@@ -2418,7 +2414,7 @@ extern void PEXFreeFontInfo(
 extern void PEXFreeFontNames(
 #if NeedFunctionPrototypes
     unsigned long 		/* count */,
-    PEXStringData *		/* font_names */
+    char **		/* font_names */
 #endif
 );
 
@@ -2785,10 +2781,11 @@ extern PEXWorkstationAttributes *PEXGetWorkstationAttributes(
 #endif
 );
 
-extern PEXWorkstationDynamics *PEXGetWorkstationDynamics(
+extern Status PEXGetWorkstationDynamics(
 #if NeedFunctionPrototypes
     Display *		/* display */,
-    Drawable 		/* drawable */
+    Drawable 		/* drawable */,
+    PEXWorkstationDynamics *		/* dynamics_return */
 #endif
 );
 
@@ -2826,7 +2823,7 @@ extern void PEXLabel(
 #endif
 );
 
-extern PEXStringData *PEXListFonts(
+extern char **PEXListFonts(
 #if NeedFunctionPrototypes
     Display *		/* display */,
     char *		/* pattern */,
@@ -2835,13 +2832,12 @@ extern PEXStringData *PEXListFonts(
 #endif
 );
 
-extern PEXStringData *PEXListFontsWithInfo(
+extern char **PEXListFontsWithInfo(
 #if NeedFunctionPrototypes
     Display *		/* display */,
     char *		/* pattern */,
     unsigned int 		/* max_names */,
-    unsigned long *		/* num_strings_return */,
-    unsigned long *		/* num_info_return */,
+    unsigned long *		/* count_return */,
     PEXFontInfo **		/* info_return */
 #endif
 );
