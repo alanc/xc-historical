@@ -416,7 +416,7 @@ OpenFont(client, fid, format, format_mask, namelen, name)
 	ClientFontPtr cfp;
 
 	idlist = (FontIDListPtr *) pfont->svrPrivate;
-	ids = idlist[c->client->index];
+	ids = idlist[client->index];
 	orig = ids->client_list[0];
 	if (!orig) {
 	    cfp = (ClientFontPtr) fsalloc(sizeof(ClientFontRec));
