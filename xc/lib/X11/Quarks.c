@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Quarks.c,v 1.24 90/10/20 15:08:27 rws Exp $
+ * $XConsortium: Quarks.c,v 1.25 90/10/31 14:50:23 rws Exp $
  */
 
 /***********************************************************
@@ -297,16 +297,15 @@ XrmQuark XrmStringToQuark(name)
 #endif
 {
     register char c, *tname;
-    register int i = 0;
     register Signature sig = 0;
 
     if (!name)
 	return (NULLQUARK);
     
-    for (tname = (char *)name; c = *tname++; i++)
+    for (tname = (char *)name; c = *tname++; )
 	sig = (sig << 1) + c;
 
-    return _XrmInternalStringToQuark(name, i, sig, False);
+    return _XrmInternalStringToQuark(name, tname-(char *)name-1, sig, False);
 }
 
 #if NeedFunctionPrototypes
@@ -318,16 +317,15 @@ XrmQuark XrmPermStringToQuark(name)
 #endif
 {
     register char c, *tname;
-    register int i = 0;
     register Signature sig = 0;
 
     if (!name)
 	return (NULLQUARK);
 
-    for (tname = (char *)name; c = *tname++; i++)
+    for (tname = (char *)name; c = *tname++; )
 	sig = (sig << 1) + c;
 
-    return _XrmInternalStringToQuark(name, i, sig, True);
+    return _XrmInternalStringToQuark(name, tname-(char *)name-1, sig, True);
 }
 
 XrmQuark XrmUniqueQuark()
