@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xdpyinfo.c,v 1.9 88/09/06 14:37:44 jim Exp $
+ * $XConsortium: xdpyinfo.c,v 1.10 88/09/26 16:25:28 jim Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -126,9 +126,30 @@ print_display_info (dpy)
     printf ("keycode range:    minimum %d, maximum %d\n",
 	    minkeycode, maxkeycode);
 
+    print_extension_info (dpy);
+
     printf ("default screen number:    %d\n", DefaultScreen (dpy));
     printf ("number of screens:    %d\n", ScreenCount (dpy));
 
+    return;
+}
+
+print_extension_info (dpy)
+    Display *dpy;
+{
+    int n = 0;
+    char **extlist = XListExtensions (dpy, &n);
+
+    printf ("number of extensions:    %d\n", n);
+
+    if (extlist) {
+	register int i;
+
+	for (i = 0; i < n; i++) {
+	    printf ("    %s\n", extlist[i]);
+	}
+	XFreeExtensionList (extlist);
+    }
     return;
 }
 
