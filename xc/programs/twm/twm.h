@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.60 90/03/15 14:22:44 jim Exp $
+ * $XConsortium: twm.h,v 1.61 90/03/20 11:16:54 jim Exp $
  *
  * twm include file
  *
@@ -61,11 +61,6 @@ typedef void (*SigProc)();	/* type of function returned by signal() */
 
 #define BW 2			/* border width */
 #define BW2 4			/* border width  * 2 */
-
-/* directory to look for bitmaps if the file is not found in the current
- * directory 
- */
-#define BITMAPS "/usr/include/X11/bitmaps"
 
 #ifndef TRUE
 #define TRUE	1
