@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ConnDis.c,v 11.109 94/01/13 15:11:29 mor Exp $
+ * $XConsortium: ConnDis.c,v 11.110 94/01/14 19:10:25 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -263,7 +263,10 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
      * host, and port back together to pass to _X11TransOpenCOTSClient().
      */
 
-    sprintf(address,"%s/%s:%s", pprotocol?pprotocol:"", phostname, pdpynum );
+    sprintf(address,"%s/%s:%s",
+	pprotocol ? pprotocol : "",
+	phostname ? phostname : "",
+	pdpynum );
 
     /*
      * Make the connection, also need to get the auth address info for
