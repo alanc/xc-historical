@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: TextSrc.c,v 1.3 89/10/09 16:21:10 jim Exp $";
+static char Xrcsid[] = "$XConsortium: TextSrc.c,v 1.4 89/10/31 17:12:19 kit Exp $";
 #endif 
 
 /*
@@ -38,6 +38,7 @@ static char Xrcsid[] = "$XConsortium: TextSrc.c,v 1.3 89/10/09 16:21:10 jim Exp 
 #include <X11/StringDefs.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/TextSrcP.h>
+#include <X11/Xmu/CharSet.h>
 
 /****************************************************************
  *
@@ -53,7 +54,8 @@ static XtResource resources[] = {
         offset(edit_mode), XtRString, "read"},
 };
 
-static void ClassPartInitialize(), SetSelection();
+static void ClassInitialize(), ClassPartInitialize(), SetSelection();
+static void CvtStringToEditMode();
 static Boolean ConvertSelection();
 static XawTextPosition Search(), Scan(), Read();
 static int Replace();
@@ -65,7 +67,7 @@ TextSrcClassRec textSrcClassRec = {
     /* superclass	  	*/	(WidgetClass) SuperClass,
     /* class_name	  	*/	"TextSrc",
     /* widget_size	  	*/	sizeof(TextSrcRec),
-    /* class_initialize   	*/	XawInitializeWidgetSet,
+    /* class_initialize   	*/	ClassInitialize,
     /* class_part_initialize	*/	ClassPartInitialize,
     /* class_inited       	*/	FALSE,
     /* initialize	  	*/	NULL,
@@ -107,6 +109,14 @@ TextSrcClassRec textSrcClassRec = {
 };
 
 WidgetClass textSrcObjectClass = (WidgetClass)&textSrcClassRec;
+
+static void 
+ClassInitialize ()
+{
+    XawInitializeWidgetSet ();
+    XtAddConverter(XtRString, XtREditMode,   CvtStringToEditMode,   NULL, 0);
+}
+
 
 static void
 ClassPartInitialize(wc)
@@ -278,6 +288,47 @@ Atom selection;
   /* This space intentionally left blank. */
 }
 
+
+#define done(address, type) \
+        { toVal->size = sizeof(type); toVal->addr = (caddr_t) address; }
+
+/* ARGSUSED */
+static void 
+CvtStringToEditMode(args, num_args, fromVal, toVal)
+XrmValuePtr args;		/* unused */
+Cardinal	*num_args;	/* unused */
+XrmValuePtr	fromVal;
+XrmValuePtr	toVal;
+{
+  static XawTextEditType editType;
+  static  XrmQuark  QRead, QAppend, QEdit;
+  XrmQuark    q;
+  char        lowerName[BUFSIZ];
+  static Boolean inited = FALSE;
+    
+  if ( !inited ) {
+    QRead   = XrmStringToQuark(XtEtextRead);
+    QAppend = XrmStringToQuark(XtEtextAppend);
+    QEdit   = XrmStringToQuark(XtEtextEdit);
+    inited = TRUE;
+  }
+
+  XmuCopyISOLatin1Lowered (lowerName, (char *)fromVal->addr);
+  q = XrmStringToQuark(lowerName);
+
+  if       (q == QRead)          editType = XawtextRead;
+  else if (q == QAppend)         editType = XawtextAppend;
+  else if (q == QEdit)           editType = XawtextEdit;
+  else {
+    done(NULL, 0);
+    return;
+  }
+  done(&editType, XawTextEditType);
+  return;
+}
+
+
+
 /************************************************************
  *
  * Public Functions.
@@ -420,3 +471,5 @@ Atom selection;
 
   (*class->textSrc_class.SetSelection)(w, left, right, selection);
 }
+
+

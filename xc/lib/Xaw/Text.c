@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.137 90/02/01 16:03:05 keith Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.138 90/03/01 15:55:12 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -148,40 +148,6 @@ static XtResource resources[] = {
 #define done(address, type) \
         { toVal->size = sizeof(type); toVal->addr = (caddr_t) address; }
 
-/* ARGSUSED */
-static void 
-CvtStringToEditMode(args, num_args, fromVal, toVal)
-XrmValuePtr args;		/* unused */
-Cardinal	*num_args;	/* unused */
-XrmValuePtr	fromVal;
-XrmValuePtr	toVal;
-{
-  static XawTextEditType editType;
-  static  XrmQuark  QRead, QAppend, QEdit;
-  XrmQuark    q;
-  char        lowerName[BUFSIZ];
-  static Boolean inited = FALSE;
-    
-  if ( !inited ) {
-    QRead   = XrmStringToQuark(XtEtextRead);
-    QAppend = XrmStringToQuark(XtEtextAppend);
-    QEdit   = XrmStringToQuark(XtEtextEdit);
-    inited = TRUE;
-  }
-
-  XmuCopyISOLatin1Lowered (lowerName, (char *)fromVal->addr);
-  q = XrmStringToQuark(lowerName);
-
-  if       (q == QRead)          editType = XawtextRead;
-  else if (q == QAppend)         editType = XawtextAppend;
-  else if (q == QEdit)           editType = XawtextEdit;
-  else {
-    done(NULL, 0);
-    return;
-  }
-  done(&editType, XawTextEditType);
-  return;
-}
 
 
 /* ARGSUSED */
@@ -315,7 +281,6 @@ ClassInitialize()
   strcpy (cp, _XawDefaultTextTranslations3);
   textWidgetClass->core_class.tm_table = buf;
 
-  XtAddConverter(XtRString, XtREditMode,   CvtStringToEditMode,   NULL, 0);
   XtAddConverter(XtRString, XtRScrollMode, CvtStringToScrollMode, NULL, 0);
   XtAddConverter(XtRString, XtRWrapMode,   CvtStringToWrapMode,   NULL, 0);
   XtAddConverter(XtRString, XtRResizeMode, CvtStringToResizeMode, NULL, 0);
