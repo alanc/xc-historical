@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: scrnintstr.h,v 1.1 87/09/11 07:50:28 rws Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -40,7 +40,7 @@ typedef struct _PixmapFormat {
     } PixmapFormatRec;
     
 typedef struct _Visual {
-    long	vid;
+    unsigned long	vid;
     short	screen;    
     short       class;
     unsigned long	redMask, greenMask, blueMask;
@@ -55,7 +55,7 @@ typedef struct _Visual {
 typedef struct _Depth {
     int		depth;
     int		numVids;
-    long	*vids;    /* block of visual ids for this depth */
+    unsigned long	*vids;    /* block of visual ids for this depth */
   } DepthRec;
 
 typedef struct _Screen {
@@ -66,8 +66,8 @@ typedef struct _Screen {
     short		numDepths;
     DepthPtr       	allowedDepths;
     short       	rootDepth;
-    long        	rootVisual;
-    long		defColormap;
+    unsigned long      	rootVisual;
+    unsigned long	defColormap;
     short		minInstalledCmaps, maxInstalledCmaps;
     char                backingStoreSupport, saveUnderSupport;
     unsigned long	whitePixel, blackPixel;
