@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Logo.c,v 1.11 89/10/09 16:20:39 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Logo.c,v 1.12 90/04/11 17:11:27 jim Exp $";
 #endif
 
 /*
@@ -38,7 +38,7 @@ static XtResource resources[] = {
 	XtOffset(LogoWidget,logo.reverse_video), XtRString, "FALSE"},
 };
 
-static void Initialize(), Realize(), Destroy(), Redisplay();
+static void Initialize(), Destroy(), Redisplay();
 static Boolean SetValues();
 
 LogoClassRec logoClassRec = {
@@ -51,7 +51,7 @@ LogoClassRec logoClassRec = {
     /* class_inited		*/	FALSE,
     /* initialize		*/	Initialize,
     /* initialize_hook		*/	NULL,
-    /* realize			*/	Realize,
+    /* realize			*/	XtInheritRealize,
     /* actions			*/	NULL,
     /* num_actions		*/	0,
     /* resources		*/	resources,
@@ -107,15 +107,6 @@ static void Initialize (request, new)
     w->logo.foreGC = XtGetGC((Widget)w, GCForeground, &gcv);
     gcv.foreground = w->core.background_pixel;
     w->logo.backGC = XtGetGC((Widget)w, GCForeground, &gcv);
-}
-
-static void Realize (gw, valueMask, attrs)
-    Widget gw;
-    XtValueMask *valueMask;
-    XSetWindowAttributes *attrs;
-{
-    XtCreateWindow( gw, InputOutput, (Visual *)CopyFromParent,
-		    *valueMask, attrs);
 }
 
 static void Destroy (gw)
