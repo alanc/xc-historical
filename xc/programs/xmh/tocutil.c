@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.36 89/11/15 10:57:53 converse Exp $
+ * $XConsortium: tocutil.c,v 2.37 89/11/25 21:06:35 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -69,7 +69,6 @@ static void CheckSequenceMenu(toc)
     Widget	menu, item;
     Button	button;
     WidgetList	children;
-    Sequence	seq;
 
     static XtCallbackRec callbacks[] = {
 	{ DoSelectSequence,		(XtPointer) NULL},
@@ -365,7 +364,7 @@ void TULoadTocFile(toc)
     if (toc->curmsg) {
 	origcurmsgid = toc->curmsg->msgid;
 	TocSetCurMsg(toc, (Msg)NULL);
-    } else origcurmsgid = 0;
+    } else origcurmsgid = 0;  /* The "default" current msg; 0 means none */
     fid = FOpenAndCheck(toc->scanfile, "r");
     maxmsgs = 10;
     orignummsgs = toc->nummsgs;
