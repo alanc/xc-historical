@@ -1,4 +1,4 @@
-/* $XConsortium: XGtFocus.c,v 1.4 89/12/06 20:38:40 rws Exp $ */
+/* $XConsortium: XGtFocus.c,v 1.5 94/02/14 17:39:27 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -42,7 +42,7 @@ XGetDeviceFocus (dpy, dev, focus, revert_to, time)
     XDevice *dev;
     Window *focus;
     int *revert_to;
-    int *time;
+    Time *time;
     {       
     xGetDeviceFocusReq 	*req;
     xGetDeviceFocusReply 	rep;
