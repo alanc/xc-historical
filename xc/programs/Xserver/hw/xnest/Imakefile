@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.1 93/06/04 21:38:39 dmatic Exp $
+XCOMM $XConsortium: Imakefile,v 1.1 93/07/12 15:29:07 rws Exp $
 #include <Server.tmpl>
 
 SRCS = 	Args.c \
@@ -9,6 +9,7 @@ SRCS = 	Args.c \
 	Font.c \
 	GC.c \
 	GCOps.c \
+	GetTime.c \
 	Handlers.c \
 	Init.c \
 	Keyboard.c \
@@ -26,6 +27,7 @@ OBJS = 	Args.o \
 	Font.o \
 	GC.o \
 	GCOps.o \
+	GetTime.o \
 	Handlers.o \
 	Init.o \
 	Keyboard.o \
