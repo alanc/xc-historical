@@ -13,9 +13,8 @@ PEXUT_LIB = $(PEXUT_DIR)/libpexut.a
 CDEBUGFLAGS = -g
 INCLUDES = -I. -I$(COMMON_DIR) -I$(PEXUT_DIR)
 
-PEXLIB=-lPEX5
-LDLIBS = $(SUSPEX_LIB) $(PEXUT_LIB) $(PEXLIB) $(XMULIB) $(XLIB) -lm
-LDOPTIONS = -L$(LIBDIR)
+LOCAL_LIBRARIES = $(SUSPEX_LIB) $(PEXUT_LIB) $(PEXLIB) $(XMULIB) $(XLIB)
+SYS_LIBRARIES = MathLibrary
 
 default: all
 
@@ -29,6 +28,6 @@ $(COMMON_OBJS):
 	(cd $(COMMON_DIR); make)
 
 #define CommonTarget(prog) \
-  NormalProgramTarget(prog, prog.o $(COMMON_OBJS), $(PEXUT_LIB) $(SUSPEX_LIB),,)
+  NormalProgramTarget(prog, prog.o $(COMMON_OBJS) $(MAIN_OBJ), $(PEXUT_LIB) $(SUSPEX_LIB),$(LOCAL_LIBRARIES),)
 
 DependTarget()

@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: Imakefile,v 1.0 93/11/22 12:48:37 rws Exp $
 #
 #       NOTICE TO USER: The source code in this file is copyrighted under
 #       U.S. and international laws.  SunSoft, Inc., a Sun Microsystems,
@@ -34,9 +34,8 @@ SUSPEX_LIB = $(SUSPEX_LIB_DIR)/libSusPEX.a
 CDEBUGFLAGS = -g
 INCLUDES = -I. -I$(COMMON_DIR) 
 
-PEXLIB=-lPEX5
-LDLIBS = $(SUSPEX_LIB) $(PEXLIB) $(XMULIB) $(XLIB) -lm
-LDOPTIONS = -L$(LIBDIR)
+LOCAL_LIBRARIES = $(SUSPEX_LIB) $(PEXUT_LIB) $(PEXLIB) $(XMULIB) $(XLIB)
+SYS_LIBRARIES = MathLibrary
 
 PROGS = sc
 
@@ -48,7 +47,7 @@ $(SUSPEX_LIB):
 $(COMMON_OBJS):
 	(cd $(COMMON_DIR); make)
 
-NormalProgramTarget(sc, sc.o $(COMMON_OBJS), $(SUSPEX_LIB),,)
+NormalProgramTarget(sc, sc.o $(COMMON_OBJS), $(SUSPEX_LIB),$(LOCAL_LIBRARIES),)
 
 
 
