@@ -1,6 +1,6 @@
 /*
  * $Source: /usr/expo/X/src/lib/Xaw/RCS/Mailbox.h,v $
- * $Header: Mailbox.h,v 1.1 88/02/23 15:15:41 jim Exp $
+ * $Header: Mailbox.h,v 1.2 88/02/23 15:52:19 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -24,7 +24,7 @@
  * Mailbox widget; looks a lot like the clock widget, don't it...
  */
 
-/* resource names used by mailbox widget that aren't defined in Atoms.h */
+/* resource names used by mailbox widget that aren't defined in StringDefs.h */
 
 #define XtNupdate "update"		/* Int: how often to check mail */
 #define XtNfile "file"			/* String:  file name to check */
