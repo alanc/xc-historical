@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.22 89/02/09 15:05:08 jim Exp $ */
+/* $XConsortium: osinit.c,v 1.23 89/03/30 17:42:25 rws Exp $ */
 #include "os.h"
 #include "opaque.h"
 #undef NULL
@@ -48,7 +48,8 @@ SOFTWARE.
 int	havergb = 0;
 extern char *display;
 #ifndef SYSV
-Bool LimitAddressSpace = FALSE;
+int limitDataSpace = -1;
+int limitStackSpace = 0;
 #endif
 
 OsInit()
@@ -92,29 +93,40 @@ OsInit()
 #endif
 	    time (&t);
 	    fprintf (stderr, "start %s", ctime(&t));
-
-#ifndef SYSV
-	    if (!LimitAddressSpace)
-	    {
-		struct rlimit	rlim;
-
-		if (!getrlimit(RLIMIT_DATA, &rlim))
-		{
-		    rlim.rlim_cur = rlim.rlim_max;
-		    (void)setrlimit(RLIMIT_DATA, &rlim);
-		}
-		if (!getrlimit(RLIMIT_STACK, &rlim))
-		{
-		    rlim.rlim_cur = rlim.rlim_max;
-		    (void)setrlimit(RLIMIT_STACK, &rlim);
-		}
-	    }
-#endif
 	}
 
 	if (getpgrp (0) == 0)
 	    setpgrp (0, getpid ());
 
+
+#ifndef SYSV
+	if (limitDataSpace >= 0)
+	{
+	    struct rlimit	rlim;
+
+	    if (!getrlimit(RLIMIT_DATA, &rlim))
+	    {
+		if ((limitDataSpace > 0) && (limitDataSpace < rlim.rlim_max))
+		    rlim.rlim_cur = limitDataSpace;
+		else
+		    rlim.rlim_cur = rlim.rlim_max;
+		(void)setrlimit(RLIMIT_DATA, &rlim);
+	    }
+	}
+	if (limitStackSpace >= 0)
+	{
+	    struct rlimit	rlim;
+
+	    if (!getrlimit(RLIMIT_STACK, &rlim))
+	    {
+		if ((limitStackSpace > 0) && (limitStackSpace < rlim.rlim_max))
+		    rlim.rlim_cur = limitStackSpace;
+		else
+		    rlim.rlim_cur = rlim.rlim_max;
+		(void)setrlimit(RLIMIT_STACK, &rlim);
+	    }
+	}
+#endif
 	been_here = TRUE;
     }
 
