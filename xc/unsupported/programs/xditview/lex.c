@@ -16,7 +16,8 @@ DviGetAndPut(dw, cp)
     }
     else
     {
-	putc ((*cp = getc(dw->dvi.file)), dw->dvi.tmpFile);
+	*cp = getc (dw->dvi.file);
+	putc (*cp, dw->dvi.tmpFile);
     }
     return *cp;
 }
