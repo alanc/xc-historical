@@ -9,6 +9,10 @@
    INSTALLFLAGS = $(INSTINCFLAGS)
        LINTLIBS = $(LINTXLIB) 
 
+#ifdef OsNameDefines
+OS_NAME_DEFINES = OsNameDefines
+#endif
+
 HEADERS = \
 	Xmu.h
 
@@ -48,14 +52,18 @@ OBJS = \
 
 #if DebugLibXmu && ProfileLibXmu
 DebuggedAndProfiledLibraryObjectRule()
+SpecialDebuggedAndProfiledObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(OS_NAME_DEFINES))
 #else
 # if DebugLibXmu 
 DebuggedLibraryObjectRule()
+SpecialDebuggedObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(OS_NAME_DEFINES))
 # else
 #  if ProfileLibXmu
 ProfiledLibraryObjectRule()
+SpecialProfiledObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(OS_NAME_DEFINES))
 #  else
 NormalLibraryObjectRule()
+SpecialObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(OS_NAME_DEFINES))
 #  endif
 # endif
 #endif
