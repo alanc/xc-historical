@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.11 89/10/05 17:17:48 jim Exp $
+ * $XConsortium: XMultibuf.c,v 1.12 89/10/06 11:27:27 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -164,8 +164,8 @@ static XmbufBufferInfo *read_buffer_info (dpy, nbufs)
 
 	bufinfo = TALLOC (XmbufBufferInfo, nbufs);
 	if (bufinfo) {
-	    register XmbufBufferInfo *c = bufinfo;
-	    register xMbufBufferInfo *net = netbuf;
+	    register XmbufBufferInfo *c;
+	    register xMbufBufferInfo *net;
 	    register int i;
 
 	    for (i = 0, c = bufinfo, net = netbuf; i < nbufs;
