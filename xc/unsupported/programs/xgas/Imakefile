@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.7 91/08/26 13:34:51 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.8 93/08/17 21:21:20 rws Exp $
 XCOMM 
 XCOMM  xgas
 XCOMM 
@@ -27,9 +27,9 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
            DOCSRCS = doc.c quick.c
            DOCOBJS = doc.o quick.o
            SRCS = main.c dynamics.c chamber.c timestep.c molecule.c util.c \
-                  help.c XGas.c $(DOCSRCS) man.c
+                  help.c Gas.c $(DOCSRCS) man.c
            OBJS = main.o dynamics.o chamber.o timestep.o molecule.o util.o \
-                  help.o XGas.o $(DOCOBJS) man.o
+                  help.o Gas.o $(DOCOBJS) man.o
 
        INCLUDES = -I$(TOOLKITSRC) -I$(TOP)
 
