@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.19 94/07/21 14:54:51 mor Exp $ */
+/* $XConsortium: xsm.h,v 1.20 94/07/26 14:12:37 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -67,6 +67,13 @@ extern FILE *fdopen(int, char const *);
 #endif
 
 #include "list.h"
+
+/*
+ * Each time the format of the sm's save file changes, bump up
+ * the version.
+ */
+
+#define SAVEFILE_VERSION 1
 
 #define DEFAULT_SESSION_NAME "Default"
 #define FAILSAFE_SESSION_NAME "Fail Safe"
