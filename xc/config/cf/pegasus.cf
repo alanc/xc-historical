@@ -10,6 +10,8 @@
 #define HasSaberC	   YES		/* a useful program to buy... */
 #define HasBsearch	   YES
 
+#define BuildServer NO
+
 /************************************************************
  *                                                          *
  * No compatability functions avaliable at all.             */
@@ -28,7 +30,7 @@
 #define XpegServer Xpeg
 
 
-/**/# platform:  $XConsortium: pegasus.cf,v 1.4 89/05/10 14:58:15 jim Exp $
+/**/# platform:  $XConsortium: pegasus.cf,v 1.5 89/07/22 19:46:55 kit Exp $
 /**/# operating system:  OSName
 
 /*
