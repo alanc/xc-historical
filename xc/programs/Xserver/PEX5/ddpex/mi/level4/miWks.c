@@ -1,4 +1,4 @@
-/* $XConsortium: miWks.c,v 5.10 92/11/19 15:13:44 hersh Exp $ */
+/* $XConsortium: miWks.c,v 5.11 92/12/21 10:16:32 mor Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -406,6 +406,16 @@ CreatePhigsWks(pInitInfo, pWKS)
 	prend->immediateMode = FALSE;
 
 	prend->pDDContext = NULL;
+
+	/* new flags added for 5.1 need to be initialized */
+	prend->backgroundColour.colourType = PEXIndexedColour;
+	prend->backgroundColour.colour.indexed.index = 0;
+	prend->clearI = FALSE;
+	prend->clearZ = TRUE;
+	prend->echoMode = PEXNoEcho;
+	prend->echoColour.colourType = PEXIndexedColour;
+	prend->echoColour.colour.indexed.index = 0;
+
 
 	pwks->displayUpdate = PEXVisualizeEach;
 	pwks->visualState = PEXCorrect;
