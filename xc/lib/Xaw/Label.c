@@ -1,6 +1,6 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.49 88/09/06 09:56:10 swick Exp $";
-static char rcsid[] = "$Header: Label.c,v 1.49 88/09/06 09:56:10 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.50 88/09/06 10:14:35 swick Exp $";
+static char rcsid[] = "$Header: Label.c,v 1.50 88/09/06 10:14:35 swick Exp $";
 #endif lint
 
 
@@ -237,12 +237,10 @@ static void Redisplay(w, event, region)
 	lw->label.label, (int) lw->label.label_len);
 }
 
-
-static void Resize(w)
-    Widget w;
+static void _Reposition(lw, width, height)
+    register LabelWidget lw;
+    Dimension width, height;
 {
-    LabelWidget lw = (LabelWidget) w;
-
     switch (lw->label.justify) {
 
 	case XtJustifyLeft   :
@@ -250,17 +248,24 @@ static void Resize(w)
 	    break;
 
 	case XtJustifyRight  :
-	    lw->label.label_x = lw->core.width -
+	    lw->label.label_x = width -
 		(lw->label.label_width + lw->label.internal_width);
 	    break;
 
 	case XtJustifyCenter :
-	    lw->label.label_x = (lw->core.width - lw->label.label_width) / 2;
+	    lw->label.label_x = (width - lw->label.label_width) / 2;
 	    break;
     }
     if (lw->label.label_x < 0) lw->label.label_x = 0;
-    lw->label.label_y = (lw->core.height - lw->label.label_height) / 2
+    lw->label.label_y = (height - lw->label.label_height) / 2
 	+ lw->label.font->max_bounds.ascent;
+}
+
+
+static void Resize(w)
+    Widget w;
+{
+    _Reposition((LabelWidget)w, w->core.width, w->core.height);
 }
 
 /*
@@ -315,17 +320,6 @@ static Boolean SetValues(current, request, new)
 	newlw->core.height =
 	    newlw->label.label_height + 2*newlw->label.internal_height;
 
-    /* we have to know if the size change is going to take
-       before calling Resize() */
-    if ((curlw->core.width != newlw->core.width ||
-	 curlw->core.height != newlw->core.height) &&
-	(XtMakeResizeRequest(new, newlw->core.width, newlw->core.height,
-			     &newlw->core.width, &newlw->core.height)
-	 == XtGeometryNo)) {
-	newlw->core.width = curlw->core.width;
-	newlw->core.height = curlw->core.height;
-    }
-
     if (curlw->label.foreground != newlw->label.foreground
 	|| curlw->label.font->fid != newlw->label.font->fid) {
 
@@ -338,7 +332,8 @@ static Boolean SetValues(current, request, new)
     if ((curlw->label.internal_width != newlw->label.internal_width)
         || (curlw->label.internal_height != newlw->label.internal_height)
 	|| was_resized) {
-	(*XtClass(new)->core_class.resize) ((Widget)newlw);
+	/* Resize() will be called if geometry changes succeed */
+	_Reposition(newlw, curlw->core.width, curlw->core.height);
     }
 
     return( was_resized );
