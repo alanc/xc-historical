@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.c,v 1.26 93/08/24 18:49:15 gildea Exp $ */
+/* $XConsortium: fsio.c,v 1.27 93/09/12 17:42:23 rws Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -573,7 +573,7 @@ _fs_wait_for_readable(conn)
 
 int
 _fs_set_bit(mask, fd)
-    FdSet *mask;
+    FdSetPtr mask;
     int         fd;
 {
     BITSET(mask, fd);
@@ -582,7 +582,7 @@ _fs_set_bit(mask, fd)
 
 int
 _fs_is_bit_set(mask, fd)
-    FdSet *mask;
+    FdSetPtr mask;
     int         fd;
 {
     return GETBIT(mask, fd);
@@ -590,7 +590,7 @@ _fs_is_bit_set(mask, fd)
 
 void
 _fs_bit_clear(mask, fd)
-    FdSet *mask;
+    FdSetPtr mask;
     int         fd;
 {
     BITCLEAR(mask, fd);
@@ -598,7 +598,7 @@ _fs_bit_clear(mask, fd)
 
 int
 _fs_any_bit_set(mask)
-    FdSet *mask;
+    FdSetPtr mask;
 {
 
 #ifdef ANYSET
@@ -615,7 +615,7 @@ _fs_any_bit_set(mask)
 
 int
 _fs_or_bits(dst, m1, m2)
-    FdSet *dst, *m1, *m2;
+    FdSetPtr dst, m1, m2;
 {
 #ifdef WIN32
     int i;
