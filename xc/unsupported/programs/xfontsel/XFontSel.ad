@@ -1,4 +1,4 @@
-! $XConsortium: XFontSel.ad,v 1.9 91/06/22 19:32:58 rws Exp $
+! $XConsortium: XFontSel.ad,v 1.10 91/06/22 19:53:24 rws Exp $
 !
 ! app-defaults for XFontSel
 !
@@ -96,7 +96,7 @@ XFontSel.cursor:	left_ptr
 
 !*fieldBox*field11.Sensitive: False
 *fieldBox*field11.menu.Options.ShowUnselectable: False
-*fieldBox*field11.menu*font: -misc-fixed-medium-r-normal--8-*-*-*-c-*-iso8859-1
+*fieldBox*field11.menu*font: -misc-fixed-medium-r-normal--7-*-*-*-c-50-iso8859-1
 
 
 !*field1*menu*courier.Font:
