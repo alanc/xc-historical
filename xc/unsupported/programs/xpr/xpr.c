@@ -1,4 +1,4 @@
-/* $XConsortium: xpr.c,v 1.55 92/01/30 09:52:30 rws Exp $ */
+/* $XConsortium: xpr.c,v 1.56 93/09/13 12:12:16 rws Exp $ */
 
 /*
  * XPR - process xwd(1) files for various printers
@@ -1171,7 +1171,7 @@ char *ps_prolog_compact[] = {
     "		/flag false def",
     "",
     "		% space for a chunk of generated bits",
-    "		/result 1000 string def",
+    "		/result 4590 string def",
     "",
     "		% read and dump the image",
     "		width height 1 [width 0 0 height neg 0 height]",
