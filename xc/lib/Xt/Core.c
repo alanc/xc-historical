@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char rcsid[] = "$Header: Core.c,v 1.4 88/02/03 09:44:12 swick Locked $";
+static char rcsid[] = "$Header: Core.c,v 1.5 88/02/03 14:54:07 swick Locked $";
 #endif lint
 
 /*
@@ -36,7 +36,9 @@ static char rcsid[] = "$Header: Core.c,v 1.4 88/02/03 09:44:12 swick Locked $";
  * Core Resources
  *
  ******************************************************************/
-static int m1 = 2;
+static int m1 = 2;	/* magic value used by ComputeWindowAttributes
+			   and Shell.Realize to know whether or not
+			   a background or border pixmap was defined */
 static int zero = 0;
 static int one  = 1;
 static Boolean true = TRUE;
