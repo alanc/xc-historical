@@ -35,8 +35,7 @@ any purpose and without fee is hereby granted, provided that the above
 copyright notice and this permission notice appear in all copies.
 MIT, Ardent, and Hewlett-Packard make no representations about the suitability 
 for any purpose of the information in this document.  It is provided "as is" 
-without express or implied warranty.  This document is only a draft standard
-of the MIT X Consortium and is therefore subject to change.
+without express or implied warranty.
 .ps
 .vs
 .bp 1
@@ -2092,8 +2091,15 @@ by clients to traverse the list.
 .IP \(bu 3n
 The \fBXValuatorState\fP structure describes the current state of the valuators
 on the device.  The \fBnum_valuators\fP field contains the number of valuators
-on the device.  The \fBmode\fP contains a constant that describes the type of
-data being reported.  This field will contain \fBAbsolute\fP or \fBRelative\fP.
+on the device.  The \fBmode\fP 
+field is a mask whose bits report the data mode and other state information
+for the device.  The following bits are currently defined:
+.DS
+\f(C
+	DeviceMode	1 << 0	  Relative = 0, Absolute = 1
+	ProximityState	1 << 1    InProximity = 0, OutOfProximity = 1
+\fP
+.DE
 The \fBvaluators\fP field contains a pointer to an array of integers that
 describe the current value of the valuators.  If the mode is \fBRelative\fP,
 these values are undefined.
@@ -2490,6 +2496,17 @@ input class that it supports.
 It is generated after every \fBDeviceFocusIn\fP event
 and \fBEnterNotify\fP  event and is delivered to clients 
 who have selected \fBXDeviceStateNotify\fP events.
+.LP
+If the device supports input class Valuators, the mode field in the
+\fBXValuatorStatus\fP structure is a bitmask that reports the device mode,
+proximity state and other state information.  The
+following bits are currently defined:
+.DS
+\f(C
+	0x01		Relative = 0, Absolute = 1
+	0x02		InProximity = 0, OutOfProximity = 1
+\fP
+.DE
 .LP
 If the device supports more valuators than can be reported in a single
 \fBXEvent\fP, multiple \fBXDeviceStateNotify\fP events will be generated.
@@ -3055,7 +3072,12 @@ This function initializes the specified valuators on the specified extension
 input device.  Valuators are numbered beginning with zero.  Only the valuators
 in the range specified by first_valuator and num_valuators are set.  If the
 number of valuators supported by the device is less than the expression
-first_valuator + num_valuators, a \fBBadValue\fP error will result.
+.DS
+\f(C
+      first_valuator + num_valuators, 
+\fP
+.DE
+a \fBBadValue\fP error will result.
 .LP
 If the request succeeds, \fPSuccess\fB is returned.  If the specifed device is 
 grabbed by some other client, the request will fail and a status of
@@ -3063,6 +3085,207 @@ grabbed by some other client, the request will fail and a status of
 .LP
 This request can fail with \fBBadLength\fP, \fBBadDevice\fP, \fBBadMatch\fP,
 and \fBBadValue\fP errors.
+.NH 3 
+Getting Input Device Controls
+.LP
+Some input devices support various configuration controls
+that can be queried or changed by clients.  The set of supported
+controls will vary from one input device to another.  Requests
+to manipulate these controls will fail if either the target
+X server or the target input device does not support the 
+requested device control.
+.LP
+Each device control has a unique identifier.  Information
+passed with each device control varies in length and is mapped
+by data structures unique to that device control.
+.LP
+To query a device control use XGetDeviceControl.  
+.LP     
+.DS
+\f(C
+XDeviceControl
+*XGetDeviceControl (display, device, control)
+	Display *display;
+	XDevice *device;
+	int control;
+\fP
+.DE
+.RS
+.in +.5i
+.IP "\fIdisplay\fP" .80i
+Specifies the connection to the X server.
+.IP "\fIdevice\fP"
+Specifies the device whose configuration control status is to be returned.
+.IP "\fIcontrol\fP"
+Identifies the specific device control to be queried.
+.in -.5i
+.RE
+.LP
+This request returns the current state of the specified device 
+control.  If the target X server does not support that device
+control, a BadValue error will be returned.  If the specified
+device does not support that device control, a BadMatch error
+will be returned.
+.LP
+If the request is successful, a pointer to a generic 
+XDeviceState structure is returned.  The information 
+returned varies according to the specified control and is 
+mapped by a structure appropriate for that control.  The first
+two fields are common to all device controls:
+.LP
+.DS
+\f(C
+typedef struct {
+      XID     control;
+      int     length;
+} XDeviceState;
+\fP
+.DE
+.LP
+The control may be compared to constants defined in the file
+XI.h.  Currently defined device controls include DEVICE_RESOLUTION.
+.LP
+The information returned for the DEVICE_RESOLUTION control is
+defined in the following structure:
+include:
+.LP
+.DS
+\f(C
+typedef struct {
+      XID     control;
+      int     length;
+      int     num_valuators;
+      int     *resolutions;
+      int     *min_resolutions;
+      int     *max_resolutions;
+} XDeviceResolutionState;
+\fP
+.DE
+.LP
+This device control returns a list of valuators and the range of 
+valid resolutions allowed for each.  Valuators are numbered 
+beginning with 0.  Resolutions for all valuators on the device are 
+returned.  For each valuator i on the device, resolutions[i] returns 
+the current setting of the resolution, min_resolutions[i] returns 
+the minimum valid setting, and max_resolutions[i] returns the 
+maximum valid setting.
+.LP
+When this control is specified, XGetDeviceControl will fail with
+a BadMatch error if the specified device has no valuators.
+.LP
+Other errors returned by this request:  BadValue.
+.NH 3 
+Changing Input Device Controls
+.LP
+Some input devices support various configuration controls
+that can be changed by clients.  Typically, this would be
+done to initialize the device to a known state or configuration.
+The set of supported controls will vary from one input device 
+to another.  Requests to manipulate these controls will fail if 
+either the target X server or the target input device does not 
+support the requested device control.  Setting the device control 
+will also fail if the target input device is grabbed by another 
+client, or is open by another client and has been set to a conflicting
+state.
+.LP
+Each device control has a unique identifier.  Information
+passed with each device control varies in length and is mapped
+by data structures unique to that device control.
+.LP
+To change a device control use XChangeDeviceControl.  
+.LP     
+.DS
+\f(C
+Status
+XChangeDeviceControl (display, device, control, value)
+	Display *display;
+	XDevice *device;
+	XID control;
+	XDeviceControl *value;
+\fP
+.DE
+.RS
+.in +.5i
+.IP "\fIdisplay\fP" .80i
+Specifies the connection to the X server.
+.IP "\fIdevice\fP"
+Specifies the device whose configuration control status is to be modified.
+.IP "\fIcontrol\fP"
+Identifies the specific device control to be changed.
+.IP "\fIvalue\fP"
+Specifies a pointer to an XDeviceControl structure that describes which 
+control is to be changed, and how it is to be changed.
+.in -.5i
+.RE
+.LP
+This request changes the current state of the specified device 
+control.  If the target X server does not support that device
+control, a BadValue error will be returned.  If the specified
+device does not support that device control, a BadMatch error
+will be returned.  If another client has the target device 
+grabbed, a status of AlreadyGrabbed will be returned.  If 
+another client has the device open and has set it to a 
+conflicting state, a status of DeviceBusy will be returned.
+.LP
+If the request fails for any reason, the device control will not
+be changed.
+.LP
+If the request is successful, the device control will be changed
+and a status of Success will be returned.  The information passed
+varies according to the specified control and is mapped by a 
+structure appropriate for that control.  The first two fields are 
+common to all device controls:
+.LP
+.DS
+\f(C
+typedef struct {
+      XID     control;
+      int     length;
+} XDeviceControl;
+\fP
+.DE
+.LP
+The control may be set using constants defined in the file XI.h.  
+Currently defined device controls include DEVICE_RESOLUTION.
+.LP
+The information that can be changed by the DEVICE_RESOLUTION 
+control is defined in the following structure:
+.LP
+.DS
+\f(C
+typedef struct {
+      XID     control;
+      int     length;
+      int     first_valuator;
+      int     num_valuators;
+      int     *resolutions;
+} XDeviceResolutionControl;
+\fP
+.DE
+.LP
+This device control changes the resolution of the specified 
+valuators on the specified extension input device.  Valuators 
+are numbered beginning with zero.  Only the valuators in the range 
+specified by first_valuator and num_valuators are set.  A value 
+of -1 in the resolutions list indicates that the resolution for 
+this valuator is not to be changed.  num_valuators specifies the 
+number of valuators in the resolutions list.
+.LP
+When this control is specified, XChangeDeviceControl will fail with 
+a BadMatch error if the specified device has no valuators.  If a 
+resolution is specified that is not within the range of valid values 
+(as returned by XGetDeviceControl) the request will fail with a 
+BadValue error.  If the number of valuators supported by the device 
+is less than the expression 
+.LP   
+.DS
+\f(C
+      first_valuator + num_valuators, 
+\fP
+.DE
+.P  
+a BadValue error will result.
+.LP  
 .NH 3
 Selecting Extension Device Events
 .LP
@@ -3466,7 +3689,7 @@ header file:
 \f(C
 .ps 8
 
-/* $Header: library.ms,v 1.1 91/07/23 17:06:30 rws Exp $ */
+/* $Header: lib.spec,v 1.9 91/07/26 12:06:36 gms Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -4149,7 +4372,7 @@ XExtensionVersion      *XGetExtensionVersion();
 XDeviceState           *XQueryDeviceState();
 XEventClass            *XGetDeviceDontPropagateList();
 #endif /* _XINPUT_H_ */
-/* $Header: library.ms,v 1.1 91/07/23 17:06:30 rws Exp $ */
+/* $Header: lib.spec,v 1.9 91/07/26 12:06:36 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -4372,10 +4595,4 @@ typedef struct {
 #endif /* _XI_H_ */
 \fP
 .DE
-.\"
-.\"
-.\"  Dump out a table of contents at the end.
-.\"
-.\"
-.TC 1 1 6
-.ps
+.TC
