@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XKeyBind.c,v 11.60 90/12/12 09:18:27 rws Exp $ */
+/* $XConsortium: XKeyBind.c,v 11.61 90/12/26 10:21:49 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -97,8 +97,8 @@ XKeysymToKeycode(dpy, ks)
 
     if ((! dpy->keysyms) && (! Initialize(dpy)))
 	return (KeyCode) 0;
-    for (i = dpy->min_keycode; i <= dpy->max_keycode; i++) {
-	for (j = 0; j < dpy->keysyms_per_keycode; j++) {
+    for (j = 0; j < dpy->keysyms_per_keycode; j++) {
+	for (i = dpy->min_keycode; i <= dpy->max_keycode; i++) {
 	    if (KeyCodetoKeySym(dpy, (KeyCode) i, j) == ks)
 		return i;
 	}
