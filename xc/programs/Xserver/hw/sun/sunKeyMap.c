@@ -164,7 +164,7 @@ static KeySym Sun2Map[] = {
 	NoSymbol,	NoSymbol,		/* 0x5a */
 	XK_Left,	XK_R10,			/* 0x5b */
 	XK_R11,		NoSymbol,		/* 0x5c */
-	XK_Right,	NoSymbol,		/* 0x5d */
+	XK_Right,	XK_R12,			/* 0x5d */
 	NoSymbol,	NoSymbol,		/* 0x5e */
 	XK_L9,		NoSymbol,		/* 0x5f */
 	NoSymbol,	NoSymbol,		/* 0x60 */
