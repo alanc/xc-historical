@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XKeyBind.c,v 11.51 89/10/05 11:36:13 rws Exp $ */
+/* $XConsortium: XKeyBind.c,v 11.52 89/10/06 09:04:36 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -333,7 +333,7 @@ XTranslateKeySym(dpy, symbol, modifiers, buffer, nbytes)
 	c = symbol & 0xFF;
     /* only apply Control key if it makes sense, else ignore it */
     if (modifiers & ControlMask) {
-	if ((c >= '@' && c <= '\177') || c == ' ') c &= 0x1F;
+	if ((c >= '@' && c < '\177') || c == ' ') c &= 0x1F;
 	else if (c == '2') c = '\000';
 	else if (c >= '3' && c <= '7') c -= ('3' - '\033');
 	else if (c == '8') c = '\177';
