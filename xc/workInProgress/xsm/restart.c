@@ -1,4 +1,4 @@
-/* $XConsortium: restart.c,v 1.1 94/02/22 14:30:19 mor Exp $ */
+/* $XConsortium: restart.c,v 1.2 94/02/22 15:44:18 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -17,6 +17,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include "xsm.h"
 
 extern List *PendingList;
+extern void remote_start ();
 
 
 void
