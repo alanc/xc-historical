@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.91 87/12/04 14:08:08 swick Locked $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.92 87/12/04 16:49:46 swick Locked $";
 #endif lint
 
 /*
@@ -389,7 +389,10 @@ Widget _XtCreate1(name,widgetClass,parent)
 	ClassInit(widgetClass);
     widget = (Widget) XtMalloc((unsigned)widgetClass->core_class.widget_size);
     widget->core.self = widget;
-    widget->core.name = strcpy(XtMalloc((unsigned)strlen(name)+1), name);
+    if (name != NULL && *name != '\0')
+      widget->core.name = strcpy(XtMalloc((unsigned)strlen(name)+1), name);
+    else			/* all widgets should have a name */
+      widget->core.name = "";	/* ...but save space by not duplicating this */
     widget->core.parent = parent;
     widget->core.widget_class = widgetClass;
     widget->core.translations = NULL;
@@ -1544,7 +1547,8 @@ static void CoreDestroy (widget)
 {
     register XtEventRec *event, *next;
 
-    XtFree((char*)(widget->core.name));
+    if (*widget->core.name != '\0') /* special case; we didn't copy this */
+        XtFree((char*)(widget->core.name));
     if (widget->core.background_pixmap != NULL) 
 	XFreePixmap(XtDisplay(widget), widget->core.background_pixmap);
     if (widget->core.border_pixmap != NULL)
