@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Core.c,v 1.28 89/09/14 15:56:05 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Core.c,v 1.29 89/09/21 09:20:44 swick Exp $";
 /* $oHeader: Core.c,v 1.2 88/08/18 15:37:59 asente Exp $ */
 #endif /* lint */
 
@@ -333,7 +333,7 @@ static Boolean CoreSetValues(old, reference, new)
 	if (old->core.tm.translations != new->core.tm.translations) {
 	    XtUninstallTranslations((Widget)old);
 	    new->core.tm.proc_table = NULL;
-	    _XtBindActions(new, &new->core.tm, 0);
+	    _XtBindActions(new, &new->core.tm);
 	    _XtInstallTranslations((Widget) new, new->core.tm.translations);
 	}
     } /* if realized */
