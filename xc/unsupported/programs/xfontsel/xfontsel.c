@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: fntchoosr.c,v 1.5 89/11/07 09:16:04 swick Exp $";
+static char Xrcsid[] = "$XConsortium: fntchoosr.c,v 1.6 89/11/07 15:31:08 swick Exp $";
 #endif
 
 /*
@@ -45,12 +45,14 @@ Author:	Ralph R. Swick, DEC/MIT Project Athena
 #define DELIM '-'
 
 /* number of font names to parse in each background iteration */
+#ifndef PARSE_QUANTUM
 #define PARSE_QUANTUM 25
+#endif
 
 #define NZ NULL,ZERO
 #define BACKGROUND 10
 
-GetFontNames();
+void GetFontNames();
 Boolean Matches();
 Boolean DoWorkPiece();
 void Quit();
@@ -365,7 +367,7 @@ struct ParseRec {
 };
 
 
-GetFontNames( closure )
+void GetFontNames( closure )
     XtPointer closure;
 {
     Display *dpy = (Display*)closure;
@@ -395,6 +397,7 @@ GetFontNames( closure )
     parseRec->num_fonts = count = matchingFontCount = numFonts;
     parseRec->fieldValues = fieldValues;
     parseRec->start = 0;
+    /* this is bogus; the task should be responsible for quantizing...*/
     while (count > PARSE_QUANTUM) {
 	ParseRec *prevRec = parseRec;
 	parseRec->end = parseRec->start + PARSE_QUANTUM;
@@ -410,7 +413,7 @@ GetFontNames( closure )
     }
     parseRec->end = numFonts;
     ScheduleWork(ParseFontNames,(XtPointer)parseRec,work_priority);
-    ScheduleWork(XFreeFontNames,(XtPointer)parseRec->fontNames,work_priority);
+    ScheduleWork(XFreeFontNames,(XtPointer)fontNames,work_priority);
     ScheduleWork(XtFree, (XtPointer)parseRec, work_priority);
     SetCurrentFontCount();
     if (AppRes.pattern != defaultPattern) {
