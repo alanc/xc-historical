@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.39 89/07/16 21:22:28 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.40 89/07/16 21:44:48 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -515,7 +515,7 @@ install:: class.ad							@@\
 depend:: $(DEPEND)							@@\
 									@@\
 $(DEPEND):								@@\
-	@echo "making $@"; \						@@\
+	@echo "making $@ over in $(DEPENDSRC) first"; \			@@\
 	cd $(DEPENDSRC); $(MAKE)
 #endif /* UseInstalled */
 #endif /* DependDependency */
@@ -568,8 +568,8 @@ target:: $(IMAKE)							@@\
 									@@\
 $(IMAKE)::								@@\
 	@(cd $(IMAKESRC); if [ -f Makefile ]; then \			@@\
-	echo "making $@ with $(IMAKESRC)/Makefile"; $(MAKE) all; else \	@@\
-	echo "bootstrapping $@ with $(IMAKESRC)/Makefile.ini"; \	@@\
+	echo "making $@ in $(IMAKESRC) first"; $(MAKE) all; else \	@@\
+	echo "bootstrapping $@ from Makefile.ini in $(IMAKESRC) first"; \	@@\
 	$(MAKE) -f Makefile.ini BOOTSTRAPCFLAGS=$(BOOTSTRAPCFLAGS); fi)
 #endif /* UseInstalled */
 #endif /* ImakeDependency */
@@ -957,7 +957,7 @@ name::									@@\
 	@case '${MFLAGS}' in *[ik]*) set +e;; esac; \			@@\
 	for i in dirs ;\						@@\
 	do \								@@\
-		(cd $$i ; echo verb "in $(CURRENT_DIR)/$$i"; \		@@\
+		(cd $$i ; echo verb "in $(CURRENT_DIR)/$$i..."; \	@@\
 			$(MAKE) $(MFLAGS) flags subname); \		@@\
 	done
 #endif
