@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.37 91/11/20 14:51:49 keith Exp $ */
+/* $XConsortium: dispatch.c,v 5.38 91/12/10 11:18:10 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1713,14 +1713,14 @@ ProcPutImage(client)
         if ((stuff->depth != 1) ||
 	    (stuff->leftPad >= screenInfo.bitmapScanlinePad))
             return BadMatch;
-        length = PixmapBytePad(stuff->width + stuff->leftPad, 1);
+        length = BitmapBytePad(stuff->width + stuff->leftPad);
     }
     else if (stuff->format == XYPixmap)
     {
         if ((pDraw->depth != stuff->depth) || 
 	    (stuff->leftPad >= screenInfo.bitmapScanlinePad))
             return BadMatch;
-        length = PixmapBytePad(stuff->width + stuff->leftPad, 1);
+        length = BitmapBytePad(stuff->width + stuff->leftPad);
 	length *= stuff->depth;
     }
     else if (stuff->format == ZPixmap)
@@ -1806,7 +1806,7 @@ ProcGetImage(client)
     }
     else 
     {
-	widthBytesLine = PixmapBytePad(stuff->width, 1);
+	widthBytesLine = BitmapBytePad(stuff->width);
 	plane = ((Mask)1) << (pDraw->depth - 1);
 	/* only planes asked for */
 	length = widthBytesLine * height *
@@ -2639,7 +2639,7 @@ ProcCreateCursor( client)
       || stuff->y > height )
 	return (BadMatch);
 
-    n = PixmapBytePad(width, 1)*height;
+    n = BitmapBytePad(width)*height;
     srcbits = (unsigned char *)xalloc(n);
     if (!srcbits)
 	return (BadAlloc);
