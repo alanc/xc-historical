@@ -1,9 +1,9 @@
-SRCS = 5x8.bdf 6x9.bdf 6x10.bdf 6x12.bdf 6x13.bdf 7x13.bdf 7x13B.bdf \
-	8x13.bdf 8x13B.bdf  9x15.bdf \
+SRCS = 5x8.bdf 6x9.bdf 6x10.bdf 6x12.bdf 6x13.bdf 6x13B.bdf \
+	7x13.bdf 7x13B.bdf 8x13.bdf 8x13B.bdf 9x15.bdf 9x15B.bdf \
 	10x20.bdf cursor.bdf deccurs.bdf decsess.bdf \
 	olcursor.bdf olgl10.bdf olgl12.bdf olgl14.bdf olgl19.bdf
-OBJS = 5x8.snf 6x9.snf 6x10.snf 6x12.snf 6x13.snf 7x13.snf 7x13B.snf \
-	8x13.snf 8x13B.snf 9x15.snf \
+OBJS = 5x8.snf 6x9.snf 6x10.snf 6x12.snf 6x13.snf 6x13B.snf \
+	7x13.snf 7x13B.snf 8x13.snf 8x13B.snf 9x15.snf 9x15B.snf \
 	10x20.snf cursor.snf deccurs.snf decsess.snf \
 	olcursor.snf olgl10.snf olgl12.snf olgl14.snf olgl19.snf
 FONTINSTDIR = $(FONTDIR)/misc
@@ -15,11 +15,13 @@ FontTarget(6x9)
 FontTarget(6x10)
 FontTarget(6x12)
 FontTarget(6x13)
+FontTarget(6x13B)
 FontTarget(7x13)
 FontTarget(7x13B)
 FontTarget(8x13)
 FontTarget(8x13B)
 FontTarget(9x15)
+FontTarget(9x15B)
 FontTarget(10x20)
 FontTarget(cursor)
 FontTarget(deccurs)
