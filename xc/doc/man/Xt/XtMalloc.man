@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtMalloc 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
+.TH XtMalloc 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtMalloc, XtCalloc, XtRealloc, XtFree, XtNew, XtNewString \- memory management functions
 .SH SYNTAX

@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtOffset 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
+.TH XtOffset 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtOffset, XtNumber \- determine the byte offset or number of array elements
 .SH SYNTAX

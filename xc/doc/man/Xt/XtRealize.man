@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtRealizeWidget 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
+.TH XtRealizeWidget 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtRealizeWidget, XtIsRealized, XtUnrealizeWidget \- realize and unrealize widgets
 .SH SYNTAX

@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtAddGrab 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
+.TH XtAddGrab 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtAddGrab, XtRemoveGrab \- redirect user input to a modal widget
 .SH SYNTAX

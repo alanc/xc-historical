@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtAppAddWorkProc 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
+.TH XtAppAddWorkProc 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtAppAddWorkProc, XtRemoveWorkProc \- Add and remove background processing procedures
 .SH SYNTAX

@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtConfigureWidget 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
+.TH XtConfigureWidget 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtConfigureWidget, XtMoveWidget, XtResizeWidget \- move and resize widgets
 .SH SYNTAX

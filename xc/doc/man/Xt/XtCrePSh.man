@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtCreatePopupShell 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
+.TH XtCreatePopupShell 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtCreatePopupShell \- create a popup shell
 .SH SYNTAX

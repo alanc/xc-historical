@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtGetResourceList 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
+.TH XtGetResourceList 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtGetResourceList \- obtain resource list
 .SH SYNTAX

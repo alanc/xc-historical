@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtClass 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
+.TH XtClass 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtClass, XtSuperClass, XtIsSubclass, XtCheckSubclass, XtIsComposite, XtIsManaged \- obtain and verify a widget's class
 .SH SYNTAX

@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtSetSensitive 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
+.TH XtSetSensitive 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtSetSensitive, XtIsSensitive \- set and check a widget's sensitivity state
 .SH SYNTAX

@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtParseAcceleratorTable 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
+.TH XtParseAcceleratorTable 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtParseAcceleratorTable, XtInstallAccelerators, XtInstallAllAccelerators \- managing accelerator tables
 .SH SYNTAX

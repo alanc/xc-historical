@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtAppNextEvent 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
+.TH XtAppNextEvent 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtAppNextEvent, XtAppPending, XtAppPeekEvent, XtAppProcessEvent, XtDispatchEvent, XtAppMainLoop \- query and process events and input
 .SH SYNTAX

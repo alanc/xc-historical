@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtSetKeyTranslator 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
+.TH XtSetKeyTranslator 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtSetKeyTranslator, XtTranslateKeycode, XtRegisterCaseConverter, XtConvertCase \- convert KeySym to KeyCodes
 .SH SYNTAX

@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtAppError 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
+.TH XtAppError 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtAppError, XtAppSetErrorHandler, XtAppSetWarningHandler, XtAppWarning \- low-level error handlers
 .SH SYNTAX

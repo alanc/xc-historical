@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtMakeGeometryRequest 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
+.TH XtMakeGeometryRequest 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtMakeGeometryRequest, XtMakeResizeRequest \- make geometry manager request
 .SH SYNTAX

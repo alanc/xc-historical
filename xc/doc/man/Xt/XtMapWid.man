@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtMapWidget 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
+.TH XtMapWidget 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtMapWidget, XtSetMappedWhenManaged, XtUnmapWidget \- map and unmap widgets
 .SH SYNTAX

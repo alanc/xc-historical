@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtGetGC 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
+.TH XtGetGC 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtGetGC, XtReleaseGC \- obtain and destroy a sharable GC
 .SH SYNTAX
