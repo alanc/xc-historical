@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.58 89/12/12 16:39:40 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.59 89/12/12 19:06:48 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -336,7 +336,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.58 89/12/12 16:39:40 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.59 89/12/12 19:06:48 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -440,7 +440,7 @@ Berklib.c: sysV/Berklib.c					@@\
           DEPXLIB = /* _Use($(USRLIBDIR),$(XLIBSRC))/libX11.so.$(SOXLIBREV) */
              XLIB = _Use(-lX11,-L$(XLIBSRC) -lX11)
 #else
-          DEPXLIB = $(DEPEXTENSIONLIB) _Use($(USRLIBDIR),$(XLIBSRC))/libX11.a 
+          DEPXLIB = _Use($(USRLIBDIR),$(XLIBSRC))/libX11.a 
              XLIB = LoaderLibPrefix _Use(-lXext -lX11, $(DEPXLIB))
 #endif
       DEPXAUTHLIB = _Use($(USRLIBDIR),$(XAUTHSRC))/libXau.a
@@ -467,11 +467,13 @@ Berklib.c: sysV/Berklib.c					@@\
          XTOOLLIB = LoaderLibPrefix _Use(-lXt,$(DEPXTOOLLIB))
 #endif
 #if SharedLibXaw
+     DEPATHENALIB = /* _Use($(USRLIBDIR),$(AWIDGETSRC))/libXaw.so.$(SOXAWREV) */
         DEPXAWLIB = /* _Use($(USRLIBDIR),$(AWIDGETSRC))/libXaw.so.$(SOXAWREV) */
            XAWLIB = _Use(-lXaw,-L$(AWIDGETSRC) -lXaw)
 #else
-        DEPXAWLIB = _Use($(USRLIBDIR),$(AWIDGETSRC))/libXaw.a $(DEPEXTENSIONLIB) 
-           XAWLIB = LoaderLibPrefix _Use(-lXaw,$(DEPXAWLIB)) $(EXTENSIONLIB) 
+     DEPATHENALIB = _Use($(USRLIBDIR),$(AWIDGETSRC))/libXaw.a
+        DEPXAWLIB = $(DEPATHENALIB) $(DEPEXTENSIONLIB) 
+           XAWLIB = LoaderLibPrefix _Use(-lXaw,$(DEPATHENALIB)) $(EXTENSIONLIB) 
 #endif
 
  LINTEXTENSIONLIB = _Use($(USRLIBDIR),$(EXTENSIONSRC))/llib-lXext.ln
