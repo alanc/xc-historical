@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 1.21 89/01/11 10:38:17 rws Exp $ */
+/* $XConsortium: mibstore.c,v 1.22 89/01/11 17:39:34 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2348,6 +2348,10 @@ miInitBackingStore(pWin, SaveAreas, RestoreAreas, SetClipmaskRgn)
 	    (* pScreen->TranslateRegion) (pSavedRegion,
 					  -pWin->absCorner.x,
 					  -pWin->absCorner.y);
+#ifdef SHAPE
+	    if (pWin->windowShape)
+		(*pScreen->Intersect) (pSavedRegion, pSavedRegion, pWin->windowShape);
+#endif
 	    miTileVirtualBS (pWin);
 	    
 	    /*
@@ -2504,6 +2508,10 @@ miResizeBackingStore(pWin, dx, dy)
     pixbounds.y1 = 0;
     pixbounds.y2 = pWin->clientWinSize.height;
     prgnTmp = (* pScreen->RegionCreate)(&pixbounds, 1);
+#ifdef SHAPE
+    if (pWin->windowShape)
+	(*pScreen->Intersect) (prgnTmp, prgnTmp, pWin->windowShape);
+#endif
     (* pScreen->Intersect)(pBackingStore->pSavedRegion,
 			   pBackingStore->pSavedRegion,
 			   prgnTmp);
@@ -2576,6 +2584,10 @@ miSaveAreas(pWin)
     winBox.x2 = pWin->clientWinSize.width;
     winBox.y2 = pWin->clientWinSize.height;
     winSize = (* pScreen->RegionCreate) (&winBox, 1);
+#ifdef SHAPE
+    if (pWin->windowShape)
+	(*pScreen->Intersect) (winSize, winSize, pWin->windowShape);
+#endif
     (* pScreen->Intersect) (prgnDoomed, prgnDoomed, winSize);
     (* pScreen->RegionDestroy) (winSize);
 
@@ -2763,6 +2775,10 @@ miRestoreAreas(pWin)
 	(* pScreen->TranslateRegion) (prgnSaved,
 				      -pWin->absCorner.x,
 				      -pWin->absCorner.y);
+#ifdef SHAPE
+	if (pWin->windowShape)
+	    (*pScreen->Intersect) (prgnSaved, prgnSaved, pWin->windowShape);
+#endif
 	miTileVirtualBS(pWin);
 
 	exposures = (* pScreen->RegionCreate)(&box, 1);
@@ -2827,6 +2843,18 @@ miTranslateBackingStore(pWin, dx, dy, oldClip)
     extents.y1 = pWin->absCorner.y;
     extents.y2 = pWin->absCorner.y + pWin->clientWinSize.height;
     (* pScreen->Inverse)(newSaved, pWin->clipList, &extents);
+#ifdef SHAPE
+    if (pWin->windowShape) {
+	(* pScreen->TranslateRegion) (newSaved,
+				    -pWin->absCorner.x,
+				    -pWin->absCorner.y);
+	(* pScreen->Intersect) (newSaved, newSaved, pWin->windowShape);
+	(* pScreen->TranslateRegion) (newSaved,
+				    pWin->absCorner.x,
+				    pWin->absCorner.y);
+    }
+#endif
+    
     /* now find any visible areas we can save from the screen */
     (* pScreen->TranslateRegion)(newSaved, -dx, -dy);
     if (oldClip)
