@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: Xct.c,v 1.1 89/05/09 08:35:43 rws Exp $
+ * $XConsortium: Xct.c,v 1.0 89/05/09 08:36:44 rws Exp $
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -21,7 +21,7 @@ typedef struct _XctPriv {
     XctString		ptr;
     XctString		ptrend;
     XctHDirection	*dirstack;
-    int			dirsize;
+    unsigned		dirsize;
 } *XctPriv;
 
 #define IsMore(priv) ((priv)->ptr != (priv)->ptrend)
@@ -216,7 +216,7 @@ HandleMultiGR(data, c)
     return 1;
 }
 
-static int enc_count = 0;
+static unsigned enc_count = 0;
 static XctString *encodings = (XctString *)NULL;
 
 static int
@@ -236,7 +236,9 @@ HandleExtended(data, c)
     data->item = ptr + 1;
     data->item_length = priv->ptr - data->item;
     len = ptr - enc;
-    for (i = 0; (i < enc_count) && strncmp(encodings[i], enc, len); i++)
+    for (i = 0;
+	 (i < enc_count) && strncmp((char *)encodings[i], (char *)enc, len);
+	 i++)
 	;
     if (i == enc_count) {
 	XctString cp;
@@ -245,7 +247,7 @@ HandleExtended(data, c)
 	    if ((!IsGL(*cp) && !IsGR(*cp)) || (*cp == 0x2a) || (*cp == 0x3f))
 		return 0;
 	}
-	ptr = (XctString)malloc(len + 1);
+	ptr = (XctString)malloc((unsigned)len + 1);
 	bcopy((char *)enc, (char *)ptr, len);
 	ptr[len] = 0x00;
 	enc_count++;
@@ -300,8 +302,8 @@ XctReset(data)
     data->horizontal = XctUnspecified;
     data->horz_depth = 0;
     data->GL_set_size = data->GR_set_size = 0; /* XXX */
-    HandleGL(data, (unsigned char)0x42);
-    Handle96GR(data, (unsigned char)0x41);
+    (void)HandleGL(data, (unsigned char)0x42);
+    (void)Handle96GR(data, (unsigned char)0x41);
     data->version = 1;
     data->can_ignore_exts = 0;
     /* parse version, if present */
