@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.49 91/02/28 09:41:32 rws Exp $ */
+/* $XConsortium: access.c,v 1.50 91/04/03 10:17:36 rws Exp $ */
 
 #include "Xos.h"
 #include "X.h"
@@ -34,19 +34,6 @@ SOFTWARE.
 #include <sys/ioctl.h>
 #include <X11/Xauth.h>
 
-#ifdef hpux
-# include <sys/utsname.h>
-# ifdef HAS_IFREQ
-#  include <net/if.h>
-# endif
-#else
-#ifdef SVR4
-# include <sys/utsname.h>
-#endif
-# include <net/if.h>
-#endif /* hpux */
-
-#include <netdb.h>
 #ifdef TCPCONN
 #include <netinet/in.h>
 #endif /* TCPCONN */
@@ -54,6 +41,23 @@ SOFTWARE.
 #include <netdnet/dn.h>
 #include <netdnet/dnetdb.h>
 #endif
+
+#ifdef hpux
+# include <sys/utsname.h>
+# ifdef HAS_IFREQ
+#  include <net/if.h>
+# endif
+#else
+#if defined(SVR4) || defined(SYSV386)
+# include <sys/utsname.h>
+#endif
+#if defined(SYSV) && defined(SYSV386)
+# include <sys/stream.h>
+#endif
+# include <net/if.h>
+#endif /* hpux */
+
+#include <netdb.h>
 #undef NULL
 #include <stdio.h>
 #include "dixstruct.h"
@@ -114,10 +118,10 @@ AccessUsingXdmcp ()
     LocalHostEnabled = FALSE;
 }
 
-#if defined(SVR4) || (defined (hpux) && ! defined (HAS_IFREQ))
+#if defined(SVR4) || defined (SYSV386) || (defined (hpux) && ! defined (HAS_IFREQ))
 /* Define this host for access control.  Find all the hosts the OS knows about 
  * for this fd and add them to the selfhosts list.
- * hpux and SVR4 do not have SIOCGIFCONF ioctl;
+ * hpux, SVR4, and SYSV386 do not have SIOCGIFCONF ioctl;
  */
 DefineSelf (fd)
     int fd;
