@@ -106,6 +106,7 @@ Oki Electric Industry Co., Ltd.
 Olivetti D.O.R.
 OMRON Corporation
 Prime Computer, Inc.
+The Santa Cruz Operation, Inc.
 Sequent Computer Systems Inc.
 Siemens Nixdorf Informationssysteme AG
 Silicon Graphics, Inc.
