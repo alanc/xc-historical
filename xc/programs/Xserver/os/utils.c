@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.133 93/12/06 15:21:07 kaleb Exp $ */
+/* $XConsortium: utils.c,v 1.134 93/12/12 11:15:33 rob Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -84,10 +84,6 @@ int auditTrailLevel = 1;
 void ddxUseMsg();
 #if NeedVarargsPrototypes
 void VErrorF(char*, va_list);
-#endif
-
-#if !defined(SVR4) && !defined(hpux)
-extern char *sbrk();
 #endif
 
 #ifdef AIXV3
