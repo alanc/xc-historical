@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.123 90/12/13 23:32:18 rws Exp $ */
+/* $XConsortium: Event.c,v 1.124 90/12/26 16:43:24 rws Exp $ */
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 
 /***********************************************************
@@ -35,6 +35,8 @@ SOFTWARE.
 #define Const /**/
 #endif
 
+#define NonMaskableMask ((EventMask)0x80000000L)
+
 /*
  * These are definitions to make the code that handles exposure compresssion
  * easier to read.
@@ -64,8 +66,10 @@ EventMask XtBuildEventMask(widget)
 	mask |= ExposureMask;
     if (widget->core.widget_class->core_class.visible_interest) 
 	mask |= VisibilityChangeMask;
+    if (widget->core.tm.translations)
+	mask |= widget->core.tm.translations->eventMask;
 
-    return mask;
+    return mask & ~NonMaskableMask;
 }
 
 static void
@@ -81,16 +85,9 @@ Boolean	        raw;
     EventMask oldMask = XtBuildEventMask(widget);
 
     pp = &widget->core.event_table;
-    p = *pp;
-
-    if (p == NULL) return;	                    /* No Event Handlers. */
-
-    /* find it */
-    while (p->proc != proc || p->closure != closure) {
-        pp = &p->next;
-        p = *pp;
-	if (p == NULL) return;	                     /* Didn't find it */
-    }
+    while ((p = *pp) && (p->proc != proc || p->closure != closure))
+	pp = &p->next;
+    if (!p) return;
 
     if (raw)
 	p->raw = FALSE; 
@@ -100,10 +97,12 @@ Boolean	        raw;
     if (p->raw || p->select) return;
 
     /* un-register it */
+    eventMask &= ~NonMaskableMask;
+    if (other)
+	eventMask |= NonMaskableMask;
     p->mask &= ~eventMask;
-    if (other) p->non_filter = FALSE;
 
-    if (p->mask == 0 && !p->non_filter) {        /* delete it entirely */
+    if (!p->mask) {        /* delete it entirely */
         *pp = p->next;
 	XtFree((char *)p);	
     }
@@ -143,64 +142,56 @@ XtEventHandler  proc;
 XtPointer	closure;
 XtListPosition  position;
 {
-    register XtEventRec *p, *prev;
+    register XtEventRec *p, **pp;
     EventMask oldMask;
     
-    if (eventMask == 0 && other == FALSE) return;
+    eventMask &= ~NonMaskableMask;
+    if (other)
+	eventMask |= NonMaskableMask;
+    if (!eventMask) return;
     
     if (XtIsRealized(widget) && !raw) oldMask = XtBuildEventMask(widget);
     
-    p = widget->core.event_table;    
-    prev = NULL;
+    pp = &widget->core.event_table;
+    while ((p = *pp) && (p->proc != proc || p->closure != closure))
+	pp = &p->next;
 
-    while ((p != NULL) &&
-	   (p->proc != proc || p->closure != closure)) {
-	prev = p;
-	p = p->next;
-    }
-    
-    if (p == NULL) {		                /* New proc to add to list */
+    if (!p) {		                /* New proc to add to list */
 	p = XtNew(XtEventRec);
 	p->proc = proc;
 	p->closure = closure;
 	p->mask = eventMask;
-	p->non_filter = other;
 	p->select = ! raw;
 	p->raw = raw;
 	
-	if ( (position == XtListHead) || (prev == NULL) ) {
+	if (position == XtListHead) {
 	    p->next = widget->core.event_table;
 	    widget->core.event_table = p;
-	}
-	else {			/* position == XtListTail && prev != NULL */
-	    prev->next = p;
+	} else {
+	    *pp = p;
 	    p->next = NULL;
 	}
     } 
     else {
 	if (force_new_position) {
-	    if (prev != NULL) 
-		prev->next = p->next; /* remove p from its current location. */
-	    else
-		prev = widget->core.event_table = p->next;
+	    *pp = p->next;
 
 	    if (position == XtListHead) {
 		p->next = widget->core.event_table;
 		widget->core.event_table = p;
-	    }
-	    else {		                 /* position == XtListTail */
+	    } else {
 	       	/*
 		 * Find the last element in the list.
 		 */
-		for ( ; prev->next != NULL ; prev = prev->next );
-		prev->next = p;
+		while (*pp)
+		    pp = &(*pp)->next;
+		*pp = p;
 		p->next = NULL;
 	    }
 	}
 
 	/* update existing proc */
 	p->mask |= eventMask;
-	p->non_filter = p->non_filter || other;
 	p->select |= ! raw;
 	p->raw |= raw;
     }
@@ -523,6 +514,34 @@ void _XtFreeWWTable(pd)
     XtFree((char *)pd->WWtable);
 }
 
+/* A separate procedure to avoid a huge stack frame in the normal case */
+static Boolean CallEventHandlers(widget, event, mask)
+    Widget     widget;
+    XEvent    *event;
+    EventMask  mask;
+{
+    register XtEventRec *p;   
+    XtEventHandler proc[100];
+    XtPointer closure[100];
+    Boolean continue_to_dispatch = True;
+    int i, numprocs;
+
+    /* Have to copy the procs into an array, because calling one of them */
+    /* might call XtRemoveEventHandler, which would break our linked list.*/
+
+    numprocs = 0;
+    for (p=widget->core.event_table; p; p = p->next) {
+	if (mask & p->mask) {
+	    proc[numprocs] = p->proc;
+	    closure[numprocs] = p->closure;
+	    numprocs++;
+	}
+    }
+    for (i=0 ; i < numprocs && continue_to_dispatch; i++)
+	(*(proc[i]))(widget, closure[i], event, &continue_to_dispatch);
+    return (numprocs != 0);
+}
+
 static Region nullRegion;
 static void CompressExposures();
 
@@ -532,10 +551,7 @@ static Boolean DispatchEvent(event, widget, mask, pd)
     EventMask mask;
     XtPerDisplay pd;
 {
-    XtEventRec *p;   
-    XtEventHandler proc[100];
-    XtPointer closure[100];
-    int numprocs, i;
+    register XtEventRec *p;   
     XEvent nextEvent;
     Boolean was_dispatched = False;
 
@@ -609,24 +625,23 @@ static Boolean DispatchEvent(event, widget, mask, pd)
 	    }
 	}
 
-    /* Have to copy the procs into an array, because calling one of them */
-    /* might call XtRemoveEventHandler, which would break our linked list.*/
-
-    numprocs = 0;
-
-    for (p=widget->core.event_table; p != NULL; p = p->next) {
-	if ((mask & p->mask) != 0 || (mask == 0 && p->non_filter)) {
-	    proc[numprocs] = p->proc;
-	    closure[numprocs++] = p->closure;
+    p=widget->core.event_table;
+    if (p) {
+	if (p->next) {
+	    was_dispatched = CallEventHandlers(widget, event, mask);
+	} else if (mask & p->mask) {
+	    was_dispatched = True;
+	    (*p->proc)(widget, p->closure, event, &was_dispatched);
+	    was_dispatched = True;
 	}
     }
 
-    {
-	Boolean continue_to_dispatch = True;
-	for (i=0 ; i < numprocs && continue_to_dispatch; i++)
-	    (*(proc[i]))(widget, closure[i], event, &continue_to_dispatch);
+    if (widget->core.tm.translations &&
+	(mask & widget->core.tm.translations->eventMask)) {
+	_XtTranslateEvent(widget, event);
+	was_dispatched = True;
     }
-    return (numprocs > 0 || was_dispatched);
+    return (was_dispatched);
 }
 
 /*
@@ -796,71 +811,65 @@ char * arg;
     return(FALSE);
 }
 
-typedef enum _GrabType {pass, ignore, remap} GrabType;
+static EventMask Const masks[] = {
+	0,			    /* Error, should never see  */
+	0,			    /* Reply, should never see  */
+	KeyPressMask,		    /* KeyPress			*/
+	KeyReleaseMask,		    /* KeyRelease		*/
+	ButtonPressMask,	    /* ButtonPress		*/
+	ButtonReleaseMask,	    /* ButtonRelease		*/
+	PointerMotionMask	    /* MotionNotify		*/
+		| Button1MotionMask
+		| Button2MotionMask
+		| Button3MotionMask
+		| Button4MotionMask
+		| Button5MotionMask
+		| ButtonMotionMask,
+	EnterWindowMask,	    /* EnterNotify		*/
+	LeaveWindowMask,	    /* LeaveNotify		*/
+	FocusChangeMask,	    /* FocusIn			*/
+	FocusChangeMask,	    /* FocusOut			*/
+	KeymapStateMask,	    /* KeymapNotify		*/
+	ExposureMask,		    /* Expose			*/
+	NonMaskableMask,	    /* GraphicsExpose, in GC    */
+	NonMaskableMask,	    /* NoExpose, in GC		*/
+	VisibilityChangeMask,       /* VisibilityNotify		*/
+	SubstructureNotifyMask,     /* CreateNotify		*/
+	StructureNotifyMask	    /* DestroyNotify		*/
+		| SubstructureNotifyMask,
+	StructureNotifyMask	    /* UnmapNotify		*/
+		| SubstructureNotifyMask,
+	StructureNotifyMask	    /* MapNotify		*/
+		| SubstructureNotifyMask,
+	SubstructureRedirectMask,   /* MapRequest		*/
+	StructureNotifyMask	    /* ReparentNotify		*/
+		| SubstructureNotifyMask,
+	StructureNotifyMask	    /* ConfigureNotify		*/
+		| SubstructureNotifyMask,
+	SubstructureRedirectMask,   /* ConfigureRequest		*/
+	StructureNotifyMask	    /* GravityNotify		*/
+		| SubstructureNotifyMask,
+	ResizeRedirectMask,	    /* ResizeRequest		*/
+	StructureNotifyMask	    /* CirculateNotify		*/
+		| SubstructureNotifyMask,
+	SubstructureRedirectMask,   /* CirculateRequest		*/
+	PropertyChangeMask,	    /* PropertyNotify		*/
+	NonMaskableMask,	    /* SelectionClear		*/
+	NonMaskableMask,	    /* SelectionRequest		*/
+	NonMaskableMask,	    /* SelectionNotify		*/
+	ColormapChangeMask,	    /* ColormapNotify		*/
+	NonMaskableMask,	    /* ClientMessage		*/
+	NonMaskableMask		    /* MappingNotify		*/
+};
 
-static void ConvertTypeToMask (eventType, mask, grabType)
+EventMask _XtConvertTypeToMask (eventType)
     int		eventType;
-    EventMask   *mask;
-    GrabType    *grabType;
 {
-
-static Const struct {
-    EventMask   mask;
-    GrabType    grabType;
-} masks[] = {
-    {0,				pass},      /* shouldn't see 0  */
-    {0,				pass},      /* shouldn't see 1  */
-    {KeyPressMask,		remap},     /* KeyPress		*/
-    {KeyReleaseMask,		remap},     /* KeyRelease       */
-    {ButtonPressMask,		remap},     /* ButtonPress      */
-    {ButtonReleaseMask,		remap},     /* ButtonRelease    */
-    {PointerMotionMask
-     | Button1MotionMask
-     | Button2MotionMask
-     | Button3MotionMask
-     | Button4MotionMask
-     | Button5MotionMask
-     | ButtonMotionMask,	ignore},    /* MotionNotify	*/
-    {EnterWindowMask,		ignore},    /* EnterNotify	*/
-    {LeaveWindowMask,		pass},      /* LeaveNotify	*/
-    {FocusChangeMask,		pass},      /* FocusIn		*/
-    {FocusChangeMask,		pass},      /* FocusOut		*/
-    {KeymapStateMask,		pass},      /* KeymapNotify	*/
-    {ExposureMask,		pass},      /* Expose		*/
-    {0,				pass},      /* GraphicsExpose   */
-    {0,				pass},      /* NoExpose		*/
-    {VisibilityChangeMask,      pass},      /* VisibilityNotify */
-    {SubstructureNotifyMask,    pass},      /* CreateNotify	*/
-    {StructureNotifyMask
-     | SubstructureNotifyMask,  pass},      /* DestroyNotify	*/
-    {StructureNotifyMask
-     | SubstructureNotifyMask,  pass},      /* UnmapNotify	*/
-    {StructureNotifyMask
-     | SubstructureNotifyMask,  pass},      /* MapNotify	*/
-    {SubstructureRedirectMask,  pass},      /* MapRequest	*/
-    {StructureNotifyMask
-     | SubstructureNotifyMask,  pass},      /* ReparentNotify   */
-    {StructureNotifyMask
-     | SubstructureNotifyMask,  pass},      /* ConfigureNotify  */
-    {SubstructureRedirectMask,  pass},      /* ConfigureRequest */
-    {StructureNotifyMask
-     | SubstructureNotifyMask,  pass},      /* GravityNotify	*/
-    {ResizeRedirectMask,	pass},      /* ResizeRequest	*/
-    {StructureNotifyMask
-     | SubstructureNotifyMask,  pass},      /* CirculateNotify	*/
-    {SubstructureRedirectMask,  pass},      /* CirculateRequest */
-    {PropertyChangeMask,	pass},      /* PropertyNotify   */
-    {0,				pass},      /* SelectionClear   */
-    {0,				pass},      /* SelectionRequest */
-    {0,				pass},      /* SelectionNotify  */
-    {ColormapChangeMask,	pass},      /* ColormapNotify   */
-    {0,				pass},      /* ClientMessage	*/
-    {0,				pass},      /* MappingNotify	*/
-  };
-
     eventType &= 0x7f;	/* Events sent with XSendEvent have high bit set. */
-    (*mask)      = masks[eventType].mask;
-    (*grabType)  = masks[eventType].grabType;
+    if (eventType < XtNumber(masks))
+	return masks[eventType];
+    else
+	return 0;
 }
 
 Boolean _XtOnGrabList(widget, grabList)
@@ -876,6 +885,7 @@ Boolean _XtOnGrabList(widget, grabList)
     }
     return FALSE;
 }
+
 static Widget LookupSpringLoaded(grabList)
     XtGrabList	grabList;
 {
@@ -891,6 +901,8 @@ static Widget LookupSpringLoaded(grabList)
     }
     return NULL;
 }
+
+typedef enum _GrabType {pass, ignore, remap} GrabType;
 
 static Boolean DecideToDispatch(event)
     XEvent  *event;
@@ -909,22 +921,24 @@ static Boolean DecideToDispatch(event)
     pdi = _XtGetPerDisplayInput(event->xany.display);
     grabList = *_XtGetGrabList(pdi);
     
-    
-    /* Lint complains about &grabType not matching the declaration.
-       Don't bother trying to fix it, it won't work */
-    ConvertTypeToMask(event->xany.type, &mask, &grabType);
+    mask = _XtConvertTypeToMask(event->xany.type);
 
-    switch (event->xany.type) {
+    grabType = pass;
+    switch (event->xany.type & 0x7f) {
 
       case KeyPress:
-      case KeyRelease:		time = event->xkey.time; break;
+      case KeyRelease:		grabType = remap; time = event->xkey.time;
+				break;
 
       case ButtonPress:
-      case ButtonRelease:	time = event->xbutton.time; break;
+      case ButtonRelease:	grabType = remap; time = event->xbutton.time;
+				break;
 
-      case MotionNotify:	time = event->xmotion.time; break;
+      case MotionNotify:	grabType = ignore; time = event->xmotion.time;
+				break;
 
       case EnterNotify:
+				grabType = ignore; /* fall through */
       case LeaveNotify:		time = event->xcrossing.time; break;
 
       case PropertyNotify:	time = event->xproperty.time; break;
@@ -1203,8 +1217,6 @@ void _XtSendFocusEvent(child, type)
 	&& XtIsRealized(child)
 	&& (XtBuildEventMask(child) & FocusChangeMask))
     {
-	EventMask mask;
-	GrabType grabType;
 	XFocusChangeEvent event;
 
 	event.type = type;
@@ -1214,8 +1226,7 @@ void _XtSendFocusEvent(child, type)
 	event.window = XtWindow(child);
 	event.mode = NotifyNormal;
 	event.detail = NotifyAncestor;
-	ConvertTypeToMask(type, &mask, &grabType);
-	DispatchEvent((XEvent*)&event, child, mask,
+	DispatchEvent((XEvent*)&event, child, _XtConvertTypeToMask(type),
 		      _XtGetPerDisplay(XtDisplay(child)));
     }
 }
