@@ -1,7 +1,7 @@
 /*
  * get_load - get system load
  *
- * $XConsortium: get_load.c,v 1.21 91/05/10 09:22:20 jap Exp $
+ * $XConsortium: get_load.c,v 1.22 91/06/08 18:02:44 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -44,6 +44,10 @@
 #endif /* apollo */
 #endif /* macII */
 
+#if defined(MOTOROLA) && defined(SYSV)
+#include <sys/sysinfo.h>
+#endif
+
 #ifdef sun
 #    include <sys/param.h>
 #    ifdef i386
@@ -84,7 +88,7 @@ struct lavnum {
 #include <sys/param.h>
 #endif /* hcx */
 
-#if defined(UTEK) || defined(alliant)
+#if defined(UTEK) || defined(alliant) || (defined(MOTOROLA) && defined(SVR4))
 #define FSCALE	100.0
 #endif
 
@@ -270,6 +274,18 @@ void GetLoadPoint( w, closure, call_data )
 #define KERNEL_FILE "/unix"
 #endif /* hcx */
 
+#ifdef MOTOROLA
+#if defined(SYSV) && defined(m68k)
+#define KERNEL_FILE "/sysV68"
+#endif
+#if defined(SYSV) && defined(m88k)
+#define KERNEL_FILE "/unix"
+#endif
+#ifdef SVR4
+#define KERNEL_FILE "/unix"
+#endif
+#endif /* MOTOROLA */
+
 /*
  * provide default for everyone else
  */
@@ -317,11 +333,23 @@ void GetLoadPoint( w, closure, call_data )
 
 #    ifdef sgi
 #	 define KERNEL_LOAD_VARIABLE "avenrun"
-#    endif
+#    endif /* sgi */
 
 #    ifdef AIXV3
 #        define KERNEL_LOAD_VARIABLE "sysinfo"
-#    endif
+#    endif /* AIXV3 */
+
+#    ifdef MOTOROLA
+#        if defined(SYSV) && defined(m68k)
+#            define KERNEL_LOAD_VARIABLE "sysinfo"
+#        endif
+#        if defined(SYSV) && defined(m88k)
+#            define KERNEL_LOAD_VARIABLE "_sysinfo"
+#        endif
+#        ifdef SVR4
+#            define KERNEL_LOAD_VARIABLE "avenrun"
+#        endif
+#    endif /* MOTOROLA */
 
 #endif /* KERNEL_LOAD_VARIABLE */
 
@@ -386,7 +414,7 @@ InitLoadPoint()
 	nl[i].n_value = (int)nl[i].n_value - v.v_kvoffset;
     }
 #else /* not macII */
-#if (!defined(SVR4) || !defined(__STDC__)) && !defined(sgi)
+#if (!defined(SVR4) || !defined(__STDC__)) && !defined(sgi) && !defined(MOTOROLA)
     extern void nlist();
 #endif
 
@@ -490,7 +518,80 @@ void GetLoadPoint( w, closure, call_data )
           /* otherwise we leave load alone. */
         }
 #    else /* not AIXV3 */
+#      if defined(MOTOROLA) && defined(SYSV)
+	{
+        static int init = 0;
+        static kmem;
+        static long loadavg_seek;
+        static xload_error();
+
+#define CEXP    0.25            /* Constant used for load averaging */
+
+        struct sysinfo sysinfod;
+        static double oldloadavg;
+        static double cexp = CEXP;
+        static long sv_rq, sv_oc;   /* save old values */
+        double rq, oc;              /* amount values have changed */
+
+        if (!init)
+        {
+            if (nlist(KERNEL_FILE,namelist) == -1)
+            {
+                perror("xload: nlist()");
+                xload_error("cannot get name list from", KERNEL_FILE);
+            }
+            loadavg_seek = namelist[0].n_value;
+
+            kmem = open(KMEM_FILE, O_RDONLY);
+            if (kmem < 0)
+            {
+                perror("xload: open()");
+                xload_error("cannot open", KMEM_FILE);
+            }
+        }
+
+        lseek(kmem, loadavg_seek, 0);
+        if (read(kmem, &sysinfod, (int) sizeof (struct sysinfo)) == -1)
+        {
+             perror("xload: read() SYSINFONL");
+             xload_error("read failed from", KMEM_FILE);
+        }
+
+        if (!init)
+        {
+            init = 1;
+            sv_rq = sysinfod.runque;
+            sv_oc = sysinfod.runocc;
+            oldloadavg = *loadavg = 0.0;
+            return;
+        }
+        /*
+         * calculate the amount the values have
+         * changed since last update
+         */
+        rq = (double) sysinfod.runque - sv_rq;
+        oc = (double) sysinfod.runocc - sv_oc;
+
+        /*
+         * save old values for next time
+         */
+        sv_rq = sysinfod.runque;
+        sv_oc = sysinfod.runocc;
+
+        if (oc == 0.0)          /* avoid divide by zero  */
+        {
+                *loadavg = (1.0 - cexp) * oldloadavg;
+
+        }
+        else
+        {
+                *loadavg = ((1.0 - cexp) * oldloadavg) ((rq / oc) * cexp);
+        }
+        oldloadavg = *loadavg;
+	}
+#      else /* not MOTOROLA */
 	(void) read(kmem, (char *)loadavg, sizeof(double));
+#      endif /* MOTOROLA */
 #    endif /* AIXV3 */
 #  endif /* umips else */
 # endif /* macII else */
