@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XFSWrap.c,v 11.4 91/04/07 17:15:49 rws Exp $
+ * $XConsortium: XFSWrap.c,v 11.5 91/05/01 08:33:37 rws Exp $
  */
 
 /*
@@ -166,6 +166,12 @@ XLocaleOfFontSet(font_set)
     XFontSet        font_set;
 {
     return font_set->core.lcd->core.name;
+}
+
+extern Bool XContextDependentDrawing(font_set)
+    XFontSet        font_set;
+{
+    return font_set->core.context_dependent;
 }
 
 XFontSetExtents *
