@@ -1,7 +1,7 @@
 #define IHaveSubdirs
 #define PassCDebugFlags /* as nothing */
 
-        SUBDIRS = misc 75dpi 100dpi scaled
+        SUBDIRS = misc 75dpi 100dpi
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
