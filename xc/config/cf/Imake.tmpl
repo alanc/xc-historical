@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.17 89/01/27 16:11:24 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.18 89/02/09 13:07:04 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -409,11 +409,10 @@ SYSLAST_LIBRARIES = SysLastLibraries
     IMAKE_DEFINES = /* leave blank, for command line use only */
 #ifdef UseInstalled
          IRULESRC = $(CONFIGDIR)	/* used in rules file */
-        IMAKE_CMD = $(IMAKE) -I$(IRULESRC) -TImake.tmpl \
-			-sMakefile $(IMAKE_DEFINES)
+        IMAKE_CMD = $(IMAKE) -I$(IRULESRC) -sMakefile $(IMAKE_DEFINES)
 #else
          IRULESRC = $(CONFIGSRC)
-        IMAKE_CMD = $(NEWTOP)$(IMAKE) -I$(NEWTOP)$(IRULESRC) -TImake.tmpl \
+        IMAKE_CMD = $(NEWTOP)$(IMAKE) -I$(NEWTOP)$(IRULESRC) \
 			-sMakefile $(IMAKE_DEFINES)
 #endif
      ICONFIGFILES = $(IRULESRC)/Imake.tmpl $(IRULESRC)/Imake.rules \
