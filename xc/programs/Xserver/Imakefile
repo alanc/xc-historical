@@ -127,6 +127,20 @@ XsunDIRS = $(SUNDIRS)
 
 ServerTarget(Xsun,$(EXTDIR) $(FONTUTILDIR) $(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
 
+saber_src_sun:
+	#cd dix; make saber_src
+	#cd ../ddx/snf; make saber_src
+	#cd ../mi; make saber_src
+	#cd ../mfb; make saber_src
+	#cd ../cfb; make saber_src
+	#cd ../sun; make saber_src
+	#cd ../../os/4.2bsd; make saber_src
+	#cd ../../../extensions/server; make saber_src
+	#cd ../../fonts/mkfontdir; make saber_src_server
+	#cd ../../server
+	#load /usr/lib/libm.a
+	#load /usr/lib/libdbm.a
+
 #
 # plx server
 #
