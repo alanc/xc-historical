@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ifparser.c,v 1.3 92/08/22 13:27:11 rws Exp $
+ * $XConsortium: ifparser.c,v 1.4 92/08/22 13:54:06 rws Exp $
  *
  * Copyright 1992 Network Computing Devices, Inc.
  * 
@@ -37,6 +37,7 @@
  * 			 |	'-'  VALUE
  * 			 |	'defined'  '('  variable  ')'
  * 			 |	'defined'  variable
+ *			 |	# variable '(' variable-list ')'
  * 			 |	variable
  * 			 |	number
  * 
@@ -123,7 +124,6 @@ parse_value (g, cp, valp)
       case '(':
 	DO (cp = ParseIfExpression (g, cp + 1, valp));
 	SKIPSPACE (cp);
-      norightparen:
 	if (*cp != ')') 
 	    return CALLFUNC(g, handle_error) (g, cp, ")");
 
@@ -139,6 +139,20 @@ parse_value (g, cp, valp)
 	*valp = -(*valp);
 	return cp;
 
+      case '#':
+	DO (cp = parse_variable (g, cp + 1, valp));
+	SKIPSPACE (cp);
+	if (*cp != '(')
+	    return CALLFUNC(g, handle_error) (g, cp, "(");
+	do {
+	    DO (cp = parse_variable (g, cp + 1, valp));
+	    SKIPSPACE (cp);
+	} while (*cp && *cp != ')');
+	if (*cp != ')')
+	    return CALLFUNC(g, handle_error) (g, cp, ")");
+	*valp = 1; /* XXX */
+	return cp + 1;
+
       case 'd':
 	if (strncmp (cp, "defined", 7) == 0 && !isalnum(cp[7])) {
 	    int paren = 0;
@@ -151,7 +165,7 @@ parse_value (g, cp, valp)
 	    DO (cp = parse_variable (g, cp, &var));
 	    SKIPSPACE (cp);
 	    if (paren && *cp != ')')
-		goto norightparen;
+		return CALLFUNC(g, handle_error) (g, cp, ")");
 	    *valp = (*(g->funcs.eval_defined)) (g, var, cp - var);
 	    return cp + paren;		/* skip the right paren */
 	}
