@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.57 92/05/28 12:16:27 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.58 92/05/28 13:10:03 rws Exp $
 XCOMM
 XCOMM                         Attention xterm porters
 XCOMM
@@ -12,10 +12,10 @@ XCOMM
  * add -DWTMP and -DLASTLOG if you want them; make sure that bcopy can
  * handle overlapping copies before using it.
  */
-#ifdef SetTtyGroup			/* turn on in config/machine.cf */
+#if SetTtyGroup			/* turn on in config/machine.cf */
    TTYGROUPDEF = -DUSE_TTY_GROUP
 #endif
-#ifdef UsePUCCPtyd			/* turn on in config/site.def */
+#if UsePUCCPtyd			/* turn on in config/site.def */
     PUCCPTYDDEF = -DPUCC_PTYD		/* does not need to be setuid */
          PTYLIB = -lpucc
 #endif
