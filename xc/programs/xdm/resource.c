@@ -11,7 +11,6 @@
 char	*servers;
 int	request_port;
 char	*errorLogFile;
-char	*validProgramsFile;
 
 # define DM_STRING	0
 # define DM_INT		1
@@ -29,16 +28,11 @@ struct dmResources {
 				"0",
 "errorLogFile",	"ErrorLogFile",	DM_STRING,	&errorLogFile,
 				"/usr/adm/Xdm-errors",
-"validPrograms","ValidPrograms",DM_STRING,	&validProgramsFile,
-				"/usr/lib/xdm/Xprograms",
 };
 
 # define NUM_DM_RESOURCES	(sizeof DmResources / sizeof DmResources[0])
 
 # define boffset(f)	((char *) &(((struct display *) 0)->f) - (char *) 0)
-
-char	terminateDefault[10] = "false";
-char	multipleDefault[10] = "true";
 
 struct displayResources {
 	char	*name, *class;
@@ -61,22 +55,13 @@ struct displayResources {
 "openRepeat",	"OpenRepeat",	DM_INT,		boffset(openRepeat),
 				"5",
 "terminateServer","TerminateServer",DM_BOOL,	boffset(terminateServer),
-				terminateDefault,
-"multipleSessions","MultipleSessions",DM_BOOL,	boffset(multipleSessions),
-				multipleDefault,
+				"false",
 };
 
 # define NUM_DISPLAY_RESOURCES	(sizeof DisplayResources/\
 				 sizeof DisplayResources[0])
 
 XrmDatabase	DmResourceDB;
-
-SetDefaults (terminate, multiple)
-char	*terminate, *multiple;
-{
-	strcpy (terminateDefault, terminate);
-	strcpy (multipleDefault, multiple);
-}
 
 GetResource (name, class, valueType, valuep, default_value)
 char	*name, *class;
@@ -125,11 +110,18 @@ char	*default_value;
 	}
 }
 
-InitResources ()
+InitResources (argc, argv)
+int	argc;
+char	**argv;
 {
-	DmResourceDB = XrmGetFileDatabase ( DM_RESOURCES );
+	char	*resourceFile = DM_RESOURCES;
+
+	if (argv[1])
+		resourceFile = argv[1];
+
+	DmResourceDB = XrmGetFileDatabase ( resourceFile );
 	if (!DmResourceDB)
-		LogError ("Can't open resource file %s\n", DM_RESOURCES);
+		LogError ("Can't open resource file %s\n", resourceFile);
 }
 
 LoadDMResources ()

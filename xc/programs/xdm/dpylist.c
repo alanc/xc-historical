@@ -6,6 +6,15 @@
 
 struct display	*displays;
 
+StartDisplays ()
+{
+	struct display	*d;
+
+	for (d = displays; d; d = d->next)
+		if (d->status == notRunning)
+			StartDisplay (d);
+}
+
 struct display *
 FindDisplayByName (name)
 char	*name;

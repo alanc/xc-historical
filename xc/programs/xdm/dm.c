@@ -7,12 +7,14 @@
 # include	"dm.h"
 # include	"buf.h"
 
-main ()
+main (argc, argv)
+int	argc;
+char	**argv;
 {
 	/*
 	 * Step 1 - load configuration parameters
 	 */
-	InitResources ();
+	InitResources (argc, argv);
 	LoadDMResources ();
 	InitErrorLog ();
 	/*
@@ -30,11 +32,14 @@ main ()
 		WaitForSomething ();
 }
 
+
 ScanServers ()
 {
 	struct buffer	*serversFile;
 	struct display	*d;
 	int		fd;
+	static DisplayType	acceptableTypes[] =
+		{ secure, insecure, remove, unknown };
 
 	fd = open (servers, 0);
 	if (fd == -1) {
@@ -42,13 +47,13 @@ ScanServers ()
 		return;
 	}
 	serversFile = fileOpen (fd);
-	if (servers == NULL)
+	if (serversFile == NULL)
 		return;
-	SetDefaults ("false", "true");
-	while (d = ReadDisplay (serversFile))
-		if (d->status == notRunning)
-			StartDisplay (d);
+	while (ReadDisplay (serversFile, acceptableTypes, (char *) 0) != EOB)
+		;
+	StartDisplays ();
 	bufClose (serversFile);
+	close (servers);
 }
 
 /*
@@ -73,13 +78,24 @@ CleanChildren ()
 		d->status = notRunning;
 		switch (waitVal (status)) {
 		case UNMANAGE_DISPLAY:
+			RemoveDisplay (d);
 			break;
 		case OBEYSESS_DISPLAY:
-			if (!d->multipleSessions)
+			switch (d->displayType) {
+			case secure:
+			case insecure:
+			case foreign:
+				StartDisplay (d);
 				break;
+			case transient:
+				RemoveDisplay (d);
+				break;
+			}
+			break;
 		case REMANAGE_DISPLAY:
 		default:
 			StartDisplay (d);
+			break;
 		}
 	}
 }
@@ -103,4 +119,17 @@ struct display	*d;
 		signal (SIGCHLD, CleanChildren);
 		break;
 	}
+}
+
+TerminateDisplay (d)
+struct display	*d;
+{
+	DisplayStatus	status;
+	int		pid;
+
+	status = d->status;
+	pid = d->pid;
+	RemoveDisplay (d);
+	if (status == running)
+		kill (pid, SIGTERM);
 }

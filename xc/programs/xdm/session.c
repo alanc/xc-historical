@@ -6,7 +6,7 @@
 # include <X11/Xlib.h>
 # include <signal.h>
 
-int	clientPid;
+static int	clientPid;
 
 ManageSession (d)
 struct display	*d;

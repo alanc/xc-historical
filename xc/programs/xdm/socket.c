@@ -7,7 +7,6 @@
 #ifdef UDP_SOCKET
 # include	<sys/types.h>
 # include	<sys/socket.h>
-# include	<netinet/in.h>
 # include	"buf.h"
 
 int	socketFd;
@@ -31,6 +30,7 @@ CreateWellKnownSockets ()
 
 	if (request_port == 0)
 		return;
+	Debug ("creating socket %d\n", request_port);
 	socketFd = socket (AF_INET, SOCK_DGRAM, 0);
 	if (socketFd == -1) {
 		LogError ("socket creation failed\n");
@@ -45,7 +45,6 @@ CreateWellKnownSockets ()
 		WellKnownSocketsMax = socketFd;
 		FD_SET (socketFd, &WellKnownSocketsMask);
 	}
-	LoadValidPrograms ();
 #endif
 }
 
@@ -78,6 +77,8 @@ int	fd;
 	int		fromlen;
 	static char	poll_providers[] = POLL_PROVIDERS;
 	static char	advertise[] = ADVERTISE;
+	static DisplayType	acceptableTypes [] =
+		{ foreign, transient, remove, unknown };
 
 	Debug ("ProcessRequestSocket\n");
 	fromlen = sizeof (from);
@@ -85,12 +86,12 @@ int	fd;
 			(struct sockaddr *) from, &fromlen);
 	if (len <= 0)
 		return;
+	from_in = (struct sockaddr_in *) from;		
 	/*
 	 * respond to broadcasts for services
 	 */
 	if (len == strlen (poll_providers) && !strncmp (buf, poll_providers, len))
 	{
-		from_in = (struct sockaddr_in *) from;		
 		Debug (
 "acknowledging request for display manager addresses to %08x port %d\n",
 ntohl (from_in->sin_addr.s_addr), ntohs (from_in->sin_port));
@@ -99,22 +100,18 @@ ntohl (from_in->sin_addr.s_addr), ntohs (from_in->sin_port));
 		return;
 	}
 	f = dataOpen (buf, len);
-	SetDefaults ("true", "false");
-	d = ReadDisplay (f);
+	ReadDisplay (f, acceptableTypes, (char *) from_in);
 	bufClose (f);
-	if (!d)
-		LogError ("Invalid packet received\n");
-	else if (!ValidateProgram (d->argv[0]))
-		LogError (
-		    "Attempt to execute unauthorized program %s\n",
-		    d->argv[0]);
-	else {
-		if (d->status == notRunning) {
-			Debug ("Starting %d from socket\n", d->name);
-			StartDisplay (d);
-		} else {
-			Debug ("Manager already running on %s\n", d->name);
-		}
-	}
+	StartDisplays ();
+}
+
+serverMessage (d, text)
+struct display	*d;
+char		*text;
+{
+	char	buf[1024];
+
+	sprintf (buf, "%s %s %s", d->name, d->argv[0], text);
+	sendto (socketFd, buf, strlen (buf), 0, &d->addr, sizeof (d->addr));
 }
 #endif

@@ -6,6 +6,8 @@
 
 # include	<X11/Xos.h>
 
+#define	UDP_SOCKET
+
 #ifdef SYSV
 # define waitCode(w)	((w) & 0xff)
 # define waitSig(w)	(((w) >> 8) & 0xff)
@@ -17,11 +19,35 @@ typedef int		waitType;
 typedef union wait	waitType;
 #endif
 
+#ifdef UDP_SOCKET
+#include	<sys/types.h>
+#include	<netinet/in.h>
+#endif
+
 # define waitVal(w)	(waitSig(w) ? -1 : waitCode (w))
 
-#define	UDP_SOCKET
-
 typedef enum displayStatus { running, notRunning } DisplayStatus;
+
+/*
+ * local     - server runs on local host
+ * foreign   - server runs on remote host
+ * removable - 'remove' message can delete entry
+ * permanent - session restarted when it exits
+ * transient - session not restarted when it exits
+ */
+
+typedef enum displayType {
+	secure,		/* local permanent non-removable server */
+ 	insecure,	/* local permanent removable server */
+ 	foreign,	/* foreign permanent server */
+ 	transient,	/* foreign non-permanent server */
+ 	remove,		/* command to remove a server */
+	unknown		/* not any of the above */
+} DisplayType;
+
+extern DisplayType parseDisplayType ();
+
+# define restartType(t)	((t) == secure || (t) == insecure || (t) == foreign)
 
 struct display {
 	struct display	*next;
@@ -37,7 +63,10 @@ struct display {
 	int		openDelay;	/* open delay time */
 	int		openRepeat;	/* open attempts to make */
 	int		terminateServer;/* restart for each session */
-	int		multipleSessions;/* keep a session going */
+	DisplayType	displayType;	/* method to handle with */
+#ifdef UDP_SOCKET
+	struct sockaddr_in	addr;	/* address used in connection */
+#endif
 };
 
 struct greet_info {
@@ -78,14 +107,17 @@ extern char	*validProgramsFile;
 
 extern struct display	*FindDisplayByName (),
 			*FindDisplayByPid (),
-			*NewDisplay (),
-			*ReadDisplay ();
+			*NewDisplay ();
 
 extern char	*malloc (), *realloc (), *strcpy ();
 
 #ifdef UDP_SOCKET
 
-# define POLL_PROVIDERS "polling for available display managers\n"
-# define ADVERTISE	"advertising a display manager\n"
+# define START		"START"
+# define TERMINATE	"TERMINATE"
+# define RESTART	"RESTART"
+
+# define POLL_PROVIDERS "POLL"
+# define ADVERTISE	"ADVERTISE"
 
 #endif
