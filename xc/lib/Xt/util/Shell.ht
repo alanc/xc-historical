@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.h,v 1.28 94/03/21 16:22:00 converse Exp $ */
+/* $XConsortium: Shell.h,v 1.29 94/04/01 14:53:22 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -156,6 +156,7 @@ SOFTWARE.
 #define XtCSessionID "SessionID"
 #define XtNshutdownCommand "shutdownCommand"
 #define XtCShutdownCommand "ShutdownCommand"
+#define XtNerrorCallback "errorCallback"
 #else
 #if __STDC__
 #define _XtConst_ const
@@ -504,6 +505,9 @@ extern _XtConst_ char XtShellStrings[];
 #endif
 #ifndef XtCShutdownCommand
 #define XtCShutdownCommand ((char*)&XtShellStrings[1259])
+#endif
+#ifndef XtNerrorCallback
+#define XtNerrorCallback ((char*)&XtShellStrings[1275])
 #endif
 #undef _XtConst_
 #endif
