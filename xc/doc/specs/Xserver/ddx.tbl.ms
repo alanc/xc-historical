@@ -1,4 +1,4 @@
-.\" $XConsortium: ddx.doc.tbl.ms,v 1.15 88/09/06 18:25:36 jim Exp $
+.\" $XConsortium: ddx.tbl.ms,v 1.16 88/09/19 12:26:53 jim Exp $
 .EF 'Porting Layer Definition'- % -'March 1, 1988'
 .OF 'Porting Layer Definition'- % -'March 1, 1988'
 .EH '''
@@ -351,11 +351,8 @@ is not needed in the server.
 You must supply some of the pieces for proper scheduling between clients.
 .nf
 
-	void WaitForSomething(pClientReady, nReady, pNewClients, nNew )
-		ClientPtr *pClientReady;
-		int *nReady;
-		ClientPtr *pNewClients;
-		int *nNew;
+	int WaitForSomething(pClientReady)
+		int *pClientReady;
 .fi
 .LP
 WaitForSomething is the scheduler procedure you must write that will
@@ -365,10 +362,11 @@ make the server suspend until one or more of the following occurs:
 .IP \(bu 5
 There is an input event from the user or hardware (see SetInputCheck())
 .IP \(bu 5
-There is a request waiting from a known client, in which case 
-you should return a nonzero nReady
+There are requests waiting from known clients, in which case 
+you should return a count of clients stored in pClientReady
 .IP \(bu 5
-A new client tries to connect, in which case you should return a nonzero nNew
+A new client tries to connect, in which case you should create the
+client and  then continue waiting
 .LP
 If WaitForSomething() decides it is about to do something that might block
 (in the sample server,  before it calls select()) it must call a DIX
@@ -452,24 +450,33 @@ report any input events until there is no client data left,
 your mouse and keyboard might get locked out by an application that constantly
 barrages the server with graphics drawing requests.
 .LP
-A list of clients with data that is ready to be processed
-should be returned in pClientReady (count in nReady).  
-This is not the requests that are ready, just a list of clients who have
-requests that are ready.
-(ClientPtr is is defined in server/include/dixstruct.h.)
+A list of indexes (client->index) for clients with data ready to be read or
+processed should be returned in pClientReady, and the count of indexes
+returned as the result value of the call.
+This is not clients that have full requests ready, but any clients who have
+any data ready to be read or processed.
 The DIX dispatcher
 will process requests from each client in turn by calling 
 ReadRequestFromClient(), below.   
 .LP
-WaitForSomething() should return a list of new clients
-requesting a connect in pNewClients (count in nNew).
-The DIX dispatcher
-will process connects from each new client in turn.
-The ClientPtr for a new client is created by DIX; the OS layer requests
-a new one with the call NextAvailableClient().  There is an OS private
+WaitForSomething() must create new clients as they are requested (by
+whatever mechanism at the transport level).  A new client is created
+by calling the DIX routine:
+.nf
+	ClientPtr NextAvailableClient(swapped)
+		int swapped;
+.fi
+This routine returns NULL if a new client cannot be allocated (e.g. maximum
+number of clients reached).  There is an OS private
 field (pClient->osPrivate) that can be used to store information about the 
 client.  In the sample server, the osPrivate field contains the 
 number of the socket for this client. See also "New Client Connections."
+After initializing this field, the initial connection data should be sent back
+to the client by calling the DIX routine:
+.nf
+	SendConnectionSetupInfo(client);
+		ClientPtr client;
+.fi
 .LP
 If there are outstanding input events,
 you should make sure that the two SetInputCheck() locations are unequal.
@@ -598,11 +605,8 @@ DIX uses this ClientPtr to refer to
 the client from now on.   The sample server uses the osPrivate field in
 the ClientPtr to store the file descriptor for the socket.   
 .LP
-WaitForSomething() then returns with the ClientPtr
-in the array of new clients it passes back.
-DIX next sends the new client(s)
-the response, which is
-an xConnSetupPrefix struct that is also in Xproto.h.
+WaitForSomething() then calls the DIX routine SendConnectionSetupInfo(),
+which sends the new client the xConnSetupPrefix struct that is defined in Xproto.h.
 DIX also sends other information on visuals, etc.
 At this point, the connection is up and running.
 .LP
