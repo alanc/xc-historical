@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.56 91/02/14 19:07:25 rws Exp $
+ * $XConsortium: Xrm.c,v 1.57 91/02/19 22:32:34 rws Exp $
  */
 
 /***********************************************************
@@ -27,11 +27,12 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include	"Xlibint.h"
-#include	<X11/Xresource.h>
 #include	<stdio.h>
 #include	<ctype.h>
+#include	"Xlibint.h"
+#include	<X11/Xresource.h>
 #include 	"XrmI.h"
+#include	"Xlcint.h"
 
 #if __STDC__
 #define Const const
@@ -160,6 +161,8 @@ typedef struct _LTable {
  */
 typedef struct _XrmHashBucketRec {
     NTable table;
+    XPointer mbstate;
+    XrmMethods methods;
 } XrmHashBucketRec;
 
 /* closure used in get/put resource */
@@ -226,19 +229,53 @@ static XrmQuark maxResourceQuark = -1;
 #define IsResourceQuark(q)  ((q) > 0 && (q) <= maxResourceQuark && \
 			     resourceQuarks[(q) >> 3] & (1 << ((q) & 7)))
 
+typedef unsigned char XrmBits;
+
+#define BSLASH  ((XrmBits) (1 << 5))
+#define NORMAL	((XrmBits) (1 << 4))
+#define EOQ	((XrmBits) (1 << 3))
+#define SEP	((XrmBits) (1 << 2))
+#define ENDOF	((XrmBits) (1 << 1))
+#define SPACE	(NORMAL|EOQ|SEP|(XrmBits)0)
+#define RSEP	(NORMAL|EOQ|SEP|(XrmBits)1)
+#define EOS	(EOQ|SEP|ENDOF|(XrmBits)0)
+#define EOL	(EOQ|SEP|ENDOF|(XrmBits)1)
+#define BINDING	(NORMAL|EOQ)
+#define ODIGIT	(NORMAL|(XrmBits)1)
+
+#define next_char(ch,str) xrmtypes[(unsigned char)((ch) = *(++(str)))]
+#define next_mbchar(ch,len,str) xrmtypes[(unsigned char)(ch = (*db->methods->mbchar)(db->mbstate, str, &len), str += len, ch)]
+
+#define is_space(bits)		((bits) == SPACE)
+#define is_EOQ(bits)		((bits) & EOQ)
+#define is_EOF(bits)		((bits) == EOS)
+#define is_EOL(bits)		((bits) & ENDOF)
+#define is_binding(bits)	((bits) == BINDING)
+#define is_odigit(bits)		((bits) == ODIGIT)
+#define is_separator(bits)	((bits) & SEP)
+#define is_nonpcs(bits)		(!(bits))
+#define is_normal(bits)		((bits) & NORMAL)
+#define is_simple(bits)		((bits) & (NORMAL|BSLASH))
+#define is_special(bits)	((bits) & (ENDOF|BSLASH))
+
 /* parsing types */
-static XrmBits Const _xrmtypes[256] = {
-    _EOF,0,0,0,0,0,0,0,0,SPACE,					/*   0. */
-    EOL,0,0,0,0,0,0,0,0,0,					/*  10. */
-    0,0,0,0,0,0,0,0,0,0,					/*  20. */
-    0,0,SPACE,0,0,0,0,0,0,0,					/*  30. */
-    0,0,LOOSE,0,0,0,TIGHT,0,ODIGIT,ODIGIT,
-    ODIGIT,ODIGIT,ODIGIT,ODIGIT,ODIGIT,  			/*  50. */
-    ODIGIT,0,0,SEP,0,						/*  55. */
-    0,0,0,0,0,0,0,0,0,0,					/*  60. */
-    0,0,0,0,0,0,0,0,0,0,					/*  70. */
-    0,0,0,0,0,0,0,0,0,0,					/*  80. */
-    0,0,BSLASH,0,0,0,0,0,0,0				        /*  90. */
+static XrmBits Const xrmtypes[256] = {
+    EOS,0,0,0,0,0,0,0,
+    0,SPACE,EOL,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,
+    SPACE,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,
+    NORMAL,NORMAL,BINDING,NORMAL,NORMAL,NORMAL,BINDING,NORMAL,
+    ODIGIT,ODIGIT,ODIGIT,ODIGIT,ODIGIT,ODIGIT,ODIGIT,ODIGIT,
+    NORMAL,NORMAL,RSEP,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,
+    NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,
+    NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,
+    NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,
+    NORMAL,NORMAL,NORMAL,NORMAL,BSLASH,NORMAL,NORMAL,NORMAL,
+    NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,
+    NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,
+    NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,
+    NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,0
     /* The rest will be automatically initialized to zero. */
 };
 
@@ -276,12 +313,13 @@ void XrmStringToQuarkList(name, quarks)
     register char       	ch, *tname;
     register int 		i = 0;
 
-    if ((tname = (char *)name)) {
-	while (!xrm_is_EOF(bits = get_next_char(ch, tname))) {
-	    if (xrm_is_tight_or_loose (bits)) {
+    if (tname = (char *)name) {
+	tname--;
+	while (!is_EOF(bits = next_char(ch, tname))) {
+	    if (is_binding (bits)) {
 		if (i) {
 		    /* Found a complete name */
-		    *quarks++ = _XrmInternalStringToQuark(name,tname -name -1,
+		    *quarks++ = _XrmInternalStringToQuark(name,tname - name,
 							  sig, False);
 		    i = 0;
 		    sig = 0;
@@ -293,8 +331,7 @@ void XrmStringToQuarkList(name, quarks)
 		i++;
 	    }
 	}
-	*quarks++ = _XrmInternalStringToQuark(name, tname - name - 1, sig,
-					      False);
+	*quarks++ = _XrmInternalStringToQuark(name, tname - name, sig, False);
     }
     *quarks = NULLQUARK;
 }
@@ -317,14 +354,15 @@ void XrmStringToBindingQuarkList(name, bindings, quarks)
     register XrmBinding 	binding;
     register int 		i = 0;
 
-    if ((tname = (char *)name)) {
+    if (tname = (char *)name) {
+	tname--;
 	binding = XrmBindTightly;
-	while (!xrm_is_EOF(bits = get_next_char(ch, tname))) {
-	    if (xrm_is_tight_or_loose (bits)) {
+	while (!is_EOF(bits = next_char(ch, tname))) {
+	    if (is_binding (bits)) {
 		if (i) {
 		    /* Found a complete name */
 		    *bindings++ = binding;
-		    *quarks++ = _XrmInternalStringToQuark(name, tname -name -1,
+		    *quarks++ = _XrmInternalStringToQuark(name, tname - name,
 							  sig, False);
 
 		    i = 0;
@@ -333,7 +371,7 @@ void XrmStringToBindingQuarkList(name, bindings, quarks)
 		}
 		name = tname;
 
-		if (xrm_is_loose(bits)) 
+		if (ch == '*')
 		    binding = XrmBindLoosely;
 	    }
 	    else {
@@ -342,8 +380,7 @@ void XrmStringToBindingQuarkList(name, bindings, quarks)
 	    }
 	}
 	*bindings = binding;
-	*quarks++ = _XrmInternalStringToQuark(name, tname - name - 1, sig,
-					      False);
+	*quarks++ = _XrmInternalStringToQuark(name, tname - name, sig, False);
     }
     *quarks = NULLQUARK;
 }
@@ -372,8 +409,10 @@ static XrmDatabase NewDatabase()
     register XrmDatabase db;
 
     db = (XrmDatabase) Xmalloc(sizeof(XrmHashBucketRec));
-    if (db)
+    if (db) {
 	db->table = (NTable)NULL;
+	_XrmInitParseInfo(&db->mbstate);
+    }
     return db;
 }
 
@@ -401,7 +440,7 @@ static void MoveValues(ftable, ttable)
 	    fentry->next = tentry;
 	}
     }
-    Xfree(ftable->buckets);
+    Xfree((char *)ftable->buckets);
 }
 
 /* move all tables from ftable to ttable, and free ftable.
@@ -428,7 +467,7 @@ static void MoveTables(ftable, ttable)
 	    fentry->next = tentry;
 	}
     }
-    Xfree(ftable);
+    Xfree((char *)ftable);
 }
 
 /* grow the table, based on current number of entries */
@@ -521,7 +560,7 @@ static void MergeValues(ftable, pprev, override)
 		    fentry = *prev;
 		    *prev = tentry->next;
 		    /* free the overridden entry */
-		    Xfree(tentry);
+		    Xfree((char *)tentry);
 		    /* get next tentry */
 		    tentry = *prev;
 		} else {
@@ -530,7 +569,7 @@ static void MergeValues(ftable, pprev, override)
 		    tentry = fentry; /* use as a temp var */
 		    fentry = fentry->next;
 		    /* free the overpowered entry */
-		    Xfree(tentry);
+		    Xfree((char *)tentry);
 		    /* get next tentry */
 		    tentry = *prev;
 		}
@@ -548,8 +587,8 @@ static void MergeValues(ftable, pprev, override)
 	    }
 	}
     }
-    Xfree(ftable->buckets);
-    Xfree(ftable);
+    Xfree((char *)ftable->buckets);
+    Xfree((char *)ftable);
     /* resize if necessary, now that we're all done */
     GROW(pprev);
 }
@@ -622,7 +661,7 @@ static void MergeTables(ftable, pprev, override)
 	    }
 	}
     }
-    Xfree(ftable);
+    Xfree((char *)ftable);
     /* resize if necessary, now that we're all done */
     GROW(pprev);
 }
@@ -667,7 +706,7 @@ void XrmCombineDatabase(from, into, override)
 		    *prev = ftable;
 	    }
 	}
-	Xfree(from);
+	Xfree((char *)from);
     }
 }
 
@@ -789,7 +828,7 @@ static void PutEntry(db, bindings, quarks, type, value)
 		}
 		/* splice out and free old entry */
 		*vprev = entry->next;
-		Xfree(entry);
+		Xfree((char *)entry);
 		(*pprev)->entries--;
 	    }
 	    /* this is where to insert */
@@ -844,7 +883,7 @@ static void PutEntry(db, bindings, quarks, type, value)
     if (q > maxResourceQuark) {
 	unsigned oldsize = maxResourceQuark + 1;
 	unsigned size = (q | 0x7f) + 1; /* reallocate in reasonable chunks */
-	if (resourceQuarks) 
+	if (resourceQuarks)
 	    resourceQuarks = (unsigned char *)Xrealloc((char *)resourceQuarks,
 						       size);
 	else
@@ -946,6 +985,7 @@ static void GetDatabase(db, str, filename)
     register char *ptr;
     register XrmBits bits = 0;
     register char c;
+    int len;
     register Signature sig;
     register char *ptr_max;
     register XrmQuarkList t_quarks;
@@ -956,6 +996,7 @@ static void GetDatabase(db, str, filename)
     XrmQuark quarks[LIST_SIZE];
     XrmBinding bindings[LIST_SIZE];
     XrmValue value;
+    Bool only_pcs;
 
     if (!db)
 	return;
@@ -963,21 +1004,23 @@ static void GetDatabase(db, str, filename)
     if (!(value_str = Xmalloc(sizeof(char) * alloc_chars)))
 	return;
 
-    while (!xrm_is_EOF(bits)) {
+    (*db->methods->mbinit)(db->mbstate);
+    str--;
+    while (!is_EOF(bits)) {
 
 	/*
 	 * First: Remove extra whitespace. 
 	 */
 
 	do {
-	    bits = get_next_char(c, str);
-	} while xrm_is_space(bits);
+	    bits = next_char(c, str);
+	} while is_space(bits);
 
 	/*
 	 * Ignore empty lines.
 	 */
 
-	if (xrm_is_EOL(bits))
+	if (is_EOL(bits))
 	    continue;		/* start a new line. */
 
 	/*
@@ -986,33 +1029,40 @@ static void GetDatabase(db, str, filename)
 	 */
 
 	if (c == '!') { /* Comment, spin to next newline */
-	    while (!xrm_is_EOL(bits = get_next_char(c, str))) {}
+	    while (is_simple(bits = next_char(c, str))) {}
+	    if (is_EOL(bits))
+		continue;
+	    while (!is_EOL(bits = next_mbchar(c, len, str))) {}
+	    str--;
 	    continue;		/* start a new line. */
 	}
 
 	if (c == '#') { /* Directive */
 	    /* remove extra whitespace */
-	    while (xrm_is_space(bits = get_next_char(c, str))) {};
+	    while (is_space(bits = next_char(c, str))) {};
 	    /* only "include" directive is currently defined */
-	    if (!strncmp(str-1, "include", 7)) {
+	    if (!strncmp(str, "include", 7)) {
 		str += (7-1);
 		/* remove extra whitespace */
-		while (xrm_is_space(bits = get_next_char(c, str))) {};
+		while (is_space(bits = next_char(c, str))) {};
 		/* must have a starting " */
 		if (c == '"') {
-		    char *fname = str;
+		    char *fname = str+1;
 		    do {
-			bits = get_next_char(c, str);
-		    } while (c != '"' && !xrm_is_EOL(bits));
+			bits = next_char(c, str);
+		    } while (c != '"' && !is_EOL(bits));
 		    /* must have an ending " */
 		    if (c == '"')
-			GetIncludeFile(db, filename, fname, str - fname - 1);
+			GetIncludeFile(db, filename, fname, str - fname);
 		}
 	    }
 	    /* spin to next newline */
-	    if (xrm_is_EOL(bits))
+	    if (is_simple(bits))
+		while (is_simple(bits = next_char(c, str))) {}
+	    if (is_EOL(bits))
 		continue;
-	    while (!xrm_is_EOL(bits = get_next_char(c, str))) {}
+	    while (!is_EOL(bits = next_mbchar(c, len, str))) {}
+	    str--;
 	    continue;		/* start a new line. */
 	}
 
@@ -1034,38 +1084,38 @@ static void GetDatabase(db, str, filename)
 	ptr = buffer;
 	*t_bindings = XrmBindTightly;	
 	for(;;) {
-	    if (!xrm_is_tight_or_loose(bits)) {
-		while (!xrm_is_end_of_quark(bits)) {
+	    if (!is_binding(bits)) {
+		while (!is_EOQ(bits)) {
 		    *ptr++ = c;
 		    sig = (sig << 1) + c; /* Compute the signature. */
-		    bits = get_next_char(c, str);
+		    bits = next_char(c, str);
 		}
 
 		*t_quarks++ = _XrmInternalStringToQuark(buffer, ptr - buffer,
 							sig, False);
-	    
-		if (xrm_is_separator(bits))  {
-		    if (!xrm_is_space(bits))
+
+		if (is_separator(bits))  {
+		    if (!is_space(bits))
 			break;
 
 		    /* Remove white space */
 		    do {
 			*ptr++ = c;
 			sig = (sig << 1) + c; /* Compute the signature. */
-		    } while (xrm_is_space(bits = get_next_char(c, str)));
+		    } while (is_space(bits = next_char(c, str)));
 
 		    /* 
 		     * The spec doesn't permit it, but support spaces
 		     * internal to resource name/class 
 		     */
 
-		    if (xrm_is_separator(bits))
+		    if (is_separator(bits))
 			break;
 		    t_quarks--;
 		    continue;
 		}
 
-		if (xrm_is_tight(bits))
+		if (c == '.')
 		    *(++t_bindings) = XrmBindTightly;
 		else
 		    *(++t_bindings) = XrmBindLoosely;
@@ -1084,12 +1134,12 @@ static void GetDatabase(db, str, filename)
 		 * will be loose, otherwise it will be tight.
 		 */
 
-		if (xrm_is_loose(bits))
+		if (c == '*')
 		    *t_bindings = XrmBindLoosely;
 	    }
 
-	    bits = get_next_char(c, str);
-	} 
+	    bits = next_char(c, str);
+	}
 
 	*t_quarks = NULLQUARK;
 
@@ -1097,22 +1147,24 @@ static void GetDatabase(db, str, filename)
 	 * Make sure that there is a ':' in this line.
 	 */
 
-	if (!xrm_is_real_separator(bits)) {
-	    XrmBits old_bits;
-
-	    if (xrm_is_EOL(bits)) 
-		continue;
+	if (c != ':') {
+	    char oldc;
 
 	    /*
 	     * A parsing error has occured, toss everything on the line
 	     * a new_line can still be escaped with a '\'.
 	     */
 
+	    if (is_normal(bits))
+		while (is_normal(bits = next_char(c, str))) {}
+	    if (is_EOL(bits))
+		continue;
+	    bits = next_mbchar(c, len, str);
 	    do {
-		old_bits = bits;
-		bits = get_next_char(c, str);
-	    } while (!(xrm_is_EOF(bits) ||
-		       (xrm_is_EOL(bits) && !xrm_is_backslash(old_bits))));
+		oldc = c;
+		bits = next_mbchar(c, len, str);
+	    } while (c && (c != '\n' || oldc == '\\'));
+	    str--;
 	    continue;
 	}
 
@@ -1130,13 +1182,13 @@ static void GetDatabase(db, str, filename)
 	for(;;) {
 	    XrmBits old_bits;
 
-	    if (xrm_is_space(bits = get_next_char(c, str)))
+	    if (is_space(bits = next_char(c, str)))
 		continue;
-	    if (!xrm_is_backslash(bits))
+	    if (c != '\\')
 		break;
 	    old_bits = bits;
-	    bits = get_next_char(c, str);
-	    if (xrm_is_EOL(bits) && !xrm_is_EOF(bits))
+	    bits = next_char(c, str);
+	    if (c == '\n')
 		continue;
 	    str--;
 	    bits = old_bits;
@@ -1149,6 +1201,7 @@ static void GetDatabase(db, str, filename)
 
 	ptr = value_str;
 	ptr_max = ptr + alloc_chars - 4;
+	only_pcs = True;
 
 	for(;;) {
 
@@ -1157,90 +1210,106 @@ static void GetDatabase(db, str, filename)
 	     * character that will fit into the allocated buffer.
 	     */
 
-	    while (!(xrm_is_backslash_or_EOV(bits) ||
-		     (ptr >= ptr_max)) ) {
-		*ptr++ = c;
-		bits = get_next_char(c, str);
+	    if (only_pcs) {
+		while (is_normal(bits) && ptr < ptr_max) {
+		    *ptr++ = c;
+		    bits = next_char(c, str);
+		}
+		if (is_EOL(bits))
+		    break;
+		if (is_nonpcs(bits)) {
+		    only_pcs = False;
+		    bits = next_mbchar(c, len, str);
+		}
+	    }
+	    while (!is_special(bits) && ptr + len <= ptr_max) {
+		len = -len;
+		while (len)
+		    *ptr++ = str[len++];
+		bits = next_mbchar(c, len, str);
 	    }
 
-	    if (xrm_is_end_of_value(bits))
+	    if (is_EOL(bits))
 		break;
 
-	    if (xrm_is_backslash(bits)) {
-		char temp[3];
-		int count;
-
+	    if (c == '\\') {
 		/*
 		 * We need to do some magic after a backslash.
 		 */
 
-		bits = get_next_char(c, str); 
+		if (only_pcs) {
+		    bits = next_char(c, str);
+		    if (is_nonpcs(bits))
+			only_pcs = False;
+		}
+		if (!only_pcs)
+		    bits = next_mbchar(c, len, str);
 
-		if (xrm_is_EOL(bits)) 
-		    if (xrm_is_EOF(bits)) 
-			goto done;
-		    else {
-			bits = get_next_char(c, str);
+		if (is_EOL(bits)) {
+		    if (is_EOF(bits))
 			continue;
+		} else if (c == 'n') {
+		    /*
+		     * "\n" means insert a newline.
+		     */
+		    *ptr++ = '\n';
+		} else if (c == '\\') {
+		    /*
+		     * "\\" completes to just one backslash.
+		     */
+		    *ptr++ = '\\';
+		} else {
+		    /*
+		     * pick up to three octal digits after the '\'.
+		     */
+		    char temp[3];
+		    int count = 0;
+		    while (is_odigit(bits) && count < 3) {
+			temp[count++] = c;
+			if (only_pcs) {
+			    bits = next_char(c, str);
+			    if (is_nonpcs(bits))
+				only_pcs = False;
+			}
+			if (!only_pcs)
+			    bits = next_mbchar(c, len, str);
 		    }
 
-		/*
-		 * "\n" means insert a newline.
-		 */
-		  
-		if (c == 'n') {
-		    *ptr++ = A_NEW_LINE;
-		    bits = get_next_char(c, str);
-		    continue;
-		}
-
-		/*
-		 * "\\" completes to just one backslash.
-		 */
-
-		if (xrm_is_backslash(bits)) {
-		    *ptr++ = c;	                /* we know that c == '\'. */
-		    bits = get_next_char(c, str);
-		    continue;
-		}
-
-		/*
-		 * pick up to three octal digits after the '\'.
-		 */
-		
-		count = 0;
-		while (xrm_is_odigit(bits) && count < 3) {
-		    temp[count] = c;
-		    bits = get_next_char(c, str);
-		    count++;
-		}
-		
-		/*
-		 * If we found three digits then insert that octal code into
-		 * into the value string as a character.
-		 */
-		
-		if (count == 3) {
-		    *ptr++ = (unsigned char) ((temp[0] - ZERO) * 0100 +
-					      (temp[1] - ZERO) * 010 +
-					      (temp[2] - ZERO));
-		}
-		else {
-		    int tcount;
-
-		    /* 
-		     * Otherwise just insert those characters into the 
-		     * string, since no special processing is needed on
-		     * numerics we can skip the special processing.
+		    /*
+		     * If we found three digits then insert that octal code
+		     * into the value string as a character.
 		     */
 
-		    for (tcount = 0; tcount < count; tcount++) {
-			*ptr++ = temp[tcount]; /* print them in 
-						  the correct order */
+		    if (count == 3) {
+			*ptr++ = (unsigned char) ((temp[0] - '0') * 0100 +
+						  (temp[1] - '0') * 010 +
+						  (temp[2] - '0'));
 		    }
+		    else {
+			int tcount;
+
+			/* 
+			 * Otherwise just insert those characters into the 
+			 * string, since no special processing is needed on
+			 * numerics we can skip the special processing.
+			 */
+
+			for (tcount = 0; tcount < count; tcount++) {
+			    *ptr++ = temp[tcount]; /* print them in
+						      the correct order */
+			}
+		    }
+		    continue;
 		}
+		if (only_pcs) {
+		    bits = next_char(c, str);
+		    if (is_nonpcs(bits))
+			only_pcs = False;
+		}
+		if (!only_pcs)
+		    bits = next_mbchar(c, len, str);
 	    }
-	    
+
 	    /* 
 	     * It is important to make sure that there is room for at least
 	     * four more characters in the buffer, since I can add that
@@ -1253,8 +1322,11 @@ static void GetDatabase(db, str, filename)
 		alloc_chars += BUFSIZ/10;		
 		temp_str = Xrealloc(value_str, sizeof(char) * alloc_chars);
 
-		if (!value_str)
-		    goto done;
+		if (!temp_str) {
+		    Xfree(value_str);
+		    (*db->methods->mbfinish)(db->mbstate);
+		    return;
+		}
 
 		ptr = temp_str + (ptr - value_str); /* reset pointer. */
 		value_str = temp_str;
@@ -1267,7 +1339,7 @@ static void GetDatabase(db, str, filename)
 	 * 	   into the database.
 	 */
 
-	*ptr++ = STRING_TERMINATOR;
+	*ptr++ = '\0';
 
 	/* Store it in database */
 	value.size = ptr - value_str;
@@ -1276,9 +1348,8 @@ static void GetDatabase(db, str, filename)
 	PutEntry(db, bindings, quarks, XrmQString, &value);
     }
 
- done:
-
     Xfree(value_str);
+    (*db->methods->mbfinish)(db->mbstate);
 }
 
 #if NeedFunctionPrototypes
@@ -1317,7 +1388,7 @@ void XrmPutLineResource(pdb, line)
 {
     if (!*pdb) *pdb = NewDatabase();
     GetDatabase(*pdb, line, (char *)NULL);
-} 
+}
 
 #if NeedFunctionPrototypes
 XrmDatabase XrmGetStringDatabase(
@@ -1340,14 +1411,14 @@ XrmDatabase XrmGetStringDatabase(data)
  *	Returns: An allocated string containing the contents of the file.
  */
 
-static char * 
+static char *
 ReadInFile(filename)
 char * filename;
 {
     register int fd, size;
     char * filebuf;
 
-    if ( (fd = OpenFile(filename)) == -1 ) 
+    if ( (fd = OpenFile(filename)) == -1 )
 	return (char *)NULL;
 
     GetSizeOfFile(filename, size);
@@ -1676,7 +1747,7 @@ Bool XrmEnumerateDatabase(db, names, classes, mode, proc, closure)
     XrmQuark	quarks[MAXDBDEPTH+2];
     register NTable table;
     EClosureRec	eclosure;
-   
+
     if (!db)
 	return False;
     eclosure.db = db;
@@ -1800,7 +1871,7 @@ void XrmPutFileDatabase(db, fileName)
 {
     FILE	*file;
     XrmQuark empty = NULLQUARK;
-    
+
     if (!db) return;
     if (!(file = fopen(fileName, "w"))) return;
     (void)XrmEnumerateDatabase(db, &empty, &empty, XrmEnumAllLevels,
@@ -2299,11 +2370,11 @@ static void DestroyLTable(table)
     for (i = table->table.mask; i >= 0; i--, buckets++) {
 	for (next = *buckets; entry = next; ) {
 	    next = entry->next;
-	    Xfree(entry);
+	    Xfree((char *)entry);
 	}
     }
-    Xfree(table->buckets);
-    Xfree(table);
+    Xfree((char *)table->buckets);
+    Xfree((char *)table);
 }
 
 /* destroy all contained tables, plus table itself */
@@ -2324,7 +2395,13 @@ static void DestroyNTable(table)
 		DestroyNTable(entry);
 	}
     }
-    Xfree(table);
+    Xfree((char *)table);
+}
+
+char *XrmLocaleOfDatabase(db)
+    XrmDatabase db;
+{
+    return (*db->methods->lcname)(db->mbstate);
 }
 
 void XrmDestroyDatabase(db)
@@ -2340,6 +2417,6 @@ void XrmDestroyDatabase(db)
 	    else
 		DestroyNTable(table);
 	}
-	Xfree(db);
+	Xfree((char *)db);
     }
 }
