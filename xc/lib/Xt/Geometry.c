@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.43 90/03/19 13:01:19 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.44 90/04/04 11:27:56 swick Exp $";
 /* $oHeader: Geometry.c,v 1.3 88/08/23 11:37:50 asente Exp $ */
 #endif /* lint */
 
@@ -316,20 +316,17 @@ void XtResizeWidget(w, width, height, borderWidth)
     Dimension old_width, old_height, old_borderWidth;
     Cardinal mask = 0;
 
-    if (w->core.width != width) {
-	old_width = w->core.width;
+    if ((old_width = w->core.width) != width) {
 	changes.width = w->core.width = width;
 	mask |= CWWidth;
     }
 
-    if (w->core.height != height) {
-	old_height = w->core.height;
+    if ((old_height = w->core.height) != height) {
 	changes.height = w->core.height = height;
 	mask |= CWHeight;
     }
 
-    if (w->core.border_width != borderWidth) {
-	old_borderWidth = w->core.border_width;
+    if ((old_borderWidth = w->core.border_width) != borderWidth) {
 	changes.border_width = w->core.border_width = borderWidth;
 	mask |= CWBorderWidth;
     }
@@ -340,14 +337,14 @@ void XtResizeWidget(w, width, height, borderWidth)
 		XConfigureWindow(XtDisplay(w), XtWindow(w), mask, &changes);
 	    else {
 		Widget pw = _XtWindowedAncestor(w);
-		unsigned big_width = old_width + (old_borderWidth << 1);
-		unsigned big_height = old_height + (old_borderWidth << 1);
-		if ((width + (borderWidth << 1)) > big_width)
-		    big_width = width + (borderWidth << 1);
-		if ((height + (borderWidth << 1)) > big_height)
-		    big_height = height + (borderWidth << 1);
+		old_width += (old_borderWidth << 1);
+		old_height += (old_borderWidth << 1);
+		if ((width + (borderWidth << 1)) > old_width)
+		    old_width = width + (borderWidth << 1);
+		if ((height + (borderWidth << 1)) > old_height)
+		    old_height = height + (borderWidth << 1);
 		XClearArea( XtDisplay(pw), XtWindow(pw),
-			    w->core.x, w->core.y, big_width, big_height,
+			    w->core.x, w->core.y, old_width, old_height,
 			    TRUE );
 	    }
 	}
