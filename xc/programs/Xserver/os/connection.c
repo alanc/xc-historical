@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.98 89/03/24 09:17:46 rws Exp $ */
+/* $XConsortium: connection.c,v 1.99 89/03/24 09:22:06 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -170,9 +170,11 @@ CreateWellKnownSockets()
     struct sockaddr_in insock;
     int		tcpportReg;	    /* port with same byte order as server */
 
+#ifndef SO_DONTLINGER
 #ifdef SO_LINGER
     static int linger[2] = { 0, 0 };
 #endif /* SO_LINGER */
+#endif /* SO_DONTLINGER */
 
 #endif /* TCPCONN */
 
@@ -239,11 +241,16 @@ CreateWellKnownSockets()
 	if (errno)
 	    unset_socket_option (request, SO_REUSEADDR);
 #endif /* hpux */
+#ifdef SO_DONTLINGER
+	if(setsockopt (request, SOL_SOCKET, SO_DONTLINGER, (char *)NULL, 0))
+	    Error ("Setting TCP SO_DONTLINGER\n");
+#else
 #ifdef SO_LINGER
 	if(setsockopt (request, SOL_SOCKET, SO_LINGER,
 		       (char *)linger, sizeof(linger)))
 	    Error ("Setting TCP SO_LINGER\n");
 #endif /* SO_LINGER */
+#endif /* SO_DONTLINGER */
 	if (listen (request, 5))
 	    Error ("Reg TCP Listening");
 	WellKnownConnections |= (1 << request);
