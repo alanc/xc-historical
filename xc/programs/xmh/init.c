@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.74 94/08/26 18:08:33 swick Exp rws $
+ * $XConsortium: init.c,v 2.75 94/08/28 17:56:34 rws Exp swick $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -356,12 +356,10 @@ char **argv;
     toplevel = XtOpenApplication(&app, "Xmh", table, XtNumber(table),
 				 &argc, argv, FallbackResources,
 				 sessionShellWidgetClass,
-				 NULL, (Cardinal)0);
+				 shell_args, XtNumber(shell_args));
     if (argc > 1) Syntax(progName);
 
     XSetIOErrorHandler(_IOErrorHandler);
-
-    XtSetValues(toplevel, shell_args, XtNumber(shell_args));
 
     theDisplay = XtDisplay(toplevel);
 
@@ -471,6 +469,8 @@ char **argv;
     protocolList[1] = wm_save_yourself = 
 	XInternAtom(XtDisplay(toplevel), "WM_SAVE_YOURSELF", False);
 
+    XtAddCallback(toplevel, XtNsaveCallback, DoSaveYourself, (XtPointer)NULL);
+
     MenuItemBitmap =
 	XCreateBitmapFromData( XtDisplay(toplevel),
 			      RootWindowOfScreen( XtScreen(toplevel)),
@@ -493,7 +493,4 @@ char **argv;
     DEBUG("done.\n");
 
     MapScrn(scrn);
-
-    XtAddCallback(toplevel, XtNsaveCallback, DoSaveYourself, (XtPointer)NULL);
-    XtVaSetValues(toplevel, XtNjoinSession, (XtArgVal)True, NULL);
 }

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: screen.c,v 2.62 91/07/22 21:23:25 converse Exp swick $
+ * $XConsortium: screen.c,v 2.63 94/08/26 18:05:04 swick Exp swick $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -317,6 +317,9 @@ ScrnKind kind;
 	case STview:		MakeView(scrn); break;
 	case STcomp:		MakeComp(scrn);	break;
     }
+
+    if (scrn->parent == toplevel)
+	XtVaSetValues(toplevel, XtNjoinSession, (XtArgVal)True, NULL);
 
     if (kind != STpick) {
 	int	theight, min, max;
