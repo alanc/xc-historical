@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.32 89/01/20 16:05:22 rws Exp $";
+static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.33 89/01/20 18:06:39 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -70,6 +70,7 @@ enum device {LN01, LN03, LA100, PS, PP};
 #define F_REPORT 64
 #define F_COMPACT 128
 #define F_INVERT 256
+#define F_GRAY 512
 
 char *infilename = "stdin", *whoami;
 
@@ -92,7 +93,7 @@ char **argv;
     int top_margin, left_margin;
     int hpad;
     char *header, *trailer;
-    int plane = -1;
+    int plane;
     char *data;
     long size;
     enum orientation orientation;
@@ -155,7 +156,7 @@ char **argv;
     data = malloc((unsigned)size);
     fullread(0, data, (int)size);
     if ((win.pixmap_depth > 1) || (win.byte_order != win.bitmap_bit_order)) {
-	data = convert_data(&win, data, plane, colors);
+	data = convert_data(&win, data, plane, colors, flags);
 	size = win.bytes_per_line * win.pixmap_height;
     }
     if (win.bitmap_bit_order == MSBFirst) {
@@ -249,6 +250,7 @@ int *plane;
     *left = -1;
     *header = NULL;
     *trailer = NULL;
+    *plane = -1;
     if (!(whoami = argv[0]))
       whoami = "xpr";
     
@@ -294,6 +296,13 @@ int *plane;
 	    }
 	    break;
 
+	case 'g':		/* -gray */
+	    if (!bcmp(*argv, "-gray", len) ||
+		!bcmp(*argv, "-grey", len)) {
+		*flags |= F_GRAY;
+	    }
+	    break;
+
 	case 'h':		/* -height <inches> */
 	    if (len <= 3) {
 		fprintf(stderr, "xpr: ambiguous option: \"%s\"\n", *argv);
@@ -309,6 +318,10 @@ int *plane;
 	    break;
 
 	case 'l':		/* -landscape | -left <inches> */
+	    if (len <= 2) {
+		fprintf(stderr, "xpr: ambigous option: \"%s\"\n", *argv);
+		exit(1);
+	    }
 	    if (!bcmp(*argv, "-landscape", len)) {
 		*flags |= F_LANDSCAPE;
 	    } else if (!bcmp(*argv, "-left", len)) {
@@ -337,6 +350,10 @@ int *plane;
 	    break;
 
 	case 'p':		/* -portrait | -plane <n> */
+	    if (len <= 2) {
+		fprintf(stderr, "xpr: ambiguous option: \"%s\"\n", *argv);
+		exit(1);
+	    }
 	    if (!bcmp(*argv, "-portrait", len)) {
 		*flags |= F_PORTRAIT;
 	    } else if (!bcmp(*argv, "-plane", len)) {
@@ -352,6 +369,10 @@ int *plane;
 	    break;
 
 	case 'r':		/* -report | -rv */
+	    if (len <= 2) {
+		fprintf(stderr, "xpr: ambigous option: \"%s\"\n", *argv);
+		exit(1);
+	    }
 	    if (!bcmp(*argv, "-report", len)) {
 		*flags |= F_REPORT;
 	    } else if (!bcmp(*argv, "-rv", len)) {
@@ -360,6 +381,10 @@ int *plane;
 	    break;
 
 	case 's':		/* -scale <scale> | -split <n-pages> */
+	    if (len <= 2) {
+		fprintf(stderr, "xpr: ambigous option: \"%s\"\n", *argv);
+		exit(1);
+	    }
 	    if (!bcmp(*argv, "-scale", len)) {
 		argc--; argv++;
 		*scale = atoi(*argv);
@@ -483,11 +508,12 @@ enum orientation *orientation;
 }
 
 char *
-convert_data(win, data, plane, colors)
+convert_data(win, data, plane, colors, flags)
     register XWDFileHeader *win;
     char *data;
     int plane;
     XColor *colors;
+    int flags;
 {
     XImage in_image, out_image;
     register int x, y;
@@ -520,6 +546,12 @@ convert_data(win, data, plane, colors)
     _XInitImageFuncPtrs(&in_image);
     out_image.width = (int) win->pixmap_width;
     out_image.height = (int) win->pixmap_height;
+    if ((flags & F_GRAY) && (in_image.depth > 1) && (plane < 0)) {
+	out_image.width *= 2;
+	out_image.height *= 2;
+	win->pixmap_width *= 2;
+	win->pixmap_height *= 2;
+    }
     out_image.xoffset = win->xoffset = 0;
     out_image.format = win->pixmap_format = XYBitmap;
     out_image.byte_order = win->byte_order = LSBFirst;
@@ -571,18 +603,114 @@ convert_data(win, data, plane, colors)
 	}
 	if ((win->ncolors == 0) || (win->visual_class = DirectColor))
 	    direct = 1;
-	for (y = 0; y < in_image.height; y++)
-	    for (x = 0; x < in_image.width; x++) {
-		color.pixel = XGetPixel(&in_image, x, y);
-		color.red = (color.pixel >> rshift) & rmask;
-		color.green = (color.pixel >> gshift) & gmask;
-		color.blue = (color.pixel >> bshift) & bmask;
-		if (!direct) {
-		    color.red = colors[color.red].red;
-		    color.green = colors[color.green].green;
-		    color.blue = colors[color.blue].blue;
+	if (flags & F_GRAY) {
+	    register int ox, oy;
+	    for (y = 0, oy = 0; y < in_image.height; y++, oy += 2)
+		for (x = 0, ox = 0; x < in_image.width; x++, ox += 2) {
+		    color.pixel = XGetPixel(&in_image, x, y);
+		    color.red = (color.pixel >> rshift) & rmask;
+		    color.green = (color.pixel >> gshift) & gmask;
+		    color.blue = (color.pixel >> bshift) & bmask;
+		    if (!direct) {
+			color.red = colors[color.red].red;
+			color.green = colors[color.green].green;
+			color.blue = colors[color.blue].blue;
+		    }
+		    switch ((int)(5 * INTENSITY(&color)) /
+				  (INTENSITYPER(100) + 1)) {
+		    case 0:
+			XPutPixel(&out_image, ox, oy, 0);
+			XPutPixel(&out_image, ox + 1, oy, 0);
+			XPutPixel(&out_image, ox, oy + 1, 0);
+			XPutPixel(&out_image, ox + 1, oy + 1, 0);
+			break;
+		    case 1:
+			XPutPixel(&out_image, ox, oy, 1);
+			XPutPixel(&out_image, ox + 1, oy, 0);
+			XPutPixel(&out_image, ox, oy + 1, 0);
+			XPutPixel(&out_image, ox + 1, oy + 1, 0);
+			break;
+		    case 2:
+			XPutPixel(&out_image, ox, oy, 0);
+			XPutPixel(&out_image, ox + 1, oy, 1);
+			XPutPixel(&out_image, ox, oy + 1, 1);
+			XPutPixel(&out_image, ox + 1, oy + 1, 0);
+			break;
+		    case 3:
+			XPutPixel(&out_image, ox, oy, 0);
+			XPutPixel(&out_image, ox + 1, oy, 1);
+			XPutPixel(&out_image, ox, oy + 1, 1);
+			XPutPixel(&out_image, ox + 1, oy + 1, 1);
+			break;
+		    default:
+			XPutPixel(&out_image, ox, oy, 1);
+			XPutPixel(&out_image, ox + 1, oy, 1);
+			XPutPixel(&out_image, ox, oy + 1, 1);
+			XPutPixel(&out_image, ox + 1, oy + 1, 1);
+			break;
+		    }
 		}
-		XPutPixel(&out_image, x, y, INTENSITY(&color) > HALFINTENSITY);
+	} else {
+	    for (y = 0; y < in_image.height; y++)
+		for (x = 0; x < in_image.width; x++) {
+		    color.pixel = XGetPixel(&in_image, x, y);
+		    color.red = (color.pixel >> rshift) & rmask;
+		    color.green = (color.pixel >> gshift) & gmask;
+		    color.blue = (color.pixel >> bshift) & bmask;
+		    if (!direct) {
+			color.red = colors[color.red].red;
+			color.green = colors[color.green].green;
+			color.blue = colors[color.blue].blue;
+		    }
+		    XPutPixel(&out_image, x, y,
+			      INTENSITY(&color) > HALFINTENSITY);
+		}
+	}
+    } else if (flags & F_GRAY) {
+	register int ox, oy;
+
+	if (win->ncolors == 0) {
+	    fprintf(stderr, "no colors in data, can't remap\n");
+	    exit(1);
+	}
+	for (x = 0; x < win->ncolors; x++) {
+	    register XColor *color = &colors[x];
+
+	    color->pixel = (5 * INTENSITY(color)) / (INTENSITYPER(100) + 1);
+	}
+	for (y = 0, oy = 0; y < in_image.height; y++, oy += 2)
+	    for (x = 0, ox = 0; x < in_image.width; x++, ox += 2)
+		switch ((int)colors[XGetPixel(&in_image, x, y)].pixel) {
+		case 0:
+		    XPutPixel(&out_image, ox, oy, 0);
+		    XPutPixel(&out_image, ox + 1, oy, 0);
+		    XPutPixel(&out_image, ox, oy + 1, 0);
+		    XPutPixel(&out_image, ox + 1, oy + 1, 0);
+		    break;
+		case 1:
+		    XPutPixel(&out_image, ox, oy, 1);
+		    XPutPixel(&out_image, ox + 1, oy, 0);
+		    XPutPixel(&out_image, ox, oy + 1, 0);
+		    XPutPixel(&out_image, ox + 1, oy + 1, 0);
+		    break;
+		case 2:
+		    XPutPixel(&out_image, ox, oy, 0);
+		    XPutPixel(&out_image, ox + 1, oy, 1);
+		    XPutPixel(&out_image, ox, oy + 1, 1);
+		    XPutPixel(&out_image, ox + 1, oy + 1, 0);
+		    break;
+		case 3:
+		    XPutPixel(&out_image, ox, oy, 0);
+		    XPutPixel(&out_image, ox + 1, oy, 1);
+		    XPutPixel(&out_image, ox, oy + 1, 1);
+		    XPutPixel(&out_image, ox + 1, oy + 1, 1);
+		    break;
+		default:
+		    XPutPixel(&out_image, ox, oy, 1);
+		    XPutPixel(&out_image, ox + 1, oy, 1);
+		    XPutPixel(&out_image, ox, oy + 1, 1);
+		    XPutPixel(&out_image, ox + 1, oy + 1, 1);
+		    break;
 	    }
     } else {
 	if (win->ncolors == 0) {
