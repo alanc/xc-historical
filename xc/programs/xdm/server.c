@@ -1,4 +1,4 @@
-/* $XConsortium: server.c,v 1.18 93/09/20 18:03:16 hersh Exp $ */
+/* $XConsortium: server.c,v 1.19 94/04/17 20:03:44 hersh Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -65,14 +65,11 @@ CatchUsr1 (n)
     ++receivedUsr1;
 }
 
-static char *_SysErrorMsg (n)
+char *_SysErrorMsg (n)
     int n;
 {
-    extern char *sys_errlist[];
-    extern int sys_nerr;
-    char *s = ((n >= 0 && n < sys_nerr) ? sys_errlist[n] : "unknown error");
-
-    return (s ? s : "no such error");
+    char *s = strerror(n);
+    return (s ? s : "unknown error");
 }
 
 StartServerOnce (d)

@@ -70,8 +70,8 @@ char *ProgramName;
 static char *SysErrorMsg (n)
     int n;
 {
-    char *s = (n > 0 && n < sys_nerr) ? sys_errlist[n] : "unknown";
-    return (s ? s : "null system error");
+    char *s = strerror(n);
+    return (s ? s : "unknown error");
 }
 
 

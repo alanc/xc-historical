@@ -1,4 +1,4 @@
-/* $XConsortium: session.c,v 1.72 94/04/17 20:03:45 gildea Exp converse $ */
+/* $XConsortium: session.c,v 1.73 94/10/07 19:45:28 converse Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -223,12 +223,7 @@ static
 IOErrorHandler (dpy)
     Display *dpy;
 {
-    extern char *sys_errlist[];
-    extern int sys_nerr;
-    char *s = ((errno >= 0 && errno < sys_nerr) ? sys_errlist[errno]
-						: "unknown error");
-
-    LogError("fatal IO error %d (%s)\n", errno, s);
+    LogError("fatal IO error %d (%s)\n", errno, _SysErrorMsg(errno));
     exit(RESERVER_DISPLAY);
 }
 
