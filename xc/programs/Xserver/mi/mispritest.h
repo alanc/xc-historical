@@ -4,7 +4,7 @@
  * mi sprite structures
  */
 
-/* $XConsortium: mispritest.h,v 5.7 89/09/12 14:16:36 keith Exp $ */
+/* $XConsortium: mispritest.h,v 5.8 89/10/03 19:45:31 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -92,7 +92,7 @@ extern void QueryGlyphExtents();
  */
 #define SPN_OVERLAP(pCbox,y,x,w) BOX_OVERLAP((pCbox),(x),(y),(x)+(w),(y))
 
-#define LINE_SORT(x1,y2,x2,y2) \
+#define LINE_SORT(x1,y1,x2,y2) \
 { int _t; \
   if (x1 > x2) { _t = x1; x1 = x2; x2 = _t; } \
   if (y1 > y2) { _t = y1; y1 = y2; y2 = _t; } }
