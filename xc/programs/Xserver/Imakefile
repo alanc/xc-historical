@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.173 94/02/05 02:34:01 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.174 94/02/06 12:17:38 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -45,7 +45,7 @@ XCOMM $XConsortium: Imakefile,v 1.173 94/02/05 02:34:01 rws Exp $
 #endif
       OTHEREXTS = Xext/libext.a $(XINPUTEXT) $(XIEEXT) $(LBXEXT) $(LBXUTILLIB)
         EXTDIRS = Xext $(XIDIR) $(XIEDIR) $(PEXDIR) $(LBXDIR)
-        DEPDIRS = $(FONTLIBSRC) $(LBXUTILDIR)
+        DEPDIRS = $(LBXUTILDIR)
      EXTENSIONS = $(OTHEREXTS) $(PEXLIBS)
          XAULIB = $(XAUTHSRC)/libXau.a
 #if HasKrb5
