@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.c,v 1.28 93/09/12 20:08:19 rws Exp $ */
+/* $XConsortium: fsio.c,v 1.29 93/09/20 15:56:48 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -102,7 +102,7 @@ _fs_name_to_address(servername, inaddr)
     (void) strncpy(hostname, servername, sizeof(hostname));
 
     /* get port */
-    if ((sp = index(hostname, ':')) == NULL)
+    if ((sp = strchr(hostname, ':')) == NULL)
 	return -1;
 
     *(sp++) = '\0';

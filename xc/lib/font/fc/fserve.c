@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.28 93/09/12 17:42:44 rws Exp $ */
+/* $XConsortium: fserve.c,v 1.29 93/09/20 15:56:46 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -177,15 +177,15 @@ fs_send_init_packets(conn)
 	    goto fail;
 	}
     }
-    sp = rindex(conn->servername, '/');
+    sp = strrchr(conn->servername, '/');
 
     /* don't get tricked by a non-existant catalogue list */
-    if (sp == index(conn->servername, '/')) {
+    if (sp == strchr(conn->servername, '/')) {
 	/*
 	 * try original name -- this might be an alternate with no catalogues
 	 */
-	sp = rindex(conn->requestedname, '/');
-	if (sp == index(conn->requestedname, '/'))
+	sp = strrchr(conn->requestedname, '/');
+	if (sp == strchr(conn->requestedname, '/'))
 		sp = (char *) 0;
     }
     if (sp) {			/* turn cats into counted list */
@@ -198,7 +198,7 @@ fs_send_init_packets(conn)
 	}
 	num_cats = 0;
 	while (*sp) {
-	    end = index(sp, CATALOGUE_SEP);
+	    end = strchr(sp, CATALOGUE_SEP);
 	    if (!end)
 		end = sp + strlen(sp);
 	    *cp++ = len = end - sp;

@@ -1,4 +1,4 @@
-/* $XConsortium: spfile.c,v 1.8 93/08/24 18:48:45 gildea Exp $ */
+/* $XConsortium: spfile.c,v 1.9 93/09/17 18:27:45 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -230,7 +230,7 @@ sp_open_master(filename, master)
     {				/* choose the proper encoding */
 	char       *f;
 
-	f = rindex(filename, '/');
+	f = strrchr(filename, '/');
 	if (f) {
 	    f++;
 	    if (strncmp(f, "bx113", 5) == 0) {

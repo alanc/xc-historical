@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitscale.c,v 1.15 93/09/17 18:26:48 gildea Exp $
+ * $XConsortium: bitscale.c,v 1.16 93/09/20 15:56:36 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -478,7 +478,7 @@ ComputeScaledProperties(sourceFontInfo, name, vals, dx, dy, sdx, sdy,
 	if (*ptr2)
 	{
 	    ptr1 = ptr2 + 1;
-	    if (!(ptr2 = index(ptr1, '-'))) ptr2 = index(ptr1, '\0');
+	    if (!(ptr2 = strchr(ptr1, '-'))) ptr2 = strchr(ptr1, '\0');
 	}
 
 	*isStringProp = 0;

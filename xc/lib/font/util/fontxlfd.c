@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontxlfd.c,v 1.9 93/09/18 17:20:17 rws Exp $
+ * $XConsortium: fontxlfd.c,v 1.10 93/09/20 15:56:41 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -382,20 +382,20 @@ FontParseXLFDName(fname, vals, subst)
 	*vals = tmpvals;
 
     if (!(*(ptr = fname) == '-' || *ptr++ == '*' && *ptr == '-') ||  /* fndry */
-	    !(ptr = index(ptr + 1, '-')) ||	/* family_name */
-	    !(ptr1 = ptr = index(ptr + 1, '-')) ||	/* weight_name */
+	    !(ptr = strchr(ptr + 1, '-')) ||	/* family_name */
+	    !(ptr1 = ptr = strchr(ptr + 1, '-')) ||	/* weight_name */
 	    !(ptr = parse_weight(ptr + 1, &tmpvals)) ||	/* slant */
-	    !(ptr = index(ptr + 1, '-')) ||	/* setwidth_name */
-	    !(ptr = index(ptr + 1, '-')) ||	/* add_style_name */
-	    !(ptr = index(ptr + 1, '-')) ||	/* pixel_size */
+	    !(ptr = strchr(ptr + 1, '-')) ||	/* setwidth_name */
+	    !(ptr = strchr(ptr + 1, '-')) ||	/* add_style_name */
+	    !(ptr = strchr(ptr + 1, '-')) ||	/* pixel_size */
 	    !(ptr = GetMatrix(ptr + 1, &tmpvals, PIXELSIZE_MASK)) ||
 	    !(ptr2 = ptr = GetMatrix(ptr + 1, &tmpvals, POINTSIZE_MASK)) ||
 	    !(ptr = GetInt(ptr + 1, &tmpvals.x)) ||	/* resolution_x */
 	    !(ptr3 = ptr = GetInt(ptr + 1, &tmpvals.y)) ||  /* resolution_y */
-	    !(ptr4 = ptr = index(ptr + 1, '-')) ||	/* spacing */
+	    !(ptr4 = ptr = strchr(ptr + 1, '-')) ||	/* spacing */
 	    !(ptr5 = ptr = GetInt(ptr + 1, &tmpvals.width)) || /* average_width */
-	    !(ptr = index(ptr + 1, '-')) ||	/* charset_registry */
-	    index(ptr + 1, '-'))/* charset_encoding */
+	    !(ptr = strchr(ptr + 1, '-')) ||	/* charset_registry */
+	    strchr(ptr + 1, '-'))/* charset_encoding */
 	return FALSE;
 
     /* Lop off HP charset subsetting enhancement.  Interpreting this
@@ -407,7 +407,7 @@ FontParseXLFDName(fname, vals, subst)
        subsetting.  */
 
     if (subst != FONT_XLFD_REPLACE_NONE &&
-	(p = index(rindex(fname, '-'), '=')))
+	(p = strchr(strrchr(fname, '-'), '=')))
     {
 	tmpvals.values_supplied |= CHARSUBSET_SPECIFIED;
 	*p = '\0';
@@ -435,14 +435,14 @@ FontParseXLFDName(fname, vals, subst)
 	ptr1 = skip_to_enhancement(ptr);	/* weight_name enhancement */
 	if (*ptr1 != '-')
 	{
-	    ptr = index(ptr1, '-');
+	    ptr = strchr(ptr1, '-');
 	    memmove(ptr1, ptr, strlen(ptr) + 1);
 	}
 	ptr = ptr1 + 1;
 
-	ptr = index(ptr, '-') + 1;		/* skip slant */
-	ptr = index(ptr, '-') + 1;		/* skip setwidth_name */
-	ptr = index(ptr, '-') + 1;		/* skip add_style_name */
+	ptr = strchr(ptr, '-') + 1;		/* skip slant */
+	ptr = strchr(ptr, '-') + 1;		/* skip setwidth_name */
+	ptr = strchr(ptr, '-') + 1;		/* skip add_style_name */
 
 	if ((ptr - fname) + spacingLen + strlen(ptr5) + 10 >= 1024)
 	    return FALSE;
@@ -500,7 +500,7 @@ FontParseXLFDName(fname, vals, subst)
 
 
 	p = ptr1 + 1;				/* weight enhancement */
-	l = index(p, '-') - p;
+	l = strchr(p, '-') - p;
 	sprintf(tmpBuf, "%*.*s", l, l, p);
 	if (vals->values_supplied & EMBOLDENING_SPECIFIED)
 	    sprintf(tmpBuf + strlen(tmpBuf), "%c%d",
@@ -514,15 +514,15 @@ FontParseXLFDName(fname, vals, subst)
 					     -vals->vert_weight));
 
 	p += l + 1;				/* slant enhancement */
-	l = index(p, '-') - p;
+	l = strchr(p, '-') - p;
 	sprintf(tmpBuf + strlen(tmpBuf), "-%*.*s", l, l, p);
 
 	p += l + 1;				/* setwidth_name */
-	l = index(p, '-') - p;
+	l = strchr(p, '-') - p;
 	sprintf(tmpBuf + strlen(tmpBuf), "-%*.*s", l, l, p);
 
 	p += l + 1;				/* add_style_name enhancement */
-	l = index(p, '-') - p;
+	l = strchr(p, '-') - p;
 	sprintf(tmpBuf + strlen(tmpBuf), "-%*.*s", l, l, p);
 
 	strcat(tmpBuf, "-");
@@ -587,12 +587,12 @@ int *nranges;
     char *p1, *p2;
     fsRange *result = NULL;
 
-    name = index(name, '-');
+    name = strchr(name, '-');
     for (n = 1; name && n < 14; n++)
-	name = index(name + 1, '-');
+	name = strchr(name + 1, '-');
 
     *nranges = 0;
-    if (!name || !(name = index(name, '='))) return NULL;
+    if (!name || !(name = strchr(name, '='))) return NULL;
 
     p1 = name;
 

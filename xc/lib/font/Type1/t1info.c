@@ -1,4 +1,4 @@
-/* $XConsortium: t1info.c,v 1.10 93/08/24 18:48:57 gildea Exp $ */
+/* $XConsortium: t1info.c,v 1.11 93/09/17 18:27:00 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -314,7 +314,7 @@ ComputeStdProps(pInfo, Vals, Filename, Fontname, sAscent, sDescent, sWidth)
 	if (*ptr2)
 	{
 	    ptr1 = ptr2 + 1;
-	    if (!(ptr2 = index(ptr1, '-'))) ptr2 = index(ptr1, '\0');
+	    if (!(ptr2 = strchr(ptr1, '-'))) ptr2 = strchr(ptr1, '\0');
 	}
 
         pp->name = fpt->atom;

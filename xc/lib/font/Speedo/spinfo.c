@@ -1,4 +1,4 @@
-/* $XConsortium: spinfo.c,v 1.9 93/08/24 18:48:51 gildea Exp $ */
+/* $XConsortium: spinfo.c,v 1.10 93/09/17 18:27:48 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -327,7 +327,7 @@ sp_compute_props(spf, fontname, pinfo, sWidth)
         if (*ptr2)
         {
             ptr1 = ptr2 + 1;
-            if (!(ptr2 = index(ptr1, '-'))) ptr2 = index(ptr1, '\0');
+            if (!(ptr2 = strchr(ptr1, '-'))) ptr2 = strchr(ptr1, '\0');
         }
 
 	pp->name = fpt->atom;
