@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.41 89/05/03 14:37:19 jim Exp $
+ * $XConsortium: twm.c,v 1.42 89/05/04 19:02:57 keith Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.41 89/05/03 14:37:19 jim Exp $";
+"$XConsortium: twm.c,v 1.42 89/05/04 19:02:57 keith Exp $";
 #endif
 
 #include <stdio.h>
@@ -612,7 +612,7 @@ InitVariables()
  */
 
 void
-Done()
+Reborder ()
 {
     TwmWindow *tmp;			/* temp twm window structure */
     unsigned x, y;
@@ -633,10 +633,12 @@ Done()
 			 &JunkBW, &JunkDepth);
 
 	    xwcm = CWX | CWY;
+	    xwc.x = x;
+	    xwc.y = y;
 
-	    if (Scr->BorderWidth) {
-	    	xwc.x = x + tmp->frame_bw - tmp->old_bw;
-	    	xwc.y = y + tmp->frame_bw - tmp->old_bw;
+	    if (JunkBW != tmp->old_bw) {
+	    	xwc.x = x - tmp->old_bw;
+	    	xwc.y = y - tmp->old_bw;
 	    	xwc.border_width = tmp->old_bw;
 		xwcm |= CWBorderWidth;
 	    }
@@ -646,6 +648,12 @@ Done()
     }
 
     XSetInputFocus(dpy, PointerRoot, RevertToPointerRoot, CurrentTime);
+}
+
+void
+Done()
+{
+    Reborder ();
     XCloseDisplay(dpy);
     exit(0);
 }

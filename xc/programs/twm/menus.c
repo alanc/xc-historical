@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.52 89/05/02 15:39:40 jim Exp $
+ * $XConsortium: menus.c,v 1.53 89/05/04 15:51:35 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.52 89/05/02 15:39:40 jim Exp $";
+"$XConsortium: menus.c,v 1.53 89/05/04 15:51:35 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1093,6 +1093,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 
     case F_RESTART:
 	XSync (dpy, 0);
+	Reborder ();
 	execvp(*Argv, Argv, Environ);
 	XSync (dpy, 0);
 	fprintf(stderr, "%s:  restart failed\n", *Argv);
