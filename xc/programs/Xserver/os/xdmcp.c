@@ -13,12 +13,12 @@
  *
  */
 
+#include "Xos.h"
 #include <sys/param.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <stdio.h>
-#include "Xos.h"
 #include "X.h"
 #include "Xmd.h"
 #include "misc.h"
