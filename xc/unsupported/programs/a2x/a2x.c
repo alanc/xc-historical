@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.64 92/04/20 10:18:14 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.65 92/04/24 11:34:27 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -47,11 +47,16 @@ Syntax of magic values in the input stream:
 			(with b, means "key or button")
 	b		require windows that select for button events
 			(with k, means "key or button")			
-	n<name>		require window with given name
+	n<name>		require window with given name (WM_NAME)
 			this must be the last option
-	p<prefix>	require window with given name prefix
+	p<prefix>	require window with given name prefix (WM_NAME)
 			this must be the last option
-	N[<name>.<class>] require window with given instance name and/or class
+	N[<name>.<class>] require window with given name and/or class
+			(WM_CLASS or _MIT_OBJ_CLASS)
+			this must be the last option
+			either <name> or <class> can be empty
+	P[<name>.<class>] require window with given name and/or class prefix
+			(WM_CLASS or _MIT_OBJ_CLASS)
 			this must be the last option
 			either <name> or <class> can be empty
 	[ <mult>]	off-axis distance multiplier is <mult> (float)
@@ -70,11 +75,16 @@ Syntax of magic values in the input stream:
 	M		set MapNotify trigger
 	U		set UnmapNotify trigger
 	W		wait for trigger
-	n<name>		require window with given name
+	n<name>		require window with given name (WM_NAME)
 			this must be the last option
-	p<prefix>	require window with given name prefix
+	p<prefix>	require window with given name prefix (WM_NAME)
 			this must be the last option
-	N[<name>.<class>] require window with given instance name and/or class
+	N[<name>.<class>] require window with given name and/or class
+			(WM_CLASS or _MIT_OBJ_CLASS)
+			this must be the last option
+			either <name> or <class> can be empty
+	P[<name>.<class>] require window with given name and/or class prefix
+			(WM_CLASS or _MIT_OBJ_CLASS)
 			this must be the last option
 			either <name> or <class> can be empty
 	[ <delay>]	wait no more than <delay> seconds
@@ -109,11 +119,14 @@ released automatically at next button or non-modifier key.
 #define control_char '\024' /* control T */
 #define control_end '\224'
 
-typedef enum {MatchNone, MatchName, MatchPrefix, MatchClass} MatchType;
+typedef enum
+{MatchNone, MatchName, MatchNamePrefix, MatchClass, MatchClassPrefix}
+MatchType;
 
 typedef struct {
     MatchType match;
-    int nlen;
+    int namelen;
+    int classlen;
     char name[100];
     char class[100];
 } MatchRec;
@@ -800,9 +813,17 @@ match_class(w, rec, prop)
 	    i = strlen(data) + 1;
 	    if (i > len)
 		i = len;
-	    if ((!rec->name[0] || !strcmp(rec->name, data)) &&
-		(!rec->class[0] || !strcmp(rec->class, data + i)))
-		ok = True;
+	    if (rec->match == MatchClass) {
+		if ((!rec->name[0] || !strcmp(rec->name, data)) &&
+		    (!rec->class[0] || !strcmp(rec->class, data + i)))
+		    ok = True;
+	    } else {
+		if ((!rec->name[0] ||
+		     !strncmp(rec->name, data, rec->namelen)) &&
+		    (!rec->class[0] ||
+		     !strncmp(rec->class, data + i, rec->classlen)))
+		    ok = True;
+	    }
 	}
 	XFree(data);
     }
@@ -820,7 +841,7 @@ matches(w, rec, getcw)
 
     switch (rec->match) {
     case MatchName:
-    case MatchPrefix:
+    case MatchNamePrefix:
 	if (getcw)
 	    w = XmuClientWindow(dpy, w);
 	if (!XFetchName(dpy, w, &name))
@@ -828,10 +849,11 @@ matches(w, rec, getcw)
 	if (rec->match == MatchName)
 	    ok = !strcmp(rec->name, name);
 	else
-	    ok = !strncmp(rec->name, name, rec->nlen);
+	    ok = !strncmp(rec->name, name, rec->namelen);
 	XFree(name);
 	break;
     case MatchClass:
+    case MatchClassPrefix:
 	if (getcw)
 	    w = XmuClientWindow(dpy, w);
 	ok = ((getcw && match_class(w, rec, XA_WM_CLASS)) ||
@@ -1204,6 +1226,8 @@ parse_class(buf, rec)
 	strcpy(rec->name, buf);
 	rec->class[0] = '\0';
     }
+    rec->namelen = strlen(rec->name);
+    rec->classlen = strlen(rec->class);
     if (endptr) {
 	*endptr = ' ';
 	buf = endptr - 1;
@@ -1223,7 +1247,7 @@ parse_name(buf, rec)
     if (endptr)
 	*endptr = '\0';
     strcpy(rec->name, buf);
-    rec->nlen = strlen(rec->name);
+    rec->namelen = strlen(rec->name);
     if (endptr) {
 	*endptr = ' ';
 	buf = endptr - 1;
@@ -1278,7 +1302,11 @@ do_jump(buf)
 	    jump.input |= ButtonPressMask|ButtonReleaseMask;
 	    break;
 	case 'N':
-	    jump.match.match = MatchClass;
+	case 'P':
+	    if (*buf == 'N')
+		jump.match.match = MatchClass;
+	    else
+		jump.match.match = MatchClassPrefix;
 	    buf = parse_class(buf + 1, &jump.match);
 	    break;
 	case 'n':
@@ -1286,7 +1314,7 @@ do_jump(buf)
 	    if (*buf == 'n')
 		jump.match.match = MatchName;
 	    else
-		jump.match.match = MatchPrefix;
+		jump.match.match = MatchNamePrefix;
 	    buf = parse_name(buf + 1, &jump.match);
 	    break;
 	case 'O':
@@ -1442,7 +1470,11 @@ do_trigger(buf)
 	    wait = True;
 	    break;
 	case 'N':
-	    match = MatchClass;
+	case 'P':
+	    if (*buf == 'n')
+		match = MatchClass;
+	    else
+		match = MatchClassPrefix;
 	    buf = parse_class(buf + 1, &trigger.match);
 	    break;
 	case 'n':
@@ -1450,7 +1482,7 @@ do_trigger(buf)
 	    if (*buf == 'n')
 		match = MatchName;
 	    else
-		match = MatchPrefix;
+		match = MatchNamePrefix;
 	    buf = parse_name(buf + 1, &trigger.match);
 	    break;
 	case ' ':
