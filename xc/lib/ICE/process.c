@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.10 93/09/22 17:56:13 mor Exp $ */
+/* $XConsortium: process.c,v 1.11 93/09/24 15:52:58 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -784,9 +784,26 @@ IceReplyWaitInfo	*replyWait;
     IceOCLauthStatus	status;
     IcePointer 		authState;
     int			realAuthIndex;
+    char		*tempBuf = NULL;
+    unsigned long 	bytes;
 
-    IceReadCompleteMessage (iceConn, SIZEOF (iceAuthRequiredMsg),
-	iceAuthRequiredMsg, message, authData);
+    IceReadMessageHeader (iceConn, SIZEOF (iceAuthRequiredMsg),
+	iceAuthRequiredMsg, message);
+
+    bytes = (message->length << 3) - (SIZEOF (iceAuthRequiredMsg) - 8);
+
+    if ((iceConn->inbufmax - iceConn->inbufptr) >= bytes)
+    {
+	IceReadData (iceConn, bytes, iceConn->inbufptr);
+	authData = iceConn->inbufptr;
+	iceConn->inbufptr += bytes;
+    }
+    else
+    {
+	tempBuf = (char *) malloc ((unsigned) bytes);
+	authData = tempBuf;
+	IceReadData (iceConn, bytes, tempBuf);
+    }
 
     if (iceConn->connect_to_you)
     {
@@ -802,6 +819,9 @@ IceReplyWaitInfo	*replyWait;
 
 	    _IceErrorAuthenticationFailed (iceConn,
 		ICE_AuthRequired, errorString);
+
+	    if (tempBuf)
+		free (tempBuf);
 
 	    return (1);
 	}
@@ -828,6 +848,9 @@ IceReplyWaitInfo	*replyWait;
 	    _IceErrorAuthenticationFailed (iceConn,
 		ICE_AuthRequired, errorString);
 
+	    if (tempBuf)
+		free (tempBuf);
+
 	    return (1);
 	}
 	else
@@ -850,6 +873,10 @@ IceReplyWaitInfo	*replyWait;
 	 */
 
 	_IceErrorBadState (iceConn, 0, ICE_AuthRequired, IceCanContinue);
+
+	if (tempBuf)
+	    free (tempBuf);
+
 	return (0);
     }
 
@@ -922,6 +949,9 @@ IceReplyWaitInfo	*replyWait;
     if (replyData && replyDataLen > 0)
 	free ((char *) replyData);
 
+    if (tempBuf)
+	free (tempBuf);
+
     return (status != IceOCLauthHaveReply);
 }
 
@@ -940,9 +970,26 @@ Bool		swap;
     int 		authDataLen;
     IcePointer 		authData = NULL;
     char		*errorString = NULL;
+    char		*tempBuf = NULL;
+    unsigned long 	bytes;
 
-    IceReadCompleteMessage (iceConn, SIZEOF (iceAuthReplyMsg),
-	iceAuthReplyMsg, message, replyData);
+    IceReadMessageHeader (iceConn, SIZEOF (iceAuthReplyMsg),
+	iceAuthReplyMsg, message);
+
+    bytes = (message->length << 3) - (SIZEOF (iceAuthReplyMsg) - 8);
+
+    if ((iceConn->inbufmax - iceConn->inbufptr) >= bytes)
+    {
+	IceReadData (iceConn, bytes, iceConn->inbufptr);
+        replyData = iceConn->inbufptr;
+	iceConn->inbufptr += bytes;
+    }
+    else
+    {
+	tempBuf = (char *) malloc ((unsigned) bytes);
+	replyData = tempBuf;
+	IceReadData (iceConn, bytes, tempBuf);
+    }
 
     replyDataLen = message->length << 3;
 
@@ -1096,6 +1143,9 @@ Bool		swap;
 
     if (errorString)
 	free (errorString);
+
+    if (tempBuf)
+	free (tempBuf);
 }
 
 
@@ -1117,9 +1167,26 @@ IceReplyWaitInfo	*replyWait;
     IceOCLauthProc 	authProc;
     IceOCLauthStatus	status;
     IcePointer 		*authState;
+    char		*tempBuf = NULL;
+    unsigned long 	bytes;
 
-    IceReadCompleteMessage (iceConn, SIZEOF (iceAuthNextPhaseMsg),
-	iceAuthNextPhaseMsg, message, authData);
+    IceReadMessageHeader (iceConn, SIZEOF (iceAuthNextPhaseMsg),
+	iceAuthNextPhaseMsg, message);
+
+    bytes = (message->length << 3) - (SIZEOF (iceAuthNextPhaseMsg) - 8);
+
+    if ((iceConn->inbufmax - iceConn->inbufptr) >= bytes)
+    {
+	IceReadData (iceConn, bytes, iceConn->inbufptr);
+	authData = iceConn->inbufptr;
+	iceConn->inbufptr += bytes;
+    }
+    else
+    {
+	tempBuf = (char *) malloc ((unsigned) bytes);
+	authData = tempBuf;
+	IceReadData (iceConn, bytes, tempBuf);
+    }
 
     if (iceConn->connect_to_you)
     {
@@ -1145,6 +1212,10 @@ IceReplyWaitInfo	*replyWait;
 	 */
 
 	_IceErrorBadState (iceConn, 0, ICE_AuthNextPhase, IceCanContinue);
+
+	if (tempBuf)
+	    free (tempBuf);
+
 	return (0);
     }
 
@@ -1203,6 +1274,9 @@ IceReplyWaitInfo	*replyWait;
 
     if (replyData && replyDataLen > 0)
 	free ((char *) replyData);
+
+    if (tempBuf)
+	free (tempBuf);
 
     return (status != IceOCLauthHaveReply);
 }
