@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.32 94/03/17 15:41:08 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.33 94/03/18 10:23:56 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -151,14 +151,22 @@ typedef Bool (*IceHostBasedAuthProc) (
 #endif
 );
 
-typedef void (*IceProtocolSetupNotifyProc) (
+typedef Status (*IceProtocolSetupProc) (
 #if NeedFunctionPrototypes
     IceConn 		/* iceConn */,
     int			/* majorVersion */,
     int			/* minorVersion */,
     char *		/* vendor */,
     char *		/* release */,
-    IcePointer *	/* clientDataRet */
+    IcePointer *	/* clientDataRet */,
+    char **		/* failureReasonRet */
+#endif
+);
+
+typedef void (*IceProtocolActivateProc) (
+#if NeedFunctionPrototypes
+    IceConn 		/* iceConn */,
+    IcePointer		/* clientData */
 #endif
 );
 
@@ -223,7 +231,8 @@ extern int IceRegisterForProtocolReply (
     char **			/* authNames */,
     IcePaAuthProc *		/* authProcs */,
     IceHostBasedAuthProc	/* hostBasedAuthProc */,
-    IceProtocolSetupNotifyProc	/* protocolSetupNotifyProc */,
+    IceProtocolSetupProc	/* protocolSetupProc */,
+    IceProtocolActivateProc	/* protocolActivateProc */,
     IceIOErrorProc		/* IOErrorProc */
 #endif
 );
@@ -349,7 +358,7 @@ extern Bool IceProcessMessages (
 #endif
 );
 
-extern void IcePing (
+extern Status IcePing (
 #if NeedFunctionPrototypes
    IceConn		/* iceConn */,
    IcePingReplyProc	/* pingReplyProc */,
