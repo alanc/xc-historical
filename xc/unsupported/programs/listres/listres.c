@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.5 89/07/10 19:03:44 jim Exp $
+ * $XConsortium: listres.c,v 1.6 89/07/10 19:06:10 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -51,7 +51,7 @@ static XtResource Resources[] = {
   { "showObjects", "ShowObjects", XtRBoolean, sizeof(Boolean),
       offset(objects), XtRString, "FALSE" },
   { "resourceFormat", "ResourceFormat", XtRString, sizeof(char *),
-      offset(format), XtRString, "  %28s %-28s    %s" },
+      offset(format), XtRString, " %27s  %-27s    %s" },
 #undef offset
 };
 
