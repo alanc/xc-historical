@@ -276,7 +276,6 @@ static void	send_ack();
 static void	start_play_clock();
 static void	compute_action_time();
 
-void	ProcessInputEvents();
 /*
  * This function is defined in the "events.c" file in the dix part of the
  * server source.
@@ -1267,16 +1266,12 @@ struct timeval	*waittime;
 				my = action_array[read_index].y;
 			}
 			if (action_array[read_index].type == XTestKEY_ACTION)
-			{
-			ProcessInputEvents();
-			XTestGenerateEvent(
-				 action_array[read_index].device, 
-				 action_array[read_index].keycode, 
-				 action_array[read_index].keystate,
-				 mx,
-				 my);
-			ProcessInputEvents();
-			}
+			    XTestGenerateEvent(
+				     action_array[read_index].device, 
+				     action_array[read_index].keycode, 
+				     action_array[read_index].keystate,
+				     mx,
+				     my);
 			read_index++;
 			/*
 			 * if all input actions are processed, then restore 
