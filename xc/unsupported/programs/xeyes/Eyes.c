@@ -183,7 +183,7 @@ static void Realize (gw, valueMask, attrs)
      XtValueMask *valueMask;
      XSetWindowAttributes *attrs;
 {
-     EyesWidget	w;
+     EyesWidget	w = (EyesWidget)gw;
 
      if (w->eyes.backing_store != Always + WhenMapped + NotUseful) {
      	attrs->backing_store = w->eyes.backing_store;
