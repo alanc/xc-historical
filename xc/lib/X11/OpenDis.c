@@ -1,5 +1,5 @@
 /*
- * $XConsortium: OpenDis.c,v 11.144 93/10/21 09:56:36 rws Exp $
+ * $XConsortium: OpenDis.c,v 11.145 93/10/24 15:50:13 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -196,7 +196,6 @@ Display *XOpenDisplay (display)
 	dpy->im_fd_length	= 0;
 	dpy->conn_watchers	= NULL;
 	dpy->watcher_count	= 0;
-	dpy->in_process_conni	= False;
 	dpy->filedes		= NULL;
 	dpy->flushes		= NULL;
 	dpy->xcmisc_opcode	= 0;
