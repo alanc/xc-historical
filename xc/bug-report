@@ -6,7 +6,7 @@ VERSION:
     [X Consortium public patches edit this line to indicate the patch level]
 
 CLIENT MACHINE and OPERATING SYSTEM:
-    [e.g. Sparc/SunOS 5.2, DECstation 5000/Ultrix 4.3, HP 9000-730/HP-UX 9.1]
+    [e.g. Sparc/SunOS 5.3, DECstation 5000/Ultrix 4.3, HP 9000-730/HP-UX 9.1]
 
 DISPLAY TYPE:
     [e.g. Sun GX, 8-bit framebuffer, IBM Skyway ...]
