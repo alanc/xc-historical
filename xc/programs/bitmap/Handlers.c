@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Handlers.c,v 1.8 91/02/10 17:12:46 rws Exp $
+ * $XConsortium: Handlers.c,v 1.9 91/04/16 09:06:48 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,20 +23,14 @@
  * Author:  Davor Matic, MIT X Consortium
  */
 
-
-
-#include <X11/IntrinsicP.h>
-#include <X11/Xaw/XawInit.h>
-#include <X11/Xmu/Converters.h>
 #include <X11/StringDefs.h>
-#include <X11/Xatom.h>
+#include <X11/IntrinsicP.h>
 #include "BitmapP.h"
     
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
 
-#define XtStrlen(s)                   ((s) ? strlen(s) : 0)
 #ifndef abs
 #define abs(x)                        (((int)(x) > 0) ? (x) : -(x))
 #endif
