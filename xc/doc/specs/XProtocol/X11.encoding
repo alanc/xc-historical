@@ -3095,7 +3095,7 @@ VISUALTYPE
 .ta .2i .5i 1.5i 2.5i
 .R
 .PN CreateGlyphCursor
-	1	94		CreateGlyphCursor
+	1	94		opcode
 	1			unused
 	2	8		request length
 	4	CURSOR		cid
@@ -3244,7 +3244,7 @@ VISUALTYPE
 	1			unused
 	2	2		request length
 	1	KEYCODE		first-keycode
-	1	CARD8		count
+	1	m		count
 	2			unused
 .De
 .Ds 0
@@ -3442,7 +3442,7 @@ VISUALTYPE
 		1	DECnet
 		2	Chaos
 	1			unused
-	2	CARD16		length of address
+	2	n		length of address
 	n	LISTofCARD8		address
 	p			unused, p=pad(n)
 .De
