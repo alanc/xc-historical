@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$XConsortium: sun.h,v 5.11 91/05/04 23:11:57 keith Exp $ SPRITE (Berkeley)"
+ *	"$XConsortium: sun.h,v 5.12 91/07/22 23:47:22 keith Exp $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
@@ -230,9 +230,6 @@ extern Bool 	  sunScreenInit();
 extern int  	  sunOpenFrameBuffer();
 
 extern fbFd 	  sunFbs[];
-
-extern int  	  lastEventTime;    /* Time (in ms.) of last event */
-extern void 	  SetTimeSinceLastInputEvent();
 
 extern int monitorResolution;
 
