@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.95 91/04/14 15:45:46 keith Exp $ */
+/* $XConsortium: utils.c,v 1.96 91/05/09 21:46:22 rws Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -59,6 +59,14 @@ void ddxUseMsg();
 
 #ifndef SVR4
 extern char *sbrk();
+
+#endif
+#ifdef AIXV3
+#define AIXFILE "/tmp/aixfile"
+FILE *aixfd;
+int FlushOn = 0;
+int SyncOn  = 0;
+extern int SelectWaitTime;
 #endif
 
 #ifdef DEBUG
@@ -423,6 +431,23 @@ char	*argv[];
 	    i = skip - 1;
 	}
 #endif
+#ifdef AIXV3
+        else if ( strcmp( argv[i], "-timeout") == 0)
+        {
+            if(++i < argc)
+                SelectWaitTime = atoi(argv[i]);
+            else
+                UseMsg();
+        }
+        else if ( strcmp( argv[i], "-flush") == 0)
+        {
+            FlushOn++;
+        }
+        else if ( strcmp( argv[i], "-sync") == 0)
+        {
+            SyncOn++;
+        }
+#endif
  	else
  	{
 	    UseMsg();
@@ -712,5 +737,24 @@ ErrorF( f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
     char *f;
     char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
 {
+#ifdef AIXV3
+    fprintf(aixfd, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
+    if (FlushOn || SyncOn)
+        fflush (aixfd);
+    if (SyncOn)
+        sync();
+#else
     fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
+#endif
+}
+
+#ifdef AIXV3
+OpenDebug()
+{
+        if((aixfd = fopen(AIXFILE,"w")) == NULL )
+        {
+                fprintf(stderr,"open aixfile failed\n");
+                exit(-1);
+        }
+        chmod(AIXFILE,00777);
 }
