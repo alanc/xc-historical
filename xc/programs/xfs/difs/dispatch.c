@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.12 92/05/26 17:37:00 gildea Exp $ */
+/* $XConsortium: dispatch.c,v 1.13 92/05/28 16:41:53 gildea Exp $ */
 /*
  * protocol dispatcher
  */
@@ -873,39 +873,34 @@ void
 CloseDownClient(client)
     ClientPtr   client;
 {
-    if (client->clientGone == CLIENT_ALIVE) {
+    int client_alive = client->clientGone == CLIENT_ALIVE;
+
+    if (client_alive) {
 	client->clientGone = CLIENT_GONE;
 	CloseDownConnection(client);
-	FreeClientResources(client);
-	if (ClientIsAsleep(client))
-	    ClientSignal(client);
-	if (client->index < nextFreeClientID)
-	    nextFreeClientID = client->index;
-	clients[client->index] = NullClient;
-	fsfree(client);
-	--nClients;
+    }
+    FreeClientResources(client);
+    if (ClientIsAsleep(client))
+	ClientSignal(client);
+    if (client->index < nextFreeClientID)
+	nextFreeClientID = client->index;
+    clients[client->index] = NullClient;
 
+    if (client_alive) {
+	--nClients;
 #ifdef NOTYET
 	/* reset server when last client goes away */
 	if (client->requestVector != InitialVector && nClients == 0)
 	    dispatchException |= DE_RESET;
 #endif
-    } else {
-	FreeClientResources(client);
-	if (ClientIsAsleep(client))
-	    ClientSignal(client);
-	if (client->index < nextFreeClientID)
-	    nextFreeClientID = client->index;
-	clients[client->index] = NullClient;
-	fsfree(client);
-    }
+    } 
+    if (currentClient == client)
+	currentClient = serverClient;
+    fsfree(client);
 
 #ifdef DEBUG
     fprintf(stderr, "Shut down client\n");
 #endif
-
-    if (currentClient == client)
-	currentClient = serverClient;
 
     while (!clients[currentMaxClients - 1])
 	currentMaxClients--;
