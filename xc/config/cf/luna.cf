@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: luna.cf,v 1.13 91/06/06 14:13:20 rws Exp $
+XCOMM platform:  $XConsortium: luna.cf,v 1.14 91/07/02 00:09:27 xguest Exp $
 /*
  *	Please set the values for OSMajorVerion and OSMinorVersion
  *	before making makefiles.	 
@@ -22,7 +22,6 @@ XCOMM platform:  $XConsortium: luna.cf,v 1.13 91/06/06 14:13:20 rws Exp $
 #endif
 XCOMM operating system:  OSName
 
-#define HasPutenv		NO
 #define HasBsearch		NO
 #define HasSaberC		NO
 #define HasVoidSignalReturn	NO
@@ -65,22 +64,17 @@ XCOMM operating system:  OSName
 #define HasNdbm			YES
 #ifdef HasGcc
 #define CcCmd                   gcc -fstrength-reduce
-#define OptimizedCDebugFlags    -O2 -traditional
-#define ServerCDebugFlags       -O2 -traditional
+#define OptimizedCDebugFlags    -O2 /* -traditional */
 #endif
 #endif
 
 #ifdef Mc68000Architecture
 #define UnalignedReferencesAllowed YES  /* if arbitrary deref is okay */
-#define BuildServer		YES		
-#define BuildXInputLib		NO
-#define BuildPex		NO		
+#define BuildPexExt		NO		
 #define XlunaServer 		YES
 #endif
 
 #ifdef Mc88000Architecture
-#define BuildServer		YES		
-#define BuildXInputLib		NO	
-#define BuildPex		NO
+#define BuildPexExt		NO
 #define XlunaServer 		YES
 #endif
