@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dixstruct.h,v 1.15 91/02/14 19:35:59 keith Exp $ */
+/* $XConsortium: dixstruct.h,v 1.16 92/03/13 15:39:45 rws Exp $ */
 
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
@@ -68,6 +68,8 @@ typedef struct _Client {
     int         numSaved;
     pointer     screenPrivate[MAXSCREENS];
     int         (**requestVector) ();
+    unsigned long req_len;		/* length of current request */
+    Bool	big_requests;		/* supports large requests */
 
 #ifdef DEBUG
     unsigned char requestLog[MAX_REQUEST_LOG];
