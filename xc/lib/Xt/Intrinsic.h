@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.148 91/01/09 20:11:10 gildea Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.149 91/01/11 16:58:54 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1958,8 +1958,10 @@ extern void XtGetConstraintResourceList(
 #define XtDefaultFont		"XtDefaultFont"
 
 #if defined(CRAY) || defined(__arm)
+#if __STDC__
+#define XtOffset(p_type,field) _Offsetof(p_type,field)
+#else
 #ifdef CRAY2
-
 #define XtOffset(p_type,field) \
 	(sizeof(int)*((unsigned int)&(((p_type)NULL)->field)))
 
@@ -1968,6 +1970,7 @@ extern void XtGetConstraintResourceList(
 #define XtOffset(p_type,field) ((unsigned int)&(((p_type)NULL)->field))
 
 #endif	/* !CRAY2 */
+#endif  /* __STDC__ */
 #else	/* ! (CRAY || __arm) */
 
 #define XtOffset(p_type,field) \
@@ -1975,11 +1978,11 @@ extern void XtGetConstraintResourceList(
 
 #endif /* !CRAY */
 
+#if __STDC__ && !defined(NOSTDHDRS)
+#include <stddef.h>
+#define XtOffsetOf(s_type,field) offsetof(s_type,field)
+#else
 #define XtOffsetOf(s_type,field) XtOffset(s_type*,field)
-
-#ifdef notdef
-/* this doesn't work on picky compilers */
-#define XtOffset(p_type,field)	((unsigned int)&(((p_type)NULL)->field))
 #endif
 
 /*************************************************************
