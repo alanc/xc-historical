@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.69 89/10/03 14:48:23 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.70 89/10/03 16:15:13 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -852,48 +852,43 @@ static void Realize(wid, vmask, attr)
 	ShellWidget w = (ShellWidget) wid;
         Mask mask = *vmask;
 
-	if (w->core.background_pixmap == XtUnspecifiedPixmap) {
+	if (! (w->shell.client_specified & _XtShellGeometryParsed)) {
+	    /* we'll get here only if there was no child the first
+	       time we were realized.  If the shell was Unrealized
+	       and then re-Realized, we probably don't want to
+	       re-evaluate the defaults anyway.
+	     */
+	    void GetGeometry();
+	    GetGeometry(wid, (Widget)NULL);
+	}
+	else if (w->core.background_pixmap == XtUnspecifiedPixmap) {
 	    /* I attempt to inherit my child's background to avoid screen flash
 	     * if there is latency between when I get resized and when my child
 	     * is resized.  Background=None is not satisfactory, as I want the
 	     * user to get immediate feedback on the new dimensions (most
 	     * particularly in the case of a non-reparenting wm).  It is
 	     * especially important to have the server clear any old cruft
-	     * from the display when I am resized larger */
-
-	    Boolean found_pixmap = False;
-	    if (w->composite.num_children > 0) {
-		Widget child;
-		int i;
-		for (i = 0; i < w->composite.num_children; i++) {
-		    child = w->composite.children[i];
-		    if (XtIsWidget(child) && XtIsManaged(child)) {
-			if (child->core.background_pixmap
+	     * from the display when I am resized larger.
+	     */
+	    register Widget *childP = w->composite.children;
+	    int i;
+	    for (i = w->composite.num_children; i; i--, childP++) {
+		if (XtIsWidget(*childP) && XtIsManaged(*childP)) {
+		    if ((*childP)->core.background_pixmap
 			    != XtUnspecifiedPixmap) {
-			    mask &= ~(CWBackPixel);
-			    mask |= CWBackPixmap;
+			mask &= ~(CWBackPixel);
+			mask |= CWBackPixmap;
+			attr->background_pixmap =
 			    w->core.background_pixmap =
-				attr->background_pixmap =
-				    child->core.background_pixmap;
-			    found_pixmap = True;
-			} else {
+				(*childP)->core.background_pixmap;
+		    } else {
+			attr->background_pixel = 
 			    w->core.background_pixel = 
-				child->core.background_pixel;
-			}
-			break;
+				(*childP)->core.background_pixel;
 		    }
+		    break;
 		}
 	    }
-	    if (!found_pixmap) {
-		mask |= CWBackPixel;
-		mask &= ~(CWBackPixmap);
-		attr->background_pixel = w->core.background_pixel;
-	    }
-	}
-	else {
-	    mask &= ~(CWBackPixel);
-	    mask |= CWBackPixmap;
-	    attr->background_pixmap = w->core.background_pixmap;
 	}
 
 	if(w->shell.save_under) {
@@ -1280,113 +1275,119 @@ static void ApplicationDestroy(wid)
 }
 
 /*
- * There is some real ugliness here.  If I have a width and a height which are
- * zero, and as such suspect, and I have not yet been realized then I will 
- * grow to match my child.
+ * If the Shell has a width and a height which are zero, and as such
+ * suspect, and it has not yet been realized then it will grow to
+ * match the child before parsing the geometry resource.
  *
  */
+static void GetGeometry(W, child)
+    Widget W, child;
+{
+    register ShellWidget w = (ShellWidget)W;
+    Boolean is_wmshell = XtIsWMShell(W);
+    int x, y, width, height, win_gravity = -1, flag;
+    struct _OldXSizeHints hints, *hintsP;
+
+    if (child != NULL) {
+	/* we default to our child's size */
+	if (is_wmshell && (w->core.width == 0 || w->core.height == 0))
+	    ((WMShellWidget)W)->wm.size_hints.flags |= PSize;
+	if (w->core.width == 0)	    w->core.width = child->core.width;
+	if (w->core.height == 0)    w->core.height = child->core.height;
+    }
+    if(w->shell.geometry != NULL) {
+	char def_geom[64];
+	x = w->core.x;
+	y = w->core.y;
+	width = w->core.width;
+	height = w->core.height;
+	if (is_wmshell) {
+	    EvaluateSizeHints((WMShellWidget)w);
+	    hintsP = &((WMShellWidget)w)->wm.size_hints;
+	    if (hintsP->flags & PBaseSize) {
+		width -= ((WMShellWidget)w)->wm.base_width;
+		height -= ((WMShellWidget)w)->wm.base_height;
+	    }
+	    else if (hintsP->flags & PMinSize) {
+		width -= hintsP->min_width;
+		height -= hintsP->min_height;
+	    }
+	    if (hintsP->flags & PResizeInc) {
+		width /= hintsP->width_inc;
+		height /= hintsP->height_inc;
+	    }
+	}
+	else {
+	    hintsP = &hints;
+	    hints.flags = 0;
+	}
+	sprintf( def_geom, "%dx%d+%d+%d", width, height, x, y );
+	flag = XWMGeometry( XtDisplay(W),
+			    XScreenNumberOfScreen(XtScreen(W)),
+			    w->shell.geometry, def_geom,
+			    (unsigned int)w->core.border_width,
+			    hintsP, &x, &y, &width, &height,
+			    &win_gravity
+			   );
+	if (flag) {
+	    if (flag & XValue) w->core.x = (Position)x;
+	    if (flag & YValue) w->core.y = (Position)y;
+	    if (flag & WidthValue) w->core.width = (Dimension)width;
+	    if (flag & HeightValue) w->core.height = (Dimension)height;
+	}
+	else {
+	    String params[2];
+	    Cardinal num_params = 2;
+	    params[0] = XtName(W);
+	    params[1] = w->shell.geometry;
+	    XtAppWarningMsg(XtWidgetToApplicationContext(W),
+       "badGeometry", "shellRealize", "XtToolkitError",
+       "Shell widget \"%s\" has an invalid geometry specification: \"%s\"",
+			    params, &num_params);
+	}
+    }
+    else
+	flag = 0;
+
+    if (is_wmshell) {
+	WMShellWidget wmshell = (WMShellWidget) w;
+	if (wmshell->wm.win_gravity == XtUnspecifiedShellInt) {
+	    if (win_gravity != -1)
+		wmshell->wm.win_gravity = win_gravity;
+	    else
+		wmshell->wm.win_gravity = NorthWestGravity;
+	}
+	wmshell->wm.size_hints.flags |= PWinGravity;
+	if ((flag & (XValue|YValue)) == (XValue|YValue))
+	    wmshell->wm.size_hints.flags |= USPosition;
+	if ((flag & (WidthValue|HeightValue)) == (WidthValue|HeightValue))
+	    wmshell->wm.size_hints.flags |= USSize;
+    }
+    w->shell.client_specified |= _XtShellGeometryParsed;
+}
+
+
 static void ChangeManaged(wid)
     Widget wid;
 {
-    register ShellWidget w = (ShellWidget) wid;
-    Widget childwid = NULL;
+    ShellWidget w = (ShellWidget) wid;
+    Widget child = NULL;
     int i;
 
     for (i = 0; i < w->composite.num_children; i++) {
 	if (XtIsManaged(w->composite.children[i])) {
-	    childwid = w->composite.children[i];
+	    child = w->composite.children[i];
 	    break;
 	}
     }
 
-    if (!XtIsRealized (wid)) {
-	Boolean is_wmshell = XtIsWMShell(wid);
-	int x, y, width, height, win_gravity = -1, flag;
-	struct _OldXSizeHints hints, *hintsP;
+    if (!XtIsRealized (wid))	/* then we're about to be realized... */
+	GetGeometry(wid, child);
 
-	if (childwid != NULL) {
-	    /* we default to our child's size */
-	    if (is_wmshell && (w->core.width == 0 || w->core.height == 0))
-		((WMShellWidget)wid)->wm.size_hints.flags |= PSize;
-	    if (w->core.width == 0)
-		w->core.width = childwid->core.width;
-	    if (w->core.height == 0)
-		w->core.height = childwid->core.height;
-	}
-	if(w->shell.geometry != NULL) {
-	    char def_geom[64];
-	    x = w->core.x;
-	    y = w->core.y;
-	    width = w->core.width;
-	    height = w->core.height;
-	    if (is_wmshell) {
-		EvaluateSizeHints((WMShellWidget)w);
-		hintsP = &((WMShellWidget)w)->wm.size_hints;
-		if (hintsP->flags & PBaseSize) {
-		    width -= ((WMShellWidget)w)->wm.base_width;
-		    height -= ((WMShellWidget)w)->wm.base_height;
-		}
-		else if (hintsP->flags & PMinSize) {
-		    width -= hintsP->min_width;
-		    height -= hintsP->min_height;
-		}
-		if (hintsP->flags & PResizeInc) {
-		    width /= hintsP->width_inc;
-		    height /= hintsP->height_inc;
-		}
-	    }
-	    else {
-		hintsP = &hints;
-		hints.flags = 0;
-	    }
-	    sprintf( def_geom, "%dx%d+%d+%d", width, height, x, y );
-	    flag = XWMGeometry( XtDisplay(wid),
-			        XScreenNumberOfScreen(XtScreen(wid)),
-			        w->shell.geometry, def_geom,
-			        (unsigned int)w->core.border_width,
-			        hintsP, &x, &y, &width, &height,
-			        &win_gravity
-			       );
-	    if (flag) {
-		if (flag & XValue) w->core.x = (Position)x;
-		if (flag & YValue) w->core.y = (Position)y;
-		if (flag & WidthValue) w->core.width = (Dimension)width;
-		if (flag & HeightValue) w->core.height = (Dimension)height;
-	    }
-	    else {
-		String params[2];
-		Cardinal num_params = 2;
-		params[0] = XtName(wid);
-		params[1] = w->shell.geometry;
-		XtAppWarningMsg(XtWidgetToApplicationContext(wid),
-	   "badGeometry", "shellRealize", "XtToolkitError",
-	   "Shell widget \"%s\" has an invalid geometry specification: \"%s\"",
-				params, &num_params);
-	    }
-	}
-	else
-	    flag = 0;
-
-	if (is_wmshell) {
-	    WMShellWidget wmshell = (WMShellWidget) w;
-	    if (wmshell->wm.win_gravity == XtUnspecifiedShellInt) {
-		if (win_gravity != -1)
-		    wmshell->wm.win_gravity = win_gravity;
-		else
-		    wmshell->wm.win_gravity = NorthWestGravity;
-	    }
-	    wmshell->wm.size_hints.flags |= PWinGravity;
-	    if ((flag & (XValue|YValue)) == (XValue|YValue))
-		wmshell->wm.size_hints.flags |= USPosition;
-	    if ((flag & (WidthValue|HeightValue)) == (WidthValue|HeightValue))
-		wmshell->wm.size_hints.flags |= USSize;
-	}
-    }
-
-    if (childwid != NULL) {
-	XtConfigureWidget (childwid, (Position)0, (Position)0,
+    if (child != NULL) {
+	XtConfigureWidget (child, (Position)0, (Position)0,
 			   w->core.width, w->core.height, (Dimension)0 );
-	XtSetKeyboardFocus(wid, childwid);
+	XtSetKeyboardFocus(wid, child);
     }
 }
 
@@ -1570,19 +1571,25 @@ static XtGeometryResult RootGeometryManager(w, request, reply)
 
     if (mask & CWX) {
 	    if (w->core.x == request->x) mask &= ~CWX;
-	    else if (wm) {
+	    else {
+		w->core.x = values.x = request->x;
+		if (wm) {
 		    hintp->flags &= ~USPosition;
 		    hintp->flags |= PPosition;
-		    w->core.x = hintp->x = values.x = request->x;
-	    } else w->core.x = values.x = request->x;
+		    hintp->x = values.x;
+		}
+	    }
     }
     if (mask & CWY) {
 	    if (w->core.y == request->y) mask &= ~CWY;
-	    else if (wm) {
+	    else {
+		w->core.y = values.y = request->y;
+		if (wm) {
 		    hintp->flags &= ~USPosition;
 		    hintp->flags |= PPosition;
-		    w->core.y = hintp->y = values.y = request->y;
-	    } else w->core.y = values.y = request->y;
+		    hintp->y = values.y;
+		}
+	    }
     }
     if (mask & CWBorderWidth) {
 	    if (w->core.border_width == request->border_width) {
@@ -1593,20 +1600,26 @@ static XtGeometryResult RootGeometryManager(w, request, reply)
     if (mask & CWWidth) {
 	    values.width = request->width;
 	    if (w->core.width == values.width) mask &= ~CWWidth;
-	    else if (wm) {
+	    else {
+		w->core.width = values.width;
+		if (wm) {
 		    hintp->flags &= ~USSize;
 		    hintp->flags |= PSize;
 		    hintp->width = values.width;
-	    } else w->core.width = values.width;
+		}
+	    }
     } else values.width = w->core.width; /* for _wait_for_response */
     if (mask & CWHeight) {
 	    values.height = request->height;
 	    if (w->core.height == values.height) mask &= ~CWHeight;
-	    else if (wm) {
+	    else {
+		w->core.height = values.height;
+		if (wm) {
 		    hintp->flags &= ~USSize;
 		    hintp->flags |= PSize;
 		    hintp->height = values.height;
-	    } else w->core.height = values.height;
+		}
+	    }
     } else values.height = w->core.height; /* for _wait_for_response */
     if (mask & CWStackMode) {
 	values.stack_mode = request->stack_mode;
@@ -1614,7 +1627,7 @@ static XtGeometryResult RootGeometryManager(w, request, reply)
 	    values.sibling = XtWindow(request->sibling);
     }
 
-    if (!XtIsRealized(w)) return XtGeometryDone;
+    if (!XtIsRealized(w)) return XtGeometryYes;
 
     if (wm && !wmshell->shell.override_redirect
 	&& mask & (CWX | CWY | CWWidth | CWHeight | CWBorderWidth)) {
