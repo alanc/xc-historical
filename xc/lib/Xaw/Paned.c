@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Paned.c,v 1.13 90/03/01 10:48:51 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Paned.c,v 1.14 90/04/17 19:13:50 swick Exp $";
 #endif /* lint */
 
 
@@ -1802,9 +1802,13 @@ Widget old, request, new;
  */
 
 void 
+#if NeedFunctionPrototypes
+XawPanedSetMinMax(Widget widget, int min, int max)
+#else
 XawPanedSetMinMax(widget, min, max)
 Widget widget;
 int min, max;
+#endif
 {
     Pane pane = PaneInfo(widget);
 
@@ -1821,9 +1825,13 @@ int min, max;
  */
 
 void 
+#if NeedFunctionPrototypes
+XawPanedGetMinMax(Widget widget, int *min, int *max)
+#else
 XawPanedGetMinMax(widget, min, max)
 Widget widget;
 int    *min, *max;
+#endif
 {
     Pane pane = PaneInfo(widget);
 
@@ -1840,9 +1848,13 @@ int    *min, *max;
  */
 
 void 
+#if NeedFunctionPrototypes
+XawPanedSetRefigureMode(Widget w, Boolean mode)
+#else
 XawPanedSetRefigureMode(w, mode)
 Widget w;
 Boolean mode;
+#endif
 {
     ((PanedWidget) w)->paned.refiguremode = mode;
     RefigureLocationsAndCommit( w );
@@ -1855,8 +1867,12 @@ Boolean mode;
  */
 
 int 
+#if NeedFunctionPrototypes
+XawPanedGetNumSub(Widget w)
+#else
 XawPanedGetNumSub(w)
 Widget w;
+#endif
 {
     return ((PanedWidget)w)->paned.num_panes;
 }
@@ -1869,9 +1885,13 @@ Widget w;
  */
 
 void 
+#if NeedFunctionPrototypes
+XawPanedAllowResize(Widget widget, Boolean allow_resize)
+#else
 XawPanedAllowResize(widget, allow_resize)
 Widget widget;
 Boolean allow_resize;
+#endif
 {
     PaneInfo(widget)->allow_resize = allow_resize;
 }

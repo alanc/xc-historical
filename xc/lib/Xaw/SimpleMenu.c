@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.32 89/12/11 15:01:50 kit Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.33 90/04/26 17:35:35 converse Exp $";
 #endif 
 
 /*
@@ -755,8 +755,12 @@ Cardinal * num_params;
  */
 
 void
+#if NeedFunctionPrototypes
+XawSimpleMenuAddGlobalActions(XtAppContext app_con)
+#else
 XawSimpleMenuAddGlobalActions(app_con)
 XtAppContext app_con;
+#endif
 {
     XtInitializeWidgetClass(simpleMenuWidgetClass);
     XmuCallInitializers( app_con );
@@ -770,8 +774,12 @@ XtAppContext app_con;
  */
 
 Widget
+#if NeedFunctionPrototypes
+XawSimpleMenuGetActiveEntry(Widget w)
+#else
 XawSimpleMenuGetActiveEntry(w)
 Widget w;
+#endif
 {
     SimpleMenuWidget smw = (SimpleMenuWidget) w;
 
@@ -785,8 +793,12 @@ Widget w;
  */
 
 void
+#if NeedFunctionPrototypes
+XawSimpleMenuClearActiveEntry(Widget w)
+#else
 XawSimpleMenuClearActiveEntry(w)
 Widget w;
+#endif
 {
     SimpleMenuWidget smw = (SimpleMenuWidget) w;
 

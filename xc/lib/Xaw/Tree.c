@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.34 90/04/13 17:16:46 jim Exp $
+ * $XConsortium: Tree.c,v 1.35 90/04/13 17:38:52 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -953,8 +953,13 @@ static void layout_tree (tw, insetvalues)
  *                                                                           *
  *****************************************************************************/
 
-void XawTreeForceLayout (tree)
+void
+#if NeedFunctionPrototypes
+XawTreeForceLayout (Widget tree)
+#else
+XawTreeForceLayout (tree)
     Widget tree;
+#endif
 {
     layout_tree ((TreeWidget) tree, FALSE);
 }

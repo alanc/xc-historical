@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.58 90/03/01 15:54:35 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.59 90/03/01 15:59:38 kit Exp $";
 #endif /* lint */
 
 
@@ -913,9 +913,14 @@ static XtGeometryResult PreferredGeometry(w, constraints, reply)
 }
 
 
-void XawViewportSetLocation (gw, xoff, yoff)
+void
+#if NeedFunctionPrototypes
+XawViewportSetLocation (Widget gw, float xoff, float yoff)
+#else
+XawViewportSetLocation (gw, xoff, yoff)
     Widget gw;
     float  xoff,yoff;
+#endif
 {
     ViewportWidget w = (ViewportWidget) gw;
     register Widget child = w->viewport.child;
@@ -938,9 +943,14 @@ void XawViewportSetLocation (gw, xoff, yoff)
     MoveChild (w, -x, -y);
 }
 
-void XawViewportSetCoordinates (gw, x, y)
+void
+#if NeedFunctionPrototypes
+XawViewportSetCoordinates (Widget gw, Position x, Position y)
+#else
+XawViewportSetCoordinates (gw, x, y)
     Widget gw;
     Position x, y;
+#endif
 {
     ViewportWidget w = (ViewportWidget) gw;
     Widget child = w->viewport.child;

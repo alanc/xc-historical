@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Toggle.h,v 1.7 89/12/11 15:23:02 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -117,8 +117,12 @@ typedef struct _ToggleRec        *ToggleWidget;
  *	Returns: none.
  */
 
-void XawToggleChangeRadioGroup(/* w, radio_group */);
-/* Widget w, radio_group; */
+extern void XawToggleChangeRadioGroup(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    Widget		/* radio_group */
+#endif
+);
 
 /*	Function Name: XawToggleGetCurrent
  *	Description: Returns the RadioData associated with the toggle
@@ -127,8 +131,11 @@ void XawToggleChangeRadioGroup(/* w, radio_group */);
  *	Returns: The XtNradioData associated with the toggle widget.
  */
 
-caddr_t XawToggleGetCurrent(/* radio_group */);
-/* Widget radio_group; */
+extern caddr_t XawToggleGetCurrent(
+#if NeedFunctionPrototypes
+    Widget		/* radio_group */
+#endif
+);
 
 /*	Function Name: XawToggleSetCurrent
  *	Description: Sets the Toggle widget associated with the
@@ -138,10 +145,12 @@ caddr_t XawToggleGetCurrent(/* radio_group */);
  *	Returns: none.
  */
 
-void XawToggleSetCurrent(/* radio_group, radio_data */);
-/* Widget radio_group;
- * caddr_t radio_data;
- */
+extern void XawToggleSetCurrent(
+#if NeedFunctionPrototypes
+    Widget		/* radio_group */,
+    caddr_t		/* radio_data */
+#endif
+);
  
 /*	Function Name: XawToggleUnsetCurrent
  *	Description: Unsets all Toggles in the radio_group specified.
@@ -149,8 +158,11 @@ void XawToggleSetCurrent(/* radio_group, radio_data */);
  *	Returns: none.
  */
 
-void XawToggleUnsetCurrent( /* radio_group */);
-/* Widget radio_group; */
+extern void XawToggleUnsetCurrent(
+#if NeedFunctionPrototypes
+    Widget		/* radio_group */
+#endif
+);
 
 #ifdef XAW_BC
 /*************************************************************

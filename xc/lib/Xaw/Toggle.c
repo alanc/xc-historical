@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.15 89/12/11 15:22:59 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.16 90/04/26 17:36:04 converse Exp $";
 #endif /* lint */
 
 /*
@@ -473,8 +473,12 @@ Widget w;
  */
 
 void
+#if NeedFunctionPrototypes
+XawToggleChangeRadioGroup(Widget w, Widget radio_group)
+#else
 XawToggleChangeRadioGroup(w, radio_group)
 Widget w, radio_group;
+#endif
 {
   ToggleWidget tw = (ToggleWidget) w;
 
@@ -498,8 +502,12 @@ Widget w, radio_group;
  */
 
 caddr_t
+#if NeedFunctionPrototypes
+XawToggleGetCurrent(Widget w)
+#else
 XawToggleGetCurrent(w)
 Widget w;
+#endif
 {
   RadioGroup * group;
 
@@ -524,9 +532,13 @@ Widget w;
  */
 
 void
+#if NeedFunctionPrototypes
+XawToggleSetCurrent(Widget radio_group, caddr_t radio_data)
+#else
 XawToggleSetCurrent(radio_group, radio_data)
 Widget radio_group;
 caddr_t radio_data;
+#endif
 {
   RadioGroup * group;
   ToggleWidget local_tog; 
@@ -573,8 +585,12 @@ caddr_t radio_data;
  */
 
 void
+#if NeedFunctionPrototypes
+XawToggleUnsetCurrent(Widget radio_group)
+#else
 XawToggleUnsetCurrent(radio_group)
 Widget radio_group;
+#endif
 {
   ToggleWidgetClass class;
   ToggleWidget local_tog = (ToggleWidget) radio_group;

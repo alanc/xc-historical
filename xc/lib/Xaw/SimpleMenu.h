@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: SimpleMenu.h,v 1.17 89/12/11 15:01:55 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -111,11 +111,11 @@ extern WidgetClass simpleMenuWidgetClass;
  *	Returns: none.
  */
 
-void 
-XawSimpleMenuAddGlobalActions(/* app_con */);
-/*
-XtAppContext app_con;
-*/
+extern void XawSimpleMenuAddGlobalActions(
+#if NeedFunctionPrototypes
+    XtAppContext	/* app_con */
+#endif
+);
  
 /*	Function Name: XawSimpleMenuGetActiveEntry
  *	Description: Gets the currently active (set) entry.
@@ -123,11 +123,11 @@ XtAppContext app_con;
  *	Returns: the currently set entry or NULL if none is set.
  */
 
-Widget
-XawSimpleMenuGetActiveEntry( /* w */);
-/*
-Widget w;
-*/
+extern Widget XawSimpleMenuGetActiveEntry(
+#if NeedFunctionPrototypes
+    Widget		/* w */
+#endif
+);
 
 /*	Function Name: XawSimpleMenuClearActiveEntry
  *	Description: Unsets the currently active (set) entry.
@@ -135,10 +135,10 @@ Widget w;
  *	Returns: none.
  */
 
-void
-XawSimpleMenuClearActiveEntry(/* w */);
-/*
-Widget w;
-*/
+extern void XawSimpleMenuClearActiveEntry(
+#if NeedFunctionPrototypes
+    Widget		/* w */
+#endif
+);
 
 #endif /* _SimpleMenu_h */

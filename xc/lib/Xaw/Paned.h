@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Paned.h,v 1.8 89/10/04 19:35:43 kit Exp $
+* $XConsortium: Paned.h,v 1.9 90/04/20 17:08:17 kit Exp $
 */
 
 
@@ -158,9 +158,13 @@ typedef struct _PanedRec	*PanedWidget;
  *	Returns: none.
  */
 
-extern void XawPanedSetMinMax();		/* widget, min, max */
-    /* Widget widget; */
-    /* int min, max; */
+extern void XawPanedSetMinMax(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    int			/* min */,
+    int			/* max */
+#endif
+);
 
 /*	Function Name: XawPanedGetMinMax
  *	Description: Gets the min and max size for a pane.
@@ -169,9 +173,13 @@ extern void XawPanedSetMinMax();		/* widget, min, max */
  *	Returns: none.
  */
 
-extern void XawPanedGetMinMax(); /* widget, min, max */
-    /* Widget widget; */
-    /* int    *min, *max; */
+extern void XawPanedGetMinMax(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    int *		/* min_return */,
+    int *		/* max_return */
+#endif
+);
 
 /*	Function Name: XawPanedSetRefigureMode
  *	Description: Allows a flag to be set the will inhibit 
@@ -181,9 +189,12 @@ extern void XawPanedGetMinMax(); /* widget, min, max */
  *	Returns: none.
  */
 
-extern void XawPanedSetRefigureMode();	/* w, mode */
-    /* Widget w; */
-    /* Boolean mode; */
+extern void XawPanedSetRefigureMode(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    Boolean		/* mode */
+#endif
+);
 
 /*	Function Name: XawPanedGetNumSub
  *	Description: Returns the number of panes in the paned widget.
@@ -191,8 +202,11 @@ extern void XawPanedSetRefigureMode();	/* w, mode */
  *	Returns: the number of panes in the paned widget.
  */
 
-extern int XawPanedGetNumSub();		/* w */
-    /* Widget w; */
+extern int XawPanedGetNumSub(
+#if NeedFunctionPrototypes
+    Widget		/* w */
+#endif
+);
 
 /*	Function Name: XawPanedAllowResize
  *	Description: Allows a flag to be set that determines if the paned
@@ -201,9 +215,12 @@ extern int XawPanedGetNumSub();		/* w */
  *	Returns: none.
  */
 
-extern void XawPanedAllowResize();  /* widget, allow_resize */
-    /* Widget widget; */
-    /* Boolean allow_resize; */
+extern void XawPanedAllowResize(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    Boolean		/* allow_resize */
+#endif
+);
 
 #ifdef XAW_BC
 /*************************************************************
