@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$xHeader: TMstate.c,v 1.49 88/08/31 10:26:27 swick Exp $";
+static char rcsid[] = "$xHeader: TMstate.c,v 1.50 88/08/31 11:44:32 swick Exp $";
 /* $oHeader: TMstate.c,v 1.3 88/08/29 14:58:11 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -788,12 +788,17 @@ static EventMask masks[] = {
         Modifiers modifierMask = event->event.modifierMask;
         EventMask returnMask = 0;
         Modifiers tempMask;
+
+#define AllButtonsMask \
+	(Button1Mask | Button2Mask | Button3Mask | Button4Mask | Button5Mask)
+
         if (modifierMask == 0)
-             return (PointerMotionMask | ButtonMotionMask);
-        tempMask = modifierMask & ( Button1Mask | Button2Mask |
-            Button3Mask | Button4Mask | Button5Mask);
+             return PointerMotionMask;
+        tempMask = modifierMask & AllButtonsMask;
         if (tempMask == 0)
             return PointerMotionMask;
+	if (tempMask == AllButtonsMask)
+	    return ButtonMotionMask;
         if ((tempMask & Button1Mask)!=0)
             returnMask |= Button1MotionMask;
         if ((tempMask & Button2Mask) != 0)
@@ -806,6 +811,7 @@ static EventMask masks[] = {
             returnMask |= Button5MotionMask;
         return returnMask;
     }
+#undef AllButtonsMask
     return ((eventType >= XtNumber(masks)) ?  0 : masks[eventType]);
 }
 /*** Public procedures ***/
