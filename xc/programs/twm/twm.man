@@ -14,9 +14,7 @@
 .ta .3i .6i .9i 1.2i 1.5i 1.8i
 .TH TWM 1 "Release 4" "X Version 11"
 .SH NAME
-.PP
 twm - Tab Window Manager for the X Window System
-.PP
 .SH SYNTAX
 .PP
 \fBtwm \fP[-display \fIdpy\fP] [-s] [-f \fIinitfile\fP] [-v]
@@ -1140,9 +1138,6 @@ arranged as described by the \fBIconRegion\fP variable.  In addition, a
 terse grid of icon names, called an icon manager, provides a more efficient
 use of screen space as well as the ability to navigate among windows from
 the keyboard.
-.PP
-Neither client-supplied icon windows nor dynamic setting of the
-icon pixmap are supported (icon name changes will be updated automatically).
 .PP
 An icon manager is a window that contains names of selected or all
 windows currently on the display.  In addition to the window name,
