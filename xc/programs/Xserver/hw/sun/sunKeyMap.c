@@ -350,7 +350,7 @@ static KeySym Sun4Map[] = {
         XK_F7,          NoSymbol,               /* 0x10 */
         XK_F8,          NoSymbol,               /* 0x11 */
         XK_F9,          NoSymbol,               /* 0x12 */
-        XK_Break,       NoSymbol,               /* 0x13 */
+	XK_Alt_L,	NoSymbol,		/* 0x13 */
         NoSymbol,       NoSymbol,               /* 0x14 */
         XK_R1,          XK_Pause,               /* 0x15 */
         XK_R2,          NoSymbol,               /* 0x16 */
@@ -381,7 +381,7 @@ static KeySym Sun4Map[] = {
         XK_R6,          XK_KP_Multiply,		/* 0x2f */
         NoSymbol,       NoSymbol,               /* 0x30 */
         XK_L5,          NoSymbol,               /* 0x31 */
-        NoSymbol,       XK_KP_Decimal,          /* 0x32 */
+        XK_Delete,      XK_KP_Decimal,          /* 0x32 */
         XK_L6,          NoSymbol,               /* 0x33 */
         NoSymbol,       NoSymbol,               /* 0x34 */
         XK_Tab,         NoSymbol,               /* 0x35 */
@@ -396,13 +396,13 @@ static KeySym Sun4Map[] = {
         XK_O,           NoSymbol,               /* 0x3e */
         XK_P,           NoSymbol,               /* 0x3f */
         XK_bracketleft, XK_braceleft,           /* 0x40 */
-        XK_bracketright,        XK_braceright,  /* 0x41 */
+        XK_bracketright,XK_braceright,          /* 0x41 */
         XK_Delete,      NoSymbol,               /* 0x42 */
-        NoSymbol,       NoSymbol,               /* 0x43 */
+        XK_Multi_key,   NoSymbol,               /* 0x43 */
         XK_R7,          XK_KP_7,                /* 0x44 */
         XK_Up,          XK_KP_8,                /* 0x45 */
         XK_R9,          XK_KP_9,                /* 0x46 */
-        NoSymbol,       XK_KP_Subtract,         /* 0x47 */
+        XK_KP_Subtract, XK_KP_Subtract,         /* 0x47 */
         XK_L7,          NoSymbol,               /* 0x48 */
         XK_L8,          NoSymbol,               /* 0x49 */
         NoSymbol,       NoSymbol,               /* 0x4a */
@@ -421,15 +421,15 @@ static KeySym Sun4Map[] = {
         XK_quoteright,  XK_quotedbl,            /* 0x57 */
         XK_backslash,   XK_bar,                 /* 0x58 */
         XK_Return,      NoSymbol,               /* 0x59 */
-        NoSymbol,       XK_KP_Enter,            /* 0x5a */
+        XK_KP_Enter,    XK_KP_Enter,            /* 0x5a */
         XK_Left,        XK_KP_4,                /* 0x5b */
         XK_R11,         XK_KP_5,                /* 0x5c */
         XK_Right,       XK_KP_6,                /* 0x5d */
-        NoSymbol,       XK_KP_0,                /* 0x5e */
+        XK_Insert,       XK_KP_0,                /* 0x5e */
         XK_L9,          NoSymbol,               /* 0x5f */
         NoSymbol,       NoSymbol,               /* 0x60 */
         XK_L10,         NoSymbol,               /* 0x61 */
-        NoSymbol,       XK_Num_Lock,            /* 0x62 */
+        XK_Num_Lock,    XK_Num_Lock,            /* 0x62 */
         XK_Shift_L,     NoSymbol,               /* 0x63 */
         XK_Z,           NoSymbol,               /* 0x64 */
         XK_X,           NoSymbol,               /* 0x65 */
@@ -456,7 +456,7 @@ static KeySym Sun4Map[] = {
         XK_Meta_R,      NoSymbol,               /* 0x7a */
         NoSymbol,       NoSymbol,               /* 0x7b */
         NoSymbol,       NoSymbol,               /* 0x7c */
-        NoSymbol,       XK_KP_Add,              /* 0x7d */
+        XK_KP_Add,      XK_KP_Add,              /* 0x7d */
         NoSymbol,       NoSymbol,               /* 0x7e */
         NoSymbol,       NoSymbol,               /* 0x7f */
 };
