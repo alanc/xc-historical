@@ -22,7 +22,7 @@ typedef struct _Parms {
     int  objects;       /* required of all  */
     int  special;
     char *font, *bfont;
-    int  stipple;       /* Do stipple?      */
+    int  fillStyle;     /* Solid, transparent stipple, or opqaque stipple? */
 } ParmRec, *Parms;
 
 typedef struct _Test {
