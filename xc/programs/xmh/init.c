@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: init.c,v 2.14 88/02/21 13:19:33 swick Exp $";
+static char rcs_id[] = "$Header: init.c,v 2.15 88/02/23 20:05:21 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -92,7 +92,7 @@ static XrmOptionDescRec table[] = {
     {"-debug",	"debug",		XrmoptionNoArg,	"on"},
     {"-flag",	"mailwaitingflag",	XrmoptionNoArg, "on"},
     {"-initial","initialfolder",	XrmoptionSepArg, NULL},
-    {"-path",	"mailPath",		XrmoptionSepArg, NULL},
+    {"-path",	"mailpath",		XrmoptionSepArg, NULL},
 };
 
 /* Tell the user how to use this program. */
