@@ -1,4 +1,4 @@
-/* $XConsortium: restart.c,v 1.13 94/07/26 14:23:42 mor Exp $ */
+/* $XConsortium: restart.c,v 1.14 94/07/27 16:01:01 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -522,6 +522,9 @@ StartDefaultApps ()
 
     while (getline(&buf, &buflen, f))
     {
+	if (buf[0] == '!')
+	    continue;		/* a comment */
+
 	if (p = strchr (buf, '\n'))
 	    *p = '\0';
 
