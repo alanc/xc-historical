@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.66 88/10/03 17:13:05 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.68 88/10/04 16:09:12 swick Exp $";
 #endif
 
 
@@ -199,7 +199,7 @@ static void Initialize(request, new)
     ctx->text.s.left = ctx->text.s.right = 0;
     ctx->text.s.type = XtselectPosition;
     ctx->text.s.selections = NULL;
-    ctx->text.s.array_size = 0;
+    ctx->text.s.atom_count = ctx->text.s.array_size = 0;
     ctx->text.sbar = ctx->text.outer = NULL;
     ctx->text.lasttime = 0; /* ||| correct? */
     ctx->text.time = 0; /* ||| correct? */
@@ -708,8 +708,6 @@ static Boolean ConvertSelection(w, selection, target,
     Display* d = XtDisplay(w);
     TextWidget ctx = (TextWidget)w;
 
-    if (*selection != XA_PRIMARY) return False;
-
     if (*target == XA_TARGETS(d)) {
 	Atom* targetP;
 	Atom* std_targets;
@@ -783,7 +781,7 @@ static Boolean ConvertSelection(w, selection, target,
     }
     if (*target == XA_CHARACTER_POSITION(d)) {
 	*value = XtMalloc(8);
-	(*(long**)value)[0] = ctx->text.s.left;
+	(*(long**)value)[0] = ctx->text.s.left + 1;
 	(*(long**)value)[1] = ctx->text.s.right;
 	*type = XA_SPAN(d);
 	*length = 2;
@@ -1335,35 +1333,14 @@ static Atom* _SelectionList(ctx, params, num_params)
     /* converts (params, num_params) to a list of atoms & caches the
      * list in the TextWidget instance.
      */
-    Display *d = XtDisplay((Widget)ctx);
-    static AtomPtr* atoms;
-    static Cardinal atom_count = 0, last = 0;
-    int i;
 
     if (num_params > ctx->text.s.array_size) {
 	ctx->text.s.selections =
 	    (Atom*)XtRealloc(ctx->text.s.selections, num_params*sizeof(Atom));
 	ctx->text.s.array_size = num_params;
     }
-    if (num_params > atom_count) {
-	atom_count = num_params;
-	atoms = (AtomPtr*)XtRealloc(atoms, atom_count*sizeof(AtomPtr));
-    }
-    for (i = 0; i < num_params; i++) {
-	register int p;
-	for (p = 0; p < last; p++) {
-	    if (strcmp(params[i], XmuNameOfAtom(atoms[p])) == 0) {
-		break;
-	    }
-	}
-	if (p == last) {
-	    if (last == atom_count) {
-		atoms = (AtomPtr*)XtRealloc(atoms, (++atom_count)*sizeof(AtomPtr));
-	    }
-	    atoms[last++] = XmuMakeAtom(params[i]);
-	}
-	ctx->text.s.selections[i] = XmuInternAtom(d, &atoms[p]);
-    }
+    XmuInternStrings( XtDisplay((Widget)ctx), params, num_params,
+		      ctx->text.s.selections );
     ctx->text.s.atom_count = num_params;
     return ctx->text.s.selections;
 }
@@ -1900,8 +1877,9 @@ void XtTextSetSelection (w, left, right)
 
 	_XtTextPrepareToUpdate(ctx);
         if (left == right)
-	    XtDisownSelection(w, XA_PRIMARY);
-        _XtTextSetNewSelection(ctx, left, right, &selection, ONE);
+	    XtTextUnsetSelection(w);
+	else
+	    _XtTextSetNewSelection(ctx, left, right, &selection, ONE);
 	_XtTextExecuteUpdate(ctx);
 }
 
@@ -2531,50 +2509,6 @@ static void InsertNewLineAndIndent(ctx, event)
    EndAction(ctx);
 }
 
-static void NewSelection(ctx, l, r, params, num_params)
-  TextWidget ctx;
-  XtTextPosition l, r;
-  String *params;
-  Cardinal *num_params;
-{
-    Display *d = XtDisplay((Widget)ctx);
-    char   *ptr;
-    static Atom* selections;
-    static AtomPtr* atoms;
-    static Cardinal selection_count = 0;
-    static Cardinal atom_count = 0, last = 0;
-    int i;
-
-    if (*num_params > selection_count) {
-	selection_count = *num_params;
-	selections = (Atom*)XtRealloc(selections, selection_count*sizeof(Atom));
-    }
-    if (*num_params > atom_count) {
-	atom_count = *num_params;
-	atoms = (AtomPtr*)XtRealloc(atoms, atom_count*sizeof(AtomPtr));
-    }
-    for (i = 0; i < *num_params; i++) {
-	register int p;
-	for (p = 0; p < last; p++) {
-	    if (strcmp(params[i], XmuNameOfAtom(atoms[p])) == 0) {
-		break;
-	    }
-	}
-	if (p == last) {
-	    if (last == atom_count) {
-		atoms = (AtomPtr*)XtRealloc(atoms, (++atom_count)*sizeof(AtomPtr));
-	    }
-	    atoms[last++] = XmuMakeAtom(params[i]);
-	}
-	selections[i] = XmuInternAtom(d, atoms[p]);
-    }
-
-    _XtTextSetNewSelection(
-	   ctx, l, r,
-	   _SelectionList(ctx, params, *num_params),
-	   *num_params );
-}
-
 static void SelectWord(ctx, event, params, num_params)
   TextWidget ctx;
    XEvent *event;
@@ -2587,7 +2521,9 @@ static void SelectWord(ctx, event, params, num_params)
     	XtstWhiteSpace, XtsdLeft, 1, FALSE);
     r = (*ctx->text.source->Scan)(ctx->text.source, l, XtstWhiteSpace, 
     	XtsdRight, 1, FALSE);
-    NewSelection(ctx, l, r, params, num_params);
+    _XtTextSetNewSelection(ctx, l, r,
+			   _SelectionList(ctx, params, *num_params),
+			   *num_params);
    EndAction(ctx);
 }
 
@@ -2599,7 +2535,9 @@ static void SelectAll(ctx, event, params, num_params)
    Cardinal *num_params;
 {
    StartAction(ctx, event);
-   NewSelection(ctx, (XtTextPosition)0, ctx->text.lastPos, params, num_params);
+   _XtTextSetNewSelection(ctx, (XtTextPosition)0, ctx->text.lastPos,
+			  _SelectionList(ctx, params, *num_params),
+			  *num_params);
    EndAction(ctx);
 }
 
