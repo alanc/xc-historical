@@ -2,7 +2,7 @@
  * fsinfo -- report info about a font server
  */
 
-/* $XConsortium: fsinfo.c,v 1.4 94/04/12 21:58:46 dpw Exp $ */
+/* $XConsortium: fsinfo.c,v 1.5 94/04/17 20:24:18 dpw Exp mor $ */
 /*
 
 Portions Copyright (c) 1987  X Consortium
@@ -84,6 +84,7 @@ main(argc, argv)
     FSServer   *svr;
     char       *servername = NULL;
     int         i;
+    char	*sp;
 
     progname = argv[0];
 
@@ -100,8 +101,9 @@ main(argc, argv)
     svr = FSOpenServer(servername);
 
     if (!svr) {
+	sp = FSServerName(servername);
 	fprintf(stderr, "%s:  unable to open server \"%s\"\n",
-		progname, FSServerName(servername));
+		progname, sp ? sp : "NULL");
 	exit(1);
     }
     print_server_info(svr);
