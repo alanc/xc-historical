@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.14 89/03/09 14:24:16 converse Exp $
+ * $XConsortium: Xmu.h,v 1.15 89/03/24 16:34:00 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -93,6 +93,10 @@ int XmuReadBitmapData(), XmuReadBitmapDataFromFile();
 int XmuPrintDefaultErrorMessage();
 Status XmuStandardColormap( /* Display*, int, Visual*, ... */);
 Status XmuVisualStandardColormaps( /* Display*, int, Visual*, int */);
+caddr_t XmuAddCloseDisplayHook (/* Display *, int (*)(), caddr_t */);
+Bool XmuRemoveCloseDisplayHook (/* Display *, caddr_t, int (*)(), caddr_t */);
+Bool XmuLookupCloseDisplayHook (/* Display *, caddr_t, int (*)(), caddr_t */);
+
 
 #ifndef _Atoms_c_
 #define XA_ATOM_PAIR(d)		XmuInternAtom(d, _XA_ATOM_PAIR)
