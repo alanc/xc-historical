@@ -77,21 +77,11 @@ macIIBW2SaveScreen (pScreen, on)
     Bool    	  on;
 {
     int         state = on;
-    switch (on) {
-    case SCREEN_SAVER_FORCER:
-	SetTimeSinceLastInputEvent();
-	screenSaved = FALSE;
+    if (on != SCREEN_SAVER_ON) {
+      SetTimeSinceLastInputEvent();
 /*	state = FBVIDEO_ON; */
-	break;
-    case SCREEN_SAVER_OFF:
-	screenSaved = FALSE;
-/*	state = FBVIDEO_ON; */
-	break;
-    case SCREEN_SAVER_ON:
-    default:
-	screenSaved = TRUE;
+    } else {
 /*	state = FBVIDEO_OFF; */
-	break;
     }
 /*    (void) ioctl(macIIFbs[pScreen->myNum].fd, FBIOSVIDEO, &state); */
     return TRUE;
@@ -251,28 +241,9 @@ macIIBW2Init (index, pScreen, argc, argv)
     pPixmap->devKind =  macIIFbs[index].info.fb_pitch >> 3; /* bytes per scan line */
 
     pScreen->SaveScreen = macIIBW2SaveScreen;
-    pScreen->RealizeCursor = macIIRealizeCursor;
-    pScreen->UnrealizeCursor = macIIUnrealizeCursor;
-    pScreen->DisplayCursor = macIIDisplayCursor;
-    pScreen->SetCursorPosition = macIISetCursorPosition;
-    pScreen->CursorLimits = macIICursorLimits;
-    pScreen->PointerNonInterestBox = macIIPointerNonInterestBox;
-    pScreen->ConstrainCursor = macIIConstrainCursor;
-    pScreen->RecolorCursor = macIIRecolorCursor;
     pScreen->ResolveColor = macIIBW2ResolveColor;
     pScreen->CreateColormap = macIIBW2CreateColormap;
     pScreen->DestroyColormap = macIIBW2DestroyColormap;
-    pScreen->RegionCreate = miRegionCreate;
-    pScreen->RegionCopy = miRegionCopy;
-    pScreen->RegionDestroy = miRegionDestroy;
-    pScreen->Intersect = miIntersect;
-    pScreen->Inverse = miInverse;
-    pScreen->Union = miUnion;
-    pScreen->Subtract = miSubtract;
-    pScreen->RegionReset = miRegionReset;
-    pScreen->TranslateRegion = miTranslateRegion;
-    pScreen->RectIn = miRectIn;
-    pScreen->PointInRegion = miPointInRegion;
     pScreen->whitePixel = 0;
     pScreen->blackPixel = 1;
 
