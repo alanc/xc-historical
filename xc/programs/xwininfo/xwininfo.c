@@ -320,9 +320,6 @@ Display_Events_Info(window)
   printf("\n         ==> Someone wants these events:\n");
   Display_Event_Mask(win_attributes.all_event_masks);
 
-  printf("         ==> my event mask...\n");
-  Display_Event_Mask(win_attributes.your_event_mask);
-
   printf("         ==> Do not prograte these events:\n");
   Display_Event_Mask(win_attributes.do_not_propagate_mask);
 
