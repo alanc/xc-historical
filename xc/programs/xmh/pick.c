@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pick.c,v 2.39 89/12/13 18:08:21 jim Exp $
+ * $XConsortium: pick.c,v 2.40 89/12/16 03:33:47 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -578,7 +578,7 @@ static RowList AddRow(group, type)
 	arglist[1].value = (XtArgVal)group->rlist[group->numrows - 2]->widget;
     else
 	arglist[1].value = (XtArgVal) NULL;
-    row->widget = XtCreateWidget((String)NULL, formWidgetClass, group->widget,
+    row->widget = XtCreateWidget("rowform", formWidgetClass, group->widget,
 				  arglist, XtNumber(arglist) );
     if (type == RTignore) return row;
     AddToggle(row, "Pick", TRUE, (Widget)NULL, (XtPointer)(&true_data));
@@ -621,7 +621,7 @@ static Group AddGroup(form)
 	arglist[1].value = (XtArgVal)form->glist[form->numgroups - 2]->widget;
     else
 	arglist[1].value = (XtArgVal)NULL;
-    group->widget = XtCreateWidget((String)NULL, formWidgetClass, form->inner,
+    group->widget = XtCreateWidget("groupform", formWidgetClass, form->inner,
 				    arglist, XtNumber(arglist) );
     return group;
 }
@@ -646,6 +646,8 @@ static AddDetailGroup(form)
     row =  AddRow(group, RTignore);
     AddButton(row, "- Or -", ExecGroupOr);
     XtManageChild(row->widget);
+    if (XtIsRealized(XtParent(group->widget)))
+	XtRealizeWidget(group->widget); 
     XtManageChild(group->widget);
 }
 
