@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.47 92/05/10 11:47:49 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.48 92/05/10 12:01:20 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -80,12 +80,12 @@ clean::									@@\
 #endif
 
 #if defined(HPArchitecture) && defined(__hp9000s800)
-#undef BuildServer
+/* #undef BuildServer */
 #undef BuildFontServer
 #undef BuildFonts
 #undef NeedBerklib
-#define BuildServer      YES
-#define XnonServer       YES
+/* #define BuildServer      YES */
+/* #define XnonServer       YES */
 #define BuildFontServer  YES
 #define BuildFonts       YES
 #define NeedBerklib      YES
