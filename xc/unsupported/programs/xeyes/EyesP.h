@@ -1,5 +1,5 @@
 /*
-* $Header: $
+* $Header: EyesP.h,v 1.1 88/08/13 09:49:54 jim Exp $
 */
 
 #ifndef _EyesP_h
@@ -19,7 +19,10 @@ typedef struct {
 	 GC		pupGC;		/* pointer to GraphicsContext */
 	 GC		centerGC;	/* pointer to GraphicsContext */
 /* start of graph stuff */
+	 int		backing_store;	/* backing store variety */
 	 Boolean	reverse_video;	/* swap fg and bg pixels */
+	 Boolean	use_wide_lines;	/* use wide lines instead of fills */
+	 Boolean	use_bevel;	/* use bevel join style for arcs */
 	 int		update;		/* current timeout index */
 	 int		thickness;	/* line thickness */
 	 int		odx, ody;	/* old mouse position */

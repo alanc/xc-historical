@@ -21,18 +21,23 @@ static XtResource resources[] = {
 	goffset(height), XtRString, "100"},
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
         offset(puppixel), XtRString, "Black"},
-    {XtNoutline, XtCOutline, XtRPixel, sizeof(Pixel),
+    {XtNoutline, XtCForeground, XtRPixel, sizeof(Pixel),
         offset(outline), XtRString, "Black"},
-    {XtNcenterColor, XtCCenterColor, XtRPixel, sizeof (Pixel),
+    {XtNcenterColor, XtCBackground, XtRPixel, sizeof (Pixel),
     	offset(center), XtRString, "White"},
     {XtNreverseVideo, XtCReverseVideo, XtRBoolean, sizeof (Boolean),
 	offset (reverse_video), XtRString, "FALSE"},
+    {XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
+    	offset (backing_store), XtRString, "default"},
+    {XtNuseWideLines, XtCUseWideLines, XtRBoolean, sizeof (Boolean),
+        offset (use_wide_lines), XtRString, "FALSE"},
+    {XtNuseBevel, XtCUseBevel, XtRBoolean, sizeof (Boolean),
+	offset (use_bevel), XtRString, "FALSE"},
 };
 
 #undef offset
 #undef goffset
 
-static void ClassInitialize();
 static void Initialize(), Realize(), Destroy(), Redisplay();
 static Boolean SetValues();
 static int repaint_window();
@@ -60,7 +65,7 @@ EyesClassRec eyesClassRec = {
     /* superclass		*/	&widgetClassRec,
     /* class_name		*/	"Eyes",
     /* size			*/	sizeof(EyesRec),
-    /* class_initialize		*/	ClassInitialize,
+    /* class_initialize		*/	NULL,
     /* class_part_initialize	*/	NULL,
     /* class_inited		*/	FALSE,
     /* initialize		*/	Initialize,
@@ -91,10 +96,6 @@ EyesClassRec eyesClassRec = {
 };
 
 WidgetClass eyesWidgetClass = (WidgetClass) &eyesClassRec;
-
-static void ClassInitialize ()
-{
-}
 
 /* ARGSUSED */
 static void Initialize (greq, gnew)
@@ -135,11 +136,21 @@ static void Initialize (greq, gnew)
     w->eyes.pupGC = XtGetGC(gnew, valuemask, &myXGCV);
 
     myXGCV.foreground = w->eyes.outline;
-    myXGCV.line_width = w->eyes.thickness;
-    valuemask = GCForeground | GCBackground | GCLineWidth;
+    valuemask = GCForeground | GCBackground;
+    if (w->eyes.use_wide_lines) {
+	myXGCV.line_width = w->eyes.thickness;
+	valuemask |= GCLineWidth;
+	if (w->eyes.use_bevel) {
+	    myXGCV.join_style = JoinBevel;
+	    valuemask |= GCJoinStyle;
+	}
+    }
     w->eyes.outGC = XtGetGC(gnew, valuemask, &myXGCV);
 
-    myXGCV.foreground = w->eyes.center;
+    if (w->eyes.use_wide_lines)
+	myXGCV.foreground = w->core.background_pixel;
+    else
+	myXGCV.foreground = w->eyes.center;
     myXGCV.background = w->eyes.puppixel;
     valuemask = GCForeground | GCBackground;
     w->eyes.centerGC = XtGetGC(gnew, valuemask, &myXGCV);
@@ -161,6 +172,12 @@ static void Realize (gw, valueMask, attrs)
      XtValueMask *valueMask;
      XSetWindowAttributes *attrs;
 {
+     EyesWidget	w;
+
+     if (w->eyes.backing_store != Always + WhenMapped + NotUseful) {
+     	attrs->backing_store = w->eyes.backing_store;
+	*valueMask |= CWBackingStore;
+     }
      XtCreateWindow( gw, (unsigned)InputOutput, (Visual *)CopyFromParent,
 		     *valueMask, attrs );
 }
@@ -264,29 +281,19 @@ int		num;
 	int etdiv2 = et/2;
 	unsigned int ewdiv2 = ew/2, ehdiv2 = eh/2;
 
-#ifdef punt
-	/*
-	 * The following expression is too complicated for some compilers.
-	 */
-	XFillArc (dpy, win, outgc,
- 		(int) EYE_CENTER_X(w, num) - EYE_WIDTH(w)/2 - EYE_THICK(w)/2,
-		(int) EYE_CENTER_Y(w, num) - EYE_HEIGHT(w)/2 - EYE_THICK(w)/2,
-		EYE_WIDTH(w) + EYE_THICK(w), EYE_HEIGHT(w) + EYE_THICK(w),
-		90 * 64, 360 * 64);
-	XFillArc (dpy, win, centergc,
- 		(int) EYE_CENTER_X(w, num) - EYE_WIDTH(w)/2 + EYE_THICK(w)/2,
-		(int) EYE_CENTER_Y(w, num) - EYE_HEIGHT(w)/2 + EYE_THICK(w)/2,
-		EYE_WIDTH(w) - EYE_THICK(w), EYE_HEIGHT(w) - EYE_THICK(w),
-		90 * 64, 360 * 64);
-#endif
-
-	XFillArc (dpy, win, outgc, 
-		  (ecx - ewdiv2 - etdiv2), (ecy - ehdiv2 - etdiv2),
-		  (ew + et), (eh + et), 90 * 64, 360 * 64);
-	XFillArc (dpy, win, centergc,
-		  (ecx - ewdiv2 + etdiv2), (ecy - ehdiv2 + etdiv2),
-		  (ew - et), (eh - et), 90 * 64, 360 * 64);
-
+	if (w->eyes.use_wide_lines) {
+		XDrawArc (dpy, win, outgc,
+			  (ecx - ewdiv2), (ecy - ehdiv2),
+			  ew, eh,
+			  90 * 64, 360 * 64);
+	} else {
+		XFillArc (dpy, win, outgc, 
+			  (ecx - ewdiv2 - etdiv2), (ecy - ehdiv2 - etdiv2),
+			  (ew + et), (eh + et), 90 * 64, 360 * 64);
+		XFillArc (dpy, win, centergc,
+			  (ecx - ewdiv2 + etdiv2), (ecy - ehdiv2 + etdiv2),
+			  (ew - et), (eh - et), 90 * 64, 360 * 64);
+	}
 }
 
 eyeBall (w, gc, num, dx, dy)
@@ -307,27 +314,25 @@ int	dx, dy;
 
 	dx = dx - EYE_CENTER_X(w, num);
 	dy = dy - EYE_CENTER_Y(w, num);
-	angle = atan2 ((double) dy, (double) dx);
-	a = EYE_WIDTH(w) / 2.0;
-	b = EYE_HEIGHT(w) / 2.0;
-	h = hypot (b * cos (angle), a * sin (angle));
-	x = a * b * cos (angle) / h;
-	y = a * b * sin (angle) / h;
-	dist = BALL_DIST * hypot (x, y);
-	if (dist > hypot ((double) dx, (double) dy)) {
-		cx = dx + EYE_CENTER_X(w, num);
-		cy = dy + EYE_CENTER_Y(w, num);
+	if (dx == 0 && dy == 0) {
+		cx = EYE_CENTER_X(w, num);
+		cy = EYE_CENTER_Y(w, num);
 	} else {
-		cx = dist * cos (angle) + EYE_CENTER_X(w, num);
-		cy = dist * sin (angle) + EYE_CENTER_Y(w, num);
+		angle = atan2 ((double) dy, (double) dx);
+		a = EYE_WIDTH(w) / 2.0;
+		b = EYE_HEIGHT(w) / 2.0;
+		h = hypot (b * cos (angle), a * sin (angle));
+		x = a * b * cos (angle) / h;
+		y = a * b * sin (angle) / h;
+		dist = BALL_DIST * hypot (x, y);
+		if (dist > hypot ((double) dx, (double) dy)) {
+			cx = dx + EYE_CENTER_X(w, num);
+			cy = dy + EYE_CENTER_Y(w, num);
+		} else {
+			cx = dist * cos (angle) + EYE_CENTER_X(w, num);
+			cy = dist * sin (angle) + EYE_CENTER_Y(w, num);
+		}
 	}
-#ifdef punt
-	/*
-	 * The following expression is too complicated for some compilers.
-	 */
-	XFillArc (dpy, win, gc, cx - BALL_WIDTH(w)/2, cy - BALL_HEIGHT(w)/2,
-		BALL_WIDTH(w), BALL_HEIGHT(w), 90 * 64, 360 * 64);
-#endif
 	XFillArc (dpy, win, gc, (cx - bw/2), (cy - bh/2), bw, bh, 
 		  90 * 64, 360 * 64);
 }
