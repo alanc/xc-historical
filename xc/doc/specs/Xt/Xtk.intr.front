@@ -1,4 +1,4 @@
-.\" $XConsortium: Xtk.intr.front,v 1.9 94/04/18 18:21:06 rws Exp $
+.\" $XConsortium: Xtk.intr.front,v 1.10 94/04/18 20:20:59 rws Exp $
 .\" MIT header page and copyright notice
 .\" MIT page header and footers
 .\"
@@ -92,8 +92,9 @@ software described herein for any purpose.
 It is provided ``as is'' without express or implied warranty.
 .ps 11
 .nr PS 11
-.bp iii
-.XS iii
+.bp 10
+.af PN i
+.XS x
 Acknowledgments
 .XE
 \&
@@ -110,18 +111,13 @@ were done by Charles Haynes, Mike Chow, and Paul Asente of Digital WSL.
 Additional contributors to the design and/or implementation were:
 .LP
 .Ds
-Loretta Guarino-Reid (Digital WSL)
-Rich Hyde (Digital WSL)
-Susan Angebranndt (Digital WSL)
-Terry Weissman (Digital WSL)
-Mary Larson (Digital UEG)
-Mark Manasse (Digital SRC)
-Jim Gettys  (Digital SRC)
-Ralph Swick (Project Athena and Digital ERP) 
-Leo Treggiari  (Digital SDT)
-Ron Newman (Project Athena)
-Mark Ackerman (Project Athena)
-Bob Scheifler (MIT LCS)
+.ta 3i
+Loretta Guarino-Reid (Digital WSL)	Rich Hyde (Digital WSL)
+Susan Angebranndt (Digital WSL)	Terry Weissman (Digital WSL)
+Mary Larson (Digital UEG)	Mark Manasse (Digital SRC)
+Jim Gettys  (Digital SRC)	Leo Treggiari  (Digital SDT)
+Ralph Swick (Project Athena and Digital ERP)	Mark Ackerman (Project Athena)
+Ron Newman (Project Athena)	Bob Scheifler (MIT LCS)
 .De
 .LP
 The contributors to the X10 toolkit also deserve mention.
@@ -234,15 +230,14 @@ and
 July, 1991
 .De
 .bp
-.sp
 .LP
 The Release 6 Intrinsics is a result of the collaborative
 efforts of participants in the X Consortium's \fBintrinsics\fP
 working group.  
-A few individuals made substantial design proposals,
-participated in lengthy discussions, reviewed final proposals,
+A few individuals contributed substantial design proposals,
+participated in lengthy discussions, reviewed final specifications,
 and in most cases, were also responsible for sections of the implementation.
-They deserve recognition for seeing the entire process through to completion:
+They deserve recognition and thanks for their major contributions:
 .LP
 .Ds
 .ta 3i
@@ -252,25 +247,28 @@ Vania Joloboff (OSF)		Kaleb Keithley (X Consortium)
 Courtney Loomis (HP)		Douglas Rand (OSF)
 Bob Scheifler (X Consortium)	Ajay Vohra (SunSoft)
 .De
-.sp
 .LP
 Many others analyzed designs, offered useful comments and suggestions,
-or participated in a significant subset of the lengthy process. 
+and participated in a significant subset of the process.
 The following people deserve thanks for their contributions:
 Andy Bovingdon, Sam Chang, Chris Craig,
 George Erwin-Grotsky, Keith Edwards, Clive Feather, Stephen Gildea,
 Dan Heller, Steve Humphrey, David Kaelbling,
 Jaime Lau, Rob Lembree, Stuart Marks, Beth Mynatt,
 Tom Paquin, Chris Peterson, Kamesh Ramakrishna, Tom Rodriguez,
-Ralph Swick, Jim VanGilder, Will Walker, and Mike Wexler.
+Jim VanGilder, Will Walker, and Mike Wexler.
+.LP
+I am especially grateful to two of my colleagues: Ralph Swick for
+expert editorial guidance, and Kaleb Keithley for leadership in
+the implementation and the specification work.
 .sp
 .Ds 0
 Donna Converse
 X Consortium
 April, 1994
 .De
-.bp iv
-.XS iv
+.bp
+.XS xiii
 About This Manual
 .XE
 \&
@@ -328,7 +326,8 @@ the explanations for all arguments that you pass start with the word
 The explanations for all arguments that are returned to you start with the
 word \fIreturns\fP or, in the case of multiple arguments, the word \fIreturn\^\fP.
 .bp 1
-.EH '\fBX Toolkit Intrinsics\fP''\fBDraft X11 Release \*(Rn\fP'
-.OH '\fBX Toolkit Intrinsics\fP''\fBDraft X11 Release \*(Rn\fP'
+.af PN 1
+.EH '\fBX Toolkit Intrinsics\fP''\fBX11 Release \*(Rn\fP'
+.OH '\fBX Toolkit Intrinsics\fP''\fBX11 Release \*(Rn\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
