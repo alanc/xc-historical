@@ -76,6 +76,8 @@ Version 1.0
 X Consortium Standard
 .sp
 X Version 11, Release 6
+
+
 .AU
 Robert Scheifler
 .AI
@@ -1070,7 +1072,7 @@ connect to other end, send
 .St "receive" Error quit
 .St "receive <other>, send" Error quit
 .Se
-.sp 1
+.bp
 Here are top-level state transitions for the party that accepts connections.
 .Ss listener
 .\" .St "accept connection" "" init_wait
