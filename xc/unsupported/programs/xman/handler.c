@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: handler.c,v 1.6 89/02/16 13:12:49 kit Exp $
+ * $XConsortium: handler.c,v 1.7 89/04/28 15:05:37 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -144,15 +144,15 @@ ManpageGlobals * man_globals;
     ChangeLabel(man_globals->label, man_globals->manpage_title);
   
   XtSetArg(arglist[0], XtNlabel, label_str);
-  XawSimpleMenuUpdateEntry(man_globals->option_menu, BOTH_SCREENS,
+  XawSimpleMenuSetEntryValues(man_globals->option_menu, BOTH_SCREENS,
 			   arglist, (Cardinal) 1);
   
   /* if both are shown there is no need to switch between the two. */
 
   XtSetArg(arglist[0], XtNsensitive, !man_globals->both_shown);
-  XawSimpleMenuUpdateEntry(man_globals->option_menu, MANPAGE,
+  XawSimpleMenuSetEntryValues(man_globals->option_menu, MANPAGE,
 			   arglist, (Cardinal) 1);
-  XawSimpleMenuUpdateEntry(man_globals->option_menu, DIRECTORY,
+  XawSimpleMenuSetEntryValues(man_globals->option_menu, DIRECTORY,
 			   arglist, (Cardinal) 1);
 }
 
@@ -211,7 +211,7 @@ FILE * file;
   if (!man_globals->both_shown) {
     Arg arglist[1];
     XtSetArg(arglist[0], XtNsensitive, TRUE);
-    XawSimpleMenuUpdateEntry(man_globals->option_menu, MANPAGE,
+    XawSimpleMenuSetEntryValues(man_globals->option_menu, MANPAGE,
 			     arglist, (Cardinal) 1);
   }
 
@@ -405,7 +405,7 @@ Cardinal * num_params;
   case 'M':
   case 'm':
     XtSetArg(arglist[0], XtNsensitive, &sensitive);
-    XawSimpleMenuGetValues(man_globals->option_menu, MANPAGE,
+    XawSimpleMenuGetEntryValues(man_globals->option_menu, MANPAGE,
 			   arglist, (Cardinal) 1);
     if (sensitive) {
       ChangeLabel(man_globals->label,man_globals->manpage_title);

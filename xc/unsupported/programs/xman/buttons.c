@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.8 89/03/11 09:49:45 rws Exp $
- * $Header: buttons.c,v 1.8 89/03/11 09:49:45 rws Exp $
+ * $XConsortium: buttons.c,v 1.9 89/04/28 15:05:26 kit Exp $
+ * $Header: buttons.c,v 1.9 89/04/28 15:05:26 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -213,7 +213,7 @@ Boolean full_instance;
 				   hpane, arglist, num_args);
 
   XtSetArg(arglist[0], XtNlabel, SHOW_BOTH);
-  XawSimpleMenuUpdateEntry(man_globals->option_menu, BOTH_SCREENS,
+  XawSimpleMenuSetEntryValues(man_globals->option_menu, BOTH_SCREENS,
 			   arglist, (Cardinal) 1);
 
   if (full_instance) {
@@ -223,11 +223,11 @@ Boolean full_instance;
     Widget menu = man_globals->option_menu;
     XtSetSensitive(sections, FALSE);       
     XtSetArg(arglist[0], XtNsensitive, FALSE);
-    XawSimpleMenuUpdateEntry(menu, DIRECTORY,    arglist, (Cardinal) 1);
-    XawSimpleMenuUpdateEntry(menu, MANPAGE,      arglist, (Cardinal) 1);
-    XawSimpleMenuUpdateEntry(menu, HELP,         arglist, (Cardinal) 1);
-    XawSimpleMenuUpdateEntry(menu, SEARCH,       arglist, (Cardinal) 1);
-    XawSimpleMenuUpdateEntry(menu, BOTH_SCREENS, arglist, (Cardinal) 1);
+    XawSimpleMenuSetEntryValues(menu, DIRECTORY,    arglist, (Cardinal) 1);
+    XawSimpleMenuSetEntryValues(menu, MANPAGE,      arglist, (Cardinal) 1);
+    XawSimpleMenuSetEntryValues(menu, HELP,         arglist, (Cardinal) 1);
+    XawSimpleMenuSetEntryValues(menu, SEARCH,       arglist, (Cardinal) 1);
+    XawSimpleMenuSetEntryValues(menu, BOTH_SCREENS, arglist, (Cardinal) 1);
   }
 
   man_globals->label = XtCreateManagedWidget(MANNAME, labelWidgetClass,
@@ -298,13 +298,13 @@ Boolean help;
       XtSetValues(dir, arglist, (Cardinal) 1);
 
       XtSetArg(arglist[0], XtNsensitive, FALSE);
-      XawSimpleMenuUpdateEntry(man_globals->option_menu, MANPAGE,
+      XawSimpleMenuSetEntryValues(man_globals->option_menu, MANPAGE,
 			       arglist, (Cardinal) 1);
-      XawSimpleMenuUpdateEntry(man_globals->option_menu, DIRECTORY,
+      XawSimpleMenuSetEntryValues(man_globals->option_menu, DIRECTORY,
 			       arglist, (Cardinal) 1);
 
       XtSetArg(arglist[0], XtNlabel, SHOW_ONE);
-      XawSimpleMenuUpdateEntry(man_globals->option_menu, BOTH_SCREENS,
+      XawSimpleMenuSetEntryValues(man_globals->option_menu, BOTH_SCREENS,
 			       arglist, (Cardinal) 1);
       ChangeLabel(label,
 		  man_globals->section_name[man_globals->current_directory]);
@@ -323,11 +323,11 @@ Boolean help;
     XtManageChild(dir);
     man_globals->dir_shown = TRUE;
     XtSetArg(arglist[0], XtNsensitive, FALSE);
-    XawSimpleMenuUpdateEntry(man_globals->option_menu, MANPAGE,
+    XawSimpleMenuSetEntryValues(man_globals->option_menu, MANPAGE,
 			     arglist, (Cardinal) 1);
-    XawSimpleMenuUpdateEntry(man_globals->option_menu, HELP,
+    XawSimpleMenuSetEntryValues(man_globals->option_menu, HELP,
 			     arglist, (Cardinal) 1);
-    XawSimpleMenuUpdateEntry(man_globals->option_menu, BOTH_SCREENS,
+    XawSimpleMenuSetEntryValues(man_globals->option_menu, BOTH_SCREENS,
 			     arglist, (Cardinal) 1);
     man_globals->both_shown = FALSE;
     ChangeLabel(label,
@@ -418,7 +418,7 @@ Widget parent;
     menu_struct = (MenuStruct *) XtMalloc(sizeof(MenuStruct));
     menu_struct->data = (caddr_t) man_globals;
     menu_struct->quark = XrmStringToQuark(option_names[i]);
-    XawSimpleMenuAddCallback(menu, option_names[i], OptionCallback,
+    XawSimpleMenuAddEntryCallback(menu, option_names[i], OptionCallback,
 			     (caddr_t) menu_struct);
     XtAddCallback(menu, XtNdestroyCallback, 
 		  MenuDestroy, (caddr_t) menu_struct);
@@ -450,7 +450,7 @@ Widget parent;
     menu_struct = (MenuStruct *) XtMalloc(sizeof(MenuStruct));
     menu_struct->data = (caddr_t) man_globals;
     menu_struct->number = i;
-    XawSimpleMenuAddCallback(menu, manual[i].blabel, DirPopupCallback, 
+    XawSimpleMenuAddEntryCallback(menu, manual[i].blabel, DirPopupCallback, 
 			     (caddr_t) menu_struct);
     XtAddCallback(menu, XtNdestroyCallback, 
 		  MenuDestroy, (caddr_t) menu_struct);
