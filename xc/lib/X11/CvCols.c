@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCvCols.c,v 1.3 91/02/12 16:12:41 dave Exp $" */
+/* $XConsortium: XcmsCvCols.c,v 1.4 91/02/15 18:33:37 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -405,7 +405,6 @@ _XcmsDIConvertColors(pCCC, pColors_in_out, pWhitePt, nColors,
     XcmsFuncPtr *dest_to_CIEXYZ, *dest_from_CIEXYZ;
     XcmsFuncPtr *to_CIEXYZ_stop, *from_CIEXYZ_start;
     XcmsFuncPtr *tmp;
-    int index;
 
     /*
      * Allow pWhitePt to equal NULL.  This appropriate when converting
@@ -560,7 +559,6 @@ _XcmsDDConvertColors(pCCC, pColors_in_out, nColors, newFormat,
     XcmsFuncPtr *tmp;
     int	retval;
     int hasCompressed = 0;
-    int index;
 
     if (pCCC == NULL || pColors_in_out == NULL) {
 	return(XCMS_FAILURE);
