@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.67 91/04/01 20:49:27 gildea Exp $ */
+/* $XConsortium: Display.c,v 1.68 91/04/02 08:55:52 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -42,7 +42,8 @@ ProcessContext _XtGetProcessContext()
     static ProcessContextRec processContextRec = {
 	(XtAppContext)NULL,
 	(XtAppContext)NULL,
-	(ConverterTable)NULL
+	(ConverterTable)NULL,
+	{ XtDefaultLanguageProc, (XtPointer)NULL }
     };
 
     return &processContextRec;
@@ -285,6 +286,8 @@ XtAppContext XtCreateApplicationContext()
 	app->process = _XtGetProcessContext();
 	app->next = app->process->appContextList;
 	app->process->appContextList = app;
+	app->langProcRec.proc = app->process->globalLangProcRec.proc;
+	app->langProcRec.closure = app->process->globalLangProcRec.closure;
 	app->destroy_callbacks = NULL;
 	app->list = NULL;
 	app->count = app->max = app->last = 0;
