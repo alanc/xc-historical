@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Form.c,v 1.30 89/07/16 14:43:21 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Form.c,v 1.31 89/10/05 19:24:37 kit Exp $";
 #endif /* lint */
 
 
@@ -35,7 +35,7 @@ SOFTWARE.
 
 /* Private Definitions */
 
-static int default_value = -99999
+static int default_value = -99999;
 
 #define Offset(field) XtOffset(FormWidget, form.field)
 static XtResource resources[] = {
@@ -49,23 +49,23 @@ static XtEdgeType defEdge = XtRubber;
 #define Offset(field) XtOffset(FormConstraints, form.field)
 static XtResource formConstraintResources[] = {
     {XtNtop, XtCEdge, XtREdgeType, sizeof(XtEdgeType),
-	Offset(top), XtREdgeType, (caddr_t)&defEdge},
+	Offset(top), XtREdgeType, (XtPointer)&defEdge},
     {XtNbottom, XtCEdge, XtREdgeType, sizeof(XtEdgeType),
-	Offset(bottom), XtREdgeType, (caddr_t)&defEdge},
+	Offset(bottom), XtREdgeType, (XtPointer)&defEdge},
     {XtNleft, XtCEdge, XtREdgeType, sizeof(XtEdgeType),
-	Offset(left), XtREdgeType, (caddr_t)&defEdge},
+	Offset(left), XtREdgeType, (XtPointer)&defEdge},
     {XtNright, XtCEdge, XtREdgeType, sizeof(XtEdgeType),
-	Offset(right), XtREdgeType, (caddr_t)&defEdge},
+	Offset(right), XtREdgeType, (XtPointer)&defEdge},
     {XtNhorizDistance, XtCThickness, XtRInt, sizeof(int),
-	Offset(dx), XtRInt, &default_value},
+	Offset(dx), XtRInt, (XtPointer) &default_value},
     {XtNfromHoriz, XtCWidget, XtRWidget, sizeof(Widget),
-	Offset(horiz_base), XtRWidget, (caddr_t)NULL},
+	Offset(horiz_base), XtRWidget, (XtPointer)NULL},
     {XtNvertDistance, XtCThickness, XtRInt, sizeof(int),
-	Offset(dy), XtRInt, &default_value},
+	Offset(dy), XtRInt, (XtPointer) &default_value},
     {XtNfromVert, XtCWidget, XtRWidget, sizeof(Widget),
-	Offset(vert_base), XtRWidget, (caddr_t)NULL},
+	Offset(vert_base), XtRWidget, (XtPointer)NULL},
     {XtNresizable, XtCBoolean, XtRBoolean, sizeof(Boolean),
-	Offset(allow_resize), XtRImmediate, (caddr_t) FALSE},
+	Offset(allow_resize), XtRImmediate, (XtPointer) FALSE},
 };
 #undef Offset
 
