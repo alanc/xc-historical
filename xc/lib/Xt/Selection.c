@@ -1,6 +1,6 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: Selection.c,v 1.6 88/08/29 16:48:30 asente Exp $";
-/* $oHeader: Selection.c,v 1.6 88/08/29 16:48:30 asente Exp $ */
+static char rcsid[] = "$XConsortium: Selection.c,v 1.7 88/09/04 12:21:33 swick Exp $";
+/* $oHeader: Selection.c,v 1.8 88/09/01 11:53:42 asente Exp $ */
 #endif lint
 
 /***********************************************************
@@ -37,7 +37,7 @@ extern void bcopy();
 
 #define LOCAL (Opaque) 0x80000000
 
-void _SetDefaultSelectionTimeout(timeout)
+void _XtSetDefaultSelectionTimeout(timeout)
 	unsigned long *timeout;
 {
 	*timeout = 5000; /* default to 5 seconds */
@@ -120,7 +120,8 @@ Atom prop;
  if (prop == None) return;
  if (XFindContext(dpy, DefaultRootWindow(dpy), selectPropertyContext,
     (caddr_t *)&sarray)) 
-    XtErrorMsg("noSelectionProperties", "freeSelectionProperty", "XtToolkitError",
+    XtAppErrorMsg(_XtDisplayToApplicationContext(dpy),
+	    "noSelectionProperties", "freeSelectionProperty", "XtToolkitError",
 		"internal error: no selection property context for display",
 		 (String *)NULL,  (Cardinal *)NULL );
  for (p = sarray->list; p; p++) 
