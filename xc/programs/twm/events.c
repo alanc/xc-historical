@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.72 89/07/05 16:02:43 jim Exp $
+ * $XConsortium: events.c,v 1.73 89/07/06 12:16:59 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.72 89/07/05 16:02:43 jim Exp $";
+"$XConsortium: events.c,v 1.73 89/07/06 12:16:59 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -702,23 +702,6 @@ HandleExpose()
 		TitleBarX, Scr->TitleBarFont.y,
 		Tmp_win->name, strlen(Tmp_win->name));
 	    flush_expose (Event.xany.window);
-	}
-
-	if (Tmp_win->iconify_w == Event.xany.window)
-	{
-	    FB(Tmp_win->title.fore, Tmp_win->title.back);
-	    XCopyPlane(dpy, Scr->iconifyPm, Tmp_win->iconify_w, Scr->NormalGC,
-		0,0, h, h, 0, 0, 1);
-	    flush_expose (Event.xany.window);
-	    return;
-	}
-	if (Tmp_win->resize_w == Event.xany.window)
-	{
-	    FB(Tmp_win->title.fore, Tmp_win->title.back);
-	    XCopyPlane(dpy, Scr->resizePm, Tmp_win->resize_w, Scr->NormalGC,
-		0,0, h, h, 0, 0, 1);
-	    flush_expose (Event.xany.window);
-	    return;
 	}
 
 	if (Event.xany.window == Tmp_win->icon_w)

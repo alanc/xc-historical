@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.73 89/07/12 16:15:05 jim Exp $
+ * $XConsortium: add_window.c,v 1.74 89/07/12 16:32:22 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.73 89/07/12 16:15:05 jim Exp $";
+"$XConsortium: add_window.c,v 1.74 89/07/12 16:32:22 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -998,6 +998,9 @@ TwmWindow *tmp_win;
     int x, y;
     int h = Scr->TitleHeight - (Scr->FramePadding * 2) - Scr->ButtonIndent * 2
 	    - TITLEBUTTON_BORDERWIDTH;
+    GC gc;
+    Pixmap iconifyPM, resizePM;
+    XGCValues gcv;
 
     if (tmp_win->title_height == 0)
     {
@@ -1010,7 +1013,7 @@ TwmWindow *tmp_win;
     if (Scr->iconifyPm == NULL)
     {
 	XSegment segs[4];
-	GC gc, gcBack;
+	GC gcBack;
 	int w;
 
 	Scr->iconifyPm = XCreatePixmap (dpy, tmp_win->title_w, h, h, 1);
@@ -1057,18 +1060,29 @@ TwmWindow *tmp_win;
 	XFreeGC(dpy, gc);
     }
 
+    iconifyPM = XCreatePixmap (dpy, tmp_win->title_w, h, h, Scr->d_depth);
+    resizePM = XCreatePixmap (dpy, tmp_win->title_w, h, h, Scr->d_depth);
+    gcv.foreground = tmp_win->title.fore;
+    gcv.background = tmp_win->title.back;
+    gc = XCreateGC (dpy, tmp_win->title_w, (GCForeground | GCBackground),
+		    &gcv);
+    XCopyPlane (dpy, Scr->iconifyPm, iconifyPM, gc, 0, 0, h, h, 0, 0, 1);
+    XCopyPlane (dpy, Scr->resizePm, resizePM, gc, 0, 0, h, h, 0, 0, 1);
+    XFreeGC (dpy, gc);
+
     attributes.win_gravity = NorthWestGravity;
-    attributes.background_pixel = tmp_win->title.back;
+    attributes.background_pixmap = iconifyPM;
     attributes.border_pixel = tmp_win->title.fore;
-    attributes.event_mask = (ButtonPressMask | ButtonReleaseMask |
-			     ExposureMask);
-    valuemask = (CWWinGravity | CWBackPixel | CWBorderPixel | CWEventMask);
+    attributes.event_mask = (ButtonPressMask | ButtonReleaseMask);
+    valuemask = (CWWinGravity | CWBackPixmap | CWBorderPixel | CWEventMask);
     x = y = Scr->FramePadding + Scr->ButtonIndent - TITLEBUTTON_BORDERWIDTH;
     tmp_win->iconify_w = XCreateWindow (dpy, tmp_win->title_w, x, y,
 					h, h, TITLEBUTTON_BORDERWIDTH, 0, 
 					CopyFromParent, CopyFromParent,
 				        valuemask, &attributes);
+    XFreePixmap (dpy, iconifyPM);
 
+    attributes.background_pixmap = resizePM;
     attributes.win_gravity = NorthEastGravity;
     x = (tmp_win->attr.width - Scr->FramePadding - Scr->ButtonIndent - h - 1 -
 	 TITLEBUTTON_BORDERWIDTH);
@@ -1076,10 +1090,11 @@ TwmWindow *tmp_win;
 					h, h, 1, 0, 
 					CopyFromParent, CopyFromParent,
 				        valuemask, &attributes);
+    XFreePixmap (dpy, resizePM);
+
+
     h += Scr->ButtonIndent * 2 + TITLEBUTTON_BORDERWIDTH * 2;
     if (tmp_win->titlehighlight) {
-	XGCValues gcv;
-	GC gc;
 	Pixmap pm = None;
 
 	/*
