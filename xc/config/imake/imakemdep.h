@@ -1,4 +1,4 @@
-/* $XConsortium: imakemdep.h,v 1.81 95/01/09 21:54:28 kaleb Exp kaleb $ */
+/* $XConsortium: imakemdep.h,v 1.82 95/01/12 16:27:01 kaleb Exp kaleb $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -254,7 +254,7 @@ char *cpp_argv[ARGUMENTS] = {
 	"-D__i386__",
 # endif
 # ifdef __GNUC__
-	"-traditional"
+	"-traditional",
 # endif
 #endif
 #ifdef M4330
@@ -417,7 +417,7 @@ char *cpp_argv[ARGUMENTS] = {
 	"-D__i386__",
 # endif
 # ifdef __GNUC__
-	"-traditional"
+	"-traditional",
 # endif
 #endif
 #ifdef Oki
@@ -673,6 +673,18 @@ struct symtab	predefs[] = {
 #endif
 #ifdef PC_UX
 	{"PC_UX", "1"},
+#endif
+#ifdef sgi
+	{"sgi", "1"},
+#endif
+#ifdef __sgi
+	{"__sgi", "1"},
+#endif
+#ifdef __FreeBSD__
+	{"__FreeBSD__", "1"},
+#endif
+#ifdef __NetBSD__
+	{"__NetBSD__", "1"},
 #endif
 	/* add any additional symbols before this line */
 	{NULL, NULL}
