@@ -1,5 +1,5 @@
 .ds xL Programming With Xlib
-.TH XChangeDeviceDontPropagateList "Release 5" "X Version 11" "X FUNCTIONS"
+.TH XChangeDeviceDontPropagateList 3X11 "Release 5" "X Version 11" "X FUNCTIONS"
 .SH NAME
 XChangeDeviceDontPropagateList, XGetDeviceDontPropagateList \- query or change the dont-propagate-list for extension devices
 .SH SYNTAX
