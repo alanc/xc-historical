@@ -1,4 +1,4 @@
-/* $XConsortium: XDrArcs.c,v 11.16 90/12/26 10:06:24 rws Exp $ */
+/* $XConsortium: XDrArcs.c,v 11.17 91/01/06 11:45:12 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -33,9 +33,7 @@ int n_arcs;
     req->drawable = d;
     req->gc = gc->gid;
     len = ((long)n_arcs) * arc_scale;
-    if ((req->length + len) > (unsigned)65535)
-	len = 1; /* force BadLength */
-    req->length += len;
+    SetReqLen(req, len, 1);
     len <<= 2; /* watch out for macros... */
     Data16 (dpy, (short *) arcs, len);
     UnlockDisplay(dpy);

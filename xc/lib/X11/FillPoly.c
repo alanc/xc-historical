@@ -1,4 +1,4 @@
-/* $XConsortium: XFillPoly.c,v 11.12 90/12/26 10:07:35 rws Exp $ */
+/* $XConsortium: XFillPoly.c,v 11.13 91/01/06 11:45:34 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -36,9 +36,7 @@ int mode;
     req->shape = shape;
     req->coordMode = mode;
 
-    if ((req->length + n_points) > (unsigned)65535)
-	n_points = 65535 - req->length; /* force BadLength, if possible */
-    req->length += n_points;
+    SetReqLen(req, n_points, 65535 - req->length);
 
     /* shift (mult. by 4) before passing to the (possible) macro */
 
