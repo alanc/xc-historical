@@ -1,4 +1,4 @@
-/* $XConsortium: ResourceI.h,v 1.5 88/09/06 16:28:40 jim Exp $ */
+/* $XConsortium: ResourceI.h,v 1.6 89/11/14 14:23:06 swick Exp $ */
 /* $oHeader: ResourceI.h,v 1.2 88/08/18 15:56:00 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -35,14 +35,6 @@ SOFTWARE.
 #define StringToClass(string) XrmStringToClass(string)
 
 typedef struct _XtTypedArg* XtTypedArgList;
-
-extern void XtGetResources(
-#if NeedFunctionPrototypes
-    Widget       /* widget */,
-    ArgList      /* args */,
-    int          /* num_args */
-#endif
-);
 
 extern void _XtResourceDependencies(
 #if NeedFunctionPrototypes

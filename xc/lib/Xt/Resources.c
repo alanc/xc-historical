@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.83 90/03/19 13:03:13 swick Exp $";
+    "$XConsortium: Resources.c,v 1.84 90/04/04 11:28:21 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -857,7 +857,7 @@ XtCacheRef *_XtGetResources(w, args, num_args, typed_args, num_typed_args)
     }
     FreeCache(quark_cache, quark_args);
     return cache_refs;
-} /* XtGetResources */
+} /* _XtGetResources */
 
 
 void XtGetSubresources
