@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.156 91/05/04 21:42:58 gildea Exp $
+ * $XConsortium: charproc.c,v 1.157 91/05/05 11:56:06 gildea Exp $
  */
 
 /*
@@ -238,7 +238,7 @@ Shift <KeyPress> Insert:insert-selection(PRIMARY, CUT_BUFFER0) \n\
   !Lock Ctrl <Btn3Down>:popup-menu(fontMenu) \n\
  ~Ctrl ~Meta <Btn3Down>:start-extend() \n\
      ~Meta <Btn3Motion>:select-extend()	\n\
-    ~Ctrl ~Meta <BtnUp>:select-end(PRIMARY, CUT_BUFFER0) \n\
+                <BtnUp>:select-end(PRIMARY, CUT_BUFFER0) \n\
 	      <BtnDown>:bell(0) \
 ";
 
