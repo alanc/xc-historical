@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: Xtransdnet.c,v 1.6 94/02/06 16:03:22 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -76,8 +76,8 @@ TRANS(DNETGetAddr) (ciptr)
 XtransConnInfo ciptr;
 
 {
-    sockaddr_dn	sockname;
-    int		namelen = sizeof(sockname);
+    struct sockaddr_dn	sockname;
+    int			namelen = sizeof(sockname);
 
     PRMSG (3,"TRANS(DNETGetAddr) (%x)\n", ciptr, 0, 0);
 
@@ -119,8 +119,8 @@ TRANS(DNETGetPeerAddr) (ciptr)
 XtransConnInfo ciptr;
 
 {
-    sockaddr_dn	sockname;
-    int		namelen = sizeof(sockname);
+    struct sockaddr_dn	sockname;
+    int			namelen = sizeof(sockname);
 
     PRMSG (3,"TRANS(DNETGetPeerAddr) (%x)\n", ciptr, 0, 0);
 
@@ -316,7 +316,7 @@ XtransConnInfo	ciptr;
 
 {
     XtransConnInfo	newciptr;
-    sockaddr_dn		sockname;
+    struct sockaddr_dn	sockname;
     int			namelen = sizeof(sockname);
 
     PRMSG (2, "TRANS(DNETAccept) (%x,%d)\n", ciptr, ciptr->fd, 0);
