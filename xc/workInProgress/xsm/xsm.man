@@ -1,4 +1,4 @@
-.\" $XConsortium: xsm.man,v 1.1 94/02/10 21:32:12 rws Exp $
+.\" $XConsortium: xsm.man,v 1.2 94/04/18 18:24:31 rws Exp $
 .\" Copyright (c) 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -29,9 +29,189 @@
 xsm \- X session manager
 .SH SYNOPSIS
 .B xsm
-[ TBD ]
+[-name session_name] [-verbose]
 .SH DESCRIPTION
 .PP
-The \fIxsm\fP program is a simple session manager.
-.SH AUTHOR
+\fIxsm\fP is a session manager.  A session is a group of applications, each
+of which has a particular state.  The purpose of the session manager is to
+save and restore sessions.
+.SH SETUP
+.SS .xsession file
+Using \fIxsm\fP requires a few changes to your \fI.xsession\fP file:
+.PP
+First, the last program executed by your \fI.xsession\fP file should
+be \fIxsm\fP.  With this configuration, when the user chooses to shut
+down the session using \fIxsm\fP, the session will truly be over.
+.PP
+Second, since the goal of the session manager is to restart clients when
+logging into a session, your .xsession file, in general, should not directly
+start up applications.  Rather, the applications should be started within
+a session.  When \fIxsm\fP shuts down the session, \fIxsm\fP will know to
+restart these applications.  Note however that there are some types of
+applications that are not "session aware", and these applications should be
+started within the \fI.xsession\fP file.  Applications that are not session
+aware are ones that do not support the X Session Management Protocol, or
+they do not create any top level windows for the Session Management Proxy
+to detect.  An example of such an application is the \fIxmodmap\fP program.
+.PP
+.SS SM_SAVE_DIR environment variable
+If the \fISM_SAVE_DIR\fP environment variable is defined, \fIxsm\fP will
+save all configuration files in this directory.  Otherwise, they will be
+stored in the user's home directory.  Session aware applications are also
+encouraged to save their checkpoint files in the \fISM_SAVE_DIR\fP directory,
+although the user should not depend on this convention.
+.PP
+.SS Default Startup Applications
+The first time \fIxsm\fP is started, it will need to locate a list of
+applications to start up.  For example, this list might include a window
+manager, a session management proxy, and an xterm.  \fIxsm\fP will first
+look for the file \fI.xsmstartup\fP in the user's home directory.  If that
+file does not exists, it will look for the \fIsystem.xsm\fP file that was
+set up at installation time.  Note that \fIxsm\fP provides a "fail safe"
+option when the user chooses a session to start up.  The fail safe option
+simply loads the default applications described above.
+.PP
+Each line in the startup file should contain a command to start an application.
+A sample startup file might look this:
+.PP
+<start of file>
+.br
+twm
+.br
+smproxy
+.br
+xterm -geom +150+150
+.br
+<end of file>
+.PP
+.SH STARTING A SESSION
+When \fIxsm\fP starts up, it first checks to see if the user previously
+saved any sessions.  If no saved sessions exist, \fIxsm\fP starts up a set
+of default applications (as described above in the section titled
+\fIDefault Startup Applications\fP).  If at least on session exists, a
+session menu is presented.  The \fB[-name session_name]\fR option forces the
+specified session to be loaded, bypassing the session menu.
+.SS The session menu
+The session menu presents the user with a list of sessions to choose from.
+The user can change the currently selected session with the mouse, or by
+using the up and down arrows on the keyboard.
+.PP
+The following operations can be performed from the session menu:
+.PP
+.TP 22
+.B Load Session
+Pressing this button will load the currently selected session.  Alternatively,
+hitting the Return key will also load the currently selected session, or the
+user can double click a session from the list.
+.TP 22
+.B Delete Session
+This operation will delete the currently selected session, along with all
+of the application checkpoint files associated with the session.  After
+pressing this button, the user will be asked to press the button a second
+time in order to confirm the operation.
+.TP 22
+.B Default/Fail Safe
+\fIxsm\fP will start up a set of default applications (as described above
+in the section titled \fIDefault Startup Applications\fP).  This is useful
+when the user wants to start a fresh session, or if the session configuartion
+files were corrupted and the user wants a "fail safe" session.
+.TP 22
+.B Cancel
+Pressing this button will cause \fIxsm\fP to exit.  It can also be used to
+cancel a "Delete Session" operation.
+.PP
+.SH CONTROLLING A SESSION
+After \fIxsm\fP determines which session to load, it brings up its main
+user interface window, then starts up all applications that are part of
+the session.  The title bar for the session manager's main window will
+contain the name of the session that was loaded.
+.PP
+The following options are available from \fIxsm\fP's main window:
+.TP 18
+.B Client List
+Pressing this button brings up a window containing a list of all clients that
+are in the session.  For each client, the host machine that the client is
+running on is presented.  As clients are added and removed from the session,
+this list is updated to reflect the changes.
+.br
+.sp
+By pressing the \fBView Properties\fR
+button, the user can view the session management properties associated with
+the currently selected client.
+.br
+.sp
+By pressing the \fBKill Client\fR button, the user can remove a client from
+the session.
+.br
+.sp
+Pressing the \fBDone\fR button removes the \fBClient List\fR window.
+.TP 18
+.B Name Session...
+This option allows the user to assign a new name to the session.  Note
+that once a session's name is changed, any state changes will only affect
+the new session.  The user can take a "snapshot" of a useful session by
+naming the session and performing a checkpoint (see below).
+.TP 18
+.B Checkpoint
+By performing a checkpoint, all applications that are in the session are
+asked to save their state.  Not every application will save its complete
+state, but at a minimum, the session manager is guaranteed that it will
+receive the command required to restart the application (along with all
+command line options).  A window manager participating in the session
+should guarantee that the applications will come back up with the same
+window configurations.
+.br
+.sp
+When performing a checkpoint, the user must specify a \fBSave Type\fR
+which informs the applications in the session how much state they should save.
+.br
+.sp
+The \fBLocal\fR
+type indicates that the application should save enough information to restore
+the state as seen by the user.  It should not affect the state as seen by
+other users.  For example, an editor would create a temporary file containing
+the contents of its editing buffer, the location of the cursor, etc...
+.br
+.sp
+The \fBGlobal\fR
+type indicates that the application should commit all of its data to
+permanent, globally accessible storage.  For example, the editor would
+simply save the edited file.
+.br
+.sp
+The \fBBoth\fR
+type indicates that the application should do both of these.  For example,
+the editor would save the edited file, then create a temporary file with
+information such as the location of the cursor, etc...
+.br
+.sp
+In addition to the \fBSave Type\fR, the user must specify an
+\fBInteract Style\fR.
+.br
+.sp
+The \fBNone\fR type indicates that the application should not interact with
+the user while saving state.
+.br
+.sp
+The \fBErrors\fR type indicates that the application may interact with
+the user only if an error condition arises.
+.br
+.sp
+The \fBAny\fR type indicates that the application may interact with
+the user for any purpose.  Note that \fIxsm\fP will only allow one
+application to interact with the user at a time.
+.TP 18
+.B Shutdown
+A shutdown provides all the options found in a checkpoint, but in addition,
+can cause the session to exit.  Note that if the interaction style is
+\fBErrors\fR or \fBAny\fR, the user may cancel the shutdown.
+.br
+.sp
+The user may choose to exit the session without performing a checkpoint
+(an additional save type \fBNone\fR is available).
+.SH SEE ALSO
+smproxy(1)
+.SH AUTHORS
 Ralph Mor, X Consortium
+.br
+Jordan Brown, Quarterdeck Office Systems
