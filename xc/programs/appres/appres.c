@@ -1,5 +1,5 @@
 /*
- * $XConsortium: appres.c,v 1.3 89/07/27 19:06:48 jim Exp $
+ * $XConsortium: appres.c,v 1.4 89/08/14 11:16:53 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -45,7 +45,6 @@ main (argc, argv)
     char tmpbuf[1025];
     char buf[BUFSIZ];
     FILE *fp;
-    int n;
     Bool incont, printit;
     int clen, ilen;
 

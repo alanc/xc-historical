@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: oclock.c,v 1.6 89/07/21 13:44:46 jim Exp $";
+static char rcsid[] = "$XConsortium: oclock.c,v 1.7 89/07/23 11:40:34 rws Exp $";
 #endif /* lint */
 
 #include <X11/Intrinsic.h>
@@ -53,7 +53,6 @@ void main(argc, argv)
     int argc;
     char **argv;
 {
-    char host[256];
     Widget toplevel;
     Widget clock;
     Arg arg[2];

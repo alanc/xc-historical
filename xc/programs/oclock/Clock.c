@@ -283,7 +283,7 @@ static void Realize (gw, valueMask, attrs)
     }
     XtCreateWindow( gw, (unsigned)InputOutput, (Visual *)CopyFromParent,
 		     *valueMask, attrs );
-    Resize (gw);
+    Resize (w);
     new_time ((caddr_t) gw, 0);
 }
 
@@ -306,10 +306,7 @@ static void Redisplay(gw, event, region)
      XEvent *event;
      Region region;
 {
-    int		thick;
     ClockWidget	w;
-    XGCValues	myXGCV;
-    Display	*dpy;
 
     w = (ClockWidget) gw;
     paint_jewel (w, XtWindow (w), w->clock.jewelGC);
@@ -416,8 +413,6 @@ ClockWidget	w;
 Drawable	d;
 GC		gc;
 {
-	int	i;
-
 	if (!w->clock.polys_valid)
 		return;
 	if ((MINUTE_LENGTH >= (JEWEL_Y - JEWEL_SIZE/2.0) &&

@@ -15,7 +15,7 @@ implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: shapetest.c,v 1.1 89/07/23 11:26:11 rws Exp $ */
+/* $XConsortium: shapetest.c,v 1.2 89/08/21 08:56:32 rws Exp $ */
 #include <stdio.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
@@ -58,14 +58,10 @@ main(argc, argv)
 {
 	Window  w;
 	GC gc;
-	XGCValues xgcv;
 	char *windowName = "Test of Shape Extension";
-	char line[30];
 	XSetWindowAttributes xswa;
 	unsigned long	mask;
 	XEvent pe;
-	Pixmap tile_pat, stip_pat;
-	int     iteration = 0;
 	XColor screen_def_blue, exact_def_blue;
 	XColor screen_def_red, exact_def_red;
 
@@ -83,7 +79,7 @@ main(argc, argv)
 
 	XChangeProperty(dpy,
 	    w, XA_WM_NAME, XA_STRING, 8, PropModeReplace,
-	    windowName, strlen(windowName));
+	    (unsigned char *)windowName, strlen(windowName));
 
 	XShapeCombineRectangles (dpy, w, ShapeBounding, 0, 0, 
 		          rects, sizeof (rects) / sizeof (rects[0]),

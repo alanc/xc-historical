@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.20 89/10/30 18:36:45 jim Exp $
+ * $XConsortium: listres.c,v 1.21 89/10/30 18:51:35 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -146,7 +146,6 @@ main (argc, argv)
     int i;
     WidgetNode *topnode;
     Widget toplevel, container;
-    Bool list_all = False;
 
     ProgramName = argv[0];
 
