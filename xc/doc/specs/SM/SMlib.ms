@@ -20,13 +20,9 @@
 .TL
 \s+2\fBX Session Management Library\fP\s-2
 .sp
-Version 0.10
+Public Review Draft
 .sp
-Preliminary Public Review Draft
-.sp
-X Consortium Standard
-.sp
-X Version 11, Release 6
+X Consortium Draft Standard
 .AU
 Ralph Mor
 .AI
@@ -38,10 +34,11 @@ Copyright \(co 1993 by the Massachusetts Institute of Technology
 .sp 5
 Permission to use, copy, modify, and distribute this documentation for any
 purpose and without fee is hereby granted, provided that the above copyright
-notice and this permission notice appear in all copies.  MIT makes no
-representations about the suitability for any purpose of the information in
-this document.  This documentation is provided ``as is'' without express or
-implied warranty.
+notice and this permission notice appear in all copies.  MIT and the
+X Consortium make no representations about the suitability for any purpose
+of the information in this document.  This documentation is provided
+\*Qas is\*U  without express or implied warranty.  This document is only a
+draft standard of the X Consortium and is therefore subject to change.
 .DE
 .bp
 .bp 1
@@ -121,7 +118,7 @@ client will retain the same ID after it is restarted.
 .LP
 Once the client initializes itself with the session manager, it must be
 ready to respond to messages from the session manager.  For example, it
-might be asked to save it's state or to terminate.  In the case of a shutdown,
+might be asked to save its state or to terminate.  In the case of a shutdown,
 the session manager might give each client a chance to interact with the
 user and cancel the shutdown.
 .LP
@@ -647,16 +644,6 @@ values may be ORed together:
 	
 .PN SmcShutdownCancelledProcMask
 .LP
-.sp 0.5
-When changing all of the callbacks, the mask value of
-.PN SmcAllProcMask
-may be used.
-.LP
-The callbacks in
-.PN SmcCallbacks
-are defined in the description of
-.PN SmcOpenConnection .
-.LP
 .NH 2
 Setting, Deleting, and Retrieving Session Management Properties
 .XS
@@ -748,6 +735,7 @@ Rather, a callback of type
 .PN SmcPropReplyProc
 is invoked when the data is ready.
 .LP
+.bp
 .sM
 typedef void (*SmcPropReplyProc)();
 .LP
@@ -1491,7 +1479,7 @@ void SaveYourselfRequestProc\^(\^\fIsms_conn\fP, \fImanager_data\fP\^, \fIsave_t
 .FN
 .IP \fIsms_conn\fP 1i
 The session management connection object.
-.IP \fIclient_data\fP 1i
+.IP \fImanager_data\fP 1i
 Manager data specified when the callback was registered.
 .IP \fIsave_type\fP 1i
 Specifies the type of information that should be saved.
@@ -1768,48 +1756,26 @@ client IDs around from machine to machine, from user to user, and
 from session manager to session manager, while retaining the
 identity of the client.  This, combined with the indefinite
 persistence of client IDs, means that client IDs need to be globally
-unique.  The construction specified below will ensure that any
-client ID created by any user, session manager, and machine will be
-different from any other.
+unique.
 .LP
-A client ID is a string of XPCS characters encoded in ISO Latin 1 (ISO
-8859-1).  No null characters are allowed in this string.
+Call the
+.PN SmsGenerateClientID
+function to generate a globally unique client ID.
 .LP
-Certain portions of client ID strings are constructed from numbers.  These
-portions will be encoded either as decimal or hexadecimal character strings,
-padded with leading zeroes so as to fill the specified length.  Hexadecimal
-encodings will use the characters `0' through `9' and `A' through `F'.
+.sM
+.FD 0
+char *SmsGenerateClientID\^(\^\fIsms_conn\fP\^)
+.br
+    SmsConn \fIsms_conn\fP\^;
+.FN
+.IP \fIsms_conn\fP 1i
+The session management connection object.
 .LP
-Client IDs consist of the pieces described below.  The ID is formed by
-concatenating the pieces in sequence, without separator characters.
-.IP \(bu 4
-Version.  This is currently the character `1'.
-.IP \(bu 4
-Address type and address.  The address type will be one of
-.DS
-.ta 0.5i
-`1'	a 4-byte IP address encoded as 8 hexadecimal digits
-`2'	a 6-byte DECNET address encoded as 12 hexadecimal digits
-.DE
-.IP
-The address is the one of the network addresses of the machine where the
-session manager (not the client) is running.  For example, the IP address
-198.112.45.11 would be encoded as the string \*Q1C6702D0B\*U.
-.IP \(bu 4
-Time stamp.  A 13-digit decimal number specifying the number of
-milliseconds since 00:00:00 UTC, January 1, 1970.
-.IP \(bu 4
-Process-ID type and process-ID.  The process-ID type will be one of
-.DS
-.ta 0.5i
-`1'	a POSIX process-ID encoded as a 10-digit decimal number.
-.DE
-.IP
-The process-ID is the process-ID of the session manager, not of a client.
-.IP \(bu 4
-Sequence number.  This is a four-digit decimal number.  It is incremented
-every time the session manager creates an ID.  After reaching \*Q9999\*U it
-should wrap to \*Q0000\*U.
+.eM
+.PN NULL
+will be returned if the ID could not be generated.  Otherwise, the return
+value of the function is the client ID.  It should be freed with a call to
+free() when no longer needed.
 .LP
 .NH 2
 Sending a Save Yourself Message
@@ -1949,6 +1915,7 @@ The \fIInteract\fP\^ message grants the client the privilege of interacting
 with the user.  When the client is done interacting with the user, it must
 send an \fIInteract Done\fP\^ message to the session manager.
 .LP
+.bp
 .NH 2
 Sending a Die Message
 .XS
@@ -2022,7 +1989,6 @@ void SmsReturnProperties\^(\^\fIsms_conn\fP\^, \fInum_props\fP\^, \fIprops\fP\^)
 .br
     SmProp **\fIprops\fP\^;
 .FN
-.bp
 .IP \fIsms_conn\fP 1i
 The session management connection object.
 .IP \fInum_props\fP 1i
@@ -2142,6 +2108,7 @@ The session management connection object.
 .LP
 .eM
 .LP
+.bp
 .NH 2
 Informational Functions
 .XS
@@ -2221,6 +2188,7 @@ functions which can be used on the IceConn are IceConnectionNumber,
 and IceLastSequenceNumber.  Check the \fIInter-Client Exchange Library\fP\^
 document for more details on these functions.
 .LP
+.bp
 .NH 2
 Error Handling
 .XS
@@ -2348,32 +2316,35 @@ indicates that there is a single array of bytes.
 A type of
 .PN SmLISTofARRAY8
 indicates that there is a list of array of bytes.
-
+.LP
 .TS H
-l l c .
+l l l c .
 _
 .sp 6p
 .B
-Name	Type	Required?
+Name	Type	POSIX Type	Required?
+.R
 .sp 6p
 _
 .sp 6p
 .TH
-.R
-SmCloneCommand	OS-specific	Yes
-SmCurrentDirectory	OS-specific	No
-SmDiscardCommand	OS-specific	No
-SmEnvironment	OS-specific	No
-SmProcessID	OS-specific	No
-SmProgram	OS-specific	Yes
-SmRestartCommand	OS-specific	Yes
-SmResignCommand	OS-specific	No
-SmRestartStyleHint	SmCARD8	No
-SmShutdownCommand	OS-specific	No
-SmUserID	SmARRAY8	Yes
+SmCloneCommand	OS-specific	SmLISTofARRAY8	Yes
+SmCurrentDirectory	OS-specific	SmARRAY8	No
+SmDiscardCommand	OS-specific	SmLISTofARRAY8	No*
+SmEnvironment	OS-specific	SmLISTofARRAY8	No
+SmProcessID	OS-specific	SmARRAY8	No
+SmProgram	OS-specific	SmARRAY8	Yes
+SmRestartCommand	OS-specific	SmLISTofARRAY8	Yes
+SmResignCommand	OS-specific	SmLISTofARRAY8	No
+SmRestartStyleHint	SmCARD8	SmCARD8	No
+SmShutdownCommand	OS-specific	SmLISTofARRAY8	No
+SmUserID	SmARRAY8	SmARRAY8	Yes
 .sp 6p
 _
 .TE
+.LP
+* Required if any state is stored in an external repository (e.g. state file).
+.LP
 .IP SmCloneCommand 3
 This is like the 
 .PN SmRestartCommand 
@@ -2398,7 +2369,7 @@ in the
 On POSIX systems the type should be
 .PN SmLISTofARRAY8 .
 .IP SmEnvironment 3
-On POSIX based systems, this will contain an
+On POSIX based systems, this will be of type
 .PN SmLISTofARRAY8
 where the ARRAY8s alternate between environment variable name and environment
 variable value.  
@@ -2572,7 +2543,7 @@ Setup\fP\^ occurs on an ICE connection.  The authentication methods that
 are available are implementation dependent (ie. dependent on the ICElib
 and SMlib implementations in use).
 .LP
-In general, the session manager must supply it's clients with some
+In general, the session manager must supply its clients with some
 initial authentication data (for example, a key).  The means by which it
 supplies this data is implementation dependent.  The ICElib sample
 implementation provides a set of utility functions which manipulate
@@ -2585,7 +2556,7 @@ refer to the \fIInter-Client Exchange Library\fP\^ document,
 Appendix A - Authentication Utility Functions\fP\^.
 .LP
 In addition to the session manager providing the initial authentication
-data to it's clients, it must also provide this data to the ICE library by
+data to its clients, it must also provide this data to the ICE library by
 calling the
 .PN IceSetPaAuthData
 function.
@@ -2682,7 +2653,4 @@ of multi-threading in the ICE environment, is discussed in the
 .LP
 .EH ''''
 .OH ''''
-.EF ''''
-.OF ''''
-.bp
-.TC
+.YZ 3
