@@ -1,4 +1,4 @@
-/* $XConsortium: XChkWinEv.c,v 11.19 91/01/06 11:44:33 rws Exp $ */
+/* $XConsortium: XChkWinEv.c,v 11.20 91/02/17 13:50:40 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1987	*/
 
 /*
@@ -22,7 +22,7 @@ extern _XQEvent *_qfree;
 #else
 #define Const /**/
 #endif
-extern long Const _event_to_mask[];
+extern long Const _Xevent_to_mask[];
 #define AllPointers (PointerMotionMask|PointerMotionHintMask|ButtonMotionMask)
 #define AllButtons (Button1MotionMask|Button2MotionMask|Button3MotionMask|\
 		    Button4MotionMask|Button5MotionMask)
@@ -50,7 +50,7 @@ Bool XCheckWindowEvent (dpy, w, mask, event)
 		 prev = qelt, qelt = qelt->next) {
 		if ((qelt->event.xany.window == w) &&
 		    (qelt->event.type < LASTEvent) &&
-		    (_event_to_mask[qelt->event.type] & mask) &&
+		    (_Xevent_to_mask[qelt->event.type] & mask) &&
 		    ((qelt->event.type != MotionNotify) ||
 		     (mask & AllPointers) ||
 		     (mask & AllButtons & qelt->event.xmotion.state))) {

@@ -1,4 +1,4 @@
-/* $XConsortium: evtomask.c,v 1.6 91/01/06 11:48:59 rws Exp $ */
+/* $XConsortium: evtomask.c,v 1.7 91/01/08 14:42:03 gildea Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 /*
@@ -25,7 +25,7 @@ without express or implied warranty.
  * This array can be used given an event type to determine the mask bits
  * that could have generated it.
  */
-long Const _event_to_mask [LASTEvent] = {
+long Const _Xevent_to_mask [LASTEvent] = {
 	0,						/* no event 0 */
 	0,						/* no event 1 */
 	KeyPressMask,					/* KeyPress */

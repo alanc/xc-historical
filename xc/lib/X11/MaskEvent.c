@@ -1,4 +1,4 @@
-/* $XConsortium: XMaskEvent.c,v 11.20 90/12/11 11:08:23 rws Exp $ */
+/* $XConsortium: XMaskEvent.c,v 11.21 91/01/06 11:47:01 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -23,7 +23,7 @@ without express or implied warranty.
 #endif
 
 extern _XQEvent *_qfree;
-extern long Const _event_to_mask[];
+extern long Const _Xevent_to_mask[];
 #define AllPointers (PointerMotionMask|PointerMotionHintMask|ButtonMotionMask)
 #define AllButtons (Button1MotionMask|Button2MotionMask|Button3MotionMask|\
 		    Button4MotionMask|Button5MotionMask)
@@ -48,7 +48,7 @@ XMaskEvent (dpy, mask, event)
 		 qelt;
 		 prev = qelt, qelt = qelt->next) {
 		if ((qelt->event.type < LASTEvent) &&
-		    (_event_to_mask[qelt->event.type] & mask) &&
+		    (_Xevent_to_mask[qelt->event.type] & mask) &&
 		    ((qelt->event.type != MotionNotify) ||
 		     (mask & AllPointers) ||
 		     (mask & AllButtons & qelt->event.xmotion.state))) {

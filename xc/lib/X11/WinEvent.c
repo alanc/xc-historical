@@ -1,4 +1,4 @@
-/* $XConsortium: XWinEvent.c,v 11.17 90/12/11 11:08:52 rws Exp $ */
+/* $XConsortium: XWinEvent.c,v 11.18 91/01/06 11:48:48 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -23,7 +23,7 @@ without express or implied warranty.
 #endif
 
 extern _XQEvent *_qfree;
-extern long Const _event_to_mask[];
+extern long Const _Xevent_to_mask[];
 #define AllPointers (PointerMotionMask|PointerMotionHintMask|ButtonMotionMask)
 #define AllButtons (Button1MotionMask|Button2MotionMask|Button3MotionMask|\
 		    Button4MotionMask|Button5MotionMask)
@@ -52,7 +52,7 @@ XWindowEvent (dpy, w, mask, event)
 		 prev = qelt, qelt = qelt->next) {
 		if ((qelt->event.xany.window == w) &&
 		    (qelt->event.type < LASTEvent) &&
-		    (_event_to_mask[qelt->event.type] & mask) &&
+		    (_Xevent_to_mask[qelt->event.type] & mask) &&
 		    ((qelt->event.type != MotionNotify) ||
 		     (mask & AllPointers) ||
 		     (mask & AllButtons & qelt->event.xmotion.state))) {
