@@ -1,7 +1,7 @@
 /*
  * xev - event diagnostics
  *
- * $XHeader: xmag.c,v 1.12 88/07/12 09:29:51 jim Exp $
+ * $XHeader: xev.c,v 1.1 88/07/13 15:38:15 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -52,7 +52,7 @@ main (argc, argv)
     int i;
     XSizeHints hints;
     Window w;
-    Pixel fore, back, border;
+    XSetWindowAttributes attr;
     int done;
 
     ProgramName = argv[0];
@@ -87,15 +87,11 @@ main (argc, argv)
     set_sizehints (&hints, 10, 10, 400, 200, 100, 100, geom);
 
     screen = DefaultScreen (dpy);
-    fore = WhitePixel (dpy, screen);
-    back = BlackPixel (dpy, screen);
-    border = WhitePixel (dpy, screen);
 
-    w = XCreateSimpleWindow (dpy, RootWindow (dpy, screen), hints.x, hints.y,
-			     hints.width, hints.height, 2, border, back);
-
+    attr.background_pixel = BlackPixel (dpy, screen);
+    attr.border_pixel = WhitePixel (dpy, screen);
     /* select for all events */
-    XSelectInput (dpy, w, (KeyPressMask | KeyReleaseMask | ButtonPressMask |
+    attr.event_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask |
 			   ButtonReleaseMask | EnterWindowMask |
 			   LeaveWindowMask | PointerMotionMask | 
 			   PointerMotionHintMask | Button1MotionMask |
@@ -106,7 +102,12 @@ main (argc, argv)
 			   StructureNotifyMask | ResizeRedirectMask | 
 			   SubstructureNotifyMask | SubstructureRedirectMask |
 			   FocusChangeMask | PropertyChangeMask |
-			   ColormapChangeMask | OwnerGrabButtonMask));
+			   ColormapChangeMask | OwnerGrabButtonMask;
+
+    w = XCreateWindow (dpy, RootWindow (dpy, screen), hints.x, hints.y,
+		       hints.width, hints.height, 2, 0, InputOutput,
+		       (Visual *)CopyFromParent,
+		       CWBackPixel|CWBorderPixel|CWEventMask, &attr);
 
     XSetStandardProperties (dpy, w, "Event Tester", NULL, (Pixmap) 0,
 			    argv, argc, &hints);
