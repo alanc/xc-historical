@@ -21,6 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $Header$ */
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"

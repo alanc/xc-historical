@@ -21,6 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $Header$ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
