@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.37 90/09/15 12:16:02 keith Exp $
+ * $XConsortium: Panner.c,v 1.38 90/12/02 18:15:06 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -288,7 +288,7 @@ static void move_shadow (pw)
 	int lw = pw->panner.shadow_thickness + pw->panner.line_width * 2;
 	int pad = pw->panner.internal_border;
 
-	if (pw->panner.knob_height > lw && pw->panner.knob_width > lw) {
+	if ((int)pw->panner.knob_height > lw && (int)pw->panner.knob_width > lw) {
 	    register XRectangle *r = pw->panner.shadow_rects;
 	    r->x = (short) (pw->panner.knob_x + pad + pw->panner.knob_width);
 	    r->y = (short) (pw->panner.knob_y + pad + lw);
@@ -345,13 +345,13 @@ static void rescale (pw)
     if (pw->panner.canvas_height < 1)
       pw->panner.canvas_height = pw->core.height;
 
-    if (pw->core.width <= hpad) hpad = 0;
-    if (pw->core.height <= vpad) vpad = 0;
+    if ((int)pw->core.width <= hpad) hpad = 0;
+    if ((int)pw->core.height <= vpad) vpad = 0;
 
-    pw->panner.haspect = (((double) (pw->core.width - hpad)) /
-			  ((double) pw->panner.canvas_width));
-    pw->panner.vaspect = (((double) (pw->core.height - vpad)) /
-			  ((double) pw->panner.canvas_height));
+    pw->panner.haspect = ((double) pw->core.width - hpad) /
+			  (double) pw->panner.canvas_width;
+    pw->panner.vaspect = ((double) pw->core.height - vpad) /
+			  (double) pw->panner.canvas_height;
     scale_knob (pw, TRUE, TRUE);
 }
 
