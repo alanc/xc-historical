@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitEdit.c,v 1.2 90/03/29 19:05:37 dmatic Exp $
+ * $XConsortium: BitEdit.c,v 1.3 90/03/30 15:26:00 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -413,7 +413,7 @@ void TheCallback(w, id)
     switch (*id) {
 	
     case Load:
-	filename = "";
+	BWGetFilepath(bitmap_widget, &filename);
     RetryLoad:
 	if (PopupDialog(input_dialog, "Load file:", filename, &filename) == 
 	    Okay) {
@@ -431,7 +431,7 @@ void TheCallback(w, id)
 	break;
 	
     case Insert:
-	filename = "";
+	BWGetFilepath(bitmap_widget, &filename);
     RetryInsert:
 	if (PopupDialog(input_dialog, "Insert file:", filename, &filename) == 
 	    Okay) {

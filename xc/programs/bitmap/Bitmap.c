@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.6 90/03/31 03:17:51 dmatic Exp $
+ * $XConsortium: Bitmap.c,v 1.7 90/03/31 04:40:05 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -317,7 +317,7 @@ void BWDebug(w)
     XCreateBitmapFromData(XtDisplay(BW), XtWindow(BW),\
 			  image->data, image->width, image->height)
 
-#define CreateCleanData(length) XtCalloc(length, 1)
+#define CreateCleanData(length) XtCalloc(length, sizeof(char))
  
 Pixmap BWGetPixmap(w) 
     Widget w;
@@ -376,7 +376,7 @@ Pixmap BWGetUnzoomedPixmap(w)
 
 XImage *CreateBitmapImage();
 
-void ConvertToBitmapImage();
+XImage *ConvertToBitmapImage();
 
 XImage *GetImage(BW, pixmap)
     BitmapWidget BW;
@@ -386,7 +386,6 @@ XImage *GetImage(BW, pixmap)
     int x, y;
     unsigned int width, height, border_width, depth;
     XImage *source, *image;
-    char *image_data;
 
     XGetGeometry(XtDisplay(BW), pixmap, &root, &x, &y,
 		 &width, &height, &border_width, &depth);
@@ -394,10 +393,7 @@ XImage *GetImage(BW, pixmap)
     source = XGetImage(XtDisplay(BW), pixmap, x, y, width, height,
 		     1, XYPixmap);
 
-    image_data = CreateCleanData(Length(width, height));
-    image = CreateBitmapImage(BW, image_data, width, height);
-
-    ConvertToBitmapImage(source, image);
+    image = ConvertToBitmapImage(BW, source);
 
     return image;
 }
@@ -1837,15 +1833,23 @@ void CopyImageData(source, destination, from_x, from_y, to_x, to_y, at_x, at_y)
 		ClearBit(destination, at_x + x, at_y + y);
 }
       
-void ConvertToBitmapImage(source, destination)
-    XImage *source, *destination;
+XImage *ConvertToBitmapImage(BW, image)
+    BitmapWidget BW;
+    XImage *image;
 {
+    XImage *bitmap_image;
+    char   *data;
     Position x, y;
     
-    for (x = 0; x < min(source->width, destination->width); x++)
-	for (y = 0; y < min(source->height,destination-> height); y++)
-	    if ((XGetPixel(source, x, y) != 0) != GetBit(destination, x, y))
-		InvertBit(destination, x, y);
+    data = CreateCleanData(Length(image->width, image->height));
+    bitmap_image = CreateBitmapImage(BW, data, image->width, image->height);
+
+    for (x = 0; x < min(image->width, bitmap_image->width); x++)
+	for (y = 0; y < min(image->height, bitmap_image->height); y++)
+	    if ((XGetPixel(image, x, y) != 0) != GetBit(bitmap_image, x, y))
+		InvertBit(bitmap_image, x, y);
+
+    return bitmap_image;
 }
 
 void TransferImageData(source, destination)
@@ -1854,7 +1858,7 @@ void TransferImageData(source, destination)
     Position x, y;
     
     for (x = 0; x < min(source->width, destination->width); x++)
-	for (y = 0; y < min(source->height,destination-> height); y++)
+	for (y = 0; y < min(source->height, destination->height); y++)
 	    if (GetBit(source, x, y) != GetBit(destination, x, y))
 		InvertBit(destination, x, y);
 }
@@ -3563,6 +3567,24 @@ String BWGetFilename(w, str)
     BitmapWidget BW = (BitmapWidget) w;
     
     *str = XtNewString(BW->bitmap.filename);
+
+    return *str;
+}
+
+String BWGetFilepath(w, str)
+    Widget w;
+    String *str;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    String end;
+
+    *str = XtNewString(BW->bitmap.filename);
+    end = rindex(*str, '/');
+
+    if (end)
+	*(end + 1) = '\0';
+    else 
+	**str = '\0';
 
     return *str;
 }

@@ -41,7 +41,7 @@
 *input*icon:				Term
 *quit*icon:				Term
 *error*icon:				Excl
-*Dialog.value.borderWidth:		0
+!*Dialog.value.borderWidth:		0
 *Dialog.yes.label:			Yes
 *Dialog.no.label:			No
 *Dialog.okay.label:			OK
