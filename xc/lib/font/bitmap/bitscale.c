@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitscale.c,v 1.16 93/09/20 15:56:36 gildea Exp $
+ * $XConsortium: bitscale.c,v 1.17 93/09/22 16:59:19 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -748,7 +748,9 @@ ScaleFont(opf, widthMult, heightMult, sWidthMult, sHeightMult, vals,
 
     bytestoalloc = 0;
 
+#undef MAXSHORT
 #define MAXSHORT    32767
+#undef MINSHORT
 #define MINSHORT    -32768
 
     pfi->anamorphic = FALSE;
