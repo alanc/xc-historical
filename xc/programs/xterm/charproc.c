@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.102 89/10/19 14:57:49 jim Exp $
+ * $XConsortium: charproc.c,v 1.103 89/10/27 12:18:30 jim Exp $
  */
 
 
@@ -140,7 +140,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.102 89/10/19 14:57:49 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.103 89/10/27 12:18:30 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -213,6 +213,8 @@ static char defaultTranslations[] =
  Ctrl ~Meta <Btn2Down>:         create-menu(vtMenu) XawPositionSimpleMenu(vtMenu) MenuPopup(vtMenu) \n\
 ~Ctrl ~Meta <Btn2Down>:		ignore()	\n\
 ~Ctrl ~Meta <Btn2Up>:		insert-selection(PRIMARY, CUT_BUFFER0) \n\
+ Ctrl ~Meta <Btn3Down>:         create-menu(fontMenu) XawPositionSimpleMenu(fontMenu) MenuPopup(fontMenu) \n\
+~Ctrl ~Meta <Btn3Down>:		ignore()	\n\
 ~Ctrl ~Meta <Btn3Down>:		start-extend()	\n\
       ~Meta <Btn3Motion>:	select-extend()	\n\
 ~Ctrl ~Meta <BtnUp>:		select-end(PRIMARY, CUT_BUFFER0) \n\
@@ -395,7 +397,19 @@ static XtResource resources[] = {
 	XtRBoolean, (caddr_t) &defaultFALSE},
 {XtNallowSendEvents, XtCAllowSendEvents, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.allowSendEvents),
-	XtRBoolean, (caddr_t) &defaultFALSE}
+	XtRBoolean, (caddr_t) &defaultFALSE},
+{"font1", "Font1", XtRString, sizeof(String),
+	XtOffset(XtermWidget, screen.menu_font_names[fontMenu_font1]),
+	XtRString, (caddr_t) NULL},
+{"font2", "Font2", XtRString, sizeof(String),
+	XtOffset(XtermWidget, screen.menu_font_names[fontMenu_font2]),
+	XtRString, (caddr_t) NULL},
+{"font3", "Font3", XtRString, sizeof(String),
+	XtOffset(XtermWidget, screen.menu_font_names[fontMenu_font3]),
+	XtRString, (caddr_t) NULL},
+{"font4", "Font4", XtRString, sizeof(String),
+	XtOffset(XtermWidget, screen.menu_font_names[fontMenu_font4]),
+	XtRString, (caddr_t) NULL},
 };
 
 
@@ -1982,6 +1996,13 @@ static void VTInitialize (request, new)
    new->screen.eight_bits = request->screen.eight_bits;
    new->screen.allowSendEvents = request->screen.allowSendEvents;
    new->misc.titeInhibit = request->misc.titeInhibit;
+   for (i = 0; i < NMENUFONTS; i++) {
+       new->screen.menu_font_names[i] = request->screen.menu_font_names[i];
+   }
+   /* set default in realize proc */
+   new->screen.menu_font_names[fontMenu_fontdefault] = NULL;
+   new->screen.menu_font_names[fontMenu_fontother] = NULL;
+   new->screen.menu_font_number = fontMenu_fontdefault;
 
     /*
      * The definition of -rv now is that it changes the definition of 
@@ -2043,13 +2064,15 @@ XSetWindowAttributes *values;
 
 	TabReset (term->tabs);
 
+	screen->menu_font_names[fontMenu_fontdefault] = term->misc.f_n;
 	screen->fnt_norm = screen->fnt_bold = NULL;
-	if (!try_new_font (screen, term->misc.f_n, term->misc.f_b, False)) {
+	if (!try_new_font(screen, term->misc.f_n, term->misc.f_b, False, 0)) {
 	    if (XmuCompareISOLatin1(term->misc.f_n, "fixed") != 0) {
 		fprintf (stderr, 
 		     "%s:  unable to open font \"%s\", trying \"fixed\"....\n",
 		     xterm_name, term->misc.f_n);
-		(void) try_new_font (screen, "fixed", NULL, False);
+		(void) try_new_font (screen, "fixed", NULL, False, 0);
+		screen->menu_font_names[fontMenu_fontdefault] = "fixed";
 	    }
 	}
 
@@ -2567,10 +2590,12 @@ void HandleSetFont(w, event, params, param_count)
 
     switch (*param_count) {
       case 1:
-	didit = try_new_font (&term->screen, params[0], NULL, True);
+	didit = try_new_font (&term->screen, params[0], NULL, True, 
+			      fontMenu_fontother);
 	break;
       case 2:
-	didit = try_new_font (&term->screen, params[0], params[1], True);
+	didit = try_new_font (&term->screen, params[0], params[1], True, 
+			      fontMenu_fontother);
 	break;
       default:
 	Bell();			/* want to ring twice */
@@ -2580,18 +2605,44 @@ void HandleSetFont(w, event, params, param_count)
 }
 
 
-int try_new_font (screen, nfontname, bfontname, doresize)
+void set_vt_font (i)
+    int i;
+{
+    TScreen *screen = &term->screen;
+
+    if (i < 0 || i > fontMenu_font4) {
+	Bell();
+	return;
+    }
+    if (!try_new_font(screen, screen->menu_font_names[i], NULL, True, i)) {
+	Bell();
+    }
+    return;
+}
+
+
+int try_new_font (screen, nfontname, bfontname, doresize, fontnum)
     TScreen *screen;
     char *nfontname, *bfontname;
     Bool doresize;
+    int fontnum;
 {
     XFontStruct *nfs = NULL, *bfs = NULL;
     XGCValues xgcv;
     unsigned long mask;
     GC new_normalGC = NULL, new_normalboldGC = NULL;
     GC new_reverseGC = NULL, new_reverseboldGC = NULL;
+    char *tmpname = NULL;
 
     if (!nfontname) return 0;
+
+    if (fontnum == fontMenu_fontother &&
+	nfontname != screen->menu_font_names[fontnum]) {
+	/* copy name to static buf */
+	tmpname = (char *) malloc (strlen(nfontname) + 1);
+	if (!tmpname) return 0;
+	strcmp (tmpname, nfontname);
+    }
 
     if (!(nfs = XLoadQueryFont (screen->display, nfontname))) goto bad;
 
@@ -2647,14 +2698,24 @@ int try_new_font (screen, nfontname, bfontname, doresize)
     screen->fnt_bold = bfs;
     screen->fnt_bold = screen->fnt_norm;
     screen->enbolden = (nfs == bfs);
+    set_menu_font (0);
+    screen->menu_font_number = fontnum;
+    set_menu_font (1);
     set_cursor_gcs (screen);
     update_font_info (screen, doresize);
+    if (tmpname) {			/* if setting other */
+	if (screen->menu_font_names[fontnum])
+	  free (screen->menu_font_names[fontnum]);
+	screen->menu_font_names[fontnum] = tmpname;
+    }
+
    /*
-     * XXX - need to resize and redisplay
-     */
+    * XXX - need to resize and redisplay
+    */
     return 1;
 
   bad:
+    if (tmpname) free (tmpname);
     if (new_normalGC)
       XtReleaseGC ((Widget) term, screen->normalGC);
     if (new_normalGC && new_normalGC != new_normalboldGC)

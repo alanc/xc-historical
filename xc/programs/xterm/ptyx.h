@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.33 89/10/03 12:41:40 jim Exp $
+ *	$XConsortium: ptyx.h,v 1.34 89/10/27 12:18:04 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -137,6 +137,8 @@ typedef Char **ScrnBuf;
 #define	PM	0x9E
 #define	APC	0x9F
 #define	RDEL	0xFF
+
+#define NMENUFONTS 6
 
 #define	NBOX	5			/* Number of Points in box	*/
 #define	NPARAM	10			/* Max. parameters		*/
@@ -343,7 +345,9 @@ typedef struct {
 	Cardinal	selection_count; /* how many atoms in use */
 	Boolean		eight_bits;	/* use 8th bit instead of ESC prefix */
 	Pixmap		menu_item_bitmap;	/* mask for checking items */
-	Widget		mainMenu, vtMenu, tekMenu;
+	Widget		mainMenu, vtMenu, tekMenu, fontMenu;
+	char*		menu_font_names[NMENUFONTS];
+	int		menu_font_number;
 } TScreen;
 
 typedef struct _TekPart {

@@ -25,7 +25,7 @@ static void do_securekbd(), do_allowsends(), do_visualbell(), do_logging(),
   do_altscreen(), do_softreset(), do_hardreset(), do_tekmode(), do_vthide(), 
   do_tektextlarge(), do_tektext2(), do_tektext3(), do_tektextsmall(), 
   do_tekpage(), do_tekreset(), do_tekcopy(), do_vtshow(), do_vtmode(), 
-  do_tekhide();
+  do_tekhide(), do_vtfont();
 
 
 /*
@@ -69,6 +69,15 @@ MenuEntry vtMenuEntries[] = {
     { "tekshow",	do_tekshow, NULL },		/* 19 */
     { "tekmode",	do_tekmode, NULL },		/* 20 */
     { "vthide",		do_vthide, NULL }};		/* 21 */
+
+MenuEntry fontMenuEntries[] = {
+    { "fontdefault",	do_vtfont, NULL },		/*  0 */
+    { "font1",		do_vtfont, NULL },		/*  1 */
+    { "font2",		do_vtfont, NULL },		/*  2 */
+    { "font3",		do_vtfont, NULL },		/*  3 */
+    { "font4",		do_vtfont, NULL },		/*  4 */
+    { "fontother",	do_vtfont, NULL }};		/*  5 */
+    /* this should match NMENUFONTS in ptyx.h */
 
 MenuEntry tekMenuEntries[] = {
     { "tektextlarge",	do_tektextlarge, NULL },	/*  0 */
@@ -151,6 +160,14 @@ void HandleCreateMenu (w, event, params, param_count)
 		gotmenus++;
 	    }
 	    break;
+	  case 'f':
+	    if (!screen->fontMenu) {
+		screen->fontMenu = create_menu (term, toplevel, "fontMenu",
+						fontMenuEntries,
+						NMENUFONTS);  
+		set_vt_font (0);
+	    }
+	    break;
 	  case 't':
 	    if (!screen->tekMenu) {
 		screen->tekMenu = create_menu (term, toplevel, "tekMenu",
@@ -200,6 +217,7 @@ static Widget create_menu (xtw, toplevel, name, entries, nentries)
 
     for (; nentries > 0; nentries--, entries++) {
 	cb[0].callback = (XtCallbackProc) entries->function;
+	cb[0].closure = (caddr_t) entries->name;
 	entries->widget = XtCreateManagedWidget (entries->name, 
 						 (entries->function ?
 						  smeBSBObjectClass :
@@ -611,6 +629,28 @@ static void do_vthide (gw, closure, data)
 
     set_vt_visibility (FALSE);
     if (!screen->TekEmu) switch_modes (False);	/* switch to tek mode */
+}
+
+
+/*
+ * vtfont menu
+ */
+
+static void do_vtfont (gw, closure, data)
+    Widget gw;
+    caddr_t closure, data;
+{
+    register TScreen *screen = &term->screen;
+    char *entryname = (char *) closure;
+    int i;
+
+    for (i = 0; i < NMENUFONTS; i++) {
+	if (strcmp (entryname, fontMenuEntries[i].name) == 0) {
+	    set_vt_font (i);
+	    return;
+	}
+    }
+    Bell();
 }
 
 

@@ -7,6 +7,7 @@ typedef struct _MenuEntry {
 } MenuEntry;
 
 extern MenuEntry mainMenuEntries[], vtMenuEntries[], tekMenuEntries[];
+extern MenuEntry fontMenuEntries[];
 extern Arg menuArgs[];
 
 extern void HandleAllowSends(), HandleVisualBell(),
@@ -43,6 +44,7 @@ extern void HandleAllowSends(), HandleVisualBell(),
 #define mainMenu_line2 11
 #define mainMenu_quit 12
 
+
 /*
  * items in vt100 mode menu
  */
@@ -68,6 +70,17 @@ extern void HandleAllowSends(), HandleVisualBell(),
 #define vtMenu_tekshow 19
 #define vtMenu_tekmode 20
 #define vtMenu_vthide 21
+
+/*
+ * items in vt100 font menu
+ */
+#define fontMenu_fontdefault 0
+#define fontMenu_font1 1
+#define fontMenu_font2 2
+#define fontMenu_font3 3
+#define fontMenu_font4 4
+#define fontMenu_fontother 5
+/* this should match NMENUFONTS in ptyx.h */
 
 /*
  * items in tek4014 mode menu
@@ -241,4 +254,9 @@ extern void HandleAllowSends(), HandleVisualBell(),
 #define set_tekfont_menu_item(n,val) \
   update_menu_item (term->screen.tekMenu, \
 		    tekMenuEntries[FS2MI(n)].widget, \
+		    (val))
+
+#define set_menu_font(val) \
+  update_menu_item (term->screen.fontMenu, \
+		    fontMenuEntries[term->screen.menu_font_number].widget, \
 		    (val))
