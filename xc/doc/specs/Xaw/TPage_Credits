@@ -1,4 +1,4 @@
-.\" $XConsortium: TPage_Credits,v 1.14 91/07/30 17:57:30 converse Exp $
+.\" $XConsortium: TPage_Credits,v 1.15 94/04/14 18:17:13 kaleb Exp $
 .ds CH
 .ds CF
 .ps 11
@@ -38,8 +38,8 @@ to distribution of the software without specific, written prior permission.
 M.I.T and Digital makes no representations about the suitability of the
 software described herein for any purpose.
 It is provided ``as is'' without express or implied warranty.
-.ps 11
-.nr PS 11
+.ps 9
+.nr PS 9
 .bp 
 .XS v
 Acknowledgments
@@ -104,9 +104,8 @@ spending nearly a month with me working out all the annoying little
 details.
 .sp
 .Ds 0
-Chris D. Peterson
-MIT X Consortium
-December 1989
+Chris D. Peterson 
+MIT X Consortium 1989
 .De
 .LP
 .sp
@@ -115,22 +114,21 @@ the MIT X Consortium, with significant contributions by Jim Fulton (NCD).
 .sp
 .Ds 0
 Donna Converse
-MIT X Consortium
-July 1991
+MIT X Consortium 1991
 .De
 .LP
 .sp
-The R6 edition of this document has been edited to reflect changes brought
-about by research staff of the Omron Corporation, with special
+The R6 edition of this document has been edited to reflect changes 
+brought about by research staff of the Omron Corporation, with special
 recognition to Li Yuhong, Seiji Kuwari, and Hiroshi Kuribayashi for 
 the X11R5/contrib/lib/Xaw internationalization that inspired this version.
 .sp
 .Ds 0
 Frank Sheeran
-Omron Corporation
-March 1994
+Omron Corporation 1994
 .De
-.bp
+.ps 11
+.nr PS 11
 .ds LH \fBAthena Widget Set\fP
 .ds CH
 .ds RH \fBX11, Release 6\fP
