@@ -1,5 +1,5 @@
 /*
- * $XConsortium: DisplayQue.c,v 1.2 89/08/17 14:06:45 jim Exp $
+ * $XConsortium: DisplayQue.c,v 1.3 89/10/08 14:59:33 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -37,8 +37,8 @@ static int _DQCloseDisplay();
  * XmuDQCreate - create a display queue
  */
 XmuDisplayQueue *XmuDQCreate (closefunc, freefunc, data)
-    int (*closefunc)();
-    int (*freefunc)();
+    XmuCloseDisplayQueueProc closefunc;
+    XmuFreeDisplayQueueProc freefunc;
     caddr_t data;
 {
     XmuDisplayQueue *q = (XmuDisplayQueue *) malloc (sizeof (XmuDisplayQueue));
