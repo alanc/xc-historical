@@ -1,4 +1,4 @@
-/* $XConsortium: miPick.c,v 5.3 92/02/06 11:19:03 mor Exp $ */
+/* $XConsortium: miPick.c,v 5.4 92/03/04 14:10:47 hersh Exp $ */
 
 
 /***********************************************************
@@ -420,8 +420,6 @@ UpdatePickMeasure(pPM, size, pInput)
     ddULONG		    start_el;
     ddULONG		    num_els;
     ddpex4rtn		    err;
-    listofObj		    *start_path;
-    extern ddpex3rtn BeginPicking();
     extern ddpex3rtn EndPicking();
     extern ddpex4rtn traverser();
 
@@ -446,35 +444,16 @@ UpdatePickMeasure(pPM, size, pInput)
 	}
     ppm->status = PEXNoPick;
 
-    if (ppm->path->numObj)	{	/* there's a start path */
-	trav_state.exec_str_flag = ES_FOLLOW_PICK;
-	trav_state.p_curr_pick_el = (ddPickPath *) ppm->path->pList;
-	trav_state.p_curr_sc_el = (ddElementRef *) NULL;
-	/* set to follow start path */
-	pos = NULL;
-	pstr = (diStructHandle) trav_state.p_curr_pick_el->structure;
-	start_el = 1;
-	num_els = MISTR_NUM_EL((miStructPtr) pstr->deviceData);
-    } else {
-	trav_state.exec_str_flag = ES_YES;
-	trav_state.p_curr_pick_el = (ddPickPath *) NULL;
-	trav_state.p_curr_sc_el = (ddElementRef *) NULL;
-	/* set to traverse all posted structs */
-	pos = pwks->postedStructs.postruct;
-	pos = pos->next;
-	pstr = pos->pstruct;
-	start_el = 1;
-	num_els = MISTR_NUM_EL((miStructPtr) pstr->deviceData);
-    }
+    trav_state.exec_str_flag = ES_YES;
+    trav_state.p_curr_pick_el = (ddPickPath *) NULL;
+    trav_state.p_curr_sc_el = (ddElementRef *) NULL;
+    /* set to traverse all posted structs */
+    pos = pwks->postedStructs.postruct;
+    pos = pos->next;
+    pstr = pos->pstruct;
+    start_el = 1;
+    num_els = MISTR_NUM_EL((miStructPtr) pstr->deviceData);
 
-    /* before starting pick, copy start path and save it for later
-     * the new pick path will replace it
-     */
-    start_path = puCreateList( DD_PICK_PATH );
-    if (!start_path) 
-	return (BadAlloc);
-    
-    puCopyList( ppm->path, start_path );
 
     BeginPicking(pwks->pRend, pPM);
 
@@ -505,8 +484,6 @@ UpdatePickMeasure(pPM, size, pInput)
 
     if (err == Success ) {
     /* now, update the structure ref counts */
-        path_update_struct_refs(start_path, (diResourceHandle) NULL,
-				PICK_RESOURCE, REMOVE);
         path_update_struct_refs(ppm->path, (diResourceHandle) NULL,
 				PICK_RESOURCE, ADD);
     } else {
@@ -514,7 +491,6 @@ UpdatePickMeasure(pPM, size, pInput)
 	return(err);
     }
 
-    puDeleteList( start_path );
     return (Success);
 }				/* UpdatePickMeasure */
 
