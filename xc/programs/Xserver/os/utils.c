@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.136 94/01/21 22:00:30 dpw Exp $ */
+/* $XConsortium: utils.c,v 1.138 94/02/02 01:29:45 dpw Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -79,6 +79,9 @@ extern Bool defeatAccessControl;
 
 Bool CoreDump;
 Bool noTestExtensions;
+#ifdef XKB
+Bool noXkbExtension;
+#endif
 int auditTrailLevel = 1;
 
 void ddxUseMsg();
@@ -249,6 +252,7 @@ void UseMsg()
     ErrorF("-fp string             default font path\n");
     ErrorF("-help                  prints message with these options\n");
     ErrorF("-I                     ignore all remaining arguments\n");
+    ErrorF("-kb                    disable XKB extension\n");
 #ifdef RLIMIT_DATA
     ErrorF("-ld int                limit data space to N Kb\n");
 #endif
@@ -429,6 +433,12 @@ char	*argv[];
 	{
 	    UseMsg();
 	    exit(0);
+	}
+	else if ( strcmp( argv[i], "-kb") == 0)
+	{
+#ifdef XKB
+	    noXkbExtension = TRUE;
+#endif
 	}
 #ifdef RLIMIT_DATA
 	else if ( strcmp( argv[i], "-ld") == 0)
