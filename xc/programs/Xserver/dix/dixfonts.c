@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.4 89/03/11 16:49:08 rws Exp $ */
+/* $XConsortium: dixfonts.c,v 1.5 89/03/18 16:24:09 rws Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -141,7 +141,8 @@ DescribeFont(pfontname, lenfname, pfi, ppfp)
     FontPtr pfont;
     Bool found;
 
-    found = FontFilePropLoad(pfontname, lenfname, &pfont, pfi, ppfp);
+    found = FontFilePropLoad(pfontname, (unsigned int)lenfname,
+			     &pfont, pfi, ppfp);
 
     if (!found)
 	return FALSE;
@@ -156,7 +157,7 @@ DescribeFont(pfontname, lenfname, pfi, ppfp)
 	    if (*ppfp == NullDIXFontProp)
 		return FALSE;
 	    bcopy((char *)pfont->pFP, (char *)*ppfp,
-		sizeof(DIXFontProp) *pfi->nProps);
+		  (int)(sizeof(DIXFontProp) * pfi->nProps));
 	}
     }
 
