@@ -35,9 +35,9 @@ University of California.
 #define NEED_REPLIES
 #define NEED_EVENTS
 
-#include "Xproto.h"
-#include "Xlibint.h"
-#include "xtestext1.h"
+#include <X11/Xproto.h>
+#include <X11/Xlibint.h>
+#include <X11/extensions/xtestext1.h>
 
 /******************************************************************************
  * variables
