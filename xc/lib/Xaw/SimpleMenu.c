@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.24 89/10/02 19:14:02 kit Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.25 89/10/05 17:50:30 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -419,14 +419,15 @@ Widget current, request, new;
     
     if (!XtIsRealized(current)) return(FALSE);
     
-    if (smw_old->core.width != smw_old->core.width) {
-	smw_new->simple_menu.menu_width = (smw_new->core.width != 0);
-	layout = TRUE;
-    }
-
-    if (smw_old->core.height != smw_old->core.height) {
-	smw_new->simple_menu.menu_height = (smw_new->core.height != 0);
-	layout = TRUE;
+    if (!smw_new->simple_menu.recursive_set_values) {
+	if (smw_new->core.width != smw_old->core.width) {
+	    smw_new->simple_menu.menu_width = (smw_new->core.width != 0);
+	    layout = TRUE;
+	}
+	if (smw_new->core.height != smw_old->core.height) {
+	    smw_new->simple_menu.menu_height = (smw_new->core.height != 0);
+	    layout = TRUE;
+	}
     }
 
     if (smw_old->simple_menu.cursor != smw_new->simple_menu.cursor)
