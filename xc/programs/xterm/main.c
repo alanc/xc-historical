@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.197 91/11/09 16:22:33 keith Exp $";
+static char *rid="$XConsortium: main.c,v 1.198 91/12/18 14:46:32 eswu Exp $";
 #endif /* lint */
 
 /*
@@ -1568,74 +1568,57 @@ spawn ()
 			if (tty_got_hung || errno == ENXIO || errno == EIO ||
 			    errno == ENOTTY) {
 				no_dev_tty = TRUE;
-#ifdef USE_SYSV_TERMIO
-				tio = d_tio;
 #ifdef TIOCSLTC
 				ltc = d_ltc;
 #endif	/* TIOCSLTC */
 #ifdef TIOCLSET
 				lmode = d_lmode;
 #endif	/* TIOCLSET */
+#ifdef USE_SYSV_TERMIO
+				tio = d_tio;
 #else	/* not USE_SYSV_TERMIO */
 				sg = d_sg;
 				tc = d_tc;
 				discipline = d_disipline;
-				ltc = d_ltc;
-				lmode = d_lmode;
 #ifdef sony
-				jtc = d_jtc;
 				jmode = d_jmode;
+				jtc = d_jtc;
 #endif /* sony */
 #endif	/* USE_SYSV_TERMIO */
 			} else {
 			    SysError(ERROR_OPDEVTTY);
 			}
 		} else {
-			/* get a copy of the current terminal's state */
-
-#ifdef USE_SYSV_TERMIO
-		        /* SVR4 fails here if xterm started
-			   from twm from xdm from /etc/rc.
-			   Hence the protection for the next 3 ioctl's.
-			   Something about not having a controlling tty. */
-		        if(ioctl(tty, TCGETA, &tio) == -1)
-#ifndef SVR4
-				SysError(ERROR_TIOCGETP);
-#else /* SVR4 */
-			        tio = d_tio;
-#endif /* SVR4 */
+			/* Get a copy of the current terminal's state,
+			 * if we can.  Some systems (e.g., SVR4 and MacII)
+			 * may not have a controlling terminal at this point
+			 * if started directly from xdm or xinit,     
+			 * in which case we just use the defaults as above.
+			 */
 #ifdef TIOCSLTC
 			if(ioctl(tty, TIOCGLTC, &ltc) == -1)
-#ifndef SVR4
-				SysError(ERROR_TIOCGLTC);
-#else /* SVR4 */
 				ltc = d_ltc;
-#endif /* SVR4 */
 #endif	/* TIOCSLTC */
 #ifdef TIOCLSET
 			if(ioctl(tty, TIOCLGET, &lmode) == -1)
-#ifndef SVR4
-				SysError(ERROR_TIOCLGET);
-#else /* SVR4 */
 				lmode = d_lmode;
-#endif /* SVR4 */
 #endif	/* TIOCLSET */
+#ifdef USE_SYSV_TERMIO
+		        if(ioctl(tty, TCGETA, &tio) == -1)
+			        tio = d_tio;
+
 #else	/* not USE_SYSV_TERMIO */
 			if(ioctl(tty, TIOCGETP, (char *)&sg) == -1)
-				SysError (ERROR_TIOCGETP);
+			        sg = d_sg;
 			if(ioctl(tty, TIOCGETC, (char *)&tc) == -1)
-				SysError (ERROR_TIOCGETC);
+			        tc = d_tc;
 			if(ioctl(tty, TIOCGETD, (char *)&discipline) == -1)
-				SysError (ERROR_TIOCGETD);
-			if(ioctl(tty, TIOCGLTC, (char *)&ltc) == -1)
-				SysError (ERROR_TIOCGLTC);
-			if(ioctl(tty, TIOCLGET, (char *)&lmode) == -1)
-				SysError (ERROR_TIOCLGET);
+			        discipline = d_disipline;
 #ifdef sony
 			if(ioctl(tty, TIOCKGET, (char *)&jmode) == -1)
-				SysError (ERROR_TIOCKGET);
+			        jmode = d_jmode;
 			if(ioctl(tty, TIOCKGETC, (char *)&jtc) == -1)
-				SysError (ERROR_TIOCKGETC);
+				jtc = d_jtc;
 #endif /* sony */
 #endif	/* USE_SYSV_TERMIO */
 			close (tty);
