@@ -1,5 +1,5 @@
 /*
- * $XConsortium: vendor.h,v 1.8 91/11/19 08:38:02 rws Exp $
+ * $XConsortium: vendor.h,v 1.9 93/07/29 14:20:16 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -63,7 +63,7 @@
 #  define SYSMANPATH "/usr/catman/a_man:/usr/catman/g_man:/usr/catman/p_man:/usr/catman/u_man:/usr/man/p_man:/usr/man/u_man:/usr/man"
 #endif /* sgi */
 #ifdef __bsdi__
-#  define SYSMANPATH "/usr/share/man:/usr/contrib/man:/usr/local/man"
+#  define SYSMANPATH "/usr/share/man:/usr/contrib/man:/usr/contrib/isode/man:/usr/local/man"
 #endif /* __bsdi__ */
 
 #ifndef SYSMANPATH
