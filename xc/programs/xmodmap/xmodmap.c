@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $Header: xmodmap.c,v 1.2 87/09/04 17:01:11 sun Locked $ */
+/* $Header: xmodmap.c,v 1.3 87/09/10 18:53:16 sun Exp $ */
 #include <stdio.h>
 #include <ctype.h>
 #include "X11/Xlib.h"
@@ -153,16 +153,19 @@ DecodeArgs(argc, argv, map)
 		case 'S':
 		case 's':
 		    ClearMod(map, 0);
+		    update_map++;
 		    fout = NULL;
 		    break;
 		case 'C':
 		case 'c':
 		    ClearMod(map, 2);
+		    update_map++;
 		    fout = NULL;
 		    break;
 		case 'L':
 		case 'l':
 		    ClearMod(map, 1);
+		    update_map++;
 		    fout = NULL;
 		    break;
 	    }
