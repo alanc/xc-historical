@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlogo.c,v 1.13 90/04/30 16:53:59 converse Exp $
+ * $XConsortium: xlogo.c,v 1.14 90/10/22 15:08:58 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,7 +23,6 @@
  */
 
 #include <X11/Intrinsic.h>
-
 #include <X11/Xaw/Logo.h>
 #include <X11/Xaw/Cardinals.h>
 
@@ -73,8 +72,7 @@ char **argv;
     XtAppContext app_con;
 
     toplevel = XtAppInitialize(&app_con, "XLogo", options, XtNumber(options), 
-			       (Cardinal *) &argc, argv, fallback_resources,
-			       NULL, ZERO);
+			       &argc, argv, fallback_resources, NULL, ZERO);
     if (argc != 1) 
 	Syntax(argv[0]);
 
