@@ -245,12 +245,12 @@ static void Shape (w)
 			WINDOW_WIDTH, WINDOW_HEIGHT,
 			0, 360 * 64);
 
-	XShapeCombineMask (XtDisplay (w), XtWindow (w), ShapeWindow, 
+	XShapeCombineMask (XtDisplay (w), XtWindow (w), ShapeClip, 
 		    w->clock.shape_mask, ShapeSet,
 		    -xwc.border_width, -xwc.border_width);
 
 	/*
-	 * draw the border shape
+	 * draw the bounding shape
 	 */
 
 	TFillArc (XtDisplay (w), w->clock.shape_mask,
@@ -259,7 +259,7 @@ static void Shape (w)
 			2.0, 2.0,
 			0, 360 * 64);
 
-	XShapeCombineMask (XtDisplay (w), XtWindow (w), ShapeBorder,
+	XShapeCombineMask (XtDisplay (w), XtWindow (w), ShapeBounding,
 		w->clock.shape_mask, ShapeSet,
 		-xwc.border_width, -xwc.border_width);
 
@@ -267,20 +267,14 @@ static void Shape (w)
 	w->clock.shape_mask = 0;
 
 	/*
-	 * copy the border shape to any enclosing windows
+	 * copy the bounding shape to any enclosing windows
 	 */
 
 	child = (Widget) w;
 	border_width = xwc.border_width;
 	while (parent = XtParent (child)) {
-#ifdef NOTDEF
-	    XShapeCombineShape (XtDisplay (parent), XtWindow (parent), ShapeWindow,
-			    XtWindow (child), ShapeBorder, ShapeSet,
-			    child->core.x + border_width,
-			    child->core.y + border_width);
-#endif
-	    XShapeCombineShape (XtDisplay (parent), XtWindow (parent), ShapeBorder,
-			    XtWindow (child), ShapeBorder, ShapeSet,
+	    XShapeCombineShape (XtDisplay (parent), XtWindow (parent), ShapeBounding,
+			    XtWindow (child), ShapeBounding, ShapeSet,
 			    child->core.x + border_width,
 			    child->core.y + border_width);
 	    child = parent;
