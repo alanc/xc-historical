@@ -58,6 +58,14 @@ sets key-click volume (allowable range: 0-8).
 .B \-f \fIvolume\fP
 sets feep (bell) volume (allowable range: 0-7).
 .TP 8
+.B \-logo
+turns on the X Window System logo display in the screen-saver.
+There is currently no way to change this from a client.
+.TP 8
+.B \-nologo
+turns off the X Window System logo display in the screen-saver.
+There is currently no way to change this from a client.
+.TP 8
 .B \-p \fIminutes\fP
 sets screen-saver pattern cycle time in minutes.
 .TP 8
