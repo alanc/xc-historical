@@ -1,4 +1,4 @@
-/* $XConsortium: Varargs.c,v 1.25 94/04/01 14:56:28 converse Exp $ */
+/* $XConsortium: Varargs.c,v 1.26 94/04/17 20:15:03 converse Exp converse $ */
 
 /*
 
@@ -259,6 +259,10 @@ _XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources)
 	    arg_return->value = (XtArgVal) *(char *)to_val.addr;
 	else if (to_val.size == sizeof(XtArgVal))
 	    arg_return->value = *(XtArgVal *)to_val.addr;
+	else if (to_val.size > sizeof(XtArgVal)) {
+	    arg_return->value = (XtArgVal) XtMalloc(to_val.size);
+	    memcpy(arg_return->value, to_val.addr, to_val.size);
+	}
     }
        
     return(1);
