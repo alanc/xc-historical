@@ -475,6 +475,14 @@
 							  `(,(kintern slot-name) ,slot-name)))
 						 constructor-args)))))
 			    ,(when predicate
+			       #+allegro
+			       `(progn
+				  (defmethod ,predicate (object)
+				    (declare (ignore object))
+				    nil)
+				  (defmethod ,predicate ((object ,name))
+				    t))
+			       #-allegro
 			       `(defun ,predicate (object)
 				  (typep object ',name)))
 			    ,(when copier
@@ -596,7 +604,7 @@
 ;; Printing routines.
 ;;-----------------------------------------------------------------------------
 
-#-(or clx-ansi-common-lisp Genera)
+#-(and (not allegro-v4.0) (or clx-ansi-common-lisp Genera))
 (defun print-unreadable-object-function (object stream type identity function)
   (declare #+lispm
 	   (sys:downward-funarg function))
@@ -621,7 +629,7 @@
   (princ ">" stream)
   nil)
   
-#-(or clx-ansi-common-lisp Genera)
+#-(and (not allegro-v4.0) (or clx-ansi-common-lisp Genera))
 (defmacro print-unreadable-object
 	  ((object stream &key type identity) &body body)
   (if body

@@ -147,15 +147,12 @@
 #+excl
 (setq compiler::generate-interrupt-checks-switch
       (compile nil
-	       '(lambda (safety size speed)
-		  (declare (ignore size))
+	       '(lambda (safety size speed &optional debug)
+		  (declare (ignore size debug))
 		  (or (< speed 3) (> safety 0)))))
 
 
 ;;; Allegro
-
-#+allegro
-(require :defsystem "defsys")
 
 #+allegro
 (excl:defsystem :clx 

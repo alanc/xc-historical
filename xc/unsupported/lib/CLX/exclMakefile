@@ -1,6 +1,6 @@
 # 
 #  Makefile for CLX
-#  (X11 R4 release, Franz Allegro Common Lisp version)
+#  (X11 R4.4 release, Franz Allegro Common Lisp version)
 #
 
 # *************************************************************************
@@ -55,35 +55,50 @@ L_SRC	= defsystem.cl package.cl excldep.cl depdefs.cl clx.cl \
 	graphics.cl text.cl attributes.cl translate.cl keysyms.cl \
 	manager.cl image.cl resource.cl
 
+# default and aliases
+all:	no-clos
+compile-CLX-for-CLUE:	compile-partial-clos-CLX
+clue:	partial-clos
 
-all:	$(C_OBJS) compile-CLX cat
+#
+# Three build rules are provided: no-clos, partial-clos, and full-clos.
+# The first is no-clos, which results in a CLX whose datastructures are
+# all defstructs.  partial-clos results in xlib:window, xlib:pixmap, and
+# xlib:drawable being CLOS instances, all others defstructs.  full-clos
+# makes all CLX complex datatypes into CLOS instances.
+#
+# (note that the :clos feature implies native CLOS *not* PCL).
+#
 
-clue:	$(C_OBJS) compile-CLX-for-CLUE cat
+no-clos:	$(C_OBJS) compile-no-clos-CLX cat
 
-CLX:	$(C_OBJS) compile-CLX load-CLX
+#
+# This rule is used to compile CLX to be used with XCW version 2, or CLUE.
+#
+partial-clos:	$(C_OBJS) compile-partial-clos-CLX cat
+
+full-clos:	$(C_OBJS) compile-full-clos-CLX cat
 
 
 c:	$(C_OBJS)
 
 
-lisp:	compile-CLX
-
-
-compile-CLX:	$(C_OBJS)
+compile-no-clos-CLX:	$(C_OBJS)
 	$(ECHO) " \
 	(set-case-mode :case-sensitive-lower) \
 	(proclaim '(optimize (speed $(SPEED)) (safety $(SAFETY)))) \
+ 	#+allegro-v4.0 (pushnew :clx-ansi-common-lisp *features*) \
 	(load \"defsystem\") \
 	#+allegro (compile-system :clx) \
 	#-allegro (compile-clx) \
 	#+allegro (compile-system :clx-debug)" \
 	| $(CL) $(CLOPTS) -batch
 
-
-compile-CLX-for-CLUE:	$(C_OBJS)
+compile-partial-clos-CLX:	$(C_OBJS)
 	$(ECHO) " \
+	#+clos (set-case-mode :case-sensitive-lower) \
+	#-clos (setq excl::*print-nickname* t) \
 	(proclaim '(optimize (speed $(SPEED)) (safety $(SAFETY)))) \
-	(setq excl::*print-nickname* t) \
 	(unless (or (find-package 'clos) (find-package 'pcl)) \
 	  (let ((spread (sys:gsgc-parameter :generation-spread))) \
 	    (setf (sys:gsgc-parameter :generation-spread) 1) \
@@ -91,8 +106,31 @@ compile-CLX-for-CLUE:	$(C_OBJS)
 	    (provide :pcl) \
 	    (gc) (gc) \
 	    (setf (sys:gsgc-parameter :generation-spread) spread))) \
+	#+allegro-v4.0 (pushnew :clx-ansi-common-lisp *features*) \
 	(load \"defsystem\") \
-	#+allegro (pushnew :clx-for-clue *features*) \
+	(load \"package\") \
+	(setq xlib::*def-clx-class-use-defclass* '(xlib:window xlib:pixmap xlib:drawable)) \
+	#+allegro (compile-system :clx) \
+	#-allegro (compile-clx \"\" \"\" :for-clue t) \
+	#+allegro (compile-system :clx-debug)" \
+	| $(CL) $(CLOPTS) -batch
+
+compile-full-clos-CLX:	$(C_OBJS)
+	$(ECHO) " \
+	#+clos (set-case-mode :case-sensitive-lower) \
+	#-clos (setq excl::*print-nickname* t) \
+	(proclaim '(optimize (speed $(SPEED)) (safety $(SAFETY)))) \
+	(unless (or (find-package 'clos) (find-package 'pcl)) \
+	  (let ((spread (sys:gsgc-parameter :generation-spread))) \
+	    (setf (sys:gsgc-parameter :generation-spread) 1) \
+	    (require :pcl) \
+	    (provide :pcl) \
+	    (gc) (gc) \
+	    (setf (sys:gsgc-parameter :generation-spread) spread))) \
+	#+allegro-v4.0 (pushnew :clx-ansi-common-lisp *features*) \
+	(load \"defsystem\") \
+	(load \"package\") \
+	(setq xlib::*def-clx-class-use-defclass* t) \
 	#+allegro (compile-system :clx) \
 	#-allegro (compile-clx \"\" \"\" :for-clue t) \
 	#+allegro (compile-system :clx-debug)" \
@@ -117,7 +155,7 @@ load-CLX:
 	"(exit)" | $(CL) $(CLOPTS)
 
 clean:
-	$(RM) -f *.fasl debug/*.fasl $(CLX) core $(C_OBJS)
+	$(RM) -f *.fasl debug/*.fasl $(CLX) core $(C_OBJS) make.out
 
 
 install:

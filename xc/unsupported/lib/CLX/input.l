@@ -1593,9 +1593,9 @@
       (report-request-error condition stream)
       (format stream " Error Code ~d." (unknown-error-error-code condition)))))
 
-(define-condition access-error (request-error))
+(define-condition access-error (request-error) ())
 
-(define-condition alloc-error (request-error))
+(define-condition alloc-error (request-error) ())
 
 (define-condition atom-error (request-error)
   ((atom-id :reader atom-error-atom-id :initarg :atom-id))
@@ -1604,27 +1604,27 @@
       (report-request-error condition stream)
       (format stream " Atom-ID #x~x" (atom-error-atom-id condition)))))
 
-(define-condition colormap-error (resource-error))
+(define-condition colormap-error (resource-error) ())
 
-(define-condition cursor-error (resource-error))
+(define-condition cursor-error (resource-error) ())
 
-(define-condition drawable-error (resource-error))
+(define-condition drawable-error (resource-error) ())
 
-(define-condition font-error (resource-error))
+(define-condition font-error (resource-error) ())
 
-(define-condition gcontext-error (resource-error))
+(define-condition gcontext-error (resource-error) ())
 
-(define-condition id-choice-error (resource-error))
+(define-condition id-choice-error (resource-error) ())
 
-(define-condition illegal-request-error (request-error))
+(define-condition illegal-request-error (request-error) ())
 
-(define-condition length-error (request-error))
+(define-condition length-error (request-error) ())
 
-(define-condition match-error (request-error))
+(define-condition match-error (request-error) ())
 
-(define-condition name-error (request-error))
+(define-condition name-error (request-error) ())
 
-(define-condition pixmap-error (resource-error))
+(define-condition pixmap-error (resource-error) ())
 
 (define-condition value-error (request-error)
   ((value :reader value-error-value :initarg :value))
@@ -1633,9 +1633,9 @@
       (report-request-error condition stream)
       (format stream " Value ~d." (value-error-value condition)))))
 
-(define-condition window-error (resource-error))
+(define-condition window-error (resource-error)())
 
-(define-condition implementation-error (request-error))
+(define-condition implementation-error (request-error) ())
 
 ;;-----------------------------------------------------------------------------
 ;; Internal error conditions signaled by CLX

@@ -15,6 +15,10 @@
 
 (in-package :xlib)
 
+(eval-when (compile load eval)
+  (when (find-package :cltl1)
+    (import '(cltl1:require cltl1:provide))))
+
 (eval-when (load)
   (provide :clx))
 
@@ -121,8 +125,7 @@
     nil))
 
 (defun anglep (x)
-  (declare (optimize (speed 3) (safety 0))
-	   (:explain :calls :types))
+  (declare (optimize (speed 3) (safety 0)))
   (if (or (and (excl::fixnump x) (>= (the fixnum x) #.(truncate (* -2 pi)))
 	       (<= (the fixnum x) #.(truncate (* 2 pi))))
 	  (and (excl::single-float-p x)
@@ -317,7 +320,11 @@
 ;; special patch for CLX (various process fixes)
 ;; patch1000.2
 
-(in-package 'patch :use '(lisp excl))
+(eval-when (compile load eval)
+  (unless (find-package :patch)
+    (make-package :patch :use '(:lisp :excl))))
+
+(in-package :patch)
 
 (defvar *patches* nil)
 
@@ -326,6 +333,7 @@
   (when (and (= excl::cl-major-version-number 3)
 	     (or (= excl::cl-minor-version-number 0)
 		 (and (= excl::cl-minor-version-number 1)
+		      excl::cl-generation-number
 		      (< excl::cl-generation-number 9))))
     (push :clx-r4-process-patches *features*)))
 

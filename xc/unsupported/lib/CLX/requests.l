@@ -19,6 +19,7 @@
 (in-package :xlib)
 
 (defun create-window (&key
+		      window
 		      (parent (required-arg parent))
 		      (x (required-arg x))
 		      (y (required-arg y))
@@ -34,7 +35,8 @@
   ;; Display is obtained from parent.  Only non-nil attributes are passed on in
   ;; the request: the function makes no assumptions about what the actual protocol
   ;; defaults are.  Width and height are the inside size, excluding border.
-  (declare (type window parent) ; required
+  (declare (type (or null window) window)
+	   (type window parent)		; required
 	   (type int16 x y) ;required
 	   (type card16 width height) ;required
 	   (type card16 depth border-width)
@@ -53,7 +55,7 @@
 	   (type (or null (member :none) cursor) cursor))
   (declare (values window))
   (let* ((display (window-display parent))
-	 (window (make-window :display display))
+	 (window (or window (make-window :display display)))
 	 (wid (allocate-resource-id display window 'window))
 	 back-pixmap back-pixel
 	 border-pixmap border-pixel)
@@ -250,16 +252,16 @@
   (declare (values keyword))
   (if (zerop atom-id)
       nil
-    (or (id-atom atom-id display)
-	(let ((keyword
-		(kintern
+  (or (id-atom atom-id display)
+      (let ((keyword
+	      (kintern
 		  (with-buffer-request-and-reply
 		       (display *x-getatomname* nil :sizes (16))
-		       ((resource-id atom-id))
-		    (values
-		      (string-get (card16-get 8) *replysize*))))))
-	  (declare (type keyword keyword))
-	  (setf (atom-id keyword display) atom-id)
+		     ((resource-id atom-id))
+		  (values
+		    (string-get (card16-get 8) *replysize*))))))
+	(declare (type keyword keyword))
+	(setf (atom-id keyword display) atom-id)
 	  keyword))))
 
 ;;; For binary compatibility with older code
@@ -774,16 +776,18 @@
       (bit-vector256-get 8 8 bit-vector))))
 
 (defun create-pixmap (&key
+		      pixmap
 		      (width (required-arg width))
 		      (height (required-arg height))
 		      (depth (required-arg depth))
 		      (drawable (required-arg drawable)))
-  (declare (type card8 depth) ;; required
+  (declare (type (or null pixmap) pixmap)
+	   (type card8 depth) ;; required
 	   (type card16 width height) ;; required
 	   (type drawable drawable)) ;; required
   (declare (values pixmap))
   (let* ((display (drawable-display drawable))
-	 (pixmap (make-pixmap :display display))
+	 (pixmap (or pixmap (make-pixmap :display display)))
 	 (pid (allocate-resource-id display pixmap 'pixmap)))
     (setf (pixmap-id pixmap) pid)
     (with-buffer-request (display *x-createpixmap*)

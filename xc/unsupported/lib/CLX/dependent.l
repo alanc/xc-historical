@@ -1535,7 +1535,7 @@
 ;; This is used so an 'eq' test may be used to find out whether or not we can
 ;; safely throw this process out of the CLX read loop.
 ;;
-(defparameter *read-whostate* "blocked on read from X server")
+(defparameter *read-whostate* "waiting for input from X server")
 
 ;;
 ;; Note that this function returns nil on error if the scheduler is running,
@@ -1939,7 +1939,7 @@
 	      slots)
      ,@args))
 
-#+excl
+#+(and excl (not clx-ansi-common-lisp))
 (defmacro define-condition (name parent-types &optional slots &rest args)
   `(excl::define-condition
      ,name (,(first parent-types))
@@ -2007,7 +2007,7 @@
   (format stream continue-format-string))
 
 #+(or clx-ansi-common-lisp excl lcl3.0)
-(define-condition x-error (error))
+(define-condition x-error (error) ())
 
 #-(or lispm clx-ansi-common-lisp excl lcl3.0)
 (defstruct x-error
@@ -2255,7 +2255,7 @@
 ;; WITH-STANDARD-IO-SYNTAX equivalent, used in (SETF WM-COMMAND)
 ;;-----------------------------------------------------------------------------
 
-#-(or clx-ansi-common-lisp Genera)
+#-(and (not allegro-v4.0) (or clx-ansi-common-lisp Genera))
 (defun with-standard-io-syntax-function (function)
   (declare #+lispm
 	   (sys:downward-funarg function))
@@ -2277,7 +2277,7 @@
 	#+lucid (lucid::*print-structure* t))
     (funcall function)))
 
-#-(or clx-ansi-common-lisp Genera)
+#-(and (not allegro-v4.0) (or clx-ansi-common-lisp Genera))
 (defmacro with-standard-io-syntax (&body body)
   `(flet ((.with-standard-io-syntax-body. () ,@body))
      (with-standard-io-syntax-function #'.with-standard-io-syntax-body.)))
@@ -2298,7 +2298,7 @@
 ;;; When MASK-MODIFIERS is missing, all other modifiers are ignored.
 ;;; In ambiguous cases, the most specific translation is used.
 
-#-(and clx-ansi-common-lisp (not lispm))
+#+(or (not clx-ansi-common-lisp) lispm allegro)
 (defun default-keysym-translate (display state object)
   (declare (type display display)
 	   (type card16 state)
@@ -2321,7 +2321,7 @@
       (setf (char-bit object :hyper) 1)))
   object)
 
-#+(and clx-ansi-common-lisp (not lispm))
+#+(and clx-ansi-common-lisp (not lispm) (not allegro))
 (defun default-keysym-translate (display state object)
   (declare (type display display)
 	   (type card16 state)

@@ -132,8 +132,11 @@
 	   (when (member 8  sizes) '(buffer-bbuf))
 	   (when (member 16 sizes) '(buffer-woffset buffer-wbuf))
 	   (when (member 32 sizes) '(buffer-loffset buffer-lbuf)))
+       #+clx-overlapping-arrays
        (macrolet ((%buffer-sizes () ',sizes))
-	 ,@body))))
+	 ,@body)
+       #-clx-overlapping-arrays
+       ,@body)))
 
 ;;; This macro is just used internally in buffer
 

@@ -90,7 +90,7 @@
     create-window cursor cursor-display cursor-equal cursor-error
     cursor-id cursor-p cursor-plist cut-buffer declare-event decode-core-error
     default-error-handler default-keysym-index default-keysym-translate
-    define-condition define-error define-extension define-gcontext-accessor
+    define-error define-extension define-gcontext-accessor
     define-keysym define-keysym-set delete-property delete-resource
     destroy-subwindows destroy-window device-busy device-event-mask
     device-event-mask-class discard-current-event discard-font-info display
