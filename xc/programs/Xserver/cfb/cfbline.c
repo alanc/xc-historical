@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbline.c,v 1.5 89/09/13 18:58:05 rws Exp $ */
+/* $XConsortium: cfbline.c,v 1.6 89/09/14 17:04:38 rws Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -733,6 +733,13 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 		pbox++;
 	    }
 	} /* while (nbox--) */
+#ifndef POLYSEGMENT
+	/*
+	 * walk the dash list around to the next line
+	 */
+	miStepDash (unclippedlen, &dashIndex, pDash,
+		    numInDashList, &dashOffset);
+#endif
     } /* while (nline--) */
 
 #ifndef POLYSEGMENT

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbline.c,v 5.5 89/09/13 18:58:16 rws Exp $ */
+/* $XConsortium: mfbline.c,v 5.6 89/09/14 16:26:48 rws Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -739,6 +739,10 @@ mfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 		pbox++;
 	    }
 	} /* while (nbox--) */
+#ifndef POLYSEGMENT
+	miStepDash (unclippedlen, &dashIndex, pDash,
+		    numInDashList, &dashOffset);
+#endif
     } /* while (nline--) */
 
 #ifndef POLYSEGMENT
