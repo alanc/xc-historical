@@ -53,11 +53,14 @@ main()
 	if ((fd = open("/dev/console", O_RDWR)) < 0) {
 	    printf("Xrepair: can't open /dev/console\n");
 	} else if (ioctl(fd, I_FIND, "line") == 0) {
-	    if(ioctl(fd, I_POP, 0) < 0) {
-		errors++;
-		printf("Failed to ioctl I_POP.\r\n");
-	    }
-	    
+#ifdef CONS_UNDIRECT
+            ctl.ic_len = 0;
+            ctl.ic_cmd = CONS_UNDIRECT;
+            if (ioctl(fd, I_STR, &ctl) < 0) {
+                errors++;
+                printf("Failed to ioctl I_STR CONS_UNDIRECT.\r\n");
+            }
+#endif
 	    iarg = 0;
 	    if (ioctl(fd, FIONBIO, &iarg) < 0) {
 		errors++;
