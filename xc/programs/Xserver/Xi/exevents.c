@@ -554,6 +554,11 @@ GrabKey(client, dev, this_device_mode, other_devices_mode, modifiers,
 	client->errorValue = modifiers;
 	return BadValue;
     }
+    if ((ownerEvents != xTrue) && (ownerEvents != xFalse))
+    {
+	client->errorValue = ownerEvents;
+        return BadValue;
+    }
     pWin = LookupWindow(grabWindow, client);
     if (!pWin)
 	return BadWindow;
