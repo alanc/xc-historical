@@ -97,7 +97,11 @@ char	**argv;
 	    color.blue = *rgbvalues++;
 	    color.flags = DoRed | DoGreen | DoBlue;
 	    /* Get the server to convert from RGB to pixel value */
-	    XAllocColor(dpy, cmap, &color);
+	    if (!XAllocColor(dpy, cmap, &color)) {
+		/* The colormap filled up - give up */
+		fprintf(stderr, "Colormap full\n");
+		exit(1);
+	    }
 	    /* Put the pixel value into the image */
 	    (void) XPutPixel(image, x, y, color.pixel);
 	}
