@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.34 89/10/11 11:52:30 jim Exp $
+ * $XConsortium: tocutil.c,v 2.35 89/11/14 20:13:16 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -168,7 +168,7 @@ void TUScanFileForToc(toc)
 	XtFree(argv[1]);
 	XtFree((char *) argv);
 
-	TUResetTocLabel(scrn);
+	toc->needslabelupdate = True;
 	toc->validity = valid;
 	toc->curmsg = NULL;	/* Get cur msg somehow! %%% */
     }
