@@ -13,7 +13,7 @@ MakeScriptFromCpp(xinitrc, -DXINITDIR=$(XINITDIR))
 /* MakeScriptFromCpp(xserverrc, -DXINITDIR=$(XINITDIR)) */
 
 
-InstallProgram(startx,$(BINDIR))
+InstallNamedProg(startx,startx,$(BINDIR))
 
 #if InstallXinitConfig
 InstallMultiple($(SAMPLECONFIGS),$(XINITDIR))
