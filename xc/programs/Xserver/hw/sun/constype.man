@@ -1,8 +1,8 @@
-TH CONSOLETYPE 1 "1 October 1988" "X Version 11"
+TH CONSTYPE 1 "1 October 1988" "X Version 11"
 .SH NAME
-consoletype - print type of Sun console
+constype - print type of Sun console
 .SH SYNOPSIS
-.B "consoletype"
+.B "constype"
 .SH DESCRIPTION
 .I Consoletype
 prints on the standard output the Sun code for the tyep of display
