@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.2 93/08/20 10:15:11 mor Exp $ */
+/* $XConsortium: connect.c,v 1.3 93/08/20 15:36:38 rws Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -129,6 +129,8 @@ char *errorStringRet;
 
     iceConn->process_msg_info = NULL;
 
+    iceConn->saved_reply_waits = NULL;
+
     iceConn->connect_to_you = (_IceConnectToYouInfo *) malloc (
 	sizeof (_IceConnectToYouInfo));
     iceConn->connect_to_you->auth_active = 0;
@@ -218,8 +220,9 @@ char *errorStringRet;
      * Authentication will take place behind the scenes.
      */
 
-    replyWait.opcode_of_request = ICE_ConnectionSetup;
     replyWait.sequence_of_request = setup_sequence;
+    replyWait.major_opcode_of_request = 0;
+    replyWait.minor_opcode_of_request = ICE_ConnectionSetup;
     replyWait.reply = (IcePointer) &reply;
 
     gotReply = False;
