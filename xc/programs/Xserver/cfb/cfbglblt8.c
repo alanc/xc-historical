@@ -16,7 +16,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbglblt8.c,v 5.2 89/09/14 17:04:31 rws Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.3 89/09/19 15:36:23 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -34,6 +34,22 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 #if PPW == 4
 
+#if GLYPHPADBYTES != 4
+#define USE_LEFTBITS
+#endif
+
+#ifdef USE_LEFTBITS
+typedef	unsigned char	*glyphPointer;
+
+#define GlyphBits(bits,width,dst)	getleftbits(bits,width,dst); \
+					(dst) &= widthMask; \
+					(bits) += widthGlyph;
+#else
+typedef unsigned int	*glyphPointer;
+
+#define GlyphBits(bits,width,dst)	(dst) = *(bits)++;
+#endif
+
 void
 cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     DrawablePtr pDrawable;
@@ -43,12 +59,13 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     CharInfoPtr *ppci;		/* array of character info */
     unsigned char *pglyphBase;	/* start of array of glyphs */
 {
-    unsigned long   c;
-    unsigned long   pixel;
-    unsigned long   *dst;
-    int		    ewTmp;
-    int		    xoff;
-    unsigned long   *glyphBits;
+    register unsigned long  c;
+    register unsigned long  pixel;
+    register unsigned long  *dst;
+    register int	    ewTmp;
+    register int	    xoff;
+    register glyphPointer   glyphBits;
+    int			    c1;
 
     CharInfoPtr		pci;
     FontInfoPtr		pfi = pGC->font->pFI;
@@ -62,6 +79,10 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     BoxRec		bbox;		/* for clipping */
     int			widthDiff;
     int			w;
+#ifdef USE_LEFTBITS
+    int			widthGlyph;
+    unsigned long	widthMask;
+#endif
 
     pixel = PFILL (pGC->fgPixel);
     
@@ -109,7 +130,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     while (nglyph--)
     {
 	pci = *ppci++;
-	glyphBits = (unsigned long *) (pglyphBase + pci->byteOffset);
+	glyphBits = (glyphPointer) (pglyphBase + pci->byteOffset);
 	w = pci->metrics.rightSideBearing - pci->metrics.leftSideBearing;
 	xG = x + pci->metrics.leftSideBearing;
 	yG = y - pci->metrics.ascent;
@@ -118,13 +139,18 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	ew = (w + xoff + 3) >> 2;
 	hTmp = pci->metrics.descent + pci->metrics.ascent;
 	dst = dstLine;
+#ifdef USE_LEFTBITS
+	widthGlyph = GLYPHWIDTHBYTESPADDED (pci);
+	widthMask = (1 << w) - 1;
+#endif
 	switch (ew) {
 	case 0:
 	    break;
 	case 1:
 	    while (hTmp--)
 	    {
-	    	c = BitRight (*glyphBits++, xoff);
+		GlyphBits(glyphBits, w, c)
+	    	c = BitRight (c, xoff);
 		WriteFourBits (dst, pixel, GetFourBits(c));
 	    	dst += widthDst;
 	    }
@@ -132,7 +158,8 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	case 2:
 	    while (hTmp--)
 	    {
-	    	c = BitRight (*glyphBits++, xoff);
+		GlyphBits(glyphBits, w, c)
+	    	c = BitRight (c, xoff);
 	    	if (c)
 	    	{
 		    WriteFourBits (dst, pixel, GetFourBits(c));
@@ -145,7 +172,8 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	case 3:
 	    while (hTmp--)
 	    {
-	    	c = BitRight (*glyphBits++, xoff);
+		GlyphBits(glyphBits, w, c)
+	    	c = BitRight (c, xoff);
 	    	if (c)
 	    	{
 		    WriteFourBits (dst, pixel, GetFourBits(c));
@@ -162,20 +190,21 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    dst -= widthDiff;
 	    while (hTmp--)
 	    {
-	    	c = BitRight (*glyphBits, xoff);
+		GlyphBits(glyphBits, w, c1)
 	    	dst += widthDiff;
-	    	if (!c)
+	    	if (!c1)
 	    	{
 		    dst += ew;
 		    continue;
 	    	}
+	    	c = BitRight (c1, xoff);
 	    	ewTmp = ew - 1;
 	    	while (ewTmp--) {
 		    WriteFourBits(dst, pixel, GetFourBits(c))
 		    dst++;
 		    NextFourBits(c);
 	    	}
-		c = BitLeft (*glyphBits++, 32 - xoff);
+		c = BitLeft (c1, 32 - xoff);
 		WriteFourBits(dst, pixel, GetFourBits(c));
 		dst++;
 	    }
@@ -185,7 +214,8 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    dst -= widthDiff;
 	    while (hTmp--)
 	    {
-	    	c = BitRight (*glyphBits++, xoff);
+		GlyphBits(glyphBits, w, c)
+	    	c = BitRight (c, xoff);
 	    	dst += widthDiff;
 	    	if (!c)
 	    	{
@@ -212,12 +242,13 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     CharInfoPtr *ppci;		/* array of character info */
     unsigned char *pglyphBase;	/* start of array of glyphs */
 {
-    unsigned long   c;
-    unsigned long   pixel;
-    unsigned long   *dst;
-    int		    ewTmp;
-    int		    xoff;
-    unsigned long   *rightChar;
+    register unsigned long  c;
+    register unsigned long  pixel;
+    register unsigned long  *dst;
+    register int	    ewTmp;
+    register int	    xoff;
+    register glyphPointer   glyphBits;
+    int			    c1;
 
     CharInfoPtr		pci;
     FontInfoPtr		pfi = pGC->font->pFI;
@@ -235,6 +266,10 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int			w;
     RegionPtr		pRegion;
     int			yBand;
+#ifdef USE_LEFTBITS
+    int			widthGlyph;
+    unsigned long	widthMask;
+#endif
 
     pixel = PFILL (pGC->fgPixel);
     
@@ -279,7 +314,7 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     while (nglyph--)
     {
 	pci = *ppci++;
-	rightChar = (unsigned long *) (pglyphBase + pci->byteOffset);
+	glyphBits = (glyphPointer) (pglyphBase + pci->byteOffset);
 	w = pci->metrics.rightSideBearing - pci->metrics.leftSideBearing;
 	xG = x + pci->metrics.leftSideBearing;
 	yG = y - pci->metrics.ascent;
@@ -289,42 +324,111 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	hTmp = pci->metrics.descent + pci->metrics.ascent;
 	widthDiff = widthDst - ew;
 	dst = dstLine - widthDiff;
+#ifdef USE_LEFTBITS
+	widthGlyph = GLYPHWIDTHBYTESPADDED (pci);
+	widthMask = (1 << w) - 1;
+#endif
 	switch (cfb8ComputeClipMasks32 (pBox, numRects, xG, yG, w, hTmp, clips))
  	{
 	case rgnIN:
-	    while (hTmp--)
+	    if (ew <= 8)
 	    {
-	    	c = BitRight (*rightChar++, xoff);
-	    	dst += widthDiff;
-	    	if (!c)
-	    	{
-		    dst += ew;
-		    continue;
-	    	}
-	    	ewTmp = ew;
-	    	while (ewTmp--) {
-		    WriteFourBits (dst, pixel, GetFourBits(c));
+		while (hTmp--)
+		{
+		    GlyphBits(glyphBits, w, c)
+	    	    c = BitRight (c, xoff);
+	    	    dst += widthDiff;
+	    	    if (!c)
+	    	    {
+		    	dst += ew;
+		    	continue;
+	    	    }
+	    	    ewTmp = ew;
+	    	    while (ewTmp--) {
+		    	WriteFourBits (dst, pixel, GetFourBits(c));
+		    	dst++;
+		    	NextFourBits(c);
+	    	    }
+		}
+	    }
+	    else
+	    {
+		while (hTmp--)
+		{
+		    GlyphBits(glyphBits, w, c1)
+	    	    dst += widthDiff;
+	    	    if (!c1)
+	    	    {
+		    	dst += ew;
+		    	continue;
+	    	    }
+	    	    c = BitRight (c1, xoff);
+	    	    ewTmp = ew-1;
+	    	    while (ewTmp--) {
+		    	WriteFourBits (dst, pixel, GetFourBits(c));
+		    	dst++;
+		    	NextFourBits(c);
+	    	    }
+		    c = BitLeft (c1, 32 - xoff);
+		    WriteFourBits(dst, pixel, GetFourBits(c));
 		    dst++;
-		    NextFourBits(c);
-	    	}
+		}
 	    }
 	    break;
 	case rgnPART:
 	    cTmp = clips;
-	    while (hTmp--)
+	    if (ew <= 8)
 	    {
-	    	c = BitRight (*rightChar++ & *cTmp++, xoff);
-	    	dst += widthDiff;
-	    	if (!c)
+	    	while (hTmp--)
 	    	{
-		    dst += ew;
-		    continue;
+		    GlyphBits(glyphBits, w, c)
+		    c = BitRight (c & *cTmp++, xoff);
+		    dst += widthDiff;
+		    if (!c)
+		    {
+		    	dst += ew;
+		    	continue;
+		    }
+		    ewTmp = ew;
+		    while (ewTmp--) {
+			c1 = GetFourBits(c);
+			if (c1)
+			{
+			    WriteFourBits (dst, pixel, c1);
+			}
+		    	dst++;
+		    	NextFourBits(c);
+		    }
 	    	}
-	    	ewTmp = ew;
-	    	while (ewTmp--) {
-		    WriteFourBits (dst, pixel, GetFourBits(c));
+	    }
+	    else
+	    {
+	    	while (hTmp--)
+	    	{
+		    GlyphBits(glyphBits, w, c1)
+		    c1 &= *cTmp++;
+		    dst += widthDiff;
+		    if (!c1)
+		    {
+		    	dst += ew;
+		    	continue;
+		    }
+		    c = BitRight (c1, xoff);
+		    ewTmp = ew - 1;
+		    while (ewTmp--) {
+			if (GetFourBits(c))
+			{
+			    WriteFourBits (dst, pixel, GetFourBits(c));
+			}
+		    	dst++;
+		    	NextFourBits(c);
+		    }
+		    c = BitLeft (c1, 32 - xoff);
+		    if (GetFourBits(c))
+		    {
+		    	WriteFourBits (dst, pixel, GetFourBits(c));
+		    }
 		    dst++;
-		    NextFourBits(c);
 	    	}
 	    }
 	    break;

@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbteblt8.c,v 5.5 89/11/02 13:50:23 keith Exp $ */
+/* $XConsortium: cfbteblt8.c,v 5.6 89/11/05 15:15:46 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -34,6 +34,62 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include	"cfb8bit.h"
 
 #if (PPW == 4)
+
+#define GetBits4S   c = BitRight (*char1++, xoff1) | \
+			BitRight (*char2++, xoff2) | \
+			BitRight (*char3++, xoff3) | \
+			BitRight (*char4++, xoff4);
+#define GetBits4L   c = BitLeft  (*leftChar++, lshift) | \
+			BitRight (*char1++, xoff1) | \
+			BitRight (*char2++, xoff2) | \
+			BitRight (*char3++, xoff3) | \
+			BitRight (*char4++, xoff4);
+#define GetBits4U   c = *char1++ | \
+			BitRight (*char2++, xoff2) | \
+			BitRight (*char3++, xoff3) | \
+			BitRight (*char4++, xoff4);
+
+#if GLYPHPADBYTES == 1
+typedef unsigned char	*glyphPointer;
+#define USE_LEFTBITS
+#endif
+
+#if GLYPHPADBYTES == 2
+typedef unsigned short	*glyphPointer;
+#define USE_LEFTBITS
+#endif
+
+#if GLYPHPADBYTES == 4
+typedef unsigned int	*glyphPointer;
+#endif
+
+#ifdef FASTGETBITS
+#define glyphbits(bits,width,mask,dst) FASTGETBITS(bits,0,width,dst)
+#else
+#define glyphbits(bits,width,mask,dst) getleftbits(bits,width,dst); dst &= mask;
+#endif
+
+#ifdef USE_LEFTBITS
+#define IncChar(c)  (c = (glyphPointer) (((char *) c) + glyphBytes))
+#define GetBits1S   glyphbits (char1, widthGlyph, glyphMask, c); \
+		    c = BitRight (c, xoff1); \
+		    IncChar(char1);
+#define GetBits1L   GetBits1S \
+		    glyphbits (leftChar, widthGlyph, glyphMask, tmpSrc); \
+		    IncChar(leftChar); \
+		    c |= BitLeft (tmpSrc, lshift);
+#define GetBits1U   glyphbits (char1, widthGlyph, glyphMask, c); \
+		    IncChar(char1);
+#define GetBitsL    glyphbits (leftChar, widthGlyph, glyphMask, c); \
+		    c = BitLeft (c, lshift); \
+		    IncChar(leftChar);
+#else
+#define GetBits1S   c = BitRight (*char1++, xoff1);
+#define GetBits1L   c = BitLeft (*leftChar++, lshift) | \
+			BitRight (*char1++, xoff1);
+#define GetBits1U   c = *char1++;
+#define GetBitsL    c = BitLeft (*leftChar++, lshift);
+#endif
 
 /* another ugly giant macro */
 #define SwitchEm    switch (ew) \
@@ -123,15 +179,15 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     register unsigned long  c;
     register unsigned long  *dst;
     register int	    xoff1, xoff2, xoff3, xoff4;
-    register unsigned long  *char1, *char2, *char3, *char4;
+    register glyphPointer   char1, char2, char3, char4;
     register unsigned long  leftMask, rightMask;
 
     CharInfoPtr		pci;
     FontInfoPtr		pfi = pGC->font->pFI;
     unsigned long	*dstLine;
-    unsigned long	*oldRightChar;
+    glyphPointer	oldRightChar;
     unsigned long	*pdstBase;
-    unsigned long	*leftChar;
+    glyphPointer	leftChar;
     int			hTmp;
     int			widthDst;
     int			widthGlyph;
@@ -140,7 +196,12 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     int			x, y;
     BoxRec		bbox;		/* for clipping */
     int			lshift;
-    int			widthGlyph4;
+    int			widthGlyphs;
+#ifdef USE_LEFTBITS
+    register int	    glyphMask;
+    register unsigned int   tmpSrc;
+    register int	    glyphBytes;
+#endif
 
     pci = &pfi->maxbounds;
     widthGlyph = pci->metrics.characterWidth;
@@ -179,28 +240,34 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	pdstBase = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
-    widthGlyph4 = widthGlyph << 2;
+    widthGlyphs = widthGlyph << 2;
+
+#ifdef USE_LEFTBITS
+    glyphMask = (1 << widthGlyph) - 1;
+    glyphBytes = GLYPHWIDTHBYTESPADDED(pci);
+#endif
+
     pdstBase += y * widthDst;
-    while (nglyph)
+    if (nglyph >= 4 && widthGlyphs <= 32)
     {
-	xoff1 = x & 0x3;
-	char1 = (unsigned long *) (pglyphBase + (*ppci++)->byteOffset);
-	hTmp = h;
-	dstLine = pdstBase + (x >> 2);
-	if (nglyph > 3 && xoff1 + widthGlyph4 < 36)
+	while (nglyph >= 4)
 	{
 	    nglyph -= 4;
+	    hTmp = h;
+	    dstLine = pdstBase + (x >> 2);
+	    xoff1 = x & 0x3;
 	    xoff2 = xoff1 + widthGlyph;
 	    xoff3 = xoff2 + widthGlyph;
 	    xoff4 = xoff3 + widthGlyph;
-	    char2 = (unsigned long *) (pglyphBase + (*ppci++)->byteOffset);
-	    char3 = (unsigned long *) (pglyphBase + (*ppci++)->byteOffset);
-	    char4 = (unsigned long *) (pglyphBase + (*ppci++)->byteOffset);
+	    char1 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
+	    char2 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
+	    char3 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
+	    char4 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
 	    oldRightChar = char4;
 	    dst = dstLine;
 	    if (xoff1)
 	    {
-		ew = ((widthGlyph4 - (4 - xoff1)) >> 2) + 1;
+		ew = ((widthGlyphs - (4 - xoff1)) >> 2) + 1;
 	    	if (!leftChar)
 	    	{
 		    leftMask = cfbendtab[xoff1];
@@ -218,10 +285,7 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 #define FirstStep	c = BitLeft (c, 2);
 #endif
 
-#define GetBits	    c = BitRight (*char1++, xoff1) | \
-			BitRight (*char2++, xoff2) | \
-			BitRight (*char3++, xoff3) | \
-			BitRight (*char4++, xoff4);
+#define GetBits GetBits4S
 
 		    SwitchEm
 
@@ -235,74 +299,74 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 
 #define StoreBits0  dst[0] = GetFourPixels(c);
 
-#define GetBits	    c = BitLeft  (*leftChar++, lshift) | \
-			BitRight (*char1++, xoff1) | \
-			BitRight (*char2++, xoff2) | \
-			BitRight (*char3++, xoff3) | \
-			BitRight (*char4++, xoff4);
+#define GetBits GetBits4L
+
 		    SwitchEm
+
 #undef GetBits
 
 	    	}
 	    }
 	    else
 	    {
-	    	ew = widthGlyph;    /* widthGlyph4 >> 2 */
+	    	ew = widthGlyph;    /* widthGlyphs >> 2 */
 
-#define GetBits	    c = *char1++ | \
-			BitRight (*char2++, xoff2) | \
-			BitRight (*char3++, xoff3) | \
-			BitRight (*char4++, xoff4);
+#define GetBits	GetBits4U
+
 	    	SwitchEm
+
 #undef GetBits
 
 	    }
-	    x += widthGlyph4;
+	    x += widthGlyphs;
+	    leftChar = oldRightChar;
 	}
-	else
+    }
+    while (nglyph--)
+    {
+	xoff1 = x & 0x3;
+	char1 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
+	hTmp = h;
+	dstLine = pdstBase + (x >> 2);
+	oldRightChar = char1;
+	dst = dstLine;
+	if (xoff1)
 	{
-	    nglyph--;
-	    oldRightChar = char1;
-	    dst = dstLine;
-	    if (xoff1)
+	    ew = ((widthGlyph - (4 - xoff1)) >> 2) + 1;
+	    if (!leftChar)
 	    {
-		ew = ((widthGlyph - (4 - xoff1)) >> 2) + 1;
-	    	if (!leftChar)
-	    	{
-		    leftMask = cfbendtab[xoff1];
-		    rightMask = cfbstarttab[xoff1];
+		leftMask = cfbendtab[xoff1];
+		rightMask = cfbstarttab[xoff1];
 #undef StoreBits0
 #define StoreBits0	dst[0] = dst[0] & leftMask | GetFourPixels(c) & rightMask;
-#define GetBits		c = BitRight (*char1++, xoff1);
-
-		    SwitchEm
-#undef GetBits
-#undef StoreBits0
-
-	    	}
-	    	else
-	    	{
-		    lshift = widthGlyph - xoff1;
-#define GetBits	    c = BitLeft (*leftChar++, lshift) | \
-			BitRight (*char1++, xoff1);
-
-#define StoreBits0  dst[0] = GetFourPixels(c);
-
-		    SwitchEm
-#undef GetBits
-	    	}
-	    }
-	    else
-	    {
-	    	ew = widthGlyph >> 2;
-#define GetBits	c = *char1++;
+#define GetBits	GetBits1S
 
 		SwitchEm
 #undef GetBits
+#undef StoreBits0
 
 	    }
-	    x += widthGlyph;
+	    else
+	    {
+		lshift = widthGlyph - xoff1;
+#define GetBits GetBits1L
+
+#define StoreBits0  dst[0] = GetFourPixels(c);
+
+		SwitchEm
+#undef GetBits
+	    }
 	}
+	else
+	{
+	    ew = widthGlyph >> 2;
+#define GetBits	GetBits1U
+
+	    SwitchEm
+#undef GetBits
+
+	}
+	x += widthGlyph;
 	leftChar = oldRightChar;
     }
     /*
@@ -318,9 +382,8 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	hTmp = h;
 	while (hTmp--)
 	{
-	    *dst = (*dst & rightMask) |
-		   (GetFourPixels(BitLeft (*leftChar, lshift)) & leftMask);
-	    leftChar++;
+	    GetBitsL
+	    *dst = (*dst & rightMask) | (GetFourPixels(c) & leftMask);
 	    dst += widthDst;
 	}
     }
