@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.17 88/12/12 15:17:07 jim Exp $
+ * $XConsortium: process.c,v 1.18 88/12/12 15:53:13 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -933,17 +933,20 @@ static int match_auth (a, b)
 }
 
 
-static int merge_entries (firstp, second)
+static int merge_entries (firstp, second, nnewp, nreplp)
     AuthList **firstp, *second;
+    int *nnewp, *nreplp;
 {
     AuthList *a, *b, *first, *tail;
-    int n = 0;
+    int n = 0, nnew = 0, nrepl = 0;
 
     if (!second) return 0;
 
     if (!*firstp) {			/* if nothing to merge into */
 	*firstp = second;
 	for (tail = *firstp, n = 1; tail->next; n++, tail = tail->next) ;
+	*nnewp = n;
+	*nreplp = 0;
 	return n;
     }
 
@@ -974,7 +977,8 @@ static int merge_entries (firstp, second)
 		free ((char *) b);
 		b = NULL;
 		tail->next = next;
-		n--;
+		nrepl++;
+		nnew--;
 		break;
 	    }
 	    if (a == tail) break;	/* if have looked at left side */
@@ -985,8 +989,11 @@ static int merge_entries (firstp, second)
 	}
 	b = next;
 	n++;
+	nnew++;
     }
 
+    *nnewp = nnew;
+    *nreplp = nrepl;
     return n;
 
 }
@@ -1190,7 +1197,7 @@ static int do_merge (inputfilename, lineno, argc, argv)
     int i;
     int errors = 0;
     AuthList *head, *tail, *listhead, *listtail;
-    int nentries;
+    int nentries, nnew, nrepl;
     Bool numeric = False;
 
     if (argc < 2) {
@@ -1232,8 +1239,10 @@ static int do_merge (inputfilename, lineno, argc, argv)
      * if we have new entries, merge them in (freeing any duplicates)
      */
     if (listhead) {
-	nentries = merge_entries (&xauth_head, listhead);
-	if (verbose) printf ("%d new entries read in.\n", nentries);
+	nentries = merge_entries (&xauth_head, listhead, &nnew, &nrepl);
+	if (verbose) 
+	  printf ("%d entries read in:  %d new, %d replacement%s\n", 
+	  	  nentries, nnew, nrepl, nrepl != 1 ? "s" : "");
 	if (nentries > 0) xauth_modified = True;
     }
 
@@ -1294,7 +1303,7 @@ static int do_add (inputfilename, lineno, argc, argv)
     int argc;
     char **argv;
 { 
-    int n;
+    int n, nnew, nrepl;
     int len;
     char *dpyname;
     char *protoname;
@@ -1375,7 +1384,7 @@ static int do_add (inputfilename, lineno, argc, argv)
     /*
      * merge it in; note that merge will deal with allocation
      */
-    n = merge_entries (&xauth_head, list);
+    n = merge_entries (&xauth_head, list, &nnew, &nrepl);
     if (n <= 0) {
 	prefix (inputfilename, lineno);
 	fprintf (stderr, "unable to merge in added record\n");
