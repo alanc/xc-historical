@@ -535,12 +535,29 @@ void XtNextEvent(event)
 	XtAppNextEvent(_XtDefaultAppContext(), event);
 }
 
+static void _RefreshMapping(event)
+    XEvent *event;
+{
+    XtPerDisplay pd = _XtGetPerDisplay(event->xmapping.display);
+    if (pd != NULL) {
+	XtFree((char *) pd->keysyms);
+	pd->keysyms = NULL;
+	XtFree((char *) pd->modKeysyms);
+	pd->modKeysyms = NULL;
+	XtFree((char *) pd->modsToKeysyms);
+	pd->modsToKeysyms = NULL;
+	_XtBuildKeysymTable(event->xmapping.display,pd);
+	pd ->modsToKeysyms =_XtBuildModsToKeysymTable(
+	    event->xmapping.display,pd);
+    }
+    XRefreshKeyboardMapping(event);
+}
+
 void XtAppNextEvent(app, event)
 	XtAppContext app;
 	XEvent *event;
 {
     int i, d;
-    XtPerDisplay pd;
 
     for (;;) {
 	for (i = 1; i <= app->count; i++) {
@@ -549,21 +566,8 @@ void XtAppNextEvent(app, event)
 	    if (XPending(app->list[d]) ) {
 		XNextEvent(app->list[d], event);
 		app->last = d;
-		if (event->xany.type == MappingNotify) {
-                    pd = _XtGetPerDisplay(event->xmapping.display);
-                    if (pd != NULL) {
-                        XtFree((char *) pd->keysyms);
-                        pd->keysyms = NULL;
-                        XtFree((char *) pd->modKeysyms);
-                        pd->modKeysyms = NULL;
-                        XtFree((char *) pd->modsToKeysyms);
-                        pd->modsToKeysyms = NULL;
-                        _XtBuildKeysymTable(event->xmapping.display,pd);
-                        pd ->modsToKeysyms =_XtBuildModsToKeysymTable(
-                            event->xmapping.display,pd);
-                    }
-		    XRefreshKeyboardMapping(event);
-                }
+		if (event->xany.type == MappingNotify)
+		    _RefreshMapping(event);
 		return;
 	    }
 	}
@@ -577,9 +581,8 @@ void XtAppNextEvent(app, event)
 	if (d != -1) {
 	    XNextEvent (app->list[d], event);
 	    app->last = d;;
-	    if (event->xany.type == MappingNotify) {
-		XRefreshKeyboardMapping(event);
-	    }
+	    if (event->xany.type == MappingNotify)
+		_RefreshMapping(event);
 	    return;
 	} 
 
