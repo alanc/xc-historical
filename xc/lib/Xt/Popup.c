@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Popup.c,v 1.18 88/09/06 09:52:00 swick Exp $";
+    "$XConsortium: Popup.c,v 1.19 88/09/06 16:28:26 jim Exp $";
 /* $oHeader: Popup.c,v 1.3 88/09/01 11:45:34 asente Exp $ */
 #endif lint
 
@@ -48,7 +48,7 @@ void _XtPopup(widget, grab_kind, spring_loaded)
     }
 
     if (! shell_widget->shell.popped_up) {
-	XtCallCallbacks(widget, XtNpopupCallback, (Opaque)NULL);
+	XtCallCallbacks(widget, XtNpopupCallback, (caddr_t)NULL);
 	shell_widget->shell.popped_up = TRUE;
 	shell_widget->shell.grab_kind = grab_kind;
 	shell_widget->shell.spring_loaded = spring_loaded;
@@ -124,7 +124,7 @@ void XtPopdown(widget)
 	    XtRemoveGrab(widget);
 	}
 	shell_widget->shell.popped_up = FALSE;
-	XtCallCallbacks(widget, XtNpopdownCallback, (Opaque)NULL);
+	XtCallCallbacks(widget, XtNpopdownCallback, (caddr_t)NULL);
     }
 } /* XtPopdown */
 
