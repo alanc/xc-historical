@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.76 89/03/31 08:32:21 rws Exp $ */
+/* $XConsortium: utils.c,v 1.77 89/05/03 09:47:37 rws Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -168,12 +168,15 @@ void UseMsg()
     ErrorF("bc                     enable bug compatibility\n");
     ErrorF("-bs                    disable any backing store support\n");
     ErrorF("-c                     turns off key-click\n");
-    ErrorF("c #                    key-click volume (0-8)\n");
+    ErrorF("c #                    key-click volume (0-100)\n");
     ErrorF("-cc int                default color visual class\n");
     ErrorF("-co string             color database file\n");
+    ErrorF("-f #                   bell base (0-100)\n");
     ErrorF("-fc string             cursor font\n");
     ErrorF("-fn string             default font name\n");
     ErrorF("-fp string             default font path\n");
+    ErrorF("-help                  prints message with these options\n");
+    ErrorF("-I                     ignore all remaining arguments\n");
 #ifndef SYSV
     ErrorF("-ld int                limit data space to N Kb\n");
     ErrorF("-ls int                limit stack space to N Kb\n");
@@ -185,18 +188,15 @@ void UseMsg()
     ErrorF("-p #                   screen-saver pattern duration (seconds)\n");
     ErrorF("-r                     turns off auto-repeat\n");
     ErrorF("r                      turns on auto-repeat \n");
-    ErrorF("-f #                   bell base (0-100)\n");
-    ErrorF("-x string              loads named extension at init time \n");
-    ErrorF("-help                  prints message with these options\n");
     ErrorF("-s #                   screen-saver timeout (seconds)\n");
     ErrorF("-su                    disable any save under support\n");
     ErrorF("-t #                   mouse threshold (pixels)\n");
     ErrorF("-to #                  connection time out\n");
+    ErrorF("ttyxx                  server started from init on /dev/ttyxx\n");
     ErrorF("v                      video blanking for screen-saver\n");
     ErrorF("-v                     screen-saver without video blanking\n");
     ErrorF("-wm                    WhenMapped default backing-store\n");
-    ErrorF("-I                     ignore all remaining arguments\n");
-    ErrorF("ttyxx                  server started from init on /dev/ttyxx\n");
+    ErrorF("-x string              loads named extension at init time \n");
     ddxUseMsg();
 }
 
