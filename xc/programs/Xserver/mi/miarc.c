@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: miarc.c,v 1.44 87/07/15 15:52:34 todd Exp $ */
+/* $Header: miarc.c,v 1.44 87/07/15 15:52:34 toddb Locked $ */
 /* Author: Todd Newman */
 #include "X.h"
 #include "Xprotostr.h"
@@ -245,7 +245,8 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 			      polyarcs[ifirst + 1].pPts[0]))
 		    ifirst++;
 		cptAll = polyarcs[ilast].cpt;
-		pAllPts = polyarcs[ilast++].pPts;
+		pAllPts = polyarcs[ilast].pPts;
+		polyarcs[ilast++].pPts= NULL;
 		for(; ilast < narcs; ilast++)
 		{
 		    cpt = polyarcs[ilast].cpt;
@@ -310,6 +311,9 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 		        miClearDrawable(pDrawTo, pGCTo);
 		    }
 		}
+		Xfree(pAllPts);
+		polyarcs[i].pPts= NULL;
+
 		cptAll = cpt;
 		pAllPts = pPts;
 	    }
@@ -327,6 +331,7 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	{
 	    Xfree(polyarcs[i].pPts);
 	}
+	Xfree(pAllPts);
 	DEALLOCATE_LOCAL(polyarcs);
 	if(fTricky)
 	{
