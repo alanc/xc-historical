@@ -1,10 +1,14 @@
-#
-#Here is an Imakefile for twm.  It depends on having TWMDIR defined
-#in Imake.tmpl.  I like to use Imakefiles for everything, and I am sure
-#other people do also, so perhaps you could do us all a favor and
-#distribute this one.
-#
+/**/#
+/**/#Here is an Imakefile for twm.  It depends on having TWMDIR defined
+/**/#in Imake.tmpl.  I like to use Imakefiles for everything, and I am sure
+/**/#other people do also, so perhaps you could do us all a favor and
+/**/#distribute this one.
+/**/#
 
+/*
+ * The following definitions will be removed when R4beta ships with the new
+ * configuration control stuff.
+ */
 #ifndef SignalReturnProcType
 #if defined(HPArchitecture) && OSMajorVersion <= 6 && OSMajorVersion <= 2
 #define SignalReturnProcType int
@@ -24,18 +28,20 @@
 #if defined(ApolloArchitecture)
 #define SignalReturnProcType int
 #endif
-
 #ifndef SignalReturnProcType
 #define SignalReturnProcType int	/* not correct, but works more often */
 #endif
 #endif
-
+#ifndef HasPutenv
 #if defined(SunArchitecture) || defined(UltrixArchitecture)
-#define HasPutenv
+#define HasPutenv YES
+#endif
 #endif
 
-#ifndef HasPutenv
+#if HasPutenv
       PUTENVDEF = -DNOPUTENV
+#else
+      PUTENVDEF = 
 #endif
 
        PROGRAMS = twm
