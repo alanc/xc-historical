@@ -139,7 +139,7 @@ char *Read_Quoted(stream)
  */
 
 #define D_FORMAT "0x"              /* Default format for properties */
-#define D_DFORMAT " = $0+\n";      /* Default display pattern for properties */
+#define D_DFORMAT " = $0+\n"       /* Default display pattern for properties */
 
 static thunk *_property_formats = 0;   /* Holds mapping */
 
