@@ -1,5 +1,5 @@
 static char rcsid[] =
-	"$XConsortium: Lower.c,v 1.0 88/09/05 15:55:17 rws Exp $";
+	"$XConsortium: Lower.c,v 1.0 88/09/05 19:00:48 rws Exp $";
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -31,7 +31,7 @@ XmuCopyISOLatin1Lowered(dst, src)
 
     for (dest = (unsigned char *)dst, source = (unsigned char *)src;
 	 *source;
-	 *source++, *dest++)
+	 source++, dest++)
     {
 	if ((*source >= XK_A) && (*source <= XK_Z))
 	    *dest = *source + (XK_a - XK_A);
