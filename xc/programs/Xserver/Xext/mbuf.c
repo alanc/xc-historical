@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: mbuf.c,v 1.20 94/01/07 09:45:59 dpw Exp $ */
+/* $XConsortium: mbuf.c,v 1.21 94/03/24 20:42:20 dpw Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -1461,6 +1461,7 @@ DeliverEventsToMultibuffer (pMultibuffer, pEvents, count, filter)
     MultibufferPtr	pMultibuffer;
     xEvent	*pEvents;
     int		count;
+    Mask	filter;
 {
     int deliveries = 0, nondeliveries = 0;
     int attempt;
@@ -1555,7 +1556,7 @@ MultibufferUpdate (pMultibuffer, time)
     event.buffer = pMultibuffer->pPixmap->drawable.id;
     event.timeStamp = time;
     (void) DeliverEventsToMultibuffer (pMultibuffer, (xEvent *)&event,
-				       1, MultibufferUpdateNotifyMask);
+				1, (Mask)MultibufferUpdateNotifyMask);
 }
 
 /*
@@ -1573,7 +1574,7 @@ MultibufferClobber (pMultibuffer)
     event.buffer = pMultibuffer->pPixmap->drawable.id;
     event.state = pMultibuffer->clobber;
     (void) DeliverEventsToMultibuffer (pMultibuffer, (xEvent *)&event,
-				       1, MultibufferClobberNotifyMask);
+				1, (Mask)MultibufferClobberNotifyMask);
 }
 
 /*
