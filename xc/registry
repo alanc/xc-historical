@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.56 91/12/18 09:44:44 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.57 91/12/31 18:48:26 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -292,6 +292,7 @@ Name						Reference
 "VEX"						[14]
 "VIT-Image Display List Extension"		[46]
 "X3D-PEX"					[8], [9]
+"XTEST"						[8]
 "XTestExtension1"				[35]
 "ZoidExtension"					[34]
 
