@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.188 94/01/11 11:41:57 converse Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.189 94/01/18 19:36:20 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -31,6 +31,7 @@ SOFTWARE.
 #include	<X11/Xutil.h>
 #include	<X11/Xresource.h>
 #include	<X11/Xfuncproto.h>
+#include	<X11/SM/SMlib.h>
 #ifdef XT_BC
 #include <X11/Xos.h>		/* for R4 compatibility */
 #else
@@ -167,6 +168,7 @@ typedef XtPointer	Opaque;
 #include <X11/Constraint.h>
 #include <X11/Object.h>
 #include <X11/RectObj.h>
+#include <X11/Session.h>
 
 typedef struct _TranslationData *XtTranslations;
 typedef struct _TranslationData *XtAccelerators;
@@ -1754,22 +1756,6 @@ extern void XtDisplayInitialize(
 #endif
 );
 
-extern Widget XtSessionInitialize(
-#if NeedFunctionPrototypes
-    XtAppContext*	/* app_context_return */,
-    _Xconst _XtString	/* application_class */,
-    String		/* session_name */,
-    WidgetClass		/* session_class */,
-    XrmOptionDescList 	/* options */,
-    Cardinal 		/* num_options */,
-    int*		/* argc_in_out */,
-    String*		/* argv_in_out */,
-    String*		/* fallback_resources */,
-    ArgList 		/* args */,
-    Cardinal 		/* num_args */
-#endif
-);
-
 extern Widget XtAppInitialize(
 #if NeedFunctionPrototypes
     XtAppContext*	/* app_context_return */,
@@ -2041,6 +2027,69 @@ extern void XtGetConstraintResourceList(
 #else
 #define XtOffsetOf(s_type,field) XtOffset(s_type*,field)
 #endif
+
+/*************************************************************
+ *
+ * Session Management
+ *
+ ************************************************************/
+
+extern Widget XtSessionInitialize(
+#if NeedFunctionPrototypes
+    XtAppContext*	/* app_context_return */,
+    _Xconst _XtString	/* application_class */,
+    String		/* session_name */,
+    WidgetClass		/* session_class */,
+    XrmOptionDescList 	/* options */,
+    Cardinal 		/* num_options */,
+    int*		/* argc_in_out */,
+    String*		/* argv_in_out */,
+    String*		/* fallback_resources */,
+    ArgList 		/* args */,
+    Cardinal 		/* num_args */
+#endif
+);
+
+#define XtSessionCheckpoint	0
+#define XtSessionInteract	1
+
+#define XtSessionSaveSuccess	0
+#define XtSessionSaveFailure	1
+
+typedef struct _XtCheckpointTokenRec *XtCheckpointToken;
+
+typedef void (*XtInteractProc)(
+#if NeedFunctionPrototypes
+    XtPointer   	/* client_data */,
+    XtCheckpointToken	/* token */
+#endif
+);
+
+typedef struct _XtCheckpointTokenRec {
+    Widget	session;
+    int		type;
+    int		save_type;
+    int		interact_style;
+    Boolean	shutdown;
+    Boolean	fast;
+    Boolean		status;			/* return */
+    XtInteractProc	interact_proc;		/* return */
+    XtPointer		interact_client_data;	/* return */
+    int			interact_dialog_type;	/* return */
+    Boolean		user_cancel;		/* return */
+} XtCheckpointTokenRec;
+
+XtCheckpointToken XtSessionGetToken(
+#if NeedFunctionPrototypes
+    Widget		/* widget */
+#endif
+);
+
+void XtSessionReturnToken(
+#if NeedFunctionPrototypes
+    XtCheckpointToken	/* token */
+#endif
+);
 
 /*************************************************************
  *
