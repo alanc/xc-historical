@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.11 89/10/20 09:19:36 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.12 89/10/29 14:46:13 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -361,8 +361,8 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	    miClearDrawable(pDrawTo, pGCTo);
 	}
 
-	fg = pGCTo->fgPixel;
-	bg = pGCTo->bgPixel;
+	fg = pGC->fgPixel;
+	bg = pGC->bgPixel;
 	if ((pGC->fillStyle == FillTiled) ||
 	    (pGC->fillStyle == FillOpaqueStippled))
 	    bg = fg; /* the protocol sez these don't cause color changes */
