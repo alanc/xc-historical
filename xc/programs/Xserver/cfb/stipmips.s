@@ -1,3 +1,36 @@
+/*
+ * $XConsortium$
+ *
+ * Copyright 1990 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
+ * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * Author:  Keith Packard, MIT X Consortium
+ */
+
+/*
+ * Assembly code for optimized text rendering, MIPS LSB specific
+ *
+ * Other stippling could be done in assembly, but the payoff is
+ * not nearly as large.  Mostly because large areas are heavily
+ * optimized already.
+ */
+
 /* reordering instructions would be fatal here */
 	.set	noreorder
 /*
@@ -115,6 +148,11 @@ $l2:					;\
 $label:					;\
 	StippleCases(addr,value,done,b $l1,CatComma(bnez bits, $l2),0)
 
+#ifdef INCLUDE_UNUSED_FUNCTIONS
+/*
+ * This function isn't used, but exists to illustrate the
+ * usage of the basic code
+ */
 	.text	
 	.align	2
 /*
@@ -140,12 +178,16 @@ stippleone:
 #undef bits
 #undef value
 
+#endif /* INCLUDE_UNUSED_FUNCTIONS */
+
 /*
- * stipplestack(addr, stipple, value, stride, count, shift)
+ * stipplestack(addr, stipple, value, stride, Count, Shift)
  *               4       5       6      7     16(sp) 20(sp)
  *
  *  Apply successive 32-bit stipples starting at addr, addr+stride, ...
  *
+ *  Used for text rendering, but only when no data could be lost
+ *  when the stipple is shifted left by Shift bits
  */
 /* arguments */
 #define addr	$4
@@ -188,6 +230,7 @@ $204:
  * shift
  */
 
+/* additional local variables */
 #define tbits	$10
 #define TBase	$3
 #define mshift	$15
@@ -235,11 +278,15 @@ $264:
 #undef atemp
 #undef bits
 
+#ifdef INCLUDE_UNUSED_FUNCTIONS
 /*
  * stipplespan32(addr,bits,value, leftmask,rightmask,nlw)
  *                $4   $5    $6       $7     16($sp) 20($sp) 		
  *
  * Fill a span with bits from a 32-bit stipple.
+ *
+ * This could be used by span filling code, but the performance
+ * gain is not really all that significant
  */
 /* arguments */
 #define addr		$4
@@ -304,3 +351,5 @@ $405:
 #undef nlw
 #undef btemp
 #undef atemp
+
+#endif /* INCLUDE_UNUSED_FUNCTIONS */
