@@ -1,4 +1,4 @@
-/* $Header: mibstore.c,v 1.5 88/08/10 13:11:46 rws Exp $ */
+/* $Header: mibstore.c,v 1.6 88/08/13 16:48:27 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -489,10 +489,22 @@ miGetImageWithBS ( pDraw, x, y, w, h, format, planemask, pImage)
     unsigned long	planemask;
     unsigned char	*pImage;
 {
-    miGetImage( pDraw, x, y, w, h, format, planemask, pImage);
-    if ((pDraw->type == DRAWABLE_WINDOW) &&
-	(((WindowPtr)pDraw)->backingStore != NotUseful))
+    int	oldBackingStore = NotUseful;
+
+    /*
+     * miGetImage uses the pScreen->GetSpans but GetSpans has been mangled to
+     * get bits from backing store for, which we desparately want to avoid at
+     * this point as GetImage is expected to return screen contents.
+     */
+    if (pDraw->type == DRAWABLE_WINDOW)
     {
+	oldBackingStore = ((WindowPtr)pDraw)->backingStore;
+	((WindowPtr)pDraw)->backingStore = NotUseful;
+    }
+    miGetImage( pDraw, x, y, w, h, format, planemask, pImage);
+    if (oldBackingStore != NotUseful)
+    {
+	((WindowPtr)pDraw)->backingStore = oldBackingStore;
 	miBSGetImage((WindowPtr) pDraw, NullPixmap, x, y, w, h,
 		     format, planemask, pImage);
     }
