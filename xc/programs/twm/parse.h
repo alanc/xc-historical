@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: parse.h,v 1.5 89/07/27 13:59:43 jim Exp $
+ * $XConsortium: parse.h,v 1.6 89/10/27 14:01:30 jim Exp $
  *
  * .twmrc parsing externs
  *
@@ -43,5 +43,64 @@ extern int ParseTwmrc(), ParseString();
 extern int (*twmInputFunc)();
 extern void (*twmUnputFunc)();
 extern void TwmOutput();
+
+#define F_NOP			0
+#define F_BEEP			1
+#define F_RESTART		2
+#define F_QUIT			3
+#define F_FOCUS			4
+#define F_REFRESH		5
+#define F_WINREFRESH		6
+#define F_DELTASTOP		7
+#define F_MOVE			8
+#define F_POPUP			9
+#define F_FORCEMOVE		10
+#define F_AUTORAISE		11
+#define F_IDENTIFY		12
+#define F_ICONIFY		13
+#define F_DEICONIFY		14
+#define F_UNFOCUS		15
+#define F_RESIZE		16
+#define F_ZOOM			17
+#define F_LEFTZOOM		18
+#define F_RIGHTZOOM		19
+#define F_TOPZOOM		20
+#define F_BOTTOMZOOM		21
+#define F_HORIZOOM		22
+#define F_FULLZOOM		23
+#define F_RAISE			24
+#define F_RAISELOWER		25
+#define F_LOWER			26
+#define F_DESTROY		27
+#define F_DELETE		28
+#define F_SAVEYOURSELF		29
+#define F_TWMRC			30
+#define F_VERSION		31
+#define F_TITLE			32
+#define F_RIGHTICONMGR		33
+#define F_LEFTICONMGR		34
+#define F_UPICONMGR		35
+#define F_DOWNICONMGR		36
+#define F_FORWICONMGR		37
+#define F_BACKICONMGR		38
+#define F_NEXTICONMGR		39
+#define F_PREVICONMGR		40
+#define F_SORTICONMGR		41
+#define F_CIRCLEUP		42
+#define F_CIRCLEDOWN		43
+#define F_CUTFILE		44
+#define F_SHOWLIST		45
+#define F_HIDELIST		46
+#define F_MENU			47	/* string */
+#define F_SOURCE		48	/* string */
+#define F_WARPTO		49	/* string */
+#define F_WARPTOICONMGR		50	/* string */
+#define F_FILE			51	/* string */
+#define F_EXEC			52	/* string */
+#define F_CUT			53	/* string */
+#define F_FUNCTION		54	/* string */
+#define F_WARPTOSCREEN		55	/* string */
+#define F_COLORMAP		56	/* string */
+
 
 #endif /* _PARSE_ */

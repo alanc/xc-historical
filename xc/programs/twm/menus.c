@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.114 89/11/06 16:09:10 jim Exp $
+ * $XConsortium: menus.c,v 1.115 89/11/10 15:54:30 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.114 89/11/06 16:09:10 jim Exp $";
+"$XConsortium: menus.c,v 1.115 89/11/10 15:54:30 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -49,6 +49,7 @@ static char RCSinfo[] =
 #include "menus.h"
 #include "events.h"
 #include "util.h"
+#include "parse.h"
 #include "gram.h"
 #include "screen.h"
 #include "pull.bm"

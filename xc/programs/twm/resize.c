@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.47 89/11/03 22:18:41 keith Exp $
+ * $XConsortium: resize.c,v 1.48 89/11/05 17:47:13 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,12 +38,12 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.47 89/11/03 22:18:41 keith Exp $";
+"$XConsortium: resize.c,v 1.48 89/11/05 17:47:13 jim Exp $";
 #endif
 
 #include <stdio.h>
 #include "twm.h"
-#include "gram.h"
+#include "parse.h"
 #include "util.h"
 #include "resize.h"
 #include "add_window.h"

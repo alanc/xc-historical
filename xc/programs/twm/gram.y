@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.68 89/11/13 15:16:18 jim Exp $
+ * $XConsortium: gram.y,v 1.69 89/11/13 17:03:17 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.68 89/11/13 15:16:18 jim Exp $";
+"$XConsortium: gram.y,v 1.69 89/11/13 17:03:17 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -47,6 +47,7 @@ static char RCSinfo[]=
 #include "list.h"
 #include "util.h"
 #include "screen.h"
+#include "parse.h"
 
 static char *Action = "";
 static char *Name = "";
@@ -77,20 +78,8 @@ extern int yylineno;
 };
 
 %token <num> LB RB LP RP MENUS MENU BUTTON TBUTTON DEFAULT_FUNCTION PLUS MINUS
-%token <num> ALL OR CURSORS PIXMAPS ICONS COLOR MONOCHROME FUNCTION F_FUNCTION
-%token <num> F_MENU F_UNFOCUS F_REFRESH F_FILE F_TWMRC F_CIRCLEUP F_QUIT
-%token <num> F_NOP F_TITLE F_VERSION F_EXEC F_CUT F_CIRCLEDOWN F_SOURCE
-%token <num> F_CUTFILE F_MOVE F_ICONIFY F_FOCUS F_RESIZE F_RAISE F_LOWER
-%token <num> F_POPUP F_DEICONIFY F_FORCEMOVE WINDOW_FUNCTION 
-%token <num> F_DESTROY F_WINREFRESH F_BEEP ZOOM ICONMGRS
-%token <num> F_DELETE F_SAVEYOURSELF F_COLORMAP F_IDENTIFY
-%token <num> F_SHOWLIST F_HIDELIST F_AUTORAISE
-%token <num> F_ZOOM F_FULLZOOM F_UPICONMGR F_DOWNICONMGR F_HORIZOOM
-%token <num> F_RIGHTZOOM F_LEFTZOOM F_TOPZOOM F_BOTTOMZOOM F_RESTART 
-%token <num> F_LEFTICONMGR F_RIGHTICONMGR F_WARPTO F_DELTASTOP
-%token <num> F_WARPTOICONMGR F_WARPTOSCREEN F_RAISELOWER F_SORTICONMGR
-%token <num> F_FORWICONMGR F_BACKICONMGR F_NEXTICONMGR F_PREVICONMGR
-%token <num> ICONMGR_SHOW ICONMGR
+%token <num> ALL OR CURSORS PIXMAPS ICONS COLOR MONOCHROME FUNCTION 
+%token <num> ICONMGR_SHOW ICONMGR WINDOW_FUNCTION ZOOM ICONMGRS
 %token <num> ICONMGR_GEOMETRY ICONMGR_NOSHOW MAKE_TITLE
 %token <num> ICONIFY_BY_UNMAPPING DONT_ICONIFY_BY_UNMAPPING 
 %token <num> NO_TITLE AUTO_RAISE NO_HILITE 
@@ -99,7 +88,7 @@ extern int yylineno;
 %token <num> START_ICONIFIED NO_TITLE_HILITE TITLE_HILITE
 %token <num> MOVE RESIZE WAIT SELECT KILL LEFT_TITLEBUTTON RIGHT_TITLEBUTTON 
 %token <num> NORTH SOUTH EAST WEST ICON_REGION 
-%token <num> NUMBER KEYWORD NKEYWORD CKEYWORD CLKEYWORD
+%token <num> NUMBER KEYWORD NKEYWORD CKEYWORD CLKEYWORD FKEYWORD FSKEYWORD 
 %token <ptr> STRING SKEYWORD
 
 %type <ptr> string
@@ -527,87 +516,43 @@ menu_entry	: string action		{ AddToMenu(root, $1, Action, pull, $2,
 					  pull = NULL;
 					}
 		;
-action		: F_NOP			{ $$ = F_NOP; }
-		| F_BEEP		{ $$ = F_BEEP; }
-		| F_RESTART		{ $$ = F_RESTART; }
-		| F_QUIT		{ $$ = F_QUIT; }
-		| F_FOCUS		{ $$ = F_FOCUS; }
-		| F_REFRESH		{ $$ = F_REFRESH; }
-		| F_WINREFRESH		{ $$ = F_WINREFRESH; }
-		| F_SOURCE string	{ Action = $2; $$ = F_TWMRC; }
-		| F_DELTASTOP		{ $$ = F_DELTASTOP; }
-		| F_MOVE		{ $$ = F_MOVE; }
-		| F_FORCEMOVE		{ $$ = F_FORCEMOVE; }
-		| F_AUTORAISE		{ $$ = F_AUTORAISE; }
-		| F_IDENTIFY		{ $$ = F_IDENTIFY; }
-		| F_ICONIFY		{ $$ = F_ICONIFY; }
-		| F_DEICONIFY		{ $$ = F_DEICONIFY; }
-		| F_UNFOCUS		{ $$ = F_UNFOCUS; }
-		| F_RESIZE		{ $$ = F_RESIZE; }
-		| F_ZOOM		{ $$ = F_ZOOM; }
-                | F_LEFTZOOM            { $$ = F_LEFTZOOM; }
-                | F_RIGHTZOOM           { $$ = F_RIGHTZOOM; }
-                | F_TOPZOOM             { $$ = F_TOPZOOM; }
-                | F_BOTTOMZOOM          { $$ = F_BOTTOMZOOM; }
-		| F_HORIZOOM		{ $$ = F_HORIZOOM; }
-		| F_FULLZOOM		{ $$ = F_FULLZOOM; }
-		| F_RAISE		{ $$ = F_RAISE; }
-		| F_RAISELOWER		{ $$ = F_RAISELOWER; }
-		| F_LOWER		{ $$ = F_LOWER; }
-		| F_DESTROY		{ $$ = F_DESTROY; }
-		| F_DELETE		{ $$ = F_DELETE; }
-		| F_SAVEYOURSELF	{ $$ = F_SAVEYOURSELF; }
-		| F_TWMRC		{ $$ = F_TWMRC; }
-		| F_VERSION		{ $$ = F_VERSION; }
-		| F_TITLE		{ $$ = F_TITLE; }
-		| F_RIGHTICONMGR	{ $$ = F_RIGHTICONMGR; }
-		| F_LEFTICONMGR		{ $$ = F_LEFTICONMGR; }
-		| F_UPICONMGR		{ $$ = F_UPICONMGR; }
-		| F_DOWNICONMGR		{ $$ = F_DOWNICONMGR; }
-		| F_FORWICONMGR		{ $$ = F_FORWICONMGR; }
-		| F_BACKICONMGR		{ $$ = F_BACKICONMGR; }
-		| F_NEXTICONMGR		{ $$ = F_NEXTICONMGR; }
-		| F_PREVICONMGR		{ $$ = F_PREVICONMGR; }
-		| F_SORTICONMGR		{ $$ = F_SORTICONMGR; }
-		| F_CIRCLEUP		{ $$ = F_CIRCLEUP; }
-		| F_CIRCLEDOWN		{ $$ = F_CIRCLEDOWN; }
-		| F_CUTFILE		{ $$ = F_CUTFILE; }
-		| F_SHOWLIST		{ $$ = F_SHOWLIST; }
-		| F_HIDELIST		{ $$ = F_HIDELIST; }
-		| F_MENU string		{ pull = GetRoot($2, 0, 0);
-					  pull->prev = root;
-					  $$ = F_MENU;
-					}
-		| F_WARPTO string	{ Action = $2; $$ = F_WARPTO; }
-		| F_WARPTOICONMGR string { Action = $2; $$ = F_WARPTOICONMGR; }
-		| F_FILE string		{ Action = $2; $$ = F_FILE; }
-		| F_EXEC string		{ Action = $2; $$ = F_EXEC; }
-		| F_CUT string		{ Action = $2; $$ = F_CUT; }
-		| F_FUNCTION string	{ Action = $2; $$ = F_FUNCTION; }
-		| F_WARPTOSCREEN string	{ Action = $2; 
-					  if (CheckWarpScreenArg (Action)) {
-					      $$ = F_WARPTOSCREEN;
-					  } else {
-					      twmrc_error_prefix();
-					      fprintf (stderr, 
+
+action		: FKEYWORD	{ $$ = $1; }
+		| FSKEYWORD string {
+				$$ = $1;
+				Action = $2;
+				switch ($1) {
+				  case F_SOURCE:
+				    $$ = F_TWMRC;
+				    break;
+				  case F_MENU:
+				    pull = GetRoot ($2, 0, 0);
+				    pull->prev = root;
+				    break;
+				  case F_WARPTOSCREEN:
+				    if (!CheckWarpScreenArg (Action)) {
+					twmrc_error_prefix();
+					fprintf (stderr, 
 			"ignoring invalid f.warpscreen argument \"%s\"\n", 
-						       Action);
-					      $$ = F_NOP;
-					  }
-					}
-		| F_COLORMAP string { Action = $2;
-					if (CheckColormapArg (Action)) {
-					    $$ = F_COLORMAP;
-					} else {
-					    twmrc_error_prefix();
-					    fprintf (stderr,
-			"ignoring invalid f.colormap argument \"%s\"\n", 
-						     Action);
-					    $$ = F_NOP;
-					}
+					         Action);
+					$$ = F_NOP;
 				    }
-	
+				    break;
+				  case F_COLORMAP:
+				    if (CheckColormapArg (Action)) {
+					$$ = F_COLORMAP;
+				    } else {
+					twmrc_error_prefix();
+					fprintf (stderr,
+			"ignoring invalid f.colormap argument \"%s\"\n", 
+						 Action);
+					$$ = F_NOP;
+				    }
+				    break;
+				} /* end switch */
+				   }
 		;
+
 
 grav		: NORTH		{ $$ = $1; }
 		| SOUTH		{ $$ = $1; }

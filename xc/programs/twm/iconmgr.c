@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.29 89/11/03 19:10:59 jim Exp $
+ * $XConsortium: iconmgr.c,v 1.30 89/11/05 19:01:23 jim Exp $
  *
  * Icon Manager routines
  *
@@ -32,7 +32,7 @@
 #include <stdio.h>
 #include "twm.h"
 #include "util.h"
-#include "gram.h"
+#include "parse.h"
 #include "screen.h"
 #include "add_window.h"
 #include "siconify.bm"

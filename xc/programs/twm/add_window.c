@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.105 89/11/06 16:30:23 jim Exp $
+ * $XConsortium: add_window.c,v 1.106 89/11/10 16:38:51 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.105 89/11/06 16:30:23 jim Exp $";
+"$XConsortium: add_window.c,v 1.106 89/11/10 16:38:51 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -48,7 +48,7 @@ static char RCSinfo[]=
 #include "add_window.h"
 #include "util.h"
 #include "resize.h"
-#include "gram.h"
+#include "parse.h"
 #include "list.h"
 #include "events.h"
 #include "menus.h"
