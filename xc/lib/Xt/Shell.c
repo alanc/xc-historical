@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Shell.c,v 1.16 88/02/14 18:41:45 swick Exp $";
+static char rcsid[] = "$Header: Shell.c,v 1.17 88/02/14 20:44:07 swick Exp $";
 #endif lint
 
 /*
@@ -696,7 +696,6 @@ static void _popup_set_prop(w)
 	    hintp = &wmshell->wm.wm_hints;
 
 	    hintp->flags = 0;
-	    hintp->input = FALSE;
 
 	    /* Should I tell the window manager to bring me up iconfied */
 	    hintp->flags |= StateHint | InputHint;
@@ -1330,7 +1329,7 @@ static Boolean WMSetValues(old, ref, new)
 	if (! EQW(icon_pixmap)) wmflags |= IconPixmapHint;
 	if (! EQW(icon_mask)) wmflags |= IconMaskHint;
 	if (! EQW(icon_window)) wmflags |= IconWindowHint;
-
+	if (! EQW(input)) wmflags |= InputHint;
 	if (! EQW(window_group)) wmflags |= WindowGroupHint;
 
 	if (wmflags && XtIsRealized(old)) {
@@ -1352,6 +1351,9 @@ static Boolean WMSetValues(old, ref, new)
 	    }
 	    if (wmflags & IconWindowHint) {
 		ohints->icon_window = nhints->icon_window;
+	    }
+	    if (wmflags & InputHint) {
+		ohints->input = nhints->input;
 	    }
 	    if (wmflags & WindowGroupHint) {
 		ohints->window_group = nhints->window_group;
