@@ -1,4 +1,4 @@
-/* $XConsortium: Context.c,v 1.11 91/04/12 11:22:52 rws Exp $ */
+/* $XConsortium: Context.c,v 1.12 91/07/05 13:06:38 rws Exp $ */
 /* static char *sccsid = "@(#)Context.c	1.5	2/24/87"; */
 
 
@@ -35,7 +35,7 @@ SOFTWARE.
    XFindContext(a,b,c,&d) will set d to be the value in position (a,b,c).
    XDeleteContext(a,b,c) will delete the entry in (a,b,c).
 
-   a is a display id, b is a window id, and c is a Context.  d is just an
+   a is a display id, b is a resource id, and c is a Context.  d is just an
    XPointer.  This code will work with any range of parameters, but is geared
    to be most efficient with very few (one or two) different a's.
 
@@ -47,7 +47,7 @@ SOFTWARE.
 #define INITHASHMASK 63 /* Number of entries originally in the hash table. */
 
 typedef struct _TableEntryRec {	/* Stores one entry. */
-    Window 			window;
+    XID 			rid;
     XContext			context;
     XPointer			data;
     struct _TableEntryRec	*next;
@@ -63,12 +63,12 @@ typedef struct _XContextDB {	/* Stores hash table for one display. */
 static DB NullDB = (DB)0;
 #endif
 
-/* Given a Window and a context, returns a value between 0 and HashSize-1.
+/* Given an XID and a context, returns a value between 0 and HashSize-1.
    Currently, this requires that HashSize be a power of 2.
 */
 
-#define Hash(db,window,context) \
-    (db)->table[(((window) << 1) + context) & (db)->mask]
+#define Hash(db,rid,context) \
+    (db)->table[(((rid) << 1) + context) & (db)->mask]
 
 /* Resize the given db */
 
@@ -92,7 +92,7 @@ static void ResizeTable(db)
     for (pold = otable ; --i >= 0; pold++) {
 	for (entry = *pold; entry; entry = next) {
 	    next = entry->next;
-	    head = &Hash(db, entry->window, entry->context);
+	    head = &Hash(db, entry->rid, entry->context);
 	    entry->next = *head;
 	    *head = entry;
 	}
@@ -121,7 +121,7 @@ static void _XFreeContextDB(display)
 
 /* Public routines. */
 
-/* Save the given value of data to correspond with the keys Window and context.
+/* Save the given value of data to correspond with the keys XID and context.
    Returns nonzero error code if an error has occured, 0 otherwise.
    Possible errors are Out-of-memory.
 */   
@@ -129,13 +129,13 @@ static void _XFreeContextDB(display)
 #if NeedFunctionPrototypes
 int XSaveContext(
     Display *display,
-    register Window window,
+    register XID rid,
     register XContext context,
     _Xconst char* data)
 #else
-int XSaveContext(display, window, context, data)
+int XSaveContext(display, rid, context, data)
     Display *display;
-    register Window window;
+    register XID rid;
     register XContext context;
     XPointer data;
 #endif
@@ -167,9 +167,9 @@ int XSaveContext(display, window, context, data)
 #endif
 	display->free_funcs->context_db = _XFreeContextDB;
     }
-    head = &Hash(db, window, context);
+    head = &Hash(db, rid, context);
     for (entry = *head; entry; entry = entry->next) {
-	if (entry->window == window && entry->context == context) {
+	if (entry->rid == rid && entry->context == context) {
 	    entry->data = (XPointer)data;
 	    return 0;
 	}
@@ -177,7 +177,7 @@ int XSaveContext(display, window, context, data)
     entry = (TableEntry) Xmalloc(sizeof(TableEntryRec));
     if (!entry)
 	return XCNOMEM;
-    entry->window = window;
+    entry->rid = rid;
     entry->context = context;
     entry->data = (XPointer)data;
     entry->next = *head;
@@ -190,14 +190,14 @@ int XSaveContext(display, window, context, data)
 
 
 
-/* Given a window and context, returns the associated data.  Note that data 
+/* Given an XID and context, returns the associated data.  Note that data 
    here is a pointer since it is a return value.  Returns nonzero error code
    if an error has occured, 0 otherwise.  Possible errors are Entry-not-found.
 */
 
-int XFindContext(display, window, context, data)
+int XFindContext(display, rid, context, data)
     Display *display;
-    register Window window;
+    register XID rid;
     register XContext context;
     XPointer *data;		/* RETURN */
 {
@@ -210,9 +210,9 @@ int XFindContext(display, window, context, data)
     db = display->context_db;
     if (!db)
 	return XCNOENT;
-    for (entry = Hash(db, window, context); entry; entry = entry->next)
+    for (entry = Hash(db, rid, context); entry; entry = entry->next)
     {
-	if (entry->window == window && entry->context == context) {
+	if (entry->rid == rid && entry->context == context) {
 	    *data = (XPointer)entry->data;
 	    return 0;
 	}
@@ -222,14 +222,14 @@ int XFindContext(display, window, context, data)
 
 
 
-/* Deletes the entry for the given window and context from the datastructure.
+/* Deletes the entry for the given XID and context from the datastructure.
    This returns the same thing that FindContext would have returned if called
    with the same arguments.
 */
 
-int XDeleteContext(display, window, context)
+int XDeleteContext(display, rid, context)
     Display *display;
-    register Window window;
+    register XID rid;
     register XContext context;
 {
     register DB db;
@@ -241,10 +241,10 @@ int XDeleteContext(display, window, context)
     db = display->context_db;
     if (!db)
 	return XCNOENT;
-    for (prev = &Hash(db, window, context);
+    for (prev = &Hash(db, rid, context);
 	 entry = *prev;
 	 prev = &entry->next) {
-	if (entry->window == window && entry->context == context) {
+	if (entry->rid == rid && entry->context == context) {
 	    *prev = entry->next;
 	    Xfree((char *) entry);
 	    db->numentries--;
