@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shapestr.h,v 1.10 91/10/05 14:13:23 rws Exp $ */
+/* $XConsortium: shapestr.h,v 1.11 93/09/11 15:02:10 rws Exp $ */
 
 #ifndef _SHAPESTR_H_
 #define _SHAPESTR_H_
@@ -231,4 +231,4 @@ typedef struct {
 #undef Window
 #undef Time
 
-#endif /* _SHAPESTR_H_ *
+#endif /* _SHAPESTR_H_ */
