@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.22 93/12/07 16:40:17 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.23 93/12/28 11:44:14 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -335,7 +335,7 @@ typedef struct {
 
 struct _IceListenObj {
     int				fd;
-    Bool			unix_domain;
+    Bool			local_conn;
     char			*network_id;
     IceHostBasedAuthProc 	host_based_auth_proc;
 };
