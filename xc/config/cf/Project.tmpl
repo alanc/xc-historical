@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.93 91/02/15 16:00:44 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.94 91/02/15 21:11:06 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -40,6 +40,9 @@ XCOMM $XConsortium: Project.tmpl,v 1.93 91/02/15 16:00:44 rws Exp $
 #endif
 #ifndef BuildExamples
 #define BuildExamples		NO	/* they take a lot of space */
+#endif
+#ifndef BuildDoc
+#define BuildDoc		NO	/* at least not for alpha */
 #endif
 #ifndef InstallXinitConfig
 #define InstallXinitConfig	NO	/* install sample xinit config */
@@ -353,7 +356,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.93 91/02/15 16:00:44 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.93 91/02/15 16:00:44 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.94 91/02/15 21:11:06 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
