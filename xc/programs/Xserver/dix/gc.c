@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.7 89/07/16 20:58:55 rws Exp $ */
+/* $XConsortium: gc.c,v 5.8 89/07/17 07:51:49 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -451,19 +451,13 @@ CreateGC(pDrawable, mask, pval, pStatus)
     void 	(**j)();
 #endif /* DEBUG */
 
-    pGC = (GCPtr)xalloc(sizeof(GC));
+    pGC = (GCPtr)xalloc(sizeof(GC) + gcPrivateCount * sizeof (DevUnion));
     if (!pGC)
     {
 	*pStatus = BadAlloc;
 	return (GCPtr)NULL;
     }
-    pGC->devPrivates = (DevUnion *)xalloc(gcPrivateCount * sizeof (DevUnion));
-    if (!pGC->devPrivates)
-    {
-	xfree(pGC);
-	*pStatus = BadAlloc;
-	return (GCPtr)NULL;
-    }
+    pGC->devPrivates = (DevUnion *)(pGC + 1);
 
 #ifdef DEBUG
     for(j = &pGC->FillSpans;
@@ -764,7 +758,6 @@ FreeGC(pGC, gid)
 	(* pGC->pScreen->DestroyPixmap)(pGC->stipple);
 
     (*pGC->funcs->DestroyGC) (pGC);
-    xfree(pGC->devPrivates);
     if (pGC->dash != DefaultDash)
 	xfree(pGC->dash);
     xfree(pGC);
@@ -809,15 +802,10 @@ CreateScratchGC(pScreen, depth)
     void 	(**j)();
 #endif /* DEBUG */
 
-    pGC = (GCPtr)xalloc(sizeof(GC));
+    pGC = (GCPtr)xalloc(sizeof(GC) + gcPrivateCount * sizeof (DevUnion));
     if (!pGC)
 	return (GCPtr)NULL;
-    pGC->devPrivates = (DevUnion *)xalloc(gcPrivateCount * sizeof (DevUnion));
-    if (!pGC->devPrivates)
-    {
-	xfree(pGC);
-	return (GCPtr)NULL;
-    }
+    pGC->devPrivates = (DevUnion *)(pGC + 1);
 
 #ifdef DEBUG
     for(j = &pGC->FillSpans;
