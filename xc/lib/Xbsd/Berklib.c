@@ -1,6 +1,4 @@
-/* $XConsortium: Berklib.c,v 1.7 91/01/10 18:35:51 rws Exp $ */
-
-#include <sys/types.h>
+/* $XConsortium: Berklib.c,v 1.8 91/01/10 20:21:56 rws Exp $ */
 
 /*
  * These are routines found in BSD but not on all other systems.  The core
@@ -10,8 +8,22 @@
  * provided here.
  */
 
+#include <sys/types.h>
+
+#ifdef hpux
+#define WANT_BFUNCS
+#define WANT_FFS
+#define WANT_RANDOM
+#endif
+
+#ifdef macII
+#define WANT_RANDOM
+#endif
+
+
+#ifdef WANT_BFUNCS
+
 /* you should use Xfuncs.h instead of this in most cases */
-#if 0
 bcopy (b1, b2, length)
     register char *b1, *b2;
     register length;
@@ -26,10 +38,8 @@ bcopy (b1, b2, length)
 	    *b2++ = *b1++;
     }
 }
-#endif
 
 /* you should use Xfuncs.h instead of this in most cases */
-#if 0
 bcmp (b1, b2, length)
     register char *b1, *b2;
     register length;
@@ -42,7 +52,6 @@ bcmp (b1, b2, length)
 #endif
 
 /* you should use Xfuncs.h instead of this in most cases */
-#if 0
 bzero (b, length)
     register char *b;
     register length;
@@ -50,7 +59,8 @@ bzero (b, length)
     while (length--)
 	*b++ = '\0';
 }
-#endif
+
+#endif /* WANT_BFUNCS */
 
 /* Find the first set bit
  * i.e. least signifigant 1 bit:
@@ -61,7 +71,7 @@ bzero (b, length)
  * 4 => 3
  */
 
-#if defined(hpux)
+#ifdef WANT_FFS
 int
 ffs(mask)
 unsigned int	mask;
@@ -91,7 +101,7 @@ unsigned int	mask;
  *      ``VAX Architecture Handbook'', pp. 228-235.
  */
 
-#if 0
+#ifdef WANT_QUE
 struct qelem {
     struct    qelem *q_forw;
     struct    qelem *q_back;
@@ -122,7 +132,7 @@ register struct qelem *elem;
 
     /* insert unlocking code here */
 }
-#endif
+#endif /* WANT_QUE */
 
 /*
  * Berkeley random()
@@ -130,13 +140,12 @@ register struct qelem *elem;
  * We simulate via System V's rand()
  */
 
-#if defined(hpux)
+#ifdef WANT_RANDOM
 int
 random()
 {
    return (rand());
 }
-#endif
 
 /*
  * Berkeley srandom()
@@ -144,14 +153,13 @@ random()
  * We simulate via System V's rand()
  */
 
-#if defined(hpux)
 int
 srandom(seed)
 int seed;
 {
    return (srand(seed));
 }
-#endif
+#endif /* WANT_RANDOM */
 
 /*
  * gettimeofday emulation
@@ -160,7 +168,7 @@ int seed;
  *  - does not return timezone info.
  */
 
-#if 0
+#if WANT_GTOD
 int gettimeofday (tvp, tzp)
     struct timeval *tvp;
     struct timezone *tzp;
@@ -174,4 +182,5 @@ int gettimeofday (tvp, tzp)
 		);
     }
 }
-#endif
+#endif /* WANT_GTOD */
+
