@@ -4,7 +4,7 @@
  * xwininfo.c	- MIT Project Athena, X Window system window
  *		  information utility.
  *
- * $XConsortium: xwininfo.c,v 1.46 90/12/14 15:38:35 gildea Exp $
+ * $XConsortium: xwininfo.c,v 1.47 90/12/14 17:03:00 gildea Exp $
  *
  *	This program will report all relevant information
  *	about a specific window.
@@ -463,7 +463,9 @@ Display_Stats_Info(window)
   XSizeHints hints;
   int dw = DisplayWidth (dpy, screen), dh = DisplayHeight (dpy, screen);
   int xright, ybelow, rx, ry;
+  int showright = 0, showbelow = 0;
   int junk;
+  Window junkwin;
   Window wmframe;
 
   if (!XGetWindowAttributes(dpy, window, &win_attributes))
@@ -474,7 +476,7 @@ Display_Stats_Info(window)
   (void) XTranslateCoordinates (dpy, window, win_attributes.root, 
 				-win_attributes.border_width,
 				-win_attributes.border_width,
-				&rx, &ry, &wmframe);
+				&rx, &ry, &junkwin);
 				
   xright = (dw - rx - win_attributes.border_width * 2 -
 	    win_attributes.width);
@@ -528,24 +530,72 @@ Display_Stats_Info(window)
 	     win_attributes.height/hints.height_inc);
   } else
       printf("%dx%d", win_attributes.width, win_attributes.height);
-  if (wmframe != window)
+
+  /* find our window manager frame, if any */
+  wmframe = window;
+  while (True) {
+      Window root, parent;
+      Window *cjunk;
+
+      XQueryTree(dpy, wmframe, &root, &parent, &cjunk, &junk);
+      if (parent == root)
+	  break;
+      else
+	  wmframe = parent;
+  }
+  if (wmframe != window) {
       /* WM reparented, so compute how much window has been moved */
       /* Only works for ICCCM-compliant WMs, and then only if the
-	 window has corner gravity. */
-      if (hints.win_gravity != SouthEastGravity) {
-	  XWindowAttributes frame_attr;
-
-	  XGetWindowAttributes(dpy, wmframe, &frame_attr);
-	  if (hints.win_gravity == NorthWestGravity
-	        || hints.win_gravity == NorthGravity
-	        || hints.win_gravity == NorthEastGravity)
-	      ry = frame_attr.y;
-	  if (hints.win_gravity == NorthWestGravity
-	        || hints.win_gravity == WestGravity
-	        || hints.win_gravity == SouthWestGravity)
-	      rx = frame_attr.x;
+         window has corner gravity.  We would need to know the original width
+	 of the window to correctly handle the other gravities.
+         Even with a corner gravity, we only know the position of
+         one corner, so we always report that one. */
+      XWindowAttributes frame_attr;
+      
+      if (!XGetWindowAttributes(dpy, wmframe, &frame_attr))
+	  Fatal_Error("Can't get frame attributes.");
+      if (!(hints.flags&PWinGravity))
+	  hints.win_gravity = NorthWestGravity;
+      if (hints.win_gravity == NorthWestGravity
+	   || hints.win_gravity == WestGravity
+	   || hints.win_gravity == SouthWestGravity)
+	  rx = frame_attr.x;
+      if (hints.win_gravity == NorthEastGravity
+	   || hints.win_gravity == EastGravity
+	   || hints.win_gravity == SouthEastGravity) {
+	  /* must, for now, print right edge */
+	  xright = dw - frame_attr.x - frame_attr.width -
+	      2*frame_attr.border_width;
+	  showright = 1;
       }
-  printf("%+d%+d\n", rx, ry);
+      if (hints.win_gravity == NorthWestGravity
+	   || hints.win_gravity == NorthGravity
+	   || hints.win_gravity == NorthEastGravity)
+	  ry = frame_attr.y;
+      if (hints.win_gravity == SouthWestGravity
+	   || hints.win_gravity == SouthGravity
+	   || hints.win_gravity == SouthEastGravity) {
+	  /* must, for now, print bottom edge */
+	  ybelow = dh - frame_attr.y - frame_attr.height -
+	      2*frame_attr.border_width;
+	  showbelow = 1;
+      }
+  }
+  /* Print upper left corner unless some other corner is
+      near the edge of the screen. */
+  if (xright <= 100)
+      showright = 1;
+  if (ybelow <= 100)
+      showbelow = 1;
+  
+  if (showright)
+      printf("-%d", xright);
+  else
+      printf("+%d", rx);
+  if (showbelow)
+      printf("-%d", ybelow);
+  else
+      printf("+%d", ry);
 }
 
 
