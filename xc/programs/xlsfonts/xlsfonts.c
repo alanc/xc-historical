@@ -31,9 +31,9 @@ usage()
 	fprintf (stderr,
 	    "    -1                   force single column\n");
 	fprintf (stderr,
-	    "    -display host:dpy    or -d host:dpy\n");
+	    "    -display host:dpy    X server to contact\n");
 	fprintf (stderr,
-	    "    host:dpy             obselete format, use -display\n");
+	    "\n");
 	exit(1);
 }
 

@@ -33,11 +33,13 @@ static char *window_id_format = " 0x%lx";
 usage()
 {
     fprintf (stderr,
-	"usage:  %s [-options ...] [display]\n\n", program_name);
+	"usage:  %s [-options ...]\n\n", program_name);
     fprintf (stderr,
 	"where options include:\n");
     fprintf (stderr,
 	"    -help                print this message\n");
+    fprintf (stderr,
+	"    -display host:dpy    X server to contact\n");
     fprintf (stderr,
 	"    -root                use the root window\n");
     fprintf (stderr,
@@ -59,11 +61,7 @@ usage()
     fprintf (stderr,
 	"    -all                 -tree, status, -bits, -events, -size, -wm\n");
     fprintf (stderr,
-	"where display can be specified as:\n");
-    fprintf (stderr,
-	"    host:dpy             obselete format, use -display\n");
-    fprintf (stderr,
-	"    -display host:dpy    or -d host:dpy\n");
+	"\n");
     exit (1);
 }
 
