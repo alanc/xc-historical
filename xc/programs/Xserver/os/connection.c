@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.79 88/08/16 20:41:59 jim Exp $ */
+/* $Header: connection.c,v 1.80 88/08/19 13:55:26 jim Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -135,7 +135,6 @@ extern int GiveUp();
 void
 CreateWellKnownSockets()
 {
-    char	fname[32];
     int		request, i;
     int		whichbyte;	    /* used to figure out whether this is
    					 LSB or MSB */
@@ -225,7 +224,8 @@ CreateWellKnownSockets()
 	    unset_socket_option (request, SO_REUSEADDR);
 #endif /* hpux */
 #ifdef SO_LINGER
-	if(setsockopt (request, SOL_SOCKET, SO_LINGER, linger, sizeof(linger)))
+	if(setsockopt (request, SOL_SOCKET, SO_LINGER,
+		       (char *)linger, sizeof(linger)))
 	    Notice ("Setting TCP SO_LINGER\n");
 #endif /* SO_LINGER */
 	if (listen (request, 5))
@@ -334,7 +334,7 @@ ReadBuffer(conn, buffer, charsWanted)
     timerclear(&itv.it_interval);
     itv.it_value.tv_sec = TimeOutValue;
     itv.it_value.tv_usec = 0;
-    setitimer(ITIMER_REAL, &itv, NULL);
+    setitimer(ITIMER_REAL, &itv, (struct itimerval *)NULL);
     /* It better not take a full minute to get to the read call */
 
     while (charsWanted && (fTimeOut = setjmp(env)) == FALSE)
@@ -349,12 +349,12 @@ ReadBuffer(conn, buffer, charsWanted)
 	    /* Ok, we got something, reset the timer */
  	    itv.it_value.tv_sec = TimeOutValue;
             itv.it_value.tv_usec = 0;
-	    setitimer(ITIMER_REAL, &itv, NULL);
+	    setitimer(ITIMER_REAL, &itv, (struct itimerval *)NULL);
 	}
     }
     /* disable the timer */
     timerclear(&itv.it_value);
-    setitimer(ITIMER_REAL, &itv, NULL);
+    setitimer(ITIMER_REAL, &itv, (struct itimerval *)NULL);
     /* If we got here and we didn't time out, then return TRUE, because
      * we must have read what we wanted. If we timed out, return FALSE */
     if(fTimeOut && debug_conns)
@@ -405,7 +405,7 @@ ClientAuthorized(conn, pswapped, reason)
     char auth_proto[100];
     char auth_string[100];
 
-    if (!ReadBuffer(conn, &xccp, sizeof(xConnClientPrefix)))
+    if (!ReadBuffer(conn, (char *)&xccp, sizeof(xConnClientPrefix)))
     {
 	/* If they can't even give us this much, just blow them off
 	 * without an error message */
@@ -423,7 +423,7 @@ ClientAuthorized(conn, pswapped, reason)
 	(xccp.minorVersion != X_PROTOCOL_REVISION))
     {        
 #define STR "Protocol version mismatch"
-        *reason = (char *)Xalloc(sizeof(STR));
+        *reason = (char *)xalloc(sizeof(STR));
         strcpy(*reason, STR);
 	if (debug_conns)
 	    ErrorF("%s\n", STR);
@@ -435,7 +435,7 @@ ClientAuthorized(conn, pswapped, reason)
         InvalidHost (&from.sa, fromlen)) 
     {
 #define STR "Server is not authorized to connect to host"	
-        *reason = (char *)Xalloc(sizeof(STR));
+        *reason = (char *)xalloc(sizeof(STR));
         strcpy(*reason, STR);
 #undef STR
         return 0;
@@ -446,7 +446,7 @@ ClientAuthorized(conn, pswapped, reason)
         if (!ReadBuffer(conn, auth_proto, slen))
         {
 #define STR "Length error in xConnClientPrefix for protocol authorization "
-            *reason = (char *)Xalloc(sizeof(STR));
+            *reason = (char *)xalloc(sizeof(STR));
             strcpy(*reason, STR);
             return 0;
 #undef STR
@@ -458,7 +458,7 @@ ClientAuthorized(conn, pswapped, reason)
         if (!ReadBuffer(conn, auth_string, slen))
         {
 #define STR "Length error in xConnClientPrefix for protocol string"
-            *reason = (char *)Xalloc(sizeof(STR));
+            *reason = (char *)xalloc(sizeof(STR));
             strcpy(*reason, STR);
             return 0;
 #undef STR
@@ -541,7 +541,7 @@ ErrorF("Didn't make connection: Out of file descriptors for connections\n");
 			{
 			    int mi = 1;
 			    setsockopt (newconn, IPPROTO_TCP, TCP_NODELAY,
-				       &mi, sizeof (int));
+				       (char *)&mi, sizeof (int));
 			}
 		    }
 #endif /* TCP_NODELAY */
@@ -563,7 +563,7 @@ ErrorF("Didn't make connection: Out of file descriptors for connections\n");
                         if (! inputBuffers[newconn].size) 
 			{
 			    inputBuffers[newconn].buffer = 
-					(char *)Xalloc(BUFSIZE);
+					(char *)xalloc(BUFSIZE);
 			    inputBuffers[newconn].size = BUFSIZE;
 			    inputBuffers[newconn].bufptr = 	
 					inputBuffers[newconn].buffer;
@@ -586,10 +586,10 @@ ErrorF("Didn't make connection: Out of file descriptors for connections\n");
 			   newclients[(*nnew)++] = next;
 			   next->swapped = swapped;
 			   ConnectionTranslation[newconn] = next;
-			   priv =  (OsCommPtr)Xalloc(sizeof(OsCommRec));
+			   priv =  (OsCommPtr)xalloc(sizeof(OsCommRec));
 			   priv->fd = newconn;
 			   priv->buf = (unsigned char *)
-					Xalloc(OutputBufferSize);
+					xalloc(OutputBufferSize);
 			   priv->bufsize = OutputBufferSize;
 			   priv->count = 0;
 			   next->osPrivate = (pointer)priv;
@@ -597,7 +597,7 @@ ErrorF("Didn't make connection: Out of file descriptors for connections\n");
 			else
 			{
 #define STR "Maximum number of clients exceeded"
-			   reason = (char *)Xalloc(sizeof(STR));
+			   reason = (char *)xalloc(sizeof(STR));
 			   strcpy(reason, STR);
 #undef STR
 			}
@@ -622,7 +622,7 @@ ErrorF("Didn't make connection: Out of file descriptors for connections\n");
 				swaps(&c.length, n);
 			    }
 
-			    write(newconn, &c, sizeof(xConnSetupPrefix)); 
+			    write(newconn, (char *)&c, sizeof(xConnSetupPrefix)); 
 			    iov[0].iov_len = c.lengthReason;
 			    iov[0].iov_base = reason;
 			    iov[1].iov_len = padlength[c.lengthReason & 3];
@@ -632,7 +632,7 @@ ErrorF("Didn't make connection: Out of file descriptors for connections\n");
 			        ErrorF("Didn't make connection:%s\n", reason);
 			}
 			close(newconn);
-			Xfree(reason);
+			xfree(reason);
 		    }
 
 		}
@@ -655,7 +655,7 @@ CloseDownFileDescriptor(connection)
 
     if (inputBuffers[connection].size)
     {
-	Xfree(inputBuffers[connection].buffer);
+	xfree(inputBuffers[connection].buffer);
 	inputBuffers[connection].buffer = (char *) NULL;
 	inputBuffers[connection].bufptr = (char *) NULL;
 	inputBuffers[connection].size = 0;
@@ -731,8 +731,8 @@ CloseDownConnection(client)
     ConnectionTranslation[oc->fd] = (ClientPtr)NULL;
     CloseDownFileDescriptor(oc->fd);
     if (oc->buf != NULL) /* an Xrealloc may have returned NULL */
-	Xfree(oc->buf);
-    Xfree(client->osPrivate);
+	xfree(oc->buf);
+    xfree(client->osPrivate);
 }
 
 

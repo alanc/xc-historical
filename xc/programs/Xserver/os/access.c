@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: access.c,v 1.24 88/08/29 16:08:52 rws Exp $ */
+/* $Header: access.c,v 1.24 88/08/29 16:14:52 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -52,6 +52,8 @@ SOFTWARE.
 #include "dixstruct.h"
 #include "osdep.h"
 
+#define acmp(a1, a2, len) bcmp((char *)(a1), (char *)(a2), len)
+#define acopy(a1, a2, len) bcopy((char *)(a1), (char *)(a2), len)
 
 #define DONT_CHECK -1
 extern char	*index();
@@ -119,19 +121,19 @@ DefineSelf (fd)
     if (hp != NULL) {
 	saddr.sa.sa_family = hp->h_addrtype;
 	inetaddr = (struct sockaddr_in *) (&(saddr.sa));
-	bcopy ( hp->h_addr, &(inetaddr->sin_addr), hp->h_length);
+	acopy ( hp->h_addr, &(inetaddr->sin_addr), hp->h_length);
 	family = ConvertAddr ( &(saddr.sa), &len, &addr);
 	if ( family > 0) {
 	    for (host = selfhosts;
 		 host && ( family != host->family ||
-			  bcmp ( addr, host->addr, len));
+			  acmp ( addr, host->addr, len));
 		 host = host->next) ;
 	    if (!host) {
 		/* add this host to the host list.	*/
 		host = (HOST *) xalloc (sizeof (HOST));
 		host->family = family;
 		host->len = len;
-		bcopy ( addr, host->addr, len);
+		acopy ( addr, host->addr, len);
 		host->next = selfhosts;
 		selfhosts = host;
 	    }
@@ -176,14 +178,14 @@ DefineSelf (fd)
         if ((family = ConvertAddr (&ifr->ifr_addr, &len, &addr)) <= 0)
 	    continue;
         for (host = selfhosts; host && (family != host->family ||
-	  bcmp (addr, host->addr, len)); host = host->next)
+	  acmp (addr, host->addr, len)); host = host->next)
 	    ;
         if (host)
 	    continue;
         host = (HOST *) xalloc (sizeof (HOST));
         host->family = family;
         host->len = len;
-        bcopy(addr, host->addr, len);
+        acopy(addr, host->addr, len);
         host->next = selfhosts;
         selfhosts = host;
     }
@@ -260,8 +262,7 @@ ResetHosts (display)
 		    {
     			bzero ((pointer) &dnaddr, sizeof (dnaddr));
     			dnaddr.a_len = np->n_length;
-    			bcopy (np->n_addr, (pointer) dnaddr.a_addr,
-			  np->n_length);
+    			acopy (np->n_addr, dnaddr.a_addr, np->n_length);
     			NewHost (family, (pointer) &dnaddr);
     		    }
     		}
@@ -277,9 +278,9 @@ ResetHosts (display)
     		saddr.sa.sa_family = hp->h_addrtype;
     		if ((family = ConvertAddr (&saddr.sa, &len, &addr)) > 0)
 #ifdef NEW_HEADER_WITH_OLD_LIBRARY
-    		    NewHost (family, hp->h_addr_list);
+    		    NewHost (family, (pointer)hp->h_addr_list);
 #else
-    		    NewHost (family, hp->h_addr);
+    		    NewHost (family, (pointer)hp->h_addr);
 #endif
 
     	    }
@@ -310,8 +311,7 @@ AuthorizedClient(client)
 		return TRUE;
 	    for (host = selfhosts; host; host = host->next)
 	    {
-		if (family == host->family &&
-		    !bcmp (addr, host->addr, alen))
+		if (family == host->family && !acmp (addr, host->addr, alen))
 		    return TRUE;
 	    }
 	}
@@ -349,13 +349,13 @@ AddHost (client, family, length, pAddr)
     }
     for (host = validhosts; host; host = host->next)
     {
-        if (unixFamily == host->family && !bcmp (pAddr, host->addr, len))
+        if (unixFamily == host->family && !acmp (pAddr, host->addr, len))
     	    return (Success);
     }
     host = (HOST *) xalloc (sizeof (HOST));
     host->family = unixFamily;
     host->len = len;
-    bcopy(pAddr, host->addr, len);
+    acopy(pAddr, host->addr, len);
     host->next = validhosts;
     validhosts = host;
     return (Success);
@@ -374,13 +374,13 @@ NewHost (family, addr)
         return;
     for (host = validhosts; host; host = host->next)
     {
-        if (family == host->family && !bcmp (addr, host->addr, len))
+        if (family == host->family && !acmp (addr, host->addr, len))
     	return;
     }
     host = (HOST *) xalloc (sizeof (HOST));
     host->family = family;
     host->len = len;
-    bcopy(addr, host->addr, len);
+    acopy(addr, host->addr, len);
     host->next = validhosts;
     validhosts = host;
 }
@@ -413,7 +413,7 @@ RemoveHost (client, family, length, pAddr)
     }
     for (prev = &validhosts;
          (host = *prev) && (unixFamily != host->family ||
-		            bcmp (pAddr, host->addr, len));
+		            acmp (pAddr, host->addr, len));
          prev = &host->next)
         ;
     if (host)
@@ -458,7 +458,7 @@ GetHosts (data, pnHosts, pEnabled)
 	    ((xHostEntry *)ptr)->family = XFamily(host->family);
 	    ((xHostEntry *)ptr)->length = len;
 	    ptr += sizeof(xHostEntry);
-	    bcopy (host->addr, ptr, len);
+	    acopy (host->addr, ptr, len);
 	    ptr += ((len + 3) >> 2) << 2;
         }
     }
@@ -508,7 +508,7 @@ CheckFamily (connection, family)
 	    for (host = selfhosts; host; host = host->next)
 	    {
 		if (family == host->family &&
-		    !bcmp (addr, host->addr, alen))
+		    !acmp (addr, host->addr, alen))
 		    return (len);
 	    }
 	}
@@ -535,7 +535,7 @@ InvalidHost (saddr, len)
         return(0);    
     for (host = validhosts; host; host = host->next)
     {
-        if (family == host->family && !bcmp (addr, host->addr, len))
+        if (family == host->family && !acmp (addr, host->addr, len))
     	    return (0);
     }
     return (1);

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: oscolor.c,v 1.11 88/02/13 20:53:40 rws Exp $ */
+/* $Header: oscolor.c,v 1.12 88/08/16 22:26:51 keith Exp $ */
 #include <dbm.h>
 #include "rgb.h"
 #include "os.h"
@@ -46,8 +46,6 @@ OsLookupColor(screen, name, len, pred, pgreen, pblue)
     datum		dbent;
     RGB			rgb;
     char	*lowername;
-    register unsigned int i;
-    register char c;
 
     if(!havergb)
 	return(0);
@@ -56,7 +54,8 @@ OsLookupColor(screen, name, len, pred, pgreen, pblue)
     lowername = (char *)ALLOCATE_LOCAL(len + 1);
     if (!lowername)
 	return(0);
-    CopyISOLatin1Lowered ((unsigned char *) lowername, (unsigned char *) name, len);
+    CopyISOLatin1Lowered ((unsigned char *) lowername, (unsigned char *) name,
+			  (int)len);
 
     dbent.dptr = lowername;
     dbent.dsize = len;

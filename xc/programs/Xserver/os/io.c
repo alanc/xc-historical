@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: io.c,v 1.46 88/08/16 20:17:39 jim Exp $ */
+/* $Header: io.c,v 1.47 88/08/16 20:42:03 jim Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -98,6 +98,7 @@ extern int errno;
 
 ConnectionInput inputBuffers[MAXSOCKS];    /* buffers for clients */
 
+/*ARGSUSED*/
 char *
 ReadRequestFromClient(who, status, oldbuf)
     ClientPtr who;
@@ -157,7 +158,7 @@ ReadRequestFromClient(who, status, oldbuf)
 	    if ((pBuff->size > BUFWATERMARK) && (result < BUFSIZE))
 	    {
 		pBuff->size = BUFSIZE;
-		pBuff->buffer = (char *)Xrealloc(pBuff->buffer, pBuff->size);
+		pBuff->buffer = (char *)xrealloc(pBuff->buffer, pBuff->size);
 	    }
 	    pBuff->bufptr = pBuff->buffer;
 	}
@@ -191,7 +192,7 @@ ReadRequestFromClient(who, status, oldbuf)
         if (needed > pBuff->size)
         {
 	    pBuff->size = needed;
-    	    pBuff->buffer = (char *)Xrealloc(pBuff->buffer, needed);
+    	    pBuff->buffer = (char *)xrealloc(pBuff->buffer, needed);
         }
         pBuff->bufptr = pBuff->buffer;
     }
@@ -225,7 +226,7 @@ ReadRequestFromClient(who, status, oldbuf)
         if (needed > pBuff->size)
         {
 	    pBuff->size = needed;
-    	    pBuff->buffer = (char *)Xrealloc(pBuff->buffer, needed);
+    	    pBuff->buffer = (char *)xrealloc(pBuff->buffer, needed);
         }
         pBuff->bufptr = pBuff->buffer;
     }	
@@ -307,18 +308,14 @@ static int
 FlushClient(who, oc, extraBuf, extraCount)
     ClientPtr who;
     OsCommPtr oc;
-    unsigned char *extraBuf;
+    char *extraBuf;
     int extraCount; /* do not modify... returned below */
 {
-#define OUTTIME 2
     int connection = oc->fd,
     	total, n, i, notWritten, written,
-	mask[mskcnt],
 	iovCnt = 0;
-    struct timeval outtime;
     struct iovec iov[3];
     char padBuffer[3];
-    unsigned char *buf = oc->buf;
 
     total = 0;
     if (oc->count)
@@ -331,7 +328,7 @@ FlushClient(who, oc, extraBuf, extraCount)
     if (extraCount)
     {
 	total += iov[iovCnt].iov_len = extraCount;
-	iov[iovCnt++].iov_base = (caddr_t)extraBuf;
+	iov[iovCnt++].iov_base = extraBuf;
 	if (extraCount & 3)
 	{
 	    total += iov[iovCnt].iov_len = padlength[extraCount & 3];
@@ -394,7 +391,7 @@ FlushClient(who, oc, extraBuf, extraCount)
 	    if (written > 0)
 	    {
 		oc->count -= written;
-		bcopy(oc->buf + written, oc->buf, oc->count);
+		bcopy((char *)oc->buf + written, (char *)oc->buf, oc->count);
 		written = 0;
 	    }
 	}
@@ -409,7 +406,7 @@ FlushClient(who, oc, extraBuf, extraCount)
 	    /* allocate at least enough to contain it plus one
 	       OutputBufferSize */
 	    oc->bufsize = notWritten + OutputBufferSize;
-	    oc->buf = (unsigned char *)Xrealloc(oc->buf, oc->bufsize);
+	    oc->buf = (unsigned char *)xrealloc(oc->buf, oc->bufsize);
 	    if (oc->buf == NULL)
 	    {
 	outOfMem:
@@ -433,7 +430,7 @@ FlushClient(who, oc, extraBuf, extraCount)
 	/* If the amount written extended into the padBuffer, then the
 	   difference "extraCount - written" may be less than 0 */
 	if ((n = extraCount - written) > 0)
-	    bcopy (extraBuf + written, oc->buf + oc->count, n);
+	    bcopy (extraBuf + written, (char *)oc->buf + oc->count, n);
 
 	oc->count = notWritten; /* this will include the pad */
 
@@ -445,7 +442,7 @@ FlushClient(who, oc, extraBuf, extraCount)
     if (oc->bufsize > OutputBufferSize)
     {
 	oc->bufsize = OutputBufferSize;
-	oc->buf = (unsigned char *)Xrealloc(oc->buf, OutputBufferSize);
+	oc->buf = (unsigned char *)xrealloc(oc->buf, OutputBufferSize);
 	if (oc->buf == NULL) /* nearly impossible */
 	    goto outOfMem;
     }
@@ -499,7 +496,7 @@ FlushAllOutput()
 		NewOutputPending = TRUE;
 	    }
 	    else
-		FlushClient(client, oc, NULL, 0);
+		FlushClient(client, oc, (char *)NULL, 0);
 	}
     }
 
@@ -564,7 +561,7 @@ WriteToClient (who, count, buf)
 
     NewOutputPending = TRUE;
     BITSET(OutputPending, oc->fd);
-    bcopy(buf, oc->buf + oc->count, count);
+    bcopy(buf, (char *)oc->buf + oc->count, count);
     oc->count += count + padBytes;
     
     return(count);

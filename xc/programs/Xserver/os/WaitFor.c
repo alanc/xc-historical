@@ -59,8 +59,7 @@ extern Bool NewOutputPending;
 extern Bool AnyClientsWriteBlocked;
 
 extern void CheckConnections();
-extern int FirstClient;
-extern int MaxClients;
+extern void EstablishNewConnections();
 
 extern int errno;
 
