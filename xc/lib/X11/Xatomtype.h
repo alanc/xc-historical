@@ -1,4 +1,4 @@
-/* $Header: Xatomtype.h,v 11.7 87/08/18 15:31:47 jg Exp $ */
+/* $Header: Xatomtype.h,v 11.7 87/09/11 08:15:34 toddb Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -54,7 +54,7 @@ typedef struct {
     BITS32 iconMask;
     CARD32 windowGroup;
   } xPropWMHints;
-#define NumPropWMHintsElements 8 /* number of elements in this structure */
+#define NumPropWMHintsElements 9 /* number of elements in this structure */
 
 /* this structure defines the icon size hints information */
 typedef struct {
