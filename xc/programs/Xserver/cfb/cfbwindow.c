@@ -28,6 +28,7 @@ SOFTWARE.
 #include "cfb.h"
 #include "mistruct.h"
 #include "regionstr.h"
+#include "cfbmskbits.h"
 
 extern void miInitBackingStore(), miFreeBackingStore();
 
@@ -198,6 +199,7 @@ cfbChangeWindowAttributes(pWin, mask)
 {
     register unsigned long index;
     register cfbPrivWin *pPrivWin;
+    int width;
 
     pPrivWin = (cfbPrivWin *)(pWin->devPrivate);
     while(mask)
@@ -234,9 +236,8 @@ cfbChangeWindowAttributes(pWin, mask)
 		  pWin->PaintWindowBackground = cfbPaintAreaPR;
 		  pPrivWin->fastBackground = 0;
 	      }
-	      else if ((pWin->backgroundTile->width <= 32) &&
-		       !(pWin->backgroundTile->width &
-			 (pWin->backgroundTile->width - 1)))
+	      else if (((width = (pWin->backgroundTile->width * PSZ)) <= 32) &&
+		       !(width & (width - 1)))
 	      {
 		  if (pPrivWin->pRotatedBackground)
 		      cfbDestroyPixmap(pPrivWin->pRotatedBackground);
@@ -247,7 +248,7 @@ cfbChangeWindowAttributes(pWin, mask)
 		      pPrivWin->fastBackground = 1;
 		      pPrivWin->oldRotate.x = pWin->absCorner.x;
 		      pPrivWin->oldRotate.y = pWin->absCorner.y;
-		      cfbPadPixmap(pPrivWin->pRotatedBackground);
+		      (void)cfbPadPixmap(pPrivWin->pRotatedBackground);
 		      cfbXRotatePixmap(pPrivWin->pRotatedBackground,
 				       pWin->absCorner.x);
 		      cfbYRotatePixmap(pPrivWin->pRotatedBackground,
@@ -284,9 +285,8 @@ cfbChangeWindowAttributes(pWin, mask)
 		  pPrivWin->fastBorder = 0;
 		  break;
 		default:
-		  if ((pWin->borderTile->width <= 32) &&
-		      !(pWin->borderTile->width &
-			(pWin->borderTile->width - 1)))
+		  if (((width = (pWin->borderTile->width * PSZ)) <= 32) &&
+		      !(width & (width - 1)))
 		  {
 		      if (pPrivWin->pRotatedBorder)
 			  cfbDestroyPixmap(pPrivWin->pRotatedBorder);
@@ -297,7 +297,7 @@ cfbChangeWindowAttributes(pWin, mask)
 			  pPrivWin->fastBorder = 1;
 			  pPrivWin->oldRotate.x = pWin->absCorner.x;
 			  pPrivWin->oldRotate.y = pWin->absCorner.y;
-			  cfbPadPixmap(pPrivWin->pRotatedBorder);
+			  (void)cfbPadPixmap(pPrivWin->pRotatedBorder);
 			  cfbXRotatePixmap(pPrivWin->pRotatedBorder,
 					   pWin->absCorner.x);
 			  cfbYRotatePixmap(pPrivWin->pRotatedBorder,
