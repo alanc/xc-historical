@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.187 94/01/07 15:09:38 kaleb Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.188 94/01/11 11:41:57 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1751,6 +1751,22 @@ extern void XtDisplayInitialize(
     Cardinal 		/* num_options */,
     int*		/* argc */,
     char**		/* argv */
+#endif
+);
+
+extern Widget XtSessionInitialize(
+#if NeedFunctionPrototypes
+    XtAppContext*	/* app_context_return */,
+    _Xconst _XtString	/* application_class */,
+    String		/* session_name */,
+    WidgetClass		/* session_class */,
+    XrmOptionDescList 	/* options */,
+    Cardinal 		/* num_options */,
+    int*		/* argc_in_out */,
+    String*		/* argv_in_out */,
+    String*		/* fallback_resources */,
+    ArgList 		/* args */,
+    Cardinal 		/* num_args */
 #endif
 );
 
