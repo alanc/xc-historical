@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t
-.\" $XConsortium: xlfd.tbl.ms,v 1.10 91/07/03 14:21:54 rws Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.11 91/07/28 15:45:59 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -682,7 +682,7 @@ of a proportional font.
 T}
 ``M''	Monospaced	T{
 A font whose logical character widths are constant 
-(that is, all char widths of the font are = max_ bounds.width).
+(that is, every glyph in the font has the same logical width).
 No other restrictions are placed on the metrics of a monospaced font.
 T}
 ``C''	CharCell	T{
@@ -1504,8 +1504,10 @@ property, according to the following algorithm:
 .LP
 .DS
 if (UNDERLINE_POSITION undefined) then
-   UNDERLINE_POSITION = ROUND(max_bounds.descent / 2)
+   UNDERLINE_POSITION = ROUND((maximum descent) / 2)
 .DE
+where maximum descent is the maximum descent (below the baseline)
+in pixels of any glyph in the font.
 .NH 3
 UNDERLINE_THICKNESS 
 .XS
@@ -1540,8 +1542,10 @@ according to the following algorithm:
 .LP
 .DS
 if (STRIKEOUT_ASCENT undefined)
-   STRIKEOUT_ASCENT =  max_bounds.ascent
+   STRIKEOUT_ASCENT =  maximum ascent
 .DE
+where maximum ascent is the maximum ascent (above the baseline)
+in pixels of any glyph in the font.
 .NH 3
 STRIKEOUT_DESCENT
 .XS
@@ -1559,8 +1563,10 @@ according to the following algorithm:
 .LP
 .DS
 if (STRIKEOUT_DESCENT undefined)
-   STRIKEOUT_DESCENT =  max_bounds.descent
+   STRIKEOUT_DESCENT =  maximum descent
 .DE
+where maximum descent is the maximum descent (below the baseline)
+in pixels of any glyph in the font.
 .NH 3
 ITALIC_ANGLE
 .XS
@@ -2155,8 +2161,10 @@ according to the following algorithm:
 .LP
 .DS
 if (FONT_ASCENT undefined) then
-   FONT_ASCENT = max_bounds.ascent
+   FONT_ASCENT = maximum ascent
 .DE
+where maximum ascent is the maximum ascent (above the baseline)
+in pixels of any glyph in the font.
 .NH 3
 FONT_DESCENT
 .XS
@@ -2180,8 +2188,10 @@ according to the following algorithm:
 .LP
 .DS
 if (FONT_DESCENT undefined) then
-   FONT_DESCENT = max_bounds.descent
+   FONT_DESCENT = maximum descent
 .DE
+where maximum descent is the maximum descent (below the baseline)
+in pixels of any glyph in the font.
 .NH 3
 DEFAULT_CHAR
 .XS
