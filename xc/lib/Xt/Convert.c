@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Convert.c,v 1.29 89/10/05 12:47:27 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Convert.c,v 1.30 89/10/08 14:48:25 rws Exp $";
 /* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -785,7 +785,8 @@ Boolean XtConvertAndStore(object, from_type_str, from, to_type_str, to)
 	    return False;
 	}
 	bcopy( from->addr, to->addr, from->size );
-    }
+    } else			/* from_type == to_type */
+	*to = *from;
 
     return True;
 }
