@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.52 91/07/15 22:01:00 keith Exp $
+ * $XConsortium: session.c,v 1.53 91/07/18 18:51:07 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -26,7 +26,6 @@
 # include <X11/Xlib.h>
 # include <signal.h>
 # include <X11/Xatom.h>
-# include <setjmp.h>
 # include <errno.h>
 # include <stdio.h>
 # include <ctype.h>
@@ -48,7 +47,7 @@ static SIGVAL
 catchTerm (n)
     int n;
 {
-    longjmp (abortSession, 1);
+    Longjmp (abortSession, 1);
 }
 
 static jmp_buf	pingTime;
@@ -58,7 +57,7 @@ static SIGVAL
 catchAlrm (n)
     int n;
 {
-    longjmp (pingTime, 1);
+    Longjmp (pingTime, 1);
 }
 
 SessionPingFailed (d)
@@ -181,7 +180,7 @@ struct display	*d;
 	SessionExit (d, OBEYSESS_DISPLAY, FALSE);
     }
     clientPid = 0;
-    if (!setjmp (abortSession)) {
+    if (!Setjmp (abortSession)) {
 	(void) Signal (SIGTERM, catchTerm);
 	/*
 	 * Start the clients, changing uid/groups
@@ -195,7 +194,7 @@ struct display	*d;
 	    for (;;) {
 		if (d->pingInterval)
 		{
-		    if (!setjmp (pingTime))
+		    if (!Setjmp (pingTime))
 		    {
 			(void) Signal (SIGALRM, catchAlrm);
 			(void) alarm (d->pingInterval * 60);
@@ -286,7 +285,7 @@ static SIGVAL
 syncTimeout (n)
     int n;
 {
-    longjmp (syncJump, 1);
+    Longjmp (syncJump, 1);
 }
 
 SecureDisplay (d, dpy)
@@ -295,7 +294,7 @@ Display		*dpy;
 {
     Debug ("SecureDisplay %s\n", d->name);
     (void) Signal (SIGALRM, syncTimeout);
-    if (setjmp (syncJump)) {
+    if (Setjmp (syncJump)) {
 	LogError ("WARNING: display %s could not be secured\n",
 		   d->name);
 	SessionExit (d, RESERVER_DISPLAY, FALSE);
@@ -448,7 +447,7 @@ static SIGVAL
 waitAbort (n)
     int n;
 {
-	longjmp (tenaciousClient, 1);
+	Longjmp (tenaciousClient, 1);
 }
 
 #if defined(_POSIX_SOURCE) || defined(SYSV) || defined(SVR4)
@@ -475,7 +474,7 @@ int	pid;
 		return;
 	    }
 	}
-	if (!setjmp (tenaciousClient)) {
+	if (!Setjmp (tenaciousClient)) {
 	    (void) Signal (SIGALRM, waitAbort);
 	    (void) alarm ((unsigned) 10);
 	    retId = wait ((waitType *) 0);

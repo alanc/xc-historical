@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.47 91/07/16 22:19:43 gildea Exp $
+ * $XConsortium: dm.h,v 1.48 91/07/18 21:03:43 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -28,6 +28,14 @@
 # include	<X11/Xfuncs.h>
 # include	<X11/Xmd.h>
 # include	<X11/Xauth.h>
+
+#if !defined(X_NOT_POSIX) && !defined(_POSIX_SOURCE)
+#define _POSIX_SOURCE
+# include	<setjmp.h>
+#undef _POSIX_SOURCE
+#else
+# include	<setjmp.h>
+#endif
 
 /* If XDMCP symbol defined, compile to run XDMCP protocol */
 
@@ -313,6 +321,11 @@ char *malloc(), *realloc();
 #define SIGNALS_RESET_WHEN_CAUGHT
 #define UNRELIABLE_SIGNALS
 #endif
+#define Setjmp(e)	setjmp(e)
+#define Longjmp(e,v)	longjmp(e,v)
+#else
+#define Setjmp(e)   sigsetjmp(e,1)
+#define Longjmp(e,v)	siglongjmp(e,v)
 #endif
 
 SIGVAL (*Signal())();

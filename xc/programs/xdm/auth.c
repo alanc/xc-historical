@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.44 91/07/24 00:06:45 keith Exp $
+ * $XConsortium: auth.c,v 1.45 91/07/26 19:47:53 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -26,7 +26,6 @@
 
 #include "dm.h"
 #include <X11/X.h>
-#include <setjmp.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>

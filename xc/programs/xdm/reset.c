@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: reset.c,v 1.7 91/01/31 22:03:26 gildea Exp $
+ * $XConsortium: reset.c,v 1.8 91/02/13 19:15:31 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -24,10 +24,9 @@
  * a client remains connected with no windows.
  */
 
-# include	<X11/Xlib.h>
-# include	<setjmp.h>
-# include	<signal.h>
 # include	"dm.h"
+# include	<X11/Xlib.h>
+# include	<signal.h>
 
 /*ARGSUSED*/
 static int
@@ -71,7 +70,7 @@ static SIGVAL
 abortReset (n)
     int n;
 {
-	longjmp (resetJmp, 1);
+	Longjmp (resetJmp, 1);
 }
 
 /*
@@ -84,7 +83,7 @@ Display	*dpy;
 	Window	root;
 	int	screen;
 
-	if (setjmp (resetJmp)) {
+	if (Setjmp (resetJmp)) {
 		LogError ("pseudoReset timeout\n");
 	} else {
 		(void) Signal (SIGALRM, abortReset);

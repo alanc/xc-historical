@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: server.c,v 1.14 91/07/16 22:19:47 gildea Exp $
+ * $XConsortium: server.c,v 1.15 91/07/31 16:55:04 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -27,7 +27,6 @@
 # include	<X11/Xos.h>
 # include	<stdio.h>
 # include	<signal.h>
-# include	<setjmp.h>
 # include	<errno.h>
 
 static receivedUsr1;
@@ -141,7 +140,7 @@ static SIGVAL
 serverPauseAbort (n)
     int n;
 {
-    longjmp (pauseAbort, 1);
+    Longjmp (pauseAbort, 1);
 }
 
 /* ARGSUSED */
@@ -151,7 +150,7 @@ serverPauseUsr1 (n)
 {
     Debug ("display manager paused til SIGUSR1\n");
     ++receivedUsr1;
-    longjmp (pauseAbort, 1);
+    Longjmp (pauseAbort, 1);
 }
 
 static
@@ -162,7 +161,7 @@ int	    serverPid;
     int		pid;
 
     serverPauseRet = 0;
-    if (!setjmp (pauseAbort)) {
+    if (!Setjmp (pauseAbort)) {
 	(void) Signal (SIGALRM, serverPauseAbort);
 	(void) Signal (SIGUSR1, serverPauseUsr1);
 #ifdef SYSV
@@ -219,7 +218,7 @@ int	    serverPid;
 /*
  * this code is complicated by some TCP failings.  On
  * many systems, the connect will occasionally hang forever,
- * this trouble is avoided by setting up a timeout to longjmp
+ * this trouble is avoided by setting up a timeout to Longjmp
  * out of the connect (possibly leaving piles of garbage around
  * inside Xlib) and give up, terminating the server.
  */
@@ -231,7 +230,7 @@ static SIGVAL
 abortOpen (n)
     int n;
 {
-	longjmp (openAbort, 1);
+	Longjmp (openAbort, 1);
 }
 
 #ifdef XDMCP
@@ -294,7 +293,7 @@ WaitForServer (d)
     for (i = 0; i < (d->openRepeat > 0 ? d->openRepeat : 1); i++) {
     	(void) Signal (SIGALRM, abortOpen);
     	(void) alarm ((unsigned) d->openTimeout);
-    	if (!setjmp (openAbort)) {
+    	if (!Setjmp (openAbort)) {
 	    Debug ("Before XOpenDisplay(%s)\n", d->name);
 	    errno = 0;
 	    (void) XSetIOErrorHandler (openErrorHandler);
@@ -352,7 +351,7 @@ static jmp_buf	pingTime;
 static void
 PingLost ()
 {
-    longjmp (pingTime, 1);
+    Longjmp (pingTime, 1);
 }
 
 /* ARGSUSED */
@@ -385,7 +384,7 @@ PingServer (d, alternateDpy)
     oldAlarm = alarm (0);
     oldSig = Signal (SIGALRM, PingLostSig);
     (void) alarm (d->pingTimeout * 60);
-    if (!setjmp (pingTime))
+    if (!Setjmp (pingTime))
     {
 	Debug ("Ping server\n");
 	XSync (alternateDpy, 0);
