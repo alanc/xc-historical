@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: xrdb.c,v 11.3 87/08/28 15:05:02 jg Exp $";
+static char rcs_id[] = "$Header: xrdb.c,v 11.4 87/08/29 15:09:48 jg Locked $";
 #endif
 
 /*
@@ -43,7 +43,6 @@ static char rcs_id[] = "$Header: xrdb.c,v 11.3 87/08/28 15:05:02 jg Exp $";
 #define MAXRDB 100000
 #define DBOK 0
 
-char buffer[MAXRDB];
 char *SanityCheck();
 
 main (argc, argv)
@@ -57,6 +56,7 @@ main (argc, argv)
     FILE *fp;
     int nbytes;
     char *bptr, *endptr;
+    char buffer[MAXRDB];
     int printit = 0;
 
     for (i = 1; i < argc; i++) {
@@ -74,7 +74,8 @@ main (argc, argv)
 
     if (printit == 1) {
 	/* user wants to print contents */
-	fputs(dpy->xdefaults, stdout);
+	if (dpy->xdefaults)
+	    fputs(dpy->xdefaults, stdout);
 	exit(0);
 	}
     else {
