@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.10 90/05/18 15:17:00 rws Exp $ */
+/* $XConsortium: devices.c,v 5.11 90/05/18 15:30:19 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1192,7 +1192,6 @@ ProcChangeKeyboardControl (client)
 		if (key == DO_ALL)
 		    ctrl.autoRepeat = defaultKeyboardControl.autoRepeat;
 		else
-		    ctrl.autoRepeats[i] &= ~mask;
 		    ctrl.autoRepeats[i] =
 			    (ctrl.autoRepeats[i] & ~mask) |
 			    (defaultKeyboardControl.autoRepeats[i] & mask);
