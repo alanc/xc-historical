@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.10 91/05/13 16:50:52 gildea Exp $ */
+/* $XConsortium: connection.c,v 1.12 91/07/16 20:22:30 keith Exp $ */
 /*
  * handles connections
  */
@@ -27,6 +27,12 @@
  * $NCDId: @(#)connection.c,v 4.10 1991/07/03 17:19:22 lemke Exp $
  *
  */
+
+/* sorry, streams support not here yet */
+#ifdef STREAMSCONN
+#undef STREAMSCONN
+#define TCPCONN
+#endif
 
 #include	<X11/Xos.h>
 #include	<stdio.h>
