@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetHints.c,v 11.14 87/08/18 15:31:25 jg Exp $ */
+/* $Header: XGetHints.c,v 11.14 87/09/01 14:48:06 toddb Locked $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -26,6 +26,7 @@ SOFTWARE.
 
 ******************************************************************/
 
+#include <stdio.h>
 #include "Xlibint.h"
 #include "Xutil.h"
 #include "Xatomtype.h"
@@ -47,13 +48,8 @@ Status XGetSizeHints (dpy, w, hints, property)
             &nitems, &leftover, (unsigned char **)&prop)
             != Success) return (0);
 
-	/* If the property is undefined, return an error condition. */
-
-	if (actual_type == None) {
-		return(0);
-		}
-
-        if ((nitems < NumPropSizeElements) || (actual_format != 32)) {
+        if ((actual_type != XA_WM_SIZE_HINTS) ||
+	    (nitems < NumPropSizeElements) || (actual_format != 32)) {
 		if (prop != NULL) Xfree ((char *)prop);
                 return(0);
 		}
@@ -100,10 +96,8 @@ XWMHints *XGetWMHints (dpy, w)
 
 	/* If the property is undefined on the window, return null pointer. */
 
-	if (actual_type == None) {
-		return(NULL);
-		}
-        if ((nitems < NumPropWMHintsElements) || (actual_format != 32)) {
+        if ((actual_type != XA_WM_HINTS) ||
+	    (nitems < NumPropWMHintsElements) || (actual_format != 32)) {
 		if (prop != NULL) Xfree ((char *)prop);
                 return(NULL);
 		}
@@ -166,15 +160,10 @@ Status XGetIconSizes (dpy, w, size_list, count)
             &nitems, &leftover, (unsigned char **)&prop)
             != Success) return (0);
 
-	/* If the property isn't defined on the window, return zero. */
-	if (actual_type == None) {
-		return(0);
-		}
-
-
 	pp = prop;
 
-        if ((nitems < NumPropIconSizeElements) || (actual_format != 32)) {
+        if ((actual_type != XA_WM_ICON_SIZE) ||
+	    (nitems < NumPropIconSizeElements) || (actual_format != 32)) {
 		if (prop != NULL) Xfree ((char *)prop);
                 return(0);
 		}
@@ -203,4 +192,67 @@ Status XGetIconSizes (dpy, w, size_list, count)
 	if (prop != NULL) Xfree ((char *)prop);
 	return(1);
 	
+}
+
+Status
+XGetTransientForHint(dpy, w, propWindow)
+	Display *dpy;
+	Window w;
+	Window *propWindow;
+{
+    Atom actual_type;
+    int actual_format;
+    unsigned long nitems;
+    long leftover;
+    Window *data = NULL;
+    if (XGetWindowProperty(dpy, w, XA_WM_TRANSIENT_FOR, 0L, 1L, False,
+        XA_WINDOW, 
+	&actual_type,
+	&actual_format, &nitems, &leftover, (char **) &data) != Success) {
+	*propWindow = None;
+	return (0);
+	}
+    if ( (actual_type == XA_WINDOW) && (actual_format == 32) ) {
+	*propWindow = *data;
+	Xfree( (char *) data);
+	return (Success);
+	}
+    *propWindow = None;
+    Xfree( (char *) data);
+    return(0);
+}
+
+Status
+XGetClassHint(dpy, w, classhint)
+	Display *dpy;
+	Window w;
+	XClassHint *classhint;
+{
+    int len_name, len_class;
+    Atom actual_type;
+    int actual_format;
+    unsigned long nitems;
+    long leftover;
+    unsigned char *data = NULL;
+    if (XGetWindowProperty(dpy, w, XA_WM_CLASS, 0L, (long)BUFSIZ, False,
+        XA_STRING, 
+	&actual_type,
+	&actual_format, &nitems, &leftover, &data) != Success) {
+	classhint = NULL;
+	return (0);
+	}
+	
+   if ( (actual_type == XA_STRING) && (actual_format == 8) ) {
+	len_name = strlen(data);
+	len_class = strlen(data+len_name+1);
+	classhint->res_name = Xmalloc(len_name+1);
+	strcpy(classhint->res_name, data);
+	classhint->res_class = Xmalloc(len_class+1);
+	strcpy(classhint->res_class, data+len_name+1);
+	Xfree( (char *) data);
+	return(Success);
+	}
+    classhint = NULL;
+    Xfree( (char *) data);
+    return(0);
 }
