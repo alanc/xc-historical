@@ -9,7 +9,8 @@ SmeBSB Object
 .TA 2.0i
 .ta 2.0i
 .sp
-Header file	SmeBSB.h
+Application Header file	<X11/Xaw/SmeBSB.h>
+Class Header file	<X11/Xaw/SmeBSBP.h>
 Class		smeBSBObjectClass
 Class Name	SmeBSB
 Superclass	Sme
@@ -32,31 +33,31 @@ and affect only the single menu entry specified by this object.
 .vs 11
 .nr VS 11
 .TS H
-lw(1.5i) lw(1i) lw(1i) lw(2i).
+lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Class	Type	Default Value
+Name	Class	Type	Notes	Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-ancestorSensitive	AncestorSensitive	Boolean	True
-callback	Callback	Callback	NULL
-destroyCallback	Callback	XtCallbackList	NULL
-font	Font	FontStruct	XtDefaultFont
-foreground	Foreground	Pixel	XtDefaultForeground
-height	Height	Dimension	Font height + \fBvertSpace\fP
-justify	Justify	Justify	XtjustifyLeft
-label	Label	String	NULL
-leftBitmap	LeftBitmap	Pixmap	XtUnspecifiedPixmap
-leftMargin	leftMargin	Dimension	4
-rightBitmap	RightBitmap	Pixmap	XtUnspecifiedPixmap
-rightMargin	rightMargin	Dimension	4
-sensitive	Sensitive	Boolean	True
-vertSpace	VertSpace	Int	25
-width	Width	Dimension	TextWidth + margins
+ancestorSensitive	AncestorSensitive	Boolean	D	True
+callback	Callback	Callback		NULL
+destroyCallback	Callback	XtCallbackList		NULL
+font	Font	FontStruct		XtDefaultFont
+foreground	Foreground	Pixel		XtDefaultForeground
+height	Height	Dimension	A	Font height + \fBvertSpace\fP
+justify	Justify	Justify		XtjustifyLeft
+label	Label	String		NULL
+leftBitmap	LeftBitmap	Pixmap		XtUnspecifiedPixmap
+leftMargin	leftMargin	Dimension		4
+rightBitmap	RightBitmap	Pixmap		XtUnspecifiedPixmap
+rightMargin	rightMargin	Dimension		4
+sensitive	Sensitive	Boolean		True
+vertSpace	VertSpace	Int		25
+width	Width	Dimension	A	TextWidth + margins
 .sp 3p
 _
 .TE
@@ -64,29 +65,20 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
-.IP ancestorSensitive 1.5i
-The sensitivity state of the ancestors of this object.  A object is
-insensitive if either it or any of its ancestors is insensitive.
-This resource is not settable with \fBXtSetValues\fP.  It may
-however be queried.
+.As
 .IP \fBcallback\fP 1.5i
 All callback functions on this list are called when the SimpleMenu
 \fInotifies\fP this entry that the user has selected it.
-.IP destroyCallback 1.5i
-All callback functions on this list are called when this object is destroyed.
+.De
 .IP \fBfont\fP 1.5i
 The font used to display the text label.
 .IP \fBforeground\fP 1.5i
 An index into SimpleMenu's colormap specifing the color that will be
 used to draw the \fBlabel\fP.  This color is also used to render all
 1's in the left and right bitmaps.
-.IP height 1.5i
-.br
-.ns
-.IP width 1.5i
-The height and width of this object in pixels.   Keep in mind that the
-SimpleMenu widget will force the width of all menu entries to be the 
-width of the longest entry.
+.Hw
+Keep in mind that the SimpleMenu widget will force the width of all
+menu entries to be the width of the longest entry.
 .IP \fBjustify\fP 1.5i
 How the label is to be rendered between the left and right margins when
 the space is wider than the actual text.  This resource may be
@@ -117,9 +109,7 @@ into this entry's label.
 .IP \fBrightMargin\fP 1.5i
 This is the amount of space (in pixels) that will be left between the
 edge of the menu entry and the label string.
-.IP sensitive 1.5i
-Whether of not this menu entry may be selected.  When a menu entry is
-not sensitive its label will be painted through a grey stipple.
+.Se
 .IP \fBvertSpace\fP 1.5i
 This is the amount of extra space, as a percentage of the font height,
 that is to be added to the font height to determine the default height

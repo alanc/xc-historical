@@ -8,7 +8,8 @@ MenuButton Widget
 .Ds 0
 .TA 2.0i
 .ta 2.0i
-Header file	MenuButton.h
+Application Header file	<X11/Xaw/MenuButton.h>
+Class Header file	<X11/Xaw/MenuButtoP.h>
 Class		menuButtonWidgetClass
 Class Name	MenuButton
 Superclass	Command
@@ -176,4 +177,4 @@ the call_data argument in these callback functions is undefined.
 .IP \fBPopupMenu\fP(\|) 1.5i
 Pops up the menu specified by the \fBmenuName\fP resource.
 .bp
-.PX
+

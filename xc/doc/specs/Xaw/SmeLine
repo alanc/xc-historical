@@ -9,7 +9,8 @@ SmeLine Object
 .Ds 0
 .TA 2.0i
 .ta 2.0i
-Header file	SmeLine.h
+Application Header file	<X11/Xaw/SmeLine.h>
+Class Header file	<X11/Xaw/SmeLineP.h>
 Class		smeLineObjectClass
 Class Name	SmeLine
 Superclass	Sme
@@ -33,22 +34,22 @@ and affect only the single menu entry specified by this object.
 .vs 11
 .nr VS 11
 .TS H
-lw(1.5i) lw(1i) lw(1i) lw(2i).
+lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Class	Type	Default Value
+Name	Class	Type	Notes	Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-destroyCallback	Callback	XtCallbackList	NULL
-foreground	Foreground	Pixel	XtDefaultForeground
-height	Height	Dimension	\fBlineWidth\fP
-lineWidth	LineWidth	Dimension	1
-stipple	Stipple	Pixmap	XtUnspecifiedPixmap
-width	Width	Dimension	1
+destroyCallback	Callback	XtCallbackList		NULL
+foreground	Foreground	Pixel		XtDefaultForeground
+height	Height	Dimension		\fBlineWidth\fP
+lineWidth	LineWidth	Dimension		1
+stipple	Stipple	Pixmap		XtUnspecifiedPixmap
+width	Width	Dimension		1
 .sp 3p
 _
 .TE
@@ -56,18 +57,14 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
-.IP destroyCallback 1.5i
-All callback functions on this list are called when this object is destroyed.
+.De
 .IP \fBforeground\fP 1.5i
 An index into SimpleMenu's colormap specifing the color that will be
 used to draw the line.
-.IP height 1.5i
-.br
-.ns
-.IP width 1.5i
-The height and width of this object in pixels.  Keep in mind that the
-SimpleMenu widget will force all menu items to be the width of the
-widest entry.  Thus the width is generally not very important.
+.Hw
+Keep in mind that the SimpleMenu widget will force all menu items to
+be the width of the widest entry.  Thus the width is generally not
+very important.
 .IP \fBlineWidth\fP 1.5i
 The width of the horizontal line that is to be displayed.
 .IP \fBstipple\fP 1.5i

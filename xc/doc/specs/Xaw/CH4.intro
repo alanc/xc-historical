@@ -33,7 +33,7 @@ OverrideShell widget class.  No other shell is necessary when
 creating a menu.  The managed children of a SimpleMenu must be
 subclasses of the Sme (Simple Menu Entry) object.
 .LP
-The Athena widget set provides three classes of Sme Objects that may
+The Athena widget set provides three classes of Sme objects that may
 be used to build menus.
 .sp
 .IP \fBSme\fP 1i
