@@ -1,4 +1,4 @@
-/* $XConsortium: mpctoi.c,v 1.5 94/01/12 20:22:20 rws Exp $ */
+/* $XConsortium: mpctoi.c,v 1.6 94/04/17 20:35:16 rws Exp $ */
 /**** module mpctoi.c ****/
 /******************************************************************************
 
@@ -304,6 +304,7 @@ static int InitializeCtoIAll(flo,ped)
 {
   xieFloConvertToIndex  *raw = (xieFloConvertToIndex *)ped->elemRaw;
   xieTecColorAllocAll   *tec = (xieTecColorAllocAll *) &raw[1];
+  pTecCtoIDefPtr         pvt = (pTecCtoIDefPtr) ped->techPvt;
   peTexPtr		 pet = ped->peTex;
   formatPtr		 ift = &ped->inFloLst[SRCtag].format[0];
   formatPtr		 oft = &ped->outFlo.format[0];
@@ -317,7 +318,7 @@ static int InitializeCtoIAll(flo,ped)
    */
   ddx->cmap        = dix->cmap;
   ddx->clindex     = dix->list->client->index;
-  ddx->fill	   = tec->fill;
+  ddx->fill	   = pvt->fill;
   ddx->width       = oft->width;
   ddx->cmapFull    = FALSE;
   ddx->pixCnt      = 0;

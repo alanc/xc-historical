@@ -1,4 +1,4 @@
-/* $XConsortium: pctoi.c,v 1.4 94/01/12 19:54:39 rws Exp $ */
+/* $XConsortium: pctoi.c,v 1.5 94/04/17 20:33:44 rws Exp $ */
 /**** module pctoi.c ****/
 /******************************************************************************
 
@@ -196,14 +196,21 @@ Bool CopyCtoIAllocAll(flo, ped, sparms, rparms, tsize, isDefault)
      CARD16	tsize;
      Bool       isDefault;
 {
+  pTecCtoIDefPtr pvt;
+
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
   
+  if(!(ped->techPvt=(pointer)XieMalloc(sizeof(pTecCtoIDefRec))))
+    FloAllocError(flo,ped->phototag,xieElemConvertToIndex, return(TRUE));
+
+  pvt = (pTecCtoIDefPtr)ped->techPvt;
+
   if (isDefault) 
-    rparms->fill = 0; /* Not really a good way to pick this so . . . */
+    pvt->fill = 0;	/* Not really a good way to pick this so . . . */
   else if( flo->reqClient->swapped ) {
-    cpswapl(sparms->fill, rparms->fill);
+    cpswapl(sparms->fill, pvt->fill);
   } else
-    rparms->fill = sparms->fill;
+    pvt->fill = sparms->fill;
   
   return(TRUE);
 }
@@ -426,4 +433,4 @@ static Bool DebriefConvertToIndex(flo,ped,ok)
   return(TRUE);
 }                               /* end DebriefConvertToIndex */
 
-/* end module ictoi.c */
+/* end module pctoi.c */

@@ -1,4 +1,4 @@
-/* $XConsortium: element.h,v 1.4 94/01/12 20:04:43 rws Exp $ */
+/* $XConsortium: element.h,v 1.5 94/04/17 20:34:02 rws Exp $ */
 /* module element.h */
 /*****************************************************************************
 
@@ -279,6 +279,10 @@ typedef struct _pTecConvertToIndexMatchdef {
   double	matchLimit;
   double	grayLimit;
 } pTecConvertToIndexMatchDefRec, *pConvertToIndexMatchDefPtr;
+
+typedef struct _ptecctoi {
+  CARD32	fill;
+} pTecCtoIDefRec, *pTecCtoIDefPtr;
 #endif /* _XIEC_PCTOI */
 
 #if defined(_XIEC_PCTRGB)
