@@ -1,9 +1,10 @@
-XCOMM $XConsortium: Imakefile,v 1.10 93/08/17 21:17:09 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.11 93/09/18 20:08:05 rws Exp $
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
   SYS_LIBRARIES = MathLibrary
 
            SRCS = xbiff.c Mailbox.c
            OBJS = xbiff.o Mailbox.o
+        HEADERS = MailboxP.h Mailbox.h
 
 ComplexProgramTarget(xbiff)
