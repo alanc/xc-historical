@@ -1,3 +1,4 @@
+/* $NCDId: @(#)bitsource.c,v 1.4 1991/07/02 17:00:59 lemke Exp $ */
 /*
  * $XConsortium: bitsource.c,v 1.2 91/06/12 14:35:05 keith Exp $
  *
@@ -86,10 +87,9 @@ FontFileMatchBitmapSource (fpe, pFont, flags, entry, zeroPat, vals, format, fmas
     fsBitmapFormat	format;
     fsBitmapFormatMask	fmask;
 {
-    int			source, i;
+    int			source;
     FontEntryPtr	zero;
     FontBitmapEntryPtr	bitmap;
-    FontScalableRec	temp;
     int			ret;
     FontDirectoryPtr	dir;
     FontScaledPtr	scaled;
