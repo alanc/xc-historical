@@ -281,6 +281,7 @@ cfbXRotatePixmap(pPix, rw)
 {
     register unsigned int	*pw, *pwFinal;
     register unsigned int	t;
+    int				rot;
 
     if (pPix == NullPixmap)
         return;
@@ -296,17 +297,15 @@ cfbXRotatePixmap(pPix, rw)
 	    return;
     }
     pw = (unsigned int *)pPix->devPrivate.ptr;
-    rw %= pPix->drawable.width;
-    if (rw < 0)
-	rw += pPix->drawable.width;
+    modulus (rw, (int) pPix->drawable.width, rot);
     if(pPix->drawable.width == PPW)
     {
         pwFinal = pw + pPix->drawable.height;
 	while(pw < pwFinal)
 	{
 	    t = *pw;
-	    *pw++ = SCRRIGHT(t, rw) |
-		    (SCRLEFT(t, (PPW-rw)) & cfbendtab[rw]);
+	    *pw++ = SCRRIGHT(t, rot) |
+		    (SCRLEFT(t, (PPW-rot)) & cfbendtab[rot]);
 	}
     }
     else
@@ -316,24 +315,24 @@ cfbXRotatePixmap(pPix, rw)
 	register unsigned int *pwTmp;
 	int size, tsize;
 
-	tsize = PixmapBytePad(pPix->drawable.width - rw, PSZ);
+	tsize = PixmapBytePad(pPix->drawable.width - rot, PSZ);
 	pwTmp = (unsigned int *) ALLOCATE_LOCAL(pPix->drawable.height * tsize);
 	if (!pwTmp)
 	    return;
-	/* divide pw (the pixmap) in two vertically at (w - rw) and swap */
+	/* divide pw (the pixmap) in two vertically at (w - rot) and swap */
 	tsize >>= 2;
 	size = pPix->devKind >> 2;
 	cfbQuickBlt((int *)pw, (int *)pwTmp,
 		    0, 0, 0, 0,
-		    (int)pPix->drawable.width - rw, (int)pPix->drawable.height,
+		    (int)pPix->drawable.width - rot, (int)pPix->drawable.height,
 		    size, tsize);
 	cfbQuickBlt((int *)pw, (int *)pw,
-		    (int)pPix->drawable.width - rw, 0, 0, 0,
-		    rw, (int)pPix->drawable.height,
+		    (int)pPix->drawable.width - rot, 0, 0, 0,
+		    rot, (int)pPix->drawable.height,
 		    size, size);
 	cfbQuickBlt((int *)pwTmp, (int *)pw,
-		    0, 0, rw, 0,
-		    (int)pPix->drawable.width - rw, (int)pPix->drawable.height,
+		    0, 0, rot, 0,
+		    (int)pPix->drawable.width - rot, (int)pPix->drawable.height,
 		    tsize, size);
 	DEALLOCATE_LOCAL(pwTmp);
 #endif
@@ -355,6 +354,7 @@ cfbYRotatePixmap(pPix, rh)
 			   offset of first line moved down to 0 */
     char *pbase;
     char *ptmp;
+    int	rot;
 
     if (pPix == NullPixmap)
 	return;
@@ -369,20 +369,17 @@ cfbYRotatePixmap(pPix, rh)
 	    return;
     }
 
-    rh %= pPix->drawable.height;
-    if (rh < 0)
-	rh += pPix->drawable.height;
-
+    modulus (rh, (int) pPix->drawable.height, rot);
     pbase = (char *)pPix->devPrivate.ptr;
 
-    nbyDown = rh * pPix->devKind;
+    nbyDown = rot * pPix->devKind;
     nbyUp = (pPix->devKind * pPix->drawable.height) - nbyDown;
     if(!(ptmp = (char *)ALLOCATE_LOCAL(nbyUp)))
 	return;
 
     bcopy(pbase, ptmp, nbyUp);		/* save the low rows */
     bcopy(pbase+nbyUp, pbase, nbyDown);	/* slide the top rows down */
-    bcopy(ptmp, pbase+nbyDown, nbyUp);	/* move lower rows up to row rh */
+    bcopy(ptmp, pbase+nbyDown, nbyUp);	/* move lower rows up to row rot */
     DEALLOCATE_LOCAL(ptmp);
 }
 
