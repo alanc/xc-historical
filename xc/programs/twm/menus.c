@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.94 89/08/03 11:00:19 jim Exp $
+ * $XConsortium: menus.c,v 1.95 89/08/14 18:16:35 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.94 89/08/03 11:00:19 jim Exp $";
+"$XConsortium: menus.c,v 1.95 89/08/14 18:16:35 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2427,19 +2427,19 @@ static void InstallWindowColormap (tmp_win, newi)
 }
 
 
+/*
+ * BumpWindowColormap - adjust the colormap according to WM_COLORMAP_WINDOWS;
+ * this makes use of the fact that we inserted the top level window's colormap
+ * into the list implicitly.
+ */
+
 BumpWindowColormap (tmp_win, inc)
     TwmWindow *tmp_win;
     int inc;
 {
     if (tmp_win->cmap_windows) {
-	int newcmapindex;
-
-	if (inc == 0) {
-	    newcmapindex = -1;			/* get default element */
-	} else {
-	    newcmapindex = tmp_win->current_cmap_window + inc;
-	}
-	InstallWindowColormap (tmp_win, newcmapindex);
+	InstallWindowColormap (tmp_win, 
+			       inc ? tmp_win->current_cmap_window + inc : 0);
     }
 }
 
