@@ -280,7 +280,7 @@ caddr_t XawToggleGetCurrent(\fIradio_group\fP);
      Widget \fIradio_group\fP;
 .FN
 .IP \fIradio_group\fP 1i
-Specifies the Toggle widget.
+Specifies any Toggle widget in the radio group.
 .LP
 The value returned by this function is the
 .PN radioData
@@ -302,7 +302,7 @@ void XawToggleSetCurrent(\fIradio_group\fP, \fIradio_data\fP);
      caddr_t \fIradio_data\fP;
 .FN
 .IP \fIradio_group\fP 1i
-Specifies the Toggle widget.
+Specifies any Toggle widget in the radio group.
 .IP \fIradio_data\fP 1i
 Specifies the 
 .PN radioData
@@ -329,7 +329,7 @@ void XawToggleUnsetCurrent(\fIradio_group\fP);
      Widget \fIradio_group\fP;
 .FN
 .IP \fIradio_group\fP 1i
-Specifies the Toggle widget.
+Specifies any Toggle widget in the radio group.
 .LP
 If this causes a Toggle widget to change state, all routines on its
 callback list will be invoked.

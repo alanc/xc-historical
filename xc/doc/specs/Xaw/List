@@ -20,7 +20,7 @@ Superclass	Simple
 
 The List widget contains a list of strings formatted into rows and
 columns. When one of the strings is selected, it is highlighted, and the
-List widget's \fBnotify\fP action is invoked, calling all routines on
+List widget's \fBNotify\fP action is invoked, calling all routines on
 its callback list.  Only one string may be selected at a time.
 
 .LP
