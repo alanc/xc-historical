@@ -1,4 +1,4 @@
-/* $XConsortium: t1funcs.c,v 1.12 93/09/17 16:01:59 dpw Exp $ */
+/* $XConsortium: t1funcs.c,v 1.13 93/09/17 18:26:59 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -165,8 +165,11 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
        glyphs = type1->glyphs;
  
        /* load font if not already loaded */
-       if (!fontfcnA(fileName, &rc))
-	   return (rc);
+       if (!fontfcnA(fileName, &rc)) {
+         delmemory();
+         xfree(pool);
+         return Type1ReturnCodeToXReturnCode(rc);
+       }
 
        fontmatrix = &FontP->fontInfoP[FONTMATRIX].value;
        if (objPIsArray(fontmatrix) && fontmatrix->len == 6)
@@ -239,7 +242,7 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
                rc = 0;
                area = fontfcnB(S, codename, &len, &rc);
                if (rc < 0) {
-                       rc = BadFontName;
+                       rc = Type1ReturnCodeToXReturnCode(rc);
                        break;
                }
                else if (rc > 0)
@@ -604,4 +607,29 @@ Type1RegisterFontFileFunctions()
     T1InitStdProps();
     for (i=0; i < sizeof(renderers) / sizeof(FontRendererRec); i++)
             FontFileRegisterRenderer(&renderers[i]);
+}
+
+int Type1ReturnCodeToXReturnCode(rc)
+    int rc;
+{
+    switch(rc) {
+    case SCAN_OK:
+	return Successful;
+    case SCAN_FILE_EOF:
+	/* fall through to BadFontFormat */
+    case SCAN_ERROR:
+	return BadFontFormat;
+    case SCAN_OUT_OF_MEMORY:
+	return AllocError;
+    case SCAN_FILE_OPEN_ERROR:
+	return BadFontName;
+    case SCAN_TRUE:
+    case SCAN_FALSE:
+    case SCAN_END:
+	/* fall through */
+    default:
+	/* this should not happen */
+	ErrorF("Type1 return code not convertable to X return code: %d\n", rc);
+	return rc;
+    }
 }
