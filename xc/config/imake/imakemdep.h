@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.28 91/05/08 11:48:50 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.29 91/05/12 21:46:22 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -40,7 +40,8 @@
 #endif
 
 #ifdef CRAY
-#define imake_ccflags "-DSYSV -DUSG"
+/* -DX_NOT_STDC_ENV is just so we can bootstrap with cc instead of scc */
+#define imake_ccflags "-DSYSV -DUSG -DX_NOT_STDC_ENV"
 #endif
 
 #ifdef _IBMR2
