@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.c,v 1.15 91/01/09 17:31:05 rws Exp $
+ * $XConsortium: ScrollByL.c,v 1.16 91/01/10 22:23:35 gildea Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -49,15 +49,14 @@ static char defaultTranslations[] =
  *
  ****************************************************************/
 
-#define Offset(field) XtOffset(ScrollByLineWidget, scroll.field)
-#define CoreOffset(field) XtOffset(ScrollByLineWidget, core.field)
+#define Offset(field) XtOffsetOf(ScrollByLineRec, scroll.field)
+#define CoreOffset(field) XtOffsetOf(ScrollByLineRec, core.field)
 
 static XtResource resources[] = {
     {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
        CoreOffset(width), XtRImmediate, (caddr_t) 500},
     {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
        CoreOffset(height), XtRImmediate, (caddr_t) 700},
-
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
        Offset(foreground), XtRString, "XtDefaultForeground"},
     {XtNforceVert, XtCBoolean, XtRBoolean, sizeof(Boolean),

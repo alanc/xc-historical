@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: main.c,v 1.14 91/01/10 12:13:56 converse Exp $
+ * $XConsortium: main.c,v 1.15 91/02/11 14:24:19 converse Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -30,7 +30,7 @@
 
 static void ArgError();
 
-#define Offset(field) (XtOffset(Xman_Resources *, field))
+#define Offset(field) (XtOffsetOf(Xman_Resources , field))
 
 static XtResource my_resources[] = {
   {"directoryFontNormal", XtCFont, XtRFontStruct, sizeof(XFontStruct *),
@@ -60,6 +60,8 @@ static XtResource my_resources[] = {
   {"clearSearchString", "ClearSearchString", XtRBoolean, sizeof(Boolean),
      Offset(clear_search_string), XtRImmediate, (caddr_t) TRUE},
 };
+
+#undef Offset
 
 /*
  * The resource that we absolutely need.
