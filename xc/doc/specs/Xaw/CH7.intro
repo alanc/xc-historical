@@ -1,0 +1,25 @@
+.bp
+\&
+.sp 1
+.ce 3
+\s+1\fBChapter 6\fP\s-1
+
+\s+1\fBTemplate Widget\fP\s-1
+.sp 2
+.nr H1 3
+.nr H2 0
+.nr H3 0
+.nr H4 0
+.nr H5 0
+.na
+.LP
+.XS
+Chapter 6 - Template Widget
+.XE
+.LP
+This chapter describes creating your own widgets with the Athena
+Template widget.
+
+
+
+

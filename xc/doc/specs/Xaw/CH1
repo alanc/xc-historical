@@ -1,0 +1,310 @@
+.bp
+\&
+.sp 1
+.ce 3
+\s+1\fBChapter 1\fP\s-1
+
+\s+1\fBAthena Widgets and The Intrinsics\fP\s-1
+.sp 2
+.nr H1 1
+.nr H2 0
+.nr H3 0
+.nr H4 0
+.nr H5 0
+.LP
+.XS
+Chapter 1 \- Athena Widgets and The Intrinsics
+.XE
+The Athena widget set and the \*(xI make up the \*(tk.
+In the \*(tk, 
+a widget is the combination of an X window or subwindow 
+and its associated input and output semantics.
+The Athena widgets provide the base functionality necessary to build 
+a wide variety of application environments.
+Because the \*(xI mask implementation details from the widget 
+and application programmer,
+the Athena widgets and the application environments built with them are 
+fully compatible with the other widget sets built with the \*(xI. 
+For information about the \*(xI,
+see the \fI\*(xT\fP.
+.LP
+The Athena widget set is a library package layered on top of the \*(xI
+and Xlib.
+This layer extends the basic abstractions provided by X
+and provides the next layer of functionality primarily by supplying
+a cohesive set of sample widgets.
+.LP
+To the extent possible, 
+the \*(tk is policy free.
+The application environment, not the \*(tk, defines, implements, and enforces:
+.IP \(bu 5
+Policy
+.IP \(bu 5
+Consistency
+.IP \(bu 5
+Style 
+.LP
+Each individual widget implementation defines its own policy.
+The \*(tk design allows for but does not necessarily encourage 
+the free mixing of radically differing widget implementations.
+.NH 2
+Introduction to the \*(tk Library
+.LP
+.XS
+\*(SN Introduction to the \*(tk Library
+.XE
+The \*(tk library provides tools that simplify the design of
+application user interfaces in the X Window System programming environment.
+It assists application programmers by providing a set of common
+underlying user-interface functions.
+It also lets widget programmers modify existing widgets 
+or add new widgets.
+By using the \*(tk library in their applications,
+programmers present a similar user interface across 
+applications to all workstation users.
+.LP
+The \*(tk consists of:
+.IP \(bu 5
+A set of \*(xI functions for building widgets
+.IP \(bu 5
+An architectural model for constructing widgets 
+.IP \(bu 5
+A sample interface (widget set) for programming
+.LP
+While the majority of the \*(xI functions are intended 
+for the widget programmer,
+a subset of the \*(xI functions are to be used by application programmers
+(see  \fI\*(xT\fP).
+The architectural model lets the widget programmer design new widgets
+by using the \*(xI and by combining other widgets.
+The application interface layers built on top of the \*(tk include a
+coordinated set of widgets and composition policies.
+Some of these widgets and policies are specific to an application domain,
+and others are common across a number of application domains.
+.LP
+The \*(tk also can implement one or more application interface layers to:
+.IP \(bu 5
+Verify the toolkit architecture
+.IP \(bu 5
+Provide a base set of widgets and composition policies that
+can be incorporated in other application interface layers
+.IP \(bu 5
+Make the \*(tk immediately usable by those application 
+programmers who find that a supplied application interface layer
+meets their needs
+.LP
+The remainder of this chapter discusses the \*(tk:
+.IP \(bu 5
+Terminology
+.IP \(bu 5
+Model
+.IP \(bu 5
+Design principles and philosophy
+.LE
+.NH 2 
+Terminology
+.LP
+.XS
+\*(SN Terminology
+.XE
+.LP
+In addition to the terms already defined for X programming (see \fI\*(xL\fP),
+the following terms are specific to the \*(xI and used throughout this book.
+.LP
+\fBApplication programmer\fP
+.IN "Application programmer" "" "@DEF@"
+.IP
+A programmer who uses the \*(tk to produce an application user interface.
+.LP
+.PN Child
+.IP
+A widget that is contained within another ("parent") widget.
+.LP
+\fBClass\fP
+.IN "Class" "" "@DEF@"
+.IP
+The general group to which a specific object belongs.
+.LP
+\fBClient\fP
+.IN "Client" "" "@DEF@"
+.IP
+A function that uses a widget in an application or for composing
+other widgets.
+.LP
+.PN "Full\ name"
+.IP
+The name of a widget instance appended to the full name of its parent.
+.LP
+\fBInstance\fP
+.IN "Instance" "" "@DEF@"
+.IP
+A specific widget object as opposed to a general widget class.
+.LP
+\fBMethod\fP
+.IN "Method" "" "@DEF@"
+.IP
+The functions or procedures that a widget class implements.
+.LP
+\fBName\fP
+.IN "Name" "" "@DEF@"
+.IP
+The name that is specific to an instance of a widget for a given client.
+.LP
+\fBObject\fP
+.IN "Object" "" "@DEF@"
+.IP
+A software data abstraction consisting of private data and private and public
+functions that operate on the private data.
+Users of the abstraction can interact with the object only through calls
+to the object's public functions.
+In the \*(tk,
+some of the object's public functions are called directly by the application,
+while others are called indirectly when the application calls the common
+\*(xI functions.
+In general, if a function is common to all widgets,
+an application uses a single \*(xI function to invoke the function for all
+types of widgets.
+If a function is unique to a single widget type,
+the widget exports the function as another ``Xt'' function.
+.LP
+.PN Parent
+.IP
+A widget that contains at least one other ("child") widget.
+A parent widget is also known as a composite widget.
+.LP
+\fBResource\fP
+.IN "Resource" "" "@DEF@"
+.IP
+A named piece of data in a widget that can be set by a client,
+by an application, or by user defaults.
+.LP
+.PN Superclass
+.IP
+A larger class of which a specific class is a member.
+All members of a class are also members of the superclass.
+.LP
+\fBUser\fP
+.IN "User" "" "@DEF@"
+.IP
+A person interacting with a workstation.
+.LP
+\fBWidget\fP
+.IN "Widget" "" "@DEF@"
+.IP
+An object providing a user-interface abstraction (for example, a Scrollbar
+widget).
+.LP
+\fBWidget class\fP
+.IN "Widget class" "" "@DEF@"
+.IP
+The general group to which a specific widget belongs,
+otherwise known as the type of the widget.
+.LP
+\fBWidget programmer\fP
+.IN "Widget programmer" "" "@DEF@"
+.IP
+A programmer who adds new widgets to the \*(tk.
+.NH 2
+Underlying Model
+.LP
+.XS
+\*(SN Underlying Model
+.XE
+The underlying architectural model is based on the following premises:
+.KS
+.IP "Widgets are X windows"
+.IP
+Every user-interface widget is contained in a unique X window.
+The X window ID for a widget is readily available from the widget ID,
+so standard Xlib window manipulation procedures can operate on
+widgets.
+.KE
+.KS
+.IP "Information hiding"
+.IP
+The data for every widget is private to the widget and its subclasses.
+That is, the data is neither directly accessible 
+nor visible outside of the module implementing the widget.
+All program interaction with the widget is performed by a set of operations
+(methods) that are defined for the widget.
+.KE
+.KS
+.IP "Widget semantics and widget layout geometry"
+.IP
+Widget semantics are clearly separated from widget layout
+geometry.
+Widgets are concerned with implementing specific user-interface
+semantics.
+They have little control over issues such as their size or
+placement relative to other widget peers.
+Mechanisms are provided for associating geometric managers with widgets
+and for widgets to make suggestions about their own geometry.
+.KE
+.NH 2 
+Design Principles and Philosophy
+.LP
+.XS
+\*(SN Design Principles and Philosophy
+.XE
+The \*(tk follows two design principles throughout,
+which cover languages and language bindings as well as widget IDs.
+.NH 3
+Languages and Language Bindings
+.LP
+The \*(tk facilitates access from objective languages.
+However, the \*(tk library is conveniently usable by
+application programs written in nonobjective languages.
+Procedural interface guidelines are required when the
+\*(tk is used with nonobjective languages.
+.LP
+The guidelines for the procedural interfaces are:
+.IP \(bu 5
+Strings are passed as null-terminated character arrays.
+.IP \(bu 5
+Most other arrays are passed using two parameters: a size and a pointer to 
+the first element.
+.IP \(bu 5
+Most numeric arguments are passed by value.
+.IP \(bu 5
+Structures as arguments are avoided, 
+unless a method for building them is provided for languages without pointers.
+Pointers embedded in structures are allowed, 
+but they should be avoided if an equivalent alternative is available.
+.IP \(bu 5
+Pointers are not recommended as return arguments, unless they will never
+have to be dereferenced by the caller.
+If they need to be dereferenced, 
+the caller should allocate storage and pass the address to the procedure 
+to fill in.
+.IP \(bu 5
+Procedures can be passed as parameters.
+.IP \(bu 5
+The ownership of dynamically allocated storage is determined on a 
+case-by-case basis.
+The application is also permitted to replace the standard
+memory allocation and freeing routines used by the library at build time.
+.NH 3
+Widget IDs
+.LP
+All references to widgets use a unique identifier that is known as the widget ID.
+The widget ID is returned to the client by the
+.PN XtCreateWidget
+function.
+From an application programmer's perspective,
+a widget ID is an opaque data type;
+no particular interpretation can be assigned to it.
+Given a widget ID, 
+you can retrieve the corresponding X window ID, the
+.PN Display
+and 
+.PN Screen
+structures, and other information by using \*(xI functions.
+.LP
+From a widget programmer's perspective,
+the widget ID actually is a pointer to a data structure 
+known as the widget instance record.
+Several parts of the data structure are common to all widget types,
+while other parts are unique to a particular widget type.
+The widget's private data that is associated with a particular widget instance
+normally is included directly in the widget instance record.
+

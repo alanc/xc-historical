@@ -1,0 +1,139 @@
+.NH 2
+Grip Widget
+.LP
+.XS
+\*(SN Grip Widget
+.XE
+.IN "Grip widget" "" "@DEF@"
+.LP
+The Grip widget provides a small region in which user input
+events
+(such as
+.PN ButtonPress or
+.PN ButtonRelease )
+may be handled.
+The most common use for the grip is as an attachment
+point for visually repositioning an object, 
+such as the pane border in a VPaned widget.
+.LP
+The class variable for the Grip widget is 
+.PN gripWidgetClass .
+.LP
+When creating a Grip widget instance, 
+the following resources are retrieved from the argument list 
+or from the resource database:
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNborderColor	Pixel	XtDefaultForeground	Window border color
+XtNborderPixmap	Pixmap	None	Window border pixmap
+XtNborderWidth	Dimension	0	Width of the border in pixels
+XtNcallback	XtCallbackList	None	Action routine
+XtNcursor	Cursor	None	Cursor for the grip
+T{
+XtNdestroyCallback
+T}	T{
+XtCallbackList
+T}	T{
+NULL
+T}	T{
+Callback for 
+.PN XtDestroyWidget
+T}
+XtNforeground	Pixel	XtDefaultForeground	Window background color
+XtNheight	Dimension	8	Height of the widget
+T{
+XtNmappedWhenManaged
+T}	T{
+Boolean
+T}	T{
+True
+T}	T{
+Whether 
+.PN XtMapWidget
+is automatic
+T}
+XtNsensitive	Boolean	True	Whether widget should receive input
+XtNtranslations	TranslationTable	None	Event-to-action translations
+XtNwidth	Dimension	8	Width of the widget
+XtNx	Position	0	x coordinate within parent
+XtNy	Position	0	y coordinate within parent
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+Note that the Grip widget displays its region with the foreground pixel only.
+.LP
+The Grip widget does not declare any default event translation bindings,
+but it does declare a single action routine named GripAction
+in its action table.
+The client specifies an arbitrary
+event translation table giving parameters to the GripAction routine.
+.LP
+The
+.PN GripAction
+action executes the callbacks on the
+.PN XtNcallback
+list, passing as call_data a pointer to a
+.PN GripCallData
+structure, defined in
+.Pn < X11/Grip.h > :
+.LP
+.Ds 0
+.TA .5i 2.25i
+.ta .5i 2.25i
+.IN "GripCallData" "" "@DEF@"
+.IN "GripCallDataRec" "" "@DEF@"
+typedef struct _GripCallData {
+	XEvent *event;
+	String *params;
+	Cardinal num_params;
+} GripCallDataRec, *GripCallData;
+.De
+.LP
+In this structure, the event field is a pointer to the input
+event that triggered the action, and params and num_params give
+the string parameters specified in the translation table for the
+particular event binding.
+.IN "Grip widget" "GripAction table"
+.LP
+The following is an example of a GripAction translation table:
+.LP
+.Ds 0
+.TA .5i 2.5i
+.ta .5i 2.5i
+	<Btn1Down>:	GripAction(press)
+	<Btn1Motion>:	GripAction(move)
+	<Btn1Up>:	GripAction(release)
+.De
+For a complete description of the format of action routines,
+see the \fI\*(xT\fP.
+.LP
+.IN "Grip widget" "creating"
+.IN "Creating widgets" "Grip"
+To create a Grip widget instance, use
+.PN XtCreateWidget
+and specify the class variable
+.PN gripWidgetClass .
+.LP
+.IN "Grip widget" "destroying"
+.IN "Destroying widgets" "Grip"
+To destroy a Command button widget instance, use
+.PN XtDestroyWidget
+and specify the ID of the Grip widget.

@@ -1,0 +1,931 @@
+.bp
+\&
+.sp 1
+.ce 3
+\s+1\fBChapter 2\fP\s-1
+
+\s+1\fBUsing Widgets\fP\s-1
+.sp 2
+.nr H1 2
+.nr H2 0
+.nr H3 0
+.nr H4 0
+.nr H5 0
+.LP
+.XS
+Chapter 2 \- Using Widgets
+.XE
+Widgets serve as the primary tools for building a user
+interface or application environment.
+The widget set consists of primitive widgets (for example, a command button)
+and composite widgets (for example, a Dialog widget).
+.LP
+The remaining chapters of this guide explain the widgets and the geometry 
+managers that work together to provide a set of user-interface components.
+These user-interface components serve as a default interface for 
+application programmers who do not want to implement their own widgets.
+In addition, they serve as examples or a starting point
+for those widget programmers who, using the \*(xI mechanisms,
+want to implement alternative application programming interfaces.
+.LP
+This chapter discusses the common features of the \*(tk widgets.
+.NH 2
+Initializing the Toolkit
+.LP
+.XS
+\*(SN Initializing the Toolkit
+.XE
+You must invoke the toolkit initialization function 
+.PN XtInitialize
+before invoking any other toolkit routines.
+.PN XtInitialize
+opens the X server connection,
+parses standard parts of the command line,
+and creates an initial widget that is to serve as the root of
+a tree of widgets that will be created by this application.
+.IN "XtInitialize" "" "@DEF@"
+.FD 0
+Widget XtInitialize(\fIshell_name\fP, \fIapplication_class\fP, \fIoptions\fP, \
+\fInum_options\fP, \fIargc\fP, \fIargv\fP)
+.br
+      String \fIshell_name\fP;
+.br
+      String \fIapplication_class\fP;
+.br
+      XrmOptionDescRec \fIoptions\fP[];
+.br
+      Cardinal \fInum_options\fP;
+.br
+      Cardinal *\fIargc\fP;
+.br
+      String \fIargv\fP[];
+.FN
+.IP \fIshell_name\fP 1i
+Specifies the name of the application shell widget instance,
+which usually is something generic like ``main''.
+.IP \fIapplication_class\ \ \ \fP 1i
+Specifies the class name of this application,
+which usually is the generic name for all instances of this application.
+By convention, the class name is formed by reversing the case of the
+application's first significant letter.
+For example,
+an application named ``xterm'' would have a class name of ``XTerm''.
+.IP \fIoptions\fP 1i
+Specifies how to parse the command line for any application-specific resources.
+The options argument is passed as a parameter to
+.PN XrmParseCommand .
+For further information,
+see \fI\*(xL\fP.
+.IP \fInum_options\fP 1i
+Specifies the number of entries in the options list.
+.IP \fIargc\fP 1i
+Specifies a pointer to the number of command line parameters.
+.IP \fIargv\fP 1i
+Specifies the command line parameters.
+.LP
+For further information about this function,
+see the \fI\*(xI\fP.
+.NH 2
+Creating a Widget 
+.LP
+.XS
+\*(SN Creating a Widget
+.XE
+Creating a widget is a three-step process.
+First, the widget instance is allocated,
+and various instance-specific attributes are set by using
+.PN XtCreateWidget .
+Second, the widget's parent is informed of the new child by using
+.PN XtManageChild .
+Finally, X windows are created for the parent and all its children by using 
+.PN XtRealizeWidget
+and specifying the top-most widget.
+The first two steps can be combined by using
+.PN XtCreateManagedWidget .
+In addition, 
+.PN XtRealizeWidget
+is automatically called when the child becomes managed if the parent
+is already realized.
+.LP
+To allocate and initialize a widget, use
+.PN XtCreateWidget .
+.IN "XtCreateWidget" "" "@DEF@"
+.FD 0
+Widget XtCreateWidget(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, \
+\fIargs\fP, \fInum_args\fP)
+.br
+      String \fIname\fP;
+.br
+      WidgetClass \fIwidget_class\fP;
+.br
+      Widget \fIparent\fP;
+.br
+      ArgList \fIargs\fP;
+.br
+      Cardinal \fInum_args\fP;
+.FN
+.IP \fIname\fP 1i
+Specifies the instance name for the created widget that is used for retrieving
+widget resources.
+.IP \fIwidget_class\fP 1i
+Specifies the widget class pointer for the created widget.
+.IP \fIparent\fP 1i
+Specifies the parent widget ID.
+.IP \fIargs\fP 1i
+Specifies the argument list.
+The argument list is a variable-length list composed of name 
+and value pairs that contain information pertaining to the specific widget 
+instance being created.
+For further information,
+see Section 2.7.2.
+.IP \fInum_args\fP 1i
+Specifies the number of arguments in the argument list.
+When the num_args is zero, the argument list is never referenced.
+.LP
+When a widget instance is successfully created, 
+the widget identifier is returned to the application.
+If an error is encountered, 
+the
+.PN XtError
+routine is invoked to inform the user of the error.
+.LP
+For further information,
+see the \fI\*(xI\fP.
+.NH 2
+Common Arguments in the Widget Argument List
+.LP
+Although a widget can have unique arguments that it understands,
+all widgets have common arguments that provide some regularity of operation.
+The common arguments allow arbitrary widgets to be 
+managed by higher-level components without regards to the individual
+widget type.
+All widgets ignore any argument that they do not understand.
+.LP
+The following resources are retrieved from the argument list
+or from the resource database by all \*(tk widgets:
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNbackground	Pixel	XtDefaultBackground	Window background color
+XtNbackgroundPixmap	Pixmap	None	Window background pixmap
+XtNborderColor	Pixel	XtDefaultForeground	Window border color
+XtNborderPixmap	Pixmap	None	Window border pixmap
+XtNborderWidth	Dimension	1	Width of the border in pixels
+T{
+XtNdestroyCallback
+T}	T{
+XtCallbackList
+T}	T{
+NULL
+T}	T{
+Callback for 
+.PN XtDestroyWidget
+T}
+XtNheight	Dimension	Widget dependent	Height of the widget
+T{
+XtNmappedWhenManaged
+T}	T{
+Boolean
+T}	T{
+True
+T}	T{
+Whether 
+.PN XtMapWidget
+is automatic
+T}
+XtNsensitive	Boolean	True	Whether widget should receive input
+XtNtranslations	TranslationTable	None	Event-to-action translations
+XtNwidth	Dimension	Widget dependent	Width of the widget
+XtNx	Position	0	x coordinate within parent
+XtNy	Position	0	y coordinate within parent
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+The following additional resources are retrieved from the argument list
+or from the resource database by many \*(tk widgets:
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNcallback	XtCallbackList	NULL	Callback functions and client data
+XtNcursor	Cursor	None	Pointer cursor
+XtNforeground	Pixel	XtDefaultForeground	Foreground color
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+The value for the XtNcursor resource can be specified in the resource
+database as a string,
+which can be specified as one of the following:
+.IP \(bu 5
+A standard X cursor name from
+.Pn < X11/cursorfont.h >
+.IP \(bu 5
+FONT font-name glyph-index [[ font-name ] glyph-index ]
+.IP \(bu 5
+A relative or absolute file name
+.LP
+The first font and glyph specify the cursor source pixmap.
+The second font and glyph specify the cursor mask pixmap.
+The mask font defaults to the source font,
+and the mask glyph index defaults to the source glyph index.
+.LP
+If a relative or absolute file name is specified,
+that file is used to create the source pixmap.
+Then the string "Mask" is appended to locate the cursor mask pixmap.
+If the "Mask" file does not exist,
+the suffix "msk" is tried.
+If "msk" fails,
+no cursor mask will be used.
+If a relative file name is used,
+the directory specified by the resource name
+.PN bitmapFilePath
+or class
+.PN BitmapFilePath
+is added to the beginning of the file name.
+If the
+.PN bitmapFilePath
+resource is not defined,
+the default directory on a UNIX-based system is
+.PN /usr/include/X11/bitmaps .
+.NH 2
+Realizing a Widget
+.LP
+.XS
+\*(SN Realizing a Widget
+.XE
+The
+.PN XtRealizeWidget
+function performs two tasks:
+.IP \(bu 5
+Creates an X window for the widget and, 
+if it is a composite widget, for each of its managed children.
+.IP \(bu 5
+Maps each window onto the screen.
+.IN "XtRealizeWidget" "" "@DEF@"
+.FD 0
+void XtRealizeWidget(\fIw\fP)
+.br
+      Widget \fIw\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget.
+.LP
+For further information about this function,
+see the \fI\*(xT\fP.
+.NH 2
+Standard Widget Manipulation Functions
+.LP
+.XS
+\*(SN Standard Widget Manipulation Functions
+.XE
+After a widget has been created, 
+a client can interact with that widget by calling either of the following:
+.IP \(bu 5
+One of the standard widget manipulation routines that
+provide functions that all widgets support
+.IP \(bu 5
+A widget class-specific manipulation routine
+.LP
+The \*(tk provides generic routines to provide the
+application programmer access to a set of standard widget functions.
+These routines let an application or composite widget manipulate
+widgets without requiring explicit knowledge of the widget type.
+The standard widget manipulation functions let you:
+.IP \(bu 5
+Control the location, size and mapping of widget windows
+.IP \(bu 5
+Destroy a widget instance
+.IP \(bu 5
+Obtain an argument value
+.IP \(bu 5
+Set an argument value
+.NH 3
+Mapping Widgets
+.LP
+By default,
+widget windows automatically are mapped (made viewable) by
+.PN XtRealizeWidget .
+This behavior can be changed by using 
+.PN XtSetMappedWhenManaged ,
+and it then is the client's responsibility to use the
+.PN XtMapWidget
+function to make the widget viewable.
+.IN "XtSetMappedWhenManaged" "" @DEF@"
+.FD 0
+void XtSetMappedWhenManaged(\fIw\fP, \fImap_when_managed\fP)
+.br
+      Widget \fIw\fP;
+.br
+      Boolean \fImap_when_managed\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget.
+.IP \fImap_when_managed\fP 1i
+Specifies the new value.
+If map_when_managed is
+.PN True ,
+the widget is mapped automatically when it is realized.
+If map_when_managed is
+.PN False ,
+the client must call
+.PN XtMapWidget
+or make a second call to
+.PN XtSetMappedWhenManaged
+to cause the child window to be mapped.
+.LP
+.sp
+The definition for
+.PN XtMapWidget
+is:
+.IN "XtMapWidget" "" "@DEF@"
+.FD 0
+XtMapWidget(\fIw\fP)
+.br
+     Widget \fIw\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget.
+.LP
+When you create several children in sequence for a common parent 
+after it has been realized,
+it is generally more efficient to construct a list of children as 
+they are created and use
+.PN XtManageChildren
+to inform their parent of them all at once, 
+instead of causing each child to be managed separately.
+By managing a list of children at one time,
+the parent can avoid wasteful duplication of geometry processing
+and the associated "screen flash".
+.IN "XtManageChildren" "" "@DEF@"
+.FD 0
+void XtManageChildren(\fIchildren\fP, \fInum_children\fP)
+.br
+      WidgetList \fIchildren\fP;
+.br
+      Cardinal \fInum_children\fP;
+.FN
+.IP \fIchildren\fP 1i
+Specifies a list of children to add.
+.IP \fInum_children\fP 1i
+Specifies the number of children to add.
+.LP
+If the parent is already visible on the screen,
+it is especially important to batch updates so that the minimum amount 
+of visible window reconfiguration is performed.
+.LP
+For further information about these functions,
+see the \fI\*(xI\fP.
+.NH 3
+Destroying Widgets
+.LP
+To destroy a widget instance of any type, use
+.PN XtDestroyWidget .
+.IN "XtDestroyWidget" "" "@DEF@"
+.FD 0
+void XtDestroyWidget(\fIw\fP)
+.br
+      Widget \fIw\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget.
+.LP
+.PN XtDestroyWidget
+destroys the widget and recursively destroys any children that it may have,
+including the windows created by its children.
+After calling
+.PN XtDestroyWidget ,
+no further references should be made to the widget or to the widget IDs 
+of any children that the destroyed widget may have had.
+.NH 3
+Retrieving Widget Resource Values
+.LP
+To retrieve the current value of a resource attribute associated 
+with a widget instance, use
+.PN XtGetValues .
+.IN "XtGetValues" "" "@DEF@"
+.FD 0
+void XtGetValues(\fIw\fP, \fIargs\fP, \fInum_args\fP)
+.br
+      Widget \fIw\fP;
+.br
+      ArgList \fIargs\fP;
+.br
+      Cardinal \fInum_args\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget.
+.IP \fIargs\fP 1i
+Specifies a variable-length argument list of name and address
+pairs that contain the resource name and the address into which the resource value is stored.
+.IP \fInum_args\fP 1i
+Specifies the number of arguments in the argument list.
+.LP
+The arguments and values passed in the argument list are dependent on the widget.
+Note that the caller is responsible for allocating space into which the returned
+resource value is copied; the
+.PN ArgList
+contains a pointer to this storage.
+The caller must allocate storage of the type as represented in the widget.
+For example, x and y must be allocated as Position and so on.
+For further information,
+see the \fI\*(xT\fP.
+.NH 3
+Modifying Widget Resource Values
+.LP
+To modify the current value of a resource attribute associated 
+with a widget instance, use
+.PN XtSetValues .
+.IN "XtSetValues" "" "@DEF@"
+.FD 0
+void XtSetValues(\fIw\fP, \fIargs\fP, \fInum_args\fP)
+.br
+      Widget \fIw\fP;
+.br
+      ArgList \fIargs\fP;
+.br
+      Cardinal \fInum_args\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget.
+.IP \fIargs\fP 1i
+Specifies a variable-length argument list of name and value
+pairs that contain the arguments to be modified and their new values.
+.IP \fInum_args\fP 1i
+Specifies the number of arguments in the argument list.
+.LP
+The arguments and values passed in the argument list depend on
+the widget being modified.
+Some widgets may not allow certain resources to be modified
+after the widget instance has been created or realized.
+No notification is given if any part of a 
+.PN XtSetValues
+request is ignored.
+.LP
+For further information about these functions,
+see the \fI\*(xI\fP.
+.NT
+The argument list entry for
+.PN XtGetValues
+specifies the address to which the caller wants the value copied.
+The argument list entry for
+.PN XtSetValues ,
+however, contains the new value itself if the size of value is less
+than sizeof(XtArgVal) (architecture dependent, but at least sizeof(long));
+otherwise, it is a pointer to the value.
+String resources are always passed as pointers, regardless of the
+length of the string.
+.NE
+.NH 2
+Using the Client Callback Interface
+.LP
+.XS
+\*(SN Using the Client Callback Interface
+.XE
+Widgets communicate changes in their state to their clients
+by means of a callback facility.
+The format for a client's callback handler is:
+.IN "CallbackProc" "" "@DEF@"
+.FD 0
+void \fICallbackProc\fP(\fIw\fP, \fIclient_data\fP, \fIcall_data\fP)
+.br
+      Widget \fIw\fP;
+.br
+      caddr_t \fIclient_data\fP;
+.br
+      caddr_t \fIcall_data\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies widget for which the callback is registered.
+.IP \fIclient_data\fP 1i
+Specifies arbitrary client-supplied data that the widget should pass back 
+to the client when the widget executes the client's callback procedure.
+This is a way for the client registering the callback to also register 
+client-specific data:
+a pointer to additional information about the widget, 
+a reason for invoking the callback, and so on.
+It is perfectly normal to have client_data of NULL
+if all necessary information is in the widget.
+This field is also frequently known as the \fIclosure\fP.
+.IP \fIcall_data\fP 1i
+Specifies any callback-specific data the widget wants to pass to the client.
+For example, when Scrollbar executes its jumpProc callback list, 
+it passes the current position of the thumb in the call_data argument.
+.LP
+Callbacks can be registered with widgets in one of two ways.
+When the widget is created,
+a pointer to a list of callback procedure and data pairs can be passed in the
+argument list to
+.PN XtCreateWidget .
+The list is of type
+.PN XtCallbackList :
+.IN "XtCallbackProc" 
+.IN "XtCallbackList" "" "@DEF@"
+.LP
+.Ds 0
+.TA .5i 3i
+.ta .5i 3i
+typedef struct {
+	XtCallbackProc callback;
+	caddr_t closure;
+} XtCallbackRec, *XtCallbackList;
+.De
+.LP
+The callback list must be allocated and initialized before calling
+.PN XtCreateWidget .
+The end of the list is identified by an entry containing NULL in
+callback and closure.
+Once the widget is created,
+the client can change or de-allocate this list;
+The widget itself makes no further reference to it.
+The closure field contains the client_data passed to the callback
+when the callback list is executed.
+.LP
+The second method for registering callbacks is to use
+.PN XtAddCallback 
+after the widget has been created.
+.IN "XtAddCallback" "" "@DEF@"
+.FD 0
+void XtAddCallback(\fIw\fP, \fIcallback_name, \fP\fIcallback\fP, \
+\fIclient_data\fP)
+.br
+      Widget \fIw\fP;
+.br
+      String \fIcallback_name\fP;
+.br
+      XtCallbackProc \fIcallback\fP;
+.br
+      caddr_t \fIclient_data\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget to add the callback to.
+.IP \fIcallback_name\fP 1i
+Specifies the callback list within the widget to append to.
+.IP \fIcallback\fP 1i
+Specifies the callback procedure to add.
+.IP \fIclient_data\fP 1i
+Specifies the data to be passed to the callback when it is invoked.
+.LP
+.PN XtAddCallback
+adds the specified callback to the list for the named widget.
+.LP
+All widgets provide a callback list named
+.PN XtNdestroyCallback
+where clients can register procedures that are to be executed when the widget
+is destroyed.
+The destroy callbacks are executed when the widget or an ancestor is destroyed.
+The call_data argument is unused for destroy callbacks.
+.LP
+The \*(tk \*(xI provide additional functions for further manipulating
+a callback list.
+For information about these functions, see
+.PN XtCallCallbacks ,
+.PN XtRemoveCallback ,
+.PN XtRemoveCallbacks ,
+and
+.PN XtRemoveAllCallbacks
+in the \fI\*(xT\fP.
+.NH 2
+Programming Considerations
+.LP
+.XS
+\*(SN Programming Considerations
+.XE
+This section provides some guidelines to set up an application
+program that uses the \*(tk.
+This section discusses:
+.IP \(bu 5
+Writing applications
+.IP \(bu 5
+Creating argument lists
+.NH 3
+Writing Applications
+.LP
+When writing an application that uses the toolkit, 
+you should make sure that your application performs the following:
+.IP 1. 5
+Include
+.Pn < X11/Intrinsic.h >
+in your application programs.
+This header file automatically includes
+.Pn < X11/Xlib.h >,
+so all Xlib functions also are defined.
+.IP 2. 5
+Include the widget-specific header files for each widget type 
+that you need to use.
+For example, 
+.Pn < X11/Label.h >
+and
+.Pn < X11/Command.h >.
+.IP 3. 5
+Call the
+.PN XtInitialize
+function before invoking any other toolkit or Xlib functions.
+For further information,
+see Section 2.1 and the \fI\*(xT\fP.
+.IP 4. 5
+To pass attributes to the widget creation routines
+that will over-ride any site or user customizations,
+set up argument lists.
+In this document,
+a list of valid argument names that start with 
+.PN XtN 
+is provided in the discussion of each widget.
+.IP
+For further information,
+see Section 2.7.2.
+.IP 5. 5
+When the argument list is set up, 
+create the widget by using the
+.PN XtCreateWidget
+function.
+For further information,
+see Section 2.2 and the \fI\*(xT\fP.
+.IP 6. 5
+If the widget has any callback routines, which are usually defined by the 
+.PN XtNcallback
+argument or the
+.PN XtAddCallback 
+function, declare these routines within the application.
+.IP 7. 5
+After a widget has been created, use
+.PN XtManageChild 
+to manage it.
+If there is no manipulation of the widget between
+.PN XtCreateWidget
+and
+.PN XtManageChild,
+you can do this in a single step by using
+.PN XtCreateManagedWidget .
+For further information about these functions,
+see the \fI\*(xI\fP.
+.IP 8. 5
+After creating the initial widget hierarchy, windows must be created
+for each widget by calling
+.PN XtRealizeWidget
+on the top level widget.
+.IP 9. 5
+Most applications now sit in a loop processing events using
+.PN XtMainLoop ,
+for example:
+.IP
+.Ds 0
+XtCreateManagedWidget(\fIname\fP, \fIclass\fP, \fIparent\fP, \fIargs\fP, \fInum_args\fP);
+XtRealizeWidget(\fIparent\fP);
+XtMainLoop(\|);
+.De
+.IP
+For information about this function, 
+see the \fI\*(xT\fP.
+.IP 10. 5
+Link your application with 
+.PN libXaw.a
+(the Athena widgets),
+.PN libXmu.a
+(miscellaneous utilities),
+.PN libXt.a 
+(the \*(tk \*(xI), and 
+.PN libX11.a 
+(the core X library).
+The following provides a sample command line:
+.IP
+.Ds 0
+cc -o \fIapplication\fP \fIapplication\fP.c \-lXaw \-lXmu \-lXt \-lX11
+.De
+.NH 3
+Creating Argument Lists
+.LP
+To set up an argument list for the inline specification of widget attributes,
+you can use one of the four approaches discussed in this section.
+You should use whichever approach fits the needs of the application  
+and you are most comfortable with.
+In general, 
+argument lists should be kept as short as possible to allow widget attributes
+to be specified through the resource database.
+Whenever a client inserts a specific attribute value in an argument list,
+the user is prevented from customizing the behavior of the widget.
+Resource names in the resource database, by convention, 
+correspond to their symbolic names that are used in argument list without the
+.PN XtN
+prefix.
+For example, the resource name for
+.PN XtNforeground
+is ``foreground''.
+For further information,
+see the \fI\*(xI\fP.
+.LP
+The 
+.PN Arg
+structure contains:
+.IN "ArgList" "" "@DEF@"
+.IN "Arg" "" "@DEF@"
+.LP
+.Ds 0
+.TA .5i 1.5i
+.ta .5i 1.5i
+typedef struct {
+	String name;
+	XtArgVal value;
+} Arg, *ArgList;
+.De
+.LP
+The first approach lets you statically initialize the argument list.
+For example:
+.LP
+.Ds 0
+.TA .5i
+.ta .5i
+static Arg arglist[] = {
+	{XtNwidth, (XtArgVal) 400},
+	{XtNheight, (XtArgVal) 300},
+};
+.De
+.LP
+This approach makes it easy to add or delete new
+elements.
+The 
+.PN XtNumber 
+macro can be used to compute the number of elements in the argument list,
+thus preventing simple programming errors.
+The following provides an example:
+.LP
+.Ds 
+XtCreateWidget(\fIname\fP, \fIclass\fP, \fIparent\fP, \fIarglist\fP, XtNumber(\fIarglist\fP));
+.De
+.LP
+The second approach lets you use the 
+.PN XtSetArg
+macro.
+For example:
+.LP
+.Ds 0
+.TA .5i
+.ta .5i
+Arg arglist[10];
+XtSetArg(arglist[1], XtNwidth, 400);
+XtSetArg(arglist[2], XtNheight, 300);
+.De
+.LP
+To make it easier to insert and delete entries, 
+you also can use a variable index,
+as in this example:
+.LP
+.Ds 0
+.TA .5i
+.ta .5i
+Arg arglist[10];
+Cardinal i=0;
+XtSetArg(arglist[i], XtNwidth,  400);       i++;
+XtSetArg(arglist[i], XtNheight, 300);       i++;
+.De
+.LP
+The i variable can then be used as the argument list count in the widget
+create function.
+In this example,
+.PN XtNumber 
+would return 10, not 2, and therefore is not useful.
+.NT
+You should not use auto-increment or auto-decrement 
+within the first argument to
+.PN XtSetArg .
+As it is currently implemented,
+.PN XtSetArg
+is a macro that dereferences the first argument twice.
+.NE
+.LP
+The third approach lets you individually set the elements of the argument list array, 
+one piece at a time.
+For example:
+.LP
+.Ds 0
+.TA .5i
+.ta .5i
+Arg arglist[10];
+arglist[0].name  = XtNwidth;
+arglist[0].value = (XtArgVal) 400;
+arglist[1].name  = XtNheight;
+arglist[1].value = (XtArgVal) 300;
+.De
+.LP
+Note that in this example, as in the previous example,
+.PN XtNumber 
+would return 10, not 2, and therefore is not useful.
+.LP
+The fourth approach lets you use a mixture of the first and third approaches:
+you can statically define the argument list but modify some entries at runtime.
+For example:
+.LP
+.Ds 0
+.TA .5i
+.ta .5i
+static Arg arglist[] = {
+	{XtNwidth, (XtArgVal) 400},
+	{XtNheight, (XtArgVal) NULL},
+};
+arglist[1].value = (XtArgVal) 300;
+.De
+.LP
+In this example,
+.PN XtNumber 
+can be used, as in the first approach, for easier code maintenance.
+.NH 3
+Sample Program
+.LP
+The following program creates one command button that, when pressed, 
+causes the program to exit.
+This example is a complete program that illustrates:
+.IP \(bu 5
+Toolkit initialization
+.IP \(bu 5
+Optional command-line arguments
+.IP \(bu 5
+Widget creation
+.IP \(bu 5
+Callback routines
+.LP
+.bp
+.ps 9
+.nr PS 9
+.Ds 0
+.TA .5i 2i
+.ta .5i 2i
+#include <stdio.h>
+#include <X11/Intrinsic.h>
+#include <X11/Command.h>
+.sp 6p
+static XrmOptionDescRec options[] = {
+{"\-label", "*button.label", XrmoptionSepArg, NULL}
+};
+.sp 6p
+Syntax(call)
+	char *call;
+{
+	fprintf(stderr, "Usage: %s\\n", call);
+}
+.sp 6p
+void Activate(w, client_data, call_data)
+	Widget w;
+	caddr_t client_data;	/* unused */
+	caddr_t call_data;	/* unused */
+{
+	printf("button was activated.\\n");
+	exit(0);
+}
+.sp 6p
+void main(argc, argv)
+	unsigned int argc;
+	char **argv;
+{
+	Widget toplevel;
+	static XtCallbackRec callbacks[] = {
+	\ \ \ \ { Activate, NULL },
+	\ \ \ \ { NULL, NULL },
+	};
+.sp 6p
+	static Arg args[] = {
+	\ \ { XtNcallback, (XtArgVal)callbacks },
+	};
+.sp 6p
+	toplevel = XtInitialize("main", "Demo", options, XtNumber(options), &argc, argv );
+	if (argc != 1) Syntax(argv[0]);
+.sp 6p
+	XtCreateManagedWidget("button",commandWidgetClass,toplevel,args,XtNumber(args));
+.sp 6p    
+	XtRealizeWidget(toplevel);
+	XtMainLoop(\|);
+}
+.De
+.ps 11
+.nr PS 11

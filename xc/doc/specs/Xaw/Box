@@ -1,0 +1,127 @@
+.NH 2
+Box Widget
+.LP
+.XS
+\*(SN Box Widget
+.XE
+.IN "Box widget" "" "@DEF@"
+The Box widget provides geometry management of
+arbitrary widgets in a box of a specified dimension.
+The children are rearranged when resizing events occur either on the 
+Box or when children are added or deleted.
+The Box widget always attempts to pack its children as closely as possible
+within the geometry allowed by its parent.
+.LP
+Box widgets are commonly used to manage a related set of Command
+widgets and are frequently called ButtonBox widgets, but the children are
+not limited to buttons.
+.LP
+The children are arranged on a background that
+has its own specified dimensions and color.
+.LP
+The class variable for the Box widget is
+.PN boxWidgetClass .
+.LP
+When creating a Box widget instance,
+the following resources are retrieved from the argument list
+or from the resource database:
+.IN "Box widget" "resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i) .
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNbackground	Pixel	XtDefaultBackground	Window background color
+XtNbackgroundPixmap	Pixmap	None	Window background pixmap
+XtNborderColor	Pixel	XtDefaultForeground	Window border color
+XtNborderPixmap	Pixmap	None	Window border pixmap
+XtNborderWidth	Dimension	1	Border width on button box
+T{
+XtNdestroyCallback
+T}	T{
+XtCallbackList
+T}	T{
+NULL
+T}	T{
+Callbacks for 
+.PN XtDestroyWidget
+T}
+XtNhSpace	Dimension	4	Pixel distance left and right of children
+XtNheight	Dimension	see below	Viewing height of inner window
+T{
+XtNmappedWhenManaged
+T}	T{
+Boolean
+T}	T{
+True
+T}	T{
+Whether
+.PN XtMapWidget
+is automatic
+T}
+XtNtranslations	TranslationTable	None	Event-to-action translations
+XtNvSpace	Dimension	4	Pixel distance top and bottom of children
+XtNwidth	Dimension	width of widest child	Viewing width of inner window
+XtNx	Position	0	Widget location x coordinate
+XtNy	Position	0	Widget location y coordinate
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+The Box widget positions its children in rows with
+.PN XtNhSpace
+pixels to the left and right of each child and
+.PN XtNvSpace
+pixels between rows.
+If the Box width is not specified,
+the Box widget uses the width of the widest child.
+Each time a child is managed or unmanaged, the Box widget will
+attempt to reposition the remaining children to compact the box.
+Children are positioned in order left to right, top to bottom.
+When the next child does not fit on the current row, a new row is
+started.  If a child is wider than the width of the box, the box
+will request a larger width from it parent and will begin the
+layout process from the beginning if a new width is granted.
+After positioning all children,
+the Box widget attempts to shrink its own size to the minimum dimensions
+required for the layout.
+.LP
+.IN "Box widget" "creating"
+.IN "Creating widgets" "Box"
+To create a box widget instance, use 
+.PN XtCreateWidget
+and specify the class variable
+.PN boxWidgetClass .
+.LP
+.IN "Box widget" "adding children"
+To add a child to the Box, use
+.PN XtCreateWidget
+and specify the widget ID of the Box as the parent of the new widget.
+.LP
+.IN "Box widget" "removing children"
+To remove a child from the Box, use 
+.PN XtUnmanageChild
+or
+.PN XtDestroyWidget
+and specify the widget ID of the child.
+.LP
+.IN "Box widget" "destroying"
+.IN "Destroying widgets" "Box"
+To destroy a Box widget instance, use
+.PN XtDestroyWidget
+and specify the widget ID of the Box widget.
+All the children of this box are automatically destroyed at the same time.

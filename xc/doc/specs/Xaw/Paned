@@ -1,0 +1,288 @@
+.NH 2 
+VPaned Widget
+.LP
+.XS
+\*(SN VPaned Widget
+.XE
+.IN "VPaned widget" "" "@DEF@"
+The VPaned widget manages children in a vertically tiled fashion.
+A region, called a grip, appears on the border between each child.
+When the pointer is positioned on a grip and pressed,  
+an arrow is displayed that indicates the significant pane that is
+being resized.
+While keeping the pointer button down, 
+the user can move the pointer up or down.
+This, in turn, changes the window borders, causing one pane to shrink
+and some other pane to grow.
+The cursor indicates the pane that is of interest to the user;
+some other pane in the opposite direction will be chosen to grow
+or shrink an equal amount.  The choice of alternate pane is a
+function of the
+.PN XtNmin ,
+.PN XtNmax
+and
+.PN XtNskipAdjust
+constraints on the other panes.  With the default bindings,
+button 1 resizes the pane above the selected grip, button 3
+resizes the pane below the selected grip and button 2 repositions
+the border between two panes only.
+.LP
+The class variable for the VPaned widget is
+.PN vPanedWidgetClass .
+.LP
+When creating a VPaned widget instance,
+the following resources are retrieved from the argument list
+or from the resource database:
+.IN "VPaned widget" "resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i) .
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNbackground	Pixel	XtDefaultBackground	Window background color
+XtNbackgroundPixmap	Pixmap	None	Window background pixmap
+T{
+XtNbetweenCursor
+T}	T{
+Cursor
+T}	T{
+XC_sb_left_arrow	
+T}	T{
+Cursor for changing the boundary between two panes
+T}
+XtNborderColor	Pixel	XtDefaultForeground	Window border color
+XtNborderPixmap	Pixmap	None	Window border pixmap
+XtNborderWidth	Dimension	1	Border width (pixels)
+T{
+XtNdestroyCallback
+T}	T{
+XtCallbackList
+T}	T{
+NULL
+T}	T{
+Callbacks for 
+.PN XtDestroyWidget
+T}
+XtNforeground	Pixel	Black	Pixel value for the foreground color
+XtNgripCursor	Cursor	XC_sb_v_double_arrow	Cursor for grip when not active
+XtNgripIndent	Position	10	Offset of grip from margin (pixels)
+XtNgripTranslations	TranslationTable	internal	button bindings for grip
+XtNheight	Dimension	sum of child heights	Height of vPane
+T{
+XtNlowerCursor
+T}	T{
+Cursor
+T}	T{
+XC_sb_down_arrow
+T}	T{
+Cursor for resizing pane below grip
+T}
+T{
+XtNmappedWhenManaged
+T}	T{
+Boolean
+T}	T{
+True
+T}	T{
+Whether
+.PN XtMapWidget
+is automatic
+T}
+XtNrefigureMode	Boolean	On	Whether vPane should adjust children
+XtNsensitive	Boolean	True	Whether widget receives input
+XtNtranslations	TranslationTable	None	Event-to-action translations
+T{
+XtNupperCursor
+T}	T{
+Cursor
+T}	T{
+XC_sb_up_arrow
+T}	T{
+Cursor for resizing pane above grip
+T}
+XtNwidth	Dimension	width of widest child	Width of vPane
+XtNx	Position	0	x position of vPane
+XtNy	Position	0	y position of vPane
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+.IN "VPaned widget" "creating"
+.IN "Creating widgets" "VPaned"
+To create a VPaned widget instance, use 
+.PN XtCreateWidget 
+and specify the class variable
+.PN vPanedWidgetClass .
+.LP
+Once the parent frame is created, 
+you then add panes to it.
+Any type of widget can be paned.
+.LP
+.IN "VPaned widget" "adding pane"
+To add a child pane to a VPaned frame, use
+.PN XtCreateWidget
+and specify the widget ID of the VPaned widget
+as the parent of each new child pane.
+.LP
+During the creation of a child pane,
+the following resources,
+by which the VPaned widget controls the placement of the child,
+can be specified in the argument list or retrieved from the resource database:
+.IN "VPaned widget" "child resources"
+.LP
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i) .
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+T{
+XtNallowResize
+T}	T{
+Boolean
+T}	T{
+False
+T}	T{
+If False, ignore child resize requests
+T}
+XtNmax	Dimension	unlimited	Maximum height for pane
+XtNmin	Dimension	1	Minimum height for pane
+T{
+XtNskipAdjust
+T}	T{
+Boolean
+T}	T{
+False
+T}	T{
+True if VPaned widget should not automatically resize pane
+T}
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+.IN "VPaned widget" "deleting pane"
+To delete a pane from a vertically paned window frame, use
+.PN XtUnmanageWidget
+or
+.PN XtDestroyWidget
+and specify the widget ID of the child pane.
+.LP
+.IN "VPaned widget" "enable pane resizing"
+.IN "VPaned widget" "disable pane resizing"
+To enable or disable a child's request for pane resizing,
+use
+.PN XtPanedAllowResize .
+.IN "XtPanedAllowResize" "" "@DEF@"
+.FD 0
+void XtPanedAllowResize(\fIw\fP, \fIallow_resize\fP)
+.br
+     Widget \fIw\fP;
+.br
+     Boolean \fIallow_resize\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the child widget pane.
+.IP \fIallow_resize\fP
+Enables or disables a pane widget for resizing requests.
+.LP
+If allow_resize is
+.PN True ,
+VPane allows geometry requests from the child to change the pane's height.
+If allow_resize is
+.PN False ,
+VPane ignores geometry requests from the child to change the pane's height. 
+The default state is
+.PN True
+before the VPane is realized and
+.PN False
+after it is realized.
+This procedure is equivalent to changing the
+.PN XtNallowResize
+resource for the child.
+.LP
+.sp
+.IN "VPaned widget" "change height settings"
+To change the minimum and maximum height settings for a pane, use
+.PN XtPanedSetMinMax .
+.IN "XtPanedSetMinMax" "" "@DEF@"
+.FD 0
+void XtPanedSetMinMax(\fIw\fP, \fImin\fP, \fImax\fP)
+.br
+     Widget \fIw\fP;
+.br
+     int \fImin\fP, \fImax\fP;   
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the child widget pane.
+.IP \fImin\fP 1i
+New minimum height of the child, expressed in pixels.
+.IP \fImax\fP 1i
+New maximum height of the child, expressed in pixels.
+.LP
+This procedure is equivalent to setting the
+.PN XtNmin
+and
+.PN XtNmax
+resources for the child.
+.LP
+.sp
+.IN "VPaned widget" "enable auto-reconfiguring"
+.IN "VPaned widget" "disable auto-reconfiguring"
+To enable or disable automatic recalculation of pane sizes and positions,
+use 
+.PN XtPanedSetRefigureMode .
+.IN "XtPanedSetRefigureMode" "" "@DEF@"
+.FD 0
+void XtPanedSetRefigureMode(\fIw\fP, \fImode\fP)
+.br
+     Widget \fIw\fP;
+.br
+     Boolean \fImode\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the VPaned widget.
+.IP \fImode\fP 1i
+Enables or disables refiguration.
+.LP
+You should set the mode to FALSE if you add multiple panes to
+or remove multiple panes from the parent frame after it has been realized,
+unless you can arrange to manage all the panes at once using
+.PN XtManageChildren .
+After all the panes are added, set the mode to TRUE.
+This avoids unnecessary geometry calculations and ``window dancing''.
+.LP
+.IN "VPaned widget" "destroying"
+.IN "Destroying widgets" "VPaned"
+To delete an entire VPaned widget and all associated data structures, 
+use 
+.PN XtDestroyWidget
+and specify the widget ID of the VPaned widget.
+All the children of the VPaned widget 
+are automatically destroyed at the same time.

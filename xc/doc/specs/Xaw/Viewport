@@ -1,0 +1,135 @@
+.NH 2
+Viewport Widget
+.LP
+.XS
+\*(SN Viewport Widget
+.XE
+.IN "Viewport widget" "" "@DEF@"
+The Viewport widget consists of a frame window, one or two Scrollbars,
+and an inner window.
+The frame window is determined by 
+the viewing size of the data that is to be displayed 
+and the dimensions to which the Viewport is created.
+The inner window is the full size of the data that is to be displayed
+and is clipped by the frame window.
+The Viewport widget controls the scrolling of the data directly.
+No application callbacks are required for scrolling.
+.LP
+When the geometry of the frame window is equal in size to the inner window, 
+or when the data does not require scrolling, 
+the Viewport widget automatically removes any scroll bars.
+The
+.PN forceBars 
+option causes the Viewport widget to display any scroll bar permanently.
+.LP
+The class variable for the Viewport widget is
+.PN viewportWidgetClass .
+.LP
+When creating a Viewport widget instance,
+the following resources are retrieved from the argument list
+or from the resource database:
+.IN "Viewport widget" "resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNallowHoriz	Boolean	False	Flag to allow horizontal scroll bars
+XtNallowVert	Boolean	False	Flag to allow vertical scroll bars
+XtNbackground	Pixel	XtDefaultBackground	Window background color
+XtNbackgroundPixmap	Pixmap	None	Window background pixmap
+XtNborderColor	Pixel	XtDefaultForeground	Window border color
+XtNborderPixmap	Pixmap	None	Window border pixmap
+XtNborderWidth	Dimension	1	Width of the border in pixels
+T{
+XtNdestroyCallback
+T}	T{
+XtCallbackList
+T}	T{
+NULL
+T}	T{
+Callback for 
+.PN XtDestroyWidget
+T}
+XtNforceBars	Boolean	False	Flag to force display of scroll bars
+XtNheight	Dimension	height of child	Height of the widget
+T{
+XtNmappedWhenManaged
+T}	T{
+Boolean
+T}	T{
+True
+T}	T{
+Whether 
+.PN XtMapWidget
+is automatic
+T}
+XtNsensitive	Boolean	True	Whether widget should receive input
+XtNtranslations	TranslationTable	None	Event-to-action translations
+XtNuseBottom	Boolean	False	Flag to indicate bottom/top bars
+XtNuseRight	Boolean	False	Flag to indicate right/left bars
+XtNwidth	Dimension	width of child	Width of the widget
+XtNx	Position	0	x coordinate within parent
+XtNy	Position	0	y coordinate within parent
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+The Viewport widget manages a single child widget.
+When the size of the child is larger than the size of the Viewport,
+the user can interactively move the child within the Viewport
+by repositioning the Scrollbars.
+.LP
+The default size of the Viewport before it is realized is the
+width and/or height of the child.
+After it is realized, the viewport will allow its
+child to grow vertically or horizontally if
+.PN XtNallowVert
+or
+.PN XtNallowHoriz
+were set, respectively.  If the corresponding vertical or horizontal
+scrolling were not enabled, the viewport will propagate the
+geometry request to its own parent and the child will be allowed
+to change size only if the (grand) parent allows it.  Regardless
+of whether or not scrolling was enabled in the corresponding
+direction, if the child requests a new size smaller than the
+viewport size, the change will be allowed only if the parent of
+the viewport allows the viewport to shrink to the appropriate dimension.
+.LP
+.IN "Viewport widget" "creating"
+To create a Viewport widget instance, use 
+.PN XtCreateWidget
+and specify the class variable
+.PN viewportWidgetClass .
+.LP
+.IN "Viewport widget" "inserting a child"
+To insert a child into a Viewport widget, use 
+.PN XtCreateWidget
+and specify the widget ID of the previously created Viewport as the parent.
+.LP
+.IN "Viewport widget" "removing a child"
+To remove a child from a Viewport widget, use
+.PN XtUnmanageChild
+or
+.PN XtDestroyWidget
+and specify the widget ID of the child.
+.LP
+.IN "Viewport widget" "destroying"
+.IN "Destroying widgets" "Viewport"
+To delete the inner window, any children, and the frame window, use
+.PN XtDestroyWidget
+and specify the widget ID of the Viewport widget.

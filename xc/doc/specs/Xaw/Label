@@ -1,0 +1,217 @@
+.NH 2 
+Label Widget
+.LP
+.XS
+\*(SN Label Widget
+.XE
+.IN "Label widget" "" "@DEF@"
+A Label is an noneditable text string or pixmap that is displayed within a window.
+The string is limited to one line and can be aligned to the left, right, 
+or center of its window.
+A Label can neither be selected nor directly edited by the user.
+.LP
+The class variable for the Label widget is 
+.PN labelWidgetClass .
+.LP
+When creating a Label widget instance, 
+the following resources are retrieved from the argument list
+or from the resource database:
+.IN "Label widget" "resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNbackground	Pixel	XtDefaultBackground	Window background color
+XtNbackgroundPixmap	Pixmap	None	Window background pixmap
+T{
+XtNbitmap
+T}	T{
+Pixmap	
+T}	T{
+None
+T}	T{
+Pixmap to display in place of the label
+T}
+XtNborderColor	Pixel	XtDefaultForeground	Window border color
+XtNborderPixmap	Pixmap	None	Window border pixmap
+XtNborderWidth	Dimension	1	Border width in pixels
+XtNcursor	Cursor	None	Pointer cursor
+T{
+XtNdestroyCallback
+T}	T{
+XtCallbackList
+T}	T{
+NULL
+T}	T{
+Callbacks for 
+.PN XtDestroyWidget
+T}
+XtNfont	XFontStruct*	XtDefaultFont	Label font
+XtNforeground	Pixel	XtDefaultForeground	Foreground color
+XtNheight	Dimension	text height	Height of widget
+XtNinsensitiveBorder	Pixmap	Gray	Border when not sensitive
+XtNinternalHeight	Dimension	2	See note
+XtNinternalWidth	Dimension	4	See note
+XtNjustify	XtJustify	XtJustifyCenter	Type of text alignment
+XtNlabel	String	label name	String to be displayed
+T{
+XtNmappedWhenManaged
+T}	T{
+Boolean
+T}	T{
+True
+T}	T{
+Whether 
+.PN XtMapWidget
+is automatic
+T}
+XtNresize	Boolean	True	Whether to auto-resize in SetValues
+XtNsensitive	Boolean	True	Whether widget receives input
+XtNwidth	Dimension	text width	Width of widget
+XtNx	Position	0	x coordinate in pixels
+XtNy	Position	0	y coordinate in pixels
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+The new resources associated with Label are:
+.TS
+lw(1.5i) lw(4i).
+T{
+.PN XtNbitmap
+T}	T{
+Specifies a bitmap to display in place of the text label.
+The bitmap can be specified as a string in the resource data base.
+The StringToPixmap converter will interpret the string as the name of a
+file in the bitmap utility format that is to be loaded into a pixmap.
+The string can be an absolute or a relative file name.
+If a relative file name is used,
+the directory specified by the resource name
+.PN bitmapFilePath
+or
+the resource class
+.PN BitmapFilePath
+is add to the beginning of the
+specified file name.
+If the
+.PN bitmapFilePath
+resource is not defined,
+the default directory on a UNIX-based system is
+.PN /usr/include/X11/bitmaps .
+T}
+.sp 6p
+T{
+.PN XtNheight
+T}	T{
+Specifies the height of the Label widget.
+The default value is the minimum height that will contain:
+.br
+XtNinternalheight + height of XtNlabel + XtNinternalHeight 
+.br
+If the specified height is larger than the minimum,
+the label string is centered vertically.
+T}
+.sp 6p
+T{
+.PN XtNinternalHeight 
+T}	T{
+Represents the distance in pixels between the top and bottom 
+of the label text or bitmap and the horizontal edges of the Label widget.
+T}
+.sp 6p
+T{
+.PN XtNinternalWidth 
+T}	T{
+Represents the distance in pixels between the ends of the label text or bitmap
+and the vertical edges of the Label widget.
+T}
+.sp 6p
+T{
+.PN XtNjustify
+T}	T{
+Specifies left, center, or right alignment of the label string
+within the Label widget.
+If it is specified within an
+.PN ArgList ,
+one of the values
+.PN XtJustifyLeft ,
+.PN XtJustifyCenter ,
+or
+.PN XtJustifyRight
+can be specified.
+In a resource of type ``string'',
+one of the values ``left'', ``center'', or ``right'' can be specified.
+T}
+.sp 6p
+T{
+.PN XtNlabel
+T}	T{
+Specifies the text string that is to be displayed in the button
+if no bitmap is specified.
+The default is the widget name of the Label widget.
+T}
+.sp 6p
+T{
+.PN XtNresize
+T}	T{
+Specifies whether the Label widget should attempt to resize to its
+preferred dimensions whenever
+.PN XtSetValues
+is called for it.
+T}
+.sp 6p
+T{
+.PN XtNsensitive
+T}	T{
+If set to
+.PN False ,
+the Label widget will change its window border to
+.PN XtNinsensitiveBorder
+and will stipple the label string.
+T}
+.sp 6p
+T{
+.PN XtNwidth
+T}	T{
+Specifies the width of the Label widget.
+The default value is the minimum width that will contain:
+.br
+XtNinternalWidth + width of XtNlabel + XtNinternalWidth 
+.br
+If the width is larger or smaller than the minimum,
+.PN XtNjustify 
+determines how the label string is aligned.
+T}
+.TE
+.LP
+.IN "Label widget" "creating"
+.IN "Creating widgets" "Label"
+To create a Label widget instance, use
+.PN XtCreateWidget
+and specify the class variable
+.PN labelWidgetClass .
+.LP
+.IN "Label widget" "destroying"
+.IN "Destroying widgets" "Label"
+To destroy a Label widget instance, use
+.PN XtDestroyWidget
+and specify the widget ID of the label.
+.LP
+The Label widget supports only the
+.PN XtNdestroyCallback
+callback list.

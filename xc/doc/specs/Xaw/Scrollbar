@@ -1,0 +1,393 @@
+.NH 2 
+Scrollbar Widget
+.LP
+.XS
+\*(SN Scrollbar Widget
+.XE
+.IN "Scrollbar widget" "" "@DEF@"
+The Scrollbar widget is a rectangular area that contains a slide region and 
+a thumb (slide bar).
+A Scrollbar can be used alone, as a valuator, or it can
+be used within a composite widget (for example, a Viewport).
+A Scrollbar can be aligned either vertically or horizontally.
+.LP
+When a Scrollbar is created, 
+it is drawn with the thumb in a contrasting color.
+The thumb is normally used to scroll client data and to give visual
+feedback on the percentage of the client data that is visible.
+.LP
+Each pointer button invokes a specific scroll bar action.
+That is, given either a vertical or horizontal alignment, 
+the pointer button actions will scroll or return data as appropriate
+for that alignment.
+Pointer buttons 1 and 3 do not perform scrolling operations by default.
+Instead, they return the pixel position of the cursor on the scroll region.
+When pointer button 2 is clicked, 
+the thumb moves to the current pointer position.
+When pointer button 2 is held down and the pointer pointer is moved,
+the thumb follows the pointer.
+.LP
+The cursor in the scroll region changes depending on the current action.
+When no pointer button is pressed, 
+the cursor appears as an arrow that points in the direction
+that scrolling can occur.
+When pointer button 1 or 3 is pressed, 
+the cursor appears as a single-headed arrow that points in the logical
+direction that the client will move the data.
+When pointer button 2 is pressed, 
+the cursor appears as an arrow that points to the thumb.
+.LP
+While scrolling is in progress, 
+the application receives notification from callback procedures.
+For both scrolling actions, 
+the callback returns the Scrollbar widget ID, the client_data,
+and the pixel position of the pointer when the button was released.
+For smooth scrolling,
+the callback routine returns the scroll bar widget, the client data, 
+and the current relative position of the thumb.
+When the thumb is moved using pointer button 2, 
+the callback procedure is invoked continuously.
+When either button 1 or 3 is pressed,
+the callback procedure is invoked only when the button is released
+and the client callback procedure is responsible for moving the thumb.
+.LP
+The class variable for the Scrollbar widget is
+.PN scrollbarWidgetClass .
+.LP
+When creating a Scrollbar widget instance, 
+the following resources are retrieved from the argument list
+or from the resource database:
+.IN "Scrollbar widget" "resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Type	Default	Description   
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNbackground	Pixel	white	Window background color
+XtNbackgroundPixmap	Pixmap	None	Window background pixmap
+XtNborderColor	Pixel	XtDefaultForeground	Window border color
+XtNborderPixmap	Pixmap	None	Window border pixmap
+XtNborderWidth	Dimension	1	Width of button border
+T{
+XtNdestroyCallback
+T}	T{
+XtCallbackList
+T}	T{
+NULL
+T}	T{
+Callbacks for 
+.PN XtDestroyWidget
+T}
+XtNforeground	Pixel	black	Thumb color
+XtNheight	Dimension	See below	Height of scroll bar
+XtNjumpProc	XtCallbackList	NULL	Callback for thumb select
+XtNlength	Dimension	None	Major dimension (height of XtorientVertical)
+T{
+XtNmappedWhenManaged
+T}	T{
+Boolean
+T}	T{
+True
+T}	T{
+Whether
+.PN XtMapWidget
+is automatic
+T}
+T{
+XtNorientation
+T}	T{
+XtOrientation
+T}	T{
+XtorientVertical
+T}	T{
+Orientation (vertical or horizontal)
+T}
+T{
+XtNscrollDCursor
+T}	T{
+Cursor
+T}	T{
+XC_sb_down_arrow
+T}	T{
+Cursor for scrolling down
+T}
+T{
+XtNscrollHCursor
+T}	T{
+Cursor
+T}	T{
+XC_sb_h_double_arrow
+T}	T{
+Idle horizontal cursor
+T}
+T{
+XtNscrollLCursor
+T}	T{
+Cursor
+T}	T{
+XC_sb_left_arrow
+T}	T{
+Cursor for scrolling left
+T}
+XtNscrollProc	XtCallbackList	NULL	Callback for the slide region
+T{
+XtNscrollRCursor
+T}	T{
+Cursor
+T}	T{
+XC_sb_right_arrow
+T}	T{
+Cursor for scrolling right
+T}
+T{
+XtNscrollUCursor
+T}	T{
+Cursor
+T}	T{
+XC_sb_up_arrow
+T}	T{
+Cursor for scrolling up
+T}
+T{
+XtNscrollVCursor
+T}	T{
+Cursor
+T}	T{
+XC_sb_v_double_arrow
+T}	T{
+Idle vertical cursor
+T}
+XtNsensitive	Boolean	True	Whether widget receives input
+XtNshown	float	NULL	Percentage the thumb covers
+XtNthickness	Dimension	14	Minor dimension (height if XtorientHorizontal)
+XtNthumb	Pixmap	Grey	Thump pixmap
+XtNtop	float	NULL	Position on scroll bar
+XtNtranslations	TranslationTable	See below	Event-to-action translations
+XtNwidth	Dimension	See below	Width of scroll bar
+XtNx	Position	NULL	x position of scroll bar
+XtNy	Position	NULL	y position of scroll bar
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+The class for all cursor resources is
+.PN XtCCursor .
+.LP
+You can set the dimensions of the Scrollbar two ways.
+As for all widgets,
+you can use the
+.PN XtNwidth
+and
+.PN XtNheight
+resources.
+In addition,
+you can use an alternative method that is independent of the vertical
+or horizontal orientation:
+.TS
+lw(1.5i) lw(4.5i).
+T{
+.PN XtNlength
+T}	T{
+Specifies the height for a vertical Scrollbar
+and the width for a horizontal Scrollbar.
+T}
+T{
+.PN XtNthickness
+T}	T{
+Specifies the width for a vertical Scrollbar
+and the height for a horizontal Scrollbar.
+T}
+.TE
+.LP
+.IN "Scrollbar widget" "creating"
+.IN "Creating widgets" "Scrollbar"
+To create a Scrollbar widget instance, use 
+.PN XtCreateWidget
+and specify the class variable
+.PN scrollbarWidgetClass .
+.LP
+.IN "Scrollbar widget" "destroying"
+.IN "Destroying widgets" "Scrollbar"
+To destroy a Scrollbar widget instance, use 
+.PN XtDestroyWidget
+and specify the widget ID for the Scrollbar.
+.LP
+.sp
+The arguments to the
+.PN XtNscrollProc
+callback procedure are:
+.IN "ScrollProc" "" "@DEF@"
+.FD 0
+void \fIScrollProc\fP(\fIscrollbar\fP, \fIclient_data\fP, \fIposition\fP)
+.br
+     Widget \fIscrollbar\fP;
+.br
+     caddr_t \fIclient_data\fP;
+.br
+     caddr_t \fIposition\fP;    /* int */
+.FN
+.IP \fIscrollbar\fP 1i
+Specifies the ID of the Scrollbar.
+.IP \fIclient_data\fP 1i
+Specifies the client data.
+.IP \fIposition\fP 1i
+Returns the pixel position of the thumb in integer form.
+.LP
+The 
+.PN XtNscrollProc 
+callback is used for incremental scrolling 
+and is called by the \fBNotifyScroll\fP action.
+The position argument is a signed quantity and should be cast to an int
+when used.
+Using the default button bindings,
+button 1 returns a positive value,
+and button 3 returns a negative value.
+In both cases,
+the magnitude of the value is the distance of the pointer in pixels from the
+top (or left) of the Scrollbar.
+The value will never be less than zero or greater than the length
+of the Scrollbar.
+.LP
+.sp
+The arguments to the
+.PN XtNjumpProc
+callback procedure are:
+.IN "JumpProc" "" "@DEF@"
+.FD 0
+void \fIJumpProc\fP(\fIscrollbar\fP, \fIclient_data\fP, \fIpercent\fP)
+.br
+     Widget \fIscrollbar\fP;
+.br
+     caddr_t \fIclient_data\fP;
+.br
+     caddr_t \fIpercent_ptr\fP;    /* float* */
+.FN
+.IP \fIscrollbar\fP 1i
+Specifies the ID of the scroll bar widget.
+.IP \fIclient_data\fP 1i
+Specifies the client data.
+.IP \fIpercent_ptr\fP 1i
+Specifies the floating point position of the thumb (0.0 \- 1.0).
+.LP
+The 
+.PN XtNjumpProc 
+callback is used to implement smooth scrolling and is called by the
+\fBNotifyThumb\fP
+action.  Percent_ptr must be cast to a pointer to float before
+use; i.e.
+.LP
+.Ds 0
+.TA .5i
+.ta .5i
+	float percent = *(float*)percent_ptr;
+.De
+.LP
+With the default button bindings,
+button 2 moves the thumb interactively,
+and the 
+.PN XtNjumpProc
+is called on each new position of the pointer.
+.NT
+An older interface used
+.PN XtNthumbProc
+and passed the percentage by value rather than by reference.
+This interface is not portable across machine architectures
+and therefore is no longer supported but is still implemented
+for those (non-portable) applications which used it.
+.NE
+.LP
+.IN "Scrollbar widget" "setting thumb values"
+To set the position and length of a Scrollbar thumb, use 
+.PN XtScrollbarSetThumb .
+.IN "XtScrollbarSetThumb" "" "@DEF@"
+.FD 0
+void XtScrollbarSetThumb(\fIw\fP, \fItop\fP, \fIshown\fP)
+.br
+     Widget \fIw\fP;
+.br
+     float \fItop\fP;
+.br
+     float \fIshown\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the Scrollbar widget ID.
+.IP \fItop\fP 1i
+Specifies the position of the top of the thumb as a fraction of the
+length of the Scrollbar.
+.IP \fIshown\fP 1i
+Specifies the length of the thumb as a fraction of the total length
+of the Scrollbar.
+.LP
+.PN XtScrollbarThumb
+moves the visible thumb to position (0.0 \- 1.0) and length (0.0 \- 1.0).
+Either the top or shown arguments can be specified as \-1.0,
+in which case the current value is left unchanged.
+Values greater than 1.0 are truncated to 1.0.
+.LP
+If called from 
+.PN XtNjumpProc ,
+.PN XtScrollbarSetThumb
+has no effect.
+.LP
+.sp
+The actions supported by the Scrollbar widget are:
+.IP \fBStartScroll\fP(\fIvalue\fP) 1i
+The possible values are Forward, Backward, or Continuous.
+This must be the first action to begin a new movement.
+.IP \fBNotifyScroll\fP(\fIvalue\fP) 1i
+The possible values are Proportional or FullLength.
+If the argument to StartScroll was Forward or Backward,
+NotifyScroll executes the
+.PN XtNscrollProc
+callbacks 
+and passes either the position of the pointer if its argument is Proportional
+or the full length of the scroll bar if its argument is FullLength.
+If the argument to StartScroll was Continuous,
+NotifyScroll returns without executing any callbacks.
+.IP \fBEndScroll\fP(\^) 1i
+This must be the last action after a movement is complete.
+.IP \fBMoveThumb\fP(\^) 1i
+Repositions the scroll bar thumb to the current pointer location.
+.IP \fBNotifyThumb\fP(\^)\ \ \  1i
+Calls the
+.PN XtNjumpProc
+callbacks and passes the relative position of the
+pointer as a percentage of the scroll bar length.
+.LP
+The default bindings for Scrollbar are:
+.LP
+.Ds 0
+.TA .5i 1.75i
+.ta .5i 1.75i
+	<Btn1Down>:	StartScroll(Forward)
+	<Btn2Down>:	StartScroll(Continuous) MoveThumb(\|) NotifyThumb(\|)
+	<Btn3Down>:	StartScroll(Backward)
+	<Btn2Motion>:	MoveThumb(\|) NotifyThumb(\|)
+	<BtnUp>:	NotifyScroll(Proportional) EndScroll(\|)
+.De
+.LP
+Examples of additional bindings a user might wish to specify in a
+resource file are:
+.LP
+.Ds 0
+.TA .5i 2.25i
+.ta .5i 2.25i
+*Scrollbar.Translations: \\
+	~Meta<KeyPress>space:	StartScroll(Forward) NotifyScroll(FullLength) \\n\\
+	 Meta<KeyPress>space:	StartScroll(Backward) NotifyScroll(FullLength) \\n\\
+		EndScroll(\|)
+.De

@@ -1,0 +1,143 @@
+.NH 2
+Dialog Widget
+.LP
+.XS
+\*(SN Dialog Widget
+.XE
+.IN "Dialog widget" "" "@DEF@"
+The Dialog widget implements a commonly used interaction
+semantic to prompt for auxiliary input from a user.
+For example, you can use a Dialog widget when an application
+requires a small piece of information, such as a file name, from the user.
+A Dialog widget is simply a special case of the Form widget
+that provides a convenient way to create a ``preconfigured form''.
+.LP
+The typical Dialog widget contains three areas.
+The first line contains a 
+description of the function of the Dialog widget, 
+for example, the string ``Filename:''.
+The second line contains an area into which the user types input.
+The third line can contain buttons that let the user confirm 
+or cancel the Dialog input.
+.LP
+The class variable for the Dialog widget is
+.PN dialogWidgetClass .
+.LP
+When creating a Dialog widget instance,
+the following resources are retrieved from the argument list
+or from the resource database:
+.IN "Dialog widget" "resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+XtNbackground	Pixel	XtDefaultBackground	Window background color
+XtNbackgroundPixmap	Pixmap	None	Window background pixmap
+XtNborderColor	Pixel	XtDefaultForeground	Window border color
+XtNborderPixmap	Pixmap	None	Window border pixmap
+XtNborderWidth	Dimension	1	Width of border in pixels
+T{
+XtNdestroyCallback
+T}	T{
+XtCallbackList
+T}	T{
+NULL
+T}	T{
+Callbacks for 
+.PN XtDestroyWidget
+T}
+XtNheight	Dimension	computed at create	Height of dialog
+XtNlabel	String	Label name	String to be displayed
+T{
+XtNmappedWhenManaged
+T}	T{
+Boolean
+T}	T{
+True
+T}	T{
+Whether
+.PN XtMapWidget
+is automatic
+T}
+XtNmaximumLength	int	256	Length of input buffer
+XtNsensitive	Boolean	True	Whether widget receives input
+XtNtranslations	TranslationTable	None	Event-to-action translations
+XtNvalue	char*	NULL	Pointer to default value string
+XtNwidth	Dimension	computed at create	Width of dialog
+XtNx	Position	NULL	x position of dialog
+XtNy	Position	NULL	y position of dialog
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+The instance name of the label widget within the Dialog widget is ``label'',
+and the instance name of the Dialog value widget is ``value''.
+.LP
+.IN "Dialog widget" "creating"
+.IN "Creating widgets" "Dialog"
+To create a Dialog widget instance, you can use 
+.PN XtCreateWidget
+and specify the class variable
+.PN dialogWidgetClass .
+.LP
+.IN "Dialog widget" "adding children"
+To add a child button to the Dialog box, use 
+.PN XtCreateWidget
+and specify widget ID of the previously created Dialog box as the parent
+of each child.
+When creating buttons,
+you do not have to specify form constraints.
+The Dialog box will automatically add the constraints.
+.LP
+.sp
+To return the character string in the text field, use
+.PN XtDialogGetValueString .
+.IN "XtDialogGetValueString" "" "@DEF@"
+.FD 0
+char *XtDialogGetValueString(\fIw\fP)
+.br
+	Widget \fIw\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the Dialog box.
+.LP
+If a string was specified in the
+.PN XtNvalue
+resource, Dialog copy the string internally and will use it as the
+initial (i.e. default) value for the input text.  The value string
+may be freed immediately after creating the Dialog widget.  If the
+length of the value string is greater than the maximumLength resource,
+the larger value is used.
+.LP
+If no value resource is specified for the Dialog widget, the text user
+input area is not displayed.  In order to display a blank input area,
+an empty string must be passed as the value resource.
+.LP
+.sp
+.IN "Dialog widget" "removing children"
+To remove a child button from the Dialog box, use
+.PN XtUnmanageChild
+or
+.PN XtDestroyWidget
+and specify the widget ID of the child.
+.LP
+.IN "Dialog widget" "destroying"
+.IN "Destroying widgets" "Dialog"
+To destroy a Dialog widget instance, use
+.PN XtDestroyWidget
+and specify the widget ID of the Dialog widget.
+All children of the Dialog are automatically destroyed at the same time.

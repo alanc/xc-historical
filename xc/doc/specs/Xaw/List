@@ -1,0 +1,402 @@
+.NH 2
+List Widget
+.LP
+.XS
+\*(SN List Widget
+.XE
+.IN "List widget" "" "@DEF@"
+The List widget is a rectangle that contains a list of strings formatted
+into rows and columns.
+When one of the strings is selected,
+it is highlighted, and an application callback routine is invoked.
+.\"When the cursor pointer is clicked on one of the strings 
+.\"it is shown to be selected by highlighting and the application's 
+.\"callback routine is invoked.
+.LP
+The class variable for the List widget is 
+.PN listWidgetClass .
+.LP
+When creating a List widget instance, 
+the following resources are retrieved from the argument list
+or from the resource database:
+.IN "List widget" "resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNbackground	Pixel	XtDefaultBackground	Window background color
+XtNbackgroundPixmap	Pixmap	None	Window background pixmap
+XtNborderColor	Pixel	XtDefaultForeground	Window border color
+XtNborderPixmap	Pixmap	None	Window border pixmap
+XtNborderWidth	Dimension	1	Width of border
+XtNcallback 	XtCallbackList	NULL	Selection callback function
+XtNcolumnSpacing	Dimension	6	Space between columns in the list
+XtNcursor	Cursor	left_ptr	Pointer cursor
+XtNdefaultColumns	int	2	Number of columns to use
+T{
+XtNdestroyCallback
+T}	T{
+XtCallbackList
+T}	T{
+NULL
+T}	T{
+Callbacks for 
+.PN XtDestroyWidget
+T}
+XtNfont	XFontStruct*	XtDefaultFont	Font for list text
+XtNforceColumns	Boolean	False	Force the use of XtNdefaultColumns
+XtNforeground	Pixel	XtDefaultForeground	Foreground (text) color
+XtNheight	Dimension	Contains list exactly	Height of widget
+XtNinsensitiveBorder	Pixmap	Gray	Border when not sensitive
+T{
+XtNinternalHeight
+T}	T{
+Dimension
+T}	T{
+2
+T}	T{
+Spacing between list and widget edges
+T}
+T{
+XtNinternalWidth
+T}	T{
+Dimension
+T}	T{
+4
+T}	T{
+Spacing between list and widget edges
+T}
+XtNlist	String *	List name	An array of strings that is the list
+T{
+XtNlongest
+T}	T{
+int
+T}	T{
+Longest item
+T}	T{
+Length of the longest list item in pixels
+T}
+T{
+XtNmappedWhenManaged
+T}	T{
+Boolean	
+T}	T{
+True
+T}	T{
+Whether 
+.PN XtMapWidget
+is automatic
+T}
+T{
+XtNnumberStrings
+T}	T{
+int
+T}	T{
+Number of strings 
+T}	T{
+Number of items in the list
+T}
+XtNpasteBuffer	Boolean	False	Copy the selected item to cut buffer 0
+XtNrowSpacing 	Dimension	4 	Space between rows in the list
+XtNsensitive	Boolean	True	Whether widget receives input
+XtNtranslations	TranslationTable	None	Event-to-action translations
+XtNverticalList	Boolean	False	Specify the layout of list items
+XtNwidth	Dimension	Contains list exactly	Width of widget
+XtNx	Position	0	Widget x coordinate
+XtNy	Position	0	Widget y coordinate
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+The new resources associated with the List widget are:
+.TS
+lw(1.7i) lw(4i).
+T{
+.PN XtNcolumnSpacing
+.br
+.PN XtNrowSpacing
+T}	T{
+Specify the amount of space between each of the rows and columns in the list.
+T}
+.sp
+T{
+.PN XtNdefaultColumns
+T}	T{
+Specifies the default number of columns,
+which is used when neither the width nor the height of the List widget 
+is specified or when XtNforceColumns is 
+.PN True .
+T}
+.sp 6p
+T{
+.PN XtNforceColumns
+T}	T{
+Specifies that the default number of columns is to be used 
+no matter what the current size of the List widget is.
+T}
+.sp 6p
+T{
+.PN XtNheight
+T}	T{
+Specifies the height of the List widget.
+The default value is the minimum height that will contain
+the entire list with the spacing values specified.
+If the specified height is larger than the minimum,
+the list is put in the upper left corner.
+T}
+.sp 6p
+T{
+.PN XtNinternalHeight 
+T}	T{
+Represents a margin, in pixels, between the top and bottom 
+of the list and the edges of the List widget.
+T}
+.sp 6p
+T{
+.PN XtNinternalWidth 
+T}	T{
+Represents a margin, in pixels, between the left and right edges
+of the list and the edges of the List widget.
+T}
+.sp 6p
+T{
+.PN XtNlist
+T}	T{
+Specifies the array of text strings that is to displayed in the List widget.
+If the default for XtNnumberStrings is used,
+the list must be null-terminated.
+If a value is not specified for the list,
+the number of strings is set to 1,
+and the name of the widget is used as the list.
+T}
+.sp 6p
+T{
+.PN XtNlongest
+T}	T{
+Specifies the length of the longest string in the current list in pixels.
+If the client knows the length,
+it should specify it.
+The List widget will compute a default length by searching through the list.
+T}
+.sp 6p
+T{
+.PN XtNnumberStrings
+T}	T{
+Specifies the number of strings in the current list. 
+If a value is not specified,
+the list must be null-terminated.
+T}
+.sp 6p
+T{
+.PN XtNpasteBuffer
+T}	T{
+If this is 
+.PN True ,
+then the value of the string selected will be put
+into X cut buffer 0.
+T}
+.sp 6p
+T{
+.PN XtNsensitive
+T}	T{
+If set to
+.PN False ,
+the List widget will change its window border to
+.PN XtNinsensitiveBorder
+and display all items in the list as stippled strings.
+While the List widget is insensitive,
+no item in the list can be selected or highlighted.
+T}
+.sp 6p
+T{
+.PN XtNverticalList
+T}	T{
+If this is
+.PN True ,
+the elements in the list are arranged vertically; if
+.PN False ,
+the elements are arranged horizontally.
+T}
+.sp 6p
+T{
+.PN XtNwidth
+T}	T{
+Specifies the width of the List widget.
+The default value is the minimum width that will contain
+the entire list with the spacing values specified.
+If the specified width is larger than the minimum,
+the list is put in the upper left corner.
+T}
+.TE
+.LP
+The List widget has three predefined actions: Set, Unset, and Notify.
+Set and Unset allow switching the foreground and background colors
+for the current list item.
+Notify allows processing application callbacks.
+.LP
+The following is the default translation table used by the List Widget:
+.LP
+.Ds 
+.TA .5i 2.25i
+.ta .5i 2.25i
+<Btn1Down>,<Btn1Up>:	Set(\|) Notify(\|)
+.De
+.LP
+.IN "List widget" "creating"
+.IN "Creating widgets" "List"
+To create a List widget instance, use
+.PN XtCreateWidget
+and specify the class variable
+.PN listWidgetClass .
+.LP
+.IN "List widget" "destroying"
+.IN "Destroying widgets" "list"
+To destroy a List widget instance, use
+.PN XtDestroyWidget
+and specify the widget ID of the List widget.
+.LP
+The List widget supports two callback lists:
+.IP \(bu 5
+.PN XtNdestroyCallback
+.IP \(bu 5
+.PN XtNcallback
+.LP
+The notify action executes the callbacks on the the
+.PN XtNcallback
+list.
+.LP
+The call_data argument passed to callbacks on the
+.PN XtNcallback
+list is a pointer to an
+.PN XtListReturnStruct
+structure, defined in 
+.Pn < X11/List.h >:
+.LP
+.Ds 0
+.TA .5i 2.25i
+.ta .5i 2.25i
+.IN "XtListReturnStruct" "" "@DEF@"
+typedef struct _XtListReturnStruct {
+	String string;	/* string shown in the list. */
+	int index;	/* index of the item selected. */
+} XtListReturnStruct;
+.De
+.NH 3
+Changing the List
+.LP
+To change the list that is displayed, use
+.PN XtListChange .
+.IN "XtListChange" "" "@DEF@"
+.FD 0
+void XtListChange(\fIw\fP, \fIlist\fP, \fInitems\fP, \fIlongest\fP, \fIresize\fP)
+.br
+     Widget \fIw\fP;
+.br
+     String * \fIlist\fP;
+.br
+     int \fInitems\fP, \fIlongest\fP;
+.br
+     Boolean \fIresize\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID.
+.IP \fIlist\fP 1i
+Specifies the new list for the list widget to display.
+.IP \fInitems\fP 1i
+Specifies the number of items in the list.
+If a value less than 1 is specified,
+list must be null terminated.
+.IP \fIlongest\fP 1i
+Specifies the length of the longest item in the list in pixels.
+If a value less than 1 is specified,
+the List widget calculates the value for you.
+.IP \fIresize\fP 1i
+Specifies a Boolean value that indicates whether the List widget should try
+to resize itself
+.Pn ( True )
+or not
+.Pn ( False )
+after making the change.
+Note that the constraints of the parent of this widget are always enforced,
+regardless of the value specified.
+.LP
+.PN XtListChange
+changes the list of strings that the List widget is to display.
+.NH 3
+Highlighting an Item
+.LP
+To highlight an item in the list use,
+.PN XtListHighlight
+.IN "XtListHighlight" "" "@DEF@"
+.FD 0
+void XtListHighlight(\fIw\fP, \fIitem\fP);
+.br
+     Widget \fIw\fP;
+.br
+     int \fIitem\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID.
+.IP \fIitem\fP 1i
+Specifies the index into the current list that indicates the item 
+to be highlighted.
+.LP
+Only one item can be highlighted at a time.
+If an item is already highlighted when
+.PN XtListHighlight 
+is called,
+the highlighted item is immediately unhighlighted and 
+the new item is highlighted.
+.NH 3
+Unhighlighting an Item
+.LP
+To unhighlight the currently highlighted item in the list, use
+.PN XtListUnhighlight
+.IN "XtListUnhighlight" "" "@DEF@"
+.FD 0
+void XtListUnhightlight(\fIw\fP);
+.br
+     Widget \fIw\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID.
+.NH 3
+Retrieving the Currently Selected Item
+.LP
+To retrieve an item in the list use,
+.PN XtListShowCurrent
+.IN "XtListShowCurrent" "" "@DEF@"
+.FD 0
+XtListReturnStruct *XtListShowCurrent(\fIw\fP);
+.br
+     Widget \fIw\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID.
+.LP
+The
+.PN XtListShowCurrent
+function returns a pointer to an
+.PN XtListReturnStruct
+structure,
+contains the currently highlighted item.
+If the value of the index member is XT_LIST_NONE,
+.IN "XT_LIST_NONE"
+the string member is undefined,
+which indicates that no item is currently selected.
+

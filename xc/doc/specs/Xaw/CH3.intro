@@ -1,0 +1,32 @@
+.bp
+\&
+.sp 1
+.ce 3
+\s+1\fBChapter 3\fP\s-1
+
+\s+1\fBSimple Widgets\fP\s-1
+.sp 2
+.nr H1 3
+.nr H2 0
+.nr H3 0
+.nr H4 0
+.nr H5 0
+.na
+.LP
+.XS
+Chapter 3 - Athena Widget Set
+.XE
+.LP
+This chapter describes the following Athena widgets:
+.IP \(bu 5
+Command 
+.IP \(bu 5
+Grip
+.IP \(bu 5
+Label
+.IP \(bu 5
+List 
+.IP \(bu 5
+Scrollbar
+.IP \(bu 5
+Toggle

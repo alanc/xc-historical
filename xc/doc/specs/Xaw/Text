@@ -1,0 +1,1091 @@
+.NH 2 
+Text Widget
+.LP
+.XS
+\*(SN Text Widget
+.XE
+.IN "Text widget" "" "@DEF@"
+A Text widget is a window that provides a way for an application to display
+one or more lines of text.
+The displayed text can reside in a file on disk or in a string in memory.
+An option also lets an application display a vertical Scrollbar 
+in the Text window,
+letting the user scroll through the displayed text.
+Other options allow an application to let the user modify the text 
+in the window.
+.LP
+The Text widget is divided into three parts: 
+.IP \(bu 5
+Source 
+.IP \(bu 5
+Sink
+.IP \(bu 5
+Text widget
+.LP
+The idea is to separate the storage
+of the text (source) from the painting of the text (sink).
+The Text widget coordinates the sources and sinks.
+Clients usually will use 
+.PN AsciiText 
+widgets that automatically create the source and sink for the client.
+A client can, if it so chooses, explicitly create the source and sink
+before creating the Text widget.
+.LP
+The source stores and manipulates the text.
+The \*(tk provides string and disk file sources.
+The source determines what editing functions may be performed on the text.
+.LP
+The sink obtains the fonts and the
+colors in which to paint the text.
+The sink also computes what text can fit on each line.
+The \*(tk provides a single-font, single-color ASCII sink.
+.LP
+If a disk file is used to display the text,
+two edit modes are available: 
+.IP \(bu 5
+Append
+.IP \(bu 5
+Read-only 
+.LP
+Append mode lets the user enter text into the window,
+while read-only mode does not.
+Text may only be entered if the insertion point is after the last
+character in the window.
+.LP
+If a string in memory is used, 
+the application must allocate the amount of space needed.
+If a string in memory is used to display text,
+three types of edit mode are available:
+.IN "Text widget" "edit modes"
+.IP \(bu 5
+Append-only 
+.IP \(bu 5
+Read-only 
+.IP \(bu 5
+Editable
+.LP
+The first two modes are the same as displaying text from a disk file.
+Editable mode lets the user place the cursor anywhere in the text and
+modify the text at that position.
+The text cursor position can be modified by using the
+key strokes or pointer buttons defined by the event bindings.
+.LE
+Many standard keyboard editing facilities are supported by the
+event bindings.
+The following actions are supported:
+.LP
+.Ds 0
+.TA .5i	2.5i 3i
+.ta .5i 2.5i 3i
+Cursor Movement	Delete
+	forward-character		delete-next-character
+	backward-character		delete-previous-character
+	forward-word		delete-next-word
+	backward-word		delete-previous-word
+	forward-paragraph		delete-selection
+	backward-paragraph
+	beginning-of-line
+	end-of-line	Selection
+	next-line		select-word
+	previous-line		select-all
+	next-page		select-start
+	previous-page		select-adjust
+	beginning-of-file		select-end
+	end-of-file		extend-start
+	scroll-one-line-up		extend-adjust
+	scroll-one-line-down		extend-end
+
+New Line	Miscellaneous
+	newline-and-indent		redraw-display
+	newline-and-backup		insert-file
+	newline		insert-char
+			insert-string
+			display-caret
+			do-nothing
+
+Kill		Unkill
+	kill-word		unkill
+	backward-kill-word		stuff
+	kill-selection		insert-selection
+	kill-to-end-of-line
+	kill-to-end-of-paragraph
+.De
+.NT Notes
+.IP 1. 5
+A page corresponds to the size of the Text window.
+For example, if the Text window is 50 lines in length, 
+scrolling forward one page is the same as scrolling forward 50 lines.
+.IP 2. 5
+The \fBinsert-char\fP action may only be attached to a key event.  It
+calls XLookupString to translate the event into a (rebindable) Latin-1
+character (sequence) and inserts that sequence into the text at the
+current position.  The \fBinsert-string\fP action takes one or more
+arguments and inserts the arguments into the text at the current position.
+An argument beginning with the characters "0x" and containing only
+valid hexadecimal digits in the remainder is interpreted as a hexadecimal
+constant and the corresponding single character is inserted instead.
+.IP 3. 5
+The \fBdelete\fP
+action deletes a text item.
+The \fBkill\fP
+action deletes a text item and puts the item in the kill buffer
+(X cut buffer 1).
+.IP 4. 5
+The \fBunkill\fP
+action inserts the contents of the kill buffer into the text at the current
+position.
+The \fBstuff\fP
+action inserts the contents of the paste buffer (X cut buffer 0) into the
+text at the current position.
+The \fBinsert-selection\fP
+action retrieves the value of a specified X selection or cut
+buffer, with fall-back to alternative selections or cut buffers.
+.IP 5. 5
+The \fBdisplay-caret\fP
+action allows the insert position marker to be turned on and off.
+The first argument specifies the desired state as any of the string
+values accepted for Boolean resources (e.g. "on", "true", "off", "false",
+etc.).  If no arguments are specified, the default value is "on".
+The second argument specifies, for 
+.PN EnterNotify or
+.PN LeaveNotify
+events whether or not the focus field in the event is to be examined.
+If the second argument is not specified, or specified as something other
+than "always" then if the action is bound to an 
+.PN EnterNotify or
+.PN LeaveNotify
+event, the action will be taken only if the focus field is \fBTrue\fP.
+An augmented binding that might be useful is:
+.LP
+.Ds 0
+.TA .5i 2.25i
+.ta .5i 2.25i
+*Text.Translations: #override \\
+	<FocusIn>:	display-caret(on) \\n\\
+	<FocusOut>:	display-caret(off)
+.De
+.NE
+.LP
+The default event bindings for the Text widget are:
+.IN "Text widget" "default bindings"
+.LP
+.Ds 0
+.TA .5i 2.5i
+.ta .5i 2.5i
+char defaultTextTranslations[] = ``\\
+	Ctrl<Key>F:	forward-character(\|) \\n\\
+	Ctrl<Key>B:	backward-character(\|) \\n\\
+	Ctrl<Key>D:	delete-next-character(\|) \\n\\
+	Ctrl<Key>A:	beginning-of-line(\|) \\n\\
+	Ctrl<Key>E:	end-of-line(\|) \\n\\
+	Ctrl<Key>H:	delete-previous-character(\|) \\n\\
+	Ctrl<Key>J:	newline-and-indent(\|) \\n\\
+	Ctrl<Key>K:	kill-to-end-of-line(\|) \\n\\
+	Ctrl<Key>L:	redraw-display(\|) \\n\\
+	Ctrl<Key>M:	newline(\|) \\n\\
+	Ctrl<Key>N:	next-line(\|) \\n\\
+	Ctrl<Key>O:	newline-and-backup(\|) \\n\\
+	Ctrl<Key>P:	previous-line(\|) \\n\\
+	Ctrl<Key>V:	next-page(\|) \\n\\
+	Ctrl<Key>W:	kill-selection(\|) \\n\\
+	Ctrl<Key>Y:	unkill(\|) \\n\\
+	Ctrl<Key>Z:	scroll-one-line-up(\|) \\n\\
+	Meta<Key>F:	forward-word(\|) \\n\\
+	Meta<Key>B:	backward-word(\|) \\n\\
+	Meta<Key>I:	insert-file(\|) \\n\\
+	Meta<Key>K:	kill-to-end-of-paragraph(\|) \\n\\
+	Meta<Key>V:	previous-page(\|) \\n\\
+	Meta<Key>Y:	stuff(\|) \\n\\
+	Meta<Key>Z:	scroll-one-line-down(\|) \\n\\
+	:Meta<Key>d:	delete-next-word(\|) \\n\\
+	:Meta<Key>D:	kill-word(\|) \\n\\
+	:Meta<Key>h:	delete-previous-word(\|) \\n\\
+	:Meta<Key>H:	backward-kill-word(\|) \\n\\
+	:Meta<Key>\\<:	beginning-of-file(\|) \\n\\
+	:Meta<Key>\\>:	end-of-file(\|) \\n\\
+	:Meta<Key>]:	forward-paragraph(\|) \\n\\
+	:Meta<Key>[:	backward-paragraph(\|) \\n\\
+	~Shift Meta<Key>Delete:		delete-previous-word(\|) \\n\\
+	\ Shift Meta<Key>Delete:		backward-kill-word(\|) \\n\\
+	~Shift Meta<Key>Backspace:	delete-previous-word(\|) \\n\\
+	\ Shift Meta<Key>Backspace:	backward-kill-word(\|) \\n\\
+	<Key>Right:	forward-character(\|) \\n\\
+	<Key>Left:	backward-character(\|) \\n\\
+	<Key>Down:	next-line(\|) \\n\\
+	<Key>Up:	previous-line(\|) \\n\\
+	<Key>Delete:	delete-previous-character(\|) \\n\\
+	<Key>BackSpace:	delete-previous-character(\|) \\n\\
+	<Key>Linefeed:	newline-and-indent(\|) \\n\\
+	<Key>Return:	newline(\|) \\n\\
+	<Key>:		insert-char(\|) \\n\\
+	<FocusIn>:	focus-in(\|) \\n\\
+	<FocusOut>:	focus-out(\|) \\n\\
+	<Btn1Down>:	select-start(\|) \\n\\
+	<Btn1Motion>:	extend-adjust(\|) \\n\\
+	<Btn1Up>:	extend-end(PRIMARY, CUT_BUFFER0) \\n\\
+	<Btn2Down>:	insert-selection(PRIMARY, CUT_BUFFER0) \\n\\
+	<Btn3Down>:	extend-start(\|) \\n\\
+	<Btn3Motion>:	extend-adjust(\|) \\n\\
+	<Btn3Up>:	extend-end(PRIMARY, CUT_BUFFER0) \\
+'';
+.De
+.LP
+A user-supplied resource entry can use application-specific bindings, a subset
+of the supplied default bindings, or both.
+The following is an example of a user-supplied resource entry that uses a 
+subset of the default bindings:
+.LP
+.Ds 0
+.TA .5i 1.75i
+.ta .5i 1.75i
+Xmh*Text.Translations: \\
+	<Key>Right:	forward-character(\|) \\n\\
+	<Key>Left:	backward-character(\|) \\n\\
+	 Meta<Key>F:	forward-word(\|) \\n\\
+	 Meta<Key>B:	backward-word(\|) \\n\\
+	:Meta<Key>]:	forward-paragraph(\|) \\n\\
+	:Meta<Key>[:	backward-paragraph(\|) \\n\\
+	<Key>:		insert-char(\|)
+.De
+.LP
+An augmented binding that is useful with the xclipboard
+utility is:
+.LP
+.Ds 0
+.TA .5i 2.25i
+.ta .5i 2.25i
+*Text.Translations: #override \\
+	Button1 <Btn2Down>:	extend-end(CLIPBOARD)
+.De
+.LP
+A Text widget lets both the user and the application
+take control of the text being displayed.
+The user takes control with the scroll bar or with key strokes 
+defined by the event bindings.
+The scroll bar option places the scroll bar on the left side of the widget
+and can be used with any editing mode.
+The application takes control with procedure calls to the Text widget
+to:
+.IP \(bu 5
+Display text at a specified position
+.IP \(bu 5
+Highlight specified text areas 
+.IP \(bu 5
+Replace specified text areas
+.LE
+.LP
+The text that is selected within a Text widget may be assigned to an
+X selection or copied into a cut buffer
+and can be retrieved by the application with the Intrinsics
+.PN XtGetSelectionValue
+or the Xlib 
+.PN XFetchBytes 
+functions respectively.
+Several standard selection schemes
+(e.g. character/word/paragraph with multi-click)
+are supported through the event bindings.
+.LP
+The class variable for the Text widget is 
+.PN textWidgetClass .
+.LP
+.IN "Text widget" "creating"
+.IN "Creating widgets" "Text string"
+To create a Text string widget, use 
+.PN XtCreateWidget
+and specify the class variable
+.PN asciiStringWidgetClass .
+.LP
+.IN "Creating widgets" "Text file"
+To create a Text file widget, use 
+.PN XtCreateWidget
+and specify the class variable
+.PN asciiDiskWidgetClass .
+.NT
+If you want to create an instance of the class
+.PN textWidgetClass ,
+you must provide a source and a sink when the widget is created.
+The Text widget cannot be instantiated without both.
+.NE
+.LP
+When creating a Text widget instance, 
+the following resources are retrieved from the argument list
+or from the resource database:
+.IN "Text widget" "resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNbackground	Pixel	XtDefaultBackground	Window background color 
+XtNbackgroundPixmap	Pixmap	None	Window background pixmap
+XtNborderColor	Pixel	XtDefaultForeground	Window border color
+XtNborderPixmap	Pixmap	None	Window border pixmap
+XtNborderWidth	Dimension	4	Border width in pixels
+XtNcursor	Cursor	XC_xterm	Pointer cursor
+XtNdialogHOffset	int	10	Offset of insert file dialog
+XtNdialogVOffset	int	10	Offset of insert file dialog
+T{
+XtNdestroyCallback
+T}	T{
+XtCallbackList
+T}	T{
+NULL
+T}	T{
+Callbacks for 
+.PN XtDestroyWidget
+T}
+XtNdisplayCaret	Boolean	True	Display a marker at the insert position
+XtNdisplayNonPrinting	Boolean	True	Display control char as ^C
+XtNdisplayPosition	int	0	Character position of first line
+XtNecho	Boolean	True	Whether or not to display output
+XtNeditType	XtEditType	XttextRead	Edit mode (see note)
+T{
+XtNfile
+T}	T{
+char*
+T}	T{
+tmpnam(\|)
+T}	T{
+File for
+.PN asciiDiskWidgetClass
+T}
+XtNforeground	Pixel	Black	Foreground color
+XtNfont	XFontStruct*	Fixed	Fontname
+XtNheight	Dimension	Font height	Height of widget
+XtNinsertPosition	int	0	Character position of caret
+XtNleftMargin	Dimension	2	Left margin in pixels
+T{
+XtNlength
+T}	T{
+int
+T}	T{
+String length
+T}	T{
+Size of the string buffer
+T}
+T{
+XtNmappedWhenManaged
+T}	T{
+Boolean
+T}	T{
+True
+T}	T{
+Whether 
+.PN XtMapWidget
+is automatic
+T}
+XtNselectTypes	XtTextSelectType*	See below	Selection units for multi-click
+XtNsensitive	Boolean	True	Whether widget receives input
+T{
+XtNstring
+T}	T{
+char*
+T}	T{
+Blank
+T}	T{
+String for 
+.PN asciiStringWidgetClass
+T}
+XtNtextOptions	int	None	See below
+XtNtextSink	XtTextSink	None	See below
+XtNtextSource	XtTextSource	None	See below
+XtNtranslations	TranslationTable	See above	event-to-action translations
+XtNwidth	Dimension	100	Width of widget (pixels)
+XtNx	Position	0	x coordinate in pixels
+XtNy	Position	0	y coordinate in pixels
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.NT Notes
+.IP 1. 5
+You cannot use 
+.PN XtNeditType ,
+.PN XtNfile ,
+.PN XtNlength ,
+and
+.PN XtNfont
+with the 
+.PN XtTextSetValues 
+and the 
+.PN XtTextGetValues 
+calls.
+.IP 2. 5
+The 
+.PN XtNeditType 
+attribute has one of the values
+.PN XttextAppend ,
+.PN XttextEdit ,
+or
+.PN XttextRead .
+.IP 3. 5
+If
+.PN asciiStringWidgetClass
+is used, the resource
+.PN XtNstring
+specifies a buffer containing the text to be displayed and edited.
+.PN AsciiStringWidget
+does not copy this buffer but uses it in-place.
+.IP 4. 5
+If
+.PN XtNdisplayNonPrinting
+is
+.PN True
+any control characters will be displayed as the two-character
+sequence "^", "C" where "C" is the uppercase (printing) equivalent
+of the control character.  If the value is
+.PN False
+any control characters will be displayed as a single space character.
+.IP 5. 5
+If
+.PN XtNecho
+is
+.PN False
+then no text is displayed.  Text may still be selected and modified,
+though invisibly.
+.NE
+.LP
+The options for the 
+.PN XtNtextOptions 
+attribute are:
+.TS H
+lw(1.5i) lw(4.5i).
+_
+.sp 3p
+.TB
+Option	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+T{
+.PN editable
+T}	T{
+Whether or not the user is allowed to modify the text.
+T}
+.sp 3p
+T{
+.PN resizeHeight
+T}	T{
+Makes a request to the parent widget to lengthen the widget 
+if all the text cannot fit in the window.
+T}
+.sp 3p
+T{
+.PN resizeWidth
+T}	T{
+Makes a request to the parent widget to widen the widget if the 
+text becomes too long to fit on one line.
+T}
+.\".sp 3p
+.\"T{
+.\".PN scrollHorizontal
+.\"T}	T{
+.\"Puts a scroll bar on the top of the widget.
+.\"T}
+.sp 3p
+T{
+.PN scrollOnOverflow
+T}	T{
+Automatically scrolls the text up when new text is entered
+below the bottom (last) line.
+T}
+.sp 3p
+T{
+.PN scrollVertical
+T}	T{
+Puts a scroll bar on the left side of the widget.
+T}
+.sp 3p
+T{
+.PN wordBreak
+T}	T{
+Starts a new line when a word does not fit on the current line.
+T}
+.sp 3p
+_
+.TE
+.LP
+These options can be ORed together to set more than one at the same time.
+.LP
+.PN XtNselectionTypes 
+is an array of entries of type 
+.PN XtTextSelectType
+and is used for multiclick.
+As the pointer button is clicked in rapid succession, 
+each click highlights the next ``type'' described in the array.
+.TS
+lw(1.25i) lw(4.25i).
+T{
+XtselectAll
+T}	T{
+Selects the contents of the entire buffer.
+T}
+.sp 6p
+T{
+XtselectChar
+T}	T{
+Selects text characters as the pointer moves over them.
+T}
+.sp 6p
+T{
+XtselectLine
+T}	T{
+Selects the entire line.
+T}
+.sp 6p
+T{
+XtselectNull
+T}	T{
+Indicates the end of the selection array.
+T}
+.sp 6p
+T{
+XtselectParagraph
+T}	T{
+Selects the entire paragraph (delimited by newline characters).
+T}
+.sp 6p
+T{
+XtselectPosition
+T}	T{
+Selects the current pointer position.
+T}
+.sp 6p
+T{
+XtselectWord
+T}	T{
+Selects whole words (delimited by whitespace) as the pointer moves onto
+them.
+T}
+.TE
+.LP
+The default selectType array is:
+.LP
+.Ds 0
+{XtselectPosition, XtselectWord, XtselectLine, XtselectParagraph, XtselectAll, XtselectNull}
+.De
+.LP
+For the default case, 
+two rapid pointer clicks highlight the current word, three clicks
+highlight the current line, 
+four clicks highlight the current paragraph,
+and five clicks highlight the entire text.
+If the timeout value is exceeded, the next pointer
+click returns to the first entry in the selection array.
+The selection array is not copied by the Text widget.
+The client must allocate space for the array
+and cannot deallocate or change it until the Text widget is destroyed
+or until a new selection array is set.
+.NH 3
+Selection Actions
+.LP
+The Text widget fully supports the X selection and cut buffer mechanisms.
+The following actions can be used to specify button bindings that will cause Text
+to assert ownership of one or more selections, to store the selected text into a 
+cut buffer, and to retrieve the value of a selection or cut buffer and insert it
+into the text value.
+.IP \fBinsert-selection\fP(\fIname\fP[,\fIname\fP,...]) 1i
+Retrieves the value of the first (left-most) named selection that exists
+or the cut buffer that is not empty and inserts it into the input stream.
+The specified name can be that of any selection (for example,
+.PN PRIMARY
+or
+.PN SECONDARY )
+or a cut buffer (i.e.
+.PN CUT_BUFFER0
+through
+.PN CUT_BUFFER7 ).
+Note that case matters.
+.IP \fBselect-start\fP(\^) 1i
+Unselects any previously selected text and begins selecting new text.
+.sp 6p
+.IP \fBselect-adjust\fP(\^) 1i
+.br
+.ns
+.IP \fBextend-adjust\fP(\^)\ \ \  1i
+Continues selecting text from the previous start position.
+.sp 6p
+.IP \fBstart-extend\fP(\^) 1i
+Begins extending the selection from the farthest (left or right) edge.
+.sp 6p
+.IP \fBselect-end\fP(\fIname\fP[,\fIname\fP,...]) 1i
+.br
+.ns
+.IP \fBextend-end\fP(\fIname\fP[,\fIname\fP,...]) 1i
+Ends the text selection, asserts ownership of the specified
+selection(s)
+and stores the text in the specified cut buffer(s).
+The specified name can be that of a selection (for example,
+.PN PRIMARY
+or
+.PN SECONDARY )
+or a cut buffer (i.e.
+.PN CUT_BUFFER0
+through
+.PN CUT_BUFFER7 ).
+Note that case is significant.  If
+.PN CUT_BUFFER0
+is listed, the cut buffers are rotated before storing into buffer 0.
+.NH 3
+Selecting Text
+.LP
+To enable an application to select a piece of text, use 
+.PN XtTextSetSelection .
+.IN "XtTextSetSelection" "" "@DEF@"
+.FD 0
+typedef long XtTextPosition;
+.sp 6p
+void XtTextSetSelection(\fIw\fP, \fIleft\fP, \fIright\fP)
+.br
+     Widget \fIw\fP;
+.br
+     XtTextPosition \fIleft\fP, \fIright\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID.
+.IP \fIleft\fP 1i
+Specifies the character position at which the selection begins.
+.IP \fIright\fP 1i
+Specifies the character position at which the selection ends.
+.LP
+If redisplay is not disabled,
+this function highlights the text and 
+makes it the PRIMARY selection.
+.LP
+.NH 3
+Unhighlighting Text
+.LP
+To unhighlight previously highlighted text in a widget, use 
+.PN XtTextUnsetSelection .
+.IN "XtTextUnsetSelection" "" "@DEF@"
+.FD 0
+void XtTextUnsetSelection(\fIw\fP)
+.br
+     Widget \fIw\fP;
+.FN
+.LP
+.NH 3
+Getting Selected Text Character Positions
+.LP
+To enable the application to get the character positions of the
+selected text, use 
+.PN XtTextGetSelectionPos .
+.IN "XtTextGetSelectionPos" "" "@DEF@"
+.FD 0
+void XtTextGetSelectionPos(\fIw\fP, \fIpos1\fP, \fIpos2\fP)
+.br
+     Widget \fIw\fP;
+.br
+     XtTextPosition *\fIpos1\fP, *\fIpos2\fP; 
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID.
+.IP \fIpos1\fP 1i
+Specifies a pointer to the location to which the beginning character position
+of the selection
+is returned.
+.IP \fIpos2\fP 1i
+Specifies a pointer to the location to which the ending character position of
+the selection is returned.
+.LP
+If the returned values are equal,
+there is no current selection.
+.NH 3
+Replacing Text
+.LP
+To enable an application to replace text, use 
+.PN XtTextReplace .
+.IN "XtTextReplace" "" "@DEF@"
+.FD 0
+int XtTextReplace(\fIw\fP, \fIstart_pos\fP, \fIend_pos\fP, \fItext\fP)
+.br
+     Widget \fIw\fP;
+.br
+     XtTextPosition \fIstart_pos\fP, \fIend_pos\fP;
+.br
+     XtTextBlock *\fItext\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID.
+.IP \fIstart_pos\fP 1i
+Specifies the starting character position of the text replacement.
+.IP \fIend_pos\fP 1i
+Specifies the ending character position of the text replacement.
+.IP \fItext\fP 1i
+Specifies the text to be inserted into the file.
+.LP
+The
+.PN XtTextReplace
+function deletes text in the specified range (startPos, endPos) 
+and inserts the new text at startPos.
+The return value is
+.PN XawEditDone
+if the replacement is successful, 
+.PN XawPositionError
+if the edit mode is
+.PN XttextAppend
+and startPos is 
+not the last character of the source,
+or
+.PN XawEditError
+if either the source was read-only 
+or the range to be deleted is larger than the length of the source.
+.LP
+The
+.PN XtTextBlock 
+structure (defined in
+.Pn < X11/Text.h >
+contains:
+.LP
+.IN "XtTextBlock" "" "@DEF@"
+.Ds 0
+.TA .5i 1.5i 2.25i 
+.ta .5i 1.5i 2.25i
+typedef struct {
+	int firstPos;
+	int length;
+	char *ptr;
+	Atom format;
+} XtTextBlock, *TextBlockPtr;
+.De
+.LP
+The firstPos field is the starting point to use within the ptr field.
+The value is usually zero.
+The length field is the number of characters that are transferred from the 
+ptr field.
+The number of characters transferred is usually the number of characters in
+ptr.  The format field is not currently used, but should be
+specified as
+.PN FMT8BIT .
+The 
+.PN XtTextReplace 
+arguments \fBstart_pos\fP and \fBend_pos\fP
+represent the text source character positions for the existing text that is
+to be replaced by the text in
+the  
+.PN XtTextBlock 
+structure.
+The characters from start_pos up to but not including end_pos are deleted,
+and the characters that are specified by the text block are inserted in
+their place.  If start_pos and end_pos are equal, no text is
+deleted and the new text is inserted after start_pos.
+.NT
+Only ASCII text is currently supported, and
+only one font can be used for each Text widget.
+.NE
+.NH 3
+Redisplaying Text
+.LP
+To redisplay a range of characters, use
+.PN XtTextInvalidate .
+.IN "XtTextInvalidate" "" "@DEF@"
+.FD 0
+void XtTextInvalidate(\fIw\fP, \fIfrom\fP, \fIto\fP)
+.br
+      Widget \fIw\fP;
+.br
+      XtTextPosition \fIfrom\fP, \fIto\fP;
+.FN
+The
+.PN XtTextInvalidate
+function causes the specified range of characters to be redisplayed immediately
+if redisplay is enabled or the next time that redisplay is enabled.
+.LP
+.sp
+To enable redisplay, use
+.PN XtTextEnableRedisplay .
+.IN "XtTextEnableRedisplay" "" "@DEF@"
+.FD 0
+void XtTextEnableRedisplay(\fIw\fP)
+.br
+      Widget \fIw\fP;
+.FN
+The
+.PN XtTextEnableRedisplay
+function flushes any changes due to batched updates when 
+.PN XtTextDisableRedisplay
+was called and allows future changes to be reflected immediately.
+.LP
+.sp
+To disable redisplay while making several changes, use
+.PN XtTextDisableRedisplay .
+.IN "XtTextDisableRedisplay" "" "@DEF@"
+.FD 0
+void XtTextDisableRedisplay(\fIw\fP)
+.br
+       Widget \fIw\fP;
+.FN
+The
+.PN XtTextDisableRedisplay
+function causes all changes to be batched until 
+.PN XtTextDisplay 
+or 
+.PN XtTextEnableRedisplay
+is called.
+.LP
+.sp
+To display batched updates, use
+.PN XtTextDisplay .
+.IN "XtTextDisplay" "" "@DEF@" 
+.FD 0
+void XtTextDisplay(\fIw\fP)
+.br
+     Widget \fIw\fP;
+.FN
+The 
+.PN XtTextDisplay
+function forces any accumulated updates to be displayed.
+.LP
+.sp
+To notify the source that the length has been changed, use
+.PN XtTextSetLastPos .
+.IN "XtTextSetLastPos" "" "@DEF@"
+.FD 0
+void XtTextSetLastPos(\fIw\fP, \fIlast\fP);
+.br
+      Widget \fIw\fP;
+.br
+      XtTextPosition \fIlast\fP;
+.FN
+.LP
+The
+.PN XtTextSetLastPos
+function notifies the text source that data has been added to 
+or removed from the end of the source.
+.NH 3
+Changing Resources
+.LP
+The following procedures are convenience procedures that replace calls to 
+.PN XtSetValues 
+or 
+.PN XtGetValues 
+when only a single resource is to be modified or retrieved.
+.LP
+.sp
+To assigns a new value to XtNtextOptions resource, use
+.PN XtTextChangeOptions .
+.IN "XtTextChangeOptions" "" "@DEF@"
+.FD 0
+void XtTextChangeOptions(\fIw\fP, \fIoptions\fP)
+.br
+      Widget \fIw\fP;
+.br
+      int \fIoptions\fP;
+.FN
+.LP
+.sp
+To obtain the current value of XtNtextOptions for the specified widget, use
+.PN XtTextGetOptions .
+.IN "XtTextGetOptions" "" "@DEF@"
+.FD 0
+int XtTextGetOptions(\fIw\fP)
+.br
+      Widget \fIw\fP;
+.FN
+.LP
+.sp
+To obtain the character position of the left-most character on the
+first line displayed in the widget (that is, the value of XtNdisplayPosition), use
+.PN XtTextTopPosition .
+.IN "XtTextTopPosition" "" @DEF@"
+.FD 0
+XtTextPosition XtTextTopPosition(\fIw\fP)
+.br    
+      Widget \fIw\fP;
+.FN
+.LP
+.sp
+To move the insertion caret to the specified source position, use
+.PN XtTextSetInsertionPoint .
+.IN "XtTextSetInsertionPoint" "" "@DEF@"
+.FD 0
+void XtTextSetInsertionPoint(\fIw\fP, \fIposition\fP)
+.br        
+      Widget \fIw\fP;
+.br
+      XtTextPosition \fIposition\fP;
+.FN
+.LP
+The text will be scrolled vertically if necessary to make the line containing the
+insertion point visible.
+The result is equivalent to setting the XtNinsertPosition resource.
+.LP
+.sp
+To obtain the current position of the insertion caret, use
+.PN XtTextGetInsertionPoint .
+.IN "XtTextGetInsertionPoint" "" "@DEF@"
+.FD 0
+XtTextPosition XtTextGetInsertionPoint(\fIw\fP)
+.br
+      Widget \fIw\fP;
+.FN
+The result is equivalent to retrieving the value of the XtNinsertPosition resource.
+.LP
+.sp
+To replace the text source in the specified widget, use
+.PN XtTextSetSource .
+.IN "XtTextSetSource" "" "@DEF@"
+.FD 0
+void XtTextSetSource(\fIw\fP, \fIsource\fP, \fIposition\fP)
+.br
+      Widget \fIw\fP;
+.br
+      XtTextSource \fIsource\fP;
+.br
+      XtTextPosition \fIposition\fP;
+.FN
+A display update will be performed if redisplay has not been disabled.
+.LP
+.sp
+To obtain the current text source for the specified widget, use
+.PN XtTextGetSource .
+.IN "XtTextGetSource" "" "@DEF@"
+.FD 0
+XtTextSource XtTextGetSource(\fIw\fP)
+.br    
+      Widget \fIw\fP;
+.FN
+.LP
+.sp
+To enable and disable the insert position marker, use
+.PN XtTextDisplayCaret .
+.IN "XtTextDisplayCaret" "" "@DEF@"
+.FD 0
+void XtTextDisplayCaret(\fIw\fP, \fIvisible\fP)
+.br
+      Widget \fIw\fP;
+.br
+      Boolean \fIvisible\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the Text widget.
+.IP \fIvisible\fP 1i
+Specifies whether or not the caret should be displayed.
+.LP
+If visible is \fBFalse\fP the insert position marker will be disabled.
+The marker is re-enabled either by setting visible to \fBTrue\fP, by
+calling
+.PN XtSetValues ,
+or by executing the \fBdisplay-caret\fP action routine.
+.NH 3
+Creating Sources and Sinks
+.LP
+The following functions for creating and destroying text sources and sinks
+are called automatically by
+.PN AsciiStringWidget
+and
+.PN AsciiDiskWidget
+and it is therefore only necessary for the client to use them when creating
+an instance of
+.PN textWidgetClass .
+.LP
+.sp
+To create a new ASCII text sink, use
+.PN XtAsciiSinkCreate .
+.IN "XtAsciiSinkCreate" "" "@DEF@"
+.FD 0
+XtTextSink XtAsciiSinkCreate(\fIw\fP, \fIargs\fP, \fInum_args\fP)
+.br
+      Widget \fIw\fP;
+.br
+      ArgList \fIargs\fP;
+.br
+      Cardinal \fInum_args\fP;
+.FN
+.LP
+The resources required by the sink are
+qualified by the name and class of the parent and the sub-part name
+.PN XtNtextSink
+and class
+.PN XtCTextSink .
+.LP
+.sp
+To deallocate an ASCII text sink, use
+.PN XtAsciiSinkDestroy .
+.IN "XtAsciiSinkDestroy" "" "@DEF@"
+.FD 0
+void XtAsciiSinkDestroy(\fIsink\fP)
+.br
+      XtTextSink \fIsink\fP;
+.FN
+.LP
+The sink must not be in use by any widget or an error will result.
+.LP
+.sp
+To create a new text disk source, use
+.PN XtDiskSourceCreate .
+.IN "XtDiskSourceCreate" "" "@DEF@"
+.FD 0
+XtTextSource XtDiskSourceCreate(\fIw\fP, \fIargs\fP, \fInum_args\fP)
+.br
+      Widget \fIw\fP;
+.br
+      ArgList \fIargs\fP;
+.br
+      Cardinal \fInum_args\fP;
+.FN
+.LP
+The resources required by the source are
+qualified by the name and class of the parent and the sub-part name
+.PN XtNtextSource
+and class
+.PN XtCTextSource .
+.LP
+.sp
+To deallocate a text disk source, use
+.PN XtDiskSourceDestroy .
+.IN "XtDiskSourceDestroy" "" "@DEF@"
+.FD 0
+void XtDiskSourceDestroy(\fIsource\fP)
+.br
+      XtTextSource \fIsource\fP;
+.FN
+.LP
+The source must not be in use by any widget or an error will result.
+.LP
+.sp
+To create a new text string source, use
+.PN XtStringSourceCreate .
+.IN "XtStringSourceCreate" "" "@DEF@"
+.FD 0
+XtTextSource XtStringSourceCreate(\fIw\fP, \fIargs\fP, \fInum_args\fP)
+.br
+      Widget \fIw\fP;
+.br
+      ArgList \fIargs\fP;
+.br
+      Cardinal \fInum_args\fP;
+.FN
+.LP
+The resources required by the source are
+qualified by the name and class of the parent and the sub-part name
+.PN XtNtextSource
+and class
+.PN XtCTextSource .
+.LP
+.sp
+To deallocate a text string source, use
+.PN XtStringSourceDestroy .
+.IN "XtStringSourceDestroy" "" "@DEF@"
+.FD 0
+void XtStringSourceDestroy(\fIsource\fP)
+.br
+      XtTextSource \fIsource\fP;
+.FN
+.LP
+The source must not be in use by any widget or an error will result.

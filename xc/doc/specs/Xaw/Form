@@ -1,0 +1,293 @@
+.NH 2
+Form Widget
+.LP
+.XS
+\*(SN Form Widget
+.XE
+.IN "Form widget" "" "@DEF@"
+The Form widget can contain an arbitrary number of children or subwidgets.
+The Form provides geometry management for its children,
+which allows individual control of the position of each child.
+Any combination of children can be added to a Form.
+The initial positions of the children may be computed relative to
+the positions of other children.
+When the Form is resized, 
+it computes new positions and sizes for its children.
+This computation is based upon information provided 
+when a child is added to the Form.
+.LP
+The class variable for a Form widget is
+.PN formWidgetClass .
+.LP
+When creating a Form widget instance,
+the following resources are retrieved from the argument list
+or from the resource database:
+.IN "Form widget" "resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNbackground	Pixel	XtDefaultBackground	Window background color
+XtNbackgroundPixmap	Pixmap	None	Window background pixmap
+XtNborderColor	Pixel	XtDefaultForeground	Window border color
+XtNborderPixmap	Pixmap	None	Window border pixmap
+XtNborderWidth	Dimension	1	Width of border in pixels
+T{
+XtNdefaultDistance
+T}	T{
+int
+T}	T{
+4
+T}	T{
+Default value for XtNhorizDistance 
+.br
+and XtNvertDistance
+T}
+T{
+XtNdestroyCallback
+T}	T{
+XtCallbackList
+T}	T{
+NULL
+T}	T{
+Callbacks for 
+.PN XtDestroyWidget
+T}
+XtNheight	Dimension	computed at realize	Height of form
+T{
+XtNmappedWhenManaged
+T}	T{
+Boolean
+T}	T{
+True
+T}	T{
+Whether
+.PN XtMapWidget
+is automatic
+T}
+XtNsensitive	Boolean	True	Whether widget receives input
+XtNtranslations	TranslationTable	None	Event-to-action translations
+XtNwidth	Dimension	computed at realize	Width of form
+XtNx	Position	NULL	x position of form
+XtNy	Position	NULL	y position of form
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+.IN "Form widget" "creating"
+.IN "Creating widgets" "Form"
+To create a Form widget instance, use 
+.PN XtCreateWidget
+and specify the class variable
+.PN formWidgetClass .
+.LP
+.IN "Form widget" "adding children"
+To add a new child to a Form, use 
+.PN XtCreateWidget
+and specify the widget ID of the previously created Form as the parent
+of the child.
+.LP
+When creating children that are to be added to a Form,
+the following additional resources are retrieved from the
+argument list or from the resource database:
+.IN "Form widget" "child resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNbottom	XtEdgeType	XtRubber	See text
+XtNfromHoriz	Widget	NULL	See text
+XtNfromVert	Widget	NULL	See text
+XtNhorizDistance	int	XtdefaultDistance	See text
+XtNleft	XtEdgeType	XtRubber	See text
+XtNresizable	Boolean	FALSE	TRUE if allowed to resize
+XtNright	XtEdgeType	XtRubber	See text
+XtNtop	XtEdgeType	XtRubber	See text
+XtNvertDistance	int	XtdefaultDistance	See text
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+When a widget is added to a Form, constraints
+can be specified to the Form to indicate
+where the child should be positioned within the Form.
+.LP
+The resources
+.PN XtNhorizDistance 
+and 
+.PN XtNfromHoriz 
+let the
+widget position itself a specified number of pixels horizontally
+away from another
+widget in the form.
+As an example, 
+.PN XtNhorizDistance
+could equal 10 and 
+.PN XtNfromHoriz 
+could be the widget ID of
+another widget in the Form.
+The new widget will be placed
+10 pixels to the right of the
+widget defined in 
+.PN XtNfromHoriz .
+If 
+.PN XtNfromHoriz 
+equals NULL, then 
+.PN XtNhorizDistance 
+is measured from the left edge of the Form.
+.LP
+Similarly, the resources 
+.PN XtNvertDistance 
+and 
+.PN XtNfromVert 
+let
+the widget position itself a specified number of pixels vertically
+away from another widget in the Form.
+If 
+.PN XtNfromVert 
+equals
+NULL, then
+.PN XtNvertDistance 
+is measured from the top of the Form.
+Form provides a StringToWidget conversion procedure.  Using this
+procedure, the resource database may be used to specify the
+.PN XtNfromHoriz
+and
+.PN XtNfromVert
+resources by widget name rather than widget id.  The string value
+must be the name of a child of the same Form widget parent.
+.LP
+The 
+.PN XtNtop , 
+.PN XtNbottom , 
+.PN XtNleft , 
+and 
+.PN XtNright
+resources tell the Form where to position the child when the Form is
+resized.
+.PN XtEdgeType
+is defined in
+.Pn < X11/Form.h >
+and is one of
+.IN "XtEdgeType" "" "@DEF@"
+.PN XtChainTop ,
+.PN XtChainBottom ,
+.PN XtChainLeft ,
+.PN XtChainRight
+or
+.PN XtRubber .
+.LP
+The values
+.PN XtChainTop ,
+.PN XtChainBottom ,
+.PN XtChainLeft ,
+and 
+.PN XtChainRight 
+specify that a constant distance from an edge of the child to
+the top, bottom, left, and right edges respectively of the Form is to be
+maintained.
+The value
+.PN XtRubber 
+specifies that a proportional distance from the edge of the child to
+the left or top edge of the Form is to be maintained when the
+form is resized.  The proportion is determined from the initial
+position of the child and the initial size of the Form.
+Form provides a StringToEdgeType conversion procedure to allow the resize
+constraints to be easily specified in a resource file.
+.LP
+The default width of the Form is the minimum width needed to
+enclose the children after computing their initial layout, with a
+margin of
+.PN XtNdefaultDistance
+at the right and bottom edges.  If a width and height is assigned
+to the Form that is too small for the layout, the children will
+be clipped by the right and bottom edges of the Form.
+.LP
+.IN "Form widget" "deleting children"
+To remove a child from a Form, use 
+.PN XtUnmanageChild
+or
+.PN XtDestroyWidget
+and specify the widget ID of the child widget.
+.LP
+.IN "Form widget" "destroying"
+.IN "Destroying widgets" "Form"
+To destroy a Form widget instance, use 
+.PN XtDestroyWidget
+and specify the widget ID of the Form.
+All children of the Form are automatically destroyed at the same
+time.
+.LP
+When a new child becomes managed or an old child unmanaged, Form
+will recalculate the positions of its children according to the
+values of the
+.PN XtNhorizDistance ,
+.PN XtNfromHoriz ,
+.PN XtNvertDistance
+and
+.PN XtNfromVert
+constraints at the time the change is made.
+No re-layout is performed when a child makes a
+geometry request.
+.LP
+.sp
+To force or defer a re-layout of the Form, use
+.PN XtFormDoLayout .
+.IN "Form widget" "re-layout"
+.IN "XtFormDoLayout" "" "@DEF@"
+.FD 0
+void XtFormDoLayout(\fIw\fP, \fIdo_layout\fP)
+.br
+     Widget \fIw\fP;
+.br
+     Boolean \fIdo_layout\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the Form widget.
+.IP \fIdo_layout\fP 1i
+Enables (if
+.PN True )
+or disables (if
+.PN False )
+layout of the Form widget.
+.LP
+When making several changes to the children of a Form widget
+after the Form has been realized, it is a good idea to disable
+re-layout until all changes have been made, then allow the
+layout.  Form increments an internal count each time
+.PN XtFormDoLayout
+is called with do_layout
+.PN False
+and decrements the count when do_layout is
+.PN True .
+When the count reaches 0, Form performs a re-layout.
