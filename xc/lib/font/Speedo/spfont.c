@@ -1,4 +1,4 @@
-/* $XConsortium: spfont.c,v 1.10 91/07/16 20:17:52 keith Exp $ */
+/* $XConsortium: spfont.c,v 1.11 91/07/18 22:40:17 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -824,4 +824,5 @@ SpeedoCloseFont(pfont)
     close_sp_font(spf);
     xfree(pfont->info.isStringProp);
     xfree(pfont->info.props);
+    xfree(pfont);
 }
