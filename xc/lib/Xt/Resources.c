@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Resources.c,v 1.5 88/08/26 14:49:54 asente Exp $";
+    "$XConsortium: Resources.c,v 1.48 88/09/02 20:30:35 swick Exp $";
 /* $oHeader: Resources.c,v 1.5 88/08/26 14:49:54 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -215,7 +215,6 @@ static Cardinal GetNamesAndClasses(w, names, classes)
     register Cardinal length, j;
     register XrmQuark t;
     WidgetClass class;
-    Widget cw = w;
 
     /* Return null-terminated quark arrays, with length the number of
        quarks (not including NULL) */
@@ -242,10 +241,6 @@ static Cardinal GetNamesAndClasses(w, names, classes)
     }
     names[length] = NULLQUARK;
     classes[length] = NULLQUARK;
-    if (names[0] == NULLQUARK) {
-	/* hack for R2 compatibility */
-	names[0] = XtWidgetToApplicationContext(cw)->name;
-    }
     return length;
 } /* GetNamesAndClasses */
 
@@ -704,9 +699,9 @@ void XtGetApplicationResources
     /* Get full name, class of application */
     if (w == NULL) {
 	/* hack for R2 compatibility */
-	names[0] = _XtDefaultAppContext()->name;
+	names[0] = _XtGetPerDisplay(_XtDefaultAppContext()->list[0])->name;
 	names[1] = NULLQUARK;
-	classes[0] = _XtDefaultAppContext()->class;
+	classes[0] = _XtGetPerDisplay(_XtDefaultAppContext()->list[0])->class;
 	classes[1] = NULLQUARK;
     }
     else {
