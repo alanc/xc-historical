@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.1 88/09/05 11:26:20 jim Exp $
+ * $XConsortium: Xmu.h,v 1.2 88/09/05 19:02:02 rws Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -28,8 +28,10 @@
 void XmuCopyISOLatin1Lowered();
 void XmuCvtFunctionToCallback();
 void XmuCvtStringToBackingStore();
+void XmuCvtStringToCursor();
 void XmuCvtStringToJustify();
 void XmuCvtStringToOrientation();
+void XmuCvtStringToPixmap();
 int XmuReadBitmapDataFromFile();
 
 typedef enum {
