@@ -76,10 +76,7 @@ Shift<Key>v: SetLabelType(variable) \n\
 <Key>s: Select(shown) \n\
 
 *buttonbox.view.Label: View
-*buttonbox.view.viewMenu.layoutWest.Label: Layout Left
-*buttonbox.view.viewMenu.layoutNorth.Label: Layout Top
-*buttonbox.view.viewMenu.layoutEast.Label: Layout Right
-*buttonbox.view.viewMenu.layoutSouth.Label: Layout Bottom
+*buttonbox.view.viewMenu.layoutHorizontal.Label: Layout Horizontal
 *buttonbox.view.viewMenu.layoutVertical.Label: Layout Vertical
 *buttonbox.view.viewMenu.namesVariable.Label: Show Variable Names
 *buttonbox.view.viewMenu.namesClass.Label: Show Class Names

@@ -45,11 +45,11 @@ specifying resources.  This operation may also be performed with the
 .TP 8
 .B "Layout Horizontal"
 This entry causes the tree to be laid out from left to right.  This operation
-may also be performed with the \fISetOrientation(horizontal)\fP translation.
+may also be performed with the \fISetOrientation(West)\fP translation.
 .TP 8
 .B "Layout Vertical"
 This entry causes the tree to be laid out from top to bottom.  This operation
-may also be performed with the \fISetOrientation(vertical)\fP translation.
+may also be performed with the \fISetOrientation(North)\fP translation.
 .TP 8
 .B "Show Resource Boxes"
 This entry expands the selected nodes (see next section) to show the 
@@ -121,7 +121,8 @@ This action sets the node labels to display the widget \fIvariable\fP or
 \fIclass\fP names, according to the argument \fItype\fP.
 .TP 8
 .B "SetOrientation(\fIdirection\fP)"
-This action sets the tree to be either \fIvertical\fP or \fIhorizontal\fP.
+This action sets the root of the tree to be one of the following areas of
+the window:  \fIWest\fP, \fINorth\fP, \fIEast\fP, or \fISouth\fP.
 .TP 8
 .B "Select(\fIwhat\fP)"
 This action selects the indicated nodes, as described in the \fBVIEW MENU\fP
@@ -145,11 +146,11 @@ Viewres viewres
 			Command quit
 			MenuButton view
 				SimpleMenu viewMenu
-					SmeBSB namesVariable
-					SmeBSB namesClass
-					SmeLine line1
 					SmeBSB layoutHorizontal
 					SmeBSB layoutVertical
+					SmeLine line1
+					SmeBSB namesVariable
+					SmeBSB namesClass
 					SmeLine line2
 					SmeBSB viewResources
 					SmeBSB viewNoResources

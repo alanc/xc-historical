@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.60 90/03/26 15:57:03 jim Exp $
+ * $XConsortium: viewres.c,v 1.61 90/04/13 16:39:25 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -157,15 +157,13 @@ static XtActionsRec viewres_actions[] = {
 #define BOOL_ON 1
 #define BOOL_TOGGLE 2
 
-#define VIEW_WEST 0
-#define VIEW_NORTH 1
-#define VIEW_EAST 2
-#define VIEW_SOUTH 3
-#define VIEW_VARIABLES 4
-#define VIEW_CLASSES 5
-#define VIEW_SHOW_RESOURCES 6
-#define VIEW_HIDE_RESOURCES 7
-#define VIEW_number 8
+#define VIEW_HORIZONTAL 0
+#define VIEW_VERTICAL 1
+#define VIEW_VARIABLES 2
+#define VIEW_CLASSES 3
+#define VIEW_SHOW_RESOURCES 4
+#define VIEW_HIDE_RESOURCES 5
+#define VIEW_number 6
 
 #define SELECT_NOTHING 0
 #define SELECT_ALL 1
@@ -835,10 +833,8 @@ static void set_orientation_menu (grav, dosetvalues)
     Boolean dosetvalues;
 {
 #define CHOOSE(val) (sensitiveargs + (grav != (val)))
-    XtSetValues (view_widgets[VIEW_WEST], CHOOSE(WestGravity), ONE);
-    XtSetValues (view_widgets[VIEW_NORTH], CHOOSE(NorthGravity), ONE);
-    XtSetValues (view_widgets[VIEW_EAST], CHOOSE(EastGravity), ONE);
-    XtSetValues (view_widgets[VIEW_SOUTH], CHOOSE(SouthGravity), ONE);
+    XtSetValues (view_widgets[VIEW_HORIZONTAL], CHOOSE(WestGravity), ONE);
+    XtSetValues (view_widgets[VIEW_VERTICAL], CHOOSE(NorthGravity), ONE);
 #undef CHOOSE
 
     if (dosetvalues) {
@@ -924,10 +920,8 @@ main (argc, argv)
     view_widgets[n] = XtCreateManagedWidget (name, smeBSBObjectClass, \
 					     viewMenu, args, ONE)
     callback_rec[0].callback = (XtCallbackProc) gravity_callback;
-    MAKE_VIEW (VIEW_WEST, WestGravity, "layoutWest");
-    MAKE_VIEW (VIEW_NORTH, NorthGravity, "layoutNorth");
-    MAKE_VIEW (VIEW_EAST, EastGravity, "layoutEast");
-    MAKE_VIEW (VIEW_SOUTH, SouthGravity, "layoutSouth");
+    MAKE_VIEW (VIEW_HORIZONTAL, WestGravity, "layoutHorizontal");
+    MAKE_VIEW (VIEW_VERTICAL, NorthGravity, "layoutVertical");
 
     (void) XtCreateManagedWidget ("line1", smeLineObjectClass, viewMenu,
 				  (ArgList) NULL, ZERO);
