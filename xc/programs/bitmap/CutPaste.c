@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CutPaste.c,v 1.1 91/01/23 15:59:59 dave Exp $
+ * $XConsortium: CutPaste.c,v 1.2 91/01/25 11:04:06 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -160,7 +160,6 @@ void SelectionCallback(w, cldat, selection, type, val, length, format)
     unsigned long *length;
     int *format;
 {
-    caddr_t client_data = (caddr_t)cldat;
     caddr_t value = (caddr_t)val;
     BitmapWidget BW = (BitmapWidget) w;
     Pixmap *pixmap;
