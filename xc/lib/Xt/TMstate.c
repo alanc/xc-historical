@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.174 94/09/15 19:42:47 kaleb Exp kaleb $ */
+/* $XConsortium: TMstate.c,v 1.175 94/09/16 19:17:43 kaleb Exp kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2040,7 +2040,7 @@ static Boolean ComposeTranslations(dest, operation, source, newXlations)
 	    XSelectInput(XtDisplay(dest), XtWindow(dest), 
 			 XtBuildEventMask(dest));
     }
-    XtStackFree((char *)newBindings, (char *)stackBindings);
+    XtStackFree((XtPointer)newBindings, (XtPointer)stackBindings);
     return(newTable != NULL);
 }
 
