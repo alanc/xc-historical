@@ -1,4 +1,4 @@
-/* $XConsortium: Error.c,v 1.29 90/12/12 14:51:13 rws Exp $ */
+/* $XConsortium: Error.c,v 1.30 91/02/05 16:58:21 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -113,8 +113,10 @@ void XtAppGetErrorDatabaseText(app, name,type,class,defaultp,
     XrmDatabase db;
 #endif
 {
+    String str_class;
     String type_str;
     XrmValue result;
+    char str_name[BUFSIZ];
     char temp[BUFSIZ];
 
 #if GLOBALERRORS
@@ -128,14 +130,23 @@ void XtAppGetErrorDatabaseText(app, name,type,class,defaultp,
         app->error_inited = TRUE;
     }
 #endif /* GLOBALERRORS */
-    (void) sprintf(temp, "%s.%s", name, type);
+    (void) sprintf(str_name, "%s.%s", name, type);
+    /* XrmGetResource requires the name and class to be fully qualified
+     * and to have the same number of components. */
+    str_class = class;
+    if (! strchr(class, '.')) {
+	(void) sprintf(temp, "%s.%s", class, class);
+	str_class = temp;
+    }
     if (db == NULL) {
 #if GLOBALERRORS
-	(void) XrmGetResource(errorDB, temp, class, &type_str, &result);
+	(void) XrmGetResource(errorDB, str_name, str_class, &type_str,
+			      &result);
 #else
-	(void) XrmGetResource(app->errorDB, temp, class, &type_str, &result);
+	(void) XrmGetResource(app->errorDB, str_name, str_class, &type_str,
+			      &result);
 #endif /* GLOBALERRORS */
-    } else (void) XrmGetResource(db, temp, class, &type_str, &result);
+    } else (void) XrmGetResource(db, str_name, str_class, &type_str, &result);
     if (result.addr) {
         (void) strncpy (buffer, result.addr, nbytes);
         if (result.size > nbytes) buffer[nbytes-1] = 0;
