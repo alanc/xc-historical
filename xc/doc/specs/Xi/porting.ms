@@ -8,15 +8,13 @@
 .ce 50
 .ps 20
 \fBX11 Input Extension Porting Document
-.sp 16
-.ps 12
-Defining personnel:
-.sp 2
-.ps 15
-George Sachs\0\0\0\0Hewlett-Packard
 .sp 2
 .ps 12
 X Version 11, Release 5
+.sp 16
+.ps 15
+George Sachs\0\0\0\0Hewlett-Packard
+.ps 12
 .ce 0
 .bp
 \0
