@@ -1,4 +1,4 @@
-/* $XConsortium: corex.h,v 1.2 93/11/06 15:43:40 rws Exp $ */
+/* $XConsortium: corex.h,v 1.3 94/01/12 20:04:32 rws Exp $ */
 /**** module corex.h ****/
 /******************************************************************************
 				NOTICE
@@ -70,8 +70,11 @@ terms and conditions:
 
 #define ALIGNMENT  xieValArbitrary	
 
+#ifdef LONG64
+#define PITCH_MOD 64			/* default scanline pitch          */
+#else
 #define PITCH_MOD 32			/* default scanline pitch	   */
-
+#endif
 
 #if defined(_XIEC_SESSION)
 /*
