@@ -1,4 +1,4 @@
-/* $XConsortium: colorlst.c,v 1.4 94/01/12 19:56:25 rws Exp $ */
+/* $XConsortium: colorlst.c,v 1.5 94/04/17 20:33:52 rws Exp $ */
 /**** module colorlst.c ****/
 /****************************************************************************
 
@@ -237,9 +237,9 @@ int ProcQueryColorList(client)
      *       (anyone care to donate an Alpha?)
      */
     if( client->swapped )
-      CopySwap32Write(client, clst->cellCnt, clst->cellPtr);
+      CopySwap32Write(client, clst->cellCnt << 2, clst->cellPtr);
     else
-      WriteToClient(client, clst->cellCnt, (char *)clst->cellPtr);
+      WriteToClient(client, clst->cellCnt << 2, (char *)clst->cellPtr);
   
   return(Success);
 }                               /* end ProcQueryColorList */
