@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.28 92/08/20 17:38:13 rws Exp $ */
+/* $XConsortium: osdep.h,v 1.29 92/08/21 19:31:18 rws Exp $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
@@ -70,8 +70,7 @@ SOFTWARE.
 #if (mskcnt==1)
 #define BITMASK(i) (1 << (i))
 #define MASKIDX(i) 0
-#endif
-#if (mskcnt>1)
+#else
 #define BITMASK(i) (1 << ((i) & 31))
 #define MASKIDX(i) ((i) >> 5)
 #endif
