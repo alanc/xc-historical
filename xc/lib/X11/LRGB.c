@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.13 91/07/22 16:00:38 rws Exp $" */
+/* $XConsortium: XcmsLRGB.c,v 1.14 91/07/22 16:40:56 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -649,7 +649,7 @@ LINEAR_RGB_InitSCCData(dpy, screenNumber, pPerScrnInfo)
 	 */
 	visualID = _XcmsGetElement(format_return, &pChar, &nitems);
 	while (count--) {
-	    visualID = visualID << format;
+	    visualID = visualID << format_return;
 	    visualID |= _XcmsGetElement(format_return, &pChar, &nitems);
 	}
 
