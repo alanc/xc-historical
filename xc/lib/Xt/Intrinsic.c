@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.112 88/02/06 10:19:33 swick Locked $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.113 88/02/08 14:29:27 swick Exp $";
 #endif lint
 
 /*
@@ -54,14 +54,14 @@ static void ComputeWindowAttributes(widget,value_mask,values)
 {
     *value_mask = CWEventMask;
     (*values).event_mask = _XtBuildEventMask(widget);
-    if (widget->core.background_pixmap != 2) {
+    if (widget->core.background_pixmap != UnspecifiedPixmap) {
 	*value_mask |= CWBackPixmap;
 	(*values).background_pixmap = widget->core.background_pixmap;
     } else {
 	*value_mask |= CWBackPixel;
 	(*values).background_pixel = widget->core.background_pixel;
     }
-    if (widget->core.border_pixmap != 2) {
+    if (widget->core.border_pixmap != UnspecifiedPixmap) {
 	*value_mask |= CWBorderPixmap;
 	(*values).border_pixmap = widget->core.border_pixmap;
     } else {

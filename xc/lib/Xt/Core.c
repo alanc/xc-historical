@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char rcsid[] = "$Header: Core.c,v 1.7 88/02/13 15:38:53 swick Exp $";
+static char rcsid[] = "$Header: Core.c,v 1.8 88/02/14 11:56:32 rws Exp $";
 #endif lint
 
 /*
@@ -36,9 +36,10 @@ static char rcsid[] = "$Header: Core.c,v 1.7 88/02/13 15:38:53 swick Exp $";
  * Core Resources
  *
  ******************************************************************/
-static int m1 = 2;	/* magic value used by ComputeWindowAttributes
-			   and Shell.Realize to know whether or not
-			   a background or border pixmap was defined */
+/* UnspecifiedPixmap is a magic value used by ComputeWindowAttributes
+   and Shell.Realize to know whether or not a background or border
+   pixmap was defined */
+static Pixmap defNone = UnspecifiedPixmap;
 static int zero = 0;
 static int one  = 1;
 static Boolean true = TRUE;
@@ -70,13 +71,13 @@ static XtResource resources[] = {
          XtOffset(Widget,core.background_pixel),
          XtRDefaultColor,(caddr_t)&one},
     {XtNbackgroundPixmap, XtCPixmap, XtRPixmap, sizeof(Pixmap),
-         XtOffset(Widget,core.background_pixmap), XtRInt,(caddr_t) &m1},
+         XtOffset(Widget,core.background_pixmap), XtRPixmap,(caddr_t)&defNone},
     {XtNborderWidth, XtCBorderWidth, XtRInt, sizeof(int),
          XtOffset(Widget,core.border_width), XtRInt, (caddr_t) &one},
     {XtNborder, XtCBorderColor, XtRPixel,sizeof(Pixel),
          XtOffset(Widget,core.border_pixel), XtRDefaultColor,(caddr_t)&zero},
     {XtNborderPixmap, XtCPixmap, XtRPixmap, sizeof(Pixmap),
-         XtOffset(Widget,core.border_pixmap), XtRInt,(caddr_t) &m1},
+         XtOffset(Widget,core.border_pixmap), XtRPixmap, (caddr_t)&defNone},
     {XtNsensitive, XtCSensitive, XtRBoolean, sizeof(Boolean),
          XtOffset(Widget,core.sensitive), XtRBoolean, (caddr_t) &true},
     {XtNmappedWhenManaged, XtCMappedWhenManaged, XtRBoolean, sizeof(Boolean),
@@ -254,9 +255,9 @@ static void CoreDestroy (widget)
 
     if (*widget->core.name != '\0') /* special case; we didn't copy this */
 	XtFree((char *) (widget->core.name));
-    if (widget->core.background_pixmap > 2)
+    if (widget->core.background_pixmap > UnspecifiedPixmap)
 	XFreePixmap(XtDisplay(widget), widget->core.background_pixmap);
-    if (widget->core.border_pixmap > 2)
+    if (widget->core.border_pixmap > UnspecifiedPixmap)
 	XFreePixmap(XtDisplay(widget), widget->core.border_pixmap);
     event = widget->core.event_table;
     while (event != NULL) {

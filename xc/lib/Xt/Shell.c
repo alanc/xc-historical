@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Shell.c,v 1.14 88/02/13 14:16:08 swick Exp $";
+static char rcsid[] = "$Header: Shell.c,v 1.15 88/02/13 16:04:17 swick Exp $";
 #endif lint
 
 /*
@@ -60,7 +60,6 @@ static int fivesecond = 5000;
  * Shell class record
  *
  ***************************************************************************/
-static Pixmap unspecified = 2;	/* copied from Core.c */
 #define Offset(x)	(XtOffset(ShellWidget, x))
 static XtResource shellResources[]=
 {
@@ -590,7 +589,7 @@ static void Realize(wid, vmask, attr)
 	ShellWidget w = (ShellWidget) wid;
         Mask mask = *vmask;
 
-	if (w->core.background_pixmap == unspecified) {
+	if (w->core.background_pixmap == UnspecifiedPixmap) {
 	    /* I attempt to inherit my child's background to avoid screen flash
 	     * if there is latency between when I get resized and when my child
 	     * is resized.  Background=None is not satisfactory, as I want the
@@ -609,7 +608,7 @@ static void Realize(wid, vmask, attr)
 			    break;
 		    }
 		}
-		if (child->core.background_pixmap != unspecified) {
+		if (child->core.background_pixmap != UnspecifiedPixmap) {
 		    mask &= ~(CWBackPixel);
 		    mask |= CWBackPixmap;
 		    attr->background_pixmap = child->core.background_pixmap;
