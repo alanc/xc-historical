@@ -1,5 +1,5 @@
 /*
- *	$Header: misc.c,v 1.1 88/02/10 13:08:10 jim Exp $
+ *	$Header: misc.c,v 1.2 88/02/11 18:32:11 jim Exp $
  */
 
 
@@ -52,7 +52,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$Header: misc.c,v 1.1 88/02/10 13:08:10 jim Exp $";
+static char rcs_id[] = "$Header: misc.c,v 1.2 88/02/11 18:32:11 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -109,9 +109,7 @@ caddr_t eventdata;
 {
 	register TScreen *screen = &term->screen;
 
-	if (((event->detail) != NotifyInferior)
-	 && event->mode == NotifyNormal
-	 && event->focus) {
+	if (((event->detail) != NotifyInferior) && event->focus) {
 #ifdef DEBUG
 		if(debug)
 			fprintf(stderr, "EnterWindow %s\n", window ==
@@ -129,9 +127,7 @@ caddr_t eventdata;
 {
 	register TScreen *screen = &term->screen;
 
-	if (((event->detail) != NotifyInferior)
-	 && event->mode == NotifyNormal
-	 && event->focus) {
+	if (((event->detail) != NotifyInferior) && event->focus) {
 #ifdef DEBUG
 		if(debug)
 			fprintf(stderr, "LeaveWindow %s\n", window ==
