@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.47 89/11/16 18:40:45 jim Exp $
+ * $XConsortium: twm.h,v 1.48 89/11/20 16:04:24 jim Exp $
  *
  * twm include file
  *
@@ -250,6 +250,7 @@ typedef struct TwmWindow
 #define DoesWmDeleteWindow	(1L << 2)
 
 
+extern char *ProgramName;
 extern Display *dpy;
 extern Window ResizeWindow;	/* the window we are resizing */
 #ifdef SHAPE
