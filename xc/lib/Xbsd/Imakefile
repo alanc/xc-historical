@@ -1,5 +1,3 @@
-#include <Library.tmpl>
-
 SRCS = Berklib.c
 OBJS = Berklib.o
 
