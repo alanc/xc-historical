@@ -1,32 +1,21 @@
 #include <Server.tmpl>
-IMAKE_DEFINES = $(EXT_DEFINES)
 
-#ifdef defined(XINPUT) || defined(PEXEXT)
+#if BuildXInputExt || BuildPexExt
 #define IHaveSubdirs
 #endif
 
-#ifdef XINPUT
+#if BuildXInputExt
   XINPUTDIRS = xinput
 #endif
-#ifdef PEXEXT
+#if BuildPexExt
   PEXDIRS = PEX
 #endif
-#ifdef SHAPE
-  SHAPESRCS = shape.c
-  SHAPEOBJS = shape.o
-#else
-  SHAPESRCS = /* nothing */
-  SHAPEOBJS = /* nothing */
-#endif
-#ifdef MITSHM
+#if HasShm
   SHMSRCS = shm.c
   SHMOBJS = shm.o
-#else
-  SHMSRCS = /* nothing */
-  SHMOBJS = /* nothing */
 #endif
-       SRCS = $(SHAPESRCS) $(SHMSRCS) multibuf.c mitmisc.c xtest1di.c xtest1dd.c
-       OBJS = $(SHAPEOBJS) $(SHMOBJS) multibuf.o mitmisc.o xtest1di.o xtest1dd.o
+       SRCS = shape.c $(SHMSRCS) multibuf.c mitmisc.c xtest1di.c xtest1dd.c
+       OBJS = shape.o $(SHMOBJS) multibuf.o mitmisc.o xtest1di.o xtest1dd.o
    INCLUDES = -I../include -I$(INCLUDESRC) -I$(SERVERSRC)/include
    LINTLIBS = ../../server/dix/llib-ldix.ln ../../server/os/4.2bsd/llib-los.ln
         SUBDIRS = $(XINPUTDIRS) $(PEXDIRS)
