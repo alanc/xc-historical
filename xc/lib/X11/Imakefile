@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.124 91/07/25 20:53:49 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.125 91/07/26 13:28:52 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -39,7 +39,9 @@ XCOMM $XConsortium: Imakefile,v 1.124 91/07/25 20:53:49 rws Exp $
      KDB_DEFINES = -DKEYSYMDB=\"$(LIBDIR)/XKeysymDB\"
      CMS_DEFINES = -DXCMSDB=\"$(LIBDIR)/Xcms.txt\"
      NLS_DEFINES = -DXNLSPATHDEFAULT=\"$(NLSDIR)\"
+#if MotifBC
       BC_DEFINES = -DMOTIFBC
+#endif
    INSTALLFLAGS = $(INSTINCFLAGS)
        AUTHOBJS = AuDispose.o AuGetBest.o AuFileName.o AuRead.o 
        AUTHSRCS = AuDispose.c AuGetBest.c AuFileName.c AuRead.c 
@@ -989,15 +991,13 @@ LibraryObjectRule()
 SpecialLibObjectRule(XErrDes.o,$(ICONFIGFILES),$(EDB_DEFINES))
 SpecialLibObjectRule(XStrKeysym.o,$(ICONFIGFILES),$(KDB_DEFINES))
 SpecialLibObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialLibObjectRule(XOpenDis.o,$(ICONFIGFILES),$(XDMAUTHDEFS) $(RPCDEFS) $(CONN_DEFINES))
+SpecialLibObjectRule(XOpenDis.o,$(ICONFIGFILES),$(XDMAUTHDEFS) $(RPCDEFS) $(CONN_DEFINES) $(BC_DEFINES))
 SpecialLibObjectRule(Wrap.o,$(ICONFIGFILES),$(XDMAUTHDEFS))
 SpecialLibObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialLibObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialLibObjectRule(XcmsColNm.o,$(ICONFIGFILES),$(CMS_DEFINES))
 SpecialLibObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
-#if MotifBC
 SpecialLibObjectRule(Context.o,$(ICONFIGFILES),$(BC_DEFINES))
-#endif
 
 LCRules()
 
