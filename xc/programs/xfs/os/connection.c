@@ -27,21 +27,19 @@
  *
  */
 
+#include	<X11/Xos.h>
 #include	<stdio.h>
 #include	<errno.h>
-#include	<sys/types.h>
 #include	<sys/param.h>
 #include	<sys/socket.h>
 #include	<sys/uio.h>
 #include	<signal.h>
-#include	<fcntl.h>
 
 #ifdef TCPCONN
 #include	<netinet/in.h>
 #include	<netinet/tcp.h>
 #endif
 
-#include	<X11/Xos.h>
 #include	"FS.h"
 #include	"FSproto.h"
 #include	"clientstr.h"
