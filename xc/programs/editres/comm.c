@@ -381,7 +381,8 @@ int * format;
     char *string, *local_value, msg[BUFSIZ], *error_msg = NULL;
     ResIdent ident;
     ResourceError error;
-    Boolean no_message = FALSE;
+
+    msg[0] = '\0';
 
     if ( (*type != XA_STRING) || (*format != EDITRES_FORMAT) ) 
 	return;
@@ -422,7 +423,6 @@ int * format;
 	switch(global_client.command) {
 	case SendWidgetTree:
 	    BuildVisualTree(global_tree_parent, local_value);
-	    no_message = TRUE;
 	    break;
 	case SetValues:
 	    strcpy(msg, local_value);
@@ -437,12 +437,11 @@ int * format;
 #endif
 	case FindChild:
 	    DisplayChild(local_value);
-	    no_message = TRUE;
 	    break;
 	default:
 	    sprintf(msg, "Internal error: Unknown command %d.", 
 		    global_client.command);
-	    break;
+   	    break;
 	}
 	break;
 
@@ -486,16 +485,26 @@ int * format;
 	sprintf(msg, "Internal error: Unknown error code %d.", error);
 	break;
     }	
-		
-    if (!no_message) {
-	if (error_msg == NULL) 
-	    SetMessage(global_screen_data.info_label, msg);
-	else {
-	    SetMessage(global_screen_data.info_label, error_msg);
-	    XtFree(error_msg);
-	}
-    }
+
     XtFree(local_value);
+		
+    if (error_msg != NULL) {
+	SetMessage(global_screen_data.info_label, error_msg);
+	XtFree(error_msg);
+	return;
+    }
+
+    if (msg[0] == '\0') {
+	WNode * top;
+	
+	if (global_tree_info == NULL)
+	    return;
+	
+	top = global_tree_info->top_node;
+	
+	sprintf(msg, "Widget Tree for client %s(%s).", top->name, top->class);
+    }
+    SetMessage(global_screen_data.info_label, msg);
 }
 
 /*	Function Name: StripReturnValueFromString
@@ -509,7 +518,7 @@ int * format;
  */
 
 #define ERROR_TEMPLATE \
-	  "No %s Separator in the return string received from the client"
+	  "No %s Separator in the return string received from the client."
 
 static Boolean
 StripReturnValueFromString(string, ident, error, value)
