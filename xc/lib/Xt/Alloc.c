@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Alloc.c,v 1.13 87/11/11 11:36:06 swick Exp $";
+static char rcsid[] = "$Header: Alloc.c,v 6.3 88/01/29 11:59:08 asente Exp $";
 #endif lint
 
 /*
@@ -29,21 +29,15 @@ static char rcsid[] = "$Header: Alloc.c,v 1.13 87/11/11 11:36:06 swick Exp $";
  */
 extern char *malloc(), *realloc(), *calloc();
 extern void exit(), free();
-#ifdef VMS
-#include Xlib
-#else
 #include "Xlib.h"
-#endif
-#include "Intrinsic.h"
+#include "IntrinsicI.h"
 
 char *XtMalloc(size)
     unsigned size;
 {
     char *ptr;
 
-    if ((ptr = malloc(size)) == NULL)
-      XtError("Cannot perform malloc");
-
+    if ((ptr = malloc(size)) == NULL) XtError("Cannot perform malloc");
     return(ptr);
 }
 
