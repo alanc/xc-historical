@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.111 89/09/08 14:32:29 keith Exp $ */
+/* $XConsortium: connection.c,v 1.112 89/09/14 16:19:59 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -117,7 +117,7 @@ static Bool debug_conns = FALSE;
 static int SavedAllClients[mskcnt];
 static int SavedAllSockets[mskcnt];
 static int SavedClientsWithInput[mskcnt];
-static Bool GrabInProgress = FALSE;
+static int GrabInProgress = 0;
 
 int ConnectionTranslation[MAXSOCKS];
 extern ClientPtr NextAvailableClient();
@@ -784,7 +784,7 @@ OnlyListenToOneClient(client)
 	BITSET(AllSockets, connection);
 	CLEARBITS(AllClients);
 	BITSET(AllClients, connection);
-	GrabInProgress = TRUE;
+	GrabInProgress = client->index;
     }
 }
 
@@ -800,8 +800,67 @@ ListenToAllClients()
 	ORBITS(AllSockets, AllSockets, SavedAllSockets);
 	ORBITS(AllClients, AllClients, SavedAllClients);
 	ORBITS(ClientsWithInput, ClientsWithInput, SavedClientsWithInput);
-	GrabInProgress = FALSE;
+	GrabInProgress = 0;
     }	
 }
 
+/****************
+ * IgnoreClient
+ *    Removes one client from input masks.
+ *    Must have cooresponding call to AttendClient.
+ ****************/
 
+static long IgnoredClientsWithInput[mskcnt];
+static long IgnoredSavedClientsWithInput[mskcnt];
+
+IgnoreClient (client)
+    ClientPtr	client;
+{
+    OsCommPtr oc = (OsCommPtr)client->osPrivate;
+    int connection = oc->fd;
+
+    if (GETBIT (ClientsWithInput, connection))
+	BITSET(IgnoredClientsWithInput, connection);
+    else
+	BITCLEAR(IgnoredClientsWithInput, connection);
+    BITCLEAR(ClientsWithInput, connection);
+    BITCLEAR(AllSockets, connection);
+    BITCLEAR(AllClients, connection);
+    if (GrabInProgress)
+    {
+    	if (GETBIT (SavedClientsWithInput, connection))
+	    BITSET(IgnoredSavedClientsWithInput, connection);
+    	else
+	    BITCLEAR(IgnoredSavedClientsWithInput, connection);
+	BITCLEAR(SavedClientsWithInput, connection);
+	BITCLEAR(SavedAllSockets, connection);
+	BITCLEAR(SavedAllClients, connection);
+    }
+}
+
+/****************
+ * AttendClient
+ *    Adds one client back into the input masks.
+ ****************/
+
+AttendClient (client)
+    ClientPtr	client;
+{
+    OsCommPtr oc = (OsCommPtr)client->osPrivate;
+    int connection = oc->fd;
+
+    if (!GrabInProgress || GrabInProgress == client->index)
+    {
+    	BITSET(AllClients, connection);
+    	BITSET(AllSockets, connection);
+    	if (GETBIT (IgnoredClientsWithInput, connection))
+	    BITSET(ClientsWithInput, connection);
+    }
+    else
+    {
+	BITSET(SavedAllClients, connection);
+	BITSET(SavedAllSockets, connection);
+	if (GETBIT(IgnoredSavedClientsWithInput, connection))
+	    BITSET(SavedClientsWithInput, connection);
+    }
+}
