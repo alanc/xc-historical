@@ -49,8 +49,6 @@ IMPORTS2 = \
 	$(AWIDGETSRC)/Box.h \
 	$(AWIDGETSRC)/BoxP.h \
 	$(AWIDGETSRC)/Cardinals.h \
-	$(AWIDGETSRC)/Cascade.h \
-	$(AWIDGETSRC)/CascadeP.h \
 	$(AWIDGETSRC)/Clock.h \
 	$(AWIDGETSRC)/ClockP.h \
 	$(AWIDGETSRC)/Command.h \
