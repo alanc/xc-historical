@@ -43,7 +43,7 @@ PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: main.c,v 1.1 93/12/15 16:06:32 rob Exp $ */
+/* $XConsortium: main.c,v 1.2 94/01/11 20:46:35 rob Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -92,7 +92,7 @@ extern void CreateConnectionThread();
 extern void InitSelections();
 extern void InitClientGlobals();
 
-#ifdef USE_MONITOR_XTHREADS
+#ifdef USE_MONITOR_MTX
 extern void ConnectionThread();
 extern void DeviceInputThread();
 #endif
@@ -216,7 +216,7 @@ main(argc, argv)
 **
 ** #define ServerCDebugFlags -DUSE_MONITOR_MTX OptimizedCDebugFlags
 */
-#ifdef USE_MONITOR_XTHREADS
+#ifdef USE_MONITOR_MTX
     X_SET_SYMNAME(main,"MST     ");
     X_SET_SYMNAME(ConnectionThread,"CCT     ");
     X_SET_SYMNAME(ClientInputThread, "CIT     ");

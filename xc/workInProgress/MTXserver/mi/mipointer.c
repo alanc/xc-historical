@@ -2,7 +2,7 @@
  * mipointer.c
  */
 
-/* $XConsortium: mipointer.c,v 1.2 93/12/27 19:38:28 rob Exp $ */
+/* $XConsortium: mipointer.c,v 1.3 94/01/11 20:49:49 rob Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -154,9 +154,9 @@ miPointerInitialize (pScreen, spriteFuncs, screenFuncs, waitForUpdate)
     X_MUTEX_INIT(&miPointer.mutex, X_MUTEX_ATTR_DEFAULT);
 #ifdef  USE_SOFTWARE_CURSOR
     miPointer.last_thread_id = (X_THREAD_TYPE)-1;
-#ifdef USE_MONITOR_XTHREADS
+#ifdef USE_MONITOR_MTX
     X_SET_SYMNAME(&(miPointer.mutex),"PTR_M");
-#endif /* USE_MONITOR_XTHREADS */
+#endif /* USE_MONITOR_MTX */
 #endif /* USE_SOFTWARE_CURSOS */
 #endif /* XTHREADS */
     return TRUE;
