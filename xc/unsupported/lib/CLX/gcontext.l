@@ -314,7 +314,9 @@
     ;; need single setf for atomicity
     (setf (gcontext-internal-dash local-state)
 	  (if (type? dashes 'sequence)
-	      (list nil (or dashes (vector)))
+	      (if (zerop (length dashes))
+		  (x-type-error dashes '(or card8 sequence) "non-empty sequence")
+		(list nil (or dashes (vector))))
 	      (list (encode-type card8 dashes))))
     dashes))
 
