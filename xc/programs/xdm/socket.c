@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: $
+ * $XConsortium: socket.c,v 1.4 88/09/23 14:21:33 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -20,6 +20,10 @@
 
 /*
  * socket.c
+ *
+ * this code is not ready yet, it is included to support the
+ * eventual implementation.  The protocol must still be specified
+ * and agreed upon before I embody it in code.
  */
 
 # include "dm.h"
@@ -29,7 +33,7 @@
 # include	<sys/socket.h>
 # include	"buf.h"
 
-int	socketFd;
+int	socketFd = -1;
 
 fd_set	WellKnownSocketsMask;
 int	WellKnownSocketsMax;
@@ -41,11 +45,9 @@ int	WellKnownSocketsMax;
 # define FD_ISSET(f,fdp)	((fdp)->fds_bits[(f) / (sizeof (int) * 8)] & (1 << ((f) % (sizeof (int) * 8))))
 #endif
 
-#endif
 
 CreateWellKnownSockets ()
 {
-#ifdef UDP_SOCKET
 	struct sockaddr_in	sock_addr;
 
 	if (request_port == 0)
@@ -65,17 +67,15 @@ CreateWellKnownSockets ()
 		WellKnownSocketsMax = socketFd;
 		FD_SET (socketFd, &WellKnownSocketsMask);
 	}
-#endif
 }
 
 AnyWellKnownSockets ()
 {
-	return socketFd != 0;
+	return socketFd != -1;
 }
 
 WaitForSomething ()
 {
-#ifdef UDP_SOCKET
 	fd_set	reads;
 	int	nready;
 
@@ -86,64 +86,27 @@ WaitForSomething ()
 		if (nready > 0 && FD_ISSET (socketFd, &reads))
 			ProcessRequestSocket (socketFd);
 	} else
-#endif
 		pause ();
 }
 
-#ifdef UDP_SOCKET
+/*
+ * respond to a request on the UDP socket.  The protocol here
+ * is under development, see the file "protocol" for some
+ * uninspired ideas
+ */
+
 ProcessRequestSocket (fd)
 int	fd;
 {
-	struct display	*d;
-	char	buf[4096];
-	int	len;
-	struct buffer	*f;
-	char	from[1024];
-	struct sockaddr_in	*from_in;
-	int		fromlen;
-	static char	poll_providers[] = POLL_PROVIDERS;
-	static char	advertise[] = ADVERTISE;
-	static DisplayType	acceptableTypes [] =
-		{ { Foreign, Permanent, Secure },
-		  { Foreign, Transient, Secure },
-		  { Foreign, Permanent, Insecure },
-		  { Foreign, Transient, Insecure },
-		};
-
-	Debug ("ProcessRequestSocket\n");
-	fromlen = sizeof (from);
-	len = recvfrom (fd, buf, sizeof (buf), 0, 
-			(struct sockaddr *) from, &fromlen);
-	if (len <= 0)
-		return;
-	from_in = (struct sockaddr_in *) from;		
-	/*
-	 * respond to broadcasts for services
-	 */
-	if (len == strlen (poll_providers) && !strncmp (buf, poll_providers, len))
-	{
-		Debug (
-"acknowledging request for display manager addresses to %08x port %d\n",
-ntohl (from_in->sin_addr.s_addr), ntohs (from_in->sin_port));
-		sendto (fd, advertise, strlen (advertise), 0, 
-			(struct sockaddr *) from, fromlen);
-		return;
-	}
-	f = dataOpen (buf, len);
-	ReadDisplay (f, acceptableTypes,
- 		     sizeof (acceptableTypes) / sizeof (acceptableTypes[0]),
-		     (char *) from_in);
-	bufClose (f);
-	StartDisplays ();
 }
+
+/*
+ * send a control message to a managed server.
+ */
 
 serverMessage (d, text)
 struct display	*d;
 char		*text;
 {
-	char	buf[1024];
-
-	sprintf (buf, "%s %s %s", d->name, d->argv[0], text);
-	sendto (socketFd, buf, strlen (buf), 0, &d->addr, sizeof (d->addr));
 }
 #endif
