@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] = 
-    "$XConsortium: bbox.c,v 2.24 89/07/05 18:40:40 converse Exp $";
+    "$XConsortium: bbox.c,v 2.25 89/07/07 18:04:19 converse Exp $";
 #endif
 /*
  *
@@ -184,7 +184,8 @@ int enabled;			/* Whether button is initially enabled. */
 			       ("<Btn1Down>,<Btn1Up>:set()\n"));
     else if (buttonbox->button_type == menuButtonWidgetClass)
 	XtOverrideTranslations(button->widget, XtParseTranslationTable
-			       ("<BtnDown>:set()folder-menu()\n\
+                               ("<LeaveWindow>:reset()leave()\n\
+			         <BtnDown>:set()folder-menu()\n\
                                  <BtnUp>:folder-button()reset()\n"));
     button->func = func;
 }

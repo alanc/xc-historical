@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: init.c,v 2.25 89/06/30 15:34:51 swick Exp $";
+    "$XConsortium: init.c,v 2.26 89/07/07 18:04:13 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -171,6 +171,7 @@ char **argv;
 	{"open-sequence", OpenSequence},
         {"folder-menu", FolderMenu},
         {"folder-button", FolderButton},
+        {"leave", Leave},
     };
     static Arg shell_args[] = {
 	{XtNinput, (XtArgVal)True},
