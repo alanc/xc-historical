@@ -4,7 +4,7 @@
  * 8 bit color frame buffer utility routines
  */
 
-/* $XConsortium: cfb8bit.c,v 1.6 91/12/19 14:15:28 keith Exp $ */
+/* $XConsortium: cfb8bit.c,v 1.7 91/12/19 18:36:48 keith Exp $ */
 
 #if PSZ == 8
 
@@ -43,6 +43,7 @@ unsigned long	fg, planemask;
     cfb8StippleMode = FillStippled;
     cfb8StippleAlu = alu;
     cfb8StippleFg = fg & PMSK;
+    cfb8StipplePm = planemask & PMSK;
     rrop = cfbReduceRasterOp (alu, fg, planemask, &and, &xor);
     cfb8StippleRRop = rrop;
     /*
