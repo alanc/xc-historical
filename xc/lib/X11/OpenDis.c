@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.99 90/12/26 11:04:43 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.100 91/01/06 11:47:08 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -21,6 +21,9 @@ without express or implied warranty.
 #include <stdio.h>
 #include "Xlibint.h"
 #include <X11/Xos.h>
+#ifdef HASDES
+#include "Xlibnet.h"
+#endif
 #include <X11/Xauth.h>
 #include "Xatom.h"
 
