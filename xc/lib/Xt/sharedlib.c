@@ -1,4 +1,4 @@
-/* $XConsortium: sharedlib.c,v 1.16 94/03/30 20:32:53 converse Exp $ */
+/* $XConsortium: sharedlib.c,v 1.17 94/04/17 20:15:06 converse Exp converse $ */
 
 /*
 
@@ -242,7 +242,7 @@ Widget XtVaOpenApplication(app_context_return, application_class, options,
     extern Widget _XtVaOpenApplication();
 
     VENDORINIT
-    Va_start(var, fallback_resources);
+    Va_start(var, widget_class);
     return _XtVaOpenApplication(app_context_return, application_class, options,
 				num_options, argc_in_out, argv_in_out,
 				fallback_resources, widget_class, var);
