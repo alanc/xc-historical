@@ -4,252 +4,329 @@
 .ce 3
 \s+1\fBAppendix E\fP\s-1
 
-\s+1\fBStringDefs.h Header File\fP\s-1
+\s+1\fB\fBDefined Strings\fP\s-1
 .sp 2
 .LP
 .XS
-Appendix E \- StringDefs.h Header File
+Appendix E \- Defined Strings
 .XE
 .LP
 The 
 .PN StringDefs.h
-header file contains:
+header file contains definitions for the following resource name,
+class, and representation type symbolic constants.
 .LP
-.Ds 0
-.TA 2.5i
-.ta 2.5i
-/* Resource names */
-
-#define XtNaccelerators "accelerators"
-#define XtNallowHoriz "allowHoriz"
-#define XtNallowVert "allowVert"
-#define XtNancestorSensitive "ancestorSensitive"
-#define XtNbackground "background"
-#define XtNbackgroundPixmap "backgroundPixmap"
-#define XtNbitmap "bitmap"
-#define XtNborderColor "borderColor"
-#define XtNborder "borderColor"
-#define XtNborderPixmap "borderPixmap"
-#define XtNborderWidth "borderWidth"
-#define XtNcallback "callback"
-#define XtNchildren "children"
-#define XtNcolormap "colormap"
-#define XtNdepth "depth"
-#define XtNdestroyCallback "destroyCallback"
-#define XtNeditType "editType"
-#define XtNfile "file"
-#define XtNfont "font"
-#define XtNforceBars "forceBars"
-#define XtNforeground "foreground"
-#define XtNfunction "function"
-#define XtNheight "height"
-#define XtNhighlight "highlight"
-#define XtNhSpace "hSpace"
-#define XtNindex "index"
-#define XtNinitialResourcesPersistent "initialResourcesPersistent"
-#define XtNinnerHeight "innerHeight"
-#define XtNinnerWidth "innerWidth"
-#define XtNinnerWindow "innerWindow"
-#define XtNinsertPosition "insertPosition"
-#define XtNinternalHeight "internalHeight"
-#define XtNinternalWidth "internalWidth"
-#define XtNjumpProc "jumpProc"
-#define XtNjustify "justify"
-#define XtNknobHeight "knobHeight"
-#define XtNknobIndent "knobIndent"
-#define XtNknobPixel "knobPixel"
-#define XtNknobWidth "knobWidth"
-#define XtNlabel "label"
-#define XtNlength "length"
-#define XtNlowerRight "lowerRight"
-#define XtNmappedWhenManaged "mappedWhenManaged"
-#define XtNmenuEntry "menuEntry"
-#define XtNname "name"
-#define XtNnotify "notify"
-#define XtNnumChildren "numChildren"
-#define XtNorientation "orientation"
-#define XtNparameter "parameter"
-#define XtNpixmap "pixmap"
-#define XtNpopupCallback "popupCallback"
-#define XtNpopdownCallback "popdownCallback"
-#define XtNresize "resize"
-#define XtNreverseVideo "reverseVideo"
-#define XtNscreen "screen"
-#define XtNscrollProc "scrollProc"
-#define XtNscrollDCursor "scrollDCursor"
-#define XtNscrollHCursor "scrollHCursor"
-#define XtNscrollLCursor "scrollLCursor"
-#define XtNscrollRCursor "scrollRCursor"
-#define XtNscrollUCursor "scrollUCursor"
-#define XtNscrollVCursor "scrollVCursor"
-#define XtNselection "selection"
-#define XtNselectionArray "selectionArray"
-#define XtNsensitive "sensitive"
-#define XtNshown "shown"
-#define XtNspace "space"
-#define XtNstring "string"
-#define XtNtextOptions "textOptions"
-#define XtNtextSink "textSink"
-#define XtNtextSource "textSource"
-#define XtNthickness "thickness"
-#define XtNthumb "thumb"
-#define XtNthumbProc "thumbProc"
-#define XtNtop "top"
-#define XtNtranslations "translations"
-#define XtNunrealizeCallback "unrealizeCallback"
-#define XtNupdate "update"
-#define XtNuseBottom "useBottom"
-#define XtNuseRight "useRight"
-#define XtNvalue "value"
-#define XtNvSpace "vSpace"
-#define XtNwidth "width"
-#define XtNwindow "window"
-#define XtNx "x"
-#define XtNy "y"
-
-/* Class types */ 
-#define XtCAccelerators "Accelerators"
-#define XtCBackground "Background"
-#define XtCBitmap "Bitmap"
-#define XtCBoolean "Boolean"
-#define XtCBorderColor "BorderColor"
-#define XtCBorderWidth "BorderWidth"
-#define XtCCallback "Callback"
-#define XtCColormap "Colormap"
-#define XtCColor "Color"
-#define XtCCursor "Cursor"
-#define XtCDepth "Depth"
-#define XtCEditType "EditType"
-#define XtCEventBindings "EventBindings"
-#define XtCFile "File"
-#define XtCFont "Font"
-#define XtCForeground "Foreground"
-#define XtCFraction "Fraction"
-#define XtCFunction "Function"
-#define XtCHeight "Height"
-#define XtCHSpace "HSpace"
-#define XtCIndex "Index"
-#define XtCInitialResourcesPersistent "InitialResourcesPersistent"
-#define XtCInsertPosition "InsertPosition"
-#define XtCInterval "Interval"
-#define XtCJustify "Justify"
-#define XtCKnobIndent "KnobIndent"
-#define XtCKnobPixel "KnobPixel"
-#define XtCLabel "Label"
-#define XtCLength "Length"
-#define XtCMappedWhenManaged "MappedWhenManaged"
-#define XtCMargin "Margin"
-#define XtCMenuEntry "MenuEntry"
-#define XtCNotify "Notify"
-#define XtCOrientation "Orientation"
-#define XtCParameter "Parameter"
-#define XtCPixmap "Pixmap"
-#define XtCPosition "Position"
-#define XtCReadOnly "ReadOnly"
-#define XtCResize "Resize"
-#define XtCReverseVideo "ReverseVideo"
-#define XtCScreen "Screen"
-#define XtCScrollProc "ScrollProc"
-#define XtCScrollDCursor "ScrollDCursor"
-#define XtCScrollHCursor "ScrollHCursor"
-#define XtCScrollLCursor "ScrollLCursor"
-#define XtCScrollRCursor "ScrollRCursor"
-#define XtCScrollUCursor "ScrollUCursor"
-#define XtCScrollVCursor "ScrollVCursor"
-#define XtCSelection "Selection"
-#define XtCSensitive "Sensitive"
-#define XtCSelectionArray "SelectionArray"
-#define XtCSpace "Space"
-#define XtCString "String"
-#define XtCTextOptions "TextOptions"
-#define XtCTextPosition "TextPosition"
-#define XtCTextSink "TextSink"
-#define XtCTextSource "TextSource"
-#define XtCThickness "Thickness"
-#define XtCThumb "Thumb"
-#define XtCTranslations "Translations"
-#define XtCValue "Value"
-#define XtCVSpace "VSpace"
-#define XtCWidth "Width"
-#define XtCWindow "Window"
-#define XtCX "X"
-#define XtCY "Y"
-
-/* Representation types */
-
-#define XtRAcceleratorTable "AcceleratorTable"
-#define XtRAtom "Atom"
-#define XtRBitmap "Bitmap"
-#define XtRBool "Bool"
-#define XtRBoolean "Boolean"
-#define XtRCallback "Callback"
-#define XtRCallProc "CallProc"
-#define XtRCardinal "Cardinal"
-#define XtRColor "Color"
-#define XtRColormap "Colormap"
-#define XtRCursor "Cursor"
-#define XtRDimension "Dimension"
-#define XtRDisplay "Display"
-#define XtREditMode "EditMode"
-#define XtREnum "Enum"
-#define XtRFile "File"
-#define XtRFloat "Float"
-#define XtRFont "Font"
-#define XtRFontStruct "FontStruct"
-#define XtRFunction "Function"
-#define XtRGeometry "Geometry"
-#define XtRImmediate "Immediate"
-#define XtRInitialState "InitialState"
-#define XtRInt "Int"
-#define XtRJustify "Justify"
-#define XtRLongBoolean XtRBool
-#define XtRObject "Object"
-#define XtROrientation "Orientation"
-#define XtRPixel "Pixel"
-#define XtRPixmap "Pixmap"
-#define XtRPointer "Pointer"
-#define XtRPosition "Position"
-#define XtRScreen "Screen"
-#define XtRShort "Short"
-#define XtRString "String"
-#define XtRStringArray "StringArray"
-#define XtRStringTable "StringTable"
-#define XtRUnsignedChar "UnsignedChar"
-#define XtRTranslationTable "TranslationTable"
-#define XtRVisual "Visual"
-#define XtRWidget "Widget"
-#define XtRWidgetClass "WidgetClass"
-#define XtRWidgetList "WidgetList"
-#define XtRWindow "Window"
-
-
-/* Boolean enumeration constants */
-
-#define XtEoff "off"
-#define XtEfalse "false"
-#define XtEno "no"
-#define XtEon "on"
-#define XtEtrue "true"
-#define XtEyes "yes"
-
-/* Orientation enumeration constants */
-
-#define XtEvertical "vertical"
-#define XtEhorizontal "horizontal"
-
-/* text edit enumeration constants */
-
-#define XtEtextRead "read"
-#define XtEtextAppend "append"
-#define XtEtextEdit "edit"
-
-/* color enumeration constants */
-
-#define XtExtdefaultbackground "xtdefaultbackground"
-#define XtExtdefaultforeground "xtdefaultforeground"
-
-/* font constant */
-
-#define XtExtdefaultfont "xtdefaultfont"
-.De
+Resource names:
+.TS
+lw(1.5i) lw(3i).
+_
+.sp 6p
+Symbol	Definition
+.sp 6p
+_
+.sp 6p
+XtNaccelerators	"accelerators"
+XtNallowHoriz	"allowHoriz"
+XtNallowVert	"allowVert"
+XtNancestorSensitive	"ancestorSensitive"
+XtNbackground	"background"
+XtNbackgroundPixmap	"backgroundPixmap"
+XtNbitmap	"bitmap"
+XtNborderColor	"borderColor"
+XtNborder	"borderColor"
+XtNborderPixmap	"borderPixmap"
+XtNborderWidth	"borderWidth"
+XtNcallback	"callback"
+XtNchildren	"children"
+XtNcolormap	"colormap"
+XtNdepth	"depth"
+XtNdestroyCallback	"destroyCallback"
+XtNeditType	"editType"
+XtNfile	"file"
+XtNfont	"font"
+XtNforceBars	"forceBars"
+XtNforeground	"foreground"
+XtNfunction	"function"
+XtNheight	"height"
+XtNhighlight	"highlight"
+XtNhSpace	"hSpace"
+XtNindex	"index"
+XtNinitialResourcesPersistent	"initialResourcesPersistent"
+XtNinnerHeight	"innerHeight"
+XtNinnerWidth	"innerWidth"
+XtNinnerWindow	"innerWindow"
+XtNinsertPosition	"insertPosition"
+XtNinternalHeight	"internalHeight"
+XtNinternalWidth	"internalWidth"
+XtNjumpProc	"jumpProc"
+XtNjustify	"justify"
+XtNknobHeight	"knobHeight"
+XtNknobIndent	"knobIndent"
+XtNknobPixel	"knobPixel"
+XtNknobWidth	"knobWidth"
+XtNlabel	"label"
+XtNlength	"length"
+XtNlowerRight	"lowerRight"
+XtNmappedWhenManaged	"mappedWhenManaged"
+XtNmenuEntry	"menuEntry"
+XtNname	"name"
+XtNnotify	"notify"
+XtNnumChildren	"numChildren"
+XtNorientation	"orientation"
+XtNparameter	"parameter"
+XtNpixmap	"pixmap"
+XtNpopupCallback	"popupCallback"
+XtNpopdownCallback	"popdownCallback"
+XtNresize	"resize"
+XtNreverseVideo	"reverseVideo"
+XtNscreen	"screen"
+XtNscrollProc	"scrollProc"
+XtNscrollDCursor	"scrollDCursor"
+XtNscrollHCursor	"scrollHCursor"
+XtNscrollLCursor	"scrollLCursor"
+XtNscrollRCursor	"scrollRCursor"
+XtNscrollUCursor	"scrollUCursor"
+XtNscrollVCursor	"scrollVCursor"
+XtNselection	"selection"
+XtNselectionArray	"selectionArray"
+XtNsensitive	"sensitive"
+XtNshown	"shown"
+XtNspace	"space"
+XtNstring	"string"
+XtNtextOptions	"textOptions"
+XtNtextSink	"textSink"
+XtNtextSource	"textSource"
+XtNthickness	"thickness"
+XtNthumb	"thumb"
+XtNthumbProc	"thumbProc"
+XtNtop	"top"
+XtNtranslations	"translations"
+XtNunrealizeCallback	"unrealizeCallback"
+XtNupdate	"update"
+XtNuseBottom	"useBottom"
+XtNuseRight	"useRight"
+XtNvalue	"value"
+XtNvSpace	"vSpace"
+XtNwidth	"width"
+XtNwindow	"window"
+XtNx	"x"
+XtNy	"y"
+.sp 6p
+_
+.TE
+.LP
+Resource classes:
+.TS
+lw(1.5i) lw(3i).
+_
+.sp 6p
+Symbol	Definition
+.sp 6p
+_
+.sp 6p
+XtCAccelerators	"Accelerators"
+XtCBackground	"Background"
+XtCBitmap	"Bitmap"
+XtCBoolean	"Boolean"
+XtCBorderColor	"BorderColor"
+XtCBorderWidth	"BorderWidth"
+XtCCallback	"Callback"
+XtCColormap	"Colormap"
+XtCColor	"Color"
+XtCCursor	"Cursor"
+XtCDepth	"Depth"
+XtCEditType	"EditType"
+XtCEventBindings	"EventBindings"
+XtCFile	"File"
+XtCFont	"Font"
+XtCForeground	"Foreground"
+XtCFraction	"Fraction"
+XtCFunction	"Function"
+XtCHeight	"Height"
+XtCHSpace	"HSpace"
+XtCIndex	"Index"
+XtCInitialResourcesPersistent	"InitialResourcesPersistent"
+XtCInsertPosition	"InsertPosition"
+XtCInterval	"Interval"
+XtCJustify	"Justify"
+XtCKnobIndent	"KnobIndent"
+XtCKnobPixel	"KnobPixel"
+XtCLabel	"Label"
+XtCLength	"Length"
+XtCMappedWhenManaged	"MappedWhenManaged"
+XtCMargin	"Margin"
+XtCMenuEntry	"MenuEntry"
+XtCNotify	"Notify"
+XtCOrientation	"Orientation"
+XtCParameter	"Parameter"
+XtCPixmap	"Pixmap"
+XtCPosition	"Position"
+XtCReadOnly	"ReadOnly"
+XtCResize	"Resize"
+XtCReverseVideo	"ReverseVideo"
+XtCScreen	"Screen"
+XtCScrollProc	"ScrollProc"
+XtCScrollDCursor	"ScrollDCursor"
+XtCScrollHCursor	"ScrollHCursor"
+XtCScrollLCursor	"ScrollLCursor"
+XtCScrollRCursor	"ScrollRCursor"
+XtCScrollUCursor	"ScrollUCursor"
+XtCScrollVCursor	"ScrollVCursor"
+XtCSelection	"Selection"
+XtCSensitive	"Sensitive"
+XtCSelectionArray	"SelectionArray"
+XtCSpace	"Space"
+XtCString	"String"
+XtCTextOptions	"TextOptions"
+XtCTextPosition	"TextPosition"
+XtCTextSink	"TextSink"
+XtCTextSource	"TextSource"
+XtCThickness	"Thickness"
+XtCThumb	"Thumb"
+XtCTranslations	"Translations"
+XtCValue	"Value"
+XtCVSpace	"VSpace"
+XtCWidth	"Width"
+XtCWindow	"Window"
+XtCX	"X"
+XtCY	"Y"
+.sp 6p
+_
+.TE
+.LP
+Resource representation types:
+.TS
+lw(1.5i) lw(3i).
+_
+.sp 6p
+Symbol	Definition
+.sp 6p
+_
+.sp 6p
+XtRAcceleratorTable	"AcceleratorTable"
+XtRAtom	"Atom"
+XtRBitmap	"Bitmap"
+XtRBool	"Bool"
+XtRBoolean	"Boolean"
+XtRCallback	"Callback"
+XtRCallProc	"CallProc"
+XtRCardinal	"Cardinal"
+XtRColor	"Color"
+XtRColormap	"Colormap"
+XtRCursor	"Cursor"
+XtRDimension	"Dimension"
+XtRDisplay	"Display"
+XtREditMode	"EditMode"
+XtREnum	"Enum"
+XtRFile	"File"
+XtRFloat	"Float"
+XtRFont	"Font"
+XtRFontStruct	"FontStruct"
+XtRFunction	"Function"
+XtRGeometry	"Geometry"
+XtRImmediate	"Immediate"
+XtRInitialState	"InitialState"
+XtRInt	"Int"
+XtRJustify	"Justify"
+XtRLongBoolean	XtRBool
+XtRObject	"Object"
+XtROrientation	"Orientation"
+XtRPixel	"Pixel"
+XtRPixmap	"Pixmap"
+XtRPointer	"Pointer"
+XtRPosition	"Position"
+XtRScreen	"Screen"
+XtRShort	"Short"
+XtRString	"String"
+XtRStringArray	"StringArray"
+XtRStringTable	"StringTable"
+XtRUnsignedChar	"UnsignedChar"
+XtRTranslationTable	"TranslationTable"
+XtRVisual	"Visual"
+XtRWidget	"Widget"
+XtRWidgetClass	"WidgetClass"
+XtRWidgetList	"WidgetList"
+XtRWindow	"Window"
+.sp 6p
+_
+.TE
+.LP
+Boolean enumeration constants:
+.TS
+lw(1.5i) lw(3i).
+_
+.sp 6p
+Symbol	Definition
+.sp 6p
+_
+.sp 6p
+XtEoff	"off"
+XtEfalse	"false"
+XtEno	"no"
+XtEon	"on"
+XtEtrue	"true"
+XtEyes	"yes"
+.sp 6p
+_
+.TE
+.LP
+Orientation enumeration constants:
+.TS
+lw(1.5i) lw(3i).
+_
+.sp 6p
+Symbol	Definition
+.sp 6p
+_
+.sp 6p
+XtEvertical	"vertical"
+XtEhorizontal	"horizontal"
+.sp 6p
+_
+.TE
+.LP
+Text edit enumeration constants:
+.TS
+lw(1.5i) lw(3i).
+_
+.sp 6p
+Symbol	Definition
+.sp 6p
+_
+.sp 6p
+XtEtextRead	"read"
+XtEtextAppend	"append"
+XtEtextEdit	"edit"
+.sp 6p
+_
+.TE
+.LP
+Color enumeration constants:
+.TS
+lw(1.5i) lw(3i).
+_
+.sp 6p
+Symbol	Definition
+.sp 6p
+_
+.sp 6p
+XtExtdefaultbackground	"xtdefaultbackground"
+XtExtdefaultforeground	"xtdefaultforeground"
+.sp 6p
+_
+.TE
+.LP
+Font constant:
+.TS
+lw(1.5i) lw(3i).
+_
+.sp 6p
+Symbol	Definition
+.sp 6p
+_
+.sp 6p
+XtExtdefaultfont	"xtdefaultfont"
+.sp 6p
+_
+.TE
 .TC
