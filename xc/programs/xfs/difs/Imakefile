@@ -1,4 +1,4 @@
-/*	@(#)Imakefile	4.1	91/05/02	*/
+#include <Server.tmpl>
 
 SRCS =	main.c dispatch.c extensions.c globals.c events.c tables.c \
 	fontinfo.c swapreq.c swaprep.c resource.c \
@@ -13,9 +13,9 @@ INCLUDES = -I. -I../../include -I../include -I$(FONTSRC)/include
 FONTDEFINES = -DFONT_PCF -DFONT_FS -DFONT_SPEEDO
 
 NormalLibraryObjectRule()
-NormalLibraryTarget(difs, $(OBJS))
+NormalLibraryTarget(difs,$(OBJS))
 
 DependTarget()
 
-SpecialObjectRule(initfonts.o, $(ICONFIGFILES), $(FONTDEFINES))
+SpecialObjectRule(initfonts.o,$(ICONFIGFILES),$(FONTDEFINES))
 
