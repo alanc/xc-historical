@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.40 94/03/14 17:50:14 gildea Exp $ */
+/* $XConsortium: fserve.c,v 1.41 94/03/18 11:00:54 mor Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -136,10 +136,9 @@ static Bool
 fs_name_check(name)
     char       *name;
 {
-    return (
-	!strncmp(name, "tcp/", MIN(4, (int) strlen(name))) ||
-        !strncmp(name, "local/", MIN(6, (int) strlen(name))) ||
-        !strncmp(name, "decnet/", MIN(7, (int) strlen(name))));
+    /* Just make sure there is a protocol/ prefix */
+
+    return (name && *name != '/' && strchr(name, '/'));
 }
 
 static void
