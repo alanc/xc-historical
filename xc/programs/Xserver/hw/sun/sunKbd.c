@@ -72,6 +72,8 @@ static void 	  sunKbdDoneEvents();
 int	  	  autoRepeatKeyDown = 0;
 int	  	  autoRepeatDebug = 0;
 int	  	  autoRepeatReady;
+long	  	  autoRepeatInitiate = 1000 * AUTOREPEAT_INITIATE;
+long	  	  autoRepeatDelay = 1000 * AUTOREPEAT_DELAY;
 static int	  autoRepeatFirst;
 struct timeval    autoRepeatLastKeyDownTv;
 struct timeval    autoRepeatDeltaTv;
@@ -783,9 +785,9 @@ sunBlockHandler(nscreen, pbdata, pptv, pReadmask)
 	return;
 
     if (autoRepeatFirst == TRUE)
-	artv.tv_usec = 1000 * AUTOREPEAT_INITIATE;
+	artv.tv_usec = autoRepeatInitiate;
     else
-	artv.tv_usec = 1000 * AUTOREPEAT_DELAY;
+	artv.tv_usec = autoRepeatDelay;
     *pptv = &artv;
 
     if (autoRepeatDebug)
@@ -816,9 +818,9 @@ sunWakeupHandler(nscreen, pbdata, err, pReadmask)
 	tvminus(autoRepeatDeltaTv, tv, autoRepeatLastKeyDownTv);
 	if (autoRepeatDeltaTv.tv_sec > 0 ||
 			(!autoRepeatFirst && autoRepeatDeltaTv.tv_usec >
-				1000 * AUTOREPEAT_DELAY) ||
+				autoRepeatDelay) ||
 			(autoRepeatDeltaTv.tv_usec >
-				1000 * AUTOREPEAT_INITIATE))
+				autoRepeatInitiate))
 		autoRepeatReady++;
     }
     
