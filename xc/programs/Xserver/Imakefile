@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.186 94/11/21 18:25:56 kaleb Exp kaleb $
+XCOMM $XConsortium: Imakefile,v 1.187 94/11/28 11:52:03 kaleb Exp kaleb $
 /*
  * Server Master Makefile
  */
@@ -81,7 +81,7 @@ XCOMM $XConsortium: Imakefile,v 1.186 94/11/21 18:25:56 kaleb Exp kaleb $
         SYSLIBS = MathLibrary Krb5Libraries DBMLibrary $(EXTRASYSLIBS)
 #endif
            CBRT = mi/cbrt.o
-        STDDIRS = dix os mi $(EXTDIRS)
+        STDDIRS = include dix os mi $(EXTDIRS)
 
 XCOMM
 XCOMM This turns off the default rule for compiling .c files because
