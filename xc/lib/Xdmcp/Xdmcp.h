@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -89,6 +90,13 @@ typedef struct _XdmcpBuffer {
 typedef struct _XdmAuthKey {
     BYTE    data[8];
 } XdmAuthKeyRec, *XdmAuthKeyPtr;
+
+
+/* implementation-independent network address structure.
+   Equiv to sockaddr* for sockets and netbuf* for STREAMS. */
+
+typedef char *XdmcpNetaddr;
+
 
 extern int XdmcpWriteCARD8(),		XdmcpWriteCARD16();
 extern int XdmcpWriteCARD32();
