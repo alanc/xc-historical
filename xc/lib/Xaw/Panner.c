@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.6 90/02/12 15:42:16 jim Exp $
+ * $XConsortium: Panner.c,v 1.7 90/02/12 16:08:50 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -63,7 +63,7 @@ static XtResource resources[] = {
     { XtNdefaultScale, XtCDefaultScale, XtRDimension, sizeof(Dimension),
 	poff(default_scale), XtRImmediate, (XtPointer) PANNER_DEFAULT_SCALE },
     { XtNrubberBand, XtCRubberBand, XtRBoolean, sizeof(Boolean),
-	poff(rubber_band), XtRImmediate, (XtPointer) TRUE },
+	poff(rubber_band), XtRImmediate, (XtPointer) FALSE },
     { XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel), 
 	poff(foreground), XtRImmediate, (XtPointer) "XtDefaultForeground" },
     { XtNlineWidth, XtCLineWidth, XtRDimension, sizeof(Dimension),

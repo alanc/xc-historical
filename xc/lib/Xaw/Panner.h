@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.h,v 1.5 90/02/12 15:30:06 jim Exp $
+ * $XConsortium: Panner.h,v 1.6 90/02/12 15:42:18 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -45,7 +45,7 @@
  *  defaultScale	DefaultScale	Dimension	10 (percent)
  *  foreground		Foreground	Pixel		XtDefaultForeground
  *  lineWidth		LineWidth	Dimension	0
- *  rubberBand		RubberBand	Boolean		TRUE
+ *  rubberBand		RubberBand	Boolean		FALSE
  *  shadow		Shadow		Boolean		TRUE
  *  sliderColor		Background	Pixel		XtDefaultBackground
  *  sliderX		SliderX		Position	0
@@ -86,7 +86,9 @@ typedef struct _PannerClassRec *PannerWidgetClass;
 typedef struct _PannerRec      *PannerWidget;
 
 typedef struct {
-    Position x, y;
+    Position slider_x, slider_y;
+    Dimension slider_width, slider_height;
+    Dimension canvas_width, canvas_height;
 } XawPannerReport;
 
 #endif /* _XawPanner_h */
