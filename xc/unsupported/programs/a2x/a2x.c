@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.51 92/04/12 13:39:55 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.52 92/04/12 17:04:38 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -136,6 +136,7 @@ typedef struct {
 typedef struct {
     Window root;
     int type;
+    unsigned long serial;
     struct timeval time;
     MatchRec match;
     Window windows[1024];
@@ -1092,13 +1093,17 @@ process_events()
 	    break;
 	case MapNotify:
 	    if (trigger.type == MapNotify &&
-		matches(((XMapEvent *)&ev)->window, &trigger.match, True))
+		ev.xmap.serial >= trigger.serial &&
+		ev.xmap.event == trigger.root &&
+		matches(ev.xmap.window, &trigger.match, True))
 		unset_trigger();
 	    break;
 	case UnmapNotify:
-	    if (trigger.type == UnmapNotify)
+	    if (trigger.type == UnmapNotify &&
+		ev.xunmap.serial >= trigger.serial &&
+		ev.xunmap.event == trigger.root)
 		for (j = 0; trigger.windows[j]; j++) {
-		    if (trigger.windows[j] == ((XUnmapEvent *)&ev)->window) {
+		    if (trigger.windows[j] == ev.xunmap.window) {
 			unset_trigger();
 			break;
 		    }
@@ -1167,6 +1172,7 @@ do_trigger(buf)
 	trigger.match.match = match;
 	XQueryPointer(dpy, DefaultRootWindow(dpy), &trigger.root, &child,
 		      &x, &y, &x, &y, (unsigned int *)&x);
+	trigger.serial = NextRequest(dpy);
 	XSelectInput(dpy, trigger.root, SubstructureNotifyMask);
 	if (type == UnmapNotify)
 	    set_unmap_trigger();
@@ -1174,7 +1180,10 @@ do_trigger(buf)
     if (!wait || !trigger.type)
 	return;
     while (trigger.type) {
-	XFlush(dpy);
+	if (XPending(dpy)) {
+	    process_events();
+	    continue;
+	}
 	fdmask[0] = Xmask;
 	type = select(maxfd, fdmask, NULL, NULL, &trigger.time);
 	if (type < 0)
@@ -1706,7 +1715,10 @@ main(argc, argv)
     Xmask = 1 << ConnectionNumber(dpy);
     maxfd = ConnectionNumber(dpy) + 1;
     while (1) {
-	XFlush(dpy);
+	if (XPending(dpy)) {
+	    process_events();
+	    continue;
+	}
 	fdmask[0] = 1 | Xmask;
 	i = select(maxfd, fdmask, NULL, NULL, moving_timeout);
 	if (i < 0)
