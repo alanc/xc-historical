@@ -50,7 +50,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 5.15 91/05/30 14:47:16 keith Exp $ */
+/* $XConsortium: cfbfillsp.c,v 5.16 91/07/14 13:49:50 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -242,10 +242,6 @@ int fSorted;
      */
 
     pStipple = pGC->stipple;
-
-    if (pStipple->drawable.depth != 1) {
-	FatalError( "Stipple depth not equal to 1!\n" );
-    }
 
     stwidth = pStipple->devKind >> 2;
     stippleWidth = pStipple->drawable.width;
@@ -441,10 +437,6 @@ int fSorted;
      *		Pointer to pixels = pStipple->devPrivate.ptr
      */
     pStipple = pGC->stipple;
-
-    if (pStipple->drawable.depth != 1) {
-	FatalError( "Stipple depth not equal to 1!\n" );
-    }
 
     stwidth = pStipple->devKind >> 2;
     stippleWidth = pStipple->drawable.width;
