@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.95 90/07/12 17:47:39 swick Exp $ */
+/* $XConsortium: TMparse.c,v 1.96 90/08/15 21:43:10 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1948,8 +1948,6 @@ _XtAddTMConverters(table)
     ConverterTable table;
 {
     XrmQuark q;
-    extern void _XtFreeTranslations();
-    extern Boolean _XtCvtMergeTranslations();
      _XtTableAddConverter(table,
 	     q = XrmStringToRepresentation(XtRString), 
 	     XrmStringToRepresentation(XtRTranslationTable), 
