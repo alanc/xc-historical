@@ -18,7 +18,7 @@ Author: Keith Packard, MIT X Consortium
 
 */
 
-/* $XConsortium: cfbrctstip8.c,v 1.1 89/08/18 16:46:23 keith Exp $ */
+/* $XConsortium: cfbrctstip8.c,v 1.2 89/08/21 19:08:06 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -93,7 +93,15 @@ cfb8FillBoxOpaqueStippled32 (pDrawable, nBox, pBox, stipple, fg, bg)
 	h = pBox->y2 - pBox->y1;
 	y = pBox->y1;
 	dstLine = pbits + (pBox->y1 * nlwDst) + ((pBox->x1 & ~31) >> PWSH);
-	mask32bits (pBox->x1, w, startmask, endmask)
+	if (((pBox->x1 & PIM) + w) <= PPW)
+	{
+	    maskpartialbits(pBox->x1, w, startmask);
+	    endmask = 0;
+	}
+	else
+	{
+	    mask32bits (pBox->x1, w, startmask, endmask);
+	}
 	nlwMiddle = ((((pBox->x2 - 1) | 31) + 1) -  (pBox->x1 & ~31)) >> 5;
 	firstStart = (pBox->x1 & 31) >> PWSH;
 	lastStop = ((pBox->x2 - 1) & 31) >> PWSH;
@@ -202,7 +210,15 @@ cfb8FillBoxTransparentStippled32 (pDrawable, nBox, pBox, stipple, fg)
     	h = pBox->y2 - pBox->y1;
     	y = pBox->y1;
     	dstLine = pbits + (pBox->y1 * nlwDst) + ((pBox->x1 & ~31) >> PWSH);
-	mask32bits (pBox->x1, w, startmask, endmask)
+	if (((pBox->x1 & PIM) + w) <= PPW)
+	{
+	    maskpartialbits(pBox->x1, w, startmask);
+	    endmask = 0;
+	}
+	else
+	{
+	    mask32bits (pBox->x1, w, startmask, endmask);
+	}
     	nlwMiddle = ((((pBox->x2 - 1) | 31) + 1) -  (pBox->x1 & ~31)) >> 5;
     	firstStart = (pBox->x1 & 31) >> PWSH;
     	lastStop = ((pBox->x2 - 1) & 31) >> PWSH;
