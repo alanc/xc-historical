@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Scroll.c,v 1.22 88/01/28 08:04:07 swick Locked $";
+static char rcsid[] = "$Header: Scroll.c,v 1.23 88/02/05 20:26:51 swick Exp $";
 #endif lint
 
 /*
@@ -501,9 +501,8 @@ static Boolean PeekNotifyEvent( dpy, event, args )
 {
     struct EventData *eventData = (struct EventData*)args;
 
-    if ((++eventData->count == QLength(dpy)) /* since PeekIf blocks */
-	|| CompareEvents(event, eventData->oldEvent))
-	return True;
+    return ((++eventData->count == QLength(dpy)) /* since PeekIf blocks */
+	    || CompareEvents(event, eventData->oldEvent));
 }
 
 
