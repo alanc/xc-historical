@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.117 91/07/16 22:50:15 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.118 91/07/17 15:27:57 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -360,6 +360,7 @@ OBJS3 = \
 	XwcWrap.o \
 	XFilterEv.o \
 	XRegstFlt.o \
+	XSetLocale.o \
 	$(LCOBJS)
 
 #if BuildXsi
@@ -398,7 +399,6 @@ LCSRCS = \
 	$(LIMSRCS) \
 	XOpenIM.c \
 	XParseCT.c \
-	XSetLocale.c \
 	XlcAccess.c \
 	XlcDefLd.c \
 	XlcLoad.c \
@@ -435,7 +435,6 @@ LCOBJS = \
 	$(LIMOBJS) \
 	XOpenIM.o \
 	XParseCT.o \
-	XSetLocale.o \
 	XlcAccess.o \
 	XlcDefLd.o \
 	XlcLoad.o \
