@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.h,v 1.12 90/02/28 11:24:03 jim Exp $
+ * $XConsortium: Panner.h,v 1.13 90/02/28 11:38:55 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -45,14 +45,14 @@
  *  canvasWidth		CanvasWidth	Dimension	0
  *  canvasHeight	CanvasHeight	Dimension	0
  *  defaultScale	DefaultScale	Dimension	10 (percent)
- *  foreground		Foreground	Pixel		XtDefaultForeground
+ *  foreground		Foreground	Pixel		XtDefaultBackground
  *  internalBorderWidth	BorderWidth	Dimension	4
  *  lineWidth		LineWidth	Dimension	0
  *  reportCallback	ReportCallback	XtCallbackList	NULL
  *  resize		Boolean		Boolean		TRUE
  *  rubberBand		RubberBand	Boolean		FALSE
  *  shadow		Shadow		Boolean		TRUE
- *  shadowColor		ShadowColor	Pixel		"black"
+ *  shadowColor		ShadowColor	Pixel		XtDefaultForeground
  *  sliderX		SliderX		Position	0
  *  sliderY		SliderY		Position	0
  *  sliderWidth		SliderWidth	Dimension	0

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.15 90/02/28 11:24:00 jim Exp $
+ * $XConsortium: Panner.c,v 1.16 90/02/28 11:38:52 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -67,7 +67,7 @@ static XtResource resources[] = {
     { XtNrubberBand, XtCRubberBand, XtRBoolean, sizeof(Boolean),
 	poff(rubber_band), XtRImmediate, (XtPointer) FALSE },
     { XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel), 
-	poff(foreground), XtRString, (XtPointer) "XtDefaultForeground" },
+	poff(foreground), XtRString, (XtPointer) "XtDefaultBackground" },
     { XtNinternalBorderWidth, XtCBorderWidth, XtRDimension, sizeof(Dimension),
 	poff(internal_border), XtRImmediate, (XtPointer) 4 },
     { XtNlineWidth, XtCLineWidth, XtRDimension, sizeof(Dimension),
@@ -87,7 +87,7 @@ static XtResource resources[] = {
     { XtNshadow, XtCShadow, XtRBoolean, sizeof(Boolean),
 	poff(shadow), XtRImmediate, (XtPointer) TRUE },
     { XtNshadowColor, XtCShadowColor, XtRPixel, sizeof(Pixel),
-	poff(shadow_color), XtRString, (XtPointer) "black" },
+	poff(shadow_color), XtRString, (XtPointer) "XtDefaultForeground" },
     { XtNbackgroundStipple, XtCBackgroundStipple, XtRString, sizeof(String),
 	poff(stipple_name), XtRImmediate, (XtPointer) NULL },
 #undef poff
