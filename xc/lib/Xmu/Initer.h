@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Initer.h,v 1.1 89/07/14 17:51:55 jim Exp $
+ * $XConsortium: Initer.h,v 1.2 90/12/19 18:10:02 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -22,6 +22,13 @@
 #ifndef _XMU_INITER_H_
 #define _XMU_INITER_H_
 
+typedef void (*XmuInitializerProc)(
+#if NeedFunctionPrototypes
+    XtAppContext	/* app_context */,
+    caddr_t		/* data */
+#endif
+);
+
 #ifdef __cplusplus
 extern "C" {					/* for C++ V2.0 */
 #endif
@@ -34,12 +41,7 @@ extern void XmuCallInitializers(
 
 extern void XmuAddInitializer(
 #if NeedFunctionPrototypes
-    void (*) (
-#if NeedNestedPrototypes
-	      XtAppContext,
-	      caddr_t
-#endif
-	      )	/* func */,
+    XmuInitializerProc	/* func */,
      caddr_t	/* data */
 #endif
 );
