@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.37 89/05/15 13:21:32 jim Exp $
+ *	$XConsortium: misc.c,v 1.38 89/05/16 14:26:55 kit Exp $
  */
 
 
@@ -55,7 +55,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.37 89/05/15 13:21:32 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.38 89/05/16 14:26:55 kit Exp $";
 #endif	/* lint */
 
 xevents()
@@ -830,7 +830,7 @@ static void withdraw_window (dpy, w, scr)
 
     if (!shp) shp = XAllocSizeHints();
 
-    if (shp && XGetWMNormalHints (dpy, w, shp, supp)) {
+    if (shp && XGetWMNormalHints (dpy, w, shp, &supp)) {
 	shp->flags &= ~(PPosition|PSize);	/* tell it user pref */
 	shp->flags |= (USPosition|USSize);
 				   
