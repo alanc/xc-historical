@@ -134,13 +134,13 @@ macIIKbdProc (pKeyboard, what)
 	    }
 	    if (consoleFd == 0) {
 		if ((consoleFd = open("/dev/console", O_RDWR|O_NDELAY)) < 0) {
-			FatalError("Could not open /dev/console. \n");
+			FatalError("Could not open /dev/console. \r\n");
 			return (!Success);
 		}
             }
 	    if (devosmFd == 0) {
 		if ((devosmFd = open("/dev/osm", O_RDWR)) < 0) {
-			ErrorF("Could not open /dev/osm. \n");
+			MessageF("Could not open /dev/osm. \r\n");
 		}
             }
 
@@ -221,7 +221,7 @@ macIIKbdSetUp(fd, openClose)
     if (openClose) {
 
 	if (ioctl(fd, TCGETA, &save_tio) < 0) {
-		FatalError("Failed to ioctl TCGETA.\n");
+		FatalError("Failed to ioctl TCGETA.\r\n");
 		return (!Success);
 	}
 
@@ -236,7 +236,7 @@ macIIKbdSetUp(fd, openClose)
 		ioctl(fd, I_LOOK, buff);
 		while (errno != EINVAL) {
 			if(ioctl(fd, I_POP, 0) < 0) {
-				FatalError("Failed to ioctl I_POP %s.\n", buff);
+				FatalError("Failed to ioctl I_POP %s.\r\n", buff);
 				return (!Success);
 			}
 			ioctl(fd, I_LOOK, buff);
@@ -246,14 +246,14 @@ macIIKbdSetUp(fd, openClose)
 		
 	iarg = 1;
 	if (ioctl(fd, FIONBIO, &iarg) < 0) {
-		FatalError("Could not ioctl FIONBIO. \n");
+		FatalError("Could not ioctl FIONBIO. \r\n");
 		return (!Success);
 	}
 
 #ifdef notdef
 	iarg = 1;
 	if (ioctl(fd, FIOASYNC, &iarg) < 0) {
-		FatalError("Could not ioctl FIOASYNC. \n");
+		FatalError("Could not ioctl FIOASYNC. \r\n");
 		return (!Success);
 	}
 #endif
@@ -263,14 +263,14 @@ macIIKbdSetUp(fd, openClose)
 	tio.c_cflag = CREAD|CS8|B9600;
 	tio.c_lflag = 0;
 	if (ioctl(fd, TCSETA, &tio) < 0) {
-		FatalError("Failed to ioctl TCSETA.\n");
+		FatalError("Failed to ioctl TCSETA.\r\n");
 		return (!Success);
 	}
 
 	ctl.ic_len = 0;
 	ctl.ic_cmd = VIDEO_RAW;
 	if (ioctl(fd, I_STR, &ctl) < 0) {
-		FatalError("Failed to ioctl I_STR VIDEO_RAW.\n");
+		FatalError("Failed to ioctl I_STR VIDEO_RAW.\r\n");
 		return(!Success);
 	}
 
@@ -278,14 +278,14 @@ macIIKbdSetUp(fd, openClose)
 	ctl.ic_cmd = VIDEO_MOUSE;
 	if (ioctl(fd, I_STR, &ctl) < 0) {
 
-#define MSG "Failed to ioctl I_STR VIDEO_MOUSE.\n Run Xrepair and try again.\n"
+#define MSG "Failed to ioctl I_STR VIDEO_MOUSE.\r\n Run Xrepair and try again.\r\n"
 		FatalError(MSG);
 #undef MSG
 		return(!Success);
 	}
 
 	if (ioctl(fd, I_FLUSH, FLUSHRW) < 0) {
-		FatalError("Failed to ioctl I_FLUSH FLUSHRW.\n");
+		FatalError("Failed to ioctl I_FLUSH FLUSHRW.\r\n");
 		return (!Success);
 	}
 
@@ -293,48 +293,48 @@ macIIKbdSetUp(fd, openClose)
 		/*
 		 * Not fatal! Convenience for A/UX 1.1 and later.
 		 */
-		ErrorF("Failed to ioctl I_PUSH kprf.\n");
+		MessageF("Failed to ioctl I_PUSH kprf.\r\n");
 	}
 
     } else {
 	if(ioctl(fd, I_POP, 0) < 0) {
-		ErrorF("Failed to ioctl I_POP.\n");
+		MessageF("Failed to ioctl I_POP.\r\n");
 	}
 
 	iarg = 0;
 	if (ioctl(fd, FIONBIO, &iarg) < 0) {
-		ErrorF("Could not ioctl FIONBIO. \n");
+		ErrorF("Could not ioctl FIONBIO. \r\n");
 	}
 
 #ifdef notdef
 	iarg = 0;
 	if (ioctl(fd, FIOASYNC, &iarg) < 0) {
-		ErrorF("Could not ioctl FIOASYNC. \n");
+		ErrorF("Could not ioctl FIOASYNC. \r\n");
 	}
 #endif
 
 	if (ioctl(fd, I_FLUSH, FLUSHRW) < 0) {
-		ErrorF("Failed to ioctl I_FLUSH FLUSHRW.\n");
+		MessageF("Failed to ioctl I_FLUSH FLUSHRW.\r\n");
 	}
     
 	ctl.ic_len = 0;
 	ctl.ic_cmd = VIDEO_NOMOUSE;
 	if (ioctl(fd, I_STR, &ctl) < 0) {
-		ErrorF("Failed to ioctl I_STR VIDEO_NOMOUSE.\n");
+		MessageF("Failed to ioctl I_STR VIDEO_NOMOUSE.\r\n");
 	}
 
 	ctl.ic_len = 0;
 	ctl.ic_cmd = VIDEO_ASCII;
 	if (ioctl(fd, I_STR, &ctl) < 0) {
-		ErrorF("Failed to ioctl I_STR VIDEO_ASCII.\n");
+		MessageF("Failed to ioctl I_STR VIDEO_ASCII.\r\n");
 	}
 
 	if(ioctl(fd, I_PUSH, "line") < 0) {
-		ErrorF("Failed to ioctl I_PUSH.\n");
+		MessageF("Failed to ioctl I_PUSH.\r\n");
 	}
 
 	if (ioctl(fd, TCSETA, &save_tio) < 0) {
-		ErrorF("Failed to ioctl TCSETA.\n");
+		MessageF("Failed to ioctl TCSETA.\r\n");
 	}
     }
 }
@@ -371,7 +371,7 @@ macIIBell (loudness, pKeyboard)
     ctl.ic_dp = (char *)&countdown;
     ctl.ic_cmd = VIDEO_BELL;
     if (ioctl(consoleFd, I_STR, &ctl) < 0) {
-	    ErrorF("Failed to ioctl I_STR VIDEO_BELL.\n");
+	    MessageF("Failed to ioctl I_STR VIDEO_BELL.\r\n");
     }
 }
 
@@ -453,7 +453,7 @@ macIIKbdProcessEvent(pKeyboard,me)
 	 * Update time & pointer location of saved KeyPress event.
 	 */
 	if (autoRepeatDebug)
-	    ErrorF("macIIKbdProcessEvent: autoRepeatKeyDown = %d\n",
+	    ErrorF("macIIKbdProcessEvent: autoRepeatKeyDown = %d\r\n",
 			autoRepeatKeyDown);
 
 	delta = autoRepeatDeltaTv;
@@ -485,7 +485,7 @@ macIIKbdProcessEvent(pKeyboard,me)
          */
         autoRepeatKeyDown = 0;
         if (autoRepeatDebug)
-            ErrorF("macIIKbdProcessEvent: autoRepeat off\n");
+            ErrorF("macIIKbdProcessEvent: autoRepeat off\r\n");
     }
 
     xE.u.keyButtonPointer.time = lastEventTime;
@@ -497,7 +497,7 @@ macIIKbdProcessEvent(pKeyboard,me)
     if ((xE.u.u.type == KeyPress) && (keyModifiers == 0)) {
 	  /* initialize new AutoRepeater event & mark AutoRepeater on */
         if (autoRepeatDebug)
-            ErrorF("macIIKbdProcessEvent: KEY_DOWN\n");
+            ErrorF("macIIKbdProcessEvent: KEY_DOWN\r\n");
         autoRepeatEvent = xE;
         autoRepeatFirst = TRUE;
         autoRepeatKeyDown++;
@@ -543,7 +543,7 @@ macIIBlockHandler(nscreen, pbdata, pptv, pReadmask)
     *pptv = &artv;
 
     if (autoRepeatDebug)
-        ErrorF("macIIBlockHandler(%d,%d): \n", artv.tv_sec, artv.tv_usec);
+        ErrorF("macIIBlockHandler(%d,%d): \r\n", artv.tv_sec, artv.tv_usec);
 
 }
 
@@ -558,7 +558,7 @@ macIIWakeupHandler(nscreen, pbdata, err, pReadmask)
     long now;
 
     if (autoRepeatDebug)
-        ErrorF("macIIWakeupHandler(ar=%d, err=%d):\n", autoRepeatKeyDown, err);
+        ErrorF("macIIWakeupHandler(ar=%d, err=%d):\r\n", autoRepeatKeyDown, err);
 
     if (pKbdCtrl == (KeybdCtrl *) 0)
       pKbdCtrl = ((KbPrivPtr) LookupKeyboardDevice()->devicePrivate)->ctrl;
