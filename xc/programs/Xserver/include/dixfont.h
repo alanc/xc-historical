@@ -1,4 +1,4 @@
-/* $XConsortium: dixfont.h,v 1.4 91/02/14 19:35:57 keith Exp $ */
+/* $XConsortium: dixfont.h,v 1.5 91/02/20 19:39:21 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -33,19 +33,6 @@ SOFTWARE.
 typedef struct _DIXFontProp *DIXFontPropPtr;
 
 #ifndef R4_FONT_STRUCTURES
-
-#define	FontAliasType	0x1000
-
-#define	StillWorking	-2
-#define	Suspended	-1
-
-/* OpenFont flags */
-#define FontLoadInfo	0x0001
-#define FontLoadProps	0x0002
-#define FontLoadMetrics	0x0004
-#define FontLoadBitmaps	0x0008
-#define FontLoadAll	0x000f
-#define	FontOpenSync	0x0010
 
 extern void UseFPE();
 extern void FreeFPE();
