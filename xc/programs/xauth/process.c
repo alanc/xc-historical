@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.20 89/01/02 18:06:28 jim Exp $
+ * $XConsortium: process.c,v 1.21 89/01/03 10:17:05 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -29,22 +29,23 @@
 extern int errno;			/* for stupid errno.h files */
 #include <signal.h>
 #include "xauth.h"
-#include <X11/X.h>
-#include <pwd.h>
+#include <X11/X.h>			/* for Family constants */
 
-#ifndef DEFAULT_PROTOCOL
-#define DEFAULT_PROTOCOL "MIT-MAGIC-COOKIE-1"
-#endif
+extern char *get_hostname();
+extern Bool nameserver_timedout;
 
-#ifndef DEFAULT_PROTOCOL_ABBREV
+#ifndef DEFAULT_PROTOCOL_ABBREV		/* to make add command easier */
 #define DEFAULT_PROTOCOL_ABBREV "."
+#endif
+#ifndef DEFAULT_PROTOCOL		/* for protocol abbreviation */
+#define DEFAULT_PROTOCOL "MIT-MAGIC-COOKIE-1"
 #endif
 
 #define XAUTH_DEFAULT_RETRIES 2		/* just a few times */
 #define XAUTH_DEFAULT_TIMEOUT 2		/* in seconds, be quick */
 #define XAUTH_DEFAULT_DEADTIME 600L	/* 10 minutes in seconds */
 
-typedef struct _AuthList {
+typedef struct _AuthList {		/* linked list of entries */
     struct _AuthList *next;
     Xauth *auth;
 } AuthList;
@@ -59,35 +60,34 @@ typedef struct _CommandTable {		/* commands that are understood */
     char *helptext;			/* what to print for help */
 } CommandTable;
 
-struct _extract_data {
-    FILE *fp;
-    char *filename;
-    Bool used_stdout;
-    Bool numeric;
-    int nwritten;
-    char *cmd;
+struct _extract_data {			/* for iterating */
+    FILE *fp;				/* input source */
+    char *filename;			/* name of input */
+    Bool used_stdout;			/* whether or not need to close */
+    Bool numeric;			/* format in which to write */
+    int nwritten;			/* number of entries written */
+    char *cmd;				/* for error messages */
 };
 
-struct _list_data {
-    FILE *fp;
-    Bool numeric;
+struct _list_data {			/* for iterating */
+    FILE *fp;				/* output file */
+    Bool numeric;			/* format in which to write */
 };
 
 
 /*
  * private data
  */
-
-static char *stdin_filename = "(stdin)";
-static char *stdout_filename = "(stdout)";
-static char *Yes = "yes";
-static char *No = "no";
+static char *stdin_filename = "(stdin)";  /* for messages */
+static char *stdout_filename = "(stdout)";  /* for messages */
+static char *Yes = "yes";		/* for messages */
+static char *No = "no";			/* for messages */
 
 static int do_list(), do_merge(), do_extract(), do_add(), do_remove();
 static int do_help(), do_source(), do_info(), do_exit();
 static int do_quit(), do_questionmark();
 
-CommandTable command_table[] = {
+CommandTable command_table[] = {	/* table of known commands */
     { "add",      2, 3, do_add,
 	"add dpyname protoname hexkey   add entry" },
     { "exit",     3, 4, do_exit,
@@ -119,7 +119,7 @@ CommandTable command_table[] = {
     { NULL,       0, 0, NULL, NULL },
 };
 
-#define COMMAND_NAMES_PADDED_WIDTH 10	/* widget than anything above */
+#define COMMAND_NAMES_PADDED_WIDTH 10	/* wider than anything above */
 
 
 static Bool okay_to_use_stdin = True;	/* set to false after using */
@@ -159,12 +159,9 @@ static char *hex_table[] = {		/* for printing hex digits */
     "f8", "f9", "fa", "fb", "fc", "fd", "fe", "ff", 
 };
 
-static unsigned int hexvalues[256];
+static unsigned int hexvalues[256];	/* for parsing hex input */
 
-static int original_umask = 0;
-
-extern char *get_hostname();
-extern Bool nameserver_timedout;
+static int original_umask = 0;		/* for restoring */
 
 
 /*
@@ -233,7 +230,7 @@ static char *skip_nonspace (s)
     return s;
 }
 
-static char **split_into_words (src, argcp)
+static char **split_into_words (src, argcp)  /* argvify string */
     char *src;
     int *argcp;
 {
@@ -321,7 +318,7 @@ static int getinput (fp)
     return c;
 }
 
-static int get_short (fp, sp)
+static int get_short (fp, sp)		/* for reading numeric input */
     FILE *fp;
     unsigned short *sp;
 {
@@ -345,7 +342,7 @@ static int get_short (fp, sp)
     return 1;
 }
 
-static int get_bytes (fp, n, ptr)
+static int get_bytes (fp, n, ptr)	/* for reading numeric input */
     FILE *fp;
     unsigned int n;
     char **ptr;
@@ -473,7 +470,6 @@ static Bool get_displayname_auth (displayname, auth)
      * check to see if the display name is of the form "host/unix:"
      * which is how the list routine prints out local connections
      */
-
     cp = index (displayname, '/');
     if (cp && strncmp (cp, "/unix:", 6) == 0)
       prelen = (cp - displayname);
@@ -519,7 +515,7 @@ static Bool get_displayname_auth (displayname, auth)
     }
 }
 
-static int cvthexkey (hexstr, ptrp)
+static int cvthexkey (hexstr, ptrp)	/* turn hex key string into octets */
     char *hexstr;
     char **ptrp;
 {
@@ -701,9 +697,6 @@ int auth_initialize (authfilename)
 
     original_umask = umask (0077);	/* disallow non-owner access */
 
-    /*
-     * XXX needs to lock auth file
-     */
     authfp = fopen (authfilename, "r");
     if (!authfp) {
 	int olderrno = errno;
