@@ -1,13 +1,13 @@
 /* 
  * $header: xset.c,v 1.18 87/07/11 08:47:46 dkk Locked $ 
- * $Locker: toddb $ 
+ * $Locker: swick $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.19 87/07/22 05:22:24 toddb Locked $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.20 87/09/06 12:14:30 swick Locked $";
 #endif
 
 #include <X11/X.h>      /*  Should be transplanted to X11/Xlibwm.h     %*/
@@ -36,6 +36,8 @@ static char *rcsid_xset_c = "$Header: xset.c,v 1.19 87/07/22 05:22:24 toddb Lock
 	if (i >= argc) \
 		break; \
 
+char *progName;
+
 main(argc, argv)
 int argc;
 char **argv;
@@ -52,6 +54,7 @@ int numpixels = 0;
 char *disp = '\0';
 Display *dpy;
 if (argc == 1)  usage(argv[0]); /* To be replaced by window-interface */
+progName = argv[0];
 for (i = 1; i < argc; ) {
   arg = argv[i++];
   if (index(arg, ':')) {     /*  Set display name if given by user.  */
@@ -119,7 +122,12 @@ for (i = 1; i < argc; ) {
 	}
       }
     }
-  } 
+  }
+  else if (strcmp(arg, "fp") == 0) {	       /* set font path */
+    arg = nextarg(i, argv);
+    set_font_path(dpy, arg);
+    i++;
+  }
   else if (strcmp(arg, "-led") == 0) {         /* Turn off one or all LEDs */
     values.led_mode = OFF;
     values.led = ALL;        /* None specified */
@@ -326,6 +334,34 @@ XChangeKeyboardControl(dpy, KBBellDuration, &values);
 return;
 }
 
+set_font_path(dpy, path)
+    Display *dpy;
+    char *path;
+{
+    char **directoryList = NULL; int ndirs = 0;
+    char *directories;
+    char *pDir;
+
+    if (strcmp(path, "default")!=0) {
+        if (((directories = (char *)malloc( strlen(path) )) == NULL) ||
+	    ((directoryList = (char **)malloc(sizeof(char *))) == NULL))
+	    error( "out of memory" );
+
+	strcpy( directories, path );
+	*directoryList = pDir = directories;
+	ndirs++;
+	while( (pDir = index(pDir, ',')) != NULL) {
+	    *pDir++ = '\0';
+	    directoryList = (char **)realloc(directoryList, 
+					     (ndirs+1)*sizeof(char *));
+	    if (directoryList == NULL) error( "out of memory" );
+	    directoryList[ndirs++] = pDir;
+	}
+    }
+
+    XSetFontPath( dpy, directoryList, ndirs );
+}
+
 set_led(dpy, led, led_mode)
 Display *dpy;
 int led, led_mode;
@@ -438,10 +474,12 @@ Display *dpy;
 XKeyboardState values;
 int acc_num, acc_denom, threshold;
 int timeout, interval, prefer_blank, allow_exp;
+char **font_path; int npaths;
 
 XGetKeyboardControl(dpy, &values);
 XGetPointerControl(dpy, &acc_num, &acc_denom, &threshold);
 XGetScreenSaver(dpy, &timeout, &interval, &prefer_blank, &allow_exp);
+font_path = XGetFontPath(dpy, &npaths);
 
 printf ("Keyboard Control Values:\n");
 /*printf ("Auto Repeat: %d \t\t", values.auto_repeat_mode);    %%*/
@@ -455,11 +493,17 @@ printf ("LED Mode: %o \t\t", values.led_mode);         %%*/
 
 printf ("Pointer (Mouse) Control Values:\n");
 printf ("Acceleration: %d \t", acc_num / acc_denom);
-printf ("Threshold: %d \n\n", threshold);
+printf ("Threshold: %d \n", threshold);
 printf ("Screen Saver: (yes = %d, no = %d, default = %d)\n",
 	PreferBlanking, DontPreferBlanking, DefaultBlanking);
 printf ("Prefer Blanking: %d \t", prefer_blank);
 printf ("Time-out: %d \t Cycle: %d\n", timeout, interval);
+if (npaths) {
+    printf( "Font Path: %s", *font_path++ );
+    for( --npaths; npaths; npaths-- )
+        printf( ",%s", *font_path++ );
+    printf( "\n" );
+}
 return;
 }
 
@@ -478,6 +522,10 @@ char *prog;
 	printf("\t-c                c off               c 0\n");
 	printf("    To set keyclick volume:\n");
 	printf("\t c [0-100]        c on\n");
+	printf("    To set the font path:\n" );
+	printf("\t fp path[,path...]\n" );
+	printf("    To restore the default font path:\n" );
+	printf("\t fp default\n" );
 	printf("    To set LED states off or on:\n");
 	printf("\t-led [1-32]         led off\n");
 	printf("\t led [1-32]         led on\n");
@@ -492,4 +540,11 @@ char *prog;
 	printf("\t s blank              s noblank\n");
 	printf("    For status information:  q   or  query\n");
 	exit(0);
+}
+
+error( message )
+    char *message;
+{
+    fprintf( stderr, "%s: %s\n", progName, message );
+    exit( 1 );
 }
