@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.36 88/01/04 08:22:38 rws Exp $ */
+/* $Header: utils.c,v 1.37 88/01/31 18:39:53 rws Exp $ */
 #include <stdio.h>
 #include <sys/time.h>
 #include "misc.h"
@@ -265,6 +265,8 @@ UseMsg()
     ErrorF("-wp<:screen> color     WhitePixel for screen\n");
     ErrorF("There may be other device-dependent options as well\n");
 }
+
+#ifndef SPECIAL_MALLOC
 /*
  * malloc wrap-around, to take care of the "no memory" case, since
  * it would be difficult in many places to "back out" on failure.
@@ -415,3 +417,4 @@ CheckNode(ptr)
     return TRUE;
 }
 #endif /* DEBUG */
+#endif /* SPECIAL_MALLOC */
