@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.101 94/03/28 14:28:15 gildea Exp $
+ *	$XConsortium: misc.c,v 1.102 94/03/28 18:27:08 gildea Exp gildea $
  */
 
 /*
@@ -765,10 +765,8 @@ int a;
 char *SysErrorMsg (n)
     int n;
 {
-    extern char *sys_errlist[];
-    extern int sys_nerr;
-
-    return ((n >= 0 && n < sys_nerr) ? sys_errlist[n] : "unknown error");
+    register char *s = strerror(n);
+    return s ? s : "unknown error";
 }
 
 
