@@ -1,11 +1,11 @@
-/* $XConsortium: Berklib.c,v 1.13 91/06/08 18:08:45 rws Exp $ */
+/* $XConsortium: Berklib.c,v 1.14 91/07/09 14:49:33 rws Exp $ */
 
 /*
  * These are routines found in BSD but not on all other systems.  The core
- * MIT distribution does not use them except for ffs in the server.  You
- * should enable only the ones that you need for your system.  Use Xfuncs.h
- * in clients to avoid using the slow versions of bcopy, bcmp, and bzero
- * provided here.
+ * MIT distribution does not use them except for ffs in the server, unless
+ * the system is seriously deficient.  You should enable only the ones that
+ * you need for your system.  Use Xfuncs.h in clients to avoid using the
+ * slow versions of bcopy, bcmp, and bzero provided here.
  */
 
 #include <sys/types.h>
@@ -17,7 +17,9 @@
 #endif
 
 #ifdef macII
-#define WANT_RANDOM
+/* silly bcopy in A/UX 2.0.1 does not handle overlaps */
+#define WANT_BFUNCS
+#define NO_BZERO
 #endif
 
 #ifdef SVR4
@@ -94,12 +96,16 @@ int bcmp (b1, b2, length)
     return memcmp(b1, b2, length);
 }
 
+#ifndef NO_BZERO
+
 bzero (b, length)
     register char *b;
     register int length;
 {
     memset(b, 0, length);
 }
+
+#endif
 
 #else
 
