@@ -1,4 +1,4 @@
-/* $XConsortium: choose.c,v 1.11 94/07/25 13:38:13 mor Exp $ */
+/* $XConsortium: choose.c,v 1.12 94/07/28 14:54:35 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -187,7 +187,7 @@ ChooseSession ()
     XtSetKeyboardFocus (chooseSessionPopup, chooseSessionListWidget);
 
     XSetInputFocus (XtDisplay (topLevel), XtWindow (chooseSessionPopup),
-	RevertToNone, CurrentTime);
+	RevertToPointerRoot, CurrentTime);
 
     XSync (XtDisplay (topLevel), 0);
 }
@@ -409,7 +409,7 @@ XtPointer 	callData;
 	delete_phase = 0;
     }
     else
-	exit (0);
+	exit (2);
 }
 
 
