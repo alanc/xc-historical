@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.43 88/10/07 13:28:23 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.44 88/11/16 13:45:06 rws Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -121,7 +121,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.43 88/10/07 13:28:23 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.44 88/11/16 13:45:06 rws Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -1305,6 +1305,7 @@ static void TekRealize (gw, valuemaskp, values)
     tek->count = 0;
     tek->ptr = tek->data;
     Tpushback = Tpushb;
+    Tbptr = Tbuffer;
     screen->cur_X = 0;
     screen->cur_Y = TEKHOME;
     line_pt = Tline;
