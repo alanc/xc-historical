@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.17 88/01/21 10:27:57 swick Locked $";
+static char rcsid[] = "$Header: Text.c,v 1.18 88/01/22 11:39:45 swick Locked $";
 #endif lint
 
 /*
@@ -28,9 +28,12 @@ static char rcsid[] = "$Header: Text.c,v 1.17 88/01/21 10:27:57 swick Locked $";
 
 #include <X/Intrinsic.h>
 #include <X/Text.h>
+#include <X/Label.h>
 #include <X/Command.h>
 #include <X/Dialog.h>
 #include <X/Scroll.h>
+#include <X/Shell.h>
+#include <X/Popup.h>
 #include <X/Atoms.h>
 #include <X/Xutil.h>
 #include <X/Xos.h>
@@ -40,13 +43,13 @@ Atom FMT8BIT = NULL;
 
 extern void bcopy();
 extern void _XLowerCase();
+extern int errno, sys_nerr;
+extern char* sys_errlist[];
 
-#define BufMax 1000
 #define abs(x)	(((x) < 0) ? (-(x)) : (x))
 #define min(x,y)	((x) < (y) ? (x) : (y))
 #define max(x,y)	((x) > (y) ? (x) : (y))
 #define GETLASTPOS  (*ctx->text.source->Scan) (ctx->text.source, 0, XtstAll, XtsdRight, 1, TRUE)
-#define BUTTONMASK 0x143d
 
 #define  yMargin 2
 #define zeroPosition ((XtTextPosition) 0)
@@ -81,6 +84,10 @@ static XtResource resources[] = {
         offset(core.height), XrmRString, "-9999" /*DEFAULTVALUE*/},
     {XtNtextOptions, XtCTextOptions, XrmRInt, sizeof (int),
         offset(text.options), XrmRString, "0"},
+    {XtNdialogHOffset, XtCMargin, XrmRInt, sizeof(int),
+	 offset(text.dialog_horiz_offset), XrmRString, "10"},
+    {XtNdialogVOffset, XtCMargin, XrmRInt, sizeof(int),
+	 offset(text.dialog_vert_offset), XrmRString, "10"},
     {XtNdisplayPosition, XtCTextPosition, XrmRInt,
 	 sizeof (XtTextPosition), offset(text.lt.top), XrmRString, "0"},
     {XtNinsertPosition, XtCTextPosition, XtRInt,
@@ -1260,11 +1267,17 @@ _XtTextExecuteUpdate(ctx)
 }
 
 
-static void TextDestroy(ctx)
-TextWidget ctx;
+static void TextDestroy(w)
+    Widget w;
 {
-    if (ctx->text.dialog)
-	(void) XtDestroyWidget(ctx->text.dialog);
+    TextWidget ctx = (TextWidget)w;
+    register struct _dialog *dialog, *next;
+
+    for (dialog = ctx->text.dialog; dialog; dialog = next) {
+	/* no need to destroy the widgets here; they should go automatically */
+	next = dialog->next;
+	XtFree( dialog );
+    }
     if (ctx->text.outer)
 	(void) XtDestroyWidget(ctx->text.outer);
     if (ctx->text.sbar)
@@ -2189,15 +2202,21 @@ static void RedrawDisplay(ctx, event)
 }
 
 
-void _XtTextAbortDialog(ctx, event)
-  TextWidget ctx;
-   XEvent *event;
+/* ARGSUSED */
+void _XtTextAbortDialog(w, closure, call_data)
+     Widget w;			/* unused */
+     caddr_t closure;		/* dialog */
+     caddr_t call_data;		/* unused */
 {
-   StartAction(ctx, event);
-    if (ctx->text.dialog) {
-	XtDestroyWidget(ctx->text.dialog);
-	ctx->text.dialog = NULL;
-    }
+   struct _dialog *dialog = (struct _dialog*)closure;
+   Widget popup = dialog->widget->core.parent;
+   TextWidget ctx = dialog->text; 
+
+   StartAction(ctx, (XEvent*)NULL);
+     XtPopdown(popup);
+     dialog->mapped = False;
+     if (dialog->message)
+	 XtUnmanageChild( dialog->message );
    EndAction(ctx);
 }
 
@@ -2231,13 +2250,42 @@ static int InsertFileNamed(ctx, str)
     return 0;
 }
 
-static void DoInsert(ctx)
-  TextWidget ctx;
+/* ARGSUSED */
+static void DoInsert(w, closure, call_data)
+     Widget w;			/* unused */
+     caddr_t closure;		/* text widget */
+     caddr_t call_data;		/* unused */
 {
-    if (InsertFileNamed(ctx, XtDialogGetValueString(ctx->text.dialog)))
-	XBell(XtDisplay(ctx), 50);
+    struct _dialog *dialog = (struct _dialog*)closure;
+
+    if (InsertFileNamed( dialog->text,
+			 XtDialogGetValueString(dialog->widget) )) {
+	char msg[128];
+	static Arg args[] = {
+	    {XtNlabel, NULL},
+	    {XtNfromVert, NULL},
+	    {XtNleft, (XtArgVal)XtChainLeft},
+	    {XtNright, (XtArgVal)XtChainRight},
+	    {XtNborderWidth, 0},
+	};
+	sprintf( msg, "*** Error: %s ***",
+		 (errno > 0 && errno < sys_nerr) ?
+			sys_errlist[errno] : "Can't open file" );
+	args[0].value = (XtArgVal)msg;
+	if (dialog->message) {
+	    XtSetValues( dialog->message, args, (Cardinal)1 );
+	    XtManageChild( dialog->message );
+	}
+	else {
+	    args[1].value = (XtArgVal)dialog->doit;
+	    dialog->message =
+		XtCreateManagedWidget( "message", labelWidgetClass,
+				       dialog->widget, args, XtNumber(args) );
+	}
+/*	XBell(XtDisplay(w), 50); */
+    }
     else {
-	_XtTextAbortDialog(ctx, (XEvent*)NULL);
+	_XtTextAbortDialog(w, closure, NULL);
     }
 }
 
@@ -2280,27 +2328,40 @@ static void InsertChar(ctx, event)
    EndAction(ctx);
 }
 
-static void InsertFile(ctx, event)
-  TextWidget ctx;
-   XEvent *event;
+static void InsertFile(w, event)
+    Widget w;
+    XEvent *event;
 {
+#define DIALOG_LABEL "Insert File:"
+    TextWidget ctx = (TextWidget)w;
+    register struct _dialog *dialog, *prev;
     char *ptr;
     XtTextBlock text;
-    register Widget dialog;
-    Arg args[1];
+    register Widget popup;
+    static Arg popup_args[] = {
+	{XtNx, NULL},
+	{XtNy, NULL},
+	{XtNiconName, (XtArgVal)DIALOG_LABEL},
+	{XtNgeometry, NULL},
+	{XtNallowshellresize, True},
+    };
+    Arg args[2];
     static XtCallbackRec callbacks[] = { {NULL, NULL}, {NULL, NULL} };
+    int x, y;
+    Window j;
 
    StartAction(ctx, event);
     if (ctx->text.source->edit_mode != XttextEdit) {
-	XBell(XtDisplay(ctx), 50);
+	XBell(XtDisplay(w), 50);
 	EndAction(ctx);
 	return;
     }
     if (ctx->text.s.left < ctx->text.s.right) {
 	ptr = _XtTextGetText(ctx, ctx->text.s.left, ctx->text.s.right);
 	DeleteCurrentSelection(ctx, (XEvent*)NULL);
+#ifdef notdef
 	if (InsertFileNamed(ctx, ptr)) {
-	    XBell( XtDisplay(ctx), 50);
+	    XBell( XtDisplay(w), 50);
 	    text.ptr = ptr;
 	    text.length = strlen(ptr);
 	    (void) ReplaceText(ctx, ctx->text.insertPos, ctx->text.insertPos, &text);
@@ -2312,27 +2373,63 @@ static void InsertFile(ctx, event)
 	XtFree(ptr);
 	EndAction(ctx);
 	return;
+#endif notdef
     }
-    if (ctx->text.dialog)
-	_XtTextAbortDialog(ctx, (XEvent*)NULL);
+    else {
+	ptr = "";
+    }
+    XTranslateCoordinates( XtDisplay(w), XtWindow(w),
+			   RootWindowOfScreen(XtScreen(w)), 0, 0, &x, &y, &j );
+    x += ctx->text.dialog_horiz_offset;
+    y += ctx->text.dialog_vert_offset;
+    if (ctx->text.sbar)
+	x += ctx->text.sbar->core.width + ctx->text.sbar->core.border_width;
+    prev = NULL;
+    for (dialog = ctx->text.dialog; dialog; dialog = dialog->next) {
+	if (!dialog->mapped)
+	    break;
+	x += ctx->text.dialog_horiz_offset;
+	y += ctx->text.dialog_vert_offset;
+	prev = dialog;
+    }
+    if (dialog) {
+	_XtTextAbortDialog(w, (caddr_t)dialog, NULL);
+	XtMoveWidget(popup = dialog->widget->core.parent, x, y);
+    }
+    else {
+	dialog = XtNew(struct _dialog);
+	if (prev)
+	    prev->next = dialog; /* add to end of list to make visual */
+	else			 /* placement easier next time 'round */
+	    ctx->text.dialog = dialog;
+	dialog->text = ctx;
+	dialog->message = (Widget)NULL;
+	dialog->next = NULL;
+	popup_args[0].value = (XtArgVal)x;
+	popup_args[1].value = (XtArgVal)y;
+	popup = XtCreatePopupShell( "insertFile", popupWidgetClass, w,
+				    popup_args, XtNumber(popup_args) );
 
-    XtSetArg( args[0], XtNlabel, "Insert File:" );
-    dialog = XtCreateWidget( NULL, dialogWidgetClass,
-			     (Widget)ctx, args, (Cardinal)1 );
+	XtSetArg( args[0], XtNlabel, DIALOG_LABEL );
+	XtSetArg( args[1], XtNvalue, ptr ); 
+	dialog->widget =
+	    XtCreateWidget(NULL, dialogWidgetClass, popup, args, (Cardinal)2);
 
-    callbacks[0].callback = _XtTextAbortDialog;
-    callbacks[0].closure = (caddr_t)ctx;
-    XtSetArg( args[0], XtNcallback, callbacks );
-    XtCreateManagedWidget("Abort",commandWidgetClass,dialog,args,(Cardinal)1);
+	callbacks[0].callback = _XtTextAbortDialog;
+	callbacks[0].closure = (caddr_t)dialog;
+	XtSetArg( args[0], XtNcallback, callbacks );
+	XtCreateManagedWidget( "Abort", commandWidgetClass, dialog->widget,
+			       args, (Cardinal)1 );
 
-    callbacks[0].callback = DoInsert;
-    XtCreateManagedWidget("DoIt",commandWidgetClass,dialog,args,(Cardinal)1);
+	callbacks[0].callback = DoInsert;
+	dialog->doit =
+	    XtCreateManagedWidget( "DoIt", commandWidgetClass, dialog->widget,
+				   args, (Cardinal)1 );
 
-    XtRealizeWidget( dialog );
-
-    XMapWindow( XtDisplay(ctx), XtWindow(dialog) );
-
-    ctx->text.dialog = dialog;
+	XtRealizeWidget( popup );
+    }
+    XtPopup(popup, XtGrabNone);
+    dialog->mapped = True;
 
    EndAction(ctx);
 }
