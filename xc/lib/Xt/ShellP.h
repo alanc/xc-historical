@@ -1,5 +1,5 @@
 /*
-* $XConsortium: ShellP.h,v 1.25 89/09/18 07:51:42 swick Exp $
+* $XConsortium: ShellP.h,v 1.26 89/09/21 13:10:46 swick Exp $
 * $oHeader: ShellP.h,v 1.2 88/08/18 15:56:19 asente Exp $
 */
 
@@ -90,6 +90,7 @@ typedef struct {
 	Boolean     client_specified; /* re-using old name */
 #define _XtShellPositionValid	0x01
 #define _XtShellNotReparented	0x02
+#define _XtShellPPositionOK	0x04
 	Boolean	    save_under;
 	Boolean	    override_redirect;
 
