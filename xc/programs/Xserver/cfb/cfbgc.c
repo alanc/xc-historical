@@ -109,7 +109,7 @@ cfbCreateGC(pGC)
     {
 	cfbPrivGC  *pPriv;
 
-	pPriv = (cfbPrivGC *) Xalloc(sizeof(cfbPrivGC));
+	pPriv = (cfbPrivGC *) xalloc(sizeof(cfbPrivGC));
 	if (!pPriv)
 	    return FALSE;
 	else {
@@ -129,9 +129,9 @@ cfbCreateGC(pGC)
     }
     pGC->devBackingStore = (pointer)NULL;
     
-    pQ = (GCInterestPtr) Xalloc(sizeof(GCInterestRec));
+    pQ = (GCInterestPtr) xalloc(sizeof(GCInterestRec));
     if (!pQ) {
-	Xfree(pGC->devPriv);
+	xfree(pGC->devPriv);
 	return FALSE;
     }
 
@@ -189,8 +189,8 @@ cfbDestroyGC(pGC, pQ)
 	(*pGC->pScreen->RegionDestroy)(pPriv->pCompositeClip);
     if(pPriv->pAbsClientRegion)
 	(*pGC->pScreen->RegionDestroy)(pPriv->pAbsClientRegion);
-    Xfree(pGC->devPriv);
-    Xfree(pQ);
+    xfree(pGC->devPriv);
+    xfree(pQ);
 }
 
 #define WINMOVED(pWin, pGC) \
@@ -569,28 +569,15 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	    break;
 	case FillTiled:
 	    pGC->FillSpans = cfbUnnaturalTileFS;
-	    if (!pGC->tile)
-		FatalError("cfbValidateGC: tile mode & no tile\n");
-	    if (((DrawablePtr)pGC->tile)->depth != pGC->depth)
-		FatalError("cfbValidateGC: tile wrong depth\n");
 	    break;
 	case FillStippled:
 	    pGC->FillSpans = cfbUnnaturalStippleFS;
-	    if (!pGC->stipple)
-		FatalError("cfbValidateGC: stipple mode & no stipple\n");
-	    if (((DrawablePtr)pGC->stipple)->depth != 1)
-		FatalError("cfbValidateGC: stipple wrong depth\n");
 	    break;
 	case FillOpaqueStippled:
 	    if (pGC->fgPixel == pGC->bgPixel)
 		pGC->FillSpans = cfbSolidFS;
-	    else {
+	    else
 		pGC->FillSpans = cfbUnnaturalStippleFS;
-		if (!pGC->stipple)
-		    FatalError("cfbValidateGC: stipple mode & no stipple\n");
-		if (((DrawablePtr)pGC->stipple)->depth != 1)
-		    FatalError("cfbValidateGC: stipple wrong depth\n");
-	    }
 	    break;
 	default:
 	    FatalError("cfbValidateGC: illegal fillStyle\n");
@@ -611,14 +598,10 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	    cfbDestroyPixmap(devPriv->pRotatedStipple);
 	    devPriv->pRotatedStipple = (PixmapPtr)NULL;
 	}
-	if (pGC->tile &&
-	    (devPriv->pRotatedTile = cfbCopyPixmap(pGC->tile))
-		== (PixmapPtr) NULL)
-	    FatalError("cfbValidateGC: cannot rotate tile\n");
-	if (pGC->stipple && 
-	    (devPriv->pRotatedStipple = cfbCopyPixmap(pGC->stipple))
-		== (PixmapPtr) NULL)
-	    FatalError("cfbValidateGC: cannot rotate stipple\n");
+	if (pGC->tile)
+	    devPriv->pRotatedTile = cfbCopyPixmap(pGC->tile);
+	if (pGC->stipple)
+	    devPriv->pRotatedStipple = cfbCopyPixmap(pGC->stipple);
 	/*
 	 * If we've gotten here, we're probably going to rotate the tile
 	 * and/or stipple, so we have to add the pattern origin into
@@ -717,7 +700,7 @@ cfbChangeClip(pGC, type, pvalue, nrects)
     else if (type != CT_NONE)
     {
 	pGC->clientClip = (pointer) miRectsToRegion(pGC, nrects, pvalue, type);
-	Xfree(pvalue);
+	xfree(pvalue);
     }
     pGC->clientClipType = (type != CT_NONE && pGC->clientClip) ? CT_REGION :
 								 CT_NONE;
