@@ -1,4 +1,4 @@
-/* $XConsortium: sm_process.c,v 1.27 94/04/07 18:12:54 mor Exp $ */
+/* $XConsortium: sm_process.c,v 1.28 94/04/17 20:16:57 mor Exp mor $ */
 
 /*
 
@@ -108,6 +108,12 @@ Bool		 *replyReadyRet;
 	{
 	    IceDisposeCompleteMessage (iceConn, pData);
 	    return;
+	}
+
+	if (swap)
+	{
+	    pMsg->errorClass = lswaps (pMsg->errorClass);
+	    pMsg->offendingSequenceNum = lswapl (pMsg->offendingSequenceNum);
 	}
 
 	if (replyWait &&
@@ -448,6 +454,12 @@ Bool		 swap;
 	{
 	    IceDisposeCompleteMessage (iceConn, pData);
 	    return;
+	}
+
+	if (swap)
+	{
+	    pMsg->errorClass = lswaps (pMsg->errorClass);
+	    pMsg->offendingSequenceNum = lswapl (pMsg->offendingSequenceNum);
 	}
 
 	(*_SmsErrorHandler) (smsConn, swap,
