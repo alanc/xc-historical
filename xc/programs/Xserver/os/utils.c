@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.126 93/09/13 20:54:52 rws Exp $ */
+/* $XConsortium: utils.c,v 1.127 93/09/18 13:43:42 dpw Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -209,7 +209,7 @@ void UseMsg()
     ErrorF("-co string             color database file\n");
     ErrorF("-core                  generate core dump on fatal error\n");
     ErrorF("-dpi int               screen resolution in dots per inch\n");
-    ErrorF("-defer [0|8|16]        defer loading of [no|all|16-bit] glyphs\n");
+    ErrorF("-deferglyphs [none|all|16] defer loading of [no|all|16-bit] glyphs\n");
     ErrorF("-f #                   bell base (0-100)\n");
     ErrorF("-fc string             cursor font\n");
     ErrorF("-fn string             default font name\n");
