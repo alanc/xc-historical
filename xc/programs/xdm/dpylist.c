@@ -26,8 +26,6 @@
 
 struct display	*displays;
 
-extern void	free ();
-
 AnyDisplaysLeft ()
 {
 	return displays != (struct display *) 0;
