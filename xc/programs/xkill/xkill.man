@@ -3,7 +3,7 @@
 xkill - kill a client by its X resource
 .SH SYNOPSIS
 .B "xkill"
-[\-display \fIdisplayname\fP] [\-id \fIresource\fP] [\-button number] [\-all]
+[\-display \fIdisplayname\fP] [\-id \fIresource\fP] [\-button number] [\-all] [\-wmwindow]
 .SH DESCRIPTION
 .PP
 .I Xkill
@@ -36,6 +36,12 @@ This option indicates that all clients with top-level windows on the screen
 should be killed.  \fIXkill\fP will ask you to select the root window with 
 each of the currently defined buttons to give you several chances to abort.
 Use of this option is highly discouraged.
+.TP 8
+.B \-wmwindow
+This option indicates that xkill should ignore the standard conventions for
+finding top-level client windows (which are typically nested inside a window
+manager window), and simply believe that you want to kill direct children of
+the root.
 .SH XDEFAULTS
 .TP 8
 .B Button
