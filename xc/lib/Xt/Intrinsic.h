@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.185 93/09/28 13:23:38 kaleb Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.186 93/09/28 17:54:04 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2576,6 +2576,52 @@ extern void XtUnregisterDrawable(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     Drawable		/* drawable */
+#endif
+);
+
+extern Widget XtHooksOfDisplay(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */
+#endif
+);
+
+typedef struct {
+    Widget widget;
+    ArgList args;
+    Cardinal num_args;
+} XtCreateHookDataRec, *XtCreateHookData;
+
+typedef struct {
+    Widget old;
+    Widget widget;
+    ArgList args;
+    Cardinal num_args;
+} XtChangeHookDataRec, *XtChangeHookData;
+
+typedef struct {
+    Widget widget;
+    XtGeometryMask changeMask;
+    XWindowChanges changes;
+    Boolean pending;
+} XtConfigureHookDataRec, *XtConfigureHookData;
+
+typedef struct {
+    Widget widget;
+    XtWidgetGeometry* request;
+    XtWidgetGeometry* reply;
+    XtGeometryResult result;
+    Boolean pending;
+} XtGeometryHookDataRec, *XtGeometryHookData;
+
+typedef struct {
+    Widget widget;
+} XtDestroyHookDataRec, *XtDestroyHookData;
+
+extern void XtGetDisplays(
+#if NeedFunctionPrototypes
+    XtAppContext	/* app_context */,
+    Display***		/* dpy_return */,
+    Cardinal*		/* num_dpy_return */
 #endif
 );
 
