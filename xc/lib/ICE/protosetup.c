@@ -1,4 +1,4 @@
-/* $XConsortium: protosetup.c,v 1.3 93/09/10 14:10:56 mor Exp $ */
+/* $XConsortium: protosetup.c,v 1.4 93/09/13 16:45:06 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -253,8 +253,8 @@ char 	*errorStringRet;
 	    iceConn->his_min_opcode].accept_flag = 0;
 
 	iceConn->process_msg_info[hisOpcode -
-	    iceConn->his_min_opcode].process_msg_cb.orig_client =
-		versionRec->process_msg_cb;
+	    iceConn->his_min_opcode].process_msg_proc.orig_client =
+		versionRec->process_msg_proc;
 
 	return (IceProtocolSetupSuccess);
     }
