@@ -17,7 +17,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.21 89/10/24 18:28:49 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.22 89/11/05 15:35:21 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -375,7 +375,7 @@ miZeroArcPts(arc, pts)
 	    Pixelate(xorghn + y, yorgh - x);
 	    Pixelate(xorghn + y, yorgh + x);
 	    Pixelate(xorghp - y, yorgh + x);
-	    MIARCCIRCLESTEP( );
+	    MIARCCIRCLESTEP(;);
 	}
 	if (x > 1 && pts[-1].x == pts[-5].x && pts[-1].y == pts[-5].y)
 	    pts -= 4;
@@ -386,19 +386,19 @@ miZeroArcPts(arc, pts)
     {
 	while (y < info.h || x < info.w)
 	{
-	    MIARCOCTANTSHIFT( );
+	    MIARCOCTANTSHIFT(;);
 	    Pixelate(info.xorg + x, info.yorg + y);
 	    Pixelate(info.xorgo - x, info.yorg + y);
 	    Pixelate(info.xorgo - x, info.yorgo - y);
 	    Pixelate(info.xorg + x, info.yorgo - y);
-	    MIARCSTEP( , );
+	    MIARCSTEP(;,;);
 	}
     }
     else
     {
 	while (y < info.h || x < info.w)
 	{
-	    MIARCOCTANTSHIFT( );
+	    MIARCOCTANTSHIFT(;);
 	    if ((x == info.start.x) || (y == info.start.y))
 	    {
 		mask = info.start.mask;
@@ -413,7 +413,7 @@ miZeroArcPts(arc, pts)
 		mask = info.end.mask;
 		info.end = info.altend;
 	    }
-	    MIARCSTEP( , );
+	    MIARCSTEP(;,;);
 	}
     }
     if ((x == info.start.x) || (y == info.start.y))
@@ -474,7 +474,7 @@ miZeroArcDashPts(pGC, arc, dinfo, points, maxPts, evenPts, oddPts)
     }
     while (y < info.h || x < info.w)
     {
-	MIARCOCTANTSHIFT( );
+	MIARCOCTANTSHIFT(;);
 	if ((x == info.firstx) || (y == info.firsty))
 	    startPt = arcPts[startseg];
 	if ((x == info.start.x) || (y == info.start.y))
@@ -491,7 +491,7 @@ miZeroArcDashPts(pGC, arc, dinfo, points, maxPts, evenPts, oddPts)
 	    mask = info.end.mask;
 	    info.end = info.altend;
 	}
-	MIARCSTEP( , );
+	MIARCSTEP(;,;);
     }
     if ((x == info.firstx) || (y == info.firsty))
 	startPt = arcPts[startseg];
