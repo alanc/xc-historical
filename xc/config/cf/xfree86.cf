@@ -1,4 +1,4 @@
-XCOMM $XConsortium: xfree86.cf,v 1.1 94/03/29 15:34:48 gildea Exp $
+XCOMM $XConsortium: xfree86.cf,v 1.2 94/03/31 11:37:26 gildea Exp kaleb $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -16,18 +16,16 @@ XCOMM $XConsortium: xfree86.cf,v 1.1 94/03/29 15:34:48 gildea Exp $
 
 #ifndef XF86VGA16Server
 # define XF86VGA16Server	NO
+# ifndef XF86VGA16DualServer
+#  define XF86VGA16DualServer	NO
+# endif
 #endif
 
 #ifndef XF86MonoServer
 # define XF86MonoServer		NO
-#endif
-
-#ifndef XF86HgaServer
-# define XF86HgaServer		NO
-#endif
-
-#ifndef XF86BdmServer
-# define XF86BdmServer		NO
+# ifndef XF86MonoDualServer
+#  define XF86MonoDualServer	NO
+# endif
 #endif
 
 #ifndef XF86S3Server
@@ -44,6 +42,18 @@ XCOMM $XConsortium: xfree86.cf,v 1.1 94/03/29 15:34:48 gildea Exp $
 
 #ifndef XF86Mach32Server
 # define XF86Mach32Server	NO
+#endif
+
+#ifndef XF86AGXServer
+# define XF86AGXServer		NO
+#endif
+
+#ifndef XF86P9000Server
+# define XF86P9000Server	NO
+#endif
+
+#ifndef XF86W32Server
+# define XF86W32Server		NO
 #endif
 
 #if XF86S3Server
@@ -70,11 +80,29 @@ XCOMM $XConsortium: xfree86.cf,v 1.1 94/03/29 15:34:48 gildea Exp $
 # define XF86Mach32Dir		/**/
 #endif
 
+#if XF86P9000Server
+# define XF86P9000Dir		p9000
+#else
+# define XF86P9000Dir		/**/
+#endif
+
+#if XF86AGXServer
+# define XF86AGXDir		agx
+#else
+# define XF86AGXDir		/**/
+#endif
+
+#if XF86W32Server
+# define XF86W32Dir		et4000w32
+#else
+# define XF86W32Dir		/**/
+#endif
+
 #undef XF86AccelServerDirs
-#define XF86AccelServerDirs   XF86S3Dir XF86I8514Dir XF86Mach8Dir XF86Mach32Dir
+#define XF86AccelServerDirs   XF86S3Dir XF86I8514Dir XF86Mach8Dir XF86Mach32Dir XF86P9000Dir XF86AGXDir XF86W32Dir
 
 #undef XF86AccelServer
-#if XF86S3Server || XF86I8514Server || XF86Mach8Server || XF86Mach32Server
+#if XF86S3Server || XF86I8514Server || XF86Mach8Server || XF86Mach32Server || XF86P9000Server || XF86AGXServer || XF86W32Server
 # define XF86AccelServer	YES
 #else
 # define XF86AccelServer	NO
@@ -83,30 +111,44 @@ XCOMM $XConsortium: xfree86.cf,v 1.1 94/03/29 15:34:48 gildea Exp $
 /*
  * Driver list for several of the X Servers.
  */
-#ifndef XF86Vga256Drivers
-# define XF86Vga256Drivers	et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
-				ncr77c22 compaq oak
+#ifndef XF86SvgaDrivers
+# define XF86SvgaDrivers	et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
+				ncr77c22 compaq oak mx al2101 cl6420 video7 \
+				generic
 #endif
 
 #ifndef XF86Vga16Drivers
-# define XF86Vga16Drivers	et4000 ncr77c22 generic tvga8900
+# define XF86Vga16Drivers	et4000 ncr77c22 ati tvga8900 oak cl6420 generic
 #endif
 
 #ifndef XF86Vga2Drivers
-# define XF86Vga2Drivers	et4000 et3000 pvga1 gvga tvga8900 ncr77c22 \
-				compaq oak generic
+# define XF86Vga2Drivers	et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
+				ncr77c22 compaq oak cl6420 generic
 #endif
 
-#ifndef XF86Hga2Drivers
-# define XF86Hga2Drivers	hga6845
+#ifndef XF86Vga2Banked
+# define XF86Vga2Banked		YES
 #endif
 
-#ifndef XF86Bdm2Drivers
-# define XF86Bdm2Drivers	hgc1280 sigma
+#ifndef XF86MonoDrivers
+# define XF86MonoDrivers	hgc1280 sigma apollo hercules
 #endif
 
+/* This doesn't do anything (yet) */
 #ifndef XF86S3Drivers
 # define XF86S3Drivers		mmio_928 s3_generic
+#endif
+
+#ifndef XF86W32Drivers
+# define XF86W32Drivers		et4000w32
+#endif
+
+#ifndef BuildPexExt
+#define BuildPexExt		XF86AccelServer || XF86SVGAServer
+#endif
+
+#ifndef BuildXIE
+#define BuildXIE		XF86AccelServer || XF86SVGAServer
 #endif
 
 /*
@@ -125,21 +167,78 @@ XCOMM $XConsortium: xfree86.cf,v 1.1 94/03/29 15:34:48 gildea Exp $
 #define BuildType1	YES
 #endif
 
+#ifndef CompressAllFonts
+#define CompressAllFonts	YES
+#endif
+
+#ifndef AsmDefines
+#define AsmDefines /**/
+#endif
+
+#ifndef XFree86Version
+#define XFree86Version	3100
+#endif
+
+#ifndef UseRgbTxt
+#define UseRgbTxt	YES
+#endif
+
+#ifndef XF86LinkKit
+#define XF86LinkKit	NO
+#endif
+
+#ifndef LinkKitDefines
+#if XF86LinkKit
+#define LinkKitDefines	-DLINKKIT
+#else
+#define LinkKitDefines	/**/
+#endif
+#endif
+
+#ifndef ServerExtraDefines
+#define ServerExtraDefines -DSTATIC_COLOR -DAVOID_GLYPHBLT LinkKitDefines
+#endif
+
+#ifndef LinkKitDir
+#define LinkKitDir	$(USRLIBDIR)/Server
+#endif
+
+
 /*
  * Some commonly refered to directories are defined here.
  */
 
+#if XF86LinkKit
+       XF86SRC = $(TOP)
+  XF86ACCELSRC = $(XF86SRC)/lib
+    XF86COMSRC = $(XF86SRC)/lib
+ XF86CONFIGSRC = $(XF86SRC)
+     XF86HWSRC = $(XF86SRC)/lib
+     XF86OSSRC = $(XF86SRC)/lib
+     DRIVERSRC = $(XF86SRC)/drivers
+  VGADRIVERSRC = $(XF86SRC)/drivers/vga256
+VGA16DRIVERSRC = $(XF86SRC)/drivers/vga16
+ VGA2DRIVERSRC = $(XF86SRC)/drivers/vga2
+ MONODRIVERSRC = $(XF86SRC)/drivers/mono
+   S3DRIVERSRC = $(XF86SRC)/drivers/s3
+
+#ifdef SiteIConfigFiles
+#undef SiteIConfigFiles
+#endif
+#define SiteIConfigFiles $(TOP)/site.def $(TOP/LinkKit.tmpl $(TOP)/Imakefile
+#else
        XF86SRC = $(SERVERSRC)/hw/xfree86
   XF86ACCELSRC = $(XF86SRC)/accel
     XF86COMSRC = $(XF86SRC)/common
+ XF86CONFIGSRC = $(XF86COMSRC)
      XF86HWSRC = $(XF86SRC)/common_hw
      XF86OSSRC = $(XF86SRC)/os-support
   VGADRIVERSRC = $(XF86SRC)/vga256/drivers
 VGA16DRIVERSRC = $(XF86SRC)/vga16/drivers
  VGA2DRIVERSRC = $(XF86SRC)/vga2/drivers
- HGA2DRIVERSRC = $(XF86SRC)/hga2/drivers
- BDM2DRIVERSRC = $(XF86SRC)/bdm2/drivers
+ MONODRIVERSRC = $(XF86SRC)/mono/drivers
    S3DRIVERSRC = $(XF86SRC)/accel/s3/drivers
+#endif
 
 /*
  * These libraries are needed by all X Servers
@@ -147,28 +246,12 @@ VGA16DRIVERSRC = $(XF86SRC)/vga16/drivers
 
 XF86INIT   = $(XF86COMSRC)/xf86Init.o
 XF86MINIT  = $(XF86COMSRC)/xf86Init_m.o
-XF86CONFIG = $(XF86COMSRC)/xf86_Option.o
+XF86CONFIG = $(XF86CONFIGSRC)/xf86_Option.o
 XF86COMLIB = $(XF86COMSRC)/libxf86.a
 XF86OSLIB  = $(XF86OSSRC)/libxf86_os.a
 XF86HWLIB  = $(XF86HWSRC)/libxf86_hw.a
 XF86LIBS   = $(XF86INIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86HWLIB) $(XF86OSLIB)
 XF86MLIBS  = $(XF86MINIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86HWLIB) $(XF86OSLIB)
-
-/*
- * Other stuff used in the X Server source.
- */
-
-#ifndef AsmDefines
-#define AsmDefines /**/
-#endif
-
-#ifndef XFree86Version
-#define XFree86Version	3000
-#endif
-
-#ifndef UseRgbTxt
-#define UseRgbTxt	YES
-#endif
 
 /*
  * GNU Compiler stuff

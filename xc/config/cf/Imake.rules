@@ -1,6 +1,6 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.193 94/04/10 17:39:55 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.194 94/08/30 17:25:36 matt Exp kaleb $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -776,6 +776,29 @@ install:: LibraryTargetName(libname)					@@\
 	RanLibrary($(RANLIBINSTFLAGS) $(DESTDIR)dest/LibraryTargetName(libname))
 #endif /* InstallLibrary */
 
+
+/*
+ * InstallLinkKitLibrary - rule to install Link Kit library.
+ *                         (only used for XFree86). This is a no-op
+ *                         rule so that Imakefiles on non-XFree86 systems
+ *                         continue to build Makefiles correctly.
+ */
+#ifndef InstallLinkKitLibrary
+#define InstallLinkKitLibrary(lib,dir)
+#endif
+
+
+/*
+ * InstallLinkKitNamedLibrary - rule to install Link Kit library.
+ *                         (only used for XFree86). This is a no-op
+ *                         rule so that Imakefiles on non-XFree86 systems
+ *                         continue to build Makefiles correctly.
+ */
+#ifndef InstallLinkKitNamedLibrary
+#define InstallLinkKitNamedLibrary(lib,dlib,dir)
+#endif
+
+
 /*
  * MergeIntoInstalledLibrary - generate rules to merge one library into another
  */
@@ -861,6 +884,17 @@ InstallNamedTarget(install,srcname,$(INSTDATFLAGS),dest,dstname)
 #define	InstallNonExecFile(file,dest)					@@\
 InstallTarget(install,file,$(INSTDATFLAGS),dest)
 #endif /* InstallNonExecFile */
+
+
+/*
+ * InstallLinkKitNonExecFile - rule for installing server Link Kit files.
+ *                         (only used for XFree86). This is a no-op
+ *                         rule so that Imakefiles on non-XFree86 systems
+ *                         continue to build Makefiles correctly.
+ */
+#ifndef InstallLinkKitNonExecFile
+#define InstallLinkKitNonExecFile(file,dir)
+#endif
 
 
 /*
@@ -1773,6 +1807,17 @@ NamedTargetSubdirs(install.man,dirs,"installing man pages",DESTDIR=$(DESTDIR),in
 #ifndef IncludesSubdirs
 #define IncludesSubdirs(dirs) \
 NamedTargetSubdirs(includes,dirs,including,NullParameter,includes)
+#endif
+
+
+/*
+ * InstallLinkKitSubdirs - generate rules to recursively install server Link
+ *                         Kit (only used for XFree86). This is a no-op
+ *                         rule so that Imakefiles on non-XFree86 systems
+ *                         continue to build Makefiles correctly.
+ */
+#ifndef InstallLinkKitSubdirs
+#define InstallLinkKitSubdirs(dirs)
 #endif
 
 

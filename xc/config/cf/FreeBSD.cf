@@ -1,10 +1,11 @@
-XCOMM platform:  $XConsortium$
+XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp kaleb $
 
 #define OSName            FreeBSD 1.1
 #define OSVendor          /**/
 XCOMM operating system:  OSName
 #define OSMajorVersion    1
 #define OSMinorVersion    1
+#define OSTeenyVersion    0
 
 #define HasPutenv       YES
 #define HasBSD44Sockets YES
@@ -38,12 +39,13 @@ XCOMM operating system:  OSName
 
 #ifdef __i386__
 #define OptimizedCDebugFlags -m486 -O2
-#define ServerOSDefines	-DDDXTIME
 #else
 #define OptimizedCDebugFlags -O2
-#define ServerOSDefines /**/
 #endif
+#define ServerOSDefines	-DDDXTIME
 #define ServerExtraDefines GccGasOption
+
+#define StandardDefines	-DCSRG_BASED
 
 #define TroffCmd        groff -Tps
 #define SetTtyGroup     YES

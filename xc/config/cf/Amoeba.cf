@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Amoeba.cf,v 1.3 94/04/01 18:30:10 dpw Exp $
+XCOMM platform:  $XConsortium: Amoeba.cf,v 1.4 94/04/04 13:20:04 dpw Exp kaleb $
 
 /*  The presence of this configuration file in the X distribution
  *  does not imply full support for the system it describes.
@@ -23,13 +23,13 @@ XCOMM operating system:  OSName
 
 /* Configuration defaults */
 #ifndef AmoebaTop
-#define AmoebaTop		/usr/proj/amwork
+#define AmoebaTop		__AM_TOP__
 #endif
 #ifndef AmoebaBin
 #define AmoebaBin		$(ATOP)/bin.sun4
 #endif
 #ifndef AmoebaConf
-#define AmoebaConf		/usr/proj/amwork/conf/amoeba
+#define AmoebaConf		__AM_CONF__
 #endif
 
 #define HasNdbm			YES
@@ -59,13 +59,13 @@ XCOMM operating system:  OSName
 #define PexCCOptions		DefaultCCOptions
 #define ServerOSDefines		-DDDXOSINIT
 
-#define UsrLibDir               $(DESTDIR)/public/module/x11/lib
-#define LibDir                  $(DESTDIR)/public/module/x11/lib
-#define ManDirectoryRoot        $(DESTDIR)/public/module/x11/man
-#define BinDir                  $(DESTDIR)/public/module/x11/bin
-#define IncRoot                 $(DESTDIR)/public/module/x11/include
-#define FontDir                 $(DESTDIR)/public/module/x11/fonts/$(ARCH)
-#define DefaultRGBDatabase      $(DESTDIR)/public/module/x11/lib/rgb/$(ARCH)/rgb
+#define UsrLibDir               $(DESTDIR)/profile/module/x11/lib
+#define LibDir                  $(DESTDIR)/profile/module/x11/lib
+#define ManDirectoryRoot        $(DESTDIR)/profile/module/x11/man
+#define BinDir                  $(DESTDIR)/profile/module/x11/bin
+#define IncRoot                 $(DESTDIR)/profile/module/x11/include
+#define FontDir                 $(DESTDIR)/profile/module/x11/fonts/$(ARCH)
+#define DefaultRGBDatabase      $(DESTDIR)/profile/module/x11/lib/rgb/$(ARCH)/rgb
 
 #define ManSuffix               1
 #define ManPath                 ManDirectoryRoot
@@ -85,8 +85,9 @@ XCOMM operating system:  OSName
 #define FontDefines             -DFONT_SNF
 #define ConnectionFlags         -DAMTCPCONN -DAMRPCCONN
 #define ServerXdmcpDefines	/* no -DXDMCP */
+#define UseRgbTxt		YES
 #define NdbmDefines		-DSDBM -DNDBM -I$(INCLUDESRC)
-#define DBMLibrary		$(LIBSRC)/sdbm/libsdbm.a
+#define DBMLibrary		/* $(LIBSRC)/sdbm/libsdbm.a */
 
 #if defined(i386Architecture)
 #ifndef AckToolset
@@ -191,6 +192,8 @@ SPARCLIBDIR     = AmoebaBin/gnu/sparc
 ALDFLAGS        = -mam_sparc -n -Ttext 40000 -Bstatic -e start -L$(SPARCLIBDIR)
 #endif
 
+#define BootstrapCFlags		-DAMOEBA -DCROSS_$(ARCH) -DCROSS_COMPILE
+
 /*
  * The rest of this files consists of rules to allow cross-compilation
  * and installation of binaries and data files from the Unix host to
@@ -207,15 +210,12 @@ $(LD) $(ALDFLAGS) $(HEAD) -o program options objects libraries $(EXTRA_LOAD_FLAG
 
 /* ComplexHostProgramTarget - Compile a program such that we can run
  * it on this host, i.e., don't use the default cross compiler.
- * Note: this has no 'clean' target because that would cause the
- * build to remove imake as well.  That will then be rebuilt without
- * the proper BOOTSTRAPCFLAGS.
  */
 #ifndef ComplexHostProgramTarget
 #define	ComplexHostProgramTarget(program)				@@\
               CC=cc							@@\
     STD_INCLUDES=							@@\
-          CFLAGS=$(TOP_INCLUDES) $(INCLUDES)				@@\
+          CFLAGS=$(TOP_INCLUDES) $(INCLUDES) $(BOOTSTRAPCFLAGS)		@@\
 EXTRA_LOAD_FLAGS=							@@\
         PROGRAM = program						@@\
 									@@\
@@ -227,6 +227,8 @@ program: $(OBJS) $(DEPLIBS)						@@\
 									@@\
 DependTarget()								@@\
 LintTarget()
+									@@\
+clean::	
 #endif /* ComplexHostProgramTarget */
 
 #ifndef SimpleHostProgramTarget

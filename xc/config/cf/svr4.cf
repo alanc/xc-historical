@@ -1,4 +1,4 @@
-XCOMM $XConsortium: svr4.cf,v 1.5 94/04/01 19:59:16 kaleb Exp $
+XCOMM $XConsortium: svr4.cf,v 1.6 94/04/08 18:56:33 rws Exp kaleb $
 /*
  * A default OS name
  */
@@ -72,6 +72,12 @@ XCOMM $XConsortium: svr4.cf,v 1.5 94/04/01 19:59:16 kaleb Exp $
 #endif
 #ifndef YaccCmd
 #define	YaccCmd	/usr/ccs/bin/yacc
+#endif
+
+#if (OSMajorVersion == 0)
+#ifndef XawI18nDefines
+#define XawI18nDefines		-DUSE_XWCHAR_STRING
+#endif
 #endif
 
 #ifdef i386Architecture

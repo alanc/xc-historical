@@ -1,6 +1,6 @@
 XCOMM!/bin/sh
 XCOMM
-XCOMM $XConsortium: mdepend.cpp,v 1.9 92/04/14 18:21:13 rws Exp $
+XCOMM $XConsortium: mdepend.cpp,v 1.10 94/03/24 18:22:49 gildea Exp kaleb $
 XCOMM
 XCOMM	Do the equivalent of the 'makedepend' program, but do it right.
 XCOMM
@@ -126,7 +126,8 @@ do
 done
 echo ' $*' >> $ARGS
 
-echo "exec $CC `cat $ARGS`" > $CPPCMD
+echo "#!/bin/sh" > $CPPCMD
+echo "exec $CC `cat $ARGS`" >> $CPPCMD
 chmod +x $CPPCMD
 rm $ARGS
 

@@ -1,5 +1,5 @@
 %{
-/* $XConsortium: to_wfont.y,v 5.6 93/07/29 14:13:03 rws Exp $ */
+/* $XConsortium: to_wfont.y,v 5.7 94/04/17 20:10:08 rws Exp kaleb $ */
 
 /*****************************************************************
 
@@ -351,7 +351,7 @@ check_num_ch()
 
 yyerror()
 {
-#ifndef __bsdi__
+#if !defined(CSRG_BASED) && !defined(linux)
 	extern int      yylineno;
 #endif
 #	define ERR_SIZE (sizeof(err_string) / sizeof(char *))
@@ -374,10 +374,10 @@ yyerror()
 		str = err_string[yyerrno-1];
 	else
 		str = "Syntax error";
-#ifdef __bsdi__
-		fprintf(stderr, "%s.\n", str);
-#else
+#if !defined(CSRG_BASED) && !defined(linux)
 		fprintf(stderr, "line %d: %s.\n", yylineno, str);
+#else
+		fprintf(stderr, "%s.\n", str);
 #endif
 	freeall();
 	(void) unlink(fname);

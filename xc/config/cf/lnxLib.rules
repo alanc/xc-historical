@@ -1,4 +1,4 @@
-XCOMM $XConsortium: lnxLib.rules,v 1.1 94/03/29 15:34:47 gildea Exp $
+XCOMM $XConsortium: lnxLib.rules,v 1.2 94/03/31 11:37:29 gildea Exp kaleb $
 
 /*
  * Linux shared library rules (DLL version)
@@ -31,8 +31,6 @@ XCOMM $XConsortium: lnxLib.rules,v 1.1 94/03/29 15:34:47 gildea Exp $
 #define PositionIndependentCFlags -B/usr/dll/jump/
 #endif
 
-DLL_BINDIR = /usr/dll/bin
-
 /*
  * These definitions are now extended to work with the X sources and
  * external sources wishing to build shared libs.
@@ -60,7 +58,7 @@ DLL_BINDIR = /usr/dll/bin
  *  JUMP_GOTSIZE_Xfoo = 4096				<adjust if necessary>
  *  JUMP_STUBNAMES_Xfoo = libXfoo			<and others>
  *  JUMP_STUBS_IMPORT_Xfoo = /usr/lib/libc.sa		<and others>
- *  JUMP_LDLIBS_Xfoo = `$(CC) --print` -lc		<and others>
+ *  JUMP_LDLIBS_Xfoo = `$(CC) --print-libgcc-file-name` -lc <and others>
  *
  * To create a complex "host", you need to add
  *  JUMP_SIBARS_Xt = jump/libXbar.a~			<and others>
@@ -78,7 +76,7 @@ DLL_BINDIR = /usr/dll/bin
 #ifndef UseInstalled
 XCOMM These are only needed to build the server
 
-JUMP_LDLIBS_libc = `$(CC) --print` -lc
+JUMP_LDLIBS_libc = `$(CC) --print-libgcc-file-name` -lc
 
 XCOMM libX11.so (X11, SM, ICE)
 JUMP_ROOT_X11 = $(XLIBSRC)
@@ -257,7 +255,7 @@ JUMP_DIR=./jump								@@\
 JUMP_LIB=Concat(lib,libname)						@@\
 									@@\
 XCOMM  this is needed for newer gnumake versions			@@\
-	export JUMP_DIR JUMP_LIB					@@\
+export JUMP_DIR JUMP_LIB						@@\
 									@@\
 JUMP_IS_HOST=$(Concat(JUMP_IS_HOST_,libname))				@@\
 JUMP_AR=$(JUMP_DIR)/Concat(lib,libname.a~)				@@\
@@ -287,14 +285,14 @@ down/mk_JUMP_SA_1:: $(JUMP_SO)						@@\
 									@@\
 down/mk_JUMP_SA_1:: down/mk_JUMP_SO_2					@@\
 	$(RM) $(Concat(JUMP_STUBLIBS_,libname))				@@\
-	$(DLL_BINDIR)/mkstubs -v rev -l $(JUMP_LIB) \
+	mkstubs -v rev -l $(JUMP_LIB) \
 		-a $(Concat(JUMP_ADDRESS_,libname)) \
 		-j $(Concat(JUMP_JUMPTABLESIZE_,libname)) \
 		-g $(Concat(JUMP_GOTSIZE_,libname)) \
 		-- $(Concat(JUMP_STUBNAMES_,libname))			@@\
-	$(DLL_BINDIR)/verify-shlib -l $(JUMP_SO) \
-		$(Concat(JUMP_STUBLIBS_,libname)) && \
-		$(RM) verify.out					@@\
+	verify-shlib -l $(JUMP_SO) \
+		$(Concat(JUMP_STUBLIBS_,libname))			@@\
+	$(MV) verify.out $(JUMP_DIR)					@@\
 	touch $@							@@\
 									@@\
 mk_JUMP_HOST:								@@\
@@ -310,7 +308,7 @@ down/mk_JUMP_SO_1:: $(JUMP_AR) mk_JUMP_SIBDIRS down/mk_JUMP_SO_2	@@\
 									@@\
 down/mk_JUMP_SO_2: down/mk_JUMP_AR $(Concat(JUMP_SIBARS_,libname))	@@\
 	$(RM) $(JUMP_SO)						@@\
-	$(DLL_BINDIR)/mkimage -f -v rev -l $(JUMP_LIB) \
+	mkimage -f -v rev -l $(JUMP_LIB) \
 		-a $(Concat(JUMP_ADDRESS_,libname)) \
 		-j $(Concat(JUMP_JUMPTABLESIZE_,libname)) \
 		-g $(Concat(JUMP_GOTSIZE_,libname)) \
@@ -381,19 +379,15 @@ down/mk_JUMP_AR: solist							@@\
 clean:: jumpclean							@@\
 									@@\
 jumpclean: jumpclean_$(JUMP_IS_HOST)					@@\
-	$(RM) $(JUMP_SA) $(JUMP_DIR)/__jump.s $(JUMP_DIR)/__jump.o \
-		down/mk_JUMP_AR $(JUMP_AR)				@@\
+	$(RM) $(JUMP_SA) down/mk_JUMP_AR				@@\
 	$(RM) -r $(JUMP_DIR)						@@\
 									@@\
 jumpclean_0:								@@\
 	$(RM) down/mk_JUMP_SA_0						@@\
+	$(RM) $(JUMP_HOST)/$(JUMP_SA)					@@\
 									@@\
 jumpclean_1:								@@\
-	$(RM) $(JUMP_SO) $(JUMP_DIR)/_GCMN_*.s $(JUMP_DIR)/_GVAR_*.s \
-		$(JUMP_DIR)/jump.vars $(JUMP_DIR)/jump.funcs \
-		$(JUMP_DIR)/jump.ignore $(JUMP_DIR)/jump.params \
-		$(JUMP_DIR)/jump.undefs $(JUMP_DIR)/jump.log \
-		$(JUMP_DIR)/jump.import $(JUMP_DIR)/stubs.import \
+	$(RM) $(JUMP_SO) $(Concat(JUMP_DIR_,libname)) \			@@\
 		down/mk_JUMP_SA_1 down/mk_JUMP_SO_1 down/mk_JUMP_SO_2
 #endif /* SharedLibraryTarget */
 
@@ -408,7 +402,7 @@ install:: $(JUMP_SA) $(JUMP_SO)						@@\
 		(T=$(DESTDIR)dest/`echo $(JUMP_SO)|sed 's/\.[^\.]*$$//'`;\
 		set -x; \
 		$(INSTALL) -s -c $(INSTSOLIBFLAGS) $(JUMP_SO) $(DESTDIR)dest; \
-		$(RM) $$T && $(LN) $(DESTDIR)dest/$(JUMP_SO) $$T); fi	@@\
+		$(RM) $$T && $(LN) $(JUMP_SO) $$T); fi			@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) $(JUMP_SA) $(DESTDIR)dest
 #endif /* InstallSharedLibrary */
 

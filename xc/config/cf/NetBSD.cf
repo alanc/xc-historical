@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium$
+XCOMM platform:  $XConsortium: NetBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp kaleb $
 
 #define OSName		NetBSD
 #define	OSVendor	/**/
@@ -50,7 +50,9 @@ XCOMM operating system:  OSName
 #define OptimizedCDebugFlags -O2
 #define ServerOSDefines /**/
 #endif
-#define ServerExtraDefines GccGasOption
+#define ServerExtraDefines GccGasOption -DSTATIC_COLOR -DAVOID_GLYPHBLT
+
+#define StandardDefines	-DCSRG_BASED
 
 #define TroffCmd        groff -Tps
 #define SetTtyGroup     YES

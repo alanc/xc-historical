@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.220 94/08/30 17:25:36 matt Exp gildea $
+XCOMM $XConsortium: Imake.tmpl,v 1.221 94/10/04 18:39:36 gildea Exp kaleb $
 XCOMM
 
 /*
@@ -738,7 +738,11 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define LibManSuffix	3		/* use just one tab or cpp will die */
 #endif
 #ifndef FileManSuffix
+#if SystemV || SystemV4 || defined(OSF1Architecture)
 #define FileManSuffix	4		/* use just one tab or cpp will die */
+#else
+#define FileManSuffix	5		/* use just one tab or cpp will die */
+#endif
 #endif
 #ifndef ExpandManNames
 #if SystemV
@@ -1069,6 +1073,7 @@ XCOMM rules for building in SUBDIRS - do not edit
 
 InstallSubdirs($(SUBDIRS))
 InstallManSubdirs($(SUBDIRS))
+InstallLinkKitSubdirs($(SUBDIRS))
 CleanSubdirs($(SUBDIRS))
 TagSubdirs($(SUBDIRS))
 MakefileSubdirs($(SUBDIRS))
