@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.24 89/05/26 11:39:05 jim Exp $
+ *	$XConsortium: scrollbar.c,v 1.25 89/06/12 12:09:22 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -46,7 +46,7 @@
 extern void bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.24 89/05/26 11:39:05 jim Exp $";
+static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.25 89/06/12 12:09:22 jim Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -99,15 +99,17 @@ static void ResizeScreen(xw, min_width, min_height )
 	if (!XGetWMNormalHints (screen->display, XtWindow(XtParent(xw)),
 				&sizehints, &supp))
 	    sizehints.flags = 0;
-	sizehints.min_width = min_width;
-	sizehints.min_height = min_height;
+	sizehints.base_width = min_width;
+	sizehints.base_height = min_height;
 	sizehints.width_inc = FontWidth(screen);
 	sizehints.height_inc = FontHeight(screen);
+	sizehints.min_width = sizehints.base_width + sizehints.width_inc;
+	sizehints.min_height = sizehints.base_height + sizehints.height_inc;
 	sizehints.width =  (screen->max_col + 1) * FontWidth(screen)
 				+ min_width;
 	sizehints.height = FontHeight(screen) * (screen->max_row + 1)
 				+ min_height;
-	sizehints.flags |= PMinSize|PResizeInc;
+	sizehints.flags |= (PBaseSize|PMinSize|PResizeInc);
 #endif
 
 	argList[0].value = (XtArgVal)min_width;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.84 89/05/26 18:10:32 jim Exp $
+ * $XConsortium: charproc.c,v 1.85 89/06/12 12:09:13 jim Exp $
  */
 
 
@@ -139,7 +139,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.84 89/05/26 18:10:32 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.85 89/06/12 12:09:13 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2107,12 +2107,14 @@ XSetWindowAttributes *values;
 	  ypos += DisplayHeight(screen->display, DefaultScreen(screen->display)) 
 			- height - (term->core.parent->core.border_width * 2);
 
-	/* set up size hints for window manager */
-	sizehints.min_width = 2 * screen->border + scrollbar_width;
-	sizehints.min_height = 2 * screen->border;
+	/* set up size hints for window manager; min 1 char by 1 char */
+	sizehints.base_width = 2 * screen->border + scrollbar_width;
+	sizehints.base_height = 2 * screen->border;
 	sizehints.width_inc = FontWidth(screen);
 	sizehints.height_inc = FontHeight(screen);
-	sizehints.flags = PMinSize|PResizeInc;
+	sizehints.min_width = sizehints.base_width + sizehints.width_inc;
+	sizehints.min_height = sizehints.base_height + sizehints.height_inc;
+	sizehints.flags = (PBaseSize|PMinSize|PResizeInc);
 	sizehints.x = xpos;
 	sizehints.y = ypos;
 	if ((XValue&pr) || (YValue&pr)) {
