@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.161 93/12/23 16:17:37 rws Exp $ */
+/* $XConsortium: Event.c,v 1.162 94/02/10 17:53:33 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -822,8 +822,6 @@ static Boolean CallEventHandlers(widget, event, mask)
     return cont_to_disp;
 }
 
-static Region nullRegion;
-/* READ-ONLY VARIABLES: nullRegion */
 static void CompressExposures();
 
 #define KnownButtons (Button1MotionMask|Button2MotionMask|Button3MotionMask|\
@@ -1069,6 +1067,43 @@ XEvent * event;
     SendExposureEvent(event, widget, pd);
 }
 
+void XtAddExposureToRegion(event, region)
+    XEvent   *event;
+    Region   region;
+{
+    XRectangle rect;
+
+    switch (event->type) {
+	case Expose:
+		rect.x = event->xexpose.x;
+		rect.y = event->xexpose.y;
+		rect.width = event->xexpose.width;
+		rect.height = event->xexpose.height;
+		break;
+	case GraphicsExpose:
+		rect.x = event->xgraphicsexpose.x;
+		rect.y = event->xgraphicsexpose.y;
+		rect.width = event->xgraphicsexpose.width;
+		rect.height = event->xgraphicsexpose.height;
+		break;
+	default:
+		return;
+    }
+
+    XUnionRectWithRegion(&rect, region, region);
+}
+
+
+static Region nullRegion;
+/* READ-ONLY VARIABLES: nullRegion */
+
+void _XtEventInitialize()
+{
+#ifndef __lock_lint
+    nullRegion = XCreateRegion();
+#endif
+}
+
 /*	Function Name: SendExposureEvent
  *	Description: Sets the x, y, width, and height of the event
  *                   to be the clip box of Expose Region.
@@ -1109,7 +1144,7 @@ XtPerDisplay pd;
 }
 
 /*	Function Name: CheckExposureEvent
- *	Description: Checks the event cue for an expose event
+ *	Description: Checks the event queue for an expose event
  *	Arguments: display - the display connection.
  *                 event - the event to check.
  *                 arg - a pointer to the exposure info structure.
@@ -1538,41 +1573,6 @@ void XtAppMainLoop(app)
     } while(app->exit_flag == FALSE);
     UNLOCK_APP(app);
 }
-
-
-void _XtEventInitialize()
-{
-#ifndef __lock_lint
-    nullRegion = XCreateRegion();
-#endif
-}
-
-void XtAddExposureToRegion(event, region)
-    XEvent   *event;
-    Region   region;
-{
-    XRectangle rect;
-
-    switch (event->type) {
-	case Expose:
-		rect.x = event->xexpose.x;
-		rect.y = event->xexpose.y;
-		rect.width = event->xexpose.width;
-		rect.height = event->xexpose.height;
-		break;
-	case GraphicsExpose:
-		rect.x = event->xgraphicsexpose.x;
-		rect.y = event->xgraphicsexpose.y;
-		rect.width = event->xgraphicsexpose.width;
-		rect.height = event->xgraphicsexpose.height;
-		break;
-	default:
-		return;
-    }
-
-    XUnionRectWithRegion(&rect, region, region);
-}
-
 
 void _XtFreeEventTable(event_table)
     XtEventTable *event_table;
