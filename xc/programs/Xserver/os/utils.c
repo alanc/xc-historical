@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.48 88/07/22 20:17:33 jim Exp $ */
+/* $Header: utils.c,v 1.49 88/07/24 16:48:27 toddb Exp $ */
 #include <stdio.h>
 #include <sys/time.h>
 #include "misc.h"
@@ -82,7 +82,7 @@ GiveUp()
 /*VARARGS1*/
 void
 ErrorF( f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
-    char *	f;
+    char *f;
     char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
 {
     fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
@@ -98,31 +98,35 @@ AbortServer()
     abort();
 }
 
-int
+void
 Error(str)
     char *str;
 {
     perror(str);
 }
 
-int
+/*
+ * This is private to the OS layer.
+ */
+void
 Notice()
 {
 }
 
 /*VARARGS1*/
-FatalError (msg, v0, v1, v2, v3, v4, v5, v6, v7, v8)
-    char *msg;
-    char *v0, *v1, *v2, *v3, *v4, *v5, *v6, *v7, *v8;
+void
+FatalError(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
+    char *f;
+    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
 {
     ErrorF("\nFatal server bug!\n");
-    ErrorF(msg, v0, v1, v2, v3, v4, v5, v6, v7, v8);
+    ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
     ErrorF("\n");
     AbortServer();
     /*NOTREACHED*/
 }
 
-int
+long
 GetTimeInMillis()
 {
     struct timeval  tp;
@@ -131,11 +135,45 @@ GetTimeInMillis()
     return(tp.tv_sec * 1000) + (tp.tv_usec / 1000);
 }
 
+static void UseMsg()
+{
+    ErrorF("use: X [:<display>] [option] [<tty>]\n");
+    ErrorF("-a #                   mouse acceleration (pixels)\n");
+    ErrorF("-bp<:screen> color     BlackPixel for screen\n");
+    ErrorF("-c                     turns off key-click\n");
+    ErrorF("c #                    key-click volume (0-8)\n");
+#ifdef COMPRESSED_FONTS
+    ErrorF("nocf or -cf            disable use of compressed fonts\n");
+#endif
+    ErrorF("-co string             color database file\n");
+    ErrorF("-fc string             cursor font\n");
+    ErrorF("-fn string             default text font name\n");
+    ErrorF("-fp string             default text font path\n");
+#ifndef NOLOGOHACK
+    ErrorF("-logo                  enable logo in screen saver\n");
+    ErrorF("nologo                 disable logo in screen saver\n");
+#endif
+    ErrorF("-p #                   screen-saver pattern duration (seconds)\n");
+    ErrorF("-r                     turns off auto-repeat\n");
+    ErrorF("r                      turns on auto-repeat \n");
+    ErrorF("-f #                   bell base (0-100)\n");
+    ErrorF("-x string              loads named extension at init time \n");
+    ErrorF("-help                  prints message with these options\n");
+    ErrorF("-s #                   screen-saver timeout (seconds)\n");
+    ErrorF("-t #                   mouse threshold (pixels)\n");
+    ErrorF("-to #                  connection time out\n");
+    ErrorF("v                      video blanking for screen-saver\n");
+    ErrorF("-v                     screen-saver without video blanking\n");
+    ErrorF("-wp<:screen> color     WhitePixel for screen\n");
+    ErrorF("There may be other device-dependent options as well\n");
+}
+
 /*
  * This function parses the command line. Handles device-independent fields
  * only.  It is not allowed to modify argc or any of the strings pointed to
  * by argv.
  */
+void
 ProcessCommandLine ( argc, argv )
 int	argc;
 char	*argv[];
@@ -272,39 +310,6 @@ char	*argv[];
 	     * it isn't */
 	}
     }
-}
-
-UseMsg()
-{
-    ErrorF("use: X [:<display>] [option] [<tty>]\n");
-    ErrorF("-a #                   mouse acceleration (pixels)\n");
-    ErrorF("-bp<:screen> color     BlackPixel for screen\n");
-    ErrorF("-c                     turns off key-click\n");
-    ErrorF("c #                    key-click volume (0-8)\n");
-#ifdef COMPRESSED_FONTS
-    ErrorF("nocf or -cf            disable use of compressed fonts\n");
-#endif
-    ErrorF("-co string             color database file\n");
-    ErrorF("-fc string             cursor font\n");
-    ErrorF("-fn string             default text font name\n");
-    ErrorF("-fp string             default text font path\n");
-#ifndef NOLOGOHACK
-    ErrorF("-logo                  enable logo in screen saver\n");
-    ErrorF("nologo                 disable logo in screen saver\n");
-#endif
-    ErrorF("-p #                   screen-saver pattern duration (seconds)\n");
-    ErrorF("-r                     turns off auto-repeat\n");
-    ErrorF("r                      turns on auto-repeat \n");
-    ErrorF("-f #                   bell base (0-100)\n");
-    ErrorF("-x string              loads named extension at init time \n");
-    ErrorF("-help                  prints message with these options\n");
-    ErrorF("-s #                   screen-saver timeout (seconds)\n");
-    ErrorF("-t #                   mouse threshold (pixels)\n");
-    ErrorF("-to #                  connection time out\n");
-    ErrorF("v                      video blanking for screen-saver\n");
-    ErrorF("-v                     screen-saver without video blanking\n");
-    ErrorF("-wp<:screen> color     WhitePixel for screen\n");
-    ErrorF("There may be other device-dependent options as well\n");
 }
 
 #ifndef SPECIAL_MALLOC
