@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.50 89/11/16 14:35:00 jim Exp $
+ * $XConsortium: resize.c,v 1.52 89/11/16 18:09:45 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.50 89/11/16 14:35:00 jim Exp $";
+"$XConsortium: resize.c,v 1.52 89/11/16 18:09:45 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -679,10 +679,8 @@ int x, y, w, h;
     ComputeWindowTitleOffsets (tmp_win, xwc.width, True);
 
 #ifdef SHAPE
-    reShape = FALSE;
-    if (tmp_win->wShaped && w != tmp_win->frame_width)
-	reShape = TRUE;
-    if (tmp_win->squeeze_info)
+    reShape = (tmp_win->wShaped ? TRUE : FALSE);
+    if (tmp_win->squeeze_info)		/* check for title shaping */
     {
 	title_width = tmp_win->rightx + Scr->TBInfo.rightoff;
 	if (title_width < xwc.width)
@@ -695,8 +693,7 @@ int x, y, w, h;
 	}
 	else
 	{
-	    if (!tmp_win->wShaped && tmp_win->fShaped)
-		reShape = TRUE;
+	    if (!tmp_win->wShaped) reShape = TRUE;
 	    title_width = xwc.width;
 	}
     }
@@ -739,8 +736,7 @@ int x, y, w, h;
     }
 
 #ifdef SHAPE
-    if (HasShape && (reShape || tmp_win->fShaped == -1)) {
-	tmp_win->fShaped = 0;
+    if (HasShape && reShape) {
 	SetFrameShape (tmp_win);
     }
 #endif
@@ -926,7 +922,6 @@ SetFrameShape (tmp)
 				tmp->title_y + tmp->title_bw,
 				tmp->title_w, ShapeBounding,
 				ShapeUnion);
-	    tmp->fShaped = 1;
 	}
     } else {
 	int expect_title_width;
@@ -969,16 +964,6 @@ SetFrameShape (tmp)
 	    newClip[1].height = tmp->frame_height - newClip[1].y;
 	    XShapeCombineRectangles (dpy, tmp->frame, ShapeClip, 0, 0,
 				     newClip, 2, ShapeSet, YXBanded);
-	    tmp->fShaped = 2;
-	}
-	else
-	{
-	    if (tmp->fShaped)
-	    {
-		XShapeCombineMask (dpy, tmp->frame, ShapeBounding, 0, 0,
-				   None, ShapeSet);
-		tmp->fShaped = 0;
-	    }
 	}
     }
 }

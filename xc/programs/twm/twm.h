@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.45 89/11/05 17:47:29 jim Exp $
+ * $XConsortium: twm.h,v 1.47 89/11/16 18:09:48 jim Exp $
  *
  * twm include file
  *
@@ -235,7 +235,6 @@ typedef struct TwmWindow
     short zoomed;		/* is the window zoomed? */
 #ifdef SHAPE
     short wShaped;		/* this window has a bounding shape */
-    short fShaped;		/* regions of the frame have been shaped */
 #endif
     unsigned long protocols;	/* which protocols this window handles */
     Window *cmap_windows;	/* WM_COLORMAP_WINDOWS list */
