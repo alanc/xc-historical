@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 1.62 88/10/21 17:12:44 keith Exp $ */
+/* $XConsortium: miarc.c,v 1.63 88/10/23 17:07:31 keith Exp $ */
 /* Author: Keith Packard */
 
 #include "X.h"
@@ -33,6 +33,30 @@ SOFTWARE.
 #include "windowstr.h"
 #include "mifpoly.h"
 #include "mi.h"
+
+/*
+ * some interesting sematic interpretation of the protocol:
+ *
+ * Self intersecting arcs (i.e. those spanning 360 degrees) 
+ *  never join with other arcs, and are drawn without caps
+ *  (unless on/off dashed, in which case each dash segment
+ *  is capped, except when the last segment meets the
+ *  first segment, when no caps are drawn)
+ *
+ * double dash arcs are drawn in two parts, first the
+ *  odd dashes (drawn in background) then the even dashes
+ *  (drawn in foreground).  This means that overlapping
+ *  sections of foreground/background are drawn twice,
+ *  first in background then in foreground.  The double-draw
+ *  occurs even when the function uses the destination values
+ *  (e.g. xor mode).  This is the same way the wide-line
+ *  code works and should be "fixed".
+ *
+ * the wide arc code will never be "correct" -- the protocol
+ *  document specifies exact pixelization which is impossible
+ *  when calculating pixel positions with complicated floating-
+ *  point expressions.
+ */
 
 extern double sqrt(), cos(), sin(), atan();
 
@@ -72,19 +96,20 @@ typedef struct _miArcFace {
 	SppPointRec	counterClock;
 } miArcFaceRec, *miArcFacePtr;
 
-/*
- * This is an entire sequence of arcs, computed and categorized according
- * to operation.  miDashArcs generates either one or two of these.
- */
-
 typedef struct _miArcData {
 	xArc		arc;
 	int		render;		/* non-zero means render after drawing */
 	int		join;		/* related join */
 	int		cap;		/* related cap */
+	int		selfJoin;	/* final dash meets first dash */
 	miArcFaceRec	bounds[2];
 	double		x0, y0, x1, y1;
 } miArcDataRec, *miArcDataPtr;
+
+/*
+ * This is an entire sequence of arcs, computed and categorized according
+ * to operation.  miDashArcs generates either one or two of these.
+ */
 
 typedef struct _miPolyArc {
 	int		narcs;
@@ -185,6 +210,7 @@ miArcSegment(pDraw, pGC, tarc, right, left)
  * from the scratch drawable to pDraw. (See the wide line code for a
  * fuller explanation of this.)
  */
+
 void
 miPolyArc(pDraw, pGC, narcs, parcs)
     DrawablePtr	pDraw;
@@ -316,6 +342,12 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 			     &arcData->bounds[LEFT_END]);
 		if (polyArcs[iphase].arcs[i].render) {
 		    fillSpans (pDrawTo, pGCTo);
+		    /*
+		     * don't cap self-joining arcs
+		     */
+		    if (polyArcs[iphase].arcs[i].selfJoin &&
+		        cap[iphase] < polyArcs[iphase].arcs[i].cap)
+		    	cap[iphase]++;
 		    while (cap[iphase] < polyArcs[iphase].arcs[i].cap) {
 			int	arcIndex, end;
 			miArcDataPtr	arcData0;
@@ -874,6 +906,7 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 	xArc		xarc;
 	int		iphase, prevphase, joinphase;
 	int		arcsJoin;
+	int		selfJoin;
 
 	int		iDash, dashRemaining;
 	int		iDashStart, dashRemainingStart, iphaseStart;
@@ -937,7 +970,7 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 		j = i + 1;
 		if (j == narcs)
 			j = 0;
-		if (!data[i].selfJoin && 
+		if (data[i].selfJoin || 
 		     (UNEQUAL (data[i].x1, data[j].x0) ||
 		      UNEQUAL (data[i].y1, data[j].y0)))
  		{
@@ -959,6 +992,10 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 		if (nexti == narcs)
 			nexti = 0;
 		if (isDashed) {
+			/*
+			 * compute each individual dash segment using the path
+			 * length function
+			 */
 			startAngle = parcs[i].angle1;
 			spanAngle = parcs[i].angle2;
 			if (spanAngle > FULLCIRCLE)
@@ -972,6 +1009,8 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 			endAngle = startAngle + spanAngle;
 			backwards = spanAngle < 0;
 			prevDashAngle = startAngle;
+			selfJoin = data[i].selfJoin &&
+ 				    (iphase == 0 || isDoubleDash);
 			while (prevDashAngle != endAngle) {
 				dashAngle = computeAngleFromPath
  						(prevDashAngle, endAngle,
@@ -992,6 +1031,9 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 					xarc.angle2 = spanAngle;
 					arc = addArc (&arcs[iphase].arcs, &arcs[iphase].narcs,
  							&arcSize[iphase], xarc);
+					/*
+					 * cap each end of an on/off dash
+					 */
 					if (!isDoubleDash) {
 						if (prevDashAngle != startAngle) {
 							addCap (&arcs[iphase].caps,
@@ -1010,6 +1052,9 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 					arc->cap = arcs[iphase].ncaps;
 					arc->join = arcs[iphase].njoins;
 					arc->render = 0;
+					arc->selfJoin = 0;
+					if (dashAngle == endAngle)
+						arc->selfJoin = selfJoin;
 				}
 				prevphase = iphase;
 				if (dashRemaining <= 0) {
@@ -1026,6 +1071,7 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
  				      &arcSize[iphase], parcs[i]);
 			arc->join = arcs[iphase].njoins;
 			arc->cap = arcs[iphase].ncaps;
+			arc->selfJoin = data[i].selfJoin;
 			prevphase = iphase;
 		}
 		if (prevphase == 0 || isDoubleDash)
@@ -1042,7 +1088,8 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 		}
 		arcsJoin = narcs > 1 && 
 	 		    ISEQUAL (data[i].x1, data[j].x0) &&
-			    ISEQUAL (data[i].y1, data[j].y0);
+			    ISEQUAL (data[i].y1, data[j].y0) &&
+			    !data[i].selfJoin && !data[j].selfJoin;
 		if (arcsJoin)
 			arc->render = 0;
 		else
@@ -1074,8 +1121,12 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 				arc->join = arcs[prevphase].njoins;
 			}
 		} else {
+			/*
+			 * cap the left end of this arc
+			 * unless it joins itself
+			 */
 			if ((prevphase == 0 || isDoubleDash) &&
-			    !data[i].selfJoin)
+			    !arc->selfJoin)
 			{
 				addCap (&arcs[prevphase].caps, &arcs[prevphase].ncaps,
  					&capSize[prevphase], LEFT_END, k);
@@ -1103,8 +1154,7 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 			 * hardly matters...
 			 */
 			if ((iphase == 0 || isDoubleDash) &&
-			    (nexti != start || arcsJoin && isDashed) &&
- 			    !data[j].selfJoin)
+			    (nexti != start || arcsJoin && isDashed))
 				addCap (&arcs[iphase].caps, &arcs[iphase].ncaps,
  					&capSize[iphase], RIGHT_END, nextk);
 		}
@@ -1288,6 +1338,11 @@ computeAngleFromPath (startAngle, endAngle, w, h, lenp, backwards)
 	return a1;
 }
 
+/*
+ * To avoid inaccuracy at the cardinal points, use trig functions
+ * which are exact for those angles
+ */
+
 # define Dsin(d)	((d) == 0.0 ? 0.0 : ((d) == 90.0 ? 1.0 : sin(d*M_PI/180.0)))
 # define Dcos(d)	((d) == 0.0 ? 1.0 : ((d) == 90.0 ? 0.0 : cos(d*M_PI/180.0)))
 
@@ -1433,7 +1488,6 @@ drawZeroArc (pDraw, pGC, tarc, left, right)
 	}
 }
 
- 
 /*
  * scan convert wide arcs.
  */
@@ -1673,6 +1727,12 @@ intersectLine (y, line)
 	return line->m * y + line->b;
 }
 
+/*
+ * compute various accelerators for an elipse.  These
+ * are simply values that are used repeatedly in
+ * the computations
+ */
+
 computeAcc (def, acc)
 	struct arc_def		*def;
 	struct accelerators	*acc;
@@ -1687,6 +1747,11 @@ computeAcc (def, acc)
 	acc->tail_y = tailElipseY (def->w, def->h, def->l);
 }
 		
+/*
+ * compute y value bounds of various portions of the arc,
+ * the outer edge, the elipse and the inner edge.
+ */
+
 computeBound (def, bound, acc, right, left)
 	struct arc_def		*def;
 	struct arc_bound	*bound;
@@ -1721,7 +1786,10 @@ computeBound (def, bound, acc, right, left)
 	
 	/*
 	 * save the line end points for the
-	 * cap code to use
+	 * cap code to use.  Careful here, these are
+	 * in cartesean coordinates (y increasing upwards)
+	 * while the cap code uses inverted coordinates
+	 * (y increasing downwards)
 	 */
 
 	if (right) {
@@ -1772,7 +1840,35 @@ computeBound (def, bound, acc, right, left)
 /*
  * using newtons method and a binary search, compute the elipse y value
  * associated with the given edge value (either outer or
- * inner)
+ * inner).  This is the heart of the scan conversion code and
+ * is generally called three times for each span.  It should
+ * be optimized further.
+ *
+ * the general idea here is to solve the equation:
+ *
+ *                               w^2 * l
+ *   edge_y = y + y * -------------------------------
+ *                    2 * sqrt (x^2 * h^4 + y^2 * w^4)
+ *
+ * for y.  (x, y) is a point on the elipse, so x can be
+ * found from y:
+ *
+ *                ( h^2 - y^2 )
+ *   x = w * sqrt ( --------- )
+ *                (    h^2    )
+ *
+ * The information given at the start of the search
+ * is two points which are known to bound the desired
+ * solution, a binary search starts with these two points
+ * and converges close to a solution, which is then
+ * refined with newtons method.  Newtons method
+ * cannot be used in isolation as it does not always
+ * converge to the desired solution without a close
+ * starting point, the binary search simply provides
+ * that point.  Increasing the solution interval for
+ * the binary search will certainly speed up the
+ * solution, but may generate a range which causes
+ * the newtons method to fail.  This needs study.
  */
 
 double
@@ -1781,14 +1877,14 @@ elipseY (edge_y, def, bound, acc, outer, y0, y1)
 	struct arc_def		*def;
 	struct arc_bound	*bound;
 	struct accelerators	*acc;
-	double			y0, y1;
+	register double		y0, y1;
 {
-	double	w, h, l, h2, h4, w2, w4, x, y2;
-	double	newtony, binaryy;
-	double	value0, value1, valuealt;
-	double	newtonvalue, binaryvalue;
-	double	minY, maxY;
-	double	(*f)();
+	register double	w, h, l, h2, h4, w2, w4, x, y2;
+	double		newtony, binaryy;
+	double		value0, value1, valuealt;
+	double		newtonvalue, binaryvalue;
+	double		minY, maxY;
+	double		(*f)();
 	
 	/*
 	 * compute some accelerators
@@ -1902,7 +1998,7 @@ outerX (outer_y, def, bound, acc)
 		y = bound->elipse.max;
 	else
 		y = elipseY (outer_y, def, bound, acc, 1,
- 			     bound->elipse.min, bound->elipse.max, -1.0);
+ 			     bound->elipse.min, bound->elipse.max);
 	return outerXfromY (y, def, acc);
 }
 
@@ -2086,6 +2182,11 @@ hookX (scan_y, def, bound, acc, left)
 	}
 	return x;
 }
+
+/*
+ * generate the set of spans with
+ * the given y coordinate
+ */
 
 arcSpan (y, def, bounds, acc)
 	double			y;
@@ -2367,6 +2468,14 @@ mergeSpan (y, min, max)
 
 static double	spanY;
 
+/*
+ * split an arc into pieces which are scan-converted
+ * in the first-quadrant and mirrored into position.
+ * This is necessary as the scan-conversion code can
+ * only deal with arcs completely contained in the
+ * first quadrant.
+ */
+
 drawArc (x0, y0, w, h, l, a0, a1, right, left)
 	int	x0, y0, w, h, l, a0, a1;
 	miArcFacePtr	right, left;	/* save end line points */
@@ -2555,6 +2664,10 @@ drawArc (x0, y0, w, h, l, a0, a1, right, left)
 		drawQuadrant (&def, &acc, sweep[j].a0, sweep[j].a1, mask, 
  			      passRight, passLeft);
 	}
+	/*
+	 * mirror the coordinates generated for the
+	 * faces of the arc
+	 */
 	if (right) {
 		mirrorSppPoint (rightq, &right->clock);
 		mirrorSppPoint (rightq, &right->center);
