@@ -145,6 +145,12 @@ XCOMM
 #define XmipsServer /* as nothing */
 #endif
 
+#ifdef XnonServer
+#define dononServer
+#else
+#define	XnonServer /* as nothing */
+#endif
+
 /*****************************************************************************
  *                                                                           *
  * Now add X<what>Server to the ALL line; do NOT split across lines or you   *
@@ -152,8 +158,8 @@ XCOMM
  *                                                                           *
 /*****************************************************************************
  */
-ALL = XqvssServer XqdssServer XsunServer XapolloServer XibmServer XhpServer XmacIIServer XmfbpmaxServer XcfbpmaxServer XtekServer XlunaServer XmipsServer
-ALLPOSSIBLE = Xqvss Xqdss Xsun Xibm Xapollo Xhp XhpMit XmacII Xcfbpmax Xmfbpmax Xtek Xluna Xmips
+ALL = XqvssServer XqdssServer XsunServer XapolloServer XibmServer XhpServer XmacIIServer XmfbpmaxServer XcfbpmaxServer XtekServer XlunaServer XmipsServer XnonServer
+ALLPOSSIBLE = Xqvss Xqdss Xsun Xibm Xapollo Xhp XhpMit XmacII Xcfbpmax Xmfbpmax Xtek Xluna Xmips Xnon
 
 all: $(ALL)
 
@@ -446,6 +452,23 @@ XmipsDIRS = $(MIPSDIRS)
  
 ServerTarget(Xmips,$(EXTDIR) $(MIPSDIRS),$(MIPSOBJS),$(MIPSLIBS),$(MIPSSYSLIBS))
 #endif /* domipsServer */
+
+
+#ifdef dononServer
+XCOMM
+XCOMM non server, just compile sources for build test
+XCOMM
+#define need_dix
+#define need_ddx_mi
+#define need_ddx_cfb
+#define need_ddx_mfb
+#define need_os_42bsd
+
+Xnon: $(EXTDIR) dix ddx/mi ddx/mfb ddx/cfb os/4.2bsd
+
+#endif /* dononServer */
+
+
 
 /*****************************************************************************
  *                                                                           *
