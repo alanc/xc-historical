@@ -1,12 +1,3 @@
-#ifdef sparc
-#undef sparc
-#define SparcArchitecture
-#endif
-#ifdef sun386
-#undef sun386
-#define i386Architecture
-#endif
-
 /*
  * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
  *
@@ -18,18 +9,31 @@
 #define OSMajorVersion    4
 #define OSMinorVersion    0
 #define HasSaberC	  YES		/* for machines that have it */
-
-
-#define SystemV           NO
-#define SignalReturnProcType int
-#define HasPutenv YES
-
 #define XsunServer Xsun
 
-#ifdef SparcArchitecture
-#define DefaultCCOptions -pipe
+#define SystemV           NO
+#define HasPutenv YES
+
+#if OSMajorVersion <= 3
+#define SignalReturnProcType int
 #else
-#define DefaultCCOptions -f68881 -pipe
+#define SignalReturnProcType void
+#endif
+
+#ifdef sparc
+#undef sparc
+#define SparcArchitecture
+#endif
+#ifdef sun386
+#undef sun386
+#define i386Architecture
+#endif
+
+
+#ifdef SparcArchitecture
+#define DefaultCCOptions -pipe			/* remove in R4 */
+#else
+#define DefaultCCOptions -f68881 -pipe		/* remove in R4 */
 #endif
 
 #define LibraryCCOptions /* don't want special floating point */
@@ -37,7 +41,7 @@
 /* see below for ServerDefines */
 
 
-/**/# platform:  $XConsortium: sun.cf,v 1.15 89/05/10 14:57:50 jim Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.16 89/05/15 13:53:59 rws Exp $
 /**/# operating system:  OSName
 
 #if SunOSPlatform
