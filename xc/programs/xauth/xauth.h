@@ -10,7 +10,7 @@ typedef int Bool;
 
 extern char *ProgramName;
 
-extern char *copystring(), *malloc();
+extern char *copystring(), *malloc(), *realloc();
 int process_command(), auth_initialize(), auth_finalize();
 extern void print_help();
 extern Bool format_numeric;
