@@ -18,7 +18,13 @@ SRCS = \
 	timB14.bdf timB18.bdf timB24.bdf timBI08.bdf timBI10.bdf \
 	timBI12.bdf timBI14.bdf timBI18.bdf timBI24.bdf timI08.bdf \
 	timI10.bdf timI12.bdf timI14.bdf timI18.bdf timI24.bdf timR08.bdf \
-	timR10.bdf timR12.bdf timR14.bdf timR18.bdf timR24.bdf
+	timR10.bdf timR12.bdf timR14.bdf timR18.bdf timR24.bdf \
+	charB08.bdf charB10.bdf charB12.bdf charB14.bdf charB18.bdf \
+	charB24.bdf charBI08.bdf charBI10.bdf charBI12.bdf charBI14.bdf \
+	charBI18.bdf charBI24.bdf charI08.bdf charI10.bdf charI12.bdf \
+	charI14.bdf charI18.bdf charI24.bdf charR08.bdf charR10.bdf \
+	charR12.bdf charR14.bdf charR18.bdf charR24.bdf
+
 
 OBJS = \
 	courB08.snf courB10.snf courB12.snf courB14.snf courB18.snf \
@@ -40,7 +46,12 @@ OBJS = \
 	timB14.snf timB18.snf timB24.snf timBI08.snf timBI10.snf \
 	timBI12.snf timBI14.snf timBI18.snf timBI24.snf timI08.snf \
 	timI10.snf timI12.snf timI14.snf timI18.snf timI24.snf timR08.snf \
-	timR10.snf timR12.snf timR14.snf timR18.snf timR24.snf
+	timR10.snf timR12.snf timR14.snf timR18.snf timR24.snf \
+	charB08.snf charB10.snf charB12.snf charB14.snf charB18.snf \
+	charB24.snf charBI08.snf charBI10.snf charBI12.snf charBI14.snf \
+	charBI18.snf charBI24.snf charI08.snf charI10.snf charI12.snf \
+	charI14.snf charI18.snf charI24.snf charR08.snf charR10.snf \
+	charR12.snf charR14.snf charR18.snf charR24.snf
 
 FONTINSTDIR = $(FONTDIR)/75dpi
 
@@ -148,8 +159,32 @@ FontTarget(timR12)
 FontTarget(timR14)
 FontTarget(timR18)
 FontTarget(timR24)
+FontTarget(charB08)
+FontTarget(charB10)
+FontTarget(charB12)
+FontTarget(charB14)
+FontTarget(charB18)
+FontTarget(charB24)
+FontTarget(charBI08)
+FontTarget(charBI10)
+FontTarget(charBI12)
+FontTarget(charBI14)
+FontTarget(charBI18)
+FontTarget(charBI24)
+FontTarget(charI08)
+FontTarget(charI10)
+FontTarget(charI12)
+FontTarget(charI14)
+FontTarget(charI18)
+FontTarget(charI24)
+FontTarget(charR08)
+FontTarget(charR10)
+FontTarget(charR12)
+FontTarget(charR14)
+FontTarget(charR18)
+FontTarget(charR24)
+
 
 InstallFonts($(FONTINSTDIR))
 
 depend::
-	@echo "skipping make depend in bdf/75dpi"
