@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.h,v 1.27 91/06/05 09:50:08 dave Exp $
+ * $XConsortium: man.h,v 1.28 91/06/08 18:15:35 rws Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -99,6 +99,7 @@ typedef struct _MenuStruct {
 typedef struct tManual {
   char * blabel;		/* The button label. */
   char ** entries; 		/* The individual man page file names. */
+  char ** entries_less_paths;   /* Entry names only */
   int nentries;			/* how many (TOTAL)*/
   int nalloc;			/* how much space allocated */
   int flags;			/* suffix, fold */
