@@ -1,4 +1,4 @@
-/* $XConsortium: lcEuc.c,v 1.3 93/09/23 12:31:19 rws Exp $ */
+/* $XConsortium: lcEuc.c,v 1.4 93/09/23 13:01:07 rws Exp $ */
 /******************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -241,7 +241,8 @@ euc_wcstombs(conv, from, from_left, to, to_left, args, num_args)
 
     unsigned long wch_encode;
     unsigned long sshift = 0;
-    XlcSide side = 0;
+    XlcSide lcside;
+    int side;
 
     CodeSet *list_codesets = XLC_GENERIC(lcd, codeset_list); 
     int codeset_num = XLC_GENERIC(lcd, codeset_num);
@@ -269,32 +270,32 @@ euc_wcstombs(conv, from, from_left, to, to_left, args, num_args)
 
 	if (wch_encode == CS0 ) {
 	    length = cset[0]->length;
-	    side = cset[0]->side;
+	    lcside = cset[0]->side;
 	    wch = wch ^ CS0;
 	    sshift = 0;
 	}
 	else if (wch_encode == CS1) {
 	    length = cset[1]->length;
-	    side = cset[1]->side;
+	    lcside = cset[1]->side;
 	    wch = wch ^ CS1;
 	    sshift = 0;
 	}
 	else if (wch_encode == CS2) {
 	    length = cset[2]->length;
-	    side = cset[2]->side;
+	    lcside = cset[2]->side;
 	    wch = wch ^ CS2;
 	    sshift = SS2;
 	}
 	else if (wch_encode == CS3) {
 	    length = cset[3]->length;
-	    side = cset[3]->side;
+	    lcside = cset[3]->side;
 	    wch = wch ^ CS3;
 	    sshift = SS3;
 	}
 	else
 	    errflg++;
 
-	switch(side) {
+	switch(lcside) {
 	    case XlcGR:
 		side = 0x80;
 		break;
@@ -302,6 +303,7 @@ euc_wcstombs(conv, from, from_left, to, to_left, args, num_args)
 		side = XlcGL;
 		break;
 	    default:
+		side = 0;
 		errflg++;
 		break;
 	}
