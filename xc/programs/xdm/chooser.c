@@ -1,5 +1,5 @@
 /*
- * $XConsortium: chooser.c,v 1.11 91/10/31 09:38:38 rws Exp $
+ * $XConsortium: chooser.c,v 1.12 91/10/31 09:55:18 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -73,6 +73,10 @@
 #include    <sys/ioctl.h>
 
 #define BROADCAST_HOSTNAME  "BROADCAST"
+
+#ifndef ishexdigit
+#define ishexdigit(c)	(isdigit(c) || 'a' <= (c) && (c) <= 'f')
+#endif
 
 #ifdef hpux
 # include <sys/utsname.h>
@@ -505,20 +509,16 @@ RegisterHostname (name)
     }
     else
     {
-#ifndef ishexdigit
-#define ishexdigit(c)	(isdigit(c) || 'a' <= (c) && (c) <= 'f')
-#endif
 
-	if (isascii (name[0]) && ishexdigit (name[0]))
+	/* address as hex string, e.g., "12180022" (depreciated) */
+	if (strlen(name) == 8 &&
+	    FromHex(name, &in_addr.sin_addr.s_addr, strlen(name)) == 0)
 	{
-	    if (!index (name, '.'))
-		FromHex (name, &in_addr.sin_addr.s_addr, strlen (name));
-	    else
-		in_addr.sin_addr.s_addr = inet_addr (name);
-	    if (in_addr.sin_addr.s_addr == -1)
-		return;
 	    in_addr.sin_family = AF_INET;
 	}
+	/* Per RFC 1123, check first for IP address in dotted-decimal form */
+	else if ((in_addr.sin_addr.s_addr = inet_addr(name)) != -1)
+	    in_addr.sin_family = AF_INET;
 	else
 	{
 	    hostent = gethostbyname (name);
@@ -776,21 +776,32 @@ main (argc, argv)
     /*NOTREACHED*/
 }
 
+/* Converts the hex string s of length len into the byte array d.
+   Returns 0 if s was a legal hex string, 1 otherwise.
+   */
+int
 FromHex (s, d, len)
     char    *s, *d;
     int	    len;
 {
     int	t;
+    int ret = len&1;		/* odd-length hex strings are illegal */
     while (len >= 2)
     {
 #define HexChar(c)  ('0' <= (c) && (c) <= '9' ? (c) - '0' : (c) - 'a' + 10)
+
+	if (!ishexdigit(*s))
+	    ret = 1;
 	t = HexChar (*s) << 4;
 	s++;
+	if (!ishexdigit(*s))
+	    ret = 1;
 	t += HexChar (*s);
 	s++;
 	*d++ = t;
 	len -= 2;
     }
+    return ret;
 }
 
 /*ARGSUSED*/
