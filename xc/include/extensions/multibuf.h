@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibuf.h,v 1.14 91/05/04 19:16:54 rws Exp $
+ * $XConsortium: multibuf.h,v 1.15 91/07/12 10:20:42 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -41,6 +41,7 @@
 #define X_MbufGetBufferAttributes	7
 #define X_MbufGetBufferInfo		8
 #define X_MbufCreateStereoWindow	9
+#define X_MbufClearImageBufferArea	10
 
 /*
  * update_action field
@@ -274,7 +275,29 @@ extern Window XmbufCreateStereoWindow(
 #endif
 );
 
+extern void XmbufClearBufferArea(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    Multibuffer			/* buffer */,
+    int				/* x */,
+    int				/* y */,
+    unsigned int		/* width */,
+    unsigned int		/* height */,
+    Bool			/* exposures */
+#endif
+);
+
 _XFUNCPROTOEND
+
+#else
+
+typedef Bool	(* mbInitFunc)();
+extern void	RegisterMultibufferInit();
+extern void	RegisterDoubleBufferHardware();
+
+extern int	CreateImageBuffers ();
+extern void	DestroyImageBuffers ();
+extern int	DisplayImageBuffers ();
 
 #endif /* _MULTIBUF_SERVER_ */
 #endif /* _MULTIBUF_H_ */
