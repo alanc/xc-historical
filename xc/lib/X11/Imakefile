@@ -261,22 +261,22 @@ InstallNonExec(XErrorDB,$(LIBDIR))
 
 #if DebugLibX && ProfileLibX
 DebuggedAndProfiledLibraryObjectRule()
-SpecialDebuggedAndProfiledObjectRule(XErrDes.o,$(IRULESRC)/$(SITEDEFFILE),$(DB_DEFINES))
-SpecialDebuggedAndProfiledObjectRule(XConnDis.o,$(IRULESRC)/$(MACROFILE),)
+SpecialDebuggedAndProfiledObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
+SpecialDebuggedAndProfiledObjectRule(XConnDis.o,$(ICONFIGFILES),)
 #else
 # if DebugLibX
 DebuggedLibraryObjectRule()
-SpecialDebuggedObjectRule(XErrDes.o,$(IRULESRC)/$(SITEDEFFILE),$(DB_DEFINES))
-SpecialDebuggedObjectRule(XConnDis.o,$(IRULESRC)/$(MACROFILE),)
+SpecialDebuggedObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
+SpecialDebuggedObjectRule(XConnDis.o,$(ICONFIGFILES),)
 # else
 #  if ProfileLibX
 ProfiledLibraryObjectRule()
-SpecialProfiledObjectRule(XErrDes.o,$(IRULESRC)/$(SITEDEFFILE),$(DB_DEFINES))
-SpecialProfiledObjectRule(XConnDis.o,$(IRULESRC)/$(MACROFILE),)
+SpecialProfiledObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
+SpecialProfiledObjectRule(XConnDis.o,$(ICONFIGFILES),)
 #  else
 NormalLibraryObjectRule()
-SpecialObjectRule(XErrDes.o,$(IRULESRC)/$(SITEDEFFILE),$(DB_DEFINES))
-SpecialObjectRule(XConnDis.o,$(IRULESRC)/$(MACROFILE),)
+SpecialObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
+SpecialObjectRule(XConnDis.o,$(ICONFIGFILES),)
 #  endif
 # endif
 #endif

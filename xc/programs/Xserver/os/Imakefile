@@ -53,8 +53,8 @@ LintLibraryTarget(os,$(SRCS))
 NormalLintTarget($(SRCS))
 
 # these depend on ConnectionFlags
-access.o: $(IRULESRC)/$(MACROFILE)
-connection.o: $(IRULESRC)/$(MACROFILE)
+access.o: $(ICONFIGFILES)
+connection.o: $(ICONFIGFILES)
 
 #ifdef HPArchitecture
 /**/#
@@ -83,8 +83,8 @@ alloca.o:  $(PWLIB)
 	ar x $(PWLIB) alloca.o
 #endif /* NEED_ALLOCA_FROM_LIBPW */
 
-SpecialObjectRule(osinit.o, $(IRULESRC)/$(MACROFILE), -DADMPATH=\"$(ADMDIR)/X\%smsgs\")
-SpecialObjectRule(WaitFor.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
-SpecialObjectRule(fonttype.o, $(IRULESRC)/$(MACROFILE), $(FONT_DEFINES))
+SpecialObjectRule(osinit.o, $(ICONFIGFILES), -DADMPATH=\"$(ADMDIR)/X\%smsgs\")
+SpecialObjectRule(WaitFor.o, $(ICONFIGFILES), $(EXT_DEFINES))
+SpecialObjectRule(fonttype.o, $(ICONFIGFILES), $(FONT_DEFINES))
 
 DependTarget()
