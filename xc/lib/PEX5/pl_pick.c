@@ -1,4 +1,4 @@
-/* $XConsortium: pl_pick.c,v 1.10 94/03/30 12:17:19 rws Exp $ */
+/* $XConsortium: pl_pick.c,v 1.11 94/03/30 16:53:33 rws Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -154,7 +154,7 @@ INPUT unsigned long		valueMask;
 
 {
     register pexGetPickMeasureReq	*req;
-    char				*pBuf;
+    char				*pBuf, *pBufSave;
     pexGetPickMeasureReply		rep;
     PEXPMAttributes			*ppmi;
     unsigned long			f;
@@ -195,8 +195,8 @@ INPUT unsigned long		valueMask;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
-
+    XREAD_INTO_SCRATCH (display, pBufSave, rep.length << 2);
+    pBuf = pBufSave;
 
     /*
      * Allocate a buffer for the replies to pass back to the client.
@@ -234,7 +234,7 @@ INPUT unsigned long		valueMask;
 	}
     }
 
-    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
+    FINISH_WITH_SCRATCH (display, pBufSave, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -310,7 +310,7 @@ INPUT unsigned long		valueMask;
 
 {
     register pexGetPickDeviceReq	*req;
-    char				*pBuf;
+    char				*pBuf, *pBufSave;
     pexGetPickDeviceReply		rep;
     PEXPDAttributes			*ppdi;
     unsigned long			f;
@@ -356,8 +356,8 @@ INPUT unsigned long		valueMask;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
-
+    XREAD_INTO_SCRATCH (display, pBufSave, rep.length << 2);
+    pBuf = pBufSave;
 
     /*
      * Allocate a buffer for the replies to pass back to the client.
@@ -432,7 +432,7 @@ INPUT unsigned long		valueMask;
 	}
     }
 
-    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
+    FINISH_WITH_SCRATCH (display, pBufSave, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -957,12 +957,11 @@ OUTPUT unsigned long	*count_return;
 
 {
     register pexEndPickAllReq	*req;
-    char			*pBuf;
+    char			*pBuf, *pBufSave;
     pexEndPickAllReply		rep;
     PEXPickPath			*pPath;
     PEXPickPath			*pPathRet;
     PEXPickElementRef		*pElemRef;
-    char			*pBufSave;
     int				numElements, i;
     unsigned int		total_size;
 
@@ -1004,15 +1003,14 @@ OUTPUT unsigned long	*count_return;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
-
+    XREAD_INTO_SCRATCH (display, pBufSave, rep.length << 2);
+    pBuf = pBufSave;
 
     /*
      * Allocate a buffer for the replies to pass back to the client.
      * If possible, use the pick path cache.
      */
 
-    pBufSave = pBuf;
     total_size = rep.numPicked * sizeof (PEXPickPath);
 
     for (i = 0; i < rep.numPicked; i++)
@@ -1046,7 +1044,7 @@ OUTPUT unsigned long	*count_return;
 	pElemRef += numElements;
     }
 
-    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
+    FINISH_WITH_SCRATCH (display, pBufSave, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -1077,12 +1075,11 @@ OUTPUT unsigned long	*count_return;
 
 {
     register pexPickAllReq	*req;
-    char			*pBuf;
+    char			*pBuf, *pBufSave;
     pexPickAllReply		rep;
     PEXPickPath			*pPath;
     PEXPickPath			*pPathRet;
     PEXPickElementRef		*pElemRef;
-    char			*pBufSave;
     int				numElements, i;
     unsigned int		rec_size;
     unsigned int		total_size;
@@ -1140,15 +1137,14 @@ OUTPUT unsigned long	*count_return;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
-
+    XREAD_INTO_SCRATCH (display, pBufSave, rep.length << 2);
+    pBuf = pBufSave;
 
     /*
      * Allocate a buffer for the replies to pass back to the client.
      * If possible, use the pick path cache.
      */
 
-    pBufSave = pBuf;
     total_size = rep.numPicked * sizeof (PEXPickPath);
 
     for (i = 0; i < rep.numPicked; i++)
@@ -1182,7 +1178,7 @@ OUTPUT unsigned long	*count_return;
 	pElemRef += numElements;
     }
 
-    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
+    FINISH_WITH_SCRATCH (display, pBufSave, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.

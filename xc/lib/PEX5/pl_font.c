@@ -1,4 +1,4 @@
-/* $XConsortium: pl_font.c,v 1.9 93/09/23 14:39:45 mor Exp $ */
+/* $XConsortium: pl_font.c,v 1.10 94/03/30 16:48:28 rws Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -126,7 +126,7 @@ INPUT PEXFont		font;
 
 {
     register pexQueryFontReq	*req;
-    char			*pBuf;
+    char			*pBuf, *pBufSave;
     pexQueryFontReply 		rep;
     PEXFontInfo			*fontInfo;
 
@@ -163,8 +163,8 @@ INPUT PEXFont		font;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
-
+    XREAD_INTO_SCRATCH (display, pBufSave, rep.length << 2);
+    pBuf = pBufSave;
 
     /*
      * Allocate a buffer for the replies to pass back to the client.
@@ -179,7 +179,7 @@ INPUT PEXFont		font;
 
     EXTRACT_LISTOF_FONTPROP (fontInfo->count, pBuf, fontInfo->props);
 
-    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
+    FINISH_WITH_SCRATCH (display, pBufSave, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -202,7 +202,7 @@ OUTPUT unsigned long	*countReturn;
 
 {
     register pexListFontsReq   	*req;
-    char			*pBuf;
+    char			*pBuf, *pBufSave;
     pexListFontsReply 		rep;
     char			**names;
 
@@ -246,8 +246,8 @@ OUTPUT unsigned long	*countReturn;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
-
+    XREAD_INTO_SCRATCH (display, pBufSave, rep.length << 2);
+    pBuf = pBufSave;
 
     /*
      * Allocate a buffer for the replies to pass back to the client.
@@ -257,7 +257,7 @@ OUTPUT unsigned long	*countReturn;
 
     EXTRACT_LISTOF_STRING (rep.numStrings, pBuf, names);
 
-    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
+    FINISH_WITH_SCRATCH (display, pBufSave, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -281,7 +281,7 @@ OUTPUT PEXFontInfo	**fontInfoReturn;
 
 {
     register pexListFontsWithInfoReq	*req;
-    char				*pBuf;
+    char				*pBuf, *pBufSave;
     pexListFontsWithInfoReply		rep;
     PEXFontInfo				*pInfoRet;
     char				**names;
@@ -328,8 +328,8 @@ OUTPUT PEXFontInfo	**fontInfoReturn;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
-
+    XREAD_INTO_SCRATCH (display, pBufSave, rep.length << 2);
+    pBuf = pBufSave;
 
     /*
      * Allocate a buffer for the font names to pass back to the client.
@@ -359,7 +359,7 @@ OUTPUT PEXFontInfo	**fontInfoReturn;
         EXTRACT_LISTOF_FONTPROP (pInfoRet->count, pBuf, pInfoRet->props);
     }
 
-    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
+    FINISH_WITH_SCRATCH (display, pBufSave, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -389,7 +389,7 @@ INPUT unsigned long		count;
 INPUT PEXStringData		*text;
 {
     register pexQueryTextExtentsReq	*req;
-    char				*pBuf;
+    char				*pBuf, *pBufSave;
     pexQueryTextExtentsReply 		rep;
     pexMonoEncoding 			monoEncoding;
     int					numEncodings, i;
@@ -472,8 +472,8 @@ INPUT PEXStringData		*text;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
-
+    XREAD_INTO_SCRATCH (display, pBufSave, rep.length << 2);
+    pBuf = pBufSave;
 
     /*
      * Allocate a buffer for the replies to pass back to the client.
@@ -484,7 +484,7 @@ INPUT PEXStringData		*text;
 
     EXTRACT_LISTOF_EXTENT_INFO (count, pBuf, textExtents, fpConvert, fpFormat)
 
-    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
+    FINISH_WITH_SCRATCH (display, pBufSave, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -515,7 +515,7 @@ INPUT PEXListOfEncodedText    	*encoded_text;
 
 {
     register pexQueryTextExtentsReq	*req;
-    char				*pBuf;
+    char				*pBuf, *pBufSave;
     pexQueryTextExtentsReply 		rep;
     PEXEncodedTextData      		*string;
     PEXTextExtent			*textExtents;
@@ -627,8 +627,8 @@ INPUT PEXListOfEncodedText    	*encoded_text;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
-
+    XREAD_INTO_SCRATCH (display, pBufSave, rep.length << 2);
+    pBuf = pBufSave;
 
     /*
      * Allocate a buffer for the replies to pass back to the client.
@@ -639,7 +639,7 @@ INPUT PEXListOfEncodedText    	*encoded_text;
 
     EXTRACT_LISTOF_EXTENT_INFO (count, pBuf, textExtents, fpConvert, fpFormat)
 
-    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
+    FINISH_WITH_SCRATCH (display, pBufSave, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.

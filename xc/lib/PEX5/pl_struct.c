@@ -1,4 +1,4 @@
-/* $XConsortium: pl_struct.c,v 1.9 93/09/23 14:40:01 mor Exp $ */
+/* $XConsortium: pl_struct.c,v 1.10 94/03/30 16:55:15 rws Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -395,7 +395,7 @@ OUTPUT unsigned long	*numPathsReturn;
 
 {
     register pexGetAncestorsReq		*req;
-    char				*pBuf;
+    char				*pBuf, *pBufSave;
     pexGetAncestorsReply		rep;
     PEXStructurePath			*pStrucPath;
     PEXElementRef			*pElemRef;
@@ -440,8 +440,8 @@ OUTPUT unsigned long	*numPathsReturn;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
-
+    XREAD_INTO_SCRATCH (display, pBufSave, rep.length << 2);
+    pBuf = pBufSave;
 
     /*
      * Allocate a buffer for the replies to pass back to the client.
@@ -463,7 +463,7 @@ OUTPUT unsigned long	*numPathsReturn;
 	pStrucPath[i].elements = pElemRef;
     }
 
-    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
+    FINISH_WITH_SCRATCH (display, pBufSave, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -488,7 +488,7 @@ OUTPUT unsigned long	*numPathsReturn;
 
 {
     register pexGetDescendantsReq	*req;
-    char				*pBuf;
+    char				*pBuf, *pBufSave;
     pexGetDescendantsReply		rep;
     PEXStructurePath			*pStrucPath;
     PEXElementRef			*pElemRef;
@@ -533,8 +533,8 @@ OUTPUT unsigned long	*numPathsReturn;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
-
+    XREAD_INTO_SCRATCH (display, pBufSave, rep.length << 2);
+    pBuf = pBufSave;
 
     /*
      * Allocate a buffer to pass the replies back to the client.
@@ -556,7 +556,7 @@ OUTPUT unsigned long	*numPathsReturn;
 	pStrucPath[i].elements = pElemRef;
     }
 
-    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
+    FINISH_WITH_SCRATCH (display, pBufSave, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.

@@ -1,4 +1,4 @@
-/* $XConsortium: pl_xdata.h,v 1.1 93/02/23 14:36:53 mor Exp $ */
+/* $XConsortium: pl_xdata.h,v 1.2 94/03/30 16:51:32 rws Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -38,10 +38,11 @@ without express or implied warranty.
     } \
     else \
     { \
-        char *_pBuf; \
-        XREAD_INTO_SCRATCH (_display, _pBuf, _count * SIZEOF (float)); \
+        char *_pBuf, *_pBufSave; \
+        XREAD_INTO_SCRATCH (_display, _pBufSave, _count * SIZEOF (float)); \
+	_pBuf = _pBufSave; \
     	EXTRACT_LISTOF_FLOAT32 (_count, _pBuf, _pList, _fpConvert, _fpFormat); \
-	FINISH_WITH_SCRATCH (_display, _pBuf, _count * SIZEOF (float)); \
+	FINISH_WITH_SCRATCH (_display, _pBufSave, _count * SIZEOF (float)); \
     } \
 }
 
@@ -55,10 +56,11 @@ without express or implied warranty.
     } \
     else \
     { \
-        char *_pBuf; \
-        XREAD_INTO_SCRATCH (_display, _pBuf, _count * SIZEOF (pexCoord3D)); \
+        char *_pBuf, *_pBufSave; \
+        XREAD_INTO_SCRATCH (_display, _pBufSave, _count * SIZEOF (pexCoord3D)); \
+	_pBuf = _pBufSave; \
     	EXTRACT_LISTOF_COORD3D (_count, _pBuf, _pList, _fpConvert, _fpFormat); \
-	FINISH_WITH_SCRATCH (_display, _pBuf, _count * SIZEOF (pexCoord3D)); \
+	FINISH_WITH_SCRATCH (_display, _pBufSave, _count * SIZEOF (pexCoord3D)); \
     } \
 }
 
@@ -72,12 +74,13 @@ without express or implied warranty.
     } \
     else \
     { \
-        char *_pBuf; \
-        XREAD_INTO_SCRATCH (_display, _pBuf, \
+        char *_pBuf, *_pBufSave; \
+        XREAD_INTO_SCRATCH (_display, _pBufSave, \
 	    _count * SIZEOF (pexDeviceCoord)); \
+	_pBuf = _pBufSave; \
         EXTRACT_LISTOF_DEVCOORD (_count, _pBuf, _pList, \
 	    _fpConvert, _fpFormat); \
-	FINISH_WITH_SCRATCH (_display, _pBuf, \
+	FINISH_WITH_SCRATCH (_display, _pBufSave, \
 	    _count * SIZEOF (pexDeviceCoord)); \
     } \
 }
@@ -108,83 +111,92 @@ without express or implied warranty.
 
 #define XREAD_LISTOF_CARD32(_display, _count, _pList) \
 { \
-    char *_pBuf; \
-    XREAD_INTO_SCRATCH (_display, _pBuf, _count * SIZEOF (CARD32)); \
+    char *_pBuf, *_pBufSave; \
+    XREAD_INTO_SCRATCH (_display, _pBufSave, _count * SIZEOF (CARD32)); \
+    _pBuf = _pBufSave; \
     EXTRACT_LISTOF_CARD32 (_count, _pBuf, _pList); \
-    FINISH_WITH_SCRATCH (_display, _pBuf, _count * SIZEOF (CARD32)); \
+    FINISH_WITH_SCRATCH (_display, _pBufSave, _count * SIZEOF (CARD32)); \
 }
 
 
 #define XREAD_LISTOF_CARD16(_display, _count, _pList) \
 { \
-    char *_pBuf; \
-    XREAD_INTO_SCRATCH (_display, _pBuf, _count * SIZEOF (CARD16)); \
+    char *_pBuf, *_pBufSave; \
+    XREAD_INTO_SCRATCH (_display, _pBufSave, _count * SIZEOF (CARD16)); \
+    _pBuf = _pBufSave; \
     EXTRACT_LISTOF_CARD16 (_count, _pBuf, _pList); \
-    FINISH_WITH_SCRATCH (_display, _pBuf, _count * SIZEOF (CARD16)); \
+    FINISH_WITH_SCRATCH (_display, _pBufSave, _count * SIZEOF (CARD16)); \
 }
 
 
 #define XREAD_LISTOF_FLOAT32(_display, _count, _pList, _fpConvert, _fpFormat) \
 { \
-    char *_pBuf; \
-    XREAD_INTO_SCRATCH (_display, _pBuf, _count * SIZEOF (float)); \
+    char *_pBuf, *_pBufSave; \
+    XREAD_INTO_SCRATCH (_display, _pBufSave, _count * SIZEOF (float)); \
+    _pBuf = _pBufSave; \
     EXTRACT_LISTOF_FLOAT32 (_count, _pBuf, _pList, _fpConvert, _fpFormat); \
-    FINISH_WITH_SCRATCH (_display, _pBuf, _count * SIZEOF (float)); \
+    FINISH_WITH_SCRATCH (_display, _pBufSave, _count * SIZEOF (float)); \
 }
 
 
 #define XREAD_LISTOF_COORD3D(_display, _count, _pList, _fpConvert, _fpFormat) \
 { \
-    char *_pBuf; \
-    XREAD_INTO_SCRATCH (_display, _pBuf, _count * SIZEOF (pexCoord3D)); \
+    char *_pBuf, *_pBufSave; \
+    XREAD_INTO_SCRATCH (_display, _pBufSave, _count * SIZEOF (pexCoord3D)); \
+    _pBuf = _pBufSave; \
     EXTRACT_LISTOF_COORD3D (_count, _pBuf, _pList, _fpConvert, _fpFormat); \
-    FINISH_WITH_SCRATCH (_display, _pBuf, _count * SIZEOF (pexCoord3D)); \
+    FINISH_WITH_SCRATCH (_display, _pBufSave, _count * SIZEOF (pexCoord3D)); \
 }
 
 
 #define XREAD_LISTOF_DEVCOORD(_display, _count, _pList, _fpConvert, _fpFormat)\
 { \
-    char *_pBuf; \
-    XREAD_INTO_SCRATCH (_display, _pBuf, _count * SIZEOF (pexDeviceCoord)); \
+    char *_pBuf, *_pBufSave; \
+    XREAD_INTO_SCRATCH (_display, _pBufSave, _count * SIZEOF (pexDeviceCoord)); \
+    _pBuf = _pBufSave; \
     EXTRACT_LISTOF_DEVCOORD (_count, _pBuf, _pList, _fpConvert, _fpFormat); \
-    FINISH_WITH_SCRATCH (_display, _pBuf, _count * SIZEOF (pexDeviceCoord)); \
+    FINISH_WITH_SCRATCH (_display, _pBufSave, _count * SIZEOF (pexDeviceCoord)); \
 }
 
 
 #define XREAD_LISTOF_DEVRECT(_display, _count, _pList) \
 { \
-    char *_pBuf; \
-    XREAD_INTO_SCRATCH (_display, _pBuf, _count * SIZEOF (pexDeviceRect)); \
+    char *_pBuf, *_pBufSave; \
+    XREAD_INTO_SCRATCH (_display, _pBufSave, _count * SIZEOF (pexDeviceRect)); \
+    _pBuf = _pBufSave; \
     EXTRACT_LISTOF_DEVRECT (_count, _pBuf, _pList); \
-    FINISH_WITH_SCRATCH (_display, _pBuf, _count * SIZEOF (pexDeviceRect)); \
+    FINISH_WITH_SCRATCH (_display, _pBufSave, _count * SIZEOF (pexDeviceRect)); \
 }
 
 
 #define XREAD_LISTOF_ELEMINFO(_display, _count, _pList) \
 { \
-    char *_pBuf; \
-    XREAD_INTO_SCRATCH (_display, _pBuf, _count * SIZEOF (pexElementInfo)); \
+    char *_pBuf, *_pBufSave; \
+    XREAD_INTO_SCRATCH (_display, _pBufSave, _count * SIZEOF (pexElementInfo)); \
+    _pBuf = _pBufSave; \
     EXTRACT_LISTOF_ELEMINFO (_count, _pBuf, _pList); \
-    FINISH_WITH_SCRATCH (_display, _pBuf, _count * SIZEOF (pexElementInfo)); \
+    FINISH_WITH_SCRATCH (_display, _pBufSave, _count * SIZEOF (pexElementInfo)); \
 }
 
 
 #define XREAD_LISTOF_ELEMREF(_display, _count, _pList) \
 { \
-    char *_pBuf; \
-    XREAD_INTO_SCRATCH (_display, _pBuf, _count * SIZEOF (pexElementRef)); \
+    char *_pBuf, *_pBufSave; \
+    XREAD_INTO_SCRATCH (_display, _pBufSave, _count * SIZEOF (pexElementRef)); \
+    _pBuf = _pBufSave; \
     EXTRACT_LISTOF_ELEMREF (_count, _pBuf, _pList); \
-    FINISH_WITH_SCRATCH (_display, _pBuf, _count * SIZEOF (pexElementRef)); \
+    FINISH_WITH_SCRATCH (_display, _pBufSave, _count * SIZEOF (pexElementRef)); \
 }
 
 
 #define XREAD_LISTOF_PICKELEMREF(_display, _count, _pList) \
 { \
-    char *_pBuf; \
-    XREAD_INTO_SCRATCH (_display, _pBuf,
+    char *_pBuf, *_pBufSave; \
+    XREAD_INTO_SCRATCH (_display, _pBufSave,
 	_count * SIZEOF (pexPickElementRef)); \
+    _pBuf = _pBufSave; \
     EXTRACT_LISTOF_PICKELEMREF (_count, _pBuf, _pList); \
-    FINISH_WITH_SCRATCH (_display, _pBuf,
+    FINISH_WITH_SCRATCH (_display, _pBufSave,
 	_count * SIZEOF (pexPickElementInfo)); \
 }
 

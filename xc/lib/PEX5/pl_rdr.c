@@ -1,4 +1,4 @@
-/* $XConsortium: pl_rdr.c,v 1.8 93/09/23 14:39:58 mor Exp $ */
+/* $XConsortium: pl_rdr.c,v 1.9 94/03/30 16:52:29 rws Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -162,7 +162,7 @@ INPUT unsigned long		valueMask;
 {
     register pexGetRendererAttributesReq	*req;
     register PEXRendererAttributes		*pAttr;
-    register char				*pBuf;
+    register char				*pBuf, *pBufSave;
     pexGetRendererAttributesReply		rep;
     unsigned long				f;
     int						i;
@@ -205,8 +205,8 @@ INPUT unsigned long		valueMask;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
-
+    XREAD_INTO_SCRATCH (display, pBufSave, rep.length << 2);
+    pBuf = pBufSave;
 
     /*
      * Allocate a buffer for the replies to pass back to the client.
@@ -405,7 +405,7 @@ INPUT unsigned long		valueMask;
 	}
     }
 
-    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
+    FINISH_WITH_SCRATCH (display, pBufSave, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.

@@ -1,4 +1,4 @@
-/* $XConsortium: pl_wks.c,v 1.10 93/09/23 14:40:05 mor Exp $ */
+/* $XConsortium: pl_wks.c,v 1.11 94/03/30 16:54:17 rws Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -175,7 +175,7 @@ INPUT unsigned long	*valueMask;
 
 {
     register pexGetWorkstationAttributesReq	*req;
-    register char				*pBuf;
+    register char				*pBuf, *pBufSave;
     pexGetWorkstationAttributesReply		rep;
     PEXWorkstationAttributes			*ppwi;
     Bool					bitSet;
@@ -220,8 +220,8 @@ INPUT unsigned long	*valueMask;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
-
+    XREAD_INTO_SCRATCH (display, pBufSave, rep.length << 2);
+    pBuf = pBufSave;
 
     /*
      * Allocate a buffer for the replies to pass back to the client.
@@ -433,7 +433,7 @@ INPUT unsigned long	*valueMask;
 	}
     }
 
-    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
+    FINISH_WITH_SCRATCH (display, pBufSave, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -538,7 +538,7 @@ OUTPUT PEXViewRep	*curViewReturn;
 
 {
     register pexGetWorkstationViewRepReq	*req;
-    register char				*pBuf;
+    register char				*pBuf, *pBufSave;
     pexGetWorkstationViewRepReply		rep;
     int						fpConvert;
     int						fpFormat;
@@ -581,8 +581,8 @@ OUTPUT PEXViewRep	*curViewReturn;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
-
+    XREAD_INTO_SCRATCH (display, pBufSave, rep.length << 2);
+    pBuf = pBufSave;
 
     /*
      * Get the requested view rep.
@@ -615,7 +615,7 @@ OUTPUT PEXViewRep	*curViewReturn;
     EXTRACT_LISTOF_FLOAT32 (16, pBuf, curViewReturn->view.mapping,
         fpConvert, fpFormat);
 
-    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
+    FINISH_WITH_SCRATCH (display, pBufSave, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
