@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $Header: Xlibint.h,v 11.43 88/02/03 23:49:10 swick Exp $ */
+/* $Header: Xlibint.h,v 11.44 88/02/10 18:00:57 rws Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -56,7 +56,7 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
  *
  */
 
-#ifdef __STDC__
+#if (defined __STDC__) && (!defined UNIXCPP)
 #define GetReq(name, req) \
 	if ((dpy->bufptr + sizeof(*req)) > dpy->bufmax)\
 		_XFlush(dpy);\
@@ -81,7 +81,7 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
    bytes after the request. "n" must be a multiple of 4!  */
 
 
-#ifdef __STDC__
+#if (defined __STDC__) && (!defined UNIXCPP)
 #define GetReqExtra(name, n, req) \
 	if ((dpy->bufptr + sizeof(*req) + n) > dpy->bufmax)\
 		_XFlush(dpy);\
@@ -107,7 +107,7 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
  * "rid" is the name of the resource. 
  */
 
-#ifdef __STDC__
+#if (defined __STDC__) && (!defined UNIXCPP)
 #define GetResReq(name, rid, req) \
 	if ((dpy->bufptr + sizeof(xResourceReq)) > dpy->bufmax)\
 	    _XFlush(dpy);\
@@ -133,7 +133,7 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
  * GetEmptyReq is for those requests that have no arguments
  * at all. 
  */
-#ifdef __STDC__
+#if (defined __STDC__) && (!defined UNIXCPP)
 #define GetEmptyReq(name, req) \
 	if ((dpy->bufptr + sizeof(xReq)) > dpy->bufmax)\
 	    _XFlush(dpy);\
