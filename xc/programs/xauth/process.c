@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: process.c,v 1.4 88/11/30 16:34:05 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -111,6 +111,19 @@ static void prefix (fn, n)
     int n;
 {
     fprintf (stderr, "%s: line %d of \"%s\":  ", ProgramName, n, fn);
+}
+
+static void baddisplayname (dpy, cmd)
+    char *dpy, *cmd;
+{
+    fprintf (stderr, "bad display name \"%s\" in \"%s\" command\n",
+	     dpy, cmd);
+}
+
+static void badcommandline (cmd)
+    char *cmd;
+{
+    fprintf (stderr, "bad \"%s\" command line\n", cmd);
 }
 
 static int parse_boolean (s)
@@ -249,28 +262,53 @@ static Bool get_displayname_auth (displayname, auth)
     char *cp;
     int len;
     extern char *get_address_info();
+    Xauth proto;
+    int prelen = 0;
 
-    if (!parse_displayname (displayname, &family, &host, &dpynum, &scrnum,
-			    &rest)) {
+    /*
+     * check to see if the display name is of the form "host/unix:"
+     * which is how the list routine prints out local connections
+     */
+
+    cp = index (displayname, '/');
+    if (cp && strncmp (cp, "/unix:", 6) == 0)
+      prelen = (cp - displayname);
+
+    if (!parse_displayname (displayname + ((prelen > 0) ? prelen + 1 : 0),
+			    &family, &host, &dpynum, &scrnum, &rest)) {
 	return False;
     }
 
-    auth->family = family;
-    auth->address = get_address_info (family, host, &len);
-    if (auth->address) {
+    proto.family = family;
+    proto.address = get_address_info (family, displayname, prelen, host, &len);
+    if (proto.address) {
 	char buf[40];			/* want to hold largest display num */
 
-	auth->address_length = len;
+	proto.address_length = len;
 	buf[0] = '\0';
 	sprintf (buf, "%d", dpynum);
-	auth->number_length = strlen (buf);
-	if (auth->number_length > 0) 
-	  auth->number = copystring (buf, auth->number_length);
+	proto.number_length = strlen (buf);
+	if (proto.number_length <= 0) {
+	    free (proto.address);
+	    proto.address = NULL;
+	} else {
+	    proto.number = copystring (buf, proto.number_length);
+	}
     }
 
     if (host) free (host);
     if (rest) free (rest);
-    return (auth->address ? True : False);
+
+    if (proto.address) {
+	auth->family = proto.family;
+	auth->address = proto.address;
+	auth->address_length = proto.address_length;
+	auth->number = proto.number;
+	auth->number_length = proto.number_length;
+	return True;
+    } else {
+	return False;
+    }
 }
 
 	
@@ -375,10 +413,12 @@ static void fprintfhex (fp, len, cp)
     return;
 }
 
-static void dump_entry (fp, auth)
-    FILE *fp;
+static int dump_entry (auth, data)
     Xauth *auth;
+    char *data;
 {
+    FILE *fp = (FILE *) data;
+
     if (format_numeric) {
 	fprintf (fp, "%04x", auth->family);  /* unsigned short */
 	fprintf (fp, " %04x ", auth->address_length);  /* short */
@@ -395,9 +435,8 @@ static void dump_entry (fp, auth)
 
 	switch (auth->family) {
 	  case FamilyLocal:
-	    putc ('/', fp);
 	    fwrite (auth->address, sizeof (char), auth->address_length, fp);
-	    putc ('/', fp);
+	    fprintf (fp, "/unix");
 	    break;
 	  case FamilyInternet:
 	  case FamilyDECnet:
@@ -422,9 +461,65 @@ static void dump_entry (fp, auth)
 	fprintfhex (fp, auth->data_length, auth->data);
     }
     putc ('\n', fp);
-    return;
+    return 0;
 }
 
+
+static int match_auth (a, b)
+    register Xauth *a, *b;
+{
+    return ((a->family == b->family &&
+	     a->address_length == b->address_length &&
+	     a->number_length == b->number_length &&
+	     bcmp (a->address, b->address, a->address_length) == 0 &&
+	     bcmp (a->number, b->number, a->number_length) == 0) ? 1 : 0);
+}
+
+
+static int iterate (inputfilename, lineno, start,
+		    argc, argv, yfunc, nfunc, data)
+    char *inputfilename;
+    int lineno;
+    int start;
+    int argc;
+    char *argv[];
+    int (*yfunc)(), (*nfunc)();
+    char *data;
+{
+    int i;
+    int errors = 0;
+    Xauth proto;
+    AuthList *l;
+
+    /*
+     * iterate
+     */
+    for (i = start; i < argc; i++) {
+	char *displayname = argv[i];
+	proto.address = proto.number = NULL;
+	if (!get_displayname_auth (displayname, &proto)) {
+	    prefix (inputfilename, lineno);
+	    baddisplayname (displayname, argv[0]);
+	    errors++;
+	    continue;
+	}
+	for (l = xauth_head; l; l = l->next) {
+	    if (match_auth (&proto, l->auth)) {
+		if (yfunc) {
+		    errors += (*yfunc) (l->auth, data);
+		}
+	    } else {
+		if (nfunc) {
+		    errors += (*nfunc) (l->auth, data);
+		}
+	    }
+	}
+	if (proto.address) free (proto.address);
+	if (proto.number) free (proto.number);
+    }
+
+    return errors;
+}
 
 /*
  * action routines
@@ -445,7 +540,7 @@ static int do_help (inputfilename, lineno, argc, argv)
 }
 
 /*
- * list [displayname]
+ * list [displayname ...]
  */
 static int do_list (inputfilename, lineno, argc, argv)
     char *inputfilename;
@@ -453,34 +548,22 @@ static int do_list (inputfilename, lineno, argc, argv)
     int argc;
     char **argv;
 {
+    int i;
     AuthList *l;
-    Bool specific_display = False;
     int family, dpynum, scrnum;
     char *host = NULL, *rest = NULL;
     Xauth proto;
+    int errors = 0;
 
-    if (argc > 2 || (argc == 2 && !argv[1])) {
-	prefix (inputfilename, lineno);
-	fprintf (stderr, "bad \"list\" command line\n");
-	return 1;
-    }
-
-    if (argc == 2) {
-	if (!get_displayname_auth (argv[1], &proto)) {
-	    prefix (inputfilename, lineno);
-	    fprintf (stderr, "bad display name \"%s\" in \"list\"\n", argv[1]);
-	    return 1;
+    if (argc == 1) {
+	for (l = xauth_head; l; l = l->next) {
+	    dump_entry (l->auth, stdout);
 	}
-	specific_display = True;
+	return 0;
     }
 
-    for (l = xauth_head; l; l = l->next) {
-	if (specific_display /* XXX - && !match(,l) */) continue;
-	dump_entry (stdout, l->auth);
-    }
-
-    /* XXX */
-    return 0;
+    return iterate (inputfilename, lineno, 1, argc, argv,
+		    dump_entry, NULL, (char *) stdout);
 }
 
 /*
@@ -497,7 +580,7 @@ static int do_merge (inputfilename, lineno, argc, argv)
 
     if (argc < 2) {
 	prefix (inputfilename, lineno);
-	fprintf (stderr, "bad \"merge\" command line\n");
+	badcommandline (argv[0]);
 	return 1;
     }
 
@@ -505,7 +588,7 @@ static int do_merge (inputfilename, lineno, argc, argv)
 }
 
 /*
- * extract filename displayname
+ * extract filename displayname [displayname ...]
  */
 static int do_extract (inputfilename, lineno, argc, argv)
     char *inputfilename;
@@ -513,13 +596,62 @@ static int do_extract (inputfilename, lineno, argc, argv)
     int argc;
     char **argv;
 {
-    if (argc != 3 || !argv[1] || !argv[2]) {
+    int i;
+    FILE *fp = NULL;
+    Xauth proto;
+    AuthList *l;
+    int errors = 0;
+    char *filename;
+
+    if (argc < 3) {
 	prefix (inputfilename, lineno);
-	fprintf (stderr, "bad \"extract\" command line\n");
+	badcommandline (argv[0]);
 	return 1;
     }
-    /* XXX */
-    return 0;
+
+    filename = argv[1];
+
+    /*
+     * should use iterate
+     */
+    for (i = 2; i < argc; i++) {
+	char *displayname = argv[i];
+	proto.address = proto.number = NULL;
+	if (!get_displayname_auth (displayname, &proto)) {
+	    prefix (inputfilename, lineno);
+	    baddisplayname (displayname, argv[0]);
+	    errors++;
+	    continue;
+	}
+
+	for (l = xauth_head; l; l = l->next) {
+	    if (match_auth (&proto, l->auth)) {
+		if (!fp) {
+		    fp = fopen (filename, "w");
+		    if (!fp) {
+			prefix (inputfilename, lineno);
+			fprintf (stderr,
+				 "unable to open extraction file \"%s\"\n",
+				 filename);
+			errors++;
+			break;
+		    }
+		}
+		XauWriteAuth (fp, l->auth);
+	    }
+	}
+	if (proto.address) free (proto.address);
+	if (proto.number) free (proto.number);
+    }
+
+    if (!fp) {
+	printf ("No matches found, authority file \"%s\" not written.\n",
+		filename);
+    } else {
+	(void) fclose (fp);
+    }
+
+    return errors;
 }
 
 /*
@@ -533,7 +665,7 @@ static int do_add (inputfilename, lineno, argc, argv)
 { 
     if (argc != 4 || !argv[1] || !argv[2] || !argv[3]) {
 	prefix (inputfilename, lineno);
-	fprintf (stderr, "bad \"add\" command line\n");
+	badcommandline (argv[0]);
 	return 1;
     }
     /* XXX */
@@ -551,7 +683,7 @@ static int do_remove (inputfilename, lineno, argc, argv)
 {
     if (argc != 2 || !argv[1]) {
 	prefix (inputfilename, lineno);
-	fprintf (stderr, "bad \"remove\" command line\n");
+	badcommandline (argv[0]);
 	return 1;
     }
     /* XXX */
@@ -569,7 +701,7 @@ static int do_info (inputfilename, lineno, argc, argv)
 {
     if (argc != 1) {
 	prefix (inputfilename, lineno);
-	fprintf (stderr, "bad \"info\" command line\n");
+	badcommandline (argv[0]);
 	return 1;
     }
     printf ("Authority file:  %s\n", 
@@ -608,7 +740,7 @@ static int do_numeric (inputfilename, lineno, argc, argv)
 	break;
       default:
 	prefix (inputfilename, lineno);
-	fprintf (stderr, "bad \"numeric\" command line\n");
+	badcommandline (argv[0]);
 	return 1;
     }
     return 0;
@@ -653,7 +785,7 @@ static int do_source (inputfilename, lineno, argc, argv)
 
     if (argc != 2 || !argv[1]) {
 	prefix (inputfilename, lineno);
-	fprintf (stderr, "bad \"source\" command line\n");
+	badcommandline (argv[0]);
 	return 1;
     }
 
