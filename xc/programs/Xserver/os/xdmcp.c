@@ -1,4 +1,4 @@
-/* $XConsortium: xdmcp.c,v 1.25 93/09/03 08:14:52 dpw Exp $ */
+/* $XConsortium: xdmcp.c,v 1.26 93/09/20 20:11:15 dpw Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -33,8 +33,8 @@
 #include "Xdmcp.h"
 
 extern char *display;
-extern long EnabledDevices[];
-extern long AllClients[];
+extern FdSet EnabledDevices;
+extern FdSet AllClients;
 extern char *defaultDisplayClass;
 
 static int		    xdmcpSocket, sessionSocket;
@@ -594,13 +594,13 @@ XdmcpBlockHandler(data, wt, pReadmask)
     struct timeval  **wt;
     pointer	    pReadmask;
 {
-    long *LastSelectMask = (long *)pReadmask;
+    FdMask *LastSelectMask = (FdMask *)pReadmask;
     long millisToGo, wtMillis;
     static struct timeval waittime;
 
     if (state == XDM_OFF)
 	return;
-    *LastSelectMask |= (1 << xdmcpSocket);
+    BITSET(LastSelectMask, xdmcpSocket);
     if (timeOutTime == 0)
 	return;
     millisToGo = timeOutTime - GetTimeInMillis() + 1;
@@ -636,8 +636,8 @@ XdmcpWakeupHandler(data, i, pReadmask)
     int	    i;
     pointer pReadmask;
 {
-    long    *LastSelectMask = (long *)pReadmask;
-    long    devicesReadable[mskcnt];
+    FdMask  *LastSelectMask = (FdMask *)pReadmask;
+    FdSet   devicesReadable;
 
     if (state == XDM_OFF)
 	return;

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.73 93/07/10 16:47:58 rws Exp $ */
+/* $XConsortium: io.c,v 1.74 93/09/03 08:17:17 dpw Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -58,9 +58,9 @@ SOFTWARE.
 #endif
 
 extern void MarkClientException();
-extern long ClientsWithInput[];
-extern long ClientsWriteBlocked[];
-extern long OutputPending[];
+extern FdSet ClientsWithInput;
+extern FdSet ClientsWriteBlocked;
+extern FdSet OutputPending;
 extern int ConnectionTranslation[];
 extern Bool NewOutputPending;
 extern Bool AnyClientsWriteBlocked;

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.156 93/09/03 08:20:39 dpw Exp $ */
+/* $XConsortium: connection.c,v 1.157 93/09/18 14:51:12 dpw Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -110,15 +110,15 @@ typedef long CCID;      /* mask of indices into client socket table */
 extern char *display;		/* The display number */
 int lastfdesc;			/* maximum file descriptor */
 
-long WellKnownConnections;	/* Listener mask */
-long EnabledDevices[mskcnt];	/* mask for input devices that are on */
-long AllSockets[mskcnt];	/* select on this */
-long AllClients[mskcnt];	/* available clients */
-long LastSelectMask[mskcnt];	/* mask returned from last select call */
-long ClientsWithInput[mskcnt];	/* clients with FULL requests in buffer */
-long ClientsWriteBlocked[mskcnt];/* clients who cannot receive output */
-long OutputPending[mskcnt];	/* clients with reply/event data ready to go */
-long MaxClients = MAXSOCKS ;
+FdMask WellKnownConnections;	/* Listener mask */
+FdSet EnabledDevices;		/* mask for input devices that are on */
+FdSet AllSockets;		/* select on this */
+FdSet AllClients;		/* available clients */
+FdSet LastSelectMask;		/* mask returned from last select call */
+FdSet ClientsWithInput;		/* clients with FULL requests in buffer */
+FdSet ClientsWriteBlocked;	/* clients who cannot receive output */
+FdSet OutputPending;		/* clients with reply/event data ready to go */
+long MaxClients = MAXSOCKS;
 long NConnBitArrays = mskcnt;
 Bool NewOutputPending;		/* not yet attempted to write some new output */
 Bool AnyClientsWriteBlocked;	/* true if some client blocked on write */
@@ -129,11 +129,11 @@ static int ParentProcess;
 
 static Bool debug_conns = FALSE;
 
-static long IgnoredClientsWithInput[mskcnt];
-static long GrabImperviousClients[mskcnt];
-static long SavedAllClients[mskcnt];
-static long SavedAllSockets[mskcnt];
-static long SavedClientsWithInput[mskcnt];
+static FdSet IgnoredClientsWithInput;
+static FdSet GrabImperviousClients;
+static FdSet SavedAllClients;
+static FdSet SavedAllSockets;
+static FdSet SavedClientsWithInput;
 int GrabInProgress = 0;
 
 int ConnectionTranslation[MAXSOCKS];
@@ -658,7 +658,7 @@ EstablishNewConnections(clientUnused, closure)
     ClientPtr clientUnused;
     pointer closure;
 {
-    long readyconnections;     /* mask of listeners that are ready */
+    FdMask readyconnections;     /* mask of listeners that are ready */
     int curconn;                  /* fd of listener that's ready */
     register int newconn;         /* fd of new client */
     long connect_time;
@@ -682,7 +682,7 @@ EstablishNewConnections(clientUnused, closure)
     int	fromlen;
 #endif /* TCP_NODELAY */
 
-    readyconnections = (((long)closure) & WellKnownConnections);
+    readyconnections = (((FdMask)closure) & WellKnownConnections);
     if (!readyconnections)
 	return TRUE;
     connect_time = GetTimeInMillis();
@@ -791,7 +791,7 @@ ErrorConnMax(fd)
     char byteOrder = 0;
     int whichbyte = 1;
     struct timeval waittime;
-    long mask[mskcnt];
+    FdSet mask;
 
     /* if these seems like a lot of trouble to go to, it probably is */
     waittime.tv_sec = BOTIMEOUT / MILLI_PER_SECOND;
@@ -868,8 +868,8 @@ CloseDownFileDescriptor(oc)
 void
 CheckConnections()
 {
-    long		mask;
-    long		tmask[mskcnt]; 
+    FdMask		mask;
+    FdSet		tmask; 
     register int	curclient, curoff;
     int			i;
     struct timeval	notime;
@@ -1089,7 +1089,7 @@ MakeClientGrabPervious(client)
 
 #ifdef AIXV3
 
-static long pendingActiveClients[mskcnt];
+static FdSet pendingActiveClients;
 static BOOL reallyGrabbed;
 
 /****************
