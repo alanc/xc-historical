@@ -163,7 +163,7 @@ static void Get_inverseGC(cbw)
     values.font		= ComWfont->fid;
     values.fill_style   = FillSolid;
 
-    ComWinverseGC = XtGetGC(XtDisplay((Widget)cbw), XtWindow((Widget)cbw),
+    ComWinverseGC = XtGetGC((Widget)cbw,
     	GCBackground | GCForeground | GCFont | GCFillStyle, &values);
 }
 
@@ -178,7 +178,7 @@ static void Get_highlightGC(cbw)
     values.background   = ComWbackground;
     values.line_width   = ComWhighlightThickness;
 
-    ComWhighlightGC = XtGetGC(XtDisplay((Widget)cbw),XtWindow((Widget)cbw),
+    ComWhighlightGC = XtGetGC((Widget)cbw,
     	GCForeground | GCLineWidth, &values);
 }
 
@@ -261,7 +261,7 @@ static void Highlight(w,event)
      XEvent *event;
 {
   CommandWidget cbw = (CommandWidget)w;
-  ComWhighlightThickness = TRUE;
+  ComWhighlight = TRUE;
   Redisplay(w);
 }
 
@@ -270,7 +270,7 @@ static void Unhighlight(w,event)
      XEvent *event;
 {
   CommandWidget cbw = (CommandWidget)w;
-  ComWhighlightThickness = FALSE;
+  ComWhighlight = FALSE;
   Redisplay(w);
 }
 
@@ -311,19 +311,19 @@ static void Redisplay(w)
       redrawing to avoid flicker.  If the state is the same,
       the window just needs to redraw (even on an expose). */
 
-   if (ComWsensitive && !ComWdisplaySensitive) 
+   if (!ComWsensitive && ComWdisplaySensitive) 
       {
 	  /* change border to gray */
 	window_attributes.border_pixmap = ComWgrayPixmap;
 	XChangeWindowAttributes(XtDisplay(w),XtWindow(w),
-				CWBorderPixmap,window_attributes);
+				CWBorderPixmap,&window_attributes);
       }
-   else if (!ComWsensitive && ComWdisplaySensitive)
+   else if (ComWsensitive && !ComWdisplaySensitive)
      {
        /* change border to black */
        window_attributes.border_pixel = ComWforeground;
        XChangeWindowAttributes(XtDisplay(w),XtWindow(w),
-			       CWBorderPixel,window_attributes);
+			       CWBorderPixel,&window_attributes);
      }
 
    if (ComWhighlighted != ComWdisplayHighlighted ||
@@ -359,7 +359,7 @@ static void Resize(w)
     Widget	w;
 {
     /* Nothing changes specific to command.  Label must change. */
-  XtCallParentProcedure(realize,w);
+  XtCallParentProcedure(resize,w);
 }
 
 static void Destroy()
