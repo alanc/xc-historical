@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: NextEvent.c,v 6.21 88/01/29 12:27:58 asente Exp $";
+static char rcsid[] = "$Header: NextEvent.c,v 1.32 88/02/02 14:48:53 swick Locked $";
 #endif lint
 
 /*
@@ -27,13 +27,13 @@ static char rcsid[] = "$Header: NextEvent.c,v 6.21 88/01/29 12:27:58 asente Exp 
 
 #include <stdio.h>
 #include <errno.h>
-#include <X11/Xlib.h>
+#include <X/Xos.h>
+#include <X/Xlib.h>
 #include "IntrinsicI.h"
-#include <nlist.h>
-#include <sys/time.h>
-#include <sys/file.h>
 #include <sys/param.h>
 #include "fd.h"
+
+extern int errno;
 
 /*
  * Private definitions
