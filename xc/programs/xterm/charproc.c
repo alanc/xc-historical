@@ -1,6 +1,6 @@
 
 /*
- *	$Header: charproc.c,v 1.2 88/02/11 20:29:09 jim Exp $
+ *	$Header: charproc.c,v 1.3 88/02/11 21:18:56 jim Exp $
  */
 
 
@@ -57,7 +57,7 @@ extern void exit(), bcopy();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.2 88/02/11 20:29:09 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.3 88/02/11 21:18:56 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1587,14 +1587,19 @@ XSetWindowAttributes *values;
 	screen->fullVwin.f_height = screen->fnt_norm->max_bounds.ascent +
 				    screen->fnt_norm->max_bounds.descent;
 
-	/* making cursor -- won't work yet */
+	/* making cursor */
+	{
+	    unsigned long fg, bg;
 
-	if (XStrCmp(term->misc.curs_shape, "arrow") == 0) {
-		screen->curs = make_arrow(screen->mousecolor,
-			term->core.background_pixel);
-	} else {
-		screen->curs = make_xterm(screen->mousecolor,
-			term->core.background_pixel);
+	    fg = screen->mousecolor;
+	    bg = (screen->mousecolor == term->core.background_pixel) ?
+		screen->foreground : term->core.background_pixel;
+
+	    if (XStrCmp(term->misc.curs_shape, "arrow") == 0) {
+		screen->curs = make_arrow (fg, bg);
+	    } else {
+		screen->curs = make_xterm (fg, bg);
+	    }
 	}
 
 	i = 2 * screen->border + screen->scrollbar;

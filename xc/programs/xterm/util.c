@@ -1,5 +1,5 @@
 /*
- *	$Header: util.c,v 1.13 87/12/19 10:13:19 rws Exp $
+ *	$Header: util.c,v 1.1 88/02/10 13:08:17 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* util.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: util.c,v 1.13 87/12/19 10:13:19 rws Exp $";
+static char rcs_id[] = "$Header: util.c,v 1.1 88/02/10 13:08:17 jim Exp $";
 #endif	/* lint */
 
 #include <stdio.h>
@@ -902,13 +902,20 @@ ReverseVideo (term)
 	screen->reverseboldGC = tmpGC;
 
 	XFreeCursor(screen->display, screen->curs);
-	if (XStrCmp(term->misc.curs_shape, "arrow") == 0) {
-		screen->curs = make_arrow(screen->mousecolor, term->core.background_pixel);
-	} else {
-		screen->curs = make_xterm(screen->mousecolor, term->core.background_pixel);
-	}
 	XFreeCursor(screen->display, screen->arrow);
-	screen->arrow = make_arrow(screen->mousecolor, term->core.background_pixel);
+	{
+	    unsigned long fg, bg;
+	    fg = screen->mousecolor;
+	    bg = (screen->mousecolor == screen->foreground) ?
+		term->core.background_pixel : screen->foreground;
+
+	    if (XStrCmp(term->misc.curs_shape, "arrow") == 0) {
+		screen->curs = make_arrow (fg, bg);
+	    } else {
+		screen->curs = make_xterm (fg, bg);
+	    }
+	    screen->arrow = make_arrow (fg, bg);
+	}
 
 	XDefineCursor(screen->display, TextWindow(screen), screen->curs);
 	if(tek)
