@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.90 88/09/16 16:20:12 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.91 88/09/23 09:56:36 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -1764,6 +1764,17 @@ spawn ()
 #else	/* USE_SYSV_PGRP */
 		(void) write(cp_pipe[1], &handshake, sizeof(handshake));
 #endif	/* !USE_SYSV_PGRP */
+
+		/* need to reset after all the ioctl bashing we did above */
+#ifdef sun
+#ifdef TIOCSSIZE
+		ioctl  (0, TIOCSSIZE, &ts);
+#endif	/* TIOCSSIZE */
+#else	/* not sun */
+#ifdef TIOCSWINSZ
+		ioctl (0, TIOCSWINSZ, (char *)&ws);
+#endif	/* TIOCSWINSZ */
+#endif	/* sun */
 
 		if (command_to_exec) {
 			execvp(*command_to_exec, command_to_exec);
