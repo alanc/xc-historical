@@ -1,6 +1,7 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: TMstate.c,v 1.50 88/08/31 11:44:32 swick Exp $";
-/* $oHeader: TMstate.c,v 1.3 88/08/29 14:58:11 asente Exp $ */
+static char rcsid[] =
+    "$XConsortium: TMstate.c,v 1.53 88/09/04 12:22:12 swick Exp $";
+/* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
 
@@ -34,7 +35,6 @@ SOFTWARE.
 #define XK_LATIN1
 #include <X11/Xlib.h>
 #include <X11/keysymdef.h>
-#include <X11/Xos.h>
 #include "StringDefs.h"
 #include <stdio.h>
 #include "IntrinsicI.h"
@@ -201,7 +201,8 @@ static Boolean ComputeLateBindings(event,eventSeq,computed,computedMask)
     dpy = eventSeq->dpy;
     perDisplay = _XtGetPerDisplay(dpy);
     if (perDisplay == NULL) {
-        XtWarningMsg("displayError","invalidDisplay","XtToolkitError",
+        XtAppWarningMsg(_XtDisplayToApplicationContext(dpy),
+		"displayError","invalidDisplay","XtToolkitError",
             "Can't find display structure",
             (String *)NULL, (Cardinal *)NULL);
          return FALSE;
@@ -523,7 +524,8 @@ static void _XtTranslateEvent (w, closure, event)
     XEventToTMEvent (event, &curEvent);
 
     if (stateTable == NULL) {
-        XtWarningMsg("translationError","nullTable","XtToolkitError",
+        XtAppWarningMsg(XtWidgetToApplicationContext(w),
+		"translationError","nullTable","XtToolkitError",
             "Can't translate event thorugh NULL table",
             (String *)NULL, (Cardinal *)NULL);
        return ;
@@ -1458,13 +1460,15 @@ static void RemoveAccelerators(widget,closure,data)
     int i;
     XtTranslations table = (XtTranslations)closure;
     if (table == NULL) {
-        XtWarningMsg("translation error","nullTable","XtToolkitError",
+        XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+		"translation error","nullTable","XtToolkitError",
             "Can't remove accelerators from NULL table",
             (String *)NULL, (Cardinal *)NULL);
         return;
     }
     if (table->accProcTbl == NULL) {
-        XtWarningMsg("translation error","nullTable","XtToolkitError",
+        XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+		"translation error","nullTable","XtToolkitError",
             "Tried to remove non-existant accelerators",
             (String *)NULL, (Cardinal *)NULL);
         return;
@@ -1651,14 +1655,16 @@ static void _XtMenuPopupAction(widget, event, params, num_params)
     register Widget popup_shell;
 
     if (*num_params != 1)
-           XtErrorMsg("invalidParameters","xtMenuPopupAction","XtToolkitError",
+           XtAppErrorMsg(XtWidgetToApplicationContext(widget),
+		    "invalidParameters","xtMenuPopupAction","XtToolkitError",
            "MenuPopup wants exactly one argument",
 	   (String *)NULL, (Cardinal *)NULL);
 
     if (event->type == ButtonPress) spring_loaded = True;
     else if (event->type == EnterNotify) spring_loaded = False;
     else {
-	XtWarningMsg("invalidPopup","unsupportedOperation","XtToolkitError",
+	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+		"invalidPopup","unsupportedOperation","XtToolkitError",
 "Pop-up menu creation is only supported on ButtonPress or EnterNotify events.",
                   (String *)NULL, (Cardinal *)NULL);
 	spring_loaded = False;
@@ -1666,7 +1672,8 @@ static void _XtMenuPopupAction(widget, event, params, num_params)
 
     popup_shell = _XtFindPopup(widget, params[0]);
     if (popup_shell == NULL)
-            XtErrorMsg("invalidPopup","xtMenuPopup","XtToolkitError",
+            XtAppErrorMsg(XtWidgetToApplicationContext(widget),
+		    "invalidPopup","xtMenuPopup","XtToolkitError",
                    "Can't find popup in _XtMenuPopup",
 		   (String *)NULL, (Cardinal *)NULL);
 
@@ -1689,12 +1696,14 @@ static void _XtMenuPopdownAction(widget, event, params, num_params)
     } else if (*num_params == 1) {
 	popup_shell = _XtFindPopup(widget, params[0]);
 	if (popup_shell == NULL)
-            XtErrorMsg("invalidPopup","xtMenuPopup","XtToolkitError",
+            XtAppErrorMsg(XtWidgetToApplicationContext(widget),
+		    "invalidPopup","xtMenuPopup","XtToolkitError",
                    "Can't find popup in _XtMenuPopup",
 		   (String *)NULL, (Cardinal *)NULL);
 	    XtPopdown(popup_shell);
     } else {
-	XtErrorMsg("invalidParameters","xtmenuPopdown","XtToolkitError",
+	XtAppErrorMsg(XtWidgetToApplicationContext(widget),
+		"invalidParameters","xtmenuPopdown","XtToolkitError",
                "XtMenuPopdown called with num_params != 0 or 1",
 	       (String *)NULL, (Cardinal *)NULL);
     }
@@ -1764,7 +1773,8 @@ void _XtRegisterGrabs(widget,tm)
 				break;
 	    
 			    default:
-              XtWarningMsg("invalidPopup","unsupportedOperation","XtToolkitError",
+              XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+		    "invalidPopup","unsupportedOperation","XtToolkitError",
 "Pop-up menu creation is only supported on ButtonPress or EnterNotify events.",
                   (String *)NULL, (Cardinal *)NULL);
 			    break;
