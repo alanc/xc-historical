@@ -1,4 +1,4 @@
-/* $XConsortium: servermd.h,v 1.2 91/05/13 16:49:26 gildea Exp $ */
+/* $XConsortium: servermd.h,v 1.3 91/07/22 13:35:12 rws Exp $ */
 /* 
  * Copyright 1990, 1991 Network Computing Devices; 
  * Portions Copyright 1987 by Digital Equipment Corporation and the 
@@ -33,6 +33,10 @@
 
 #ifndef VENDOR_STRING
 #define VENDOR_STRING "MIT X Consortium"
+#endif
+
+#ifndef DEFAULT_FS_PORT
+#define DEFAULT_FS_PORT 7000
 #endif
 
 #endif /* _SERVERMD_H_ */

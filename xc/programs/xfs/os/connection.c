@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.12 91/07/16 20:22:30 keith Exp $ */
+/* $XConsortium: connection.c,v 1.13 91/07/19 18:46:57 rws Exp $ */
 /*
  * handles connections
  */
@@ -53,11 +53,11 @@
 #include	"osdep.h"
 #include	"globals.h"
 #include	"osstruct.h"
+#include	"servermd.h"
 
 extern int  errno;
 
-int         serverNum;		/* the server number */
-int         ListenPort = FS_TCP_PORT;	/* port to listen on */
+int         ListenPort = DEFAULT_FS_PORT;   /* port to listen on */
 int         lastfdesc;
 
 extern int  ListenSock;
@@ -128,7 +128,7 @@ open_tcp_socket()
 
     bzero((char *) &insock, sizeof(insock));
     insock.sin_family = AF_INET;
-    insock.sin_port = htons((unsigned short) (ListenPort + serverNum));
+    insock.sin_port = htons((unsigned short) (ListenPort));
     insock.sin_addr.s_addr = htonl(INADDR_ANY);
     retry = 20;
     while (bind(request, (struct sockaddr *) & insock, sizeof(insock))) {

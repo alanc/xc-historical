@@ -1,4 +1,4 @@
-/* $XConsortium: config.c,v 1.4 91/05/13 16:50:28 gildea Exp $ */
+/* $XConsortium: config.c,v 1.5 91/07/16 20:22:28 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -41,7 +41,8 @@ static char *config_set_int(),
            *config_set_catalogue(),
            *config_set_list(),
            *config_set_file(),
-           *config_set_resolutions();
+           *config_set_resolutions(),
+	   *config_set_snf_format();
 
 /* these need to be in lower case and alphabetical order so a
  * binary search lookup can be used
@@ -56,6 +57,7 @@ static ConfigOptionRec config_options[] = {
     {"error-file", config_set_file},
     {"port", config_set_int},
     {"server-number", config_set_int},
+    {"snf-format", config_set_snf_format},
     {"trusted-clients", config_set_list},
     {"use-syslog", config_set_bool},
     {(char *) 0, 0},
@@ -291,27 +293,17 @@ ReadConfigFile(filename)
     return ret;
 }
 
-struct {
+struct nameVal {
     char       *name;
     int         val;
-}           name_val[] = {
-
-    "yes", TRUE,
-    "on", TRUE,
-    "1", TRUE,
-    "true", TRUE,
-    "no", FALSE,
-    "off", FALSE,
-    "0", FALSE,
-    "false", FALSE,
-    (char *) 0, 0,
 };
 
 static char *
-config_parse_bool(c, ret, pval)
+config_parse_nameVal (c, ret, pval, name_val)
     char       *c;
     int        *ret;
-    Bool       *pval;
+    int		*pval;
+    struct nameVal   *name_val;
 {
     char       *start,
                 t;
@@ -336,6 +328,26 @@ config_parse_bool(c, ret, pval)
     *c = t;
     *ret = -1;
     return c;
+}
+
+static char *
+config_parse_bool (c, ret, pval)
+    char	*c;
+    int		*ret;
+    Bool	*pval;
+{
+    static struct nameVal bool_val[] = {
+    	    "yes", TRUE,
+    	    "on", TRUE,
+    	    "1", TRUE,
+    	    "true", TRUE,
+    	    "no", FALSE,
+    	    "off", FALSE,
+    	    "0", FALSE,
+    	    "false", FALSE,
+    	    (char *) 0, 0,
+    };
+    return config_parse_nameVal (c, ret, pval, bool_val);
 }
 
 static char *
@@ -378,7 +390,6 @@ config_set_int(parm, val)
 {
     int         ival,
                 ret;
-    extern int  serverNum;
     extern int  ListenPort;
     extern void SetDefaultPointSize();
 
@@ -387,9 +398,7 @@ config_set_int(parm, val)
 	return val;
 
     /* now do individual attribute checks */
-    if (!strcmp(parm->parm_name, "server-number")) {
-	serverNum = ival;
-    } else if (!strcmp(parm->parm_name, "port")) {
+    if (!strcmp(parm->parm_name, "port")) {
 	ListenPort = ival;
     } else if (!strcmp(parm->parm_name, "client-limit")) {
 	AccessSetConnectionLimit(ival);
@@ -504,5 +513,54 @@ config_set_resolutions(parm, val)
 	}
     }
     *val = t;
+    return val;
+}
+
+
+static char *
+config_parse_endian(c, ret, pval)
+    char       *c;
+    int        *ret;
+    int		*pval;
+{
+    static struct nameVal endian_val[] = {
+	"lsb",	LSBFirst,
+	"little",   LSBFirst,
+	"lsbfirst", LSBFirst,
+	"msb",	    MSBFirst,
+	"big",	    MSBFirst,
+	"msbfirst", MSBFirst,
+	(char *) 0, 0,
+    };
+    return config_parse_nameVal (c, ret, pval, endian_val);
+}
+
+static char *
+config_set_snf_format (parm, val)
+    ConfigOptionPtr parm;
+    char	    *val;
+{
+    char    *start = val,
+	    t;
+    int	    err;
+    int	    bit, byte, glyph, scan;
+    int	    ret;
+    
+    val = config_parse_endian (val, &ret, &bit);
+    if (ret == -1)
+	return val;
+    skip_whitespace (val);
+    val = config_parse_endian (val, &ret, &byte);
+    if (ret == -1)
+	return val;
+    skip_whitespace (val);
+    val = config_parse_int (val, &ret, &glyph);
+    if (ret == -1)
+	return val;
+    skip_whitespace (val);
+    val = config_parse_int (val, &ret, &scan);
+    if (ret == -1)
+	return val;
+    SnfSetFormat (bit, byte, glyph, scan);
     return val;
 }

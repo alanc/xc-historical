@@ -1,4 +1,4 @@
-/* $XConsortium: utils.c,v 1.5 91/07/02 09:50:07 rws Exp $ */
+/* $XConsortium: utils.c,v 1.6 91/07/16 20:22:33 keith Exp $ */
 /*
  * misc os utilities
  */
@@ -57,7 +57,6 @@
 #define SIGVAL void
 #endif
 
-extern int  serverNum;
 extern char *configfilename;
 char       *progname;
 Bool        CloneSelf;
@@ -147,22 +146,17 @@ ProcessCmdLine(argc, argv)
 
     progname = argv[0];
     for (i = 1; i < argc; i++) {
-	if (!strncmp(argv[i], "-s", 2)) {
-	    if (argv[i + 1])
-		serverNum = atoi(argv[++i]);
-	    else
-		usage();
-	} else if (!strncmp(argv[i], "-p", 2)) {
+	if (!strcmp(argv[i], "-port")) {
 	    if (argv[i + 1])
 		ListenPort = atoi(argv[++i]);
 	    else
 		usage();
-	} else if (!strncmp(argv[i], "-ls", 3)) {
+	} else if (!strcmp(argv[i], "-ls")) {
 	    if (argv[i + 1])
 		ListenSock = atoi(argv[++i]);
 	    else
 		usage();
-	} else if (!strncmp(argv[i], "-cf", 3)) {
+	} else if (!strcmp(argv[i], "-cf") || !strcmp(argv[i], "-config")) {
 	    if (argv[i + 1])
 		configfilename = argv[++i];
 	    else
