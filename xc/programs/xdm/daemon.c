@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: daemon.c,v 1.7 91/01/31 22:03:05 gildea Exp $
+ * $XConsortium: daemon.c,v 1.8 91/05/11 15:37:38 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -20,7 +20,7 @@
 
 #include <X11/Xos.h>
 
-#ifdef SVR4
+#if defined(SVR4) || defined(USG)
 #include <termios.h>
 #else
 #include <sys/ioctl.h>
@@ -64,11 +64,16 @@ BecomeDaemon ()
 
 #ifndef SYSV386
     if ((i = open ("/dev/tty", O_RDWR)) >= 0) {	/* did open succeed? */
+#if defined(USG) && defined(TCCLRCTTY)
+	int zero = 0;
+	(void) ioctl (i, TCCLRCTTY, &zero);
+#else
 #if (defined(SYSV) || defined(SVR4)) && defined(TIOCTTY)
 	int zero = 0;
 	(void) ioctl (i, TIOCTTY, &zero);
 #else
 	(void) ioctl (i, TIOCNOTTY, (char *) 0);    /* detach, BSD style */
+#endif
 #endif
 	(void) close (i);
     }
