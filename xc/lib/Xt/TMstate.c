@@ -1,4 +1,4 @@
-/* "$XConsortium: TMstate.c,v 1.101 90/06/15 18:50:34 rws Exp $"; */
+/* "$XConsortium: TMstate.c,v 1.102 90/06/28 13:27:21 swick Exp $"; */
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 /*LINTLIBRARY*/
 
@@ -2091,7 +2091,7 @@ void XtAugmentTranslations(widget, new)
     Widget widget;
     XtTranslations new;
 {
-    XtTranslations newTable = ConvertATranslation(widget, new, override);
+    XtTranslations newTable = ConvertATranslation(widget, new, augment);
 
     if (newTable == NULL) 
 	return;
