@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.39 91/05/29 08:46:33 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.39 91/05/29 08:50:03 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -687,6 +687,7 @@ Value	Name					Reference
 4	Evans & Sutherland			[75]
 5	Sun Microsystems, Inc.			[76]
 6	Sumitomo Electric Workstation Corp.	[77]
+7	Hewlett-Packard Co.			[78]
 
 
 REFERENCES
@@ -1042,3 +1043,8 @@ REFERENCES
 	Sumitomo Electric Workstation Corp.
 	No. 30 Kowa Bldg.  2-4-5 Roppongi, Minato-ku
 	Tokyo, 106 Japan
+
+[78]	Jeff Stevenson; MS 74
+	Hewlett-Packard Co.
+	3404 E. Harmony Road
+	Fort Collins, CO  80525-9599
