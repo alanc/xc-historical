@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.97 91/05/10 07:06:35 jap Exp $ */
+/* $XConsortium: utils.c,v 1.98 91/05/10 07:25:38 jap Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -214,6 +214,9 @@ char	*argv[];
 #endif
     defaultKeyboardControl.autoRepeat = TRUE;
 
+#ifdef AIXV3
+    OpenDebug();
+#endif
     for ( i = 1; i < argc; i++ )
     {
 	/* call ddx first, so it can peek/override if it wants */
