@@ -1,4 +1,5 @@
 //
+// $XConsortium$
 // This is a sample SVPMI file usable for every S3 chipset. It contains
 // a textmode and a 640x480-256 colors mode.
 //
