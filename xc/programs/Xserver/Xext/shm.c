@@ -17,7 +17,7 @@ without any express or implied warranty.
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-/* $XConsortium: shm.c,v 1.15 92/05/10 17:26:46 rws Exp $ */
+/* $XConsortium: shm.c,v 1.16 93/01/28 19:29:19 rws Exp $ */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -336,27 +336,19 @@ fbShmPutImage(dst, pGC, depth, format, w, h, sx, sy, sw, sh, dx, dy, data)
 {
     if ((format == ZPixmap) || (depth == 1))
     {
-	PixmapRec FakePixmap;
-    	FakePixmap.drawable.type = DRAWABLE_PIXMAP;
-    	FakePixmap.drawable.class = 0;
-    	FakePixmap.drawable.pScreen = dst->pScreen;
-    	FakePixmap.drawable.depth = depth;
-    	FakePixmap.drawable.bitsPerPixel = depth;
-    	FakePixmap.drawable.id = 0;
-    	FakePixmap.drawable.serialNumber = NEXT_SERIAL_NUMBER;
-    	FakePixmap.drawable.x = 0;
-    	FakePixmap.drawable.y = 0;
-    	FakePixmap.drawable.width = w;
-    	FakePixmap.drawable.height = h;
-    	FakePixmap.devKind = PixmapBytePad(w, depth);
-    	FakePixmap.refcnt = 1;
-    	FakePixmap.devPrivate.ptr = (pointer)data;
+	PixmapPtr pPixmap;
+
+	pPixmap = GetScratchPixmapHeader(dst->pScreen, w, h, depth,
+			/*XXX*/depth, PixmapBytePad(w, depth), (pointer)data);
+	if (!pPixmap)
+	    return;
 	if (format == XYBitmap)
-	    (void)(*pGC->ops->CopyPlane)(&FakePixmap, dst, pGC,
+	    (void)(*pGC->ops->CopyPlane)(pPixmap, dst, pGC,
 					 sx, sy, sw, sh, dx, dy, 1L);
 	else
-	    (void)(*pGC->ops->CopyArea)(&FakePixmap, dst, pGC,
+	    (void)(*pGC->ops->CopyArea)(pPixmap, dst, pGC,
 					sx, sy, sw, sh, dx, dy);
+	FreeScratchPixmapHeader(pPixmap);
     }
     else
 	miShmPutImage(dst, pGC, depth, format, w, h, sx, sy, sw, sh, dx, dy,
@@ -575,23 +567,13 @@ fbShmCreatePixmap (pScreen, width, height, depth, addr)
 {
     register PixmapPtr pPixmap;
 
-    pPixmap = (PixmapPtr)xalloc(sizeof(PixmapRec));
+    pPixmap = (*pScreen->CreatePixmap)(pScreen, 0, 0, pScreen->rootDepth);
     if (!pPixmap)
 	return NullPixmap;
-    pPixmap->drawable.type = DRAWABLE_PIXMAP;
-    pPixmap->drawable.class = 0;
-    pPixmap->drawable.pScreen = pScreen;
-    pPixmap->drawable.depth = depth;
-    pPixmap->drawable.bitsPerPixel = depth;
-    pPixmap->drawable.id = 0;
-    pPixmap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-    pPixmap->drawable.x = 0;
-    pPixmap->drawable.y = 0;
-    pPixmap->drawable.width = width;
-    pPixmap->drawable.height = height;
-    pPixmap->devKind = PixmapBytePad(width, depth);
-    pPixmap->refcnt = 1;
-    pPixmap->devPrivate.ptr = (pointer)addr;
+
+    if (!(*pScreen->ModifyPixmapHeader)(pPixmap, width, height, depth,
+		  /*XXX*/depth, PixmapBytePad(width, depth), (pointer)addr))
+	return NullPixmap;
     return pPixmap;
 }
 
