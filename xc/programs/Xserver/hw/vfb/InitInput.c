@@ -1,3 +1,4 @@
+/* $XConsortium: mbuf.c,v 1.20 94/01/07 09:45:59 dpw Exp $ */
 /*
  * Copyright 1993 Massachusetts Institute of Technology
  *
