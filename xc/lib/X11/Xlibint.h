@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.91 91/07/22 15:43:08 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.92 92/01/03 13:56:32 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -147,10 +147,8 @@ extern int errno;			/* Internal system error number. */
 /*
  * display flags
  */
-#define XlibDisplayIOError	(1L << 0) /* IO error handler called */
-#define XlibDisplayClosing	(1L << 1) /* XCloseDisplay called */
-#define XlibDisplayIgnoreFont	(1L << 2) /* ignore BadName on OpenFont */
-#define XlibDisplayAddNoOp	(1L << 3) /* subtract 2 to get seq num */
+#define XlibDisplayIOError	(1L << 0)
+#define XlibDisplayClosing	(1L << 1)
 
 /*
  * X Protocol packetizing macros.
@@ -169,7 +167,7 @@ extern int errno;			/* Internal system error number. */
            *(dpy->bufptr+1) =  0;\
            *(dpy->bufptr+2) =  0;\
            *(dpy->bufptr+3) =  1;\
-             dpy->request += 1;\
+             dpy->request++;\
              dpy->bufptr += 4;\
          }
 #else /* else does not require alignment on 64-bit boundaries */
@@ -442,6 +440,29 @@ extern int errno;			/* Internal system error number. */
 
 #endif /* MUSTCOPY - used machines whose C structs don't line up with proto */
 
+typedef struct _XInternalError {
+    struct _XInternalError *next;
+    Bool (*handler)();
+    XPointer data;
+} _XInternalErrorHandler;
+
+typedef struct _XInternalEState {
+    unsigned long min_sequence_number;
+    unsigned long max_sequence_number;
+    unsigned char error_code;
+    unsigned char major_opcode;
+    unsigned short minor_opcode;
+    unsigned char last_error_received;
+    int error_count;
+} _XInternalErrorState;
+
+#define _XDeqErrorHandler(dpy,handler) { \
+    if (dpy->async_handlers == (handler)) \
+	dpy->async_handlers = (handler)->next; \
+    else \
+	_XDeqInternalErrorHandler(dpy, handler); \
+    }
+
 /*
  * This structure is private to the library.
  */
@@ -493,6 +514,7 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 extern unsigned long _XSetLastRequestRead();	/* update dpy->last_request_read */
 extern int _XGetHostname();		/* get name of this machine */
 extern Screen *_XScreenOfWindow ();	/* get Screen pointer for window */
+extern Bool _XAsyncErrorHandler ();	/* internal error handler */
 
 extern int (*XESetCreateGC(
 #if NeedFunctionPrototypes
