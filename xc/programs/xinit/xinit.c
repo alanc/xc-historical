@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$Header: xinit.c,v 11.23 88/09/03 18:54:54 jim Exp $";
+static char *rcsid_xinit_c = "$Header: xinit.c,v 11.24 88/09/05 14:24:38 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -88,8 +88,10 @@ char client_display[100];
 char *default_server = "X";
 char *default_display = ":0";		/* choose most efficient */
 char *default_client[] = {"xterm", "-geometry", "+1+1", "-n", "login", "-display", NULL};
-char *server[100];
-char *client[100];
+char *serverargv[100];
+char *clientargv[100];
+char **server = serverargv + 2;		/* make sure room for sh .xserverrc args */
+char **client = clientargv + 2;		/* make sure room for sh .xinitrc args */
 char *displayNum;
 char *program;
 Display *xd;			/* server connection */
@@ -127,6 +129,7 @@ register char **argv;
 	register char **ptr;
 	int pid, i;
 	int client_args_given = 0, server_args_given = 0;
+	int start_of_client_args, start_of_server_args;
 
 	program = *argv++;
 	argc--;
@@ -168,6 +171,7 @@ register char **argv;
 		    *cptr++ = "-C";
 #endif /* sun */
 	}
+	start_of_client_args = (cptr - client);
 	while (argc && strcmp(*argv, "--")) {
 		client_args_given++;
 		*cptr++ = *argv++;
@@ -193,6 +197,8 @@ register char **argv;
 		displayNum = *argv;
 	else
 		displayNum = *sptr++ = default_display;
+
+	start_of_server_args = (sptr - server);
 	while (--argc >= 0) {
 		server_args_given++;
 		*sptr++ = *argv++;
@@ -206,7 +212,7 @@ register char **argv;
 	 * if no client arguments given, check for a startup file and copy
 	 * that into the argument list
 	 */
-	if (client_args_given == 0) {
+	{
 	    char *cp;
 	    Bool required = False;
 
@@ -219,9 +225,9 @@ register char **argv;
 	    }
 	    if (xinitrcbuf[0]) {
 		if (access (xinitrcbuf, R_OK) == 0) {		/* read */
+		    client += start_of_client_args - 2;
 		    client[0] = SHELL;
 		    client[1] = xinitrcbuf;
-		    client[2] = NULL;
 		} else if (access (xinitrcbuf, F_OK) == 0) {	/* exists */
 		    fprintf (stderr,
 		     "%s:  warning, can't read client init file \"%s\"\n",
@@ -238,10 +244,9 @@ register char **argv;
 	 * if no server arguments given, check for a startup file and copy
 	 * that into the argument list
 	 */
-	if (server_args_given == 0) {
+	{
 	    char *cp;
 	    Bool required = False;
-	    char xserverrcbuf[256];
 
 	    xserverrcbuf[0] = '\0';
 	    if ((cp = getenv ("XSERVERRC")) != NULL) {
@@ -252,9 +257,9 @@ register char **argv;
 	    }
 	    if (xserverrcbuf[0]) {
 		if (access (xserverrcbuf, R_OK) == 0) {		/* read */
+		    server += start_of_server_args - 2;
 		    server[0] = SHELL;
 		    server[1] = xserverrcbuf;
-		    server[2] = NULL;
 		} else if (access (xserverrcbuf, F_OK) == 0) {	/* exists */
 		    fprintf (stderr,
 		     "%s:  warning, can't read server init file \"%s\"\n",
