@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XPutImage.c,v 11.38 87/12/13 12:27:36 rws Exp $ */
+/* $Header: XPutImage.c,v 11.39 87/12/19 15:54:58 rws Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
@@ -85,6 +85,11 @@ _swaplong (bp, n)
 	bp += 2;
     }
 }
+
+/* XXX the following functions are declared int instead of void because various
+ * compilers and lints complain about later intialization of SwapFunc and/or
+ * (swapfunc == NoSwap) when void is used.
+ */
 
 static int
 NoSwap (src, dest, srclen, srcinc, destinc, height)
@@ -190,7 +195,7 @@ SwapWords (src, dest, srclen, srcinc, destinc, height)
 
     srcinc -= length;
     destinc -= length;
-    for (h = height; --h >= 0; src += srcinc, dest += destinc)
+    for (h = height; --h >= 0; src += srcinc, dest += destinc) {
 	if ((h == 0) && (srclen != length)) {
 	    length -= 4;
 	    if ((srclen - length) == 3)
@@ -205,6 +210,7 @@ SwapWords (src, dest, srclen, srcinc, destinc, height)
 	    *dest++ = *src++;
 	    *dest++ = *src++;
 	}
+    }
 }
 
 /* XXX do this with a table someday, ya think? */
@@ -254,7 +260,7 @@ SwapBitsAndTwoBytes (src, dest, srclen, srcinc, destinc, height)
 
     srcinc -= length;
     destinc -= length;
-    for (h = height; --h >= 0; src += srcinc, dest += destinc)
+    for (h = height; --h >= 0; src += srcinc, dest += destinc) {
 	if ((h == 0) && (srclen != length)) {
 	    length -= 2;
 	    *(dest + length + 1) = rev[*(src + length)];
@@ -263,6 +269,7 @@ SwapBitsAndTwoBytes (src, dest, srclen, srcinc, destinc, height)
 	    *dest++ = rev[*(src + 1)];
 	    *dest++ = rev[*src];
 	}
+    }
 }
 
 static int
@@ -277,7 +284,7 @@ SwapBitsAndFourBytes (src, dest, srclen, srcinc, destinc, height)
 
     srcinc -= length;
     destinc -= length;
-    for (h = height; --h >= 0; src += srcinc, dest += destinc)
+    for (h = height; --h >= 0; src += srcinc, dest += destinc) {
 	if ((h == 0) && (srclen != length)) {
 	    length -= 4;
 	    if ((srclen - length) == 3)
@@ -292,6 +299,7 @@ SwapBitsAndFourBytes (src, dest, srclen, srcinc, destinc, height)
 	    *dest++ = rev[*(src + 1)];
 	    *dest++ = rev[*src];
 	}
+    }
 }
 
 static int
@@ -306,7 +314,7 @@ SwapBitsAndWords (src, dest, srclen, srcinc, destinc, height)
 
     srcinc -= length;
     destinc -= length;
-    for (h = height; --h >= 0; src += srcinc, dest += destinc)
+    for (h = height; --h >= 0; src += srcinc, dest += destinc) {
 	if ((h == 0) && (srclen != length)) {
 	    length -= 4;
 	    if ((srclen - length) == 3)
@@ -321,6 +329,7 @@ SwapBitsAndWords (src, dest, srclen, srcinc, destinc, height)
 	    *dest++ = rev[*src++];
 	    *dest++ = rev[*src++];
 	}
+    }
 }
 
 /*
