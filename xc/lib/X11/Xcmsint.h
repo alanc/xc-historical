@@ -1,4 +1,4 @@
-/* $XConsortium: Xcmsint.h,v 1.13 91/07/09 16:31:56 rws Exp $ */
+/* $XConsortium: Xcmsint.h,v 1.14 91/07/22 15:45:52 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -196,6 +196,7 @@ typedef struct {
 #define XCMS_POLY(x)		_XcmsPolynomial(x)
 #define XCMS_SIN(x)		_XcmsSine(x)
 #define XCMS_SQRT(x)		_XcmsSquareRoot(x)
+#define XCMS_TAN(x)		(XCMS_SIN(x) / XCMS_COS(x))
 
 #if __STDC__
 double _XcmsArcTangent(double a);
@@ -220,9 +221,36 @@ double _XcmsSquareRoot();
 /*
  *  DEFINES FOR GAMUT COMPRESSION AND QUERY ROUTINES
  */
-#define XCMS_CIEUSTAROFHUE(h, l, c)	((XCMS_COS(radians((h))) * (c)) / (l))
-#define XCMS_CIEVSTAROFHUE(h, l, c)	((XCMS_SIN(radians((h))) * (c)) / (l))
-#define XCMS_CIELUV_PMETRIC_HUE(u, v)	XCMS_ATAN( (v) / (u))
+#ifndef PI
+#  ifdef M_PI
+#    define PI M_PI
+#  else
+#    define PI 3.14159265358979323846264338327950
+#  endif /* M_PI */
+#endif /* PI */
+#ifndef degrees
+#  define degrees(r) ((XcmsFloat)(r) * 180.0 / PI)
+#endif /* degrees */
+#ifndef radians
+#  define radians(d) ((XcmsFloat)(d) * PI / 180.0)
+#endif /* radians */
+
+#define XCMS_CIEUSTAROFHUE(h,c)	\
+((XCMS_COS((h)) == 0.0) ? (XcmsFloat)0.0 : (XcmsFloat) \
+((XcmsFloat)(c) / (XcmsFloat)XCMS_SQRT((XCMS_TAN(h) * XCMS_TAN(h)) + \
+(XcmsFloat)1.0)))
+#define XCMS_CIEVSTAROFHUE(h,c)	\
+((XCMS_COS((h)) == 0.0) ? (XcmsFloat)0.0 : (XcmsFloat) \
+((XcmsFloat)(c) / (XcmsFloat)XCMS_SQRT(((XcmsFloat)1.0 / \
+(XcmsFloat)(XCMS_TAN(h) * XCMS_TAN(h))) + (XcmsFloat)1.0)))
+/* this hue is returned in radians */
+#define XCMS_CIELUV_PMETRIC_HUE(u,v)	\
+(((u) != 0.0) ? XCMS_ATAN( (v) / (u)) : ((v >= 0.0) ? PI / 2 : -(PI / 2)))
 #define XCMS_CIELUV_PMETRIC_CHROMA(u,v)	XCMS_SQRT(((u)*(u)) + ((v)*(v)))
+
+#define XCMS_CIEASTAROFHUE(h,c)		XCMS_CIEUSTAROFHUE((h), (c))
+#define XCMS_CIEBSTAROFHUE(h,c)		XCMS_CIEVSTAROFHUE((h), (c))
+#define XCMS_CIELAB_PMETRIC_HUE(a,b)	XCMS_CIELUV_PMETRIC_HUE((a), (b))
+#define XCMS_CIELAB_PMETRIC_CHROMA(a,b)	XCMS_CIELUV_PMETRIC_CHROMA((a), (b))
 
 #endif /* _XCMSINT_H_ */
