@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: search.c,v 1.11 89/10/03 15:58:01 kit Exp $
+ * $XConsortium: search.c,v 1.12 91/01/09 17:31:42 rws Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -20,6 +20,7 @@
  */
 
 #include "globals.h"
+#include "vendor.h"
 
 /* Map <CR> and control-M to goto begining of file. */
 

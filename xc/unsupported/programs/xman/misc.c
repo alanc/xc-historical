@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.21 91/01/09 17:31:37 rws Exp $
+ * $XConsortium: misc.c,v 1.22 91/02/11 14:25:04 converse Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -20,6 +20,7 @@
  */
 
 #include "globals.h"
+#include "vendor.h"
 #include <X11/Xos.h> 		/* sys/types.h and unistd.h included in here */
 #include <sys/stat.h>
 #include <errno.h>
