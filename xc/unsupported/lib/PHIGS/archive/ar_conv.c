@@ -1,4 +1,4 @@
-/* $XConsortium: ar_conv.c,v 5.2 91/05/12 22:30:28 rws Exp $ */
+/* $XConsortium: ar_conv.c,v 5.3 91/07/01 16:20:00 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -37,10 +37,10 @@ SOFTWARE.
 
 /* For in place conversions which happen in this file */
 #define CONVERT_CARD32(swp, val) \
-    (val = ((swp)->ConvertCARD32 ? (*(swp)->ConvertCARD32)(&(val)) : (val)))
+    if ((swp)->ConvertCARD32)  ((*(swp)->ConvertCARD32)(&(val))) 
 
 #define CONVERT_CARD16(swp, val) \
-    (val = ((swp)->ConvertCARD16 ? (*(swp)->ConvertCARD16)(&(val)) : (val)))
+    if ((swp)->ConvertCARD16)  ((*(swp)->ConvertCARD16)(&(val))) 
     
     
 static pexSwap   clientSwapStructure;	
@@ -49,29 +49,29 @@ static pexSwap  *swp = &clientSwapStructure;
 static int fromFormat;
 static int toFormat;
 
-extern PEXFLOAT	ConvertIEEEToVax();
-extern PEXFLOAT	SwapIEEEToVax();
-extern PEXFLOAT	ConvertVaxToIEEE();
-extern PEXFLOAT	SwapVaxToIEEE();
-extern CARD16	SwapCARD16();
-extern CARD32	SwapCARD32();
+extern void	ConvertIEEEToVax();
+extern void	SwapIEEEToVax();
+extern void	ConvertVaxToIEEE();
+extern void	SwapVaxToIEEE();
+extern void	SwapCARD16();
+extern void	SwapCARD32();
 
 typedef struct {
-	CARD16 (*s)();		/* Function to convert a short */
-	CARD32 (*l)();		/* Function to convert a long */
-	PEXFLOAT  (*f)();		/* Function to convert a float */
+	void (*s)();		/* Function to convert a short */
+	void (*l)();		/* Function to convert a long */
+	void  (*f)();		/* Function to convert a float */
 } ThreeFuncs;
 
 static ThreeFuncs ConversionFunction[4][4] = {
 	{   /* From Big Endian Ieee */
 	    { 0, 0, 0 },
-	    { SwapCARD16, SwapCARD32, (PEXFLOAT (*)())SwapCARD32 },
+	    { SwapCARD16, SwapCARD32, (void (*)())SwapCARD32 },
 	    { 0, 0, ConvertIEEEToVax },
 	    { SwapCARD16, SwapCARD32, SwapIEEEToVax }
 	},
 	{
 	    /* From Big Endian DecF */
-	    { SwapCARD16, SwapCARD32, (PEXFLOAT (*)())SwapCARD32 },
+	    { SwapCARD16, SwapCARD32, (void (*)())SwapCARD32 },
 	    { 0, 0, 0 },
 	    { SwapCARD16, SwapCARD32, SwapIEEEToVax },
 	    { 0, 0, ConvertIEEEToVax }
@@ -81,13 +81,13 @@ static ThreeFuncs ConversionFunction[4][4] = {
 	    { 0, 0, ConvertVaxToIEEE },
 	    { SwapCARD16, SwapCARD32, SwapVaxToIEEE },
 	    { 0, 0, 0 },
-	    { SwapCARD16, SwapCARD32, (PEXFLOAT (*)())SwapCARD32 }
+	    { SwapCARD16, SwapCARD32, (void (*)())SwapCARD32 }
 	},
 	{
 	    /* From Little Endian DecF */
 	    { SwapCARD16, SwapCARD32, SwapVaxToIEEE },
 	    { 0, 0, ConvertVaxToIEEE },
-	    { SwapCARD16, SwapCARD32, (PEXFLOAT (*)())SwapCARD32 },
+	    { SwapCARD16, SwapCARD32, (void (*)())SwapCARD32 },
 	    { 0, 0, 0 }
 	}
 };
@@ -172,7 +172,7 @@ Phg_ar_archiving_direction   direction;
     register int	command;
     register CARD16	type;
     CARD16		length;
-    CARD16	      (*localswapshort)();
+    void	      (*localswapshort)();
     extern OCFunction	cPEXOutputCmd[];
     extern OCFunction	uPEXOutputCmd[];
 
@@ -195,8 +195,10 @@ Phg_ar_archiving_direction   direction;
 	
 	    /* we are reading fram an archive so we must 'decode' */
 	    if (localswapshort != NULL) {
-		type = (*localswapshort)(head->elementType);
-		length = (*localswapshort)(head->length);
+		(*localswapshort)(head->elementType);
+		type = head->elementType;
+		(*localswapshort)(head->length);
+		length = head->length;
 	    } else {
 		type = head->elementType;
 		length = head->length;

@@ -1,4 +1,4 @@
-/* $XConsortium: dipexExt.c,v 5.3 91/07/12 17:56:33 hersh Exp $ */
+/* $XConsortium: dipexExt.c,v 5.4 91/07/21 12:01:49 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -61,8 +61,8 @@ extern ddpex43rtn ddpexInit();
 extern ddBuffer *pPEXBuffer;
 extern ddBuffer *diInitPEXBuffer();
 extern RequestFunction PEXRequest[];
-extern CARD32 SwapCARD32();
-extern CARD16 SwapCARD16();
+extern void SwapCARD32();
+extern void SwapCARD16();
 static int DeletePexClient();
 
 /*
