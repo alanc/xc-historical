@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: sm_genid.c,v 1.1 94/01/31 11:11:26 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -17,6 +17,9 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
+#ifdef WIN32
+#define _WILLWINSOCK_
+#endif
 #include <X11/SM/SMlib.h>
 #include <X11/SM/SMlibint.h>
 #include <X11/Xtrans.h>
