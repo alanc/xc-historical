@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.44 94/07/07 16:46:42 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.45 94/07/07 19:47:46 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -142,10 +142,6 @@ Widget			nameSessionDialog;
 Widget			    nameSessionOkButton;
 Widget			    nameSessionCancelButton;
 
-
-XtActionsRec xsm_actions[] = {
-	"XsmNameSessionOk",	XsmNameSessionOk
-};
 
 void FreeClientInfo ();
 
@@ -934,9 +930,6 @@ main(argc, argv)
     XtGetApplicationResources(topLevel, (XtPointer) &app_resources,
 			      resources, XtNumber(resources), NULL, 0);
     
-    XtAppAddActions (appContext,
-	xsm_actions, XtNumber (xsm_actions));
-
 
     /*
      * Set my own IO error handler.
