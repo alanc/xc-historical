@@ -1,4 +1,4 @@
-/* $XConsortium: dipexExt.c,v 5.6 92/03/04 14:14:57 hersh Exp $ */
+/* $XConsortium: dipexExt.c,v 5.7 92/04/15 15:27:36 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -82,6 +82,7 @@ PexExtensionInit()
 		FreePickMeasure(), dipexFreePhigsWks(), FreePipelineContext(),
 		FreeNameSet(), FreeLUT(), FreePEXFont(), FreeWksDrawable();
     extern ddpex43rtn OpenPEXFont();
+    dipexFont	*pPEXFont;
 
     PEXStructType   = CreateNewResourceType (DeleteStructure);
     PEXSearchType   = CreateNewResourceType (FreeSearchContext);
@@ -125,29 +126,51 @@ PexExtensionInit()
     /*
      *  Open up the default font
      */
-    defaultPEXFont=(diFontHandle)Xalloc((unsigned long)(sizeof(ddFontResource)));
-    if (!defaultPEXFont) {
+    pPEXFont=(dipexFont *)Xalloc((unsigned long)(sizeof(dipexFont)));
+    if (!pPEXFont) {
 	ErrorF("PEXExtensionInit: Memory error--could not allocate default PEX font");
 	return; }
 	
-    defaultPEXFont->id = FakeClientID(0);
+    pPEXFont->refcnt = 1;
+    pPEXFont->ddFont.id = FakeClientID(0);
     
+    defaultPEXFont = &(pPEXFont->ddFont);
+
     if ( OpenPEXFont(	(ddULONG)(strlen(DEFAULT_PEX_FONT_NAME)), 
 			(ddUCHAR *)(DEFAULT_PEX_FONT_NAME),
-			defaultPEXFont) != Success) {
-	char errmsg[80];
+			pPEXFont) != Success) {
+	char *errmsg;
 	char *static_message =
 		    "PEXExtensionInit: Couldn't open default PEX font file ";
-	bcopy(	static_message, errmsg, strlen(static_message)+1);
-	bcopy(	DEFAULT_PEX_FONT_NAME,&(errmsg[strlen(&(errmsg[0]))]),
-		strlen(DEFAULT_PEX_FONT_NAME)+1);
-	ErrorF(errmsg);
-	Xfree(defaultPEXFont);
+
+        errmsg = (char *) Xalloc(strlen(static_message) +
+				 strlen(DEFAULT_PEX_FONT_NAME) +
+				 2  /* 1 byte for space between strings,
+				     * 1 byte for null */
+				 );
+        if (errmsg) {
+          sprintf(errmsg, "%s %s", static_message, DEFAULT_PEX_FONT_NAME);
+
+	  ErrorF(errmsg);
+          Xfree(errmsg);
+        }
+
+	Xfree(pPEXFont);
 	defaultPEXFont = 0; 
 	return; }
     
-    if (!AddResource(	defaultPEXFont->id, PEXFontType,
-			(pointer)(defaultPEXFont))) {
+    /*
+     * Note that fonts resources are stored with the type (dipexFont *),
+     * and they are referenced sometimes in the DD layer as diFontHandle
+     * (which is a pointer to a ddFontResource).  Since the first part
+     * of the dipexFont structure consists of a ddFontResource, this
+     * works.  Even though it is ugly, it's best not to start changing
+     * all of the font code at this time (right before a public release),
+     * and hopefully, it will get cleaned up for PEX 6.0.
+     */
+
+    if (!AddResource(	pPEXFont->ddFont.id, PEXFontType,
+			(pointer)(pPEXFont))) {
 	ErrorF("PEXExtensionInit: Couldn't add default PEX font resource.");
 	return;
     }
