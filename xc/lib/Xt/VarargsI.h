@@ -1,4 +1,4 @@
-/* $XConsortium: VarargsI.h,v 1.4 89/11/13 13:09:23 swick Exp $ */
+/* $XConsortium: VarargsI.h,v 1.5 89/11/14 10:14:19 swick Exp $ */
 /*
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
@@ -31,12 +31,12 @@ without express or implied warranty.
 # define Va_start(a,b) va_start(a)
 #endif
 
-typedef struct _XtTypedArg{
+typedef struct _XtTypedArg {
     String      name;
     String      type;
     XtArgVal    value;
     int         size;
-} XtTypedArg, *XtTypedArgList;
+} XtTypedArg;
  
 /* private routines */
 
