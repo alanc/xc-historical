@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.162 92/03/25 16:47:39 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.163 92/12/22 17:19:30 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -927,10 +927,12 @@ static void HandleComplexState(w, tmRecPtr, curEventPtr)
 	    (candState = TryCurrentTree(stateTreePtr,
 				       tmRecPtr,
 				       curEventPtr))) {
-	    matchTreeIndex = i;
-	    matchState = candState;
-	    if (candState->actions)
-	      break;
+	    if (!matchState || candState->actions) {
+		matchTreeIndex = i;
+		matchState = candState;
+		if (candState->actions)
+		    break;
+	    }
 	}
     }
     if (matchState == NULL){
