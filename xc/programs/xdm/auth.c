@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.43 91/07/18 18:38:40 rws Exp $
+ * $XConsortium: auth.c,v 1.44 91/07/24 00:06:45 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -666,23 +666,28 @@ DefineSelf (fd, file, auth)
 	} else
 #endif
 	{
-        	if (ConvertAddr (&ifr->ifr_addr, &len, &addr) < 0)
-	    	    continue;
-		/*
-		 * don't write out 'localhost' entries, as
-		 * they may conflict with other local entries.
-		 * DefineLocal will always be called to add
-		 * the local entry anyway, so this one can
-		 * be tossed.
-		 */
-		if (len == 4 &&
-		    addr[0] == 127 && addr[1] == 0 &&
-		    addr[2] == 0 && addr[3] == 1)
- 		{
-			Debug ("Skipping localhost address\n");
-			continue;
-		}
-		family = FamilyInternet;
+	    if (ConvertAddr (&ifr->ifr_addr, &len, &addr) < 0)
+		continue;
+	    if (len == 0)
+ 	    {
+		Debug ("Skipping zero length address\n");
+		continue;
+	    }
+	    /*
+	     * don't write out 'localhost' entries, as
+	     * they may conflict with other local entries.
+	     * DefineLocal will always be called to add
+	     * the local entry anyway, so this one can
+	     * be tossed.
+	     */
+	    if (len == 4 &&
+		addr[0] == 127 && addr[1] == 0 &&
+		addr[2] == 0 && addr[3] == 1)
+	    {
+		    Debug ("Skipping localhost address\n");
+		    continue;
+	    }
+	    family = FamilyInternet;
 	}
 	Debug ("DefineSelf: write network address, length %d\n", len);
 	writeAddr (family, len, addr, file, auth);
