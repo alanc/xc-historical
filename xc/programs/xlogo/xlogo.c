@@ -1,13 +1,14 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xlogo.c,v 1.5 88/09/12 15:32:49 jim Exp $";
+static char rcsid[] = "$XConsortium: xlogo.c,v 1.6 89/02/16 14:48:48 rws Exp $";
 #endif  lint
 
-#include <X11/Xlib.h>
-#include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>
+#include <X11/StringDefs.h>
 #include <X11/Shell.h>
-#include <X11/Logo.h>
-#include <X11/Cardinals.h>
+
+#include <X11/Xaw/Logo.h>
+#include <X11/Xaw/Cardinals.h>
+#include <X11/Xmu/Xmu.h>
 
 extern void exit();
 
@@ -42,7 +43,7 @@ void main(argc, argv)
     gcFore = XCreateGC(XtDisplay(toplevel), icon, GCForeground, &gcv);
     gcv.foreground = 0;
     gcBack = XCreateGC(XtDisplay(toplevel), icon, GCForeground, &gcv);
-    XDrawLogo(XtDisplay(toplevel), icon, gcFore, gcBack, 0, 0, 32, 32);
+    XmuDrawLogo(XtDisplay(toplevel), icon, gcFore, gcBack, 0, 0, 32, 32);
     XFreeGC(XtDisplay(toplevel), gcFore);
     XFreeGC(XtDisplay(toplevel), gcBack);
     arg.name = XtNiconPixmap;

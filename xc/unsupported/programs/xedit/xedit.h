@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$XConsortium: xedit.h,v 1.14 88/09/16 14:31:22 swick Exp $";
+ *	rcs_id[] = "$XConsortium: xedit.h,v 1.15 88/10/18 13:31:07 swick Exp $";
  */
 
 /*
@@ -29,25 +29,22 @@
 
 
 #include <stdio.h>
-#include <X11/Xos.h>
-#include <X11/Xlib.h>
 #include <X11/Intrinsic.h>
-
+#include <X11/StringDefs.h>
 #include <X11/cursorfont.h>
 #include <X11/Xatom.h>
-#include <X11/StringDefs.h>
-#include <X11/Box.h>
-#include <X11/Command.h>
-#include <X11/Dialog.h>
-#include <X11/Label.h>
-#include <X11/Scroll.h>
-#include <X11/AsciiText.h>
-#include <X11/Text.h>
-#include <X11/TextSrcP.h>
-#include <X11/VPaned.h>
-#include <X11/Viewport.h>
-#include <X11/Cardinals.h>
 
+#include <X11/Xaw/Box.h>
+#include <X11/Xaw/Command.h>
+#include <X11/Xaw/Dialog.h>
+#include <X11/Xaw/Label.h>
+#include <X11/Xaw/Scroll.h>
+#include <X11/Xaw/AsciiText.h>
+#include <X11/Xaw/Paned.h>
+#include <X11/Xaw/Viewport.h>
+#include <X11/Xaw/Cardinals.h>
+
+#include <X11/Xaw/TextSrcP.h>
 
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 #define min(a,b) (((a) < (b)) ? (a) : (b))
@@ -61,9 +58,9 @@
 
 
 /*	misc externs 	*/
-extern XtTextSource TCreateISSource();
-extern XtTextSource CreatePSource();
-extern XtTextSource TCreateApAsSource();
+extern XawTextSource TCreateISSource();
+extern XawTextSource CreatePSource();
+extern XawTextSource TCreateApAsSource();
 extern DestroyPSource();
 extern PSchanges();
 extern TDestroyApAsSource();
@@ -90,8 +87,8 @@ extern Widget outer;
 extern Widget textwindow;
 extern Widget messwidget;
 extern Widget labelwindow;
-extern XtTextSource source, asource, dsource, psource, messsource;
-extern XtTextSource PseudoDiskSourceCreate();
+extern XawTextSource source, asource, dsource, psource, messsource;
+extern XawTextSource PseudoDiskSourceCreate();
 extern void PseudoDiskSourceDestroy();
 
 extern struct _app_resources {

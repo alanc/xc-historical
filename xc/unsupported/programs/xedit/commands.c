@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: commands.c,v 1.18 88/10/07 15:56:27 swick Exp $";
+static char rcs_id[] = "$XConsortium: commands.c,v 1.19 89/04/05 12:13:39 converse Exp $";
 #endif
 
 /*
@@ -54,11 +54,11 @@ static int FileMode = 0640;
 ReplaceOne()
 {
   int searchlen = strlen(searchstring);
-  int startpos  = XtTextGetInsertionPoint( textwindow);
+  int startpos  = XawTextGetInsertionPoint( textwindow);
   int  count, result;
-  XtTextPosition pos, destpos;
+  XawTextPosition pos, destpos;
   char *buf;
-  XtTextBlock t, *text;
+  XawTextBlock t, *text;
     text = &t;
      if((startpos != searchEndPos) && (startpos != searchBegPos)){
 	return(0);
@@ -79,7 +79,8 @@ ReplaceOne()
 	text->length = (strlen(replacestring));
 	text->firstPos = 0;
 	text->ptr = replacestring;
-	if(XtTextReplace( textwindow, searchBegPos,searchEndPos,text) != EditDone) 
+	if(XawTextReplace( textwindow, searchBegPos,
+			  searchEndPos,text) != XawEditDone) 
 	    result = 0;
 	else 
 	    result = 1;
@@ -94,16 +95,16 @@ DoReplaceOne()
 	Feep();
     }
     else 
-	XtTextUnsetSelection( textwindow);
+	XawTextUnsetSelection( textwindow);
     if(SearchRight())
-        XtTextSetSelection(textwindow, searchBegPos, searchEndPos);
+        XawTextSetSelection(textwindow, searchBegPos, searchEndPos);
 }
 
 DoReplaceAll()
 {
   int count;
     count = 0;
-    XtTextSetInsertionPoint( textwindow, 0); 
+    XawTextSetInsertionPoint( textwindow, 0); 
     while(SearchRight()){
 	if(!ReplaceOne())
 	    break;
@@ -120,7 +121,7 @@ DoReplaceAll()
 DoSearchRight()
 {
     if(SearchRight()){
-	XtTextSetSelection(textwindow, searchBegPos, searchEndPos);
+	XawTextSetSelection(textwindow, searchBegPos, searchEndPos);
     } else {
         Feep();  
 	XeditPrintf("\nSearch: couldn't find ` %s ' ", searchstring);
@@ -129,12 +130,12 @@ DoSearchRight()
 
 SearchRight()
 {
-  XtTextPosition pos, startpos = XtTextGetInsertionPoint( textwindow);
+  XawTextPosition pos, startpos = XawTextGetInsertionPoint( textwindow);
   int searchlen;
-  int n, i, destpos, size = (*source->Scan)(source, 0, XtstAll, 
-		XtsdRight, 0,0) - startpos;
+  int n, i, destpos, size = (*source->Scan)(source, 0, XawstAll, 
+		XawsdRight, 0,0) - startpos;
   char *s1, *s2, *buf = malloc(size);
-  XtTextBlock t, *text;
+  XawTextBlock t, *text;
     text = &t;
     destpos = 0;
     searchlen = strlen(searchstring);
@@ -146,7 +147,7 @@ SearchRight()
 	    return 0;
 	}
 	searchlen = text->length;
-	XtTextReplace( searchstringwindow, 0,0, text); 
+	XawTextReplace( searchstringwindow, 0,0, text); 
 	free(text->ptr);
     }
     for(pos = startpos; pos < startpos + size; ){
@@ -165,7 +166,7 @@ SearchRight()
     free(buf);
     if( n < 0){
         i += startpos;
-        XtTextSetInsertionPoint( textwindow, i + searchlen); 
+        XawTextSetInsertionPoint( textwindow, i + searchlen); 
         searchBegPos = i;
         searchEndPos = i + searchlen;
 	return(1);
@@ -176,12 +177,12 @@ SearchRight()
 
 DoSearchLeft()
 {
-  XtTextPosition end = (*source->Scan)(source, 0, XtstAll, XtsdRight, 0,0);
-  XtTextPosition pos, startpos = XtTextGetInsertionPoint( textwindow);
+  XawTextPosition end = (*source->Scan)(source, 0, XawstAll, XawsdRight, 0,0);
+  XawTextPosition pos, startpos = XawTextGetInsertionPoint( textwindow);
   int searchlen = strlen(searchstring);
   int n, i, destpos, count =  startpos + searchlen;
   char *s1, *s2, *buf = calloc(1, count);
-  XtTextBlock t, *text;
+  XawTextBlock t, *text;
     text = &t;
     destpos = 0;
     /* if there's a string in the window, use it, otherwize, use selected */
@@ -193,7 +194,7 @@ DoSearchLeft()
 	    return;
 	}
 	searchlen = text->length;
-	XtTextReplace( searchstringwindow, 0,0, text); 
+	XawTextReplace( searchstringwindow, 0,0, text); 
 	free(text->ptr);
     }
     /* buffer portion of file from insertion point, on */
@@ -213,10 +214,10 @@ DoSearchLeft()
     }
     /* process result */
     if(n < 0){
-        XtTextSetInsertionPoint( textwindow, i); 
+        XawTextSetInsertionPoint( textwindow, i); 
         searchBegPos = i;
         searchEndPos = i + searchlen;
-	XtTextSetSelection(textwindow, searchBegPos, searchEndPos);
+	XawTextSetSelection(textwindow, searchBegPos, searchEndPos);
     }
     else {
 	XeditPrintf("\nSearch: couldn't find ` %s ' ", searchstring);
@@ -226,13 +227,13 @@ DoSearchLeft()
 }
 DoUndo()
 {
-  XtTextPosition from;
+  XawTextPosition from;
     from = (*source->Replace)(source, -1, 0, 0); 
     FixScreen(from);
 }
 DoUndoMore()
 {
-  XtTextPosition from;
+  XawTextPosition from;
     from = (*source->Replace)(source, 0, -1, 0); 
     FixScreen(from);
 }
@@ -283,8 +284,8 @@ error()
 DoSave()
 {
   char *backupFilename, *tempName;
-  XtTextPosition pos, end;
-  XtTextBlock t, *text;
+  XawTextPosition pos, end;
+  XawTextBlock t, *text;
   FILE *outStream;
   int outfid;
     text = &t;
@@ -328,7 +329,7 @@ DoSave()
 	outStream = fdopen(outfid, "w");
     }
 /* WRITE ALL THE BITS OUT TO THE OUTPUT STREAM */
-    end = (*source->Scan)(source, 0, XtstAll, XtsdRight, 1, FALSE);
+    end = (*source->Scan)(source, 0, XawstAll, XawsdRight, 1, FALSE);
     for(pos = 0; pos < end; ){
 	pos = (*source->Read)(source, pos, text, 1024);
 	if(text->length == 0)
@@ -383,7 +384,7 @@ DoLoad()
 	dsource = PseudoDiskSourceCreate(filename);  
 	asource = PseudoDiskSourceCreate("");
 	source = CreatePSource(dsource, asource);
-	XtTextSetSource( textwindow, source, 0);
+	XawTextSetSource( textwindow, source, 0);
         if(Editable){
 /*            XtButtonBoxAddButton( Row1, args, numargs); */
 	    Editable = 0;
@@ -408,16 +409,16 @@ DoLoad()
 
 DoEdit()
 {
-  XtTextPosition newInsertPos = XtTextGetInsertionPoint( textwindow);
+  XawTextPosition newInsertPos = XawTextGetInsertionPoint( textwindow);
   int numargs;
   Arg args[1];
     numargs = 0;
     MakeArg(XtNwindow, (XtArgVal)editbutton);
     if (access(filename, W_OK) == 0) {
-        XtTextSetSource( textwindow, source, 0);  
+        XawTextSetSource( textwindow, source, 0);  
 /*        XUnmapWindow(CurDpy, editbutton); */
 /*        XtButtonBoxDeleteButton( Row1, args, numargs);  */
-	XtTextSetInsertionPoint(textwindow, newInsertPos);
+	XawTextSetInsertionPoint(textwindow, newInsertPos);
         Editable = 1;
     } else {
 	XeditPrintf("\nEdit: File is not writable");
@@ -428,12 +429,12 @@ DoEdit()
 static Jump(line)
   int line;
 {
-  XtTextPosition pos;
+  XawTextPosition pos;
     if(line <= 1)
 	pos = 0;
     else
-        pos =  (*source->Scan)(source, 0, XtstEOL, XtsdRight, line-1, 1);
-    XtTextSetInsertionPoint( textwindow, pos); 
+        pos =  (*source->Scan)(source, 0, XawstEOL, XawsdRight, line-1, 1);
+    XawTextSetInsertionPoint( textwindow, pos); 
 }
 
 DoJump()

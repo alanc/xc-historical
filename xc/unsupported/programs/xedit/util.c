@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: util.c,v 1.8 88/09/06 17:34:30 jim Exp $";
+static char rcs_id[] = "$XConsortium: util.c,v 1.9 88/09/16 14:44:01 swick Exp $";
 #endif
 
 /*
@@ -32,14 +32,14 @@ XeditPrintf(fmt, arg1, arg2, arg3, arg4)
   char *fmt;
 {
   char buf[1024];
-  XtTextBlock text;
+  XawTextBlock text;
   
-  XtTextPosition pos = (*messsource->Scan)(messsource, 0, XtstAll, XtsdRight,1,0);
+  XawTextPosition pos = (*messsource->Scan)(messsource, 0, XawstAll, XawsdRight,1,0);
     sprintf(buf, fmt, arg1, arg2, arg3, arg4);
     text.length = strlen(buf);
     text.ptr = buf;
-    XtTextReplace( messwidget, pos, pos, &text);
-    XtTextSetInsertionPoint(messwidget, pos + text.length);
+    XawTextReplace( messwidget, pos, pos, &text);
+    XawTextSetInsertionPoint(messwidget, pos + text.length);
 }
 
 Widget makeCommandButton(box, name, function)
@@ -61,7 +61,7 @@ Widget makeStringBox(parentBox, string, length)
   Widget StringW;
   int numargs;
     numargs = 0;
-    MakeArg(XtNeditType, (XtArgVal)XttextEdit );
+    MakeArg(XtNeditType, (XtArgVal)XawtextEdit );
     MakeArg(XtNtextOptions, (XtArgVal)( resizeWidth)); 
     MakeArg(XtNstring,(XtArgVal)string);     
     MakeArg(XtNwidth,  (XtArgVal)length);
@@ -72,13 +72,13 @@ Widget makeStringBox(parentBox, string, length)
 }
  
 FixScreen(from)
-    XtTextPosition from;
+    XawTextPosition from;
 {
-    XtTextPosition to;
+    XawTextPosition to;
     if(from >= 0){
-        to = (*source->Scan)(source, 0, XtstAll, XtsdRight, 0,0) + 10;
-	XtTextInvalidate(textwindow, (from > 0 ) ? from -1 : from, to); 
-	XtTextSetInsertionPoint(textwindow, from); 
+        to = (*source->Scan)(source, 0, XawstAll, XawsdRight, 0,0) + 10;
+	XawTextInvalidate(textwindow, (from > 0 ) ? from -1 : from, to); 
+	XawTextSetInsertionPoint(textwindow, from); 
     } else {
 	Feep();
     }

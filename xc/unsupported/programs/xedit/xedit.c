@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: xedit.c,v 1.16 88/10/18 13:30:41 swick Exp $";
+static char rcs_id[] = "$XConsortium: xedit.c,v 1.17 89/04/05 12:12:29 converse Exp $";
 #endif
 
 /*
@@ -79,7 +79,7 @@ Widget replaceallbutton;
 Widget jumpbutton;
 
 Display *CurDpy;
-XtTextSource source, asource, dsource, psource, messsource;
+XawTextSource source, asource, dsource, psource, messsource;
 extern DoQ();
 
 
@@ -102,9 +102,9 @@ makeButtonsAndBoxes()
   };
     outer = XtCreateManagedWidget( "vpaned", vPanedWidgetClass, toplevel,
                                   NULL, 0 );
-    XtPanedSetRefigureMode(outer, FALSE);
+    XawPanedSetRefigureMode(outer, FALSE);
 
-/*    XtPanedAllowResize(outer, TRUE); */
+/*    XawPanedAllowResize(outer, TRUE); */
     Row1 = XtCreateManagedWidget("row1", boxWidgetClass, outer, NULL,0);
         quitbutton = makeCommandButton(Row1, "Quit", DoQuit);
         savebutton = makeCommandButton(Row1, "Save", DoSave);
@@ -130,25 +130,25 @@ makeButtonsAndBoxes()
     XtSetArg(getargs[0], XtNheight, &boxHeight);
     XtGetValues(quitbutton, getargs, XtNumber(getargs));
     boxHeight += 8;
-    XtPanedSetMinMax((Widget) Row1, (int)boxHeight, (int)boxHeight);
-    XtPanedSetMinMax((Widget) Row2, (int)boxHeight, (int)boxHeight);
+    XawPanedSetMinMax((Widget) Row1, (int)boxHeight, (int)boxHeight);
+    XawPanedSetMinMax((Widget) Row2, (int)boxHeight, (int)boxHeight);
 
     }
     messsource = PseudoDiskSourceCreate("");
     MessArgs[0].value = (XtArgVal)messsource;
-    MessArgs[1].value = (XtArgVal)XtAsciiSinkCreate(outer, NULL, 0);
+    MessArgs[1].value = (XtArgVal)XawAsciiSinkCreate(outer, NULL, 0);
     messwidget =  XtCreateManagedWidget("messageWindow", textWidgetClass,
 		outer, MessArgs, XtNumber(MessArgs));
-    XtPanedSetMinMax((Widget) messwidget, 40, 40);
+    XawPanedSetMinMax((Widget) messwidget, 40, 40);
 
     labelwindow = XtCreateManagedWidget("labelWindow",labelWidgetClass, 
 		outer, labelArgs, XtNumber(labelArgs)); 
-    XtPanedSetMinMax((Widget)labelwindow, 14, 14);
+    XawPanedSetMinMax((Widget)labelwindow, 14, 14);
     TextArgs[0].value = (XtArgVal)source;
-    TextArgs[1].value = (XtArgVal)XtAsciiSinkCreate(outer, NULL, 0);
+    TextArgs[1].value = (XtArgVal)XawAsciiSinkCreate(outer, NULL, 0);
     textwindow =  XtCreateManagedWidget("editWindow", textWidgetClass, 
 		outer, TextArgs, XtNumber(TextArgs));
-    XtPanedSetRefigureMode(outer, TRUE); 
+    XawPanedSetRefigureMode(outer, TRUE); 
 }
 
 struct _app_resources app_resources;
