@@ -1,4 +1,4 @@
-/* $XConsortium: XKB.c,v 1.11 94/02/05 18:13:51 rws Exp $ */
+/* $XConsortium: XKB.c,v 1.12 94/04/01 18:44:09 erik Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -54,6 +54,7 @@ XkbQueryExtension(dpy,opcodeReturn,eventBaseReturn,errorBaseReturn,majorReturn,m
 	*majorReturn = dpy->xkb_info->srv_major;
     if (minorReturn)
 	*minorReturn = dpy->xkb_info->srv_minor;
+    return True;
 }
 
 Status XkbLibraryVersion(libMajorRtrn,libMinorRtrn)
