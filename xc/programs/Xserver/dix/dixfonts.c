@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.14 91/02/22 15:39:41 keith Exp $ */
+/* $XConsortium: dixfonts.c,v 1.15 91/02/23 00:33:43 keith Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -204,6 +204,12 @@ doOpenFont(client, c)
 	    return TRUE;
 	}
 	break;
+    }
+    if (err == BadName)
+    {
+	err = FontOpenScaled (c->num_fpes, c->fpe_list,
+	    c->fontname, c->fnamelen, &pfont,
+	    BITMAP_BIT_ORDER, IMAGE_BYTE_ORDER, GLYPHPADBYTES, 1);
     }
     if (err != Success)
 	goto dropout;
