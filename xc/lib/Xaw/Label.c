@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.79 90/02/05 16:16:23 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.80 90/04/26 17:35:25 converse Exp $";
 #endif /* lint */
 
 
@@ -314,11 +314,17 @@ static void Redisplay(w, event, region)
    LabelWidget lw = (LabelWidget) w;
    GC gc;
 
-   if (region != NULL &&
-       XRectInRegion(region, lw->label.label_x, lw->label.label_y,
-		     lw->label.label_width, lw->label.label_height)
-	     == RectangleOut)
-       return;
+   if (region != NULL) {
+       int x = lw->label.label_x;
+       unsigned int width = lw->label.label_width;
+       if (lw->label.lbm_width) {
+	   if (lw->label.label_x > (x = lw->label.internal_width))
+	       width += lw->label.label_x - x;
+       }
+       if (XRectInRegion(region, x, lw->label.label_y,
+			 width, lw->label.label_height) == RectangleOut)
+	   return;
+   }
 
    gc = XtIsSensitive((Widget)lw) ? lw->label.normal_GC : lw->label.gray_GC;
 #ifdef notdef
