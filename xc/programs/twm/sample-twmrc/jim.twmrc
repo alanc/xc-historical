@@ -23,6 +23,10 @@ SqueezeTitle			# also sets default to Squeeze all Titles
     "emacs"	center	  0  0
     "xmh"	center	  0  0
 }
+DontSqueezeTitle
+{
+    "XLogout"			# make it stand out when mapped
+}
 NoDefaults			# turn off iconify and resize button
 LeftTitleButton "menu12" = f.menu "windowmenu"	# add a menu to each window
 TitleButtonBorderWidth 0	# don't want to see box around button
@@ -38,6 +42,7 @@ BorderWidth 2			# width of top level windows created by twm
 NoGrabServer			# don't grab server during menus, etc.
 NoRaiseOnMove			# allow moving under other windows
 NoRaiseOnResize			# allow resizing under other windows
+NoRaiseOnWarp			# prevent flashing
 DecorateTransients		# put titlebars on transients
 TitleFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
 MenuFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
@@ -45,20 +50,17 @@ IconFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*-*-*-*"
 IconManagerFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*"
 ResizeFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*"
 NoSaveUnders			# faster to just repaint then save
+NoTitleFocus			# bug in either Xt or twm
 XORvalue 1			# tend to use visually distinct adjacent colors
 ConstrainedMoveTime 0		# turn off horizontal/vertical only moving
-
+NoCaseSensitive			# turn off case-sensitivity in sorting icons
+WarpUnmapped			# allow warping to unmapped windows
 
 ###############################################################################
 #                                                                             #
 #                           Declare some nice colors                          #
 #                                                                             #
 ###############################################################################
-
-Cursors
-{
-    Button "hand2"		# to remind me to press in the button
-}
 
 Color
 {
@@ -81,7 +83,7 @@ Color
 Monochrome
 {
     IconManagerHighlight  "white"
-    BorderColor "white"
+    BorderColor "black"
 }
 
 
@@ -99,7 +101,6 @@ Function "move-or-raise"	# simulate uwm action
     f.raise
 }
 
-
 DefaultFunction f.nop		# ignore extraneous events
 
 Button1 =      : root                     : f.menu "twmops"
@@ -114,7 +115,7 @@ Button3 = m    : window|icon|frame|title  : f.function "move-or-raise"
 Button1 = c|m|s: root			  : f.refresh
 #"F20"   =      : all                      : f.warptoscreen "next"
 
-"F24"	=      : all			  : f.colormap "next"
+"F24"	=      : all			  : f.warpto "xmh"
 "F28"   =      : all                      : f.warpring "next"
 "F30"   =      : all                      : f.warptoiconmgr ""
 "F32"   =      : all                      : f.raiselower
@@ -144,12 +145,14 @@ IconManagerDontShow		# but ignore these windows
   "xload"
   "oclock"
   "xcutsel"
+  "XLogout"
 }
 DontIconifyByUnmapping		# don't lose them (still in TwmWindows menu)
 {
   "xclock"
   "xbiff"
   "xload"
+  "oclock"
   "xcutsel"
 }
 NoTitle				# little programs that look like icons
@@ -177,14 +180,16 @@ WindowRing			# f.warpring acts along these windows
 
 menu "twmops"
 {
-"twm"			f.title
-"Restart"		f.restart
-"Exit"			f.quit
+"System"		f.title
+"Restart Twm"		f.restart
+"Exit Twm"		f.quit
 ""			f.nop
 "xterm"			!"xterm &"
 "xterm -e /bin/sh"	!"xterm -e /bin/sh &"
 "xhost +"		!"xhost + >/dev/null"
 "xhost -"		!"xhost - >/dev/null"
+""			f.nop
+"Logout"		f.warpto "!!"
 }
 
 menu "windowops"
