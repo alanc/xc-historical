@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.8 89/11/11 14:53:49 kit Exp $";
+static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.9 89/11/13 15:14:08 kit Exp $";
 #endif
 
 /***********************************************************
@@ -398,7 +398,7 @@ Boolean blit;
     /* Draw graph reference lines */
     left = j;
     for (i = 1; i < w->strip_chart.scale; i++) {
-      j = (i * w->core.height) / w->strip_chart.scale;
+      j = i * (w->core.height / w->strip_chart.scale);
       XDrawLine(XtDisplay((Widget) w), XtWindow( (Widget) w),
 		w->strip_chart.hiGC, left, j, (int)w->core.width, j);
     }
