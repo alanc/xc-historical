@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.31 94/11/30 18:12:45 mor Exp mor $ */
+/* $XConsortium: xsm.h,v 1.32 94/12/12 19:59:38 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -97,6 +97,7 @@ typedef struct _ClientRec {
     unsigned int	userIssuedCheckpoint : 1;
     unsigned int	restartHint : 2;
     unsigned int        receivedDiscardCommand : 1;
+    unsigned int	freeAfterBadSavePopup : 1;
 
 } ClientRec;
 
@@ -142,8 +143,6 @@ extern List		*WaitForSaveDoneList;
 extern List		*FailedSaveList;
 extern List		*WaitForInteractList;
 extern List		*WaitForPhase2List;
-
-extern int		saveWaitCount;
 
 extern Bool		client_info_visible;
 extern Bool		client_prop_visible;
