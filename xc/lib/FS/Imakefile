@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.8 91/07/17 16:05:40 gildea Exp $
 INCLUDES = -I$(FONTSRC)/include
 
 SRCS =	FSClServ.c FSCloseFt.c FSConnServ.c FSErrDis.c FSErrHndlr.c\
@@ -13,7 +13,12 @@ OBJS =	FSClServ.o FSCloseFt.o FSConnServ.o FSErrDis.o FSErrHndlr.o\
 	FSQGlyphs.o FSQXExt.o FSQXInfo.o FSQuExt.o FSServName.o\
 	FSSetCats.o FSSync.o FSSynchro.o FSlibInt.o
 
+CONN_DEFINES = ConnectionFlags
+
 NormalLibraryTarget(FS,$(OBJS))
+
+SpecialObjectRule(FSlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialObjectRule(FSConnServ.o,$(ICONFIGFILES),$(CONN_DEFINES))
 
 LinkFileList(includes,FSlib.h,../../include,../lib/fs)
 
