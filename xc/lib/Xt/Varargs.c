@@ -1,4 +1,4 @@
-/* $XConsortium: Varargs.c,v 1.23 91/02/05 16:59:26 gildea Exp $ */
+/* $XConsortium: Varargs.c,v 1.24 91/06/13 18:00:58 converse Exp $ */
 
 /*
 
@@ -228,7 +228,7 @@ _XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources)
             from_val.addr = (XPointer)&typed_arg->value;
     }
        
-    XtConvert(widget, typed_arg->type, &from_val, to_type, &to_val);
+    XtConvertAndStore(widget, typed_arg->type, &from_val, to_type, &to_val);
  
     if (to_val.addr == NULL) {
         XtAppWarningMsg(XtWidgetToApplicationContext(widget),
