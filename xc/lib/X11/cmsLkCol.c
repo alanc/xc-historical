@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLkCol.c,v 1.9 91/05/14 10:58:42 rws Exp $ */
+/* $XConsortium: XcmsLkCol.c,v 1.10 91/06/27 10:52:10 dave Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -43,6 +43,7 @@
  */
 extern void _XColor_to_XcmsRGB();
 extern void _XcmsRGB_to_XColor();
+extern void _XcmsResolveColor();
 extern void _XcmsUnresolveColor();
 #ifdef X_NOT_STDC_ENV
 extern char *getenv();
@@ -129,7 +130,6 @@ XcmsLookupColor(dpy, cmap, colorname, pColor_exact_return, pColor_scrn_return,
     bcopy((char *)pColor_exact_return, (char *)pColor_scrn_return,
 	    sizeof(XcmsColor));
     if (pColor_scrn_return->format == XcmsRGBFormat) {
-	_XcmsUnresolveColor(ccc, pColor_scrn_return, 1);
 	retval2 = XcmsSuccess;
     } else if ((retval2 = XcmsConvertColors(ccc, pColor_scrn_return, 1,
 	    XcmsRGBFormat, (Bool *)NULL)) == XcmsFailure) {
@@ -142,18 +142,17 @@ XcmsLookupColor(dpy, cmap, colorname, pColor_exact_return, pColor_scrn_return,
      *    pCompressed.
      */
 
-    switch (result_format) {
-      case XcmsRGBFormat :
-	break;
-      case XcmsUndefinedFormat :
+    if (result_format ==  XcmsUndefinedFormat) {
 	result_format = pColor_exact_return->format;
-	/* fall through */
-      default :
+    }
+    if (result_format == XcmsRGBFormat) {
+	_XcmsUnresolveColor(ccc, pColor_scrn_return);
+    } else {
+	_XcmsResolveColor(ccc, pColor_scrn_return);
 	if (XcmsConvertColors(ccc, pColor_scrn_return, 1, result_format,
 		(Bool *) NULL) == XcmsFailure) {
 	    return(XcmsFailure);
 	}
-	break;
     }
 
     return(retval1 > retval2 ? retval1 : retval2);
