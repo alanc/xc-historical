@@ -224,7 +224,7 @@ This option indicates that \fIxterm\fP should start in VT102 mode.
 .BI \-tn " name"
 This option specifies the name of the terminal type to be set in the TERM
 environment variable.  This terminal type must exist in the \fItermcap(5)\fP
-database and should have \fI#li\fP and \fI#co\fP entries.
+database and should have \fIli#\fP and \fIco#\fP entries.
 .TP 8
 .B \-ut
 This option indicates that \fIxterm\fP shouldn't write a record into the 
