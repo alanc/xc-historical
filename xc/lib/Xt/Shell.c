@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.120 91/12/06 16:16:40 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.122 92/02/12 17:25:53 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1973,10 +1973,11 @@ static Boolean TransientSetValues(oldW, refW, newW, args, num_args)
     TransientShellWidget new = (TransientShellWidget)newW;
     
     if (XtIsRealized(newW)
-	&& ((new->transient.transient_for != old->transient.transient_for)
-	    || (new->transient.transient_for == NULL
-		&& (new->wm.wm_hints.window_group
-		    != old->wm.wm_hints.window_group)))) {
+	&& ((new->wm.transient && !old->wm.transient)
+	    || ((new->transient.transient_for != old->transient.transient_for)
+		|| (new->transient.transient_for == NULL
+		    && (new->wm.wm_hints.window_group
+			!= old->wm.wm_hints.window_group))))) {
 
 	_SetTransientForHint(new, True);
     }
