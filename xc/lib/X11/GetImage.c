@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetImage.c,v 11.16 87/09/01 14:49:58 newman Locked $ */
+/* $Header: XGetImage.c,v 11.17 87/09/13 20:21:40 rws Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -70,8 +70,8 @@ XImage *XGetImage (dpy, d, x, y, width, height, plane_mask, format)
 	return (image);
 }
 
-XGetSubImage(dpy, d, x, y, width, height, plane_mask, format,
-               dest_image, dest_x, dest_y)
+XImage *XGetSubImage(dpy, d, x, y, width, height, plane_mask, format,
+		     dest_image, dest_x, dest_y)
      register Display *dpy;
      Drawable d;
      int x, y;
@@ -86,4 +86,5 @@ XGetSubImage(dpy, d, x, y, width, height, plane_mask, format,
 				plane_mask, format);
 	_XSetImage(temp_image, dest_image, dest_x, dest_y);
 	_XDestroyImage(temp_image);
+	return (dest_image);
 }	
