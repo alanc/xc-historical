@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.h,v 1.2 88/09/06 17:48:12 jim Exp $
+ * $XConsortium: man.h,v 1.3 89/01/06 18:42:18 kit Exp $
  * $Athena: man.h,v 4.6 89/01/06 12:17:38 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -79,7 +79,7 @@ typedef struct _ManPageWidgets {
   Widget manpage,		/* The manual page window (scrolled) */
     directory,			/* The widget in which all directories will
 				   appear. */
-    box[MAXSECT];		/* The boxes containing the sections. */
+    *box;			/* The boxes containing the sections. */
 } ManPageWidgets;
 
 /*
@@ -90,6 +90,7 @@ typedef struct tManual {
   char * blabel;		/* The button label. */
   char ** entries;		/* the individual man page file names. */
   int nentries;			/* how many */
+  int nalloc;			/* how much space allocated */
 } Manual;
 
 /* 
@@ -125,7 +126,7 @@ typedef struct _ManpageGlobals{
 				   currently looking at.*/
   char tmpfile[80];		/* the name of the file in /tmp that
 				   we are currently using. */
-  char * section_name[MAXSECT];	/* The name of each of the sections */
+  char ** section_name;		/* The name of each of the sections */
 
   ManPageWidgets manpagewidgets; /* The manpage widgets. */
 

@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: globals.c,v 1.2 88/09/06 17:47:38 jim Exp $
+ * $XConsortium: globals.c,v 1.3 89/01/06 18:41:57 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -36,7 +36,7 @@ int default_height,default_width; /* Approximately the default with and
 					    the the top level manual page 
 					    window */
 
-Manual manual[MAXSECT];		/* The manual structure. */
+Manual * manual;		/* The manual structure. */
 int sections;			/* The number of manual sections. */
 
 int man_pages_shown;		/* The current number of manual

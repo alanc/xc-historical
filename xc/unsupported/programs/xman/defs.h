@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: defs.h,v 1.6 88/10/20 19:03:47 jim Exp $
+ * $XConsortium: defs.h,v 1.7 89/01/06 18:41:55 kit Exp $
  * $Athena: defs.h,v 4.8 89/01/06 15:56:19 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -89,15 +89,10 @@
 #define CANCEL "Cancel"
 
 #define DEFAULT_WIDTH 500	/* The default width of xman. */
-#define MAXSECT 62		/* The maximum number of sections.
-				   one for each of (1-9) & (a-z) & (A-Z) */
-#ifdef sun
-#define MAXENTRY 2000		/* The maximum number of entries in one 
-				   section, on a sun. */
-#else
-#define MAXENTRY 800		/* The maximum number of entries in one 
-				   section, on other machines. */
-#endif
+#define SECTALLOC  8		/* The number of entries allocated
+				   at a time for the manual structures. */
+#define ENTRYALLOC 100		/* The number of entries allocated
+				   at a time for a section. */
 
 #define NLINES  66		/* This is the number of lines to wait until
 				   we boldify the line again, this allows 
@@ -137,9 +132,15 @@
  * function defintions 
  */
 
+/*
+ * This is easier than trying to find all calls to StrAlloc().
+ */
+
+#define StrAlloc(ptr) XtNewString(ptr)
+
 /* Standard library function definitions. */
 
-char * mktemp(), * getenv(), * malloc();
+char * mktemp(), * getenv(), * malloc(), * realloc();
 void exit();
 
 /* Toolkit standard definitions. */
@@ -171,7 +172,6 @@ void main(),Quit();
 /* man.c */
 
 int Man();
-char * StrAlloc();
 
 /* menu.c is self contained */
 

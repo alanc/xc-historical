@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.c,v 1.3 89/01/06 18:42:14 kit Exp $
+ * $XConsortium: man.c,v 1.4 89/02/07 18:01:47 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -45,6 +45,8 @@ typedef struct _SectionList {
  *	Description: Builds a list of all manual directories and files.
  *	Arguments: none. 
  *	Returns: the number of manual sections.
+ *
+ *      NOTE: This function maintains internal state.
  */
 
 int
@@ -52,7 +54,7 @@ Man()
 {
   SectionList *list = NULL;
   char *ptr, manpath[BUFSIZ], *path, *current_label;
-  int sect;
+  int sect, num_alloced;
 
 /* 
  * Get the environment variable MANPATH, and if it doesn't exist then back
@@ -78,27 +80,33 @@ Man()
   SortList(&list);
 
   sect = 0;
-  InitManual( &(manual[sect]), list->label );
+  num_alloced = SECTALLOC;
+  manual = (Manual *) malloc( sizeof(Manual) * num_alloced );
+  if (manual == NULL) 
+    PrintError("Could not allocate memory for manual sections.");
+  InitManual( manual + sect, list->label );
   current_label = NULL;
   while ( list != NULL ) {
     SectionList * old_list;
 
     if ( current_label == NULL || streq(list->label, current_label) )
-      AddToCurrentSection( &(manual[sect]), list->directory);
+      AddToCurrentSection( manual + sect, list->directory);
     else {
       if (manual[sect].nentries == 0) {	/* empty section, re-use it. */
 	free(manual[sect].blabel);
 	manual[sect].blabel = list->label;
       }
       else {
-	if ( ++sect >= MAXSECT ) {
-	  sprintf(error_buf, "%s %s", "Too many manual sections, recompile",
-		  "with a larger value for MAXSECT.");
-	  PrintError(error_buf);
+	if ( ++sect >= num_alloced ) {
+	  num_alloced += SECTALLOC;
+	  manual = (Manual *) realloc ( (char *) manual,
+				        (sizeof(Manual) * num_alloced));
+	  if (manual == NULL) 
+	    PrintError("Could not allocate memory for manual sections.");
 	}
-	InitManual( &(manual[sect]), list->label );
+	InitManual( manual + sect, list->label );
       }
-      AddToCurrentSection( &(manual[sect]), list->directory);
+      AddToCurrentSection( manual + sect, list->directory);
     }
     /* Save label to see if it matches next entry. */
     current_label = list->label; 
@@ -114,6 +122,15 @@ Man()
 #ifdef notdef			/* dump info. */
   DumpManual(sect);
 #endif
+  
+/*
+ * realloc manual to be minimum space necessary.
+ */
+
+  manual = (Manual *) realloc( (char *) manual, (sizeof(Manual) * sect));
+  if (manual == NULL) 
+    PrintError("Could not allocate memory for manual sections.");
+
   return(sect);		/* return the number of man sections. */
 }    
 
@@ -252,15 +269,15 @@ char * path;
   char file[BUFSIZ];
 
   for (i = 1 ; i <= 8 ; i++) {
-    sprintf(file, "%s%d", MAN, i);
+    sprintf(file, "%s%d", SEARCHDIR, i);
     AddNewSection(list, path, file, names[i-1], TRUE);
   }
   i--;
-  sprintf(file, "%sl", MAN);
+  sprintf(file, "%sl", SEARCHDIR);
   AddNewSection(list, path, file, names[i++], TRUE);
-  sprintf(file, "%sn", MAN);
+  sprintf(file, "%sn", SEARCHDIR);
   AddNewSection(list, path, file, names[i++], TRUE);
-  sprintf(file, "%so", MAN);
+  sprintf(file, "%so", SEARCHDIR);
   AddNewSection(list, path, file, names[i], TRUE);
 }
 
@@ -318,6 +335,7 @@ char * path;
   DIR * dir;
   register struct direct *dp;
   register int nentries;
+  register int nalloc;
   char full_name[BUFSIZ];
 
   if((dir = opendir(path)) == NULL) {	
@@ -329,15 +347,18 @@ char * path;
   }
   
   nentries = local_manual->nentries;
+  nalloc = local_manual->nalloc;
 
   while( (dp = readdir(dir)) != NULL ) {
     char * name = dp->d_name;
     if( (name[0] == '.') || (index(name, '.') == NULL) ) 
       continue;
-    if ( nentries >= MAXENTRY ) {
-      sprintf(error_buf, "%s %s %s", "Too many manual pages in directory",
-	      path, "recompile with A larger value for MAXENTRY.");
-      PrintError(error_buf);
+    if( nentries >= nalloc ) {
+      nalloc = local_manual->nalloc += ENTRYALLOC;
+      local_manual->entries = (char **) realloc( (char *)local_manual->entries,
+				local_manual->nalloc * sizeof(char *));
+      if(local_manual->entries == NULL)
+        PrintError("Could not allocate memory while building manpage list.");
     }
     sprintf(full_name, "%s/%s", path, name);
     local_manual->entries[nentries++] = StrAlloc(full_name);
@@ -364,7 +385,7 @@ int number;
 
   for ( i = 0; i < number; i++) { /* sort each section */
     register int j = 0;
-    Manual * man = &(manual[i]);
+    Manual * man = manual + i;
 
 #ifdef DEBUG
   printf("sorting section %d - %s\n", i, man->blabel);
@@ -420,26 +441,6 @@ char **e1, **e2;
   return( strcmp(l1, l2) );
 }
 
-/*	Function Name: StrAlloc
- *	Description: this function allocates memory for a character string
- *      pointed to by sp and returns its new pointer.
- *	Arguments: sp - a pointer to the string that needs memory.
- *	Returns: a pointer to this string, that is now safely allocated.
- */
-
-char *
-StrAlloc(sp) char *sp;
-{
-  char *ret;
-
-  if((ret = (char *) malloc(strlen(sp)+1)) == NULL) {
-    sprintf(error_buf,"Out of memory");
-    PrintError(error_buf);
-  }
-  strcpy(ret,sp);
-  return(ret);
-}
-
 /*	Function Name: InitManual
  *	Description: Initializes this manual section.
  *	Arguments: l_manual - local copy of the manual structure.
@@ -454,9 +455,10 @@ char * label;
 {
   bzero( l_manual, sizeof(Manual) );	        /* clear it. */
   l_manual->blabel = label;	                /* set label. */
-  l_manual->entries = (char **) malloc( sizeof(char *) * MAXENTRY);
+  l_manual->entries = (char **) malloc( sizeof(char *) * ENTRYALLOC);
   if (l_manual->entries == NULL)
 	PrintError("Could not allocate memory in InitManual().");
+  l_manual->nalloc = ENTRYALLOC;
 }
   
 #if defined(DEBUG)

@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: globals.h,v 1.2 88/09/06 17:47:41 jim Exp $
+ * $XConsortium: globals.h,v 1.3 89/01/06 18:41:58 kit Exp $
  * $Athena: globals.h,v 4.5 88/12/19 13:46:58 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -35,7 +35,7 @@ extern int default_height,default_width; /* Approximately the default with and
 extern int man_pages_shown;		/* The current number of manual
 					   pages being shown, if 0 we exit. */
 
-extern Manual manual[MAXSECT];		/* The manual structure. */
+extern Manual * manual;		        /* The manual structure. */
 extern int sections;			/* The number of manual sections. */
 
 extern Widget initial_widget;	      /* The initial widget, never realized. */

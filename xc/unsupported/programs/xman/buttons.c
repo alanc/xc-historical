@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.2 88/09/04 20:27:16 swick Exp $
- * $Header: buttons.c,v 4.0 88/08/31 22:11:26 kit Exp $
+ * $XConsortium: buttons.c,v 1.3 89/01/06 18:41:51 kit Exp $
+ * $Header: buttons.c,v 1.3 89/01/06 18:41:51 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -140,16 +140,20 @@ InitPsuedoGlobals()
   ManpageGlobals * man_globals;
   int i;
 
-  man_globals = (ManpageGlobals *) malloc(sizeof(ManpageGlobals));
-  if (man_globals == NULL)
-    PrintError("Not Enough Memory to open man_globals");
+  /*
+   * Allocate necessary memory. 
+   */
+
+  man_globals = (ManpageGlobals *) 
+                XtMalloc( (Cardinal) sizeof(ManpageGlobals));
+  man_globals->section_name = (char **) XtMalloc( (Cardinal) (sections *
+							      sizeof(char *)));
+  man_globals->manpagewidgets.box = (Widget *) XtCalloc( (Cardinal) sections,
+						    (Cardinal) sizeof(Widget));
 
 /* Initialize the number of screens that will be shown */
 
   man_globals->both_shown = resources.both_shown_initial;
-
-  for ( i = 0 ; i < sections ; i++) 
-    man_globals->manpagewidgets.box[i] = NULL;
   
   return(man_globals);
 }
@@ -504,7 +508,6 @@ Widget widget;
   Menu popup;			/* The menu structure. */
   Widget popup_shell;		/* the pop up widget's shell. */
   Widget pupwidget;		/* The popup menu widget. */
-  Button buttons[MAXSECT];	/* The menu buttons structure. */
   Arg args[1];			/* The argument list. */
   int i;			/* A counter. */
   Cardinal num_args = 0;	/* The number of arguments. */
@@ -522,13 +525,12 @@ Widget widget;
   popup.box_num = (Cardinal) 0;
   popup.button_args = args;
   popup.button_num = num_args;
-  popup.buttons = buttons;
+  popup.buttons = (Button *) XtCalloc( (Cardinal) sections, 
+				      (Cardinal) sizeof(Button) );
   popup.callback = DirPopUpCallback;
 
-  for ( i = 0 ; i < sections; i ++) {
-    buttons[i].name = manual[i].blabel;
-    buttons[i].number_per_line = 0;
-  }
+  for ( i = 0 ; i < sections; i ++)
+    popup.buttons[i].name = manual[i].blabel;
 
   pupwidget = MakeMenu(popup_shell,&popup, (caddr_t) man_globals);
   XtAddEventHandler(popup_shell, (Cardinal) LeaveWindowMask,
@@ -537,6 +539,7 @@ Widget widget;
   (void) MakeLong(pupwidget);
   XtRealizeWidget(popup_shell);
   AddCursor(popup_shell,resources.cursors.top);
+  XtFree( (char *) popup.buttons);
 }
 
 /*	Function Name: CreateManpageName

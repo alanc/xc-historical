@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.3 88/10/07 17:19:53 jim Exp $
+ * $XConsortium: misc.c,v 1.4 89/01/06 18:42:24 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -210,7 +210,11 @@ ManpageGlobals * man_globals;
 {
   if (man_globals->This_Manpage != help_widget) {
     XtDestroyWidget(man_globals->This_Manpage);
-    free(man_globals);
+
+    XtFree( (char *) man_globals->section_name);
+    XtFree( (char *) man_globals->manpagewidgets.box);
+    XtFree( (char *) man_globals);
+
     man_pages_shown--;
   }
   else
