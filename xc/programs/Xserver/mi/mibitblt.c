@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 5.7 89/07/22 15:07:26 rws Exp $ */
+/* $XConsortium: mibitblt.c,v 5.8 89/07/26 15:49:34 rws Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -207,7 +207,7 @@ miCopyArea(pSrcDrawable, pDstDrawable,
 	    ppt++->y = y++;
 	    *pwidth++ = width;
 	}
-	pbits = (unsigned int *)xalloc(PixmapBytePad(width,
+	pbits = (unsigned int *)xalloc(height * PixmapBytePad(width,
 						     pSrcDrawable->depth));
 	if (pbits)
 	{
