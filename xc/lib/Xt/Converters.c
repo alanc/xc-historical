@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Converters.c,v 1.47 89/10/05 13:48:12 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Converters.c,v 1.48 89/10/09 14:25:33 swick Exp $";
 /* $oHeader: Converters.c,v 1.6 88/09/01 09:26:23 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -293,12 +293,12 @@ static Boolean CvtStringToBool(dpy, args, num_args, fromVal, toVal, closure_ret)
     if (   (CompareISOLatin1(str, "true") == 0)
 	|| (CompareISOLatin1(str, "yes") == 0)
 	|| (CompareISOLatin1(str, "on") == 0)
-	|| (CompareISOLatin1(str, "1") == 0))	done( Boolean, True );
+	|| (CompareISOLatin1(str, "1") == 0))	done( Bool, True );
 
     if (   (CompareISOLatin1(str, "false") == 0)
 	|| (CompareISOLatin1(str, "no") == 0)
 	|| (CompareISOLatin1(str, "off") == 0)
-	|| (CompareISOLatin1(str, "0") == 0))	done( Boolean, False );
+	|| (CompareISOLatin1(str, "0") == 0))	done( Bool, False );
 
     XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, "Bool");
     return False;
