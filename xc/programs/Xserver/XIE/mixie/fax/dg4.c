@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: dg4.c,v 1.1 93/10/26 09:53:55 rws Exp $ */
 /**** module fax/g4.c ****/
 /******************************************************************************
 				NOTICE
@@ -48,15 +48,11 @@ terms and conditions:
   
 *****************************************************************************/
 
-#define RETURN_after_anything 0
 
-#define use_verbosity_groups_not
-#define vbdecoder 0
-
+#define _G4
 #include "fax.h"
 #include "faxint.h"
 #include "bits.h"
-#include "verbosity.h"
 
 #include <servermd.h>
 	/* pick up the BITMAP_BIT_ORDER from Core X*/
@@ -86,8 +82,6 @@ int 	length_acc=0;
 int 	last_b1_idx=0;
 int 	b1_pos,b2_pos;
 int 	rl;
-int	magic_blab = 0;
-
 
 	if (state == (FaxState *)NULL)
 		return(-1);
@@ -95,20 +89,13 @@ int	magic_blab = 0;
 	/* set up initial bitstream for the very first strip */
 	if (!state->bits.started) {
 	    if (state->strip_state != StripStateNew) {
-	       if (vbdecoder || be_verbose(decoder)) 
-	 	 printf(" %s%d,program error, unexpected strip state\n",
-			__FILE__,__LINE__,state->strip_state);
-	       return(-1);
+		state->decoder_done = FAX_DECODE_DONE_ErrorBadStripper;
+		return(-1);
 	    }
 	    state->bits.byteptr = (unsigned char *)state->strip;
 	    state->bits.endptr  = state->bits.byteptr + state->strip_size-4;
 	       /* we will panic with four bytes to go */
 
-	    if (vbdecoder || be_verbose(decoder)) {
-		printf(" started a bitstream for strip 0x%x, len %d\n",
-			state->strip,
-			state->strip_size);
-	    }
 	    state->bits.bitpos = 0;
 	    state->bits.started = 1;
 	}
@@ -119,53 +106,20 @@ int	magic_blab = 0;
 	    finish_magic(state->final);
 		/* a magic strip was waiting for 1st word of next strip */
 
-	if (vbdecoder || be_verbose(decoder)) {
-	    printf(" seeking to decode %d lines\n",state->nl_sought);
-	    printf(" bitstream is at 0x%x + %d bits, limit 0x%x\n",
-		byteptr,bitpos,endptr);
-	    printf(" four bytes starting at 0x%x are %x %x %x %x\n",
-		byteptr,*byteptr,*(byteptr+1),*(byteptr+2),*(byteptr+3));
-	    fflush(stdout);
-	}
-
 /***	Main Decoding Loop	***/
 	while(1) {
-	  set_verbosity_group_level(decoder,3);
-	  if (vbdecoder || be_verbose(decoder)) {		
-	    printf(" bitstream is at 0x%x + %d bits, limit 0x%x\n",
-		byteptr,bitpos,endptr);
-	    printf(" four bytes starting at 0x%x are %x %x %x %x\n",
-		byteptr,*byteptr,*(byteptr+1),*(byteptr+2),*(byteptr+3));
-	    fflush(stdout);
-	  }
-	  set_verbosity_group_level(decoder,2);
-	  if (vbdecoder || be_verbose(decoder))
-	  	printf(" goal is %d\n",goal);
 	  switch(goal) {
 	  case FAX_GOAL_StartNewLine:
 
 	    /* if any data produced by previous states, write it out */
-	    if (lines_found) {
-		if (state->write_data) {
-		   char *olp = state->o_lines[lines_found-1];
-
-		   /* White will be ones, blacks zeros */
-		   zero_even(olp,new_trans,n_new_trans,width,1);
-		}
-	        if (lines_found >= state->nl_sought)
+	    if (lines_found >= state->nl_sought) 
 		    save_state_and_return(state);
-	    }
+
 	    /* normal line initialization stuff */
 	    a0_pos   = -1;
 	    a0_color = WHITE;
 	    goal     = FAX_GOAL_DetermineMode;
 	    reset_transitions();
-	    set_verbosity_group_level(decoder,3);
-	    if (vbdecoder || be_verbose(decoder)) {
-		printf(" new goal is determine mode\n");
-		fflush(stdout);
-	    }
-	    set_verbosity_group_level(decoder,2);
 	    break;
 	  case FAX_GOAL_DetermineMode:
 	    get_mode_and_length(mode,length,byteptr,bitpos,endptr); 
@@ -177,9 +131,6 @@ int	magic_blab = 0;
 	    break;
 
 	  case  FAX_GOAL_HandleHoriz: 
-	    if (vbdecoder || be_verbose(decoder)) {
-		printf(" wow! I'm in horizontal mode!\n");
-	    }
 	    length_acc=0;
 	    goal = FAX_GOAL_AccumulateA0A1;
 		/* in case I run out of data while getting a0-a1 distance */
@@ -197,14 +148,6 @@ int	magic_blab = 0;
 
 	  case  FAX_GOAL_RecordA0A1:
 	    a0a1 = length_acc;
-	    if (vbdecoder || be_verbose(decoder)) {
-	      printf(" a0a1 is %d!\n",a0a1);
-	      fflush(stdout);
-	    }
-	    if (vbdecoder || be_verbose(decoder)) {
-	      printf(" will try to finish horizontal stuff\n");
-	      fflush(stdout);
-	    }
 	    length_acc=0;
 	    goal = FAX_GOAL_AccumulateA1A2;
 		/* in case I run out of data while getting a1-a2 distance */
@@ -221,10 +164,6 @@ int	magic_blab = 0;
 
 	  case  FAX_GOAL_FinishHoriz:
 	    a1a2 = length_acc;
-	    if (vbdecoder || be_verbose(decoder)) {
-	      printf(" a1a2 is %d!\n",a1a2);
-	      fflush(stdout);
-	    }
 	    if (a0_pos < 0) {
 		/* at start of line, a0a1 is the number of white pixels,  */
 		/* which is also the index on the line where white->black */
@@ -243,19 +182,13 @@ int	magic_blab = 0;
 		new_trans[n_new_trans]   = a0_pos = a0_pos + a0a1 + a1a2;
 		++n_new_trans;
 	    }
-	    if (vbdecoder || be_verbose(decoder))
-	        printf("  a0_pos is now %d\n",a0_pos);
 	    if (a0_pos >= width) {
 		if (a0_pos > width) {
-		   if (vbdecoder || be_verbose(decoder))
-		     printf(" error, a0 (%d) spilled past width (%d)\n",
-			a0_pos,width);
-		   return(-1);
+		   state->decoder_done = FAX_DECODE_DONE_ErrorPastWidth;
+		   save_state_and_return(state);
 		}
-		if (vbdecoder || be_verbose(decoder))
-		     printf(" found end of line with Horizontal!\n");
-	        ++lines_found;
 		goal = FAX_GOAL_StartNewLine;
+		FlushLineData();
 		break;
 	    }
 	    else 
@@ -263,37 +196,21 @@ int	magic_blab = 0;
 	    break;
 
 	  case FAX_MODE_Pass:
-	    if (vbdecoder || be_verbose(decoder)) {
-	      printf(" Yoiks! I'm in pass mode!\n");
-	      fflush(stdout);
-	    }
 	    if (!n_old_trans) {	/* line above all white */
-	      if (vbdecoder || be_verbose(decoder)) {
-		printf(" line above pass mode has no transitions - ");
-		printf(" is that legal?\n");
-		fflush(stdout);
-	      }
-	      return(-1);
+		state->decoder_done = FAX_DECODE_DONE_ErrorPassAboveAllWhite;
+		save_state_and_return(state);
 	    }
 	    find_b2pos(a0_pos,a0_color,n_old_trans,old_trans);
-	    if (vbdecoder || be_verbose(decoder))
-	        printf(" %s-%d: b2 pos returned is %d\n",
-		     __FILE__,__LINE__,b2_pos);
 
 	    a0_pos = b2_pos;
-	    if (vbdecoder || be_verbose(decoder))
-	        printf("  after passing, a0_pos is now %d\n",a0_pos);
 	    if (a0_pos < 0) {
-	       if (vbdecoder || be_verbose(decoder))
-	         printf(" Yoiks! pass mode yielded b2_pos of %d!\n",b2_pos);
-	       ++lines_found;
-	       goal = FAX_GOAL_StartNewLine;
-	       break;
+		FlushLineData();
+	       	goal = FAX_GOAL_StartNewLine;
+	       	break;
 	    }
 	    if (a0_pos >= width) {
-		printf(" %s(%d) Egads! a0_pos is %d\n",
-			__FILE__,__LINE__,a0_pos);
-		return(-1);
+		state->decoder_done = FAX_DECODE_DONE_ErrorBadA0pos;
+		save_state_and_return(state);
 	    }
 	    goal = FAX_GOAL_DetermineMode;
 	    break;
@@ -305,30 +222,13 @@ int	magic_blab = 0;
 	  case FAX_GOAL_HandleVertR1:
 	  case FAX_GOAL_HandleVertR2:
 	  case FAX_GOAL_HandleVertR3:
-	    if (vbdecoder || be_verbose(decoder)) {
-	      printf(" about to try some vertical stuff\n");
-	      fflush(stdout);
-	    }
 	    if (n_old_trans) {	/* line above not all white */
-		if (vbdecoder || be_verbose(decoder)) {
-		    printf(" egads! line above us (at %d) not all white!\n",
-			a0_pos);
-		    printf(" number of transitions was %d, last idx %d was %d\n",
-			n_old_trans,last_b1_idx,old_trans[last_b1_idx]);
-		}
 		find_b1pos(a0_pos,a0_color,n_old_trans,old_trans);
-		if (vbdecoder || be_verbose(decoder))
-		   printf(" %s-%d: b1 pos returned is %d\n",
-		     __FILE__,__LINE__,b1_pos);
 
 		if (b1_pos < 0) {
 		   if (goal > FAX_GOAL_HandleVert0) {
-		     if (vbdecoder || be_verbose(decoder)) {
-			printf(" got b1pos negative, vertical RIGHT mode\n");
-		        printf(" %s-%d: b1 pos is %d, a0_pos %d\n",
-		          __FILE__,__LINE__,b1_pos,a0_pos);
-		     }
-		     return(-1);	/* error! */
+		     state->decoder_done = FAX_DECODE_DONE_ErrorBadGoal;
+		     save_state_and_return(state);
 		   }
 		   b1_pos = width;
 		}
@@ -337,7 +237,7 @@ int	magic_blab = 0;
 		a0_pos   = b1_pos + (goal-FAX_GOAL_HandleVert0);
 		a0_color = 1-a0_color;
 	        if (a0_pos >= width) {
-	            ++lines_found;
+		    FlushLineData();
 		    goal = FAX_GOAL_StartNewLine;
 		}
 		else  {
@@ -351,15 +251,14 @@ int	magic_blab = 0;
 	       /* b1 is imaginary transition off right edge.  In other   */
 	       /* words, there are no more transitions! Done with line	 */
 
-	        ++lines_found;
-		if (vbdecoder || be_verbose(decoder))
-		   printf(" no more vertical transitions: found %d lines!!\n",
-			lines_found);
+		FlushLineData();
 		goal = FAX_GOAL_StartNewLine;
 	    }
 	    break;
 
 	  default:
+	    state->decoder_done = FAX_DECODE_DONE_ErrorBadGoal;
+	    save_state_and_return(state);
 	  break;
 	  }  /* end of switch */
 	}

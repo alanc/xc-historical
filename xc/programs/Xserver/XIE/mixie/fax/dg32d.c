@@ -1,5 +1,5 @@
-/* $XConsortium: g32d.c,v 1.1 93/07/19 10:14:53 rws Exp $ */
-/**** module fax/g32d.c ****/
+/* $XConsortium: dg32d.c,v 1.1 93/10/26 09:53:42 rws Exp $ */
+/**** module fax/dg32d.c ****/
 /******************************************************************************
 				NOTICE
                               
@@ -42,17 +42,13 @@ terms and conditions:
      Logic, Inc.
 *****************************************************************************
   
-	fax/g32d.c -- DDXIE G4 fax decode technique/element
+	fax/dg32d.c -- DDXIE G32D fax decode technique/element
   
 	Ben Fahy -- AGE Logic, Inc. May, 1993
   
 *****************************************************************************/
 
-#define RETURN_after_anything 0
-#define lenient_decoder
-
-#define use_verbosity_groups_not
-#define vbdecoder 0
+#define lenient_decoder_not
 
 /* the folling define causes extra stuff to be saved in state recorder */
 #define _G32D
@@ -60,10 +56,8 @@ terms and conditions:
 #include "fax.h"
 #include "faxint.h"
 #include "bits.h"
-#include "verbosity.h"
 
-#include <servermd.h>
-	/* pick up the BITMAP_BIT_ORDER from Core X*/
+#include <servermd.h> /* pick up the BITMAP_BIT_ORDER from Core X*/
 
 
 /**********************************************************************/
@@ -92,8 +86,6 @@ int 	length_acc=0;
 int 	last_b1_idx=0;
 int 	b1_pos,b2_pos;
 int 	code,nbits;
-int	magic_blab = 0;
-
 
 	if (state == (FaxState *)NULL)
 		return(-1);
@@ -132,13 +124,18 @@ int	magic_blab = 0;
 	    	  rl     = _WhiteFaxTable[code].run_length;
 	      	  if (rl == EOL_RUN_LENGTH) 
 			break;
-		  else
-			/* move bitstream one bit further and try again */
+		  else if (!state->o_line && !lines_found) {
+			/* we'll be lenient starting out */
  		 	adjust_1bit(byteptr,bitpos,endptr);
+		  }
+		  else {
+			state->decoder_done = FAX_DECODE_DONE_ErrorSkipPast;
+	    		save_state_and_return(state);
+		  }
 		}
 		if (byteptr == endptr) {
 			state->decoder_done = FAX_DECODE_DONE_ErrorSkipPast;
-			exit(1);
+	    		save_state_and_return(state);
 		}
 	    	nbits  = _WhiteFaxTable[code].n_bits;
 	    	goal = FAX_GOAL_SeekTagBit;
@@ -170,17 +167,10 @@ int	magic_blab = 0;
 
 	  case FAX_GOAL_StartNewLine:
 
-	    /* if any data produced by previous states, write it out */
-	    if (lines_found) {
-		if (state->write_data) {
-		   char *olp = state->o_lines[lines_found-1];
-
-		   /* White will be ones, blacks zeros */
-		   zero_even(olp,new_trans,n_new_trans,width,1);
-		}
-	        if (lines_found >= state->nl_sought)
+	    /* if we got all the data we want, write it out */
+	    if (lines_found >= state->nl_sought)
 		    save_state_and_return(state);
-	    }
+
 	    /* normal line initialization stuff */
 	    a0_pos   = -1;
 	    a0_color = WHITE;
@@ -205,9 +195,6 @@ int	magic_blab = 0;
 	    break;
 
 	  case  FAX_GOAL_RecoverZero:
-	    set_verbosity_group_level(decoder,1);
-	    if (be_verbose(decoder))
-	      printf(" will try to recover from a zero!\n");
 
 	    /* have to set new goal in case adjusting throws us	*/
 	    /* back to the caller (to get more data) 		*/
@@ -301,15 +288,10 @@ int	magic_blab = 0;
 	    }
 	    if (a1_pos >= width) {
 		if (a1_pos > width) {
-#if defined(lenient_decoder)
-		   /* we went too far, but we'll be forgiving */
-		  a1_pos = width;
-#else  /* not so lenient */
 		  state->decoder_done = FAX_DECODE_DONE_ErrorPastWidth;
 		  return(lines_found);
-#endif
 		}
-	        ++lines_found;
+		FlushLineData();
 		goal = FAX_GOAL_SeekEOLandTag;
 		break;
 	    }
@@ -321,14 +303,14 @@ int	magic_blab = 0;
 	        /* variable number of zeros, which is legal according to    */
 	        /* the coding spec.  So we will record the increment in     */
 	        /* line number and then attempt to recover.		    */
-	        ++lines_found;
-	  goal = FAX_GOAL_SkipPastAnyToEOL;
+		FlushLineData();
+	  	goal = FAX_GOAL_SkipPastAnyToEOL;
 	        break;
 			/* break out of the switch, loop with the while */
 	    }
 
 	    if (rl == EOL_RUN_LENGTH) {
-	        ++lines_found;
+		FlushLineData();
 	        goal =  FAX_GOAL_SeekTagBit;
 		/* if we got a non-zero length, remember the transition */
 		/* in case the next line is coded in vertical mode	*/
@@ -370,26 +352,21 @@ int	magic_blab = 0;
 	    /* then attempt to recover.					*/
 	    if (goal == FAX_GOAL_RecoverZero) {
 	        /* assume we have hit the begining of an EOL */
-	        ++lines_found;
+		FlushLineData();
 	  	goal = FAX_GOAL_SkipPastAnyToEOL;
 	        break;
 	    }
 	    if (rl == EOL_RUN_LENGTH) {
-	        ++lines_found;
+		FlushLineData();
 	        goal =  FAX_GOAL_SeekTagBit;
 		break;
 	    }
 	    if (a0_pos >= width) {
 		if (a0_pos > width) {
-#if defined(lenient_decoder)
-		   /* we went too far, but we'll be forgiving */
-		   a0_pos = width;
-#else
 		   state->decoder_done = FAX_DECODE_DONE_ErrorPastWidth;
 		   return(lines_found);
-#endif
 		}
-	        ++lines_found;
+		FlushLineData();
 		goal = FAX_GOAL_SeekEOLandTag;
 		break;
 	    }
@@ -409,13 +386,11 @@ int	magic_blab = 0;
 
 	    a0_pos = b2_pos;
 	    if (a0_pos < 0) {
-	       ++lines_found;
-	       goal = FAX_GOAL_SeekEOLandTag;
-	       break;
+		FlushLineData();
+	       	goal = FAX_GOAL_SeekEOLandTag;
+	       	break;
 	    }
 	    if (a0_pos >= width) {
-		printf(" %s(%d) Egads! a0_pos is %d\n",
-			__FILE__,__LINE__,a0_pos);
 		return(-1);
 	    }
 	    goal = FAX_GOAL_DetermineMode;
@@ -442,7 +417,7 @@ int	magic_blab = 0;
 		a0_pos   = b1_pos + (goal-FAX_GOAL_HandleVert0);
 		a0_color = 1-a0_color;
 	        if (a0_pos >= width) {
-	            ++lines_found;
+		    FlushLineData();
 		    goal = FAX_GOAL_SeekEOLandTag;
 		}
 		else  {
@@ -456,7 +431,7 @@ int	magic_blab = 0;
 	       /* b1 is imaginary transition off right edge.  In other   */
 	       /* words, there are no more transitions! Done with line	 */
 
-	        ++lines_found;
+		FlushLineData();
 		goal = FAX_GOAL_SeekEOLandTag;
 	    }
 	    break;
