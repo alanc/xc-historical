@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.13 91/05/08 22:21:33 converse Exp $ */
+/* $XConsortium: TMaction.c,v 1.14 91/05/24 12:41:41 swick Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -813,7 +813,7 @@ static void _XtMenuPopdownAction(widget, event, params, num_params)
 	XtPopdown(popup_shell);
     } else {
 	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-			"invalidParameters","xtmenuPopdown",XtCXtToolkitError,
+			"invalidParameters","xtMenuPopdown",XtCXtToolkitError,
 			"XtMenuPopdown called with num_params != 0 or 1",
 			(String *)NULL, (Cardinal *)NULL);
     }
