@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextPop.c,v 1.10 90/02/01 16:21:22 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextPop.c,v 1.11 90/06/01 17:48:26 converse Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -75,7 +75,7 @@ extern char* sys_errlist[];
 static void CenterWidgetOnPoint(), PopdownSearch(), DoInsert(), _SetField();
 static void InitializeSearchWidget(), SetResource(), SetSearchLabels();
 static void DoReplaceOne(), DoReplaceAll();
-static Widget CreateDialog();
+static Widget CreateDialog(), GetShell();
 static Boolean DoSearch(), SetResourceByName(), Replace();
 static String GetString();
 
@@ -1228,7 +1228,7 @@ String ptr, name;
 void (*func)();
 {
   Widget popup, form;
-  Arg args[4];
+  Arg args[5];
   Cardinal num_args;
 
   num_args = 0;
@@ -1236,6 +1236,7 @@ void (*func)();
   XtSetArg(args[num_args], XtNgeometry, NULL); num_args++;
   XtSetArg(args[num_args], XtNallowShellResize, TRUE); num_args++;
   XtSetArg(args[num_args], XtNsaveUnder, TRUE); num_args++;
+  XtSetArg(args[num_args], XtNtransientFor, GetShell(parent)); num_args++;
   popup = XtCreatePopupShell(name, transientShellWidgetClass, 
 			     parent, args, XtNumber(args) );
   
@@ -1244,4 +1245,22 @@ void (*func)();
 
   (*func) (form, ptr, parent);
   return(popup);
+}
+
+ /*	Function Name: GetShell
+  * 	Description: Walks up the widget hierarchy to find the
+  * 		nearest shell widget.
+  * 	Arguments: w - the widget whose parent shell should be returned.
+  * 	Returns: The shell widget among the ancestors of w that is the
+  * 		fewest levels up in the widget hierarchy.
+  */
+ 
+static Widget
+GetShell(w)
+Widget w;
+{
+    while ((w != NULL) && !XtIsShell(w))
+	w = XtParent(w);
+    
+    return (w);
 }
