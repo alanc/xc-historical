@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.48 89/08/21 10:08:58 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.49 89/08/24 10:40:13 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -44,14 +44,14 @@
  */
 
 #ifdef ibm032
-#define MacroIncludeFile "rt.cf"
+#define MacroIncludeFile <rt.cf>
 #define MacroFile rt.cf
 #undef ibm032
 #define RtArchitecture
 #endif /* ibm032 */
 
 #ifdef ultrix
-#define MacroIncludeFile "ultrix.cf"
+#define MacroIncludeFile <ultrix.cf>
 #define MacroFile ultrix.cf
 #ifdef vax
 #undef vax
@@ -66,56 +66,56 @@
 #endif
 
 #if defined(vax) && !defined(UltrixArchitecture)
-#define MacroIncludeFile "bsd.cf"
+#define MacroIncludeFile <bsd.cf>
 #define MacroFile bsd.cf
 #undef vax
 #define VaxArchitecture
 #endif
 
 #ifdef sun
-#define MacroIncludeFile "sun.cf"
+#define MacroIncludeFile <sun.cf>
 #define MacroFile sun.cf
 #undef sun
 #define SunArchitecture
 #endif /* sun */
 
 #ifdef hpux
-#define MacroIncludeFile "hp.cf"
+#define MacroIncludeFile <hp.cf>
 #define MacroFile hp.cf
 #undef hpux
 #define HPArchitecture
 #endif /* hpux */
 
 #ifdef att
-#define MacroIncludeFile "att.cf"
+#define MacroIncludeFile <att.cf>
 #define MacroFile att.cf
 #undef att
 #define ATTArchitecture
 #endif /* att */
 
 #ifdef apollo
-#define MacroIncludeFile "apollo.cf"
+#define MacroIncludeFile <apollo.cf>
 #define MacroFile apollo.cf
 #undef apollo
 #define ApolloArchitecture
 #endif /* apollo */
 
 #ifdef sony
-#define MacroIncludeFile "sony.cf"
+#define MacroIncludeFile <sony.cf>
 #define MacroFile sony.cf
 #undef sony
 #define SonyArchitecture
 #endif /* sony */
 
 #ifdef M4310
-#define MacroIncludeFile "pegasus.cf"
+#define MacroIncludeFile <pegasus.cf>
 #define MacroFile pegasus.cf
 #undef M4310
 #define PegasusArchitecture
 #endif /* M4310 */
 
 #ifdef M4330
-#define MacroIncludeFile "m4330.cf"
+#define MacroIncludeFile <m4330.cf>
 #define MacroFile m4330.cf
 #undef  M4330
 #define M4330Architecture
@@ -123,14 +123,14 @@
 
 #ifdef macII
 /* A/UX cpp has no unique symbol:  build imake with BOOTSTRAPCFLAGS=-DmacII */
-#define MacroIncludeFile "macII.cf"
+#define MacroIncludeFile <macII.cf>
 #define MacroFile macII.cf
 #undef  macII
 #define MacIIArchitecture
 #endif /* macII */
 
 #ifdef CRAY
-#define MacroIncludeFile "cray.cf"
+#define MacroIncludeFile <cray.cf>
 #define MacroFile cray.cf
 #undef cray
 #undef CRAY
@@ -138,7 +138,7 @@
 #endif /* CRAY */
 
 #ifdef sgi
-#define MacroIncludeFile "sgi.cf"
+#define MacroIncludeFile <sgi.cf>
 #define MacroFile sgi.cf
 #undef sgi
 #define SGIArchitecture
@@ -147,7 +147,7 @@
 #endif
 
 #if defined(mips) && !defined(UltrixArchitecture) && !defined(SGIArchitecture)
-#define MacroIncludeFile "umips.cf"
+#define MacroIncludeFile <umips.cf>
 #define MacroFile umips.cf
 #undef mips
 #undef umips
@@ -158,7 +158,7 @@
 #ifndef MacroIncludeFile
 /**/# WARNING:  Imake.tmpl not configured; guessing at definitions!!!
 /**/# This might mean that BOOTSTRAPCFLAGS wasn't set when building imake.
-#define MacroIncludeFile "generic.cf"
+#define MacroIncludeFile <generic.cf>
 #define MacroFile generic.cf
 #endif
 
