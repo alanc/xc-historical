@@ -15,7 +15,6 @@ HEADERS = DECkeysym.h \
 	Xproto.h \
 	Xprotostr.h \
 	ap_keysym.h \
-	copyright.h \
 	keysym.h \
 	keysymdef.h 
 
