@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: maskbits.h,v 1.5 87/09/07 19:08:59 toddb Locked $ */
+/* $Header: maskbits.h,v 1.6 87/09/12 23:46:43 toddb Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -303,7 +303,7 @@ else \
 #define getleftbits(psrc, w, dst) \
     { \
 	if ( ((int)(psrc)) & 0x01 ) \
-		getbits( ((unsigned int *)((int)(psrc))-1), 8, (w), (dst) ); \
+		getbits( ((unsigned int *)(((char *)(psrc))-1)), 8, (w), (dst) ); \
 	else
 		getbits(psrc, 0, w, dst)
     }
@@ -312,11 +312,11 @@ else \
 #if GETLEFTBITS_ALIGNMENT == 4
 #define getleftbits(psrc, w, dst) \
     { \
-	int off; \
-	off = ( ((int)(psrc)) & 0x03) << 3; \
+	int off, off_b; \
+	off_b = (off = ( ((int)(psrc)) & 0x03)) << 3; \
 	getbits( \
-		(unsigned int *)( ((int)(psrc)) &~0x03), \
-		(off), (w), (dst) \
+		(unsigned int *)( ((char *)(psrc)) - off), \
+		(off_b), (w), (dst) \
 	       ); \
     }
 #endif /* GETLEFTBITS_ALIGNMENT == 4 */
