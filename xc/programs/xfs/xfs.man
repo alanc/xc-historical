@@ -1,4 +1,4 @@
-.\" $NCDId: @(#)fs.man,v 1.3 1991/07/09 14:15:59 lemke Exp $
+.\" $XConsortium$
 .TH FS 1 "Release 5" "X Version 11"
 .SH NAME
 fs \- X font server
@@ -127,6 +127,38 @@ default-point-size = 120
 default-resolutions = 100,100,75,75
 .fi
 .sp
+.SH "FONT SERVER NAMES"
+One of the following forms can be used to name a font server that
+accepts TCP connections:
+.sp
+.nf
+    tcp/\fIhostname\fP:\fIport\fP
+    tcp/\fIhostname\fP:\fIport\fP/\fIcataloguelist\fP
+.fi
+.PP
+The \fIhostname\fP specifies the name (or decimal numeric address)
+of the machine on which the font server is running.  The \fIport\fP
+is the decimal TCP port on which the font server is listening for connections.
+The \fIcataloguelist\fP specifies a list of catalogue names,
+with '+' as a separator.
+.PP
+Examples: \fItcp/expo.lcs.mit.edu:7000\fP, \fItcp/18.30.0.212:7001/all\fP.
+.PP
+One of the following forms can be used to name a font server that
+accepts DECnet connections:
+.sp
+.nf
+    decnet/\fInodename\fP::font$\fIobjname\fP
+    decnet/\fInodename\fP::font$\fIobjname\fP/\fIcataloguelist\fP
+.fi
+.PP
+The \fInodename\fP specifies the name (or decimal numeric address)
+of the machine on which the font server is running.
+The \fIobjname\fP is a normal, case-insensitive DECnet object name.
+The \fIcataloguelist\fP specifies a list of catalogue names,
+with '+' as a separator.
+.PP
+Examples: \fIDECnet/SRVNOD::FONT$DEFAULT\fP, \fIdecnet/44.70::font$special/symbols\fP.
 .SH "SEE ALSO"
 X(1), \fIFont server implementation overview\fB
 .SH COPYRIGHT
