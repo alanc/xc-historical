@@ -9,7 +9,12 @@ int max_output_line_width = 79;
 int output_line_padding = 3;
 int columns = 0;
 
-int	long_list, very_long;
+#define L_SHORT 0
+#define L_MEDIUM 1
+#define L_LONG 2
+#define L_VERYLONG 3
+
+int	long_list = L_SHORT;
 int	nnames = N_START;
 int	font_cnt;
 int	min_max;
@@ -25,9 +30,7 @@ usage()
 	fprintf (stderr,"usage:  %s [-options] [-fn pattern]\n", program_name);
 	fprintf (stderr, "where options include:\n");
 	fprintf (stderr,
-	"    -l                       give long info about each font\n");
-	fprintf (stderr,
-	"    -L                       give very long list about each font\n");
+	"    -l[l[l]]                 give long info about each font\n");
 	fprintf (stderr,
 	"    -m                       give character min and max bounds\n");
 	fprintf (stderr,
@@ -60,9 +63,6 @@ char **argv;
 			if (argcnt > 0) usage ();
 			for (i=1; argv[0][i]; i++)
 				switch(argv[0][i]) {
-				case 'L':
-					very_long++;
-					break;
 				case 'l':
 					long_list++;
 					break;
@@ -119,14 +119,14 @@ get_list(pattern)
 
 	/* Get list of fonts matching pattern */
 	for (;;) {
-		if (long_list)
+		if (long_list == L_MEDIUM)
 			fonts = XListFontsWithInfo(dpy,
 				pattern, nnames, &available, &info);
 		else
 			fonts = XListFonts(dpy, pattern, nnames, &available);
 		if (fonts == NULL || available < nnames)
 			break;
-		if (long_list)
+		if (long_list == L_MEDIUM)
 			XFreeFontInfo(fonts, info, available);
 		else
 			XFreeFontNames(fonts);
@@ -143,7 +143,7 @@ get_list(pattern)
 		(font_cnt + available) * sizeof(FontList));
 	for (i=0; i<available; i++) {
 		font_list[font_cnt].name = fonts[i];
-		if (long_list)
+		if (long_list == L_MEDIUM)
 			font_list[font_cnt].info = info + i;
 		else
 			font_list[font_cnt].info = NULL;
@@ -172,14 +172,14 @@ show_fonts()
 	/* first sort the output */
 	qsort(font_list, font_cnt, sizeof(FontList), compare);
 
-	if (very_long) {
+	if (long_list > L_MEDIUM) {
 	    for (i = 0; i < font_cnt; i++) {
 		do_query_font (dpy, font_list[i].name);
 	    }
 	    return;
 	}
 
-	if (long_list) {
+	if (long_list == L_MEDIUM) {
 		XFontStruct	*pfi;
 		char		*string;
 
@@ -539,7 +539,8 @@ do_query_font (dpy, name)
     printf ("  bounds:             %s", bounds_metrics_title);
     PrintBounds ("min", &info->min_bounds);
     PrintBounds ("max", &info->max_bounds);
-    if (info->per_char) print_character_metrics (info);
+    if (info->per_char && long_list >= L_VERYLONG) 
+      print_character_metrics (info);
     printf ("  properties:\t\t%d\n", info->n_properties);
     for (i = 0; i < info->n_properties; i++)
 	PrintProperty (&info->properties[i]);
