@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbline.c,v 1.36 88/02/06 10:42:36 rws Exp $ */
+/* $Header: mfbline.c,v 1.36 88/02/06 11:53:38 rws Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -112,7 +112,7 @@ edges) instead of pbox (the standard no-right-or-lower-edge one)?
 
 #define ceiling(m,n) ( ((m) + (n) -1)/(n) )
 
-#define SignTimes(sign, n) ((sign) * (n))
+#define SignTimes(sign, n) ((sign) * ((int)(n)))
 
 /*
 #define SignTimes(sign, n) \
@@ -741,7 +741,8 @@ int *pclip1, *pclip2;
     DDXPointRec pt1Orig, pt1, pt2, ptTmp;
     int swapped = 0;
     int clipDone = 0;
-    register int tmp;
+    int tmp;
+    register unsigned long utmp;
     int oc1, oc2;
     int clip1, clip2;
 
@@ -785,104 +786,84 @@ int *pclip1, *pclip2;
 	    if (oc1 & OUT_LEFT)
 	    {
 	      pt1.x = box.x1;
+	      utmp = abs(box.x1 - pt1Orig.x);
+	      utmp *= ady;
 	      if(axis==X_AXIS)
 	      {
-	        pt1.y = pt1Orig.y +
-		        SignTimes(signdy,
-			          round(abs(box.x1-pt1Orig.x)*ady,
-				        adx));
+	        pt1.y = pt1Orig.y + SignTimes(signdy, round(utmp, adx));
 	      }
 	      else
 	      {
-	        tmp = abs(pt1Orig.x - box.x1);
-	        tmp = 2 * tmp * ady;
-	        if (swapped)
-		    tmp += ady;
-	        else
-		    tmp -= ady;
-	        tmp = abs(tmp);
-	        pt1.y = pt1Orig.y +
-		        SignTimes(signdy,
-			          ceiling(tmp, 2*adx));
-	        if (swapped)
+		utmp <<= 1;
+		if (swapped)
+		    utmp += ady;
+		else
+		    utmp -= ady;
+		pt1.y = pt1Orig.y + SignTimes(signdy, ceiling(utmp, 2*adx));
+		if (swapped)
 		    pt1.y -= signdy;
 	      }
 	    }
 	    else if (oc1 & OUT_ABOVE)
 	    {
 	      pt1.y = box.y1;
+	      utmp = abs(box.y1 - pt1Orig.y);
+	      utmp *= adx;
 	      if (axis == Y_AXIS)
 	      {
-	        pt1.x = pt1Orig.x +
-		        SignTimes(signdx,
-			          round(abs(box.y1-pt1Orig.y)*adx,
-				        ady));
+	        pt1.x = pt1Orig.x + SignTimes(signdx, round(utmp, ady));
 	      }
 	      else
 	      {
-	        tmp = abs(pt1Orig.y - box.y1);
-	        tmp = 2 * tmp * adx;
-	        if (swapped)
-		    tmp += adx;
-	        else
-		    tmp -= adx;
-	        tmp = abs(tmp);
-	        pt1.x = pt1Orig.x +
-		        SignTimes(signdx,
-			          ceiling(tmp, 2*ady));
-	        if (swapped)
+		utmp <<= 1;
+		if (swapped)
+		    utmp += adx;
+		else
+		    utmp -= adx;
+		pt1.x = pt1Orig.x + SignTimes(signdx, ceiling(utmp, 2*ady));
+		if (swapped)
 		    pt1.x -= signdx;
 	      }
 	    }
 	    else if (oc1 & OUT_RIGHT)
 	    {
 	      pt1.x = box.x2;
+	      utmp = abs(pt1Orig.x - box.x2);
+	      utmp *= ady;
 	      if (axis == X_AXIS)
 	      {
-	        pt1.y = pt1Orig.y +
-		        SignTimes(signdy,
-			          round(abs(box.x2-pt1Orig.x)*ady,
-				        adx));
+	        pt1.y = pt1Orig.y + SignTimes(signdy, round(utmp, adx));
 	      }
 	      else
 	      {
-	        tmp = abs(pt1Orig.x - box.x2);
-	        tmp = 2 * tmp * ady;
-	        if (swapped)
-		    tmp += ady;
-	        else
-		    tmp -= ady;
-	        tmp = abs(tmp);
-	        pt1.y = pt1Orig.y +
-		        SignTimes(signdy,
-			          ceiling(tmp, 2*adx));
-	        if (swapped)
+		utmp <<= 1;
+		if (swapped)
+		    utmp += ady;
+		else
+		    utmp -= ady;
+		pt1.y = pt1Orig.y + SignTimes(signdy, ceiling(utmp, 2*adx));
+		if (swapped)
 		    pt1.y -= signdy;
 	      }
 	    }
 	    else if (oc1 & OUT_BELOW)
 	    {
 	      pt1.y = box.y2;
+	      utmp = abs(pt1Orig.y - box.y2);
+	      utmp *= adx;
 	      if (axis == Y_AXIS)
 	      {
-	        pt1.x = pt1Orig.x +
-		        SignTimes(signdx,
-			          round(abs(box.y2-pt1Orig.y)*adx,
-				        ady));
+	        pt1.x = pt1Orig.x + SignTimes(signdx, round(utmp, ady));
 	      }
 	      else
 	      {
-	        tmp = abs(pt1Orig.y - box.y2);
-	        tmp = 2 * tmp * adx;
-	        if (swapped)
-		    tmp += adx;
-	        else
-		    tmp -= adx;
-	        tmp = abs(tmp);
-	        pt1.x = pt1Orig.x +
-		        SignTimes(signdx,
-			          ceiling(tmp, 2*ady));
-	        if (swapped)
+		utmp <<= 1;
+		if (swapped)
+		    utmp += adx;
+		else
+		    utmp -= adx;
+		pt1.x = pt1Orig.x + SignTimes(signdx, ceiling(utmp, 2*ady));
+		if (swapped)
 		    pt1.x -= signdx;
 	      }
 	    }
