@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 1.143 88/09/19 12:13:43 jim Exp $ */
+/* $XConsortium: main.c,v 1.144 89/01/04 08:39:05 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -160,6 +160,9 @@ main(argc, argv)
 	{
 	    CreateWellKnownSockets();
 	    InitProcVectors();
+	    clients = (ClientPtr *)xalloc(MAXCLIENTS * sizeof(ClientPtr));
+	    for (i=1; i<MAXCLIENTS; i++) 
+		clients[i] = NullClient;
 	    serverClient = (ClientPtr)xalloc(sizeof(ClientRec));
             serverClient->sequence = 0;
             serverClient->closeDownMode = RetainPermanent;
@@ -172,11 +175,8 @@ main(argc, argv)
 	    serverClient->saveSet = (pointer *)NULL;
 	    serverClient->index = 0;
 	}
-        currentMaxClients = 10;
-        clients = (ClientPtr *)xalloc(currentMaxClients * sizeof(ClientPtr));
-        for (i=1; i<currentMaxClients; i++) 
-            clients[i] = NullClient;
         clients[0] = serverClient;
+        currentMaxClients = 1;
 
 	InitClientResources(serverClient);      /* for root resources */
 
@@ -244,7 +244,6 @@ main(argc, argv)
 	}
 
 	ResetHosts(display);
-        xfree(clients);
 	xfree(ConnectionInfo);
 
 	ResetWellKnownSockets ();
