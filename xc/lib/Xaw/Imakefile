@@ -65,7 +65,8 @@ HEADERS = \
 	ToggleP.h \
 	Viewport.h \
 	ViewportP.h \
-	VPaned.h
+	VPaned.h \
+	XawInit.h 
 
 SRCS = \
 	AsciiSink.c \
@@ -98,7 +99,8 @@ SRCS = \
 	TextTr.c \
 	Toggle.c \
 	Vendor.c \
-	Viewport.c 
+	Viewport.c \
+	XawInit.c 
 
 OBJS = \
 	AsciiSink.o \
@@ -131,7 +133,8 @@ OBJS = \
 	TextTr.o \
 	Toggle.o \
 	Vendor.o \
-	Viewport.o 
+	Viewport.o \
+	XawInit.o 
 
 #if SharedLibXaw
 # if DebugLibXaw
