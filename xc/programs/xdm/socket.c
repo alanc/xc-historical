@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.9 89/09/09 13:01:03 keith Exp $
+ * $XConsortium: socket.c,v 1.10 89/10/09 15:00:06 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -749,7 +749,7 @@ manage (from, fromlen, length)
 	    if (displayClass.length)
 	    {
 		bcopy (displayClass.data, class, displayClass.length);
-		class[length] = '\0';
+		class[displayClass.length] = '\0';
 	    }
 	    else
 		class = (char *) 0;
