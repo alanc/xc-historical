@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.189 94/08/11 15:26:33 dpw Exp mor $ */
+/* $XConsortium: connection.c,v 1.190 94/11/08 20:47:43 mor Exp kaleb $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -232,7 +232,7 @@ CreateWellKnownSockets()
 #ifdef LBX
     for (i=0; i<MAXSOCKS; i++) ConnectionOutputTranslation[i] = 0;
 #endif
-#if !defined(X_NOT_POSIX) && !defined(__FreeBSD__) && !defined(__386BSD__) && !defined(__NetBSD__)
+#ifdef _SC_OPEN_MAX
     lastfdesc = sysconf(_SC_OPEN_MAX) - 1;
 #else
 #ifdef hpux

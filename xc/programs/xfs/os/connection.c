@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.29 94/04/17 19:56:05 mor Exp kaleb $ */
+/* $XConsortium: connection.c,v 1.30 95/03/04 12:41:51 kaleb Exp kaleb $ */
 /*
  * handles connections
  */
@@ -190,7 +190,7 @@ OldListenRec *old_listen;
     for (i = 0; i < MAXSOCKS; i++)
 	ConnectionTranslation[i] = 0;
 
-#if !defined(X_NOT_POSIX) && !defined(__FreeBSD__) && !defined(__386BSD__) && !defined(__NetBSD__)
+#ifdef _SC_OPEN_MAX
     lastfdesc = sysconf(_SC_OPEN_MAX) - 1;
 #else
 #ifdef hpux
