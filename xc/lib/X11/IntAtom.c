@@ -1,4 +1,4 @@
-/* $XConsortium: XIntAtom.c,v 11.19 91/08/14 09:52:08 rws Exp $ */
+/* $XConsortium: XIntAtom.c,v 11.20 93/08/31 17:34:20 rws Exp $ */
 /*
 
 Copyright 1986, 1990 by the Massachusetts Institute of Technology
@@ -18,6 +18,8 @@ without express or implied warranty.
 #define NEED_REPLIES
 #include "Xlibint.h"
 
+/* XXX this table def is duplicated in XGetAtomNm.c, keep them consistent! */
+
 #define TABLESIZE 64
 
 typedef struct _Entry {
@@ -35,7 +37,7 @@ typedef struct _XDisplayAtoms {
 #define REHASHVAL(sig) ((((sig) % (TABLESIZE-3)) + 2) | 1)
 #define REHASH(idx,rehash) ((idx + rehash) & (TABLESIZE-1))
 
-static void
+void
 _XFreeAtomTable(dpy)
     Display *dpy;
 {
