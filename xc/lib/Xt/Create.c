@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.80 90/12/04 10:03:48 rws Exp $ */
+/* $XConsortium: Create.c,v 1.81 90/12/12 14:51:00 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -33,8 +33,6 @@ SOFTWARE.
 
 static String XtNxtCreateWidget = "xtCreateWidget";
 static String XtNxtCreatePopupShell = "xtCreatePopupShell";
-
-extern void bcopy();
 
 static void CallClassPartInit(ancestor, wc)
      WidgetClass ancestor, wc;

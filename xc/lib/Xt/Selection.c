@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.56 90/09/24 16:39:34 swick Exp $ */
+/* $XConsortium: Selection.c,v 1.57 90/12/03 16:30:35 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -28,8 +28,6 @@ SOFTWARE.
 #include "StringDefs.h"
 #include "SelectionI.h"
 #include <X11/Xatom.h>
-
-extern void bcopy();
 
 void _XtSetDefaultSelectionTimeout(timeout)
 	unsigned long *timeout;
