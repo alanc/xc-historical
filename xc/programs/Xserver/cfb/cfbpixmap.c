@@ -35,7 +35,7 @@ SOFTWARE.
 #include "cfb.h"
 #include "mi.h"
 
-extern void cfbXRotateBitmap();
+extern void mfbXRotatePixmap(), mfbYRotatePixmap();
 
 #if (BITMAP_BIT_ORDER == MSBFirst)
 static int masktab[32] = 
@@ -188,10 +188,8 @@ cfbCopyPixmap(pSrc)
    for each scanline of pattern
       zero out area to be filled with replicate
       left shift and or in original as many times as needed
-
-   returns TRUE iff pixmap was, or could be padded to be, 32 bits wide.
 */
-Bool
+void
 cfbPadPixmap(pPixmap)
     PixmapPtr pPixmap;
 {
@@ -203,14 +201,12 @@ cfbPadPixmap(pPixmap)
     register int i;
     int rep;                    /* repeat count for pattern */
  
-    if (width == 32)
-        return(TRUE);
-    if (width > 32)
-        return(FALSE);
- 
+    if (width >= 32)
+        return;
+
     rep = 32/width;
     if (rep*width != 32)
-        return(FALSE);
+        return;
  
     mask = masktab[width];
  
@@ -231,7 +227,6 @@ cfbPadPixmap(pPixmap)
         p++;
     }    
     pPixmap->drawable.width = 32/(pPixmap->drawable.depth);
-    return(TRUE);
 }
 
 
@@ -279,13 +274,13 @@ static cfbdumppixmap(pPix)
  * words are 32 bits wide, and that the least significant bit appears on the
  * left.
  */
+void
 cfbXRotatePixmap(pPix, rw)
     PixmapPtr	pPix;
     register int rw;
 {
-    register unsigned int	*pw, *pwFinal, *pwTmp;
+    register unsigned int	*pw, *pwFinal;
     register unsigned int	t;
-    int			size, tsize;
 
     if (pPix == NullPixmap)
         return;
@@ -294,7 +289,7 @@ cfbXRotatePixmap(pPix, rw)
 	case PSZ:
 	    break;
 	case 1:
-	    cfbXRotateBitmap(pPix, rw);
+	    mfbXRotatePixmap(pPix, rw);
 	    return;
 	default:
 	    ErrorF("cfbXRotatePixmap: unsupported depth %d\n", ((DrawablePtr) pPix)->depth);
@@ -316,6 +311,11 @@ cfbXRotatePixmap(pPix, rw)
     }
     else
     {
+        ErrorF("cfb internal error: trying to rotate odd-sized pixmap.\n");
+#ifdef notdef
+	register unsigned int *pwTmp;
+	int size, tsize;
+
 	tsize = PixmapBytePad(pPix->drawable.width - rw, PSZ);
 	pwTmp = (unsigned int *) ALLOCATE_LOCAL(pPix->drawable.height * tsize);
 	if (!pwTmp)
@@ -336,6 +336,7 @@ cfbXRotatePixmap(pPix, rw)
 		    (int)pPix->drawable.width - rw, (int)pPix->drawable.height,
 		    tsize, size);
 	DEALLOCATE_LOCAL(pwTmp);
+#endif
     }
 }
 
@@ -343,6 +344,7 @@ cfbXRotatePixmap(pPix, rw)
    pPix->drawable.height
    works on any width.
  */
+void
 cfbYRotatePixmap(pPix, rh)
     register PixmapPtr	pPix;
     int	rh;
@@ -384,3 +386,36 @@ cfbYRotatePixmap(pPix, rh)
     DEALLOCATE_LOCAL(ptmp);
 }
 
+void
+cfbCopyRotatePixmap(psrcPix, ppdstPix, xrot, yrot)
+    register PixmapPtr psrcPix, *ppdstPix;
+    int	xrot, yrot;
+{
+    register PixmapPtr pdstPix;
+
+    if ((pdstPix = *ppdstPix) &&
+	(pdstPix->devKind == psrcPix->devKind) &&
+	(pdstPix->drawable.height == psrcPix->drawable.height))
+    {
+	bcopy((char *)psrcPix->devPrivate.ptr,
+	      (char *)pdstPix->devPrivate.ptr,
+	      psrcPix->drawable.height * psrcPix->devKind);
+	pdstPix->drawable.width = psrcPix->drawable.width;
+	pdstPix->drawable.depth = psrcPix->drawable.depth;
+	pdstPix->drawable.bitsPerPixel = psrcPix->drawable.bitsPerPixel;
+	pdstPix->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+    }
+    else
+    {
+	if (pdstPix)
+	    cfbDestroyPixmap(pdstPix);
+	*ppdstPix = pdstPix = cfbCopyPixmap(psrcPix);
+	if (!pdstPix)
+	    return;
+    }
+    cfbPadPixmap(pdstPix);
+    if (xrot)
+	cfbXRotatePixmap(pdstPix, xrot);
+    if (yrot)
+	cfbYRotatePixmap(pdstPix, yrot);
+}
