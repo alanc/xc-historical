@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.93 91/04/16 17:06:18 converse Exp $
+ * $XConsortium: Tekproc.c,v 1.94 91/05/04 18:21:44 gildea Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -1381,7 +1381,8 @@ void TekSetFontSize (gw, newitem)
     int oldsize = screen->cur.fontsize;
     int newsize = MI2FS(newitem);
     
-    if (oldsize == newsize) return;
+    if (!tekWidget  ||  oldsize == newsize)
+	return;
     if (!Ttoggled) TCursorToggle(TOGGLE);
     set_tekfont_menu_item (oldsize, FALSE);
     TekSetGCFont (newsize);
@@ -1490,6 +1491,8 @@ void TekSimulatePageButton (reset)
 {
     register TScreen *screen = &term->screen;
 
+    if (!tekWidget)
+	return;
     if (reset) {
 /*      bzero ((char *)&curmodes, sizeof(Tmodes));             */
 	bzero ((char *) &screen->cur, sizeof screen->cur);
