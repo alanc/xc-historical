@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.42 91/04/26 18:58:35 keith Exp $ */
+/* $XConsortium: os.h,v 1.43 91/05/13 22:27:43 rws Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -70,33 +70,25 @@ pragma on(alloca);
 
 #ifdef __GNUC__
 #define alloca __builtin_alloca
-#define ALLOCATE_LOCAL(size) alloca((int)(size))
-#define DEALLOCATE_LOCAL(ptr)  /* as nothing */
-#else /* ! __GNUC__ */
+#endif
+
 /*
- * warning: mips alloca is unsuitable in the server, do not use.
+ * warning: old mips alloca (pre 2.10) is unusable, new one is builtin
+ * Test is easy, the new one is named __builtin_alloca and comes
+ * from alloca.h which #defines alloca.
  */
-#if defined(vax) || defined(sun) || defined(apollo) || defined(stellar)
+#if defined(vax) || defined(sun) || defined(apollo) || defined(stellar) || defined(alloca)
 /*
  * Some System V boxes extract alloca.o from /lib/libPW.a; if you
  * decide that you don't want to use alloca, you might want to fix 
  * ../os/4.2bsd/Imakefile
  */
+#ifndef alloca
 char *alloca();
+#endif
 #define ALLOCATE_LOCAL(size) alloca((int)(size))
 #define DEALLOCATE_LOCAL(ptr)  /* as nothing */
 #endif /* who does alloca */
-#endif /* __GNUC__ */
-
-/*
- * Warning: Prior to the RISCompilers 2.10 release, the MIPS alloca was
- * unsuitable for the server.
- */
-#if Mips
-#include <alloca.h>
-#define ALLOCATE_LOCAL(size) alloca((unsigned int)(size))
-#define DEALLOCATE_LOCAL(ptr)  /* as nothing */
-#endif
 
 #endif /* NO_ALLOCA */
 
