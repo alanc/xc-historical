@@ -231,7 +231,7 @@ typedef struct _WidgetInfo {
 
 typedef struct _ProtocolStream {
     unsigned long size, alloc;
-    XtPointer real_top, top, current;
+    unsigned char *real_top, *top, *current;
 } ProtocolStream;
 
 /************************************************************
