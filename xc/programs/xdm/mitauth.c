@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: mitauth.c,v 1.1 89/09/26 20:04:39 keith Exp $
+ * $XConsortium: mitauth.c,v 1.2 89/10/03 16:27:59 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -69,7 +69,7 @@ long	sum[2];
 #  ifdef macII
 #   define USE_CRYPT
 #  endif
-#  ifdef sparc
+#  ifdef sun
 #   define USE_CRYPT
     /* avoid strange sun crypt hackery */
 #   define crypt _crypt
