@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.6 89/03/28 16:50:48 keith Exp $
+ * $XConsortium: auth.c,v 1.7 89/07/21 13:43:59 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -541,14 +541,19 @@ char	*name;
 {
 	int	fd;
 	char	*colon, *malloc ();
+	char	*dot;
 
 	colon = rindex (name, ':');
 	if (colon) {
 		++colon;
-		auth->number_length = strlen (colon);
+		if (dot = index (colon, '.'))
+			auth->number_length = dot - colon;
+		else
+			auth->number_length = strlen (colon);
 		auth->number = malloc (auth->number_length + 1);
 		if (auth->number) {
-			strcpy (auth->number, colon);
+			strncpy (auth->number, colon, auth->number_length);
+			auth->number[auth->number_length] = '\0';
 		} else {
 			LogOutOfMem ("writeLocalAuth");
 			auth->number_length = 0;
