@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: util.c,v 1.12 91/04/01 10:29:26 rws Exp $
+ * $XConsortium: util.c,v 1.13 91/04/17 10:06:32 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -62,6 +62,8 @@ getEnv (e, name)
 	char	*name;
 {
 	int	l = strlen (name);
+
+	if (!e) return 0;
 
 	while (*e) {
 		if ((int)strlen (*e) > l && !strncmp (*e, name, l) &&
