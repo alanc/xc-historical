@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: macII.cf,v 1.28 91/03/27 09:13:15 rws Exp $
+XCOMM platform:  $XConsortium: macII.cf,v 1.29 91/04/09 14:40:16 rws Exp $
 
 #define OSName            A/UX 2.0.1
 #define OSMajorVersion    2
@@ -10,6 +10,7 @@ XCOMM operating system:  OSName
 #define BootstrapCFlags   -DmacII
 #endif
 #define SystemV            YES
+#define ExtraLibraries -lposix
 #define Malloc0ReturnsNull YES
 #define StandardDefines    -DmacII -DSYSV
 #define LnCmd             ln -s
