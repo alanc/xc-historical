@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium: p232,v 5.1 91/02/16 09:41:13 rws Exp $
+.\" $XConsortium: p232,v 5.2 91/08/16 16:25:17 hersh Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -342,17 +342,17 @@ If your application uses the defined macros, the differences in the
 identification numbers should not cause any problems.
 .LP
 A definition of the binding is in the file
-\fL\s-1Xsrc/extensions/lib/\s-1PEX\s+1/c_binding/phigs.c_bind\fR\s+1.  This file contains stubs 
+\fC\s-1Xsrc/extensions/lib/\s-1PEX\s+1/c_binding/phigs.c_bind\fR\s+1.  This file contains stubs 
 for all of the binding functions and is used to build the lint library.
 The data structures are defined in the file 
-\fL\s-1Xsrc/extensions/lib/\s-1PEX\s+1/include/phigs.h\fR\s+1.
+\fC\s-1Xsrc/extensions/lib/\s-1PEX\s+1/include/phigs.h\fR\s+1.
 .SS Structure Storage
 .IX "Structure Storage" description "" "" "" ""
 The \s-2API\s+2 supports client side and server side \s-2CSS\s+2.
 Client side \s-2CSS\s+2 is used if the connecting server does not support
 structure storage.
 .SS \s-2PHIGS\s+2 Monitor (\s-2PM\s+2)
-.IX "\s-2PHIGS\s+2 Monitor (\s-2PM\s+2)" description "" "" "" ""
+.IX "PHIGS Monitor (\s-2PM\s+2)" description "" "" "" ""
 To meet many of the goals and constraints of \s-2PHIGS\s+2, \s-2PHIGS PLUS\s+2, \s-2X\s+2,
 and \s-2PEX\s+2, the \s-2PEX-SI\s+2 graphics library is implemented as two
 processes. One process resides in the client's process and one resides in a separate

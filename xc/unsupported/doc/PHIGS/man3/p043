@@ -1,5 +1,5 @@
 .\"
-.\" $XConsortium: p043,v 5.1 91/02/16 09:37:28 rws Exp $
+.\" $XConsortium: p043,v 5.2 91/08/16 16:22:27 hersh Exp $
 .\"
 .\" 
 .\" Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -25,9 +25,9 @@
 .TH "ESCAPE" 3P "29 February 1991"
 .SH NAME
 ESCAPE \- invoke an implementation-dependent function
-.IX "ESCAPE" pescape "" "\fLpescape\fP \(em \s-2C\s+2 function"
-.IX pescape "" "\fLpescape\fP \(em \s-2C\s+2 function"
-.IX "C functions" "\fLpescape\fP"
+.IX "ESCAPE" pescape "" "pescape \(em \s-2C\s+2 function"
+.IX pescape "" "pescape \(em \s-2C\s+2 function"
+.IX "C functions" "pescape"
 .IX "Implementation-Specific Functions" "ESCAPE"
 .SH SYNOPSIS
 .SS C Syntax
