@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.71 94/05/05 16:03:22 dpw Exp kaleb $ */
+/* $XConsortium: servermd.h,v 1.72 94/11/21 18:26:34 kaleb Exp kaleb $ */
 
 /*
  * Machine dependent values:
@@ -131,7 +131,9 @@ SOFTWARE.
 
 #endif /* vax */
 
-#ifdef sun
+#if (defined(sun) && !(defined(i386) && defined(SVR4))) || \
+    (defined(AMOEBA) && (defined(sparc) || defined(mc68000))) || \
+    (defined(__NetBSD__) && (defined(__sparc__) || defined(mc68000)))
 
 #if defined(sun386) || defined(sun5)
 # define IMAGE_BYTE_ORDER	LSBFirst        /* Values for the SUN only */
@@ -235,7 +237,7 @@ SOFTWARE.
 
 #endif /* macII */
 
-#if defined(mips) && !defined(sgi)
+#if (defined(mips) || defined(__mips)) && !defined(sgi)
 
 #if defined(MIPSEL) || defined(__MIPSEL__)
 # define IMAGE_BYTE_ORDER	LSBFirst        /* Values for the PMAX only */
