@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.38 94/06/17 10:14:34 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.39 94/06/17 13:20:46 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -46,9 +46,7 @@ static XtResource resources [] = {
     {"verbose",  "Verbose",  XtRBoolean, sizeof(Boolean), 
 	 Offset(verbose), XtRImmediate, (XtPointer) False},
     {"debug",  "Debug",  XtRBoolean, sizeof(Boolean), 
-	 Offset(debug), XtRImmediate, (XtPointer) False},
-    {"proxy",  "Proxy",  XtRBoolean, sizeof(Boolean), 
-	 Offset(proxy), XtRImmediate, (XtPointer) False}
+	 Offset(debug), XtRImmediate, (XtPointer) False}
 };
 #undef Offset
 
@@ -56,7 +54,6 @@ static XrmOptionDescRec options[] = {
     {"-verbose",	"*verbose",	XrmoptionNoArg,		"TRUE"},
     {"-quiet",		"*verbose",	XrmoptionNoArg,		"FALSE"},
     {"-debug",		"*debug",	XrmoptionNoArg,		"TRUE"},
-    {"-proxy",		"*proxy",	XrmoptionNoArg,		"TRUE"},
 };
 
 List		*PendingList;
@@ -134,6 +131,7 @@ Widget			    shutdownCancelButton;
 void FreeClientInfo ();
 
 extern Status InitWatchProcs ();
+extern void start_default_apps ();
 extern void restart_everything ();
 extern int read_save ();
 extern void write_save ();
@@ -1037,44 +1035,6 @@ XtPointer 	callData;
 
 
 void
-StartWindowManager ()
-
-{
-    switch(fork()) {
-	case -1:
-	    perror("fork");
-	    break;
-	case 0:
-	    execlp("twm", "twm", (char *)NULL);
-	    perror("twm");
-	    _exit(255);
-	default:
-	    break;
-    }
-}
-
-
-
-void
-StartProxy ()
-
-{
-    switch(fork()) {
-	case -1:
-	    perror("fork");
-	    break;
-	case 0:
-	    execlp("smproxy", "smproxy", (char *)NULL);
-	    perror("smproxy");
-	    _exit(255);
-	default:
-	    break;
-    }
-}
-
-
-
-void
 PingXtProc (w, client_data, callData)
 
 Widget		w;
@@ -1680,21 +1640,10 @@ main(argc, argv)
     if (!database_read)
     {
 	/*
-	 * Start window manager.
+	 * Start default apps (e.g. twm, smproxy)
 	 */
 
-	StartWindowManager();
-
-
-	/*
-	 * Start proxy for old style SM clients.
-	 */
-
-	if (app_resources.proxy)
-	{
-	    StartProxy ();
-	    sleep (2);		/* What should we really do here??? */
-	}
+	start_default_apps ();
     }
 
 

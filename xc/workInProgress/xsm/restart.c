@@ -1,4 +1,4 @@
-/* $XConsortium: restart.c,v 1.4 94/04/17 21:15:18 mor Exp $ */
+/* $XConsortium: restart.c,v 1.5 94/05/12 11:59:01 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -243,4 +243,58 @@ restart_everything()
     if(non_local_display_env) free(non_local_display_env);
     if(non_local_session_env) free(non_local_session_env);
     if(audio_env) free(audio_env);
+}
+
+
+
+#if defined(sun) && defined(SVR4)
+static int System (s)
+    char *s;
+{
+    int pid, status;
+    if ((pid = fork ()) == 0) {
+	(void) setpgrp();
+	execl ("/bin/sh", "sh", "-c", s, 0);
+    } else
+	waitpid (pid, &status, 0);
+    return status;
+}
+#define system(s) System(s)
+#endif
+
+
+
+void
+start_default_apps ()
+
+{
+    FILE *f;
+    char *buf, *p;
+    int buflen, len;
+
+    f = fopen (SYSTEM_INIT_FILE, "r");
+    if (!f)
+    {
+	printf ("Could not find default apps file.  Make sure you did\n");
+	printf ("a 'make install' in the xsm build directory.\n");
+	exit (1);
+    }
+
+    buf = NULL;
+    buflen = 0;
+
+    while (getline(&buf, &buflen, f))
+    {
+	if (p = strchr (buf, '\n'))
+	    *p = '\0';
+
+	len = strlen (buf);
+
+	buf[len] = '&';
+	buf[len+1] = '\0';
+
+	/* let the shell parse the stupid args */
+
+	system (buf);
+    }
 }
