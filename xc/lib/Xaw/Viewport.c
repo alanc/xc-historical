@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.30 88/12/20 16:34:04 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.31 88/12/22 11:06:25 swick Exp $";
 #endif lint
 
 
@@ -383,8 +383,10 @@ static void MoveChild(w, x, y)
     RedrawThumbs(w);
 }
 
-static void Resize(widget)
+
+static void ComputeLayout(widget, query)
     Widget widget;
+    Boolean query;
 {
     ViewportWidget w = (ViewportWidget)widget;
     register Widget child = w->viewport.child;
@@ -422,8 +424,12 @@ static void Resize(widget)
 		    ? clip_height
 		    : child->core.height;
 	    intended.border_width = 0;
+	    if (!query) {
+		preferred.width = child->core.width;
+		preferred.height = child->core.height;
+	    }
 	    do { /* while intended != prev  */
-		XtQueryGeometry( child, &intended, &preferred );
+		if (query) XtQueryGeometry( child, &intended, &preferred );
 		prev_width = intended.width;
 		prev_height = intended.height;
 		/*
@@ -532,6 +538,12 @@ static void Resize(widget)
 }
 
 
+static void Resize(widget)
+    Widget widget;
+{
+    ComputeLayout(widget, True);
+}
+
 
 /* Semi-public routines */
 
@@ -594,6 +606,7 @@ static XtGeometryResult GeometryManager(child, request, reply)
     XtWidgetGeometry allowed, myrequest;
     XtGeometryResult result;
     Boolean reconfigured;
+    Dimension height_remaining;
 
     if (child != w->viewport.child
 	|| request->request_mode & ~(CWWidth | CWHeight | CWBorderWidth)
@@ -602,31 +615,54 @@ static XtGeometryResult GeometryManager(child, request, reply)
 	return XtGeometryNo;
 
     allowed = *request;
-    result = XtGeometryYes;
 
     /* %%% DoLayout should be a FormClass method */
     reconfigured = DoLayout( (Widget)w,
 			     (rWidth ? request->width : w->core.width),
 			     (rHeight ? request->height : w->core.height) );
 
+    height_remaining = w->core.height;
     if (rWidth && w->core.width != request->width) {
-	if (!w->viewport.allowhoriz
-	    || request->width < w->core.width)
-	{
+	if (w->viewport.allowhoriz && request->width > w->core.width) {
+	    /* horizontal scrollbar will be needed so possibly reduce height */
+	    if (w->viewport.horiz_bar == (Widget)NULL)
+		CreateScrollbar( w, True );
+	    height_remaining -= w->viewport.horiz_bar->core.height
+			        + w->viewport.horiz_bar->core.border_width;
+	    reconfigured = True;
+	}
+	else {
 	    allowed.width = w->core.width;
-	    result = XtGeometryAlmost;
 	}
     }
-    if (rHeight && w->core.height != request->height) {
-	if (!w->viewport.allowvert
-	    || request->height < w->core.height)
-	{
-	    allowed.height = w->core.height;
-	    result = XtGeometryAlmost;
+    if (rHeight && height_remaining != request->height) {
+	if (w->viewport.allowvert && request->height > height_remaining) {
+	    /* vertical scrollbar will be needed, so possibly reduce width */
+	    if (!w->viewport.allowhoriz || request->width < w->core.width) {
+		if (w->viewport.vert_bar == (Widget)NULL)
+		    CreateScrollbar( w, False );
+		if (!rWidth) {
+		    allowed.width = w->core.width;
+		    allowed.request_mode |= CWWidth;
+		}
+		if (allowed.width > (w->viewport.vert_bar->core.width
+			      + w->viewport.vert_bar->core.border_width))
+		    allowed.width -= w->viewport.vert_bar->core.width
+			      + w->viewport.vert_bar->core.border_width;
+		else
+		    allowed.width = 1;
+	    reconfigured = True;
+	    }
+	}
+	else {
+	    allowed.height = height_remaining;
 	}
     }
+
     *reply = allowed;
-    if (result == XtGeometryYes) {
+    if (allowed.width != request->width || allowed.height != request->height)
+	result = XtGeometryAlmost;
+    else {
 	Boolean needs_horiz = False, needs_vert = False;
 	if (rWidth)  child->core.width = request->width;
 	if (rHeight) child->core.height = request->height;
@@ -661,9 +697,13 @@ static XtGeometryResult GeometryManager(child, request, reply)
 	    if (ans == XtGeometryYes)
 		reconfigured = True;
 	}
+	result = XtGeometryYes;
     }
 
-    if (reconfigured) (*w->core.widget_class->core_class.resize)( (Widget)w );
+    if (reconfigured) {
+	ComputeLayout( (Widget)w, False );
+	if (result == XtGeometryYes) result = XtGeometryDone;
+    }
     return result;
 }
 
@@ -684,10 +724,10 @@ static Boolean DoLayout(w, width, height)
     geometry.height = height;
 
     if (XtIsRealized(w)) {
-	if (((ViewportWidget)w)->viewport.allowhoriz)
-	    geometry.width = Min(w->core.width, width);
-	if (((ViewportWidget)w)->viewport.allowvert)
-	    geometry.height = Min(w->core.height, height);
+	if (((ViewportWidget)w)->viewport.allowhoriz && width > w->core.width)
+	    geometry.width = w->core.width;
+	if (((ViewportWidget)w)->viewport.allowvert && height > w->core.height)
+	    geometry.height = w->core.height;
     } else {
 	/* This is the Realize call; we'll inherit a w&h iff none currently */
 	if (w->core.width != 0) {
