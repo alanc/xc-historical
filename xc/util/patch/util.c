@@ -1,3 +1,6 @@
+
+/* $XConsortium: util.c,v 3.0 94/09/09 20:04:28 kaleb Exp $ */
+
 #include "EXTERN.h"
 #include "common.h"
 #include "INTERN.h"

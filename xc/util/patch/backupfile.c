@@ -8,6 +8,8 @@
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  */
 
+/* $XConsortium: backupfile.c,v 3.0 94/09/09 20:04:28 kaleb Exp $ */
+
 /* David MacKenzie <djm@ai.mit.edu>.
    Some algorithms adapted from GNU Emacs. */
 
