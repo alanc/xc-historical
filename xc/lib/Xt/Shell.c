@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.71 89/10/04 11:50:11 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.72 89/10/05 12:00:53 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -63,9 +63,15 @@ extern void XSetTransientForHint(); /* this was not declared in Xlib.h... */
  *
  ***************************************************************************/
 
-static void ShellDepth();
-static void ShellColormap();
-static void ShellAncestorSensitive();
+#ifdef CRAY
+void _XtShellDepth();
+void _XtShellColormap();
+void _XtShellAncestorSensitive();
+#else
+static void _XtShellDepth();
+static void _XtShellColormap();
+static void _XtShellAncestorSensitive();
+#endif
 
 /***************************************************************************
  *
@@ -81,12 +87,12 @@ static XtResource shellResources[]=
 	{XtNy, XtCPosition, XtRPosition, sizeof(Position),
 	    Offset(core.y), XtRImmediate, (XtPointer)BIGSIZE},
 	{ XtNdepth, XtCDepth, XtRInt, sizeof(int),
-	    Offset(core.depth), XtRCallProc, (XtPointer) ShellDepth},
+	    Offset(core.depth), XtRCallProc, (XtPointer) _XtShellDepth},
 	{ XtNcolormap, XtCColormap, XtRPointer, sizeof(Colormap),
-	    Offset(core.colormap), XtRCallProc, (XtPointer) ShellColormap},
+	    Offset(core.colormap), XtRCallProc, (XtPointer) _XtShellColormap},
 	{ XtNancestorSensitive, XtCSensitive, XtRBoolean, sizeof(Boolean),
 	    Offset(core.ancestor_sensitive), XtRCallProc,
-	    (XtPointer) ShellAncestorSensitive},
+	    (XtPointer) _XtShellAncestorSensitive},
 	{ XtNallowShellResize, XtCAllowShellResize, XtRBoolean,
 	    sizeof(Boolean), Offset(shell.allow_shell_resize),
 	    XtRImmediate, (XtPointer)False},
@@ -711,7 +717,10 @@ static void ClassPartInitialize(widget_class)
 static void EventHandler();
 static void _popup_set_prop();
 
-static void ShellDepth(widget,closure,value)
+#ifndef CRAY
+static
+#endif
+void _XtShellDepth(widget,closure,value)
     Widget widget;
     int closure;
     XrmValue *value;
@@ -720,7 +729,10 @@ static void ShellDepth(widget,closure,value)
    else XtCopyFromParent (widget,closure,value);
 }
 
-static void ShellColormap(widget,closure,value)
+#ifndef CRAY
+static
+#endif
+void _XtShellColormap(widget,closure,value)
     Widget widget;
     int closure;
     XrmValue *value;
@@ -730,7 +742,10 @@ static void ShellColormap(widget,closure,value)
    else XtCopyFromParent (widget,closure,value);
 }
 
-static void ShellAncestorSensitive(widget,closure,value)
+#ifndef CRAY
+static
+#endif
+void _XtShellAncestorSensitive(widget,closure,value)
     Widget widget;
     int closure;
     XrmValue *value;
