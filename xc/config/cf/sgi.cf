@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.43 94/06/03 21:38:45 matt Exp gildea $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.44 94/10/22 01:30:31 gildea Exp kaleb $
 
 #define OSName			IRIX 5.2
 XCOMM operating system:  OSName
@@ -22,7 +22,9 @@ XCOMM operating system:  OSName
 #endif
 #define HasNdbm			YES
 #define HasPoll                 YES
+#if OSMajorVersion < 5
 #define Malloc0ReturnsNull	YES
+#endif
 #define ExpandManNames          YES
 #ifndef BuildXInputExt
 #define BuildXInputExt		YES
@@ -39,17 +41,20 @@ XCOMM operating system:  OSName
 #define XawI18nDefines		-DHAS_WCTYPE_H
 #endif
 
-/* Extra libraries provide : yp, sysV malloc, shared libc, and widechar */
-#define ExtraLibraries -lsun -lmalloc -lc_s -lw
-
-/* #include <sgiLib.rules> */
+#include <sgiLib.rules>
 
 #define SymbolTables -Wf,-XNp9000,-XNd8000,-XNh2000
 #define PexSymbolTables -Wf,-XNp15000,-XNd15000,-XNh2000
 #define ServerSymbolTables -Wf,-XNp8000,-XNh2000,-XNd8000
 
 /* this is for floating point, ANSI cpp */
+#if OSMajorVersion < 5
+/* Extra libraries provide : yp, sysV malloc, shared libc, and widechar */
+#define ExtraLibraries -lsun -lmalloc -lc_s -lw
 #define sgiCCOptions -xansi -D__STDC__=1 -float
+#else
+#define sgiCCOptions -float
+#endif
 #define DefaultCCOptions sgiCCOptions SymbolTables
 #define PexCCOptions sgiCCOptions PexSymbolTables
 #define ServerCCOptions sgiCCOptions ServerSymbolTables
@@ -86,6 +91,7 @@ XCOMM operating system:  OSName
 #define ServerExtraDefines -DNEED_LINEHELPER
 
 /* Changed to a single shell command for pmake/smake */
+#if OSMajorVersion < 5
 /*
  * NormalLibObjCompile - compile fragment for a library object file
  * 	do ld -x to remove line number symbols for libraries
@@ -94,6 +100,7 @@ XCOMM operating system:  OSName
 	&& $(CC) -c options $(CFLAGS) $*.c \				@@\
 	&& $(LD) $(LDSTRIPFLAGS) -r $@ -o $*.os \			@@\
 	&& $(MV) $*.os $@
+#endif
 
 #define	LibObjCompile(dir,options) $(RM) $@ dir/$@ \			@@\
 	&& $(CC) -c $(CCOPTIONS) $(ALLDEFINES) options $*.c \		@@\
