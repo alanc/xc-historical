@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.38 92/06/01 18:35:22 rws Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.39 93/05/27 15:57:50 rws Exp $
 
 #ifdef SonyBsdArchitecture
 
@@ -53,4 +53,3 @@ XCOMM platform:  $XConsortium: sony.cf,v 1.38 92/06/01 18:35:22 rws Exp $
 XCOMM operating system:  OSName
 
 #define BuildServer             NO
-#define BuildXimp		YES
