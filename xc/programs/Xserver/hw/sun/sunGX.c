@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sunGX.c,v 1.3 91/07/10 23:17:19 keith Exp $
+ * $XConsortium: sunGX.c,v 1.4 91/07/18 22:56:05 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -2411,6 +2411,7 @@ sunGXInit (pScreen, fb)
 {
     sunGXPtr	    gx;
     Uint	    mode;
+    register long   r;
 
     if (serverGeneration != sunGXGeneration)
     {
@@ -2427,15 +2428,21 @@ sunGXInit (pScreen, fb)
 	return FALSE;
     gx = (sunGXPtr) fb->fb;
     mode = gx->mode;
-    mode = mode & ~(GX_BLIT_ALL | GX_MODE_ALL | 
-		    GX_DRAW_ALL | GX_BWRITE0_ALL |
-		    GX_BWRITE1_ALL | GX_BREAD_ALL);
+    GXWait(gx,r);
+    mode &= ~(	GX_BLIT_ALL |
+		GX_MODE_ALL | 
+		GX_DRAW_ALL |
+ 		GX_BWRITE0_ALL |
+		GX_BWRITE1_ALL |
+ 		GX_BREAD_ALL |
+ 		GX_BDISP_ALL);
     mode |=	GX_BLIT_SRC |
 		GX_MODE_COLOR8 |
 		GX_DRAW_RENDER |
 		GX_BWRITE0_ENABLE |
 		GX_BWRITE1_DISABLE |
-		GX_BREAD_0;
+		GX_BREAD_0 |
+		GX_BDISP_0;
     gx->mode = mode;
     gx->clip = 0;
     gx->offx = 0;
