@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.37 92/11/20 13:22:47 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.38 93/08/25 10:01:03 rws Exp $
 
          YFLAGS = -d
         DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
@@ -14,7 +14,7 @@ LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
 		parse.o menus.o events.o resize.o util.o version.o iconmgr.o \
 		cursor.o icons.o
 
-AllTarget(twm)
+all::
 
 SpecialCObjectRule(parse,$(_NOOP_),'-DSYSTEM_INIT_FILE="'$(TWMDIR)'/system.twmrc"')
 #if !HasPutenv
