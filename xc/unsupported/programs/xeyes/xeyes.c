@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xeyes.c,v 1.10 90/12/01 13:04:49 rws Exp $";
+static char rcsid[] = "$XConsortium: xeyes.c,v 1.11 91/01/09 16:51:44 gildea Exp $";
 #endif /* lint */
 
 #include <X11/Intrinsic.h>
@@ -51,7 +51,7 @@ void main(argc, argv)
     int	i;
     
     toplevel = XtInitialize("main", "XEyes", options, XtNumber (options),
-				    (Cardinal *)&argc, argv);
+			    &argc, argv);
       
     if (argc != 1) usage();
     
