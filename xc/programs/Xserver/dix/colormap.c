@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: colormap.c,v 1.58 87/12/07 18:13:44 rws Locked $ */
+/* $Header: colormap.c,v 1.59 87/12/29 18:26:24 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -1029,28 +1029,34 @@ AllocColorCells (client, pmap, colors, planes, contig, ppix, masks)
 	oldcount += pmap->numPixelsGreen[client] + pmap->numPixelsBlue[client];
         ok = AllocDirect (client, pmap, colors, planes, planes, planes,
 			  contig, ppix, &rmask, &gmask, &bmask);
-	for (r = g = b = 1, n = planes; --n >= 0; r += r, g += g, b += b)
+	if(ok == Success)
 	{
-	    while(!(rmask & r))
-		r += r;
-	    while(!(gmask & g))
-		g += g;
-	    while(!(bmask & b))
-		b += b;
-	    *masks++ = (r << pmap->pVisual->offsetRed) |
-	               (g << pmap->pVisual->offsetGreen) |
-		       (b << pmap->pVisual->offsetBlue);
+	    for (r = g = b = 1, n = planes; --n >= 0; r += r, g += g, b += b)
+	    {
+		while(!(rmask & r))
+		    r += r;
+		while(!(gmask & g))
+		    g += g;
+		while(!(bmask & b))
+		    b += b;
+		*masks++ = (r << pmap->pVisual->offsetRed) |
+			   (g << pmap->pVisual->offsetGreen) |
+			   (b << pmap->pVisual->offsetBlue);
+	    }
 	}
     }
     else
     {
         ok = AllocPseudo (client, pmap, colors, planes, contig, ppix, &rmask,
 			  &ppixFirst);
-        for (r = 1, n = planes; --n >= 0; r += r)
+	if(ok == Success)
 	{
-	    while(!(rmask & r))
-		r += r;
-	    *masks++ = r;
+	    for (r = 1, n = planes; --n >= 0; r += r)
+	    {
+		while(!(rmask & r))
+		    r += r;
+		*masks++ = r;
+	    }
 	}
     }
 
