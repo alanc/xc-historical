@@ -202,7 +202,8 @@
   (let ((disp (if (or (symbolp display) (constantp display)) display '.display.)))
     `(macrolet ((with-event-queue ((display &key timeout) &body body)
 		  ;; Speedup hack for lexically nested with-event-queues
-		  `(progn ,display ,@(and timeout `(,timeout)) ,@body)))
+		  `(progn (progn ,display ,@(and timeout `(,timeout)) nil)
+			  ,@body)))
        (let (,@(unless (eq disp display) `((,disp ,display))))
 	 (holding-lock ((display-event-lock ,disp) ,disp "CLX Event Lock"
 			,@(and timeout `(:timeout ,timeout)))
@@ -211,10 +212,14 @@
 (defmacro with-event-queue-internal ((display &key timeout) &body body)
   ;; exclusive access to the internal event queues
   (let ((disp (if (or (symbolp display) (constantp display)) display '.display.)))
-    `(let (,@(unless (eq disp display) `((,disp ,display))))
-       (holding-lock ((display-event-queue-lock ,disp) ,disp "CLX Event Queue Lock"
-		      ,@(and timeout `(:timeout ,timeout)))
-	 ,@body))))
+    `(macrolet ((with-event-queue-internal ((display &key timeout) &body body)
+		  ;; Speedup hack for lexically nested with-event-queue-internals
+		  `(progn (progn ,display ,@(and timeout `(,timeout)) nil)
+			  ,@body)))
+       (let (,@(unless (eq disp display) `((,disp ,display))))
+	 (holding-lock ((display-event-queue-lock ,disp) ,disp "CLX Event Queue Lock"
+			,@(and timeout `(:timeout ,timeout)))
+	   ,@body)))))
 
 (defun open-display (host  &rest options &key (display 0) protocol
 		     authorization-name authorization-data &allow-other-keys)
@@ -266,7 +271,7 @@
 (defun display-connect (display &key authorization-name authorization-data)
   (unless authorization-name (setq authorization-name ""))
   (unless authorization-data (setq authorization-data ""))
-  (writing-buffer-send (display :sizes (8 16))
+  (with-buffer-output (display :sizes (8 16))
     (card8-put
       0
       (ecase (display-byte-order display)

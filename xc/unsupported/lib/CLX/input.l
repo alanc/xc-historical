@@ -769,11 +769,7 @@
 	 (name (first event-codes))
 	 (get-macro (xintern name '-event-get-macro))
 	 (get-function (xintern name '-event-get))
-	 (put-function (xintern name '-event-put))
-	 (*buffer* #-kcl (gensym)
-		   ;; XXX
-		   #+kcl '*kcl-internal-buffer-symbol-needed-because-of-the-compiler-bug*
-		   ))
+	 (put-function (xintern name '-event-put)))
     (multiple-value-bind (get-code get-index get-sizes)
 	(get-put-items
 	  2 declares nil
@@ -807,7 +803,7 @@
 	   (defun ,get-macro (display event-key variable)
 	     ;; Note: we take pains to macroexpand the get-code here to enable application
 	     ;; code to be compiled without having the CLX macros file loaded.
-	     (subst display ',*buffer*
+	     (subst display '%buffer
 		    (getf `(:display (the display ,display)
 			    :event-key (the keyword ,event-key)
 			    :event-code (the card8 (logand #x7f (read-card8 0)))
@@ -820,22 +816,21 @@
 		      (type reply-buffer event))
 	     (declare (type function handler)
 		      (downward-funarg handler))
-	     (compiler-let ((*buffer* 'display))
-	       (reading-event (event :sizes (8 16 ,@get-sizes))
-		 (funcall handler
-			  :display display
-			  :event-key (svref *event-key-vector* (event-code event))
-			  :event-code (logand #x7f (card8-get 0))
-			  :send-event-p (logbitp 7 (card8-get 0))
-			  ,@get-code))))
+	     (reading-event (event :display display :sizes (8 16 ,@get-sizes))
+	       (funcall handler
+			:display display
+			:event-key (svref *event-key-vector* (event-code event))
+			:event-code (logand #x7f (card8-get 0))
+			:send-event-p (logbitp 7 (card8-get 0))
+			,@get-code)))
 
 	   (defun ,put-function (display &key ,@(setq keywords (nreverse keywords))
 				 &allow-other-keys)
 	     (declare (type display display))
 	     ,(when (member 'sequence keywords)
 		`(unless sequence (setq sequence (display-request-number display))))
-	     (writing-buffer-send (display :sizes ,put-sizes
-					   :index (index+ (buffer-boffset display) 12))
+	     (with-buffer-output (display :sizes ,put-sizes
+					  :index (index+ (buffer-boffset display) 12))
 	       ,@put-code))
        
 	   ,@(mapcar #'(lambda (name)

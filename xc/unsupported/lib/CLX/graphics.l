@@ -43,7 +43,7 @@
   (let ((display (drawable-display drawable)))
     (with-display (display)
       (force-gcontext-changes gcontext)
-      (writing-buffer-send (display :length *requestsize*)
+      (with-buffer-output (display :length *requestsize*)
 	(let* ((last-request-byte (display-last-request display))
 	       (current-boffset buffer-boffset))
 	  ;; To append or not append, that is the question
@@ -108,7 +108,7 @@
       (incf y2 y1))
     (with-display (display)
       (force-gcontext-changes gcontext)
-      (writing-buffer-send (display :length *requestsize*)
+      (with-buffer-output (display :length *requestsize*)
 	(let* ((last-request-byte (display-last-request display))
 	       (current-boffset buffer-boffset))
 	  ;; To append or not append, that is the question
@@ -197,7 +197,7 @@
 	(request (if fill-p *x-polyfillrectangle* *x-polyrectangle*)))
     (with-display (display)
       (force-gcontext-changes gcontext)
-      (writing-buffer-send (display :length *requestsize*)
+      (with-buffer-output (display :length *requestsize*)
 	(let* ((last-request-byte (display-last-request display))
 	       (current-boffset buffer-boffset))
 	  ;; To append or not append, that is the question
@@ -263,7 +263,7 @@
 	(request (if fill-p *x-polyfillarc* *x-polyarc*)))
     (with-display (display)
       (force-gcontext-changes gcontext)
-      (writing-buffer-send (display :length *requestsize*)
+      (with-buffer-output (display :length *requestsize*)
 	(let* ((last-request-byte (display-last-request display))
 	       (current-boffset buffer-boffset))
 	  ;; To append or not append, that is the question

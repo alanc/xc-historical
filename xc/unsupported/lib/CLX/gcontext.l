@@ -216,26 +216,27 @@
        (defun ,gcontext-name (gcontext)
 	 (declare (type gcontext gcontext))
 	 (declare (values (or null ,type)))
-	 (compiler-let ((*buffer* '(gcontext-display gcontext)))
-	   (let ((value (,internal-accessor (gcontext-local-state gcontext))))
-	     (declare (type (or null card32) value))
-	     (when value ;; Don't do anything when value isn't known
+	 (let ((value (,internal-accessor (gcontext-local-state gcontext))))
+	   (declare (type (or null card32) value))
+	   (when value ;; Don't do anything when value isn't known
+	     (let ((%buffer (gcontext-display gcontext)))
+	       (declare (type display %buffer))
+	       %buffer
 	       (decode-type ,type value)))))
        
        (defun ,internal-setfer (gcontext value)
 	 (declare (type gcontext gcontext)
 		  (type ,type value))
-	 (compiler-let ((*buffer* '(gcontext-display gcontext)))
-	   (modify-gcontext (gcontext local-state)
-	     (setf (,internal-accessor local-state) (encode-type ,type value))
-	     ,@(when (eq type 'pixmap)
-		 ;; write-through pixmaps, because the protocol allows
-		 ;; the server to copy the pixmap contents at the time
-		 ;; of the store, rather than continuing to share with
-		 ;; the pixmap.
-		 `((let ((server-state (gcontext-server-state gcontext)))
-		     (setf (,internal-accessor server-state) nil))))
-	     value)))
+	 (modify-gcontext (gcontext local-state)
+	   (setf (,internal-accessor local-state) (encode-type ,type value))
+	   ,@(when (eq type 'pixmap)
+	       ;; write-through pixmaps, because the protocol allows
+	       ;; the server to copy the pixmap contents at the time
+	       ;; of the store, rather than continuing to share with
+	       ;; the pixmap.
+	       `((let ((server-state (gcontext-server-state gcontext)))
+		   (setf (,internal-accessor server-state) nil))))
+	   value))
        
        (defsetf ,gcontext-name ,internal-setfer))))
 
@@ -279,17 +280,18 @@
   (declare (values (or null (member :none) pixmap rect-seq)
 		   (or null (member :unsorted :y-sorted :yx-sorted :yx-banded))))
   (access-gcontext (gcontext local-state)
-    (compiler-let ((*buffer* '(gcontext-display gcontext)))
-      (multiple-value-bind (clip clip-mask)
-	  (without-interrupts
-	    (values (gcontext-internal-clip local-state)
-		    (gcontext-internal-clip-mask local-state)))
-	(if (null clip)
-	    (values (decode-type (or (member :none) pixmap) clip-mask)
-		    nil)
-	  (values (second clip)
-		  (decode-type (or null (member :unsorted :y-sorted :yx-sorted :yx-banded))
-			       (first clip))))))))
+    (multiple-value-bind (clip clip-mask)
+	(without-interrupts
+	  (values (gcontext-internal-clip local-state)
+		  (gcontext-internal-clip-mask local-state)))
+      (if (null clip)
+	  (values (let ((%buffer (gcontext-display gcontext)))
+		    (declare (type display %buffer))
+		    (decode-type (or (member :none) pixmap) clip-mask))
+		  nil)
+	(values (second clip)
+		(decode-type (or null (member :unsorted :y-sorted :yx-sorted :yx-banded))
+			     (first clip)))))))
 
 (defsetf gcontext-clip-mask (gcontext &optional ordering) (clip-mask)
   ;; A bit strange, but retains setf form.

@@ -69,15 +69,16 @@
   `(aset-card29 (the card29 ,item) buffer-bbuf
 		(index+ buffer-boffset ,byte-index)))
 
-(defmacro set-buffer-offset (value)
+(defmacro set-buffer-offset (value &environment env)
+  env
   `(let ((.boffset. ,value))
      (declare (type array-index .boffset.))
      (setq buffer-boffset .boffset.)
      #+clx-overlapping-arrays
-     ,@(when (member 16 *buffer-sizes*)
+     ,@(when (member 16 (macroexpand '(%buffer-sizes) env))
 	 `((setq buffer-woffset (index-ash .boffset. -1))))
      #+clx-overlapping-arrays
-     ,@(when (member 32 *buffer-sizes*)
+     ,@(when (member 32 (macroexpand '(%buffer-sizes) env))
 	 `((setq buffer-loffset (index-ash .boffset. -2))))
      #+clx-overlapping-arrays
      .boffset.))
@@ -87,24 +88,25 @@
 
 (defmacro with-buffer-output ((buffer &key (sizes '(8 16 32)) length index) &body body)
   (unless (listp sizes) (setq sizes (list sizes)))
-  `(let ()
+  `(let ((%buffer ,buffer))
+     (declare (type display %buffer))
      ,(declare-bufmac)
      ,(when length
-	`(when (index>= (index+ (buffer-boffset ,buffer) ,length) (buffer-size ,buffer))
-	   (buffer-flush ,buffer)))
-     (let* ((buffer-boffset (the array-index ,(or index `(buffer-boffset ,buffer))))
+	`(when (index>= (index+ (buffer-boffset %buffer) ,length) (buffer-size %buffer))
+	   (buffer-flush %buffer)))
+     (let* ((buffer-boffset (the array-index ,(or index `(buffer-boffset %buffer))))
 	    #-clx-overlapping-arrays
-	    (buffer-bbuf (buffer-obuf8 ,buffer))
+	    (buffer-bbuf (buffer-obuf8 %buffer))
 	    #+clx-overlapping-arrays
 	    ,@(append
 		(when (member 8 sizes)
-		  `((buffer-bbuf (buffer-obuf8 ,buffer))))
+		  `((buffer-bbuf (buffer-obuf8 %buffer))))
 		(when (or (member 16 sizes) (member 160 sizes))
 		  `((buffer-woffset (index-ash buffer-boffset -1))
-		    (buffer-wbuf (buffer-obuf16 ,buffer))))
+		    (buffer-wbuf (buffer-obuf16 %buffer))))
 		(when (member 32 sizes)
 		  `((buffer-loffset (index-ash buffer-boffset -2))
-		    (buffer-lbuf (buffer-obuf32 ,buffer))))))
+		    (buffer-lbuf (buffer-obuf32 %buffer))))))
        (declare (type array-index buffer-boffset))
        #-clx-overlapping-arrays
        (declare (type buffer-bytes buffer-bbuf)
@@ -130,16 +132,8 @@
 	   (when (member 8  sizes) '(buffer-bbuf))
 	   (when (member 16 sizes) '(buffer-woffset buffer-wbuf))
 	   (when (member 32 sizes) '(buffer-loffset buffer-lbuf)))
-       (compiler-let ((*buffer-sizes* ',sizes))
+       (macrolet ((%buffer-sizes () ',sizes))
 	 ,@body))))
-
-(defmacro writing-buffer-send ((buffer &rest options) &body body)
-  ;; BODY may contain calls to (WRITE32 item) (WRITE16 item) or (WRITE8 item)
-  ;; These calls will place "item" in the next available word, half-word
-  ;; or byte in BUFFER.  BUFFER will be flushed when full.
-  (declare (arglist (buffer &key sizes index length) &body body))
-  `(compiler-let ((*buffer* ',buffer))
-     (with-buffer-output (,buffer ,@options) ,@body)))
 
 ;;; This macro is just used internally in buffer
 
@@ -152,7 +146,7 @@
 	       #+clx-overlapping-arrays		; XXX type dependencies
 	       (or (second body)
 		   (first body))))
-    `(writing-buffer-send (buffer :index boffset :sizes ,(reverse (adjoin size '(8))))
+    `(with-buffer-output (buffer :index boffset :sizes ,(reverse (adjoin size '(8))))
        ;; Loop filling the buffer
        (do* (,@args
 	     ;; Number of bytes needed to output

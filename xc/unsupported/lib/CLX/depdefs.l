@@ -450,8 +450,7 @@
 
 		 ;; From here down are the system-specific expansions:
 
-		 ,(cond #-Genera
-			(clos-package
+		 ,(cond (clos-package
 			 `(within-definition (,name def-clx-class)
 			    (,(closintern 'defclass)
 			     ,name ,(and include `(,include))

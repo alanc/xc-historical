@@ -63,7 +63,8 @@
   (let ((buf (if (or (symbolp buffer) (constantp buffer)) buffer '.buffer.)))
     `(macrolet ((with-buffer ((buffer &key timeout) &body body)
 		  ;; Speedup hack for lexically nested with-buffers
-		  `(progn ,buffer ,@(and timeout `(,timeout)) ,@body)))
+		  `(progn (progn ,buffer ,@(and timeout `(,timeout)) nil)
+			  ,@body)))
        (let (,@(unless (eq buf buffer) `((,buf ,buffer))))
 	 ,@(unless (eq buf buffer) `((declare (type buffer ,buf))))
 	 ,(declare-bufmac)
@@ -123,31 +124,33 @@
   ;; These calls will read from the input buffer at byte
   ;; offset INDEX.  If INDEX is not supplied, then the next
   ;; word, half-word or byte is returned.
-  (let ((reply-buffer (gensym)))
-    `(let ((,reply-buffer ,event))
-       (declare (type reply-buffer ,reply-buffer))
-       (with-buffer-input (,reply-buffer ,@options) ,@body))))
+  `(with-buffer-input (,event ,@options) ,@body))
 
-(defmacro with-buffer-input ((buffer &key (sizes '(8 16 32)) index) &body body)
+(defmacro with-buffer-input ((reply-buffer &key display (sizes '(8 16 32)) index)
+			     &body body)
   (unless (listp sizes) (setq sizes (list sizes)))
   ;; 160 is a special hack for client-message-events
   (when (set-difference sizes '(0 8 16 32 160 256))
     (error "Illegal sizes in ~a" sizes))
-  `(let ()
+  `(let ((%reply-buffer ,reply-buffer)
+	 ,@(and display `((%buffer ,display))))
+     (declare (type reply-buffer %reply-buffer)
+	      ,@(and display '((type display %buffer))))
      ,(declare-bufmac)
+     ,@(and display '(%buffer))
      (let* ((buffer-boffset (the array-index ,(or index 0)))
 	    #-clx-overlapping-arrays
-	    (buffer-bbuf (reply-ibuf8 ,buffer))
+	    (buffer-bbuf (reply-ibuf8 %reply-buffer))
 	    #+clx-overlapping-arrays
 	    ,@(append
 		(when (member 8 sizes)
-		  `((buffer-bbuf (reply-ibuf8 ,buffer))))
+		  `((buffer-bbuf (reply-ibuf8 %reply-buffer))))
 		(when (or (member 16 sizes) (member 160 sizes))
 		  `((buffer-woffset (index-ash buffer-boffset -1))
-		    (buffer-wbuf (reply-ibuf16 ,buffer))))
+		    (buffer-wbuf (reply-ibuf16 %reply-buffer))))
 		(when (member 32 sizes)
 		  `((buffer-loffset (index-ash buffer-boffset -2))
-		    (buffer-lbuf (reply-ibuf32 ,buffer))))))
+		    (buffer-lbuf (reply-ibuf32 %reply-buffer))))))
        (declare (type array-index buffer-boffset))
        #-clx-overlapping-arrays
        (declare (type buffer-bytes buffer-bbuf)
@@ -173,7 +176,7 @@
 	   (when (member 8  sizes) '(buffer-bbuf))
 	   (when (member 16 sizes) '(buffer-woffset buffer-wbuf))
 	   (when (member 32 sizes) '(buffer-loffset buffer-lbuf)))
-       (compiler-let ((*buffer-sizes* ',sizes))
+       (macrolet ((%buffer-sizes () ',sizes))
 	 ,@body))))
 
 (defun make-buffer (output-size constructor &rest options)
@@ -265,7 +268,7 @@
     (multiple-value-prog1
       (progn
 	(when gc-force (force-gcontext-changes-internal gc-force))
-	(without-aborts (funcall request-function)))
+	(without-aborts (funcall request-function display)))
       (display-invoke-after-function display))))
 
 (defstruct (pending-command (:copier nil) (:predicate nil))
@@ -288,17 +291,17 @@
 	(progn 
 	  (with-buffer (display)
 	    (setq pending-command (start-pending-command display))
-	    (without-aborts (funcall request-function))
+	    (without-aborts (funcall request-function display))
 	    (buffer-force-output display)
 	    (display-invoke-after-function display))
 	  (cond (multiple-reply
 		 (loop
 		   (setq reply-buffer (read-reply display pending-command))
-		   (when (funcall reply-function reply-buffer) (return nil))
+		   (when (funcall reply-function display reply-buffer) (return nil))
 		   (deallocate-reply-buffer (shiftf reply-buffer nil))))
 		(t
 		 (setq reply-buffer (read-reply display pending-command))
-		 (funcall reply-function reply-buffer))))
+		 (funcall reply-function display reply-buffer))))
       (when reply-buffer (deallocate-reply-buffer reply-buffer))
       (when pending-command (stop-pending-command display pending-command)))))
 
@@ -1465,7 +1468,7 @@
   (declare (type buffer buffer)
 	   (type array-index boffset)
 	   (type (simple-array bit (*)) map))
-  (writing-buffer-send (buffer :index boffset :sizes 8)
+  (with-buffer-output (buffer :index boffset :sizes 8)
     (do* ((i (index+ buffer-boffset 1) (index+ i 1))	; Skip first byte
 	  (j 8 (index+ j 8)))		
 	 ((index>= j 256))

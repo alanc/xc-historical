@@ -147,42 +147,38 @@
    `(plusp (read-card8 ,index)))
   ((index thing) `(write-card8 ,index (if ,thing 1 0))))
 
-(defvar *buffer-sizes* '(8 16 32))
-(defvar *buffer* 'buffer)
-(defvar *reply-buffer* 'reply-buffer)
-
 (define-accessor drawable (32)
-  ((index &optional (buffer *buffer*))
+  ((index &optional (buffer '%buffer))
    `(lookup-drawable ,buffer (read-card29 ,index)))
   ((index thing) `(write-card29 ,index (drawable-id ,thing))))
 
 (define-accessor window (32)
-  ((index &optional (buffer *buffer*))
+  ((index &optional (buffer '%buffer))
    `(lookup-window ,buffer (read-card29 ,index)))
   ((index thing) `(write-card29 ,index (window-id ,thing))))
 
 (define-accessor pixmap (32)
-  ((index &optional (buffer *buffer*))
+  ((index &optional (buffer '%buffer))
    `(lookup-pixmap ,buffer (read-card29 ,index)))
   ((index thing) `(write-card29 ,index (pixmap-id ,thing))))
 
 (define-accessor gcontext (32)
-  ((index &optional (buffer *buffer*))
+  ((index &optional (buffer '%buffer))
    `(lookup-gcontext ,buffer (read-card29 ,index)))
   ((index thing) `(write-card29 ,index (gcontext-id ,thing))))
 
 (define-accessor cursor (32)
-  ((index &optional (buffer *buffer*))
+  ((index &optional (buffer '%buffer))
    `(lookup-cursor ,buffer (read-card29 ,index)))
   ((index thing) `(write-card29 ,index (cursor-id ,thing))))
 
 (define-accessor colormap (32)
-  ((index &optional (buffer *buffer*))
+  ((index &optional (buffer '%buffer))
    `(lookup-colormap ,buffer (read-card29 ,index)))
   ((index thing) `(write-card29 ,index (colormap-id ,thing))))
 
 (define-accessor font (32)
-  ((index &optional (buffer *buffer*))
+  ((index &optional (buffer '%buffer))
    `(lookup-font ,buffer (read-card29 ,index)))
   ;; The FONT-ID accessor may make a OpenFont request.  Since we don't support recursive
   ;; with-buffer-request, issue a compile time error, rather than barf at run-time.
@@ -192,9 +188,9 @@
 
 ;; Needed to get and put xatom's in events
 (define-accessor keyword (32)
-  ((index &optional (buffer *buffer*))
+  ((index &optional (buffer '%buffer))
    `(lookup-xatom ,buffer (read-card29 ,index)))
-  ((index thing &key (buffer *buffer*))
+  ((index thing &key (buffer '%buffer))
    `(write-card29 ,index (or (atom-id ,thing ,buffer)
 			     (error "CLX implementation error in KEYWORD-PUT")))))
 
@@ -335,15 +331,15 @@
   ;; the window id.
   ((index &optional (real-index index) data)
    `(read-bitvector256 buffer-bbuf ,real-index ,data))
-  ((index map &optional (real-index index) (buffer *buffer*))
+  ((index map &optional (real-index index) (buffer '%buffer))
    `(write-bitvector256 ,buffer (index+ buffer-boffset ,real-index) ,map)))
    
 (define-accessor string (nil)
   ((length index &key reply-buffer)
    `(read-sequence-char
-      ,(or reply-buffer *reply-buffer*) 'string ,length nil nil 0 ,index))
+      ,(or reply-buffer '%reply-buffer) 'string ,length nil nil 0 ,index))
   ((index string &key buffer (start 0) end header-length appending)
-   (unless buffer (setq buffer *buffer*))
+   (unless buffer (setq buffer '%buffer))
    (unless header-length (setq header-length (lround index)))
    (let* ((real-end (if appending (or end `(length ,string)) (gensym)))
 	  (form `(write-sequence-char ,buffer (index+ buffer-boffset ,header-length)
@@ -363,12 +359,12 @@
 	(int16 'read-sequence-int16)
 	(card32 'read-sequence-card32)
 	(int32 'read-sequence-int32))
-     ,(or reply-buffer *reply-buffer*)
+     ,(or reply-buffer '%reply-buffer)
      ,result-type ,length ,transform ,data
      ,@(when (or start index) `(,(or start 0)))
      ,@(when index `(,index))))
   ((index data &key (format 'card32) (start 0) end transform buffer appending)
-   (unless buffer (setq buffer *buffer*))
+   (unless buffer (setq buffer '%buffer))
    (let* ((real-end (if appending (or end `(length ,data)) (gensym)))
 	  (writer (xintern 'write-sequence- format))
 	  (form `(,writer ,buffer (index+ buffer-boffset ,(lround index))
@@ -471,10 +467,10 @@
 ;; Macroexpand the result of OR-GET to allow the macros file to not be loaded
 ;; when using event-case.  This is pretty gross.
 
-(defmacro or-expand (&rest forms #-kcl &environment #-kcl environment)
+(defmacro or-expand (&rest forms &environment environment)
   `(cond ,@(mapcar #'(lambda (forms)
 		       (mapcar #'(lambda (form)
-				   (macroexpand form #-kcl environment))
+				   (macroexpand form environment))
 			       forms))
 		   forms)))
 
@@ -483,7 +479,7 @@
 ;;
 (define-accessor or (32)
   ;; Select from among several types (usually NULL and something else)
-  ((index &rest type-list #-kcl &environment #-kcl environment)
+  ((index &rest type-list &environment environment)
    (do ((types type-list (cdr types))
 	(value (gensym))
 	(result))
@@ -491,7 +487,7 @@
 	`(let ((,value (read-card32 ,index)))
 	   (macrolet ((read-card32 (index) index ',value)
 		      (read-card29 (index) index ',value))
-	     ,(macroexpand `(or-expand ,@(nreverse result)) #-kcl environment))))
+	     ,(macroexpand `(or-expand ,@(nreverse result)) environment))))
      (let ((item (car types))
 	   (args nil))
        (when (consp item)
@@ -586,7 +582,7 @@
 				   `(index-incf %index 4) '.item. args))))))))
       (write-card32 ,index %mask)
       (write-card16 2 (index-ceiling (index-incf %index 4) 4))
-      (incf (buffer-boffset ,*buffer*) %index))))
+      (incf (buffer-boffset %buffer) %index))))
 
 (define-accessor progn (nil)
   ;; Catch-all for inserting random code
@@ -598,21 +594,18 @@
 ;
 ; Wrapper macros, for use around the above
 ;
-(defvar *inhibit-type-checking* nil) ;; Bind with compiler-let to inhibit type checking
-
 (defmacro type-check (value type)
   value type
   (when *type-check?*
     `(unless (type? ,value ,type)
        (x-type-error ,value ,type))))
 
-(defmacro check-put (index value type &rest args)
+(defmacro check-put (index value type &rest args &environment env)
   (let* ((var (if (or (symbolp value) (constantp value)) value '.value.))
 	 (body
-	   (if (or (not *type-check?*)
+	   (if (or (null (macroexpand `(type-check ,var ',type) env))
 		   (member type '(or progn pad8 pad16))
-		   (constantp value)
-		   *inhibit-type-checking*)
+		   (constantp value))
 	       `(,(putify type) ,index ,var ,@args)
 	     ;; Do type checking
 	     (if (get type 'predicating-put)
@@ -654,7 +647,6 @@
 				  (mask-get index (cdar items) body-function)))
 		 index nil))
 	  (t (do* ((item (cdar items) (cdr item))
-;;		   (FUNCTION (IF putp (putify type) (getify type)))
 		   (increment (index-increment type)))
 		  ((endp item))
 	       (when (constantp index)
@@ -676,104 +668,94 @@
 
 (defmacro with-buffer-request-internal ((buffer opcode &rest options) &body type-args)
   (declare (values request-number))
-  (let ((buf (if (and (symbolp buffer) (not (constantp buffer))) buffer '.buffer.))
-	(length (second (member :length options))))
-    (multiple-value-bind (code index sizes)
-	(let ((*buffer* buf)) (get-put-items 4 type-args t))
-      (let ((body
-	      `(writing-buffer-send (,buf
-				     :length ,(if length
-						  `(index+ ,length *requestsize*)
-						'*requestsize*)
-				     :sizes (8 16 ,@sizes ,@(cadr (member :sizes options))))
-		 (setf (buffer-last-request ,buf) buffer-boffset)
-		 (write-card8 0 ,opcode)	   ;; Stick in the opcode
-		 ,@code
-		 ,@(when index
-		     (setq index (lround index))
-		     `((write-card16 2 ,(ceiling index 4))
-		       (setf (buffer-boffset ,buf) (index+ buffer-boffset ,index))))
-		 (buffer-new-request-number ,buf))))
-	(if (eq buf buffer)
-	    body
-	  `(let ((,buf ,buffer))
-	     (declare (type display ,buf))
-	     ,body)))))) 
+  (multiple-value-bind (code index sizes)
+      (get-put-items 4 type-args t)
+    (let* ((supplied-length (second (member :length options)))
+	   (length (if supplied-length
+		       `(index+ ,supplied-length *requestsize*)
+		     '*requestsize*))
+	   (supplied-sizes (second (member :sizes options)))
+	   (sizes (remove-duplicates (append '(8 16) sizes supplied-sizes))))
+      `(with-buffer-output (,buffer :length ,length :sizes ,sizes)
+	 (setf (buffer-last-request ,buffer) buffer-boffset)
+	 (write-card8 0 ,opcode)	   ;; Stick in the opcode
+	 ,@code
+	 ,@(when index
+	     (setq index (lround index))
+	     `((write-card16 2 ,(ceiling index 4))
+	       (setf (buffer-boffset ,buffer) (index+ buffer-boffset ,index))))
+	 (buffer-new-request-number ,buffer)))))
 
 (defmacro with-buffer-request ((buffer opcode &rest options) &body type-args)
   (declare (values request-number))
-  (let* ((buf (if (and (symbolp buffer) (not (constantp buffer))) buffer '.buffer.))
-	 (gc-force (second (member :gc-force options)))
-	 (body 
-	   (if *use-closures-for-requests*
-	       `(with-buffer-request-function
-		  ,buffer ,gc-force
-		  #'(lambda ()
-		      (with-buffer-request-internal (,buf ,opcode ,@options) ,@type-args)))
-	     `(with-buffer (,buf)
-		,@(when gc-force `((force-gcontext-changes-internal ,gc-force)))
-		(multiple-value-prog1
-		  (without-aborts 
-		    (with-buffer-request-internal (,buf ,opcode ,@options) ,@type-args))
-		  (display-invoke-after-function ,buf))))))
-    (if (eq buf buffer)
-	body
-      `(let ((,buf ,buffer))
-	 (declare (type display ,buf))
-	 ,body))))
+  (let ((gc-force (second (member :gc-force options))))
+    (if *use-closures-for-requests*
+	`(with-buffer-request-function
+	   ,buffer ,gc-force
+	   #'(lambda (.display.)
+	       (declare (type display .display.))
+	       (with-buffer-request-internal (.display. ,opcode ,@options)
+		 ,@type-args)))
+      `(let ((.display. ,buffer))
+	 (declare (type display .display.))
+	 (with-buffer (.display.)
+	   ,@(when gc-force `((force-gcontext-changes-internal ,gc-force)))
+	   (multiple-value-prog1
+	     (without-aborts 
+	       (with-buffer-request-internal (.display. ,opcode ,@options)
+		 ,@type-args))
+	     (display-invoke-after-function .display.)))))))
 
 (defmacro with-buffer-request-and-reply
 	  ((buffer opcode reply-size &key sizes multiple-reply) type-args &body reply-forms)
   (declare (indentation 0 4 1 4 2 1))
-  (let* ((buf (if (and (symbolp buffer) (not (constantp buffer))) buffer '.buffer.))
-	 (inner-reply-body
-	   `(compiler-let ((*buffer* ',buf)
-			   (*reply-buffer* '.reply-buffer.))
-	      (with-buffer-input
-		(.reply-buffer. ,@(and sizes (list :sizes sizes)))
-		nil ,@reply-forms)))
+  (let* ((inner-reply-body
+	   `(with-buffer-input (.reply-buffer. :display .display.
+					       ,@(and sizes (list :sizes sizes)))
+	      nil ,@reply-forms))
 	 (reply-body
 	   (if (or (not (symbolp reply-size)) (constantp reply-size))
 	       inner-reply-body
-	     `(let ((,reply-size (reply-data-size .reply-buffer.)))
+	     `(let ((,reply-size (reply-data-size (the reply-buffer .reply-buffer.))))
 		(declare (type array-index ,reply-size))
-		,inner-reply-body)))
-	 (body 
-	   (if *use-closures-for-requests*
-	       `(with-buffer-request-and-reply-function
-		  ,buffer ,multiple-reply
-		  #'(lambda ()
-		      (with-buffer-request-internal (,buf ,opcode) ,@type-args))
-		  #'(lambda (.reply-buffer.)
-		      (declare (type reply-buffer .reply-buffer.))
-		      ,reply-body))
-	     `(let ((.pending-command. nil)
-		    (.reply-buffer. nil))
-		(declare (type (or null pending-command) .pending-command.)
-			 (type (or null reply-buffer) .reply-buffer.))
-		(unwind-protect
-		    (progn 
-		      (with-buffer (,buf)
-			(setq .pending-command. (start-pending-command ,buf))
-			(without-aborts
-			  (with-buffer-request-internal (,buf ,opcode)
-			    ,@type-args))
-			(buffer-force-output ,buf)
-			(display-invoke-after-function ,buf))
-		      ,@(if multiple-reply
-			    `((loop
-				(setq .reply-buffer. (read-reply ,buf .pending-command.))
-				(when ,reply-body (return nil))
-				(deallocate-reply-buffer (shiftf .reply-buffer. nil))))
-			  `((setq .reply-buffer. (read-reply ,buf .pending-command.))
-			    ,reply-body)))
-		  (when .reply-buffer. (deallocate-reply-buffer .reply-buffer.))
-		  (when .pending-command. (stop-pending-command ,buf .pending-command.)))))))
-    (if (eq buf buffer)
-	body
-      `(let ((,buf ,buffer))
-	 (declare (type display ,buf))
-	 ,body))))
+		,inner-reply-body))))
+    (if *use-closures-for-requests*
+	`(with-buffer-request-and-reply-function
+	   ,buffer ,multiple-reply
+	   #'(lambda (.display.)
+	       (declare (type display .display.))
+	       (with-buffer-request-internal (.display. ,opcode)
+		 ,@type-args))
+	   #'(lambda (.display. .reply-buffer.)
+	       (declare (type display .display.)
+			(type reply-buffer .reply-buffer.))
+	       ,reply-body))
+      `(let ((.display. ,buffer)
+	     (.pending-command. nil)
+	     (.reply-buffer. nil))
+	 (declare (type display .display.)
+		  (type (or null pending-command) .pending-command.)
+		  (type (or null reply-buffer) .reply-buffer.))
+	 (unwind-protect
+	     (progn 
+	       (with-buffer (.display.)
+		 (setq .pending-command. (start-pending-command .display.))
+		 (without-aborts
+		   (with-buffer-request-internal (.display. ,opcode)
+		     ,@type-args))
+		 (buffer-force-output .display.)
+		 (display-invoke-after-function .display.))
+	       ,@(if multiple-reply
+		     `((loop
+			 (setq .reply-buffer. (read-reply .display. .pending-command.))
+			 (when ,reply-body (return nil))
+			 (deallocate-reply-buffer (shiftf .reply-buffer. nil))))
+		   `((setq .reply-buffer. (read-reply .display. .pending-command.))
+		     ,reply-body)))
+	   (when .reply-buffer.
+	     (deallocate-reply-buffer .reply-buffer.))
+	   (when .pending-command.
+	     (stop-pending-command .display. .pending-command.)))))))
 
 (defmacro compare-request ((index) &body body)
   `(macrolet ((write-card32 (index item) `(= ,item (read-card32 ,index)))
@@ -784,7 +766,7 @@
 	      (write-int16 (index item) `(= ,item (read-int16 ,index)))
 	      (write-card8 (index item) `(= ,item (read-card8 ,index)))
 	      (write-int8 (index item) `(= ,item (read-int8 ,index))))
-     (compiler-let ((*inhibit-type-checking* t))
+     (macrolet ((type-check (value type) value type nil))
        (and ,@(get-put-items index body t)))))
 
 (defmacro put-items ((index) &body body)

@@ -61,8 +61,10 @@
 
 (eval-when (eval compile load)
 
-(defconstant *buffer-speed* 3 "Speed compiler option for buffer code.")
-(defconstant *buffer-safety* 0 "Safety compiler option for buffer code.")
+(defconstant *buffer-speed* 3
+  "Speed compiler option for buffer code.")
+(defconstant *buffer-safety* #+clx-debugging 3 #-clx-debugging 0
+  "Safety compiler option for buffer code.")
 
 (defun declare-bufmac ()
   `(declare (optimize (speed ,*buffer-speed*) (safety ,*buffer-safety*))))
