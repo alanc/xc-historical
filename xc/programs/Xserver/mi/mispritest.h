@@ -4,7 +4,7 @@
  * mi sprite structures
  */
 
-/* $XConsortium: mispritest.h,v 5.9 90/01/06 13:42:47 rws Exp $ */
+/* $XConsortium: mispritest.h,v 5.10 90/02/02 19:07:57 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology

@@ -3,7 +3,7 @@
  *
  */
 
-/* $XConsortium: mipointer.h,v 5.1 89/06/16 17:02:11 keith Exp $ */
+/* $XConsortium: mipointer.h,v 5.2 89/06/21 11:16:15 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -22,17 +22,22 @@ purpose.  It is provided "as is" without express or implied warranty.
 typedef struct {
     Bool	(*RealizeCursor)();	/* pScreen, pCursor */
     Bool	(*UnrealizeCursor)();	/* pScreen, pCursor */
-    void	(*DisplayCursor)();	/* pScreen, pCursor, x, y */
-    void	(*UndisplayCursor)();	/* pScreen, pCursor */
+    void	(*SetCursor)();		/* pScreen, pCursor, x, y */
+    void	(*MoveCursor)();	/* pScreen, x, y */
 } miPointerSpriteFuncRec, *miPointerSpriteFuncPtr;
 
 typedef struct {
-    long	(*EventTime)();		/* pScreen */
-    Bool	(*CursorOffScreen)();	/* pScreen, x, y */
+    Bool	(*CursorOffScreen)();	/* ppScreen, px, py */
     void	(*CrossScreen)();	/* pScreen, entering */
-    void	(*QueueEvent)();	/* pxE, pPointer, pScreen */
-} miPointerCursorFuncRec, *miPointerCursorFuncPtr;
+    void	(*WarpCursor)();	/* pScreen, x, y */
+} miPointerScreenFuncRec, *miPointerScreenFuncPtr;
 
-extern void miPointerPosition (),	miRegisterPointerDevice();
-extern void miPointerDeltaCursor (),	miPointerMoveCursor();
 extern Bool miPointerInitialize ();
+extern void miPointerWarpCursor ();
+extern void miPointerUpdate ();
+extern void miPointerDeltaCursor ();
+extern void miPointerAbsoluteCursor();
+extern void miPointerPosition ();
+extern void miRegisterPointerDevice();
+extern int  miPointerGetMotionEvents();
+extern int  miPointerGetMotionBufferSize();

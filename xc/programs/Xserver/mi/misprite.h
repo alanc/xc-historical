@@ -6,7 +6,7 @@
  * mi versions of these routines exist.
  */
 
-/* $XConsortium: misprite.h,v 5.1 89/06/21 11:16:23 rws Exp $ */
+/* $XConsortium: misprite.h,v 5.2 89/08/30 19:24:05 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology

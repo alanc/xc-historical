@@ -186,13 +186,13 @@ static GCOps miSpriteGCOps = {
  */
 
 static Bool miSpriteRealizeCursor (),	miSpriteUnrealizeCursor ();
-static void miSpriteDisplayCursor (),	miSpriteUndisplayCursor ();
+static void miSpriteSetCursor (),	miSpriteMoveCursor ();
 
 miPointerSpriteFuncRec miSpritePointerFuncs = {
     miSpriteRealizeCursor,
     miSpriteUnrealizeCursor,
-    miSpriteDisplayCursor,
-    miSpriteUndisplayCursor
+    miSpriteSetCursor,
+    miSpriteMoveCursor,
 };
 
 /*
@@ -208,10 +208,10 @@ static void miSpriteRemoveCursor (),	miSpriteRestoreCursor();
  */
 
 Bool
-miSpriteInitialize (pScreen, spriteFuncs, pointerFuncs)
+miSpriteInitialize (pScreen, spriteFuncs, screenFuncs)
     ScreenPtr		    pScreen;
     miSpriteCursorFuncPtr   spriteFuncs;
-    miPointerCursorFuncPtr  pointerFuncs;
+    miPointerScreenFuncPtr  screenFuncs;
 {
     miSpriteScreenPtr	pPriv;
     VisualPtr		pVisual;
@@ -230,7 +230,7 @@ miSpriteInitialize (pScreen, spriteFuncs, pointerFuncs)
     pPriv = (miSpriteScreenPtr) xalloc (sizeof (miSpriteScreenRec));
     if (!pPriv)
 	return FALSE;
-    if (!miPointerInitialize (pScreen, &miSpritePointerFuncs, pointerFuncs))
+    if (!miPointerInitialize (pScreen, &miSpritePointerFuncs, screenFuncs))
     {
 	xfree ((pointer) pPriv);
 	return FALSE;
@@ -1855,7 +1855,7 @@ miSpriteUnrealizeCursor (pScreen, pCursor)
 }
 
 static void
-miSpriteDisplayCursor (pScreen, pCursor, x, y)
+miSpriteSetCursor (pScreen, pCursor, x, y)
     ScreenPtr	pScreen;
     CursorPtr	pCursor;
 {
@@ -1868,6 +1868,14 @@ miSpriteDisplayCursor (pScreen, pCursor, x, y)
 	pScreenPriv->pCursor == pCursor &&
 	!pScreenPriv->checkPixels)
     {
+	return;
+    }
+    if (!pCursor)
+    {
+    	pScreenPriv->shouldBeUp = FALSE;
+    	if (pScreenPriv->isUp)
+	    miSpriteRemoveCursor (pScreen);
+	pScreenPriv->pCursor = 0;
 	return;
     }
     pScreenPriv->x = x;
@@ -1942,18 +1950,15 @@ miSpriteDisplayCursor (pScreen, pCursor, x, y)
 	miSpriteRestoreCursor (pScreen);
 }
 
-/*ARGSUSED*/
 static void
-miSpriteUndisplayCursor (pScreen, pCursor)
+miSpriteMoveCursor (pScreen, x, y)
     ScreenPtr	pScreen;
-    CursorPtr	pCursor;
+    int		x, y;
 {
-    miSpriteScreenPtr   pScreenPriv;
+    miSpriteScreenPtr	pScreenPriv;
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
-    pScreenPriv->shouldBeUp = FALSE;
-    if (pScreenPriv->isUp)
-	miSpriteRemoveCursor (pScreen);
+    miSpriteSetCursor (pScreen, pScreenPriv->pCursor, x, y);
 }
 
 /*

@@ -3,7 +3,7 @@
  *
  */
 
-/* $XConsortium: mipointrst.h,v 5.0 89/06/16 17:02:11 keith Exp $ */
+/* $XConsortium: mipointrst.h,v 5.1 89/06/21 11:16:59 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -22,17 +22,31 @@ purpose.  It is provided "as is" without express or implied warranty.
 # include   <mipointer.h>
 # include   <input.h>
 
+#define MOTION_SIZE	256
+
+typedef struct {
+    xTimecoord	    event;
+    ScreenPtr	    pScreen;
+} miHistoryRec, *miHistoryPtr;
+
 typedef struct {
     ScreenPtr		    pScreen;    /* current screen */
+    ScreenPtr		    pSpriteScreen;/* screen containing current sprite */
     CursorPtr		    pCursor;    /* current cursor */
+    Bool		    onScreen;	/* cursor confined to current screen */
     BoxRec		    limits;	/* current constraints */
+    BoxRec		    noninterest;/* non interest box */
+    Bool		    wasnoninterest; /* last position in non interest box */
     int			    x, y;	/* hot spot location */
+    int			    devx, devy;	/* sprite position */
     DevicePtr		    pPointer;   /* pointer device structure */
-    miPointerCursorFuncPtr  funcs;	/* device-specific methods */
+    miHistoryRec	    history[MOTION_SIZE];
+    int			    history_start, history_end;
 } miPointerRec, *miPointerPtr;
 
 typedef struct {
-    miPointerSpriteFuncPtr  funcs;
-    miPointerPtr	    pPointer;
+    miPointerSpriteFuncPtr  spriteFuncs;	/* sprite-specific methods */
+    miPointerScreenFuncPtr  screenFuncs;	/* screen-specific methods */
     Bool		    (*CloseScreen)();
+    Bool		    waitForUpdate;	/* don't move cursor in SIGIO */
 } miPointerScreenRec, *miPointerScreenPtr;

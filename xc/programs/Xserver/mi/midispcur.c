@@ -4,7 +4,7 @@
  * machine independent cursor display routines
  */
 
-/* $XConsortium: midispcur.c,v 5.9 89/08/30 19:23:59 keith Exp $ */
+/* $XConsortium: midispcur.c,v 5.10 90/03/12 14:10:02 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -78,9 +78,9 @@ static miSpriteCursorFuncRec miDCFuncs = {
 };
 
 Bool
-miDCInitialize (pScreen, cursorFuncs)
+miDCInitialize (pScreen, screenFuncs)
     ScreenPtr		    pScreen;
-    miPointerCursorFuncPtr  cursorFuncs;
+    miPointerScreenFuncPtr  screenFuncs;
 {
     miDCScreenPtr   pScreenPriv;
 
@@ -114,7 +114,7 @@ miDCInitialize (pScreen, cursorFuncs)
     
     pScreen->devPrivates[miDCScreenIndex].ptr = (pointer) pScreenPriv;
 
-    if (!miSpriteInitialize (pScreen, &miDCFuncs, cursorFuncs))
+    if (!miSpriteInitialize (pScreen, &miDCFuncs, screenFuncs))
     {
 	xfree ((pointer) pScreenPriv);
 	return FALSE;
