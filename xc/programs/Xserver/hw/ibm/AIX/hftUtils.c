@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: hftUtils.c,v 1.3 91/07/16 13:02:54 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -293,8 +293,13 @@ int     real_vol;
 
      /* restore old value of keyclick */
      if (real_vol != CurrentKeyClick) {
-	hftProtoReconfigure.hf_obj= CurrentKeyClick;
-	ioctl(hftQFD,HFRCONF,&hftProtoReconfigure);
+	/*
+	 * If the click is off, do not set the volume to 0
+	 */
+	if (CurrentKeyClick != 0) {
+	  hftProtoReconfigure.hf_obj= CurrentKeyClick;
+	  ioctl(hftQFD,HFRCONF,&hftProtoReconfigure);
+	}
      }
 
      return;
