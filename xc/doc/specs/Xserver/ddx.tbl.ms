@@ -1,4 +1,4 @@
-.\" $XConsortium: ddx.tbl.ms,v 1.26 89/12/21 14:41:27 rws Exp $
+.\" $XConsortium: ddx.tbl.ms,v 1.27 89/12/21 17:11:20 rws Exp $
 .EF 'Porting Layer Definition'- % -'March 1, 1988'
 .OF 'Porting Layer Definition'- % -'March 1, 1988'
 .EH '''
@@ -94,7 +94,7 @@ modification.
 Other parts may have to be completely written from scratch.
 .LP
 The tape also includes source for a sample implementation of a display
-server which runs on a variety of color and monochrome displayes which you
+server which runs on a variety of color and monochrome displays which you
 will find useful for implementing any type of X server.
 
 
@@ -108,7 +108,7 @@ The X Window System, or simply "X," is a
 windowing system that provides high-performance, high-level,
 device-independent graphics.
 
-X is a windowing system designed for bitmaped graphic displays.
+X is a windowing system designed for bitmapped graphic displays.
 The display can have a
 simple, monochrome display or it can have a color display with up to 32 bits
 per pixel with a special graphics processor doing the work.  (In this
@@ -396,7 +396,7 @@ Once again,  the types are not specified by DIX.  The result is the
 success indicator for the thing that (may have) blocked,
 and the pReadmask is a mask of the descriptors that came active.
 .LP
-In the 4.2 case,  result is the resdult from select(),  and pReadmask is
+In the 4.2 case,  result is the result from select(),  and pReadmask is
 the address of the select mask for reading.
 .LP
 The DIX BlockHandler() iterates through the Screens,  for each one calling
@@ -422,7 +422,7 @@ block and wakeup handlers (only together) using:
 		pointer blockData;
 .fi
 A FALSE return code indicates that the registration failed for lack of
-memory.  To remove a registerd Block handler at other than server reset time
+memory.  To remove a registered Block handler at other than server reset time
 (when they are all removed automatically), use:
 .nf
 	RemoveBlockAndWakeupHandlers (blockHandler, wakeupHandler, blockData)
@@ -2013,7 +2013,7 @@ strays into that window on the screen.
 
 For each possible shape the cursor assumes, there is a CursorRec data
 structure.  This data structure contains a pointer to a CursorBits data
-structure which containts a bitmap for the image of the cursor and a bitmap
+structure which contains a bitmap for the image of the cursor and a bitmap
 for a mask behind the cursor, in addition, the CursorRec data structure
 contains foreground and background colors for the cursor.  The CursorBits
 data structure is shared among multiple CursorRec structures which use the
@@ -2040,7 +2040,7 @@ into off-screen memory) and set up its device-private area in either the
 CursorRec data structure or CursorBits data structure as appropriate to
 possibly point to whatever data structures are needed.  It is more
 memory-conservative to share realizations by using the CursorBits private
-field, but this makes the asumption that the realization is independent of
+field, but this makes the assumption that the realization is independent of
 the colors used (which is typically true).  For instance, the
 following are the device private entries for a particular screen and cursor:
 .nf
@@ -2829,7 +2829,7 @@ the validity of the clipping information in a GC.
 The screen selects the set of procedures used to manipulate and draw into the
 drawable.  Position is used (currently) only by windows; pixmaps must
 set these fields to 0,0 as this reduces the amount of conditional code
-executed throught the mi code.  Size indicates the actual client-specified
+executed throughout the mi code.  Size indicates the actual client-specified
 size of the drawable.
 There are, in fact, no other fields that a window drawable and pixmap
 drawable have in common besides those mentioned here.
@@ -3400,7 +3400,7 @@ Details of operation
 At screen initialization, a screen must supply a GC creation procedure.
 At GC creation, the screen must fill in GC funcs and GC ops vectors
 (server/include/gcstruct.h).  For any particular GC, the func vector
-must remain constant, while the op vector may vary.  This invarient is to
+must remain constant, while the op vector may vary.  This invariant is to
 ensure that Wrappers work correctly.
 
 When a client request is processed that results in a change
@@ -3441,7 +3441,6 @@ GC Handling Routines
 .LP
 The ScreenRec data structure has a pointer for
 CreateGC().
-All of the rest of the routines in this section are pointed to by a GCInterestRec.
 .nf
 
 	Bool pScreen->CreateGC(pGC)
@@ -3520,7 +3519,7 @@ this routine.
 This routine is called by DIX 
 when a GC is being copied to another GC.
 This is for situations where dynamically allocated chunks of memory are hanging
-off a GC devPrivates field which need to be transfered to the destination GC.
+off a GC devPrivates field which need to be transferred to the destination GC.
 .nf
 
 	pGC->funcs->DestroyGC(pGC)
@@ -3747,7 +3746,7 @@ because the source and destination are the same size.  However,
 everything is still clipped to the clip regions of the destination
 drawable.
 
-If pGC->graphicsExposures is True, any portions of the desination which
+If pGC->graphicsExposures is True, any portions of the destination which
 were not valid in the source (either occluded by covering windows, or
 outside the bounds of the drawable) should be collected together and
 returned as a region (if this resultant region is empty, NULL can be
@@ -4115,7 +4114,7 @@ not always) important for getting the highest possible performance.
 called as often, and so has different constraints.)
 The miTranslate field is settable in each GC, if , for example,
 you are mixing several kinds of destinations (offscreen pixmaps,
-main memory pixmaps, backing store, and windows), all of whcih have
+main memory pixmaps, backing store, and windows), all of which have
 different requirements, on one screen.
 
 As with other drawing routines, there are fields in the GC to direct
@@ -4415,7 +4414,7 @@ Wrappers and devPrivates
 .XE
 .LP
 Two new extensibility concepts have been developed for release 4, Wrappers
-and devPrivates.  These replace the GCInterest queues, which were not a
+and devPrivates.  These replace the R3 GCInterest queues, which were not a
 general enough mechanism for many extensions and only provided hooks into a
 single data structure.
 .NH 3
