@@ -1,5 +1,5 @@
 /*
- *	$Header: ptyx.h,v 1.5 88/02/20 15:30:55 swick Exp $
+ *	$Header: ptyx.h,v 1.6 88/04/06 13:47:02 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -326,6 +326,7 @@ typedef struct {
 	int		pen;		/* current Tektronix pen 0=up, 1=dn */
 	char		*TekGIN;	/* nonzero if Tektronix GIN mode*/
 	int		multiClickTime;	 /* time between multiclick selects */
+	char		*charClass;	/* for overriding word selection */
 } TScreen;
 
 /* meaning of bits in screen.select flag */

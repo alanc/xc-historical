@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.28 88/03/29 15:41:07 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.29 88/04/06 13:46:57 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -231,6 +231,8 @@ int number_ourTopLevelShellArgs = 2;
 	
 Widget toplevel;
 
+char *ProgramName;
+
 main (argc, argv)
 int argc;
 char **argv;
@@ -244,6 +246,8 @@ char **argv;
 	int fd1 = -1;
 	int fd2 = -1;
 	int fd3 = -1;
+
+	ProgramName = argv[0];
 
 	/* close any extra open (stray) file descriptors */
 	for (i = 3; i < NOFILE; i++)

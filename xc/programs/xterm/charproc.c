@@ -1,5 +1,5 @@
 /*
- * $Header: charproc.c,v 1.25 88/03/29 09:36:34 jim Exp $
+ * $Header: charproc.c,v 1.26 88/04/06 13:46:50 jim Exp $
  */
 
 
@@ -59,6 +59,7 @@ static void VTallocbuf();
 
 #define	XtNboldFont		"boldFont"
 #define	XtNc132			"c132"
+#define XtNcharClass		"charClass"
 #define	XtNcurses		"curses"
 #define	XtNcursorColor		"cursorColor"
 #define XtNgeometry		"geometry"
@@ -87,6 +88,7 @@ static void VTallocbuf();
 #define	XtNvisualBell		"visualBell"
 
 #define	XtCC132			"C132"
+#define XtCCharClass		"CharClass"
 #define	XtCCurses		"Curses"
 #define XtCGeometry		"Geometry"
 #define	XtCJumpScroll		"JumpScroll"
@@ -112,7 +114,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.25 88/03/29 09:36:34 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.26 88/04/06 13:46:50 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -170,6 +172,9 @@ static XtResource resources[] = {
 {XtNc132, XtCC132, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.c132),
 	XtRBoolean, (caddr_t) &defaultFALSE},
+{XtNcharClass, XtCCharClass, XtRString, sizeof(char *),
+	XtOffset(XtermWidget, screen.charClass),
+	XtRString, (caddr_t) NULL},
 {XtNcurses, XtCCurses, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.curses),
 	XtRBoolean, (caddr_t) &defaultFALSE},
@@ -1789,6 +1794,7 @@ static void VTInitialize (request, new)
    new->screen.TekEmu = request->screen.TekEmu;
    new->misc.re_verse = request->misc.re_verse;
    new->screen.multiClickTime = request->screen.multiClickTime;
+   new->screen.charClass = request->screen.charClass;
 
     /*
      * set the colors if reverse video; this is somewhat tricky since
@@ -1840,6 +1846,10 @@ static void VTInitialize (request, new)
 		HandleKeyPressed, (Opaque)NULL);
    XtAddEventHandler(new, 0L, TRUE,
 		VTNonMaskableEvent, (Opaque)NULL);
+
+   if (new->screen.charClass) {
+       set_character_class (new->screen.charClass);
+   }
 
    /* create it, but don't realize it */
    ScrollBarOn (new, TRUE, FALSE);
@@ -2585,3 +2595,106 @@ int item;
 }
 #endif	/* MODEMENU */
 
+/*
+ * set_character_class - takes a string of the form
+ * 
+ *                 low[-high]:val[,low[-high]:val[...]]
+ * 
+ * and sets the indicated ranges to the indicated values.
+ */
+
+int set_character_class (s)
+    register char *s;
+{
+    register int i;			/* iterator, index into s */
+    int len;				/* length of s */
+    int acc;				/* accumulator */
+    int low, high;			/* bounds of range [0..127] */
+    int base;				/* 8, 10, 16 (octal, decimal, hex) */
+    int numbers;			/* count of numbers per range */
+    int digits;				/* count of digits in a number */
+    static char *errfmt = "%s:  %s in range string \"%s\" (position %d)\n";
+    extern char *ProgramName;
+
+    if (!s) return;
+
+    base = 10;				/* in case we ever add octal, hex */
+    low = high = -1;			/* out of range */
+
+    for (i = 0, len = strlen (s), acc = 0, numbers = digits = 0;
+	 i < len; i++) {
+	char c = s[i];
+
+	if (isspace(c)) {
+	    continue;
+	} else if (isdigit(c)) {
+	    acc = acc * base + (c - '0');
+	    digits++;
+	    continue;
+	} else if (c == '-') {
+	    low = acc;
+	    acc = 0;
+	    if (digits == 0) {
+		fprintf (stderr, errfmt, ProgramName, "missing number", s, i);
+		return (-1);
+	    }
+	    digits = 0;
+	    numbers++;
+	    continue;
+	} else if (c == ':') {
+	    if (numbers == 0)
+	      low = acc;
+	    else if (numbers == 1)
+	      high = acc;
+	    else {
+		fprintf (stderr, errfmt, ProgramName, "too many numbers",
+			 s, i);
+		return (-1);
+	    }
+	    digits = 0;
+	    numbers++;
+	    acc = 0;
+	    continue;
+	} else if (c == ',') {
+	    /*
+	     * now, process it
+	     */
+
+	    if (high < 0) {
+		high = low;
+		numbers++;
+	    }
+	    if (numbers != 2) {
+		fprintf (stderr, errfmt, ProgramName, "bad value number", 
+			 s, i);
+	    } else if (SetCharacterClassRange (low, high, acc) != 0) {
+		fprintf (stderr, errfmt, ProgramName, "bad range", s, i);
+	    }
+
+	    low = high = -1;
+	    acc = 0;
+	    digits = 0;
+	    numbers = 0;
+	    continue;
+	} else {
+	    fprintf (stderr, errfmt, ProgramName, "bad character", s, i);
+	    return (-1);
+	}				/* end if else if ... else */
+
+    }
+
+    if (low < 0 && high < 0) return (0);
+
+    /*
+     * now, process it
+     */
+
+    if (high < 0) high = low;
+    if (numbers < 1 || numbers > 2) {
+	fprintf (stderr, errfmt, ProgramName, "bad value number", s, i);
+    } else if (SetCharacterClassRange (low, high, acc) != 0) {
+	fprintf (stderr, errfmt, ProgramName, "bad range", s, i);
+    }
+
+    return (0);
+}

@@ -1,5 +1,5 @@
 /*
- *	$Header: button.c,v 1.1 88/02/10 13:08:02 jim Exp $
+ *	$Header: button.c,v 1.2 88/04/06 13:46:46 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$Header: button.c,v 1.1 88/02/10 13:08:02 jim Exp $";
+static char rcs_id[] = "$Header: button.c,v 1.2 88/04/06 13:46:46 jim Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -644,6 +644,19 @@ static int charClass[128] = {
     48,  48,  48,  48,  48,  48,  48,  48,
 /*   x    y    z    {    |    }    ~  DEL */
     48,  48,  48, 123, 124, 125, 126,   1};
+
+
+int SetCharacterClassRange (low, high, value)
+    register int low, high;		/* in range of [0..127] */
+    register int value;			/* arbitrary */
+{
+
+    if (low < 0 || high > 127 || high < low) return (-1);
+
+    for (; low <= high; low++) charClass[low] = value;
+
+    return (0);
+}
 
 
 ComputeSelect(startRow, startCol, endRow, endCol)
