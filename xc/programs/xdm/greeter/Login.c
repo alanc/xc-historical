@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.22 90/04/25 18:24:47 converse Exp $
+ * $XConsortium: Login.c,v 1.23 90/05/03 18:45:46 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -28,11 +28,10 @@
 # include <X11/StringDefs.h>
 # include <X11/Quarks.h>
 # include <X11/keysym.h>
+# include <X11/Xfuncs.h>
 
 
 # include "LoginP.h"
-
-extern void	bcopy ();
 
 #define offset(field) XtOffset(LoginWidget,login.field)
 #define goffset(field) XtOffset(Widget,core.field)

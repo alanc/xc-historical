@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.21 90/12/03 16:03:52 keith Exp $
+ * $XConsortium: socket.c,v 1.22 91/01/09 17:26:55 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -29,6 +29,7 @@
 # include	<netinet/in.h>
 # include	<sys/un.h>
 # include	<X11/X.h>
+# include	<X11/Xfuncs.h>
 # include	<netdb.h>
 # include	<ctype.h>
 
