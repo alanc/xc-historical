@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.h,v 4.22 93/02/07 13:36:15 rws Exp $ */
+/* $XConsortium: cfbmskbits.h,v 4.23 93/12/13 17:22:15 dpw Exp $ */
 /* Optimizations for PSZ == 32 added by Kyle Marvin (marvin@vitec.com) */
 
 #include	"X.h"
@@ -67,18 +67,18 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * B is PGSZB.  All the other values are derived from these
  * two.  This table does not show all combinations!
  *
- * name	    mfb1,4 cfb8,4    cfb32,4      cfb8,8    cfb32,8
- * ----	    ------ ------    -------      ------    -------
- * PSZ	     1	    8	      32	    8         32
- * PGSZ	    32     32         32           64        64
- * PGSZB     4      4          4            8         8
- * PGSZBMSK 0xF    0xF       0xF          0xFF      0xFF
- * PPW	    32	    4	       1	     8         2
- * PPWMSK	   0xF       0x1          0xFF      0x3    
- * PLST	    31	    3	       0	     7         1
- * PIM	    0x1f   0x03      0x0	  0x7       0x1
- * PWSH	    5	    2	       0	    3         1
- * PMSK	    0x01   0xFF      0xFFFFFFFF   0xFF      0xFFFFFFFF
+ * name	    cfb8,4    cfb32,4      cfb8,8    cfb32,8
+ * ----	    ------    -------      ------    -------
+ * PSZ	      8	        32	      8        32
+ * PGSZ	     32         32           64        64
+ * PGSZB      4          4            8         8
+ * PGSZBMSK 0xF        0xF         0xFF      0xFF
+ * PPW	      4	         1	      8         2
+ * PPWMSK   0xF        0x1         0xFF       0x3    
+ * PLST	      3	         0	      7         1
+ * PIM	    0x3        0x0	    0x7       0x1
+ * PWSH	      2	         0	      3         1
+ * PMSK	    0xFF      0xFFFFFFFF   0xFF      0xFFFFFFFF
  *
  *
  * I have also added a new macro, PFILL, that takes one pixel and
