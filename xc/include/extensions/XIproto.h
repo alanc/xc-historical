@@ -1,4 +1,4 @@
-/* $Header: XIproto.h,v 1.18 91/05/19 09:28:47 gildea Exp $ */
+/* $Header: XIproto.h,v 1.19 91/07/17 16:35:38 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -131,6 +131,8 @@ struct tmask
 #define X_SendExtensionEvent 		31
 #define X_DeviceBell			32
 #define X_SetDeviceValuators		33
+#define X_GetDeviceControl		34
+#define X_ChangeDeviceControl		35
 
 /*********************************************************
  *
@@ -1137,6 +1139,88 @@ typedef struct {
     CARD32 	pad04 B32;
     CARD32 	pad05 B32;
 } xSetDeviceValuatorsReply;
+
+/*********************************************************
+ *
+ * GetDeviceControl.
+ *
+ */
+
+typedef struct {
+    CARD8 	reqType;	/* input extension major code	*/
+    CARD8 	ReqType;     	/* always X_GetDeviceControl 	*/
+    CARD16 	length B16;
+    CARD16      control B16;
+    CARD8       deviceid;
+    BYTE 	pad2;
+} xGetDeviceControlReq;
+
+typedef struct {
+    CARD8 	repType;  	/* X_Reply 			*/
+    CARD8 	RepType;     	/* always X_GetDeviceControl 	*/
+    CARD16 	sequenceNumber B16;
+    CARD32 	length B32;
+    CARD8 	status;
+    BYTE	pad1, pad2, pad3;
+    CARD32 	pad01 B32;
+    CARD32 	pad02 B32;
+    CARD32 	pad03 B32;
+    CARD32 	pad04 B32;
+    CARD32 	pad05 B32;
+} xGetDeviceControlReply;
+
+typedef struct {
+    CARD16  	control B16; 	/* control type     	 	*/
+    CARD16  	length B16; 	/* control length  		*/
+} xDeviceState;
+
+typedef struct {
+    CARD16  	control B16; 		/* control type     	 	*/
+    CARD16  	length B16; 		/* control length  		*/
+    CARD32  	num_valuators B32; 	/* number of valuators		*/
+} xDeviceResolutionState;
+
+/*********************************************************
+ *
+ * ChangeDeviceControl.
+ *
+ */
+
+typedef struct {
+    CARD8 	reqType;	/* input extension major code	*/
+    CARD8 	ReqType;     	/* always X_ChangeDeviceControl */
+    CARD16 	length B16;
+    CARD16      control B16;
+    CARD8       deviceid;
+    CARD8       num_valuators;
+} xChangeDeviceControlReq;
+
+typedef struct {
+    CARD8 	repType;  	/* X_Reply 			*/
+    CARD8 	RepType;     	/* always X_ChangeDeviceControl	*/
+    CARD16 	sequenceNumber B16;
+    CARD32 	length B32;
+    CARD8 	status;
+    BYTE	pad1, pad2, pad3;
+    CARD32 	pad01 B32;
+    CARD32 	pad02 B32;
+    CARD32 	pad03 B32;
+    CARD32 	pad04 B32;
+    CARD32 	pad05 B32;
+} xChangeDeviceControlReply;
+
+typedef struct {
+    CARD16  	control B16; 	/* control type     	 	*/
+    CARD16  	length B16; 	/* control length  		*/
+} xDeviceCtl;
+
+typedef struct {
+    CARD16  	control B16; 		/* control type     	 	*/
+    CARD16  	length B16; 		/* control length  		*/
+    CARD8  	first_valuator; 	/* first valuator to change     */
+    CARD8  	num_valuators; 		/* number of valuators to change*/
+    CARD8  	pad1,pad2;
+} xDeviceResolutionCtl;
 
 /**********************************************************
  *
