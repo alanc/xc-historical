@@ -117,6 +117,7 @@ HPLIBS = $(HP) \
           $(HP) \
           $(DIX) $(HPUX) $(MI) $(EXTENSIONS)
 HPSYSLIBS = $(SYSLIBS)
+XhpDIRS = $(HPDIRS)
 
 ServerTarget(Xhp,$(EXTDIR) $(HPDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
 
