@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XMacros.c,v 11.18 87/09/11 17:24:30 newman Exp $ */
+/* $Header: XMacros.c,v 11.19 88/02/01 13:15:12 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 #include "Xlibint.h"
@@ -155,20 +155,20 @@ long XEventMaskOfScreen(s) Screen *s; { return (EventMaskOfScreen(s)); }
  * These macros are used to give some sugar to the image routines so that
  * naive people are more comfortable with them.
  */
-#undef XDestroyImage(ximage)
+#undef XDestroyImage
 XDestroyImage(ximage)
 	XImage *ximage;
 {
 	return((*((ximage)->f.destroy_image))((ximage)));
 }
-#undef XGetPixel(ximage, x, y)
+#undef XGetPixel
 unsigned long XGetPixel(ximage, x, y)
 	XImage *ximage;
 	int x, y;
 {
 	return ((*((ximage)->f.get_pixel))((ximage), (x), (y)));
 }
-#undef XPutPixel(ximage, x, y, pixel)
+#undef XPutPixel
 int XPutPixel(ximage, x, y, pixel)
 	XImage *ximage;
 	int x, y;
@@ -176,7 +176,7 @@ int XPutPixel(ximage, x, y, pixel)
 {
 	return((*((ximage)->f.put_pixel))((ximage), (x), (y), (pixel)));
 }
-#undef XSubImage(ximage, x, y, width, height)
+#undef XSubImage
 XImage *XSubImage(ximage, x, y, width, height)
 	XImage *ximage;
 	int x, y;
@@ -185,7 +185,7 @@ XImage *XSubImage(ximage, x, y, width, height)
 	return((*((ximage)->f.sub_image))((ximage), (x),
 		(y), (width), (height)));
 }
-#undef XAddPixel(ximage, value)
+#undef XAddPixel
 int XAddPixel(ximage, value)
 	XImage *ximage;
 	unsigned long value;
