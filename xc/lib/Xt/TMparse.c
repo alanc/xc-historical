@@ -166,6 +166,8 @@ NameValueRec propertyChanged[] = {
 #define DetailImmed 3
 
 EventKey events[] = {
+{"BtnDown",	    NULL, BPM, ButtonPress, DetailTable,(caddr_t)buttonNames},
+{"BtnUp", 	    NULL, BRM, ButtonRelease,DetailTable,(caddr_t)buttonNames},
 {"KeyPress",	    NULL, KPM, KeyPress,	DetailKeySym,	NULL},
 {"KeyRelease",	    NULL, KRM, KeyRelease,	DetailKeySym,	NULL},
 {"ButtonPress",     NULL, BPM, ButtonPress, DetailTable,(caddr_t)buttonNames},
@@ -201,8 +203,6 @@ EventKey events[] = {
 {"MappingNotify",   NULL, 0,   0/*mapping*/,	DetailNone,	NULL},
 
 {"Key", 	    NULL, KPM, KeyPress,	DetailKeySym,	NULL},
-{"BtnDown",	    NULL, BPM, ButtonPress, DetailTable,(caddr_t)buttonNames},
-{"BtnUp", 	    NULL, BRM, ButtonRelease,DetailTable,(caddr_t)buttonNames},
 {"Btn1Down",	    NULL, BPM, ButtonPress,	DetailImmed,(caddr_t)Button1},
 {"Btn1Up", 	    NULL, BRM, ButtonRelease,	DetailImmed,(caddr_t)Button1},
 {"Btn2Down", 	    NULL, BPM, ButtonPress,	DetailImmed,(caddr_t)Button2},
@@ -406,7 +406,7 @@ static char * ParseModifiers(str, modifierMaskP, modifierP)
     char *start;
     char modStr[100];
     Boolean notFlag;
-    ModifierMask maskBit;
+    Value maskBit;
 
     while (*str != '<') {
 	str = ScanWhitespace(str);
