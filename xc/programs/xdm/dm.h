@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.22 89/11/17 18:43:06 keith Exp $
+ * $XConsortium: dm.h,v 1.23 89/11/18 12:44:54 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -53,7 +53,7 @@ typedef union wait	waitType;
 
 # define waitVal(w)	(waitSig(w) ? (waitSig(w) * 256 + 1) : waitCode (w))
 
-typedef enum displayStatus { running, notRunning } DisplayStatus;
+typedef enum displayStatus { running, notRunning, zombie, phoenix } DisplayStatus;
 
 #ifndef FD_ZERO
 typedef	struct	my_fd_set { int fds_bits[1]; } my_fd_set;
@@ -123,6 +123,7 @@ struct display {
 	int		openRepeat;	/* open attempts to make */
 	int		openTimeout;	/* abort open attempt timeout */
 	int		startAttempts;	/* number of attempts at starting */
+	int		startTries;	/* current start try */
 	int		pingInterval;	/* interval between XSync */
 	int		pingTimeout;	/* timeout for XSync */
 	int		terminateServer;/* restart for each session */
@@ -176,6 +177,7 @@ struct verify_info {
 # define REMANAGE_DISPLAY	1	/* force remanage */
 # define UNMANAGE_DISPLAY	2	/* force deletion */
 # define RESERVER_DISPLAY	3	/* force server termination */
+# define OPENFAILED_DISPLAY	4	/* XOpenDisplay failed, retry */
 
 extern char	*config;
 
@@ -187,6 +189,7 @@ extern int	daemonMode;
 extern char	*pidFile;
 extern char	*remoteAuthDir;
 extern int	autoRescan;
+extern int	removeDomainname;
 
 extern struct display	*FindDisplayByName (),
 			*FindDisplayBySessionID (),
