@@ -1,0 +1,6 @@
+StringDefs.h: makestrs.c string.list
+	$(RM) $@ makestrs StringDefs.c ShellStr.h
+	-$(CC) -o makestrs makestrs.c $(CFLAGS) $(LOCAL_LDFLAGS) $(LDLIBS) $(EXTRA_LOAD_FLAGS)
+	./makestrs < string.list > StringDefs.c
+	$(RM) makestrs
+
