@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.38 89/09/08 14:32:43 keith Exp $ */
+/* $XConsortium: access.c,v 1.39 89/09/14 16:20:08 rws Exp $ */
 
 #include "Xos.h"
 #include "X.h"
@@ -34,9 +34,12 @@ SOFTWARE.
 #include <sys/ioctl.h>
 
 #ifdef hpux
-#include <sys/utsname.h>
+# include <sys/utsname.h>
+# ifdef HAS_IFREQ
+#  include <net/if.h>
+# endif
 #else
-#include <net/if.h>
+# include <net/if.h>
 #endif /* hpux */
 
 #include <netdb.h>
@@ -58,6 +61,10 @@ SOFTWARE.
 			 ((fam) == (host)->family &&\
 			  (length) == (host)->len &&\
 			  !acmp (address, (host)->addr, length))
+
+#ifdef hpux
+#define getpeername(fd, from, fromlen)	hpux_getpeername(fd, from, fromlen)
+#endif
 
 #define DONT_CHECK -1
 extern char	*index();
@@ -124,7 +131,7 @@ AccessUsingXdmcp ()
 
 #define FAMILIES ((sizeof familyMap)/(sizeof familyMap[0]))
 
-#ifdef hpux
+#if defined (hpux) && ! defined (HAS_IFREQ)
 /* Define this host for access control.  Find all the hosts the OS knows about 
  * for this fd and add them to the selfhosts list.
  * HPUX version - hpux does not have SIOCGIFCONF ioctl;
@@ -242,24 +249,35 @@ DefineSelf (fd)
 	    struct sockaddr broad_addr;
 
 	    XdmcpRegisterConnection (FamilyInternet, (char *)addr, len);
+	    broad_addr = ifr->ifr_addr;
+	    ((struct sockaddr_in *) &broad_addr)->sin_addr.s_addr =
+		htonl (INADDR_BROADCAST);
 #ifdef SIOCGIFBRDADDR
 	    {
 	    	struct ifreq    broad_req;
     
 	    	broad_req = *ifr;
-	    	ioctl (fd, SIOCGIFBRDADDR, &broad_req);
-	    	broad_addr = broad_req.ifr_addr;
+		if (ioctl (fd, SIOCGIFFLAGS, (char *) &broad_req) != -1 &&
+		    (broad_req.ifr_flags & IFF_BROADCAST) &&
+		    (broad_req.ifr_flags & IFF_UP)
+		    )
+		{
+		    broad_req = *ifr;
+		    if (ioctl (fd, SIOCGIFBRDADDR, &broad_req) != -1)
+			broad_addr = broad_req.ifr_addr;
+		    else
+			continue;
+		}
+		else
+		    continue;
 	    }
-#else
-	    broad_addr = ifr->ifr_addr;
-	    ((struct sockaddr_in *) &broad_addr)->sin_addr = INADDR_BROADCAST;
 #endif
 	    XdmcpRegisterBroadcastAddress ((struct sockaddr_in *) &broad_addr);
 	}
 #endif
     }
 }
-#endif /* hpux */
+#endif /* hpux && !HAS_IFREQ */
 
 AddLocalHosts ()
 {
@@ -672,7 +690,7 @@ ConvertAddr (saddr, len, addr)
     switch (saddr->sa_family)
     {
       case AF_UNSPEC:
-#ifndef hpux
+#ifdef UNIXCONN
       case AF_UNIX:
 #endif
         return (0);
