@@ -1,5 +1,5 @@
 /*
- * $XConsortium: constype.c,v 1.4 89/09/26 19:57:08 jim Exp $
+ * $XConsortium: constype.c,v 1.5 92/11/18 14:10:04 rws Exp kaleb $
  * 
  * consoletype - utility to print out string identifying Sun console type
  *
@@ -68,7 +68,11 @@ main (argc, argv)
 #include <fcntl.h>
 #include <sys/fbio.h>
 #else
+#ifndef __NetBSD__
 #include <sun/fbio.h>
+#else
+#include <machine/fbio.h>
+#endif
 #endif
 
 /* decoding as of Release 3.4 : fbio.h 1.3 87/01/09 SMI */
