@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.18 89/07/16 14:49:58 jim Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.19 89/08/10 12:11:24 keith Exp $";
 #endif 
 
 /***********************************************************
@@ -875,6 +875,20 @@ Cardinal * num_params;
  *
  ************************************************************/
  
+/*	Function Name: XawSimpleMenuAddGlobalActions
+ *	Description: adds the global actions to the simple menu widget.
+ *	Arguments: app_con - the appcontext.
+ *	Returns: none.
+ */
+
+void
+XawSimpleMenuAddGlobalActions(app_con)
+XtAppContext app_con;
+{
+  XtInitializeWidgetClass(simpleMenuWidgetClass);
+  XmuCallInitializers( app_con );
+}
+
 /*      Function Name: XawSimpleMenuAddEntryCallback
  *      Description: Adds an entry to the callback list.
  *      Arguments: w - the menu widget

@@ -2,7 +2,7 @@
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
 
- "$XConsortium: SimpleMenu.h,v 1.9 89/07/21 01:41:50 kit Exp $";
+ "$XConsortium: SimpleMenu.h,v 1.10 89/07/21 14:23:42 jim Exp $";
 
                         All Rights Reserved
 
@@ -168,6 +168,18 @@ extern WidgetClass simpleMenuWidgetClass;
  * Public Functions.
  *
  ************************************************************/
+
+/*	Function Name: XawSimpleMenuAddGlobalActions
+ *	Description: adds the global actions to the simple menu widget.
+ *	Arguments: app_con - the appcontext.
+ *	Returns: none.
+ */
+
+void 
+XawSimpleMenuAddGlobalActions(/* app_con */)
+/*
+XtAppContext app_con;
+*/
  
 /*      Function Name: XawSimpleMenuAddEntryCallback
  *      Description: Adds an entry to the callback list.
