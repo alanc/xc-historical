@@ -2,19 +2,12 @@
  * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
  */
 
-/*
- * Note that pre-SR10.1 releases are not supported.
- */
-
 #define OSName            Domain/OS SR10.2
 #define OSMajorVersion    10
 #define OSMinorVersion    2
 
 #define CCompilerMajorVersion   6
 #define CCompilerMinorVersion   0
-
-    /* Does cpp handle "##" correctly yet? (0=no, 1=yes) */
-#define CppFullANSISupport      0
 
 #define XapolloServer     Xapollo
 
@@ -23,25 +16,18 @@
 #define HasVoidSignalReturn NO
 
 
-XCOMM platform:  $XConsortium: apollo.cf,v 1.21 90/03/12 08:54:40 rws Exp $
+XCOMM platform:  $XConsortium: apollo.cf,v 1.22 90/11/30 11:13:33 rws Exp $
 XCOMM operating system:  OSName
 
 /*****************************************************************************
  *			  Platform-specific parameters                       *
  *****************************************************************************/
 
-#if (OSMajorVersion == 10) && (! CppFullANSISupport)
-#define DefaultCCOptions -U__STDC__ -D_PROTOTYPES
-#endif
+#define UnixCpp /**/
+#define DefaultCCOptions -DNOSTDHDRS -DUNIXCPP
 
-#if (OSMajorVersion == 10) && (OSMinorVersion < 2)
-    /* <netinet/tcp.h> doesn't exist until SR10.2 */
-#define ConnectionFlags -DTCPCONN -DNO_TCP_H
-#define OSReleaseDefines -DPRE_SR10_2
-#else
 #define ConnectionFlags -DTCPCONN
 #define OSReleaseDefines /* as nothing */
-#endif
 
 #define miOptChoices -DAVOID_GLYPHBLT -DNEED_OLD_MFB_MASKS
 
@@ -51,4 +37,3 @@ XCOMM operating system:  OSName
 
 #define FontDefines	-DFONT_SNF -DFONT_BDF
 #define FontFilters BDFTOSNFFILT SHELLPATH
-
