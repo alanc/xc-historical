@@ -30,6 +30,14 @@
 #include "xgas.icon"
 #include <X11/Shell.h>
 
+static String FallbackResources[] = {
+"*lab.height: 300",
+"*lab.width: 300",
+"*Scrollbar.height: 300",
+"*help.label: Missing app-defaults!",
+NULL
+};
+
 static XtResource resources[] = {
   { "timestepSize", "TimestepSize", XtRFloat, sizeof(float),
       XtOffset( LabDataPtr, timestepSize), XtRString, "3.0" },
@@ -72,6 +80,7 @@ main( argc, argv )
      int argc;
      char *argv[];
 {
+  XtAppContext app;
   Widget toplevel;
   Widget frame;
   Widget run, pause, step, quit;	/* Push Buttons */
@@ -85,8 +94,8 @@ main( argc, argv )
   Pixmap icon;
   
   /* TOPLEVEL */
-  toplevel = XtInitialize( argv[0], "XGas", NULL,
-			  0, &argc, argv);
+  toplevel = XtAppInitialize(&app, "XGas", NULL, 0, &argc, argv,
+			     FallbackResources, NULL, (Cardinal)0);
   
   /* Get Resources */
   XtGetApplicationResources( toplevel, (XtPointer) &labData, resources,
@@ -213,5 +222,5 @@ main( argc, argv )
   XtCallCallbacks( labData.chamber[0].control, XtNscrollProc, (XtPointer)300);
   XtCallCallbacks( labData.chamber[1].control, XtNscrollProc, (XtPointer)300);
   
-  XtMainLoop();
+  XtAppMainLoop(app);
 }
