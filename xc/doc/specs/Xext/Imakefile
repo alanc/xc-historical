@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.5 94/02/10 17:14:39 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.6 94/02/10 17:19:20 rws Exp $
 
 MakeSimpleDoc(shape,shape.ms)
 
@@ -7,3 +7,5 @@ MakeSimpleDoc(xtest,xtest.ms)
 MakeSimpleDoc(mit-shm,mit-shm.ms)
 
 MakeSimpleDoc(bigreq,bigreq.ms)
+
+MakeTblDoc(record,record.ms)
