@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.40 94/06/05 16:15:22 rws Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.41 94/06/06 16:18:16 matt Exp matt $
 /* only tested with Digital OSF/1 */
 
 #ifdef AlphaArchitecture
@@ -23,6 +23,7 @@ XCOMM operating system:  OSName
 #define HasPoll			YES
 #define HasVFork                NO
 #define InstallCmd installbsd
+#define RanlibCmd ranlib -t
 #if OSMajorVersion > 1 || OSMinorVersion > 0
 #define ModernOSF1		YES
 #else
@@ -56,6 +57,12 @@ XCOMM operating system:  OSName
 #if HasDECCplusplus
 #ifndef HasCplusplus 
 #define HasCplusplus YES
+#endif
+#ifndef SharedLibFresco
+#define SharedLibFresco NO
+#endif
+#ifndef SharedLibXtf
+#define SharedLibXtf NO
 #endif
 #ifndef CplusplusCmd
 #define CplusplusCmd /usr/bin/cxx
