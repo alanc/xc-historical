@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.1 89/06/21 15:19:07 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.2 89/07/03 13:23:58 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -307,10 +307,12 @@ Dispatch()
 
 		client->sequence++;
 		client->requestBuffer = (pointer)request;
+#ifdef DEBUG
 		if (client->requestLogIndex == MAX_REQUEST_LOG)
 		    client->requestLogIndex = 0;
 		client->requestLog[client->requestLogIndex] = request->reqType;
 		client->requestLogIndex++;
+#endif
 		if (result > (MAX_REQUEST_SIZE << 2))
 		    ErrorStatus = BadLength;
 		else
@@ -3329,7 +3331,9 @@ NextAvailableClient(ospriv)
     client->numSaved = 0;
     client->saveSet = (pointer *)NULL;
     client->noClientException = Success;
+#ifdef DEBUG
     client->requestLogIndex = 0;
+#endif
     client->requestVector = InitialVector;
     client->osPrivate = ospriv;
     client->swapped = FALSE;
