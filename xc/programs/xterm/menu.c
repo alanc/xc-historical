@@ -1,4 +1,4 @@
-/* $XConsortium: menu.c,v 1.51 91/03/27 12:09:27 gildea Exp $ */
+/* $XConsortium: menu.c,v 1.52 91/04/15 13:53:17 gildea Exp $ */
 /*
 Copyright 1989 Massachusetts Institute of Technology
 
@@ -90,8 +90,10 @@ MenuEntry fontMenuEntries[] = {
     { "font2",		do_vtfont, NULL },		/*  2 */
     { "font3",		do_vtfont, NULL },		/*  3 */
     { "font4",		do_vtfont, NULL },		/*  4 */
-    { "fontescape",	do_vtfont, NULL },		/*  5 */
-    { "fontsel",	do_vtfont, NULL }};		/*  6 */
+    { "font5",		do_vtfont, NULL },		/*  5 */
+    { "font6",		do_vtfont, NULL },		/*  6 */
+    { "fontescape",	do_vtfont, NULL },		/*  7 */
+    { "fontsel",	do_vtfont, NULL }};		/*  8 */
     /* this should match NMENUFONTS in ptyx.h */
 
 MenuEntry tekMenuEntries[] = {

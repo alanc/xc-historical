@@ -1,4 +1,4 @@
-/* $XConsortium: menu.h,v 1.17 91/03/29 13:47:56 gildea Exp $ */
+/* $XConsortium: menu.h,v 1.18 91/04/15 13:53:15 gildea Exp $ */
 
 /* Copyright 1989 Massachusetts Institute of Technology */
 
@@ -111,8 +111,10 @@ extern void HandleTekCopy();
 #define fontMenu_font2 2
 #define fontMenu_font3 3
 #define fontMenu_font4 4
-#define fontMenu_fontescape 5
-#define fontMenu_fontsel 6
+#define fontMenu_font5 5
+#define fontMenu_font6 6
+#define fontMenu_fontescape 7
+#define fontMenu_fontsel 8
 /* number of non-line items should match NMENUFONTS in ptyx.h */
 
 

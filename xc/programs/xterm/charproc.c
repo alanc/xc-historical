@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.148 91/04/26 13:59:06 gildea Exp $
+ * $XConsortium: charproc.c,v 1.149 91/04/26 14:43:52 gildea Exp $
  */
 
 /*
@@ -443,6 +443,12 @@ static XtResource resources[] = {
 	XtRString, (caddr_t) NULL},
 {"font4", "Font4", XtRString, sizeof(String),
 	XtOffsetOf(XtermWidgetRec, screen.menu_font_names[fontMenu_font4]),
+	XtRString, (caddr_t) NULL},
+{"font5", "Font5", XtRString, sizeof(String),
+	XtOffsetOf(XtermWidgetRec, screen.menu_font_names[fontMenu_font5]),
+	XtRString, (caddr_t) NULL},
+{"font6", "Font6", XtRString, sizeof(String),
+	XtOffsetOf(XtermWidgetRec, screen.menu_font_names[fontMenu_font6]),
 	XtRString, (caddr_t) NULL},
 };
 
@@ -2815,6 +2821,10 @@ void HandleSetFont(w, event, params, param_count)
 	    fontnum = fontMenu_font3; break;
 	  case '4':
 	    fontnum = fontMenu_font4; break;
+	  case '5':
+	    fontnum = fontMenu_font5; break;
+	  case '6':
+	    fontnum = fontMenu_font6; break;
 	  case 'e': case 'E':
 	    fontnum = fontMenu_fontescape; maxparams = 3; break;
 	  case 's': case 'S':

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.50 91/04/24 14:27:01 gildea Exp $
+ *	$XConsortium: ptyx.h,v 1.51 91/04/26 13:28:24 gildea Exp $
  */
 
 /*
@@ -132,7 +132,7 @@ typedef Char **ScrnBuf;
 #define	APC	0x9F
 #define	RDEL	0xFF
 
-#define NMENUFONTS 7			/* entries in fontMenu */
+#define NMENUFONTS 9			/* entries in fontMenu */
 
 #define	NBOX	5			/* Number of Points in box	*/
 #define	NPARAM	10			/* Max. parameters		*/
