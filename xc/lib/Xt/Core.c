@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char rcsid[] = "$Header: Core.c,v 1.13 88/02/26 12:32:11 swick Exp $";
+static char rcsid[] = "$Header: Core.c,v 1.14 88/05/03 12:49:11 swick Exp $";
 #endif lint
 
 
@@ -275,9 +275,15 @@ static void CoreDestroy (widget)
     _XtUnregisterWindow(widget->core.window, widget);
     if (widget->core.constraints != NULL)
 	XtFree((char *) widget->core.constraints);
-    for (i = 0; i < widget->core.num_popups; i++)
-        XDestroyWindow(XtDisplay(widget->core.popup_list[i]),
-		       widget->core.popup_list[i]->core.window);
+    for (i = 0; i < widget->core.num_popups; i++) {
+	/* This code assumes that popups are always on the same display
+	 * as their parent.  We've had to cache the popup window id in
+	 * the popup list (in ShellDestroy), as the widget has been freed
+	 * by the time we reach this point.
+	 */
+	register Window win = (Window)widget->core.popup_list[i];
+	if (win) XDestroyWindow(XtDisplay(widget), win);
+    }
     if (widget->core.popup_list != NULL) XtFree(widget->core.popup_list);
     XtFree((char *) widget);
 } /* CoreDestroy */
