@@ -779,6 +779,12 @@ This function raises the lowest window that is obscured by other windows.
 .IP "\fBf.cutfile\fP" 8
 This function takes the contents of the window server's cut buffer 
 and uses it as a filename to read into the server's cut buffer.
+.IP "\fBf.delete\fP" 8
+This function asks the client application to remove the indicated window if
+the window has subscribed to the WM_DELETE_WINDOW window manager protocol.
+If the indicated window is an icon manager, \fItwm\fP will hide it.  If the
+window does not have WM_DELETE_WINDOW in its WM_PROTOCOLS list, the bell will
+be wrung and no action taken.
 .IP "\fBf.deiconify\fP" 8
 This function deiconifies a window.  If the window is not an icon, this
 function does nothing.
@@ -990,6 +996,10 @@ the current state of the window.
 .IP "\fBf.rightzoom\fP" 8
 This variable is similar to the \fBf.bottomzoom\fP function but causes
 the window to be resized to the right half of the display.
+.IP "\fBf.saveyourself\fP" 8
+This function asks the client application to checkpoint all state associated
+with the indicated window if that window subscribes to the WM_SAVEYOURSELF
+window manager protocol.  Otherwise, the bell is wrung and no action is taken.
 .IP "\fBf.showiconmgr\fP" 8
 This function causes the icon manager window to become mapped (visible).
 .IP "\fBf.sorticonmgr\fP" 8
