@@ -44,7 +44,7 @@ button unless it has been changed with \fIxmodmap\fP) on a
 titlebutton will invoke the function associated with the button.
 In the default interface, windows are iconified by clicking (pressing
 and then immediately releasing) the left titlebutton (which looks
-like a small X).  Conversely, windows are deiconified by clicking in the
+like a Dot).  Conversely, windows are deiconified by clicking in the
 associated icon or entry in the icon manager
 (see description of the variable
 \fBShowIconManager\fP and of the function \fBf.showiconmgr\fP).
@@ -947,7 +947,9 @@ the client application has requested it through the WM_PROTOCOLS window
 property.  The application is supposed to respond to the message by removing
 the indicated window.  If the window has not requested
 WM_DELETE_WINDOW messages, the keyboard bell will be rung indicating that 
-the user should choose an alternative method.
+the user should choose an alternative method.  Note this is very different
+from f.destroy.  The intent here is to delete a single window,  not 
+necessarily the entire application.
 .IP "\fBf.deltastop\fP" 8
 This function allows a user-defined function to be aborted if the pointer has 
 been moved more than \fIMoveDelta\fP pixels.  See the example definition
@@ -955,7 +957,7 @@ given for \fBFunction "move-or-raise"\fP at the beginning of the section.
 .IP "\fBf.destroy\fP" 8
 This function instructs the X server to close the display connection of the
 client that created the selected window.  This should only be used as a last 
-resort for shutting down runaway clients.  
+resort for shutting down runaway clients.  See also f.delete.
 .IP "\fBf.downiconmgr\fI" 8
 This function warps the pointer to the next row in the current icon manger,
 wrapping to the beginning of the next column if necessary.
@@ -1049,6 +1051,7 @@ This function displays an outline of the selected window.  Crossing a border
 rubber band until the invoking button is released.  To abort a resize,
 press another button before releasing the first button.
 .IP "\fBf.restart\fP" 8
+
 This function kills and restarts \fItwm\fP.
 .IP "\fBf.righticonmgr\fI" 8
 This function is similar to \fBf.nexticonmgr\fP except that wrapping does
