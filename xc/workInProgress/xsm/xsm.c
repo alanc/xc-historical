@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.23 94/02/17 13:08:02 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.24 94/02/18 16:04:04 converse Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -352,9 +352,11 @@ char 		*previousId;
 		break;
 	    }
 	}
+	free (previousId);
+    } else {
+	SmsSaveYourself(smsConn, SmSaveLocal, False, SmInteractStyleNone,
+			False);
     }
-
-    if(previousId) free (previousId);
 
     return (1);
 }
