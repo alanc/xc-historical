@@ -1,4 +1,4 @@
-/* $XConsortium: pl_startup.c,v 1.3 92/06/12 11:52:46 mor Exp $ */
+/* $XConsortium: pl_startup.c,v 1.4 92/07/16 10:58:43 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -28,12 +28,15 @@ SOFTWARE.
 #include "PEXlib.h"
 #include "PEXlibint.h"
 #include "pl_global_def.h"
+#include <stdio.h>
 
 
-Status
-PEXInitialize (display)
+int
+PEXInitialize (display, length, error_string)
 
 INPUT Display	*display;
+INPUT int	length;
+OUTPUT char	*error_string;
 
 {
     pexGetExtensionInfoReq	*req;
@@ -48,7 +51,8 @@ INPUT Display	*display;
 
     extern XExtCodes		*XInitExtension();
     extern Status		_PEXConvertMaxHitsEvent();
-    char			*_PEXLookupErrorString();
+    Bool			_PEXConvertOCError();
+    void			_PEXPrintOCError();
     int				_PEXCloseDisplay();
 
 
@@ -65,7 +69,14 @@ INPUT Display	*display;
 
     if ((pExtCodes = XInitExtension (display, "X3D-PEX")) == NULL)
     {
-	return (0);
+        UnlockDisplay (display);
+	PEXSyncHandle (display);
+
+	XGetErrorDatabaseText (display, "PEXlibMessage", "BadExtension",
+	    "Could not initialize the PEX extension on the specified display",
+            error_string, length);
+
+	return (PEXBadExtension);
     }
 
 
@@ -78,6 +89,18 @@ INPUT Display	*display;
 
     pexDisplayInfo = (PEXDisplayInfo *)
 	PEXAllocBuf ((unsigned) (sizeof (PEXDisplayInfo)));
+
+    if (!pexDisplayInfo)
+    {
+        UnlockDisplay (display);
+	PEXSyncHandle (display);
+
+	XGetErrorDatabaseText (display, "PEXlibMessage", "BadLocalAlloc",
+	    "Could not allocate memory for PEXlib internal usage",
+            error_string, length);
+
+	return (PEXBadLocalAlloc);
+    }
 
     PEXAddDisplayInfo (display, pexDisplayInfo);
 
@@ -98,9 +121,21 @@ INPUT Display	*display;
      */
 
     enumType = PEXETFloatFormat;
-    enumReturn = pexDisplayInfo->fpSupport =
-	PEXGetEnumTypeInfo (display, DefaultRootWindow (display), 1,
-	&enumType, PEXETIndex, &numReturn);
+
+    if (PEXGetEnumTypeInfo (display, DefaultRootWindow (display), 1,
+	&enumType, PEXETIndex, &numReturn, &enumReturn) == 0)
+    {
+        UnlockDisplay (display);
+	PEXSyncHandle (display);
+
+	XGetErrorDatabaseText (display, "PEXlibMessage", "GetEnumFailure",
+	    "Implicit call to PEXGetEnumTypeInfo by PEXInitialize failed",
+            error_string, length);
+
+	return (PEXBadFloatConversion);
+    }
+
+    pexDisplayInfo->fpSupport = enumReturn;
     pexDisplayInfo->fpCount = *numReturn;
 
     for (i = match = 0; i < *numReturn; i++)
@@ -110,7 +145,18 @@ INPUT Display	*display;
 	    break;
 	}
 
-    if (match || enumReturn == NULL || *numReturn == 0)
+    if (enumReturn == NULL || *numReturn == 0)
+    {
+        UnlockDisplay (display);
+	PEXSyncHandle (display);
+
+	XGetErrorDatabaseText (display, "PEXlibMessage", "NoFloats",
+	    "No floating point formats supported by server",
+            error_string, length);
+
+	return (PEXBadFloatConversion);
+    }
+    else if (match)
     {
 	pexDisplayInfo->fpFormat = NATIVE_FP_FORMAT;
 	pexDisplayInfo->fpConvert = 0;
@@ -125,14 +171,24 @@ INPUT Display	*display;
 
 
     /*
-     * Tell Xlib where to get the text for the PEX errors.
+     * Tell Xlib how to convert an Output Command error from
+     * wire to client format.
      */
 
-    XESetErrorString (display, pExtCodes->extension, _PEXLookupErrorString);
+    XESetWireToError (display, pExtCodes->first_error + BadPEXOutputCommand,
+	_PEXConvertOCError);
 
 
     /*
-     * Tell Xlib how to convert the MaxHitReachedEvent.
+     * Tell Xlib how to print the OC error.
+     */
+
+    XESetPrintErrorValues (display, pExtCodes->extension, _PEXPrintOCError);
+
+
+    /*
+     * Tell Xlib how to convert a MaxHitReachedEvent from
+     * wire to host format.
      */
 
     XESetWireToEvent (display, pExtCodes->first_event + PEXMaxHitsReached,
@@ -158,7 +214,12 @@ INPUT Display	*display;
     {
         UnlockDisplay (display);
 	PEXSyncHandle (display);
-	return (0);              /* return an error */
+
+	XGetErrorDatabaseText (display, "PEXlibMessage", "GetInfoFailure",
+	    "Could not get PEX extension information",
+            error_string, length);
+
+	return (PEXBadExtension);
     }
 
 
@@ -166,7 +227,18 @@ INPUT Display	*display;
      * Get the vendor name string and null terminate it.
      */
 
-    string = (char *) PEXAllocBuf ((unsigned) (rep.lengthName + 1));
+    if (!(string = (char *) PEXAllocBuf ((unsigned) (rep.lengthName + 1))))
+    {
+        UnlockDisplay (display);
+	PEXSyncHandle (display);
+
+	XGetErrorDatabaseText (display, "PEXlibMessage", "BadLocalAlloc",
+	    "Could not allocate memory for PEXlib internal usage",
+            error_string, length);
+
+	return (PEXBadLocalAlloc);
+    }
+
     _XReadPad (display, (char *) string, (long) (rep.lengthName));
     string[rep.lengthName] = '\0';
 
@@ -186,6 +258,15 @@ INPUT Display	*display;
     extInfo = pexDisplayInfo->extInfo =	(PEXExtensionInfo *)
 	PEXAllocBuf ((unsigned) (sizeof (PEXExtensionInfo)));
 
+    if (!extInfo)
+    {
+	XGetErrorDatabaseText (display, "PEXlibMessage", "BadLocalAlloc",
+	    "Could not allocate memory for PEXlib internal usage",
+            error_string, length);
+
+	return (PEXBadLocalAlloc);
+    }
+
     extInfo->major_version = rep.majorVersion;
     extInfo->minor_version = rep.minorVersion;
     extInfo->release = rep.release;
@@ -195,7 +276,22 @@ INPUT Display	*display;
     extInfo->first_event = pExtCodes->first_event;
     extInfo->first_error = pExtCodes->first_error;
 
-    return (1);
+    if (rep.majorVersion == PEX_PROTO_MAJOR)
+	return (0);
+    else
+    {
+	char str[PEXErrorStringLength];
+
+	XGetErrorDatabaseText (display, "PEXlibMessage", "BadProtoVersion",
+	    "Client speaks PEX %d.%d; Server speaks PEX %d.%d",
+            str, PEXErrorStringLength);
+
+	sprintf (error_string, str,
+            PEX_PROTO_MAJOR, PEX_PROTO_MINOR,
+	    rep.majorVersion, rep.minorVersion);
+  
+	return (PEXBadProtocolVersion);
+    }
 }
 
 
@@ -232,9 +328,9 @@ INPUT Display	*display;
  * be compatible with the PEX SI.  In 6.0, the encoding should be fixed.
  */
 
-PEXEnumTypeDesc *
+Status
 PEXGetEnumTypeInfo (display, drawable, numEnumTypes, enumTypes,
-    itemMask, numReturn)
+    itemMask, numReturn, enumInfoReturn)
 
 INPUT Display			*display;
 INPUT Drawable			drawable;
@@ -242,6 +338,7 @@ INPUT unsigned long		numEnumTypes;
 INPUT int			*enumTypes;
 INPUT unsigned long		itemMask;
 OUTPUT unsigned long		**numReturn;
+OUTPUT PEXEnumTypeDesc		**enumInfoReturn;
 
 {
     pexGetEnumTypeInfoReq	*req;
@@ -252,7 +349,6 @@ OUTPUT unsigned long		**numReturn;
     char			*pstring;
     CARD16			*dstEnumType;
     int				*srcEnumType;
-    PEXEnumTypeDesc		*enumInfoReturn;
     int				numDescs, totDescs, length, i, j;
 
 
@@ -285,7 +381,8 @@ OUTPUT unsigned long		**numReturn;
 	UnlockDisplay (display);
 	PEXSyncHandle (display);
 	*numReturn = NULL;
-	return (NULL);			/* return an error */
+	*enumInfoReturn = NULL;
+	return (0);			/* return an error */
     }
 
 
@@ -298,7 +395,8 @@ OUTPUT unsigned long		**numReturn;
 	UnlockDisplay (display);
 	PEXSyncHandle (display);
 	*numReturn = NULL;
-	return (NULL);			/* return an error */
+	*enumInfoReturn = NULL;
+	return (0);			/* return an error */
     }
 
 
@@ -353,7 +451,7 @@ OUTPUT unsigned long		**numReturn;
      * Allocate storage for enum data to be returned to the client.
      */
 
-    enumInfoReturn = penum = (PEXEnumTypeDesc *)
+    *enumInfoReturn = penum = (PEXEnumTypeDesc *)
 	PEXAllocBuf ((unsigned) (totDescs * sizeof (PEXEnumTypeDesc)));
 
 
@@ -430,22 +528,22 @@ OUTPUT unsigned long		**numReturn;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (enumInfoReturn);
+    return (1);
 }
 
 
-PEXImpDepConstant *
-PEXGetImpDepConstants (display, drawable, numNames, names)
+Status
+PEXGetImpDepConstants (display, drawable, numNames, names, constantsReturn)
 
-INPUT Display		*display;
-INPUT Drawable		drawable;
-INPUT unsigned long	numNames;
-INPUT unsigned short	*names;
+INPUT Display			*display;
+INPUT Drawable			drawable;
+INPUT unsigned long		numNames;
+INPUT unsigned short		*names;
+OUTPUT PEXImpDepConstant	**constantsReturn;
 
 {
     pexGetImpDepConstantsReq	*req;
     pexGetImpDepConstantsReply	rep;
-    PEXImpDepConstant		*constantsReturn;
     int				convertFP;
 
 
@@ -472,7 +570,8 @@ INPUT unsigned short	*names;
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
-        return (NULL);            /* return an error */
+	*constantsReturn = NULL;
+        return (0);            /* return an error */
     }
 
 
@@ -480,7 +579,7 @@ INPUT unsigned short	*names;
      * Allocate a buffer for the client.
      */
 
-    constantsReturn = (PEXImpDepConstant *) PEXAllocBuf (
+    *constantsReturn = (PEXImpDepConstant *) PEXAllocBuf (
 	(unsigned) (numNames * sizeof (PEXImpDepConstant)));
 
 
@@ -488,7 +587,7 @@ INPUT unsigned short	*names;
      * Copy the values into the buffer.
      */
 
-    _XRead (display, (char *) constantsReturn,
+    _XRead (display, (char *) *constantsReturn,
 	(long) (numNames * sizeof (CARD32)));
 
 
@@ -499,13 +598,13 @@ INPUT unsigned short	*names;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (constantsReturn);
+    return (1);
 }
 
 
-PEXRenderingTarget *
+Status
 PEXMatchRenderingTargets (display, drawable, depth, type, visual,
-    maxTargets, numTargets)
+    maxTargets, numTargets, targets)
 
 INPUT Display			*display;
 INPUT Drawable			drawable;
@@ -514,11 +613,12 @@ INPUT int			type;
 INPUT Visual			*visual;
 INPUT unsigned long  	        maxTargets;
 OUTPUT unsigned long		*numTargets;
+OUTPUT PEXRenderingTarget	**targets;
 
 {
     pexMatchRenderingTargetsReq		*req;
-    pexMatchRenderingTargetsReply        rep;
-    PEXRenderingTarget			*info, *targets;
+    pexMatchRenderingTargetsReply       rep;
+    PEXRenderingTarget			*info;
     pexRendererTarget			*matchRec;
     int					i;
 
@@ -547,7 +647,8 @@ OUTPUT unsigned long		*numTargets;
         UnlockDisplay (display);
         PEXSyncHandle (display);
 	*numTargets = 0;
-        return (NULL);               /* return an error */
+	*targets = NULL;
+        return (0);               /* return an error */
     }
 
     *numTargets = rep.length / 2;
@@ -567,7 +668,7 @@ OUTPUT unsigned long		*numTargets;
      * Allocate a buffer for the target list to pass back to the client.
      */
 
-    targets = info = (PEXRenderingTarget *) PEXAllocBuf (
+    *targets = info = (PEXRenderingTarget *) PEXAllocBuf (
 	(unsigned) (*numTargets * sizeof (PEXRenderingTarget)));
 
     for (i = 0; i < *numTargets; i++)
@@ -587,79 +688,89 @@ OUTPUT unsigned long		*numTargets;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (targets);
+    return (1);
 }
 
 
 /*
- * Routine to return the PEX error message for PEX errors.
+ * Routine called to convert an Output Command error from wire format
+ * to client format.  The callback is set up in PEXInitialize.
+ */
+
+Bool
+_PEXConvertOCError (display, client_error, wire_error)
+
+INPUT Display		*display;
+OUTPUT XErrorEvent	*client_error;
+INPUT xError		*wire_error;
+
+{
+    PEXOCErrorEvent		*client = (PEXOCErrorEvent *) client_error;
+    pexOutputCommandError	*wire = (pexOutputCommandError *) wire_error;
+
+
+    /*
+     * PEXOCErrorEvent = XErrorEvent + oc_op_code + ocs_processed_count
+     * Xlib will convert all of the XErrorEvent fields.  We must
+     * convert the op code and count.
+     */
+
+    client->op_code = wire->opcode;
+    client->count = wire->numCommands;
+
+    return (True);
+}
+
+
+/*
+ * Routine called when an Output Command error is printed.
  * The callback is set up in PEXInitialize.
  */
 
-char *
-_PEXLookupErrorString (display, errorcode, extCodes, buffer, nbytes)
+void
+_PEXPrintOCError (display, error, fp)
 
-INPUT	Display		*display;
-INPUT	int		errorcode;
-INPUT	XExtCodes	*extCodes;
-INPUT	char		*buffer;
-INPUT	int		nbytes;
-
+INPUT Display		*display;
+INPUT XErrorEvent	*error;
+#ifdef __STDC__
+INPUT void		*fp;
+#else
+INPUT FILE		*fp;
+#endif
 {
-    char	*defaultp;
-    char	buf[32];
-    int		code;
-
-
     /*
-     * Note that there is no way with the current extension interface to
-     * access the opcode and numCorrect fields of the OutputCommand error.
+     * Xlib bug - extension codes should be passed to this function,
+     * but they're not.  We must get them ourselves.
      */
 
-    /*
-     * Xlib calls this for all errors.  Is this an error we know
-     * anything about?
-     */
+    PEXDisplayInfo 	*pexDisplayInfo;
+    char		opcode_message[PEXErrorStringLength];
+    char		oc_count_message[PEXErrorStringLength];
 
-    code = errorcode - extCodes->first_error;
-    if ((code <= PEXMaxError) && (code >= 0))
+
+    PEXGetDisplayInfo (display, pexDisplayInfo);
+
+    if (error->error_code ==
+	pexDisplayInfo->extCodes->first_error + BadPEXOutputCommand)
     {
-	/*
-	 * Set up the default message for XGetErrorDatabaseText.
-	 */
+	PEXOCErrorEvent	*oc_error = (PEXOCErrorEvent *) error;
 
-	defaultp = PEXErrorList[code];
+	XGetErrorDatabaseText (display,
+	    "PEXlibMessage", "OCErrorOpCode",
+	    "Opcode of failed output command : %d\n",
+            opcode_message, PEXErrorStringLength);
 
+	XGetErrorDatabaseText (display,
+	    "PEXlibMessage", "OCErrorCount",
+	    "Number of output commands processed before error : %d\n",
+            oc_count_message, PEXErrorStringLength);
 
-	/*
-	 * Even though the Xlib doc says this wants the application name in the
-	 * 2nd arg and the message type in the 3rd arg, Xlib calls it with the
-	 * message type in the 2nd arg and the ASCIIized error code in the 3rd
-	 * arg.  This seems to match what's in XErrorDB.
-	 */
+	fprintf (fp, "  ");
+	fprintf (fp, opcode_message, oc_error->op_code);
 
-	/*
-	 * Convert the error code to ASCII.
-	 */
-
-	sprintf (buf, "%d", code);
-
-
-	/*
-	 * Look up the error in the error database.  This is the proper way
-	 * to do things, even though we have no errors there now.
-	 */
-
-	XGetErrorDatabaseText (display, "PEXProtoError", buf, defaultp,
-	    buffer, nbytes);
+	fprintf (fp, "  ");
+	fprintf (fp, oc_count_message, oc_error->count);
     }
-
-
-    /*
-     * The R3 code ignores the error return.
-     */
-
-    return (buffer);
 }
 
 
