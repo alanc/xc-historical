@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.37 89/10/06 17:27:04 keith Exp $ */
+/* $XConsortium: window.c,v 5.38 89/10/08 15:19:50 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3426,7 +3426,7 @@ MapWindow(pWin, client)
         (* pScreen->RealizeWindow)(pWin);
 	(* pScreen->RegionInit) (&temp, NullBox, 0);
 	(* pScreen->RegionCopy) (&temp, &pWin->clipList);
-	(*pScreen->WindowExposures) (pWin, &temp);
+	(*pScreen->WindowExposures) (pWin, &temp, NullRegion);
 	(* pScreen->RegionUninit) (&temp);
     }
 
