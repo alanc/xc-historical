@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Create.c,v 1.46 88/09/20 17:47:45 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Create.c,v 1.47 88/10/17 20:19:21 swick Exp $";
 /* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
 #endif lint
 
@@ -281,6 +281,13 @@ static void RemovePopupFromParent(widget,closure,call_data)
 	Window win;
         if ((win = XtWindow(widget)) != NULL)
 	    XDestroyWindow( XtDisplay(widget), win );
+
+	return;
+	/* don't update parent's popup_list, as we won't then be able to find
+	 * this child for Phase2Destroy.  This also allows for the possibility
+	 * that a destroy callback higher up in the hierarchy may care to
+	 * know that this popup child once existed.
+	 */
     }
     parent->core.num_popups--;
     for (/*i=i*/; i<parent->core.num_popups; i++)
