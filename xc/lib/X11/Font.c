@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XFont.c,v 11.19 87/06/03 12:30:48 jg Exp $ */
+/* $Header: XFont.c,v 11.19 87/07/22 16:49:02 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -25,6 +25,15 @@ XFontStruct *XLoadQueryFont(dpy, name)
     dpy->request--;
     font_result = (_XQueryFont(dpy, fid));
     dpy->request++;
+    if (!font_result) {
+       /* if _XQueryFont returned NULL, then the OpenFont request got
+	  a BadName error.  This means that the following QueryFont
+	  request is guaranteed to get a BadFont error, since the id
+	  passed to QueryFont wasn't really a valid font id.  To read
+	  and discard this second error, we call _XReply again. */
+	xReply reply;
+	(void) _XReply (dpy, &reply, 0, xFalse);
+	}
     UnlockDisplay(dpy);
     SyncHandle();
     return font_result;
