@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.10 91/05/08 09:26:28 jap Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.11 91/05/08 17:36:28 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -73,14 +73,15 @@ without express or implied warranty.
 #ifndef OPEN_MAX
 #include <sys/param.h>
 #ifdef NOFILE
-#ifdef AIXV3 /* Limit size of array to 128 on AIXV3 as NOFILE = 2000! */
-#define OPEN_MAX 128
-#else  /* AIXV3 */
 #define OPEN_MAX NOFILE
-#endif /* AIXV3 */
 #else
 #define OPEN_MAX NOFILES_MAX
 #endif
+#endif
+
+#if OPEN_MAX > 256
+#undef OPEN_MAX
+#define OPEN_MAX 256
 #endif
 
 #define MSKCNT ((OPEN_MAX + 31) / 32)
