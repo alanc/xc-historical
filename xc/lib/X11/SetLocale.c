@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.31 91/05/02 10:55:38 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.32 91/05/13 08:45:00 rws Exp $
  */
 
 /*
@@ -118,8 +118,10 @@ _XlcMapOSLocaleName(osname, siname)
     int   len;
 
     start = index(osname, ':');
-    if (!start)
+    if (!start) {
+	strcpy(siname, osname);
 	return osname;
+    }
     start++;
     end = index(start, ';');
     if (!end)
