@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.18 90/08/20 15:19:54 swick Exp $ */
+/* $XConsortium: Keyboard.c,v 1.19 90/08/23 16:19:52 swick Exp $ */
 
 /********************************************************
 
@@ -574,27 +574,20 @@ void _XtHandleFocus(widget, client_data, event, cont)
 }
 
 
-static void AddFocusHandler(widget, descendant, pwi, pdi, oldEventMask)
+static void AddFocusHandler(widget, descendant, pwi, psi, pdi, oldEventMask)
     Widget widget, descendant;
     XtPerWidgetInput pwi;
+    XtPerWidgetInput psi;
     XtPerDisplayInput pdi;
     EventMask oldEventMask;
 {
-    XtPerWidgetInput	psi;
-    Widget		shell;
     EventMask	 	eventMask, targetEventMask;
     Widget		target;
 
     /*
-     * we are having this handler server double duty as the
-     * heir of ForwardEvent in R3. One thing that is needed is
-     * to guarantee that the descendant gets keyevents if
-     * interested 
-     */
-    shell = GetShell(widget);
-    psi = _XtGetPerWidgetInput(shell, TRUE);
-
-    /*
+     * widget must now select for key events if the descendant is
+     * interested in them.
+     *
      * shell borders are not occluded by the child, they're occluded
      * by reparenting window managers. !!!
      */
@@ -692,8 +685,10 @@ static void QueryEventMask(widget, client_data, event, cont)
 
     /* use of 'target' is non-standard hackery; allows focus to non-widget */
     if (pwi && (pwi->focusKid == target)) {
-	XtPerDisplayInput pdi = _XtGetPerDisplayInput(XtDisplay(ancestor));
-	AddFocusHandler(ancestor, target, pwi, pdi, (EventMask)0);
+	AddFocusHandler(ancestor, target, pwi,
+			_XtGetPerWidgetInput(GetShell(ancestor), TRUE),
+			_XtGetPerDisplayInput(XtDisplay(ancestor)),
+			(EventMask)0);
     }
     XtRemoveEventHandler(widget, XtAllEvents, True,
 			 QueryEventMask, client_data);
@@ -772,11 +767,23 @@ void XtSetKeyboardFocus(widget, descendant)
 	}
 	
 	if (descendant) {
+	    Widget shell = GetShell(widget);
+	    XtPerWidgetInput psi = _XtGetPerWidgetInput(shell, TRUE);
 	    XtAddCallback (descendant, XtNdestroyCallback, 
 			   FocusDestroyCallback, (XtPointer) widget);
 
-	    AddFocusHandler(widget, descendant, pwi, pdi,
+	    AddFocusHandler(widget, descendant, pwi, psi, pdi,
 			    oldTarget ? XtBuildEventMask(oldTarget) : 0);
+
+	    if (widget != shell)
+		XtAddEventHandler(
+			shell,
+			FocusChangeMask | EnterWindowMask | LeaveWindowMask,
+			False,
+			_XtHandleFocus,
+			(XtPointer)psi
+		       );
+
 	    if (! XtIsRealized(target)) {
 		XtAddEventHandler(target, (EventMask)StructureNotifyMask,
 				  False, QueryEventMask, (XtPointer)widget);
