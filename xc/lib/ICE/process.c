@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.11 93/09/24 15:52:58 mor Exp $ */
+/* $XConsortium: process.c,v 1.12 93/09/26 15:16:09 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -395,8 +395,8 @@ IceReplyWaitInfo *replyWait;
     iceErrorMsg *message;
     char 	*pData;
 
-    IceReadCompleteMessage (iceConn,
-	SIZEOF (iceErrorMsg), iceErrorMsg, message, pData);
+    IceReadMessage (iceConn, SIZEOF (iceErrorMsg),
+	iceErrorMsg, message, pData);
 
     if (swap)
     {
@@ -615,7 +615,7 @@ Bool			swap;
     char *release = NULL;
     int  accept_setup_now = 0;
 
-    IceReadCompleteMessage (iceConn, SIZEOF (iceConnectionSetupMsg),
+    IceReadMessage (iceConn, SIZEOF (iceConnectionSetupMsg),
 	iceConnectionSetupMsg, message, pData);
 
     EXTRACT_XPCS (pData, swap, vendor);
@@ -784,26 +784,10 @@ IceReplyWaitInfo	*replyWait;
     IceOCLauthStatus	status;
     IcePointer 		authState;
     int			realAuthIndex;
-    char		*tempBuf = NULL;
-    unsigned long 	bytes;
+    Bool		freeAuthData;
 
-    IceReadMessageHeader (iceConn, SIZEOF (iceAuthRequiredMsg),
-	iceAuthRequiredMsg, message);
-
-    bytes = (message->length << 3) - (SIZEOF (iceAuthRequiredMsg) - 8);
-
-    if ((iceConn->inbufmax - iceConn->inbufptr) >= bytes)
-    {
-	IceReadData (iceConn, bytes, iceConn->inbufptr);
-	authData = iceConn->inbufptr;
-	iceConn->inbufptr += bytes;
-    }
-    else
-    {
-	tempBuf = (char *) malloc ((unsigned) bytes);
-	authData = tempBuf;
-	IceReadData (iceConn, bytes, tempBuf);
-    }
+    IceCheckAndReadMessage (iceConn, SIZEOF (iceAuthRequiredMsg),
+	iceAuthRequiredMsg, message, authData, freeAuthData);
 
     if (iceConn->connect_to_you)
     {
@@ -820,8 +804,8 @@ IceReplyWaitInfo	*replyWait;
 	    _IceErrorAuthenticationFailed (iceConn,
 		ICE_AuthRequired, errorString);
 
-	    if (tempBuf)
-		free (tempBuf);
+	    if (freeAuthData)
+		free (authData);
 
 	    return (1);
 	}
@@ -848,8 +832,8 @@ IceReplyWaitInfo	*replyWait;
 	    _IceErrorAuthenticationFailed (iceConn,
 		ICE_AuthRequired, errorString);
 
-	    if (tempBuf)
-		free (tempBuf);
+	    if (freeAuthData)
+		free (authData);
 
 	    return (1);
 	}
@@ -874,8 +858,8 @@ IceReplyWaitInfo	*replyWait;
 
 	_IceErrorBadState (iceConn, 0, ICE_AuthRequired, IceCanContinue);
 
-	if (tempBuf)
-	    free (tempBuf);
+	if (freeAuthData)
+	    free (authData);
 
 	return (0);
     }
@@ -949,8 +933,8 @@ IceReplyWaitInfo	*replyWait;
     if (replyData && replyDataLen > 0)
 	free ((char *) replyData);
 
-    if (tempBuf)
-	free (tempBuf);
+    if (freeAuthData)
+	free (authData);
 
     return (status != IceOCLauthHaveReply);
 }
@@ -970,26 +954,10 @@ Bool		swap;
     int 		authDataLen;
     IcePointer 		authData = NULL;
     char		*errorString = NULL;
-    char		*tempBuf = NULL;
-    unsigned long 	bytes;
+    Bool		freeReplyData;
 
-    IceReadMessageHeader (iceConn, SIZEOF (iceAuthReplyMsg),
-	iceAuthReplyMsg, message);
-
-    bytes = (message->length << 3) - (SIZEOF (iceAuthReplyMsg) - 8);
-
-    if ((iceConn->inbufmax - iceConn->inbufptr) >= bytes)
-    {
-	IceReadData (iceConn, bytes, iceConn->inbufptr);
-        replyData = iceConn->inbufptr;
-	iceConn->inbufptr += bytes;
-    }
-    else
-    {
-	tempBuf = (char *) malloc ((unsigned) bytes);
-	replyData = tempBuf;
-	IceReadData (iceConn, bytes, tempBuf);
-    }
+    IceCheckAndReadMessage (iceConn, SIZEOF (iceAuthReplyMsg),
+	iceAuthReplyMsg, message, replyData, freeReplyData);
 
     replyDataLen = message->length << 3;
 
@@ -1144,8 +1112,8 @@ Bool		swap;
     if (errorString)
 	free (errorString);
 
-    if (tempBuf)
-	free (tempBuf);
+    if (freeReplyData)
+	free (replyData);
 }
 
 
@@ -1167,26 +1135,10 @@ IceReplyWaitInfo	*replyWait;
     IceOCLauthProc 	authProc;
     IceOCLauthStatus	status;
     IcePointer 		*authState;
-    char		*tempBuf = NULL;
-    unsigned long 	bytes;
+    Bool		freeAuthData;
 
-    IceReadMessageHeader (iceConn, SIZEOF (iceAuthNextPhaseMsg),
-	iceAuthNextPhaseMsg, message);
-
-    bytes = (message->length << 3) - (SIZEOF (iceAuthNextPhaseMsg) - 8);
-
-    if ((iceConn->inbufmax - iceConn->inbufptr) >= bytes)
-    {
-	IceReadData (iceConn, bytes, iceConn->inbufptr);
-	authData = iceConn->inbufptr;
-	iceConn->inbufptr += bytes;
-    }
-    else
-    {
-	tempBuf = (char *) malloc ((unsigned) bytes);
-	authData = tempBuf;
-	IceReadData (iceConn, bytes, tempBuf);
-    }
+    IceCheckAndReadMessage (iceConn, SIZEOF (iceAuthNextPhaseMsg),
+	iceAuthNextPhaseMsg, message, authData, freeAuthData);
 
     if (iceConn->connect_to_you)
     {
@@ -1213,8 +1165,8 @@ IceReplyWaitInfo	*replyWait;
 
 	_IceErrorBadState (iceConn, 0, ICE_AuthNextPhase, IceCanContinue);
 
-	if (tempBuf)
-	    free (tempBuf);
+	if (freeAuthData)
+	    free (authData);
 
 	return (0);
     }
@@ -1275,8 +1227,8 @@ IceReplyWaitInfo	*replyWait;
     if (replyData && replyDataLen > 0)
 	free ((char *) replyData);
 
-    if (tempBuf)
-	free (tempBuf);
+    if (freeAuthData)
+	free (authData);
 
     return (status != IceOCLauthHaveReply);
 }
@@ -1294,7 +1246,7 @@ IceReplyWaitInfo 	*replyWait;
     iceConnectionReplyMsg 	*message;
     char 			*pData;
 
-    IceReadCompleteMessage (iceConn, SIZEOF (iceConnectionReplyMsg),
+    IceReadMessage (iceConn, SIZEOF (iceConnectionReplyMsg),
 	iceConnectionReplyMsg, message, pData);
 
     if (iceConn->connect_to_you)
@@ -1375,7 +1327,7 @@ Bool			swap;
 	iceConn->want_to_close = 0;
     }
 
-    IceReadCompleteMessage (iceConn, SIZEOF (iceProtocolSetupMsg),
+    IceReadMessage (iceConn, SIZEOF (iceProtocolSetupMsg),
 	iceProtocolSetupMsg, message, pData);
 
     if (iceConn->process_msg_info && iceConn->process_msg_info[
@@ -1618,7 +1570,7 @@ IceReplyWaitInfo 	*replyWait;
     iceProtocolReplyMsg *message;
     char		*pData;
 
-    IceReadCompleteMessage (iceConn, SIZEOF (iceProtocolReplyMsg),
+    IceReadMessage (iceConn, SIZEOF (iceProtocolReplyMsg),
 	iceProtocolReplyMsg, message, pData);
 
     if (iceConn->protosetup_to_you)
