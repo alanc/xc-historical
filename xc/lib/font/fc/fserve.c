@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -33,9 +34,10 @@
 #include	"FS.h"
 #include	"FSproto.h"
 #include	"fservestr.h"
-#include	"assert.h"
 #include	<errno.h>
+#ifdef DEBUG
 #include	<stdio.h>
+#endif
 
 #define	check_conn(conn)	if (conn->fs_fd == -1) return AllocError
 
@@ -48,6 +50,8 @@ extern int  fs_build_range();
 static int  fs_read_glyphs();
 static int  fs_read_list();
 static int  fs_read_list_info();
+static int  fs_read_extents();
+static int  fs_read_bitmaps();
 
 static int  fs_font_type;
 extern unsigned long fs_fd_mask[];

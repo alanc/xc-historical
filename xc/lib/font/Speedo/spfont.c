@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: spfont.c,v 1.3 91/05/11 09:58:01 rws Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -48,6 +48,7 @@ static int  get_sp_glyphs(),
             get_sp_bitmaps(),
             get_sp_metrics(),
             get_sp_extents();
+static int load_sp_font();
 
 static CharInfoRec junkDefault;
 

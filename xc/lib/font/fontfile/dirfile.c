@@ -1,5 +1,5 @@
 #endif /* lint */
- * $XConsortium$
+ * $XConsortium: dirfile.c,v 1.1 91/05/10 14:46:29 keith Exp $
  *
 /*
  * Copyright 1991 Massachusetts Institute of Technology
@@ -34,6 +34,8 @@
 #include    <sys/errno.h>
 
 extern int  errno;
+#endif
+
 static int ReadFontAlias();
 
 int

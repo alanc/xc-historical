@@ -7,7 +7,10 @@
 
 #include	<stdio.h>
 
-#ifdef X_NOT_STDC_ENV
+#include <X11/Xosdefs.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
 char       *getenv();
 #endif
 
