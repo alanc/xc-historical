@@ -1,3 +1,6 @@
+/* $XConsortum: TekCMS_TCI.c,v 1.1 91/02/11 19:40:35 dave Exp $ */
+
+
 /*
  * (c) Copyright 1990, Tektronix Inc.
  * 	All Rights Reserved
@@ -34,13 +37,6 @@
  *			Create the test case function.
  */
 
-#ifndef LINT
-static char *copy_notice = "(c) Copyright 1990 Tektronix, Inc., All Rights Reserved.";
-#  ifdef RCS_ID
-static char *rcsid=  "$Header: TekCMS_TCI.c,v 1.3 90/11/13 13:24:21 alt Exp $";
-#  endif /* RCS_ID */
-#endif LINT
-
 
 /*
  *      EXTERNAL INCLUDES
@@ -56,7 +52,8 @@ static char *rcsid=  "$Header: TekCMS_TCI.c,v 1.3 90/11/13 13:24:21 alt Exp $";
  *              program using this package.
  */
 #include <stdio.h>
-#include "TekCMS.h"
+#include <X11/Xlib.h>
+#include <X11/Xcms.h>
 #ifdef AUTOHEADER
 #  include "TekCMS_LT.ah"
 #  include "TestInit.ah"

@@ -1,3 +1,5 @@
+/* $XConsortium: TekCMS_LT.c,v 1.1 91/02/11 19:40:04 dave Exp $ */
+
 /*
  * (c) Copyright 1990, Tektronix Inc.
  * 	All Rights Reserved
@@ -38,14 +40,6 @@
  *			contains the remainder of the command.
  */
 
-#ifndef LINT
-static char *copy_notice = "(c) Copyright 1990 Tektronix, Inc., All Rights Reserved.";
-#  ifdef RCS_ID
-static char *rcsid=  "$Header: TekCMS_LT.c,v 1.18 91/01/31 13:24:40 alt Exp $";
-#  endif /* RCS_ID */
-#endif LINT
-
-
 /*
  *      EXTERNAL INCLUDES
  *              Include files that must be exported to any package or
@@ -62,9 +56,8 @@ static char *rcsid=  "$Header: TekCMS_LT.c,v 1.18 91/01/31 13:24:40 alt Exp $";
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include "TekCMS.h"
-#include "TekCMSext.h"
-#include "XcmsStdIll.h"
+#include <X11/Xlib.h>
+#include <X11/Xcms.h>
 
 #ifdef AUTOHEADER
 #  include "TestInit.ah"
@@ -2000,7 +1993,8 @@ AdjustValue_Usage:
     HVC_return.pixel = 0;
     printf("\tHUE CHROMA IN:\n");
     PrintXcmsColorSpec(&HVC_return);
-    if ((XcmsConvertColors(_pTest_CCC, &HVC_return, 1, XCMS_CIEXYZ_FORMAT, NULL))
+    if ((XcmsConvertColors(_pTest_CCC, &HVC_return, 1, 
+			   XCMS_CIEXYZ_FORMAT, NULL))
 	== XCMS_FAILURE) {
 	printf("\tXcmsConvertColors returned FAIL\n");
 	return(0);
@@ -2194,7 +2188,6 @@ Cmd_PrefixOfId(buf)
  *
  */
 {
-    extern char * XcmsPrefixOfID();
     int nargs;
     char tmpstr[BUFSIZ];
     char formatStr[BUFSIZ];
@@ -2228,7 +2221,7 @@ PrefixOfId_Usage:
     printf("\tFormat:\t%s\n", formatStr);
 
     printf("    RESULT:\n");
-    if ((prefix = XcmsPrefixOfID((XcmsCCC *)(_pTest_CCC), formatID)) == NULL) {
+    if ((prefix = XcmsPrefixOfID(formatID)) == NULL) {
 	printf("\tXcmsPrefixOfID() returned NULL\n");
 	return(0);
     }
@@ -2284,7 +2277,7 @@ IdOfPrefix_Usage:
     printf("\tprefix:\t%s\n", prefix);
 
     printf("    RESULT:\n");
-    formatID = XcmsIDofPrefix(_pTest_CCC, prefix);
+    formatID = XcmsIDofPrefix(prefix);
     printf("\tXcmsIDofPrefix() returned %u\n", formatID);
     printf("\t    %s\n", LtDefineToStr(FormatTbl, formatID));
     return(1);

@@ -7,11 +7,11 @@
 
 #define THOUSAND	1000
 
-LtDefineEntry ErrorTbl[] ;
+LtDefineEntry ErrorTbl [];
 
-LtDefineEntry AllocTbl[] ;
+LtDefineEntry AllocTbl [];
 
-LtDefineEntry FormatTbl[] ;
+LtDefineEntry FormatTbl [];
 #ifndef TEKCMSGLOB
 #define TEKCMSGLOB
 #endif

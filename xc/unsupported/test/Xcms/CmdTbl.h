@@ -7,12 +7,13 @@
 #else
 #endif
 
-#define LIBTEST_CMDTBL	LibTstCmdTbl
+#define LIBTEST_CMDTBL	LibTstCmdTbl 
 #define LIBTEST_COMMENT_CHAR    '#'
 #define LIBTEST_PROMPT	"TekCMS > "
 
 
-FuncTableEntry LibTstCmdTbl[] ;
+/*FuncTableEntry LibTstCmdTbl [];*/
+FuncTableEntry *LibTstCmdTbl;
 
 
 

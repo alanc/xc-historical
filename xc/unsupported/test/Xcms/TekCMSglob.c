@@ -1,3 +1,5 @@
+/* $XConsortum: TekCMSglob.c,v 1.1 91/02/11 19:40:44 dave Exp $ */
+
 /*
  *	Copyright (c) 1988, Tektronix, Inc.
  *	Confidential -- All proprietary rights reserved.
@@ -17,13 +19,6 @@
  *
  *	DESCRIPTION
  */
-#ifndef LINT
-static char *copy_notice = "Copyright 1988 Tektronix, Inc.";
-#ifdef RCS_ID
-static char *rcsid=  "$Header: TekCMSglob.c,v 1.4 91/01/22 22:03:28 alt Exp $";
-#endif RCS_ID
-#endif LINT
-
 
 /*
  *      EXTERNAL INCLUDES
@@ -39,7 +34,8 @@ static char *rcsid=  "$Header: TekCMSglob.c,v 1.4 91/01/22 22:03:28 alt Exp $";
  *              Include files that need NOT be exported to any package or
  *              program using this package.
  */
-#include "TekCMS.h"
+#include <X11/Xlib.h>
+#include <X11/Xcms.h>
 
 /*
  *	INTERNALS

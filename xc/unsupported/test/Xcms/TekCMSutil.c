@@ -1,3 +1,5 @@
+/* $XConsortum: TekCMSutil.c,v 1.1 91/02/11 19:40:54 dave Exp $ */
+
 /*
  * (c) Copyright 1990, Tektronix Inc.
  * 	All Rights Reserved
@@ -28,7 +30,7 @@
 #ifndef LINT
 static char *copy_notice = "(c) Copyright 1990 Tektronix, Inc., All Rights Reserved.";
 #  ifdef RCS_ID
-static char *rcsid=  "$Header: TekCMSutil.c,v 1.10 91/01/31 13:25:31 alt Exp $";
+
 #  endif /* RCS_ID */
 #endif LINT
 
@@ -47,7 +49,7 @@ static char *rcsid=  "$Header: TekCMSutil.c,v 1.10 91/01/31 13:25:31 alt Exp $";
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
-#include "TekCMS.h"
+#include <X11/Xcms.h>
 #include "LibTest.h"
 
 #ifdef AUTOHEADER

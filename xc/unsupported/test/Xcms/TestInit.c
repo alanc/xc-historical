@@ -1,3 +1,5 @@
+/* $XConsortium: TestInit.c,v 1.1 91/02/11 19:41:03 dave Exp $ */
+
 /*
  *	Copyright (c) 1988, Tektronix, Inc.
  *	Confidential -- All proprietary rights reserved.
@@ -17,13 +19,6 @@
  *
  *	DESCRIPTION
  */
-#ifndef LINT
-static char *copy_notice = "Copyright 1988 Tektronix, Inc.";
-#ifdef RCS_ID
-static char *rcsid=  "$Header: TestInit.c,v 1.4 90/11/13 13:24:36 alt Exp $";
-#endif /* RCS_ID */
-#endif /* LINT */
-
 
 /*
  *	EXTERNAL INCLUDES

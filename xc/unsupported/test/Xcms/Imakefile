@@ -1,4 +1,4 @@
-# $Header: Imakefile,v 1.5 90/11/13 12:09:36 alt Exp $
+# $Header: Imakefile,v 1.1 91/02/11 19:35:52 dave Exp $
 #include <Library.tmpl>
 
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
@@ -29,7 +29,7 @@ LIBTEST_CMDTBL_INCL = CmdTbl.h
             DEFINES =
 #endif
 
-           PROGNAME = LibTest
+           PROGNAME = cmstest
             CMD_SRC = TekCMS_LT.c
             CMD_OBJ = TekCMS_LT.o
        LIBTEST_INCL = LibTest.h
@@ -70,9 +70,11 @@ LIBTEST_CMDTBL_INCL = CmdTbl.h
                       $(CMD_OBJ)	\
                       TekCMS_TCI.o
 
+    LOCAL_LIBRARIES = $(XLIB)
+
 all:: $(HDRS)
 
-SingleProgramTarget($(PROGNAME), $(OBJS), $(LOCAL_LIBS), $(SYS_LIBS))
+ComplexProgramTarget(cmstest)
 
 headers:: $(HDRS)
 
@@ -123,8 +125,6 @@ depend::
 #endif
 
 NormalLibraryObjectRule()
-
-DependTarget()
 
 NormalLintTarget($(SRCS))
 

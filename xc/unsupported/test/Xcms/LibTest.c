@@ -1,3 +1,5 @@
+/* $XConsortium: cmstest.c,v 1.1 91/02/11 19:36:08 dave Exp $ */
+
 /*
  *	Copyright 1989 1990, Tektronix, Inc.
  *	Copyright 1989 1990 by The Massachusetts Institute of Technology
@@ -26,10 +28,10 @@
  *	THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  *	NAME
- *		LibTest - Interactive Library Testing Interface.
+ *		cmstest - Interactive Library Testing Interface.
  *
  *	SYNOPSIS
- *		LibTest
+ *		cmstest
  *
  *	DESCRIPTION
  *		This program is a front-end for testing the library.
@@ -52,13 +54,6 @@
  *			and generated and appropriately linked to this
  *			program.
  */
-
-#ifndef LINT
-static char *copy_notice = "(c) Copyright 1990 Tektronix, Inc., All Rights Reserved.";
-#  ifdef RCS_ID
-static char *rcsid=  "$Header: LibTest.c,v 1.4 90/11/13 13:23:49 alt Exp $";
-#  endif /* RCS_ID */
-#endif LINT
 
 /*
  *      EXTERNAL INCLUDES
@@ -85,11 +80,7 @@ int EchoInput = 0;	/* GLOBAL */
  *              program using this package.
  */
 #include <stdio.h>
-#ifdef AUTOHEADER
-#include "CmdTbl.ah"
-#else
 #include "CmdTbl.h"
-#endif
 
 /*
  *	INTERNALS
@@ -171,7 +162,8 @@ main(argc, argv)
 	    continue;
 	}
 	if (sscanf(buf, "%s", command) != 0) {
-	    if ((pfunc = LtStrToFuncPtr(LIBTEST_CMDTBL, command)) == (PFStatus) -1) {
+	  if ((pfunc = LtStrToFuncPtr(LIBTEST_CMDTBL, command)) 
+		== (PFStatus) -1) {
 		printf("Error: Invalid command\n\n");
 		fflush(stdout);
 		continue;
@@ -228,7 +220,7 @@ _XPrintDefaultError (dpy, event, fp)
     } else {
 	for (ext = dpy->ext_procs;
 	     ext && (ext->codes.major_opcode != event->request_code);
-	     ext = ext->next)
+	     ext = ext->next) /* SUPPRESS 530 */
 	  ;
 	if (ext)
 	    strcpy(buffer, ext->name);
@@ -345,10 +337,9 @@ LtErrorHandler (pDpy, pError)
  */
 PFStatus
 LtStrToFuncPtr(pde,pstring)
-    FuncTableEntry	pde[];	/* IN: table of string/functionptr  pairs
-			     *     last entry must contain pair "", 0
-			     */
-    char	*pstring;	/* IN: string to be looked up in that table	*/
+    FuncTableEntry	*pde;	/* IN: table of string/functionptr  pairs
+			     *     last entry must contain pair "", 0 */
+    char	*pstring;	/* IN: string to be looked up in that table  */
 /*
  *	DESCRIPTION
  *		Converts a string to an integer define.
@@ -364,6 +355,7 @@ LtStrToFuncPtr(pde,pstring)
  *
  */
 {
+    if (!pde) return((PFStatus) -1); /* defend against NULL pointer */
     while( strcmp(pde->pstring,"") != 0 ){
 	if( strcmp(pde->pstring, pstring) == 0){
 	    return(pde->pfunc);
