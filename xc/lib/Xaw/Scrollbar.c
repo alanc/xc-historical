@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Scroll.c,v 1.55 89/11/17 10:43:20 kit Exp $";
+    "$XConsortium: Scroll.c,v 1.56 89/12/07 20:17:59 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -552,7 +552,7 @@ struct EventData {
 	int count;
 };
 
-static Boolean PeekNotifyEvent( dpy, event, args )
+static Bool PeekNotifyEvent( dpy, event, args )
     Display *dpy;
     XEvent *event;
     char *args;
