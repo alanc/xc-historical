@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.16 89/07/13 18:17:34 keith Exp $ */
+/* $XConsortium: window.c,v 5.17 89/07/14 13:47:39 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1683,8 +1683,8 @@ WindowPtr   pWin;
 
     box.x1 = pWin->drawable.x;
     box.y1 = pWin->drawable.y;
-    box.x2 = pWin->drawable.x + pWin->drawable.width;
-    box.y2 = pWin->drawable.y + pWin->drawable.height;
+    box.x2 = pWin->drawable.x + (int) pWin->drawable.width;
+    box.y2 = pWin->drawable.y + (int) pWin->drawable.height;
     pRgn = (*pWin->drawable.pScreen->RegionCreate) (&box, 1);
 #ifdef SHAPE
     if (wBoundingShape (pWin) || wClipShape (pWin)) {
