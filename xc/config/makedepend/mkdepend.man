@@ -272,7 +272,7 @@ then
 .B makedepend
 will be compiled in such a way that all
 .I #if
-directives will evaluate to "true" regardless of their actual value.
+directives will evaluate to "false" regardless of their actual value.
 This may cause the wrong
 .I #include
 directives to be evaluated.
