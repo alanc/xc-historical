@@ -1,7 +1,7 @@
 /*
  * square and cube roots by Newton's method
  *
- * $XConsortium: XcmsMath.c,v 1.4 91/02/11 18:17:52 dave Exp $
+ * $XConsortium: XcmsMath.c,v 1.5 91/02/12 16:13:23 dave Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -28,11 +28,11 @@
 #include "Xlibint.h"
 #include "Xcmsint.h"
 
-#ifdef __STDC__
+#if !defined(X_NOT_STDC_ENV) && (__STDC__ || !defined(sun))
 #include <float.h>
-static double epsilon_factor = DBL_EPSILON;
-#else
-static double epsilon_factor = 1e-6; /* conservative */
+#endif
+#ifndef DBL_EPSILON
+#define DBL_EPSILON 1e-6
 #endif
 
 #ifdef _X_ROOT_STATS
@@ -49,7 +49,7 @@ double
 XcmsCubeRoot(a)
     double a;
 {
-    double abs_a, cur_guess, delta;
+    register double abs_a, cur_guess, delta;
 
 #ifdef DEBUG
     printf("XcmsCubeRoot passed in %g\n", a);
@@ -75,7 +75,7 @@ XcmsCubeRoot(a)
 	delta = (cur_guess - abs_a/(cur_guess*cur_guess))/3.;
 	cur_guess -= delta;
 	if (delta < 0.) delta = -delta;
-    } while (delta >= cur_guess*epsilon_factor);
+    } while (delta >= cur_guess*DBL_EPSILON);
 
     if (a < 0.)
 	cur_guess = -cur_guess;
@@ -94,7 +94,7 @@ double
 XcmsSquareRoot(a)
     double a;
 {
-    double cur_guess, delta;
+    register double cur_guess, delta;
 
 #ifdef DEBUG
     printf("XcmsSquareRoot passed in %g\n", a);
@@ -123,7 +123,7 @@ XcmsSquareRoot(a)
 	delta = (cur_guess - a/cur_guess)/2.;
 	cur_guess -= delta;
 	if (delta < 0.) delta = -delta;
-    } while (delta >= cur_guess*epsilon_factor);
+    } while (delta >= cur_guess*DBL_EPSILON);
 
 #ifdef DEBUG
     printf("XcmsSquareRoot returning %g\n", cur_guess);
