@@ -33,7 +33,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$XConsortium: mivaltree.c,v 1.44 88/08/14 10:57:50 keith Exp $ SPRITE (Berkeley)";
+"$XConsortium: mivaltree.c,v 1.45 88/09/06 14:49:34 jim Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    "X.h"
@@ -526,8 +526,6 @@ miValidateTree (pParent, pChild, top, anyMarked)
     pParent->marked = 0;
 
     (* pScreen->RegionDestroy) (childClip);
-
-    WindowsRestructured();
 
     (* pScreen->RegionDestroy) (totalClip);
 
