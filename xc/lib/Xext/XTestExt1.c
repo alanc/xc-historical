@@ -87,7 +87,7 @@ static unsigned long	action_count = 0;
  * function declarations
  *****************************************************************************/
 
-static void	XTestWireToEvent();
+static int	XTestWireToEvent();
 static int	XTestCheckExtInit();
 static Bool	XTestIdentifyMyEvent();
 static int	XTestInitExtension();
@@ -522,7 +522,7 @@ register Display	*dpy;
  *	Handle XTest extension events.
  *	Reformat a wire event into an XEvent structure of the right type.
  */
-static void
+static int
 XTestWireToEvent(dpy, re, event)
 /*
  * the connection to the X server
@@ -593,6 +593,7 @@ xTestInputActionEvent	*event;
 		printf("%s is giving up.\n", XTestEXTENSION_NAME);
 		exit (1);
 	}
+	return 1;
 }
 
 /******************************************************************************
@@ -724,7 +725,6 @@ unsigned int	action;
 		return(XTestPackInputAction(display,
 					    (CARD8 *) &keyinfo,
 					    sizeof(XTestKeyInfo)));
-		break;
 	case XTestRELEASE:
 		/*
 		 * Check the delay.  If it is larger than will fit in the
@@ -758,7 +758,6 @@ unsigned int	action;
 		return(XTestPackInputAction(display,
 					    (CARD8 *) &keyinfo,
 					    sizeof(XTestKeyInfo)));
-		break;
 	case XTestSTROKE:
 		/*
 		 * Check the delay.  If it is larger than will fit in the
@@ -834,13 +833,11 @@ unsigned int	action;
 		return(XTestPackInputAction(display,
 					    (CARD8 *) &keyinfo,
 					    sizeof(XTestKeyInfo)));
-		break;
 	default:
 		/*
 		 * invalid action value, return -1
 		 */
 		 return(-1);
-		break;
 	}
 }
 

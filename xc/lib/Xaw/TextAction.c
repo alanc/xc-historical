@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.20 89/11/02 13:06:13 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.21 89/12/07 17:46:59 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -232,13 +232,14 @@ Cardinal num_params;
       default:	       buffer = -1;
     }
     if (buffer >= 0) {
-	unsigned long nbytes;
+	int nbytes;
+	unsigned long length;
 	int fmt8 = 8;
 	Atom type = XA_STRING;
 	char *line = XFetchBuffer(XtDisplay(w), &nbytes, buffer);
-	if (nbytes > 0)
+	if (length = nbytes)
 	    _SelectionReceived(w, NULL, &selection, &type, (caddr_t)line,
-			       &nbytes, &fmt8);
+			       &length, &fmt8);
 	else if (num_params > 1)
 	    GetSelection(w, time, params+1, num_params-1);
     } else {
@@ -952,11 +953,12 @@ XEvent *event;
 {
   TextWidget ctx = (TextWidget) w;
   char *ptr, strbuf[BUFSIZ];
-  int     keycode, count, error;
+  int count, error;
+  KeySym keysym;
   XawTextBlock text;
 
   if ( (text.length = XLookupString (event, strbuf, BUFSIZ,
-			       &keycode, &compose_status)) == 0) {
+			       &keysym, &compose_status)) == 0) {
     return;
   }
   
