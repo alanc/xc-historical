@@ -1,4 +1,4 @@
-/* $XConsortium: TMprint.c,v 1.7 91/06/26 18:25:51 converse Exp $ */
+/* $XConsortium: TMprint.c,v 1.8 92/04/03 15:18:08 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -88,13 +88,16 @@ static void PrintModifiers(sb, mask, mod)
     PRINTMOD(ControlMask, "Ctrl");	/* name is not CtrlMask... */
     PRINTMOD(LockMask, "Lock");
     PRINTMOD(Mod1Mask, "Mod1");
+    CHECK_STR_OVERFLOW(sb);
     PRINTMOD(Mod2Mask, "Mod2");
     PRINTMOD(Mod3Mask, "Mod3");
     PRINTMOD(Mod4Mask, "Mod4");
     PRINTMOD(Mod5Mask, "Mod5");
+    CHECK_STR_OVERFLOW(sb);
     PRINTMOD(Button1Mask, "Button1");
     PRINTMOD(Button2Mask, "Button2");
     PRINTMOD(Button3Mask, "Button3");
+    CHECK_STR_OVERFLOW(sb);
     PRINTMOD(Button4Mask, "Button4");
     PRINTMOD(Button5Mask, "Button5");
 
