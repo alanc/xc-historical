@@ -10,7 +10,7 @@ PEXDIRS = pexscope
 #endif
 
 SUBDIRS = \
-	appres bitmap cmsdb editres listres oclock twm viewres \
+	appres bitmap xcmsdb editres listres oclock twm viewres \
 	xauth xbiff xcalc xclipboard xclock xconsole \
 	xditview xdpyinfo xedit xfd xkill xload xlogo \
 	xlsatoms xlsclients xlsfonts xmag xman xmh \
