@@ -1,6 +1,6 @@
-/* $XConsortium: TextTr.c,v 1.4 88/10/07 09:28:18 swick Exp $ */
+/* $XConsortium: TextTr.c,v 1.5 89/02/03 11:33:13 swick Exp $ */
 
-char defaultTextTranslations[] =
+char *_XawDefaultTextTranslations1 =
 "\
 Ctrl<Key>F:	forward-character() \n\
 Ctrl<Key>B:	backward-character() \n\
@@ -19,6 +19,7 @@ Ctrl<Key>V:	next-page() \n\
 Ctrl<Key>W:	kill-selection() \n\
 Ctrl<Key>Y:	unkill() \n\
 Ctrl<Key>Z:	scroll-one-line-up() \n\
+", *_XawDefaultTextTranslations2 = "\
 Meta<Key>F:	forward-word() \n\
 Meta<Key>B:	backward-word() \n\
 Meta<Key>I:	insert-file() \n\
@@ -38,6 +39,7 @@ Meta<Key>Z:	scroll-one-line-down() \n\
  Shift Meta<Key>Delete:		backward-kill-word() \n\
 ~Shift Meta<Key>BackSpace:	delete-previous-word() \n\
  Shift Meta<Key>BackSpace:	backward-kill-word() \n\
+", *_XawDefaultTextTranslations3 = "\
 <Key>Right:	forward-character() \n\
 <Key>Left:	backward-character() \n\
 <Key>Down:	next-line() \n\
