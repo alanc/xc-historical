@@ -1,4 +1,5 @@
-/* $XConsortium: RectObjP.h,v 1.2 88/09/04 12:21:25 swick Exp $ */
+/* $XConsortium: RectObjP.h,v 1.3 88/09/04 15:51:48 swick Exp $ */
+/* $Header: RectObjP.h,v 1.3 88/09/04 15:51:48 swick Exp $ */
 /* $oHeader: RectObjP.h,v 1.2 88/08/18 15:55:52 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

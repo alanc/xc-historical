@@ -1,5 +1,6 @@
 /*
-* $XConsortium: Shell.h,v 1.2 88/08/18 15:56:14 asente Exp $
+* $XConsortium: Shell.h,v 1.14 88/09/04 12:21:48 swick Exp $
+* $Header: Shell.h,v 1.14 88/09/04 12:21:48 swick Exp $
 * $oHeader: Shell.h,v 1.2 88/08/18 15:56:14 asente Exp $
 */
 /***********************************************************

@@ -1,4 +1,5 @@
-/* $XConsortium: InitializeI.h,v 1.4 88/09/03 17:07:05 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.5 88/09/04 14:58:42 swick Exp $ */
+/* $Header: InitialI.h,v 1.5 88/09/04 14:58:42 swick Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

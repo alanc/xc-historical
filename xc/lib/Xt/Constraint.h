@@ -1,4 +1,5 @@
-/* $XConsortium: Constraint.h,v 1.5 88/09/04 12:17:27 swick Exp $ */
+/* $XConsortium: Constraint.h,v 1.6 88/09/04 15:48:17 swick Exp $ */
+/* $Header: Constraint.h,v 1.6 88/09/04 15:48:17 swick Exp $ */
 /* $oHeader: Constraint.h,v 1.2 88/08/18 15:54:18 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

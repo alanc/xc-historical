@@ -1,4 +1,5 @@
-/* $XConsortium: ObjectP.h,v 1.2 88/09/04 12:21:05 swick Exp $ */
+/* $XConsortium: ObjectP.h,v 1.3 88/09/04 15:50:43 swick Exp $ */
+/* $Header: ObjectP.h,v 1.3 88/09/04 15:50:43 swick Exp $ */
 /* $oHeader: ObjectP.h,v 1.2 88/08/18 15:55:35 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
