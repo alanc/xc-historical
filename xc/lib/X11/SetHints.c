@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XSetHints.c,v 11.18 87/09/01 15:05:37 newman Locked $ */
+/* $Header: XSetHints.c,v 11.19 87/10/30 00:00:13 rws Locked $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,6 +30,7 @@ SOFTWARE.
 #include "Xutil.h"
 #include "Xatomtype.h"
 #include "Xatom.h"
+#include <string.h>
 
 #define safestrlen(s) ((s) ? strlen(s) : 0)
 
@@ -139,7 +140,6 @@ XSetIconSizes (dpy, w, list, count)
 	Xfree ((char *)prop);
 }
 
-#include <strings.h>
 XSetCommand (dpy, w, argv, argc)
 	Display *dpy;
 	Window w;
