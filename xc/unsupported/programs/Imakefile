@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.11 94/04/07 16:04:01 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.12 94/04/09 19:38:25 rws Exp gildea $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -20,7 +20,7 @@ FRESCODIRS = dish i2mif ixx fdraw
 #endif
 
 SUBDIRS = hterm ico listres maze puzzle showfont viewres xbiff xcalc \
-	xditview xedit xev xeyes xfeoak xfontsel xgas xgc xload \
+	xditview xedit xev xeyes xfontsel xgas xgc xload \
 	xman xmessage xpr $(PHIGSDIRS) $(FRESCODIRS)
 
 MakeSubdirs($(SUBDIRS))
