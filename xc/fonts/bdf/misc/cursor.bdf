@@ -4,7 +4,7 @@ FONT cursor
 SIZE 31 78 78
 FONTBOUNDINGBOX 31 31 -15 -16
 STARTPROPERTIES 3
-OWNERSHIP "These ""glyphs"" are unencumbered"
+COPYRIGHT "These ""glyphs"" are unencumbered"
 FONT_ASCENT 16
 FONT_DESCENT 17
 ENDPROPERTIES
@@ -193,7 +193,7 @@ BITMAP
 0700
 0fc0
 9fe0
-f87f
+ffff
 ffff
 ffff
 fff8
@@ -711,21 +711,21 @@ SWIDTH 548 0
 DWIDTH 17 0
 BBX 16 15 -7 -8
 BITMAP
-7efc
-befb
-def7
-eeef
-f6df
+66cc
+b6db
+def6
+6eec
+36d8
 fabf
 fc7f
 0100
 fc7f
 fabf
-f6df
-eeef
-def7
-befb
-7efc
+36d8
+6eec
+def6
+b6db
+66cc
 ENDCHAR
 STARTCHAR crosshair
 ENCODING -1 34
@@ -1185,8 +1185,8 @@ BITMAP
 00fc
 00fc
 c0ff
-ffbf
-ffbf
+ffff
+ffff
 fffc
 fffc
 fffc
@@ -1281,14 +1281,14 @@ BITMAP
 0fc0
 1fe0
 7ff0
-ffc0
 fff0
-bff0
-0fe0
-0fc0
-9780
-c600
-ec00
+fff0
+fff0
+ffe0
+ffc0
+ff80
+fe00
+fc00
 7800
 ENDCHAR
 STARTCHAR hand2
@@ -1321,14 +1321,14 @@ BITMAP
 7f80
 ffc0
 ffe0
-fe70
-7e38
-1f38
-3e38
-1e7c
-3cee
-1fc7
-0fce
+fff0
+7ff8
+1ff8
+3ff8
+1ffc
+3ffe
+1fff
+0ffe
 07fc
 03f8
 01f0
@@ -1341,13 +1341,13 @@ SWIDTH 548 0
 DWIDTH 17 0
 BBX 15 14 -6 -6
 BITMAP
-7efc
-e38e
+3ef8
+638c
 c106
 8002
 8002
 8002
-c002
+8002
 c006
 600c
 3018
@@ -1745,19 +1745,19 @@ DWIDTH 17 0
 BBX 16 16 -14 -11
 BITMAP
 1fe0
-3ef0
-3ef8
+3ff0
+3ff8
 c382
 e7c7
-7c7f
-3d7b
-1d70
-0460
-06c0
-0c60
-1930
-3398
-76dc
+7fff
+3ffb
+1ff0
+07e0
+07c0
+0fe0
+1ff0
+3ff8
+7efc
 fc7f
 fc7f
 ENDCHAR
@@ -1881,17 +1881,17 @@ DWIDTH 17 0
 BBX 13 16 -11 -1
 BITMAP
 fc03
-c600
-c700
-6500
-3d80
-3080
-18c0
-0840
-0c60
-0620
-0630
-0318
+fe00
+ff00
+7f00
+3f80
+3f80
+1fc0
+0fc0
+0fe0
+07e0
+07f0
+03f8
 01f8
 00f8
 0078
@@ -1929,8 +1929,8 @@ BITMAP
 0fc0
 1fe0
 3ff0
-7338
-7338
+7ff8
+7ff8
 3ff0
 1fe0
 8fc1
@@ -2852,8 +2852,8 @@ BITMAP
 e000
 f800
 fe00
-7fc0
-7fc0
+7f80
+7fe0
 3ffc
 3ffc
 1ffc
@@ -3068,7 +3068,7 @@ BITMAP
 3e00
 7f00
 ff80
-f780
+ff80
 ff80
 7f00
 3e00
@@ -3144,20 +3144,20 @@ DWIDTH 17 0
 BBX 16 16 -8 -14
 BITMAP
 176e
-dddb
-b65c
-5837
-e6cc
-9ef3
-f29e
-0280
-0280
-0280
-0280
-02e0
-02a0
-02a0
-0360
+dffb
+bffc
+7fff
+fffc
+ffff
+f39e
+0380
+0380
+0380
+0380
+03e0
+03e0
+03e0
+03e0
 01c0
 ENDCHAR
 STARTCHAR ur_angle
@@ -3229,14 +3229,14 @@ BITMAP
 3ff0
 3ff0
 7ff8
-e39c
-c38f
-c387
-c7c7
-c7c7
-cf87
-dc0f
-e81c
+fffc
+ffff
+ffff
+ffff
+ffff
+ffff
+ffff
+fffc
 7ff8
 3ff0
 3ff0
