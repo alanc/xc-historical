@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.10 90/02/12 17:56:34 keith Exp $
+ * $XConsortium: verify.c,v 1.11 90/08/23 13:15:48 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -89,6 +89,7 @@ char **
 defaultEnv ()
 {
     char    **env, **exp, *value;
+    char    *getenv();
 
     env = 0;
     for (exp = exportList; exp && *exp; ++exp)
