@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.80 89/09/27 15:25:42 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.81 89/09/28 11:53:45 swick Exp $";
 /* $oHeader: TMparse.c,v 1.4 88/09/01 17:30:39 asente Exp $ */
 #endif /*lint*/
 
@@ -168,9 +168,9 @@ static NameValueRec propertyChanged[] = {
 };
 
 static NameValueRec mappingNotify[] = {
-    {"MappingModifier",	0,	MappingModifier},
-    {"MappingKeyboard",	0,	MappingKeyboard},
-    {"MappingPointer",	0,	MappingPointer},
+    {"Modifier",	0,	MappingModifier},
+    {"Keyboard",	0,	MappingKeyboard},
+    {"Pointer",	0,	MappingPointer},
     {NULL, NULL, NULL},
 };
 
@@ -654,25 +654,21 @@ static String ParseModifiers(str, event,error)
         str = FetchModifierToken(str,modStr);
         if (start == str) {
             Syntax("Modifier or '<' expected","");
-            str = PanicModeRecovery(str);
             *error = TRUE;
-            return str;
+            return PanicModeRecovery(str);
         }
          if (keysymAsMod) {
              _XtParseKeysymMod(modStr,&event->event.lateModifiers,
 			       notFlag,&maskBit, error);
-	     if (*error) {
-                 str = PanicModeRecovery(str);
-                 return str;
-             }
+	     if (*error)
+                 return PanicModeRecovery(str);
 
          } else
   	     if (!_XtLookupModifier( modStr,
 	   &event->event.lateModifiers, notFlag, &maskBit,FALSE)) {
 	         Syntax("Unknown modifier name:  ",modStr);
-                 str = PanicModeRecovery(str);
                  *error = TRUE;
-                 return str;
+                 return PanicModeRecovery(str);
              }
         event->event.modifierMask |= maskBit;
 	if (notFlag) event->event.modifiers &= ~maskBit;
@@ -697,8 +693,7 @@ static String ParseXtEventType(str, event, tmEventP,error)
     eventTypeStr[str-start] = '\0';
     *tmEventP = LookupTMEventType(eventTypeStr,error);
     if (*error == TRUE) 
-        str = PanicModeRecovery(str);
-    else
+        return PanicModeRecovery(str);
     event->event.eventType = events[*tmEventP].eventType;
     return str;
 }
@@ -921,14 +916,18 @@ static String ParseTable(str, closure, event,error)
     event->event.eventCode = 0L;
     str = ScanAlphanumeric(str);
     if (str == start) {event->event.eventCodeMask = 0L; return str; }
+    if (str-start >= 99) {
+	Syntax("Invalid Detail Type (string is too long).", "");
+	*error = TRUE;
+	return str;
+    }
     (void) strncpy(tableSymName, start, str-start);
     tableSymName[str-start] = '\0';
     if (! _XtLookupTableSym((NameValueTable)closure, tableSymName, 
             (Value *)&event->event.eventCode)) {
 	Syntax("Unknown Detail Type:  ",tableSymName);
-        str = PanicModeRecovery(str);
         *error = TRUE;
-        return str;
+        return PanicModeRecovery(str);
     }
     event->event.eventCodeMask = ~0L;
 
@@ -948,13 +947,14 @@ static String ParseNone(str, closure, event,error)
     return str;
 }
 
+/*ARGSUSED*/
 static String ParseAtom(str, closure, event,error)
     String str;
     Opaque closure;
     EventPtr event;
     Boolean* error;
 {
-    char *atomName, *start;
+    char atomName[1000], *start;
 
     str = ScanWhitespace(str);
 
@@ -971,6 +971,11 @@ static String ParseAtom(str, closure, event,error)
 		&& *str != '\t'
                 && *str != '\n'
 		&& *str != '\0') str++;
+	if (str-start >= 999) {
+	    Syntax( "Atom name must be less than 1000 characters long.", "" );
+	    *error = TRUE;
+	    return str;
+	}
 	(void) strncpy(atomName, start, str-start);
 	atomName[str-start] = '\0';
 	event->event.eventCode = XrmStringToQuark(atomName);
@@ -995,18 +1000,16 @@ static String ParseEvent(str, event,error)
     if (*error == TRUE) return str;
     if (*str != '<') {
          Syntax("Missing '<' while parsing event type.",""); 
-         str = PanicModeRecovery(str);
          *error = TRUE;
-         return str;
+         return PanicModeRecovery(str);
     }
     else str++;
     str = ParseXtEventType(str, event, &tmEvent,error);
     if (*error == TRUE) return str;
     if (*str != '>'){
          Syntax("Missing '>' while parsing event type","");
-         str = PanicModeRecovery(str);
          *error = TRUE;
-         return str;
+         return PanicModeRecovery(str);
     }
     else str++;
     str = (*(events[tmEvent].parseDetail))(
@@ -1065,10 +1068,9 @@ static String ParseQuotedStringEvent(str, event,error)
 	    break;
 	}
     tmEvent = (EventType) LookupTMEventType("Key",error);
-    if (*error == TRUE) {
-        str = PanicModeRecovery(str);
-        return str;
-    }
+    if (*error == TRUE)
+        return PanicModeRecovery(str);
+
     event->event.eventType = events[tmEvent].eventType;
     if ('A' <= c && c <= 'Z') {
 	event->event.modifiers |=  shiftMask;
@@ -1445,9 +1447,8 @@ static String ParseEventSeq(str, eventSeqP, actionsP,error)
 	    }
 	    if (*str != '"') {
                 Syntax("Missing '\"'.","");
-                str = PanicModeRecovery(str);
                 *error = TRUE;
-                return str;
+                return PanicModeRecovery(str);
              }
              else str++;
 	} else {
@@ -1469,18 +1470,16 @@ static String ParseEventSeq(str, eventSeqP, actionsP,error)
         else {
             if (*str != ',') {
                 Syntax("',' or ':' expected while parsing event sequence.","");
-                str = PanicModeRecovery(str);
                 *error = TRUE;
-                return str;
+                return PanicModeRecovery(str);
 	    } else str++;
         }
     }
 
     if (*str != ':') {
         Syntax("Missing ':'after event sequence.",""); 
-        str = PanicModeRecovery(str);
         *error = TRUE;
-        return str;
+        return PanicModeRecovery(str);
     } else str++;
 
     return str;
@@ -1597,16 +1596,14 @@ static String ParseAction(str, actionP,error)
 	str = ParseParamSeq(str, &actionP->params, &actionP->num_params);
     } else {
         Syntax("Missing '(' while parsing action sequence",""); 
-        str = PanicModeRecovery(str);
         *error = TRUE;
-        return str;
+        return PanicModeRecovery(str);
     }
     if (*str == ')') str++;
     else{
         Syntax("Missing ')' while parsing action sequence","");
-        str = PanicModeRecovery(str);
         *error = TRUE;
-        return str;
+        return PanicModeRecovery(str);
     }
     return str;
 }
