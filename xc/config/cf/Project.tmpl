@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.5 89/01/17 16:00:43 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.6 89/01/17 16:21:17 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -220,7 +220,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.5 89/01/17 16:00:43 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.6 89/01/17 16:21:17 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -257,7 +257,6 @@ Berklib.c: sysV/Berklib.c					@@\
         MKFONTDIR = $(MKFONTDIRSRC)/mkfontdir
         MKDIRHIER = BourneShell $(SCRIPTSSRC)/mkdirhier.sh
 
-              TOP = TOPDIR
         CONFIGSRC = $(TOP)/config
         CLIENTSRC = $(TOP)/clients
           DEMOSRC = $(TOP)/demos
@@ -283,7 +282,7 @@ Berklib.c: sysV/Berklib.c					@@\
      MKFONTDIRSRC = $(FONTSRC)/mkfontdir
      EXTENSIONSRC = $(TOP)/extensions
     IMAKE_DEFINES = /* leave blank, for command line use only */
-        IMAKE_CMD = $(NEWTOP)$(IMAKE) -TImake.tmpl -I$(NEWTOP)$(IRULESRC) \
+        IMAKE_CMD = $(NEWTOP)$(IMAKE) -I$(NEWTOP)$(IRULESRC) -TImake.tmpl \
 			-s Makefile $(IMAKE_DEFINES)
 #ifdef UseInstalled
          IRULESRC = $(CONFIGDIR)
