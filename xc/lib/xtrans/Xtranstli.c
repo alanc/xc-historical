@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranstli.c,v 1.13 94/03/31 10:53:07 mor Exp $ */
+/* $XConsortium: Xtranstli.c,v 1.14 94/03/31 16:45:26 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -484,6 +484,11 @@ char		*port;
 	return NULL;
     }
     
+    /* Set the family type */
+
+    ciptr->family = TLItrans2devtab[i].family;
+
+
     /* Save the TLIFamily for later use in TLIAddrToNetbuf() lookups */
     
     ciptr->index = i;
