@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.14 88/10/07 08:15:37 swick Exp $
+ *	$XConsortium: button.c,v 1.15 88/10/07 14:14:42 swick Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.14 88/10/07 08:15:37 swick Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.15 88/10/07 14:14:42 swick Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -283,9 +283,9 @@ Cardinal num_params;
 	if (nbytes > 0)
 	    SelectionReceived(w, NULL, &selection, &type, (caddr_t)line,
 			      &nbytes, &fmt8);
-    }
-    /* else */
-    {
+	else if (num_params > 1)
+	    _GetSelection(w, time, params+1, num_params-1);
+    } else {
 	struct _SelectionList* list;
 	if (--num_params) {
 	    list = XtNew(struct _SelectionList);
@@ -977,7 +977,40 @@ static void LoseSelection(w, selection)
   Widget w;
   Atom *selection;
 {
-    TrackText(0, 0, 0, 0);
+    register TScreen* screen = &((XtermWidget)w)->screen;
+    register Atom* atomP;
+    int i, empty;
+    for (i = 0, atomP = screen->selection_atoms;
+	 i < screen->selection_count; i++, atomP++)
+    {
+	if (*selection == *atomP) *atomP = (Atom)0;
+	switch (*atomP) {
+	  case XA_CUT_BUFFER0:
+	  case XA_CUT_BUFFER1:
+	  case XA_CUT_BUFFER2:
+	  case XA_CUT_BUFFER3:
+	  case XA_CUT_BUFFER4:
+	  case XA_CUT_BUFFER5:
+	  case XA_CUT_BUFFER6:
+	  case XA_CUT_BUFFER7:	*atomP = (Atom)0;
+	}
+    }
+
+    for (i = screen->selection_count; i; i--) {
+	if (screen->selection_atoms[i-1] != 0) break;
+    }
+    screen->selection_count = i;
+
+    for (i = 0, atomP = screen->selection_atoms;
+	 i < screen->selection_count; i++, atomP++)
+    {
+	if (*atomP == (Atom)0) {
+	    *atomP = screen->selection_atoms[--screen->selection_count];
+	}
+    }
+
+    if (screen->selection_count == 0)
+	TrackText(0, 0, 0, 0);
 }
 
 
