@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: bsd.cf,v 1.15 91/07/23 18:01:53 keith Exp $
+XCOMM platform:  $XConsortium: bsd.cf,v 1.16 91/07/23 23:16:07 keith Exp $
 
 #define OSName            4.3bsd
 XCOMM operating system:  OSName
@@ -17,7 +17,12 @@ XCOMM operating system:  OSName
 #ifdef VaxArchitecture
 #define XqdssServer YES
 #define XqvssServer YES
+#if HasGcc
 #define BuildPexExt XqdssServer
+#else
+#define BuildPex 	NO	/* compiler runs out of table space */
+#define BuildXInputLib 	NO	/* compiler runs out of table space */
+#endif
 #define HasSaberC YES
 #else
 #define BuildServer NO
