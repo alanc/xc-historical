@@ -1,4 +1,4 @@
-/* $XConsortium: registry,v 1.100 94/07/07 09:32:59 rws Exp $ */
+/* $XConsortium: registry,v 1.101 94/07/28 18:29:33 rws Exp rws $ */
 
 				  X Registry
 
@@ -48,6 +48,7 @@ Name						Reference
 "DEC"						[82]
 "DG"						[48]
 "DME"						[7]
+"Dt"						[114]
 "ES"						[75]
 "FXD"						[55]
 "FUJITSU"					[87]
@@ -1502,3 +1503,8 @@ REFERENCES
 	c/o AIB Software Corporation
 	46030 Manekin Plaza, Suite 160
 	Dulles, VA  20166
+
+[114]	Stuart W. Marks
+	SunSoft, Inc.
+	2550 Garcia Avenue, Mail Stop UMTV 21-122
+	Mountain View, CA  94043-1100
