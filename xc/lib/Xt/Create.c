@@ -1,6 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Create.c,v 1.71 90/03/27 12:56:32 swick Exp $";
-/* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
+static char Xrcsid[] = "$XConsortium: Create.c,v 1.72 90/04/04 11:27:40 swick Exp $";
 #endif /*lint*/
 
 /***********************************************************
@@ -201,11 +200,13 @@ static Widget _XtCreate(
     widget->core.xrm_name = StringToName((name != NULL) ? name : "");
     widget->core.being_destroyed =
 	(parent != NULL ? parent->core.being_destroyed : FALSE);
-    widget->core.constraints = NULL;
-    if (parent_constraint_class != NULL) 
+    if (parent_constraint_class != NULL
+	&& parent_constraint_class->constraint_class.constraint_size > 0)
        	widget->core.constraints = 
 	    (XtPointer) XtMalloc((unsigned)parent_constraint_class->
                        constraint_class.constraint_size);
+    else
+	widget->core.constraints = NULL;
     if (XtIsWidget(widget)) {
 	widget->core.name = XtNewString((name != NULL) ? name : "");
         widget->core.screen = default_screen;
@@ -277,13 +278,14 @@ static Widget _XtCreate(
     }
 
     if (parent_constraint_class != NULL) {
-	size = parent_constraint_class->constraint_class.constraint_size;
-	req_constraints = XtStackAlloc(size, constraint_cache);
-	bcopy(widget->core.constraints, (char*)req_constraints, (int) size);
-	req_widget->core.constraints = req_constraints;
+	if (size = parent_constraint_class->constraint_class.constraint_size){
+	    req_constraints = XtStackAlloc(size, constraint_cache);
+	    bcopy(widget->core.constraints, (char*)req_constraints,(int)size);
+	    req_widget->core.constraints = req_constraints;
+	} else req_widget->core.constraints = NULL;
 	CallConstraintInitialize(parent_constraint_class, req_widget, widget,
 				 args, num_args);
-	XtStackFree(req_constraints, constraint_cache);
+	if (size) XtStackFree(req_constraints, constraint_cache);
     }
     XtStackFree((XtPointer)req_widget, widget_cache);
     return (widget);
