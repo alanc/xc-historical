@@ -1,4 +1,4 @@
-XCOMM $XConsortium: svr4.cf,v 1.3 94/03/30 20:14:40 gildea Exp $
+XCOMM $XConsortium: svr4.cf,v 1.4 94/04/01 16:59:15 dpw Exp $
 /*
  * A default OS name
  */
@@ -74,7 +74,7 @@ XCOMM $XConsortium: svr4.cf,v 1.3 94/03/30 20:14:40 gildea Exp $
 
 #ifdef i386Architecture
 #ifndef StandardDefines
-#define StandardDefines		-DSVR4 -Di386 -DNO_WCHAR
+#define StandardDefines		-DSVR4 -Di386
 #endif
 #ifndef DefaultCCOptions
 #if HasGcc2

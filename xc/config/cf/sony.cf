@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.54 94/03/28 17:11:42 matt Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.55 94/03/29 15:44:49 matt Exp $
 
 #ifdef SonyBsdArchitecture
 
@@ -36,6 +36,8 @@ XCOMM platform:  $XConsortium: sony.cf,v 1.54 94/03/28 17:11:42 matt Exp $
 #define StandardDefines		-DNOSTDHDRS
 #define HasBsearch		NO
 #endif
+
+#define XawI18nDefines		-DUSE_XWCHAR_STRING
 
 #else
 

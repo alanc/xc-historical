@@ -1,6 +1,6 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.234 94/03/30 12:05:06 gildea Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.235 94/03/31 14:11:10 gildea Exp $
 
 /****************************************************************************
  *                                                                          *
@@ -166,6 +166,13 @@ XCOMM $XConsortium: Project.tmpl,v 1.234 94/03/30 12:05:06 gildea Exp $
 #endif
 #ifndef FontDefines
 #define FontDefines -DFONT_SNF -DFONT_BDF -DFONT_PCF -DCOMPRESSED_FONTS FontOSDefines
+#endif
+#ifndef XawI18nDefines
+#if SystemV4
+#define XawI18nDefines -DHAS_WCTYPE_H
+#else
+#define XawI18nDefines /**/
+#endif
 #endif
 #ifndef ExtensionOSDefines
 #define ExtensionOSDefines /**/

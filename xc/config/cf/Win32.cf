@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.cf,v 1.36 94/03/26 17:12:34 rws Exp $
+XCOMM platform:  $XConsortium: Win32.cf,v 1.37 94/03/29 20:25:02 rws Exp $
 
 #define OSName			Microsoft Windows NT 3.1
 XCOMM operating system:  OSName
@@ -62,5 +62,6 @@ XCOMM operating system:  OSName
 
 #define BuildFonts		NO
 #define BuildFresco		NO
+#define XawI18nDefines		-DHAS_WCHAR_H
 
 #include <Win32.rules>

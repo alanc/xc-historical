@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.40 94/03/26 17:10:01 kaleb Exp $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.41 94/03/26 17:14:27 rws Exp $
 
 #define OSName			IRIX 5.2
 XCOMM operating system:  OSName
@@ -34,6 +34,7 @@ XCOMM operating system:  OSName
 
 #if OSMajorVersion > 4
 #define HasWChar32              YES
+#define XawI18nDefines		-DHAS_WCTYPE_H
 #endif
 
 /* Extra libraries provide : yp, sysV malloc, shared libc, and widechar */

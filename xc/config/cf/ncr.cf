@@ -1,14 +1,15 @@
-XCOMM platform:  $XConsortium: ncr.cf,v 1.7 94/03/26 17:32:17 rws Exp $
+XCOMM platform:  $XConsortium: ncr.cf,v 1.8 94/03/29 15:42:16 gildea Exp $
 #define OSName			Unix System V Release 4/MP-RAS
 #define OSVendor		NCR
 XCOMM operating system:  OSName
 
 #define BootstrapCFlags		-DNCR
 #define HasStreams		YES
+#define XawI18nDefines		-DUSE_XWCHAR_STRING
 
 /* Build Flags */
 
-#define StandardDefines		-DSVR4 -DNCR -Di386 -DXML -DXI18N -DNO_WCHAR
+#define StandardDefines		-DSVR4 -DNCR -Di386 -DXML -DXI18N
 #define DefaultCCOptions	-Xc -Hnocopyr -W0,-asm
 #define DefaultCDebugFlags	-O3
 #define ServerExtraDefines      -DNO_SECONDARY

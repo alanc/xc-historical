@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.31 94/03/27 16:28:11 rws Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.32 94/03/30 13:47:06 dpw Exp $
 /* only tested with Digital OSF/1 */
 
 #ifdef AlphaArchitecture
@@ -37,16 +37,19 @@ XCOMM operating system:  OSName
 #endif
 
 #include <osfLib.rules>
-#define NoRConst YES
+#define NoRConst		YES
 
 #ifdef AlphaArchitecture
-#define HasWChar32 YES
-#define DefaultCCOptions -std1
+#define HasWChar32		YES
+#define DefaultCCOptions	-std1
+#define XawI18nDefines		-DHAS_WCHAR_H
 /* XKB library code is not 64-bit ready yet */
-#define BuildXKBlib NO
+#define BuildXKBlib		NO
 #endif
 #ifdef MipsArchitecture
 #define DefaultCCOptions	-Xc
+#define XawI18nDefines		-DUSE_XWCHAR_STRING
+/* XKB library code is not 64-bit ready yet */
 #define XdecServer YES
 #define ServerOSDefines -DDDXTIME
 #define PexCCOptions -Xc -Wf,-XNp15000,-XNd15000
