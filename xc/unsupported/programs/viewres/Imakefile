@@ -5,4 +5,4 @@ LOCAL_LIBRARIES = XawClientLibs
            OBJS = viewres.o 
 
 ComplexProgramTarget(viewres)
-
+InstallAppDefaults(Viewres)
