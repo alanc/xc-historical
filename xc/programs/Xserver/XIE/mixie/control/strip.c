@@ -1,4 +1,4 @@
-/* $XConsortium: strip.c,v 1.1 93/07/19 10:13:27 rws Exp $ */
+/* $XConsortium: strip.c,v 1.2 93/07/19 20:16:28 rws Exp $ */
 /**** module strip.c ****/
 /*****************************************************************************
 				NOTICE
@@ -321,7 +321,7 @@ static int export_data(flo,ped,band,data,bytes,maxLen,term)
     Execute(flo,NULL);
 
   if(release)
-    free_strip(flo,strip);
+    free_strip(flo->flags.active ? flo : NULL ,strip);
 
   return(   ferrCode(flo)      ? xieValExportError
 	 : !ped->outFlo.active ? xieValExportDone

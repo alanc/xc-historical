@@ -1,4 +1,4 @@
-/* $XConsortium: protoflo.c,v 1.2 93/07/19 11:26:31 rws Exp $ */
+/* $XConsortium: protoflo.c,v 1.3 93/07/19 20:13:49 rws Exp $ */
 /**** module protoflo.c ****/
 /****************************************************************************
 				NOTICE
@@ -677,9 +677,10 @@ static int FloDone(client,flo)
       (*ped->diVec->debrief)(flo,ped,ok);
 
   /* handle errors */
-  if(ferrCode(flo))
+  if(ferrCode(flo)) {
+    ddShutdown(flo);
     SendFloError(client,flo);
-
+  }
   /* handle events */
   if(flo->flags.notify) {
     flo->event.event = xieEvnNoPhotofloDone;
