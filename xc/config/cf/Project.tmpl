@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.187 93/09/12 21:04:31 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.188 93/09/13 14:11:14 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -34,11 +34,11 @@ XCOMM $XConsortium: Project.tmpl,v 1.187 93/09/12 21:04:31 rws Exp $
 /*
  * X-specific things
  */
-#ifndef BuildServer
-#define BuildServer		YES
-#endif
 #ifndef HasXServer
 #define HasXServer		YES
+#endif
+#ifndef BuildServer
+#define BuildServer		HasXServer
 #endif
 #ifndef BuildFontServer
 #define BuildFontServer		BuildServer
