@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetStCmap.c,v 1.3 87/07/21 14:11:43 ham Exp $ */
+/* $Header: XGetStCmap.c,v 1.3 87/09/11 08:15:49 jim Locked $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -40,7 +40,7 @@ Status XGetStandardColormap (dpy, w, cmap, property)
 	xPropStandardColormap *prop;
         Atom actual_type;
         int actual_format;
-        long leftover;
+        unsigned long leftover;
         unsigned long nitems;
 
 	if (XGetWindowProperty (dpy, w, property, 0L,
