@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8line.c,v 1.8 90/08/31 15:37:16 keith Exp $
+ * $XConsortium: cfb8line.c,v 1.10 90/11/12 15:48:34 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -42,35 +42,6 @@
 #else
 #define STUPID
 #endif
-
-#define cfbGetByteWidth(pDrawable) (((pDrawable)->type == DRAWABLE_WINDOW) ? \
-    (int) (((PixmapPtr)((pDrawable)->pScreen->devPrivate))->devKind) : \
-    (int)(((PixmapPtr)pDrawable)->devKind))
-    
-#define cfbGetByteWidthAndPointer(pDrawable, width, pointer) { \
-    if ((pDrawable)->type == DRAWABLE_WINDOW) { \
-	(pointer) = (char *) \
-		(((PixmapPtr)((pDrawable)->pScreen->devPrivate))->devPrivate.ptr); \
-	(width) = (int) \
-		(((PixmapPtr)((pDrawable)->pScreen->devPrivate))->devKind); \
-    } else { \
-	(pointer) = (char *)(((PixmapPtr)pDrawable)->devPrivate.ptr); \
-	(width) = (int)(((PixmapPtr)pDrawable)->devKind); \
-    } \
-}
-
-#define cfbGetLongWidthAndPointer(pDrawable, width, pointer) { \
-    if ((pDrawable)->type == DRAWABLE_WINDOW) { \
-	(pointer) = (unsigned long *) \
-		(((PixmapPtr)((pDrawable)->pScreen->devPrivate))->devPrivate.ptr); \
-	(width) = (int) \
-		(((PixmapPtr)((pDrawable)->pScreen->devPrivate))->devKind) >> 2; \
-    } else { \
-	(pointer) = (unsigned long *) \
-		(((PixmapPtr)pDrawable)->devPrivate.ptr); \
-	(width) = (int)(((PixmapPtr)pDrawable)->devKind) >> 2; \
-    } \
-}
 
 #define I_H do{
 #define I_T }while(0);
