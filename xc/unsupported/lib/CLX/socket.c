@@ -1,22 +1,31 @@
+/* Copyright    Massachusetts Institute of Technology    1988	*/
 /*
  * THIS IS AN OS DEPENDENT FILE! It should work on 4.2BSD derived
  * systems.  VMS and System V should plan to have their own version.
  *
- * This code was cribbed from X11 beta connection code in XLIB.
+ * This code was cribbed from lib/X/XConnDis.c.
  * Compile using   
- *                    % cc -c socket.c
+ *                    % cc -c socket.c -DUNIXCONN
  */
 
 #include <stdio.h>
-#include <sys/types.h>
+#include <X11/Xos.h>
+#include <X11/Xproto.h>
 #include <errno.h>
 #include <netinet/in.h>
 #include <sys/ioctl.h>
 #include <netdb.h> 
-#include <fcntl.h>
 #include <sys/socket.h>
-#include <strings.h>
+#ifndef hpux
+#include <netinet/tcp.h>
+#endif
 
+#ifdef UNIXCONN
+#include <sys/un.h>
+#ifndef X_UNIX_PATH
+#define X_UNIX_PATH "/tmp/.X11-unix/X"
+#endif /* X_UNIX_PATH */
+#endif /* UNIXCONN */
 void bcopy();
 
 /* 
@@ -32,10 +41,29 @@ int connect_to_server (host, display)
   struct sockaddr *addr;		/* address to connect to */
   struct hostent *host_ptr;
   int addrlen;			/* length of address */
+#ifdef UNIXCONN
+  struct sockaddr_un unaddr;	/* UNIX socket address. */
+#endif
   extern char *getenv();
   extern struct hostent *gethostbyname();
   int fd;				/* Network socket */
   {
+#ifdef UNIXCONN
+    if ((host[0] == '\0') || 
+	(strcmp("unix", host) == 0)) {
+	/* Connect locally using Unix domain. */
+	unaddr.sun_family = AF_UNIX;
+	(void) strcpy(unaddr.sun_path, X_UNIX_PATH);
+	sprintf(&unaddr.sun_path[strlen(unaddr.sun_path)], "%d", display);
+	addr = (struct sockaddr *) &unaddr;
+	addrlen = strlen(unaddr.sun_path) + 2;
+	/*
+	 * Open the network connection.
+	 */
+	if ((fd = socket((int) addr->sa_family, SOCK_STREAM, 0)) < 0)
+	    return(-1);	    /* errno set by system call. */
+    } else
+#endif
     {
       /* Get the statistics on the specified host. */
       if ((inaddr.sin_addr.s_addr = inet_addr(host)) == -1) 
@@ -65,7 +93,7 @@ int connect_to_server (host, display)
 	}
       addr = (struct sockaddr *) &inaddr;
       addrlen = sizeof (struct sockaddr_in);
-      inaddr.sin_port = display;
+      inaddr.sin_port = display + X_TCP_PORT;
       inaddr.sin_port = htons(inaddr.sin_port);
       /*
        * Open the network connection.
@@ -75,7 +103,7 @@ int connect_to_server (host, display)
       /* make sure to turn off TCP coalescence */
 #ifdef TCP_NODELAY
       {
-	int mi;
+	int mi = 1;
 	setsockopt (fd, IPPROTO_TCP, TCP_NODELAY, &mi, sizeof (int));
       }
 #endif
