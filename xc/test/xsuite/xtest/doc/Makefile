@@ -12,7 +12,7 @@
 # make no representations about the suitability of this software for any
 # purpose.  It is provided "as is" without express or implied warranty.
 #
-# $XConsortium: Makefile,v 1.5 92/06/30 19:28:27 rws Exp $
+# $XConsortium: Makefile,v 1.6 92/06/30 19:31:22 rws Exp $
 #
 
 # This Makefile can be used to print the documentation for the X test suite.
@@ -47,23 +47,23 @@ printall:	print00 print01 print02
 print00:	relnotes.ps
 	cat relnotes.ps | $(LPR)
 
-relnotes.ps:	relnotes.mm
+relnotes.ps:
 	$(SOELIM) relnotes.mm | $(TBL) | $(TROFF) >relnotes.ps
 
 print01:	userguide.ps
 	cat userguide.ps | $(LPR)
 
-userguide.ps:	userguide.mm
+userguide.ps:
 	$(SOELIM) userguide.mm | $(TBL) | $(TROFF) >userguide.ps
 
 print02:	progguide.ps
 	cat progguide.ps | $(LPR)
 
-progguide.ps:	progguide.mm
+progguide.ps:
 	$(SOELIM) progguide.mm | $(TBL) | $(TROFF) >progguide.ps
 
 print03:	paper.ps
 	cat paper.ps | $(LPR)
 
-paper.ps:	paper.mm
+paper.ps:
 	$(SOELIM) paper.mm | $(TBL) | $(TROFF) >paper.ps
