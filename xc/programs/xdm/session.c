@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.11 88/12/15 18:32:15 keith Exp $
+ * $XConsortium: session.c,v 1.12 89/01/16 17:11:34 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -273,7 +273,7 @@ int	pid;
 {
 	int	sig = SIGTERM;
 #ifdef __STDC__
-	volitile int	i;
+	volatile int	i;
 #else
 	int	i;
 #endif
@@ -311,6 +311,7 @@ char			*file;
 	int	pid;
 	extern int	errno;
 	waitType	result;
+	char	*getEnv ();
 
 	Debug ("source %s\n", file);
 	if (file[0] && access (file, 1) == 0) {
