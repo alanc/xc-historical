@@ -52,7 +52,6 @@ typedef struct _XmhButtonBoxRec {
 				   currently inhibited. */
     Button	*radio;		/* Pointer to where to keep which radio button
 				   is selected. */
-    short	fullsized;	/* TRUE if we keep this box full-height. */
 } ButtonBoxRec;
 
 #endif _bboxint_h
