@@ -1,4 +1,4 @@
-/* $Header: XrmConvert.c,v 1.1 87/09/12 12:27:36 jg Locked $ */
+/* $Header: XrmConvert.c,v 1.2 87/09/13 20:07:28 swick Locked $ */
 #ifndef lint
 static char *sccsid = "@(#)XrmConvert.c	1.6	2/25/87";
 #endif lint
@@ -27,8 +27,7 @@ static char *sccsid = "@(#)XrmConvert.c	1.6	2/25/87";
  */
 
 
-#include	"Xlib.h"
-#include	"Xlibos.h"
+#include	"Xlibint.h"
 #include	"Xresource.h"
 #include	"XrmConvert.h"
 #include	"Conversion.h"

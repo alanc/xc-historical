@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: ParseCmd.c,v 1.1 87/09/12 12:26:56 swick Locked $";
+static char rcsid[] = "$Header: ParseCmd.c,v 1.2 87/11/23 11:11:19 swick Locked $";
 #endif lint
 
 /*
@@ -29,8 +29,7 @@ static char rcsid[] = "$Header: ParseCmd.c,v 1.1 87/09/12 12:26:56 swick Locked 
 /* XrmParseCommand.c 
    Parse command line and store argument values into resource database */
 
-#include "Xlib.h"
-#include "Xlibos.h"
+#include "Xlibint.h"
 #include "Xresource.h"
 #include "Quarks.h"
 #include <stdio.h>
