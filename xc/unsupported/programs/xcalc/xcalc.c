@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcalc.c,v 1.10 89/12/15 18:48:55 converse Exp $
+ * $XConsortium: xcalc.c,v 1.11 90/04/30 16:54:34 converse Exp $
  *
  * xcalc.c  -  a hand calculator for the X Window system
  * 
@@ -68,9 +68,10 @@ static Widget	LCD = NULL;		/* liquid crystal display */
 static Widget	ind[6];			/* mode indicators in the screen */
 static char	selstr[LCD_STR_LEN]; /* storage for selections from the LCD */
 					/* checkerboard used in mono mode */
+static XtAppContext xtcontext;		/* Toolkit application context */
 #define check_width 16
 #define check_height 16
-static char check_bits[] = {
+static unsigned char check_bits[] = {
    0x55, 0x55, 0xaa, 0xaa, 0x55, 0x55, 0xaa, 0xaa, 0x55, 0x55, 0xaa, 0xaa,
    0x55, 0x55, 0xaa, 0xaa, 0x55, 0x55, 0xaa, 0xaa, 0x55, 0x55, 0xaa, 0xaa,
    0x55, 0x55, 0xaa, 0xaa, 0x55, 0x55, 0xaa, 0xaa};
@@ -110,8 +111,8 @@ void main(argc, argv)
     void Quit(), Syntax();
 
 
-    toplevel = XtInitialize(NULL, "XCalc", Options, XtNumber(Options),
-			    (Cardinal *) &argc, argv);
+    toplevel = XtAppInitialize(&xtcontext, "XCalc", Options, XtNumber(Options),
+			       &argc, argv, NULL, NULL, 0);
     if (argc != 1) Syntax(argc, argv);
     
     XtSetArg(args[0], XtNinput, True);
@@ -123,8 +124,7 @@ void main(argc, argv)
 
     create_calculator(toplevel);
 
-    XtAppAddActions(XtWidgetToApplicationContext(toplevel), Actions,
-		    XtNumber(Actions));
+    XtAppAddActions(xtcontext, Actions, XtNumber(Actions));
 
     XtOverrideTranslations(toplevel, 
 	   XtParseTranslationTable("<Message>WM_PROTOCOLS: quit()\n"));
@@ -142,7 +142,8 @@ void main(argc, argv)
 	Pixmap	backgroundPix;
 
 	backgroundPix = XCreatePixmapFromBitmapData
-	    (dpy, XtWindow(toplevel), check_bits, check_width, check_height,
+	    (dpy, XtWindow(toplevel),
+	     (char *)check_bits, check_width, check_height,
 	     WhitePixelOfScreen(screen), BlackPixelOfScreen(screen),
 	     DefaultDepthOfScreen(screen));
 	XtSetArg(args[0], XtNbackgroundPixmap, backgroundPix);
@@ -153,7 +154,7 @@ void main(argc, argv)
     signal(SIGFPE,fperr);
 #endif
     ResetCalc();
-    XtMainLoop();
+    XtAppMainLoop(xtcontext);
 }
 
 void create_calculator(shell)
@@ -289,7 +290,7 @@ void ringbell()
 void Quit()
 {
     extern void exit();
-    XtDestroyApplicationContext(XtWidgetToApplicationContext(toplevel));
+    XtDestroyApplicationContext(xtcontext);
     exit(0);
 }
 
@@ -310,7 +311,7 @@ void Syntax(argc, argv)
     for (i=0; i < XtNumber(Options); i++)
 	(void) fprintf(stderr, " [%s]", Options[i].option);
     (void) fprintf(stderr, "\n");
-    XtDestroyApplicationContext(XtWidgetToApplicationContext(toplevel));
+    XtDestroyApplicationContext(xtcontext);
     exit(1);
 }
 
