@@ -107,6 +107,7 @@ struct greet_info	*greet;
 	XFlush (XtDisplay (toplevel));
 	greet->name = name;
 	greet->password = password;
+	greet->string = 0;
 }
 
 
