@@ -1,5 +1,4 @@
-#! /bin/csh -f
-#
+: "@(#) /usr/lib/X11/.x11start		Shell Script for X11R2"
 xset m 4 2
 uwm &
 xclock -analog -update 60 =96x96-2-2 &
