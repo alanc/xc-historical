@@ -1,0 +1,28 @@
+EVERYWHERE=../util/macros.t strings.mit strings.xaw
+CHAPTER1=CH1
+CHAPTER2=CH2
+CHAPTER3=CH3.intro Command Grip Label List Scrollbar Simple StripChart Toggle 
+CHAPTER4=CH4.intro SimpleMenu SmeBSB SmeLine Sme MenuButton
+CHAPTER5=CH5.intro TextActions TextFuncs AsciiText AsciiSource AsciiSink \
+	 TextCustom Text TextSource TextSink
+CHAPTER6=CH6.intro Box Dialog Form Paned Viewport
+CHAPTER7=CH7.intro Template
+
+SRCS = \
+	$(EVERYWHERE) TPage_Credits \
+	$(CHAPTER1) $(CHAPTER2) $(CHAPTER3) $(CHAPTER4) \
+	$(CHAPTER5) $(CHAPTER6) $(CHAPTER7) 
+
+all: widgets.PS widg.idx.PS
+
+widgets.PS:
+	$(TBL) $(SRCS) | $(TROFF) $(MSMACROS) 2> index.raw > widgets.PS
+
+widg.idx.PS:
+	tail -1 index.raw > index.pageno
+	grep -v '^.pn ' index.raw | sort -f -t: +1 -3 +0n -1n | awk -f ../util/fixindex.awk | awk -f ../util/block.awk > index.troff
+	cat widg.idxmac.t index.troff | $(TROFF) -me  > widg.idx.PS
+	$(RM) index.troff index.pageno
+
+clean:
+	$(RM) index.raw index.troff index.pageno widgets.PS widg.idx.PS
