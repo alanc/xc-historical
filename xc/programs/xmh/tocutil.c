@@ -366,8 +366,7 @@ void TULoadTocFile(toc)
 	TocSetCurMsg(toc, (Msg)NULL);
     } else origcurmsgid = 0;  /* The "default" current msg; 0 means none */
     fid = FOpenAndCheck(toc->scanfile, "r");
-    maxmsgs = 10;
-    orignummsgs = toc->nummsgs;
+    maxmsgs = orignummsgs = toc->nummsgs;
     toc->nummsgs = 0;
     origmsgs = toc->msgs;
     toc->msgs = (Msg *) XtMalloc((Cardinal) maxmsgs * sizeof(Msg));
@@ -418,20 +417,21 @@ void TULoadTocFile(toc)
     for (i=0 ; i<numScrns ; i++) {
 	msg = scrnList[i]->msg;
 	if (msg && msg->toc == toc) {
-	    for (j=0 ; j<toc->nummsgs ; j++) {
-		if (SeemsIdentical(toc->msgs[j], msg)) {
-		    msg->position = toc->msgs[j]->position;
+	    Msg* tmsgP;
+	    for (j=toc->nummsgs, tmsgP=toc->msgs ; j ; j--, tmsgP++) {
+		if (SeemsIdentical((*tmsgP), msg)) {
+		    msg->position = (*tmsgP)->position;
 		    msg->visible = TRUE;
-		    ptr = toc->msgs[j]->buf;
-		    l = toc->msgs[j]->length;
-		    *(toc->msgs[j]) = *msg;
-		    toc->msgs[j]->buf = ptr;
-		    toc->msgs[j]->length = l;
-		    scrnList[i]->msg = toc->msgs[j];
+		    ptr = (*tmsgP)->buf;
+		    l = (*tmsgP)->length;
+		    **tmsgP = *msg;
+		    (*tmsgP)->buf = ptr;
+		    (*tmsgP)->length = l;
+		    scrnList[i]->msg = *tmsgP;
 		    break;
 		}
 	    }
-	    if (j >= toc->nummsgs) {
+	    if (j == 0) {
 		msg->temporary = FALSE;	/* Don't try to auto-delete msg. */
 		MsgSetScrnForce(msg, (Scrn) NULL);
 	    }
