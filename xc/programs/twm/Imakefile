@@ -46,8 +46,13 @@ clean::
 
 deftwmrc.c:  system.twmrc
 	$(RM) $@
-	echo '/* This file is built automatically from system.twmrc */' >>$@
-	echo 'char *defaultTwmrc = "\' >>$@
-	sed -e '/^#/d' -e 's/"/\\"/g' -e 's/$$/\\n\\/' system.twmrc >>$@
-	echo '";' >>$@
+	echo '/* ' >>$@
+	echo ' * This file is generated automatically from the default' >>$@
+	echo ' * twm bindings file system.twmrc by the twm Imakefile.' >>$@
+	echo ' */' >>$@
+	echo '' >>$@
+	echo 'char *defTwmrc[] = {' >>$@
+	sed -e '/^#/d' -e 's/"/\\"/g' -e 's/^/    "/' -e 's/$$/",/' \
+		system.twmrc >>$@
+	echo '    (char *) 0 };' >>$@
 

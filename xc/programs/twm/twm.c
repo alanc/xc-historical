@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.96 89/11/29 14:48:23 jim Exp $
+ * $XConsortium: twm.c,v 1.97 89/11/29 19:35:23 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.96 89/11/29 14:48:23 jim Exp $";
+"$XConsortium: twm.c,v 1.97 89/11/29 19:35:23 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -381,6 +381,7 @@ main(argc, argv, environ)
 	Scr->tbpm.menu = None;
 
 	InitVariables();
+	InitMenus();
 
 	/* Parse it once for each screen. */
 	ParseTwmrc(InitFile);

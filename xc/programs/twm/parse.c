@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.27 89/11/30 18:03:34 jim Exp $
+ * $XConsortium: parse.c,v 1.28 89/11/30 20:03:33 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.27 89/11/30 18:03:34 jim Exp $";
+"$XConsortium: parse.c,v 1.28 89/11/30 20:03:33 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -62,7 +62,7 @@ static int len = 0;
 static char buff[BUF_LEN+1];
 static char overflowbuff[20];		/* really only need one */
 static int overflowlen = 0;
-static char *stringSource, *currentString;
+static char **stringListSource, *currentString;
 static int ParseUsePPosition();
 
 extern int yylineno;
@@ -70,12 +70,12 @@ extern int mods;
 
 int ConstrainedMoveTime = 400;		/* milliseconds, event times */
 
-static int twmFileInput(), twmStringInput();
+static int twmFileInput(), twmStringListInput();
 void twmUnput();
 int (*twmInputFunc)();
 
 extern char *getenv();
-extern char *defaultTwmrc;		/* default bindings */
+extern char *defTwmrc[];		/* default bindings */
 
 
 /***********************************************************************
@@ -89,11 +89,36 @@ extern char *defaultTwmrc;		/* default bindings */
  ***********************************************************************
  */
 
+static int doparse (ifunc, srctypename, srcname)
+    int (*ifunc)();
+    char *srctypename;
+    char *srcname;
+{
+    mods = 0;
+    ptr = 0;
+    len = 0;
+    yylineno = 1;
+    ParseError = FALSE;
+    twmInputFunc = ifunc;
+
+    yyparse();
+
+    if (ParseError) {
+	fprintf (stderr, "%s:  errors found in twm %s",
+		 ProgramName, srctypename);
+	if (srcname) fprintf (stderr, " \"%s\"", srcname);
+	fprintf (stderr, "\n");
+    }
+    return (ParseError ? 0 : 1);
+}
+
+
 int ParseTwmrc(filename)
     char *filename;
 {
     char *cp = filename;
     char init_file[257];
+    int status;
 
     if (!cp) {
 	char *home = getenv ("HOME");
@@ -113,53 +138,26 @@ int ParseTwmrc(filename)
 	if (!cp) cp = SYSTEM_INIT_FILE;
     }
 
-    InitMenus();
-    mods = 0;
-
     if (!(twmrc = fopen (cp, "r"))) {
 	if (filename) {
 	    fprintf (stderr, 
 		     "%s:  unable to open twmrc file \"%s\"; using defaults\n",
 		     ProgramName, filename);
 	}
-	ParseString (defaultTwmrc);	/* use default bindings */
-	return 0;
+	return ParseStringList (defTwmrc);	/* use default bindings */
     }
 
-
-    ptr = 0;
-    len = 0;
-    yylineno = 0;
-    ParseError = FALSE;
-    twmInputFunc = twmFileInput;
-
-    yyparse();
-
-    fclose(twmrc);
-
-    if (ParseError)
-    {
-	fprintf (stderr, "%s:  errors found in twmrc file \"%s\"\n", 
-		 ProgramName, cp);
-	return 0;
-    }
-    return 1;
+    status = doparse (twmFileInput, "file", cp);
+    fclose (twmrc);
+    return status;
 }
 
-
-int ParseString (s)
-    char *s;
+int ParseStringList (sl)
+    char **sl;
 {
-    mods = 0;
-    ptr = 0;
-    len = 0;
-    yylineno = 1;
-    ParseError = FALSE;
-    twmInputFunc = twmStringInput;
-    stringSource = currentString = s;
-    
-    yyparse();
-    return (ParseError ? 0 : 1);
+    stringListSource = sl;
+    currentString = *sl;
+    return doparse (twmStringListInput, "string list", NULL);
 }
 
 
@@ -191,17 +189,21 @@ static int twmFileInput()
     return ((int)buff[ptr++]);
 }
 
-static int twmStringInput()
+static int twmStringListInput()
 {
-    unsigned int c;
-
     if (overflowlen) return (int) overflowbuff[--overflowlen];
 
-    if (c = (unsigned int) *stringSource) {
-	if (c == '\n') yylineno++;
-	stringSource++;
+    /*
+     * return the character currently pointed to
+     */
+    if (currentString) {
+	unsigned int c = (unsigned int) *currentString++;
+
+	if (c) return c;		/* if non-nul char */
+	currentString = *++stringListSource;  /* advance to next bol */
+	return '\n';			/* but say that we hit last eol */
     }
-    return (int) c;
+    return 0;				/* eof */
 }
 
 
