@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8line.c,v 1.20 91/12/19 14:15:34 keith Exp $
+ * $XConsortium: cfb8line.c,v 1.21 92/05/04 15:14:23 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -624,7 +624,6 @@ cfb8LineSS1Rect (pDrawable, pGC, mode, npt, pptInit)
 }
 
 #define round(m,n)	    ((((m)<<1) + (n)) / ((n)<<1))
-#define ceiling(m,n)	    (((m)-1)/(n) + 1)
 #define SignTimes(sign,n)   (((sign) < 0) ? -(n) : (n))
 
 cfbClipPoint (oc, xp, yp, dx, dy, boxp, first)
@@ -664,14 +663,15 @@ cfbClipPoint (oc, xp, yp, dx, dy, boxp, first)
     	utmp *= dy;
 	if (dy > dx)
 	{
-	    utmp <<= 1;
+	    utmp = (utmp << 1) + dy - 1;
+	    /*
+ 	     * trust me -- there's a difference in how this
+	     * works depending on which end of the line is
+	     * being clipped
+	     */
 	    if (first)
-		utmp -= dy;
-	    else
-		utmp += dy;
-	    utmp = ceiling (utmp, dx << 1);
-	    if (!first)
-		utmp -= 1;
+		utmp -= (dy - dx) << 1;
+	    utmp = utmp / (dx << 1);
 	}
 	else
 	    utmp = round (utmp, dx);
@@ -694,14 +694,11 @@ cfbClipPoint (oc, xp, yp, dx, dy, boxp, first)
 	utmp *= dx;
 	if (dx > dy)
 	{
-	    utmp <<= 1;
+	    utmp = (utmp << 1) + dx - 1;
+	    /* see comment above */
 	    if (first)
-		utmp -= dx;
-	    else
-		utmp += dx;
-	    utmp = ceiling (utmp, dy << 1);
-	    if (!first)
-		utmp -= 1;
+		utmp -= (dx - dy) << 1;
+	    utmp = utmp / (dx << 1);
 	}
 	else
 	    utmp = round (utmp, dy);
