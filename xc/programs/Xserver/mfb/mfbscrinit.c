@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbscrinit.c,v 5.0 89/06/09 15:07:02 keith Exp $ */
+/* $XConsortium: mfbscrinit.c,v 5.1 89/06/16 16:58:02 keith Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -58,12 +58,13 @@ miBSFuncRec mfbBSFuncRec = {
 
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
 Bool
-mfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy)
+mfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     int index;
     register ScreenPtr pScreen;
     pointer pbits;		/* pointer to screen bitmap */
     int xsize, ysize;		/* in pixels */
     int dpix, dpiy;		/* dots per inch */
+    int width;			/* pixel width of frame buffer */
 {
     DepthPtr	pDepth;
     VisualPtr	pVisual;
@@ -116,7 +117,7 @@ mfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy)
     pPixmap->drawable.height = ysize;
     pPixmap->refcnt = 1;
     pPixmap->devPrivate.ptr = pbits;
-    pPixmap->devKind = PixmapBytePad(xsize, 1);
+    pPixmap->devKind = PixmapBytePad(width, 1);
     pScreen->devPrivate = (pointer)pPixmap;
 
     /* anything that mfb doesn't know about is assumed to be done

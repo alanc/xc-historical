@@ -103,12 +103,13 @@ cfbCloseScreen (index, pScreen)
 
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
 Bool
-cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
+cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     int index;
     register ScreenPtr pScreen;
     pointer pbits;		/* pointer to screen bitmap */
     int xsize, ysize;		/* in pixels */
-    int dpi;			/* dots per inch */
+    int dpix, dpiy;		/* dots per inch */
+    int width;			/* pixel width of frame buffer */
 {
     VisualID	*pVids;
     register PixmapPtr pPixmap;
@@ -118,8 +119,8 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     pScreen->myNum = index;
     pScreen->width = xsize;
     pScreen->height = ysize;
-    pScreen->mmWidth = (xsize * 254) / (dpi * 10);
-    pScreen->mmHeight = (ysize * 254) / (dpi * 10);
+    pScreen->mmWidth = (xsize * 254) / (dpix * 10);
+    pScreen->mmHeight = (ysize * 254) / (dpiy * 10);
     pScreen->numDepths = NUMDEPTHS;
     pScreen->allowedDepths = depths;
 
@@ -147,7 +148,7 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     pPixmap->drawable.height = ysize;
     pPixmap->refcnt = 1;
     pPixmap->devPrivate.ptr = pbits;
-    pPixmap->devKind = PixmapBytePad(xsize, 8);
+    pPixmap->devKind = PixmapBytePad(width, 8);
     pScreen->devPrivate = (pointer)pPixmap;
 
     /* anything that cfb doesn't know about is assumed to be done
