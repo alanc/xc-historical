@@ -19,6 +19,7 @@
 #define OSMinorVersion    4
 #define SystemV           NO
 #define SignalReturnProcType int
+#define HasPutenv YES
 
 #define XsunServer Xsun
 
@@ -33,7 +34,7 @@
 /* see below for ServerDefines */
 
 
-/**/# platform:  $XConsortium: sun.cf,v 1.12 89/04/10 09:22:28 jim Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.13 89/04/11 14:59:50 jim Exp $
 /**/# operating system:  OSName
 
 #if SunOSPlatform

@@ -5,27 +5,21 @@
 #define OSName            Ultrix-32 3.0
 #define OSMajorVersion    3
 #define OSMinorVersion    0
+#define SystemV NO
+#define SignalReturnProcType void
+#define HasPutenv YES
+
 
 #ifdef VaxArchitecture
 #define XqvssServer Xqvss
 #define XqdssServer Xqdss
+#define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
 #endif
-
-#define SignalReturnProcType void
 
 #ifdef MipsArchitecture
 #define BuildServer NO		/* for now, do not build PMAX server */
-/* increase some compiler tables to avoid overflow (bleah, static tables) */
 #define StandardDefines		-Wf,-XNh2000
 #endif
 
-/**/# platform:  $XConsortium: ultrix.cf,v 1.4 89/03/20 13:42:46 keith Exp $
+/**/# platform:  $XConsortium: ultrix.cf,v 1.5 89/03/20 13:47:47 jim Exp $
 /**/# operating system:  OSName
-
-/*****************************************************************************
- *			  Platform-specfic parameters                        *
- *****************************************************************************/
-
-#ifdef VaxArchitecture
-#define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
-#endif

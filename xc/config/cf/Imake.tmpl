@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.28 89/04/11 14:59:47 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.29 89/04/11 15:12:53 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -215,6 +215,9 @@
 #else
 #define HasVFork		YES
 #endif
+#endif
+#ifndef HasPutenv
+#define HasPutenv		NO	/* assume not */
 #endif
 
 #ifndef DestDir
