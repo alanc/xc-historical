@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.55 91/02/03 18:14:14 rws Exp $
+ * $XConsortium: Xrm.c,v 1.56 91/02/14 19:07:25 rws Exp $
  */
 
 /***********************************************************
@@ -1742,6 +1742,8 @@ static Bool DumpEntry(db, bindings, quarks, type, value, data)
     }
     else
 	fprintf(stream, "=%s:\t", XrmRepresentationToString(*type));
+    if (i && (*s == ' ' || *s == '\t'))
+	(void) putc('\\', stream); /* preserve leading whitespace */
     while (i--) {
 	c = *s++;
 	if (c == '\n') {
