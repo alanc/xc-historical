@@ -1,5 +1,5 @@
 *SimpleMenu*BackingStore: NotUseful
-*SimpleMenu*menuLabel.font: -adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso*-*
+*SimpleMenu*menuLabel.font: -adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-*
 *SimpleMenu*menuLabel.vertSpace: 	100
 *SimpleMenu*HorizontalMargins: 16
 *SimpleMenu*Sme.height:	16
