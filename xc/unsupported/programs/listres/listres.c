@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.14 89/07/12 11:19:49 jim Exp $
+ * $XConsortium: listres.c,v 1.15 89/07/24 13:47:19 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -27,6 +27,7 @@
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
 #include <X11/Xaw/Cardinals.h>
+#include <X11/Core.h>
 #include "defs.h"
 
 extern WidgetNode widget_list[];
@@ -114,12 +115,14 @@ main (argc, argv)
 {
     int i;
     WidgetNode *topnode;
-    Widget toplevel;
+    Widget toplevel, container;
 
     ProgramName = argv[0];
 
     toplevel = XtInitialize (NULL, "Listres", Options, XtNumber (Options),
 			     &argc, argv);
+    container = XtCreateWidget ("dummy", widgetClass, toplevel, NULL, ZERO);
+
     XtGetApplicationResources (toplevel, (caddr_t) &Appresources,
 			       Resources, XtNumber(Resources), NULL, ZERO);
     initialize_nodes (widget_list, nwidgets);
@@ -131,7 +134,7 @@ main (argc, argv)
     if (argc == 0) {
 	WidgetNode *wn;
 	for (i = 0, wn = widget_list; i < nwidgets; i++, wn++) {
-	    list_resources (wn, Appresources.format, topnode, toplevel,
+	    list_resources (wn, Appresources.format, topnode, container,
 			    (Bool) Appresources.show_superclass,
 			    (Bool) Appresources.show_variable);
 	}
@@ -146,7 +149,7 @@ main (argc, argv)
 			 ProgramName, *argv);
 		continue;
 	    }
-	    list_resources (node, Appresources.format, topnode, toplevel,
+	    list_resources (node, Appresources.format, topnode, container,
 			    (Bool) Appresources.show_superclass,
 			    (Bool) Appresources.show_variable);
 	}
