@@ -123,10 +123,10 @@ int x, y;
     }
 }
 
-Bool cfbUnmapWindow(pWindow, x, y)
+Bool cfbUnmapWindow(pWindow)
 WindowPtr pWindow;
-int x, y;
 {
+    return (TRUE);
 }
 
 /* UNCLEAN!
