@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.110 94/01/07 20:01:48 kaleb Exp $ */
+/* $XConsortium: Display.c,v 1.111 94/01/08 18:50:51 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -652,7 +652,6 @@ static void CloseDisplay(dpy)
 		XtFree((char *) xtpd->dispatcher_list);
 	    if (xtpd->ext_select_list != NULL)
 		XtFree((char *) xtpd->ext_select_list);
-	    XtDestroyWidget(xtpd->hook_object);
         }
 	XtFree((char*)pd);
 	XrmSetDatabase(dpy, (XrmDatabase)NULL);
