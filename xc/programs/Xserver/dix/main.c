@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.5 89/07/18 20:49:20 rws Exp $ */
+/* $XConsortium: main.c,v 5.6 89/08/08 08:37:41 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -267,7 +267,6 @@ main(argc, argv)
 	    break;
 	}
 
-	ResetHosts(display);
 	xfree(ConnectionInfo);
 
 	ResetWellKnownSockets ();
