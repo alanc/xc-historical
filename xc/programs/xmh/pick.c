@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: pick.c,v 1.18 88/01/25 13:54:33 swick Locked $";
+static char rcs_id[] = "$Header: pick.c,v 2.18 88/01/25 13:54:33 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -114,11 +114,13 @@ Widget widget;
 	{XtNforeground, NULL},
 	{XtNbackground, NULL},
     };
-    XtArgVal temp;
+    Pixel foreground, background;
+
+    arglist[0].value = (XtArgVal)&foreground;
+    arglist[1].value = (XtArgVal)&background;
     XtGetValues(widget, arglist, XtNumber(arglist));
-    temp = arglist[0].value;
-    arglist[0].value = arglist[1].value;
-    arglist[1].value = temp;
+    arglist[0].value = (XtArgVal)background;
+    arglist[1].value = (XtArgVal)foreground;
     XtSetValues(widget, arglist, XtNumber(arglist));
 }
 
@@ -208,8 +210,8 @@ char *str;
     Arg arglist2[3];
     XtTextSource source;
     if (strcmp(str, entry->ptr) == 0) return;
+    arglist[0].value = (XtArgVal)&source;
     XtGetValues(entry->widget, arglist, XtNumber(arglist));
-    source = (XtTextSource) arglist[0].value;
     XtStringSourceDestroy(source);
     (void) strcpy(entry->ptr, str);
     XtSetArg( arglist2[0], XtNstring, entry->ptr );
