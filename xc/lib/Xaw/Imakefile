@@ -43,6 +43,8 @@ HEADERS = \
 	Text.h \
 	TextP.h \
 	TextSrcP.h \
+	Toggle.h \
+	ToggleP.h \
 	VPaned.h \
 	VPanedP.h \
 	Viewport.h \
@@ -70,6 +72,7 @@ SRCS = \
 	StringSrc.c \
 	Text.c \
 	TextTr.c \
+	Toggle.c \
 	Vendor.c \
 	Viewport.c \
 	VPaned.c \
@@ -96,6 +99,7 @@ OBJS = \
 	StringSrc.o \
 	Text.o \
 	TextTr.o \
+	Toggle.o \
 	Vendor.o \
 	Viewport.o \
 	VPaned.o \
