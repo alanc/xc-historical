@@ -22,10 +22,6 @@
 *Porthole*Box.HSpace: 0
 *Porthole*Box.VSpace: 0
 *Paned*allowResize: true
-*Panner.canvasWidth: 800
-*Panner.canvasHeight: 500
-*Panner.sliderWidth: 800
-*Panner.sliderHeight: 500
 
 *Tree*List*Font: -adobe-helvetica-medium-r-normal--*-80-*-*-*-*-iso*-*
 
@@ -39,10 +35,6 @@
 
 *buttonbox.quit.Translations:  #override \
 		<Btn1Down>,<Btn1Up>: Quit() unset()
-*buttonbox.labeltype.Translations:  #override \
-		<Btn1Down>,<Btn1Up>: SetLabelType() unset()
-*buttonbox.orientation.Translations:  #override \
-		<Btn1Down>,<Btn1Up>: SetOrientation() unset()
 
 *Toggle.Translations: #augment \n\
 <Btn2Down>,<Btn2Up>: set() notify() Resources(toggle) \n\
