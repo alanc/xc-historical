@@ -1,5 +1,5 @@
 .\" Contrib manifest  -*- Nroff -*-
-.\" $XConsortium: Manifest.ms,v 1.6 94/06/14 13:54:54 gildea Exp gildea $
+.\" $XConsortium: Manifest.ms,v 1.7 94/10/22 19:55:17 gildea Exp gildea $
 .\" #! troff -ms
 .nr PS 11
 .if n \{
@@ -78,7 +78,7 @@ This document is a walk-through of the directories of the X11R6
 contrib part.
 .LP
 Where programs have provided a top-level \fI.man\fP file, the
-line that \fIapropos\fP(1) would extract from that file is shown.
+line that \*Q\fIman \-k\fP\*U would extract from that file is shown.
 For other packages, if there is a succinct description of
 the software near the top of a \fIREADME\fP file, that is given here.
 .LP
