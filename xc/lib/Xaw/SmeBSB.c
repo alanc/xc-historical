@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SmeBSB.c,v 1.8 89/12/11 15:20:11 kit Exp $";
+static char Xrcsid[] = "$XConsortium: SmeBSB.c,v 1.9 89/12/13 15:42:48 kit Exp $";
 #endif 
 
 /*
@@ -53,11 +53,11 @@ static XtResource resources[] = {
      offset(label), XtRString, NULL},
   {XtNvertSpace,  XtCVertSpace, XtRInt, sizeof(int),
      offset(vert_space), XtRImmediate, (caddr_t) 25},
-  {XtNleftBitmap, XtCLeftBitmap, XtRPixmap, sizeof(Pixmap),
+  {XtNleftBitmap, XtCLeftBitmap, XtRBitmap, sizeof(Pixmap),
      offset(left_bitmap), XtRImmediate, (caddr_t)None},
   {XtNjustify, XtCJustify, XtRJustify, sizeof(XtJustify),
      offset(justify), XtRImmediate, (caddr_t) XtJustifyLeft},
-  {XtNrightBitmap, XtCRightBitmap, XtRPixmap, sizeof(Pixmap),
+  {XtNrightBitmap, XtCRightBitmap, XtRBitmap, sizeof(Pixmap),
      offset(right_bitmap), XtRImmediate, (caddr_t)None},
   {XtNleftMargin,  XtCHorizontalMargins, XtRDimension, sizeof(Dimension),
      offset(left_margin), XtRImmediate, (caddr_t) 4},
