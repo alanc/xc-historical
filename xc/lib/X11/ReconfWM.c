@@ -1,4 +1,4 @@
-/* $XConsortium: ReconfWM.c,v 1.4 91/01/06 11:43:47 rws Exp $ */
+/* $XConsortium: ReconfWM.c,v 1.5 92/01/09 18:47:05 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986   */
 
 /*
@@ -29,8 +29,8 @@ Status XReconfigureWMWindow (dpy, w, screen, mask, changes)
 {
     XConfigureRequestEvent ev;
     Window root = RootWindow (dpy, screen);
-    _XInternalErrorHandler async;
-    _XInternalErrorState async_state;
+    _XAsyncHandler async;
+    _XAsyncErrorState async_state;
 
     /*
      * Only need to go through the trouble if we are actually changing the

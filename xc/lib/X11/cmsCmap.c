@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCmap.c,v 1.11 91/07/25 01:08:28 rws Exp $" */
+/* $XConsortium: XcmsCmap.c,v 1.12 92/01/09 18:51:21 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -82,8 +82,8 @@ CmapRecForColormap(dpy, cmap)
     int nVisualsMatched;	/* Number of visuals that match */
     Window tmpWindow;
     Visual *vp;
-    _XInternalErrorHandler async;
-    _XInternalErrorState async_state;
+    _XAsyncHandler async;
+    _XAsyncErrorState async_state;
 
     for (pRec = (XcmsCmapRec *)dpy->cms.clientCmaps; pRec != NULL;
 	    pRec = pRec->pNext) {

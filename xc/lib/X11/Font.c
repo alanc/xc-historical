@@ -1,4 +1,4 @@
-/* $XConsortium: XFont.c,v 11.39 92/01/03 13:59:23 rws Exp $ */
+/* $XConsortium: XFont.c,v 11.40 92/01/09 18:48:20 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -81,8 +81,8 @@ _XQueryFont (dpy, fid, seq)
     xQueryFontReply reply;
     register xResourceReq *req;
     register _XExtension *ext;
-    _XInternalErrorHandler async;
-    _XInternalErrorState async_state;
+    _XAsyncHandler async;
+    _XAsyncErrorState async_state;
 
     if (seq) {
 	async_state.min_sequence_number = seq;
