@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: ParseCmd.c,v 1.14 88/09/19 13:55:46 jim Exp $
  */
 
 /***********************************************************
@@ -68,6 +68,7 @@ void XrmParseCommand(pdb, options, num_options, prefix, argc, argv)
     char		*optP, *argP, optchar, argchar;
     int			matches;
     enum {DontCare, Check, NotSorted, Sorted} table_is_sorted;
+    char		**argend;
 
 #define PutCommandResource(value_str)				\
 {								\
@@ -77,6 +78,7 @@ void XrmParseCommand(pdb, options, num_options, prefix, argc, argv)
 } /* PutCommandResource */
 
     myargc = (*argc); 
+    argend = argv + myargc;
     argsave = ++argv;
 
     /* Parse prefix into bindings and quark list */
@@ -176,5 +178,6 @@ void XrmParseCommand(pdb, options, num_options, prefix, argc, argv)
 	    (*argsave++) = (*argv);  /*compress arglist*/ 
     }
 
-    (*argsave)=NULL; /* put NULL terminator on compressed argv */
+    if (argsave < argend)
+	(*argsave)=NULL; /* put NULL terminator on compressed argv */
 }
