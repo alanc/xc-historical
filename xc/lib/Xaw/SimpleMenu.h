@@ -2,7 +2,7 @@
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
 
- "$XConsortium: Label.c,v 1.64 89/03/16 12:58:17 swick Exp $";
+ "$XConsortium: SimpleMenu.h,v 1.1 89/04/03 17:23:03 kit Exp $";
 
                         All Rights Reserved
 
@@ -55,7 +55,9 @@ SOFTWARE.
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
  background	     Background		Pixel		XtDefaultBackground
- border		     BorderColor	Pixel		XtDefaultForeground
+ backgroundPixmap    BackgroundPixmap	Pixmap          None
+ borderColor	     BorderColor	Pixel		XtDefaultForeground
+ borderPixmap	     BorderPixmap	Pixmap		None
  borderWidth	     BorderWidth	Dimension	1
  bottomMargin        VerticalMargins    Dimension       VerticalSpace
  columnWidth         ColumnWidth        Dimension       Width of widest text
@@ -83,12 +85,12 @@ SOFTWARE.
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
+ callback            Callback           Callback        NULL
  label               Label              String          Name of entry
- sensitive	     Sensitive		Boolean		True
  leftBitmap          LeftBitmap         Pixmap          None
  rightBitmap         RightBitmap        Pixmap          None
+ sensitive	     Sensitive		Boolean		True
  type                Type               XawMenuEntryType  Text
- callback            Callback           Callback        NULL
 
 */
 
@@ -113,35 +115,35 @@ typedef struct _SimpleMenuRec*		SimpleMenuWidget;
 
 extern WidgetClass simpleMenuWidgetClass;
 
-#define XtNcursor                    "cursor"
+#define XtNcursor		"cursor"
 
-#define XtNbottomMargin              "bottomMargin"
-#define XtNcolumnWidth               "columnWidth"
-#define XtNleftBitmap                "leftBitmap"
-#define XtNleftMargin                "leftMargin"
-#define XtNresize                    "resize"
-#define XtNrightBitmap               "rightBitmap"
-#define XtNrightMargin               "rightMargin"
-#define XtNrowHeight                 "rowHeight"
-#define XtNtopMargin                 "topMargin"
-#define XtNtype                      "type"
-#define XtNverticalSpace             "verticalSpace"
+#define XtNbottomMargin         "bottomMargin"
+#define XtNcolumnWidth          "columnWidth"
+#define XtNleftBitmap           "leftBitmap"
+#define XtNleftMargin		"leftMargin"
+#define XtNresize		"resize"
+#define XtNrightBitmap          "rightBitmap"
+#define XtNrightMargin          "rightMargin"
+#define XtNrowHeight            "rowHeight"
+#define XtNtopMargin            "topMargin"
+#define XtNtype                 "type"
+#define XtNverticalSpace        "verticalSpace"
 
-#define XtEblank                     "blank"
-#define XtEseparator                 "separator"
-#define XtEtext                      "text"
+#define XtEblank                "blank"
+#define XtEseparator            "separator"
+#define XtEtext                 "text"
 
-#define XtCColumnWidth               "ColumnWidth"
-#define XtCHorizontalMargins         "HorizontalMargins"
-#define XtCLeftBitmap                "LeftBitmap"
-#define XtCResize                    "Resize"
-#define XtCRightBitmap               "RightBitmap"
-#define XtCRowHeight                 "RowHeight"
-#define XtCType                      "Type"
-#define XtCVerticalMargins           "VerticalMargins"
-#define XtCVerticalSpace             "VerticalSpace"
+#define XtCColumnWidth          "ColumnWidth"
+#define XtCHorizontalMargins    "HorizontalMargins"
+#define XtCLeftBitmap           "LeftBitmap"
+#define XtCResize		"Resize"
+#define XtCRightBitmap          "RightBitmap"
+#define XtCRowHeight            "RowHeight"
+#define XtCType                 "Type"
+#define XtCVerticalMargins      "VerticalMargins"
+#define XtCVerticalSpace        "VerticalSpace"
 
-#define XtRSimpleMenuType            "SimpleMenuType"
+#define XtRSimpleMenuType       "SimpleMenuType"
 
 /************************************************************
  *
@@ -149,7 +151,7 @@ extern WidgetClass simpleMenuWidgetClass;
  *
  ************************************************************/
  
-/*      Function Name: XawSimpleMenuAddCallback
+/*      Function Name: XawSimpleMenuAddEntryCallback
  *      Description: Adds an entry to the callback list.
  *      Arguments: w - the menu widget
  *                 name - name of new menu item.
@@ -159,7 +161,7 @@ extern WidgetClass simpleMenuWidgetClass;
  */
 
 void
-XawSimpleMenuAddCallback(/* w, name, proc, data */);
+XawSimpleMenuAddEntryCallback(/* w, name, proc, data */);
 /*
 Widget w;
 char * name;
@@ -204,13 +206,9 @@ char * name;
  *                 args - the argument list.
  *                 num_args -  number of arguments.
  *      Returns: none.
- *      NOTE: figureing out whether or not to redisplay is an annoying
- *            amount of code and time.  Since the only resource that would
- *            not cause a redisplay is the callback list, I will just 
- *            always redisplay - CDP 3/22/89.
  */
 
-void XawSimpleMenuUpdateEntry(/* w, name , args, num_args */);
+void XawSimpleMenuSetEntryValues(/* w, name , args, num_args */);
 /*
 Widget w;
 char * name;
