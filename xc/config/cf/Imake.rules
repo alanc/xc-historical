@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.78 90/12/13 14:54:26 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.79 90/12/13 22:30:57 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -39,6 +39,7 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.78 90/12/13 14:54:26 rws Exp $
  *      InstallMultipleFlags                     (list,dest,flags)
  *      InstallMultipleMan                       (list,dest)
  *     	InstallAppDefaults                       (class)
+ *     	InstallAppDefaultsLong                   (file,class)
  *      DependDependency                         ()
  *     	DependTarget                             ()
  *     	CleanTarget                              ()
@@ -516,6 +517,20 @@ install:: class.ad							@@\
 #define	InstallAppDefaults(class)
 #endif /* InstallAppDefFiles */
 #endif /* InstallAppDefaults */
+
+/*
+ * InstallAppDefaultsLong - generate rules to install appliation default files 
+ * if the InstallAppDefFiles configuration parameter is set.
+ */
+#ifndef InstallAppDefaultsLong
+#if InstallAppDefFiles
+#define	InstallAppDefaultsLong(file,class)				@@\
+install:: file.ad							@@\
+	$(INSTALL) -c $(INSTAPPFLAGS) file.ad $(XAPPLOADDIR)/class
+#else
+#define	InstallAppDefaultsLong(file,class)
+#endif /* InstallAppDefFiles */
+#endif /* InstallAppDefaultsLong */
 
 
 
