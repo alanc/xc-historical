@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.166 91/06/11 18:36:35 converse Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.167 91/06/11 19:07:46 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1714,46 +1714,6 @@ extern XrmDatabase XtScreenDatabase(
 extern void XtCloseDisplay(
 #if NeedFunctionPrototypes
     Display*		/* dpy */
-#endif
-);
-
-extern void XtCopyFromParent(
-#if NeedFunctionPrototypes
-    Widget		/* widget */,
-    int			/* offset */,
-    XrmValue*		/* value */
-#endif
-);
-
-extern void XtCopyDefaultDepth(
-#if NeedFunctionPrototypes
-    Widget		/* widget */,
-    int			/* offset */,
-    XrmValue*		/* value */
-#endif
-);
-
-extern void XtCopyDefaultColormap(
-#if NeedFunctionPrototypes
-    Widget		/* widget */,
-    int			/* offset */,
-    XrmValue*		/* value */
-#endif
-);
-
-extern void XtCopyAncestorSensitive(
-#if NeedFunctionPrototypes
-    Widget		/* widget */,
-    int			/* offset */,
-    XrmValue*		/* value */
-#endif
-);
-
-extern void XtCopyScreen(
-#if NeedFunctionPrototypes
-    Widget		/* widget */,
-    int			/* offset */,
-    XrmValue*		/* value */
 #endif
 );
 
