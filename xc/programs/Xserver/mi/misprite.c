@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.30 90/05/15 18:36:30 keith Exp $ */
+/* $XConsortium: misprite.c,v 5.31 91/01/27 13:01:34 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -1798,6 +1798,8 @@ miSpriteRealizeCursor (pScreen, pCursor)
     miSpriteScreenPtr	pScreenPriv;
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
+    if (pCursor == pScreenPriv->pCursor)
+	pScreenPriv->checkPixels = TRUE;
     return (*pScreenPriv->funcs->RealizeCursor) (pScreen, pCursor);
 }
 
