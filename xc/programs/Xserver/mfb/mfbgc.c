@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.8 89/07/28 12:00:42 rws Exp $ */
+/* $XConsortium: mfbgc.c,v 5.9 89/08/08 14:35:07 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -361,16 +361,16 @@ matchCommon (pGC)
         pGC->font->pFI->maxbounds.metrics.rightSideBearing -
 	pGC->font->pFI->minbounds.metrics.leftSideBearing > 32)
 	return 0;
+    priv = (mfbPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr;
     for (i = 0; i < numberCommonOps; i++) {
 	cop = &mfbCommonOps[i];
 	if (pGC->fgPixel != cop->fg)
 	    continue;
 	if (pGC->bgPixel != cop->bg)
 	    continue;
-	priv = (mfbPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr;
 	if (priv->rop != cop->rrop)
 	    continue;
-	if (cop->terminalFont != pGC->font->pFI->terminalFont)
+	if (cop->terminalFont && !pGC->font->pFI->terminalFont)
 	    continue;
 	priv->FillArea = cop->fillArea;
 	return cop->ops;
