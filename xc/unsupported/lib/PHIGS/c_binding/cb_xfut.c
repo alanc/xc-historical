@@ -1,4 +1,4 @@
-/* $XConsortium: cb_xfut.c,v 5.3 91/07/12 20:19:54 hersh Exp $ */
+/* $XConsortium: cb_xfut.c,v 5.4 91/07/22 19:14:52 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -419,7 +419,7 @@ pcompose_tran_matrix3( m, pt, shift, x_ang, y_ang, z_ang, scale, error_ind, resu
 	*error_ind = 0;
 	build_transform3( pt, shift, x_ang, y_ang, z_ang, scale, xform);
 	/* Assuming pre-multiplication of old by new. */
-	phg_mat_mul(result, m, xform);
+	phg_mat_mul(result, xform, m);
     }
 }
 
@@ -442,7 +442,7 @@ pcompose_tran_matrix( m, pt, shift, angle, scale, error_ind, result)
 	*error_ind = 0;
 	build_transform( pt, shift, angle, scale, xform);
 	/* Assuming pre-multiplication of old by new. */
-	phg_mat_mul_3x3(result, m, xform);
+	phg_mat_mul_3x3(result, xform, m);
     }
 }
 
