@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: inputstr.h,v 1.27 91/07/17 16:43:02 rws Exp $ */
+/* $XConsortium: inputstr.h,v 1.28 91/07/24 15:45:57 rws Exp $ */
 
 #ifndef INPUTSTRUCT_H
 #define INPUTSTRUCT_H
@@ -107,6 +107,7 @@ typedef struct _KeyClassRec {
     CARD8		modifierMap[MAP_LENGTH];
     CARD8		maxKeysPerModifier;
     unsigned short	state;
+    unsigned short	prev_state;
 } KeyClassRec, *KeyClassPtr;
 
 typedef struct _AxisInfo {
