@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.9 91/05/12 15:31:15 rws Exp $
+# $XConsortium: Imakefile,v 5.10 91/07/08 15:39:17 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -45,9 +45,7 @@ OBJS = cp_util.o cp_ccom.o cp_rcom.o cp_inp.o psl.o \
 	cpb_clnt.o cpb_util.o cpb_css.o cpb_ws.o cpb_pm.o \
 	cpm_xevnt.o cpm_tlkt.o
 
-HSRCS = cp_priv.h
-
-ASRCS = $(CSRCS) $(HSRCS)
+SRCS = $(CSRCS) phigsmon.c
 
 MONDEPLIBS = ../libphigs.a XawClientDepLibs
 MONLIBS = ../libphigs.a XawClientLibs
@@ -73,19 +71,17 @@ all:: DONE
 DONE: ${OBJS}
 	touch DONE
 
-extract : $(ASRCS)
-
 NormalProgramTarget(phigsmon,phigsmon.o,$(MONDEPLIBS),$(MONLIBS),$(SYSLIBS))
 
-lint:   $(ASRCS)
+lint:
 	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) 
 
-lint-x: $(ASRCS)
+lint-x:
 	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) 
 
 lintlib : llib-lcp.ln
 
-llib-lcp.ln : $(ASRCS)
+llib-lcp.ln :
 	$(LINT) $(CSRCS) $(LINTFLAGS) -Ccp 
 
 .c.lint:
@@ -94,8 +90,6 @@ llib-lcp.ln : $(ASRCS)
 #ifdef HPArchitecture
 SpecialObjectRule(hpext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
 #endif
-
-SRCS = $(CSRCS) $(HSRCS) phigsmon.c
 
 DependTarget()
 
