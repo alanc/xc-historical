@@ -1,7 +1,7 @@
 /*
  * Kerberos V5 authentication scheme
  *
- * $XConsortium: k5auth.c,v 1.5 94/01/14 19:09:33 gildea Exp $
+ * $XConsortium: k5auth.c,v 1.6 94/02/04 10:52:15 rws Exp $
  *
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -107,10 +107,11 @@ Bool k5_cmpenc(pname, plen, buf)
  * CARD16	length	= total length
  * STRING8	princ	= encoded principal of server
  */
-XID K5Check(data_length, data, client)
+XID K5Check(data_length, data, client, reason)
     unsigned short data_length;
     char *data;
     ClientPtr client;
+    char **reason;
 {
     krb5_error_code retval;
     CARD16 tlen;

@@ -1,7 +1,7 @@
 /*
  * SUN-DES-1 authentication mechanism
  *
- * $XConsortium: rpcauth.c,v 1.6 93/09/03 08:21:41 dpw Exp $
+ * $XConsortium: rpcauth.c,v 1.7 93/09/26 15:41:11 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -33,12 +33,13 @@
 #include <rpc/auth_des.h>
 #endif
 
+static enum auth_stat why;
+
 static char * 
 authdes_ezdecode(inmsg, len)
 char *inmsg;
 int  len;
 {
-    enum auth_stat  why;
     struct rpc_msg  msg;
     char            cred_area[MAX_AUTH_BYTES];
     char            verf_area[MAX_AUTH_BYTES];
@@ -105,19 +106,34 @@ CheckNetName (addr, len, closure)
 	    strncmp ((char *) addr, (char *) closure, len) == 0);
 }
 
+static char rpc_error[MAXNETNAMELEN+50];
+
 XID
-SecureRPCCheck (data_length, data, client)
-register unsigned short	data_length;
-char	*data;
-ClientPtr client;
+SecureRPCCheck (data_length, data, client, reason)
+    register unsigned short	data_length;
+    char	*data;
+    ClientPtr client;
+    char	**reason;
 {
     char *fullname;
     
-    if (rpc_id != (XID) ~0L &&
-	(fullname = authdes_ezdecode(data, data_length)) != (char *)0)
-    {
-	if (ForEachHostInFamily (FamilyNetname, CheckNetName, (pointer) fullname))
-	    return rpc_id;
+    if (rpc_id == (XID) ~0L) {
+	*reason = "Secure RPC authorization not initialized";
+    } else {
+	fullname = authdes_ezdecode(data, data_length);
+	if (fullname == (char *)0) {
+	    sprintf(rpc_error, "Unable to authenticate secure RPC client (why=%d)", why);
+	    *reason = rpc_error;
+	} else {
+	    if (ForEachHostInFamily (FamilyNetname, CheckNetName,
+				     (pointer) fullname))
+		return rpc_id;
+	    else {
+		sprintf(rpc_error, "Principal \"%s\" is not authorized to connect",
+			fullname);
+		*reason = rpc_error;
+	    }
+	}
     }
     return (XID) ~0L;
 }

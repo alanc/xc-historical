@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.176 94/02/04 19:35:12 dpw Exp $ */
+/* $XConsortium: connection.c,v 1.177 94/02/05 16:18:04 rws Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -424,9 +424,10 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
     int 		family;
     int			fromlen;
     XID	 		auth_id;
+    char	 	*reason = NULL;
 
     auth_id = CheckAuthorization (proto_n, auth_proto,
-				  string_n, auth_string, client);
+				  string_n, auth_string, client, &reason);
 
     priv = (OsCommPtr)client->osPrivate;
     if (auth_id == (XID) ~0L)
@@ -450,7 +451,10 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
 	}
 
 	if (auth_id == (XID) ~0L)
-	    return "Client is not authorized to connect to Server";
+	    if (reason)
+		return reason;
+	    else
+		return "Client is not authorized to connect to Server";
     }
     else if (auditTrailLevel > 1)
     {

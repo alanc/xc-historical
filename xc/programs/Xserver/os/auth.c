@@ -1,7 +1,7 @@
 /*
  * authorization hooks for the server
  *
- * $XConsortium: auth.c,v 1.17 94/01/14 19:08:34 gildea Exp $
+ * $XConsortium: auth.c,v 1.18 94/01/18 17:29:17 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -160,12 +160,13 @@ RegisterAuthorizations ()
 #endif
 
 XID
-CheckAuthorization (name_length, name, data_length, data, client)
-unsigned short	name_length;
-char	*name;
-unsigned short	data_length;
-char	*data;
-ClientPtr client;
+CheckAuthorization (name_length, name, data_length, data, client, reason)
+    unsigned short	name_length;
+    char	*name;
+    unsigned short	data_length;
+    char	*data;
+    ClientPtr client;
+    char	**reason;	/* failure message.  NULL for default msg */
 {
     int	i;
     struct stat buf;
@@ -193,7 +194,7 @@ ClientPtr client;
 	    if (protocols[i].name_length == name_length &&
 		memcmp (protocols[i].name, name, (int) name_length) == 0)
 	    {
-		return (*protocols[i].Check) (data_length, data, client);
+		return (*protocols[i].Check) (data_length, data, client, reason);
 	    }
 	}
     return (XID) ~0L;
