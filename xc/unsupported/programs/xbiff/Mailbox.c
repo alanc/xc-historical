@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.25 89/04/22 13:10:54 rws Exp $
+ * $XConsortium: Mailbox.c,v 1.26 89/05/11 01:05:53 kit Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -410,6 +410,7 @@ static void check_mailbox (w, force_redraw, reset)
 	switch (system(w->mailbox.check_command)) {
 	  case 0:
 	    mailboxsize = w->mailbox.last_size + 1;
+	    break;
 	  /* case 1 is no change */
 	  case 2:
 	    mailboxsize = 0;
