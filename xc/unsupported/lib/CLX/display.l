@@ -113,14 +113,17 @@
 					    :display display :id id))
 			       (save-id display id ,type))
 			      ;; Found.  Check the type
-			      ,(if (member type '(window pixmap))
-				   `((or (type? ,type ',type) (type? ,type 'drawable)) ,type)
-				 `((type? ,type ',type) ,type))			       
-			      (t (x-error 'lookup-error
-					  :id id
-					  :display display
-					  :type ',type
-					  :object ,type))))
+			      ,(cond ((null *type-check?*)
+				      `(t ,type))
+				     ((member type '(window pixmap))
+				      `((type? ,type 'drawable) ,type))
+				     (t `((type? ,type ',type) ,type)))
+			      ,@(when *type-check?*
+				  `((t (x-error 'lookup-error
+						:id id
+						:display display
+						:type ',type
+						:object ,type))))))
 		   ;; Not being cached.  Create a new one each time.
 		   `(,(xintern 'make- type)
 		     :display display :id id))))
