@@ -85,7 +85,9 @@ IMPORTS = $(IMPORTS1) $(IMPORTS2)
 
 SUBIMPORTS = \
 	$(EXTENSIONSRC)/include/zoid.h \
-	$(EXTENSIONSRC)/include/bezier.h
+	$(EXTENSIONSRC)/include/bezier.h \
+	$(EXTENSIONSRC)/include/plxvideo.h \
+	$(EXTENSIONSRC)/include/xtestext1.h
    
 SUBDIRS = bitmaps
 
