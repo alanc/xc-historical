@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.22 89/12/12 12:10:18 jim Exp $
+ * $XConsortium: Xos.h,v 1.23 89/12/12 16:23:32 jim Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -30,8 +30,14 @@
 
 #ifdef USG
 #ifndef __TYPES__
+#ifdef CRAY
+#define word word_t
+#endif
 #include <sys/types.h>			/* forgot to protect it... */
 #define __TYPES__
+#ifdef CRAY
+#undef word
+#endif
 #endif /* __TYPES__ */
 #else
 #include <sys/types.h>
