@@ -1,4 +1,4 @@
-/* $XConsortium: XImUtil.c,v 11.54 91/12/21 16:12:19 rws Exp $ */
+/* $XConsortium: XImUtil.c,v 11.55 91/12/23 09:32:47 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -21,6 +21,22 @@ without express or implied warranty.
 #define Const const
 #else
 #define Const /**/
+#endif
+
+#if NeedFunctionPrototypes
+static int _XDestroyImage(XImage *);
+static unsigned long _XGetPixel(XImage *, int, int);
+static unsigned long _XGetPixel1(XImage *, int, int);
+static unsigned long _XGetPixel8(XImage *, int, int);
+static unsigned long _XGetPixel16(XImage *, int, int);
+static unsigned long _XGetPixel32(XImage *, int, int);
+static int _XPutPixel(XImage *, int, int, unsigned long);
+static int _XPutPixel1(XImage *, int, int, unsigned long);
+static int _XPutPixel8(XImage *, int, int, unsigned long);
+static int _XPutPixel16(XImage *, int, int, unsigned long);
+static int _XPutPixel32(XImage *, int, int, unsigned long);
+static XImage *_XSubImage(XImage *, int, int, unsigned int, unsigned int);
+static int _XAddPixel(XImage *, long);
 #endif
 
 static unsigned char Const _lomask[0x09] = { 0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff };
