@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.79 91/01/08 09:26:14 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.80 91/01/08 11:59:15 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -85,9 +85,6 @@ XCOMM $XConsortium: Project.tmpl,v 1.79 91/01/08 09:26:14 rws Exp $
 #ifndef LibManSuffix
 #define LibManSuffix	3		/* use just one tab or cpp will die */
 #endif
-#ifndef UNCOMPRESSFILT
-#define UNCOMPRESSFILT -DUNCOMPRESSFILT=\"UNCOMPRESSPATH\"
-#endif
 #ifndef BDFTOSNFFILT
 #define BDFTOSNFFILT -DBDFTOSNFFILT=\"$(BINDIR)/bdftosnf\"
 #endif
@@ -98,7 +95,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.79 91/01/08 09:26:14 rws Exp $
 #define ZBDFTOSNFFILT -DZBDFTOSNFFILT=\"UNCOMPRESSPATH" | $(BINDIR)/bdftosnf $(FONTCFLAGS)\""
 #endif
 #ifndef FontFilters
-#define FontFilters UNCOMPRESSFILT BDFTOSNFFILT SHELLPATH ZBDFTOSNFFILT
+#define FontFilters BDFTOSNFFILT SHELLPATH ZBDFTOSNFFILT
 #endif
 #ifndef PrimaryScreenResolution
 #define PrimaryScreenResolution 72		/* a common resolution */
@@ -355,7 +352,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.79 91/01/08 09:26:14 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.79 91/01/08 09:26:14 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.80 91/01/08 11:59:15 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
