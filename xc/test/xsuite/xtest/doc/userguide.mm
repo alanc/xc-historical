@@ -1,4 +1,4 @@
-.\" $XConsortium: userguide.mm,v 1.9 92/07/04 16:47:49 rws Exp $
+.\" $XConsortium: userguide.mm,v 1.10 92/07/04 17:05:08 rws Exp $
 '
 .ds dD User Guide for the X Test Suite
 .so 00.header
@@ -1215,6 +1215,8 @@ tcc -b [ -s scenario_file ]  [ -j journal_file ] [ -y string ] xtest all
 .LI \fC-b\fP
 .br
 This invokes the \s-1TCC\s0 in build mode.
+(If you have just finished building the \s-1TCC\s0 from the \fCcsh\fP,
+you will probably have to \fCrehash\fP to get \fCtcc\fP in your path.)
 .LI "\fC-s scenario_file\fP"
 .br
 This option builds the test sets in the named scenario file.
