@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.18 89/08/24 19:52:06 keith Exp $ */
+/* $XConsortium: misprite.c,v 5.19 89/08/30 19:23:11 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -47,6 +47,7 @@ static unsigned long miSpriteGeneration = 0;
 static Bool	    miSpriteCloseScreen();
 static void	    miSpriteGetImage();
 static void	    miSpriteGetSpans();
+static void	    miSpriteSourceValidate();
 static Bool	    miSpriteCreateGC();
 static void	    miSpriteBlockHandler();
 static void	    miSpriteInstallColormap();
@@ -234,6 +235,7 @@ miSpriteInitialize (pScreen, spriteFuncs, pointerFuncs)
     pPriv->CloseScreen = pScreen->CloseScreen;
     pPriv->GetImage = pScreen->GetImage;
     pPriv->GetSpans = pScreen->GetSpans;
+    pPriv->SourceValidate = pScreen->SourceValidate;
     pPriv->CreateGC = pScreen->CreateGC;
     pPriv->BlockHandler = pScreen->BlockHandler;
     pPriv->InstallColormap = pScreen->InstallColormap;
@@ -258,6 +260,7 @@ miSpriteInitialize (pScreen, spriteFuncs, pointerFuncs)
     pScreen->CloseScreen = miSpriteCloseScreen;
     pScreen->GetImage = miSpriteGetImage;
     pScreen->GetSpans = miSpriteGetSpans;
+    pScreen->SourceValidate = miSpriteSourceValidate;
     pScreen->CreateGC = miSpriteCreateGC;
     pScreen->BlockHandler = miSpriteBlockHandler;
     pScreen->InstallColormap = miSpriteInstallColormap;
@@ -294,6 +297,7 @@ miSpriteCloseScreen (i, pScreen)
     pScreen->CloseScreen = pScreenPriv->CloseScreen;
     pScreen->GetImage = pScreenPriv->GetImage;
     pScreen->GetSpans = pScreenPriv->GetSpans;
+    pScreen->SourceValidate = pScreenPriv->SourceValidate;
     pScreen->CreateGC = pScreenPriv->CreateGC;
     pScreen->BlockHandler = pScreenPriv->BlockHandler;
     pScreen->InstallColormap = pScreenPriv->InstallColormap;
@@ -383,6 +387,31 @@ miSpriteGetSpans (pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
     (*pScreen->GetSpans) (pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
 
     SCREEN_EPILOGUE (pScreen, GetSpans, miSpriteGetSpans);
+}
+
+static void
+miSpriteSourceValidate (pDrawable, x, y, width, height)
+    DrawablePtr	pDrawable;
+    int		x, y, width, height;
+{
+    ScreenPtr		    pScreen = pDrawable->pScreen;
+    miSpriteScreenPtr	    pScreenPriv;
+    
+    SCREEN_PROLOGUE (pScreen, SourceValidate);
+
+    pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
+
+    if (pDrawable->type == DRAWABLE_WINDOW && pScreenPriv->isUp &&
+	ORG_OVERLAP(&pScreenPriv->saved, pDrawable->x, pDrawable->y,
+		    x, y, width, height))
+    {
+	miSpriteRemoveCursor (pScreen);
+    }
+
+    if (pScreen->SourceValidate)
+	(*pScreen->SourceValidate) (pDrawable, x, y, width, height);
+
+    SCREEN_EPILOGUE (pScreen, SourceValidate, miSpriteSourceValidate);
 }
 
 static Bool
@@ -947,28 +976,15 @@ miSpriteCopyArea (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty)
 
     GC_SETUP(pDst, pGC);
 
-    /*
-     * check both destination and source for overlap.  Avoid
-     * the source check when source == destination
-     */
-    if (GC_CHECK((WindowPtr) pDst) && (
-	 ORG_OVERLAP(&pScreenPriv->saved,pDst->x,pDst->y,dstx,dsty,w,h) ||
-	 (pSrc == pDst &&
-	  ORG_OVERLAP(&pScreenPriv->saved,pSrc->x,pSrc->y,srcx,srcy,w,h))))
+    /* check destination/source overlap. */
+    if (GC_CHECK((WindowPtr) pDst) &&
+	 (ORG_OVERLAP(&pScreenPriv->saved,pDst->x,pDst->y,dstx,dsty,w,h) ||
+	  ((pDst == pSrc) &&
+	   ORG_OVERLAP(&pScreenPriv->saved,pSrc->x,pSrc->y,srcx,srcy,w,h))))
     {
 	miSpriteRemoveCursor (pDst->pScreen);
     }
-    else if (pSrc != pDst && pSrc->type == DRAWABLE_WINDOW)
-    {
-	GC_SETUP_CHEAP(pSrc);
-
-    	if (GC_CHECK((WindowPtr) pSrc) &&
-	    ORG_OVERLAP(&pScreenPriv->saved,pSrc->x,pSrc->y,srcx,srcy,w,h))
-    	{
-	    miSpriteRemoveCursor (pSrc->pScreen);
-    	}
-    }
-
+ 
     GC_OP_PROLOGUE (pGC);
 
     rgn = (*pGC->ops->CopyArea) (pSrc, pDst, pGC, srcx, srcy, w, h,
@@ -997,25 +1013,14 @@ miSpriteCopyPlane (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
     GC_SETUP(pDst, pGC);
 
     /*
-     * check both destination and source for overlap.  Avoid
-     * the source check when source == destination
+     * check destination/source for overlap.
      */
-    if (GC_CHECK((WindowPtr) pDst) && (
-	 ORG_OVERLAP(&pScreenPriv->saved,pDst->x,pDst->y,dstx,dsty,w,h) ||
-	 (pSrc == pDst &&
+    if (GC_CHECK((WindowPtr) pDst) &&
+	(ORG_OVERLAP(&pScreenPriv->saved,pDst->x,pDst->y,dstx,dsty,w,h) ||
+	 ((pDst == pSrc) &&
 	  ORG_OVERLAP(&pScreenPriv->saved,pSrc->x,pSrc->y,srcx,srcy,w,h))))
     {
 	miSpriteRemoveCursor (pDst->pScreen);
-    }
-    else if (pSrc != pDst && pSrc->type == DRAWABLE_WINDOW)
-    {
-	GC_SETUP_CHEAP(pSrc);
-
-    	if (GC_CHECK((WindowPtr) pSrc) &&
-	    ORG_OVERLAP(&pScreenPriv->saved,pSrc->x,pSrc->y,srcx,srcy,w,h))
-    	{
-	    miSpriteRemoveCursor (pSrc->pScreen);
-    	}
     }
 
     GC_OP_PROLOGUE (pGC);
