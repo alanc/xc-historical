@@ -1,4 +1,4 @@
-.TH XTERM 1 "1 March 1988" "X Version 11"
+.TH XTERM 1 "16 October 1988" "X Version 11"
 .SH NAME
 xterm \- terminal emulator for X
 .SH SYNOPSIS
@@ -870,7 +870,7 @@ resize(1), X(1), pty(4), tty(4)
 The \fB\-L\fP option is no longer needed as the new \fIxdm\fP display manager
 system handling logging in in a much cleaner way.  No more messing around with
 trying to match colors in \fI/etc/ttys\fP or worrying about an unwanted login
-window.
+window.  \fBThis option may be removed in future releases.\fP
 .PP
 \fBXterm will hang forever if you try to paste too much text at one time.\fP
 It is both producer and consumer for the pty and can deadlock.
