@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.5 93/10/26 19:50:05 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.6 93/10/27 21:52:50 rws Exp $ */
 
 int   verbosity_Group_xielib ;
 int   verbosity_Group_xielib_user_level ;
@@ -126,7 +126,6 @@ XieLut CreatePointLut();
 /* ScreenSaver state */
 static XParmRec    xparms;
 static int ssTimeout, ssInterval, ssPreferBlanking, ssAllowExposures;
-static XiePhotomap XIEPhotomap;
 
 /************************************************
 *	    time related stuff			*
@@ -470,8 +469,6 @@ Window CreatePerfWindow(xp, x, y, width, height)
 {
     XSetWindowAttributes xswa;
     Window w;
-    Screen *s;
-    int su;
     unsigned long value_mask;
 
     xswa.background_pixel = xp->background;
@@ -499,8 +496,6 @@ Window CreatePerfWindowUnmapped(xp, x, y, width, height)
 {
     XSetWindowAttributes xswa;
     Window w;
-    Screen *s;
-    int su;
     unsigned long value_mask;
 
     xswa.background_pixel = xp->background;
@@ -814,7 +809,7 @@ main(argc, argv)
     char **argv;
 
 {
-    int		i, j, n, skip;
+    int		i, j, n;
     int		numTests;       /* Even though the linker knows, we don't. */
     char	hostname[100];
     char	*displayName;
@@ -822,7 +817,6 @@ main(argc, argv)
     Bool	synchronous = False;
     XGCValues	tgcv;
     int		screen;
-    int		rop, pm;
     XVisualInfo *vinfolist, vinfotempl;
     unsigned long vmask;
     XieExtensionInfo        *xieInfo;
@@ -1005,7 +999,6 @@ main(argc, argv)
 	/* Just print out list of tests for use with .sh programs that
 	   assemble data from different xieperf runs into a nice format */
 	ForEachTest (i) {
-	    int child;
 	    if (doit[i] && (test[i].versions & xparms.version)) {
 		printf ("%s\n", test[i].label);
 	    }
@@ -1055,7 +1048,7 @@ main(argc, argv)
 	capabilities = SUBSET_DIS;
     }
 
-    InitEventInfo( &xparms, xieInfo );
+    InitEventInfo( xparms.d, xieInfo );
     /* get visual info of default visual */
     vmask = VisualIDMask | VisualScreenMask;
     vinfotempl.visualid = XVisualIDFromVisual(XDefaultVisual(xparms.d, screen));
@@ -1230,7 +1223,7 @@ main(argc, argv)
     if ( loadTests == False )
     {
     	ForEachTest (i) {
-		int child;
+
 		char label[200];
 
 		if ( !EventOrErrorValid( test[ i ].parms.description ) )
@@ -1239,7 +1232,7 @@ main(argc, argv)
 			if ( IsNotBoring( test[ i ].parms.description ) )
 			{
 				strcpy (label, test[i].label);
-				ProcessTest(&xparms, &test[i], GXcopy, ~0, label, -1);
+				ProcessTest(&xparms, &test[i], GXcopy, ~((unsigned long)0), label, -1);
 			}
 		} /* if doit */
 	    } /* ForEachTest */
@@ -1259,7 +1252,6 @@ main(argc, argv)
 			done = True;
 		else
 		{
-			int child;
 			char label[200];
 
 			if ( !EventOrErrorValid( test[ i ].parms.description ) )
@@ -1276,7 +1268,7 @@ main(argc, argv)
 						repeat = repeattmp;
 					}
 					ProcessTest(&xparms, 
-						&test[i], GXcopy, ~0, label, reps);
+						&test[i], GXcopy, ~0L, label, reps);
 					if ( repeattmp != -1 )
 						repeat = repeatsave;
 				}
@@ -1918,9 +1910,6 @@ Bool 	radiometric;
         XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
         char *encode_params=NULL;
 	XieLTriplet width, height, levels;
-	unsigned char pixel_stride[ 3 ];
-	unsigned char left_pad[ 3 ];
-	unsigned char scanline_pad[ 3 ];
 	XiePhotomap	tmp;
 	int	size;
 
@@ -2332,7 +2321,6 @@ int	inlevels;
         XiePhotospace photospace;
 	int flo_id, flo_notify;
         XiePhotoElement *flograph;
-	XieLTriplet width, height, levels;
 	XiePhotomap XIEPhotomap, tmp;
 	XieLut XIELut;
 	XieProcessDomain domain;
@@ -2416,11 +2404,10 @@ Parms	p;
 GeometryParms *geo;
 int	which;
 {
-	XIEimage *image;
         XiePhotospace photospace;
-	int size, flo_id, flo_notify;
+	int flo_id, flo_notify;
         XiePhotoElement *flograph;
-	XieLTriplet width, height, levels;
+
 	static XieConstant constant = { 0.0, 0.0, 0.0 };
         XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
         char *encode_params=NULL;
@@ -2496,11 +2483,8 @@ int	which;
 {
 	XIEimage *image;
         XiePhotospace photospace;
-	int size, flo_id, flo_notify;
+	int flo_id, flo_notify;
         XiePhotoElement *flograph;
-	XieLTriplet width, height, levels;
-        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
-        char *encode_params=NULL;
 	float coeffs[ 6 ];
 	static XieConstant constant = { 0.0, 0.0, 0.0 };
 	XieLut XIELut;
@@ -2876,16 +2860,14 @@ Parms	p;
 int	which;
 int	level;
 {
-	XIEimage *image;
         XiePhotospace photospace;
 	int flo_id, flo_notify;
         XiePhotoElement *flograph;
         XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
         char *encode_params=NULL;
-	XieLTriplet width, height, levels;
+	XieLTriplet levels;
         char *tech_parms=NULL;
 	XiePhotomap tmp, XIEPhotomap;
-	int size;
 
 	tmp = GetXIEPhotomap( xp, p, which );
 	if ( tmp == ( XiePhotomap ) NULL )
@@ -3056,13 +3038,11 @@ int	cliptype;
 XieConstant in_low,in_high;
 XieLTriplet out_low,out_high;
 {
-	XIEimage *image;
         XiePhotospace photospace;
 	int flo_id, flo_notify;
         XiePhotoElement *flograph;
         XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
         char *encode_params=NULL;
-	XieLTriplet width, height, levels;
         char *tech_parms=NULL;
 	XiePhotomap tmp, XIEPhotomap;
 
@@ -3540,19 +3520,12 @@ XStandardColormap *stdCmap;
         XiePhotospace photospace;
 	XiePhotoElement *flograph;
         int flo_id, flo_notify;
-	XieColorList clist;
-        XWindowAttributes xwa;
-        XieColorAllocAllParam *color_parm;
 	XieConstant c1;
 	float bias;
 
 	if ( ( ditheredPhoto = GetXIEDitheredTriplePhotomap( xp, p, which,
 		ditherTech, threshold, levels ) ) == ( XiePhotomap ) NULL )
 	{
-		if ( clist )
-			XieDestroyColorList( xp->d, clist );
-		if ( color_parm )
-			free( color_parm );
 		return( 0 );
 	}
 
@@ -3603,6 +3576,9 @@ GetFileSize( path )
 char	*path;
 {
 	int	size;
+	struct stat _Stat_Buffer;
+#define file_size(path) ( stat(path,&_Stat_Buffer)== 0 ? \
+                _Stat_Buffer.st_size :  -1)
 
         /* open the file */
 
@@ -3621,7 +3597,6 @@ Parms	p;
 int	which;
 {
         int     fd;
-        int     n;
 	int	*size;
 	XIEimage *image;
 	char	*name;
@@ -3678,7 +3653,7 @@ int	which;
 
         /* read the data */
 
-        if ( ( n = read( fd, image->data, *size ) ) != *size )
+        if ( read( fd, image->data, *size ) != *size )
         {
                 fprintf( stderr, "Couldn't read data\n" );
                 goto out;
@@ -3765,7 +3740,8 @@ int	lutLevels;
                 2               /* number of elements */
         );
         XSync( xp->d, 0 );
-        PumpTheClientData( xp, p, flo_id, photospace, 1, lut, lutSize, 0 );
+        PumpTheClientData( xp, p, flo_id, photospace, 1, (char *)lut, lutSize,
+			   0 );
         WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
         XieFreePhotofloGraph(flograph,2);
     	return tmp;
@@ -3815,8 +3791,8 @@ int	rectsSize;
                 2               /* number of elements */
         );
         XSync( xp->d, 0 );
-        PumpTheClientData( xp, p, flo_id, photospace, 1, rects, rectsSize
-		* sizeof( XieRectangle ), 0 );
+        PumpTheClientData( xp, p, flo_id, photospace, 1, (char *)rects,
+			   rectsSize * sizeof( XieRectangle ), 0 );
         WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
  
         XieFreePhotofloGraph(flograph,2);
@@ -4209,13 +4185,13 @@ Atom	atom;
 }
 
 #define SETLUT if ( lutCellSize == sizeof( char ) ) {\
-        *( ( char * ) ptr ) = val; \
+        *( ( unsigned char * ) ptr ) = val; \
 	ptr+=sizeof(char); } \
 else if ( lutCellSize == sizeof( short ) ) { \
-        *( ( short * ) ptr ) = val; \
+        *( ( unsigned short * ) ptr ) = val; \
 	ptr+=sizeof(short); } \
 else { \
-        *( ( long * ) ptr) = val; \
+        *( ( unsigned long * ) ptr) = val; \
 	ptr+=sizeof(long); }
 
 XieLut
@@ -4225,8 +4201,8 @@ Parms	p;
 int	indepth;
 int	outdepth;
 {
-        char    *lut, *ptr; 
-        int     lutSize, lutLevels;
+        unsigned char    *lut, *ptr;
+        int     lutSize;
         int     lutCellSize;
         int     i, j, val;
         int     step, increment;
@@ -4258,9 +4234,9 @@ int	outdepth;
                 step = 1;
         }
 
-	lut = (char *) malloc( lutSize * lutCellSize );
-	ptr = ( void * ) lut;
-	if ( lut == ( char * ) NULL )
+	lut = (unsigned char *) malloc( lutSize * lutCellSize );
+	ptr = lut;
+	if ( lut == ( unsigned char * ) NULL )
 		return( ( XieLut ) NULL );
 
 	/* initialize the lut */
@@ -4282,3 +4258,60 @@ int	outdepth;
 	return( retval );
 }
 
+/*
+ * integer cube roots by Newton's method
+ *
+ * Stephen Gildea, MIT X Consortium, July 1991
+ */
+
+/* Newton's Method:  x_n+1 = x_n - ( f(x_n) / f'(x_n) ) */
+
+/* for cube roots, x^3 - a = 0,  x_new = x - 1/3 (x - a/x^2) */
+
+/*
+ * Quick and dirty cube roots.  Nothing fancy here, just Newton's method.
+ * Only works for positive integers (since that's all we need).
+ * We actually return floor(cbrt(a)) because that's what we need here, too.
+ */
+
+static int icbrt_with_guess(a, guess)
+    int a, guess;
+{
+    register int delta;
+
+    if (a <= 0)
+	return 0;
+    if (guess < 1)
+	guess = 1;
+
+    do {
+	delta = (guess - a/(guess*guess))/3;
+	guess -= delta;
+    } while (delta != 0);
+
+    if (guess*guess*guess > a)
+	guess--;
+
+    return guess;
+}
+
+static int icbrt_with_bits(a, bits)
+    int a;
+    int bits;			/* log 2 of a */
+{
+    return icbrt_with_guess(a, a>>2*bits/3);
+}
+
+int icbrt(a)		/* integer cube root */
+    int a;
+{
+    register int bits = 0;
+    register unsigned n = a;
+
+    while (n)
+    {
+	bits++;
+	n >>= 1;
+    }
+    return icbrt_with_bits(a, bits);
+}
