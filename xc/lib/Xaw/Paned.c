@@ -1,4 +1,4 @@
-/* $XConsortium: Paned.c,v 1.20 91/02/17 16:32:22 converse Exp $ */
+/* $XConsortium: Paned.c,v 1.21 91/02/20 20:02:51 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,7 +27,7 @@ SOFTWARE.
 /*
  * Paned.c - Paned Composite Widget.
  *
- * Updated and significantly modifided from the Athena VPaned Widget.
+ * Updated and significantly modified from the Athena VPaned Widget.
  *
  * Date:    March 1, 1989
  *
@@ -35,8 +35,6 @@ SOFTWARE.
  *          MIT X Consortium
  *          kit@expo.lcs.mit.edu
  */
-
-#include <ctype.h>
 
 #include <X11/IntrinsicP.h>
 #include <X11/cursorfont.h>
@@ -48,6 +46,8 @@ SOFTWARE.
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/Grip.h>
 #include <X11/Xaw/PanedP.h>
+
+#include <ctype.h>
 
 typedef enum {UpLeftPane = 'U', LowRightPane = 'L', 
 	      ThisBorderOnly = 'T', AnyPane = 'A' } Direction;
@@ -193,7 +193,7 @@ PanedClassRec panedClassRec = {
     /* realize            */   Realize,
     /* actions            */   NULL,
     /* num_actions        */   0,
-    /* resourses          */   resources,
+    /* resources          */   resources,
     /* resource_count     */   XtNumber(resources),
     /* xrm_class          */   NULLQUARK,
     /* compress_motion    */   TRUE,
@@ -223,7 +223,7 @@ PanedClassRec panedClassRec = {
     /* extension          */   NULL
    }, {
 /* constraint class fields */
-    /* subresourses       */   subresources,
+    /* subresources       */   subresources,
     /* subresource_count  */   XtNumber(subresources),
     /* constraint_size    */   sizeof(PanedConstraintsRec),
     /* initialize         */   NULL,
@@ -235,7 +235,7 @@ PanedClassRec panedClassRec = {
 
 WidgetClass panedWidgetClass = (WidgetClass) &panedClassRec;
 
-/* For compatability. */
+/* For compatibility. */
 WidgetClass vPanedWidgetClass = (WidgetClass) &panedClassRec;
 
 /***********************************************************
@@ -350,7 +350,7 @@ Boolean vert;
 
 /*	Function Name: ChoosePaneToResize.
  *	Description: This function chooses a pane to resize.
- *                   They are choosen using the following rules:
+ *                   They are chosen using the following rules:
  *
  *                   1) size < max && size > min
  *                   2) skip adjust == FALSE
@@ -366,28 +366,28 @@ Boolean vert;
  *                   If no widgets are found then NULL is returned.
  * 
  *	Arguments: pw - the paned widget.
- *                 index - the index of the current pane.
+ *                 paneindex - the index of the current pane.
  *                 dir - direction to search first.
  *                 shrink - TRUE if we need to shrink a pane, FALSE otherwise.
  *	Returns: pane to resize or NULL.
  */
 
 static Pane
-ChoosePaneToResize(pw, index, dir, shrink)
+ChoosePaneToResize(pw, paneindex, dir, shrink)
 PanedWidget pw;
-int index;
+int paneindex;
 Direction dir;
 Boolean shrink;
 {
     Widget *childP;
     int rules = 3;
     Direction _dir = dir;
-    int _index = index;
+    int _index = paneindex;
 
-    if ( (index == NO_INDEX) || (dir == AnyPane) ) {	/* Use defaults. */
+    if ( (paneindex == NO_INDEX) || (dir == AnyPane) ) {  /* Use defaults. */
       _dir = LowRightPane;		/* Go up. - really. */
       _index = pw->paned.num_panes - 1;	/* Start the last pane, and work
-					   backwords. */
+					   backwards. */
     }
     childP = pw->composite.children + _index;
     while(TRUE) {
@@ -396,11 +396,11 @@ Boolean shrink;
         if ( (rules < 3 || SatisfiesRule3(pane, shrink)) &&
 	     (rules < 2 || SatisfiesRule2(pane))         &&
 	     (SatisfiesRule1(pane, shrink))              &&
-	     ((index != PaneIndex(*childP)) || (dir == AnyPane)) )
+	     ((paneindex != PaneIndex(*childP)) || (dir == AnyPane)) )
 	    return(pane);
 
 /*
- * This is counter-intiutive, but if we are resizing the pane
+ * This is counter-intuitive, but if we are resizing the pane
  * above the grip we want to choose a pane below the grip to lose,
  * and visa-versa.
  */
@@ -466,13 +466,13 @@ Boolean shrink;
 	   ( (shrink && ((int)pane->wp_size <= pane->size)) ||
 	     (!shrink && ((int)pane->wp_size >= pane->size))) );
 }
-   
+
 /*	Function Name: LoopAndRefigureChildren.
- *	Description: if we are resizeing either the UpleftPane or LowRight Pane
+ *	Description: if we are resizing either the UpleftPane or LowRight Pane
  *                   loop through all the children to see if any will allow us
  *                   to resize them.
  *	Arguments: pw - the paned widget.
- *                 index - the number of the pane border we are moving.
+ *                 paneindex - the number of the pane border we are moving.
  *                 dir - the pane to move (either UpLeftPane or LowRightPane).
  *                 sizeused - current amount of space used. 
  *                            THIS VALUE IS USED AND RETURNED.
@@ -480,15 +480,15 @@ Boolean shrink;
  */
 
 static void
-LoopAndRefigureChildren(pw, index, dir, sizeused)
+LoopAndRefigureChildren(pw, paneindex, dir, sizeused)
 PanedWidget pw;
-int index, *sizeused;
+int paneindex, *sizeused;
 Direction dir;
 {
     int pane_size = (int) PaneSize( (Widget) pw, IsVert(pw));
     Boolean shrink = (*sizeused > pane_size);
 
-    if (dir == LowRightPane) index++;
+    if (dir == LowRightPane) paneindex++;
 
     while (*sizeused != pane_size) { /* While all panes do not fit properly. */
 /*
@@ -503,7 +503,7 @@ Direction dir;
 
 	GetPaneStack(pw, shrink, &pane, &start_size);
 	if (pane == NULL) {
-	    pane = ChoosePaneToResize(pw, index, dir, shrink);
+	    pane = ChoosePaneToResize(pw, paneindex, dir, shrink);
 	    if (pane == NULL) 
 	        return; /* no one to resize, give up. */
 
@@ -547,23 +547,23 @@ Direction dir;
 /*	Function Name: RefigureLocations
  *	Description: refigures all locations of children.
  *	Arguments: pw - the paned widget.
- *                 index - child to start refiguring at.
+ *                 paneindex - child to start refiguring at.
  *                 dir - direction to move from child.
  *	Returns: none.
  *
- *      There are special arguements to index and dir, they are:
- *      index - NO_INDEX.
+ *      There are special arguments to paneindex and dir, they are:
+ *      paneindex - NO_INDEX.
  *      dir   - AnyPane.
  *
  *      If either of these is true then all panes may be resized and
- *      the choosing of panes proceedes in reverse order starting with the
+ *      the choosing of panes procedes in reverse order starting with the
  *      last child.
  */
 
 static void 
-RefigureLocations(pw, index, dir)
+RefigureLocations(pw, paneindex, dir)
 PanedWidget pw;
-int index;
+int paneindex;
 Direction dir;
 {
     register Widget *childP;
@@ -586,7 +586,7 @@ Direction dir;
     sizeused -= (int) pw->paned.internal_bw;
 
     if ( (dir != ThisBorderOnly) && (sizeused != pane_size) ) 
-      LoopAndRefigureChildren(pw, index, dir, &sizeused);
+      LoopAndRefigureChildren(pw, paneindex, dir, &sizeused);
 
 /* 
  * If we still are not the right size, then tell the pane that
@@ -594,8 +594,8 @@ Direction dir;
  */
 
 
-    if ( (index != NO_INDEX) && (dir != AnyPane) ) {
-	Pane pane = PaneInfo(*(pw->composite.children + index));
+    if ( (paneindex != NO_INDEX) && (dir != AnyPane) ) {
+	Pane pane = PaneInfo(*(pw->composite.children + paneindex));
         Dimension old = pane->size;
 
 	pane->size += pane_size - sizeused;
@@ -683,7 +683,7 @@ PanedWidget pw;
 
 /*	Function Name: RefigureLocationsAndCommit
  *	Description: Refigures all locations in a paned widget and
- *                   commits them immediatly.
+ *                   commits them immediately.
  *	Arguments: pw - the paned widget.
  *	Returns: none
  *
@@ -692,7 +692,7 @@ PanedWidget pw;
  *      o The widget is unrealized.
  *      o There are no panes is the paned widget.
  *
- *      NOTE: This is the resize Proceedure for the Paned widget.
+ *      NOTE: This is the resize Procedure for the Paned widget.
  */
 
 static void 
@@ -748,7 +748,7 @@ GC gc;
     unsigned int on_size, off_size;
 
 /*
- * This is an optomization.  Do not paint the internal borders if
+ * This is an optimization.  Do not paint the internal borders if
  * they are the same color as the background.
  */
 
@@ -825,7 +825,7 @@ Boolean erase;
 #define EraseTrackLines(pw) _DrawTrackLines((pw), TRUE);
 
 /*	Function Name: GetEventLocation
- *	Description: Converts and event to an x and y locaion.
+ *	Description: Converts and event to an x and y location.
  *	Arguments: pw - the paned widget.
  *                 event - a pointer to an event.
  *	Returns: if this is a vertical pane then (y) else (x).
@@ -863,7 +863,7 @@ XEvent *event;
 }
 
 /*	Function Name: StartGripAdjustment
- *	Description: Starts the grip adjustment proceedure.
+ *	Description: Starts the grip adjustment procedure.
  *	Arguments: pw - the paned widget.
  *                 grip - the grip widget selected.
  *                 dir - the direction that we are to be moving.
@@ -984,6 +984,7 @@ int loc;
  *	Returns: none
  */
 
+static void
 CommitGripAdjustment(pw)
 PanedWidget pw;
 {
@@ -1084,16 +1085,16 @@ PanedWidget pw;
     unmanagedP = NULL;
     ForAllChildren(pw, childP) {
        if (!IsPane(*childP) || !XtIsManaged(*childP)) {
-/*
- * We only keep track of the first unmanaged pane.
- */
+	   /*
+	    * We only keep track of the first unmanaged pane.
+	    */
 	   if (unmanagedP == NULL)    
 	       unmanagedP = childP;
        }
        else {			     /* must be a managed pane */
-/*
- * If an earlier widget was not a managed pane, then swap 
- */
+	   /*
+	    * If an earlier widget was not a managed pane, then swap 
+	    */
 	   if (unmanagedP != NULL) {	   
 	       Widget child = *unmanagedP;
 	       *unmanagedP = *childP;
@@ -1407,7 +1408,7 @@ ClassInitialize()
  * It only allows height changes, but offers the requested height
  * as a compromise if both width and height changes were requested.
  *
- * For horizontal widgets the coverse is true.
+ * For horizontal widgets the converse is true.
  * As all good Geometry Managers should, we will return No if the
  * request will have no effect; i.e. when the requestor is already
  * of the desired geometry.
@@ -1579,7 +1580,7 @@ register Widget w;
 
    if (!IsPane(w)) return;
 
-   /* ||| Panes will be added in the order they are created, temporarilly */
+   /* ||| Panes will be added in the order they are created, temporarily */
 
    if ( pane->show_grip == TRUE ) {
        CreateGrip(w);

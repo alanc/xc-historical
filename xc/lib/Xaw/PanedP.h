@@ -1,6 +1,6 @@
 /***********************************************************
 
-  $XConsortium: PanedP.h,v 1.3 89/03/30 16:05:51 jim Exp $
+  $XConsortium: PanedP.h,v 1.4 89/05/11 01:06:12 kit Exp $
 
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -28,7 +28,7 @@ SOFTWARE.
 /*
  * PanedP.h - Paned Composite Widget's private header file.
  *
- * Updated and significantly modifided from the Athena VPaned Widget.
+ * Updated and significantly modified from the Athena VPaned Widget.
  *
  * Date:    March 1, 1989
  *
@@ -41,7 +41,6 @@ SOFTWARE.
 #define _XawPanedP_h
 
 #include <X11/Xaw/Paned.h>
-#include <X11/Constraint.h>
 
 /*********************************************************************
  *
@@ -104,7 +103,7 @@ typedef struct _PanedConstraintsRec {
 
 typedef struct _PaneStack {
     struct _PaneStack * next;	/* The next element on the stack. */
-    Pane pane;			/* The pane in thise element on the stack. */
+    Pane pane;			/* The pane in this element on the stack. */
     int start_size;		/* The size of this element when it was pushed
 				   onto the stack. */
 } PaneStack;
