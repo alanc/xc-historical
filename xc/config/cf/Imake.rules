@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.184 94/02/07 17:04:35 kaleb Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.185 94/02/10 19:48:03 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -434,6 +434,25 @@ ProofProgramTarget(program,objects deplibs,objects locallibs $(LDLIBS) syslibs) 
 clean::									@@\
 	RemoveFile(ProgramTargetName(program))
 #endif /* NormalProgramTarget */
+
+
+/*
+ * NormalCplusplusProgramTarget - Like NormalTargetProgram, but uses
+ * C++ linking rules.
+ */
+#ifndef NormalCplusplusProgramTarget
+#define	NormalCplusplusProgramTarget(program,objects,deplibs,locallibs,syslibs)	@@\
+ProgramTargetName(program): objects deplibs				@@\
+	RemoveTargetProgram($@)						@@\
+	CplusplusLinkRule($@,$(LDOPTIONS),objects,locallibs $(LDLIBS) syslibs)	@@\
+									@@\
+SentinelProgramTarget(program,objects deplibs,objects locallibs $(LDLIBS) syslibs) @@\
+PurifyProgramTarget(program,objects deplibs,objects locallibs $(LDLIBS) syslibs) @@\
+ProofProgramTarget(program,objects deplibs,objects locallibs $(LDLIBS) syslibs) @@\
+									@@\
+clean::									@@\
+	RemoveFile(ProgramTargetName(program))
+#endif /* NormalCplusplusProgramTarget */
 
 
 #ifndef SetUIDProgramTarget
