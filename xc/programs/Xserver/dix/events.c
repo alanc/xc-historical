@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.110 87/10/22 09:05:38 rws Locked $ */
+/* $Header: events.c,v 1.111 87/11/05 09:14:33 rws Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1058,6 +1058,7 @@ NewCurrentScreen(newScreen, x, y)
         return;
     ROOT = &WindowTable[newScreen->myNum];
     currentScreen = newScreen;
+    NewCursorConfines(0, currentScreen->width, 0, currentScreen->height);
     (void) CheckMotion(x, y, TRUE);
 }
 
