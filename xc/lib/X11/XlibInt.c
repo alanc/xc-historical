@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.151 91/07/12 15:54:43 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.152 91/07/19 10:55:51 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1259,6 +1259,7 @@ _XDefaultIOError (dpy)
 	    (void) fprintf (stderr,
 	 "      The connection was probably broken by a server shutdown or KillClient.\r\n");
 	}
+	exit(1);
 }
 
 
