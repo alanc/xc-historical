@@ -50,6 +50,8 @@ install::
 	-mkdir $(UWMDIR)
 	-mkdir $(MANDIR)
 
+InstallManPage(X,$(MANDIR))
+
 # don't name your log file make.log when you run this ...
 World::
 	cd $(IMAKESRC); $(MAKE) clean; $(MAKE)
