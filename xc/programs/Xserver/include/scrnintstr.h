@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 5.2 89/07/10 08:01:45 rws Exp $ */
+/* $XConsortium: scrnintstr.h,v 5.3 89/07/12 17:15:37 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -159,13 +159,13 @@ typedef struct _Screen {
 
     RegionPtr (* RegionCreate)(); 	/* rect, size */
     void (* RegionInit)();		/* pRegion, rect, size */
-    void (* RegionCopy)();		/* dstrgn, srcrgn */
+    Bool (* RegionCopy)();		/* dstrgn, srcrgn */
     void (* RegionDestroy)();		/* pRegion */
     void (* RegionUninit)();		/* pRegion */
-    int (* Intersect)();		/* newReg, reg1, reg2 */
-    int (* Union)();			/* newReg, reg1, reg2 */
-    int (* Subtract)();			/* regD, regM, regS */
-    int (* Inverse)();			/* newReg, reg1, invRect */
+    Bool (* Intersect)();		/* newReg, reg1, reg2 */
+    Bool (* Union)();			/* newReg, reg1, reg2 */
+    Bool (* Subtract)();		/* regD, regM, regS */
+    Bool (* Inverse)();			/* newReg, reg1, invRect */
     void (* RegionReset)();		/* pRegion, pBox */
     void (* TranslateRegion)();		/* pRegion, x, y */
     int (* RectIn)();			/* pRegion, pRect */
@@ -173,8 +173,8 @@ typedef struct _Screen {
     Bool (* RegionNotEmpty)();      	/* pRegion: RegionPtr */
     void (* RegionEmpty)();        	/* pRegion: RegionPtr */
     BoxPtr (* RegionExtents)(); 	/* pRegion: RegionPtr */
-    void (* RegionAppend)();		/* pRegion, pRegion */
-    Bool (* RegionValidate)();		/* pRegion */
+    Bool (* RegionAppend)();		/* pRegion, pRegion */
+    Bool (* RegionValidate)();		/* pRegion, pOverlap */
     RegionPtr (* BitmapToRegion)();	/* PixmapPtr */
     RegionPtr (* RectsToRegion)();	/* nrects, pRects, ordering */
     void (* SendGraphicsExpose)();	/* client, rgn, draw, major, minor */

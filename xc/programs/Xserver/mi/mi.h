@@ -1,4 +1,4 @@
-/* $XConsortium: mi.h,v 1.3 88/09/06 15:48:17 jim Exp $ */
+/* $XConsortium: mi.h,v 1.4 89/07/09 15:32:59 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -62,30 +62,29 @@ extern void  miGetPts(), miRoundCap(), miOneSegWide();
 extern int   miPtToAngle();
 extern RegionPtr miRegionCreate();
 extern void miRegionInit();
-extern void miRegionCopy();
+extern Bool miRegionCopy();
 extern void miRegionDestroy();
 extern void miRegionUninit();
-extern int miIntersect();
-extern int miInverse();
-extern int miUnion();
+extern Bool miIntersect();
+extern Bool miInverse();
+extern Bool miUnion();
 extern int miSubtract();
 extern void miRegionReset();
 extern void miTranslateRegion();
 extern int miRectIn();
-extern void miRegionAppend();
+extern Bool miRegionAppend();
 extern Bool miRegionValidate();
 extern RegionPtr miRectsToRegion();
 extern Bool miPointInRegion();
 extern Bool miRegionNotEmpty();
 extern void miRegionEmpty();
-extern int miNumberRectsInRegion();
-extern void miWindowExposures();    
 extern BoxPtr miRegionExtents();
-extern void miSendGraphicsExpose();
-extern RegionPtr miHandleExposures();
-extern void miRectAlloc();
+extern Bool miRectAlloc();
 #ifdef DEBUG
 extern Bool miValidRegion();
 #endif
+extern void miWindowExposures();
+extern void miSendGraphicsExpose();
+extern RegionPtr miHandleExposures();
 
 #endif /* MI_H */
