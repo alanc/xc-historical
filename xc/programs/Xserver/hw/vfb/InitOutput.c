@@ -67,6 +67,7 @@ typedef struct
     int depth;
     int bitsPerPixel;
     int sizeInBytes;
+    int ncolors;
     char *pfbMemory;
     XWDColor *pXWDCmap;
     XWDFileHeader *pXWDHeader;
@@ -463,6 +464,8 @@ ffbStoreColors(pmap, ndef, pdefs)
     pXWDCmap = ffbScreens[pmap->pScreen->myNum].pXWDCmap;
 
     /* XXX direct color doesn't work here yet */
+    if ((pmap->pVisual->class | DynamicClass) == DirectColor)
+	return;
 
     for (i = 0; i < ndef; i++)
     {
@@ -485,7 +488,7 @@ ffbSaveScreen(pScreen, on)
 
 #ifdef HAS_MMAP
 
-void *
+void
 ffbBlockHandler(blockData, pTimeout, pReadmask)
     pointer   blockData;
     OSTimePtr pTimeout;
@@ -505,7 +508,7 @@ ffbBlockHandler(blockData, pTimeout, pReadmask)
 }
 
 
-void *
+void
 ffbWakeupHandler(blockData, result, pReadmask)
     pointer blockData;
     int     result;
@@ -514,7 +517,7 @@ ffbWakeupHandler(blockData, result, pReadmask)
 }
 
 
-void *
+void
 ffbAllocateMmappedFramebuffer(pffb)
     ffbScreenInfoPtr pffb;
 {
@@ -571,7 +574,7 @@ ffbAllocateMmappedFramebuffer(pffb)
 
 
 #ifdef HAS_SHM
-void *
+void
 ffbAllocateSharedMemoryFramebuffer(pffb)
     ffbScreenInfoPtr pffb;
 {
@@ -604,12 +607,10 @@ static char *
 ffbAllocateFramebufferMemory(pffb)
     ffbScreenInfoPtr pffb;
 {
-    int ncolors;
-
     if (pffb->pfbMemory) return pffb->pfbMemory; /* already done */
 
     if (pffb->bitsPerPixel == 1)
-	pffb->sizeInBytes = (pffb->paddedWidth * pffb->height) / 8;
+	pffb->sizeInBytes = (pffb->paddedWidth * pffb->height);
     else
 	pffb->sizeInBytes = pffb->paddedWidth * pffb->height *
 			    (pffb->bitsPerPixel/8);
@@ -618,19 +619,19 @@ ffbAllocateFramebufferMemory(pffb)
 
     if (pffb->depth <= 10)
     {
-	ncolors = 1 << pffb->depth;
+	pffb->ncolors = 1 << pffb->depth;
     }
     else
     {
 	int nplanes = pffb->depth / 3;
 	if (pffb->depth % 3) nplanes++;
-	ncolors = 3 * (1 << nplanes);
+	pffb->ncolors = 3 * (1 << nplanes);
     }
 
     /* add extra bytes for XWDFileHeader, window name, and colormap */
 
     pffb->sizeInBytes += SIZEOF(XWDheader) + XWD_WINDOW_NAME_LEN +
-		    ncolors * SIZEOF(XWDColor);
+		    pffb->ncolors * SIZEOF(XWDColor);
 
     pffb->pXWDHeader = NULL; 
     switch (fbmemtype)
@@ -650,10 +651,9 @@ ffbAllocateFramebufferMemory(pffb)
 
     if (pffb->pXWDHeader)
     {
-	pffb->pXWDHeader->ncolors = ncolors;
 	pffb->pXWDCmap = (XWDColor *)((char *)pffb->pXWDHeader
 				+ SIZEOF(XWDheader) + XWD_WINDOW_NAME_LEN);
-	pffb->pfbMemory = (char *)(pffb->pXWDCmap + ncolors);
+	pffb->pfbMemory = (char *)(pffb->pXWDCmap + pffb->ncolors);
 	return pffb->pfbMemory;
     }
     else
@@ -688,8 +688,7 @@ ffbWriteXWDFileHeader(pScreen)
     pXWDHeader->bitmap_pad = BITMAP_SCANLINE_PAD;
     pXWDHeader->bits_per_pixel = pffb->bitsPerPixel;
     pXWDHeader->bytes_per_line = pffb->paddedWidth;
-
-    /* pXWDHeader->ncolors was filled in by ffbAllocateFramebufferMemory */
+    pXWDHeader->ncolors = pffb->ncolors;
 
     /* visual related fields are written when colormap is installed */
 
@@ -707,7 +706,7 @@ ffbWriteXWDFileHeader(pScreen)
 
     /* write colormap pixel slot values */
 
-    for (i = 0; i < pXWDHeader->ncolors; i++)
+    for (i = 0; i < pffb->ncolors; i++)
     {
 	pffb->pXWDCmap[i].pixel = i;
 	/* XXX direct/true color different? */
@@ -718,7 +717,7 @@ ffbWriteXWDFileHeader(pScreen)
     if (needswap)
     {
 	SwapLongs((CARD32 *)pXWDHeader, SIZEOF(XWDheader)/4);
-	for (i = 0; i < pXWDHeader->ncolors; i++)
+	for (i = 0; i < pffb->ncolors; i++)
 	{
 	    register char n;
 	    swapl(&pffb->pXWDCmap[i].pixel, n);
@@ -770,7 +769,7 @@ ffbScreenInit(index, pScreen, argc, argv)
     {
     case 1:
 	ret = mfbScreenInit(pScreen, pbits, pffb->width, pffb->height,
-			    dpix, dpiy, pffb->paddedWidth);
+			    dpix, dpiy, pffb->paddedWidth * 8);
 	break;
     case 8:
 	ret = cfbScreenInit(pScreen, pbits, pffb->width, pffb->height,
@@ -788,6 +787,8 @@ ffbScreenInit(index, pScreen, argc, argv)
 	return FALSE;
     }
 
+    if (!ret) return FALSE;
+
     pScreen->CreateGC = ffbMultiDepthCreateGC;
     pScreen->GetImage = ffbMultiDepthGetImage;
     pScreen->GetSpans = ffbMultiDepthGetSpans;
@@ -796,14 +797,27 @@ ffbScreenInit(index, pScreen, argc, argv)
     pScreen->UninstallColormap = ffbUninstallColormap;
     pScreen->ListInstalledColormaps = ffbListInstalledColormaps;
 
-    pScreen->SaveScreen = (SaveScreenProcPtr)ffbSaveScreen;
+    pScreen->SaveScreen = ffbSaveScreen;
     pScreen->StoreColors = ffbStoreColors;
 
     miDCInitialize(pScreen, &ffbPointerCursorFuncs);
 
     ffbWriteXWDFileHeader(pScreen);
 
-    return cfbCreateDefColormap(pScreen);
+    if (pffb->bitsPerPixel == 1)
+    {
+	/* XXX probably should have options for these? */
+	pScreen->blackPixel = 0;
+	pScreen->whitePixel = 1;
+	ret = mfbCreateDefColormap(pScreen);
+    }
+    else
+    {
+	ret = cfbCreateDefColormap(pScreen);
+    }
+
+    return ret;
+
 } /* end ffbScreenInit */
 
 
