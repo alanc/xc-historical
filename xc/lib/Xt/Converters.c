@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.81 91/07/16 18:06:03 rws Exp $ */
+/* $XConsortium: Converters.c,v 1.82 91/07/19 23:21:28 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -719,6 +719,23 @@ static void FreeFile(app, toVal, closure, args, num_args)
 }
 
 /*ARGSUSED*/
+Boolean XtCvtIntToFloat(dpy, args, num_args, fromVal, toVal, closure_ret)
+    Display*	dpy;
+    XrmValuePtr args;
+    Cardinal    *num_args;
+    XrmValuePtr	fromVal;
+    XrmValuePtr	toVal;
+    XtPointer	*closure_ret;
+{
+    if (*num_args != 0)
+	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+		  XtNwrongParameters,"cvtIntToFloat",XtCXtToolkitError,
+                  "Integer to Float conversion needs no extra arguments",
+                   (String *)NULL, (Cardinal *)NULL);
+    done(float, (*(int *)fromVal->addr));
+}
+
+/*ARGSUSED*/
 Boolean XtCvtStringToFloat(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
@@ -1150,7 +1167,7 @@ Boolean XtCvtStringToDimension(dpy, args, num_args, fromVal, toVal, closure_ret)
     if (*num_args != 0)
         XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
 	  XtNwrongParameters,"cvtStringToShort",XtCXtToolkitError,
-          "String to Integer conversion needs no extra arguments",
+          "String to Dimension conversion needs no extra arguments",
            (String *) NULL, (Cardinal *)NULL);
     if (IsInteger((String)fromVal->addr, &i)) {
         if ( i < 0 )
@@ -1161,6 +1178,24 @@ Boolean XtCvtStringToDimension(dpy, args, num_args, fromVal, toVal, closure_ret)
     XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, XtRShort);
     return False;
 }
+
+/*ARGSUSED*/
+Boolean XtCvtIntToUnsignedChar(dpy, args, num_args, fromVal, toVal, closure_ret)
+    Display*	dpy;
+    XrmValuePtr args;
+    Cardinal    *num_args;
+    XrmValuePtr	fromVal;
+    XrmValuePtr	toVal;
+    XtPointer	*closure_ret;
+{
+    if (*num_args != 0)
+	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+		  XtNwrongParameters,"cvtIntToUnsignedChar",XtCXtToolkitError,
+                  "Integer to UnsignedChar conversion needs no extra arguments",
+                   (String *)NULL, (Cardinal *)NULL);
+    done(unsigned char, (*(int *)fromVal->addr));
+}
+
 
 /*ARGSUSED*/
 Boolean XtCvtStringToUnsignedChar(dpy, args, num_args, fromVal, toVal, closure_ret)
@@ -1446,6 +1481,8 @@ _XtAddDefaultConverters(table)
     Add(XtQInt,   XtQPixmap,      XtCvtIntToPixmap,    NULL, 0, XtCacheNone);
     Add(XtQInt,   XtQPosition,    XtCvtIntToShort,     NULL, 0, XtCacheNone);
     Add(XtQInt,   XtQShort,       XtCvtIntToShort,     NULL, 0, XtCacheNone);
+    Add(XtQInt,   XtQFloat,       XtCvtIntToFloat,     NULL, 0, XtCacheNone);
+    Add(XtQInt,   XtQUnsignedChar,XtCvtIntToUnsignedChar,NULL, 0, XtCacheNone);
 
     Add(XtQPixel, XtQColor,	  XtCvtIntToColor,
 	colorConvertArgs, XtNumber(colorConvertArgs), XtCacheByDisplay);
