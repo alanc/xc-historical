@@ -73,7 +73,7 @@ AtomPtr XmuMakeAtom(\fIname\fP)
 .IP \fIname\fP 1i
 specifies the atom name
 .LP
-Creates and initializes an opaque object, an
+This function creates and initializes an opaque object, an
 .PN AtomPtr ,
 for an
 .PN Atom
@@ -90,7 +90,7 @@ char *XmuNameOfAtom(\fIatom_ptr\fP)
 .IP \fIatom_ptr\fP 1i
 specifies the AtomPtr
 .LP
-Returns the name of an AtomPtr.
+The function returns the name of an AtomPtr.
 .sp
 .FD 0
 Atom XmuInternAtom(\fId\fP, \fIatom_ptr\fP)
@@ -104,7 +104,7 @@ specifies the connection to the X server
 .IP \fIatom_ptr\fP 1i
 specifies the AtomPtr
 .LP
-Returns the
+This function returns the
 .PN Atom
 for an
 .PN AtomPtr .
@@ -125,7 +125,7 @@ specifies the connection to the X server
 .IP \fIatom\fP 1i
 specifies the atom whose name is desired
 .LP
-Returns name of an
+This function returns the name of an
 .PN Atom .
 The result is cached, such that subsequent
 requests do not cause another round-trip to the server.
@@ -150,7 +150,7 @@ specifies the number of strings
 .IP \fIatoms\fP 1i
 returns the list of Atom values
 .LP
-Convert a list of atom names into
+This function converts a list of atom names into
 .PN Atom
 values.  The results are cached, such
 that subsequent requests do not cause further round-trips to the server.
@@ -180,8 +180,9 @@ specifies the error
 specifies where to print the error message
 .LP
 This function prints an error message, equivalent to Xlib's default error
-message for protocol errors.  It returns 1 if the caller should consider
-exiting, otherwise it returns 0.  This function can be used when you need to
+message for protocol errors.  It returns a non-zero value
+if the caller should consider exiting, otherwise it returns 0.
+This function can be used when you need to
 write your own error handler, but need to print out an error from within
 that handler.
 .sp
@@ -208,8 +209,8 @@ and ignores
 errors for
 .PN XGetGeometry ;
 it returns 0 in those cases.  Otherwise, it prints the default error message,
-and returns 1 if the caller should consider exiting, and 0 if the caller
-should not exit.
+and returns a non-zero value if the caller should consider exiting,
+and 0 if the caller should not exit.
 .LP
 .NH 1
 System Utility Functions
