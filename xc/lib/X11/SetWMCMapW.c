@@ -1,4 +1,4 @@
-#include "copyright.h"
+/* $XConsortium: SetWMCMapW.c,v 1.10 90/12/12 09:16:33 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,

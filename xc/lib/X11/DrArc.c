@@ -1,7 +1,17 @@
-#include "copyright.h"
-
-/* $XConsortium: XDrArc.c,v 11.13 88/08/10 16:09:00 jim Exp $ */
+/* $XConsortium: XDrArc.c,v 11.14 88/09/06 16:06:32 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
+
+/*
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the name of M.I.T. not be used in advertising or
+publicity pertaining to distribution of the software without specific,
+written prior permission.  M.I.T. makes no representations about the
+suitability of this software for any purpose.  It is provided "as is"
+without express or implied warranty.
+*/
 
 /* Note to future maintainers:  XDrawArc does NOT batch successive PolyArc
    requests into a single request like XDrawLine, XDrawPoint, etc.

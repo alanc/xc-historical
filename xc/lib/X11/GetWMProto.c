@@ -1,6 +1,4 @@
-#include "copyright.h"
-
-/* $XConsortium: GetWMProto.c,v 1.2 89/04/25 19:36:33 jim Exp $ */
+/* $XConsortium: GetWMProto.c,v 1.3 90/12/09 16:32:37 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,

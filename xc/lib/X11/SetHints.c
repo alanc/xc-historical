@@ -1,6 +1,4 @@
-#include "copyright.h"
-
-/* $XConsortium: XSetHints.c,v 11.35 89/12/11 19:10:18 rws Exp $ */
+/* $XConsortium: XSetHints.c,v 11.36 90/12/12 09:19:28 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,

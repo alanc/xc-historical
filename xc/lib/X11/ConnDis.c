@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.66 90/03/05 11:41:01 keith Exp $
+ * $XConsortium: XConnDis.c,v 11.67 90/12/26 16:24:29 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,7 +24,6 @@
  * This file contains operating system dependencies.
  */
 
-#include "copyright.h"
 #define NEED_EVENTS
 
 #include <stdio.h>

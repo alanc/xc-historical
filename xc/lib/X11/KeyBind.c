@@ -1,7 +1,17 @@
-#include "copyright.h"
-
-/* $XConsortium: XKeyBind.c,v 11.61 90/12/26 10:21:49 rws Exp $ */
+/* $XConsortium: XKeyBind.c,v 11.62 91/01/05 15:51:38 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
+
+/*
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the name of M.I.T. not be used in advertising or
+publicity pertaining to distribution of the software without specific,
+written prior permission.  M.I.T. makes no representations about the
+suitability of this software for any purpose.  It is provided "as is"
+without express or implied warranty.
+*/
 
 /* Beware, here be monsters (still under construction... - JG */
 

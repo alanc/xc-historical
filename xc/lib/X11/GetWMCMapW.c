@@ -1,6 +1,4 @@
-#include "copyright.h"
-
-/* $XConsortium: GetWMCMapW.c,v 1.2 89/04/25 19:36:31 jim Exp $ */
+/* $XConsortium: GetWMCMapW.c,v 1.3 90/12/09 16:32:04 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,

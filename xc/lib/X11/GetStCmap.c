@@ -1,6 +1,4 @@
-#include "copyright.h"
-
-/* $XConsortium: XGetStCmap.c,v 1.7 89/03/28 18:14:22 jim Exp $ */
+/* $XConsortium: XGetStCmap.c,v 1.8 89/05/08 15:57:41 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,

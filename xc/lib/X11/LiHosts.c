@@ -1,7 +1,18 @@
-#include "copyright.h"
-
-/* $XConsortium: XLiHosts.c,v 11.17 90/01/31 12:22:47 keith Exp $ */
+/* $XConsortium: XLiHosts.c,v 11.18 90/12/26 10:25:49 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
+
+/*
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the name of M.I.T. not be used in advertising or
+publicity pertaining to distribution of the software without specific,
+written prior permission.  M.I.T. makes no representations about the
+suitability of this software for any purpose.  It is provided "as is"
+without express or implied warranty.
+*/
+
 /* This can really be considered an os dependent routine */
 
 #define NEED_REPLIES

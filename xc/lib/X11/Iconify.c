@@ -1,5 +1,3 @@
-#include "copyright.h"
-
 /***********************************************************
 Copyright 1988 by Wyse Technology, Inc., San Jose, Ca.,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
