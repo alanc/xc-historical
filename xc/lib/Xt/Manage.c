@@ -1,5 +1,6 @@
 #ifndef lint
-static char rcsid[] = "$Header: Manage.c,v 1.9 88/02/26 12:42:45 swick Exp $";
+static char rcsid[] = "$xHeader: Manage.c,v 1.2 88/08/18 15:50:52 asente Exp $";
+/* $oHeader: Manage.c,v 1.2 88/08/18 15:50:52 asente Exp $ */
 #endif lint
 
 /***********************************************************
@@ -28,66 +29,79 @@ SOFTWARE.
 
 #include "IntrinsicI.h"
 
-#define MAXCHILDREN 100
-
 void XtUnmanageChildren(children, num_children)
     WidgetList children;
     Cardinal num_children;
 {
-    register Widget		parent;
+    register CompositeWidget	parent;
     register Widget		child;
     register Cardinal		num_unique_children, i;
-    XtWidgetProc		change_managed;
-    Widget			parent_cache[MAXCHILDREN];
-    register WidgetList		unique_parents;
-    register Widget		*parentP;
+	     XtWidgetProc	change_managed;
+	     Bool		parent_realized;
 
     if (num_children == 0) return;
     if (children[0] == NULL) {
-	XtWarning("Null child passed to XtUnmanageChildren");
+	XtWarningMsg("invalidChild","xtUnmanageChildren","XtToolkitError",
+                  "Null child passed to XtUnmanageChildren",
+		  (String *)NULL, (Cardinal *)NULL);
 	return;
     }
+    parent = (CompositeWidget) children[0]->core.parent;
+    if (parent->core.being_destroyed) return;
 
-    if (num_children <= MAXCHILDREN) {
-	parentP = (Widget*) (unique_parents = parent_cache);
-    } else {
-	parentP = (Widget*) (unique_parents = (WidgetList) XtMalloc(num_children * sizeof(Widget)));
+    if (XtIsComposite((Widget) parent)) {
+        change_managed = ((CompositeWidgetClass) parent->core.widget_class)
+		    ->composite_class.change_managed;
+	parent_realized = XtIsRealized(parent);
+
+    } else if (XtIsCompositeObject((Widget) parent)) {
+	Widget  t = parent->core.parent;
+        change_managed = ((CompositeObjectClass) parent->core.widget_class)
+		    ->composite_class.change_managed;
+	/* This is somewhat bogus, as assumes obj realized if parent widget is*/
+	while (t != NULL && ! XtIsWindowObject(t)) t = t->core.parent;
+	parent_realized = XtIsRealized(t);
     }
-    *parentP = children[0]->core.parent;
 
     num_unique_children = 0;
     for (i = 0; i < num_children; i++) {
 	child = children[i];
 	if (child == NULL) {
-	    XtWarning("Null child passed to XtUnmanageChildren");
+        XtWarningMsg("invalidChild","xtUnmanageChildren","XtToolkitError",
+                  "Null child passed to XtUnmanageChildren",
+		  (String *)NULL, (Cardinal *)NULL);
 	    return;
 	}
-	parent = child->core.parent;
-	if (! child->core.managed || parent->core.being_destroyed)
-	    continue;
-	if (parent != *parentP) {
-	    register Widget *pP = parentP;
-	    for (; pP > unique_parents && *pP != parent; pP-- ) ;
-	    if (*pP != parent) *++parentP = parent;
-	}
-	num_unique_children++;
-	child->core.managed = FALSE;
-	if (child->core.mapped_when_managed) {
-	    ((CompositeWidget)parent)->composite.num_mapped_children--;
-	    if (XtIsRealized(child)) XtUnmapWidget(child);
-	}
+        if ((CompositeWidget) child->core.parent != parent) {
+	   XtWarningMsg("ambigiousParent","xtUnmanageChildren","XtToolkitError",
+           "Not all children have same parent in XtUnmanageChildren",
+             (String *)NULL, (Cardinal *)NULL);
+	} else
+        if (child->core.managed) {
+            num_unique_children++;
+	    child->core.managed = FALSE;
+            if (XtIsWindowObject(child)) {
+                if (XtIsRealized(child) && child->core.mapped_when_managed)
+                    XtUnmapWidget(child);
+            }else  { /*gadget child */
+            Widget pw = child->core.parent;
+            RectObj r = (RectObj) child;
+            while ((pw!=NULL) &&
+		    ( ! XtIsSubclass (pw, (WidgetClass) windowObjClass)))
+                pw = pw->core.parent;
+            if ((pw!=NULL) && XtIsRealized (pw))
+                XClearArea (XtDisplay (pw), XtWindow (pw),
+                    r->rectangle.x, r->rectangle.y,
+                    r->rectangle.width + (r->rectangle.border_width << 1),
+                    r->rectangle.height + (r->rectangle.border_width << 1),
+                    TRUE);
+            }
+
+        }
     }
-    if (num_unique_children != 0) {
-	for (; parentP >= unique_parents; parentP-- ) {
-	    change_managed =
-		((CompositeWidgetClass)(*parentP)->core.widget_class)->
-		composite_class.change_managed;
-	    if (change_managed != NULL && XtIsRealized(*parentP)) {
-		(*change_managed) (*parentP);
-	    }
-	}
+    if (num_unique_children != 0 && change_managed != NULL && parent_realized) {
+	(*change_managed) (parent);
     }
-    if (unique_parents != parent_cache) XtFree((char*) unique_parents);
 } /* XtUnmanageChildren */
 
 
@@ -102,88 +116,95 @@ void XtManageChildren(children, num_children)
     WidgetList  children;
     Cardinal    num_children;
 {
-    register Widget		parent;
+#define MAXCHILDREN 100
+    register CompositeWidget    parent;
     register Widget		child;
     register Cardinal		num_unique_children, i;
-    XtWidgetProc		change_managed;
+	     XtWidgetProc	change_managed;
     register WidgetList		unique_children;
-    Widget			cache[MAXCHILDREN];
-    Widget			parent_cache[MAXCHILDREN];
-    register WidgetList		unique_parents;
-    register Widget		*parentP;
-    Boolean			parent_realized = FALSE;
+	     Widget		cache[MAXCHILDREN];
+	     Bool		parent_realized;
 
     if (num_children == 0) return;
     if (children[0] == NULL) {
-	XtWarning("Null child passed to XtManageChildren");
+	XtWarningMsg("invalidChild","xtManageChildren","XtToolkitError",
+         "null child passed to XtManageChildren",
+	 (String *)NULL, (Cardinal *)NULL);
 	return;
+    } 
+    parent = (CompositeWidget) children[0]->core.parent;
+    if (XtIsComposite((Widget) parent)) {
+        change_managed = ((CompositeWidgetClass) parent->core.widget_class)
+		    ->composite_class.change_managed;
+	parent_realized = XtIsRealized(parent);
+
+    } else if (XtIsCompositeObject((Widget) parent)) {
+	Widget  t = parent->core.parent;
+        change_managed = ((CompositeObjectClass) parent->core.widget_class)
+		    ->composite_class.change_managed;
+	/* This is somewhat bogus, as assumes obj realized if parent widget is*/
+	while (t != NULL && ! XtIsWindowObject(t)) t = t->core.parent;
+	parent_realized = XtIsRealized(t);
+
+    } else {
+	XtErrorMsg("invalidParent","xtManageChildren", "XtToolkitError",
+	    "Attempt to manage a child when parent is not Composite",
+	    (String *) NULL, (Cardinal *) NULL);
     }
+    if (parent->core.being_destroyed) return;
 
     /* Construct new list of children that really need to be operated upon. */
     if (num_children <= MAXCHILDREN) {
 	unique_children = cache;
-	parentP = (Widget*) (unique_parents = parent_cache);
     } else {
 	unique_children = (WidgetList) XtMalloc(num_children * sizeof(Widget));
-	parentP = (Widget*) (unique_parents = (WidgetList) XtMalloc(num_children * sizeof(Widget)));
     }
-    *parentP = children[0]->core.parent;
-    if (!XtIsComposite(*parentP))
-	XtError("Attempt to manage a child when parent is not a Composite");
     num_unique_children = 0;
     for (i = 0; i < num_children; i++) {
 	child = children[i];
 	if (child == NULL) {
-	    XtWarning("Null child passed to XtManageChildren");
-	    continue;
+	    XtWarningMsg("invalidChild","xtManageChildren","XtToolkitError",
+		"null child passed to XtManageChildren",
+		(String *)NULL, (Cardinal *)NULL);
+	    return;
 	}
-	parent = child->core.parent;
-	if ( child->core.managed ||
-	     child->core.being_destroyed ||
-	     parent->core.being_destroyed )
-	    continue;
-	if (parent != *parentP) {
-	    register Widget *pP = parentP;
-	    for (; pP > unique_parents && *pP != parent; pP-- ) ;
-	    if (*pP != parent) {
-		*++parentP = parent;
-		if (!XtIsComposite(parent))
-		    XtError("Attempt to manage a child when parent is not a Composite");
-	    }
-	}
-	unique_children[num_unique_children++] = child;
-	child->core.managed = TRUE;
-	if (child->core.mapped_when_managed) {
-	    ((CompositeWidget)parent)->composite.num_mapped_children++;
+        if ((CompositeWidget) child->core.parent != parent) {
+	    XtWarningMsg("ambigiousParent","xtManageChildren","XtToolkitError",
+		"Not all children have same parent in XtManageChildren",
+		(String *)NULL, (Cardinal *)NULL);
+	} else if (! child->core.managed) {
+	    unique_children[num_unique_children++] = child;
+	    child->core.managed = TRUE;
 	}
     }
 
-    if (num_unique_children != 0) {
+    if (num_unique_children != 0 && parent_realized) {
+	/* Compute geometry of new managed set of children. */
+	if (change_managed != NULL) (*change_managed) (parent);
 
-	for (; parentP >= unique_parents; parentP--) {
-	    if (XtIsRealized(*parentP)) {
-	        parent_realized = TRUE;
-		/* Compute geometry of new managed set of children. */
-		change_managed =
-		    ((CompositeWidgetClass) (*parentP)->core.widget_class)->
-		    composite_class.change_managed;
-		if (change_managed != NULL) (*change_managed) (*parentP);
-	    }
-	}
-	if (parent_realized) {
-	    /* Realize each child if necessary, then map if necessary */
-	    for (i = 0; i < num_unique_children; i++) {
-	        child = unique_children[i];
-		if (XtIsRealized(child->core.parent)) {
-		    if (! XtIsRealized(child)) XtRealizeWidget(child);
-		    if (child->core.mapped_when_managed) XtMapWidget(child);
-		}
-	    }
-	}
+	/* Realize each child if necessary, then map if necessary */
+	for (i = 0; i < num_unique_children; i++) {
+	    child = unique_children[i];
+	    if (XtIsWindowObject(child)) {
+		if (! XtIsRealized(child)) XtRealizeWidget(child);
+		if (child->core.mapped_when_managed) XtMapWidget(child);
+	    } else { /* gadget child */
+            Widget pw = child->core.parent;
+            RectObj r = (RectObj) child;
+            while ((pw!=NULL) &&
+		    ( ! XtIsSubclass (pw, (WidgetClass) windowObjClass)))
+                pw = pw->core.parent;
+            if (pw != NULL)
+                XClearArea (XtDisplay (pw), XtWindow (pw),
+                r->rectangle.x, r->rectangle.y,
+                r->rectangle.width + (r->rectangle.border_width << 1),
+                r->rectangle.height + (r->rectangle.border_width << 1),
+                TRUE);
+            }
+        }
     }
 
     if (unique_children != cache) XtFree((char *) unique_children);
-    if (unique_parents != parent_cache) XtFree((char *) unique_parents);
 } /* XtManageChildren */
 
 
@@ -204,13 +225,9 @@ void XtSetMappedWhenManaged(widget, mapped_when_managed)
 
     if (mapped_when_managed) {
 	/* Didn't used to be mapped when managed.		*/
-	((CompositeWidget) (widget->core.parent))->
-	    composite.num_mapped_children++;
 	if (XtIsRealized(widget)) XtMapWidget(widget);
     } else {
 	/* Used to be mapped when managed.			*/
-	((CompositeWidget) (widget->core.parent))->
-	    composite.num_mapped_children--;
 	if (XtIsRealized(widget)) XtUnmapWidget(widget);
     }
 } /* XtSetMappedWhenManaged */
