@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.217 88/10/13 20:17:02 rws Exp $ */
+/* $XConsortium: window.c,v 1.218 88/10/13 21:27:49 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1413,6 +1413,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		    pWin->colormap = cmap;
 		    xE.u.u.type = ColormapNotify;
 		    xE.u.colormap.window = pWin->wid;
+		    xE.u.colormap.colormap = cmap;
 	            xE.u.colormap.new = xTrue;
 	            xE.u.colormap.state = IsMapInstalled(cmap, pWin);
 		    DeliverEvents(pWin, &xE, 1, (WindowPtr) NULL);
