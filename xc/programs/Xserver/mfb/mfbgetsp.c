@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgetsp.c,v 5.5 89/09/14 16:26:46 rws Exp $ */
+/* $XConsortium: mfbgetsp.c,v 5.6 92/12/23 17:43:39 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 
@@ -74,9 +74,9 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 
     while(ppt < pptLast)
     {
-	xEnd = min(ppt->x + *pwidth, widthSrc << 3);
+	xEnd = min(ppt->x + *pwidth, widthSrc << 5);
 	pwidth++;
-	psrc = mfbScanline(psrcBase, ppt->x, ppt->y, widthSrc >> 2);
+	psrc = mfbScanline(psrcBase, ppt->x, ppt->y, widthSrc);
 	w = xEnd - ppt->x;
 	srcBit = ppt->x & 0x1f;
 
