@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.66 94/10/19 21:59:25 dpw Exp kaleb $ */
+/* $XConsortium: dispatch.c,v 5.67 94/11/02 15:58:49 kaleb Exp kaleb $ */
 /************************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -87,8 +87,8 @@ extern void SwapConnClientPrefix(
 Selection *CurrentSelections;
 int NumCurrentSelections;
 
-extern long defaultScreenSaverTime;
-extern long defaultScreenSaverInterval;
+extern CARD32 defaultScreenSaverTime;
+extern CARD32 defaultScreenSaverInterval;
 extern int  defaultScreenSaverBlanking;
 extern int  defaultScreenSaverAllowExposures;
 static ClientPtr grabClient;

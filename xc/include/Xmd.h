@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef XMD_H
 #define XMD_H 1
-/* $XConsortium: Xmd.h,v 1.46 93/09/13 20:05:18 rws Exp $ */
+/* $XConsortium: Xmd.h,v 1.47 94/04/17 20:10:50 rws Exp kaleb $ */
 /*
  *  Xmd.h: MACHINE DEPENDENT DECLARATIONS.
  */
@@ -60,6 +60,11 @@ SOFTWARE.
 #endif
 #ifdef __alpha
 #define LONG64				/* 32/64-bit architecture */
+#endif
+#ifdef __sgi
+#if (_MIPS_SZLONG == 64)
+#define LONG64
+#endif
 #endif
 
 /*

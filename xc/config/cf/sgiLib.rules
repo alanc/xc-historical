@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sgiLib.rules,v 1.9 94/12/12 22:44:24 kaleb Exp kaleb $
+XCOMM $XConsortium: sgiLib.rules,v 1.10 95/01/16 19:49:35 kaleb Exp kaleb $
 
 #ifndef HasSharedLibraries
 #define HasSharedLibraries YES
@@ -66,6 +66,7 @@ InstallTarget(install,Concat3(lib,libname,_s.a),$(INSTLIBFLAGS),dest)
 #ifndef SharedLibraryLoadFlags
 #define SharedLibraryLoadFlags -shared
 #endif
+/* -KPIC is redundant, PIC is always used unless you specify -non_shared */
 #ifndef PositionIndependentCFlags
 #define PositionIndependentCFlags -KPIC
 #endif
@@ -73,7 +74,11 @@ InstallTarget(install,Concat3(lib,libname,_s.a),$(INSTLIBFLAGS),dest)
 #define PositionIndependentCplusplusFlags -KPIC
 #endif
 #ifndef ExtraLoadOptions
+#if OSMajorVersion < 6
 #define ExtraLoadOptions -rpath $(USRLIBDIR)
+#else
+#define ExtraLoadOptions -Wl,"-rpath $(USRLIBDIR)"
+#endif
 #endif
 
 /*

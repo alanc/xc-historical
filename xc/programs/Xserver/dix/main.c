@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.31 94/11/02 15:58:17 kaleb Exp dpw $ */
+/* $XConsortium: main.c,v 5.32 95/01/03 14:32:03 dpw Exp kaleb $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -66,8 +66,8 @@ SOFTWARE.
 #include "site.h"
 #include "dixfont.h"
 
-extern long defaultScreenSaverTime;
-extern long defaultScreenSaverInterval;
+extern CARD32 defaultScreenSaverTime;
+extern CARD32 defaultScreenSaverInterval;
 extern int defaultScreenSaverBlanking;
 extern int defaultScreenSaverAllowExposures;
 

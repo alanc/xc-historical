@@ -34,7 +34,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
 
-/* $XConsortium: cfb8bit.h,v 1.16 94/04/17 20:28:40 dpw Exp dpw $ */
+/* $XConsortium: cfb8bit.h,v 1.17 94/09/29 20:33:11 dpw Exp kaleb $ */
 
 #include "servermd.h"
 
@@ -612,6 +612,7 @@ extern int		cfb8StippleRRop;
 	        SwitchBitsLoop (((CARD32 *) (dst))[QuadPixel1] = (pixel);) \
 	        break; 							   \
 	} 								   \
+    }									   \
 }
 #endif /* PGSZ == 64 */
 #endif /* PSZ == 8 */

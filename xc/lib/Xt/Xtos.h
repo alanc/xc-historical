@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Xtos.h,v 1.16 94/09/13 21:49:51 kaleb Exp kaleb $
+* $XConsortium: Xtos.h,v 1.17 94/09/16 19:00:07 kaleb Exp kaleb $
 */
 
 /***********************************************************
@@ -63,6 +63,12 @@ SOFTWARE.
 
 #ifdef __alpha
 #define LONG64
+#endif
+
+#ifdef __sgi
+#if (_MIPS_SZLONG == 64)
+#define LONG64
+#endif
 #endif
 
 /* stolen from server/include/os.h */

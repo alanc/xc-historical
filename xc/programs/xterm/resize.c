@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.31 94/11/30 23:51:18 kaleb Exp kaleb $
+ *	$XConsortium: resize.c,v 1.32 95/01/16 20:03:38 kaleb Exp kaleb $
  */
 
 /*
@@ -77,7 +77,9 @@
 
 #ifdef USE_USG_PTYS
 #include <sys/stream.h>
+#ifndef SVR4
 #include <sys/ptem.h>
+#endif
 #endif
 
 #include <signal.h>

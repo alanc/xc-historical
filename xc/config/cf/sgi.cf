@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.47 95/03/17 19:46:29 kaleb Exp gildea $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.48 95/03/17 20:53:33 gildea Exp kaleb $
 
 #ifndef OSName
 #define OSName			IRIX 5.2
@@ -33,6 +33,10 @@ XCOMM operating system:  OSName
 #define HasWChar32              YES
 #define HasVFork		NO
 #define XawI18nDefines		-DHAS_WCTYPE_H -DHAS_ISW_FUNCS
+#endif
+
+#if OSMajorVersion == 6
+#define Mips64Architecture
 #endif
 
 #define Malloc0ReturnsNull	YES	/* IRIX 5.x -lmalloc needs this */

@@ -1,4 +1,4 @@
-/* $XConsortium: utils.c,v 1.146 94/04/17 20:27:07 erik Exp dpw $ */
+/* $XConsortium: utils.c,v 1.147 94/08/16 14:03:23 dpw Exp kaleb $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -570,7 +570,7 @@ char	*argv[];
 	else if ( strcmp( argv[i], "-to") == 0)
 	{
 	    if(++i < argc)
-		TimeOutValue = ((long)atoi(argv[i])) * MILLI_PER_SECOND;
+		TimeOutValue = ((CARD32)atoi(argv[i])) * MILLI_PER_SECOND;
 	    else
 		UseMsg();
 	}
