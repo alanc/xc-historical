@@ -1,11 +1,11 @@
 XProtoError.3: not a valid window ID
 # these are used in XGetErrorMessage.
-XlibMessage.XError: X Protocol error detected by server
-XlibMessage.MajorCode: Failed request major op code %d
-XlibMessage.MinorCode: Failed request minor op code %d (if applicable)
-XlibMessage.ResourceID: ResourceID 0x%x in failed request (if applicable)
-XlibMessage.ErrorSerial: Serial number of failed request %d
-XlibMessage.CurrentSerial: Current serial number in output stream %d
+XlibMessage.XError: X Protocol error
+XlibMessage.MajorCode: Major opcode of failed request:  %d
+XlibMessage.MinorCode: Minor opcode of failed request:  %d
+XlibMessage.ResourceID: Resource id in failed request:  0x%lx
+XlibMessage.ErrorSerial: Serial number of failed request:  %lu
+XlibMessage.CurrentSerial: Current serial number in output stream:  %lu
 # X request codes.
 XRequest.1:X_CreateWindow
 XRequest.2:X_ChangeWindowAttributes
