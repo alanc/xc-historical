@@ -1,4 +1,4 @@
-/* $XConsortium: pexStr.c,v 5.3 92/12/01 17:17:58 hersh Exp $ */
+/* $XConsortium: pexStr.c,v 5.4 94/04/17 20:36:14 hersh Exp hersh $ */
 
 /***********************************************************
 
@@ -53,6 +53,7 @@ SOFTWARE.
  *	PEXCopyStructure
  *	PEXDestroyStructures
  *	PEXGetStructureInfo
+ *	PEXSetStructurePermission
  *	PEXGetElementInfo
  *	PEXGetStructuresInNetwork
  *	PEXGetAncestors
@@ -61,6 +62,7 @@ SOFTWARE.
  *	PEXSetEditingMode
  *	PEXSetElementPointer
  *	PEXSetElementPointerAtLabel
+ *	PEXSetElementPointerAtPickID
  *	PEXElementSearch
  *	PEXStoreElements
  *	PEXDeleteElements
@@ -182,6 +184,25 @@ pexGetStructureInfoReq  *strmPtr;
     return( err );
 
 } /* end-PEXGetStructureInfo() */
+
+/*++	PEXSetStructurePermission
+ --*/
+ErrorCode
+PEXSetStructurePermission( cntxtPtr, strmPtr )
+pexContext     		*cntxtPtr;
+pexSetStructurePermissionReq  *strmPtr;
+{
+    ErrorCode err = Success;
+    diStructHandle pstr = 0;
+
+    LU_STRUCTURE(strmPtr->sid, pstr);
+
+    err = SetStructurePermission( pstr, strmPtr->permission );
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+
+    return( err );
+
+} /* end-PEXSetStructurePermission() */
 
 /*++	PEXGetElementInfo
  */
@@ -376,6 +397,24 @@ pexSetElementPointerAtLabelReq  *strmPtr;
     LU_STRUCTURE(strmPtr->sid, pstr);
 
     err = SetElementPointerAtLabel (pstr, strmPtr->label, strmPtr->offset);
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+    return( err );
+
+} /* end-PEXSetElementPointerAtLabel() */
+
+/*++	PEXSetElementPointerAtPickID
+ --*/
+ErrorCode
+PEXSetElementPointerAtPickID( cntxtPtr, strmPtr )
+pexContext      		*cntxtPtr;
+pexSetElementPointerAtPickIDReq  *strmPtr;
+{
+    ErrorCode err = Success;
+    diStructHandle pstr = 0;
+
+    LU_STRUCTURE(strmPtr->sid, pstr);
+
+    err = SetElementPointerAtPickID (pstr, strmPtr->pickId, strmPtr->offset);
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
     return( err );
 
