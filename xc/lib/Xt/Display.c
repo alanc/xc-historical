@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.104 93/09/18 18:18:24 kaleb Exp $ */
+/* $XConsortium: Display.c,v 1.105 93/09/24 17:56:49 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -419,7 +419,7 @@ Boolean XtAppGetExitFlag (app)
     return retval;
 }
 
-void _XtDestroyAppContext(app)
+static void DestroyAppContext(app)
 	XtAppContext app;
 {
 	XtAppContext* prev_app;
@@ -469,7 +469,7 @@ void XtDestroyApplicationContext(app)
 	}
 
 	if (_XtSafeToDestroy(app)) 
-	    _XtDestroyAppContext(app);
+	    DestroyAppContext(app);
 	else {
 	    app->being_destroyed = TRUE;
 	    LOCK_PROCESS;
@@ -488,7 +488,7 @@ void _XtDestroyAppContexts()
 	int i;
 
 	for (i = 0; i < _XtAppDestroyCount; i++) {
-	    _XtDestroyAppContext(appDestroyList[i]);
+	    DestroyAppContext(appDestroyList[i]);
 	}
 	LOCK_PROCESS;
 	_XtAppDestroyCount = 0;
