@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.92 87/12/20 12:47:11 swick Locked $";
+static char rcsid[] = "$Header: Initialize.c,v 1.93 88/01/20 08:28:00 swick Locked $";
 #endif lint
 
 /*
@@ -362,19 +362,35 @@ Widget wid;
 Mask *vmask;
 XSetWindowAttributes *attr;
 {
-	ShellWidget w = (ShellWidget) wid;
+	register ShellWidget w = (ShellWidget) wid;
         Mask mask = *vmask;
 
-	mask &= ~(CWBackPixel);
-	mask |= CWBackPixmap;
-	attr->background_pixmap = None;	/* I must have a background pixmap of
-					   none, and no background pixel. 
-					   This should give me a transparent
-					   background so that if there is
-					   latency from when I get resized and
-					   when my child is resized it won't be
-					   as obvious.
-					   */
+	/* I attempt to inherit my child's background to avoid screen flash
+	 * if there is latency between when I get resized and when my child
+	 * is resized.  Background=None is not satisfactory, as I want the
+	 * user to get immediate feedback on the new dimensions.  It is
+	 * especially important to clear any old cruft from the display
+	 * when I am resized larger */
+
+	if (w->composite.num_children > 0) {
+	    Widget child;
+	    if (w->composite.num_mapped_children == 0)
+		child = w->composite.children[0];
+	    else {
+		int i;
+		for (i = 0; i < w->composite.num_children; i++) {
+		    if (XtIsManaged(child = w->composite.children[i]))
+			break;
+		}
+	    }
+	    if (child->core.background_pixmap) {
+		mask &= ~(CWBackPixel);
+		mask |= CWBackPixmap;
+		attr->background_pixmap = child->core.background_pixmap;
+	    } else {
+		attr->background_pixel = child->core.background_pixel;
+	    }
+	}
 	if(w->shell.save_under) {
 		mask |= CWSaveUnder;
 		attr->save_under = TRUE;
