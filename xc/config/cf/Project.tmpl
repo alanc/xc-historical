@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.183 93/09/06 15:19:39 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.184 93/09/10 12:00:47 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -779,7 +779,7 @@ UnsharedLibReferences(FONT,font,$(FONTLIBSRC))
 #define	InstallAppDefaults(class)					@@\
 install:: class.ad							@@\
 	MakeDir($(DESTDIR)$(XAPPLOADDIR))				@@\
-	$(INSTALL) -c $(INSTAPPFLAGS) class.ad $(DESTDIR)$(XAPPLOADDIR)/class
+	$(INSTALL) $(INSTALLFLAGS) $(INSTAPPFLAGS) class.ad $(DESTDIR)$(XAPPLOADDIR)/class
 #else
 #define	InstallAppDefaults(class)
 #endif /* InstallAppDefFiles */
@@ -794,7 +794,7 @@ install:: class.ad							@@\
 #define	InstallAppDefaultsLong(file,class)				@@\
 install:: file.ad							@@\
 	MakeDir($(DESTDIR)$(XAPPLOADDIR))				@@\
-	$(INSTALL) -c $(INSTAPPFLAGS) file.ad $(DESTDIR)$(XAPPLOADDIR)/class
+	$(INSTALL) $(INSTALLFLAGS) $(INSTAPPFLAGS) file.ad $(DESTDIR)$(XAPPLOADDIR)/class
 #else
 #define	InstallAppDefaultsLong(file,class)
 #endif /* InstallAppDefFiles */
@@ -838,7 +838,7 @@ InstallMultipleFlags(objs,dest,$(INSTDATFLAGS))				@@\
 									@@\
 install::  fonts.dir							@@\
 	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) -c $(INSTDATFLAGS) fonts.dir $(DESTDIR)dest
+	$(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) fonts.dir $(DESTDIR)dest
 #endif /* InstallFontObjs */
 
 
@@ -858,7 +858,7 @@ InstallFontObjs($(OBJS),dest)
 #define InstallFontAliases(dest)					@@\
 install::  fonts.alias							@@\
 	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) -c $(INSTDATFLAGS) fonts.alias $(DESTDIR)dest
+	$(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) fonts.alias $(DESTDIR)dest
 #endif /* InstallFontAliases */
 
 #ifndef FontSrc
@@ -876,7 +876,7 @@ install::  fonts.alias							@@\
 #define InstallFontScale(dest)						@@\
 install::  fonts.scale							@@\
 	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) -c $(INSTDATFLAGS) fonts.scale $(DESTDIR)dest
+	$(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) fonts.scale $(DESTDIR)dest
 #endif /* InstallFontScale */
 
 /*
