@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.13 91/09/11 19:23:18 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.14 91/10/09 11:03:05 rws Exp $
 
 SERVERSTYPE = XdmServersType
 
@@ -21,6 +21,3 @@ InstallNamedProg(Xsetup_0,Xsetup_0,$(XDMDIR))
 #endif
 
 depend::
-
-clean::
-	$(RM) Xservers.ws xdm-config Xservers
