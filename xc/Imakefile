@@ -25,8 +25,12 @@ NamedMakeSubdirs(hacks,$(HACKSRC))
 MakeLintLibSubdirs($(LINTLIBDIRS))
 
 #
-# before doing the depend, be sure that makedepend exists.
+# before doing the depend, be sure that makedepend exists, and that
+# the include directory has everything in it.
 #
+depend::
+	cd include; $(MAKE)
+
 depend:: $(DEPEND)
 
 $(DEPEND):
