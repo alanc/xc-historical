@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.19 89/05/11 14:01:56 kit Exp $
+ * $XConsortium: Xmu.h,v 1.20 89/05/19 14:34:23 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -102,7 +102,7 @@ Bool XmuLookupCloseDisplayHook (/* Display *,CloseHook,int (*)(),caddr_t */);
 
 Status XmuAllStandardColormaps( /* Display* */ );
 Status XmuCreateColormap( /* Display*, XStandardColormap* */ );
-void   XmuDeleteStandardCoormap( /* Display*, int, Atom */ );
+void   XmuDeleteStandardColormap( /* Display*, int, Atom */ );
 Status XmuGetColormapAllocation( /* XVisualInfo*, Atom, unsigned long, ... */);
 Status XmuLookupColormap( /* Display*, int, VisualID, ... */ );
 XStandardColormap *XmuStandardColormap( /* Display*, int, VisualID, ... */ );
