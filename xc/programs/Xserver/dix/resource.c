@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.68 88/12/22 18:59:35 rws Exp $ */
+/* $XConsortium: resource.c,v 1.69 89/01/16 13:48:16 rws Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -190,8 +190,8 @@ AddResource(id, type, value, func, class)
 	(clientTable[client].hashsize < MAXHASHSIZE))
     {
 	/*
-	 * Must preserve insertion order so that FreeResource doesn't free
-	 * "subclasses" before main resources are freed.
+	 * For now, preserve insertion order, since some ddx layers depend
+	 * on resources being free in the opposite order they are added.
 	 */
 	ResourcePtr **tails, *resources;
 	register ResourcePtr **tptr, *rptr;
