@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.16 92/11/17 17:27:58 hersh Exp $ */
+/* $XConsortium: pexRndr.c,v 5.17 92/11/18 19:53:22 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -203,15 +203,15 @@ pexCreateRendererReq    *strmPtr;
 
     /* create listoflist for doing Pick All */
     prend->pickstr.list = puCreateList(DD_LIST_OF_LIST);
+    prend->immediateMode = TRUE;
 
     /* create a phony structure to pack OCs into 
        for doing immediate mode renderer picking
     */
-    fakeStrID = FakeClientID(cntxtPtr->client->index);
     fakeStr = (diStructHandle)Xalloc((unsigned long)
 					  sizeof(ddStructResource));
     if (!fakeStr) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
-    fakeStr->id = fakeStrID;
+    fakeStr->id = -666;
     err = CreateStructure(fakeStr);
     if (err) {
 	Xfree((pointer)(fakeStr));
@@ -448,7 +448,6 @@ pexCreateRendererReq    *strmPtr;
 
     ADDRESOURCE(strmPtr->rdr, PEXRendType, prend);
     ADDRESOURCE(fakepm, PEXPickType, prend->pickstr.pseudoPM);
-    ADDRESOURCE(fakeStrID, PEXStructType, fakeStr);
     return( err );
 
 } /* end-PEXCreateRenderer() */
@@ -471,7 +470,7 @@ pexRenderer id;
 	puDeleteList(prend->pickStartPath);
 	puDeleteList(prend->pickstr.list);
 	strpp = (ddPickPath *)(prend->pickstr.fakeStrlist)->pList;
-	FreeResource((strpp[0].structure)->id, RT_NONE);
+	DeleteStructure(strpp[0].structure, (strpp[0].structure)->id );
 	puDeleteList(prend->pickstr.fakeStrlist);
 	puDeleteList(prend->pickstr.sIDlist);
 	Xfree((pointer)prend);
