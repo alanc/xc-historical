@@ -1,4 +1,4 @@
-/* $XConsortium: XimintP.h,v 1.3 93/09/24 10:48:06 rws Exp $ */
+/* $XConsortium: XimintP.h,v 1.4 94/01/20 18:03:01 rws Exp $ */
 /******************************************************************
 
            Copyright 1991, 1992 by Sun Microsystems, Inc.
@@ -86,7 +86,7 @@ typedef void (*XimTransFlushProc)(
 #endif
 );
 typedef Bool (*XimTransIntrProc)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 		      Xim, Bool (*)(Xim, INT16, XPointer, XPointer), XPointer
 #endif
 );
