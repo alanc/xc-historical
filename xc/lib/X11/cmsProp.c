@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsProp.c,v 1.7 91/05/13 23:27:26 rws Exp $" */
+/* $XConsortium: XcmsProp.c,v 1.8 91/07/22 15:49:52 rws Exp $" */
 
 /*
  *
@@ -61,33 +61,41 @@ _XcmsGetElement (format, pValue, pCount)
  *	    Also increment the pointer the amount needed.
  *
  *	Returns
- *	    int
+ *	    unsigned long
  */
 {
-    unsigned char      *pCard8;
-    unsigned short	*pCard16;
-    unsigned long       *pCard32;
+    unsigned long value;
 
     switch (format) {
       case 32:
-	pCard32 = (unsigned long *) *pValue;
+#ifdef WORD64
+	value = ((unsigned long)(((unsigned char *)(*pValue))[0])) << 24 ||
+		((unsigned long)(((unsigned char *)(*pValue))[1])) << 16 ||
+		((unsigned long)(((unsigned char *)(*pValue))[2])) << 8 ||
+		((unsigned long)(((unsigned char *)(*pValue))[0]));
+#else
+	value = *((unsigned long *)(*pValue));
+#endif
 	*pValue += 4;
-	(*pCount)--;
-	return((unsigned long) *pCard32);
+	*pCount -= 1;
       case 16:
-	pCard16 = (unsigned short *) *pValue;
+#ifdef WORD64
+	value = ((unsigned long)(((unsigned char *)(*pValue))[0])) << 8 ||
+		((unsigned long)(((unsigned char *)(*pValue))[1]));
+#else
+	value = *((unsigned short *)(*pValue));
+#endif
 	*pValue += 2;
-	(*pCount)--;
-	return((unsigned long) *pCard16);
+	*pCount -= 1;
       case 8:
-	pCard8 = (unsigned char *) *pValue;
+	value = *((unsigned char *) (*pValue));
 	*pValue += 1;
-	(*pCount)--;
-	return((unsigned long) *pCard8);
+	*pCount -= 1;
       default:
+	value = 0;
 	break;
     }
-    return(0);
+    return(value);
 }
 
 
