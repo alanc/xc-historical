@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlogo.c,v 1.14 90/10/22 15:08:58 converse Exp $
+ * $XConsortium: xlogo.c,v 1.15 91/01/10 12:27:35 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -30,7 +30,7 @@ extern void exit();
 static void quit();
 
 static XrmOptionDescRec options[] = {
-{ "-shape", "*shapeWindow", XrmoptionNoArg, (caddr_t) "on" },
+{ "-shape", "*shapeWindow", XrmoptionNoArg, (XPointer) "on" },
 };
 
 static XtActionsRec actions[] = {
@@ -89,6 +89,7 @@ char **argv;
     XtAppMainLoop(app_con);
 }
 
+/*ARGSUSED*/
 static void quit(w, event, params, num_params)
     Widget w;
     XEvent *event;
