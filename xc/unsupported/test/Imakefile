@@ -1,29 +1,26 @@
-# $XConsortium: Imakefile,v 1.18 90/06/07 11:04:18 rws Exp $
+# $XConsortium: Imakefile,v 1.19 91/02/15 14:59:51 rws Exp $
 
-#if BuildPexClients
+#if BuildXInputLib
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
-      SUBDIRS = PEX
+      SUBDIRS = xinput
 #endif
 
     DEFINES = ExtensionDefines
 IMAKE_DEFINES = $(DEFINES)
   SHAPESRCS = shapetest.c
   SHAPEOBJS = shapetest.o
-#ifdef MITSHM
+#if HasShm
     SHMSRCS = shmtest.c
     SHMOBJS = shmtest.o
-#else
-    SHMSRCS = /* nothing */
-    SHMOBJS = /* nothing */
 #endif
    MBUFSRCS = xmbufinfo.c
    MBUFOBJS = xmbufinfo.o
-   INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I../include
+   INCLUDES = -I../include
        SRCS = $(SHAPESRCS) $(SHMSRCS) $(MBUFSRCS)
        OBJS = $(SHAPEOBJS) $(SHMOBJS) $(MBUFOBJS)
 
-#ifdef MITSHM
+#if HasShm
 all:: shapetest shmtest xmbufinfo
 #else
 all:: shapetest xmbufinfo
@@ -31,7 +28,7 @@ all:: shapetest xmbufinfo
 
 NormalProgramTarget(xmbufinfo,$(MBUFOBJS),$(DEPXLIB),$(XLIB), /**/)
 NormalProgramTarget(shapetest,$(SHAPEOBJS),$(DEPXLIB),$(XLIB), /**/)
-#ifdef MITSHM
+#if HasShm
 NormalProgramTarget(shmtest,$(SHMOBJS),$(DEPXLIB),$(XLIB), /**/)
 #endif
 
