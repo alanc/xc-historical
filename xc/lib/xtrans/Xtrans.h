@@ -100,13 +100,7 @@
 
 #define XTRANS_MAX_ADDR_LEN	128	/* large enough to hold sun_path */
 
-typedef	union {
-#ifndef BSD44SOCKETS
-    unsigned short	family;
-#else
-    unsigned char	unused;
-    unsigned char	family;
-#endif
+typedef	struct {
     unsigned char	addr[XTRANS_MAX_ADDR_LEN];
 } Xtransaddr;
 
