@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransam.c,v 1.1 94/03/30 10:39:50 mor Exp $ */
+/* $XConsortium: Xtransam.c,v 1.2 94/03/31 10:52:58 mor Exp $ */
 
 /* Copyright (c) 1994 Vrije Universiteit Amsterdam, Netherlands
  * Copyright 1994 by the Massachusetts Institute of Technology
@@ -760,6 +760,8 @@ struct netbuf	*netbufp;
  * These functions are the interface supplied in the Xtransport structure
  */
 
+#ifdef TRANS_CLIENT
+
 static XtransConnInfo
 TRANS(AMOpenCOTSClient)(thistrans, protocol, host, port)
 Xtransport	*thistrans;
@@ -799,6 +801,7 @@ char		*port;
     return ciptr;
 }
 
+#endif /* TRANS_CLIENT */
 
 #if defined(XSERV_t) || defined(FS_t)
 
@@ -1488,6 +1491,8 @@ TRANS(AmSetAddr)(ciptr, chandesc)
     }
 }
 
+#ifdef TRANS_SERVER
+
 static XtransConnInfo
 TRANS(AMOpenCOTSServer)(thistrans, protocol, given_host, port)
 Xtransport	*thistrans;
@@ -1524,6 +1529,10 @@ char		*port;
     return ciptr;
 }
 
+#endif /* TRANS_SERVER */
+
+
+#ifdef TRANS_CLIENT
 
 static XtransConnInfo
 TRANS(AMOpenCLTSClient)(thistrans, protocol, host, port)
@@ -1540,6 +1549,10 @@ char		*port;
     return NULL;
 }			
 
+#endif /* TRANS_CLIENT */
+
+
+#ifdef TRANS_SERVER
 
 static XtransConnInfo
 TRANS(AMOpenCLTSServer)(thistrans, protocol, host, port)
@@ -1566,6 +1579,8 @@ XtransConnInfo	ciptr;
     return 0;
 }
 
+#endif /* TRANS_SERVER */
+
 static
 TRANS(AMSetOption)(ciptr, option, arg)
 XtransConnInfo	ciptr;
@@ -1577,6 +1592,8 @@ int		arg;
     return -1;
 }
 
+
+#ifdef TRANS_SERVER
 
 static
 TRANS(AMCreateListener)(ciptr, req)
@@ -1629,6 +1646,10 @@ XtransConnInfo	ciptr;
 #endif
 }
 
+#endif /* TRANS_SERVER */
+
+
+#ifdef TRANS_CLIENT
 
 static
 TRANS(AMConnect)(ciptr, host, port)
@@ -1640,6 +1661,8 @@ char		*port;
     PRMSG(2, "TRANS(AMConnect)(%d,%s)\n", ciptr->fd, host, 0);
     return 0;
 }
+
+#endif /* TRANS_CLIENT */
 
 
 int
@@ -1925,15 +1948,27 @@ Xtransport	TRANS(AmConnFuncs) = {
 	/* Combined AMOEBA RPC/TCP Interface; maybe we should split this  */
 	"amcon",
 	0,
+#ifdef TRANS_CLIENT
 	TRANS(AMOpenCOTSClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
 	TRANS(AMOpenCOTSServer),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
 	TRANS(AMOpenCLTSClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
 	TRANS(AMOpenCLTSServer),
+#endif /* TRANS_SERVER */
 	TRANS(AMSetOption),
+#ifdef TRANS_SERVER
 	TRANS(AMCreateListener),
 	TRANS(AMResetListener),
 	TRANS(AMAccept),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
 	TRANS(AMConnect),
+#endif /* TRANS_CLIENT */
 	TRANS(AMBytesReadable),
 	TRANS(AMRead),
 	TRANS(AMWrite),
