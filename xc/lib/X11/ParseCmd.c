@@ -1,3 +1,7 @@
+#ifndef lint
+static char rcsid[] = "$Header$";
+#endif lint
+
 /*
 *****************************************************************************
 **                                                                          *
@@ -22,10 +26,20 @@
 *****************************************************************************
 **/
 
-#include "Xlib.h"
+#include <X/Xlib.h>
 #include "Xlibint.h"
-#include "Xresource.h"
+#include <X/Xresource.h>
 #include <stdio.h>
+
+
+static void _XReportParseError(arg, msg)
+    XrmOptionDescRec *arg;
+    char *msg;
+{
+    (void) fprintf(stderr, "Error parsing argument \"%s\" (%s); %s\n",
+		   arg->option, arg->specifier, msg);
+    exit(1);
+}
 
 void XrmParseCommand(pdb, options, num_options, prefix, argc, argv)
     XrmDatabase		*pdb;		/* data base */
@@ -113,7 +127,7 @@ void XrmParseCommand(pdb, options, num_options, prefix, argc, argv)
 		    break;
 
 		default:
-		    _XReportParseError (options[i].argKind);
+		    _XReportParseError (&options[i], "unknown kind");
 		    break;
 		}
 	    } else foundOption = False;
@@ -125,12 +139,4 @@ void XrmParseCommand(pdb, options, num_options, prefix, argc, argv)
     }
 
     (*argsave)=NULL; /* put NULL terminator on compressed argv */
-}
-
-void exit();
-int _XReportParseError(arg)
-    char arg[];
-{
-	(void) fprintf(stderr, "Error parsing argument %s", arg);
-	exit(1);
 }
