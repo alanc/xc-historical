@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ParseCmd.c,v 1.19 89/12/11 19:08:30 rws Exp $
+ * $XConsortium: ParseCmd.c,v 1.20 90/12/12 09:16:44 rws Exp $
  */
 
 /***********************************************************
@@ -94,7 +94,7 @@ void XrmParseCommand(pdb, options, num_options, prefix, argc, argv)
     /* Parse prefix into bindings and quark list */
     XrmStringToBindingQuarkList(prefix, bindings, quarks);
     for (start_bindings = bindings, start_quarks = quarks;
-	 *start_quarks != NULLQUARK;
+	 *start_quarks;
 	 start_bindings++, start_quarks++) {};
 
     table_is_sorted = (myargc > 2) ? Check : DontCare;
@@ -111,11 +111,11 @@ void XrmParseCommand(pdb, options, num_options, prefix, argc, argv)
 		table_is_sorted = NotSorted;
 	    }
 	    for (argP = *argv, optP = options[i].option;
-		 (optchar = *optP++) != NULL &&
-		 (argchar = *argP++) != NULL &&
+		 (optchar = *optP++) &&
+		 (argchar = *argP++) &&
 		 argchar == optchar;);
-	    if (optchar == NULL) {
-		if (*argP == NULL ||
+	    if (!optchar) {
+		if (!*argP ||
 		    options[i].argKind == XrmoptionStickyArg ||
 		    options[i].argKind == XrmoptionIsArg) {
 		    /* give preference to exact matches, StickyArg and IsArg */
@@ -124,7 +124,7 @@ void XrmParseCommand(pdb, options, num_options, prefix, argc, argv)
 		    break;
 		}
 	    }
-	    else if (argchar == NULL) {
+	    else if (!argchar) {
 		/* may be an abbreviation for this option */
 		matches++;
 		foundOption = i;
