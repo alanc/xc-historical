@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: ButtonBox.c,v 1.12 87/09/13 18:40:48 newman Locked $";
+static char rcsid[] = "$Header: ButtonBox.c,v 1.13 87/09/13 20:35:58 swick Locked $";
 #endif lint
 
 /*
@@ -89,7 +89,9 @@ ButtonBoxClassRec buttonBoxClassRec = {
     /* resize             */    Resize,
     /* expose             */    NULL,
     /* set_values         */    SetValues,
-    /* accept_focus       */    NULL
+    /* accept_focus       */    NULL,
+    /* callback_private   */    NULL,
+    /* reserved_private   */    NULL,
   },{
 /* composite_class fields */
     /* geometry_manager   */    GeometryManager,
@@ -332,7 +334,7 @@ static void ChangeManaged(bbw)
 static void Initialize(request, new, args, num_args)
     ButtonBoxWidget request, new;
     ArgList args;
-    Cardinal num_args;
+    Cardinal *num_args;
 {
 /* ||| What are consequences of letting height, width be 0? If okay, then
        Initialize can be NULL */
@@ -349,18 +351,14 @@ static void Initialize(request, new, args, num_args)
    of the other parameters change from class to class? */
 static void Realize(w, valueMask, attributes)
     register Widget w;
-    Mask valueMask;
+    Mask *valueMask;
     XSetWindowAttributes *attributes;
 {
     attributes->bit_gravity = NorthWestGravity;
-    valueMask |= CWBitGravity;
-    
-    w->core.window =
-	XCreateWindow(XtDisplay(w), XtWindow(w->core.parent),
-	w->core.x, w->core.y, w->core.width, w->core.height,
-	w->core.border_width, w->core.depth,
-	InputOutput, (Visual *)CopyFromParent,
-	valueMask, attributes);
+    *valueMask |= CWBitGravity;
+
+    XtCreateWindow( w, InputOutput, (Visual *)CopyFromParent,
+		    *valueMask, attributes);
 } /* Realize */
 
 /*
