@@ -63,6 +63,7 @@ extern KeySymsRec sunKeySyms[];
 extern CARD16 keyModifiersList[];
 
 extern void	ProcessInputEvents();
+extern void	miPointerPosition();
 
 static void 	  sunBell();
 static void 	  sunKbdCtrl();
