@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.46 91/05/06 23:53:41 gildea Exp $
+ * $XConsortium: dm.h,v 1.47 91/07/16 22:19:43 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -173,7 +173,6 @@ struct display {
 	/* session resources */
 	char		*resources;	/* resource file */
 	char		*xrdb;		/* xrdb program */
-	char		*cpp;		/* cpp program */
 	char		*setup;		/* Xsetup program */
 	char		*startup;	/* Xstartup program */
 	char		*reset;		/* Xreset program */

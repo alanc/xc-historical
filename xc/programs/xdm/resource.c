@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.40 91/01/10 10:53:59 rws Exp $
+ * $XConsortium: resource.c,v 1.41 91/07/18 18:37:36 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -79,9 +79,6 @@ char	*randomFile;
 #endif
 #ifndef DEF_CHOOSER
 #define DEF_CHOOSER "/usr/lib/X11/xdm/chooser"
-#endif
-#ifndef CPP_PROGRAM
-#define CPP_PROGRAM "/lib/cpp"
 #endif
 #ifndef DEF_AUTH_NAME
 #ifdef HASDES
@@ -204,8 +201,6 @@ struct displayResource sessionResources[] = {
 				"",
 "xrdb",		"Xrdb",		DM_STRING,	boffset(xrdb),
 				XRDB_PROGRAM,
-"cpp",		"Cpp",		DM_STRING,	boffset(cpp),
-				CPP_PROGRAM,
 "setup",	"Setup",	DM_STRING,	boffset(setup),
 				"",
 "startup",	"Startup",	DM_STRING,	boffset(startup),
