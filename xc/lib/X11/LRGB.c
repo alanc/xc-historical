@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.10 91/05/14 14:32:07 rws Exp $" */
+/* $XConsortium: XcmsLRGB.c,v 1.11 91/06/27 10:52:31 dave Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -1102,12 +1102,10 @@ XcmsLRGB_RGB_ParseString(spec, pColor)
 	 */
 	n <<= 2;
 	n = 16 - n;
-	pColor->spec.RGB.red =
-		((unsigned long)r * 0xFFFF) / ((1 << n) - 1);
-	pColor->spec.RGB.green =
-		((unsigned long)g * 0xFFFF) / ((1 << n) - 1);
-	pColor->spec.RGB.blue = 
-		((unsigned long)b * 0xFFFF) / ((1 << n) - 1);
+	/* shift instead of scale, to match old broken semantics */
+	pColor->spec.RGB.red = r << n;
+	pColor->spec.RGB.green = g << n;
+	pColor->spec.RGB.blue =  b << n;
     } else {
 	if ((pchar = strchr(spec, ':')) == NULL) {
 	    return(XcmsFailure);
