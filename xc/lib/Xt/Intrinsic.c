@@ -449,7 +449,7 @@ void XtSetSensitive(widget,sensitive)
 {  WidgetClass widgetClass; \
   for(widgetClass = widget->core.widget_class;widgetClass != NULL; \
                          widgetClass = widgetClass ->core_class.superclass) \
-                         widgetClass->core_class.proc; \
+  if ((widgetClass->core_class.proc) != (WidgetProc)NULL) widgetClass->core_class.proc; \
 }
 #define TABLESIZE 20
 typedef struct {
@@ -643,12 +643,14 @@ void Phase2ChildrenCallbacks(widget)
 {
      CompositeWidget cwidget;
      int i;
-    if (XtIsSubclass(widget,compositeWidgetClass))
+    if (XtIsSubclass(widget,compositeWidgetClass)) {
      cwidget = (CompositeWidget)widget;
        for (i=cwidget->composite.num_children; i!=0; --i) {
-  XtCallCallbacks(cwidget->composite.children[i-1]->core.destroy_callbacks);
+    CallCallbacks(&(cwidget->composite.children[i-1]->core.destroy_callbacks),
+                                                 NULL);
            Phase2ChildrenCallbacks(cwidget->composite.children[i-1]);
        }
+    }
      return;
 }
 
@@ -657,12 +659,13 @@ void Phase2ChildrenDestroy(widget)
 {
       CompositeWidget cwidget;
       int i;
-   if (XtIsSubclass(widget,compositeWidgetClass))
+   if (XtIsSubclass(widget,compositeWidgetClass)){
        cwidget = (CompositeWidget)widget;
        for (i=cwidget->composite.num_children; i!=0; --i) {
            Phase2ChildrenDestroy(cwidget->composite.children[i-1]);
 	ClassToSuperclass(cwidget->composite.children[i-1],destroy())
        }
+   }
      return;
 }
 
@@ -676,7 +679,7 @@ void XtPhase2Destroy (widget)
 		->composite_class.delete_child(widget);
     }
 
-    XtCallCallbacks(widget->core.destroy_callbacks);
+    CallCallbacks(&(widget->core.destroy_callbacks),NULL);
     Phase2ChildrenCallbacks(widget);
     Phase2ChildrenDestroy(widget);
     /* ||| All this shit needs to check procs for NULL before calling */
@@ -693,7 +696,7 @@ void XtDestroyWidget (widget)
     if (widget->core.being_destroyed) return;
 
     DestroyChildren(widget);
-    XtAddCallback( DestroyList, XtPhase2Destroy, widget, NULL);
+    AddCallback(widget, &DestroyList, XtPhase2Destroy, NULL);
 
 }
 
