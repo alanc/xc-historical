@@ -308,7 +308,6 @@ OBJS3 = \
 	CIEXYZ.o \
 	CIEuvY.o \
 	CIExyY.o \
-	CIExyYWpAj.o \
 	TekHVC.o \
 	TekHVCGcC.o \
 	TekHVCGcV.o \
@@ -331,17 +330,23 @@ OBJS3 = \
 	XcmsCvCols.o \
 	XcmsDefSD.o \
 	XcmsGlobls.o \
-	XcmsGRAY.o \
 	XcmsIdOfPr.o \
 	XcmsInt.o \
 	XcmsLRGB.o \
 	XcmsLRGBFr.o \
 	XcmsLkCol.o \
 	XcmsMath.o \
+	XcmsOfCCC.o \
 	XcmsPrOfId.o \
 	XcmsProp.o \
+	XcmsQBlack.o \
+	XcmsQBlue.o \
+	XcmsQGreen.o \
+	XcmsQRed.o \
+	XcmsQWhite.o \
 	XcmsQuCol.o \
 	XcmsQuCols.o \
+	XcmsSetCCC.o \
 	XcmsSetGet.o \
 	XcmsStCol.o \
 	XcmsStCols.o \
