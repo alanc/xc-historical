@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: tables.c,v 1.15 87/08/12 15:52:53 newman Locked $ */
+/* $Header: tables.c,v 1.16 87/08/20 17:16:29 toddb Locked $ */
 
 extern int    ProcBadRequest(), ProcCreateWindow(),
     ProcChangeWindowAttributes(), ProcGetWindowAttributes(),
@@ -431,7 +431,8 @@ void (* EventSwapVector[128]) () =
     SSelectionRequestEvent,		/* 30 */
     SSelectionNotifyEvent,
     SColormapEvent,
-    SClientMessageEvent
+    SClientMessageEvent,
+    SKeymapNotifyEvent
 };
 
 
