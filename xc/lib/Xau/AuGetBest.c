@@ -1,4 +1,4 @@
-/* $XConsortium: AuGetBest.c,v 1.6 94/04/17 20:15:43 rws Exp mor $ */
+/* $XConsortium: AuGetBest.c,v 1.7 94/10/03 21:01:14 mor Exp mor $ */
 
 /*
 
@@ -140,7 +140,7 @@ XauGetBestAuthByAddr (family, address_length, address,
 
 	if ((family == FamilyWild || entry->family == FamilyWild ||
 	     (entry->family == family &&
-	     (address_length == entry->address_length &&
+	     ((address_length == entry->address_length &&
 	      binaryEqual (entry->address, address, (int)address_length))
 #ifdef hpux
 	     || (family == FamilyLocal &&
@@ -148,7 +148,7 @@ XauGetBestAuthByAddr (family, address_length, address,
 	     	binaryEqual (entry->address, fully_qual_address,
 		    (int) fully_qual_address_length))
 #endif
-	    )) &&
+	    ))) &&
 	    (number_length == 0 || entry->number_length == 0 ||
 	     (number_length == entry->number_length &&
 	      binaryEqual (entry->number, number, (int)number_length))))
