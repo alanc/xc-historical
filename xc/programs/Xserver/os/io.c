@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.48 88/08/31 10:09:42 rws Exp $ */
+/* $XConsortium: io.c,v 1.49 88/09/06 15:50:44 jim Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -48,7 +48,7 @@ extern long ClientsWithInput[];
 extern long ClientsWriteBlocked[];
 extern long OutputPending[];
 extern long OutputBufferSize;
-extern ClientPtr ConnectionTranslation[];
+extern int ConnectionTranslation[];
 extern Bool NewOutputPending;
 extern Bool AnyClientsWriteBlocked;
 static Bool CriticalOutputPending;
@@ -485,12 +485,13 @@ FlushAllOutput()
 	{
 	    index = ffs(mask) - 1;
 	    mask &= ~lowbit(mask);
-	    if ((client = ConnectionTranslation[(32 * base) + index ]) == NULL)
+	    if ((index = ConnectionTranslation[(base << 5) + index]) == 0)
 		continue;
+	    client = clients[index];
 	    if (client->clientGone)
 		continue;
 	    oc = (OsCommPtr)client->osPrivate;
-	    if (GETBIT(ClientsWithInput, client->index))
+	    if (GETBIT(ClientsWithInput, oc->fd))
 	    {
 		BITSET(OutputPending, oc->fd); /* set the bit again */
 		NewOutputPending = TRUE;
