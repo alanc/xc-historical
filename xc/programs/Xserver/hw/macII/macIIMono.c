@@ -320,7 +320,7 @@ macIIMonoProbe(pScreenInfo, index, fbNum, argc, argv)
 	}
 
 	{
-		static char *video_virtaddr = 120 * 1024 * 1024;
+		static char *video_virtaddr = (char *) (120 * 1024 * 1024);
 		struct video_map vmap;
 		struct strioctl ctl; /* Streams ioctl control structure */
 
