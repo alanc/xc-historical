@@ -50,7 +50,7 @@ IconFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*-*-*-*"
 IconManagerFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*"
 ResizeFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*"
 NoSaveUnders			# faster to just repaint then save
-NoTitleFocus			# bug in either Xt or twm
+NoTitleFocus			# work around bug in Xt
 XORvalue 1			# tend to use visually distinct adjacent colors
 ConstrainedMoveTime 0		# turn off horizontal/vertical only moving
 NoCaseSensitive			# turn off case-sensitivity in sorting icons
@@ -64,8 +64,8 @@ WarpUnmapped			# allow warping to unmapped windows
 
 Color
 {
-    DefaultForeground "white"
-    DefaultBackground "blue"
+    DefaultBackground "maroon"
+    DefaultForeground "gray85"
     BorderColor "gray70"
     TitleBackground "maroon"
     TitleForeground "gray85"
@@ -154,6 +154,7 @@ DontIconifyByUnmapping		# don't lose them (still in TwmWindows menu)
   "xload"
   "oclock"
   "xcutsel"
+  "Untitled"
 }
 NoTitle				# little programs that look like icons
 {
@@ -189,7 +190,7 @@ menu "twmops"
 "xhost +"		!"xhost + >/dev/null"
 "xhost -"		!"xhost - >/dev/null"
 ""			f.nop
-"Logout"		f.warpto "!!"
+"Logout"		f.warpto "xlogout"
 }
 
 menu "windowops"
