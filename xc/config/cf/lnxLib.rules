@@ -1,4 +1,4 @@
-XCOMM $XConsortium: lnxLib.rules,v 1.4 95/01/05 19:40:24 kaleb Exp kaleb $
+XCOMM $XConsortium: lnxLib.rules,v 1.5 95/01/11 21:40:59 kaleb Exp kaleb $
 
 /*
  * Linux shared library rules (DLL & ELF versions)
@@ -471,7 +471,7 @@ jumpclean_0:								@@\
 	$(RM) $(JUMP_HOST)/$(JUMP_SA)					@@\
 									@@\
 jumpclean_1:								@@\
-	$(RM) $(JUMP_SO) $(Concat(JUMP_DIR_,libname)) \			@@\
+	$(RM) -r $(JUMP_SO) $(Concat(JUMP_DIR_,libname)) \		@@\
 		down/mk_JUMP_SA_1 down/mk_JUMP_SO_1 down/mk_JUMP_SO_2
 #endif /* SharedLibraryTarget */
 
