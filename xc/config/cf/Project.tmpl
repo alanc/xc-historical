@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.6 89/01/17 16:21:17 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.7 89/01/17 17:38:19 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -140,8 +140,8 @@
 #ifndef BinDir
 #define BinDir $(DESTDIR)/usr/bin/X11
 #endif
-#ifndef IncDir
-#define IncDir $(INCROOT)/X11
+#ifndef IncRoot
+#define IncRoot $(DESTDIR)/usr/include
 #endif
 #ifndef LibDir
 #define LibDir $(USRLIBDIR)/X11
@@ -220,19 +220,22 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.6 89/01/17 16:21:17 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.7 89/01/17 17:38:19 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
  * Makefile.
  */
+          PATHSEP = /			/* for building filenames */
         USRLIBDIR = UsrLibDir		/* libraries */
            BINDIR = BinDir		/* programs */
-           INCDIR = IncDir		/* header files */
+          INCROOT = IncRoot		/* base of where to put header files */
+           INCDIR = $(INCROOT)/X11	/* header files, must end in X11 */
            ADMDIR = AdmDir		/* server log files */
            LIBDIR = LibDir		/* rgb, XErrorDB, etc. */
         CONFIGDIR = ConfigDir		/* build configuration information */
        LINTLIBDIR = LintlibDir		/* lint libraries */
+
           FONTDIR = FontDir		/* font directories */
          XINITDIR = XinitDir		/* xinit config files */
            XDMDIR = XdmDir		/* xdm config files */
@@ -249,9 +252,13 @@ Berklib.c: sysV/Berklib.c					@@\
 
      INSTAPPFLAGS = $(INSTDATFLAGS)	/* XXX - this should go away - XXX */
 
-          PATHSEP = /
-           DEPEND = $(DEPENDSRC)/makedepend
+#ifdef UseInstalled
+            IMAKE = imake		/* assume BINDIR in path */
+           DEPEND = depend		/* assume BINDIR in path */
+#else
             IMAKE = $(IMAKESRC)/imake
+           DEPEND = $(DEPENDSRC)/makedepend
+#endif
               RGB = $(RGBSRC)/rgb
                FC = $(BDFTOSNFSRC)/bdftosnf
         MKFONTDIR = $(MKFONTDIRSRC)/mkfontdir
@@ -281,16 +288,6 @@ Berklib.c: sysV/Berklib.c					@@\
       BDFTOSNFSRC = $(FONTSRC)/bdftosnf
      MKFONTDIRSRC = $(FONTSRC)/mkfontdir
      EXTENSIONSRC = $(TOP)/extensions
-    IMAKE_DEFINES = /* leave blank, for command line use only */
-        IMAKE_CMD = $(NEWTOP)$(IMAKE) -I$(NEWTOP)$(IRULESRC) -TImake.tmpl \
-			-s Makefile $(IMAKE_DEFINES)
-#ifdef UseInstalled
-         IRULESRC = $(CONFIGDIR)
-#else
-         IRULESRC = $(CONFIGSRC)
-#endif
-     ICONFIGFILES = $(IRULESRC)/Imake.tmpl $(IRULESRC)/$(MACROFILE) \
-			$(IRULESRC)/site.def $(IRULESRC)/Project.tmpl
 
 /*
  * and now a little bit of magic for using imake without source tree
