@@ -1,4 +1,4 @@
-/* $XConsortium: Error.c,v 1.30 91/02/05 16:58:21 gildea Exp $ */
+/* $XConsortium: Error.c,v 1.31 91/04/09 19:07:25 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -133,7 +133,7 @@ void XtAppGetErrorDatabaseText(app, name,type,class,defaultp,
     (void) sprintf(str_name, "%s.%s", name, type);
     /* XrmGetResource requires the name and class to be fully qualified
      * and to have the same number of components. */
-    str_class = class;
+    str_class = (char *)class;
     if (! strchr(class, '.')) {
 	(void) sprintf(temp, "%s.%s", class, class);
 	str_class = temp;
