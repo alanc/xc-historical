@@ -1,39 +1,20 @@
 Installation instructions for fontserver
 
-1 - modify server/include/site.h to point to the correct places.
-
-	DEFAULT_CONFIG_FILE	where to look for the font server
-				config file
+1 - set DefaultFSConfigFile to point to the correct place, if the default
+    is not what you want.
 
     an example config file is in ./config
 
-2 - build the top level Makefile with xmkmf and do a 'make World'.
-	if everything goes right (not terribly likely :-)), it should
-	build the fontserver, the library and the client & test
-	programs.
-
-3 - modify the file named by DEFAULT_CONFIG_FILE so the 'catalogue'
-	paramter points to a set of valid font directories.
+2 - modify the file named by DefaultFsConfigFile so the 'catalogue'
+	parameter points to a set of valid font directories.
 
 At this point the test programs should work.  Start the font server
-	(server/fs &) and try some tests.  Most of the clients take
+	(fs &) and try some tests.  Most of the clients take
 	a command line switch of where to find the server, and
 	FSlib understands the environment variable FONTSERVER.
 	The format is the same as Xlib, (ie, hostname:server_number).
 
-Basic directory layout:
-
-./clients
-	sample clients & test programs
-
-./lib
-	the font server library
-
-./include
-	the font server include files
-
-./server
-	the font server itself
+See mit/doc/fontserver:
 
 ./doc
 	various pieces of documentation on the font server and associated
@@ -52,6 +33,3 @@ Tested environments:
 the fontserver and clients have been built & tested on SPARC running
 4.x and a DECstation 3100 running V4.0.  it should work ok on any 32
 bit UNIX w/ BSD sockets.
-
--------
-@(#)README	2.4	91/05/01
