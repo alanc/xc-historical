@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicP.h,v 1.46 89/12/12 20:07:10 swick Exp $
+* $XConsortium: IntrinsicP.h,v 1.47 90/03/19 10:30:44 swick Exp $
 * $oHeader: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
 */
 
@@ -179,6 +179,8 @@ typedef struct _XtTMRec {
 #include <X11/CoreP.h>
 #include <X11/CompositeP.h>
 #include <X11/ConstrainP.h>
+#include <X11/ObjectP.h>
+#include <X11/RectObjP.h>
 
 #define XtDisplay(widget)	DisplayOfScreen((widget)->core.screen)
 #define XtScreen(widget)	((widget)->core.screen)
