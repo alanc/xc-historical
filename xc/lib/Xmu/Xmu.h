@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.24 89/07/14 17:51:35 jim Exp $
+ * $XConsortium: Xmu.h,v 1.25 89/07/16 14:01:06 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -23,22 +23,18 @@
 #define _XMU_H_
 
 /*
- * This include file is obsolete.  Callers should use the appropriate 
- * specific include file.  
+ * This include file is obsolete and is provided only for compatibility with
+ * MIT Release 3 clients.  Callers should use the appropriate include file.  
  *
  * DO NOT ADD ANY NEW INCLUDES OR DEFINITIONS TO THIS FILE!
  */
 #include <X11/Intrinsic.h>
-
 #include <X11/Xmu/Atoms.h>		/* _XA_... */
 #include <X11/Xmu/CharSet.h>		/* CopyISOLatin1Lowered */
 #include <X11/Xmu/Converters.h>		/* CvtStringTo... */
 #include <X11/Xmu/Drawing.h>		/* DrawRoundedRect, DrawLogo */
 #include <X11/Xmu/Error.h>		/* PrintDefaultError */
-#include <X11/Xmu/Initer.h>		/* CallInitializers, ... */
 #include <X11/Xmu/StdSel.h>		/* ConvertStandardSelection */
-#include <X11/Xmu/StdCmap.h>		/* standard colormap */
-#include <X11/Xmu/WinUtil.h>		/* ClientWindow */
 
 #endif /* _XMU_H_ */
 
