@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.26 92/04/13 19:09:29 rws Exp $" */
+/* $XConsortium: cmsColNm.c,v 1.27 93/09/07 21:32:55 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -839,13 +839,13 @@ _XcmsResolveColorString(ccc, color_string, pColor_exact_return, result_format)
  *		associated with a color name in the Device-Independent Color
  *		Name Database.
  *	RETURNS
- *		XcmsFailure if failed to parse string or find any entry in
- *			the database.
+ *		XcmsFailure if failed to convert valid color string.
  *		XcmsSuccess if succeeded in converting color string to
  *			XcmsColor.
- *		_XCMS_NEWNAME if succeeded in converting color string (which
- *			is a color name to yet another color name.  Note
- *			that the new color name is returned via 'name'.
+ *		_XCMS_NEWNAME if failed to parse the string or find it in
+ *			the database, or if succeeded in looking it up and
+ *			found another name which is not in the database.
+ *			Note that the new name is returned in color_string.
  *
  *		This function returns both the color specification found in the
  *		database (db specification) and the color specification for the
@@ -898,13 +898,12 @@ _XcmsResolveColorString(ccc, color_string, pColor_exact_return, result_format)
      */
     retval = _XcmsLookupColorName(ccc, color_string, pColor_exact_return);
 
-    if (retval == _XCMS_NEWNAME) {
-	/* color_string replaced with a color name */
-	return(retval);
+    if (retval != XcmsSuccess) {
+	/* color_string replaced with a color name, or not found */
+	return(_XCMS_NEWNAME);
     }
 
-    if ((retval == XcmsFailure)
-	   || (pColor_exact_return->format == XcmsUndefinedFormat)) {
+    if (pColor_exact_return->format == XcmsUndefinedFormat) {
 	return(XcmsFailure);
     }
 
