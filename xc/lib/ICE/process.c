@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.35 94/04/07 14:42:06 mor Exp $ */
+/* $XConsortium: process.c,v 1.36 94/04/08 11:19:23 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -1815,7 +1815,10 @@ Bool		swap;
 
     pData = pStart;
 
-    if (iceConn->process_msg_info && iceConn->process_msg_info[
+    if (iceConn->process_msg_info &&
+	message->protocolOpcode >= iceConn->his_min_opcode &&
+        message->protocolOpcode <= iceConn->his_max_opcode &&
+	iceConn->process_msg_info[
 	message->protocolOpcode - iceConn->his_min_opcode].in_use)
     {
 	_IceErrorMajorOpcodeDuplicate (iceConn, message->protocolOpcode);
