@@ -1,4 +1,4 @@
-/* $XConsortium: SMlibint.h,v 1.6 93/09/24 15:53:36 mor Exp $ */
+/* $XConsortium: SMlibint.h,v 1.7 93/09/27 11:47:04 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -46,11 +46,11 @@ purpose.  It is provided "as is" without express or implied warranty.
     _bytes = 8; \
     for (_i = 0; _i < _numProps; _i++) \
     { \
-	_bytes += (8 + ARRAY8_BYTES (strlen (_props[_i].name)) + \
-	    ARRAY8_BYTES (strlen (_props[_i].type))); \
+	_bytes += (8 + ARRAY8_BYTES (strlen (_props[_i]->name)) + \
+	    ARRAY8_BYTES (strlen (_props[_i]->type))); \
 \
-	for (_j = 0; _j < _props[_i].num_vals; _j++) \
-	    _bytes += ARRAY8_BYTES (_props[_i].vals[_j].length); \
+	for (_j = 0; _j < _props[_i]->num_vals; _j++) \
+	    _bytes += ARRAY8_BYTES (_props[_i]->vals[_j].length); \
     } \
 }
 
@@ -75,14 +75,14 @@ purpose.  It is provided "as is" without express or implied warranty.
     _pBuf += 4; \
     for (_i = 0; _i < _count; _i++) \
     { \
-        STORE_ARRAY8 (_pBuf, strlen (_props[_i].name), _props[_i].name); \
-        STORE_ARRAY8 (_pBuf, strlen (_props[_i].type), _props[_i].type); \
-        STORE_CARD32 (_pBuf, _props[_i].num_vals); \
+        STORE_ARRAY8 (_pBuf, strlen (_props[_i]->name), _props[_i]->name); \
+        STORE_ARRAY8 (_pBuf, strlen (_props[_i]->type), _props[_i]->type); \
+        STORE_CARD32 (_pBuf, _props[_i]->num_vals); \
         _pBuf += 4; \
-        for (_j = 0; _j < _props[_i].num_vals; _j++) \
+        for (_j = 0; _j < _props[_i]->num_vals; _j++) \
 	{ \
-            STORE_ARRAY8 (_pBuf, _props[_i].vals[_j].length, \
-		(char *) _props[_i].vals[_j].value); \
+            STORE_ARRAY8 (_pBuf, _props[_i]->vals[_j].length, \
+		(char *) _props[_i]->vals[_j].value); \
 	} \
     } \
 }
@@ -120,20 +120,21 @@ purpose.  It is provided "as is" without express or implied warranty.
     int _i, _j; \
     EXTRACT_CARD32 (_pBuf, _swap, _count); \
     _pBuf += 4; \
-    _props = (SmProp *) malloc (_count * sizeof (SmProp)); \
+    _props = (SmProp **) malloc (_count * sizeof (SmProp *)); \
     for (_i = 0; _i < _count; _i++) \
     { \
-        EXTRACT_ARRAY8_AS_STRING (_pBuf, _swap, _props[_i].name); \
-        EXTRACT_ARRAY8_AS_STRING (_pBuf, _swap, _props[_i].type); \
-        EXTRACT_CARD32 (_pBuf, _swap, _props[_i].num_vals); \
+        _props[_i] = (SmProp *) malloc (sizeof (SmProp)); \
+        EXTRACT_ARRAY8_AS_STRING (_pBuf, _swap, _props[_i]->name); \
+        EXTRACT_ARRAY8_AS_STRING (_pBuf, _swap, _props[_i]->type); \
+        EXTRACT_CARD32 (_pBuf, _swap, _props[_i]->num_vals); \
         _pBuf += 4; \
-        _props[_i].vals = (SmPropValue *) malloc ( \
-	    _props[_i].num_vals * sizeof (SmPropValue)); \
-        for (_j = 0; _j < _props[_i].num_vals; _j++) \
+        _props[_i]->vals = (SmPropValue *) malloc ( \
+	    _props[_i]->num_vals * sizeof (SmPropValue)); \
+        for (_j = 0; _j < _props[_i]->num_vals; _j++) \
 	{ \
 	    char *_temp; \
-            EXTRACT_ARRAY8 (_pBuf, _swap, _props[_i].vals[_j].length, _temp); \
-	    _props[_i].vals[_j].value = (SmPointer) _temp; \
+            EXTRACT_ARRAY8 (_pBuf, _swap, _props[_i]->vals[_j].length, _temp);\
+	    _props[_i]->vals[_j].value = (SmPointer) _temp; \
 	} \
     } \
 }
