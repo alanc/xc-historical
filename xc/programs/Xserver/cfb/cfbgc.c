@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.55 92/02/05 16:07:46 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.56 92/03/13 16:18:46 eswu Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -218,15 +218,23 @@ cfbMatchCommon (pGC, devPriv)
 	    && FONTMAXBOUNDS(pGC->font,characterWidth) >= 4
 #endif
 	)
+#ifdef NO_ONE_RECT
+            return &cfbTEOps1Rect;
+#else
 	    if (devPriv->oneRect)
 		return &cfbTEOps1Rect;
 	    else
 		return &cfbTEOps;
+#endif
 	else
+#ifdef NO_ONE_RECT
+	    return &cfbNonTEOps1Rect;
+#else
 	    if (devPriv->oneRect)
 		return &cfbNonTEOps1Rect;
 	    else
 		return &cfbNonTEOps;
+#endif
     }
     return 0;
 }
@@ -472,10 +480,14 @@ cfbValidateGC(pGC, changes, pDrawable)
 					    pGC->clipOrg.x, pGC->clipOrg.y);
 	    }
 	}			/* end of composute clip for pixmap */
+#ifdef NO_ONE_RECT
+	devPriv->oneRect = FALSE;
+#else
 	oneRect = REGION_NUM_RECTS(devPriv->pCompositeClip) == 1;
 	if (oneRect != devPriv->oneRect)
 	    new_line = TRUE;
 	devPriv->oneRect = oneRect;
+#endif
     }
 
     mask = changes;
@@ -674,6 +686,19 @@ cfbValidateGC(pGC, changes, pDrawable)
     if (new_line)
     {
 	pGC->ops->FillPolygon = miFillPolygon;
+#ifdef NO_ONE_RECT
+	if (pGC->fillStyle == FillSolid)
+	{
+	    switch (devPriv->rop) {
+	    case GXcopy:
+		pGC->ops->FillPolygon = cfbFillPoly1RectCopy;
+		break;
+	    default:
+		pGC->ops->FillPolygon = cfbFillPoly1RectGeneral;
+		break;
+	    }
+	}
+#else
 	if (devPriv->oneRect && pGC->fillStyle == FillSolid)
 	{
 	    switch (devPriv->rop) {
@@ -685,6 +710,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 		break;
 	    }
 	}
+#endif
 	if (pGC->lineWidth == 0)
 	{
 #ifdef PIXEL_ADDR
@@ -717,17 +743,24 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    {
 		if (pGC->fillStyle == FillSolid)
 		{
-#ifdef PIXEL_ADDR
+#if defined(PIXEL_ADDR) && !defined(NO_ONE_RECT)
 		    if (devPriv->oneRect)
 		    {
 			pGC->ops->Polylines = cfb8LineSS1Rect;
 			pGC->ops->PolySegment = cfb8SegmentSS1Rect;
 		    } else
 #endif
+#ifdef NO_ONE_RECT
+		    {
+			pGC->ops->Polylines = cfb8LineSS1Rect;
+			pGC->ops->PolySegment = cfb8SegmentSS1Rect;
+		    }
+#else
 		    {
 		    	pGC->ops->Polylines = cfbLineSS;
 		    	pGC->ops->PolySegment = cfbSegmentSS;
 		    }
+#endif
 		}
  		else
 		    pGC->ops->Polylines = miZeroLine;
