@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.14 94/02/05 13:43:54 rws Exp $ */
+/* $XConsortium: xsm.c,v 1.15 94/02/05 15:04:08 rws Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -42,7 +42,15 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include <stdlib.h>
 #endif
 #include <setjmp.h>
+#include <limits.h>
 #include <sys/param.h>
+#ifndef PATH_MAX
+#ifdef MAXPATHLEN
+#define PATH_MAX MAXPATHLEN
+#else
+#define PATH_MAX 1024
+#endif
+#endif
 
 /* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
 #if defined(SYSV) && defined(SYSV386) && defined(__STDC__) && defined(ISC)
@@ -101,7 +109,7 @@ static XrmOptionDescRec options[] = {
     {"-quiet",		"*verbose",	XrmoptionNoArg,		"FALSE"},
 };
 
-char		session_save_file[MAXPATHLEN];
+char		session_save_file[PATH_MAX];
 List		*PendingList;
 ClientRec	*ClientList = NULL;
 int		numClients = 0;

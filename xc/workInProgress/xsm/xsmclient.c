@@ -1,4 +1,4 @@
-/* $XConsortium: xsmclient.c,v 1.6 94/01/19 21:16:55 converse Exp $ */
+/* $XConsortium: xsmclient.c,v 1.7 94/02/05 15:09:02 rws Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -42,7 +42,15 @@ purpose.  It is provided "as is" without express or implied warranty.
 #ifndef X_NOT_POSIX
 #include <unistd.h>
 #endif
+#include <limits.h>
 #include <sys/param.h>
+#ifndef PATH_MAX
+#ifdef MAXPATHLEN
+#define PATH_MAX MAXPATHLEN
+#else
+#define PATH_MAX 1024
+#endif
+#endif
 
 extern Status XtInitializeICE ();
 
@@ -135,7 +143,7 @@ SaveState()
     CurrentDirectory.num_vals = 1;
     CurrentDirectory.vals = &CurrentDirectory_val;
 
-    CurrentDirectory_val.value = getcwd((char *)NULL, MAXPATHLEN+2);
+    CurrentDirectory_val.value = getcwd((char *)NULL, PATH_MAX+2);
     CurrentDirectory_val.length = strlen (CurrentDirectory_val.value);
 
     props[nprops++] = &CurrentDirectory;
@@ -706,7 +714,7 @@ char **argv;
 	"cwdDataLabel", labelWidgetClass, mainWindow,
 	XtNlabel,
 #ifndef X_NOT_POSIX
-	getcwd((char *)NULL, MAXPATHLEN),
+	getcwd((char *)NULL, PATH_MAX),
 #else
 	"unknown-cwd"
 #endif
