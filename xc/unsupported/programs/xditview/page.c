@@ -72,14 +72,14 @@ SearchPagePosition (dw, number)
 	return m->position;
 }
 
-FileSeek(dw, Position)
+FileSeek(dw, position)
 DviWidget	dw;
-long		Position;
+long		position;
 {
 	if (dw->dvi.tmpFile) {
 		dw->dvi.readingTmp = 1;
-		fseek (dw->dvi.tmpFile, Position, 0);
+		fseek (dw->dvi.tmpFile, position, 0);
 	} else
-		fseek (dw->dvi.file, Position, 0);
+		fseek (dw->dvi.file, position, 0);
 }
 
