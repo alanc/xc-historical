@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: misc.h,v 1.54 90/03/08 14:14:45 keith Exp $ */
+/* $XConsortium: misc.h,v 1.55 90/05/15 12:28:59 keith Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -57,6 +57,7 @@ typedef unsigned long ATOM;
 #define FALSE 0
 #endif
 #include "os.h" 	/* for ALLOCATE_LOCAL and DEALLOCATE_LOCAL */
+#include <X11/Xfuncs.h> /* for bcopy, bzero, and bcmp */
 
 #define NullBox ((BoxPtr)0)
 #define MILLI_PER_MIN (1000 * 60)
