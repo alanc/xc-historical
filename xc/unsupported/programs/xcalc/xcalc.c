@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: xcalc.c,v 1.1 89/05/04 11:44:12 jim Exp $
  *
  * xcalc.c  -  a hand calculator for the X Window system
  * 
@@ -49,18 +49,19 @@
  *	global data
  */
 int	rpn = 0;		/* Reverse Polish Notation (HP mode) flag */
-char	dispstr[32];		/* string to show up in the LCD */
+#define LCD_STR_LEN	32
+char	dispstr[LCD_STR_LEN];		/* string to show up in the LCD */
 
 /*
  *	local data 
  */
-static Display	*dpy = NULL;	/* connection to the X server */
-static Widget	toplevel=NULL;  /* top level shell widget */
-static Widget   calculator=NULL;/* an underlying form widget */
-static Widget	LCD = NULL;	/* liquid crystal display */
-static Widget	ind[6];		/* mode indicators in the screen */
-static char	selstr[20];	/* storage for selections from the LCD */
-				/* checkerboard used in mono mode */
+static Display	*dpy = NULL;		/* connection to the X server */
+static Widget	toplevel=NULL;  	/* top level shell widget */
+static Widget   calculator=NULL;	/* an underlying form widget */
+static Widget	LCD = NULL;		/* liquid crystal display */
+static Widget	ind[6];			/* mode indicators in the screen */
+static char	selstr[LCD_STR_LEN]; /* storage for selections from the LCD */
+					/* checkerboard used in mono mode */
 #define check_width 16
 #define check_height 16
 static char check_bits[] = {
@@ -231,7 +232,7 @@ void create_keypad(parent)
 }
 
 /*
- *	Miscellaneous utility routines that interact with the widets.
+ *	Miscellaneous utility routines that interact with the widgets.
  */
 
 /*
@@ -295,11 +296,10 @@ void Syntax(argc, argv)
 }
 
 /*    
- * For selections.  Obviously, this is a little sloppy, and a hack.
  * I use actions on the toggle widget to support selections.  This
  * means that the user may not do a partial selection of the number
- * displayed in the `liquid crystal display.'  Pasting numbers into
- * the calculator is also not supported.  So all you can do is cut
+ * displayed in the `liquid crystal display.'  Copying numbers into
+ * the calculator is also not supported.  So all you can do is copy
  * the entire number from the calculator display.
  */
 
@@ -313,20 +313,14 @@ Boolean convert(w, selection, target, type, value, length, format)
     unsigned long	*length;
     int		*format;
 {
-    switch (*target)
+    if (*target == XA_STRING)
     {
-      case XA_STRING:
 	*type = XA_STRING;
-	strcpy(selstr, dispstr);
+	*length = strlen(dispstr);
+	strncpy(selstr, dispstr, (int)(*length));
 	*value = selstr;
-	*length = strlen(selstr);
-	*format = 8;			/* XXX ugh */
+	*format = 8;
 	return True;
-	                          /* where is TARGETS defined? XXX
-      case TARGETS:
-	*value = XA_STRING;
-	return True;
-	                           */
     }
     return False;
 }
@@ -343,7 +337,7 @@ void lose(w, selection)
 }
 
 /*
- * called when some other client has got the selection.
+ * called when some other client got the selection.
  */
 /*ARGSUSED*/
 void done(w, selection, target)
@@ -355,18 +349,19 @@ void done(w, selection, target)
 }
 
 /*
- * called when xcalc asserts ownership of the selection.
+ * called by the selection() action routine, in response to user action.
  */
-void own(time)
+void do_select(time)
     Time	time;
 {
-    XtOwnSelection(LCD, XA_PRIMARY, time, convert, lose, done);
-}
+    Boolean	state;
+    Arg		args[1];
 
-/*
- * called when xcalc relinguishes selection ownership.
- */
-void disown()
-{
-    selstr[0] = '\0';
+    XtSetArg(args[0], XtNstate, &state);
+    XtGetValues(LCD, args, 1);
+
+    if (state)
+        XtOwnSelection(LCD, XA_PRIMARY, time, convert, lose, done);
+    else
+	selstr[0] = '\0';
 }

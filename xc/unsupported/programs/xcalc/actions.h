@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: actions.h,v 1.1 89/05/04 11:44:07 jim Exp $
  * 
  * actions.h - action table declaring externally available procedures for xcalc
  *
@@ -26,12 +26,12 @@
  */
 
 extern void
-    add(), back(), bell(), clear(), cosine(), cut(), decimal(),
+    add(), back(), bell(), clear(), cosine(), decimal(),
     degree(), digit(), divide(), e(), enter(), epower(), equal(),
     exchange(), factorial(), HPrecall(), HPstore(), HPsum(),
     inverse(), leftParen(), logarithm(), multiply(), naturalLog(),
     negate(), nop(), off(), pi(), power(), quit(), recall(),
-    reciprocal(), rightParen(), roll(), scientific(), sine(),
+    reciprocal(), rightParen(), roll(), scientific(), selection(), sine(),
     square(), squareRoot(), store(), subtract(), sum(),
     tangent(), tenpower(), XexchangeY();
 
@@ -45,7 +45,6 @@ XtActionsRec	Actions[] = {
 {"bell",	bell},		/* ring bell */
 {"clear",	clear},		/* TI-specific clear calculator state */
 {"cosine",	cosine},	/* trigonometric function cosine */
-{"cut",		cut},		/* cut selection */
 {"decimal",	decimal},	/* decimal point */
 {"degree",	degree},	/* degree, radian, grad switch */
 {"digit",	digit},		/* numeric key */
@@ -75,6 +74,7 @@ XtActionsRec	Actions[] = {
 {"rightParen",	rightParen},	/* TI-specific left parenthesis */
 {"roll",	roll},		/* HP-specific roll stack */
 {"scientific",	scientific},	/* scientfic notation (EE) */
+{"selection",	selection},	/* copy selection */
 {"sine",	sine},		/* trigonometric function sine */
 {"square",	square},	/* square */
 {"squareRoot",	squareRoot},	/* square root */

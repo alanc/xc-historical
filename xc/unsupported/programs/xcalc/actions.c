@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: actions.c,v 1.1 89/05/04 11:44:04 jim Exp $
  *
  * actions.c - externally available procedures for xcalc
  * 
@@ -28,7 +28,7 @@
 #include <X11/Intrinsic.h>
 #include "xcalc.h"
 
-extern void pre_op(), post_op(), Quit(), ringbell();
+extern void pre_op(), post_op(), Quit(), ringbell(), do_select();
 
 /*ARGSUSED*/
 void add(w, e, vector, count)
@@ -86,27 +86,6 @@ void cosine(w, e, vector, count)
     pre_op(kCOS);
     oneop(kCOS);
     post_op();
-}
-
-static int	cutstate = 0;
-   
-/*ARGSUSED*/
-void cut(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
-{
-    extern void disown(), own();
-
-    if (cutstate)
-    {
-	disown();
-	cutstate = 0;
-	return;
-    }
-    cutstate++;
-    own(((XButtonReleasedEvent *)e)->time);
 }
 
 /*ARGSUSED*/
@@ -462,6 +441,16 @@ void scientific(w, e, vector, count)
     pre_op(kEE);
     eef();
     post_op();
+}
+
+/*ARGSUSED*/
+void selection(w, e, vector, count)
+    Widget	w;
+    XEvent	*e;
+    String	*vector;
+    Cardinal	*count;
+{
+    do_select(((XButtonReleasedEvent *)e)->time);
 }
 
 /*ARGSUSED*/
