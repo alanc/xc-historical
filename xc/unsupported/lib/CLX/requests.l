@@ -353,7 +353,7 @@
   (let (keyword)
     (with-display (display)
       (with-buffer-request (display *x-getatomname* :no-after)
-	(card32 atom-id))
+	(card29 atom-id))
       (with-buffer-reply (display nil :sizes (16))
 	(setq keyword (string-get (card16-get 8))))
       (setq keyword (intern keyword 'keyword))
@@ -813,7 +813,7 @@
   (declare (type window dst)
 	   (type int16 dst-x dst-y))
   (with-buffer-request ((window-display dst) *x-warppointer*)
-    (card32 0) ;; None
+    (resource-id 0) ;; None
     (window dst)
     (int16 0 0)
     (card16 0 0)
@@ -823,8 +823,8 @@
   (declare (type display display)
 	   (type int16 x-off y-off))
   (with-buffer-request (display *x-warppointer*)
-    (card32 0) ;; None
-    (card32 0) ;; None
+    (resource-id 0) ;; None
+    (resource-id 0) ;; None
     (int16 0 0)
     (card16 0 0)
     (int16 x-off y-off)))
@@ -853,7 +853,7 @@
   (unless (or (eql src-width 0) (eql src-height 0))
     (with-buffer-request ((window-display src) *x-warppointer*)
       (window src)
-      (card32 0) ;; None
+      (resource-id 0) ;; None
       (int16 src-x src-y)
       (card16 (or src-width 0) (or src-height 0))
       (int16 x-off y-off))))
@@ -957,7 +957,7 @@
     (card32 plane)))
 
 (defun create-colormap (visual window &optional alloc-p)
-  (declare (type integer visual)
+  (declare (type card29 visual)
 	   (type window window)
 	   (type boolean alloc-p))
   (declare-values colormap)
@@ -969,7 +969,7 @@
       ((data boolean) alloc-p)
       (resource-id id)
       (window window)
-      (card32 visual))
+      (card29 visual))
     colormap))
 
 (defun free-colormap (colormap)
@@ -987,7 +987,7 @@
 	 (id (allocate-resource-id display new-colormap 'colormap)))
     (setf (colormap-id new-colormap) id)
     (with-buffer-request (display *x-copycolormapandfree*)
-      (card32 id)
+      (resource-id id)
       (colormap colormap))
     new-colormap))
 
@@ -1259,7 +1259,7 @@
 	   (type (or null card16) mask-char)
 	   (type color foreground background)) ;; required
   (declare-values cursor)
-  (let* ((display (pixmap-display source-font))
+  (let* ((display (font-display source-font))
 	 (cursor (make-cursor :display display))
 	 (cid (allocate-resource-id display cursor 'cursor))
 	 (source-font-id (font-id source-font))
@@ -1661,7 +1661,7 @@
 (defun kill-temporary-clients (display)
   (declare (type display display))
   (with-buffer-request (display *x-killclient*)
-    (card32 0)))
+    (resource-id 0)))
 
 #+comment ;; This is a protocol request, but its not very interesting...
 (defun no-operation (display)
