@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: init_win.c,v 5.1 91/02/16 09:32:47 rws Exp $ */
 
 /***********************************************************
 Copyright 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -78,7 +78,7 @@ init_window()
 
 	XChangeProperty(appl_display,
 		appl_window, XA_WM_NAME, XA_STRING, 8,
-		PropModeReplace, "Plaid", 5);
+		PropModeReplace, (unsigned char *)"AutoBox", 5);
 	XMapWindow(appl_display, appl_window);
 						 
 	/** sync and wait for exposure event **/
