@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.69 88/08/09 15:56:39 jim Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.70 88/08/09 17:12:21 jim Exp $";
 #endif
 
 /*
@@ -14,6 +14,49 @@ static char rcsid[] = "$Header: XlibInt.c,v 11.69 88/08/09 15:56:39 jim Exp $";
 
 #include <stdio.h>
 #include "Xlibint.h"
+
+#ifdef CRAY
+
+/*
+ * Cray UniCOS does not have readv and writev so we emulate
+ */
+#include <sys/socket.h>
+
+static int readv (fd, iov, iovcnt)
+int fd;
+struct iovec *iov;
+int iovcnt;
+{
+	struct msghdr hdr;
+
+	hdr.msg_iov = iov;
+	hdr.msg_iovlen = iovcnt;
+	hdr.msg_accrights = 0;
+	hdr.msg_accrightslen = 0;
+	hdr.msg_name = 0;
+	hdr.msg_namelen = 0;
+
+	return (recvmsg (fd, &hdr, 0));
+}
+
+static int writev (fd, iov, iovcnt)
+int fd;
+struct iovec *iov;
+int iovcnt;
+{
+	struct msghdr hdr;
+
+	hdr.msg_iov = iov;
+	hdr.msg_iovlen = iovcnt;
+	hdr.msg_accrights = 0;
+	hdr.msg_accrightslen = 0;
+	hdr.msg_name = 0;
+	hdr.msg_namelen = 0;
+
+	return (sendmsg (fd, &hdr, 0));
+}
+
+#endif /* CRAY */
 
 /*
  * The following routines are internal routines used by Xlib for protocol
@@ -1296,3 +1339,5 @@ PackShorts(from, to, bytes)
 	}
 }
 #endif /* BIGSHORTS */
+
+
