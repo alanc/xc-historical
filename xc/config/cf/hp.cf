@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: hp.cf,v 1.49 92/05/05 08:49:16 rws Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.50 92/05/09 09:43:52 rws Exp $
 
 #define OSName                 HP-UX 8.07
 XCOMM operating system:  OSName
@@ -29,7 +29,7 @@ XCOMM operating system:  OSName
 #define HasPutenv              YES
 
 #define BuildServer            NO
-#define NeedBerklib            BuildServer
+#define NeedBerklib            (BuildServer|BuildFontServer)
 
 #if OSMajorVersion < 6 || (OSMajorVersion == 6 && OSMinorVersion < 2)
 #define ConnectionFlags		-DTCPCONN	/* no unix sockets */
