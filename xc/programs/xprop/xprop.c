@@ -1,4 +1,4 @@
-/* $XConsortium: xprop.c,v 1.37 91/05/12 18:23:07 rws Exp $*/
+/* $XConsortium: xprop.c,v 1.38 92/10/16 14:47:09 rws Exp $*/
 /*
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -1020,16 +1020,16 @@ long Extract_Value(pointer, length, size, signedp)
 		break;
 	      case 16:
 		value = (long) * (short *) *pointer;
-		*pointer += 2;
-		*length -= 2;
+		*pointer += sizeof(short);
+		*length -= sizeof(short);
 		mask = 0xffff;
 		break;
 	      default:
 		/* Error */
 	      case 32:
 		value = (long) * (long *) *pointer;
-		*pointer += 4;
-		*length -= 4;
+		*pointer += sizeof(long);
+		*length -= sizeof(long);
 		mask = 0xffffffff;
 		break;
 	}
@@ -1411,7 +1411,7 @@ char *Get_Font_Property_Data_And_Type(atom, length, type, size)
 	for (i=0; i<font->n_properties; i++)
 	  if (atom==font->properties[i].name) {
 		  _font_prop=font->properties[i].card32;
-		  *length=4;
+		  *length=sizeof(long);
 		  *size=32;
 		  return((char *) &_font_prop);
 	  }
@@ -1427,6 +1427,7 @@ char *Get_Window_Property_Data_And_Type(atom, length, type, size)
 	Atom actual_type;
 	int actual_format;
 	unsigned long nitems;
+	unsigned long nbytes;
 	unsigned long bytes_after;
 	unsigned char *prop;
 	int status;
@@ -1440,7 +1441,13 @@ char *Get_Window_Property_Data_And_Type(atom, length, type, size)
 	if (status!=Success)
 	  Fatal_Error("XGetWindowProperty failed!");
 	
-	*length = min(nitems * actual_format/8, max_len);
+	if (actual_format == 32)
+	    nbytes = sizeof(long);
+	else if (actual_format == 16)
+	    nbytes = sizeof(short);
+	else
+	    nbytes = 1;
+	*length = min(nitems * nbytes, max_len);
 	*type = actual_type;
 	*size = actual_format;
 	return((char *)prop);
