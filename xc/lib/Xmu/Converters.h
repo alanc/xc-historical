@@ -49,7 +49,11 @@ extern void XmuCvtStringToBackingStore();
  * XmuCvtStringToCursor
  */
 extern void XmuCvtStringToCursor();
+extern Boolean XmuCvtStringToColorCursor();
 
+#define XtRColorCursor "ColorCursor"
+#define XtNpointerColor "pointerColor"
+#define XtNpointerColorBackground "pointerColorBackground"
 
 /******************************************************************************
  * XmuCvtStringToJustify
