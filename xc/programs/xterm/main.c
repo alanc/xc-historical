@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.52 88/07/18 18:11:41 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.53 88/07/19 09:34:39 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -40,6 +40,26 @@ SOFTWARE.
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <pwd.h>
+
+/*
+ * The macII uses System V terminal control, but bsd for a lot of other things.
+ * That is why it is doesn't use SYSV....
+ */
+#ifdef macII
+#include <sys/ioctl.h>
+#include <sys/termio.h>
+#define VSWITCH VSWTCH
+#include <sys/stat.h>
+#include <sys/ttychars.h>
+#include <compat.h>
+
+#define vhangup() ;
+#define setpgrp2 setpgrp
+#define USE_SYSV_TERMIO
+#define USE_SYSV_UTMP
+#define USE_SYSV_SIGNALS
+#endif /* macII */
+
 #ifdef SYSV
 #include <sys/ioctl.h>
 #include <sys/termio.h>
@@ -48,23 +68,31 @@ SOFTWARE.
 #ifdef JOBCONTROL
 #include <sys/bsdtty.h>
 #endif	/* JOBCONTROL */
-#else	/* !SYSV */
+#define USE_SYSV_TERMIO
+#define USE_SYSV_UTMP
+#define USE_SYSV_SIGNALS
+
+#else	/* not SYSV; bsd *AND* macII */
+
 #include <sgtty.h>
 #include <sys/wait.h>
 #include <sys/resource.h>
 #endif	/* !SYSV */
+
+
 #include <stdio.h>
 #include <errno.h>
 #include <signal.h>
 #include <setjmp.h>
+
 #ifdef hpux
 #include <sys/utsname.h>
-#endif
+#endif /* hpux */
 
 #ifdef apollo
 #define ttyslot() 1
 #define vhangup() ;
-#endif
+#endif /* apollo */
 
 #include <utmp.h>
 #include <sys/param.h>	/* for NOFILE */
@@ -94,7 +122,8 @@ static int reapchild ();
 static Bool added_utmp_entry = False;
 
 static char **command_to_exec;
-#ifdef SYSV
+
+#ifdef USE_SYSV_TERMIO
 /* The following structures are initialized in main() in order
 ** to eliminate any assumptions about the internal order of their
 ** contents.
@@ -106,7 +135,7 @@ static struct ltchars d_ltc;
 #ifdef TIOCLSET
 static unsigned int d_lmode;
 #endif	/* TIOCLSET */
-#else	/* !SYSV */
+#else /* not USE_SYSV_TERMIO */
 static struct  sgttyb d_sg = {
         0, 0, 0177, CKILL, EVENP|ODDP|ECHO|XTABS|CRMOD
 };
@@ -120,8 +149,9 @@ static struct  ltchars d_ltc = {
 };
 static int d_disipline = NTTYDISC;
 static long int d_lmode = LCRTBS|LCRTERA|LCRTKIL|LCTLECH;
-#endif	/* !SYSV */
-#ifdef SYSV
+#endif /* USE_SYSV_TERMIO */
+
+#ifdef USE_SYSV_UTMP
 extern struct utmp *getutent();
 extern struct utmp *getutid();
 extern struct utmp *getutline();
@@ -136,19 +166,21 @@ extern struct passwd *getpwnam();
 extern void setpwent();
 extern void endpwent();
 extern struct passwd *fgetpwent();
-#else	/* SYSV */
+#else	/* not USE_SYSV_UTMP */
 static char etc_utmp[] = "/etc/utmp";
-#endif	/* SYSV */
+#endif	/* USE_SYSV_UTMP */
+
 static char *get_ty;
 static int inhibit;
 static char passedPty[2];	/* name if pty if slave */
 static int loginpty;
+
 #ifdef TIOCCONS
 static int Console;
 #endif	/* TIOCCONS */
-#ifndef SYSV
+#ifndef USE_SYSV_UTMP
 static int tslot;
-#endif	/* !SYSV */
+#endif	/* USE_SYSV_UTMP */
 static jmp_buf env;
 
 char *ProgramName;
@@ -354,7 +386,7 @@ char **argv;
 	strcpy (ttydev, TTYDEV);
 	strcpy (ptydev, PTYDEV);
 
-#ifdef SYSV
+#ifdef USE_SYSV_TERMIO
 	/* Initialization is done here rather than above in order
 	** to prevent any assumptions about the order of the contents
 	** of the various terminal structures (which may change from
@@ -409,7 +441,7 @@ char **argv;
 #ifdef TIOCLSET
 	d_lmode = 0;
 #endif	/* TIOCLSET */
-#endif	/* !SYSV */
+#endif	/* USE_SYSV_TERMIO */
 
 	/* This is ugly.  When running under init, we need to make sure
 	 * Xlib/Xt won't use file descriptors 0/1/2, because we need to
@@ -479,7 +511,7 @@ char **argv;
 		    t_ttydev = malloc (strlen (TTYDEV) + 1);
 		    if (!t_ptydev || !t_ttydev) {
 			fprintf (stderr, 
-				 "%s:  unable to memory for t_ttydev or t_ptydev\n",
+			 "%s:  unable to alloc memory for t_ttydev or t_ptydev\n",
 				 ProgramName);
 			exit (1);
 		    }
@@ -496,7 +528,7 @@ char **argv;
 			t_ttydev[strlen(t_ttydev) - 1] =
 			get_ty[strlen(get_ty) - 1];
 		loginpty = open( t_ptydev, O_RDWR, 0 );
-#ifdef SYSV
+#ifdef USE_SYSV_UTMP
 		/* use the same tty name that everyone else will use
 		** (from ttyname)
 		*/
@@ -505,11 +537,12 @@ char **argv;
 
 			if (ptr = ttyname(loginpty)) {
 				/* it may be bigger! */
-				t_ptydev = realloc(t_ptydev, (unsigned) (strlen(ptr) + 1));
+				t_ptydev = realloc (t_ptydev,
+						    (unsigned) (strlen(ptr) + 1));
 				(void) strcpy(t_ptydev, ptr);
 			}
 		}
-#endif /* SYSV */
+#endif /* USE_SYSV_UTMP */
 		loginpty = open( t_ptydev, O_RDWR, 0 );
 		dup2( loginpty, 4);
 		close( loginpty );
@@ -591,20 +624,20 @@ char **argv;
 	    if (get_ty) {
 #ifdef hpux
 		struct utsname name;
-#endif
+#endif /* hpux */
 
 		strcpy(window_title, "login(");
 
 #ifdef hpux
-		/* Why not use gethostname()?  Well, at least on my system, I've had to
-		 * make an ugly kernel patch to get a name longer than 8 characters, and
-		 * uname() lets me access to the whole string (it smashes release, you
-		 * see), whereas gethostname() kindly truncates it for me.
+		/* Why not use gethostname()?  On older hpux's, we hve to make
+		 * an ugly kernel patch to get a name longer than 8 characters, and
+		 * uname() lets me access to the whole string, wherease gethostname
+		 * truncates it.
 		 */
 
 		uname(&name);
 		strcpy(window_title+6, name.nodename);
-#else
+#else /* else not hpux */
 		(void) gethostname(window_title+6, sizeof(window_title)-6);
 #endif /* hpux */
 
@@ -635,7 +668,7 @@ char **argv;
 	if(get_ty)
 		i = open("/dev/console", O_WRONLY, 0);
 	if(i >= 0) {
-#ifdef SYSV
+#ifdef USE_SYSV_TERMIO
 		/* SYSV has another pointer which should be part of the
 		** FILE structure but is actually a seperate array.
 		*/
@@ -644,12 +677,12 @@ char **argv;
 		old_bufend = (unsigned char *) _bufend(stderr);
 		fileno(stderr) = i;
 		(unsigned char *) _bufend(stderr) = old_bufend;
-#else	/* SYSV */
+#else /* else not USE_SYSV_TERMIO */
 		fileno(stderr) = i;
-#endif	/* SYSV */
+#endif	/* USE_SYSV_TERMIO */
 	}
 	if(fileno(stderr) != (NOFILE - 1)) {
-#ifdef SYSV
+#ifdef USE_SYSV_TERMIO
 		/* SYSV has another pointer which should be part of the
 		** FILE structure but is actually a seperate array.
 		*/
@@ -661,12 +694,12 @@ char **argv;
 			close(fileno(stderr));
 		fileno(stderr) = (NOFILE - 1);
 		(unsigned char *) _bufend(stderr) = old_bufend;
-#else	/* !SYSV */
+#else	/* else not USE_SYSV_TERMIO */
 		dup2(fileno(stderr), (NOFILE - 1));
 		if(fileno(stderr) >= 3)
 			close(fileno(stderr));
 		fileno(stderr) = (NOFILE - 1);
-#endif	/* !SYSV */
+#endif	/* USE_SYSV_TERMIO */
 	}
 
 	signal (SIGCHLD, reapchild);
@@ -694,16 +727,16 @@ char **argv;
 	}
 	screen->inhibit = inhibit;
 
-#ifdef SYSV
+#ifdef USE_SYSV_TERMIO
 	if (0 > (mode = fcntl(pty, F_GETFL, 0)))
 		Error();
 	mode |= O_NDELAY;
 	if (fcntl(pty, F_SETFL, mode))
 		Error();
-#else	/* SYSV */
+#else	/* USE_SYSV_TERMIO */
 	mode = 1;
 	if (ioctl (pty, FIONBIO, (char *)&mode) == -1) SysError (ERROR_FIONBIO);
-#endif	/* SYSV */
+#endif	/* USE_SYSV_TERMIO */
 	
 	pty_mask = 1 << pty;
 	X_mask = 1 << Xsocket;
@@ -827,7 +860,7 @@ spawn ()
 	int Xsocket = screen->display->fd;
 	int index1, tty = -1;
 	int discipline;
-#ifdef SYSV
+#ifdef USE_SYSV_TERMIO
 	struct termio tio;
 	struct termio dummy_tio;
 #ifdef TIOCLSET
@@ -840,21 +873,21 @@ spawn ()
 	int one = 1;
 	int zero = 0;
 	int status;
-#else	/* !SYSV */
+#else	/* else not USE_SYSV_TERMIO */
 	unsigned lmode;
 	struct tchars tc;
 	struct ltchars ltc;
 	struct sgttyb sg;
-#endif	/* !SYSV */
+#endif	/* USE_SYSV_TERMIO */
 
 	char termcap [1024];
 	char newtc [1024];
 	char *ptr, *shname, *shname_minus;
 	int i, no_dev_tty = FALSE;
-#ifdef SYSV
+#ifdef USE_SYSV_TERMIO
 	char *dev_tty_name = (char *) 0;
 	int fd;			/* for /etc/wtmp */
-#endif	/* SYSV */
+#endif	/* USE_SYSV_TERMIO */
 	char **envnew;		/* new environment */
 	char buf[32];
 	char *TermName = NULL;
@@ -863,7 +896,7 @@ spawn ()
 #ifdef TIOCSSIZE
 	struct ttysize ts;
 #endif	/* TIOCSSIZE */
-#else	/* sun */
+#else	/* not sun */
 #ifdef TIOCSWINSZ
 	struct winsize ws;
 #endif	/* TIOCSWINSZ */
@@ -874,19 +907,19 @@ spawn ()
 #endif	/* UTMP */
 	extern int Exit();
 	char *getenv();
-	char *index (), *rindex (), *strindex ();
+	char *strindex ();
 
 	screen->uid = getuid();
 	screen->gid = getgid();
 
-#if !defined(SYSV) || defined(JOBCONTROL)
+#if !defined(SYSV) || defined(JOBCONTROL)  /* a reason why macII isn't SYSV */
 	/* so that TIOCSWINSZ || TIOCSIZE doesn't block */
 	signal(SIGTTOU,SIG_IGN);
 #endif	/* !defined(SYSV) || defined(JOBCONTROL) */
 
 	if (get_ty) {
 		screen->respond = loginpty;
-#ifndef SYSV
+#ifndef USE_SYSV_UTMP
 		if((tslot = ttyslot()) <= 0)
 			SysError(ERROR_TSLOT);
 #ifdef TIOCCONS
@@ -896,8 +929,7 @@ spawn ()
 				SysError(ERROR_TIOCCONS);
 		}
 #endif  /* TIOCCONS */
-
-#endif	/* SYSV */
+#endif	/* not USE_SYSV_UTMP */
 	} else if (am_slave) {
 		screen->respond = am_slave;
 		ptydev[strlen(ptydev) - 2] = ttydev[strlen(ttydev) - 2] =
@@ -913,10 +945,10 @@ spawn ()
 			ttydev = realloc(ttydev, (unsigned) (strlen(ptr) + 1));
 			(void) strcpy(ttydev, ptr);
 		}
-#ifndef SYSV
+#ifndef USE_SYSV_UTMP
 		if((tslot = ttyslot()) <= 0)
 			SysError(ERROR_TSLOT2);
-#endif	/* !SYSV */
+#endif	/* not USE_SYSV_UTMP */
 		setgid (screen->gid);
 		setuid (screen->uid);
 	} else {
@@ -926,7 +958,7 @@ spawn ()
  		 * defaults.
  		 */
  		signal(SIGALRM, hungtty);
- 		alarm(1);		
+ 		alarm(2);		/* alarm(1) might return too soon */
  		if (! setjmp(env)) {
  			tty = open ("/dev/tty", O_RDWR, 0);
  			alarm(0);
@@ -940,7 +972,7 @@ spawn ()
 			if (errno != ENXIO) SysError(ERROR_OPDEVTTY);
 			else {
 				no_dev_tty = TRUE;
-#ifdef SYSV
+#ifdef USE_SYSV_TERMIO
 				tio = d_tio;
 #ifdef TIOCSLTC
 				ltc = d_ltc;
@@ -948,18 +980,18 @@ spawn ()
 #ifdef TIOCLSET
 				lmode = d_lmode;
 #endif	/* TIOCLSET */
-#else	/* !SYSV */
+#else	/* not USE_SYSV_TERMIO */
 				sg = d_sg;
 				tc = d_tc;
 				discipline = d_disipline;
 				ltc = d_ltc;
 				lmode = d_lmode;
-#endif	/* !SYSV */
+#endif	/* USE_SYSV_TERMIO */
 			}
 		} else {
 			/* get a copy of the current terminal's state */
 
-#ifdef SYSV
+#ifdef USE_SYSV_TERMIO
 			if(ioctl(tty, TCGETA, &tio) == -1)
 				SysError(ERROR_TIOCGETP);
 #ifdef TIOCSLTC
@@ -970,7 +1002,7 @@ spawn ()
 			if(ioctl(tty, TIOCLGET, &lmode) == -1)
 				SysError(ERROR_TIOCLGET);
 #endif	/* TIOCLSET */
-#else	/* !SYSV */
+#else	/* not USE_SYSV_TERMIO */
 			if(ioctl(tty, TIOCGETP, (char *)&sg) == -1)
 				SysError (ERROR_TIOCGETP);
 			if(ioctl(tty, TIOCGETC, (char *)&tc) == -1)
@@ -981,13 +1013,13 @@ spawn ()
 				SysError (ERROR_TIOCGLTC);
 			if(ioctl(tty, TIOCLGET, (char *)&lmode) == -1)
 				SysError (ERROR_TIOCLGET);
-#endif	/* !SYSV */
+#endif	/* USE_SYSV_TERMIO */
 			close (tty);
 
 			/* close all std file descriptors */
 			for (index1 = 0; index1 < 3; index1++)
 				close (index1);
-#ifndef SYSV
+#ifndef SYSV				/* macII does want this! */
 			if ((tty = open ("/dev/tty", O_RDWR, 0)) < 0)
 				SysError (ERROR_OPDEVTTY2);
 
@@ -1028,7 +1060,7 @@ spawn ()
 		/* set the new terminal's state to be the old one's 
 		   with minor modifications for efficiency */
 
-#ifdef SYSV
+#ifdef USE_SYSV_TERMIO
 		/* input: nl->nl, don't ignore cr, cr->nl */
 		tio.c_iflag &= ~(INLCR|IGNCR);
 		tio.c_iflag |= ICRNL;
@@ -1062,7 +1094,7 @@ spawn ()
 		if (ioctl (tty, TIOCLSET, (char *)&lmode) == -1)
 			SysError (ERROR_TIOCLSET);
 #endif	/* TIOCLSET */
-#else	/* !SYSV */
+#else	/* not USE_SYSV_TERMIO */
 		sg.sg_flags &= ~(ALLDELAY | XTABS | CBREAK | RAW);
 		sg.sg_flags |= ECHO | CRMOD;
 		/* make sure speed is set on pty so that editors work right*/
@@ -1088,25 +1120,26 @@ spawn ()
 				SysError(ERROR_TIOCCONS);
 		}
 #endif	/* TIOCCONS */
-#endif	/* !SYSV */
+#endif	/* USE_SYSV_TERMIO */
 
 		close (open ("/dev/null", O_RDWR, 0));
 
 		for (index1 = 0; index1 < 3; index1++)
 			dup2 (tty, index1);
-#ifndef SYSV
+#ifndef USE_SYSV_UTMP
 		if((tslot = ttyslot()) <= 0)
 			SysError(ERROR_TSLOT3);
-#endif	/* !SYSV */
+#endif	/* not USE_SYSV_UTMP */
+
 #ifdef UTMP
-#ifdef SYSV
+#ifdef USE_SYSV_UTMP
 		/* If we have gotten this far, we can only assume that
 		** we have (will have) set the utmp entry.  Anyway,
 		** we won't reset it later if the pid's don't match.
 		** Also, if utmpInhibit is set, then pretend failure.
 		*/
 		added_utmp_entry = utmpInhibit ? False : True;
-#else	/* SYSV */
+#else	/* not USE_SYSV_UTMP, it is bsd */
 		added_utmp_entry = False;
 		if (!utmpInhibit &&
 		    (pw = getpwuid(screen->uid)) &&
@@ -1123,7 +1156,7 @@ spawn ()
 			close(i);
 		} else
 			tslot = -tslot;
-#endif	/* !SYSV */
+#endif	/* USE_SYSV_UTMP */
 #endif	/* UTMP */
 	}
 
@@ -1162,7 +1195,7 @@ spawn ()
 	}
 	ioctl  (screen->respond, TIOCSSIZE, &ts);
 #endif	/* TIOCSSIZE */
-#else	/* sun */
+#else	/* not sun */
 #ifdef TIOCSWINSZ
 	/* tell tty how big window is */
 	if(screen->TekEmu) {
@@ -1181,19 +1214,19 @@ spawn ()
 #endif	/* sun */
             
 	if (!am_slave) {
-#ifdef SYSV
+#ifdef USE_SYSV_TERMIO
 	    (void) setpgrp();
 	    (void) close(open(ttydev, O_RDWR, 0));
-#endif	/* SYSV */
+#endif	/* USE_SYSV_TERMIO */
 	    if ((screen->pid = fork ()) == -1)
 		SysError (ERROR_FORK);
 		
 	    if (screen->pid == 0) {
 		extern char **environ;
 		int pgrp = getpid();
-#ifdef SYSV
+#ifdef USE_SYSV_TERMIO
 		char numbuf[12];
-#endif	/* SYSV */
+#endif	/* USE_SYSV_TERMIO */
 
 		close (Xsocket);
 		close (screen->respond);
@@ -1216,28 +1249,28 @@ spawn ()
 		 * calls which may add a new entry to the environment.
 		 * The `1' is for the NULL terminating entry.
 		 */
-#ifdef SYSV
+#ifdef SYSV				/* macII doesn't do COLUMNS/LINES */
 		envnew = (char **) calloc ((unsigned) i + (5 + 1), sizeof(char *));
-#else	/* !SYSV */
+#else /* not SYSV */
 		envnew = (char **) calloc ((unsigned) i + (4 + 1), sizeof(char *));
-#endif	/* SYSV */
+#endif /* SYSV */
 		Bcopy((char *)environ, (char *)envnew, i * sizeof(char *));
 		environ = envnew;
 		Setenv ("TERM=", TermName);
 		if(!TermName)
 			*newtc = 0;
-#ifdef SYSV
+#ifdef SYSV				/* macII does not want this */
 		sprintf (numbuf, "%d", screen->max_col + 1);
 		Setenv("COLUMNS=", numbuf);
 		sprintf (numbuf, "%d", screen->max_row + 1);
 		Setenv("LINES=", numbuf);
-#else	/* !SYSV */
+#else /* not SYSV (including macII) */
 		if (term->misc.titeInhibit) {
 		    remove_termcap_entry (newtc, ":ti=");
 		    remove_termcap_entry (newtc, ":te=");
 		}
 		Setenv ("TERMCAP=", newtc);
-#endif	/* !SYSV */
+#endif	/* SYSV */
 
 		sprintf (buf, "%lu", screen->TekEmu ? 
 			 ((unsigned long) XtWindow (XtParent(tekWidget))) :
@@ -1247,16 +1280,16 @@ spawn ()
 		Setenv ("DISPLAY=", XDisplayString (screen->display));
 
 		signal(SIGTERM, SIG_DFL);
-#if !defined(SYSV) || defined(JOBCONTROL)
+#if !defined(USE_SYSV_TERMIO) || defined(JOBCONTROL)
 		ioctl(0, TIOCSPGRP, (char *)&pgrp);
 		setpgrp (0, 0);
-#endif	/* !defined(SYSV) || defined(JOBCONTROL) */
+#endif	/* !defined(USE_SYSV_TERMIO) || defined(JOBCONTROL) */
 		close(open(ttyname(0), O_WRONLY, 0));
-#if !defined(SYSV) || defined(JOBCONTROL)
+#if !defined(USE_SYSV_TERMIO) || defined(JOBCONTROL)
 		setpgrp (0, pgrp);
-#endif	/* !defined(SYSV) || defined(JOBCONTROL) */
+#endif	/* !defined(USE_SYSV_TERMIO) || defined(JOBCONTROL) */
 
-#ifdef SYSV
+#ifdef USE_SYSV_UTMP
 		/* Set up our utmp entry now.  We need to do it here
 		** for the following reasons:
 		**   - It needs to have our correct process id (for
@@ -1313,7 +1346,7 @@ spawn ()
 			(void) close(fd);
 		    }
 		}
-#endif	/* SYSV */
+#endif	/* USE_SYSV_UTMP */
 
 		setgid (screen->gid);
 		setuid (screen->uid);
@@ -1327,7 +1360,7 @@ spawn ()
 		signal(SIGHUP, SIG_IGN);
 		if (get_ty) {
 
-#ifdef SYSV
+#ifdef SYSV				/* macII does NOT want this */
 			ioctl (0, TIOCTTY, &zero);
 			execlp ("/etc/getty", "getty", get_ty, "Xwindow", 0);
 
@@ -1355,11 +1388,11 @@ spawn ()
 		shname_minus = malloc(strlen(shname) + 2);
 		(void) strcpy(shname_minus, "-");
 		(void) strcat(shname_minus, shname);
-#ifndef SYSV
+#ifndef USE_SYSV_TERMIO
 		ldisc = XStrCmp("csh", shname + strlen(shname) - 3) == 0 ?
 		 NTTYDISC : 0;
 		ioctl(0, TIOCSETD, (char *)&ldisc);
-#endif	/* !SYSV */
+#endif	/* !USE_SYSV_TERMIO */
 		execlp (ptr, term->misc.login_shell ? shname_minus : shname, 0);
 		fprintf (stderr, "%s: Could not exec %s!\n", xterm_name, ptr);
 		sleep(5);
@@ -1368,11 +1401,11 @@ spawn ()
 	}
 
 	if(tty >= 0) close (tty);
-#ifdef SYSV
+#ifdef USE_SYSV_TERMIO
 	/* the parent should not be associated with tty anymore */
 	for (index1 = 0; index1 < 3; index1++)
 		close(index1);
-#endif	/* SYSV */
+#endif	/* USE_SYSV_TERMIO */
 	signal(SIGHUP,SIG_IGN);
 
 	if (!no_dev_tty) {
@@ -1383,12 +1416,11 @@ spawn ()
 		if (tty > 2) close (tty);
 	}
 
-#if !defined(SYSV) || defined(JOBCONTROL)
-
+#if !defined(SYSV) || defined(JOBCONTROL)  /* macII *does* want this */
 	signal(SIGINT, Exit); 
 	signal(SIGQUIT, Exit);
 	signal(SIGTERM, Exit);
-#else	/* !defined(SYSV) || defined(JOBCONTROL) */
+#else	/* not !defined(SYSV) || defined(JOBCONTROL) */
 	signal(SIGINT, SIG_IGN); 
 	signal(SIGQUIT, SIG_IGN);
 	signal(SIGTERM, SIG_IGN);
@@ -1401,7 +1433,7 @@ int n;
 	register TScreen *screen = &term->screen;
         int pty = term->screen.respond;  /* file descriptor of pty */
 #ifdef UTMP
-#ifdef SYSV
+#ifdef USE_SYSV_UTMP
 	struct utmp utmp;
 	struct utmp *utptr;
 
@@ -1420,7 +1452,7 @@ int n;
 	    }
 	    (void) endutent();
 	}
-#else	/* !SYSV */
+#else	/* not USE_SYSV_UTMP */
 	register int i;
 	struct utmp utmp;
 
@@ -1431,7 +1463,7 @@ int n;
 		write(i, (char *)&utmp, sizeof(struct utmp));
 		close(i);
 	}
-#endif	/* !SYSV */
+#endif	/* USE_SYSV_UTMP */
 #endif	/* UTMP */
         close(pty); /* close explicitly to avoid race with slave side */
 	if(screen->logging)
@@ -1458,7 +1490,7 @@ register char *oldtc, *newtc;
 	register char *temp;
 	char *index(), *strindex();
 
-#ifndef SYSV
+#ifndef SYSV				/* macII *does* want this */
 	if ((ptr1 = strindex (oldtc, "co#")) == NULL){
 		fprintf(stderr, "%s: Can't find co# in termcap string %s\n",
 			xterm_name, TermName);
@@ -1494,7 +1526,7 @@ register char *oldtc, *newtc;
 
 static reapchild ()
 {
-#if defined(SYSV) && !defined(JOBCONTROL)
+#if defined(USE_SYSV_SIGNALS) && !defined(JOBCONTROL)
 	int status, pid;
 
 	pid = wait(&status);
@@ -1502,7 +1534,7 @@ static reapchild ()
 		(void) signal(SIGCHLD, reapchild);
 		return;
 	}
-#else	/* defined(SYSV) && !defined(JOBCONTROL) */
+#else	/* defined(USE_SYSV_SIGNALS) && !defined(JOBCONTROL) */
 	union wait status;
 	register int pid;
 	
@@ -1511,16 +1543,18 @@ static reapchild ()
 #endif	/* DEBUG */
 	pid  = wait3 (&status, WNOHANG, (struct rusage *)NULL);
 	if (!pid) {
-#ifdef SYSV
+#ifdef USE_SYSV_SIGNALS
 		(void) signal(SIGCHLD, reapchild);
-#endif	/* SYSV */
+#endif /* USE_SYSV_SIGNALS */
 		return;
 	}
-#endif	/* defined(SYSV) && !defined(JOBCONTROL) */
+#endif	/* defined(USE_SYSV_SIGNALS) && !defined(JOBCONTROL) */
+
+
 	if (pid != term->screen.pid) {
-#ifdef SYSV
+#ifdef USE_SYSV_SIGNALS
 		(void) signal(SIGCHLD, reapchild);
-#endif	/* SYSV */
+#endif	/* USE_SYSV_SIGNALS */
 		return;
 	}
 	
@@ -1577,13 +1611,13 @@ checklogin()
 {
 	register int ts, i;
 	register struct passwd *pw;
-#ifdef SYSV
+#ifdef USE_SYSV_UTMP
 	char *name;
-#else	/* !SYSV */
+#else /* not USE_SYSV_UTMP */
 	struct utmp utmp;
-#endif	/* !SYSV */
+#endif /* USE_SYSV_UTMP */
 
-#ifdef SYSV
+#ifdef USE_SYSV_UTMP
 	name = cuserid((char *) 0);
 	if (name)
 		pw = getpwnam(name);
@@ -1591,7 +1625,7 @@ checklogin()
 		pw = getpwuid(getuid());
 	if (pw == NULL)
 		return(FALSE);
-#else	/* !SYSV */
+#else	/* not USE_SYSV_UTMP */
 	ts = tslot > 0 ? tslot : -tslot;
 	if((i = open(etc_utmp, O_RDONLY)) < 0)
 		return(FALSE);
@@ -1602,7 +1636,7 @@ checklogin()
 	 !*utmp.ut_name || (pw = getpwnam(utmp.ut_name)) == NULL)
 		return(FALSE);
 	chdir(pw->pw_dir);
-#endif	/* !SYSV */
+#endif	/* USE_SYSV_UTMP */
 	setgid(pw->pw_gid);
 	setuid(pw->pw_uid);
 	L_flag = 0;
