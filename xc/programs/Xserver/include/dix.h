@@ -525,4 +525,16 @@ typedef struct {
     ServerGrabState grabstate;
 } ServerGrabInfoRec;
 
+/*
+ *  EventCallback stuff
+ */
+
+extern CallbackListPtr EventCallback;
+
+typedef struct {
+    ClientPtr client;
+    struct _xEvent *events;
+    int count;
+} EventInfoRec;
+
 #endif /* DIX_H */
