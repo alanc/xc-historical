@@ -118,6 +118,9 @@ DebuggedLibraryTarget(Xdmcp,$(OBJS))
 #endif
 
 BuildIncludes($(HEADERS),Xdmcp,..)
+
+MakeDirectories(install,$(INCDIR)/Xdmcp)
+
 InstallMultiple($(HEADERS),$(INCDIR)/Xdmcp)
 
 DependTarget()

@@ -170,6 +170,9 @@ DebuggedLibraryTarget(Xmu,$(OBJS))
 #endif
 
 BuildIncludes($(HEADERS),Xmu,..)
+
+MakeDirectories(install,$(INCDIR)/Xmu)
+
 InstallMultiple($(HEADERS),$(INCDIR)/Xmu)
 
 #if InstallOldHeaderFiles
