@@ -1,5 +1,5 @@
 
-/* $XConsortium: miUtils.c,v 5.2 91/05/01 14:25:43 hersh Exp $ */
+/* $XConsortium: miUtils.c,v 5.3 92/01/24 15:19:51 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -159,7 +159,7 @@ ddFLOAT		b[4][4];
 		result++;
 	}
      }
-     bcopy( (char *)t, (char *)m, 16*sizeof(float));
+     memcpy( (char *)m, (char *)t, 16*sizeof(float));
     }
 }
 
