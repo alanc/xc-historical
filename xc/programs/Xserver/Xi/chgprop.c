@@ -1,4 +1,4 @@
-/* $Header: xchgprop.c,v 1.2 90/10/22 16:51:35 gms Exp $ */
+/* $XConsortium: xchgprop.c,v 1.9 91/01/24 16:22:19 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 

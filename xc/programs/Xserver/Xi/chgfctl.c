@@ -1,4 +1,4 @@
-/* $Header: xchgfctl.c,v 1.12 91/05/05 18:30:43 rws Exp $ */
+/* $XConsortium: xchgfctl.c,v 1.13 91/05/14 12:21:54 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 

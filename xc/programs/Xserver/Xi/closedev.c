@@ -1,4 +1,4 @@
-/* $Header: xclosedev.c,v 1.2 90/11/27 16:34:45 gms Exp $ */
+/* $XConsortium: xclosedev.c,v 1.9 91/01/24 16:24:01 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 

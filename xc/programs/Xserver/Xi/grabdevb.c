@@ -1,4 +1,4 @@
-/* $Header: xgrabdevb.c,v 1.8 91/01/24 16:36:19 rws Exp $ */
+/* $XConsortium: xgrabdevb.c,v 1.9 91/05/05 18:29:38 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 

@@ -1,4 +1,4 @@
-/* $Header: xlistdev.c,v 1.13 91/12/26 13:34:09 rws Exp $ */
+/* $XConsortium: xlistdev.c,v 1.14 92/08/11 11:57:33 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 

@@ -1,4 +1,4 @@
-/* $Header: xchgptr.c,v 1.13 91/01/24 16:23:08 rws Exp $ */
+/* $XConsortium: xchgptr.c,v 1.14 91/05/05 17:36:57 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 

@@ -1,4 +1,4 @@
-/* $Header: xgetprop.c,v 1.2 91/01/18 15:38:10 gms Exp $ */
+/* $XConsortium: xgetprop.c,v 1.7 91/01/24 17:03:42 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 

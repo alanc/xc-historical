@@ -1,4 +1,4 @@
-/* $Header: xgetfctl.c,v 1.12 91/01/24 17:03:38 rws Exp $ */
+/* $XConsortium: xgetfctl.c,v 1.13 91/05/14 12:21:12 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 

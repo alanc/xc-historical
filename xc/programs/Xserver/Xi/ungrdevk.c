@@ -1,4 +1,4 @@
-/* $Header: xungrdevk.c,v 1.6 91/01/24 16:41:50 rws Exp $ */
+/* $XConsortium: xungrdevk.c,v 1.7 91/05/05 18:29:40 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 

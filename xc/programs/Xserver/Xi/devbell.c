@@ -1,5 +1,4 @@
-#ifdef XINPUT
-/* $Header: xdevbell.c,v 1.1 91/01/24 16:24:52 rws Exp $ */
+/* $XConsortium: xdevbell.c,v 1.2 91/05/14 12:22:22 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -144,5 +143,3 @@ ProcXDeviceBell (client)
 
     return Success;
     }
-
-#endif /* XINPUT */

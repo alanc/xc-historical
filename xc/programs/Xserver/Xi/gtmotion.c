@@ -1,4 +1,4 @@
-/* $Header: xgtmotion.c,v 1.9 91/01/24 16:37:48 rws Exp $ */
+/* $XConsortium: xgtmotion.c,v 1.10 91/07/17 16:38:25 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
