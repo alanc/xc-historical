@@ -22,8 +22,6 @@
  */
 
 #include <stdio.h>
-#include <X11/Xos.h>
-#include <X11/Intrinsic.h>
 
 #ifdef att
 #define LOADSTUB
@@ -98,6 +96,9 @@ struct lavnum {
 #ifdef sequent
 #define FSCALE	1000.0
 #endif
+
+#include <X11/Xos.h>
+#include <X11/Intrinsic.h>
 
 extern long lseek();
 extern void exit();
@@ -195,51 +196,47 @@ void GetLoadPoint( w, closure, call_data )
 
 
 #ifndef KERNEL_LOAD_VARIABLE
+#    ifdef alliant
+#        define KERNEL_LOAD_VARIABLE "_Loadave"
+#    endif /* alliant */
 
-#ifdef alliant
-#define KERNEL_LOAD_VARIABLE "_Loadave"
-#endif /* alliant */
+#    ifdef CRAY
+#        if defined(CRAY2) && OSMAJORVERSION == 4
+#            define KERNEL_LOAD_VARIABLE "avenrun"
+#        else
+#            define KERNEL_LOAD_VARIABLE "sysinfo"
+#            define SYSINFO
+#        endif /* defined(CRAY2) && OSMAJORVERSION == 4 */
+#    endif /* CRAY */
 
-#ifdef CRAY
-#  if defined(CRAY2) && OSMAJORVERSION == 4
-#    define KERNEL_LOAD_VARIABLE "avenrun"
-#  else
-#    define KERNEL_LOAD_VARIABLE "sysinfo"
-#    define SYSINFO
-#  endif /* defined(CRAY2) && OSMAJORVERSION == 4 */
-#endif /* CRAY */
+#    ifdef hpux
+#        ifdef hp9000s800
+#            define KERNEL_LOAD_VARIABLE "avenrun"
+#        endif /* hp9000s800 */
+#    endif /* hpux */
 
-#ifdef hpux
-#ifdef hp9000s800
-#define KERNEL_LOAD_VARIABLE "avenrun"
-#endif /* hp9000s800 */
-#endif /* hpux */
+#    ifdef mips
+#        ifdef SYSTYPE_SYSV
+#            define KERNEL_LOAD_VARIABLE "avenrun"
+#        else
+#            define KERNEL_LOAD_VARIABLE "_avenrun"
+#        endif /* SYSTYPE_SYSV */
+#    endif /* mips */
 
-#ifdef mips
-# ifdef SYSTYPE_SYSV
-# define KERNEL_LOAD_VARIABLE "avenrun"
-# else
-# define KERNEL_LOAD_VARIABLE "_avenrun"
-# endif /* SYSTYPE_SYSV */
-#endif /* mips */
-
-#ifdef sequent
-#define KERNEL_FILE "/dynix"
-#endif /* sequent */
+#    ifdef sequent
+#        define KERNEL_FILE "/dynix"
+#    endif /* sequent */
 
 /*
  * provide default for everyone else
  */
 
-#ifndef KERNEL_LOAD_VARIABLE
-#ifdef USG
-#define KERNEL_LOAD_VARIABLE "sysinfo"
-#define SYSINFO
-#else
-#define KERNEL_LOAD_VARIABLE "_avenrun"
-#endif
-#endif
-
+#    ifdef USG
+#        define KERNEL_LOAD_VARIABLE "sysinfo"
+#        define SYSINFO
+#    else
+#        define KERNEL_LOAD_VARIABLE "_avenrun"
+#    endif
 #endif /* KERNEL_LOAD_VARIABLE */
 
 #ifdef macII
