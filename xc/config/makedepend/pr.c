@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pr.c,v 1.6 88/09/30 08:55:13 jim Exp $
+ * $XConsortium: pr.c,v 1.7 89/05/14 14:22:04 rws Exp $
  */
 #include "def.h"
 
@@ -93,21 +93,3 @@ pr(ip, file, base)
 	for (i=0; i<ip->i_listlen; i++)
 		printf("\n#\t%s", ip->i_list[ i ]->i_incstring);
 }
-
-#if defined (mips) && defined (SYSTYPE_SYSV)
-void catch()
-{
-	fflush(stdout);
-	log_fatal("got signal\n");
-}
-#else /* not (mips && SYSTYPE_SYSV) */
-#if defined(ultrix) || defined(sun)
-void
-#endif
-catch(n)
-{
-	fflush(stdout);
-	log_fatal("got signal %d\n", n);
-}
-#endif /* mips && SYSTYPE_SYSV */
-

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.30 89/06/21 10:52:34 jim Exp $
+ * $XConsortium: main.c,v 1.31 89/07/18 09:29:44 jim Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -96,15 +96,21 @@ int	width = 78;
 boolean	printed = FALSE;
 boolean	verbose = FALSE;
 boolean	show_where_not = FALSE;
-#if USG
-void  catch();
-#else 
-#if defined(ultrix) || defined(sun)
-void  catch();
-#else
-int   catch();
-#endif /* ultrix or sun; should use SignalReturnProcType */
 
+static
+#ifdef SIGNALRETURNSINT
+int
+#else
+void
+#endif
+catch (sig)
+    int sig;
+{
+	fflush (stdout);
+	log_fatal ("got signal %d\n", sig);
+}
+
+#ifndef USG
 struct sigvec sig_vec = {
 	catch,
 	 (1<<(SIGINT -1))

@@ -4,20 +4,21 @@
 #if CppSourcesPresent
     SRCS = include.c main.c parse.c pr.c cppsetup.c cpp.c cpy.y
     OBJS = include.o main.o parse.o pr.o cppsetup.o cpp.o cpy.o
- DEFINES = -DCPP '-DINCLUDEDIR="/usr/include"'
+ CPPDEFS = -DCPP
   CPPSRC = CppSources
-
 #else
-
 #
 # But if you don't have cpp source...
 #
     SRCS = include.c main.c parse.c pr.c cppsetup.c
     OBJS = include.o main.o parse.o pr.o cppsetup.o
- DEFINES = '-DINCLUDEDIR="/usr/include"'
-
 #endif
 
+#if !HasVoidSignalReturn
+SIGPROCDEF = -DSIGNALRETURNSINT
+#endif
+
+ DEFINES = $(CPPDEFS) '-DINCLUDEDIR="/usr/include"' $(SIGPROCDEF)
  DEPLIBS =
 
 all:: makedepend
