@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.59 91/05/11 14:57:27 converse Exp $ */
+/* $XConsortium: Convert.c,v 1.60 91/06/13 17:46:47 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -807,14 +807,14 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
 				     p->converter, args, num_args,
 				     from, to, cache_ref_return, p);
 	    }
-	    else { /* is old-style (non-app) converter */
+	    else { /* is old-style (non-display) converter */
 		XrmValue tempTo;
 		XtDirectConvert((XtConverter)p->converter, args, num_args,
 				from, &tempTo);
 		if (cache_ref_return)
 		    *cache_ref_return = NULL;
 		if (tempTo.addr) {
-		    if (to->addr) {	/* new-style call */
+		    if (to->addr) {	/* new-style caller */
 			if (to->size >= tempTo.size) {
 			    if (to_type == _XtQString)
 				*(String*)(to->addr) = tempTo.addr;
@@ -824,7 +824,7 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
 			    retval = True;
 			}
 			to->size = tempTo.size;
-		    } else {	/* old-style call */
+		    } else {		/* old-style caller */
 			*to = tempTo;
 			retval = True;
 		    } 
