@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: TMparse.c,v 1.57 88/02/14 14:54:02 rws Exp $";
+static char rcsid[] = "$Header: TMparse.c,v 1.58 88/02/26 12:48:03 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -36,6 +36,10 @@ SOFTWARE.
 #include "IntrinsicI.h"
 #include "TMprivate.h"
 #include <X11/Convert.h>
+#ifndef NOTASCII
+#define XK_LATIN1
+#include <X11/keysymdef.h>
+#endif
 
 /* Private definitions. */
 #define LF 0x0a
@@ -511,42 +515,42 @@ static String ParseXtEventType(str, event, tmEventP)
     return str;
 }
 
-static unsigned int StrToHex(str)
+static unsigned long StrToHex(str)
     String str;
 {
     register char   c;
-    register int    val = 0;
+    register unsigned long    val = 0;
 
     while (c = *str) {
 	if ('0' <= c && c <= '9') val = val*16+c-'0';
 	else if ('a' <= c && c <= 'z') val = val*16+c-'a'+10;
 	else if ('A' <= c && c <= 'Z') val = val*16+c-'A'+10;
-	else return -1;
+	else return 0;
 	str++;
     }
 
     return val;
 }
 
-static unsigned int StrToOct(str)
+static unsigned long StrToOct(str)
     String str;
 {
     register char c;
-    register int  val = 0;
+    register unsigned long  val = 0;
 
     while (c = *str) {
-        if ('0' <= c && c <= '7') val = val*8+c-'0'; else return -1;
+        if ('0' <= c && c <= '7') val = val*8+c-'0'; else return 0;
 	str++;
     }
 
     return val;
 }
 
-static unsigned int StrToNum(str)
+static unsigned long StrToNum(str)
     String str;
 {
     register char c;
-    register int val = 0;
+    register unsigned long val = 0;
 
     if (*str == '0') {
 	str++;
@@ -556,7 +560,7 @@ static unsigned int StrToNum(str)
 
     while (c = *str) {
 	if ('0' <= c && c <= '9') val = val*10+c-'0';
-	else return -1;
+	else return 0;
 	str++;
     }
 
@@ -566,13 +570,23 @@ static unsigned int StrToNum(str)
 static KeySym XStringToKeySym(str)
     String str;
 {
+    KeySym sym;
 
-/* ||| replace this with real one when xlib has it... */
-
-    if (str == NULL) return (KeySym) 0;
-    if ('0' <= *str && *str <= '9') return (KeySym) StrToNum(str);
-    if ('A' <= *str && *str <= 'Z') return (KeySym) *str+'a'-'A';
-    return (KeySym) *str;
+    if (!str || !*str) return NoSymbol;
+#ifndef NOTASCII
+    /* special case single character ASCII, for speed */
+    if (!*(str+1)) {
+	/* XXX why are handling A-Z, but not upper case in general??? */
+	if ('A' <= *str && *str <= 'Z')
+	    return XK_a + (*str - 'A' + 'a');
+	if (' ' <= *str && *str <= '~')
+	    return XK_space + (*str - ' ');
+    }
+#endif
+    sym = XStringToKeysym(str);
+    if (sym == NoSymbol && '0' <= *str && *str <= '9')
+      sym = StrToNum(str);
+    return sym;
 }
 
 static String ParseImmed(str, closure, event)
@@ -1087,7 +1101,7 @@ static String ParseRepeat(str, eventP, actionsP)
 	str = ScanNumeric(str);
 	(void) strncpy(repStr, start, str-start);
 	repStr[str-start] = '\0';
-	reps = StrToNum(repStr);
+	reps = (int) StrToNum(repStr); /* XXX worry about overflow? */
     }
     else { Syntax("Missing number."); return ScanFor(str, ')'); }
     if (*str == '+') { plus = TRUE; str++; };
