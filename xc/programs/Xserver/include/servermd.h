@@ -21,7 +21,9 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: Xmd.h,v 1.21 87/08/31 12:17:17 toddb Exp $ */
+#ifndef SERVERMD_H
+#define SERVERMD_H 1
+/* $Header: servermd.h,v 1.21 87/08/31 12:17:17 toddb Locked $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -149,3 +151,4 @@ extern PaddingInfo PixmapWidthPaddingInfo[];
 
 #define GetBitFromPixel(pixel, plane, depth) \
     ((unsigned char) ((pixel) & (1 << (plane))))
+#endif SERVERMD_H
