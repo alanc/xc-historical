@@ -1,4 +1,4 @@
-/**/# platform:  $XConsortium: cray.cf,v 1.12 89/10/09 17:27:19 jim Exp $
+/**/# platform:  $XConsortium: cray.cf,v 1.13 89/11/17 16:40:58 jim Exp $
 
 
 /*
@@ -9,7 +9,7 @@
 
 #define OSName			UNICOS 5.1
 #define OSMajorVersion		5
-#define OSMinorVersion		1
+#define OSMinorVersion		0
 
 #define InstallCmd sh $(SCRIPTSRC)/install.sh
 #define RemoveTargetProgramByMoving YES
@@ -20,7 +20,12 @@
 #define BuildServer		NO
 #define HasVoidSignalReturn	YES
 #define NeedBerklibInXlib	NO
+#define HasInputExtension	NO
+#if OSMajorVersion >= 5 && OSMinorVersion >= 1
 #define CcCmd			scc
+#else
+#define CcCmd			cc
+#endif
 #define ExtensionDefines	-DSHAPE -DMULTIBUFFER -DMITMISC
 
 #if CRAY2 && !UNICOS6
@@ -38,11 +43,16 @@
 #define ExtraLoadFlags        -lnet
 #define ArCmd                 bld cr
 
+
 #ifdef CRAY1
-#define DefaultCDebugFlags    -halign
 #define Cray1Architecture
+#define DefaultCDebugFlags    -halign
 #else /* CRAY 2 */
-#define DefaultCDebugFlags    
 #define Cray2Architecture
+#if OSMajorVersion >= 5 && OSMinorVersion >= 1
+#define DefaultCDebugFalgs    -hsharelm
+#else
+#define DefaultCDebugFlags    -hsharelm -hnocache
+#endif
 #endif
 
