@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$Header: xedit.h,v 1.8 87/09/11 08:22:22 toddb Exp $";
+ *	rcs_id[] = "$Header: xedit.h,v 1.10 88/02/23 21:06:18 rws Exp $";
  */
 
 /*
@@ -29,14 +29,13 @@
 
 
 #include <stdio.h>
-#include <strings.h>
-#include <sys/file.h>
+#include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Intrinsic.h>
 
 #include <X11/cursorfont.h>
 #include <X11/Xatom.h>
-#include <X11/Atoms.h>
+#include <X11/StringDefs.h>
 #include <X11/Box.h>
 #include <X11/Clock.h>
 #include <X11/Command.h>
