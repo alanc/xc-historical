@@ -37,17 +37,6 @@ Xtransport	*Xtransports[] = {
 
 #define NUMTRANS	(sizeof(Xtransports)/sizeof(Xtransport *))
 
-/*
- * Connection Info table. This array keeps track of information unique to each
- * connection, such as the transport type and the address.
- * The transport index is stored in the table using
- * the fd as the index.
- */
-
-static
-XtransConnInfo **TRANS(conninfo) = NULL; /* Gets initialized at run time */
-
-#define GetConnectionInfo(fd)		TRANS(conninfo)[fd]
 
 #ifdef WIN32
 #define ESET(val) WSASetLastError(val)
@@ -59,42 +48,17 @@ XtransConnInfo **TRANS(conninfo) = NULL; /* Gets initialized at run time */
 
 
 /*
- * These a few utility function used by the public interface functions.
+ * These are a few utility function used by the public interface functions.
  */
-static void
-TRANS(SetConnInfo)(ciptr, trans)
-XtransConnInfo	*ciptr;
-Xtransport	*trans;
-{
-int	fd;
 
-PRMSG(3,"TRANS(SetConnInfo)(%x,%x)\n",ciptr, trans, 0);
-
-if( TRANS(conninfo) == NULL )
-	{
-	/* First call: allocate array */
-
-	TRANS(conninfo)=(XtransConnInfo **)calloc(100,sizeof(XtransConnInfo *));
-				/* XXXSTU This should be determined in a
-				   POSIX manner based on how many fds are
-				   configured. Similar thing was done in Xt. */
-	}
-
-fd=ciptr->fd;
-ciptr->transptr=trans;
-
-TRANS(conninfo)[fd]=ciptr;
-}
-
-static void
+#ifndef X11
+static
+#endif
+void
 TRANS(FreeConnInfo)(ciptr)
-XtransConnInfo	*ciptr;
+XtransConnInfo	ciptr;
 {
-int	fd;
-
 PRMSG(3,"TRANS(FreeConnInfo)(%x)\n",ciptr, 0, 0);
-
-fd=ciptr->fd;
 
 if(ciptr->addr)
 	free(ciptr->addr);
@@ -102,10 +66,9 @@ if(ciptr->addr)
 if(ciptr->peeraddr)
 	free(ciptr->peeraddr);
 
-free(ciptr);
-
-TRANS(conninfo)[fd]=NULL;
+free((char *) ciptr);
 }
+
 
 static Xtransport *
 TRANS(SelectTransport)(protocol)
@@ -151,6 +114,7 @@ char	**port;
  */
 char	*mybuf,*tmpptr;
 char	*_protocol,*_host,*_port;
+char	hostnamebuf[256];
 
 PRMSG(3,"TRANS(ParseAddress)(%s)\n",address, 0, 0);
 
@@ -229,7 +193,12 @@ if( (mybuf=strchr(mybuf,':')) == NULL )
 
 if( strlen(_host) == 0 )
 	{
+#if defined(UNIXCONN) || defined(LOCALCONN)
 	_host="local";
+#else
+	TRANS(GetHostname) (hostnamebuf, sizeof (hostnamebuf));
+	_host = hostnamebuf;
+#endif
 	}
 
 /* Check for DECnet */
@@ -300,13 +269,13 @@ return 1;
  * type of open to perform.
  */
 
-static int
+static XtransConnInfo
 TRANS(Open)(type, address)
 int	type;
 char	*address;
 {
 char *protocol=NULL, *host=NULL, *port=NULL;
-XtransConnInfo	*ciptr=NULL;
+XtransConnInfo	ciptr=NULL;
 Xtransport	*thistrans;
 
 PRMSG(2,"TRANS(Open)(%d,%s)\n",type,address,0);
@@ -316,7 +285,7 @@ PRMSG(2,"TRANS(Open)(%d,%s)\n",type,address,0);
 if( TRANS(ParseAddress)(address,&protocol,&host,&port) == 0 )
 	{
 	PRMSG(1,"TRANS(Open): Unable to Parse address %s\n", address, 0,0 );
-	return -1;
+	return NULL;
 	}
 
 /* Determine the transport type */
@@ -327,7 +296,7 @@ if( (thistrans=TRANS(SelectTransport)(protocol)) == NULL )
 	free(protocol);
 	free(host);
 	free(port);
-	return -1;
+	return NULL;
 	}
 
 /* Open the transport */
@@ -357,34 +326,25 @@ if( ciptr == NULL )
 	free(protocol);
 	free(host);
 	free(port);
-	return -1;
+	return NULL;
 	}
 
-TRANS(SetConnInfo)(ciptr,thistrans);
+ciptr->transptr = thistrans;
 
 free(protocol);
 free(host);
 free(port);
 
-return ciptr->fd;
+return ciptr;
 }
 
-#define	PASSTHRUCALL(func,args)	\
-Xtransport	*thistrans;	\
-XtransConnInfo	*ciptr;		\
-				\
-ciptr=GetConnectionInfo(fd);	\
-thistrans=ciptr->transptr;	\
-				\
-return thistrans->func args
-
 /*
  * These are the public interfaces to this Transport interface.
  * These are the only functions that should have knowledge of the transport
  * table.
  */
 
-int
+XtransConnInfo
 TRANS(OpenCOTSClient)(address)
 char	*address;
 {
@@ -392,7 +352,7 @@ PRMSG(2,"TRANS(OpenCOTSClient)(%s)\n", address, 0,0);
 return TRANS(Open)(XTRANS_OPEN_COTS_CLIENT, address);
 }
 
-int
+XtransConnInfo
 TRANS(OpenCOTSServer)(address)
 char	*address;
 {
@@ -400,7 +360,7 @@ PRMSG(2,"TRANS(OpenCOTSServer)(%s)\n", address, 0,0);
 return TRANS(Open)(XTRANS_OPEN_COTS_SERVER, address);
 }
 
-int
+XtransConnInfo
 TRANS(OpenCLTSClient)(address)
 char	*address;
 {
@@ -408,7 +368,7 @@ PRMSG(2,"TRANS(OpenCLTSClient)(%s)\n", address, 0,0);
 return TRANS(Open)(XTRANS_OPEN_CLTS_CLIENT, address);
 }
 
-int
+XtransConnInfo
 TRANS(OpenCLTSServer)(address)
 char	*address;
 {
@@ -416,12 +376,15 @@ PRMSG(2,"TRANS(OpenCLTSServer)(%s)\n", address, 0,0);
 return TRANS(Open)(XTRANS_OPEN_CLTS_SERVER, address);
 }
 
-void
-TRANS(SetOption)(fd, option, arg)
-int	fd;
-int	option;
-int	arg;
+int
+TRANS(SetOption)(ciptr, option, arg)
+XtransConnInfo	ciptr;
+int		option;
+int		arg;
 {
+int	fd = ciptr->fd;
+int	ret = 0;
+
 PRMSG(2,"TRANS(SetOption)(%d,%d,%d)\n", fd, option, arg);
 /*
  * For now, all transport type use the same stuff for setting options.
@@ -430,8 +393,9 @@ PRMSG(2,"TRANS(SetOption)(%d,%d,%d)\n", fd, option, arg);
  * uses the session and application libraries is implemented, this code may
  * have to move to a transport dependent function.
  *
- * PASSTHRUCALL(SetOption,(ciptr, fd, option, arg));
+ * ret = ciptr->transptr->SetOption(ciptr, option, arg);
  */
+
 switch(option)
 	{
 	case TRANS_NONBLOCKING:
@@ -442,23 +406,27 @@ switch(option)
 				break;
 			case 1: /* Set to non-blocking mode */
 #if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux) && !defined(AIXV3) && !defined(uniosu))
-        			(void) fcntl (fd, F_SETFL, O_NONBLOCK);
+        			ret = fcntl (fd, F_SETFL, O_NONBLOCK);
 #else
 #ifdef FIOSNBIO
         			{
             				int arg;
             				arg = 1;
-            				ioctl(fd, FIOSNBIO, &arg);
+            				ret = ioctl(fd, FIOSNBIO, &arg);
         			}
 #else
 #if (defined(AIXV3) || defined(uniosu) || defined(WIN32)) && defined(FIONBIO)
         			{
             				int arg;
             				arg = 1;
-            				ioctl(fd, FIONBIO, &arg);
+            				ret = ioctl(fd, FIONBIO, &arg);
         			}
 #else
-					fcntl (fd, F_SETFL, FNDELAY);
+#ifdef FNDELAY
+    				ret = fcntl (fd, F_SETFL, FNDELAY);
+#else
+    				ret = fcntl (fd, F_SETFL, O_NDELAY);
+#endif
 #endif /* AIXV3  || uniosu */
 #endif /* FIOSNBIO */
 #endif /* O_NONBLOCK */
@@ -471,62 +439,52 @@ switch(option)
 	case TRANS_CLOSEONEXEC:
 #ifdef F_SETFD
 #ifdef FD_CLOEXEC
-		(void) fcntl (fd, F_SETFD, FD_CLOEXEC);
+		ret = fcntl (fd, F_SETFD, FD_CLOEXEC);
 #else
-		(void) fcntl (fd, F_SETFD, 1);
+		ret = fcntl (fd, F_SETFD, 1);
 #endif /* FD_CLOEXEC */
 #endif /* F_SETFD */
 		break;
-	case TRANS_COALESCENCE:
-		break;
 	}
+
+return ret;
 }
 
 int
-TRANS(CreateListener)(fd, port)
-int	fd;
-char	*port;
+TRANS(CreateListener)(ciptr, port)
+XtransConnInfo	ciptr;
+char		*port;
 {
-PASSTHRUCALL(CreateListener,(ciptr, fd, port));
+return ciptr->transptr->CreateListener(ciptr, port);
 }
 
-TRANS(Accept)(fd)
-int	fd;
+XtransConnInfo
+TRANS(Accept)(ciptr)
+XtransConnInfo	ciptr;
 {
-Xtransport	*thistrans;
-XtransConnInfo	*ciptr;
-XtransConnInfo	*newciptr;
+XtransConnInfo	newciptr;
 
-PRMSG(2,"TRANS(Accept)(%d)\n", fd, 0,0);
+PRMSG(2,"TRANS(Accept)(%d)\n", ciptr->fd, 0,0);
 
-ciptr=GetConnectionInfo(fd);
-thistrans=ciptr->transptr;
+newciptr=ciptr->transptr->Accept(ciptr);
 
-newciptr=thistrans->Accept(ciptr,fd);
+if (newciptr)
+    newciptr->transptr = ciptr->transptr;
 
-if( newciptr == NULL)
-	return -1;
-
-TRANS(SetConnInfo)(newciptr,thistrans);
-
-return newciptr->fd;
+return newciptr;
 }
 
-TRANS(Connect)(fd, address)
-int	fd;
-char	*address;
+int
+TRANS(Connect)(ciptr, address)
+XtransConnInfo	ciptr;
+char		*address;
 {
-Xtransport	*thistrans;
-XtransConnInfo	*ciptr;
 char	*protocol;
 char	*host;
 char	*port;
 int	ret;
 
-PRMSG(2,"TRANS(Connect)(%d,%s)\n", fd, address, 0);
-
-ciptr=GetConnectionInfo(fd);
-thistrans=ciptr->transptr;
+PRMSG(2,"TRANS(Connect)(%d,%s)\n", ciptr->fd, address, 0);
 
 if( TRANS(ParseAddress)(address,&protocol,&host,&port) == 0 )
 	{
@@ -543,7 +501,7 @@ if( !port || !*port )
 	return -1;
 	}
 
-ret=thistrans->Connect(ciptr, fd, host, port);
+ret=ciptr->transptr->Connect(ciptr, host, port);
 
 if(protocol) free(protocol);
 if(host) free(host);
@@ -552,128 +510,132 @@ if(port) free(port);
 return ret;
 }
 
-TRANS(BytesReadable)(fd, pend)
-int	fd;
+int
+TRANS(BytesReadable)(ciptr, pend)
+XtransConnInfo	ciptr;
 BytesReadable_t	*pend;
 {
-PASSTHRUCALL(BytesReadable,(ciptr, fd, pend));
+return ciptr->transptr->BytesReadable(ciptr, pend);
 }
 
-TRANS(Read)(fd, buf, size)
-int	fd;
-char	*buf;
-int	size;
+int
+TRANS(Read)(ciptr, buf, size)
+XtransConnInfo	ciptr;
+char		*buf;
+int		size;
 {
-PASSTHRUCALL(Read,(ciptr, fd, buf, size));
+return ciptr->transptr->Read(ciptr, buf, size);
 }
 
-TRANS(Write)(fd, buf, size)
-int	fd;
-char	*buf;
-int	size;
+int
+TRANS(Write)(ciptr, buf, size)
+XtransConnInfo	ciptr;
+char		*buf;
+int		size;
 {
-PASSTHRUCALL(Write,(ciptr, fd, buf, size));
+return ciptr->transptr->Write(ciptr, buf, size);
 }
 
-TRANS(Readv)(fd, buf, size)
-int		fd;
+int
+TRANS(Readv)(ciptr, buf, size)
+XtransConnInfo	ciptr;
 struct iovec	*buf;
 int		size;
 {
-PASSTHRUCALL(Readv,(ciptr, fd, buf, size));
+return ciptr->transptr->Readv(ciptr, buf, size);
 }
 
-TRANS(Writev)(fd, buf, size)
-int		fd;
+int
+TRANS(Writev)(ciptr, buf, size)
+XtransConnInfo	ciptr;
 struct iovec	*buf;
 int		size;
 {
-PASSTHRUCALL(Writev,(ciptr, fd, buf, size));
+return ciptr->transptr->Writev(ciptr, buf, size);
 }
 
-TRANS(Disconnect)(fd)
-int	fd;
+int
+TRANS(Disconnect)(ciptr)
+XtransConnInfo	ciptr;
 {
-PASSTHRUCALL(Disconnect,(ciptr, fd));
+return ciptr->transptr->Disconnect(ciptr);
 }
 
-TRANS(Close)(fd)
-int	fd;
+int
+TRANS(Close)(ciptr)
+XtransConnInfo	ciptr;
 {
-Xtransport	*thistrans;
-XtransConnInfo	*ciptr;
+int ret;
 
-PRMSG(2,"TRANS(Close)(%d)\n", fd, 0,0);
+PRMSG(2,"TRANS(Close)(%d)\n", ciptr->fd, 0,0);
 
-ciptr=GetConnectionInfo(fd);
-thistrans=ciptr->transptr;
-
-thistrans->Close(ciptr,fd);
+ret = ciptr->transptr->Close(ciptr);
 
 TRANS(FreeConnInfo)(ciptr);
+
+return ret;
 }
 
 #ifdef not_yet
-TRANS(NameToAddr)(int fd /*???what else???*/ )
+TRANS(NameToAddr)(XtransConnInfo ciptr /*???what else???*/ )
 {
 }
 
-TRANS(AddrToName)(int fd /*???what else???*/ )
+TRANS(AddrToName)(XtransConnInfo ciptr /*???what else???*/ )
 {
 }
 #endif
 
-void
-TRANS(GetMyAddr)(fd, familyp, addrlenp, addrp)
-int		fd;
+int
+TRANS(GetMyAddr)(ciptr, familyp, addrlenp, addrp)
+XtransConnInfo	ciptr;
 int		*familyp;
 int		*addrlenp;
 Xtransaddr	**addrp;
 {
-Xtransaddr	*addr;
-XtransConnInfo	*ciptr;
+PRMSG(2,"TRANS(GetMyAddr)(%d)\n", ciptr->fd, 0,0);
 
-PRMSG(2,"TRANS(GetMyAddr)(%d)\n", fd, 0,0);
-
-ciptr=GetConnectionInfo(fd);
 *familyp=ciptr->family;
 *addrlenp=ciptr->addrlen;
-if( (addr=(Xtransaddr *)malloc(ciptr->addrlen)) == NULL )
+if( (*addrp=(Xtransaddr *)malloc(ciptr->addrlen)) == NULL )
 	{
 	PRMSG(1,"TRANS(GetMyAddr) malloc failed\n", 0,0,0 );
-	return;
+	return -1;
 	}
-memcpy(addr,ciptr->addr,ciptr->addrlen);
-*addrp=addr;
+memcpy(*addrp,ciptr->addr,ciptr->addrlen);
 
-return;
+return 0;
 }
 
-void
-TRANS(GetPeerAddr)(fd, familyp, addrlenp, addrp )
-int		fd;
+int
+TRANS(GetPeerAddr)(ciptr, familyp, addrlenp, addrp )
+XtransConnInfo	ciptr;
 int		*familyp;
 int		*addrlenp;
 Xtransaddr	**addrp;
 {
-Xtransaddr	*addr;
-XtransConnInfo	*ciptr;
+PRMSG(2,"TRANS(GetPeerAddr)(%d)\n", ciptr->fd, 0,0);
 
-PRMSG(2,"TRANS(GetPeerAddr)(%d)\n", fd, 0,0);
-
-ciptr=GetConnectionInfo(fd);
 *familyp=ciptr->family;
 *addrlenp=ciptr->peeraddrlen;
-if( (addr=(Xtransaddr *)malloc(ciptr->peeraddrlen)) == NULL )
+if( (*addrp=(Xtransaddr *)malloc(ciptr->peeraddrlen)) == NULL )
 	{
 	PRMSG(1,"TRANS(GetMyAddr) malloc failed\n", 0,0,0 );
-	return;
+	return -1;
 	}
-memcpy(addr,ciptr->peeraddr,ciptr->peeraddrlen);
-*addrp=addr;
+memcpy(*addrp,ciptr->peeraddr,ciptr->peeraddrlen);
 
-return;
+return 0;
 }
+
+
+int
+TRANS(GetConnectionNumber)(ciptr)
+XtransConnInfo	ciptr;
+{
+    return ciptr->fd;
+}
+
 
 /*
  * These functions are really utility functions, but they require knowledge
@@ -681,15 +643,19 @@ return;
  * Independant API.
  */
 
-void
-TRANS(MakeAllCOTSServerListeners)(port, fds)
-char	*port;
-FdMask	*fds;
+int
+TRANS(MakeAllCOTSServerListeners)(port, count_ret, ciptrs_ret)
+char		*port;
+int		*count_ret;
+XtransConnInfo 	**ciptrs_ret;
 {
-int	i, fd;
+int	i;
 char	buffer[256]; /* ??? What size ?? */
+XtransConnInfo	ciptr, temp_ciptrs[NUMTRANS];
 
-PRMSG(2,"TRANS(MakeAllCOTSServerListeners)(%s,%x)\n",port,fds,0);
+PRMSG(2,"TRANS(MakeAllCOTSServerListeners)(%s,%x)\n",port,ciptrs_ret,0);
+
+*count_ret = 0;
 
 for(i=0;i<NUMTRANS;i++)
 	{
@@ -697,38 +663,60 @@ for(i=0;i<NUMTRANS;i++)
 		continue;
 	sprintf(buffer,"%s/:%s", Xtransports[i]->TransName, port );
 	PRMSG(5,"TRANS(MakeAllCOTSServerListeners) opening %s\n", buffer,0,0 );
-	if( (fd=TRANS(OpenCOTSServer(buffer))) < 0 )
+	if( (ciptr=TRANS(OpenCOTSServer(buffer))) == NULL )
 		{
 		PRMSG(1,
 	"TRANS(MakeAllCOTSServerListeners) failed to open listener for %s\n",
-					Xtransports[i]->TransName,0,0 );
+				Xtransports[i]->TransName,0,0 );
 		continue;
 		}
-	if( TRANS(CreateListener(fd,port)) < 0 )
+	if( TRANS(CreateListener(ciptr,port)) < 0 )
 		{
 		PRMSG(1,
 	"TRANS(MakeAllCOTSServerListeners) failed to create listener for %s\n",
-					Xtransports[i]->TransName, 0,0 );
+				Xtransports[i]->TransName, 0,0 );
 		continue;
 		}
 	PRMSG(5,
 	"TRANS(MakeAllCOTSServerListeners) opened listener for %s, %d\n",
-					Xtransports[i]->TransName, fd, 0 );
-	*fds |= (((FdMask)1) << fd);
+				Xtransports[i]->TransName, ciptr->fd, 0 );
+
+	temp_ciptrs[*count_ret] = ciptr;
+	(*count_ret)++;
 	}
 
-return;
+if (*count_ret > 0)
+{
+    if ((*ciptrs_ret = (XtransConnInfo *) malloc (
+	*count_ret * sizeof (XtransConnInfo))) == NULL)
+    {
+	return -1;
+    }
+
+    for (i = 0; i < *count_ret; i++)
+    {
+	(*ciptrs_ret)[i] = temp_ciptrs[i];
+    }
+}
+else
+    *ciptrs_ret = NULL;
+ 
+return 0;
 }
 
-void
-TRANS(MakeAllCLTSServerListeners)(port, fds)
-char	*port;
-FdMask	*fds;
+int
+TRANS(MakeAllCLTSServerListeners)(port, count_ret, ciptrs_ret)
+char		*port;
+int		*count_ret;
+XtransConnInfo 	**ciptrs_ret;
 {
-int	i, fd;
+int	i;
 char	buffer[256]; /* ??? What size ?? */
+XtransConnInfo	ciptr, temp_ciptrs[NUMTRANS];
 
-PRMSG(2,"TRANS(MakeAllCLTSServerListeners)(%s,%x)\n",port,fds,0);
+PRMSG(2,"TRANS(MakeAllCLTSServerListeners)(%s,%x)\n",port,ciptrs_ret,0);
+
+*count_ret = 0;
 
 for(i=0;i<NUMTRANS;i++)
 	{
@@ -736,27 +724,44 @@ for(i=0;i<NUMTRANS;i++)
 		continue;
 	sprintf(buffer,"%s/:%s", Xtransports[i]->TransName, port );
 	PRMSG(5,"TRANS(MakeAllCLTSServerListeners) opening %s\n", buffer,0,0 );
-	if( (fd=TRANS(OpenCLTSServer(buffer))) < 0 )
+	if( (ciptr=TRANS(OpenCLTSServer(buffer))) == NULL )
 		{
 		PRMSG(1,
 	"TRANS(MakeAllCLTSServerListeners) failed to open listener for %s\n",
-					Xtransports[i]->TransName,0,0 );
+				Xtransports[i]->TransName,0,0 );
 		continue;
 		}
-	if( TRANS(CreateListener(fd,port)) < 0 )
+	if( TRANS(CreateListener(ciptr,port)) < 0 )
 		{
 		PRMSG(1,
 	"TRANS(MakeAllCLTSServerListeners) failed to create listener for %s\n",
-					Xtransports[i]->TransName, 0,0 );
+				Xtransports[i]->TransName, 0,0 );
 		continue;
 		}
 	PRMSG(5,
 	"TRANS(MakeAllCLTSServerListeners) opened listener for %s, %d\n",
-					Xtransports[i]->TransName, fd, 0 );
-	*fds |= (((FdMask)1) << fd);
+				Xtransports[i]->TransName, ciptr->fd, 0 );
+	temp_ciptrs[*count_ret] = ciptr;
+	(*count_ret)++;
 	}
 
-return;
+if (*count_ret > 0)
+{
+    if ((*ciptrs_ret = (XtransConnInfo *) malloc (
+	*count_ret * sizeof (XtransConnInfo))) == NULL)
+    {
+	return -1;
+    }
+
+    for (i = 0; i < *count_ret; i++)
+    {
+	(*ciptrs_ret)[i] = temp_ciptrs[i];
+    }
+}
+else
+    *ciptrs_ret = NULL;
+
+return 0;
 }
 
 /*
@@ -769,10 +774,10 @@ return;
  */
 #include <sys/socket.h> /* why is this needed?? */
 
-int TRANS(ReadV) (fd, iov, iovcnt)
-int fd;
-struct iovec *iov;
-int iovcnt;
+int TRANS(ReadV) (ciptr, iov, iovcnt)
+XtransConnInfo	ciptr;
+struct iovec 	*iov;
+int 		iovcnt;
 {
 	struct msghdr hdr;
 
@@ -783,13 +788,13 @@ int iovcnt;
 	hdr.msg_name = 0;
 	hdr.msg_namelen = 0;
 
-	return (recvmsg (fd, &hdr, 0));
+	return (recvmsg (ciptr->fd, &hdr, 0));
 }
 
-int TRANS(WriteV) (fd, iov, iovcnt)
-int fd;
-struct iovec *iov;
-int iovcnt;
+int TRANS(WriteV) (ciptr, iov, iovcnt)
+XtransConnInfo	ciptr;
+struct iovec 	*iov;
+int 		iovcnt;
 {
 	struct msghdr hdr;
 
@@ -800,7 +805,7 @@ int iovcnt;
 	hdr.msg_name = 0;
 	hdr.msg_namelen = 0;
 
-	return (sendmsg (fd, &hdr, 0));
+	return (sendmsg (ciptr->fd, &hdr, 0));
 }
 
 #endif /* CRAY */
@@ -810,10 +815,10 @@ int iovcnt;
  * SYSV/386 and WIN32 do not have readv so we emulate
  */
 
-int TRANS(ReadV) (fd, iov, iovcnt)
-int fd;
-struct iovec *iov;
-int iovcnt;
+int TRANS(ReadV) (ciptr, iov, iovcnt)
+XtransConnInfo	ciptr;
+struct iovec 	*iov;
+int 		iovcnt;
 {
     int i, len, total;
     char *base;
@@ -824,7 +829,7 @@ int iovcnt;
 	base = iov->iov_base;
 	while (len > 0) {
 	    register int nbytes;
-	    nbytes = TRANS(Read)(fd, base, len);
+	    nbytes = TRANS(Read)(ciptr->fd, base, len);
 	    if (nbytes < 0 && total == 0)  return -1;
 	    if (nbytes <= 0)  return total;
 	    ESET(0);
@@ -843,10 +848,10 @@ int iovcnt;
  * WIN32 does not have readv so we emulate
  */
 
-int TRANS(WriteV) (fd, iov, iovcnt)
-    int fd;
-    struct iovec *iov;
-    int iovcnt;
+int TRANS(WriteV) (ciptr, iov, iovcnt)
+XtransConnInfo	ciptr;
+struct iovec 	*iov;
+int 		iovcnt;
 {
     int i, len, total;
     char *base;
@@ -857,7 +862,7 @@ int TRANS(WriteV) (fd, iov, iovcnt)
 	base = iov->iov_base;
 	while (len > 0) {
 	    register int nbytes;
-	    nbytes = TRANS(Write)(fd, base, len);
+	    nbytes = TRANS(Write)(ciptr->fd, base, len);
 	    if (nbytes < 0 && total == 0)  return -1;
 	    if (nbytes <= 0)  return total;
 	    ESET(0);
@@ -869,3 +874,35 @@ int TRANS(WriteV) (fd, iov, iovcnt)
     return total;
 }
 #endif /* WIN32 */
+
+
+#if (defined(_POSIX_SOURCE) && !defined(AIXV3)) || defined(hpux) || defined(USG) || defined(SVR4)
+#define NEED_UTSNAME
+#include <sys/utsname.h>
+#endif
+
+/*
+ * TRANS(GetHostname) - similar to gethostname but allows special processing.
+ */
+int TRANS(GetHostname) (buf, maxlen)
+    char *buf;
+    int maxlen;
+{
+    int len;
+
+#ifdef NEED_UTSNAME
+    struct utsname name;
+
+    uname (&name);
+    len = strlen (name.nodename);
+    if (len >= maxlen) len = maxlen - 1;
+    strncpy (buf, name.nodename, len);
+    buf[len] = '\0';
+#else
+    buf[0] = '\0';
+    (void) gethostname (buf, maxlen);
+    buf [maxlen - 1] = '\0';
+    len = strlen(buf);
+#endif /* NEED_UTSNAME */
+    return len;
+}

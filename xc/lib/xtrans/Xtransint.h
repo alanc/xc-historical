@@ -44,10 +44,15 @@
 */
 #ifdef DEBUG
 #include <stdio.h>
-#include <errno.h>
 #endif /* DEBUG */
 
-typedef struct  _XtransConnInfo {
+#include <errno.h>
+
+#ifdef X_NOT_STDC_ENV
+extern int  errno;		/* Internal system error number. */
+#endif
+
+struct _XtransConnInfo {
 	struct _Xtransport     *transptr;
 	char	*priv;
 	int	flags;
@@ -57,36 +62,145 @@ typedef struct  _XtransConnInfo {
 	int	addrlen;
 	char	*peeraddr;
 	int	peeraddrlen;
-} XtransConnInfo;
+};
+
+#define XTRANS_OPEN_COTS_CLIENT       1
+#define XTRANS_OPEN_COTS_SERVER       2
+#define XTRANS_OPEN_CLTS_CLIENT       3
+#define XTRANS_OPEN_CLTS_SERVER       4
+
 
 typedef struct _Xtransport {
 	char	*TransName;
 	int	flags;
-	XtransConnInfo	*(*OpenCOTSClient)(struct _Xtransport *, char *,
-							char *, char *);
-#define XTRANS_OPEN_COTS_CLIENT       1
-	XtransConnInfo *(*OpenCOTSServer)(struct _Xtransport *, char *,
-							char *, char *);
-#define XTRANS_OPEN_COTS_SERVER       2
-	XtransConnInfo	*(*OpenCLTSClient)(struct _Xtransport *, char *,
-							char *, char *);
-#define XTRANS_OPEN_CLTS_CLIENT       3
-	XtransConnInfo	*(*OpenCLTSServer)(struct _Xtransport *, char *,
-							char *, char *);
-#define XTRANS_OPEN_CLTS_SERVER       4
-	int	(*SetOption)(struct _XtransConnInfo *, int, int, int);
-	int	(*CreateListener)(struct _XtransConnInfo *, int, char *);
-	XtransConnInfo	*(*Accept)(struct _XtransConnInfo *, int);
-	int	(*Connect)(struct _XtransConnInfo *, int, char *, char *);
-	int	(*BytesReadable)(struct _XtransConnInfo *, int, BytesReadable_t *);
-	int	(*Read)(struct _XtransConnInfo *, int, char *, int);
-	int	(*Write)(struct _XtransConnInfo *, int, char *, int);
-	int	(*Readv)(struct _XtransConnInfo *, int, struct iovec *, int);
-	int	(*Writev)(struct _XtransConnInfo *, int, struct iovec *, int);
-	int	(*Disconnect)(struct _XtransConnInfo *, int);
-	int	(*Close)(struct _XtransConnInfo *, int);
-	int	(*NameToAddr)(struct _XtransConnInfo *, int);
-	int	(*AddrToName)(struct _XtransConnInfo *, int);
+
+	XtransConnInfo (*OpenCOTSClient)(
+#if NeedFunctionPrototypes
+		struct _Xtransport *,
+		char *,
+		char *,
+		char *
+#endif
+);
+
+	XtransConnInfo (*OpenCOTSServer)(
+#if NeedFunctionPrototypes
+		struct _Xtransport *,
+		char *,
+		char *,
+		char *
+#endif
+);
+
+	XtransConnInfo (*OpenCLTSClient)(
+#if NeedFunctionPrototypes
+		struct _Xtransport *,
+		char *,
+		char *,
+		char *
+#endif
+);
+
+	XtransConnInfo (*OpenCLTSServer)(
+#if NeedFunctionPrototypes
+		struct _Xtransport *,
+		char *,
+		char *,
+		char *
+#endif
+);
+
+	int	(*SetOption)(
+#if NeedFunctionPrototypes
+		XtransConnInfo,
+		int,
+		int
+#endif
+);
+
+	int	(*CreateListener)(
+#if NeedFunctionPrototypes
+		XtransConnInfo,
+		char *
+#endif
+);
+
+	XtransConnInfo (*Accept)(
+#if NeedFunctionPrototypes
+		XtransConnInfo
+#endif
+);
+
+	int	(*Connect)(
+#if NeedFunctionPrototypes
+		XtransConnInfo,
+		char *,
+		char *
+#endif
+);
+
+	int	(*BytesReadable)(
+#if NeedFunctionPrototypes
+		XtransConnInfo,
+		BytesReadable_t *
+#endif
+);
+
+	int	(*Read)(
+#if NeedFunctionPrototypes
+		XtransConnInfo,
+		char *,
+		int
+#endif
+);
+
+	int	(*Write)(
+#if NeedFunctionPrototypes
+		XtransConnInfo,
+		char *,
+		int
+#endif
+);
+
+	int	(*Readv)(
+#if NeedFunctionPrototypes
+		XtransConnInfo,
+		struct iovec *,
+		int
+#endif
+);
+
+	int	(*Writev)(
+#if NeedFunctionPrototypes
+		XtransConnInfo,
+		struct iovec *,
+		int
+#endif
+);
+
+	int	(*Disconnect)(
+#if NeedFunctionPrototypes
+		XtransConnInfo
+#endif
+);
+
+	int	(*Close)(
+#if NeedFunctionPrototypes
+		XtransConnInfo
+#endif
+);
+
+	int	(*NameToAddr)(
+#if NeedFunctionPrototypes
+		XtransConnInfo
+#endif
+);
+
+	int	(*AddrToName)(
+#if NeedFunctionPrototypes
+		XtransConnInfo
+#endif
+);
 	} Xtransport;
 
 /*
@@ -100,21 +214,21 @@ typedef struct _Xtransport {
  */
 #if defined(CRAY) || (defined(SYSV) && defined(SYSV386)) || defined(WIN32)
 
-#define READV(fd, iov, iovcnt)	TRANS(ReadV)(fd, iov, iovcnt)
+#define READV(ciptr, iov, iovcnt)	TRANS(ReadV)(ciptr, iov, iovcnt)
 
 static	int TRANS(ReadV)(
 #if NeedFunctionPrototypes
-    int,		/* fd */
+    XtransConnInfo,	/* ciptr */
     struct iovec *,	/* iov */
     int			/* iovcnt */
 #endif
 );
 
-#define WRITEV(fd, iov, iovcnt)	TRANS(WriteV)(fd, iov, iovcnt)
+#define WRITEV(ciptr, iov, iovcnt)	TRANS(WriteV)(ciptr, iov, iovcnt)
 
 static int TRANS(WriteV)(
 #if NeedFunctionPrototypes
-    int,		/* fd */
+    XtransConnInfo,	/* ciptr */
     struct iovec *,	/* iov */
     int 		/* iovcnt */
 #endif
@@ -122,8 +236,8 @@ static int TRANS(WriteV)(
 
 #else
 
-#define READV(fd, iov, iovcnt)	readv(fd, iov, iovcnt)
-#define WRITEV(fd, iov, iovcnt)	writev(fd, iov, iovcnt)
+#define READV(ciptr, iov, iovcnt)	readv(ciptr->fd, iov, iovcnt)
+#define WRITEV(ciptr, iov, iovcnt)	writev(ciptr->fd, iov, iovcnt)
 
 #endif /* CRAY || (SYSV && SYSV386) || WIN32 */
 

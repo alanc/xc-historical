@@ -81,12 +81,6 @@ typedef int BytesReadable_t;
 typedef long BytesReadable_t;
 #endif
 
-#ifdef LONG64
-typedef unsigned int FdMask;
-#else
-typedef unsigned long FdMask;
-#endif
-
 /*
  * Some useful #defines
  */
@@ -114,7 +108,6 @@ typedef	union {
  */
 #define TRANS_NONBLOCKING	1
 #define	TRANS_CLOSEONEXEC	2
-#define	TRANS_COALESCENCE	3
 
 /*
  * Some WIN32 stuff
@@ -163,145 +156,174 @@ struct iovec {
 #define NULL 0
 #endif
 
+typedef struct _XtransConnInfo *XtransConnInfo;
+
+
+/*
+ * Return values of Connect (0 is success)
+ */
+
+#ifndef TRANS_CONNECT_FAILED
+#define TRANS_CONNECT_FAILED -1
+#endif
+
+#ifndef TRANS_TRY_CONNECT_AGAIN
+#define TRANS_TRY_CONNECT_AGAIN -2
+#endif
+
 
 /*
  * Function prototypes for the exposed interface
  */
-int TRANS(OpenCOTSClient)(
+XtransConnInfo TRANS(OpenCOTSClient)(
 #if NeedFunctionPrototypes
     char *		/* address */
 #endif
 );
-int TRANS(OpenCOTSServer)(
+XtransConnInfo TRANS(OpenCOTSServer)(
 #if NeedFunctionPrototypes
     char *		/* address */
 #endif
 );
-int TRANS(OpenCLTSClient)(
+XtransConnInfo TRANS(OpenCLTSClient)(
 #if NeedFunctionPrototypes
     char *		/* address */
 #endif
 );
-int TRANS(OpenCLTSServer)(
+XtransConnInfo TRANS(OpenCLTSServer)(
 #if NeedFunctionPrototypes
     char *		/* address */
+#endif
+);
+int TRANS(SetOption)(
+#if NeedFunctionPrototypes
+    XtransConnInfo,	/* ciptr */
+    int,		/* option */
+    int			/* arg */
 #endif
 );
 int TRANS(CreateListener)(
 #if NeedFunctionPrototypes
-    int,		/* fd */
+    XtransConnInfo,	/* ciptr */
     char *		/* port */
 #endif
 );
-int TRANS(Listen)(
+XtransConnInfo TRANS(Accept)(
 #if NeedFunctionPrototypes
-    int			/* fd */
-#endif
-);
-int TRANS(Accept)(
-#if NeedFunctionPrototypes
-    int			/* fd */
+    XtransConnInfo	/* ciptr */
 #endif
 );
 int TRANS(Connect)(
 #if NeedFunctionPrototypes
-    int,		/* fd */
+    XtransConnInfo,	/* ciptr */
     char *		/* address */
 #endif
 );
 int TRANS(BytesReadable)(
 #if NeedFunctionPrototypes
-    int,		/* fd */
+    XtransConnInfo,	/* ciptr */
     BytesReadable_t *	/* pend */
-#endif
-);
-void TRANS(SetOption)(
-#if NeedFunctionPrototypes
-    int,		/* fd */
-    int,		/* option */
-    int			/* arg */
 #endif
 );
 int TRANS(Read)(
 #if NeedFunctionPrototypes
-    int,		/* fd */
+    XtransConnInfo,	/* ciptr */
     char *,		/* buf */
     int			/* size */
 #endif
 );
 int TRANS(Write)(
 #if NeedFunctionPrototypes
-    int,		/* fd */
+    XtransConnInfo,	/* ciptr */
     char *,		/* buf */
     int			/* size */
 #endif
 );
 int TRANS(Readv)(
 #if NeedFunctionPrototypes
-    int,		/* fd */
+    XtransConnInfo,	/* ciptr */
     struct iovec *,	/* buf */
     int			/* size */
 #endif
 );
 int TRANS(Writev)(
 #if NeedFunctionPrototypes
-    int,		/* fd */
+    XtransConnInfo,	/* ciptr */
     struct iovec *,	/* buf */
     int			/* size */
 #endif
 );
 int TRANS(Disconnect)(
 #if NeedFunctionPrototypes
-    int			/* fd */
+    XtransConnInfo	/* ciptr */
 #endif
 );
 int TRANS(Close)(
 #if NeedFunctionPrototypes
-    int			/* fd */
+    XtransConnInfo	/* ciptr */
 #endif
 );
 int TRANS(NameToAddr)(
 #if NeedFunctionPrototypes
-    int			/* fd */
+    XtransConnInfo	/* ciptr */
 #endif
 );
 int TRANS(AddrToName)(
 #if NeedFunctionPrototypes
-    int			/* fd */
+    XtransConnInfo	/* ciptr */
 #endif
 );
-void TRANS(GetMyAddr)(
+int TRANS(GetMyAddr)(
 #if NeedFunctionPrototypes
-    int,		/* fd */
+    XtransConnInfo,	/* ciptr */
     int *,		/* familyp */
     int *,		/* addrlenp */
     Xtransaddr **	/* addrp */
 #endif
 );
-void TRANS(GetPeerAddr)(
+int TRANS(GetPeerAddr)(
 #if NeedFunctionPrototypes
-    int,		/* fd */
+    XtransConnInfo,	/* ciptr */
     int *,		/* familyp */
     int *,		/* addrlenp */
     Xtransaddr **	/* addrp */
 #endif
 );
-void TRANS(MakeAllCOTSServerListeners)(
+int TRANS(GetConnectionNumber)(
 #if NeedFunctionPrototypes
-    char *,		/* port */
-    FdMask *		/* fds */
+    XtransConnInfo	/* ciptr */
 #endif
 );
-void TRANS(MakeAllCLTSServerListeners)(
+int TRANS(MakeAllCOTSServerListeners)(
 #if NeedFunctionPrototypes
     char *,		/* port */
-    FdMask *		/* fds */
+    int *,		/* count_ret */
+    XtransConnInfo **	/* ciptrs_ret */
+#endif
+);
+int TRANS(MakeAllCLTSServerListeners)(
+#if NeedFunctionPrototypes
+    char *,		/* port */
+    int *,		/* count_ret */
+    XtransConnInfo **	/* ciptrs_ret */
 #endif
 );
 
 /*
  * Function Prototypes for Utility Functions.
  */
+
+#ifdef X11
+
+int TRANS(ConvertAddress)(
+#if NeedFunctionPrototypes
+    int *,		/* familyp */
+    int *,		/* addrlenp */
+    Xtransaddr *	/* addrp */
+#endif
+);
+
+#endif /* X11 */
 
 #ifdef ICE
 
@@ -323,23 +345,6 @@ TRANS(GetPeerNetworkId)(
 #endif
 );
 
-#endif
-
-int TRANS(ConvertAddress)(
-#if NeedFunctionPrototypes
-    int *,		/* familyp */
-    int *,		/* addrlenp */
-    Xtransaddr *	/* addrp */
-#endif
-);
-
-#ifdef X11
-void _X11TransCreateWellKnowListeners(
-#if NeedFunctionPrototypes
-    char *,		/* port */
-    FdMask *		/* fds */
-#endif
-);
-#endif /* X11 */
+#endif /* ICE */
 
 #endif /* _XTRANS_H */

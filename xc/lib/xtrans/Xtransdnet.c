@@ -1,9 +1,11 @@
+#include <netdnet/dn.h>
+#include <netdnet/dnetdb.h>
 
 /*
  * This is the DNET implementation of the X Transport service layer
  */
 
-static XtransConnInfo *
+static XtransConnInfo
 TRANS(DNETOpenCOTSClient)(thistrans, protocol, host, port)
 Xtransport	*thistrans;
 char		*protocol;
@@ -15,7 +17,7 @@ PRMSG(1,"TRANS(DNETOpenCOTSClient)(%s,%s,%s) - Not Implemented\n",
 return NULL;
 }
 
-static XtransConnInfo *
+static XtransConnInfo
 TRANS(DNETOpenCOTSServer)(thistrans, protocol, host, port)
 Xtransport	*thistrans;
 char		*protocol;
@@ -25,7 +27,7 @@ char		*port;
 return NULL;
 }
 
-static XtransConnInfo *
+static XtransConnInfo
 TRANS(DNETOpenCLTSClient)(thistrans, protocol, host, port)
 Xtransport	*thistrans;
 char		*protocol;
@@ -35,7 +37,7 @@ char		*port;
 return NULL;
 }
 
-static XtransConnInfo *
+static XtransConnInfo
 TRANS(DNETOpenCLTSServer)(thistrans, protocol, host, port)
 Xtransport	*thistrans;
 char		*protocol;
@@ -45,114 +47,101 @@ char		*port;
 return NULL;
 }
 
-static
-TRANS(DNETSetOption)(thistrans, fd, option, arg)
-Xtransport	*thistrans;
-int		fd;
+static int
+TRANS(DNETSetOption)(ciptr, option, arg)
+XtransConnInfo	ciptr;
 int		option;
 int		arg;
 {
 }
 
-static
-TRANS(DNETCreateListener)(thistrans, fd, port)
-Xtransport	*thistrans;
-int		fd;
+static int
+TRANS(DNETCreateListener)(ciptr, port)
+XtransConnInfo	ciptr;
 char		*port;
 {
 }
 
-static XtransConnInfo *
-TRANS(DNETAccept)(thistrans, fd)
-Xtransport	*thistrans;
-int		fd;
+static XtransConnInfo
+TRANS(DNETAccept)(ciptr)
+XtransConnInfo	ciptr;
 {
 return NULL;
 }
 
-static
-TRANS(DNETConnect)(thistrans, fd, host, port)
-Xtransport	*thistrans;
-int		fd;
+static int
+TRANS(DNETConnect)(ciptr, host, port)
+XtransConnInfo	ciptr;
 char		*host;
 char		*port;
 {
 }
 
 static int
-TRANS(DNETBytesReadable)(thistrans, fd, pend)
-Xtransport	*thistrans;
-int		fd;
+TRANS(DNETBytesReadable)(ciptr, pend)
+XtransConnInfo	ciptr;
 BytesReadable_t	*pend;
 {
 return -1;
 }
 
 static int
-TRANS(DNETRead)(thistrans, fd, buf, size)
-Xtransport	*thistrans;
-int		fd;
+TRANS(DNETRead)(ciptr, buf, size)
+XtransConnInfo	ciptr;
 char		*buf;
 int		size;
 {
-return read(fd,buf,size);
+return read(ciptr->fd,buf,size);
 }
 
 static int
-TRANS(DNETWrite)(thistrans, fd, buf, size)
-Xtransport	*thistrans;
-int		fd;
+TRANS(DNETWrite)(ciptr, buf, size)
+XtransConnInfo	ciptr;
 char		*buf;
 int		size;
 {
-return write(fd,buf,size);
+return write(ciptr->fd,buf,size);
 }
 
 static int
-TRANS(DNETReadv)(thistrans, fd, buf, size)
-Xtransport	*thistrans;
-int		fd;
+TRANS(DNETReadv)(ciptr, buf, size)
+XtransConnInfo	ciptr;
 struct iovec	*buf;
 int		size;
 {
-return READV(fd,buf,size);
+return READV(ciptr,buf,size);
 }
 
 static int
-TRANS(DNETWritev)(thistrans, fd, buf, size)
-Xtransport	*thistrans;
-int		fd;
+TRANS(DNETWritev)(ciptr, buf, size)
+XtransConnInfo	ciptr;
 struct iovec	*buf;
 int		size;
 {
-return WRITEV(fd,buf,size);
+return WRITEV(ciptr,buf,size);
 }
 
-static
-TRANS(DNETDisconnect)(thistrans, fd)
-Xtransport	*thistrans;
-int		fd;
+static int
+TRANS(DNETDisconnect)(ciptr)
+XtransConnInfo	ciptr;
+{
+}
+
+static int
+TRANS(DNETClose)(ciptr)
+XtransConnInfo	ciptr;
 {
 }
 
 static
-TRANS(DNETClose)(thistrans, fd)
-Xtransport	*thistrans;
-int		fd;
+TRANS(DNETNameToAddr)(ciptr)
+XtransConnInfo	ciptr;
 {
 }
 
 static
-TRANS(DNETNameToAddr)(thistrans, fd)
-Xtransport	*thistrans;
-int		fd;
-{
-}
-
-static
-TRANS(DNETAddrToName)(thistrans, fd)
-Xtransport	*thistrans;
-int		fd;
+TRANS(DNETAddrToName)(ciptr)
+XtransConnInfo	ciptr;
 {
 }
 
