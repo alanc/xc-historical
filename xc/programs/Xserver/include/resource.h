@@ -1,4 +1,4 @@
-/* $XConsortium: resource.h,v 1.10 89/07/19 09:34:49 rws Exp $ */
+/* $XConsortium: resource.h,v 1.11 90/03/27 15:39:20 rws Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -60,6 +60,10 @@ typedef unsigned long RESTYPE;
 #define CLIENT_BITS(id) ((id) & 0x1fc00000)		/* hi 7 bits */
 #define CLIENT_ID(id) ((int)(CLIENT_BITS(id) >> CLIENTOFFSET))
 #define SERVER_BIT		0x20000000		/* use illegal bit */
+
+#ifdef INVALID
+#undef INVALID	/* needed on HP/UX */
+#endif
 
 /* Invalid resource id */
 #define INVALID	(0)
