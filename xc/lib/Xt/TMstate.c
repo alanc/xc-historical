@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: TMstate.c,v 1.41 88/02/02 13:50:41 swick Locked $";
+static char rcsid[] = "$Header: TMstate.c,v 1.42 88/02/03 23:41:19 swick Locked $";
 #endif lint
 /*LINTLIBRARY*/
 
@@ -1240,11 +1240,11 @@ static void _XtMenuPopupAction(widget, event, params, num_params)
     Widget widget;
     XEvent *event;
     String *params;
-    Cardinal num_params;
+    Cardinal *num_params;
 {
     String newParams[2];
 
-    if (num_params != 1) XtError("MenuPopup wants exactly one argument.");
+    if (*num_params != 1) XtError("MenuPopup wants exactly one argument.");
 
     newParams[0] = params[0];
     if (event->type == ButtonPress) newParams[1] = "True";
@@ -1265,7 +1265,7 @@ static void _XtMenuPopdownAction(widget, event, params, num_params)
     Widget widget;
     XEvent *event;
     String *params;
-    Cardinal num_params;
+    Cardinal *num_params;
 {
     XtPopdown(widget);
 }
