@@ -1,4 +1,4 @@
-/* $XConsortium: bbox.h,v 2.5 89/05/04 15:05:10 converse Exp $ */
+/* $XConsortium: bbox.h,v 2.6 89/07/07 18:04:17 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -27,6 +27,7 @@
 #ifndef _bbox_h
 #define _bbox_h
 
+extern ButtonBox BBoxMenuCreate();
 extern ButtonBox BBoxRadioCreate();
 extern ButtonBox BBoxCreate();
 extern void BBoxSetRadio();
