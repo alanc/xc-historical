@@ -1,4 +1,4 @@
-/* $XConsortium: imRm.c,v 1.2 94/01/20 18:05:20 rws Exp $ */
+/* $XConsortium: imRm.c,v 1.6 94/03/29 22:51:41 rws Exp $ */
 /******************************************************************
 
 	  Copyright 1990, 1991, 1992,1993, 1994 by FUJITSU LIMITED
@@ -46,17 +46,17 @@ typedef struct _XimValueOffsetInfo {
     XrmQuark		 quark;
     unsigned int	 offset;
     Bool		 (*defaults)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 	struct _XimValueOffsetInfo *, XPointer, XPointer, unsigned long
 #endif
 			 );
     Bool		 (*encode)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 	struct _XimValueOffsetInfo *, XPointer, XPointer
 #endif
 			 );
     Bool		 (*decode)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 	struct _XimValueOffsetInfo *, XPointer, XPointer
 #endif
 			 );

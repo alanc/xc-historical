@@ -1,4 +1,4 @@
-/* $XConsortium: XimImSw.h,v 1.1 93/09/17 13:26:39 rws Exp $ */
+/* $XConsortium: XimImSw.h,v 1.2 94/01/20 18:02:19 rws Exp $ */
 /******************************************************************
 
                 Copyright 1992, 1993 by FUJITSU LIMITED
@@ -32,17 +32,17 @@ PERFORMANCE OF THIS SOFTWARE.
 
 typedef struct {
     Bool	(*checkprocessing)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 	Xim   im
 #endif
 		);
     Bool	(*im_open)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 	Xim   im
 #endif
 		);
     void	(*im_free)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 	Xim   im
 #endif
 		);

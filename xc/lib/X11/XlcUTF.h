@@ -1,4 +1,4 @@
-/* $XConsortium: XlcUTF.h,v 1.3 93/09/25 15:28:37 rws Exp $ */
+/* $XConsortium: XlcUTF.h,v 1.4 94/01/20 18:03:21 rws Exp $ */
 /******************************************************************
 
               Copyright 1993 by SunSoft, Inc.
@@ -68,7 +68,7 @@ typedef enum {
 typedef struct  _UtfDataRec {
 	XlcCharSet		charset;
 	void			(*initialize)( /* Table Initializer */
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 					      long *tbl,
 					      long fallback
 #endif
@@ -76,7 +76,7 @@ typedef struct  _UtfDataRec {
 	long			*fromtbl;	/* UTF -> CharSet */
 	NormalizeType		type;		/* Normalize type */
 	void			(*cstorune)(   /* CharSet -> UTF */
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 					    unsigned char c,
 					    Rune *r
 #endif
@@ -90,7 +90,7 @@ typedef struct _XlcUTFDataRec {
     XlcSide	side;
     void	(*initialize)();
     void	(*cstorune)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 			    unsigned char c,
 			    Rune *r
 #endif
