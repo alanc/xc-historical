@@ -4,6 +4,9 @@
        INCLUDES = -I. -I$(XLIBSRC) -I$(TOP) -I$(TOP)/X11
    INSTALLFLAGS = $(INSTINCFLAGS)
        LINTLIBS = $(LINTXLIB)
+#ifdef RtArchitecture
+             CC = pcc
+#endif
 
 HEADERS = \
 	Cardinals.h \
