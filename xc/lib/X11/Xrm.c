@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.25 89/07/20 10:38:50 jim Exp $
+ * $XConsortium: Xrm.c,v 1.26 89/07/20 10:41:39 jim Exp $
  */
 
 /***********************************************************
@@ -793,7 +793,7 @@ static void PutLineResources(pdb, get_line, closure)
 						(s[1] - '0') * 010 +
 						(s[2] - '0'));
 			ts++;
-			s += 3;
+			s += 2;
 		    } else if (*s != '\0') {
 			*ts = *s;
 			ts++;
