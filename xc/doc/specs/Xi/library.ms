@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: library.ms,v 1.7 92/11/14 13:05:02 rws Exp $
 .\" Input Extension
 .EH ''''
 .OH ''''
@@ -2356,7 +2356,8 @@ Event Structures
 .XE
 .LP
 Each extension event type has a corresponding structure declared in
-\fB<X11/XInput.h>\fP.  All event structures have the following members:
+\fB<X11/extensions/XInput.h>\fP.  All event structures have the
+following members:
 .RS
 .in +.5i
 .IP "\fItype\fP" .80i
@@ -3819,38 +3820,12 @@ This function frees the array of motion information.
 .ds Ch ~
 .nr H1 1
 .LP
-The following information is contained in the \fB<X11/XInput.h>\fP
-header file:
+The following information is contained in the \fB<X11/extensions/XInput.h>\fP
+and \fB<X11/extensions/XI.h>\fP header files:
 .DS 0
 .cs CW 20
 \f(C
 .ps 8
-
-/* $Header: library.ms,v 1.6 91/07/28 15:58:08 rws Exp $ */
-/************************************************************
-Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
-Massachusetts Institute of Technology, Cambridge, Massachusetts.
-
-			All Rights Reserved
-
-Permission to use, copy, modify, and distribute this software and its
-documentation for any purpose and without fee is hereby granted,
-provided that the above copyright notice appear in all copies and that
-both that copyright notice and this permission notice appear in
-supporting documentation, and that the names of Hewlett-Packard or MIT not be
-used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.
-
-HEWLETT-PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
-ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
-HEWLETT-PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
-ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
-WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
-ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
-SOFTWARE.
-
-********************************************************/
-
 /* Definitions used by the library and client */
 
 #ifndef _XINPUT_H_
@@ -4509,31 +4484,6 @@ XExtensionVersion      *XGetExtensionVersion();
 XDeviceState           *XQueryDeviceState();
 XEventClass            *XGetDeviceDontPropagateList();
 #endif /* _XINPUT_H_ */
-/* $Header: library.ms,v 1.6 91/07/28 15:58:08 rws Exp $ */
-
-/************************************************************
-Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
-Massachusetts Institute of Technology, Cambridge, Massachusetts.
-
-			All Rights Reserved
-
-Permission to use, copy, modify, and distribute this software and its
-documentation for any purpose and without fee is hereby granted,
-provided that the above copyright notice appear in all copies and that
-both that copyright notice and this permission notice appear in
-supporting documentation, and that the names of Hewlett-Packard or MIT not be
-used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.
-
-HEWLETT-PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
-ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
-HEWLETT-PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
-ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
-WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
-ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
-SOFTWARE.
-
-********************************************************/
 
 /* Definitions used by the server, library and client */
 
