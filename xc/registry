@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.29 91/04/26 18:14:05 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.30 91/04/30 19:48:42 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -45,17 +45,17 @@ Name						Reference
 
 Name			Value			Reference
 ----			-----			---------
-hpXK_mute_acute		0x100000a8		[36]
-hpXK_mute_grave		0x100000a9		[36]
-hpXK_mute_asciicircum	0x100000aa		[36]
-hpXK_mute_diaeresis	0x100000ab		[36]
-hpXK_mute_asciitilde	0x100000ac		[36]
-hpXK_lira		0x100000af		[36]
-hpXK_guilder		0x100000be		[36]
-hpXK_Ydiaeresis		0x100000ee		[36]
-hpXK_IO			0x100000ee		[36]
-hpXK_longminus		0x100000f6		[36]
-hpXK_block		0x100000fc		[36]
+hpXK_mute_acute		0x100000A8		[36]
+hpXK_mute_grave		0x100000A9		[36]
+hpXK_mute_asciicircum	0x100000AA		[36]
+hpXK_mute_diaeresis	0x100000AB		[36]
+hpXK_mute_asciitilde	0x100000AC		[36]
+hpXK_lira		0x100000AF		[36]
+hpXK_guilder		0x100000BE		[36]
+hpXK_Ydiaeresis		0x100000EE		[36]
+hpXK_IO			0x100000EE		[36]
+hpXK_longminus		0x100000F6		[36]
+hpXK_block		0x100000FC		[36]
 apXK_LineDel		0x1000FF00		[1]
 apXK_CharDel		0x1000FF01		[1]
 apXK_Copy		0x1000FF02		[1]
