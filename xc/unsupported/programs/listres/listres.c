@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: listres.c,v 1.1 89/07/10 17:10:01 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,6 +24,7 @@
  */
 
 #include <stdio.h>
+#include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
 #include <X11/Xaw/Cardinals.h>
 
@@ -73,9 +74,9 @@ main (argc, argv)
     char **argv;
 {
     int i;
-    WidgetClass top = coreWidgetClass;
+    WidgetClass top;
     WidgetNameList *wl;
-    Widget toplevel;
+    Widget toplevel, super;
 
     ProgramName = argv[0];
 
@@ -89,23 +90,11 @@ main (argc, argv)
 	else usage ();
     }
 
+    super = (listres_resources.super ? toplevel : NULL);
+    top = (listres_resources.objects ? NULL : coreWidgetClass);
+
     for (i = 0, wl = widget_list; i < nwidgets; i++, wl++) {
-	WidgetClass wc = wl->widget_class[0];
-	XtResourceList res;
-	Cardinal nres;
-	Widget dummy;
-
-	if (super) {
-	    dummy = XtCreateWidget (wl->label, wc, toplevel, NULL, ZERO);
-	    XtGetResourceList (wc, &res, &nres);
-	} else {
-	    dummy = NULL;
-	    res = wc->core_class.resources;
-	    nres = wc->core_class.num_resources;
-	}
-
-	print_resource_list (wl->label, wc, top, res, nres, super);
-	if (dummy) XtDestroyWidget (dummy);
+	list_resources (wl->label, wl->widget_class[0], top, super);
     }
 
     exit (0);
