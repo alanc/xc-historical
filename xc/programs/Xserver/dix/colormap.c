@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 1.81 89/03/16 20:26:41 rws Exp $ */
+/* $XConsortium: colormap.c,v 1.82 89/03/18 16:24:24 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -134,7 +134,7 @@ CreateColormap (mid, pScreen, pVisual, ppcmap, alloc, client)
     pmap->pVisual = pVisual;
     pmap->class = class;
     pmap->freeRed = size;
-    bzero ((char *) pmap->red, sizebytes);
+    bzero ((char *) pmap->red, (int)sizebytes);
     bzero((char *) pmap->numPixelsRed, MAXCLIENTS * sizeof(int));
     for (pptr = &pmap->clientPixelsRed[MAXCLIENTS]; --pptr >= pmap->clientPixelsRed; )
 	*pptr = (Pixel *)NULL;
@@ -171,8 +171,8 @@ CreateColormap (mid, pScreen, pVisual, ppcmap, alloc, client)
 	pmap->numPixelsBlue = (int *)((char *)pmap->clientPixelsBlue +
 				      (MAXCLIENTS * sizeof(Pixel *)));
 
-	bzero ((char *) pmap->green, sizebytes);
-	bzero ((char *) pmap->blue, sizebytes);
+	bzero ((char *) pmap->green, (int)sizebytes);
+	bzero ((char *) pmap->blue, (int)sizebytes);
 
 	bcopy((char *) pmap->clientPixelsRed,
 	      (char *) pmap->clientPixelsGreen,

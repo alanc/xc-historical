@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: atom.c,v 1.25 88/09/06 15:40:03 jim Exp $ */
+/* $XConsortium: atom.c,v 1.26 89/03/11 16:54:22 rws Exp $ */
 
 #include "X.h"
 #include "Xatom.h"
@@ -68,7 +68,7 @@ MakeAtom(string, len, makeit)
 	    np = &((*np)->right);
 	else
 	{			       /* now start testing the strings */
-	    comp = strncmp(string, (*np)->string, len);
+	    comp = strncmp(string, (*np)->string, (int)len);
 	    if ((comp < 0) || ((comp == 0) && (len < strlen((*np)->string))))
 		np = &((*np)->left);
 	    else if (comp > 0)
@@ -106,7 +106,7 @@ MakeAtom(string, len, makeit)
 	nd->left = nd->right = (NodePtr) NULL;
 	nd->fingerPrint = fp;
 	nd->a = (++lastAtom);
-	strncpy(nd->string, string, len);
+	strncpy(nd->string, string, (int)len);
 	nd->string[len] = 0;
 	*(nodeTable+lastAtom) = nd;
 	return nd->a;
