@@ -1,7 +1,7 @@
 #include BandAidCompiler
 
-#if AlignedReferencesOnly
-  ALIGN_DEFINES = -DALIGNED
+#if UnalignedReferencesAllowed
+  ALIGN_DEFINES = -DUNALIGNED
 #endif
     STD_DEFINES = LibraryDefines $(ALIGN_DEFINES)
     APP_DEFINES = -DXAPPLOADDIR=\"$(XAPPLOADDIR)$(PATHSEP)\"
