@@ -1,4 +1,4 @@
-/* $Header: dsimple.c,v 1.1 87/09/11 08:22:44 rws Locked $ */
+/* $Header: dsimple.c,v 1.2 87/12/21 12:20:34 jim Locked $ */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -89,57 +89,30 @@ char *Realloc(ptr, size)
 
 
 /*
- * Get_Display_Name: Routine which returns the name of the display we
- *                   are supposed to use.  This is either the display name
- *                   given in the list of command arguments or if no name
- *                   is given, the value of the DISPLAY environmental
- *                   variable.  If DISPLAY is unset, NULL is returned.
- *                   The main program should pass its command arguments
- *                   to this routine.  The display argument if any is found
- *                   will be removed from the list of command arguments.
- *                   Any command argument containing a ':' which occurs
- *                   before a '-' is considered to be a display.  If
- *                   two or more of these occur, only the first will be used.
- *                   Does not require dpy or screen defined on entry.
+ * Get_Display_Name (argc, argv) Look for -display, -d, or host:dpy (obselete)
  */
-char *Get_Display_Name(argc, argv)
-     int *argc;          /* MODIFIED */
-     char **argv;        /* MODIFIED */
+char *Get_Display_Name(pargc, argv)
+    int *pargc;
+    char **argv;
 {
-	char *display;
-	char *getenv();
-	int nargc=1;
-	int count;
-	char **nargv;
-	
-	/* Get default display name from environmental variable DISPLAY */
-	display = getenv("DISPLAY");
+    int argc = *pargc;
+    char *displayname = NULL;
+    int i;
 
-	/*
-	 * Search for a user supplied overide command argument of the
-         * form host:display and remove it from command arguments if found.
-	 */
-	count = *argc;
-	nargv = argv + 1;
-	for (count--, argv++; count>0; count--, argv++) {
-	  if (!strcmp("-", *argv)) {          /* Don't search past a "-" */
-	    break;
-	  }
-	  if (index(*argv, ':')) {
-	    display = *(argv++);
-	    count--;
-	    break;                            /* Only use first display name */
-	  }
-	  *(nargv++) = *argv;
-	  nargc++;
+    for (i = 1; i < argc; i++) {
+	char *arg = argv[i];
+
+	if (strcmp (arg, "-display") == 0 || strcmp (arg, "-d") == 0) {
+	    if (++i >= argc) usage ();
+
+	    displayname = argv[i];
+	    continue;
 	}
-	while (count>0) {
-	  *(nargv++) = *(argv++);
-	  nargc++; count--;
-	}
-	*argc = nargc;
-	
-	return(display);
+	if (index (arg, ':') != NULL)
+	    displayname = arg;
+    }
+
+    return (displayname);
 }
 
 
@@ -172,10 +145,17 @@ char *display_name;
  *                           Does not require dpy or screen defined.
  */
 void Setup_Display_And_Screen(argc, argv)
-int *argc;      /* MODIFIED */
-char **argv;    /* MODIFIED */
+int *argc;
+char **argv;
 {
-	dpy = Open_Display(Get_Display_Name(argc, argv));
+	char *displayname = Get_Display_Name(argc, argv);
+
+	dpy = Open_Display (displayname);
+	if (!dpy) {
+	    fprintf (stderr, "%s:  unable to open display '%s'\n",
+		     program_name, XDisplayName (displayname));
+	    usage ();
+	}
 	screen = DefaultScreen(dpy);
 }
 

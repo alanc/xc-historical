@@ -32,11 +32,39 @@ static char *window_id_format = " 0x%lx";
  */
 usage()
 {
-    fprintf(stderr, "\n");
-    fprintf(stderr, "Usage: %s [-help] %s [-int] ",
-	    program_name, SELECT_USAGE);
-    fprintf(stderr, "[host:vs] [-tree] [-stats] [-bits] [-events] [-size] [-wm]\n\n");
-    exit(0);
+    fprintf (stderr,
+	"usage:  %s [-options ...] [display]\n\n", program_name);
+    fprintf (stderr,
+	"where options include:\n");
+    fprintf (stderr,
+	"    -help                print this message\n");
+    fprintf (stderr,
+	"    -root                use the root window\n");
+    fprintf (stderr,
+	"    -id windowid         use the window with the specified id\n");
+    fprintf (stderr,
+	"    -name windowname     use the window with the specifed name\n");
+    fprintf (stderr,
+	"    -tree                print out parent and child identifiers\n");
+    fprintf (stderr,
+	"    -stats               print out window geometry [DEFAULT]\n");
+    fprintf (stderr,
+	"    -bits                print out window pixel information\n");
+    fprintf (stderr,
+	"    -events              print out events selected for on window\n");
+    fprintf (stderr,
+	"    -size                print out size hints\n");
+    fprintf (stderr,
+	"    -wm                  print out window manager hints\n");
+    fprintf (stderr,
+	"    -all                 -tree, status, -bits, -events, -size, -wm\n");
+    fprintf (stderr,
+	"where display can be specified as:\n");
+    fprintf (stderr,
+	"    host:dpy             obselete format, use -display\n");
+    fprintf (stderr,
+	"    -display host:dpy    or -d host:dpy\n");
+    exit (1);
 }
 
 
@@ -57,6 +85,11 @@ main(argc, argv)
 
   /* Handle our command line arguments */
   for (i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "-display") == 0 || strcmp(argv[i], "-d") == 0) {
+	if (++i >= argc) usage ();
+	/* already handled */
+	continue;
+    }
     if (!strcmp(argv[i], "-help"))
       usage();
     if (!strcmp(argv[i], "-int")) {
@@ -91,13 +124,14 @@ main(argc, argv)
       tree = stats = bits = events = wm = size = 1;
       continue;
     }
+    if (index (argv[i], ':') != NULL) continue;	/* already handled */
     usage();
   }
 
   /* If no window selected on command line, let user pick one the hard way */
   if (!window) {
-	  printf("\nxwininfo ==> Please select the window you wish\n");
-	  printf("         ==> information on by clicking the\n");
+	  printf("\nxwininfo ==> Please select the window about which you\n");
+	  printf("         ==> would like information by clicking the\n");
 	  printf("         ==> mouse in that window.\n");
 	  window = Select_Window(dpy);
   }
