@@ -1559,21 +1559,20 @@
     (unless (= depth image-depth)
       (if (= image-depth 1)
 	  (unless gcontext (xlib::required-arg gcontext))
-	(error "Pixmap depth ~d incompatable with image depth ~d"
-	       depth image-depth)))	       
+	  (error "Pixmap depth ~d incompatible with image depth ~d"
+		 depth image-depth)))
     (put-image pixmap gc image :x 0 :y 0 :bitmap-p (and (= image-depth 1) gcontext))
     ;; Tile when image-width is less than the pixmap width, or
     ;; the image-height is less than the pixmap height.
     ;; ??? Would it be better to create a temporary pixmap and 
     ;; ??? let the server do the tileing?
-    (do ((x image-width (+ x image-width)))
-	((>= x width))
-      (copy-area pixmap gc 0 0 image-width image-height pixmap x 0)
+    (do () ((>= image-width width))
+      (copy-area pixmap gc 0 0 image-width image-height pixmap image-width 0)
       (incf image-width image-width))
-    (do ((y image-height (+ y image-height)))
-	((>= y height))
-      (copy-area pixmap gc 0 0 image-width image-height pixmap 0 y)
+    (do () ((>= image-height height))
+      (copy-area pixmap gc 0 0 width image-height pixmap 0 image-height)
       (incf image-height image-height))
-    (unless gcontext (free-gcontext gc))
-    pixmap))
 
+    (unless gcontext (free-gcontext gc))
+    
+    pixmap))
