@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.61 88/09/26 09:30:45 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.64 89/01/19 16:31:24 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -41,13 +41,20 @@ SOFTWARE.
 
 #define StringToAction(string)	((XtAction) StringToQuark(string))
 
-#define STR_THRESHOLD 30
+#define STR_THRESHOLD 25
 #define STR_INCAMOUNT 100
 #define CHECK_STR_OVERFLOW \
     if (str - *buf > *len - STR_THRESHOLD) {		\
 	String old = *buf;				\
 	*buf = XtRealloc(old, *len += STR_INCAMOUNT);	\
 	str = str - old + *buf;				\
+    }
+
+#define ExpandToFit(more) \
+    if (str - *buf > *len - STR_THRESHOLD - strlen(more)) { 		\
+	String old = *buf;						\
+	*buf = XtRealloc(old, *len += STR_INCAMOUNT + strlen(more));	\
+	str = str - old + *buf;						\
     }
 
 
@@ -230,7 +237,7 @@ static String PrintParams(buf, len, str, params, num_params)
 {
     register Cardinal i;
     for (i = 0; i<num_params; i++) {
-	CHECK_STR_OVERFLOW;
+	ExpandToFit( params[i] );
 	if (i != 0) (void) sprintf(str, ", ");
 	str += strlen(str);
 	(void) sprintf(str, "\"%s\"", params[i]);
@@ -247,9 +254,9 @@ static String PrintActions(buf, len, str, actions, quarkTable)
     XrmQuark* quarkTable;
 {
     while (actions != NULL /* && actions->token != NULL */) {
-	CHECK_STR_OVERFLOW;
-        (void) sprintf(
-            str, " %s(", XrmQuarkToString(quarkTable[actions->index]));
+	String proc = XrmQuarkToString(quarkTable[actions->index]);
+	ExpandToFit( proc );
+        (void) sprintf(str, " %s(", proc);
 	str += strlen(str);
 	str = PrintParams(buf, len, str, actions->params, (Cardinal)actions->num_params);
 	str += strlen(str);
@@ -1684,10 +1691,10 @@ static void PrintState(buf, len, str, state, quarkTable, eot)
     /* print the current state */
     if (state == NULL) return;
 
-    CHECK_STR_OVERFLOW;
     str = PrintEvent(buf, len, str, &eot[state->index].event);
     if (state->actions != NULL) {
 	int offset = str - *buf;
+	CHECK_STR_OVERFLOW;
 	(void) sprintf(str, "%s: ", (state->cycle ? "(+)" : ""));
 	while (*str) str++;
 	(void) PrintActions(buf, len, str, state->actions, quarkTable);
