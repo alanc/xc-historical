@@ -1,4 +1,4 @@
-/* $XConsortium: cpx_util.c,v 5.2 91/05/07 11:50:03 rws Exp $ */
+/* $XConsortium: cpx_util.c,v 5.3 91/07/24 16:48:53 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -115,10 +115,15 @@ phg_cpx_destroy_all_css_servers( cph )
     Cp_handle		cph;
 {
     register	Cpx_css_srvr	*css_srvr;
+    register    Cpx_css_srvr    *n_css_srvr;
 
-    CPX_FOR_ALL_SERVERS(cph,css_srvr) {
+    css_srvr = cph->css_srvr_list;
+    while ( css_srvr ) {
+	n_css_srvr = css_srvr->next;
 	destroy_css_srvr( cph, css_srvr );
+	css_srvr = n_css_srvr;
     }
+
     cph->css_srvr_list = (Cpx_css_srvr *)NULL;
 }
 
