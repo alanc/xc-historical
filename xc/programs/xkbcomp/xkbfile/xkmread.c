@@ -1,4 +1,4 @@
-/* $XConsortium: xkmread.c,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: xkmread.c,v 1.1 94/04/08 15:51:02 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -253,7 +253,7 @@ char name[100];
 	xkb->names->keycodes= XkmInternAtom(dpy,name,False);
     }
     for (i=minKC;i<=maxKC;i++) {
-	if (fread(&xkb->names->keys[i].name,1,4,file)!=4)
+	if (fread(xkb->names->keys[i].name,1,4,file)!=4)
 	    return False;
     }
     if (changes)
