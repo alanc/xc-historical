@@ -1,7 +1,7 @@
 /*
  * atobm - ascii to bitmap filter
  *
- * $XConsortium: atobm.c,v 1.1 91/02/18 10:49:58 dave Exp $
+ * $XConsortium: atobm.c,v 1.2 92/08/14 13:52:21 converse Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -262,7 +262,7 @@ doit (fp, filename, chars, xhot, yhot, name)
     if (xhot >= 0) printf ("#define %s_x_hot %d\n", name, xhot);
     if (yhot >= 0) printf ("#define %s_y_hot %d\n", name, yhot);
     printf ("\n");
-    printf ("static char %s_bits[] = {\n", name);
+    printf ("static unsigned char %s_bits[] = {\n", name);
 
     j = 0;
     last_character = height * bytes_per_scanline - 1;
