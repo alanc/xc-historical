@@ -1,4 +1,4 @@
-/* $XConsortium: StdCmap.c,v 1.3 89/03/21 14:01:03 converse Exp $ */
+/* $XConsortium: StdCmap.c,v 1.4 89/04/03 17:21:56 converse Exp $ */
 
 /* 
  * Copyright 1989 by the Massachusetts Institute of Technology
@@ -86,9 +86,28 @@ Status XmuStandardColormap(dpy, screen, visualid, depth, red_max,
 
     /* determine that the number of colors requested is <= map size */
     ncolors = (red_max + 1) * (green_max + 1) * (blue_max + 1);
-    if (ncolors > vinfo->colormap_size)
+    if ((vinfo->class == DirectColor) || (vinfo->class == TrueColor))
     {
-	XFree((char *) vinfo);
+	unsigned long mask;
+
+	mask = vinfo->red_mask;
+	while (!(mask & 1))
+	    mask >>= 1;
+	if (red_max > mask)
+	    goto bad;
+	mask = vinfo->green_mask;
+	while (!(mask & 1))
+	    mask >>= 1;
+	if (green_max > mask)
+	    goto bad;
+	mask = vinfo->blue_mask;
+	while (!(mask & 1))
+	    mask >>= 1;
+	if (blue_max > mask)
+	    goto bad;
+    } else if (ncolors > vinfo->colormap_size)
+    {
+bad:	XFree((char *) vinfo);
 	return 0;
     }
     
