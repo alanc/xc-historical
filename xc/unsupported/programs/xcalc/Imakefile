@@ -1,7 +1,7 @@
-XCOMM $XConsortium: Imakefile,v 1.6 91/07/17 00:47:34 gildea Exp $
-#ifdef MacIIArchitecture
+XCOMM $XConsortium: Imakefile,v 1.7 91/07/22 16:23:30 converse Exp $
+#if defined(MacIIArchitecture) || defined(MotoR4Architecture)
       IEEE_DEFS = -DIEEE
-#endif /* MacIIArchitecture */
+#endif
 
         DEFINES = $(IEEE_DEFS) $(SIGNAL_DEFINES)
         DEPLIBS = XawClientDepLibs
