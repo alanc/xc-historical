@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.27 89/10/16 19:15:53 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.28 89/10/29 14:47:19 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -805,8 +805,8 @@ miBSFillSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int		*pwidthInit;		/* pointer to list of n widths */
     int 	fSorted;
 {
-    DDXPointPtr	pptCopy;
-    int 	  	*pwidthCopy;
+    DDXPointPtr	pptCopy, pptReset;
+    int 	*pwidthCopy;
     SETUP_BACKING (pDrawable, pGC);
 
     PROLOGUE(pGC);
@@ -820,6 +820,22 @@ miBSFillSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
 	(* pGC->ops->FillSpans)(pDrawable, pGC, nInit, pptInit,
 			     pwidthInit, fSorted);
+	if (pGC->miTranslate)
+	{
+	    int	dx, dy;
+	    int	nReset;
+
+	    pptReset = pptCopy;
+	    dx = pDrawable->x - pBackingDrawable->x;
+	    dy = pDrawable->y - pBackingDrawable->y;
+	    nReset = nInit;
+	    while (nReset--)
+	    {
+		pptReset->x -= dx;
+		pptReset->y -= dy;
+		++pptReset;
+	    }
+	}
 	(* pBackingGC->ops->FillSpans)(pBackingDrawable,
 				  pBackingGC, nInit, pptCopy, pwidthCopy,
 				  fSorted);
@@ -852,7 +868,7 @@ miBSSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
     int			nspans;
     int			fSorted;
 {
-    DDXPointPtr	pptCopy;
+    DDXPointPtr	pptCopy, pptReset;
     int 	*pwidthCopy;
     SETUP_BACKING (pDrawable, pGC);
 
@@ -867,6 +883,22 @@ miBSSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 
 	(* pGC->ops->SetSpans)(pDrawable, pGC, psrc, ppt, pwidth,
 			    nspans, fSorted);
+	if (pGC->miTranslate)
+	{
+	    int	dx, dy;
+	    int	nReset;
+
+	    pptReset = pptCopy;
+	    dx = pDrawable->x - pBackingDrawable->x;
+	    dy = pDrawable->y - pBackingDrawable->y;
+	    nReset = nspans;
+	    while (nReset--)
+	    {
+		pptReset->x -= dx;
+		pptReset->y -= dy;
+		++pptReset;
+	    }
+	}
 	(* pBackingGC->ops->SetSpans)(pBackingDrawable, pBackingGC,
 				 psrc, pptCopy, pwidthCopy, nspans,
 				 fSorted);
