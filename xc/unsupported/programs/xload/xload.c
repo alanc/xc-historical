@@ -3,7 +3,7 @@
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
- * $XConsortium: xload.c,v 1.27 90/04/30 16:53:44 converse Exp $
+ * $XConsortium: xload.c,v 1.28 90/12/21 11:40:52 gildea Exp $
  */
 
 #include <stdio.h> 
@@ -39,13 +39,13 @@ typedef struct _XLoadResources {
  */
 
 static XrmOptionDescRec options[] = {
-{"-scale",	"*load.minScale",	XrmoptionSepArg,	   NULL},
-{"-update",	"*load.update",		XrmoptionSepArg,	   NULL},
-{"-hl",		"*load.highlight",	XrmoptionSepArg,	   NULL},
-{"-highlight",	"*load.highlight",	XrmoptionSepArg,	   NULL},
-{"-label",	"*label.label",		XrmoptionSepArg,	   NULL},
-{"-nolabel",	"*showLabel",	        XrmoptionNoArg,          "False"},
-{"-jumpscroll",	"*load.jumpScroll",	XrmoptionSepArg,	   NULL},
+ {"-scale",		"*load.minScale",	XrmoptionSepArg,	NULL},
+ {"-update",		"*load.update",		XrmoptionSepArg,	NULL},
+ {"-hl",		"*load.highlight",	XrmoptionSepArg,	NULL},
+ {"-highlight",		"*load.highlight",	XrmoptionSepArg,	NULL},
+ {"-label",		"*label.label",		XrmoptionSepArg,	NULL},
+ {"-nolabel",		"*showLabel",	        XrmoptionNoArg,       "False"},
+ {"-jumpscroll",	"*load.jumpScroll",	XrmoptionSepArg,	NULL},
 };
 
 /*
@@ -53,7 +53,7 @@ static XrmOptionDescRec options[] = {
  * Xload application resources.
  */
 
-#define Offset(field) (XtOffset(XLoadResources *, field))
+#define Offset(field) (XtOffsetOf(XLoadResources, field))
 
 static XtResource my_resources[] = {
   {"showLabel", XtCBoolean, XtRBoolean, sizeof(Boolean),
@@ -111,6 +111,7 @@ void main(argc, argv)
     Arg args[1];
     Pixmap icon_pixmap = None;
     XLoadResources resources;
+    XtAppContext app_con;
 
     ProgramName = argv[0];
 
@@ -120,8 +121,8 @@ void main(argc, argv)
     setuid(getuid());
     setgid(getgid());
 
-    toplevel = XtInitialize(NULL, "XLoad", options, XtNumber(options),
-			    (Cardinal *) &argc, argv);
+    toplevel = XtAppInitialize(&app_con, "XLoad", options, XtNumber(options),
+			    (Cardinal *) &argc, argv, NULL, NULL, 0);
       
     XtGetApplicationResources( toplevel, (caddr_t) &resources, 
 			      my_resources, XtNumber(my_resources),
@@ -132,8 +133,7 @@ void main(argc, argv)
      * This is a hack so that f.delete will do something useful in this
      * single-window application.
      */
-    XtAppAddActions (XtWidgetToApplicationContext(toplevel),
-		     xload_actions, XtNumber(xload_actions));
+    XtAppAddActions (app_con, xload_actions, XtNumber(xload_actions));
     XtOverrideTranslations(toplevel,
 		    XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
 
@@ -178,7 +178,7 @@ void main(argc, argv)
                                     False);
     (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
                             &wm_delete_window, 1);
-    XtMainLoop();
+    XtAppMainLoop(app_con);
 }
 
 
