@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.57 88/08/11 17:36:32 rws Exp $ */
+/* $Header: dispatch.c,v 1.58 88/08/13 14:05:44 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1578,13 +1578,6 @@ ProcCopyPlane(client)
 
     REQUEST_SIZE_MATCH(xCopyPlaneReq);
 
-   /* Check to see if stuff->bitPlane has exactly ONE bit set */
-   if(stuff->bitPlane == 0 || stuff->bitPlane & (stuff->bitPlane - 1)) 
-   {
-       client->errorValue = stuff->bitPlane;
-       return(BadValue);
-   }
-
     VALIDATE_DRAWABLE_AND_GC(stuff->dstDrawable, pdstDraw, pGC, client);
     if (stuff->dstDrawable != stuff->srcDrawable)
     {
@@ -1601,6 +1594,15 @@ ProcCopyPlane(client)
     }
     else
         psrcDraw = pdstDraw;
+
+    /* Check to see if stuff->bitPlane has exactly ONE good bit set */
+    if(stuff->bitPlane == 0 || (stuff->bitPlane & (stuff->bitPlane - 1)) ||
+       (stuff->bitPlane > (1L << (psrcDraw->depth - 1))))
+    {
+       client->errorValue = stuff->bitPlane;
+       return(BadValue);
+    }
+
     (*pGC->CopyPlane)(psrcDraw, pdstDraw, pGC, stuff->srcX, stuff->srcY,
 				 stuff->width, stuff->height, 
 				 stuff->dstX, stuff->dstY, stuff->bitPlane);
