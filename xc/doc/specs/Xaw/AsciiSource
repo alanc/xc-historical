@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: AsciiSource,v 1.12 94/05/01 19:21:18 gildea Exp $
 .NH 2
 Ascii Source Object and Multi Source Object
 .LP
@@ -19,7 +19,7 @@ Class		asciiSrcObjectClass or multiSrcObjectClass
 Class Name	AsciiSrc or MultiSrc
 .IN "AsciiSrc object" "class name"
 Superclass	TextSource
-.sp 1
+.De
 .LP
 The AsciiSrc or MultiSrc object is used by a text widget to read the text from a
 file or string in memory.  Depending on its \fBinternational\fP resource, an
@@ -79,10 +79,9 @@ of the string resource as its own text buffer, and the \fBlength\fP
 resource indicates the buffer size.   In this case
 the buffer contents change as the user types at the widget;
 it is not necessary to call \fBXtGetValues\fP on the string 
-resource to determine the contents of the buffer -- it will
+resource to determine the contents of the buffer\*-it will
 simply return the address of the application's implementation
 of the text buffer.
-.De
 .NH 3
 Resources
 .LP

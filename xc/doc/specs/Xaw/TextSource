@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: TextSource,v 1.14 94/05/01 19:20:57 gildea Exp $
 .NH 2
 TextSrc Object
 .LP
@@ -19,7 +19,7 @@ Class		textSrcObjectClass
 Class Name	TextSrc
 .IN "TextSrc object" "class name"
 Superclass	Object
-.sp 1
+.De
 .LP
 The TextSrc object is the root object for all text sources.  Any new text
 source objects should be subclasses of the TextSrc Object.  The
@@ -28,7 +28,6 @@ source to export.
 .LP
 Since all text sources will have some resources in common the
 TextSrc defines a few new resources.  
-.De
 .NH 3
 Resources
 .LP

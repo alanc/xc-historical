@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: TextSink,v 1.15 94/05/01 19:21:10 gildea Exp $
 .NH 2
 TextSink Object
 .LP
@@ -19,7 +19,7 @@ Class		textSinkObjectClass
 Class Name	TextSink
 .IN "TextSink object" "class name"
 Superclass	Object
-.sp 1
+.De
 .LP
 The TextSink object is the root object for all text sinks.  Any new text
 sink objects should be subclasses of the TextSink Object.  The TextSink
@@ -28,7 +28,6 @@ export.
 .LP
 Since all text sinks will have some resources in common, the TextSink
 defines a few new resources.
-.De
 .NH 3
 Resources
 .LP

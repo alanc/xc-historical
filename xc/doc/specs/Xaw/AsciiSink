@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: AsciiSink,v 1.9 94/05/01 19:21:16 gildea Exp $
 .LP
 .NH 2
 Ascii Sink Object and Multi Sink Object
@@ -20,7 +20,7 @@ Class		asciiSinkObjectClass
 Class Name	AsciiSink
 .IN "AsciiSink object" "class name"
 Superclass	TextSink
-.sp 1
+.De
 .LP
 The AsciiSink or MultiSink object is used by a text widget to render the text.
 Depending on its \fBinternational\fP resource, a
@@ -34,7 +34,6 @@ and Carriage Return.  The name has been left as ``AsciiSink'' for compatibility.
 handling Tab and Carriage
 Return.\fP    The source object also reports the text window metrics to the
 text widgets.
-.De
 .NH 3
 Resources
 .LP
