@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.62 89/10/05 17:53:21 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.63 89/10/09 16:20:02 jim Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -542,13 +542,11 @@ Widget current, request, new;
   }
 
 #ifdef SHAPE
-  if ( XtIsRealized(new) &&
-      ((oldcbw->command.shape_style != cbw->command.shape_style) ||
-       (oldcbw->core.width != cbw->core.width) ||
-       (oldcbw->core.height != cbw->core.height)) ) 
+  if ( XtIsRealized(new)
+       && oldcbw->command.shape_style != cbw->command.shape_style
+       && !ShapeButton(cbw))
   {
-      if (!ShapeButton(cbw))
-	  cbw->command.shape_style = oldcbw->command.shape_style;
+      cbw->command.shape_style = oldcbw->command.shape_style;
   }
 #endif /*SHAPE*/
 
