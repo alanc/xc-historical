@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.19 89/08/30 19:23:11 keith Exp $ */
+/* $XConsortium: misprite.c,v 5.20 89/09/12 14:16:22 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -1499,8 +1499,16 @@ miSpriteTextOverlap (pDraw, font, x, y, n, charinfo, imageblt, w, cursorBox)
 			y + extents.overallDescent));
 }
 
+/*
+ * values for textType:
+ */
+#define TT_POLY8   0
+#define TT_IMAGE8  1
+#define TT_POLY16  2
+#define TT_IMAGE16 3
+
 static int 
-miSpriteText (pDraw, pGC, x, y, count, chars, fontEncoding, imageblt, cursorBox)
+miSpriteText (pDraw, pGC, x, y, count, chars, fontEncoding, textType, cursorBox)
     DrawablePtr	    pDraw;
     GCPtr	    pGC;
     int		    x,
@@ -1508,7 +1516,7 @@ miSpriteText (pDraw, pGC, x, y, count, chars, fontEncoding, imageblt, cursorBox)
     unsigned long    count;
     char	    *chars;
     FontEncoding    fontEncoding;
-    Bool	    imageblt;
+    Bool	    textType;
     BoxPtr	    cursorBox;
 {
     CharInfoPtr *charinfo;
@@ -1516,6 +1524,10 @@ miSpriteText (pDraw, pGC, x, y, count, chars, fontEncoding, imageblt, cursorBox)
     unsigned long n, i;
     unsigned int w;
     void    	  (*drawFunc)();
+
+    Bool imageblt;
+
+    imageblt = (textType == TT_IMAGE8) || (textType == TT_IMAGE16);
 
     charinfo = (CharInfoPtr *) ALLOCATE_LOCAL(count * sizeof(CharInfoPtr));
     if (!charinfo)
@@ -1532,8 +1544,37 @@ miSpriteText (pDraw, pGC, x, y, count, chars, fontEncoding, imageblt, cursorBox)
 	if (miSpriteTextOverlap(pDraw, pGC->font, x, y, n, charinfo, imageblt, w, cursorBox))
 	    miSpriteRemoveCursor(pDraw->pScreen);
 
+#ifdef AVOID_GLYPHBLT
+	/*
+	 * On displays like Apollos, which do not optimize the GlyphBlt functions because they
+	 * convert fonts to their internal form in RealizeFont and optimize text directly, we
+	 * want to invoke the text functions here, not the GlyphBlt functions.
+	 */
+	switch (textType)
+	{
+	case TT_POLY8:
+	    drawFunc = pGC->ops->PolyText8;
+	    break;
+	case TT_IMAGE8:
+	    drawFunc = pGC->ops->ImageText8;
+	    break;
+	case TT_POLY16:
+	    drawFunc = pGC->ops->PolyText16;
+	    break;
+	case TT_IMAGE16:
+	    drawFunc = pGC->ops->ImageText16;
+	    break;
+	}
+	(*drawFunc) (pDraw, pGC, x, y, (int) count, chars);
+#else /* don't AVOID_GLYPHBLT */
+	/*
+	 * On the other hand, if the device does use GlyphBlt ultimately to do text, we
+	 * don't want to slow it down by invoking the text functions and having them call
+	 * GetGlyphs all over again, so we go directly to the GlyphBlt functions here.
+	 */
 	drawFunc = imageblt ? pGC->ops->ImageGlyphBlt : pGC->ops->PolyGlyphBlt;
 	(*drawFunc) (pDraw, pGC, x, y, n, charinfo, pGC->font->pGlyphs);
+#endif /* AVOID_GLYPHBLT */
     }
     DEALLOCATE_LOCAL(charinfo);
     return x + w;
@@ -1555,7 +1596,7 @@ miSpritePolyText8(pDrawable, pGC, x, y, count, chars)
 
     if (GC_CHECK((WindowPtr) pDrawable))
 	ret = miSpriteText (pDrawable, pGC, x, y, (unsigned long)count, chars,
-			    Linear8Bit, FALSE, &pScreenPriv->saved);
+			    Linear8Bit, TT_POLY8, &pScreenPriv->saved);
     else
 	ret = (*pGC->ops->PolyText8) (pDrawable, pGC, x, y, count, chars);
 
@@ -1581,7 +1622,7 @@ miSpritePolyText16(pDrawable, pGC, x, y, count, chars)
 	ret = miSpriteText (pDrawable, pGC, x, y, (unsigned long)count,
 			    (char *)chars,
 			    pGC->font->pFI->lastRow == 0 ?
-			    Linear16Bit : TwoD16Bit, FALSE, &pScreenPriv->saved);
+			    Linear16Bit : TwoD16Bit, TT_POLY16, &pScreenPriv->saved);
     else
 	ret = (*pGC->ops->PolyText16) (pDrawable, pGC, x, y, count, chars);
 
@@ -1603,7 +1644,7 @@ miSpriteImageText8(pDrawable, pGC, x, y, count, chars)
 
     if (GC_CHECK((WindowPtr) pDrawable))
 	(void) miSpriteText (pDrawable, pGC, x, y, (unsigned long)count,
-			     chars, Linear8Bit, TRUE, &pScreenPriv->saved);
+			     chars, Linear8Bit, TT_IMAGE8, &pScreenPriv->saved);
     else
 	(*pGC->ops->ImageText8) (pDrawable, pGC, x, y, count, chars);
 
@@ -1626,7 +1667,7 @@ miSpriteImageText16(pDrawable, pGC, x, y, count, chars)
 	(void) miSpriteText (pDrawable, pGC, x, y, (unsigned long)count,
 			     (char *)chars,
 			    pGC->font->pFI->lastRow == 0 ?
-			    Linear16Bit : TwoD16Bit, TRUE, &pScreenPriv->saved);
+			    Linear16Bit : TwoD16Bit, TT_IMAGE16, &pScreenPriv->saved);
     else
 	(*pGC->ops->ImageText16) (pDrawable, pGC, x, y, count, chars);
 
