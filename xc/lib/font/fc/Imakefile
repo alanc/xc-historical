@@ -9,6 +9,7 @@
             OBJS = fsconvert.o fserve.o fsio.o
          DEFINES = $(SIGNAL_DEFINES)
 
+NormalLibraryObjectRule()
 NormalLibraryTarget(fontfc,$(OBJS))
 all:: $(OBJS)
 NormalLintTarget($(SRCS))
