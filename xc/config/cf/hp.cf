@@ -9,7 +9,6 @@
 #define OSMinorVersion         0
 #define StandardDefines        -Wc,-Nd4000,-Ns3000 -DSYSV
 #define LintOpts               -ax -Nd4000 -Ns3000 -Na25000 -DSYSV
-#define StandardCppDefines     -DSYSV
 #define LnCmd                  ln -s
 
 /* This defines the server you want */
@@ -18,7 +17,7 @@
 #define NeedBerklibInXlib      YES		/* snag Berklib for Xlib */
 
 
-/**/# platform:  $XConsortium: sun.sys,v 1.1 89/01/10 18:15:21 jim Exp $
+/**/# platform:  $XConsortium: hp.cf,v 1.2 89/01/11 14:58:27 jim Exp $
 /**/# operating system:  OSName
 
 /*
