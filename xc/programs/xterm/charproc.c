@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.85 89/06/12 12:09:13 jim Exp $
+ * $XConsortium: charproc.c,v 1.86 89/06/22 19:06:30 jim Exp $
  */
 
 
@@ -139,7 +139,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.85 89/06/12 12:09:13 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.86 89/06/22 19:06:30 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1397,15 +1397,15 @@ int		(*func)();
 			}
 			break;
 		case 40:		/* 132 column mode		*/
-			(*func)(&screen->c132, 1);
+			screen->c132 = (func == bitset);
 			update_allow132();
 			break;
 		case 41:		/* curses hack			*/
-			(*func)(&screen->curses, 1);
+			screen->curses = (func == bitset);
 			update_cursesemul();
 			break;
 		case 44:		/* margin bell			*/
-			(*func)(&screen->marginbell, 1);
+			screen->marginbell = (func == bitset);
 			if(!screen->marginbell)
 				screen->bellarmed = -1;
 			update_marginbell();
