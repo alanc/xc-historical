@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.4 87/09/13 23:32:44 swick Locked $";
+static char rcsid[] = "$Header: Text.c,v 1.5 87/12/02 16:07:42 swick Locked $";
 #endif lint
 
 /*
@@ -913,6 +913,8 @@ CheckResizeOrOverflow(ctx)
     XtTextPosition posToCheck;
     int     visible, line, width;
     XtWidgetGeometry rbox;
+    XtGeometryResult reply;
+
     if (ctx->text.options & resizeWidth) {
 	width = 0;
 	for (line=0 ; line<ctx->text.lt.lines ; line++)
@@ -922,9 +924,11 @@ CheckResizeOrOverflow(ctx)
 	if (width > ctx->core.width) {
 	    rbox.request_mode = CWWidth;
 	    rbox.width = width;
-	    if ( XtMakeGeometryRequest(ctx, &rbox, NULL) != XtGeometryNo) {
-	      ctx->core.width = rbox.width;
-	      }
+	    reply = XtMakeGeometryRequest(ctx, &rbox, &rbox);
+	    if (reply == XtGeometryAlmost)
+	        reply = XtMakeGeometryRequest(ctx, &rbox, NULL);
+	    if (reply == XtGeometryYes)
+	        ctx->core.width = rbox.width;
 	}
     }
     if ((ctx->text.options & resizeHeight) || (ctx->text.options & scrollOnOverflow)) {
@@ -949,9 +953,11 @@ CheckResizeOrOverflow(ctx)
 		rbox.request_mode = CWHeight;
 		rbox.height = (*(ctx->text.sink->maxHeight))
 				(ctx, line + 1) + (2*yMargin)+2;
-		if (XtMakeGeometryRequest(ctx, &rbox, NULL) != XtGeometryNo) {
-	      		ctx->core.width = rbox.height ;
-	      };
+		reply = XtMakeGeometryRequest(ctx, &rbox, &rbox);
+		if (reply == XtGeometryAlmost)
+		    reply = XtMakeGeometryRequest(ctx, &rbox, NULL);
+		if (reply == XtGeometryYes)
+		    ctx->core.height = rbox.height;
 	    }
     }
 }
