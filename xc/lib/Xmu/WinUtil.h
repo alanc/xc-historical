@@ -1,5 +1,5 @@
 /*
- * $XConsortium: WinUtil.h,v 1.2 89/09/22 11:52:20 jim Exp $
+ * $XConsortium: WinUtil.h,v 1.3 89/09/22 12:10:20 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -22,8 +22,34 @@
 #ifndef _XMU_WINDOWUTIL_H_
 #define _XMU_WINDOWUTIL_H_
 
-extern Window XmuClientWindow();
-extern Bool XmuUpdateMapHints();
-extern Screen *XmuScreenOfWindow();
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
+
+extern Window XmuClientWindow(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    Window 	/* win */
+#endif
+);
+
+extern Bool XmuUpdateMapHints(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    Window	/* win */,
+    XSizeHints*	/* hints */
+#endif
+);
+
+extern Screen *XmuScreenOfWindow(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    Window 	/* w */
+#endif
+);
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #endif /* _XMU_WINDOWUTIL_H_ */

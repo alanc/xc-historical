@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CharSet.h,v 1.1 89/07/14 17:51:53 jim Exp $
+ * $XConsortium: CharSet.h,v 1.2 89/09/22 15:33:14 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -22,7 +22,33 @@
 #ifndef _XMU_CHARSET_H_
 #define _XMU_CHARSET_H_
 
-extern void XmuCopyISOLatin1Lowered();
-extern void XmuCopyISOLatin1Uppered();
-extern int XmuCompareISOLatin1();
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
+
+extern void XmuCopyISOLatin1Lowered(
+#if NeedFunctionPrototypes
+    char *		/* dst_return */,
+    _Xconst char *	/* src */
+#endif
+);
+
+extern void XmuCopyISOLatin1Uppered(
+#if NeedFunctionPrototypes
+    char *		/* dst_return */,
+    _Xconst char *	/* src */
+#endif
+);
+
+extern int XmuCompareISOLatin1(
+#if NeedFunctionPrototypes
+    _Xconst char *	/* first */,
+    _Xconst char *	/* second */
+#endif
+);
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
+
 #endif /* _XMU_CHARSET_H_ */

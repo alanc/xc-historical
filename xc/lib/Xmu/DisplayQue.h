@@ -1,4 +1,29 @@
-/* Coopyright 1989 Massachusetts Institute of Technology */
+/*
+ * $XConsortium$
+ *
+ * Copyright 1989 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
+ * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
+
+#ifndef _XMU_DISPLAYQUE_H_
+#define _XMU_DISPLAYQUE_H_
 
 #include <X11/Xmu/CloseHook.h>
 
@@ -76,11 +101,60 @@ typedef struct _XmuDisplayQueue {
 } XmuDisplayQueue;
 
 
-extern XmuDisplayQueue *XmuDQCreate ();
-extern Bool XmuDQDestroy ();
-extern XmuDisplayQueueEntry *XmuDQLookupDisplay ();
-extern XmuDisplayQueueEntry *XmuDQAddDisplay ();
-extern Bool XmuDQRemoveDisplay ();
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
 
+extern XmuDisplayQueue *XmuDQCreate(
+#if NeedFunctionPrototypes
+    int (*)(
+#if NeedNestedPrototypes
+	    XmuDisplayQueue*		/* queue */,
+	    XmuDisplayQueueEntry*	/* entry */
+#endif
+	    )	/* closefunc */,
+    int (*)(
+#if NeedNestedPrototypes
+	    XmuDisplayQueue*		/* queue */
+#endif
+	    )	/* freefunc */,
+    caddr_t	/* data */
+#endif
+);
+
+extern Bool XmuDQDestroy(
+#if NeedFunctionPrototypes
+    XmuDisplayQueue*	/* q */,
+    Bool		/* docallbacks */
+#endif
+);
+
+extern XmuDisplayQueueEntry *XmuDQLookupDisplay(
+#if NeedFunctionPrototypes
+    XmuDisplayQueue*	/* q */,
+    Display*		/* dpy */
+#endif
+);
+
+extern XmuDisplayQueueEntry *XmuDQAddDisplay(
+#if NeedFunctionPrototypes
+    XmuDisplayQueue*	/* q */,
+    Display*		/* dpy */,
+    caddr_t		/* data */
+#endif
+);
+
+extern Bool XmuDQRemoveDisplay(
+#if NeedFunctionPrototypes
+    XmuDisplayQueue*	/* q */,
+    Display*		/* dpy */
+#endif
+);
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #define XmuDQNDisplays(q) ((q)->nentries)
+
+#endif /* _XMU_DISPLAYQUE_H_ */

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Atoms.h,v 1.2 89/12/07 09:22:15 rws Exp $
+ * $XConsortium: Atoms.h,v 1.3 89/12/08 12:03:56 rws Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -72,10 +72,48 @@ extern AtomPtr
 #define XA_TIMESTAMP(d)		XmuInternAtom(d, _XA_TIMESTAMP)
 #define XA_USER(d)		XmuInternAtom(d, _XA_USER)
 
-extern AtomPtr XmuMakeAtom( /* char* */ );
-extern Atom XmuInternAtom( /* Display*, AtomPtr */ );
-extern void XmuInternStrings( /* Display*, String*, Cardinal, Atom* */);
-extern char *XmuGetAtomName( /* Display*, Atom */ );
-extern char *XmuNameOfAtom( /* AtomPtr */ );
+
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
+
+extern char *XmuGetAtomName(
+#if NeedFunctionPrototypes
+    Display *	/* dpy */,
+    Atom	/* atom */
+#endif
+);
+
+extern Atom XmuInternAtom(
+#if NeedFunctionPrototypes
+    Display *	/* dpy */,
+    AtomPtr	/* atom_ptr */
+#endif
+);
+
+extern void XmuInternStrings(
+#if NeedFunctionPrototypes
+    Display *			/* dpy */,
+    _Xconst char * _Xconst *	/* names */,
+    Cardinal    		/* count */,
+    Atom *			/* atoms_return */
+#endif
+);
+
+extern AtomPtr XmuMakeAtom(
+#if NeedFunctionPrototypes
+    _Xconst char *		/* name	*/
+#endif
+);
+
+extern char *XmuNameOfAtom(
+#if NeedFunctionPrototypes
+    AtomPtr	/* atom_ptr */
+#endif
+);
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #endif /* _XMU_ATOMS_H_ */

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.23 89/06/07 16:50:58 jim Exp $
+ * $XConsortium: CloseHook.h,v 1.1 89/07/14 17:51:53 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -23,8 +23,54 @@
 #define _XMU_CLOSEHOOK_H_
 
 typedef caddr_t CloseHook;
-CloseHook XmuAddCloseDisplayHook (/* Display *, int (*)(), caddr_t */);
-Bool XmuRemoveCloseDisplayHook (/* Display *,CloseHook,int (*)(),caddr_t */);
-Bool XmuLookupCloseDisplayHook (/* Display *,CloseHook,int (*)(),caddr_t */);
+
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
+
+extern CloseHook XmuAddCloseDisplayHook(
+#if NeedFunctionPrototypes
+    Display *	/* dpy */,
+    int (*) (
+#if NeedNestedPrototypes
+	     Display *	/* dpy */,
+	     caddr_t	/* arg */
+#endif
+	     )	/* func */,
+    caddr_t	/* arg */
+#endif
+);
+
+extern Bool XmuLookupCloseDisplayHook(
+#if NeedFunctionPrototypes
+    Display *	/* dpy */,
+    CloseHook	/* handle */,
+    int (*)(
+#if NeedNestedPrototypes
+	    Display *	/* dpy */,
+	    caddr_t	/* arg */
+#endif
+	    )	/* func */,
+    caddr_t	/* arg  */
+#endif
+);
+
+extern Bool XmuRemoveCloseDisplayHook(
+#if NeedFunctionPrototypes
+    Display *	/* dpy */,
+    CloseHook	/* handle */,
+    int (*)(
+#if NeedNestedPrototypes
+	    Display *	/* dpy */,
+	    caddr_t	/* arg */
+#endif
+	    )	/* func */,
+    caddr_t	/* arg */
+#endif
+);
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #endif /* _XMU_CLOSEHOOK_H_ */
