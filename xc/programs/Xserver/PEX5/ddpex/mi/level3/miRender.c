@@ -1,4 +1,4 @@
-/* $XConsortium: miRender.c,v 5.3 91/07/19 16:02:57 hersh Exp $ */
+/* $XConsortium: miRender.c,v 5.4 91/11/15 19:43:06 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -371,6 +371,60 @@ RenderOCs(pRend, numOCs, pOCs)
 
     return (Success);
 }
+
+/*++
+ |
+ |  Function Name:	RenderElements
+ |
+ |  Function Description:
+ |	 Supports the PEXRenderElements request.
+ |
+ |  Note(s):
+ |
+ --*/
+
+ddpex3rtn
+RenderElements(pRend, pStr, range)
+/* in */
+    ddRendererPtr       pRend;	  /* renderer handle */
+    diStructHandle      pStr;
+    ddElementRange      *range;
+/* out */
+{
+
+    ddpex3rtn		err = Success;
+
+  /* JSH - this functionality to be added later */
+
+  return(err);
+}
+
+/*++
+ |
+ |  Function Name:      AccumulateState	
+ |
+ |  Function Description:
+ |	 Supports the PEXAccumulateState request.
+ |
+ |  Note(s):
+ |
+ --*/
+
+ddpex3rtn
+AccumulateState(pRend,  pAccSt )
+/* in */
+    ddRendererPtr       pRend;	  /* renderer handle */
+ddAccStPtr          pAccSt;	  /* accumulate state handle */
+/* out */
+{
+
+    ddpex3rtn		err = Success;
+
+  /* JSH - this functionality to be added later */
+
+  return(err);
+}
+
 
 /*++
  |
@@ -927,7 +981,7 @@ BeginPicking(pRend, pPM)
     /* do double buffering stuff */
     /* do hlhsr stuff */
 
-    pRend->state = PEXRendering;
+    pRend->state = PEXPicking;
 
     return (Success);
 }
