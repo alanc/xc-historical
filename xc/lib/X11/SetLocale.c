@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.27 91/04/08 10:04:23 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.28 91/04/08 11:50:11 rws Exp $
  */
 
 /*
@@ -34,19 +34,16 @@
 
 #include "Xlibint.h"
 #include "Xlcint.h"
-#ifdef X_NOT_STDC_ENV
 #include <X11/Xlocale.h>
-#else
 #include <X11/Xos.h>
-#endif
+
+#ifdef XLOCALE
+
+/* alternative setlocale() for when the OS does not provide one */
 
 #ifdef X_NOT_STDC_ENV
 extern char *getenv();
 #endif
-
-#ifdef X_NOT_STDC_ENV
-
-/* alternative setlocale() for when the OS does not provide one */
 
 #define MAXLOCALE	64	/* buffer size of locale name */
 
@@ -89,9 +86,8 @@ _Xsetlocale(category, name)
     return locale_name;
 }
 
-#endif /* X_NOT_STDC_ENV */
+#else /* XLOCALE */
 
-#ifndef X_NOT_STDC_ENV
 /*
  * _XlcMapOSLocaleName is an implementation dependent routine that derives
  * the LC_CTYPE locale name as used in the sample implementation from that
@@ -135,4 +131,4 @@ _XlcMapOSLocaleName(osname, siname)
 
 #endif /* hpux */
 
-#endif  /* X_NOT_STDC_ENV */
+#endif  /* XLOCALE */
