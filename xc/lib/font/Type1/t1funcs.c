@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: t1funcs.c,v 1.4 91/10/10 11:19:28 rws Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -591,7 +591,7 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
        clearmemory(type1, sizeof(struct type1font));
  
        /* heuristic for "maximum" size of pool we'll need: */
-       size = 20000 + 12 * vals->pixel * sizeof(short);
+       size = 200000 + 120 * vals->pixel * sizeof(short);
        if (size < 0 || NULL == (pool = xalloc(size))) {
                xfree(type1);
                xfree(pFont);
@@ -605,9 +605,11 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
  
        glyphs = type1->glyphs;
  
-       for (p = entry->name.name, i = 13; --i >= 0 && p != NULL; p = strchr(p + 1, '-')) { ; }
- 
-       if (p != NULL && !strncmp(p, "-ADOBE-FONTSPECIFIC", 19))
+       p = entry->name.name + entry->name.length - 19;
+       
+       if (entry->name.ndashes == 14 &&
+	   p >= entry->name.name &&
+	   !strcmp (p, "-adobe-fontspecific"))
                codepage = SYMBOL;
        else
                codepage = ISO8859;
