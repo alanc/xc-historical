@@ -1,4 +1,4 @@
-/* $XConsortium: XErrHndlr.c,v 11.16 91/11/09 15:39:57 keith Exp $ */
+/* $XConsortium: XErrHndlr.c,v 11.17 93/07/09 15:24:40 gildea Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -46,7 +46,7 @@ XErrorHandler XSetErrorHandler(handler)
     }
     UnlockMutex();
 
-    return oldhandler;
+    return (XErrorHandler) oldhandler;
 }
 
 /* 
@@ -79,5 +79,5 @@ XIOErrorHandler XSetIOErrorHandler(handler)
     }
     UnlockMutex();
 
-    return oldhandler;
+    return (XIOErrorHandler) oldhandler;
 }

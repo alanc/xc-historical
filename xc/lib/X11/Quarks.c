@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Quarks.c,v 1.35 91/03/09 17:45:57 rws Exp $
+ * $XConsortium: Quarks.c,v 1.36 91/03/11 09:03:34 rws Exp $
  */
 
 /***********************************************************
@@ -107,6 +107,11 @@ static char *permalloc(length)
     return(ret);
 }
 
+#ifndef WORD64
+typedef struct {char a; double b;} TestType1;
+typedef struct {char a; unsigned long b;} TestType2;
+#endif
+
 char *Xpermalloc(length)
     unsigned int length;
 {
@@ -114,9 +119,8 @@ char *Xpermalloc(length)
 
     if (neverFreeTableSize && length < NEVERFREETABLESIZE) {
 #ifndef WORD64
-	if ((sizeof(struct {char a; double b;}) !=
-	     (sizeof(struct {char a; unsigned long b;}) -
-	      sizeof(unsigned long) + sizeof(double))) &&
+	if ((sizeof(TestType1) !=
+	     (sizeof(TestType2) - sizeof(unsigned long) + sizeof(double))) &&
 	    !(length & (DALIGN-1)) &&
 	    (i = (NEVERFREETABLESIZE - neverFreeTableSize) & (DALIGN-1))) {
 	    neverFreeTableSize -= DALIGN - i;
