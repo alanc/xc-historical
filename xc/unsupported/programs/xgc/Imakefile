@@ -1,10 +1,13 @@
-       DEFINES = -DXAW_BC
-          SRCS = dashlist.c planemask.c getfilename.c tests.c text.c choice.c \
-                 main.c interpret.c record.c testfrac.c
-          OBJS = dashlist.o planemask.o getfilename.o tests.o text.o choice.o \
-                 main.o interpret.o record.o testfrac.o
+	DEFINES = -DXAW_BC
+           SRCS = dashlist.c planemask.c getfilename.c tests.c text.c \
+		  choice.c main.c interpret.c record.c testfrac.c
+      OTHERSRCS = gram.y lex.l
+           OBJS = dashlist.o planemask.o getfilename.o tests.o text.o \
+		  choice.o main.o interpret.o record.o testfrac.o \
+		  gram.o lex.o
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
   SYS_LIBRARIES = -lm
+	 YFLAGS = -d
 
 ComplexProgramTarget(xgc)
 
