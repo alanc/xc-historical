@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.108 94/03/22 15:41:16 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.109 94/03/30 12:07:21 gildea Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -61,7 +61,6 @@ XTWARNINGPREFIX = XtWarningPrefix
  RCONST_DEFINES = -DNORCONST
 #endif
 
-   INSTALLFLAGS = $(INSTINCFLAGS)
        LINTLIBS = $(LINTXLIB)
 
 HEADERS = \
