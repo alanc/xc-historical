@@ -1,28 +1,28 @@
 /*
-* $XConsortium: omronInit.c,v 1.1 94/01/04 19:19:02 rob Exp $
-* Copyright 1992, 1993 Data General Corporation;
-* Copyright 1991, 1992, 1993 OMRON Corporation  
-*
-* Permission to use, copy, modify, distribute, and sell this software and its
-* documentation for any purpose is hereby granted without fee, provided that
-* the above copyright notice appear in all copies and that both that copyright
-* notice and this permission notice appear in supporting documentation, and
-* that neither the name OMRON or DATA GENERAL be used in advertising or
-* publicity pertaining to distribution of the software without specific,
-* written prior permission of the party whose name is to be used.  Neither 
-* OMRON or DATA GENERAL make any representation about the suitability of this
-* software for any purpose.  It is provided "as is" without express or 
-* implied warranty.  
-*
-* OMRON AND DATA GENERAL EACH DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
-* SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
-* IN NO EVENT SHALL OMRON OR DATA GENERAL BE LIABLE FOR ANY SPECIAL, INDIRECT
-* OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
-* USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
-* TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
-* OF THIS SOFTWARE.
-*
-*/
+ * $XConsortium: omronInit.c,v 1.2 94/01/05 16:55:57 rob Exp $
+ * Copyright 1992, 1993 Data General Corporation;
+ * Copyright 1991, 1992, 1993 OMRON Corporation  
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting documentation, and
+ * that neither the name OMRON or DATA GENERAL be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission of the party whose name is to be used.  Neither 
+ * OMRON or DATA GENERAL make any representation about the suitability of this
+ * software for any purpose.  It is provided "as is" without express or 
+ * implied warranty.  
+ *
+ * OMRON AND DATA GENERAL EACH DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+ * IN NO EVENT SHALL OMRON OR DATA GENERAL BE LIABLE FOR ANY SPECIAL, INDIRECT
+ * OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+ * USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+ * OF THIS SOFTWARE.
+ *
+ */
 
 #include "omron.h"
 #include "omronFb.h"
@@ -42,25 +42,30 @@ static void omronResetConsoleMode();
 #ifndef luna88k
 # ifdef uniosu
 #  ifndef luna2
-static OmronFbProc omron_fb_proc_2 = {
+static OmronFbProc omron_fb_proc_2 =
+{
     omronFsBmCreate,  omronFsBmInit,  omronFsBmGiveUp
 };
 #  endif
 # endif /* uniosu */
-static OmronFbProc omron_fb_proc_1 = {
+static OmronFbProc omron_fb_proc_1 =
+{
     omronDtBmCreate,  omronDtBmInit,  omronDtBmGiveUp
 };
 #else /* luna88k */
-static OmronFbProc omron_fb_proc_1 = {
+static OmronFbProc omron_fb_proc_1 =
+{
     omron88kBmCreate, omron88kBmInit, omron88kBmGiveUp
 };
 #ifdef USE_24PLANES
-static OmronFbProc omron_fb_proc_2 = {
+static OmronFbProc omron_fb_proc_2 =
+{
     omron88kBm24Create, omron88kBm24Init, omron88kBm24GiveUp
 };
 #endif
 #ifdef USE_VME8PLANES
-static OmronFbProc omron_fb_proc_3 = {
+static OmronFbProc omron_fb_proc_3 =
+{
     omronVme8pBmCreate, omronVme8pBmInit, omronVme8pBmGiveUp
 };
 #endif
@@ -69,37 +74,35 @@ static OmronFbProc omron_fb_proc_3 = {
 
 int
 InitOutput(pScreenInfo, argc, argv)
-ScreenInfo 	  *pScreenInfo;
-int     	  argc;
-char    	  **argv;
+    ScreenInfo 	  *pScreenInfo;
+    int     	  argc;
+    char    	  **argv;
 {
-static PixmapFormatRec  MonoFormats = {
+    static PixmapFormatRec  MonoFormats =
+    {
 	1, 1, BITMAP_SCANLINE_PAD,  /* 1-bit deep */
     };
 #ifdef USE_24PLANES
-static PixmapFormatRec  Fb24Formats[] = {
+    static PixmapFormatRec  Fb24Formats[] =
+    {
 	1, 1, BITMAP_SCANLINE_PAD,	/* 1-bit deep */
 	24, 32, BITMAP_SCANLINE_PAD /* 24-bit deep */
     };
 #endif
 #ifdef USE_VME8PLANES
-static PixmapFormatRec  Fb8Formats[] = {
+    static PixmapFormatRec  Fb8Formats[] =
+    {
 	1, 1, BITMAP_SCANLINE_PAD,	/* 1-bit deep */
 	8, 8, BITMAP_SCANLINE_PAD   /* 8-bit deep */
     };
 #endif
-static Bool omronFbInfo     = FALSE;
-static Bool omronDevsCreate = FALSE;
-    
+    static Bool omronFbInfo 	= FALSE;
+    static Bool omronDevsCreate = FALSE;
+
     if (!omronFbInfo)
     {
 	if (omronGetFbInfo(&omron_fb_info) != TRUE) 
 	    FatalError("Can't get framebuffer information.\n");
-
-	pScreenInfo->imageByteOrder     = IMAGE_BYTE_ORDER;
-	pScreenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
-	pScreenInfo->bitmapScanlinePad  = BITMAP_SCANLINE_PAD;
-	pScreenInfo->bitmapBitOrder     = BITMAP_BIT_ORDER;
 	omronFbInfo = TRUE;
     }
 
@@ -126,49 +129,44 @@ static Bool omronDevsCreate = FALSE;
     }
     else
 #endif
+
     {
-	pScreenInfo->numPixmapFormats   = 1;
-	pScreenInfo->formats[0]         = MonoFormats;
+	pScreenInfo->numPixmapFormats = 1;
+	pScreenInfo->formats[0]       = MonoFormats;
     }
-    
+
     if (!omronDevsCreate)
     {
 	omronSetConsoleMode();
 
 	if (!(* omron_fb_info.func->CreateProc)(&omron_fb_info))
 	    FatalError("Can't create framebuffer.\n");
-
-	if (AddScreen(omronScreenInit, argc, argv) < 0)
-	    FatalError("Can't add screen\n");
-
-	omronDevsCreate = TRUE;
     }
-}
 
+    if(AddScreen(omronScreenInit, argc, argv) < 0)
+	FatalError("Can't add screen\n");
+
+    omronDevsCreate = TRUE;
+}
 
 static Bool
 omronScreenInit(screenIndex, pScreen, argc, argv)
     int		screenIndex;
     ScreenPtr	pScreen;
     int		argc;
-    char 	**argv;
+    char 		**argv;
 {
     if (omronGeneration != serverGeneration)
     {
-	if ((omronScreenIndex = AllocateScreenPrivateIndex()) <0)
+	if((omronScreenIndex = AllocateScreenPrivateIndex()) <0)
 	{
 	    ErrorF("AllocateScreenPrivateIndex error.\n");
 	    return FALSE;
 	}
-#ifndef MTX
-	pScreen->devPrivates[omronScreenIndex].ptr = (pointer)&omron_fb_info;
-#endif /* MTX */
 
 	omronGeneration = serverGeneration;
     }
-#ifdef MTX
     pScreen->devPrivates[omronScreenIndex].ptr = (pointer)&omron_fb_info;
-#endif /* MTX */
 
     return((* omron_fb_info.func->InitProc)(screenIndex, pScreen, argc, argv));
 }
@@ -194,9 +192,7 @@ InitInput(argc, argv)
     miRegisterPointerDevice(screenInfo.screens[0], p);
 
     if (mieqInit (k, p) != TRUE)
-    {
 	FatalError("Enqueue init error.\n");
-    }
 
     omronSetIoHandler(omronEnqueueEvents);
 
@@ -219,36 +215,32 @@ omronGetFbInfo(omron_fb_info)
 
     if ( fb_type )
     {
-	omron_fb_info->fb_width = FB_WIDTH;  
-	omron_fb_info->fb_height = FB_HEIGHT;  
-	omron_fb_info->fb_depth = 1;
-
 	if (strcmp(fb_type, "DT_BM") == 0)
 	{
 	    omron_fb_info->fb_type = DT_BM;
 	    omron_fb_info->func  = &omron_fb_proc_1;
-	}
+	} 
 	else if (strcmp(fb_type, "DT_BM8") == 0)
 	{
 	    omron_fb_info->fb_type = DT_BM8;
 	    omron_fb_info->func  = &omron_fb_proc_1;
-	}
+	} 
 	else if (strcmp(fb_type, "DT_PLASMA") == 0)
 	{
 	    omron_fb_info->fb_type = DT_PLASMA;
 	    omron_fb_info->func  = &omron_fb_proc_1;
-	}
+	} 
 	else if (strcmp(fb_type, "FS_BM") == 0)
 	{	
 	    omron_fb_info->fb_type = FS_BM;
 #if (defined(uniosu) && (! defined(luna2)))
 	    omron_fb_info->func  = &omron_fb_proc_2;
 #endif
-	}
+	} 
 	else if (strcmp(fb_type, "DS_BM") == 0)
 	{
 	    omron_fb_info->fb_type = DS_BM; 
-	}
+	} 
 #ifdef USE_24PLANES
 	else if (strcmp(fb_type, "DT_BM24") == 0)
 	{
@@ -276,12 +268,16 @@ omronGetFbInfo(omron_fb_info)
 	{
 	    omron_fb_info->scr_width = SCREEN_WIDTH;  
 	    omron_fb_info->scr_height = SCREEN_HEIGHT;  
-	}
+	} 
 	else
 	{
 	    omron_fb_info->scr_width = PLASMA_SCREEN_WIDTH;  
 	    omron_fb_info->scr_height = PLASMA_SCREEN_HEIGHT;  
 	}
+
+	omron_fb_info->fb_width = FB_WIDTH;  
+	omron_fb_info->fb_height = FB_HEIGHT;  
+	omron_fb_info->fb_depth = 1;
 
 	return (TRUE);
     }
@@ -299,70 +295,73 @@ omronGetFbInfo(omron_fb_info)
 	return (FALSE);
     }
 #endif
+
     switch(machine_type & (MACH_MACH | MACH_GRAPHIC_BOARD))
     {
-	case MACH_DT | MACH_BM : /* we call LUNA */ 
-		omron_fb_info->fb_type = DT_BM;
-		omron_fb_info->func  = &omron_fb_proc_1;
-		break;
+	case MACH_DT | MACH_BM : /* we call LUNA */
 
-	case MACH_DT | MACH_PLASMA  : /* LUNA support plasma display */  
-		omron_fb_info->fb_type = DT_PLASMA;
-		omron_fb_info->func  = &omron_fb_proc_1;
-		break;
+	    omron_fb_info->fb_type = DT_BM;
+	    omron_fb_info->func  = &omron_fb_proc_1;
+	    break;
+
+	case MACH_DT | MACH_PLASMA  : /* LUNA support plasma display */
+
+	    omron_fb_info->fb_type = DT_PLASMA;
+	    omron_fb_info->func  = &omron_fb_proc_1;
+	    break;
 
 	case MACH_DS | MACH_BM : /* we call Mr. */
-		omron_fb_info->fb_type = DS_BM;
-		break;
+	    omron_fb_info->fb_type = DS_BM;
+	    break;
 
 	case MACH_FS | MACH_BM : /* we call M90 */
-		omron_fb_info->fb_type = FS_BM;
+	    omron_fb_info->fb_type = FS_BM;
 #if (defined(uniosu) && (! defined(luna2)))
-		omron_fb_info->func  = &omron_fb_proc_2;
+	    omron_fb_info->func  = &omron_fb_proc_2;
 #endif
-		break;
+	    break;
 	default : 
-		ErrorF("Can't support machine type. (0x%x)\n",machine_type);
-		return (FALSE);
+	    ErrorF("Can't support machine type. (0x%x)\n",machine_type);
+	    return (FALSE);
     }
 
     switch(machine_type & MACH_PLANE)
     {
 	case MACH_1_PLANE :
-		omron_fb_info->fb_depth = 1;
-		break;
+	    omron_fb_info->fb_depth = 1;
+	    break;
 
 	case MACH_4_PLANE :
-		omron_fb_info->fb_depth = 4;
-		break;
+	    omron_fb_info->fb_depth = 4;
+	    break;
 
 	case MACH_8_PLANE :
-		omron_fb_info->fb_depth = 8;
-		if(omron_fb_info->fb_type == DT_BM)
-		    omron_fb_info->fb_type = DT_BM8;
-		break;
+	    omron_fb_info->fb_depth = 8;
+	    if(omron_fb_info->fb_type == DT_BM)
+		omron_fb_info->fb_type = DT_BM8;
+	    break;
 
 #ifdef USE_24PLANES
 	case MACH_24_PLANE :
 	    omron_fb_info->fb_depth = 24;
 	    if(omron_fb_info->fb_type == DT_BM)
 	    {
-		omron_fb_info->fb_type = DT_BM24;
-		omron_fb_info->func  = &omron_fb_proc_2;
+		    omron_fb_info->fb_type = DT_BM24;
+		    omron_fb_info->func  = &omron_fb_proc_2;
 	    }
 	    break;
 #endif
 
 	default :
-		ErrorF("Can't support plane number. (0x%x)\n", machine_type); 
-		return (FALSE);
+	    ErrorF("Can't support plane number. (0x%x)\n", machine_type); 
+	    return (FALSE);
     }
 
     if (omron_fb_info->fb_type != DT_PLASMA)
     {
 	omron_fb_info->scr_width  = SCREEN_WIDTH;  
 	omron_fb_info->scr_height = SCREEN_HEIGHT;  
-    }
+    } 
     else
     {
 	omron_fb_info->scr_width  = PLASMA_SCREEN_WIDTH;  
