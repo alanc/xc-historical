@@ -250,6 +250,8 @@
 	(if reply-buffer
 	    (deallocate-reply-buffer reply-buffer)
 	  (return nil)))))
+  ;; Clear pointers to help the Garbage Collector
+  (setf (pending-command-process pending-command) nil)
   ;; Deallocate this pending-command
   (threaded-atomic-push pending-command *pending-command-free-list*
 			pending-command-next pending-command)
