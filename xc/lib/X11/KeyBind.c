@@ -1,11 +1,12 @@
 #include "copyright.h"
 
-/* $Header: XKeyBind.c,v 11.30 87/09/01 14:55:18 toddb Exp $ */
+/* $Header: XKeyBind.c,v 11.31 87/09/03 19:18:39 toddb Locked $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
 
 #define NEED_EVENTS
+#include "Xlib.h"
 #include "Xlibint.h"
 #include "Xutil.h"
 #include "keysym.h"
@@ -22,65 +23,6 @@ struct XKeytrans {
 };
 
 static struct XKeytrans *trans = NULL;
-
-KeySym XKeycodeToKeysym(dpy, keycode, col)
-     register Display *dpy;
-     int keycode;
-     int col;
-{
-     int ind;
-     /*
-      * if keycode not defined in set, this should really be impossible.
-      * in any case, if sanity check fails, return NoSymbol.
-      */
-     if (col < 0 || col > dpy->keysyms_per_keycode) return (NoSymbol);
-     if (keycode < dpy->min_keycode || keycode > dpy->max_keycode) 
-       return(NoSymbol);
-
-     ind = (keycode - dpy->min_keycode) * dpy->keysyms_per_keycode + col;
-     return (dpy->keysyms[ind]);
-}
-
-static struct ks_info {
-    char	*ks_name;
-    KeySym	ks_val;
-} keySymInfo[] = {
-#include	"ks_names.h"
-};
-
-KeySym XStringToKeysym(s)
-    char *s;
-{
-    int i;
-
-    /*
-     *	Yes,  yes,  yes.  I know this is a linear search,  and we should
-     *	do better,  but I'm in a hurry right now.
-     */
-
-    for (i = 0; i < ((sizeof keySymInfo)/(sizeof keySymInfo[0])); i++) {
-	if (strcmp(s, keySymInfo[i].ks_name) == 0)
-	    return (keySymInfo[i].ks_val);
-    }
-    return (NoSymbol);
-}
-
-char *XKeysymToString(ks)
-    KeySym ks;
-{
-    int i;
-
-    /*
-     *	Yes,  yes,  yes.  I know this is a linear search,  and we should
-     *	do better,  but I'm in a hurry right now.
-     */
-
-    for (i = 0; i < ((sizeof keySymInfo)/(sizeof keySymInfo[0])); i++) {
-	if (ks == keySymInfo[i].ks_val)
-	    return (keySymInfo[i].ks_name);
-    }
-    return ((char *) NULL);
-}
 
 KeySym XKeycodeToKeysym(dpy, kc, col)
     Display *dpy;
@@ -271,7 +213,7 @@ int XLookupString (event, buffer, nbytes, keysym, status)
 	    if ( IsModifierKey(symbol)   || IsCursorKey(symbol)
 		|| IsPFKey (symbol)      || IsFunctionKey(symbol)
 		|| IsMiscFunctionKey(symbol)
-		|| (symbol == XK_Compose) || (symbol == XK_Kanji))  return 0;
+		|| (symbol == XK_Multi_key) || (symbol == XK_Kanji))  return 0;
             buf[0] = byte4;
 	    /* if X keysym, convert to ascii by grabbing low 7 bits */
 	    if (byte3 == 0xFF) buf[0] &= 0x7F;
