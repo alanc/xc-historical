@@ -44,8 +44,10 @@ do
 			paths=$path
 			for filename
 			do
-				path=$path/$filename
-				paths=$paths$newline$path
+				if [ "$filename" != "." ]; then
+					path=$path/$filename
+					paths=$paths$newline$path
+				fi
 			done
 
 			mkdir $paths || status=$?
