@@ -7,7 +7,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.29 88/05/11 13:13:46 jim Exp $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.30 88/05/11 13:20:30 jim Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -20,6 +20,7 @@ static char *rcsid_xset_c = "$Header: xset.c,v 1.29 88/05/11 13:13:46 jim Exp $"
 #define ON 1
 #define OFF 0
 
+#define SERVER_DEFAULT (-1)
 #define DONT_CHANGE -2
 
 #define ALL -1
@@ -74,7 +75,7 @@ for (i = 1; i < argc; ) {
     set_click(dpy, 0);           /* If so, turn click off and  */
   } 
   else if (*arg == 'c') {         /* Well, does it start with "c", then? */
-    percent = -1;   /* Default click volume.      */
+    percent = SERVER_DEFAULT;		/* Default click volume. */
     arg = nextarg(i, argv);
     if (strcmp(arg, "on") == 0) {               /* Let click be default. */
       i++;
@@ -93,7 +94,7 @@ for (i = 1; i < argc; ) {
     set_bell_vol(dpy, 0);           /* Then turn off bell.    */
   } 
   else if (*arg == 'b') {                       /* Does it start w/ "b".  */
-    percent = -1;             /* Set bell to default.   */
+    percent = SERVER_DEFAULT;		/* Set bell to default. */
     arg = nextarg(i, argv);
     if (strcmp(arg, "on") == 0) {               /* Let it stay that way.  */
       set_bell_vol(dpy, percent);
@@ -156,9 +157,9 @@ for (i = 1; i < argc; ) {
   }
 /*  Set pointer (mouse) settings:  Acceleration and Threshold. */
   else if (strcmp(arg, "m") == 0 || strcmp(arg, "mouse") == 0) {
-    acc_num = -1;
-    acc_denom = -1;     /*  Defaults */
-    threshold = -1;
+    acc_num = SERVER_DEFAULT;		/* restore server defaults */
+    acc_denom = SERVER_DEFAULT;
+    threshold = SERVER_DEFAULT;
     if (i >= argc){
       set_mouse(dpy, acc_num, acc_denom, threshold);
       break;
@@ -389,10 +390,15 @@ Display *dpy;
 int acc_num, acc_denom, threshold;
 {
 int do_accel = True, do_threshold = True;
-if (acc_num == DONT_CHANGE)
+
+if (acc_num == DONT_CHANGE)		/* what an incredible crock... */
   do_accel = False;
 if (threshold == DONT_CHANGE)
   do_threshold = False;
+if (acc_denom <= 0)			/* shouldn't happen */
+  acc_denom = SERVER_DEFAULT;
+if (threshold == 0) threshold = 1;	/* in case person makes silly error */
+if (threshold < 0) threshold = SERVER_DEFAULT;
 XChangePointerControl(dpy, do_accel, do_threshold, acc_num,
 		      acc_denom, threshold);
 return;
@@ -410,8 +416,8 @@ int mask, value;
   if (mask == PREFER_BLANK) prefer_blank = value;
   if (mask == ALLOW_EXP) allow_exp = value;
   if (mask == ALL) {  /* "value" is ignored in this case.  (defaults) */
-    timeout = -1;
-    interval = -1;
+    timeout = SERVER_DEFAULT;
+    interval = SERVER_DEFAULT;
     prefer_blank = DefaultBlanking;
     allow_exp = DefaultExposures;
   }
@@ -510,7 +516,7 @@ printf ("Bell Duration (msec): %d \n", values.bell_duration);
 printf ("LED Mode: %o \t\t", values.led_mode);         %%*/
 
 printf ("Pointer (Mouse) Control Values:\n");
-printf ("Acceleration: %d \t", acc_num / acc_denom);
+printf ("Acceleration: %d (%d/%d)\t", acc_num / acc_denom, acc_num, acc_denom);
 printf ("Threshold: %d \n", threshold);
 printf ("Screen Saver:\n");
 printf ("Prefer Blanking: %s\t",
