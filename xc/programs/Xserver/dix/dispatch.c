@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.52 88/06/30 19:47:14 keith Exp $ */
+/* $Header: dispatch.c,v 1.53 88/07/05 18:52:05 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -76,7 +76,8 @@ extern void (* EventSwapVector[128]) ();
 extern void (* ReplySwapVector[256]) ();
 extern void Swap32Write(), SLHostsExtend(), SQColorsExtend(), WriteSConnectionInfo();
 extern void WriteSConnSetupPrefix();
-void KillAllClients();
+static void KillAllClients();
+static void DeleteClientFromAnySelections();
 
 /* buffers for clients. legal values below */
 static int nextFreeClientID=1;	   /* 0 is for the server */
@@ -3130,7 +3131,6 @@ void
 CloseDownClient(client)
     register ClientPtr client;
 {
-    extern void DeleteClientFromAnySelections();
     register int i;
       /* ungrab server if grabbing client dies */
     if (grabbingClient &&  (onlyClient == client))

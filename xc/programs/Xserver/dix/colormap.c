@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: colormap.c,v 1.70 88/06/06 11:01:25 keith Exp $ */
+/* $Header: colormap.c,v 1.71 88/06/06 11:33:10 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -40,6 +40,7 @@ extern XID clientErrorValue;
 static Pixel FindBestPixel();
 static void  CopyFree(), FreeCell(), AllocShared();
 static int   AllComp(), RedComp(), GreenComp(), BlueComp(), FreeClientPixels();
+static int   AllocDirect(), AllocPseudo(), AllocCP(), FreeCo();
 
 /* GetNextBitsOrBreak(bits, mask, base)  -- 
  * (Suggestion: First read the macro, then read this explanation.

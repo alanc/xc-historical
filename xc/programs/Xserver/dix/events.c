@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.146 88/06/07 18:13:13 rws Exp $ */
+/* $Header: events.c,v 1.147 88/07/05 14:38:03 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -142,6 +142,7 @@ extern void DoFocusEvents();
 extern Mask EventMaskForClient();
 extern WindowPtr CheckMotion();
 extern void WriteEventsToClient();
+static Bool CheckDeviceGrabs(), IsParent();
 
 extern GrabPtr CreateGrab();		/* Defined in grabs.c */
 extern void  DeleteGrab();
