@@ -16,6 +16,7 @@ XCOMM
 OS_NAME_DEFINES = OsNameDefines
 #endif
         CSSDEFS = $(OS_NAME_DEFINES) ConnectionFlags
+        BITDEFS = -DBITMAPDIR=\"$(INCDIR)/bitmaps\"
 
 HEADERS = \
 	Xmu.h \
@@ -138,25 +139,31 @@ all::
 # if DebugLibXmu
 SharedAndDebuggedLibraryObjectRule()
 SpecialSharedAndDebuggedObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
+SpecialSharedAndDebuggedObjectRule(LocBitmap.o,$(ICONFIGFILES),$(BITDEFS))
 # else
 SharedLibraryObjectRule()
 SpecialSharedObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
+SpecialSharedObjectRule(LocBitmap.o,$(ICONFIGFILES),$(BITDEFS))
 # endif
 #else
 # if DebugLibXmu && ProfileLibXmu
 DebuggedAndProfiledLibraryObjectRule()
 SpecialDebuggedAndProfiledObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
+SpecialDebuggedAndProfiledObjectRule(LocBitmap.o,$(ICONFIGFILES),$(BITDEFS))
 # else
 #  if DebugLibXmu 
 DebuggedLibraryObjectRule()
 SpecialDebuggedObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
+SpecialDebuggedObjectRule(LocBitmap.o,$(ICONFIGFILES),$(BITDEFS))
 #  else
 #   if ProfileLibXmu
 ProfiledLibraryObjectRule()
 SpecialProfiledObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
+SpecialProfiledObjectRule(LocBitmap.o,$(ICONFIGFILES),$(BITDEFS))
 #   else
 NormalLibraryObjectRule()
 SpecialObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
+SpecialObjectRule(LocBitmap.o,$(ICONFIGFILES),$(BITDEFS))
 #   endif
 #  endif
 # endif
