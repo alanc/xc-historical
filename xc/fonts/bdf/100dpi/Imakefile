@@ -1,6 +1,13 @@
+all::
+	@echo "skipping make all in bdf/100dpi until fonts arrive"
+
+/*
+
 SRCS = 
 OBJS = 
 
 MakeFonts()
 
 InstallFonts($(FONTDIR)/100dpi)
+
+ */
