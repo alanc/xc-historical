@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: atom.c,v 1.2 91/05/13 16:53:12 gildea Exp $ */
 /*
  * font server atom manipulations
  */
@@ -32,7 +32,7 @@
 #include "resource.h"
 
 #define InitialTableSize 100
-#define	FSA_LAST_PREDEFINED	1
+#define	FSA_LAST_PREDEFINED	0 /* only None is predefined */
 
 typedef struct _Node {
     struct _Node *left,
