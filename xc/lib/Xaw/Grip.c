@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Knob.c,v 1.6 87/12/17 16:41:08 swick Locked $";
+static char rcsid[] = "$Header: Knob.c,v 1.7 88/01/05 08:35:30 swick Locked $";
 #endif lint
 
 /*
@@ -47,9 +47,9 @@ static caddr_t defaultTranslations = (caddr_t)defaultTranslation;
 
 static XtResource resources[] = {
    {XtNwidth, XtCWidth, XrmRInt, sizeof(int),
-      XtOffset(KnobWidget, core.width), XtRString, "8" },
+      XtOffset(KnobWidget, core.width), XtRString, "6" },
    {XtNheight, XtCHeight, XrmRInt, sizeof(int),
-      XtOffset(KnobWidget, core.height), XtRString, "8" },
+      XtOffset(KnobWidget, core.height), XtRString, "6" },
    {XtNbackground, XtCBackground, XrmRPixel, sizeof(Pixel),
       XtOffset(KnobWidget, core.background_pixel), XtRString, "Black"},
    {XtNborderWidth, XtCBorderWidth, XrmRInt, sizeof(int),
