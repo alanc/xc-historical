@@ -8,6 +8,17 @@ published on the comp.windows.x Usenet mailing list and reside at many
 archive sites, including expo.lcs.mit.edu, where they may be obtained by
 anonymous ftp). 
 
+To run X you'll need a "network" kernel. Either the B-NET or the NFS kernel
+described in the A/UX Release Notes is sufficient. As a check, you must
+be able to successfully "rlogin" to A/UX from its own console. This
+requirement holds whether or not you have an Ethernet card or connection.
+
+Running the X server and the usual suite of clients requires at least 4MB
+of RAM. A 4MB system will thrash if the A/UX kernel tables are too large.
+The default table sizes do not lead to thrashing, but if you have adjusted
+these sizes using "kconfig" you may wish to restore the moderate default
+allocations.
+
 Build the system by:
 
 1)	As super-user, run the script R3setup.sh located in this directory.
@@ -39,7 +50,7 @@ Build the system by:
 
 	    X11R3
 
-6)	X11R3 should start up an xterm window named .x11start that acts as a
+6)	X11R3 should start up an xterm window named "console" that acts as a
 	console.  When this xterm terminates, the xinit will kill the server.  
 	You can also start up client programs from a terminal or rlogin, 
 	but be sure the DISPLAY environment variable is set:
