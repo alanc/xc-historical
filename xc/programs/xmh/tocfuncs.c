@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocfuncs.c,v 2.30 89/12/14 21:18:05 converse Exp $
+ * $XConsortium: tocfuncs.c,v 2.31 89/12/16 03:33:53 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -436,54 +436,101 @@ void XmhCommitChanges(w, event, params, num_params)
 
 
 /*ARGSUSED*/
-void DoPrint(w, client_data, call_data)
-    Widget	w;
-    XtPointer	client_data;
-    XtPointer	call_data;
+void XmhShellCommand(w, event, params, num_params)
+    Widget	w;	 /* any widget on same scrn as the messages */
+    XEvent	*event;	 /* unused */
+    String	*params; /* shell command to execute with msgs appended */
+    Cardinal	*num_params;
 {
-    Scrn	scrn = (Scrn) client_data;
-    Toc		toc = scrn->toc;
+    int		i, len, used;
     MsgList	mlist;
-    char	str[MAX_SYSTEM_LEN], *msg;
-    int		i, used, len;
+    String	*p;
+    Scrn 	scrn = ScrnFromWidget(w);
+    char	str[MAX_SYSTEM_LEN];
 
-    if (toc == NULL) return;
-    mlist = CurMsgListOrCurMsg(toc);
-    i = 0;
+    if (! UserWantsAction(w, scrn) || ! scrn->toc)
+	return;
+    if (! *num_params) {
+	PopupNotice("XmhShellCommand: no command given.",
+		    (XtCallbackProc)NULL, (XtPointer)NULL);
+	return;
+    }
+    used = 0;
+    p = params;
+    for (i = *num_params; --i >= 0; p++) {
+	len = strlen(*p);
+	if ((used + len + 1) >= MAX_SYSTEM_LEN) {
+	    PopupNotice("XmhShellCommand: command too long.",
+			(XtCallbackProc)NULL, (XtPointer)NULL);
+	    return;
+	}
+	strncpy(&str[used], *p, len);
+	str[(used += len)] = ' ';
+	used++;
+    }
+    str[used] = '\0';
+
+    mlist = CurMsgListOrCurMsg(scrn->toc);
     if (mlist->nummsgs) {
+	char *msg;
+	int prefix = used;
+	i = 0;
 	while (i < mlist->nummsgs) {
-	    (void) strcpy( str, app_resources.print_command );
-	    used = strlen(str) + 2;
+	    used = prefix;
 	    while (i < mlist->nummsgs &&
 		   (msg = MsgFileName(mlist->msglist[i])) &&
-		   (used + (len = strlen(msg) + 1)) < MAX_SYSTEM_LEN) {
-		(void) strcat( str, " " );
-		(void) strcat( str, msg );
-		used += len;
+		   (used + (len = strlen(msg)) + 1) < MAX_SYSTEM_LEN) {
+		strncpy(&str[used], msg, len);
+		str[(used += len)] = ' ';
+		used++;
 		i++;
 	    }
-	    DEBUG( str );
-	    (void) system(str);
+	    if (used != prefix) {
+		str[used] = '\0';
+		DEBUG( str );
+		(void) system(str); /* ||| user doesn't see messages, status */
+	    }
 	}
-    }
-    else {
-	PopupNotice( "print: no messages selected.", 
-		    (XtCallbackProc) NULL, (XtPointer) NULL);
-    }
+    } else
+	PopupNotice("XmhShellCommand: no messages selected.",
+		    (XtCallbackProc)NULL, (XtPointer)NULL);
     FreeMsgList(mlist);
 }
 
 
-/*ARGSUSED*/
 void XmhPrint(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal	*num_params;
 {
-    Scrn scrn = ScrnFromWidget(w);
-    if (UserWantsAction(w, scrn))
-	DoPrint(w, (XtPointer) scrn, (XtPointer) NULL);
+    if (! num_params || ! *num_params) {
+	/* use the print command specified in application resources */
+	Cardinal argc = 1;
+	String *argv = MakeArgv(argc);
+	argv[0] = app_resources.print_command;
+	XmhShellCommand(w, event, argv, &argc);
+	XtFree((char *) argv);
+    } else {
+	/* do whatever the user has specified as action parameters */
+	XmhShellCommand(w, event, params, num_params);
+    }
+}
+
+
+/*ARGSUSED*/
+void DoPrint(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	call_data;	/* unused */
+{
+    Scrn	scrn = (Scrn) client_data;
+    Cardinal	num_params = 0;
+    /* The callback interface will not be entered unless the user requested
+     * the action, so pass a widget which will succeed the test in 
+     * UserWantsAction.
+     */
+    XmhPrint(scrn->parent, (XEvent*)NULL, (String*)NULL, &num_params);
 }
 
 
