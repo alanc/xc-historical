@@ -1,33 +1,22 @@
+/**/###########################################################################
+/**/# X Window System Build Parameters
+/**/# $XConsortium$
+
 /*****************************************************************************
  *                                                                           *
- *			      DEFAULT DEFINITONS                             *
+ *                            DEFAULT DEFINITONS                             *
  *                                                                           *
  * The following section contains defaults for things that can be overridden *
- * in the various sys.* files and def.site.  DO NOT EDIT!                    *
+ * in the various *.cf and site.def files.  DO NOT EDIT!                     *
  *                                                                           *
  ****************************************************************************/
 
-#ifndef SystemV
-#ifdef SYSV
-#define SystemV			YES	/* need system 5 style */
-#else
-#define SystemV			NO	/* bsd */
-#endif
-#endif
-#ifndef OSMajorVersion
-#define OSMajorVersion          0
-#endif
-#ifndef OSMinorVersion
-#define OSMinorVersion          0
-#endif
+/*
+ * X-specific things
+ */
+
 #ifndef BuildServer
 #define BuildServer		YES	/* go ahead and build server */
-#endif
-#ifndef UnalignedReferencesAllowed
-#define UnalignedReferencesAllowed NO	/* if arbitrary deref is okay */
-#endif
-#ifndef BourneShell			/* to force shell in makefile */
-#define BourneShell		/bin/sh
 #endif
 #ifndef InstallxinitConfig
 #define InstallxinitConfig	NO	/* install sample xinit config */
@@ -37,9 +26,6 @@
 #endif
 #ifndef InstallAppDefFiles
 #define InstallAppDefFiles	YES	/* install application defaults */
-#endif
-#ifndef ExpandManNames
-#define ExpandManNames		NO	/* expand Xlib man page filenames */
 #endif
 #ifndef DebugLibX
 #define DebugLibX		NO	/* debugged X library */
@@ -98,9 +84,6 @@
 #ifndef ExtensionDefines
 #define ExtensionDefines /* as nothing or perhaps -DZOID -DBEZIER */
 #endif
-#ifndef UNCOMPRESSPATH
-#define UNCOMPRESSPATH /usr/ucb/uncompress
-#endif
 #ifndef UNCOMPRESSFILT
 #define UNCOMPRESSFILT -DUNCOMPRESSFILT=\"UNCOMPRESSPATH\"
 #endif
@@ -138,21 +121,6 @@
 #ifndef FontDefines
 #define FontDefines -DFONT_SNF -DFONT_BDF -DCOMPRESSED_FONTS
 #endif
-#ifndef OptimizedCDebugFlags
-#define OptimizedCDebugFlags -O
-#endif
-#ifndef DebuggableCDebugFlags
-#define DebuggableCDebugFlags -g
-#endif
-#ifndef NoOpCDebugFlags
-#define NoOpCDebugFlags /* as nothing */
-#endif
-#ifndef DefaultCDebugFlags
-#define DefaultCDebugFlags OptimizedCDebugFlags
-#endif
-#ifndef LibraryCDebugFlags
-#define LibraryCDebugFlags OptimizedCDebugFlags
-#endif
 #ifndef ServerCDebugFlags
 #define ServerCDebugFlags OptimizedCDebugFlags
 #endif
@@ -168,24 +136,12 @@
 #ifndef CppSources
 #define CppSources /usr/src/lib/cpp
 #endif
-#ifndef ConstructMFLAGS
-#if SystemV
-#define ConstructMFLAGS		YES	/* build MFLAGS from MAKEFLAGS */
-#else
-#define ConstructMFLAGS		NO	/* build MFLAGS from MAKEFLAGS */
-#endif
-#endif
-#ifndef DestDir
-#define DestDir /* as nothing */
-#endif
-#ifndef UsrLibDir
-#define UsrLibDir $(DESTDIR)/usr/lib
-#endif
+
 #ifndef BinDir
 #define BinDir $(DESTDIR)/usr/bin/X11
 #endif
 #ifndef IncDir
-#define IncDir $(DESTDIR)/usr/include/X11
+#define IncDir $(INCROOT)/X11
 #endif
 #ifndef AdmDir
 #define AdmDir $(DESTDIR)/usr/adm
@@ -232,27 +188,6 @@
 #ifndef XAppLoadDir
 #define XAppLoadDir $(LIBDIR)/app-defaults
 #endif
-#ifndef InstBinFlags
-#define InstBinFlags -m 0755
-#endif
-#ifndef InstUidFlags
-#define InstUidFlags -m 4755
-#endif
-#ifndef InstLibFlags
-#define InstLibFlags -m 0664
-#endif
-#ifndef InstIncFlags
-#define InstIncFlags -m 0444
-#endif
-#ifndef InstManFlags
-#define InstManFlags -m 0444
-#endif
-#ifndef InstAppFlags
-#define InstAppFlags -m 0444
-#endif
-#ifndef InstKmemFlags
-#define InstKmemFlags InstUidFlags    /* put -g kmem -m 2755 in site.def... */
-#endif
 #ifndef BandAidLibraryNeeded
 #define BandAidLibraryNeeded NO		/* for getting right stuff into Xlib */
 #endif
@@ -268,97 +203,6 @@
 #ifndef DefaultSystemShell		/* for xdm to set in SHELL */
 #define DefaultSystemShell BourneShell
 #endif
-#ifndef ArCmd
-#define ArCmd                  ar clq
-#endif
-#ifndef BootstripCFlags
-#define BootstripCFlags        /**/
-#endif
-#ifndef CcCmd
-#define CcCmd                  cc
-#endif
-#ifndef CompressCmd
-#define CompressCmd            compress
-#endif
-#ifndef CppCmd
-#define CppCmd                 /lib/cpp
-#endif
-#ifndef InstallCmd
-#if SystemV
-#define InstallCmd             bsdinstall
-#else
-#define InstallCmd             install
-#endif
-#endif
-#ifndef LdCmd
-#define LdCmd                  ld
-#endif
-#ifndef LintCmd
-#define LintCmd                lint
-#endif
-#ifndef LintLibFlag
-#if SystemV
-#define LintLibFlag            -o
-#else
-#define LintLibFlag            -C
-#endif
-#endif
-#ifndef LintOpts
-#if SystemV
-#define LintOpts               -ax
-#else
-#define LintOpts               -axz
-#endif
-#endif
-#ifndef CpCmd
-#define CpCmd                  cp
-#endif
-#ifndef LnCmd
-#if SystemV
-#define LnCmd                  ln			/* or even cp */
-#else
-#define LnCmd                  ln -s
-#endif
-#endif
-#ifndef MakeCmd
-#define MakeCmd                make
-#endif
-#ifndef MvCmd
-#define MvCmd                  mv
-#endif
-#ifndef RanlibCmd
-#if SystemV
-#define RanlibCmd              /bin/true
-#else
-#define RanlibCmd              ranlib
-#endif
-#endif
-#ifndef RanlibInstFlags
-#define RanlibInstFlags        /**/
-#endif
-#ifndef RemoveCmd
-#define RemoveCmd              rm -f
-#endif
-#ifndef StandardCppDefines
-#if SystemV
-#define StandardCppDefines     -DSYSV
-#else
-#define StandardCppDefines     /**/
-#endif
-#endif
-#ifndef StandardDefines
-#if SystemV
-#define StandardDefines         -DSYSV
-#else
-#define StandardDefines         /**/
-#endif
-#endif
-#ifndef SysLastLibraries
-#define SysLastLibraries       /**/
-#endif
-#ifndef TagsCmd
-#define TagsCmd                ctags
-#endif
 
 #if NeedBerklibinXlib
 #define BandAidLibraryNeeded		YES
@@ -369,3 +213,95 @@ Berklib.c: sysV/Berklib.c					@@\
 	-$(RM) Berklib.c					@@\
 	-$(LN) sysV/Berklib.c .
 #endif
+
+
+/**/###########################################################################
+/**/# X Window System make variables; this need to be coordinated with rules
+/**/# $XConsortium$
+
+/*
+ * This list must be reflected in the DIRS_TO_BUILD list in the top-level
+ * Makefile.
+ */
+        USRLIBDIR = UsrLibDir		/* libraries */
+           BINDIR = BinDir		/* programs */
+           INCDIR = IncDir		/* header files */
+           ADMDIR = AdmDir		/* server log files */
+           LIBDIR = LibDir		/* rgb, XErrorDB, etc. */
+       LINTLIBDIR = LintlibDir		/* lint libraries */
+          FONTDIR = FontDir		/* font directories */
+         XINITDIR = XinitDir		/* xinit config files */
+           XDMDIR = XdmDir		/* xdm config files */
+           UWMDIR = UwmDir		/* uwm config files */
+           AWMDIR = AwmDir		/* awm config files */
+           TWMDIR = TwmDir		/* twm config files */
+          MANPATH = ManPath		/* top of manual page tree */
+    MANSOURCEPATH = ManSourcePath	/* prefix for man page sources */
+           MANDIR = ManDir		/* man pages for commands */
+        LIBMANDIR = LibmanDir		/* man pages for library routines */
+      XAPPLOADDIR = XAppLoadDir		/* application default resources */
+
+          FCFLAGS = FontCompilerFlags
+
+          PATHSEP = /
+           DEPEND = $(DEPENDSRC)/makedepend
+            IMAKE = $(IMAKESRC)/imake
+              RGB = $(RGBSRC)/rgb
+               FC = $(BDFTOSNFSRC)/bdftosnf
+        MKFONTDIR = $(MKFONTDIRSRC)/mkfontdir
+        MKDIRHIER = BourneShell $(SCRIPTSSRC)/mkdirhier.sh
+
+              TOP = TOPDIR
+        CONFIGSRC = $(TOP)/conf
+        CLIENTSRC = $(TOP)/clients
+          DEMOSRC = $(TOP)/demos
+           LIBSRC = $(TOP)/lib
+          FONTSRC = $(TOP)/fonts
+       INCLUDESRC = $(TOP)/X11
+        SERVERSRC = $(TOP)/server
+          UTILSRC = $(TOP)/util
+       SCRIPTSSRC = $(UTILSRC)/scripts
+       EXAMPLESRC = $(TOP)/examples
+       CONTRIBSRC = $(TOP)/contrib
+           DOCSRC = $(TOP)/doc
+           RGBSRC = $(TOP)/rgb
+        DEPENDSRC = $(UTILSRC)/makedepend
+         IMAKESRC = $(UTILSRC)/imake
+         IRULESRC = $(CONFIGSRC)
+         XAUTHSRC = $(LIBSRC)/Xau
+          XLIBSRC = $(LIBSRC)/X
+           XMUSRC = $(LIBSRC)/Xmu
+       TOOLKITSRC = $(LIBSRC)/Xt
+       AWIDGETSRC = $(LIBSRC)/Xaw
+       OLDXLIBSRC = $(LIBSRC)/oldX
+      BDFTOSNFSRC = $(FONTSRC)/bdftosnf
+     MKFONTDIRSRC = $(FONTSRC)/mkfontdir
+     EXTENSIONSRC = $(TOP)/extensions
+     ICONFIGFILES = $(IRULESRC)/X.itmpl \
+			$(IRULESRC)/$(MACROFILE) \
+			$(IRULESRC)/site.def $(IRULESRC)/global.def
+    IMAKE_DEFINES = /* leave blank, for command line use only */
+        IMAKE_CMD = $(NEWTOP)$(IMAKE) -TX.itmpl -I$(NEWTOP)$(IRULESRC) \
+			-s Makefile $(IMAKE_DEFINES)
+
+/*
+ * and now a little bit of magic for using imake without source tree
+ */
+
+#ifdef UseInstalled
+#define dirtouse(a,b) a
+#else
+#define dirtouse(a,b) b
+#endif
+     EXTENSIONLIB = dirtouse($(USRLIBDIR),$(EXTENSIONSRC)/lib)/libXext.a
+         XAUTHLIB = dirtouse($(USRLIBDIR),$(XAUTHSRC))/libXau.a
+             XLIB = dirtouse($(USRLIBDIR),$(XLIBSRC))/libX11.a
+           XMULIB = dirtouse($(USRLIBDIR),$(XMUSRC))/libXmu.a
+          OLDXLIB = dirtouse($(USRLIBDIR),$(OLDXLIBSRC))/liboldX.a
+         XTOOLLIB = dirtouse($(USRLIBDIR),$(TOOLKITSRC))/libXt.a
+           XAWLIB = dirtouse($(USRLIBDIR),$(AWIDGETSRC))/libXaw.a
+         LINTXLIB = dirtouse($(USRLIBDIR),$(XLIBSRC))/llib-lX11.ln
+          LINTXMU = dirtouse($(USRLIBDIR),$(XMUSRC))/llib-lXmu.ln
+        LINTXTOOL = dirtouse($(USRLIBDIR),$(TOOLKITSRC))/llib-lXt.ln
+          LINTXAW = dirtouse($(USRLIBDIR),$(AWIDGETSRC))/llib-lXaw.ln
+#undef dirtouse
