@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.1 93/08/19 18:25:18 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.1 93/08/19 18:29:15 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -21,21 +21,6 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include <X11/Xfuncs.h>
 #include <X11/Xmd.h>
 #include <X11/ICE/ICEproto.h>
-
-#ifndef OPEN_MAX
-#ifdef SVR4
-#define OPEN_MAX 256
-#else
-#include <sys/param.h>
-#ifndef OPEN_MAX
-#ifdef NOFILE
-#define OPEN_MAX NOFILE
-#else
-#define OPEN_MAX NOFILES_MAX
-#endif
-#endif
-#endif
-#endif
 
 
 /*
