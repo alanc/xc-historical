@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.93 89/12/11 19:09:51 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.94 89/12/12 18:17:05 rws Exp $
  */
 
 #include "copyright.h"
@@ -31,6 +31,33 @@ static int xauth_namelen = 0;
 static char *xauth_name = NULL;	 /* NULL means use default mechanism */
 static int xauth_datalen = 0;
 static char *xauth_data = NULL;	 /* NULL means get default data */
+
+/*
+ * This is a list of the authorization names which Xlib currently supports.
+ * Xau will choose the file entry which matches the earliest entry in this
+ * array, allowing us to prioritize these in terms of the most secure first
+ */
+
+static char *default_xauth_names[] = {
+#ifdef HASDES
+    "XDM-AUTHORIZATION-1",
+#endif
+    "MIT-MAGIC-COOKIE-1"
+};
+
+static int default_xauth_lengths[] = {
+#ifdef HASDES
+    19,	    /* strlen ("XDM-AUTHORIZATION-1") */
+#endif
+    18	    /* strlen ("MIT-MAGIC-COOKIE-1") */
+};
+
+#define NUM_DEFAULT_AUTH    (sizeof (default_xauth_names) / sizeof (default_xauth_names[0]))
+    
+static char **xauth_names = default_xauth_names;
+static int  *xauth_lengths = default_xauth_lengths;
+
+static int  xauth_names_length = NUM_DEFAULT_AUTH;
 
 static OutOfMemory();
 
@@ -70,11 +97,22 @@ void XSetAuthorization (name, namelen, data, datalen)
 
     xauth_name = tmpname;		/* and store the suckers */
     xauth_namelen = namelen;
+    if (tmpname)
+    {
+	xauth_names = &xauth_name;
+	xauth_lengths = &xauth_namelen;
+	xauth_names_length = 1;
+    }
+    else
+    {
+	xauth_names = default_xauth_names;
+	xauth_lengths = default_xauth_lengths;
+	xauth_names_length = NUM_DEFAULT_AUTH;
+    }
     xauth_data = tmpdata;
     xauth_datalen = datalen;
     return;
 }
-
 
 
 extern Bool _XWireToEvent();
@@ -125,6 +163,10 @@ Display *XOpenDisplay (display)
 	extern char *getenv();
 	extern XID _XAllocID();
  
+#ifdef HASDES
+	char    encrypted_data[192/8];
+#endif
+
 	/*
 	 * If the display specifier string supplied as an argument to this 
 	 * routine is NULL or a pointer to NULL, read the DISPLAY variable.
@@ -187,13 +229,14 @@ Display *XOpenDisplay (display)
 	    char dpynumbuf[40];		/* big enough to hold 2^64 and more */
 	    (void) sprintf (dpynumbuf, "%d", idisplay);
 
-	    authptr = XauGetAuthByAddr ((unsigned short) conn_family,
+	    authptr = XauGetBestAuthByAddr ((unsigned short) conn_family,
 					(unsigned short) server_addrlen,
 					server_addr,
 					(unsigned short) strlen (dpynumbuf),
 					dpynumbuf,
-					(unsigned short) xauth_namelen,
-					xauth_name);
+					xauth_names_length,
+					xauth_names,
+					xauth_lengths);
 	    if (authptr) {
 		conn_auth_namelen = authptr->name_length;
 		conn_auth_name = (char *)authptr->name;
@@ -213,49 +256,45 @@ Display *XOpenDisplay (display)
 	if (conn_auth_namelen == 19 &&
 	    !strncmp (conn_auth_name, "XDM-AUTHORIZATION-1", 19))
 	{
-	    static char    encrypted_data[192/8];
 	    int	    i, j;
 	    struct sockaddr_in	in_addr;
 	    int	    addrlen;
 	    long    now;
+	    unsigned long	addr;
+	    unsigned short	port;
 
-	    j = 0;
-	    for (i = 0; i < 8; i++)
-	    {
-		encrypted_data[j] = conn_auth_data[i];
-		j++;
-	    }
+
+	    for (j = 0; j < 8; j++)
+		encrypted_data[j] = conn_auth_data[j];
 	    addrlen = sizeof (in_addr);
 	    getsockname (dpy->fd, (struct sockaddr *) &in_addr, &addrlen);
 	    if (in_addr.sin_family == 2)
 	    {
-		encrypted_data[j] = in_addr.sin_addr.s_net; j++;
-		encrypted_data[j] = in_addr.sin_addr.s_host; j++;
-		encrypted_data[j] = in_addr.sin_addr.s_lh; j++;
-		encrypted_data[j] = in_addr.sin_addr.s_impno; j++;
-		encrypted_data[j] = (in_addr.sin_port >> 8) & 0xff; j++;
-		encrypted_data[j] = (in_addr.sin_port) & 0xff; j++;
+		addr = ntohl (in_addr.sin_addr.s_addr);
+		port = ntohs (in_addr.sin_port);
 	    }
 	    else
 	    {
-		encrypted_data[j] = 0xff; j++;
-		encrypted_data[j] = 0xff; j++;
-		encrypted_data[j] = 0xff; j++;
-		encrypted_data[j] = 0xff; j++;
-		i = getpid ();
-		encrypted_data[j] = (i >> 8) & 0xff; j++;
-		encrypted_data[j] = (i) & 0xff; j++;
+		addr = 0xFFFFFFFF;
+		port = getpid ();
 	    }
+	    encrypted_data[j++] = (addr >> 24) & 0xFF;
+	    encrypted_data[j++] = (addr >> 16) & 0xFF;
+	    encrypted_data[j++] = (addr >>  8) & 0xFF;
+	    encrypted_data[j++] = (addr >>  0) & 0xFF;
+	    encrypted_data[j++] = (port >>  8) & 0xFF;
+	    encrypted_data[j++] = (port >>  0) & 0xFF;
 	    time (&now);
-	    for (i = 3; i >= 0; i--)
-	    {
-		encrypted_data[j] = (now >> (i * 8)) & 0xff;
-		j++;
-	    }
+	    encrypted_data[j++] = (now >> 24) & 0xFF;
+	    encrypted_data[j++] = (now >> 16) & 0xFF;
+	    encrypted_data[j++] = (now >>  8) & 0xFF;
+	    encrypted_data[j++] = (now >>  0) & 0xFF;
+	    while (j < 192 / 8)
+		encrypted_data[j++] = 0;
 	    XdmcpEncrypt (encrypted_data, conn_auth_data + 8,
-			  encrypted_data, 192/8);
+			  encrypted_data, j);
 	    conn_auth_data = encrypted_data;
-	    conn_auth_datalen = 192 / 8;
+	    conn_auth_datalen = j;
 	}
 #endif /* HASDES */
 	if (server_addr) (void) Xfree (server_addr);
