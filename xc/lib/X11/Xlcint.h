@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xlcint.h,v 11.8 91/04/13 11:23:04 rws Exp $
+ * $XConsortium: Xlcint.h,v 11.9 91/04/23 18:19:16 rws Exp $
  */
 
 /*
@@ -451,6 +451,11 @@ typedef struct {
 #endif
 	);
     char* (*lcname)(
+#if NeedFunctionPrototypes
+	XPointer /* state */
+#endif
+	);
+    void (*destroy)(
 #if NeedFunctionPrototypes
 	XPointer /* state */
 #endif
