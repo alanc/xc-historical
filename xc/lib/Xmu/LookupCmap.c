@@ -1,4 +1,4 @@
-/* $XConsortium$ 
+/* $XConsortium: LookupCmap.c,v 1.1 89/05/19 14:35:54 converse Exp $ 
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
@@ -134,7 +134,7 @@ Status XmuLookupStandardColormap(dpy, screen, visualid, depth, property,
     }
 
     colormap = XmuStandardColormap(dpy, screen, visualid, depth, property,
-				   cmap, r_max, g_max, b_max);q
+				   cmap, r_max, g_max, b_max);
     if (colormap) {
 	XGrabServer(dpy);
 
