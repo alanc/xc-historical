@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: misc.h,v 1.48 88/02/21 18:25:20 rws Exp $ */
+/* $Header: misc.h,v 1.49 88/03/15 15:56:48 rws Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -83,6 +83,14 @@ typedef unsigned long ATOM;
 #define abs(a) ((a) > 0 ? (a) : -(a))
 #define fabs(a) ((a) > 0.0 ? (a) : -(a))	/* floating absolute value */
 #define sign(x) ((x) < 0 ? -1 : ((x) > 0 ? 1 : 0))
+/*
+ * return the least significant bit in x which is set
+ *
+ * This works on 1's complement and 2's complement machines.
+ * If you care about the extra instruction on 2's complement
+ * machines, change to ((x) & (-(x)))
+ */
+#define lowbit(x) ((x) & (~(x) + 1))
 
 #define MAXSHORT 32767
 #define MINSHORT -MAXSHORT 
