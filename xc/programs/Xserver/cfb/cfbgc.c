@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: Exp $ */
+/* $XConsortium: cfbgc.c,v 5.11 89/07/28 12:50:49 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -41,6 +41,10 @@ SOFTWARE.
 
 #include "cfbmskbits.h"
 
+#if (PPW == 4)
+#include "cfb8bit.h"
+#endif
+
 static void cfbValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
 static void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
 static cfbDestroyOps();
@@ -55,13 +59,18 @@ static GCFuncs cfbFuncs = {
     cfbCopyClip,
 };
 
-extern void mfbPushPixels(), cfbPushPixels8();
+extern void	    mfbPushPixels(), cfbPushPixels8();
+extern RegionPtr    cfbCopyArea8();
 
 static GCOps	cfbTEOps = {
     cfbSolidFS,
     cfbSetSpans,
     miPutImage,
+#if (PPW == 4)
+    cfbCopyArea8,
+#else
     cfbCopyArea,
+#endif
     miCopyPlane,
     miPolyPoint,
     miZeroLine,
@@ -91,7 +100,11 @@ static GCOps	cfbNonTEOps = {
     cfbSolidFS,
     cfbSetSpans,
     miPutImage,
+#if (PPW == 4)
+    cfbCopyArea8,
+#else
     cfbCopyArea,
+#endif
     miCopyPlane,
     miPolyPoint,
     miZeroLine,
