@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 2.24 88/05/13 16:04:35 swick Locked $";
+static char rcs_id[] = "$Header: screen.c,v 2.25 88/08/22 13:09:19 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -342,7 +342,7 @@ ScrnKind kind;
 	DEBUG(" done.\n")
 	XtSetKeyboardFocus( scrn->parent, scrn->viewwidget );
 	XDefineCursor( theDisplay, XtWindow(scrn->parent),
-		       XtGetCursor( theDisplay, XC_left_ptr ) );
+		       app_resources.cursor );
     }
     scrn->mapped = (numScrns == 1);
     return scrn;

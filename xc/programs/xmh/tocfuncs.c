@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: tocfuncs.c,v 2.12 88/05/12 16:54:21 swick Locked $";
+static char rcs_id[] = "$Header: tocfuncs.c,v 2.13 88/08/22 13:12:44 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -360,7 +360,7 @@ Scrn scrn;
     XtRealizeWidget(scrn->parent);
     DEBUG(" done.\n")
     XDefineCursor( theDisplay, XtWindow(scrn->parent),
-		   XtGetCursor( theDisplay, XC_left_ptr ) );
+		   app_resources.cursor );
     MapScrn(nscrn);
 }
 

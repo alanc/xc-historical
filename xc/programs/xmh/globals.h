@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$Header: globals.h,v 2.11 88/05/12 16:53:44 swick Locked $";
+ *	rcs_id[] = "$Header: globals.h,v 2.12 88/08/22 12:55:28 swick Exp $";
  */
 
 /*
@@ -69,6 +69,7 @@ ext struct _resources {
     Boolean	defNewMailCheck;	/* Whether to check for new mail. */
     Boolean	defMakeCheckpoints; /* Whether to create checkpoint files. */
     int		mailWaitingFlag;	/* If true, change icon on new mail */
+    Cursor	cursor;			/* application cursor */
 } app_resources;
 
 ext char	*draftFile;		/* Filename of draft. */

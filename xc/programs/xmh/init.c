@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: init.c,v 2.19 88/05/13 12:15:11 swick Locked $";
+static char rcs_id[] = "$Header: init.c,v 2.20 88/08/22 13:05:38 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -90,6 +90,8 @@ static XtResource resources[] = {
 	 offset(mailDir), XtRString, NULL},
     {"mailwaitingflag", "MailWaitingFlag", XtRBoolean, sizeof(Boolean),
 	 offset(mailWaitingFlag), XtRBoolean, &defFalse},
+    {"cursor", "Cursor", XtRCursor, sizeof(Cursor),
+	 offset(cursor), XtRString, "left_ptr"},
 };
 
 #undef offset
