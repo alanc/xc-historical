@@ -1,5 +1,5 @@
-/* $XConsortium: s3gc.c,v 1.3 94/10/12 20:07:37 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc.c,v 3.2 1994/08/03 13:27:58 dawes Exp $ */
+/* $XConsortium: s3gc.c,v 1.4 94/10/13 20:21:22 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc.c,v 3.3 1994/11/26 12:44:49 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium

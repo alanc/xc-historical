@@ -1,4 +1,4 @@
-/* $XConsortium: s3gtimg.c,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XConsortium: s3gtimg.c,v 1.2 94/10/12 20:07:37 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gtimg.c,v 3.4 1994/08/20 07:34:09 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -39,7 +39,7 @@ s3GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
      DrawablePtr pDrawable;
      int         sx, sy, w, h;
      unsigned int format;
-     Pixel planeMask;
+     unsigned long planeMask;
      char *pdstLine;
 {
    int width;

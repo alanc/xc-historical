@@ -1,5 +1,5 @@
-/* $XConsortium: s3Ti3020.h,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Ti3020.h,v 3.5 1994/09/19 14:20:54 dawes Exp $ */
+/* $XConsortium: s3Ti3020.h,v 1.2 94/10/12 20:07:37 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Ti3020.h,v 3.8 1994/10/30 04:44:01 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@paros.com>
  *
@@ -76,9 +76,12 @@
 #define   TI_MUX1_DIRECT_565	0x05
 #define   TI_MUX1_DIRECT_555	0x04
 #define   TI_MUX1_DIRECT_664	0x03
-#define   TI_MUX1_WEIRD_MODE_1	0xC6
-#define   TI_MUX1_WEIRD_MODE_2	0x4D
-#define   TI_MUX1_WEIRD_MODE_3	0x4E
+#define   TI_MUX1_3025D_888	0x0E     /* 3025 only */
+#define   TI_MUX1_3025D_565	0x0D     /* 3025 only */
+#define   TI_MUX1_3025D_555	0x0C     /* 3025 only */
+#define   TI_MUX1_3025T_888	0x4E     /* 3025 only */
+#define   TI_MUX1_3025T_565	0x4D     /* 3025 only */
+#define   TI_MUX1_3025T_555	0x4C     /* 3025 only */
 #define TI_MUX_CONTROL_2	0x19
 #define   TI_MUX2_BUS_VGA	0x98
 #define   TI_MUX2_BUS_PC_D8P64	0x1C
@@ -88,8 +91,6 @@
 #define   TI_MUX2_BUS_TC_D24P64	0x04
 #define   TI_MUX2_BUS_TC_D16P64	0x04
 #define   TI_MUX2_BUS_TC_D15P64	0x04
-#define   TI_MUX2_WEIRD_MODE_2	0x14
-#define   TI_MUX2_WEIRD_MODE_3	0x04
 #define TI_INPUT_CLOCK_SELECT	0x1A
 #define   TI_ICLK_CLK0		0x00
 #define   TI_ICLK_CLK0_DOUBLE	0x10
@@ -104,17 +105,27 @@
 #define   TI_ICLK_PLL		0x05     /* 3025 only */
 #define TI_OUTPUT_CLOCK_SELECT	0x1B
 #define   TI_OCLK_VGA		0x3E
-#define   TI_OCLK_S_V1_R8	0x43
-#define   TI_OCLK_S_V2_R8	0x4B
-#define   TI_OCLK_S_V4_R8	0x53
-#define   TI_OCLK_S_V8_R8	0x5B
-#define   TI_OCLK_S_V2_R4	0x4A
-#define   TI_OCLK_S_V4_R4	0x52
-#define   TI_OCLK_S_V1_R2	0x41
-#define   TI_OCLK_S_V2_R2	0x49
-#define   TI_OCLK_NS_V1_R1	0x80     /* 3025 only */
-#define   TI_OCLK_NS_V2_R2	0x89     /* 3025 only */
-#define   TI_OCLK_NS_V4_R4	0x92     /* 3025 only */
+#define   TI_OCLK_S		0x40
+#define   TI_OCLK_NS		0x80     /* 3025 only */
+#define   TI_OCLK_V1		0x00
+#define   TI_OCLK_V2		0x08
+#define   TI_OCLK_V4		0x10
+#define   TI_OCLK_V8		0x18
+#define   TI_OCLK_R1		0x00
+#define   TI_OCLK_R2		0x01
+#define   TI_OCLK_R4		0x02
+#define   TI_OCLK_R8		0x03
+#define   TI_OCLK_S_V1_R8	(TI_OCLK_S | TI_OCLK_V1 | TI_OCLK_R8)
+#define   TI_OCLK_S_V2_R8	(TI_OCLK_S | TI_OCLK_V2 | TI_OCLK_R8)
+#define   TI_OCLK_S_V4_R8	(TI_OCLK_S | TI_OCLK_V4 | TI_OCLK_R8)
+#define   TI_OCLK_S_V8_R8	(TI_OCLK_S | TI_OCLK_V8 | TI_OCLK_R8)
+#define   TI_OCLK_S_V2_R4	(TI_OCLK_S | TI_OCLK_V2 | TI_OCLK_R4)
+#define   TI_OCLK_S_V4_R4	(TI_OCLK_S | TI_OCLK_V4 | TI_OCLK_R4)
+#define   TI_OCLK_S_V1_R2	(TI_OCLK_S | TI_OCLK_V1 | TI_OCLK_R2)
+#define   TI_OCLK_S_V2_R2	(TI_OCLK_S | TI_OCLK_V2 | TI_OCLK_R2)
+#define   TI_OCLK_NS_V1_R1	(TI_OCLK_NS | TI_OCLK_V1 | TI_OCLK_R1)
+#define   TI_OCLK_NS_V2_R2	(TI_OCLK_NS | TI_OCLK_V2 | TI_OCLK_R2)
+#define   TI_OCLK_NS_V4_R4	(TI_OCLK_NS | TI_OCLK_V4 | TI_OCLK_R4)
 #define TI_PALETTE_PAGE		0x1C
 #define TI_GENERAL_CONTROL	0x1D
 #define TI_MISC_CONTROL		0x1E     /* 3025 only */
