@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Shell.c,v 1.30 88/09/03 09:09:00 swick Exp $";
+    "$XConsortium: Shell.c,v 1.31 88/09/03 09:19:08 swick Exp $";
 /* $oHeader: Shell.c,v 1.6 88/08/19 16:49:51 asente Exp $ */
 #endif lint
 
@@ -869,7 +869,7 @@ static void _popup_set_prop(w)
 /* ARGSUSED */
 static void EventHandler(wid, closure, event)
 	Widget wid;
-	Opaque closure;
+	caddr_t closure;
 	XEvent *event;
 {
 	register ShellWidget w = (ShellWidget) wid;
