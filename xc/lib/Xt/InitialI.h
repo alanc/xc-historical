@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.64 93/01/08 16:04:57 converse Exp $ */
+/* $XConsortium: InitialI.h,v 1.65 93/07/10 12:17:14 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -274,6 +274,7 @@ typedef struct _XtPerDisplayStruct {
     struct _GCrec *GClist;	       /* support for XtGetGC */
     Drawable **pixmap_tab;             /* ditto for XtGetGC */
     String language;		       /* XPG language string */
+    XEvent last_event;		       /* last event dispatched */
     Time last_timestamp;	       /* from last event dispatched */
     int multi_click_time;	       /* for XtSetMultiClickTime */
     struct _TMKeyContextRec* tm_context;     /* for XtGetActionKeysym */
