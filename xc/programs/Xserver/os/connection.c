@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.167 93/10/11 15:28:45 rws Exp $ */
+/* $XConsortium: connection.c,v 1.168 93/10/12 09:03:35 rws Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -24,8 +24,8 @@ SOFTWARE.
 ******************************************************************/
 /*
  *
- * The connection code/ideas in lib/X and server/os for SVR4/Intel 
- * environments was contributed by the following companies/groups:
+ * The connection code/ideas for SVR4/Intel environments was contributed by
+ * the following companies/groups:
  *
  *	MetroLink Inc
  *	NCR
