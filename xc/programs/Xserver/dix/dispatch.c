@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.39 88/02/03 10:07:02 rws Exp $ */
+/* $Header: dispatch.c,v 1.40 88/02/03 19:37:50 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2615,7 +2615,8 @@ ProcLookupColor(client)
 	    lcr.screenBlue = lcr.exactBlue;
 	    (*pcmp->pScreen->ResolveColor)(&lcr.screenRed,
 	                                   &lcr.screenGreen,
-					   &lcr.screenBlue);
+					   &lcr.screenBlue,
+					   pcmp->pVisual);
 	    WriteReplyToClient(client, sizeof(xLookupColorReply), &lcr);
 	    return(client->noClientException);
 	}
