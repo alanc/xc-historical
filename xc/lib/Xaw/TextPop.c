@@ -1,4 +1,4 @@
-/* $XConsortium: TextPop.c,v 1.19 91/06/16 18:22:22 converse Exp $ */
+/* $XConsortium: TextPop.c,v 1.20 91/06/19 13:34:23 converse Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -534,6 +534,9 @@ Cardinal * num_params;
 						  AddSearchChildren);
     XtRealizeWidget(ctx->text.search->search_popup);
     SetWMProtocolTranslations(ctx->text.search->search_popup);
+  }
+  else if (*num_params > 1) {
+    XtVaSetValues(ctx->text.search->search_text, XtNstring, ptr, NULL);
   }
 
   XtSetArg(args[0], XtNeditType,&edit_mode);
