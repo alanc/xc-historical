@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.32 87/09/07 13:03:20 rws Locked $ */
+/* $Header: utils.c,v 1.33 87/09/09 16:56:52 toddb Locked $ */
 #include <stdio.h>
 #include <sys/time.h>
 #include "misc.h"
@@ -273,7 +273,6 @@ UseMsg()
  * expectations of malloc, but this makes lint happier.
  */
 
-#ifndef ibm032		/* IBM wants to use a debugging Xalloc */
 unsigned long * 
 Xalloc (amount)
     int amount;
@@ -403,4 +402,3 @@ CheckNode(ptr)
     return TRUE;
 }
 #endif /* DEBUG */
-#endif /* ibm032 */
