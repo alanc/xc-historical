@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.11 91/05/13 23:53:18 rws Exp $" */
+/* $XConsortium: XcmsColNm.c,v 1.12 91/05/14 09:54:00 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -279,7 +279,11 @@ _XcmsParseColorString(ccc, color_string, pColor)
  *	SYNOPSIS
  */
 int FirstCmp(p1, p2)
+#if __STDC__
+    const void *p1, *p2;
+#else
     XcmsPair *p1, *p2;
+#endif
 /*
  *	DESCRIPTION
  *		Compares the color names of XcmsColorTuples.
@@ -292,7 +296,7 @@ int FirstCmp(p1, p2)
  *
  */
 {
-    return(strcmp(p1->first, p2->first));
+    return(strcmp(((XcmsPair *)p1)->first, ((XcmsPair *)p2)->first));
 }
 
 
@@ -766,8 +770,7 @@ LoadColornameDB()
     /*
      * sort the pair recs
      */
-    qsort((char *)pairs, nEntries,
-	    sizeof(XcmsPair), FirstCmp);
+    qsort((char *)pairs, nEntries, sizeof(XcmsPair), FirstCmp);
 
     XcmsColorDbState = XcmsDbInitSuccess;
     return(XcmsSuccess);
