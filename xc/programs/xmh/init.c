@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcs_id[] =
-    "$XConsortium: init.c,v 2.21 88/08/26 13:26:06 swick Exp $";
+    "$XConsortium: init.c,v 2.22 88/09/02 17:04:04 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -149,6 +149,9 @@ char **argv;
 	{"open-folder", OpenFolder},
 	{"open-sequence", OpenSequence},
     };
+    static Arg shell_args[] = {
+	{XtNinput, (XtArgVal)True},
+    };
 
     ptr = rindex(argv[0], '/');
     if (ptr) progName = ptr + 1;
@@ -157,6 +160,9 @@ char **argv;
     toplevel = XtInitialize("main", "Xmh", table, XtNumber(table),
 			    &argc, argv);
     if (argc > 1) Syntax(progName);
+
+    XtSetValues(toplevel, shell_args, XtNumber(shell_args));
+
     theDisplay = XtDisplay(toplevel);
     theScreen = DefaultScreen(theDisplay);
 
