@@ -1,5 +1,5 @@
 /*
- * $XConsortium: mieq.c,v 1.3 91/07/18 22:54:12 keith Exp $
+ * $XConsortium: mieq.c,v 1.4 91/07/19 23:20:26 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -123,10 +123,13 @@ mieqEnqueue (e)
 }
 
 void
-mieqSwitchScreen (pScreen)
+mieqSwitchScreen (pScreen, fromDIX)
     ScreenPtr	pScreen;
+    Bool	fromDIX;
 {
     miEventQueue.pEnqueueScreen = pScreen;
+    if (fromDIX)
+	miEventQueue.pDequeueScreen = pScreen;
 }
 
 /*
