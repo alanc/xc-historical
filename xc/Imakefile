@@ -136,6 +136,14 @@ RELNOTES.lpt:  RELNOTES.ms
 RELNOTES.txt:  RELNOTES.ms
 	tbl RELNOTES.ms | ntroff -ms | colcrt >$@
 
+    RESOLUTION = 75
+
+RELNOTES.dit:  RELNOTES.ms
+	tbl RELNOTES.ms | ditroff -TX$(RESOLUTION) -ms >$@
+
+preview::
+	xditview '| tbl RELNOTES.ms | ditroff -TX$(RESOLUTION) -ms'
+
 
 CHANGES.ALL::
 	$(RM) $@
