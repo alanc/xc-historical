@@ -2492,9 +2492,32 @@ The
 function must be the first ICElib function a
 multi-threaded program calls.  It must complete before any other ICElib
 call is made.  IceInitThreads returns a non-zero status if and only if it
-was able to successfully initialize the threads package.
+was able to successfully initialize the threads package.  It is safe to
+call this function more than once, although the threads package will only
+be initialized once.
 .LP
 .sp
+Protocol libraries layered on top of ICElib will have to lock critical
+sections of code that access an ICE connection (for example, when
+generating messages).  Two calls, which are generally implemented as
+macros, are provided:
+.LP
+.sM
+.FD 0
+LockIceConn\^(\^\fIice_conn\fP\^)
+.br
+    IceConn \fIice_conn\fP\^;
+.br
+.sp
+UnlockIceConn\^(\^\fIice_conn\fP\^)
+.br
+    IceConn \fIice_conn\fP\^;
+.FN
+.IP \fIice_conn\fP 1i
+The ICE connection.
+.LP
+.eM
+.bp
 To keep an ICE connection locked across several ICElib calls, use
 .PN IceLockConn
 and
@@ -2521,7 +2544,6 @@ If the program has not previously called
 .PN IceLockConn
 has no effect.
 .LP
-.bp
 .sM
 .FD 0
 void IceUnlockConn\^(\^\fIice_conn\fP\^)
