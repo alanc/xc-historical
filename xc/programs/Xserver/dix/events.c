@@ -1745,6 +1745,7 @@ DoFocusEvents(fromWin, toWin, mode)
 {
     int     out, in;		       /* for holding details for to/from
 				          PointerRoot/None */
+    int     i;
 
     out = (fromWin == NoneWin) ? NotifyDetailNone : NotifyPointerRoot;
     in = (toWin == NoneWin) ? NotifyDetailNone : NotifyPointerRoot;
@@ -1756,17 +1757,22 @@ DoFocusEvents(fromWin, toWin, mode)
    	{
 	    if (fromWin == PointerRootWin)
 		FocusOutEvents(sprite.win, ROOT, mode, NotifyPointer, TRUE);
-	    FocusEvent(FocusOut, mode, out, ROOT);
+	    /* Notify all the roots */
+	    for (i=0; i<screenInfo.numScreens; i++)
+	        FocusEvent(FocusOut, mode, out, &WindowTable[i]);
 	}
 	else
 	{
 	    if (IsParent(fromWin, sprite.win))
 	      FocusOutEvents(sprite.win, fromWin, mode, NotifyPointer, FALSE);
 	    FocusEvent(FocusOut, mode, NotifyNonlinear, fromWin);
-	    FocusOutEvents(
-	      fromWin->parent, ROOT, mode, NotifyNonlinearVirtual, TRUE);
+	    /* next call catches the root too, if the screen changed */
+	    FocusOutEvents( fromWin->parent, NullWindow, mode,
+			    NotifyNonlinearVirtual, FALSE);
 	}
-	FocusEvent(FocusIn, mode, in, ROOT);
+	/* Notify all the roots */
+	for (i=0; i<screenInfo.numScreens; i++)
+	    FocusEvent(FocusIn, mode, in, &WindowTable[i]);
 	if (toWin == PointerRootWin)
 	    FocusInEvents(
 		ROOT, sprite.win, NullWindow, mode, NotifyPointer, TRUE);
@@ -1777,8 +1783,10 @@ DoFocusEvents(fromWin, toWin, mode)
 	{
 	    if (fromWin == PointerRootWin)
 		FocusOutEvents(sprite.win, ROOT, mode, NotifyPointer, TRUE);
-	    FocusEvent(FocusOut, mode, out, ROOT);
-	    FocusInEvents(
+	    for (i=0; i<screenInfo.numScreens; i++)
+	      FocusEvent(FocusOut, mode, out, &WindowTable[i]);
+	    if (toWin->parent != NullWindow)
+	      FocusInEvents(
 		ROOT, toWin, toWin, mode, NotifyNonlinearVirtual, TRUE);
 	    FocusEvent(FocusIn, mode, NotifyNonlinear, toWin);
 	    if (IsParent(toWin, sprite.win))
@@ -1824,10 +1832,12 @@ DoFocusEvents(fromWin, toWin, mode)
 			FocusOutEvents(
 			    sprite.win, fromWin, mode, NotifyPointer, FALSE);
 		    FocusEvent(FocusOut, mode, NotifyNonlinear, fromWin);
-		    FocusOutEvents(
+		    if (fromWin->parent != NullWindow)
+		      FocusOutEvents(
 			fromWin->parent, common, mode, NotifyNonlinearVirtual,
 			FALSE);
-		    FocusInEvents(
+		    if (toWin->parent != NullWindow)
+		      FocusInEvents(
 			common, toWin, toWin, mode, NotifyNonlinearVirtual,
 			FALSE);
 		    FocusEvent(FocusIn, mode, NotifyNonlinear, toWin);
