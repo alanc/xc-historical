@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER))
-  static char Xrcs_id[] = "$XConsortium: List.c,v 1.21 89/08/24 17:57:39 kit Exp $";
+  static char Xrcs_id[] = "$XConsortium: List.c,v 1.22 89/10/09 16:20:43 jim Exp $";
 #endif
 
 /***********************************************************
@@ -207,7 +207,16 @@ Boolean changex, changey;
     Dimension height = w->core.height;
     register int i, len;
 
-    if (lw->list.nitems == 0)	/* Get number of items. */
+/*
+ * If list is NULL then the list will just be the name of the widget.
+ */
+
+    if (lw->list.list == NULL) {
+      lw->list.list = &(lw->core.name);
+      lw->list.nitems = 1;
+    }
+
+    if (lw->list.nitems == 0)	    /* Get number of items. */
         for ( ; lw->list.list[lw->list.nitems] != NULL ; lw->list.nitems++);
 
     if (lw->list.longest == 0) /* Get column width. */
@@ -304,15 +313,6 @@ Widget junk, new;
     lw->list.row_height = lw->list.font->max_bounds.ascent
 			+ lw->list.font->max_bounds.descent
 			+ lw->list.row_space;
-
-/*
- * Default to the name of the widget as the entire list.
- */
-
-    if (lw->list.list == NULL) {
-      lw->list.list = &(lw->core.name);
-      lw->list.nitems = 1;
-    }
 
     ResetList(new, (new->core.width == 0), (new->core.height == 0));
 
