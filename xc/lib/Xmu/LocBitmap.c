@@ -1,5 +1,5 @@
 /*
- * $XConsortium: LocBitmap.c,v 1.9 90/12/28 20:02:44 gildea Exp $
+ * $XConsortium: LocBitmap.c,v 1.10 91/01/05 11:55:26 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -26,7 +26,6 @@
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
 #include <X11/Xutil.h>
-#include <X11/StringDefs.h>
 #include <X11/Xmu/CvtCache.h>
 #include <X11/Xmu/Drawing.h>
 
