@@ -1,4 +1,4 @@
-/* $XConsortium: PEXprotost.h,v 1.3 92/07/16 11:09:39 mor Exp $ */
+/* $XConsortium: PEXprotost.h,v 1.4 92/11/02 16:36:35 mor Exp $ */
 
 /******************************************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc.
@@ -34,7 +34,11 @@ SOFTWARE.
 
 
 /* This is FLOAT as defined and used by the Protocol Encoding */
+#ifndef WORD64
 typedef float PEXFLOAT;
+#else
+typedef CARD32 PEXFLOAT;
+#endif
 
 
 typedef CARD32  pexAsfAttribute;
@@ -51,8 +55,15 @@ typedef CARD32 	pexName;
 typedef XID 	pexNameSet;
 typedef XID	pexPC;
 typedef XID	pexFont;
+
+#ifndef WORD64
 typedef PEXFLOAT	pexMatrix[4][4];
 typedef PEXFLOAT 	pexMatrix3X3[3][3];
+#else
+typedef CARD8		pexMatrix[64];
+typedef CARD8		pexMatrix3X3[36];
+#endif
+
 typedef XID	pexPhigsWks;
 typedef XID	pexPickMeasure;
 typedef XID	pexRenderer;
@@ -74,64 +85,64 @@ typedef struct {
 
 typedef struct {
     pexStructure	sid B32;
-    PEXFLOAT		priority;
+    PEXFLOAT		priority B32;
 } pexStructureInfo;
 
 typedef struct {
-    PEXFLOAT	x;
-    PEXFLOAT	y;
+    PEXFLOAT	x B32;
+    PEXFLOAT	y B32;
 } pexVector2D;
 
 typedef struct {
-    PEXFLOAT	x;
-    PEXFLOAT	y;
-    PEXFLOAT	z;
+    PEXFLOAT	x B32;
+    PEXFLOAT	y B32;
+    PEXFLOAT	z B32;
 } pexVector3D;
 
 /* Coord structures */
 
 typedef struct {
-    PEXFLOAT	x;
-    PEXFLOAT	y;
+    PEXFLOAT	x B32;
+    PEXFLOAT	y B32;
 } pexCoord2D;
 
 typedef struct {
-    PEXFLOAT	x;
-    PEXFLOAT	y;
-    PEXFLOAT	z;
+    PEXFLOAT	x B32;
+    PEXFLOAT	y B32;
+    PEXFLOAT	z B32;
 } pexCoord3D;
 
 typedef struct {
-    PEXFLOAT	x;
-    PEXFLOAT	y;
-    PEXFLOAT	z;
-    PEXFLOAT	w;
+    PEXFLOAT	x B32;
+    PEXFLOAT	y B32;
+    PEXFLOAT	z B32;
+    PEXFLOAT	w B32;
 } pexCoord4D;
 
 
 /* Color structures */
 typedef struct {
-    PEXFLOAT	red;
-    PEXFLOAT	green;
-    PEXFLOAT	blue;
+    PEXFLOAT	red B32;
+    PEXFLOAT	green B32;
+    PEXFLOAT	blue B32;
 } pexRgbFloatColor;
 
 typedef struct {
-    PEXFLOAT	hue;
-    PEXFLOAT	saturation;
-    PEXFLOAT	value;
+    PEXFLOAT	hue B32;
+    PEXFLOAT	saturation B32;
+    PEXFLOAT	value B32;
 } pexHsvColor;
 
 typedef struct {
-    PEXFLOAT	hue;
-    PEXFLOAT	lightness;
-    PEXFLOAT	saturation;
+    PEXFLOAT	hue B32;
+    PEXFLOAT	lightness B32;
+    PEXFLOAT	saturation B32;
 } pexHlsColor;
 
 typedef struct {
-    PEXFLOAT	x;
-    PEXFLOAT	y;
-    PEXFLOAT	z;
+    PEXFLOAT	x B32;
+    PEXFLOAT	y B32;
+    PEXFLOAT	z B32;
 } pexCieColor;
 
 typedef struct {
@@ -166,9 +177,9 @@ typedef struct {
 } pexColor;
 
 typedef struct {
-    PEXFLOAT   first;
-    PEXFLOAT   second;
-    PEXFLOAT   third;
+    PEXFLOAT   first B32;
+    PEXFLOAT   second B32;
+    PEXFLOAT   third B32;
 } pexFloatColor;
 
 typedef struct {
@@ -181,13 +192,13 @@ typedef struct {
 typedef struct {
     pexEnumTypeIndex	approxMethod B16;
     CARD16		unused B16;
-    PEXFLOAT		tolerance;
-} pexCurveApprox;
+    PEXFLOAT		tolerance B32;
+} pexCurveApproxData;
 
 typedef struct {
     INT16	x B16;
     INT16 	y B16;
-    PEXFLOAT 	z;
+    PEXFLOAT 	z B32;
 } pexDeviceCoord;
 
 typedef struct {
@@ -214,7 +225,7 @@ typedef struct {
 } pexElementPos;
 
 typedef struct {
-    pexElementPos	position1;
+    pexElementPos	position1;	/* pexElementPos is 8 bytes long */
     pexElementPos	position2;
 } pexElementRange;
 
@@ -224,29 +235,38 @@ typedef struct {
 } pexElementRef;
 
 typedef struct {
-	pexCoord2D lowerLeft;
-	pexCoord2D upperRight;
-	pexCoord2D concatpoint;
+    PEXFLOAT	lowerLeft_x B32;
+    PEXFLOAT	lowerLeft_y B32;
+    PEXFLOAT	upperRight_x B32;
+    PEXFLOAT	upperRight_y B32;
+    PEXFLOAT	concatpoint_x B32;
+    PEXFLOAT	concatpoint_y B32;
 } pexExtentInfo;
 
 typedef struct {
     pexEnumTypeIndex	index B16;
-    pexString		descriptor;
+    CARD16		descriptor_length B16;
 } pexEnumTypeDesc;
 
 typedef struct {
-    pexCoord3D	point;
-    pexVector3D	vector;
+    PEXFLOAT	point_x B32;
+    PEXFLOAT	point_y B32;
+    PEXFLOAT	point_z B32;
+    PEXFLOAT	vector_x B32;
+    PEXFLOAT	vector_y B32;
+    PEXFLOAT	vector_z B32;
 } pexHalfSpace;
 
 typedef struct {
-    pexNameSet	incl;
-    pexNameSet	excl;
+    pexNameSet	incl B32;
+    pexNameSet	excl B32;
 } pexNameSetPair;
 
 typedef struct {
-    pexCoord2D	point;
-    pexVector2D	vector;
+    PEXFLOAT	point_x B32;
+    PEXFLOAT	point_y B32;
+    PEXFLOAT	vector_x B32;
+    PEXFLOAT	vector_y B32;
 } pexHalfSpace2D;
 
 typedef struct {
@@ -262,8 +282,12 @@ typedef struct {
 } pexLocalTransform2DData;
 
 typedef struct {
-    pexCoord3D	minval;
-    pexCoord3D	maxval;
+    PEXFLOAT	xmin B32;
+    PEXFLOAT	ymin B32;
+    PEXFLOAT	zmin B32;
+    PEXFLOAT	xmax B32;
+    PEXFLOAT	ymax B32;
+    PEXFLOAT	zmax B32;
 } pexNpcSubvolume;
 
 /*  an OPT_DATA  structure cannot be defined because it has variable content
@@ -300,9 +324,9 @@ typedef struct {
     CARD16		order B16;
     pexCoordType	type B16;
     INT16		approxMethod B16;
-    PEXFLOAT		tolerance;
-    PEXFLOAT		tMin;
-    PEXFLOAT		tMax;
+    PEXFLOAT		tolerance B32;
+    PEXFLOAT		tMin B32;
+    PEXFLOAT		tMax B32;
     CARD32		numKnots B32;
     CARD32		numCoord B32;
     /* LISTof FLOAT(numKnots) -- length = order + number of coords */
@@ -318,53 +342,74 @@ typedef struct {
 
 typedef struct {
     pexEnumTypeIndex	pickType B16;
-    CARD16		unused;
+    CARD16		unused B16;
     /* SINGLE HITBOX() */
 } pexPickRecord;
 
 typedef struct {
-    PEXFLOAT		ambient;
-    PEXFLOAT		diffuse;
-    PEXFLOAT		specular;
-    PEXFLOAT		specularConc;
-    PEXFLOAT		transmission;  /* 0.0 = opaque, 1.0 = transparent */
-    pexColorSpecifier  specularColor;
+    PEXFLOAT		ambient B32;
+    PEXFLOAT		diffuse B32;
+    PEXFLOAT		specular B32;
+    PEXFLOAT		specularConc B32;
+    PEXFLOAT		transmission B32; /* 0.0 = opaque, 1.0 = transparent */
+    pexColorType        specular_colorType B16;
+    CARD16              unused B16;
     /* SINGLE COLOR() */
 } pexReflectionAttr;
 
 typedef struct {
     pexEnumTypeIndex	approxMethod B16;
     CARD16		unused B16;
-    PEXFLOAT		uTolerance;
-    PEXFLOAT		vTolerance;
-} pexSurfaceApprox;
+    PEXFLOAT		uTolerance B32;
+    PEXFLOAT		vTolerance B32;
+} pexSurfaceApproxData;
 
 
 typedef struct {
-    pexCoord3D	point;
+    PEXFLOAT	point_x B32;
+    PEXFLOAT	point_y B32;
+    PEXFLOAT	point_z B32;
     /* SINGLE OPT_DATA() */
 } pexVertex;
 
 
 typedef struct {
-    pexDeviceCoord	minval;
-    pexDeviceCoord	maxval;
+    INT16		xmin B16;
+    INT16		ymin B16;
+    PEXFLOAT		zmin B32;
+    INT16		xmax B16;
+    INT16		ymax B16;
+    PEXFLOAT		zmax B32;
     pexSwitch		useDrawable;
     BYTE		pad[3];
 } pexViewport;
 
 typedef struct {
-    CARD16		clipFlags B16;
-    CARD16		unused B16;
-    pexNpcSubvolume	clipLimits;
-    pexMatrix		orientation;
-    pexMatrix		mapping;
+    CARD16	clipFlags B16;
+    CARD16	unused B16;
+    PEXFLOAT	clipLimits_xmin B32;
+    PEXFLOAT	clipLimits_ymin B32;
+    PEXFLOAT	clipLimits_zmin B32;
+    PEXFLOAT	clipLimits_xmax B32;
+    PEXFLOAT	clipLimits_ymax B32;
+    PEXFLOAT	clipLimits_zmax B32;
+    pexMatrix	orientation;
+    pexMatrix	mapping;
 } pexViewEntry;
 
 typedef struct {
     pexTableIndex	index B16;
-    CARD16		unused B16;
-    pexViewEntry	view;
+    CARD16		unused1 B16;
+    CARD16		clipFlags B16;
+    CARD16		unused2 B16;
+    PEXFLOAT		clipLimits_xmin B32;
+    PEXFLOAT		clipLimits_ymin B32;
+    PEXFLOAT		clipLimits_zmin B32;
+    PEXFLOAT		clipLimits_xmax B32;
+    PEXFLOAT		clipLimits_ymax B32;
+    PEXFLOAT		clipLimits_zmax B32;
+    pexMatrix		orientation;
+    pexMatrix		mapping;
 } pexViewRep;
 
 /*
@@ -381,27 +426,32 @@ typedef struct {
 typedef struct {
     pexEnumTypeIndex	lineType B16;
     pexEnumTypeIndex	polylineInterp B16;
-    pexCurveApprox	curveApprox;
-    PEXFLOAT		lineWidth;
-    pexColorSpecifier	lineColor;
-    /* SINGLE COLOR() */
+    pexEnumTypeIndex	curveApprox_method B16;
+    CARD16		unused1 B16;
+    PEXFLOAT		curveApprox_tolerance B32;
+    PEXFLOAT		lineWidth B32;
+    pexColorType	lineColorType B16;
+    CARD16		unused2 B16;
+    /* SINGLE COLOR(lineColorType) */
 } pexLineBundleEntry;
 
 typedef struct {
     pexEnumTypeIndex	markerType B16;
-    INT16		unused B16;
-    PEXFLOAT		markerScale;
-    pexColorSpecifier	markerColor;
-    /* SINGLE COLOR() */
+    INT16		unused1 B16;
+    PEXFLOAT		markerScale B32;
+    pexColorType	markerColorType B16;
+    CARD16		unused2 B16;
+    /* SINGLE COLOR(markerColorType) */
 } pexMarkerBundleEntry;
 
 typedef struct {
     CARD16		textFontIndex B16;
     CARD16		textPrecision B16;
-    PEXFLOAT		charExpansion;
-    PEXFLOAT		charSpacing;
-    pexColorSpecifier	textColor;
-    /* SINGLE COLOR() */
+    PEXFLOAT		charExpansion B32;
+    PEXFLOAT		charSpacing B32;
+    pexColorType	textColorType B16;
+    CARD16		unused B16;
+    /* SINGLE COLOR(textColorType) */
 } pexTextBundleEntry;
 
 
@@ -419,7 +469,10 @@ typedef struct {
     INT16		bfInteriorStyleIndex B16;
     pexEnumTypeIndex    bfReflectionModel B16;
     pexEnumTypeIndex    bfSurfaceInterp B16;
-    pexSurfaceApprox    surfaceApprox;
+    pexEnumTypeIndex	surfaceApprox_method B16;
+    CARD16		unused B16;
+    PEXFLOAT		surfaceApproxuTolerance B32;
+    PEXFLOAT		surfaceApproxvTolerance B32;
     /* SINGLE pexColorSpecifier		surfaceColor    */
     /* SINGLE pexReflectionAttr		reflectionAttr   */
     /* SINGLE pexColorSpecifier		bfSurfaceColor  */
@@ -428,11 +481,12 @@ typedef struct {
 
 typedef struct {
     pexSwitch		edges;
-    CARD8		unused;
+    CARD8		unused1;
     pexEnumTypeIndex	edgeType B16;
-    PEXFLOAT		edgeWidth;
-    pexColorSpecifier	edgeColor;
-    /* SINGLE COLOR() */
+    PEXFLOAT		edgeWidth B32;
+    pexColorType	edgeColorType B16;
+    CARD16		unused2 B16;
+    /* SINGLE COLOR(edgeColorType) */
 } pexEdgeBundleEntry;
 
 typedef struct {
@@ -455,32 +509,38 @@ typedef struct {
 
 typedef struct {
     pexEnumTypeIndex	lightType B16;
-    INT16		unused B16;
-    pexVector3D		direction;
-    pexCoord3D		point;
-    PEXFLOAT		concentration;
-    PEXFLOAT		spreadAngle;
-    PEXFLOAT		attenuation1;
-    PEXFLOAT		attenuation2;
-    pexColorSpecifier	lightColor;
-    /* SINGLE COLOR() */
+    INT16		unused1 B16;
+    PEXFLOAT		direction_x B32;
+    PEXFLOAT		direction_y B32;
+    PEXFLOAT		direction_z B32;
+    PEXFLOAT		point_x B32;
+    PEXFLOAT		point_y B32;
+    PEXFLOAT		point_z B32;
+    PEXFLOAT		concentration B32;
+    PEXFLOAT		spreadAngle B32;
+    PEXFLOAT		attenuation1 B32;
+    PEXFLOAT		attenuation2 B32;
+    pexColorType	lightColorType B16;
+    CARD16		unused2 B16;
+    /* SINGLE COLOR(lightColorType) */
 } pexLightEntry;
 
 typedef struct {
     pexSwitch		mode;
-    CARD8		unused;
+    CARD8		unused1;
     CARD16		unused2 B16;
-    PEXFLOAT		frontPlane;
-    PEXFLOAT		backPlane;
-    PEXFLOAT		frontScaling;
-    PEXFLOAT		backScaling;
-    pexColorSpecifier	depthCueColor;
-    /* SINGLE COLOR() */
+    PEXFLOAT		frontPlane B32;
+    PEXFLOAT		backPlane B32;
+    PEXFLOAT		frontScaling B32;
+    PEXFLOAT		backScaling B32;
+    pexColorType	depthCueColorType B16;
+    CARD16		unused3 B16;
+    /* SINGLE COLOR(depthCueColorType) */
 } pexDepthCueEntry;
 
 typedef struct {
-    INT16	approxType;
-    INT16	approxModel;
+    INT16	approxType B16;
+    INT16	approxModel B16;
     CARD16	max1 B16;
     CARD16	max2 B16;
     CARD16	max3 B16;
@@ -489,9 +549,9 @@ typedef struct {
     CARD32	mult1 B32;
     CARD32	mult2 B32;
     CARD32	mult3 B32;
-    PEXFLOAT	weight1;
-    PEXFLOAT	weight2;
-    PEXFLOAT	weight3;
+    PEXFLOAT	weight1 B32;
+    PEXFLOAT	weight2 B32;
+    PEXFLOAT	weight3 B32;
     CARD32	basePixel B32;
 } pexColorApproxEntry;
 
@@ -522,7 +582,7 @@ typedef struct {
     CARD8	characterSetWidth;
     CARD8	encodingState;
     CARD16	unused B16;
-    CARD16	numChars;
+    CARD16	numChars B16;
     /* LISTof CHARACTER( numChars ) */
     /* pad */
 } pexMonoEncoding;
@@ -544,10 +604,14 @@ typedef struct {
 } pexPSC_IsoparametricCurves;		/* type 3 */
 
 typedef struct {
-    pexCoord3D	    origin;
-    pexVector3D	    direction;
-    CARD16	    numberIntersections B16;
-    CARD16	    pad B16;
+    PEXFLOAT	origin_x B32;
+    PEXFLOAT	origin_y B32;
+    PEXFLOAT	origin_z B32;
+    PEXFLOAT	direction_x B32;
+    PEXFLOAT	direction_y B32;
+    PEXFLOAT	direction_z B32;
+    CARD16	numberIntersections B16;
+    CARD16	pad B16;
     /* LISTof pexCoord3D( numIntersections ) */
 } pexPSC_LevelCurves;			/*  type 4: MC
 					    type 5: WC */
@@ -555,8 +619,9 @@ typedef struct {
 /* Pick Device data records */
 
 typedef struct {
-    pexDeviceCoord2D	position;
-    PEXFLOAT		distance;
+    INT16	position_x B16;
+    INT16 	position_y B16;
+    PEXFLOAT	distance B32;
 } pexPD_DC_HitBox;				/* pick device 1 */
 
 typedef pexNpcSubvolume pexPD_NPC_HitVolume;	/* pick device 2 */

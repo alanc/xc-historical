@@ -1,4 +1,4 @@
-/* $XConsortium: PEXproto.h,v 1.4 92/07/16 11:08:43 mor Exp $ */
+/* $XConsortium: PEXproto.h,v 1.5 92/11/02 16:36:26 mor Exp $ */
 
 /******************************************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc.
@@ -829,7 +829,12 @@ typedef struct {
     CARD16 		length B16;	/* 7 */
     pexRenderer		rdr B32;
     pexStructure	sid B32;
-    pexElementRange	range;
+    CARD16		position1_whence B16;
+    CARD16		unused1 B16;
+    INT32		position1_offset B32;
+    CARD16		position2_whence B16;
+    CARD16		unused2 B16;
+    INT32		position2_offset B32;
 } pexRenderElementsReq;
 
 typedef struct {
@@ -884,7 +889,12 @@ typedef struct {
     pexEnumTypeIndex	fpFormat B16;
     CARD16		unused B16;
     pexStructure	sid B32;
-    pexElementRange	range;
+    CARD16		position1_whence B16;
+    CARD16		unused1 B16;
+    INT32		position1_offset B32;
+    CARD16		position2_whence B16;
+    CARD16		unused2 B16;
+    INT32		position2_offset B32;
 } pexGetElementInfoReq;
 
 typedef struct {
@@ -915,7 +925,12 @@ typedef struct {
     pexEnumTypeIndex	fpFormat B16;
     CARD16		unused B16;
     pexStructure	sid B32;
-    pexElementRange	range;
+    CARD16		position1_whence B16;
+    CARD16		unused1 B16;
+    INT32		position1_offset B32;
+    CARD16		position2_whence B16;
+    CARD16		unused2 B16;
+    INT32		position2_offset B32;
 } pexFetchElementsReq;
 
 typedef struct {
@@ -932,7 +947,9 @@ typedef struct {
     CARD8 		opcode;
     CARD16 		length B16;	/* 4 */
     pexStructure	sid B32;
-    pexElementPos	position;
+    CARD16		position_whence B16;
+    CARD16		unused B16;
+    INT32		position_offset B32;
 } pexSetElementPointerReq;
 
 typedef struct {
@@ -949,7 +966,9 @@ typedef struct {
     CARD8 		opcode;
     CARD16 		length B16;
     pexStructure	sid B32;
-    pexElementPos	position;
+    CARD16		position_whence B16;
+    CARD16		unused B16;
+    INT32		position_offset B32;
     CARD32		direction B32;
     CARD32		numIncls B32;
     CARD32		numExcls B32;
@@ -975,7 +994,12 @@ typedef struct {
     CARD8 		opcode;
     CARD16 		length B16;	/* 6 */
     pexStructure	sid B32;
-    pexElementRange	range;
+    CARD16		position1_whence B16;
+    CARD16		unused1 B16;
+    INT32		position1_offset B32;
+    CARD16		position2_whence B16;
+    CARD16		unused2 B16;
+    INT32		position2_offset B32;
 } pexDeleteElementsReq;
 
 typedef struct {
@@ -983,7 +1007,9 @@ typedef struct {
     CARD8 		opcode;
     CARD16 		length B16;	/* 5 */
     pexStructure	sid B32;
-    pexElementPos	position;
+    CARD16		position_whence B16;
+    CARD16		unused B16;
+    INT32		position_offset B32;
     INT32		label B32;
 } pexDeleteElementsToLabelReq;
 
@@ -1001,9 +1027,16 @@ typedef struct {
     CARD8 		opcode;
     CARD16 		length B16;	/* 9 */
     pexStructure	src B32;
-    pexElementRange	srcRange;
+    CARD16		srcPosition1_whence B16;
+    CARD16		unused1 B16;
+    INT32		srcPosition1_offset B32;
+    CARD16		srcPosition2_whence B16;
+    CARD16		unused2 B16;
+    INT32		srcPosition2_offset B32;
     pexStructure	dst B32;
-    pexElementPos	dstPosition;
+    CARD16		dstPosition_whence B16;
+    CARD16		unused3 B16;
+    INT32		dstPosition_offset B32;
 } pexCopyElementsReq;
 
 typedef struct {
@@ -1199,9 +1232,20 @@ typedef struct {
     CARD8		opcode;
     CARD16		length B16;	/* 43 */
     pexEnumTypeIndex	fpFormat B16;
-    CARD16		unused B16;
+    CARD16		unused1 B16;
     pexPhigsWks		wks B32;
-    pexViewRep		viewRep;
+    pexTableIndex	index B16;
+    CARD16		unused2 B16;
+    CARD16		clipFlags B16;
+    CARD16		unused3 B16;
+    PEXFLOAT		clipLimits_xmin B32;
+    PEXFLOAT		clipLimits_ymin B32;
+    PEXFLOAT		clipLimits_zmin B32;
+    PEXFLOAT		clipLimits_xmax B32;
+    PEXFLOAT		clipLimits_ymax B32;
+    PEXFLOAT		clipLimits_zmax B32;
+    pexMatrix		view_orientation;
+    pexMatrix		view_mapping;
 } pexSetWorkstationViewRepReq;
 
 typedef struct {
@@ -1211,7 +1255,12 @@ typedef struct {
     pexEnumTypeIndex	fpFormat B16;
     CARD16		unused B16;
     pexPhigsWks		wks B32;
-    pexNpcSubvolume	npcSubvolume;
+    PEXFLOAT		npcSubvolume_xmin B32;
+    PEXFLOAT		npcSubvolume_ymin B32;
+    PEXFLOAT		npcSubvolume_zmin B32;
+    PEXFLOAT		npcSubvolume_xmax B32;
+    PEXFLOAT		npcSubvolume_ymax B32;
+    PEXFLOAT		npcSubvolume_zmax B32;
 } pexSetWorkstationWindowReq;
 
 typedef struct {
@@ -1221,7 +1270,14 @@ typedef struct {
     pexEnumTypeIndex	fpFormat B16;
     CARD16		unused B16;
     pexPhigsWks		wks B32;
-    pexViewport		viewport;
+    INT16		viewport_xmin B16;
+    INT16		viewport_ymin B16;
+    PEXFLOAT		viewport_zmin B32;
+    INT16		viewport_xmax B16;
+    INT16		viewport_ymax B16;
+    PEXFLOAT		viewport_zmax B32;
+    pexSwitch		useDrawable;
+    BYTE		pad[3];
 } pexSetWorkstationViewportReq;
 
 typedef struct {
@@ -1250,7 +1306,7 @@ typedef struct {
     CARD16		unused B16;
     pexPhigsWks		wks B32;
     pexStructure	sid B32;
-    PEXFLOAT		priority;
+    PEXFLOAT		priority B32;
 } pexPostStructureReq;
 
 typedef struct {
@@ -1293,7 +1349,7 @@ typedef struct {
     CARD8 		opcode;
     CARD16 		length B16;	/* 4 */
     pexPhigsWks		wks B32;
-    pexPickMeasure	pm;
+    pexPickMeasure	pm B32;
     pexEnumTypeIndex	devType B16;
     CARD16      	pad B16;
 } pexCreatePickMeasureReq;
@@ -1433,10 +1489,11 @@ typedef struct {
     pexTableIndex	    fontGroupIndex  B16;
     CARD16		    unused B16;
     XID			    id B32;	/* renderer, wks, or text font lut */
-    PEXFLOAT		    charExpansion;
-    PEXFLOAT		    charSpacing;
-    PEXFLOAT		    charHeight;
-    pexTextAlignmentData    textAlignment;
+    PEXFLOAT		    charExpansion B32;
+    PEXFLOAT		    charSpacing B32;
+    PEXFLOAT		    charHeight B32;
+    CARD16		    alignment_vertical B16;
+    CARD16		    alignment_horizontal B16;
     CARD32		    numStrings B32;
     /* LISTof LISTof MONO_ENCODINGS() */
     /* pad() */
@@ -1447,18 +1504,21 @@ typedef struct {
  *****************************************************************/
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexEnumTypeIndex	markerType B16;
     CARD16		pad B16;
 } pexMarkerType;
 
 typedef struct {
-    pexElementInfo	head;
-    PEXFLOAT		scale;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+    PEXFLOAT		scale B32;
 } pexMarkerScale;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexTableIndex	index B16;
     CARD16		pad B16;
 } pexMarkerBundleIndex;
@@ -1467,282 +1527,348 @@ typedef pexMarkerBundleIndex  pexMarkerColorIndex;
 typedef pexMarkerBundleIndex  pexTextColorIndex;
 typedef pexMarkerBundleIndex  pexLineColorIndex;
 typedef pexMarkerBundleIndex  pexSurfaceColorIndex;
-typedef pexMarkerBundleIndex  pexBfSurfaceColorIndex;
+typedef pexMarkerBundleIndex  pexBFSurfaceColorIndex;
 typedef pexMarkerBundleIndex  pexSurfaceEdgeColorIndex;
 
 typedef pexMarkerBundleIndex pexTextFontIndex;
 
 typedef struct {
-    pexElementInfo	head;
-    pexColorSpecifier	colorSpec;
-    /* SINGLE COLOR() */
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+    pexColorType	colorType B16;
+    CARD16		unused B16;
+    /* SINGLE COLOR(colorType) */
 } pexMarkerColor;
 
 typedef pexMarkerColor pexTextColor;
 typedef pexMarkerColor pexLineColor;
 typedef pexMarkerColor pexSurfaceColor;
-typedef pexMarkerColor pexBfSurfaceColor;
+typedef pexMarkerColor pexBFSurfaceColor;
 typedef pexMarkerColor pexSurfaceEdgeColor;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexEnumTypeIndex	style B16;
     CARD16		pad B16;
-} pexAtextStyle;
+} pexATextStyle;
 
 typedef pexMarkerBundleIndex pexTextBundleIndex;
 typedef pexMarkerBundleIndex pexLineBundleIndex;
 typedef pexMarkerBundleIndex pexInteriorBundleIndex;
 typedef pexMarkerBundleIndex pexInteriorStyleIndex;
-typedef pexMarkerBundleIndex pexBfInteriorStyleIndex;
+typedef pexMarkerBundleIndex pexBFInteriorStyleIndex;
 typedef pexMarkerBundleIndex pexEdgeBundleIndex;
 typedef pexMarkerBundleIndex pexViewIndex;
 typedef pexMarkerBundleIndex pexDepthCueIndex;
 typedef pexMarkerBundleIndex pexColorApproxIndex;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     CARD16		precision B16;
     CARD16		pad B16;
 } pexTextPrecision;
 
 typedef struct {
-    pexElementInfo	head;
-    PEXFLOAT		expansion;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+    PEXFLOAT		expansion B32;
 } pexCharExpansion;
 
 typedef struct {
-    pexElementInfo	head;
-    PEXFLOAT		spacing;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+    PEXFLOAT		spacing B32;
 } pexCharSpacing;
 
 typedef struct {
-    pexElementInfo	head;
-    PEXFLOAT		height;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+    PEXFLOAT		height B32;
 } pexCharHeight;
-typedef pexCharHeight pexAtextHeight;
+typedef pexCharHeight pexATextHeight;
 
 typedef struct {
-    pexElementInfo	head;
-    pexVector2D		up;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+    PEXFLOAT		up_x B32;
+    PEXFLOAT		up_y B32;
 } pexCharUpVector;
-typedef pexCharUpVector pexAtextUpVector;
+typedef pexCharUpVector pexATextUpVector;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     CARD16		path B16;
     CARD16		pad B16;
 } pexTextPath;
-typedef pexTextPath pexAtextPath;
+typedef pexTextPath pexATextPath;
 
 typedef struct {
-    pexElementInfo		head;
-    pexTextAlignmentData	alignment;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+    CARD16		alignment_vertical B16;
+    CARD16		alignment_horizontal B16;
 } pexTextAlignment;
-typedef pexTextAlignment pexAtextAlignment;
+typedef pexTextAlignment pexATextAlignment;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexEnumTypeIndex	lineType B16;
     CARD16		pad B16;
 } pexLineType;
 
 typedef struct {
-    pexElementInfo	head;
-    PEXFLOAT		width;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+    PEXFLOAT		width B32;
 } pexLineWidth;
 typedef pexLineWidth	pexSurfaceEdgeWidth;
 
 typedef struct {
-    pexElementInfo	head;
-    pexCurveApprox	approx;
-} pexCurveApproximation;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+    pexEnumTypeIndex	approxMethod B16;
+    CARD16		unused B16;
+    PEXFLOAT		tolerance B32;
+} pexCurveApprox;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexEnumTypeIndex	polylineInterp B16;
     CARD16		pad B16;
-} pexPolylineInterp;
+} pexPolylineInterpMethod;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexEnumTypeIndex	interiorStyle B16;
     CARD16		pad B16;
 } pexInteriorStyle;
-typedef pexInteriorStyle pexBfInteriorStyle;
+typedef pexInteriorStyle pexBFInteriorStyle;
 
 typedef struct {
-    pexElementInfo	head;
-    pexReflectionAttr	reflectionAttr;
-} pexSurfaceReflAttr;
-typedef pexSurfaceReflAttr pexBfSurfaceReflAttr;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+    PEXFLOAT		ambient B32;
+    PEXFLOAT		diffuse B32;
+    PEXFLOAT		specular B32;
+    PEXFLOAT		specularConc B32;
+    PEXFLOAT		transmission B32;
+    pexColorType	specular_colorType B16;
+    CARD16		unused B16;
+    /* SINGLE COLOR(specular_colorType) */
+} pexReflectionAttributes;
+typedef pexReflectionAttributes pexBFReflectionAttributes;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexEnumTypeIndex	reflectionModel B16;
     CARD16		pad B16;
-} pexSurfaceReflModel;
-typedef pexSurfaceReflModel pexBfSurfaceReflModel;
+} pexReflectionModel;
+typedef pexReflectionModel pexBFReflectionModel;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexEnumTypeIndex	surfaceInterp B16;
     CARD16		pad B16;
-} pexSurfaceInterp;
-typedef pexSurfaceInterp pexBfSurfaceInterp;
+} pexSurfaceInterpMethod;
+typedef pexSurfaceInterpMethod pexBFSurfaceInterpMethod;
 
 typedef struct {
-    pexElementInfo	head;
-    pexSurfaceApprox	approx;
-} pexSurfaceApproximation;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+    pexEnumTypeIndex	approxMethod B16;
+    CARD16		unused B16;
+    PEXFLOAT		uTolerance B32;
+    PEXFLOAT		vTolerance B32;
+} pexSurfaceApprox;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexCullMode		cullMode B16;
     CARD16		pad B16;
-} pexCullingMode;
+} pexFacetCullingMode;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexSwitch		distinguish;
     BYTE		pad[3];
-} pexDistinguishFlag;
+} pexFacetDistinguishFlag;
 
 typedef struct {
-    pexElementInfo	head;
-    pexVector2D		size;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+    PEXFLOAT		size_x B32;
+    PEXFLOAT		size_y B32;
 } pexPatternSize;
 
 typedef struct {
-    pexElementInfo	head;
-    pexCoord2D		point;
-} pexPatternRefPt;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+    PEXFLOAT		point_x B32;
+    PEXFLOAT		point_y B32;
+} pexPatternAttributes2D;
 
 typedef struct {
-    pexElementInfo	head;
-    pexCoord3D		refPt;
-    pexVector3D		vector1;
-    pexVector3D		vector2;
-} pexPatternAttr;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+    PEXFLOAT		refPt_x B32;
+    PEXFLOAT		refPt_y B32;
+    PEXFLOAT		refPt_z B32;
+    PEXFLOAT		vector1_x B32;
+    PEXFLOAT		vector1_y B32;
+    PEXFLOAT		vector1_z B32;
+    PEXFLOAT		vector2_x B32;
+    PEXFLOAT		vector2_y B32;
+    PEXFLOAT		vector2_z B32;
+} pexPatternAttributes;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexSwitch		onoff;
     BYTE		pad[3];
 } pexSurfaceEdgeFlag;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexEnumTypeIndex	edgeType B16;
     CARD16		pad B16;
 } pexSurfaceEdgeType;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexAsfAttribute	attribute B32;
     pexAsfValue		source;
     BYTE		pad[3];
-} pexSetAsfValues;
+} pexIndividualASF;
 
 typedef struct {
-    pexElementInfo	head;
-    pexComposition	compType;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+    pexComposition	compType B16;
     CARD16		unused B16;
     pexMatrix		matrix;
 } pexLocalTransform;
 
 typedef struct {
-    pexElementInfo	head;
-    pexComposition	compType;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+    pexComposition	compType B16;
     CARD16		unused B16;
     pexMatrix3X3	matrix3X3;
 } pexLocalTransform2D;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexMatrix		matrix;
 } pexGlobalTransform;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexMatrix3X3	matrix3X3;
 } pexGlobalTransform2D;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexSwitch		onoff;
     BYTE		pad[3];
-} pexModelClip;
+} pexModelClipFlag;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexEnumTypeIndex	modelClipOperator B16;
     CARD16		numHalfSpaces B16;
     /* LISTof pexHalfSpace( numHalfSpaces ) */
 } pexModelClipVolume;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexEnumTypeIndex	modelClipOperator B16;
     CARD16		numHalfSpaces B16;
     /* LISTof pexHalfSpace2D( numHalfSpaces ) */
 } pexModelClipVolume2D;
 
 typedef struct {
-    pexElementInfo	head;
-} pexRestoreModelClip;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+} pexRestoreModelClipVolume;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     CARD16		numEnable B16;
     CARD16		numDisable B16;
     /* LISTof pexTableIndex( numEnable ) */
     /* pad( ( numEnable )*2 ) */
     /* LISTof pexTableIndex( numDisable ) */
     /* pad( ( numDisable )*2 ) */
-} pexLightState;
+} pexLightSourceState;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     CARD32		pickId B32;
-} pexPickId;
+} pexPickID;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     CARD32		hlhsrID B32;
-} pexHlhsrIdentifier;
+} pexHLHSRID;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexEnumTypeIndex	model B16;
     CARD16		pad B16;
 } pexRenderingColorModel;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexEnumTypeIndex	characteristics B16;
     CARD16		length B16;
     /* SINGLEof PARAMETRIC_SURFACE_CHARACTERISTICS */
 } pexParaSurfCharacteristics;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     /* LISTof pexName() */
 } pexAddToNameSet;
 typedef pexAddToNameSet pexRemoveFromNameSet;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexStructure	id B32;
 } pexExecuteStructure;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     INT32		label B32;
 } pexLabel;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     CARD16		numElements B16;
     CARD16		unused B16;
     /* LISTof CARD8( numElements ) -- don't swap */
@@ -1750,92 +1876,117 @@ typedef struct {
 } pexApplicationData;
     
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     CARD32		id B32;
     CARD16		numElements B16;
     CARD16		unused B16;
     /* LISTof CARD8( numElements ) -- don't swap */
     /* pad( numElements ) */
-} pexGse;
+} pexGSE;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     /* LISTof pexCoord3D() */
-} pexMarker;	
+} pexMarkers;	
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     /* LISTof pexCoord2D() */
-} pexMarker2D;	
+} pexMarkers2D;	
 
 typedef struct {
-    pexElementInfo	head;
-    pexCoord3D		origin;
-    pexVector3D		vector1;
-    pexVector3D		vector2;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+    PEXFLOAT		origin_x B32;
+    PEXFLOAT		origin_y B32;
+    PEXFLOAT		origin_z B32;
+    PEXFLOAT		vector1_x B32;
+    PEXFLOAT		vector1_y B32;
+    PEXFLOAT		vector1_z B32;
+    PEXFLOAT		vector2_x B32;
+    PEXFLOAT		vector2_y B32;
+    PEXFLOAT		vector2_z B32;
     CARD16		numEncodings B16;
     CARD16		unused B16;
     /* LISTof pexMonoEncoding( numEncodings ) */
 } pexText;
 
 typedef struct {
-    pexElementInfo	head;
-    pexCoord2D		origin;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+    PEXFLOAT		origin_x B32;
+    PEXFLOAT		origin_y B32;
     CARD16		numEncodings B16;
     CARD16		unused B16;
     /* LISTof pexMonoEncoding( numEncodings ) */
 } pexText2D;
 
 typedef struct {
-    pexElementInfo	head;
-    pexCoord3D		origin;
-    pexCoord3D		offset;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+    PEXFLOAT		origin_x B32;
+    PEXFLOAT		origin_y B32;
+    PEXFLOAT		origin_z B32;
+    PEXFLOAT		offset_x B32;
+    PEXFLOAT		offset_y B32;
+    PEXFLOAT		offset_z B32;
     CARD16		numEncodings B16;
     CARD16		unused B16;
     /* LISTof pexMonoEncoding( numEncodings ) */
 } pexAnnotationText;
 
 typedef struct {
-    pexElementInfo	head;
-    pexCoord2D		origin;
-    pexCoord2D		offset;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+    PEXFLOAT		origin_x B32;
+    PEXFLOAT		origin_y B32;
+    PEXFLOAT		offset_x B32;
+    PEXFLOAT		offset_y B32;
     CARD16		numEncodings B16;
     CARD16		unused B16;
     /* LISTof pexMonoEncoding( numEncodings ) */
 } pexAnnotationText2D;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     /* LISTof pexCoord3D() */
 } pexPolyline;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     /* LISTof pexCoord2D() */
 } pexPolyline2D;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexColorType	colorType B16;
     pexBitmaskShort	vertexAttribs B16;
     CARD32		numLists B32;
     /* LISTof CLISTof pexVertex( numLists, vertexAttribs, colorType ) */
-} pexPolylineSet;
+} pexPolylineSetWithData;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     CARD16		curveOrder B16;
     pexCoordType	coordType B16;
-    PEXFLOAT		tmin;
-    PEXFLOAT		tmax;
+    PEXFLOAT		tmin B32;
+    PEXFLOAT		tmax B32;
     CARD32		numKnots B32;
     CARD32		numPoints B32;
     /* LISTof FLOAT( numKnots ) */
     /* LISTof {pexCoord3D|pexCoord4D}( numPoints, coordType ) */
-} pexNurbCurve;
+} pexNURBCurve;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     CARD16		shape B16;
     pexSwitch		ignoreEdges;
     CARD8		pad;
@@ -1843,7 +1994,8 @@ typedef struct {
 } pexFillArea;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     CARD16		shape B16;
     pexSwitch		ignoreEdges;
     CARD8		unused;
@@ -1851,7 +2003,8 @@ typedef struct {
 } pexFillArea2D;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     CARD16		shape B16;
     pexSwitch		ignoreEdges;
     CARD8		unused;
@@ -1860,10 +2013,11 @@ typedef struct {
     pexBitmaskShort	vertexAttribs B16;
     CARD16		unused2 B16;
     /* SINGLE Facet( facetAttribs, vertexAttribs, colorType ) */
-} pexExtFillArea;
+} pexFillAreaWithData;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     CARD16		shape B16;
     pexSwitch		ignoreEdges;
     CARD8		contourHint;
@@ -1872,7 +2026,8 @@ typedef struct {
 } pexFillAreaSet;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     CARD16		shape B16;
     pexSwitch		ignoreEdges;
     CARD8		contourHint;
@@ -1882,7 +2037,8 @@ typedef struct {
 
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     CARD16		shape B16;
     pexSwitch		ignoreEdges;
     CARD8		contourHint;
@@ -1893,10 +2049,11 @@ typedef struct {
     CARD32		numLists B32;
     /* pexOptData( facetAttribs ) */
     /* LISTof CLISTof  pexVertex( numLists, vertexAttribs, colorType ) */
-} pexExtFillAreaSet;
+} pexFillAreaSetWithData;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexColorType	colorType B16;
     pexBitmaskShort	facetAttribs B16;
     pexBitmaskShort	vertexAttribs B16;
@@ -1908,7 +2065,8 @@ typedef struct {
 } pexTriangleStrip;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexColorType	colorType B16;
     CARD16		mPts B16;
     CARD16		nPts B16;
@@ -1921,7 +2079,8 @@ typedef struct {
 } pexQuadrilateralMesh;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     CARD16		shape B16;
     pexColorType	colorType B16;
     CARD16		FAS_Attributes B16;
@@ -1939,10 +2098,11 @@ typedef struct {
     /* pad( numEdges ) */
     /* LISTof CLISTof CLISTof CARD16( numFAS, numContours, numEdges ) */
     /* pad */
-} pexSOFAS;
+} pexSetOfFillAreaSets;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexCoordType 	type B16;
     CARD16		uOrder B16;
     CARD16		vOrder B16;
@@ -1956,13 +2116,20 @@ typedef struct {
     /* LISTof FLOAT( numVKnots ) */
     /* LISTof {pexCoord3D|pexCoord4D}( mPts, nPts, surfaceType ) */
     /* LISTof CLISTof pexTrimCurve( numLists ) */
-} pexNurbSurface;
+} pexNURBSurface;
 
 typedef struct {
-    pexElementInfo	head;
-    pexCoord3D		point1;
-    pexCoord3D		point2;
-    pexCoord3D		point3;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+    PEXFLOAT		point1_x B32;
+    PEXFLOAT		point1_y B32;
+    PEXFLOAT		point1_z B32;
+    PEXFLOAT		point2_x B32;
+    PEXFLOAT		point2_y B32;
+    PEXFLOAT		point2_z B32;
+    PEXFLOAT		point3_x B32;
+    PEXFLOAT		point3_y B32;
+    PEXFLOAT		point3_z B32;
     CARD32		dx B32;
     CARD32		dy B32;
     /* LISTof pexTableIndex( dx, dy ) */
@@ -1970,9 +2137,12 @@ typedef struct {
 } pexCellArray;
 
 typedef struct {
-    pexElementInfo	head;
-    pexCoord2D		point1;
-    pexCoord2D		point2;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
+    PEXFLOAT		point1_x B32;
+    PEXFLOAT		point1_y B32;
+    PEXFLOAT		point2_x B32;
+    PEXFLOAT		point2_y B32;
     CARD32		dx B32;
     CARD32		dy B32;
     /* LISTof pexTableIndex( dx, dy ) */
@@ -1980,39 +2150,49 @@ typedef struct {
 } pexCellArray2D;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     pexColorType	colorType B16;
     CARD16		unused B16;
-    pexCoord3D		point1;
-    pexCoord3D		point2;
-    pexCoord3D		point3;
+    PEXFLOAT		point1_x B32;
+    PEXFLOAT		point1_y B32;
+    PEXFLOAT		point1_z B32;
+    PEXFLOAT		point2_x B32;
+    PEXFLOAT		point2_y B32;
+    PEXFLOAT		point2_z B32;
+    PEXFLOAT		point3_x B32;
+    PEXFLOAT		point3_y B32;
+    PEXFLOAT		point3_z B32;
     CARD32		dx B32;
     CARD32		dy B32;
     /* LISTof pexColorSpecifier( dx, dy ) */
-} pexExtCellArray;
+} pexExtendedCellArray;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     INT32		gdpId B32;
     CARD32		numPoints B32;
     CARD32		numBytes B32;
     /* LISTof pexCoord3D( numPoints ) */
     /* LISTof CARD8( numBytes ) -- don't swap */
     /* pad( numBytes ) */
-} pexGdp;
+} pexGDP;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
     INT32		gdpId B32;
     CARD32		numPoints B32;
     CARD32		numBytes B32;
     /* LISTof pexCoord2D( numPoints ) */
     /* LISTof CARD8( numBytes ) -- don't swap */
     /* pad( numBytes ) */
-} pexGdp2D;
+} pexGDP2D;
 
 typedef struct {
-    pexElementInfo	head;
+    CARD16		oc_opcode B16;
+    CARD16		oc_length B16;
 } pexNoop;
 
 /****************************************************************
