@@ -1,6 +1,6 @@
 
 /*
- *	$Header: charproc.c,v 1.7 88/02/12 10:43:35 jim Exp $
+ *	$Header: charproc.c,v 1.8 88/02/16 14:59:40 jim Exp $
  */
 
 
@@ -57,7 +57,7 @@ extern void exit(), bcopy();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.7 88/02/12 10:43:35 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.8 88/02/16 14:59:40 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2297,8 +2297,9 @@ int item;
 
 	case MMENU_HIDEVT:
 		XUnmapWindow(screen->display, VWindow(screen));
+		screen->Vshow = FALSE;
 		reselectwindow(screen);
-		SyncUnmap(VWindow(screen), WINDOWEVENTS);
+		/* SyncUnmap(VWindow(screen), WINDOWEVENTS); */
 			/* drop through */
 	case MMENU_TEKMODE:
 		if(!screen->TekEmu) {
@@ -2321,7 +2322,7 @@ int item;
 		} else {
 			screen->Tshow = FALSE;
 			XUnmapWindow(screen->display, TWindow(screen));
-			SyncUnmap(TWindow(screen), TWINDOWEVENTS);
+			/* SyncUnmap(TWindow(screen), TWINDOWEVENTS); */
 			if(screen->TekEmu) {
 				if(screen->logging) {
 					FlushLog(screen);

@@ -1,6 +1,6 @@
 /*
- * $Source$
- * $Header: TekprocReal.c,v 1.2 88/02/12 10:43:41 jim Exp $
+ * $Source: /usr/expo/X/src/clients/xterm.new/RCS/Tekproc.c,v $
+ * $Header: Tekproc.c,v 1.3 88/02/16 14:59:35 jim Exp $
  *
  * Warning, there be crufty dragons here.  This is a good example of how to add
  * a trash bag on the side of a widget.  
@@ -116,7 +116,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: TekprocReal.c,v 1.2 88/02/12 10:43:41 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.3 88/02/16 14:59:35 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -1605,7 +1605,7 @@ int item;
 	case TMENU_HIDETEK:
 		screen->Tshow = FALSE;
 		XUnmapWindow(screen->display, TWindow(screen));
-		SyncUnmap(TWindow(screen), TWINDOWEVENTS);
+		/* SyncUnmap(TWindow(screen), TWINDOWEVENTS); */
 		reselectwindow(screen);
 		TekRefresh = (TekLink *)0;
 			/* drop through */
@@ -1623,15 +1623,15 @@ int item;
 		break;
 
 	case TMENU_VTWIN:
-/*		if(screen->show = !screen->show) {
+		if(screen->Vshow = !screen->Vshow) {
 			if(VWindow(screen) || VTInit()) {
 				XMapWindow(screen->display, VWindow(screen));
-				screen->show = TRUE;
+				screen->Vshow = TRUE;
 			}
 		} else {
-			screen->show = FALSE;
+			screen->Vshow = FALSE;
 			XUnmapWindow(screen->display, VWindow(screen));
-			SyncUnmap(VWindow(screen), WINDOWEVENTS);
+			/* SyncUnmap(VWindow(screen), WINDOWEVENTS); */
 			if(!screen->TekEmu) {
 				if(TekRefresh)
 					dorefresh();
@@ -1643,7 +1643,7 @@ int item;
 				longjmp(VTend, 1);
 			}
 		}
-*/
+
 		reselectwindow(screen);
 		break;
 	}

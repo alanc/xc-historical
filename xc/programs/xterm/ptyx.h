@@ -1,5 +1,5 @@
 /*
- *	$Header: ptyx.h,v 1.1 88/02/10 13:08:11 jim Exp $
+ *	$Header: ptyx.h,v 1.2 88/02/16 15:00:03 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -300,6 +300,7 @@ typedef struct {
 	Boolean		planeused;	/* is xorplane being used	*/
 	Boolean		cellsused;	/* are color cells being used	*/
 	XColor		colorcells[3];	/* color cells for Tek		*/
+	Boolean		Vshow;		/* VT window showing		*/
 	Boolean		Tshow;		/* Tek window showing		*/
 	Boolean		waitrefresh;	/* postpone refresh		*/
 	struct {
