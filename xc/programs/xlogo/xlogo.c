@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: xlogo.c,v 1.1 88/02/21 16:24:20 swick Exp $";
+static char rcsid[] = "$Header: xlogo.c,v 1.1 88/02/23 10:31:59 rws Exp $";
 #endif  lint
 
 #include <X11/Xlib.h>
@@ -21,7 +21,7 @@ Syntax(call)
 	(void) printf ("       [-bw <pixels>] [-bd <color>]\n");
 	(void) printf ("       [-d [<host>]:[<vs>]]\n");
 	(void) printf ("       [-g =[<width>][x<height>][<+-><xoff>[<+-><yoff>]]]\n\n");
-	exit(0);
+	exit(1);
 }
 
 void main(argc, argv)
