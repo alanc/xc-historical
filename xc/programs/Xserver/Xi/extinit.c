@@ -1,4 +1,4 @@
-/* $XConsortium: xextinit.c,v 1.14 92/11/14 10:32:01 rws Exp $ */
+/* $XConsortium: extinit.c,v 1.15 92/12/30 16:04:26 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -430,7 +430,7 @@ SReplyIDispatch (client, len, rep)
 	SRepXChangeDeviceControl (client, len, rep);
     else
 	{
-	SendErrorToClient(client, IReqCode, rep, 0, BadRequest);
+	    FatalError("XINPUT confused sending swapped reply");
 	}
     }
 
