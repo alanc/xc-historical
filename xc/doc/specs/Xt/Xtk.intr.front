@@ -1,4 +1,4 @@
-.\" $XConsortium: Xtk.intr.front,v 1.6 91/08/26 20:34:33 swick Exp $
+.\" $XConsortium: Xtk.intr.front,v 1.7 94/01/08 17:16:29 converse Exp $
 .\" MIT header page and copyright notice
 .\" MIT page header and footers
 .\"
@@ -10,16 +10,15 @@
 .nr PS 11
 \&
 .sp 8
-.ce 5
+.ce 4
 \s+2\fB\*(xT\fP\s-2
 
 \s+1\fBX Window System\fP\s-1
 
 \s+1\fBX Version 11, Release \*(Rn\fP\s-1
 
-\s+1\fBPublic Review Draft - January, 1994\fP\s-1
 
-\s+1\fBX Consortium Draft Standard\fP\s-1
+First Revision - April, 1994
 .sp 5
 .ce 4
 \s-1Joel McCormack
@@ -210,31 +209,38 @@ July, 1991
 .bp
 .sp
 .LP
-The public review draft for Release 6 is a result of the sustained
+The Release 6 Intrinsics is a result of the collaborative
 efforts of participants in the X Consortium's \fBintrinsics\fP
-working group.
-In particular, the following people contributed design proposals,
-participated in lengthy discussions, and in most cases, made substantial
-implementation efforts, seeing the entire process through to completion:
+working group.  
+A few individuals made substantial design proposals,
+participated in lengthy discussions, reviewed final proposals,
+and in most cases, were also responsible for sections of the implementation.
+They deserve recognition for seeing the entire process through to completion:
 .LP
 .Ds
 .ta 3i
 Paul Asente (Adobe)		Larry Cable (SunSoft)
 Ellis Cohen (OSF)		Daniel Dardailler (OSF)
-Stephen Gildea (X Consortium)	Vania Joloboff (OSF)
-Kaleb Keithley (X Consortium)	Courtney Loomis (HP)
-Douglas Rand (OSF)		Bob Scheifler (X Consortium)
-Ajay Vohra (SunSoft)
+Vania Joloboff (OSF)		Kaleb Keithley (X Consortium)
+Courtney Loomis (HP)		Douglas Rand (OSF)
+Bob Scheifler (X Consortium)	Ajay Vohra (SunSoft)
 .De
 .sp
 .LP
-In addition, many others contributed technical review comments and answered
-questions, and their essential contributions are greatly appreciated.
+Many others analyzed designs, offered useful comments and suggestions,
+or participated in a significant subset of the lengthy process. 
+The following people deserve thanks for their contributions:
+Andy Bovingdon, Sam Chang, Chris Craig,
+George Erwin-Grotsky, Keith Edwards, Clive Feather, Stephen Gildea,
+Dan Heller, Steve Humphrey, David Kaelbling,
+Jaime Lau, Rob Lembree, Stuart Marks, Beth Mynatt,
+Tom Paquin, Chris Peterson, Kamesh Ramakrishna, Tom Rodriguez,
+Ralph Swick, Jim VanGilder, Will Walker, and Mike Wexler.
 .sp
 .Ds 0
 Donna Converse
-
-January, 1994
+X Consortium
+April, 1994
 .De
 .bp iv
 .XS iv
