@@ -1,5 +1,5 @@
 /*
- * $XConsortium: util.c,v 2.36 89/11/15 11:03:27 converse Exp $
+ * $XConsortium: util.c,v 2.37 89/12/10 20:20:47 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -51,7 +51,6 @@ static char *SysErrorMsg (n)
 void Punt(str)
   char *str;
 {
-    extern void abort();
     (void) fprintf( stderr, "%s: %s\nerrno = %d; %s\007\n",
 		    progName, str, errno, SysErrorMsg(errno) );
     if (app_resources.debug) {
