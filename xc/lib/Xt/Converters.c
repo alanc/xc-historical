@@ -1,6 +1,5 @@
-/* $Header: Converters.c,v 1.11 88/02/03 23:05:42 swick Locked $ */
 #ifndef lint
-static char rcsid[] = "$Header: Converters.c,v 1.11 88/02/03 23:05:42 swick Locked $";
+static char rcsid[] = "$Header: Converters.c,v 1.12 88/02/03 23:06:45 swick Locked $";
 #endif lint
 
 /*
