@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.119 89/11/30 16:55:24 jim Exp $
+ * $XConsortium: events.c,v 1.120 89/11/30 18:58:03 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.119 89/11/30 16:55:24 jim Exp $";
+"$XConsortium: events.c,v 1.120 89/11/30 18:58:03 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1716,34 +1716,35 @@ HandleLeaveNotify()
 {
     if (Tmp_win != NULL)
     {
+	Bool inicon = (Tmp_win->list &&
+		       Tmp_win->list->w == Event.xcrossing.window);
+
 	if (Scr->RingLeader && Scr->RingLeader == Tmp_win) {
-	    if (Tmp_win->mapped)
-	      Tmp_win->ring.cursor_valid = False;
-	    else {
-		Tmp_win->ring.cursor_valid = True;
-		Tmp_win->ring.curs_x = Event.xcrossing.x_root -
-		  Tmp_win->frame_x;
-		Tmp_win->ring.curs_y = Event.xcrossing.y_root -
-		  Tmp_win->frame_y;
+	    if (!inicon) {
+		if (Tmp_win->mapped) {
+		    Tmp_win->ring.cursor_valid = False;
+		} else {
+		    Tmp_win->ring.cursor_valid = True;
+		    Tmp_win->ring.curs_x = (Event.xcrossing.x_root -
+					    Tmp_win->frame_x);
+		    Tmp_win->ring.curs_y = (Event.xcrossing.y_root -
+					    Tmp_win->frame_y);
+		}
 	    }
 	    Scr->RingLeader = (TwmWindow *) NULL;
 	}
 	if (Scr->FocusRoot) {
 	    if (Event.xcrossing.detail != NotifyInferior) {
-		if (Event.xcrossing.window == Tmp_win->frame ||
-		  (Tmp_win->list &&
-		   Event.xcrossing.window == Tmp_win->list->w)) {
+		if (Event.xcrossing.window == Tmp_win->frame || inicon) {
 		    if (Tmp_win->list) NotActiveIconManager(Tmp_win->list);
 		    if (Tmp_win->hilite_w)
-			XUnmapWindow(dpy, Tmp_win->hilite_w);
+		      XUnmapWindow (dpy, Tmp_win->hilite_w);
 		    SetBorder (Tmp_win, False);
 		    if (Scr->TitleFocus ||
 			Tmp_win->protocols & DoesWmTakeFocus)
 		      SetFocus (NULL);
 		    Scr->Focus = NULL;
-		}
-		else if (Event.xcrossing.window == Tmp_win->w)
-		{
+		} else if (Event.xcrossing.window == Tmp_win->w) {
 		    InstallAColormap(dpy, Scr->CMap);
 		}
 	    }
