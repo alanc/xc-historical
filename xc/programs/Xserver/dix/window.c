@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.27 89/07/19 21:24:33 keith Exp $ */
+/* $XConsortium: window.c,v 5.28 89/07/19 22:25:55 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -901,6 +901,7 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     pWin->drawable.id = wid;
     pWin->drawable.class = class;
 
+    pWin->parent = pParent;
     SetWindowToDefaults(pWin);
 
     if (visual != ancwopt->visual)
@@ -936,7 +937,6 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     (* pScreen->RegionInit)(&pWin->winSize, NullBox, 1);
     (* pScreen->RegionInit)(&pWin->borderSize, NullBox, 1);
 
-    pWin->parent = pParent;
     pHead = RealChildHead(pParent);
     if (pHead)
     {
