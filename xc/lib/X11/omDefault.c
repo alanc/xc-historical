@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: omDefault.c,v 1.1 94/01/20 17:57:00 rws Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -31,7 +31,7 @@
 #include <stdio.h>
 
 #define DefineLocalBuf		char local_buf[BUFSIZ]
-#define AllocLocalBuf(length)	(length > BUFSIZ ? Xmalloc(length) : local_buf)
+#define AllocLocalBuf(length)	(length > BUFSIZ ? (char *)Xmalloc(length) : local_buf)
 #define FreeLocalBuf(ptr)	if (ptr != local_buf) Xfree(ptr)
 
 static Bool
