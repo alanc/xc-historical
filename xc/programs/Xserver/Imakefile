@@ -1,7 +1,12 @@
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
+#ifdef UseSunWindowsInServer
+    CDEBUGFLAGS = -g -DSUN_WINDOWS
+#else
     CDEBUGFLAGS = -g
+#endif
+
      ALLDDXDIRS = ddx/mi ddx/sun ddx/cfb ddx/apollo ddx/mfb ddx/lk201 \
                     ddx/qvss ddx/ibm/apa16 ddx/ibm/rt
       ALLOSDIRS = os/sysV os/4.2bsd
