@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: authutil.c,v 1.1 93/11/18 14:24:59 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -27,15 +27,22 @@ extern int errno;
 extern long time ();
 extern unsigned	sleep ();
 
-static int binaryEqual ();
-static int read_short ();
-static int read_counted_string ();
-static int write_short ();
-static int write_counted_string ();
-static int address_check ();
+static Status read_short ();
+static Status read_string ();
+static Status read_counted_string ();
+static Status write_short ();
+static Status write_string ();
+static Status write_counted_string ();
+static Bool binaryEqual ();
+static Bool address_valid ();
+static Bool auth_valid ();
 
 
 
+/*
+ * The following routines are for manipulating the .ICEauthority file
+ */
+
 char *
 IceAuthFileName ()
 
@@ -201,57 +208,45 @@ FILE	*auth_file;
     IceAuthFileEntry   	local;
     IceAuthFileEntry   	*ret;
 
-    if (read_counted_string (&local.protocol_name_length,
-	&local.protocol_name, auth_file) == 0)
+    local.protocol_name = NULL;
+    local.protocol_data = NULL;
+    local.address_list = NULL;
+    local.auth_name = NULL;
+    local.auth_data = NULL;
+
+    if (!read_string (auth_file, &local.protocol_name))
 	return (NULL);
 
-    if (read_counted_string (&local.protocol_data_length,
-	&local.protocol_data, auth_file) == 0)
-    {
-	if (local.protocol_name) free (local.protocol_name);
-	return (NULL);
-    }
+    if (!read_counted_string (auth_file,
+	&local.protocol_data_length, &local.protocol_data))
+	goto bad;
 
-    if (read_counted_string (&local.address_list_length,
-	&local.address_list, auth_file) == 0)
-    {
-	if (local.protocol_name) free (local.protocol_name);
-	if (local.protocol_data) free (local.protocol_data);
-	return (NULL);
-    }
+    if (!read_string (auth_file, &local.address_list))
+	goto bad;
 
-    if (read_counted_string (&local.auth_name_length,
-	&local.auth_name, auth_file) == 0)
-    {
-	if (local.protocol_name) free (local.protocol_name);
-	if (local.protocol_data) free (local.protocol_data);
-	if (local.address_list) free (local.address_list);
-	return (NULL);
-    }
+    if (!read_string (auth_file, &local.auth_name))
+	goto bad;
 
-    if (read_counted_string (&local.auth_data_length,
-	&local.auth_data, auth_file) == 0)
-    {
-	if (local.protocol_name) free (local.protocol_name);
-	if (local.protocol_data) free (local.protocol_data);
-	if (local.address_list) free (local.address_list);
-	if (local.auth_name) free (local.auth_name);
-	return (NULL);
-    }
+    if (!read_counted_string (auth_file,
+	&local.auth_data_length, &local.auth_data))
+	goto bad;
 
     if (!(ret = (IceAuthFileEntry *) malloc (sizeof (IceAuthFileEntry))))
-    {
-	if (local.protocol_name) free (local.protocol_name);
-	if (local.protocol_data) free (local.protocol_data);
-	if (local.address_list) free (local.address_list);
-	if (local.auth_name) free (local.auth_name);
-	if (local.auth_data) free (local.auth_data);
-	return (NULL);
-    }
+	goto bad;
 
     *ret = local;
 
     return (ret);
+
+ bad:
+
+    if (local.protocol_name) free (local.protocol_name);
+    if (local.protocol_data) free (local.protocol_data);
+    if (local.address_list) free (local.address_list);
+    if (local.auth_name) free (local.auth_name);
+    if (local.auth_data) free (local.auth_data);
+
+    return (NULL);
 }
 
 
@@ -282,24 +277,21 @@ FILE			*auth_file;
 IceAuthFileEntry	*auth;
 
 {
-    if (write_counted_string (auth->protocol_name_length,
-	auth->protocol_name, auth_file) == 0)
+    if (!write_string (auth_file, auth->protocol_name))
 	return (0);
 
-    if (write_counted_string (auth->protocol_data_length,
-	auth->protocol_data, auth_file) == 0)
+    if (!write_counted_string (auth_file,
+	auth->protocol_data_length, auth->protocol_data))
 	return (0);
 
-    if (write_counted_string (auth->address_list_length,
-	auth->address_list, auth_file) == 0)
+    if (!write_string (auth_file, auth->address_list))
 	return (0);
 
-    if (write_counted_string (auth->auth_name_length,
-	auth->auth_name, auth_file) == 0)
+    if (!write_string (auth_file, auth->auth_name))
 	return (0);
 
-    if (write_counted_string (auth->auth_data_length,
-	auth->auth_data, auth_file) == 0)
+    if (!write_counted_string (auth_file,
+	auth->auth_data_length, auth->auth_data))
 	return (0);
 
     return (1);
@@ -308,26 +300,23 @@ IceAuthFileEntry	*auth;
 
 
 Status
-IceGetAuthNamesFromAuthFile (address_length, address,
-    num_names_ret, names_lengths_ret, names_ret)
+IceGetValidAuthIndicesFromAuthFile (protocol_name, address,
+    num_auth_names, auth_names, num_indices_ret, indices_ret)
 
-unsigned  address_length;
-char	  *address;
-unsigned  *num_names_ret;
-unsigned  **names_lengths_ret;
-char	  ***names_ret;
+char	*protocol_name;
+char	*address;
+int	num_auth_names;
+char	**auth_names;
+int	*num_indices_ret;
+int	*indices_ret;		/* in/out arg */
 
 {
     FILE    		*auth_file;
     char    		*filename;
-    unsigned		temp_lengths[MAX_ICE_AUTH_NAMES];
-    char		*temp_names[MAX_ICE_AUTH_NAMES];
     IceAuthFileEntry    *entry;
-    int			i;
+    int			index_ret, i;
 
-    *num_names_ret = 0;
-    *names_lengths_ret = NULL;
-    *names_ret = NULL;
+    *num_indices_ret = 0;
 
     if (!(filename = IceAuthFileName ()))
 	return (0);
@@ -338,36 +327,28 @@ char	  ***names_ret;
     if (!(auth_file = fopen (filename, "rb")))
 	return (0);
 
-    for (; *num_names_ret < MAX_ICE_AUTH_NAMES; )
+    for (;;)
     {
 	if (!(entry = IceReadAuthFileEntry (auth_file)))
 	    break;
 
-	if (address_check (address_length, address,
-	    entry->address_list_length, entry->address_list))
+	if (strcmp (protocol_name, entry->protocol_name) == 0 &&
+	    address_valid (address, entry->address_list) &&
+	    auth_valid (entry->auth_name, num_auth_names,
+	    auth_names, &index_ret))
 	{
-	    for (i = 0; i < *num_names_ret; i++)
-		if (binaryEqual (temp_names[i], entry->auth_name,
-		    entry->auth_name_length))
-		{
-		    IceDisposeAuthFileEntry (entry);
+	    /*
+	     * Make sure we didn't store this index already.
+	     */
+
+	    for (i = 0; i < *num_indices_ret; i++)
+		if (index_ret == indices_ret[i])
 		    break;
-		}
 
-	    if (i >= *num_names_ret)
+	    if (i >= *num_indices_ret)
 	    {
-		/*
-		 * If there are multiple entries for a given address
-		 * and auth name, only count the first.
-		 */
-
-		temp_lengths[*num_names_ret] = entry->auth_name_length;
-		temp_names[*num_names_ret] = (char *) malloc (
-		    entry->auth_name_length);
-		memcpy (temp_names[*num_names_ret], entry->auth_name,
-		    entry->auth_name_length);
-
-		*num_names_ret += 1;
+		indices_ret[*num_indices_ret] = index_ret;
+		*num_indices_ret += 1;
 	    }
 	}
 
@@ -376,60 +357,22 @@ char	  ***names_ret;
 
     fclose (auth_file);
 
-    if (*num_names_ret > 0)
-    {
-	*names_lengths_ret = (unsigned *) malloc (
-	    *num_names_ret * sizeof (unsigned));
-	memcpy (*names_lengths_ret, temp_lengths,
-	    *num_names_ret * sizeof (unsigned));
-
-	*names_ret = (char **) malloc (
-	    *num_names_ret * sizeof (char *));
-	memcpy (*names_ret, temp_names,
-	    *num_names_ret * sizeof (char *));
-    }
-
     return (1);
 }
 
 
 
-void
-IceFreeAuthNames (count, names)
-
-unsigned 	count;
-char		**names;
-
-{
-    if (names)
-    {
-	int i;
-
-	for (i = 0; i < count; i++)
-	    free (names[i]);
-
-	free ((char *) names);
-    }
-}
-
-
-
 IceAuthFileEntry *
-IceGetAuthFileEntry (protocol_name_length, protocol_name,
-    address_length, address, auth_name_length, auth_name)
+IceGetAuthFileEntry (protocol_name, address, auth_name)
 
-unsigned  protocol_name_length;
-char	  *protocol_name;
-unsigned  address_length;
-char	  *address;
-unsigned  auth_name_length;
-char	  *auth_name;
+char	*protocol_name;
+char	*address;
+char	*auth_name;
 
 {
     FILE    		*auth_file;
     char    		*filename;
     IceAuthFileEntry    *entry;
-    int	    		auth_index;
 
     if (!(filename = IceAuthFileName ()))
 	return (NULL);
@@ -445,12 +388,9 @@ char	  *auth_name;
 	if (!(entry = IceReadAuthFileEntry (auth_file)))
 	    break;
 
-	if (protocol_name_length == entry->protocol_name_length &&
-	    binaryEqual (protocol_name, entry->protocol_name,
-	    protocol_name_length) && address_check (address_length, address,
-	    entry->address_list_length, entry->address_list) &&
-            auth_name_length == entry->auth_name_length &&
-            binaryEqual (auth_name, entry->auth_name, auth_name_length))
+	if (strcmp (protocol_name, entry->protocol_name) == 0 &&
+	    address_valid (address, entry->address_list) &&
+            strcmp (auth_name, entry->auth_name) == 0)
 	{
 	    break;
 	}
@@ -465,197 +405,51 @@ char	  *auth_name;
 
 
 
-IceAuthFileEntry *
-IceGetBestAuthFileEntry (protocol_name_length, protocol_name,
-    address_length, address, num_auth_names, auth_names_lengths, auth_names)
-
-unsigned  protocol_name_length;
-char	  *protocol_name;
-unsigned  address_length;
-char	  *address;
-unsigned  num_auth_names;
-unsigned  *auth_names_lengths;
-char	  **auth_names;
-
-{
-    FILE    		*auth_file;
-    char    		*filename;
-    IceAuthFileEntry    *entry;
-    IceAuthFileEntry    *best_entry;
-    int	    		auth_index;
-    int	    		best_auth_index;
-
-    if (!(filename = IceAuthFileName ()))
-	return (NULL);
-
-    if (access (filename, R_OK) != 0)		/* checks REAL id */
-	return (NULL);
-
-    if (!(auth_file = fopen (filename, "rb")))
-	return (NULL);
-
-    best_entry = NULL;
-    best_auth_index = num_auth_names;
-
-    for (;;)
-    {
-	if (!(entry = IceReadAuthFileEntry (auth_file)))
-	    break;
-
-	if (protocol_name_length == entry->protocol_name_length &&
-	    binaryEqual (protocol_name, entry->protocol_name,
-	    protocol_name_length) && address_check (address_length, address,
-	    entry->address_list_length, entry->address_list))
-	{
-	    if (best_auth_index == 0)
-	    {
-		best_entry = entry;
-		break;
-	    }
-
-	    for (auth_index = 0; auth_index < best_auth_index; auth_index++)
-		if (auth_names_lengths[auth_index] ==
-		    entry->auth_name_length &&
-		    !(strncmp (auth_names[auth_index], entry->auth_name,
-		    entry->auth_name_length)))
-		{
-		    break;
-		}
-
-	    if (auth_index < best_auth_index)
-	    {
-		if (best_entry)
-		    IceDisposeAuthFileEntry (best_entry);
-
-		best_entry = entry;
-		best_auth_index = auth_index;
-
-		if (auth_index == 0)
-		    break;
-
-		continue;
-	    }
-	}
-
-	IceDisposeAuthFileEntry (entry);
-    }
-
-    fclose (auth_file);
-
-    return (best_entry);
-}
-
-
-
 /*
  * Internal routines to ICElib
  */
 
-
 void
-_IceGetAuthNames (address_length, address,
-    num_names_ret, names_lengths_ret, names_ret)
+_IceGetValidAuthIndices (listen_obj, protocol_name,
+    num_auth_names, auth_names, num_indices_ret, indices_ret)
 
-unsigned  address_length;
-char	  *address;
-unsigned  *num_names_ret;
-unsigned  **names_lengths_ret;
-char	  ***names_ret;
+IceListenObj	listen_obj;
+char		*protocol_name;
+int		num_auth_names;
+char		**auth_names;
+int		*num_indices_ret;
+int		*indices_ret;		/* in/out arg */
 
 {
-    unsigned		temp_lengths[MAX_ICE_AUTH_NAMES];
-    char		*temp_names[MAX_ICE_AUTH_NAMES];
-    IceAuthDataEntry    *entry;
+    int			index_ret;
     int			i, j;
+    IceAuthDataEntry	*entry;
 
-    *num_names_ret = 0;
-    *names_lengths_ret = NULL;
-    *names_ret = NULL;
+    *num_indices_ret = 0;
 
-    for (i = 0;
-	i < _IceAuthDataEntryCount && *num_names_ret < MAX_ICE_AUTH_NAMES;
-	i++)
+    for (i = 0;	i < listen_obj->auth_data_entry_count; i++)
     {
-	entry = &_IceAuthDataEntries[i];
+	entry = &listen_obj->auth_data_entries[i];
 
-	if (address_check (address_length, address,
-	    entry->address_list_length, entry->address_list))
+	if (strcmp (protocol_name, entry->protocol_name) == 0 &&
+	    auth_valid (entry->auth_name, num_auth_names,
+	    auth_names, &index_ret))
 	{
-	    for (j = 0; j < *num_names_ret; j++)
-		if (binaryEqual (temp_names[j], entry->auth_name,
-		    entry->auth_name_length))
-		{
+	    /*
+	     * Make sure we didn't store this index already.
+	     */
+
+	    for (j = 0; j < *num_indices_ret; j++)
+		if (index_ret == indices_ret[j])
 		    break;
-		}
 
-	    if (j >= *num_names_ret)
+	    if (j >= *num_indices_ret)
 	    {
-		/*
-		 * If there are multiple entries for a given address
-		 * and auth name, only count the first.
-		 */
-
-		temp_lengths[*num_names_ret] = entry->auth_name_length;
-		temp_names[*num_names_ret] = (char *) malloc (
-		    entry->auth_name_length);
-		memcpy (temp_names[*num_names_ret], entry->auth_name,
-		    entry->auth_name_length);
-
-		*num_names_ret += 1;
+		indices_ret[*num_indices_ret] = index_ret;
+		*num_indices_ret += 1;
 	    }
 	}
     }
-
-    if (*num_names_ret > 0)
-    {
-	*names_lengths_ret = (unsigned *) malloc (
-	    *num_names_ret * sizeof (unsigned));
-	memcpy (*names_lengths_ret, temp_lengths,
-	    *num_names_ret * sizeof (unsigned));
-
-	*names_ret = (char **) malloc (
-	    *num_names_ret * sizeof (char *));
-	memcpy (*names_ret, temp_names,
-	    *num_names_ret * sizeof (char *));
-    }
-}
-
-
-
-IceAuthDataEntry *
-_IceGetAuthDataEntry (protocol_name_length, protocol_name,
-    address_length, address, auth_name_length, auth_name)
-
-unsigned  protocol_name_length;
-char	  *protocol_name;
-unsigned  address_length;
-char	  *address;
-unsigned  auth_name_length;
-char	  *auth_name;
-
-{
-    IceAuthDataEntry	*entry;
-    int			found = 0;
-    int			i;
-
-    for (i = 0; i < _IceAuthDataEntryCount && !found; i++)
-    {
-	entry = &_IceAuthDataEntries[i];
-
-	found =
-	    entry->protocol_name_length == protocol_name_length &&
-	    binaryEqual (entry->protocol_name, protocol_name,
-		protocol_name_length) &&
-	    address_check (address_length, address,
-	        entry->address_list_length, entry->address_list) &&
-	    entry->auth_name_length == auth_name_length &&
-	    binaryEqual (entry->auth_name, auth_name, auth_name_length);
-    }
-
-    if (found)
-	return (entry);
-    else
-	return (NULL);
 }
 
 
@@ -664,48 +458,74 @@ char	  *auth_name;
  * local routines
  */
 
-static int
-binaryEqual (a, b, len)
+static Status
+read_short (file, shortp)
 
-register char		*a, *b;
-register unsigned	len;
-
-{
-    while (len--)
-	if (*a++ != *b++)
-	    return 0;
-    return 1;
-}
-
-
-static int
-read_short (shortp, file)
-
-unsigned short	*shortp;
 FILE		*file;
+unsigned short	*shortp;
 
 {
     unsigned char   file_short[2];
 
     if (fread ((char *) file_short, (int) sizeof (file_short), 1, file) != 1)
-	return 0;
+	return (0);
+
     *shortp = file_short[0] * 256 + file_short[1];
-    return 1;
+    return (1);
 }
 
 
-static int
-read_counted_string (countp, stringp, file)
+static Status
+read_string (file, stringp)
 
-unsigned short	*countp;
-char	**stringp;
 FILE	*file;
+char	**stringp;
 
 {
     unsigned short  len;
     char	    *data;
 
-    if (read_short (&len, file) == 0)
+    if (!read_short (file, &len))
+	return (0);
+
+    if (len == 0)
+    {
+	data = 0;
+    }
+    else
+    {
+    	data = malloc ((unsigned) len + 1);
+
+    	if (!data)
+	    return (0);
+
+    	if (fread (data, (int) sizeof (char), (int) len, file) != len)
+	{
+	    free (data);
+	    return (0);
+    	}
+
+	data[len] = '\0';
+    }
+
+    *stringp = data;
+
+    return (1);
+}
+
+
+static Status
+read_counted_string (file, countp, stringp)
+
+FILE	*file;
+unsigned short	*countp;
+char	**stringp;
+
+{
+    unsigned short  len;
+    char	    *data;
+
+    if (!read_short (file, &len))
 	return (0);
 
     if (len == 0)
@@ -733,16 +553,16 @@ FILE	*file;
 }
 
 
-static int
-write_short (s, file)
+static Status
+write_short (file, s)
 
-unsigned short	s;
 FILE		*file;
+unsigned short	s;
 
 {
     unsigned char   file_short[2];
 
-    file_short[0] = (s & (unsigned)0xff00) >> 8;
+    file_short[0] = (s & (unsigned) 0xff00) >> 8;
     file_short[1] = s & 0xff;
 
     if (fwrite ((char *) file_short, (int) sizeof (file_short), 1, file) != 1)
@@ -752,15 +572,16 @@ FILE		*file;
 }
 
 
-static int
-write_counted_string (count, string, file)
+static Status
+write_string (file, string)
 
-unsigned short	count;
-char		*string;
 FILE		*file;
+char		*string;
 
 {
-    if (write_short (count, file) == 0)
+    unsigned short count = strlen (string);
+
+    if (!write_short (file, count))
 	return (0);
 
     if (fwrite (string, (int) sizeof (char), (int) count, file) != count)
@@ -770,12 +591,45 @@ FILE		*file;
 }
 
 
+static Status
+write_counted_string (file, count, string)
+
+FILE		*file;
+unsigned short	count;
+char		*string;
+
+{
+    if (!write_short (file, count))
+	return (0);
+
+    if (fwrite (string, (int) sizeof (char), (int) count, file) != count)
+	return (0);
+
+    return (1);
+}
+
+
+static Bool
+binaryEqual (a, b, len)
+
+char		*a, *b;
+unsigned	len;
+
+{
+    while (len--)
+	if (*a++ != *b++)
+	    return (0);
+
+    return (1);
+}
+
+
 static char *
 findchar (strptr, ch, bytes)
 
-char *strptr;
-char ch;
-unsigned bytes;
+char		*strptr;
+char 		ch;
+unsigned	bytes;
 
 {
     char *ptr = strptr;
@@ -793,21 +647,21 @@ unsigned bytes;
 }
 
 
-static int
-address_check (address_length, address, address_list_length, address_list)
+static Bool
+address_valid (address, address_list)
 
-unsigned address_length;
 char	 *address;
-unsigned address_list_length;
 char     *address_list;
 
 {
-    /* Check if address is in address_list */
+    /*
+     * Check if address is in address_list.
+     */
 
-    char *ptr = address_list;
-    char *next;
-    unsigned bytes;
-    int bytesLeft = (int) address_list_length;
+    char	*ptr = address_list;
+    char	*next;
+    unsigned	bytes;
+    int		bytesLeft = strlen (address_list);
 
     while (bytesLeft > 0)
     {
@@ -818,8 +672,8 @@ char     *address_list;
 	else
 	    bytes = bytesLeft;
 
-	if (bytes == address_length &&
-	    binaryEqual (ptr, address, address_length))
+	if (bytes == strlen (address) &&
+	    strncmp (ptr, address, bytes) == 0)
 	{
 	    return (1);
 	}
@@ -829,4 +683,35 @@ char     *address_list;
     }
 
     return (0);
+}
+
+
+static Bool
+auth_valid (auth_name, num_auth_names, auth_names, index_ret)
+
+char	*auth_name;
+int	num_auth_names;
+char	**auth_names;
+int	*index_ret;
+
+{
+    /*
+     * Check if auth_name is in auth_names.  Return index.
+     */
+
+    int i;
+
+    for (i = 0; i < num_auth_names; i++)
+	if (strcmp (auth_name, auth_names[i]) == 0)
+	{
+	    break;
+	}
+   
+    if (i < num_auth_names)
+    {
+	*index_ret = i;
+	return (1);
+    }
+    else
+	return (0);
 }
