@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.172 91/03/27 18:05:52 gildea Exp $ */
+/* $XConsortium: main.c,v 1.173 91/03/27 21:19:16 gildea Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -1860,7 +1860,8 @@ spawn ()
 		    if (Console) {
 			int on = 1;
 			if (ioctl (tty, TIOCCONS, (char *)&on) == -1)
-			    HsSysError(cp_pipe[1], ERROR_TIOCCONS);
+			    fprintf(stderr, "%s: cannot open console\n",
+				    xterm_name);
 		    }
 #endif	/* TIOCCONS */
 		}
@@ -2467,7 +2468,6 @@ register char *oldtc, *newtc;
 	register int i;
 	register int li_first = 0;
 	register char *temp;
-	char *index();
 
 	if ((ptr1 = strindex (oldtc, "co#")) == NULL){
 		strcat (oldtc, "co#80:");
@@ -2682,9 +2682,13 @@ kill_process_group(pid, sig)
     int pid;
     int sig;
 {
-#if defined(_POSIX_SOURCE) || defined(SVR4)
+#ifndef X_NOT_POSIX
+    return kill (-pid, sig);
+#else
+#if defined(SVR4) || defined(SYSV)
     return kill (-pid, sig);
 #else
     return killpg (pid, sig);
+#endif
 #endif
 }
