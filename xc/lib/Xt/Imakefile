@@ -116,6 +116,20 @@ SpecialObjectRule(Initialize.o,$(IRULESRC)/Imake.tmpl,$(APP_DEFINES))
 # endif
 #endif
 
+#if defined(SunArchitecture) && SunOSMajorVersion >= 4
+/* the Sun C optimizer is broken on just this file */
+TMparse.o:  TMparse.c
+	$(MAKE) $(MFLAGS) CDEBUGFLAGS= nooptTMparse.o
+	mv nooptTMparse.o TMparse.o
+	$(RM) nooptTMparse.c
+
+nooptTMparse.c:
+	$(LN) TMparse.c nooptTMparse.c
+
+clean::
+	$(RM) nooptRMparse.c
+#endif
+
 NormalLibraryTarget(Xt,$(OBJS))
 LintLibraryTarget(Xt,$(SRCS))
 InstallLibrary(Xt,$(USRLIBDIR))
