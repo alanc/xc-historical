@@ -1,4 +1,4 @@
-/* $XConsortium: PEX.h,v 5.8 92/04/06 18:19:07 hersh Exp $ */
+/* $XConsortium: PEX.h,v 5.9 92/04/23 16:11:14 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -484,7 +484,7 @@ SOFTWARE.
 #define PEXIDChromaticityWhiteV		32
 #define PEXIDLuminanceWhite		33
 /* have to stick this here since others are not in order */
-#define PEXIDMaxHitsEventsSupported     34
+#define PEXIDMaxHitsEventSupported      34
 
 /* Constants for IDRgbBestApproximation */
 #define PEXColourApproxAnyValues	0
