@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.30 88/02/14 14:00:08 rws Exp $";
+static char rcsid[] = "$Header: Text.c,v 1.31 88/02/14 14:16:04 rws Exp $";
 #endif
 
 /*
@@ -35,6 +35,7 @@ static char rcsid[] = "$Header: Text.c,v 1.30 88/02/14 14:00:08 rws Exp $";
 #include <X11/Atoms.h>
 #include <X11/Xos.h>
 #include <X11/TextP.h>
+#include <X11/Cardinals.h>
 
 Atom FMT8BIT = NULL;
 
@@ -2323,7 +2324,7 @@ static void DoInsert(w, closure, call_data)
 			sys_errlist[errno] : "Can't open file" );
 	args[0].value = (XtArgVal)msg;
 	if (dialog->message) {
-	    XtSetValues( dialog->message, args, (Cardinal)1 );
+	    XtSetValues( dialog->message, args, ONE );
 	    XtManageChild( dialog->message );
 	}
 	else {
@@ -2467,18 +2468,18 @@ static void InsertFile(w, event)
 	XtSetArg( args[0], XtNlabel, DIALOG_LABEL );
 	XtSetArg( args[1], XtNvalue, ptr ); 
 	dialog->widget =
-	    XtCreateWidget(NULL, dialogWidgetClass, popup, args, (Cardinal)2);
+	    XtCreateManagedWidget(NULL, dialogWidgetClass, popup, args, TWO);
 
 	callbacks[0].callback = _XtTextAbortDialog;
 	callbacks[0].closure = (caddr_t)dialog;
 	XtSetArg( args[0], XtNcallback, callbacks );
 	XtCreateManagedWidget( "Abort", commandWidgetClass, dialog->widget,
-			       args, (Cardinal)1 );
+			       args, ONE );
 
 	callbacks[0].callback = DoInsert;
 	dialog->doit =
 	    XtCreateManagedWidget( "DoIt", commandWidgetClass, dialog->widget,
-				   args, (Cardinal)1 );
+				   args, ONE );
 
 	XtRealizeWidget( popup );
     }
