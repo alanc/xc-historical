@@ -1,4 +1,5 @@
-/* $XConsortium: vgaAsm.h,v 1.1 94/03/28 21:55:37 dpw Exp kaleb $ */
+/* $XConsortium: vgaAsm.h,v 1.2 94/11/01 11:04:42 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgAsm.h,v 3.0 1994/11/26 12:48:16 dawes Exp $ */
 
 /* Definitions for VGA bank assembler routines */
 
