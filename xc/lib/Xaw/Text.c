@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.110 89/08/24 17:37:18 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.111 89/08/25 17:12:17 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -2758,8 +2758,11 @@ XawTextBlock * text;
 {
   TextWidget ctx = (TextWidget) w;
 
-  return(*ctx->text.source->Search)(ctx->text.source, 
-				    ctx->text.insertPos, dir, text);
+  if (*ctx->text.source->Search != NULL)
+      return(*ctx->text.source->Search)(ctx->text.source, 
+					ctx->text.insertPos, dir, text);
+  else
+      return XawTextSearchError;
 }
   
 TextClassRec textClassRec = {

@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextPop.c,v 1.3 89/07/18 15:38:49 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextPop.c,v 1.4 89/07/27 18:20:43 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -478,6 +478,11 @@ Cardinal * num_params;
   XawTextScanDirection dir;
   char * ptr, buf[BUFSIZ];
   static void AddSearchChildren();
+
+  if (ctx->text.source->Search == NULL) {
+      XBell(XtDisplay(w), 0);
+      return;
+  }
 
   if ( (*num_params < 1) || (*num_params > 2) ) {
     sprintf(buf, "%s %s\n%s", SEARCH_HEADER, "This action must have only", 
