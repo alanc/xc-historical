@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.45 88/07/11 16:52:31 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.46 88/07/12 10:41:16 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -162,6 +162,8 @@ static char *title;
 static Boolean closefds = TRUE;
 #endif /* CLOSE_FILE_DESCRIPTORS */
 
+static Boolean utmpInhibit = FALSE;
+
 /* used by VT (charproc.c) */
 
 static XtResource application_resources[] = {
@@ -171,6 +173,8 @@ static XtResource application_resources[] = {
 	(Cardinal)&icon_geometry, XtRString, (caddr_t) NULL},
     {XtNtitle, XtCTitle, XtRString, sizeof(char *),
 	(Cardinal)&title, XtRString, (caddr_t) NULL},
+    {"utmpInhibit", "UtmpInhibit", XtRBoolean, sizeof (Boolean),
+	(Cardinal)&utmpInhibit, XtRString, "false"},
 #ifdef CLOSE_FILE_DESCRIPTORS
     {"closeFileDescriptors", "CloseFileDescriptors", XtRBoolean, 
      sizeof (Boolean), (Cardinal) &closefds, XtRString, "true"},
@@ -226,6 +230,8 @@ static XrmOptionDescRec optionDescList[] = {
 {"-sl",		"*saveLines",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-t",		"*tekStartup",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+t",		"*tekStartup",	XrmoptionNoArg,		(caddr_t) "off"},
+{"-ut",		"*utmpInhibit",	XrmoptionNoArg,		(caddr_t) "on"},
+{"+ut",		"*utmpInhibit",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-vb",		"*visualBell",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+vb",		"*visualBell",	XrmoptionNoArg,		(caddr_t) "off"},
 /* bogus old compatibility stuff for which there are
@@ -1056,11 +1062,14 @@ spawn ()
 		/* If we have gotten this far, we can only assume that
 		** we have (will have) set the utmp entry.  Anyway,
 		** we won't reset it later if the pid's don't match.
+		** Also, if utmpInhibit is set, then pretend failure.
 		*/
-		added_utmp_entry = True;
+		added_utmp_entry = utmpInhibit ? False : True;
 #else	/* SYSV */
-		if((pw = getpwuid(screen->uid)) &&
-		 (i = open(etc_utmp, O_WRONLY)) >= 0) {
+		added_utmp_entry = False;
+		if (!utmpInhibit &&
+		    (pw = getpwuid(screen->uid)) &&
+		    (i = open(etc_utmp, O_WRONLY)) >= 0) {
 			bzero((char *)&utmp, sizeof(struct utmp));
 			(void) strcpy(utmp.ut_line, ttydev + strlen("/dev/"));
 			(void) strcpy(utmp.ut_name, pw->pw_name);
@@ -1246,13 +1255,13 @@ spawn ()
 
 #ifdef UTMP
 		/* write out the entry */
-		(void) pututline(&utmp);
+		if (!utmpInhibit) (void) pututline(&utmp);
 #endif	/* UTMP */
 
 		/* close the file */
 		(void) endutent();
 
-		if (get_ty) {
+		if (get_ty && !utmpInhibit) {
 		    /* set wtmp entry if wtmp file exists */
 		    if (fd = open("/etc/wtmp", O_WRONLY | O_APPEND)) {
 			(void) write(fd, &utmp, sizeof(utmp));
@@ -1363,7 +1372,7 @@ int n;
 	struct utmp *utptr;
 
 	/* cleanup the utmp entry we forged earlier */
-	if (added_utmp_entry) {
+	if (!utmpInhibit && added_utmp_entry) {
 	    utmp.ut_type = USER_PROCESS;
 	    (void) strncpy(utmp.ut_id, ttydev + strlen(ttydev) - 2,
 		    sizeof(utmp.ut_id));
@@ -1381,7 +1390,7 @@ int n;
 	register int i;
 	struct utmp utmp;
 
-	if (added_utmp_entry &&
+	if (!utmpInhibit && added_utmp_entry &&
 	    (!am_slave && tslot > 0 && (i = open(etc_utmp, O_WRONLY)) >= 0)) {
 		bzero((char *)&utmp, sizeof(struct utmp));
 		lseek(i, (long)(tslot * sizeof(struct utmp)), 0);
