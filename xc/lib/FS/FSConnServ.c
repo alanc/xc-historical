@@ -405,7 +405,7 @@ _FSWaitForWritable(svr)
 		(*_FSIOErrorFunction) (svr);
 	} while (nfound <= 0);
 
-	if (ANYSET(r_mask)) {
+	if (_FSANYSET(r_mask)) {
 	    char        buf[BUFSIZE];
 	    long        pend_not_register;
 	    register long pend;
@@ -442,7 +442,7 @@ _FSWaitForWritable(svr)
 	    }
 	    ENDITERATE
 	}
-	if (ANYSET(w_mask))
+	if (_FSANYSET(w_mask))
 	    return;
     }
 }
