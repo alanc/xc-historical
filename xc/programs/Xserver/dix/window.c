@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.71 91/07/03 16:35:09 keith Exp $ */
+/* $XConsortium: window.c,v 5.72 91/07/03 17:01:01 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1946,6 +1946,8 @@ MoveWindow(pWin, x, y, pNextSib, kind)
 	if (dosave)
 	    DoChangeSaveUnder(pWin->parent, windowToValidate);
 #endif /* DO_SAVE_UNDERS */
+	if (anyMarked && pScreen->PostValidateTree)
+	    (* pScreen->PostValidateTree)(pParent, NullWindow, kind);
     }
     if (pWin->realized)
 	WindowsRestructured ();
@@ -2433,6 +2435,8 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	if (dosave)
 	    DoChangeSaveUnder(pParent, pFirstChange);
 #endif /* DO_SAVE_UNDERS */
+	if (anyMarked && pScreen->PostValidateTree)
+	    (* pScreen->PostValidateTree)(pParent, pFirstChange, VTOther);
     }
     else if (bsExposed)
     {
@@ -2509,6 +2513,8 @@ ChangeBorderWidth(pWin, width)
 	if (dosave)
 	    DoChangeSaveUnder(pParent, pWin->nextSib);
 #endif /* DO_SAVE_UNDERS */
+	if (anyMarked && pScreen->PostValidateTree)
+	    (* pScreen->PostValidateTree)(pParent, pWin, VTOther);
     }
     if (pWin->realized)
 	WindowsRestructured ();
@@ -2844,6 +2850,9 @@ ReflectStackChange(pWin, pSib, kind)
 	if (dosave)
 	    DoChangeSaveUnder(pParent, pFirstChange);
 #endif /* DO_SAVE_UNDERS */
+	if (anyMarked && pWin->drawable.pScreen->PostValidateTree)
+	    (* pWin->drawable.pScreen->PostValidateTree)(pParent,
+							 pFirstChange, kind);
     }
     if (pWin->realized)
 	WindowsRestructured ();
@@ -3185,6 +3194,8 @@ SetShape(pWin)
 	if (dosave)
 	    DoChangeSaveUnder(pParent, pWin);
 #endif /* DO_SAVE_UNDERS */
+	if (anyMarked && pScreen->PostValidateTree)
+	    (* pScreen->PostValidateTree)(pParent, NullWindow, VTOther);
     }
     if (pWin->realized)
 	WindowsRestructured ();
@@ -3552,6 +3563,8 @@ MapWindow(pWin, client)
 	    if (dosave)
 		DoChangeSaveUnder(pParent, pWin->nextSib);
 #endif /* DO_SAVE_UNDERS */
+	if (anyMarked && pScreen->PostValidateTree)
+	    (* pScreen->PostValidateTree)(pParent, pWin, VTMap);
 	}
 	WindowsRestructured ();
     }
@@ -3661,6 +3674,8 @@ MapSubwindows(pParent, client)
 	if (dosave)
 	    DoChangeSaveUnder(pParent, pFirstSaveUndered->nextSib);
 #endif /* DO_SAVE_UNDERS */
+	if (anyMarked && pScreen->PostValidateTree)
+	    (* pScreen->PostValidateTree)(pParent, pFirstMapped, VTMap);
     	WindowsRestructured ();
     }
 }
@@ -3772,6 +3787,9 @@ UnmapWindow(pWin, fromConfigure)
 	}
 	pWin->DIXsaveUnder = FALSE;
 #endif /* DO_SAVE_UNDERS */
+	if (!fromConfigure && pWin->drawable.pScreen->PostValidateTree)
+	    (* pWin->drawable.pScreen->PostValidateTree)(pParent,
+							 pWin, VTUnmap);
     }
     if (wasRealized && !fromConfigure)
 	WindowsRestructured ();
@@ -3843,6 +3861,8 @@ UnmapSubwindows(pWin)
 		DoChangeSaveUnder(pWin, pWin->firstChild);
 	}
 #endif /* DO_SAVE_UNDERS */
+	if (anyMarked && pWin->drawable.pScreen->PostValidateTree)
+	    (* pWin->drawable.pScreen->PostValidateTree)(pWin, pHead, VTUnmap);
     }
     if (wasRealized)
 	WindowsRestructured ();
