@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.59 87/08/25 08:36:22 susan Exp $ */
+/* $Header: connection.c,v 1.59 87/08/26 23:49:34 toddb Locked $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -259,7 +259,7 @@ CreateWellKnownSockets()
         Error ("No Listeners, nothing to do");
     signal (SIGPIPE, SIG_IGN);
     signal (SIGHUP, AutoResetServer);
-/*    signal (SIGINT, GiveUp); */
+    signal (SIGINT, GiveUp);
     signal (SIGTERM, GiveUp);
     FirstClient = request + 1;
     AllSockets[0] = WellKnownConnections;
