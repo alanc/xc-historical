@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miClip.c,v 5.1 91/02/16 09:55:12 rws Exp $ */
 
 
 /***********************************************************
@@ -204,7 +204,7 @@ ComputeMCVolume(pRend, pddc)
         miTransformPoint(&wcHS->point, pxform,
                          &mcHS.point);
 
-        miTransformPoint(&wcHS->vector, vxform, &mcHS.vector);
+        miTransformVector(&wcHS->vector, vxform, &mcHS.vector);
 
 	NORMALIZE_VECTOR(&mcHS.vector, length);
 	
