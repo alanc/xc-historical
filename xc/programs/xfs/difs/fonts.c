@@ -1,4 +1,4 @@
-/* $XConsortium: fonts.c,v 1.24 94/03/21 13:50:11 gildea Exp $ */
+/* $XConsortium: fonts.c,v 1.25 94/04/17 19:56:15 gildea Exp $ */
 /*
  * font control
  */
@@ -1218,7 +1218,7 @@ do_list_fonts_with_info(client, c)
 		    c->current = c->saved;
 		}
 	    }
-	    if (c->current.max_names == 0)
+	    else if (c->current.max_names == 0)
 		break;
 	} else if (err == Successful) {
 /* XXX why is it xFontProp ? */

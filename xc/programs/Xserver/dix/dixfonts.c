@@ -21,7 +21,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.51 94/08/02 17:41:45 dpw Exp dpw $ */
+/* $XConsortium: dixfonts.c,v 1.52 95/01/03 14:32:35 dpw Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -992,7 +992,7 @@ doListFontsWithInfo(client, c)
 		    c->current = c->saved;
 		}
 	    }
-	    if (c->current.max_names == 0)
+	    else if (c->current.max_names == 0)
 		break;
 	}
  	else if (err == Successful)
