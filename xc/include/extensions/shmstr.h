@@ -17,9 +17,8 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: shmstr.h,v 1.0 89/08/18 17:50:00 rws Exp $ */
+/* $XConsortium: shmstr.h,v 1.1 89/08/20 16:28:08 rws Exp $ */
 
-#define _XSHM_SERVER_
 #include "XShm.h"
 
 #define SHMNAME "MIT-SHM"
@@ -27,10 +26,12 @@ without any express or implied warranty.
 #define SHM_MAJOR_VERSION	1	/* current version numbers */
 #define SHM_MINOR_VERSION	0
 
+#ifdef _XSHM_SERVER_
 typedef struct _ShmFuncs {
     PixmapPtr	(* CreatePixmap)();
     void	(* PutImage)();
 } ShmFuncs, *ShmFuncsPtr;
+#endif
 
 typedef struct _ShmQueryVersion {
     CARD8	reqType;		/* always ShmReqCode */
@@ -95,9 +96,8 @@ typedef struct _ShmPutImage {
     CARD8	bpad;
     ShmSeg	shmseg B32;
     CARD32	offset B32;
-    CARD32	size B32;
 } xShmPutImageReq;    
-#define sz_xShmPutImageReq	44
+#define sz_xShmPutImageReq	40
 
 typedef struct _ShmGetImage {
     CARD8	reqType;	/* always ShmReqCode */
@@ -115,9 +115,8 @@ typedef struct _ShmGetImage {
     CARD8	pad2;
     ShmSeg	shmseg B32;
     CARD32	offset B32;
-    CARD32	size B32;
 } xShmGetImageReq;    
-#define sz_xShmGetImageReq	36
+#define sz_xShmGetImageReq	32
 
 typedef struct _ShmGetImageReply {
     BYTE	type;  /* X_Reply */
@@ -147,9 +146,8 @@ typedef struct _ShmCreatePixmap {
     CARD8	pad2;
     ShmSeg	shmseg B32;
     CARD32	offset B32;
-    CARD32	size B32;
 } xShmCreatePixmapReq;
-#define sz_xShmCreatePixmap 32
+#define sz_xShmCreatePixmapReq 28
 
 typedef struct _ShmCompletion {
     BYTE	type;		/* always eventBase + ShmCompletion */

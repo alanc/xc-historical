@@ -17,7 +17,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: shm.c,v 1.1 89/08/20 12:15:33 rws Exp $ */
+/* $XConsortium: shm.c,v 1.2 89/08/20 17:02:02 rws Exp $ */
 
 #ifdef MITSHM
 
@@ -38,6 +38,7 @@ without any express or implied warranty.
 #include "gcstruct.h"
 #include "extnsionst.h"
 #include "servermd.h"
+#define _XSHM_SERVER_
 #include "shmstr.h"
 
 typedef struct _ShmDesc {
@@ -63,7 +64,7 @@ static ShmFuncsPtr shmFuncs[MAXSCREENS];
 static ShmFuncs miFuncs = {NULL, miShmPutImage};
 static ShmFuncs fbFuncs = {fbShmCreatePixmap, fbShmPutImage};
 
-#define VALIDATE_SHMSEG(shmseg,shmdesc,client) \
+#define VERIFY_SHMSEG(shmseg,shmdesc,client) \
 { \
     shmdesc = (ShmDescPtr)LookupIDByType(shmseg, ShmSegType); \
     if (!shmdesc) \
@@ -73,21 +74,24 @@ static ShmFuncs fbFuncs = {fbShmCreatePixmap, fbShmPutImage};
     } \
 }
 
-#define VALIDATE_SHMPTR(shmseg,offset,len,needwrite,shmdesc,client) \
+#define VERIFY_SHMPTR(shmseg,offset,needwrite,shmdesc,client) \
 { \
-    VALIDATE_SHMSEG(shmseg, shmdesc, client); \
-    if ((offset & 3) || (offset >= shmdesc->size)) \
+    VERIFY_SHMSEG(shmseg, shmdesc, client); \
+    if ((offset & 3) || (offset > shmdesc->size)) \
     { \
 	client->errorValue = offset; \
 	return BadValue; \
     } \
-    if ((offset + len) > shmdesc->size) \
-    { \
-	client->errorValue = len; \
-	return BadValue; \
-    } \
     if (needwrite && !shmdesc->writable) \
 	return BadAccess; \
+}
+
+#define VERIFY_SHMSIZE(shmdesc,offset,len,client) \
+{ \
+    if ((offset + len) > shmdesc->size) \
+    { \
+	return BadAccess; \
+    } \
 }
 
 void
@@ -251,7 +255,7 @@ ProcShmDetach(client)
     REQUEST(xShmDetachReq);
 
     REQUEST_SIZE_MATCH(xShmDetachReq);
-    VALIDATE_SHMSEG(stuff->shmseg, shmdesc, client);
+    VERIFY_SHMSEG(stuff->shmseg, shmdesc, client);
     FreeResource(stuff->shmseg, RT_NONE);
     return(client->noClientException);
 }
@@ -336,8 +340,7 @@ ProcShmPutImage(client)
 
     REQUEST_SIZE_MATCH(xShmPutImageReq);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
-    VALIDATE_SHMPTR(stuff->shmseg, stuff->offset, stuff->size,
-		    FALSE, shmdesc, client);
+    VERIFY_SHMPTR(stuff->shmseg, stuff->offset, FALSE, shmdesc, client);
     if ((stuff->sendEvent != xTrue) && (stuff->sendEvent != xFalse))
 	return BadValue;
     if (stuff->format == XYBitmap)
@@ -364,11 +367,8 @@ ProcShmPutImage(client)
 	client->errorValue = stuff->format;
         return BadValue;
     }
-    if ((length * stuff->totalHeight) != stuff->size)
-    {
-	client->errorValue = stuff->size;
-	return BadValue;
-    }
+    VERIFY_SHMSIZE(shmdesc, stuff->offset, length * stuff->totalHeight,
+		   client);
     if (stuff->srcX > stuff->totalWidth)
     {
 	client->errorValue = stuff->srcX;
@@ -449,8 +449,7 @@ ProcShmGetImage(client)
 	client->errorValue = stuff->drawable;
 	return (BadDrawable);
     }
-    VALIDATE_SHMPTR(stuff->shmseg, stuff->offset, stuff->size,
-		    TRUE, shmdesc, client);
+    VERIFY_SHMPTR(stuff->shmseg, stuff->offset, TRUE, shmdesc, client);
     if (pDraw->type == DRAWABLE_WINDOW)
     {
       if( /* check for being viewable */
@@ -496,8 +495,7 @@ ProcShmGetImage(client)
 	/* only planes asked for */
 	length = lenPer * Ones(stuff->planeMask & (plane | (plane - 1)));
     }
-    if (length > stuff->size)
-	return BadValue;
+    VERIFY_SHMSIZE(shmdesc, stuff->offset, length, client);
     xgi.size = length;
     if (length == 0)
     {
@@ -587,8 +585,7 @@ ProcShmCreatePixmap(client)
         if (!(pDraw = (DrawablePtr)LookupWindow(stuff->drawable, client))) 
             return (BadDrawable);
     }
-    VALIDATE_SHMPTR(stuff->shmseg, stuff->offset, stuff->size,
-		    TRUE, shmdesc, client);
+    VERIFY_SHMPTR(stuff->shmseg, stuff->offset, TRUE, shmdesc, client);
     if (!stuff->width || !stuff->height)
     {
 	client->errorValue = 0;
@@ -604,9 +601,9 @@ ProcShmCreatePixmap(client)
         return BadValue;
     }
 CreatePmap:
-    if (stuff->size !=
-	(PixmapBytePad(stuff->width, stuff->depth) * stuff->height))
-	return BadValue;
+    VERIFY_SHMSIZE(shmdesc, stuff->offset,
+		   PixmapBytePad(stuff->width, stuff->depth) * stuff->height,
+		   client);
     pMap = (*shmFuncs[pDraw->pScreen->myNum]->CreatePixmap)(
 			    pDraw->pScreen, stuff->width,
 			    stuff->height, stuff->depth,
@@ -716,7 +713,6 @@ SProcShmPutImage(client)
     swaps(&stuff->dstY, n);
     swapl(&stuff->shmseg, n);
     swapl(&stuff->offset, n);
-    swapl(&stuff->size, n);
     return ProcShmPutImage(client);
 }
 
@@ -735,7 +731,6 @@ SProcShmGetImage(client)
     swapl(&stuff->planeMask, n);
     swapl(&stuff->shmseg, n);
     swapl(&stuff->offset, n);
-    swapl(&stuff->size, n);
     return ProcShmGetImage(client);
 }
 
@@ -751,7 +746,6 @@ SProcShmCreatePixmap(client)
     swaps(&stuff->height, n);
     swapl(&stuff->shmseg, n);
     swapl(&stuff->offset, n);
-    swapl(&stuff->size, n);
     return ProcShmCreatePixmap(client);
 }
 
