@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.sample,v 1.9 94/04/08 17:02:06 rws Exp $
+XCOMM site:  $XConsortium: site.sample,v 1.10 94/05/13 16:43:11 matt Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -60,31 +60,6 @@ XCOMM site:  $XConsortium: site.sample,v 1.9 94/04/08 17:02:06 rws Exp $
 /* #define BuildXKB YES */
 
 /* #define PreIncDir /usr/local/lib/gcc-lib/sparc-sun-sunos4.1.3/2.5.8/include */
-
-/*
- * If your C++ compiler has ANSI preprocessor features like token-pasting, 
- * you may want to turn them on when building Fresco.  If you get compile
- * time errors about "_" not being a type name or Xf not being a type name,
- * it means your standard preprocessor converts empty comments to spaces 
- * instead of doing token pasting.  Use an ANSI preprocessor if you can.
- *
- * If your compiler does ANSI token-pasting but does NOT set __STDC__ to 1
- * you should add -D__ANSI_CPP__ to the command line so Fresco sources 
- * know they can use ANSI token pasting.  Here's a sample set of values
- * for HP's C++ compiler, which requires special flags for ANSI features
- * and which does not assert __STDC__ == 1:
- */
-
-/*
-#ifdef HPArchitecture
-#ifndef DefaultCplusplusOptions
-#define DefaultCplusplusOptions -Aa
-#endif
-#ifndef CplusplusExtraDefines
-#define CplusplusExtraDefines -D__ANSI_CPP__
-#endif
-#endif 
-*/
 
 /*
 #if defined(SunArchitecture) && defined(SparcArchitecture)
