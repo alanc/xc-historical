@@ -1,0 +1,21 @@
+/*	@(#)Imakefile	4.1	91/05/02	*/
+
+SRCS =	main.c dispatch.c extensions.c globals.c events.c tables.c \
+	fontinfo.c swapreq.c swaprep.c resource.c \
+	fonts.c difsutils.c cache.c initfonts.c atom.c
+
+OBJS =  main.o dispatch.o extensions.o globals.o events.o tables.o \
+	fontinfo.o swapreq.o swaprep.o resource.o \
+	fonts.o difsutils.o cache.o initfonts.o atom.o
+
+
+INCLUDES = -I. -I../../include -I../include -I$(FONTSRC)/include -I/usr/include/X11
+FONTDEFINES = -DFONT_PCF -DFONT_FS -DFONT_SPEEDO
+
+NormalLibraryObjectRule()
+NormalLibraryTarget(difs, $(OBJS))
+
+DependTarget()
+
+SpecialObjectRule(initfonts.o, $(ICONFIGFILES), $(FONTDEFINES))
+

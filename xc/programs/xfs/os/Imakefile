@@ -1,0 +1,15 @@
+/*	@(#)Imakefile	4.1	91/05/02	*/
+SRCS =	connection.c waitfor.c io.c utils.c osinit.c config.c access.c osglue.c
+OBJS =  connection.o waitfor.o io.o utils.o osinit.o config.o access.o osglue.o
+
+INCLUDES = -I. -I../../include -I../include -I/usr/include/X11
+
+DEFINES = ConnectionFlags
+
+NormalLibraryObjectRule()
+NormalLibraryTarget(os, $(OBJS))
+
+# these depend on ConnectionFlags
+connection.o: $(ICONFIGFILES)
+
+DependTarget()
