@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mizerline.c,v 5.2 89/11/08 17:11:15 keith Exp $ */
+/* $XConsortium: mizerline.c,v 5.3 89/11/25 12:30:33 rws Exp $ */
 #include "X.h"
 
 #include "misc.h"
@@ -57,9 +57,10 @@ DDXPointRec *pptInit;	/* points in the polyline */
 
     DDXPointPtr pspanInit;
     int *pwidthInit;
-    int list_len = dst->height;
+    int list_len;
     Bool local = TRUE;
 
+    list_len = (dst->height >= dst->width) ? dst->height : dst->width;
     pspanInit = (DDXPointPtr)ALLOCATE_LOCAL(list_len * sizeof(DDXPointRec));
     pwidthInit = (int *)ALLOCATE_LOCAL(list_len * sizeof(int));
     if (!pspanInit || !pwidthInit)
