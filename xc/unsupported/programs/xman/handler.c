@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: handler.c,v 1.17 91/02/11 18:52:15 converse Exp $
+ * $XConsortium: handler.c,v 1.18 91/02/13 16:09:47 converse Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -324,12 +324,12 @@ Cardinal * num_params;
 	    sprintf(error_buf,
 		    "Couldn't set permissions on formatted man page '%s'.\n",
 		    man_globals->save_file);
-	    PrintWarning( man_globals, error_buf);
+	    PopupWarning( man_globals, error_buf);
 	}
     } else {
 	sprintf(error_buf, "Error while executing the command '%s'.\n",
 		cmdbuf);
-	PrintWarning( man_globals, error_buf);
+	PopupWarning( man_globals, error_buf);
     }
     break;
   case 'C':
@@ -338,7 +338,7 @@ Cardinal * num_params;
   default:
     sprintf(error_buf,"%s %s", "Xman - SaveFormattedPagee:",
 	    "Unknown argument must be either 'Save' or 'Cancel'.");
-    PrintWarning(man_globals, error_buf);
+    PopupWarning(man_globals, error_buf);
     return;
   }
     

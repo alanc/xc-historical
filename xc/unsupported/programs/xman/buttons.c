@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.25 91/02/13 16:09:04 converse Exp $
+ * $XConsortium: buttons.c,v 1.26 91/05/31 11:12:56 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -42,10 +42,12 @@ ManpageGlobals * InitPsuedoGlobals();
 
 static Atom wm_delete_window;
 
+Widget top;			/* needed in PopupWarning, misc.c */
+
 void
 MakeTopBox()
 {
-  Widget top, form, command, label; /* widgets. */
+  Widget form, command, label; /* widgets. */
   Arg arglist[TOPARGS];		/* An argument list */
   Cardinal num_args = 0;	/* The number of arguments. */
   ManpageGlobals * man_globals;
@@ -637,7 +639,7 @@ char ** full_size, ** half_size;
   }
 
   if (long_widget == (Widget) NULL) {          /* Make sure we found one. */
-    PrintWarning(GetGlobals(parent), 
+    PopupWarning(GetGlobals(parent), 
 		 "Could not find longest widget, aborting...");
     XtFree((char *)full_widgets);
     XtFree((char *)half_widgets);

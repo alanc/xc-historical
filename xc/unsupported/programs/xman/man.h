@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.h,v 1.24 91/04/02 15:24:18 gildea Exp $
+ * $XConsortium: man.h,v 1.25 91/05/31 11:13:36 dave Exp $
  * $Athena: man.h,v 4.6 89/01/06 12:17:38 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -222,7 +222,7 @@ int Man();
 
 /* misc.c */
 
-void PrintError(),PrintWarning(), ChangeLabel(), OpenFile();
+void PrintError(),PrintWarning(), PopupWarning(), ChangeLabel(), OpenFile();
 void RemovePixmaps(),PositionCenter(),AddCursor(),ParseEntry();
 FILE *FindManualFile(),*Format(), *OpenEntryFile();
 ManpageGlobals * GetGlobals();

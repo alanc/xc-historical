@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.23 91/02/13 16:11:17 converse Exp $
+ * $XConsortium: misc.c,v 1.24 91/04/02 15:24:52 gildea Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -24,17 +24,66 @@
 #include <X11/Xos.h> 		/* sys/types.h and unistd.h included in here */
 #include <sys/stat.h>
 #include <errno.h>
+#include <X11/Xaw/Dialog.h>
+#include <X11/Shell.h>
 
 static FILE * Uncompress();
 static Boolean UncompressNamed(), UncompressUnformatted();
 extern int errno;		/* error codes. */
 
-/*
- * It would be very nice if these would pop up their own windows for 
- * error messages, whould anyone like to implement this???
+/*	Function Name: PopupWarning
+ *	Description: This function pops upa warning message.
+ *	Arguments: string - the specific warning string.
+ *	Returns: none
  */
 
-/*	Function Name: PrintWarning
+extern Widget initial_widget, top;
+static Widget warnShell, warnDialog;
+
+void 
+PopdownWarning(w, client, call)
+     Widget w; XtPointer client, call;
+{
+  XtPopdown((Widget)client);
+}
+
+void
+PopupWarning(man_globals, string)
+ManpageGlobals * man_globals;
+char * string;
+{
+  int n;
+  Arg wargs[2];
+  Dimension topX, topY;
+  char buffer[BUFSIZ];
+
+  sprintf( buffer, "Xman Warning: %s", string);
+  n=0;
+  XtSetArg(wargs[n], XtNx, &topX); n++;
+  XtSetArg(wargs[n], XtNy, &topY); n++;
+  XtGetValues(top, wargs, n);
+
+  if (man_globals != NULL) 
+    ChangeLabel(man_globals->label, buffer);
+  if (man_globals->label == NULL) {
+    n=0;
+    XtSetArg(wargs[n], XtNx, topX); n++;
+    XtSetArg(wargs[n], XtNy, topY); n++;
+    warnShell = XtCreatePopupShell("warnShell", transientShellWidgetClass, 
+				   initial_widget, wargs, n);
+    XtSetArg(wargs[0], XtNlabel, buffer); 
+    warnDialog = XtCreateManagedWidget("warnDialog", dialogWidgetClass, 
+				       warnShell, wargs, 1);
+    XawDialogAddButton(warnDialog, "dismiss", PopdownWarning, 
+		       (XtPointer)warnShell);
+    XtRealizeWidget(warnShell);
+    Popup(warnShell, XtGrabNone);
+  }
+}
+
+
+/*      THIS ROUTINE IS OBSOLETE...
+ *	Function Name: PrintWarning
  *	Description: This function prints a warning message to stderr.
  *	Arguments: string - the specific warning string.
  *	Returns: none
@@ -183,7 +232,7 @@ char * filename;
   else if ((file = fopen(tmpfile, "r")) == NULL) {  
     sprintf(error_buf, "Something went wrong in retrieving the %s",
 	    "uncompressed manual page try cleaning up /tmp.");
-    PrintWarning(man_globals, error_buf);
+    PopupWarning(man_globals, error_buf);
   }
 
   unlink(tmpfile);		/* remove name in tree, it will remain
@@ -212,7 +261,7 @@ char * filename, * output;
     if (errno != ENOENT) {
       sprintf(error_buf, "Error while stating file %s, errno = %d",
 	      filename, errno);
-      PrintWarning(man_globals, error_buf);
+      PopupWarning(man_globals, error_buf);
     }
     return(FALSE);
   }
@@ -231,7 +280,7 @@ char * filename, * output;
     return(TRUE);
 
   sprintf(error_buf, "Error while uncompressing, command was: %s", cmdbuf);
-  PrintWarning(man_globals, error_buf);
+  PopupWarning(man_globals, error_buf);
   return(FALSE);
 }
 
@@ -270,7 +319,7 @@ char * entry;
   if ( !UncompressUnformatted(man_globals, entry, filename) ) {
     /* We Really could not find it, this should never happen, yea right. */
     sprintf(error_buf, "Could not open manual page, %s", entry);
-    PrintWarning(man_globals, error_buf);
+    PopupWarning(man_globals, error_buf);
     XtPopdown( XtParent(man_globals->standby) );
     return(NULL);
   }
@@ -286,14 +335,14 @@ char * entry;
   if(system(cmdbuf) != 0) {	/* execute search. */
     sprintf(error_buf,
 	    "Something went wrong trying to run the command: %s", cmdbuf);
-    PrintWarning(man_globals, error_buf);
+    PopupWarning(man_globals, error_buf);
     file = NULL;
   }
   else {
     if ((file = fopen(man_globals->tmpfile,"r")) == NULL) {  
       sprintf(error_buf, "Something went wrong in retrieving the %s",
 	      "temp file, try cleaning up /tmp");
-      PrintWarning(man_globals, error_buf);
+      PopupWarning(man_globals, error_buf);
     }
     else {
 
@@ -411,7 +460,7 @@ Cursor cursor;
   Colormap c_map;
   
   if (!XtIsRealized(w)) {
-    PrintWarning(NULL, "Widget is not realized, no cursor added.\n");
+    PopupWarning(NULL, "Widget is not realized, no cursor added.\n");
     return;
   }
 

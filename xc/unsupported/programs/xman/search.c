@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: search.c,v 1.13 91/02/13 16:11:35 converse Exp $
+ * $XConsortium: search.c,v 1.14 91/04/02 15:25:04 gildea Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -60,7 +60,7 @@ Widget parent;
 				 arglist, num_args);
 
   if ( (text = XtNameToWidget(dialog, "value")) == (Widget) NULL)
-    PrintWarning(NULL, "Could not find text widget in MakeSearchWidget.");
+    PopupWarning(NULL, "Could not find text widget in MakeSearchWidget.");
   else
     XtSetKeyboardFocus(dialog, text);
 
@@ -75,7 +75,7 @@ Widget parent;
 
   if ( ((command = XtNameToWidget(dialog, MANUALSEARCH)) == (Widget) NULL) ||
        ((cancel = XtNameToWidget(dialog, CANCEL)) == (Widget) NULL) )
-    PrintWarning(NULL,
+    PopupWarning(NULL,
 		 "Could not find manual search widget in MakeSearchWidget.");
   else {
     Cardinal num_args = 0;
@@ -113,7 +113,7 @@ ManpageGlobals * man_globals;
   if (dialog != NULL) 
     return(XawDialogGetValueString(dialog));
 
-  PrintWarning(man_globals,
+  PopupWarning(man_globals,
 	      "Could not get the search string, no search will be preformed.");
   return(NULL);
 }
@@ -157,12 +157,12 @@ int type;
   /* If the string is empty or starts with a space then do not search */
 
   if ( streq(search_string,"") ) {
-    PrintWarning(man_globals, "Search string is empty.");
+    PopupWarning(man_globals, "Search string is empty.");
     return(NULL);
   }
 
   if (search_string[0] == ' ') {
-    PrintWarning(man_globals, "First character cannot be a space.");
+    PopupWarning(man_globals, "First character cannot be a space.");
     return(NULL);
   }
 
@@ -191,7 +191,7 @@ int type;
 
     if(system(cmdbuf) != 0) {	/* execute search. */
       sprintf(error_buf,"Something went wrong trying to run %s\n",cmdbuf);
-      PrintWarning(man_globals, error_buf);
+      PopupWarning(man_globals, error_buf);
     }
 
     if((file = fopen(mantmp,"r")) == NULL)
@@ -254,7 +254,7 @@ int type;
 
     dialog = XtNameToWidget(man_globals->search_widget, DIALOG);
     if (dialog == NULL) 
-      PrintWarning(man_globals, "Could not clear the search string.");
+      PopupWarning(man_globals, "Could not clear the search string.");
 
     XtSetArg(arglist[0], XtNvalue, "");
     XtSetValues(dialog, arglist, (Cardinal) 1);

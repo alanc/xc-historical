@@ -1,7 +1,7 @@
 /*
  * xman - X Window System manual page display program.
  *
- * $XConsortium: man.c,v 1.21 91/02/17 20:24:58 converse Exp $
+ * $XConsortium: man.c,v 1.22 91/04/04 16:56:45 gildea Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -353,7 +353,7 @@ char * path;
   if((dir = opendir(path)) == NULL) {	
 #ifdef DEBUG
     sprintf(error_buf,"Can't open directory %s", path);
-    PrintWarning(NULL, error_buf);
+    PopupWarning(NULL, error_buf);
 #endif /* DEBUG */
     return;
   }
