@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.158 94/07/21 17:46:55 mor Exp mor $
+ * $XConsortium: add_window.c,v 1.159 94/08/10 19:52:12 mor Exp mor $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -170,6 +170,7 @@ IconMgr *iconp;
     int namelen;
     int bw2;
     unsigned short saved_x, saved_y, saved_width, saved_height;
+    unsigned short restore_icon_x, restore_icon_y;
     Bool restore_iconified = 0;
     int restoredFromPrevSession;
 
@@ -202,7 +203,8 @@ IconMgr *iconp;
     FetchWmColormapWindows (tmp_win);
 
     if (GetWindowConfig (tmp_win,
-	&saved_x, &saved_y, &saved_width, &saved_height, &restore_iconified))
+	&saved_x, &saved_y, &saved_width, &saved_height,
+	&restore_iconified, &restore_icon_x, &restore_icon_y))
     {
 	tmp_win->attr.x = saved_x;
 	tmp_win->attr.y = saved_y;
@@ -230,6 +232,9 @@ IconMgr *iconp;
     {
 	tmp_win->wmhints->initial_state = IconicState;
 	tmp_win->wmhints->flags |= StateHint;
+	tmp_win->wmhints->icon_x = restore_icon_x;
+	tmp_win->wmhints->icon_y = restore_icon_y;
+	tmp_win->wmhints->flags |= IconPositionHint;
     }
 
     if (tmp_win->wmhints && (tmp_win->wmhints->flags & WindowGroupHint)) 
