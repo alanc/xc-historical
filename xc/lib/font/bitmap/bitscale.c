@@ -1,11 +1,11 @@
 /*
- * $XConsortium: bitscale.c,v 1.10 92/03/20 14:34:06 keith Exp $
+ * $XConsortium: bitscale.c,v 1.11 92/05/12 18:07:44 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
+ * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the name of M.I.T. not be used in advertising or
  * publicity pertaining to distribution of the software without specific,
@@ -13,12 +13,13 @@
  * suitability of this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  *
- * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
- * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+ * M.I.T.  BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ * SOFTWARE.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
@@ -111,7 +112,6 @@ GetScalableEntry (fpe, name)
     FontNamePtr		name;
 {
     FontDirectoryPtr	dir;
-    FontEntryPtr	entry;
 
     dir = (FontDirectoryPtr) fpe->private;
     return FontFileFindNameInDir (&dir->scalable, name);
@@ -173,7 +173,6 @@ FindBestToScale(fpe, entry, vals, best, dxp, dyp, fpep)
 		    best_dx, best_dx_amount,
 		    best_dy, best_dy_amount,
 		    minfrac;
-    int		    status;
     FontEntryPtr    zero;
     FontNameRec	    zeroName;
     char	    zeroChars[MAXFONTNAMELEN];
@@ -622,7 +621,7 @@ ScaleFont(opf, widthMult, heightMult, props, propCount, isStringProp)
     }
 
     if (pfi->defaultCh != (unsigned short) NO_SUCH_CHAR) {
-	int         r,
+	unsigned int r,
 	            c,
 	            cols;
 

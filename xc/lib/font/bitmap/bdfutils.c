@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfutils.c,v 1.5 92/03/26 17:38:18 gildea Exp $ */
+/* $XConsortium: bdfutils.c,v 1.6 92/04/16 09:20:57 gildea Exp $ */
 
 #include <ctype.h>
 
@@ -35,6 +35,7 @@ SOFTWARE.
 
 /***====================================================================***/
 
+/* VARARGS1 */
 void
 bdfError(message, a0, a1, a2, a3, a4, a5)
     char       *message;
@@ -51,6 +52,7 @@ bdfError(message, a0, a1, a2, a3, a4, a5)
 
 /***====================================================================***/
 
+/* VARARGS1 */
 void
 bdfWarning(message, a0, a1, a2, a3, a4, a5)
     char       *message;
@@ -67,7 +69,8 @@ bdfWarning(message, a0, a1, a2, a3, a4, a5)
 
 /***====================================================================***/
 
-/*ARGSUSED*/
+/* ARGSUSED */
+/* VARARGS1 */
 void
 bdfInformation(pFile, message, a0, a1, a2, a3, a4, a5)
     char       *message;

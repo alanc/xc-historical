@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfread.c,v 1.12 92/04/16 09:20:54 gildea Exp $ */
+/* $XConsortium: bdfread.c,v 1.13 92/05/12 18:07:40 gildea Exp $ */
 
 #include <ctype.h>
 #include "fontfilest.h"
@@ -484,7 +484,6 @@ bdfReadHeader(file, pState)
 {
     unsigned char *line;
     char        namebuf[BDFLINELEN];
-    int         tmp;
     char        lineBuf[BDFLINELEN];
 
     line = bdfGetLine(file, lineBuf, BDFLINELEN);
@@ -562,8 +561,8 @@ bdfReadProperties(file, pFont, pState)
     pFont->info.props = props = (FontPropPtr) xalloc((nProps + BDF_GENPROPS) *
 						     sizeof(FontPropRec));
     if (props == NULL) {
-	bdfError("Couldn't allocate props (%d*%d)\n", (nProps + BDF_GENPROPS,
-						       sizeof(FontPropRec)));
+	bdfError("Couldn't allocate props (%d*%d)\n", nProps + BDF_GENPROPS,
+						      sizeof(FontPropRec));
 	goto BAILOUT;
     }
     nextProp = 0;
@@ -580,7 +579,6 @@ bdfReadProperties(file, pFont, pState)
 	default:
 	    bdfError("missing '%s' parameter value\n", namebuf);
 	    goto BAILOUT;
-	    break;
 
 	case 2:
 	    /*

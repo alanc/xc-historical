@@ -1,11 +1,11 @@
 /*
- * $XConsortium: pcfread.c,v 1.9 92/03/20 14:34:37 keith Exp $
+ * $XConsortium: pcfread.c,v 1.10 92/05/12 18:07:47 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
+ * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the name of M.I.T. not be used in advertising or
  * publicity pertaining to distribution of the software without specific,
@@ -13,12 +13,13 @@
  * suitability of this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  *
- * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
- * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+ * M.I.T.  BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ * SOFTWARE.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
@@ -542,7 +543,7 @@ pcfReadFont(pFont, file, bit, byte, glyph, scan)
     bitmapFont->encoding = encoding;
     bitmapFont->pDefault = (CharInfoPtr) 0;
     if (pFont->info.defaultCh != (unsigned short) NO_SUCH_CHAR) {
-	int         r,
+	unsigned int r,
 	            c,
 	            cols;
 
