@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.45 90/11/16 18:12:23 swick Exp $
+ * $XConsortium: tocutil.c,v 2.46 90/12/03 09:56:58 swick Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -512,16 +512,8 @@ void TUEnsureScanIsValidAndOpen(toc)
 {
     if (toc) {
 	TUGetFullFolderInfo(toc);
-	if (TUScanFileOutOfDate(toc)) {
-	    if (toc->source) {
-		XtFree((char *) toc->source);
-		toc->source = NULL;
-	    }
-	    TUScanFileForToc(toc);
-	}
-	if (toc->source == NULL)
-	    TULoadTocFile(toc);
-	toc->validity = valid;
+	if (TUScanFileOutOfDate(toc))
+	    TocForceRescan(toc);
     }
 }
 
