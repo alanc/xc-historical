@@ -60,6 +60,7 @@ extern Bool sunBW2Probe(), sunBW2Create();
 extern Bool sunCG2CProbe(), sunCG2CCreate();
 extern Bool sunCG3CProbe(), sunCG3CCreate();
 extern Bool sunCG4CProbe(), sunCG4CCreate();
+extern Bool sunCG6CProbe(), sunCG6CCreate();
 extern void ProcessInputEvents();
 
 extern void SetInputCheck();
@@ -116,11 +117,9 @@ sunFbDataRec sunFbData[] = {
 #else  ZOIDS
 sunFbDataRec sunFbData[] = {
     sunBW2Probe,  	"/dev/bwtwo0",	    sunBW2Create,
-#ifdef NOTDEF
     sunCG2CProbe,  	"/dev/cgtwo0",	    sunCG2CCreate,
     sunCG3CProbe,  	"/dev/cgthree0",    sunCG3CCreate,
-#endif
-    sunCG4CProbe,  	"/dev/cgfour0",	    sunCG4CCreate
+    sunCG4CProbe,  	"/dev/cgfour0",	    sunCG4CCreate,
 };
 #endif ZOIDS
 
