@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.61 92/04/17 08:52:31 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.62 92/04/17 08:57:35 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -44,7 +44,9 @@ Syntax of magic values in the input stream:
 	r		top-level widget going right
 	u		top-level widget going up
 	k		require windows that select for key events
+			(with b, means "key or button")
 	b		require windows that select for button events
+			(with k, means "key or button")			
 	n<name>		require window with given name
 			this must be the last option
 	p<prefix>	require window with given name prefix
@@ -128,7 +130,8 @@ typedef struct {
     double best_dist;
     Bool recurse;
     MatchRec match;
-} Closest;
+    Region overlap;
+} JumpRec;
 
 typedef struct {
     int x1;
@@ -145,7 +148,16 @@ typedef struct {
     MatchRec match;
     int count;
     Window *windows;
-} Trigger;
+} TriggerRec;
+
+typedef struct _undo {
+    struct _undo *next;
+    int bscount;
+    char *seq;
+    int seq_len;
+    char *undo;
+    int undo_len;
+} UndoRec;
 
 Display *dpy;
 Atom MIT_OBJ_CLASS;
@@ -177,19 +189,12 @@ int (*oldioerror)();
 char history[4096];
 int history_end = 0;
 char *undofile = NULL;
-typedef struct _undo {
-    struct _undo *next;
-    int bscount;
-    char *seq;
-    int seq_len;
-    char *undo;
-    int undo_len;
-} Undo;
-Undo *undos[256];
+UndoRec *undos[256];
 int curbscount = 0;
 Bool in_control_seq = False;
 Bool skip_next_control_char = False;
-Trigger trig;
+TriggerRec trigger;
+JumpRec jump;
 
 void process();
 
@@ -593,6 +598,35 @@ do_warp(buf)
     }
 }
 
+void
+get_region(reg, w, wa, getshape)
+    Region reg;
+    Window w;
+    XWindowAttributes *wa;
+    Bool getshape;
+{
+    XRectangle rect;
+    XRectangle *rects;
+    int n;
+    int order;
+
+    if (getshape &&
+	(rects = XShapeGetRectangles(dpy, w, ShapeBounding, &n, &order))) {
+	while (--n >= 0) {
+	    rects[n].x += wa->x;
+	    rects[n].y += wa->y;
+	    XUnionRectWithRegion(&rects[n], reg, reg);
+	}
+	XFree((char *)rects);
+    } else {
+	rect.x = wa->x;
+	rect.y = wa->y;
+	rect.width = wa->width + (2 * wa->border_width);
+	rect.height = wa->height + (2 * wa->border_width);
+	XUnionRectWithRegion(&rect, reg, reg);
+    }
+}
+
 Region
 compute_univ(puniv, iuniv, w, wa, level)
     Region puniv;
@@ -601,28 +635,17 @@ compute_univ(puniv, iuniv, w, wa, level)
     XWindowAttributes *wa;
     int level;
 {
-    XRectangle rect;
-    XRectangle *rects;
-    int n;
-    int order;
     Region univ;
 
     univ = XCreateRegion();
     XIntersectRegion(iuniv, univ, iuniv);
-    if (!level &&
-	(rects = XShapeGetRectangles(dpy, w, ShapeBounding, &n, &order))) {
-	while (--n >= 0) {
-	    rects[n].x += wa->x;
-	    rects[n].y += wa->y;
-	    XUnionRectWithRegion(&rects[n], iuniv, iuniv);
+    get_region(iuniv, w, wa, !level);
+    if (!level && jump.overlap) {
+	XIntersectRegion(iuniv, jump.overlap, univ);
+	if (!XEmptyRegion(univ)) {
+	    XDestroyRegion(univ);
+	    return NULL;
 	}
-	XFree((char *)rects);
-    } else {
-	rect.x = wa->x;
-	rect.y = wa->y;
-	rect.width = wa->width + (2 * wa->border_width);
-	rect.height = wa->height + (2 * wa->border_width);
-	XUnionRectWithRegion(&rect, iuniv, iuniv);
     }
     XIntersectRegion(puniv, iuniv, univ);
     if (XEmptyRegion(univ)) {
@@ -738,14 +761,13 @@ find_closest_point(univ, px, py)
 
 
 void
-compute_point(univ, wa, rec)
+compute_point(univ, wa)
     Region univ;
     XWindowAttributes *wa;
-    Closest *rec;
 {
-    rec->bestx = wa->x + wa->width / 2 + wa->border_width;
-    rec->besty = wa->y + wa->height / 2 + wa->border_width;
-    find_closest_point(univ, &rec->bestx, &rec->besty);
+    jump.bestx = wa->x + wa->width / 2 + wa->border_width;
+    jump.besty = wa->y + wa->height / 2 + wa->border_width;
+    find_closest_point(univ, &jump.bestx, &jump.besty);
 }
 
 Region
@@ -824,45 +846,44 @@ matches(w, rec, getcw)
 }
 
 double
-compute_best_right(rec, univ, cx, cy)
-    Closest *rec;
+compute_best_right(univ, cx, cy)
     Region univ;
     int cx;
     int cy;
 {
     int maxy, maxx, x, y, Y, Y2, i;
 
-    cx -= rec->rootx;
-    cy -= rec->rooty;
+    cx -= jump.rootx;
+    cy -= jump.rooty;
     if (cy < 0)
 	cy = -cy;
-    maxy = HeightOfScreen(rec->screen) - rec->rooty;
-    if (rec->rooty > maxy)
-	maxy = rec->rooty;
-    i = sqrt(rec->best_dist / rec->ymult);
+    maxy = HeightOfScreen(jump.screen) - jump.rooty;
+    if (jump.rooty > maxy)
+	maxy = jump.rooty;
+    i = sqrt(jump.best_dist / jump.ymult);
     if (i < maxy)
 	maxy = i;
-    maxx = WidthOfScreen(rec->screen) - rec->rootx;
-    i = sqrt(rec->best_dist);
+    maxx = WidthOfScreen(jump.screen) - jump.rootx;
+    i = sqrt(jump.best_dist);
     if (i < maxx)
 	maxx = i;
-    if (XRectInRegion(univ, rec->rootx, rec->rooty - maxy,
+    if (XRectInRegion(univ, jump.rootx, jump.rooty - maxy,
 		      maxx + 1, maxy + maxy + 1) == RectangleOut)
 	return -1;
     for (Y = cy; Y <= maxy; Y++) {
 	Y2 = Y * Y;
 	for (y = cy; y <= Y; y++) {
-	    x = sqrt(rec->ymult * (Y2 - y*y));
+	    x = sqrt(jump.ymult * (Y2 - y*y));
 	    if (x < cx)
 		break;
-	    if (XRectInRegion(univ, rec->rootx, rec->rooty - y,
+	    if (XRectInRegion(univ, jump.rootx, jump.rooty - y,
 			      x + 1, y + y + 1) == RectangleOut)
 		continue;
 	    for (i = 0; i <= x; i++) {
-		if (!XPointInRegion(univ, rec->rootx + i, rec->rooty - y) &&
-		    !XPointInRegion(univ, rec->rootx + i, rec->rooty + y))
+		if (!XPointInRegion(univ, jump.rootx + i, jump.rooty - y) &&
+		    !XPointInRegion(univ, jump.rootx + i, jump.rooty + y))
 		    continue;
-		return i * i + rec->ymult * y * y;
+		return i * i + jump.ymult * y * y;
 	    }
 	}
     }
@@ -870,45 +891,44 @@ compute_best_right(rec, univ, cx, cy)
 }
 
 double
-compute_best_left(rec, univ, cx, cy)
-    Closest *rec;
+compute_best_left(univ, cx, cy)
     Region univ;
     int cx;
     int cy;
 {
     int maxy, maxx, x, y, Y, Y2, i;
 
-    cx = rec->rootx - cx;
-    cy -= rec->rooty;
+    cx = jump.rootx - cx;
+    cy -= jump.rooty;
     if (cy < 0)
 	cy = -cy;
-    maxy = HeightOfScreen(rec->screen) - rec->rooty;
-    if (rec->rooty > maxy)
-	maxy = rec->rooty;
-    i = sqrt(rec->best_dist / rec->ymult);
+    maxy = HeightOfScreen(jump.screen) - jump.rooty;
+    if (jump.rooty > maxy)
+	maxy = jump.rooty;
+    i = sqrt(jump.best_dist / jump.ymult);
     if (i < maxy)
 	maxy = i;
-    maxx = rec->rootx;
-    i = sqrt(rec->best_dist);
+    maxx = jump.rootx;
+    i = sqrt(jump.best_dist);
     if (i < maxx)
 	maxx = i;
-    if (XRectInRegion(univ, rec->rootx - maxx, rec->rooty - maxy,
+    if (XRectInRegion(univ, jump.rootx - maxx, jump.rooty - maxy,
 		      maxx + 1, maxy + maxy + 1) == RectangleOut)
 	return -1;
     for (Y = cy; Y <= maxy; Y++) {
 	Y2 = Y * Y;
 	for (y = cy; y <= Y; y++) {
-	    x = sqrt(rec->ymult * (Y2 - y*y));
+	    x = sqrt(jump.ymult * (Y2 - y*y));
 	    if (x < cx)
 		break;
-	    if (XRectInRegion(univ, rec->rootx - x, rec->rooty - y,
+	    if (XRectInRegion(univ, jump.rootx - x, jump.rooty - y,
 			      x + 1, y + y + 1) == RectangleOut)
 		continue;
 	    for (i = 0; i <= x; i++) {
-		if (!XPointInRegion(univ, rec->rootx - i, rec->rooty - y) &&
-		    !XPointInRegion(univ, rec->rootx - i, rec->rooty + y))
+		if (!XPointInRegion(univ, jump.rootx - i, jump.rooty - y) &&
+		    !XPointInRegion(univ, jump.rootx - i, jump.rooty + y))
 		    continue;
-		return i * i + rec->ymult * y * y;
+		return i * i + jump.ymult * y * y;
 	    }
 	}
     }
@@ -916,45 +936,44 @@ compute_best_left(rec, univ, cx, cy)
 }
 
 double
-compute_best_up(rec, univ, cx, cy)
-    Closest *rec;
+compute_best_up(univ, cx, cy)
     Region univ;
     int cx;
     int cy;
 {
     int maxy, maxx, x, y, X, X2, i;
 
-    cx -= rec->rootx;
+    cx -= jump.rootx;
     if (cx < 0)
 	cx = -cx;
-    cy = rec->rooty - cy;
-    maxx = WidthOfScreen(rec->screen) - rec->rootx;
-    if (rec->rootx > maxx)
-	maxx = rec->rootx;
-    i = sqrt(rec->best_dist / rec->xmult);
+    cy = jump.rooty - cy;
+    maxx = WidthOfScreen(jump.screen) - jump.rootx;
+    if (jump.rootx > maxx)
+	maxx = jump.rootx;
+    i = sqrt(jump.best_dist / jump.xmult);
     if (i < maxx)
 	maxx = i;
-    maxy = rec->rooty;
-    i = sqrt(rec->best_dist);
+    maxy = jump.rooty;
+    i = sqrt(jump.best_dist);
     if (i < maxy)
 	maxy = i;
-    if (XRectInRegion(univ, rec->rootx - maxx, rec->rooty - maxy,
+    if (XRectInRegion(univ, jump.rootx - maxx, jump.rooty - maxy,
 		      maxx + maxx + 1, maxy + 1) == RectangleOut)
 	return -1;
     for (X = cx; X <= maxx; X++) {
 	X2 = X * X;
 	for (x = cx; x <= X; x++) {
-	    y = sqrt(rec->xmult * (X2 - x*x));
+	    y = sqrt(jump.xmult * (X2 - x*x));
 	    if (y < cy)
 		break;
-	    if (XRectInRegion(univ, rec->rootx - x, rec->rooty - y,
+	    if (XRectInRegion(univ, jump.rootx - x, jump.rooty - y,
 			      x + x + 1, y + 1) == RectangleOut)
 		continue;
 	    for (i = 0; i <= y; i++) {
-		if (!XPointInRegion(univ, rec->rootx - x, rec->rooty - i) &&
-		    !XPointInRegion(univ, rec->rootx + x, rec->rooty - i))
+		if (!XPointInRegion(univ, jump.rootx - x, jump.rooty - i) &&
+		    !XPointInRegion(univ, jump.rootx + x, jump.rooty - i))
 		    continue;
-		return rec->xmult * x * x + i * i;
+		return jump.xmult * x * x + i * i;
 	    }
 	}
     }
@@ -962,45 +981,44 @@ compute_best_up(rec, univ, cx, cy)
 }
 
 double
-compute_best_down(rec, univ, cx, cy)
-    Closest *rec;
+compute_best_down(univ, cx, cy)
     Region univ;
     int cx;
     int cy;
 {
     int maxy, maxx, x, y, X, X2, i;
 
-    cx -= rec->rootx;
+    cx -= jump.rootx;
     if (cx < 0)
 	cx = -cx;
-    cy -= rec->rooty;
-    maxx = WidthOfScreen(rec->screen) - rec->rootx;
-    if (rec->rootx > maxx)
-	maxx = rec->rootx;
-    i = sqrt(rec->best_dist / rec->xmult);
+    cy -= jump.rooty;
+    maxx = WidthOfScreen(jump.screen) - jump.rootx;
+    if (jump.rootx > maxx)
+	maxx = jump.rootx;
+    i = sqrt(jump.best_dist / jump.xmult);
     if (i < maxx)
 	maxx = i;
-    maxy = HeightOfScreen(rec->screen) - rec->rooty;
-    i = sqrt(rec->best_dist);
+    maxy = HeightOfScreen(jump.screen) - jump.rooty;
+    i = sqrt(jump.best_dist);
     if (i < maxy)
 	maxy = i;
-    if (XRectInRegion(univ, rec->rootx - maxx, rec->rooty,
+    if (XRectInRegion(univ, jump.rootx - maxx, jump.rooty,
 		      maxx + maxx + 1, maxy + 1) == RectangleOut)
 	return -1;
     for (X = cx; X <= maxx; X++) {
 	X2 = X * X;
 	for (x = cx; x <= X; x++) {
-	    y = sqrt(rec->xmult * (X2 - x*x));
+	    y = sqrt(jump.xmult * (X2 - x*x));
 	    if (y < cy)
 		break;
-	    if (XRectInRegion(univ, rec->rootx - x, rec->rooty,
+	    if (XRectInRegion(univ, jump.rootx - x, jump.rooty,
 			      x + x + 1, y + 1) == RectangleOut)
 		continue;
 	    for (i = 0; i <= y; i++) {
-		if (!XPointInRegion(univ, rec->rootx - x, rec->rooty + i) &&
-		    !XPointInRegion(univ, rec->rootx + x, rec->rooty + i))
+		if (!XPointInRegion(univ, jump.rootx - x, jump.rooty + i) &&
+		    !XPointInRegion(univ, jump.rootx + x, jump.rooty + i))
 		    continue;
-		return rec->xmult * x * x + i * i;
+		return jump.xmult * x * x + i * i;
 	    }
 	}
     }
@@ -1008,93 +1026,90 @@ compute_best_down(rec, univ, cx, cy)
 }
 
 double
-compute_best_close(rec, univ, cx, cy)
-    Closest *rec;
+compute_best_close(univ, cx, cy)
     Region univ;
     int cx;
     int cy;
 {
     find_closest_point(univ, &cx, &cy);
-    return ((cx - rec->rootx) * (cx - rec->rootx) +
-	    (cy - rec->rooty) * (cy - rec->rooty));
+    return ((cx - jump.rootx) * (cx - jump.rootx) +
+	    (cy - jump.rooty) * (cy - jump.rooty));
 }
 
 double
-compute_distance(rec, univ)
-    Closest *rec;
+compute_distance(univ)
     Region univ;
 {
     Box box;
     int x, y;
 
-    if (XPointInRegion(univ, rec->rootx, rec->rooty))
+    if (XPointInRegion(univ, jump.rootx, jump.rooty))
 	return -1;
     compute_box(univ, &box);
-    switch (rec->dir) {
+    switch (jump.dir) {
     case 'R':
     case 'L':
-	if (rec->dir == 'R' && box.x1 >= rec->rootx)
+	if (jump.dir == 'R' && box.x1 >= jump.rootx)
 	    x = box.x1;
-	else if (rec->dir == 'L' && box.x2 <= rec->rootx)
+	else if (jump.dir == 'L' && box.x2 <= jump.rootx)
 	    x = box.x2;
 	else
-	    x = rec->rootx;
-	if (box.y2 < rec->rooty)
+	    x = jump.rootx;
+	if (box.y2 < jump.rooty)
 	    y = box.y2;
-	else if (box.y1 > rec->rooty)
+	else if (box.y1 > jump.rooty)
 	    y = box.y1;
 	else
-	    y = rec->rooty;
-	if (((x - rec->rootx) * (x - rec->rootx) +
-	     rec->ymult * (y - rec->rooty) * (y - rec->rooty)) >=
-	    rec->best_dist)
+	    y = jump.rooty;
+	if (((x - jump.rootx) * (x - jump.rootx) +
+	     jump.ymult * (y - jump.rooty) * (y - jump.rooty)) >=
+	    jump.best_dist)
 	    return -1;
-	if (rec->dir == 'R')
-	    return compute_best_right(rec, univ, x, y);
-	return compute_best_left(rec, univ, x, y);
+	if (jump.dir == 'R')
+	    return compute_best_right(univ, x, y);
+	return compute_best_left(univ, x, y);
     case 'U':
     case 'D':
-	if (box.x2 < rec->rootx)
+	if (box.x2 < jump.rootx)
 	    x = box.x2;
-	else if (box.x1 > rec->rootx)
+	else if (box.x1 > jump.rootx)
 	    x = box.x1;
 	else
-	    x = rec->rootx;
-	if (rec->dir == 'U' && box.y2 <= rec->rooty)
+	    x = jump.rootx;
+	if (jump.dir == 'U' && box.y2 <= jump.rooty)
 	    y = box.y2;
-	else if (rec->dir == 'D' && box.y1 > rec->rooty)
+	else if (jump.dir == 'D' && box.y1 > jump.rooty)
 	    y = box.y1;
 	else
-	    y = rec->rooty;
-	if ((rec->xmult * (x - rec->rootx) * (x - rec->rootx) +
-	     (y - rec->rooty) * (y - rec->rooty)) >= rec->best_dist)
+	    y = jump.rooty;
+	if ((jump.xmult * (x - jump.rootx) * (x - jump.rootx) +
+	     (y - jump.rooty) * (y - jump.rooty)) >= jump.best_dist)
 	    return -1;
-	if (rec->dir == 'U')
-	    return compute_best_up(rec, univ, x, y);
-	return compute_best_down(rec, univ, x, y);
-    case 'C':
-	if (box.x2 < rec->rootx)
+	if (jump.dir == 'U')
+	    return compute_best_up(univ, x, y);
+	return compute_best_down(univ, x, y);
+    default:
+	if (box.x2 < jump.rootx)
 	    x = box.x2;
-	else if (box.x1 > rec->rootx)
+	else if (box.x1 > jump.rootx)
 	    x = box.x1;
 	else
-	    x = rec->rootx;
-	if (box.y2 < rec->rooty)
+	    x = jump.rootx;
+	if (box.y2 < jump.rooty)
 	    y = box.y2;
-	else if (box.y1 > rec->rooty)
+	else if (box.y1 > jump.rooty)
 	    y = box.y1;
 	else
-	    y = rec->rooty;
-	if (((x - rec->rootx) * (x - rec->rootx) +
-	     (y - rec->rooty) * (y - rec->rooty)) >= rec->best_dist)
+	    y = jump.rooty;
+	if (((x - jump.rootx) * (x - jump.rootx) +
+	     (y - jump.rooty) * (y - jump.rooty)) >= jump.best_dist)
 	    return -1;
-	return compute_best_close(rec, univ, x, y);
+	return compute_best_close(univ, x, y);
     }
 }
 
 Bool
-find_closest(rec, parent, pwa, puniv, level)
-    Closest *rec;
+find_closest(parent, pwa, puniv, level)
     Window parent;
     XWindowAttributes *pwa;
     Region puniv;
@@ -1128,41 +1143,41 @@ find_closest(rec, parent, pwa, puniv, level)
 	if (!univ)
 	    continue;
 	compute_box(univ, &box);
-	switch (rec->dir) {
+	switch (jump.dir) {
 	case 'U':
-	    if (box.y1 >= rec->rooty)
+	    if (box.y1 >= jump.rooty)
 		continue;
 	    break;
 	case 'D':
-	    if (box.y2 <= rec->rooty)
+	    if (box.y2 <= jump.rooty)
 		continue;
 	    break;
 	case 'R':
-	    if (box.x2 <= rec->rootx)
+	    if (box.x2 <= jump.rootx)
 		continue;
 	    break;
 	case 'L':
-	    if (box.x1 >= rec->rootx)
+	    if (box.x1 >= jump.rootx)
 		continue;
 	    break;
 	}
-	if (rec->recurse &&
-	    find_closest(rec, child, &wa, univ, level + 1))
+	if (jump.recurse &&
+	    find_closest(child, &wa, univ, level + 1))
 	    found = True;
-	if (rec->input && !(wa.all_event_masks & rec->input))
+	if (jump.input && !(wa.all_event_masks & jump.input))
 	    continue;
 	if (XEmptyRegion(univ))
 	    continue;
-	if (rec->recurse && !box_left(univ, iuniv))
+	if (jump.recurse && !box_left(univ, iuniv))
 	    continue;
-	if (!matches(child, &rec->match, !level))
+	if (!matches(child, &jump.match, !level))
 	    continue;
-	dist = compute_distance(rec, univ);
-	if (dist < 0 || dist >= rec->best_dist)
+	dist = compute_distance(univ);
+	if (dist < 0 || dist >= jump.best_dist)
 	    continue;
-	rec->best = children[i];
-	rec->best_dist = dist;
-	compute_point(univ, &wa, rec);
+	jump.best = children[i];
+	jump.best_dist = dist;
+	compute_point(univ, &wa);
 	found = True;
     }
     if (children)
@@ -1226,16 +1241,19 @@ do_jump(buf)
     XWindowAttributes wa;
     int screen;
     double mult = 10.0;
-    Closest rec;
     Region univ;
     XRectangle rect;
     char *endptr;
+    Bool overlap;
+    unsigned int mask;
 
-    rec.dir = 0;
-    rec.recurse = False;
-    rec.input = 0;
-    rec.best_dist = 4e9;
-    rec.match.match = MatchNone;
+    jump.dir = 0;
+    jump.recurse = False;
+    jump.input = 0;
+    jump.best_dist = 4e9;
+    jump.match.match = MatchNone;
+    jump.overlap = NULL;
+    overlap = False;
     for (; *buf; buf++) {
 	switch (*buf) {
 	case 'C':
@@ -1243,34 +1261,37 @@ do_jump(buf)
 	case 'U':
 	case 'L':
 	case 'R':
-	    rec.dir = *buf;
-	    rec.recurse = False;
+	    jump.dir = *buf;
+	    jump.recurse = False;
 	    break;
 	case 'c':
 	case 'd':
 	case 'u':
 	case 'l':
 	case 'r':
-	    rec.dir = *buf - 'a' + 'A';
-	    rec.recurse = True;
+	    jump.dir = *buf - 'a' + 'A';
+	    jump.recurse = True;
 	    break;
 	case 'k':
-	    rec.input |= KeyPressMask|KeyReleaseMask;
+	    jump.input |= KeyPressMask|KeyReleaseMask;
 	    break;
 	case 'b':
-	    rec.input |= ButtonPressMask|ButtonReleaseMask;
+	    jump.input |= ButtonPressMask|ButtonReleaseMask;
 	    break;
 	case 'N':
-	    rec.match.match = MatchClass;
-	    buf = parse_class(buf + 1, &rec.match);
+	    jump.match.match = MatchClass;
+	    buf = parse_class(buf + 1, &jump.match);
 	    break;
 	case 'n':
 	case 'p':
 	    if (*buf == 'n')
-		rec.match.match = MatchName;
+		jump.match.match = MatchName;
 	    else
-		rec.match.match = MatchPrefix;
-	    buf = parse_name(buf + 1, &rec.match);
+		jump.match.match = MatchPrefix;
+	    buf = parse_name(buf + 1, &jump.match);
+	    break;
+	case 'O':
+	    overlap = True;
 	    break;
 	case ' ':
 	    mult = strtod(buf+1, &endptr);
@@ -1284,38 +1305,47 @@ do_jump(buf)
 	    return;
 	}
     }
-    switch (rec.dir) {
+    switch (jump.dir) {
     case 'U':
     case 'D':
-	rec.xmult = mult;
-	rec.ymult = 1.0;
+	jump.xmult = mult;
+	jump.ymult = 1.0;
 	break;
     case 'R':
     case 'L':
-	rec.xmult = 1.0;
-	rec.ymult = mult;
+	jump.xmult = 1.0;
+	jump.ymult = mult;
 	break;
     case 'C':
-	rec.xmult = 1.0;
-	rec.ymult = 1.0;
+	jump.xmult = 1.0;
+	jump.ymult = 1.0;
 	break;
     default:
 	return;
     }
-    XQueryPointer(dpy, DefaultRootWindow(dpy), &root, &child,
-		  &rec.rootx, &rec.rooty,
-		  &rec.bestx, &rec.besty, (unsigned int *)&screen);
-    for (screen = 0; RootWindow(dpy, screen) != root; screen++)
-	;
-    rec.screen = ScreenOfDisplay(dpy, screen);
-    if (rec.recurse && child) {
+    root = DefaultRootWindow(dpy);
+    while (1) {
+	for (screen = 0; RootWindow(dpy, screen) != root; screen++)
+	    ;
+	if (XQueryPointer(dpy, DefaultRootWindow(dpy), &root, &child,
+			  &jump.rootx, &jump.rooty,
+			  &jump.bestx, &jump.besty, &mask))
+	    break;
+    }
+    jump.screen = ScreenOfDisplay(dpy, screen);
+    if (child && (jump.recurse || overlap))
 	XGetWindowAttributes(dpy, child, &wa);
+    if (jump.recurse && child) {
 	root = child;
     } else {
+	if (overlap && child) {
+	    jump.overlap = XCreateRegion();
+	    get_region(jump.overlap, child, &wa, True);
+	}
 	wa.x = 0;
 	wa.y = 0;
-	wa.width = WidthOfScreen(rec.screen);
-	wa.height = HeightOfScreen(rec.screen);
+	wa.width = WidthOfScreen(jump.screen);
+	wa.height = HeightOfScreen(jump.screen);
     }
     univ = XCreateRegion();
     rect.x = wa.x;
@@ -1323,21 +1353,23 @@ do_jump(buf)
     rect.width = wa.width;
     rect.height = wa.height;
     XUnionRectWithRegion(&rect, univ, univ);
-    if (find_closest(&rec, root, &wa, univ, 0))
-	generate_warp(screen, rec.bestx, rec.besty);
+    if (find_closest(root, &wa, univ, 0))
+	generate_warp(screen, jump.bestx, jump.besty);
+    if (jump.overlap)
+	XDestroyRegion(jump.overlap);
     XDestroyRegion(univ);
 }
 
 void
 unset_trigger()
 {
-    trig.type = 0;
-    if (trig.windows) {
-	XFree((char *)trig.windows);
-	trig.windows = NULL;
-	trig.count = 0;
+    trigger.type = 0;
+    if (trigger.windows) {
+	XFree((char *)trigger.windows);
+	trigger.windows = NULL;
+	trigger.count = 0;
     }
-    XSelectInput(dpy, trig.root, 0L);
+    XSelectInput(dpy, trigger.root, 0L);
 }
 
 void
@@ -1349,18 +1381,18 @@ set_unmap_trigger()
     int i;
     int j;
 
-    XQueryTree(dpy, trig.root, &w, &child, &children, &nchild);
+    XQueryTree(dpy, trigger.root, &w, &child, &children, &nchild);
     if (!nchild) {
 	unset_trigger();
 	return;
     }
     for (i = nchild, j = 0; --i >= 0; ) {
 	w = children[i];
-	if (matches(w, &trig.match, True))
+	if (matches(w, &trigger.match, True))
 	    children[j++] = w;
     }
-    trig.windows = children;
-    trig.count = j;
+    trigger.windows = children;
+    trigger.count = j;
 }
 
 void
@@ -1378,18 +1410,18 @@ process_events()
 	    reset_mapping();
 	    break;
 	case MapNotify:
-	    if (trig.type == MapNotify &&
-		ev.xmap.serial >= trig.serial &&
-		ev.xmap.event == trig.root &&
-		matches(ev.xmap.window, &trig.match, True))
+	    if (trigger.type == MapNotify &&
+		ev.xmap.serial >= trigger.serial &&
+		ev.xmap.event == trigger.root &&
+		matches(ev.xmap.window, &trigger.match, True))
 		unset_trigger();
 	    break;
 	case UnmapNotify:
-	    if (trig.type == UnmapNotify &&
-		ev.xunmap.serial >= trig.serial &&
-		ev.xunmap.event == trig.root) {
-		for (j = 0; j < trig.count; j++) {
-		    if (trig.windows[j] == ev.xunmap.window) {
+	    if (trigger.type == UnmapNotify &&
+		ev.xunmap.serial >= trigger.serial &&
+		ev.xunmap.event == trigger.root) {
+		for (j = 0; j < trigger.count; j++) {
+		    if (trigger.windows[j] == ev.xunmap.window) {
 			unset_trigger();
 			break;
 		    }
@@ -1415,8 +1447,8 @@ do_trigger(buf)
     type = 0;
     match = MatchNone;
     wait = False;
-    trig.time.tv_sec = 10;
-    trig.time.tv_usec = 0;
+    trigger.time.tv_sec = 10;
+    trigger.time.tv_usec = 0;
     for (; *buf; buf++) {
 	switch (*buf) {
 	case 'M':
@@ -1430,7 +1462,7 @@ do_trigger(buf)
 	    break;
 	case 'N':
 	    match = MatchClass;
-	    buf = parse_class(buf + 1, &trig.match);
+	    buf = parse_class(buf + 1, &trigger.match);
 	    break;
 	case 'n':
 	case 'p':
@@ -1438,14 +1470,14 @@ do_trigger(buf)
 		match = MatchName;
 	    else
 		match = MatchPrefix;
-	    buf = parse_name(buf + 1, &trig.match);
+	    buf = parse_name(buf + 1, &trigger.match);
 	    break;
 	case ' ':
 	    delay = strtod(buf+1, &endptr);
 	    if (*endptr)
 		return;
-	    trig.time.tv_sec = delay;
-	    trig.time.tv_usec = (delay - trig.time.tv_sec) * 1000000;
+	    trigger.time.tv_sec = delay;
+	    trigger.time.tv_usec = (delay - trigger.time.tv_sec) * 1000000;
 	    buf = endptr - 1;
 	    break;
 	default:
@@ -1453,26 +1485,26 @@ do_trigger(buf)
 	}
     }
     if (type) {
-	if (trig.type)
+	if (trigger.type)
 	    unset_trigger();
-	trig.type = type;
-	trig.match.match = match;
-	XQueryPointer(dpy, DefaultRootWindow(dpy), &trig.root, &child,
+	trigger.type = type;
+	trigger.match.match = match;
+	XQueryPointer(dpy, DefaultRootWindow(dpy), &trigger.root, &child,
 		      &x, &y, &x, &y, (unsigned int *)&x);
-	trig.serial = NextRequest(dpy);
-	XSelectInput(dpy, trig.root, SubstructureNotifyMask);
+	trigger.serial = NextRequest(dpy);
+	XSelectInput(dpy, trigger.root, SubstructureNotifyMask);
 	if (type == UnmapNotify)
 	    set_unmap_trigger();
     }
-    if (!wait || !trig.type)
+    if (!wait || !trigger.type)
 	return;
-    while (trig.type) {
+    while (trigger.type) {
 	if (XPending(dpy)) {
 	    process_events();
 	    continue;
 	}
 	fdmask[0] = Xmask;
-	type = select(maxfd, fdmask, NULL, NULL, &trig.time);
+	type = select(maxfd, fdmask, NULL, NULL, &trigger.time);
 	if (type < 0)
 	    quit(1);
 	if (!type)
@@ -1591,7 +1623,7 @@ undo_stroke()
 void
 do_backspace()
 {
-    Undo *u;
+    UndoRec *u;
     Bool partial = False;
 
     curbscount++;
@@ -1703,7 +1735,7 @@ mark_controls(s, len)
 
 void
 free_undo(up)
-    Undo *up;
+    UndoRec *up;
 {
     free(up->seq);
     free(up->undo);
@@ -1716,7 +1748,7 @@ get_undofile()
     FILE *fp;
     char buf[1024];
     int i;
-    Undo *up, **upp;
+    UndoRec *up, **upp;
     int line;
 
     fp = fopen(undofile, "r");
@@ -1732,7 +1764,7 @@ get_undofile()
     for (; fgets(buf, sizeof(buf), fp); line++) {
 	if (buf[0] == '\n' || buf[0] == '!')
 	    continue;
-	up = (Undo *)malloc(sizeof(Undo));
+	up = (UndoRec *)malloc(sizeof(UndoRec));
 	up->seq = NULL;
 	up->undo = NULL;
 	i = 0;
