@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Label.h,v 1.17 88/09/26 18:02:34 swick Exp $
+* $XConsortium: Label.h,v 1.18 88/09/27 11:17:39 swick Exp $
 */
 
 
@@ -58,6 +58,7 @@ SOFTWARE.
  justify	     Justify		Justify		Center
  label		     Label		String		NULL
  mappedWhenManaged   MappedWhenManaged	Boolean		True
+ resize		     Resize		Boolean		True
  sensitive	     Sensitive		Boolean		True
  width		     Width		Dimension	text width
  x		     Position		Position	0
@@ -73,6 +74,8 @@ SOFTWARE.
 #define XtNfont			"font"
 #define XtNinternalWidth	"internalWidth"
 #define XtNinternalHeight	"internalHeight"
+#define XtNresize		"resize"
+#define XtCResize		"Resize"
  
 #define XtCBitmap		"Bitmap"
 

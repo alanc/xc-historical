@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.57 88/09/27 11:18:15 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.58 88/09/27 16:43:51 swick Exp $";
 #endif lint
 
 
@@ -64,6 +64,8 @@ static XtResource resources[] = {
 	offset(label.internal_height), XtRImmediate, (caddr_t)2},
     {XtNbitmap, XtCPixmap, XtRPixmap, sizeof(Pixmap),
 	offset(label.pixmap), XtRPixmap, (caddr_t)None},
+    {XtNresize, XtCResize, XtRBoolean, sizeof(Boolean),
+	offset(label.resize), XtRImmediate, (caddr_t)True},
 };
 
 static void Initialize();
@@ -347,6 +349,7 @@ static Boolean SetValues(current, request, new)
     LabelWidget reqlw = (LabelWidget) request;
     LabelWidget newlw = (LabelWidget) new;
     Boolean was_resized = False;
+    Boolean redisplay = False;
 
     if (newlw->label.label == NULL) {
 	newlw->label.label = newlw->core.name;
@@ -380,13 +383,15 @@ static Boolean SetValues(current, request, new)
 	}
 
     /* calculate the window size */
-    if (curlw->core.width == reqlw->core.width)
-	newlw->core.width =
-	    newlw->label.label_width +2*newlw->label.internal_width;
+    if (newlw->label.resize) {
+	if (curlw->core.width == reqlw->core.width)
+	    newlw->core.width =
+		newlw->label.label_width +2*newlw->label.internal_width;
 
-    if (curlw->core.height == reqlw->core.height)
-	newlw->core.height =
-	    newlw->label.label_height + 2*newlw->label.internal_height;
+	if (curlw->core.height == reqlw->core.height)
+	    newlw->core.height =
+		newlw->label.label_height + 2*newlw->label.internal_height;
+    }
 
     if (curlw->label.foreground != newlw->label.foreground
 	|| curlw->label.font->fid != newlw->label.font->fid) {
@@ -395,6 +400,7 @@ static Boolean SetValues(current, request, new)
 	XtReleaseGC(new, curlw->label.gray_GC);
 	GetnormalGC(newlw);
 	GetgrayGC(newlw);
+	redisplay = True;
     }
 
     if ((curlw->label.internal_width != newlw->label.internal_width)
@@ -405,7 +411,7 @@ static Boolean SetValues(current, request, new)
 	_Reposition(newlw, curlw->core.width, curlw->core.height, &dx, &dy);
     }
 
-    return( was_resized );
+    return was_resized || redisplay;
 }
 
 

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: LabelP.h,v 1.19 88/09/06 16:41:43 jim Exp $
+* $XConsortium: LabelP.h,v 1.20 88/09/26 18:03:10 swick Exp $
 */
 
 
@@ -67,6 +67,7 @@ typedef struct {
     Dimension	internal_width;
     Dimension	internal_height;
     Pixmap	pixmap;
+    Boolean	resize;
 
     /* private state */
     GC		normal_GC;
