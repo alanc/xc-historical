@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.16 89/10/03 15:57:44 kit Exp $
- * $Header: buttons.c,v 1.16 89/10/03 15:57:44 kit Exp $
+ * $XConsortium: buttons.c,v 1.17 89/10/10 15:11:08 kit Exp $
+ * $Header: buttons.c,v 1.17 89/10/10 15:11:08 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -397,7 +397,7 @@ Widget parent;
   man_globals->option_menu = menu;
   
   for (i = 0 ; i < NUM_OPTIONS ; i++) {
-    entry = XtCreateManagedWidget(option_names[i], bSBMenuEntryObjectClass,
+    entry = XtCreateManagedWidget(option_names[i], smeBSBObjectClass,
 				  menu, NULL, ZERO);
     XtAddCallback(entry, XtNcallback, OptionCallback, (caddr_t) man_globals);
     switch (i) {
@@ -454,7 +454,7 @@ Widget parent;
 			    NULL, (Cardinal) 0);
 
   for (i = 0 ; i < sections ; i ++) {
-    entry = XtCreateManagedWidget(manual[i].blabel, bSBMenuEntryObjectClass,
+    entry = XtCreateManagedWidget(manual[i].blabel, smeBSBObjectClass,
 				  menu, NULL, ZERO);
     menu_struct = (MenuStruct *) XtMalloc(sizeof(MenuStruct));
     menu_struct->data = (caddr_t) man_globals;

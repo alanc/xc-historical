@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.h,v 1.15 89/10/03 15:57:57 kit Exp $
+ * $XConsortium: man.h,v 1.16 89/10/04 14:55:43 kit Exp $
  * $Athena: man.h,v 4.6 89/01/06 12:17:38 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -40,7 +40,7 @@
 /* Widget header files. */
 
 #include <X11/Xaw/AsciiText.h>
-#include <X11/Xaw/BSBMenuEnt.h>
+#include <X11/Xaw/SmeBSB.h>
 #include <X11/Xaw/Box.h>
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Dialog.h>

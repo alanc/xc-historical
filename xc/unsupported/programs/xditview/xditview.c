@@ -5,7 +5,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xditview.c,v 1.13 89/10/04 13:16:42 kit Exp $";
+static char rcsid[] = "$XConsortium: xditview.c,v 1.14 89/10/08 14:03:08 rws Exp $";
 #endif /* lint */
 
 #include <X11/Xatom.h>
@@ -20,7 +20,7 @@ static char rcsid[] = "$XConsortium: xditview.c,v 1.13 89/10/04 13:16:42 kit Exp
 #include <X11/Xaw/Dialog.h>
 #include <X11/Xaw/Label.h>
 #include <X11/Xaw/SimpleMenu.h>
-#include <X11/Xaw/BSBMenuEnt.h>
+#include <X11/Xaw/SmeBSB.h>
 
 #include "libXdvi/Dvi.h"
 
@@ -144,7 +144,7 @@ void main(argc, argv)
 				    NULL, 0);
     for (i = 0; i < XtNumber (menuEntries); i++) {
 	entry = XtCreateManagedWidget(menuEntries[i].name, 
-				      bSBMenuEntryObjectClass, simpleMenu,
+				      smeBSBObjectClass, simpleMenu,
 				      NULL, (Cardinal) 0);
 	XtAddCallback(entry, XtNcallback, menuEntries[i].function, NULL);
     }
