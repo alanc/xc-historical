@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.120 91/07/20 10:27:29 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.121 91/07/23 22:27:40 keith Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -303,8 +303,22 @@ OBJS2 =\
 
 OBJS3 = \
 	CIELab.o \
+	CIELabGcC.o \
+	CIELabGcL.o \
+	CIELabGcLC.o \
+	CIELabMnL.o \
+	CIELabMxC.o \
+	CIELabMxL.o \
+	CIELabMxLC.o \
 	CIELabWpAj.o \
 	CIELuv.o \
+	CIELuvGcC.o \
+	CIELuvGcL.o \
+	CIELuvGcLC.o \
+	CIELuvMnL.o \
+	CIELuvMxC.o \
+	CIELuvMxL.o \
+	CIELuvMxLC.o \
 	CIELuvWpAj.o \
 	CIEXYZ.o \
 	CIEuvY.o \
