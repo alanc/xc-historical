@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.23 92/04/13 19:38:17 rws Exp $" */
+/* $XConsortium: XcmsLRGB.c,v 1.24 92/06/04 16:25:26 converse Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -89,8 +89,8 @@ extern void _XcmsFreeIntensityMaps();
  */
 static void LINEAR_RGB_FreeSCCData();
 static int LINEAR_RGB_InitSCCData();
-int XcmsLRGB_RGB_ParseString();
-int XcmsLRGB_RGBi_ParseString();
+static int XcmsLRGB_RGB_ParseString();
+static int XcmsLRGB_RGBi_ParseString();
 Status _XcmsGetTableType0();
 Status _XcmsGetTableType1();
 
@@ -1252,7 +1252,7 @@ void _XcmsMatVec(pMat, pIn, pOut)
  *
  *	SYNOPSIS
  */
-int
+static int
 XcmsLRGB_RGB_ParseString(spec, pColor)
     register char *spec;
     XcmsColor *pColor;
@@ -1368,7 +1368,7 @@ XcmsLRGB_RGB_ParseString(spec, pColor)
  *
  *	SYNOPSIS
  */
-int
+static int
 XcmsLRGB_RGBi_ParseString(spec, pColor)
     register char *spec;
     XcmsColor *pColor;
