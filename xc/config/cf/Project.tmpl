@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.64 90/01/11 09:55:51 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.65 90/01/11 09:56:58 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -336,7 +336,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.64 90/01/11 09:55:51 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.65 90/01/11 09:56:58 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -508,7 +508,7 @@ Berklib.c: sysV/Berklib.c					@@\
 /*
  * Individual libraries should override this
  */
-#if HasSunOSSharedLibraries
+#if HasSunOSSharedLibraries || UseInstalled
           DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
 #else
           DEPLIBS = $(LOCAL_LIBRARIES)
