@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Clock.c,v 1.29 88/03/03 14:40:15 swick Exp $";
+static char rcsid[] = "$Header: Clock.c,v 1.30 88/04/09 14:16:32 rws Exp $";
 #endif lint
 
 
@@ -49,6 +49,8 @@ static void clock_tic(), DrawHand(), DrawSecond(), SetSeg(), DrawClockFace();
 #define SECOND_WIDTH_FRACT	5
 #define SECOND_HAND_TIME	30
 
+#define ANALOG_SIZE_DEFAULT	164
+
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #define abs(a) ((a) < 0 ? -(a) : (a))
@@ -61,9 +63,9 @@ static void clock_tic(), DrawHand(), DrawSecond(), SetSeg(), DrawClockFace();
 
 static XtResource resources[] = {
     {XtNwidth, XtCWidth, XtRInt, sizeof(int),
-	goffset(width), XtRString, "164"},
+	goffset(width), XtRString, "0"},
     {XtNheight, XtCHeight, XtRInt, sizeof(int),
-	goffset(height), XtRString, "164"},
+	goffset(height), XtRString, "0"},
     {XtNupdate, XtCInterval, XtRInt, sizeof(int), 
         offset(update), XtRString, "60" },
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
@@ -141,6 +143,7 @@ static void Initialize (request, new)
     ClockWidget w = (ClockWidget)new;
     XtGCMask		valuemask;
     XGCValues	myXGCV;
+    int min_height, min_width;
 
     valuemask = GCForeground | GCBackground | GCFont | GCLineWidth;
     if (w->clock.font != NULL)
@@ -148,11 +151,11 @@ static void Initialize (request, new)
     else
         valuemask &= ~GCFont;	/* use server default font */
 
+    min_width = min_height = ANALOG_SIZE_DEFAULT;
     if(!w->clock.analog) {
        char *str;
        struct tm tm, *localtime();
        long time_value;
-       int min_height, min_width;
        (void) time(&time_value);
        tm = *localtime(&time_value);
        str = asctime(&tm);
@@ -164,9 +167,11 @@ static void Initialize (request, new)
 	  2 * w->clock.padding;
        min_height = w->clock.font->ascent +
 	  w->clock.font->descent + 2 * w->clock.padding;
-       if (w->core.width < min_width) w->core.width = min_width;
-       if (w->core.height < min_height) w->core.width = min_height;
     }
+    if (w->core.width == 0)
+	w->core.width = min_width;
+    if (w->core.height == 0)
+	w->core.height = min_height;
 
     /*
      * set the colors if reverse video; this is somewhat tricky since there
@@ -212,7 +217,11 @@ static void Initialize (request, new)
     myXGCV.foreground = w->clock.Hdpixel;
     w->clock.HandGC = XtGetGC((Widget)w, valuemask, &myXGCV);
 
+    if (w->clock.update <= 0)
+	w->clock.update = 60;	/* make invalid update's use a default */
     w->clock.show_second_hand = (w->clock.update <= SECOND_HAND_TIME);
+    w->clock.numseg = 0;
+    w->clock.interval_id = 0;
 }
 
 static void Realize (gw, valueMask, attrs)
@@ -264,8 +273,11 @@ static void Redisplay (gw, event, region)
     Region region;		/* unused */
 {
     ClockWidget w = (ClockWidget) gw;
-    if (w->clock.analog)
+    if (w->clock.analog) {
+	if (w->clock.numseg != 0)
+	    erase_hands (w, (struct tm *) 0);
         DrawClockFace(w);
+    }
     clock_tic((caddr_t)w, (XtIntervalId)NULL);
 }
 
@@ -283,8 +295,9 @@ static void clock_tic(client_data, id)
         register Display *dpy = XtDisplay(w);
         register Window win = XtWindow(w);
 
-	w->clock.interval_id =
-	    XtAddTimeOut( w->clock.update*1000, clock_tic, (caddr_t)w );
+	if (id || !w->clock.interval_id)
+	    w->clock.interval_id =
+		XtAddTimeOut( w->clock.update*1000, clock_tic, (caddr_t)w );
 	(void) time(&time_value);
 	tm = *localtime(&time_value);
 	/*
@@ -303,11 +316,21 @@ static void clock_tic(client_data, id)
 	    }
 	}
 	if( w->clock.analog == FALSE ) {
+	    int	clear_from;
+
 	    time_ptr = asctime(&tm);
 	    time_ptr[strlen(time_ptr) - 1] = 0;
 	    XDrawImageString (dpy, win, w->clock.myGC,
 			     2+w->clock.padding, 2+w->clock.font->ascent+w->clock.padding,
 			     time_ptr, strlen(time_ptr));
+	    /*
+	     * Clear any left over bits
+	     */
+	    clear_from = XTextWidth (w->clock.font, time_ptr, strlen (time_ptr))
+ 	    		+ 2 + w->clock.padding;
+	    if (clear_from < w->core.width)
+		XFillRectangle (dpy, win, w->clock.EraseGC,
+		    clear_from, 0, w->core.width - clear_from, w->core.height);
 	} else {
 			/*
 			 * The second (or minute) hand is sec (or min) 
@@ -323,54 +346,7 @@ static void clock_tic(client_data, id)
 			if(tm.tm_hour > 12)
 				tm.tm_hour -= 12;
 
-			/*
-			 * Erase old hands.
-			 */
-			if(w->clock.numseg > 0) {
-			    if (w->clock.show_second_hand == TRUE) {
-				XDrawLines(dpy, win,
-					w->clock.EraseGC,
-					w->clock.sec,
-					VERTICES_IN_HANDS-1,
-					CoordModeOrigin);
-				if(w->clock.Hdpixel != w->core.background_pixel) {
-				    XFillPolygon(dpy,
-					win, w->clock.EraseGC,
-					w->clock.sec,
-					VERTICES_IN_HANDS-2,
-					Convex, CoordModeOrigin
-				    );
-				}
-			    }
-			    if(	tm.tm_min != w->clock.otm.tm_min ||
-				tm.tm_hour != w->clock.otm.tm_hour ) {
-				XDrawLines( dpy,
-					   win,
-					   w->clock.EraseGC,
-					   w->clock.segbuff,
-					   VERTICES_IN_HANDS,
-					   CoordModeOrigin);
-				XDrawLines( dpy,
-					   win,
-					   w->clock.EraseGC,
-					   w->clock.hour,
-					   VERTICES_IN_HANDS,
-					   CoordModeOrigin);
-				if(w->clock.Hdpixel != w->core.background_pixel) {
-				    XFillPolygon( dpy,
-					win, w->clock.EraseGC,
-					w->clock.segbuff, VERTICES_IN_HANDS,
-					Convex, CoordModeOrigin
-				    );
-				    XFillPolygon(dpy,
-					win, w->clock.EraseGC,
-					w->clock.hour,
-					VERTICES_IN_HANDS,
-					Convex, CoordModeOrigin
-				    );
-				}
-			    }
-		    }
+			erase_hands (w, &tm);
 
 		    if (w->clock.numseg == 0 ||
 			tm.tm_min != w->clock.otm.tm_min ||
@@ -442,10 +418,65 @@ static void clock_tic(client_data, id)
 
 			}
 			w->clock.otm = tm;
-			
 		}
 }
 	
+static erase_hands (w, tm)
+ClockWidget	w;
+struct tm	*tm;
+{
+    /*
+     * Erase old hands.
+     */
+    if(w->clock.numseg > 0) {
+	Display	*dpy;
+	Window	win;
+
+	dpy = XtDisplay (w);
+	win = XtWindow (w);
+	if (w->clock.show_second_hand == TRUE) {
+	    XDrawLines(dpy, win,
+		w->clock.EraseGC,
+		w->clock.sec,
+		VERTICES_IN_HANDS-1,
+		CoordModeOrigin);
+	    if(w->clock.Hdpixel != w->core.background_pixel) {
+		XFillPolygon(dpy,
+			win, w->clock.EraseGC,
+			w->clock.sec,
+			VERTICES_IN_HANDS-2,
+			Convex, CoordModeOrigin
+			);
+	    }
+	}
+	if(!tm || tm->tm_min != w->clock.otm.tm_min ||
+		  tm->tm_hour != w->clock.otm.tm_hour)
+ 	{
+	    XDrawLines( dpy, win,
+			w->clock.EraseGC,
+			w->clock.segbuff,
+			VERTICES_IN_HANDS,
+			CoordModeOrigin);
+	    XDrawLines( dpy, win,
+			w->clock.EraseGC,
+			w->clock.hour,
+			VERTICES_IN_HANDS,
+			CoordModeOrigin);
+	    if(w->clock.Hdpixel != w->core.background_pixel) {
+		XFillPolygon( dpy, win,
+ 			      w->clock.EraseGC,
+			      w->clock.segbuff, VERTICES_IN_HANDS,
+			      Convex, CoordModeOrigin);
+		XFillPolygon( dpy, win,
+ 			      w->clock.EraseGC,
+			      w->clock.hour,
+			      VERTICES_IN_HANDS,
+			      Convex, CoordModeOrigin);
+	    }
+	}
+    }
+}
+
 /*
  * DrawLine - Draws a line.
  *
