@@ -1,5 +1,5 @@
-        DEPLIBS = $(DEPXLIB)
-LOCAL_LIBRARIES = $(XLIB)
+        DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
+LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
         DEFINES = -DNOINLINE
 
            SRCS = xpr.c x2pmp.c x2jet.c

@@ -45,7 +45,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.42 89/10/08 12:28:39 rws Exp $";
+static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.43 89/12/07 12:13:09 jim Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -56,6 +56,7 @@ static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.42 89/10/08 12:28:39 rws Exp
 #include "lncmd.h"
 #include "xpr.h"
 #include <X11/XWDFile.h>
+#include <X11/Xmu/SysUtil.h>
 
 #ifdef	NLS16
 #ifndef NLS
@@ -1252,7 +1253,7 @@ char *name;
     printf ("%%%%BoundingBox: 0 0 %d %d\n",
 	    (iw * scale * 72)/300, (ih * scale * 72)/300);
     pswd = getpwuid (getuid ());
-    (void) gethostname (hostname, sizeof hostname);
+    (void) XmuGetHostname (hostname, sizeof hostname);
     printf ("%%%%Creator: %s:%s (%s)\n", hostname,
 	    pswd->pw_name, pswd->pw_gecos);
     printf ("%%%%Title: %s (%s)\n", infilename,name);
