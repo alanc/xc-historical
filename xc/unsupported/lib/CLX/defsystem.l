@@ -18,6 +18,7 @@
 
 (lisp:in-package 'xlib :use '(lisp))
 
+#-lispm
 (export '(
 	  compile-clx
 	  load-clx))
