@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Convert.c,v 1.25 89/09/12 17:05:38 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Convert.c,v 1.26 89/09/14 10:12:08 swick Exp $";
 /* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -43,7 +43,7 @@ typedef struct _ConverterRec *ConverterPtr;
 typedef struct _ConverterRec {
     ConverterPtr	next;
     XrmRepresentation	from, to;
-    XtNewConverter	converter;
+    XtTypeConverter	converter;
     XtDestructor	destructor;
     XtConvertArgList    convert_args;
     Cardinal		num_args;
@@ -54,6 +54,9 @@ typedef struct _ConverterRec {
 #define CONVERTHASHSIZE	((unsigned)512)
 #define CONVERTHASHMASK	511
 #define ProcHash(from_type, to_type) (2 * (from_type) + to_type)
+
+/* used for old-style type converter cache only */
+static Heap globalHeap = {NULL, NULL, 0};
 
 void _XtSetDefaultConverterTable(table)
 	ConverterTable *table;
@@ -102,7 +105,7 @@ typedef struct _CacheRec {
     CachePtr	next;		/* must remain first */
     XtPointer	tag;
     int		hash;
-    XtNewConverter converter;
+    XtTypeConverter converter;
     XrmValue	*args;
     short	num_args;
     short	flags;
@@ -129,7 +132,7 @@ static CacheHashTable	cacheHashTable;
 void _XtTableAddConverter(table, from_type, to_type, converter, convert_args, num_args, new_style, cache_type, destructor)
     ConverterTable	table;
     XrmRepresentation   from_type, to_type;
-    XtNewConverter	converter;
+    XtTypeConverter	converter;
     XtConvertArgList    convert_args;
     Cardinal		num_args;
     Boolean		new_style;
@@ -163,9 +166,9 @@ void _XtTableAddConverter(table, from_type, to_type, converter, convert_args, nu
 	p->cache_type = XtCacheNone;
 }
 
-void XtSetConverter(from_type, to_type, converter, convert_args, num_args, cache_type, destructor)
+void XtSetTypeConverter(from_type, to_type, converter, convert_args, num_args, cache_type, destructor)
     register String	from_type, to_type;
-    XtNewConverter	converter;
+    XtTypeConverter	converter;
     XtConvertArgList    convert_args;
     Cardinal		num_args;
     XtCacheType		cache_type;
@@ -191,10 +194,10 @@ void XtSetConverter(from_type, to_type, converter, convert_args, num_args, cache
     }
 }
 
-void XtAppSetConverter(app, from_type, to_type, converter, convert_args, num_args, cache_type, destructor)
+void XtAppSetTypeConverter(app, from_type, to_type, converter, convert_args, num_args, cache_type, destructor)
     XtAppContext	app;
     register String	from_type, to_type;
-    XtNewConverter	converter;
+    XtTypeConverter	converter;
     XtConvertArgList    convert_args;
     Cardinal		num_args;
     XtCacheType		cache_type;
@@ -224,11 +227,11 @@ void XtAddConverter(from_type, to_type, converter, convert_args, num_args)
 	    XtCalloc(CONVERTHASHSIZE, (unsigned)sizeof(ConverterPtr));
     }
     _XtTableAddConverter(process->globalConverterTable, from, to,
-			 (XtNewConverter)converter, convert_args, num_args,
+			 (XtTypeConverter)converter, convert_args, num_args,
 			 False, XtCacheAll, (XtDestructor)NULL);
     while (app != (XtAppContext)NULL) {
 	_XtTableAddConverter(app->converterTable, from, to,
-			     (XtNewConverter)converter, convert_args,
+			     (XtTypeConverter)converter, convert_args,
 			     num_args, False, XtCacheAll, (XtDestructor)NULL);
 	app = app->next;
     }
@@ -245,7 +248,7 @@ void XtAppAddConverter(app, from_type, to_type, converter, convert_args, num_arg
     _XtTableAddConverter(app->converterTable,
 	XrmStringToRepresentation(from_type),
         XrmStringToRepresentation(to_type),
-	(XtNewConverter)converter, convert_args, num_args,
+	(XtTypeConverter)converter, convert_args, num_args,
 	False, XtCacheAll, (XtDestructor)NULL);
 }
 
@@ -253,7 +256,7 @@ static CachePtr
 CacheEnter(heap, converter, args, num_args, from, to, succeeded, hash,
 	   flags, destructor, closure)
     Heap*		    heap;
-    register XtNewConverter converter;
+    register XtTypeConverter converter;
     register XrmValuePtr    args;
     Cardinal		    num_args;
     XrmValuePtr		    from;
@@ -479,7 +482,7 @@ void XtDirectConvert(converter, args, num_args, from, to)
     
     for (p = cacheHashTable[hash & CACHEHASHMASK]; p != NULL; p = p->next) {
 	if ((p->hash == hash)
-	 && (p->converter == (XtNewConverter)converter)
+	 && (p->converter == (XtTypeConverter)converter)
 	 && (p->from.size == from->size)
 	 && (! XtBCmp(p->from.addr, from->addr, from->size))
          && (p->num_args == num_args)) {
@@ -505,8 +508,7 @@ void XtDirectConvert(converter, args, num_args, from, to)
     /* This memory can never be freed since we don't know the Display
      * or app context from which to compute the persistance */
     {
-	static Heap globalHeap = {NULL, NULL, 0};
-	CacheEnter( &globalHeap, (XtNewConverter)converter, args, num_args,
+	CacheEnter( &globalHeap, (XtTypeConverter)converter, args, num_args,
 		    from, to, (to->addr != NULL), hash, 0,
 		    (XtDestructor)NULL, NULL
 		   );
@@ -516,7 +518,7 @@ void XtDirectConvert(converter, args, num_args, from, to)
 
 static ConverterPtr GetConverterEntry( app, converter )
     XtAppContext app;
-    XtNewConverter converter;
+    XtTypeConverter converter;
 {
     int entry;
     register ConverterPtr cP;
@@ -530,9 +532,10 @@ static ConverterPtr GetConverterEntry( app, converter )
 }
 
 
-Boolean XtCallConverter(dpy, converter, args, num_args, from, to, cache_ref_return)
+Boolean
+XtCallConverter(dpy, converter, args, num_args, from, to, cache_ref_return)
     Display*	    dpy;
-    XtNewConverter  converter;
+    XtTypeConverter converter;
     XrmValuePtr     args;
     Cardinal	    num_args;
     register XrmValuePtr from;
@@ -550,7 +553,7 @@ Boolean XtCallConverter(dpy, converter, args, num_args, from, to, cache_ref_retu
      || ((cP->cache_type == XtCacheNone) && (cP->destructor == nullProc))) {
 	char* closure;
 	if (cache_ref_return != NULL) *cache_ref_return = NULL;
-	return (*(XtNewConverter)converter)
+	return (*(XtTypeConverter)converter)
 	    (dpy, args, &num_args, from, to, &closure);
     }
 
@@ -602,7 +605,7 @@ Boolean XtCallConverter(dpy, converter, args, num_args, from, to, cache_ref_retu
 	    ((cP->cache_type & XtCacheRefCount) && (cache_ref_return != NULL))
 		? IS_REFCOUNTED : 0;
 	Boolean retval =
-	    (*(XtNewConverter)converter)(dpy, args, &num_args, from, to, &closure);
+	    (*(XtTypeConverter)converter)(dpy, args, &num_args, from, to, &closure);
 	if ((cache_type == XtCacheNone) || (ref_flags & IS_REFCOUNTED)) {
 	    heap = NULL;
 	    ref_flags |= MUST_BE_FREED;
@@ -699,17 +702,74 @@ void XtConvert(widget, from_type_str, from, to_type_str, to)
     from_type = XrmStringToRepresentation(from_type_str);
     to_type = XrmStringToRepresentation(to_type_str);
     if (from_type != to_type) {
+	/*  It's not safe to ref count these resources, 'cause we
+	    don't know what older clients may have assumed about
+	    the resource lifetimes.
 	XtCacheRef ref;
+	*/
 	to->addr = NULL;
 	to->size = 0;
-	_XtConvert(widget, from_type, from, to_type, to, &ref);
+	_XtConvert(widget, from_type, from, to_type, to, /*&ref*/ NULL);
+	/*
 	if (ref != NULL) {
 	    XtAddCallback( widget, XtNdestroyCallback,
 			   XtCallbackReleaseCacheRef, (XtPointer)ref );
 	}
+	*/
     }
     else
 	(*to) = *from;
+}
+
+Boolean XtConvertAndStore(object, from_type_str, from, to_type_str, to)
+    Widget	object;
+    String	from_type_str;
+    XrmValuePtr	from;
+    String	to_type_str;
+    XrmValuePtr	to;
+{
+    XrmQuark    from_type, to_type;
+
+    from_type = XrmStringToRepresentation(from_type_str);
+    to_type = XrmStringToRepresentation(to_type_str);
+    if (from_type != to_type) {
+	static XtPointer local_valueP = NULL;
+	static Cardinal local_valueS = 128;
+	XtCacheRef ref;
+	do {
+	    Boolean local = False;
+	    if (to->addr == NULL) {
+		if (local_valueP == NULL)
+		    local_valueP = _XtHeapAlloc(&globalHeap, local_valueS);
+		to->addr = local_valueP;
+		to->size = local_valueS;
+		local = True;
+	    }
+	    if (!_XtConvert(object, from_type, from, to_type, to, &ref)) {
+		if (local && (to->size > local_valueS)) {
+		    local_valueP = _XtHeapAlloc(&globalHeap, to->size);
+		    local_valueS = to->size;
+		    continue;
+		} else
+		    return False;
+	    }
+	    if (ref != NULL) {
+		XtAddCallback( object, XtNdestroyCallback,
+			       XtCallbackReleaseCacheRef, (XtPointer)ref );
+	    }
+	    return True;
+	} while ( /*local && local_valueS < to->size*/ True);
+    }
+    if (to->addr != NULL) {
+	if (to->size < from->size) {
+	    to->size = from->size;
+	    return False;
+	}
+	bcopy( from->addr, to->addr, from->size );
+    } else
+	to = from;
+
+    return True;
 }
 
 void _XtFreeCacheRec(app, p)
@@ -756,7 +816,7 @@ void XtAppReleaseCacheRefs(app, refs)
 void XtCallbackReleaseCacheRefList(widget, closure, call_data)
     Widget widget;		/* unused */
     XtPointer closure;
-    XtPointer call_data;		/* unused */
+    XtPointer call_data;	/* unused */
 {
     XtAppReleaseCacheRefs( XtWidgetToApplicationContext(widget),
 			   (XtCacheRef*)closure );
@@ -768,7 +828,7 @@ void XtCallbackReleaseCacheRefList(widget, closure, call_data)
 void XtCallbackReleaseCacheRef(widget, closure, call_data)
     Widget widget;		/* unused */
     XtPointer closure;
-    XtPointer call_data;		/* unused */
+    XtPointer call_data;	/* unused */
 {
     XtCacheRef cache_refs[2];
     cache_refs[0] = (XtCacheRef)closure;
