@@ -1,5 +1,5 @@
 #!/bin/sh 
-# $XConsortium: inspex.sh,v 5.3 91/02/18 20:54:20 hersh Exp $
+# $XConsortium: inspex.sh,v 5.4 91/02/19 20:41:31 hersh Exp $
 ###################################################################
 # Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 # 
@@ -500,13 +500,13 @@ i_exec()
 	fi
 
 	# Execute the interpreter on the supplied script
+	#echo "$INSPEXDEST/bin/pexint $1 2>&1 | tee -a $INSPEXLOG"
 	$INSPEXDEST/bin/pexint $1 2>&1 | tee -a $INSPEXLOG
 
 	# test for existence of core file
 	if [ -f core ]
 	then
 	    echolog $1 FAILED: core dumped
-	    rm core
 	fi
 
 	# test that server is still alive
@@ -947,7 +947,7 @@ done
 #
 if [ ! "$PEXINCDIR" ]
 then
-	default=../../lib/PEX/include
+	default=../../../X11
 	if [ -d $default ]
 	then
 		if [ -d $default/phigs ]
