@@ -65,6 +65,7 @@
       (when (<= first keysym last)
 	(return (first set))))))
 
+(eval-when (compile eval load) ;; Required for Vaxlisp ...
 (defmacro keysym (keysym &rest bytes)
   ;; Build a keysym.
   ;; If KEYSYM is an integer, it is used as the most significant bits of
@@ -83,6 +84,7 @@
     (otherwise
      (or (car (character->keysyms keysym))
 	 (error "~s Isn't the name of a keysym" keysym)))))
+)
 
 (defvar *keysym->character-map* (make-hash-table :test #'eq :size 400))
 
@@ -215,7 +217,7 @@
 		 (modifiers (cdr key)))
 	     (or (eql object (keysym-mapping-object entry))
 		 (equal modifiers (keysym-mapping-modifiers entry))))))
-    (let* ((entry)
+    (let* (entry
 	   (previous (if display
 			 (cdr (setq entry (assoc keysym (display-keysym-translation display))))
 		       (gethash keysym *keysym->character-map*)))
