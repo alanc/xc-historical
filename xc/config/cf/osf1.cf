@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.28 94/03/27 15:55:24 rws Exp $
-/* only tested with Digital OSF/1 V1.0 */
+XCOMM platform:  $XConsortium: osf1.cf,v 1.29 94/03/27 16:23:57 rws Exp $
+/* only tested with Digital OSF/1 */
 
 #ifdef AlphaArchitecture
 #define OSName			OSF/1 1.3
