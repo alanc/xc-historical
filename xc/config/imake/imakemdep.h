@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.39 91/10/28 19:00:57 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.40 91/10/30 15:57:25 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.
  * When porting imake, read each of the steps below and add in any necessary
@@ -245,10 +245,16 @@ char *cpp_argv[ARGUMENTS] = {
 	"-DDELL",
 #endif
 #endif
-#ifdef __osf__
+#if defined(__OSF1__) || defined(__osf__)
 	"-D__OSF1__",
 # ifdef __mips__
 	"-D__mips__",
+# endif
+# ifdef __i386__
+	"-D__i386__",
+# endif
+# ifdef __GNUC__
+	"-traditional"
 # endif
 #endif
 };
