@@ -1,4 +1,4 @@
-.\" $XConsortium: X.man,v 1.62 94/04/07 20:33:51 dpw Exp $
+.\" $XConsortium: X.man,v 1.63 94/04/11 16:02:47 matt Exp $
 .TH X 1 "Release 6" "X Version 11"
 .SH NAME
 X \- a portable, network-transparent window system
@@ -1007,7 +1007,7 @@ XStandards(1),
 Xsecurity(1),
 .\" clients, utilities, and demos
 appres(1), auto_box(1), bdftopcf(1), beach_ball(1), bitmap(1), editres(1),
-fs(1), fsinfo(1), fslsfonts(1), fstobdf(1),
+xfs(1), fsinfo(1), fslsfonts(1), fstobdf(1),
 ico(1), imake(1), listres(1), lndir(1), makedepend(1), maze(1),
 mkdirhier(1), mkfontdir(1), oclock(1), plbpex(1), puzzle(1), resize(1),
 showfont(1), showrgb(1), twm(1), viewres(1), x11perf(1), x11perfcomp(1),
@@ -1016,7 +1016,7 @@ xcmsdb(1), xcmstest(1), xconsole(1), xcutsel(1),
 xditview(1), xdm(1), xdpr(1), xdpyinfo(1), xedit(1), xev(1), xeyes(1), xfd(1),
 xfontsel(1), xgas(1), xgc(1), xhost(1), xinit(1), xkill(1), xload(1),
 xlogo(1), xlsatoms(1), xlsclients(1), xlsfonts(1), xmag(1),
-xman(1), xmh(1), xmkmf(1), xmodmap(1), xon(1),
+xman(1), xmessage(1), xmh(1), xmkmf(1), xmodmap(1), xon(1),
 xpr(1), xprop(1), xrdb(1), xrefresh(1),
 xset(1), xsetroot(1), xstdcmap(1), xterm(1), xwd(1), xwininfo(1), xwud(1),
 .\" servers
