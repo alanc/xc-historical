@@ -1,3 +1,4 @@
+.\" Use tbl, -ms, and macros.t
 .EH ''''
 .OH ''''
 .EF ''''
@@ -35,9 +36,7 @@ provided that the above copyright notice and this permission
 notice appear in all copies.  Network Computing Devices, Inc.
 makes no representations about the suitability for any purpose
 of the information in this document.  This documentation is
-provided ``as is'' without express or implied warranty.  This
-document is only a draft standard of the MIT X Consortium
-and is therefore subject to change.
+provided ``as is'' without express or implied warranty.
 .ps 11
 .nr PS 11
 .bp 1
@@ -85,7 +84,7 @@ required by the display.  Since the font server, rather than the display, is
 responsible for parsing the raw font data, new formats can be used by all
 displays by modifying a single font server.
 .LP
->From the user's point of view, font servers are simply a new type of name in
+From the user's point of view, font servers are simply a new type of name in
 the X font path.  Network name services allow descriptive names (such as
 DEPARTMENT-FONTS or APPLICATION-FONTS) to be translated into proper network
 addresses.  X displays send requests to and read replies from the font server
@@ -106,7 +105,7 @@ servers, as shown in Figure 2.1.  Although the font protocol is geared towards
 the X Window System, it may be also used by other consumers of font data (such
 as printer drivers).
 .DS
-.ft C
+.ft CW
  +--------+              +---------------+
  |   X1   |--------------|               |
  | Server |              |  Font Server  |
@@ -207,10 +206,10 @@ The following syntax should be used for TCP/IP names:
 where <hostname> is either symbolic (such as expo.lcs.mit.edu) or numeric
 decimal (such as 18.30.0.212).  The <ipportnumber> is the port on which the
 font server is listening for connections.  The <cataloguelist> string at
-the end is optional and specifies a comma-separated list of catalogues
+the end is optional and specifies a plus-separated list of catalogues
 that may be requested.  For example:
 .DS
-	tcp/expo.lcs.mit.edu:8012/available,special
+	tcp/expo.lcs.mit.edu:8012/available+special
 	tcp/18.30.0.212:7890
 .DE
 .NH 2
@@ -224,7 +223,7 @@ The following syntax should be used for DECnet names:
 where <nodename> is either symbolic (such as SRVNOD) or the numeric decimal
 form of the DECnet address (such as 44.70).  The <objname> is normal,
 case-insensitive DECnet object name.  The <cataloguelist> string at the end is
-optional and specifies a comma-separated list of catalogues that may be
+optional and specifies a plus-separated list of catalogues that may be
 requested.  For example:
 .DS
 	DECNET/SRVNOD::FONT$DEFAULT/AVAILABLE
@@ -277,6 +276,20 @@ within the server.  These resources are used by the server to
 store client-specified authorization information.  This
 information may be used by the server to determine whether or not
 the client should be granted access to particular font data.
+.sp
+In order to preserve the integrity of font licensing being performed by
+the font server, care must be taken by a client to properly represent the
+identity of the true user of the font.  Some font clients will in fact
+be servers (for example, X servers) requesting fonts for their own clients.
+Other font clients may be doing work on behalf of a number of different
+users over time (for example, print spoolers).
+.sp
+.PN AccessContexts 
+must be created (with 
+.PN CreateAC ) 
+and switched among (with
+.PN SetAuthorization )
+to represent all of these "font users" properly.
 .LP
 ALTERNATESERVER:  [ name:  STRING8, 
 .br
@@ -308,7 +321,7 @@ sets of values given further below
 .RS
 .DS
 .TA .75i .75i .75i .75i
-								[
+[
  	byte-order-msb:		1 bit, 
 	bit-order-msb:		1 bit,
 	image-rect:			2 bits { Min,
@@ -1135,18 +1148,48 @@ error is returned.
 .LP
 .IN "ListCatalogues" "" "@DEF@"
 .PN ListCatalogues
-.LP
-  =>
 .IP
+\fIpattern\fP\^:  STRING8
+\fImax-names\fP\^:  CARD32
+.LP
+  =>+
+.IP
+\fIreplies-following-hint\fP\^:  CARD32
+.br
 \fInames\fP\^: 	LISTofSTRING8
 .IP
 Errors:  
 .PN Alloc
 .IP
-This request returns the names of the collections (called
-catalogues) of fonts that are provided by the server.
-Catalogue names are encoded in ISO 8859-1 and are not case
-sensitive.  Names may be returned in mixed case.
+This request returns a list of at most MAX-NAMES names
+of collections (called catalogues) of fonts that match
+the specified PATTERN.  In the pattern (which is encoded
+in ISO 8859-1), the `?' character (octal 77) matches any
+single character; the `*' character (octal 52) matches
+any series of zero or more characters; and alphabetic
+characters match either upper- or lowercase.  The
+returned NAMES are encoded in ISO 8859-1 and may contain
+mixed character cases.
+.sp
+If PATTERN is of zero length or MAX-NAMES is equal to zero,
+one reply containing a zero-length list of names is returned.
+This may be used to synchronize the client with the server.
+.sp
+Servers are free to add or remove catalogues to the set returned by
+.PN ListCatalogues
+between any two requests.  This request is not
+cumulative; repeated uses are processed in isolation and do
+result in an iteration through the list.
+.sp
+To reduce the amount of buffering needed by the server, the
+list of names may be split across several reply packets, so
+long as the names arrive in the same order that they would
+have appeared had they been in a single packet.  The
+REPLIES-FOLLOWING-HINT field in all but the last reply
+contains a positive value that specifies the number of
+replies that are likely, but not required, to follow.  In the
+last reply, which may contain zero or more names, this field
+is set to zero.
 .LP
 .IN "SetCatlogues" "" "@DEF@"
 .PN SetCatalogues
@@ -1521,6 +1564,8 @@ client with the server.
 \fIotherid\fP\^:  FONTID or None
 .br
 \fIotherid-valid\fP\^:  BOOL
+.br
+\fIcachable\fP\^:  BOOL
 .IP
 Errors:  
 .PN IDChoice , 
@@ -1604,6 +1649,17 @@ and
 .PN GetXBitmaps16 
 requests.  Servers may wish to use
 this information to precompute certain values.
+.sp
+If CACHABLE is set to True, the client may cache the font
+(so that redundant opens of the same font may be avoided)
+and use it with all 
+.PN AccessContexts 
+during the life of the
+client without violating the font's licensing policy.  This
+flag is typically set whenever a font is unlicensed or is
+licensed on a per-display basis.  If CACHABLE is False, the
+client should reopen the font for each 
+.PN AccessContext .
 .sp
 The server is permitted to add to or remove from the set of
 fonts returned by 
@@ -2239,7 +2295,7 @@ Data Types
 .ft P
 .sp 6p
 .TS
-tab(@);
+tab (@) ;
 l s s
 l l l.
 ALTERNATESERVER
@@ -2251,7 +2307,7 @@ p@@unused, p=pad(n+2)
 .TE
 .sp 6p
 .TS
-tab(@);
+tab (@) ;
 l s s
 l l l.
 AUTH
@@ -2270,7 +2326,7 @@ BITMAPFORMAT
 .sp 6p
 4	CARD32	value, union of the following bits:
 .TS
-tab(@);
+tab (@) ;
 n l.
 #x00000001@ByteOrderMSB
 #x00000002@BitOrderMSB
@@ -2307,7 +2363,7 @@ BITMAPFORMATMASK
 .TA .75i .75i .75i .75i
 4	CARD32	value, mask of the following bits:
 .TS
-tab(@);
+tab (@) ;
 n l.
 #x00000001@ByteOrderMask
 #x00000002@BitOrderMask
@@ -2375,7 +2431,7 @@ EVENTMASK
 4		CARD32		event mask
 .br
 .TS
-tab(@);
+tab (@) ;
 l s
 n l.
 for core events, this is union of the following bits:
@@ -2400,7 +2456,7 @@ FONTID
 .br
 					the following bits set:
 .TS
-tab(@);
+tab (@) ;
 n l.
 #x1fffffff
 .sp 6p
@@ -2567,7 +2623,7 @@ n		PROPINFO	property data
 Requests
 .ft P
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 open connection
@@ -2606,7 +2662,7 @@ set to Success, or until the server sets STATUS to Busy
 or Denied and closes the connection:
 .LP
 .TS
-tab(@);
+tab (@) ;
 lw(.25i) lw(2i) l.
 ->
 4@1+(d+q)/4@length
@@ -2628,7 +2684,7 @@ When STATUS is Success, the protocol resumes with the
 following sent by the server:
 .LP
 .TS
-tab(@);
+tab (@) ;
 lw(.25i) lw(2i) l.
 4@3+(v+w)/4@length of rest of data
 2@CARD16@maximum-request-length
@@ -2641,7 +2697,7 @@ w@@unused, w=pad(v)
 Once the connection has been established, the client may send the
 following requests:
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 NoOp
@@ -2652,7 +2708,7 @@ NoOp
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 ListExtensions
@@ -2669,7 +2725,7 @@ p@@unused, p=pad(n)
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 QueryExtension
@@ -2695,36 +2751,43 @@ p@@unused, p=pad(n)
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 ListCatalogues
 1@3@major-opcode
 1@@unused
-2@1@length
-=>
+2@3+(n+p)/4@length
+4@CARD32@max-names
+2@n@length of pattern
+2@@unused
+n@STRING8@pattern
+p@@unused, p=pad(n)
+=>+
 1@0@type reply
-1@CARD8@number of catalogue-names
+1@@unused
 2@CARD16@sequence-number
-4@2+(n+p)/4@length
+4@4+(n+p)/4@length
+4@CARD32@replies-following-hint
+4@CARD32@number of catalogue-names
 n@LISTofSTRNAME@catalogue-names
 p@@unused, p=pad(n)
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 SetCatalogues
 1@4@major-opcode
-1@1@number of catalogue-names
+1@CARD8@number of catalogue-names
 2@1+(n+p)/4@length
 n@LISTofSTRNAME@catalogue-names
 p@@unused, p=pad(n)
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 GetCatalogues
@@ -2742,7 +2805,7 @@ p@@unused, p=pad(n)
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 SetEventMask
@@ -2754,7 +2817,7 @@ SetEventMask
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 GetEventMask
@@ -2771,7 +2834,7 @@ GetEventMask
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 CreateAC
@@ -2803,7 +2866,7 @@ until the status is set to Success, Busy, or Denied at
 which point the request is finished.
 .LP
 .TS
-tab(@);
+tab (@) ;
 lw(.25i) lw(2i) l.
 ->
 4@1+(d+q)/4@length
@@ -2823,7 +2886,7 @@ q@@unused, q=pad(d)
 .sp 12p
 .ne 3
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 FreeAC
@@ -2835,7 +2898,7 @@ FreeAC
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 SetAuthorization
@@ -2847,7 +2910,7 @@ SetAuthorization
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 SetResolution
@@ -2860,7 +2923,7 @@ p@p=pad(6*n)
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 GetResolution
@@ -2878,7 +2941,7 @@ p@@p=pad(6*n)
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 ListFonts
@@ -2897,13 +2960,13 @@ p@@unused, p=pad(n)
 2@CARD16@sequence-number
 4@4+(n+p)/4@length
 4@CARD32@replies-following-hint
-4@CARD32@number of names
-n@LISTofSTRNAME@names
+4@CARD32@number of font-names
+n@LISTofSTRNAME@font-names
 p@@unused, p=pad(n)
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 ListFontsWithXInfo
@@ -2940,7 +3003,7 @@ lw(.25i) lw(2i) l.
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 OpenBitmapFont
@@ -2962,7 +3025,7 @@ p@@unused, p=pad(n)
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 QueryXInfo
@@ -2980,7 +3043,7 @@ f@XFONTINFO@font info
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 QueryXExtents8
@@ -3002,7 +3065,7 @@ p@@unused, p=pad(n)
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 QueryXExtents16
@@ -3024,7 +3087,7 @@ p@@unused, p=pad(2*n)
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 QueryXBitmaps8
@@ -3051,7 +3114,7 @@ p@@unused, p=pad(m)
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 QueryXBitmaps16
@@ -3078,7 +3141,7 @@ p@@unused, p=pad(m)
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 lw(.25i) lw(2i) l.
 CloseFont
@@ -3092,7 +3155,7 @@ CloseFont
 Errors
 .ft P
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 n lw(2i) l.
 Request
@@ -3108,7 +3171,7 @@ Request
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 n lw(2i) l.
 Format
@@ -3125,7 +3188,7 @@ Format
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 n lw(2i) l.
 Font
@@ -3142,7 +3205,7 @@ Font
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 n lw(2i) l.
 Range
@@ -3159,7 +3222,7 @@ Range
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 n lw(2i) l.
 EventMask
@@ -3176,7 +3239,7 @@ EventMask
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 n lw(2i) l.
 AccessContext
@@ -3193,7 +3256,7 @@ AccessContext
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 n lw(2i) l.
 IDChoice
@@ -3210,7 +3273,7 @@ IDChoice
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 n lw(2i) l.
 Name
@@ -3226,7 +3289,7 @@ Name
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 n lw(2i) l.
 Resolution
@@ -3242,7 +3305,7 @@ Resolution
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 n lw(2i) l.
 Alloc
@@ -3258,7 +3321,7 @@ Alloc
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 n lw(2i) l.
 Length
@@ -3275,7 +3338,7 @@ Length
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 n lw(2i) l.
 Implementation
@@ -3293,7 +3356,7 @@ Implementation
 Events
 .ft P
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 n lw(2i) l.
 KeepAlive
@@ -3306,7 +3369,7 @@ KeepAlive
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 n lw(2i) l.
 CatalogueListNotify
@@ -3322,7 +3385,7 @@ CatalogueListNotify
 .TE
 .sp 12p
 .TS
-tab(@);
+tab (@) ;
 lfB s s
 n lw(2i) l.
 FontListNotify
@@ -3345,13 +3408,12 @@ Although this was a group effort, the author remains responsible for any errors
 or omissions.  The protocol presented here was primarily designed by Jim
 Fulton, Keith Packard, and Bob Scheifler.  Special thanks goes to Ned
 Batchelder, Jim Flowers, and Axel Deininger for their invigorating comments
-which never failed to make this a better document.  Finally, David Lemke
-deserves great credit for doing the lion's share of the design and coding of
-the sample implementation.
+which never failed to make this a better document.  Finally, David Lemke 
+deserves great credit for designing and coding the sample implementation.
 .NH 1
 References
 .LP
-All of the following references are X Consortium standards available from MIT:
+All of the following documents are X Consortium standards available from MIT:
 .LP
 [1]  Scheifler, Robert W.  ``X Window System Protocol Version 11''
 .LP
@@ -3436,5 +3498,5 @@ and spread them among several processes as the load increases.
 .IP "d."
 If a font client is unable to connect to a server (as opposed
 to having the connection terminated), it should retry for an
-implementation-dependent length of time [see Xlib's 
-handling of ECONNREFUSED in XConnDis.c].
+implementation-dependent length of time (see Xlib's 
+handling of ECONNREFUSED in XConnDis.c).
