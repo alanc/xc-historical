@@ -17,7 +17,7 @@
  * appropriate .macros in the directory $(TOP)/util/imake.includes/.
  */
 
-#if defined(sun) && SunOSMajorVersion >= 4
+#if defined(SunArchitecture) && SunOSPlatform && OSMajorVersion >= 4
 #define GettyProgram '-DGETTY_EXE="/usr/etc/getty"'
 #else
 #define GettyProgram /* as nothing */
