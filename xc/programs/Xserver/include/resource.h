@@ -1,4 +1,4 @@
-/* $XConsortium: resource.h,v 1.15 93/09/20 17:38:03 dpw Exp $ */
+/* $XConsortium: resource.h,v 1.16 93/11/16 10:56:38 rob Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -25,6 +25,11 @@ SOFTWARE.
 #ifndef RESOURCE_H
 #define RESOURCE_H 1
 #include "misc.h"
+#ifdef XTHREADS
+#include "pixmap.h"     /* DrawablePtr */
+#include "window.h"     /* WindowPtr */
+#include "gcstruct.h"   /* GCPtr */
+#endif /* XTHREADS */
 
 /*****************************************************************
  * STUFF FOR RESOURCES 
@@ -76,6 +81,21 @@ typedef unsigned long RESTYPE;
 
 #define BAD_RESOURCE 0xe0000000
 
+/*
+ * XXX:SM Moved from resource.c, this needs to be here.  Function prototyping.
+ */
+#ifdef XTHREADS
+typedef enum
+{
+    reader_writer_lock,
+    exclusive_lock,
+    no_lock,
+    read_lock,
+    write_lock
+} ResourceLockType;
+#endif
+
+
 typedef int (*DeleteType)(
 #if NeedNestedPrototypes
     pointer /*value*/,
@@ -83,11 +103,22 @@ typedef int (*DeleteType)(
 #endif
 );
 
+#ifdef XTHREADS
+extern RESTYPE CreateNewResourceType(
+#if NeedFunctionPrototypes
+    DeleteType /*deleteFunc*/,
+    ResourceLockType /*lockType*/,
+    int /*lockOffset*/,
+    Bool /*shared*/
+#endif
+);
+#else /*XTHREADS*/
 extern RESTYPE CreateNewResourceType(
 #if NeedFunctionPrototypes
     DeleteType /*deleteFunc*/
 #endif
 );
+#endif /*XTHREADS*/
 
 extern RESTYPE CreateNewResourceClass(
 #if NeedFunctionPrototypes
@@ -177,46 +208,45 @@ extern pointer LookupIDByClass(
 #endif
 );
 
-/* XXX:SM new for MTX */
-#ifdef NOTYET
+#ifdef XTHREADS
 extern void UnlockDrawableAndGC(
 #if NeedFunctionPrototypes
     DrawablePtr /*pDraw*/,
-    GC /**pGC*/,
+    GCPtr /**pGC*/,
     XID /*drawID*/,
     XID /*gcID*/ 
 #endif
-)
+);
 extern void UnlockTwoDrawablesAndGC(
 #if NeedFunctionPrototypes
     DrawablePtr /*pSrc*/,
     DrawablePtr /*pDst*/,
-    GC /**pGC*/,
+    GCPtr /**pGC*/,
     XID /*srcID*/,
     XID /*dstID*/,
     XID /*gcID*/ 
 #endif
-)
+);
 extern void UnlockDrawable(
 #if NeedFunctionPrototypes
     DrawablePtr /*pDraw*/,
     XID /*drawID*/ 
 #endif
-)
+);
 extern void UnlockGC(
 #if NeedFunctionPrototypes
-    GC /**pGC*/,
+    GCPtr /**pGC*/,
     XID /*gcID*/ 
 #endif
-)
+);
 extern void UnlockWindow(
 #if NeedFunctionPrototypes
     WindowPtr /*pWin*/,
     XID /*winID*/ 
 #endif
-)
+);
+#endif /* XTHREADS */
 
-#endif
 
 #endif /* RESOURCE_H */
 
