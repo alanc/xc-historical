@@ -18,11 +18,11 @@ sessreg \- manage utmp/wtmp entries for non-init clients
 \fISessreg\fP is a simple program for managing utmp/wtmp
 entries for xdm sessions.
 .PP
-System V has a better interface to /etc/utmp than Berkeley Unix; it
+System V has a better interface to /etc/utmp than BSD; it
 dynamically allocates entries in the file, instead of writing them at fixed
 positions indexed by position in /etc/ttys.
 .PP
-To manage Berkeley style utmp files, \fIsessreg\fP has two strategies.  In
+To manage BSD-style utmp files, \fIsessreg\fP has two strategies.  In
 conjunction with xdm, the -x option counts the number of lines in /etc/ttys
 and then adds to that the number of the line in the Xservers file which
 specifies the display.  The display name must be specified as the
@@ -35,7 +35,7 @@ can direct
 .PP
 Conversely, System V managers will not ever need to use these options (-x,
 -s and -t).  To make the program easier to document and explain,
-\fIsessreg\fP accepts the Berkeley-specific flags in the System V
+\fIsessreg\fP accepts the BSD-specific flags in the System V
 environment and ignores them.
 .PP
 BSD also has a host-name field in the utmp file which doesn't exist in

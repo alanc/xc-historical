@@ -894,7 +894,7 @@ static int charClass[128] = {
 For example, the string ``33:48,37:48,45-47:48,64:48'' indicates that the
 exclamation mark, percent sign, dash, period, slash, and ampersand characters
 should be treated the same way as characters and numbers.  This is very useful 
-for cutting and pasting electronic mailing addresses and Unix filenames.
+for cutting and pasting electronic mailing addresses and filenames.
 .SH "KEY TRANSLATIONS"
 .PP
 It is possible to rebind keys (or sequences of keys) to arbitrary strings

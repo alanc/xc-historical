@@ -267,7 +267,7 @@ to the list of dependencies for
 .SH "SEE ALSO"
 cc(1), make(1)
 .SH BUGS
-If you do not have the source for cpp, the Berkeley Unix C preprocessor,
+If you do not have the source for cpp, the Berkeley C preprocessor,
 then
 .B makedepend
 will be compiled in such a way that all

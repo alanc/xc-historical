@@ -88,7 +88,7 @@ would look like this.
 .fi
 This will add a menu item to the \fISections\fP menu that would
 bring up a listing of all manual pages in sections two and three of
-Unix Programmers Manual.  Since the label names are \fIexactly\fP the
+the Programmers Manual.  Since the label names are \fIexactly\fP the
 same they will be added to the same section. Note, however, that the
 original sections still exist.
 .PP

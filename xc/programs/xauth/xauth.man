@@ -115,9 +115,9 @@ Display names for the \fIadd\fP, \fI[n]extract\fP, \fI[n]list\fP,
 DISPLAY environment variable and the common \fI-display\fP command line
 argument.  Display-specific information (such as the screen number)
 is unnecessary and will be ignored.
-Same-machine connections (such as UNIX-domain sockets,
-shared memory,  and the Internet Protocol hostname \fIlocalhost\fP) are 
-refered to as \fIhostname\fP/unix:\fIdisplaynumber\fP so that
+Same-machine connections (such as local-host sockets,
+shared memory, and the Internet Protocol hostname \fIlocalhost\fP) are 
+referred to as \fIhostname\fP/unix:\fIdisplaynumber\fP so that
 local entries for different machines may be stored in one authority file.
 .SH EXAMPLE
 .PP
