@@ -22,6 +22,8 @@
              MI = ddx/mi/libmi.a
             DIX = dix/libdix.a
             SNF = ddx/snf/libsnf.a
+         APOLLO = ddx/apollo/libapollo.a
+            APC = ddx/apollo/apc/libapc.a
             SUN = ddx/sun/libsun.a
              HP = ddx/hp/hp/libhp.a
         SYSLIBS = -lm -ldbm
@@ -148,10 +150,8 @@ ServerTarget(Xibm,$(EXTDIR) $(IBMDIRS),$(IBMOBJS),$(IBMLIBS),$(IBMSYSLIBS))
 # apollo server
 #
 APOLLODIRS = dix ddx/snf ddx/mi ddx/mfb ddx/apollo os/4.2bsd
-APOLLOOBJS = ddx/apollo/init.o ddx/apollo/apollo_io.o \
-	        ddx/apollo/gpr_tmgr.o ddx/apollo/apolloGC.o \
-		/sys/traits/io_traits
-APOLLOLIBS = $(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
+APOLLOOBJS = ddx/apollo/ap_init.o /sys/traits/io_traits
+APOLLOLIBS = $(APOLLO) $(APC) $(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 XapolloDIRS = $(APOLLODIRS)
 
 ServerTarget(Xapollo,$(EXTDIR) $(APOLLODIRS),$(APOLLOOBJS),$(APOLLOLIBS),$(SYSLIBS))
