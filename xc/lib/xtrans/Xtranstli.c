@@ -31,19 +31,23 @@ static TLItrans2dev TLItrans2devtab[] = {
  * local transports such as UNIX domain sockets, pts, and named.
  */
 
-#if defined(X11)
+#if defined(X11_t)
 #define TLINODENAME	"TLI:xserver"
 #endif
 
-#if defined(FS) || defined(FONT)
+#if defined(XIM_t)
+#define TLINODENAME	"TLI:xim"
+#endif
+
+#if defined(FS_t) || defined(FONT_t)
 #define TLINODENAME	"TLI:fontserver"
 #endif
 
-#if defined(ICE)
+#if defined(ICE_t)
 #define TLINODENAME	"TLI:ICE"
 #endif
 
-#if defined(TEST)
+#if defined(TEST_t)
 #define TLINODENAME	"TLI:test"
 #endif
 
@@ -559,7 +563,7 @@ struct t_bind	*req;
 
 PRMSG(2,"TRANS(TLICreateListener)(%x->%d,%s)\n", ciptr, ciptr->fd, port );
 
-#ifdef X11
+#ifdef X11_t
 /*
  * X has a well known port, that is transport dependent. It is easier
  * to handle it here, than try and come up with a transport independent
@@ -567,24 +571,13 @@ PRMSG(2,"TRANS(TLICreateListener)(%x->%d,%s)\n", ciptr, ciptr->fd, port );
  *
  * The port that is passed here is really a string containing the idisplay
  * from ConnectDisplay().
- *
- * Xlib may be calling this for either X11 or IM. Assume that
- * if port < IP_RESERVE, then is is a display number. Otherwise, it is a
- * regular port number for IM.
  */
 
 if (is_numeric (port))
 {
     short tmpport = (short) atoi (port);
 
-#if 0
-    if( tmpport < 1024 ) /* IP_RESERVED */
-#endif
-	sprintf(portbuf,"%d", X_TCP_PORT+tmpport );
-#if 0
-    else
-	strncpy(portbuf,port,PORTBUFSIZE);
-#endif
+    sprintf(portbuf,"%d", X_TCP_PORT+tmpport );
 }
 else
     strncpy(portbuf,port,PORTBUFSIZE);
@@ -846,7 +839,7 @@ struct	t_call	*sndcall;
 
 PRMSG(2, "TRANS(TLIINETConnect)(%s,%s)\n", host, port, 0);
 
-#ifdef X11
+#ifdef X11_t
 /*
  * X has a well known port, that is transport dependant. It is easier
  * to handle it here, than try and come up with a transport independent
@@ -854,23 +847,13 @@ PRMSG(2, "TRANS(TLIINETConnect)(%s,%s)\n", host, port, 0);
  *
  * The port that is passed here is really a string containing the idisplay
  * from ConnectDisplay().
- *
- * Xlib may be calling this for either X11 or IM. Assume that
- * if port < IP_RESERVE, then is is a display number. Otherwise, it is a
- * regular port number for IM.
  */
+
 if (is_numeric (port))
 {
     short tmpport = (short) atoi (port);
 
-#if 0
-    if( tmpport < 1024 ) /* IP_RESERVED */
-#endif
-	sprintf(portbuf,"%d", X_TCP_PORT+tmpport );
-#if 0
-    else
-	strncpy(portbuf,port,PORTBUFSIZE);
-#endif
+    sprintf(portbuf,"%d", X_TCP_PORT+tmpport );
 }
 else
 #endif
