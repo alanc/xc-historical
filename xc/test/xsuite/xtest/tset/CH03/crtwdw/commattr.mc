@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: commattr.mc,v 1.17 92/06/11 16:07:13 rws Exp $
+ * $XConsortium: commattr.mc,v 1.18 92/06/29 18:44:29 rws Exp $
  */
 >>EXTERN
 
@@ -1718,7 +1718,7 @@ int 	found = 0;
 		return;
 	}
 
-	parent = defdraw(display, VI_WIN);
+	parent = makewin(display, vp);
 	pm =  XCreatePixmap(display, parent, 1, 1, 1);
 
 	visual = vp->visual;
