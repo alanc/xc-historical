@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.80 91/05/08 10:00:39 rws Exp $
+ * $XConsortium: XConnDis.c,v 11.81 91/05/08 17:26:59 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -216,8 +216,6 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
      * Note that if UNIXCONN isn't defined, then we can use the default
      * transport connection function set above.
      */
-    if (!phostname) {
-    }
     if (!phostname) {
 #ifdef apollo
 	;   /* Unix domain sockets are *really* bad on apollos */
