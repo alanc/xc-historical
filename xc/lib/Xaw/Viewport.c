@@ -547,11 +547,11 @@ static XtGeometryResult GeometryManager(child, request, reply)
     XtWidgetGeometry *request, *reply;
 {
     ViewportWidget w = (ViewportWidget)child->core.parent;
-    Boolean rWidth = request->request_mode & CWWidth;
-    Boolean rHeight = request->request_mode & CWHeight;
+    Boolean rWidth = (Boolean)(request->request_mode & CWWidth);
+    Boolean rHeight = (Boolean)(request->request_mode & CWHeight);
     XtWidgetGeometry allowed, myrequest;
     XtGeometryResult result;
-    Boolean resized;
+    Boolean reconfigured;
 
     if (child != w->viewport.child
 	|| request->request_mode & ~(CWWidth | CWHeight | CWBorderWidth)
@@ -563,9 +563,9 @@ static XtGeometryResult GeometryManager(child, request, reply)
     result = XtGeometryYes;
 
     /* %%% DoLayout should be a FormClass method */
-    resized = DoLayout( (Widget)w,
-		        (rWidth ? request->width : w->core.width),
-		        (rHeight ? request->height : w->core.height) );
+    reconfigured = DoLayout( (Widget)w,
+			     (rWidth ? request->width : w->core.width),
+			     (rHeight ? request->height : w->core.height) );
 
     if (rWidth && w->core.width != request->width) {
 	if (!w->viewport.allowhoriz) {
@@ -589,12 +589,14 @@ static XtGeometryResult GeometryManager(child, request, reply)
 	if (child->core.height > w->core.height) needs_vert = True;
 	if (needs_horiz && !w->viewport.horiz_bar && XtIsRealized((Widget)w)) {
 	    CreateScrollbar( w, True );
+	    reconfigured = True;
 	    if ((myrequest.height = w->viewport.horiz_bar->core.height << 1)
 		> w->core.height)
 		myrequest.request_mode |= CWHeight;
 	}
 	if (needs_vert && !w->viewport.vert_bar && XtIsRealized((Widget)w)) {
 	    CreateScrollbar( w, False );
+	    reconfigured = True;
 	    if ((myrequest.width = w->viewport.vert_bar->core.width << 1)
 		> w->core.width)
 		myrequest.request_mode |= CWWidth;
@@ -605,11 +607,11 @@ static XtGeometryResult GeometryManager(child, request, reply)
 	    if (ans == XtGeometryAlmost)
 		ans = XtMakeGeometryRequest( (Widget)w, &myrequest, NULL );
 	    if (ans == XtGeometryYes)
-		resized = True;
+		reconfigured = True;
 	}
     }
 
-    if (resized) (*w->core.widget_class->core_class.resize)( (Widget)w );
+    if (reconfigured) (*w->core.widget_class->core_class.resize)( (Widget)w );
     return result;
 }
 
