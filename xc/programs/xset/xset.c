@@ -1,12 +1,12 @@
 /* 
- * $XConsortium: xset.c,v 1.44 88/09/28 11:34:16 jim Exp $ 
+ * $XConsortium: xset.c,v 1.45 88/10/08 15:21:59 jim Exp $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.44 88/09/28 11:34:16 jim Exp $";
+static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.45 88/10/08 15:21:59 jim Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -15,6 +15,7 @@ static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.44 88/09/28 11:34:16 jim E
 #include <X11/keysym.h>
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
+#include <X11/Xmu.h>
 #include <stdio.h>
 #include <ctype.h>
 
@@ -838,7 +839,7 @@ int local_xerror (dpy, rep)
 	fprintf (stderr, "%s:  error in storing color:  %s\n",
 		 progName, errname);
     } else {
-	_XDefaultError (dpy, rep);
+	XmuPrintDefaultErrorMessage (dpy, rep, stderr);
     }
     return (0);
 }
