@@ -9,7 +9,7 @@
  * Modified by Marvin Solomon, Univeristy of Wisconsin, to handle Apple
  * Laserwriter (PostScript) devices (-device ps).
  * Also accepts the -compact flag that produces more compact output
- * by using run-lenght encoding on white (1) pixels.
+ * by using run-length encoding on white (1) pixels.
  * This version does not (yet) support the following options
  *   -append -dump -noff -nosixopt -split
  * 
@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$Header: xpr_lw.c,v 1.11 87/06/04 17:42:58 dkk Locked $";
+static char *rcsid_xpr_c = "$Header: xpr_lw.c,v 1.12 87/06/04 17:49:54 dkk Locked $";
 #endif
 
 #include <sys/types.h>
