@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.21 89/10/11 11:52:22 jim Exp $
+ * $XConsortium: folder.c,v 2.22 89/11/16 21:03:54 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -237,22 +237,42 @@ void XmhOpenFolderInNewWindow(w, event, params, num_params)
 
 /* Create a new folder with the given name. */
 
-static void CreateFolder(name)
-    char	*name;
+static char *previous_label = NULL;
+/*ARGUSED*/
+static void CreateFolder(widget, client_data, call_data)
+    Widget	widget;		/* the okay button of the dialog widget */
+    XtPointer	client_data;	/* the dialog widget */
+    XtPointer	call_data;
 {
     Toc		toc;
-    int		i;
+    register int i;
+    char	*name;
+    Widget	dialog = (Widget) client_data;
+    Arg		args[3];
+    char 	*str[256], *label;
 
+    name = XawDialogGetValueString(dialog);
     for (i=0 ; name[i] > ' ' ; i++) ;
     name[i] = '\0';
     toc = TocGetNamed(name);
-    if (toc || i == 0) {
-	Feep();
-	return;
-    }
-    toc = TocCreateFolder(name);
-    if (toc == NULL) {
-	Feep();
+    if ((toc) || (i==0) || (name[0]=='/') || ((toc = TocCreateFolder(name))
+					      == NULL)) {
+	if (toc) 
+	    (void) sprintf(str, "Folder \"%s\" already exists.  Try again.",
+			   name);
+	else if (name[0]=='/')
+	    (void) sprintf(str, "Try \"%s\" without the leading slash.",
+			   name);
+	else 
+	    (void) sprintf(str, "Cannot create folder \"%s\".  Try again.",
+			   name);
+	label = XtNewString(str);
+	XtSetArg(args[0], XtNlabel, label);
+	XtSetArg(args[1], XtNvalue, "");
+	XtSetValues(dialog, args, TWO);
+	if (previous_label)
+	    XtFree(previous_label);
+	previous_label = label;
 	return;
     }
     for (i = 0; i < numScrns; i++)
@@ -270,6 +290,7 @@ static void CreateFolder(name)
 		BBoxAddButton(scrnList[i]->folderbuttons, name,
 			      menuButtonWidgetClass, True);
 	}
+    DestroyPopup(widget, XtParent(dialog), (XtPointer) NULL);
 }
 
 
