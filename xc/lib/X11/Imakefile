@@ -339,7 +339,6 @@ OBJS3 = \
 
 LCOBJS = \
 	ProtoFlt.o \
-	XCloseIM.o \
 	XCnvCTToWC.o \
 	XCnvMBToCT.o \
 	XCnvWCToMB.o \
@@ -347,8 +346,6 @@ LCOBJS = \
 	XConnIM.o \
 	XCrFntSet.o \
 	XCrIC.o \
-	XDestIC.o \
-	XFontSet.o \
 	XGetIMVal.o \
 	XICFocus.o \
 	XICGetVal.o \
@@ -360,11 +357,9 @@ LCOBJS = \
 	XInitCT.o \
 	XOpenIM.o \
 	XParseCT.o \
-	XSetLcMod.o \
 	XSetLocale.o \
 	XlcAccess.o \
 	XlcLoad.o \
-	XlcMisc.o \
 	XmbDeGlyph.o \
 	XmbText.o \
 	XmbTextExt.o \
