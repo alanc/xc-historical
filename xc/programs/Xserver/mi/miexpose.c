@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 1.42 89/03/31 13:19:47 keith Exp $ */
+/* $XConsortium: miexpose.c,v 1.43 89/04/03 19:23:57 keith Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -432,25 +432,24 @@ miWindowExposures(pWin)
 			-pWin->absCorner.x, -pWin->absCorner.y);
 	    pBox = exposures->rects;
 
-	    if(!(pEvent = (xEvent *)
-		ALLOCATE_LOCAL(exposures->numRects * sizeof(xEvent)))) {
-		prgn->numRects = 0;
-		return;
+	    pEvent = (xEvent *)
+		ALLOCATE_LOCAL(exposures->numRects * sizeof(xEvent));
+	    if (pEvent) {
+	    	pe = pEvent;
+    
+	    	for (i=1; i<=exposures->numRects; i++, pe++, pBox++)
+	    	{
+		    pe->u.u.type = Expose;
+		    pe->u.expose.window = pWin->wid;
+		    pe->u.expose.x = pBox->x1;
+		    pe->u.expose.y = pBox->y1;
+		    pe->u.expose.width = pBox->x2 - pBox->x1;
+		    pe->u.expose.height = pBox->y2 - pBox->y1;
+		    pe->u.expose.count = (exposures->numRects - i);
+	    	}
+	    	DeliverEvents(pWin, pEvent, (int)exposures->numRects, NullWindow);
+	    	DEALLOCATE_LOCAL(pEvent);
 	    }
-	    pe = pEvent;
-
-	    for (i=1; i<=exposures->numRects; i++, pe++, pBox++)
-	    {
-		pe->u.u.type = Expose;
-		pe->u.expose.window = pWin->wid;
-		pe->u.expose.x = pBox->x1;
-		pe->u.expose.y = pBox->y1;
-		pe->u.expose.width = pBox->x2 - pBox->x1;
-		pe->u.expose.height = pBox->y2 - pBox->y1;
-		pe->u.expose.count = (exposures->numRects - i);
-	    }
-	    DeliverEvents(pWin, pEvent, (int)exposures->numRects, NullWindow);
-	    DEALLOCATE_LOCAL(pEvent);
 	}
 	if (exposures && exposures != prgn)
 	    (* pWin->drawable.pScreen->RegionDestroy) (exposures);
