@@ -69,9 +69,9 @@
  * hc revision 1.4r won't compile parts of Xt and some clients.
  */
 #if HCRevision == 14018
-#define BandAidCompiler "rt.bac"
+#define BandAidCompiler "rtcchack.bac"
 #undef MacroFile
-#define MacroFile rt.cf $(IRULESRC)/rt.bac
+#define MacroFile rt.cf $(IRULESRC)/rtcchack.bac
 #endif
 
 /* 
