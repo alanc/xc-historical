@@ -1,29 +1,21 @@
-
+/* $XConsortium$ */
 #include <Server.tmpl>
 
-#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)' 'CC=$(CC)' 'CCOPTIONS=$(CCOPTIONS)'
+REZ = /mac/bin/rez -i /:mac:lib:rincludes -d AUX
 
-CC = ServerCcCmd
-CCOPTIONS = ServerCCOptions
-STD_DEFINES = ServerDefines
-CDEBUGFLAGS = ServerCDebugFlags
-REZ =           /mac/bin/rez -i /:mac:lib:rincludes -d AUX
-
-OSDIR = $(FONTSRC)/server/os
+OSDIR = $(FONTSERVERSRC)/os
 OSLIB = $(OSDIR)/libos.a
-DIFSDIR = $(FONTSRC)/server/difs
+DIFSDIR = $(FONTSERVERSRC)/difs
 DIFSLIB = $(DIFSDIR)/libdifs.a
-FONTDIR = $(FONTSRC)/lib/font
-FONTLIB = $(FONTDIR)/libfont.a
 SYSLIBS =
 
-
-INCLUDES = -I/usr/include/mac -I$(FONTSRC)/include \
-	-I$(FONTSRC)/lib/font/include -I$(FONTSERVERSRC)/include \
+INCLUDES = -I/usr/include/mac -I$(FONTLIBSRC)/include \
+	-I$(FONTINCSRC) -I$(FONTSERVERSRC)/include \
 	-I$(FONTSERVERSRC)/os
 HEADERS = 
 
 FSDIRS = $(OSDIR) $(DIFSDIR) $(PCFDIRS)
+DEPFSLIBS = $(DIFSLIB) $(DEPFONTLIB) $(OSLIB) $(BSDEMUL)
 FSLIBS = $(DIFSLIB) $(FONTLIB) $(OSLIB) $(BSDEMUL)
 
 
@@ -39,7 +31,7 @@ all:: MacFS
 clean::
         $(RM) MacFS
 
-MacFS:		${FSLIBS} ${OBJS} MacFontUIError.o
+MacFS:		${DEPFSLIBS} ${OBJS} MacFontUIError.o
 		ld /usr/lib/maccrt0.o /lib/crt2.o -o MacFS MacFontUIError.o \
 		${OBJS} ${FSLIBS} \
 		/usr/lib/low.o -lmac_s -lat -lld -lmr -lc_s \
