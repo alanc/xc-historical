@@ -1,4 +1,4 @@
-/* $XConsortium: menu.c,v 1.50 91/02/05 19:44:38 gildea Exp $ */
+/* $XConsortium: menu.c,v 1.51 91/03/27 12:09:27 gildea Exp $ */
 /*
 Copyright 1989 Massachusetts Institute of Technology
 
@@ -18,6 +18,7 @@ without express or implied warranty.
 #include "menu.h"
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
+#include <X11/Xmu/CharSet.h>
 #include <X11/Xaw/SimpleMenu.h>
 #include <X11/Xaw/SmeBSB.h>
 #include <X11/Xaw/SmeLine.h>
