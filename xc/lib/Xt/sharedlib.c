@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sharedlib.c,v 1.13 91/11/08 16:32:39 gildea Exp $
+ * $XConsortium: sharedlib.c,v 1.14 92/01/06 17:01:45 gildea Exp $
  * 
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -199,5 +199,8 @@ WidgetClass topLevelShellWidgetClass = (WidgetClass) &topLevelShellClassRec;
 
 extern ApplicationShellClassRec applicationShellClassRec;
 WidgetClass applicationShellWidgetClass = (WidgetClass) &applicationShellClassRec;
+
+extern HookObjClassRec hookObjClassRec;
+WidgetClass hookObjectClass = (WidgetClass) &hookObjClassRec;
 
 #endif /* SUNSHLIB */
