@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.63 89/07/26 11:02:50 jim Exp $
+ * $XConsortium: twm.c,v 1.64 89/07/26 12:47:44 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.63 89/07/26 11:02:50 jim Exp $";
+"$XConsortium: twm.c,v 1.64 89/07/26 12:47:44 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -615,23 +615,26 @@ InitVariables()
     Scr->FirstTime = TRUE;
     Scr->HaveFonts = FALSE;		/* i.e. not loaded yet */
 
-    /* setup default fonts */
+    /* setup default fonts; overridden by defaults from system.twmrc */
+#define DEFAULT_NICE_FONT "variable"
+#define DEFAULT_FAST_FONT "fixed"
+
     Scr->TitleBarFont.font = NULL;
-    Scr->TitleBarFont.name = "8x13";
+    Scr->TitleBarFont.name = DEFAULT_NICE_FONT;
     Scr->MenuFont.font = NULL;
-    Scr->MenuFont.name = "8x13";
+    Scr->MenuFont.name = DEFAULT_NICE_FONT;
     Scr->IconFont.font = NULL;
-    Scr->IconFont.name = "8x13";
+    Scr->IconFont.name = DEFAULT_NICE_FONT;
     Scr->SizeFont.font = NULL;
-    Scr->SizeFont.name = "fixed";
+    Scr->SizeFont.name = DEFAULT_FAST_FONT;
     Scr->VersionFont.font = NULL;
-    Scr->VersionFont.name = "8x13";
+    Scr->VersionFont.name = DEFAULT_NICE_FONT;
     Scr->InitialFont.font = NULL;
-    Scr->InitialFont.name = "9x15";
+    Scr->InitialFont.name = DEFAULT_NICE_FONT;
     Scr->IconManagerFont.font = NULL;
-    Scr->IconManagerFont.name = "8x13";
+    Scr->IconManagerFont.name = DEFAULT_NICE_FONT;
     Scr->DefaultFont.font = NULL;
-    Scr->DefaultFont.name = "fixed";
+    Scr->DefaultFont.name = DEFAULT_FAST_FONT;
 
 }
 
