@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.53 91/05/07 14:53:04 gildea Exp $
+ *	$XConsortium: ptyx.h,v 1.54 91/05/08 19:01:13 gildea Exp $
  */
 
 /*
@@ -513,6 +513,21 @@ typedef struct Tek_Link
 #define	I_LOG		0x01
 #define	I_SIGNAL	0x02
 #define	I_TEK		0x04
+
+/*
+ * Check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
+ * systems are broken and return EWOULDBLOCK when they should return EAGAIN.
+ * Note that this macro may evaluate its argument more than once.
+ */
+#if defined(EAGAIN) && defined(EWOULDBLOCK)
+#define E_TEST(err) ((err) == EAGAIN || (err) == EWOULDBLOCK)
+#else
+#ifdef EAGAIN
+#define E_TEST(err) ((err) == EAGAIN)
+#else
+#define E_TEST(err) ((err) == EWOULDBLOCK)
+#endif
+#endif
 
 extern Cursor make_colored_cursor();
 extern int GetBytesAvailable();
