@@ -25,7 +25,7 @@ A set of popup menus that allow you full access to editres's features.
 The panner allows a more intuitive way to scroll the application tree display.
 .IP "Message Area"
 Displays information to the user about the action that editres expects 
-of the her.
+of her.
 .IP "Application Widget Tree" 25
 This area will be used to display the selected client's widget tree.
 .LP
