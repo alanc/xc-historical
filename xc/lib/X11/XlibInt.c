@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.177 93/09/15 10:02:18 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.177 93/09/15 10:07:04 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -41,7 +41,7 @@ void (*_XLockMutex_fn)() = NULL;
 void (*_XUnlockMutex_fn)() = NULL;
 xthread_t (*_Xthread_self_fn)() = NULL;
 
-#define XThread_Self()		(_Xthread_self_fn ? (*_Xthread_self_fn)() : NULL)
+#define XThread_Self()	((*_Xthread_self_fn)())
 
 #define UnlockNextReplyReader(d) if ((d)->lock_fns) \
     (*(d)->lock_fns->pop_reader)((d), &(d)->lock->reply_awaiters,&(d)->lock->reply_awaiters_tail)
@@ -238,7 +238,7 @@ _XWaitForWritable(dpy
 #ifdef USE_POLL
 	if (filedes.revents & POLLIN)
 #else
-	if (GETBIT(r_mask,f dpy->fd))
+	if (GETBIT(r_mask, dpy->fd))
 #endif
 	{
 	    _XAlignedBuffer buf;
@@ -443,7 +443,7 @@ _XWaitForReadable(dpy)
     }
 #ifdef XTHREADS
 #ifdef XTHREADS_DEBUG
-    printf("thread %x _XWaitForReadable returning\n", XThread_Self());
+    printf("thread %x _XWaitForReadable returning\n", xthread_self());
 #endif
 #endif
 }
@@ -546,7 +546,7 @@ _XEventsQueued (dpy, mode)
 	struct _XCVList *cvl;
 
 #ifdef XTHREADS_DEBUG
-	printf("_XEventsQueued called in thread %x\n", XThread_Self());
+	printf("_XEventsQueued called in thread %x\n", xthread_self());
 #endif
 #endif /* XTHREADS*/
 
@@ -723,17 +723,17 @@ _XReadEvents(dpy)
 
 #ifdef XTHREADS_DEBUG
 	printf("_XReadEvents called in thread %x\n",
-	       XThread_Self());
+	       xthread_self());
 #endif
 	/* create our condition variable and append to list,
 	 * unless we were called from within XProcessInternalConnection
 	 */
 	xthread_clear_id(self);
-	if (dpy->lock && dpy->lock->conni_thread)
+	if (dpy->lock && xthread_have_id (dpy->lock->conni_thread))
 	    /* some thread is in XProcessInternalConnection,
 	       so we have to see if it is us */
 	    self = XThread_Self();
-	if (!xthread_have_id(self)  ||  self != dpy->lock->conni_thread)
+	if (!xthread_have_id(self) || !xthread_equal(self, dpy->lock->conni_thread))
 	    cvl = QueueEventReaderLock(dpy);
 
 	/* note which events we have already seen so we'll know
@@ -1312,7 +1312,7 @@ Status _XReply (dpy, rep, extra, discard)
 
 #ifdef XTHREADS_DEBUG
     printf("_XReply called in thread %x, adding %x to cvl\n",
-	   XThread_Self(), cvl);
+	   xthread_self(), cvl);
 #endif
 
     _XFlushInt(dpy, cvl ? cvl->cv : NULL);
@@ -1478,7 +1478,7 @@ _XAsyncReply(dpy, rep, buf, lenp, discard)
 		       dpy->last_request_read);
 #ifdef XTHREADS
 #ifdef XTHREADS_DEBUG
-	printf("thread %x, unexpected async reply\n", XThread_Self());
+	printf("thread %x, unexpected async reply\n", xthread_self());
 #endif
 #endif
 	if (len > *lenp)
@@ -1749,7 +1749,7 @@ XAddConnectionWatch(dpy, callback, client_data)
 	if (!wd_array)
 	    return 0;
 	if (dpy->watcher_count > 1) {
-	    memcpy(wd_array+1, info_list->watch_data, dpy->watcher_count-1);
+	    memcpy((void *)(wd_array+1), (void *)info_list->watch_data, dpy->watcher_count-1);
 	    Xfree(info_list->watch_data);
 	}
 	/* new element is at front of list now */
