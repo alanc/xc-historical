@@ -9,3 +9,4 @@ SUBDIRS = X \
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
 MakeLintLibSubdirs($(SUBDIRS))
+MakeLintSubdirs($(SUBDIRS),install.ln,install.ln)
