@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.62 93/09/06 15:21:56 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.63 93/09/18 15:56:07 rws Exp $
 #include <Server.tmpl>
 
 #if (SystemV || SystemV4) && !HasSockets
@@ -63,11 +63,6 @@ BOOTSTRAPCFLAGS =
 #else
      OS_DEFINES =
 #endif /* SpecialMalloc */
-#if defined(PegasusArchitecture) || defined(SGIArchitecture) || XdecServer
-    TIME_DEFINES = -DDDXTIME
-#else
-    TIME_DEFINES =
-#endif
     DBM_DEFINES = NdbmDefines
     ADM_DEFINES = -DADMPATH=\"$(ADMDIR)/X\%smsgs\"
     EXT_DEFINES = ExtensionDefines
@@ -104,7 +99,7 @@ SpecialCObjectRule(connection,$(ICONFIGFILES),$(SOCK_DEFINES) $(EXTRA_DEFINES))
 SpecialCObjectRule(osinit,$(ICONFIGFILES),$(ADM_DEFINES))
 SpecialCObjectRule(WaitFor,$(ICONFIGFILES),$(EXT_DEFINES))
 SpecialCObjectRule(io,$(ICONFIGFILES),$(EXT_DEFINES))
-SpecialCObjectRule(utils,$(ICONFIGFILES),$(TIME_DEFINES) $(EXTRA_DEFINES))
+SpecialCObjectRule(utils,$(ICONFIGFILES),$(EXTRA_DEFINES))
 #if defined(SparcArchitecture) && HasGcc && !HasGcc2
 oscolor.o: oscolor.c $(ICONFIGFILES)
 	$(RM) $@
