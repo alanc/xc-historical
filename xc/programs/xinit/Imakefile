@@ -1,4 +1,4 @@
-        DEFINES = ConnectionFlags -DBINDIR=\"$(BINDIR)\"
+        DEFINES = ConnectionFlags $(SIGNAL_DEFINES) -DBINDIR=\"$(BINDIR)\"
         DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
           SRCS1 = xinit.c 
