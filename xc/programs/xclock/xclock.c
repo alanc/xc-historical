@@ -2,14 +2,14 @@
  *  Hacked from Tony Della Fera's much hacked clock program.
  */
 #ifndef lint
-static char *rcsid_xclock_c = "$Header: xclock.c,v 1.5 87/09/13 03:17:53 swick Locked $";
+static char *rcsid_xclock_c = "$Header: xclock.c,v 1.6 87/12/04 16:08:58 swick Locked $";
 #endif  lint
 
 #include "Xatom.h"
 #include "Xlib.h"
 #include "Intrinsic.h"
 #include "Atoms.h"
-#include "TopLevel.h"
+#include "Shell.h"
 #include "Clock.h"
 #include "clock.bit"
 
