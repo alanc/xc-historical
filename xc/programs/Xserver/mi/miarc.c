@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.20 90/08/16 10:47:00 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.21 90/08/18 19:18:23 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -37,6 +37,7 @@ SOFTWARE.
 #include "mifillarc.h"
 
 double	miDsin(), miDcos(), miDasin(), miDatan2();
+double	cbrt();
 
 #ifdef ICEILTEMPDECL
 ICEILTEMPDECL
@@ -272,6 +273,8 @@ miFillWideCircle(pDraw, pGC, parc)
     register int *wids;
 
     doinner = -pGC->lineWidth;
+    if (!doinner)
+	doinner = -1;
     slw = parc->width - doinner;
     points = (DDXPointPtr)ALLOCATE_LOCAL((sizeof(DDXPointRec) * 2) * slw);
     if (!points)
@@ -350,6 +353,263 @@ miFillWideCircle(pDraw, pGC, parc)
 }
 
 /*
+
+Three equations combine to describe the boundaries of the arc
+
+x^2/w^2 + y^2/h^2 = 1			ellipse itself
+(X-x)^2 + (Y-y)^2 = r^2			circle at (x, y) on the ellipse
+(Y-y) = (X-x)*w^2*y/(h^2*x)		normal at (x, y) on the ellipse
+
+These lead to a quartic relating Y and y
+
+y^4 - (2Y)y^3 + (Y^2 + (h^4 - w^2*r^2)/(w^2 - h^2))y^2
+    - (2Y*h^4/(w^2 - h^2))y + (Y^2*h^4)/(w^2 - h^2) = 0
+
+The reducible cubic obtained from this quartic is
+
+z^3 - (3N)z^2 - 2V = 0
+
+where
+
+N = (Y^2 + (h^4 - w^2*r^2/(w^2 - h^2)))/6
+V = w^2*r^2*Y^2*h^4/(4 *(w^2 - h^2)^2)
+
+Let
+
+t = z - N
+p = -N^2
+q = -N^3 - V
+
+Then we get
+
+t^3 + 3pt + 2q = 0
+
+The discriminant of this cubic is
+
+D = q^2 + p^3
+
+When D > 0, a real root is obtained as
+
+z = N + cbrt(-q+sqrt(D)) + cbrt(-q-sqrt(D))
+
+When D < 0, a real root is obtained as
+
+z = N - 2m*cos(acos(-q/m^3)/3)
+
+where
+
+m = sqrt(|p|) * sign(q)
+
+Given a real root Z of the cubic, the roots of the quartic are the roots
+of the two quadratics
+
+y^2 + ((b+A)/2)y + (Z + (bZ - d)/A) = 0
+
+where 
+
+A = +/- sqrt(8Z + b^2 - 4c)
+b, c, d are the cubic, quadratic, and linear coefficients of the quartic
+
+Some experimentation is then required to determine which solutions
+correspond to the inner and outer boundaries.
+
+*/
+
+static void
+miFillWideEllipse(pDraw, pGC, parc)
+    DrawablePtr	pDraw;
+    GCPtr	pGC;
+    xArc	*parc;
+{
+    DDXPointPtr points;
+    register DDXPointPtr pts;
+    int *widths;
+    register int *wids;
+    double w, h, r, xorg;
+    int yorg, dy, k, lw;
+    double Hs, Hf, WH, K, Vk, Nk, Fk, Vr, N, Nc, Z, rs;
+    double A, T, b, d, x, y, t, inx, outx, hepp, hepm;
+    int flip;
+
+    lw = pGC->lineWidth;
+    if (!lw)
+	lw = 1;
+    dy = parc->height + lw;
+    points = (DDXPointPtr)ALLOCATE_LOCAL((sizeof(DDXPointRec) * 2) * dy);
+    if (!points)
+	return;
+    widths = (int *)ALLOCATE_LOCAL((sizeof(int) * 2) * dy);
+    if (!widths)
+    {
+	DEALLOCATE_LOCAL(points);
+	return;
+    }
+    pts = points;
+    wids = widths;
+    w = parc->width / 2.0;
+    h = parc->height / 2.0;
+    r = lw / 2.0;
+    xorg = parc->x + w;
+    yorg = parc->y + (parc->height >> 1);
+    dy = parc->height & 1;
+    rs = r * r;
+    Hs = h * h;
+    WH = w * w - Hs;
+    Nk = w * r;
+    Vk = (Nk * Hs) / (WH + WH);
+    Hf = Hs * Hs;
+    Nk = (Hf - Nk * Nk) / WH;
+    Fk = Hf / WH;
+    hepp = h + EPSILON;
+    hepm = h - EPSILON;
+    K = h + (lw >> 1);
+    k = (parc->height >> 1) + (lw >> 1);
+    if (pGC->miTranslate)
+    {
+	xorg += pDraw->x;
+	yorg += pDraw->y;
+    }
+    if (!(lw & 1)) {
+	if (!(parc->width & 1)) {
+	    pts->x = xorg;
+	    pts->y = yorg - k;
+	    pts++;
+	    *wids++ = 1;
+	}
+	K -= 1.0;
+	k--;
+    }
+    for (; K > 0.0; K -= 1.0, k--) {
+	N = (K * K + Nk) / 6.0;
+	Nc = N * N * N;
+	Vr = Vk * K;
+	t = Nc + Vr * Vr;
+	d = Nc + t;
+	if (d < 0.0) {
+	    d = Nc;
+	    b = N;
+	    if (b < 0.0 == t < 0.0) {
+		b = -b;
+		d = -d;
+	    }
+	    Z = N - 2.0 * b * cos(acos(-t / d) / 3.0);
+	    if (Z < 0.0 == Vr < 0.0)
+		flip = 2;
+	    else
+		flip = 1;
+	} else {
+	    d = Vr * sqrt(d);
+	    Z = N + cbrt(t + d) + cbrt(t - d);
+	    flip = 0;
+	}
+	A = sqrt((Z + Z) - Nk);
+	T = (Fk - Z) * K / A;
+	inx = 0.0;
+	b = A + K;
+	d = b * b - 4 * (Z - T);
+	if (d >= 0) {
+	    d = sqrt(d);
+	    y = (b + d) / 2;
+	    if ((y >= 0.0) && (y < hepp)) {
+		if (y > hepm)
+		    y = h;
+		t = y / h;
+		x = w * sqrt(1 - (t * t));
+		t = K - y;
+		inx = x - sqrt(rs - (t * t));
+	    }
+	    y = (b - d) / 2;
+	    if ((y >= 0.0) && (y < hepp)) {
+		if (y > hepm)
+		    y = h;
+		t = y / h;
+		x = w * sqrt(1 - (t * t));
+		t = K - y;
+		t = sqrt(rs - (t * t));
+		if (flip == 1)
+		    inx = x - t;
+		else
+		    outx = x + t;
+	    }
+	}
+	b = -A + K;
+	d = b * b - 4 * (Z + T);
+	if (d >= 0) {
+	    d = sqrt(d);
+	    y = (b + d) / 2;
+	    if ((y >= 0.0) && (y < hepp)) {
+		if (y > hepm)
+		    y = h;
+		t = y / h;
+		x = w * sqrt(1 - (t * t));
+		t = K - y;
+		t = sqrt(rs - (t * t));
+		if (flip == 2)
+		    inx = x - t;
+		else
+		    outx = x + t;
+	    }
+	}
+	if (inx <= 0.0)
+	{
+	    pts->x = ICEIL(xorg - outx);
+	    pts->y = yorg - k;
+	    *wids = ICEIL(xorg + outx) - pts->x;
+	    (pts+1)->x = pts->x;
+	    (pts+1)->y = yorg + k + dy;
+	    *(wids+1) = *wids;
+	    pts += 2;
+	    wids += 2;
+	}
+	else
+	{
+	    pts->x = ICEIL(xorg - outx);
+	    pts->y = yorg - k;
+	    *wids = ICEIL(xorg - inx) - pts->x;
+	    (pts+1)->x = ICEIL(xorg + inx);
+	    (pts+1)->y = pts->y;
+	    *(wids+1) = ICEIL(xorg + outx) - (pts+1)->x;
+	    (pts+2)->x = pts->x;
+	    (pts+2)->y = yorg + k + dy;
+	    *(wids+2) = *wids;
+	    (pts+3)->x = (pts+1)->x;
+	    (pts+3)->y = (pts+2)->y;
+	    *(wids+3) = *wids;
+	    pts += 4;
+	    wids += 4;
+	}
+    }
+    if (!(parc->height & 1)) {
+	outx = w + r;
+	inx = w - r;
+	if (Nk < 0.0)
+	    inx = w * sqrt(1 + Nk / Hs) - sqrt(rs + Nk);
+	if (inx <= 0.0)
+	{
+	    pts->x = ICEIL(xorg - outx);
+	    pts->y = yorg;
+	    *wids = ICEIL(xorg + outx) - pts->x;
+	    pts++;
+	    wids++;
+	}
+	else
+	{
+	    pts->x = ICEIL(xorg - outx);
+	    pts->y = yorg;
+	    *wids = ICEIL(xorg - inx) - pts->x;
+	    (pts+1)->x = ICEIL(xorg + inx);
+	    (pts+1)->y = pts->y;
+	    *(wids+1) = ICEIL(xorg + outx) - (pts+1)->x;
+	    pts += 2;
+	    wids += 2;
+	}
+    }
+    (*pGC->ops->FillSpans)(pDraw, pGC, pts - points, points, widths, FALSE);
+    DEALLOCATE_LOCAL(widths);
+    DEALLOCATE_LOCAL(points);
+}
+
+/*
  * miPolyArc strategy:
  *
  * If arc is zero width and solid, we don't have to worry about the rasterop
@@ -394,11 +654,13 @@ miPolyArc(pDraw, pGC, narcs, parcs)
     {
 	if ((pGC->lineStyle == LineSolid) && narcs)
 	{
-	    while ((parcs->width == parcs->height) &&
-		   ((parcs->angle2 >= FULLCIRCLE) ||
-		    (parcs->angle2 <= -FULLCIRCLE)))
+	    while ((parcs->angle2 >= FULLCIRCLE) ||
+		   (parcs->angle2 <= -FULLCIRCLE))
 	    {
-		miFillWideCircle(pDraw, pGC, parcs);
+		if (parcs->width == parcs->height)
+		    miFillWideCircle(pDraw, pGC, parcs);
+		else
+		    miFillWideEllipse(pDraw, pGC, parcs);
 		if (!--narcs)
 		    return;
 		parcs++;
@@ -1945,20 +2207,28 @@ double	x;
 # define CUBED_ROOT_2	1.2599210498948732038115849718451499938964
 # define CUBED_ROOT_4	1.5874010519681993173435330390930175781250
 
-static double
-tailEllipseY (w, h, l)
-	double	w, h, l;
+static void
+tailEllipseY (def, acc)
+	struct arc_def		*def;
+	struct accelerators	*acc;
 {
 	double		t;
 
-	if (w != h) {
-		t = (pow (h * l * w, 2.0/3.0) - CUBED_ROOT_4 * h*h) /
-		    (w*w - h*h);
-		if (t < 0)
-			return 0;	/* no tail */
-		return h / CUBED_ROOT_2 * Sqrt (t);
-	} else
-		return 0;
+	acc->tail_y = 0.0;
+	if (def->w == def->h)
+	    return;
+	t = def->l * def->w;
+	if (def->w > def->h) {
+	    if (t < acc->h2 + acc->h2)
+		return;
+	} else {
+	    if (t > acc->h2 + acc->h2)
+		return;
+	}
+	t = def->h * t;
+	t = (CUBED_ROOT_4 * acc->h2 - cbrt(t * t)) / acc->h2mw2;
+	if (t > 0.0)
+	    acc->tail_y = def->h / CUBED_ROOT_2 * sqrt(t);
 }
 
 /*
@@ -2104,7 +2374,7 @@ computeAcc (def, acc)
 	acc->h2mw2 = acc->h2 - acc->w2;
 	acc->wh2mw2 = def->w * acc->h2mw2;
 	acc->wh4 = def->w * acc->h4;
-	acc->tail_y = tailEllipseY (def->w, def->h, def->l);
+	tailEllipseY (def, acc);
 	for (i = 0; i <= BINARY_TABLE_SIZE; i++)
 		acc->innerValid[i] = acc->outerValid[i] = 0;
 }
@@ -2616,9 +2886,9 @@ hookEllipseY (scan_y, bound, acc, left)
 	}
 	ret = (acc->h4 * scan_y) / (acc->h2mw2);
 	if (ret >= 0)
-		return pow (ret, 1.0/3.0);
+		return cbrt (ret);
 	else
-		return -pow (-ret, 1.0/3.0);
+		return -cbrt (-ret);
 }
 
 /*
