@@ -1,4 +1,4 @@
-/* $XConsortium: ObjectP.h,v 1.11 92/04/03 13:16:55 converse Exp $ */
+/* $XConsortium: ObjectP.h,v 1.12 94/01/10 20:27:56 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -95,8 +95,8 @@ typedef struct _ObjectClassPart {
 }ObjectClassPart;
 
 typedef struct {
-    XtPointer next_extension;	/* required for all extension records */
-    XrmQuark record_type;	/* NULLQUARK; on ObjectClassPart */
+    XtPointer next_extension;	/* 1st 4 required for all extension records */
+    XrmQuark record_type;	/* NULLQUARK; when on ObjectClassPart */
     long version;		/* must be XtObjectExtensionVersion */
     Cardinal record_size;	/* sizeof(ObjectClassExtensionRec) */
     XtAllocateProc allocate;
@@ -110,5 +110,7 @@ typedef struct _ObjectClassRec {
 externalref ObjectClassRec objectClassRec;
 
 #define XtObjectExtensionVersion 1L
+#define XtInheritAllocate ((XtAllocateProc) _XtInherit)
+#define XtInheritDeallocate ((XtDeallocateProc) _XtInherit)
 
 #endif /*_Xt_ObjectP_h_*/
