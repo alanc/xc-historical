@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.6 89/07/11 16:44:44 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.7 89/07/11 19:44:42 kit Exp $";
 #endif /* lint && SABER */
 
 /*
@@ -45,7 +45,7 @@ static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.6 89/07/11 16:44:44 kit Exp
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 
-#include <X11/Xmu/Xmu.h>
+#include <X11/Xmu/CharSet.h>
 #include <X11/Xmu/Misc.h>
 
 #include <X11/Xaw/AsciiTextP.h>
