@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.65 91/07/16 22:26:49 converse Exp $
+ * $XConsortium: init.c,v 2.66 91/07/17 12:28:04 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -151,7 +151,11 @@ static XtResource resources[] = {
     {"appDefaultsVersion", "AppDefaultsVersion", XtRInt, sizeof(int),
 	 Offset(app_defaults_version), XtRImmediate, (XtPointer)0},
     {"banner", "Banner", XtRString, sizeof(char *),
-	 Offset(banner), XtRString, "xmh    MIT X Consortium    R5"}
+	 Offset(banner), XtRString, "xmh    MIT X Consortium    R5"},
+    {"wmProtocolsTranslations", "WMProtocolsTranslations", 
+	 XtRTranslationTable, sizeof(XtTranslations),
+	 Offset(wm_protocols_translations), XtRString,
+	 "<Message>WM_PROTOCOLS: XmhWMProtocols()\n"}
 };
 
 #undef Offset
@@ -251,6 +255,7 @@ char **argv;
 
 	{"XmhClose",			XmhClose},
 	{"XmhComposeMessage",		XmhComposeMessage},
+	{"XmhWMProtocols",		XmhWMProtocols},
 
 	/* actions upon folders */
 
@@ -328,11 +333,6 @@ char **argv;
 	/* popup dialog box button action procedures */
 
 	{"XmhPromptOkayAction",		XmhPromptOkayAction},
-
-	/* additional actions to implement support for WM_PROTOCOLS */
-
-	{"XmhCancelPick",		XmhCancelPick},
-	{"XmhWMDeletePopup", 		XmhWMDeletePopup}
     };
 
     static Arg shell_args[] = {
@@ -451,8 +451,10 @@ char **argv;
 			 ButtonPressMask | ButtonReleaseMask,
 			 GrabModeAsync, GrabModeAsync);
     wm_protocols = XInternAtom(XtDisplay(toplevel), "WM_PROTOCOLS", False);
-    wm_delete_window = XInternAtom(XtDisplay(toplevel), "WM_DELETE_WINDOW",
-				   False);
+    protocolList[0] = wm_delete_window =
+	XInternAtom(XtDisplay(toplevel), "WM_DELETE_WINDOW", False);
+    protocolList[1] = wm_save_yourself = 
+	XInternAtom(XtDisplay(toplevel), "WM_SAVE_YOURSELF", False);
 
     MenuItemBitmap =
 	XCreateBitmapFromData( XtDisplay(toplevel),
