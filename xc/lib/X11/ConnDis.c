@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $Header: XConnDis.c,v 11.21 87/09/13 23:03:07 rws Locked $ */
+/* $Header: XConnDis.c,v 11.22 87/12/16 09:28:38 rws Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -8,9 +8,8 @@
  */
 #include <stdio.h>
 #include "Xlibint.h"
-#include <fcntl.h>
+#include <X11/Xos.h>
 #include <sys/socket.h>
-#include <strings.h>
 
 #ifdef UNIXCONN
 #include <sys/un.h>
