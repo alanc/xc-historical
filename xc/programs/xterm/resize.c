@@ -1,9 +1,9 @@
 /*
- *	$XConsortium: resize.c,v 1.9 89/03/23 09:38:09 jim Exp $
+ *	$XConsortium: resize.c,v 1.10 89/12/06 15:32:03 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_resize_c = "$XConsortium: resize.c,v 1.9 89/03/23 09:38:09 jim Exp $";
+static char *rcsid_resize_c = "$XConsortium: resize.c,v 1.10 89/12/06 15:32:03 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -80,7 +80,7 @@ extern struct passwd *fgetpwent();
 #endif	/* USE_SYSV_TERMIO */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: resize.c,v 1.9 89/03/23 09:38:09 jim Exp $";
+static char rcs_id[] = "$XConsortium: resize.c,v 1.10 89/12/06 15:32:03 jim Exp $";
 #endif
 
 #define	EMULATIONS	2
@@ -450,10 +450,14 @@ char *str;
 {
 	register int i, last;
 	int timeout();
-#ifndef att
+#ifndef USG
 	struct itimerval it;
+#endif
 
 	signal(SIGALRM, timeout);
+#ifdef USG
+	alarm (TIMEOUT);
+#else
 	bzero((char *)&it, sizeof(struct itimerval));
 	it.it_value.tv_sec = TIMEOUT;
 	setitimer(ITIMER_REAL, &it, (struct itimerval *)NULL);
@@ -464,7 +468,9 @@ char *str;
 	}
 	last = str[i = strlen(str) - 1];
 	while((*buf++ = getc(fp)) != last);
-#ifndef att
+#ifdef USG
+	alarm (0);
+#else
 	bzero((char *)&it, sizeof(struct itimerval));
 	setitimer(ITIMER_REAL, &it, (struct itimerval *)NULL);
 #endif

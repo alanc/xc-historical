@@ -136,12 +136,12 @@ static Bool domenu (w, event, params, param_count)
 	    update_visualbell();
 	    update_logging();
 #ifndef SIGTSTP
-	    set_sensitivity (screen->mainMenu, vtMenuEntries[vtMenu_suspend,
-			     FALSE);
+	    set_sensitivity (screen->mainMenu,
+			     mainMenuEntries[mainMenu_suspend].widget, FALSE);
 #endif
 #ifndef SIGCONT
-	    set_sensitivity (screen->mainMenu, vtMenuEntries[vtMenu_continue,
-			     FALSE);
+	    set_sensitivity (screen->mainMenu, 
+			     mainMenuEntries[mainMenu_continue].widget, FALSE);
 #endif
 	}
 	break;

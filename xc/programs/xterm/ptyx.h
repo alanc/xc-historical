@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.37 89/11/14 18:58:48 jim Exp $
+ *	$XConsortium: ptyx.h,v 1.38 89/12/09 16:24:11 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -62,8 +62,10 @@
 
 #define	killpg(x,sig)	kill(-x,sig)
 
+#ifndef CRAY
 #define	dup2(fd1,fd2)	((fd1 == fd2) ? fd1 : \
 				(close(fd2), fcntl(fd1, F_DUPFD, fd2)))
+#endif
 
 #endif	/* !SYSV */
 

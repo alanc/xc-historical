@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.59 89/12/03 12:00:12 jim Exp $
+ *	$XConsortium: misc.c,v 1.60 89/12/09 16:24:13 jim Exp $
  */
 
 
@@ -31,6 +31,7 @@
 #include "ptyx.h"		/* X headers included here. */
 
 #include <stdio.h>
+#include <X11/Xos.h>
 #include <setjmp.h>
 #include <ctype.h>
 #include <pwd.h>
@@ -57,7 +58,7 @@ static void DoSpecialEnterNotify();
 static void DoSpecialLeaveNotify();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.59 89/12/03 12:00:12 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.60 89/12/09 16:24:13 jim Exp $";
 #endif	/* lint */
 
 xevents()

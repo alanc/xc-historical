@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.69 89/12/03 12:00:17 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.70 89/12/06 15:31:56 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -48,7 +48,9 @@
 # include <sgtty.h>
 # endif /* not SYSTYPE_SYSV */
 #else
-# include <sgtty.h>
+# ifndef CRAY
+#  include <sgtty.h>
+# endif
 #endif /* umips */
 #include <ctype.h>
 #include <errno.h>
@@ -112,7 +114,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.69 89/12/03 12:00:17 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.70 89/12/06 15:31:56 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;

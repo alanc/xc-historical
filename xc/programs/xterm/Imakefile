@@ -49,10 +49,16 @@
        DEPLIBS1 = XawClientDepLibs
        DEPLIBS2 = 
 
-ComplexProgramTarget_1(xterm,XawClientLibs,-ltermcap $(PTYLIB))
-SpecialObjectRule(main.o,,$(MAIN_DEFINES))
+#ifdef CrayArchitecture
+     TERMCAPLIB = -lcurses
+#else
+     TERMCAPLIB = -ltermcap
+#endif
 
-SingleProgramTarget(resize,$(OBJS2),,-ltermcap)
+ComplexProgramTarget_1(xterm,XawClientLibs,$(TERMCAPLIB) $(PTYLIB))
+SpecialObjectRule(main.o, ,$(MAIN_DEFINES))
+
+SingleProgramTarget(resize,$(OBJS2), ,-ltermcap)
 InstallProgramWithFlags(resize, $(BINDIR), )
 InstallAppDefaults(XTerm)
 InstallManPage(resize,$(MANDIR))

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.135 89/12/09 15:26:44 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.136 89/12/09 16:24:03 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -75,11 +75,12 @@ SOFTWARE.
 /*
  * now get system-specific includes
  */
-#ifdef att
-/* #undef UTMP */
+#ifdef CRAY
+#define HAS_BSD_GROUPS
 #endif
 #ifdef macII
 #define HAS_UTMP_UT_HOST
+#define HAS_BSD_GROUPS
 #include <sys/ttychars.h>
 #undef USE_SYSV_ENVVARS
 #undef FIOCLEX
@@ -90,7 +91,8 @@ SOFTWARE.
 #include <sys/resource.h>
 #endif
 #ifdef hpux
-#include <sys/ptyio.h>			/* hpux */
+#define HAS_BSD_GROUPS
+#include <sys/ptyio.h>
 #endif
 #endif /* SYSV */
 
@@ -99,6 +101,7 @@ SOFTWARE.
 #include <sys/wait.h>
 #include <sys/resource.h>
 #define HAS_UTMP_UT_HOST
+#define HAS_BSD_GROUPS
 #endif	/* !SYSV */
 
 
@@ -1838,8 +1841,12 @@ spawn ()
 #endif /* USE_HANDSHAKE */
 #endif/* UTMP */
 
-		setgid (screen->gid);
-		setuid (screen->uid);
+		(void) setgid (screen->gid);
+#ifdef HAS_BSD_GROUPS
+		if (geteuid() == 0)
+		  initgroups (pw->pw_name, pw->pw_gid);
+#endif
+		(void) setuid (screen->uid);
 
 #ifdef USE_HANDSHAKE
 		/* mark the pipes as close on exec */
@@ -2098,8 +2105,13 @@ int n;
 #endif
 	/* cleanup the utmp entry we forged earlier */
 	if (!resource.utmpInhibit && added_utmp_entry) {
+#ifdef CRAY
+#define PTYCHARLEN 4
+#else
+#define PTYCHARLEN 2
+#endif
 	    utmp.ut_type = USER_PROCESS;
-	    (void) strncpy(utmp.ut_id, ttydev + strlen(ttydev) - 2,
+	    (void) strncpy(utmp.ut_id, ttydev + strlen(ttydev) - PTYCHARLEN,
 		    sizeof(utmp.ut_id));
 	    (void) setutent();
 	    utptr = getutid(&utmp);
