@@ -1,4 +1,4 @@
-/* $XConsortium: action.c,v 1.2 94/04/04 10:15:00 rws Exp $ */
+/* $XConsortium: action.c,v 1.3 94/04/04 15:28:02 rws Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -260,7 +260,7 @@ HandleSetLatchMods(xkb,action,field,array_ndx,value)
     ExprDef *		value;
 {
 XkbModAction *	act;
-ExprResult	rtrn;
+unsigned	rtrn;
 unsigned	t1,t2;
 
     act= (XkbModAction *)action;
@@ -274,9 +274,9 @@ unsigned	t1,t2;
     switch (field) {
 	case F_ClearLocks:
 	case F_LatchToLock:
-	    rtrn.uval= act->flags;
+	    rtrn= act->flags;
 	    if (CheckLatchLockFlags(action->type,field,value,&rtrn)) {
-		act->flags= rtrn.uval;
+		act->flags= rtrn;
 		return True;
 	    }
 	    return False;
@@ -377,7 +377,7 @@ HandleSetLatchGroup(xkb,action,field,array_ndx,value)
     ExprDef *		value;
 {
 XkbGroupAction *	act;
-ExprResult		rtrn;
+unsigned		rtrn;
 unsigned		t1;
 int			t2;
 
@@ -392,9 +392,9 @@ int			t2;
     switch (field) {
 	case F_ClearLocks:
 	case F_LatchToLock:
-	    rtrn.uval= act->flags;
-	    if (CheckLatchLockFlags(action->type,field,value,&rtrn)) {
-		act->flags= rtrn.uval;
+	    rtrn= act->flags;
+	    if (CheckLatchLockFlags(action->type,field,value,rtrn)) {
+		act->flags= rtrn;
 		return True;
 	    }
 	    return False;
