@@ -1,4 +1,4 @@
-/* $XConsortium: StrToCurs.c,v 1.10 90/07/15 16:18:56 rws Exp $ */
+/* $XConsortium: StrToCurs.c,v 1.11 90/12/28 21:02:12 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -90,8 +90,9 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
     register int i;
     char maskname[PATH_MAX];
     Pixmap source, mask;
-    static XColor bgColor = {0, ~0, ~0, ~0};  /* XXX - make a resource */
-    static XColor fgColor = {0, 0, 0, 0};     /* XXX - ditto */
+    /* XXX - make fg/bg resources */
+    static XColor bgColor = {0, 0xffff, 0xffff, 0xffff};
+    static XColor fgColor = {0, 0, 0, 0};
     int xhot, yhot;
     int len;
 
