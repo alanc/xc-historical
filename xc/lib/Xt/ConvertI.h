@@ -1,4 +1,4 @@
-/* $XConsortium: ConvertI.h,v 1.5 88/09/06 16:27:25 jim Exp $ */
+/* $XConsortium: ConvertI.h,v 1.1 89/06/01 14:33:58 swick Exp $ */
 /* $oHeader: ConvertI.h,v 1.3 88/08/31 16:11:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -39,15 +39,10 @@ extern void _XtTableAddConverter();
     /* XtConvertArgList     convert_args;   */
     /* Cardinal             num_args;       */
 
-extern void _XtConvert();
+extern Boolean _XtConvert();
     /* Widget               widget;         */
     /* XtAppContext         app;            */
     /* XrmRepresentation    from_type       */
     /* XrmValue             *from;          */
     /* XrmRepresentation    to_type;        */
     /* XrmValue             *to;            */  /* RETURN */
-
-extern void LowerCase(); /* source, dest */
-    /* char *source;    */
-    /* char *dest;      */  /* RETURN */
-
