@@ -1,4 +1,4 @@
-/* $XConsortium: XSync.c,v 1.7 94/03/30 14:40:58 rws Exp $ */
+/* $XConsortium: XSync.c,v 1.8 94/04/17 20:22:56 rws Exp gildea $ */
 /*
 
 Copyright (c) 1991, 1993  X Consortium
@@ -258,8 +258,11 @@ XSyncInitialize(dpy, major_version_return, minor_version_return)
     SyncHandle();
     *major_version_return = rep.majorVersion;
     *minor_version_return = rep.minorVersion;
-    return ((rep.majorVersion == SYNC_MAJOR_VERSION) &&
-	    (rep.minorVersion >= SYNC_MINOR_VERSION));
+    return ((rep.majorVersion == SYNC_MAJOR_VERSION)
+#if SYNC_MINOR_VERSION > 0	/* avoid compiler warning */
+	    && (rep.minorVersion >= SYNC_MINOR_VERSION)
+#endif
+	    );
 }
 
 XSyncSystemCounter *
