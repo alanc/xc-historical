@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: inputstr.h,v 1.19 89/04/22 15:49:54 rws Exp $ */
+/* $XConsortium: inputstr.h,v 1.20 89/04/26 09:13:49 rws Exp $ */
 
 #ifndef INPUTSTRUCT_H
 #define INPUTSTRUCT_H
@@ -146,7 +146,8 @@ typedef struct _QdEvent *QdEventPtr;
 typedef struct _QdEvent {
     QdEventPtr		next;
     DeviceIntPtr	device;
-    ScreenPtr		pScreen;
+    ScreenPtr		pScreen;	/* what screen the pointer was on */
+    unsigned long	months;		/* milliseconds is in the event */
     xEvent		event;
 } QdEventRec;    
 
