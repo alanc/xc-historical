@@ -1,4 +1,4 @@
-/* $Header: XExtInt.c,v 1.20 91/07/16 16:40:04 rws Exp $ */
+/* $Header: XExtInt.c,v 1.21 91/07/16 20:43:30 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -479,10 +479,10 @@ XInputWireToEvent (dpy, re, event)
 	    XValuatorStatus *vev;
 	    char *data;
 
-	    stev->window 		= dpy->current;
-	    stev->deviceid 		= sev->deviceid & DEVICE_BITS;
-	    stev->time     		= sev->time;
-	    stev->num_classes	 	= Ones (sev->classes_reported);
+	    stev->window 	= dpy->current;
+	    stev->deviceid 	= sev->deviceid & DEVICE_BITS;
+	    stev->time     	= sev->time;
+	    stev->num_classes	= Ones (sev->classes_reported & InputClassBits);
  	    data = (char *) &stev->data[0];
 	    if (sev->classes_reported & (1 << KeyClass))
 	        {
@@ -508,6 +508,7 @@ XInputWireToEvent (dpy, re, event)
 	        vev->class = ValuatorClass;
 	        vev->length = sizeof (XValuatorStatus);
 	        vev->num_valuators = sev->num_valuators;
+		vev->mode = sev->classes_reported >> ModeBitsShift;
 		j = sev->num_valuators;
 		if (j > 3) j = 3;
 		switch (j)
