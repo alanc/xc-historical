@@ -88,6 +88,9 @@ extern void XCMiscExtensionInit();
 #ifdef XRECORD
 extern void XRecordExtensionInit();
 #endif
+#ifdef LBX
+extern void     LbxExtensionInit();
+#endif
 
 /*ARGSUSED*/
 void
@@ -151,5 +154,8 @@ InitExtensions(argc, argv)
 #endif
 #ifdef XRECORD
     if (!noTestExtensions) XRecordExtensionInit(); 
+#endif
+#ifdef LBX
+    LbxExtensionInit();
 #endif
 }
