@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 2.22 88/04/01 14:59:26 swick Exp $";
+static char rcs_id[] = "$Header: screen.c,v 2.23 88/05/12 16:54:14 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -352,7 +352,10 @@ Scrn NewViewScrn()
 
 Scrn NewCompScrn()
 {
-    return CreateNewScrn(STcomp);
+    Scrn scrn;
+    scrn = CreateNewScrn(STcomp);
+    scrn->assocmsg = (Msg)NULL;
+    return scrn;
 }
 
 void ScreenSetAssocMsg(scrn, msg)
