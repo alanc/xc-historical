@@ -1,4 +1,4 @@
-/* $XConsortium: technique.c,v 1.1 93/07/19 11:39:32 mor Exp $ */
+/* $XConsortium: technique.c,v 1.2 93/07/26 19:05:07 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -138,7 +138,7 @@ int			encode;
     {
 	BEGIN_TECHNIQUE (xieTecRGBToCIELab, *bufDest, dstParam);
 
-	bcopy (srcParam->matrix, dstParam->matrix, 36);
+	memcpy (dstParam->matrix, srcParam->matrix, 36);
 	dstParam->whiteAdjusted = srcParam->white_adjust_tech;
 	dstParam->lenParams = techLen;
 
@@ -201,7 +201,7 @@ int			encode;
     {
 	BEGIN_TECHNIQUE (xieTecCIELabToRGB, *bufDest, dstParam);
 
-	bcopy (srcParam->matrix, dstParam->matrix, 36);
+	memcpy (dstParam->matrix, srcParam->matrix, 36);
 	dstParam->whiteAdjusted = srcParam->white_adjust_tech;
 	dstParam->numWhiteParams = whiteLen;
 	dstParam->gamutTechnique = srcParam->gamut_tech;
@@ -586,11 +586,11 @@ int			   encode;
 	 * so no need to pad.
 	 */
 
-	bcopy (srcParam->q_table, *bufDest, srcParam->q_size);
+	memcpy (*bufDest, srcParam->q_table, srcParam->q_size);
 	*bufDest += srcParam->q_size;
-	bcopy (srcParam->ac_table, *bufDest, srcParam->ac_size);
+	memcpy (*bufDest, srcParam->ac_table, srcParam->ac_size);
 	*bufDest += srcParam->ac_size;
-	bcopy (srcParam->dc_table, *bufDest, srcParam->dc_size);
+	memcpy (*bufDest, srcParam->dc_table, srcParam->dc_size);
 	*bufDest += srcParam->dc_size;
     }
 	
@@ -625,7 +625,7 @@ int			   encode;
 
 	/* table_size should be multiple of 4, so no need to pad */
 
-	bcopy (srcParam->table, *bufDest, srcParam->table_size);
+	memcpy (*bufDest, srcParam->table, srcParam->table_size);
     }
 	
     return (length);

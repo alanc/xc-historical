@@ -1,4 +1,4 @@
-/* $XConsortium: conven.c,v 1.2 93/07/26 19:02:49 mor Exp $ */
+/* $XConsortium: conven.c,v 1.3 93/08/20 10:07:18 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -414,7 +414,7 @@ char			*convolve_param;
 
     size = kernel_size * kernel_size * 4;
     element->data.Convolve.kernel = (float *) Xmalloc (size);
-    bcopy (kernel, element->data.Convolve.kernel, size);
+    memcpy (element->data.Convolve.kernel, kernel, size);
 }
 
 
@@ -561,7 +561,7 @@ unsigned int	tile_count;
 
     size = tile_count * sizeof (XieTile);
     element->data.PasteUp.tiles = (XieTile *) Xmalloc (size);
-    bcopy (tiles, element->data.PasteUp.tiles, size);
+    memcpy (element->data.PasteUp.tiles, tiles, size);
 }
 
 
@@ -829,7 +829,7 @@ char			*white_adjust_param;
     XieRGBToCIELabParam *param = (XieRGBToCIELabParam *)
 	Xmalloc (sizeof (XieRGBToCIELabParam));
 
-    bcopy (matrix, param->matrix, sizeof (XieMatrix));
+    memcpy (param->matrix, matrix, sizeof (XieMatrix));
     param->white_adjust_tech  = white_adjust_tech;
     param->white_adjust_param = white_adjust_param;
 
@@ -848,7 +848,7 @@ char			*white_adjust_param;
     XieRGBToCIEXYZParam *param = (XieRGBToCIEXYZParam *)
 	Xmalloc (sizeof (XieRGBToCIEXYZParam));
 
-    bcopy (matrix, param->matrix, sizeof (XieMatrix));
+    memcpy (param->matrix, matrix, sizeof (XieMatrix));
     param->white_adjust_tech  = white_adjust_tech;
     param->white_adjust_param = white_adjust_param;
 
@@ -908,7 +908,7 @@ char			*gamut_param;
     XieCIELabToRGBParam *param = (XieCIELabToRGBParam *)
 	Xmalloc (sizeof (XieCIELabToRGBParam));
 
-    bcopy (matrix, param->matrix, sizeof (XieMatrix));
+    memcpy (param->matrix, matrix, sizeof (XieMatrix));
     param->white_adjust_tech  = white_adjust_tech;
     param->white_adjust_param = white_adjust_param;
     param->gamut_tech         = gamut_tech;
@@ -932,7 +932,7 @@ char			*gamut_param;
     XieCIEXYZToRGBParam *param = (XieCIEXYZToRGBParam *)
 	Xmalloc (sizeof (XieCIEXYZToRGBParam));
 
-    bcopy (matrix, param->matrix, sizeof (XieMatrix));
+    memcpy (param->matrix, matrix, sizeof (XieMatrix));
     param->white_adjust_tech  = white_adjust_tech;
     param->white_adjust_param = white_adjust_param;
     param->gamut_tech         = gamut_tech;
@@ -1353,9 +1353,9 @@ unsigned int	dc_size;
     param->ac_table   = (char *) Xmalloc (ac_size);
     param->dc_table   = (char *) Xmalloc (dc_size);
 
-    bcopy (q_table, param->q_table, q_size);
-    bcopy (ac_table, param->ac_table, ac_size);
-    bcopy (dc_table, param->dc_table, dc_size);
+    memcpy (param->q_table, q_table, q_size);
+    memcpy (param->ac_table, ac_table, ac_size);
+    memcpy (param->dc_table, dc_table, dc_size);
 
     return (param);
 }
@@ -1382,7 +1382,7 @@ unsigned int	table_size;
     param->table_size   = table_size;
 
     param->table = (char *) Xmalloc (table_size);
-    bcopy (table, param->table, table_size);
+    memcpy (param->table, table, table_size);
 
     return (param);
 }

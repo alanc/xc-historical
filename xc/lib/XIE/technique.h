@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: technique.h,v 1.1 93/07/19 11:39:33 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -32,7 +32,7 @@ without express or implied warranty.
     _dstParam = &tParam;
 
 #define END_TECHNIQUE(_name, _bufDest, _dstParam) \
-    bcopy ((char *) _dstParam, _bufDest, SIZEOF (_name)); \
+    memcpy (_bufDest, _dstParam, SIZEOF (_name)); \
     _bufDest += SIZEOF (_name); \
 }
 
@@ -58,7 +58,7 @@ typedef struct {
 { \
     Long _d; \
     _d.value = _val; \
-    bcopy (&_d, _pBuf, SIZEOF (CARD32)); \
+    memcpy (_pBuf, &_d, SIZEOF (CARD32)); \
     _pBuf += SIZEOF (CARD32); \
 }
 

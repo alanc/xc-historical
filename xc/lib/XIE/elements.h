@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: elements.h,v 1.1 93/07/19 11:39:18 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -48,7 +48,7 @@ without express or implied warranty.
     _elemDest->elemLength = _elemLength;
 
 #define END_ELEM_HEAD(_name, _bufDest, _elemDest) \
-    bcopy ((char *) _elemDest, _bufDest, ELEM_SIZE(_name)); \
+    memcpy (_bufDest, _elemDest, ELEM_SIZE(_name)); \
     _bufDest += ELEM_SIZE(_name); \
 }
 
@@ -84,7 +84,7 @@ without express or implied warranty.
 	temp.src  = _tiles[i].src; \
         temp.dstX = _tiles[i].dst_x; \
         temp.dstY = _tiles[i].dst_y; \
-	bcopy ((char *) &temp, _pBuf, SIZEOF (xieTypTile)); \
+	memcpy (_pBuf, &temp, SIZEOF (xieTypTile)); \
         _pBuf += SIZEOF (xieTypTile); \
     } \
 }

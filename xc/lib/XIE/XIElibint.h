@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: XIElibint.h,v 1.1 93/07/19 11:39:09 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -213,7 +213,7 @@ typedef struct _XieExtInfo
     _pReq = &tReq;
 
 #define END_REQUEST_HEADER(_name, _pBuf, _pReq) \
-    bcopy ((char *) _pReq, _pBuf, REQSIZE(_name)); \
+    memcpy (_pBuf, _pReq, REQSIZE(_name)); \
     _pBuf += REQSIZE(_name); \
 }
 

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: init.h,v 1.1 93/07/19 11:39:26 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -25,7 +25,7 @@ without express or implied warranty.
 
 #define GET_TECHNIQUE_REC(_pBuf, _techRec) \
     xieTypTechniqueRec temp; \
-    bcopy (_pBuf, &temp, SIZEOF (xieTypTechniqueRec)); \
+    memcpy (&temp, _pBuf, SIZEOF (xieTypTechniqueRec)); \
     _techRec = &temp;
 
 #endif /* WORD64 */
