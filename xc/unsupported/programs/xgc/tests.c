@@ -1,5 +1,5 @@
 /*
-** $XConsortium: tests.c,v 1.18 91/04/03 20:35:51 gildea Exp $
+** $XConsortium: tests.c,v 1.19 91/06/08 18:33:51 rws Exp $
 **
 */
 
@@ -265,11 +265,7 @@ polypoint_test()
 
   XSync(X.dpy,0);
   start_timer();
-  XDrawPoints(X.dpy,X.win,X.gc,points,20000,CoordModeOrigin);
-  XDrawPoints(X.dpy,X.win,X.gc,&points[20000],20000,CoordModeOrigin);
-  XDrawPoints(X.dpy,X.win,X.gc,&points[40000],20000,CoordModeOrigin);
-  XDrawPoints(X.dpy,X.win,X.gc,&points[60000],20000,CoordModeOrigin);
-  XDrawPoints(X.dpy,X.win,X.gc,&points[80000],20000,CoordModeOrigin);
+  XDrawPoints(X.dpy,X.win,X.gc,points,num_points,CoordModeOrigin);
   XSync(X.dpy,0);
   totaltime = end_timer();
 
