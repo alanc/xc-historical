@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.193 91/06/12 09:10:12 rws Exp $ */
+/* $XConsortium: Initialize.c,v 1.194 91/06/13 18:48:34 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -585,7 +585,7 @@ XrmDatabase _XtPreparseCommandLine(urlist, num_urs, argc, argv, applName,
 	    type == _XtQString)
 	    *displayName = val.addr;
     }
-    name_list[1] = XrmPermStringToQuark("xnlanguage");
+    name_list[1] = XrmPermStringToQuark("xnlLanguage");
     class_list[1] = XrmPermStringToQuark("XnlLanguage");
     if (XrmQGetResource(db, name_list, class_list, &type, &val) &&
 	type == _XtQString)
