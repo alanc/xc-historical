@@ -5063,7 +5063,7 @@ supports three mechanisms which will be outlined below.
 .LP
 If other device types are eventually necessary, additional
 properties will be required to describe them.
-.nH 2 "XYZ \*(dA RGB Conversion Matrices"
+.nH 2 "XYZ RGB Conversion Matrices"
 .LP
 Because of the limited dynamic range of both XYZ and RGB intensity,
 these matrices will be encoded using a fixed point representation of a
