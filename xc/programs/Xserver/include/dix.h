@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.65 93/09/18 13:47:40 dpw Exp $ */
+/* $XConsortium: dix.h,v 1.66 93/09/20 18:07:20 dpw Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -150,7 +150,11 @@ extern ClientPtr requestingClient;
 extern ClientPtr *clients;
 extern ClientPtr serverClient;
 extern int currentMaxClients;
+#ifdef __alpha /* XXX temporary until driver is fixed */
+extern int *checkForInput[2];
+#else
 extern long *checkForInput[2];
+#endif
 
 /* dispatch.c */
 
