@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.64 89/07/05 11:36:27 jim Exp $
+ * $XConsortium: add_window.c,v 1.65 89/07/05 13:42:59 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.64 89/07/05 11:36:27 jim Exp $";
+"$XConsortium: add_window.c,v 1.65 89/07/05 13:42:59 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -992,7 +992,7 @@ TwmWindow *tmp_win;
     unsigned long valuemask;		/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
     int x, y;
-    int h = Scr->TitleHeight - Scr->FramePadding * 2;
+    int h = Scr->TitleHeight - (Scr->FramePadding * 2);
 
     if (tmp_win->title_height == 0)
     {
@@ -1027,23 +1027,20 @@ TwmWindow *tmp_win;
 	 * out the edges so that they look crisp
 	 */
 	XmuDrawLogo (dpy, Scr->iconifyPm, gc, gcBack, 0, 0, h, h);
-	XDrawRectangle (dpy, Scr->iconifyPm, gcBack, 0, 0, h - 1, h - 1);
+	XDrawRectangle (dpy, Scr->iconifyPm, gc,     0, 0, h - 1, h - 1);
 	XDrawRectangle (dpy, Scr->iconifyPm, gcBack, 1, 1, h - 3, h - 3);
-	XDrawRectangle (dpy, Scr->iconifyPm, gcBack, 3, 3, h - 7, h - 7);
-	XDrawRectangle (dpy, Scr->iconifyPm, gc,     2, 2, h - 5, h - 5);
 	XFreeGC (dpy, gcBack);
 
 	/*
 	 * draw the resize button, 
 	 */
-	XDrawRectangle (dpy, Scr->resizePm, gc, 2, 2, h - 5, h - 5);
+	XDrawRectangle (dpy, Scr->resizePm, gc, 0, 0, h - 1, h - 1);
 
-	/* (real size * 2 + .5) / 3 */
-	w = ((h * (2 * 2)) + 1) / (3 * 2);
-	XDrawRectangle (dpy, Scr->resizePm, gc, 2, 2, w, w);
+	w = (((h * 4) / 3) + 1) / 2;		/* 2/3 h rounded */
+	XDrawRectangle (dpy, Scr->resizePm, gc, 0, 0, w - 1, w - 1);
 
 	w = (w + 1) / 2;
-	XDrawRectangle (dpy, Scr->resizePm, gc, 2, 2, w, w);
+	XDrawRectangle (dpy, Scr->resizePm, gc, 0, 0, w - 1, w - 1);
 
 
 	/*
@@ -1052,7 +1049,7 @@ TwmWindow *tmp_win;
 	XFreeGC(dpy, gc);
     }
 
-    attributes.win_gravity = NorthEastGravity;
+    attributes.win_gravity = NorthWestGravity;
     attributes.background_pixmap = None;
     attributes.event_mask = (ButtonPressMask | ButtonReleaseMask |
 			     ExposureMask);
@@ -1063,10 +1060,10 @@ TwmWindow *tmp_win;
 					CopyFromParent, CopyFromParent,
 				        valuemask, &attributes);
 
-    attributes.win_gravity = NorthWestGravity;
+    attributes.win_gravity = NorthEastGravity;
     tmp_win->resize_w = XCreateWindow (dpy, tmp_win->title_w, 
 				       (tmp_win->attr.width - Scr->FramePadding
-					- 1), Scr->FramePadding,
+					- h - 1), Scr->FramePadding,
 					h, h, 0, 0, 
 					CopyFromParent, CopyFromParent,
 				        valuemask, &attributes);
