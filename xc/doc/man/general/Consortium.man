@@ -94,6 +94,7 @@ Hitachi Ltd.
 Hughes Aircraft Company
 IBM Corporation
 Intergraph Corp.
+Kubota Corp.
 Matsushita Electric Industrical Co., Ltd.
 MIPS Computer Systems
 Mitsubishi Electric Corporation
