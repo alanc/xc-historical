@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.97 91/02/17 15:56:32 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.98 91/02/18 10:53:30 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -204,10 +204,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.97 91/02/17 15:56:32 rws Exp $
 #endif
 #endif
 #ifndef PexClientDefines
-#define PexClientDefines /**/
-#endif
-#ifndef PexTestDefines
-#define PexTestDefines /**/
+#define PexClientDefines -DPEX_SI_PHIGS
 #endif
 
 #ifndef CppSourcesPresent
@@ -390,7 +387,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.97 91/02/17 15:56:32 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.97 91/02/17 15:56:32 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.98 91/02/18 10:53:30 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
