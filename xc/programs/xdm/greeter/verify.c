@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.4 88/10/15 19:11:29 keith Exp $
+ * $XConsortium: verify.c,v 1.5 88/10/20 17:37:57 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -49,7 +49,7 @@ struct verify_info	*verify;
 	char		**argv;
 
 	p = getpwnam (greet->name);
-	if (!p)
+	if (!p || strlen (greet->name) == 0)
 		p = &joeblow;
 	Debug ("Verify %s %s\n", greet->name, greet->password);
 	if (strcmp (crypt (greet->password, p->pw_passwd), p->pw_passwd)) {
