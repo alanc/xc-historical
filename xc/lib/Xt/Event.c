@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.133 91/07/12 12:16:54 rws Exp $ */
+/* $XConsortium: Event.c,v 1.134 91/08/26 14:20:42 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -868,11 +868,6 @@ static EventMask Const masks[] = {
 	ButtonPressMask,	    /* ButtonPress		*/
 	ButtonReleaseMask,	    /* ButtonRelease		*/
 	PointerMotionMask	    /* MotionNotify		*/
-		| Button1MotionMask
-		| Button2MotionMask
-		| Button3MotionMask
-		| Button4MotionMask
-		| Button5MotionMask
 		| ButtonMotionMask,
 	EnterWindowMask,	    /* EnterNotify		*/
 	LeaveWindowMask,	    /* LeaveNotify		*/
@@ -984,6 +979,10 @@ static Boolean DecideToDispatch(event)
 				break;
 
       case MotionNotify:	grabType = ignore; time = event->xmotion.time;
+#define XKnownButtons (Button1MotionMask|Button2MotionMask|Button3MotionMask|\
+                       Button4MotionMask|Button5MotionMask)
+	                        mask |= (event->xmotion.state & XKnownButtons);
+#undef XKnownButtons
 				break;
 
       case EnterNotify:
