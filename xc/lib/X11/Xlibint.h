@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: Xlibint.h,v 11.61 88/09/06 16:09:16 jim Exp $ */
+/* $XConsortium: Xlibint.h,v 11.62 89/01/10 11:17:13 rws Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -265,11 +265,9 @@ extern void Data();
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 
-#define	CI_NONEXISTCHAR	0x4000	/* required because QueryFont represents
-				   a non-existant character with zero-value
-				   metrics, but requires drivers to output
-				   the default char in their place. */
-
+#define CI_NONEXISTCHAR(cs) (((cs)->width == 0) && \
+			     ((cs)->rbearing == 0) && \
+			     ((cs)->lbearing == 0))
 
 #ifdef MUSTCOPY
 
