@@ -1,4 +1,4 @@
-/* $XConsortium: xedit.c,v 1.25 90/10/26 12:00:00 dave Exp $ */
+/* $XConsortium: xedit.c,v 1.26 91/01/10 21:31:27 gildea Exp $ */
  
 /*
  *			  COPYRIGHT 1987
@@ -43,16 +43,18 @@ Display *CurDpy;
 
 struct _app_resources app_resources;
 
-#define offset(field) XtOffset(struct _app_resources*, field)
+#define Offset(field) XtOffsetOf(struct _app_resources, field)
+
 static XtResource resources[] = {
    {"enableBackups", "EnableBackups", XtRBoolean, sizeof(Boolean),
-         offset(enableBackups), XtRImmediate, FALSE},
+         Offset(enableBackups), XtRImmediate, FALSE},
    {"backupNamePrefix", "BackupNamePrefix", XtRString, sizeof(char *),
-         offset(backupNamePrefix),XtRString, ""},
+         Offset(backupNamePrefix),XtRString, ""},
    {"backupNameSuffix", "BackupNameSuffix", XtRString, sizeof(char *),
-         offset(backupNameSuffix),XtRString, ".BAK"}
+         Offset(backupNameSuffix),XtRString, ".BAK"}
 };
-#undef offset
+
+#undef Offset
 
 void
 main(argc, argv)
