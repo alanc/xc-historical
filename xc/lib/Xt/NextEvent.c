@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.137 94/03/28 14:20:16 gildea Exp $ */
+/* $XConsortium: NextEvent.c,v 1.136 94/02/04 14:20:03 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -100,6 +100,12 @@ static SignalEventRec* freeSignalRecs;
 #define IS_AT_OR_AFTER(t1, t2) (((t2).tv_sec > (t1).tv_sec) \
 	|| (((t2).tv_sec == (t1).tv_sec)&& ((t2).tv_usec >= (t1).tv_usec)))
 
+#ifdef USE_POLL
+#ifndef XT_DEFAULT_FDLIST_SIZE
+#define XT_DEFAULT_FDLIST_SIZE 32
+#endif
+#endif
+
 static void AdjustHowLong (howlong, start_time)
 	unsigned long *howlong;
 	struct timeval *start_time;
@@ -174,9 +180,11 @@ static void InitTimes (block, howlong, wt)
 
 typedef struct {
 #ifndef USE_POLL
-    Fd_set rmaskfd, wmaskfd, emaskfd;
+    Fd_set rmask, wmask, emask;
+    int nfds;
 #else
-    int fdlistlen, fdli;
+    struct pollfd* fdlist;
+    int fdlistlen, num_dpys;
 #endif
 } wait_fds_t, *wait_fds_ptr_t;
 
@@ -188,33 +196,26 @@ static void InitFds (app, ignoreEvents, ignoreInputs, wf)
 {
     int ii;
 #ifndef USE_POLL
+    wf->nfds = app->fds.nfds;
     if( !ignoreInputs ) {
-	wf->rmaskfd = app->fds.rmask;
-	wf->wmaskfd = app->fds.wmask;
-	wf->emaskfd = app->fds.emask;
+	wf->rmask = app->fds.rmask;
+	wf->wmask = app->fds.wmask;
+	wf->emask = app->fds.emask;
      } else
-	wf->rmaskfd = wf->wmaskfd = wf->emaskfd = zero_fd;
+	wf->rmask = wf->wmask = wf->emask = zero_fd;
 
      if (!ignoreEvents)
 	for (ii = 0; ii < app->count; ii++) {
-	    FD_SET (ConnectionNumber(app->list[ii]), &wf->rmaskfd);
+	    FD_SET (ConnectionNumber(app->list[ii]), &wf->rmask);
 	}
 #else
-    wf->fdlistlen = 0;
-    if (!ignoreEvents)
-	wf->fdlistlen += app->count;
-    if (!ignoreInputs && app->input_list != NULL)
-	for (ii = 0; ii < (int) app->input_max; ii++)
-	    if (app->input_list[ii] != NULL)
-		wf->fdlistlen++;
-
     if (wf->fdlistlen) {
-	struct pollfd* fdlp = app->fds.fdlist;
+	struct pollfd* fdlp = wf->fdlist;
 	InputEvent* iep;
 
 	if (!ignoreEvents)
-	    for (wf->fdli = 0 ; wf->fdli < app->count; wf->fdli++, fdlp++) {
-		fdlp->fd = ConnectionNumber (app->list[wf->fdli]);
+	    for (ii = 0 ; ii < wf->num_dpys; ii++, fdlp++) {
+		fdlp->fd = ConnectionNumber (app->list[ii]);
 		fdlp->events = POLLIN;
 	    }
 	if (!ignoreInputs && app->input_list != NULL)
@@ -228,8 +229,6 @@ static void InitFds (app, ignoreEvents, ignoreInputs, wf)
 			    fdlp->events |= POLLIN;
 			if (iep->ie_condition & XtInputWriteMask)
 			    fdlp->events |= POLLOUT;
-			if (iep->ie_condition & XtInputExceptMask)
-			    fdlp->events |= POLLERR;
 		    }
 		    fdlp++;
 		}
@@ -265,19 +264,18 @@ static void AdjustTimes (app, block, howlong, ignoreTimers, wt)
 #endif
 }
 
-static int IoWait (app, wt, wf)
-    XtAppContext app;
+static int IoWait (wt, wf)
     wait_times_ptr_t wt;
     wait_fds_ptr_t wf;
 {
 #ifndef USE_POLL
-    return select (app->fds.nfds, 
-		   (int *) &wf->rmaskfd, 
-		   (int *) &wf->wmaskfd, 
-		   (int *) &wf->emaskfd, 
+    return select (wf->nfds, 
+		   (int *) &wf->rmask, 
+		   (int *) &wf->wmask, 
+		   (int *) &wf->emask, 
 		   wt->wait_time_ptr);
 #else
-    return poll (app->fds.fdlist, wf->fdlistlen, wt->poll_wait);
+    return poll (wf->fdlist, wf->fdlistlen, wt->poll_wait);
 #endif
 }
 
@@ -292,14 +290,15 @@ static void FindInputs (app, wf, nfds, ignoreEvents, ignoreInputs, dpy_no, found
 {
     XtInputMask condition;
     InputEvent *ep;
+    int ii;
 #ifndef USE_POLL /* { check ready file descriptors block */
-    int ii, dd;
+    int dd;
     *dpy_no = -1;
     *found_input = False;
 
-    for (ii = 0; ii < app->fds.nfds && nfds > 0; ii++) {
+    for (ii = 0; ii < wf->nfds && nfds > 0; ii++) {
 	condition = 0;
-	if (FD_ISSET (ii, &wf->rmaskfd)) {
+	if (FD_ISSET (ii, &wf->rmask)) {
 	    nfds--;
 	    if (!ignoreEvents) {
 		for (dd = 0; dd < app->count; dd++) {
@@ -321,13 +320,24 @@ static void FindInputs (app, wf, nfds, ignoreEvents, ignoreInputs, dpy_no, found
 		    }
 		}
 	    }
+#ifdef XTHREADS
+	    if (FD_ISSET (ii, &app->fds.rmask))
+#endif
 	    condition = XtInputReadMask;
 	}
-	if (FD_ISSET (ii, &wf->wmaskfd)) {
+	if (FD_ISSET (ii, &wf->wmask)
+#ifdef XTHREADS
+	 && FD_ISSET (ii, &app->fds.wmask)
+#endif
+	) {
 	    condition |= XtInputWriteMask;
 	    nfds--;
 	}
-	if (FD_ISSET (ii, &wf->emaskfd)) {
+	if (FD_ISSET (ii, &wf->emask)
+#ifdef XTHREADS
+	 && FD_ISSET (ii, &app->fds.emask)
+#endif
+	) {
 	    condition |= XtInputExceptMask;
 	    nfds--;
 	}
@@ -342,27 +352,41 @@ static void FindInputs (app, wf, nfds, ignoreEvents, ignoreInputs, dpy_no, found
 ENDILOOP:   ;
     } /* endfor */
 #else /* }{ */
-    struct pollfd* fdlp = app->fds.fdlist;
+    struct pollfd* fdlp = wf->fdlist;
 
     *dpy_no = -1;
     *found_input = False;
 
-    wf->fdli = 0;
     if (!ignoreEvents)
-	for ( ; wf->fdli < app->count; wf->fdli++, fdlp++)
+	for (ii = 0; ii < wf->num_dpys; ii++, fdlp++)
 	    if (fdlp->revents & (POLLIN|POLLHUP) &&
-		XEventsQueued (app->list[wf->fdli], QueuedAfterReading))
-		*dpy_no = wf->fdli;
+#ifdef XTHREADS
+		!(fdlp->revents & POLLNVAL) &&
+#endif
+		XEventsQueued (app->list[ii], QueuedAfterReading))
+		*dpy_no = ii;
 
      if (!ignoreInputs) {
-	for ( ; wf->fdli < wf->fdlistlen; wf->fdli++, fdlp++) {
+	for (ii = wf->num_dpys; ii < wf->fdlistlen; ii++, fdlp++) {
 	    condition = 0;
 	    if (fdlp->revents) {
-		if (fdlp->revents & (POLLIN|POLLHUP))
+		if (fdlp->revents & (POLLIN|POLLHUP)
+#ifdef XTHREADS
+		    && !(fdlp->revents & POLLNVAL)
+#endif
+		)
 		    condition = XtInputReadMask;
-		if (fdlp->revents & POLLOUT)
+		if (fdlp->revents & POLLOUT
+#ifdef XTHREADS
+		    && !(fdlp->revents & POLLNVAL)
+#endif
+		)
 		    condition |= XtInputWriteMask;
-		if (fdlp->revents & POLLERR)
+		if (fdlp->revents & POLLERR
+#ifdef XTHREADS
+		    && !(fdlp->revents & POLLNVAL)
+#endif
+		)
 		    condition |= XtInputExceptMask;
 	    }
 	    if (condition) {
@@ -459,6 +483,9 @@ int _XtWaitForSomething(app,
 #ifdef XTHREADS
     Boolean push_thread = TRUE;
 #endif
+#ifdef USE_POLL
+    struct pollfd fdlist[XT_DEFAULT_FDLIST_SIZE];
+#endif
 
 #ifdef XTHREADS
     /* assert ((ignoreTimers && ignoreInputs && ignoreSignals) || drop_lock); */
@@ -468,6 +495,24 @@ int _XtWaitForSomething(app,
 #endif
 
     InitTimes (block, howlong, &wt);
+
+#ifdef USE_POLL
+    if (!ignoreEvents)
+	wf.fdlistlen = wf.num_dpys = app->count;
+    else
+	wf.fdlistlen = wf.num_dpys = 0;
+
+    if (!ignoreInputs && app->input_list != NULL) {
+	int ii;
+	for (ii = 0; ii < (int) app->input_max; ii++)
+	    if (app->input_list[ii] != NULL)
+		wf.fdlistlen++;
+    }
+
+    wf.fdlist = (struct pollfd*)
+	XtStackAlloc (sizeof (struct pollfd) * wf.fdlistlen, fdlist);
+#endif
+
     InitFds (app, ignoreEvents, ignoreInputs, &wf);
 
 WaitLoop:
@@ -490,7 +535,7 @@ WaitLoop:
 		push_thread = FALSE;
 	    }
 	    yield = YIELD_APP_LOCK(app);
-	    nfds = IoWait (app, &wt, &wf); 
+	    nfds = IoWait (&wt, &wf); 
 
 	    if (!IS_TOP_THREAD(app))
 		goto WaitLoop;
@@ -500,13 +545,15 @@ WaitLoop:
 	    push_thread = TRUE;
 	} else
 #endif /* } */
-	nfds = IoWait (app, &wt, &wf);
+	nfds = IoWait (&wt, &wf);
 	if (nfds == -1) {
 	    /*
 	     *  interrupt occured recalculate time value and wait again.
 	     */
-	    if (errno == EINTR) {
+	    if (errno == EINTR || errno == EAGAIN) {
 		errno = 0;  /* errno is not self reseting */
+
+		if (errno == EAGAIN) continue;
 
 		/* was it interrupted by a signal that we care about? */
 		if (!ignoreSignals && app->signalQueue != NULL) {
@@ -515,7 +562,10 @@ WaitLoop:
 			if (se_ptr->se_notice) {
 			    if (block && howlong != NULL)
 				AdjustHowLong (howlong, &wt.start_time);
-				return -1;
+#ifdef USE_POLL
+			    XtStackFree ((XtPointer) wf.fdlist, fdlist);
+#endif
+			    return -1;
 			}
 			se_ptr = se_ptr->se_next;
 		    }
@@ -554,8 +604,12 @@ WaitLoop:
 		if (!ignoreEvents)
 		    /* get Xlib to detect a bad connection */
 		    for (dd = 0; dd < app->count; dd++)
-			if (XEventsQueued(app->list[dd], QueuedAfterReading))
-					return dd;
+			if (XEventsQueued(app->list[dd], QueuedAfterReading)) {
+#if USE_POLL
+			    XtStackFree ((XtPointer) wf.fdlist, fdlist);
+#endif
+			    return dd;
+			}
 
 		sprintf( Errno, "%d", errno);
 		XtAppWarningMsg(app, "communicationError","select",
@@ -571,21 +625,31 @@ WaitLoop:
 	/* Timed out */
 	if (howlong) 
 	    *howlong = (unsigned long)0;
+#ifdef USE_POLL
+	XtStackFree ((XtPointer) wf.fdlist, fdlist);
+#endif
 	return -1;
     }
 
     if (block && howlong != NULL)
 	AdjustHowLong (howlong, &wt.start_time);
 
-    if (ignoreInputs && ignoreEvents)
+    if (ignoreInputs && ignoreEvents) {
+#ifdef USE_POLL
+	XtStackFree ((XtPointer) wf.fdlist, fdlist);
+#endif
 	return -1;
-    else
+    } else
 	FindInputs (app, &wf, nfds, 
 		    ignoreEvents, ignoreInputs, 
 		    &dpy_no, &found_input);
 
-    if (dpy_no >= 0 || found_input)
+    if (dpy_no >= 0 || found_input) {
+#ifdef USE_POLL
+	XtStackFree ((XtPointer) wf.fdlist, fdlist);
+#endif
 	return dpy_no;
+    }
     goto WaitLoop;
 }
 
@@ -851,10 +915,11 @@ XtInputId XtAppAddInput(app, source, Condition, proc, closure)
 
 	if (app->input_max <= source) {
 	    Cardinal n = source + 1;
+	    int ii;
 	    app->input_list = (InputEvent**)XtRealloc((char*) app->input_list,
 						      n * sizeof(InputEvent*));
-	    bzero((char *) &app->input_list[app->input_max],
-		  (unsigned)(n - app->input_max) * sizeof(InputEvent*));
+	    for (ii = app->input_max; ii < (int) n; ii++)
+		app->input_list[ii] = (InputEvent*) NULL;
 	    app->input_max = n;
 	}
 	sptr = XtNew(InputEvent);
@@ -874,14 +939,10 @@ XtInputId XtAppAddInput(app, source, Condition, proc, closure)
 
 	if (app->fds.nfds < (source+1)) app->fds.nfds = source+1;
 #else
-	if (sptr->ie_next == NULL) {
+	if (sptr->ie_next == NULL)
 	    app->fds.nfds++;
-	    app->fds.fdlist = (struct pollfd *)
-		XtRealloc ((char *)app->fds.fdlist,
-			   app->fds.nfds * sizeof (struct pollfd));
-	}
 #endif
-	app->fds.count++;
+	app->input_count++;
 	UNLOCK_APP(app);
 	return((XtInputId)sptr);
 }
@@ -938,9 +999,13 @@ void XtRemoveInput( id )
 		}
 	}
 
-	if (found)
-	    app->fds.count--;
-	else
+	if (found) {
+	    app->input_count--;
+#ifdef USE_POLL
+	    if (app->input_list[source] == NULL)
+		app->fds.nfds--;
+#endif
+	} else
 	    XtAppWarningMsg(app, "invalidProcedure","inputHandler",
 			    XtCXtToolkitError, 
 			    "XtRemoveInput: Input handler not found",
@@ -981,7 +1046,7 @@ static void DoOtherSources(app)
 	}
 /*enddef*/
 	DrainQueue();
-	if (app->fds.count > 0) {
+	if (app->input_count > 0) {
 	    /* Call _XtWaitForSomething to get input queued up */
 	    (void) _XtWaitForSomething (app,
 					TRUE, TRUE, FALSE, TRUE, 
@@ -1190,7 +1255,7 @@ void XtAppProcessEvent(app, mask)
 	    }
     
 	    if (mask & XtIMAlternateInput) {
-		if (app->fds.count > 0 && app->outstandingQueue == NULL) {
+		if (app->input_count > 0 && app->outstandingQueue == NULL) {
 		    /* Call _XtWaitForSomething to get input queued up */
 		    (void) _XtWaitForSomething (app, 
 						TRUE, TRUE, FALSE, TRUE, 
@@ -1346,7 +1411,7 @@ static Boolean PeekOtherSources(app)
 	    }
 	}
 
-	if (app->fds.count > 0) {
+	if (app->input_count > 0) {
 	    /* Call _XtWaitForSomething to get input queued up */
 	    (void) _XtWaitForSomething (app,
 					TRUE, TRUE, FALSE, TRUE, 

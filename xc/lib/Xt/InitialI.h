@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.79 93/11/22 13:17:57 kaleb Exp $ */
+/* $XConsortium: InitialI.h,v 1.80 94/01/07 20:01:51 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -96,15 +96,12 @@ typedef struct _WorkProcRec {
 
 typedef struct 
 {
-#if !defined (USE_POLL)
+#ifndef USE_POLL
   	Fd_set rmask;
 	Fd_set wmask;
 	Fd_set emask;
-#else
-	struct pollfd *fdlist;
 #endif
 	int	nfds;
-	int	count;
 } FdStruct;
 
 typedef struct _LangProcRec {
@@ -148,6 +145,7 @@ typedef struct _XtAppStruct {
     short count;			/* num of assigned entries in list */
     short max;				/* allocate size of list */
     short last;
+    short input_count;
     short input_max;			/* elts input_list init'd with */
     Boolean sync, being_destroyed, error_inited;
 #ifndef NO_IDENTIFY_WINDOWS
