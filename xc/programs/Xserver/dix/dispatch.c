@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.46 88/04/10 10:53:10 rws Exp $ */
+/* $Header: dispatch.c,v 1.47 88/04/30 12:03:26 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2975,7 +2975,7 @@ ProcKillClient(client)
     if (clientIndex && pResource)
     {
 	myIndex = client->index;
-    	if (clients[clientIndex] && !clients[clientIndex]->clientGone)
+    	if (clients[clientIndex])
  	{
 	    CloseDownClient(clients[clientIndex]);
 	}
