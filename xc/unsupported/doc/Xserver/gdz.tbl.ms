@@ -54,7 +54,7 @@ Star Wars,  \fIGeorge Lucas\fP
 Copyright \(co 1987 by Sun Microsystems, Inc.\s-2\u1\d\s0
 .DE
 .DS C
-Copyright \(co 1990 by the Massachusetts Institute of Technology\s-2\u1\d\s0
+Copyright \(co 1990  X Consortium\s-2\u1\d\s0
 .DE
 .FS
 1.  Permission to use, copy, modify, distribute and sell this document for
