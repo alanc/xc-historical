@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sunGX.c,v 1.11 91/11/13 20:03:05 keith Exp $
+ * $XConsortium: sunGX.c,v 1.12 91/11/14 14:00:20 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -34,6 +34,7 @@
 #include	"mistruct.h"
 #include	"fontstruct.h"
 #include	"dixfontstr.h"
+#define PSZ 8
 #include	"cfb.h"
 #include	"cfbmskbits.h"
 #include	"cfb8bit.h"
@@ -415,8 +416,6 @@ sunGXCopyArea(pSrcDrawable, pDstDrawable,
     int width, height;
     int dstx, dsty;
 {
-    extern RegionPtr	cfbBitBlt (), cfbCopyArea ();
-
     if (pSrcDrawable->type != DRAWABLE_WINDOW)
 	return cfbCopyArea (pSrcDrawable, pDstDrawable,
             pGC, srcx, srcy, width, height, dstx, dsty);
@@ -2146,7 +2145,11 @@ sunGXValidateGC (pGC, changes, pDrawable)
 	cfbValidateGC (pGC, changes, pDrawable);
 	return;
     }
-    gxPriv->type = DRAWABLE_WINDOW;
+    if (gxPriv->type != DRAWABLE_WINDOW)
+    {
+	changes = (1 << GCLastBit+1) - 1;
+	gxPriv->type = DRAWABLE_WINDOW;
+    }
 
     new_rotate = pGC->lastWinOrg.x != pDrawable->x ||
 		 pGC->lastWinOrg.y != pDrawable->y;
