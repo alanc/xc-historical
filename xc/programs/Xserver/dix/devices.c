@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.19 91/07/17 19:26:02 rws Exp $ */
+/* $XConsortium: devices.c,v 5.20 91/11/17 13:48:08 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1267,6 +1267,16 @@ ProcChangePointerControl(client)
 
     REQUEST_SIZE_MATCH(xChangePointerControlReq);
     ctrl = mouse->ptrfeed->ctrl;
+    if ((stuff->doAccel != xTrue) && (stuff->doAccel != xFalse))
+    {
+	client->errorValue = stuff->doAccel;
+	return(BadValue);
+    }
+    if ((stuff->doThresh != xTrue) && (stuff->doThresh != xFalse))
+    {
+	client->errorValue = stuff->doThresh;
+	return(BadValue);
+    }
     if (stuff->doAccel)
     {
 	if (stuff->accelNum == -1)
