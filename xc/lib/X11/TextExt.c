@@ -1,34 +1,24 @@
-#define NEED_REPLIES
+/*
+ * $XConsortium: XTextExt.c,v 1.5 89/06/07 12:04:25 jim Exp $
+ *
+ * Copyright 1989 Massachusetts Institute of Technology
+ */
+
 
 #include "Xlibint.h"
 
 #define min_byte2 min_char_or_byte2
 #define max_byte2 max_char_or_byte2
 
-
-/*
- * GetCS - Return the charinfo struct for the indicated 8bit character.  If
- * the character is in the column and exists, then return the appropriate
- * metrics (note that fonts with common per-character metrics will return
- * min_bounds).  If none of these hold true, try again with the default char. 
+/* 
+ * GetCharInfo1d - Return the charinfo struct for the indicated 8bit
+ * character.  If the character is in the column and exists, then return the
+ * appropriate metrics (note that fonts with common per-character metrics will
+ * return min_bounds).  If none of these hold true, try again with the default
+ * char.
  */
 
-#define InitGetCS(fs,cs) \
-{ \
-    unsigned int col = fs->default_char; \
-    cs = NULL; \
-    if (col >= fs->min_byte2 && col <= fs->max_byte2) { \
-	if (fs->per_char == NULL) { \
-	    cs = &fs->min_bounds; \
-	} else { \
-	    cs = &fs->per_char[(col - fs->min_byte2)]; \
-	    if (CI_NONEXISTCHAR(cs)) cs = NULL; \
-	} \
-    } \
-}
-
-
-#define GetCS(fs,col,def,cs) \
+#define GetCharInfo1d(fs,col,def,cs) \
 { \
     cs = def; \
     if (col >= fs->min_byte2 && col <= fs->max_byte2) { \
@@ -41,34 +31,46 @@
     } \
 }
 
+#define GetDefaultCharInfo1d(fs,cs) \
+  GetCharInfo1d (fs, fs->default_char, NULL, cs)
 
 
-/*
- * GetCS2d - do the same thing as GetCS, except that the font has more than
- * one row.  This is special case of more general version used in XTextExt16.c
- * since row == 0.  This is used when max_byte2 is not zero.  A further
- * optimization would do the check for min_byte1 being zero athead of time.
- */
-
-#define InitGetCS2d(fs,cs) \
+#define GetCharInfo2d(fs,row,col,def,cs) \
 { \
-    unsigned int row = (fs->default_char >> 8); \
-    unsigned int col = (fs->default_char & 0xff); \
-    int numCols = fs->max_byte2 - fs->min_byte2 + 1; \
     cs = NULL; \
     if (row >= fs->min_byte1 && row <= fs->max_byte1 && \
 	col >= fs->min_byte2 && col <= fs->max_byte2) { \
 	if (fs->per_char == NULL) { \
 	    cs = &fs->min_bounds; \
 	} else { \
-	    cs = &fs->per_char[(row - fs->min_byte1) * numCols +  \
+	    cs = &fs->per_char[((row - fs->min_byte1) * \
+			        (fs->max_byte2 - fs->min_byte2 + 1)) + \
 			       (col - fs->min_byte2)]; \
 	    if (CI_NONEXISTCHAR(cs)) cs = NULL; \
         } \
     } \
 }
 
-#define GetCS2d(fs,col,def,cs) \
+#define GetDefaultCharInfo2d(fs,cs) \
+{ \
+    unsigned int r = (fs->default_char >> 8); \
+    unsigned int c = (fs->default_char & 0xff); \
+    GetCharInfo2d (fs, r, c, NULL, cs); \
+}
+
+
+
+
+
+/* 
+ * GetRowZeroCharInfo2d - do the same thing as GetCharInfo1d, except that
+ * the font has more than one row.  This is special case of more general
+ * version used in XTextExt16.c since row == 0.  This is used when max_byte2 is
+ * not zero.  A further optimization would do the check for min_byte1 being
+ * zero ahead of time.
+ */
+
+#define GetRowZeroCharInfo2d(fs,col,def,cs) \
 { \
     cs = def; \
     if (fs->min_byte1 == 0 && \
@@ -102,10 +104,10 @@ XTextExtents (fs, string, nchars, dir, font_ascent, font_descent, overall)
     XCharStruct *def;			/* info about default char */
     unsigned char *us = (unsigned char *) string;  /* be 8bit clean */
 
-    if (singlerow) {
-	InitGetCS (fs, def);
+    if (singlerow) {			/* optimization */
+	GetDefaultCharInfo1d (fs, def);
     } else {
-	InitGetCS2d (fs, def);
+	GetDefaultCharInfo2d (fs, def);
     }
 
     *dir = fs->direction;
@@ -113,20 +115,20 @@ XTextExtents (fs, string, nchars, dir, font_ascent, font_descent, overall)
     *font_descent = fs->descent;
 
     /*
-     * Iterate over all character in the input string getting the appropriate
-     * char struct.  The default (which may be null if there is no def_char)
-     * will be returned if the character doesn't exist.  On the first time 
-     * through the loop, assign the values to overall; otherwise, compute
-     * the new values.
+     * Iterate over the input string getting the appropriate * char struct.
+     * The default (which may be null if there is no def_char) will be returned
+     * if the character doesn't exist.  On the first time * through the loop,
+     * assign the values to overall; otherwise, compute * the new values.
      */
+
     for (i = 0, us = (unsigned char *) string; i < nchars; i++, us++) {
 	register unsigned uc = (unsigned) *us;	/* since about to do macro */
 	register XCharStruct *cs;
 
-	if (singlerow) {
-	    GetCS (fs, uc, def, cs);
+	if (singlerow) {		/* optimization */
+	    GetCharInfo1d (fs, uc, def, cs);
 	} else {
-	    GetCS2d (fs, uc, def, cs);
+	    GetRowZeroCharInfo2d (fs, uc, def, cs);
 	}
 
 	if (cs) {
@@ -171,10 +173,10 @@ int XTextWidth (fs, string, count)
     unsigned char *us = (unsigned char *) string;  /* be 8bit clean */
     int width = 0;			/* RETURN value */
 
-    if (singlerow) {
-	InitGetCS (fs, def);
+    if (singlerow) {			/* optimization */
+	GetDefaultCharInfo1d (fs, def);
     } else {
-	InitGetCS2d (fs, def);
+	GetDefaultCharInfo2d (fs, def);
     }
 
     /*
@@ -185,10 +187,10 @@ int XTextWidth (fs, string, count)
 	register unsigned uc = (unsigned) *us;	/* since about to do macro */
 	register XCharStruct *cs;
 
-	if (singlerow) {
-	    GetCS (fs, uc, def, cs);
+	if (singlerow) {		/* optimization */
+	    GetCharInfo1d (fs, uc, def, cs);
 	} else {
-	    GetCS2d (fs, uc, def, cs);
+	    GetRowZeroCharInfo2d (fs, uc, def, cs);
 	}
 
 	if (cs) width += cs->width;
