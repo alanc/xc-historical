@@ -325,11 +325,7 @@
 		    (source-pathname-defaults "")
 		    (binary-pathname-defaults "")
 		    &key
-		    (compile-c t)
-		    (for-clue nil))
-
-  ;; If we're compiling for clue, add :clx-for-clue to *features*
-  (when for-clue (pushnew :clx-for-clue *features*))
+		    (compile-c t))
 
   ;; The pathname-defaults above might only be strings, so coerce them
   ;; to pathnames.  Build a default binary path with every component
