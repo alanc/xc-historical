@@ -26,7 +26,6 @@
 #define XcfbpmaxServer Xcfbpmax
 #define NeedFunctionPrototypes YES
 #define BuildPex YES
-#define DefaultCCOptions
 #if BuildPex
 #define DefaultCCOptions -Wf,-XNp15000,-XNd15000
 #endif
@@ -37,5 +36,5 @@
 #define ServerCCOptions /* */
 #endif
 
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.27 91/03/13 18:57:28 rws Exp $
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.28 91/03/16 15:31:24 rws Exp $
 XCOMM operating system:  OSName
