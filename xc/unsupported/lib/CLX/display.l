@@ -260,7 +260,7 @@
 		      :display display
 		      :output-stream stream
 		      :input-stream stream
-		      #-ti :allow-other-keys #-ti t	; Explorer 4.1 is broken
+		      :allow-other-keys t
 		      options))
 	 (ok-p nil))
     (unwind-protect
