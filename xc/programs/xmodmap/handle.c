@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: handle.c,v 1.9 88/10/08 14:18:13 jim Exp $
+ * $XConsortium: handle.c,v 1.10 88/10/08 15:14:56 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -104,7 +104,7 @@ static struct dt {
     { "add", 3, do_add },
     { "remove", 6, do_remove },
     { "clear", 5, do_clear },
-    { "buttons", 7, do_buttons },
+    { "pointer", 7, do_buttons },
     { NULL, 0, NULL }};
 
 /*
@@ -767,6 +767,27 @@ static int do_clear (line, len)
     return (0);
 }
 
+static int strncmp_nocase (a, b, n)
+    char *a, *b;
+    int n;
+{
+    int i;
+    int a1, b1;
+
+    for (i = 0; i < n; i++, a++, b++) {
+	if (!*a) return -1;
+	if (!*b) return 1;
+
+	if (*a != *b) {
+	    a1 = (isascii(*a) && isupper(*a)) ? tolower(*a) : *a;
+	    b1 = (isascii(*b) && isupper(*b)) ? tolower(*b) : *b;
+	    if (a1 != b1) return b1 - a1;
+	}
+    }
+    return 0;
+}
+
+
 /*
  * do_buttons = get list of numbers of the form
  *
@@ -798,25 +819,29 @@ static int do_buttons (line, len)
 	return (-1);
     }
 
-    line++, len--;
+    line++, len--;			/* skip = */
+    n = skip_space (line, len);
+    line += n, len -= n;
 
     i = 0;
-    while (len > 0) {
-	n = skip_space (line, len);
-	line += n, len -= n;
-	if (line[0] == '\0') break;
-	n = skip_word (line, len);
-	if (n < 1) {
-	    badmsg ("skip of word in buttons line:  %s", line);
-	    return (-1);
+    if (len < 7 || strncmp_nocase (line, "default", 7) != 0) {
+	while (len > 0) {
+	    n = skip_space (line, len);
+	    line += n, len -= n;
+	    if (line[0] == '\0') break;
+	    n = skip_word (line, len);
+	    if (n < 1) {
+		badmsg ("skip of word in buttons line:  %s", line);
+		return (-1);
+	    }
+	    val = parse_number (line, n);
+	    if (val < 0 || val >= MAXBUTTONCODES) {
+		badmsg ("value %d given for buttons list", val);
+		return (-1);
+	    }
+	    buttons[i++] = (unsigned char) val;
+	    line += n, len -= n;
 	}
-	val = parse_number (line, n);
-	if (val < 0 || val >= MAXBUTTONCODES) {
-	    badmsg ("value %d given for buttons list", val);
-	    return (-1);
-	}
-	buttons[i++] = (unsigned char) val;
-	line += n, len -= n;
     }
     
     opb = AllocStruct (struct op_buttons);
