@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imake.cf,v 1.4 93/10/14 11:56:51 rws Exp $
+XCOMM $XConsortium: Imake.cf,v 1.5 94/01/01 14:49:34 rws Exp $
 /*
  * To add support for another platform:
  * 
@@ -269,6 +269,13 @@ XCOMM $XConsortium: Imake.cf,v 1.4 93/10/14 11:56:51 rws Exp $
 #define MacroFile Win32.cf
 #define Win32Architecture
 #endif /* WIN32 */
+
+#ifdef NCR
+#define MacroIncludeFile <ncr.cf>
+#define MacroFile ncr.cf
+#undef NCR
+#define SVR4Architecture
+#endif /* NCR */
 
 #ifndef MacroIncludeFile
 XCOMM WARNING:  Imake.cf not configured; guessing at definitions!!!

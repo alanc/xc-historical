@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.62 93/09/13 19:42:07 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.63 94/01/01 14:51:40 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.
  * When porting imake, read each of the steps below and add in any necessary
@@ -29,7 +29,7 @@
 #define imake_ccflags "-DSYSV"
 #endif
 
-#if defined(USL) || defined(Oki)
+#if defined(USL) || defined(Oki) || defined(NCR)
 #define imake_ccflags "-Xc -DSVR4"
 #endif
 
@@ -286,6 +286,9 @@ char *cpp_argv[ARGUMENTS] = {
 	"-nologo",
 	"-batch",
 	"-D__STDC__",
+#endif
+#ifdef NCR
+	"-DNCR",	/* NCR */
 #endif
 };
 #else /* else MAKEDEPEND */
