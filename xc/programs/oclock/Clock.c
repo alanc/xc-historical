@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Clock.c,v 1.24 91/05/22 17:20:31 converse Exp $
+ * $XConsortium: Clock.c,v 1.25 91/10/21 14:31:50 eswu Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -38,6 +38,11 @@
 
 #ifdef X_NOT_STDC_ENV
 extern struct tm *localtime();
+#define Time_t long
+extern Time_t time();
+#else
+#includd <time.h>
+#define Time_t time_t
 #endif
 
 #define offset(field) XtOffsetOf(ClockRec, clock.field)
@@ -422,7 +427,7 @@ static void new_time (client_data, id)
      XtIntervalId *id;		/* unused */
 {
         ClockWidget	w = (ClockWidget)client_data;
-	long		now;
+	Time_t		now;
 	struct tm	*tm;
 	
 	if (!w->clock.transparent)
