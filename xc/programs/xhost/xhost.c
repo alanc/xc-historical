@@ -17,7 +17,7 @@ without express or implied warranty.
 */
 
 #ifndef lint
-static char *rcsid_xhost_c = "$Header: xhost.c,v 11.18 88/07/05 16:35:46 jim Exp $";
+static char *rcsid_xhost_c = "$Header: xhost.c,v 11.19 88/08/15 18:01:07 jim Exp $";
 #endif
  
 #include <signal.h>
@@ -140,23 +140,20 @@ main(argc, argv)
 	    if (*arg == '-') {
 	    
 	        if (!argv[i][1] && ((i+1) == argc)) {
-		    printf ("Restricting connections to server ");
-		    printf ("(access control enabled).\n");
+		    printf ("all hosts restricted (access control enabled).\n");
 		    XEnableAccessControl(dpy);
 		} else {
 		    arg = argv[i][1]? &argv[i][1] : argv[++i];
                     if ((address = get_address(arg)) == NULL) 
 		         fprintf(stderr, "%s: bad host: %s\n", argv[0], arg);
                     else {
-			printf ("Removing host from access control list:  ");
-			printf ("%s\n", arg);
+			printf ("%s removed from access control list.\n", arg);
 			XRemoveHost(dpy, address);
 		    }
 		}
 	    } else {
 	        if (*arg == '+' && !argv[i][1] && ((i+1) == argc)) {
-		    printf ("Allowing all hosts to connect to server ");
-		    printf ("(access control disabled).\n");
+		    printf ("all hosts allowed (access control disabled).\n");
 		    XDisableAccessControl(dpy);
 		} else {
 		    if (*arg == '+') {
@@ -165,8 +162,7 @@ main(argc, argv)
                     if ((address = get_address(arg)) == NULL) 
 		         fprintf(stderr, "%s: bad host: %s\n", argv[0], arg);
                     else {
-			printf ("Adding host to access control list:  %s\n",
-				arg);
+			printf ("%s added to access control list.\n", arg);
 			XAddHost(dpy, address);
 		    }
 		}
@@ -306,7 +302,13 @@ local_xerror (dpy, rep)
 {
     if ((rep->error_code == BadAccess) && (rep->request_code == X_ChangeHosts)) {
 	fprintf (stderr, 
-		 "%s:  not allowed to change host list or access control.\n",
+		 "%s:  must be on local machine to add or remove hosts.\n",
+		 ProgramName);
+	return;
+    } else if ((rep->error_code == BadAccess) && 
+	       (rep->request_code == X_SetAccessControl)) {
+	fprintf (stderr, 
+	"%s:  must be on local machine to enable or disable access control.\n",
 		 ProgramName);
 	return;
     } else if ((rep->error_code == BadValue) && 
@@ -316,4 +318,3 @@ local_xerror (dpy, rep)
 	_XDefaultError(dpy, rep);
     }
 }
-
