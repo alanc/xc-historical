@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.42 91/02/13 19:12:32 rws Exp $
+ * $XConsortium: dm.h,v 1.43 91/04/01 10:26:56 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -56,13 +56,9 @@
 #endif /* pegasus */
 
 #ifndef X_NOT_POSIX
-#ifndef macII
-#include <sys/wait.h>
-#else
 #define _POSIX_SOURCE
 #include <sys/wait.h>
 #undef _POSIX_SOURCE
-#endif
 # define waitCode(w)	WEXITSTATUS(w)
 # define waitSig(w)	WTERMSIG(w)
 # define waitCore(w)    0	/* not in POSIX.  so what? */
@@ -230,10 +226,17 @@ struct greet_info {
 	char		*string;	/* random string */
 };
 
+/* setgroups is not covered by POSIX, arg type varies */
+#if defined(SYSV) || defined(SVR4)
+#define GID_T gid_t
+#else
+#define GID_T int
+#endif
+
 struct verify_info {
 	int		uid;		/* user id */
 #ifdef NGROUPS_MAX
-	int		groups[NGROUPS_MAX];/* group list */
+	GID_T		groups[NGROUPS_MAX];/* group list */
 	int		ngroups;	/* number of elements in groups */
 #else
 	int		gid;		/* group id */
