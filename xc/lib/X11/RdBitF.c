@@ -78,6 +78,8 @@ int XReadBitmapFile(display, d, filename, width, height, bitmap, x_hot, y_hot)
     
     if (sscanf(line, "static short %s = {", name_and_type) == 1)
       version10p = 1;
+    else if (sscanf(line, "static unsigned char %s = {", name_and_type) == 1)
+      version10p = 0;
     else if (sscanf(line, "static char %s = {", name_and_type) == 1)
       version10p = 0;
     else continue;
