@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: command.c,v 2.26 89/07/21 18:56:36 converse Exp $";
+    "$XConsortium: command.c,v 2.27 89/09/17 19:40:27 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987, 1989
@@ -76,7 +76,6 @@ typedef struct _CommandStatus {
 typedef char* Pointer;
 static void FreeStatus();
 
-static Window	busy_window = NULL;	/* InputOnly window with cursor */
 
 static void SystemError(text)
     char* text;
@@ -343,7 +342,7 @@ DEBUG("read.\n")}
 		status->error_buf_size--;
 	    while (status->error_buffer[status->error_buf_size-1]  == '\n')
 		status->error_buffer[--status->error_buf_size] = '\0';
-	    DEBUG1( "stderr = \"%s\"\n", status->error_buffer );
+	    DEBUG1( "stderr = \"%s\"\n", status->error_buffer )
 	    PopupNotice( status->error_buffer, FreeStatus, (Pointer)status );
 	    return_status = -1;
 	}
@@ -423,8 +422,6 @@ DoCommand(argv, inputfile, outputfile)
     int fd_in, fd_out;
     int status;
 
-    XMapWindow(theDisplay, busy_window);
-
     if (inputfile != NULL) {
 	FILEPTR file = FOpenAndCheck(inputfile, "r");
 	fd_in = dup(fileno(file));
@@ -445,7 +442,6 @@ DoCommand(argv, inputfile, outputfile)
 				    (int *) NULL );
     if (fd_in != -1) close(fd_in);
     if (fd_out != -1) close(fd_out);
-    XUnmapWindow(theDisplay, busy_window);
     return status;
 }
 
@@ -457,11 +453,9 @@ char ** argv;
 {
     char *result = NULL;
     int len = 0;
-    XMapWindow(theDisplay, busy_window);
     _DoCommandToFileOrPipe( argv, -1, -2, &result, &len );
     if (result == NULL) result = XtMalloc(1);
     result[len] = '\0';
-    XUnmapWindow(theDisplay, busy_window);
     DEBUG1("('%s')\n", result)
     return result;
 }
@@ -475,35 +469,12 @@ char *DoCommandToFile(argv)
     char *name;
     FILEPTR file;
     int fd;
-    XMapWindow(theDisplay, busy_window);
     name = MakeNewTempFileName();
     file = FOpenAndCheck(name, "w");
     fd = dup(fileno(file));
     myfclose(file);
     _DoCommandToFileOrPipe(argv, -1, fd, (char **) NULL, (int *) NULL);
     close(fd);
-    XUnmapWindow(theDisplay, busy_window);
     return name;
 }
 
-
-/* Create an input-only window with a busy-wait cursor. */
-
-#include <X11/cursorfont.h>
-
-void InitWaitCursor()
-{
-    unsigned long		valuemask;
-    XSetWindowAttributes	attributes;
-
-    valuemask = (CWDontPropagate | CWCursor);
-    attributes.do_not_propagate_mask = (KeyPressMask | KeyReleaseMask |
-					ButtonPressMask | ButtonReleaseMask |
-					PointerMotionMask);
-    attributes.cursor = XCreateFontCursor(theDisplay, XC_watch);
-    
-    busy_window = XCreateWindow(theDisplay, XtWindow(toplevel), 0, 0,
-				rootwidth, rootheight, (unsigned int) 0,
-				CopyFromParent, InputOnly, CopyFromParent,
-				valuemask, &attributes);
-}

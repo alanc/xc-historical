@@ -1,9 +1,9 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: compfuncs.c,v 2.14 89/08/31 19:09:25 converse Exp $";
+    "$XConsortium: compfuncs.c,v 2.15 89/09/15 16:15:12 converse Exp $";
 #endif
 /*
- *			  COPYRIGHT 1987
+ * 		      COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
  *			ALL RIGHTS RESERVED.
@@ -35,19 +35,19 @@ static char rcs_id[] =
    template. */
 
 /*ARGSUSED*/
-static void ResetCompose(widget, client_data, call_data)
+void DoResetCompose(widget, client_data, call_data)
     Widget	widget;		/* unused */
-    caddr_t	client_data;
-    caddr_t	call_data;	/* unused */
+    XtPointer	client_data;
+    XtPointer	call_data;	/* unused */
 {
     Scrn	scrn = (Scrn) client_data;
     Msg		msg;
     XtCallbackRec	confirms[2];
 
-    confirms[0].callback = (XtCallbackProc) ResetCompose;
-    confirms[0].closure = (caddr_t) scrn;
+    confirms[0].callback = (XtCallbackProc) DoResetCompose;
+    confirms[0].closure = (XtPointer) scrn;
     confirms[1].callback = (XtCallbackProc) NULL;
-    confirms[1].closure = (caddr_t) NULL;
+    confirms[1].closure = (XtPointer) NULL;
 
     if (MsgSetScrn((Msg) NULL, scrn, confirms, (XtCallbackList) NULL) ==
 	NEEDS_CONFIRMATION)
@@ -68,7 +68,7 @@ void XmhResetCompose(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    ResetCompose(w, (caddr_t) scrn, (caddr_t) NULL);
+    DoResetCompose(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
@@ -85,7 +85,7 @@ void XmhSend(w, event, params, num_params)
 {
     Scrn scrn = ScrnFromWidget(w);
     if (scrn->msg == NULL) return;
-    if (!MsgGetReapable(scrn->msg)) {
+    if (MsgChanged(scrn->msg) || ! MsgGetReapable(scrn->msg)) {
 	MsgSend(scrn->msg);
 	MsgSetReapable(scrn->msg);
     }

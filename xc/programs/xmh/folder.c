@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: folder.c,v 2.17 89/09/15 16:15:20 converse Exp $";
+    "$XConsortium: folder.c,v 2.18 89/09/17 19:40:31 converse Exp $";
 #endif
 /*
  *		       COPYRIGHT 1987, 1989
@@ -124,6 +124,18 @@ void XmhClose(w, event, params, num_params)
 
 /* Open the selected folder in this screen. */
 
+/* ARGSUSED*/
+void DoOpenFolder(widget, client_data, call_data)
+    Widget	widget;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    Scrn	scrn = (Scrn) client_data;
+    Toc		toc  = SelectedToc(scrn);
+    TocSetScrn(toc, scrn);
+}
+
+
 /*ARGSUSED*/
 void XmhOpenFolder(w, event, params, num_params)
     Widget	w;
@@ -131,24 +143,21 @@ void XmhOpenFolder(w, event, params, num_params)
     String	*params;	/* unused */
     Cardinal	*num_params;	/* unused */
 {
-    Scrn scrn = ScrnFromWidget(w);
-    Toc toc = SelectedToc(scrn);
-    TocSetScrn(toc, scrn);
+    Scrn 	scrn = ScrnFromWidget(w);
+    DoOpenFolder(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
 /* Compose a new message. */
 
 /*ARGSUSED*/
-void XmhComposeMessage(w, event, params, num_params)
-    Widget	w;		/* unused */
-    XEvent	*event;		/* unused */
-    String	*params;	/* unused */
-    Cardinal	*num_params;	/* unused */
+void DoComposeMessage(widget, client_data, call_data)
+    Widget	widget;
+    XtPointer	client_data;
+    XtPointer	call_data;
 {
-    Msg msg;
-    Scrn scrn = NewCompScrn();
-    msg = TocMakeNewMsg(DraftsFolder);
+    Scrn        scrn = NewCompScrn();
+    Msg		msg = TocMakeNewMsg(DraftsFolder);
     MsgLoadComposition(msg);
     MsgSetTemporary(msg);
     MsgSetReapable(msg);
@@ -156,8 +165,33 @@ void XmhComposeMessage(w, event, params, num_params)
     MapScrn(scrn);
 }
 
+   
+/*ARGSUSED*/
+void XmhComposeMessage(w, event, params, num_params)
+    Widget	w;		/* unused */
+    XEvent	*event;		/* unused */
+    String	*params;	/* unused */
+    Cardinal	*num_params;	/* unused */
+{
+    DoComposeMessage(w, (XtPointer) NULL, (XtPointer) NULL);
+}
+
 
 /* Make a new scrn displaying the given folder. */
+
+/*ARGSUSED*/
+void DoOpenFolderInNewWindow(widget, client_data, call_data)
+    Widget	widget;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    Scrn	scrn = (Scrn) client_data;
+    Toc 	toc = SelectedToc(scrn);
+    scrn = CreateNewScrn(STtocAndView);
+    TocSetScrn(toc, scrn);
+    MapScrn(scrn);
+}
+
 
 /*ARGSUSED*/
 void XmhOpenFolderInNewWindow(w, event, params, num_params)
@@ -167,24 +201,20 @@ void XmhOpenFolderInNewWindow(w, event, params, num_params)
     Cardinal	*num_params;	/* unused */
 {
     Scrn scrn = ScrnFromWidget(w);
-    Toc toc = SelectedToc(scrn);
-    scrn = CreateNewScrn(STtocAndView);
-    TocSetScrn(toc, scrn);
-    MapScrn(scrn);
+    DoOpenFolderInNewWindow(w, (XtPointer) scrn, (XtPointer) NULL);
 }
-
 
 
 /* Create a new folder with the given name. */
 
-void DoCreateFolder(name)
+static void CreateFolder(name)
     char	*name;
 {
     Toc		toc;
-    int		i, position;
+    int		i;
 
     for (i=0 ; name[i] > ' ' ; i++) ;
-    name[i] = 0;
+    name[i] = '\0';
     toc = TocGetNamed(name);
     if (toc || i == 0) {
 	Feep();
@@ -195,14 +225,11 @@ void DoCreateFolder(name)
 	Feep();
 	return;
     }
-    for (position = numFolders - 1; position >= 0; position--)
-	if (folderList[position] == toc)
-	    break;
     for (i = 0; i < numScrns; i++)
 	if (scrnList[i]->folderbuttons) {
 	    char	*c;
 	    Button	button;
-	    if (c = index(name, '/')) {
+	    if (c = index(name, '/')) { /* if is subfolder */
 		c[0] = '\0';
 		button = BBoxFindButtonNamed(scrnList[i]->folderbuttons,
 					     name);
@@ -211,12 +238,22 @@ void DoCreateFolder(name)
 	    }
 	    else
 		BBoxAddButton(scrnList[i]->folderbuttons, name,
-			      menuButtonWidgetClass, position, True);
+			      menuButtonWidgetClass, True);
 	}
 }
 
 
 /* Create a new folder.  Requires the user to name the new folder. */
+
+/*ARGSUSED*/
+void DoCreateFolder(widget, client_data, call_data)
+    Widget	widget;		/* unused */
+    XtPointer	client_data;	/* unused */
+    XtPointer	call_data;	/* unused */
+{
+    PopupPrompt("Create folder named:", CreateFolder);
+}
+
 
 /*ARGSUSED*/
 void XmhCreateFolder(w, event, params, num_params)
@@ -225,7 +262,7 @@ void XmhCreateFolder(w, event, params, num_params)
     String	*params;	/* unused */
     Cardinal	*num_params;	/* unused */
 {
-    PopupPrompt("Create folder named:", DoCreateFolder);
+    DoCreateFolder(w, (XtPointer) NULL, (XtPointer) NULL);
 }
 
 
@@ -261,7 +298,6 @@ void CheckAndConfirmDeleteFolder(widget, client_data, call_data)
     DeleteData  deleteData = (DeleteData) client_data;
     Scrn	scrn = deleteData->scrn;
     Toc		toc  = deleteData->toc;
-    char	*foldername;
     char	str[300];
     XtCallbackRec confirms[2];
     XtCallbackRec cancels[2];
@@ -302,9 +338,8 @@ void CheckAndConfirmDeleteFolder(widget, client_data, call_data)
 
     yes_callbacks[0].closure = client_data;
     no_callbacks[0].closure =  client_data;
-    foldername = TocName(toc);
-    (void) sprintf(str, "Are you sure you want to destroy %s?", foldername);
-    PopupConfirm(str, yes_callbacks, no_callbacks);
+    (void) sprintf(str, "Are you sure you want to destroy %s?", TocName(toc));
+    PopupConfirm(scrn->tocwidget, str, yes_callbacks, no_callbacks);
 }
 
 
@@ -344,30 +379,35 @@ void CheckAndDeleteFolder(widget, client_data, call_data)
     TocDeleteFolder(toc);
     for (i=0 ; i<numScrns ; i++)
 	if (scrnList[i]->folderbuttons) {
-
+	    
 	    if (IsSubfolder(foldername)) {
-		char	parentfolder[300];
-		(void) strcpy(parentfolder, foldername);
-		*(index(parentfolder, '/')) = '\0';
+		char	*parent_folder = MakeParentFolderName(foldername);
+				
+		/* Since menus are built upon demand, and are a per-screen
+		 * resources, not all toc & view screens will have the same
+		 * menus built.  So the menu entry deletion routines must
+		 * be able to handle a button whose menu field is null.
+		 * It would be better to share folder menus between screens.
+		 */
 
 		DeleteFolderMenuEntry
-		    (BBoxFindButtonNamed(scrnList[i]->folderbuttons,
-					 parentfolder), foldername);
+		    ( BBoxFindButtonNamed( scrnList[i]->folderbuttons,
+					  parent_folder), 
+		     foldername);
+		XtFree(parent_folder);
 	    }
 	    else {
-		Boolean	reset;
+		BBoxDeleteButton
+		    (BBoxFindButtonNamed( scrnList[i]->folderbuttons,
+					 foldername));
+	    }
 
-		/* Is this the current folder of this screen? */
-		reset = ! strcmp(scrnList[i]->curfolder, foldername);
+	    /* If we've deleted the current folder, show the Initial Folder */
 
-		BBoxDeleteButton(BBoxFindButtonNamed
-				 (scrnList[i]->folderbuttons, foldername));
-
-		/* If so, reset the current folder of the screen. */
-		if (reset && BBoxNumButtons(scrnList[i]->folderbuttons))
-		    SetCurrentFolderName(scrnList[i], BBoxNameOfButton
-		     (BBoxButtonNumber(scrnList[i]->folderbuttons, 0)));
-	   }
+	    if ((! strcmp(scrnList[i]->curfolder, foldername)) 
+		&& (BBoxNumButtons(scrnList[i]->folderbuttons))
+		&& (strcmp(foldername, app_resources.initialFolderName)))
+		TocSetScrn(InitialFolder, scrnList[i]);
 	}
     XtFree(foldername);
     if (deleteData->original_toc != NULL) 
@@ -379,13 +419,12 @@ void CheckAndDeleteFolder(widget, client_data, call_data)
 /* Delete the selected folder.  Requires confirmation! */
 
 /*ARGSUSED*/
-void XmhDeleteFolder(w, event, params, num_params)
+void DoDeleteFolder(w, client_data, call_data)
     Widget	w;
-    XEvent	*event;		/* unused */
-    String	*params;	/* unused */
-    Cardinal	*num_params;	/* unused */
+    XtPointer	client_data;
+    XtPointer	call_data;
 {
-    Scrn	scrn = ScrnFromWidget(w);
+    Scrn	scrn = (Scrn) client_data;
     Toc		toc  = SelectedToc(scrn);
     DeleteData	deleteData;
 
@@ -405,6 +444,18 @@ void XmhDeleteFolder(w, event, params, num_params)
 	deleteData->original_toc = (Toc) NULL;
 
     CheckAndConfirmDeleteFolder(w, (XtPointer) deleteData, (XtPointer) NULL);
+}
+
+
+/*ARGSUSED*/
+void XmhDeleteFolder(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;		/* unused */
+    String	*params;	/* unused */
+    Cardinal	*num_params;	/* unused */
+{
+    Scrn	scrn = ScrnFromWidget(w);
+    DoDeleteFolder(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
@@ -545,16 +596,16 @@ static void CreateFolderMenu(button)
     extern	alphasort();
     char	directory[500];
 
-    DEBUG1("Building menu for %s...", button->name);
+    DEBUG1("Building menu for %s...", button->name)
     n = strlen(app_resources.mailDir);
     (void) strncpy(directory, app_resources.mailDir, n);
     directory[n++] = '/';
     (void) strcpy(directory + n, button->name);
-    flen = strlen(directory);
-    (void) strcpy(filename, directory);
+    flen = strlen(directory);		/* for IsFolder */
+    (void) strcpy(filename, directory);	/* for IsFolder */
     n = scandir(directory, &namelist, IsFolder, alphasort);
     if (n <= 0) {
-	DEBUG(" no entries.\n");
+	DEBUG(" no entries.\n")
 	/* no subfolders, therefore no menu */
 	button->menu = NoMenuForButton;
 	return;
@@ -563,6 +614,7 @@ static void CreateFolderMenu(button)
     /* Create the menu widget, allowing the menu to show entry changes. */
     /* %%% memory leak.  We don't free entry callback closures when
      * the entire menu is destroyed; there should be a destroy callback. */
+
     CreateMenu(button, True);
 	
     /* The first entry is always the parent folder */
@@ -580,7 +632,7 @@ static void CreateFolderMenu(button)
 	AddFolderMenuEntry(button, directory);
     }
     XtFree((char *) namelist);
-    DEBUG(" done.\n");
+    DEBUG(" done.\n")
 }
 
 
@@ -592,10 +644,29 @@ static void DeleteFolderMenuEntry(button, foldername)
     Button	button;
     char	*foldername;	/* guaranteed to be a subfolder */
 {
+    struct direct	**namelist;
+    int			i, n;
+    char		directory[500];
+
+    if (button == NULL || button->menu == NULL) return;
 
     /* %%% memory leak on the entry's callback closure */
 
-    if (XawSimpleMenuEntryCount(button->menu, XawMenuTextMask) <= 2) {
+/* %%% This interface is gone.  Wait for menu entry objects to be rewritten.
+ *	Meanwhile, subfolder deletion will be significantly slower.
+ *
+ *    if (XawSimpleMenuEntryCount(button->menu, XawMenuTextMask) <= 2) { 
+ */
+    n = strlen(app_resources.mailDir);
+    (void) strncpy(directory, app_resources.mailDir, n);
+    directory[n++] = '/';
+    (void) strcpy(directory + n, button->name);
+    flen = strlen(directory);		/* for IsFolder */
+    (void) strcpy(filename, directory);	/* for IsFolder */
+    if (!(n =  scandir(directory, &namelist, IsFolder, NULL ))) {
+	for (i=0; i < n; i++)
+	    XtFree((char *) namelist[i]);
+	XtFree((char *) namelist);
 	XtDestroyWidget(button->menu);	
 	button->menu = NoMenuForButton;
     }
@@ -611,34 +682,7 @@ static void DeleteFolderMenuEntry(button, foldername)
 	    XawSimpleMenuRemoveEntry(button->menu, subfolder);
 	XtFree(subfolder);
     }
-    SetCurrentFolderName(button->buttonbox->scrn, button->name);
 }
-
-
-/*---------------------- %%% hack to get action procedures --------------*/
-
-static XtActionProc Reset = NULL, PopupMenu = NULL;
-
-static void external_action_init_hack()
-{
-    extern XtActionList xaw_command_actions_list, xaw_mbutton_actions_list;
-    XtActionList command_actions = xaw_command_actions_list;
-    XtActionList mbutton_actions = xaw_mbutton_actions_list;
-    register int i;
-
-    for (i=0; i < 6; i++) {
-	if (strcmp(command_actions[i].string, "reset") == 0) {
-	    Reset = command_actions[i].proc;
-	    break;
-	}
-    }
-
-    if (strcmp(mbutton_actions[0].string, "PopupMenu") == 0) 
-	    PopupMenu = mbutton_actions[0].proc;
-}
-
-/*------------------- end of hack to get action procedures -------------*/
-
 
 static Widget LastMenuButtonPressed = NULL;	/* to `toggle' menu buttons */
 
@@ -675,10 +719,10 @@ void XmhPopupFolderMenu(w, event, vector, count)
     if (button->menu == NoMenuForButton)
 	LastMenuButtonPressed = w;
     else {
-	if (PopupMenu == NULL || Reset == NULL)
-	    external_action_init_hack();	/* %%% hack employed */
-	if (PopupMenu != NULL) PopupMenu(button->widget, NULL, NULL, 0);
-	if (Reset != NULL) Reset(button->widget, NULL, NULL, 0);
+	XtCallActionProc(button->widget, "PopupMenu", (XEvent *) NULL,
+			 (String *) NULL, (Cardinal) 0);
+	XtCallActionProc(button->widget, "reset", (XEvent *) NULL,
+			 (String *) NULL, (Cardinal) 0);
     }
 }
 
@@ -752,3 +796,60 @@ void XmhOpenFolderFromMenu(w, event, vector, count)
 
     XmhOpenFolder(w, event, vector, count);
 }
+
+static String	Stack = NULL;
+static int	StackCount = 0;
+
+static void	Push(scrn, string)
+    Scrn	scrn;
+    String	string;
+{
+    Stack = XtRealloc(Stack, ++StackCount);
+    Stack[StackCount - 1] = string;
+}
+
+
+static char * Pop(scrn)
+    Scrn	scrn;
+{
+    return (char *) NULL;
+}
+
+
+/*ARGSUSED*/
+void XmhPushFolder(w, event, params, count)
+    Widget	w;
+    XEvent 	*event;
+    String 	*params;
+    Cardinal 	*count;
+{
+    Scrn	scrn = ScrnFromWidget(w);
+    int		i;
+
+    /* Parameters are taken as names of folders to be pushed on the stack. */
+
+    for (i=0; i < *count; i++) {
+	Push(scrn, params[i]);
+    }
+
+    if (*count == 0) /* push the currently _selected_ folder onto the stack */
+	Push(scrn, scrn->curfolder);
+}
+
+
+/*ARGSUSED*/
+void XmhPopFolder(w, event, params, count)
+    Widget	w;
+    XEvent 	*event;
+    String 	*params;
+    Cardinal 	*count;
+{
+    Scrn	scrn = ScrnFromWidget(w);
+    char	*folder;
+
+    /* pop the stack & take that folder to be the currently selected folder. */
+
+    if ((folder = Pop(scrn)) != NULL)
+	SetCurrentFolderName(scrn, folder);
+}
+

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: menu.c,v 1.1 89/09/15 16:15:27 converse Exp $
+ * $XConsortium: menu.c,v 1.2 89/09/17 19:40:40 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -43,32 +43,31 @@ void CreateMenu(button, dynamic)
 }
 
 
-void AddMenuEntry(button, name, callback_proc, callback_data, sensitive)
-    Button		button;		/* the menu button */
-    char *		name;		/* the name of the menu entry */
-    XtCallbackProc	callback_proc;
-    XtPointer		callback_data;
-    Boolean		sensitive;
+void AttachMenuToButton(button, menu, menu_name)
+    Button	button;
+    Widget	menu;
+    char *	menu_name;
 {
-    Cardinal		i;
-    Arg			args[3];
-    static XtCallbackRec callbacks[] = {
-	{ (XtCallbackProc) NULL, (XtPointer) NULL},
-	{ (XtCallbackProc) NULL, (XtPointer) NULL},
+    Arg		args[3];
+
+    if (button == NULL) return;
+    button->menu = menu;
+    XtSetArg(args[0], XtNmenuName, XtNewString(menu_name));
+    XtSetValues(button->widget, args, (Cardinal) 1);
+}
+
+
+/*ARGSUSED*/
+void DoRememberMenuSelection(widget, client_data, call_data)
+    Widget	widget;		/* menu */
+    XtPointer	client_data;	/* menu entry name */
+    XtPointer	call_data;
+{
+    static Arg	args[] = {
+	{ XtNpopupOnEntry,	(XtArgVal) NULL },
     };
-
-    i = 0;
-    if (callback_proc) {
-	callbacks[0].callback = callback_proc;
-	callbacks[0].closure  = callback_data;
-	XtSetArg(args[i], XtNcallback, callbacks);	i++;
-    }
-
-    /* The menu entry is sensitive by default. */
-    if (! sensitive) {
-	XtSetArg(args[i], XtNsensitive, False);		i++;
-    }
-    XawSimpleMenuAddEntry(button->menu, name, args, i);
+    args[0].value = (XtArgVal) client_data;
+    XtSetValues(widget, args, XtNumber(args));
 }
 
 
@@ -78,7 +77,18 @@ void SendMenuEntryEnableMsg(button, entry_name, value)
     int		value;
 {
     static Arg	args[] = { XtNsensitive, (XtArgVal) NULL };
-    args[0].value = ((value == 0) ? (XtArgVal) False : (XtArgVal) True);
+    args[0].value = (XtArgVal) ((value == 0) ? False : True);
     XawSimpleMenuSetEntryValues(button->menu, entry_name, args, (Cardinal) 1);
 }
+
+
+void ToggleMenuItem(widget, name, state)
+    Widget	widget;
+    char 	*name;
+    Boolean	state;
+{
+    Arg		args[1];
     
+    XtSetArg(args[0], XtNleftBitmap, (state ? MenuItemBitmap : None));
+    XawSimpleMenuSetEntryValues(widget, name, args, (Cardinal) 1);
+}

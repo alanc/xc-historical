@@ -1,5 +1,5 @@
 /*
- *  $XConsortium: globals.h,v 2.24 89/09/15 16:10:27 converse Exp $
+ *  $XConsortium: globals.h,v 2.25 89/09/17 19:40:25 converse Exp $
  */
 
 /*
@@ -67,6 +67,14 @@ ext struct _resources {
     int		check_frequency;	/* in minutes, of new mail check */
     int		mailWaitingFlag;	/* If true, change icon on new mail */
     Cursor	cursor;			/* application cursor */
+    Pixel	cursor_color;		/* application cursor color */
+    Boolean	sticky_menu;		/* command menu entries are sticky? */
+    Boolean	prefix_wm_and_icon_name;/* prefix wm names with progName ? */
+    Boolean	reverse_read_order;	/* decrement counter to next msg ? */
+    Boolean	block_events_on_busy;	/* disallow user input while busy ? */
+    Cursor	busy_cursor;		/* the cursor while input blocked */
+    Pixel	busy_cursor_color;	/* busy cursor color */
+    int		command_button_count;	/* number of buttons in command box */
 } app_resources;
 
 ext char	*draftFile;	/* Filename of draft. */
@@ -83,6 +91,7 @@ ext Dimension	rootwidth;	/* Dimensions of root window.  */
 ext Dimension	rootheight;
 ext Pixmap	NoMailPixmap;	/* Icon pixmap if no new mail. */
 ext Pixmap	NewMailPixmap;	/* Icon pixmap if new mail. */
+ext Pixmap	MenuItemBitmap;	/* Options menu item checkmark */
 
 ext struct _LastInput {
     Window win;
@@ -92,5 +101,5 @@ ext struct _LastInput {
 
 ext Boolean	subProcessRunning; /* interlock for DoCommand/CheckMail */
 
-#define PNullSource (NullSource != NULL ? NullSource : (Widget) \
- 		     CreateFileSource(scrn->viewlabel, "/dev/null", False))
+#define PNullSource (NullSource != NULL ? NullSource : \
+(NullSource = (Widget)  CreateFileSource(scrn->viewlabel, "/dev/null", False)))

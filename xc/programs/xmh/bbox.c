@@ -1,10 +1,10 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] = 
-    "$XConsortium: bbox.c,v 2.28 89/08/14 15:42:14 converse Exp $";
+    "$XConsortium: bbox.c,v 2.29 89/09/15 16:14:40 converse Exp $";
 #endif
 /*
  *
- *			  COPYRIGHT 1987, 1989
+ *			COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
  *			ALL RIGHTS RESERVED.
@@ -86,15 +86,13 @@ ButtonBox RadioBBoxCreate(scrn, name)
 }
 
 
-
 /* Create a new button, and add it to a buttonbox. */
 
-static void bboxAddButton(buttonbox, name, kind, position, enabled, radio)
+static void bboxAddButton(buttonbox, name, kind, enabled, radio)
 
     ButtonBox	buttonbox;
     char	*name;
     WidgetClass	kind;
-    int		position;
     Boolean	enabled;
     Boolean	radio;
 {
@@ -103,14 +101,11 @@ static void bboxAddButton(buttonbox, name, kind, position, enabled, radio)
     Widget	radio_group;
     Arg		args[5];
 
-    if (position > buttonbox->numbuttons) position = buttonbox->numbuttons;
     buttonbox->numbuttons++;
     buttonbox->button = (Button *) 
 	XtRealloc((char *) buttonbox->button,
 		  (unsigned) buttonbox->numbuttons * sizeof(Button));
-    for (i=buttonbox->numbuttons-1 ; i>position ; i--)
-	buttonbox->button[i] = buttonbox->button[i-1];
-    button = buttonbox->button[position] = XtNew(ButtonRec);
+    button = buttonbox->button[buttonbox->numbuttons - 1] = XtNew(ButtonRec);
     button->buttonbox = buttonbox;
     button->name = XtNewString(name);
     button->menu = (Widget) NULL;
@@ -138,24 +133,22 @@ static void bboxAddButton(buttonbox, name, kind, position, enabled, radio)
 }
 
 
-void BBoxAddButton(buttonbox, name, kind, position, enabled)
+void BBoxAddButton(buttonbox, name, kind, enabled)
     ButtonBox	buttonbox;
     char	*name;
     WidgetClass	kind;
-    int		position;
     Boolean	enabled;
 {
-    bboxAddButton(buttonbox, name, kind, position, enabled, False);
+    bboxAddButton(buttonbox, name, kind, enabled, False);
 }    
 
 
-void RadioBBoxAddButton(buttonbox, name, position, enabled)
+void RadioBBoxAddButton(buttonbox, name, enabled)
     ButtonBox	buttonbox;
     char	*name;
-    int		position;
     Boolean	enabled;
 {
-    bboxAddButton(buttonbox, name, toggleWidgetClass, position, enabled, True);
+    bboxAddButton(buttonbox, name, toggleWidgetClass, enabled, True);
 }
 
 
@@ -220,6 +213,7 @@ void RadioBBoxDeleteButton(button)
     Boolean	reradio = False;
     char *	current;
 
+    if (button == NULL) return;
     buttonbox = button->buttonbox;
     current = RadioBBoxGetCurrent(buttonbox);
     if (current) reradio = ! strcmp(current, button->name);
@@ -319,8 +313,8 @@ char *BBoxNameOfButton(button)
 
 /* Set maximum size for a bbox so that it cannot be resized any bigger 
  * than its total height.  Allow the user to set the minimum size.
- * The problem, we think, is that the box computes it's height based on
- * each button being in a separate row; i.e. a column of buttons. 
+ * The box computes it's height based on each button being in a separate
+ *  row; i.e. a column of buttons.  I wonder how useful this is.
  */
 
 void BBoxLockSize(buttonbox)
@@ -328,8 +322,9 @@ void BBoxLockSize(buttonbox)
 {
     Dimension	maxheight;
     Arg		args[1];
+
+    if (buttonbox == NULL) return;
     maxheight = (Dimension) GetHeight(buttonbox->inner);
-    DEBUG1("maxheight is %d\n", maxheight);
     XtSetArg(args[0], XtNmax, maxheight);	/* for Paned widget */
     XtSetValues(buttonbox->outer, args, (Cardinal) 1);
 }

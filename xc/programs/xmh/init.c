@@ -1,9 +1,9 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: init.c,v 2.33 89/09/15 16:15:24 converse Exp $";
+    "$XConsortium: init.c,v 2.34 89/09/17 19:40:37 converse Exp $";
 #endif
 /*
- *			  COPYRIGHT 1987
+ *		        COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
  *			ALL RIGHTS RESERVED.
@@ -31,15 +31,23 @@ static char rcs_id[] =
 /* Init.c - Handle start-up initialization. */
 
 #include "xmh.h"
+#include "actions.h"
 #include <sys/errno.h>
 
-extern char* _XLowerCase();
+extern char* _XLowerCase();	/* %%% what is this doing here. */
 
 /* Xmh-specific resources. */
+
 static Boolean defFalse = False;
 static Boolean defTrue = True;
-
 static Boolean static_variable;
+
+#define check_width 9
+#define check_height 8
+static char check_bits[] = {
+   0x00, 0x01, 0x80, 0x01, 0xc0, 0x00, 0x60, 0x00,
+   0x31, 0x00, 0x1b, 0x00, 0x0e, 0x00, 0x04, 0x00
+};
 
 #define offset(field) XtOffset(struct _resources *, field)
 
@@ -91,7 +99,7 @@ static XtResource resources[] = {
 	 offset(defNewMailCheck), XtRBoolean, (XtPointer)&defTrue},
     {"makecheckpoints", "MakeCheckPoints", XtRBoolean, sizeof(Boolean),
 	 offset(defMakeCheckpoints), XtRBoolean, (XtPointer)&defFalse},
-    {"checkFrequency", "CheckFrequency", XtRInt, sizeof(int),
+    {"checkfrequency", "CheckFrequency", XtRInt, sizeof(int),
 	 offset(check_frequency), XtRString, "1"},
     {"mailpath", "MailPath", XtRString, sizeof(char *),
 	 offset(mailDir), XtRString, NULL},
@@ -99,6 +107,22 @@ static XtResource resources[] = {
 	 offset(mailWaitingFlag), XtRBoolean, &defFalse},
     {"cursor", "Cursor", XtRCursor, sizeof(Cursor),
 	 offset(cursor), XtRString, "left_ptr"},
+    {"cursorcolor", "CursorColor", XtRPixel, sizeof(Pixel),
+	 offset(cursor_color), XtRString, XtDefaultForeground},
+    {"stickymenu", "StickyMenu", XtRBoolean, sizeof(Boolean), 	
+	 offset(sticky_menu), XtRBoolean, (XtPointer) &defFalse},
+    {"prefixwmandiconname", "PrefixWmAndIconName", XtRBoolean, sizeof(Boolean),
+	 offset(prefix_wm_and_icon_name), XtRBoolean, (XtPointer)&defTrue},
+    {"reverseReadOrder", "ReverseReadOrder", XtRBoolean, sizeof(Boolean),
+	 offset(reverse_read_order), XtRBoolean, (XtPointer)&defFalse},
+    {"blockEventsOnBusy", "BlockEventsOnBusy", XtRBoolean, sizeof(Boolean),
+	 offset(block_events_on_busy), XtRBoolean, (XtPointer)&defTrue},
+    {"busyCursor", "BusyCursor", XtRCursor, sizeof(Cursor),
+	 offset(busy_cursor), XtRString, "watch"},
+    {"busyCursorColor", "BusyCursorColor", XtRPixel, sizeof(Pixel),
+	 offset(busy_cursor_color), XtRString, XtDefaultForeground},
+    {"commandButtonCount", "CommandButtonCount", XtRInt, sizeof(int),
+	 offset(command_button_count), XtRString, "0"},
 };
 
 #undef offset
@@ -192,6 +216,8 @@ char **argv;
 	{"XmhPackFolder",		XmhPackFolder},
 	{"XmhSortFolder",		XmhSortFolder},
 	{"XmhForceRescan",		XmhForceRescan},
+	{"XmhPushFolder",		XmhPushFolder},
+	{"XmhPopFolder",		XmhPopFolder},
 
 		/* actions upon the currently selected message(s) */
 
@@ -225,7 +251,7 @@ char **argv;
 	{"XmhSaveView",			XmhSaveView},
 	{"XmhPrintView",		XmhPrintView},
 
-       		/* composition actions */
+       		/* actions upon a composition, reply, or forward */
 
 	/* Close button			XmhCloseView	  (see above) */
 	{"XmhResetCompose",		XmhResetCompose},
@@ -305,12 +331,14 @@ char **argv;
     if (app_resources.mailDir == NULL)
 	app_resources.mailDir = XtNewString(str2);
 
+    NullSource = (Widget) NULL;
+
     l = strlen(app_resources.defMhPath) - 1;
     if (l > 0 && app_resources.defMhPath[l] == '/')
 	app_resources.defMhPath[l] = 0;
 
-    rootwidth = DisplayWidth(theDisplay, DefaultScreen(theDisplay));
-    rootheight = DisplayHeight(theDisplay, DefaultScreen(theDisplay));
+    rootwidth = WidthOfScreen(XtScreen(toplevel));
+    rootheight = HeightOfScreen(XtScreen(toplevel));
 
     app_resources.defTocGeometry =
 	FixUpGeometry(app_resources.defTocGeometry,
@@ -334,13 +362,23 @@ char **argv;
     IconInit();
     BBoxInit();
 
+    XtAppAddActions( XtWidgetToApplicationContext(toplevel),
+		    actions, XtNumber(actions));
 
-    XtAddActions(actions, XtNumber(actions));
+    MenuItemBitmap =
+	XCreateBitmapFromData( XtDisplay(toplevel),
+			      RootWindowOfScreen( XtScreen(toplevel)),
+			      check_bits, check_width, check_height);
 
     DEBUG("Making screen ... ")
 
     scrn = CreateNewScrn(STtocAndView);
-    InitWaitCursor();
+
+    SetCursorColor(scrn->parent, app_resources.cursor,
+		   app_resources.cursor_color);
+    if (app_resources.block_events_on_busy)
+	SetCursorColor(scrn->parent, app_resources.busy_cursor, 
+		       app_resources.busy_cursor_color);
 
     DEBUG(" setting toc ... ")
 

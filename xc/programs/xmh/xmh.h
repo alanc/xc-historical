@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xmh.h,v 2.22 89/07/20 21:15:03 converse Exp $
+ * $XConsortium: xmh.h,v 2.23 89/09/15 16:10:33 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -47,7 +47,7 @@
 #include <X11/Xaw/SimpleMenu.h>
 #include <X11/Xaw/Toggle.h>
 #include <X11/Xaw/Viewport.h>
-#include <X11/Xaw/VPaned.h>
+#include <X11/Xaw/Paned.h>
 
 #define DELETEABORTED	-1
 #define NEEDS_CONFIRMATION	-1
@@ -99,8 +99,8 @@ typedef struct _ScrnRec {
    ButtonBox	mainbuttons;	/* Main xmh control buttons. */
    Widget	toclabel;	/* Toc titlebar. */
    Widget	tocwidget;	/* Toc text. */
-   ButtonBox	tocbuttons;	/* Toc control buttons. */
    ButtonBox 	seqbuttons;	/* Sequence buttons. */
+   ButtonBox	miscbuttons;	/* optional miscellaneous command buttons */
    Widget	viewlabel;	/* View titlebar. */
    Widget	viewwidget;	/* View text. */
    ButtonBox 	viewbuttons;	/* View control buttons. */
@@ -111,6 +111,7 @@ typedef struct _ScrnRec {
    XtTranslations edit_translations;	/* Text widget translations */
    XtTranslations read_translations;	/* overridden by accelerators */
    Msg		assocmsg;	/* Associated message for reply, etc. */
+   Window	wait_window;	/* InputOnly window with busy cursor */
 } ScrnRec, *Scrn;
 
 

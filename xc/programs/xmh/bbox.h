@@ -1,4 +1,4 @@
-/* $XConsortium: bbox.h,v 2.7 89/07/11 16:16:53 converse Exp $ */
+/* $XConsortium: bbox.h,v 2.8 89/09/15 16:09:46 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -30,19 +30,16 @@
 	/* for radio button boxes only */
 
 extern ButtonBox RadioBBoxCreate      (/*  Scrn, char *  */);
-extern void	 RadioBBoxAddButton   (/*  ButtonBox, char *, int, Boolean */);
+extern void	 RadioBBoxAddButton   (/*  ButtonBox, char *, Boolean */);
 extern void	 RadioBBoxSet	      (/*  Button  */);
 extern char *	 RadioBBoxGetCurrent  (/*  ButtonBox  */);
 extern void	 RadioBBoxDeleteButton(/*  Button  */);
 
-
 	/* for other kinds of button boxes */
 
 extern ButtonBox BBoxCreate	      (/*  Scrn, char *  */);
-extern void	 BBoxAddButton	      (/*  ButtonBox, char *, WidgetClass, int,
- 				           Boolean  */);
+extern void	 BBoxAddButton (/* ButtonBox, char *, WidgetClass, Boolean */);
 extern void	 BBoxDeleteButton     (/*  Button  */);
-
 
 	/* for all kinds of button boxes */
 
