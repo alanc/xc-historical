@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 5.6 89/08/24 10:37:05 rws Exp $ */
+/* $XConsortium: shape.c,v 5.7 89/09/14 15:08:56 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -86,7 +86,7 @@ ShapeExtensionInit()
     ClientType = CreateNewResourceType(ShapeFreeClient);
     EventType = CreateNewResourceType(ShapeFreeEvents);
     if (ClientType && EventType &&
-	(extEntry = AddExtension(SHAPENAME, ShapeNumberEvents, 0,
+	(extEntry = AddExtension(SHAPENAME, ShapeNumberOfEvents, 0,
 				 ProcShapeDispatch, SProcShapeDispatch,
 				 ShapeResetProc, StandardMinorOpcode)))
     {
