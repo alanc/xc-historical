@@ -112,12 +112,6 @@ SOFTWARE.
  *	CPU memory bus for instructions and data.  This unrolls some
  *	solid fill loops which are otherwise best left rolled up.
  *	Currently defined for SPARC.
- *
- *  And a hack to get at some hand-coded assembler for the MIPS:
- *
- *  HAS_STIPPLE_CODE
- *	Used when the device-specific code exports special code
- *	for transparent stipples.
  */
 
 #ifdef vax
@@ -217,9 +211,6 @@ SOFTWARE.
 # define BITMAP_BIT_ORDER	LSBFirst
 # define GLYPHPADBYTES		4
 # define GETLEFTBITS_ALIGNMENT	1
-# ifdef ultrix
-#  define HAS_STIPPLE_CODE			/* cfbpmax only */
-# endif
 #else
 # define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the MIPS only */
 # define BITMAP_BIT_ORDER	MSBFirst
