@@ -1,7 +1,7 @@
 #ifndef _PEXLIB_H_
 #define _PEXLIB_H_
 
-/* $XConsortium: PEXlib.h,v 1.5 92/06/30 14:26:26 mor Exp $ */
+/* $XConsortium: PEXlib.h,v 1.6 92/07/24 15:19:37 mor Exp $ */
 
 /******************************************************************************/
 /*  Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Mass.      */
@@ -581,7 +581,7 @@ typedef struct {
 
 /* connectivity list for set of fill area sets */
 typedef struct {
-    unsigned short      count;                  /* number of uShorts */
+    unsigned short      count;                  /* number of shorts */
     unsigned short      *shorts;
 } PEXListOfUShort;
 
@@ -3037,7 +3037,7 @@ extern int PEXMapXCToNPC2D(
     PEXViewEntry *		/* views */,
     int *		/* view_return */,
     int *		/* count_return */,
-    PEXCoord2D *	/* points_return */
+    PEXCoord2D *		/* points_return */
 #endif
 );
 
