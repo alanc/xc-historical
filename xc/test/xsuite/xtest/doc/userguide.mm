@@ -1,4 +1,4 @@
-.\" $XConsortium: userguide.mm,v 1.8 92/07/04 15:35:26 rws Exp $
+.\" $XConsortium: userguide.mm,v 1.9 92/07/04 16:47:49 rws Exp $
 '
 .ds dD User Guide for the X Test Suite
 .so 00.header
@@ -158,12 +158,6 @@ and the X extension library (normally named
 .C libXext.a ).
 .LE
 .H 2 "Installing the \*(xT"
-The \*(xT requires about 10Mb of disc space to 
-install from the supplied media and 50-100Mb of disc space to build and
-run space-saving executable files (dependent on machine architecture).
-If you choose to build standard executable files
-you will require 100-250Mb of disc space.
-.P
 Change to the directory in which you wish to install the distribution.
 Set an environment variable \s-1TET_ROOT\s0 to the full path name of
 that directory.
