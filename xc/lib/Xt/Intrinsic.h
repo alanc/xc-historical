@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.122 89/12/13 12:59:07 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.124 89/12/13 19:01:47 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -2400,6 +2400,84 @@ extern void XtGetSelectionValuesIncremental(
     XtPointer*		/* client_data */,
     Time 		/* time */
 #endif
+);
+
+extern void XtGrabKey(
+#if NeedFunctionPrototypes
+    Widget 		/* widget */,
+    KeySym 		/* keysym */,
+    unsigned int 	/* modifiers */,
+    Boolean 		/* owner_events */,
+    int 		/* pointer_mode */,
+    int 		/* keyboard_mode */
+#endif /* NeedFunctionPrototypes */
+);
+
+extern void XtUngrabKey(
+#if NeedFunctionPrototypes
+    Widget 		/* widget */,
+    KeySym 		/* keysym */,
+    unsigned int 	/* modifiers */
+#endif /* NeedFunctionPrototypes */
+);
+
+extern int XtGrabKeyboard(
+#if NeedFunctionPrototypes
+    Widget 		/* widget */,
+    Boolean 		/* owner_events */,
+    int 		/* pointer_mode */,
+    int 		/* keyboard_mode */,
+    Time 		/* time */
+#endif /* NeedFunctionPrototypes */
+);
+
+extern void XtUngrabKeyboard(
+#if NeedFunctionPrototypes
+    Widget 		/* widget */,
+    Time 		/* time */
+#endif /* NeedFunctionPrototypes */
+);
+
+extern void XtGrabButton(
+#if NeedFunctionPrototypes
+    Widget 		/* widget */,
+    int 		/* button */,
+    unsigned int 	/* modifiers */,
+    Boolean 		/* owner_events */,
+    int 		/* pointer_mode */,
+    int 		/* keyboard_mode */,
+    Mask 		/* event_mask */,
+    Window 		/* confine_to */,
+    Cursor 		/* cursor */
+#endif /* NeedFunctionPrototypes */
+);
+
+extern void XtUngrabButton(
+#if NeedFunctionPrototypes
+    Widget 		/* widget */,
+    int 		/* button */,
+    unsigned int 	/* modifiers */
+#endif /* NeedFunctionPrototypes */
+);
+
+extern int XtGrabPointer(
+#if NeedFunctionPrototypes
+    Widget 		/* widget */,
+    Boolean 		/* owner_events */,
+    int 		/* pointer_mode */,
+    int 		/* keyboard_mode */,
+    Mask 		/* event_mask */,
+    Window 		/* confine_to */,
+    Cursor 		/* cursor */,
+    Time 		/* time */
+#endif /* NeedFunctionPrototypes */
+);
+
+extern void XtUngrabPointer(
+#if NeedFunctionPrototypes
+    Widget 		/* widget */,
+    Time 		/* time */
+#endif /* NeedFunctionPrototypes */
 );
 
 #ifdef __cplusplus
