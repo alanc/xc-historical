@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransint.h,v 1.22 94/07/20 10:36:03 mor Exp kaleb $ */
+/* $XConsortium: Xtransint.h,v 1.23 95/06/06 21:27:45 kaleb Exp kaleb $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -53,18 +53,18 @@ from the X Consortium.
  */
 
 /*
- * TRANSDEBUG will enable the PRMSG() macros used in the X Transport Interface 
- * code. Each use of the PRMSG macro has a level associated with it. TRANSDEBUG 
- * is defined to be a level. If the invocation level is =< the value of 
- * TRANSDEBUG, then the message will be printed out to stderr. Recommended 
- * levels are:
+ * XTRANSDEBUG will enable the PRMSG() macros used in the X Transport 
+ * Interface code. Each use of the PRMSG macro has a level associated with 
+ * it. XTRANSDEBUG is defined to be a level. If the invocation level is =< 
+ * the value of XTRANSDEBUG, then the message will be printed out to stderr. 
+ * Recommended levels are:
  *
- *	TRANSDEBUG=1	Error messages
- *	TRANSDEBUG=2 API Function Tracing
- *	TRANSDEBUG=3 All Function Tracing
- *	TRANSDEBUG=4 printing of intermediate values
- *	TRANSDEBUG=5 really detailed stuff
-#define TRANSDEBUG 2
+ *	XTRANSDEBUG=1	Error messages
+ *	XTRANSDEBUG=2 API Function Tracing
+ *	XTRANSDEBUG=3 All Function Tracing
+ *	XTRANSDEBUG=4 printing of intermediate values
+ *	XTRANSDEBUG=5 really detailed stuff
+#define XTRANSDEBUG 2
  */
 
 #ifndef _XTRANSINT_H_
@@ -76,9 +76,9 @@ from the X Consortium.
 
 #include "Xtrans.h"
 
-#ifdef TRANSDEBUG
+#ifdef XTRANSDEBUG
 #include <stdio.h>
-#endif /* TRANSDEBUG */
+#endif /* XTRANSDEBUG */
 
 #include <errno.h>
 #ifdef X_NOT_STDC_ENV
@@ -416,17 +416,17 @@ static int is_numeric (
 
 
 /*
- * Some TRANSDEBUG stuff
+ * Some XTRANSDEBUG stuff
  */
 
-#if defined(TRANSDEBUG)
-#define PRMSG(lvl,x,a,b,c)	if (lvl <= TRANSDEBUG){ \
+#if defined(XTRANSDEBUG)
+#define PRMSG(lvl,x,a,b,c)	if (lvl <= XTRANSDEBUG){ \
 			int saveerrno=errno; \
 			fprintf(stderr, x,a,b,c); fflush(stderr); \
 			errno=saveerrno; \
 			}
 #else
 #define PRMSG(lvl,x,a,b,c)
-#endif /* TRANSDEBUG */
+#endif /* XTRANSDEBUG */
 
 #endif /* _XTRANSINT_H_ */
