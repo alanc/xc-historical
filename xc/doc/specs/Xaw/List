@@ -148,7 +148,7 @@ the number of strings the List widget assumes that the \fBlist\fP is NULL
 terminated. 
 .IP \fBpasteBuffer\fP 1.5i
 If this resource is set to \fBTrue\fP then the name of the currently
-selected list element will be put into X cut buffer 0.
+selected list element will be put into \fBCUT_BUFFER_0\fP.
 .Sc
 .Se
 .Tr
