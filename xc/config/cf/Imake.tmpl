@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.195 93/09/14 10:33:49 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.196 93/09/17 17:26:36 rws Exp $
 XCOMM
 
 /*
@@ -546,6 +546,9 @@ _NULLCMD_ = @ echo -n
 #define LdCombineFlags -X -r
 #endif
 #endif
+#ifndef LdStripFlags
+#define LdStripFlags -x
+#endif
 #ifndef TagsCmd
 #define TagsCmd ctags
 #endif
@@ -821,6 +824,7 @@ PICFLAGS = PositionIndependentCFlags
 #else
            CCLINK = $(CC)
 #endif
+     LDSTRIPFLAGS = LdStripFlags
    LDCOMBINEFLAGS = LdCombineFlags
       DEPENDFLAGS = DependFlags
 
