@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.174 93/08/23 20:31:42 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.175 93/08/25 15:01:03 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -694,7 +694,7 @@ UnsharedLibReferences(SM,SM,$(SMSRC))
 #define ProfileLibFS		NO	/* profiled FS library */
 #endif
          FSLIBSRC = $(FONTSRC)/lib/fs
-#if SharedLibSM
+#if SharedLibFS
 SharedLibReferences(FS,FS,$(FSLIBSRC),SOFSREV,SharedFSRev)
 #else
 UnsharedLibReferences(FS,FS,$(FSLIBSRC))
