@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Selection.c,v 1.14 89/06/16 19:35:19 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Selection.c,v 1.15 89/09/12 16:46:41 swick Exp $";
 /* $oHeader: Selection.c,v 1.8 88/09/01 11:53:42 asente Exp $ */
 #endif /* lint */
 
@@ -28,10 +28,8 @@ SOFTWARE.
 ******************************************************************/
 
 #include "IntrinsicI.h"
-#include "Selection.h"
 #include "StringDefs.h"
 #include "SelectionI.h"
-#include "EventI.h"
 
 extern void bcopy();
 
@@ -569,6 +567,7 @@ XEvent *event;
       case SelectionRequest:
 	ctx = FindCtx(event->xselectionrequest.display,
 		      event->xselectionrequest.selection);
+	ctx->event = *(XSelectionRequestEvent*)event;
 	ev.type = SelectionNotify;
 	ev.display = event->xselectionrequest.display;
 	ev.requestor = event->xselectionrequest.requestor;
@@ -1025,6 +1024,8 @@ Boolean incremental;
     Boolean notFirst = FALSE;
     
 
+	ctx->event.target = target;
+
 	if (ctx->incremental) {
 	   if (!(*ctx->convert)(ctx->widget, &selection, &target,
 			    &resulttype, &value, &length, &format,
@@ -1102,9 +1103,12 @@ Time time;
     CallBackInfo info;
 
     ctx = FindCtx(XtDisplay(widget), selection);
-    if (ctx->widget) 
+    if (ctx->widget) {
+	ctx->event.requestor = XtWindow(widget);
+	ctx->event.time = time;
 	DoLocalTransfer(ctx, selection, target, widget,
 			callback, closure, FALSE);
+    }
     else {
 	info = MakeInfo(callback, &closure, 1, widget, time, FALSE);
 	info->target = (Atom *)XtMalloc((unsigned) sizeof(Atom));
@@ -1132,7 +1136,9 @@ Time time;
     if (count == 0) return;
     ctx = FindCtx(XtDisplay(widget), selection);
     if (ctx->widget) {
-       for (; count; count--, targets++, closures++ ) 
+       ctx->event.requestor = XtWindow(widget);
+       ctx->event.time = time;
+       for (; count; count--, targets++, closures++ )
 	 DoLocalTransfer(ctx, selection, *targets, widget,
 			 callback, *closures, FALSE);
     } else {
@@ -1154,4 +1160,40 @@ Time time;
 	XtFree((char *) pairs);
 	RequestSelectionValue(info, ctx, selection, ctx->indirect_atom);
     }
+}
+
+
+XSelectionRequestEvent *XtGetSelectionRequest( widget, selection, id )
+    Widget widget;
+    Atom selection;
+    XtRequestId id;
+{ 
+    Select ctx = FindCtx( XtDisplay(widget), selection );
+
+    if (ctx == NULL) {
+	String params = XtName(widget);
+	Cardinal num_params = 1;
+	XtAppWarningMsg( XtWidgetToApplicationContext(widget),
+			 "notInConvertSelection", "xtGetSelectionRequest",
+			 "XtToolkitError",
+			 "XtGetSelectionRequest called for widget \"%s\" outside of ConvertSelection proc",
+			 &params, &num_params
+		       );
+	return NULL;
+    }
+
+    if (ctx->widget == NULL) 	/* owner is not local */
+	return &ctx->event;
+
+    /* owner is local; construct an event */
+    ctx->event.type = SelectionRequest;
+    ctx->event.serial = LastKnownRequestProcessed(XtDisplay(widget));
+    ctx->event.send_event = True;
+    ctx->event.display = XtDisplay(widget);
+    ctx->event.owner = XtWindow(ctx->widget);
+/*  ctx->event.requestor = XtWindow(requesting_widget); */
+    ctx->event.selection = selection;
+/*  ctx->event.target = requestors_target; */
+    ctx->event.property = None;	/* %%% what to do about side-effects? */
+/*  ctx->event.time = requestors_time; */
 }
