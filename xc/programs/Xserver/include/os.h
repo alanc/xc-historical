@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: os.h,v 1.18 87/09/10 18:00:15 rws Locked $ */
+/* $Header: os.h,v 1.19 87/11/05 08:31:54 rws Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -71,6 +71,10 @@ void free();
 #define DEALLOCATE_LOCAL(ptr) free((char *)(ptr))
 
 #endif
+
+#define xalloc(size) Xalloc((unsigned long)(size))
+#define xrealloc(ptr, size) Xrealloc((unsigned long *)(ptr), (unsigned long)(size))
+#define xfree(ptr) Xfree((unsigned long *)(ptr))
 
 char *ReadRequestFromClient();   /* should be xReq but then include Xproto.h */
 Bool CloseDownConnection();
