@@ -1,4 +1,4 @@
-/* $XConsortium: menu.c,v 1.49 91/01/30 16:16:33 gildea Exp $ */
+/* $XConsortium: menu.c,v 1.50 91/02/05 19:44:38 gildea Exp $ */
 /*
 Copyright 1989 Massachusetts Institute of Technology
 
@@ -912,6 +912,9 @@ void HandleSendSignal(w, event, params, param_count)
 #endif
 	{ "int",	SIGINT },
 	{ "hup",	SIGHUP },
+	{ "quit",	SIGQUIT },
+	{ "alrm",	SIGALRM },
+	{ "alarm",	SIGALRM },
 	{ "term",	SIGTERM },
 	{ "kill",	SIGKILL },
 	{ NULL, 0 },
