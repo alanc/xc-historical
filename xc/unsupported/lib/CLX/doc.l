@@ -2459,7 +2459,7 @@
   (declare (type display display)
 	   (type card8 code)
 	   (type card16 state)
-	   (type (or null card8) keysym-index)
+	   (type card8 keysym-index)
 	   (values keysym)))
 
 (defun keysym->keycodes (display keysym)

@@ -298,7 +298,7 @@
 (defun keycode->keysym (display keycode keysym-index)
   (declare (type display display)
 	   (type card8 keycode)
-	   (type (or null card8) keysym-index)
+	   (type card8 keysym-index)
 	   (values keysym))
   (let* ((mapping (display-keyboard-mapping display))
 	 (keysym (aref mapping keycode keysym-index)))
