@@ -1,4 +1,4 @@
-/* $XConsortium: dsimple.c,v 1.12 91/05/11 21:00:35 gildea Exp $ */
+/* $XConsortium: dsimple.c,v 1.12 91/05/11 21:01:05 gildea Exp $ */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -258,7 +258,7 @@ Window Select_Window_Args(rargc, argv)
 #define OPTION argv[0]
 #define NXTOPTP ++argv, --argc>0
 #define NXTOPT if (++argv, --argc==0) usage()
-#define COPYOPT nargv++[0]=OPTION; nargc++
+#define COPYOPT nargv++[0]=OPTION, nargc++
 
 	while (NXTOPTP) {
 		if (!strcmp(OPTION, "-")) {
