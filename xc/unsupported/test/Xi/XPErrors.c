@@ -1,4 +1,4 @@
-/* $XConsortium: XPErrors.c,v 1.2 91/02/17 11:14:35 rws Exp $ */
+/* $XConsortium: XPErrors.c,v 1.1 91/02/18 10:25:22 rws Exp $ */
 /************************************************************************
  *
  * XProtoErrors.c - attempt to force all of the protocol errors defined
@@ -97,7 +97,7 @@ XDeviceInfoPtr	xkeyboard;
 XDeviceInfoPtr	xpointer;
 XDevice		*keydevice;
 XDevice		*sdev[256];
-XEventClass	bogusclass[] = {-1,-1,-1};
+XEventClass	bogusclass[] = {(unsigned long)~0L,(unsigned long)~0L,(unsigned long)~0L};
 
 int	baddevice;
 int	badclass;
