@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.75 94/03/31 17:50:46 mor Exp $
+XCOMM $XConsortium: Imakefile,v 1.76 94/04/07 18:13:51 erik Exp mor $
 #include <Server.tmpl>
 
 /*
@@ -51,15 +51,23 @@ KRB5SRCS = k5auth.c k5encode.c
    SOCK_DEFINES = -DBSD44SOCKETS
 #endif
 
+#if BuildLBX
+   LBX_SRCS = lbxio.c
+   LBX_OBJS = lbxio.o
+#else
+   LBX_SRCS =
+   LBX_OBJS =
+#endif
+
 BOOTSTRAPCFLAGS = 
            SRCS = WaitFor.c access.c connection.c io.c oscolor.c \
                   osinit.c utils.c auth.c mitauth.c $(XDMAUTHSRCS) \
  		  $(RPCSRCS) $(KRB5SRCS) xdmcp.c decompress.c OtherSources \
- 		  transport.c
+ 		  transport.c $(LBX_SRCS)
            OBJS = WaitFor.o access.o connection.o io.o oscolor.o \
                   osinit.o utils.o auth.o mitauth.o $(XDMAUTHOBJS) \
  		  $(RPCOBJS) $(KRB5OBJS) xdmcp.o decompress.o OtherObjects \
- 		  transport.o
+ 		  transport.o $(LBX_OBJS)
 
 #if SpecialMalloc
      MEM_DEFINES = -DSPECIAL_MALLOC
