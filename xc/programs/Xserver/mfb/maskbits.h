@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: maskbits.h,v 1.19 89/07/21 14:18:12 keith Exp $ */
+/* $XConsortium: maskbits.h,v 1.20 89/09/13 18:57:38 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -189,12 +189,25 @@ getshiftedleftbits(psrc, offset, w, dst)
 	psrc is declared (unsigned char *).
 */
 
-#ifdef STRICT_ANSI_SHIFT
-#define SHL(x,y)    ((y) >= 32 ? 0 : ((x) << (y)))
-#define SHR(x,y)    ((y) >= 32 ? 0 : ((x) >> (y)))
+#if (BITMAP_BIT_ORDER == IMAGE_BYTE_ORDER)
+#define LONG2CHARS(x) (x)
 #else
-#define SHL(x,y)    ((x) << (y))
-#define SHR(x,y)    ((x) >> (y))
+/*
+ *  the unsigned case below is for compilers like
+ *  the Danbury C and i386cc
+ */
+#define LONG2CHARS( x ) ( ( ( ( x ) & 0x000000FF ) << 0x18 ) \
+                      | ( ( ( x ) & 0x0000FF00 ) << 0x08 ) \
+                      | ( ( ( x ) & 0x00FF0000 ) >> 0x08 ) \
+                      | ( ( ( x ) & (unsigned long)0xFF000000 ) >> 0x18 ) )
+#endif
+
+#ifdef STRICT_ANSI_SHIFT
+#define SHL(x,y)    ((y) >= 32 ? 0 : LONG2CHARS(LONG2CHARS(x) << (y)))
+#define SHR(x,y)    ((y) >= 32 ? 0 : LONG2CHARS(LONG2CHARS(x) >> (y)))
+#else
+#define SHL(x,y)    LONG2CHARS(LONG2CHARS(x) << (y))
+#define SHR(x,y)    LONG2CHARS(LONG2CHARS(x) >> (y))
 #endif
 
 #if (BITMAP_BIT_ORDER == MSBFirst)	/* pc/rt, 680x0 */
@@ -204,7 +217,6 @@ getshiftedleftbits(psrc, offset, w, dst)
 #define SCRLEFT(lw, n)	SHR((lw),(n))
 #define SCRRIGHT(lw, n)	SHL((lw),(n))
 #endif
-
 
 #define maskbits(x, w, startmask, endmask, nlw) \
     startmask = starttab[(x)&0x1f]; \
