@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbline.c,v 1.22 94/03/06 18:20:33 dpw Exp $ */
+/* $XConsortium: cfbline.c,v 1.23 94/04/17 20:28:53 dpw Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -126,6 +126,8 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     int e, e1, e2;		/* bresenham error and increments */
     int len;			/* length of segment */
     int axis;			/* major axis */
+    int octant;
+    unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
 
 				/* a bunch of temporaries */
     int tmp;
@@ -304,18 +306,8 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 	}
 	else	/* sloped line */
 	{
-	    signdx = 1;
-	    if ((adx = x2 - x1) < 0)
-	    {
-		adx = -adx;
-		signdx = -1;
-	    }
-	    signdy = 1;
-	    if ((ady = y2 - y1) < 0)
-	    {
-		ady = -ady;
-		signdy = -1;
-	    }
+	    CalcLineDeltas(x1, y1, x2, y2, adx, ady, signdx, signdy,
+			   1, 1, octant);
 
 	    if (adx > ady)
 	    {
@@ -323,7 +315,6 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 		e1 = ady << 1;
 		e2 = e1 - (adx << 1);
 		e = e1 - adx;
-		FIXUP_X_MAJOR_ERROR(e, signdx, signdy);
  	    }
 	    else
 	    {
@@ -331,8 +322,10 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 		e1 = adx << 1;
 		e2 = e1 - (ady << 1);
 		e = e1 - ady;
-		FIXUP_Y_MAJOR_ERROR(e, signdx, signdy);
+		SetYMajorOctant(octant);
 	    }
+
+	    FIXUP_ERROR(e, octant, bias);
 
 	    /* we have bresenham parameters and two points.
 	       all we have to do now is clip and draw.
@@ -374,8 +367,8 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 		    if (miZeroClipLine(pbox->x1, pbox->y1, pbox->x2-1,
 				       pbox->y2-1,
 				       &new_x1, &new_y1, &new_x2, &new_y2,
-				       adx, ady, &clip1, &clip2, axis,
-				       (signdx == signdy), oc1, oc2) == -1)
+				       adx, ady, &clip1, &clip2,
+				       octant, bias, oc1, oc2) == -1)
 		    {
 			pbox++;
 			continue;
@@ -495,6 +488,8 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     int e, e1, e2;		/* bresenham error and increments */
     int len;			/* length of segment */
     int axis;			/* major axis */
+    int octant;
+    unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
     int x1, x2, y1, y2;
     RegionPtr cclip;
     cfbRRopRec	    rrops[2];
@@ -572,8 +567,7 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 	y2 = ppt->y + yorg;
 #endif
 
-	AbsDeltaAndSign(x2, x1, adx, signdx);
-	AbsDeltaAndSign(y2, y1, ady, signdy);
+	CalcLineDeltas(x1, y1, x2, y2, adx, ady, signdx, signdy, 1, 1, octant);
 
 	if (adx > ady)
 	{
@@ -582,7 +576,6 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 	    e2 = e1 - (adx << 1);
 	    e = e1 - adx;
 	    unclippedlen = adx;
-	    FIXUP_X_MAJOR_ERROR(e, signdx, signdy);
 	}
 	else
 	{
@@ -591,8 +584,10 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 	    e2 = e1 - (ady << 1);
 	    e = e1 - ady;
 	    unclippedlen = ady;
-	    FIXUP_Y_MAJOR_ERROR(e, signdx, signdy);
+	    SetYMajorOctant(octant);
 	}
+
+	FIXUP_ERROR(e, octant, bias);
 
 	/* we have bresenham parameters and two points.
 	   all we have to do now is clip and draw.
@@ -643,8 +638,8 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 		if (miZeroClipLine(pbox->x1, pbox->y1, pbox->x2-1,
 				   pbox->y2-1,
 				   &new_x1, &new_y1, &new_x2, &new_y2,
-				   adx, ady, &clip1, &clip2, axis,
-				   (signdx == signdy), oc1, oc2) == -1)
+				   adx, ady, &clip1, &clip2,
+				   octant, bias, oc1, oc2) == -1)
 		{
 		    pbox++;
 		    continue;

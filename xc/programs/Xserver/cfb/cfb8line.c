@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8line.c,v 1.27 94/03/06 18:20:20 dpw Exp $
+ * $XConsortium: cfb8line.c,v 1.28 94/04/17 20:28:42 dpw Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -211,7 +211,8 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
     cfbPrivGCPtr    devPriv;
     BoxPtr	    extents;
     int		    *ppt;
-    int		    axis;
+    int		    octant;
+    unsigned int    bias = miGetZeroLineBias(pDrawable->pScreen);
 
     devPriv = cfbGetGCPrivate(pGC);
     cfbGetPixelWidthAndPointer (pDrawable, nwidth, addr);
@@ -301,18 +302,8 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 	    {
 		break;
 	    }
-	    stepmajor = 1;
-	    if ((x1_or_len = _x2 - _x1) < 0)
-	    {
-		x1_or_len = -x1_or_len;
-		stepmajor = -1;
-	    }
-	    stepminor = NWIDTH(nwidth);
-	    if ((y1_or_e1 = _y2 - _y1) < 0)
-	    {
-		y1_or_e1 = -y1_or_e1;
-		stepminor = -stepminor;
-	    }
+	    CalcLineDeltas(_x1, _y1, _x2, _y2, x1_or_len, y1_or_e1,
+			   stepmajor, stepminor, 1, NWIDTH(nwidth), octant);
 	}
 #endif /* !ORIGIN */
 #ifdef EITHER_MODE
@@ -333,35 +324,15 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 #ifdef SAVE_X2Y2
 	    intToCoord(c2,x2,y2);
 #endif
-	    stepmajor = 1;
-	    if ((x1_or_len = X2 - X1) < 0)
-	    {
-		x1_or_len = -x1_or_len;
-		stepmajor = -1;
-	    }
-	    stepminor = NWIDTH(nwidth);
-	    if ((y1_or_e1 = Y2 - Y1) < 0)
-	    {
-		y1_or_e1 = -y1_or_e1;
-		stepminor = -stepminor;
-	    }
+	    CalcLineDeltas(X1, Y1, X2, Y2, x1_or_len, y1_or_e1,
+			   stepmajor, stepminor, 1, NWIDTH(nwidth), octant);
 	}
 #endif /* !PREVIOUS */
 #endif /* POLYSEGMENT */
 
 #ifdef POLYSEGMENT
-	stepmajor = 1;
-	if ((x1_or_len = X2 - X1) < 0)
-	{
-	    x1_or_len = -x1_or_len;
-	    stepmajor = -1;
-	}
-	stepminor = NWIDTH(nwidth);
-	if ((y1_or_e1 = Y2 - Y1) < 0)
-	{
-	    y1_or_e1 = -y1_or_e1;
-	    stepminor = -stepminor;
-	}
+	CalcLineDeltas(X1, Y1, X2, Y2, x1_or_len, y1_or_e1,
+		       stepmajor, stepminor, 1, NWIDTH(nwidth), octant);
 	/*
 	 * although the horizontal code works for polyline, it
 	 * slows down 10 pixel lines by 15%.  Thus, this
@@ -372,7 +343,6 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 	if (y1_or_e1 != 0)
 	{
 #endif
-	axis = X_AXIS;
 	if (x1_or_len < y1_or_e1)
 	{
 #ifdef REARRANGE
@@ -386,7 +356,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 	    e3 = stepminor;
 	    stepminor = stepmajor;
 	    stepmajor = e3;
-	    axis = Y_AXIS;
+	    SetYMajorOctant(octant);
 	}
 
 	e = -x1_or_len;
@@ -405,14 +375,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 	y1_or_e1 = y1_or_e1 << 1;
 	e3 = e << 1;
 
-	if (axis == X_AXIS)
-	{
-	    FIXUP_X_MAJOR_ERROR(e, stepmajor, stepminor);
-	}
-	else /* axis == Y_AXIS */
-	{
-	    FIXUP_Y_MAJOR_ERROR(e, stepminor, stepmajor);
-	}
+	FIXUP_ERROR(e, octant, bias);
 
 #define body {\
 	    RROP_SOLID(addrp); \
@@ -580,16 +543,22 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 #  define C2  ppt[-1]
 # endif
 #ifdef EITHER_MODE
-    if (pGC->capStyle != CapNotLast && ((mode && C2 != *((int *) pptInitOrig))
-					|| (_x2 != pptInitOrig->x)
-					|| (_y2 != pptInitOrig->y)))
+    if (pGC->capStyle != CapNotLast &&
+	((mode ? (C2 != *((int *) pptInitOrig))
+	       : ((_x2 != pptInitOrig->x) ||
+		  (_y2 != pptInitOrig->y)))
+	 || (ppt == ((int *)pptInitOrig) + 2)))
 #endif /* EITHER_MODE */
 #ifdef PREVIOUS
-    if (pGC->capStyle != CapNotLast && ((_x2 != pptInitOrig->x) ||
-				        (_y2 != pptInitOrig->y)))
+    if (pGC->capStyle != CapNotLast &&
+	((_x2 != pptInitOrig->x) ||
+	 (_y2 != pptInitOrig->y) ||
+	 (ppt == ((int *)pptInitOrig) + 2)))
 #endif /* PREVIOUS */
-#ifdef ORIG
-    if (pGC->capStyle != CapNotLast && C2 != *((int *) pptInitOrig))
+#ifdef ORIGIN
+    if (pGC->capStyle != CapNotLast &&
+	((C2 != *((int *) pptInitOrig)) ||
+	 (ppt == ((int *)pptInitOrig) + 2)))
 #endif /* !PREVIOUS */
     {
 # ifdef REARRANGE
@@ -758,7 +727,7 @@ RROP_NAME (cfb8ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
     Bool	shorten;
 {
     int		    oc1, oc2;
-    int		    signdx, signdy, axis, e, e1, e3, len;
+    int		    e, e1, e3, len;
     int		    adx, ady;
 
     PixelType	    *addr;
@@ -768,6 +737,8 @@ RROP_NAME (cfb8ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
     int             new_x1, new_y1, new_x2, new_y2;
     Bool	    pt1_clipped, pt2_clipped;
     int		    changex, changey, result;
+    int		    octant;
+    unsigned int    bias = miGetZeroLineBias(pDrawable->pScreen);
 
     cfbGetPixelWidthAndPointer(pDrawable, nwidth, addr);
 
@@ -785,23 +756,8 @@ RROP_NAME (cfb8ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
     if (oc1 & oc2)
 	return;
 
-    signdx = 1;
-    stepx = 1;
-    if ((adx = x2 - x1) < 0)
-    {
-	adx = -adx;
-	signdx = -1;
-	stepx = -1;
-    }
-    signdy = 1;
-    stepy = nwidth;
-    if ((ady = y2 - y1) < 0)
-    {
-	ady = -ady;
-	signdy = -1;
-	stepy = -nwidth;
-    }
-    axis = X_AXIS;
+    CalcLineDeltas(x1, y1, x2, y2, adx, ady, stepx, stepy, 1, nwidth, octant);
+
     if (adx <= ady)
     {
 	int	t;
@@ -814,17 +770,13 @@ RROP_NAME (cfb8ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
 	stepx = stepy;
 	stepy = t;
 	
-	axis = Y_AXIS;
-	e = - adx;
-	FIXUP_Y_MAJOR_ERROR(e, signdx, signdy);
+	SetYMajorOctant(octant);
     }
-    else
-    {
-	e = - adx;
-	FIXUP_X_MAJOR_ERROR(e, signdx, signdy);
-    }
+    e = - adx;
     e1 = ady << 1;
     e3 = - (adx << 1);
+
+    FIXUP_ERROR(e, octant, bias);
 
     new_x1 = x1;
     new_y1 = y1;
@@ -833,13 +785,13 @@ RROP_NAME (cfb8ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
     pt1_clipped = 0;
     pt2_clipped = 0;
 
-    if (axis == X_AXIS)
+    if (IsXMajorOctant(octant))
     {
 	result = miZeroClipLine(boxp->x1, boxp->y1, boxp->x2 - 1, boxp->y2 - 1,
 				&new_x1, &new_y1, &new_x2, &new_y2,
 				adx, ady,
-				&pt1_clipped, &pt2_clipped, X_AXIS,
-				signdx == signdy, oc1, oc2);
+				&pt1_clipped, &pt2_clipped,
+				octant, bias, oc1, oc2);
 	if (result == -1)
 	    return;
 	
@@ -866,8 +818,8 @@ RROP_NAME (cfb8ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
 	result = miZeroClipLine(boxp->x1, boxp->y1, boxp->x2 - 1, boxp->y2 - 1,
 				&new_x1, &new_y1, &new_x2, &new_y2,
 				ady, adx,
-				&pt1_clipped, &pt2_clipped, Y_AXIS,
-				signdx == signdy, oc1, oc2);
+				&pt1_clipped, &pt2_clipped,
+				octant, bias, oc1, oc2);
 	if (result == -1)
 	    return;
 	
