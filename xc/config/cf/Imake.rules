@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.83 91/02/04 17:51:33 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.84 91/02/09 14:35:36 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -23,7 +23,6 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.83 91/02/04 17:51:33 rws Exp $
  *     	ComplexProgramTarget_3                   (program,locallib,syslib)
  *     	ServerTarget                     (server,subdirs,objects,libs,syslibs)
  *     	InstallLibrary                           (libname,dest)
- *     	InstallSharedLibrary                     (libname,rev,dest)
  *     	InstallLibraryAlias                      (libname,alias,dest)
  *     	InstallLintLibrary                       (libname,dest)
  *     	InstallManPageLong                       (file,destdir,dest)
@@ -51,14 +50,11 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.83 91/02/04 17:51:33 rws Exp $
  *     	ProfiledLibraryObjectRule                ()
  *     	DebuggedLibraryObjectRule                ()
  *     	DebuggedAndProfiledLibraryObjectRule     ()
- *      SharedLibraryObjectRule                  ()
- *      SharedAndDebuggedLibraryObjectRule       ()
  *      SpecialObjectRule                        (objs,depends,options)
  *     	SpecialProfiledObjectRule                (objs,depends,options)
  *     	SpecialDebuggedObjectRule                (objs,depends,options)
  *     	SpecialDebuggedAndProfiledObjectRule     (objs,depends,options)
  *     	NormalLibraryTarget                      (libname,objlist)
- *      NormalSharedLibraryTarget                (libname,rev,solist,salist)
  *     	NormalLibraryTarget2                     (libname,objlist1,objlist2)
  *     	NormalLibraryTarget3              (libname,objlist1,objlist2,objlist3)
  *     	ProfiledLibraryTarget                    (libname,objlist)
@@ -102,6 +98,15 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.83 91/02/04 17:51:33 rws Exp $
  *	Concat                                   (a,b)
  *	Concat3                                  (a,b,c)
  * 
+ * The following are in specific OSLib.rules:
+ *     	InstallSharedLibrary                     (libname,rev,dest)
+ *      InstallSharedLibraryData                 (libname,rev,dest)
+ *      SharedLibraryObjectRule                  ()
+ *      SharedAndDebuggedLibraryObjectRule       ()
+ *      SpecialSharedAndDebuggedObjectRule       (objs,depends,options)
+ *      SpecialSharedObjectRule                  (objs,depends,options)
+ *      NormalSharedLibraryTarget                (libname,rev,solist)
+ *      NormalSharedLibraryDataTarget            (libname,rev,salist)
  * 
  * The general linking for building programs is:
  * 
@@ -328,28 +333,6 @@ install:: Concat(lib,libname.a)						@@\
 install::  fromlib							@@\
 	$(SCRIPTSRC)/mergelib tolib fromlib
 #endif /* MergeIntoInstalledLibrary */
-
-/*
- * InstallSharedLibrary - generate rules to install the shared library.
- */
-#ifndef InstallSharedLibrary
-#define	InstallSharedLibrary(libname,rev,dest)				@@\
-install:: Concat(lib,libname.so.rev) 					@@\
-	$(INSTALL) -c $(INSTLIBFLAGS) Concat(lib,libname.so.rev) dest	@@\
-
-#endif /* InstallSharedLibrary */
-
-/*
- * InstallSharedLibraryData - generate rules to install the shared library data
- */
-#ifndef InstallSharedLibraryData
-#define	InstallSharedLibraryData(libname,rev,dest)			@@\
-install:: Concat(lib,libname.sa.rev)					@@\
-	$(INSTALL) -c $(INSTLIBFLAGS) Concat(lib,libname.sa.rev) dest	@@\
-	RanLibrary($(RANLIBINSTFLAGS) Concat(dest/lib,libname.sa.rev))
-
-#endif /* InstallSharedLibraryData */
-
 
 /*
  * InstallLibraryAlias - generate rules to create a link from one library name
@@ -751,90 +734,6 @@ clean::									@@\
 
 
 /*
- * SharedLibraryObjectRule - generate make rules to build shared and "normal"
- * object files.
- */
-#ifndef SharedLibraryObjectRule
-#define SharedLibraryObjectRule()					@@\
-all::									@@\
-	-@if [ -d shared ]; then exit 0; else mkdir shared; fi		@@\
-									@@\
-.c.o:									@@\
-	$(RM) $@ shared/$@						@@\
-	$(CC) -pic -c $(SHAREDCODEDEF) $(SHLIBDEF) -O $(CCOPTIONS) $(ALLDEFINES) $*.c	@@\
-	$(MV) $*.o shared/$*.o						@@\
-	$(CC) -c $(SHLIBDEF) $(CFLAGS) $*.c				@@\
-									@@\
-clean::									@@\
-	-@if [ -d shared ]; then echo "	$(RM) shared/?*.o"; \		@@\
-		$(RM) shared/?*.o; else exit 0; fi			@@\
-
-#endif /* SharedLibraryObjectRule */
-
-/*
- * SharedAndDebuggedLibraryObjectRule - generate make rules to build shared,
- * debuggable, and "normal" object files.
- */
-#ifndef SharedAndDebuggedLibraryObjectRule
-#define SharedAndDebuggedLibraryObjectRule()				@@\
-all::									@@\
-	-@if [ -d shared ]; then exit 0; else mkdir shared; fi		@@\
-	-@if [ -d debugger ]; then exit 0; else mkdir debugger; fi	@@\
-									@@\
-.c.o:									@@\
-	$(RM) $@ shared/$@ debugger/$@					@@\
-	$(CC) -pic -c $(SHAREDCODEDEF) $(SHLIBDEF) -O $(CCOPTIONS) $(ALLDEFINES) $*.c	@@\
-	$(MV) $*.o shared/$*.o						@@\
-	$(CC) -g -c $(SHLIBDEF) $(CFLAGS) $*.c				@@\
-	$(MV) $*.o debugger/$*.o					@@\
-	$(CC) -c $(SHLIBDEF) $(CFLAGS) $*.c				@@\
-									@@\
-clean::									@@\
-	-@if [ -d shared ]; then echo "	$(RM) shared/?*.o"; \	@@\
-		$(RM) shared/?*.o; else exit 0; fi			@@\
-	-@if [ -d debugger ]; then echo "	$(RM) debugger/?*.o"; \ @@\
-		$(RM) debugger/?*.o; else exit 0; fi			@@\
-
-#endif /* SharedAndDebuggedLibraryObjectRule */
-
-/*
- * SpecialSharedAndDebuggedObjectRule - generate rules to compile a file 
- * with special flags and to make shared and debuggable versions.
- */
-#ifndef SpecialSharedAndDebuggedObjectRule
-#define	SpecialSharedAndDebuggedObjectRule(objs,depends,options)	@@\
-all::									@@\
-	-@if [ -d shared ]; then exit 0; else mkdir shared; fi		@@\
-	-@if [ -d debugger ]; then exit 0; else mkdir debugger; fi	@@\
-									@@\
-objs:	depends								@@\
-	$(RM) $@ shared/$@ debugger/$@					@@\
-	$(CC) -pic -c $(SHAREDCODEDEF) $(SHLIBDEF) -O $(CCOPTIONS) $(ALLDEFINES) options $*.c @@\
-	$(MV) $*.o shared/$*.o						@@\
-	$(CC) -g -c $(SHLIBDEF) $(CFLAGS) options $*.c			@@\
-	$(MV) $*.o debugger/$*.o					@@\
-	$(CC) -c $(SHLIBDEF) $(CFLAGS) options $*.c
-#endif /* SpecialDebuggedAndProfiledObjectRule */
-
-/*
- * SpecialSharedObjectRule - generate rules to compile a file 
- * with special flags and to make shared and debuggable versions.
- */
-#ifndef SpecialSharedObjectRule
-#define	SpecialSharedObjectRule(objs,depends,options)			@@\
-all::									@@\
-	-@if [ -d shared ]; then exit 0; else mkdir shared; fi		@@\
-									@@\
-objs:	depends								@@\
-	$(RM) $@ shared/$@ 						@@\
-	$(CC) -pic -c $(SHAREDCODEDEF) $(SHLIBDEF) -O $(CCOPTIONS) $(ALLDEFINES) options $*.c @@\
-	$(MV) $*.o shared/$*.o						@@\
-	$(CC) -c $(SHLIBDEF) $(CFLAGS) options $*.c
-#endif /* SpecialDebuggedAndProfiledObjectRule */
-
-
-
-/*
  * SpecialObjectRule - generate rules to compile a file with special flags.
  */
 #ifndef SpecialObjectRule
@@ -911,46 +810,6 @@ Concat(lib,libname.a): objlist						@@\
 	$(AR) $@ objlist						@@\
 	RanLibrary($@)
 #endif /* NormalLibraryTarget */
-
-
-/*
- * NormalSharedLibraryTarget - generate rules to create a shared library;
- * build it into a different name so that the we do not hose people by having
- * the library gone for long periods.
- */
-#ifndef NormalSharedLibraryTarget
-#define NormalSharedLibraryTarget(libname,rev,solist)			@@\
-AllTarget(Concat(lib,libname.so.rev))					@@\
-									@@\
-Concat(lib,libname.so.rev):  solist					@@\
-	$(RM) $@~							@@\
-	(cd shared; $(LD) -o ../$@~ -assert pure-text solist)		@@\
-	$(RM) $@ 							@@\
-	$(MV) $@~ $@							@@\
-									@@\
-clean::									@@\
-	$(RM) Concat(lib,libname.so.rev)
-
-#endif
-
-/*
- * NormalSharedLibraryDataTarget - generate rules to create shlib data file;
- * build it into a different name so that the we do not hose people by having
- * the library gone for long periods.
- */
-#ifndef NormalSharedLibraryDataTarget
-#define NormalSharedLibraryDataTarget(libname,rev,salist)		@@\
-AllTarget(Concat(lib,libname.sa.rev))					@@\
-									@@\
-Concat(lib,libname.sa.rev):  salist					@@\
-	$(RM) $@							@@\
-	$(AR) $@ salist							@@\
-	RanLibrary($@)							@@\
-									@@\
-clean::									@@\
-	$(RM) Concat(lib,libname.sa.rev)
-
-#endif /* NormalSharedLibraryTarget */
 
 
 /*
