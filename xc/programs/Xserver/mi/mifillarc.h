@@ -15,17 +15,21 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.h,v 5.0 89/09/20 18:55:54 rws Exp $ */
+/* $XConsortium: mifillarc.h,v 5.0 89/10/20 08:46:03 rws Exp $ */
 
 #define FULLCIRCLE (360 * 64)
 
-typedef struct FillArcInfo {
+typedef struct _miFillArc {
     int xorg, yorg;
     int y;
     int dx, dy;
     int e, ex;
     int ym, yk, xm, xk;
 } miFillArcRec;
+
+#define miFillArcEmpty(arc) (!(arc)->angle2 || \
+			     !(arc)->width || !(arc)->height || \
+			     (((arc)->width == 1) && ((arc)->height & 1)))
 
 #define miCanFillArc(arc) (((arc)->width == (arc)->height) || \
 			   (((arc)->width <= 800) && ((arc)->height <= 800)))
@@ -71,3 +75,51 @@ extern void miFillArcSetup();
 	slw--
 
 #define miFillArcLower(slw) (((y + dy) != 0) && ((slw > 1) || (e != ex)))
+
+typedef struct _miSliceEdge {
+    int	    x;
+    int     stepx;
+    int	    deltax;
+    int	    e;
+    int	    dy;
+    int	    dx;
+} miSliceEdgeRec, *miSliceEdgePtr;
+
+typedef struct _miArcSlice {
+    miSliceEdgeRec edge1, edge2;
+    int min_top_y, max_top_y;
+    int min_bot_y, max_bot_y;
+    Bool edge1_top, edge2_top;
+    Bool flip_top, flip_bot;
+} miArcSliceRec;
+
+#define MIARCSLICESTEP(edge) \
+    edge.x -= edge.stepx; \
+    edge.e -= edge.dx; \
+    if (edge.e <= 0) \
+    { \
+	edge.x -= edge.deltax; \
+	edge.e += edge.dy; \
+    }
+
+#define miFillSliceUpper(slice) \
+		((y >= slice.min_top_y) && (y <= slice.max_top_y))
+
+#define miFillSliceLower(slice) \
+		((y >= slice.min_bot_y) && (y <= slice.max_bot_y))
+
+#define MIARCSLICEUPPER(xl,xr,slice,slw) \
+    xl = xorg - x; \
+    xr = xl + slw - 1; \
+    if (slice.edge1_top && (slice.edge1.x < xr)) \
+	xr = slice.edge1.x; \
+    if (slice.edge2_top && (slice.edge2.x > xl)) \
+	xl = slice.edge2.x;
+
+#define MIARCSLICELOWER(xl,xr,slice,slw) \
+    xl = xorg - x; \
+    xr = xl + slw - 1; \
+    if (!slice.edge1_top && (slice.edge1.x > xl)) \
+	xl = slice.edge1.x; \
+    if (!slice.edge2_top && (slice.edge2.x < xr)) \
+	xr = slice.edge2.x;
