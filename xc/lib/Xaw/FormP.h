@@ -1,7 +1,12 @@
+/* $Header$ */
+/* Copyright	Massachusetts Institute of Technology	1987 */
+
 /* Form widget private definitions */
 
 #ifndef _FormP_h
 #define _FormP_h
+
+#include <X/Form.h>
 
 typedef struct {int empty;} FormClassPart;
 
@@ -43,4 +48,3 @@ typedef struct _FormConstraintsRec {
 } FormConstraintsRec, *FormConstraints;
 
 #endif _FormP_h
-/* DON'T ADD STUFF AFTER THIS #endif */
