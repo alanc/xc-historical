@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.34 88/02/12 13:24:59 jim Exp $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.35 88/08/09 15:15:45 keith Exp $";
 #endif
 
 /*%
@@ -142,6 +142,10 @@ Window_Dump(window, out)
     char *win_name;
     XWindowAttributes win_info;
     XImage *image;
+    int absx, absy, x, y;
+    unsigned width, height;
+    int dwidth, dheight;
+    int bw;
 
     XWDFileHeader header;
 
@@ -158,13 +162,18 @@ Window_Dump(window, out)
     if(!XGetWindowAttributes(dpy, window, &win_info)) 
       Fatal_Error("Can't get target window attributes.");
 
-    if (win_info.x + win_info.border_width * nobdrs < 0 ||
-        win_info.y + win_info.border_width * nobdrs < 0 ||
-	win_info.x + win_info.border_width + win_info.width + 
-	win_info.border_width * (!nobdrs) > DisplayWidth  (dpy, screen) ||
-	win_info.y + win_info.border_width + win_info.height + 
-	win_info.border_width * (!nobdrs) > DisplayHeight (dpy, screen))
-      Fatal_Error("Target window lies partially off screen \n");
+    absx = win_info.x + (nobdrs ? win_info.border_width : 0);
+    absy = win_info.y + (nobdrs ? win_info.border_width : 0);
+    width = win_info.width + (nobdrs ? 0 : (2 * win_info.border_width));
+    height = win_info.height + (nobdrs ? 0 : (2 * win_info.border_width));
+    dwidth = DisplayWidth (dpy, screen);
+    dheight = DisplayHeight (dpy, screen);
+
+    /* clip to window */
+    if (absx < 0) width += absx, absx = 0;
+    if (absy < 0) height += absy, absy = 0;
+    if (absx + width > dwidth) width = dwidth - absx;
+    if (absy + height > dheight) width = dheight - absy;
 
     XFetchName(dpy, window, &win_name);
     if (!win_name || !win_name[0])
@@ -177,6 +186,12 @@ Window_Dump(window, out)
      * Snarf the pixmap with XGetImage.
      */
 
+    bw = nobdrs ? 0 : win_info.border_width;
+    x = absx - win_info.x - bw;
+    y = absy - win_info.y - bw;
+    image = XGetImage (dpy, window, x, y, width, height, ~0, format);
+
+#ifdef obsolete
     if (nobdrs) {
       	if (debug) outl("xwd: Image without borders selected.\n");
 	image = XGetImage ( dpy, window, 0, 0, win_info.width,
@@ -191,6 +206,7 @@ Window_Dump(window, out)
 			   ~0, format); 
       }
     if (debug) outl("xwd: Getting pixmap.\n");
+#endif /* obsolete */
 
     /*
      * Determine the pixmap size.
@@ -240,13 +256,8 @@ Window_Dump(window, out)
     header.ncolors = ncolors;
     header.window_width = (xwdval) win_info.width;
     header.window_height = (xwdval) win_info.height;
-    if (nobdrs) {
-      header.window_x = (xwdval) (win_info.x + win_info.border_width);
-      header.window_y = (xwdval) (win_info.y + win_info.border_width);
-    } else {
-      header.window_x = (xwdval) win_info.x;
-      header.window_y = (xwdval) win_info.y;
-    }
+    header.window_x = absx;
+    header.window_y = absy;
     header.window_bdrwidth = (xwdval) win_info.border_width;
 
     if (*(char *) &swaptest) {
