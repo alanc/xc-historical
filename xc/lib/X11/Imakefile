@@ -248,14 +248,14 @@ InstallMultiple($(HEADERS),$(INCDIR))
 InstallNonExec(XErrorDB,$(LIBDIR))
 
 
-#if ProfileLibX
+#if ProfileLibX && ProfileLibXArchive
 ProfiledLibraryTarget(X,$(OBJS))
 AliasedLibraryTarget(X_p,X11_p)
 InstallLibrary(X_p,$(USRLIBDIR))
 InstallLibraryAlias(X_p,X11_p,$(USRLIBDIR))
 #endif
 
-#if DebugLibX
+#if DebugLibX && DebugLibXArchive
 DebuggedLibraryTarget(X,$(OBJS))
 AliasedLibraryTarget(X_d,X11_d)
 #endif
