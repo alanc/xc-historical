@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: WaitFor.c,v 1.22 87/09/07 13:14:07 sun Locked $ */
+/* $Header: WaitFor.c,v 1.23 87/09/11 17:23:10 sun Locked $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -131,11 +131,11 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
             else
                 wt = NULL;
 	    COPYBITS(AllSockets, LastSelectMask);
-	    BlockHandler();
+	    BlockHandler(wt, LastSelectMask);
 	    i = select (MAXSOCKS, LastSelectMask, 
 			(int *) NULL, (int *) NULL, wt);
 	    selecterr = errno;
-	    WakeupHandler();
+	    WakeupHandler(i, LastSelectMask);
 	    if (i <= 0) /* An error or timeout occurred */
             {
 		if (i < 0) 

@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $Header: dixutils.c,v 1.22 87/08/17 18:16:23 drewry Exp $ */
+/* $Header: dixutils.c,v 1.22 87/09/11 07:18:47 sun Locked $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -209,20 +209,26 @@ NoopDDA()
 
 
 /* called from the OS layer */
-BlockHandler()
+BlockHandler(pTimeout, pReadmask)
+pointer	pTimeout;	/* DIX doesn't want to know how OS represents time */
+pointer pReadmask;	/* nor how it represents the set of descriptors */
 {
     register int i;
     for (i = 0; i < screenInfo.numScreens; i++)
 	(* screenInfo.screen[i].BlockHandler)(i, 
-				screenInfo.screen[i].blockData);
+				screenInfo.screen[i].blockData,
+				pTimeout, pReadmask);
 }
 
 
-WakeupHandler()
+WakeupHandler(result, pReadmask)
+unsigned long	result;	/* 32 bits of undefined result from the wait */
+pointer pReadmask;	/* the resulting descriptor mask */
 {
     register int i;
     for (i = 0; i < screenInfo.numScreens; i++)
 	(* screenInfo.screen[i].WakeupHandler)(i, 
-				screenInfo.screen[i].wakeupData);
+				screenInfo.screen[i].wakeupData,
+				result, pReadmask);
 }
 
