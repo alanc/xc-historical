@@ -87,8 +87,7 @@ SRCS = \
 	UpdMapHint.c \
 	VisCmap.c \
 	WidgetNode.c \
-	Xct.c \
-	sharedlib.c 
+	Xct.c
 
 OBJS = \
 	AllCmap.o \
@@ -135,19 +134,10 @@ OBJS = \
 	WidgetNode.o \
 	Xct.o
 
-UNSHAREDOBJS = sharedlib.o
-
 LibraryObjectRule()
 
 SpecialLibObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
 SpecialLibObjectRule(LocBitmap.o,$(ICONFIGFILES),$(BITDEFS))
-#if DoSharedLib
-depend:: xtsharedlib.c
-xtsharedlib.c: $(TOOLKITSRC)/sharedlib.c
-	$(RM) $@
-	$(LN) $? $@
-SpecialObjectRule(sharedlib.o,,$(SHLIBDEF) -I$(TOOLKITSRC))
-#endif
 
 #if DoSharedLib
 #if DoNormalLib
@@ -155,9 +145,7 @@ SharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS),shared,..)
 #else
 SharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS),.,.)
 #endif
-SharedLibraryDataTarget(Xmu,$(SOXMUREV),$(UNSHAREDOBJS))
 InstallSharedLibrary(Xmu,$(SOXMUREV),$(USRLIBDIR))
-InstallSharedLibraryData(Xmu,$(SOXMUREV),$(USRLIBDIR))
 #endif
 #if DoNormalLib
 NormalLibraryTarget(Xmu,$(OBJS))
