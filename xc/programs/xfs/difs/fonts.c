@@ -1,4 +1,4 @@
-/* $XConsortium: fonts.c,v 1.20 94/02/03 10:07:23 gildea Exp $ */
+/* $XConsortium: fonts.c,v 1.21 94/03/08 17:45:08 gildea Exp $ */
 /*
  * font control
  */
@@ -95,7 +95,7 @@ FreeFPE(fpe)
 
 /*
  * note that the font wakeup queue is not refcounted.  this is because
- * an fpe needs to be added when its inited, and removed when its finally
+ * an fpe needs to be added when it's inited, and removed when it's finally
  * freed, in order to handle any data that isn't requested, like FS events.
  *
  * since the only thing that should call these routines is the renderer's
@@ -155,7 +155,7 @@ void
 FontWakeup(data, count, LastSelectMask)
     pointer     data;
     int         count;
-    long       *LastSelectMask;
+    unsigned long *LastSelectMask;
 {
     int         i;
     FontPathElementPtr fpe;
@@ -628,10 +628,14 @@ set_font_path_elements(npaths, paths, bad)
 	*bad = 0;
 	return FSBadAlloc;
     }
+    for (i = 0; i < num_fpe_types; i++) {
+	if (fpe_functions[i].set_path_hook)
+	    (*fpe_functions[i].set_path_hook) ();
+    }
     for (i = 0; i < npaths; i++) {
 	len = *cp++;
 	if (len) {
-	    /* if its already in our active list, just reset it */
+	    /* if it's already in our active list, just reset it */
 	    /*
 	     * note that this can miss FPE's in limbo -- may be worth catching
 	     * them, though it'd muck up refcounting
@@ -646,7 +650,7 @@ set_font_path_elements(npaths, paths, bad)
 		    cp += len;
 		    continue;
 		}
-		/* can't do it, so act like its a new one */
+		/* can't do it, so act like it's a new one */
 	    }
 	    type = determine_fpe_type(cp);
 	    if (type == -1)
@@ -1298,7 +1302,8 @@ LoadGlyphRanges(client, pfont, range_flag, num_ranges, item_size, data)
     /* either returns Successful, Suspended, or some nasty error */
     if (fpe_functions[pfont->fpe->type].load_glyphs)
 	return (*fpe_functions[pfont->fpe->type].load_glyphs)(
-		client, pfont, range_flag, num_ranges, item_size, data);
+		(pointer)client, pfont, range_flag, num_ranges, item_size,
+		(unsigned char *)data);
     else
 	return Successful;
 }
@@ -1307,7 +1312,8 @@ int
 RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
 	   open_func, close_func, list_func, start_lfwi_func, next_lfwi_func,
 		     wakeup_func, client_died, load_glyphs,
-		     start_list_alias_func, next_list_alias_func)
+		     start_list_alias_func, next_list_alias_func,
+		     set_path_func)
     Bool        (*name_func) ();
     int         (*init_func) ();
     int         (*free_func) ();
@@ -1322,6 +1328,7 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
     int         (*load_glyphs) ();
     int		(*start_list_alias_func) ();
     int		(*next_list_alias_func) ();
+    void	(*set_path_func) ();
 {
     FPEFunctions *new;
 
@@ -1351,6 +1358,8 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
 	start_list_alias_func;
     fpe_functions[num_fpe_types].list_next_font_or_alias =
 	next_list_alias_func;
+    fpe_functions[num_fpe_types].set_path_hook = set_path_func;
+
     return num_fpe_types++;
 }
 
