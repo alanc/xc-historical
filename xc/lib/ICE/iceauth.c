@@ -1,4 +1,4 @@
-/* $XConsortium: iceauth.c,v 1.11 94/02/07 19:14:00 mor Exp $ */
+/* $XConsortium: iceauth.c,v 1.12 94/03/08 12:17:24 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -89,11 +89,11 @@ int len;
 
 
 IcePoAuthStatus
-_IcePoMagicCookie1Proc (authStatePtr, address, cleanUp, swap,
+_IcePoMagicCookie1Proc (authStatePtr, networkId, cleanUp, swap,
     authDataLen, authData, replyDataLenRet, replyDataRet, errorStringRet)
 
 IcePointer	*authStatePtr;
-char		*address;
+char		*networkId;
 Bool 		cleanUp;
 Bool		swap;
 int     	authDataLen;
@@ -119,13 +119,13 @@ char    	**errorStringRet;
 	/*
 	 * This is the first time we're being called.  Search the
 	 * authentication data for the first occurence of
-	 * MIT-MAGIC-COOKIE-1 that matches address.
+	 * MIT-MAGIC-COOKIE-1 that matches networkId.
 	 */
 
 	unsigned short  length;
 	char		*data;
 
-	_IceGetPoAuthData ("ICE", address, "MIT-MAGIC-COOKIE-1",
+	_IceGetPoAuthData ("ICE", networkId, "MIT-MAGIC-COOKIE-1",
 	    &length, &data);
 
 	if (!data)
@@ -169,11 +169,11 @@ char    	**errorStringRet;
 
 
 IcePaAuthStatus
-_IcePaMagicCookie1Proc (authStatePtr, address, swap,
+_IcePaMagicCookie1Proc (authStatePtr, networkId, swap,
     replyDataLen, replyData, authDataLenRet, authDataRet, errorStringRet)
 
 IcePointer	*authStatePtr;
-char		*address;
+char		*networkId;
 Bool		swap;
 int     	replyDataLen;
 IcePointer	replyData;
@@ -203,13 +203,13 @@ char    	**errorStringRet;
     {
 	/*
 	 * Search the authentication data for the first occurence of
-	 * MIT-MAGIC-COOKIE-1 that matches address.
+	 * MIT-MAGIC-COOKIE-1 that matches networkId.
 	 */
 
 	unsigned short  length;
 	char		*data;
 
-	_IceGetPaAuthData ("ICE", address, "MIT-MAGIC-COOKIE-1",
+	_IceGetPaAuthData ("ICE", networkId, "MIT-MAGIC-COOKIE-1",
 	    &length, &data);
 
 	if (data)
