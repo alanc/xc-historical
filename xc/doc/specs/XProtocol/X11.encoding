@@ -1,11 +1,11 @@
 \&
 .sp 1
-.ce 3
 .ps 11
 .nr PS 11
 .XS
 Appendix B \- Protocol Encoding
 .XE
+.ce 3
 \s+1\fBAppendix B\fP\s-1
 
 \s+1\fBProtocol Encoding\fP\s-1

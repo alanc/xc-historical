@@ -1,11 +1,11 @@
 \&
 .sp 1
-.ce 3
 .ps 11
 .nr PS 11
 .XS
 Appendix A \- KEYSYM Encoding
 .XE
+.ce 3
 \s+1\fBAppendix A\fP\s-1
 
 \s+1\fBKEYSYM Encoding\fP\s-1
