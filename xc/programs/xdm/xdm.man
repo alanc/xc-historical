@@ -1,0 +1,236 @@
+.TH xdm 1 "1 March 1988" "X Version 11"
+.SH NAME
+xdm \- X Display Manager
+.B xdm
+[configuration-file]
+.SH DESCRIPTION
+.I Xdm
+manages sessions on a collection of X displays, both local and remote.
+.I Xdm
+is responsible for maintaining a server and a series of sessions on
+each display which requests management.
+.PP
+Before the session is started, 
+.I xdm
+executes a user authentication procedure which reads the login-id and password
+from the user, verifying the validity of the pair and performing other
+ritual unix procedures normally proscribed to the getty/login programs.
+.PP
+At this point, the session is begun.  Similar to terminal-based unix usage,
+the session is defined by the lifetime of a particular unix process, in the
+traditional setting, the users login shell process.  In the xdm context, it
+is an arbitrary session manager.  Until real session managers become widely
+availible, this is likely to be either a window manager with an "exit" option
+or a terminal emulator running a shell.
+.PP
+When the session is terminated,
+.I xdm
+resets the X server and restarts the authentication procedure.
+.SH RESOURCES
+At many stages the actions of
+.I xdm
+can be controlled through the use of an optional configuration file
+which is in the familiar X resource format.  Some resources
+modify the global behaviour of
+.I xdm
+while others modify the actions related only to a single display.  Where
+actions relate to the display, the DISPLAY name is inserted into the
+resource name between DisplayManager and the final resource name segment.
+.IP "DisplayManager.servers"
+This resource describes the collection of servers (seperated with new-lines) 
+which are local to this host.
+If the resource name begins with a virgule, it is assumed to represent a unix
+file containing the list.  Each entry consists of three parts:  a display-name,
+a display-type and a type-specific collection of space-separated words.
+.nf
+
+  unix:0 secure /usr/bin/X11/X :0
+
+.fi
+is a typical entry for local display number 0.  The types are:
+.ta 1.5i
+.nf
+
+secure	a local display which cannot be disabled
+insecure	a local display which can be disabled
+foreign		a remote display which is constantly restarted
+transient	a remote display which receives only one session
+.fi
+.IP
+The only valid entries for local displays are obviously "secure" and "insecure".
+Other types will generate an error.  The type-specific collection of words
+following the type are a program name and a list of arguments.  The program
+name should probably be a fully qualified unix path name as 
+.I xdm
+does not search through PATH.
+.IP "DisplayManager.requestPort"
+Setting this numeric resource to a value other than zero enables the
+network monitoring portion of the display manager.  See the NETWORK
+section below
+.IP "DisplayManager.errorLogFile"
+Error output is normally directed at the system console, to redirect it simply
+set this resource to any file name.  A method to send these messages to
+syslog should be developed for systems which support it.
+.IP "DisplayManager.DISPLAY.resources"
+This resource specifies a file to be loaded as the resource data-base onto
+the Root window of screen 0 of the display using xrdb.  This resource data base
+is loaded just before the authentication proceedure is started, so it can control
+the apperance of that display.
+.IP "DisplayManager.DISPLAY.xrdb"
+Specifies the program used to load the resources.  By default,
+.I xdm
+uses /usr/bin/X11/xrdb.
+.IP "DisplayManager.DISPLAY.startup"
+This specifies a program which is run (as root) after the authentication process
+suceeds.  By default, no program is run.
+.IP "DisplayManager.DISPLAY.reset"
+This specifies a program which is run (as root) after the session terminates.
+Again, by default no program is run.
+.IP "DisplayManager.DISPLAY.session"
+This specifies the session to be executed.  By default, /usr/bin/X11/xterm is
+run.
+.IP "DisplayManager.DISPLAY.openDelay,\ DisplayManager.DISPLAY.openRepeat"
+These numeric resoruces control the behaviour of
+.I xdm
+when attempting to open intransigent servers.  openDelay is the length of the
+pause (in seconds) between sucessive attempts, openRepeat is the number of
+attempts to make.  After openRepeat attempts have been made,
+.I xdm
+terminates and restarts the server, attempting to connect again.
+.IP "DisplayManager.DISPLAY.terminateServer"
+This boolean resource specifies whether the X server should be terminated
+when a session terminates (instead of simply resetting it).  This option
+can be used when the server tends to grow without bound over time to
+limit the amount of time the server is run.
+.IP "DisplayManager.DISPLAY.unixPath"
+.I Xdm
+sets the PATH environment variable for the session.
+.SH "CONTROLING THE SERVER"
+.I Xdm
+controls local servers using Unix signals.  SIGHUP is expected to reset the server,
+closing all client connections and performing other clean up duties.  SIGTERM is
+expected to terminate the server.  If these signals do not perform the expected
+actions,
+.I xdm
+will not perform properly.
+.PP
+To control remote servers,
+.I xdm
+sends UDP packets to the address which originally requested the connection.  To
+secure this connection from possible compromise,
+.I xdm
+includes key which was passed in the original request.  The
+format of these packets is:
+.nf
+display-name authentication-word message
+.fi
+.PP
+Message consists of one of the following (all ISO Latin-1 characters):
+.nf
+START		is sent before any connection is attempted
+TERMINATE	is sent when the server should be disabled
+RESTART		is sent when the server should be reset
+.fi
+.SH NETWORK
+A UDP socket bound
+to the DispayManager.requestPort IP port number is created to which requests
+can be sent from remote X displays.  There are two types of messages which
+can be sent, a poll message consisting of the ISO Latin-1 characters "POLL"
+which simply requests an anouncement of the availiblity of the socket.
+.I xdm
+responds to this message with a packet containing the ISO Latin-1 characters
+"ADVERTISE".
+.IP
+The other type of message is in the same format as DisplayManager.servers,
+the acceptable types in this case are "foreign", "transient" and "remove".
+Remove is a special command which causes
+.I xdm
+to disable the specified server.  If the server is of type "secure", a remove
+command will fail.  If the server is "transient" or "foreign" then the first
+optional word following "remove" must match the key given when that display
+was managed.  For the other two types,
+the type-specific words following the type must contain a single word which is
+used as a key as described in the section on Controlling the Server.
+In either case,
+.I xdm
+proceeds with the authentication process after confirming that a display with
+the given name can be opened.  The only difference occurs when the session terminates.
+In the "foreign" case, another authentication process is started, with its attendent session
+following.  "transient" clients are not restarted, they are notified of the session
+termination and are expected to re-request if another session is desired.
+.SH "AUTHENTICATION WIDGET"
+The authentication widget is a very simplistic tool which reads a name/password
+pair from the keyboard.  As this is a toolkit client, nearly every imaginable
+parameter can be controlled with a resource.  Resources for this widget
+should be put into the file named by DisplayManager.DISPLAY.resources.
+.IP "xlogin*width,height,x,y"
+The geometry of the xlogin widget is normally computed automatically.  If you
+wish to position it elsewhere, specify each of these resources.
+.IP "xlogin*foreground"
+The color used to display the typed-in user name.
+.IP "xlogin*font"
+The font used to display the typed-in user name.
+.IP "xlogin*greeting"
+A string which identifies this window.
+The default is "Welcome to the X Window System".
+.IP "xlogin*greetFont"
+The font used to display the greeting.
+.IP "xlogin*greetColor"
+The color used to display the greeting.
+.IP "xlogin*namePrompt"
+The string displayed to prompt for a user name.
+The default is "Login:  "
+.IP "xlogin*passwdPrompt"
+The string displayed to prompt for a password.
+The default is "Password:  ".
+.IP "xlogin*promptFont"
+The font used to display both prompts.
+.IP "xlogin*promptColor"
+The color used to display both prompts.
+.IP "xlogin*fail"
+A message which is displayed when the authentication fails.
+The default is "Login Failed".
+.IP "xlogin*failFont"
+The font used to display the failure message
+.IP "xlogin*failColor"
+The color used to display the failure message
+.IP "xlogin*failTimeout"
+The time (in seconds) that the fail message is displayed.
+.PP
+The Login widget uses the Translation manager to process events, the actions
+supported are:
+.IP "delete-previous-character (Backspace, Delete)"
+Erases the character before the cursor.
+.IP "delete-character (Cntl<Key>D)"
+Erases the character after the cursor.
+.IP "move-backward-character (Cntl<Key>B)"
+Moves the cursor backwards.
+.IP "move-forward-character (Cntl<Key>F)"
+Moves the cursor forward.
+.IP "move-to-begining (Cntl<Key>A)"
+Moves the cursor to the begining of the editible text.
+.IP "move-to-end (Cntl<Key>E)"
+Moves the cursor to the end ot the editible text.
+.IP "erase-to-end-of-line (Cntl<Key>K)"
+Erases all text after the cursor.
+.IP "erase-line (Cntl(Key>U)"
+Erases the entire text.
+.IP "finish-field (Return)"
+If the cursor is in the name field, proceeds to the password field.
+Else, attempts to validate the current name/password pair.
+.IP "abort-session (Ctrl<Key>\\)"
+Terminates and restarts the server.
+.IP "abort-display (Ctrl<Key>R)"
+Terminates the server, disabling it.
+.IP "restart-session (Ctrl<Key>C)"
+Resets the X server and starts a new session.
+.IP "insert-char"
+Inserts the character.
+.SH "SEE ALSO"
+X(1), xinit(1)
+.SH BUGS
+.SH COPYRIGHT
+Copyright 1988, Massachusetts Institute of Technology.
+.br
+See \fIX(1)\fP for a full statement of rights and permissions.
+
