@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Composite.c,v 6.17 88/01/29 11:59:46 asente Exp $";
+static char rcsid[] = "$Header: Composite.c,v 6.18 88/02/01 17:20:21 swick Locked $";
 #endif lint
 
 /*
@@ -31,7 +31,7 @@ static char rcsid[] = "$Header: Composite.c,v 6.17 88/01/29 11:59:46 asente Exp 
 #include "Atoms.h"
 
 static void CompositeClassPartInitialize();
-void CompositeInitialize();
+static void CompositeInitialize();
 static void CompositeInsertChild();
 static void CompositeDeleteChild();
 static void CompositeDestroy();
@@ -186,7 +186,7 @@ static void CompositeDeleteChild(w)
 }
 
 /* ARGSUSED */
-void CompositeInitialize(requested_widget, new_widget)
+static void CompositeInitialize(requested_widget, new_widget)
     Widget   new_widget, requested_widget;
 {
     register CompositeWidget cw;
