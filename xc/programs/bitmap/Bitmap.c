@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.11 90/04/25 08:30:41 dmatic Exp $
+ * $XConsortium: Bitmap.c,v 1.12 90/06/09 20:19:28 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -576,7 +576,7 @@ String StripFilename(filename)
 int XmuWriteBitmapDataToFile (filename, basename, 
 			      width, height, datap, x_hot, y_hot)
     String filename, basename;
-    unsigned int width, height;
+    int width, height;
     char *datap;
     int x_hot, y_hot;
 {
@@ -774,7 +774,6 @@ static void Initialize(request, new, argv, argc)
 	    new->bitmap.zooming = False;
 	}
 	if (!strcmp(new->bitmap.basename, "")) {
-	    XtFree(new->bitmap.basename);
 	    new->bitmap.basename = StripFilename(new->bitmap.filename);
 	}
     }
@@ -880,7 +879,7 @@ void BWChangeBasename(w, str)
 
 int BWReadFile(w, filename, basename)
     Widget w;
-    String filename, *basename;
+    String filename, basename;
 {
     BitmapWidget BW = (BitmapWidget) w;
     int status;
@@ -951,7 +950,9 @@ int BWSetImage(w, image)
     char *buffer_data;
     
     buffer_data = CreateCleanData(Length(image->width, image->height));
-    buffer = CreateBitmapImage(BW, buffer_data, image->width, image->height);
+    buffer = CreateBitmapImage(BW, buffer_data, 
+			       (Dimension) image->width, 
+			       (Dimension) image->height);
     
     TransferImageData(BW->bitmap.image, buffer);
     
@@ -978,7 +979,7 @@ int BWWriteFile(w, filename, basename)
     String filename, basename;
 {
     BitmapWidget BW = (BitmapWidget) w;
-    unsigned char *data;
+    char *data;
     XImage *image;
     XPoint hot;
     int status;
@@ -988,8 +989,8 @@ int BWWriteFile(w, filename, basename)
 	      Length(BW->bitmap.zoom.image->width, 
 		     BW->bitmap.zoom.image->height));
 	image = CreateBitmapImage(BW, data,
-				  BW->bitmap.zoom.image->width,
-				  BW->bitmap.zoom.image->height);
+				  (Dimension) BW->bitmap.zoom.image->width,
+				  (Dimension) BW->bitmap.zoom.image->height);
 	CopyImageData(BW->bitmap.image, image, 
 		      0, 0, 
 		      BW->bitmap.image->width - 1,
@@ -1230,7 +1231,9 @@ void BWRescale(w, width, height)
 		       (double) height / (double) BW->bitmap.image->height);
 
     buffer_data = CreateCleanData(Length(image->width, image->height));
-    buffer = CreateBitmapImage(BW, buffer_data, image->width, image->height);
+    buffer = CreateBitmapImage(BW, buffer_data, 
+			       (Dimension) image->width, 
+			       (Dimension) image->height);
     
     TransferImageData(BW->bitmap.buffer, buffer);
 
@@ -1318,8 +1321,6 @@ static void Resize(BW)
      BitmapWidget BW;
 {
     Dimension squareW, squareH;
-    char *data;
-    int i;
 
     squareW = max(1, ((int)BW->core.width - 2 * (int)BW->bitmap.distance) / 
 		  (int)BW->bitmap.width);
@@ -1526,7 +1527,8 @@ void BWSwitchDashed(w)
 
     BWRedrawGrid(w,
 		 0, 0,
-		 BW->bitmap.width - 1, BW->bitmap.height - 1);
+		 (Position) BW->bitmap.width - 1, 
+		 (Position) BW->bitmap.height - 1);
 
     rectangle.x = 0;
     rectangle.y = 0;
@@ -1559,7 +1561,8 @@ void BWSwitchDashed(w)
    
     BWRedrawGrid(w,
 		 0, 0,
-		 BW->bitmap.width - 1, BW->bitmap.height - 1);
+		 (Position) BW->bitmap.width - 1, 
+		 (Position) BW->bitmap.height - 1);
 }
 
 void BWDashed(w, _switch)

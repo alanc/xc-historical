@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.11 90/04/25 08:30:41 dmatic Exp $
+ * $XConsortium: Graphics.c,v 1.1 90/06/09 20:20:29 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -788,8 +788,8 @@ void BWFold(w)
 					  BW->bitmap.image->height));
 
     storage = CreateBitmapImage(BW, storage_data, 
-				BW->bitmap.image->width, 
-				BW->bitmap.image->height);
+				(Dimension) BW->bitmap.image->width, 
+				(Dimension) BW->bitmap.image->height);
 
     TransferImageData(BW->bitmap.image, storage);
 
@@ -1156,7 +1156,9 @@ XImage *ConvertToBitmapImage(BW, image)
     Position x, y;
     
     data = CreateCleanData(Length(image->width, image->height));
-    bitmap_image = CreateBitmapImage(BW, data, image->width, image->height);
+    bitmap_image = CreateBitmapImage(BW, data, 
+				     (Dimension) image->width, 
+				     (Dimension) image->height);
 
     for (x = 0; x < min(image->width, bitmap_image->width); x++)
 	for (y = 0; y < min(image->height, bitmap_image->height); y++)

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitEdit.c,v 1.6 90/04/25 08:30:28 dmatic Exp $
+ * $XConsortium: BitEdit.c,v 1.7 90/06/09 20:19:19 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -46,19 +46,15 @@ static char *usage = "[-options ...] filename\n\
 where options include:\n\
      -size WIDTHxHEIGHT\n\
      -squares dimension\n\
-     -grid on/off\n\
-     -axes on/off\n\
-     -dashed on/off\n\
+     -grid, +grid\n\
+     -axes, +axes\n\
+     -dashed, +dashed\n\
+     -stippled, +stippled\n\
+     -proportional, +proportional\n\
      -dashes filename\n\
-     -stippled on/off\n\
      -stipple filename\n\
-     -proportional on/off\n\
-     -fg color\n\
-     -bg color\n\
      -hl color\n\
      -fr color\n\
-     -mf color\n\
-     -mb color\n\
      -filename filename\n\
      -basename basename\n\
 \n\
@@ -79,18 +75,33 @@ static XrmOptionDescRec options[] = {
   {
     "-grid",
     "*grid",
-    XrmoptionSepArg,
-    NULL},
+    XrmoptionNoArg,
+    "True"},
+  {
+    "+grid",
+    "*grid",
+    XrmoptionNoArg,
+    "False"},
   {
     "-axes",
     "*axes",
-    XrmoptionSepArg,
-    NULL},
+    XrmoptionNoArg,
+    "True"},
+  {
+    "+axes",
+    "*axes",
+    XrmoptionNoArg,
+    "False"},
   {
     "-dashed",
     "*dashed",
-    XrmoptionSepArg,
-    NULL},
+    XrmoptionNoArg,
+    "True"},
+  {
+    "+dashed",
+    "*dashed",
+    XrmoptionNoArg,
+    "False"},
   {
     "-dashes",
     "*dashes",
@@ -99,8 +110,13 @@ static XrmOptionDescRec options[] = {
   {
     "-stippled",
     "*stippled",
-    XrmoptionSepArg,
-    NULL},
+    XrmoptionNoArg,
+    "True"},
+  {
+    "+stippled",
+    "*stippled",
+    XrmoptionNoArg,
+    "False"},
   {
     "-stipple",
     "*stipple",
@@ -109,19 +125,13 @@ static XrmOptionDescRec options[] = {
   {
     "-proportional",
     "*proportional",
-    XrmoptionSepArg,
-    NULL},
-
+    XrmoptionNoArg,
+    "True"},
   {
-    "-fg",
-    "*foreground",
-    XrmoptionSepArg,
-    NULL},
-  {
-    "-bg",
-    "*background",
-    XrmoptionSepArg,
-    NULL},
+    "+proportional",
+    "*proportional",
+    XrmoptionNoArg,
+    "False"},
   {
     "-hl", 
     "*highlight", 
@@ -132,16 +142,6 @@ static XrmOptionDescRec options[] = {
     "*framing", 
     XrmoptionSepArg, 
     NULL},
-  {
-    "-mf", 
-    "*mouseForeground", 
-    XrmoptionSepArg, 
-    XtDefaultForeground},
-  {
-    "-mb", 
-    "*mouseBackground", 
-    XrmoptionSepArg, 
-    XtDefaultBackground},
   {
     "-filename", 
     "*filename", 
@@ -279,16 +279,16 @@ Widget
     image_widget;
 Boolean image_visible = False;
 Pixmap check_mark;
-Dialog info_dialog, input_dialog, error_dialog, quit_dialog;
+Dialog info_dialog, input_dialog, error_dialog, qsave_dialog;
 Time time;
 String filename = "", basename = "", format = "";
 char message[80];
 
-void BAImage();
+void ShowImage();
 void FixMenu();
 
 static XtActionsRec actions_table[] = {
-{"image", BAImage},
+{"image", ShowImage},
 {"fix-menu", FixMenu},
 };
 
@@ -415,13 +415,32 @@ void TheCallback(w, id)
     switch (*id) {
 	
     case Load:
+	if (BWQueryChanged(bitmap_widget)) {
+	    BWGetFilename(bitmap_widget, &filename);
+	RetryLoadSave:
+	    switch (PopupDialog(qsave_dialog, "Save file before loading?",
+				filename, &filename, XtGrabExclusive)) {
+	    case Yes:
+		if (BWWriteFile(bitmap_widget, filename, NULL) 
+		    != BitmapSuccess) {
+		    sprintf(message, "Can't write file: %s", filename);
+		    if (PopupDialog(error_dialog, message, 
+				    NULL, NULL, XtGrabExclusive) == Retry) 
+			goto RetryLoadSave;
+		}
+
+	    case Cancel:
+		return;
+	    }
+	}
 	BWGetFilepath(bitmap_widget, &filename);
     RetryLoad:
-	if (PopupDialog(input_dialog, "Load file:", filename, &filename) == 
-	    Okay) {
+	if (PopupDialog(input_dialog, "Load file:", 
+			filename, &filename, XtGrabExclusive) == Okay) {
 	    if (BWReadFile(bitmap_widget, filename, NULL) != BitmapSuccess) {
 		sprintf(message, "Can't read file: %s", filename);
-		if (PopupDialog(error_dialog, message, NULL, NULL) == Retry)
+		if (PopupDialog(error_dialog, message, 
+				NULL, NULL, XtGrabExclusive) == Retry)
 		    goto RetryLoad;
 	    }
 	    else {
@@ -435,11 +454,12 @@ void TheCallback(w, id)
     case Insert:
 	BWGetFilepath(bitmap_widget, &filename);
     RetryInsert:
-	if (PopupDialog(input_dialog, "Insert file:", filename, &filename) == 
-	    Okay) {
+	if (PopupDialog(input_dialog, "Insert file:", 
+			filename, &filename, XtGrabExclusive) == Okay) {
 	    if (BWStoreFile(bitmap_widget, filename, NULL) != BitmapSuccess) {
 		sprintf(message, "Can't read file: %s", filename);
-		if (PopupDialog(error_dialog, message, NULL, NULL) == Retry)
+		if (PopupDialog(error_dialog, message, 
+				NULL, NULL, XtGrabExclusive) == Retry)
 		    goto RetryInsert;
 	    }
 	    else {
@@ -451,7 +471,8 @@ void TheCallback(w, id)
     case Save:
 	if (BWWriteFile(bitmap_widget, NULL, NULL) != BitmapSuccess) {
 	    sprintf(message, "Can't write file: %s", filename);
-	    if (PopupDialog(error_dialog, message, NULL, NULL) == Retry) {
+	    if (PopupDialog(error_dialog, message, 
+			    NULL, NULL, XtGrabExclusive) == Retry) {
 		BWGetFilename(bitmap_widget, &filename);
 		goto RetrySave;
 	    }
@@ -464,11 +485,12 @@ void TheCallback(w, id)
     case SaveAs:
 	BWGetFilename(bitmap_widget, &filename);
     RetrySave:
-	if (PopupDialog(input_dialog, "Save file:", filename, &filename) 
-	    == Okay) {
+	if (PopupDialog(input_dialog, "Save file:", 
+			filename, &filename, XtGrabExclusive) == Okay) {
 	    if (BWWriteFile(bitmap_widget, filename, NULL) != BitmapSuccess) {
 		sprintf(message, "Can't write file: %s", filename);
-		if (PopupDialog(error_dialog, message, NULL, NULL) == Retry)
+		if (PopupDialog(error_dialog, message, 
+				NULL, NULL, XtGrabExclusive) == Retry)
 		    goto RetrySave;
 	    }
 	    else {
@@ -480,8 +502,8 @@ void TheCallback(w, id)
 
     case Filename:
 	BWGetFilename(bitmap_widget, &filename);
-	if (PopupDialog(input_dialog, "Change filename:", filename, &filename)
-	    == Okay) {
+	if (PopupDialog(input_dialog, "Change filename:", 
+			filename, &filename, XtGrabExclusive) == Okay) {
 	    BWChangeFilename(bitmap_widget, filename);
 	    FixStatus();
 	}
@@ -489,8 +511,8 @@ void TheCallback(w, id)
 
     case Basename:
 	BWGetBasename(bitmap_widget, &basename);
-	if (PopupDialog(input_dialog, "Change basename:", basename, &basename)
-	    == Okay) {
+	if (PopupDialog(input_dialog, "Change basename:", 
+			basename, &basename, XtGrabExclusive) == Okay) {
 	    BWChangeBasename(bitmap_widget, basename);
 	    FixStatus();
 	}
@@ -500,22 +522,22 @@ void TheCallback(w, id)
 	if (BWQueryChanged(bitmap_widget)) {
 	    BWGetFilename(bitmap_widget, &filename);
 	RetryQuit:
-	    switch (PopupDialog(quit_dialog, "Save file before quitting?",
-				filename, &filename)) {
+	    switch (PopupDialog(qsave_dialog, "Save file before quitting?",
+				filename, &filename, XtGrabExclusive)) {
 	    case Yes:
 		if (BWWriteFile(bitmap_widget, filename, NULL) 
 		    != BitmapSuccess) {
 		    sprintf(message, "Can't write file: %s", filename);
-		    if (PopupDialog(error_dialog, message, NULL, NULL) 
-			== Retry) goto RetryQuit;
+		    if (PopupDialog(error_dialog, message, 
+				    NULL, NULL, XtGrabExclusive) == Retry) 
+			goto RetryQuit;
 		}
-		else exit(0);
-
-	    case No:
-		exit(0);
+		
+	    case Cancel:
+		return;
 	    }
 	}
-	else exit(0);
+	exit(0);
 	break;
 	
     case Image:
@@ -538,9 +560,9 @@ void TheCallback(w, id)
 
 	    image_visible = True;
 	    
-	    FixImage(bitmap_widget, NULL, NULL);
+	    FixImage();
 	    XtPopup(image_shell, XtGrabNone);
-	    FixImage(bitmap_widget, NULL, NULL);
+	    FixImage();
 	}
     break;
 
@@ -584,8 +606,8 @@ void TheCallback(w, id)
     case Resize:
 	format = "";
     RetryResize:
-	if (PopupDialog(input_dialog, "Resize to WIDTHxHEIGHT:", format, 
-			&format) == Okay) {
+	if (PopupDialog(input_dialog, "Resize to WIDTHxHEIGHT:", 
+			format, &format, XtGrabExclusive) == Okay) {
 	    sscanf(format, "%d%c%d", &width, &x, &height);
 	    if ((width >0) && (height > 0) && (x == 'x')) {
 		BWResize(bitmap_widget, (Dimension)width, (Dimension)height);
@@ -595,7 +617,8 @@ void TheCallback(w, id)
 	    }
 	    else {
 		sprintf(message, "Wrong format: %s", format);
-		if (PopupDialog(error_dialog, message, NULL, NULL) == Retry)
+		if (PopupDialog(error_dialog, message, 
+				NULL, NULL, XtGrabExclusive) == Retry)
 		    goto RetryResize;
 	    }
 	}
@@ -604,8 +627,8 @@ void TheCallback(w, id)
     case Rescale:
 	format = "";
     RetryRescale:
-	if (PopupDialog(input_dialog, "Rescale to WIDTHxHEIGHT:", format, 
-			&format) == Okay) {
+	if (PopupDialog(input_dialog, "Rescale to WIDTHxHEIGHT:", 
+			format,	&format, XtGrabExclusive) == Okay) {
 	    sscanf(format, "%d%c%d", &width, &x, &height);
 	    if ((width >0) && (height > 0) && (x == 'x')) {
 		BWRescale(bitmap_widget, (Dimension)width, (Dimension)height);
@@ -615,7 +638,8 @@ void TheCallback(w, id)
 	    }
 	    else {
 		sprintf(message, "Wrong format: %s", format);
-		if (PopupDialog(error_dialog, message, NULL, NULL) == Retry)
+		if (PopupDialog(error_dialog, message, 
+				NULL, NULL, XtGrabExclusive) == Retry)
 		    goto RetryRescale;
 	    }
 	}
@@ -818,7 +842,7 @@ void BAPopdownImage(w, call_data, event)
 }
 
 
-void BAImage(w)
+void ShowImage(w)
     Widget w;
 {
     static int id = Image;
@@ -830,9 +854,8 @@ void BAImage(w)
 
 void InfoCallback()
 {
-    PopupDialog(info_dialog, 
-		info,
-		NULL, NULL);
+    PopupDialog(info_dialog, info,
+		NULL, NULL, XtGrabExclusive);
 }
    
 void main(argc, argv)
@@ -967,7 +990,7 @@ void main(argc, argv)
     info_dialog = CreateDialog(top_widget, "info", Okay);
     input_dialog = CreateDialog(top_widget, "input", Okay | Cancel);
     error_dialog = CreateDialog(top_widget, "error", Abort | Retry);    
-    quit_dialog = CreateDialog(top_widget, "quit", Yes | No | Cancel);
+    qsave_dialog = CreateDialog(top_widget, "qsave", Yes | No | Cancel);
 
     XawToggleSetCurrent(radio_group, radio_data);
     BWEngageRequest(bitmap_widget, PointRequest, True, Plain);

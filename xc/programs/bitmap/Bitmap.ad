@@ -1,3 +1,25 @@
+#if (COLOR)
+bitmap*background: medium blue
+bitmap*foreground: cyan
+bitmap*borderColor: plum
+bitmap*framing: deep sky blue
+bitmap*highlight: magenta
+bitmap*Command.background: purple
+bitmap*Toggle.background: purple
+bitmap*MenuButton.background: purple
+bitmap*Command.foreground: white
+bitmap*Toggle.foreground: white
+bitmap*MenuButton.foreground: white
+bitmap*status.foreground: green
+bitmap*Dialog.icon.foreground: pale green
+#else
+bitmap*background: black
+bitmap*foreground: white
+bitmap*borderColor: white
+bitmap*framing: white
+bitmap*highlight: white
+#endif
+
 *TransientShell.allowShellResize:	True
 *font:			-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso*-*
 *shapeStyle:				oval
@@ -31,6 +53,11 @@
 *bitmap.dashed:				on
 *bitmap.cursor:           		tcross
 *bitmap.stipple:			Stipple
+#if (COLOR)
+bitmap*bitmap.stippled:                 off
+#else
+bitmap*bitmap.stippled:                 on
+#endif
 
 *info*label.font:-adobe-helvetica-bold-r-normal--*-100-*-*-p-*-iso8859-1
 *info*icon:				xlogo64
@@ -39,7 +66,7 @@
 *TransientShell.width:			300
 
 *input*icon:				Term
-*quit*icon:				Term
+*qsave*icon:				Term
 *error*icon:				Excl
 !*Dialog.value.borderWidth:		0
 *Dialog.yes.label:			Yes
@@ -84,6 +111,7 @@
 *fileMenu.save.label:			Save
 *fileMenu.saveAs.label:			Save As...
 *fileMenu.resize.label:			Resize...
+*fileMenu.rescale.label:		Rescale...
 *fileMenu.filename.label:		Filename...
 *fileMenu.basename.label:		Basename...
 *fileMenu.quit.label:			Quit

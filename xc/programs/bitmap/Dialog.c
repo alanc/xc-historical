@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Dialog.c,v 1.2 90/04/25 08:30:54 dmatic Exp $
+ * $XConsortium: Dialog.c,v 1.3 90/06/09 20:20:23 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -103,9 +103,10 @@ void PopdownDialog(popup, answer)
     XtPopdown(popup->shell_widget);
 }
 
-int PopupDialog(popup, message, suggestion, answer)
-     Dialog popup;
-     String message, suggestion, *answer;
+int PopupDialog(popup, message, suggestion, answer, grab)
+    Dialog popup;
+    String message, suggestion, *answer;
+    XtGrabKind grab;
 {
   Position popup_x, popup_y, top_x, top_y;
   Dimension popup_width, popup_height, top_width, top_height, border_width;
@@ -147,13 +148,9 @@ int PopupDialog(popup, message, suggestion, answer)
 
   selected = Empty;
 
-  XtPopup(popup->shell_widget, XtGrabExclusive);
+  XtPopup(popup->shell_widget, grab);
 
-  XFlush(XtDisplay(popup->shell_widget));
-
-  XSetInputFocus(XtDisplay(popup->dialog_widget), 
-		 XtWindow(popup->dialog_widget),
-		 RevertToParent, CurrentTime);
+  XtSetKeyboardFocus(popup->top_widget, popup->shell_widget);
   
   while ((selected & popup->options) == Empty) {
       XEvent event;
@@ -165,12 +162,3 @@ int PopupDialog(popup, message, suggestion, answer)
 
   return selected;
 }
-    
-
-
-
-
-
-
-
-
