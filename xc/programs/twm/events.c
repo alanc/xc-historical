@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.186 93/07/18 14:08:05 rws Exp $
+ * $XConsortium: events.c,v 1.1 94/06/14 20:10:46 mor Exp $
  *
  * twm event handling
  *
@@ -366,8 +366,11 @@ HandleEvents()
 	    InstallWindowColormaps(ColormapNotify, (TwmWindow *) NULL);
 	}
 	WindowMoved = FALSE;
-	XNextEvent(dpy, &Event);
-	(void) DispatchEvent ();
+	XtAppNextEvent(appContext, &Event);
+	if (Event.type>= 0 && Event.type < MAX_X_EVENT)
+	    (void) DispatchEvent ();
+	else
+	    XtDispatchEvent (&Event);
     }
 }
 
