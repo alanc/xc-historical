@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.14 88/09/06 09:54:36 swick Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.15 88/09/06 16:40:47 jim Exp $";
 #endif lint
 
 
@@ -163,10 +163,10 @@ static void StringCreateSourceSink(widget, args, num_args)
     Cardinal *num_args;
 {
     AsciiStringWidget w = (AsciiStringWidget)widget;
+    void (*NullProc)() = NULL;	/* some compilers require this */
 
     w->text.source = XtStringSourceCreate( widget, args, *num_args );
     w->text.sink = XtAsciiSinkCreate( widget, args, *num_args );
-
 
     if (w->core.height == DEFAULT_TEXT_HEIGHT)
         w->core.height = (2*yMargin) + 2
@@ -175,6 +175,18 @@ static void StringCreateSourceSink(widget, args, num_args)
     w->text.lastPos = /* GETLASTPOS */
       (*w->text.source->Scan) ( w->text.source, 0, XtstAll,
 			        XtsdRight, 1, TRUE );
+
+    if (w->text.sink->SetTabs != NullProc) {
+#define TAB_COUNT 32
+	int i;
+	Position tabs[TAB_COUNT], tab;
+
+	for (i=0, tab=0; i<TAB_COUNT;i++) {
+	    tabs[i] = (tab += 8);
+	}
+	(w->text.sink->SetTabs) (widget, w->text.leftmargin, TAB_COUNT, tabs);
+#undef TAB_COUNT
+    }
 
     ForceBuildLineTable( (TextWidget)w );
 }
@@ -224,6 +236,7 @@ static void DiskCreateSourceSink(widget, args, num_args)
     Cardinal *num_args;
 {
     AsciiDiskWidget w = (AsciiDiskWidget)widget;
+    void (*NullProc)() = NULL;	/* some compilers require this */
 
     w->text.source = XtDiskSourceCreate( widget, args, *num_args );
     w->text.sink = XtAsciiSinkCreate( widget, args, *num_args );
@@ -235,6 +248,18 @@ static void DiskCreateSourceSink(widget, args, num_args)
     if (w->core.height == DEFAULT_TEXT_HEIGHT)
         w->core.height = (2*yMargin) + 2
 			  + (*w->text.sink->MaxHeight)(widget, 1);
+
+    if (w->text.sink->SetTabs != NullProc) {
+#define TAB_COUNT 32
+	int i;
+	Position tabs[TAB_COUNT], tab;
+
+	for (i=0, tab=0; i<TAB_COUNT;i++) {
+	    tabs[i] = (tab += 8);
+	}
+	(w->text.sink->SetTabs) (widget, w->text.leftmargin, TAB_COUNT, tabs);
+#undef TAB_COUNT
+    }
 
     ForceBuildLineTable( (TextWidget)w );
 }

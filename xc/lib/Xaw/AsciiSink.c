@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.20 88/09/19 12:11:08 swick Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.21 88/09/19 13:22:47 swick Exp $";
 #endif lint
 
 
@@ -45,9 +45,11 @@ typedef struct _AsciiSinkData {
     Pixel foreground;
     GC normgc, invgc, xorgc;
     XFontStruct *font;
-    int tabwidth;
+    int em;
     Pixmap insertCursorOn;
     XtTextInsertState laststate;
+    int tab_count;
+    Position *tabs;
 } AsciiSinkData, *AsciiSinkPtr;
 
 static char *buf = NULL;
@@ -63,17 +65,29 @@ static XtResource SinkResources[] = {
 
 /* Utilities */
 
-static int CharWidth (data, x, c)
-  AsciiSinkData *data;
+static int CharWidth (w, x, c)
+  Widget w;
   int x;
   char c;
 {
+    AsciiSinkData *data = (AsciiSinkData*) ((TextWidget)w)->text.sink->data;
     int     width, nonPrinting;
     XFontStruct *font = data->font;
 
-    if (c == '\t')
-        /* This is totally bogus!! need to know tab settings etc.. */
-	return data->tabwidth - (x % data->tabwidth);
+    if (c == '\t') {
+	int i;
+	Position *tab;
+	if (x >= w->core.width) return 0;
+	for (i=0, tab=data->tabs; i<data->tab_count; i++, tab++) {
+	    if (x < *tab) {
+		if (*tab < w->core.width)
+		    return *tab - x;
+		else
+		    return 0;
+	    }
+	}
+	return 0;
+    }
     if (c == LF)
 	c = SP;
     nonPrinting = (c < SP);
@@ -86,7 +100,7 @@ static int CharWidth (data, x, c)
 	width = font->min_bounds.width;
 
     if (nonPrinting)
-	width += CharWidth(data, x, '^');
+	width += CharWidth(w, x, '^');
 
     return width;
 }
@@ -126,7 +140,7 @@ static int AsciiDisplayText (w, x, y, pos1, pos2, highlight)
 			gc, x, y, buf, j);
 		buf[j] = 0;
 		x += XTextWidth(data->font, buf, j);
-		width = CharWidth(data, x, '\t');
+		width = CharWidth(w, x, '\t');
 		XClearArea(XtDisplay(w), XtWindow(w), x,
 			       y - font->ascent, width,
 			       (Dimension) (data->font->ascent +
@@ -243,11 +257,11 @@ static AsciiFindDistance (w, fromPos, fromx, toPos,
 	    (*source->Read)(source, index, &blk, toPos - fromPos);
 	c = blk.ptr[index - blk.firstPos];
 	if (c == LF) {
-	    *resWidth += CharWidth(data, fromx + *resWidth, SP);
+	    *resWidth += CharWidth(w, fromx + *resWidth, SP);
 	    index++;
 	    break;
 	}
-	*resWidth += CharWidth(data, fromx + *resWidth, c);
+	*resWidth += CharWidth(w, fromx + *resWidth, c);
     }
     *resPos = index;
     *resHeight = data->font->ascent + data->font->descent;
@@ -287,11 +301,11 @@ static AsciiFindPosition(w, fromPos, fromx, width, stopAtWordBreak,
 	    (*source->Read)(source, index, &blk, bufferSize);
 	c = blk.ptr[index - blk.firstPos];
 	if (c == LF) {
-	    *resWidth += CharWidth(data, fromx + *resWidth, SP);
+	    *resWidth += CharWidth(w, fromx + *resWidth, SP);
 	    index++;
 	    break;
 	}
-	*resWidth += CharWidth(data, fromx + *resWidth, c);
+	*resWidth += CharWidth(w, fromx + *resWidth, c);
 	if ((c == SP || c == TAB) && *resWidth <= width) {
 	    whiteSpaceSeen = TRUE;
 	    whiteSpacePosition = index;
@@ -354,6 +368,26 @@ static int AsciiMaxHeightForLines (w, lines)
 }
 
 
+static void AsciiSetTabs (w, offset, tab_count, tabs)
+  Widget w;			/* for context */
+  Position offset;		/* from left, for margin */
+  int tab_count;		/* count of entries in tabs */
+  Position *tabs;		/* list of character positions */
+{
+    AsciiSinkData *data = (AsciiSinkData*)((TextWidget)w)->text.sink->data;
+    int i;
+
+    if (tab_count > data->tab_count) {
+	data->tabs = (Position*)XtRealloc(data->tabs,
+				    (unsigned)tab_count * sizeof(Position*));
+    }
+    
+    for (i=0; i < tab_count; i++) {
+	data->tabs[i] = offset + tabs[i] * data->em;
+    }
+    data->tab_count = tab_count;
+}
+
 /***** Public routines *****/
 
 XtTextSink XtAsciiSinkCreate (parent, args, num_args)
@@ -380,6 +414,7 @@ XtTextSink XtAsciiSinkCreate (parent, args, num_args)
     sink->Resolve = AsciiResolveToPosition;
     sink->MaxLines = AsciiMaxLinesForHeight;
     sink->MaxHeight = AsciiMaxHeightForLines;
+    sink->SetTabs = AsciiSetTabs;
     data = XtNew(AsciiSinkData);
     sink->data = (caddr_t)data;
 
@@ -411,8 +446,11 @@ XtTextSink XtAsciiSinkCreate (parent, args, num_args)
 	else
 	    wid = font->max_bounds.width;
     }
-    if (wid <= 0) wid = 1;
-    data->tabwidth = 8 * wid;
+    if (wid <= 0)
+	data->em = 1;
+    else
+	data->em = wid;
+
     data->font = font;
 #ifdef SERVERNOTBROKEN
     data->insertCursorOn = CreateInsertCursor(XtScreen(parent));
@@ -459,6 +497,8 @@ XtTextSink XtAsciiSinkCreate (parent, args, num_args)
 #endif /* SERVERNOTBROKEN2 */
 #endif /* SERVERNOTBROKEN */
     data->laststate = XtisOff;
+    data->tab_count = 0;
+    data->tabs = NULL;
     return sink;
 }
 
@@ -468,6 +508,7 @@ void XtAsciiSinkDestroy (sink)
     AsciiSinkData *data;
 
     data = (AsciiSinkData *) sink->data;
+    XtFree((char *) data->tabs);
     XtFree((char *) data);
     XtFree((char *) sink);
 }
