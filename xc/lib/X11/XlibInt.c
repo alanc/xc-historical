@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.122 90/06/15 09:39:11 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.123 90/06/15 09:57:20 rws Exp $
  */
 
 #include "copyright.h"
@@ -1276,7 +1276,8 @@ static int _XPrintDefaultError (dpy, event, fp)
 		break;
 	}    
 	if (buffer[0])
-	    sprintf(buffer, "%s.%d", ext->name, event->error_code);
+	    sprintf(buffer, "%s.%d", ext->name,
+		    event->error_code - ext->codes.first_error);
 	else
 	    strcpy(buffer, "Value");
 	XGetErrorDatabaseText(dpy, mtype, buffer, "Value 0x%x", mesg, BUFSIZ);
