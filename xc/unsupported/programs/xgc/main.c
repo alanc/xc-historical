@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.18 91/02/18 16:10:12 converse Exp $
+/* $XConsortium: main.c,v 1.19 91/02/19 15:54:08 converse Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -43,6 +43,7 @@
 static void fill_up_commandform();
 extern void run_test();
 static void quit();
+static void quitAction();
 static void clear_test_window();
 static void clear_result_window();
 extern void start_playback();
@@ -69,6 +70,10 @@ FILE *outend;
 XStuff X;			/* GC stuff plus some global variables */
 Boolean recording = FALSE;	/* Whether we're recording into a file */
 XtAppContext appcontext;	/* To make Xt happy */
+static Atom wm_delete_window;
+static XtActionsRec actions[] = {
+    {"quit",	quitAction}
+};
 
 static Widget bigdaddy;		/* the top level widget */
        Widget topform;		/* form surrounding the whole thing */
@@ -164,6 +169,9 @@ main(argc,argv)
 			     (Cardinal) 0, &argc, argv, (String *) NULL,
 			     shellargs, XtNumber(shellargs));
   X.dpy = XtDisplay(bigdaddy);
+  XtAppAddActions(appcontext, actions, XtNumber(actions));
+  XtOverrideTranslations
+      (bigdaddy, XtParseTranslationTable("<Message>WM_PROTOCOLS: quit()"));
 
   /* Initialize GC stuff */
 
@@ -294,7 +302,10 @@ main(argc,argv)
 
   GC_change_foreground(X.foreground,TRUE);
   GC_change_background(X.background,TRUE);
-    
+
+  wm_delete_window = XInternAtom(X.dpy, "WM_DELETE_WINDOW", False);
+  (void) XSetWMProtocols(X.dpy, XtWindow(bigdaddy), &wm_delete_window, 1);
+
   /* Act like the user picked the first choice in each group */
 
   choose_defaults(GCdescs,(int)XtNumber(GCdescs));
@@ -408,7 +419,6 @@ fill_up_commandform(w)
    			      w,quitargs,XtNumber(quitargs));
     
 }    
-
 /* quit()
 ** ------
 ** Leave the program nicely.
@@ -419,6 +429,18 @@ quit()
 {
   close_file_if_recording();
   exit(0);
+}
+
+static void quitAction(w, e, p, n)
+    Widget w;
+    XEvent *e;
+    String *p;
+    Cardinal *n;
+{
+    if (e->type == ClientMessage && e->xclient.data.l[0] != wm_delete_window)
+	XBell(XtDisplay(w), 0);
+    else 
+	quit();
 }
 
 /* clear_test_window()
