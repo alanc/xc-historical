@@ -1,4 +1,4 @@
-/* $XConsortium: error.c,v 1.8 93/12/28 11:43:29 mor Exp $ */
+/* $XConsortium: error.c,v 1.9 94/03/15 13:35:52 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -424,7 +424,35 @@ IcePointer	values;
     switch (errorClass)
     {
         case IceBadValue:
+        {
+	    int offset, length, val;
+
+	    EXTRACT_CARD32 (pData, swap, offset);
+	    EXTRACT_CARD32 (pData, swap, length);
+
+	    fprintf (stderr,
+		"            BadValue Offset           = %d\n", offset);
+	    fprintf (stderr,
+		"            BadValue Length           = %d\n", length);
+
+	    if (length <= 4)
+	    {
+		if (length == 1)
+		    val = (int) *pData;
+		else if (length == 2)
+		{
+		    EXTRACT_CARD16 (pData, swap, val);
+		}
+		else
+		{
+		    EXTRACT_CARD32 (pData, swap, val);
+		}
+
+		fprintf (stderr,
+	            "            BadValue                  = %d\n", val);
+	    }
             break;
+	}
 
         case IceBadMajor:
 

@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.32 94/03/08 12:14:26 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.33 94/03/15 13:31:52 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -694,6 +694,23 @@ typedef struct {
     int _i; \
     for (_i = 0; _i < _count; _i++) \
         EXTRACT_STRING (_pBuf, _swap, _strings[_i]); \
+}
+
+
+#define SKIP_STRING(_pBuf, _swap) \
+{ \
+    CARD16 _len; \
+    EXTRACT_CARD16 (_pBuf, _swap, _len); \
+    _pBuf += _len; \
+    if (PAD32 (2 + _len)) \
+        _pBuf += PAD32 (2 + _len); \
+}
+
+#define SKIP_LISTOF_STRING(_pBuf, _swap, _count) \
+{ \
+    int _i; \
+    for (_i = 0; _i < _count; _i++) \
+        SKIP_STRING (_pBuf, _swap); \
 }
 
 
