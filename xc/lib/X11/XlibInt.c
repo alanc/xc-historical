@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.74 88/08/11 18:24:56 jim Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.75 88/08/12 17:03:52 jim Exp $";
 #endif
 
 /*
@@ -282,10 +282,10 @@ static _doXRead32 (dpy, data, size, packbuffer)
         }
 }
 
-_XRead32 (dpy, data, size)
+_XRead32 (dpy, data, len)
     Display *dpy;
     long *data;
-    long size;
+    long len;
 {
     char packbuffer[PACKBUFFERSIZE];
     unsigned nwords = (PACKBUFFERSIZE >> 2);	/* bytes to CARD32 */
@@ -330,10 +330,10 @@ static _doXRead16 (dpy, data, size)
         }
 }
 
-_XRead16 (dpy, data, size)
+_XRead16 (dpy, data, len)
     Display *dpy;
     short *data;
-    long size;
+    long len;
 {
     char packbuffer[PACKBUFFERSIZE];
     unsigned nwords = (PACKBUFFERSIZE >> 1);	/* bytes to CARD16 */
