@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbimage.c,v 1.30 87/08/19 18:03:26 drewry Exp $ */
+/* $Header: mfbimage.c,v 1.30 87/08/19 18:03:26 rws Locked $ */
 
 #include "X.h"
 
@@ -35,6 +35,8 @@ SOFTWARE.
 #include "Xmd.h"
 
 #include "maskbits.h"
+
+#include "servermd.h"
 
 /* Put and Get images on a monochrome frame buffer
  *

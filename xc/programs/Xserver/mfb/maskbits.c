@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: maskbits.c,v 1.1 87/09/02 00:29:19 rws Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -23,6 +23,7 @@ SOFTWARE.
 
 ******************************************************************/
 #include "maskbits.h"
+#include "servermd.h"
 
 /*
    these tables are used by several macros in the mfb code.

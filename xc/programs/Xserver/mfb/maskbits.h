@@ -21,9 +21,11 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbimage.c,v 1.30 87/08/19 18:03:26 drewry Exp $ */
+/* $Header: maskbits.h,v 1.4 87/09/02 00:26:44 rws Locked $ */
 #include "X.h"
 #include "Xmd.h"
+#include "servermd.h"
+
 extern int starttab[];
 extern int endtab[];
 extern int startpartial[];

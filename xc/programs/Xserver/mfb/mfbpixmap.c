@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbpixmap.c,v 1.44 87/08/25 09:41:20 drewry Exp $ */
+/* $Header: mfbpixmap.c,v 1.44 87/09/07 19:02:10 rws Locked $ */
 
 /* pixmap management
    written by drewry, september 1986
@@ -35,6 +35,8 @@ SOFTWARE.
 
 #include "mfb.h"
 #include "mi.h"
+
+#include "servermd.h"
 
 PixmapPtr
 mfbCreatePixmap (pScreen, width, height, depth)
