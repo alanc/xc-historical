@@ -1,4 +1,4 @@
-/* $XConsortium: xtest.c,v 1.13 92/12/17 11:45:05 rws Exp $ */
+/* $XConsortium: xtest.c,v 1.14 93/02/02 19:07:02 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -173,6 +173,8 @@ ProcXTestFakeInput(client)
 		return BadValue;
 	    }
 	}
+	else if (type == DeviceMotionNotify)
+	    return BadLength;
 	type = type - DeviceKeyPress + KeyPress;
 	extension = TRUE;
     }
