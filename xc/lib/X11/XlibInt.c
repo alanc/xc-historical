@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.223 94/03/30 11:22:51 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.224 94/03/30 16:19:46 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -2925,7 +2925,7 @@ void _XFreeTemp (dpy, buf, nbytes)
     unsigned long nbytes;
 {
     if (dpy->scratch_buffer)
-	Xfree(buf);
+	Xfree(dpy->scratch_buffer);
     dpy->scratch_buffer = buf;
     dpy->scratch_length = nbytes;
 }
