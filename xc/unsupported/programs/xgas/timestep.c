@@ -19,8 +19,9 @@ void doTimestep( data, id)	/* ARGSUSED */
     
     /* Put back callback (see Young's clock example) */
     data->timer =
-	XtAddTimeOut((unsigned long)data->delay, 
-		     (XtTimerCallbackProc)doTimestep, (XtPointer)data);
+	XtAppAddTimeOut(XtWidgetToApplicationContext(data->lab),
+			(unsigned long)data->delay, 
+			(XtTimerCallbackProc)doTimestep, (XtPointer)data);
 }
 
 /*
@@ -89,8 +90,9 @@ void run_callback(w, data, call_data) /* ARGSUSED */
 {
      if(! data->timer)
 	data->timer =
-	   XtAddTimeOut((unsigned long)data->delay,
-			(XtTimerCallbackProc)doTimestep,(XtPointer)data);
+	   XtAppAddTimeOut(XtWidgetToApplicationContext(w),
+			   (unsigned long)data->delay,
+			   (XtTimerCallbackProc)doTimestep,(XtPointer)data);
 }
 
 void pause_callback(w, data, call_data)	/* ARGSUSED */
