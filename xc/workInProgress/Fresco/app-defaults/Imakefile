@@ -1,6 +1,6 @@
 XCOMM
 XCOMM data files for defining application defaults
-XCOMM $Header$
+XCOMM $XConsortium$
 XCOMM
 
 InstallAppDefaults(Fresco)
