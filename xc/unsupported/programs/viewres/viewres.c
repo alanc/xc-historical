@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.24 90/02/06 15:40:05 jim Exp $
+ * $XConsortium: viewres.c,v 1.25 90/02/07 11:09:44 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -114,10 +114,24 @@ static XtActionsRec viewres_actions[] = {
 #define SELECT_INVERT 0
 #define SELECT_NOTHING 1
 #define SELECT_PARENTS 2
-#define SELECT_ALL 3
-#define SELECT_WITH_RESOURCES 4
-#define SELECT_WITHOUT_RESOURCES 5
-#define SELECT_number 6
+#define SELECT_CHILDREN 3
+#define SELECT_ALL 4
+#define SELECT_WITH_RESOURCES 5
+#define SELECT_WITHOUT_RESOURCES 6
+#define SELECT_number 7
+
+static struct _nametable {
+    char *name;
+    int value;
+} select_nametable[] = {
+    { "invert", SELECT_INVERT },
+    { "nothing", SELECT_NOTHING },
+    { "parents", SELECT_PARENTS },
+    { "children", SELECT_CHILDREN },
+    { "all", SELECT_ALL },
+    { "resources", SELECT_WITH_RESOURCES },
+    { "noresources", SELECT_WITHOUT_RESOURCES },
+};
 
 static Widget treeWidget;
 static Widget quitButton, formatButton, formatMenu, selectButton, selectMenu;
@@ -213,7 +227,7 @@ static void add_to_selected_list (node, updatewidget)
     WidgetNode *node;
     Boolean updatewidget;
 {
-    if (node->selection_index >= 0) return;  /* already on list */
+    if (!node->instance || node->selection_index >= 0) return;
 
     if (selected_list.n_elements >= selected_list.max_elements) {
 	initialize_widgetnode_list (&selected_list.elements,
@@ -245,9 +259,10 @@ static Boolean remove_from_selected_list (node, updatewidget)
     selected_list.n_elements -= skips;
 
     if (updatewidget) XtSetValues (node->instance, false_args, ONE);
+    return TRUE;
 }
 
-static Boolean remove_nodes_from_selected_list (start, count, updatewidget)
+static void remove_nodes_from_selected_list (start, count, updatewidget)
     int start, count;
     Boolean updatewidget;
 {
@@ -261,6 +276,18 @@ static Boolean remove_nodes_from_selected_list (start, count, updatewidget)
     selected_list.n_elements -= copydown (0);
 }
 	    
+static void add_subtree_to_selected_list (node, updatewidget)
+    WidgetNode *node;
+    Boolean updatewidget;
+{
+    if (!node) return;
+
+    add_to_selected_list (node, updatewidget);
+    for (node = node->children; node; node = node->siblings) {
+	add_subtree_to_selected_list (node, updatewidget);
+    }
+}
+
 
 /* ARGSUSED */
 static void select_callback (gw, closure, data)
@@ -270,12 +297,11 @@ static void select_callback (gw, closure, data)
 {
     register int i;
     int nselected = selected_list.n_elements;
+    WidgetNode *node;
 
     switch ((int) closure) {
       case SELECT_INVERT:		/* toggle selection state */
-	for (i = 0; i < nwidgets; i++) {
-	    WidgetNode *node = &widget_list[i];
-
+	for (i = 0, node = widget_list; i < nwidgets; i++, node++) {
 	    if (node->selection_index < 0) add_to_selected_list (node, TRUE);
 	}
 	remove_nodes_from_selected_list (0, nselected, True);
@@ -298,29 +324,26 @@ static void select_callback (gw, closure, data)
 	}
 	break;
 
-      case SELECT_ALL:			/* put everything on selection_list */
-	if (selected_list.max_elements < nwidgets) {
-	    initialize_widgetnode_list (&selected_list.elements,
-					&selected_list.max_elements,
-					nwidgets);
-	}
-	for (i = 0; i < nwidgets; i++) {
-	    add_to_selected_list (&widget_list[i], TRUE);
+      case SELECT_CHILDREN:		/* all sub nodes */
+	for (i = 0; i < nselected; i++) {
+	    WidgetNode *parent = selected_list.elements[i];
+
+	    add_subtree_to_selected_list (parent, TRUE);
 	}
 	break;
 
-      case SELECT_WITH_RESOURCES:	/* put all w/ rescnt > 0 on sel_list */
-	for (i = 0; i < nwidgets; i++) {
-	    WidgetNode *node = &widget_list[i];
+      case SELECT_ALL:			/* put everything on selection_list */
+	add_subtree_to_selected_list (topnode, TRUE);
+	break;
 
+      case SELECT_WITH_RESOURCES:	/* put all w/ rescnt > 0 on sel_list */
+	for (i = 0, node = widget_list; i < nwidgets; i++, node++) {
 	    if (node->nnewresources > 0) add_to_selected_list (node, TRUE);
 	}
 	break;
 
       case SELECT_WITHOUT_RESOURCES:	/* put all w recnt == 0 on sel_list */
-	for (i = 0; i < nwidgets; i++) {
-	    WidgetNode *node = &widget_list[i];
-
+	for (i = 0, node = widget_list; i < nwidgets; i++, node++) {
 	    if (node->nnewresources == 0) add_to_selected_list (node, TRUE);
 	}
 	break;
@@ -343,7 +366,7 @@ static void toggle_callback (gw, closure, data)
     if (selected) {
 	add_to_selected_list (node, FALSE);
     } else {
-	remove_from_selected_list (node, FALSE);
+	(void) remove_from_selected_list (node, FALSE);
     }
 }
 
@@ -446,6 +469,7 @@ main (argc, argv)
 				  NULL, ZERO);
     MAKE_SELECT (SELECT_INVERT, "selectInvert");
     MAKE_SELECT (SELECT_PARENTS, "selectParents");
+    MAKE_SELECT (SELECT_CHILDREN, "selectChildren");
     MAKE_SELECT (SELECT_ALL, "selectAll");
     MAKE_SELECT (SELECT_WITH_RESOURCES, "selectWithResources");
     MAKE_SELECT (SELECT_WITHOUT_RESOURCES, "selectWithoutResources");
@@ -568,6 +592,7 @@ static void HandleSelect (w, event, params, num_params)
 {
     int obj;
     char *cmd;
+    int i;
 
     if (*num_params != 1) {
 	XBell (XtDisplay(w), 0);
@@ -576,19 +601,13 @@ static void HandleSelect (w, event, params, num_params)
 
     cmd = (char *) params[0];
 
-    if (XmuCompareISOLatin1 (cmd, "invert") == 0) {
-	obj = SELECT_INVERT;
-    } else if (XmuCompareISOLatin1 (cmd, "nothing") == 0) {
-	obj = SELECT_NOTHING;
-    } else if (XmuCompareISOLatin1 (cmd, "parents") == 0) {
-	obj = SELECT_PARENTS;
-    } else if (XmuCompareISOLatin1 (cmd, "all") == 0) {
-	obj = SELECT_ALL;
-    } else if (XmuCompareISOLatin1 (cmd, "resources") == 0) {
-	obj = SELECT_WITH_RESOURCES;
-    } else if (XmuCompareISOLatin1 (cmd, "noresources") == 0) {
-	obj = SELECT_WITHOUT_RESOURCES;
-    } else {
+    for (i = 0; i < SELECT_number; i++) {
+	if (XmuCompareISOLatin1 (cmd, select_nametable[i].name) == 0) {
+	    obj = select_nametable[i].value;
+	    break;
+	}
+    }
+    if (i == SELECT_number) {
 	XBell (XtDisplay(w), 0);
 	return;
     }
