@@ -946,6 +946,7 @@ main(argc, argv)
     /* Restore ScreenSaver to original state. */
     XSetScreenSaver(xparms.d, ssTimeout, ssInterval, ssPreferBlanking,
 	ssAllowExposures);
+    XCloseDisplay (xparms.d);
 }
 
 int
