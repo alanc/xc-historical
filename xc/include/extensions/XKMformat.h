@@ -1,4 +1,4 @@
-/* $XConsortium: xkmformat.h,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: XKMformat.h,v 1.1 94/04/02 17:01:01 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -28,7 +28,7 @@
 #define	XKMFORMAT_H 1
 
 #include <X11/extensions/XKBproto.h>
-#include "xkm.h"
+#include "XKM.h"
 
 #define	XkmMSB(s)	((((xkmSectionInfo *)(s))->format)&MSBFirst)
 
