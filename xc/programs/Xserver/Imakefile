@@ -12,8 +12,7 @@
                   ddx/dec/sm ddx/sun \
                   ddx/apollo \
                   ddx/ibm \
-                  ddx/hp/hp ddx/hp/mfb ddx/hp/cfb ddx/hp/gbx ddx/hp/mob \
-                  ddx/hp/topcat ddx/hp/catseye ddx/hp/ren \
+                  ddx/hp/hp ddx/hp/cfb ddx/hp/mfb ddx/hp/topcat \
                   ddx/ndx ddx/tek \
                   ddx/macII ddx/plx
       ALLOSDIRS = os/4.2bsd os/sysV
@@ -155,18 +154,13 @@ ServerTarget(Xplx,$(EXTDIR) $(FONTUTILDIR) $(PLXDIRS),$(PLXOBJS),$(PLXLIBS),$(PL
 #
 # HP server
 #
-HPDIRS = dix ddx/snf ddx/mi ddx/hp/hp ddx/hp/mfb ddx/hp/cfb ddx/hp/gbx \
-         ddx/hp/mob ddx/hp/topcat ddx/hp/catseye ddx/hp/ren os/4.2bsd os/sysV
+HPDIRS = dix ddx/snf ddx/mi ddx/hp/hp ddx/hp/cfb ddx/hp/mfb \
+         ddx/hp/topcat os/4.2bsd os/sysV
 HPOBJS = ddx/hp/hp/init.o $(FONTUTIL)
 HPLIBS = $(DIX) $(EXTENSIONS) $(HP) \
           ddx/hp/topcat/libtopcat.a \
           ddx/hp/hp/libcrtstub.a \
-          ddx/hp/gbx/libgbx.a \
-          ddx/hp/mob/libmob.a \
-          ddx/hp/catseye/libcatseye.a \
-          ddx/hp/ren/libren.a \
 	  $(HP) \
-          ddx/hp/ren/libren.a \
           ddx/hp/cfb/libcfb.a \
           ddx/hp/mfb/libmfb.a \
           $(UNIX) $(SNF) $(MI) $(SYSV)
