@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: Xct.c,v 1.9 89/10/07 14:06:35 rws Exp $
+ * $XConsortium: Xct.c,v 1.10 89/10/09 12:31:55 rws Exp $
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -305,6 +305,7 @@ HandleExtended(data, c)
     return 1;
 }
 
+static void
 ShiftGRToGL(data, hasCdata)
     register XctData data;
     int hasCdata;
