@@ -48,7 +48,14 @@ InitMux (dpy_name, requestp, eventp, errorp, sequencep)
 	return -1;
     /* yuck.  Guess at the request number; 1 XFreeGC per screen and 1 XSync */
     *sequencep = NextRequest (dpy) + XScreenCount (dpy);
+#if 0
+    /*  XXX on some systems, closing the display renders even the dup'ed
+     *  fd invalid.  For now, just leave the display open.  Note that
+     *  dpy is being leaked.
+     */
     fd = dup (ConnectionNumber (dpy));
     XCloseDisplay (dpy);
+#endif
+    fd = ConnectionNumber (dpy);
     return fd;
 }
