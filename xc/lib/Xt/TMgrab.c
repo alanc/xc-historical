@@ -1,4 +1,4 @@
-/* $XConsortium: TMgrab.c,v 1.5 92/04/03 16:47:06 converse Exp $ */
+/* $XConsortium: TMgrab.c,v 1.7 92/12/22 18:10:46 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -46,6 +46,18 @@ static void GrabAllCorrectKeys(widget, typeMatch, modMatch, grabP)
     Display *dpy = XtDisplay(widget);
     KeyCode *keycodes, *keycodeP;
     Cardinal keycount;
+    Modifiers careOn = 0;
+    Modifiers careMask = 0;
+
+    if (modMatch->lateModifiers) {
+	Boolean resolved;
+	resolved = _XtComputeLateBindings(dpy, modMatch->lateModifiers,
+					  &careOn, &careMask);
+	if (!resolved) return;
+    }
+    careOn |= modMatch->modifiers;
+    careMask |= modMatch->modifierMask;
+
     XtKeysymToKeycodeList(
 	    dpy,
 	    (KeySym)typeMatch->eventCode,
@@ -61,11 +73,10 @@ static void GrabAllCorrectKeys(widget, typeMatch, modMatch, grabP)
 	    Modifiers modifiers_return;
 	    XtTranslateKeycode( dpy, *keycodeP, (Modifiers)0,
 			        &modifiers_return, &keysym );
-	    if (modifiers_return & modMatch->modifiers)
+	    if (careMask & modifiers_return)
 		return;
 	    if (keysym == typeMatch->eventCode) {
-		XtGrabKey(widget, *keycodeP,
-			  (unsigned)modMatch->modifiers,
+		XtGrabKey(widget, *keycodeP, careOn,
 			  grabP->owner_events,
 			  grabP->pointer_mode,
 			  grabP->keyboard_mode
@@ -78,13 +89,13 @@ static void GrabAllCorrectKeys(widget, typeMatch, modMatch, grabP)
 		Modifiers dummy;
 		 /* check all useful combinations of modifier bits */
 		if (modifiers_return & std_mods &&
-		    !(std_mods & ~modifiers_return)) {
+		    !(~modifiers_return & std_mods)) {
 		    XtTranslateKeycode( dpy, *keycodeP,
 					(Modifiers)std_mods,
 					&dummy, &keysym );
 		    if (keysym == typeMatch->eventCode) {
 			XtGrabKey(widget, *keycodeP,
-				  (Modifiers) (modMatch->modifiers | std_mods),
+				  careOn | (Modifiers) std_mods,
 				  grabP->owner_events,
 				  grabP->pointer_mode,
 				  grabP->keyboard_mode
@@ -94,8 +105,7 @@ static void GrabAllCorrectKeys(widget, typeMatch, modMatch, grabP)
 		}
 	    }
 	} else /* !event->standard */ {
-	    XtGrabKey(widget, *keycodeP,
-		      (unsigned)modMatch->modifiers,
+	    XtGrabKey(widget, *keycodeP, careOn,
 		      grabP->owner_events,
 		      grabP->pointer_mode,
 		      grabP->keyboard_mode
