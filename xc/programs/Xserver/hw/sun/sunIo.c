@@ -300,8 +300,18 @@ SetTimeSinceLastInputEvent()
 void
 AbortDDX()
 {
+    int		i;
+    ScreenPtr	pScreen;
+
+    signal (SIGIO, SIG_IGN);
     sunChangeKbdTranslation (LookupKeyboardDevice (), FALSE);
     sunNonBlockConsoleOff ((char *) 0);
+    for (i = 0; i < screenInfo.numScreens; i++)
+    {
+	pScreen = screenInfo.screens[i];
+	(*pScreen->SaveScreen) (pScreen, SCREEN_SAVER_OFF);
+	sunDisableCursor (pScreen);
+    }
 }
 
 /* Called by GiveUp(). */

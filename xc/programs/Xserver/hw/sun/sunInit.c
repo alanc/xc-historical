@@ -291,6 +291,7 @@ sunCloseScreen (i, pScreen)
     Bool    ret;
 
     signal (SIGIO, SIG_IGN);
+    sunDisableCursor (pScreen);
     pScreen->CloseScreen = pPrivate->CloseScreen;
     ret = (*pScreen->CloseScreen) (i, pScreen);
     (void) (*pScreen->SaveScreen) (pScreen, SCREEN_SAVER_OFF);

@@ -142,17 +142,6 @@ sunLoadCursor (pScreen, pCursor, x, y)
 }
 
 static void
-sunDisableCursor (pScreen)
-    ScreenPtr	pScreen;
-{
-    struct fbcursor fbcursor;
-
-    fbcursor.set = FB_CUR_SETCUR;
-    fbcursor.enable = 0;
-    (void) ioctl (sunFbs[pScreen->myNum].fd, FBIOSCURSOR, &fbcursor);
-}
-
-static void
 sunSetCursor (pScreen, pCursor, x, y)
     ScreenPtr	pScreen;
     CursorPtr	pCursor;
@@ -230,6 +219,7 @@ sunCursorInitialize (pScreen)
     int	    h, w;
     int	    size;
 
+    pCurPriv->has_cursor = FALSE;
     if (ioctl (sunFbs[pScreen->myNum].fd, FBIOGCURMAX, &maxsize) == -1)
 	return FALSE;
     pCurPriv->width = maxsize.x;
@@ -239,8 +229,25 @@ sunCursorInitialize (pScreen)
 			 &sunPointerSpriteFuncs,
 			 &sunPointerScreenFuncs,
 			 FALSE);
+    pCurPriv->has_cursor = TRUE;
 #else
     return FALSE;
+#endif
+}
+
+sunDisableCursor (pScreen)
+    ScreenPtr	pScreen;
+{
+#ifdef FBIOGCURMAX
+    SetupCursor (pScreen);
+    struct fbcursor fbcursor;
+
+    if (pCurPriv->has_cursor)
+    {
+    	fbcursor.set = FB_CUR_SETCUR;
+    	fbcursor.enable = 0;
+    	(void) ioctl (sunFbs[pScreen->myNum].fd, FBIOSCURSOR, &fbcursor);
+    }
 #endif
 }
 

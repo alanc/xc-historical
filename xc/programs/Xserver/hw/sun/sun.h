@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$XConsortium: sun.h,v 5.9 91/02/20 22:38:27 keith Exp $ SPRITE (Berkeley)"
+ *	"$XConsortium: sun.h,v 5.11 91/05/04 23:11:57 keith Exp $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
@@ -162,6 +162,7 @@ extern int  sunScreenIndex;
 
 typedef struct {
     int		    width, height;
+    Bool	    has_cursor;
 } sunCursorRec, *sunCursorPtr;
 
 typedef struct {
