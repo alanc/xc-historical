@@ -1,4 +1,4 @@
-/* $XConsortium: XawIm.c,v 1.4 94/03/30 21:28:49 kaleb Exp $ */
+/* $XConsortium: XawIm.c,v 1.5 94/04/17 20:13:30 kaleb Exp kaleb $ */
 
 /*
  * Copyright 1991 by OMRON Corporation
@@ -57,7 +57,6 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <X11/Xos.h>
-#include <X11/Xlocale.h>
 #include <X11/Xfuncs.h>
 #include <X11/ShellP.h>
 #include <X11/Xaw/TextP.h>
@@ -447,7 +446,6 @@ static void OpenIM(ve)
 
     if (ve->im.open_im == False) return;
     ve->im.xim = NULL;
-    if (!strcmp(setlocale(LC_ALL, NULL), "C")) return;
     if (ve->im.im_list_num <= 0) {
 	if ((p = XSetLocaleModifiers("@im=none")) != NULL && *p)
 	    xim = XOpenIM(XtDisplay(ve->parent), NULL, NULL, NULL);
