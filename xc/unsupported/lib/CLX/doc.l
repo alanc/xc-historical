@@ -2995,31 +2995,38 @@ If there are no regions given, return a very large region."
 	   (type (or null (function ((list string) t) boolean))
                  test test-not)))
 
-(defun wm-resources (database window &key key test test-not)
-  ;; Takes the resources associated with the RESOURCE_MANAGER property
-  ;; of WINDOW (if any) and merges them with DATABASE.
-  ;; KEY is a function used for converting value-strings, the default is
-  ;; identity.  TEST and TEST-NOT are predicates used for filtering
-  ;; which resources to include in the database.  They are called with
-  ;; the name and results of the KEY function.
-  (declare (type resource-database database)
-	   (type window window)
+(defun root-resources (screen &key database key test test-not)
+  "Returns a resource database containing the contents of the root window
+   RESOURCE_MANAGER property for the given SCREEN. If SCREEN is a display,
+   then its default screen is used. If an existing DATABASE is given, then
+   resource values are merged with the DATABASE and the modified DATABASE is
+   returned.
+
+   TEST and TEST-NOT are predicates for selecting which resources are
+   read.  Arguments are a resource name list and a resource value. The KEY
+   function, if given, is called to convert a resource value string to the
+   value given to TEST or TEST-NOT."
+
+  (declare (type (or screen display) screen)
+	   (type (or null resource-database) database)
 	   (type (or null (function (string) t)) key)
-	   (type (or null (function ((list string) t) boolean))
-                 test test-not)
+	   (type (or null (function ((list string) t) boolean)) test test-not)
 	   (values resource-database)))
 
-(defun set-wm-resources (database window &key write test test-not)
-  ;; Sets the resources associated with the RESOURCE_MANAGER property
-  ;; of WINDOW.
-  ;; WRITE is a function used for writing values, the default is #'princ
-  ;; TEST and TEST-NOT are predicates used for filtering which resources
-  ;; to include in the database.  They are called with the name and value.
-  (declare (type resource-database database)
-	   (type window window)
-	   (type (or null (function (string stream) t)) write)
-	   (type (or null (function ((list string) t) boolean))
-                 test test-not)))
+(defsetf root-resources (screen &key test test-not (write 'princ)) (database)
+  "Changes the contents of the root window RESOURCE_MANAGER property for the
+   given SCREEN. If SCREEN is a display, then its default screen is used. 
+
+   TEST and TEST-NOT are predicates for selecting which resources from the
+   DATABASE are written.  Arguments are a resource name list and a resource
+   value.  The WRITE function is used to convert a resource value into a
+   string stored in the property."
+
+  (declare (type (or screen display) screen)
+	(type (or null resource-database) database)
+	(type (or null (function ((list string) t) boolean)) test test-not)
+	(type (or null (function (string stream) t)) write)
+	(values resource-database)))
 
 ;;;-----------------------------------------------------------------------------
 ;;; Shared GContext's
