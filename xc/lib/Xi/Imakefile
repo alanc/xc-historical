@@ -27,6 +27,7 @@ SRCS = XAllowDv.c \
 		  XQueryDv.c \
 		  XSelect.c \
 		  XSetBMap.c \
+		  XSetDVal.c \
 		  XSetMMap.c \
 		  XSetMode.c \
 		  XSndExEv.c \
@@ -61,6 +62,7 @@ OBJS = XAllowDv.o \
 		  XQueryDv.o \
 		  XSelect.o \
 		  XSetBMap.o \
+		  XSetDVal.o \
 		  XSetMMap.o \
 		  XSetMode.o \
 		  XSndExEv.o \
@@ -95,6 +97,7 @@ LOBJS = XAllowDv.ln \
 		  XQueryDv.ln \
 		  XSelect.ln \
 		  XSetBMap.ln \
+		  XSetDVal.ln \
 		  XSetMMap.ln \
 		  XSetMode.ln \
 		  XSndExEv.ln \
