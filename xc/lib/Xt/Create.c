@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Create.c,v 6.26 88/01/29 16:37:51 swick Locked $";
+static char rcsid[] = "$Header: Create.c,v 6.27 88/02/01 17:40:50 swick Locked $";
 #endif lint
 
 /*
@@ -212,12 +212,14 @@ Widget XtCreateWidget(name, widgetClass, parent, args, num_args)
     widget->core.ancestor_sensitive = 
 	(parent->core.ancestor_sensitive & parent->core.sensitive);
     _XtCreate2(widget, args, num_args, cwc);
-    insert_child = ((CompositeWidgetClass) parent->core.widget_class)->
-	composite_class.insert_child;
-    if (insert_child == NULL) {
-	XtError("NULL insert_child procedure");
-    } else {
-	(*insert_child) (widget, args, &num_args);
+    if (XtIsComposite(parent)) {
+	insert_child = ((CompositeWidgetClass) parent->core.widget_class)->
+	    composite_class.insert_child;
+	if (insert_child == NULL) {
+	    XtError("NULL insert_child procedure");
+	} else {
+	    (*insert_child) (widget, args, &num_args);
+	}
     }
     return (widget);
 }
