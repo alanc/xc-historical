@@ -744,6 +744,17 @@ Specifies font number 3 to use in the Tektronix window.
 .TP 8
 .B "fontSmall (\fPclass\fB Font)"
 Specifies the small font to use in the Tektronix window.
+.TP 8
+.B "initialFont (\fPclass\fB InitialFont)"
+Specifies which of the four Tektronix fonts to use initially.
+Values are the same as for the \fIset-tek-text\fP action.
+The default is ``large.''
+.TP 8
+.B "ginTerminator (\fPclass\fB GinTerminator)"
+Specifies what character(s) should follow a GIN report or status report.
+The possibilities are ``none,'' which sends no terminating characters,
+``CRonly,'' which sends CR, and ``CR&EOT,'' which sends both CR and EOT.
+The default is ``none.''
 .\".in -1in
 .sp
 .PP
