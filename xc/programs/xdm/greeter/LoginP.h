@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: LoginP.h,v 1.3 88/09/23 14:20:23 keith Exp $
+ * $XConsortium: LoginP.h,v 1.5 88/11/23 16:54:06 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -19,7 +19,7 @@
  */
 
 /*
-* $XConsortium: LoginP.h,v 1.3 88/09/23 14:20:23 keith Exp $
+* $XConsortium: LoginP.h,v 1.5 88/11/23 16:54:06 keith Exp $
 */
 
 #ifndef _LoginP_h
@@ -83,4 +83,4 @@ typedef struct _LoginClassRec {
 /* Class pointer. */
 extern LoginClassRec loginClassRec;
 
-#endif _LoginP_h
+#endif /* _LoginP_h */

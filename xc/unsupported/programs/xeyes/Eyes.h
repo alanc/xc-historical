@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Eyes.h,v 1.4 89/03/28 17:29:04 keith Exp $
+* $XConsortium: Eyes.h,v 1.5 89/04/09 13:19:35 keith Exp $
 */
 
 #ifndef _XtEyes_h
@@ -42,5 +42,5 @@ typedef struct _EyesClassRec *EyesWidgetClass;    /* completely defined in EyesP
 
 extern WidgetClass eyesWidgetClass;
 
-#endif _XtEyes_h
+#endif /* _XtEyes_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

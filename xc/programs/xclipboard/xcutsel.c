@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: xcutsel.c,v 1.6 89/07/16 16:04:03 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,8 +24,8 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xcutsel.c,v 1.5 89/05/11 18:09:36 kit Exp $";
-#endif	lint
+static char rcsid[] = "$XConsortium: xcutsel.c,v 1.6 89/07/16 16:04:03 jim Exp $";
+#endif /* lint */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>

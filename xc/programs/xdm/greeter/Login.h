@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.h,v 1.4 88/09/23 14:20:19 keith Exp $
+ * $XConsortium: Login.h,v 1.6 88/11/23 16:53:56 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -19,7 +19,7 @@
  */
 
 /*
-* $XConsortium: Login.h,v 1.4 88/09/23 14:20:19 keith Exp $
+* $XConsortium: Login.h,v 1.6 88/11/23 16:53:56 keith Exp $
 */
 
 #ifndef _XtLogin_h
@@ -91,5 +91,5 @@ typedef struct _LoginClassRec *LoginWidgetClass;    /* completely defined in Log
 
 extern WidgetClass loginWidgetClass;
 
-#endif _XtLogin_h
+#endif /* _XtLogin_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

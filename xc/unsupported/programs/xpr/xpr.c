@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.35 89/01/22 17:31:37 rws Exp $";
+static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.36 89/05/26 14:09:21 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -59,7 +59,7 @@ enum device {LN01, LN03, LA100, PS, PP};
 
 #ifdef NOINLINE
 #define min(x,y) (((x)<(y))?(x):(y))
-#endif NOINLINE
+#endif /* NOINLINE */
 
 #define F_PORTRAIT 1
 #define F_LANDSCAPE 2
@@ -1104,7 +1104,7 @@ dump_prolog(flags) {
     char **p = (flags & F_COMPACT) ? ps_prolog_compact : ps_prolog;
     while (*p) printf("%s\n",*p++);
 }
-#endif XPROLOG
+#endif /* XPROLOG */
 
 #define PAPER_WIDTH 85*30 /* 8.5 inches */
 #define PAPER_LENGTH 11*300 /* 11 inches */

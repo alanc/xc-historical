@@ -1,6 +1,6 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xeyes.c,v 1.5 89/03/31 17:28:51 keith Exp $";
-#endif  lint
+static char rcsid[] = "$XConsortium: xeyes.c,v 1.6 89/04/09 12:23:15 rws Exp $";
+#endif /* lint */
 
 #include <X11/Intrinsic.h>
 #include <X11/Xatom.h>

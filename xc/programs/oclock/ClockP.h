@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ClockP.h,v 1.3 89/04/09 12:30:04 rws Exp $
+ * $XConsortium: ClockP.h,v 1.4 89/05/02 18:04:53 keith Exp $
  */
 
 #ifndef _ClockP_h
@@ -62,4 +62,4 @@ typedef struct _ClockClassRec {
 /* Class pointer. */
 extern ClockClassRec clockClassRec;
 
-#endif _ClockP_h
+#endif /* _ClockP_h */

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.5 89/01/16 17:14:02 keith Exp $
+ * $XConsortium: auth.c,v 1.6 89/03/28 16:50:48 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -531,7 +531,7 @@ DefineSelf (fd, file, auth)
 	writeAddr (family, len, addr, file, auth);
     }
 }
-#endif hpux
+#endif /* hpux */
 #endif
 
 writeLocalAuth (file, auth, name)

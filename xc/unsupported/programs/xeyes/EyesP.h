@@ -1,5 +1,5 @@
 /*
-* $XConsortium: EyesP.h,v 1.6 89/03/31 17:27:53 keith Exp $
+* $XConsortium: EyesP.h,v 1.7 89/04/09 13:15:28 keith Exp $
 */
 
 #ifndef _EyesP_h
@@ -57,4 +57,4 @@ typedef struct _EyesClassRec {
 /* Class pointer. */
 extern EyesClassRec eyesClassRec;
 
-#endif _EyesP_h
+#endif /* _EyesP_h */
