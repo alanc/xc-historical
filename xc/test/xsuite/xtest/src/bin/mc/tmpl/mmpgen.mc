@@ -1,3 +1,4 @@
+# $XConsortium$
 #
 # Pixel generation makerules for generating the reference
 # known good image files.

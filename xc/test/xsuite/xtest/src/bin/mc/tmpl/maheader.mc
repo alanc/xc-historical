@@ -1,3 +1,4 @@
+'\" $XConsortium$
 '\" Simple table specification - to avoid the need to use tbl.
 .de tL \" table line
 .nf

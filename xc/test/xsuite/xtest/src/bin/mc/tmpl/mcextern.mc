@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 
 extern	Display	*Dsp;
 extern	Window	Win;

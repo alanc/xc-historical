@@ -1,3 +1,4 @@
+# $XConsortium$
 #
 # A version of the test that can be combined together with
 # all the other tests to make one executable.  This will save a

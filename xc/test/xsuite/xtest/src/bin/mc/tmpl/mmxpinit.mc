@@ -1,3 +1,4 @@
+# $XConsortium$
 #
 # X Protocol tests.
 #

@@ -1,3 +1,4 @@
+# $XConsortium$
 #
 # Miscellaneous housekeeping functions.
 #
