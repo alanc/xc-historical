@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.8 89/07/12 17:16:21 keith Exp $ */
+/* $XConsortium: dispatch.c,v 5.9 89/07/16 17:23:51 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1276,14 +1276,14 @@ int
 ProcListFontsWithInfo(client)
     register ClientPtr client;
 {
-    register xListFontsWithInfoReply *reply;
+    register xListFontsWithInfoReply *reply, *nreply;
     xListFontsWithInfoReply last_reply;
     FontRec font;
     FontInfoRec finfo;
     register FontPathPtr fpaths;
     register char **path;
     register int n, *length;
-    int rlength;
+    int curlength, rlength;
     REQUEST(xListFontsWithInfoReq);
 
     REQUEST_FIXED_SIZE(xListFontsWithInfoReq, stuff->nbytes);
@@ -1295,6 +1295,8 @@ ProcListFontsWithInfo(client)
     font.pFI = &finfo;
     font.pInkMin = &finfo.minbounds;
     font.pInkMax = &finfo.maxbounds;
+    reply = (xListFontsWithInfoReply *)NULL;
+    curlength = 0;
     for (n = fpaths->npaths, path = fpaths->paths, length = fpaths->length;
 	 --n >= 0;
 	 path++, length++)
@@ -1303,7 +1305,16 @@ ProcListFontsWithInfo(client)
 	   continue;
 	rlength = sizeof(xListFontsWithInfoReply)
 		    + finfo.nProps * sizeof(xFontProp);
-	if (reply = (xListFontsWithInfoReply *)ALLOCATE_LOCAL(rlength))
+	if (rlength > curlength)
+	{
+	    nreply = (xListFontsWithInfoReply *)xrealloc(reply, rlength);
+	    if (nreply)
+	    {
+		reply = nreply;
+		curlength = rlength;
+	    }
+	}
+	if (rlength <= curlength)
 	{
 		reply->type = X_Reply;
 		reply->sequenceNumber = client->sequence;
@@ -1318,6 +1329,7 @@ ProcListFontsWithInfo(client)
 	}
 	xfree(font.pFP);
     }
+    xfree(reply);
     FreeFontRecord(fpaths);
     bzero((char *)&last_reply, sizeof(xListFontsWithInfoReply));
     last_reply.type = X_Reply;
