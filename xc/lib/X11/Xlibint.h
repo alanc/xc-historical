@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.96 92/01/30 10:22:57 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.97 92/12/29 14:41:54 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -36,7 +36,8 @@ struct _XGC {
     XGCValues values;	/* shadow structure of values */
 };
 
-struct _XDisplay {
+struct _XDisplay
+{
 	XExtData *ext_data;	/* hook for extension to hang data */
 	struct _XFreeFuncs *free_funcs; /* internal free functions */
 	int fd;			/* Network socket. */
@@ -176,6 +177,9 @@ char *malloc(), *realloc(), *calloc();
 #define LockMutex(mutex)
 #define UnlockMutex(mutex)
 #define UnlockDisplay(dis)
+#define InitDisplayLock(dis) 0	/* return success status */
+#define FreeDisplayLock(dis)
+
 #define Xfree(ptr) free((ptr))
 
 /*

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.127 92/11/07 17:22:14 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.128 92/12/29 14:42:48 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -37,7 +37,7 @@ typedef struct {
 extern int _Xdebug;
 
 #ifndef lint
-static int lock;	/* get rid of ifdefs when locking implemented */
+static XPointer lock;	/* get rid of ifdefs when locking implemented */
 #endif
 
 static xReq _dummy_request = {
@@ -105,13 +105,6 @@ Display *XOpenDisplay (display)
 		/* Display is non-NULL, copy the pointer */
 		display_name = (char *)display;
 	}
-
-/*
- * Lock against other threads trying to access global data (like the error
- * handlers and display list).
- */
-	LockMutex(&lock);
-
 /*
  * Set the default error handlers.  This allows the global variables to
  * default to NULL for use with shared libraries.
@@ -123,7 +116,6 @@ Display *XOpenDisplay (display)
  * Attempt to allocate a display structure. Return NULL if allocation fails.
  */
 	if ((dpy = (Display *)Xcalloc(1, sizeof(Display))) == NULL) {
-		UnlockMutex(&lock);
 		return(NULL);
 	}
 
@@ -138,7 +130,6 @@ Display *XOpenDisplay (display)
 					 &conn_auth_namelen, &conn_auth_data,
 					 &conn_auth_datalen)) < 0) {
 		Xfree ((char *) dpy);
-		UnlockMutex(&lock);
 		return(NULL);
 	}
 
@@ -200,10 +191,15 @@ Display *XOpenDisplay (display)
 	dpy->default_screen = iscreen;  /* Value returned by ConnectDisplay */
 	dpy->last_req = (char *)&_dummy_request;
 
+	/* Initialize the display lock */
+	if (InitDisplayLock(dpy) != 0) {
+	        OutOfMemory (dpy, setup);
+		return(NULL);
+	}
+
 	/* Set up the output buffers. */
 	if ((dpy->bufptr = dpy->buffer = Xmalloc(BUFSIZE)) == NULL) {
 	        OutOfMemory (dpy, setup);
-		UnlockMutex(&lock);
 		return(NULL);
 	}
 	dpy->bufmax = dpy->buffer + BUFSIZE;
@@ -217,7 +213,6 @@ Display *XOpenDisplay (display)
 							sizeof(_XFreeFuncRec)))
 	    == NULL) {
 	    OutOfMemory (dpy, setup);
-	    UnlockMutex(&lock);
 	    return(NULL);
 	}
 
@@ -240,7 +235,6 @@ Display *XOpenDisplay (display)
 	{
 	    _XDisconnectDisplay (dpy->fd);
 	    Xfree ((char *)dpy);
-	    UnlockMutex(&lock);
 	    return(NULL);
 	}	    
 	if (conn_auth_name) Xfree(conn_auth_name);
@@ -248,6 +242,9 @@ Display *XOpenDisplay (display)
 /*
  * Now see if connection was accepted...
  */
+	/* these internal functions expect the display to be locked */
+	LockDisplay(dpy);
+
 	_XRead (dpy, (char *)&prefix,(long)SIZEOF(xConnSetupPrefix));
 
 	if (prefix.majorVersion != X_PROTOCOL) {
@@ -266,7 +263,6 @@ Display *XOpenDisplay (display)
 	      (setup =  Xmalloc ((unsigned) setuplength))) == NULL) {
 		_XDisconnectDisplay (dpy->fd);
 		Xfree ((char *)dpy);
-		UnlockMutex(&lock);
 		return(NULL);
 	}
 	_XRead (dpy, (char *)u.setup, setuplength);
@@ -283,7 +279,6 @@ Display *XOpenDisplay (display)
 			(int)prefix.lengthReason, stderr);
 		(void) fwrite ("\r\n", sizeof(char), 2, stderr);
 		OutOfMemory(dpy, setup);
-		UnlockMutex(&lock);
 		return (NULL);
 	}
 
@@ -319,7 +314,6 @@ Display *XOpenDisplay (display)
 	dpy->vendor = (char *) Xmalloc((unsigned) (u.setup->nbytesVendor + 1));
 	if (dpy->vendor == NULL) {
 	    OutOfMemory(dpy, setup);
-	    UnlockMutex(&lock);
 	    return (NULL);
 	}
 	vendorlen = u.setup->nbytesVendor;
@@ -338,7 +332,6 @@ Display *XOpenDisplay (display)
 		(unsigned) (dpy->nformats *sizeof(ScreenFormat)));
 	if (dpy->pixmap_format == NULL) {
 	        OutOfMemory (dpy, setup);
-		UnlockMutex(&lock);
 		return(NULL);
 	}
 /*
@@ -360,7 +353,6 @@ Display *XOpenDisplay (display)
 	    (Screen *)Xmalloc((unsigned) dpy->nscreens*sizeof(Screen));
 	if (dpy->screens == NULL) {
 	        OutOfMemory (dpy, setup);
-		UnlockMutex(&lock);
 		return(NULL);
 	}
 /*
@@ -395,7 +387,6 @@ Display *XOpenDisplay (display)
 			(unsigned)sp->ndepths*sizeof(Depth));
 	    if (sp->depths == NULL) {
 		OutOfMemory (dpy, setup);
-		UnlockMutex(&lock);
 		return(NULL);
 	    }
 	    /*
@@ -411,7 +402,6 @@ Display *XOpenDisplay (display)
 		      (Visual *)Xmalloc((unsigned)dp->nvisuals*sizeof(Visual));
 		    if (dp->visuals == NULL) {
 			OutOfMemory (dpy, setup);
-			UnlockMutex(&lock);
 			return(NULL);
 		    }
 		    for (k = 0; k < dp->nvisuals; k++) {
@@ -446,9 +436,13 @@ Display *XOpenDisplay (display)
  */
 	if (iscreen >= dpy->nscreens) {
 	    OutOfMemory(dpy, (char *) NULL);
-	    UnlockMutex(&lock);
 	    return(NULL);
 	}
+
+/*
+ * finished calling internal routines, now unlock for external routines
+ */
+	UnlockDisplay(dpy);
 
 /*
  * Set up other stuff clients are always going to use.
@@ -462,21 +456,14 @@ Display *XOpenDisplay (display)
 					     GCForeground|GCBackground,
 					     &values)) == NULL) {
 		OutOfMemory(dpy, (char *) NULL);
-		UnlockMutex (&lock);
 		return (NULL);
 	    }
 	}
 /*
  * call into synchronization routine so that all programs can be
- * forced synchronize
+ * forced synchronous
  */
 	(void) XSynchronize(dpy, _Xdebug);
-
-/*
- * and done mucking with the display
- */
-	UnlockDisplay(dpy);		/* didn't exist, so didn't lock */
-	UnlockMutex(&lock);
 
 /*
  * get availability of large requests, and
@@ -573,11 +560,11 @@ _XBigReqHandler(dpy, rep, buf, len, data)
 static OutOfMemory (dpy, setup)
     Display *dpy;
     char *setup;
-    {
+{
     _XDisconnectDisplay (dpy->fd);
     _XFreeDisplayStructure (dpy);
     if (setup) Xfree (setup);
-    }
+}
 
 
 /* XFreeDisplayStructure frees all the storage associated with a 
@@ -673,6 +660,7 @@ _XFreeDisplayStructure(dpy)
 	    Xfree ((char *)dpy->free_funcs);
  	if (dpy->scratch_buffer)
  	    Xfree (dpy->scratch_buffer);
+	FreeDisplayLock(dpy);
 
 	Xfree ((char *)dpy);
 }
