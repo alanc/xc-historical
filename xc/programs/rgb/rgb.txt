@@ -134,8 +134,8 @@
 159 95 159		BlueViolet
 216 216 191		wheat
 216 216 191		Wheat
-252 252 252		white
-252 252 252		White
+255 255 255		white
+255 255 255		White
 255 255 0		yellow
 255 255 0		Yellow
 147 219 112		green yellow
