@@ -263,7 +263,7 @@ sunScreenInit (pScreen)
      */
     pDrawable = (DrawablePtr)(pScreen->devPrivate);
 
-    fb->pGC = GetScratchGC (pDrawable->depth, pDrawable->pScreen);
+    fb->pGC = CreateScratchGC (pDrawable->depth, pDrawable->pScreen);
 
     /*
      * By setting graphicsExposures false, we prevent any expose events
