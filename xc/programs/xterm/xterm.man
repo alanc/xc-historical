@@ -5,35 +5,29 @@ xterm \- X window system terminal emulator
 .B xterm
 [-option ...]
 .SH DESCRIPTION
-.I Xterm
-is the
-.I X
-window system terminal emulator.
-It attempts to emulate a DEC VT102 terminal
-to provide a standard terminal type for programs not aware of the window
-system directly.
-Under 4.3BSD, Ultrix 1.2 and other systems with the capability,
-.I xterm
-supports the terminal resizing facilities built into the system.
+The \fIxterm\fP program is a terminal emulator for the X Window System.
+It provides DEC VT102 and Tektronix 4014 
+compatible terminals for programs that can't
+use the window system directly.  If the underlying operating system supports 
+terminal resizing capabilities (for example, the SIGWINCH signal in systems 
+derived from 4.3bsd), \fIxterm\fP will use the facilities to notify programs 
+running in the window whenever it is resized.
 .PP
-In addition,
-.I xterm
-emulates the Tektronix 4015 in a separate window.
-.I Note: Tektronix mode is untested for X 11 and guaranteed not to work at this
-.I time.
+The VT102 and Tektronix 4014 terminals each have their own window so that you
+can edit text in one and look at graphics in the other at the same time.
 To maintain the correct aspect ratio (height/width), Tektronix graphics will
-be restricted to the
-largest box with a 4015's aspect ratio that will fit in the window.
-This box is located in the upper left area of the window.
+be restricted to the largest box with a 4014's aspect ratio that will fit in 
+the window.  This box is located in the upper left area of the window.
 .PP
-Both windows may be displayed at the same time, though only one window and
-mode is active at a time.
-Input will be displayed in the active window even if the pointer is in the other
-window.
-Switching between the active modes is possible under manual (menu) and program
-(escape sequence) control.
+Although both windows may be displayed at the same time, one of them is 
+considered the ``active'' window for receiving keyboard input and terminal
+output.  This is the window that contains the text cursor and whose border 
+highlights whenever the pointer is in either window.
+The active window can be choosen through escape sequences,
+the ``Modes'' menu in the VT102 window, and the ``Tektronix''
+menu in the 4014 window.
 .SH OPTIONS
-.I Xterm
+The \fIxterm\fP terminal emulator 
 accepts all of the standard X Toolkit command line options along with the 
 additional options listed below (if the option begins with a
 .RB ` + '
@@ -93,8 +87,7 @@ disabling smooth scroll as well as the ``Modes'' menu can be used to turn this
 feature on or off.
 .TP 8
 .B \+j
-This option indicates that \fIxterm\fP should not do jump scrolling, as 
-described above.
+This option indicates that \fIxterm\fP should not do jump scrolling.
 .TP 8
 .B \-l
 This option indicates that \fIxterm\fP should send all terminal output to
@@ -102,8 +95,7 @@ a log file as well as to the screen.  This option can be enabled or disabled
 using the ``xterm X11'' menu.
 .TP 8
 .B \+l
-This option indicates that \fIxterm\fP should not do logging as described
-above. 
+This option indicates that \fIxterm\fP should not do logging.
 .TP 8
 .BI \-lf " filename"
 This option specifies the name of the file to which the output log described
@@ -121,7 +113,7 @@ indicating to the shell that it should read the user's .login or .profile).
 .TP 8
 .B \+ls
 This option indicates that the shell that is started should not be a login
-shell (i.e. it will be normal ``subshell'').  This is the default.
+shell (i.e. it will be normal ``subshell'').
 .TP 8
 .B \-mb
 This option indicates that \fIxterm\fP should ring a margin bell when
@@ -197,8 +189,7 @@ than in VT102 mode.  Switching between the two windows is done using the
 ``Modes'' menus.
 .TP 8
 .B \+t
-This option indicates that \fIxterm\fP should start in VT102 mode.  This is
-the default.
+This option indicates that \fIxterm\fP should start in VT102 mode.
 .TP 8
 .B \-vb
 This option indicates that a visual bell is prefered over an audible one.
@@ -679,11 +670,14 @@ and the COPY file name.
 Many of the options are not resettable after
 .I xterm
 starts.
+.PP
+This manual page is too long.  There should be a separate users manual
+defining all of the non-standard escape sequences.
 .SH AUTHORS
 Copyright 1988, Massachusetts Institute of Technology.
 .sp
 Far too many people, including:
-.br
+.sp
 Loretta Guarino Reid (DEC-UEG-WSL), 
 Joel McCormack (DEC-UEG-WSL), Terry Weissman (DEC-UEG-WSL),
 Edward Moy (Berkeley), Ralph R. Swick (MIT-Athena),
