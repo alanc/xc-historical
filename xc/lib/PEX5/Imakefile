@@ -1,23 +1,12 @@
-XCOMM $XConsortium: Imakefile,v 1.12 93/07/22 13:26:27 gildea Exp $
-XCOMM
-XCOMM Copyright 1992 by the Massachusetts Institute of Technology
-XCOMM 
-XCOMM Permission to use, copy, modify, distribute, and sell this software and
-XCOMM its documentation for any purpose is hereby granted without fee, provided
-XCOMM that the above copyright notice appear in all copies and that both that
-XCOMM copyright notice and this permission notice appear in supporting
-XCOMM documentation, and that the name of M.I.T. not be used in advertising or
-XCOMM publicity pertaining to distribution of the software without specific,
-XCOMM written prior permission.  M.I.T. makes no representations about the
-XCOMM suitability of this software for any purpose.  It is provided "as is"
-XCOMM without express or implied warranty.
-XCOMM
+XCOMM $XConsortium: Imakefile,v 1.13 93/08/23 13:50:28 kaleb Exp $
 
 #define DoNormalLib NormalLibPex
 #define DoSharedLib SharedLibPex
 #define DoDebugLib DebugLibPex
 #define DoProfileLib ProfileLibPex
-#include <Library.tmpl>
+#define LibName PEX5
+#define SoRev SOPEXREV
+#define IncSubdir PEX5
 
 #ifdef SharedPexReqs
 REQUIREDLIBS = SharedPexReqs
@@ -84,35 +73,6 @@ OBJS =  pl_convert.o \
 	pl_wks.o
 	
 
-LibraryObjectRule()
-
-#if DoSharedLib
-#if DoNormalLib
-SharedLibraryTarget(PEX5,$(SOPEXREV),$(OBJS),shared,..)
-#else
-SharedLibraryTarget(PEX5,$(SOPEXREV),$(OBJS),.,.)
-#endif
-InstallSharedLibrary(PEX5,$(SOPEXREV),$(SHLIBDIR))
-#endif
-#if DoNormalLib
-NormalLibraryTarget(PEX5,$(OBJS))
-InstallLibrary(PEX5,$(USRLIBDIR))
-#endif
-#if DoProfileLib
-ProfiledLibraryTarget(PEX5,$(OBJS))
-InstallLibrary(PEX5_p,$(USRLIBDIR))
-#endif
-#if DoDebugLib
-DebuggedLibraryTarget(PEX5,$(OBJS))
-InstallLibrary(PEX5_d,$(USRLIBDIR))
-#endif
-
-LintLibraryTarget(PEX5,$(SRCS))
-InstallLintLibrary(PEX5,$(LINTLIBDIR))
-
-BuildIncludes($(HEADERS),PEX5,..)
-InstallMultiple($(HEADERS),$(INCDIR)/PEX5)
+#include <Library.tmpl>
 
 DependTarget()
-
-NormalLintTarget($(SRCS))

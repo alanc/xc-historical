@@ -1,11 +1,8 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.4 91/10/10 11:13:21 rws Exp $
 
 #include <Server.tmpl>
 
-INCLUDES = -I$(FONTSRC)/lib/font/include \
-	   -I$(FONTSRC)/include  \
-	   -I$(FONTSRC)/../include \
-	   -I$(FONTSRC)/../.
+INCLUDES = -I$(FONTINCSRC) -I../include
 
 SRCS =          \
        arith.c         \

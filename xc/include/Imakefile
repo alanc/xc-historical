@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile,v 1.80 93/08/09 14:58:25 rws Exp $
 #define PassCDebugFlags /**/
 
 INSTALLFLAGS = $(INSTINCFLAGS)
-SUBDIRS = bitmaps
+SUBDIRS = bitmaps extensions fonts
 
 HEADERS = DECkeysym.h \
 	Sunkeysym.h \

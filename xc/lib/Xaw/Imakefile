@@ -1,9 +1,12 @@
-XCOMM $XConsortium: Imakefile,v 1.79 92/05/28 12:08:24 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.80 92/06/28 17:46:42 rws Exp $
 #define DoNormalLib NormalLibXaw
 #define DoSharedLib SharedLibXaw
 #define DoDebugLib DebugLibXaw
 #define DoProfileLib ProfileLibXaw
-#include <Library.tmpl>
+#define HasSharedData YES
+#define LibName Xaw
+#define SoRev SOXAWREV
+#define IncSubdir Xaw
 
 #ifdef SharedXawReqs
 REQUIREDLIBS = SharedXawReqs
@@ -166,42 +169,10 @@ OBJS = \
 	Viewport.o \
 	XawInit.o 
 
-LibraryObjectRule()
+#include <Library.tmpl>
 
 #if DoSharedLib && SharedDataSeparation
 SpecialCObjectRule(sharedlib,NullParameter,$(SHLIBDEF))
 #endif
 
-#if DoSharedLib
-#if DoNormalLib
-SharedLibraryTarget(Xaw,$(SOXAWREV),$(OBJS),shared,..)
-#else
-SharedLibraryTarget(Xaw,$(SOXAWREV),$(OBJS),.,.)
-#endif
-SharedLibraryDataTarget(Xaw,$(SOXAWREV),$(UNSHAREDOBJS))
-InstallSharedLibrary(Xaw,$(SOXAWREV),$(SHLIBDIR))
-InstallSharedLibraryData(Xaw,$(SOXAWREV),$(SHLIBDIR))
-#endif
-#if DoNormalLib
-NormalLibraryTarget(Xaw,$(OBJS))
-InstallLibrary(Xaw,$(USRLIBDIR))
-#endif
-#if DoProfileLib
-ProfiledLibraryTarget(Xaw,$(OBJS))
-InstallLibrary(Xaw_p,$(USRLIBDIR))
-#endif
-#if DoDebugLib
-DebuggedLibraryTarget(Xaw,$(OBJS))
-InstallLibrary(Xaw_d,$(USRLIBDIR))
-#endif
-
-LintLibraryTarget(Xaw,$(SRCS))
-InstallLintLibrary(Xaw,$(LINTLIBDIR))
-
-BuildIncludes($(HEADERS),Xaw,..)
-
-InstallMultiple($(HEADERS),$(INCDIR)/Xaw)
-
 DependTarget()
-
-NormalLintTarget($(SRCS))

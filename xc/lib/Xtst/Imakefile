@@ -1,47 +1,24 @@
-XCOMM $XConsortium: Imakefile,v 1.4 93/07/22 13:25:40 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.5 93/08/23 13:48:33 kaleb Exp $
 #define DoNormalLib NormalLibXTest
 #define DoSharedLib SharedLibXTest
 #define DoDebugLib DebugLibXTest
 #define DoProfileLib ProfileLibXTest
-#include <Library.tmpl>
+#define LibName Xtst
+#define SoRev SOXTESTREV
+#define LibHeaders NO
 
 #ifdef SharedXTestReqs
 REQUIREDLIBS = SharedXTestReqs
 #endif
 
  DEFINES = XMTDefines
-INCLUDES = -I$(TOP) -I$(XLIBSRC) -I../../include
+INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
 
 SRCS = XTest.c
 OBJS = XTest.o
 
 LINTLIBS = $(LINTXLIB)
 
-LibraryObjectRule()
-
-#if DoSharedLib
-#if DoNormalLib
-SharedLibraryTarget(Xtst,$(SOXTESTREV),$(OBJS),shared,..)
-#else
-SharedLibraryTarget(Xtst,$(SOXTESTREV),$(OBJS),.,.)
-#endif
-InstallSharedLibrary(Xtst,$(SOXTESTREV),$(SHLIBDIR))
-#endif
-#if DoNormalLib
-NormalLibraryTarget(Xtst,$(OBJS))
-InstallLibrary(Xtst,$(USRLIBDIR))
-#endif
-#if DoProfileLib
-ProfiledLibraryTarget(Xtst,$(OBJS))
-InstallLibrary(Xtst_p,$(USRLIBDIR))
-#endif
-#if DoDebugLib
-DebuggedLibraryTarget(Xtst,$(OBJS))
-#endif
-
-LintLibraryTarget(Xtst,$(SRCS))
-InstallLintLibrary(Xtst,$(LINTLIBDIR))
+#include <Library.tmpl>
 
 DependTarget()
-
-NormalLintTarget($(SRCS))

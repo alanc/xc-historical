@@ -1,13 +1,11 @@
-XCOMM $XConsortium: Imakefile,v 1.13 93/07/22 13:27:04 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.14 93/08/23 13:49:30 kaleb Exp $
 #define DoNormalLib NormalLibXinput
 #define DoSharedLib SharedLibXinput
 #define DoDebugLib DebugLibXinput
 #define DoProfileLib ProfileLibXinput
-#include <Library.tmpl>
-
-#ifndef NeedXinputAlias
-#define NeedXinputAlias NO
-#endif
+#define LibName Xi
+#define SoRev SOXINPUTREV
+#define LibHeaders NO
 
 #ifdef SharedXinputReqs
 REQUIREDLIBS = SharedXinputReqs
@@ -20,7 +18,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
   MTX_DEFINES = XMTDefines
 
  DEFINES = $(ALLOC_DEFINES) $(MTX_DEFINES)
-INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC) -I../../include
+INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
 SRCS = XAllowDv.c \
 		  XChgDCtl.c \
 		  XChgFCtl.c \
@@ -98,34 +96,6 @@ OBJS = XAllowDv.o \
 
        LINTLIBS = $(LINTXLIB) $(LINTXEXT)
 
-LibraryObjectRule()
-
-#if DoSharedLib
-#if DoNormalLib
-SharedLibraryTarget(Xi,$(SOXINPUTREV),$(OBJS),shared,..)
-#else
-SharedLibraryTarget(Xi,$(SOXINPUTREV),$(OBJS),.,.)
-#endif
-InstallSharedLibrary(Xi,$(SOXINPUTREV),$(SHLIBDIR))
-#endif
-#if DoNormalLib
-NormalLibraryTarget(Xi,$(OBJS))
-InstallLibrary(Xi,$(USRLIBDIR))
-#if NeedXinputAlias
-InstallLibraryAlias(Xi,Xinput,$(USRLIBDIR))
-#endif
-#endif
-#if DoProfileLib
-ProfiledLibraryTarget(Xi,$(OBJS))
-InstallLibrary(Xi_p,$(USRLIBDIR))
-#endif
-#if DoDebugLib
-DebuggedLibraryTarget(Xi,$(OBJS))
-#endif
-
-LintLibraryTarget(Xi,$(SRCS))
-InstallLintLibrary(Xi,$(LINTLIBDIR))
+#include <Library.tmpl>
 
 DependTarget()
-
-NormalLintTarget($(SRCS))

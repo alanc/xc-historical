@@ -1,9 +1,11 @@
-XCOMM $XConsortium: Imakefile,v 1.101 93/08/27 16:17:57 kaleb Exp $
+XCOMM $XConsortium: Imakefile,v 1.100 93/08/23 11:11:48 rws Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
 #define DoProfileLib ProfileLibXt
-#include <Library.tmpl>
+#define HasSharedData YES
+#define LibName Xt
+#define SoRev SOXTREV
 
 #ifndef MotifBC
 #define MotifBC NO
@@ -30,11 +32,7 @@ XTWARNINGPREFIX = XtWarningPrefix
 #if HasPoll
    POLL_DEFINES = -DUSE_POLL
 #endif
-
-        DEFINES = AllocateLocalDefines \
-		  $(ALIGN_DEFINES) \
-		  $(POLL_DEFINES) XtExtraDefines XMTDefines
-
+        DEFINES = AllocateLocalDefines $(ALIGN_DEFINES) $(POLL_DEFINES) XtExtraDefines XMTDefines
     MTT_DEFINES = ThreadTypeDefines
  DEPEND_DEFINES = ThreadTypeDefines
 
@@ -43,7 +41,6 @@ XTWARNINGPREFIX = XtWarningPrefix
 		  -DXTWARNING_PREFIX=\"$(XTWARNINGPREFIX)\"
 
    SRCH_DEFINES = -DXFILESEARCHPATHDEFAULT=\"$(XFILESEARCHPATHDEFAULT)\"
-
 #if Malloc0ReturnsNull
   ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
@@ -189,7 +186,7 @@ UNSHAREDOBJS = StringDefs.o sharedlib.o
 UNSHAREDOBJS = sharedlib.o
 #endif
 
-LibraryObjectRule()
+#include <Library.tmpl>
 
 SpecialCLibObjectRule(Intrinsic,$(ICONFIGFILES),$(SRCH_DEFINES))
 SpecialCLibObjectRule(Error,$(ICONFIGFILES),$(DB_DEFINES))
@@ -201,35 +198,4 @@ SpecialCObjectRule(sharedlib,$(_NOOP_),$(SHLIBDEF))
 #endif
 SpecialCLibObjectRule(Threads,$(ICONFIGFILES),$(MTT_DEFINES))
 
-#if DoSharedLib
-#if DoNormalLib
-SharedLibraryTarget(Xt,$(SOXTREV),$(OBJS),shared,..)
-#else
-SharedLibraryTarget(Xt,$(SOXTREV),$(OBJS),.,.)
-#endif
-SharedLibraryDataTarget(Xt,$(SOXTREV),$(UNSHAREDOBJS))
-InstallSharedLibrary(Xt,$(SOXTREV),$(SHLIBDIR))
-InstallSharedLibraryData(Xt,$(SOXTREV),$(SHLIBDIR))
-#endif
-#if DoNormalLib
-NormalLibraryTarget(Xt,$(OBJS))
-InstallLibrary(Xt,$(USRLIBDIR))
-#endif
-#if ProfileLibXt
-ProfiledLibraryTarget(Xt,$(OBJS))
-InstallLibrary(Xt_p,$(USRLIBDIR))
-#endif
-#if DebugLibXt
-DebuggedLibraryTarget(Xt,$(OBJS))
-InstallLibrary(Xt_d,$(USRLIBDIR))
-#endif
-
-LintLibraryTarget(Xt,$(SRCS))
-InstallLintLibrary(Xt,$(LINTLIBDIR))
-
-BuildIncludes($(HEADERS),.,.)
-InstallMultiple($(HEADERS),$(INCDIR))
-
 DependTarget()
-
-NormalLintTarget($(SRCS))

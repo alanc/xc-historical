@@ -1,9 +1,10 @@
-XCOMM $XConsortium: Imakefile,v 1.23 93/08/17 11:16:02 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.24 93/08/18 21:04:09 rws Exp $
 #define DoNormalLib NormalOldLibX
 #define DoSharedLib SharedOldLibX
 #define DoDebugLib DebugOldLibX
 #define DoProfileLib ProfileOldLibX
-#include <Library.tmpl>
+#define LibName oldX
+#define SoRev SOOLDXREV
 
 #ifdef SharedOldXReqs
 REQUIREDLIBS = SharedOldXReqs
@@ -32,40 +33,6 @@ REQUIREDLIBS = SharedOldXReqs
 		XLookAssoc.o \
 		XMakeAssoc.o
 
-LibraryObjectRule()
-
-#if DoSharedLib
-#if DoNormalLib
-SharedLibraryTarget(oldX,$(SOOLDXREV),$(OBJS),shared,..)
-#else
-SharedLibraryTarget(oldX,$(SOOLDXREV),$(OBJS),.,.)
-#endif
-InstallSharedLibrary(oldX,$(SOOLDXREV),$(SHLIBDIR))
-#endif
-#if DoNormalLib
-NormalLibraryTarget(oldX,$(OBJS))
-InstallLibrary(oldX,$(USRLIBDIR))
-#endif
-#if DoProfileLib
-ProfiledLibraryTarget(oldX,$(OBJS))
-InstallLibrary(oldX_p,$(USRLIBDIR))
-#endif
-#if DoDebugLib
-DebuggedLibraryTarget(oldX,$(OBJS))
-InstallLibrary(oldX_d,$(USRLIBDIR))
-#endif
-
-LintLibraryTarget(oldX,$(SRCS))
-
-BuildIncludes($(HEADERS),.,.)
-InstallMultiple($(HEADERS),$(INCDIR))
-
-InstallLintLibrary(oldX,$(LINTLIBDIR))
-
+#include <Library.tmpl>
 
 DependTarget()
-
-XCOMM structure alignment errors can safely be ignored.
-XCOMM complaints about qevent can be ignored too.
-
-NormalLintTarget($(SRCS))

@@ -1,14 +1,13 @@
-XCOMM $XConsortium: Imakefile,v 1.76 92/05/28 13:07:03 rws Exp $
-XCOMM
-XCOMM This library contains miscellaneous utility routines and is not part
-XCOMM of the Xlib standard.
-XCOMM
+XCOMM $XConsortium: Imakefile,v 1.77 92/06/28 17:47:45 rws Exp $
 
 #define DoNormalLib NormalLibXmu
 #define DoSharedLib SharedLibXmu
 #define DoDebugLib DebugLibXmu
 #define DoProfileLib ProfileLibXmu
-#include <Library.tmpl>
+#define HasSharedData YES
+#define LibName Xmu
+#define SoRev SOXMUREV
+#define IncSubdir Xmu
 
 #ifdef SharedXmuReqs
 REQUIREDLIBS = SharedXmuReqs
@@ -143,7 +142,7 @@ OBJS = \
 	WidgetNode.o \
 	Xct.o
 
-LibraryObjectRule()
+#include <Library.tmpl>
 
 SpecialCLibObjectRule(CvtStdSel,$(ICONFIGFILES),$(CSSDEFS))
 SpecialCLibObjectRule(LocBitmap,$(ICONFIGFILES),$(BITDEFS))
@@ -151,42 +150,4 @@ SpecialCLibObjectRule(LocBitmap,$(ICONFIGFILES),$(BITDEFS))
 SpecialCObjectRule(sharedlib,$(_NOOP_),$(SHLIBDEF))
 #endif
 
-#if DoSharedLib
-#ifdef XmuDependencyRule
-XmuDependencyRule()
-#endif
-
-#if DoNormalLib
-SharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS),shared,..)
-#else
-SharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS),.,.)
-#endif
-SharedLibraryDataTarget(Xmu,$(SOXMUREV),$(UNSHAREDOBJS))
-
-InstallSharedLibrary(Xmu,$(SOXMUREV),$(SHLIBDIR))
-InstallSharedLibraryData(Xmu,$(SOXMUREV),$(SHLIBDIR))
-#endif
-#if DoNormalLib
-NormalLibraryTarget(Xmu,$(OBJS))
-InstallLibrary(Xmu,$(USRLIBDIR))
-#endif
-#if DoProfileLib
-ProfiledLibraryTarget(Xmu,$(OBJS))
-InstallLibrary(Xmu_p,$(USRLIBDIR))
-#endif
-#if DoDebugLib
-DebuggedLibraryTarget(Xmu,$(OBJS))
-InstallLibrary(Xmu_d,$(USRLIBDIR))
-#endif
-
-LintLibraryTarget(Xmu,$(SRCS))
-InstallLintLibrary(Xmu,$(LINTLIBDIR))
-
-BuildIncludes($(HEADERS),Xmu,..)
-
-InstallMultiple($(HEADERS),$(INCDIR)/Xmu)
-
 DependTarget()
-
-NormalLintTarget($(SRCS))
-

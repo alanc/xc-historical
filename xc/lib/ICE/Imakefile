@@ -1,22 +1,12 @@
-XCOMM
-XCOMM Copyright 1993 by the Massachusetts Institute of Technology
-XCOMM 
-XCOMM Permission to use, copy, modify, distribute, and sell this software and
-XCOMM its documentation for any purpose is hereby granted without fee, provided
-XCOMM that the above copyright notice appear in all copies and that both that
-XCOMM copyright notice and this permission notice appear in supporting
-XCOMM documentation, and that the name of M.I.T. not be used in advertising or
-XCOMM publicity pertaining to distribution of the software without specific,
-XCOMM written prior permission.  M.I.T. makes no representations about the
-XCOMM suitability of this software for any purpose.  It is provided "as is"
-XCOMM without express or implied warranty.
-XCOMM
+XCOMM $XConsortium$
 
 #define DoNormalLib NormalLibICE
 #define DoSharedLib SharedLibICE
 #define DoDebugLib DebugLibICE
 #define DoProfileLib ProfileLibICE
-#include <Library.tmpl>
+#define LibName ICE
+#define SoRev SOICEREV
+#define IncSubdir ICE
 
 #if (SystemV || SystemV4) && !HasSockets
 CONN_DEFINES = -DTCPCONN
@@ -57,39 +47,10 @@ OBJS = connect.o \
        iceauth.o \
        misc.o
 
-LibraryObjectRule()
-
-#if DoSharedLib
-#if DoNormalLib
-SharedLibraryTarget(ICE,$(SOICEREV),$(OBJS),shared,..)
-#else
-SharedLibraryTarget(ICE,$(SOICEREV),$(OBJS),.,.)
-#endif
-InstallSharedLibrary(ICE,$(SOICEREV),$(SHLIBDIR))
-#endif
-#if DoNormalLib
-NormalLibraryTarget(ICE,$(OBJS))
-InstallLibrary(ICE,$(USRLIBDIR))
-#endif
-#if DoProfileLib
-ProfiledLibraryTarget(ICE,$(OBJS))
-InstallLibrary(ICE_p,$(USRLIBDIR))
-#endif
-#if DoDebugLib
-DebuggedLibraryTarget(ICE,$(OBJS))
-InstallLibrary(ICE_d,$(USRLIBDIR))
-#endif
+#include <Library.tmpl>
 
 SpecialCLibObjectRule(connect,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(accept,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(connutil,$(ICONFIGFILES),$(CONN_DEFINES) $(SOCK_DEFINES))
 
-LintLibraryTarget(ICE,$(SRCS))
-InstallLintLibrary(ICE,$(LINTLIBDIR))
-
-BuildIncludes($(HEADERS),ICE,..)
-InstallMultiple($(HEADERS),$(INCDIR)/ICE)
-
 DependTarget()
-
-NormalLintTarget($(SRCS))

@@ -1,22 +1,12 @@
-XCOMM
-XCOMM Copyright 1993 by the Massachusetts Institute of Technology
-XCOMM 
-XCOMM Permission to use, copy, modify, distribute, and sell this software and
-XCOMM its documentation for any purpose is hereby granted without fee, provided
-XCOMM that the above copyright notice appear in all copies and that both that
-XCOMM copyright notice and this permission notice appear in supporting
-XCOMM documentation, and that the name of M.I.T. not be used in advertising or
-XCOMM publicity pertaining to distribution of the software without specific,
-XCOMM written prior permission.  M.I.T. makes no representations about the
-XCOMM suitability of this software for any purpose.  It is provided "as is"
-XCOMM without express or implied warranty.
-XCOMM
+XCOMM $XConsortium$
 
 #define DoNormalLib NormalLibSM
 #define DoSharedLib SharedLibSM
 #define DoDebugLib DebugLibSM
 #define DoProfileLib ProfileLibSM
-#include <Library.tmpl>
+#define LibName SM
+#define SoRev SOSMREV
+#define IncSubdir SM
 
 #ifdef SharedSMReqs
 REQUIREDLIBS = SharedSMReqs
@@ -41,35 +31,6 @@ OBJS = client.o \
        misc.o \
        smauth.o
 
-LibraryObjectRule()
-
-#if DoSharedLib
-#if DoNormalLib
-SharedLibraryTarget(SM,$(SOSMREV),$(OBJS),shared,..)
-#else
-SharedLibraryTarget(SM,$(SOSMREV),$(OBJS),.,.)
-#endif
-InstallSharedLibrary(SM,$(SOSMREV),$(SHLIBDIR))
-#endif
-#if DoNormalLib
-NormalLibraryTarget(SM,$(OBJS))
-InstallLibrary(SM,$(USRLIBDIR))
-#endif
-#if DoProfileLib
-ProfiledLibraryTarget(SM,$(OBJS))
-InstallLibrary(SM_p,$(USRLIBDIR))
-#endif
-#if DoDebugLib
-DebuggedLibraryTarget(SM,$(OBJS))
-InstallLibrary(SM_d,$(USRLIBDIR))
-#endif
-
-LintLibraryTarget(SM,$(SRCS))
-InstallLintLibrary(SM,$(LINTLIBDIR))
-
-BuildIncludes($(HEADERS),SM,..)
-InstallMultiple($(HEADERS),$(INCDIR)/SM)
+#include <Library.tmpl>
 
 DependTarget()
-
-NormalLintTarget($(SRCS))

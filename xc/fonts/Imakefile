@@ -1,21 +1,14 @@
-XCOMM $XConsortium: Imakefile,v 1.28 91/07/16 23:03:55 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.29 93/08/18 21:24:04 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
-#if BuildFonts
 FONTDIRS = bdf scaled
-#endif
 
 #if BuildPexExt
-PEXDIRS = PEX
+PEXDIR = PEX
 #endif
 
-#if BuildFontServer
-SERVERDIRS = server
-#endif
-
-/* clients must be built before font dirs */
-SUBDIRS = lib clients $(FONTDIRS) $(PEXDIRS) $(SERVERDIRS)
+SUBDIRS = bdf scaled $(PEXDIR)
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))

@@ -1,9 +1,11 @@
-XCOMM $XConsortium: Imakefile,v 1.147 93/08/16 11:40:09 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.148 93/08/23 13:46:10 kaleb Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
 #define DoProfileLib ProfileLibX
-#include <Library.tmpl>
+#define LibName X11
+#define SoRev SOXLIBREV
+#define HugeLibrary YES
 
 #ifndef MotifBC
 #define MotifBC NO
@@ -61,7 +63,7 @@ XBSDLIB = /**/
     MTT_DEFINES = ThreadTypeDefines
 
         DEFINES = $(MALLOC_DEFINES) $(MTX_DEFINES)
- DEPEND_DEFINES = -I$(EXTENSIONSRC)/include $(MTT_DEFINES)
+ DEPEND_DEFINES = -I$(EXTINCSRC) $(MTT_DEFINES)
    INSTALLFLAGS = $(INSTINCFLAGS)
        AUTHOBJS = AuDispose.o AuGetBest.o AuFileName.o AuRead.o 
        AUTHSRCS = AuDispose.c AuGetBest.c AuFileName.c AuRead.c 
@@ -739,17 +741,6 @@ LIMSRCS = XLocalIM.c
 LIMOBJS = XLocalIM.o
 #endif
 
-LCHDRS = \
-	XIMlibint.h \
-	XIMproto.h \
-	Xi18nint.h \
-	Xlocaleint.h \
-	wcharint.h \
-	TextBody.c \
-	TextEscBd.c \
-	TextExtBd.c \
-	TextPerBd.c
-
 LCSYMSRCS = \
 	ProtoFlt.c \
 	XCnvCTToWC.c \
@@ -890,10 +881,6 @@ XLIBI18N_PATH = $(LIBDIR)
 #endif
 SRCH_DEFINES = -DXLIBI18N_PATH=\"$(XLIBI18N_PATH)\"
 
-LCHDRS = \
-	XIMProto.h \
-	Ximplc.h
-
 LCSYMSRCS = \
 	XimpCT.c \
 	XimpCallbk.c \
@@ -1026,7 +1013,7 @@ SpecialCLibObjectRule(XimpLCUtil,$(ICONFIGFILES),$(SRCH_DEFINES))
 
 OBJS = $(OBJS1) $(OBJS2) $(OBJS3)
 
-LibraryObjectRule()
+#include <Library.tmpl>
 
 SpecialCLibObjectRule(XErrDes,$(ICONFIGFILES),$(EDB_DEFINES))
 SpecialCLibObjectRule(XStrKeysym,$(ICONFIGFILES),$(KDB_DEFINES))
@@ -1042,31 +1029,6 @@ SpecialCLibObjectRule(Xrm,$(_NOOP_),$(RCONST_DEFINES))
 SpecialCLibObjectRule(locking,$(ICONFIGFILES),$(MTT_DEFINES))
 LCRules()
 
-#if DoSharedLib
-#if DoNormalLib
-SharedLibraryTarget(X11,$(SOXLIBREV),$(OBJS),shared,..)
-#else
-SharedLibraryTarget(X11,$(SOXLIBREV),$(OBJS),.,.)
-#endif
-InstallSharedLibrary(X11,$(SOXLIBREV),$(SHLIBDIR))
-#endif
-#if DoNormalLib
-NormalLibraryTarget3(X11,$(OBJS1),$(OBJS2),$(OBJS3))
-InstallLibrary(X11,$(USRLIBDIR))
-#endif
-#if DoProfileLib
-ProfiledLibraryTarget(X11,$(OBJS))
-InstallLibrary(X11_p,$(USRLIBDIR))
-#endif
-#if DoDebugLib
-DebuggedLibraryTarget(X11,$(OBJS))
-InstallLibrary(X11_d,$(USRLIBDIR))
-#endif
-
-LintLibraryTarget(X11,$(SRCS))
-
-BuildIncludes($(HEADERS),.,.)
-InstallMultiple($(HEADERS),$(INCDIR))
 #if InstallXcmsTxt
 InstallNonExecFile(Xcms.txt,$(LIBDIR))
 #endif
@@ -1092,17 +1054,11 @@ ks_tables.h: $(INCLUDESRC)/keysymdef.h util/makekeys.c
 	$(MV) ks_tables_h $@
 	RemoveFiles(ProgramTargetName(makekeys) makekeys.Osuf ks_tables_h)
 
-includes:: ks_tables.h Wrap.h $(AUTHSRCS) $(XDMAUTHSRCS) $(LCHDRS) $(LCSYMSRCS)
+includes:: ks_tables.h
 
-depend:: ks_tables.h Wrap.h $(AUTHSRCS) $(XDMAUTHSRCS) $(LCHDRS) $(LCSYMSRCS)
+depend:: ks_tables.h
 
 clean::
 	RemoveFiles(ks_tables_h ks_tables.h ProgramTargetName(makekeys))
 
 DependTarget3($(SRCS1),$(SRCS2),$(SRCS3))
-
-
-XCOMM structure alignment errors can safely be ignored.
-XCOMM complaints about qevent can be ignored too.
-
-NormalLintTarget($(SRCS))

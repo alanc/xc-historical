@@ -1,21 +1,13 @@
-XCOMM $XConsortium: Imakefile,v 1.27 92/03/12 16:35:58 keith Exp $
-#if BuildPexClients || BuildPexExt
+XCOMM $XConsortium: Imakefile,v 1.29 93/08/19 20:30:02 rws Exp $
 #define IHaveSubdirs
-      PEXDIRS = PEX
-#endif
-#if BuildXTrapExt || BuildXTrapLib
-#define IHaveSubdirs
-    XTRAPDIRS = xtrap
-#endif
-
-#ifdef IHaveSubdirs
 #define PassCDebugFlags
-#endif
-SUBDIRS = $(PEXDIRS) $(XTRAPDIRS)
+
+SUBDIRS = PEX
 
 HEADERS = Xext.h multibuf.h shape.h XShm.h MITMisc.h XI.h XInput.h XIproto.h \
 	XTest.h xtestext1.h saver.h scrnsaver.h XIE.h XIEproto.h XIEprotost.h \
 	sync.h
+
 INSTALLFLAGS = $(INSTINCFLAGS)
 
 all::
@@ -25,7 +17,5 @@ InstallMultiple($(HEADERS),$(INCDIR)/extensions)
 
 depend::
 
-#ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
-#endif
