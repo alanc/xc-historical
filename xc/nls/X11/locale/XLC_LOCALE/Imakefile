@@ -1,11 +1,14 @@
-XCOMM $XConsortium: Imakefile,v 1.1 93/09/17 13:34:03 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 93/09/17 16:18:08 rws Exp $
 
   WCHAR32 = HasWChar32
    TBLDIR = $(LOCALEDIR)/tbl_data
 
 #define LTarget(name)							@@\
 CppFileTarget(name.i,name,-DWCHAR32=$(WCHAR32),NullParameter)		@@\
-InstallNamedNonExec(name.i,XLC_LOCALE,$(XLOCALEDIR)/name)
+InstallNamedNonExec(name.i,XLC_LOCALE,$(XLOCALEDIR)/name)		@@\
+									@@\
+clean::									@@\
+	$(RM) name.i
 
 all::
 
@@ -42,6 +45,3 @@ InstallNonExec(ksc5601,$(TBLDIR))
 InstallNonExec(gb2312,$(TBLDIR))
 
 depend::
-
-clean::
-	RemoveFiles(*.i)
