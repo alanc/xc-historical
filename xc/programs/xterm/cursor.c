@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: cursor.c,v 1.10 91/01/09 16:52:13 rws Exp $
+ *	$XConsortium: cursor.c,v 1.11 91/01/30 15:56:05 gildea Exp $
  */
 
 /*
@@ -27,9 +27,7 @@
 
 /* cursor.c */
 
-
-#include <X11/Xlib.h>
-#include "ptyx.h"
+#include "ptyx.h"		/* also gets Xlib.h */
 
 static void _CheckSelection(screen)
 register TScreen *screen;
@@ -205,10 +203,6 @@ register int	amount;
 CarriageReturn(screen)
 register TScreen *screen;
 {
-	extern void ScrnSetAttributes();
-	
-	ScrnSetAttributes(screen, screen->cur_row, screen->cur_col,
-			  ENDLINE, ENDLINE, 1);
 	screen->cur_col = 0;
 	screen->do_wrap = 0;
 	_CheckSelection(screen);
