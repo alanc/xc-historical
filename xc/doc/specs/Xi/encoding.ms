@@ -2005,4 +2005,5 @@ ChangeDeviceNotify
 		1	NewKeyboard
 	23			unused
 .DE
-.TC 1 1 6
+.bp
+.TC
