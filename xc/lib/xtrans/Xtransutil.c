@@ -169,7 +169,7 @@ Xtransaddr	*addr;
 
     switch (family)
     {
-#ifdef AF_UNIX
+#ifdef UNIXCONN
     case AF_UNIX:
     {
 	struct sockaddr_un *saddr = (struct sockaddr_un *) addr;
@@ -179,7 +179,7 @@ Xtransaddr	*addr;
 	break;
     }
 #endif
-#ifdef AF_INET
+#ifdef TCPCONN
     case AF_INET:
     {
 	struct sockaddr_in *saddr = (struct sockaddr_in *) addr;
