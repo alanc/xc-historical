@@ -130,6 +130,10 @@ void	NotImplemented();
 
 void	abort_play_back();
 void	return_input_array_size();
+void	steal_input();
+void	stop_stealing_input();
+void	flush_input_actions();
+void	parse_fake_input();
 
 void	AddResource();
 void	FreeResource();
@@ -537,7 +541,7 @@ ProcTestFakeInput(client)
 		 * input actions that have already been sent to it,
 		 * and will then reset its association with a client.
 		 */
-		parse_fake_input(client, stuff);
+		parse_fake_input(client, (char *)stuff);
 		return(Success);
 	}
 	else
