@@ -44,8 +44,8 @@ cfbCreateWindow(pWin)
 	return FALSE;
     pPrivWin->pRotatedBorder = NullPixmap;
     pPrivWin->pRotatedBackground = NullPixmap;
-    pPrivWin->fastBackground = 0;
-    pPrivWin->fastBorder = 0;
+    pPrivWin->fastBackground = FALSE;
+    pPrivWin->fastBorder = FALSE;
 
     return TRUE;
 }
@@ -91,8 +91,7 @@ cfbPositionWindow(pWin, x, y)
     int setxy = 0;
 
     pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
-    if (pWin->backgroundState == BackgroundPixmap &&
-	(pPrivWin->fastBackground != 0))
+    if (pWin->backgroundState == BackgroundPixmap && pPrivWin->fastBackground)
     {
 	cfbXRotatePixmap(pPrivWin->pRotatedBackground,
 		      pWin->drawable.x - pPrivWin->oldRotate.x);
@@ -101,7 +100,7 @@ cfbPositionWindow(pWin, x, y)
 	setxy = 1;
     }
 
-    if (!pWin->borderIsPixel &&	(pPrivWin->fastBorder != 0))
+    if (!pWin->borderIsPixel &&	pPrivWin->fastBorder)
     {
 	cfbXRotatePixmap(pPrivWin->pRotatedBorder,
 		      pWin->drawable.x - pPrivWin->oldRotate.x);
@@ -199,11 +198,11 @@ cfbChangeWindowAttributes(pWin, mask)
 	  case CWBackPixmap:
 	      if (pWin->backgroundState == None)
 	      {
-		  pPrivWin->fastBackground = 0;
+		  pPrivWin->fastBackground = FALSE;
 	      }
 	      else if (pWin->backgroundState == ParentRelative)
 	      {
-		  pPrivWin->fastBackground = 0;
+		  pPrivWin->fastBackground = FALSE;
 	      }
 	      else if (((width = (pWin->background.pixmap->drawable.width * PSZ)) <= 32) &&
 		       !(width & (width - 1)))
@@ -214,7 +213,7 @@ cfbChangeWindowAttributes(pWin, mask)
 		    cfbCopyPixmap(pWin->background.pixmap);
 		  if (pPrivWin->pRotatedBackground)
 		  {
-		      pPrivWin->fastBackground = 1;
+		      pPrivWin->fastBackground = TRUE;
 		      pPrivWin->oldRotate.x = pWin->drawable.x;
 		      pPrivWin->oldRotate.y = pWin->drawable.y;
 		      (void)cfbPadPixmap(pPrivWin->pRotatedBackground);
@@ -225,17 +224,17 @@ cfbChangeWindowAttributes(pWin, mask)
 		  }
 		  else
 		  {
-		      pPrivWin->fastBackground = 0;
+		      pPrivWin->fastBackground = FALSE;
 		  }
 	      }
 	      else
 	      {
-		  pPrivWin->fastBackground = 0;
+		  pPrivWin->fastBackground = FALSE;
 	      }
 	      break;
 
 	  case CWBackPixel:
-	      pPrivWin->fastBackground = 0;
+	      pPrivWin->fastBackground = FALSE;
 	      break;
 
 	  case CWBorderPixmap:
@@ -248,7 +247,7 @@ cfbChangeWindowAttributes(pWin, mask)
 		    cfbCopyPixmap(pWin->border.pixmap);
 		  if (pPrivWin->pRotatedBorder)
 		  {
-		      pPrivWin->fastBorder = 1;
+		      pPrivWin->fastBorder = TRUE;
 		      pPrivWin->oldRotate.x = pWin->drawable.x;
 		      pPrivWin->oldRotate.y = pWin->drawable.y;
 		      (void)cfbPadPixmap(pPrivWin->pRotatedBorder);
@@ -259,16 +258,16 @@ cfbChangeWindowAttributes(pWin, mask)
 		  }
 		  else
 		  {
-		      pPrivWin->fastBorder = 0;
+		      pPrivWin->fastBorder = TRUE;
 		  }
 	      }
 	      else
 	      {
-		  pPrivWin->fastBorder = 0;
+		  pPrivWin->fastBorder = FALSE;
 	      }
 	      break;
 	    case CWBorderPixel:
-	      pPrivWin->fastBorder = 0;
+	      pPrivWin->fastBorder = FALSE;
 	      break;
 
 	}

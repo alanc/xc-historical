@@ -1,4 +1,4 @@
-/* $XConsortium: mfbwindow.c,v 5.3 89/07/09 15:58:24 rws Exp $ */
+/* $XConsortium: mfbwindow.c,v 5.4 89/07/12 17:17:56 keith Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -45,8 +45,8 @@ mfbCreateWindow(pWin)
 	 return (FALSE);
     pPrivWin->pRotatedBorder = NullPixmap;
     pPrivWin->pRotatedBackground = NullPixmap;
-    pPrivWin->fastBackground = 0;
-    pPrivWin->fastBorder = 0;
+    pPrivWin->fastBackground = FALSE;
+    pPrivWin->fastBorder = FALSE;
 
     return (TRUE);
 }
@@ -94,8 +94,7 @@ mfbPositionWindow(pWin, x, y)
     int	reset = 0;
 
     pPrivWin = (mfbPrivWin *)(pWin->devPrivates[mfbWindowPrivateIndex].ptr);
-    if (pWin->backgroundState == BackgroundPixmap &&
-	(pPrivWin->fastBackground != 0))
+    if (pWin->backgroundState == BackgroundPixmap && pPrivWin->fastBackground)
     {
 	mfbXRotatePixmap(pPrivWin->pRotatedBackground,
 			 pWin->drawable.x - pPrivWin->oldRotate.x);
@@ -104,8 +103,7 @@ mfbPositionWindow(pWin, x, y)
 	reset = 1;
     }
 
-    if (pWin->borderIsPixel == FALSE &&
-	(pPrivWin->fastBorder != 0))
+    if (!pWin->borderIsPixel && pPrivWin->fastBorder)
     {
 	mfbXRotatePixmap(pPrivWin->pRotatedBorder,
 			 pWin->drawable.x - pPrivWin->oldRotate.x);
@@ -245,11 +243,11 @@ mfbChangeWindowAttributes(pWin, mask)
 	  case CWBackPixmap:
 	      if (pWin->backgroundState == None)
 	      {
-		  pPrivWin->fastBackground = 0;
+		  pPrivWin->fastBackground = FALSE;
 	      }
 	      else if (pWin->backgroundState == ParentRelative)
 	      {
-		  pPrivWin->fastBackground = 0;
+		  pPrivWin->fastBackground = FALSE;
 	      }
 	      else if ((pWin->background.pixmap->drawable.width <= 32) &&
 		       !(pWin->background.pixmap->drawable.width &
@@ -261,7 +259,7 @@ mfbChangeWindowAttributes(pWin, mask)
 		    mfbCopyPixmap(pWin->background.pixmap);
 		  if (pPrivWin->pRotatedBackground)
 		  {
-		      pPrivWin->fastBackground = 1;
+		      pPrivWin->fastBackground = TRUE;
 		      (void)mfbPadPixmap(pPrivWin->pRotatedBackground);
 		      mfbXRotatePixmap(pPrivWin->pRotatedBackground,
 				       pWin->drawable.x);
@@ -272,17 +270,17 @@ mfbChangeWindowAttributes(pWin, mask)
 		  }
 		  else
 		  {
-		      pPrivWin->fastBackground = 0;
+		      pPrivWin->fastBackground = FALSE;
 		  }
 	      }
 	      else
 	      {
-		  pPrivWin->fastBackground = 0;
+		  pPrivWin->fastBackground = FALSE;
 	      }
 	      break;
 
 	  case CWBackPixel:
-	      pPrivWin->fastBackground = 0;
+	      pPrivWin->fastBackground = FALSE;
 	      break;
 
 	  case CWBorderPixmap:
@@ -295,7 +293,7 @@ mfbChangeWindowAttributes(pWin, mask)
 		  pPrivWin->pRotatedBorder = mfbCopyPixmap(pWin->border.pixmap);
 		  if (pPrivWin->pRotatedBorder)
 		  {
-		      pPrivWin->fastBorder = 1;
+		      pPrivWin->fastBorder = TRUE;
 		      pPrivWin->oldRotate.x = pWin->drawable.x;
 		      pPrivWin->oldRotate.y = pWin->drawable.y;
 		      (void)mfbPadPixmap(pPrivWin->pRotatedBorder);
@@ -306,16 +304,16 @@ mfbChangeWindowAttributes(pWin, mask)
 		  }
 		  else
 		  {
-		      pPrivWin->fastBorder = 0;
+		      pPrivWin->fastBorder = FALSE;
 		  }
 	      }
 	      else
 	      {
-		  pPrivWin->fastBorder = 0;
+		  pPrivWin->fastBorder = FALSE;
 	      }
 	      break;
 	    case CWBorderPixel:
-	      pPrivWin->fastBorder = 0;
+	      pPrivWin->fastBorder = FALSE;
 	      break;
 	}
     }
