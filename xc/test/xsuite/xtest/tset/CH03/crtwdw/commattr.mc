@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: commattr.mc,v 1.17 92/06/11 16:07:13 rws Exp $
  */
 >>EXTERN
 
@@ -37,6 +37,7 @@ setinonly()
 #define XCWA_NORMAL	0
 #define XCWA_DEFCOLMAP	1
 #define	XCWA_GRAVITY	2
+#define XCWA_VISDEPTH	3
 
 static Window
 makeinout(mio_parent, mio_visual, mio_depth, mio_mode)
@@ -77,9 +78,25 @@ int	mio_mode;
 			mio_valuemask = CWColormap;
 			mio_a.colormap = makecolmap(mio_display, mio_visual, AllocNone);
 			break;
+
 		case	XCWA_GRAVITY:
 			mio_valuemask = CWWinGravity;
 			mio_a.win_gravity = NorthWestGravity;
+			break;
+
+                /*
+                 * This new case is used whenever a window is to be created
+                 * which has a different visual/depth than the parent window.
+                 * It will ensure that all required window attributes are set
+                 * to prevent a BadMatch error on window creation.
+                 */
+		case    XCWA_VISDEPTH:
+			mio_valuemask = CWBorderPixel | CWColormap;
+			mio_a.border_pixel = 0;
+			mio_a.colormap = makecolmap(mio_display, mio_visual, 
+						AllocNone);
+			break;
+
 		case	XCWA_NORMAL:
 		default:
 			break;
@@ -896,7 +913,7 @@ int 	found = 0;
 #if defined(T_XCreateWindow)
 	(void)XCALL;
 #else
-	w = makeinout(parent, visual, depth, XCWA_NORMAL);
+	w = makeinout(parent, visual, depth, XCWA_VISDEPTH);
 	(void)XCALL;
 #endif
 
@@ -1768,7 +1785,7 @@ int 	found = 0;
 #if defined(T_XCreateWindow)
 	(void)XCALL;
 #else
-	w = makeinout(parent, visual, depth, XCWA_NORMAL);
+	w = makeinout(parent, visual, depth, XCWA_VISDEPTH);
 	(void)XCALL;
 #endif
 
@@ -1828,7 +1845,7 @@ XVisualInfo	*vp2;
 #if defined(T_XCreateWindow)
 	(void)XCALL;
 #else
-	w = makeinout(parent, visual, depth, XCWA_DEFCOLMAP);
+	w = makeinout(parent, visual, depth, XCWA_VISDEPTH);
 	(void)XCALL;
 #endif
 	if (geterr() == BadMatch)
