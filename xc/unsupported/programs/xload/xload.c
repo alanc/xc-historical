@@ -1,13 +1,15 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xload.c,v 1.15 88/09/12 12:54:26 swick Exp $";
+static char rcsid[] = "$XConsortium: xload.c,v 1.16 88/10/18 14:07:18 swick Exp $";
 #endif  lint
 
+#include <stdio.h> 
 #include <X11/Intrinsic.h>
 #include <X11/Xatom.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
-#include <X11/Load.h>
-#include <stdio.h> 
+
+#include <X11/Xaw/Load.h>
+
 #include "xload.bit"
 
 extern void exit();
