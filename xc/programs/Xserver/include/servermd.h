@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.38 88/09/06 15:49:05 jim Exp $ */
+/* $XConsortium: servermd.h,v 1.39 89/05/10 23:52:16 keith Exp $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -39,7 +39,7 @@ SOFTWARE.
  * by the vendor.
  */
 #ifndef VENDOR_RELEASE
-#define VENDOR_RELEASE	3
+#define VENDOR_RELEASE	4
 #endif	VENDOR_RELEASE
 
 /*
@@ -53,7 +53,7 @@ SOFTWARE.
  * space in the font bitmaps.  Padding to 4 bytes would be good
  * for real 32 bit machines, etc.  Be sure that you tell the font
  * compiler what kind of padding you want because its defines are
- * kept separate from this.  See server/include/fonts.h for how
+ * kept separate from this.  See server/include/font.h for how
  * GLYPHPADBYTES is used.
  *
  * Along with this, you should choose an appropriate value for
@@ -68,9 +68,6 @@ SOFTWARE.
  * also decide that the computing involved in aligning the pointer is more
  * costly than an odd-address access; you choose GETLEFTBITS_ALIGNMENT == 1.
  * 
- * XXX: this code has changed since beta test and only GLYPHPADBYTES == 4
- * has been tested, hence all machines have this same value.
- *
  */
 
 #ifdef vax
