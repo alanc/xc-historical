@@ -55,6 +55,7 @@ extern void cfbCopyWindow();
 extern void cfbPaintWindow();
 
 extern void miPolyFillRect();
+extern void cfbPolyFillRect();
 extern void miPolyFillArc();
 
 extern RegionPtr cfbCopyArea();
@@ -66,6 +67,8 @@ extern void cfbUnnaturalTileFS();
 extern void cfbUnnaturalStippleFS();
 
 extern void cfbTEGlyphBlt();
+extern void cfbTEGlyphBlt8();
+extern void cfbPolyGlyphBlt8();
 
 extern void cfbSaveAreas();
 extern void cfbRestoreAreas();

@@ -41,8 +41,6 @@ SOFTWARE.
 static void cfbValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
 static void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
 static cfbDestroyOps();
-extern void cfbPolyGlyphBlt8();
-extern void cfbPolyFillRect();
 
 static GCFuncs cfbFuncs = {
     cfbValidateGC,
