@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.71 89/10/05 12:19:54 swick Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.72 89/10/05 19:01:39 rws Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif /* lint */
 
@@ -152,7 +152,7 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 	register struct timeval *wait_time_ptr;
 	Fd_set rmaskfd, wmaskfd, emaskfd;
 	static Fd_set zero = { 0 };
-	int nfound, i, d;
+	int nfound, i, d, last_d_with_no_events = -1;
 	
  	if (block) {
 		(void) gettimeofday (&cur_time, &cur_timezone);
@@ -251,13 +251,23 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 	if(ignoreInputs) {
 	    if (ignoreEvents) return -1; /* then only doing timers */
 	    for (d = 0; d < app->count; d++) {
-		/*
-		 * Have to be VERY careful here:  an error event
-		 * could have arrived without any real events.
-		 */
-		if ( FD_ISSET(ConnectionNumber(app->list[d]), &rmaskfd)
-		    && XEventsQueued( app->list[d], QueuedAfterReading ) ) {
-		    return d;
+		if (FD_ISSET(ConnectionNumber(app->list[d]), &rmaskfd)) {
+		    /*
+		     * Have to be VERY careful here:  an error event
+		     * could have arrived without any real events, or
+		     * the stream may have been closed.  XEventsQueued
+		     * will process any error events but there's no way
+		     * to find out from Xlib that there aren't enough
+		     * bytes on the wire.  We save enough state to
+		     * notice that XEventsQueued has returned 0 more
+		     * than once for the same fd and if so go ahead and
+		     * let the Xlib IO processing handle things.
+		     */
+		    if (XEventsQueued( app->list[d], QueuedAfterReading )
+			|| last_d_with_no_events == d)
+			return d;
+		    if (last_d_with_no_events == -1)
+			last_d_with_no_events = d;
 		}
 	    }
 	    goto WaitLoop;	/* must have been only error events */
@@ -272,14 +282,18 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 		if (!ignoreEvents) {
 		    for (d = 0; d < app->count; d++) {
 			if (i == ConnectionNumber(app->list[d])) {
-			    /*
-			     * Have to be VERY careful here:  an error event
-			     * could have arrived without any real events.
-			     */
-			    if ( ret == -1
-				&& XEventsQueued( app->list[d],
-						  QueuedAfterReading) ) {
-				ret = d;
+			    if (ret == -1) {
+				/*
+				 * An error event could have arrived
+				 * without any real events, or the
+				 * stream may have been closed.
+				 */
+				if (XEventsQueued( app->list[d],
+						   QueuedAfterReading )
+				    || last_d_with_no_events == d)
+				    ret = d;
+				else if (last_d_with_no_events == -1)
+				    last_d_with_no_events = d;
 			    }
 			    goto ENDILOOP;
 			}
