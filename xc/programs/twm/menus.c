@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.110 89/11/03 19:03:37 jim Exp $
+ * $XConsortium: menus.c,v 1.111 89/11/05 17:47:08 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.110 89/11/03 19:03:37 jim Exp $";
+"$XConsortium: menus.c,v 1.111 89/11/05 17:47:08 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1296,14 +1296,15 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		0, 0, 0, 0, eventp->xbutton.x_root, eventp->xbutton.y_root);
 
 	if (w != tmp_win->icon_w) {	/* can't resize icons */
-	    register TBWindow *tbw;
 	    Bool fromtitlebar = False;	/* controls AutoRelativeResizing */
 
 	    /*
 	     * see if this is being done from the titlebar
 	     */
-	    if (tmp_win) {		/* if titlebar, then don't do */
-		for (tbw = tmp_win->titlebuttons; tbw; tbw++) {
+	    if (tmp_win && tmp_win->titlebuttons) {
+		register TBWindow *tbw;
+		register int nb = Scr->TBInfo.nleft + Scr->TBInfo.nright;
+		for (tbw = tmp_win->titlebuttons; nb > 0; tbw++, nb--) {
 		    if (tbw->window == w) {
 			fromtitlebar = True;
 			break;
