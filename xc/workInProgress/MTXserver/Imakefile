@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.128 91/07/20 13:34:07 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.129 91/07/20 18:00:57 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -377,13 +377,9 @@ DependSubdirs($(SUBDIRS))
 MakeLintLibSubdirs($(SUBDIRS))
 LintSubdirs($(SUBDIRS))
 
-$(DEPDIRS) $(SUBDIRS): FRC
-	@cd $@ ; echo "making all in $(CURRENT_DIR)/$@..."; \
-	$(MAKE) $(MFLAGS) PassCDebugFlags all
+ForceSubdirs($(DEPDIRS) $(SUBDIRS))
 
 clean::
 	$(RM) $(ALL)
 
 InstallManPage(Xserver,$(MANDIR))
-
-FRC:

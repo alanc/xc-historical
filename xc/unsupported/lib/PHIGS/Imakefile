@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.18 91/05/14 17:02:58 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.19 91/07/12 17:36:28 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -79,7 +79,7 @@ libphigs.a: $(LIBDIRS) $(ALL_DONE) $(SWAPDIR) $(SWAPLIB)
 	$(ARADD) $@ $(ALL_OBJ)
 	RanLibrary($@)
 
-lintlib lint-library: FRC
+lintlib lint-library:
 	(cd c_binding; $(MAKE) $(MFLAGS) lint-library)
 
 lintlibs:
@@ -94,16 +94,7 @@ lint lint-x: lintlibs
 		$(MAKE) $(MFLAGS) $@  \
 	    ); done
 
-extract: FRC
-	for i in  $(SUBDIRS) ;\
-	do \
-	(cd $$i ; echo "making $@ in $$i"; \
-	$(MAKE) $@); \
-	done
-
-$(SUBDIRS) $(SWAPDIR): FRC
-	@cd $@ ; echo "making all in $(CURRENT_DIR)/$@..."; \
-	$(MAKE) $(MFLAGS) PassCDebugFlags all
+ForceSubdirs($(SUBDIRS) $(SWAPDIR))
 
 InstallLibrary(phigs,$(USRLIBDIR))
 
@@ -113,5 +104,3 @@ SpecialObjectRule(hppex.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
 #endif
 
 DependSubdirs($(SUBDIRS))
-
-FRC:
