@@ -42,7 +42,7 @@
 ;;;	because they don't run in a multi-processing shared-address space
 ;;;	environment.
 
-(in-package 'xlib :use '(lisp))
+(in-package :xlib)
 
 (export '(force-gcontext-changes
 	  with-gcontext

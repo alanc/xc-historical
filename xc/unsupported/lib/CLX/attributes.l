@@ -40,7 +40,7 @@
 ;;;	All WITH-STATE has to do (re)bind *Window-attributes* to a list including
 ;;;	the new drawable.  The caches are initialized to NIL and allocated as needed.
 
-(in-package 'xlib :use '(lisp))
+(in-package :xlib)
 
 (export '(
 	  with-state

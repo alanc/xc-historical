@@ -27,10 +27,10 @@
 ;;; fix a bug in kcl's RATIONAL...
 ;;;   redefine both the function and the type.
 
-#+kcl
+#+(or kcl ibcl)
 (shadow 'rational)
 
-#+kcl
+#+(or kcl ibcl)
 (progn
   (defun rational (x)
     (if (rationalp x)
@@ -102,7 +102,6 @@
 
 ;;; WITH-VECTOR (variable type) &body body --- ensures the variable is a local
 ;;; and then does a type declaration and array register declaration
-
 (defmacro with-vector ((var type) &body body)
   `(let ((,var ,var))
      (declare (type ,type ,var)
@@ -144,16 +143,11 @@
 ;		gcontext
 		cursor
 		colormap
-		font
-		xatom))
+		font))
 
 (defmacro resource-id-map-test ()
   #+excl '#'equal
   #-excl '#'eql)		    ; (eq fixnum fixnum) is not guaranteed.
-
-(defmacro atom-cache-test ()
-  #+excl '#'equal
-  #-excl '#'eql)
 
 (defmacro keysym->character-map-test ()
   #+excl '#'equal

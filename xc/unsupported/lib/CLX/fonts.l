@@ -16,7 +16,7 @@
 ;;; express or implied warranty.
 ;;;
 
-(in-package 'xlib :use '(lisp))
+(in-package :xlib)
 
 (export '(
 	  open-font
@@ -242,7 +242,7 @@
     ;; Replace atom id's with keywords in the plist
     (do ((p props (cddr p)))
 	((endp p))
-      (setf (car p) (lookup-xatom display (car p))))
+      (setf (car p) (atom-name display (car p))))
     (setf (font-info-properties font-info) props)
     font-info))
 
@@ -333,7 +333,7 @@
     (dolist (font result)
       (do ((p (font-properties font) (cddr p)))
 	  ((endp p))
-	(setf (car p) (lookup-xatom display (car p)))))
+	(setf (car p) (atom-name display (car p)))))
     (coerce (nreverse result) result-type)))
 
 (defun font-path (display &key (result-type 'list))

@@ -49,7 +49,7 @@
 ;;     a point after a complete request.  This is to ensure that a partial
 ;;     request won't be left after aborts (e.g. control-abort on a lispm).
 
-(in-package 'xlib :use '(lisp))
+(in-package :xlib)
 
 (defconstant *requestsize* 160) ;; Max request size (excluding variable length requests)
 

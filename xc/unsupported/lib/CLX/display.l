@@ -18,7 +18,7 @@
 ;;; express or implied warranty.
 ;;;
 
-(in-package 'xlib :use '(lisp))
+(in-package :xlib)
 
 (export '(
 	  with-display
@@ -90,9 +90,6 @@
   (declare (values object))
   (setf (gethash id (display-resource-id-map display)) object))
 
-(defun make-xatom (&key display id)
-  (atom-name-internal display id))
-
 ;; Define functions to find the CLX data types given a display and resource-id
 ;; If the data type is being cached, look there first.
 (macrolet ((generate-lookup-functions (useless-name &body types)
@@ -133,8 +130,14 @@
     gcontext
     cursor
     colormap
-    font
-    xatom))
+    font))
+
+(defun id-atom (id display)
+  ;; Return the cached atom for an atom ID
+  (declare (type resource-id id)
+	   (type display display))
+  (declare (values (or null keyword)))
+  (gethash id (display-atom-id-map display)))
 
 (defun atom-id (atom display)
   ;; Return the ID for an atom in DISPLAY
@@ -152,30 +155,36 @@
 	   (type display display)
 	   (type resource-id id))
   (declare (values resource-id))
-  (setf (gethash (if (keywordp atom)
-		     atom
-		     (kintern atom))
-		 (display-atom-cache display))
-	id))
+  (let ((atom (if (keywordp atom) atom (kintern atom))))
+    (declare (type keyword atom))
+    (setf (gethash id (display-atom-id-map display)) atom)
+    (setf (gethash atom (display-atom-cache display)) id)
+    id))
 
 (defsetf atom-id set-atom-id)
 
 (defun initialize-predefined-atoms (display)
   (do ((i 1 (1+ i))
-       (end (length *predefined-atoms*))
-       (save-p (member 'xatom *clx-cached-types*)))
+       (end (length *predefined-atoms*)))
       ((>= i end))
-    (set-atom-id (svref *predefined-atoms* i) display i)
-    (when save-p
-      (save-id display i (svref *predefined-atoms* i)))))
+    (declare (type resource-id i))
+    (setf (atom-id (svref *predefined-atoms* i) display) i)))
 
 (defun visual-info (display visual-id)
   (declare (type display display)
 	   (type resource-id visual-id)
 	   (values visual-info))
-  (and (not (zerop visual-id))
-       (or (lookup-resource-id display visual-id)
-	   (error "Visual info not found for id #x~x in display ~s." visual-id display))))
+  (when (zerop visual-id)
+    (return-from visual-info nil))
+  (dolist (screen (display-roots display))
+    (declare (type screen screen))
+    (dolist (depth (screen-depths screen))
+      (declare (type cons depth))
+      (dolist (visual-info (rest depth))
+	(declare (type visual-info visual-info))
+	(when (funcall (resource-id-map-test) visual-id (visual-info-id visual-info))
+	  (return-from visual-info visual-info)))))
+  (error "Visual info not found for id #x~x in display ~s." visual-id display))
 
 
 ;;
@@ -395,26 +404,27 @@
 			  (visuals nil)) ;; 4 bytes unused
 		      (dotimes (k num-visuals)
 			(buffer-input display buffer-bbuf 0 24)
-			(let ((visual (make-visual-info
-					:id (card32-get 0)
-					:display display
-					:class (member8-get 4 :static-gray :gray-scale
-							    :static-color :pseudo-color
-							    :true-color :direct-color)
-					:bits-per-rgb (card8-get 5)
-					:colormap-entries (card16-get 6)
-					:red-mask (card32-get 8)
-					:green-mask (card32-get 12)
-					:blue-mask (card32-get 16)
-					;; 4 bytes unused
-					)))
-			  (save-id display (visual-info-id visual) visual)
-			  (push visual visuals)))
+			(let* ((visual (card32-get 0))
+			       (visual-info (make-visual-info
+					      :id visual
+					      :display display
+					      :class (member8-get 4 :static-gray :gray-scale
+								  :static-color :pseudo-color
+								  :true-color :direct-color)
+					      :bits-per-rgb (card8-get 5)
+					      :colormap-entries (card16-get 6)
+					      :red-mask (card32-get 8)
+					      :green-mask (card32-get 12)
+					      :blue-mask (card32-get 16)
+					      ;; 4 bytes unused
+					      )))
+			  (push visual-info visuals)
+			  (when (funcall (resource-id-map-test) root-visual visual)
+			    (setf (screen-root-visual-info screen)
+				  (setf (colormap-visual-info default-colormap)
+					visual-info)))))
 		      (push (cons depth (nreverse visuals)) depths)))
 		  (setf (screen-depths screen) (nreverse depths))
-		  (setf (screen-root-visual-info screen)
-			(setf (colormap-visual-info default-colormap)
-			      (visual-info display root-visual)))
 		  (push screen (display-roots display))))
 	      (setf (display-roots display) (nreverse (display-roots display)))
 	      (setf (display-default-screen display) (first (display-roots display))))))

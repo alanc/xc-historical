@@ -25,7 +25,7 @@
 
 ;;; This is built on top of BUFFER
 
-(in-package 'xlib :use '(lisp))
+(in-package :xlib)
 
 ;;; This variable is used by the required-arg macro just to satisfy compilers.
 (defvar *required-arg-dummy*)
@@ -189,7 +189,7 @@
 ;; Needed to get and put xatom's in events
 (define-accessor keyword (32)
   ((index &optional (buffer '%buffer))
-   `(lookup-xatom ,buffer (read-card29 ,index)))
+   `(atom-name ,buffer (read-card29 ,index)))
   ((index thing &key (buffer '%buffer))
    `(write-card29 ,index (or (atom-id ,thing ,buffer)
 			     (error "CLX implementation error in KEYWORD-PUT")))))

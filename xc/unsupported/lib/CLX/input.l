@@ -25,7 +25,7 @@
 ;;; -------------------------------------------------------------------------------------
 ;;; 12/10/87	LGO	Created
 
-(in-package 'xlib :use '(lisp))
+(in-package :xlib)
 
 (export '(
 	  event-listen

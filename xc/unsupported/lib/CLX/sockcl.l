@@ -1,6 +1,6 @@
 ;;; -*- Mode: LISP; Syntax: Common-lisp; Package: XLIB; Base: 10; Lowercase: Yes -*-
 
-;;;; Server Connection for kcl
+;;;; Server Connection for kcl and ibcl
 
 ;;; Copyright (C) 1987, 1989 Massachussetts Institute of Technology 
 ;;;
@@ -23,7 +23,7 @@
 ;;; Compile this file with compile-file.
 ;;; Load it with (si:faslink "sockcl.o" "socket.o -lc")
 
-(in-package 'xlib :use '(lisp))
+(in-package :xlib)
 
 ;;; The cmpinclude.h file does not have this type definition from
 ;;; <kcldistribution>/h/object.h.  We include it here so the
@@ -47,11 +47,19 @@ enum smmode {			/*  stream mode  */
 };
 ")
 
-;;; Here's other randomness stolen from object.h.
-;;; It's very bad form to fool around with file pointers.
-;;;
-#+sun (CLINES "#define BASEFF (unsigned char *)0xffffffff")
-#-sun (CLINES "#define BASEFF (         char *)0xffffffff")
+#-akcl
+(CLINES "
+struct stream {
+	short	t, m;
+	FILE	*sm_fp;		/*  file pointer  */
+	object	sm_object0;	/*  some object  */
+	object	sm_object1;	/*  some object */
+	int	sm_int0;	/*  some int  */
+	int	sm_int1;	/*  some int  */
+	short	sm_mode;	/*  stream mode  */
+				/*  of enum smmode  */
+};
+")
 
 
 ;;;; Connect to the server.
@@ -95,7 +103,7 @@ konnect_stream(host,fd,flag,elem)
      int flag;			/* 0 input, 1 output */
      object elem;		/* 'string-char */
 {
-   object stream;
+   struct stream *stream;
    char *mode;			/* file open mode */
    FILE *fp;			/* file pointer */
    enum smmode smm;		/* lisp mode (a short) */
@@ -121,12 +129,11 @@ konnect_stream(host,fd,flag,elem)
      vs_push(stream);
    } else {
      stream = alloc_object(t_stream);
-     stream->sm.sm_mode = (short)smm;
-     stream->sm.sm_fp = fp;
-     fp->_base = BASEFF;	/* what the ??? */
-     stream->sm.sm_object0 = elem;
-     stream->sm.sm_object1 = host;
-     stream->sm.sm_int0 = stream->sm.sm_int1 = 0;
+     stream->sm_mode = (short)smm;
+     stream->sm_fp = fp;
+     stream->sm_object0 = elem;
+     stream->sm_object1 = host;
+     stream->sm_int0 = stream->sm.sm_int1 = 0;
      vs_push(stream);
      setbuf(fp, alloc_contblock(BUFSIZ));
    }

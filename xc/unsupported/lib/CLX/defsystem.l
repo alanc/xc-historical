@@ -30,6 +30,7 @@
 ;;;   lcl3.0
 ;;;   apollo
 ;;;   kcl
+;;;   ibcl
 ;;;   excl
 
 #+excl (error "Use excldefsys")
@@ -169,7 +170,7 @@
 (defun clx-foreign-files (binary-path)
 
   ;; apply a patch to 2.0 systems
-  #-(or lcl3.0 vax)
+  #+(and (not lcl3.0) (or mc68000 mc68020))
   (load (merge-pathnames "make-sequence-patch" binary-path))
 
   ;; Link lisp to the C function connect_to_server
@@ -198,11 +199,11 @@
 			     *foreign-libraries*))
 
 
-;; socket interface for kcl
+;; socket interface for kcl and ibcl
 ;;   defines the function (open-socket-stream host display)
 ;;
 ;; You must first compile file socket.c
-#+kcl
+#+(or kcl ibcl)
 (defun kcl-socket-init (binary-path)
   (let ((sockcl (namestring (merge-pathnames "sockcl.o" binary-path)))
 	(socket (namestring (merge-pathnames "socket.o" binary-path))))
@@ -291,19 +292,24 @@
 	       ;; If the source and binary pathnames are the same,
 	       ;; then don't supply an output file just to be sure
 	       ;; compile-file defaults correctly.
+	       #+(or kcl ibcl) (load source)
 	       (if (equal source binary)
 		   (compile-file source)
 		   (compile-file source :output-file binary))
 	       (load binary))))
 
-      ;; Now compile and load all the files.  For lucid 3.0, make the
-      ;; compiler warnings apply to the files as a whole.
-      (#+lcl3.0 lucid::with-deferred-warnings #-lcl3.0 progn
-
+      ;; Now compile and load all the files.
+      ;; Defer compiler warnings until everything's compiled, if possible.
+      (#.(if (fboundp 'with-compilation-unit)
+	     'with-compilation-unit
+	   #+lcl3.0 'lucid::with-deferred-warnings
+	   #-lcl3.0 'progn)
+       ()
+       
        #+lucid
        (progn 
 	 (when compile-c			; compile the C files
-	   #-(or lcl3.0 vax)
+	   #+(and (not lcl3.0) (or mc68000 mc68020))
 	   (progn				; sequence patch
 	     (format t "You may need to uudecode ms-patch.uu and copy~%")
 	     (format t "the result to the binary directory.~%")
@@ -328,7 +334,7 @@
 	 (format t ";;; Loading foreign files~%")
 	 (clx-foreign-files binary-path))
 
-       #+kcl
+       #+(or kcl ibcl)
        (progn
 	 (when compile-c			; compile the C files
 	   (let* ((src (merge-pathnames "socket.c" source-path))
@@ -408,7 +414,7 @@
       #+lucid
       (clx-foreign-files binary-path)
 
-      #+kcl
+      #+(or kcl ibcl)
       (kcl-socket-init binary-path)
 
       (load-binary "depdefs")

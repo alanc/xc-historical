@@ -18,7 +18,7 @@
 ;;; express or implied warranty.
 ;;;
 
-(in-package 'xlib :use '(lisp))
+(in-package :xlib)
 
 #+lcl3.0
 (import '(
@@ -1127,7 +1127,7 @@
 ;;; OPEN-X-STREAM - create a stream for communicating to the appropriate X
 ;;; server
 
-#-(or explorer Genera lucid kcl excl)
+#-(or explorer Genera lucid kcl ibcl excl)
 (defun open-x-stream (host display protocol)
   host display protocol ;; unused
   (error "OPEN-X-STREAM not implemented yet."))
@@ -1208,7 +1208,7 @@
 			    :element-type 'unsigned-byte
 			    #-lcl3.0 :stream-type #-lcl3.0 :ephemeral)))
 
-#+kcl
+#+(or kcl ibcl)
 (defun open-x-stream (host display protocol)
   protocol ;; unused
   (let ((stream (open-socket-stream host display)))

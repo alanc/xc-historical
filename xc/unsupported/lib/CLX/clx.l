@@ -78,7 +78,7 @@
 
 ;; Note: all of the following is in the package XLIB.
 
-(in-package 'xlib)
+(in-package :xlib)
 
 (export '(
 	  *version*
@@ -284,7 +284,7 @@
 (pushnew :clx *features*)
 (pushnew :xlib *features*)
 
-(defparameter *version* "MIT R4.2 Experimental")
+(defparameter *version* "MIT R4.2")
 (pushnew :clx-mit-r4 *features*)
 
 (defparameter *protocol-major-version* 11.)
@@ -451,9 +451,9 @@
     nil :type (or null reply-buffer))
   (event-queue-head				; Threaded queue of events
     nil :type (or null reply-buffer))
-  (atom-cache (make-hash-table :test (atom-cache-test) :size *atom-cache-size*)
+  (atom-cache (make-hash-table :test #'eq :size *atom-cache-size*)
 	      :type hash-table)			; Hash table relating atoms keywords
-						; to resource id's
+						; to atom id's
   (font-cache nil)				; list of font
   (protocol-major-version 0 :type card16)	; Major version of server's X protocol
   (protocol-minor-version 0 :type card16)	; minor version of servers X protocol
@@ -519,6 +519,9 @@
 						; Protected by WITH-EVENT-QUEUE.
   (current-event-symbol				; Bound with PROGV by event handling macros 
     (list (gensym) (gensym)) :type cons)
+  (atom-id-map (make-hash-table :test (resource-id-map-test)
+				:size *atom-cache-size*)
+	       :type hash-table)
   )
 
 (defun print-display (display stream depth)

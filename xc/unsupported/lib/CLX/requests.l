@@ -16,7 +16,7 @@
 ;;; express or implied warranty.
 ;;;
 
-(in-package 'xlib :use '(lisp))
+(in-package :xlib)
 
 (export '(create-window
 	  destroy-window
@@ -304,63 +304,66 @@
   (declare (type display display)
 	   (type xatom name))
   (declare (values resource-id))
-  (or (atom-id name display)
-      (let ((string (string name)))
-	(multiple-value-bind (id)
-	    (with-buffer-request-and-reply (display *x-internatom* 12 :sizes 32)
-		 ((data 0)
-		  (card16 (length string))
-		  (pad16 nil)
-		  (string string))
-	      (values
-		(resource-id-get 8)))
-	  (let ((keyword (if (keywordp name) name (kintern string))))
+  (let ((keyword (if (keywordp name) name (kintern (string name)))))
+    (declare (type keyword keyword))
+    (or (atom-id keyword display)
+	(let ((string (symbol-name keyword)))
+	  (declare (type string string))
+	  (multiple-value-bind (id)
+	      (with-buffer-request-and-reply (display *x-internatom* 12 :sizes 32)
+		   ((data 0)
+		    (card16 (length string))
+		    (pad16 nil)
+		    (string string))
+		(values
+		  (resource-id-get 8)))
+	    (declare (type resource-id id))
 	    (setf (atom-id keyword display) id)
-	    (save-id display id keyword))
-	  id))))
+	    id)))))
 
 (defun find-atom (display name)
   ;; Same as INTERN-ATOM, but with the ONLY-IF-EXISTS flag True
   (declare (type display display)
 	   (type xatom name))
   (declare (values (or null resource-id)))
-  (or (atom-id name display)
-      (let ((string (string name)))
-	(multiple-value-bind (id)
-	    (with-buffer-request-and-reply (display *x-internatom* 12 :sizes 32)
-		 ((data 1)
-		  (card16 (length string))
-		  (pad16 nil)
-		  (string string))
-	      (values
-		(or-get 8 null resource-id)))
-	  (when id 
-	    (let ((keyword (if (keywordp name) name (kintern string))))
-	      (setf (atom-id keyword display) id)
-	      (save-id display id keyword)))
-	  id))))
+  (let ((keyword (if (keywordp name) name (kintern (string name)))))
+    (declare (type keyword keyword))
+    (or (atom-id keyword display)
+	(let ((string (symbol-name keyword)))
+	  (declare (type string string))
+	  (multiple-value-bind (id)
+	      (with-buffer-request-and-reply (display *x-internatom* 12 :sizes 32)
+		   ((data 1)
+		    (card16 (length string))
+		    (pad16 nil)
+		    (string string))
+		(values
+		  (or-get 8 null resource-id)))
+	    (declare (type (or null resource-id) id))
+	    (when id 
+	      (setf (atom-id keyword display) id))
+	    id)))))
 
-;; Use LOOKUP-XATOM instead
-(proclaim '(inline atom-name))
 (defun atom-name (display atom-id)
   (declare (type display display)
 	   (type resource-id atom-id))
   (declare (values keyword))
-  (lookup-xatom display atom-id))
+  (or (id-atom atom-id display)
+      (let ((keyword
+	      (kintern
+		(with-buffer-request-and-reply (display *x-getatomname* nil :sizes (16))
+		     ((resource-id atom-id))
+		  (values
+		    (string-get (card16-get 8) *replysize*))))))
+	(declare (type keyword keyword))
+	(setf (atom-id keyword display) atom-id)
+	keyword)))
 
-(defun atom-name-internal (display atom-id)
-  ;; Called only by LOOKUP-XATOM
+;;; For binary compatibility with older code
+(defun lookup-xatom (display atom-id)
   (declare (type display display)
-	   (type resource-id atom-id)
-	   (values keyword))
-  (multiple-value-bind (keyword)
-      (with-buffer-request-and-reply (display *x-getatomname* nil :sizes (16))
-	   ((resource-id atom-id))
-	(values
-	  (string-get (card16-get 8) *replysize*)))
-    (setq keyword (kintern keyword))
-    (setf (atom-id keyword display) atom-id)
-    keyword))
+	   (type resource-id atom-id))
+  (atom-name display atom-id))
 
 (defun change-property (window property data type format
 		       &key (mode :replace) (start 0) end transform)
@@ -455,7 +458,7 @@
 				       :length nitems :transform transform
 				       :index *replysize*)))))))
       (values data
-	      (and (plusp reply-type) (lookup-xatom display reply-type))
+	      (and (plusp reply-type) (atom-name display reply-type))
 	      reply-format
 	      bytes-after))))
 
@@ -496,9 +499,9 @@
       (if (listp seq)
 	  (do ((elt seq (cdr elt)))
 	      ((endp elt) seq)
-	    (setf (car elt) (lookup-xatom display (car elt))))
+	    (setf (car elt) (atom-name display (car elt))))
 	(dotimes (i (length seq) seq)
-	  (setf (aref seq i) (lookup-xatom display (aref seq i))))))))
+	  (setf (aref seq i) (atom-name display (aref seq i))))))))
 
 (defun selection-owner (display selection)
   (declare (type display display)

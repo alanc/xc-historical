@@ -18,7 +18,7 @@
 ;;; express or implied warranty.
 ;;;
 
-(in-package 'xlib :use '(lisp))
+(in-package :xlib)
 
 (define-keysym-set :latin-1	(keysym 0 0) (keysym 0 255))
 (define-keysym-set :latin-2	(keysym 1 0) (keysym 1 255))

@@ -19,7 +19,7 @@
 ;;; express or implied warranty.
 ;;;
 
-(in-package 'xlib :use '(lisp))
+(in-package :xlib)
 
 ;;; The read- macros are in buffer.lisp, because event-case depends on (most of) them.
 
