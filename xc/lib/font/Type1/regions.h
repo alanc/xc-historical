@@ -1,4 +1,4 @@
-/* $XConsortium: regions.h,v 1.4 94/02/06 16:17:33 gildea Exp $ */
+/* $XConsortium: regions.h,v 1.5 94/02/06 21:22:40 rws Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -95,7 +95,9 @@ void t1_UnJumble();           /* sort the edges and reset the jumbled flag    */
    else if (x2 > R->edgexmax) R->edgexmax = x2; \
 }
  
+#ifndef __sxg__
 #include <limits.h>
+#endif
 #ifdef SHRT_MIN
 #define MINPEL SHRT_MIN
 #else
