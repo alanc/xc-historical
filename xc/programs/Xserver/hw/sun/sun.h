@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$XConsortium: sun.h,v 5.3 89/07/10 13:29:38 rws Exp $ SPRITE (Berkeley)"
+ *	"$XConsortium: sun.h,v 5.4 89/07/18 18:16:08 rws Exp $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
@@ -223,19 +223,6 @@ extern void 	  sunInitCursor();
  */
 extern Bool 	  sunScreenInit();
 extern int  	  sunOpenFrameBuffer();
-
-/*
- * GC Interceptions
- */
-extern GCPtr	  sunCreatePrivGC();
-extern Bool	  sunCreateGC();
-extern Bool	  sunCreateWindow();
-extern Bool	  sunChangeWindowAttributes();
-
-extern void 	  sunGetImage();
-extern unsigned int *sunGetSpans();
-
-extern int  	  sunCheckInput;    /* Non-zero if input is available */
 
 extern fbFd 	  sunFbs[];
 
