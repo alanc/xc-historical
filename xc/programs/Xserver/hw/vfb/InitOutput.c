@@ -56,6 +56,8 @@ extern char *display;
 #define VFB_DEFAULT_WIDTH  1280
 #define VFB_DEFAULT_HEIGHT 1024
 #define VFB_DEFAULT_DEPTH  8
+#define VFB_DEFAULT_WHITEPIXEL 0
+#define VFB_DEFAULT_BLACKPIXEL 1
 #define XWD_WINDOW_NAME_LEN 60
 
 typedef struct
@@ -71,6 +73,8 @@ typedef struct
     char *pfbMemory;
     XWDColor *pXWDCmap;
     XWDFileHeader *pXWDHeader;
+    Pixel blackPixel;
+    Pixel whitePixel;
 
 #ifdef HAS_MMAP
     int mmap_fd;
@@ -89,6 +93,7 @@ static char *pfbdir = NULL;
 typedef enum { NORMAL_MEMORY_FB, SHARED_MEMORY_FB, MMAPPED_FILE_FB } fbMemType;
 static fbMemType fbmemtype = NORMAL_MEMORY_FB;
 static char needswap = 0;
+static int lastScreen = -1;
 
 #define swapcopy16(_dst, _src) \
     if (needswap) { CARD16 _s = _src; cpswaps(_s, _dst); } \
@@ -119,6 +124,8 @@ vfbInitializeDefaultScreens()
 	vfbScreens[i].width  = VFB_DEFAULT_WIDTH;
 	vfbScreens[i].height = VFB_DEFAULT_HEIGHT;
 	vfbScreens[i].depth  = VFB_DEFAULT_DEPTH;
+	vfbScreens[i].blackPixel = VFB_DEFAULT_BLACKPIXEL;
+	vfbScreens[i].whitePixel = VFB_DEFAULT_WHITEPIXEL;
 	vfbScreens[i].pfbMemory = NULL;
     }
     vfbNumScreens = 1;
@@ -241,6 +248,7 @@ ddxProcessArgument (argc, argv, i)
 
 	if (screenNum >= vfbNumScreens)
 	    vfbNumScreens = screenNum + 1;
+	lastScreen = screenNum;
 	return 3;
     }
 
@@ -261,6 +269,47 @@ ddxProcessArgument (argc, argv, i)
 	}
 	return ret;
     }
+
+    if (strcmp (argv[i], "-blackpixel") == 0)	/* -blackpixel n */
+    {
+	Pixel pix;
+	if (++i >= argc) UseMsg();
+	pix = atoi(argv[i]);
+	if (-1 == lastScreen)
+	{
+	    int i;
+	    for (i = 0; i < MAXSCREENS; i++)
+	    {
+		vfbScreens[i].blackPixel = pix;
+	    }
+	}
+	else
+	{
+	    vfbScreens[lastScreen].blackPixel = pix;
+	}
+	return 2;
+    }
+
+    if (strcmp (argv[i], "-whitepixel") == 0)	/* -whitepixel n */
+    {
+	Pixel pix;
+	if (++i >= argc) UseMsg();
+	pix = atoi(argv[i]);
+	if (-1 == lastScreen)
+	{
+	    int i;
+	    for (i = 0; i < MAXSCREENS; i++)
+	    {
+		vfbScreens[i].whitePixel = pix;
+	    }
+	}
+	else
+	{
+	    vfbScreens[lastScreen].whitePixel = pix;
+	}
+	return 2;
+    }
+
 
 #ifdef HAS_MMAP
     if (strcmp (argv[i], "-fbdir") == 0)	/* -fbdir directory */
@@ -807,11 +856,11 @@ vfbScreenInit(index, pScreen, argc, argv)
 
     vfbWriteXWDFileHeader(pScreen);
 
+    pScreen->blackPixel = pvfb->blackPixel;
+    pScreen->whitePixel = pvfb->whitePixel;
+
     if (pvfb->bitsPerPixel == 1)
     {
-	/* XXX probably should have options for these? */
-	pScreen->blackPixel = 0;
-	pScreen->whitePixel = 1;
 	ret = mfbCreateDefColormap(pScreen);
     }
     else
