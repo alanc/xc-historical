@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.52 89/11/16 18:40:41 jim Exp $
+ * $XConsortium: resize.c,v 1.53 89/11/19 15:34:18 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.52 89/11/16 18:40:41 jim Exp $";
+"$XConsortium: resize.c,v 1.53 89/11/19 15:34:18 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -436,17 +436,6 @@ EndResize()
     {
         PackIconManager(tmp_win->iconmgrp);
     }
-#ifdef SUN386
-    /* This is a kludge to fix a problem in the Sun 386 server which
-     * causes windows to not be repainted after a resize operation.
-     */
-    w = XCreateSimpleWindow(dpy, tmp_win->frame,
-        0, 0, 9999, 9999, 0, Scr->Black, Scr->Black);
-
-    XMapWindow(dpy, w);
-    XDestroyWindow(dpy, w);
-    XFlush(dpy);
-#endif
 
     if (!Scr->NoRaiseResize)
         XRaiseWindow(dpy, tmp_win->frame);
