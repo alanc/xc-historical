@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 1.156 89/04/07 16:54:05 rws Exp $ */
+/* $XConsortium: main.c,v 1.157 89/04/17 10:39:57 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -219,7 +219,7 @@ main(argc, argv)
 	    FatalError("failed to initialize core devices");
 
 	if (SetDefaultFontPath(defaultFontPath) != Success)
-	    ErrorF("failed to set default font path\n");
+	    ErrorF("failed to set default font path '%s'", defaultFontPath);
 	if (!SetDefaultFont(defaultTextFont))
 	    FatalError("could not open default font '%s'", defaultTextFont);
 	if (!(rootCursor = CreateRootCursor(defaultCursorFont, 0)))
