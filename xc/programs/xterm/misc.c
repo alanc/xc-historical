@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.79 91/05/04 19:38:37 gildea Exp $
+ *	$XConsortium: misc.c,v 1.80 91/05/06 17:12:09 gildea Exp $
  */
 
 /*
@@ -380,7 +380,8 @@ Bell()
 	       back.  If the server is suspending operations while the bell
 	       is being emitted (problematic for audio bell), this lets us
 	       know when the previous bell has finished */
-	    XChangeProperty(XtDisplay(term), XtWindow(term),
+	    Widget w = screen->TekEmu ? (Widget) tekWidget : (Widget) term;
+	    XChangeProperty(XtDisplay(w), XtWindow(w),
 			    XA_NOTICE, XA_NOTICE, 8, PropModeAppend, NULL, 0);
 	    screen->bellInProgress = TRUE;
 	}
@@ -393,7 +394,7 @@ void HandleBellPropertyChange(w, data, ev, more)
     XEvent *ev;
     Boolean *more;
 {
-    TScreen *screen = &((XtermWidget)w)->screen;
+    register TScreen *screen = &term->screen;
 
     if (ev->xproperty.atom == XA_NOTICE) {
 	screen->bellInProgress = FALSE;
