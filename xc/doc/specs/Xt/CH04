@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: CH04,v 1.5 91/07/31 20:23:57 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -79,6 +79,7 @@ that interacts with the session manager.
 T}
 .IN "ApplicationShell" "" "@DEF@"
 .TE
+
 .NH 2
 Shell Widget Definitions
 .XS
@@ -169,6 +170,7 @@ TopLevelShell,
 and
 ApplicationShell
 are intended for public use.
+
 .NH 3
 ShellClassPart Definitions
 .XS
@@ -934,7 +936,7 @@ window_group	\fBXtUnspecifiedWindow\fP
 base_width	\fBXtUnspecifiedShellInt\fP
 base_height	\fBXtUnspecifiedShellInt\fP
 win_gravity	\fBXtUnspecifiedShellInt\fP
-title_encoding	\fB\s-1XA_STRING\s+1\fP
+title_encoding	See text
 .sp 6p
 _
 .TE
@@ -943,6 +945,17 @@ The \fItitle\fP and
 \fItitle_encoding\fP fields are stored in the
 .PN \s-1WM_NAME\s+1
 property on the shell's window by the WMShell realize procedure.
+If the \fItitle_encoding\fP field is
+.PN None ,
+the \fItitle\fP string is assumed to be in the encoding of the current
+locale and the encoding of the
+.PN \s-1WM_NAME\s+1
+property is set to
+.PN XStdICCTextStyle .
+If a language procedure has not been set
+the default value of \fItitle_encoding\fP is
+\fB\s-1XA_STRING\s+1\fP, otherwise the default value is
+.PN None .
 The \fIwm_timeout\fP field specifies, in milliseconds,
 the amount of time a shell is to wait for
 confirmation of a geometry request to the window manager.
@@ -1061,9 +1074,7 @@ icon_name	Shell widget's name
 iconic	T{
 .PN False
 T}
-icon_name_encoding	T{
-.PN \s-1XA_STRING\s+1
-T}
+icon_name_encoding	See text
 .sp 6p
 _
 .TE
@@ -1072,7 +1083,19 @@ The \fIicon_name\fP
 and \fIicon_name_encoding\fP fields are stored in the
 .PN \s-1WM_ICON_NAME\s+1
 property on the shell's window by the TopLevelShell realize
-procedure.  The \fIiconic\fP field may be used by a client to request
+procedure.
+If the \fIicon_name_encoding\fP field is
+.PN None ,
+the \fIicon_name\fP string is assumed to be in the encoding of the
+current locale and the encoding of the
+.PN \s-1WM_ICON_NAME\s+1
+property is set to
+.PN XStdICCTextStyle .
+If a language procedure has not been set
+the default value of \fItitle_encoding\fP is
+\fB\s-1XA_STRING\s+1\fP, otherwise the default value is
+.PN None .
+The \fIiconic\fP field may be used by a client to request
 that the window manager iconify or deiconify the shell; the
 TopLevelShell
 set_values procedure will send the appropriate
