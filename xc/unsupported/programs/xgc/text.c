@@ -7,6 +7,7 @@
 ** leaves its window.
 */
 
+#include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Label.h>
@@ -173,7 +174,6 @@ change_text(w,newtext)
 {
   XawTextBlock text;		/* the new text */
   XawTextPosition first, last;	/* boundaries of the old text */
-  int length;			/* length of the old text */
   String oldtext;		/* the old text */
 
   static Arg textargs[] = {
