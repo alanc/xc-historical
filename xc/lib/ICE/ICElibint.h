@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.7 93/09/10 14:17:12 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.8 93/09/14 15:34:22 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -87,10 +87,11 @@ purpose.  It is provided "as is" without express or implied warranty.
  * Some internal data structures for processing ICE messages.
  */
 
-typedef Bool (*_IceProcessCoreMsgCB) (
+typedef Bool (*_IceProcessCoreMsgProc) (
 #if NeedFunctionPrototypes
     IceConn 		/* iceConn */,
     int			/* opcode */,
+    unsigned long	/* length */,
     Bool		/* swap */,
     IceReplyWaitInfo *  /* replyWait */
 #endif
@@ -99,7 +100,7 @@ typedef Bool (*_IceProcessCoreMsgCB) (
 typedef struct {
     int 			major_version;
     int 			minor_version;
-    _IceProcessCoreMsgCB	process_core_msg_cb;
+    _IceProcessCoreMsgProc	process_core_msg_proc;
 } _IceVersion;
 
 
@@ -110,7 +111,8 @@ typedef struct {
 #define IceFlush(_iceConn) \
 { \
     _IceWrite (_iceConn, \
-	 _iceConn->outbufptr - _iceConn->outbuf, _iceConn->outbuf); \
+	(unsigned long) (_iceConn->outbufptr - _iceConn->outbuf), \
+	_iceConn->outbuf); \
     _iceConn->outbufptr = _iceConn->outbuf; \
 }
 
@@ -171,7 +173,7 @@ typedef struct {
     if ((_iceConn->outbufptr + (_bytes)) > _iceConn->outbufmax) \
     { \
 	IceFlush (_iceConn); \
-        _IceWrite (_iceConn, _bytes, _data); \
+        _IceWrite (_iceConn, (unsigned long) (_bytes), _data); \
     } \
     else \
     { \
@@ -201,7 +203,7 @@ typedef struct {
 { \
     if (_iceConn->outbufptr > _iceConn->outbuf) \
 	IceFlush (_iceConn); \
-    _IceWrite (_iceConn, _bytes, _data); \
+    _IceWrite (_iceConn, (unsigned long) (_bytes), _data); \
 }
 
 #ifndef WORD64
@@ -226,7 +228,7 @@ typedef struct {
     { \
         char _dummy[7]; \
 	IceFlush (_iceConn); \
-        _IceWrite (_iceConn, _bytes, _dummy); \
+        _IceWrite (_iceConn, (unsigned long) (_bytes), _dummy); \
     } \
     else \
     { \
@@ -244,16 +246,9 @@ typedef struct {
 #define IceReadCompleteMessage(_iceConn, _headerSize, _msgType, _pMsg, _pData)\
 { \
     iceMsg *header = (iceMsg *) (_iceConn->inbuf); \
-    int bytes = header->length << 3; \
+    unsigned long bytes = header->length << 3; \
     if ((IceGetInBufSize (_iceConn) - SIZEOF (iceMsg)) < bytes) \
-    { \
-        char *temp = _iceConn->inbuf; \
-        _iceConn->inbuf = (char *) malloc (bytes + SIZEOF (iceMsg)); \
-        bcopy (temp, _iceConn->inbuf, SIZEOF (iceMsg)); \
-       	_iceConn->inbufptr = _iceConn->inbuf + SIZEOF (iceMsg); \
-        _iceConn->inbufmax = _iceConn->inbuf + bytes + SIZEOF (iceMsg); \
-        free (temp); \
-    } \
+        bytes = IceGetInBufSize (_iceConn) - SIZEOF (iceMsg); \
     _pMsg = (_msgType *) (_iceConn->inbuf); \
     _pData = _iceConn->inbuf + _headerSize; \
     _IceRead (_iceConn, bytes, _iceConn->inbufptr); \
@@ -266,21 +261,22 @@ typedef struct {
 #define IceReadMessageHeader(_iceConn, _headerSize, _msgType, _pMsg) \
 { \
     _IceRead (_iceConn, \
-	(_headerSize - SIZEOF (iceMsg)), _iceConn->inbufptr); \
+	(unsigned long) (_headerSize - SIZEOF (iceMsg)), \
+	_iceConn->inbufptr); \
     _pMsg = (_msgType *) (_iceConn->inbuf); \
     _iceConn->inbufptr += (_headerSize - SIZEOF (iceMsg)); \
 }
 
 #define IceReadData (_iceConn, _bytes, _pData) \
-    _IceRead (_iceConn, _bytes, (char *) _pData); \
+    _IceRead (_iceConn, (unsigned long) (_bytes), (char *) _pData); \
 
 #ifndef WORD64
 
 #define IceReadData16 (_iceConn, _bytes, _pData) \
-    _IceRead (_iceConn, _bytes, (char *) _pData); \
+    _IceRead (_iceConn, (unsigned long) (_bytes), (char *) _pData); \
 
 #define IceReadData32 (_iceConn, _bytes, _pData) \
-    _IceRead (_iceConn, _bytes, (char *) _pData); \
+    _IceRead (_iceConn, (unsigned long) (_bytes), (char *) _pData); \
 
 #endif
 
@@ -293,7 +289,7 @@ typedef struct {
 #define IceReadPad (_iceConn, _bytes) \
 { \
     char _dummy[7]; \
-    _IceRead (_iceConn, _bytes, _dummy); \
+    _IceRead (_iceConn, (unsigned long) (_bytes), _dummy); \
 }
 
 
@@ -554,7 +550,8 @@ _IceErrorBadMajor (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     int			/* offendingMajor */,
-    int			/* offendingMinor */
+    int			/* offendingMinor */,
+    int			/* severity */
 #endif
 );
 
@@ -620,8 +617,16 @@ extern Status
 _IceRead (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
-    int			/* nbytes */,
+    unsigned long	/* nbytes */,
     char *		/* ptr */
+#endif
+);
+
+extern void
+_IceReadSkip (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    unsigned long	/* nbytes */
 #endif
 );
 
@@ -629,7 +634,7 @@ extern void
 _IceWrite (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
-    int			/* nbytes */,
+    unsigned long	/* nbytes */,
     char *		/* ptr */
 #endif
 );
