@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XKeyBind.c,v 11.28 87/08/21 16:21:46 toddb Locked $ */
+/* $Header: XKeyBind.c,v 11.29 87/08/29 13:46:28 toddb Locked $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -41,6 +41,26 @@ KeySym XKeycodeToKeysym(dpy, keycode, col)
      return (dpy->keysyms[ind]);
 }
 
+KeyCode XKeysymToKeycode(dpy, ks)
+    Display *dpy;
+    KeySym ks;
+{
+    int         i;
+
+     if (dpy->keysyms == NULL)
+         Initialize(dpy);
+    for (i = dpy->min_keycode; i <= dpy->max_keycode; i++) {
+	int         j;
+
+	for (j = 0; j < dpy->keysyms_per_keycode; j++) {
+	    int ind = (i - dpy->min_keycode) * dpy->keysyms_per_keycode + j;
+
+	    if (ks == dpy->keysyms[ind])
+		return (i);
+	}
+    }
+    return (0);
+}
 KeySym XLookupKeysym(event, col)
      register XKeyEvent *event;
      int col;

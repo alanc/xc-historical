@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XImUtil.c,v 11.16 87/08/29 13:36:06 ham Exp $ */
+/* $Header: XImUtil.c,v 11.16 87/09/01 14:53:11 toddb Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -10,6 +10,39 @@
 extern char _reverse_byte[0x100]; /* found in XPutImage */
 static char _lomask[0x09] = { 0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff };
 static char _himask[0x09] = { 0xff, 0xfe, 0xfc, 0xf8, 0xf0, 0xe0, 0xc0, 0x80, 0x00 };
+
+/* These two convenience routines return the scanline_pad and bits_per_pixel 
+	associated with a specific depth of ZPixmap format image for a 
+	display. */
+
+ _XGetScanlinePad(dpy, depth)
+ Display *dpy;
+ int depth;
+ {
+ 	register ScreenFormat *fmt = dpy->pixmap_format;
+ 	register int i;
+ 
+ 	for (i = dpy->nformats + 1; --i; ++fmt)
+ 		if (fmt->depth == depth)
+ 			return(fmt->scanline_pad);
+ 
+ 	return(dpy->bitmap_pad);
+ }
+ 
+ _XGetBitsPerPixel(dpy, depth)
+ Display *dpy;
+ int depth;
+ {
+ 	register ScreenFormat *fmt = dpy->pixmap_format;
+ 	register int i;
+ 
+ 	for (i = dpy->nformats + 1; --i; ++fmt)
+ 		if (fmt->depth == depth)
+ 			return(fmt->bits_per_pixel);
+ 
+ 	return(depth);
+ }
+ 
 
 /*
  * This module provides rudimentary manipulation routines for image data
@@ -219,17 +252,11 @@ XImage *XCreateImage (dpy, visual, depth, format, offset, data, width, height,
 	else {
 		image->red_mask = image->green_mask = image->blue_mask = 0;
 	}
-	if (format == ZPixmap) {
-	    int i;
-
-	    for (i = 0; i < dpy->nformats; i++) {
-		ScreenFormat *sfp = &dpy->pixmap_format[i];
-		if (sfp->depth == depth) {
-		    bits_per_pixel = sfp->bits_per_pixel;
-		    break;
-		}
-	    }
+	if (format == ZPixmap) 
+	{
+	    bits_per_pixel = _XGetBitsPerPixel(dpy, depth);
 	}
+
 	image->xoffset = offset;
 	image->bitmap_pad = xpad;
 	image->depth = depth;
