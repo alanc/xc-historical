@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.29 89/04/11 15:12:53 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.30 89/04/18 14:46:16 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -383,10 +383,14 @@
 #ifndef TOPDIR
 #define TOPDIR .
 #endif
+#ifndef CURDIR
+#define CURDIR .
+#endif
 
             SHELL = BourneShell
 
               TOP = TOPDIR
+      CURRENT_DIR = CURDIR
 
                AR = ArCmd
   BOOTSTRAPCFLAGS = BootstrapCFlags	/* set if cpp doesn't have uniq sym */
