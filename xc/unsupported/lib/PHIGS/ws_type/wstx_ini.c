@@ -1,4 +1,4 @@
-/* $XConsortium: wstx_ini.c,v 5.3 91/07/12 20:25:43 hersh Exp $ */
+/* $XConsortium: wstx_ini.c,v 5.4 91/07/19 14:22:05 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -239,7 +239,7 @@ init_input_ws_dt( ws_dt )
     assure(in_ws_dt->num_devs.stroke <= WST_MAX_NUM_STROKE_DEVS);
     in_ws_dt->num_devs.pick = 1;
     assure(in_ws_dt->num_devs.pick <= WST_MAX_NUM_PICK_DEVS);
-    in_ws_dt->num_devs.val = 1;
+    in_ws_dt->num_devs.val = 6;
     assure(in_ws_dt->num_devs.val <= WST_MAX_NUM_VALUATOR_DEVS);
     in_ws_dt->num_devs.choice = 1;
     assure(in_ws_dt->num_devs.choice <= WST_MAX_NUM_CHOICE_DEVS);
