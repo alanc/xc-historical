@@ -5,26 +5,32 @@
 
 *flashColor:			Yellow
 
-*Background:			SteelBlue4
+*Background:			RoyalBlue4
 *Foreground:			Azure
 *BorderColor:			LightCyan1
 
 *Tree.Background: 		Grey
 *Tree.Foreground: 		White
 
-*Tree.Toggle.Background: 	RoyalBlue4
 *Tree.Toggle.Foreground: 	Gold
 *Tree.Toggle.BorderWidth: 	0
 
-*MenuButton.Background:		RoyalBlue4
 *MenuButton.Foreground:		Gold
 *MenuButton.BorderWidth: 	0
 
-*SimpleMenu.Background:		RoyalBlue4
 *SmeBSB.Foreground: 		Gold
 
-*Panner*Foreground:		LightCyan
+*Porthole.Background:		Grey
+*Panner*Foreground:		MintCream
 *Panner*Background:		Grey
 *Panner*BorderColor:		Grey
 *Panner*ShadowColor:		Black
 *Panner*BackgroundStipple:	None
+
+*resourceBox*namesAndClasses.Background: Grey
+*resourceBox*namesAndClasses*Toggle.Background: RoyalBlue4
+*resourceBox*namesAndClasses*Toggle.Foreground: White
+*resourceBox*valueForm.Background: Grey
+*resourceBox*valueLabel.Background: Grey
+*resourceBox*valueLabel.Foreground: White
+*resourceBox*Command.Foreground: Gold
