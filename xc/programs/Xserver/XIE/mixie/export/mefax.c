@@ -1,4 +1,4 @@
-/* $XConsortium: mefax.c,v 1.2 93/10/31 09:43:37 dpw Exp $ */
+/* $XConsortium: mefax.c,v 1.3 93/11/01 09:00:19 dpw Exp $ */
 /**** module mefax.c ****/
 /******************************************************************************
 				NOTICE
@@ -132,7 +132,10 @@ typedef struct _fax_encode_pvt {
 	       register int size=dbnd->maxLocal-dbnd->minLocal;		\
 	       register unsigned char *ucp = dst;			\
 	   	while (size--)						\
-			*ucp = _ByteReverseTable[*ucp]; ucp++;		\
+		{							\
+		    *ucp = _ByteReverseTable[*ucp];			\
+		    ucp++;						\
+		}							\
 	 }
 
 /*------------------------------------------------------------------------
