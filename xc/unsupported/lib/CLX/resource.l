@@ -20,10 +20,6 @@
 
 (in-package :xlib)
 
-#+clx-for-clue ;; for CLUE only
-(defparameter *resource-subclassp* nil
-  "When non-nil and no match found, search superclasses.")
-
 ;; The C version of this uses a 64 entry hash table at each entry.
 ;; Small hash tables lose in Lisp, so we do linear searches on lists.
 
@@ -256,19 +252,7 @@
 		(get-entry-lookup tight class names classes)))
 	  ((and loose
 		(not (stringable-equal name class))
-		(get-entry-lookup loose class names classes)))
-	  #+clx-for-clue ;; for CLUE only
-	  ((and *resource-subclassp*
-		(or loose tight)
-		(dolist (class (cluei::class-all-superclasses class))
-		  (when tight
-		    (when (setq result
-				(get-entry-lookup tight class names classes))
-		      (return result)))
-		  (when loose
-		    (when (setq result
-				(get-entry-lookup loose class names classes))
-		      (return result))))))	
+		(get-entry-lookup loose class names classes)))	
 	  (loose
 	   (loop
 	     (pop names) (pop classes)
@@ -281,12 +265,6 @@
 			(setq result
 			      (get-entry-lookup loose class names classes)))
 	       (return result))
-	     #+clx-for-clue ;; for CLUE only
-	     (when *resource-subclassp*
-	       (dolist (class (cluei::class-all-superclasses class))
-		 (when (setq result
-			     (get-entry-lookup loose class names classes))
-		   (return-from get-entry result))))
 	     )))))
 
 
@@ -388,15 +366,6 @@
       (get-tables-lookup tight class names classes))
     (when (and loose (not (stringable-equal name class)))
       (get-tables-lookup loose class names classes))
-    #+clx-for-clue ;; for CLUE only
-    (when *resource-subclassp*
-      (dolist (class (cluei::class-all-superclasses class))
-	(declare (type symbol class))
-	(setq class class)
-	(when tight
-	  (get-tables-lookup tight class names classes))
-	(when loose
-	  (get-tables-lookup loose class names classes))))
     (when loose
       (loop
 	(pop names) (pop classes)
@@ -406,10 +375,6 @@
 	(get-tables-lookup loose name names classes)
 	(unless (stringable-equal name class)
 	  (get-tables-lookup loose class names classes))
-	#+clx-for-clue ;; for CLUE only
-	(when *resource-subclassp*
-	  (dolist (class (cluei::class-all-superclasses class))
-	    (get-tables-lookup loose class names classes)))
 	))))
 
 
