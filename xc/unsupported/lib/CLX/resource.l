@@ -538,11 +538,11 @@
 	      (otherwise
 	       (multiple-value-bind (name-list value)
 		   (parse-resource string i end)
+		 (when key (setq value (funcall key value)))
 		 (when
 		   (cond (test (funcall test name-list value))
 			 (test-not (not (funcall test-not name-list value)))
 			 (t t))
-		   (when key (setq value (funcall key value)))
 		   (add-resource database name-list value)))))))))))
 
 (defun parse-resource (string &optional (start 0) end)
