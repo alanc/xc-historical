@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.156 94/03/08 16:57:41 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.157 94/03/09 14:38:42 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -568,40 +568,7 @@ static XtResource applicationResources[]=
     {XtNargc, XtCArgc, XtRInt, sizeof(int),
 	  Offset(application.argc), XtRImmediate, (XtPointer)0}, 
     {XtNargv, XtCArgv, XtRStringArray, sizeof(String*),
-	  Offset(application.argv), XtRPointer, (XtPointer) NULL},
-    {XtNconnection, XtCConnection, XtRSmcConn, sizeof(SmcConn),
-         Offset(application.connection), XtRSmcConn, (XtPointer) NULL},
-    {XtNsessionID, XtCSessionID, XtRString, sizeof(String),
-         Offset(application.session_id), XtRString, (XtPointer) NULL},
-    {XtNrestartCommand, XtCRestartCommand, XtRStringArray, sizeof(String*),
-         Offset(application.restart_command), XtRPointer, (XtPointer) NULL},
-    {XtNcloneCommand, XtCCloneCommand, XtRStringArray, sizeof(String*),
-	 Offset(application.clone_command), XtRPointer, (XtPointer) NULL},
-    {XtNdiscardCommand, XtCDiscardCommand, XtRStringArray, sizeof(String*),
-	 Offset(application.discard_command), XtRPointer, (XtPointer) NULL},
-    {XtNresignCommand, XtCResignCommand, XtRStringArray, sizeof(String*),
-	 Offset(application.resign_command), XtRPointer, (XtPointer) NULL},
-    {XtNshutdownCommand, XtCShutdownCommand, XtRStringArray, sizeof(String*),
-	 Offset(application.shutdown_command), XtRPointer, (XtPointer) NULL},
-    {XtNenvironment, XtCEnvironment, XtRStringArray, sizeof(String*),
-	 Offset(application.environment), XtRPointer, (XtPointer) NULL},
-    {XtNcurrentDirectory, XtCCurrentDirectory, XtRString, sizeof(String),
-	 Offset(application.current_dir), XtRString, (XtPointer) NULL},
-    {XtNprogramPath, XtCProgramPath, XtRString, sizeof(String),
-	 Offset(application.program_path), XtRString, (XtPointer) NULL},
-    {XtNrestartStyle, XtCRestartStyle, XtRRestartStyle, sizeof(unsigned char),
-	 Offset(application.restart_style),
-	 XtRImmediate, (XtPointer) SmRestartIfRunning},
-    {XtNjoinSession, XtCJoinSession, XtRBoolean, sizeof(Boolean),
-	 Offset(application.join_session), XtRImmediate, (XtPointer) True},
-    {XtNsaveCallback, XtCCallback, XtRCallback, sizeof(XtPointer),
-         Offset(application.save_callbacks), XtRCallback, (XtPointer) NULL},
-    {XtNinteractCallback, XtCCallback, XtRCallback, sizeof(XtPointer),
-         Offset(application.interact_callbacks), XtRCallback, (XtPointer)NULL},
-    {XtNcancelCallback, XtCCallback, XtRCallback, sizeof(XtPointer),
-         Offset(application.cancel_callbacks), XtRCallback, (XtPointer) NULL},
-    {XtNdieCallback, XtCCallback, XtRCallback, sizeof(XtPointer),
-         Offset(application.die_callbacks), XtRCallback, (XtPointer) NULL}
+	  Offset(application.argv), XtRPointer, (XtPointer) NULL}
 };
 #undef Offset
 
@@ -674,6 +641,124 @@ externaldef(applicationshellclassrec) ApplicationShellClassRec applicationShellC
 
 externaldef(applicationshellwidgetclass) WidgetClass applicationShellWidgetClass =
 	(WidgetClass) (&applicationShellClassRec);
+
+/***************************************************************************
+ *
+ * SessionShell class record
+ *
+ ***************************************************************************/
+
+#undef Offset
+#define Offset(x)	(XtOffsetOf(SessionShellRec, x))
+
+static XtResource sessionResources[]=
+{
+    {XtNconnection, XtCConnection, XtRSmcConn, sizeof(SmcConn),
+         Offset(session.connection), XtRSmcConn, (XtPointer) NULL},
+    {XtNsessionID, XtCSessionID, XtRString, sizeof(String),
+         Offset(session.session_id), XtRString, (XtPointer) NULL},
+    {XtNrestartCommand, XtCRestartCommand, XtRStringArray, sizeof(String*),
+         Offset(session.restart_command), XtRPointer, (XtPointer) NULL},
+    {XtNcloneCommand, XtCCloneCommand, XtRStringArray, sizeof(String*),
+	 Offset(session.clone_command), XtRPointer, (XtPointer) NULL},
+    {XtNdiscardCommand, XtCDiscardCommand, XtRStringArray, sizeof(String*),
+	 Offset(session.discard_command), XtRPointer, (XtPointer) NULL},
+    {XtNresignCommand, XtCResignCommand, XtRStringArray, sizeof(String*),
+	 Offset(session.resign_command), XtRPointer, (XtPointer) NULL},
+    {XtNshutdownCommand, XtCShutdownCommand, XtRStringArray, sizeof(String*),
+	 Offset(session.shutdown_command), XtRPointer, (XtPointer) NULL},
+    {XtNenvironment, XtCEnvironment, XtRStringArray, sizeof(String*),
+	 Offset(session.environment), XtRPointer, (XtPointer) NULL},
+    {XtNcurrentDirectory, XtCCurrentDirectory, XtRString, sizeof(String),
+	 Offset(session.current_dir), XtRString, (XtPointer) NULL},
+    {XtNprogramPath, XtCProgramPath, XtRString, sizeof(String),
+	 Offset(session.program_path), XtRString, (XtPointer) NULL},
+    {XtNrestartStyle, XtCRestartStyle, XtRRestartStyle, sizeof(unsigned char),
+	 Offset(session.restart_style),
+	 XtRImmediate, (XtPointer) SmRestartIfRunning},
+    {XtNjoinSession, XtCJoinSession, XtRBoolean, sizeof(Boolean),
+	 Offset(session.join_session), XtRImmediate, (XtPointer) True},
+    {XtNsaveCallback, XtCCallback, XtRCallback, sizeof(XtPointer),
+         Offset(session.save_callbacks), XtRCallback, (XtPointer) NULL},
+    {XtNinteractCallback, XtCCallback, XtRCallback, sizeof(XtPointer),
+         Offset(session.interact_callbacks), XtRCallback, (XtPointer)NULL},
+    {XtNcancelCallback, XtCCallback, XtRCallback, sizeof(XtPointer),
+         Offset(session.cancel_callbacks), XtRCallback, (XtPointer) NULL},
+    {XtNdieCallback, XtCCallback, XtRCallback, sizeof(XtPointer),
+         Offset(session.die_callbacks), XtRCallback, (XtPointer) NULL}
+};
+#undef Offset
+
+static void SessionInitialize();
+static void SessionDestroy();
+static Boolean SessionSetValues();
+
+static CompositeClassExtensionRec sessionCompositeClassExtension = {
+    /* next_extension	*/	NULL,
+    /* record_type	*/	NULLQUARK,
+    /* version		*/	XtCompositeExtensionVersion,
+    /* record_size	*/	sizeof(CompositeClassExtensionRec),
+    /* accepts_objects	*/	TRUE
+};
+
+
+externaldef(sessionshellclassrec) SessionShellClassRec sessionShellClassRec = {
+  {
+    /* superclass         */    (WidgetClass) &applicationShellClassRec,
+    /* class_name         */    "SessionShell",
+    /* size               */    sizeof(SessionShellRec),
+    /* Class Initializer  */	NULL,
+    /* class_part_initialize*/	NULL,
+    /* Class init'ed ?    */	FALSE,
+    /* initialize         */    SessionInitialize,
+    /* initialize_notify  */	NULL,	
+    /* realize            */    XtInheritRealize,
+    /* actions            */    NULL,
+    /* num_actions        */    0,
+    /* resources          */    sessionResources,
+    /* resource_count     */	XtNumber(sessionResources),
+    /* xrm_class          */    NULLQUARK,
+    /* compress_motion    */    FALSE,
+    /* compress_exposure  */    TRUE,
+    /* compress_enterleave*/    FALSE,
+    /* visible_interest   */    FALSE,
+    /* destroy            */    SessionDestroy,
+    /* resize             */    XtInheritResize,
+    /* expose             */    NULL,
+    /* set_values         */    SessionSetValues,
+    /* set_values_hook    */	NULL,		
+    /* set_values_almost  */	XtInheritSetValuesAlmost,
+    /* get_values_hook    */	NULL,
+    /* accept_focus       */    NULL,
+    /* intrinsics version */	XtVersion,
+    /* callback offsets   */    NULL,
+    /* tm_table		  */	XtInheritTranslations,
+    /* query_geometry	  */	NULL,
+    /* display_accelerator*/	NULL,
+    /* extension	  */	NULL
+  },{
+    /* geometry_manager   */    XtInheritGeometryManager,
+    /* change_managed     */    XtInheritChangeManaged,
+    /* insert_child	  */	XtInheritInsertChild,
+    /* delete_child	  */	XtInheritDeleteChild,
+    /* extension	  */	(XtPointer)&sessionCompositeClassExtension
+  },{
+    /* extension	  */	NULL
+  },{
+    /* extension	  */	NULL
+  },{
+    /* extension	  */	NULL
+  },{
+    /* extension	  */	NULL
+  },{
+    /* extension	  */	NULL
+  },{
+    /* extension          */    NULL
+  }
+};
+
+externaldef(sessionshellwidgetclass) WidgetClass sessionShellWidgetClass =
+	(WidgetClass) (&sessionShellClassRec);
 
 /****************************************************************************
  * Whew!
@@ -929,6 +1014,21 @@ static void TopLevelInitialize(req, new, args, num_args)
 	    w->wm.wm_hints.initial_state = IconicState;
 }
 
+static String *NewStringArray();
+static void FreeStringArray();
+
+/* ARGSUSED */
+static void ApplicationInitialize(req, new, args, num_args)
+    Widget req, new;
+    ArgList args;		/* unused */
+    Cardinal *num_args;		/* unused */
+{
+    ApplicationShellWidget w = (ApplicationShellWidget)new;
+
+    if (w->application.argv) w->application.argv =
+	NewStringArray(w->application.argv);
+}
+
 #define XtSaveInactive 0
 #define XtSaveActive   1
 #define XtInteractPending    2
@@ -949,8 +1049,6 @@ extern char *getenv();
 static void JoinSession();
 static void SetSessionProperties();
 static void StopManagingSession();
-static String *NewStringArray();
-static void FreeStringArray();
 static String *HackParseArgv(); /* XXX */
 
 typedef struct _XtSaveYourselfRec {
@@ -967,52 +1065,50 @@ typedef struct _XtSaveYourselfRec {
 } XtSaveYourselfRec;
 
 /* ARGSUSED */
-static void ApplicationInitialize(req, new, args, num_args)
+static void SessionInitialize(req, new, args, num_args)
     Widget req, new;
     ArgList args;		/* unused */
     Cardinal *num_args;		/* unused */
 {
-    ApplicationShellWidget w = (ApplicationShellWidget)new;
+    SessionShellWidget w = (SessionShellWidget)new;
 
-    if (w->application.argv) w->application.argv =
-	NewStringArray(w->application.argv);
-    if (w->application.session_id) w->application.session_id =
-	XtNewString(w->application.session_id);
-    if (w->application.discard_command) w->application.discard_command =
-	NewStringArray(w->application.discard_command);
-    if (w->application.resign_command) w->application.resign_command =
-	NewStringArray(w->application.resign_command);
-    if (w->application.shutdown_command) w->application.shutdown_command =
-	NewStringArray(w->application.shutdown_command);
-    if (w->application.environment) w->application.environment =
-	NewStringArray(w->application.environment);
-    if (w->application.current_dir) w->application.current_dir =
-	XtNewString(w->application.current_dir);
+    if (w->session.session_id) w->session.session_id =
+	XtNewString(w->session.session_id);
+    if (w->session.discard_command) w->session.discard_command =
+	NewStringArray(w->session.discard_command);
+    if (w->session.resign_command) w->session.resign_command =
+	NewStringArray(w->session.resign_command);
+    if (w->session.shutdown_command) w->session.shutdown_command =
+	NewStringArray(w->session.shutdown_command);
+    if (w->session.environment) w->session.environment =
+	NewStringArray(w->session.environment);
+    if (w->session.current_dir) w->session.current_dir =
+	XtNewString(w->session.current_dir);
 
-    w->application.checkpoint_state = XtSaveInactive;
-    w->application.input_id = 0;
-    w->application.save = NULL;
+    w->session.checkpoint_state = XtSaveInactive;
+    w->session.input_id = 0;
+    w->session.save = NULL;
 
-    if ((w->application.join_session) &&
-	(w->application.argv || w->application.restart_command))
+    if ((w->session.join_session) &&
+	(w->application.argv || w->session.restart_command))
 	JoinSession(w);
 
-    w->application.restart_command = w->application.restart_command
-	? NewStringArray(w->application.restart_command)
-	: HackParseArgv(w->application.session_id, w->application.argv, True);
+    w->session.restart_command = w->session.restart_command
+	? NewStringArray(w->session.restart_command)
+	: HackParseArgv(w->session.session_id, w->application.argv, True);
 
-    w->application.clone_command = w->application.clone_command
-	? NewStringArray(w->application.clone_command)
-	: HackParseArgv(w->application.session_id,
-			w->application.restart_command, False);
+    w->session.clone_command = w->session.clone_command
+	? NewStringArray(w->session.clone_command)
+	: HackParseArgv(w->session.session_id,
+			w->session.restart_command, False);
 
-    w->application.program_path = w->application.program_path
-	? XtNewString(w->application.program_path)
-	: w->application.restart_command ?
-	    XtNewString(w->application.restart_command[0])
+    w->session.program_path = w->session.program_path
+	? XtNewString(w->session.program_path)
+	: w->session.restart_command ?
+	    XtNewString(w->session.restart_command[0])
 		: NULL;
 
-    if (w->application.connection)
+    if (w->session.connection)
 	SetSessionProperties(w, True, 0L, 0L);
 }
 
@@ -1376,9 +1472,9 @@ static void _popup_set_prop(w)
 			    (unsigned char *)(&(p->core.window)), 1);
 	if (p == (Widget) w) {
 	    for ( ; p->core.parent != NULL; p = p->core.parent);
-	    if (XtIsApplicationShell(p)) {
+	    if (XtIsSubclass(p, sessionShellWidgetClass)) {
 		String sm_client_id = 
-		    ((ApplicationShellWidget)p)->application.session_id;
+		    ((SessionShellWidget)p)->session.session_id;
 		if (sm_client_id != NULL) {
 		    XChangeProperty(XtDisplay((Widget)w), XtWindow((Widget)w),
 				    XInternAtom(XtDisplay((Widget)w),
@@ -1539,18 +1635,24 @@ static void ApplicationDestroy(wid)
     Widget wid;
 {
     ApplicationShellWidget w = (ApplicationShellWidget) wid;
-
-    StopManagingSession(w, w->application.connection);
-    XtFree(w->application.session_id);
     FreeStringArray(w->application.argv);
-    FreeStringArray(w->application.restart_command);
-    FreeStringArray(w->application.clone_command);
-    FreeStringArray(w->application.discard_command);
-    FreeStringArray(w->application.resign_command);
-    FreeStringArray(w->application.shutdown_command);
-    FreeStringArray(w->application.environment);
-    XtFree(w->application.current_dir);
-    XtFree(w->application.program_path);
+}
+
+static void SessionDestroy(wid)
+    Widget wid;
+{
+    SessionShellWidget w = (SessionShellWidget) wid;
+
+    StopManagingSession(w, w->session.connection);
+    XtFree(w->session.session_id);
+    FreeStringArray(w->session.restart_command);
+    FreeStringArray(w->session.clone_command);
+    FreeStringArray(w->session.discard_command);
+    FreeStringArray(w->session.resign_command);
+    FreeStringArray(w->session.shutdown_command);
+    FreeStringArray(w->session.environment);
+    XtFree(w->session.current_dir);
+    XtFree(w->session.program_path);
 }
 
 /*
@@ -2231,9 +2333,6 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 {
     ApplicationShellWidget nw = (ApplicationShellWidget) new;
     ApplicationShellWidget cw = (ApplicationShellWidget) current;
-    unsigned long set_mask = 0L;
-    unsigned long unset_mask = 0L;
-    Boolean initialize = False;
 
     if (cw->application.argv != nw->application.argv) {
 	nw->application.argv = NewStringArray(nw->application.argv);
@@ -2250,99 +2349,113 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 		XDeleteProperty(XtDisplay(new), XtWindow(new), XA_WM_COMMAND);
 	}
     }
+    return False;
+}
 
-    if (cw->application.session_id != nw->application.session_id) {
-	nw->application.session_id = XtNewString(nw->application.session_id);
-	XtFree(cw->application.session_id);
+/*ARGSUSED*/
+static Boolean SessionSetValues(current, request, new, args, num_args)
+    Widget current, request, new;
+    ArgList args;
+    Cardinal *num_args;
+{
+    SessionShellWidget nw = (SessionShellWidget) new;
+    SessionShellWidget cw = (SessionShellWidget) current;
+    unsigned long set_mask = 0L;
+    unsigned long unset_mask = 0L;
+    Boolean initialize = False;
+
+    if (cw->session.session_id != nw->session.session_id) {
+	nw->session.session_id = XtNewString(nw->session.session_id);
+	XtFree(cw->session.session_id);
     }
 
-    if (cw->application.clone_command != nw->application.clone_command) {
-	if (nw->application.clone_command) {
-	    nw->application.clone_command =
-		NewStringArray(nw->application.clone_command);
+    if (cw->session.clone_command != nw->session.clone_command) {
+	if (nw->session.clone_command) {
+	    nw->session.clone_command =
+		NewStringArray(nw->session.clone_command);
 	    set_mask |= XtCloneCommandMask;
 	} else unset_mask |= XtCloneCommandMask;
-	FreeStringArray(cw->application.clone_command);
+	FreeStringArray(cw->session.clone_command);
     }
 
-    if (cw->application.current_dir != nw->application.current_dir) {
-	if (nw->application.current_dir) {
-	    nw->application.current_dir = 
-		XtNewString(nw->application.current_dir);
+    if (cw->session.current_dir != nw->session.current_dir) {
+	if (nw->session.current_dir) {
+	    nw->session.current_dir = 
+		XtNewString(nw->session.current_dir);
 	    set_mask |= XtCurrentDirectoryMask;
 	} else unset_mask |= XtCurrentDirectoryMask;
-	XtFree((char *) cw->application.current_dir);
+	XtFree((char *) cw->session.current_dir);
     }
 
-    if (cw->application.discard_command != nw->application.discard_command) {
-	if (nw->application.discard_command) {
-	    nw->application.discard_command =
-		NewStringArray(nw->application.discard_command);
+    if (cw->session.discard_command != nw->session.discard_command) {
+	if (nw->session.discard_command) {
+	    nw->session.discard_command =
+		NewStringArray(nw->session.discard_command);
 	    set_mask |=  XtDiscardCommandMask;
 	} else unset_mask |= XtDiscardCommandMask;
-	FreeStringArray(cw->application.discard_command);
+	FreeStringArray(cw->session.discard_command);
     }
 
-    if (cw->application.environment != nw->application.environment) {
-	if (nw->application.environment) {
-	    nw->application.environment = 
-		NewStringArray(nw->application.environment);
+    if (cw->session.environment != nw->session.environment) {
+	if (nw->session.environment) {
+	    nw->session.environment = 
+		NewStringArray(nw->session.environment);
 	    set_mask |= XtEnvironmentMask;
 	} else unset_mask |= XtEnvironmentMask;
-	FreeStringArray(cw->application.environment);
+	FreeStringArray(cw->session.environment);
     }
 
-    if (cw->application.program_path != nw->application.program_path) {
-	if (nw->application.program_path) {
-	    nw->application.program_path = 
-		XtNewString(nw->application.program_path);
+    if (cw->session.program_path != nw->session.program_path) {
+	if (nw->session.program_path) {
+	    nw->session.program_path = 
+		XtNewString(nw->session.program_path);
 	    set_mask |= XtProgramMask;
 	} else unset_mask |= XtProgramMask;
-	XtFree((char *) cw->application.program_path);
+	XtFree((char *) cw->session.program_path);
     }
 
-    if (cw->application.resign_command != nw->application.resign_command) {
-	if (nw->application.resign_command) {
-	    nw->application.resign_command =
-		NewStringArray(nw->application.resign_command);
+    if (cw->session.resign_command != nw->session.resign_command) {
+	if (nw->session.resign_command) {
+	    nw->session.resign_command =
+		NewStringArray(nw->session.resign_command);
 	    set_mask |= XtResignCommandMask;
 	} else set_mask |= XtResignCommandMask;
-	FreeStringArray(cw->application.resign_command);
+	FreeStringArray(cw->session.resign_command);
     }
 
-    if (cw->application.restart_command != nw->application.restart_command) {
-	if (nw->application.restart_command) {
-	    nw->application.restart_command =
-		NewStringArray(nw->application.restart_command);
+    if (cw->session.restart_command != nw->session.restart_command) {
+	if (nw->session.restart_command) {
+	    nw->session.restart_command =
+		NewStringArray(nw->session.restart_command);
 	    set_mask |= XtRestartCommandMask;
 	} else unset_mask |= XtRestartCommandMask;
-	FreeStringArray(cw->application.restart_command);
+	FreeStringArray(cw->session.restart_command);
     }
 
-    if (cw->application.restart_style != nw->application.restart_style)
+    if (cw->session.restart_style != nw->session.restart_style)
 	set_mask |= XtRestartStyleHintMask;
 
-    if (cw->application.shutdown_command != nw->application.shutdown_command) {
-	if (nw->application.shutdown_command) {
-	    nw->application.shutdown_command =
-		NewStringArray(nw->application.shutdown_command);
+    if (cw->session.shutdown_command != nw->session.shutdown_command) {
+	if (nw->session.shutdown_command) {
+	    nw->session.shutdown_command =
+		NewStringArray(nw->session.shutdown_command);
 	    set_mask |= XtShutdownCommandMask;
 	} else unset_mask |= XtShutdownCommandMask;
-	FreeStringArray(cw->application.shutdown_command);
+	FreeStringArray(cw->session.shutdown_command);
     }
 
-    if ((!cw->application.join_session && nw->application.join_session) ||
-	(!cw->application.connection && nw->application.connection)) {
+    if ((!cw->session.join_session && nw->session.join_session) ||
+	(!cw->session.connection && nw->session.connection)) {
 	JoinSession(nw);
 	initialize = True;
     }
 
-    if (nw->application.connection && (set_mask || unset_mask || initialize))
+    if (nw->session.connection && (set_mask || unset_mask || initialize))
 	SetSessionProperties(new, initialize, set_mask, unset_mask);
 
-    if ((cw->application.join_session && !nw->application.join_session) ||
-	(cw->application.connection && !nw->application.connection))
-	StopManagingSession(nw, nw->application.connection);
+    if ((cw->session.join_session && !nw->session.join_session) ||
+	(cw->session.connection && !nw->session.connection))
+	StopManagingSession(nw, nw->session.connection);
 
     return False;
 }
@@ -2436,23 +2549,23 @@ static void GetIceEvent();
 static XtCheckpointToken GetToken();
 
 static void StopManagingSession(w, connection)
-    ApplicationShellWidget w;
+    SessionShellWidget w;
     SmcConn connection; /* connection to close, if any */
 {
     if (connection)
 	SmcCloseConnection(connection, 0, NULL);
 
-    if (w->application.input_id) {
-	XtRemoveInput(w->application.input_id);
-	w->application.input_id = 0;
+    if (w->session.input_id) {
+	XtRemoveInput(w->session.input_id);
+	w->session.input_id = 0;
     }
-    w->application.connection = NULL;
-    w->application.join_session = False;
+    w->session.connection = NULL;
+    w->session.join_session = False;
 }
 
 #define XT_MSG_LENGTH 256
 static void JoinSession(w)
-    ApplicationShellWidget w;
+    SessionShellWidget w;
 {
     IceConn ice_conn;
     SmcCallbacks smcb;
@@ -2466,16 +2579,16 @@ static void JoinSession(w)
 	smcb.die.client_data =
 	    smcb.shutdown_cancelled.client_data = (SmPointer) w;
 
-    if (w->application.connection) {
+    if (w->session.connection) {
 	mask = SmcSaveYourselfProcMask | SmcDieProcMask |
 	    SmcShutdownCancelledProcMask;
-	SmcModifyCallbacks(w->application.connection, mask, &smcb);
-	sm_client_id = SmcClientID(w->application.connection);
+	SmcModifyCallbacks(w->session.connection, mask, &smcb);
+	sm_client_id = SmcClientID(w->session.connection);
     } else if (getenv("SESSION_MANAGER")) {
 	char error_msg[XT_MSG_LENGTH];
 	error_msg[0] = '\0';
-	w->application.connection =
-	    SmcOpenConnection(NULL, &smcb, w->application.session_id,
+	w->session.connection =
+	    SmcOpenConnection(NULL, &smcb, w->session.session_id,
 			      &sm_client_id, XT_MSG_LENGTH, error_msg);
 	if (error_msg[0]) {
 	    String params[1];
@@ -2488,23 +2601,23 @@ static void JoinSession(w)
 			    params, &num_params);
 	}
     }
-    if (w->application.connection) {
-	w->application.join_session = True;
-	if (w->application.session_id == NULL
-	    || (strcmp(w->application.session_id, sm_client_id) != 0)) {
-	    XtFree(w->application.session_id);
-	    w->application.session_id = XtNewString(sm_client_id);
+    if (w->session.connection) {
+	w->session.join_session = True;
+	if (w->session.session_id == NULL
+	    || (strcmp(w->session.session_id, sm_client_id) != 0)) {
+	    XtFree(w->session.session_id);
+	    w->session.session_id = XtNewString(sm_client_id);
 	}
 	free(sm_client_id);
-	ice_conn = SmcGetIceConnection(w->application.connection);
+	ice_conn = SmcGetIceConnection(w->session.connection);
 	/* XXX should add only if first one to select on this fd */
-	w->application.input_id =
+	w->session.input_id =
 	    XtAppAddInput(XtWidgetToApplicationContext((Widget)w),
 			  IceConnectionNumber(ice_conn),
 			  (XtPointer) XtInputReadMask,
 			  GetIceEvent, (XtPointer) ice_conn);
     } else {
-	w->application.join_session = False;
+	w->session.join_session = False;
     }
 }
 #undef XT_MSG_LENGTH
@@ -2621,24 +2734,24 @@ typedef struct PropertyRec {
     PackProc	proc;
 } PropertyRec, *PropertyTable;
 
-#define Offset(x) (XtOffsetOf(ApplicationShellRec, x))
+#define Offset(x) (XtOffsetOf(SessionShellRec, x))
 static PropertyRec propertyTable[] = {
-  {SmCloneCommand,     Offset(application.clone_command),    ListPack},
-  {SmCurrentDirectory, Offset(application.current_dir),      ArrayPack},
-  {SmDiscardCommand,   Offset(application.discard_command),  ListPack},
-  {SmEnvironment,      Offset(application.environment),	     ListPack},
-  {SmProgram,          Offset(application.program_path),     ArrayPack},
-  {SmResignCommand,    Offset(application.resign_command),   ListPack},
-  {SmRestartCommand,   Offset(application.restart_command),  ListPack},
-  {SmRestartStyleHint, Offset(application.restart_style),    CardPack},
-  {SmShutdownCommand,  Offset(application.shutdown_command), ListPack}
+  {SmCloneCommand,     Offset(session.clone_command),    ListPack},
+  {SmCurrentDirectory, Offset(session.current_dir),      ArrayPack},
+  {SmDiscardCommand,   Offset(session.discard_command),  ListPack},
+  {SmEnvironment,      Offset(session.environment),      ListPack},
+  {SmProgram,          Offset(session.program_path),     ArrayPack},
+  {SmResignCommand,    Offset(session.resign_command),   ListPack},
+  {SmRestartCommand,   Offset(session.restart_command),  ListPack},
+  {SmRestartStyleHint, Offset(session.restart_style),    CardPack},
+  {SmShutdownCommand,  Offset(session.shutdown_command), ListPack}
 };
 #undef Offset
 
 #define XT_NUM_SM_PROPS 11
 
 static void SetSessionProperties(w, initialize, set_mask, unset_mask)
-    ApplicationShellWidget w;
+    SessionShellWidget w;
     Boolean initialize;
     unsigned long set_mask;
     unsigned long unset_mask;
@@ -2651,7 +2764,7 @@ static void SetSessionProperties(w, initialize, set_mask, unset_mask)
     SmProp *props[XT_NUM_SM_PROPS];
     char *pnames[XT_NUM_SM_PROPS];
 
-    if (w->application.connection == NULL)
+    if (w->session.connection == NULL)
 	return;
 
     if (initialize) {
@@ -2677,7 +2790,7 @@ static void SetSessionProperties(w, initialize, set_mask, unset_mask)
 	props[num_props++] = ArrayPack(SmProcessID, &pidp);
 
 	if (num_props) {
-	    SmcSetProperties(w->application.connection, num_props, props);
+	    SmcSetProperties(w->session.connection, num_props, props);
 	    FreePacks(props, num_props);
 	}
 	return;
@@ -2690,7 +2803,7 @@ static void SetSessionProperties(w, initialize, set_mask, unset_mask)
 		addr = (XtPointer *) ((char *) w + p->offset);
 		props[num_props++] = (*(p->proc))(p->name, (XtPointer)addr);
 	    }
-	SmcSetProperties(w->application.connection, num_props, props);
+	SmcSetProperties(w->session.connection, num_props, props);
 	FreePacks(props, num_props);
     }
 
@@ -2700,7 +2813,7 @@ static void SetSessionProperties(w, initialize, set_mask, unset_mask)
 	for (n = XtNumber(propertyTable); n; n--, p++, mask <<= 1)
 	    if (mask & unset_mask) 
 		pnames[num_props++] = p->name;
-	SmcDeleteProperties(w->application.connection, num_props, pnames);
+	SmcDeleteProperties(w->session.connection, num_props, pnames);
     }
 }
 
@@ -2715,28 +2828,28 @@ static void GetIceEvent(client_data, source, id)
 }
 
 static void CleanUpSave(w)
-    ApplicationShellWidget w;
+    SessionShellWidget w;
 {
-    XtSaveYourself next = w->application.save->next;
-    XtFree((char *)w->application.save);
-    w->application.save = next;
-    if (w->application.save)
+    XtSaveYourself next = w->session.save->next;
+    XtFree((char *)w->session.save);
+    w->session.save = next;
+    if (w->session.save)
 	CallSaveCallbacks(w);
 }
     
 static void CallSaveCallbacks(w)
-    ApplicationShellWidget w;
+    SessionShellWidget w;
 {
     XtCheckpointToken token;
 
     if (XtHasCallbacks((Widget) w, XtNsaveCallback) != XtCallbackHasSome) {
 	/* if the application makes no attempt to save state, report failure */
-	SmcSaveYourselfDone(w->application.connection, False);
+	SmcSaveYourselfDone(w->session.connection, False);
 	CleanUpSave(w);
     } else {
-	w->application.checkpoint_state = XtSaveActive;
+	w->session.checkpoint_state = XtSaveActive;
 	token = GetToken((Widget) w, XtSessionCheckpoint);
-	XtCallCallbackList((Widget)w, w->application.save_callbacks,
+	XtCallCallbackList((Widget)w, w->session.save_callbacks,
 			   (XtPointer)token);
 	XtSessionReturnToken(token);
     }
@@ -2752,7 +2865,7 @@ static void XtCallSaveCallbacks(connection, client_data, save_type, shutdown,
     int		interact;
     Bool	fast;
 {
-    ApplicationShellWidget w = (ApplicationShellWidget) client_data;
+    SessionShellWidget w = (SessionShellWidget) client_data;
     XtSaveYourself save;
     XtSaveYourself prev;
 
@@ -2768,12 +2881,12 @@ static void XtCallSaveCallbacks(connection, client_data, save_type, shutdown,
     save->cancel_shutdown = False;
     save->interact_dialog_type = SmDialogNormal;
 
-    prev = (XtSaveYourself) &w->application.save;
+    prev = (XtSaveYourself) &w->session.save;
     while (prev->next)
 	prev = prev->next;
     prev->next = save;
 
-    if (w->application.checkpoint_state == XtSaveInactive)
+    if (w->session.checkpoint_state == XtSaveInactive)
 	CallSaveCallbacks(w);
 }
 
@@ -2782,10 +2895,10 @@ static void XtCallDieCallbacks(connection, client_data)
     SmcConn	connection;	/* unused */
     SmPointer	client_data;
 {
-    ApplicationShellWidget w =  (ApplicationShellWidget) client_data;
+    SessionShellWidget w =  (SessionShellWidget) client_data;
 
-    StopManagingSession(w, w->application.connection);
-    XtCallCallbackList((Widget)w, w->application.die_callbacks,
+    StopManagingSession(w, w->session.connection);
+    XtCallCallbackList((Widget)w, w->session.die_callbacks,
 		       (XtPointer) NULL);
 }
 
@@ -2794,20 +2907,20 @@ static void XtCallCancelCallbacks(connection, client_data)
     SmcConn	connection;	/* unused */
     SmPointer	client_data;
 {
-    ApplicationShellWidget w = (ApplicationShellWidget) client_data;
+    SessionShellWidget w = (SessionShellWidget) client_data;
 
-    if (w->application.checkpoint_state) 
-	w->application.save->cancel_shutdown = True;
+    if (w->session.checkpoint_state) 
+	w->session.save->cancel_shutdown = True;
 
-    XtCallCallbackList((Widget)w, w->application.cancel_callbacks,
+    XtCallCallbackList((Widget)w, w->session.cancel_callbacks,
 		       (XtPointer) NULL);
 
-    if (w->application.checkpoint_state == XtInteractPending) {
+    if (w->session.checkpoint_state == XtInteractPending) {
 	XtRemoveAllCallbacks((Widget)w, XtNinteractCallback);
-	w->application.checkpoint_state = XtSaveActive;
-	if (w->application.save->save_tokens == 0) {
-	    w->application.checkpoint_state = XtSaveInactive;
-	    SmcSaveYourselfDone(w->application.connection, False);
+	w->session.checkpoint_state = XtSaveActive;
+	if (w->session.save->save_tokens == 0) {
+	    w->session.checkpoint_state = XtSaveInactive;
+	    SmcSaveYourselfDone(w->session.connection, False);
 	    CleanUpSave(w);
 	}
     }
@@ -2818,16 +2931,16 @@ static void XtInteractPermission(connection, data)
     SmPointer	data;
 {
     Widget w = (Widget) data;
-    ApplicationShellWidget appshell = (ApplicationShellWidget) data;
+    SessionShellWidget sw = (SessionShellWidget) data;
     XtCheckpointToken token;
     XtCallbackProc callback;
     XtPointer client_data;
 
         
-    _XtPeekCallback(w, appshell->application.interact_callbacks,
-		    &callback, &client_data);
+    _XtPeekCallback(w, sw->session.interact_callbacks, &callback,
+		    &client_data);
     if (callback) {
-	appshell->application.checkpoint_state = XtInteractActive;
+	sw->session.checkpoint_state = XtInteractActive;
 	token = GetToken(w, XtSessionInteract);
     	XtRemoveCallback(w, XtNinteractCallback, callback, client_data);
 	(*callback)(w, client_data, (XtPointer) token);
@@ -2840,14 +2953,14 @@ static XtCheckpointToken GetToken(widget, type)
     Widget	widget;
     int		type;
 {
-    ApplicationShellWidget w = (ApplicationShellWidget) widget;
+    SessionShellWidget w = (SessionShellWidget) widget;
     XtCheckpointToken token;
-    XtSaveYourself save = w->application.save;
+    XtSaveYourself save = w->session.save;
    
     if (type == XtSessionCheckpoint)
-	w->application.save->save_tokens++;
+	w->session.save->save_tokens++;
     else if (type == XtSessionInteract)
-	w->application.save->interact_tokens++;
+	w->session.save->interact_tokens++;
     else 
 	return (XtCheckpointToken) NULL;
 
@@ -2871,12 +2984,12 @@ XtCheckpointToken XtSessionGetToken(widget)
     Widget	widget;
 #endif
 {
-    ApplicationShellWidget w = (ApplicationShellWidget) widget;
+    SessionShellWidget w = (SessionShellWidget) widget;
     XtCheckpointToken token = NULL;
     WIDGET_TO_APPCON(widget);
 
     LOCK_APP(app);
-    if (w->application.checkpoint_state)
+    if (w->session.checkpoint_state)
 	token = GetToken(widget, XtSessionCheckpoint);
 
     UNLOCK_APP(app);
@@ -2890,7 +3003,7 @@ void XtSessionReturnToken(token)
     XtCheckpointToken	token;
 #endif
 {
-    ApplicationShellWidget w = (ApplicationShellWidget) token->widget;
+    SessionShellWidget w = (SessionShellWidget) token->widget;
     Boolean has_some;
     Boolean save_done;
     XtCallbackProc callback;
@@ -2903,47 +3016,47 @@ void XtSessionReturnToken(token)
 		== XtCallbackHasSome);
 
     if (token->save_success == False)
-	w->application.save->save_success = False;
+	w->session.save->save_success = False;
     if (token->interact_dialog_type == SmDialogError)
-	w->application.save->interact_dialog_type = SmDialogError;
+	w->session.save->interact_dialog_type = SmDialogError;
 
     if (token->type == XtSessionCheckpoint) {
-	w->application.save->save_tokens--;
-	if (has_some && w->application.checkpoint_state == XtSaveActive) {
-	    w->application.checkpoint_state = XtInteractPending;
-	    SmcInteractRequest(w->application.connection,
-			       w->application.save->interact_dialog_type,
+	w->session.save->save_tokens--;
+	if (has_some && w->session.checkpoint_state == XtSaveActive) {
+	    w->session.checkpoint_state = XtInteractPending;
+	    SmcInteractRequest(w->session.connection,
+			       w->session.save->interact_dialog_type,
 			       XtInteractPermission, (SmPointer) w);
 	}
 	XtFree((char*) token);
     } else {
 	if (token->cancel_shutdown == True)
-	    w->application.save->cancel_shutdown = True;
+	    w->session.save->cancel_shutdown = True;
 	if (has_some) {
-	    token->cancel_shutdown = w->application.save->cancel_shutdown;
-	    _XtPeekCallback((Widget)w, w->application.interact_callbacks,
+	    token->cancel_shutdown = w->session.save->cancel_shutdown;
+	    _XtPeekCallback((Widget)w, w->session.interact_callbacks,
 			    &callback, &client_data);
 	    XtRemoveCallback((Widget)w, XtNinteractCallback,
 			     callback, client_data);
 	    (*callback)((Widget)w, client_data, (XtPointer)token);
 	} else {
-	    w->application.save->interact_tokens--;
-	    if (w->application.save->interact_tokens == 0) {
-		w->application.checkpoint_state = XtSaveActive;
-		SmcInteractDone(w->application.connection,
-				w->application.save->cancel_shutdown);
+	    w->session.save->interact_tokens--;
+	    if (w->session.save->interact_tokens == 0) {
+		w->session.checkpoint_state = XtSaveActive;
+		SmcInteractDone(w->session.connection,
+				w->session.save->cancel_shutdown);
 	    }
 	    XtFree((char *) token);
 	}
     }
 
-    save_done = (w->application.save->save_tokens == 0 && 
-		 w->application.checkpoint_state == XtSaveActive);
+    save_done = (w->session.save->save_tokens == 0 && 
+		 w->session.checkpoint_state == XtSaveActive);
 
     if (save_done) {
-	w->application.checkpoint_state = XtSaveInactive;
-	SmcSaveYourselfDone(w->application.connection,
-			    w->application.save->save_success);
+	w->session.checkpoint_state = XtSaveInactive;
+	SmcSaveYourselfDone(w->session.connection,
+			    w->session.save->save_success);
 	CleanUpSave(w);
     }
 

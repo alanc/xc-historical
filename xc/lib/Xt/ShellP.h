@@ -1,4 +1,4 @@
-/* $XConsortium: ShellP.h,v 1.35 94/02/08 20:26:12 converse Exp $ */
+/* $XConsortium: ShellP.h,v 1.36 94/03/20 18:18:54 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -295,8 +295,6 @@ typedef struct _ApplicationShellClassRec {
 
 externalref ApplicationShellClassRec applicationShellClassRec;
 
-typedef struct _XtSaveYourselfRec *XtSaveYourself;
-
 /* New fields for the application shell widget */
 
 typedef struct {
@@ -308,6 +306,48 @@ typedef struct {
     XrmClass xrm_class;
     int argc;
     char **argv;
+} ApplicationShellPart;
+
+typedef  struct {
+	CorePart 	core;
+	CompositePart 	composite;
+	ShellPart 	shell;
+	WMShellPart	wm;
+	VendorShellPart	vendor;
+	TopLevelShellPart topLevel;
+	ApplicationShellPart application;
+} ApplicationShellRec, *ApplicationShellWidget;
+
+/***********************************************************************
+ *
+ * SessionShell Widget Private Data
+ *
+ ***********************************************************************/
+
+/* New fields for the SessionShell widget class record */
+
+typedef struct {
+    XtPointer       extension;          /* pointer to extension record */
+} SessionShellClassPart;
+
+typedef struct _SessionShellClassRec {
+  	CoreClassPart      core_class;
+	CompositeClassPart composite_class;
+	ShellClassPart  shell_class;
+	WMShellClassPart   wm_shell_class;
+	VendorShellClassPart vendor_shell_class;
+	TopLevelShellClassPart top_level_shell_class;
+	ApplicationShellClassPart application_shell_class;
+	SessionShellClassPart session_shell_class;
+} SessionShellClassRec;
+
+externalref SessionShellClassRec sessionShellClassRec;
+
+typedef struct _XtSaveYourselfRec *XtSaveYourself; /* implementation-private */
+
+/* New fields for the session shell widget */
+
+typedef struct {
     SmcConn         connection;
     String          session_id;
     String*         restart_command;
@@ -327,7 +367,17 @@ typedef struct {
     XtCallbackList  die_callbacks;
     XtSaveYourself  save;
     XtInputId       input_id;
-} ApplicationShellPart;
+    XtPointer       ses9;
+    XtPointer       ses8;
+    XtPointer       ses7;
+    XtPointer       ses6;
+    XtPointer       ses5;
+    XtPointer       ses4;
+    XtPointer       ses3;
+    XtPointer       ses2;
+    XtPointer       ses1;
+    XtPointer       ses0;
+} SessionShellPart;
 
 typedef  struct {
 	CorePart 	core;
@@ -337,6 +387,7 @@ typedef  struct {
 	VendorShellPart	vendor;
 	TopLevelShellPart topLevel;
 	ApplicationShellPart application;
-} ApplicationShellRec, *ApplicationShellWidget;
+	SessionShellPart session;
+} SessionShellRec, *SessionShellWidget;
 
 #endif /* _XtShellPrivate_h */

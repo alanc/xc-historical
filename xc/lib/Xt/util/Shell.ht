@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.h,v 1.26 94/02/04 21:31:21 converse Exp $ */
+/* $XConsortium: Shell.h,v 1.27 94/02/08 20:24:54 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -512,6 +512,7 @@ typedef struct _WMShellClassRec *WMShellWidgetClass;
 typedef struct _TransientShellClassRec *TransientShellWidgetClass;
 typedef struct _TopLevelShellClassRec *TopLevelShellWidgetClass;
 typedef struct _ApplicationShellClassRec *ApplicationShellWidgetClass;
+typedef struct _SessionShellClassRec *SessionShellWidgetClass;
 
 #ifndef SHELL 
 externalref WidgetClass shellWidgetClass;
@@ -520,6 +521,7 @@ externalref WidgetClass wmShellWidgetClass;
 externalref WidgetClass transientShellWidgetClass;
 externalref WidgetClass topLevelShellWidgetClass;
 externalref WidgetClass applicationShellWidgetClass;
+externalref WidgetClass sessionShellWidgetClass;
 #endif
 
 #endif /* _XtShell_h */
