@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: error.c,v 1.8 89/01/16 17:09:47 keith Exp $
+ * $XConsortium: error.c,v 1.9 89/09/09 13:00:57 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -46,12 +46,23 @@ InitErrorLog ()
 }
 
 /*VARARGS1*/
+LogInfo (fmt, arg1, arg2, arg3, arg4, arg5, arg6)
+char	*fmt;
+int	arg1, arg2, arg3, arg4, arg5, arg6;
+{
+    fprintf (stderr, "info (pid %d): ", getpid());
+    fprintf (stderr, fmt, arg1, arg2, arg3, arg4, arg5, arg6);
+    fflush (stderr);
+}
+
+/*VARARGS1*/
 LogError (fmt, arg1, arg2, arg3, arg4, arg5, arg6)
 char	*fmt;
 int	arg1, arg2, arg3, arg4, arg5, arg6;
 {
-	fprintf (stderr, fmt, arg1, arg2, arg3, arg4, arg5, arg6);
-	fflush (stderr);
+    fprintf (stderr, "error (pid %d): ", getpid());
+    fprintf (stderr, fmt, arg1, arg2, arg3, arg4, arg5, arg6);
+    fflush (stderr);
 }
 
 /*VARARGS1*/
@@ -59,9 +70,9 @@ LogPanic (fmt, arg1, arg2, arg3, arg4, arg5, arg6)
 char	*fmt;
 int	arg1, arg2, arg3, arg4, arg5, arg6;
 {
-	LogError ("panic: ");
-	LogError (fmt, arg1, arg2, arg3, arg4, arg5, arg6);
-	exit (1);
+    LogError ("panic (pid %d): ", getpid());
+    LogError (fmt, arg1, arg2, arg3, arg4, arg5, arg6);
+    exit (1);
 }
 
 /*VARARGS1*/
@@ -69,20 +80,20 @@ LogOutOfMem (fmt, arg1, arg2, arg3, arg4, arg5, arg6)
 char	*fmt;
 int	arg1, arg2, arg3, arg4, arg5, arg6;
 {
-	fprintf (stderr, "xdm: out of memory in routine ");
-	fprintf (stderr, fmt, arg1, arg2, arg3, arg4, arg5, arg6);
-	fflush (stderr);
+    fprintf (stderr, "xdm: out of memory in routine ");
+    fprintf (stderr, fmt, arg1, arg2, arg3, arg4, arg5, arg6);
+    fflush (stderr);
 }
 
 Panic (mesg)
 char	*mesg;
 {
-	int	i;
+    int	i;
 
-	i = creat ("/dev/console", 0666);
-	write (i, "panic: ", 7);
-	write (i, mesg, strlen (mesg));
-	exit (1);
+    i = creat ("/dev/console", 0666);
+    write (i, "panic: ", 7);
+    write (i, mesg, strlen (mesg));
+    exit (1);
 }
 
 
@@ -91,7 +102,6 @@ Debug (fmt, arg1, arg2, arg3, arg4, arg5, arg6)
 char	*fmt;
 int	arg1, arg2, arg3, arg4, arg5, arg6;
 {
-	if (debugLevel > 1) {
-		printf (fmt, arg1, arg2, arg3, arg4, arg5, arg6);
-	}
+    if (debugLevel > 0)
+	printf (fmt, arg1, arg2, arg3, arg4, arg5, arg6);
 }
