@@ -1,5 +1,5 @@
 /*
- * $XConsortium: appres.c,v 1.2 89/07/20 16:38:21 jim Exp $
+ * $XConsortium: appres.c,v 1.3 89/07/27 19:06:48 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -32,7 +32,7 @@ char *ProgramName;
 
 static void usage ()
 {
-    fprintf (stderr, "usage:  %s  [instance] [class]\n", ProgramName);
+    fprintf (stderr, "usage:  %s  [class [instance]]\n", ProgramName);
     exit (1);
 }
 
@@ -106,7 +106,7 @@ main (argc, argv)
 	     *
 	     *     [*.]
 	     *     class[*.]
-	     *     inst[*.]
+	     *     instance[*.]
 	     *
 	     * and set printit
 	     */

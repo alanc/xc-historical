@@ -3,7 +3,7 @@
 appres - list application resource database
 .SH SYNOPSIS
 .B "appres"
-[[instancename] classname] [-xrm resource ...] 
+[[classname [instancename]] [-xrm resource ...] 
 .SH DESCRIPTION
 .PP
 The \fIappres\fP program prints the resources seen by an application of the
