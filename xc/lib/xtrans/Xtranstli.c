@@ -1,4 +1,3 @@
-#include <sys/socket.h>
 #include <sys/un.h>
 #include <stropts.h>
 #include <tiuser.h>
@@ -36,7 +35,7 @@ static TLItrans2dev TLItrans2devtab[] = {
 #define TLINODENAME	"TLI:xserver"
 #endif
 
-#if defined(FS)
+#if defined(FS) || defined(FONT)
 #define TLINODENAME	"TLI:fontserver"
 #endif
 
