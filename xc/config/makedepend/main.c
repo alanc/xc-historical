@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.46 91/03/19 13:43:56 rws Exp $
+ * $XConsortium: main.c,v 1.47 91/03/19 14:19:42 rws Exp $
  */
 #ifdef SVR4
 #define _POSIX_SOURCE
@@ -481,7 +481,8 @@ redirect(line, makefile)
 fatal(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
     char *x0;
 {
-	warning(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
+	fprintf(stderr, "%s: error:  ", ProgramName);
+	fprintf(stderr, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
 	exit (1);
 }
 
@@ -489,6 +490,13 @@ fatal(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
 warning(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
     char *x0;
 {
-	fprintf(stderr, "%s:  ", ProgramName);
+	fprintf(stderr, "%s: warning:  ", ProgramName);
+	fprintf(stderr, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
+}
+
+/*VARARGS0*/
+warning1(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
+    char *x0;
+{
 	fprintf(stderr, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
 }
