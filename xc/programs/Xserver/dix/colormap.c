@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.8 90/01/23 10:57:32 rws Exp $ */
+/* $XConsortium: colormap.c,v 5.9 90/01/23 13:35:31 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -935,6 +935,45 @@ FakeAllocColor (pmap, pred, pgreen, pblue, pPix, read_only)
 }
 #endif
 
+typedef unsigned short	BigNumUpper;
+typedef unsigned long	BigNumLower;
+
+#define BIGNUMLOWERBITS	24
+#define BIGNUMUPPERBITS	16
+#define BIGNUMLOWER (1 << BIGNUMLOWERBITS)
+#define BIGNUMUPPER (1 << BIGNUMUPPERBITS)
+#define UPPERPART(i)	((i) >> BIGNUMLOWERBITS)
+#define LOWERPART(i)	((i) & (BIGNUMLOWER - 1))
+
+typedef struct _bignum {
+    BigNumUpper	upper;
+    BigNumLower	lower;
+} BigNumRec, *BigNumPtr;
+
+#define BigNumGreater(x,y) ((x)->upper > (y)->upper ||\
+			    (x)->upper == (y)->upper && (x)->lower > (y)->lower)
+
+#define UnsignedToBigNum(u,r)	(((r)->upper = UPPERPART(u)), \
+				 ((r)->lower = LOWERPART(u)))
+
+#define MaxBigNum(r)		(((r)->upper = BIGNUMUPPER-1), \
+				 ((r)->lower = BIGNUMLOWER-1))
+
+static
+BigNumAdd (x, y, r)
+    BigNumPtr	x, y, r;
+{
+    BigNumLower	lower, carry = 0;
+
+    lower = x->lower + y->lower;
+    if (lower >= BIGNUMLOWER) {
+	lower -= BIGNUMLOWER;
+	carry = 1;
+    }
+    r->lower = lower;
+    r->upper = x->upper + y->upper + carry;
+}
+
 static Pixel
 FindBestPixel(pentFirst, size, prgb, channel)
     EntryPtr	pentFirst;
@@ -945,10 +984,11 @@ FindBestPixel(pentFirst, size, prgb, channel)
     EntryPtr	pent;
     Pixel	pixel, final;
     long	dr, dg, db;
-    unsigned long minval, diff, sum;
+    unsigned long   sq;
+    BigNumRec	minval, sum, temp;
 
     final = 0;
-    minval = ~((Pixel)0);
+    MaxBigNum(&minval);
     /* look for the minimal difference */
     for (pent = pentFirst, pixel = 0; pixel < size; pent++, pixel++)
     {
@@ -968,15 +1008,18 @@ FindBestPixel(pentFirst, size, prgb, channel)
 	      db = pent->co.local.blue - prgb->blue;
 	      break;
 	}
-	diff = dr * dr;
-	sum = diff + dg * dg;
-	if (sum < diff)
-	    continue;
-	diff = sum + db * db;
-	if ((diff >= sum) && (diff < minval))
+	sq = dr * dr;
+	UnsignedToBigNum (sq, &sum);
+	sq = dg * dg;
+	UnsignedToBigNum (sq, &temp);
+	BigNumAdd (&sum, &temp, &sum);
+	sq = db * db;
+	UnsignedToBigNum (sq, &temp);
+	BigNumAdd (&sum, &temp, &sum);
+	if (BigNumGreater (&minval, &sum))
 	{
 	    final = pixel;
-	    minval = diff;
+	    minval = sum;
 	}
     }
     return(final);
