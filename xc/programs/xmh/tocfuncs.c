@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: tocfuncs.c,v 1.7 87/10/09 14:01:54 weissman Exp $";
+static char rcs_id[] = "$Header: tocfuncs.c,v 1.8 88/01/19 14:50:03 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -252,16 +252,16 @@ void ExecPack(scrn)
 Scrn scrn;
 {
     Toc toc = scrn->toc;
-    char **argv, str[100];
+    char **argv;
     if (toc == NULL) return;
     if (TocConfirmCataclysm(toc)) return;
     argv = MakeArgv(4);
     argv[0] = "folder";
-    (void) sprintf(str, "+%s", TocGetFolderName(toc));
-    argv[1] = str;
+    argv[1] = TocMakeFolderName(toc);
     argv[2] = "-pack";
     argv[3] = "-fast";
     DoCommand(argv, (char *) NULL, "/dev/null");
+    XtFree(argv[1]);
     XtFree((char *) argv);
     TocForceRescan(toc);
 }
@@ -272,15 +272,15 @@ void ExecSort(scrn)
 Scrn scrn;
 {
     Toc toc = scrn->toc;
-    char **argv, str[100];
+    char **argv;
     if (toc == NULL) return;
     if (TocConfirmCataclysm(toc)) return;
     argv = MakeArgv(3);
     argv[0] = "sortm";
-    (void) sprintf(str, "+%s", TocGetFolderName(toc));
-    argv[1] = str;
+    argv[1] = TocMakeFolderName(toc);
     argv[2] = "-noverbose";
     DoCommand(argv, (char *) NULL, "/dev/null");
+    XtFree(argv[1]);
     XtFree((char *) argv);
     TocForceRescan(toc);
 }
@@ -377,7 +377,7 @@ Scrn scrn;
 TwiddleOperation op;
 {
     Toc toc = scrn->toc;
-    char **argv, plus[100], str[100], *seqname;
+    char **argv, str[100], *seqname;
     int i;
     MsgList mlist;
     if (toc == NULL || scrn->curseq == NULL) return;
@@ -398,8 +398,7 @@ TwiddleOperation op;
     }
     argv = MakeArgv(6 + mlist->nummsgs);
     argv[0] = "mark";
-    (void) sprintf(plus, "+%s", TocGetFolderName(toc));
-    argv[1] = plus;
+    argv[1] = TocMakeFolderName(toc);
     argv[2] = "-sequence";
     argv[3] = seqname;
     switch (op) {
@@ -423,7 +422,8 @@ TwiddleOperation op;
     DoCommand(argv, (char *) NULL, "/dev/null");
     for (i = 0; i < mlist->nummsgs; i++)
         free((char *) argv[6 + i]);
-    free((char *) argv);
+    XtFree(argv[1]);
+    XtFree((char *) argv);
     FreeMsgList(mlist);
     TocReloadSeqLists(toc);
 }
