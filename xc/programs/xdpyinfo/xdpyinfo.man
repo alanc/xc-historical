@@ -1,9 +1,9 @@
 .TH XDPYINFO 1 "Release 4" "X Version 11"
 .SH NAME
-xdpyinfo - display information utility for X
+xdpyinfo \- display information utility for X
 .SH SYNOPSIS
 .B "xdpyinfo"
-[-display \fIdisplayname\fP]
+[\-display \fIdisplayname\fP]
 .SH DESCRIPTION
 .PP
 .I Xdpyinfo
@@ -32,6 +32,7 @@ supported pixmap formats:
     depth 1, bits_per_pixel 1, scanline_pad 32
     depth 8, bits_per_pixel 8, scanline_pad 32
 keycode range:    minimum 8, maximum 129
+focus:  PointerRoot
 number of extensions:    4
     SHAPE
     MIT-SHM
