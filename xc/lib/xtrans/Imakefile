@@ -1,24 +1,6 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.9 94/02/06 15:53:18 mor Exp $
 
-DEFINES = ConnectionFlags -DTEST_t -DTHISHOST=\"`hostname`\"
-XCOMM	DEFINES = -DTCPCONN -DUNIXCONN -DTEST_t -DTHISHOST=\"`hostname`\"
-XCOMM	CDEBUGFLAGS = -g
-XCOMM	SYS_LIBRARIES = -ldbmalloc
-LOCAL_LIBRARIES = XawClientLibs
-
-OBJS = transport.o
-SRCS = transport.c
-
-all::
-
-tests: ProgramTargetName(clienttest) ProgramTargetName(servtest) ProgramTargetName(dpytest) ProgramTargetName(bindanytst) ProgramTargetName(parsetest)
-
-NormalProgramTarget(clienttest,$(OBJS) clienttest.o,NullParameter,NullParameter,NullParameter)
-NormalProgramTarget(servtest,$(OBJS) servtest.o,NullParameter,NullParameter,NullParameter)
-CenterProgramTarget(servtest,servtest.c $(SRCS),servtest.o $(OBJS),NullParameter,NullParameter)
-NormalProgramTarget(dpytest,dpytest.o,NullParameter,$(XONLYLIB),NullParameter)
-NormalProgramTarget(bindanytst,$(OBJS) bindanytst.o,NullParameter,NullParameter,NullParameter)
-NormalProgramTarget(parsetest,$(OBJS) parsetest.o,NullParameter,NullParameter,NullParameter)
+none::
 
 DependTarget()
 BuildIncludesTop(Xtrans.h)
