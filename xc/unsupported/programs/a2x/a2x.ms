@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.26 92/09/29 10:53:07 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.27 92/09/30 19:08:02 rws Exp $
 .de Ds
 .RS
 .nf
@@ -1112,6 +1112,11 @@ The command line options for \fBa2x\fP are:
 .B \-b
 .IP
 Prevents translating Backspace characters into Delete characters.
+.LP
+.B \-c
+.IP
+Clears the screen at startup time (using the standard ANSI escape
+sequence).
 .LP
 .B \-d \fIdisplay\fP
 .IP

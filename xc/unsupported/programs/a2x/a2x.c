@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.98 92/10/01 19:25:08 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.99 92/10/01 20:27:22 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -255,6 +255,7 @@ MacroRec macros[10];
 LocationRec locations[10];
 Bool noecho = True;
 Bool fakeecho = False;
+Bool doclear = False;
 char *hotwinname = "a2x";
 Window hotwin = None;
 char *hotkeyname = NULL;
@@ -431,7 +432,7 @@ xtrap_clean_up()
 void
 usage()
 {
-    printf("%s: [-d <display>] [-e] [-E] [-b] [-u <undofile>] [-h <keysym>] [-w <name>] [-f] [-g <geometry>]\n",
+    printf("%s: [-d <display>] [-c] [-e] [-E] [-b] [-u <undofile>] [-h <keysym>] [-w <name>] [-f] [-g <geometry>]\n",
 	   progname);
     exit(1);
 }
@@ -2513,6 +2514,12 @@ main(argc, argv)
 	if (argv[0][0] != '-')
 	    usage();
 	switch (argv[0][1]) {
+	case 'b':
+	    bs_is_del = False;
+	    break;
+	case 'c':
+	    doclear = True;
+	    break;
 	case 'd':
 	    argc--; argv++;
 	    if (!argc)
@@ -2525,27 +2532,6 @@ main(argc, argv)
 	case 'E':
 	    fakeecho = True;
 	    break;
-	case 'b':
-	    bs_is_del = False;
-	    break;
-	case 'u':
-	    argc--; argv++;
-	    if (!argc)
-		usage();
-	    undofile = *argv;
-	    break;
-	case 'h':
-	    argc--; argv++;
-	    if (!argc)
-		usage();
-	    hotkeyname = *argv;
-	    break;
-	case 'w':
-	    argc--; argv++;
-	    if (!argc)
-		usage();
-	    hotwinname = *argv;
-	    break;
 	case 'f':
 	    hotwinfocus = False;
 	    break;
@@ -2554,6 +2540,24 @@ main(argc, argv)
 	    if (!argc)
 		usage();
 	    hotwingeom = *argv;
+	    break;
+	case 'h':
+	    argc--; argv++;
+	    if (!argc)
+		usage();
+	    hotkeyname = *argv;
+	    break;
+	case 'u':
+	    argc--; argv++;
+	    if (!argc)
+		usage();
+	    undofile = *argv;
+	    break;
+	case 'w':
+	    argc--; argv++;
+	    if (!argc)
+		usage();
+	    hotwinname = *argv;
 	    break;
 	default:
 	    usage();
@@ -2591,6 +2595,8 @@ main(argc, argv)
 	olderror = XSetErrorHandler(error);
     }
 #endif
+    if (istty && doclear)
+	write(1, "\033[H\033[2J", 7);
     if (!dname && !*(XDisplayName(dname)))
 	dname = ":0";
     if (!init_display(dname))
