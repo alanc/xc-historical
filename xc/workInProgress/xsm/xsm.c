@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.64 94/08/19 17:18:03 mor Exp mor $ */
+/* $XConsortium: xsm.c,v 1.65 94/08/30 17:57:49 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -102,8 +102,6 @@ char **argv;
 	    argv[0]);
 	exit (1);
     }
-
-    umask (0077);	/* disallow non-owner access */
 
     p = strrchr(argv[0], '/');
     progName = (p ? p + 1 : argv[0]);
