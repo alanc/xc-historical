@@ -1,4 +1,4 @@
-/* $XConsortium: cb_ctrl.c,v 5.1 91/02/16 09:47:38 rws Exp $ */
+/* $XConsortium: cb_ctrl.c,v 5.2 91/04/04 17:04:32 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -35,6 +35,12 @@ SOFTWARE.
 #ifndef lint
 /* Force version string to be included. */
 static char **version = &phg_version_string; 
+#endif
+
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+extern char *getenv();
 #endif
 
 /* The global CP handle for the binding. */
@@ -143,7 +149,6 @@ static void
 check_env_controls()
 {
     char		*str;
-    extern char		*getenv();
 
     /* If the application already set something we'll override it. */
     if ( str = getenv( "PEX_SI_API_NO_PM" ) ) {
