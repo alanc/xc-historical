@@ -1,6 +1,6 @@
 #include "copyright.h"
 #ifndef lint
-static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.56 88/02/10 08:13:20 rws Exp $";
+static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.57 88/02/20 20:23:25 rws Exp $";
 #endif
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 
@@ -165,6 +165,7 @@ Display *XOpenDisplay (display)
 	dpy->max_keycode	= u.setup->maxKeyCode;
 	dpy->keysyms		= (KeySym *) NULL;
 	dpy->modifiermap	= NULL;
+	dpy->lock_meaning	= NoSymbol;
 	dpy->keysyms_per_keycode = 0;
 	dpy->current		= None;
 	dpy->xdefaults		= (char *)NULL;
