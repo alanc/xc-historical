@@ -68,6 +68,7 @@ extern GCPtr CreateScratchGC();
 #define	PARENT	"WINDOW_GFX"
 
 int sunSigIO = 0;	 /* For use with SetInputCheck */
+static int autoRepeatHandlersInstalled;	/* FALSE each time InitOutput called */
 
 	/* What should this *really* be? */
 #define MOTION_BUFFER_SIZE 0
@@ -178,6 +179,8 @@ InitOutput(pScreenInfo, argc, argv)
     {
         pScreenInfo->formats[i] = formats[i];
     }
+
+    autoRepeatHandlersInstalled = FALSE;
 
     for (i = 0, index = 0; i < NUMSCREENS; i++) {
 	if ((* sunFbData[i].probeProc) (pScreenInfo, index, i, argc, argv)) {
@@ -303,7 +306,6 @@ sunScreenInit (pScreen)
     DrawablePtr	  pDrawable;
     extern void   sunBlockHandler();
     extern void   sunWakeupHandler();
-    static	  autoRepeatHandlersInstalled = FALSE;
     static ScreenPtr autoRepeatScreen;
 
     fb = &sunFbs[pScreen->myNum];
@@ -540,7 +542,7 @@ sunOpenFrameBuffer(expect, pfbType, index, fbNum, argc, argv)
 	static struct screen newScreen;
 	struct inputmask inputMask;
 	Bool	    keepParent = FALSE;
-	static int  sunFbFound = 0;     /* True if FB found under SunWindows */
+	static int  sunFbFound = 0;	/* True if FB found under SunWindows */
 
 	/*
 	 * If no device was specified on the command line, open the window 
@@ -636,28 +638,28 @@ badfb:
 	}
 
 	if (pfbType->fb_type != expect) {
-          struct fbgattr fbgattr;
-          int i;
+	    struct fbgattr fbgattr;
+	    int i;
 
-	  /*
-	   * On a 3/110 we only want to open one display
-	   * on /dev/fb (or /dev/cgfour0) if no device is
-	   * specified in the command line.  If not, we won't
-	   * be able to slide back and forth between X displays
-	   * since only one SunWindows framebuffer is open.
-	   * The screen that is opened is /dev/bwtwo0.
-	   */
-	  if (sunFbFound && (devsw == (char *) NULL))
-	      goto badfb;
-	
-	  if (ioctl(framebufferFd, FBIOGATTR, &fbgattr) < 0)
-	      goto badfb;
-	  
-	  for (i=0; i<FB_ATTR_NEMUTYPES; i++)
-	      if (fbgattr.emu_types[i] == expect)
-		  break;
-	      else if (fbgattr.emu_types[i] == -1)
-		  goto badfb;
+	    /*
+	     * On a 3/110 we only want to open one display
+	     * on /dev/fb (or /dev/cgfour0) if no device is
+	     * specified in the command line.  If not, we won't
+	     * be able to slide back and forth between X displays
+	     * since only one SunWindows framebuffer is open.
+	     * The screen that is opened is /dev/bwtwo0.
+	     */
+	    if (sunFbFound && (devsw == (char *) NULL))
+		goto badfb;
+
+	    if (ioctl(framebufferFd, FBIOGATTR, &fbgattr) < 0)
+		goto badfb;
+	    
+	    for (i=0; i<FB_ATTR_NEMUTYPES; i++)
+		if (fbgattr.emu_types[i] == expect)
+		    break;
+		else if (fbgattr.emu_types[i] == -1)
+		    goto badfb;
 	}
         /*
 	 * NDELAY only applies to "input" fds, or fds that can be
