@@ -1,7 +1,7 @@
 .ds xL Programming with Xlib
 .TH XSetDeviceValuators 3X11 "Release 5" "X Version 11" "X FUNCTIONS"
 .SH NAME
-XSetDeviceValuators \- initialize the valuators on an extension input device.
+XSetDeviceValuators \- initialize the valuators on an extension input device
 .SH SYNTAX
 XSetDeviceValuators\^(\^\fIdisplay\fP, \fIdevice\fP\^, \fIvaluators\fP\^, \fIfirst_valuator\fP\^, \fInum_valuators\fP\^)
 .br

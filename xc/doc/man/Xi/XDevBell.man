@@ -1,7 +1,7 @@
 .ds xL Programming With Xlib
 .TH XDeviceBell 3X11 "Release 5" "X Version 11" "X FUNCTIONS"
 .SH NAME
-XDeviceBell \- ring a bell on a device supported through the input extension.
+XDeviceBell \- ring a bell on a device supported through the input extension
 .SH SYNTAX
 Status XDeviceBell\^(\^\fIdisplay\fP, \fIdevice\fP\^, \fIfeedbackclass\fP\^, \fIfeedbackid\fP\^, \fIpercent\fP\^)
 .br

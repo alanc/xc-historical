@@ -1,7 +1,7 @@
 .ds xL Programming with Xlib
 .TH XListInputDevices 3X11 "Release 5" "X Version 11" "X FUNCTIONS"
 .SH NAME
-XListInputDevices, XFreeDeviceList \- list available input devices.
+XListInputDevices, XFreeDeviceList \- list available input devices
 .SH SYNTAX
 XDeviceInfo *XListInputDevices\^(\^\fIdisplay\fP, \fIndevices_return\fP\^)
 .br

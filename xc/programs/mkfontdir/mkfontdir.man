@@ -1,6 +1,6 @@
 .TH MKFONTDIR 1 "Release 5" "X Version 11"
 .SH NAME
-mkfontdir - create fonts.dir file from directory of font files.
+mkfontdir - create fonts.dir file from directory of font files
 .SH SYNOPSIS
 .B "mkfontdir"
 [directory-names]
