@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bufio.c,v 1.1 91/09/07 11:58:29 keith Exp $
+ * $XConsortium: bufio.c,v 1.2 91/11/20 15:40:18 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -160,7 +160,7 @@ BufFileRead (f, b, n)
 	    break;
 	*b++ = c;
     }
-    return n - cnt;
+    return n - cnt - 1;
 }
 
 BufFileWrite (f, b, n)
