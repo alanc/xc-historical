@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.21 89/04/18 10:26:42 swick Exp $
+ * $XConsortium: Xrm.c,v 1.22 89/05/18 08:21:15 swick Exp $
  */
 
 /***********************************************************
@@ -31,6 +31,9 @@ SOFTWARE.
 #include	<X11/Xresource.h>
 #include	<stdio.h>
 #include	<ctype.h>
+#ifdef SYSV
+#include	<X11/Xos.h>
+#endif /* SYSV */
 
 
 extern void bzero();
