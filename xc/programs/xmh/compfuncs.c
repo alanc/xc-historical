@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: compfuncs.c,v 1.10 87/06/01 17:20:00 weissman Exp $";
+static char rcs_id[] = "$Header: compfuncs.c,v 1.7 87/10/09 14:01:31 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -31,7 +31,7 @@ static char rcs_id[] = "$Header: compfuncs.c,v 1.10 87/06/01 17:20:00 weissman E
 #include "xmh.h"
 
 
-/* Reset this composition window to be one with just a blank message
+/* Reset this composition widget to be one with just a blank message
    template. */
 
 void ExecCompReset(scrn)
@@ -48,7 +48,7 @@ Scrn scrn;
 }
 
 
-/* Send the message in this window.  Avoid sending the same message twice.
+/* Send the message in this widget.  Avoid sending the same message twice.
    (Code elsewhere actually makes sure this button is disabled to avoid
    sending the same message twice, but it doesn't hurt to be safe here.) */
 
