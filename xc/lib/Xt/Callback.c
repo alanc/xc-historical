@@ -1,4 +1,4 @@
-/* $XConsortium: Callback.c,v 1.36 93/08/27 16:27:05 kaleb Exp $ */
+/* $XConsortium: Callback.c,v 1.37 93/09/18 18:18:19 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -281,7 +281,7 @@ void XtRemoveCallback (widget, name, callback, closure)
     if (!callbacks) {
 	XtAppWarningMsg(app,
 	       XtNinvalidCallbackList,XtNxtRemoveCallback,XtCXtToolkitError,
-              "Cannot find callback list in XtRemoveCallbacks",
+              "Cannot find callback list in XtRemoveCallback",
 	      (String *)NULL, (Cardinal *)NULL);
 	UNLOCK_APP(app);
 	return;
