@@ -21,8 +21,29 @@ WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
+Copyright 1992, 1993 Data General Corporation;
+Copyright 1992, 1993 OMRON Corporation  
+
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that the
+above copyright notice appear in all copies and that both that copyright
+notice and this permission notice appear in supporting documentation, and that
+neither the name OMRON or DATA GENERAL be used in advertising or publicity
+pertaining to distribution of the software without specific, written prior
+permission of the party whose name is to be used.  Neither OMRON or 
+DATA GENERAL make any representation about the suitability of this software
+for any purpose.  It is provided "as is" without express or implied warranty.  
+
+OMRON AND DATA GENERAL EACH DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+IN NO EVENT SHALL OMRON OR DATA GENERAL BE LIABLE FOR ANY SPECIAL, INDIRECT
+OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+OF THIS SOFTWARE.
+
 ******************************************************************/
-/* $XConsortium: mfbfillsp.c,v 5.9 92/12/24 13:08:58 rws Exp $ */
+/* $XConsortium: mfbfillsp.c,v 1.1 93/12/29 12:30:56 rob Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -37,12 +58,29 @@ SOFTWARE.
 
 #include "servermd.h"
 
+#include "mtxlock.h"
+
+#ifdef MTX
+#ifndef TRANSLATE_COORDS
+#undef MAYBE_COME_UP_FOR_AIR
+#define MAYBE_COME_UP_FOR_AIR()
+#endif
+#define MTX_MAYBE_COME_UP_FOR_AIR() MAYBE_COME_UP_FOR_AIR()
+#else /* MTX */
+#define MTX_MAYBE_COME_UP_FOR_AIR() /* nothing */
+#endif /* MTX */
+
 /* scanline filling for monochrome frame buffer
    written by drewry, oct 1986
 
    these routines all clip.  they assume that anything that has called
 them has already translated the points (i.e. pGC->miTranslate is
 non-zero, which is howit gets set in mfbCreateGC().)
+
+    MTX: If TRANSLATE_COORDS is defined, these routines assume that
+	anything that has called them has NOT already translated the
+	points (i.e. pGC->miTranslate is 0).  This translation now occurs
+	in miClipSpans().
 
    the number of new scnalines created by clipping ==
 MaxRectsPerBand * nSpans.
@@ -57,12 +95,13 @@ fgPixel != bgPixel.  based on the fill style, it uses
 */
 
 
-void mfbBlackSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
+void
+mfbBlackSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DrawablePtr pDrawable;
     GCPtr	pGC;
-    int		nInit;			/* number of spans to fill */
-    DDXPointPtr pptInit;		/* pointer to list of start points */
-    int		*pwidthInit;		/* pointer to list of n widths */
+    int		nInit;		/* number of spans to fill */
+    DDXPointPtr pptInit;	/* pointer to list of start points */
+    int		*pwidthInit;	/* pointer to list of n widths */
     int 	fSorted;
 {
 				/* next three parameters are post-clip */
@@ -77,11 +116,16 @@ void mfbBlackSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     register PixelType endmask;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
+    mfbPrivGC *devPriv;         /* pointer to private GC */
 
     if (!(pGC->planemask & 1))
 	return;
 
-    n = nInit * miFindMaxBand(((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
+    MTX_MAYBE_COME_UP_FOR_AIR();
+
+    devPriv = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr));
+    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
@@ -92,9 +136,12 @@ void mfbBlackSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     }
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip,
-		    pptInit, pwidthInit, nInit,
-		    ppt, pwidth, fSorted);
+    n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit,
+		    ppt, pwidth, fSorted
+#if defined(MTX) && defined(TRANSLATE_COORDS)
+			, pDrawable->x, pDrawable->y
+#endif
+		    );
 
     mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrlBase);
 
@@ -129,12 +176,13 @@ void mfbBlackSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
 
 
-void mfbWhiteSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
+void
+mfbWhiteSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DrawablePtr pDrawable;
     GCPtr	pGC;
-    int		nInit;			/* number of spans to fill */
-    DDXPointPtr pptInit;		/* pointer to list of start points */
-    int		*pwidthInit;		/* pointer to list of n widths */
+    int		nInit;		/* number of spans to fill */
+    DDXPointPtr pptInit;	/* pointer to list of start points */
+    int		*pwidthInit;	/* pointer to list of n widths */
     int 	fSorted;
 {
 				/* next three parameters are post-clip */
@@ -149,11 +197,16 @@ void mfbWhiteSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     register PixelType endmask;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
+    mfbPrivGC *devPriv;         /* pointer to private GC */
 
     if (!(pGC->planemask & 1))
 	return;
 
-    n = nInit * miFindMaxBand(((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
+    MTX_MAYBE_COME_UP_FOR_AIR();
+
+    devPriv = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr));
+    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
@@ -164,9 +217,12 @@ void mfbWhiteSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     }
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip,
-		    pptInit, pwidthInit, nInit,
-		    ppt, pwidth, fSorted);
+    n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit,
+		    ppt, pwidth, fSorted
+#if defined(MTX) && defined(TRANSLATE_COORDS)
+			, pDrawable->x, pDrawable->y
+#endif
+		    );
 
     mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrlBase);
 
@@ -201,12 +257,13 @@ void mfbWhiteSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
 
 
-void mfbInvertSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
+void
+mfbInvertSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DrawablePtr pDrawable;
     GCPtr	pGC;
-    int		nInit;			/* number of spans to fill */
-    DDXPointPtr pptInit;		/* pointer to list of start points */
-    int		*pwidthInit;		/* pointer to list of n widths */
+    int		nInit;		/* number of spans to fill */
+    DDXPointPtr pptInit;	/* pointer to list of start points */
+    int		*pwidthInit;	/* pointer to list of n widths */
     int 	fSorted;
 {
 				/* next three parameters are post-clip */
@@ -221,11 +278,16 @@ void mfbInvertSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     register PixelType endmask;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
+    mfbPrivGC *devPriv;         /* pointer to private GC */
 
     if (!(pGC->planemask & 1))
 	return;
 
-    n = nInit * miFindMaxBand(((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
+    MTX_MAYBE_COME_UP_FOR_AIR();
+
+    devPriv = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr));
+    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
@@ -236,9 +298,12 @@ void mfbInvertSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     }
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip,
-		    pptInit, pwidthInit, nInit,
-		    ppt, pwidth, fSorted);
+    n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit,
+		    ppt, pwidth, fSorted
+#if defined(MTX) && defined(TRANSLATE_COORDS)
+			, pDrawable->x, pDrawable->y
+#endif
+		    );
 
     mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrlBase);
 
@@ -274,12 +339,12 @@ void mfbInvertSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
 void 
 mfbWhiteStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-DrawablePtr pDrawable;
-GC *pGC;
-int nInit;			/* number of spans to fill */
-DDXPointPtr pptInit;		/* pointer to list of start points */
-int *pwidthInit;		/* pointer to list of n widths */
-int fSorted;
+    DrawablePtr pDrawable;
+    GC *pGC;
+    int nInit;			/* number of spans to fill */
+    DDXPointPtr pptInit;	/* pointer to list of start points */
+    int *pwidthInit;		/* pointer to list of n widths */
+    int fSorted;
 {
 				/* next three parameters are post-clip */
     int n;			/* number of spans to fill */
@@ -297,11 +362,16 @@ int fSorted;
     int tileHeight;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
+    mfbPrivGC *devPriv;         /* pointer to private GC */
 
     if (!(pGC->planemask & 1))
 	return;
 
-    n = nInit * miFindMaxBand(((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
+    MTX_MAYBE_COME_UP_FOR_AIR();
+
+    devPriv = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr));
+    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
@@ -312,13 +382,16 @@ int fSorted;
     }
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip,
-		    pptInit, pwidthInit, nInit, 
-		    ppt, pwidth, fSorted);
+    n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit, 
+		    ppt, pwidth, fSorted
+#if defined(MTX) && defined(TRANSLATE_COORDS)
+			, pDrawable->x, pDrawable->y
+#endif
+		    );
 
     mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrlBase);
 
-    pStipple = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pRotatedPixmap;
+    pStipple = devPriv->pRotatedPixmap;
     tileHeight = pStipple->drawable.height;
     psrc = (PixelType *)(pStipple->devPrivate.ptr);
 
@@ -352,12 +425,12 @@ int fSorted;
 
 void 
 mfbBlackStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-DrawablePtr pDrawable;
-GC *pGC;
-int nInit;			/* number of spans to fill */
-DDXPointPtr pptInit;		/* pointer to list of start points */
-int *pwidthInit;		/* pointer to list of n widths */
-int fSorted;
+    DrawablePtr pDrawable;
+    GC *pGC;
+    int nInit;			/* number of spans to fill */
+    DDXPointPtr pptInit;	/* pointer to list of start points */
+    int *pwidthInit;		/* pointer to list of n widths */
+    int fSorted;
 {
 				/* next three parameters are post-clip */
     int n;			/* number of spans to fill */
@@ -375,11 +448,16 @@ int fSorted;
     int tileHeight;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
+    mfbPrivGC *devPriv;         /* pointer to private GC */
 
     if (!(pGC->planemask & 1))
 	return;
 
-    n = nInit * miFindMaxBand(((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
+    MTX_MAYBE_COME_UP_FOR_AIR();
+
+    devPriv = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr));
+    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
@@ -390,13 +468,16 @@ int fSorted;
     }
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip,
-		    pptInit, pwidthInit, nInit, 
-		    ppt, pwidth, fSorted);
+    n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit, 
+		    ppt, pwidth, fSorted
+#if defined(MTX) && defined(TRANSLATE_COORDS)
+			, pDrawable->x, pDrawable->y
+#endif
+);
 
     mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrlBase);
 
-    pStipple = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pRotatedPixmap;
+    pStipple = devPriv->pRotatedPixmap;
     tileHeight = pStipple->drawable.height;
     psrc = (PixelType *)(pStipple->devPrivate.ptr);
 
@@ -430,12 +511,12 @@ int fSorted;
 
 void 
 mfbInvertStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-DrawablePtr pDrawable;
-GC *pGC;
-int nInit;			/* number of spans to fill */
-DDXPointPtr pptInit;		/* pointer to list of start points */
-int *pwidthInit;		/* pointer to list of n widths */
-int fSorted;
+    DrawablePtr pDrawable;
+    GC *pGC;
+    int nInit;			/* number of spans to fill */
+    DDXPointPtr pptInit;	/* pointer to list of start points */
+    int *pwidthInit;		/* pointer to list of n widths */
+    int fSorted;
 {
 				/* next three parameters are post-clip */
     int n;			/* number of spans to fill */
@@ -453,11 +534,16 @@ int fSorted;
     int tileHeight;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
+    mfbPrivGC *devPriv;         /* pointer to private GC */
 
     if (!(pGC->planemask & 1))
 	return;
 
-    n = nInit * miFindMaxBand(((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
+    MTX_MAYBE_COME_UP_FOR_AIR();
+
+    devPriv = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr));
+    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
@@ -468,13 +554,16 @@ int fSorted;
     }
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip,
-		    pptInit, pwidthInit, nInit, 
-		    ppt, pwidth, fSorted);
+    n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit, 
+		    ppt, pwidth, fSorted
+#if defined(MTX) && defined(TRANSLATE_COORDS)
+			, pDrawable->x, pDrawable->y
+#endif
+);
 
     mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrlBase);
 
-    pStipple = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pRotatedPixmap;
+    pStipple = devPriv->pRotatedPixmap;
     tileHeight = pStipple->drawable.height;
     psrc = (PixelType *)(pStipple->devPrivate.ptr);
 
@@ -545,19 +634,20 @@ int fSorted;
 
 
 
-void mfbTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-DrawablePtr pDrawable;
-GC *pGC;
-int nInit;			/* number of spans to fill */
-DDXPointPtr pptInit;		/* pointer to list of start points */
-int *pwidthInit;		/* pointer to list of n widths */
-int fSorted;
+void
+mfbTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
+    DrawablePtr pDrawable;
+    GC *pGC;
+    int nInit;			/* number of spans to fill */
+    DDXPointPtr pptInit;	/* pointer to list of start points */
+    int *pwidthInit;		/* pointer to list of n widths */
+    int fSorted;
 {
 				/* next three parameters are post-clip */
     int n;			/* number of spans to fill */
     register DDXPointPtr ppt;	/* pointer to list of start points */
     register int *pwidth;	/* pointer to list of n widths */
-    PixelType *addrlBase;		/* pointer to start of bitmap */
+    PixelType *addrlBase;	/* pointer to start of bitmap */
     int nlwidth;		/* width in longwords of bitmap */
     register PixelType *addrl;	/* pointer to current longword in bitmap */
     register PixelType src;
@@ -571,12 +661,17 @@ int fSorted;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
     unsigned long   flip;
+    mfbPrivGC *devPriv;         /* pointer to private GC */
 
 
     if (!(pGC->planemask & 1))
 	return;
 
-    n = nInit * miFindMaxBand(((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
+    MTX_MAYBE_COME_UP_FOR_AIR();
+
+    devPriv = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr));
+    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
@@ -587,19 +682,22 @@ int fSorted;
     }
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip,
-		    pptInit, pwidthInit, nInit, 
-		    ppt, pwidth, fSorted);
+    n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit, 
+		    ppt, pwidth, fSorted
+#if defined(MTX) && defined(TRANSLATE_COORDS)
+			, pDrawable->x, pDrawable->y
+#endif
+		    );
 
     mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrlBase);
 
-    pTile = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pRotatedPixmap;
+    pTile = devPriv->pRotatedPixmap;
     tileHeight = pTile->drawable.height;
     psrc = (PixelType *)(pTile->devPrivate.ptr);
     if (pGC->fillStyle == FillTiled)
 	rop = pGC->alu;
     else
-	rop = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->ropOpStip;
+	rop = devPriv->ropOpStip;
 
     flip = 0;
     switch(rop)
@@ -691,12 +789,12 @@ int fSorted;
 /* Fill spans with tiles that aren't 32 bits wide */
 void
 mfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-DrawablePtr pDrawable;
-GC		*pGC;
-int		nInit;		/* number of spans to fill */
-DDXPointPtr pptInit;		/* pointer to list of start points */
-int *pwidthInit;		/* pointer to list of n widths */
-int fSorted;
+    DrawablePtr pDrawable;
+    GC		*pGC;
+    int		nInit;		/* number of spans to fill */
+    DDXPointPtr pptInit;	/* pointer to list of start points */
+    int *pwidthInit;		/* pointer to list of n widths */
+    int fSorted;
 {
     int		iline;		/* first line of tile to use */
 				/* next three parameters are post-clip */
@@ -716,11 +814,16 @@ int fSorted;
     PixelType      endmask, *psrcT;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
+    mfbPrivGC *devPriv;         /* pointer to private GC */
 
     if (!(pGC->planemask & 1))
 	return;
 
-    n = nInit * miFindMaxBand(((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
+    MTX_MAYBE_COME_UP_FOR_AIR();
+
+    devPriv = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr));
+    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
@@ -731,9 +834,12 @@ int fSorted;
     }
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip,
-		    pptInit, pwidthInit, nInit, 
-		    ppt, pwidth, fSorted);
+    n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit, 
+		    ppt, pwidth, fSorted
+#if defined(MTX) && defined(TRANSLATE_COORDS)
+			, pDrawable->x, pDrawable->y
+#endif
+		    );
 
     if (pGC->fillStyle == FillTiled)
     {
@@ -745,7 +851,7 @@ int fSorted;
     {
 	pTile = pGC->stipple;
 	tlwidth = pTile->devKind >> 2;
-	rop = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->ropOpStip;
+	rop = devPriv->ropOpStip;
     }
 
     xSrc = pDrawable->x;
@@ -849,12 +955,12 @@ int fSorted;
 /* Fill spans with stipples that aren't 32 bits wide */
 void
 mfbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-DrawablePtr pDrawable;
-GC		*pGC;
-int		nInit;		/* number of spans to fill */
-DDXPointPtr pptInit;		/* pointer to list of start points */
-int *pwidthInit;		/* pointer to list of n widths */
-int fSorted;
+    DrawablePtr pDrawable;
+    GC		*pGC;
+    int		nInit;		/* number of spans to fill */
+    DDXPointPtr pptInit;	/* pointer to list of start points */
+    int *pwidthInit;		/* pointer to list of n widths */
+    int fSorted;
 {
 				/* next three parameters are post-clip */
     int n;			/* number of spans to fill */
@@ -875,11 +981,16 @@ int fSorted;
     int		tileHeight;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
+    mfbPrivGC *devPriv;         /* pointer to private GC */
 
     if (!(pGC->planemask & 1))
 	return;
 
-    n = nInit * miFindMaxBand(((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
+    MTX_MAYBE_COME_UP_FOR_AIR();
+
+    devPriv = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr));
+    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
@@ -890,12 +1001,15 @@ int fSorted;
     }
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip,
-		    pptInit, pwidthInit, nInit, 
-		    ppt, pwidth, fSorted);
+    n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit, 
+		    ppt, pwidth, fSorted
+#if defined(MTX) && defined(TRANSLATE_COORDS)
+			, pDrawable->x, pDrawable->y
+#endif
+		    );
 
     pTile = pGC->stipple;
-    rop = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop;
+    rop = devPriv->rop;
     tlwidth = pTile->devKind >> 2;
     xSrc = pDrawable->x;
     ySrc = pDrawable->y;
