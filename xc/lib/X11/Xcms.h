@@ -28,20 +28,8 @@
  *		Public include file for TekCMS Color Extension to X
  *              This file used to be TekCMS.h and TekCMSext.h - dms.
  */
-#ifndef Xcms_H
-#define Xcms_H
-
-/*
- *	DEFINES
- */
-
-#ifndef NULL
-#  define NULL 0
-#endif
-
-#ifndef Status
-#  define Status int
-#endif
+#ifndef _XCMS_H_
+#define _XCMS_H_
 
     /*
      * TekCMS Status Values
@@ -95,10 +83,6 @@
 #define XcmsSetWhitePtAdjFunc(ccc,f)	((ccc)->WhitePtAdjFunc = f)
 #define XcmsSetWhitePtAdjClientData(ccc,d)	((ccc)->WhitePtAdjClientData = d)
 
-
-/*
- *	TYPEDEFS
- */
 
 typedef unsigned int XcmsSpecFmt;	/* Color Space Format ID */
 
@@ -239,6 +223,60 @@ typedef struct _XcmsCCC {
 					/*  screen_number */
 } XcmsCCC;
 
+    /*
+     * Function List Pointer -- pointer to an array of function pointers.
+     *    The end of list is indicated by a NULL pointer.
+     */
+typedef XcmsFuncPtr *XcmsFuncListPtr;
+
+    /*
+     * Color Space -- per Color Space related data (Device-Independent
+     *    or Device-Dependent)
+     */
+typedef struct _XcmsColorSpace {
+    char *prefix;		/* Prefix of string format.		*/
+    XcmsSpecFmt id;		/* Format ID number.			*/
+    XcmsFuncPtr parseString;	/* String format parsing function	*/
+    XcmsFuncListPtr to_CIEXYZ;	/* Pointer to an array of function 	*/
+				/*   pointers such that when the	*/
+				/*   functions are executed in sequence	*/
+				/*   will convert a XcmsColor structure	*/
+				/*   from this color space to CIEXYZ	*/
+				/*   space.				*/
+    XcmsFuncListPtr from_CIEXYZ;/* Pointer to an array of function 	*/
+				/*   pointers such that when the	*/
+				/*   functions are executed in sequence	*/
+				/*   will convert a XcmsColor structure	*/
+				/*   from CIEXYZ space to this color	*/
+				/*   space.				*/
+    int inverse_flag;		/* If 1, indicates that for 0 <= i < n	*/
+				/*   where n is the number of function	*/
+				/*   pointers in the lists to_CIEXYZ	*/
+				/*   and from_CIEXYZ; for each function */
+				/*   to_CIEXYZ[i] its inverse function	*/
+				/*   is from_CIEXYZ[n - i].		*/
+
+} XcmsColorSpace;
+
+    /*
+     * Screen Color Characterization Function Set -- per device class
+     *    color space conversion functions.
+     */
+typedef struct _XcmsSCCFuncSet {
+    XcmsColorSpace **papDDColorSpaces;
+				/* Pointer to an array of pointers to	*/
+				/*   Device-DEPENDENT color spaces	*/
+				/*   understood by this SCCFuncSet.	*/
+    int (*pInitScrnFunc)();	/* Screen initialization function that	*/
+				/*   reads Screen Color Characterization*/
+				/*   Data off properties on the screen's*/
+				/*   root window.			*/
+    void (*pFreeSCCData)();	/* Function that frees the SCCData	*/
+				/*   structures.			*/
+} XcmsSCCFuncSet;
+
+_XFUNCPROTOBEGIN
+
 extern Status XcmsAllocColor (
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
@@ -362,70 +400,6 @@ extern char *XcmsPrefixOfID (
 #endif
 );
 
-/*
- *	DESCRIPTION
- *		Include file for TekCMS color extension to X, containing
- *		declarations for Color Spaces and Screen Color
- *		Characterization Function Sets.
- *
- */
-
-/*
- *	TYPEDEFS
- */
-
-    /*
-     * Function List Pointer -- pointer to an array of function pointers.
-     *    The end of list is indicated by a NULL pointer.
-     */
-typedef XcmsFuncPtr *XcmsFuncListPtr;
-
-    /*
-     * Color Space -- per Color Space related data (Device-Independent
-     *    or Device-Dependent)
-     */
-typedef struct _XcmsColorSpace {
-    char *prefix;		/* Prefix of string format.		*/
-    XcmsSpecFmt id;		/* Format ID number.			*/
-    XcmsFuncPtr parseString;	/* String format parsing function	*/
-    XcmsFuncListPtr to_CIEXYZ;	/* Pointer to an array of function 	*/
-				/*   pointers such that when the	*/
-				/*   functions are executed in sequence	*/
-				/*   will convert a XcmsColor structure	*/
-				/*   from this color space to CIEXYZ	*/
-				/*   space.				*/
-    XcmsFuncListPtr from_CIEXYZ;/* Pointer to an array of function 	*/
-				/*   pointers such that when the	*/
-				/*   functions are executed in sequence	*/
-				/*   will convert a XcmsColor structure	*/
-				/*   from CIEXYZ space to this color	*/
-				/*   space.				*/
-    int inverse_flag;		/* If 1, indicates that for 0 <= i < n	*/
-				/*   where n is the number of function	*/
-				/*   pointers in the lists to_CIEXYZ	*/
-				/*   and from_CIEXYZ; for each function */
-				/*   to_CIEXYZ[i] its inverse function	*/
-				/*   is from_CIEXYZ[n - i].		*/
-
-} XcmsColorSpace;
-
-    /*
-     * Screen Color Characterization Function Set -- per device class
-     *    color space conversion functions.
-     */
-typedef struct _XcmsSCCFuncSet {
-    XcmsColorSpace **papDDColorSpaces;
-				/* Pointer to an array of pointers to	*/
-				/*   Device-DEPENDENT color spaces	*/
-				/*   understood by this SCCFuncSet.	*/
-    int (*pInitScrnFunc)();	/* Screen initialization function that	*/
-				/*   reads Screen Color Characterization*/
-				/*   Data off properties on the screen's*/
-				/*   root window.			*/
-    void (*pFreeSCCData)();	/* Function that frees the SCCData	*/
-				/*   structures.			*/
-} XcmsSCCFuncSet;
-
 extern Status XcmsAddDIColorSpace (
 #if NeedFunctionPrototypes
     XcmsColorSpace*	/* pColorSpace */
@@ -438,4 +412,6 @@ extern Status XcmsAddSCCFuncSet (
 #endif
 );
 
-#endif /* Xcms_H */
+_XFUNCPROTOEND
+
+#endif /* _XCMS_H_ */
