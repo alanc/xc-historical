@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunCfb.c,v 1.13 94/03/28 14:36:25 kaleb Exp $ */
+/* $XConsortium: sunCfb.c,v 1.14 94/04/17 20:29:34 kaleb Exp $ */
 
 /*
 Copyright (c) 1990  X Consortium
@@ -114,6 +114,8 @@ void sunInstallColormap(cmap)
     register Entry *pent;
     register VisualPtr pVisual = cmap->pVisual;
     u_char	  rmap[256], gmap[256], bmap[256];
+    unsigned long rMask, gMask, bMask;
+    int	oRed, oGreen, oBlue;
 
     if (cmap == pPrivate->installedMap)
 	return;
@@ -121,10 +123,21 @@ void sunInstallColormap(cmap)
 	WalkTree(pPrivate->installedMap->pScreen, TellLostMap,
 		 (pointer) &(pPrivate->installedMap->mid));
     if ((pVisual->class | DynamicClass) == DirectColor) {
+	if (pVisual->ColormapEntries < 256) {
+	    rMask = pVisual->redMask;
+	    gMask = pVisual->greenMask;
+	    bMask = pVisual->blueMask;
+	    oRed = pVisual->offsetRed;
+	    oGreen = pVisual->offsetGreen;
+	    oBlue = pVisual->offsetBlue;
+	} else {
+	    rMask = gMask = bMask = 255;
+	    oRed = oGreen = oBlue = 0;
+	}
 	for (i = 0; i < 256; i++) {
-	    rmap[i] = cmap->red[i].co.local.red >> 8;
-	    gmap[i] = cmap->green[i].co.local.green >> 8;
-	    bmap[i] = cmap->blue[i].co.local.blue >> 8;
+	    rmap[i] = cmap->red[(i & rMask) >> oRed].co.local.red >> 8;
+	    gmap[i] = cmap->green[(i & gMask) >> oGreen].co.local.green >> 8;
+	    bmap[i] = cmap->blue[(i & bMask) >> oBlue].co.local.blue >> 8;
 	}
     } else {
 	for (i = 0, pent = cmap->red;
