@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.144 88/06/29 11:55:41 jim Exp $ */
+/* $Header: Xlib.h,v 11.145 88/06/29 11:59:56 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -1043,7 +1043,7 @@ XExtData **XEHeadOfExtensionList();
 /* these are routines for which there are also macros */
 Window XRootWindow(), XDefaultRootWindow(), XRootWindowOfScreen();
 Visual *XDefaultVisual(), *XDefaultVisualOfScreen();
-GC XDefaultGC(), XDefaultGCofScreen();
+GC XDefaultGC(), XDefaultGCOfScreen();
 unsigned long XBlackPixel(), XWhitePixel(), XAllPlanes();
 unsigned long XBlackPixelOfScreen(), XWhitePixelOfScreen();
 unsigned long XNextRequest(), XLastKnownRequestProcessed();
