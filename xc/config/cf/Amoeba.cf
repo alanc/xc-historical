@@ -1,4 +1,8 @@
-XCOMM platform:  $XConsortium$
+XCOMM platform:  $XConsortium: Amoeba.cf,v 1.1 94/03/29 15:34:44 gildea Exp $
+
+/*
+ * Configuration file for Amoeba 5.2
+ */
 
 #define OSName                  Amoeba 5.2
 XCOMM operating system:  OSName
@@ -9,14 +13,15 @@ XCOMM operating system:  OSName
 
 #define AmoebaArchitecture	YES
 
+/* Configuration defaults */
 #ifndef AmoebaTop
-#define AmoebaTop	/usr/proj/amwork
+#define AmoebaTop		/usr/proj/amwork
 #endif
 #ifndef AmoebaBin
-#define AmoebaBin	$(ATOP)/bin.sun4
+#define AmoebaBin		$(ATOP)/bin.sun4
 #endif
 #ifndef AmoebaConf
-#define AmoebaConf	/usr/proj/amwork/conf/amoeba
+#define AmoebaConf		/usr/proj/amwork/conf/amoeba
 #endif
 
 #define HasNdbm			YES
@@ -29,8 +34,8 @@ XCOMM operating system:  OSName
 #define HasStreams              NO
 
 #if defined(Sun3Architecture) || defined(SparcArchitecture)
-#define XsunServer		YES
-#define XsunMonoServer		YES
+#define XsunAmoebaServer	YES
+#define XsunAmoebaMonoServer	YES
 #endif
 
 #define BuildFonts              NO
@@ -41,16 +46,10 @@ XCOMM operating system:  OSName
 
 #define YaccCmd                 byacc
 #define TermcapLibrary          /* in libajax */
+#define LexLib			/* not needed */
 
 #define PexCCOptions		DefaultCCOptions
 #define ServerOSDefines		-DDDXOSINIT
-
-#define CommonAmoebaDefines     -DAMOEBA -D$(ARCH)
-#define StandardDefines         CommonAmoebaDefines
-#define StandardCppDefines      StandardDefines
-
-/* Define DefaultLdOptions not to include $(CDEBUGFLAGS) $(CCOPTIONS) */
-#define DefaultLdOptions	$(EXTRA_LOAD_DFLAGS) $(LOCAL_LDFLAGS) $(LDPRELIB)
 
 #define UsrLibDir               $(DESTDIR)/public/module/x11/lib
 #define LibDir                  $(DESTDIR)/public/module/x11/lib
@@ -82,17 +81,30 @@ XCOMM operating system:  OSName
 #define DBMLibrary		$(LIBSRC)/sdbm/libsdbm.a
 
 #if defined(i386Architecture)
+#ifndef AckToolset
 #define AckToolset              YES
+#define ExtraFPLoadFlags	-fp
+#endif
+#define XF86MonoServer		YES
+#endif
+
+#if defined(Sun3Architecture)
+#ifndef AckToolset
+#define AckToolset              YES
+#endif
+#endif
+
+#if AckToolset
 #define CcCmd                   ack
 #define ServerCcCmd             ack
 #define LdCmd                   ack
-#define DefaultCCOptions        -mam_i80386
-#define LibraryCCOptions        -mam_i80386
+#define AckArchOption		-mam_$(ARCH)
+#define DefaultCCOptions        AckArchOption
+#define LibraryCCOptions        AckArchOption
 #define LdCombineFlags          -Rled-r -c.out
-#define ExtraFPLoadFlags	-fp
 #define ArCmd 			aal clrv
 #define RanlibCmd		/bin/true
-#define AsCmd			AmoebaConf/$(ARCH).$(TOOLSET)/toolset/do_as -mam_i80386
+#define AsCmd			AmoebaConf/$(ARCH).$(TOOLSET)/toolset/do_as AckArchOption
 #define AsIncl			-I$(ATOP)/src/h/machdep/arch/$(ARCH)
 #define AsmDefines		-DACK_ASSEMBLER
 #define LdPreLib		/**/
@@ -107,9 +119,18 @@ XCOMM operating system:  OSName
 #define LdCmd                   AmoebaConf/$(ARCH).$(TOOLSET)/toolset/do_gld
 #define DefaultCCOptions        -sun4
 #define LibraryCCOptions        -sun4
+#define AmoebaCompilerDefs	-Usun
 #define ServerExtraDefines	AllocateLocalDefines
 #define LdPostLib		/**/
 #endif
+
+#ifndef AmoebaCompilerDefs
+#define AmoebaCompilerDefs	/**/
+#endif
+
+#define CommonAmoebaDefines     -DAMOEBA -D$(ARCH) AmoebaCompilerDefs
+#define StandardDefines         CommonAmoebaDefines
+#define StandardCppDefines      StandardDefines
 
 #ifndef ExtraFPLoadFlags
 #define ExtraFPLoadFlags
@@ -124,7 +145,7 @@ XCOMM operating system:  OSName
 
 ATOP            = AmoebaTop
 ALIB            = AmoebaConf/$(ARCH).$(TOOLSET)/lib
-#ifdef AckToolset 
+#if AckToolset 
 /* The ACK toolset already links in the appropriate head.o by default */
 HEAD            =
 #else
@@ -144,17 +165,21 @@ LINK.c=$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
 #if defined(i386Architecture)
 ARCH            = i80386
 TOOLSET         = ack
-CROSSLFLAGS     = -mam_i80386 -.c -Rcv-s32
-ALDFLAGS        = -mam_i80386 -.c -Rcv-s32
+ALDFLAGS        = /* -mam_i80386 now in CCopts */ -.c -Rcv-s32
 
 #include <xfree86.cf>
+#endif
+
+#if defined(Sun3Architecture)
+ARCH            = mc68000
+TOOLSET         = ack
+ALDFLAGS        =  -.c -Rcv-s32
 #endif
 
 #if defined(SparcArchitecture)
 ARCH            = sparc
 TOOLSET         = sun
 SPARCLIBDIR     = AmoebaBin/gnu/sparc
-CROSSLFLAGS     = -mam_sparc -n -Ttext 40000 -Bstatic -e start -L$(SPARCLIBDIR)
 ALDFLAGS        = -mam_sparc -n -Ttext 40000 -Bstatic -e start -L$(SPARCLIBDIR)
 #endif
 
@@ -203,6 +228,15 @@ LintTarget()
 									@@\
 ComplexHostProgramTarget(program)
 #endif /* SimpleHostProgramTarget */
+
+
+#ifndef Concat
+#if (__STDC__ && !defined(UnixCpp)) || defined(AnsiCpp)
+#define Concat(a,b)a##b
+#else
+#define Concat(a,b)a/**/b
+#endif
+#endif
 
 /*
  * LintLibReferences - variables for lint libraries
