@@ -1,4 +1,4 @@
-/* $XConsortium: GetImage.c,v 11.28 91/12/23 09:31:46 rws Exp $ */
+/* $XConsortium: GetImage.c,v 11.29 94/04/17 20:19:36 rws Exp gildea $ */
 /*
 
 Copyright (c) 1986  X Consortium
@@ -28,6 +28,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #define NEED_REPLIES
 #include "Xlibint.h"
+#include <X11/Xutil.h>		/* for XDestroyImage */
 
 #define ROUNDUP(nbytes, pad) (((((nbytes) - 1) + (pad)) / (pad)) * (pad))
 
