@@ -1,4 +1,4 @@
-/* $XConsortium: xpsmclient.c,v 1.4 93/09/28 17:39:43 mor Exp $ */
+/* $XConsortium: xsmclient.c,v 1.1 93/10/19 10:21:04 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -48,6 +48,7 @@ SmcConn 	smcConn;
 char 		*clientId;
 int		interactRequestType;
 Bool		shutdownInProgress = False;
+Bool		saveYourselfDone = False;
 
 XtAppContext	appContext;
 
@@ -262,6 +263,7 @@ Bool	  fast;
 	    clientId);
 
 	interactRequestType = SmDialogNormal;
+	saveYourselfDone = False;
     }
     else if (interactStyle == SmInteractStyleErrors)
     {
@@ -272,11 +274,13 @@ Bool	  fast;
 	    clientId);
 
 	interactRequestType = SmDialogError;
+	saveYourselfDone = False;
     }
     else
     {
 	SaveState();
 	SmcSaveYourselfDone (smcConn, True);
+	saveYourselfDone = True;
 
 	printf ("Client Id = %s, sent SAVE YOURSELF DONE [Success = True]\n",
 	    clientId);
@@ -347,7 +351,7 @@ SmcConn smcConn;
     printf ("Client Id = %s, received DIE\n", clientId);
     printf ("\n");
 
-    SmcCloseConnection (smcConn, NULL, 0, NULL);
+    SmcCloseConnection (smcConn, 0, NULL);
 
     free (clientId);
 
@@ -368,6 +372,17 @@ SmPointer clientData;
 
     shutdownInProgress = False;
     XtSetSensitive (mainWindow, 1);
+
+    if (!saveYourselfDone)
+    {
+	SaveState();
+	SmcSaveYourselfDone (smcConn, True);
+
+	printf ("Client Id = %s, sent SAVE YOURSELF DONE [Success = True]\n",
+	    clientId);
+
+	saveYourselfDone = True;
+    }
 }
 
 
@@ -465,7 +480,7 @@ XtPointer 	callData;
     reasonMsg[0] = "Quit Reason 1";
     reasonMsg[1] = "Quit Reason 2";
 
-    SmcCloseConnection (smcConn, "locale", 2, reasonMsg);
+    SmcCloseConnection (smcConn, 2, reasonMsg);
 
     printf ("Quit\n");
 
@@ -495,6 +510,8 @@ XtPointer 	callData;
 	clientId);
     printf ("\n");
 
+    saveYourselfDone = True;
+
     /* If a shutdown is in progress, we need to stay "frozen" until the */
     /* shutdown is ultimately resolved.  If not, we can unfreeze */
     /* immediately. */
@@ -521,10 +538,10 @@ XtPointer 	callData;
     printf ("Client Id = %s, sent SAVE YOURSELF DONE [Success = True]\n",
 	clientId);
     printf ("\n");
-    /* If a shutdown is in progress, we need to stay "frozen" until the */
-    /* shutdown is ultimately resolved.  If not, we can unfreeze */
-    /* immediately. */
-    if(!shutdownInProgress) XtSetSensitive (mainWindow, 1);
+
+    saveYourselfDone = True;
+
+    XtSetSensitive (mainWindow, 1);
 }
 
 
