@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: widgets.c,v 1.14 91/01/09 17:46:10 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -391,25 +391,25 @@ WNode * node;
     ResourceBoxInfo * res_box = node->resources->res_box;
     AnyInfo *new_info, *old_info;
     char **names, **classes;
-    Widget form, left, any;
+    Widget form;
     NameInfo * name_info = NULL;
     Cardinal num_args;
     Arg args[10];
     int i;
+    Widget dot, star, name, class, single, any;
 
     GetNamesAndClasses(node, &names, &classes);
 
     form = XtCreateManagedWidget("namesAndClasses", formWidgetClass,
 				 parent, NULL, ZERO);
 
-    left = any = NULL;
+    name = class = any = NULL;
     i = 0;
     old_info = NULL;
     while (TRUE) {
-	Widget name, class, dot, star;
 
 	num_args = 0;
-	XtSetArg(args[num_args], XtNfromHoriz, left); num_args++;
+	XtSetArg(args[num_args], XtNfromHoriz, name); num_args++;
 	XtSetArg(args[num_args], XtNradioData, "."); num_args++;
 	dot = XtCreateManagedWidget("dot", toggleWidgetClass, 
 				    form, args, num_args);
@@ -417,7 +417,7 @@ WNode * node;
 		      ActivateWidgetsAndSetResourceString,(XtPointer) node);
 
 	num_args = 0;
-	XtSetArg(args[num_args], XtNfromHoriz, left); num_args++;
+	XtSetArg(args[num_args], XtNfromHoriz, class); num_args++;
 	XtSetArg(args[num_args], XtNfromVert, dot); num_args++;
 	XtSetArg(args[num_args], XtNradioGroup, dot); num_args++;
 	XtSetArg(args[num_args], XtNradioData, "*"); num_args++;
@@ -464,16 +464,8 @@ WNode * node;
 	old_info = new_info;
 
 	num_args = 0;
-	XtSetArg(args[num_args], XtNfromHoriz, left); num_args++;
-	XtSetArg(args[num_args], XtNfromVert, star); num_args++;
-	XtSetArg(args[num_args], XtNradioData, ANY_RADIO_DATA); num_args++;
-	any = XtCreateManagedWidget("any", toggleWidgetClass, 
-				    form, args, num_args);
-
-	num_args = 0;
-	XtSetArg(args[num_args], XtNfromHoriz, star); num_args++;
+	XtSetArg(args[num_args], XtNfromHoriz, dot); num_args++;
 	XtSetArg(args[num_args], XtNlabel, names[i]); num_args++;
-	XtSetArg(args[num_args], XtNradioGroup, any); num_args++;
 	XtSetArg(args[num_args], XtNradioData, names[i]); num_args++;
 	name = XtCreateManagedWidget("name", toggleWidgetClass, 
 				     form, args, num_args);
@@ -484,18 +476,36 @@ WNode * node;
 	XtSetArg(args[num_args], XtNfromHoriz, star); num_args++;
 	XtSetArg(args[num_args], XtNfromVert, name); num_args++;
 	XtSetArg(args[num_args], XtNlabel, classes[i]); num_args++;
-	XtSetArg(args[num_args], XtNradioGroup, any); num_args++;
+	XtSetArg(args[num_args], XtNradioGroup, name); num_args++;
 	XtSetArg(args[num_args], XtNradioData, classes[i]); num_args++;
 	class = XtCreateManagedWidget("class", toggleWidgetClass, 
 				      form,args,num_args);
 	XtAddCallback(class, XtNcallback,
 		      ActivateWidgetsAndSetResourceString,(XtPointer) node);
 
+	num_args = 0;
+	XtSetArg(args[num_args], XtNfromHoriz, star); num_args++;
+	XtSetArg(args[num_args], XtNfromVert, class); num_args++;
+	XtSetArg(args[num_args], XtNradioData, "?"); num_args++;
+	XtSetArg(args[num_args], XtNradioGroup, name); num_args++;
+	single = XtCreateManagedWidget("single", toggleWidgetClass, 
+				       form, args, num_args);
+	XtAddCallback(single,XtNcallback,
+		      ActivateWidgetsAndSetResourceString,(XtPointer) node);
+
+	num_args = 0;
+	XtSetArg(args[num_args], XtNfromHoriz, any); num_args++;
+	XtSetArg(args[num_args], XtNfromVert, single); num_args++;
+	XtSetArg(args[num_args], XtNradioGroup, name); num_args++;
+	XtSetArg(args[num_args], XtNradioData, ANY_RADIO_DATA); num_args++;
+	any = XtCreateManagedWidget("any", toggleWidgetClass, 
+				    form, args, num_args);
+
 	name_info->name_leader = name;
 
-	MakeBoxLookNice(dot, star, any, name, class);
+	MakeBoxLookNice(dot, star, any, single, name, class,
+			(i == 0 ? -1 : (names[i + 1] ? 0 : 1)));
 
-	left = name;
 	i++;
     }
 
@@ -532,21 +542,23 @@ WNode * node;
  *	Description: Resizes the box that contains the resource names
  *                   to look a bit nicer.
  *	Arguments: dot, star - the widgets containing the separator types.
- *                 any, name, class - the widgets that contain the name
- *                                    and class of this object.
+ *                 any, single, name, class - the widgets that contain the
+ *                                     name and class of this object.
  *	Returns: none.
  */
  
 static void
-MakeBoxLookNice(dot, star, any, name, class)
-Widget dot, star, any, name, class;
+MakeBoxLookNice(dot, star, any, single, name, class, endbox)
+Widget dot, star, any, single, name, class;
+Boolean endbox;
 {
 
 #define MAX_HDIST 3
 
     Arg args[10];
     Cardinal num_args;
-    Dimension any_width, name_class_width, dot_star_width,  width_1, width_2;
+    Dimension any_width, name_class_width, dot_star_width;
+    Dimension width_1, width_2;
     int h_dist[MAX_HDIST];
     int i;
 
@@ -570,8 +582,9 @@ Widget dot, star, any, name, class;
     XtGetValues(any, args, num_args);
     
     dot_star_width = (width_1 > width_2) ? width_1 : width_2;
-    for (i = 1 ; i < MAX_HDIST; i++) 
-	h_dist[0] = (h_dist[i] > h_dist[0]) ? h_dist[i] : h_dist[0];
+    for (i = 1 ; i < MAX_HDIST; i++) {
+	if (h_dist[i] > h_dist[0]) h_dist[0] = h_dist[i];
+    }
 
     num_args = 0;
     XtSetArg(args[num_args], XtNhorizDistance, h_dist[0]); num_args++;
@@ -601,23 +614,34 @@ Widget dot, star, any, name, class;
     XtSetArg(args[num_args], XtNhorizDistance, &(h_dist[1])); num_args++;
     XtGetValues(class, args, num_args);
 
-    name_class_width = (width_1 > width_2) ? width_1 : width_2;
-    h_dist[0] = (h_dist[1] > h_dist[0]) ? h_dist[1] : h_dist[0];
-    width_1 = dot_star_width + h_dist[0] + name_class_width;
+    if (width_2 > width_1) width_1 = width_2;
+    if (h_dist[1] > h_dist[0]) h_dist[0] = h_dist[1];
 
-    if (width_1 > any_width) {
-	num_args = 0;
-	XtSetArg(args[num_args], XtNwidth, width_1); num_args++;
-	XtSetValues(any, args, num_args);	
-    }
-    else 
-	name_class_width = any_width - (dot_star_width + h_dist[0]);
+    num_args = 0;
+    XtSetArg(args[num_args], XtNwidth, &width_2); num_args++;
+    XtSetArg(args[num_args], XtNhorizDistance, &(h_dist[1])); num_args++;
+    XtGetValues(single, args, num_args);
+
+    name_class_width = (width_1 > width_2) ? width_1 : width_2;
+    if (h_dist[1] > h_dist[0]) h_dist[0] = h_dist[1];
+    if (any_width > name_class_width)
+	name_class_width = any_width;
+    any_width = dot_star_width + h_dist[0] + name_class_width;
+    if (endbox < 0)
+	any_width += dot_star_width / 2;
+    else if (endbox > 0)
+	any_width += (dot_star_width - dot_star_width / 2);
+
+    num_args = 0;
+    XtSetArg(args[num_args], XtNwidth, any_width); num_args++;
+    XtSetValues(any, args, num_args);	
 
     num_args = 0;
     XtSetArg(args[num_args], XtNwidth, name_class_width); num_args++;
     XtSetArg(args[num_args], XtNhorizDistance, h_dist[0]); num_args++;
     XtSetValues(name, args, num_args);	
     XtSetValues(class, args, num_args);	
+    XtSetValues(single, args, num_args);	
 }
 
 /*	Function Name: CreateLists
