@@ -1,4 +1,4 @@
-/* $XConsortium: regions.h,v 1.2 91/10/10 11:19:06 rws Exp $ */
+/* $XConsortium: regions.h,v 1.3 94/02/04 10:00:46 gildea Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -134,7 +134,7 @@ scratchpad areas used while the region is being built:
        struct edgelist *lastedge,*firstedge;  /* last and first edges in subpath */
        pel *edge;            /* pointer to array of X values for edge        */
        fractpel edgeYstop;   /* Y value where 'edges' array ends             */
-       int (*newedgefcn)();  /* function to use when building a new edge     */
+       void (*newedgefcn)();  /* function to use when building a new edge    */
        struct strokeinfo *strokeinfo;  /* scratchpad info during stroking only */
 } ;
 /*
