@@ -540,6 +540,7 @@ sunOpenFrameBuffer(expect, pfbType, index, fbNum, argc, argv)
 	static struct screen newScreen;
 	struct inputmask inputMask;
 	Bool	    keepParent = FALSE;
+	static int  sunFbFound = 0;     /* True if FB found under SunWindows */
 
 	/*
 	 * If no device was specified on the command line, open the window 
@@ -597,10 +598,6 @@ sunOpenFrameBuffer(expect, pfbType, index, fbNum, argc, argv)
 	input_imnull(&inputMask);
 	inputMask.im_flags = IM_ASCII | IM_META | IM_NEGEVENT | IM_INTRANSIT;
 
-#ifdef notdef
-	win_setinputcodebit(&inputMask, KBD_USE);
-	win_setinputcodebit(&inputMask, KBD_DONE);
-#endif notdef
 	win_setinputcodebit(&inputMask, LOC_MOVE);
 	win_setinputcodebit(&inputMask, LOC_WINEXIT);
 	win_setinputcodebit(&inputMask, LOC_WINENTER);
@@ -608,6 +605,11 @@ sunOpenFrameBuffer(expect, pfbType, index, fbNum, argc, argv)
 	win_setinputcodebit(&inputMask, MS_MIDDLE);
 	win_setinputcodebit(&inputMask, MS_RIGHT);
 	win_set_pick_mask(winFd, &inputMask);
+
+	input_imnull(&inputMask);
+	win_setinputcodebit(&inputMask, KBD_USE);
+	win_setinputcodebit(&inputMask, KBD_DONE);
+	win_set_kbd_mask(winFd, &inputMask);
 
 	win_insert(winFd);
 
@@ -625,7 +627,8 @@ sunOpenFrameBuffer(expect, pfbType, index, fbNum, argc, argv)
 	}
 
 	if (ioctl(framebufferFd, FBIOGTYPE, pfbType) < 0) {
-	    perror("sunOpenFrameBuffer");
+	    perror("sunOpenFrameBuffer: FBIOGTYPE");
+badfb:
 	    (void) close(framebufferFd);
 	    (void) close(winFd);
 	    (void) close(parentFd);
@@ -633,12 +636,29 @@ sunOpenFrameBuffer(expect, pfbType, index, fbNum, argc, argv)
 	}
 
 	if (pfbType->fb_type != expect) {
-	    (void) close(framebufferFd);
-	    (void) close(winFd);
-	    (void) close(parentFd);
-	    return (-1);
-	}
+          struct fbgattr fbgattr;
+          int i;
 
+	  /*
+	   * On a 3/110 we only want to open one display
+	   * on /dev/fb (or /dev/cgfour0) if no device is
+	   * specified in the command line.  If not, we won't
+	   * be able to slide back and forth between X displays
+	   * since only one SunWindows framebuffer is open.
+	   * The screen that is opened is /dev/bwtwo0.
+	   */
+	  if (sunFbFound && (devsw == (char *) NULL))
+	      goto badfb;
+	
+	  if (ioctl(framebufferFd, FBIOGATTR, &fbgattr) < 0)
+	      goto badfb;
+	  
+	  for (i=0; i<FB_ATTR_NEMUTYPES; i++)
+	      if (fbgattr.emu_types[i] == expect)
+		  break;
+	      else if (fbgattr.emu_types[i] == -1)
+		  goto badfb;
+	}
         /*
 	 * NDELAY only applies to "input" fds, or fds that can be
 	 * read.  sunwindows fds are read, while frame buffer fds aren't.
@@ -654,6 +674,7 @@ sunOpenFrameBuffer(expect, pfbType, index, fbNum, argc, argv)
 	
 	fd = framebufferFd;
 	windowFd = winFd;
+	sunFbFound++;
 #else
 	ErrorF("Not configured to run inside SunWindows\n");
 	fd = -1;
