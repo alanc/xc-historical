@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.161 93/09/05 17:54:30 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.162 93/09/06 10:23:14 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -27,6 +27,7 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.161 93/09/05 17:54:30 rws Exp $
  * PurifyProgramTarget		(program,deplist,linklist)
  * ProofLinkTarget		(step,program,linklist)
  * ProofProgramTarget		(program,deplist,linklist)
+ * ProofCleanTarget		()
  * RemoveTargetProgram		(program)
  * MakeDir			(dir)
  * BuildIncludes		(srclist,dstsubdir,dstupdir)
@@ -280,8 +281,8 @@ ProgramTargetName(program.pure): deplist				@@\
 	RemoveTargetProgram($@)						@@\
 	$(CCENVSETUP) $(PURIFY) $(PURIFYOPTIONS) $(CC) -o $@ linklist	@@\
 									@@\
-clean::									@@\
-	RemoveFile(program.pure)
+clean clean.pure::							@@\
+	RemoveFile(program.pure program.pure.*)
 #else
 #define	PurifyProgramTarget(program,deplist,linklist) /**/
 #endif
@@ -308,12 +309,22 @@ ProgramTargetName(program.tc): deplist				@@\
 	RemoveTargetProgram($@)						@@\
 	$(CCENVSETUP) $(PROOF) $(PROOFOPTIONS) $(CC) -o $@ linklist	@@\
 									@@\
-clean::									@@\
-	RemoveFile(program.tc)
+clean clean.tc::							@@\
+	RemoveFiles(program.tc program.tc.*.*)
 #else
 #define	ProofProgramTarget(program,deplist,linklist) /**/
 #endif
 #endif /* ProofProgramTarget */
+
+#ifndef ProofCleanTarget
+#if HasTestCenter
+#define ProofCleanTarget()						@@\
+clean clean.tc::							@@\
+	$(RM) -r TC.Cache
+#else
+#define ProofCleanTarget() /**/
+#endif
+#endif /* ProofCleanTarget */
 
 #ifndef RemoveTargetProgram
 #if RemoveTargetProgramByMoving
@@ -806,14 +817,14 @@ depend::								@@\
 
 
 /*
- * CleanTarget - generate rules to remove any garbage files; the #* is here
- * instead of in the definition of RM_CMD because System V will treat the 
- * pound sign in the RM_CMD variable as a comment.
+ * CleanTarget - generate rules to remove any garbage files
  */
 #ifndef CleanTarget
 #define	CleanTarget()							@@\
 clean::									@@\
-	$(RM_CMD) "#"*
+	$(RM_CMD) FilesToClean ExtraFilesToClean "#"*			@@\
+									@@\
+ProofCleanTarget()
 #endif /* CleanTarget */
 
 
