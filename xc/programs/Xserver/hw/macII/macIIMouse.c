@@ -332,12 +332,38 @@ macIIMouseProcessEvent(pMouse,me)
     if (ypos & 0x0040) ypos = ypos - 0x0080;
     pPriv->y += MouseAccelerate (pMouse, ypos);
    
+    /*
+     * Active Zaphod implementation:
+     *    increment or decrement the current screen
+     *    if the x is to the right or the left of
+     *    the current screen.
+     */
+    if (screenInfo.numScreens > 1 &&
+        (pPriv->x > pPriv->pScreen->width ||
+         pPriv->x < 0)) {
+        macIIRemoveCursor();
+        if (pPriv->x < 0) { 
+             if (pPriv->pScreen->myNum != 0)
+                (pPriv->pScreen)--;
+             else
+                 pPriv->pScreen = &screenInfo.screen[screenInfo.numScreens -1];
+             pPriv->x += pPriv->pScreen->width;
+        }
+        else {
+            pPriv->x -= pPriv->pScreen->width;
+            if (pPriv->pScreen->myNum != screenInfo.numScreens -1)
+                (pPriv->pScreen)++;
+            else
+                 pPriv->pScreen = &screenInfo.screen[0];
+        }
+    }
+
     if (!macIIConstrainXY (&pPriv->x, &pPriv->y)) {
     return;
     }
     NewCurrentScreen (pPriv->pScreen, pPriv->x, pPriv->y);
    
-      	    xE.u.keyButtonPointer.rootX = pPriv->x;
+    xE.u.keyButtonPointer.rootX = pPriv->x;
     xE.u.keyButtonPointer.rootY = pPriv->y;
    
 #ifdef MACII_ALL_MOTION
