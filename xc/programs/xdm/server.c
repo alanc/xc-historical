@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: server.c,v 1.3 89/11/17 18:43:21 keith Exp $
+ * $XConsortium: server.c,v 1.4 89/11/18 12:42:41 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -88,7 +88,7 @@ struct display	*d;
 	 */
 	signal (SIGUSR1, SIG_IGN);
 	(void) execv (argv[0], argv);
-	LogError ("server %s cannot be executed",
+	LogError ("server %s cannot be executed\n",
 			argv[0]);
 	sleep ((unsigned) d->openDelay);
 	exit (REMANAGE_DISPLAY);
