@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: cpyclrmpan.m,v 1.11 92/06/11 16:15:11 rws Exp $
  */
 >>TITLE XCopyColormapAndFree CH05
 Colormap
@@ -326,23 +326,27 @@ unsigned long	*copypix;
 		trace("r/o Pixel value allocated was %lu", cols[1].pixel);
 		XQueryColor(display, colormap, &cols[1]);
 		
+		size = maxsize(vp) - 4;
+		if (size >= 0) {
 /* Allocate 2 r/w cells for a new client */
-		if(XAllocColorCells(display, colormap, False, 0L, 0, pix, 2) == False) {
-			delete("XAllocColorCells() failed.");
-			return;
-		}
+			if(XAllocColorCells(display, colormap, False, 0L, 0, pix, 2) == False) {
+				delete("XAllocColorCells() failed.");
+				return;
+			}
 /* set the 2 r/w cells to the same values as the first two. */
-		cols[2] = cols[0];
-		cols[2].pixel = pix[0];
-		cols[3] = cols[1];
-		cols[3].pixel = pix[1];
-		trace("r/w Pixel values allocated were %lu & %lu",
-			cols[2].pixel, cols[3].pixel);
-		XStoreColors(display, colormap, &cols[2], 2);
-		XQueryColors(display, colormap, &cols[2], 2);
+			cols[2] = cols[0];
+			cols[2].pixel = pix[0];
+			cols[3] = cols[1];
+			cols[3].pixel = pix[1];
+			trace("r/w Pixel values allocated were %lu & %lu",
+				cols[2].pixel, cols[3].pixel);
+			XStoreColors(display, colormap, &cols[2], 2);
+			XQueryColors(display, colormap, &cols[2], 2);
+			CHECK;
+		} else
+			CHECK;
 
 /* Allocate remaining cells to the other client */
-		size = maxsize(vp) - 4;
 		debug(1, "size=%d, maxsize=%d", size, maxsize(vp));
 		copypix = (unsigned long *) malloc( maxsize(vp) * sizeof(unsigned long));
 
@@ -365,9 +369,9 @@ unsigned long	*copypix;
 		for ( i=0; XAllocColorCells(disp2, testcmap, False, 0L, 0, &copypix[i], 1) != False; i++) {
 			; /* do nothing */
 		}
-		if ( i != size ) {
-			report("only allocated %d cells instead of %d, in copy",
-					i, size);
+		if ( (size >= 0 && i != size) || (size < 0 && i > 0) ) {
+			report("allocated %d cells instead of %d, in copy",
+					i, (size >= 0) ? size : 0);
 			FAIL;
 		} else
 			CHECK;
@@ -376,15 +380,18 @@ unsigned long	*copypix;
 
 		if (!check_rgb(disp2, testcmap, &cols[0]) |
 			!check_rgb(disp2, testcmap, &cols[1]) |
-			!check_rgb(disp2, testcmap, &cols[2]) |
-			!check_rgb(disp2, testcmap, &cols[3]) ) {
+			(size >= 0 && !check_rgb(disp2, testcmap, &cols[2])) |
+			(size >= 0 && !check_rgb(disp2, testcmap, &cols[3])) ) {
 				report("RGB values not the same!");
 				FAIL;
 		} else
 			CHECK;
 /* should check that can now allocate 4 more in old cmap */
 		for(i=0; i < 4; i++) {
-			if( XAllocColorCells(disp2, colormap, False, 0L, 0, &copypix[i], 1) == False) {
+			if (size < 0 && i > 1) {
+				CHECK;
+			}
+			else if( XAllocColorCells(disp2, colormap, False, 0L, 0, &copypix[i], 1) == False) {
 				report("Could not allocate the supposedly freed cell (%d) in original cmap", i);
 				FAIL;
 			} else {
@@ -408,17 +415,20 @@ unsigned long	*copypix;
 		} else
 			CHECK;
 
-		startcall(disp2);
-		XStoreColors(disp2, testcmap, &cols[2], 2);
-		endcall(disp2);
-		if (geterr() != Success) {
-			report("Trying to update 2 r/w cells. Got %s, Expecting Success", errorname(geterr()));
-			FAIL;
+		if (size >= 0) {
+			startcall(disp2);
+			XStoreColors(disp2, testcmap, &cols[2], 2);
+			endcall(disp2);
+			if (geterr() != Success) {
+				report("Trying to update 2 r/w cells. Got %s, Expecting Success", errorname(geterr()));
+				FAIL;
+			} else
+				CHECK;
 		} else
 			CHECK;
 	}
 	
-	CHECKPASS(12*nsupvis());
+	CHECKPASS(13*nsupvis());
 
 >>ASSERTION Bad B 1
 .ER BadAlloc
