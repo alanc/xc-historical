@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.30 90/02/13 14:26:22 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.31 90/02/22 18:42:13 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -37,7 +37,7 @@ Author: Keith Packard
 
 extern int  cfbDoBitbltCopy();
 extern int  cfbDoBitbltXor();
-extern int  cfbDoBitbltCopyXorAndReverseOr();
+extern int  cfbDoBitbltOr();
 extern int  cfbDoBitbltGeneral();
 
 cfbDoBitblt (pSrc, pDst, alu, prgnDst, pptSrc, planemask)
@@ -108,9 +108,8 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 		case GXxor:
 		    localDoBitBlt = cfbDoBitbltXor;
 		    break;
-		case GXandReverse:
 		case GXor:
-		    localDoBitBlt = cfbDoBitbltCopyXorAndReverseOr;
+		    localDoBitBlt = cfbDoBitbltOr;
 		    break;
 		}
 	    }
@@ -462,40 +461,42 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 #ifdef FAST_CONSTANT_OFFSET_MODE
 # define StorePixels(pdst,o,pixels)	(pdst)[o] = (pixels)
 # define EndStep(pdst,o)		(pdst) += (o)
+# define StoreRopPixels(pdst,o,and,xor)	(pdst)[o] = DoRRop((pdst)[o],and,xor);
 #else
 # define StorePixels(pdst,o,pixels)	*(pdst)++ = (pixels)
 # define EndStep(pdst,o)
+# define StoreRopPixels(pdst,o,and,xor)	*(pdst) = DoRRop(*(pdst),and,xor); (pdst)++;
 #endif
 
 #define Step(c)			NextFourBits(c);
 #define StoreBitsPlain(o,c)	StorePixels(pdst,o,GetFourPixels(c))
+#define StoreRopBitsPlain(o,c)	StoreRopPixels(pdst,o,\
+					cfb8StippleAnd[GetFourBits(c)], \
+					cfb8StippleXor[GetFourBits(c)])
 #define StoreBits0(c)		StoreBitsPlain(0,c)
+#define StoreRopBits0(c)	StoreRopBitsPlain(0,c)
 
 #if (BITMAP_BIT_ORDER == MSBFirst)
 # define StoreBits(o,c)	StoreBitsPlain(o,c)
+# define StoreRopBits(o,c)  StoreRopBitsPlain(o,c)
 # define FirstStep(c)	Step(c)
 #else
 # define StoreBits(o,c)	StorePixels(pdst,o,*((unsigned long *)\
 			    (((char *) cfb8Pixels) + (c & 0x3c))))
+# define StoreRopBits(o,c)  StoreRopPixels(pdst,o, \
+	    *((unsigned long *) (((char *) cfb8StippleAnd) + (c & 0x3c))), \
+	    *((unsigned long *) (((char *) cfb8StippleXor) + (c & 0x3c))))
 # define FirstStep(c)	c = BitLeft (c, 2);
 #endif
 
-		    StoreBits0(tmp);
-		    FirstStep(tmp);
-		    StoreBits(1,tmp);
-		    Step(tmp);
-		    StoreBits(2,tmp);
-		    Step(tmp);
-		    StoreBits(3,tmp);
-		    Step(tmp);
-		    StoreBits(4,tmp);
-		    Step(tmp);
-		    StoreBits(5,tmp);
-		    Step(tmp);
-		    StoreBits(6,tmp);
-		    Step(tmp);
-		    StoreBits(7,tmp);
-		    EndStep (pdst,8);
+		    StoreBits0(tmp);	FirstStep(tmp);
+		    StoreBits(1,tmp);	Step(tmp);
+		    StoreBits(2,tmp);	Step(tmp);
+		    StoreBits(3,tmp);	Step(tmp);
+		    StoreBits(4,tmp);	Step(tmp);
+		    StoreBits(5,tmp);	Step(tmp);
+		    StoreBits(6,tmp);	Step(tmp);
+		    StoreBits(7,tmp);   EndStep (pdst,8);
 	    	}
 	    	if (nl || endmask)
 	    	{
@@ -513,26 +514,19 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 		    switch (nl)
 		    {
 		    case 7:
-			StoreBitsPlain(-7,tmp);
-			Step(tmp);
+			StoreBitsPlain(-7,tmp);	Step(tmp);
 		    case 6:
-			StoreBitsPlain(-6,tmp);
-			Step(tmp);
+			StoreBitsPlain(-6,tmp);	Step(tmp);
 		    case 5:
-			StoreBitsPlain(-5,tmp);
-			Step(tmp);
+			StoreBitsPlain(-5,tmp);	Step(tmp);
 		    case 4:
-			StoreBitsPlain(-4,tmp);
-			Step(tmp);
+			StoreBitsPlain(-4,tmp);	Step(tmp);
 		    case 3:
-			StoreBitsPlain(-3,tmp);
-			Step(tmp);
+			StoreBitsPlain(-3,tmp);	Step(tmp);
 		    case 2:
-			StoreBitsPlain(-2,tmp);
-			Step(tmp);
+			StoreBitsPlain(-2,tmp);	Step(tmp);
 		    case 1:
-			StoreBitsPlain(-1,tmp);
-			Step(tmp);
+			StoreBitsPlain(-1,tmp);	Step(tmp);
 		    }
 		    if (endmask)
 		    	*pdst = *pdst & ~endmask | GetFourPixels(tmp) & endmask;
@@ -575,14 +569,14 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 		    	bits = *psrc++;
 		    	if (rightShift != 32)
 		    	    tmp |= BitRight(bits, rightShift);
-		    	i = 8;
-		    	while (i--)
-		    	{
-			    src = GetFourBits (tmp);
-			    *pdst = RRopPixels (*pdst, src);
-		    	    pdst++;
-		    	    NextFourBits(tmp);
-		    	}
+			StoreRopBits0(tmp);	FirstStep(tmp);
+			StoreRopBits(1,tmp);	Step(tmp);
+			StoreRopBits(2,tmp);	Step(tmp);
+			StoreRopBits(3,tmp);	Step(tmp);
+			StoreRopBits(4,tmp);	Step(tmp);
+			StoreRopBits(5,tmp);	Step(tmp);
+			StoreRopBits(6,tmp);	Step(tmp);
+			StoreRopBits(7,tmp);	EndStep(pdst,8);
 	    	    }
 		}
 	    	if (nl || endmask)
@@ -636,6 +630,11 @@ static unsigned long	copyPlaneBitPlane;
 #define StepBit(bit, inc)  ((bit) += (inc))
 #endif
 
+#define MROP	0
+#undef PFILL
+
+#include "mergerop.h"
+
 #define GetBits(psrc, nBits, curBit, bitPos, bits) {\
     bits = 0; \
     while (nBits--) \
@@ -684,12 +683,16 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
     int			    nl, nlMiddle;
     int			    nbox;
     BoxPtr		    pbox;
+    MROP_DECLARE()
 
     extern int starttab[32], endtab[32];
     extern unsigned int partmasks[32][32];
 
     if (!(planemask & 1))
 	return;
+
+    if (rop != GXcopy)
+	MROP_INITIALIZE (rop, planemask);
 
     if (pSrcDrawable->type == DRAWABLE_WINDOW)
     {
@@ -801,8 +804,7 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 		    i = niStart;
 		    curBit = bitStart;
 		    GetBits (psrc, i, curBit, bitPos, bits);
-		    *pdst = *pdst & ~startmask | 
-			    DoRop (rop, bits, *pdst) & startmask;
+		    *pdst = MROP_MASK(bits, *pdst, startmask);
 		    pdst++;
 	    	}
 	    	nl = nlMiddle;
@@ -811,16 +813,15 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 		    i = 32;
 		    curBit = LeftMost;
 		    GetBits (psrc, i, curBit, bitPos, bits);
-		    *pdst = DoRop (rop, bits, *pdst);
-		    ++pdst;
+		    *pdst = MROP_SOLID(bits, *pdst);
+		    pdst++;
 	    	}
 	    	if (endmask)
 	    	{
 		    i = niEnd;
 		    curBit = bitEnd;
 		    GetBits (psrc, i, curBit, bitPos, bits);
-		    *pdst = *pdst & ~endmask |
-			    DoRop (rop, bits, *pdst) & endmask;
+		    *pdst = MROP_MASK (bits, *pdst, endmask);
 	    	}
 	    }
 	}
