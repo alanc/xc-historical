@@ -1,4 +1,4 @@
-! $XConsortium: XKeysymDB,v 11.0 91/05/05 20:54:59 rws Exp $
+! $XConsortium: XKeysymDB,v 1.1 91/05/07 17:26:52 rws Exp $
 
 hpmute_acute		:100000A8
 hpmute_grave		:100000A9
@@ -138,5 +138,22 @@ SunFA_Circum		:1005FF01
 SunFA_Tilde		:1005FF02
 SunF36			:1005FF10
 SunF37			:1005FF11
+SunSys_Req		:1005FF60
+SunProps		:1005FF70
+SunFront		:1005FF71
+SunCopy			:1005FF72
+SunOpen			:1005FF73
+SunPaste		:1005FF74
+SunCut			:1005FF75
+
+SunCompose		:FF20
+SunPageUp		:FF55
+SunPageDown		:FF56
+SunPrint_Screen		:FF61
+SunUndo			:FF65
+SunAgain		:FF66
+SunFind			:FF68
+SunStop			:FF69
+SunAltGraph		:FF7E	
 
 WYSetup			:1006FF00
