@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.31 92/08/10 15:15:14 eswu Exp $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.32 92/08/10 19:16:28 eswu Exp $
 
 #ifdef RsArchitecture
 #define OSName		AIX 3.2.0
@@ -39,13 +39,6 @@ XCOMM operating system:  OSName
 #define Malloc0ReturnsNull	YES
 #define CppCmd			/usr/lpp/X11/Xamples/util/cpp/cpp
 #define StandardDefines         -DSYSV -DAIXV3 -D_ALL_SOURCE
-
-/*
- * -D__STR31__ disables inlining of memcpy to work around optimization bug
- * in XLC v1.2.0.7. Bug report filed as PMR 8X196, branch 060.
- */
-#define OptimizedCDebugFlags	-O -D__STR31__
-
 #define ExpandManNames		YES
 #define XibmServer 		YES
 #define ibmIncludeSKYWAY	YES
