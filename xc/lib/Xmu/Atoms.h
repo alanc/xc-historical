@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.23 89/06/07 16:50:58 jim Exp $
+ * $XConsortium: Atoms.h,v 1.1 89/07/14 17:51:52 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -25,20 +25,13 @@
 
 typedef struct _AtomRec *AtomPtr;
 
-#ifdef _Xmu_Atoms_c_
-#define globalref /**/
-#else
-#define globalref extern
-#endif
-
-globalref AtomPtr
+extern AtomPtr
     _XA_TEXT, _XA_TIMESTAMP, _XA_LIST_LENGTH, _XA_LENGTH,
     _XA_TARGETS, _XA_CHARACTER_POSITION, _XA_DELETE, _XA_HOSTNAME,
     _XA_IP_ADDRESS, _XA_DECNET_ADDRESS, _XA_USER, _XA_CLASS,
     _XA_NAME, _XA_CLIENT_WINDOW, _XA_ATOM_PAIR, _XA_SPAN,
     _XA_NET_ADDRESS, _XA_NULL, _XA_FILENAME, _XA_OWNER_OS, _XA_CLIPBOARD;
 
-#ifndef _Xmu_Atoms_c_
 #define XA_ATOM_PAIR(d)		XmuInternAtom(d, _XA_ATOM_PAIR)
 #define XA_CHARACTER_POSITION(d) XmuInternAtom(d, _XA_CHARACTER_POSITION)
 #define XA_CLASS(d)		XmuInternAtom(d, _XA_CLASS)
@@ -60,7 +53,6 @@ globalref AtomPtr
 #define XA_TEXT(d)		XmuInternAtom(d, _XA_TEXT)
 #define XA_TIMESTAMP(d)		XmuInternAtom(d, _XA_TIMESTAMP)
 #define XA_USER(d)		XmuInternAtom(d, _XA_USER)
-#endif /* _Xmu_Atoms_c_ */
 
 extern AtomPtr XmuMakeAtom( /* char* */ );
 extern Atom XmuInternAtom( /* Display*, AtomPtr */ );
