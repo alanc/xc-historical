@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.81 89/09/26 18:04:26 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.82 89/09/28 11:55:45 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -599,7 +599,7 @@ static void XEventToTMEvent(event, tmEvent)
 
 	case EnterNotify:
 	case LeaveNotify:
-	    tmEvent->event.eventCode = 0;
+	    tmEvent->event.eventCode = event->xcrossing.mode;
 	    tmEvent->event.modifiers = event->xcrossing.state;
 	    break;
 
@@ -670,10 +670,11 @@ static unsigned long GetTime(tm, event)
 
 
 /* ARGSUSED */
-static void _XtTranslateEvent (w, closure, event)
+static void _XtTranslateEvent (w, closure, event, continue_to_dispatch)
     Widget w;
-    XtPointer closure;
+    XtPointer closure;		/* XtTM */
     register    XEvent * event;
+    Boolean *continue_to_dispatch; /* unused */
 {
     register XtTranslations stateTable = ((XtTM)closure)->translations;
     StatePtr oldState;
@@ -1027,6 +1028,17 @@ static EventMask masks[] = {
     }
     return ((eventType >= XtNumber(masks)) ?  0 : masks[eventType]);
 }
+
+static void DispatchMappingNotify(widget, closure, call_data)
+    Widget widget;
+    XtPointer closure;		/* XtTM */
+    XtPointer call_data;	/* XEvent* */
+{
+    Boolean bool;
+    _XtTranslateEvent( widget, closure, (XEvent*)call_data, &bool );
+}
+
+
 /*** Public procedures ***/
 
 void _XtInstallTranslations(widget, stateTable)
@@ -1043,8 +1055,19 @@ void _XtInstallTranslations(widget, stateTable)
     for (i = 0; i < stateTable->numEvents; i++) {
 	register EventMask mask = EventToMask(&stateTable->eventObjTbl[i]);
 
-	eventMask |= mask;
-	nonMaskable |= (mask == 0);
+	if (mask != 0)
+	    eventMask |= mask;
+	else {
+	    nonMaskable = True;
+	    if (stateTable->eventObjTbl[i].event.eventType == MappingNotify) {
+		_XtAddCallback( widget,
+			        &_XtGetPerDisplay(XtDisplay(widget))
+			            ->mapping_callbacks,
+			        DispatchMappingNotify,
+			        (XtPointer)&widget->core.tm
+			      );
+	    }
+	}
     }
 
     /* double click needs to make sure that you have selected on both
