@@ -115,7 +115,7 @@
 175 238 238		pale turquoise
 175 238 238		PaleTurquoise
  64 224 208		turquoise
-  0 230 226		dark turquoise
+  0 206 209		dark turquoise
   0 206 209		DarkTurquoise
  72 209 204		medium turquoise
  72 209 204		MediumTurquoise
