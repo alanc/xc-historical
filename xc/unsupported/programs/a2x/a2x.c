@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.99 92/10/01 20:27:22 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.100 92/10/02 10:17:02 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -499,6 +499,12 @@ ddread(buf, len)
 	write(1, "\177", 1);
 #else
     n = getch();
+    if (n > 127) {
+	if (n == 339) /* Delete */
+	    n = '\177';
+	else
+	    n = ' ';
+    }
     if (!noecho) {
 	if (iscntrl(n))
 	    printf("^%c", n + 'A' - 1);
