@@ -95,7 +95,7 @@ extern int  errno;		/* Internal system error number. */
 #define NULL 0
 #endif
 
-#ifdef X11
+#ifdef X11_t
 #define X_TCP_PORT	6000
 #endif
 

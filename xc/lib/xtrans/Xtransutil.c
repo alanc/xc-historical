@@ -5,7 +5,7 @@
  * the internal implementation.
  */
 
-#ifdef X11
+#ifdef X11_t
 
 /*
  * These values come from X.h and Xauth.h, and MUST match them. Some
@@ -144,9 +144,9 @@ Xtransaddr	*addrp;
     return 0;
 }
 
-#endif /* X11 */
+#endif /* X11_t */
 
-#ifdef ICE
+#ifdef ICE_t
 
 #include <signal.h>
 
@@ -331,4 +331,4 @@ Xtransaddr	*peer_addr;
     return (hostname);
 }
 
-#endif /* ICE */
+#endif /* ICE_t */

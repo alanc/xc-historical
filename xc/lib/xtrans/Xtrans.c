@@ -48,7 +48,7 @@ Xtransport *Xtransports[] = {
  * These are a few utility function used by the public interface functions.
  */
 
-#ifndef X11
+#ifndef X11_t
 static
 #endif
 void
@@ -104,9 +104,9 @@ char *protocol;
     return NULL;
 }
 
-#ifndef TEST
+#ifndef TEST_t
 static
-#endif /* TEST */
+#endif /* TEST_t */
 int
 TRANS(ParseAddress) (address, protocol, host, port)
 

@@ -32,45 +32,53 @@
  * Set the functions names according to where this code is being compiled.
  */
 
-#ifdef X11
+#ifdef X11_t
 #if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define TRANS(func) _X11Trans##func
 #else
 #define TRANS(func) _X11Trans/**/func
 #endif
-#endif /* X11 */
+#endif /* X11_t */
 
-#ifdef FS
+#ifdef XIM_t
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#define TRANS(func) _XIMTrans##func
+#else
+#define TRANS(func) _XIMTrans/**/func
+#endif
+#endif /* XIM_t */
+
+#ifdef FS_t
 #if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define TRANS(func) _FSTrans##func
 #else
 #define TRANS(func) _FSTrans/**/func
 #endif
-#endif /* FS */
+#endif /* FS_t */
 
-#ifdef FONT
+#ifdef FONT_t
 #if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define TRANS(func) _FONTTrans##func
 #else
 #define TRANS(func) _FONTTrans/**/func
 #endif
-#endif /* FONT */
+#endif /* FONT_t */
 
-#ifdef ICE
+#ifdef ICE_t
 #if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define TRANS(func) _ICETrans##func
 #else
 #define TRANS(func) _ICETrans/**/func
 #endif
-#endif /* ICE */
+#endif /* ICE_t */
 
-#ifdef TEST
+#ifdef TEST_t
 #if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define TRANS(func) _TESTTrans##func
 #else
 #define TRANS(func) _TESTTrans/**/func
 #endif
-#endif /* TEST */
+#endif /* TEST_t */
 
 #if !defined(TRANS)
 #if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
@@ -314,7 +322,7 @@ int TRANS(MakeAllCLTSServerListeners)(
  * Function Prototypes for Utility Functions.
  */
 
-#ifdef X11
+#ifdef X11_t
 
 int TRANS(ConvertAddress)(
 #if NeedFunctionPrototypes
@@ -324,9 +332,9 @@ int TRANS(ConvertAddress)(
 #endif
 );
 
-#endif /* X11 */
+#endif /* X11_t */
 
-#ifdef ICE
+#ifdef ICE_t
 
 char *
 TRANS(GetMyNetworkId)(
@@ -346,6 +354,6 @@ TRANS(GetPeerNetworkId)(
 #endif
 );
 
-#endif /* ICE */
+#endif /* ICE_t */
 
 #endif /* _XTRANS_H */

@@ -76,7 +76,7 @@ int sig;
 #define DEV_PTMX	"/dev/ptmx"
 #define DEV_SPX		"/dev/spx"
 
-#if defined(X11)
+#if defined(X11_t)
 #define PTSNODENAME "/dev/X/server."
 #define NAMEDNODENAME "/dev/X/Nserver."
 /*
@@ -89,7 +89,11 @@ int sig;
 #define SCORNODENAME	"/dev/X/%1sR"
 #define SCOSNODENAME	"/dev/X/%1sS"
 #endif
-#if defined(FS)
+#if defined(XIM_t)
+#define PTSNODENAME	"/dev/X/XIM."
+#define NAMEDNODENAME	"/dev/X/NXIM."
+#endif
+#if defined(FS_t)
 /*
  * USL has already defined something here. We need to check with them
  * and see if their choice is usable here.
@@ -97,11 +101,11 @@ int sig;
 #define PTSNODENAME	"/dev/X/fontserver."
 #define NAMEDNODENAME	"/dev/X/Nfontserver."
 #endif
-#if defined(ICE)
+#if defined(ICE_t)
 #define PTSNODENAME	"/dev/X/ICE."
 #define NAMEDNODENAME	"/dev/X/NICE."
 #endif
-#if defined(TEST)
+#if defined(TEST_t)
 #define PTSNODENAME	"/dev/X/transtest."
 #define NAMEDNODENAME	"/dev/X/Ntranstest."
 #endif
@@ -1365,7 +1369,7 @@ XtransConnInfo ciptr;
 
 PRMSG(3,"TRANS(LocalOpenClient)()\n", 0,0,0 );
 
-#if defined(X11)
+#if defined(X11_t)
 /*
  * X has a well known port, that is transport dependant. It is easier
  * to handle it here, than try and come up with a transport independent
@@ -1375,7 +1379,7 @@ PRMSG(3,"TRANS(LocalOpenClient)()\n", 0,0,0 );
  * from ConnectDisplay(). Since that is what we want for the local transports,
  * we don't have to do anything special.
  */
-#endif /* X11 */
+#endif /* X11_t */
 
 if( (ciptr=(XtransConnInfo)calloc(1,sizeof(struct _XtransConnInfo))) == NULL )
 	{
@@ -1435,14 +1439,14 @@ XtransConnInfo ciptr;
 
 PRMSG(2,"TRANS(LocalOpenServer)(%d,%s,%s)\n", type, protocol, port);
 
-#if defined(X11)
+#if defined(X11_t)
 /*
  * For X11, the port will be in the format xserverN where N is the
  * display number. All of the local connections just need to know
  * the display number because they don't do any name resolution on
  * the port. This just truncates port to the display portion.
  */
-#endif /* X11 */
+#endif /* X11_t */
 
 if( (ciptr=(XtransConnInfo)calloc(1,sizeof(struct _XtransConnInfo))) == NULL )
 	{
