@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.44 91/01/05 15:50:52 dave Exp $
+ * $XConsortium: iconmgr.c,v 1.45 91/01/08 13:55:20 rws Exp $
  *
  * Icon Manager routines
  *
@@ -79,7 +79,7 @@ void CreateIconManagers()
     if (Scr->siconifyPm == NULL)
     {
 	Scr->siconifyPm = XCreatePixmapFromBitmapData(dpy, Scr->Root,
-	    siconify_bits, siconify_width, siconify_height, 1, 0, 1);
+	    (char *)siconify_bits, siconify_width, siconify_height, 1, 0, 1);
     }
 
     for (p = &Scr->iconmgr; p != NULL; p = p->next)
