@@ -73,8 +73,9 @@ void
 XtResizeWidget(w)
     Widget w;
 {
-    w->core.widget_class->core_class.resize(w);
-
+    if (w->core.widget_class->core_class.resize != (WidgetProc) NULL) {
+	w->core.widget_class->core_class.resize(w);
+    }
     if (XtIsRealized(w)) {
 	XWindowChanges changes;
 	changes.width = w->core.width;
