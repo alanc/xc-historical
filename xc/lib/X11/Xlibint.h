@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.100 93/02/08 09:47:25 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.101 93/03/10 16:31:17 gildea Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -469,13 +469,14 @@ extern int errno;			/* Internal system error number. */
 #endif
 
 #ifdef WORD64
+#define MakeBigReq(req,n) \
     { \
     char _BRdat[4]; \
     unsigned long _BRlen = req->length - 1; \
     req->length = 0; \
-    bcopy(((char *)req) + (_BRlen << 2), _BRdat, 4);
+    bcopy(((char *)req) + (_BRlen << 2), _BRdat, 4); \
     bcopy(((char *)req) + 4, ((char *)req) + 8, _BRlen << 2); \
-    bcopy(_BRdat, ((char *)req) + 4, 4);
+    bcopy(_BRdat, ((char *)req) + 4, 4); \
     Data32(dpy, (long *)&_BRdat, 4); \
     }
 #else
