@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imake.cf,v 1.2 93/09/13 19:14:07 rws Exp $
+XCOMM $XConsortium: Imake.cf,v 1.3 93/09/13 19:38:47 rws Exp $
 /*
  * To add support for another platform:
  * 
@@ -271,7 +271,7 @@ XCOMM $XConsortium: Imake.cf,v 1.2 93/09/13 19:14:07 rws Exp $
 #endif /* WIN32 */
 
 #ifndef MacroIncludeFile
-XCOMM WARNING:  Imake.tmpl not configured; guessing at definitions!!!
+XCOMM WARNING:  Imake.cf not configured; guessing at definitions!!!
 XCOMM This might mean that BOOTSTRAPCFLAGS was not set when building imake.
 #define MacroIncludeFile <generic.cf>
 #define MacroFile generic.cf
