@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.39 91/10/30 15:27:39 rws Exp $ */
+/* $XConsortium: osinit.c,v 1.40 91/11/29 15:21:07 rws Exp $ */
 #include "X.h"
 #include "os.h"
 #include "osdep.h"
@@ -153,6 +153,7 @@ OsInit()
 #endif
 	been_here = TRUE;
     }
+    OsInitAllocator();
 
     OsInitColors();
 }
