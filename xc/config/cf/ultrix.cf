@@ -6,10 +6,16 @@
 #define OSMajorVersion    3
 #define OSMinorVersion    0
 
+#ifdef VaxArchitecture
 #define XqvssServer Xqvss
 #define XqdssServer Xqdss
+#endif
 
-/**/# platform:  $XConsortium: ultrix.cf,v 1.1 89/01/11 14:58:35 jim Exp $
+#ifdef MipsArchitecture
+#define BuildServer NO		/* for now, do not build PMAX server */
+#endif
+
+/**/# platform:  $XConsortium: ultrix.cf,v 1.2 89/02/09 13:00:23 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
