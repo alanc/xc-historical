@@ -1,5 +1,5 @@
 /*
- * $XConsortium: LockDis.c,v 1.6 93/07/22 13:30:47 gildea Exp $
+ * $XConsortium: LockDis.c,v 1.7 94/01/29 18:29:59 gildea Exp $
  *
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -41,7 +41,7 @@ void XLockDisplay(dpy)
 #ifdef XTHREADS
     LockDisplay(dpy);
     if (dpy->lock)
-	(*dpy->lock_fns->user_lock_display)(dpy);
+	(*dpy->lock->user_lock_display)(dpy);
     /*
      * We want the threads in the reply queue to all get out before
      * XLockDisplay returns, in case they have any side effects the
@@ -58,7 +58,7 @@ void XLockDisplay(dpy)
 	cvl->next = dpy->lock->event_awaiters;
 	dpy->lock->event_awaiters = cvl;
 
-	ConditionWait(dpy, cvl);
+	ConditionWait(dpy, cvl->cv);
 	UnlockNextEventReader(dpy, cvl); /* pass the signal on */
     }
     UnlockDisplay(dpy);
@@ -76,7 +76,7 @@ void XUnlockDisplay(dpy)
 #ifdef XTHREADS
     LockDisplay(dpy);
     if (dpy->lock)
-	(*dpy->lock_fns->user_unlock_display)(dpy);
+	(*dpy->lock->user_unlock_display)(dpy);
     UnlockDisplay(dpy);
 #endif
 }
