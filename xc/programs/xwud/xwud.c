@@ -1,4 +1,4 @@
-/* $XConsortium: xwud.c,v 1.44 91/03/12 08:53:38 rws Exp $ */
+/* $XConsortium: xwud.c,v 1.45 91/05/10 11:03:20 rws Exp $ */
 /* Copyright 1985, 1986, 1988 Massachusetts Institute of Technology */
 
 /*
@@ -19,6 +19,7 @@ without express or implied warranty.
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/Xatom.h>
 #include <stdio.h>
 #include <X11/XWDFile.h>
 #define  XK_LATIN1
@@ -88,6 +89,8 @@ main(argc, argv)
     char *geom = NULL;
     int gbits = 0;
     XSizeHints hints;
+    XTextProperty textprop;
+    XClassHint class_hint;
     XColor *colors, color;
     Window image_win;
     Colormap colormap;
@@ -209,11 +212,12 @@ main(argc, argv)
 
     /* alloc window name */
     win_name_size = (header.header_size - sizeof(header));
-    if((win_name = malloc((unsigned) win_name_size)) == NULL)
+    if((win_name = malloc((unsigned) win_name_size + 6)) == NULL)
       Error("Can't malloc window name storage.");
+    strcpy(win_name, "xwud: ");
 
      /* read in window name */
-    if(!Read(win_name, sizeof(char), win_name_size, in_file))
+    if(!Read(win_name + 6, sizeof(char), win_name_size, in_file))
       Error("Unable to read window name from dump file.");
 
     /* initialize the input image */
@@ -544,11 +548,15 @@ main(argc, argv)
     wm_delete_window = XInternAtom(dpy, "WM_DELETE_WINDOW", False);
     (void) XSetWMProtocols (dpy, image_win, &wm_delete_window, 1);
      
-    /* store the window name string */
-    XStoreName(dpy, image_win, win_name);
-    
-    /* store size hints */
-    XSetNormalHints(dpy, image_win, &hints);
+    textprop.value = (unsigned char *) win_name;
+    textprop.encoding = XA_STRING;
+    textprop.format = 8;
+    textprop.nitems = strlen(win_name);
+    class_hint.res_name = (char *)NULL;
+    class_hint.res_class = "Xwud";
+    /* set standard properties */
+    XSetWMProperties(dpy, image_win, &textprop, (XTextProperty *)NULL,
+		     argv, argc, &hints, (XWMHints *)NULL, &class_hint);
 
     /* map the image window */
     XMapWindow(dpy, image_win);
