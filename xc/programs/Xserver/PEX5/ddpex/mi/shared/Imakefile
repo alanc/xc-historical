@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.1 91/02/16 09:56:21 rws Exp $
+# $XConsortium: Imakefile,v 5.2 91/02/18 11:31:17 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -33,7 +33,7 @@
 #	DDTEST turns on some fprintf(stderr...)s for debugging
 #	PEX_DEFAULT_FONTPATH defines the default path to PEX fonts
 
-    DEFINES = PexDdpexDefines -DPEX_DEFAULT_FONTPATH=\"$(FONTDIR)/PEX\"
+    DEFINES = PexDdpexDefines
 CDEBUGFLAGS = PexDdpexCDebugFlags
 
   PEXSERVINC = ../../../include
