@@ -46,37 +46,60 @@ main()
 {
 	int fd; int line;
 	int iarg;
-	struct strioctl s;
+	struct strioctl ctl;
 	char buff[FMNAMESZ+1];
+	int errors = 0;
 
 	if ((fd = open("/dev/console", O_RDWR)) < 0) {
 	    printf("Xrepair: can't open /dev/console\n");
 	} else if (ioctl(fd, I_FIND, "line") == 0) {
-	    errno = 0;
-	    ioctl(fd, I_LOOK, buff);
-	    while (errno != EINVAL) {
-		if(ioctl(fd, I_POP, 0) < 0) {
-			printf("Failed to ioctl I_POP %s.\n", buff);
-		}
-		ioctl(fd, I_LOOK, buff);
+	    if(ioctl(fd, I_POP, 0) < 0) {
+		errors++;
+		printf("Failed to ioctl I_POP.\r\n");
 	    }
-
-	    ioctl(fd, I_FLUSH, FLUSHRW); 
-    
+	    
 	    iarg = 0;
 	    if (ioctl(fd, FIONBIO, &iarg) < 0) {
-		printf("Failed to FIONBIO.\r\n");
+		errors++;
+		printf("Could not ioctl FIONBIO. \r\n");
+	    }
+	    
+#ifdef notdef
+	    iarg = 0;
+	    if (ioctl(fd, FIOASYNC, &iarg) < 0) {
+		errors++;
+		printf("Could not ioctl FIOASYNC. \r\n");
+	    }
+#endif
+	    
+	    if (ioctl(fd, I_FLUSH, FLUSHRW) < 0) {
+		errors++;
+		printf("Failed to ioctl I_FLUSH FLUSHRW.\r\n");
+	    }
+	    
+	    ctl.ic_len = 0;
+	    ctl.ic_cmd = VIDEO_NOMOUSE;
+	    if (ioctl(fd, I_STR, &ctl) < 0) {
+		errors++;
+		printf("Failed to ioctl I_STR VIDEO_NOMOUSE.\r\n");
+	    }
+	    
+	    ctl.ic_len = 0;
+	    ctl.ic_cmd = VIDEO_ASCII;
+	    if (ioctl(fd, I_STR, &ctl) < 0) {
+		errors++;
+		printf("Failed to ioctl I_STR VIDEO_ASCII.\r\n");
 	    }
 
-	    s.ic_len = 0;
-	    s.ic_cmd = VIDEO_NOMOUSE;
-	    ioctl(fd, I_STR, &s);
-	    s.ic_len = 0;
-	    s.ic_cmd = VIDEO_ASCII;
-	    ioctl(fd, I_STR, &s);
-	    ioctl(fd, I_PUSH, "line");
-    
-	    ioctl(fd, TCSETA, &d_tio);
+	    if(ioctl(fd, I_PUSH, "line") < 0) {
+		errors++;
+		printf("Failed to ioctl I_PUSH.\r\n");
+	    }
+
+	    if (ioctl(fd, TCSETA, &d_tio) < 0) {
+		errors++;
+		printf("Failed to ioctl TCSETA.\r\n");
+	    }
 	}
-    
+    exit (errors);
 }
