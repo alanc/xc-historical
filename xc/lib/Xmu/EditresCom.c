@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditresCom.c,v 1.17 90/07/03 16:16:18 kit Exp $
+ * $XConsortium: EditresCom.c,v 1.18 90/07/11 10:06:51 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -283,7 +283,7 @@ unsigned long length;
 		    goto done;
 		}
 	    }
-	    sv_event->value[i] = '\0'; /* NULL terminate that sucker. */
+	    ((char*)sv_event->value)[i] = '\0'; /* NULL terminate that sucker. */
 
 	    if (!_EresRetrieve16(stream, &(sv_event->num_entries)))
 		goto done;
