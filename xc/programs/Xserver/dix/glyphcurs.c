@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: glyphcurs.c,v 5.9 92/12/24 12:45:14 rws Exp $ */
+/* $XConsortium: glyphcurs.c,v 5.10 93/07/12 09:24:08 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -62,7 +62,7 @@ ServerBitsFromGlyph(pfont, ch, cm, ppbits)
     xRectangle rect;
     PixmapPtr ppix;
     long nby;
-    unsigned char *pbits;
+    char *pbits;
     XID gcval[3];
     unsigned char char2b[2];
 
@@ -72,11 +72,11 @@ ServerBitsFromGlyph(pfont, ch, cm, ppbits)
 
     pScreen = screenInfo.screens[0];
     nby = BitmapBytePad(cm->width) * (long)cm->height;
-    pbits = (unsigned char *)xalloc(nby);
+    pbits = (char *)xalloc(nby);
     if (!pbits)
 	return BadAlloc;
     /* zeroing the (pad) bits seems to help some ddx cursor handling */
-    bzero((char *)pbits, nby);
+    bzero(pbits, nby);
 
     ppix = (PixmapPtr)(*pScreen->CreatePixmap)(pScreen, cm->width,
 					       cm->height, 1);
@@ -112,7 +112,7 @@ ServerBitsFromGlyph(pfont, ch, cm, ppbits)
 			    1, (unsigned short *)char2b);
     (*pScreen->GetImage)((DrawablePtr)ppix, 0, 0, cm->width, cm->height,
 			 XYPixmap, 1, pbits);
-    *ppbits = pbits;
+    *ppbits = (unsigned char *)pbits;
     FreeScratchGC(pGC);
     (*pScreen->DestroyPixmap)(ppix);
     return Success;
