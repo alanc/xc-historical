@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.96 93/09/29 17:13:14 dpw Exp $ */
+/* $XConsortium: window.c,v 5.97 93/09/30 15:58:55 dpw Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3182,8 +3182,10 @@ TileScreenSaver(i, kind)
 	return FALSE;
 
     if (mask & CWBackPixmap)
+    {
 	MakeRootTile (pWin);
-
+	(*pWin->drawable.pScreen->ChangeWindowAttributes)(pWin, CWBackPixmap);
+    }
     MapWindow(pWin, serverClient);
 #ifndef NOLOGOHACK
     if (kind == SCREEN_IS_TILED && logoScreenSaver)
