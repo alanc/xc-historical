@@ -1,4 +1,4 @@
-/* $XConsortium: grabs.c,v 1.5 88/08/16 22:29:58 rws Exp $ */
+/* $XConsortium: grabs.c,v 1.6 88/09/06 15:41:12 jim Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -44,9 +44,9 @@ CreateDetailMask()
     int i;
 
     pTempMask = (Mask *)xalloc(sizeof(Mask) * MasksPerDetailMask);
-
-    for ( i = 0; i < MasksPerDetailMask; i++)
-	pTempMask[i]= ~0;
+    if (pTempMask)
+	for ( i = 0; i < MasksPerDetailMask; i++)
+	    pTempMask[i]= ~0;
 
     return pTempMask;
 
@@ -74,25 +74,24 @@ Mask *pOriginalDetailMask;
 	return NULL;
 
     pTempMask = (Mask *)xalloc(sizeof(Mask) * MasksPerDetailMask);
-
-    for ( i = 0; i < MasksPerDetailMask; i++)
-	pTempMask[i]= pOriginalDetailMask[i];
-
+    if (pTempMask)
+	for ( i = 0; i < MasksPerDetailMask; i++)
+	    pTempMask[i]= pOriginalDetailMask[i];
     return pTempMask;
 
 }
 
 extern int PassiveClientGone();	/* This is defined in events.c */
 
-void
+Bool
 AddPassiveGrabToWindowList(pGrab)
 GrabPtr pGrab;
 {
     pGrab->resource = FakeClientID(pGrab->client->index);
     pGrab->next = PASSIVEGRABS(pGrab->window);
     pGrab->window->passiveGrabs = (pointer)pGrab;
-    AddResource(pGrab->resource, RT_FAKE, (pointer)pGrab->window,
-		PassiveClientGone, RC_CORE);
+    return AddResource(pGrab->resource, RT_FAKE, (pointer)pGrab->window,
+		       PassiveClientGone, RC_CORE);
 }
 
 
@@ -112,6 +111,8 @@ CursorPtr cursor;
     GrabPtr grab;
 
     grab = (GrabPtr)xalloc(sizeof(GrabRec));
+    if (!grab)
+	return (GrabPtr)NULL;
     grab->client = client;
     grab->device = device;
     grab->window = window;
@@ -250,13 +251,17 @@ GrabPtr pFirstGrab, pSecondGrab;
 
 
 void
-DeletePassiveGrabFromList(pMinuendGrab)
+DeletePassiveGrabFromList(pMinuendGrab, skipFirst)
 GrabPtr pMinuendGrab;
+Bool	skipFirst;
 {
     register GrabPtr *next;
     register GrabPtr grab;
 
-    for (next = (GrabPtr *)&(pMinuendGrab->window->passiveGrabs); *next; )
+    next = (GrabPtr *)&(pMinuendGrab->window->passiveGrabs);
+    if (skipFirst)
+  	next = &((*next)->next);
+    while (*next)
     {
 	grab = *next;
 
