@@ -37,23 +37,23 @@ resources from the RectObj class.
 .vs 11
 .nr VS 11
 .TS H
-lw(1.5i) lw(1i) lw(1i) lw(2i).
+lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Class	Type	Default Value
+Name	Class	Type	Notes	Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-ancestorSensitive	AncestorSensitive	Boolean	True
-callback	Callback	XtCallbackList	NULL
-destroyCallback	Callback	XtCallbackList	NULL
-height	Height	Dimension	0
+ancestorSensitive	AncestorSensitive	Boolean		True
+callback	Callback	XtCallbackList		NULL
+destroyCallback	Callback	XtCallbackList		NULL
+height	Height	Dimension		0
 international	International	Boolean	C	False
-sensitive	Sensitive	Boolean	True
-width	Width	Dimension	1
+sensitive	Sensitive	Boolean		True
+width	Width	Dimension		1
 .sp 3p
 _
 .TE
