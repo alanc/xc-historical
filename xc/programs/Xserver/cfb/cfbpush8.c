@@ -15,7 +15,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbpush8.c,v 5.0 89/07/28 13:53:19 keith Exp $ */
+/* $XConsortium: cfbpush8.c,v 5.1 89/08/24 19:49:02 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -130,8 +130,9 @@ cfbPushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
 	    nPixmapTmp -= 8;
 	    c = BitLeft (bits, 32 - xoff);
 	}
-	bits = *src++ & rightMask;
-	c |= BitRight (bits, xoff);
+	if (BitLeft (rightMask, xoff))
+	    c |= BitRight (*src, xoff);
+	c &= rightMask;
 	switch (nPixmapTmp) {
 	case 8:
 	    WriteFourBits(dst, pixel, GetFourBits(c));
