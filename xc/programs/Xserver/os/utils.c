@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.102 91/07/03 14:10:50 keith Exp $ */
+/* $XConsortium: utils.c,v 1.103 91/07/03 19:09:27 rws Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -29,7 +29,7 @@ SOFTWARE.
 #include "input.h"
 #include "opaque.h"
 #include <signal.h>
-#if !defined(SYSV) || defined(macII) || defined(sgi) || defined(hpux)
+#ifndef SYSV
 #include <sys/resource.h>
 #endif
 

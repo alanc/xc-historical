@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.36 91/07/02 09:14:57 rws Exp $ */
+/* $XConsortium: osinit.c,v 1.37 91/07/03 19:09:16 rws Exp $ */
 #include "X.h"
 #include "os.h"
 #include "osdep.h"
@@ -37,7 +37,7 @@ SOFTWARE.
 #endif
 #endif
 
-#if !defined(SYSV) || defined(macII) || defined(sgi) || defined(hpux)
+#ifndef SYSV
 #include <sys/resource.h>
 #endif
 
