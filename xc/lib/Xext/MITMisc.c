@@ -1,5 +1,5 @@
 /*
- * $XConsortium: MITMisc.c,v 1.1 89/10/08 19:37:46 rws Exp $
+ * $XConsortium: MITMisc.c,v 1.2 90/05/15 18:48:21 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -103,33 +103,6 @@ Status XMITMiscSetBugMode(dpy, onOff)
     req->onOff = onOff;
     UnlockDisplay(dpy);
     SyncHandle();
-    return 1;
-}
-
-Status XMITMiscPushPixels(dpy, bitmap, dst, gc, width, height, dst_x, dst_y)
-    register Display	*dpy;
-    Drawable		bitmap, dst;
-    GC			gc;
-    unsigned int	width, height;
-    int			dst_x, dst_y;
-{
-    XExtDisplayInfo *info = find_display (dpy);
-    register xMITPushPixelsReq  *req;
-
-    MITCheckExtension (dpy, info, 0);
-
-    LockDisplay (dpy);
-    FlushGC (dpy, gc);
-    GetReq (MITPushPixels, req);
-    req->srcDrawable = bitmap;
-    req->dstDrawable = dst;
-    req->gc = gc->gid;
-    req->width = width;
-    req->height = height;
-    req->dstX = dst_x;
-    req->dstY = dst_y;
-    UnlockDisplay (dpy);
-    SyncHandle ();
     return 1;
 }
 

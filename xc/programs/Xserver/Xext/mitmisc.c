@@ -17,15 +17,13 @@ without any express or implied warranty.
 
 /* RANDOM CRUFT! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
 
-/* $XConsortium: mitmisc.c,v 1.1 89/10/08 19:41:20 rws Exp $ */
+/* $XConsortium: mitmisc.c,v 1.2 90/05/15 18:47:25 keith Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
 #include "misc.h"
 #include "os.h"
 #include "dixstruct.h"
-#include "gcstruct.h"
-#include "pixmapstr.h"
 #include "extnsionst.h"
 #define _MITMISC_SERVER_
 #include "mitmiscstr.h"
@@ -91,65 +89,6 @@ ProcMITGetBugMode(client)
     return(client->noClientException);
 }
 
-int
-ProcMITPushPixels (client)
-    register ClientPtr client;
-{
-    register DrawablePtr    pDst;
-    register DrawablePtr    pSrc;
-    register GCPtr	    pGC;
-    REQUEST(xCopyAreaReq);
-    unsigned		    width, height;
-    int			    dstx, dsty;
-
-    REQUEST_SIZE_MATCH(xMITPushPixelsReq);
-
-    VALIDATE_DRAWABLE_AND_GC(stuff->dstDrawable, pDst, pGC, client); 
-    if (!(pSrc = LOOKUP_DRAWABLE(stuff->srcDrawable, client)) ||
-	pSrc->type != DRAWABLE_PIXMAP ||
-	pSrc->depth != 1)
-    {
-	client->errorValue = stuff->srcDrawable;
-	return(BadPixmap);
-    }
-    if (pDst->pScreen != pSrc->pScreen)
-    {
-	client->errorValue = stuff->dstDrawable;
-	return (BadMatch);
-    }
-
-    dstx = stuff->dstX;
-    dsty = stuff->dstY;
-    width = stuff->width;
-    height = stuff->height;
-    if (width > pSrc->width)
-	width = pSrc->width;
-    if (height > pSrc->height)
-	height = pSrc->height;
-    if (dstx + width > pDst->width)
-    {
-	if (dstx > pDst->width)
-	    width = 0;
-	else
-	    width = pDst->width - dstx;
-    }
-    if (dsty + height > pDst->height)
-    {
-	if (dsty > pDst->height)
-	    height = 0;
-	else
-	    height = pDst->height - dsty;
-    }
-    if (width && height)
-    {
-    	(*pGC->ops->PushPixels)(pSrc, pDst, pGC, 
-				     width, height, 
-				     dstx, dsty);
-    }
-
-    return(client->noClientException);
-}
-
 static int
 ProcMITDispatch (client)
     register ClientPtr	client;
@@ -161,8 +100,6 @@ ProcMITDispatch (client)
 	return ProcMITSetBugMode(client);
     case X_MITGetBugMode:
 	return ProcMITGetBugMode(client);
-    case X_MITPushPixels:
-	return ProcMITPushPixels(client);
     default:
 	return BadRequest;
     }
@@ -191,23 +128,6 @@ SProcMITGetBugMode(client)
 }
 
 static int
-SProcMITPushPixels (client)
-    register ClientPtr	client;
-{
-    register int    n;
-    REQUEST (xMITPushPixelsReq);
-
-    swaps(&stuff->length, n);
-    swapl(&stuff->srcDrawable, n);
-    swapl(&stuff->dstDrawable, n);
-    swapl(&stuff->gc, n);
-    swaps(&stuff->width, n);
-    swaps(&stuff->height, n);
-    swaps(&stuff->dstX, n);
-    swaps(&stuff->dstY, n);
-}
-
-static int
 SProcMITDispatch (client)
     register ClientPtr	client;
 {
@@ -218,8 +138,6 @@ SProcMITDispatch (client)
 	return SProcMITSetBugMode(client);
     case X_MITGetBugMode:
 	return SProcMITGetBugMode(client);
-    case X_MITPushPixels:
-	return SProcMITPushPixels(client);
     default:
 	return BadRequest;
     }
