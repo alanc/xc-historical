@@ -176,12 +176,15 @@ InitOutput(pScreenInfo, argc, argv)
     char    	  **argv;
 {
     int     	  i, n, dev;
-    int		  nonBlockConsole = 1;
+    int		  nonBlockConsole = 0;
     static int	  setup_on_exit = 0;
     int		  devStart = 1;
+    extern Bool	  RunFromSmartParent;
 
     if (!monitorResolution)
 	monitorResolution = 90;
+    if (RunFromSmartParent)
+	nonBlockConsole = 1;
     for (i = 1; i < argc; i++) {
 	if (!strcmp(argv[i],"-debug"))
 	    nonBlockConsole = 0;
