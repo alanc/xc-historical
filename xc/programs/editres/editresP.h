@@ -1,5 +1,5 @@
 
-#include <X11/Xaw/EditRes.h>
+#include <X11/Xmu/Editres.h>
 #include <X11/Xresource.h>
 
 #define DEBUG
