@@ -20,7 +20,9 @@ NEWS-OS 3.2 (Sony; client only)
 UNICOS 5.0.1 (Cray; client only)
 UNIX(tm) System V, Release 3.2 (AT&T; client only)
 .sp
-Commercial implementations are also available for a much wider range
+It should be relatively easy to build the client-side software on a
+variety of other system.
+Commercial implementations are also available for a wide range
 of platforms.
 .PP
 The X Consortium requests that the following names be used when
