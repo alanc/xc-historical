@@ -1,6 +1,6 @@
-xkb_keymap "SGI102/US"
+xkb_keymap "sgi default"
 
-xkb_keycodes	{ include "sgi"		};
-xkb_types	{ include "default"	};
-xkb_interpret	{ include "default"	};
-xkb_symbols	{ include "us"		};
+xkb_keycodes		{ include "sgi"		};
+xkb_types		{ include "default"	};
+xkb_compatibility	{ include "default"	};
+xkb_symbols		{ include "us"	};
