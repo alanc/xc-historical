@@ -1,4 +1,6 @@
+#ifdef BandAidCompiler
 #include BandAidCompiler
+#endif
 
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
   SYS_LIBRARIES = -lm

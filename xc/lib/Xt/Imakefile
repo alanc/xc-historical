@@ -1,4 +1,6 @@
+#ifdef BandAidCompiler
 #include BandAidCompiler
+#endif
 
 #if UnalignedReferencesAllowed
   ALIGN_DEFINES = -DUNALIGNED

@@ -1,4 +1,6 @@
+#ifdef BandAidCompiler
 #include BandAidCompiler
+#endif
 
        INCLUDES = -I$(TOP) -I$(AWIDGETSRC) -I$(TOOLKITSRC)
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)

@@ -10,7 +10,9 @@
 /**/#                                                                         #
 /**/###########################################################################
 
+#ifdef BandAidCompiler
 #include BandAidCompiler
+#endif
 
 /*
  * The configuration parameter GettyProgramName may be found in the
