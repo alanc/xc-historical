@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.23 91/07/21 16:32:32 converse Exp $ */
+/* $XConsortium: Keyboard.c,v 1.24 91/07/21 16:55:01 converse Exp $ */
 
 /********************************************************
 
@@ -273,7 +273,8 @@ static Widget 	FindKeyDestination(widget, event,
 		       * focus 
 		       */
 		      if (
-			  (event->type != KeyPress)
+			  (event->type != KeyPress) ||
+			  (event->keycode == 0) /* Xlib XIM composed input */
 			  )
 			dspWidget = focusWidget;
 		      else
@@ -341,7 +342,8 @@ Widget _XtProcessKeyboardEvent(event, widget, pdi)
       {
 	case KeyPress:
 	  {
-	      if (!IsServerGrab(device->grabType) && 
+	      if (event->keycode != 0 && /* Xlib XIM composed input */
+		  !IsServerGrab(device->grabType) && 
 		  (newGrab = CheckServerGrabs((XEvent*)event,
 					      pdi->trace,
 					      pdi->traceDepth)))
