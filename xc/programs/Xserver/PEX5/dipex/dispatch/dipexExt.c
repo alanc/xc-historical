@@ -1,4 +1,4 @@
-/* $XConsortium: dipexExt.c,v 5.5 91/12/30 18:22:00 hersh Exp $ */
+/* $XConsortium: dipexExt.c,v 5.6 92/03/04 14:14:57 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -138,9 +138,9 @@ PexExtensionInit()
 	char errmsg[80];
 	char *static_message =
 		    "PEXExtensionInit: Couldn't open default PEX font file ";
-	bcopy(	static_message, errmsg, strlen(static_message));
+	bcopy(	static_message, errmsg, strlen(static_message)+1);
 	bcopy(	DEFAULT_PEX_FONT_NAME,&(errmsg[strlen(&(errmsg[0]))]),
-		strlen(DEFAULT_PEX_FONT_NAME));
+		strlen(DEFAULT_PEX_FONT_NAME)+1);
 	ErrorF(errmsg);
 	Xfree(defaultPEXFont);
 	defaultPEXFont = 0; 
