@@ -356,7 +356,8 @@
 				  "-o" (namestring obj)
 				  #+mips "-G 0"
 				  #+hp "-DSYSV"
-				  #-(and mips sgi) "-DUNIXCONN")))
+				  #+(and mips (not dec)) "-I/usr/include/bsd"
+				  #-(and mips (not dec)) "-DUNIXCONN")))
 		 (format t ";;; cc~{ ~A~}~%" args)
 		 (unless
 		   (zerop 
