@@ -1,5 +1,5 @@
 /*
- * $XConsortium: PannerP.h,v 1.11 90/02/28 11:24:05 jim Exp $
+ * $XConsortium: PannerP.h,v 1.12 90/02/28 11:38:58 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -60,7 +60,7 @@ typedef struct {			/* new fields in widget */
     GC slider_gc;			/* background of slider */
     GC shadow_gc;			/* edge of slider and shadow */
     GC xor_gc;				/* for doing XOR tmp graphics */
-    float haspect, vaspect;		/* aspect ratio of core to canvas */
+    double haspect, vaspect;		/* aspect ratio of core to canvas */
     Boolean rubber_band;		/* true = rubber band, false = move */
     struct {
 	Boolean doing;			/* tmp graphics in progress */
@@ -82,8 +82,8 @@ typedef struct _PannerRec {
     PannerPart panner;
 } PannerRec;
 
-#define PANNER_HSCALE(pw,val) ((pw)->panner.haspect * ((float) (val)))
-#define PANNER_VSCALE(pw,val) ((pw)->panner.vaspect * ((float) (val)))
+#define PANNER_HSCALE(pw,val) ((pw)->panner.haspect * ((double) (val)))
+#define PANNER_VSCALE(pw,val) ((pw)->panner.vaspect * ((double) (val)))
 
 #define PANNER_DSCALE(pw,val) (Dimension)  \
   ((((unsigned long) (val)) * (unsigned long) pw->panner.default_scale) / 100L)

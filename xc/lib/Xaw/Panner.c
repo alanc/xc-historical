@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.18 90/02/28 12:08:28 jim Exp $
+ * $XConsortium: Panner.c,v 1.19 90/02/28 12:21:03 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -233,9 +233,9 @@ static void check_knob (pw, knob)
     if (*y > maxy) *y = maxy;
 
     if (knob) {
-	pw->panner.slider_x = (Position) (((float) pw->panner.knob_x) /
+	pw->panner.slider_x = (Position) (((double) pw->panner.knob_x) /
 					  pw->panner.haspect + 0.5);
-	pw->panner.slider_y = (Position) (((float) pw->panner.knob_y) /
+	pw->panner.slider_y = (Position) (((double) pw->panner.knob_y) /
 					  pw->panner.vaspect + 0.5);
 	pw->panner.last_x = pw->panner.last_y = PANNER_OUTOFRANGE;
     }
@@ -293,10 +293,10 @@ static void rescale (pw)
 
     if (pw->panner.canvas_width < 1) pw->panner.canvas_width = 1;
     if (pw->panner.canvas_height < 1) pw->panner.canvas_height = 1;
-    pw->panner.haspect = (((float) (pw->core.width - pad)) /
-			  ((float) pw->panner.canvas_width));
-    pw->panner.vaspect = (((float) (pw->core.height - pad)) /
-			  ((float) pw->panner.canvas_height));
+    pw->panner.haspect = (((double) (pw->core.width - pad)) /
+			  ((double) pw->panner.canvas_width));
+    pw->panner.vaspect = (((double) (pw->core.height - pad)) /
+			  ((double) pw->panner.canvas_height));
     scale_knob (pw, TRUE, TRUE);
 }
 
@@ -694,9 +694,9 @@ static void ActionNotify (gw, event, params, num_params)
     pw->panner.knob_y = pw->panner.tmp.y;
     if (pw->panner.shadow) move_shadow (pw);
 
-    pw->panner.slider_x = (Position) (((float) pw->panner.knob_x) /
+    pw->panner.slider_x = (Position) (((double) pw->panner.knob_x) /
 				      pw->panner.haspect + 0.5);
-    pw->panner.slider_y = (Position) (((float) pw->panner.knob_y) /
+    pw->panner.slider_y = (Position) (((double) pw->panner.knob_y) /
 				      pw->panner.vaspect + 0.5);
 
     if (pw->panner.last_x != pw->panner.knob_x ||
