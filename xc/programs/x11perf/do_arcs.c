@@ -72,6 +72,40 @@ Bool InitCircles(xp, p)
     return True;
 }
 
+Bool InitDashedCircles(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    char dashes[2];
+
+    (void)InitCircles(xp, p);
+
+    /* Modify GCs to draw dashed */
+    XSetLineAttributes(xp->d, xp->bggc, 0, LineOnOffDash, CapButt, JoinMiter);
+    XSetLineAttributes(xp->d, xp->fggc, 0, LineOnOffDash, CapButt, JoinMiter);
+    dashes[0] = 3;   dashes[1] = 2;
+    XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
+    return True;
+}
+
+Bool InitDoubleDashedCircles(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    char dashes[2];
+
+    (void)InitCircles(xp, p);
+
+    /* Modify GCs to draw dashed */
+    XSetLineAttributes(xp->d, xp->bggc, 0, LineDoubleDash, CapButt, JoinMiter);
+    XSetLineAttributes(xp->d, xp->fggc, 0, LineDoubleDash, CapButt, JoinMiter);
+    dashes[0] = 3;   dashes[1] = 2;
+    XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
+    return True;
+}
+
 Bool InitEllipses(xp, p)
     XParms  xp;
     Parms   p;
@@ -126,6 +160,40 @@ Bool InitEllipses(xp, p)
 	    dir = 1 - dir;
 	}
     }
+    return True;
+}
+
+Bool InitDashedEllipses(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    char dashes[2];
+
+    (void)InitEllipses(xp, p);
+
+    /* Modify GCs to draw dashed */
+    XSetLineAttributes(xp->d, xp->bggc, 0, LineOnOffDash, CapButt, JoinMiter);
+    XSetLineAttributes(xp->d, xp->fggc, 0, LineOnOffDash, CapButt, JoinMiter);
+    dashes[0] = 3;   dashes[1] = 2;
+    XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
+    return True;
+}
+
+Bool InitDoubleDashedEllipses(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    char dashes[2];
+
+    (void)InitEllipses(xp, p);
+
+    /* Modify GCs to draw dashed */
+    XSetLineAttributes(xp->d, xp->bggc, 0, LineDoubleDash, CapButt, JoinMiter);
+    XSetLineAttributes(xp->d, xp->fggc, 0, LineDoubleDash, CapButt, JoinMiter);
+    dashes[0] = 3;   dashes[1] = 2;
+    XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
     return True;
 }
 
