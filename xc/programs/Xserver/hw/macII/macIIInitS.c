@@ -71,6 +71,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include    "dix.h"
 #include    "opaque.h"
 #include    "mipointer.h"
+#include    <compat.h>
 
 extern int macIIMouseProc();
 extern void macIIKbdProc();
@@ -78,16 +79,13 @@ extern int macIIKbdSetUp();
 
 extern Bool macIIMonoProbe();
 extern Bool macIIMonoInit();
-extern Bool macIIMonoCloseScreen();
 
 extern Bool macIIColorInit();
-extern Bool macIIColorCloseScreen();
 
 extern Bool macIISlotProbe();
 extern void ProcessInputEvents();
 
 extern void SetInputCheck();
-extern GCPtr CreateScratchGC();
 
 DevicePtr pPointerDevice, pKeyboardDevice;
 
@@ -118,7 +116,6 @@ SigIOHandler(sig, code, scp)
     struct sigcontext *scp;
 {
     macIISigIO++;
-    isItTimeToYield++;
 }
 
 macIIFbDataRec macIIFbData[] = {
@@ -339,11 +336,10 @@ InitInput(argc, argv)
     RegisterKeyboardDevice(k);
     miRegisterPointerDevice(screenInfo.screens[0], p);
 
-#ifdef notdef
+    setcompat (getcompat() | COMPAT_BSDSIGNALS);
     signal(SIGIO, SigIOHandler);
 
-    SetInputCheck (&zero, &isItTimeToYield);
-#endif
+    SetInputCheck (&zero, &macIISigIO);
 }
 
 /*-
@@ -549,8 +545,6 @@ macIISlotProbe (pScreenInfo, index, fbNum, argc, argv)
 
     }
 
-    macIIBlackScreen(index);
-
     switch (macIIFbs[index].default_depth) {
 	case 1:
 	    /* install the black & white color map */
@@ -572,12 +566,10 @@ macIISlotProbe (pScreenInfo, index, fbNum, argc, argv)
 	    (void) close (fd);
 
     	    i = AddScreen(macIIMonoInit, argc, argv);
-    	    pScreenInfo->screens[index]->CloseScreen = macIIMonoCloseScreen;
 	    break;
 
 	case 8:
     	    i = AddScreen(macIIColorInit, argc, argv);
-    	    pScreenInfo->screens[index]->CloseScreen = macIIColorCloseScreen;
 	    break;
 
 	default:
@@ -806,63 +798,6 @@ macIIScreenInit (pScreen)
     miDCInitialize (pScreen, &macIIPointerCursorFuncs);
 
     return TRUE; 
-}
-
-/*-
- *-----------------------------------------------------------------------
- * macIIBlackScreen --
- *	Fill a frame buffer with the black pixel.
- *
- * Results:
- *	None
- *
- * Side Effects:
- *
- *-----------------------------------------------------------------------
- */
-int
-macIIBlackScreen(index)
-	int index;
-{
-    fbFd *pf;
-    register unsigned char* fb;
-    register int fbinc, line, lw;
-    register unsigned int *fbt;
-
-    pf = &macIIFbs[index];
-    fb = pf->fb; /* Assumed longword aligned! */
-
-    switch (pf->info.v_pixelsize) {
-    case 1:
-    {
-	fbinc = pf->info.v_rowbytes;
-        for (line = pf->info.v_top; line < pf->info.v_bottom; line++) {
-	    fbt = (unsigned int *)fb;
-	    lw = ((pf->info.v_right - pf->info.v_left) + 31) >> 5;
-	    do {
-		*fbt++ = 0xffffffff;
-	    } while (--lw);
-	    fb += fbinc;
-	}
-	break;
-    }
-    case 8:
-    {
-	fbinc = pf->info.v_rowbytes;
-        for (line = pf->info.v_top; line < pf->info.v_bottom; line++) {
-	    fbt = (unsigned int *)fb;
-	    lw = ((pf->info.v_right - pf->info.v_left) + 3) >> 2;
-	    do {
-		*fbt++ = 0xfdfdfdfd;
-	    } while (--lw);
-	    fb += fbinc;
-	}
-	break;
-    }
-    default:
-	ErrorF("Bad depth in macIIBlackScreen.");
-	break;
-    }
 }
 
 /*-

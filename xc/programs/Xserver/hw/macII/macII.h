@@ -34,7 +34,7 @@ IMPLIED.
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- * $XConsortium: macII.h,v 1.11 88/09/06 14:41:59 jim Exp $
+ * $XConsortium: macII.h,v 1.13 89/08/29 15:31:13 keith Exp $
  */
 #ifndef _MACII_H_
 #define _MACII_H_
@@ -154,49 +154,6 @@ typedef struct ptrPrivate {
 } PtrPrivRec, *PtrPrivPtr;
 
 /*
- * Cursor-private data
- *	screenBits	saves the contents of the screen before the cursor
- *	    	  	was placed in the frame buffer.
- *	source	  	a bitmap for placing the foreground pixels down
- *	srcGC	  	a GC for placing the foreground pixels down.
- *	    	  	Prevalidated for the cursor's screen.
- *	invSource 	a bitmap for placing the background pixels down.
- *	invSrcGC  	a GC for placing the background pixels down.
- *	    	  	Also prevalidated for the cursor's screen Pixmap.
- *	temp	  	a temporary pixmap for low-flicker cursor motion --
- *	    	  	exists to avoid the overhead of creating a pixmap
- *	    	  	whenever the cursor must be moved.
- *	fg, bg	  	foreground and background pixels. For a color display,
- *	    	  	these are allocated once and the rgb values changed
- *	    	  	when the cursor is recolored.
- *	scrX, scrY	the coordinate on the screen of the upper-left corner
- *	    	  	of screenBits.
- *	state	  	one of CR_IN, CR_OUT and CR_XING to track whether the
- *	    	  	cursor is in or out of the frame buffer or is in the
- *	    	  	process of going from one state to the other.
- */
-typedef enum {
-    CR_IN,		/* Cursor in frame buffer */
-    CR_OUT,		/* Cursor out of frame buffer */
-    CR_XING	  	/* Cursor in flux */
-} CrState;
-
-typedef struct crPrivate {
-    PixmapPtr  	        screenBits; /* Screen before cursor put down */
-    PixmapPtr  	        source;     /* Cursor source (foreground bits) */
-    GCPtr   	  	srcGC;	    /* Foreground GC */
-    PixmapPtr  	        invSource;  /* Cursor source inverted (background) */
-    GCPtr   	  	invSrcGC;   /* Background GC */
-    PixmapPtr  	        temp;	    /* Temporary pixmap for merging screenBits
-				     * and the sources. Saves creation time */
-    Pixel   	  	fg; 	    /* Foreground color */
-    Pixel   	  	bg; 	    /* Background color */
-    int	    	  	scrX,	    /* Screen X coordinate of screenBits */
-			scrY;	    /* Screen Y coordinate of screenBits */
-    CrState		state;      /* Current state of the cursor */
-} CrPrivRec, *CrPrivPtr;
-
-/*
  * Frame-buffer-private info.
  *	fb  	  	pointer to the mapped image of the frame buffer. Used
  *	    	  	by the driving routines for the specific frame buffer
@@ -222,14 +179,6 @@ typedef struct video_data fbtype;
 
 typedef struct {
     pointer 	  	fb; 	    /* Frame buffer itself */
-    GCPtr   	  	pGC;	    /* GC for realizing cursors */
-
-    void    	  	(*GetImage)();
-    Bool	      	(*CreateGC)();/* GC Creation function previously in the
-				       * Screen structure */
-    Bool	      	(*CreateWindow)();
-    Bool		(*ChangeWindowAttributes)();
-    unsigned int  	*(*GetSpans)();
     int			slot;
     int			default_depth;
     ColormapPtr		installedMap;
@@ -255,39 +204,12 @@ typedef struct _macIIFbDataRec {
 } macIIFbDataRec;
 
 extern macIIFbDataRec macIIFbData[];
-/*
- * Cursor functions
- */
-extern void 	  macIIInitCursor();
-extern Bool 	  macIIRealizeCursor();
-extern Bool 	  macIIUnrealizeCursor();
-extern Bool 	  macIIDisplayCursor();
-extern Bool 	  macIISetCursorPosition();
-extern void 	  macIICursorLimits();
-extern void 	  macIIPointerNonInterestBox();
-extern void 	  macIIConstrainCursor();
-extern void 	  macIIRecolorCursor();
-extern Bool	  macIICursorLoc();
-extern void 	  macIIRemoveCursor();
-extern void	  macIIRestoreCursor();
-extern void	  macIIMoveCursor();
 
 /*
  * Initialization
  */
 extern Bool 	  macIIScreenInit();
 extern int  	  macIIOpenFrameBuffer();
-
-/*
- * GC Interceptions
- */
-extern GCPtr	  macIICreatePrivGC();
-extern Bool	  macIICreateGC();
-extern Bool	  macIICreateWindow();
-extern Bool	  macIIChangeWindowAttributes();
-
-extern void 	  macIIGetImage();
-extern unsigned int *macIIGetSpans();
 
 extern int  	  macIICheckInput;    /* Non-zero if input is available */
 
@@ -335,15 +257,4 @@ extern long 	autoRepeatDeltaTv;
 #define LookupKeyboardDevice()	pKeyboardDevice
 extern DevicePtr pPointerDevice, pKeyboardDevice;
 
-#define stateOfCurrentCursor(pScreen) \
-	(((CrPrivPtr)(currentCursor->devPriv[pScreen->myNum]))->state)
-
-#define pScreenOfCurrentCursor \
-	(((PtrPrivPtr)(LookupPointerDevice()->devicePrivate))->pScreen)
-
-#define macIICursorLoc(pScreen, pBox) \
-	((currentCursor != NullCursor) && \
-	 (pScreenOfCurrentCursor == pScreen) && \
-	 (stateOfCurrentCursor(pScreen) == CR_IN))
-	
 #endif _MACII_H_

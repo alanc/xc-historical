@@ -140,12 +140,13 @@ ProcessInputEvents ()
         NoneYet, Ptr, Kbd
     }                       lastType = NoneYet; /* Type of last event */
 
-
     unsigned char macIIevents[INPBUFSIZE];
-    register unsigned char *me = macIIevents, *meL;
+    register unsigned char *me, *meL;
     int         n;
+    int		firstTime = 1;
 
     static int optionKeyUp = 1;
+
 #define IS_OPTION_KEY(x)	(KEY_DETAIL(x) == 0x3a)
 #define IS_LEFT_ARROW_KEY(x)	(KEY_DETAIL(x) == 0x3b)
 #define IS_RIGHT_ARROW_KEY(x)	(KEY_DETAIL(x) == 0x3c)
@@ -155,122 +156,105 @@ ProcessInputEvents ()
 	(IS_LEFT_ARROW_KEY(x) || IS_RIGHT_ARROW_KEY(x) || 	\
 	 IS_DOWN_ARROW_KEY(x) || IS_UP_ARROW_KEY(x))
 
-    /*
-     *  Defensive programming - only reset macIIIOPending (preventing
-     *  further calls to ProcessInputEvents() until a future SIGIO)
-     *  if we have actually received a SIGIO,  so we know it works.
-     */
-    if (macIISigIO) {
-	isItTimeToYield = 0;
-    }
+    macIISigIO = 0;
+
     pPointer = LookupPointerDevice();
     pKeyboard = LookupKeyboardDevice();
     ptrPriv = (PtrPrivPtr)pPointer->devicePrivate;
     kbdPriv = (KbPrivPtr)pKeyboard->devicePrivate;
 
-
-    if ((n = read(consoleFd,macIIevents,INPBUFSIZE*sizeof macIIevents[0])) < 0 
-    		    && errno != ENODATA && errno != EWOULDBLOCK) {
-        /*
-         * Error reading events; should do something. XXX
-         */
- /*debug*/
-        ErrorF("ProcessInputEvents: read(windowFd)  n=%d\n",n);
-        return;
-    }
-
-    if (autoRepeatKeyDown && autoRepeatReady && 
-	kbdPriv->ctrl->autoRepeat == AutoRepeatModeOn && n <= 0) {
-        /* fake a macII kbd event */
-        n = sizeof macIIevents[0];
-        *me = AUTOREPEAT_EVENTID;
-        if (autoRepeatDebug)
-            ErrorF("ProcessInputEvents: sw auto event\n");
-    }
-
-    for (meL = macIIevents + (n/(sizeof macIIevents[0]));  me < meL; me++) {
-        if (screenIsSaved == SCREEN_SAVER_ON)
-            SaveScreens(SCREEN_SAVER_OFF, ScreenSaverReset);
-
-#ifdef USE_TOD_CLOCK
+    while ((n = read (consoleFd, macIIevents,
+		      INPBUFSIZE*sizeof macIIevents[0])) >= 0 ||
+	   errno == EWOULDBLOCK)
+    {
+	if (n <= 0 && firstTime &&
+	    autoRepeatKeyDown && autoRepeatReady && 
+	    kbdPriv->ctrl->autoRepeat == AutoRepeatModeOn)
 	{
-	    struct timeval	now;
-	    gettimeofday (&now, (struct timezone *)0);
-	    lastEventTime = TVTOMILLI(now);
+	    /* fake a macII kbd event */
+	    n = sizeof macIIevents[0];
+	    macIIevents[0] = AUTOREPEAT_EVENTID;
 	}
+
+	if (n <= 0)
+	    break;
+
+	firstTime = 0;
+
+	meL = macIIevents + (n/(sizeof macIIevents[0]));
+
+	for (me = macIIevents; me < meL; me++)
+	{
+            if (screenIsSaved == SCREEN_SAVER_ON)
+            	SaveScreens(SCREEN_SAVER_OFF, ScreenSaverReset);
+    
+#ifdef USE_TOD_CLOCK
+	    {
+	    	struct timeval	now;
+	    	gettimeofday (&now, (struct timezone *)0);
+	    	lastEventTime = TVTOMILLI(now);
+	    }
 #else
-        {
-	    struct tms	tms;
-            lastEventTime = times (&tms) << 4;
-        }
+            {
+	    	struct tms	tms;
+            	lastEventTime = times (&tms) << 4;
+            }
 #endif USE_TOD_CLOCK
-
-
-        /*
-         * Figure out the X device this event should be reported on.
-         */
-
-	if (IS_OPTION_KEY(*me)) {
-	    optionKeyUp = KEY_UP(*me);
-	}
-
-	/*
-	 * Patch up the event if the option key is down and an arrow key is hit
-	 * in order to generate arrow key codes.
-	 */
-
-	if (!optionKeyUp && IS_ARROW_KEY(*me)) {
-	    int keyUp = KEY_UP(*me);
-
-	    if (IS_RIGHT_ARROW_KEY(*me)) 	*me = 0x7b;
-	    else if (IS_LEFT_ARROW_KEY(*me)) 	*me = 0x7c;
-	    else if (IS_DOWN_ARROW_KEY(*me))	*me = 0x7d;
-	    else  				*me = 0x70; 	/* code for UP arrow */
-	    if (keyUp) *me |= 0x80;
-	}
-
-	if (KEY_DETAIL(*me) == MOUSE_ESCAPE) { 
-#ifdef notdef /* macIIKbdDoneEvents is an Noop, called many, many times */
-	    if (lastType == Kbd) {
-    		(* kbdPriv->DoneEvents) (pKeyboard);
+    
+            /*
+             * Figure out the X device this event should be reported on.
+             */
+    
+	    if (IS_OPTION_KEY(*me)) {
+	    	optionKeyUp = KEY_UP(*me);
 	    }
-#endif
-    	    (* ptrPriv->ProcessEvent) (pPointer,me);
-	    me += 2;
-	    lastType = Ptr;
-	}
-
-	else if (IS_MOUSE_KEY(*me))
-        {
-#ifdef notdef /* macIIKbdDoneEvents is an Noop, called many, many times */
-	    if (lastType == Kbd) {
-    		(* kbdPriv->DoneEvents) (pKeyboard);
+    
+	    /*
+	     * Patch up the event if the option key is down and an arrow key
+	     * is hit in order to generate arrow key codes.
+	     */
+    
+	    if (!optionKeyUp && IS_ARROW_KEY(*me)) {
+	    	int keyUp = KEY_UP(*me);
+    
+	    	if (IS_RIGHT_ARROW_KEY(*me))
+		    *me = 0x7b;
+	    	else if (IS_LEFT_ARROW_KEY(*me))
+		    *me = 0x7c;
+	    	else if (IS_DOWN_ARROW_KEY(*me))
+		    *me = 0x7d;
+	    	else
+		    *me = 0x70; 	/* code for UP arrow */
+	    	if (keyUp)
+		    *me |= 0x80;
 	    }
-#endif
-    	    (* ptrPriv->ProcessEvent) (pPointer,me);
-	    lastType = Ptr;
-	}
-
-	else if (IS_OPTION_KEY(*me)) {
-	    /* do nothing */
-	}
-
-	else {
-	    if (lastType == Ptr) {
-    		(* ptrPriv->DoneEvents) (pPointer, FALSE);
+    
+	    if (KEY_DETAIL(*me) == MOUSE_ESCAPE) { 
+    	    	(* ptrPriv->ProcessEvent) (pPointer,me);
+	    	me += 2;
+	    	lastType = Ptr;
 	    }
-    	    (* kbdPriv->ProcessEvent) (pKeyboard,me);
-	    lastType = Kbd;
-        }
+    
+	    else if (IS_MOUSE_KEY(*me))
+            {
+    	    	(* ptrPriv->ProcessEvent) (pPointer,me);
+	    	lastType = Ptr;
+	    }
+    
+	    else if (IS_OPTION_KEY(*me)) {
+	    	/* do nothing */
+	    }
+    
+	    else {
+	    	if (lastType == Ptr)
+    		    (* ptrPriv->DoneEvents) (pPointer, FALSE);
+    	    	(* kbdPriv->ProcessEvent) (pKeyboard,me);
+	    	lastType = Kbd;
+            }
+	}
     }
 
-#ifdef notdef /* macIIKbdDoneEvents is an Noop, called many, many times */
-    (* kbdPriv->DoneEvents) (pKeyboard);
-#endif
     (* ptrPriv->DoneEvents) (pPointer, FALSE);
-
-    macIIRestoreCursor();
-
 }
 
 

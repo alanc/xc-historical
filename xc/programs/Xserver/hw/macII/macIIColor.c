@@ -63,8 +63,6 @@ extern int TellLostMap(), TellGainedMap();
 
 extern int consoleFd;
 
-extern CursorPtr currentCursor;
-
 static struct ColorSpec {
 	unsigned short value;
 	unsigned short red;
@@ -86,7 +84,6 @@ macIIColorUpdateColormap(pScreen, cmap)
     struct CntrlParam pb;
     struct VDEntryRecord vde;
 
-
     if ((pVisual->class | DynamicClass) == DirectColor) {
 	for (i = 0; i < 256; i++) {
 	    Map[i].value = i;
@@ -95,7 +92,7 @@ macIIColorUpdateColormap(pScreen, cmap)
 	    if (pent->fShared)
 		Map[i].red = pent->co.shco.red->color;
 	    else
-		Map[i].red = pent->co.local.red >> 8;
+		Map[i].red = pent->co.local.red;
 	    pent = &cmap->green[(i & pVisual->greenMask) >>
 				pVisual->offsetGreen];
 	    if (pent->fShared)
@@ -149,7 +146,7 @@ macIIColorUpdateColormap(pScreen, cmap)
 
     vde.csTable = (char *) Map;
     vde.csStart = 0;
-    vde.csCount = 255;
+    vde.csCount = 255;	/* not actually count, but count-1 */
 
 #define noQueueBit 0x0200
 #define SetEntries 0x3
@@ -186,35 +183,8 @@ macIIColorSaveScreen (pScreen, on)
     ScreenPtr	  pScreen;
     Bool    	  on;
 {
-    return( TRUE );
+    return FALSE;
 }
-
-/*-
- *-----------------------------------------------------------------------
- * macIIColorCloseScreen --
- *	called to ensure video is enabled when server exits.
- *
- * Results:
- *	Screen is unsaved.
- *
- * Side Effects:
- *	None
- *
- *-----------------------------------------------------------------------
- */
-/*ARGSUSED*/
-Bool
-macIIColorCloseScreen(i, pScreen)
-    int		i;
-    ScreenPtr	pScreen;
-{
-    extern macIIBlackScreen();
-
-    macIIBlackScreen(pScreen->myNum);
-    macIIFbs[pScreen->myNum].installedMap = NULL;
-    return (pScreen->SaveScreen(pScreen, SCREEN_SAVER_OFF));
-}
-
 
 /*-
  *-----------------------------------------------------------------------
@@ -292,7 +262,6 @@ macIIColorUninstallColormap(cmap)
  *
  *-----------------------------------------------------------------------
  */
-/*ARGSUSED*/
 static int
 macIIColorListInstalledColormaps(pScreen, pCmapList)
     ScreenPtr	pScreen;
@@ -349,8 +318,14 @@ macIIColorInit (index, pScreen, argc, argv)
     int	    	  argc;	    	/* The number of the Server's arguments. */
     char    	  **argv;   	/* The arguments themselves. Don't change! */
 {
-    PixmapPtr   pPixmap;
-    CARD16	zero = 0, ones = ~0;
+    /* set up procs which aren't handled by cfb */
+    /* save screen proc */
+    pScreen->SaveScreen = macIIColorSaveScreen;
+    /* colormap procs */
+    pScreen->InstallColormap = macIIColorInstallColormap;
+    pScreen->UninstallColormap = macIIColorUninstallColormap;
+    pScreen->ListInstalledColormaps = macIIColorListInstalledColormaps;
+    pScreen->StoreColors = macIIColorStoreColors;
 
     if (!cfbScreenInit (pScreen, macIIFbs[index].fb,
 			    macIIFbs[index].info.v_right -
@@ -360,14 +335,15 @@ macIIColorInit (index, pScreen, argc, argv)
 			    macIIFbs[index].info.v_hres >> 16,
 			    macIIFbs[index].info.v_vres >> 16,
 			    macIIFbs[index].info.v_rowbytes))
+    {
 	return (FALSE);
+    }
 
-    pScreen->SaveScreen =   	    	macIIColorSaveScreen;
-    pScreen->InstallColormap = macIIColorInstallColormap;
-    pScreen->UninstallColormap = macIIColorUninstallColormap;
-    pScreen->ListInstalledColormaps = macIIColorListInstalledColormaps;
-    pScreen->StoreColors = macIIColorStoreColors;
+    /* make sure the color map gets installed */
 
-    macIIColorSaveScreen( pScreen, SCREEN_SAVER_FORCER );
+    macIIFbs[index].installedMap = NULL;
+
+    (void) macIIColorSaveScreen( pScreen, SCREEN_SAVER_FORCER );
+
     return (macIIScreenInit(pScreen) && cfbCreateDefColormap(pScreen));
 }

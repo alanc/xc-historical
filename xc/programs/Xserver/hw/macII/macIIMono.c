@@ -87,37 +87,7 @@ macIIMonoSaveScreen (pScreen, on)
     ScreenPtr	  pScreen;
     Bool    	  on;
 {
-    int         state = on;
-    if (on != SCREEN_SAVER_ON) {
-      SetTimeSinceLastInputEvent();
-	state = 1;
-    } else {
-	state = 0;
-    }
-    return TRUE;
-}
-
-/*-
- *-----------------------------------------------------------------------
- * macIIMonoCloseScreen --
- *	called to ensure video is enabled when server exits.
- *
- * Results:
- *	Screen is unsaved.
- *
- * Side Effects:
- *	None
- *
- *-----------------------------------------------------------------------
- */
-/*ARGSUSED*/
-Bool
-macIIMonoCloseScreen(i, pScreen)
-    int		i;
-    ScreenPtr	pScreen;
-{
-    macIIBlackScreen(pScreen->myNum);
-    return (pScreen->SaveScreen(pScreen, SCREEN_SAVER_OFF));
+    return FALSE;
 }
 
 /*-
@@ -145,6 +115,10 @@ macIIMonoInit (index, pScreen, argc, argv)
     ColormapPtr pColormap;
     PixmapPtr   pPixmap;
 
+    pScreen->SaveScreen = macIIMonoSaveScreen;
+    pScreen->whitePixel = 0;
+    pScreen->blackPixel = 1;
+
     if (!mfbScreenInit(pScreen,
 			   macIIFbs[index].fb,
 			   macIIFbs[index].info.v_right -
@@ -157,16 +131,6 @@ macIIMonoInit (index, pScreen, argc, argv)
     {
 	return (FALSE);
     }
-
-    pScreen->SaveScreen = macIIMonoSaveScreen;
-    pScreen->CloseScreen = macIIMonoCloseScreen;
-    pScreen->whitePixel = 0;
-    pScreen->blackPixel = 1;
-
-    /*
-     * Enable video output...? 
-     */
-    (void) macIIMonoSaveScreen(pScreen, SCREEN_SAVER_FORCER);
 
     return (macIIScreenInit(pScreen) && mfbCreateDefColormap(pScreen));
 }
@@ -244,6 +208,6 @@ macIIMonoProbe(pScreenInfo, index, fbNum, argc, argv)
      */
     oldNumScreens = pScreenInfo->numScreens;
     i = AddScreen(macIIMonoInit, argc, argv);
-    return (i > oldNumScreens);
+    return (i >= oldNumScreens);
 }
 

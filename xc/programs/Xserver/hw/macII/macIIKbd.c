@@ -251,13 +251,17 @@ macIIKbdSetUp(fd, openClose)
 		return (!Success);
 	}
 
-#ifdef notdef
 	iarg = 1;
+	if (fcntl (fd, F_SETOWN, getpid()) < 0)
+	{
+	    FatalError("Could not fcntl F_SETOWN \r\n");
+	    return !Success;
+	}
+
 	if (ioctl(fd, FIOASYNC, &iarg) < 0) {
 		FatalError("Could not ioctl FIOASYNC. \r\n");
 		return (!Success);
 	}
-#endif
 
 	tio.c_iflag = (IGNPAR|IGNBRK) & (~PARMRK) & (~ISTRIP);
 	tio.c_oflag = 0;
@@ -315,12 +319,10 @@ macIIKbdSetUp(fd, openClose)
 		ErrorF("Could not ioctl FIONBIO. \r\n");
 	}
 
-#ifdef notdef
 	iarg = 0;
 	if (ioctl(fd, FIOASYNC, &iarg) < 0) {
 		ErrorF("Could not ioctl FIOASYNC. \r\n");
 	}
-#endif
 
 	if (ioctl(fd, I_FLUSH, FLUSHRW) < 0) {
 		MessageF("Failed to ioctl I_FLUSH FLUSHRW.\r\n");
