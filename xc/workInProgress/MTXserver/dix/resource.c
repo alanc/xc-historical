@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.98 93/12/04 17:13:29 rob Exp $ */
+/* $XConsortium: resource.c,v 1.1 93/12/15 16:06:37 rob Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -224,6 +224,8 @@ extern WindowPtr *WindowTable;
             }                                                                 \
         }
 
+#ifdef LOOKUP_DRAWABLE
+#undef LOOKUP_DRAWABLE
 #define LOOKUP_DRAWABLE(drawID, pDraw, pCache)                                \
 	{                                                                     \
 	    if (pCache->lastID == drawID)                                     \
@@ -1296,7 +1298,7 @@ FreeClientNeverRetainResources(client)
 		    FlushClientCaches(this->id);
 #else /* not MTX */
 		/* make sure res->value is not currently in use */
-		CheckLockBits (cid, id, rtype, res->value);
+		CheckLockBits (cid, this->id, rtype, this->value);
 #endif /* not MTX */
 
 		MTX_CLIENT_MUTEX_UNLOCK(cid);
@@ -1355,7 +1357,7 @@ FreeClientResources(client)
 		FlushClientCaches(this->id);
 #ifdef MTX
 	    /* make sure res->value is not currently in use */
-	    CheckLockBits (cid, id, rtype, res->value);
+	    CheckLockBits (cid, this->id, rtype, this->value);
 #endif /* MTX */
 	    MTX_CLIENT_MUTEX_UNLOCK(cid);
 	    (*DeleteFuncs[rtype & TypeMask])(this->value, this->id);
@@ -1439,8 +1441,10 @@ LookupIDByClass(id, classes)
 
 /***** MTX only from here to end of file */
 #ifdef MTX
-DrawablePtr
-LookupDrawable()
+pointer
+LookupDrawable(id, client)
+    XID id;
+    ClientPtr client;
 {
     /* ??? */
 } 
