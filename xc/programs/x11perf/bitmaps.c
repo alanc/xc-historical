@@ -26,6 +26,11 @@ SOFTWARE.
 
 static unsigned char bitmap8x8[] = {
     0xCC, 0x66, 0x33, 0x99, 0xCC, 0x66, 0x33, 0x99
+/* Alternate maps for testing out your stipple code.  Only the above should
+   be used for timing, though.
+    0x00, 0xfe, 0x92, 0x92, 0xfe, 0x92, 0x92, 0xfe
+    0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA
+*/
 };
 
 static unsigned char bitmap4x4[] = {
@@ -784,13 +789,14 @@ void SetFillStyle(xp, p)
 	} else if (!strcmp (p->font, "escherknot")) {
 	    /* Enormous stipple which is x4 bits wide */
 	    stipple = XCreateBitmapFromData(xp->d, xp->w,
-		    (char *)escherknot_bits, escherknot_width, escherknot_height);
+			(char *)escherknot_bits, escherknot_width, escherknot_height);
 	    xorg = -3;
 	} else {
 	    /* Enormous stipple.  Well, pretty big. */
 	    stipple = XCreateBitmapFromData(xp->d, xp->w,
-		    (char *)mensetmanus_bits, mensetmanus_width, mensetmanus_height);
+		       (char *)mensetmanus_bits, mensetmanus_width, mensetmanus_height);
 	}
+
 	gcv.stipple = stipple;
 	gcv.fill_style = p->fillStyle;
 	gcv.ts_x_origin = xorg;
@@ -807,22 +813,19 @@ void SetFillStyle(xp, p)
 	if (!p->font) {
 	    /* Little 4x4 tile */
 	    tile = XCreatePixmapFromBitmapData(xp->d, xp->w, (char *)bitmap4x4, 4, 4,
-		    xp->foreground, xp->background,
-		    DefaultDepth(xp->d, DefaultScreen(xp->d)));
+		    xp->foreground, xp->background, xp->vinfo.depth);
 	} else if (!strcmp (p->font, "escherknot")) {
 	    /* Enormous stipple which is x4 bits wide */
 	    tile = XCreatePixmapFromBitmapData(xp->d, xp->w,
 		    (char *)escherknot_bits, escherknot_width, escherknot_height,
-		    xp->foreground, xp->background,
-		    DefaultDepth(xp->d, DefaultScreen(xp->d)));
+		    xp->foreground, xp->background, xp->vinfo.depth);
 	    /* align tile with screen */
 	    xorg = -3;
 	} else {
 	    /* Enormous tile.  Well, pretty big. */
 	    tile = XCreatePixmapFromBitmapData(xp->d, xp->w,
 		    (char *)mensetmanus_bits, mensetmanus_width, mensetmanus_height,
-		    xp->foreground, xp->background,
-		    DefaultDepth(xp->d, DefaultScreen(xp->d)));
+		    xp->foreground, xp->background, xp->vinfo.depth);
 	}
 	gcv.tile = tile;
 	gcv.ts_x_origin = xorg;
@@ -830,26 +833,22 @@ void SetFillStyle(xp, p)
 	XChangeGC(xp->d, xp->fggc, GCBits | GCTile, &gcv);
 	XFreePixmap(xp->d, tile);
 	if (!p->font) {
+	    /* Little 4x4 tile */
 	    tile = XCreatePixmapFromBitmapData(xp->d, xp->w, (char *)bitmap4x4, 4, 4,
-		    xp->background, xp->foreground,
-		    DefaultDepth(xp->d, DefaultScreen(xp->d)));
+		    xp->background, xp->foreground, xp->vinfo.depth);
 	} else if (!strcmp (p->font, "escherknot")) {
 	    /* Enormous stipple which is x4 bits wide */
 	    tile = XCreatePixmapFromBitmapData(xp->d, xp->w,
 		    (char *)escherknot_bits, escherknot_width, escherknot_height,
-		    xp->background, xp->foreground,
-		    DefaultDepth(xp->d, DefaultScreen(xp->d)));
+		    xp->background, xp->foreground, xp->vinfo.depth);
 	} else {
+	    /* Enormous tile.  Well, pretty big. */
 	    tile = XCreatePixmapFromBitmapData(xp->d, xp->w,
 		    (char *)mensetmanus_bits, mensetmanus_width, mensetmanus_height,
-		    xp->background, xp->foreground,
-		    DefaultDepth(xp->d, DefaultScreen(xp->d)));
+		    xp->background, xp->foreground, xp->vinfo.depth);
 	}
-	gcv.fill_style = FillTiled;
 	gcv.tile = tile;
-	gcv.ts_x_origin = xorg;
-	gcv.ts_y_origin = yorg;
-	XChangeGC(xp->d, xp->bggc, GCBits | GCTile, &gcv);
+	XChangeGC(xp->d, xp->bggc, GCFillStyle | GCTile, &gcv);
 	XFreePixmap(xp->d, tile);
     }
 }

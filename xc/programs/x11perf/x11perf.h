@@ -23,9 +23,12 @@ SOFTWARE.
 
 #ifndef VMS
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #else
 #include <decw$include/Xlib.h>
+#include <decw$include/Xutil.h>
 #endif
+#include <X11/Xfuncs.h>
 #ifndef NULL
 #define NULL 0
 #endif
@@ -46,6 +49,12 @@ typedef void (*Proc)	    (/* XParms xp; Parms p */);
 extern void NullProc	    (/* XParms xp; Parms p */);
 extern Bool NullInitProc    (/* XParms xp; Parms p */);
 
+#define VERSION1_2  (1 << 0)
+#define VERSION1_3  (1 << 1)
+#define VALL	    (VERSION1_2 | VERSION1_3)
+
+typedef unsigned char Version;
+    
 typedef struct _Parms {
     /* Required fields */
     int  objects;       /* Number of objects to process in one X call	    */
@@ -63,13 +72,15 @@ typedef struct _XParms {
     GC		    bggc;
     unsigned long   foreground;
     unsigned long   background;
+    XVisualInfo     vinfo;
     Bool	    pack;
+    Version	    version;
 } XParmRec, *XParms;
 
 typedef enum {
     WINDOW,     /* Windowing test, rop has no affect		    */
-    ROP,	/* Graphics test, rasterop/planemask has some affect*/
-    NONROP      /* Graphics or overhead test, rop has no affect     */
+    ROP,	/* Graphics test, rop has some affect		    */
+    NONROP      /* Graphics or overhead test, top has no affect     */
 } TestType;
 
 typedef struct _Test {
@@ -79,13 +90,13 @@ typedef struct _Test {
     Proc	proc;       /* Timed benchmark procedure		    */
     Proc	passCleanup;/* Cleanup between repetitions of same test     */
     Proc	cleanup;    /* Cleanup after test			    */
-    TestType    testType;   /* Windowing, graphics, nonxor		    */
+    Version     versions;   /* Test in 1.2 only, 1.3 only, or both	    */
+    TestType    testType;   /* Windowing, graphics rop, graphics non-rop    */
     int		clips;      /* Number of obscuring windows to force clipping*/
     ParmRec     parms;      /* Parameters passed to test procedures	    */
 } Test;
 
 extern Test test[];
-extern int subs[];
 
 #define ForEachTest(x) for (x = 0; test[x].option != NULL; x++)
 

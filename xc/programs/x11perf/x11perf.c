@@ -23,6 +23,8 @@ SOFTWARE.
 
 #include <stdio.h>
 #include <ctype.h>
+#include <signal.h>
+
 #ifndef VMS
 #include <X11/Xatom.h>
 #include <X11/Xos.h>
@@ -73,11 +75,11 @@ static int  rops[16] = { GXcopy };
 static int  numPlanemasks = 1;
 static unsigned long planemasks[256] = { (unsigned long)~0 };
 
-static char *foreground;
-static char *background;
+static char *foreground = NULL;
+static char *background = NULL;
 
 static int numSubWindows = 7;
-static int subWindows[] = {4, 16, 25, 50, 75, 100, 200};
+static int subWindows[] = {4, 16, 25, 50, 75, 100, 200, 0};
 
 static int  fixedReps = 0;
 
@@ -91,6 +93,13 @@ static XRectangle ws[] = {  /* Clip rectangles */
 };
 #define MAXCLIP     (sizeof(ws) / sizeof(ws[0]))
 static Window clipWindows[MAXCLIP];
+static Colormap cmap;
+static int depth = -1;  /* -1 means use default depth */
+
+/* ScreenSaver state */
+static XParmRec    xparms;
+static int ssTimeout, ssInterval, ssPreferBlanking, ssAllowExposures;
+
 
 /************************************************
 *	    time related stuff			*
@@ -300,6 +309,24 @@ Display *Open_Display(display_name)
     return(d);
 }
 
+
+#ifdef SIGNALRETURNSINT
+int
+#else
+void
+#endif
+Cleanup(sig)
+    int sig;
+{
+    fflush(stdout);
+    /* This will screw up if Xlib is in the middle of something */
+    XSetScreenSaver(xparms.d, ssTimeout, ssInterval, ssPreferBlanking,
+	ssAllowExposures);
+    XFlush(xparms.d);
+    exit(sig);
+}
+
+
 /************************************************
 *		Performance stuff		*
 ************************************************/
@@ -311,20 +338,25 @@ void usage()
     int     i = 0;
     static char *help_message[] = {
 "where options include:",
-"    -display host:dpy		the X server to contact",
-"    -sync			do the tests in synchronous mode",
-"    -repeat <n>		do tests <n> times (default = 5)",
-"    -time <s>			do tests for <s> seconds each (default = 5)",
-/*"    -draw			draw after each test -- pmax only",*/
-"    -all			do all tests",
-"    -range <test1>[,<test2>]	like all, but do <test1> to <test2>",
-"    -labels			generate test labels for use by fillblanks.sh",
-"    -fg			the foreground color to use",
-"    -bg		        the background color to use",
-"    -rop <rop0 rop1 ...>	use the specified rops to draw",
-"    -pm <pm0 pm1 ...>		use the specified planemasks to draw",
-"    -reps <n>			fix the rep count (default = auto scale)",
-"    -subs <s0 s1 ...>		a list of the number of sub-windows to use",
+"    -display <host:display>   the X server to contact",
+"    -sync                     do the tests in synchronous mode",
+"    -pack                     pack rectangles right next to each other",
+"    -repeat <n>               do tests <n> times (default = 5)",
+"    -time <s>                 do tests for <s> seconds each (default = 5)",
+/*
+"    -draw                     draw after each test -- pmax only",
+*/
+"    -all                      do all tests",
+"    -range <test1>[,<test2>]  like all, but do <test1> to <test2>",
+"    -labels                   generate test labels for use by fillblnk",
+"    -fg                       the foreground color to use",
+"    -bg                       the background color to use",
+"    -rop <rop0 rop1 ...>      use the given rops to draw (default = GXcopy)",
+"    -pm <pm0 pm1 ...>         use the given planemasks to draw (default = ~0)",
+"    -depth <depth>            use a visual with <depth> planes per pixel",
+"    -reps <n>                 fix the rep count (default = auto scale)",
+"    -subs <s0 s1 ...>         a list of the number of sub-windows to use",
+"    -v1.2                     perform only v1.2 tests using old semantics",
 NULL};
 
     fflush(stdout);
@@ -333,7 +365,7 @@ NULL};
 	fprintf(stderr, "%s\n", *cpp);
     }
     while (test[i].option != NULL) {
-        fprintf(stderr, "    %-28s   %s\n",
+        fprintf(stderr, "    %-24s   %s\n",
 		test[i].option, test[i].label);
         i++;
     }
@@ -391,7 +423,8 @@ void DoHardwareSync(xp, p, reps)
 
 static Test syncTest = {
     "syncTime", "Internal test for finding how long HardwareSync takes",
-    NullInitProc, DoHardwareSync, NullProc, NullProc, NONROP, 0,
+    NullInitProc, DoHardwareSync, NullProc, NullProc, 
+    VALL, NONROP, 0,
     {1}
 };
 
@@ -414,13 +447,16 @@ static Window CreatePerfWindow(xp, x, y, width, height)
     su = XPlanesOfScreen(s);
     printf("Planes of screen returns %d\n", su);
 */
+    xswa.background_pixel = xp->background;
+    xswa.border_pixel = xp->foreground;
+    xswa.colormap = cmap;
     xswa.override_redirect = True;
     xswa.backing_store = False;
     xswa.save_under = False;
-    w = XCreateSimpleWindow (xp->d, DefaultRootWindow (xp->d),
-	x, y, width, height, 1, xp->foreground, xp->background);
-    XChangeWindowAttributes (xp->d, w, 
-	    CWOverrideRedirect | CWSaveUnder | CWBackingStore, &xswa);
+    w = XCreateWindow(xp->d, DefaultRootWindow(xp->d), x, y, width, height, 1,
+        xp->vinfo.depth, CopyFromParent, xp->vinfo.visual,
+	CWBackPixel | CWBorderPixel | CWColormap | CWOverrideRedirect 
+	| CWBackingStore | CWSaveUnder, &xswa);
     XMapWindow (xp->d, w);
     return w;
 }
@@ -463,7 +499,10 @@ double DoTest(xp, test, reps)
     double  time;
     unsigned int ret_width, ret_height;
 
-    HardwareSync (xp);
+    /* Tell screen-saver to restart counting again.  See comments below for the
+       XSetScreenSaver call. */
+    XForceScreenSaver(xp->d, ScreenSaverReset);
+    HardwareSync (xp); 
     InitTimes ();
     (*test->proc) (xp, &test->parms, reps);
     HardwareSync(xp);
@@ -516,7 +555,6 @@ int CalibrateTest(xp, test, seconds, usecperobj)
 	(*test->proc) (xp, &test->parms, reps);
 	HardwareSync(xp);
 	usecs = ElapsedTime(syncTime);
-	(*test->passCleanup) (xp, &test->parms);
 	(*test->cleanup) (xp, &test->parms);
 	DestroyClipWindows(xp, test->clips);
 
@@ -552,7 +590,6 @@ int CalibrateTest(xp, test, seconds, usecperobj)
     return reps;
 } /* CalibrateTest */
 
-
 void CreatePerfGCs(xp, func, pm)
     XParms  xp;
     int     func;
@@ -571,6 +608,7 @@ void CreatePerfGCs(xp, func, pm)
     gcvbg.function = func;
     
     if (func == GXxor) {
+	/* Make test look good visually if possible */
 	gcvbg.foreground = gcvfg.foreground = bg ^ fg;
 	gcvbg.background = gcvfg.background = bg;
     } else {
@@ -579,13 +617,14 @@ void CreatePerfGCs(xp, func, pm)
 	gcvbg.foreground = bg;
 	gcvbg.background = fg;
     }
-    xp->fggc = XCreateGC(xp->d, xp->w, 
-	GCForeground | GCBackground | GCGraphicsExposures | GCFunction | GCPlaneMask,
-	    &gcvfg);
+    xp->fggc = XCreateGC(xp->d, xp->w,
+	GCForeground | GCBackground | GCGraphicsExposures
+      | GCFunction | GCPlaneMask, &gcvfg);
     xp->bggc = XCreateGC(xp->d, xp->w, 
-	GCForeground | GCBackground | GCGraphicsExposures | GCFunction | GCPlaneMask,
-	    &gcvbg);
+	GCForeground | GCBackground | GCGraphicsExposures
+      | GCFunction | GCPlaneMask, &gcvbg);
 }
+
 
 void DestroyPerfGCs(xp)
     XParms(xp);
@@ -600,11 +639,8 @@ int AllocateColor(display, name, pixel)
     int		pixel;
 {
     XColor      color;
-    Colormap    cmap;
 
     if (name != NULL) {
-	cmap = XDefaultColormap(display, DefaultScreen(display));
-
 	/* Try to parse color name */
 	if (XParseColor(display, cmap, name, &color)) {
 	    if (XAllocColor(display, cmap, &color)) {
@@ -644,7 +680,7 @@ void ProcessTest(xp, test, func, pm, label)
     char    *label;
 {
     double  time, totalTime;
-    int     reps;
+    int     reps, fooreps;
     int     j;
 
     CreatePerfGCs(xp, func, pm);
@@ -686,19 +722,17 @@ main(argc, argv)
     char **argv;
 
 {
-    int		i, j, skip;
+    int		i, j, n, skip;
     int		numTests;       /* Even though the linker knows, we don't. */
     char	hostname[100];
     char	*displayName;
-    XParmRec    xparms;
     Bool	foundOne = False;
     Bool	synchronous = False;
     XGCValues	tgcv;
     int		screen;
     int		rop, pm;
-
-    /* ScreenSaver state */
-    int ssTimeout, ssInterval, ssPreferBlanking, ssAllowExposures;
+    XVisualInfo *vinfolist, vinfotempl;
+    unsigned long vmask;
 
     /* Save away argv, argc, for usage to print out */
     saveargc = argc;
@@ -708,6 +742,7 @@ main(argc, argv)
     }
 
     xparms.pack = False;
+    xparms.version = VERSION1_3;
 
     /* Count number of tests */
     ForEachTest(numTests);
@@ -732,7 +767,8 @@ main(argc, argv)
 	    cp1 = argv[i];
 	    if (*cp1 == '-')
 		*cp1++;
-	    if ((cp2 = index(cp1, ',')) != NULL) {
+	    for (cp2 = cp1; *cp2 != '\0' && *cp2 != ','; cp2++) {};
+	    if (*cp2 == ',') {
 		*cp2++ = '\0';
 		if (*cp2 == '-')
 		    *cp2++;
@@ -740,11 +776,13 @@ main(argc, argv)
 		cp2 = "-";
 	    }
 	    ForEachTest (j) {
-		if (strcmp (cp1, (test[j].option) + 1) == 0) {
+		if (strcmp (cp1, (test[j].option) + 1) == 0 &&
+		    (test[j].versions & xparms.version)) {
 		    int k = j;
 		    do {
 			doit[k] = True;
 		    } while (strcmp(cp2, (test[k].option + 1)) != 0 &&
+			     (test[k].versions & xparms.version) &&
 			     test[++k].option != NULL);
 		    if (*cp2 != '-' && test[k].option == NULL)
 			usage();
@@ -761,32 +799,34 @@ main(argc, argv)
 	} else if (strcmp (argv[i], "-draw") == 0) {
 	    drawToFakeServer = True;
 	} else if (strcmp (argv[i], "-repeat") == 0) {
+	    i++;
 	    if (argc <= i)
 		usage ();
-	    repeat = atoi (argv[++i]);
+	    repeat = atoi (argv[i]);
 	    if (repeat <= 0)
 	       usage ();
 	} else if (strcmp (argv[i], "-time") == 0) {
+	    i++;
 	    if (argc <= i)
 		usage ();
-	    seconds = atoi (argv[++i]);
+	    seconds = atoi (argv[i]);
 	    if (seconds <= 0)
 	       usage ();
 	} else if (strcmp(argv[i], "-fg") == 0) {
+	    i++;
 	    if (argc <= i)
 		usage ();
-	    i++;
 	    foreground = argv[i];
         } else if (strcmp(argv[i], "-bg") == 0) {
+	    i++;
 	    if (argc <= i)
 		usage ();
-	    i++;
 	    background = argv[i];
 	} else if (strcmp(argv[i], "-rop") == 0) {
-	    skip = getRops (i + 1, argv, rops, &numRops);
+	    skip = GetRops (i+1, argc, argv, rops, &numRops);
 	    i += skip;
 	} else if (strcmp(argv[i], "-pm") == 0) {
-	    skip = getNumbers (i + 1, argv, planemasks, &numPlanemasks);
+	    skip = GetNumbers (i+1, argc, argv, planemasks, &numPlanemasks);
 	    i += skip;
 	} else if (strcmp(argv[i], "-xor") == 0) {
 	    numRops = 1;
@@ -796,17 +836,28 @@ main(argc, argv)
 	    rops[0] = GXcopy;
 	    rops[1] = GXxor;
 	} else if (strcmp(argv[i], "-reps") == 0) {
+	    i++;
 	    if (argc <= i)
 		usage ();
-	    fixedReps = atoi (argv[++i]);
+	    fixedReps = atoi (argv[i]);
 	    if (fixedReps <= 0)
 		usage ();
+        } else if (strcmp(argv[i], "-depth") == 0) {
+	    i++;
+	    if (argc <= i)
+                usage ();
+            depth = atoi(argv[i]);
+            if (depth <= 0)
+		usage ();
 	} else if (strcmp(argv[i], "-subs") == 0) {
-	    skip = getNumbers (i + 1, argv, subWindows, &numSubWindows);
+	    skip = GetNumbers (i+1, argc, argv, subWindows, &numSubWindows);
 	    i += skip;
+	} else if (strcmp(argv[i], "-v1.2") == 0) {
+	    xparms.version = VERSION1_2;
 	} else {
 	    ForEachTest (j) {
-		if (strcmp (argv[i], test[j].option) == 0) {
+		if (strcmp (argv[i], test[j].option) == 0 &&
+		    (test[j].versions & xparms.version)) {
 		    doit[j] = True;
 		    goto LegalOption;
 		}
@@ -822,34 +873,42 @@ main(argc, argv)
 	   assemble data from different x11perf runs into a nice format */
 	ForEachTest (i) {
 	    int child;
-	    switch (test[i].testType) {
-	        case NONROP:
-		    printf ("%s\n", test[i].label);
-		    break;
-
-		case ROP:
-		    for (rop = 0; rop < numRops; rop++)
-			for (pm = 0; pm < numPlanemasks; pm++)
-			    if (planemasks[pm] == ~0)
-				if (rops[rop] == GXcopy)
-				    printf ("%s\n", test[i].label);
-				else
-				    printf ("(%s) %s\n",
-					ropNames[rops[rop]].name,
-					test[i].label);
-			    else
-				printf ("(%s 0x%x) %s\n",
-					ropNames[rops[rop]].name,
-					planemasks[pm],
-					test[i].label);
-		    break;
-		
-		case WINDOW:
-		    for (child = 0; child < numSubWindows; child++) {
-			printf ("%s (%d kids)\n", test[i].label, subWindows[child]);
-		    }
-		    break;
-	    } /* switch */
+	    if (doit[i] && (test[i].versions & xparms.version)) {
+		switch (test[i].testType) {
+		    case NONROP:
+			printf ("%s\n", test[i].label);
+			break;
+    
+		    case ROP:
+			/* Run it through all specified rops and planemasks */
+			for (rop = 0; rop < numRops; rop++) {
+			    for (pm = 0; pm < numPlanemasks; pm++) {
+				if (planemasks[pm] == ~0) {
+				    if (rops[rop] == GXcopy) {
+					printf ("%s\n", test[i].label);
+				    } else {
+					printf ("(%s) %s\n",
+					    ropNames[rops[rop]].name,
+					    test[i].label);
+				    }
+				} else {
+				    printf ("(%s 0x%x) %s\n",
+					    ropNames[rops[rop]].name,
+					    planemasks[pm],
+					    test[i].label);
+				}
+			    } /* for pm */
+			} /* for rop */
+			break;
+		    
+		    case WINDOW:
+			for (child = 0; child != numSubWindows; child++) {
+			    printf ("%s (%d kids)\n",
+				test[i].label, subWindows[child]);
+			}
+			break;
+		} /* switch */
+	    }
 	}
 	exit(0);
     }
@@ -857,7 +916,49 @@ main(argc, argv)
     if (!foundOne)
 	usage ();
     xparms.d = Open_Display (displayName);
-    printf("x11perf - X11 performance program, version 1.2\n");
+    screen = DefaultScreen(xparms.d);
+
+    /* get visual info of default visual */
+    vmask = VisualIDMask | VisualScreenMask;
+    vinfotempl.visualid = XVisualIDFromVisual(XDefaultVisual(xparms.d, screen));
+    vinfotempl.screen = screen;
+    vinfolist = XGetVisualInfo(xparms.d, vmask, &vinfotempl, &n);
+    if (!vinfolist || n != 1) {
+	fprintf (stderr, "%s: can't get visual info of default visual\n",
+	    program_name);
+	exit(1);
+    }
+
+    if (depth == -1) {
+	/* use the default visual and colormap */
+	xparms.vinfo = *vinfolist;
+	cmap = XDefaultColormap(xparms.d, screen);
+    } else {
+	/* find the specified visual */
+	vmask = VisualDepthMask | VisualScreenMask;
+	vinfotempl.depth = depth;
+	vinfotempl.screen = screen;
+	vinfolist = XGetVisualInfo(xparms.d, vmask, &vinfotempl, &n);
+	if (!vinfolist) {
+	    fprintf (stderr, "%s: can't find a visual of depth %d\n",
+		program_name, depth);
+	    exit(1);
+	}
+	xparms.vinfo = *vinfolist;  /* use the first one in list */
+	if (xparms.vinfo.visualid ==
+	    XVisualIDFromVisual(XDefaultVisual(xparms.d, screen))) {
+	    /* matched visual is same as default visual */
+	    cmap = XDefaultColormap(xparms.d, screen);
+	} else {
+	    cmap = XCreateColormap(xparms.d, DefaultRootWindow(xparms.d),
+		xparms.vinfo.visual, AllocNone);
+	    /* since this is not default cmap, must force color allocation */
+	    if (!foreground) foreground = "Black";
+	    if (!background) background = "White";
+	}
+    }
+
+    printf("x11perf - X11 performance program, version 1.3\n");
 #ifndef VMS
     gethostname (hostname, 100);
     printf ("%s server on %s\nfrom %s\n",
@@ -866,17 +967,23 @@ main(argc, argv)
     printf ("%s server on %s\n",
 	    ServerVendor (xparms.d), DisplayString (xparms.d));
 #endif
-    screen = DefaultScreen (xparms.d);
     PrintTime ();
 
     /* Force screen out of screen-saver mode, grab current data, and set
-       time to blank to 8 hours.  This finesses various problems if you
-       try to turn it off completely.  As long as the tests run to 
+       time to blank to 8 hours.  We should just be able to turn the screen-
+       saver off, but this causes problems on some servers.  We also reset
+       the screen-saver timer each test, as 8 hours is about the maximum time
+       we can use, and that isn't long enough for some X terminals using a
+       serial protocol to finish all the tests.  As long as the tests run to 
        completion, the old screen-saver values are restored. */
     XForceScreenSaver(xparms.d, ScreenSaverReset);
     XGetScreenSaver(xparms.d, &ssTimeout, &ssInterval, &ssPreferBlanking,
 	&ssAllowExposures);
-    XSetScreenSaver(xparms.d, 8 * 3600, ssInterval, ssPreferBlanking,
+    (void) signal(SIGINT, Cleanup); /* ^C */
+    (void) signal(SIGQUIT, Cleanup);
+    (void) signal(SIGTERM, Cleanup);
+    (void) signal(SIGHUP, Cleanup);
+    XSetScreenSaver(xparms.d, 8 * 3600, ssInterval, ssPreferBlanking, 
 	ssAllowExposures);
 
     if (drawToFakeServer) {
@@ -914,7 +1021,7 @@ main(argc, argv)
 	int child;
 	char label[200];
 
-	if (doit[i]) {
+	if (doit[i] && (test[i].versions & xparms.version)) {
 	    switch (test[i].testType) {
 	        case NONROP:
 		    /* Simplest...just run it once */
@@ -923,29 +1030,32 @@ main(argc, argv)
 		    break;
 
 		case ROP:
-		    /* Run it once or twice */
-		    for (rop = 0; rop < numRops; rop++)
+		    /* Run it through all specified rops and planemasks */
+		    for (rop = 0; rop < numRops; rop++) {
 			for (pm = 0; pm < numPlanemasks; pm++) {
-			    if (planemasks[pm] == ~0)
-				if (rops[rop] == GXcopy)
+			    if (planemasks[pm] == ~0) {
+				if (rops[rop] == GXcopy) {
 				    sprintf (label, "%s", test[i].label);
-				else
+				} else {
 				    sprintf (label, "(%s) %s",
 					ropNames[rops[rop]].name,
 					test[i].label);
-			    else
+				}
+			    } else {
 				sprintf (label, "(%s 0x%x) %s",
 					ropNames[rops[rop]].name,
 					planemasks[pm],
 					test[i].label);
+			    }
 			    ProcessTest(&xparms, &test[i], rops[rop],
 				        planemasks[pm], label);
-			}
+			} /* for pm */
+		    } /* for rop */
 		    break;
 		
 		case WINDOW:
 		    /* Loop through number of children array */
-		    for (child = 0; child < numSubWindows; child++) {
+		    for (child = 0; child != numSubWindows; child++) {
 			test[i].parms.objects = subWindows[child];
 			sprintf(label, "%s (%d kids)",
 			    test[i].label, test[i].parms.objects);
@@ -961,18 +1071,21 @@ main(argc, argv)
     /* Restore ScreenSaver to original state. */
     XSetScreenSaver(xparms.d, ssTimeout, ssInterval, ssPreferBlanking,
 	ssAllowExposures);
-    XCloseDisplay (xparms.d);
+    XCloseDisplay(xparms.d);
 }
 
 int
-getWords (argi, argv, wordsp, nump)
-int	argi;
-char	**argv;
-char	**wordsp;
-int	*nump;
+GetWords (argi, argc, argv, wordsp, nump)
+    int     argi;
+    int     argc;
+    char    **argv;
+    char    **wordsp;
+    int     *nump;
 {
     int	    count;
 
+    if (argc <= argi)
+	usage();
     count = 0;
     while (argv[argi] && *(argv[argi]) != '-') {
 	*wordsp++ = argv[argi];
@@ -983,10 +1096,10 @@ int	*nump;
     return count;
 }
 
-atox (s)
-char	*s;
+int atox (s)
+    char    *s;
 {
-    int	v, c;
+    int     v, c;
 
     v = 0;
     while (*s) {
@@ -1002,22 +1115,22 @@ char	*s;
     return v;
 }
 
-getNumbers (argi, argv, intsp, nump)
-int	argi;
-char	**argv;
-int	*intsp;
-int	*nump;
+int GetNumbers (argi, argc, argv, intsp, nump)
+    int     argi;
+    int     argc;
+    char    **argv;
+    int     *intsp;
+    int     *nump;
 {
     char    *words[256];
     int	    count;
     int	    i;
     int	    flip;
 
-    count = getWords (argi, argv, words, nump);
+    count = GetWords (argi, argc, argv, words, nump);
     for (i = 0; i < count; i++) {
 	flip = 0;
-	if (!strncmp (words[i], "~", 1))
-	{
+	if (!strncmp (words[i], "~", 1)) {
 	    words[i]++;
 	    flip = ~0;
 	}
@@ -1029,18 +1142,19 @@ int	*nump;
     return count;
 }
 
-getRops (argi, argv, ropsp, nump)
-int	argi;
-char	**argv;
-int	*ropsp;
-int	*nump;
+GetRops (argi, argc, argv, ropsp, nump)
+    int     argi;
+    int     argc;
+    char    **argv;
+    int     *ropsp;
+    int     *nump;
 {
     char    *words[256];
     int	    count;
     int	    i;
     int	    rop;
 
-    count = getWords (argi, argv, words, nump);
+    count = GetWords (argi, argc, argv, words, nump);
     for (i = 0; i < count; i++) {
 	if (!strncmp (words[i], "GX", 2))
 	    words[i] += 2;

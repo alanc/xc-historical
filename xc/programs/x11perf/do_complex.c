@@ -41,16 +41,30 @@ int InitComplexPoly(xp, p, reps)
     int     i, j, numPoints;
     int     x, y;
     int     size, iradius;
-    double  phi, radius, delta, phi2;
+    double  phi, phiinc, radius, delta, phi2;
     XPoint  *curPoint;
 
     pgc = xp->fggc;
 
     size = p->special;
     phi = 0.0;
-    radius = ((double) size) * sqrt(3.0)/2.0;
-    iradius = (int) radius + 1;
     delta = 2.0 * PI / ((double) NUM_ANGLES);
+    if (xp->version == VERSION1_2) {
+	radius = ((double) size) * sqrt(3.0)/2.0;
+	phiinc = delta/10.0;
+    } else {
+	/* Version 1.2's radius computation was completely bogus, and resulted
+	   in triangles with sides about 50% longer than advertised.  Since
+	   in version 1.3 triangles are scaled to cover size^2 pixels, we do
+	   the same computation here.  The arrowheads are a little larger than
+	   simple triangles, because they lose 1/3 of their area due to the
+	   notch cut out from them, so radius has to be sqrt(3/2) larger than
+	   for simple triangles.
+	 */
+	radius = ((double) size) * sqrt(sqrt(4.0/3.0));
+	phiinc = 1.75*PI / ((double) p->objects);
+    }
+    iradius = (int) radius + 1;
 
     numPoints = (p->objects) * NUM_POINTS;  
     points = (XPoint *)malloc(numPoints * sizeof(XPoint));
@@ -68,7 +82,7 @@ int InitComplexPoly(xp, p, reps)
 	curPoint->y = y;
 	curPoint++;
 
-	phi += delta/10.0;
+	phi += phiinc;
 	y += 2 * iradius;
 	if (y + iradius >= HEIGHT) {
 	    y = iradius;

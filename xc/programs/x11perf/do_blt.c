@@ -37,12 +37,30 @@ int InitScroll(xp, p, reps)
     Parms   p;
     int     reps;
 {
-    int i;
+    int i, x, y;
 
-    for (i = 0; i != NUMPOINTS; i++) {    
-        points[i].x = rand() % WIDTH;
-        points[i].y = rand() % HEIGHT;
+    points[0].x = points[0].y = y = 0;
+    for (i = 1; i != NUMPOINTS/2; i++) {    
+	if (i & 1) {
+	    points[i].x = WIDTH-1;
+	} else {
+	    points[i].x = 0;
+	}
+	y += HEIGHT / (NUMPOINTS/2);
+	points[i].y = y;
     }
+    
+    x = 0;
+    for (i = NUMPOINTS/2; i!= NUMPOINTS; i++) {
+	if (i & 1) {
+	    points[i].y = HEIGHT-1;
+	} else {
+	    points[i].y = 0;
+	}
+	x += WIDTH / (NUMPOINTS/2);
+	points[i].x = x;
+    }
+	
     XDrawLines(xp->d, xp->w, xp->fggc, points, NUMPOINTS, CoordModeOrigin);
     return reps;
 }
@@ -52,18 +70,28 @@ void DoScroll(xp, p, reps)
     Parms   p;
     int     reps;
 {
-    int i, size, x, y, xorg, yorg;
+    int i, size, x, y, xorg, yorg, delta;
 
     size = p->special;
     xorg = 0;   yorg = 0;
     x    = 0;   y    = 0;
+    if (xp->version == VERSION1_2) {
+	delta = 1;
+    } else {
+	/* Version 1.2 only scrolled up by 1 scanline, which made hardware
+	   using page-mode access to VRAM look better on paper than it would
+	   perform in a more realistic scroll.  So we've changed to scroll by
+	   the height of the 6x13 fonts. */
+	delta = 13;
+    }
 
     for (i = 0; i != reps; i++) {
-	XCopyArea(xp->d, xp->w, xp->w, xp->fggc, x, y+1, size, size, x, y);
+	XCopyArea(xp->d, xp->w, xp->w, xp->fggc, x, y + delta,
+	    size, size, x, y);
 	y += size;
-	if (y + size + 1 > HEIGHT) {
-	    yorg++;
-	    if (yorg >= size || yorg + size + 1 > HEIGHT) {
+	if (y + size + delta > HEIGHT) {
+	    yorg += delta;
+	    if (yorg >= size || yorg + size + delta > HEIGHT) {
 		yorg = 0;
 		xorg++;
 		if (xorg >= size || xorg + size > WIDTH) {
@@ -173,8 +201,7 @@ int InitCopyPix(xp, p, reps)
     (void) InitCopyWin(xp, p, reps);
 
     /* Create pixmap to write stuff into, and initialize it */
-    pix = XCreatePixmap(xp->d, xp->w, WIDTH, HEIGHT,
-		DefaultDepth(xp->d, DefaultScreen(xp->d)));
+    pix = XCreatePixmap(xp->d, xp->w, WIDTH, HEIGHT, xp->vinfo.depth);
     XCopyArea(xp->d, xp->w, pix, xp->fggc, 0, 0, WIDTH, HEIGHT, 0, 0);
     return reps;
 }
@@ -317,11 +344,6 @@ void DoPutImage(xp, p, reps)
 }
 
 #ifdef MITSHM
-/* ||| This is included to measure the experimental MIT shared memory interface.
-       There are no guarantees that this interface will remain unchanged, but
-       then you know that if you'd turned on MITSHM anyway.
-*/
-
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -338,6 +360,8 @@ int InitShmPutImage (xp, p, reps)
 {
     int	image_size;
 
+    if (!XShmQueryExtension(xp->d))
+	return False;
     (void) InitGetImage(xp, p);
     XClearWindow(xp->d, xp->w);
     shm_image = *image;
@@ -390,6 +414,7 @@ void EndShmPutImage(xp, p)
     void    EndGetImage();
 
     EndGetImage (xp, p);
+    XShmDetach (xp->d, &shminfo);
     shmdt (shminfo.shmaddr);
     shmctl (shminfo.shmid, IPC_RMID, 0);
 }

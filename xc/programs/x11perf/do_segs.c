@@ -31,15 +31,15 @@ int InitSegments(xp, p, reps)
     Parms   p;
     int     reps;
 {
-    int size;
+    int     size;
     int     half;
-    int i;
-    int     rows;       /* Number of rows filled in current column      */
-    int x, y;		/* base of square to draw in			*/
-    int x1, y1, x2, y2;	/* offsets into square				*/
-    int phase;		/* how far into 0..8*size we are		*/
-    int phaseinc;       /* how much to increment phase at each segment  */
-    int size8;		/* 8 * size					*/
+    int     i;
+    int     rows;	    /* Number of rows filled in current column      */
+    int     x, y;	    /* base of square to draw in		    */
+    int     x1, y1, x2, y2; /* offsets into square			    */
+    int     phase;	    /* how far into 0..8*size we are		    */
+    int     phaseinc;       /* how much to increment phase at each segment  */
+    int     size8;	    /* 8 * size					    */
     XGCValues   gcv;
 
     pgc = xp->fggc;
@@ -205,12 +205,13 @@ int InitHorizSegments(xp, p, reps)
     Parms   p;
     int     reps;
 {
-    int size;
+    int     size;
     int     half;
-    int i;
-    int x, y;		/* base of square to draw in			*/
-    int phase;		/* how far into 0..8*size we are		*/
-    int phaseinc;       /* how much to increment phase at each segment  */
+    int     i;
+    int     rows;       /* Number of rows filled in current column      */
+    int     x, y;	/* base of square to draw in			*/
+    int     y1;		/* y position inside square			*/
+    int     inc;
     XGCValues   gcv;
 
     pgc = xp->fggc;
@@ -222,15 +223,31 @@ int InitHorizSegments(xp, p, reps)
 
     x = half;
     y = half;
+    y1 = 0;
+    rows = 0;
+    inc = size / p->objects;
+    if (inc == 0) inc = 1;
+
     for (i = 0; i != p->objects; i++) {
-	segments[i].x1 = x;
-	segments[i].y1 = y;
-	segments[i].x2 = x + size;
-	segments[i].y2 = y;
-	y += 2;
-	if (y >= HEIGHT - size - half) {
+	if (i % 2) {
+	    segments[i].x1 = x + size;
+	    segments[i].x2 = x;
+	    segments[i].y1 = y + size - y1;
+	    segments[i].y2 = y + size - y1;
+	    y1 += inc;
+	    if (y1 >= size) y1 -= size;
+	} else {
+	    segments[i].x1 = x;
+	    segments[i].x2 = x + size;
+	    segments[i].y1 = y + y1;
+	    segments[i].y2 = y + y1;
+	}
+	rows++;
+	y += size;
+	if (y >= HEIGHT - size - half || rows == MAXROWS) {
+	    rows = 0;
 	    y = half;
-	    x += size + 1;
+	    x += size;
 	    if (x >= WIDTH - size - half)
 		x = half;
 	}
@@ -241,17 +258,37 @@ int InitHorizSegments(xp, p, reps)
     return reps;
 }
 
-int InitVertSegments(xp, p, reps)
+int InitWideHorizSegments(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
     int size;
+
+    (void)InitHorizSegments(xp, p, reps);
+
+    size = p->special;
+    XSetLineAttributes(xp->d, xp->bggc, (int) ((size + 9) / 10),
+	LineSolid, CapRound, JoinRound);
+    XSetLineAttributes(xp->d, xp->fggc, (int) ((size + 9) / 10),
+	LineSolid, CapRound, JoinRound);
+
+    return reps;
+}
+ 
+
+int InitVertSegments(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+    int     size;
     int     half;
-    int i;
-    int x, y;		/* base of square to draw in			*/
-    int phase;		/* how far into 0..8*size we are		*/
-    int phaseinc;       /* how much to increment phase at each segment  */
+    int     i;
+    int     rows;       /* Number of rows filled in current column      */
+    int     x, y;	/* base of square to draw in			*/
+    int     x1;		/* x position inside square			*/
+    int     inc;
     XGCValues   gcv;
 
     pgc = xp->fggc;
@@ -263,15 +300,32 @@ int InitVertSegments(xp, p, reps)
 
     x = half;
     y = half;
+    x1 = 0;
+    rows = 0;
+    inc = size / p->objects;
+    if (inc == 0) inc = 1;
+
     for (i = 0; i != p->objects; i++) {
-	segments[i].x1 = x;
-	segments[i].y1 = y;
-	segments[i].x2 = x;
-	segments[i].y2 = y + size;
-	y += size + 1;
-	if (y >= HEIGHT - size - half) {
+	if (i % 2) {
+	    segments[i].x1 = x + size - x1;
+	    segments[i].x2 = x + size - x1;
+	    segments[i].y1 = y + size;
+	    segments[i].y2 = y;
+	    x1 += inc;
+	    if (x1 >= size) x1 -= size;
+	} else {
+	    segments[i].x1 = x + x1;
+	    segments[i].x2 = x + x1;
+	    segments[i].y1 = y;
+	    segments[i].y2 = y + size;
+	}
+	rows++;
+	y += size;
+	if (y >= HEIGHT - size - half || rows == MAXROWS) {
+	    /* Go to next column */
+	    rows = 0;
 	    y = half;
-	    x += 2;
+	    x += size;
 	    if (x >= WIDTH - size - half) {
 		x = half;
 	    }
@@ -282,6 +336,25 @@ int InitVertSegments(xp, p, reps)
     XChangeGC(xp->d, xp->bggc, GCCapStyle, &gcv);
     return reps;
 }
+
+int InitWideVertSegments(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+    int size;
+
+    (void)InitVertSegments(xp, p, reps);
+
+    size = p->special;
+    XSetLineAttributes(xp->d, xp->bggc, (int) ((size + 9) / 10),
+	LineSolid, CapRound, JoinRound);
+    XSetLineAttributes(xp->d, xp->fggc, (int) ((size + 9) / 10),
+	LineSolid, CapRound, JoinRound);
+
+    return reps;
+}
+ 
 
 void DoSegments(xp, p, reps)
     XParms  xp;
