@@ -1,5 +1,5 @@
 .\"
-.\" $XConsortium$
+.\" $XConsortium: index.macros,v 5.1 91/02/16 09:45:15 rws Exp $
 .\"
 .\" 
 .\" Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -26,14 +26,14 @@
 .de gX
 .if '\\$1'C' .ds lA C
 .if \\n(.$=5 .IX "\\$4 functions" "\\$3" "\\$5 functions" "\\$3"
-.IX "\\*(lA functions" "\\$2" "\\*(lA functions" "\fL\\$2\fP"
+.IX "\\*(lA functions" "\\$2" "\\*(lA functions" "\fC\\$2\fP"
 .ie '\\$4'' \{\
-.IX "\\$3" "\\$2\(em\\*(lA function" "\\$3" "\fL\\$2\fP\(em\\*(lA function"
+.IX "\\$3" "\\$2\(em\\*(lA function" "\\$3" "\fC\\$2\fP\(em\\*(lA function"
 .\}
 .el \{\
-.IX "\\$4" "\\$2\(em\\*(lA function" "\\$3" "\fL\\$2\fP\(em\\*(lA function"
+.IX "\\$4" "\\$2\(em\\*(lA function" "\\$3" "\fC\\$2\fP\(em\\*(lA function"
 .\}
-.IX "\\$2\(em\\*(lA function" "" "\fL\\$2\fP\(em\\*(lA function"
+.IX "\\$2\(em\\*(lA function" "" "\fC\\$2\fP\(em\\*(lA function"
 ..
 .\" Simulate a case statement (using if-else means search
 .\" terminates when argument matches.)  Issues error message
