@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.182 91/05/07 15:20:32 gildea Exp $ */
+/* $XConsortium: main.c,v 1.183 91/05/08 21:27:49 gildea Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -1251,15 +1251,13 @@ void first_map_occurred ()
     handshake_t handshake;
     register TScreen *screen = &term->screen;
 
-    if (screen->max_row > 0 && screen->max_col > 0) {
-	handshake.status = PTY_EXEC;
-	handshake.rows = screen->max_row;
-	handshake.cols = screen->max_col;
-	write (pc_pipe[1], (char *) &handshake, sizeof(handshake));
-	close (cp_pipe[0]);
-	close (pc_pipe[1]);
-	waiting_for_initial_map = False;
-    }
+    handshake.status = PTY_EXEC;
+    handshake.rows = screen->max_row;
+    handshake.cols = screen->max_col;
+    write (pc_pipe[1], (char *) &handshake, sizeof(handshake));
+    close (cp_pipe[0]);
+    close (pc_pipe[1]);
+    waiting_for_initial_map = False;
 }
 #else
 /*
@@ -2151,21 +2149,23 @@ spawn ()
 			/* some very bad problem occurred */
 			exit (ERROR_PTY_EXEC);
 		    }
-		    screen->max_row = handshake.rows;
-		    screen->max_col = handshake.cols;
+		    if(handshake.rows > 0 && handshake.cols > 0) {
+			screen->max_row = handshake.rows;
+			screen->max_col = handshake.cols;
 #ifdef sun
 #ifdef TIOCSSIZE
-		    ts.ts_lines = screen->max_row + 1;
-		    ts.ts_cols = screen->max_col + 1;
+			ts.ts_lines = screen->max_row + 1;
+			ts.ts_cols = screen->max_col + 1;
 #endif /* TIOCSSIZE */
 #else /* !sun */
 #ifdef TIOCSWINSZ
-		    ws.ws_row = screen->max_row + 1;
-		    ws.ws_col = screen->max_col + 1;
-		    ws.ws_xpixel = FullWidth(screen);
-		    ws.ws_ypixel = FullHeight(screen);
+			ws.ws_row = screen->max_row + 1;
+			ws.ws_col = screen->max_col + 1;
+			ws.ws_xpixel = FullWidth(screen);
+			ws.ws_ypixel = FullHeight(screen);
 #endif /* TIOCSWINSZ */
 #endif /* sun else !sun */
+		    }
 		}
 #endif /* USE_HANDSHAKE */
 

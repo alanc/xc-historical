@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.99 91/05/07 14:52:01 gildea Exp $
+ * $XConsortium: Tekproc.c,v 1.100 91/05/08 19:21:16 gildea Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -731,9 +731,6 @@ static void TekConfigure(w)
     TFullHeight(screen) = w->core.height;
 }
 
-/* this should become the Tek Widget's Expose proc */
-/* need to use compress_events = TRUE so you don't need to 
-   look at the "count" in the exposure event ! */
 /*ARGSUSED*/
 void TekExpose(w, event, region)
     Widget w;
@@ -741,6 +738,7 @@ void TekExpose(w, event, region)
     Region region;
 {
 	register TScreen *screen = &term->screen;
+	extern Bool waiting_for_initial_map;
 
 #ifdef lint
 	region = region;
@@ -761,6 +759,8 @@ void TekExpose(w, event, region)
 	rptr = TekRefresh->data;
 	rcnt = TekRefresh->count;
 	Tparsestate = curstate = Talptable;
+	if (waiting_for_initial_map)
+	    first_map_occurred ();
 	if(!screen->waitrefresh)
 		dorefresh();
 }
