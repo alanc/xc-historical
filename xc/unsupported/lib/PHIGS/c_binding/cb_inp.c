@@ -1,4 +1,4 @@
-/* $XConsortium: cb_inp.c,v 5.5 92/02/24 15:52:31 mor Exp $ */
+/* $XConsortium: cb_inp.c,v 5.6 92/12/23 10:32:24 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -940,7 +940,7 @@ preq_stroke( ws, dev, in_status, view_ind, stroke)
     Wst_input_wsdt			*idt;
     register int			i;
 
-    if ( idt = outin_ws_open( phg_cur_cph, ws, Pfn_req_stroke, NO_DT_NEEDED,
+    if ( idt = input_ws_open( phg_cur_cph, ws, Pfn_req_stroke, NO_DT_NEEDED,
 		REPORT_ERROR)) {
 	if ( !DEVICE_EXISTS( idt, stroke, dev) ) {
 	    ERR_REPORT( phg_cur_cph->erh, ERR250);
@@ -1410,6 +1410,10 @@ val_data_rec_ok( cph, pet, rec, ddt, init )
 	ERR_REPORT( cph->erh, ERR260);
 	status = 0;
 
+    } else if ( rec->low > rec->high ) {
+	ERR_REPORT( cph->erh, ERR260);
+	status = 0;
+
     } else if ( init < rec->low || init > rec->high ) {
 	ERR_REPORT( cph->erh, ERR261);
 	status = 0;
@@ -1524,6 +1528,7 @@ choice_data_rec_ok( cph, pet, rec, dt, ddt, istat, init, args )
     register int	i, size, cnt;
     register char	**strs, *strlist, *str;
     int			list_count, status = 0;
+    int			chk_flag = 0;
 
     switch ( pet ) {
 	case 1:
@@ -1544,8 +1549,19 @@ choice_data_rec_ok( cph, pet, rec, dt, ddt, istat, init, args )
 	    } else if ( list_count < 0 || list_count > ddt->choices ) {
 		ERR_REPORT( cph->erh, ERR260);
 
-	    } else
-		status = !0;
+	    } else {
+		for ( i = 0; i < list_count; i++ ) {
+		    if ( *((rec->pets.pet_r2.prompts)+i) != 0 ||
+			*((rec->pets.pet_r2.prompts)+i) != 1) {
+			chk_flag = 1;
+			ERR_REPORT( cph->erh, ERR260);
+			break;
+		    }
+		}
+
+		if ( chk_flag == 0 )
+		    status = !0;		
+	    }
 	    break;
 
 	case 3:
@@ -2569,7 +2585,7 @@ inq_pick_state( ws, dev, type, err, ret )
     Phg_args			cp_args;
     Wst_input_wsdt		*idt;
 
-    if (idt = input_ws_open( phg_cur_cph, ws, Pfn_INQUIRY, NO_DT_NEEDED, err)) {
+    if (idt = outin_ws_open( phg_cur_cph, ws, Pfn_INQUIRY, NO_DT_NEEDED, err)) {
 	if ( !DEVICE_EXISTS( idt, pick, dev) ) {
 	    *err = ERR250;
 	} else {
