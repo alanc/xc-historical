@@ -81,7 +81,6 @@ IMPORTSXAW = \
 	$(AWIDGETSRC)/TextSrcP.h \
 	$(AWIDGETSRC)/Toggle.h \
 	$(AWIDGETSRC)/ToggleP.h \
-	$(AWIDGETSRC)/VPaned.h \
 	$(AWIDGETSRC)/Viewport.h \
 	$(AWIDGETSRC)/ViewportP.h 
 
