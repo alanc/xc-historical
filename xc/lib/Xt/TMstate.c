@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.155 91/07/23 14:14:55 rws Exp $ */
+/* $XConsortium: TMstate.c,v 1.156 91/07/25 12:23:30 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -759,7 +759,7 @@ static void HandleSimpleState(w, tmRecPtr, curEventPtr)
 		     * it's bc mode then it's a potential match node that is
 		     * used to match later sequences.
 		     */
-		    else if (!TMNewMatchSemantics() && !matchExact) {
+		    if (!TMNewMatchSemantics() && !matchExact) {
 			matchExact = True;
 			typeIndex = branchHead->typeIndex;
 			modIndex = branchHead->modIndex;
@@ -991,7 +991,7 @@ void _XtTranslateEvent (w, event)
 
     XEventToTMEvent (event, &curEvent);
     
-    if (tmRecPtr == NULL) {
+    if (! tmRecPtr->translations) {
         XtAppWarningMsg(XtWidgetToApplicationContext(w),
 			XtNtranslationError,"nullTable",XtCXtToolkitError,
 			"Can't translate event through NULL table",
