@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: dispatch.c,v 1.4 94/01/10 12:01:30 rob Exp $ */
+/* $XConsortium: dispatch.c,v 1.5 94/01/10 16:43:11 rob Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3851,6 +3851,7 @@ InitProcVectors()
  *  then killed again, the client is really destroyed.
  *********************/
 
+#ifndef MTX
 Bool terminateAtReset = FALSE;
 
 void
@@ -3912,6 +3913,7 @@ CloseDownClient(client)
 	}
     }
 }
+#endif /* not MTX */
 
 static void
 KillAllClients()
@@ -3929,6 +3931,7 @@ KillAllClients()
  *    and  destroy their resources.
  *********************/
 
+#ifndef MTX
 void
 CloseDownRetainedResources()
 {
@@ -3944,7 +3947,8 @@ CloseDownRetainedResources()
     }
 }
 
-void InitClient(client, i, ospriv)
+void
+InitClient(client, i, ospriv)
     ClientPtr client;
     int i;
     pointer ospriv;
@@ -4025,6 +4029,7 @@ NextAvailableClient(ospriv)
 	nextFreeClientID++;
     return(client);
 }
+#endif /* no MTX */
 
 int
 ProcInitialConnection(client)
@@ -4237,9 +4242,11 @@ DeleteClientFromAnySelections(client)
 	}
 }
 
+#ifndef MTX
 void
 MarkClientException(client)
     ClientPtr client;
 {
     client->noClientException = -1;
 }
+#endif /* no MTX */
