@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miwindow.c,v 1.18 89/03/23 18:15:48 rws Exp $ */
+/* $XConsortium: miwindow.c,v 5.0 89/06/09 15:08:53 keith Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "region.h"
@@ -29,17 +29,6 @@ SOFTWARE.
 #include "windowstr.h"
 #include "scrnintstr.h"
 #include "pixmapstr.h"
-
-extern void HandleExposures();
-/* 
- * miwindow.c : machine independent window routines 
- *  miClearToBackground
- *  miPaintWindow
- *
- *  author: drewry
- *          Dec 1986
- */
-
 
 void 
 miClearToBackground(pWin, x, y, w, h, generateExposures)
@@ -76,15 +65,10 @@ miClearToBackground(pWin, x, y, w, h, generateExposures)
 						 generateExposures);
     }
 
+    (* pWin->drawable.pScreen->Intersect)(pReg, pReg, pWin->clipList);
     if (generateExposures)
-    {
-        (* pWin->drawable.pScreen->Intersect)(pWin->exposed, pReg, pWin->clipList);
-        HandleExposures(pWin);
-    }
+	(*pWin->drawable.pScreen->WindowExposures)(pWin, pReg);
     else if (pWin->backgroundState != None)
-    {
-        (* pWin->drawable.pScreen->Intersect)(pReg, pReg, pWin->clipList);
         (*pWin->funcs->PaintWindowBackground)(pWin, pReg, PW_BACKGROUND);
-    }
     (* pWin->drawable.pScreen->RegionDestroy)(pReg);
 }
