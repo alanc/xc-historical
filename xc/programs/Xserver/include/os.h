@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.39 89/12/06 16:41:26 rws Exp $ */
+/* $XConsortium: os.h,v 1.40 91/02/14 19:36:01 keith Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -54,7 +54,7 @@ typedef struct _NewClientRec *NewClientPtr;
  * If you want something other than Xalloc/Xfree for ALLOCATE/DEALLOCATE
  * LOCAL then you add that in here.
  */
-#if defined(__HIGHC__)
+#ifdef __HIGHC__
 
 extern char *alloca();
 
@@ -102,11 +102,17 @@ char *alloca();
 #define xrealloc(ptr, size) Xrealloc((pointer)(ptr), (unsigned long)(size))
 #define xfree(ptr) Xfree((pointer)(ptr))
 
+#ifndef X_NOT_STDC_ENV
+#include <string.h>
+#else
+#ifdef SYSV
+#include <string.h>
+#else
+#include <strings.h>
+#endif
+#endif
+
 int		ReadRequestFromClient();
-char		*strcat();
-char		*strncat();
-char		*strcpy();
-char		*strncpy();
 Bool		CloseDownConnection();
 FontPathPtr	ExpandFontNamePattern();
 FID		FiOpenForRead();
