@@ -27,7 +27,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.c,v 5.17 94/04/17 20:27:33 keith Exp $ */
+/* $XConsortium: agxFArc.c,v 1.1 94/12/27 10:50:55 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFArc.c,v 3.1 1994/11/22 02:37:19 dawes Exp $ */
 
 #include <math.h>
@@ -174,7 +174,7 @@ agxFillEllipseD(pDraw, pGC, arc, points, widths, priv)
     int x, y, i;
     int xorg, yorg, dx, dy, slw, n;
     double e, yk, xk, ym, xm;
-    miFillArcRec info;
+    miFillArcDRec info;
     DDXPointRec point;
     DDXPointPtr pts;
     int width;
@@ -339,7 +339,7 @@ agxFillArcSliceD(pDraw, pGC, arc, points, widths, priv)
     int dx, dy, xorg, yorg, slw, w;
     int ya, xl, xr, xc, n;
     double e, yk, xk, ym, xm;
-    miFillArcRec info;
+    miFillArcDRec info;
     miArcSliceRec slice;
     DDXPointRec point;
     DDXPointPtr pts;
