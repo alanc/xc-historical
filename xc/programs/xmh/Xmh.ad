@@ -1,7 +1,8 @@
-Xmh*Geometry:				508x750
-Xmh*Command.BorderWidth:		1
-Xmh*MenuButton.BorderWidth:		1
-Xmh*toc*cursor:				left_ptr
+Xmh*Geometry:			508x750
+Xmh*ShapeStyle:			Oval
+Xmh*Command.BorderWidth:	1
+Xmh*MenuButton.BorderWidth:	1
+Xmh*toc*cursor:			left_ptr
 
 Xmh*menuBox.folderButton.Label:		Folder
 Xmh*menuBox.tocButton.Label:		Table of Contents
