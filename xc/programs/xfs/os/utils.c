@@ -1,4 +1,4 @@
-/* $XConsortium: utils.c,v 1.10 92/05/13 16:07:19 keith Exp $ */
+/* $XConsortium: utils.c,v 1.11 92/11/18 21:30:57 gildea Exp $ */
 /*
  * misc os utilities
  */
@@ -137,7 +137,11 @@ GetTimeInMillis()
 {
     struct timeval tp;
 
+#if defined(SVR4) || defined(WIN32) || defined(VMS)
+    gettimeofday(&tp);
+#else
     gettimeofday(&tp, 0);
+#endif
     return ((tp.tv_sec * 1000) + (tp.tv_usec / 1000));
 }
 
