@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.12 93/09/27 11:45:16 mor Exp $ */
+/* $XConsortium: connect.c,v 1.13 93/11/08 16:34:11 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -39,7 +39,7 @@ char *errorStringRet;
 
 {
     IceConn			iceConn;
-    int				extra, i;
+    int				extra, i, j;
     int		       		endian;
     Bool			gotReply;
     unsigned long		setup_sequence;
@@ -48,6 +48,11 @@ char *errorStringRet;
     char			*pData;
     IceReplyWaitInfo 		replyWait;
     _IceReply		 	reply;
+    unsigned			afNameCount;
+    unsigned			*afNamesLengths;
+    char			**afNames;
+    char			authUsableFlags[MAX_ICE_AUTH_NAMES];
+    int				authUsableCount;
 
     if (errorStringRet && errorLength > 0)
 	*errorStringRet = '\0';
@@ -183,12 +188,43 @@ char *errorStringRet;
 
 
     /*
+     * Determine which authentication methods are available for
+     * the Connection Setup authentication.  The .ICEauthority
+     * file is checked for all ICE authentication methods that
+     * match the connection string we have.  We then check against
+     * the actual methods supported by the ICE library.
+     */
+
+    IceGetAuthNamesFromAuthFile (
+	strlen (iceConn->connection_string), iceConn->connection_string,
+	&afNameCount, &afNamesLengths, &afNames);
+
+    for (i = 0; i < _IceAuthCount; i++)
+	for (j = 0; j < afNameCount; j++)
+	    authUsableFlags[i] = (strncmp (_IcePoAuthRecs[i].auth_name,
+		afNames[j], afNamesLengths[j]) == 0);
+
+    if (afNames)
+	IceFreeAuthNames (afNameCount, afNames);
+
+    if (afNamesLengths)
+	free ((char *) afNamesLengths);
+
+
+    /*
      * Now send a Connection Setup message.
      */
 
     extra = XPCS_BYTES (IceVendorString) + XPCS_BYTES (IceReleaseString);
+    authUsableCount = 0;
+
     for (i = 0; i < _IceAuthCount; i++)
-	extra += XPCS_BYTES (_IcePoAuthRecs[i].auth_name);
+	if (authUsableFlags[i])
+	{
+	    extra += XPCS_BYTES (_IcePoAuthRecs[i].auth_name);
+	    authUsableCount++;
+	}
+
     extra += (_IceVersionCount * 2);
 
     IceGetHeaderExtra (iceConn, 0, ICE_ConnectionSetup,
@@ -198,15 +234,16 @@ char *errorStringRet;
     setup_sequence = iceConn->sequence;
 
     pSetupMsg->versionCount = _IceVersionCount;
-    pSetupMsg->authCount    = _IceAuthCount;
+    pSetupMsg->authCount    = authUsableCount;
 
     STORE_XPCS (pData, IceVendorString);
     STORE_XPCS (pData, IceReleaseString);
 
     for (i = 0; i < _IceAuthCount; i++)
-    {
-	STORE_XPCS (pData, _IcePoAuthRecs[i].auth_name);
-    }
+	if (authUsableFlags[i])
+	{
+	    STORE_XPCS (pData, _IcePoAuthRecs[i].auth_name);
+	}
 
     for (i = 0; i < _IceVersionCount; i++)
     {
