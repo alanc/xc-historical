@@ -1,7 +1,7 @@
 /*
  * xev - event diagnostics
  *
- * $XConsortium: xev.c,v 1.11 90/03/12 11:06:00 jim Exp $
+ * $XConsortium: xev.c,v 1.12 90/04/17 15:04:45 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -57,6 +57,7 @@ usage ()
 "    -geometry geom                      size and location of window",
 "    -bw pixels                          border width in pixels",
 "    -bs {NotUseful,WhenMapped,Always}   backingstore attribute",
+"    -id windowid                        use existing window",
 "    -s                                  set save-unders attribute",
 "    -name string                        window name",
 "    -rv                                 reverse video",
@@ -102,12 +103,14 @@ main (argc, argv)
     int borderwidth = 2;
     Window w, subw;
     XSetWindowAttributes attr;
+    XWindowAttributes wattr;
     unsigned long mask = 0L;
     int done;
     char *name = "Event Tester";
     Bool reverse = False;
     unsigned long back, fore;
 
+    w = 0;
     ProgramName = argv[0];
     for (i = 1; i < argc; i++) {
 	char *arg = argv[i];
@@ -136,6 +139,14 @@ main (argc, argv)
 		  default:
 		    usage ();
 		}
+	      case 'i':			/* -id */
+		if (++i >= argc) usage ();
+		sscanf(argv[i], "0x%lx", &w);
+		if (!w)
+		    sscanf(argv[i], "%ld", &w);
+		if (!w)
+		    usage ();
+		continue;
 	      case 'n':			/* -name */
 		if (++i >= argc) usage ();
 		name = argv[i];
@@ -161,22 +172,8 @@ main (argc, argv)
 	exit (1);
     }
 
-    set_sizehints (&hints, OUTER_WINDOW_MIN_WIDTH, OUTER_WINDOW_MIN_HEIGHT,
-		   OUTER_WINDOW_DEF_WIDTH, OUTER_WINDOW_DEF_HEIGHT, 
-		   OUTER_WINDOW_DEF_X, OUTER_WINDOW_DEF_Y, geom);
-
     screen = DefaultScreen (dpy);
 
-    if (reverse) {
-	back = BlackPixel(dpy,screen);
-	fore = WhitePixel(dpy,screen);
-    } else {
-	back = WhitePixel(dpy,screen);
-	fore = BlackPixel(dpy,screen);
-    }
-
-    attr.background_pixel = back;
-    attr.border_pixel = fore;
     /* select for all events */
     attr.event_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask |
 			   ButtonReleaseMask | EnterWindowMask |
@@ -190,25 +187,48 @@ main (argc, argv)
 			   SubstructureNotifyMask | SubstructureRedirectMask |
 			   FocusChangeMask | PropertyChangeMask |
 			   ColormapChangeMask | OwnerGrabButtonMask;
-    mask |= (CWBackPixel | CWBorderPixel | CWEventMask);
 
-    w = XCreateWindow (dpy, RootWindow (dpy, screen), hints.x, hints.y,
-		       hints.width, hints.height, borderwidth, 0, InputOutput,
-		       (Visual *)CopyFromParent,
-		       mask, &attr);
+    if (w) {
+	XGetWindowAttributes(dpy, w, &wattr);
+	if (wattr.all_event_masks & ButtonPressMask)
+	    attr.event_mask &= ~ButtonPressMask;
+	attr.event_mask &= ~SubstructureRedirectMask;
+	XSelectInput(dpy, w, attr.event_mask);
+    } else {
+	set_sizehints (&hints, OUTER_WINDOW_MIN_WIDTH, OUTER_WINDOW_MIN_HEIGHT,
+		       OUTER_WINDOW_DEF_WIDTH, OUTER_WINDOW_DEF_HEIGHT, 
+		       OUTER_WINDOW_DEF_X, OUTER_WINDOW_DEF_Y, geom);
 
-    XSetStandardProperties (dpy, w, name, NULL, (Pixmap) 0,
-			    argv, argc, &hints);
+	if (reverse) {
+	    back = BlackPixel(dpy,screen);
+	    fore = WhitePixel(dpy,screen);
+	} else {
+	    back = WhitePixel(dpy,screen);
+	    fore = BlackPixel(dpy,screen);
+	}
 
-    subw = XCreateSimpleWindow (dpy, w, INNER_WINDOW_X, INNER_WINDOW_Y,
-				INNER_WINDOW_WIDTH, INNER_WINDOW_HEIGHT,
-				INNER_WINDOW_BORDER,
-				attr.border_pixel, attr.background_pixel);
+	attr.background_pixel = back;
+	attr.border_pixel = fore;
+	mask |= (CWBackPixel | CWBorderPixel | CWEventMask);
 
-    XMapWindow (dpy, subw);		/* map before w so that it appears */
-    XMapWindow (dpy, w);
+	w = XCreateWindow (dpy, RootWindow (dpy, screen), hints.x, hints.y,
+			   hints.width, hints.height, borderwidth, 0,
+			   InputOutput, (Visual *)CopyFromParent,
+			   mask, &attr);
 
-    printf ("Outer window is 0x%lx, inner window is 0x%lx\n", w, subw);
+	XSetStandardProperties (dpy, w, name, NULL, (Pixmap) 0,
+				argv, argc, &hints);
+
+	subw = XCreateSimpleWindow (dpy, w, INNER_WINDOW_X, INNER_WINDOW_Y,
+				    INNER_WINDOW_WIDTH, INNER_WINDOW_HEIGHT,
+				    INNER_WINDOW_BORDER,
+				    attr.border_pixel, attr.background_pixel);
+
+	XMapWindow (dpy, subw);		/* map before w so that it appears */
+	XMapWindow (dpy, w);
+
+	printf ("Outer window is 0x%lx, inner window is 0x%lx\n", w, subw);
+    }
 
     for (done = 0; !done; ) {
 	XEvent event;
