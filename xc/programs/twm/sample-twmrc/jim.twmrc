@@ -145,6 +145,7 @@ Button1	= c|m|s	: root				: f.refresh
 SortIconManager			# keep them in alphabetic order
 ShowIconManager			# start with iconmgr up
 IconManagerGeometry "700x50+246+2" 14	# strip across top
+IconRegion "200x300+950+2" North East 50 50
 IconifyByUnmapping		# just use icon manager
 IconManagerDontShow		# but ignore these windows
 {
@@ -171,6 +172,11 @@ NoTitle				# little programs that look like icons
   "xload"
   "TWM Icon Manager"
   "xcutsel"
+}
+
+NoStackMode			# prevent hostile clients from hosing display
+{
+    "saber"
 }
 
 WindowRing			# f.warpring acts along these windows
@@ -216,6 +222,11 @@ menu "windowops"
 "Info"			f.identify
 "Focus"			f.focus
 "Unfocus"		f.unfocus
+""			f.nop
+"Show Iconmgr"		f.showiconmgr
+"Hide Iconmgr"		f.hideiconmgr
+"Prev Iconmgr"		f.previconmgr
+"Next Iconmgr"		f.nexticonmgr
 }
 
 menu "windowmenu"
@@ -230,6 +241,6 @@ menu "windowmenu"
 
 menu "kill"
 {
-    "Kill Window"	f.destroy
     "Send Delete"	f.delete
+    "Kill Window"	f.destroy
 }
