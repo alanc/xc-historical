@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.169 91/01/05 13:20:08 dave Exp $
+ * $XConsortium: menus.c,v 1.170 91/01/09 17:16:20 dave Exp $
  *
  * twm menu code
  *
@@ -405,7 +405,7 @@ int exposure;
 	    if (Scr->pullPm == None)
 	    {
 		Scr->pullPm = XCreatePixmapFromBitmapData(dpy, Scr->Root,
-		    menu12_bits, menu12_width, menu12_height, 1, 0, 1);
+		    (char *)menu12_bits, menu12_width, menu12_height, 1, 0, 1);
 	    }
 	    x = mr->width - menu12_width - 5;
 	    y = y_offset + ((Scr->MenuFont.height - menu12_height) / 2);
