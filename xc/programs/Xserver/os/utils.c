@@ -21,14 +21,13 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.39 88/02/06 17:17:21 rws Exp $ */
+/* $Header: utils.c,v 1.40 88/02/20 08:43:10 rws Exp $ */
 #include <stdio.h>
 #include <sys/time.h>
 #include "misc.h"
 #include "X.h"
 #include "input.h"
 #include "opaque.h"
-#include "site.h"
 #include <strings.h>
 extern char *display;
 
@@ -228,10 +227,7 @@ char	*argv[];
 	else if ( strcmp( argv[i], "-to") == 0)
 	{
 	    if(++i < argc)
-	    {
-	        if((TimeOutValue = atoi(argv[i])) < 0)
-		    TimeOutValue = DEFAULT_TIMEOUT;
-	    }
+		TimeOutValue = atoi(argv[i]);
 	    else
 		UseMsg();
 	}
