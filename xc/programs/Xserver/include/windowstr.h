@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 5.2 89/06/09 18:21:55 keith Exp $ */
+/* $XConsortium: windowstr.h,v 5.3 89/06/13 17:59:29 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -65,7 +65,7 @@ typedef struct _Validate {
     RegionPtr		borderExposed;
     RegionPtr		borderVisible;
     DDXPointRec		oldAbsCorner;
-} ValidateRec;
+} ValidateRec, *ValidatePtr;
 
 #define SameBackground(as, a, bs, b)				\
     ((as) == (bs) && ((as) == None ||				\
@@ -83,8 +83,6 @@ typedef struct _WindowFuncs {
     DevUnion	devPrivate;
 } WindowFuncs;
 
-typedef struct _WindowOpt   *WindowOptPtr;
-
 typedef struct _WindowOpt {
     VisualID		visual;		   /* default: same as parent */
     CursorPtr		cursor;		   /* default: window.cursorNone */
@@ -100,7 +98,7 @@ typedef struct _WindowOpt {
     RegionPtr		boundingShape;	   /* default: NULL */
     RegionPtr		clipShape;	   /* default: NULL */
 #endif
-} WindowOptRec;
+} WindowOptRec, *WindowOptPtr;
 
 #define BackgroundPixel	    2L
 #define BackgroundPixmap    3L
@@ -114,20 +112,9 @@ typedef struct _Window {
     WindowPtr		lastChild;	/* bottom-most child */
     RegionPtr		clipList;	/* clipping rectangle for output */
     RegionPtr		borderClip;	/* NotClippedByChildren + border */
-
-    /*
-     * these will eventually change
-     */
-#ifdef NOTDEF
-    ValidateRec		*valdata;
-#else
+    ValidatePtr		valdata;
     RegionPtr		winSize;
     RegionPtr		borderSize;
-    RegionPtr		exposed;
-    RegionPtr		borderExposed;
-    DDXPointRec		oldAbsCorner;
-#endif
-
     DDXPointRec		origin;		/* position relative to parent */
     unsigned short	borderWidth;
     unsigned short	deliverableEvents;
@@ -150,7 +137,6 @@ typedef struct _Window {
     unsigned		mapped:1;
     unsigned		realized:1;	/* ancestors are all mapped */
     unsigned		viewable:1;	/* realized && InputOutput */
-    unsigned		marked:1;
     DevUnion		*devPrivates;
 } WindowRec;
 
