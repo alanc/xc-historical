@@ -730,6 +730,10 @@ menu pops up when the ``control'' key and pointer button one are
 pressed in a window.
 The modes section contains items that apply to both the VT102 and Tektronix
 windows.
+The
+.B Secure Keyboard
+mode should be used when typing in passwords or other sensitive data;
+see \fBSECURITY\fP below.
 Notable entries in the command section of the menu are the
 .BR Continue ,
 .BR Suspend ,
@@ -769,6 +773,43 @@ The current font size is checked in the modes section of the menu.
 The
 .B PAGE
 entry in the command section clears the Tektronix window.
+.SH SECURITY
+.PP
+X environments differ in their security conciousness.  The servers provided
+by MIT use a host-based mechanism to control access to the server (see
+\fIxhost(1)\fP).  If you enable access for a host, and other users are
+also permitted to run clients on that host, there is the possibility that
+someone will run an application that will attempt to use the basic services
+of the X protocol to snoop on your activities, and potentially capture a
+transcript of everything you type at the keyboard.  This is of particular
+concern when you want to type in a password or other sensitive data.
+The best solution to this problem is for the industry to choose a standard
+authorization mechanism, with the necessary operating system support,
+and to incorporate this into the X protocol (which is already designed to
+handle such a mechanism).  In the mean time, since passwords are most
+commonly typed to something running in an \fIxterm\fP window, a simple
+mechanism exists for protecting keyboard input in \fIxterm\fP.
+.PP
+The \fBxterm\fP menu (see \fBMENUS\fP above) contains a \fBSecure Keyboard\fP
+entry which, when enabled, ensures that all keyboard input is directed
+\fIonly\fP to \fIxterm\fP (using the GrabKeyboard protocol request).
+When an application prompts you for a password
+(or other sensitive data), you can enable \fBSecure Keyboard\fP using the
+menu, type in the data, and then disable \fBSecure Keyboard\fP using
+the menu again.  Only one X client at a time can secure the keyboard,
+so when you attempt to enable \fBSecure Keyboard\fP it may fail.  In
+this case, the bell will sound.  If the \fBSecure Keyboard\fP succeeds,
+the foreground and background colors will be exchanged (as if you
+selected the \fBReverse Video\fP entry in the \fBModes\fP menu);
+they will be exchanged again when you exit secure mode.  If the colors
+do \fInot\fP switch, then
+you should be \fIvery\fP suspicious that you are being spoofed.  If
+the application you are running displays a prompt before asking for
+the password, it is safest to enter secure mode \fIbefore\fP the
+prompt gets displayed, and to make sure that the prompt gets displayed
+correctly (in the new colors), to minimize the probability of
+spoofing.  You can also bring up the menu again and make sure that a check
+mark appears next to the entry.
 .SH "CHARACTER CLASSES"
 Clicking the middle mouse button twice in rapid succession will cause all
 characters of the same class (e.g. letters, white space, punctuation) to be
@@ -835,6 +876,9 @@ Changing the translations for events other than key and button events
 is not expected, and will cause unpredictable behavior.
 .PP
 The actions available for key translations are:
+.TP 15
+.B secure()
+Toggles the \fBSecure Keyboard\fP mode; see \fBSECURITY\fP.
 .TP 15
 .B insert()
 Processes the key in the normal way; i.e. inserts the
