@@ -53,6 +53,7 @@ typedef struct _fs_font {
 /* FS special data for the font */
 typedef struct _fs_font_data {
     long        fontid;
+    int		generation;	/* FS generation when opened */
     FontPathElementPtr fpe;
     Bool        complete;	/* all glyphs sucked over? */
 }           FSFontDataRec;
@@ -116,13 +117,19 @@ typedef struct _fs_blocked_list_info {
 
 /* state for blocked request */
 typedef struct _fs_block_data {
-    int         type;		/* Open Font, LoadGlyphs, ListFonts,
-				 * ListWithInfo */
-    pointer     client;		/* who wants it */
-    int         sequence_number;/* expected */
-    fsReplyHeader header;
-    pointer     data;		/* type specific data */
-    struct _fs_block_data *next;
+    int			    type;	/* Open Font, LoadGlyphs, ListFonts,
+					 * ListWithInfo */
+    pointer		    client;	    /* who wants it */
+    int			    sequence_number;/* expected */
+    fsReplyHeader	    header;
+    pointer		    data;	    /* type specific data */
+    struct _fs_block_data   *depending;	    /* clients depending on this one */
+    struct _fs_block_data   *next;
 }           FSBlockDataRec;
+
+/* state for reconnected to dead font server */
+typedef struct _fs_reconnect {
+    int	    i;
+} FSReconnectRec, *FSReconnectPtr;
 
 #endif				/* _FSERVESTR_H_ */

@@ -96,30 +96,51 @@ _fs_name_to_address(servername, inaddr)
 	inaddr->sin_addr.s_addr = hostinetaddr;
 	inaddr->sin_family = AF_INET;
     }
-    inaddr->sin_port = servernum;
-    inaddr->sin_port += FS_TCP_PORT;
-    inaddr->sin_port = htons(inaddr->sin_port);
+    inaddr->sin_port = htons(servernum);
 
     return 1;
 }
 
+#ifdef SIGNALRETURNSINT
+#define SIGNAL_T int
+#else
+#define SIGNAL_T void
+#endif
+
+static SIGNAL_T
+_fs_alarm ()
+{
+    return;
+}
+
 static int
-_fs_connect(servername)
+_fs_connect(servername, timeout)
     char       *servername;
+    int		timeout;
 {
     int         fd;
     struct sockaddr *addr;
     struct sockaddr_in inaddr;
-
+    int		oldTime;
+    SIGNAL_T	(*oldAlarm)();
+    int		ret;
 
     if (_fs_name_to_address(servername, &inaddr) < 0)
 	return -1;
 
     addr = (struct sockaddr *) & inaddr;
-    if ((fd = socket((int) addr->sa_family, SOCK_STREAM, 0)) < 0) {
+    if ((fd = socket((int) addr->sa_family, SOCK_STREAM, 0)) < 0)
 	return -1;
-    }
-    if (connect(fd, addr, sizeof(struct sockaddr_in)) == -1) {
+
+    oldTime = alarm (0);
+    oldAlarm = signal (SIGALRM, _fs_alarm);
+    alarm (timeout);
+    ret = connect(fd, addr, sizeof(struct sockaddr_in));
+    alarm (0);
+    signal (SIGALRM, oldAlarm);
+    alarm (oldTime);
+    if (ret == -1)
+    {
 	(void) close(fd);
 	return -1;
     }
@@ -137,31 +158,34 @@ _fs_connect(servername)
     return fd;
 }
 
-FSFpePtr
-_fs_open_server(servername)
-    char       *servername;
-{
-    FSFpePtr    conn;
-    fsConnClientPrefix prefix;
-    fsConnSetup rep;
-    int         setuplength;
-    fsConnSetupAccept conn_accept;
-    int         endian;
-    char       *auth_data = NULL,
-               *vendor_string = NULL,
-               *alt_data = NULL;
+static int  generationCount;
 
-    conn = (FSFpePtr) xalloc(sizeof(FSFpeRec));
-    if (!conn) {
-	errno = ENOMEM;
-	return conn;
-    }
-    bzero((char *) conn, sizeof(FSFpeRec));
-    conn->fs_fd = _fs_connect(servername);
-    if (conn->fs_fd < 0) {
-	xfree((char *) conn);
-	return (FSFpePtr) NULL;
-    }
+static Bool
+_fs_setup_connection (conn, timeout)
+    FSFpePtr	conn;
+    int		timeout;
+{
+    fsConnClientPrefix	prefix;
+    fsConnSetup		rep;
+    int			setuplength;
+    fsConnSetupAccept	conn_accept;
+    int			endian;
+    int			i;
+    int			alt_len;
+    char		*auth_data = NULL,
+			*vendor_string = NULL,
+			*alt_data = NULL,
+			*alt_tmp,
+			*alt_dst;
+    FSFpeAltPtr		alts;
+    int			nalts;
+
+    conn->fs_fd = _fs_connect(conn->servername, 5);
+    if (conn->fs_fd < 0)
+	return FALSE;
+
+    conn->generation = ++generationCount;
+
     /* send setup prefix */
     endian = 1;
     if (*(char *) &endian)
@@ -176,53 +200,152 @@ _fs_open_server(servername)
     prefix.num_auths = 0;
     prefix.auth_len = 0;
 
-    _fs_write(conn, (char *) &prefix, sizeof(fsConnClientPrefix));
+    if (_fs_write(conn, (char *) &prefix, sizeof(fsConnClientPrefix)) == -1)
+	return FALSE;
 
     /* read setup info */
-    _fs_read(conn, (char *) &rep, sizeof(fsConnSetup));
+    if (_fs_read(conn, (char *) &rep, sizeof(fsConnSetup)) == -1)
+	return FALSE;
 
-    setuplength = rep.alternate_len << 2;
-    if (setuplength &&
-	    !(alt_data = (char *) xalloc((unsigned int) setuplength))) {
-	errno = ENOMEM;
-	xfree((char *) conn);
-	return (FSFpePtr) NULL;
+    alts = 0;
+    /* parse alternate list */
+    if (nalts = rep.num_alternates)
+    {
+	setuplength = rep.alternate_len << 2;
+	alts = (FSFpeAltPtr) xalloc (nalts * sizeof (FSFpeAltRec) +
+					   setuplength);
+	if (!alts)
+	{
+	    close (conn->fs_fd);
+	    errno = ENOMEM;
+	    return FALSE;
+	}
+	alt_data = (char *) (alts + nalts);
+	if (_fs_read(conn, (char *) alt_data, setuplength) == -1)
+	{
+	    xfree (alts);
+	    return FALSE;
+	}
+	alt_dst = alt_data;
+	for (i = 0; i < nalts; i++)
+	{
+	    alts[i].subset = alt_data[0];
+	    alt_len = alt_data[1];
+	    alts[i].name = alt_dst;
+	    bcopy (alt_data + 2, alt_dst, alt_len);
+	    alt_dst[alt_len] = '\0';
+	    alt_dst += (alt_len + 1);
+	    alt_data += (2 + alt_len + padlength [(2 + alt_len) & 3]);
+	}
     }
-    _fs_read(conn, (char *) alt_data, setuplength);
-/* XXX take apart delegate info */
+    if (conn->alts)
+	xfree (conn->alts);
+    conn->alts = alts;
+    conn->numAlts = nalts;
 
     setuplength = rep.auth_len << 2;
     if (setuplength &&
-	    !(auth_data = (char *) xalloc((unsigned int) setuplength))) {
+	    !(auth_data = (char *) xalloc((unsigned int) setuplength))) 
+    {
+	close (conn->fs_fd);
 	errno = ENOMEM;
-	xfree((char *) conn);
-	return (FSFpePtr) NULL;
+	return FALSE;
     }
-    _fs_read(conn, (char *) auth_data, setuplength);
+    if (_fs_read(conn, (char *) auth_data, setuplength) == -1)
+    {
+	xfree (auth_data);
+	return FALSE;
+    }
 
-    if (rep.status != AuthSuccess) {
-/* XXX -- try a delegate */
-	xfree(alt_data);
+    if (rep.status != AuthSuccess) 
+    {
 	xfree(auth_data);
-	xfree((char *) conn);
-	return (FSFpePtr) NULL;
+	close (conn->fs_fd);
+	errno = EPERM;
+	return FALSE;
     }
     /* get rest */
-    _fs_read(conn, (char *) &conn_accept, (long) sizeof(fsConnSetupAccept));
+    if (_fs_read(conn, (char *) &conn_accept, (long) sizeof(fsConnSetupAccept)) == -1)
+    {
+	xfree (auth_data);
+	return FALSE;
+    }
 
     if ((vendor_string = (char *)
-	 xalloc((unsigned) conn_accept.vendor_len + 1)) == NULL) {
+	 xalloc((unsigned) conn_accept.vendor_len + 1)) == NULL) 
+    {
+	xfree (auth_data);
+	close (conn->fs_fd);
 	errno = ENOMEM;
-	xfree((char *) conn);
-	return (FSFpePtr) NULL;
+	return FALSE;
     }
-    _fs_read_pad(conn, (char *) vendor_string, conn_accept.vendor_len);
+    if (_fs_read_pad(conn, (char *) vendor_string, conn_accept.vendor_len) == -1)
+    {
+	xfree (vendor_string);
+	xfree (auth_data);
+	return FALSE;
+    }
 
-    xfree(alt_data);
     xfree(auth_data);
     xfree(vendor_string);
 
+    return TRUE;
+}
+
+static Bool
+_fs_try_alternates (conn, timeout)
+    FSFpePtr	conn;
+    int		timeout;
+{
+    int	    i;
+
+    for (i = 0; i < conn->numAlts; i++)
+	if (_fs_setup_connection (conn, conn->alts[i].name, timeout))
+	    return TRUE;
+    return FALSE;
+}
+
+#define FS_OPEN_TIMEOUT	    30
+#define FS_REOPEN_TIMEOUT   10
+
+FSFpePtr
+_fs_open_server(servername)
+    char       *servername;
+{
+    FSFpePtr    conn;
+    int		len;
+
+    len = strlen (servername);
+    conn = (FSFpePtr) xalloc(sizeof(FSFpeRec) + len + 1);
+    if (!conn) 
+    {
+	errno = ENOMEM;
+	return (FSFpePtr) NULL;
+    }
+    bzero((char *) conn, sizeof(FSFpeRec));
+    conn->servername = (char *) (conn + 1);
+    strcpy (conn->servername, servername);
+    if (!_fs_setup_connection (conn, FS_OPEN_TIMEOUT))
+    {
+	if (!_fs_try_alternates (conn, FS_OPEN_TIMEOUT))
+	{
+	    xfree (conn->alts);
+	    xfree (conn);
+	    return (FSFpePtr) NULL;
+	}
+    }
     return conn;
+}
+
+Bool
+_fs_reopen_server(conn)
+    FSFpePtr	conn;
+{
+    if (_fs_setup_connection (conn, FS_REOPEN_TIMEOUT))
+	return TRUE;
+    if (_fs_try_alternates (conn, FS_REOPEN_TIMEOUT))
+	return TRUE;
+    return FALSE;
 }
 
 /*
@@ -244,6 +367,7 @@ _fs_read(conn, data, size)
 
 	return 0;
     }
+    errno = 0;
     while ((bytes_read = read(conn->fs_fd, data, (int) size)) != size) {
 	if (bytes_read > 0) {
 	    size -= bytes_read;
@@ -252,18 +376,17 @@ _fs_read(conn, data, size)
 	    /* in a perfect world, this shouldn't happen */
 	    /* ... but then, its less than perfect... */
 	    if (_fs_wait_for_readable(conn) == -1)	/* check for error */
+	    {
+		_fs_connection_died (conn);
+		errno = EPIPE;
 		return -1;
-	} else if (bytes_read == 0) {	/* EOF */
+	    }
+	} else if (errno == EINTR) {
+	    continue;
+	} else {	    /* something bad happened */
+	    if (conn->fs_fd > 0)
+		_fs_connection_died (conn);
 	    errno = EPIPE;
-	    return -1;
-	} else {
-	    if (errno != EINTR)
-		continue;
-
-#ifdef DEBUG
-	    fprintf(stderr, "read failed -- %s?\n", sys_errlist[errno]);
-#endif
-
 	    return -1;
 	}
     }
@@ -285,6 +408,7 @@ _fs_write(conn, data, size)
 
 	return 0;
     }
+    errno = 0;
     while ((bytes_written = write(conn->fs_fd, data, (int) size)) != size) {
 	if (bytes_written > 0) {
 	    size -= bytes_written;
@@ -295,17 +419,11 @@ _fs_write(conn, data, size)
 #ifdef DEBUG
 	    fprintf(stderr, "fs_write blocking\n");
 #endif
-	} else if (bytes_written == 0) {	/* EOF */
+	} else if (errno == EINTR) {
+	    continue;
+	} else {	    /* something bad happened */
+	    _fs_connection_died (conn);
 	    errno = EPIPE;
-	    return -1;
-	} else {
-	    if (errno != EINTR)
-		continue;
-
-#ifdef DEBUG
-	    fprintf(stderr, "write failed -- %s?\n", sys_errlist[errno]);
-#endif
-
 	    return -1;
 	}
     }
@@ -319,12 +437,14 @@ _fs_read_pad(conn, data, len)
 {
     char        pad[3];
 
-    _fs_read(conn, data, len);
+    if (_fs_read(conn, data, len) == -1)
+	return -1;
 
     /* read the junk */
     if (padlength[len & 3]) {
-	_fs_read(conn, pad, padlength[len & 3]);
+	return _fs_read(conn, pad, padlength[len & 3]);
     }
+    return len;
 }
 
 _fs_write_pad(conn, data, len)
@@ -334,12 +454,14 @@ _fs_write_pad(conn, data, len)
 {
     static char pad[3];
 
-    _fs_write(conn, data, len);
+    if (_fs_write(conn, data, len) == -1)
+	return -1;
 
     /* write the pad */
     if (padlength[len & 3]) {
-	_fs_write(conn, pad, padlength[len & 3]);
+	return _fs_write(conn, pad, padlength[len & 3]);
     }
+    return 0;
 }
 
 /*
@@ -447,7 +569,8 @@ _fs_drain_bytes(conn, len)
 #endif
 
     while (len > 0) {
-	_fs_read(conn, buf, MIN(len, 128));
+	if (_fs_read(conn, buf, MIN(len, 128)) < 0)
+	    return -1;
 	len -= 128;
     }
 }

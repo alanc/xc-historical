@@ -45,6 +45,7 @@
 #define	FS_EXTENT_REPLY		2
 #define	FS_GLYPHS_REPLY		3
 #define	FS_DONE_REPLY		4
+#define FS_DEPENDING		5
 
 /* status of ListFontsWithInfo */
 #define	FS_LFWI_WAITING		0

@@ -30,10 +30,23 @@
 
 #define	REQUEST_LOG_SIZE	100
 
+typedef struct _fs_fpe_alternate {
+    char    *name;
+    Bool    subset;
+} FSFpeAltRec, *FSFpeAltPtr;
+
+#define FS_RECONNECT_WAIT	5
+#define FS_MAX_RECONNECT_WAIT	80
+
 /* FS specific font FontPathElement data */
 typedef struct _fs_fpe_data {
     int         fs_fd;
     int         current_seq;
+    char	*servername;
+
+    int		generation;
+    int		numAlts;
+    FSFpeAltPtr	alts;
 
 #ifdef DEBUG
     int         reqindex;
@@ -42,6 +55,10 @@ typedef struct _fs_fpe_data {
 
 /* XXX massive crock to get around stupid #include interferences */
     pointer     blocked_requests;
+/* Data for reconnect - put it here to avoid allocate failure nightmare */
+    long		time_to_try;
+    long		reconnect_delay;
+    struct _fs_fpe_data	*next_reconnect;
 }           FSFpeRec, *FSFpePtr;
 
 FSFpePtr    _fs_open_server();

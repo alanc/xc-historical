@@ -7,6 +7,7 @@
          HEADERS = 
             SRCS = fsconvert.c fserve.c fsio.c
             OBJS = fsconvert.o fserve.o fsio.o
+         DEFINES = $(SIGNAL_DEFINES)
 
 NormalLibraryTarget(fontfc,$(OBJS))
 all:: $(OBJS)
