@@ -77,7 +77,7 @@ displayCaret	Output	Boolean		True
 displayNonprinting	Output	Boolean		True
 displayPosition	TextPosition	XawTextPosition		0
 echo	Output	Boolean		True
-editType	EditType	XawEditType		XawtextRead
+editType	EditType	XawTextEditType		XawtextRead
 font	Font	XFontStruct*		XtDefaultFont
 foreground	Foreground	Pixel		XtDefaultForeground
 height	Height	Dimension	A	Font height + margins
@@ -127,6 +127,7 @@ _
 .Od AsciiText
 .Dp
 .Dc
+.Tc
 .Sd AsciiText	
 .Td
 .Oe AsciiText

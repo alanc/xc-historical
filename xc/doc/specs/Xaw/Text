@@ -104,6 +104,7 @@ _
 .Cu
 .Dp
 .Dc
+.Tc Bold
 .Td Bold
 .Hw
 .Ib
