@@ -1,4 +1,4 @@
-/* $XConsortium: choose.c,v 1.10 94/07/25 13:32:01 mor Exp $ */
+/* $XConsortium: choose.c,v 1.11 94/07/25 13:38:13 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -241,14 +241,21 @@ XtPointer 	callData;
 {
     XawListReturnStruct *current;
 
+    current = XawListShowCurrent (chooseSessionListWidget);
+
+    if (!current || !current->string || *(current->string) == '\0')
+    {
+	if (current)
+	    XtFree ((char *) current);
+	XBell (XtDisplay (topLevel), 0);
+	return;
+    }
 
     /*
      * Pop down choice of sessions and start the specified session.
      */
 
     XtPopdown (chooseSessionPopup);
-
-    current = XawListShowCurrent (chooseSessionListWidget);
 
     if (session_name)
 	XtFree (session_name);
@@ -279,14 +286,11 @@ XtPointer 	callData;
 
     current = XawListShowCurrent (chooseSessionListWidget);
 
-    if (!current)
-	return;
-
-    name = current->string;
-
-    if (!name && *name == '\0')
+    if (!current || !(name = current->string) || *name == '\0')
     {
-	XtFree ((char *) current);
+	if (current)
+	    XtFree ((char *) current);
+	XBell (XtDisplay (topLevel), 0);
 	return;
     }
 
