@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 1.12 88/01/20 08:25:12 swick Locked $";
+static char rcs_id[] = "$Header: screen.c,v 2.13 88/01/25 17:52:19 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -378,8 +378,8 @@ Scrn ScrnFromWidget(w)
 Widget w;
 {
     int i;
-    while (w && w->core.widget_class != vPanedWidgetClass)
-	w = w->core.parent;
+    while (w && XtClass(w) != vPanedWidgetClass)
+	w = XtParent(w);
     if (w) {
 	for (i=0 ; i<numScrns ; i++) {
 	    if (w == (Widget) scrnList[i]->widget)
