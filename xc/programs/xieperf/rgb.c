@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: rgb.c,v 1.1 93/10/26 10:08:37 rws Exp $ */
 
 /**** module rgb.c ****/
 /******************************************************************************
@@ -68,7 +68,6 @@ XParms  xp;
 Parms   p;
 int     reps;
 {
-	XieLTriplet levels;
 	int cclass;
 
 #if     defined(__cplusplus) || defined(c_plusplus)
@@ -121,7 +120,7 @@ Parms	p;
 {
 	RGBParms *rgb = ( RGBParms * )p->ts;
 	int idx, decode_notify;
-	double cube;
+	int cube;
 	char *techParms, *colorParm1, *colorParm2;
 	char *whiteAdjustParm, *gamutParm;
 	XieRGBToCIELabParam *RGBToCIELabParm;
@@ -135,7 +134,6 @@ Parms	p;
 	XieColorAllocAllParam *convertToIndexParms;
 	XieColorspace colorSpace;
 	XWindowAttributes xwa;
-	Bool colorAllocNotify;
 	XieMatrix toMatrix, fromMatrix;
 	XieWhiteAdjustTechnique whiteAdjust;
 	double ycc_scale = 1.402;
@@ -156,7 +154,7 @@ Parms	p;
 	memcpy( fromMatrix, rgb->fromMatrix, sizeof( XieMatrix ) );
 	whiteAdjust = rgb->whiteAdjust;
 	gamut = rgb->gamut;
-	cube = floor( cbrt( ( double ) ( 1 << xp->vinfo.depth ) ) );
+	cube = icbrt( 1 << xp->vinfo.depth );
 
 	whiteAdjustParm = ( char * ) NULL;
 	gamutParm = ( char * ) NULL;
@@ -229,7 +227,6 @@ Parms	p;
 		fflush( stderr );
 		return( 0 );
 	}
-	colorAllocNotify = False;
 
 	XGetWindowAttributes( xp->d, DefaultRootWindow( xp->d ), &xwa );
 	XSetWindowColormap( xp->d, xp->w, xwa.colormap );
@@ -348,9 +345,9 @@ Parms	p;
 		idx++;
 	}
 
-	levels[ 0 ] = ( long ) cube;
-	levels[ 1 ] = ( long ) cube;
-	levels[ 2 ] = ( long ) cube;
+	levels[ 0 ] = cube;
+	levels[ 1 ] = cube;
+	levels[ 2 ] = cube;
 	ditherTech = ( char * ) NULL;
 	XieFloDither( &flograph[ idx ],
 		idx,
@@ -408,9 +405,7 @@ Parms   p;
 int     reps;
 {
 	int	i;
-	int	flo_id;
 
-	flo_id = 1;
 	for ( i = 0; i < reps; i++ )
 	{
                 XieExecutePhotoflo(xp->d, flo, flo_notify );

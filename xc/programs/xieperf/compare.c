@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: compare.c,v 1.1 93/10/26 10:07:57 rws Exp $ */
 
 /**** module compare.c ****/
 /******************************************************************************
@@ -151,7 +151,7 @@ InitCompare(xp, p, reps)
 		rect.width = ( ( CompareParms * )p->ts )->width;
 		rect.height = ( ( CompareParms * )p->ts )->height;
 
-		if ( ( XIERoi = GetXIERoi( xp, p, rect, 1 ) ) == 
+		if ( ( XIERoi = GetXIERoi( xp, p, &rect, 1 ) ) == 
 			( XieRoi ) NULL )
 		{
 			reps = 0;

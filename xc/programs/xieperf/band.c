@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: band.c,v 1.1 93/10/26 10:08:17 rws Exp $ */
 /**** module band.c ****/
 /******************************************************************************
 				NOTICE
@@ -76,7 +76,7 @@ Parms   p;
 int     reps;
 {
 	XieLTriplet levels;
-	double cube;
+	int cube;
 	int which;
 
 	which = (( BandParms * )p->ts)->which;
@@ -98,14 +98,14 @@ int     reps;
 	colorclass = 0;
 	if ( reps )
 	{
-		cube = floor( cbrt( ( double ) ( 1 << xp->vinfo.depth ) ) );
+		cube = icbrt( 1 << xp->vinfo.depth );
 	
 		if ( IsColorVisual( cclass ) )
 		{
 			colorclass = 1;
-			levels[ 0 ] = ( long ) cube;
-			levels[ 1 ] = ( long ) cube;
-			levels[ 2 ] = ( long ) cube;
+			levels[ 0 ] = cube;
+			levels[ 1 ] = cube;
+			levels[ 2 ] = cube;
 		}
 		else
 		{
@@ -162,8 +162,6 @@ int     reps;
 {
 	XieLTriplet levels;
         Atom atom;
-	double cube;
-    	XWindowAttributes xwa;
 
 	useStdCmap = ( ( BandParms * )p->ts )->useStdCmap;
 	if ( xp->vinfo.depth == 1 && useStdCmap == True )
@@ -178,7 +176,6 @@ int     reps;
 	XIEPhotomap1 = ( XiePhotomap ) NULL;
 	flograph = ( XiePhotoElement * ) NULL;
 	flo = ( XiePhotoflo ) NULL;
-        cube = floor( cbrt( ( double ) ( 1 << xp->vinfo.depth ) ) );
 
 	if ( useStdCmap == True )
 	{
@@ -406,7 +403,7 @@ int
 CreateColorBandSelectExtractFlo( xp, p, cube )
 XParms	xp;
 Parms	p;
-double 	cube;
+int 	cube;
 {
 	int idx, which, decode_notify;
 	XieColorAllocAllParam *color_param = NULL;
@@ -414,8 +411,6 @@ double 	cube;
 	XWindowAttributes xwa;
 	XieConstant c1, c2, c3;
 	float bias;
-	int source;
-	XieLTriplet levels;
 	XIEimage *image;
 
 	which = (( BandParms * )p->ts)->which;
@@ -518,7 +513,7 @@ int
 CreateGrayBandSelectExtractFlo( xp, p, cube )
 XParms	xp;
 Parms	p;
-double cube;
+int cube;
 {
 	int decode_notify;
 	unsigned int mylevels;

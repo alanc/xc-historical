@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mtchhist.c,v 1.1 93/10/26 10:07:44 rws Exp $ */
 
 /**** module mtchhist.c ****/
 /******************************************************************************
@@ -134,7 +134,7 @@ InitMatchHistogram(xp, p, reps)
 			rect.y = (( MatchHistogramParms *)p->ts )->y;
 			rect.width = (( MatchHistogramParms *)p->ts )->width;
 			rect.height = (( MatchHistogramParms *)p->ts )->height;
-			if ( ( XIERoi = GetXIERoi( xp, p, rect, 1 ) ) ==
+			if ( ( XIERoi = GetXIERoi( xp, p, &rect, 1 ) ) ==
 				( XieRoi ) NULL )
 			{
 				reps = 0;
@@ -304,20 +304,19 @@ Parms   p;
 int     reps;
 {
     	int     i, done, numHistos;
-	unsigned int checksum;
 
     	for (i = 0; i != reps; i++) {
 		XieExecutePhotoflo( xp->d, flo, flo_notify );
 		XSync( xp->d, 0 );
 		numHistos = ReadNotifyExportData( xp, p, 0, flo, histo2, 
-			sizeof( XieHistogramData ), 0, &histos, &done ) 
-			/ sizeof( XieHistogramData );
+			sizeof( XieHistogramData ), 0, (char **) &histos,
+			&done ) / sizeof( XieHistogramData );
 		DrawHistogram( xp, monitorWindow, 
 			( XieHistogramData * ) histos,
 			numHistos, 1<< xp->vinfo.depth ); 
 		numHistos = ReadNotifyExportData( xp, p, 0, flo, histo1, 
-			sizeof( XieHistogramData ), 0, &histos, &done ) 
-			/ sizeof( XieHistogramData );
+			sizeof( XieHistogramData ), 0, (char **) &histos,
+			&done ) / sizeof( XieHistogramData );
 		DrawHistogram( xp, monitor2Window, 
 			( XieHistogramData * ) histos,
 			numHistos, 1 << xp->vinfo.depth ); 

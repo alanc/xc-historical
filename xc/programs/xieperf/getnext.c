@@ -1,4 +1,4 @@
-/* $XConsortium: getnext.c,v 1.1 93/10/26 10:08:57 rws Exp $ */
+/* $XConsortium: getnext.c,v 1.2 93/10/26 18:47:37 rws Exp $ */
 
 /**** module getnext.c ****/
 /******************************************************************************
@@ -50,6 +50,7 @@ terms and conditions:
 *****************************************************************************/
 #include	<stdio.h>
 #include	<ctype.h>
+#include	<X11/Xos.h>
 
 #define MAXARGS	5
 
@@ -61,7 +62,7 @@ int	*reps;
 {
 	int	i, j, len, max;
 	char	line[ 256 ];
-	char	*args[ MAXARGS ], *cp;
+	char	*args[ MAXARGS ];
 
 otravez:				/* Spanish for 'once again'. */
 	*repeat = -1;

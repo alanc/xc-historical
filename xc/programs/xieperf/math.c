@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: math.c,v 1.1 93/10/26 10:08:10 rws Exp $ */
 
 /**** module math.c ****/
 /******************************************************************************
@@ -54,7 +54,6 @@ terms and conditions:
 static XiePhotomap XIEPhotomap;
 static XieRoi XIERoi;
 
-static XIEimage	*image;
 static int flo_notify;
 static XiePhotoElement *flograph;
 static XiePhotoflo flo;
@@ -76,7 +75,6 @@ InitMath(xp, p, reps)
 	Bool		constrain;
 	XieConstrainTechnique constrainTech;
 	int		idx;
-	int		src;
 	XieRectangle	rect;
 	int		i;
         XieLTriplet levels;
@@ -162,7 +160,7 @@ InitMath(xp, p, reps)
 		rect.width = ( ( MathParms * )p->ts )->width;
 		rect.height = ( ( MathParms * )p->ts )->height;
 
-		if ( ( XIERoi = GetXIERoi( xp, p, rect, 1 ) ) == 
+		if ( ( XIERoi = GetXIERoi( xp, p, &rect, 1 ) ) == 
 			( XieRoi ) NULL )
 		{
 			reps = 0;

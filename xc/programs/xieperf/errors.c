@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: errors.c,v 1.1 93/10/26 10:08:30 rws Exp $ */
 /**** module errors.c ****/
 /******************************************************************************
 				NOTICE
@@ -59,7 +59,6 @@ static XiePhotoflo flo;
 static int flo_elements;
 static XiePhotospace photospace;
 
-static XieLut XIELut;
 static XieRoi XIERoi;
 static XiePhotomap XIEPhotomap;
 static XieColorList clist;
@@ -138,11 +137,6 @@ FILE		*fp;
 {
     XieExtensionInfo 	 *xieExtInfo;
     XieFloAccessError    *flo_error      = (XieFloAccessError *) error;
-    XieFloResourceError	 *res_error      = (XieFloResourceError *) error;
-    XieFloDomainError	 *domain_error   = (XieFloDomainError *) error;
-    XieFloOperatorError	 *operator_error = (XieFloOperatorError *) error;
-    XieFloTechniqueError *tech_error     = (XieFloTechniqueError *) error;
-    XieFloValueError	 *value_error    = (XieFloValueError *) error;
     int	idx;
 
     GetExtensionInfo( &xieExtInfo );
@@ -188,8 +182,6 @@ XIEErrorHandler( d, ev )
 Display	*d;
 XErrorEvent *ev;
 {
-	char	mjr[ 16 ], mnr[ 16 ];
-
 	if ( showErrors == True )
 	{
 		fprintf( stderr, "X Error received: major '%d' minor '%d': ", 
@@ -417,8 +409,6 @@ XParms  xp;
 Parms   p;
 int     reps;
 {
-        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
-        char *encode_params=NULL;
 	XieLTriplet levels;
 
         flo = ( XiePhotoflo ) NULL;
@@ -475,8 +465,6 @@ XParms  xp;
 Parms   p;
 int     reps;
 {
-        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
-        char *encode_params=NULL;
 	XieLTriplet levels;
 
         flo = ( XiePhotoflo ) NULL;
@@ -570,9 +558,6 @@ XParms  xp;
 Parms   p;
 int     reps;
 {
-        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
-        char *encode_params=NULL;
-
         flo = ( XiePhotoflo ) NULL;
         flograph = ( XiePhotoElement * ) NULL;
 	XIEPhotomap = ( XiePhotomap ) NULL;
@@ -594,7 +579,7 @@ int     reps;
                 XieFloImportPhotomap(&flograph[0], XIEPhotomap, False);
 
                 XieFloExportDrawable(&flograph[1],
-                	-1,              /* source phototag number */
+                	~0,              /* source phototag number */
                         xp->w,
                         xp->fggc,
                         0,       /* x offset in window */
@@ -656,9 +641,6 @@ XParms  xp;
 Parms   p;
 int     reps;
 {
-        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
-        char *encode_params=NULL;
-
         flo = ( XiePhotoflo ) NULL;
         flograph = ( XiePhotoElement * ) NULL;
 	XIEPhotomap = ( XiePhotomap ) NULL;
@@ -703,7 +685,7 @@ int     reps;
 {
         XieLTriplet levels;
 	int	idx, cclass;
-        double 	cube;
+        int 	cube;
         XieColorAllocAllParam *color_param = NULL;
         XWindowAttributes xwa;
 
@@ -714,10 +696,10 @@ int     reps;
 #endif
         if ( !IsColorVisual( cclass ) )
                 return( 0 );
-        cube = floor( cbrt( ( double ) ( 1 << xp->vinfo.depth ) ) );
-        levels[ 0 ] = ( long ) cube;
-        levels[ 1 ] = ( long ) cube;
-        levels[ 2 ] = ( long ) cube;
+        cube = icbrt( 1 << xp->vinfo.depth );
+        levels[ 0 ] = cube;
+        levels[ 1 ] = cube;
+        levels[ 2 ] = cube;
         clist = ( XieColorList ) NULL;
         XIEPhotomap = ( XiePhotomap ) NULL;
         flograph = ( XiePhotoElement * ) NULL;
@@ -806,10 +788,8 @@ int     reps;
 {
         XieLTriplet levels;
 	int	idx, cclass;
-        double 	cube;
+        int 	cube;
         XieColorAllocAllParam *color_param = NULL;
-        XWindowAttributes xwa;
-	Colormap myCmap;
 
 #if     defined(__cplusplus) || defined(c_plusplus)
     	cclass = xp->vinfo.c_class;
@@ -819,10 +799,10 @@ int     reps;
 
         if ( !IsColorVisual( cclass ) )
                 return( 0 );
-        cube = floor( cbrt( ( double ) ( 1 << xp->vinfo.depth ) ) );
-        levels[ 0 ] = ( long ) cube;
-        levels[ 1 ] = ( long ) cube;
-        levels[ 2 ] = ( long ) cube;
+        cube = icbrt( 1 << xp->vinfo.depth );
+        levels[ 0 ] = cube;
+        levels[ 1 ] = cube;
+        levels[ 2 ] = cube;
         clist = ( XieColorList ) NULL;
         XIEPhotomap = ( XiePhotomap ) NULL;
         flograph = ( XiePhotoElement * ) NULL;
@@ -894,8 +874,6 @@ XParms  xp;
 Parms   p;
 int     reps;
 {
-        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
-        char *encode_params=NULL;
 	static GC myGC;
 
         flo = ( XiePhotoflo ) NULL;
@@ -975,7 +953,7 @@ int     reps;
                 XieFloMath(&flograph[idx],
                		idx,
                         &domain,
-                        -1,
+                        ~0,
                        	0x7 
                 );
                 idx++;

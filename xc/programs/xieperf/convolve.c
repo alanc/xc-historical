@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: convolve.c,v 1.1 93/10/26 10:08:04 rws Exp $ */
 
 /**** module convolve.c ****/
 /******************************************************************************
@@ -164,7 +164,7 @@ InitConvolve(xp, p, reps)
 			rect.width = ( ( ConvolveParms * )p->ts )->width;
 			rect.height = ( ( ConvolveParms * )p->ts )->height;
 
-			if ( ( XIERoi = GetXIERoi( xp, p, rect, 1 ) ) == 
+			if ( ( XIERoi = GetXIERoi( xp, p, &rect, 1 ) ) == 
 				( XieRoi ) NULL )
 			{
 				reps = 0;

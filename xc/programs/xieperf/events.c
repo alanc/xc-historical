@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: events.c,v 1.1 93/10/26 10:08:23 rws Exp $ */
 /**** module events.c ****/
 /******************************************************************************
 				NOTICE
@@ -150,7 +150,7 @@ Bool	verbose;
 	int retval, xie_event;
 	long endtime, curtime, delta;
 	struct timeval tv;
-	Bool done, isXIEEvent;
+	Bool done;
 	fd_set rd;
 
 	retval = 1;
@@ -461,10 +461,6 @@ XParms	xp;
 Parms	p;
 int	reps;
 {
-        XIEimage *image;
-        XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
-        char *encode_params=NULL;
-
         flo = ( XiePhotoflo ) NULL;
         flograph = ( XiePhotoElement * ) NULL;
 

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: arith.c,v 1.1 93/10/26 10:07:51 rws Exp $ */
 
 /**** module arith.c ****/
 /******************************************************************************
@@ -186,7 +186,7 @@ InitArithmetic(xp, p, reps)
 			rect.width = ( ( ArithmeticParms * )p->ts )->width;
 			rect.height = ( ( ArithmeticParms * )p->ts )->height;
 
-			if ( ( XIERoi = GetXIERoi( xp, p, rect, 1 ) ) == 
+			if ( ( XIERoi = GetXIERoi( xp, p, &rect, 1 ) ) == 
 				( XieRoi ) NULL )
 			{
 				reps = 0;
