@@ -1,4 +1,4 @@
-/* $XConsortium: micphoto.c,v 1.5 93/11/06 15:32:57 rws Exp $ */
+/* $XConsortium: micphoto.c,v 1.6 94/01/12 20:12:05 rws Exp $ */
 /**** module micphoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -776,7 +776,7 @@ static int ActivateICPhotoUncomByPixel(flo,ped,pet)
      */
     ValueError(flo,ped,db0->format->height, return(FALSE));
   }
-  if (!src || db0->final) {
+  if (!src || db0->final && db1->final && db2->final) {
     /* free whatever we've used so far and
      * set the threshold to one byte more than whatever is left over
      */

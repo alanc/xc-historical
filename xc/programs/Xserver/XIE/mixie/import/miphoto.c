@@ -1,4 +1,4 @@
-/* $XConsortium: miphoto.c,v 1.4 93/11/06 15:34:05 rws Exp $ */
+/* $XConsortium: miphoto.c,v 1.5 94/01/12 20:12:43 rws Exp $ */
 /**** module miphoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -822,7 +822,7 @@ static int ActivateIPhotoUncomByPixel(flo,ped,pet)
      */
     ValueError(flo,ped,db0->format->height, return(FALSE));
   }
-  if(!src || db0->final) {
+  if(!src || db0->final && db1->final && db2->final) {
     /* free whatever we've used so far
      */
     FreeData(flo, pet, sbnd, final ? sbnd->maxGlobal : sbnd->current);
