@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.57 92/08/06 11:02:28 gildea Exp $
+ * $XConsortium: session.c,v 1.58 92/08/14 12:04:59 eswu Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -399,7 +399,7 @@ StartClient (verify, d, pidp, name, passwd)
 	 */
 	if (setpcred(name, NULL) == -1)
 	{
-	    LogError("can't start session, setpcred failed, errno=%d\n", errno);
+	    LogError("can't start session, setpcred for \"%s\" failed, errno=%d\n", name, errno);
 	    return (0);
 	}
 #else /* AIXV3 */
@@ -435,15 +435,15 @@ StartClient (verify, d, pidp, name, passwd)
 	home = getEnv (verify->userEnviron, "HOME");
 	if (home)
 	    if (chdir (home) == -1) {
-		LogError ("user \"%s\": no home directory \"%s\", using \"/\"\n",
-			  getEnv (verify->userEnviron, "USER"), home);
+		LogError ("user \"%s\": cannot chdir to home \"%s\" (err %d), using \"/\"\n",
+			  getEnv (verify->userEnviron, "USER"), home, errno);
 		chdir ("/");
 		verify->userEnviron = setEnv(verify->userEnviron, "HOME", "/");
 	    }
 	if (verify->argv) {
 		Debug ("executing session %s\n", verify->argv[0]);
 		execute (verify->argv, verify->userEnviron);
-		LogError ("Session execution failed %s\n", verify->argv[0]);
+		LogError ("Session \"%s\" execution failed (err %d)\n", verify->argv[0], errno);
 	} else {
 		LogError ("Session has no command/arguments\n");
 	}
@@ -454,7 +454,7 @@ StartClient (verify, d, pidp, name, passwd)
     case -1:
 	bzero(passwd, strlen(passwd));
 	Debug ("StartSession, fork failed\n");
-	LogError ("can't start session for %d, fork failed, errno=%d\n",
+	LogError ("can't start session on \"%s\", fork failed, errno=%d\n",
 		  d->name, errno);
 	return 0;
     default:
@@ -551,11 +551,11 @@ runAndWait (args, environ)
     case 0:
 	CleanUpChild ();
 	execute (args, environ);
-	LogError ("can't execute %s\n", args[0]);
+	LogError ("can't execute \"%s\" (err %d)\n", args[0], errno);
 	exit (1);
     case -1:
 	Debug ("fork failed\n");
-	LogError ("can't fork to execute %s\n", args[0]);
+	LogError ("can't fork to execute \"%s\" (err %d)\n", args[0], errno);
 	return 1;
     default:
 	while (wait (&result) != pid)
