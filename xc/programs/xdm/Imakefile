@@ -42,6 +42,7 @@ DEF_SERVER = $(BINDIR)/X
 DEF_USER_PATH = DefaultUserPath		/* no leading spaces or imake will */
 DEF_SYSTEM_PATH = DefaultSystemPath	/* indent as rule */
 BOURNE_SHELL = DefaultSystemShell
+CPP_PROGRAM = CppCmd
 RES_DEFINES = '-DDEF_SERVER_LINE=":0 secure $(DEF_SERVER) :0"' \
 		  '-DXRDB_PROGRAM="$(BINDIR)/xrdb"' \
 		  '-DDEF_SESSION="$(BINDIR)/xterm -ls"' \
@@ -50,7 +51,8 @@ RES_DEFINES = '-DDEF_SERVER_LINE=":0 secure $(DEF_SERVER) :0"' \
 		  '-DDEF_SYSTEM_SHELL="$(BOURNE_SHELL)"' \
 		  '-DDEF_FAILSAFE_CLIENT="$(BINDIR)/xterm"' \
 		  '-DDEF_XDM_CONFIG="$(XDMDIR)/xdm-config"' \
-		  '-DDEF_AUTH_FILE="$(XDMDIR)/auth-server"'
+		  '-DDEF_AUTH_FILE="$(XDMDIR)/auth-server"' \
+		  '-DCPP_PROGRAM="$(CPP_PROGRAM)"'
 
 ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES),)
 SingleProgramTarget(xdmshell,$(OBJS2),,)
