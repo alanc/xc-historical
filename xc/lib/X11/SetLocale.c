@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.20 91/04/02 19:15:01 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.21 91/04/02 20:14:05 rws Exp $
  */
 
 /*
@@ -211,18 +211,10 @@ _XSetLocale(lc_category, lc_name)
     return (xlocale);
 }
 
-#if NeedFunctionPrototypes
-char *
-_Xsetlocale(
-    int             lc_category,    /* locale category */
-    _Xconst char   *lc_name        /* locale name */
-)
-#else
 char *
 _Xsetlocale(lc_category, lc_name)
     int             lc_category;    /* locale category */
     char           *lc_name;        /* locale name */
-#endif
 {
     LockMutex(&lock);
 
