@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.34 90/03/17 09:12:30 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.35 90/03/28 19:06:06 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -420,6 +420,7 @@ miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
  					     -pWin->drawable.y);
 		(*pScreen->Intersect) (&Inside, &Inside, &pWindowPriv->SavedRegion);
 
+		/* offset of sub-window in GetImage pixmap */
 		xoff = pWin->drawable.x - pDrawable->x - sx;
 		yoff = pWin->drawable.y - pDrawable->y - sy;
 
@@ -447,7 +448,7 @@ miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
 			if (pWindowPriv->backgroundState == BackgroundPixmap ||
 			    pWindowPriv->backgroundState == BackgroundPixel)
 			miBSFillVirtualBits ((DrawablePtr) pPixmap, pGC, &Inside,
-					    -xoff, -yoff,
+					    xoff, yoff,
 					    pWindowPriv->backgroundState,
 					    pWindowPriv->background, ~0L);
 			break;
@@ -460,7 +461,7 @@ miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
 		    (*pScreen->TranslateRegion)  (&Border, -pWin->drawable.x,
 						  -pWin->drawable.y);
 		    miBSFillVirtualBits ((DrawablePtr) pPixmap, pGC, &Border,
-				    	-xoff, -yoff,
+				    	xoff, yoff,
 				    	pWin->borderIsPixel ? (int)BackgroundPixel : (int)BackgroundPixmap,
 				    	pWin->border, ~0L);
 		}
@@ -2294,7 +2295,7 @@ miBSClearBackingStore(pWin, x, y, w, h, generateExposures)
 /*
  * fill a region of the destination with virtual bits
  *
- * pRgn is offset by (x, y) into the drawable
+ * pRgn is to be translated by (x,y)
  */
 
 static void
@@ -2357,14 +2358,14 @@ miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, state, pixunion, planeMask)
 	    gcval[i++] = (XID) pixunion.pixmap;
 	    gcmask |= GCTile;
 	}
-	if (pGC->patOrg.x != -x)
+	if (pGC->patOrg.x != x)
 	{
-	    gcval[i++] = (XID) -x;
+	    gcval[i++] = (XID) x;
 	    gcmask |= GCTileStipXOrigin;
 	}
-	if (pGC->patOrg.y != -y)
+	if (pGC->patOrg.y != y)
 	{
-	    gcval[i++] = (XID) -y;
+	    gcval[i++] = (XID) y;
 	    gcmask |= GCTileStipYOrigin;
 	}
     }
@@ -2380,8 +2381,8 @@ miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, state, pixunion, planeMask)
     pBox = REGION_RECTS(pRgn);
     for (i = numRects; --i >= 0; pBox++, pRect++)
     {
-    	pRect->x = pBox->x1 - x;
-	pRect->y = pBox->y1 - y;
+    	pRect->x = pBox->x1 + x;
+	pRect->y = pBox->y1 + y;
 	pRect->width = pBox->x2 - pBox->x1;
 	pRect->height = pBox->y2 - pBox->y1;
     }
