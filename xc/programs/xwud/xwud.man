@@ -1,26 +1,22 @@
 .TH XWUD 1 "1 March 1988" "X Version 11"
 .SH NAME
-xwud - X Window System, window image undumper
+xwud - image displayer for X
 .SH SYNOPSIS
 .B "xwud"
 [-debug] [-help] [-inverse] [-in \fIfile\fP]
-[-display \fIhost\fP:\fIdisplay\fP]
+[-display \fIdisplay\fP]
 .SH DESCRIPTION
 .PP
 .I Xwud
 is an X Window System window image undumping utility.
 .I Xwud
 allows X users to display window images that were saved in a specially
-formatted window dump file.  The window  image  will  appear  at  the
+formatted dump file.  The window  image  will  appear  at  the
 coordinates of the original window from which the dump was taken.
-This is a crude version of a more advanced utility that will be released
-in the future.  Monochrome
+This is a crude version of a more advanced utility that has never
+been written.  Monochrome
 dump files are displayed on a color monitor in the default foreground and
 background colors. 
-.PP
-.B NOTE:
-Windows can only be undumped on a display have at least as many bit planes
-as the original display.
 .SH OPTIONS
 .PP
 .TP 8
@@ -29,7 +25,7 @@ Print out a short description of the allowable options.
 .PP
 .TP 8
 .B "-in \fIfile\fP"
-This argument allows the user to explicitly specify the input 
+This option allows the user to explicitly specify the input 
 file on the command line.  The default is to take input from standard in.
 .PP
 .TP 8
@@ -40,19 +36,13 @@ is `write white', whereas dump files intended eventually to be written
 to a printer are generally `write black'.
 .PP
 .TP 8
-.B "-display \fIhost\fP:\fIdisplay\fP"
-This  argument  allow  you  to  specify the host and display number on
-which to display the window dump.  For example `xwud -display orpheus:1'
-would specify that the dump will appear on display `1' on the machine
-`orpheus'.  By default,
-.I xwud
-uses the host and display number stored in the environment variable
-DISPLAY, and therefore this argument is not normally specified.
+.B "-display \fIdisplay\fP"
+This  option  allow  you  to  specify the server to connect to; see \fIX(1)\fP.
 .SH ENVIRONMENT
 .PP
 .TP 8
 .B DISPLAY
-To get default host and display number.
+To get default display.
 .SH FILES
 .PP
 .TP 8
@@ -60,9 +50,8 @@ To get default host and display number.
 X Window Dump File format definition file.
 .SH BUGS
 .PP
-Cannot always undump a XY format color dump file with the correct
-colors since the original pixel\-to\-color correspondence will be lost
-if new color\-map pixels have to be allocated.
+Does not attempt to do color translation when the destination screen
+does not have a colormap exactly matching that of the original window.
 .SH SEE ALSO
 xwd(1), xpr(1), xdpr(1), X(1)
 .SH COPYRIGHT

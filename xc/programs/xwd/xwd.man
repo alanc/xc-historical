@@ -1,6 +1,6 @@
 .TH XWD 1 "1 March 1988" "X Version 11"
 .SH NAME
-xwd - dump a image of an X window
+xwd - dump an image of an X window
 .SH SYNOPSIS
 .B "xwd"
 [-debug] [-help] [-nobdrs] [-out \fIfile\fP] [-xy]
@@ -8,9 +8,9 @@ xwd - dump a image of an X window
 .SH DESCRIPTION
 .PP
 .I Xwd
-is an X Window System window image dumping utility.
+is an X Window System window dumping utility.
 .I Xwd
-allows X users to store window images in a specially formated window dump
+allows X users to store window images in a specially formated dump
 file.  This file can then be read by various other X utilities for
 redisplay, printing, editing, formatting, archiving, image processing etc..
 The target window is selected by clicking the mouse in the desired window.
