@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunFbs.c,v 1.3 93/09/26 12:27:57 rws Exp $ */
+/* $XConsortium: sunFbs.c,v 1.4 93/10/11 11:51:24 rws Exp $ */
 
 /*
  * Copyright 1990, 1993 Massachusetts Institute of Technology
@@ -74,11 +74,17 @@ int sunScreenIndex;
 
 static unsigned long generation = 0;
 
+#if NeedFunctionPrototypes
+pointer sunMemoryMap (
+    size_t	len,
+    off_t	off,
+    int		fd)
+#else
 pointer sunMemoryMap (len, off, fd)
     size_t	len;
     off_t	off;
     int		fd;
-
+#endif
 {
     int		pagemask, mapsize;
     caddr_t	addr;
@@ -121,9 +127,13 @@ pointer sunMemoryMap (len, off, fd)
     return mapaddr;
 }
 
-
+#if NeedFunctionPrototypes
+Bool sunScreenAllocate (
+    ScreenPtr	pScreen)
+#else
 Bool sunScreenAllocate (pScreen)
     ScreenPtr	pScreen;
+#endif
 {
     sunScreenPtr    pPrivate;
     extern int AllocateScreenPrivateIndex();
@@ -143,9 +153,15 @@ Bool sunScreenAllocate (pScreen)
     return TRUE;
 }
 
+#if NeedFunctionPrototypes
+Bool sunSaveScreen (
+    ScreenPtr	pScreen,
+    int		on)
+#else
 Bool sunSaveScreen (pScreen, on)
     ScreenPtr	pScreen;
     int		on;
+#endif
 {
     int		state;
 
@@ -176,8 +192,13 @@ static Bool closeScreen (i, pScreen)
     return ret;
 }
 
+#if NeedFunctionPrototypes
+Bool sunScreenInit (
+    ScreenPtr	pScreen)
+#else
 Bool sunScreenInit (pScreen)
     ScreenPtr	pScreen;
+#endif
 {
     SetupScreen(pScreen);
 #ifndef XKB
@@ -210,6 +231,17 @@ Bool sunScreenInit (pScreen)
     return TRUE;
 }
 
+#if NeedFunctionPrototypes
+Bool sunInitCommon (
+    int		scrn,
+    ScreenPtr	pScrn,
+    off_t	offset,
+    Bool	(*init1)(),
+    void	(*init2)(),
+    Bool	(*cr_cm)(),
+    Bool	(*save)(),
+    int		fb_off)
+#else
 Bool sunInitCommon (scrn, pScrn, offset, init1, init2, cr_cm, save, fb_off)
     int		scrn;
     ScreenPtr	pScrn;
@@ -219,6 +251,7 @@ Bool sunInitCommon (scrn, pScrn, offset, init1, init2, cr_cm, save, fb_off)
     Bool	(*cr_cm)();
     Bool	(*save)();
     int		fb_off;
+#endif
 {
     unsigned char*	fb = sunFbs[scrn].fb;
 

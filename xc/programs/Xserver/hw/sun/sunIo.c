@@ -1,4 +1,4 @@
-/* $XConsortium: sunIo.c,v 5.16 93/10/05 15:41:17 kaleb Exp $ */
+/* $XConsortium: sunIo.c,v 5.17 93/10/11 11:51:15 rws Exp $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.
@@ -49,9 +49,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include	<sys/resource.h>
 #endif
 
-extern int      screenIsSaved;
-extern void	SaveScreens();
-
 /*-
  *-----------------------------------------------------------------------
  * ProcessInputEvents --
@@ -81,7 +78,11 @@ ProcessInputEvents ()
  *	enqueue them using the mi event queue
  */
 
-void sunEnqueueEvents ()
+void sunEnqueueEvents (
+#if NeedFunctionPrototypes
+    void
+#endif
+)
 {
     register Firm_event    *ptrEvents,    	/* Current pointer event */
 			   *kbdEvents;	    	/* Current keyboard event */
@@ -97,16 +98,11 @@ void sunEnqueueEvents ()
 			    KbdAgain;		/* need to (re)read */
     DevicePtr		    pPointer;
     DevicePtr		    pKeyboard;
-    register PtrPrivPtr     ptrPriv;
-    register KbPrivPtr	    kbdPriv;
 
     pPointer = LookupPointerDevice();
     pKeyboard = LookupKeyboardDevice();
     if (!pPointer->on || !pKeyboard->on)
 	return;
-
-    ptrPriv = (PtrPrivPtr)pPointer->devicePrivate;
-    kbdPriv = (KbPrivPtr)pKeyboard->devicePrivate;
 
     numPtrEvents = 0;
     PtrAgain = TRUE;
@@ -126,31 +122,31 @@ void sunEnqueueEvents ()
 	 * in pE and kE
 	 */
 	if ((numPtrEvents == 0) && PtrAgain) {
-	    ptrEvents = (* ptrPriv->GetEvents) (pPointer, &nPE, &PtrAgain);
+	    ptrEvents = sunMouseGetEvents (pPointer, &nPE, &PtrAgain);
 	    numPtrEvents = nPE;
 	}
 	if ((numKbdEvents == 0) && KbdAgain) {
-	    kbdEvents = (* kbdPriv->GetEvents) (pKeyboard, &nKE, &KbdAgain);
+	    kbdEvents = sunKbdGetEvents (pKeyboard, &nKE, &KbdAgain);
 	    numKbdEvents = nKE;
 	}
 	if ((numPtrEvents == 0) && (numKbdEvents == 0))
 	    break;
 	if (numPtrEvents && numKbdEvents) {
 	    if (timercmp (&kbdEvents->time, &ptrEvents->time, <)) {
-		(* kbdPriv->EnqueueEvent) (pKeyboard, kbdEvents);
+		sunKbdEnqueueEvent (pKeyboard, kbdEvents);
 		numKbdEvents--;
 		kbdEvents++;
 	    } else {
-		(* ptrPriv->EnqueueEvent) (pPointer, ptrEvents);
+		sunMouseEnqueueEvent (pPointer, ptrEvents);
 		numPtrEvents--;
 		ptrEvents++;
 	    }
 	} else if (numKbdEvents) {
-	    (* kbdPriv->EnqueueEvent) (pKeyboard, kbdEvents);
+	    sunKbdEnqueueEvent (pKeyboard, kbdEvents);
 	    numKbdEvents--;
 	    kbdEvents++;
 	} else {
-	    (* ptrPriv->EnqueueEvent) (pPointer, ptrEvents);
+	    sunMouseEnqueueEvent (pPointer, ptrEvents);
 	    numPtrEvents--;
 	    ptrEvents++;
 	}
@@ -171,7 +167,11 @@ void AbortDDX()
     (void) OsSignal (SIGIO, SIG_IGN);
 #endif
     (void) sunChangeKbdTranslation (LookupKeyboardDevice (), FALSE);
+#ifdef SVR4
     sunNonBlockConsoleOff ();
+#else
+    sunNonBlockConsoleOff (NULL);
+#endif
     for (i = 0; i < screenInfo.numScreens; i++)
     {
 	pScreen = screenInfo.screens[i];
@@ -199,12 +199,14 @@ ddxProcessArgument (argc, argv, i)
     extern Bool FbInfo;
 
 #ifndef i386 /* { */
-	struct rlimit rl;
+    struct rlimit rl;
+    /* one per client, screen, keyboard, mouse, stdin, stdout, stderr */
+    int maxfds = MAXCLIENTS + MAXSCREENS + 5;
 
-	if (getrlimit (RLIMIT_NOFILE, &rl) == 0) {
-		rl.rlim_cur = MAXCLIENTS < rl.rlim_max ? MAXCLIENTS : rl.rlim_max;
-		(void) setrlimit (RLIMIT_NOFILE, &rl);
-	}
+    if (getrlimit (RLIMIT_NOFILE, &rl) == 0) {
+	rl.rlim_cur = maxfds < rl.rlim_max ? maxfds : rl.rlim_max;
+	(void) setrlimit (RLIMIT_NOFILE, &rl);
+    }
 #endif /* } */
 #ifndef XKB
     if (strcmp (argv[i], "-ar1") == 0) {	/* -ar1 int */

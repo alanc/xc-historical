@@ -1,5 +1,5 @@
 
-/* $XConsortium: sun.h,v 5.25 93/10/11 11:51:05 rws Exp $ */
+/* $XConsortium: sun.h,v 5.26 93/10/12 11:24:54 dpw Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -57,8 +57,6 @@ extern char *getenv();
 extern int errno;
 #endif
 
-extern int gettimeofday();
-
 /* 
  * Sun specific headers Sun moved in Solaris.
  *
@@ -74,6 +72,7 @@ extern int gettimeofday();
 # include <sys/memreg.h>
 # include <stropts.h>
 # define usleep(usec) poll((struct pollfd *) 0, (size_t) 0, usec / 1000)
+# define GETTIMEOFDAY(x) gettimeofday(x)
 #else
 # include <sun/fbio.h>
 # include <sundev/kbd.h>
@@ -82,11 +81,13 @@ extern int gettimeofday();
 # include <sundev/vuid_event.h>
 # include <pixrect/pixrect.h>
 # include <pixrect/memreg.h>
+# define GETTIMEOFDAY(x) gettimeofday(x, NULL);
 extern int ioctl();
 extern int getrlimit();
 extern int setrlimit();
 extern int getpagesize();
 #endif
+extern int gettimeofday();
 
 /* 
  * Server specific headers
@@ -115,20 +116,7 @@ extern int getpagesize();
 
 #include "mipointer.h"
 
-/* 
- * you would think, for as much as these seem to be used, that they'd
- * be prototyped/declared in a header file somewhere...
- */
-extern void mieqEnqueue();
-extern Bool miDCInitialize();
-extern int cfbExpandDirectColors();
 extern int monitorResolution;
-
-/*
- * These are needed for the GX
- */
-extern Bool cfbSetupScreen();
-extern int cfbFinishScreenInit();
 
 
 /* Frame buffer devices */
@@ -178,15 +166,13 @@ extern int cfbFinishScreenInit();
  *	map_q is TRUE if the event queue for the keyboard is memory mapped.
  */
 typedef struct kbPrivate {
-    int	    	  type;           	/* Type of keyboard */
-    int           layout;		/* The layout of the keyboard */
-    int	    	  fd;	    	    	/* Descriptor open to device */
-    Firm_event	  *(*GetEvents)();  	/* Function to read events */
-    void    	  (*EnqueueEvent)();	/* Function to process an event */
-    int		  offset;		/* to be added to device keycodes */
-    Leds	  leds;			/* led save state */
-    int		  click;		/* kbd click save state */
-    Bool	  map_q;		/* TRUE if has a mapped event queue */
+    int		fd;		/* Descriptor open to device */
+    int		type;		/* Type of keyboard */
+    int		layout;		/* The layout of the keyboard */
+    int		offset;		/* to be added to device keycodes */
+    int		click;		/* kbd click save state */
+    Leds	leds;		/* last known led state */
+    Bool	map_q;		/* TRUE if has a mapped event queue */
 } KbPrivRec, *KbPrivPtr;
 
 typedef struct {
@@ -203,10 +189,8 @@ typedef struct {
  *	dx and dy are relative coordinates on that screen (they may be negative)
  */
 typedef struct ptrPrivate {
-    int	    	  fd;	    	    	/* Descriptor to device */
-    Firm_event 	  *(*GetEvents)(); 	/* Function to read events */
-    void    	  (*EnqueueEvent)();	/* Function to process an event */
-    pointer    	  devPrivate;	    	/* Field private to device */
+    int		fd;		/* Descriptor to device */
+    int		bmask;		/* Current button state */
 } PtrPrivRec, *PtrPrivPtr;
 
 typedef struct {
@@ -226,28 +210,26 @@ typedef struct {
 #define GetScreenPrivate(s)   ((sunScreenPtr) ((s)->devPrivates[sunScreenIndex].ptr))
 #define SetupScreen(s)	sunScreenPtr	pPrivate = GetScreenPrivate(s)
 
-/*
- * Frame-buffer-private info.
- *	fd  	  	file opened to the frame buffer device.
- *	info	  	description of the frame buffer -- type, height, depth,
- *	    	  	width, etc.
- *	fb  	  	pointer to the mapped image of the frame buffer. Used
- *	    	  	by the driving routines for the specific frame buffer
- *	    	  	type.
- *	parent	  	set true if the frame buffer is actually a SunWindows
- *	    	  	window.
- */
 typedef struct {
-    unsigned char *	fb;	/* Frame buffer itself */
-    int		fd;		/* frame buffer for ioctl()s, CG2 only */
-    struct fbtype info;		/* Frame buffer characteristics */
-    void	(*EnterLeave)();/* screen switch, CG4 only */
-    unsigned char *	fbPriv;	/* fbattr stuff, for the real type */
+    unsigned char*  fb;		/* Frame buffer itself */
+    int		    fd;		/* frame buffer for ioctl()s, CG2 only */
+    struct fbtype   info;	/* Frame buffer characteristics */
+    void	    (*EnterLeave)();/* screen switch, CG4 only */
+    unsigned char*  fbPriv;	/* fbattr stuff, for the real type */
 } fbFd;
 
+typedef Bool (*sunFbInitProc)(
+#if NeedFunctionPrototypes
+    int /* screen */,
+    ScreenPtr /* pScreen */,
+    int /* argc */,
+    char** /* argv */
+#endif
+);
+
 typedef struct _sunFbDataRec {
-    Bool	(*init)();	/* init procedure for this fb */
-    char	*name;		/* /usr/include/fbio names */
+    sunFbInitProc	init;	/* init procedure for this fb */
+    char*		name;	/* /usr/include/fbio names */
 } sunFbDataRec;
 
 #ifndef XKB
@@ -261,18 +243,131 @@ extern Bool		sunSwapLkeys;
 extern int		sunScreenIndex;
 extern int*		sunProtected;
 
-extern Bool		sunCursorInitialize();
-extern void		sunDisableCursor();
-extern int		sunChangeKbdTranslation();
-extern void		sunNonBlockConsoleOff();
-extern void		sunSetTimeSinceLastInputEvent();
-extern void		sunEnqueueEvents();
-extern int		sunGXInit();
-extern Bool		sunSaveScreen();
-extern Bool		sunScreenInit();
-extern pointer		sunMemoryMap();
-extern Bool		sunScreenAllocate();
-extern Bool		sunInitCommon();
+extern Bool sunCursorInitialize(
+#if NeedFunctionPrototypes
+    ScreenPtr /* pScreen */
+#endif
+);
+
+extern void sunDisableCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr /* pScreen */
+#endif
+);
+
+extern int sunChangeKbdTranslation(
+#if NeedFunctionPrototypes
+    DevicePtr /* pKeyboard */,
+    Bool /* makeTranslated */
+#endif
+);
+
+extern void sunNonBlockConsoleOff(
+#if NeedFunctionPrototypes
+#ifdef SVR4
+    void
+#else
+    char* /* arg */
+#endif
+#endif
+);
+
+extern void		sunEnqueueEvents(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern int sunGXInit(
+#if NeedFunctionPrototypes
+    ScreenPtr /* pScreen */,
+    fbFd* /* fb */
+#endif
+);
+
+extern Bool sunSaveScreen(
+#if NeedFunctionPrototypes
+    ScreenPtr /* pScreen */,
+    int /* on */
+#endif
+);
+
+extern Bool sunScreenInit(
+#if NeedFunctionPrototypes
+    ScreenPtr /* pScreen */
+#endif
+);
+
+extern pointer sunMemoryMap(
+#if NeedFunctionPrototypes
+    size_t /* len */,
+    off_t /* off */,
+    int /* fd */
+#endif
+);
+
+extern Bool sunScreenAllocate(
+#if NeedFunctionPrototypes
+    ScreenPtr /* pScreen */
+#endif
+);
+
+extern Bool sunInitCommon(
+#if NeedFunctionPrototypes
+    int /* scrn */,
+    ScreenPtr /* pScrn */,
+    off_t /* offset */,
+    Bool (* /* init1 */)(),
+    void (* /* init2 */)(),
+    Bool (* /* cr_cm */)(),
+    Bool (* /* save */)(),
+    int /* fb_off */
+#endif
+);
+
+extern Firm_event* sunKbdGetEvents(
+#if NeedFunctionPrototypes
+    DevicePtr /* pKeyboard */,
+    int* /* pNumEvents */,
+    Bool* /* pAgain */
+#endif
+);
+
+extern Firm_event* sunMouseGetEvents(
+#if NeedFunctionPrototypes
+    DevicePtr /* pMouse */,
+    int* /* pNumEvents */,
+    Bool* /* pAgain */
+#endif
+);
+
+extern void sunKbdEnqueueEvent(
+#if NeedFunctionPrototypes
+    DevicePtr /* pKeyboard */,
+    Firm_event* /* fe */
+#endif
+);
+
+extern void sunMouseEnqueueEvent(
+#if NeedFunctionPrototypes
+    DevicePtr /* pMouse */,
+    Firm_event* /* fe */
+#endif
+);
+
+extern int sunKbdProc(
+#if NeedFunctionPrototypes
+    DeviceIntPtr /* pKeyboard */,
+    int /* what */
+#endif
+);
+
+extern int sunMouseProc(
+#if NeedFunctionPrototypes
+    DeviceIntPtr /* pMouse */,
+    int /* what */
+#endif
+);
 
 /*-
  * TVTOMILLI(tv)

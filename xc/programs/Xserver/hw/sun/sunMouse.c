@@ -65,22 +65,39 @@ miPointerScreenFuncRec sunPointerScreenFuncs = {
     sunWarpCursor,
 };
 
-typedef struct {
-    int	    bmask;	    /* Current button state */
-} SunMsPrivRec, *SunMsPrivPtr;
-
-static void 	  	sunMouseCtrl();
-static Firm_event 	*sunMouseGetEvents();
-static void 	  	sunMouseEnqueueEvent();
-
-static SunMsPrivRec	sunMousePriv;
-
-static PtrPrivRec 	sysMousePriv = {
-    -1,				/* Descriptor to device */
-    sunMouseGetEvents,		/* Function to read events */
-    sunMouseEnqueueEvent,	/* Function to process an event */
-    (pointer)&sunMousePriv,	/* Field private to device */
+static PtrPrivRec sysMousePriv = {
+    -1,	/* Descriptor to device */
+    0	/* Current button state */
 };
+
+/*-
+ *-----------------------------------------------------------------------
+ * sunMouseCtrl --
+ *	Alter the control parameters for the mouse. Since acceleration
+ *	etc. is done from the PtrCtrl record in the mouse's device record,
+ *	there's nothing to do here.
+ *
+ * Results:
+ *	None.
+ *
+ * Side Effects:
+ *	None.
+ *
+ *-----------------------------------------------------------------------
+ */
+/*ARGSUSED*/
+static 
+#if NeedFunctionPrototypes
+void sunMouseCtrl (
+    DeviceIntPtr    device,
+    PtrCtrl*	    ctrl)
+#else
+void sunMouseCtrl (device, ctrl)
+    DeviceIntPtr    device;
+    PtrCtrl*	    ctrl;
+#endif
+{
+}
 
 /*-
  *-----------------------------------------------------------------------
@@ -101,17 +118,22 @@ static PtrPrivRec 	sysMousePriv = {
  *
  *-----------------------------------------------------------------------
  */
-int
-sunMouseProc (pMouse, what)
-    DevicePtr	  pMouse;   	/* Mouse to play with */
+#if NeedFunctionPrototypes
+int sunMouseProc (
+    DeviceIntPtr  device,
+    int	    	  what)
+#else
+int sunMouseProc (device, what)
+    DeviceIntPtr  device;   	/* Mouse to play with */
     int	    	  what;	    	/* What to do with it */
+#endif
 {
+    DevicePtr	  pMouse = (DevicePtr) device;
     register int  fd;
     int	    	  format;
     static int	  oformat;
     BYTE    	  map[4];
-    char	  *device, *getenv ();
-    extern int    AddEnabledDevice(), RemoveEnabledDevice();
+    char	  *dev;
 
     switch (what) {
 	case DEVICE_INIT:
@@ -122,11 +144,11 @@ sunMouseProc (pMouse, what)
 	    if (sysMousePriv.fd >= 0) {
 		fd = sysMousePriv.fd;
 	    } else {
-		if (!(device = getenv ("MOUSE")))
-		    device = "/dev/mouse";
-		if ((fd = open (device, O_RDWR, 0)) == -1) {
+		if (!(dev = getenv ("MOUSE")))
+		    dev = "/dev/mouse";
+		if ((fd = open (dev, O_RDWR, 0)) == -1) {
 		    Error ("sunMouseProc");
-		    ErrorF ("opening %s", device);
+		    ErrorF ("opening %s", dev);
 		    return !Success;
 		}
 		if (fcntl (fd, F_SETFL, FNDELAY | FASYNC) == -1
@@ -140,7 +162,6 @@ sunMouseProc (pMouse, what)
 		}
 		sysMousePriv.fd = fd;
 	    }
-	    sunMousePriv.bmask = 0;
 	    pMouse->devicePrivate = (pointer) &sysMousePriv;
 	    pMouse->on = FALSE;
 	    map[1] = 1;
@@ -163,6 +184,7 @@ sunMouseProc (pMouse, what)
 		Error ("sunMouseProc ioctl VUIDSFORMAT");
 		return !Success;
 	    }
+	    sysMousePriv.bmask = 0;
 	    AddEnabledDevice (((PtrPrivPtr)pMouse->devicePrivate)->fd);
 	    pMouse->on = TRUE;
 	    break;
@@ -180,29 +202,7 @@ sunMouseProc (pMouse, what)
     }
     return (Success);
 }
-	    
-/*-
- *-----------------------------------------------------------------------
- * sunMouseCtrl --
- *	Alter the control parameters for the mouse. Since acceleration
- *	etc. is done from the PtrCtrl record in the mouse's device record,
- *	there's nothing to do here.
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	None.
- *
- *-----------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static void
-sunMouseCtrl (pMouse)
-    DevicePtr	  pMouse;
-{
-}
-
+    
 /*-
  *-----------------------------------------------------------------------
  * sunMouseGetEvents --
@@ -217,11 +217,18 @@ sunMouseCtrl (pMouse)
  *	None.
  *-----------------------------------------------------------------------
  */
-static Firm_event *
-sunMouseGetEvents (pMouse, pNumEvents, pAgain)
+
+#if NeedFunctionPrototypes
+Firm_event* sunMouseGetEvents (
+    DevicePtr	  pMouse,
+    int	    	  *pNumEvents,
+    Bool	  *pAgain)
+#else
+Firm_event* sunMouseGetEvents (pMouse, pNumEvents, pAgain)
     DevicePtr	  pMouse;	    /* Mouse to read */
     int	    	  *pNumEvents;	    /* Place to return number of events */
     Bool	  *pAgain;	    /* whether more might be available */
+#endif
 {
     int	    	  nBytes;	    /* number of bytes of events available. */
     register PtrPrivPtr	  pPriv;
@@ -294,20 +301,24 @@ MouseAccelerate (pMouse, delta)
  *
  *-----------------------------------------------------------------------
  */
-static void
-sunMouseEnqueueEvent (pMouse, fe)
+
+#if NeedFunctionPrototypes
+void sunMouseEnqueueEvent (
+    DevicePtr	  pMouse,
+    Firm_event	  *fe)
+#else
+void sunMouseEnqueueEvent (pMouse, fe)
     DevicePtr	  pMouse;   	/* Mouse from which the event came */
     Firm_event	  *fe;	    	/* Event to process */
+#endif
 {
     xEvent		xE;
-    register PtrPrivPtr	pPriv;	/* Private data for pointer */
-    register SunMsPrivPtr pSunPriv; /* Private data for mouse */
-    register int  	bmask;	/* Temporary button mask */
-    register unsigned long  time;
+    PtrPrivPtr		pPriv;	/* Private data for pointer */
+    int			bmask;	/* Temporary button mask */
+    unsigned long	time;
     int			x, y;
 
     pPriv = (PtrPrivPtr)pMouse->devicePrivate;
-    pSunPriv = (SunMsPrivPtr) pPriv->devPrivate;
 
     time = xE.u.keyButtonPointer.time = TVTOMILLI(fe->time);
 
@@ -325,16 +336,16 @@ sunMouseEnqueueEvent (pMouse, fe)
 	xE.u.u.detail = (fe->id - MS_LEFT) + 1;
 	bmask = 1 << xE.u.u.detail;
 	if (fe->value == VKEY_UP) {
-	    if (pSunPriv->bmask & bmask) {
+	    if (pPriv->bmask & bmask) {
 		xE.u.u.type = ButtonRelease;
-		pSunPriv->bmask &= ~bmask;
+		pPriv->bmask &= ~bmask;
 	    } else {
 		return;
 	    }
 	} else {
-	    if ((pSunPriv->bmask & bmask) == 0) {
+	    if ((pPriv->bmask & bmask) == 0) {
 		xE.u.u.type = ButtonPress;
-		pSunPriv->bmask |= bmask;
+		pPriv->bmask |= bmask;
 	    } else {
 		return;
 	    }

@@ -1,4 +1,4 @@
-/* $XConsortium: sunCursor.c,v 5.14 93/08/06 11:48:54 kaleb Exp $ */
+/* $XConsortium: sunCursor.c,v 5.15 93/09/03 20:58:47 kaleb Exp $ */
 /*-
  * sunCursor.c --
  *	Functions for maintaining the Sun software cursor...
@@ -193,9 +193,13 @@ extern miPointerScreenFuncRec	sunPointerScreenFuncs;
 
 #endif
 
-Bool
-sunCursorInitialize (pScreen)
+#if NeedFunctionPrototypes
+Bool sunCursorInitialize (
+    ScreenPtr	pScreen)
+#else
+Bool sunCursorInitialize (pScreen)
     ScreenPtr	pScreen;
+#endif
 {
 #ifdef FBIOGCURMAX
     SetupCursor (pScreen);
@@ -219,8 +223,13 @@ sunCursorInitialize (pScreen)
 #endif
 }
 
+#if NeedFunctionPrototypes
+void sunDisableCursor (
+    ScreenPtr	pScreen)
+#else
 void sunDisableCursor (pScreen)
     ScreenPtr	pScreen;
+#endif
 {
 #ifdef FBIOGCURMAX
     SetupCursor (pScreen);

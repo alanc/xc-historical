@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunCfb.c,v 1.3 93/08/31 18:46:44 kaleb Exp $ */
+/* $XConsortium: sunCfb.c,v 1.4 93/09/26 10:05:14 rws Exp $ */
 
 /*
  * Copyright 1990 Massachusetts Institute of Technology
@@ -296,8 +296,7 @@ static void CG2UpdateColormap(pScreen, index, count, rmap, gmap,bmap)
     regp->update_cmap = 1;
 }
 
-static Bool
-CG2SaveScreen (pScreen, on)
+static Bool CG2SaveScreen (pScreen, on)
     ScreenPtr	  pScreen;
     int    	  on;
 {
@@ -320,10 +319,10 @@ static void CG2ScreenInit (pScreen)
 }
 
 Bool sunCG2Init (screen, pScreen, argc, argv)
-    int	    	  screen;    	/* what screen am I going to be */
-    ScreenPtr	  pScreen;  	/* The Screen to initialize */
-    int	    	  argc;	    	/* The number of the Server's arguments. */
-    char    	  **argv;   	/* The arguments themselves. Don't change! */
+    int		screen;    	/* what screen am I going to be */
+    ScreenPtr	pScreen;  	/* The Screen to initialize */
+    int		argc;	    	/* The number of the Server's arguments. */
+    char**	argv;   	/* The arguments themselves. Don't change! */
 {
     sunScreenPtr    pPrivate;
     int		i;
@@ -382,10 +381,10 @@ static void CG4Switch (pScreen, select)
 }
 
 Bool sunCG4Init (screen, pScreen, argc, argv)
-    int	    	  screen;    	/* what screen am I going to be */
-    ScreenPtr	  pScreen;  	/* The Screen to initialize */
-    int	    	  argc;	    	/* The number of the Server's arguments. */
-    char    	  **argv;   	/* The arguments themselves. Don't change! */
+    int		screen;    	/* what screen am I going to be */
+    ScreenPtr	pScreen;  	/* The Screen to initialize */
+    int		argc;	    	/* The number of the Server's arguments. */
+    char**	argv;   	/* The arguments themselves. Don't change! */
 {
     checkMono (argc, argv);
     sunFbs[screen].EnterLeave = CG4Switch;
@@ -400,10 +399,10 @@ Bool sunCG4Init (screen, pScreen, argc, argv)
 #define CG6_IMAGE_OFFSET 0x16000
 
 Bool sunCG6Init (screen, pScreen, argc, argv)
-    int	    	  screen;    	/* The index of pScreen in the ScreenInfo */
-    ScreenPtr	  pScreen;  	/* The Screen to initialize */
-    int	    	  argc;	    	/* The number of the Server's arguments. */
-    char    	  **argv;   	/* The arguments themselves. Don't change! */
+    int		screen;    	/* The index of pScreen in the ScreenInfo */
+    ScreenPtr	pScreen;  	/* The Screen to initialize */
+    int		argc;	    	/* The number of the Server's arguments. */
+    char**	argv;   	/* The arguments themselves. Don't change! */
 {
     pointer	fb;
 

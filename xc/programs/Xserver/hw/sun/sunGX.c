@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: sunGX.c,v 1.20 93/09/25 22:29:45 rws Exp $";
+static char *rid="$XConsortium: sunGX.c,v 1.21 93/09/26 10:19:38 rws Exp $";
 #endif /* lint */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
@@ -549,7 +549,6 @@ RegionPtr sunGXCopyPlane(pSrcDrawable, pDstDrawable,
     unsigned long	bitPlane;
 {
     RegionPtr		ret;
-    extern RegionPtr    miHandleExposures();
     int			(*doBitBlt)();
 
     if (pSrcDrawable->bitsPerPixel == 1 && pDstDrawable->bitsPerPixel == 8)
@@ -2449,7 +2448,6 @@ sunGXValidateGC (pGC, changes, pDrawable)
  	{
 	    if (!pGC->ops->devPrivate.val)
 	    {
-		extern GCOps	*cfbCreateOps();
 		pGC->ops = cfbCreateOps (pGC->ops);
 		pGC->ops->devPrivate.val = 1;
 	    }
@@ -2929,9 +2927,15 @@ sunGXCopyWindow(pWin, ptOldOrg, prgnSrc)
     (* pWin->drawable.pScreen->RegionDestroy)(prgnDst);
 }
 
+#if NeedFunctionPrototypes
+sunGXInit (
+    ScreenPtr	pScreen,
+    fbFd	*fb)
+#else
 sunGXInit (pScreen, fb)
     ScreenPtr	pScreen;
     fbFd	*fb;
+#endif
 {
     sunGXPtr	    gx;
     Uint	    mode;

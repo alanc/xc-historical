@@ -1,4 +1,4 @@
-/* $XConsortium: sunInit.c,v 5.37 93/09/30 13:40:33 rws Exp $ */
+/* $XConsortium: sunInit.c,v 5.38 93/10/11 11:51:21 rws Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -42,29 +42,21 @@ PROFITS,  WHETHER  IN  AN  ACTION OF CONTRACT, NEGLIGENCE OR
 OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-********************************************************/
+*******************************************************/
 
 #include    "sun.h"
-
-extern int sunMouseProc();
-extern int sunKbdProc();
-#ifndef i386 /* { */
-extern Bool sunBW2Init();
-#endif /* } */
-#ifndef MONO_ONLY /* { */
-extern Bool sunCG3Init();
-#ifndef i386 /* { */
-extern Bool sunCG2Init();
-extern Bool sunCG4Init();
-#endif /* } */
-#ifdef FBTYPE_SUNFAST_COLOR /* { */
-extern Bool sunCG6Init();
-#endif /* } */
-#endif /* } */
 
 #ifdef i386 /* { */
 #define BW2I NULL
 #else /* }{ */
+extern Bool sunBW2Init(
+#if NeedFunctionPrototypes
+    int /* screen */,
+    ScreenPtr /* pScreen */,
+    int /* argc */,
+    char** /* argv */
+#endif
+);
 #define BW2I sunBW2Init
 #endif /* } */
 #ifdef MONO_ONLY /* { */
@@ -73,15 +65,47 @@ extern Bool sunCG6Init();
 #define CG4I NULL
 #define CG6I NULL
 #else /* }{ */
+extern Bool sunCG3Init(
+#if NeedFunctionPrototypes
+    int /* screen */,
+    ScreenPtr /* pScreen */,
+    int /* argc */,
+    char** /* argv */
+#endif
+);
 #define CG3I sunCG3Init
 #ifdef i386 /* { */
 #define CG2I NULL
 #define CG4I NULL
 #else /* }{ */
+extern Bool sunCG2Init(
+#if NeedFunctionPrototypes
+    int /* screen */,
+    ScreenPtr /* pScreen */,
+    int /* argc */,
+    char** /* argv */
+#endif
+);
 #define CG2I sunCG2Init
+extern Bool sunCG4Init(
+#if NeedFunctionPrototypes
+    int /* screen */,
+    ScreenPtr /* pScreen */,
+    int /* argc */,
+    char** /* argv */
+#endif
+);
 #define CG4I sunCG4Init
 #endif /* } */
 #ifdef FBTYPE_SUNFAST_COLOR /* { */
+extern Bool sunCG6Init(
+#if NeedFunctionPrototypes
+    int /* screen */,
+    ScreenPtr /* pScreen */,
+    int /* argc */,
+    char** /* argv */
+#endif
+);
 #define CG6I sunCG6Init
 #else /* }{ */
 #define CG6I NULL
@@ -167,7 +191,7 @@ static PixmapFormatRec	formats[] = {
 #define NUMFORMATS	(sizeof formats)/(sizeof formats[0])
 
 /*
- * sunOpenFrameBuffer --
+ * OpenFrameBuffer --
  *	Open a frame buffer according to several rules.
  *	Find the device to use by looking in the sunFbData table,
  *	an XDEVICE envariable, a -dev switch or using /dev/fb if trying
@@ -176,8 +200,7 @@ static PixmapFormatRec	formats[] = {
  * Results:
  *	The fd of the framebuffer.
  */
-static 
-int OpenFrameBuffer(device, screen)
+static int OpenFrameBuffer(device, screen)
     char		*device;	/* e.g. "/dev/cgtwo0" */
     int			screen;    	/* what screen am I going to be */
 {
@@ -278,12 +301,15 @@ static void SigIOHandler(sig)
  *
  *-----------------------------------------------------------------------
  */
+void sunNonBlockConsoleOff(
+#if NeedFunctionPrototypes
 #ifdef SVR4
-void sunNonBlockConsoleOff()
+    void
 #else
-void sunNonBlockConsoleOff(arg)
-    char *arg;
+    char* arg
 #endif
+#endif
+)
 {
     register int i;
 
@@ -292,8 +318,7 @@ void sunNonBlockConsoleOff(arg)
 	(void) fcntl(2, F_SETFL, i & ~FNDELAY);
 }
 
-static
-char **GetDeviceList (argc, argv)
+static char** GetDeviceList (argc, argv)
     int		argc;
     char	**argv;
 {
