@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.35 91/06/16 16:25:21 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.36 91/07/02 13:13:12 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -1366,8 +1366,8 @@ double	dy, dx;
 	    return 135.0;
 	} else {
 	    if (dx > 0)
-		return 225.0;
-	    return 315.0;
+		return 315.0;
+	    return 225.0;
 	}
     } else {
 	return atan2 (dy, dx) * (180.0 / M_PI);
