@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.18 93/05/13 15:14:24 converse Exp $ */
+/* $XConsortium: TMaction.c,v 1.19 93/06/22 08:16:11 kaleb Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -419,6 +419,7 @@ static void RemoveFromBindCache(w,procs)
     Widget		w;
     XtActionProc 	*procs;
 {
+    XtAppContext	app = XtWidgetToApplicationContext (w);
     TMClassCache	classCache = GetClassCache(w);
     TMBindCache		*bindCachePtr = (TMBindCache *)&classCache->bindCache;
     TMBindCache		bindCache;
@@ -448,7 +449,8 @@ static void RemoveFromBindCache(w,procs)
 			_XtGlobalTM.numBindCache--;
 #endif /* TRACE_TM */
 		      *bindCachePtr = bindCache->next;
-		      XtFree((XtPointer)bindCache);
+		      bindCache->next = app->free_bindings;
+		      app->free_bindings = bindCache;
 		  }
 		break;
 	    }
@@ -958,4 +960,14 @@ void XtCallActionProc(widget, action, event, params, num_params)
     }
 }
 
+void _XtDoFreeBindings(app)
+    XtAppContext app;
+{
+    TMBindCache bcp;
 
+    while (app->free_bindings) {
+	bcp = app->free_bindings->next;
+	XtFree ((char *) app->free_bindings);
+	app->free_bindings = bcp;
+    }
+}
