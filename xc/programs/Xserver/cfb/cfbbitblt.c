@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.25 90/01/10 11:50:56 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.26 90/01/10 19:51:35 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -690,7 +690,6 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
     int dstx, dsty;
 {
     RegionPtr prgnSrcClip;	/* may be a new region, or just a copy */
-    RegionRec rgnSrcRec;
     Bool freeSrcClip = FALSE;
 
     RegionPtr prgnExposed;
@@ -821,9 +820,7 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 	{
 	    if (!fastClip)
 		(*pGC->pScreen->RegionUninit)(&rgnDst);
-	    if (prgnSrcClip == &rgnSrcRec)
-		(*pGC->pScreen->RegionUninit)(prgnSrcClip);
-	    else if (freeSrcClip)
+	    if (freeSrcClip)
 		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
 	    return NULL;
 	}
@@ -897,9 +894,7 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 						  sizeof(DDXPointRec))))
 	{
 	    (*pGC->pScreen->RegionUninit)(&rgnDst);
-	    if (prgnSrcClip == &rgnSrcRec)
-		(*pGC->pScreen->RegionUninit)(prgnSrcClip);
-	    else if (freeSrcClip)
+	    if (freeSrcClip)
 		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
 	    return NULL;
 	}
@@ -930,9 +925,7 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 				  origDest.x, origDest.y, (unsigned long)0);
     }
     (*pGC->pScreen->RegionUninit)(&rgnDst);
-    if (prgnSrcClip == &rgnSrcRec)
-	(*pGC->pScreen->RegionUninit)(prgnSrcClip);
-    else if (freeSrcClip)
+    if (freeSrcClip)
 	(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
     return prgnExposed;
 }
