@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 2.27 92/07/31 17:19:05 rws Exp $
+XCOMM $XConsortium: Imakefile,v 2.28 93/03/15 13:56:01 rws Exp $
 #ifndef X11perfcompLib
 #define X11perfcompLib $(LIBDIR)/x11perfcomp
 #endif
@@ -23,7 +23,7 @@ XCOMM $XConsortium: Imakefile,v 2.27 92/07/31 17:19:05 rws Exp $
 		  do_triangles.o do_complex.o do_traps.o
 LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
         DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
-  SYS_LIBRARIES = -lm
+  SYS_LIBRARIES = MathLibrary
 
 ComplexProgramTarget(x11perf)
 
