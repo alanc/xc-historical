@@ -1,4 +1,4 @@
-/* $XConsortium: utils.c,v 1.6 91/07/16 20:22:33 keith Exp $ */
+/* $XConsortium: utils.c,v 1.7 91/07/25 12:15:52 keith Exp $ */
 /*
  * misc os utilities
  */
@@ -44,10 +44,12 @@
 #endif /* X_NOT_POSIX */
 #ifndef PATH_MAX
 #include <sys/param.h>
+#ifndef PATH_MAX
 #ifdef MAXPATHLEN
 #define PATH_MAX MAXPATHLEN
 #else
 #define PATH_MAX 1024
+#endif
 #endif
 #endif /* PATH_MAX */
 

@@ -1,4 +1,4 @@
-/* $XConsortium: error.c,v 1.2 91/07/31 01:09:50 keith Exp $ */
+/* $XConsortium: error.c,v 1.3 91/08/16 16:20:23 rws Exp $ */
 /*
  * error message handling
  */
@@ -41,10 +41,12 @@
 #endif
 #ifndef PATH_MAX
 #include <sys/param.h>
+#ifndef PATH_MAX
 #ifdef MAXPATHLEN
 #define PATH_MAX MAXPATHLEN
 #else
 #define PATH_MAX 1024
+#endif
 #endif
 #endif
 
