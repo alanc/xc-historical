@@ -44,9 +44,6 @@ Things to check before building:
 2)	config/Project.tmpl - check LIBDIR, FONTDIR, etc.; set 
 	define LibDir, FontDir, etc. in site.def as required.
 
-3)	If you want to use X on top of suntools or NeWS, change
-	UseSunWindowsInServer to YES in config/sun.cf.
-
 
 
 Then build the system by:
@@ -68,10 +65,8 @@ Then build the system by:
 	the hierarchy.
 
 
-3)	Exit suntools or whatever other window system you use.
 
-
-4)	On the console, or from an rlogin connection, put whatever you
+3)	On the console, or from an rlogin connection, put whatever you
 	chose for BINDIR (in Imake.tmpl) in your search path, and then
 	start the server:
 
@@ -84,7 +79,7 @@ Then build the system by:
 
 	    xinit >& /tmp/x11.out
 
-5)	xinit should start up an xterm window that acts as a console.  When
+4)	xinit should start up an xterm window that acts as a console.  When
 	this xterm terminates, the xinit will kill the server.  You can also
 	start up client programs from a terminal or rlogin, but you must
 	first set the DISPLAY environment variable:
@@ -93,29 +88,23 @@ Then build the system by:
 	    xterm &
 
 
-6)	Make sure that you have special devices in /dev for the appropriate 
+5)	Make sure that you have special devices in /dev for the appropriate 
 	framebuffer.  See the manual page for Xsun for details or run the
-	constype program.
+	constype program. VME systems require special .o files when more
+        than one of a particular frame buffer type is installed.
 
 
-7)	In general,  Xsun auto-configures to use all the available framebuffers
+6)	In general,  Xsun auto-configures to use all the available framebuffers
 	(see the Xsun manual page).  In some circumstances, you may need to 
 	use the -dev switch on the command line to specify a specific device
 	to use.  In particular, on the GP, GP+, and GP2, you'll need to
 	specify -dev /dev/cgtwo0 your xdm Xservers file or your xinit script.
 
 
-8)	To shut the server down,  send it a Hangup or Terminate signal.
+7)	To shut the server down,  send it a Hangup or Terminate signal.
 
 
-9)	Xsun coexists with the SunWindows environment.  If you run Xsun
-	from a shell window under suntools, then Xsun will overlay that
-	desktop.  If you have two desktops, then 'adjacentscreens' will still
-	be in effect.  You may want to redirect the output of the server to a
-	window that is visible on another desktop.
-
-
-10)	If X crashes, it will leave the keyboard in a funny state.  There is a
+8)	If X crashes, it will leave the keyboard in a funny state.  There is a
 	program called "kbd_mode" that will reset the mode of the keyboard.
 	"kbd_mode -a" is the appropriate setting for the bare console, and
 	"kbd_mode -e" is the appropriate setting for running with SunWindows.
