@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.7 89/09/05 08:21:34 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.8 89/09/09 19:03:54 rws Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -312,10 +312,10 @@ miZeroArcPts(arc, pts)
     }
 
 static void
-miZeroArcDashPts(pGC, arc, points, max, evenPts, oddPts)
+miZeroArcDashPts(pGC, arc, points, maxPts, evenPts, oddPts)
     GCPtr pGC;
     register xArc *arc;
-    int max;
+    int maxPts;
     register DDXPointPtr points, *evenPts, *oddPts;
 {
     miZeroArcRec info;
@@ -329,7 +329,7 @@ miZeroArcDashPts(pGC, arc, points, max, evenPts, oddPts)
     int i, delta, ptsdelta, seg, startseg;
 
     for (i = 0; i < 4; i++)
-	circPts[i] = points + (i * max);
+	circPts[i] = points + (i * maxPts);
     miZeroArcSetup(arc, &info);
     x = info.x;
     y = info.y;
@@ -410,7 +410,7 @@ miZeroArcDashPts(pGC, arc, points, max, evenPts, oddPts)
     for (i = 0; i < 5; i++)
     {
 	seg = (startseg + i) & 3;
-	pt = points + (seg * max);
+	pt = points + (seg * maxPts);
 	if (seg == startseg)
 	{
 	    if (seg & 1)
@@ -482,7 +482,7 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
     xArc	*parcs;
 {
     int maxPts = 0;
-    int n, max;
+    int n, maxw;
     register xArc *arc;
     register int i;
     DDXPointPtr points, pts, oddPts;
@@ -515,7 +515,7 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
 	widths = (int *)ALLOCATE_LOCAL(sizeof(int) * numPts);
 	if (!widths)
 	    return;
-	max = 0;
+	maxw = 0;
     }
     if (pGC->lineStyle != LineSolid)
 	numPts <<= 1;
@@ -545,10 +545,10 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
 		(*pGC->ops->PolyPoint)(pDraw, pGC, CoordModeOrigin, n, points);
 	    else
 	    {
-		if (n > max)
+		if (n > maxw)
 		{
-		    while (max < n)
-			widths[max++] = 1;
+		    while (maxw < n)
+			widths[maxw++] = 1;
 		}
 		if (pGC->miTranslate)
 		{
@@ -575,10 +575,10 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
 		(*pGC->ops->PolyPoint)(pDraw, pGC, CoordModeOrigin, n, oddPts);
 	    else
 	    {
-		if (n > max)
+		if (n > maxw)
 		{
-		    while (max < n)
-			widths[max++] = 1;
+		    while (maxw < n)
+			widths[maxw++] = 1;
 		}
 		if (pGC->miTranslate)
 		{
