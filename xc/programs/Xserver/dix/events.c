@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.126 87/12/05 12:32:34 rws Locked $ */
+/* $Header: events.c,v 1.127 87/12/10 14:11:06 rws Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1442,7 +1442,7 @@ ProcessPointerEvent (xE, mouse)
     if (moveIt)
 	(*currentScreen->SetCursorPosition)(
 	    currentScreen, xE->u.keyButtonPointer.rootX,
-	    xE->u.keyButtonPointer.rootY, FALSE); /* XXX */
+	    xE->u.keyButtonPointer.rootY, FALSE);
     if (mouse->sync.frozen)
     {
 	EnqueueEvent(mouse, xE);
