@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.145 90/04/03 10:51:15 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.146 90/04/04 11:28:05 swick Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif /* lint */
 
@@ -262,6 +262,7 @@ static void UnrealizeWidget(widget)
     register CompositeWidget	cw;
     register Cardinal		i;
     register WidgetList		children;
+    extern void _XtTranslateEvent();
 
     if (!XtIsWidget(widget) || !XtIsRealized(widget)) return;
 
@@ -289,15 +290,16 @@ static void UnrealizeWidget(widget)
     _XtUnregisterWindow(XtWindow(widget), widget);
 
     /* Remove Event Handlers */
-    /* remove async handlers, how? */
     /* remove grabs. Happens automatically when window is destroyed. */
 
     /* Destroy X Window, done at outer level with one request */
     widget->core.window = NULL;
 
-    /* Unbind actions? Nope, we check in realize to see if done. */
-    /* Uninstall Translations? */
-    XtUninstallTranslations(widget);
+    /* Removing the event handler here saves having to keep track if
+     * the translation table is changed while the widget is unrealized.
+     */
+    XtRemoveEventHandler(widget, XtAllEvents, TRUE, _XtTranslateEvent,
+			 (XtPointer)&widget->core.tm);
 
 } /* UnrealizeWidget */
 
