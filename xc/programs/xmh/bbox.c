@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] = 
-    "$XConsortium: bbox.c,v 2.22 89/05/11 19:26:47 converse Exp $";
+    "$XConsortium: bbox.c,v 2.23 89/06/28 16:44:49 converse Exp $";
 #endif
 /*
  *
@@ -115,13 +115,13 @@ int position;			/* Position to put button in box. */
 int enabled;			/* Whether button is initially enabled. */
 {
     extern void DoButtonPress();
+    extern void MenuAddEntry();
     extern void MenuCreate();
     Button button;
     int i;
     static XtCallbackRec callback[] = { {DoButtonPress, NULL}, {NULL, NULL} };
-    static XtCallbackRec menu_callback[] = { {MenuCreate, NULL}, {NULL, NULL} };
-    Arg arglist[3];
-    char	menuName[500];
+    Arg arglist[5];
+    char	menuName[300];
 
     /* Don't create new buttons for subfolders */
 
@@ -131,7 +131,7 @@ int enabled;			/* Whether button is initially enabled. */
 	    c[0] = '\0';
 	    button = BBoxFindButtonNamed(buttonbox, name);
 	    c[0] = '/';
-	    MenuAddEntry(button, c + 1);
+	    MenuAddEntry(button, name);
 	    return;
 	}
     }
@@ -163,18 +163,18 @@ int enabled;			/* Whether button is initially enabled. */
 	XtSetArg(arglist[i], XtNradioData, button->name);	i++;
     }
     else if (buttonbox->button_type == commandWidgetClass) {
+	callback[0].callback = (XtCallbackProc) DoButtonPress;
 	callback[0].closure = (caddr_t)button;
 	XtSetArg(arglist[i], XtNcallback, callback);		i++;
     }
     else if (buttonbox->button_type == menuButtonWidgetClass) {
 	button->menu = NULL;
-	menu_callback[0].closure = (caddr_t) button;
-	XtSetArg(arglist[i], XtNcallback, menu_callback);	i++;
+	callback[0].callback = (XtCallbackProc) MenuCreate;
+	callback[0].closure = (caddr_t) button;
+	XtSetArg(arglist[i], XtNcallback, callback);		i++;
 	strcpy(menuName, name);
 	strcpy(menuName + strlen(name), "Menu");
-	/* %%% this next MallocACopy can be removed if/when
-	   Chris fixes the MenuButton to malloc it.
-	 */
+	/* %%% MenuButton requires this malloc of the menuName */
 	XtSetArg(arglist[i], XtNmenuName, MallocACopy(menuName));	i++;   
     }
 
@@ -217,7 +217,7 @@ ButtonBox buttonbox;
 void BBoxSetMenuButton(button)
     Button button;
 {
-    SetCurFolderName(button->buttonbox->scrn, button->name);
+    SetCurrentFolderName(button->buttonbox->scrn, button->name);
 }
 
 /* Get the name of the current button in a menu button buttonbox */
@@ -389,19 +389,31 @@ Button button;
 		BBoxSetRadio(buttonbox->button[0]);
 	    }
 	    else if (buttonbox->button_type == menuButtonWidgetClass) {
-		SetCurFolderName(buttonbox->scrn, buttonbox->button[0]->name);
+		SetCurrentFolderName(buttonbox->scrn, buttonbox->button[0]->name);
 	    }
 	}
     }
 }
 
 
-BBoxDeleteMenuButtonEntry(button, menu_entry)
+BBoxDeleteMenuButtonEntry(button, foldername)
     Button	button;
-    char	*menu_entry;
+    char	*foldername;
 {
-    XawSimpleMenuRemoveEntry(button->menu, menu_entry);
-    SetCurFolderName(button->buttonbox->scrn, button->name);
+    char	name[200];
+
+    if (IsSubFolder(foldername)) {
+	char	*subfolder = GetSubFolderName(foldername);
+	if (strcmp(button->name, subfolder) == 0) {
+	    name[0] = '_';
+	    strcpy(name + 1, subfolder);
+	}
+	else strcpy(name, subfolder);
+	XtFree(subfolder);
+    }
+
+    XawSimpleMenuRemoveEntry(button->menu, name);
+    SetCurrentFolderName(button->buttonbox->scrn, button->name);
 }
 
 /* Destroy the given buttonbox. */
