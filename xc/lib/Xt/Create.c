@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Create.c,v 1.40 88/09/04 14:23:20 swick Exp $";
+    "$XConsortium: Create.c,v 1.41 88/09/04 14:33:29 swick Exp $";
 /* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
 #endif lint
 
@@ -269,7 +269,7 @@ static void RemovePopupFromParent(widget,closure,call_data)
 		"invalidParameter","removePopupFromParent","XtToolkitError",
                 "RemovePopupFromParent requires non-NULL popuplist",
                   (String *)NULL, (Cardinal *)NULL);
-    if (parent->core.being_destroyed) return;
+
     for (i=0; i<parent->core.num_popups; i++)
         if (parent->core.popup_list[i] == widget){
             found = TRUE; break;
@@ -280,6 +280,14 @@ static void RemovePopupFromParent(widget,closure,call_data)
                   "RemovePopupFromParent, widget not on parent list",
                    (String *)NULL, (Cardinal *)NULL);
         return;
+    }
+    if (parent->core.being_destroyed) {
+	/* then we're (probably) not the target of the XtDestroyWidget,
+	 * so our window won't get destroyed automatically...
+	 */
+	Window win;
+        if ((win = XtWindow(widget)) != NULL)
+	    XDestroyWindow( XtDisplay(widget), win );
     }
     parent->core.num_popups--;
     for (/*i=i*/; i<parent->core.num_popups; i++)
