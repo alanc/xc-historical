@@ -1,6 +1,7 @@
-#ifndef lint
-static char rcs_id[] = "$XConsortium: viewfuncs.c,v 2.10 88/08/22 13:14:44 swick Exp $";
-#endif lint
+#if !defined(lint) && !defined(SABER)
+static char rcs_id[] =
+    "$XConsortium: viewfuncs.c,v 2.11 88/09/06 17:23:55 jim Exp $";
+#endif
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -12,36 +13,45 @@ static char rcs_id[] = "$XConsortium: viewfuncs.c,v 2.10 88/08/22 13:14:44 swick
  * DIGITAL MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THIS SOFTWARE FOR
  * ANY PURPOSE.  IT IS SUPPLIED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY.
  *
- * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT RIGHTS,
- * APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN ADDITION TO THAT
- * SET FORTH ABOVE.
- *
+ * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
+ * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
+ * ADDITION TO THAT SET FORTH ABOVE.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
  * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting documentation,
- * and that the name of Digital Equipment Corporation not be used in advertising
- * or publicity pertaining to distribution of the software without specific,
- * written prior permission.
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Digital Equipment Corporation not be
+ * used in advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.
  */
 
-/* view.c -- handle viewing of a message */
+/* view.c -- action procedures to handle viewing of a message */
 
 #include "xmh.h"
 
 
-void ExecCloseView(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void CloseView(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     if (MsgSetScrn((Msg) NULL, scrn)) return;
     DestroyScrn(scrn);
 }
 
 
-void ExecViewReply(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void ViewReply(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     Msg msg;
     Scrn nscrn;
     if (scrn->msg == NULL) return;
@@ -55,9 +65,14 @@ Scrn scrn;
 }
 
 
-void ExecViewForward(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void ViewForward(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     MsgList mlist;
     if (scrn->msg == NULL) return;
     mlist = MakeSingleMsgList(scrn->msg);
@@ -66,9 +81,14 @@ Scrn scrn;
 }
 
 
-void ExecViewUseAsComposition(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void ViewUseAsComposition(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     Msg msg;
     Scrn nscrn;
     if (scrn->msg == NULL) return;
@@ -85,29 +105,41 @@ Scrn scrn;
 }
 
 
-
-void ExecEditView(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void EditView(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     if (scrn->msg == NULL) return;
     MsgSetEditable(scrn->msg);
 }
     
 
-
-void ExecSaveView(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void SaveView(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     if (scrn->msg == NULL) return;
     if (MsgSaveChanges(scrn->msg))
 	MsgClearEditable(scrn->msg);
 }
     
 
-
-void ExecPrintView(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void PrintView(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     char str[200];
     if (scrn->msg == NULL) return;
     (void) sprintf(str, "%s %s", app_resources.defPrintCommand,

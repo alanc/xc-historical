@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: init.c,v 2.26 89/07/07 18:04:13 converse Exp $";
+    "$XConsortium: init.c,v 2.27 89/07/09 16:21:40 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -13,18 +13,19 @@ static char rcs_id[] =
  * DIGITAL MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THIS SOFTWARE FOR
  * ANY PURPOSE.  IT IS SUPPLIED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY.
  *
- * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT RIGHTS,
- * APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN ADDITION TO THAT
- * SET FORTH ABOVE.
+ * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
+ * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
+ * ADDITION TO THAT SET FORTH ABOVE.
  *
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
  * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting documentation,
- * and that the name of Digital Equipment Corporation not be used in advertising
- * or publicity pertaining to distribution of the software without specific,
- * written prior permission.
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Digital Equipment Corporation not be
+ * used in advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.
+ *
  */
 
 /* Init.c - Handle start-up initialization. */
@@ -112,7 +113,8 @@ Syntax(call)
     char *call;
 {
     extern void exit();
-    (void)fprintf(stderr, "usage: %s [-path <path>] [-initial <folder>]\n", call);
+    (void) fprintf(stderr, "usage: %s [-path <path>] [-initial <folder>]\n",
+		   call);
     exit(2);
 }
 
@@ -142,11 +144,12 @@ static _IOErrorHandler(dpy)
     Display *dpy;
 {
     extern char* SysErrMsg();
-    fprintf (stderr,
+    (void) fprintf (stderr,
 	     "%s:\tfatal IO error after %lu requests (%lu known processed)\n",
 		    progName,
 		    NextRequest(dpy) - 1, LastKnownRequestProcessed(dpy));
-    fprintf (stderr, "\t%d unprocessed events remaining.\r\n", QLength(dpy));
+    (void) fprintf (stderr, "\t%d unprocessed events remaining.\r\n",
+		    QLength(dpy));
 
     if (errno == EPIPE) {
 	(void) fprintf (stderr,
@@ -155,6 +158,16 @@ static _IOErrorHandler(dpy)
 
     Punt("Cannot continue from server error.");
 }
+extern void
+CloseScrn(),ComposeMessage(),OpenFolder(),OpenFolderInNewWindow(),
+CreateFolder(),DeleteFolder(),Incorporate(),NextView(),PrevView(),
+MarkDelete(),MarkMove(),MarkCopy(),MarkUnmarked(),ViewNew(),TocReply(),
+TocForward(),TocUseAsComposition(),CommitChanges(),OpenSequence(),
+AddToSequence(),RemoveFromSequence(),DeleteSequence(),PickMessages(),
+PrintMessages(),Pack(),Sort(),ForceRescan(),CloseView(),ViewReply(),
+ViewForward(),ViewUseAsComposition(),EditView(),SaveView(),PrintView(),
+CompReset(),SaveDraft(),SendDraft(),MsgInsertAssoc();
+
 
 /* All the start-up initialization goes here. */
 
@@ -167,12 +180,66 @@ char **argv;
     char str[500], str2[500], *ptr;
     Scrn scrn;
     static XtActionsRec actions[] = {
-	{"open-folder", OpenFolder},
-	{"open-sequence", OpenSequence},
-        {"folder-menu", FolderMenu},
-        {"folder-button", FolderButton},
-        {"leave", Leave},
+
+			/* folderButtons action procedures */
+
+	{"CloseScrn",			CloseScrn},
+	{"ComposeMessage",		ComposeMessage},
+	{"OpenFolder",			OpenFolder},
+	{"OpenFolderInNewWindow",	OpenFolderInNewWindow},
+	{"CreateFolder",		CreateFolder},
+	{"DeleteFolder",		DeleteFolder},
+
+			/* tocButtons action procedures */
+
+	{"Incorporate",			Incorporate},
+	{"NextView",			NextView},
+	{"PrevView",			PrevView},
+	{"MarkDelete",			MarkDelete},
+	{"MarkMove",			MarkMove},
+	{"MarkCopy",			MarkCopy},
+	{"MarkUnmarked",		MarkUnmarked},
+	{"ViewNew",			ViewNew},
+	{"TocReply",			TocReply},
+	{"TocForward",			TocForward},
+	{"TocUseAsComposition",		TocUseAsComposition},
+	{"CommitChanges",		CommitChanges},
+	{"OpenSequence",		OpenSequence},
+	{"AddToSequence",		AddToSequence},
+	{"RemoveFromSequence",		RemoveFromSequence},
+	{"DeleteSequence",		DeleteSequence},
+	{"Pick",			PickMessages},
+	{"PrintMessages",		PrintMessages},
+	{"Pack",			Pack},
+	{"Sort",			Sort},
+	{"Rescan",			ForceRescan},
+
+			/* viewButtons action procedures */
+
+	{"CloseView",			CloseView},
+	{"ViewReply",			ViewReply},
+	{"ViewForward",			ViewForward},
+	{"ViewUseAsComposition",	ViewUseAsComposition},
+	{"EditView",			EditView},
+	{"SaveView",			SaveView},
+	{"PrintView",			PrintView},
+
+			/* compButtons action procedures */
+
+	/* Close button			CloseView */
+	{"CompReset",			CompReset},
+	/* Compose button 		ComposeMessage */
+	{"SaveDraft",			SaveDraft},
+	{"SendDraft",			SendDraft},
+	{"MsgInsertAssoc",		MsgInsertAssoc},
+
+			/* little messes */
+
+        {"folder-menu",			 FolderMenu},
+        {"folder-button",		 FolderButton},
+        {"leave",			 Leave},
     };
+
     static Arg shell_args[] = {
 	{XtNinput, (XtArgVal)True},
     };
@@ -204,7 +271,7 @@ char **argv;
     fid = myfopen(str, "r");
     if (fid) {
 	while (ptr = ReadLine(fid)) {
-	    strncpy(str2, ptr, 5);
+	    (void) strncpy(str2, ptr, 5);
 	    str2[5] = '\0';
 	    LowerCase(str2, str2);
 	    if (strcmp(str2, "path:") == 0) {

@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: screen.c,v 2.38 89/07/06 14:43:35 kit Exp $";
+    "$XConsortium: screen.c,v 2.39 89/07/11 16:17:27 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -13,18 +13,18 @@ static char rcs_id[] =
  * DIGITAL MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THIS SOFTWARE FOR
  * ANY PURPOSE.  IT IS SUPPLIED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY.
  *
- * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT RIGHTS,
- * APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN ADDITION TO THAT
- * SET FORTH ABOVE.
+ * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
+ * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
+ * ADDITION TO THAT SET FORTH ABOVE.
  *
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
  * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting documentation,
- * and that the name of Digital Equipment Corporation not be used in advertising
- * or publicity pertaining to distribution of the software without specific,
- * written prior permission.
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Digital Equipment Corporation not be
+ * used in advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.
  */
 
 /* scrn.c -- management of scrns. */
@@ -36,19 +36,19 @@ static char rcs_id[] =
 static FillViewButtons(scrn)
 Scrn scrn;
 {
-    extern void ExecCloseView(), ExecViewReply(), ExecViewForward();
-    extern void ExecViewUseAsComposition(), ExecEditView();
-    extern void ExecSaveView(), ExecPrintView();
+    extern void CloseView(), ViewReply(), ViewForward();
+    extern void ViewUseAsComposition(), EditView();
+    extern void SaveView(), PrintView();
     ButtonBox buttonbox = scrn->viewbuttons;
     if (scrn->tocwidget == NULL)
-	BBoxAddButton(buttonbox, "close", ExecCloseView, 999, TRUE);
-    BBoxAddButton(buttonbox, "reply", ExecViewReply, 999, TRUE);
-    BBoxAddButton(buttonbox, "forward", ExecViewForward, 999, TRUE);
-    BBoxAddButton(buttonbox, "useAsComp", ExecViewUseAsComposition, 999,
+	BBoxAddButton(buttonbox, "close", CloseView, 999, TRUE);
+    BBoxAddButton(buttonbox, "reply", ViewReply, 999, TRUE);
+    BBoxAddButton(buttonbox, "forward", ViewForward, 999, TRUE);
+    BBoxAddButton(buttonbox, "useAsComp", ViewUseAsComposition, 999,
 		  TRUE);
-    BBoxAddButton(buttonbox, "edit", ExecEditView, 999, TRUE);
-    BBoxAddButton(buttonbox, "save", ExecSaveView, 999, FALSE);
-    BBoxAddButton(buttonbox, "print", ExecPrintView, 999, TRUE);
+    BBoxAddButton(buttonbox, "edit", EditView, 999, TRUE);
+    BBoxAddButton(buttonbox, "save", SaveView, 999, FALSE);
+    BBoxAddButton(buttonbox, "print", PrintView, 999, TRUE);
 }
     
 
@@ -56,20 +56,20 @@ Scrn scrn;
 static FillCompButtons(scrn)
 Scrn scrn;
 {
-    extern void ExecCloseView();
-    extern void ExecCompReset();
-    extern void ExecComposeMessage();
-    extern void ExecSaveDraft();
-    extern void ExecSendDraft();
-    extern void ExecMsgInsertAssoc();
+    extern void CloseView();
+    extern void CompReset();
+    extern void ComposeMessage();
+    extern void SaveDraft();
+    extern void SendDraft();
+    extern void MsgInsertAssoc();
     ButtonBox buttonbox = scrn->viewbuttons;
     if (scrn->tocwidget == NULL)
-	BBoxAddButton(buttonbox, "close", ExecCloseView, 999, TRUE);
-    BBoxAddButton(buttonbox, "send", ExecSendDraft, 999, TRUE);
-    BBoxAddButton(buttonbox, "reset", ExecCompReset, 999, TRUE);
-    BBoxAddButton(buttonbox, "compose", ExecComposeMessage, 999, TRUE);
-    BBoxAddButton(buttonbox, "save", ExecSaveDraft, 999, TRUE);
-    BBoxAddButton(buttonbox, "insert", ExecMsgInsertAssoc, 999, TRUE);
+	BBoxAddButton(buttonbox, "close", CloseView, 999, TRUE);
+    BBoxAddButton(buttonbox, "send", SendDraft, 999, TRUE);
+    BBoxAddButton(buttonbox, "reset", CompReset, 999, TRUE);
+    BBoxAddButton(buttonbox, "compose", ComposeMessage, 999, TRUE);
+    BBoxAddButton(buttonbox, "save", SaveDraft, 999, TRUE);
+    BBoxAddButton(buttonbox, "insert", MsgInsertAssoc, 999, TRUE);
 }
 
 
@@ -144,33 +144,33 @@ caddr_t data, junk;
 static MakeTocAndView(scrn)
 Scrn scrn;
 {
-    extern void ExecCloseScrn();
-    extern void ExecComposeMessage();
-    extern void ExecOpenFolder();
-    extern void ExecOpenFolderInNewWindow();
-    extern void ExecCreateFolder();
-    extern void ExecDeleteFolder();
-    extern void ExecIncorporate();
-    extern void ExecNextView();
-    extern void ExecPrevView();
-    extern void ExecMarkDelete();
-    extern void ExecMarkMove();
-    extern void ExecMarkCopy();
-    extern void ExecMarkUnmarked();
-    extern void ExecViewNew();
-    extern void ExecTocReply();
-    extern void ExecTocForward();
-    extern void ExecTocUseAsComposition();
-    extern void ExecCommitChanges();
-    extern void ExecOpenSeq();
-    extern void ExecAddToSeq();
-    extern void ExecRemoveFromSeq();
-    extern void ExecPick();
-    extern void ExecDeleteSeq();
-    extern void ExecPrintMessages();
-    extern void ExecPack();
-    extern void ExecSort();
-    extern void ExecForceRescan();
+    extern void CloseScrn();
+    extern void ComposeMessage();
+    extern void OpenFolder();
+    extern void OpenFolderInNewWindow();
+    extern void CreateFolder();
+    extern void DeleteFolder();
+    extern void Incorporate();
+    extern void NextView();
+    extern void PrevView();
+    extern void MarkDelete();
+    extern void MarkMove();
+    extern void MarkCopy();
+    extern void MarkUnmarked();
+    extern void ViewNew();
+    extern void TocReply();
+    extern void TocForward();
+    extern void TocUseAsComposition();
+    extern void CommitChanges();
+    extern void OpenSequence();
+    extern void AddToSequence();
+    extern void RemoveFromSequence();
+    extern void PickMessages();
+    extern void DeleteSequence();
+    extern void PrintMessages();
+    extern void Pack();
+    extern void Sort();
+    extern void ForceRescan();
     int i, theight, min, max;
     ButtonBox buttonbox;
     static XawTextSelectType sarray[] = {XawselectLine,
@@ -200,13 +200,13 @@ Scrn scrn;
       BBoxAddButton(buttonbox, TocName(folderList[i]), NoOp, 999, TRUE);
 
     buttonbox = scrn->mainbuttons;
-    BBoxAddButton(buttonbox, "close", ExecCloseScrn, 999, TRUE);
-    BBoxAddButton(buttonbox, "compose", ExecComposeMessage, 999, TRUE);
-    BBoxAddButton(buttonbox, "open", ExecOpenFolder, 999, TRUE);
-    BBoxAddButton(buttonbox, "openInNew", ExecOpenFolderInNewWindow,
+    BBoxAddButton(buttonbox, "close", CloseScrn, 999, TRUE);
+    BBoxAddButton(buttonbox, "compose", ComposeMessage, 999, TRUE);
+    BBoxAddButton(buttonbox, "open", OpenFolder, 999, TRUE);
+    BBoxAddButton(buttonbox, "openInNew", OpenFolderInNewWindow,
 		  999, TRUE);
-    BBoxAddButton(buttonbox, "create", ExecCreateFolder, 999, TRUE);
-    BBoxAddButton(buttonbox, "delete", ExecDeleteFolder, 999, TRUE);
+    BBoxAddButton(buttonbox, "create", CreateFolder, 999, TRUE);
+    BBoxAddButton(buttonbox, "delete", DeleteFolder, 999, TRUE);
 
     buttonbox = scrn->seqbuttons;
     BBoxAddButton(buttonbox, "all", NoOp, 999, TRUE);
@@ -214,29 +214,29 @@ Scrn scrn;
     XawTextSetSelectionArray(scrn->tocwidget, sarray);
 
     buttonbox = scrn->tocbuttons;
-    BBoxAddButton(buttonbox, "inc", ExecIncorporate, 999, TRUE);
-    BBoxAddButton(buttonbox, "next", ExecNextView, 999, TRUE);
-    BBoxAddButton(buttonbox, "prev", ExecPrevView, 999, TRUE);
-    BBoxAddButton(buttonbox, "delete", ExecMarkDelete, 999, TRUE);
-    BBoxAddButton(buttonbox, "move", ExecMarkMove, 999, TRUE);
-    BBoxAddButton(buttonbox, "copy", ExecMarkCopy, 999, TRUE);
-    BBoxAddButton(buttonbox, "unmark", ExecMarkUnmarked, 999, TRUE);
-    BBoxAddButton(buttonbox, "viewNew", ExecViewNew, 999, TRUE);
-    BBoxAddButton(buttonbox, "reply", ExecTocReply, 999, TRUE);
-    BBoxAddButton(buttonbox, "forward", ExecTocForward, 999, TRUE);
-    BBoxAddButton(buttonbox, "useAsComp", ExecTocUseAsComposition,
+    BBoxAddButton(buttonbox, "inc", Incorporate, 999, TRUE);
+    BBoxAddButton(buttonbox, "next", NextView, 999, TRUE);
+    BBoxAddButton(buttonbox, "prev", PrevView, 999, TRUE);
+    BBoxAddButton(buttonbox, "delete", MarkDelete, 999, TRUE);
+    BBoxAddButton(buttonbox, "move", MarkMove, 999, TRUE);
+    BBoxAddButton(buttonbox, "copy", MarkCopy, 999, TRUE);
+    BBoxAddButton(buttonbox, "unmark", MarkUnmarked, 999, TRUE);
+    BBoxAddButton(buttonbox, "viewNew", ViewNew, 999, TRUE);
+    BBoxAddButton(buttonbox, "reply", TocReply, 999, TRUE);
+    BBoxAddButton(buttonbox, "forward", TocForward, 999, TRUE);
+    BBoxAddButton(buttonbox, "useAsComp", TocUseAsComposition,
 		  999, TRUE);
-    BBoxAddButton(buttonbox, "commit", ExecCommitChanges, 999, TRUE);
-    BBoxAddButton(buttonbox, "print", ExecPrintMessages, 999, TRUE);
-    BBoxAddButton(buttonbox, "pack", ExecPack, 999, TRUE);
-    BBoxAddButton(buttonbox, "sort", ExecSort, 999, TRUE);
-    BBoxAddButton(buttonbox, "rescan", ExecForceRescan, 999, TRUE);
-    BBoxAddButton(buttonbox, "pick", ExecPick, 999, TRUE);
-    BBoxAddButton(buttonbox, "openSeq", ExecOpenSeq, 999, TRUE);
-    BBoxAddButton(buttonbox, "addToSeq", ExecAddToSeq, 999, TRUE);
-    BBoxAddButton(buttonbox, "removeFromSeq", ExecRemoveFromSeq,
+    BBoxAddButton(buttonbox, "commit", CommitChanges, 999, TRUE);
+    BBoxAddButton(buttonbox, "print", PrintMessages, 999, TRUE);
+    BBoxAddButton(buttonbox, "pack", Pack, 999, TRUE);
+    BBoxAddButton(buttonbox, "sort", Sort, 999, TRUE);
+    BBoxAddButton(buttonbox, "rescan", ForceRescan, 999, TRUE);
+    BBoxAddButton(buttonbox, "pick", PickMessages, 999, TRUE);
+    BBoxAddButton(buttonbox, "openSeq", OpenSequence, 999, TRUE);
+    BBoxAddButton(buttonbox, "addToSeq", AddToSequence, 999, TRUE);
+    BBoxAddButton(buttonbox, "removeFromSeq", RemoveFromSequence,
 		  999, TRUE);
-    BBoxAddButton(buttonbox, "deleteSeq", ExecDeleteSeq, 999, TRUE);
+    BBoxAddButton(buttonbox, "deleteSeq", DeleteSequence, 999, TRUE);
 
     FillViewButtons(scrn);
 

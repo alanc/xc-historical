@@ -1,6 +1,7 @@
-#ifndef lint
-static char rcs_id[] = "$XConsortium: compfuncs.c,v 2.9 88/09/06 17:23:13 jim Exp $";
-#endif lint
+#if !defined(lint) && !defined(SABER)
+static char rcs_id[] =
+    "$XConsortium: compfuncs.c,v 2.10 89/06/30 15:19:27 kit Exp $";
+#endif
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -12,21 +13,20 @@ static char rcs_id[] = "$XConsortium: compfuncs.c,v 2.9 88/09/06 17:23:13 jim Ex
  * DIGITAL MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THIS SOFTWARE FOR
  * ANY PURPOSE.  IT IS SUPPLIED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY.
  *
- * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT RIGHTS,
- * APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN ADDITION TO THAT
- * SET FORTH ABOVE.
- *
+ * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
+ * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
+ * ADDITION TO THAT SET FORTH ABOVE.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
  * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting documentation,
- * and that the name of Digital Equipment Corporation not be used in advertising
- * or publicity pertaining to distribution of the software without specific,
- * written prior permission.
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Digital Equipment Corporation not be
+ * used in advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.
  */
 
-/* comp.c -- handle composition buttons. */
+/* comp.c -- action procedures to handle composition buttons. */
 
 #include "xmh.h"
 
@@ -34,9 +34,14 @@ static char rcs_id[] = "$XConsortium: compfuncs.c,v 2.9 88/09/06 17:23:13 jim Ex
 /* Reset this composition widget to be one with just a blank message
    template. */
 
-void ExecCompReset(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void CompReset(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     Msg msg;
     if (MsgSetScrn((Msg) NULL, scrn))
 	return;
@@ -52,10 +57,14 @@ Scrn scrn;
    (Code elsewhere actually makes sure this button is disabled to avoid
    sending the same message twice, but it doesn't hurt to be safe here.) */
 
-
-void ExecSendDraft(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void SendDraft(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     if (scrn->msg == NULL) return;
     if (!MsgGetReapable(scrn->msg)) {
 	MsgSend(scrn->msg);
@@ -66,9 +75,14 @@ Scrn scrn;
 
 /* Save any changes to the message.  This also makes this message permanent. */
 
-void ExecSaveDraft(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void SaveDraft(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     if (scrn->msg == NULL) return;
     MsgSetPermanent(scrn->msg);
     if (MsgSaveChanges(scrn->msg))

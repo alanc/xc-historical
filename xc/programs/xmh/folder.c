@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: folder.c,v 2.10 89/07/05 18:42:28 converse Exp $";
+    "$XConsortium: folder.c,v 2.11 89/07/07 18:04:21 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -13,24 +13,23 @@ static char rcs_id[] =
  * DIGITAL MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THIS SOFTWARE FOR
  * ANY PURPOSE.  IT IS SUPPLIED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY.
  *
- * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT RIGHTS,
- * APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN ADDITION TO THAT
- * SET FORTH ABOVE.
+ * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
+ * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
+ * ADDITION TO THAT SET FORTH ABOVE.
  *
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
  * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting documentation,
- * and that the name of Digital Equipment Corporation not be used in advertising
- * or publicity pertaining to distribution of the software without specific,
- * written prior permission.
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Digital Equipment Corporation not be
+ * used in advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.
  */
 
 /* folder.c -- implement buttons relating to folders and other globals. */
 
 #include "xmh.h"
-
 
 
 char *GetCurrentFolderName(scrn)
@@ -48,47 +47,55 @@ void SetCurrentFolderName(scrn, foldername)
     ChangeLabel((Widget) scrn->folderlabel, foldername);
 }
 
+
 char	*IsSubFolder(foldername)
     char	*foldername;
 {
     return index(foldername, '/');
 }
 
+
 char	*GetParentFolderName(foldername)
     char	*foldername;
 {
     char	temp[500];
     char	*c, *p;
-    strcpy(temp, foldername);
+    (void) strcpy(temp, foldername);
     c = index(temp, '/');
     *c = '\0';
     p = XtMalloc(strlen(temp)+1);
-    strcpy(p, temp);
+    (void) strcpy(p, temp);
     return p;
 }
+
 
 char	*GetSubFolderName(foldername)
     char	*foldername;
 {
     char	temp[500];
     char	*c, *p;
-    strcpy(temp, foldername);
+    (void) strcpy(temp, foldername);
     c = index(temp, '/');
     c++;
     p = XtMalloc(strlen(c) + 1);
-    strcpy(p, c);
+    (void) strcpy(p, c);
     return p;
 }
 
 
 /* Close this toc&view scrn.  If this is the last toc&view, quit xmh. */
 
-void ExecCloseScrn(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void CloseScrn(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     extern void exit();
     Toc toc;
-    int i, count;
+    register int i, count;
     Display *dpy;
     count = 0;
     for (i=0 ; i<numScrns ; i++)
@@ -128,32 +135,30 @@ Scrn scrn;
 
 /* Open the selected folder in this screen. */
 
-void ExecOpenFolder(scrn)
-Scrn scrn;
-{
-    Toc toc;
-    toc = SelectedToc(scrn);
-    TocSetScrn(toc, scrn);
-}
-
 /*ARGSUSED*/
 void OpenFolder(w, event, params, num_params)
-Widget w;
-XEvent *event;
-char **params;
-Cardinal num_params;
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
-    ExecOpenFolder(ScrnFromWidget(w));
+    Scrn scrn = ScrnFromWidget(w);
+    Toc toc = SelectedToc(scrn);
+    TocSetScrn(toc, scrn);
 }
 
 
 /* Compose a new message. */
 
-void ExecComposeMessage(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void ComposeMessage(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
     Msg msg;
-    scrn = NewCompScrn();
+    Scrn scrn = NewCompScrn();
     msg = TocMakeNewMsg(DraftsFolder);
     MsgLoadComposition(msg);
     MsgSetTemporary(msg);
@@ -163,14 +168,17 @@ Scrn scrn;
 }
 
 
-
 /* Make a new scrn displaying the given folder. */
 
-void ExecOpenFolderInNewWindow(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void OpenFolderInNewWindow(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
-    Toc toc;
-    toc = SelectedToc(scrn);
+    Scrn scrn = ScrnFromWidget(w);
+    Toc toc = SelectedToc(scrn);
     scrn = CreateNewScrn(STtocAndView);
     TocSetScrn(toc, scrn);
     MapScrn(scrn);
@@ -180,23 +188,32 @@ Scrn scrn;
 
 /* Create a new xmh folder. */
 
-void ExecCreateFolder(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void CreateFolder(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
-    void CreateFolder();
-    MakePrompt(scrn, "Create folder named:", CreateFolder);
+    Scrn scrn = ScrnFromWidget(w);
+    void CreateNewFolder();
+    MakePrompt(scrn, "Create folder named:", CreateNewFolder);
 }
-
 
 
 /* Delete the selected folder.  Requires confirmation! */
 
-void ExecDeleteFolder(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void DeleteFolder(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     char *foldername, str[100];
-    Toc toc;
     int i;
+    Toc toc;
     toc = SelectedToc(scrn);
     if (TocConfirmCataclysm(toc)) return;
     foldername = GetCurrentFolderName(scrn);
@@ -222,7 +239,7 @@ Scrn scrn;
 
 /* Create a new folder with the given name. */
 
-void CreateFolder(name)
+void CreateNewFolder(name)
   char *name;
 {
     Toc toc;

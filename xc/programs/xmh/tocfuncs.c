@@ -1,6 +1,7 @@
-#ifndef lint
-static char rcs_id[] = "$XConsortium: tocfuncs.c,v 2.17 89/04/10 11:50:20 converse Exp $";
-#endif lint
+#if !defined(lint) && !defined(SABER)
+static char rcs_id[] =
+    "$XConsortium: tocfuncs.c,v 2.18 89/05/31 10:37:39 swick Exp $";
+#endif
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -26,15 +27,20 @@ static char rcs_id[] = "$XConsortium: tocfuncs.c,v 2.17 89/04/10 11:50:20 conver
  * written prior permission.
  */
 
-/* tocfuncs.c -- handle things in the toc widget. */
+/* tocfuncs.c -- action procedures concerning things in the toc widget. */
 
 #include "xmh.h"
 
 #define MAX_SYSTEM_LEN 510
 
-void ExecNextView(scrn)
-  Scrn scrn;
+/*ARGSUSED*/
+void NextView(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     Toc toc = scrn->toc;
     MsgList mlist;
     FateType fate;
@@ -64,10 +70,14 @@ void ExecNextView(scrn)
 }
 
 
-
-void ExecPrevView(scrn)
-  Scrn scrn;
+/*ARGSUSED*/
+void PrevView(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     Toc toc = scrn->toc;
     MsgList mlist;
     FateType fate;
@@ -97,10 +107,14 @@ void ExecPrevView(scrn)
 }
 
 
-
-void ExecViewNew(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void ViewNew(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     Toc toc = scrn->toc;
     Scrn vscrn;
     MsgList mlist;
@@ -115,10 +129,14 @@ Scrn scrn;
 }
 
 
-
-void ExecTocForward(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void TocForward(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     Toc toc = scrn->toc;
     MsgList mlist;
     if (toc == NULL) return;
@@ -128,10 +146,14 @@ Scrn scrn;
     FreeMsgList(mlist);
 }
 
-
-void ExecTocUseAsComposition(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void TocUseAsComposition(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     Toc toc = scrn->toc;
     Scrn vscrn;
     MsgList mlist;
@@ -181,7 +203,8 @@ int skip;
 	    if (msg) {
 		MsgSetFate(msg, fate, desttoc);
 		if (skip)
-		    ExecNextView(scrn);
+		    NextView(scrn->widget, (XEvent *) NULL, (String *) NULL,
+			     (Cardinal *) NULL);
 	    }
 	} else {
 	    for (i = 0; i < mlist->nummsgs; i++)
@@ -192,47 +215,75 @@ int skip;
 }
 
 
-
-void ExecMarkDelete(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void MarkDelete(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     MarkMessages(scrn, Fdelete, app_resources.SkipDeleted);
 }
 
 
-
-void ExecMarkCopy(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void MarkCopy(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     MarkMessages(scrn, Fcopy, app_resources.SkipCopied);
 }
 
 
-void ExecMarkMove(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void MarkMove(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     MarkMessages(scrn, Fmove, app_resources.SkipMoved);
 }
 
 
-void ExecMarkUnmarked(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void MarkUnmarked(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     MarkMessages(scrn, Fignore, FALSE);
 }
 
 
-void ExecCommitChanges(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void CommitChanges(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     if (scrn->toc == NULL) return;
     TocCommitChanges(scrn->toc);
 }
 
 
-void ExecPrintMessages(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void PrintMessages(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     Toc toc = scrn->toc;
     MsgList mlist;
     char str[MAX_SYSTEM_LEN], *msg;
@@ -242,13 +293,13 @@ Scrn scrn;
     i = 0;
     if (mlist->nummsgs) {
 	while (i < mlist->nummsgs) {
-	    strcpy( str, app_resources.defPrintCommand );
+	    (void) strcpy( str, app_resources.defPrintCommand );
 	    used = strlen(str) + 2;
 	    while (i < mlist->nummsgs &&
 		   (msg = MsgFileName(mlist->msglist[i])) &&
 		   (used + (len = strlen(msg) + 1)) < MAX_SYSTEM_LEN) {
-		strcat( str, " " );
-		strcat( str, msg );
+		(void) strcat( str, " " );
+		(void) strcat( str, msg );
 		used += len;
 		i++;
 	    }
@@ -263,10 +314,14 @@ Scrn scrn;
 }
 
 
-
-void ExecPack(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void Pack(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     Toc toc = scrn->toc;
     char **argv;
     if (toc == NULL) return;
@@ -283,10 +338,14 @@ Scrn scrn;
 }
 
 
-
-void ExecSort(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void Sort(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     Toc toc = scrn->toc;
     char **argv;
     if (toc == NULL) return;
@@ -303,10 +362,14 @@ Scrn scrn;
 
 
 
-
-void ExecForceRescan(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void ForceRescan(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     Toc toc = scrn->toc;
     if (toc == NULL) return;
     TocForceRescan(toc);
@@ -316,18 +379,28 @@ Scrn scrn;
 
 /* Incorporate new mail. */
 
-void ExecIncorporate(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void Incorporate(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     if (scrn->toc == NULL) return;
     TocIncorporate(scrn->toc);
     TocCheckForNewMail();
 }
 
 
-void ExecTocReply(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void TocReply(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     Toc toc = scrn->toc;
     Scrn nscrn;
     MsgList mlist;
@@ -347,9 +420,14 @@ Scrn scrn;
 }
 
 
-void ExecPick(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void PickMessages(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     Toc toc = scrn->toc;
     Scrn nscrn;
     char *toseq;
@@ -369,27 +447,20 @@ Scrn scrn;
 }
 
 
-void ExecOpenSeq(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void OpenSequence(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     Toc toc = scrn->toc;
     if (toc == NULL) return;
     TocChangeViewedSeq(toc, 
 		       TocGetSeqNamed(toc,
 				      BBoxGetRadioName(scrn->seqbuttons)));
 }
-
-/*ARGSUSED*/
-void OpenSequence(w, event, params, num_params)
-Widget w;
-XEvent *event;
-char **params;
-Cardinal num_params;
-{
-    ExecOpenSeq(ScrnFromWidget(w));
-}
-
-
 
 
 typedef enum {ADD, REMOVE, DELETE} TwiddleOperation;
@@ -451,27 +522,38 @@ TwiddleOperation op;
 }
 
     
-
-
-void ExecAddToSeq(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void AddToSequence(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     TwiddleSequence(scrn, ADD);
 }
 
 
-
-void ExecRemoveFromSeq(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void RemoveFromSequence(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     TwiddleSequence(scrn, REMOVE);
 }
 
 
-
-void ExecDeleteSeq(scrn)
-Scrn scrn;
+/*ARGSUSED*/
+void DeleteSequence(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
+    Scrn scrn = ScrnFromWidget(w);
     TwiddleSequence(scrn, DELETE);
 }
 
