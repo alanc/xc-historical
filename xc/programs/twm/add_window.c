@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.128 89/12/14 14:51:33 jim Exp $
+ * $XConsortium: add_window.c,v 1.129 89/12/14 17:04:46 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.128 89/12/14 14:51:33 jim Exp $";
+"$XConsortium: add_window.c,v 1.129 89/12/14 17:04:46 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -1337,7 +1337,12 @@ FetchWmColormapWindows (tmp)
 	    Window *new_cmap_windows =
 	      (Window *) malloc (sizeof(Window) * (number_cmap_windows + 1));
 
-	    if (!new_cmap_windows) goto done;
+	    if (!new_cmap_windows) {
+		fprintf (stderr, 
+			 "%s:  unable to allocate %d element colormap window array\n",
+			ProgramName, number_cmap_windows+1);
+		goto done;
+	    }
 	    new_cmap_windows[0] = tmp->w;  /* add to front */
 	    for (i = 0; i < number_cmap_windows; i++) {	 /* append rest */
 		new_cmap_windows[i+1] = cmap_windows[i];
