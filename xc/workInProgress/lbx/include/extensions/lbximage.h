@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lbximage.h,v 1.1 94/11/08 19:52:39 mor Exp mor $ */
 
 /******************************************************************************
 
@@ -45,6 +45,7 @@ unsigned char *		/* outbuf */,
 int			/* outbufSize */,
 int			/* image_bytes */,
 int			/* pixels_per_line */,
+int			/* reverse_bits */,
 int *			/* bytesCompressed */
 #endif
 );
@@ -63,7 +64,8 @@ extern int LbxImageDecodeFaxG42D (
 unsigned char *		/* inbuf */,
 unsigned char *		/* outbuf */,
 int			/* image_bytes */,
-int			/* pixels_per_line */
+int			/* pixels_per_line */,
+int			/* reverse_bits */
 #endif
 );
 
