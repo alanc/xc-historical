@@ -12,7 +12,7 @@
 # make no representations about the suitability of this software for any
 # purpose.  It is provided "as is" without express or implied warranty.
 #
-# $XConsortium$
+# $XConsortium: Makefile,v 1.5 92/06/11 17:10:24 rws Exp $
 #
 
 #
@@ -24,7 +24,7 @@
 #
 # There are two ways this can be done:
 # 1) Using the TET. Execute the command:
-#     tcc -b -s link_exec xtest linkbuild
+#     tcc -b -s link_scen xtest linkbuild
 # in the directory $TET_ROOT/xtest.
 # This will execute the TET build tool (which is normally pmake) 
 # in the top level directory of each section of the test suite 
