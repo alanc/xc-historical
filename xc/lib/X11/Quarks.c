@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Quarks.c,v 1.8 88/02/26 12:56:28 swick Exp $";
+static char rcsid[] = "$Header: Quarks.c,v 1.9 88/08/09 13:22:14 jim Exp $";
 #endif lint
 
 /***********************************************************
@@ -51,13 +51,13 @@ char *Xpermalloc(length)
 {
     char *ret;
 
-#ifdef INT64ARCH
+#ifdef WORD64
     /* round to nearest 8-byte boundary */
     length = (length + 7) & (~7);
 #else
     /* round to nearest 4-byte boundary */
     length = (length + 3) & (~3);
-#endif /* INT64ARCH */
+#endif /* WORD64 */
     if (neverFreeTableSize < length) {
 	neverFreeTableSize =
 	    (length > NEVERFREETABLESIZE ? length : NEVERFREETABLESIZE);
