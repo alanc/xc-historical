@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.98 93/09/21 11:17:12 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.99 93/09/25 22:35:49 rws Exp $
 
 #ifdef SVR4
 #define OSName            SunOS 5.2
@@ -45,7 +45,6 @@ XCOMM operating system:  OSName
 #define LexCmd		  /usr/ccs/bin/lex
 #define YaccCmd		  /usr/ccs/bin/yacc
 #define SystemV4	  YES
-#define HasSockets	  YES
 #define HasPoll           YES
 #define HasLdRunPath      YES
 #define InstKmemFlags	  -g sys -m 2755

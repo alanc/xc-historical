@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: x386.cf,v 1.9 92/12/23 16:56:52 gildea Exp $
+XCOMM platform:  $XConsortium: x386.cf,v 1.10 93/09/30 15:29:14 rws Exp $
 
 /*****************************************************************************
  *			  Site-specfic parameters                            *
@@ -9,7 +9,6 @@ XCOMM platform:  $XConsortium: x386.cf,v 1.9 92/12/23 16:56:52 gildea Exp $
  */
 
 #define HasGcc			YES	/* doesn't work for SVR4 */
-#define HasSockets		YES
 #define HasNdbm			YES	/* correct for GNU dbm & SVR4 */
 #define StripInstalledPrograms	YES
 #define X386Server		YES

@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: hp.cf,v 1.63 93/09/06 15:20:45 rws Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.64 93/09/21 11:16:51 rws Exp $
 
 #define OSName                 HP-UX 9.1
 XCOMM operating system:  OSName
@@ -31,7 +31,6 @@ XCOMM operating system:  OSName
 #define MvCmd                  mv -f
 #define LdCombineFlags -r
 #define ExecableScripts        YES
-#define HasSockets             YES
 #define HasVFork               YES
 #define HasPoll                YES
 #define RemoveTargetProgramByMoving YES

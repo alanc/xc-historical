@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.38 93/09/30 15:29:28 rws Exp $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.39 93/10/01 09:37:04 rws Exp $
 
 #ifdef RsArchitecture
 #define OSName		AIX 3.2.1
@@ -31,7 +31,6 @@ XCOMM operating system:  OSName
 
 #define CcCmd xlc
 #define SystemV			YES
-#define HasSockets		YES
 #define LdCombineFlags		-r
 #define ExecableScripts		YES
 #define Malloc0ReturnsNull	YES
@@ -59,7 +58,6 @@ XCOMM operating system:  OSName
 
 #ifdef AIXArchitecture
 #define SystemV YES
-#define HasSockets YES
 #ifdef RtArchitecture
 #define BootstrapCFlags -Daix
 #define OSDefines -DAIX -DAIXrt -DNO_FUNCTION_PROTOTYPES -DIBM_OS_HAS_HFT

@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: DGUX.cf,v 1.1 91/05/10 17:19:48 rws Exp $
+XCOMM platform:  $XConsortium: DGUX.cf,v 1.2 92/12/22 17:45:10 gildea Exp $
 
 #define OSName            DG/UX 4.32
 XCOMM operating system:  OSName
@@ -9,7 +9,6 @@ XCOMM operating system:  OSName
 #define StandardDefines   -DDGUX -DSYSV
 #define SystemV           YES
 #define HasPutenv         YES
-#define HasSockets        YES
 #define HasGcc            YES
 #define BuildServer       NO
 #define UNCOMPRESSPATH /usr/bin/X11/uncompress
