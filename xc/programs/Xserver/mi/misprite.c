@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.43 93/09/21 09:24:21 dpw Exp $ */
+/* $XConsortium: misprite.c,v 5.44 94/01/07 09:44:57 dpw Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -592,13 +592,13 @@ miSpriteFindColors (pScreen)
     pCursor = pScreenPriv->pCursor;
     sourceColor = &pScreenPriv->colors[SOURCE_COLOR];
     maskColor = &pScreenPriv->colors[MASK_COLOR];
-    if (!(pCursor->foreRed == sourceColor->red &&
+    if (pScreenPriv->pColormap != pScreenPriv->pInstalledMap ||
+	!(pCursor->foreRed == sourceColor->red &&
 	  pCursor->foreGreen == sourceColor->green &&
           pCursor->foreBlue == sourceColor->blue &&
 	  pCursor->backRed == maskColor->red &&
 	  pCursor->backGreen == maskColor->green &&
-	  pCursor->backBlue == maskColor->blue) ||
-	 pScreenPriv->pColormap != pScreenPriv->pInstalledMap)
+	  pCursor->backBlue == maskColor->blue))
     {
 	pScreenPriv->pColormap = pScreenPriv->pInstalledMap;
 	sourceColor->red = pCursor->foreRed;
