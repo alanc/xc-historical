@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.34 91/12/28 14:20:56 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.35 92/05/28 12:23:08 rws Exp $
 #include <Server.tmpl>
 
 #ifndef PixelSize
@@ -174,7 +174,7 @@ ObjectFromSpecialSource(cfb8segG,cfb8line,-DRROP=GXset -DPOLYSEGMENT)
 ObjectFromSpecialSource(cfbply1rctC,cfbply1rct,-DRROP=GXcopy)
 ObjectFromSpecialSource(cfbply1rctG,cfbply1rct,-DRROP=GXset)
 
-SpecialObjectRule(cfbglblt8.o,$(NOTDEF),$(STIPPLEDEF))
+SpecialCObjectRule(cfbglblt8,$(NOTDEF),$(STIPPLEDEF))
 
 #if PixelSize == 8
 ObjectFromSpecialSource(cfbglrop8,cfbglblt8,-DGLYPHROP)
