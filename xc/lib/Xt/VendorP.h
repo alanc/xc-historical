@@ -1,5 +1,6 @@
 /*
-* $Header: VendorP.h,v 1.11 88/01/25 16:25:11 asente Exp $
+* $xHeader: VendorP.h,v 1.2 88/08/18 15:56:48 asente Exp $
+* $oHeader: VendorP.h,v 1.2 88/08/18 15:56:48 asente Exp $
 */
 
 /***********************************************************
@@ -46,7 +47,9 @@ SOFTWARE.
 
 /* New fields for the VendorShell widget class record */
 
-typedef struct {int foo;} VendorShellClassPart;
+typedef struct {
+    caddr_t         extension;          /* pointer to extension record      */
+} VendorShellClassPart;
 
 typedef struct _VendorShellClassRec {
   	CoreClassPart      core_class;
@@ -56,7 +59,7 @@ typedef struct _VendorShellClassRec {
 	VendorShellClassPart vendor_shell_class;
 } VendorShellClassRec;
 
-globalref VendorShellClassRec vendorShellClassRec;
+externalref VendorShellClassRec vendorShellClassRec;
 
 /* New fields for the vendor shell widget. */
 
