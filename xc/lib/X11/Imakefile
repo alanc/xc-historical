@@ -347,6 +347,9 @@ SpecialObjectRule(Encrypt.o,$(ICONFIGFILES),$(DESDEFS))
 SpecialObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
+#if defined(ApolloArchitecture) && CCompilerMajorVersion <= 6 && CCompilerMinorVersion < 8
+SpecialObjectRule(XInitExt.o,/**/,-U__STDC__)
+#endif
 #   endif
 #  endif
 # endif
