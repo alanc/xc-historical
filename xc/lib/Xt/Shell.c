@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Shell.c,v 1.13 88/02/11 09:03:16 rws Exp $";
+static char rcsid[] = "$Header: Shell.c,v 1.14 88/02/13 14:16:08 swick Exp $";
 #endif lint
 
 /*
@@ -84,6 +84,7 @@ static XtResource shellResources[]=
 };
 
 static void Initialize();
+static void ShellDestroy();
 static void Realize();
 static void Resize();
 static Boolean SetValues();
@@ -111,7 +112,7 @@ globaldef ShellClassRec shellClassRec = {
     /* compress_exposure  */    TRUE,
     /* compress_enterleave*/	FALSE,
     /* visible_interest   */    FALSE,
-    /* destroy            */    NULL,
+    /* destroy            */    ShellDestroy,
     /* resize             */    Resize,
     /* expose             */    NULL,
     /* set_values         */    SetValues,
@@ -858,6 +859,28 @@ static void EventHandler(wid, closure, event)
                     (*(XtClass(w)->core_class.resize))(w);
 
 }
+
+static void ShellDestroy(widget)
+    Widget  widget;
+{
+    int i;
+    Boolean found = FALSE;
+    register Widget parent;
+    parent = widget->core.parent;
+    if (parent == NULL | parent->core.being_destroyed) return;
+    for (i=0;i<=parent->core.num_popups-1;i++)
+        if (parent->core.popup_list[i] == widget){
+            found = TRUE; break;
+        }
+    if (found == FALSE) {
+        XtWarning("ShellDestroy, widget not on parent popup list");
+        return;
+    }
+    for (i=0;i<parent->core.num_popups-1;i++)
+        parent->core.popup_list[i]= parent->core.popup_list[i+1];
+    parent->core.num_popups--;
+}
+
 
 static void ApplicationDestroy(wid)
 	Widget wid;

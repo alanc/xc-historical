@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Create.c,v 6.30 88/02/03 09:53:04 swick Locked $";
+static char rcsid[] = "$Header: Create.c,v 6.31 88/02/03 23:03:34 swick Exp $";
 #endif lint
 
 /*
@@ -235,32 +235,6 @@ Widget XtCreateManagedWidget(name, widgetClass, parent, args, num_args)
     return widget;
 }
 
-/* ARGSUSED */
-static void RemovePopupFromParent(widget,closure,call_data)
-    Widget  widget;
-    caddr_t closure;
-    caddr_t call_data;
-{
-    int i;
-    Boolean found = FALSE;
-    register Widget parent;
-    parent = widget->core.parent;
-    if (parent == NULL | parent->core.num_popups == 0)
-        XtError("RemovePopupFromParent requires non-NULL popuplist");
-    for (i=0;i<=parent->core.num_popups-1;i++)
-        if (parent->core.popup_list[i] == widget){
-            found = TRUE; break;
-        }
-    if (found == FALSE) {
-        XtWarning("RemovePopupFromParent,widget not on parent list");
-        return;
-    }
-    for (i=0;i<parent->core.num_popups-1;i++)
-        parent->core.popup_list[i]= parent->core.popup_list[i+1];
-    parent->core.num_popups--;
-
-}
-
 Widget XtCreatePopupShell(name, widgetClass, parent, args, num_args)
     String      name;
     WidgetClass widgetClass;
@@ -286,8 +260,6 @@ Widget XtCreatePopupShell(name, widgetClass, parent, args, num_args)
 	(WidgetList) XtRealloc((caddr_t) parent->core.popup_list,
                (unsigned) (parent->core.num_popups+1) * sizeof(Widget));
     parent->core.popup_list[parent->core.num_popups++] = widget;
-    XtAddCallback(
-       widget,XtNdestroyCallback,RemovePopupFromParent, (caddr_t)NULL);
     return(widget);
 } /* XtCreatePopupShell */
 
