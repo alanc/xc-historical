@@ -723,8 +723,8 @@ list initially have this attribute set (see description of the
 variable above).
 Other windows initially have this attribute turned off.
 .IP "\fBf.backiconmgr\fI" 8
-This function is meant to be executed from a keyboard key and is
-only valid with a context of \fBiconmgr\fP.  When the function is 
+This function is meant to be executed from a keyboard key.
+When the function is 
 executed, the pointer is warped to the previous icon manager entry in the
 current icon manager.  The previous entry means warping to the previous
 column or
@@ -776,8 +776,8 @@ is changed to the \fBDestroy\fP and the next window
 to receive a button press
 will be destroyed.
 .IP "\fBf.downiconmgr\fI" 8
-This function is meant to be executed from a keyboard key and is
-only valid with a context of \fBiconmgr\fP.  When the function is 
+This function is meant to be executed from a keyboard key.
+When the function is 
 executed, the pointer is moved to the next entry in the icon 
 manager.  If the pointer is in the bottom entry, it is warped to the
 top entry.  This function allows changing the current keyboard
@@ -798,8 +798,8 @@ If executed from a menu, the cursor is changed to
 the \fBMove\fP cursor and the next window that receives a button press will be
 the window that is moved.
 .IP "\fBf.forwiconmgr\fI" 8
-This function is meant to be executed from a keyboard key and is
-only valid with a context of \fBiconmgr\fP.  When the function is 
+This function is meant to be executed from a keyboard key.
+When the function is 
 executed, the pointer is warped to the next icon manager entry in the
 current icon manager.  The next entry means warping to the next column or
 the first column of the next row if the current entry is in the last column.
@@ -857,8 +857,8 @@ and the next window that receives a button press will be
 the window that is selected.  A button press or key press in the 
 information window will cause it to be unmapped.
 .IP "\fBf.lefticonmgr\fI" 8
-This function is meant to be executed from a keyboard key and is
-only valid with a context of \fBiconmgr\fP.  When the function is 
+This function is meant to be executed from a keyboard key.
+When the function is 
 executed, the pointer is moved to the icon manager entry to the left 
 of the current one.
 If the pointer is in the leftmost entry, it is warped to the
@@ -892,8 +892,8 @@ Moving the pointer to one of the grid lines will cause the window
 to begin moving in either an up-down motion or a left-right motion
 depending on which grid line the pointer was moved across.
 .IP "\fBf.nexticonmgr\fI" 8
-This function is meant to be executed from a keyboard key and is
-only valid with a context of \fBiconmgr\fP.  When the function is 
+This function is meant to be executed from a keyboard key.
+When the function is 
 executed, the pointer is warped to the next icon manager
 which is displayed and has one or more windows listed in it.
 The next icon manager means the next icon manager in the
@@ -904,8 +904,8 @@ icon manager if it is the only one that is valid.
 .IP "\fBf.nop\fP" 8
 This function does nothing.
 .IP "\fBf.previconmgr\fI" 8
-This function is meant to be executed from a keyboard key and is
-only valid with a context of \fBiconmgr\fP.  When the function is 
+This function is meant to be executed from a keyboard key.
+When the function is 
 executed, the pointer is warped to the previous icon manager
 which is displayed and has one or more windows listed in it.
 The previous icon manager means the icon manager preceeding 
@@ -947,8 +947,8 @@ the window that is resized.
 .IP "\fBf.restart\fP" 8
 This function kills and restarts \fItwm\fP.
 .IP "\fBf.righticonmgr\fI" 8
-This function is meant to be executed from a keyboard key and is
-only valid with a context of \fBiconmgr\fP.  When the function is 
+This function is meant to be executed from a keyboard key.
+When the function is 
 executed, the pointer is moved to the icon manager entry to the right 
 of the current one.
 If the pointer is in the rightmost entry, it is warped to the
@@ -985,8 +985,8 @@ specify the filename.
 .IP "\fBf.unfocus\fP" 8
 This function assigns input focus to the root window.
 .IP "\fBf.upiconmgr\fI" 8
-This function is meant to be executed from a keyboard key and is
-only valid with a context of \fBiconmgr\fP.  When the function is 
+This function is meant to be executed from a keyboard key.
+When the function is 
 executed, the pointer is moved to the previous entry in the icon 
 manager.  If the pointer is in the top entry, it is warped to the
 bottom entry.  This function allows changing the current keyboard
