@@ -1,4 +1,4 @@
-/* $XConsortium: gcstruct.h,v 5.0 89/06/09 15:00:31 keith Exp $ */
+/* $XConsortium: gcstruct.h,v 5.1 89/06/09 17:52:37 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -78,6 +78,9 @@ typedef struct _GCOps {
     DevUnion	devPrivate;
 } GCOps;
 
+/* there is padding in the bit fields because the Sun compiler doesn't
+ * force alignment to 32-bit boundaries.  losers.
+ */
 typedef struct _GC {
     ScreenPtr		pScreen;		
     unsigned char	depth;    
@@ -97,6 +100,7 @@ typedef struct _GC {
     unsigned int	clientClipType : 2; /* CT_<kind> */
     unsigned int	miTranslate:1; /* should mi things translate? */
     unsigned int	tileIsPixel:1; /* tile is solid pixel */
+    unsigned int	unused:16; /* see comment above */
     unsigned long	planemask;
     unsigned long	fgPixel;
     unsigned long	bgPixel;
