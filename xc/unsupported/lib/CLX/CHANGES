@@ -83,5 +83,5 @@ o The WITH-GCONTEXT macro has been changed so that if you supply nil for a
 o Since ANSI Common Lisp doesn't have CHAR-BIT, the implementation of
   DEFAULT-KEYSYM-TRANSLATE is now implementation dependent in ANSI Common Lisp
   implementations, with the default doing nothing to character objects.  In
-  non-ANSI Common Lisps and Genera, it still uses CHAR-BIT. The definition of
+  non-ANSI Common Lisps and lispms, it still uses CHAR-BIT. The definition of
   DEFAULT-KEYSYM-TRANSLATE has been moved to dependent.l.
