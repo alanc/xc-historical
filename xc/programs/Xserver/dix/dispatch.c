@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.25 91/02/14 19:35:40 keith Exp $ */
+/* $XConsortium: dispatch.c,v 5.26 91/03/01 16:05:37 keith Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -451,6 +451,9 @@ ProcReparentWindow(client)
         if ((pWin->backgroundState == ParentRelative) &&
             (pParent->drawable.depth != pWin->drawable.depth))
             return BadMatch;
+	if ((pWin->drawable.class != InputOnly) &&
+	    (pParent->drawable.class == InputOnly))
+	    return BadMatch;
         result =  ReparentWindow(pWin, pParent, 
 			 (short)stuff->x, (short)stuff->y, client);
 	if (client->noClientException != Success)
