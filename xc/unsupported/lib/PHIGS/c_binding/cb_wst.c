@@ -1,4 +1,4 @@
-/* $XConsortium: cb_wst.c,v 5.6 91/06/18 19:30:39 hersh Exp $ */
+/* $XConsortium: cb_wst.c,v 5.7 91/07/12 20:18:42 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1698,15 +1698,16 @@ Pcolr_facs	*facilities;	/* OUT colour facilities	*/
 	facilities->num_colrs = dt->out_dt.num_colours;
 	facilities->colr_avail = dt->out_dt.colour_availability;
 	facilities->num_pred_inds = dt->out_dt.num_predefined_colours;
-	/* TODO: Figure out how to convert the PEX info to PHIGS info */
-	facilities->prim_colrs.cieluv_x = dt->out_dt.chroma_info.xr;
-	facilities->prim_colrs.cieluv_y = dt->out_dt.chroma_info.yr;
-	facilities->prim_colrs.cieluv_y_lum = dt->out_dt.chroma_info.xg;
-	/* TODO:
-	facilities->prim_colrs[1].y = dt->out_dt.chroma_info.yg;
-	facilities->prim_colrs[2].x = dt->out_dt.chroma_info.xb;
-	facilities->prim_colrs[2].y = dt->out_dt.chroma_info.yb;
-	*/
+	facilities->prim_colrs[0].cieluv_x = dt->out_dt.chroma_info.xr;
+	facilities->prim_colrs[0].cieluv_y = dt->out_dt.chroma_info.yr;
+	facilities->prim_colrs[0].cieluv_y_lum = dt->out_dt.chroma_info.Yr;
+	facilities->prim_colrs[1].cieluv_x = dt->out_dt.chroma_info.xg;
+	facilities->prim_colrs[1].cieluv_y = dt->out_dt.chroma_info.yg;
+	facilities->prim_colrs[1].cieluv_y_lum = dt->out_dt.chroma_info.Yg;
+	facilities->prim_colrs[2].cieluv_x = dt->out_dt.chroma_info.xb;
+	facilities->prim_colrs[2].cieluv_y = dt->out_dt.chroma_info.yb;
+	facilities->prim_colrs[2].cieluv_y_lum = dt->out_dt.chroma_info.Yb;
+
     }
 }
 
