@@ -1,4 +1,4 @@
-/* $XConsortium: shutdown.c,v 1.12 94/03/18 10:55:33 mor Exp $ */
+/* $XConsortium: shutdown.c,v 1.13 94/03/18 15:59:27 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -94,12 +94,15 @@ IceConn     iceConn;
 
 
 
-Status
+IceCloseStatus
 IceCloseConnection (iceConn)
 
 IceConn     iceConn;
 
 {
+    int refCountReachedZero;
+    IceCloseStatus status;
+
     /*
      * If this connection object was never valid, we can close
      * it right now.  This happens if IceAcceptConnection was
@@ -111,69 +114,135 @@ IceConn     iceConn;
     if (iceConn->listen_obj &&
 	iceConn->connection_status != IceConnectAccepted)
     {
-	_IceFreeConnection (iceConn, False);
-	return (1);
+	_IceConnectionClosed (iceConn);		/* invoke watch procs */
+	_IceFreeConnection (iceConn);
+	return (IceClosedNow);
     }
 
 
-    /*
-     * Now we try to close the connection only if all calls to
-     * IceOpenConnection or IceAcceptConnection have been matched
-     * with a call to IceCloseConnection, AND there are no active
-     * protocols.
-     */
+    /*---------------------------------------------------------------
+
+    ACTIONS:
+
+    A = Invoke Watch Procedures
+    B = Set free-asap bit
+    C = Free connection
+    D = Initialize shutdown negotiation
+    N = do nothing
+
+
+    ACTION TABLE:
+
+    IO	       free-      dispatch   protocol   shutdown
+    error      asap bit   level      refcount   negotiation     ACTION
+    occured    set        reached 0  reached 0
+    
+        0          0          0          0          0		N
+        0          0          0          0          1		N
+        0          0          0          1          0		AB
+        0          0          0          1          1		N
+        0          0          1          0          0		N
+        0          0          1          0          1		N
+        0          0          1          1          0		AC
+        0          0          1          1          1		D
+        0          1          0          0          0		N
+        0          1          0          0          1		N
+        0          1          0          1          0		N
+        0          1          0          1          1		N
+        0          1          1          0          0		C
+        0          1          1          0          1		D
+        0          1          1          1          0		C
+        0          1          1          1          1		D
+        1          0          0          0          0		AB
+        1          0          0          0          1		AB
+        1          0          0          1          0		AB
+        1          0          0          1          1		AB
+        1          0          1          0          0		AC
+        1          0          1          0          1		AC
+        1          0          1          1          0		AC
+        1          0          1          1          1		AC
+        1          1          0          0          0		N
+        1          1          0          0          1		N
+        1          1          0          1          0		N
+        1          1          0          1          1		N
+        1          1          1          0          0		C
+        1          1          1          0          1		C
+        1          1          1          1          0		C
+        1          1          1          1          1		C
+
+    ---------------------------------------------------------------*/
 
     if (iceConn->open_ref_count > 0)
 	iceConn->open_ref_count--;
 
-    if (iceConn->open_ref_count == 0)
+    refCountReachedZero = iceConn->open_ref_count == 0 &&
+	iceConn->proto_ref_count == 0;
+
+    status = IceConnectionInUse;
+
+    if (!iceConn->free_asap && (!iceConn->io_ok ||
+	(iceConn->io_ok && refCountReachedZero &&
+	iceConn->skip_want_to_close)))
     {
-	if (iceConn->proto_ref_count > 0)
-	{
-	    /*
-	     * Bad status - this is the last required IceCloseConnection,
-	     * but not all of the protocols have been shut down.
-	     */
+	/*
+	 * Invoke the watch procedures now.
+	 */
 
-	    return (0);
-	}
-	else
-	{
-	    if (iceConn->skip_want_to_close)
-	    {
-		_IceFreeConnection (iceConn, False);
-	    }
-	    else
-	    {
-		IceSimpleMessage (iceConn, 0, ICE_WantToClose);
-		IceFlush (iceConn);
-
-		iceConn->want_to_close = 1;
-	    }
-	}
+	_IceConnectionClosed (iceConn);
+	status = IceClosedNow;	     /* may be overwritten by IceClosedASAP */
     }
 
-    return (1);
+    if (!iceConn->free_asap && iceConn->dispatch_level != 0 &&
+	(!iceConn->io_ok ||
+	(iceConn->io_ok && refCountReachedZero &&
+	iceConn->skip_want_to_close)))
+    {
+	/*
+	 * Set flag so we free the connection as soon as possible.
+	 */
+
+	iceConn->free_asap = True;
+	status = IceClosedASAP;
+    }
+
+    if (iceConn->io_ok && iceConn->dispatch_level == 0 &&
+	!iceConn->skip_want_to_close && refCountReachedZero)
+    {
+	/*
+	 * Initiate shutdown negotiation.
+	 */
+
+	IceSimpleMessage (iceConn, 0, ICE_WantToClose);
+	IceFlush (iceConn);
+
+	iceConn->want_to_close = 1;
+
+	status = IceStartedShutdownNegotiation;
+    }
+    else if (iceConn->dispatch_level == 0 &&
+	(!iceConn->io_ok || (iceConn->io_ok && iceConn->skip_want_to_close &&
+	(iceConn->free_asap || (!iceConn->free_asap && refCountReachedZero)))))
+    {
+	/*
+	 * Free the connection.
+	 */
+
+	_IceFreeConnection (iceConn);
+
+	status = IceClosedNow;
+    }
+
+    return (status);
 }
 
 
 
 void
-_IceFreeConnection (iceConn, ignoreWatchProcs)
+_IceFreeConnection (iceConn)
 
 IceConn iceConn;
-Bool	ignoreWatchProcs;
 
 {
-    if (!ignoreWatchProcs)
-    {
-	/*
-	 * Notify the watch procedures that an iceConn was closed.
-	 */
-
-	_IceConnectionClosed (iceConn);
-    }
-
     if (iceConn->listen_obj == NULL)
     {
 	/*
