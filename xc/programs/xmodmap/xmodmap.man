@@ -21,7 +21,8 @@ xmodmap - utility for modifying keymaps in X
 .PP
 The \fIxmodmap\fP program is used to edit and display the 
 keyboard \fImodifier map\fP and \fIkeymap table\fP that are used by client 
-applications to convert event keycodes into keysyms.  It is usually run from 
+applications to convert event keycodes into keysyms (see Sections 7.9 and
+10.1.1 in the \fIXlib\fP manual).  It is usually run from 
 the user's session startup script to configure the keyboard according to 
 personal tastes.
 .SH OPTIONS
@@ -33,7 +34,7 @@ This option specifies the host and display to use.
 .TP 8
 .B \-help
 This option indicates that a brief description of the command line arguments
-should be printed on the standard error.  This will be done whenever an
+should be printed on the standard error channel.  This will be done whenever an
 unhandled argument is given to
 .I xmodmap.
 .TP 8
@@ -95,14 +96,25 @@ program in the examples directory).  Usually only one keysym is assigned
 to a given code.
 .TP 8
 .B keysym \fIKEYSYMNAME\fP = \fIKEYSYMNAME ...\fP
-The \fIKEYSYMNAME\fP on the left hand side is looked up to find its current
-keycode and the line is replaced with the appropriate \fBkeycode\fP 
-expression.  Note that if you have the same keysym bound to multiple keys, this
-might not work.
+The \fIKEYSYMNAME\fP on the left hand side is translated into a keycode (using
+\fBXStringToKeysym()\fP and \fBXKeysymToKeycode()\fP) used to perform the
+corresponding \fBkeycode\fP expression.  The list of keysym names may be
+found in the header file \fI<X11/keysymdef.h>\fP (without the \fIXK_\fP prefix)
+or the keysym database \fI/usr/lib/X11/XKeysymDB\fP.
+Note that if the same keysym is bound to multiple keys, the results for this
+expression are not defined.
 .TP 8
 .B clear \fIMODIFIERNAME\fP
 This removes all entries in the modifier map for the given modifier, where 
-valid name are:  Shift, Lock, Control, Mod1, Mod2, Mod3, Mod4 and Mod5 (case
+valid name are:
+.BR Shift ,
+.BR Lock ,
+.BR Control ,
+.BR Mod1 ,
+.BR Mod2 ,
+.BR Mod3 ,
+.BR Mod4 ,
+and \fBMod5\fP (case 
 does not matter in modifier names, although it does matter for all other
 names).  For example, ``clear Lock'' will remove
 all any keys that were bound to the shift lock modifier.
@@ -225,7 +237,7 @@ add Lock = Caps_Lock
 .B DISPLAY
 to get default host and display number.
 .SH SEE ALSO
-X(1)
+X(1), xev(1), \fIXlib\fP documentation on key and pointer events
 .SH BUGS
 .PP
 Every time a \fBkeycode\fP expression is evaluated, the server generates
@@ -243,7 +255,7 @@ There should be a way to have the
 expression accept keycodes as well as keysyms for those times when you really
 mess up your mappings.
 .SH COPYRIGHT
-Copyright 1988, Massachusetts Institute of Technology.
+Copyright 1988, 1989, 1990 Massachusetts Institute of Technology.
 .br
 Copyright 1987 Sun Microsystems, Inc.
 .br
