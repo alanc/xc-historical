@@ -2,7 +2,7 @@ To: xbugs@expo.lcs.mit.edu
 Subject: [area]: [synopsis]   [replace with actual area and short description]
 
 VERSION:
-    R5 [with any patches?]
+    R5 [MIT public patches will edit this line to indicate the patch level]
 
 CLIENT MACHINE and OPERATING SYSTEM:
     [e.g. Sparc/SunOS 4.1.1, DECstation 3100/Ultrix 4.2, ...]
