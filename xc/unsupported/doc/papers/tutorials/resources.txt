@@ -159,14 +159,14 @@ information on which resources may be specified are:
 Under X11, you have a lot of flexibility as to where defaults are defined.  The
 Resource Manager obtains resource specifications from the following places:
 
-	1. from the RESOURCE_MANAGER property on the root window of screen 0;
+	1. from any application-specific resource files, usually stored in
+	   /usr/lib/X11/app-defaults/.
+
+	2. from the RESOURCE_MANAGER property on the root window of screen 0;
 	   these are stored using the xrdb program.  If this property is not
 	   defined, then $HOME/.Xdefaults will be read to provide compatibility
 	   with X10 (although the resource specification format has
 	   changed somewhat).
-
-	2. from any application-specific resource files, usually stored in
-	   /usr/lib/X11/app-defaults/.
 
 	3. from any user-specific defaults stored in a file whose name is set
 	   in the environment variable XENVIRONMENT.
