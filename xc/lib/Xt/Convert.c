@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Convert.c,v 1.3 89/07/20 14:36:55 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Convert.c,v 1.22 89/07/21 12:06:16 swick Exp $";
 /* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -407,7 +407,8 @@ static void ComputeArgs(widget, convert_args, num_args, args)
     register Cardinal   i;
     Cardinal		offset;
     String              params[1];
-    Cardinal		num_params = 0;
+    Cardinal		num_params = 1;
+    Widget		ancestor = NULL;
 
     for (i = 0; i < num_args; i++) {
 	args[i].size = convert_args[i].size;
@@ -419,6 +420,18 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 	case XtBaseOffset:
 	    args[i].addr =
 		(caddr_t) ((int) widget + (int) convert_args[i].address_id);
+	    break;
+
+	case XtWidgetBaseOffset:
+	    if (ancestor == NULL) {
+		if (XtIsWidget(widget))
+		    ancestor = widget;
+		else
+		    ancestor = _XtWindowedAncestor(widget);
+	    }
+
+	    args[i].addr =
+		(caddr_t) ((int) ancestor + (int) convert_args[i].address_id);
 	    break;
 
 	case XtImmediate:
