@@ -1,4 +1,4 @@
-/* $XConsortium: xfontsel.c,v 1.30 91/06/22 16:54:14 rws Exp $
+/* $XConsortium: xfontsel.c,v 1.31 91/06/22 17:29:18 rws Exp $
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
 Massachusetts Institute of Technology
@@ -84,6 +84,8 @@ static struct _appRes {
     String pixelSizeList;
     String pointSizeList;
     Boolean print_on_quit;
+    String sample_text;
+    String sample_text16;
 } AppRes;
 
 #define DEFAULTPATTERN "-*-*-*-*-*-*-*-*-*-*-*-*-*-*"
@@ -107,19 +109,26 @@ static XtResource resources[] = {
     { "appDefaultsVersion", "AppDefaultsVersion", XtRInt, sizeof(int),
 		XtOffsetOf( struct _appRes, app_defaults_version ),
 		XtRImmediate, (XtPointer)0 },
+    { "sampleText", "Text", XtRString, sizeof(String),
+		XtOffsetOf( struct _appRes, sample_text ),
+		XtRString, (XtPointer)"" },
+    { "sampleText16", "Text16", XtRString, sizeof(String),
+		XtOffsetOf( struct _appRes, sample_text16 ),
+		XtRString, (XtPointer)"" },
 };
 
 static XrmOptionDescRec options[] = {
 {"-pattern",	"pattern",	XrmoptionSepArg,	NULL},
 {"-print",	"printOnQuit",	XrmoptionNoArg,		"True"},
-{"-sample",	"*sampleText.label", XrmoptionSepArg,	NULL},
+{"-sample",	"sampleText",	XrmoptionSepArg,	NULL},
+{"-sample16",	"sampleText16",	XrmoptionSepArg,	NULL},
 };
 
 Syntax(call)
     char *call;
 {
     fprintf( stderr,
-	     "Usage: %s [-toolkitOption] [-pattern <fontspec>] [-print] [-sample <text>]\n",
+	     "Usage: %s [-toolkitOption] [-pattern <fontspec>] [-print] [-sample <text>] [-sample16 <text16>]\n",
 	     call );
 }
 
@@ -191,6 +200,7 @@ Widget currentFontName;
 String currentFontNameString;
 int currentFontNameSize;
 Widget sampleText;
+int textEncoding = -1;
 static XFontStruct *sampleFont = NULL;
 Boolean *fontInSet;
 static Choice *choiceList = NULL;
@@ -1019,9 +1029,18 @@ void SetCurrentFont(closure)
 	if (font == NULL)
 	    XtUnmapWidget(mapWidget);
 	else {
-	    Arg args[1];
+	    int nargs = 1;
+	    Arg args[3];
+	    int encoding = (font->min_byte1 || font->max_byte1);
 	    XtSetArg( args[0], XtNfont, font );
-	    XtSetValues( sampleText, args, ONE );
+	    if (encoding != textEncoding) {
+		XtSetArg(args[1], XtNencoding, encoding);
+		XtSetArg(args[2], XtNlabel,
+			 encoding ? AppRes.sample_text16 : AppRes.sample_text);
+		textEncoding = encoding;
+		nargs = 3;
+	    }
+	    XtSetValues( sampleText, args, nargs );
 	    XtMapWidget(mapWidget);
 	    if (sampleFont) XFreeFont( dpy, sampleFont );
 	    sampleFont = font;
