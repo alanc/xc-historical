@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.76 89/12/07 20:17:51 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.2 90/02/03 16:55:30 jim Exp $";
 #endif /* lint */
 
 
@@ -67,6 +67,10 @@ static XtResource resources[] = {
 	offset(label.internal_width), XtRImmediate, (caddr_t)4},
     {XtNinternalHeight, XtCHeight, XtRDimension, sizeof(Dimension),
 	offset(label.internal_height), XtRImmediate, (caddr_t)2},
+    {XtNleftBitmap, XtCLeftBitmap, XtRBitmap, sizeof(Pixmap),
+       offset(label.left_bitmap), XtRImmediate, (caddr_t) None},
+    {XtNleftOffset, XtCLeftOffset, XtRPosition, sizeof(Position),
+       offset(label.left_offset), XtRImmediate, (caddr_t) 0},
     {XtNbitmap, XtCPixmap, XtRBitmap, sizeof(Pixmap),
 	offset(label.pixmap), XtRImmediate, (caddr_t)None},
     {XtNresize, XtCResize, XtRBoolean, sizeof(Boolean),
@@ -203,10 +207,11 @@ static void GetnormalGC(lw)
     values.foreground	= lw->label.foreground;
     values.background	= lw->core.background_pixel;
     values.font		= lw->label.font->fid;
+    values.graphics_exposures = False;
 
     lw->label.normal_GC = XtGetGC(
 	(Widget)lw,
-	(unsigned) GCForeground | GCBackground | GCFont,
+	(unsigned) GCForeground | GCBackground | GCFont | GCGraphicsExposures,
 	&values);
 }
 
@@ -223,13 +228,49 @@ static void GetgrayGC(lw)
 						lw->label.foreground, 
 						lw->core.background_pixel,
 						lw->core.depth);
+    values.graphics_exposures = False;
 
     lw->label.stipple = values.tile;
     lw->label.gray_GC = XtGetGC((Widget)lw, 
 				(unsigned) GCForeground | GCBackground |
-					   GCFont | GCTile | GCFillStyle,
+					   GCFont | GCTile | GCFillStyle |
+					   GCGraphicsExposures,
 				&values);
 }
+
+static void compute_bitmap_offsets (lw)
+    LabelWidget lw;
+{
+    /*
+     * label will be displayed at (internal_width, internal_height + lbm_y)
+     */
+    if (lw->label.lbm_height != 0) {
+	lw->label.lbm_y = (((int) lw->core.height) -
+			   ((int) lw->label.internal_height * 2) -
+			   ((int) lw->label.lbm_height)) / 2;
+    } else {
+	lw->label.lbm_y = 0;
+    }
+}
+
+
+static void set_bitmap_info (lw)
+    LabelWidget lw;
+{
+    Window root;
+    int x, y;
+    unsigned int bw, depth;
+
+    if (!(lw->label.left_bitmap &&
+	  XGetGeometry (XtDisplay(lw), lw->label.left_bitmap, &root, &x, &y,
+			&lw->label.lbm_width, &lw->label.lbm_height,
+			&bw, &depth))) {
+	lw->label.lbm_width = lw->label.lbm_height = 0;
+    }
+    compute_bitmap_offsets (lw);
+}
+
+
 
 /* ARGSUSED */
 static void Initialize(request, new)
@@ -249,9 +290,12 @@ static void Initialize(request, new)
     SetTextWidthAndHeight(lw);
 
     if (lw->core.width == 0)
-        lw->core.width = lw->label.label_width + 2 * lw->label.internal_width;
+        lw->core.width = (lw->label.label_width + 2 * lw->label.internal_width
+			  + LEFT_OFFSET(lw));
     if (lw->core.height == 0)
         lw->core.height = lw->label.label_height + 2*lw->label.internal_height;
+
+    set_bitmap_info (lw);
 
     lw->label.label_x = lw->label.label_y = 0;
     (*XtClass(new)->core_class.resize) ((Widget)lw);
@@ -285,6 +329,16 @@ static void Redisplay(w, event, region)
        int len = lw->label.label_len;
        char *label = lw->label.label;
        Position y = lw->label.label_y + lw->label.font->max_bounds.ascent;
+
+       /* display left bitmap */
+       if (lw->label.left_bitmap && lw->label.lbm_width != 0) {
+	   XCopyPlane (XtDisplay(w), lw->label.left_bitmap, XtWindow(w), gc,
+		       0, 0, lw->label.lbm_width, lw->label.lbm_height,
+		       (int) lw->label.internal_width, 
+		       (int) lw->label.internal_height + lw->label.lbm_y, 
+		       (unsigned long) 1L);
+       }
+
        if (len == MULTI_LINE_LABEL) {
 	   char *nl;
 	   while ((nl = index(label, '\n')) != NULL) {
@@ -322,10 +376,12 @@ static void _Reposition(lw, width, height, dx, dy)
     Position *dx, *dy;
 {
     Position newPos;
+    Position leftedge = lw->label.internal_width + LEFT_OFFSET(lw);
+
     switch (lw->label.justify) {
 
 	case XtJustifyLeft   :
-	    newPos = lw->label.internal_width;
+	    newPos = leftedge;
 	    break;
 
 	case XtJustifyRight  :
@@ -337,8 +393,8 @@ static void _Reposition(lw, width, height, dx, dy)
 	    newPos = (width - lw->label.label_width) / 2;
 	    break;
     }
-    if (newPos < (Position)lw->label.internal_width)
-	newPos = lw->label.internal_width;
+    if (newPos < (Position)leftedge)
+	newPos = leftedge;
     *dx = newPos - lw->label.label_x;
     lw->label.label_x = newPos;
     *dy = (newPos = (height - lw->label.label_height) / 2) - lw->label.label_y;
@@ -352,6 +408,7 @@ static void Resize(w)
     LabelWidget lw = (LabelWidget)w;
     Position dx, dy;
     _Reposition(lw, w->core.width, w->core.height, &dx, &dy);
+    compute_bitmap_offsets (lw);
 }
 
 /*
@@ -390,6 +447,28 @@ static Boolean SetValues(current, request, new, args, num_args)
 	newlw->label.label = newlw->core.name;
     }
 
+    /*
+     * resizing on the following conditions:
+     * 
+     *     1.  bitmap:  None <-> present (enables/disables offset)
+     *     2.  offset changes and bitmap present
+     * 
+     */
+    if ((!curlw->label.left_bitmap && newlw->label.left_bitmap) ||
+	(curlw->label.left_bitmap && !newlw->label.left_bitmap) ||
+	((curlw->label.left_offset != newlw->label.left_offset &&
+	  newlw->label.left_bitmap)))
+      was_resized = True;
+
+    /*
+     * resizing not necessary, but needs redisplay
+     *
+     *     1.  bitmap changes id, but offset does not change
+     */
+    if (curlw->label.left_bitmap && newlw->label.left_bitmap &&
+	curlw->label.left_bitmap != newlw->label.left_bitmap)
+      redisplay = True;
+
     if (curlw->label.label != newlw->label.label) {
         if (curlw->label.label != curlw->core.name)
 	    XtFree( (char *)curlw->label.label );
@@ -411,6 +490,7 @@ static Boolean SetValues(current, request, new, args, num_args)
     if (newlw->label.resize && was_resized) {
 	if ((curlw->core.width == reqlw->core.width) && !checks[WIDTH])
 	    newlw->core.width = (newlw->label.label_width +
+				 LEFT_OFFSET(newlw) +
 				 2 * newlw->label.internal_width);
 
 	if ((curlw->core.height == reqlw->core.height) && !checks[HEIGHT])
@@ -437,6 +517,10 @@ static Boolean SetValues(current, request, new, args, num_args)
 	_Reposition(newlw, curlw->core.width, curlw->core.height, &dx, &dy);
     }
 
+    if (curlw->label.left_bitmap != newlw->label.left_bitmap) {
+	set_bitmap_info (newlw);
+    }
+
     return was_resized || redisplay ||
 	   XtIsSensitive(current) != XtIsSensitive(new);
 }
@@ -460,7 +544,8 @@ static XtGeometryResult QueryGeometry(w, intended, preferred)
     register LabelWidget lw = (LabelWidget)w;
 
     preferred->request_mode = CWWidth | CWHeight;
-    preferred->width = lw->label.label_width + 2 * lw->label.internal_width;
+    preferred->width = (lw->label.label_width + 2 * lw->label.internal_width +
+			LEFT_OFFSET(lw));
     preferred->height = lw->label.label_height + 2*lw->label.internal_height;
     if (  ((intended->request_mode & (CWWidth | CWHeight))
 	   	== (CWWidth | CWHeight)) &&

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Label.h,v 1.23 89/07/16 14:36:26 jim Exp $
+ * $XConsortium: Label.h,v 1.2 90/02/03 16:55:32 jim Exp $
  */
 
 /***********************************************************
@@ -56,6 +56,8 @@ SOFTWARE.
  internalWidth	     Width		Dimension	4
  justify	     Justify		XtJustify	XtJustifyCenter
  label		     Label		String		NULL
+ leftBitmap	     LeftBitmap		Pixmap		None
+ leftOffset	     LeftOffset		Position	0
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  resize		     Resize		Boolean		True
  sensitive	     Sensitive		Boolean		True
@@ -71,6 +73,10 @@ SOFTWARE.
 #define XtNfont "font"
 #define XtNinternalWidth "internalWidth"
 #define XtNinternalHeight "internalHeight"
+#define XtNleftBitmap "leftBitmap"
+#define XtCLeftBitmap "leftBitmap"
+#define XtNleftOffset "leftOffset"
+#define XtCLeftOffset "LeftOffset"
 #define XtNresize "resize"
 #define XtCResize "Resize"
  

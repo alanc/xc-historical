@@ -1,5 +1,5 @@
 /*
-* $XConsortium: LabelP.h,v 1.23 89/05/11 01:05:36 kit Exp $
+* $XConsortium: LabelP.h,v 1.2 90/02/03 16:55:34 jim Exp $
 */
 
 
@@ -68,6 +68,8 @@ typedef struct {
     Dimension	internal_height;
     Pixmap	pixmap;
     Boolean	resize;
+    Pixmap	left_bitmap;
+    Position	left_offset;
 
     /* private state */
     GC		normal_GC;
@@ -78,6 +80,8 @@ typedef struct {
     Dimension	label_width;
     Dimension	label_height;
     Dimension	label_len;
+    int		lbm_y;			/* where in label */
+    unsigned int lbm_width, lbm_height;	 /* size of pixmap */
 } LabelPart;
 
 
@@ -92,5 +96,7 @@ typedef struct _LabelRec {
     SimplePart	simple;
     LabelPart	label;
 } LabelRec;
+
+#define LEFT_OFFSET(lw) ((lw)->label.left_bitmap ? (lw)->label.left_offset : 0)
 
 #endif /* _XawLabelP_h */
