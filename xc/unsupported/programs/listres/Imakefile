@@ -8,13 +8,15 @@ PLACESTOLOOK = $(AWIDGETSRC)\/libXaw.a $(TOOLKITSRC)\/libXt.a
 
 AllTarget(listres)
 
-depend:: widgets.c
+ComplexProgramTarget(listres)
 
+/*
 clean:: 
 	$(RM) widgets.c
 
-ComplexProgramTarget(listres)
+depend:: widgets.c
 
 widgets.c: genlist.sh
 	$(RM) $@
 	sh genlist.sh $(PLACESTOLOOK) >$@
+*/
