@@ -1,4 +1,4 @@
-/* $XConsortium: XSendEv.c,v 1.1 91/02/18 10:25:29 rws Exp $ */
+/* $XConsortium: XSendEv.c,v 1.2 91/02/20 09:17:14 rws Exp $ */
 /************************************************************************
  *
  * XSendEv.c.
@@ -534,7 +534,7 @@ select_all_input (display, win, name, dev)
 	    if (*this_client++ == class[dev->device_id].class[i])
 		break;
 	if (j==this_client_count)
-	    status == -1;
+	    status = -1;
 	}
 
     if (Dflag)

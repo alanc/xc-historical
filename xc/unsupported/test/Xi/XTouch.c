@@ -1,4 +1,4 @@
-/* $XConsortium: XTouch.c,v 1.1 91/02/18 10:25:32 rws Exp $ */
+/* $XConsortium: XTouch.c,v 1.2 91/02/20 09:18:23 rws Exp $ */
 /************************************************************************
  *
  * XTouch.c
@@ -653,7 +653,7 @@ select_all_input (display, win, name, dev)
 	    if (*this_client++ == class[dev->device_id].class[i])
 		break;
 	if (j==this_client_count)
-	    status == -1;
+	    status = -1;
 	}
 
     if (Dflag)
