@@ -251,7 +251,7 @@ int fSorted;
     register int nlMiddle;
     PixmapPtr	pTile;		/* pointer to tile we want to fill with */
     int		w, width, x, tmpSrc, srcStartOver, nstart, nend;
-    int 	endmask, tlwidth, rem, tileWidth, *psrcT, endinc, rop;
+    int 	endmask, tlwidth, rem, tileWidth, *psrcT, rop;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
 

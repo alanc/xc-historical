@@ -23,6 +23,7 @@ DependTarget()
 lint: ${SRCS}
 	@echo 'Expect the following warnings from lint:' >lint.out
 	@echo '  cfbpntwin.c: srcStartOver set but not used' >>lint.out
+	@echo '  cfbfillsp.c: srcStartOver set but not used' >>lint.out
 	@echo '  cfbbitblt.c: tmpDst set but not used (4 of these)' >>lint.out
 	@echo '-------' >>lint.out
 	$(LINT) $(LFLAGS) -Clibcfb $(INCLUDES) $(SRCS) >> lint.out 2>&1

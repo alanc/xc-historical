@@ -138,7 +138,6 @@ cfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
     int 		widthDst;	/* width of bitmap in words */
     register BoxPtr 	pbox, pboxLast, pboxTest;
     register DDXPointPtr pptLast;
-    DDXPointPtr		pptT;
     int 		alu;
     RegionPtr 		prgnDst;
     int			xStart, xEnd;

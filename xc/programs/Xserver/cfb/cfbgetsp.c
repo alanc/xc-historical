@@ -55,7 +55,6 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
     unsigned int		*psrcBase;	/* start of src bitmap */
     int			widthSrc;	/* width of pixmap in bytes */
     register DDXPointPtr pptLast;	/* one past last point to get */
-    DDXPointPtr		pptT;		/* temporary point */
     int         	xEnd;		/* last pixel to copy from */
     register int	nstart; 
     int	 		nend; 
