@@ -1,5 +1,5 @@
 /*
-* $Header: ClockP.h,v 1.6 87/10/09 13:11:03 chow BL5 $
+* $Header: ClockP.h,v 1.6 87/10/09 13:11:03 swick Locked $
 */
 
 /*
@@ -24,8 +24,10 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-#ifndef _XtClockPrivate_h
-#define _XtClockPrivate_h
+#ifndef _XtClockP_h
+#define _XtClockP_h
+
+#include <X/Clock.h>
 
 #define SEG_BUFF_SIZE		128
 
@@ -80,4 +82,4 @@ typedef struct _ClockClassRec {
 /* Class pointer. */
 extern ClockClassRec clockClassRec;
 
-#endif _XtClockPrivate_h
+#endif _XtClockP_h
