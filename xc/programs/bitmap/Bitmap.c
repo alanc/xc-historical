@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.7 90/03/31 04:40:05 dmatic Exp $
+ * $XConsortium: Bitmap.c,v 1.8 90/03/31 06:40:25 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -289,9 +289,9 @@ void BWDebug(w)
     DEBUG ^= True;
 }
 
-/*****************************************************************************
+/*****************************************************************************\
  *                               Converters                                  *
- *****************************************************************************/
+\*****************************************************************************/
 
 #define Length(width, height)\
 	(int)((int)(((width) + 7) / 8) * (height))
@@ -448,9 +448,9 @@ XImage *BWGetImage(w)
     return BW->bitmap.image;
 }
 
-/*****************************************************************************
+/*****************************************************************************\
  * Request Machine: stacks up and handles requests from application calls.   * 
- *****************************************************************************/
+\*****************************************************************************/
 
 /*
  * Searches for a request record of a request specified by its name.
@@ -720,9 +720,17 @@ void BWClearChanged(w)
     BW->bitmap.changed = False;
 }
 
-/*****************************************************************************
+Boolean BWQueryStored(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    
+    return (BW->bitmap.storage != NULL);
+}
+
+/*****************************************************************************\
  *                                   Graphics                                *
- *****************************************************************************/
+\*****************************************************************************/
 
 
 #define QuerySet(x, y) (((x) != NotSet) && ((y) != NotSet))
@@ -2913,15 +2921,20 @@ void BWTPaste(w, event)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
-    BWRequestSelection(w, event->xbutton.time, TRUE);
+    if (!BW->bitmap.selection.own)
+	BWRequestSelection(w, event->xbutton.time, TRUE);
+    else 
+	BWStore(w);
 
+    if (!BWQueryStored(w))
+	return;
     
     BWEngageRequest(w, RestoreRequest, False, 
 		    &(event->xbutton.state), sizeof(int));
-
+    
     OnePointHandler(w,
-             (BWStatus*) BW->bitmap.request_stack[BW->bitmap.current].status,
-	     event);
+	       (BWStatus*) BW->bitmap.request_stack[BW->bitmap.current].status,
+	       event);
 }
 
 void BWTMark(w, event)
@@ -3060,7 +3073,7 @@ Boolean ConvertSelection(w, selection, target, type, value, length, format)
 
     case XA_STRING:
 	*type = XA_STRING;
-	*value = "Hello world!";
+	*value = "Hello world!\n";
 	*length = XtStrlen(*value);
 	*format = 8;
 	return True;
@@ -3074,8 +3087,11 @@ void LoseSelection(w, selection)
     Widget w;
     Atom *selection;
 {
+    BitmapWidget BW = (BitmapWidget) w;
+
     if (DEBUG)
 	fprintf(stderr, "Lost Selection\n");
+    BW->bitmap.selection.own = False;
     BWUnmark(w);
 }
 
@@ -3094,10 +3110,13 @@ void BWGrabSelection(w, time)
     Widget w;
     Time time;
 {
-    
-    if (XtOwnSelection(w, XA_PRIMARY, time,
-		       ConvertSelection, LoseSelection, SelectionDone))
-	if (DEBUG)
+    BitmapWidget BW = (BitmapWidget) w;
+
+    BW->bitmap.selection.own = XtOwnSelection(w, XA_PRIMARY, time,
+					      ConvertSelection, 
+					      LoseSelection, 
+					      SelectionDone);
+	if (DEBUG && BW->bitmap.selection.own)
 	    fprintf(stderr, "Own the selection\n");
 }
 
@@ -3132,7 +3151,7 @@ void SelectionCallback(w, client_data, selection, type, value, length, format)
 	break;
     }
 
-    BW->bitmap.selection_limbo = FALSE;
+    BW->bitmap.selection.limbo = FALSE;
 }
 
 void BWRequestSelection(w, time, wait)
@@ -3145,10 +3164,10 @@ void BWRequestSelection(w, time, wait)
     XtGetSelectionValue(w, XA_PRIMARY, XA_PIXMAP,
 			SelectionCallback, NULL, time);
 
-    BW->bitmap.selection_limbo = TRUE;
+    BW->bitmap.selection.limbo = TRUE;
 
     if (wait)
-	while (BW->bitmap.selection_limbo) {
+	while (BW->bitmap.selection.limbo) {
 	    XEvent event;
 	    XtNextEvent(&event);
 	    XtDispatchEvent(&event);
@@ -3156,14 +3175,6 @@ void BWRequestSelection(w, time, wait)
 }
 
 /*****************************************************************************/
-
-
-
-
-/*********/
-    
-
-
 
 void Refresh();
 
@@ -3196,7 +3207,8 @@ static void Initialize(request, new, argv, argc)
     new->bitmap.fold = False;
     new->bitmap.changed = False;
     new->bitmap.zooming = False;
-    new->bitmap.selection_limbo = False;
+    new->bitmap.selection.own = False;
+    new->bitmap.selection.limbo = False;
 
     new->bitmap.request_stack = (BWRequestStack *)
 	XtMalloc(sizeof(BWRequestStack));
@@ -3232,31 +3244,30 @@ static void Initialize(request, new, argv, argc)
     values.foreground ^= values.background;
     values.function = GXxor;
     mask = GCForeground | GCBackground | GCFunction;
-    if ((new->bitmap.stipple != XtUnspecifiedPixmap)
-	&&
-	new->bitmap.stippled)
+    if (new->bitmap.stipple != XtUnspecifiedPixmap)
     {
 	values.stipple = new->bitmap.stipple;
-	values.fill_style = FillStippled;
 	mask |= GCStipple | GCFillStyle;
     }
+    values.fill_style = (new->bitmap.stippled ? FillStippled : FillSolid);
+
     new->bitmap.highlighting_gc = XCreateGC(XtDisplay(new), 
 					    RootWindow(XtDisplay(new), 
 					       DefaultScreen(XtDisplay(new))), 
 					    mask, &values);
-   
+
+
     values.foreground = new->bitmap.framing_pixel;
     values.background = new->core.background_pixel;
     values.foreground ^= values.background;
     mask = GCForeground | GCBackground | GCFunction;
-    if ((new->bitmap.dashes != XtUnspecifiedPixmap)
-	&&
-	new->bitmap.dashed)
+    if (new->bitmap.dashes != XtUnspecifiedPixmap)
     {
 	values.stipple = new->bitmap.dashes;
-	values.fill_style = FillStippled;
 	mask |= GCStipple | GCFillStyle;
     }
+    values.fill_style = (new->bitmap.dashed ? FillStippled : FillSolid);
+
     new->bitmap.framing_gc = XCreateGC(XtDisplay(new), 
 				     RootWindow(XtDisplay(new), 
 						DefaultScreen(XtDisplay(new))),
@@ -3356,14 +3367,6 @@ void FixMark(BW)
 		    BW->bitmap.mark.to_x = 
 			BW->bitmap.mark.to_y = NotSet;
     }
-}
-
-Boolean BWQueryStored(w)
-    Widget w;
-{
-    BitmapWidget BW = (BitmapWidget) w;
-    
-    return (BW->bitmap.storage != NULL);
 }
 
 int BWStoreFile(w, filename, basename)
