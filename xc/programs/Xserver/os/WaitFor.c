@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.55 91/06/13 08:55:43 rws Exp $ */
+/* $XConsortium: WaitFor.c,v 1.56 91/12/17 21:21:26 rws Exp $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -135,7 +135,8 @@ WaitForSomething(pClientsReady)
 	}
 	if (ScreenSaverTime)
 	{
-	    timeout = ScreenSaverTime - TimeSinceLastInputEvent();
+	    timeout = (ScreenSaverTime -
+		       (GetTimeInMillis() - lastDeviceEventTime.milliseconds));
 	    if (timeout <= 0) /* may be forced by AutoResetServer() */
 	    {
 		long timeSinceSave;
