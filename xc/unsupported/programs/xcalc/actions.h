@@ -1,0 +1,87 @@
+/*
+ * $XConsortium$
+ * 
+ * actions.h - action table declaring externally available procedures for xcalc
+ *
+ * Copyright 1989 by the Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided 
+ * that the above copyright notice appear in all copies and that both that 
+ * copyright notice and this permission notice appear in supporting 
+ * documentation, and that the name of M.I.T. not be used in advertising
+ * or publicity pertaining to distribution of the software without specific, 
+ * written prior permission. M.I.T. makes no representations about the 
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
+ * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * Author:  Donna Converse, MIT X Consortium
+ */
+
+extern void
+    add(), back(), bell(), clear(), cosine(), cut(), decimal(),
+    degree(), digit(), divide(), e(), enter(), epower(), equal(),
+    exchange(), factorial(), HPrecall(), HPstore(), HPsum(),
+    inverse(), leftParen(), logarithm(), multiply(), naturalLog(),
+    negate(), nop(), off(), pi(), power(), quit(), recall(),
+    reciprocal(), rightParen(), roll(), scientific(), sine(),
+    square(), squareRoot(), store(), subtract(), sum(),
+    tangent(), tenpower(), XexchangeY();
+
+/*
+ * 	calculator action table
+ */
+
+XtActionsRec	Actions[] = {
+{"add",		add},		/* addition */
+{"back",	back},		/* HP-specific backspace */
+{"bell",	bell},		/* ring bell */
+{"clear",	clear},		/* TI-specific clear calculator state */
+{"cosine",	cosine},	/* trigonometric function cosine */
+{"cut",		cut},		/* cut selection */
+{"decimal",	decimal},	/* decimal point */
+{"degree",	degree},	/* degree, radian, grad switch */
+{"digit",	digit},		/* numeric key */
+{"divide",	divide},	/* division */
+{"e",		e},		/* the natural number e */
+{"enter",	enter},		/* HP-specific enter */
+{"epower",	epower},	/* e raised to a power */
+{"equal",	equal},		/* TI-specific = */
+{"exchange",	exchange},	/* TI-specific exchange memory and display */
+{"factorial",	factorial},	/* factorial function */
+{"HPrecall",	HPrecall},	/* HP-specific memory recall */
+{"HPstore",	HPstore},	/* HP-specific memory store */
+{"HPsum",	HPsum},		/* HP-specific memory summation */
+{"inverse", 	inverse},	/* inverse */
+{"leftParen",	leftParen},	/* TI-specific left parenthesis */
+{"logarithm",	logarithm},	/* logarithm base 10 */
+{"multiply",	multiply},	/* multiplication */
+{"naturalLog",	naturalLog},	/* natural logarithm base e */
+{"negate",	negate},	/* change sign */
+{"nop",		nop},		/* no operation, rings bell */
+{"off",		off},		/* clear state */
+{"pi",		pi},		/* the number pi */
+{"power",	power},		/* raise to an arbitrary power */
+{"quit",	quit},		/* quit */
+{"recall",	recall},	/* TI-specific memory recall */
+{"reciprocal",  reciprocal},	/* reciprocal function */
+{"rightParen",	rightParen},	/* TI-specific left parenthesis */
+{"roll",	roll},		/* HP-specific roll stack */
+{"scientific",	scientific},	/* scientfic notation (EE) */
+{"sine",	sine},		/* trigonometric function sine */
+{"square",	square},	/* square */
+{"squareRoot",	squareRoot},	/* square root */
+{"store",	store},		/* TI-specific memory store */
+{"subtract", 	subtract},	/* subtraction */
+{"sum",		sum},		/* TI-specific memory summation */
+{"tangent",	tangent},	/* trigonometric function tangent */
+{"tenpower",	tenpower},	/* 10 raised to to an arbitrary power */
+{"XexchangeY",	XexchangeY}	/* HP-specific exchange X and Y registers */
+};

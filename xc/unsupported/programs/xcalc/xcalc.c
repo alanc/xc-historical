@@ -1,0 +1,372 @@
+/*
+ * $XConsortium$
+ *
+ * xcalc.c  -  a hand calculator for the X Window system
+ * 
+ * Copyright 1989 by the Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided 
+ * that the above copyright notice appear in all copies and that both that 
+ * copyright notice and this permission notice appear in supporting 
+ * documentation, and that the name of M.I.T. not be used in advertising
+ * or publicity pertaining to distribution of the software without specific, 
+ * written prior permission. M.I.T. makes no representations about the 
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
+ * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ *
+ *	 Original Author:  John H. Bradley, University of Pennsylvania
+ *			    (bradley@cis.upenn.edu)
+ *				  March, 1987
+ *  RPN mode added and port to X11 by Mark Rosenstein, MIT Project Athena
+ *  Rewritten to be an Xaw and Xt client by Donna Converse, MIT X Consortium
+ */
+
+#include <stdio.h>
+#include <math.h>
+#include <signal.h>
+#include <X11/Intrinsic.h>
+#include <X11/StringDefs.h>
+#include <X11/Xatom.h>
+#include <X11/Shell.h>
+#include <X11/Form.h>
+#include <X11/Label.h>
+#include <X11/Command.h>
+#include <X11/Toggle.h>
+#include <X11/cursorfont.h>
+#include "xcalc.h"
+#include "actions.h"
+
+/*
+ *	global data
+ */
+int	rpn = 0;		/* Reverse Polish Notation (HP mode) flag */
+char	dispstr[32];		/* string to show up in the LCD */
+
+/*
+ *	local data 
+ */
+static Display	*dpy = NULL;	/* connection to the X server */
+static Widget	toplevel=NULL;  /* top level shell widget */
+static Widget   calculator=NULL;/* an underlying form widget */
+static Widget	LCD = NULL;	/* liquid crystal display */
+static Widget	ind[6];		/* mode indicators in the screen */
+static char	selstr[20];	/* storage for selections from the LCD */
+				/* checkerboard used in mono mode */
+#define check_width 16
+#define check_height 16
+static char check_bits[] = {
+   0x55, 0x55, 0xaa, 0xaa, 0x55, 0x55, 0xaa, 0xaa, 0x55, 0x55, 0xaa, 0xaa,
+   0x55, 0x55, 0xaa, 0xaa, 0x55, 0x55, 0xaa, 0xaa, 0x55, 0x55, 0xaa, 0xaa,
+   0x55, 0x55, 0xaa, 0xaa, 0x55, 0x55, 0xaa, 0xaa};
+
+/*	command line options specific to the application */
+static XrmOptionDescRec Options[] = {
+{"-rpn",		"rpn",		XrmoptionNoArg,		(caddr_t)"on"},
+{"-stipple",		"stipple",	XrmoptionNoArg,		(caddr_t)"on"}
+};
+
+/*	resources specific to the application */
+static struct resources {
+    Boolean	rpn;		/* reverse polish notation (HP mode) */
+    Boolean	stipple;	/* background stipple */
+    Cursor	cursor;
+} App_Resources;
+
+static Boolean defFalse = False;
+
+#define offset(field) XtOffset(struct resources *, field)
+
+static XtResource Resources[] = {
+{"rpn", "Rpn", XtRBoolean, sizeof(Boolean), offset(rpn), XtRBoolean, 
+     (caddr_t)&defFalse},
+{"stipple", "Stipple", XtRBoolean, sizeof(Boolean), offset(stipple),
+     XtRBoolean, (caddr_t)&defFalse},
+{"cursor", "Cursor", XtRCursor, sizeof(Cursor), offset(cursor), XtRCursor,
+     (caddr_t)NULL}
+};
+
+void main(argc, argv)
+    int		argc;
+    char	**argv;
+{
+    Arg		args[3];
+#ifndef IEEE
+    extern void fperr();
+#endif
+    void create_calculator();
+    void create_display();
+    void create_keypad();
+    void Quit(), Syntax();
+
+
+    toplevel = XtInitialize(NULL, "XCalc", Options, XtNumber(Options),
+			    &argc, argv);
+    if (argc != 1) Syntax(argc, argv);
+    
+    XtSetArg(args[0], XtNtitle,	"Calculator");
+    XtSetValues(toplevel, args, 1);
+
+    XtGetApplicationResources(toplevel, (caddr_t)&App_Resources, Resources,
+			      XtNumber(Resources), (ArgList)NULL, 0);
+
+    create_calculator(toplevel);
+
+    XtAppAddActions(XtWidgetToApplicationContext(toplevel), Actions,
+		    XtNumber(Actions));
+
+    XtRealizeWidget(toplevel);
+
+    dpy = XtDisplay(toplevel);
+    XDefineCursor(dpy, XtWindow(toplevel), App_Resources.cursor);
+
+    if (App_Resources.stipple || (CellsOfScreen(XtScreen(toplevel)) <= 2))
+    {
+	Screen	*screen = XtScreen(toplevel);
+	Pixmap	backgroundPix;
+
+	backgroundPix = XCreatePixmapFromBitmapData
+	    (dpy, XtWindow(toplevel), check_bits, check_width, check_height,
+	     WhitePixelOfScreen(screen), BlackPixelOfScreen(screen),
+	     DefaultDepthOfScreen(screen));
+	XtSetArg(args[0], XtNbackgroundPixmap, backgroundPix);
+	XtSetValues(calculator, args, 1);
+    }
+
+#ifndef IEEE
+    signal(SIGFPE,fperr);
+#endif
+    ResetCalc();
+    XtMainLoop();
+}
+
+void create_calculator(shell)
+    Widget	shell;
+{
+    rpn = App_Resources.rpn;
+    calculator = XtCreateManagedWidget(rpn ? "hp" : "ti", formWidgetClass,
+				       shell, (ArgList)NULL, (Cardinal)0);
+    create_display(calculator);
+    create_keypad(calculator);
+    XtSetKeyboardFocus(calculator, LCD);
+}
+
+/*
+ *	Do the calculator data display widgets.
+ */
+void create_display(parent)
+    Widget	parent;
+{
+    Widget	bevel, screen;
+    static Arg	args[] = {
+    	{XtNborderWidth, (XtArgVal)0},
+    	{XtNjustify, (XtArgVal)XtJustifyRight}
+    };
+
+    /* the frame surrounding the calculator display */
+    bevel = XtCreateManagedWidget("bevel", formWidgetClass, parent,
+				  (ArgList)NULL, (Cardinal)0);
+    /* the screen of the calculator */
+    screen = XtCreateManagedWidget("screen", formWidgetClass, bevel,
+				   (ArgList)NULL, (Cardinal)0);
+    /* M - the memory indicator */
+    ind[MEMORY] = XtCreateManagedWidget("M", labelWidgetClass, screen,
+					args, XtNumber(args));
+    /* liquid crystal display */
+    LCD = XtCreateManagedWidget("LCD", toggleWidgetClass, screen, args,
+				XtNumber(args));
+    /* INV - the inverse function indicator */
+    ind[INVERSE] = XtCreateManagedWidget("INV", labelWidgetClass, 
+					 screen, args, XtNumber(args));
+    /* DEG - the degrees switch indicator */
+    ind[DEGREE] = XtCreateManagedWidget("DEG", labelWidgetClass, screen,
+					args, XtNumber(args));
+    /* RAD - the radian switch indicator */
+    ind[RADIAN] = XtCreateManagedWidget("RAD", labelWidgetClass, screen,
+					args, XtNumber(args));
+    /* GRAD - the grad switch indicator */
+    ind[GRADAM] = XtCreateManagedWidget("GRAD", labelWidgetClass, screen,
+					args, XtNumber(args));
+    /* () - the parenthesis indicator */
+    ind[PARENTHESIS] = XtCreateManagedWidget("P", labelWidgetClass, screen,
+					     args, XtNumber(args));
+}
+
+/*
+ *	Do all the buttons.  The application defaults file will give the
+ *	default button placement, default button labels, and default 
+ *      actions connected to the buttons.  The user can change any of 
+ *      these defaults in an environment-specific resource file.
+ */
+
+void create_keypad(parent)
+    Widget	parent;
+{
+    static char	*Keyboard[] = {
+	"button1", "button2", "button3", "button4", "button5",
+	"button6", "button7", "button8", "button9", "button10",
+	"button11","button12","button13","button14","button15",
+	"button16","button17","button18","button19","button20",
+	"button21","button22","button23","button24","button25",
+	"button26","button27","button28","button29","button30",
+	"button31","button32","button33","button34","button35",
+	"button36","button37","button38","button39","button40"
+	};
+    register int i;
+    int		 n = XtNumber(Keyboard);
+
+    if (App_Resources.rpn) n--; 	/* HP has 39 buttons, TI has 40 */
+
+    for (i=0; i < n; i++)
+	XtCreateManagedWidget(Keyboard[i], commandWidgetClass, parent,
+			      (ArgList)NULL, (Cardinal)0);
+}
+
+/*
+ *	Miscellaneous utility routines that interact with the widets.
+ */
+
+/*
+ * 	called by math routines to write to the liquid crystal display.
+ */
+void draw(string)
+    char	*string;
+{
+    Arg	args[1];
+
+    XtSetArg(args[0], XtNlabel, string);
+    XtSetValues(LCD, args, 1);
+}
+/*
+ *	called by math routines to turn on and off the display indicators.
+ */
+void setflag(indicator, on)
+    int		indicator;
+    Boolean	on;
+{
+    if (on) XtMapWidget(ind[indicator]);
+    else XtUnmapWidget(ind[indicator]);
+}
+
+/*
+ *	ring the bell.
+ */
+void ringbell()
+{
+    XBell(dpy, 0);
+}
+
+/*
+ *	die.
+ */
+void Quit()
+{
+    extern void exit();
+    XtDestroyApplicationContext(XtWidgetToApplicationContext(toplevel));
+    exit(0);
+}
+
+/*  
+ *	recite and die.
+ */
+void Syntax(argc, argv)	
+    int		argc;
+    char	**argv;
+{
+    register int i;
+    extern void exit();
+    (void) fprintf(stderr, "%s: unknown options:", argv[0]);
+    for (i=1; i <argc; i++)
+	(void) fprintf(stderr, " %s", argv[i]);
+    (void) fprintf(stderr, ".\n");
+    (void) fprintf(stderr, "Usage: %s", argv[0]);
+    for (i=0; i < XtNumber(Options); i++)
+	(void) fprintf(stderr, " [%s]", Options[i].option);
+    XtDestroyApplicationContext(XtWidgetToApplicationContext(toplevel));
+    exit(1);
+}
+
+/*    
+ * For selections.  Obviously, this is a little sloppy, and a hack.
+ * I use actions on the toggle widget to support selections.  This
+ * means that the user may not do a partial selection of the number
+ * displayed in the `liquid crystal display.'  Pasting numbers into
+ * the calculator is also not supported.  So all you can do is cut
+ * the entire number from the calculator display.
+ */
+
+/*ARGSUSED*/
+Boolean convert(w, selection, target, type, value, length, format)
+    Widget	w;
+    Atom	*selection;
+    Atom	*target;
+    Atom	*type;
+    caddr_t	*value;
+    unsigned long	*length;
+    int		*format;
+{
+    switch (*target)
+    {
+      case XA_STRING:
+	*type = XA_STRING;
+	strcpy(selstr, dispstr);
+	*value = selstr;
+	*length = strlen(selstr);
+	*format = 8;			/* XXX ugh */
+	return True;
+	                          /* where is TARGETS defined? XXX
+      case TARGETS:
+	*value = XA_STRING;
+	return True;
+	                           */
+    }
+    return False;
+}
+
+/*
+ * called when xcalc loses ownership of the selection.
+ */
+/*ARGSUSED*/
+void lose(w, selection)
+    Widget	w;
+    Atom	*selection;
+{
+    XtToggleUnsetCurrent(LCD);
+}
+
+/*
+ * called when some other client has got the selection.
+ */
+/*ARGSUSED*/
+void done(w, selection, target)
+    Widget	w;
+    Atom	*selection;
+    Atom	*target;
+{
+    selstr[0] = '\0';
+}
+
+/*
+ * called when xcalc asserts ownership of the selection.
+ */
+void own(time)
+    Time	time;
+{
+    XtOwnSelection(LCD, XA_PRIMARY, time, convert, lose, done);
+}
+
+/*
+ * called when xcalc relinguishes selection ownership.
+ */
+void disown()
+{
+    selstr[0] = '\0';
+}
