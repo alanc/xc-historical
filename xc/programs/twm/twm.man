@@ -1157,10 +1157,6 @@ Using the \fBf.upiconmgr\fP, \fBf.downiconmgr\fP
 \fBf.righticonmgr\fP functions,
 the input focus can be changed between windows directly from the keyboard.
 .SH BUGS
-Lock and Mod2-5 cannot be specified as modifier contexts.  The right fix is to
-add lock, l, mod1 (for completeness), mod2, mod3, mod4, mod5 to the parse and 
-grammar tables, and add a number as a valid key type (so long as it is 1-5).
-.PP
 The resource manager should have been used instead of all of the window
 lists.
 .PP
