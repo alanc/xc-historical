@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.6 89/11/13 18:49:11 jim Exp $
+ * $XConsortium: imakemdep.h,v 1.7 89/11/27 14:49:55 jim Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -51,10 +51,10 @@
  *     descriptor onto another, define such a mechanism here (if you don't
  *     already fall under the existing category(ies).
  */
-#ifdef SYSV
+#if defined(SYSV) && !defined(CRAY)
 #define	dup2(fd1,fd2)	((fd1 == fd2) ? fd1 : (close(fd2), \
 					       fcntl(fd1, F_DUPFD, fd2)))
-#endif	/* SYSV */
+#endif
 
 
 /*
