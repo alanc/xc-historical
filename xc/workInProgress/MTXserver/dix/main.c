@@ -43,7 +43,7 @@ PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: main.c,v 1.2 94/01/11 20:46:35 rob Exp $ */
+/* $XConsortium: main.c,v 1.3 94/01/11 20:59:41 rob Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -205,12 +205,8 @@ main(argc, argv)
     argcGlobal = argc;
     argvGlobal = argv;
     display = "0";
-    ProcessCommandLine(argc, argv);
 
-#ifndef XTHREADS
-    alwaysCheckForInput[0] = 0;
-    alwaysCheckForInput[1] = 1;
-#else /* not XTHREADS */
+#ifdef XTHREADS
 /*
 ** if you want to enable the threads monitor, add this into site.cf
 **
@@ -226,7 +222,14 @@ main(argc, argv)
     InitializeMTXLocks();
     InitializeMessageMonitor();
     InitializeSignalHandlers();
-#endif /* not XTHREADS */
+#endif /* XTHREADS */
+
+    ProcessCommandLine(argc, argv);
+
+#ifndef XTHREADS
+    alwaysCheckForInput[0] = 0;
+    alwaysCheckForInput[1] = 1;
+#endif
 
     MTX_MUTEX_LOCK(&ServerMutex);
 
