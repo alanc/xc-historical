@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.69 89/06/08 18:05:27 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.70 89/07/10 17:33:27 dschmidt Exp $";
 #endif /* lint */
 
 
@@ -127,7 +127,7 @@ static void ClassInitialize()
     extern void XmuCvtStringToJustify();
     extern void XmuCvtStringToPixmap();
     static XtConvertArgRec screenConvertArg[] = {
-        {XtBaseOffset, (caddr_t) XtOffset(Widget, core.screen),
+        {XtWidgetBaseOffset, (caddr_t) XtOffset(Widget, core.screen),
 	     sizeof(Screen *)}
     };
     XtAddConverter( XtRString, XtRJustify, XmuCvtStringToJustify, NULL, 0 );
