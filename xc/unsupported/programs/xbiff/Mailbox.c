@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.50 91/01/11 18:41:09 converse Exp $
+ * $XConsortium: Mailbox.c,v 1.51 91/02/17 15:21:40 converse Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -147,7 +147,7 @@ MailboxClassRec mailboxClassRec = {
     /* num_actions		*/	XtNumber(actionsList),
     /* resources		*/	resources,
     /* resource_count		*/	XtNumber(resources),
-    /* xrm_class		*/	NULL,
+    /* xrm_class		*/	NULLQUARK,
     /* compress_motion		*/	TRUE,
     /* compress_exposure	*/	TRUE,
     /* compress_enterleave	*/	TRUE,
@@ -204,8 +204,6 @@ static void Initialize (request, new)
     MailboxWidget w = (MailboxWidget) new;
     int shape_event_base, shape_error_base;
 
-    if (!w->mailbox.filename) GetMailFile (w);
-
     if (w->core.width <= 0) w->core.width = 1;
     if (w->core.height <= 0) w->core.height = 1;
 
@@ -214,13 +212,13 @@ static void Initialize (request, new)
 						     &shape_error_base))
       w->mailbox.shapeit = False;
     w->mailbox.shape_cache.mask = None;
-
     w->mailbox.gc = get_mailbox_gc (w);
     w->mailbox.interval_id = (XtIntervalId) 0;
     w->mailbox.full.pixmap = None;
     w->mailbox.empty.pixmap = None;
     w->mailbox.flag_up = FALSE;
     w->mailbox.last_size = 0;
+    if (!w->mailbox.filename) GetMailFile (w);
     return;
 }
 
