@@ -1,8 +1,8 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.5 91/09/09 15:42:15 rws Exp $
 
 #if InstallLibManPages
 #define IHaveSubdirs
-#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+#define PassCDebugFlags
 #endif
 
 SUBDIRS = Xlib Xt Xext XI
