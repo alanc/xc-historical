@@ -1,4 +1,4 @@
-/* $XConsortium: command.c,v 2.44 91/07/16 20:33:52 converse Exp $ */
+/* $XConsortium: command.c,v 2.45 93/09/20 17:52:14 hersh Exp $ */
 
 /*
  *			  COPYRIGHT 1987, 1989
@@ -45,14 +45,13 @@
 /* number of user input events to queue before malloc */
 #define TYPEAHEADSIZE 20
 
-#ifdef macII
+#ifndef HAS_VFORK
 #define vfork() fork()
-#endif /* macII */
-
-#if defined(SYSV) && !defined(hpux)
-#define vfork() fork()
-#endif /* SYSV and not hpux */
-
+#else
+#if defined(sun) && !defined(SVR4)
+#include <vfork.h>
+#endif
+#endif
 
 #ifndef FD_SET
 #define NFDBITS         (8*sizeof(fd_set))
