@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miLUTProcs.ci,v 5.2 91/02/16 09:56:35 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -62,11 +62,6 @@ SOFTWARE.
  */
  
 extern ddpex4rtn miDealWithDynamics();	/* in level4/miDynamics.c */
-
-/* modification types passed to call back procedure */
-#define	MILUT_COPY_MOD	0
-#define	MILUT_SET_MOD	0
-#define	MILUT_DEL_MOD	0
 
 /* get pointer to first legal entry in the table */
 #define	FIRST_ENTRY( pheader )		\
