@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.95 87/12/17 08:04:05 swick Locked $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.96 87/12/21 10:50:01 swick Locked $";
 #endif lint
 
 /*
@@ -1528,7 +1528,7 @@ void XtInheritExpose(w, event)
 	class = XtClass(w);
 	XtClass(w) = XtSuperclass(w);
 
-	(*((XtClass(w))->core_class.expose)) (w);
+	(*((XtClass(w))->core_class.expose)) (w, event);
 	XtClass(w) = class;
     }
 
