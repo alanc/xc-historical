@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.38 94/02/14 17:42:50 gildea Exp $ */
+/* $XConsortium: fserve.c,v 1.39 94/03/08 15:50:18 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -334,9 +334,8 @@ fs_close_conn(conn)
  */
 /* ARGSUSED */
 static int
-fs_init_fpe(fpe, format)
+fs_init_fpe(fpe)
     FontPathElementPtr fpe;
-    fsBitmapFormat format;
 {
     FSFpePtr    conn;
     char       *name;
@@ -2693,5 +2692,6 @@ fs_register_fpe_functions()
 					fs_client_died,
 					_fs_load_glyphs,
 					(int (*))0,
-					(int (*))0);
+					(int (*))0,
+					(void (*))0);
 }
