@@ -26,6 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
 
 #include <stdio.h>
+#include <ctype.h>
 #include <math.h>
 #define NEED_EVENTS 1
 #include <X11/X.h>
@@ -33,8 +34,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/keysym.h>
 #include "misc.h"
 #include "inputstr.h"
+#include "XKMformat.h"
 #include "XKBsrv.h"
-#include <ctype.h>
 
 #define	CREATE_ATOM(s)	MakeAtom(s,sizeof(s)-1,1)
 
@@ -45,21 +46,38 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define LED_CAPS	5
 #define	LED_NUM		6
 #define	LED_SCROLL	7
+#define	NUM_PHYS	7
 #else
 #ifdef sun
 #define LED_CAPS	4
-#define	LED_NUM		1
+#define LED_NUM		1
 #define	LED_SCROLL	2
+#define	NUM_PHYS	4
 #else
 #define	LED_CAPS	1
 #define	LED_NUM		2
 #define	LED_SCROLL	3
+#define	NUM_PHYS	3
 #endif
 #endif
+
+#define	MAX_TOC	16
+typedef struct	_SrvXkmInfo {
+	DeviceIntPtr	dev;
+	FILE *		file;
+	xkmFileInfo	finfo;
+	xkmSectionInfo	toc[MAX_TOC];
+	unsigned	loaded;
+	unsigned	present;
+} SrvXkmInfo;
 
 /***====================================================================***/
 
-char	*XkbBaseDirectory=	NULL;
+#ifndef XKB_BASE_DIRECTORY
+#define	XKB_BASE_DIRECTORY	"/usr/lib/X11/xkb"
+#endif
+
+char	*XkbBaseDirectory=	XKB_BASE_DIRECTORY;
 char	*XkbInitialMap=		NULL;
 int	 XkbWantAccessX=	0;	
 
@@ -71,12 +89,23 @@ int	 XkbWantAccessX=	0;
 #include "xkbDflts.h"
 
 static void
-XkbInitKeyTypes(xkb)
-    XkbSrvInfoRec *xkb;
+XkbInitKeyTypes(xkb,file)
+    XkbSrvInfoPtr	xkb;
+    SrvXkmInfo *	file;
 {
 register int	 i;
 XkbClientMapPtr	map;
 
+    if (file->present&XkmTypesMask) {
+	xkmSectionInfo *toc;
+	toc= XkmFindTOCEntry(&file->finfo,file->toc,XkmTypesIndex);
+	if (toc) {
+	    if (XkmReadFileSection(file->file,toc,file->dev,&file->loaded))
+		return;
+	    ErrorF("Error loading key types\n");
+	    ErrorF("Reverting to defaults\n");
+	}
+    }
     map= xkb->desc.map;
     map->size_types= num_dflt_types;
     map->num_types= num_dflt_types;
@@ -86,8 +115,9 @@ XkbClientMapPtr	map;
 }
 
 static void
-XkbInitKeySyms(xkb)
-    XkbSrvInfoRec *xkb;
+XkbInitKeySyms(xkb,file)
+    XkbSrvInfoPtr	xkb;
+    SrvXkmInfo *	file;
 {
 XkbClientMapRec	*map= xkb->desc.map;
 int	nKeys= xkb->desc.max_key_code-xkb->desc.min_key_code+1;
@@ -113,8 +143,9 @@ int	nKeys= xkb->desc.max_key_code-xkb->desc.min_key_code+1;
 }
 
 static void
-XkbInitKeyActions(xkb)
-    XkbSrvInfoRec *xkb;
+XkbInitKeyActions(xkb,file)
+    XkbSrvInfoPtr	xkb;
+    SrvXkmInfo *	file;
 {
 XkbServerMapRec	*map= xkb->desc.server;
 int	nKeys= xkb->desc.max_key_code-xkb->desc.min_key_code+1;
@@ -140,8 +171,9 @@ int	nKeys= xkb->desc.max_key_code-xkb->desc.min_key_code+1;
 #define	RG_COUNT		1
 
 static void
-XkbInitRadioGroups(xkb)
-    XkbSrvInfoRec *xkb;
+XkbInitRadioGroups(xkb,file)
+    XkbSrvInfoPtr	xkb;
+    SrvXkmInfo *	file;
 {
 XkbRadioGroupRec	*grp;
  
@@ -168,12 +200,23 @@ XkbRadioGroupRec	*grp;
 
 
 static void
-XkbInitCompatStructs(xkb)
-    XkbSrvInfoRec *xkb;
+XkbInitCompatStructs(xkb,file)
+    XkbSrvInfoPtr	xkb;
+    SrvXkmInfo *	file;
 {
 register int i;
 XkbCompatRec	*compat;
 
+    if (file->present&XkmCompatMapMask) {
+	xkmSectionInfo *toc;
+	toc= XkmFindTOCEntry(&file->finfo,file->toc,XkmCompatMapIndex);
+	if (toc) {
+	    if (XkmReadFileSection(file->file,toc,file->dev,&file->loaded))
+		return;
+	    ErrorF("Error loading compatibility map\n");
+	    ErrorF("Reverting to defaults\n");
+	}
+    }
     compat = xkb->desc.compat;
     for (i=0;i<XkbNumModifiers;i++) {
 	compat->real_mod_compat[i].mods = (1<<i);
@@ -195,11 +238,24 @@ XkbCompatRec	*compat;
     return;
 }
 
+static void
+XkbInitSemantics(xkb,file)
+    XkbSrvInfoRec *	xkb;
+    SrvXkmInfo *	file;
+{
+char	buf[1024];
+
+    XkbInitKeyTypes(xkb,file);
+    XkbInitCompatStructs(xkb,file);
+    return;
+}
+
 /***====================================================================***/
 
 static void
-XkbInitNames(xkb)
-    XkbSrvInfoPtr xkb;
+XkbInitNames(xkb,file)
+    XkbSrvInfoPtr	xkb;
+    SrvXkmInfo *	file;
 {
 XkbClientMapPtr	map;
 XkbNamesPtr	names;
@@ -208,10 +264,10 @@ register int	i;
     map = xkb->desc.map;
     names = xkb->desc.names;
     bzero(names,sizeof(XkbNamesRec));
-    names->keycodes= CREATE_ATOM("SGI_IRIS");
-    names->phys_geometry= names->geometry= CREATE_ATOM("SGI_102");
-    names->phys_symbols= names->symbols= CREATE_ATOM("ascii");
-    names->semantics= CREATE_ATOM("DEFAULT");
+    names->keycodes= CREATE_ATOM("unknown");
+    names->phys_geometry= names->geometry= CREATE_ATOM("unknown");
+    names->phys_symbols= names->symbols= CREATE_ATOM("unknown");
+    names->semantics= CREATE_ATOM("unknown");
     names->mods[0] = CREATE_ATOM("Shift");
     names->mods[1] = CREATE_ATOM("Caps");
     names->mods[2] = CREATE_ATOM("Control");
@@ -220,12 +276,27 @@ register int	i;
     names->mods[5] = CREATE_ATOM("Mod3");
     names->mods[6] = CREATE_ATOM("Mod4");
     names->mods[7] = CREATE_ATOM("Mod5");
-    names->vmods[vmod_NumLock]= CREATE_ATOM("Num Lock");
-    names->vmods[vmod_AltGr]= CREATE_ATOM("Mode Switch");
-    names->vmods[vmod_LevelThree]= CREATE_ATOM("Level Three");
-    names->indicators[4] = CREATE_ATOM("Caps Lock");
-    names->indicators[5] = CREATE_ATOM("Num Lock");
-    names->indicators[6] = CREATE_ATOM("Scroll Lock");
+    if (file->present&XkmVirtualModsMask) {
+	xkmSectionInfo *toc;
+	toc= XkmFindTOCEntry(&file->finfo,file->toc,XkmVirtualModsIndex);
+	if (toc) {
+	    if (!XkmReadFileSection(file->file,toc,file->dev,&file->loaded)) {
+		ErrorF("Error loading key names\n");
+		file->present&= ~XkmVirtualModsMask;
+	    }
+	}
+    }
+    if ((file->present&XkmVirtualModsMask)==0) {
+	names->vmods[vmod_NumLock]= CREATE_ATOM("NumLock");
+	names->vmods[vmod_AltGr]= CREATE_ATOM("ModeSwitch");
+    }
+
+    if (((file->present&XkmIndicatorsMask)==0)||
+	((file->present&XkmGeometryMask)==0)) {
+	names->indicators[LED_CAPS-1] = CREATE_ATOM("Caps Lock");
+	names->indicators[LED_NUM-1] = CREATE_ATOM("Num Lock");
+	names->indicators[LED_SCROLL-1] = CREATE_ATOM("Scroll Lock");
+    }
 #ifdef DEBUG_RADIO_GROUPS
     names->radio_groups= (Atom *)Xcalloc(RG_COUNT*sizeof(Atom));
     if (names->radio_groups) {
@@ -237,18 +308,18 @@ register int	i;
     names->char_sets= (Atom *)Xcalloc(sizeof(Atom));
     names->char_sets[0]= CREATE_ATOM("iso8859-1");
 
-#ifdef DEBUG_KEY_NAMES
-    i= xkb->desc.max_key_code+1;
-    names->keys= (XkbKeyNamePtr)Xcalloc(i*sizeof(XkbKeyNameRec));
-    if (names->keys) {
-	for (i=xkb->desc.min_key_code;i<=xkb->desc.max_key_code;i++) {
-	    sprintf(names->keys[i].name,"K%02X",i);
+    if (file->present&XkmKeyNamesMask) {
+	xkmSectionInfo *toc;
+	toc= XkmFindTOCEntry(&file->finfo,file->toc,XkmKeyNamesIndex);
+	if (toc) {
+	    if (!XkmReadFileSection(file->file,toc,file->dev,&file->loaded))
+		ErrorF("Error loading key names\n");
 	}
     }
-#endif
     return;
 }
 
+#ifdef DEBUG
 static void
 XkbInitAlternateSyms(xkb)
     XkbSrvInfoRec *xkb;
@@ -282,15 +353,30 @@ XkbAlternateSymsRec *alt;
    xkb->desc.alt_syms= alt;
    return;
 }
+#endif
 
 static void
-XkbInitIndicatorMap(xkb)
-    XkbSrvInfoRec *xkb;
+XkbInitIndicatorMap(xkb,file)
+    XkbSrvInfoPtr	xkb;
+    SrvXkmInfo *	file;
 {
-XkbIndicatorRec	*map = xkb->desc.indicators;
-register int i;
+XkbIndicatorPtr	map = xkb->desc.indicators;
+register int 	i;
 
-    map->num_phys_indicators = 7;
+    map->num_phys_indicators = NUM_PHYS;
+    if (file->present&XkmIndicatorsMask) {
+	xkmSectionInfo *toc;
+	toc= XkmFindTOCEntry(&file->finfo,file->toc,XkmIndicatorsIndex);
+	if (toc) {
+	    if (XkmReadFileSection(file->file,toc,file->dev,&file->loaded)) {
+		XkbCheckIndicatorMaps(xkb,~((unsigned)0));
+		return;
+	    }
+	    file->present&= ~XkmIndicatorsIndex;
+	    ErrorF("Error loading indicator maps\n");
+	    ErrorF("Reverting to defaults\n");
+	}
+    }
     xkb->iStateAuto= 0;
     xkb->iStateExplicit= 0;
     xkb->iStateEffective= 0;
@@ -320,7 +406,32 @@ XkbInitDevice(pXDev)
 int		nKeys,i;
 XkbSrvInfoPtr	xkb;
 XkbChangesRec	changes;
+SrvXkmInfo	file;
 
+    file.dev= pXDev;
+    file.file=NULL;
+    file.loaded=file.present= 0;
+    if (XkbInitialMap!=NULL) {
+	char buf[1024];
+	if (XkbBaseDirectory)
+	     sprintf(buf,"%s/%s.xkm",XkbBaseDirectory,XkbInitialMap);
+	else sprintf(buf,"%s.xkm",XkbInitialMap);
+	if ((file.file=fopen(buf,"r"))!=NULL) {
+	    Bool ok;
+	    ok= XkmReadTOC(file.file,&xkb->desc,&file.finfo,MAX_TOC,file.toc);
+	    if (ok) {
+		for (i=0;i<file.finfo.num_toc;i++) {
+		    file.present|= (1<<file.toc[i].type);
+		}
+	    }
+	    else {
+		ErrorF("Error loading keymap file %s, reverting to defaults\n",
+								XkbInitialMap);
+		fclose(file.file);
+		file.file= NULL;
+	    }
+	}
+    }
     /* determine size of fixed-length arrays */
     i= sizeof(XkbBehavior)+sizeof(XkbSymMapRec);
     i+= sizeof(unsigned short);	/* key acts */
@@ -353,12 +464,22 @@ XkbChangesRec	changes;
 	for (i=0;i<XkbNumVirtualMods;i++) { 
 	   xkb->desc.server->vmods[i]= XkbNoModifier;
 	}
-	XkbInitKeyTypes(xkb);
-	XkbInitNames(xkb);
-	XkbInitKeySyms(xkb);
-	XkbInitKeyActions(xkb);
-	XkbInitRadioGroups(xkb);
-	XkbInitCompatStructs(xkb);
+	XkbInitNames(xkb,&file);
+	XkbInitSemantics(xkb,&file);
+	XkbInitKeySyms(xkb,&file);
+	XkbInitKeyActions(xkb,&file);
+	XkbInitRadioGroups(xkb,&file);
+	if (file.present&XkmSymbolsMask) {
+	    xkmSectionInfo *toc;
+	    toc= XkmFindTOCEntry(&file.finfo,file.toc,XkmSymbolsIndex);
+	    if (toc) {
+		if (!XkmReadFileSection(file.file,toc,file.dev,&file.loaded)) {
+		    ErrorF("Error loading key symbols\n");
+		    ErrorF("Reverting to defaults\n");
+		    file.present&= ~XkmSymbolsIndex;
+		}
+	    }
+	}
 
 	xkb->state.group = 0;
 	xkb->state.latched_group = 0;
@@ -367,7 +488,7 @@ XkbChangesRec	changes;
 	xkb->state.locked_mods = 0;
 	xkb->state.compat_state = 0;
 
-	XkbInitIndicatorMap(xkb);
+	XkbInitIndicatorMap(xkb,&file);
 
 	xkb->desc.ctrls->num_groups = 1;
 	xkb->desc.ctrls->internal_mask = 0;
@@ -375,7 +496,7 @@ XkbChangesRec	changes;
 	xkb->desc.ctrls->internal_vmods = 0;
 	xkb->desc.ctrls->ignore_lock_mask = 0;
 	xkb->desc.ctrls->ignore_lock_real_mods = 0;
-	xkb->desc.ctrls->ignore_lock_vmods = vmod_NumLockMask;
+	xkb->desc.ctrls->ignore_lock_vmods = 0;
 	xkb->desc.ctrls->enabled_ctrls = XkbAccessXTimeoutMask|
 						XkbRepeatKeysMask|
 						XkbGroupsWrapMask|
@@ -392,6 +513,9 @@ XkbChangesRec	changes;
 	XkbUpdateActions(pXDev,xkb->desc.min_key_code,
 					XkbNumKeys(&xkb->desc),&changes);
     }
+    if (file.file!=NULL)
+	fclose(file.file);
+    return;
 }
 
 	/*
