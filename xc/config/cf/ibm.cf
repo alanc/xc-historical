@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.26 91/07/05 15:46:06 rws Exp $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.27 91/07/18 17:57:05 rws Exp $
 
 #ifdef RsArchitecture
 #define OSName		AIX 3.1.5
@@ -16,9 +16,9 @@ XCOMM platform:  $XConsortium: ibm.cf,v 1.26 91/07/05 15:46:06 rws Exp $
 #define OSMinorVersion	3
 #endif
 #else
-#define OSName		AIX 1.1
+#define OSName		AIX 1.2.1
 #define OSMajorVersion	1
-#define OSMinorVersion	1
+#define OSMinorVersion	2
 #endif
 #endif
 XCOMM operating system:  OSName
@@ -56,12 +56,17 @@ XCOMM operating system:  OSName
 #define SystemV YES
 #define LnCmd ln -s
 #define HasSockets YES
-#define HasVFork YES
 #ifdef RtArchitecture
 #define BootstrapCFlags -Daix
 #define OSDefines -DAIX -DAIXrt -DNO_FUNCTION_PROTOTYPES -DIBM_OS_HAS_HFT
 #else
-#define OSDefines -DAIX -DAIX386 -DNO_FUNCTION_PROTOTYPES -DIBM_OS_HAS_HFT
+#define ExecableScripts		YES
+#define InstallCmd              /usr/ucb/install
+#define OSDefines -DAIX386 -DIBM_OS_HAS_HFT
+#define	NeedFunctionPrototypes	YES
+#define	NeedNestedPrototypes	YES
+#define	NeedConstPrototypes	YES
+#define	NeedVarargsPrototypes	YES
 #define LdCombineFlags -r /* PS/2 doesn't do ld -X */
 #endif
 #define OPERATING_SYSTEM AIX /* directory name under server/ddx/ibm/ */
@@ -73,11 +78,10 @@ XCOMM operating system:  OSName
 #ifdef RtArchitecture
 #define CcCmd cc -Nd4000 -Nn3000 -DBSD_INCLUDES
 #define ibmosdefs -DSYSV -Nd4000 -Nn3000
+#define ibmlibdefs -Hcpp
 #else
-#define CcCmd cc -DBSD_INCLUDES -D_BSD
 #define ibmosdefs -DSYSV
 #endif
-#define ibmlibdefs -Hcpp
 #endif /* USE_PCC */
 
 #else /* else AOS - warning: AOS is going away... */
@@ -112,12 +116,6 @@ XCOMM operating system:  OSName
 #endif /* RtArchitecture */
 
 #ifdef PS2Architecture
-/*
-#define AsCmd /bin.386/i386as
-#define LdCmd /bin.386/i386ld
-#define ExtraLibraries /lib.386/libtcp.a
-*/
-#define ibmarchdefs -Di386 -DiAPX386
 /*
  * These define the screens the server will allow
  * affected:    .../server/ddx/ibm/Makefile
@@ -178,8 +176,8 @@ XCOMM operating system:  OSName
 	 */
 
 /* Need This Also For our IBM Imakefiles */
-#define	SpecialMalloc		YES
-#define	ibmSpecialMalloc		YES
+#define	SpecialMalloc		NO
+#define	ibmSpecialMalloc	NO
 
             PCC = pcc
 
@@ -206,7 +204,7 @@ XCOMM operating system:  OSName
  * '_Alloca' at load time.
  */
 
-#define	HCRevision	21004
+#define	HCRevision	21025
 
 /*
  * hc revision 1.4r won't compile parts of Xt and some clients.
