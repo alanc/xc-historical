@@ -54,8 +54,8 @@
 #define	NEED_EVENTS
 #include "Xproto.h"
 
-#include "osdep.h"
 #include "misc.h"
+#include "osdep.h"
 
 #include "scrnintstr.h"
 #include "screenint.h"
