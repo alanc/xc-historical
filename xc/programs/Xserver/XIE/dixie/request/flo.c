@@ -1,4 +1,4 @@
-/* $XConsortium: flo.c,v 1.2 93/10/26 14:09:52 rws Exp $ */
+/* $XConsortium: flo.c,v 1.3 93/10/31 09:41:13 dpw Exp $ */
 /**** module flo.c ****/
 /******************************************************************************
 				NOTICE
@@ -164,7 +164,7 @@ Bool EditFlo(flo,start,end,peLst)
      xieFlo        *peLst;
 {
   xieTypPhototag tag;
-  void	   *ptr;
+  pointer ptr;
   xieFlo   *pe;
   peDefPtr old, tmp;
 
@@ -271,7 +271,7 @@ peDefPtr MakePEDef(inFloCnt, rawLen, pvtLen)
 
     /* alloc whatever private space this element needs for dixie info */
     if(pvtLen)
-      if(ped->elemPvt = (void *)XieCalloc(pvtLen))
+      if(ped->elemPvt = (pointer)XieCalloc(pvtLen))
 	*(CARD32 *)ped->elemPvt = pvtLen;
       else
 	ped = FreePEDef(ped);
