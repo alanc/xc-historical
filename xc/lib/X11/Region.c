@@ -1,4 +1,4 @@
-/* $Header: XRegion.c,v 11.16 88/02/03 20:19:46 jim Locked $ */
+/* $Header: XRegion.c,v 11.17 88/02/06 15:22:46 jim Locked $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -59,6 +59,8 @@ SOFTWARE.
 #else
 #define assert(expr)
 #endif
+
+typedef void (*voidProcp)();
 
 extern char *_XAllocScratch();
 static void miRegionOp();
@@ -385,7 +387,8 @@ XIntersectRegion(reg1, reg2, newReg)
         return(1);
     }
 
-    miRegionOp (newReg, reg1, reg2, miIntersectO, NULL, NULL);
+    miRegionOp (newReg, reg1, reg2, 
+    		(voidProcp) miIntersectO, (voidProcp) NULL, (voidProcp) NULL);
     
     if (newReg->numRects != 0)
     {
@@ -1192,7 +1195,8 @@ XUnionRegion(reg1, reg2, newReg)
         return(TRUE);
     }
 
-    miRegionOp (newReg, reg1, reg2, miUnionO, miUnionNonO, miUnionNonO);
+    miRegionOp (newReg, reg1, reg2, (voidProcp) miUnionO, 
+    		(voidProcp) miUnionNonO, (voidProcp) miUnionNonO);
 
     newReg->extents.x1 = min(reg1->extents.x1, reg2->extents.x1);
     newReg->extents.y1 = min(reg1->extents.y1, reg2->extents.y1);
@@ -1428,7 +1432,8 @@ XSubtractRegion(regM, regS, regD)
         return(1);
     }
  
-    miRegionOp (regD, regM, regS, miSubtractO, miSubtractNonO1, NULL);
+    miRegionOp (regD, regM, regS, (voidProcp) miSubtractO, 
+    		(voidProcp) miSubtractNonO1, (voidProcp) NULL);
 
     if (regD->numRects != 0)
     {
