@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.55 88/07/20 18:05:25 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.56 88/07/20 18:11:29 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -56,10 +56,10 @@ SOFTWARE.
 #define setpgrp2 setpgrp
 #define USE_SYSV_TERMIO
 #define USE_SYSV_UTMP
-#define USE_SYSV_SIGNALS
+/* do not use System V signals since we change to 4.2bsd compatibility mode */
 #endif /* macII */
 
-#ifdef SYSV
+#ifdef SYSV				/* note that macII is *not* SYSV */
 #include <sys/ioctl.h>
 #include <sys/termio.h>
 #include <sys/ptyio.h>
@@ -70,9 +70,7 @@ SOFTWARE.
 #define USE_SYSV_TERMIO
 #define USE_SYSV_UTMP
 #define USE_SYSV_SIGNALS
-
-#else	/* not SYSV; bsd *AND* macII */
-
+#else	/* else not SYSV */		/* BSD and macII */
 #include <sgtty.h>
 #include <sys/wait.h>
 #include <sys/resource.h>
@@ -373,6 +371,14 @@ char **argv;
 	int fd3 = -1;
 
 	ProgramName = argv[0];
+
+#ifdef macII
+	/*
+	 * The following sets us to use BSD-style signals, process group, and
+	 * tty handling.
+	 */
+	set42sig ();
+#endif /* macII */
 
 	ttydev = (char *) malloc (strlen (TTYDEV) + 1);
 	ptydev = (char *) malloc (strlen (PTYDEV) + 1);
@@ -1212,14 +1218,17 @@ spawn ()
 #endif	/* sun */
             
 	if (!am_slave) {
-#ifdef USE_SYSV_TERMIO
-	    (void) setpgrp();
-	    (void) close(open(ttydev, O_RDWR, 0));
-#endif	/* USE_SYSV_TERMIO */
+#if defined(macII) || defined(USE_SYSV_SIGNALS)
+	    (void) setpgrp (0, getpid());
+	    (void) close (open (ttydev, O_RDWR, 0));
+#endif /* macII or USE_SYSV_SIGNALS */
 	    if ((screen->pid = fork ()) == -1)
 		SysError (ERROR_FORK);
 		
 	    if (screen->pid == 0) {
+		/*
+		 * now in child process
+		 */
 		extern char **environ;
 		int pgrp = getpid();
 #ifdef USE_SYSV_TERMIO
@@ -1278,14 +1287,14 @@ spawn ()
 		Setenv ("DISPLAY=", XDisplayString (screen->display));
 
 		signal(SIGTERM, SIG_DFL);
-#if !defined(USE_SYSV_TERMIO) || defined(JOBCONTROL)
+#if defined(USE_SYSV_SIGNALS) && !defined(JOBCONTROL)
+		close(open(ttyname(0), O_WRONLY, 0));
+#else /* else not USE_SYSV_SIGNALS or is JOBCONTROL */		/* macII yes */
 		ioctl(0, TIOCSPGRP, (char *)&pgrp);
 		setpgrp (0, 0);
-#endif	/* !defined(USE_SYSV_TERMIO) || defined(JOBCONTROL) */
 		close(open(ttyname(0), O_WRONLY, 0));
-#if !defined(USE_SYSV_TERMIO) || defined(JOBCONTROL)
 		setpgrp (0, pgrp);
-#endif	/* !defined(USE_SYSV_TERMIO) || defined(JOBCONTROL) */
+#endif /* USE_SYSV_SIGNALS and not JOBCONTROL */
 
 #ifdef USE_SYSV_UTMP
 		/* Set up our utmp entry now.  We need to do it here
@@ -1398,6 +1407,10 @@ spawn ()
 	    }
 	}
 
+	/*
+	 * still in parent (xterm process)
+	 */
+
 	if(tty >= 0) close (tty);
 #ifdef USE_SYSV_TERMIO
 	/* the parent should not be associated with tty anymore */
@@ -1414,16 +1427,25 @@ spawn ()
 		if (tty > 2) close (tty);
 	}
 
-#if !defined(SYSV) || defined(JOBCONTROL)  /* macII *does* want this */
-	signal(SIGINT, Exit); 
-	signal(SIGQUIT, Exit);
-	signal(SIGTERM, Exit);
-#else	/* not !defined(SYSV) || defined(JOBCONTROL) */
-	signal(SIGINT, SIG_IGN); 
-	signal(SIGQUIT, SIG_IGN);
-	signal(SIGTERM, SIG_IGN);
-#endif	/* !defined(SYSV) || defined(JOBCONTROL) */
-}
+/*
+ * Unfortunately, System V seems to have trouble divorcing the child process
+ * from the process group of xterm.  This is a problem because hitting the 
+ * INTR or QUIT characters on the keyboard will cause xterm to go away if we
+ * don't ignore the signals.  This is annoying.
+ */
+
+#if defined(USE_SYSV_SIGNALS) && !defined(JOBCONTROL)
+	signal (SIGINT, SIG_IGN);
+	signal (SIGQUIT, SIG_IGN);
+	signal (SIGTERM, SIG_IGN);
+#else /* else is bsd or has job control */
+	signal (SIGINT, Exit);
+	signal (SIGQUIT, Exit);
+	signal (SIGTERM, Exit);
+#endif /* USE_SYSV_SIGNALS and not JOBCONTROL */
+
+	return;
+}							/* end spawn */
 
 Exit(n)
 int n;
