@@ -29,7 +29,9 @@ DESCRIPTION:
 
 REPEAT BY:
     [What you did to get the error; include test program or session
-     transcript if at all possible.  Be specific; if we can't
+     transcript if at all possible.  If you include a program, make
+     sure it depends only on libraries in the MIT X distribution, not
+     on any vendor or third-party libraries.  Be specific; if we can't
      reproduce it, we can't fix it.  Bug reports without a clear,
      deterministic way of reproducing them will be fixed only after
      all bug reports that do.]
