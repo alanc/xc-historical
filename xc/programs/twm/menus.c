@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.127 89/11/28 14:20:56 jim Exp $
+ * $XConsortium: menus.c,v 1.128 89/11/28 15:42:55 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.127 89/11/28 14:20:56 jim Exp $";
+"$XConsortium: menus.c,v 1.128 89/11/28 15:42:55 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -988,8 +988,8 @@ Bool PopUpMenu (menu, x, y, center)
 	     tmp_win != NULL;
 	     tmp_win = tmp_win->next)
 	{
-	    AddToMenu(menu, tmp_win->name, (char *) tmp_win, NULL, F_POPUP,
-		      NULL, NULL);
+	    AddToMenu (menu, tmp_win->name, (char *) tmp_win, NULL, F_POPUP, 
+		       NULL, NULL);
 	}
 	MakeMenu(menu);
     }
@@ -1312,8 +1312,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	else
 	{
 	    DeIconify(tmp_win);
-	    XMapWindow(dpy, tmp_win->w);
-	    XMapRaised(dpy, tmp_win->frame);
+	    XRaiseWindow (dpy, tmp_win->frame);
 	}
 	break;
 
@@ -1804,19 +1803,17 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 
     case F_WARPTO:
 	{
-	    TwmWindow *t;
+	    register TwmWindow *t;
 	    int len;
 
 	    len = strlen(action);
 
-	    for (t = Scr->TwmRoot.next; t != NULL; t = t->next)
-	    {
+	    for (t = Scr->TwmRoot.next; t != NULL; t = t->next) {
 		/* match only the first portion of WINDOW the name */
-		if (!strncmp(action, t->name, len))
-		{
-		    if (t->mapped)
-		    {
-			XRaiseWindow(dpy, t->frame);
+		if (!strncmp(action, t->name, len)) {
+		    if (Scr->WarpUnmapped || t->mapped) {
+			if (!t->mapped) DeIconify (t);
+			XRaiseWindow (dpy, t->frame);
 			WarpToWindow (t);
 			break;
 		    }

@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.54 89/11/27 16:45:35 jim Exp $
+ * $XConsortium: screen.h,v 1.55 89/11/28 11:33:08 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -224,6 +224,7 @@ typedef struct ScreenInfo
     short HaveFonts;		/* set if fonts have been loaded */
     short FirstTime;		/* first time we've read .twmrc */
     short CaseSensitive;	/* be case-sensitive when sorting names */
+    short WarpUnmapped;		/* allow warping to unmapped windows */
 
     FuncKey FuncKeyRoot;
 } ScreenInfo;
