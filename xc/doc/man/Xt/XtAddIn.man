@@ -144,7 +144,12 @@ XtIntervalId XtAddTimeout(\fIinterval\fP, \fIproc\fP, \fIclient_data\fP)
 .br
       XtPointer \fIclient_data\fP;
 .LP
-
+XtWorkProcId XtAddWorkProc(\fIproc\fP, \fIclient_data\fP)
+.br
+      XtWorkProc \fIproc\fP;
+.br
+      XtPointer \fIclient_data\fP;
+.LP
 .SH ARGUMENTS
 .IP \fIclient_data\fP 1i
 Specifies the argument that is to be passed to the specified procedure
@@ -165,6 +170,10 @@ has been replaced by
 .ZN XtAddTimeout
 has been replaced by
 .ZN XtAppAddTimeout.
+.LP
+.ZN XtAddWorkProc
+has been replaced by
+.ZN XtAppAddWorkProc .
 .SH "SEE ALSO"
 .br
 \fI\*(xT\fP
