@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.c,v 1.22 94/04/17 20:22:59 mor Exp $ */
+/* $XConsortium: Xtrans.c,v 1.23 94/05/10 11:25:55 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -85,19 +85,19 @@ from the X Consortium.
 static
 Xtransport_table Xtransports[] = {
 #if defined(STREAMSCONN)
-    &TRANS(TLIINETFuncs),	TRANS_TLI_INET_INDEX,
     &TRANS(TLITCPFuncs),	TRANS_TLI_TCP_INDEX,
+    &TRANS(TLIINETFuncs),	TRANS_TLI_INET_INDEX,
     &TRANS(TLITLIFuncs),	TRANS_TLI_TLI_INDEX,
 #endif /* STREAMSCONN */
 #if defined(UNIXCONN)
-    &TRANS(SocketUNIXFuncs),	TRANS_SOCKET_UNIX_INDEX,
 #if !defined(LOCALCONN)
     &TRANS(SocketLocalFuncs),	TRANS_SOCKET_LOCAL_INDEX,
 #endif /* !LOCALCONN */
+    &TRANS(SocketUNIXFuncs),	TRANS_SOCKET_UNIX_INDEX,
 #endif /* UNIXCONN */
 #if defined(TCPCONN)
-    &TRANS(SocketINETFuncs),	TRANS_SOCKET_INET_INDEX,
     &TRANS(SocketTCPFuncs),	TRANS_SOCKET_TCP_INDEX,
+    &TRANS(SocketINETFuncs),	TRANS_SOCKET_INET_INDEX,
 #endif /* TCPCONN */
 #if defined(DNETCONN)
     &TRANS(DNETFuncs),		TRANS_DNET_INDEX,
@@ -1029,7 +1029,7 @@ XtransConnInfo 	**ciptrs_ret;
     int			i;
 
     PRMSG (2,"TRANS(MakeAllCOTSServerListeners) (%s,%x)\n",
-	   port, ciptrs_ret, 0);
+	   port ? port : "NULL", ciptrs_ret, 0);
 
     *count_ret = 0;
 
@@ -1108,7 +1108,7 @@ XtransConnInfo 	**ciptrs_ret;
     int			i;
 
     PRMSG (2,"TRANS(MakeAllCLTSServerListeners) (%s,%x)\n",
-	port, ciptrs_ret, 0);
+	port ? port : "NULL", ciptrs_ret, 0);
 
     *count_ret = 0;
 
