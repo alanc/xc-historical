@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.77 93/01/06 18:40:51 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.78 93/01/07 19:37:05 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -188,6 +188,7 @@ osfXK_DeselectAll	0x1004FF72		[7]
 osfXK_Reselect		0x1004FF73		[7]
 osfXK_Extend		0x1004FF74		[7]
 osfXK_Restore		0x1004FF78		[7]
+osfXK_SwitchDirection	0x1004FF7E		[7]
 osfXK_Delete		0x1004FFFF		[7]
 
 SunXK_FA_Grave		0x1005FF00		[58]
