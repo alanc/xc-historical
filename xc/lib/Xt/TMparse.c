@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.118 91/05/11 14:55:15 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.119 91/05/11 21:04:37 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1857,14 +1857,7 @@ XtCvtStringToTranslationTable(dpy, args, num_args, from, to, closure_ret)
     str = (String)(from->addr);
     if (str == NULL)
       return False;
-    
-    if (to->addr != NULL) {
-	if (to->size < sizeof(XtTranslations)) {
-	    to->size = sizeof(XtTranslations);
-	    return False;
-	}
-	*(XtTranslations *)to->addr = XtParseTranslationTable(str);
-    }
+
     if (to->addr != NULL) {
 	if (to->size < sizeof(XtTranslations)) {
 	    to->size = sizeof(XtTranslations);
