@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.35 91/04/11 16:51:30 rws Exp $ */
+/* $XConsortium: events.c,v 5.36 91/05/04 23:08:02 keith Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1237,7 +1237,7 @@ DeliverDeviceEvents(pWin, xE, grab, stopAt, dev, count)
 	int mskidx = dev->id;
 
 	inputMasks = wOtherInputMasks(pWin);
-	if (!inputMasks || !(filter & inputMasks->deliverableEvents[mskidx]))
+	if (inputMasks && !(filter & inputMasks->deliverableEvents[mskidx]))
 	    return 0;
 	while (pWin)
 	{
@@ -1256,7 +1256,8 @@ DeliverDeviceEvents(pWin, xE, grab, stopAt, dev, count)
 		return 0;
 	    child = pWin->drawable.id;
 	    pWin = pWin->parent;
-	    inputMasks = wOtherInputMasks(pWin);
+	    if (pWin)
+		inputMasks = wOtherInputMasks(pWin);
 	}
     }
     else
