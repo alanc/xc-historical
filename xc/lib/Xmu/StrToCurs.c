@@ -1,4 +1,4 @@
-/* $XConsortium: StrToCurs.c,v 1.16 91/07/25 17:48:36 converse Exp $ */
+/* $XConsortium: StrToCurs.c,v 1.17 91/12/09 15:47:51 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -24,8 +24,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include	<X11/IntrinsicP.h>	/* 'cause CoreP.h needs it */
-#include	<X11/CoreP.h>		/* just to do XtConvert() */
+#include	<X11/Intrinsic.h>
 #include	<X11/StringDefs.h>
 #include	<X11/Xmu/Converters.h>
 #include	<X11/Xmu/Drawing.h>
@@ -109,9 +108,11 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
     if (0 == strncmp(FONTSPECIFIER, name, strlen(FONTSPECIFIER))) {
 	char source_name[PATH_MAX], mask_name[PATH_MAX];
 	int source_char, mask_char, fields;
-	WidgetRec widgetRec;
 	Font source_font, mask_font;
 	XrmValue fromString, toFont;
+	XrmValue cvtArg;
+	Boolean success;
+	Display *dpy = DisplayOfScreen(screen);
 
 	fields = sscanf(name, "FONT %s %d %s %d",
 			source_name, &source_char,
@@ -121,17 +122,19 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
 	    return;
 	}
 
-	/* widgetRec is stupid; we should just use XtDirectConvert,
-	 * but the names in Xt/Converters aren't public. */
-	widgetRec.core.screen = screen;
 	fromString.addr = source_name;
 	fromString.size = strlen(source_name);
-	XtConvert(&widgetRec, XtRString, &fromString, XtRFont, &toFont);
-	if (toFont.addr == NULL) {
+	toFont.addr = (XPointer) &source_font;
+	toFont.size = sizeof(Font);
+	cvtArg.addr = (XPointer) &dpy;
+	cvtArg.size = sizeof(Display *);
+	/* XXX using display of screen argument as message display */
+	success = XtCallConverter(dpy, XtCvtStringToFont, &cvtArg,
+				  (Cardinal)1, &fromString, &toFont, NULL);
+	if (!success) {
 	    XtStringConversionWarning(name, XtRCursor);
 	    return;
 	}
-	source_font = *(Font*)toFont.addr;
 
 	switch (fields) {
 	  case 2:		/* defaulted mask font & char */
@@ -147,12 +150,15 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
 	  case 4:		/* specified mask font & char */
 	    fromString.addr = mask_name;
 	    fromString.size = strlen(mask_name);
-	    XtConvert(&widgetRec, XtRString, &fromString, XtRFont, &toFont);
-	    if (toFont.addr == NULL) {
+	    toFont.addr = (XPointer) &mask_font;
+	    toFont.size = sizeof(Font);
+	    /* XXX using display of screen argument as message display */
+	    success = XtCallConverter(dpy, XtCvtStringToFont, &cvtArg,
+				      (Cardinal)1, &fromString, &toFont, NULL);
+	    if (!success) {
 		XtStringConversionWarning(name, XtRCursor);
 		return;
 	    }
-	    mask_font = *(Font*)toFont.addr;
 	}
 
 	cursor = XCreateGlyphCursor( DisplayOfScreen(screen), source_font,
