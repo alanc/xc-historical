@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.48 91/02/12 18:56:49 rws Exp $ */
+/* $XConsortium: access.c,v 1.49 91/02/28 09:41:32 rws Exp $ */
 
 #include "Xos.h"
 #include "X.h"
@@ -69,8 +69,6 @@ SOFTWARE.
 #ifdef hpux
 #define getpeername(fd, from, fromlen)	hpux_getpeername(fd, from, fromlen)
 #endif
-
-extern char	*index();
 
 static int ConvertAddr(), CheckAddr();
 static Bool NewHost();
