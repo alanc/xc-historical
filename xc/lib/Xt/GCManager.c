@@ -1,4 +1,4 @@
-/* $XConsortium: GCManager.c,v 1.40 91/01/06 13:32:15 rws Exp $ */
+/* $XConsortium: GCManager.c,v 1.41 91/06/28 14:27:03 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard,
@@ -43,7 +43,7 @@ typedef struct _GCrec {
 #define GCVAL(bit,mask,val,default) ((bit&mask) ? val : default)
 
 #define CHECK(bit,comp,default) \
-    if ((readOnlyMask & bit) && \
+    if ((checkMask & bit) && \
 	(GCVAL(bit,valueMask,v->comp,default) != gcv.comp)) return False
 
 #define ALLGCVALS (GCFunction | GCPlaneMask | GCForeground | \
@@ -64,6 +64,7 @@ static Bool Matches(dpy, ptr, valueMask, v, readOnlyMask, dynamicMask)
     XtGCMask dynamicMask;
 {
     XGCValues gcv;
+    register XtGCMask checkMask;
 
     if (readOnlyMask & ptr->dynamic_mask)
 	return False;
@@ -71,6 +72,7 @@ static Bool Matches(dpy, ptr, valueMask, v, readOnlyMask, dynamicMask)
 	return False;
     if (!XGetGCValues(dpy, ptr->gc, ALLGCVALS, &gcv))
 	return False;
+    checkMask = readOnlyMask & ~ptr->unused_mask;
     CHECK(GCForeground, foreground, 0);
     CHECK(GCBackground, background, 1);
     CHECK(GCFont, font, ~0L);
@@ -96,10 +98,16 @@ static Bool Matches(dpy, ptr, valueMask, v, readOnlyMask, dynamicMask)
     CHECK(GCClipMask, clip_mask, None);
     gcv.dashes = ptr->dashes;
     CHECK(GCDashList, dashes, 4);
-    ptr->unused_mask &= ~dynamicMask;
+    valueMask &= ptr->unused_mask | dynamicMask;
+    if (valueMask) {
+	XChangeGC(dpy, ptr->gc, valueMask, v);
+	if (valueMask & GCDashList)
+	    ptr->dashes = v->dashes;
+	if (valueMask & GCClipMask)
+	    ptr->clip_mask = v->clip_mask;
+    }
+    ptr->unused_mask &= ~(dynamicMask | readOnlyMask);
     ptr->dynamic_mask |= dynamicMask;
-    if (valueMask & dynamicMask)
-	XChangeGC(dpy, ptr->gc, valueMask & dynamicMask, v);
     return True;
 } /* Matches */
 
