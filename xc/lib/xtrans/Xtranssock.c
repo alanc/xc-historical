@@ -1,8 +1,8 @@
+#include <ctype.h>
 #ifndef WIN32
 /*
  * 4.2bsd-based systems
  */
-#include <sys/socket.h>
 
 #ifdef UNIXCONN
 #include <sys/un.h>
@@ -23,14 +23,14 @@
 #include <netinet/tcp.h>
 #endif /* !NO_TCP_H */
 #include <sys/ioctl.h>
-#if defined(TCPCONN) || defined(UNIXCONN) || defined(DNETCONN)
+#if defined(TCPCONN) || defined(UNIXCONN)
 #include <netinet/in.h>
 #else
 #ifdef ESIX
 #include <lan/in.h>
 #endif
 #endif
-#if defined(TCPCONN) || defined(UNIXCONN) || defined(DNETCONN)
+#if defined(TCPCONN) || defined(UNIXCONN)
 #include <netdb.h>
 #endif
 #ifdef SVR4
@@ -45,12 +45,27 @@
 #endif /* !WIN32 */
 
 #ifdef WIN32
+#define _WILLWINSOCK_
+#define BOOL wBOOL
+#undef Status
+#define Status wStatus
+#include <winsock.h>
+#undef Status
+#define Status int
+#undef BOOL
+#include <X11/Xw32defs.h>
 #undef close
 #define close closesocket
 #define ECONNREFUSED WSAECONNREFUSED
-#define EGET() WSAGetLastError()
-#else
-#define EGET() errno
+#define EPROTOTYPE WSAEPROTOTYPE
+#undef EWOULDBLOCK
+#define EWOULDBLOCK WSAEWOULDBLOCK
+#undef EINTR
+#define EINTR WSAEINTR
+#endif /* WIN32 */
+
+#if defined(SO_DONTLINGER) && defined(SO_LINGER)
+#undef SO_DONTLINGER
 #endif
 
 
@@ -222,8 +237,13 @@ if( (ciptr=(XtransConnInfo)calloc(1,sizeof(struct _XtransConnInfo))) == NULL )
 	}
 
 if( (ciptr->fd=socket( Sockettrans2devtab[i].family, type,
-				Sockettrans2devtab[i].protocol )) < 0 )
-	{
+				Sockettrans2devtab[i].protocol )) < 0
+#ifndef WIN32
+#if (defined(X11) && !defined(USE_POLL)) || defined(FS) || defined(FONT)
+	|| ciptr->fd >= OPEN_MAX
+#endif
+#endif
+	) {
 	PRMSG(1, "TRANS(SocketOpen): socket() failed for %s\n", Sockettrans2devtab[i].transname, 0,0 );
 	return NULL;
 	}
@@ -414,17 +434,31 @@ int		socknamelen;
 {
 int	namelen=socknamelen;
 int	fd=ciptr->fd;
+int	retry;
 
 PRMSG(3, "TRANS(SocketCreateListener)(%x,%d)\n", ciptr, fd, 0 );
 
-if(bind(fd, (struct sockaddr *)sockname, namelen) < 0 )
-	{
-	PRMSG(1,
-	"TRANS(SocketCreateListener): failed to bind listener\n",
-								0,0,0 );
-	return -1;
-	}
+if (Sockettrans2devtab[(int)ciptr->priv].family == AF_INET)
+    retry = 20;
+else
+    retry = 0;
 
+while (bind(fd, (struct sockaddr *)sockname, namelen) < 0 )
+{
+    if (retry-- == 0) {
+	PRMSG(1, "TRANS(SocketCreateListener): failed to bind listener\n",
+								0,0,0 );
+	close(fd);
+	return -1;
+    }
+#ifdef SO_REUSEADDR
+    sleep (1);
+#else
+    sleep (10);
+#endif /* SO_REUSEDADDR */
+}
+
+if (Sockettrans2devtab[(int)ciptr->priv].family == AF_INET) {
 #ifdef SO_DONTLINGER
 setsockopt (fd, SOL_SOCKET, SO_DONTLINGER, (char *) NULL, 0);
 #else
@@ -435,10 +469,12 @@ setsockopt (fd, SOL_SOCKET, SO_DONTLINGER, (char *) NULL, 0);
 	}
 #endif
 #endif
+}
 
 if( listen(fd, 5) < 0 )
 	{
 	PRMSG(1, "TRANS(SocketCreateListener): listen() failed\n", 0,0,0 );
+	close(fd);
 	return -1;
 	}
 	
@@ -516,12 +552,12 @@ if( port && *port )
 		}
 	}
 else
-	sockname.sin_port=0;
+	sockname.sin_port=htons(0);
 
 #ifdef BSD44SOCKETS
 sockname.sin_len=sizeof(sockname);
 #endif
-sockname.sin_family=Sockettrans2devtab[(int)ciptr->priv].family;
+sockname.sin_family=AF_INET;
 sockname.sin_addr.s_addr=htonl(INADDR_ANY);
 
 if( TRANS(SocketCreateListener)( ciptr,
@@ -555,10 +591,10 @@ return 0;
 #define UNIX_DIR "/usr/spool/sockets/X11"
 #define OLD_UNIX_PATH "/tmp/.X11-unix/X"
 #endif /* X11 */
-#if defined(FS)
+#if defined(FS) || defined(FONT)
 #define UNIX_PATH "/usr/spool/sockets/fontserv/"
 #define UNIX_DIR "/usr/spool/sockets/fontserv"
-#endif /* FS */
+#endif /* FS || FONT */
 #if defined(ICE)
 #define UNIX_PATH "/usr/spool/sockets/ICE/"
 #define UNIX_DIR "/usr/spool/sockets/ICE"
@@ -574,10 +610,10 @@ return 0;
 #define UNIX_PATH "/tmp/.X11-unix/X"
 #define UNIX_DIR "/tmp/.X11-unix"
 #endif /* X11 */
-#if defined(FS)
+#if defined(FS) || defined(FONT)
 #define UNIX_PATH "/tmp/.font-unix/fs"
 #define UNIX_DIR "/tmp/.font-unix"
-#endif /* FS */
+#endif /* FS || FONT */
 #if defined(ICE)
 #define UNIX_PATH "/tmp/.ICE-unix/"
 #define UNIX_DIR "/tmp/.ICE-unix"
@@ -597,17 +633,20 @@ char *port;
 {
 struct	sockaddr_un	sockname;
 int	namelen;
+int	oldUmask;
 
 PRMSG(2, "TRANS(SocketUNIXCreateListener)(%s)\n", port, 0,0 );
 
 /* Make sure the directory is created */
+
+oldUmask = umask (0);
 
 #ifdef UNIX_DIR
     if (!mkdir (UNIX_DIR, 0777))
         chmod (UNIX_DIR, 0777);
 #endif
 
-sockname.sun_family=Sockettrans2devtab[(int)ciptr->priv].family;
+sockname.sun_family=AF_UNIX;
 
 if( port && *port ) {
 	if( *port == '/' ) { /* a full pathname */
@@ -657,6 +696,8 @@ ciptr->family=sockname.sun_family;
 ciptr->addrlen=namelen;
 memcpy(ciptr->addr,&sockname,ciptr->addrlen);
 
+(void)umask(oldUmask);
+
 return 0;
 }
 #endif /* UNIXCONN */
@@ -685,6 +726,18 @@ if( (newciptr->fd=accept(ciptr->fd,(struct sockaddr *)&sockname, &namelen)) < 0 
 	free(newciptr);
 	return NULL;
 	}
+
+#ifdef TCP_NODELAY
+        {
+	/*
+	 * turn off TCP coalescence for INET sockets
+	 */
+
+	int tmp = 1;
+	setsockopt (newciptr->fd, IPPROTO_TCP, TCP_NODELAY,
+	    (char *)&tmp, sizeof (int));
+	}
+#endif
 
 /*
  * Get this address again because the transport may give a more 
@@ -836,7 +889,7 @@ strncpy(portbuf,port,PORTBUFSIZE);
  */
 
 #ifdef BSD44SOCKETS
-sockname.sin_len=sizeof(sockname);
+sockname.sin_len=sizeof (struct sockaddr_in);
 #endif
 sockname.sin_family=AF_INET;
 
@@ -845,7 +898,12 @@ sockname.sin_family=AF_INET;
  */
 
 /* check for ww.xx.yy.zz host string */
-tmpaddr=inet_addr(host); /* returns network byte order */
+
+if (isascii(host[0]) && isdigit(host[0])) {
+    tmpaddr=inet_addr(host); /* returns network byte order */
+} else {
+    tmpaddr=-1;
+}
 
 PRMSG(4,"TRANS(SocketINETConnect) inet_addr(%s) = %x\n", host,tmpaddr, 0);
 
@@ -855,8 +913,17 @@ if( tmpaddr == -1 )
 		{
 		PRMSG(1,"TRANS(SocketINETConnect)() can't get address for %s\n",
 								host, 0,0 );
+		ESET(EINVAL);
 		return TRANS_CONNECT_FAILED;
 		}
+	if (hostp->h_addrtype != AF_INET)  /* is IP host? */
+		{
+		PRMSG(1,"TRANS(SocketINETConnect)() not INET host%s\n",
+								host, 0,0 );
+		ESET(EPROTOTYPE);
+		return TRANS_CONNECT_FAILED;
+		}
+
 #if defined(CRAY) && defined(OLDTCP)
         /* Only Cray UNICOS3 and UNICOS4 will define this */
         {
@@ -872,8 +939,12 @@ if( tmpaddr == -1 )
 	}
 else
 	{
-        memcpy ((char *)&sockname.sin_addr, (char *)&tmpaddr,
-               sizeof(sockname.sin_addr));
+#if defined(CRAY) && defined(OLDTCP)
+	/* Only Cray UNICOS3 and UNICOS4 will define this */
+	sockname.sin_addr = tmpaddr;
+#else
+	sockname.sin_addr.s_addr = tmpaddr;
+#endif /* CRAY and OLDTCP */
 	}
 
 /*
@@ -1181,14 +1252,14 @@ if( ciptr->flags
 }
 #endif /* UNIXCONN */
 
-static
+static int
 TRANS(SocketNameToAddr)(ciptr /*???what else???*/ )
 XtransConnInfo ciptr;
 {
 return -1;
 }
 
-static
+static int
 TRANS(SocketAddrToName)(ciptr /*???what else???*/ )
 XtransConnInfo ciptr;
 {
