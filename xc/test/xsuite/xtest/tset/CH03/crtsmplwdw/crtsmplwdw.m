@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: crtsmplwdw.m,v 1.9 92/06/11 16:06:51 rws Exp $
  */
 >>TITLE XCreateSimpleWindow CH03
 Window
@@ -351,7 +351,7 @@ Status	s;
 	} else
 		CHECK;
 
-	if (atts.backing_planes != ~0) {
+	if (atts.backing_planes != 0xffffffff) {
 		report("backing_planes was 0x%x, expecting all ones", atts.backing_planes);
 		FAIL;
 	} else
