@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.45 89/08/16 15:33:19 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.46 89/08/22 18:02:08 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -644,7 +644,12 @@ all::									@@\
 	$(RM) $@ profiled/$@						@@\
 	$(CC) -pg -c $(CFLAGS) $*.c					@@\
 	$(MV) $*.o profiled/$*.o					@@\
-	$(CC) -c $(CFLAGS) $*.c
+	$(CC) -c $(CFLAGS) $*.c						@@\
+									@@\
+clean::									@@\
+	-@if [ -d profiled ]; then echo "	$(RM) profiled/?*.o"; \	@@\
+		$(RM) profiled/?*.o; else exit 0; fi			@@\
+
 #endif /* ProfiledLibraryObjectRule */
 
 
@@ -661,7 +666,12 @@ all::									@@\
 	$(RM) $@ debugger/$@						@@\
 	$(CC) -g -c $(CFLAGS) $*.c					@@\
 	$(MV) $*.o debugger/$*.o					@@\
-	$(CC) -c $(CFLAGS) $*.c
+	$(CC) -c $(CFLAGS) $*.c						@@\
+									@@\
+clean::									@@\
+	-@if [ -d debugger ]; then echo "	$(RM) debugger/?*.o"; \ @@\
+		$(RM) debugger/?*.o; else exit 0; fi			@@\
+
 #endif /* DebuggedLibraryObjectRule */
 
 
@@ -681,7 +691,14 @@ all::									@@\
 	$(MV) $*.o profiled/$*.o					@@\
 	$(CC) -g -c $(CFLAGS) $*.c					@@\
 	$(MV) $*.o debugger/$*.o					@@\
-	$(CC) -c $(CFLAGS) $*.c
+	$(CC) -c $(CFLAGS) $*.c						@@\
+									@@\
+clean::									@@\
+	-@if [ -d profiled ]; then echo "	$(RM) profiled/?*.o"; \ @@\
+		$(RM) profiled/?*.o; else exit 0; fi			@@\
+	-@if [ -d debugger ]; then echo "	$(RM) debugger/?*.o"; \ @@\
+		$(RM) debugger/?*.o; else exit 0; fi			@@\
+
 #endif /* DebuggedAndProfiledLibraryObjectRule */
 
 
@@ -699,6 +716,10 @@ all::									@@\
 	$(CC) -pic -c -DSUNSHLIB $(CFLAGS) $*.c				@@\
 	$(MV) $*.o shared/$*.o						@@\
 	$(CC) -c $(CFLAGS) $*.c						@@\
+									@@\
+clean::									@@\
+	-@if [ -d shared ]; then echo "	$(RM) shared/?*.o"; \		@@\
+		$(RM) shared/?*.o; else exit 0; fi			@@\
 
 #endif /* SharedLibraryObjectRule */
 
@@ -870,11 +891,7 @@ lib/**/libname.sa.rev:  salist						@@\
 	fi								@@\
 									@@\
 clean::									@@\
-	$(RM) lib/**/libname.so.rev lib/**/libname.sa.rev		@@\
-	-@if [ -d shared ]; then echo "	$(RM) shared/?*.o"; \	@@\
-		$(RM) shared/?*.o; else exit 0; fi			@@\
-	-@if [ -d debugger ]; then echo "	$(RM) debugger/?*.o"; \ @@\
-		$(RM) debugger/?*.o; else exit 0; fi			@@\
+	$(RM) lib/**/libname.so.rev lib/**/libname.sa.rev
 
 #else
 #define NormalSharedLibraryTarget(libname,rev,solist,salist)		@@\
@@ -908,11 +925,8 @@ AllTarget(lib/**/libname/**/_p.a)					@@\
 lib/**/libname/**/_p.a: objlist						@@\
 	$(RM) $@							@@\
 	cd profiled; $(AR) ../$@ objlist				@@\
-	$(RANLIB) $@							@@\
-									@@\
-clean::									@@\
-	-@if [ -d profiled ]; then echo "	$(RM) profiled/?*.o"; \	@@\
-		$(RM) profiled/?*.o; else exit 0; fi
+	$(RANLIB) $@
+
 #endif /* ProfiledLibraryTarget */
 
 
@@ -926,11 +940,8 @@ AllTarget(lib/**/libname/**/_d.a)					@@\
 lib/**/libname/**/_d.a: objlist						@@\
 	$(RM) $@							@@\
 	cd debugger; $(AR) ../$@ objlist				@@\
-	$(RANLIB) $@							@@\
-									@@\
-clean::									@@\
-	-@if [ -d debugger ]; then echo "	$(RM) debugger/?*.o"; \	@@\
-		$(RM) debugger/?*.o; else exit 0; fi
+	$(RANLIB) $@
+
 #endif /* DebuggedLibraryTarget */
 
 
@@ -971,11 +982,8 @@ AllTarget(objname/**/_p.o)						@@\
 									@@\
 objname/**/_p.o: objlist						@@\
 	$(RM) $@							@@\
-	$(LD) -X -r objlist -o $@					@@\
-									@@\
-clean::									@@\
-	-@if [ -d profiled ]; then echo "	$(RM) profiled/?*.o"; \ @@\
-		$(RM) profiled/?*.o; else exit 0; fi
+	$(LD) -X -r objlist -o $@
+
 #endif /* ProfiledRelocatableTarget */
 
 
@@ -989,11 +997,8 @@ AllTarget(objname/**/_d.o)						@@\
 									@@\
 objname/**/_d.o: objlist						@@\
 	$(RM) $@							@@\
-	$(LD) -X -r objlist -o $@					@@\
-									@@\
-clean::									@@\
-	-@if [ -d debugger ]; then echo "	$(RM) debugger/?*.o"; \	@@\
-		$(RM) debugger/?*.o; else exit 0; fi
+	$(LD) -X -r objlist -o $@
+
 #endif /* DebuggedRelocatableTarget */
 
 
