@@ -1,4 +1,4 @@
-/* $XConsortium: Functions.c,v 1.4 91/03/15 15:11:19 gildea Exp $ */
+/* $XConsortium: Functions.c,v 1.5 91/05/03 15:31:31 rws Exp $ */
 
 /*
 
@@ -90,14 +90,16 @@ Boolean XtIsWMShell(object)
 Boolean XtIsVendorShell(object)
     Widget object;
 {
-#if defined(AIXSHLIB) && defined(SHAREDCODE)
     return _XtIsSubclassOf(object,
+#ifdef notdef
+/*
+ * We don't refer to vendorShell directly, because some shared libraries
+ * bind local references tightly.
+ */
+			   (WidgetClass)vendorShellWidgetClass,
+#endif
 			   transientShellWidgetClass->core_class.superclass,
 			   (WidgetClass)wmShellWidgetClass, 0x40);
-#else
-    return _XtIsSubclassOf(object, (WidgetClass)vendorShellWidgetClass,
-			   (WidgetClass)wmShellWidgetClass, 0x40);
-#endif
 }
 
 
