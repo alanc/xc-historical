@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Command.h,v 1.15 88/09/06 16:41:09 jim Exp $
+* $XConsortium: Command.h,v 1.16 88/10/23 13:15:47 swick Exp $
 */
 
 
@@ -42,23 +42,24 @@ SOFTWARE.
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
- background	     Background		Pixel		White
+ background	     Background		Pixel		XtDefaultBackground
  bitmap		     Pixmap		Pixmap		None
- border		     BorderColor	Pixel		Black
+ border		     BorderColor	Pixel		XtDefaultForeground
  borderWidth	     BorderWidth	Dimension	1
  callback	     Callback		Pointer		NULL
  cursor		     Cursor		Cursor		None
  destroyCallback     Callback		Pointer		NULL
- font		     Font		XFontInfo*	fixed
- foreground	     Foreground		Pixel		Black
+ font		     Font		XFontStructx*	XtDefaultFont
+ foreground	     Foreground		Pixel		XtDefaultForeground
  height		     Height		Dimension	text height
  highlightThickness  Thickness		Dimension	2
  insensitiveBorder   Insensitive	Pixmap		Gray
  internalHeight	     Height		Dimension	2
  internalWidth	     Width		Dimension	4
- justify	     Justify		XtJustify	Center
+ justify	     Justify		XtJustify	XtJustifyCenter
  label		     Label		String		NULL
  mappedWhenManaged   MappedWhenManaged	Boolean		True
+ resize		     Resize		Boolean		True
  sensitive	     Sensitive		Boolean		True
  width		     Width		Dimension	text width
  x		     Position		Position	0

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Box.h,v 1.13 88/09/06 16:40:54 jim Exp $
+* $XConsortium: Box.h,v 1.14 88/10/23 13:08:31 swick Exp $
 */
 
 
@@ -40,8 +40,8 @@ SOFTWARE.
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
- background	     Background		pixel		White
- border		     BorderColor	pixel		Black
+ background	     Background		Pixel		XtDefaultBackground
+ border		     BorderColor	Pixel		XtDefaultForeground
  borderWidth	     BorderWidth	Dimension	1
  destroyCallback     Callback		Pointer		NULL
  hSpace 	     HSpace		Dimension	4

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Clock.h,v 1.21 88/10/09 11:39:40 rws Exp $
+* $XConsortium: Clock.h,v 1.22 88/10/23 13:10:07 swick Exp $
 */
 
 
@@ -40,18 +40,18 @@ SOFTWARE.
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
- analog		     Boolean		Boolean		False
- background	     Background		pixel		White
+ analog		     Boolean		Boolean		True
+ background	     Background		Pixel		white
  backingStore	     BackingStore	BackingStore	default
- border		     BorderColor	pixel		Black
+ border		     BorderColor	Pixel		Black
  borderWidth	     BorderWidth	Dimension	1
  chime		     Boolean		Boolean		False
  destroyCallback     Callback		Pointer		NULL
- font		     Font		FontStruct*	fixed
- foreground	     Foreground		Pixel		Black
- hand		     Foreground		Pixel		Black
+ font		     Font		XFontStruct*	fixed
+ foreground	     Foreground		Pixel		black
+ hand		     Foreground		Pixel		black
  height		     Height		Dimension	164
- highlight	     Foreground		Pixel		Black
+ highlight	     Foreground		Pixel		black
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  padding	     Margin		int		8
  reverseVideo	     ReverseVideo	Boolean		False

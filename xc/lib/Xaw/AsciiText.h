@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: AsciiText.h,v 1.9 88/09/06 16:40:48 jim Exp $ */
+/* $XConsortium: AsciiText.h,v 1.10 88/10/23 13:06:01 swick Exp $ */
 
 
 /***********************************************************
@@ -41,13 +41,15 @@ SOFTWARE.
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
- background	     Background		pixel		White
- border		     BorderColor	pixel		Black
+ background	     Background		Pixel		XtDefaultBackground
+ border		     BorderColor	Pixel		XtDefaultForeground
  borderWidth	     BorderWidth	Dimension	1
  destroyCallback     Callback		Pointer		NULL
  displayPosition     TextPosition	int		0
  editType	     EditType		XtTextEditType	XttextRead
  file		     File		String		NULL
+ font		     Font		XFontStruct*	Fixed
+ foreground	     Foreground		Pixel		Black
  height		     Height		Dimension	font height
  insertPosition	     TextPosition	int		0
  leftMargin	     Margin		Dimension	2
