@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicP.h,v 1.32 88/09/06 16:28:14 jim Exp $
+* $XConsortium: IntrinsicP.h,v 1.33 88/09/26 11:40:51 swick Exp $
 * $oHeader: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
 */
 
@@ -34,8 +34,8 @@ SOFTWARE.
 
 typedef unsigned long XtVersionType;
 
-#define XT_VERSION 7
-#define XT_REVISION 1
+#define XT_VERSION 11
+#define XT_REVISION 3
 #define XtVersion (XT_VERSION * 1000 + XT_REVISION)
 #define XtVersionDontCheck 0
 
