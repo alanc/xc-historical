@@ -1,4 +1,4 @@
-/* $XConsortium: x2jet.c,v 1.3 91/01/10 11:00:48 rws Exp $ */
+/* $XConsortium: x2jet.c,v 1.4 91/05/04 22:41:35 rws Exp $ */
 
 /* -*-C-*-
 ********************************************************************************
@@ -1175,18 +1175,28 @@ int x, y;
     break;
   case 2:
     pixel = (xwd_header.byte_order == MSBFirst)
-	     ? (*image << 8 | *(image + 1))
-	     : (*image | *(image + 1) << 8);
+	     ? ((unsigned long)*image << 8 | *(image + 1))
+	     : (*image | (unsigned long)*(image + 1) << 8);
     break;
   case 3:
     pixel = (xwd_header.byte_order == MSBFirst)
-	     ? (*image << 16 | *(image + 1) << 8 | *(image + 2))
-	     : (*image | *(image + 1) << 8 | *(image + 2) << 16);
+	     ? ((unsigned long)*image << 16 |
+		(unsigned long)*(image + 1) << 8 |
+		(unsigned long)*(image + 2))
+	     : (*image |
+		(unsigned long)*(image + 1) << 8 |
+		(unsigned long)*(image + 2) << 16);
     break;
   case 4:
     pixel = (xwd_header.byte_order == MSBFirst)
-	     ? (*image << 24 | *(image+1) << 16 | *(image+2) << 8 | *(image+3))
-	     : (*image | *(image+1) << 8 | *(image+2) << 16 | *(image+3) << 24);
+	     ? ((unsigned long)*image << 24 |
+		(unsigned long)*(image+1) << 16 |
+		(unsigned long)*(image+2) << 8 |
+		*(image+3))
+	     : (*image |
+		(unsigned long)*(image+1) << 8 |
+		(unsigned long)*(image+2) << 16 |
+		(unsigned long)*(image+3) << 24);
     break;
   }
   return (pixel & Z_pixel_mask);
