@@ -524,7 +524,7 @@ GrabRec *grabList;
 extern EventMask _XtBuildEventMask(); /* widget */
     /* Widget widget; */
 
-extern void XtSetEventHandler(); /* widget, eventMask, other, proc, closure */
+extern void XtAddEventHandler(); /* widget, eventMask, other, proc, closure */
     /* Widget		widget      */
     /* EventMask        eventMask;  */
     /* Boolean          other;      */
@@ -532,10 +532,12 @@ extern void XtSetEventHandler(); /* widget, eventMask, other, proc, closure */
     /* caddr_t		closure ;   */
 
 
-extern void XtRemoveEventHandler(); /* widget, proc, closure */
-    /* Widget    widget        */
-    /* XtEventHandler proc;    */
-    /* caddr_t   closure;      */
+extern void XtRemoveEventHandler(); /* widget,eventMask,other,proc,closure */
+    /* Widget		widget      */
+    /* EventMask        eventMask;  */
+    /* Boolean          other;      */
+    /* XtEventHandler   proc;       */
+    /* caddr_t		closure ;   */
 
 
 extern void XtDispatchEvent(); /* event */

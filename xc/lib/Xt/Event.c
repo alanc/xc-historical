@@ -15,7 +15,46 @@ EventMask _XtBuildEventMask(widget)
     return mask;
 }
 
-void XtSetEventHandler(widget, eventMask, other, proc, closure)
+void XtRemoveEventHandler(widget, eventMask, other, proc, closure)
+    Widget	widget;
+    EventMask   eventMask;
+    Boolean	other;
+    XtEventHandler proc;
+    Opaque	closure;
+{
+    XtEventRec *p, **pp;
+    EventMask oldMask = _XtBuildEventMask(widget);
+
+    pp = &widget->core.event_table;
+    p = *pp;
+
+    /* find it */
+    while (p != NULL && p->proc != proc && p->closure != closure) {
+	pp = &p->next;
+	p = *pp;
+    }
+    if (p == NULL) return; /* couldn't find it */
+
+    /* un-register it */
+    p->mask &= ~eventMask;
+    p->non_filter = p->non_filter && ! other;
+
+    if (p->mask == 0 && !p->non_filter) {
+	/* delete it entirely */
+	*pp = p->next;
+	XtFree((char *)p);
+    }
+
+    /* reset select mask if realized */
+    if (XtIsRealized(widget)) {
+	EventMask mask = _XtBuildEventMask(widget);
+
+	if (oldMask != mask)
+	    XSelectInput(XtDisplay(widget), XtWindow(widget), mask);
+    }
+}
+
+void XtAddEventHandler(widget, eventMask, other, proc, closure)
     Widget	    widget;
     EventMask   eventMask;
     Boolean         other;
@@ -23,56 +62,42 @@ void XtSetEventHandler(widget, eventMask, other, proc, closure)
     Opaque	closure;
 {
    register XtEventRec *p,**pp;
-   register EventMask mask;
+   EventMask oldMask;
 
-   mask = _XtBuildEventMask(widget);
-   pp = & widget -> core.event_table;
+   if (eventMask == 0 && other == FALSE) return;
+
+   if (XtIsRealized(widget)) oldMask = _XtBuildEventMask(widget);
+
+   pp = & widget->core.event_table;
    p = *pp;
-   while (p != NULL
-	&& p->proc != proc
-	&& p->closure != closure) {
-         mask |= p->mask;
+   while (p != NULL && p->proc != proc && p->closure != closure) {
          pp = &p->next;
          p = *pp;
    }
+
    if (p == NULL) {
 	/* new proc to add to list */
-         if (eventMask == 0 && other == FALSE) return;
-         p = (XtEventRec*) XtMalloc((unsigned)sizeof(XtEventRec));
-         p ->next = widget->core.event_table;
-         widget -> core.event_table = p;
-         p -> proc = proc;
-         p -> closure = closure;
-         mask |= eventMask;
-         p ->mask = eventMask;
-         p ->non_filter = other;
+	p = (XtEventRec*) XtMalloc((unsigned)sizeof(XtEventRec));
+	p->proc = proc;
+	p->closure = closure;
+	p->mask = eventMask;
+	p->non_filter = other;
 
+	p->next = widget->core.event_table;
+	widget->core.event_table = p;
+
+    } else {
+	/* update existing proc */
+	p->mask |= eventMask;
+	p->non_filter = p->non_filter || other;
     }
-    else {
-	/* it was there, either override or delete */
-         if (eventMask == 0 && other == FALSE) {
-	    /* delete */
-	     *pp = p->next;
-             XtFree ((char*)p);
-             p = *pp;
-         }  
-         else {
-	    /* override */
-               p->mask = eventMask;
-               p->non_filter = other;
-          }
-	 while (p != NULL) {
-          mask |= p -> mask;
-          p = p-> next;
-         }
-    }     
-    if (widget->core.widget_class->core_class.expose != NULL)
-       mask |= ExposureMask;
-    if (widget->core.widget_class->core_class.visible_interest) 
-       mask |= VisibilityChangeMask;
 
-     if (widget->core.window != NULL) 
-         XSelectInput(widget->core.screen->display,widget->core.window,mask);
+    if (XtIsRealize(widget)) {
+	EventMask mask = _XtBuildEventMask(widget);
+
+	if (oldMask != mask)
+	    XSelectInput(XtDisplay(widget), XtWindow(widget), mask);
+    }
 
 }
 
@@ -143,7 +168,7 @@ void UnregisterWindow(window, widget)
                 return;
                 }
              else /* found entry to delete */
-                  (*hpp) = hp ->next;
+                  (*hpp) = hp->next;
                   XtFree((char*)hp);
                   table->count--;
                   return;
@@ -221,7 +246,7 @@ void XtDispatchEvent (event)
     EventMask mask;
     GrabType grabType;
     Boolean sensitivity;
-#define IsSensitive ((!sensitivity) || (widget->core.sensitive && widget ->core.ancestor_sensitive))
+#define IsSensitive ((!sensitivity) || (widget->core.sensitive && widget->core.ancestor_sensitive))
 
     widget =ConvertWindowToWidget (event->xany.window);
     if (widget == NULL) {
@@ -246,8 +271,8 @@ Boolean onGrabList (widget)
 {
    GrabRec* gl;
    for (; widget != NULL; widget = (Widget)widget->core.parent)
-	for (gl = grabList; gl != NULL && gl->exclusive; gl = gl ->next) 
-	    if (gl -> widget == widget) return (TRUE);
+	for (gl = grabList; gl != NULL && gl->exclusive; gl = gl->next) 
+	    if (gl->widget == widget) return (TRUE);
    return (FALSE);
 }
 
@@ -322,7 +347,7 @@ void DispatchEvent(event, widget, mask)
     if ((mask == VisibilityNotify) &&
             !(widget->core.widget_class->core_class.visible_interest)) return;
 
-    for (p=widget->core.event_table; p != NULL; p = p -> next) {
+    for (p=widget->core.event_table; p != NULL; p = p->next) {
 	if ((mask && p->mask != 0) || (mask==0 && p->non_filter == TRUE)) 
               (*(p->proc))(widget, p->closure, event);
          }
