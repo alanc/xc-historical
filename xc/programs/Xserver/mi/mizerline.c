@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mizerline.c,v 1.3 87/09/11 07:20:38 toddb Exp $ */
+/* $Header: mizerline.c,v 1.4 88/01/24 13:48:45 rws Exp $ */
 #include "X.h"
 
 #include "misc.h"
@@ -147,11 +147,11 @@ DDXPointRec *pptInit;	/* points in the polyline */
 
 	x = pt1.x;
 	y = pt1.y;
+	*pspan = pt1;
 	if (adx > ady)
 	{
 	    /* X_AXIS */
 	    width = 0;
-	    *pspan = pt1;
 	    while(len--)
 	    {
 		if (((signdx > 0) && (e < 0)) ||
@@ -206,8 +206,9 @@ DDXPointRec *pptInit;	/* points in the polyline */
 		    e += e2;
 		}
 		y += signdy;
+		pspan++;
 		pspan->x = x;
-		pspan++->y = y;
+		pspan->y = y;
 		*pwidth++ = 1;
 	    };
 	}
