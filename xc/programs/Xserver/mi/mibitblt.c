@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 5.20 94/01/07 09:44:26 dpw Exp $ */
+/* $XConsortium: mibitblt.c,v 5.21 94/01/21 22:03:27 dpw Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -321,11 +321,6 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 		 * Now get the bit and insert into a bitmap in XY format.
 		 */
 		bit = (pixel >> planeNum) & 1;
-		if (k == BITMAP_SCANLINE_UNIT)
-		{
-		    pOut++;
-		    k = 0;
-		}
 		/* XXX assuming bit order == byte order */
 #if BITMAP_BIT_ORDER == LSBFirst
 		bit <<= k;
@@ -334,6 +329,11 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 #endif
 		*pOut |= (OUT_TYPE) bit;
 		k++;
+		if (k == BITMAP_SCANLINE_UNIT)
+		{
+		    pOut++;
+		    k = 0;
+		}
 	    }
 	    pOut += delta;
 	}
@@ -629,7 +629,7 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pDst)
 		return;
 	    }
  	    /*
- 	     * Clear the pixmap before doing anything else (FIX XBUG 4994,5551)
+ 	     * Clear the pixmap before doing anything else
  	     */
  	    ValidateGC((DrawablePtr)pPixmap, pGC);
  	    pt.x = pt.y = 0;
