@@ -1,4 +1,4 @@
-/* $XConsortium: sunCursor.c,v 5.10 91/11/15 18:28:35 gildea Exp $ */
+/* $XConsortium: sunCursor.c,v 5.11 92/05/06 17:59:12 keith Exp $ */
 /*-
  * sunCursor.c --
  *	Functions for maintaining the Sun software cursor...
@@ -49,28 +49,6 @@ sunUnrealizeCursor (pScreen, pCursor)
     return TRUE;
 }
 
-sunInitFakePixmap (pScreen, p, w, h, bits)
-    ScreenPtr	    pScreen;
-    PixmapPtr	    p;
-    int		    w, h;
-    unsigned char   *bits;
-{
-    p->drawable.type = DRAWABLE_PIXMAP;
-    p->drawable.class = 0;
-    p->drawable.pScreen = pScreen;
-    p->drawable.depth = 1;
-    p->drawable.bitsPerPixel = 1;
-    p->drawable.id = 0;
-    p->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-    p->drawable.x = 0;
-    p->drawable.y = 0;
-    p->drawable.width = w;
-    p->drawable.height = h;
-    p->devKind = PixmapBytePad(w, 1);
-    p->refcnt = 1;
-    p->devPrivate.ptr = (pointer) bits;
-}
-
 static void
 sunCursorRepad (pScreen, bits, src_bits, dst_bits, ptSrc, w, h)
     ScreenPtr	    pScreen;
@@ -80,12 +58,20 @@ sunCursorRepad (pScreen, bits, src_bits, dst_bits, ptSrc, w, h)
     int		    w, h;
 {
     SetupCursor(pScreen);
-    PixmapRec	src, dst;
+    PixmapPtr	src, dst;
     BoxRec	box;
     RegionRec	rgnDst;
 
-    sunInitFakePixmap (pScreen, &src, bits->width, bits->height, src_bits);
-    sunInitFakePixmap (pScreen, &dst, w, h, dst_bits);
+    if (!(src = GetScratchPixmapHeader(pScreen, bits->width, bits->height,
+				       /*bpp*/ 1, /*depth*/ 1,
+				      PixmapBytePad(bits->width,1), src_bits)))
+	return;
+    if (!(dst = GetScratchPixmapHeader(pScreen, w, h, /*bpp*/ 1, /*depth*/ 1,
+				       PixmapBytePad(w,1), dst_bits)))
+    {
+	FreeScratchPixmapHeader(src);
+	return;
+    }
     box.x1 = 0;
     box.y1 = 0;
     box.x2 = w;
@@ -93,6 +79,8 @@ sunCursorRepad (pScreen, bits, src_bits, dst_bits, ptSrc, w, h)
     (*pScreen->RegionInit)(&rgnDst, &box, 1);
     mfbDoBitblt(&src, &dst, GXcopy, &rgnDst, ptSrc);
     (*pScreen->RegionUninit)(&rgnDst);
+    FreeScratchPixmapHeader(src);
+    FreeScratchPixmapHeader(dst);
 }
 
 static void
