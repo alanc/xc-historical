@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.79 89/12/10 10:24:06 rws Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.80 89/12/12 20:05:12 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -1312,7 +1312,7 @@ static void GetGeometry(W, child)
     register ShellWidget w = (ShellWidget)W;
     Boolean is_wmshell = XtIsWMShell(W);
     int x, y, width, height, win_gravity = -1, flag;
-    struct _OldXSizeHints hints, *hintsP;
+    XSizeHints hints;
 
     if (child != NULL) {
 	/* we default to our child's size */
@@ -1328,31 +1328,34 @@ static void GetGeometry(W, child)
 	width = w->core.width;
 	height = w->core.height;
 	if (is_wmshell) {
+	    WMShellPart* wm = &((WMShellWidget)w)->wm;
 	    EvaluateSizeHints((WMShellWidget)w);
-	    hintsP = &((WMShellWidget)w)->wm.size_hints;
-	    if (hintsP->flags & PBaseSize) {
-		width -= ((WMShellWidget)w)->wm.base_width;
-		height -= ((WMShellWidget)w)->wm.base_height;
+	    bcopy((char*)&wm->size_hints, (char*)&hints,
+		  sizeof(struct _OldXSizeHints));
+	    hints.win_gravity = wm->win_gravity;
+	    if (wm->size_hints.flags & PBaseSize) {
+		width -= wm->base_width;
+		height -= wm->base_height;
+		hints.base_width = wm->base_width;
+		hints.base_height = wm->base_height;
 	    }
-	    else if (hintsP->flags & PMinSize) {
-		width -= hintsP->min_width;
-		height -= hintsP->min_height;
+	    else if (wm->size_hints.flags & PMinSize) {
+		width -= wm->size_hints.min_width;
+		height -= wm->size_hints.min_height;
 	    }
-	    if (hintsP->flags & PResizeInc) {
-		width /= hintsP->width_inc;
-		height /= hintsP->height_inc;
+	    if (wm->size_hints.flags & PResizeInc) {
+		width /= wm->size_hints.width_inc;
+		height /= wm->size_hints.height_inc;
 	    }
 	}
-	else {
-	    hintsP = &hints;
-	    hints.flags = 0;
-	}
+	else hints.flags = 0;
+
 	sprintf( def_geom, "%dx%d+%d+%d", width, height, x, y );
 	flag = XWMGeometry( XtDisplay(W),
 			    XScreenNumberOfScreen(XtScreen(W)),
 			    w->shell.geometry, def_geom,
 			    (unsigned int)w->core.border_width,
-			    (XSizeHints *)hintsP, &x, &y, &width, &height,
+			    &hints, &x, &y, &width, &height,
 			    &win_gravity
 			   );
 	if (flag) {
