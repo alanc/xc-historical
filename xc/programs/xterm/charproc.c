@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.146 91/04/24 18:04:11 gildea Exp $
+ * $XConsortium: charproc.c,v 1.147 91/04/26 13:27:49 gildea Exp $
  */
 
 /*
@@ -117,6 +117,7 @@ static void bitset(), bitclr();
 
 #define XtCAlwaysHighlight	"AlwaysHighlight"
 #define XtCBellSuppressTime	"BellSuppressTime"
+#define XtCBoldFont		"BoldFont"
 #define	XtCC132			"C132"
 #define XtCCharClass		"CharClass"
 #define	XtCCurses		"Curses"
@@ -299,7 +300,7 @@ static XtResource resources[] = {
 {XtNfont, XtCFont, XtRString, sizeof(char *),
 	XtOffsetOf(XtermWidgetRec, misc.f_n), XtRString,
 	DEFFONT},
-{XtNboldFont, XtCFont, XtRString, sizeof(char *),
+{XtNboldFont, XtCBoldFont, XtRString, sizeof(char *),
 	XtOffsetOf(XtermWidgetRec, misc.f_b), XtRString,
 	DEFBOLDFONT},
 {XtNc132, XtCC132, XtRBoolean, sizeof(Boolean),
