@@ -1,6 +1,6 @@
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.34 89/07/05 16:03:22 jim Exp $
+ * $XConsortium: screen.h,v 1.35 89/07/06 10:33:41 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -108,6 +108,7 @@ typedef struct ScreenInfo
 
     unsigned long Black;
     unsigned long White;
+    unsigned long XORvalue;	/* number to use when drawing xor'ed */
     MyFont TitleBarFont;	/* title bar font structure */
     MyFont MenuFont;		/* menu font structure */
     MyFont IconFont;		/* icon font structure */

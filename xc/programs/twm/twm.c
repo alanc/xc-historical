@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.55 89/07/06 10:33:42 jim Exp $
+ * $XConsortium: twm.c,v 1.56 89/07/06 17:49:08 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.55 89/07/06 10:33:42 jim Exp $";
+"$XConsortium: twm.c,v 1.56 89/07/06 17:49:08 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -313,6 +313,7 @@ main(argc, argv, environ)
 	/* setup default colors */
 	black = Scr->Black = BlackPixel(dpy, scrnum);
 	white = Scr->White = WhitePixel(dpy, scrnum);
+	Scr->XORvalue = (((unsigned long) 1) << Scr->d_depth) - 1;
 
 	if (DisplayCells(dpy, scrnum) < 3)
 	    Scr->Monochrome = MONOCHROME;

@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.48 89/07/05 16:02:57 jim Exp $
+ * $XConsortium: gram.y,v 1.49 89/07/06 10:33:37 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -35,7 +35,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.48 89/07/05 16:02:57 jim Exp $";
+"$XConsortium: gram.y,v 1.49 89/07/06 10:33:37 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -85,7 +85,7 @@ extern int yylineno;
 %token <num> ICONMGR_FOREGROUND ICONMGR_BACKGROUND ICONMGR_FONT ICONMGR
 %token <num> ICONMGR_GEOMETRY SHOW_ICONMGR ICONMGR_NOSHOW MAKE_TITLE
 %token <num> F_RAISELOWER DECORATE_TRANSIENTS RANDOM_PLACEMENT
-%token <num> ICONIFY_BY_UNMAPPING DONT_ICONIFY_BY_UNMAPPING 
+%token <num> ICONIFY_BY_UNMAPPING DONT_ICONIFY_BY_UNMAPPING XOR_VALUE
 %token <num> WARPCURSOR NUMBER BORDERWIDTH CLIENT_BORDERWIDTH TITLE_FONT 
 %token <num> RESIZE_FONT NO_TITLE AUTO_RAISE FORCE_ICON NO_HILITE
 %token <num> MENU_FONT ICON_FONT UNKNOWN_ICON ICONS ICON_DIRECTORY
@@ -189,6 +189,8 @@ stmt		: error
 					}
 		| ZOOM			{ if (Scr->FirstTime) 
 						Scr->DoZoom = TRUE; }
+		| XOR_VALUE number	{ if (Scr->FirstTime)
+						Scr->XORvalue = $2; }
 		| FRAME_PADDING	number	{ if (Scr->FirstTime)
 						Scr->FramePadding = $2; }
 		| TITLE_PADDING	number	{ if (Scr->FirstTime)
