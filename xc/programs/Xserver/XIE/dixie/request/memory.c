@@ -1,4 +1,4 @@
-/* $XConsortium: memory.c,v 1.2 93/10/26 14:28:02 rws Exp $ */
+/* $XConsortium: memory.c,v 1.3 93/10/31 09:41:18 dpw Exp $ */
 /* Module memory.c */
 
 /****************************************************************************
@@ -61,27 +61,29 @@ terms and conditions:
 #include <X11/X.h>
 #include <X11/Xfuncs.h>
 
+#include "misc.h" /* for pointer */
+
 int ALLOCS = 0; /* DEBUG */
 
-void *XieMalloc(size)
+pointer XieMalloc(size)
  unsigned size;
 {
   char *memptr = (char *)Xalloc(size);
 
   if(memptr)
     ++ALLOCS; /* DEBUG */
-  return (void *)(memptr);
+  return (pointer )(memptr);
 }
 
 
-void *XieRealloc(ptr,size)
+pointer XieRealloc(ptr,size)
  char *ptr;
  unsigned size;
 {
-    return (void *)Xrealloc(ptr,size);    
+    return (pointer )Xrealloc(ptr,size);    
 }
 
-void *XieCalloc(size)
+pointer XieCalloc(size)
  unsigned size;
 {
   char *memptr = (char *)Xalloc(size);
@@ -90,10 +92,10 @@ void *XieCalloc(size)
     ++ALLOCS; /* DEBUG */
     bzero(memptr,size);
   }
-  return (void *)(memptr);
+  return (pointer )(memptr);
 }
 
-void  *XieFree(ptr)
+pointer XieFree(ptr)
  char *ptr;
 {
   if(ptr) {
