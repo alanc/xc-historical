@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.29 91/07/27 13:54:37 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.30 91/07/27 14:58:50 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -22,12 +22,6 @@ XCOMM site:  $XConsortium: site.def,v 1.29 91/07/27 13:54:37 rws Exp $
  *			       Build Parameters                              *
  *                                                                           *
  *****************************************************************************/
-
-#ifdef ATHENA
-#ifndef DoInstallExtensionsIntoXlib
-#define DoInstallExtensionsIntoXlib YES		/* for Makefile hosers */
-#endif
-#endif
 
 #ifndef XmanLocalSearchPath
 #define XmanLocalSearchPath /usr/local/man
