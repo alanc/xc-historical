@@ -1,0 +1,136 @@
+/*
+ * Copyright 1990, 1991 by the Massachusetts Institute of Technology and
+ * UniSoft Group Limited.
+ * 
+ * Copyright 1993 by the Hewlett-Packard Company.
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee,
+ * provided that the above copyright notice appear in all copies and that
+ * both that copyright notice and this permission notice appear in
+ * supporting documentation, and that the names of MIT, HP, and UniSoft not be
+ * used in advertising or publicity pertaining to distribution of the
+ * software without specific, written prior permission.  MIT, HP, and UniSoft
+ * make no representations about the suitability of this software for any
+ * purpose.  It is provided "as is" without express or implied warranty.
+ *
+ * $XConsortium: ShowExtRep.c,v 1.3 92/06/11 15:52:00 rws Exp $
+ */
+/*
+ * ***************************************************************************
+ *  Copyright 1988 by Sequent Computer Systems, Inc., Portland, Oregon       *
+ *                                                                           *
+ *                                                                           *
+ *                          All Rights Reserved                              *
+ *                                                                           *
+ *  Permission to use, copy, modify, and distribute this software and its    *
+ *  documentation for any purpose and without fee is hereby granted,         *
+ *  provided that the above copyright notice appears in all copies and that  *
+ *  both that copyright notice and this permission notice appear in          *
+ *  supporting documentation, and that the name of Sequent not be used       *
+ *  in advertising or publicity pertaining to distribution or use of the     *
+ *  software without specific, written prior permission.                     *
+ *                                                                           *
+ *  SEQUENT DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING *
+ *  ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL *
+ *  SEQUENT BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR  *
+ *  ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,      *
+ *  WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,   *
+ *  ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS      *
+ *  SOFTWARE.                                                                *
+ * ***************************************************************************
+ */
+
+/*
+ *	$Header: ShowExtRep.c,v 1.1 93/04/12 11:16:07 gms Exp $
+ */
+
+#ifndef lint
+static char rcsid[]="$Header: ShowExtRep.c,v 1.1 93/04/12 11:16:07 gms Exp $";
+#endif
+
+#include "XstlibInt.h"
+extern int XInputMajorOpcode;
+
+void
+Show_Ext_Rep(mp,type,bytes_given)
+xReply *mp;
+int type;
+long bytes_given;
+{
+	if (type & 0x0ff == XInputMajorOpcode) {
+		switch (type >> 8) {
+		case X_GetExtensionVersion:
+			BPRINTF1("GetExtensionVersion:\n");
+			break;
+		case X_ListInputDevices:
+			BPRINTF1("ListInputDevices:\n");
+			break;
+		case X_OpenDevice:
+			BPRINTF1("OpenDevice:\n");
+			break;
+		case X_SetDeviceMode:
+			BPRINTF1("SetDeviceMode:\n");
+			break;
+		case X_GetSelectedExtensionEvents:
+			BPRINTF1("GetSelectedExtensionEvents:\n");
+			break;
+		case X_GetDeviceDontPropagateList:
+			BPRINTF1("GetDeviceDontPropagateList:\n");
+			break;
+		case X_GetDeviceMotionEvents:
+			BPRINTF1("GetDeviceMotionEvents:\n");
+			break;
+		case X_ChangeKeyboardDevice:
+			BPRINTF1("ChangeKeyboardDevice:\n");
+			break;
+		case X_ChangePointerDevice:
+			BPRINTF1("ChangePointerDevice:\n");
+			break;
+		case X_GrabDevice:
+			BPRINTF1("GrabDevice:\n");
+			break;
+		case X_GetDeviceFocus:
+			BPRINTF1("GetDeviceFocus:\n");
+			break;
+		case X_GetFeedbackControl:
+			BPRINTF1("GetFeedbackControl:\n");
+			break;
+		case X_GetDeviceKeyMapping:
+			BPRINTF1("GetDeviceKeyMapping:\n");
+			break;
+		case X_GetDeviceModifierMapping:
+			BPRINTF1("GetDeviceModifierMapping:\n");
+			break;
+		case X_SetDeviceModifierMapping:
+			BPRINTF1("SetDeviceModifierMapping:\n");
+			break;
+		case X_GetDeviceButtonMapping:
+			BPRINTF1("GetDeviceButtonMapping:\n");
+			break;
+		case X_SetDeviceButtonMapping:
+			BPRINTF1("SetDeviceButtonMapping:\n");
+			break;
+		case X_QueryDeviceState:
+			BPRINTF1("QueryDeviceState:\n");
+			break;
+		case X_SetDeviceValuators:
+			BPRINTF1("SetDeviceValuators:\n");
+			break;
+		case X_GetDeviceControl:
+			BPRINTF1("GetDeviceControl:\n");
+			break;
+		case X_ChangeDeviceControl:
+			BPRINTF1("GetDeviceControl:\n");
+			break;
+		default:
+			BPRINTF1("Impossible request:\n");
+			BPRINTF2("\trepType = %ld\n",(long) ((xGetDeviceControlReq *)mp)->reqType);
+			break;
+		}
+	}
+	else 	{
+		BPRINTF1("Unsupported Extension request:\n");
+		BPRINTF2("\treqType = %ld\n",(long) ((xGetDeviceControlReq *)mp)->reqType);
+	}
+}
