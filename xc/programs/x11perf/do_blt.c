@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_blt.c,v 2.13 92/11/11 17:00:37 rws Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -366,7 +366,7 @@ void DoPutImage(xp, p, reps)
 #include <X11/extensions/XShm.h>
 
 static XImage		shm_image;
-static XShmSegmentInfo	shminfo;
+static XShmSegmentInfo	shm_info;
 
 static int haderror;
 static int (*origerrorhandler)();
@@ -393,36 +393,36 @@ int InitShmPutImage (xp, p, reps)
     image_size = image->bytes_per_line * image->height;
     /* allow XYPixmap choice: */
     if(p->font)image_size *= xp->vinfo.depth;
-    shminfo.shmid = shmget(IPC_PRIVATE, image_size, IPC_CREAT|0777);
-    if (shminfo.shmid < 0)
+    shm_info.shmid = shmget(IPC_PRIVATE, image_size, IPC_CREAT|0777);
+    if (shm_info.shmid < 0)
     {
 	perror ("shmget");
 	return False;
     }
-    shminfo.shmaddr = (char *) shmat(shminfo.shmid, 0, 0);
-    if (shminfo.shmaddr == ((char *) -1))
+    shm_info.shmaddr = (char *) shmat(shm_info.shmid, 0, 0);
+    if (shm_info.shmaddr == ((char *) -1))
     {
 	perror ("shmat");
-	shmctl (shminfo.shmid, IPC_RMID, 0);
+	shmctl (shm_info.shmid, IPC_RMID, 0);
 	return False;
     }
-    shminfo.readOnly = True;
+    shm_info.readOnly = True;
     XSync(xp->d,True);
     haderror = False;
     origerrorhandler = XSetErrorHandler(shmerrorhandler);
-    XShmAttach (xp->d, &shminfo);
+    XShmAttach (xp->d, &shm_info);
     XSync(xp->d,True);	/* wait for error or ok */
     XSetErrorHandler(origerrorhandler);
     if(haderror){
-	if(shmdt (shminfo.shmaddr)==-1)
+	if(shmdt (shm_info.shmaddr)==-1)
 	    perror("shmdt:");
-	if(shmctl (shminfo.shmid, IPC_RMID, 0)==-1)
+	if(shmctl (shm_info.shmid, IPC_RMID, 0)==-1)
 	    perror("shmctl rmid:");
 	return False;
     }
-    shm_image.data = shminfo.shmaddr;
+    shm_image.data = shm_info.shmaddr;
     bcopy (image->data, shm_image.data, image_size);
-    shm_image.obdata = (char *) &shminfo;
+    shm_image.obdata = (char *) &shm_info;
     return reps;
 }
 
@@ -454,11 +454,11 @@ void EndShmPutImage(xp, p)
     void    EndGetImage();
 
     EndGetImage (xp, p);
-    XShmDetach (xp->d, &shminfo);
+    XShmDetach (xp->d, &shm_info);
     XSync(xp->d, False);	/* need server to detach so can remove id */
-    if(shmdt (shminfo.shmaddr)==-1)
+    if(shmdt (shm_info.shmaddr)==-1)
 	perror("shmdt:");
-    if(shmctl (shminfo.shmid, IPC_RMID, 0)==-1)
+    if(shmctl (shm_info.shmid, IPC_RMID, 0)==-1)
 	perror("shmctl rmid:");
 }
 
