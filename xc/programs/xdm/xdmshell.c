@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * xdmshell - simple program for running xdm from login
  *
