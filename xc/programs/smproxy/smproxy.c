@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.27 94/12/30 15:27:00 mor Exp mor $ */
+/* $XConsortium: smproxy.c,v 1.28 95/01/04 22:28:03 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -31,7 +31,6 @@ Author:  Ralph Mor, X Consortium
 
 XtAppContext appContext;
 Display *disp;
-Window root;
 
 Atom wmProtocolsAtom;
 Atom wmSaveYourselfAtom;
@@ -1174,7 +1173,9 @@ char *previous_id;
 
 
 void
-CheckForExistingWindows ()
+CheckForExistingWindows (root)
+
+Window root;
 
 {
     Window dontCare1, dontCare2, *children, client_window;
@@ -1275,17 +1276,18 @@ char **argv;
 	exit (1);
     }
 
-    root = DefaultRootWindow (disp);
-
     wmProtocolsAtom = XInternAtom (disp, "WM_PROTOCOLS", False);
     wmSaveYourselfAtom = XInternAtom (disp, "WM_SAVE_YOURSELF", False);
     wmStateAtom = XInternAtom (disp, "WM_STATE", False);
     smClientIdAtom = XInternAtom (disp, "SM_CLIENT_ID", False);
     wmClientLeaderAtom = XInternAtom (disp, "WM_CLIENT_LEADER", False);
 
-    XSelectInput (disp, root, SubstructureNotifyMask | PropertyChangeMask);
-
-    CheckForExistingWindows ();
+    for (i = 0; i < ScreenCount (disp); i++)
+    {
+	Window root = RootWindow (disp, i);
+	XSelectInput (disp, root, SubstructureNotifyMask | PropertyChangeMask);
+	CheckForExistingWindows (root);
+    }
 
     while (1)
     {
