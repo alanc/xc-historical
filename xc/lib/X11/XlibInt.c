@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.124 90/06/15 13:09:20 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.125 90/09/11 08:47:49 rws Exp $
  */
 
 #include "copyright.h"
@@ -695,21 +695,16 @@ Status _XReply (dpy, rep, extra, discard)
 			case BadAlloc:
 			case BadAccess:
 				return (0);
-			/* 
-			 * we better see if there is an extension who may
-			 * want to suppress the error.
-			 */
-			default:
-			    ext = dpy->ext_procs;
-			    while (ext) {
-				if (ext->error != NULL) 
-				   ret = (*ext->error)
-					(dpy, err, &ext->codes, &ret_code);
-				ext = ext->next;
-				}
-			    if (ret) return (ret_code);
-			    break;
 			}
+		/* 
+		 * we better see if there is an extension who may
+		 * want to suppress the error.
+		 */
+		for (ext = dpy->ext_procs; ext; ext = ext->next) {
+		    if (ext->error) 
+		       ret = (*ext->error)(dpy, err, &ext->codes, &ret_code);
+		}
+		if (ret) return (ret_code);
 		_XError(dpy, err);
 		if (serial == cur_request)
 		    return(0);
@@ -1272,6 +1267,12 @@ static int _XPrintDefaultError (dpy, event, fp)
 	fputs("\n  ", fp);
     }
     if (event->error_code >= 128) {
+	/* let extensions try to print the values */
+	for (ext = dpy->ext_procs; ext; ext = ext->next) {
+	    if (ext->error_values)
+		(*ext->error_values)(dpy, event, fp);
+	}
+	/* the rest is a fallback, providing a simple default */
 	/* kludge, try to find the extension that caused it */
 	buffer[0] = '\0';
 	for (ext = dpy->ext_procs; ext; ext = ext->next) {
@@ -1286,7 +1287,7 @@ static int _XPrintDefaultError (dpy, event, fp)
 		    event->error_code - ext->codes.first_error);
 	else
 	    strcpy(buffer, "Value");
-	XGetErrorDatabaseText(dpy, mtype, buffer, "Value 0x%x", mesg, BUFSIZ);
+	XGetErrorDatabaseText(dpy, mtype, buffer, "", mesg, BUFSIZ);
 	if (*mesg) {
 	    (void) fprintf(fp, mesg, event->resourceid);
 	    fputs("\n  ", fp);
@@ -1334,6 +1335,13 @@ int _XDefaultError(dpy, event)
     /*NOTREACHED*/
 }
 
+Bool _XDefaultWireError(display, he, we)
+    Display     *display;
+    XErrorEvent *he;
+    xError      *we;
+{
+    return True;
+}
 
 /*
  * _XError - prepare to upcall user protocol error handler
@@ -1342,19 +1350,22 @@ int _XError (dpy, rep)
     Display *dpy;
     xError *rep;
 {
-    XErrorEvent event;
     /* 
      * X_Error packet encountered!  We need to unpack the error before
      * giving it to the user.
      */
+    XEvent event; /* make it a large event */
 
-    event.display = dpy;
-    event.type = X_Error;
-    event.serial = _XSetLastRequestRead(dpy, (xGenericReply *)rep);
-    event.resourceid = rep->resourceID;
-    event.error_code = rep->errorCode;
-    event.request_code = rep->majorCode;
-    event.minor_code = rep->minorCode;
+    event.xerror.display = dpy;
+    event.xerror.type = X_Error;
+    event.xerror.serial = _XSetLastRequestRead(dpy, (xGenericReply *)rep);
+    event.xerror.resourceid = rep->resourceID;
+    event.xerror.error_code = rep->errorCode;
+    event.xerror.request_code = rep->majorCode;
+    event.xerror.minor_code = rep->minorCode;
+    if (dpy->error_vec &&
+	!(*dpy->error_vec[rep->errorCode])(dpy, &event.xerror, rep))
+	return 0;
     if (_XErrorFunction != NULL) {
       	return ((*_XErrorFunction)(dpy, &event));	/* upcall */
     } else {
@@ -1566,8 +1577,7 @@ Data32 (dpy, data, len)
 
 
 /*
- * _XFreeQ - free the queue of events, called by XCloseDisplay when there are
- * no more displays left on the display list
+ * _XFreeQ - free the queue of events, called by XCloseDisplay
  */
 
 void _XFreeQ ()
