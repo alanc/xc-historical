@@ -1,13 +1,3 @@
-
-/*
- * If you only use #ifdef and #ifndef for conditional #includes (this
- * is what we try to maintain in the core software), or if you have cpp
- * sources, then you can use the fast partial code built in to makedepend.
- * Otherwise, you'll probably want to use the slow shell script by defining
- * MakeDependScript.
- */
-#ifndef MakeDependScript
-
 #
 # If you have source for cpp...
 #
@@ -30,8 +20,14 @@
 
 all:: makedepend
 
-SingleProgramTarget(makedepend,$(OBJS),,)
+#undef InstallManPage
+#define InstallManPage(file,dest) /* as nothing */
+ComplexProgramTarget(makedepend)
 
+InstallManPageLong(mkdepend,$(MANDIR),makedepend)
+
+
+#if CppSourcesPresent
 cpy.c: cpy.y yylex.c
 	yacc cpy.y
 	sed -e '/^# *line/d' < y.tab.c > cpy.c
@@ -58,24 +54,4 @@ cpy.o: cpy.c
 
 clean::
 	$(RM) cpp.c cpy.? yylex.c
-
-DependTarget()
-
-#else /* MakeDependScript */
-
-SRCS	=
-
-all:	makedepend
-
-makedepend:	mdepend.sh
-	rm -f makedepend
-	cp mdepend.sh makedepend
-	chmod +x makedepend
-
-clean::
-	rm -f makedepend
-
-depend::
-	echo "You don't need to make depend on a shell script"
-
-#endif /* MakeDependScript */
+#endif
