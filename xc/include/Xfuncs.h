@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xfuncs.h,v 1.11 93/08/24 17:21:08 gildea Exp $
+ * $XConsortium: Xfuncs.h,v 1.12 93/09/18 14:03:01 rws Exp $
  * 
  * Copyright 1990 by the Massachusetts Institute of Technology
  *
@@ -39,10 +39,6 @@ int bcmp();
 #else
 #ifdef SYSV
 #include <memory.h>
-#if defined(_XBCOPYFUNC) && !defined(macII)
-#define bcopy _XBCOPYFUNC
-#define _XNEEDBCOPYFUNC
-#endif
 void bcopy();
 #define bzero(b,len) memset(b, 0, len)
 #define bcmp(b1,b2,len) memcmp(b1, b2, len)
