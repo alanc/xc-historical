@@ -1,4 +1,4 @@
-/* $XConsortium: lcWrap.c,v 11.20 94/04/17 20:22:12 rws Exp kaleb $ */
+/* $XConsortium: lcWrap.c,v 11.21 94/09/01 18:40:04 kaleb Exp kaleb $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -270,9 +270,17 @@ _XOpenLC(name)
     XLCd lcd;
     XlcLoaderList loader;
     XLCdList cur;
+#if !defined(X_NOT_STDC_ENV) && !defined(X_LOCALE)
+    char siname[256];
+    char *_XlcMapOSLocaleName();
+#endif
 
-    if (name == NULL)
+    if (name == NULL) {
 	name = setlocale (LC_CTYPE, (char *)NULL);
+#if !defined(X_NOT_STDC_ENV) && !defined(X_LOCALE)
+	name = _XlcMapOSLocaleName (name, siname); 
+#endif
+    }
 
     _XLockMutex(_Xi18n_lock);
 
