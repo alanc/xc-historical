@@ -35,6 +35,12 @@ typedef struct _DialogRec {
     DialogPart		dialog;
 } DialogRec;
 
+typedef struct {int empty;} DialogConstraintsPart;
+
+typedef struct _DialogConstraintsRec {
+    FormConstraintsPart	  form;
+    DialogConstraintsPart dialog;
+} DialogConstraintsRec, *DialogConstraints;
 
 #endif _DialogP_h
 /* DON'T ADD STUFF AFTER THIS #endif */
