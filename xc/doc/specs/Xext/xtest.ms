@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: xtest.ms,v 1.2 92/04/20 14:17:06 rws Exp $
+.\" $XConsortium: xtest.ms,v 1.3 92/04/21 09:41:03 rws Exp $
 .de lP
 .ne 8
 .LP
@@ -129,8 +129,8 @@ CurrentCursor
 .NH 1
 Client Operations
 .lP
-These are abstract definitions of functionality.  They refer to client
-side objects like \*QGC\*U and \*QVISUAL\*U which are quoted to
+These are abstract definitions of functionality.  They refer to client-side
+objects like \*QGC\*U and \*QVISUAL\*U which are quoted to
 denote their abstract nature.  Concrete versions of these functions are
 only defined for particular language bindings.  In some circumstances
 a particular language binding may not implement the relevant abstract
@@ -322,9 +322,6 @@ FAKE_EVENT_TYPE
 NOTE that the above values are defined to be the same as those for
 the corresponding core protocol event types.
 .lP
-NOTE that this document defines client and server major version one (1)
-and minor version zero (0).
-.lP
 .SH
 \s+2Requests\s-2
 .lP
@@ -346,10 +343,10 @@ and minor version zero (0).
 .R
  =>
  	1	1		Reply
-	1	CARD8		server major version (1)
+	1	CARD8		server major version
 	2	CARD16		sequence number
 	4	0		reply length
-	2	CARD16		server minor version (0)
+	2	CARD16		server minor version
 	22			unused
 .De
 .lP
@@ -400,7 +397,7 @@ and minor version zero (0).
 .De
 .lP
 .NH 1
-C language Binding
+C language Xlib Binding
 .lP
 The C routines either
 provide direct access to the protocol and add no additional
@@ -546,11 +543,11 @@ then this is interpreted as no delay at all).  No other requests from
 this client will be processed until this delay, if any, has expired
 and subsequent processing of the simulated event has been completed.
 .lP
-XTestFakeMotionEvent (display, screen, x, y, delay)
+XTestFakeMotionEvent (display, screen_number, x, y, delay)
 .RS
 Display *display;
 .br
-int screen;
+int screen_number;
 .br
 int x, y;
 .br
@@ -559,8 +556,8 @@ unsigned long delay;
 .IP
 If the extension is supported, requests the server to simulate
 a movement of the pointer to position (\fIx\fP, \fIy\fP) on the
-root window of screen number \fIscreen\fP,
-otherwise the request is ignored.  If \fIscreen\fP is -1, the
+root window of screen number \fIscreen_number\fP,
+otherwise the request is ignored.  If \fIscreen_number\fP is -1, the
 current screen (that the pointer is on) is used.
 .IP
 If the extension is supported,
@@ -571,11 +568,11 @@ then this is interpreted as no delay at all).  No other requests from
 this client will be processed until this delay, if any, has expired
 and subsequent processing of the simulated event has been completed.
 .lP
-XTestFakeRelativeMotionEvent (display, screen, x, y, delay)
+XTestFakeRelativeMotionEvent (display, screen_number, x, y, delay)
 .RS
 Display *display;
 .br
-int screen;
+int screen_number;
 .br
 int x, y;
 .br
@@ -584,8 +581,8 @@ unsigned long delay;
 .IP
 If the extension is supported, requests the server to simulate
 a movement of the pointer by offsets (\fIx\fP, \fIy\fP) relative
-to the current pointer position on screen number \fIscreen\fP,
-otherwise the request is ignored.  If \fIscreen\fP is -1, the
+to the current pointer position on screen number \fIscreen_number\fP,
+otherwise the request is ignored.  If \fIscreen_number\fP is -1, the
 current screen (that the pointer is on) is used.
 .IP
 If the extension is supported,
