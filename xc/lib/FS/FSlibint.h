@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibint.h,v 1.6 91/05/13 15:12:01 gildea Exp $ */
+/* $XConsortium: FSlibint.h,v 1.7 92/11/18 21:31:10 gildea Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;
@@ -101,7 +101,7 @@ extern void	_FSEatData();
  *
  */
 
-#if defined(__STDC__) && !defined(UNIXCPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define GetReq(name, req) \
         WORD64ALIGN\
 	if ((svr->bufptr + SIZEOF(fs##name##Req)) > svr->bufmax)\
@@ -128,7 +128,7 @@ extern void	_FSEatData();
 /* GetReqExtra is the same as GetReq, but allocates "n" additional
    bytes after the request. "n" must be a multiple of 4!  */
 
-#if defined(__STDC__) && !defined(UNIXCPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define GetReqExtra(name, n, req) \
         WORD64ALIGN\
 	if ((svr->bufptr + SIZEOF(fs##name##Req) + n) > svr->bufmax)\
@@ -157,7 +157,7 @@ extern void	_FSEatData();
  * "rid" is the name of the resource.
  */
 
-#if defined(__STDC__) && !defined(UNIXCPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define GetResReq(name, rid, req) \
         WORD64ALIGN\
 	if ((svr->bufptr + SIZEOF(fsResourceReq)) > svr->bufmax)\
@@ -186,7 +186,7 @@ extern void	_FSEatData();
  * at all.
  */
 
-#if defined(__STDC__) && !defined(UNIXCPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define GetEmptyReq(name, req) \
         WORD64ALIGN\
 	if ((svr->bufptr + SIZEOF(fsReq)) > svr->bufmax)\
@@ -296,7 +296,7 @@ extern void Data();
 				 * don't line up with proto */
 
 
-#if __STDC__ && !defined(UNIXCPP)
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define FSCat(x,y) x##_##y
 #else
 #define FSCat(x,y) x/**/_/**/y

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: mergerop.h,v 1.6 90/12/11 13:31:30 rws Exp $
+ * $XConsortium: mergerop.h,v 1.7 91/07/18 22:54:58 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -176,7 +176,7 @@ extern mergeRopRec	mergeRopBits[16];
 #define MROP_PREBUILT_MASK(src,dst,mask)    MROP_MASK(src,dst,mask)
 #endif
 
-#if __STDC__ && !defined(UNIXCPP)
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define MROP_NAME_CAT(prefix,suffix)	prefix##suffix
 #else
 #define MROP_NAME_CAT(prefix,suffix)	prefix/**/suffix

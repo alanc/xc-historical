@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.99 93/01/04 17:29:41 gildea Exp $ */
+/* $XConsortium: Xlibint.h,v 11.99 93/01/04 17:52:49 gildea Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -283,7 +283,7 @@ extern int errno;			/* Internal system error number. */
  *
  */
 
-#if __STDC__ && !defined(UNIXCPP)
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define GetReq(name, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(x##name##Req)) > dpy->bufmax)\
@@ -309,7 +309,7 @@ extern int errno;			/* Internal system error number. */
 /* GetReqExtra is the same as GetReq, but allocates "n" additional
    bytes after the request. "n" must be a multiple of 4!  */
 
-#if __STDC__ && !defined(UNIXCPP)
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define GetReqExtra(name, n, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(x##name##Req) + n) > dpy->bufmax)\
@@ -338,7 +338,7 @@ extern int errno;			/* Internal system error number. */
  * "rid" is the name of the resource. 
  */
 
-#if __STDC__ && !defined(UNIXCPP)
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define GetResReq(name, rid, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(xResourceReq)) > dpy->bufmax)\
@@ -366,7 +366,7 @@ extern int errno;			/* Internal system error number. */
  * GetEmptyReq is for those requests that have no arguments
  * at all. 
  */
-#if __STDC__ && !defined(UNIXCPP)
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define GetEmptyReq(name, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(xReq)) > dpy->bufmax)\

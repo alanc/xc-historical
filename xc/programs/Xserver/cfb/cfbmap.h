@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbmap.h,v 1.2 91/12/19 14:41:46 keith Exp $
+ * $XConsortium: cfbmap.h,v 1.3 91/12/19 18:37:02 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -44,7 +44,7 @@
 cfb can not hack PSZ yet
 #endif
 
-#if __STDC__ && !defined(UNIXCPP)
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define CATNAME(prefix,subname) prefix##subname
 #else
 #define CATNAME(prefix,subname) prefix/**/subname

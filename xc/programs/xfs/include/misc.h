@@ -1,4 +1,4 @@
-/* $XConsortium: misc.h,v 1.3 91/05/13 16:48:58 gildea Exp $ */
+/* $XConsortium: misc.h,v 1.4 92/11/18 21:00:41 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -113,7 +113,7 @@ extern void FourByteInvert();
 extern long GetTimeInMillis();
 
 
-#if __STDC__ && !defined(UNIXCPP)
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define fsCat(x,y) x##_##y
 #else
 #define fsCat(x,y) x/**/_/**/y
