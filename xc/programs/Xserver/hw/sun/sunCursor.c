@@ -373,6 +373,10 @@ sunUnrealizeCursor (pScreen, pCursor)
 {
     CrPrivPtr   pPriv;
 
+    if (currentCursor == pCursor) {
+	sunRemoveCursor();
+	currentCursor = NullCursor;
+    }
     pPriv = (CrPrivPtr) pCursor->devPriv[pScreen->myNum];
 
     (*pScreen->DestroyPixmap) (pPriv->source);
