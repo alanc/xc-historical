@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: glyphcurs.c,v 5.6 91/05/30 19:09:09 keith Exp $ */
+/* $XConsortium: glyphcurs.c,v 5.7 91/06/26 14:04:24 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -71,7 +71,7 @@ ServerBitsFromGlyph(pfont, ch, cm, ppbits)
     char2b[1] = (unsigned char)(ch & 0xff);
 
     pScreen = screenInfo.screens[0];
-    nby = PixmapBytePad(cm->width, 1) * (long)cm->height;
+    nby = BitmapBytePad(cm->width) * (long)cm->height;
     pbits = (unsigned char *)xalloc(nby);
     if (!pbits)
 	return BadAlloc;
@@ -110,7 +110,7 @@ ServerBitsFromGlyph(pfont, ch, cm, ppbits)
     ValidateGC((DrawablePtr)ppix, pGC);
     (*pGC->ops->PolyText16)(ppix, pGC, cm->xhot, cm->yhot, 1, char2b);
     (*pScreen->GetImage)(ppix, 0, 0, cm->width, cm->height,
-			 ZPixmap, 1, pbits);
+			 XYPixmap, 1, pbits);
     *ppbits = pbits;
     FreeScratchGC(pGC);
     (*pScreen->DestroyPixmap)(ppix);
