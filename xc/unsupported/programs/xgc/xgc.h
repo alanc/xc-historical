@@ -4,7 +4,6 @@
 ** xgc.h
 */
 
-#include "externs.h"		/* function declarations */
 #include "constants.h"
 
 typedef struct {
@@ -54,11 +53,16 @@ typedef struct {
   struct {
     char *name;
     char *text;
-    int   num_commands;
+    int   num_toggles;
     int   columns;
   } choice;
   XgcData *data;
 } XgcStuff;
 
-/************/
+typedef struct {
+  Widget label;
+  int size;
+  WidgetList widgets;
+} ChoiceDesc;
 
+/************/
