@@ -1,4 +1,4 @@
-/* $XConsortium: wsa_pm.c,v 5.1 91/02/16 09:50:28 rws Exp $ */
+/* $XConsortium: wsa_pm.c,v 5.2 91/04/05 17:30:37 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -151,8 +151,8 @@ wsa_handle_exposure( display, window, ws, first_event )
      * regions, send them down to PEXRedrawClipRegion, and repaint any
      * input echoes on the window.
      */
-    if ( num_rects = phg_wsx_build_exposure_rects( display, window, ws,
-	    first_event, &pex_rects, &x_rects ) > 0 ) {
+    if ( (num_rects = phg_wsx_build_exposure_rects( display, window, ws,
+	    first_event, &pex_rects, &x_rects)) > 0 ) {
 	(void)PEXRedrawClipRegion(display, ws->rid,
 	    (CARD32)num_rects, pex_rects);
 	if ( WS_ANY_INP_DEV_ACTIVE(ws) && ws->input_repaint )
