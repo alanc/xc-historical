@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.31 88/12/26 15:08:21 rws Exp $";
+static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.32 89/01/20 16:05:22 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -141,7 +141,8 @@ char **argv;
 		_swapshort((char *) &colors[i].red, (long) (3 * sizeof(short)));
 	    }
 	}
-	if (win.ncolors == 2 && INTENSITY(&colors[0]) > INTENSITY(&colors[1]))
+	if ((win.ncolors == 2) &&
+	    (INTENSITY(&colors[0]) > INTENSITY(&colors[1])))
 	    flags ^= F_INVERT;
     }
     if (plane >= (long)win.pixmap_depth) {
@@ -165,8 +166,8 @@ char **argv;
 	_invbits((unsigned char *)data, size);
 
     /* calculate orientation and scale */
-    setup_layout(device, (int) win.pixmap_width, (int) win.pixmap_height, flags, width, 
-		 height, header, trailer, &scale, &orientation);
+    setup_layout(device, (int) win.pixmap_width, (int) win.pixmap_height,
+		 flags, width, height, header, trailer, &scale, &orientation);
 
     if (device == PS) {
 	iw = win.pixmap_width;
@@ -338,9 +339,7 @@ int *plane;
 	case 'p':		/* -portrait | -plane <n> */
 	    if (!bcmp(*argv, "-portrait", len)) {
 		*flags |= F_PORTRAIT;
-	    }
-	    if (!bcmp(*argv, "-plane", len)) {
-		*flags |= F_PORTRAIT;
+	    } else if (!bcmp(*argv, "-plane", len)) {
 		argc--; argv++;
 		*plane = atoi(*argv);
 	    }
@@ -530,7 +529,7 @@ convert_data(win, data, plane, colors)
     out_image.depth = win->pixmap_depth = 1;
     out_image.bits_per_pixel = win->bits_per_pixel = 1;
     out_image.bytes_per_line = win->bytes_per_line =
-		(out_image.height + 7) >> 3;
+		(out_image.width + 7) >> 3;
     out_image.red_mask = 0;
     out_image.green_mask = 0;
     out_image.blue_mask = 0;
@@ -539,10 +538,14 @@ convert_data(win, data, plane, colors)
 				      out_image.height);
     _XInitImageFuncPtrs(&out_image);
     if ((in_image.depth > 1) && (plane > 0)) {
-	for (y = 0; y < in_image.height; y ++)
+	for (y = 0; y < in_image.height; y++)
 	    for (x = 0; x < in_image.width; x++)
 		XPutPixel(&out_image, x, y,
 			  (XGetPixel(&in_image, x, y) >> plane) & 1);
+    } else if (plane == 0) {
+	for (y = 0; y < in_image.height; y++)
+	    for (x = 0; x < in_image.width; x++)
+		XPutPixel(&out_image, x, y, XGetPixel(&in_image, x, y));
     } else if ((in_image.depth > 1) &&
 	       ((win->visual_class == TrueColor) ||
 		(win->visual_class == DirectColor))) {
@@ -568,7 +571,7 @@ convert_data(win, data, plane, colors)
 	}
 	if ((win->ncolors == 0) || (win->visual_class = DirectColor))
 	    direct = 1;
-	for (y = 0; y < in_image.height; y ++)
+	for (y = 0; y < in_image.height; y++)
 	    for (x = 0; x < in_image.width; x++) {
 		color.pixel = XGetPixel(&in_image, x, y);
 		color.red = (color.pixel >> rshift) & rmask;
@@ -581,7 +584,7 @@ convert_data(win, data, plane, colors)
 		}
 		XPutPixel(&out_image, x, y, INTENSITY(&color) > HALFINTENSITY);
 	    }
-    } else if (in_image.depth > 1) {
+    } else {
 	if (win->ncolors == 0) {
 	    fprintf(stderr, "no colors in data, can't remap\n");
 	    exit(1);
@@ -590,16 +593,11 @@ convert_data(win, data, plane, colors)
 	    register XColor *color = &colors[x];
 	    color->pixel = (INTENSITY(color) > HALFINTENSITY);
 	}
-	for (y = 0; y < in_image.height; y ++)
+	for (y = 0; y < in_image.height; y++)
 	    for (x = 0; x < in_image.width; x++)
 		XPutPixel(&out_image, x, y,
 			  colors[XGetPixel(&in_image, x, y)].pixel);
-    } else {
-	for (y = 0; y < in_image.height; y ++)
-	    for (x = 0; x < in_image.width; x++)
-		XPutPixel(&out_image, x, y, XGetPixel(&in_image, x, y));
     }
-
     free(data);
     return (out_image.data);
 }
