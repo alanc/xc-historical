@@ -1,4 +1,4 @@
-/* $XConsortium: Destroy.c,v 1.45 93/08/27 16:27:17 kaleb Exp $ */
+/* $XConsortium: Destroy.c,v 1.46 93/10/06 17:20:06 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -87,6 +87,7 @@ static void Phase2Destroy(widget)
 {
     register WidgetClass	    class;
     register ConstraintWidgetClass  cwClass;
+    ObjectClassExtension	    ext;
 
     /* Call constraint destroy procedures */
     /* assert: !XtIsShell(w) => (XtParent(w) != NULL) */
@@ -122,7 +123,22 @@ static void Phase2Destroy(widget)
 	    (*destroy) (widget);
 	LOCK_PROCESS;
     }
-    UNLOCK_PROCESS;
+
+    /* Call widget deallocate procedure */
+    ext = (ObjectClassExtension)
+	XtGetClassExtension(widget->core.widget_class, 
+			    XtOffsetOf(CoreClassPart, extension),
+			    NULLQUARK, XtObjectExtensionVersion, 
+			    sizeof(ObjectClassExtensionRec));
+    if (ext && ext->deallocate) {
+	XtDeallocateProc deallocate;
+	deallocate = ext->deallocate;
+	UNLOCK_PROCESS;
+	(*deallocate)(widget, NULL);
+    } else {
+	UNLOCK_PROCESS;
+	XtFree((char *)widget);
+    }
 } /* Phase2Destroy */
 
 static Boolean IsDescendant(widget, root)
