@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.82 91/01/30 13:31:06 keith Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.83 91/02/04 17:51:33 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1434,7 +1434,11 @@ install::  fonts.alias							@@\
 #endif /* InstallFontAliases */
 
 #define FontSrc(basename) basename.bdf
+#ifdef SnfFonts
+#define FontBaseObj(basename) basename.snf
+#else
 #define FontBaseObj(basename) basename.pcf
+#endif
 
 /*
  * UncompressedFontTarget
