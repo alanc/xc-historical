@@ -1,5 +1,5 @@
 /*
-* $xHeader: Intrinsic.h,v 1.8 88/08/29 11:53:12 asente Exp $
+* $xHeader: Intrinsic.h,v 1.79 88/08/31 10:23:03 swick Exp $
 * $oHeader: Intrinsic.h,v 1.8 88/08/29 11:53:12 asente Exp $
 */
 
@@ -863,7 +863,14 @@ typedef struct _XtResource {
  * different type for the field. Possibly XtArgVal?
  */
 
+#define XtOffset(type,field) \
+        ((unsigned int) (((char *) (&(((type)NULL)->field))) - \
+                         ((char *) NULL)))
+
+#ifdef notdef
+/* this doesn't work on picky compilers */
 #define XtOffset(type,field)    ((unsigned int)&(((type)NULL)->field))
+#endif
 
 /*************************************************************
  *
