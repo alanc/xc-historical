@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.12 89/10/08 15:14:29 rws Exp $ */
+/* $XConsortium: gc.c,v 5.13 90/03/20 12:13:52 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -971,7 +971,7 @@ register unsigned ndash;
 register unsigned char *pdash;
 {
     register long i;
-    register unsigned char *p;
+    register unsigned char *p, *indash;
     BITS32 maskQ = 0;
 
     i = ndash;
@@ -986,7 +986,10 @@ register unsigned char *pdash;
 	}
     }
 
-    p = (unsigned char *)xalloc(ndash * sizeof(unsigned char));
+    if (ndash & 1)
+	p = (unsigned char *)xalloc(2 * ndash * sizeof(unsigned char));
+    else
+	p = (unsigned char *)xalloc(ndash * sizeof(unsigned char));
     if (!p)
 	return BadAlloc;
 
@@ -1002,6 +1005,14 @@ register unsigned char *pdash;
 	xfree(pGC->dash);
     pGC->numInDashList = ndash;
     pGC->dash = p;
+    if (ndash & 1)
+    {
+	pGC->numInDashList += ndash;
+	indash = pdash;
+	i = ndash;
+	while (i--)
+	    *p++ = *indash++;
+    }
     while(ndash--)
 	*p++ = *pdash++;
     pGC->stateChanges |= GCDashList;
