@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XConsortium: colormap.h,v 1.19 88/09/06 15:48:59 jim Exp $ */
+/* $XConsortium: colormap.h,v 1.20 89/03/10 17:24:28 rws Exp $ */
 #ifndef CMAP_H
 #define CMAP_H 1
 
@@ -66,7 +66,7 @@ typedef struct _CMEntry *EntryPtr;
 typedef struct _ColormapRec *ColormapPtr;
 
 extern int CreateColormap();
-extern Pixel FindColor();
+extern int FindColor();
 extern int FreeColormap();
 extern int TellLostMap();
 extern int TellGainedMap();
