@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Label.c,v 1.32 88/01/22 13:45:12 swick Locked $";
+static char rcsid[] = "$Header: Label.c,v 1.34 88/01/28 07:51:46 swick Locked $";
 #endif lint
 
 /*
@@ -303,7 +303,7 @@ static Boolean SetValues(current, request, new, last)
 {
     LabelWidget curlw = (LabelWidget) current;
     LabelWidget newlw = (LabelWidget) new;
-    Boolean was_resized;
+    Boolean was_resized = False;
 
     if (newlw->label.label == NULL) {
 	newlw->label.label = newlw->core.name;
@@ -314,6 +314,7 @@ static Boolean SetValues(current, request, new, last)
 	|| (curlw->label.justify != newlw->label.justify)) {
 
 	SetTextWidthAndHeight(newlw);
+	was_resized = True;
 
 	}
 
@@ -342,9 +343,9 @@ static Boolean SetValues(current, request, new, last)
 	newlw->core.height =
 	    newlw->label.label_height + 2*newlw->label.internal_height;
 
-    was_resized = (XtSetValuesGeometryRequest( curlw, newlw,
-					       (XtWidgetGeometry *)NULL )
-		   == XtGeometryYes);
+    was_resized |= (XtSetValuesGeometryRequest( curlw, newlw,
+					        (XtWidgetGeometry *)NULL )
+		    == XtGeometryYes);
 
     if (newlw->core.depth != curlw->core.depth) {
 	XtWarning("SetValues: Attempt to change existing widget depth.");
