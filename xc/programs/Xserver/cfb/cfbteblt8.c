@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbteblt8.c,v 5.6 89/11/05 15:15:46 rws Exp $ */
+/* $XConsortium: cfbteblt8.c,v 5.7 89/11/17 14:20:52 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -178,9 +178,10 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 {
     register unsigned long  c;
     register unsigned long  *dst;
+    register unsigned long  leftMask, rightMask;
+    register int	    hTmp;
     register int	    xoff1, xoff2, xoff3, xoff4;
     register glyphPointer   char1, char2, char3, char4;
-    register unsigned long  leftMask, rightMask;
 
     CharInfoPtr		pci;
     FontInfoPtr		pfi = pGC->font->pFI;
@@ -188,7 +189,6 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     glyphPointer	oldRightChar;
     unsigned long	*pdstBase;
     glyphPointer	leftChar;
-    int			hTmp;
     int			widthDst;
     int			widthGlyph;
     int			h;
