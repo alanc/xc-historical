@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.23 88/09/06 17:08:18 jim Exp $
+ *	$XConsortium: misc.c,v 1.24 88/10/07 13:25:28 jim Exp $
  */
 
 
@@ -53,7 +53,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.23 88/09/06 17:08:18 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.24 88/10/07 13:25:28 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -788,6 +788,7 @@ int i;
 	Cleanup(i);
 }
 
+
 /*
  * cleanup by sending SIGHUP to client processes
  */
@@ -798,9 +799,9 @@ int code;
 	register TScreen *screen;
 
 	screen = &term->screen;
-	if (screen->pid > 1)
-		killpg(getpgrp(screen->pid), SIGHUP);
-
+	if (screen->pid > 1) {
+	    (void) killpg (screen->pid, SIGHUP);
+	}
 	Exit (code);
 }
 

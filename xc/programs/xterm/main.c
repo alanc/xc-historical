@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.95 88/10/18 14:21:02 swick Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.96 88/10/18 14:43:19 swick Exp $";
 #endif	/* lint */
 
 /*
@@ -2114,7 +2114,18 @@ static reapchild ()
 		return;
 	}
 	
-	Cleanup(0);
+	/*
+	 * Use pid instead of process group (which would have to get before
+	 * the wait call above) so that we don't accidentally hose other
+	 * applications.  Otherwise, somebody could write a program which put
+	 * itself in somebody else's process group.  Also, we call Exit instead
+	 * of Cleanup so that we don't do a killpg on -1 by accident.  Some
+	 * operating systems seem to do very nasty things with that.
+	 */
+	if (pid > 1) {
+	    killpg (pid, SIGHUP);
+	}
+	Exit (0);
 }
 
 /* VARARGS1 */

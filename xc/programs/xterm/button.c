@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.21 88/10/15 16:36:18 jim Exp $
+ *	$XConsortium: button.c,v 1.22 88/10/17 20:10:47 swick Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.21 88/10/15 16:36:18 jim Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.22 88/10/17 20:10:47 swick Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -1375,38 +1375,43 @@ int item;
 		Redraw();
 		break;
 
+/*
+ * The following cases use the pid instead of the process group so that we
+ * don't get hosed by programs that change their process group
+ */
+
 	case XMENU_RESUME:
 #if !defined(SYSV) || defined(JOBCONTROL)
 		if(screen->pid > 1)
-			killpg(getpgrp(screen->pid), SIGCONT);
+			killpg (screen->pid, SIGCONT);
 #endif	/* !defined(SYSV) || defined(JOBCONTROL) */
 		break;
 
 	case XMENU_SUSPEND:
 #if !defined(SYSV) || defined(JOBCONTROL)
 		if(screen->pid > 1)
-			killpg(getpgrp(screen->pid), SIGTSTP);
+			killpg (screen->pid, SIGTSTP);
 #endif	/* !defined(SYSV) || defined(JOBCONTROL) */
 		break;
 
 	case XMENU_INTR:
 		if(screen->pid > 1)
-			killpg(getpgrp(screen->pid), SIGINT);
+			killpg (screen->pid, SIGINT);
 		break;
 
 	case XMENU_HANGUP:
 		if(screen->pid > 1)
-			killpg(getpgrp(screen->pid), SIGHUP);
+			killpg (screen->pid, SIGHUP);
 		break;
 
 	case XMENU_TERM:
 		if(screen->pid > 1)
-			killpg(getpgrp(screen->pid), SIGTERM);
+			killpg (screen->pid, SIGTERM);
 		break;
 
 	case XMENU_KILL:
 		if(screen->pid > 1)
-			killpg(getpgrp(screen->pid), SIGKILL);
+			killpg (screen->pid, SIGKILL);
 		break;
 
 	case XMENU_EXIT:
