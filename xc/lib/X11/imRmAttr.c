@@ -1,4 +1,4 @@
-/* $XConsortium: imRmAttr.c,v 1.5 93/09/24 10:42:27 rws Exp $ */
+/* $XConsortium: imRmAttr.c,v 1.6 94/01/20 18:05:26 rws Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993 by FUJITSU LIMITED
@@ -980,7 +980,7 @@ _XimEncodeIMATTRIBUTE(im, res_list, res_num, arg, data, data_len, mode)
 	(void)memcpy(&buf[buf_len], tmp_buf, BUFSIZE);
 	buf_len += BUFSIZE;
 	if (!(tmp = (char *)Xrealloc(buf, buf_len + BUFSIZE)))
-	    arg->name;
+	    return arg->name;
 	buf = tmp;
     }
 
@@ -1302,7 +1302,7 @@ _XimEncodeICATTRIBUTE(ic, res_list, res_num, arg, data, data_len, flag, mode)
 	(void)memcpy(&buf[buf_len], tmp_buf, BUFSIZE);
 	buf_len += BUFSIZE;
 	if (!(tmp = (char *)Xrealloc(buf, buf_len + BUFSIZE)))
-	    arg->name;
+	    return arg->name;
 	buf = tmp;
     }
 
