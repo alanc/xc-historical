@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.121 87/11/27 09:58:04 rws Locked $ */
+/* $Header: events.c,v 1.122 87/11/27 10:29:42 rws Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2089,7 +2089,7 @@ ProcGrabPointer(client)
 	rep.status = GrabInvalidTime;
     else
     {
-	if (grab->u.ptr.confineTo && !confineTo)
+	if (grab && grab->u.ptr.confineTo && !confineTo)
 	    NewCursorConfines(0, currentScreen->width, 0, currentScreen->height);
 	ptrGrab.u.ptr.cursor = cursor;
 	ptrGrab.client = client;
