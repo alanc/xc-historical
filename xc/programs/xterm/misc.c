@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.27 88/11/16 18:14:13 rws Exp $
+ *	$XConsortium: misc.c,v 1.28 88/11/17 16:07:46 rws Exp $
  */
 
 
@@ -45,6 +45,7 @@
 #include "wait.ic"
 #include "waitmask.ic"
 #include <X11/Shell.h>
+#include <X11/Xmu.h>
 
 extern char *malloc();
 extern char *mktemp();
@@ -53,7 +54,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.27 88/11/16 18:14:13 rws Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.28 88/11/17 16:07:46 rws Exp $";
 #endif	/* lint */
 
 xevents()
@@ -880,14 +881,9 @@ xerror(d, ev)
 Display *d;
 register XErrorEvent *ev;
 {
-        char buffer[BUFSIZ];
-	XGetErrorText(d, ev->error_code, buffer, BUFSIZ);
-	fprintf(stderr, "%s: %s\n", xterm_name, buffer);
-	fprintf(stderr, "Request code %d, minor code %d, serial #%ld, resource id %ld\n",
-	 ev->request_code, ev->minor_code, ev->serial, (long)ev->resourceid);
-    	_cleanup();
-    	abort();
-/*	Exit(ERROR_XERROR); */
+    fprintf (stderr, "%s:  warning, error event receieved:\n", xterm_name);
+    (void) XmuPrintDefaultErrorMessage (d, ev, stderr);
+    Exit (ERROR_XERROR);
 }
 
 /*ARGSUSED*/
