@@ -689,9 +689,9 @@ XkbWriteKeyTypes(xkb,rep,buf,client,wantVMap)
 		pwire= (xkbKTPreserveWireDesc *)buf;
 		preserve= type->preserve;
 		for (n=0;n<type->map_count;n++,pwire++,preserve++) {
-		    pwire->mask= entry->mask;
-		    pwire->realMods= entry->real_mods;
-		    pwire->virtualMods= entry->vmods;
+		    pwire->mask= preserve->mask;
+		    pwire->realMods= preserve->real_mods;
+		    pwire->virtualMods= preserve->vmods;
 		    if (client->swapped) {
 			register int n;
 			swaps(&pwire->virtualMods,n);
@@ -1445,30 +1445,34 @@ register unsigned	i;
 unsigned		width,first,last;
 CARD8			*map,*preserve;
 
-    if ((unsigned)(req->firstType+req->nTypes)>xkb->map->num_types) {
+    if (xkb->map->types[0].free&XkbNoFreeKTStruct) {/* statically allocated */
+	XkbKeyTypePtr	pTmp;
+	unsigned	nNew;
+	nNew= req->firstType+req->nTypes;
+	if (nNew<xkb->map->num_types)
+	    nNew= xkb->map->num_types;
+	pTmp= (XkbKeyTypePtr)Xcalloc(nNew*sizeof(XkbKeyTypeRec));
+	if (pTmp==NULL)
+	    return NULL;
+	memcpy(pTmp,xkb->map->types,xkb->map->num_types*sizeof(XkbKeyTypeRec));
+	xkb->map->size_types= nNew;
+	xkb->map->types= pTmp;
+	xkb->map->types[0].free&= ~XkbNoFreeKTStruct;
+    }
+    if ((unsigned)(req->firstType+req->nTypes)>xkb->map->size_types) {
 	XkbKeyTypeRec	*pNew;
 	width = req->firstType+req->nTypes;
-	if (xkb->map->types[0].free&XkbNoFreeKTStruct) {
-	    pNew = (XkbKeyTypeRec *)Xcalloc(width*sizeof(XkbKeyTypeRec));
-	    if (!pNew)
-		return NULL;
-	    memcpy((char *)pNew,(char *)xkb->map->types,
-				req->firstType*sizeof(XkbKeyTypeRec));
-	    pNew->free&= ~XkbNoFreeKTStruct;
-	    xkb->map->num_types = width;
-	    xkb->map->types= pNew;
-	}
-	else {
-	    pNew = (XkbKeyTypeRec *)Xrealloc(xkb->map->types,
+	pNew = (XkbKeyTypeRec *)Xrealloc(xkb->map->types,
 						width*sizeof(XkbKeyTypeRec));
-	    if (!pNew)
-		return NULL;
-	    bzero(&pNew[xkb->map->num_types],
+	if (!pNew)
+	    return NULL;
+	bzero(&pNew[xkb->map->num_types],
 			(width-xkb->map->num_types)*sizeof(XkbKeyTypeRec));
-	    xkb->map->num_types = width;
-	    xkb->map->types= pNew;
-	}
+	xkb->map->size_types = width;
+	xkb->map->types= pNew;
     }
+    if ((unsigned)(req->firstType+req->nTypes)>xkb->map->num_types)
+	xkb->map->num_types= req->firstType+req->nTypes;
 
     for (i=0;i<req->nTypes;i++) {
 	XkbKeyTypeRec	*pOld;
@@ -2895,8 +2899,10 @@ ProcXkbSetNames(client)
 	type= &xkb->map->types[stuff->firstKTLevel];
 	for (i=0;i<stuff->nTypes;i++,type++) {
 	    if (width[i]>0) {
-		if (type->lvl_names==NULL)
+		if ((!type->lvl_names)||(type->free&XkbNoFreeKTLevelNames)) {
 		    type->lvl_names= (Atom *)Xcalloc(width[i]*sizeof(Atom));
+		    type->free&= ~XkbNoFreeKTLevelNames;
+		}
 		if (type->lvl_names) {
 		    register unsigned n;
 		    for (n=0;n<width[i];n++) {
