@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.5 93/11/27 14:05:01 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.6 93/12/29 15:58:10 mor Exp $
 
 #define DoNormalLib NormalLibSM
 #define DoSharedLib SharedLibSM
@@ -18,21 +18,7 @@ CONN_DEFINES = -DTCPCONN
 CONN_DEFINES = ConnectionFlags
 #endif
 
-#if HasBSD44Sockets
-SOCK_DEFINES = -DBSD44SOCKETS
-#endif
-
-#ifdef SVR4Architecture
-/* <arpa/nameser.h> is broken */
-OS_DEFINES = -Di386
-#endif
-
-#ifdef SparcArchitecture
-/* <arpa/nameser.h> is broken on Solaris 2.3 */
-OS_DEFINES = -Dsparc
-#endif
-
-MGR_DEFINES = $(CONN_DEFINES) $(OS_DEFINES)
+DEFINES = -DICE
 
 HEADERS = SM.h \
           SMproto.h \
@@ -40,6 +26,7 @@ HEADERS = SM.h \
           SMlibint.h
 
 SRCS = sm_client.c \
+       sm_genid.c \
        sm_manager.c \
        sm_process.c \
        sm_error.c \
@@ -47,6 +34,7 @@ SRCS = sm_client.c \
        sm_auth.c
 
 OBJS = sm_client.o \
+       sm_genid.o \
        sm_manager.o \
        sm_process.o \
        sm_error.o \
@@ -55,6 +43,6 @@ OBJS = sm_client.o \
 
 #include <Library.tmpl>
 
-SpecialCLibObjectRule(sm_manager,$(ICONFIGFILES),$(MGR_DEFINES))
+SpecialCLibObjectRule(sm_genid,$(ICONFIGFILES),$(CONN_DEFINES))
 
 DependTarget()
