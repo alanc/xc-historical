@@ -11,7 +11,8 @@
                   ddx/apollo \
                   ddx/ibm \
                   ddx/hp/hp ddx/hp/mfb ddx/hp/cfb ddx/hp/gbx ddx/hp/mob \
-                  ddx/hp/topcat ddx/hp/catseye ddx/hp/ren
+                  ddx/hp/topcat ddx/hp/catseye ddx/hp/ren \
+		  ddx/ndx
       ALLOSDIRS = os/sysV os/4.2bsd os/hpux
         SUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
            UNIX = os/4.2bsd/libos.a
