@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.5 94/03/18 18:02:03 matt Exp $
+XCOMM $XConsortium: Imakefile,v 1.6 94/03/25 19:52:57 matt Exp $
 #define DoNormalLib NormalLibFresco
 #define DoSharedLib SharedLibFresco
 #define DoDebugLib DebugLibFresco
@@ -73,7 +73,7 @@ OBJS =  \
     viewers.o \
     widgets.o
 
-#define CplusplusSource
+#include <Fresco.tmpl>
 
 #include <Library.tmpl>
 
