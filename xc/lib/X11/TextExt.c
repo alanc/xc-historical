@@ -1,4 +1,4 @@
-/* $Header: XTextExt.c,v 11.11 87/08/22 11:48:31 ham Exp $ */
+/* $Header: XTextExt.c,v 11.11 87/09/11 08:09:21 toddb Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -145,7 +145,7 @@ XTextExtents (fontstruct, string, nchars, dir, font_ascent, font_descent,
 	    overall->lbearing    = charstruct[0]->lbearing;
 	    overall->rbearing   = charstruct[0]->rbearing;
     
-	    for (i=1; i < nchars; i++) {
+	    for (i=1; i < n; i++) {
 		overall->ascent = max(
 		    overall->ascent,
 		    charstruct[i]->ascent);
