@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.175 91/10/31 09:31:32 rws Exp $
+ * $XConsortium: charproc.c,v 1.176 92/03/13 18:00:30 gildea Exp $
  */
 
 /*
@@ -90,6 +90,7 @@ static void bitset(), bitclr();
 #define XtNc132 "c132"
 #define XtNcharClass "charClass"
 #define XtNcurses "curses"
+#define XtNhpLowerleftBugCompat "hpLowerleftBugCompat"
 #define XtNcursorColor "cursorColor"
 #define XtNcutNewline "cutNewline"
 #define XtNcutToBeginningOfLine "cutToBeginningOfLine"
@@ -135,6 +136,7 @@ static void bitset(), bitclr();
 #define XtCC132 "C132"
 #define XtCCharClass "CharClass"
 #define XtCCurses "Curses"
+#define XtCHpLowerleftBugCompat "HpLowerleftBugCompat"
 #define XtCCutNewline "CutNewline"
 #define XtCCutToBeginningOfLine "CutToBeginningOfLine"
 #define XtCEightBitInput "EightBitInput"
@@ -325,19 +327,22 @@ static XtResource resources[] = {
 	DEFBOLDFONT},
 {XtNc132, XtCC132, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.c132),
-	XtRBoolean, (caddr_t) &defaultFALSE},
+	XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNcharClass, XtCCharClass, XtRString, sizeof(char *),
 	XtOffsetOf(XtermWidgetRec, screen.charClass),
-	XtRString, (caddr_t) NULL},
+	XtRString, (XtPointer) NULL},
 {XtNcurses, XtCCurses, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.curses),
-	XtRBoolean, (caddr_t) &defaultFALSE},
+	XtRBoolean, (XtPointer) &defaultFALSE},
+{XtNhpLowerleftBugCompat, XtCHpLowerleftBugCompat, XtRBoolean, sizeof(Boolean),
+	XtOffsetOf(XtermWidgetRec, screen.hp_ll_bc),
+	XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNcutNewline, XtCCutNewline, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.cutNewline),
-	XtRBoolean, (caddr_t) &defaultTRUE},
+	XtRBoolean, (XtPointer) &defaultTRUE},
 {XtNcutToBeginningOfLine, XtCCutToBeginningOfLine, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.cutToBeginningOfLine),
-	XtRBoolean, (caddr_t) &defaultTRUE},
+	XtRBoolean, (XtPointer) &defaultTRUE},
 {XtNbackground, XtCBackground, XtRPixel, sizeof(Pixel),
 	XtOffsetOf(XtermWidgetRec, core.background_pixel),
 	XtRString, "XtDefaultBackground"},
@@ -349,16 +354,16 @@ static XtResource resources[] = {
 	XtRString, "XtDefaultForeground"},
 {XtNeightBitInput, XtCEightBitInput, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.input_eight_bits), 
-	XtRBoolean, (caddr_t) &defaultTRUE},
+	XtRBoolean, (XtPointer) &defaultTRUE},
 {XtNeightBitOutput, XtCEightBitOutput, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.output_eight_bits), 
-	XtRBoolean, (caddr_t) &defaultTRUE},
+	XtRBoolean, (XtPointer) &defaultTRUE},
 {XtNgeometry,XtCGeometry, XtRString, sizeof(char *),
 	XtOffsetOf(XtermWidgetRec, misc.geo_metry),
-	XtRString, (caddr_t) NULL},
+	XtRString, (XtPointer) NULL},
 {XtNalwaysHighlight,XtCAlwaysHighlight,XtRBoolean,
         sizeof(Boolean),XtOffsetOf(XtermWidgetRec, screen.always_highlight),
-        XtRBoolean, (caddr_t) &defaultFALSE},
+        XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNappcursorDefault,XtCAppcursorDefault,XtRBoolean,
         sizeof(Boolean),XtOffsetOf(XtermWidgetRec, misc.appcursorDefault),
         XtRBoolean, (XtPointer) &defaultFALSE},
@@ -370,28 +375,28 @@ static XtResource resources[] = {
         XtRInt, (XtPointer) &defaultBellSuppressTime},
 {XtNtekGeometry,XtCGeometry, XtRString, sizeof(char *),
 	XtOffsetOf(XtermWidgetRec, misc.T_geometry),
-	XtRString, (caddr_t) NULL},
+	XtRString, (XtPointer) NULL},
 {XtNinternalBorder,XtCBorderWidth,XtRInt, sizeof(int),
 	XtOffsetOf(XtermWidgetRec, screen.border),
-	XtRInt, (caddr_t) &defaultIntBorder},
+	XtRInt, (XtPointer) &defaultIntBorder},
 {XtNjumpScroll, XtCJumpScroll, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.jumpscroll),
-	XtRBoolean, (caddr_t) &defaultTRUE},
+	XtRBoolean, (XtPointer) &defaultTRUE},
 {XtNlogFile, XtCLogfile, XtRString, sizeof(char *),
 	XtOffsetOf(XtermWidgetRec, screen.logfile),
-	XtRString, (caddr_t) NULL},
+	XtRString, (XtPointer) NULL},
 {XtNlogging, XtCLogging, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, misc.log_on),
-	XtRBoolean, (caddr_t) &defaultFALSE},
+	XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNlogInhibit, XtCLogInhibit, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, misc.logInhibit),
-	XtRBoolean, (caddr_t) &defaultFALSE},
+	XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNloginShell, XtCLoginShell, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, misc.login_shell),
-	XtRBoolean, (caddr_t) &defaultFALSE},
+	XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNmarginBell, XtCMarginBell, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.marginbell),
-	XtRBoolean, (caddr_t) &defaultFALSE},
+	XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNpointerColor, XtCForeground, XtRPixel, sizeof(Pixel),
 	XtOffsetOf(XtermWidgetRec, screen.mousecolor),
 	XtRString, "XtDefaultForeground"},
@@ -400,82 +405,82 @@ static XtResource resources[] = {
 	XtRString, "XtDefaultBackground"},
 {XtNpointerShape,XtCCursor, XtRCursor, sizeof(Cursor),
 	XtOffsetOf(XtermWidgetRec, screen.pointer_cursor),
-	XtRString, (caddr_t) "xterm"},
+	XtRString, (XtPointer) "xterm"},
 {XtNmultiClickTime,XtCMultiClickTime, XtRInt, sizeof(int),
 	XtOffsetOf(XtermWidgetRec, screen.multiClickTime),
-	XtRInt, (caddr_t) &defaultMultiClickTime},
+	XtRInt, (XtPointer) &defaultMultiClickTime},
 {XtNmultiScroll,XtCMultiScroll, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.multiscroll),
-	XtRBoolean, (caddr_t) &defaultFALSE},
+	XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNnMarginBell,XtCColumn, XtRInt, sizeof(int),
 	XtOffsetOf(XtermWidgetRec, screen.nmarginbell),
-	XtRInt, (caddr_t) &defaultNMarginBell},
+	XtRInt, (XtPointer) &defaultNMarginBell},
 {XtNreverseVideo,XtCReverseVideo,XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, misc.re_verse),
-	XtRBoolean, (caddr_t) &defaultFALSE},
+	XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNresizeGravity, XtCResizeGravity, XtRGravity, sizeof(XtGravity),
 	XtOffsetOf(XtermWidgetRec, misc.resizeGravity),
 	XtRImmediate, (XtPointer) SouthWestGravity},
 {XtNreverseWrap,XtCReverseWrap, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, misc.reverseWrap),
-	XtRBoolean, (caddr_t) &defaultFALSE},
+	XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNautoWrap,XtCAutoWrap, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, misc.autoWrap),
-	XtRBoolean, (caddr_t) &defaultTRUE},
+	XtRBoolean, (XtPointer) &defaultTRUE},
 {XtNsaveLines, XtCSaveLines, XtRInt, sizeof(int),
 	XtOffsetOf(XtermWidgetRec, screen.savelines),
-	XtRInt, (caddr_t) &defaultSaveLines},
+	XtRInt, (XtPointer) &defaultSaveLines},
 {XtNscrollBar, XtCScrollBar, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, misc.scrollbar),
-	XtRBoolean, (caddr_t) &defaultFALSE},
+	XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNscrollTtyOutput,XtCScrollCond, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.scrollttyoutput),
-	XtRBoolean, (caddr_t) &defaultTRUE},
+	XtRBoolean, (XtPointer) &defaultTRUE},
 {XtNscrollKey, XtCScrollCond, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.scrollkey),
-	XtRBoolean, (caddr_t) &defaultFALSE},
+	XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNscrollLines, XtCScrollLines, XtRInt, sizeof(int),
 	XtOffsetOf(XtermWidgetRec, screen.scrolllines),
-	XtRInt, (caddr_t) &defaultScrollLines},
+	XtRInt, (XtPointer) &defaultScrollLines},
 {XtNsignalInhibit,XtCSignalInhibit,XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, misc.signalInhibit),
-	XtRBoolean, (caddr_t) &defaultFALSE},
+	XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNtekInhibit, XtCTekInhibit, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, misc.tekInhibit),
-	XtRBoolean, (caddr_t) &defaultFALSE},
+	XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNtekSmall, XtCTekSmall, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, misc.tekSmall),
-	XtRBoolean, (caddr_t) &defaultFALSE},
+	XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNtekStartup, XtCTekStartup, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.TekEmu),
-	XtRBoolean, (caddr_t) &defaultFALSE},
+	XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNtiteInhibit, XtCTiteInhibit, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, misc.titeInhibit),
-	XtRBoolean, (caddr_t) &defaultFALSE},
+	XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNvisualBell, XtCVisualBell, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.visualbell),
-	XtRBoolean, (caddr_t) &defaultFALSE},
+	XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNallowSendEvents, XtCAllowSendEvents, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.allowSendEvents),
-	XtRBoolean, (caddr_t) &defaultFALSE},
+	XtRBoolean, (XtPointer) &defaultFALSE},
 {"font1", "Font1", XtRString, sizeof(String),
 	XtOffsetOf(XtermWidgetRec, screen.menu_font_names[fontMenu_font1]),
-	XtRString, (caddr_t) NULL},
+	XtRString, (XtPointer) NULL},
 {"font2", "Font2", XtRString, sizeof(String),
 	XtOffsetOf(XtermWidgetRec, screen.menu_font_names[fontMenu_font2]),
-	XtRString, (caddr_t) NULL},
+	XtRString, (XtPointer) NULL},
 {"font3", "Font3", XtRString, sizeof(String),
 	XtOffsetOf(XtermWidgetRec, screen.menu_font_names[fontMenu_font3]),
-	XtRString, (caddr_t) NULL},
+	XtRString, (XtPointer) NULL},
 {"font4", "Font4", XtRString, sizeof(String),
 	XtOffsetOf(XtermWidgetRec, screen.menu_font_names[fontMenu_font4]),
-	XtRString, (caddr_t) NULL},
+	XtRString, (XtPointer) NULL},
 {"font5", "Font5", XtRString, sizeof(String),
 	XtOffsetOf(XtermWidgetRec, screen.menu_font_names[fontMenu_font5]),
-	XtRString, (caddr_t) NULL},
+	XtRString, (XtPointer) NULL},
 {"font6", "Font6", XtRString, sizeof(String),
 	XtOffsetOf(XtermWidgetRec, screen.menu_font_names[fontMenu_font6]),
-	XtRString, (caddr_t) NULL},
+	XtRString, (XtPointer) NULL},
 };
 
 static void VTClassInit();
@@ -730,6 +735,15 @@ static void VTparse()
 			parsestate = groundtable;
 			break;
 
+		 case CASE_HP_BUGGY_LL:
+			/* Some HP-UX applications have the bug that they
+			   assume ESC F goes to the lower left corner of
+			   the screen, regardless of what terminfo says. */
+			if (screen->hp_ll_bc)
+			    CursorSet(screen, screen->max_row, 0, term->flags);
+			parsestate = groundtable;
+			break;
+
 		 case CASE_ED:
 			/* ED */
 			switch (param[0]) {
@@ -878,6 +892,17 @@ static void VTparse()
 				reply.a_final  = 'R';
 				unparseseq(&reply, screen->respond);
 			}
+			parsestate = groundtable;
+			break;
+
+		 case CASE_HP_MEM_LOCK:
+		 case CASE_HP_MEM_UNLOCK:
+			if(screen->scroll_amt)
+			    FlushScroll(screen);
+			if (parsestate[c] == CASE_HP_MEM_LOCK)
+			    screen->top_marg = screen->cur_row;
+			else
+			    screen->top_marg = 0;
 			parsestate = groundtable;
 			break;
 
@@ -2167,6 +2192,7 @@ static void VTInitialize (wrequest, wnew, args, num_args)
    bzero ((char *) &new->screen, sizeof(new->screen));
    new->screen.c132 = request->screen.c132;
    new->screen.curses = request->screen.curses;
+   new->screen.hp_ll_bc = request->screen.hp_ll_bc;
    new->screen.foreground = request->screen.foreground;
    new->screen.cursorcolor = request->screen.cursorcolor;
    new->screen.border = request->screen.border;
@@ -2805,7 +2831,7 @@ static void HandleKeymapChange(w, event, params, param_count)
     static XtTranslations keymap, original;
     static XtResource key_resources[] = {
 	{ XtNtranslations, XtCTranslations, XtRTranslationTable,
-	      sizeof(XtTranslations), 0, XtRTranslationTable, (caddr_t)NULL}
+	      sizeof(XtTranslations), 0, XtRTranslationTable, (XtPointer)NULL}
     };
     char mapName[1000];
     char mapClass[1000];
