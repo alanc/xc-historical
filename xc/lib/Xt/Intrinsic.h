@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.91 89/07/21 12:06:23 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.92 89/09/07 17:47:22 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -56,9 +56,7 @@ typedef struct _CompositeRec *CompositeWidget;
 typedef struct _XtActionsRec *XtActionList;
 typedef struct _XtEventRec *XtEventTable;
 typedef struct _XtBoundAccActionRec *XtBoundAccActions;
-typedef unsigned int   Cardinal;
-typedef unsigned short  ShortCard;
-typedef char	Boolean;
+
 typedef unsigned long	*Opaque;
 typedef struct _XtAppStruct *XtAppContext;
 typedef unsigned long   XtValueMask;
@@ -68,8 +66,6 @@ typedef unsigned long	XtWorkProcId;
 typedef unsigned int    XtGeometryMask;
 typedef unsigned long   XtGCMask;   /* Mask of values that are used by widget*/
 typedef unsigned long   Pixel;	    /* Index into colormap	        */
-typedef short		Position;   /* Offset from 0 coordinate	        */
-typedef ShortCard	Dimension;  /* Size in pixels		        */
 typedef int		XtCacheType;
 #define			XtCacheNone	  0x001
 #define			XtCacheAll	  0x002
@@ -78,7 +74,9 @@ typedef int		XtCacheType;
 
 /****************************************************************
  *
- * System Dependent Definitions
+ * System Dependent Definitions; see spec for specific range
+ * requirements.  Do not assume every implementation uses the
+ * same base types!
  *
  *
  * XtArgVal ought to be a union of caddr_t, char *, long, int *, and proc *
@@ -95,7 +93,14 @@ typedef int		XtCacheType;
  * ArgLists rely heavily on the above typedef.
  *
  ****************************************************************/
-typedef long XtArgVal;
+typedef char		Boolean;
+typedef unsigned int	Cardinal;
+typedef unsigned short	Dimension;  /* Size in pixels		        */
+typedef short		Position;   /* Offset from 0 coordinate	        */
+typedef long		XtArgVal;
+typedef unsigned char	XtEnum;
+typedef char*		XtPointer;
+
 
 #include "Core.h"
 #include "Composite.h"
@@ -475,10 +480,31 @@ extern Boolean XtIsSubclass ();
     /* Widget       widget;	    */
     /* WidgetClass  widgetClass;    */
 
-#define XtIsComposite(widget)	XtIsSubclass(widget, (WidgetClass)compositeWidgetClass)
-#define XtIsConstraint(widget)	XtIsSubclass(widget, (WidgetClass)constraintWidgetClass)
-#define XtIsShell(widget)	XtIsSubclass(widget, (WidgetClass)shellWidgetClass)
-#define XtIsWidget(object)	XtIsSubclass(object, (WidgetClass)coreWidgetClass)
+extern Boolean XtIsObject();
+    /* Widget       object;	    */
+
+extern Boolean _XtCheckSubclassFlag(); /* implementation-private */
+extern Boolean _XtIsSubclassOf(); /* implementation-private */
+
+#define XtIsRectObj(object)		(_XtCheckSubclassFlag(object, 0x02))
+#define XtIsWidget(object)		(_XtCheckSubclassFlag(object, 0x04))
+#define XtIsComposite(widget)		(_XtCheckSubclassFlag(widget, 0x08))
+#define XtIsConstraint(widget)		(_XtCheckSubclassFlag(widget, 0x10))
+#define XtIsShell(widget)		(_XtCheckSubclassFlag(widget, 0x20))
+#define XtIsOverrideShell(widget) \
+    (_XtIsSubclassOf(widget, (WidgetClass)overrideShellWidgetClass, \
+		     (WidgetClass)shellWidgetClass, 0x20))
+#define XtIsWMShell(widget)		(_XtCheckSubclassFlag(widget, 0x40))
+#define XtIsVendorShell(widget)	\
+    (_XtIsSubclassOf(widget, (WidgetClass)vendorShellWidgetClass, \
+		     (WidgetClass)wmShellWidgetClass, 0x40))
+#define XtIsTransientShell(widget) \
+    (_XtIsSubclassOf(widget, (WidgetClass)transientShellWidgetClass, \
+		     (WidgetClass)wmShellWidgetClass, 0x40))
+#define XtIsTopLevelShell(widget)	(_XtCheckSubclassFlag(widget, 0x80))
+#define XtIsApplicationShell(widget) \
+    (_XtIsSubclassOf(widget, (WidgetClass)applicationShellWidgetClass, \
+		     (WidgetClass)topLevelShellWidgetClass, 0x80))
 
 extern void XtRealizeWidget ();
     /* Widget    widget      */
