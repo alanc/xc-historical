@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.124 93/09/03 08:17:47 dpw Exp $ */
+/* $XConsortium: utils.c,v 1.125 93/09/13 20:38:13 rws Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -608,7 +608,7 @@ Xalloc (amount)
     if ((long)amount <= 0)
 	return (unsigned long *)NULL;
     /* aligned extra on long word boundary */
-    amount = (amount + 3) & ~3;
+    amount = (amount + (sizeof(long) - 1)) & ~(sizeof(long) - 1);
 #ifdef MEMBUG
     if (!Must_have_memory && Memory_fail &&
 	((random() % MEM_FAIL_SCALE) < Memory_fail))
