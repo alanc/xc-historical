@@ -1,4 +1,4 @@
-/* $XConsortium: cfbtegblt.c,v 1.4 89/03/23 18:10:32 rws Exp $ */
+/* $XConsortium: cfbtegblt.c,v 5.0 89/06/09 15:01:44 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -38,7 +38,8 @@ SOFTWARE.
 extern void miImageGlyphBlt();
 
 /*
-    this works for fonts with glyphs <= 32 bits wide.
+    this works for fonts with glyphs <= 32 bits wide, on an
+    arbitrarily deep display.  Use cfbTEGlyphBlt8 for 8 bit displays.
 
     This should be called only with a terminal-emulator font;
 this means that the FIXED_METRICS flag is set, and that
