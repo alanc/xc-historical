@@ -14,8 +14,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/time.h>
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
@@ -127,6 +125,7 @@ XdmcpRegisterBroadcastAddress (addr)
     if (NumBroadcastAddresses >= MAX_BROADCAST)
 	return;
     bcast = &BroadcastAddresses[NumBroadcastAddresses++];
+    bzero (bcast, sizeof (struct sockaddr_in));
     bcast->sin_family = addr->sin_family;
     bcast->sin_port = htons (xdm_udp_port);
     bcast->sin_addr = addr->sin_addr;
