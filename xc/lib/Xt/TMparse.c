@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: TMparse.c,v 1.65 88/09/04 12:22:01 swick Exp $";
+    "$XConsortium: TMparse.c,v 1.66 88/09/04 15:28:33 swick Exp $";
 /* $oHeader: TMparse.c,v 1.4 88/09/01 17:30:39 asente Exp $ */
 #endif lint
 
@@ -676,42 +676,42 @@ static String ParseXtEventType(str, event, tmEventP,error)
     return str;
 }
 
-static unsigned int StrToHex(str)
+static unsigned long StrToHex(str)
     String str;
 {
     register char   c;
-    register int    val = 0;
+    register unsigned long    val = 0;
 
     while (c = *str) {
 	if ('0' <= c && c <= '9') val = val*16+c-'0';
 	else if ('a' <= c && c <= 'z') val = val*16+c-'a'+10;
 	else if ('A' <= c && c <= 'Z') val = val*16+c-'A'+10;
-	else return -1;
+	else return 0;
 	str++;
     }
 
     return val;
 }
 
-static unsigned int StrToOct(str)
+static unsigned long StrToOct(str)
     String str;
 {
     register char c;
-    register int  val = 0;
+    register unsigned long  val = 0;
 
     while (c = *str) {
-        if ('0' <= c && c <= '7') val = val*8+c-'0'; else return -1;
+        if ('0' <= c && c <= '7') val = val*8+c-'0'; else return 0;
 	str++;
     }
 
     return val;
 }
 
-static unsigned int StrToNum(str)
+static unsigned long StrToNum(str)
     String str;
 {
     register char c;
-    register int val = 0;
+    register unsigned long val = 0;
 
     if (*str == '0') {
 	str++;
@@ -721,7 +721,7 @@ static unsigned int StrToNum(str)
 
     while (c = *str) {
 	if ('0' <= c && c <= '9') val = val*10+c-'0';
-	else return -1;
+	else return 0;
 	str++;
     }
 
@@ -733,10 +733,11 @@ static KeySym StringToKeySym(str)
 {
     KeySym k;
 
+    if (str == NULL || *str == '\0') return (KeySym) 0;
+
     k = XStringToKeysym(str);
     if (k != NoSymbol) return k;
 
-    if (str == NULL) return (KeySym) 0;
     if ('0' <= *str && *str <= '9') return (KeySym) StrToNum(str);
 
     return (KeySym) *str;
