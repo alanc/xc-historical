@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 5.8 89/07/26 15:49:34 rws Exp $ */
+/* $XConsortium: mibitblt.c,v 5.9 89/08/30 19:18:38 keith Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -761,7 +761,7 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	        ValidateGC(pDraw, pGC);
 	        (*pGC->ops->PutImage)(pDraw, pGC, 1, x, y, w, h, leftPad,
 			         XYBitmap, pImage);
-	        pImage += h * PixmapBytePad(w, 1);
+	        pImage += h * PixmapBytePad(w + leftPad, 1);
 	    }
 	}
 	gcv[0] = oldPlanemask;
