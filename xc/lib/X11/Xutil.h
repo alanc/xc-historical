@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.70 91/05/05 21:21:42 rws Exp $ */
+/* $XConsortium: Xutil.h,v 11.71 91/06/05 08:25:57 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -791,6 +791,12 @@ extern int XwcTextListToTextProperty(
     int			/* count */,
     XICCEncodingStyle	/* style */,
     XTextProperty*	/* text_prop_return */
+#endif
+);
+
+extern void XwcFreeStringList(
+#if NeedFunctionPrototypes
+    wchar_t**		/* list */
 #endif
 );
 
