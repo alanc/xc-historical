@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.5 89/06/21 11:22:41 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.6 89/07/04 16:12:30 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -81,20 +81,6 @@ implied warranty.
  *	    window-relative region of exposed areas, the source and destination
  *	    coordinates and the bitplane copied, if CopyPlane, or 0, if
  *	    CopyArea.
- *
- * MODIFICATIONS MADE TO THE SERVER, TO MAKE THIS WORK, THAT SHOULD BE NOTED
- * WHEN ALTERING AN EXISTING IMPLEMENTATION:
- *	- miHandleExposures now takes an extra argument, plane, which is 0
- *	    if called from CopyArea and the plane-to-copy if called from
- *	    CopyPlane.
- *	- An extra field, devBackingStore, was added to the GC structure.
- *	- The code in sunCursor.c was modified to also intercept calls through
- *	    a window's SaveDoomedAreas and RestoreAreas procedure vectors in
- *	    the backStorage structure and remove the cursor if it interfered
- *	    with the operation.
- *	- miValidateTree was changed to modify backStorage->oldAbsCorner when
- *	    a window moves so the proper region of the screen can be saved
- *	    in miSaveAreas.
  *
  * JUSTIFICATION
  *    This is a cross between saving everything and just saving the
@@ -2633,9 +2619,6 @@ miBSAllocate(pWin)
 	pBackingStore->status = StatusNoPixmap;
 	pBackingStore->backgroundState = None;
 	
-	pBS->obscured = (* pScreen->RegionCreate) (NULL, 1);
-	pBS->oldAbsCorner.x = 0;
-	pBS->oldAbsCorner.y = 0;
 	pBS->funcs = &miBSFuncs;
 	pBS->devPrivate.ptr = (pointer) pBackingStore;
 
@@ -2743,7 +2726,6 @@ miBSFree(pWin)
 
 	    xfree(pBackingStore);
 	}
-	(*pScreen->RegionDestroy) (pWin->backStorage->obscured);
 	xfree(pWin->backStorage);
 	pWin->backStorage = (BackingStorePtr)NULL;
     }
@@ -2848,7 +2830,9 @@ miResizeBackingStore(pWin, dx, dy)
  *-----------------------------------------------------------------------
  * miBSSaveDoomedAreas --
  *	Saved the areas of the given window that are about to be
- *	obscured.
+ *	obscured.  If the window has moved, pObscured is expected to
+ *	be at the new location and (dx,dy) is expected to be the offset
+ *	to the window's previous location.
  *
  * Results:
  *	None.
@@ -2860,48 +2844,40 @@ miResizeBackingStore(pWin, dx, dy)
  *-----------------------------------------------------------------------
  */
 static void
-miBSSaveDoomedAreas(pWin)
+miBSSaveDoomedAreas(pWin, pObscured, dx, dy)
     register WindowPtr pWin;
+    RegionPtr 	       pObscured;
+    int		       dx, dy;
 {
     miBSWindowPtr 	pBackingStore;
-    RegionPtr 		prgnDoomed;
     BoxRec		winBox;
-    RegionPtr		winSize;
+    RegionPtr		prgnDoomed;
     ScreenPtr	  	pScreen;
     
 
     pBackingStore = (miBSWindowPtr)pWin->backStorage->devPrivate.ptr;
     pScreen = pWin->drawable.pScreen;
 
+    pBackingStore->viewable = (int)pWin->viewable;
     /*
      * If the window isn't realized, it's being unmapped, thus we don't
      * want to save anything if backingStore isn't Always.
      */
     if (!pWin->realized && pWin->backingStore != Always)
     {
-	pBackingStore->viewable = pWin->viewable;
 	(* pScreen->RegionEmpty) (pBackingStore->pSavedRegion);
 	miDestroyBSPixmap (pWin);
 	return;
     }
+
+    if (!(*pScreen->RegionNotEmpty)(pObscured))
+	return;
 
     /* Don't even pretend to save anything for a virtual background None */
     if ((pBackingStore->status == StatusVirtual) &&
 	(pBackingStore->backgroundState == None))
 	return;
 
-    /*
-     * Translate the region to be window-relative, then copy the region from
-     * the screen at the window's (old) position. Note that if the window
-     * has moved, backStorage->obscured is expected to be at the new
-     * location and backStorage->oldAbsCorner is expected to contain the
-     * window's previous location so the correct areas of the screen may
-     * be copied...
-     */
-    prgnDoomed = pWin->backStorage->obscured;
-    (* pScreen->TranslateRegion)(prgnDoomed, 
-				 -pWin->drawable.x,
-				 -pWin->drawable.y);
     /*
      * When a window shrinks, the obscured region will be larger than the
      * window actually is. To avoid wasted effort, therefore, we trim the
@@ -2912,53 +2888,46 @@ miBSSaveDoomedAreas(pWin)
     winBox.y1 = 0;
     winBox.x2 = pWin->drawable.width;
     winBox.y2 = pWin->drawable.height;
-    winSize = (* pScreen->RegionCreate) (&winBox, 1);
+    prgnDoomed = (* pScreen->RegionCreate) (&winBox, 1);
 #ifdef SHAPE
     if (wBoundingShape (pWin))
-	(*pScreen->Intersect) (winSize, winSize, wBoundingShape (pWin));
+	(*pScreen->Intersect) (prgnDoomed, prgnDoomed, wBoundingShape (pWin));
     if (wClipShape (pWin))
-	(*pScreen->Intersect) (winSize, winSize, wClipShape (pWin));
+	(*pScreen->Intersect) (prgnDoomed, prgnDoomed, wClipShape (pWin));
 #endif
-    (* pScreen->Intersect) (prgnDoomed, prgnDoomed, winSize);
-    (* pScreen->RegionDestroy) (winSize);
+    (* pScreen->TranslateRegion)(prgnDoomed, 
+				 pWin->drawable.x,
+				 pWin->drawable.y);
+    (* pScreen->Intersect) (prgnDoomed, prgnDoomed, pObscured);
+    (* pScreen->TranslateRegion)(prgnDoomed, 
+				 -pWin->drawable.x,
+				 -pWin->drawable.y);
 
-    /*
-     * only save the bits if we've actually
-     * started using backing store
-     */
-    if (pBackingStore->status != StatusVirtual)
+    if ((*pScreen->RegionNotEmpty)(pObscured))
     {
-	miBSScreenPtr	pScreenPriv;
+	/*
+	 * only save the bits if we've actually
+	 * started using backing store
+	 */
+	if (pBackingStore->status != StatusVirtual)
+	{
+	    miBSScreenPtr	pScreenPriv;
 
-	pScreenPriv = (miBSScreenPtr) pScreen->devPrivates[miBSScreenIndex].ptr;
-	if (!pBackingStore->pBackingPixmap)
-	    miCreateBSPixmap (pWin);
+	    pScreenPriv = (miBSScreenPtr) pScreen->devPrivates[miBSScreenIndex].ptr;
+	    if (!pBackingStore->pBackingPixmap)
+		miCreateBSPixmap (pWin);
 
-	if (pBackingStore->pBackingPixmap)
-	    (* pScreenPriv->funcs->SaveAreas) (pBackingStore->pBackingPixmap,
-					       prgnDoomed,
-					       pWin->backStorage->oldAbsCorner.x,
-					       pWin->backStorage->oldAbsCorner.y);
+	    if (pBackingStore->pBackingPixmap)
+		(* pScreenPriv->funcs->SaveAreas) (pBackingStore->pBackingPixmap,
+						   prgnDoomed,
+						   pWin->drawable.x - dx,
+						   pWin->drawable.y - dy);
+	}
+	(* pScreen->Union)(pBackingStore->pSavedRegion,
+			   pBackingStore->pSavedRegion,
+			   prgnDoomed);
     }
-
-    (* pScreen->Union)(pBackingStore->pSavedRegion,
-		       pBackingStore->pSavedRegion,
-		       prgnDoomed);
-
-    pBackingStore->viewable = (int)pWin->viewable;
-
-#ifdef NOTDEF
-    /*
-     * If you think of it the right way, we've just altered the clip-list for
-     * the pixmap, so we need to update its serial number (plus the sun and
-     * apollo ValidateGC functions clear out the GCClipMask from the
-     * stateChanges for the GC, so unless we do this, the pBackingGC won't be
-     * validated properly...
-     */
-
-    if (pBackingStore->pBackingPixmap)
-	pBackingStore->pBackingPixmap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-#endif
+    (* pScreen->RegionDestroy) (prgnDoomed);
 }
 
 /*-
@@ -2996,7 +2965,6 @@ miBSRestoreAreas(pWin, prgnExposed)
     RegionPtr prgnRestored;
     register ScreenPtr pScreen;
     RegionPtr exposures = prgnExposed;
-    Bool retile;
 
     pScreen = pWin->drawable.pScreen;
     pBackingStore = (miBSWindowPtr)pWin->backStorage->devPrivate.ptr;
@@ -3154,7 +3122,7 @@ miBSTranslateBackingStore(pWin, dx, dy, oldClip)
     if (!oldClip)
 	(* pScreen->RegionEmpty) (pSavedRegion);
     newSaved = (* pScreen->RegionCreate) (NullBox, 1);
-    obscured = pWin->backStorage->obscured;
+    obscured = (* pScreen->RegionCreate) (NullBox, 1);
     /* resize and translate backing pixmap and pSavedRegion */
     miResizeBackingStore(pWin, dx, dy);
     /* now find any already saved areas we should retain */
@@ -3194,9 +3162,7 @@ miBSTranslateBackingStore(pWin, dx, dy, oldClip)
 	{
 	    /* save those visible areas */
 	    (* pScreen->TranslateRegion) (obscured, dx, dy);
-	    pWin->backStorage->oldAbsCorner.x = pWin->drawable.x - dx;
-	    pWin->backStorage->oldAbsCorner.y = pWin->drawable.y - dy;
-	    miBSSaveDoomedAreas(pWin);
+	    miBSSaveDoomedAreas(pWin, obscured, dx, dy);
 	}
     }
     /* translate newSaved to local coordinates */
@@ -3221,11 +3187,11 @@ miBSTranslateBackingStore(pWin, dx, dy, oldClip)
 			      extents.y2 - extents.y1,
 			      TRUE);
 	pBackingStore->pSavedRegion = pSavedRegion;
-	(* pScreen->RegionEmpty) (obscured);
     }
     /* finally install new pSavedRegion */
     (* pScreen->Union) (pSavedRegion, pSavedRegion, newSaved);
     (* pScreen->RegionDestroy) (newSaved);
+    (* pScreen->RegionDestroy) (obscured);
 }
 
 /*
@@ -3433,7 +3399,8 @@ miBSValidateGC (pGC, stateChanges, pDrawable)
     {
 	int status;
 
-	pBackingGC = CreateGC (pWindowPriv->pBackingPixmap, 0, NULL, &status);
+	pBackingGC = CreateGC ((DrawablePtr)pWindowPriv->pBackingPixmap,
+			       (BITS32)0, (XID *)NULL, &status);
 	if (status != Success)
 	    lift_functions = TRUE;
 	else
@@ -3779,7 +3746,7 @@ miBSExposeCopy (pSrc, pDst, pGC, prgnExposed, srcx, srcy, dstx, dsty, plane)
 	    miBSFillVirtualBits (pDst, pGC, tempRgn, dx, dy,
 				 pBackingStore->backgroundState,
 				 pBackingStore->background,
-				 (PixmapPtr) USE_BACKGROUND_PIXEL, ~0L);
+				 ~0L);
 	    FreeScratchGC (pGC);
 	}
 	break;
