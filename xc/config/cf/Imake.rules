@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.92 91/03/13 15:16:38 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.93 91/03/13 17:15:40 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -322,8 +322,8 @@ Concat(load,server):							@@\
 #ifndef InstallLibrary
 #define	InstallLibrary(libname,dest)					@@\
 install:: Concat(lib,libname.a)						@@\
-	$(INSTALL) -c $(INSTLIBFLAGS) Concat(lib,libname.a) dest	@@\
-	RanLibrary($(RANLIBINSTFLAGS) Concat(dest/lib,libname.a))
+	$(INSTALL) -c $(INSTLIBFLAGS) Concat(lib,libname.a) $(DESTDIR)dest @@\
+	RanLibrary($(RANLIBINSTFLAGS) Concat($(DESTDIR)dest/lib,libname.a))
 #endif /* InstallLibrary */
 
 /*
@@ -332,7 +332,7 @@ install:: Concat(lib,libname.a)						@@\
 #ifndef MergeIntoInstalledLibrary
 #define MergeIntoInstalledLibrary(tolib,fromlib)			@@\
 install::  fromlib							@@\
-	$(SCRIPTSRC)/mergelib tolib fromlib
+	$(SCRIPTSRC)/mergelib $(DESTDIR)tolib fromlib
 #endif /* MergeIntoInstalledLibrary */
 
 /*
@@ -342,7 +342,7 @@ install::  fromlib							@@\
 #ifndef InstallLibraryAlias
 #define	InstallLibraryAlias(libname,alias,dest)				@@\
 install::								@@\
-	-(cd dest; \							@@\
+	-(cd $(DESTDIR)dest; \						@@\
 		$(RM) Concat(lib,alias.a); \				@@\
 		$(LN) Concat(lib,libname.a) Concat(lib,alias.a))
 #endif /* InstallLibraryAlias */
@@ -354,7 +354,7 @@ install::								@@\
 #ifndef InstallLintLibrary
 #define	InstallLintLibrary(libname,dest)				@@\
 install.ln:: Concat(llib-l,libname.ln)					@@\
-	$(INSTALL) -c $(INSTLIBFLAGS) Concat(llib-l,libname.ln) dest
+	$(INSTALL) -c $(INSTLIBFLAGS) Concat(llib-l,libname.ln) $(DESTDIR)dest
 #endif /* InstallLintLibrary */
 
 
@@ -368,7 +368,7 @@ install.ln:: Concat(llib-l,libname.ln)					@@\
 #ifndef InstallManPageLong
 #define	InstallManPageLong(file,destdir,dest)				@@\
 install.man:: file.man							@@\
-	$(INSTALL) -c $(INSTMANFLAGS) file.man destdir/dest.ManSuffix
+	$(INSTALL) -c $(INSTMANFLAGS) file.man $(DESTDIR)destdir/dest.ManSuffix
 #endif /* InstallManPageLong */
 
 
@@ -388,7 +388,7 @@ InstallManPageLong(file,dest,file)
 #ifndef InstallNonExec
 #define	InstallNonExec(file,dest)					@@\
 install:: file								@@\
-	$(INSTALL) -c $(INSTDATFLAGS) file dest
+	$(INSTALL) -c $(INSTDATFLAGS) file $(DESTDIR)dest
 #endif /* InstallNonExec */
 
 
@@ -399,7 +399,7 @@ install:: file								@@\
 #ifndef InstallProgramWithFlags
 #define InstallProgramWithFlags(program,dest,flags)			@@\
 install:: program							@@\
-	$(INSTALL) -c $(INSTPGMFLAGS) flags program dest
+	$(INSTALL) -c $(INSTPGMFLAGS) flags program $(DESTDIR)dest
 #endif /* InstallProgramWithFlags */
 
 
@@ -420,7 +420,7 @@ InstallProgramWithFlags(program,dest, /**/)
 #ifndef InstallScript
 #define	InstallScript(program,dest)					@@\
 install:: program.script						@@\
-	$(INSTALL) -c $(INSTBINFLAGS) program.script dest/program
+	$(INSTALL) -c $(INSTBINFLAGS) program.script $(DESTDIR)dest/program
 #endif /* InstallScript */
 
 
@@ -430,7 +430,7 @@ install:: program.script						@@\
 #ifndef InstallNamedProg
 #define	InstallNamedProg(srcname,dstname,dest)				@@\
 install:: srcname							@@\
-	$(INSTALL) -c $(INSTBINFLAGS) srcname dest/dstname
+	$(INSTALL) -c $(INSTBINFLAGS) srcname $(DESTDIR)dest/dstname
 #endif /* InstallNamedProg */
 
 
@@ -456,7 +456,7 @@ step:: list								@@\
 step:: list								@@\
 	@case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
 	for i in list; do \						@@\
-		(set -x; $(INSTALL) -c flags $$i dest); \		@@\
+		(set -x; $(INSTALL) -c flags $$i $(DESTDIR)dest); \	@@\
 	done
 #endif /* InstallMultipleDestFlags */
 
@@ -510,7 +510,7 @@ InstallMultipleDest(install.man,list,dest)
 #if InstallAppDefFiles
 #define	InstallAppDefaults(class)					@@\
 install:: class.ad							@@\
-	$(INSTALL) -c $(INSTAPPFLAGS) class.ad $(XAPPLOADDIR)/class
+	$(INSTALL) -c $(INSTAPPFLAGS) class.ad $(DESTDIR)$(XAPPLOADDIR)/class
 #else
 #define	InstallAppDefaults(class)
 #endif /* InstallAppDefFiles */
@@ -524,7 +524,7 @@ install:: class.ad							@@\
 #if InstallAppDefFiles
 #define	InstallAppDefaultsLong(file,class)				@@\
 install:: file.ad							@@\
-	$(INSTALL) -c $(INSTAPPFLAGS) file.ad $(XAPPLOADDIR)/class
+	$(INSTALL) -c $(INSTAPPFLAGS) file.ad $(DESTDIR)$(XAPPLOADDIR)/class
 #else
 #define	InstallAppDefaultsLong(file,class)
 #endif /* InstallAppDefFiles */
@@ -1009,7 +1009,8 @@ step::  dir srclist							@@\
 		(set -x; cd dir; $(LN) ../$$i .); \			@@\
 	done								@@\
 									@@\
-MakeDirectories(dir,dir)						@@\
+dir::									@@\
+	$(MKDIRHIER) dir						@@\
 									@@\
 clean::									@@\
 	@-(if [ -d dir ]; then \					@@\
@@ -1272,7 +1273,10 @@ CppScriptTarget(name,name.cpp,defs, /**/)
 #ifndef MakeDirectories
 #define MakeDirectories(step,dirs)					@@\
 step::									@@\
-	$(MKDIRHIER) dirs
+	@case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
+	@for i in dirs; do \						@@\
+		(set -x; $(MKDIRHIER) $(DESTDIR)$$i) \			@@\
+	done
 #endif /* MakeDirectories */
 
 
@@ -1296,10 +1300,10 @@ clean::									@@\
  */
 #ifndef InstallFonts
 #define InstallFonts(dest)						@@\
-InstallMultipleFlags($(OBJS),dest,$(INSTDATFLAGS))			@@\
+InstallMultipleFlags($(OBJS),$(DESTDIR)dest,$(INSTDATFLAGS))		@@\
 									@@\
 install::  fonts.dir							@@\
-	$(INSTALL) -c $(INSTDATFLAGS) fonts.dir dest
+	$(INSTALL) -c $(INSTDATFLAGS) fonts.dir $(DESTDIR)dest
 #endif /* InstallFonts */
 
 
@@ -1309,7 +1313,7 @@ install::  fonts.dir							@@\
 #ifndef InstallFontAliases
 #define InstallFontAliases(dest)					@@\
 install::  fonts.alias							@@\
-	$(INSTALL) -c $(INSTDATFLAGS) fonts.alias dest
+	$(INSTALL) -c $(INSTDATFLAGS) fonts.alias $(DESTDIR)dest
 #endif /* InstallFontAliases */
 
 #define FontSrc(basename) basename.bdf
