@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: fontfilest.h,v 1.1 91/05/11 09:12:00 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -110,9 +110,10 @@ typedef struct _FontDirectory {
 typedef struct _FontRenderer {
     char    *fileSuffix;
     int	    fileSuffixLen;
-    int	    (*OpenBitmap)();
-    int	    (*OpenScalable)();
-    int	    (*GetInfo)();
+    int	    (*OpenBitmap)(/* fpe, pFont, flags, entry, fileName, format, fmask */);
+    int	    (*OpenScalable)(/* fpe, pFont, flags, entry, fileName, vals, format, fmask */);
+    int	    (*GetInfoBitmap)(/* fpe, pFontInfo, entry, fileName */);
+    int	    (*GetInfoScalable)(/* fpe, pFontInfo, entry, fileName, vals */);
     int	    number;
 } FontRendererRec;
 

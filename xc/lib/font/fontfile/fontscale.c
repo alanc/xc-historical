@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontscale.c,v 1.1 91/05/10 14:46:36 keith Exp $
+ * $XConsortium: fontscale.c,v 1.2 91/05/30 19:05:46 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -162,7 +162,7 @@ static Bool
 MatchScalable (a, b)
     FontScalablePtr	a, b;
 {
-    return  a->x == b->y &&
+    return  a->x == b->x &&
 	    a->y == b->y &&
 	    (a->width == b->width || a->width == 0 || b->width == 0) &&
 	    (a->pixel == b->pixel || a->point == b->point);

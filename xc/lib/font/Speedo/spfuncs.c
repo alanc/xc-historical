@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: spfuncs.c,v 1.2 91/05/11 09:58:17 rws Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -48,13 +48,14 @@ SpeedoOpenScalable (fpe, pFont, flags, entry, fileName, vals, format, fmask)
 			    format, fmask, flags);
 }
 
-SpeedoGetInfo ()
+SpeedoGetInfoScaleable ()
 {
     /* XXX TBD */
 }
 
 static FontRendererRec renderer = {
-    ".spd", 4, (int (*)()) 0, SpeedoOpenScalable, SpeedoGetInfo, 0
+    ".spd", 4, (int (*)()) 0, SpeedoOpenScalable,
+	(int (*)()) 0, SpeedoGetInfoScaleable, 0
 };
     
 SpeedoRegisterFontFileFunctions()

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfile.c,v 1.3 91/05/29 18:29:24 keith Exp $
+ * $XConsortium: fontfile.c,v 1.4 91/05/30 19:05:17 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -164,7 +164,7 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 	    }
 	    else
 	    {
-		ret = FontFileMatchBitmapSource (fpe, pFont, flags, entry, &vals, format, fmask);
+		ret = FontFileMatchBitmapSource (fpe, pFont, flags, entry, &tmpName, &vals, format, fmask);
 		if (ret != Successful)
 		{
 		    /* Make a new scaled instance */
@@ -273,6 +273,24 @@ FontFileOpenBitmap (fpe, pFont, flags, entry, format, fmask)
     return ret;
 }
 
+FontFileGetInfoBitmap (fpe, pFontInfo, entry)
+    FontPathElementPtr	fpe;
+    FontInfoPtr		pFontInfo;
+    FontEntryPtr	entry;
+{
+    FontBitmapEntryPtr	bitmap;
+    char		fileName[MAXFONTFILENAMELEN*2+1];
+    int			ret;
+    FontDirectoryPtr	dir;
+
+    dir = (FontDirectoryPtr) fpe->private;
+    bitmap = &entry->u.bitmap;
+    strcpy (fileName, dir->directory);
+    strcat (fileName, bitmap->fileName);
+    ret = (*bitmap->renderer->GetInfoBitmap) (fpe, pFontInfo, entry, fileName);
+    return ret;
+}
+
 FontFileListFonts (client, fpe, pat, len, max, names)
     pointer     client;
     FontPathElementPtr fpe;
@@ -345,6 +363,11 @@ FontFileListFonts (client, fpe, pat, len, max, names)
     return FontFileFindNamesInDir (&dir->nonScalable, &lowerName, max, names);
 }
 
+typedef struct _LFWIData {
+    FontNamesPtr    names;
+    int		    current;
+} LFWIDataRec, *LFWIDataPtr;
+
 FontFileStartListFontsWithInfo(client, fpe, pat, len, max, privatep)
     pointer     client;
     FontPathElementPtr fpe;
@@ -353,22 +376,209 @@ FontFileStartListFontsWithInfo(client, fpe, pat, len, max, privatep)
     int         max;
     pointer    *privatep;
 {
-    return AllocError;
-    /* XXX TBD */
+    LFWIDataPtr	data;
+    int		ret;
+
+    data = (LFWIDataPtr) xalloc (sizeof *data);
+    if (!data)
+	return AllocError;
+    data->names = MakeFontNamesRecord (0);
+    if (!data->names)
+    {
+	xfree (data);
+	return AllocError;
+    }
+    ret = FontFileListFonts (client, fpe, pat, len, max, data->names);
+    if (ret != Successful)
+    {
+	FreeFontNames (data->names);
+	xfree (data);
+	return ret;
+    }
+    data->current = 0;
+    *privatep = (pointer) data;
+    return Successful;
+}
+
+static int
+FontFileListOneFontWithInfo (client, fpe, namep, namelenp, pFontInfo)
+    pointer		client;
+    FontPathElementPtr	fpe;
+    char		**namep;
+    int			*namelenp;
+    FontInfoPtr		*pFontInfo;
+{
+    FontDirectoryPtr	dir;
+    char		lowerName[MAXFONTNAMELEN];
+    char		zeroName[MAXFONTNAMELEN];
+    char		fileName[MAXFONTFILENAMELEN*2 + 1];
+    FontNameRec		tmpName;
+    FontNameRec		scalableName;
+    FontEntryPtr	entry;
+    FontScalableRec	vals;
+    FontScalableExtraPtr   extra;
+    FontScalableEntryPtr   scalable;
+    FontScaledPtr	scaled;
+    FontBitmapEntryPtr	bitmap;
+    FontAliasEntryPtr	alias;
+    FontBCEntryPtr	bc;
+    int			ret;
+    int			i;
+    char		*name = *namep;
+    int			namelen = *namelenp;
+    
+    if (namelen >= MAXFONTNAMELEN)
+	return AllocError;
+    dir = (FontDirectoryPtr) fpe->private;
+    CopyISOLatin1Lowered (lowerName, name, namelen);
+    lowerName[namelen] = '\0';
+    tmpName.name = lowerName;
+    tmpName.length = namelen;
+    tmpName.ndashes = CountDashes (lowerName, namelen);
+    /* Match XLFD patterns */
+    if (tmpName.ndashes == 14 &&
+	FontParseXLFDName (lowerName, &vals, FONT_XLFD_REPLACE_ZERO))
+    {
+	tmpName.length = strlen (lowerName);
+	entry = FontFileFindNameInDir (&dir->scalable, &tmpName);
+    	if (entry && entry->type == FONT_ENTRY_SCALABLE &&
+	    FontFileCompleteXLFD (&vals, &entry->u.scalable.extra->defaults))
+	{
+	    scalable = &entry->u.scalable;
+	    scaled = FontFileFindScaledInstance (entry, &vals);
+	    /*
+	     * A scaled instance can occur one of two ways:
+	     *
+	     *  Either the font has been scaled to this
+	     *   size already, in which case scaled->pFont
+	     *   will point at that font.
+	     *
+	     *  Or a bitmap instance in this size exists,
+	     *   which is handled as if we got a pattern
+	     *   matching the bitmap font name.
+	     */
+	    if (scaled)
+	    {
+		if (scaled->pFont)
+		{
+		    *pFontInfo = &scaled->pFont->info;
+		    ret = Successful;
+		}
+		else if (scaled->bitmap)
+		{
+		    entry = scaled->bitmap;
+		    bitmap = &entry->u.bitmap;
+		    if (bitmap->pFont)
+		    {
+			*pFontInfo = &bitmap->pFont->info;
+			ret = Successful;
+		    }
+		    else
+		    {
+			ret = FontFileGetInfoBitmap (fpe, *pFontInfo, entry);
+		    }
+		}
+		else /* "cannot" happen */
+		{
+		    ret = BadFontName;
+		}
+	    }
+	    else
+	    {
+#ifdef NOTDEF
+		/* no special case yet */
+		ret = FontFileMatchBitmapSource (fpe, pFont, flags, entry, &vals, format, fmask);
+		if (ret != Successful)
+#endif
+		{
+		    /* Make a new scaled instance */
+	    	    strcpy (fileName, dir->directory);
+	    	    strcat (fileName, scalable->fileName);
+	    	    ret = (*scalable->renderer->GetInfoScalable)
+			(fpe, *pFontInfo, entry, &tmpName, fileName, &vals);
+		}
+	    }
+	    return ret;
+	}
+	CopyISOLatin1Lowered (lowerName, name, namelen);
+	tmpName.length = namelen;
+    }
+    /* Match non XLFD pattern */
+    if (entry = FontFileFindNameInDir (&dir->nonScalable, &tmpName))
+    {
+	switch (entry->type) {
+	case FONT_ENTRY_BITMAP:
+	    bitmap = &entry->u.bitmap;
+	    if (bitmap->pFont)
+	    {
+	    	*pFontInfo = &bitmap->pFont->info;
+	    	ret = Successful;
+	    }
+	    else
+	    {
+		ret = FontFileGetInfoBitmap (fpe, *pFontInfo, entry);
+	    }
+	    break;
+	case FONT_ENTRY_ALIAS:
+	    alias = &entry->u.alias;
+	    *(char **)pFontInfo = name;
+	    *namelenp = strlen (*namep = alias->resolved);
+	    ret = FontNameAlias;
+	    break;
+	case FONT_ENTRY_BC:
+#ifdef NOTYET
+	    /* no LFWI for this yet */
+	    bc = &entry->u.bc;
+	    entry = bc->entry;
+	    /* Make a new scaled instance */
+    	    strcpy (fileName, dir->directory);
+    	    strcat (fileName, scalable->fileName);
+	    ret = (*scalable->renderer->GetInfoScalable)
+		    (fpe, *pFontInfo, entry, tmpName, fileName, &bc->vals);
+#endif
+	    break;
+	default:
+	    ret = BadFontName;
+	}
+    }
+    else
+    {
+	ret = BadFontName;
+    }
+    return ret;
 }
 
 FontFileListNextFontWithInfo(client, fpe, namep, namelenp, pFontInfo,
 			     numFonts, private)
-    pointer     client;
-    FontPathElementPtr fpe;
-    char      **namep;
-    int        *namelenp;
-    FontInfoPtr *pFontInfo;
-    int        *numFonts;
-    pointer     private;
+    pointer		client;
+    FontPathElementPtr	fpe;
+    char		**namep;
+    int			*namelenp;
+    FontInfoPtr		*pFontInfo;
+    int			*numFonts;
+    pointer		private;
 {
-    return AllocError;
-    /* XXX TBD */
+    LFWIDataPtr	data = (LFWIDataPtr) private;
+    int		ret;
+    char	*name;
+    int		namelen;
+
+    if (data->current == data->names->nnames)
+    {
+	FreeFontNames (data->names);
+	xfree (data);
+	return BadFontName;
+    }
+    name = data->names->names[data->current];
+    namelen = data->names->length[data->current];
+    ret = FontFileListOneFontWithInfo (client, fpe, &name, &namelen, pFontInfo);
+    if (ret == BadFontName)
+	ret = AllocError;
+    *namep = name;
+    *namelenp = namelen;
+    ++data->current;
+    *numFonts = data->names->nnames - data->current;
+    return ret;
 }
 
 typedef int (*IntFunc) ();

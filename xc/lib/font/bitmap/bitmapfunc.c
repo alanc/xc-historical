@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitmapfuncs.c,v 1.1 91/05/10 14:45:39 keith Exp $
+ * $XConsortium: bitmapfuncs.c,v 1.2 91/05/29 15:26:49 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -34,9 +34,10 @@ typedef struct _BitmapFileFunctions {
 extern int  pcfReadFont(), pcfReadFontInfo();
 extern int  snfReadFont(), snfReadFontInfo();
 extern int  bdfReadFont(), bdfReadFontInfo();
-int BitmapOpenBitmap ();
-extern int BitmapOpenScalable ();
-int BitmapGetInfo ();
+int	    BitmapOpenBitmap ();
+extern int  BitmapOpenScalable ();
+int	    BitmapGetInfoBitmap ();
+extern int  BitmapGetInfoScalable ();
 
 /*
  * these two arrays must be in the same order
@@ -49,11 +50,14 @@ static BitmapFileFunctionsRec readers[] = {
 
 static FontRendererRec	renderers[] = {
     ".pcf", 4,
-    BitmapOpenBitmap, BitmapOpenScalable, BitmapGetInfo, 0,
+    BitmapOpenBitmap, BitmapOpenScalable,
+	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
     ".snf", 4,
-    BitmapOpenBitmap, BitmapOpenScalable, BitmapGetInfo, 0,
+    BitmapOpenBitmap, BitmapOpenScalable,
+	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
     ".bdf", 4,
-    BitmapOpenBitmap, BitmapOpenScalable, BitmapGetInfo, 0,
+    BitmapOpenBitmap, BitmapOpenScalable,
+	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
 };
 
 BitmapOpenBitmap (fpe, ppFont, flags, entry, fileName, format, fmask)
@@ -108,9 +112,11 @@ BitmapOpenBitmap (fpe, ppFont, flags, entry, fileName, format, fmask)
     return ret;
 }
 
-BitmapGetInfo (pFontInfo, fileName)
-    FontInfoPtr	    pFontInfo;
-    char	    *fileName;
+BitmapGetInfoBitmap (fpe, pFontInfo, entry, fileName)
+    FontPathElementPtr	fpe;
+    FontInfoPtr		pFontInfo;
+    FontEntryPtr	entry;
+    char		*fileName;
 {
     FILE    *file;
     int	    i;

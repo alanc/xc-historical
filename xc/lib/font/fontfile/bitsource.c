@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: bitsource.c,v 1.1 91/05/10 14:46:26 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -75,31 +75,24 @@ FontFileUnregisterBitmapSource (fpe)
 	}
 }
 
-FontFileMatchBitmapSource (fpe, pFont, flags, entry, vals, format, fmask)
+FontFileMatchBitmapSource (fpe, pFont, flags, entry, zeroPat, vals, format, fmask)
     FontPathElementPtr	fpe;
     FontPtr		*pFont;
     int			flags;
     FontEntryPtr	entry;
+    FontNamePtr		zeroPat;
     FontScalablePtr	vals;
     fsBitmapFormat	format;
     fsBitmapFormatMask	fmask;
 {
     int			source, i;
     FontEntryPtr	zero;
-    FontNameRec		zeroName;
-    char		zeroChars[MAXFONTNAMELEN];
     FontBitmapEntryPtr	bitmap;
     FontScalableRec	temp;
     int			ret;
     FontDirectoryPtr	dir;
     FontScaledPtr	scaled;
 
-    bcopy (entry->name.name, zeroChars, entry->name.length);
-    zeroChars[entry->name.length] = '\0';
-    zeroName.name = zeroChars;
-    FontParseXLFDName (zeroChars, &temp, FONT_XLFD_REPLACE_ZERO);
-    zeroName.length = strlen (zeroChars);
-    zeroName.ndashes = entry->name.ndashes;
     /*
      * Look through all the registered bitmap sources for
      * the same zero name as ours; entries along that one
@@ -111,7 +104,7 @@ FontFileMatchBitmapSource (fpe, pFont, flags, entry, vals, format, fmask)
     	if (FontFileBitmapSources.fpe[source] == fpe)
 	    continue;
 	dir = (FontDirectoryPtr) FontFileBitmapSources.fpe[source]->private;
-	zero = FontFileFindNameInDir (&dir->scalable, &zeroName);
+	zero = FontFileFindNameInDir (&dir->scalable, zeroPat);
 	if (!zero)
 	    continue;
     	scaled = FontFileFindScaledInstance (zero, vals);
