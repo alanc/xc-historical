@@ -114,8 +114,7 @@ ProcXGrabDeviceButton(client)
 	    BadDevice);
 	return Success;
 	}
-    mb = mdev->button;
-    if (mb == NULL)
+    if (mdev->key == NULL)
 	{
 	SendErrorToClient(client, IReqCode, X_GrabDeviceButton, 0, BadMatch);
 	return Success;
