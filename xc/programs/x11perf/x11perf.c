@@ -372,6 +372,7 @@ main(argc, argv)
     if (foreground != NULL) {
 	/* Try to allocate a foreground color as specified */
 	XColor def, cdef;
+
 	if (XAllocNamedColor(display,
 		XDefaultColormap(display, DefaultScreen(display)),
 		foreground, &def, &cdef)) {
