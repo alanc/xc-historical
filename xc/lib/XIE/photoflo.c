@@ -1,4 +1,4 @@
-/* $XConsortium: photoflo.c,v 1.1 93/07/19 11:39:28 mor Exp $ */
+/* $XConsortium: photoflo.c,v 1.2 94/03/09 15:02:43 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -247,7 +247,7 @@ unsigned int    	*navailable_ret;
 
     END_REQUEST_HEADER (QueryPhotoflo, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
 	SYNC_HANDLE (display);

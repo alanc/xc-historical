@@ -1,4 +1,4 @@
-/* $XConsortium: XOpenDev.c,v 1.9 93/02/25 15:12:12 rws Exp $ */
+/* $XConsortium: XOpenDev.c,v 1.10 94/02/14 17:39:33 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -74,7 +74,7 @@ XDevice
 	dev->num_classes = rep.num_classes;
 	dev->classes = (XInputClassInfo *) ((char *) dev + sizeof (XDevice));
 	dlen = rep.num_classes * sizeof(xInputClassInfo);
-	_XRead (dpy, dev->classes, dlen);
+	_XRead (dpy, (char *)dev->classes, dlen);
 	/* could be padding that we still need to eat (yummy!) */
 	if(rlen - dlen > 0)
 	    _XEatData (dpy, (unsigned long) rlen - dlen);

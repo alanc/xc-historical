@@ -1,4 +1,4 @@
-/* $XConsortium: clientdata.c,v 1.1 93/07/19 11:39:13 mor Exp $ */
+/* $XConsortium: clientdata.c,v 1.2 94/03/09 15:02:37 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -97,7 +97,7 @@ unsigned     	*nbytes_ret;
 
     END_REQUEST_HEADER (GetClientData, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
 	/* V4.13 moved the data length word into the reply */
     {
         UnlockDisplay (display);

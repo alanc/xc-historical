@@ -1,4 +1,4 @@
-/* $XConsortium: colorlist.c,v 1.2 93/07/26 19:00:52 mor Exp $ */
+/* $XConsortium: colorlist.c,v 1.3 94/03/09 15:02:38 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -126,7 +126,7 @@ unsigned long  	**colors_ret;
 
     END_REQUEST_HEADER (QueryColorList, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
 	SYNC_HANDLE (display);

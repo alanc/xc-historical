@@ -1,4 +1,4 @@
-/* $XConsortium: XGMotion.c,v 1.12 92/11/14 12:50:36 rws Exp $ */
+/* $XConsortium: XGMotion.c,v 1.13 94/02/14 17:38:59 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -94,7 +94,7 @@ XDeviceTimeCoord
 	SyncHandle();
 	return (NULL);
 	}
-    _XRead (dpy, (int *) readp, size);
+    _XRead (dpy, (char *) readp, size);
 
     tc = (XDeviceTimeCoord *) bufp;
     data = (int *) (tc + rep.nEvents);

@@ -1,4 +1,4 @@
-/* $XConsortium: XGtSelect.c,v 1.8 93/08/24 09:27:28 rws Exp $ */
+/* $XConsortium: XGtSelect.c,v 1.9 94/02/14 17:39:29 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -83,7 +83,7 @@ XGetSelectedExtensionEvents (dpy, w, this_client_count, this_client_list,
 	        _XEatData (dpy, (unsigned long) tlen+alen);
 		return (Success);
 		}
-	    _XRead (dpy, *this_client_list, tlen);
+	    _XRead (dpy, (char *)*this_client_list, tlen);
 	    }
 	else
 	    *this_client_list = (XEventClass *) NULL;
@@ -97,7 +97,7 @@ XGetSelectedExtensionEvents (dpy, w, this_client_count, this_client_list,
 	        _XEatData (dpy, (unsigned long) alen);
 		return (Success);
 		}
-	    _XRead (dpy, *all_clients_list, alen);
+	    _XRead (dpy, (char *)*all_clients_list, alen);
 	    }
 	else
 	    *all_clients_list = (XEventClass *) NULL;

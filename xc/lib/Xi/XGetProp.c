@@ -1,4 +1,4 @@
-/* $XConsortium: XGetProp.c,v 1.6 93/01/28 19:39:39 rws Exp $ */
+/* $XConsortium: XGetProp.c,v 1.7 94/02/14 17:39:15 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -71,7 +71,7 @@ XEventClass
 	rlen = rep.length << 2;
 	list = (XEventClass *) Xmalloc (rlen);
 	if (list)
-	    _XRead (dpy, list, rlen);
+	    _XRead (dpy, (char *)list, rlen);
 	else
 	    _XEatData (dpy, (unsigned long) rlen);
 	}

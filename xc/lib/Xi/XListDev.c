@@ -1,4 +1,4 @@
-/* $XConsortium: XListDev.c,v 1.21 93/09/08 10:23:45 rws Exp $ */
+/* $XConsortium: XListDev.c,v 1.22 94/02/14 17:39:31 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -85,7 +85,7 @@ XDeviceInfo
 	    SyncHandle();
 	    return (XDeviceInfo *) NULL;
 	    }
-	_XRead (dpy, list, rlen);
+	_XRead (dpy, (char *)list, rlen);
 
 	any = (xAnyClassPtr) ((char *) list + 
 		(*ndevices * sizeof(xDeviceInfo)));
