@@ -1,5 +1,5 @@
 #ifdef XINPUT
-/* $XConsortium: xchgkbd.c,v 1.4 89/11/06 19:32:31 rws Exp $ */
+/* $XConsortium: xchgkbd.c,v 1.5 89/11/07 19:40:10 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -119,7 +119,12 @@ ProcXChangeKeyboardDevice (client)
 	      !SameClient(dev->grab, client))))
 	rep.status = GrabFrozen;
 
-    ChangeKeyboardDevice (inputInfo.keyboard, dev);
+    if (ChangeKeyboardDevice (inputInfo.keyboard, dev) != Success)
+	{
+	SendErrorToClient(client, IReqCode, X_ChangeKeyboardDevice, 0, 
+		BadDevice);
+	return Success;
+	}
     dev->focus->win = inputInfo.keyboard->focus->win;
     inputInfo.keyboard = dev;
 
