@@ -37,7 +37,7 @@ SOFTWARE.
 #define SameClient(obj,client) \
 	(CLIENT_BITS((obj)->resource) == (client)->clientAsMask)
 
-#define MAX_DEVICES	7
+#define MAX_DEVICES	9
 
 #define EMASKSIZE	MAX_DEVICES
 
@@ -121,7 +121,7 @@ typedef struct _ValuatorClassRec {
     WindowPtr    	motionHintWindow;
     XAxisInfoPtr 	axes;
     unsigned short	numAxes;
-    unsigned short	*axisVal;
+    unsigned int	*axisVal;
     CARD8	 	mode;
 } ValuatorClassRec, *ValuatorClassPtr;
 
