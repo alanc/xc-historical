@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.152 92/11/30 11:21:44 rws Exp $ */
+/* $XConsortium: connection.c,v 1.153 92/12/17 11:46:30 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -1001,7 +1001,7 @@ IgnoreClient (client)
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
     int connection = oc->fd;
 
-    if (!GrabInProgress || GETBIT(AllClients, client->index))
+    if (!GrabInProgress || GETBIT(AllClients, connection))
     {
     	if (GETBIT (ClientsWithInput, connection))
 	    BITSET(IgnoredClientsWithInput, connection);
