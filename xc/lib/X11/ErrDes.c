@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XErrDes.c,v 11.45 91/05/04 14:02:29 rws Exp $
+ * $XConsortium: XErrDes.c,v 11.46 92/07/23 19:17:33 rws Exp $
  */
 
 /***********************************************************
@@ -84,15 +84,14 @@ XGetErrorText(dpy, code, buffer, nbytes)
 			      buffer, nbytes);
     } else
 	buffer[0] = '\0';
-    ext = dpy->ext_procs;
-    while (ext) {		/* call out to any extensions interested */
- 	if (ext->error_string != NULL) 
+    /* call out to any extensions interested */
+    for (ext = dpy->ext_procs; ext; ext = ext->next) {
+ 	if (ext->error_string)
  	    (*ext->error_string)(dpy, code, &ext->codes, buffer, nbytes);
 	if (ext->codes.first_error &&
 	    ext->codes.first_error < code &&
 	    (!bext || ext->codes.first_error > bext->codes.first_error))
 	    bext = ext;
- 	ext = ext->next;
     }    
     if (!buffer[0] && bext) {
 	sprintf(buf, "%s.%d", bext->name, code - bext->codes.first_error);

@@ -1,4 +1,4 @@
-/* $XConsortium: XCopyGC.c,v 11.12 88/09/06 16:05:27 jim Exp $ */
+/* $XConsortium: XCopyGC.c,v 11.13 91/01/06 11:44:48 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -113,11 +113,9 @@ XCopyGC (dpy, srcGC, mask, destGC)
 	destGC->dashes = srcGC->dashes;
         destgv->dashes = srcgv->dashes;
 	}
-    ext = dpy->ext_procs;
-    while (ext) {		/* call out to any extensions interested */
-	if (ext->copy_GC != NULL) (*ext->copy_GC)(dpy, destGC, &ext->codes);
-	ext = ext->next;
-	}    
+    /* call out to any extensions interested */
+    for (ext = dpy->ext_procs; ext; ext = ext->next)
+	if (ext->copy_GC) (*ext->copy_GC)(dpy, destGC, &ext->codes);
     UnlockDisplay(dpy);
     SyncHandle();
     }

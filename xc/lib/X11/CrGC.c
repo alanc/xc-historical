@@ -1,4 +1,4 @@
-/* $XConsortium: XCrGC.c,v 11.37 92/03/03 15:22:10 rws Exp $ */
+/* $XConsortium: XCrGC.c,v 11.38 92/03/04 09:22:18 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -80,11 +80,9 @@ GC XCreateGC (dpy, d, valuemask, values)
 
     if (req->mask = gc->dirty)
         _XGenerateGCList (dpy, gc, (xReq *) req);
-    ext = dpy->ext_procs;
-    while (ext) {		/* call out to any extensions interested */
+    /* call out to any extensions interested */
+    for (ext = dpy->ext_procs; ext; ext = ext->next)
 	if (ext->create_GC) (*ext->create_GC)(dpy, gc, &ext->codes);
-	ext = ext->next;
-	}    
     gc->dirty = 0L; /* allow extensions to see dirty bits */
     UnlockDisplay(dpy);
     SyncHandle();
@@ -315,11 +313,9 @@ _XFlushGCCache(dpy, gc)
         req->gc = gc->gid;
 	req->mask = gc->dirty;
         _XGenerateGCList (dpy, gc, (xReq *) req);
-	ext = dpy->ext_procs;
-	while (ext) {		/* call out to any extensions interested */
-		if (ext->flush_GC) (*ext->flush_GC)(dpy, gc, &ext->codes);
-		ext = ext->next;
-	}    
+	/* call out to any extensions interested */
+	for (ext = dpy->ext_procs; ext; ext = ext->next)
+	    if (ext->flush_GC) (*ext->flush_GC)(dpy, gc, &ext->codes);
 	gc->dirty = 0L; /* allow extensions to see dirty bits */
     }
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: XInitExt.c,v 11.27 91/01/06 11:46:37 rws Exp $ */
+/* $XConsortium: XInitExt.c,v 11.28 91/01/08 14:41:05 gildea Exp $ */
 /* Copyright  Massachusetts Institute of Technology 1987 */
 
 /*
@@ -85,11 +85,9 @@ static _XExtension *XLookupExtension (dpy, extension)
 	register Display *dpy;	/* display */
 	register int extension;	/* extension number */
 {
-	register _XExtension *ext = dpy->ext_procs;
-	while (ext != NULL) {
-		if (ext->codes.extension == extension) return (ext);
-		ext = ext->next;
-	}
+	register _XExtension *ext;
+	for (ext = dpy->ext_procs; ext; ext = ext->next)
+	    if (ext->codes.extension == extension) return (ext);
 	return (NULL);
 }
 

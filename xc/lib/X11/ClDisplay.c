@@ -1,4 +1,4 @@
-/* $XConsortium: XClDisplay.c,v 11.23 91/12/18 19:31:58 rws Exp $ */
+/* $XConsortium: XClDisplay.c,v 11.24 91/12/19 18:06:28 rws Exp $ */
 /*
 
 Copyright 1985, 1990 by the Massachusetts Institute of Technology
@@ -40,12 +40,11 @@ XCloseDisplay (dpy)
 	    if (dpy->cursor_font != None) {
 		XUnloadFont (dpy, dpy->cursor_font);
 	    }
-	    ext = dpy->ext_procs;
-	    while (ext) {	/* call out to any extensions interested */
-		    if (ext->close_display != NULL) 
-			    (*ext->close_display)(dpy, &ext->codes);
-		    ext = ext->next;
-	    }    
+	    /* call out to any extensions interested */
+	    for (ext = dpy->ext_procs; ext; ext = ext->next) {
+		if (ext->close_display)
+		    (*ext->close_display)(dpy, &ext->codes);
+	    }
 	    XSync(dpy, 1);  /* throw away pending input events */
 	}
 	_XDisconnectDisplay(dpy->fd);

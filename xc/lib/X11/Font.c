@@ -1,4 +1,4 @@
-/* $XConsortium: XFont.c,v 11.42 92/01/19 15:10:39 rws Exp $ */
+/* $XConsortium: XFont.c,v 11.43 92/05/19 11:06:49 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -52,13 +52,12 @@ XFreeFont(dpy, fs)
     XFontStruct *fs;
 { 
     register xResourceReq *req;
-    register _XExtension *ext = dpy->ext_procs;
+    register _XExtension *ext;
 
     LockDisplay(dpy);
-    while (ext) {		/* call out to any extensions interested */
+    /* call out to any extensions interested */
+    for (ext = dpy->ext_procs; ext; ext = ext->next)
 	if (ext->free_Font) (*ext->free_Font)(dpy, fs, &ext->codes);
-	ext = ext->next;
-	}    
     GetResReq (CloseFont, fs->fid, req);
     UnlockDisplay(dpy);
     SyncHandle();
@@ -205,12 +204,9 @@ _XQueryFont (dpy, fid, seq)
 #endif
     }
 
-    ext = dpy->ext_procs;
-    while (ext) {		/* call out to any extensions interested */
-	if (ext->create_Font)
-		(*ext->create_Font)(dpy, fs, &ext->codes);
-	ext = ext->next;
-	}    
+    /* call out to any extensions interested */
+    for (ext = dpy->ext_procs; ext; ext = ext->next)
+	if (ext->create_Font) (*ext->create_Font)(dpy, fs, &ext->codes);
     return fs;
 }
 
