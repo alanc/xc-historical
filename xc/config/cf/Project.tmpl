@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.57 89/12/10 13:47:07 keith Exp $
+/**/# $XConsortium: Project.tmpl,v 1.58 89/12/12 16:39:40 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -336,7 +336,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.57 89/12/10 13:47:07 keith Exp $
+/**/# $XConsortium: Project.tmpl,v 1.58 89/12/12 16:39:40 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -437,8 +437,8 @@ Berklib.c: sysV/Berklib.c					@@\
      EXTENSIONLIB = LoaderLibPrefix _Use(-lXext, $(DEPEXTENSIONLIB))
 #endif
 #if SharedLibX
-          DEPXLIB = $(DEPEXTENSIONLIB) /* _Use($(USRLIBDIR),$(XLIBSRC))/libX11.so.$(SOXLIBREV) */
-             XLIB = $(EXTENSIONLIB) _Use(-lX11,-L$(XLIBSRC) -lX11)
+          DEPXLIB = /* _Use($(USRLIBDIR),$(XLIBSRC))/libX11.so.$(SOXLIBREV) */
+             XLIB = _Use(-lX11,-L$(XLIBSRC) -lX11)
 #else
           DEPXLIB = $(DEPEXTENSIONLIB) _Use($(USRLIBDIR),$(XLIBSRC))/libX11.a 
              XLIB = LoaderLibPrefix _Use(-lXext -lX11, $(DEPXLIB))
@@ -470,10 +470,11 @@ Berklib.c: sysV/Berklib.c					@@\
         DEPXAWLIB = /* _Use($(USRLIBDIR),$(AWIDGETSRC))/libXaw.so.$(SOXAWREV) */
            XAWLIB = _Use(-lXaw,-L$(AWIDGETSRC) -lXaw)
 #else
-        DEPXAWLIB = _Use($(USRLIBDIR),$(AWIDGETSRC))/libXaw.a
-           XAWLIB = LoaderLibPrefix _Use(-lXaw,$(DEPXAWLIB))
+        DEPXAWLIB = _Use($(USRLIBDIR),$(AWIDGETSRC))/libXaw.a $(DEPEXTENSIONLIB) 
+           XAWLIB = LoaderLibPrefix _Use(-lXaw,$(DEPXAWLIB)) $(EXTENSIONLIB) 
 #endif
 
+ LINTEXTENSIONLIB = _Use($(USRLIBDIR),$(EXTENSIONSRC))/llib-lXext.ln
          LINTXLIB = _Use($(USRLIBDIR),$(XLIBSRC))/llib-lX11.ln
           LINTXMU = _Use($(USRLIBDIR),$(XMUSRC))/llib-lXmu.ln
         LINTXTOOL = _Use($(USRLIBDIR),$(TOOLKITSRC))/llib-lXt.ln
