@@ -1,4 +1,4 @@
-/* $XConsortium: xsmclient.c,v 1.2 93/11/02 11:13:11 mor Exp $ */
+/* $XConsortium: xsmclient.c,v 1.3 93/11/16 16:28:44 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -188,7 +188,7 @@ SaveState()
 
     props[nprops++] = &Environment;
 
-    SmcSetProperties (smcConn, 0, nprops, props);
+    SmcSetProperties (smcConn, nprops, props);
     printf("%s:  Set %d properties\n", clientId, nprops);
 
     free((char *)RestartCommand.vals);
