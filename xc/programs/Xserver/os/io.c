@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.64 89/08/04 08:31:19 rws Exp $ */
+/* $XConsortium: io.c,v 1.65 89/09/14 16:19:50 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -48,7 +48,6 @@ extern void MarkClientException();
 extern long ClientsWithInput[];
 extern long ClientsWriteBlocked[];
 extern long OutputPending[];
-extern long OutputBufferSize;
 extern int ConnectionTranslation[];
 extern Bool NewOutputPending;
 extern Bool AnyClientsWriteBlocked;
@@ -106,15 +105,25 @@ ReadRequestFromClient(client)
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
     register ConnectionInputPtr oci = oc->input;
     int fd = oc->fd;
-    int result, gotnow, needed;
+    register int gotnow, needed;
+    int result;
     register xReq *request;
 
     if (AvailableInput)
     {
 	if (AvailableInput != oc)
 	{
-	    AvailableInput->input->next = FreeInputs;
-	    FreeInputs = AvailableInput->input;
+	    register ConnectionInputPtr aci = AvailableInput->input;
+	    if (aci->size > BUFWATERMARK)
+	    {
+		xfree(aci->buffer);
+		xfree(aci);
+	    }
+	    else
+	    {
+		aci->next = FreeInputs;
+		FreeInputs = aci;
+	    }
 	    AvailableInput->input = (ConnectionInputPtr)NULL;
 	}
 	AvailableInput = (OsCommPtr)NULL;
@@ -252,14 +261,23 @@ InsertFakeRequest(client, data, count)
     register ConnectionInputPtr oci = oc->input;
     int fd = oc->fd;
     register xReq *request;
-    int gotnow, moveup;
+    register int gotnow, moveup;
 
     if (AvailableInput)
     {
 	if (AvailableInput != oc)
 	{
-	    AvailableInput->input->next = FreeInputs;
-	    FreeInputs = AvailableInput->input;
+	    register ConnectionInputPtr aci = AvailableInput->input;
+	    if (aci->size > BUFWATERMARK)
+	    {
+		xfree(aci->buffer);
+		xfree(aci);
+	    }
+	    else
+	    {
+		aci->next = FreeInputs;
+		FreeInputs = aci;
+	    }
 	    AvailableInput->input = (ConnectionInputPtr)NULL;
 	}
 	AvailableInput = (OsCommPtr)NULL;
@@ -459,8 +477,7 @@ FlushClient(who, oc, extraBuf, extraCount)
 		unsigned char *obuf;
 
 		obuf = (unsigned char *)xrealloc(oco->buf,
-						 notWritten +
-						 OutputBufferSize);
+						 notWritten + BUFSIZE);
 		if (!obuf)
 		{
 		    close(connection);
@@ -468,7 +485,7 @@ FlushClient(who, oc, extraBuf, extraCount)
 		    oco->count = 0;
 		    return(-1);
 		}
-		oco->size = notWritten + OutputBufferSize;
+		oco->size = notWritten + BUFSIZE;
 		oco->buf = obuf;
 	    }
 
@@ -507,19 +524,16 @@ FlushClient(who, oc, extraBuf, extraCount)
  	if (! ANYSET(ClientsWriteBlocked))
 	    AnyClientsWriteBlocked = FALSE;
     }
-    if (oco->size > OutputBufferSize)
+    if (oco->size > BUFWATERMARK)
     {
-	unsigned char *obuf;
-
-	obuf = (unsigned char *)xrealloc(oco->buf, OutputBufferSize);
-	if (obuf)
-	{
-	    oco->size = OutputBufferSize;
-	    oco->buf = obuf;
-	}
+	xfree(oco->buf);
+	xfree(oco);
     }
-    oco->next = FreeOutputs;
-    FreeOutputs = oco;
+    else
+    {
+	oco->next = FreeOutputs;
+	FreeOutputs = oco;
+    }
     oc->output = (ConnectionOutputPtr)NULL;
     return extraCount; /* return only the amount explicitly requested */
 }
@@ -677,13 +691,13 @@ AllocateOutputBuffer()
     oco = (ConnectionOutputPtr)xalloc(sizeof(ConnectionOutput));
     if (!oco)
 	return (ConnectionOutputPtr)NULL;
-    oco->buf = (unsigned char *) xalloc(OutputBufferSize);
+    oco->buf = (unsigned char *) xalloc(BUFSIZE);
     if (!oco->buf)
     {
 	xfree(oco);
 	return (ConnectionOutputPtr)NULL;
     }
-    oco->size = OutputBufferSize;
+    oco->size = BUFSIZE;
     oco->count = 0;
     return oco;
 }
