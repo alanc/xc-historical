@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: dixutils.c,v 1.40 91/12/11 18:53:48 keith Exp $ */
+/* $XConsortium: dixutils.c,v 1.41 92/02/27 18:19:53 eswu Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -130,6 +130,8 @@ LookupWindow(rid, client)
     if (pWin && pWin->drawable.type == DRAWABLE_WINDOW) {
 	client->lastDrawable = (DrawablePtr) pWin;
 	client->lastDrawableID = rid;
+	client->lastGCID = INVALID;
+	client->lastGC = (GCPtr)NULL;
     }
     return pWin;
 }
