@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillrct.c,v 5.1 89/07/09 16:00:57 rws Exp $ */
+/* $XConsortium: mfbfillrct.c,v 5.2 89/07/17 10:23:49 rws Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "pixmapstr.h"
@@ -68,10 +68,7 @@ mfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     priv = (mfbPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr;
     alu = priv->ropFillArea;
     pfn = priv->FillArea;
-    if (pGC->fillStyle == FillTiled)
-	ppix = priv->pRotatedTile;
-    else
-	ppix = priv->pRotatedStipple;
+    ppix = priv->pRotatedPixmap;
     prgnClip = priv->pCompositeClip;
 
     numRects = REGION_NUM_RECTS(prgnClip);

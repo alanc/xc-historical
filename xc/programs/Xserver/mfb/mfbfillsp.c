@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillsp.c,v 5.0 89/06/09 15:06:23 keith Exp $ */
+/* $XConsortium: mfbfillsp.c,v 5.1 89/06/12 16:28:32 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -51,7 +51,7 @@ if fgPixel == bgPixel.
 
     FillTiled is overloaded to be used for OpaqueStipple, if
 fgPixel != bgPixel.  based on the fill style, it uses
-{RotatedTile, gc.alu} or {RotatedStipple, PrivGC.ropOpStip}
+{RotatedPixmap, gc.alu} or {RotatedPixmap, PrivGC.ropOpStip}
 */
 
 
@@ -375,7 +375,7 @@ int fSorted;
 	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
 
-    pStipple = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pRotatedStipple;
+    pStipple = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pRotatedPixmap;
     tileHeight = pStipple->drawable.height;
     psrc = (int *)(pStipple->devPrivate.ptr);
 
@@ -469,7 +469,7 @@ int fSorted;
 	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
 
-    pStipple = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pRotatedStipple;
+    pStipple = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pRotatedPixmap;
     tileHeight = pStipple->drawable.height;
     psrc = (int *)(pStipple->devPrivate.ptr);
 
@@ -563,7 +563,7 @@ int fSorted;
 	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
 
-    pStipple = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pRotatedStipple;
+    pStipple = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pRotatedPixmap;
     tileHeight = pStipple->drawable.height;
     psrc = (int *)(pStipple->devPrivate.ptr);
 
@@ -696,21 +696,13 @@ int fSorted;
 	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
 
+    pTile = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pRotatedPixmap;
+    tileHeight = pTile->drawable.height;
+    psrc = (int *)(pTile->devPrivate.ptr);
     if (pGC->fillStyle == FillTiled)
-    {
-	pTile = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pRotatedTile;
-	tileHeight = pTile->drawable.height;
-	psrc = (int *)(pTile->devPrivate.ptr);
 	rop = pGC->alu;
-    }
     else
-    {
-	pTile = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pRotatedStipple;
-	tileHeight = pTile->drawable.height;
-	psrc = (int *)(pTile->devPrivate.ptr);
 	rop = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->ropOpStip;
-    }
-
 
     switch(rop)
     {
