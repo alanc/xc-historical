@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$Header: xinit.c,v 11.6 88/01/07 18:09:31 jim Locked $";
+static char *rcsid_xinit_c = "$Header: xinit.c,v 11.7 88/02/09 13:45:18 jim Locked $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -17,6 +17,10 @@ static char *rcsid_xinit_c = "$Header: xinit.c,v 11.6 88/01/07 18:09:31 jim Lock
 #include <errno.h>
 #ifdef hpux
 #include <sys/utsname.h>
+#endif
+
+#ifdef SYSV
+#define vfork() fork()
 #endif
 
 #define	TRUE		1
