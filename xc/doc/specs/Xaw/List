@@ -112,7 +112,7 @@ selected and is described in detail in the \fBList Callbacks\fP section.
 The amount of space, in pixels, between each of the rows and columns
 in the list. 
 .Cu
-.Pn
+.Cn
 .IP \fBdefaultColumns\fP 1.5i
 The default number of columns.  This value is used when neither the
 width nor the height of the List widget is specified or when
@@ -189,7 +189,7 @@ The following is the default translation table used by the List Widget:
 The full list of actions supported by List widget is:
 .IP \fBSet\fP(\|) 1.5i
 \fISets\fP the list element that is currently under the pointer.  To
-inform the user that this element is currently set, it is drawn with is
+inform the user that this element is currently set, it is drawn with
 foreground and background colors reversed.  If this action is called when
 there is no list element under the cursor, the currently \fIset\fP
 element will be \fIunset\fP.

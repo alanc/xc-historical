@@ -128,7 +128,7 @@ _
 .Oc AsciiText
 .Cm
 .Cu
-.Pn
+.Cn
 .Od AsciiText
 .Dp
 .Dc
