@@ -119,7 +119,7 @@
 	  set-close-down-mode
 	  kill-client
 	  kill-temporary-clients
-;;	  NO-OPERATION
+	  no-operation
 	  ))
 
 (defun create-window (&key
