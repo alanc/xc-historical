@@ -1,0 +1,138 @@
+#define OSName			NCR Unix System V Release 4/MP-RAS
+XCOMM operating system:  OSName
+#define OSMajorVersion		4
+#define OSMinorVersion		0
+#define OSVendor		'NCR'
+
+#define SystemV4		YES
+#define HasSockets		YES
+#define ProjectRoot		/usr/X11R6
+
+/* Build Flags */
+
+#define	NeedFunctionPrototypes  YES
+#define BootstrapCFlags		-DNCR -DSVR4
+XCOMM #define StandardDefines		-DSVR4 -DNCR -Di386 -DUSL_COMPAT -DXML -DXI18N
+#define StandardDefines		-DSVR4 -DNCR -Di386 -DXML -DXI18N
+#define DefaultCDebugFlags	-O3
+#define DefaultCCOptions	-Xa -Hnocopyr -DANSICPP
+#define LibraryCDebugFlags	-O3
+#define LibraryCCOptions	-Xa -Hnocopyr -DANSICPP
+#define ServerCDebugFlags	-O3
+#define ServerCCOptions		-Xa -Hnocopyr -DNO_SECONDARY -DANSICPP
+#define ServerExtraDefines      -DSYSV386 -DXSVGA
+#define ServerOSDefines         -DDDXTIME -DDDXOSINIT
+
+#define ConnectionFlags	-DTLICONN -DLOCALCONN -DUNIXCONN
+
+XCOMM Xsvga does not have this code, don't turn it on yet.
+XCOMM #define ExtensionOSDefines	-DXTESTEXT1
+
+/* The default here is to use the streams interface for Xlib, but various
+ * other things (X server, font server, font library, phigs, xdm chooser)
+ * still depend on sockets being around, so we always link with -lsocket.
+ *
+ * Also, by agreement among several vendors, programs should be linked with
+ * -lsocket for binary portability to systems where Xlib was built using the
+ * socket interface instead of the streams interface.
+ */
+#define ExtraLoadFlags -lc -L/usr/ucblib -lucb -lm -lgen -lcmd
+#define ExtraLibraries		-lsocket -lnsl
+
+
+/* Setup proper ownership of installed files */
+
+#define StripInstalledPrograms	YES
+#define InstPgmFlags		-s -m 0755 -o bin -g bin
+#define InstBinFlags		-m 0755 -o bin -g bin
+#define InstUidFlags		-m 4755 -o root -g bin
+#define InstLibFlags		-m 0644 -o bin -g bin
+#define InstIncFlags		-m 0444 -o bin -g bin
+#define InstManFlags		-m 0444 -o bin -g bin
+#define InstDatFlags		-m 0444 -o bin -g bin
+
+/* Various Configuration settings */
+
+#define NeedWidePrototypes	NO	/* experimental */
+#define PatheticCpp		YES
+#define XsvgaServer		YES
+#define X386Server		YES
+#define X386OrcaServer		YES
+#define XnestServer		YES
+#define ForceNormalLib		YES
+#define InstallFSConfig		YES
+#define InstallXdmConfig	YES
+#define DefaultUserPath		/bin:/sbin:/usr/bin:/usr/sbin:$(BINDIR):/usr/ucb
+#define DefaultSystemPath	/etc:/bin:/usr/bin:/sbin:/usr/sbin:$(BINDIR):/usr/ucb
+#define ExtraFilesToClean	*.z
+
+/* Create man pages properly */
+ 
+#define BookFormatManPages	YES
+#define ManDirectoryRoot	/usr/catman/X115
+#define ManSuffix		1X
+#define LibManSuffix		3X
+#define ManSourcePath		$(MANPATH)/g
+#define XmanSearchPath		/usr/catman
+#define XmanLocalSearchPath	/usr/share/man
+
+#undef	TblCmd
+#define	TblCmd /usr/ucb/tbl
+#undef	EqnCmd
+#define	EqnCmd /usr/ucb/eqn
+          COL = /usr/bin/col
+         NEQN = /usr/ucb/neqn
+        NROFF = /usr/ucb/nroff -Tlp
+
+/*
+ * Man pages need to be formatted when installed, so override the default
+ * imake rules.
+ */
+#define InstallManPageLong(file,destdir,dest)                           @@\
+all:: file.z								@@\
+									@@\
+file.z:: file.man							@@\
+	@if [ -f file.man ]; \						@@\
+	then \								@@\
+	cat file.man | $(NEQN) | $(TBL) | $(NROFF) -man | $(COL) >/tmp/$$$$.man; \	@@\
+	$(RM) /tmp/$$$$.man.z; \					@@\
+	pack -f /tmp/$$$$.man; \					@@\
+	cp /tmp/$$$$.man.z file.z; \					@@\
+	$(RM) /tmp/$$$$.man.z; \					@@\
+	fi 								@@\
+									@@\
+file.man::								@@\
+									@@\
+install.man::                                                           @@\
+	MakeDir($(DESTDIR)destdir)					@@\
+	-@if [ -f file.z ]; \						@@\
+	then \								@@\
+	$(INSTALL) -c $(INSTMANFLAGS) file.z $(DESTDIR)destdir/dest.z; \@@\
+	fi
+
+#define InstallMultipleManSuffix(list,dest,suff)                        @@\
+install.man:: 								@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
+	for i in list; do \                                             @@\
+	  (set -x; \							@@\
+	  cat $$i.suff | $(NEQN) | $(TBL) | $(NROFF) -man | $(COL) >/tmp/$$$$.suff; \	@@\
+	  pack -f /tmp/$$$$.suff; \					@@\
+	  $(INSTALL) -c $(INSTMANFLAGS) /tmp/$$$$.suff.z $(DESTDIR)dest/$$i.z; \	@@\
+	  $(RM) /tmp/$$$$.suff.z); \						@@\
+	done
+
+#define InstallMultipleMan(list,dest)                                   @@\
+	InstallMultipleManSuffix(list,dest,man)
+
+#define InstallManPageAliases(file,destdir,aliases)                     @@\
+install.man:: 								@@\
+	@case '${MFLAGS}' in *[i]*) set +e;; esac; \                    @@\
+	for i in aliases; do \                                          @@\
+		(set -x; \						@@\
+		$(RM) $(DESTDIR)destdir/$$i.z;\  			@@\
+		$(LN) destdir/file.z $(DESTDIR)destdir/$$i.z;\  @@\
+		); \							@@\
+	done
+
+#include <sv4Lib.rules>
