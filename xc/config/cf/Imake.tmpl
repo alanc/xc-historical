@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.189 93/09/10 11:56:14 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.190 93/09/10 12:10:07 rws Exp $
 XCOMM
 
 /*
@@ -840,10 +840,9 @@ PICFLAGS = PositionIndependentCFlags
          IRULESRC = $(CONFIGSRC)/cf
         IMAKE_CMD = $(IMAKE) -I$(IRULESRC) $(IMAKE_DEFINES)
 #endif
-     ICONFIGFILES = $(IRULESRC)/Imake.tmpl $(IRULESRC)/Imake.rules \
-			$(IRULESRC)/Project.tmpl $(IRULESRC)/site.def \
-			$(IRULESRC)/$(MACROFILE) SiteIConfigFiles \
-			$(EXTRA_ICONFIGFILES)
+     ICONFIGFILES = $(IRULESRC)/Imake.tmpl $(IRULESRC)/Project.tmpl \
+			$(IRULESRC)/site.def $(IRULESRC)/$(MACROFILE) \
+			SiteIConfigFiles $(EXTRA_ICONFIGFILES)
 
 #ifndef LocalRulesFile
 /* need this to make ANSI-style preprocessors happy */
