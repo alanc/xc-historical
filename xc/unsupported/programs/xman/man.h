@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.h,v 1.23 91/03/19 15:11:19 gildea Exp $
+ * $XConsortium: man.h,v 1.24 91/04/02 15:24:18 gildea Exp $
  * $Athena: man.h,v 4.6 89/01/06 12:17:38 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -162,6 +162,7 @@ typedef struct _Xman_Resources {
   int directory_height;	        /* The default height of directory in 
 				   both_shown mode. */
   char * help_file;		/* The name of the help file. */
+  char * title;	    	        /* The title for topBox */
 } Xman_Resources;
 
 /************************************************************

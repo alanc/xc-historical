@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: main.c,v 1.16 91/02/17 16:36:40 dave Exp $
+ * $XConsortium: main.c,v 1.17 91/02/20 18:49:27 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -59,6 +59,8 @@ static XtResource my_resources[] = {
      Offset(top_box_active), XtRString, "True"},
   {"clearSearchString", "ClearSearchString", XtRBoolean, sizeof(Boolean),
      Offset(clear_search_string), XtRImmediate, (caddr_t) TRUE},
+  {"title", XtCString, XtRString, sizeof(char *),
+     Offset(title), XtRString, "xman"},
 };
 
 #undef Offset
@@ -89,7 +91,8 @@ static XrmOptionDescRec xman_options[] = {
 {"-pagesize", "*manualBrowser.geometry", XrmoptionSepArg, (caddr_t) NULL},
 {"-notopbox", "topBox",                  XrmoptionNoArg,  (caddr_t) "False"},
 {"-helpfile", "helpFile",                XrmoptionSepArg, (caddr_t) NULL},
-{"-bothshown", "bothShown",              XrmoptionNoArg,  (caddr_t) "True"},
+{"-bothshown","bothShown",               XrmoptionNoArg,  (caddr_t) "True"},
+{"-title",    "title",                XrmoptionSepArg,  (caddr_t) "xman"}, 
 };
 
 XtActionsRec xman_actions[] = {

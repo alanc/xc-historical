@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.24 91/01/10 22:22:00 gildea Exp $
+ * $XConsortium: buttons.c,v 1.25 91/02/13 16:09:04 converse Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -65,7 +65,8 @@ MakeTopBox()
 				 (char *)iconclosed_bits, iconclosed_width,
 				 iconclosed_height));
   num_args++;
-
+  XtSetArg(arglist[num_args], XtNtitle, resources.title);
+  num_args++;
   top = XtCreatePopupShell(TOPBOXNAME, topLevelShellWidgetClass, 
 			   initial_widget, arglist, num_args);
 
