@@ -5,7 +5,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xditview.c,v 1.10 89/07/12 13:57:05 kit Exp $";
+static char rcsid[] = "$XConsortium: xditview.c,v 1.11 89/07/21 14:20:42 jim Exp $";
 #endif /* lint */
 
 #include <X11/Xatom.h>
@@ -376,9 +376,8 @@ char	*def;
     };
     Arg valueArgs[1];
     Arg centerArgs[2];
-    XWindowAttributes	xwa;
-    int	source_x, source_y;
-    int	dest_x, dest_y, child_return;
+    Position	source_x, source_y;
+    Position	dest_x, dest_y;
     Dimension center_width, center_height;
     Dimension prompt_width, prompt_height;
     Widget  valueWidget;
