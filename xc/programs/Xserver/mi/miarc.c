@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 1.78 89/05/14 12:00:06 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.0 89/06/09 15:07:34 keith Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -3032,6 +3032,7 @@ drawArc (x0, y0, w, h, l, a0, a1, right, left)
 	int			bandno, sweepno;
 	int			i, j;
 	int			flipRight = 0, flipLeft = 0;			
+	int			copyEnd = 0;
 
 	def.w = ((double) w) / 2;
 	def.h = ((double) h) / 2;
@@ -3195,15 +3196,29 @@ drawArc (x0, y0, w, h, l, a0, a1, right, left)
 		}
 		if (mask & (1 << leftq)) {
 			if (sweep[j].a0 == lefta) {
+				if (passRight)
+					copyEnd = 1;
 				passRight = left;
 				flipLeft = 1;
 			}
 			if (sweep[j].a1 == lefta)
+			{
+				if (passLeft)
+					copyEnd = 1;
 				passLeft = left;
+			}
 		}
 		drawQuadrant (&def, &acc, sweep[j].a0, sweep[j].a1, mask, 
  			      passRight, passLeft);
 	}
+	/*
+	 * when copyEnd is set, both ends of the arc were computed
+	 * at the same time; drawQuadrant only takes one end though,
+	 * so the left end will be the only one holding the data.  Copy
+	 * it from there.
+	 */
+	if (copyEnd)
+		*right = *left;
 	/*
 	 * mirror the coordinates generated for the
 	 * faces of the arc
