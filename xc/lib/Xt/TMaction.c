@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.8 91/02/18 22:15:36 converse Exp $ */
+/* $XConsortium: TMaction.c,v 1.9 91/02/18 22:47:16 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -85,7 +85,7 @@ static CompiledActionTable CompileActionTable(actions, count, stat, perm)
     cActions = cTableHold;
 
     /* Insertion sort.  Whatever sort is used, it must be stable. */
-    for (i=1; i < count - 1; i++) {
+    for (i=1; i <= count - 1; i++) {
 	register int j;
 	hold = cActions[i];
 	j = i;
@@ -183,24 +183,21 @@ static int BindActions(stateTree, procs, compiledActionTable, numActions, ndxP)
     TMShortCard		numActions;
     Cardinal 		*ndxP;
 {
-    int unbound = stateTree->numQuarks - *ndxP;
+    register int unbound = stateTree->numQuarks - *ndxP;
     CompiledAction* action;
-    Cardinal ndx;
-    Boolean savedNdx = False;
+    register Cardinal ndx;
+    register Boolean savedNdx = False;
     
     for (ndx = *ndxP; ndx < stateTree->numQuarks; ndx++) {
 	if (procs[ndx] == NULL) {
 	    /* attempt to bind it */
-	    register XrmQuark q = stateTree->quarkTbl[ndx];
-	    Boolean found = False;
+	    XrmQuark q = stateTree->quarkTbl[ndx];
 
 	    action = SearchActionTable(q, compiledActionTable, numActions);
 	    if (action) {
 		procs[ndx] = action->proc;
 		unbound--;
-		found = True;
-	    }
-	    if (!found && !savedNdx) {
+	    } else if (!savedNdx) {
 		*ndxP= ndx;
 		savedNdx = True;
 	    }
