@@ -616,7 +616,8 @@
 
 (defun event-listen (display &optional (timeout 0))
   (declare (type display display)
-	   (type (or null number) timeout))
+	   (type (or null number) timeout)
+	   (values number-of-events-queued eof-or-timeout))
   ;; Returns the number of events queued locally, if any, else nil.  Hangs
   ;; waiting for events, forever if timeout is nil, else for the specified
   ;; number of seconds.
@@ -627,14 +628,20 @@
     (declare (type symbol current-event-symbol)
 	     (type (or null reply-buffer) current-event queue))
     (if queue
-	(with-event-queue-internal (display :timeout timeout)
-	  (threaded-length (or current-event (display-event-queue-head display))
-			   reply-next reply-buffer))
-      (with-event-queue (display :timeout timeout)
-	(unless (eq (wait-for-event display timeout nil) :timeout)
+	(values
 	  (with-event-queue-internal (display :timeout timeout)
-	    (threaded-length (display-event-queue-head display)
-			     reply-next reply-buffer)))))))
+	    (threaded-length (or current-event (display-event-queue-head display))
+			     reply-next reply-buffer))
+	  nil)
+      (with-event-queue (display :timeout timeout)
+	(let ((eof-or-timeout (wait-for-event display timeout nil)))
+	  (if eof-or-timeout
+	      (values nil eof-or-timeout)
+	    (values 
+	      (with-event-queue-internal (display :timeout timeout)
+		(threaded-length (display-event-queue-head display)
+				 reply-next reply-buffer))
+	      nil)))))))
 
 (defun queue-event (display event-key &rest args &key append-p send-event-p &allow-other-keys)
   ;; The event is put at the head of the queue if append-p is nil, else the tail.
@@ -1079,17 +1086,18 @@
 	   (type (or null number) timeout)
 	   (type boolean force-output-p)
 	   (type symbol current-event-symbol)
-	   (values event))
+	   (values event return-value))
   (unless (symbol-value current-event-symbol)
-    (when (wait-for-event display timeout force-output-p)
-      (return-from event-loop-step-before nil))
+    (let ((return-value (wait-for-event display timeout force-output-p)))
+      (when return-value
+	(return-from event-loop-step-before (values nil return-value))))
     (setf (symbol-value current-event-symbol) (display-new-events display)))
   (let ((event (symbol-value current-event-symbol)))
     (declare (type reply-buffer event))
     (with-event-queue-internal (display)
       (when (eq event (display-new-events display))
 	(setf (display-new-events display) (reply-next event))))
-    event))
+    (values event nil)))
 
 (defun event-loop-step-after
        (display event discard-p current-event-symbol current-event-discarded-p-symbol)
@@ -1127,11 +1135,12 @@
 		  (type symbol .current-event-symbol. .current-event-discarded-p-symbol.))
 	 (progv .progv-vars. .progv-vals.
 	   (loop
-	     (let ((.event. (event-loop-step-before
-			      .display. .timeout. .force-output-p.
-			      .current-event-symbol.)))
+	     (multiple-value-bind (.event. .eof-or-timeout.)
+		 (event-loop-step-before
+		   .display. .timeout. .force-output-p.
+		   .current-event-symbol.)
 	       (declare (type (or null reply-buffer) .event.))
-	       (when (null .event.) (return nil))
+	       (when (null .event.) (return (values nil .eof-or-timeout.)))
 	       (let ((,event .event.))
 		 (declare (type reply-buffer ,event))
 		 ,@body)
