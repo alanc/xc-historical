@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.39 89/05/25 15:11:32 jim Exp $
+ *	$XConsortium: button.c,v 1.40 89/05/25 15:38:16 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.39 89/05/25 15:11:32 jim Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.40 89/05/25 15:38:16 jim Exp $";
 #endif	/* lint */
 
 #include "ptyx.h"		/* Xlib headers included here. */
@@ -1167,8 +1167,8 @@ Cardinal count;
 	  default:	       buffer = -1;
 	}
 	if (buffer >= 0)
-	    XStoreBytes( XtDisplay((Widget)term), term->screen.selection,
-			 term->screen.selection_length, buffer );
+	    XStoreBuffer( XtDisplay((Widget)term), term->screen.selection,
+			  term->screen.selection_length, buffer );
 	else if (!replyToEmacs) {
 	    have_selection |=
 		XtOwnSelection( (Widget)term, atoms[i],
