@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.54 91/02/16 16:31:58 rws Exp $
+ * $XConsortium: dm.c,v 1.55 91/04/01 10:27:34 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -49,7 +49,6 @@
 
 extern int	errno;
 
-extern void	exit (), abort ();
 #ifdef SVR4
 extern FILE    *fdopen();
 #endif
