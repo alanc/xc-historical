@@ -38,7 +38,11 @@
 #ifdef hcx
 #  define MANDIR "/usr/catman/local_man:/usr/catman/u_man:/usr/catman/a_man:/usr/catman/p_man:/usr/catman/ada_man"
 #else
+#if defined(SYSV) && defined(SYSV386)
+#  define MANDIR "/usr/catman/u_man:/usr/catman/p_man"	
+#else
 #  define MANDIR "/usr/man"
+#endif /* SYSV386 */
 #endif /* hcx else */
 #endif /* SVR4 else */
 #endif /* macII else */
@@ -51,7 +55,7 @@
  * Compression Definitions.
  */
 
-#if defined( macII ) || defined( hcx )
+#if defined( macII ) || defined( hcx ) || (defined(SYSV) && defined(SYSV386))
 #  define COMPRESSION_EXTENSION   "z"
 #  define UNCOMPRESS_FORMAT       "pcat %s > %s"
 #  define NO_COMPRESS		/* mac can't handle using pack as a filter and
@@ -96,10 +100,10 @@
 
 #define MAN "man"
 
-#if ( defined(macII) || defined(CRAY) || defined(hcx) )
+#if ( defined(macII) || defined(CRAY) || defined(hcx) || (defined(SYSV) && defined(SYSV386)) )
 /*
- * The Apple, Cray, and HCX folks put the preformatted pages in the "man" 
- * directories.
+ * The Apple, Cray,, SYSV386, and HCX folks put the preformatted pages in the
+ * "man" directories.
  */
 #  define CAT MAN		
 #else
