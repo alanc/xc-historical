@@ -1,6 +1,6 @@
     CDEBUGFLAGS = LibraryCDebugFlags
        INCLUDES = -I. -I$(TOP) -I$(INCLUDESRC)
-        DEFINES = -DUNIXCONN
+        DEFINES = ConnectionFlags
    INSTALLFLAGS = -m 0644
            SRCS = *.c
         HEADERS = Xlib.h Xutil.h
