@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.15 90/12/19 19:01:16 converse Exp $
+/* $XConsortium: CvtStdSel.c,v 1.16 90/12/20 10:56:35 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -45,6 +45,7 @@
 #include <sys/socket.h>
 #endif
 
+#include "Atoms.h"
 #include "StdSel.h"
 #include "SysUtil.h"
 
