@@ -15,7 +15,7 @@ DIFSLIB = $(DIFSDIR)/libdifs.a
 FONTDIR = $(FONTSRC)/lib
 FONTLIB = $(FONTDIR)/libfont.a
 SYSLIBS =
-#if HPArchitecture
+#ifdef HPArchitecture
 BSDEMUL = $(LIBSRC)/Berk/Berklib.o
 #endif
 
