@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.41 89/07/19 11:40:16 keith Exp $ */
+/* $XConsortium: servermd.h,v 1.42 89/07/21 13:58:03 keith Exp $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -113,7 +113,7 @@ SOFTWARE.
 
 #define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the HP only */
 #define BITMAP_BIT_ORDER	MSBFirst
-#define	GLYPHPADBYTES		2
+#define	GLYPHPADBYTES		4
 #define	GETLEFTBITS_ALIGNMENT	4
 
 #    else
