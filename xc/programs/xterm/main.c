@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.26 88/03/28 19:34:34 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.27 88/03/29 09:36:42 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -1059,8 +1059,8 @@ spawn ()
 
         /* Realize the Tek or VT widget, depending on which mode we're in.
            If VT mode, this calls VTRealize (the widget's Realize proc) */
-        XtRealizeWidget (screen->TekEmu ? tekWidget->core.parent :
-			 term->core.parent);
+        XtRealizeWidget (screen->TekEmu ? XtParent(tekWidget) :
+			 XtParent(term));
 
 	if(screen->TekEmu) {
 		envnew = tekterm;
@@ -1162,8 +1162,8 @@ spawn ()
 #endif	/* !SYSV */
 
 		sprintf (buf, "%lu", screen->TekEmu ? 
-			 ((unsigned long) XtWindow (tekWidget->core.parent)) :
-			 ((unsigned long) XtWindow (term->core.parent)));
+			 ((unsigned long) XtWindow (XtParent(tekWidget))) :
+			 ((unsigned long) XtWindow (XtParent(term))));
 		Setenv ("WINDOWID=", buf);
 		/* put the display into the environment of the shell*/
 		Setenv ("DISPLAY=", XDisplayString (screen->display));
