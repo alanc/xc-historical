@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.24 93/08/14 13:03:54 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.25 93/08/14 19:11:51 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -278,8 +278,8 @@ extern Xstream _XsStream[];
 #include <X11/Xw32defs.h>
 
 #define BytesReadable(fd,ptr) ioctlsocket((SOCKET)fd, FIONREAD, (u_long *)ptr)
-#define ReadFromServer(dpy, data, size) recv((SOCKET)(dpy), (data), (size), 0)
-#define WriteToServer(dpy, bufind, size) send((SOCKET)(dpy), (bufind), (size), 0)
+#define ReadFromServer(dpy,data,size) recv((SOCKET)(dpy), data, size, 0)
+#define WriteToServer(dpy,data,size) send((SOCKET)(dpy), data, size, 0)
 
 struct iovec {
     caddr_t iov_base;
