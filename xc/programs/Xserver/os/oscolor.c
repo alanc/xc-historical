@@ -21,11 +21,15 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: oscolor.c,v 1.18 91/04/08 16:54:57 rws Exp $ */
+/* $XConsortium: oscolor.c,v 1.19 91/05/09 18:39:28 rws Exp $ */
 #ifdef NDBM
 #include <ndbm.h>
 #else
+#ifdef SVR4
+#include <rpcsvc/dbm.h>
+#else
 #include <dbm.h>
+#endif
 #endif
 #include "rgb.h"
 #include "os.h"
