@@ -1,4 +1,4 @@
-/* $Header: mfbwindow.c,v 1.6 88/06/06 17:28:51 keith Exp $ */
+/* $Header: mfbwindow.c,v 1.7 88/07/06 10:59:48 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -50,16 +50,6 @@ register WindowPtr pWin;
     pPrivWin->fastBackground = 0;
     pPrivWin->fastBorder = 0;
 
-    /* backing store stuff 
-       is this ever called with backing store turned on ???
-    */
-    if ((pWin->backingStore == WhenMapped) ||
-	(pWin->backingStore == Always))
-    {
-    }
-    else
-    {
-    }
     return (TRUE);
 }
 
@@ -77,6 +67,10 @@ WindowPtr pWin;
     mfbDestroyPixmap(pPrivWin->pRotatedBorder);
     mfbDestroyPixmap(pPrivWin->pRotatedBackground);
     Xfree(pWin->devPrivate);
+    if (pWin->backingStore != NotUseful)
+    {
+	miFreeBackingStore(pWin);
+    }
     return (TRUE);
 }
 
@@ -229,16 +223,21 @@ mfbChangeWindowAttributes(pWin, mask)
 	switch(index)
 	{
 	  case CWBackingStore:
-/*
-	    if ((pWin->backingStore == WhenMapped) ||
-	 	(pWin->backingStore == Always))
-	    {
-	    }
-	    else
-	    {
-	    }
-*/
-	    break;
+	      if (pWin->backingStore != NotUseful)
+	      {
+		  miInitBackingStore(pWin, mfbSaveAreas, mfbRestoreAreas);
+	      }
+	      else
+	      {
+		  miFreeBackingStore(pWin);
+	      }
+	      /*
+	       * XXX: The changing of the backing-store status of a window
+	       * is serious enough to warrant a validation, since otherwise
+	       * the backing-store stuff won't work.
+	       */
+	      pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+	      break;
 
 	  case CWBackPixmap:
 	      if (pWin->backgroundTile == (PixmapPtr)None)
