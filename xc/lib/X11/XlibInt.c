@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.179 93/09/15 15:11:04 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.180 93/09/15 17:34:30 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -189,7 +189,7 @@ _XWaitForWritable(dpy
     CLEARBITS(w_mask);
 #endif
 
-    while (1) {
+    for (;;) {
 #ifdef XTHREADS
 	/* We allow only one thread at a time to read, to minimize
 	   passing of read data between threads.
@@ -350,15 +350,15 @@ static void
 _XWaitForReadable(dpy)
   Display *dpy;
 {
+    int result;
+    int fd = dpy->fd;
+    struct _XConnectionInfo *ilist;  
 #ifdef USE_POLL
     struct pollfd *filedes;
 #else
     FdSet r_mask;
-#endif
-    int result;
-    int fd = dpy->fd;
     int highest_fd = fd;
-    struct _XConnectionInfo *ilist;  
+#endif
 
 #ifdef USE_POLL
     if (dpy->im_fd_length + 1 > POLLFD_CACHE_SIZE && !dpy->in_process_conni) {
@@ -1793,15 +1793,13 @@ XAddConnectionWatch(dpy, callback, client_data)
 #if NeedFunctionPrototypes
 void XRemoveConnectionWatch(
     Display* dpy,
-    XConnectionWatchProc callback,
-    XPointer client_data
+    XConnectionWatchProc callback
 )
 #else
 void
-XRemoveConnectionWatch(dpy, callback, client_data)
+XRemoveConnectionWatch(dpy, callback)
     Display *dpy;
     XConnectionWatchProc callback;
-    XPointer client_data;
 #endif
 {
     struct _XConnWatchInfo *watch;
