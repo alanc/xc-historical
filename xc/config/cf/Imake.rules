@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.57 89/09/19 09:15:12 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.58 89/09/19 12:09:23 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -637,7 +637,7 @@ BuildMakefileTarget(Imakefile,/**/)
 #define NormalFortranObjectRule()					@@\
 .f.o:									@@\
 	$(RM) $@							@@\
-	$(FC) -c $(FCFLAGS) $*.c
+	$(FC) -c $(FCFLAGS) $*.f
 #endif
 
 
