@@ -1359,7 +1359,7 @@ return NULL;
 static XtransConnInfo
 TRANS(LocalOpenClient)(int type, char *protocol, char *host, char *port)
 {
-int	fd=-1;
+int	fd = -1;
 LOCALtrans2dev *transptr;
 XtransConnInfo ciptr;
 
@@ -1384,7 +1384,7 @@ if( (ciptr=(XtransConnInfo)calloc(1,sizeof(struct _XtransConnInfo))) == NULL )
 	return NULL;
 	}
 
-ciptr->fd=-1;
+ciptr->fd = -1;
 
 TRANS(LocalInitTransports)(protocol);
 
@@ -1430,7 +1430,7 @@ return ciptr;
 static XtransConnInfo
 TRANS(LocalOpenServer)(int type, char *protocol, char *host, char *port)
 {
-int	i,fd=-1;
+int	i,fd = -1;
 XtransConnInfo ciptr;
 
 PRMSG(2,"TRANS(LocalOpenServer)(%d,%s,%s)\n", type, protocol, port);
