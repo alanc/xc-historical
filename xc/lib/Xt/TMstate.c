@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: TMstate.c,v 1.54 88/09/04 15:34:31 swick Exp $";
+    "$XConsortium: TMstate.c,v 1.55 88/09/05 11:20:25 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -530,7 +530,7 @@ static void _XtTranslateEvent (w, closure, event)
     if (stateTable == NULL) {
         XtAppWarningMsg(XtWidgetToApplicationContext(w),
 		"translationError","nullTable","XtToolkitError",
-            "Can't translate event thorugh NULL table",
+            "Can't translate event through NULL table",
             (String *)NULL, (Cardinal *)NULL);
        return ;
     }
@@ -795,16 +795,17 @@ static EventMask masks[] = {
         EventMask returnMask = 0;
         Modifiers tempMask;
 
-#define AllButtonsMask \
-	(Button1Mask | Button2Mask | Button3Mask | Button4Mask | Button5Mask)
-
-        if (modifierMask == 0)
-             return PointerMotionMask;
-        tempMask = modifierMask & AllButtonsMask;
+        if (modifierMask == 0) {
+	    if (event->event.modifiers == AnyButtonMask)
+		return ButtonMotionMask;
+	    else
+		return PointerMotionMask;
+	}
+        tempMask = modifierMask &
+	    (Button1Mask | Button2Mask | Button3Mask
+	     | Button4Mask | Button5Mask);
         if (tempMask == 0)
-            return PointerMotionMask;
-	if (tempMask == AllButtonsMask)
-	    return ButtonMotionMask;
+	    return PointerMotionMask;
         if ((tempMask & Button1Mask)!=0)
             returnMask |= Button1MotionMask;
         if ((tempMask & Button2Mask) != 0)
@@ -817,7 +818,6 @@ static EventMask masks[] = {
             returnMask |= Button5MotionMask;
         return returnMask;
     }
-#undef AllButtonsMask
     return ((eventType >= XtNumber(masks)) ?  0 : masks[eventType]);
 }
 /*** Public procedures ***/
