@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.15 93/11/18 14:21:15 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.16 93/11/22 16:34:06 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -289,6 +289,7 @@ typedef struct {
     char	*his_release;
     char	my_auth_index;
     IcePointer 	my_auth_state;
+    Bool	must_authenticate;
 } _IceConnectToMeInfo;
 
 typedef struct {
@@ -300,6 +301,7 @@ typedef struct {
     char	*his_release;
     char	my_auth_index;
     IcePointer 	my_auth_state;
+    Bool	must_authenticate;
 } _IceProtoSetupToMeInfo;
 
 typedef struct {
