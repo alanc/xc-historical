@@ -1,5 +1,5 @@
     STD_DEFINES = LibraryDefines
-        DEFINES = -DXAPPLOADDIR=\"$(XAPPLOADDIR)$(PATHSEP)\"
+    APP_DEFINES = -DXAPPLOADDIR=\"$(XAPPLOADDIR)$(PATHSEP)\"
     CDEBUGFLAGS = LibraryCDebugFlags
        INCLUDES = -I. -I$(XLIBSRC) -I$(TOP) -I$(TOP)/X11
    INSTALLFLAGS = $(INSTINCFLAGS)
@@ -87,14 +87,18 @@ Atoms.h: StringDefs.h
 
 #if DebugLibXt && ProfileLibXt
 DebuggedAndProfiledLibraryObjectRule()
+SpecialDebuggedAndProfiledObjectRule(Initialize.o,$(IRULESRC)/Imake.tmpl,$(APP_DEFINES))
 #else
 # if DebugLibXt
 DebuggedLibraryObjectRule()
+SpecialDebuggedObjectRule(Initialize.o,$(IRULESRC)/Imake.tmpl,$(APP_DEFINES))
 # else
 #  if ProfileLibXt
 ProfiledLibraryObjectRule()
+SpecialProfiledObjectRule(Initialize.o,$(IRULESRC)/Imake.tmpl,$(APP_DEFINES))
 #  else
 NormalLibraryObjectRule()
+SpecialObjectRule(Initialize.o,$(IRULESRC)/Imake.tmpl,$(APP_DEFINES))
 #  endif
 # endif
 #endif
