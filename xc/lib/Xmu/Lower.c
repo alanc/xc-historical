@@ -1,5 +1,5 @@
 static char rcsid[] =
-	"$XConsortium: Lower.c,v 1.0 88/09/05 19:00:48 rws Exp $";
+	"$XConsortium: Lower.c,v 1.1 88/12/22 15:49:24 rws Exp $";
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -43,4 +43,58 @@ XmuCopyISOLatin1Lowered(dst, src)
 	    *dest = *source;
     }
     *dest = '\0';
+}
+
+void
+XmuCopyISOLatin1Uppered(dst, src)
+    char *dst, *src;
+{
+    register unsigned char *dest, *source;
+
+    for (dest = (unsigned char *)dst, source = (unsigned char *)src;
+	 *source;
+	 source++, dest++)
+    {
+	if ((*source >= XK_a) && (*source <= XK_z))
+	    *dest = *source - (XK_a - XK_A);
+	else if ((*source >= XK_agrave) && (*source <= XK_odiaeresis))
+	    *dest = *source - (XK_agrave - XK_Agrave);
+	else if ((*source >= XK_slash) && (*source <= XK_thorn))
+	    *dest = *source - (XK_oslash - XK_Ooblique);
+	else
+	    *dest = *source;
+    }
+    *dest = '\0';
+}
+
+int XmuCompareISOLatin1 (first, second)
+    char *first, *second;
+{
+    register unsigned char *ap, *bp;
+
+    for (ap = (unsigned char *) first, bp = (unsigned char *) second;
+	 *ap && *bp; ap++, bp++) {
+	register unsigned char a, b;
+
+	if ((a = *ap) != (b = *bp)) {
+	    /* try lowercasing and try again */
+
+	    if ((a >= XK_A) && (a <= XK_Z))
+	      a += (XK_a - XK_A);
+	    else if ((a >= XK_Agrave) && (a <= XK_Odiaeresis))
+	      a += (XK_agrave - XK_Agrave);
+	    else if ((a >= XK_Ooblique) && (a <= XK_Thorn))
+	      a += (XK_oslash - XK_Ooblique);
+
+	    if ((b >= XK_A) && (b <= XK_Z))
+	      b += (XK_a - XK_A);
+	    else if ((b >= XK_Agrave) && (b <= XK_Odiaeresis))
+	      b += (XK_agrave - XK_Agrave);
+	    else if ((b >= XK_Ooblique) && (b <= XK_Thorn))
+	      b += (XK_oslash - XK_Ooblique);
+
+	    if (a != b) break;
+	}
+    }
+    return (((int) *bp) - ((int) *ap));
 }

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.23 89/06/07 16:50:58 jim Exp $
+ * $XConsortium: CharSet.h,v 1.1 89/07/14 17:51:53 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -22,6 +22,7 @@
 #ifndef _XMU_CHARSET_H_
 #define _XMU_CHARSET_H_
 
-void XmuCopyISOLatin1Lowered();
-
+extern void XmuCopyISOLatin1Lowered();
+extern void XmuCopyISOLatin1Uppered();
+extern int XmuCompareISOLatin1();
 #endif /* _XMU_CHARSET_H_ */
