@@ -46,10 +46,8 @@ This option specifies the X server to contact.
 This option specifies a resource string to be used.  This is especially
 useful for setting resources that do not have separate command line options.
 .SH X DEFAULTS
-This program uses the 
-.I Logo
-widget in the X Toolkit.  It understands all of the core resource names and
-classes as well as:
+This program uses the \fILogo\fP widget in the Athena widget set.  It
+understands all of the core resource names and classes as well as:
 .PP
 .TP 8
 .B width (\fPclass\fB Width)
@@ -59,9 +57,7 @@ Specifies the width of the logo.  The default width is 100 pixels.
 Specifies the height of the logo.  The default height is 100 pixels.
 .TP 8
 .B foreground (\fPclass\fB Foreground)
-Specifies the color for the logo.
-The default is \fIblack\fP since the core default for background 
-is \fIwhite\fP.
+Specifies the color for the logo. The default is \fIblack\fP since the core default for background is \fIwhite\fP.
 .TP 8
 .B reverseVideo (\fPclass\fB ReverseVideo)
 Specifies that the foreground and background should be reversed.
