@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: toc.c,v 1.12 88/01/25 13:57:13 swick Locked $";
+static char rcs_id[] = "$Header: toc.c,v 2.12 88/01/25 13:57:13 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -903,6 +903,14 @@ int msgid;
     int h, l, m;
     l = 0;
     h = toc->nummsgs - 1;
+    if (h < 0) {
+	if (debug) {
+	    char str[100];
+	    (void)sprintf(str, "Toc is empty! folder=%s\n", toc->foldername);
+	    DEBUG( str );
+	}
+	return NULL;
+    }
     while (l < h - 1) {
 	m = (l + h) / 2;
 	if (toc->msgs[m]->msgid > msgid)
