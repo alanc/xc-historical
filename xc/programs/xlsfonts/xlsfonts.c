@@ -1,3 +1,26 @@
+/*
+ * $XConsortium$
+ *
+ * Copyright 1989 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising
+ * or publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
+ * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <stdio.h>
@@ -439,7 +462,7 @@ ComputeFontType (fs)
     XCharStruct *cs;
     Atom awatom = XInternAtom (dpy, "AVERAGE_WIDTH", False);
 
-    printf ("  Font type:\t\t");
+    printf ("  font type:\t\t");
     if (awatom) {
 	for (i = 0; i < fs->n_properties; i++) {
 	    if (fs->properties[i].name == awatom &&
@@ -513,6 +536,7 @@ print_character_metrics (info)
     }
 }
 
+
 do_query_font (dpy, name)
     Display *dpy;
     char *name;
@@ -528,10 +552,13 @@ do_query_font (dpy, name)
     printf ("name:  %s\n", name ? name : "(nil)");
     printf ("  direction:\t\t%s\n", ((info->direction == FontLeftToRight)
 				     ? "left to right" : "right to left"));
-    printf ("  char rows:\t\t0x%02x thru 0x%02x (%d thru %d)\n",
+    printf ("  indexing:\t\t%s\n", 
+	    ((info->min_byte1 == 0 && info->max_byte1 == 0) ? "linear" :
+	     "matrix"));
+    printf ("  rows:\t\t\t0x%02x thru 0x%02x (%d thru %d)\n",
 	    info->min_byte1, info->max_byte1,
 	    info->min_byte1, info->max_byte1);
-    printf ("  char columns:\t\t0x%02x thru 0x%02x (%d thru %d)\n",
+    printf ("  columns:\t\t0x%02x thru 0x%02x (%d thru %d)\n",
 	    info->min_char_or_byte2, info->max_char_or_byte2,
 	    info->min_char_or_byte2, info->max_char_or_byte2);
     printf ("  all chars exist:\t%s\n",
