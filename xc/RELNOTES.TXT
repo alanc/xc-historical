@@ -6,7 +6,7 @@
 
                                 X Consortium
 
-                               April 21, 1994
+                                May 16, 1994
 
 Copyright (C) 1994 X Consortium
 
@@ -39,7 +39,7 @@ X Window System is a trademark of X Consortium, Inc.
 This quick summary is no substitute for reading the full build instructions
 later in this document.
 
-Edit xc/config/site.def for local preferences.  If you want to build with
+Edit xc/config/cf/site.def for local preferences.  If you want to build with
 gcc uncomment the HasGcc2 line.  If you want to install somewhere other than
 /usr/X11R6, change ProjectRoot.  (Do not use DESTDIR.)
 
@@ -47,9 +47,9 @@ If any fixes have been released by the X Consortium, stop here and follow
 the instructions at the top of each patch, but don't do any of the make com-
 mands suggested in the patches.  Then continue here.
 
-Check the appropriate xc/config/vendor.cf file to make sure that OSMajorVer-
-sion and OSMinorVersion are set correctly for your system (change them if
-necessary).
+Check the appropriate xc/config/cf/vendor.cf file to make sure that OSMa-
+jorVersion and OSMinorVersion are set correctly for your system (change them
+if necessary).
 
 See if there is a BootstrapCFlags mentioned in the comments in the vendor.cf
 file.  If there isn't one, cd to the xc directory and type:
@@ -75,6 +75,8 @@ Release Notes.
 2.  What Is Release 6
 
 This is the 6th release of X Window System software from the X Consortium.
+X is a network-transparent window system which runs on a wide range of com-
+puting and graphics machines.
 
 The X Consortium is an independent, not-for-profit corporation, the succes-
 sor to the MIT X Consortium, which was part of the MIT Laboratory for Com-
@@ -107,12 +109,11 @@ Utility Libraries
 
 Sample Programs
      We also provide a number of application programs.  A few of these pro-
-     grams, such as xdm, should be considered essential in almost all
-
-     environments.  The rest of the applications carry no special status;
-     they are simply programs that have been developed and/or maintained by
-     X Consortium staff.  In some cases, you will find better substitutes
-     for these programs in the user-contributed part.
+     grams, such as xdm, should be considered essential in almost all envi-
+     ronments.  The rest of the applications carry no special status; they
+     are simply programs that have been developed and/or maintained by X
+     Consortium staff.  In some cases, you will find better substitutes for
+     these programs in the user-contributed part.
 
 The user-contributed part contains whatever people contribute.  You'll find
 a variety of software and documentation here: programs, demos, games,
@@ -285,6 +286,11 @@ This section gives detailed instructions for building Release 6: getting it
 off the distribution medium, configuring, compiling, installing, running,
 and updating.
 
+More recent information about newly-discovered problems may be found in the
+Frequently Asked Questions posting appearing monthly on the comp.windows.x
+newsgroup and xpert mailing list.  It is also available via anonymous FTP on
+ftp.x.org in the file contrib/faqs/FAQ.Z, or on your local X mirror site.
+
 3.1.  Unpacking the Distribution
 
 The distribution normally comes as multiple tar files, either on tape or
@@ -328,6 +334,7 @@ For each tar file contrib-*.tar.gz, execute this:
 3.1.3.  Unpacking a Split Compressed FTP Distribution
 
 If you have obtained compressed and split tar files over the network, create
+
 a directory to hold the sources:
 
      mkdir sourcedir
@@ -421,6 +428,7 @@ of the more common parameters that you may wish to set in site.def.
 ProjectRoot
      The destination where X will be installed.  This variable needs to be
      set before you build, as some programs that read files at run-time have
+
      the installation directory compiled in to them.  Assuming you have set
      the variable to some value /path, files will be installed into
      /path/bin, /path/include/X11, /path/lib, and /path/man.
@@ -520,13 +528,13 @@ bugs in the clcc optimizer:
 
      xc/programs/Xserver/cfb16/cfbgetsp.c
      xc/programs/Xserver/cfb16/cfbfillsp.c
+
      xc/programs/Xserver/cfb/cfbgetsp.c
 
 Thus to build the server, you will have to compile these files by hand with
 the -g flag:
 
      % cd xc/programs/Xserver/cfb16
-
      % make CDEBUGFLAGS="-g" cfbgetsp.o cfbfillsp.o
      % cd ../cfb
      % make CDEBUGFLAGS="-g" cfbgetsp.o
@@ -617,10 +625,9 @@ trator add them.  This is commonly done by running the MAKEDEV script in the
 3.10.  Starting Servers at System Boot
 
 The xfs and xdm programs are designed to be run automatically at system
-startup.  Please read the manual pages for details on setting up
-
-configuration files; reasonable sample files are in xc/programs/xdm/config/
-and xc/programs/xfs/.
+startup.  Please read the manual pages for details on setting up configura-
+tion files; reasonable sample files are in xc/programs/xdm/config/ and
+xc/programs/xfs/.
 
 If your system uses an /etc/rc file at boot time, you can usually enable
 these programs by placing the following at or near the end of the file:
@@ -664,12 +671,12 @@ keypad to generate R5 style keysyms using the following xmodmap commands:
      keysym Break = F23
      keysym KP_Equal = F24
      keysym KP_Divide = F25
+
      keysym KP_Multiply = F26
      keysym KP_Home = F27
      keysym KP_Up = Up
      keysym KP_Prior = F29
      keysym KP_Left = Left
-
      keycode 100 = F31
      keysym KP_Right = Right
      keysym KP_End = F33
@@ -712,6 +719,7 @@ strapCFlags value any more; the information is already recorded.
 
 The software in contrib is not set up to have everything built automati-
 cally.  It is assumed that you will build individual pieces as you find the
+
 desire, time, and/or disk space.  You need to have the X Consortium part
 built and installed before building the contributed software.  To build a
 program or library in contrib, look in its directory for any special build
@@ -763,7 +771,6 @@ described in its own section below.
 4.2.  XIE (X Image Extension)
 
 The sample implementation in Release 6 is a complete implementation of full
-
 XIE 5.0 protocol, except for the following techniques that are excluded from
 the SI:
 
@@ -858,12 +865,11 @@ properties for session management have been defined.
 
 4.4.  ICE (Inter-Client Exchange)
 
-ICE provides a common framework to build protocols on.  It supplies
-
-authentication, byte order negotiation, version negotiation, and error
-reporting conventions.  It supports multiplexing multiple protocols over a
-single transport connection.  ICElib provides a common interface to these
-mechanisms so that protocol implementors need not reinvent them.
+ICE provides a common framework to build protocols on.  It supplies authen-
+tication, byte order negotiation, version negotiation, and error reporting
+conventions.  It supports multiplexing multiple protocols over a single
+transport connection.  ICElib provides a common interface to these mecha-
+nisms so that protocol implementors need not reinvent them.
 
 An iceauth program was written to manipulate an ICE authority file; it is
 very similar to the xauth program.
@@ -962,6 +968,7 @@ using IM services, and an IM Server developer's kit in contrib.  The IM
 Server developer's kit hides the details of the IM Protocol and the trans-
 port layer protocols, and hides the differences between the R5 and R6 proto-
 cols from the IM Server developer, so that an IM developer has an easier
+
 task in developing new IM Servers.
 
 4.7.  X Logical Font Description
@@ -1004,6 +1011,7 @@ included.
 4.12.  Tree Reorganization
 
 Many of the directories under xc/ (renamed from mit/) have been moved.  See
+
 the section The XC Tree for the new layout.  The reorganization has simpli-
 fied dependencies in the build process.  Once you get used to the new lay-
 out, things will be easier to find.
@@ -1101,11 +1109,12 @@ fix the offending code.
 The Xlib implementation has been changed to support a form of asynchronous
 replies, meaning that a request can be sent off to the server, and then
 other requests can be generated without waiting for the first reply to come
-back.  This is used to advantage in two new functions, XInternAtoms and XGe-
-tAtomNames, which reduce what would otherwise require multiple round trips
-to the server down to a single round trip.  It is also used in some existing
-functions, such as XGetWindowAttributes, to reduce two round trips to just
-one.
+back.  This is used to advantage in two new functions, XInternAtoms and
+
+XGetAtomNames, which reduce what would otherwise require multiple round
+trips to the server down to a single round trip.  It is also used in some
+existing functions, such as XGetWindowAttributes, to reduce two round trips
+to just one.
 
 Lots of Xlib source files were renamed to fit better on systems with short
 filenames.  The "X" prefix was dropped from most file names, and "CIE" and
@@ -1153,6 +1162,7 @@ that in R5, being based on the locale model used in ANSI C and POSIX, with
 most of the I18N capability provided by Xlib.  R5 introduced a fundamental
 framework for internationalized input and output.  It could enable basic
 localization for left-to-right, non-context sensitive, 8-bit or multi-byte
+
 codeset languages and cultural conventions.  However, it did not deal with
 all possible languages and cultural conventions.  R6 also does not cover all
 possible languages and cultural conventions, but R6 contains substantial new
@@ -1262,7 +1272,6 @@ because of these changes.
 
 The name AsciiText is now a misnomer, but has been retained for backward
 compatibility.  A new resource, XtNinternational, has been added.  If the
-
 value of the XtNinternational resource is False (the default) AsciiSrc and
 AsciiSink source and sink widgets are created, and the widget behaves as it
 did for R5.  If the value is True, MultiSrc and MultiSink source and sink
@@ -1312,13 +1321,12 @@ The API now provided with the PEX-SI is called PEXlib.  This is a change
 from R5 which shipped an API based upon the ISO IS PHIGS and PHIGS PLUS
 Bindings.  That API has been moved to contrib in favor of the PEXlib API
 based upon the PEXlib 5.1 binding, which itself is an X Consortium standard.
-The PEXlib binding is a lower-level interface than the previous PHIGS
-
-binding was and maps more closely to the PEX protocol itself.  It supports
-immediate mode rendering functionality as well as the previous PHIGS work-
-station modes and is therefore suited to a wider range of applications.  It
-is also suited for the development of higher level APIs.  There are in fact
-commercial implementations of the PHIGS API which utilize the PEXlib API.
+The PEXlib binding is a lower-level interface than the previous PHIGS bind-
+ing was and maps more closely to the PEX protocol itself.  It supports imme-
+diate mode rendering functionality as well as the previous PHIGS workstation
+modes and is therefore suited to a wider range of applications.  It is also
+suited for the development of higher level APIs.  There are in fact commer-
+cial implementations of the PHIGS API which utilize the PEXlib API.
 
 The PHIGS API based verification tool called InsPEX is moved to contrib.  A
 prototype of a possible new tool called suspex is in the directory con-
@@ -1360,12 +1368,12 @@ Multi Buffering Extension (aka MBX) found in the directory xc/lib/Xext.
 
 PEX 5.1 protocol adds certain functionality to the Server extension, acces-
 sible directly via the PEXlib API.  This functionality includes Picking via
+
 the Immediate Mode Renderer (Render Elements and Accumulate State commands
 in Chapter 6, all of Chapter 7); new Escape requests to allow vendors to
 support optional functionality; a Match Rendering Targets request to return
 information about visuals, depth and drawables the server can support; a
 noop Output command; Hierarchical HLHSR control (i.e., during traversals);
-
 and renderer clearing controls are the most important features.
 
 4.21.  Header Files
@@ -1408,12 +1416,12 @@ them.  The X server then caches the glyphs for future use.
 
 Aliases in a fonts.alias file can allow one scalable alias name to match all
 instances of another font.  The "!" character introduces a comment line in
+
 fonts.alias files.
 
 A sample font authorization protocol, "hp-hostname-1" has been added.  It is
 based on host names and is non-authenticating.  The client requesting a font
 from a font server provides (or passes through from its client) the host
-
 name of the ultimate client of the font.  There is no check that this host
 name is accurate, as this is a sample protocol only.
 
@@ -1464,7 +1472,6 @@ xc/programs/Xserver/Xext/sync.c.  As part of this work, client priorities
 have also been implemented; see the tail end of WaitForSomething() in Wait-
 For.c.  The priority scheme is strict in that the client(s) with the highest
 priority always runs.  twm has been modified to provide simple facilities
-
 for setting client priorities.
 
 The server can now fetch font glyphs on demand instead of loading them all
@@ -1649,8 +1656,9 @@ vate or deactivate the screen saver: xset s activate and xset s reset.
 
 4.34.  X Test Suite
 
-The X Test Suite, shipped separately from R5, is now part of the core dis-
-tribution in R6.
+The X Test Suite, shipped separately from R5, is now part of the core
+
+distribution in R6.
 
 The code has been fixed to work on Alpha AXP.  The Xi tests contributed by
 HP and XIM tests contributed by Sun are integrated.
@@ -1755,7 +1763,6 @@ the X server by default only on Sun and Omron Luna machines.  You can com-
 pile it in by setting
 
      #define BuildXKB YES          /* for support in the X server */
-
      #define BuildXKBLib YES       /* for support in the X library */
 
 in the file xc/config/cf/site.def.  Note that enabling XKB in the X server
@@ -1857,7 +1864,6 @@ A simple session manager has been developed to test the new Session Manage-
 ment protocol.  At the moment, it does not exercise the complete XSMP proto-
 col and the user interface is rather simple.  While it does have enough
 functionality to make it useful, it needs more work before we would want
-
 people to depend on it or use it as a good example of how to implement the
 session protocol.
 
@@ -1933,8 +1939,9 @@ where) to report the bug.
 6.  Public Fixes
 
 We occasionally put out patches to X Consortium software, to fix any serious
-problems that are discovered.  Such fixes (if any) can be found on
-ftp.x.org, in the directory pub/R6/fixes, using anonymous FTP.
+problems that are discovered.  Such fixes (if any) can be found on ftp.x.org
+in the directory pub/R6/fixes, or on your local X mirror site, using anony-
+mous FTP.
 
 For those without FTP access, individual fixes can be obtained by electronic
 mail by sending a message to
@@ -1995,6 +2002,7 @@ Xlib internationalization
      authors of Xlib specification Chapter 13 are Hideki Hiura (SunSoft) and
      Shigeru Yamada (Fujitsu OSSI).  The principal producers of the sample
      implementation of the internationalization facilities are Jeffrey
+
      Bloomfield (Fujitsu OSSI), Takashi Fujiwara (Fujitsu), Hideki Hiura
      (SunSoft), Yoshio Horiuchi (IBM), Makoto Inada (Digital), Hiromu Inukai
      (Nihon SunSoft), Song JaeKyung (KAIST), Riki Kawaguchi (Fujitsu),
@@ -2003,7 +2011,6 @@ Xlib internationalization
      Wakao (IBM), Shigeru Yamada (Fujitsu OSSI) and Katsuhisa Yano
      (Toshiba).  The coordinators of the integration, testing, and release
      of this implementation are Nobuyuki Tanaka (Sony) and Makoto Wakamatsu
-
      (Sony).  Others who have contributed on the architectural design or the
      testing of sample implementation are Hector Chan (Digital), Michael
      Kung (IBM), Joseph Kwok (Digital), Hiroyuki Machida (Sony), Nelson Ng
@@ -2058,7 +2065,6 @@ X Image Extension
 
 ICCCM
      Stuart Marks (SunSoft); Gabe Beged-Dov (Hewlett-Packard Company); Chan
-
      Benson (Hewlett-Packard Company); Jordan Brown (Quarterdeck Office Sys-
      tems); Larry Cable (SunSoft); Ellis Cohen (Open Software Foundation);
      Brian Cripe (Hewlett-Packard Company); Susan Dahlberg (Silicon Graph-
@@ -2104,6 +2110,7 @@ X server
      Milind Pansare (SunSoft), pixmap privates; Peter Daifuku (SGI), layered
      window support; David Lister (Adobe Systems Incorporated), callback
      manager; Ken Whaley (Kubota Pacific), thin line pixelization; Joel
+
      McCormack (Digital Equipment Corporation), 64-bit mfb and cfb; Rob Lem-
      bree (Digital Equipment Corporation), 64-bit mfb and cfb; Davor Matic
      (MIT), xnest ddx; Nathan Meyers (Hewlett-Packard Company), font sup-
@@ -2112,9 +2119,8 @@ X server
 
 Multi-Threaded X Server
      John A. Smith (while at Data General), team leader; H. Chiba (Omron),
-     ddx; Akeio Harada (Omron), ddx; Mike Haynes (Data General), dix;
-
-     Hidenobu Kanaoka (Omron), ddx; Paul Layne (Data General), dix and ddx;
+     ddx; Akeio Harada (Omron), ddx; Mike Haynes (Data General), dix; Hide-
+     nobu Kanaoka (Omron), ddx; Paul Layne (Data General), dix and ddx;
      Takayuki Miyake (Omron), ddx; Keith Packard (Network Computing
      Devices), design; Richard Potts (Data General), dix; Sid Manning (IBM),
      integration with core server; Rob Chesler (Absol-puter), integration
