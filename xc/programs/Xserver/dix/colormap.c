@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.31 94/04/17 20:26:17 dpw Exp kaleb $ */
+/* $XConsortium: colormap.c,v 5.32 94/11/02 15:57:55 kaleb Exp dpw $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -65,7 +65,7 @@ static Pixel FindBestPixel(
 #if NeedFunctionPrototypes
     EntryPtr /*pentFirst*/,
     int /*size*/,
-    xrgb */*prgb*/,
+    xrgb * /*prgb*/,
     int /*channel*/
 #endif
 );
@@ -73,28 +73,28 @@ static Pixel FindBestPixel(
 static int AllComp(
 #if NeedFunctionPrototypes
     EntryPtr /*pent*/,
-    xrgb */*prgb*/
+    xrgb * /*prgb*/
 #endif
 );
 
 static int RedComp(
 #if NeedFunctionPrototypes
     EntryPtr /*pent*/,
-    xrgb */*prgb*/
+    xrgb * /*prgb*/
 #endif
 );
 
 static int GreenComp(
 #if NeedFunctionPrototypes
     EntryPtr /*pent*/,
-    xrgb */*prgb*/
+    xrgb * /*prgb*/
 #endif
 );
 
 static int BlueComp(
 #if NeedFunctionPrototypes
     EntryPtr /*pent*/,
-    xrgb */*prgb*/
+    xrgb * /*prgb*/
 #endif
 );
 
@@ -137,10 +137,10 @@ static int AllocDirect(
     int /*g*/,
     int /*b*/,
     Bool /*contig*/,
-    Pixel */*pixels*/,
-    Pixel */*prmask*/,
-    Pixel */*pgmask*/,
-    Pixel */*pbmask*/
+    Pixel * /*pixels*/,
+    Pixel * /*prmask*/,
+    Pixel * /*pgmask*/,
+    Pixel * /*pbmask*/
 #endif
 );
 
@@ -151,9 +151,9 @@ static int AllocPseudo(
     int /*c*/,
     int /*r*/,
     Bool /*contig*/,
-    Pixel */*pixels*/,
-    Pixel */*pmask*/,
-    Pixel **/*pppixFirst*/
+    Pixel * /*pixels*/,
+    Pixel * /*pmask*/,
+    Pixel ** /*pppixFirst*/
 #endif
 );
 
@@ -164,15 +164,15 @@ static Bool AllocCP(
     int /*count*/,
     int /*planes*/,
     Bool /*contig*/,
-    Pixel */*pixels*/,
-    Pixel */*pMask*/
+    Pixel * /*pixels*/,
+    Pixel * /*pMask*/
 #endif
 );
 
 static Bool AllocShared(
 #if NeedFunctionPrototypes
     ColormapPtr /*pmap*/,
-    Pixel */*ppix*/,
+    Pixel * /*ppix*/,
     int /*c*/,
     int /*r*/,
     int /*g*/,
@@ -180,7 +180,7 @@ static Bool AllocShared(
     Pixel /*rmask*/,
     Pixel /*gmask*/,
     Pixel /*bmask*/,
-    Pixel */*ppixFirst*/
+    Pixel * /*ppixFirst*/
 #endif
 );
 
@@ -190,7 +190,7 @@ static int FreeCo(
     int /*client*/,
     int /*color*/,
     int /*npixIn*/,
-    Pixel */*ppixIn*/,
+    Pixel * /*ppixIn*/,
     Pixel /*mask*/
 #endif
 );
