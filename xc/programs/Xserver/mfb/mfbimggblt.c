@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimggblt.c,v 5.6 91/05/26 09:21:19 rws Exp $ */
+/* $XConsortium: mfbimggblt.c,v 5.7 92/12/23 17:45:19 rws Exp $ */
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
@@ -388,7 +388,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 			getshiftedleftbits(pglyph, glyphCol, getWidth, tmpSrc);
 			*pdst OPEQ (SCRRIGHT(tmpSrc, xoff) & startmask);
 			pglyph += widthGlyph;
-			pdst += widthDst;
+			mfbScanlineInc(pdst, widthDst, widtDst);
 		    }
 		}
 		else
