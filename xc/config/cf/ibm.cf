@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.41 93/12/23 10:56:38 rws Exp $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.42 93/12/24 10:36:52 rws Exp $
 
 #ifdef RsArchitecture
 #define OSName		AIX 3.2.5
@@ -33,7 +33,7 @@ XCOMM operating system:  OSName
 #define HasPosixThreads		YES
 #define SystemMTDefines -D_THREAD_SAFE
 #define ThreadedX		YES
-#define ThreadsLibraries -lpthreads
+#define ThreadsLibraries -lpthreads -lc_r
 #endif
 #endif
 
