@@ -1,4 +1,4 @@
-/* $XConsortium: ddContext.c,v 5.5 92/11/09 18:53:50 hersh Exp $ */
+/* $XConsortium: ddContext.c,v 5.6 92/12/03 19:41:45 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -836,54 +836,95 @@ ValidateDDContextAttrs(pRend, pddc, tables, namesets, attrs)
 	/* only set these if it's the bundle that changed */
 	if ((tables & PEXDynInteriorBundle) ||
 	    (tables & PEXDynInteriorBundleContents)) {
-	    if ((pddc->Dynamic->pPCAttr->asfs & PEXSurfaceInterpAsf) == PEXBundled)
-		pddc->Static.attrs->surfInterp = intbundle->real_entry.surfaceInterp;
+	    if ((pddc->Dynamic->pPCAttr->asfs & PEXSurfaceInterpAsf) 
+								== PEXBundled)
+		pddc->Static.attrs->surfInterp = 
+					intbundle->real_entry.surfaceInterp;
 	    else
-		pddc->Static.attrs->surfInterp = pddc->Dynamic->pPCAttr->surfInterp;
+		pddc->Static.attrs->surfInterp = 
+					pddc->Dynamic->pPCAttr->surfInterp;
 
-	    if ((pddc->Dynamic->pPCAttr->asfs & PEXReflectionModelAsf) == PEXBundled)
-		pddc->Static.attrs->reflModel = intbundle->real_entry.reflectionModel;
+	    if ((pddc->Dynamic->pPCAttr->asfs & PEXReflectionModelAsf) 
+								== PEXBundled)
+		pddc->Static.attrs->reflModel = 
+					intbundle->real_entry.reflectionModel;
 	    else
-		pddc->Static.attrs->reflModel = pddc->Dynamic->pPCAttr->reflModel;
+		pddc->Static.attrs->reflModel = 
+					pddc->Dynamic->pPCAttr->reflModel;
 
-	    if ((pddc->Dynamic->pPCAttr->asfs & PEXReflectionAttrAsf) == PEXBundled)
-		pddc->Static.attrs->reflAttr = intbundle->real_entry.reflectionAttr;
-	    else
+	    if ((pddc->Dynamic->pPCAttr->asfs & PEXReflectionAttrAsf) 
+								== PEXBundled){
+		pddc->Static.attrs->reflAttr = 
+					intbundle->real_entry.reflectionAttr;
+  		miConvertColor(pRend,
+			&intbundle->real_entry.reflectionAttr.specularColour,
+  			pddc->Dynamic->pPCAttr->rdrColourModel,
+  			&pddc->Static.attrs->reflAttr.specularColour);
+  	    } else {
 		pddc->Static.attrs->reflAttr = pddc->Dynamic->pPCAttr->reflAttr;
+  		miConvertColor(pRend,
+  			&pddc->Dynamic->pPCAttr->reflAttr.specularColour,
+  			pddc->Dynamic->pPCAttr->rdrColourModel,
+  			&pddc->Static.attrs->reflAttr.specularColour);
+  	    }
 
-	    if ((pddc->Dynamic->pPCAttr->asfs & PEXInteriorStyleAsf) == PEXBundled)
-		pddc->Static.attrs->intStyle = intbundle->real_entry.interiorStyle;
+
+	    if ((pddc->Dynamic->pPCAttr->asfs & PEXInteriorStyleAsf) 
+								== PEXBundled)
+		pddc->Static.attrs->intStyle = 
+					intbundle->real_entry.interiorStyle;
 	    else
 		pddc->Static.attrs->intStyle = pddc->Dynamic->pPCAttr->intStyle;
 
-	    if ((pddc->Dynamic->pPCAttr->asfs & PEXBfSurfaceInterpAsf) == PEXBundled)
+	    if ((pddc->Dynamic->pPCAttr->asfs & PEXBfSurfaceInterpAsf) 
+								== PEXBundled)
 		pddc->Static.attrs->bfSurfInterp =
-		    intbundle->real_entry.bfSurfaceInterp;
+		    			intbundle->real_entry.bfSurfaceInterp;
 	    else
 		pddc->Static.attrs->bfSurfInterp =
 		    pddc->Dynamic->pPCAttr->bfSurfInterp;
 
-	    if ((pddc->Dynamic->pPCAttr->asfs & PEXBfReflectionModelAsf) == PEXBundled)
+	    if ((pddc->Dynamic->pPCAttr->asfs & PEXBfReflectionModelAsf) 
+								== PEXBundled)
 		pddc->Static.attrs->bfReflModel =
-		    intbundle->real_entry.bfReflectionModel;
+		    			intbundle->real_entry.bfReflectionModel;
 	    else
-		pddc->Static.attrs->bfReflModel = pddc->Dynamic->pPCAttr->bfReflModel;
+		pddc->Static.attrs->bfReflModel = 
+					pddc->Dynamic->pPCAttr->bfReflModel;
 
-	    if ((pddc->Dynamic->pPCAttr->asfs & PEXBfReflectionAttrAsf) == PEXBundled)
+	    if ((pddc->Dynamic->pPCAttr->asfs & PEXBfReflectionAttrAsf) 
+								== PEXBundled){
 		pddc->Static.attrs->bfReflAttr =
-		    intbundle->real_entry.bfReflectionAttr;
-	    else
-		pddc->Static.attrs->bfReflAttr = pddc->Dynamic->pPCAttr->bfReflAttr;
+		    			intbundle->real_entry.bfReflectionAttr;
+  		miConvertColor(pRend,
+ 			&intbundle->real_entry.bfReflectionAttr.specularColour,
+  			pddc->Dynamic->pPCAttr->rdrColourModel,
+  			&pddc->Static.attrs->bfReflAttr.specularColour);
+  	    } else {
+		pddc->Static.attrs->bfReflAttr = 
+					pddc->Dynamic->pPCAttr->bfReflAttr;
+  		miConvertColor(pRend,
+  			&pddc->Dynamic->pPCAttr->bfReflAttr.specularColour,
+  			pddc->Dynamic->pPCAttr->rdrColourModel,
+  			&pddc->Static.attrs->bfReflAttr.specularColour);
+  	    }
 
-	    if ((pddc->Dynamic->pPCAttr->asfs & PEXBfInteriorStyleAsf) == PEXBundled)
-		pddc->Static.attrs->bfIntStyle = intbundle->real_entry.bfInteriorStyle;
-	    else
-		pddc->Static.attrs->bfIntStyle = pddc->Dynamic->pPCAttr->bfIntStyle;
 
-	    if ((pddc->Dynamic->pPCAttr->asfs & PEXSurfaceApproxAsf) == PEXBundled)
-		pddc->Static.attrs->surfApprox = intbundle->real_entry.surfaceApprox;
+	    if ((pddc->Dynamic->pPCAttr->asfs & PEXBfInteriorStyleAsf) 
+								== PEXBundled)
+		pddc->Static.attrs->bfIntStyle = 
+					intbundle->real_entry.bfInteriorStyle;
 	    else
-		pddc->Static.attrs->surfApprox = pddc->Dynamic->pPCAttr->surfApprox;
+		pddc->Static.attrs->bfIntStyle = 
+					pddc->Dynamic->pPCAttr->bfIntStyle;
+
+	    if ((pddc->Dynamic->pPCAttr->asfs & PEXSurfaceApproxAsf) 
+								== PEXBundled)
+		pddc->Static.attrs->surfApprox = 
+					intbundle->real_entry.surfaceApprox;
+	    else
+		pddc->Static.attrs->surfApprox = 
+					pddc->Dynamic->pPCAttr->surfApprox;
 	}
 	pddc->Static.misc.flags |= FILLAREAGCFLAG;
     }
