@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.105 91/07/19 23:22:14 keith Exp $ */
+/* $XConsortium: utils.c,v 1.106 91/10/30 19:25:09 eswu Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -227,8 +227,13 @@ char	*argv[];
     int i, skip;
 
 #ifdef MEMBUG
+#ifndef AIXV3
     if (!minfree)
 	minfree = (pointer)sbrk(0);
+#else
+    /* segment 2 is user data space */
+    minfree = (pointer) 0x20000000;
+#endif
 #endif
     defaultKeyboardControl.autoRepeat = TRUE;
 
