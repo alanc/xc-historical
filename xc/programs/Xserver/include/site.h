@@ -25,6 +25,23 @@ SOFTWARE.
 #ifndef SITE_H
 #define SITE_H
 /*
+ * The vendor string identifies the vendor responsible for the
+ * server executable.
+ */
+#ifndef VENDOR_STRING
+#define VENDOR_STRING "MIT X Consortium"
+#endif
+
+/*
+ * The vendor release number identifies, for the purpose of submitting
+ * traceable bug reports, the release number of software produced
+ * by the vendor.
+ */
+#ifndef VENDOR_RELEASE
+#define VENDOR_RELEASE	5000
+#endif
+
+/*
  * The following constants are provided solely as a last line of defense.  The
  * normal build ALWAYS overrides them using a special rule given in
  * server/dix/Imakefile.  If you want to change either of these constants, 
