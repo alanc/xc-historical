@@ -1,4 +1,4 @@
-/* $XConsortium: Viewport.c,v 1.65 91/06/04 01:09:25 ackerman Exp $ */
+/* $XConsortium: Viewport.c,v 1.66 91/07/23 13:52:11 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -791,10 +791,8 @@ TestSmaller(w, request, reply_return)
 {
   if (request->width < w->core.width || request->height < w->core.height)
     return XtMakeGeometryRequest(w, request, reply_return);
-  else {
-    reply_return = NULL;
+  else
     return XtGeometryYes;  
-  }
 }
 
 static XtGeometryResult
@@ -824,24 +822,26 @@ QueryGeometry(w, request, reply_return)
   if (w->viewport.allowhoriz && w->viewport.allowvert) 
     return TestSmaller(w, request, reply_return);
 
-  else if (w->viewport.allowhoriz && !w->viewport.allowvert) 
+  else if (w->viewport.allowhoriz && !w->viewport.allowvert) {
     if (WidthChange() && !HeightChange())
       return TestSmaller(w, request, reply_return);
     else if (!WidthChange() && HeightChange())
       return XtMakeGeometryRequest((Widget) w, request, reply_return);
-    else if (WidthChange() && HeightChange()) { /* hard part */
+    else if (WidthChange() && HeightChange()) /* hard part */
       return GeometryRequestPlusScrollbar(w, True, request, reply_return);
-    }
-
-  else if (!w->viewport.allowhoriz && w->viewport.allowvert) 
+    else /* !WidthChange() && !HeightChange() */
+      return XtGeometryYes;
+  }
+  else if (!w->viewport.allowhoriz && w->viewport.allowvert) {
     if (!WidthChange() && HeightChange())
       return TestSmaller(w, request, reply_return);
     else if (WidthChange() && !HeightChange())
       return XtMakeGeometryRequest((Widget)w, request, reply_return);
-    else if (WidthChange() && HeightChange()) { /* hard part */
+    else if (WidthChange() && HeightChange()) /* hard part */
       return GeometryRequestPlusScrollbar(w, False, request, reply_return);
-    }
-      
+    else /* !WidthChange() && !HeightChange() */
+      return XtGeometryYes;
+  }      
   else /* (!w->viewport.allowhoriz && !w->viewport.allowvert) */
     return XtMakeGeometryRequest((Widget) w, request, reply_return);
 }
