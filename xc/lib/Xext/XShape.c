@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: XShape.c,v 1.6 89/03/31 13:16:59 keith Exp $ */
+/* $XConsortium: XShape.c,v 1.7 89/04/06 17:52:01 keith Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -104,8 +104,8 @@ shapeWireToEvent (dpy, re, event)
     	se->display = dpy;
     	se->window = sevent->window;
     	se->kind = sevent->kind;
-    	se->x = sevent->x;
-    	se->y = sevent->y;
+    	se->x = cvtINT16toInt (sevent->x);
+    	se->y = cvtINT16toInt (sevent->y);
     	se->width = sevent->width;
     	se->height = sevent->height;
 	se->time = sevent->time;
