@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: roi.h,v 1.1 93/10/26 10:04:43 rws Exp $ */
 /**** module roi.h ****/
 /******************************************************************************
 				NOTICE
@@ -44,7 +44,7 @@ terms and conditions:
 
 	roi.h: contains region of interest specific definitions
 
-	Dean Verheiden & James H Weida -- AGE Logic, Inc. April 1993
+	Dean Verheiden -- AGE Logic, Inc. April 1993
 
 ******************************************************************************/
 

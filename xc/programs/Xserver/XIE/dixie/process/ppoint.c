@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ppoint.c,v 1.1 93/10/26 10:00:26 rws Exp $ */
 /**** module ppoint.c ****/
 /******************************************************************************
 				NOTICE
@@ -125,7 +125,7 @@ peDefPtr MakePoint(flo,tag,pe)
   /*
    * copy the client element parameters (swap if necessary)
    */
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
     cpswaps(stuff->src, raw->src);
@@ -136,7 +136,7 @@ peDefPtr MakePoint(flo,tag,pe)
     raw->bandMask = stuff->bandMask;
   }
   else
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloPoint));
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloPoint));
   /*
    * assign phototags to inFlos
    */
@@ -144,7 +144,11 @@ peDefPtr MakePoint(flo,tag,pe)
   inFlo[SRCtag].srcTag = raw->src;
   inFlo[LUTtag].srcTag = raw->lut;
   if(raw->domainPhototag)
+#if XIE_FULL
     inFlo[ped->inCnt-1].srcTag = raw->domainPhototag;
+#else
+    DomainError(flo,ped,raw->domainPhototag, return(ped));
+#endif
   
   return(ped);
 }                               /* end MakePoint */
@@ -175,8 +179,9 @@ static Bool PrepPoint(flo,ped)
   if (raw->domainPhototag && insrc->bands != inlut->bands)
      	MatchError(flo,ped, return(FALSE));
 
-  /* check to make sure input image is constrained */
-  if(outsrc->format[0].class == UNCONSTRAINED)
+  /* check to make sure input image is constrained, and lut is a lut */
+  if(IsntConstrained(outsrc->format[0].class) ||
+     IsntLut(outlut->format[0].class) )
     MatchError(flo,ped, return(FALSE));
 
   /* propagate outflo format of src to our inflo for src */
@@ -191,35 +196,24 @@ static Bool PrepPoint(flo,ped)
   if(raw->domainPhototag) {
     indom = &ped->inFloLst[ped->inCnt-1];
     outdom = &indom->srcDef->outFlo;
-    if((indom->bands = outdom->bands) != 1)
+    if(IsntDomain(outdom->format[0].class) ||
+       (indom->bands = outdom->bands) != 1)
       DomainError(flo,ped,raw->domainPhototag, return(FALSE));
     indom->format[0] = outdom->format[0];
   } else
     outdom = NULL;
 
 /***	Painful enumeration of cases	***/
-  if (outlut->bands == 1 && outsrc->bands == 1) {
-	/* gee.  so *simple*  :-) */
 
-    	dst->format[0] = insrc->format[0];
-	dst->format[0].levels = inlut->format[0].levels;
-
-	if (!UpdateFormatfromLevels(ped))
-     		MatchError(flo,ped, return(FALSE));
-
-	/* check to make sure length of lut is sufficient */
-	if (inlut->format[0].height < insrc->format[0].levels)
-     		MatchError(flo,ped, return(FALSE));
-
-	/* if domain is used, lut levels must be == src levels */
-	/* (or else we don't know what to do with pass-thru data */
-	if (outdom != NULL)
-	  if (inlut->format[0].levels < insrc->format[0].levels)
-     		MatchError(flo,ped, return(FALSE));
-  }
-
-  else if (outlut->bands == 1 && outsrc->bands == 3) {
+  if (outlut->bands == 1 && outsrc->bands == 3) {
     int level_product;
+
+    /* Width and heights of all bands must match */
+    if (insrc->format[0].width  != insrc->format[1].width  ||
+        insrc->format[1].width  != insrc->format[2].width  ||
+        insrc->format[0].height != insrc->format[1].height ||
+        insrc->format[1].height != insrc->format[2].height)
+	MatchError(flo,ped, return(FALSE));
 
     /* make tripleband src into CRAZY PIXELS! produce singleband */
     if ((raw->bandMask !=7) || (outdom != NULL))
@@ -233,17 +227,6 @@ static Bool PrepPoint(flo,ped)
     if (inlut->format[0].height < level_product)
 	MatchError(flo,ped, return(FALSE));
 
-    /* XXX only do bytes * bytes * bytes --> bytes --> bytes */
-    if ( (level_product > 256) ||
-	 (insrc->format[0].levels <= 2) ||
-	 (insrc->format[1].levels <= 2) ||
-	 (insrc->format[2].levels <= 2) ||
-	 (inlut->format[0].levels <= 2) ||
-	 (inlut->format[0].levels > 256) )
-     	ImplementationError(flo,ped, return(FALSE));
-
-    /* XXX What to do when src bands are different size in Width, Height ?? */
-
     dst->format[0] = insrc->format[0];
     dst->format[0].levels = inlut->format[0].levels;
     if (!UpdateFormatfromLevels(ped))
@@ -252,9 +235,9 @@ static Bool PrepPoint(flo,ped)
   }
 
   else if (outlut->bands == 3 && outsrc->bands == 1) {
-	/* apply lut for each band to src */
+    /* apply lut for each band to src */
 
-    /* can't use domain processing if class of lut and src don't match */
+    /* this variation does not support Domains. */
     if (outdom != NULL)
     	MatchError(flo,ped, return(FALSE));
 
@@ -262,6 +245,7 @@ static Bool PrepPoint(flo,ped)
     for(b = 0; b < dst->bands; b++)  {
     	dst->format[b] = insrc->format[0];
     	dst->format[b].band = b;
+	if ((raw->bandMask & (1<<b)) == 0) continue;
 	dst->format[b].levels = inlut->format[b].levels;
         if (inlut->format[b].height < insrc->format[0].levels)
 		MatchError(flo,ped, return(FALSE));
@@ -271,20 +255,30 @@ static Bool PrepPoint(flo,ped)
 
   }
 
-  else if (outlut->bands == 3 && outsrc->bands == 3) {
+  else if (outlut->bands == outsrc->bands && 
+	   (outlut->bands == 3 || outlut->bands == 1) ) {
 
     /* apply lut for each band to src of each band */
 
     for(b = 0; b < dst->bands; b++)  {
+
     	dst->format[b] = insrc->format[b];
+	if ((raw->bandMask & (1<<b)) == 0) continue;
+
 	dst->format[b].levels = inlut->format[b].levels;
+
+	/* check to make sure length of lut is sufficient */
         if (inlut->format[b].height < insrc->format[b].levels)
     		MatchError(flo,ped, return(FALSE));
+
+	/* if domain is used, lut levels must be == src levels */
+	/* (or else we don't know what to do with pass-thru data */
+	if (outdom != NULL)
+	  if (inlut->format[b].levels != insrc->format[b].levels)
+     		MatchError(flo,ped, return(FALSE));
     }
     if (!UpdateFormatfromLevels(ped))
 	MatchError(flo,ped, return(FALSE));
-
-    /* XXX seems like ROI Domains should apply here as well */
 
   }
   else {

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ecphoto.c,v 1.1 93/10/26 10:03:02 rws Exp $ */
 /**** module ecphoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -85,24 +85,27 @@ terms and conditions:
  */
 peDefPtr	MakeECPhoto();
 Bool		CopyECPhotoUnSingle();
-Bool		CopyECPhotoUnTriple();
 Bool		CopyECPhotoG31D();
 Bool		CopyECPhotoG32D();
 Bool		CopyECPhotoG42D();
-Bool		CopyECPhotoJPEGBaseline();
-Bool		CopyECPhotoJPEGLossless();
 Bool		CopyECPhotoTIFF2();
 Bool		CopyECPhotoTIFFPackBits();
 
 Bool		PrepECPhotoUnSingle();
-Bool		PrepECPhotoUnTriple();
 Bool		PrepECPhotoG31D();
 Bool		PrepECPhotoG32D();
 Bool		PrepECPhotoG42D();
-Bool		PrepECPhotoJPEGBaseline();
-Bool		PrepECPhotoJPEGLossless();
 Bool		PrepECPhotoTIFF2();
 Bool		PrepECPhotoTIFFPackBits();
+
+#if XIE_FULL
+Bool		CopyECPhotoUnTriple();
+Bool		CopyECPhotoJPEGBaseline();
+Bool		CopyECPhotoJPEGLossless();
+Bool		PrepECPhotoUnTriple();
+Bool		PrepECPhotoJPEGBaseline();
+Bool		PrepECPhotoJPEGLossless();
+#endif
 
 /*
  *  routines internal to this module
@@ -141,7 +144,7 @@ peDefPtr MakeECPhoto(flo,tag,pe)
   /*
    * copy the standard client element parameters (swap if necessary)
    */
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
     cpswaps(stuff->src,  raw->src);
@@ -150,23 +153,14 @@ peDefPtr MakeECPhoto(flo,tag,pe)
     cpswaps(stuff->lenParams, raw->lenParams);
   }
   else
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloExportClientPhoto));
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloExportClientPhoto));
 
-  /* Make sure notify value is valid
-   */ 
-  if(raw->notify != xieValDisable   &&
-     raw->notify != xieValFirstData &&
-     raw->notify != xieValNewData)
-    ValueError(flo,ped,raw->notify, return(ped));
-		
   /* copy technique data (if any)
    */
-  if(raw->encodeTechnique == xieValEncodeServerChoice) {
-    if(raw->lenParams)
-      TechniqueError(flo,ped,raw->encodeTechnique,raw->lenParams, return(ped));
-  } else if(!(ped->techVec = FindTechnique(xieValEncode,raw->encodeTechnique)) 
+  if(!(ped->techVec = FindTechnique(xieValEncode,raw->encodeTechnique)) 
     || !(ped->techVec->copyfnc(flo, ped, &stuff[1], &raw[1], raw->lenParams)))
-    TechniqueError(flo,ped,raw->encodeTechnique,raw->lenParams, return(ped));
+    TechniqueError(flo,ped,xieValHistogram,raw->encodeTechnique,raw->lenParams,
+		   return(ped));
 
   /* assign phototag to inFlo
    */
@@ -182,24 +176,10 @@ Bool CopyECPhotoUnSingle(flo, ped, sparms, rparms, tsize)
      xieTecEncodeUncompressedSingle *sparms, *rparms;
      CARD16	tsize;
 {
-  TECHNIQUE_SIZE_MATCH(xieTecEncodeUncompressedSingle,tsize);
+  VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
   /* Nothing to swap for this technique */
-  bcopy((char *)sparms, (char *)rparms, tsize<<2);
-  
-  return(TRUE);
-}
-
-Bool CopyECPhotoUnTriple(flo, ped, sparms, rparms, tsize) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecEncodeUncompressedTriple *sparms, *rparms;
-     CARD16	tsize;
-{
-  TECHNIQUE_SIZE_MATCH(xieTecEncodeUncompressedTriple,tsize);
-  
-  /* Nothing to swap for this technique */
-  bcopy((char *)sparms, (char *)rparms, tsize<<2);
+  memcpy((char *)rparms, (char *)sparms, tsize<<2);
   
   return(TRUE);
 }
@@ -210,10 +190,10 @@ Bool CopyECPhotoG31D(flo, ped, sparms, rparms, tsize)
      xieTecEncodeG31D *sparms, *rparms;
      CARD16	tsize;
 {
-  TECHNIQUE_SIZE_MATCH(xieTecEncodeG31D,tsize);
+  VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
   /* Nothing to swap for this technique */
-  bcopy((char *)sparms, (char *)rparms, tsize<<2);
+  memcpy((char *)rparms, (char *)sparms, tsize<<2);
   
   return(TRUE);
 }
@@ -224,15 +204,16 @@ Bool CopyECPhotoG32D(flo, ped, sparms, rparms, tsize)
      xieTecEncodeG32D *sparms, *rparms;
      CARD16	tsize;
 {
-  TECHNIQUE_SIZE_MATCH(xieTecEncodeG32D,tsize);
+  VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
+    rparms->radiometric  = sparms->radiometric;
     rparms->uncompressed = sparms->uncompressed;
     rparms->alignEol     = sparms->alignEol;
     rparms->encodedOrder = sparms->encodedOrder;
     cpswapl(sparms->kFactor, rparms->kFactor);
   } else
-    bcopy((char *)sparms, (char *)rparms, tsize<<2);
+    memcpy((char *)rparms, (char *)sparms, tsize<<2);
   
   return(TRUE);
 }
@@ -243,10 +224,53 @@ Bool CopyECPhotoG42D(flo, ped, sparms, rparms, tsize)
      xieTecEncodeG42D *sparms, *rparms;
      CARD16	tsize;
 {
-  TECHNIQUE_SIZE_MATCH(xieTecEncodeG42D,tsize);
+  VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
   /* Nothing to swap for this technique */
-  bcopy((char *)sparms, (char *)rparms, tsize<<2);
+  memcpy((char *)rparms, (char *)sparms, tsize<<2);
+  
+  return(TRUE);
+}
+
+Bool CopyECPhotoTIFF2(flo, ped, sparms, rparms, tsize)
+     floDefPtr  flo;
+     peDefPtr   ped;
+     xieTecEncodeTIFF2 *sparms, *rparms;
+     CARD16	tsize;
+{
+  VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
+  
+  /* Nothing to swap for this technique */
+  memcpy((char *)rparms, (char *)sparms, tsize<<2);
+  
+  return(TRUE);
+}
+
+Bool CopyECPhotoTIFFPackBits(flo, ped, sparms, rparms, tsize)
+     floDefPtr  flo;
+     peDefPtr   ped;
+     xieTecEncodeTIFFPackBits *sparms, *rparms;
+     CARD16	tsize;
+{
+  VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
+  
+  /* Nothing to swap for this technique */
+  memcpy((char *)rparms, (char *)sparms, tsize<<2);
+  
+  return(TRUE);
+}
+
+#if XIE_FULL
+Bool CopyECPhotoUnTriple(flo, ped, sparms, rparms, tsize) 
+     floDefPtr  flo;
+     peDefPtr   ped;
+     xieTecEncodeUncompressedTriple *sparms, *rparms;
+     CARD16	tsize;
+{
+  VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
+  
+  /* Nothing to swap for this technique */
+  memcpy((char *)rparms, (char *)sparms, tsize<<2);
   
   return(TRUE);
 }
@@ -258,32 +282,35 @@ Bool CopyECPhotoJPEGBaseline(flo, ped, sparms, rparms, tsize)
      CARD16	tsize;
 {
   eTecEncodeJPEGBaselineDefPtr pvt;
-  TECHNIQUE_SIZE_MATCH(xieTecEncodeJPEGBaseline,tsize);
+  VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
-  bcopy((char *)sparms, (char *)rparms, tsize<<2);
+  memcpy((char *)rparms, (char *)sparms, tsize<<2);
   
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     register int n;
-    swaps(&rparms->q,n);
-    swaps(&rparms->a,n);
-    swaps(&rparms->d,n);
+    swaps(&rparms->lenQtable,n);
+    swaps(&rparms->lenACtable,n);
+    swaps(&rparms->lenDCtable,n);
   }
-  if(rparms->q & 3 || rparms->a & 3 || rparms->d & 3) 
+  if(rparms->lenQtable  & 3 ||
+     rparms->lenACtable & 3 ||
+     rparms->lenDCtable & 3) 
     return(FALSE);
   
   if(!(ped->techPvt=(void *)XieMalloc(sizeof(eTecEncodeJPEGBaselineDefRec))))
     FloAllocError(flo, ped->phototag, xieElemExportClientPhoto, return(TRUE));
   
   pvt = (eTecEncodeJPEGBaselineDefPtr)ped->techPvt;
-  pvt->q = (rparms->q
+  pvt->q = (rparms->lenQtable
             ? (CARD8 *)rparms + sizeof(xieTecEncodeJPEGBaseline)
             : (CARD8 *) NULL);
-  pvt->a = (rparms->a
-            ? (CARD8 *)rparms + sizeof(xieTecEncodeJPEGBaseline) + rparms->q
-            : (CARD8 *) NULL);
-  pvt->d = (rparms->d
+  pvt->a = (rparms->lenACtable
             ? (CARD8 *)rparms + sizeof(xieTecEncodeJPEGBaseline)
-            + rparms->q + rparms->a
+	    + rparms->lenQtable
+            : (CARD8 *) NULL);
+  pvt->d = (rparms->lenDCtable
+            ? (CARD8 *)rparms + sizeof(xieTecEncodeJPEGBaseline)
+            + rparms->lenQtable + rparms->lenACtable
             : (CARD8 *) NULL);
   return(TRUE);
 }
@@ -294,44 +321,17 @@ Bool CopyECPhotoJPEGLossless(flo, ped, sparms, rparms, tsize)
      xieTecEncodeJPEGLossless *sparms, *rparms;
      CARD16	tsize;
 {
-  TECHNIQUE_SIZE_MATCH(xieTecEncodeJPEGLossless,tsize);
+  VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
 
-  bcopy((char *)sparms, (char *)rparms, tsize<<2);
+  memcpy((char *)rparms, (char *)sparms, tsize<<2);
 
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     register int n;
-    swaps(&rparms->tableSize,n);
+    swaps(&rparms->lenTable,n);
   }
   return(TRUE);
 }
-
-Bool CopyECPhotoTIFF2(flo, ped, sparms, rparms, tsize)
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecEncodeTIFF2 *sparms, *rparms;
-     CARD16	tsize;
-{
-  TECHNIQUE_SIZE_MATCH(xieTecEncodeTIFF2,tsize);
-  
-  /* Nothing to swap for this technique */
-  bcopy((char *)sparms, (char *)rparms, tsize<<2);
-  
-  return(TRUE);
-}
-
-Bool CopyECPhotoTIFFPackBits(flo, ped, sparms, rparms, tsize)
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecEncodeTIFFPackBits *sparms, *rparms;
-     CARD16	tsize;
-{
-  TECHNIQUE_SIZE_MATCH(xieTecEncodeTIFFPackBits,tsize);
-  
-  /* Nothing to swap for this technique */
-  bcopy((char *)sparms, (char *)rparms, tsize<<2);
-  
-  return(TRUE);
-}
+#endif
 
 
 /*------------------------------------------------------------------------
@@ -347,15 +347,21 @@ static Bool PrepECPhoto(flo,ped)
   xieFloExportClientPhoto *raw = (xieFloExportClientPhoto *)ped->elemRaw;
   int b;
   
+  /* Make sure notify value is valid
+   */ 
+  if(raw->notify != xieValDisable   &&
+     raw->notify != xieValFirstData &&
+     raw->notify != xieValNewData)
+    ValueError(flo,ped,raw->notify, return(FALSE));
+		
   dst->bands = inf->bands = src->bands;
   for(b = 0; b < src->bands; b++) {
-    if (!IsConstrained(src->format[b].class))
+    if (IsntConstrained(src->format[b].class))
       MatchError(flo, ped, return(FALSE));
     dst->format[b] = inf->format[b] = src->format[b];
   }
-  if(raw->encodeTechnique != xieValEncodeServerChoice &&
-     !(ped->techVec->prepfnc(flo, ped, raw, &raw[1])))
-    TechniqueError(flo, ped, raw->encodeTechnique, raw->lenParams,
+  if(!(ped->techVec->prepfnc(flo, ped, &raw[1])))
+    TechniqueError(flo,ped,xieValHistogram,raw->encodeTechnique,raw->lenParams,
                    return(FALSE));
   return(TRUE);
 }                               /* end PrepECPhoto */
@@ -367,10 +373,9 @@ static Bool PrepECPhoto(flo,ped)
 ------------------------------------------------------------------------*/
 
 /* Prep routine for uncompressed single band data */
-Bool PrepECPhotoUnSingle(flo, ped, raw, tec) 
+Bool PrepECPhotoUnSingle(flo, ped, tec) 
      floDefPtr flo;
      peDefPtr  ped;
-     xieFloExportClientPhoto *raw;
      xieTecEncodeUncompressedSingle *tec;
 {
   outFloPtr dst = &ped->outFlo;
@@ -385,8 +390,7 @@ Bool PrepECPhotoUnSingle(flo, ped, raw, tec)
   if(tec->pixelOrder != xieValLSFirst &&	    /* check pixel-order    */
      tec->pixelOrder != xieValMSFirst)
     return(FALSE);
-  if(tec->pixelStride < dst->format[0].depth ||     /* check pixel-stride   */
-     tec->pixelStride > 32)
+  if(tec->pixelStride < dst->format[0].depth)       /* check pixel-stride   */
     return(FALSE);
   if(ALIGNMENT == xieValAlignable &&		    /* scanline alignment   */
      !tec->scanlinePad && !aligned)
@@ -403,11 +407,100 @@ Bool PrepECPhotoUnSingle(flo, ped, raw, tec)
   return(TRUE);
 } /* PrepECPhotoUnSingle */
 
-/* Prep routine for uncompressed triple band data */
-Bool PrepECPhotoUnTriple(flo, ped, raw, tec) 
+Bool PrepECPhotoG31D(flo, ped, tec) 
      floDefPtr flo;
      peDefPtr  ped;
-     xieFloExportClientPhoto *raw;
+     xieTecEncodeG31D *tec;
+{
+  outFloPtr dst = &ped->outFlo;
+  
+  if(tec->encodedOrder  != xieValLSFirst &&	    /* check encoding-order  */
+     tec->encodedOrder  != xieValMSFirst)
+    return(FALSE);
+  
+  dst->format[0].interleaved = FALSE;
+  dst->format[0].class  = STREAM;
+  
+  return(TRUE);
+  
+} /* PrepECPhotoG31D */
+
+Bool PrepECPhotoG32D(flo, ped, tec) 
+     floDefPtr flo;
+     peDefPtr  ped;
+     xieTecEncodeG32D *tec;
+{
+  outFloPtr dst = &ped->outFlo;
+  
+  if(tec->encodedOrder  != xieValLSFirst &&	    /* check encoding-order  */
+     tec->encodedOrder  != xieValMSFirst)
+    return(FALSE);
+  
+  dst->format[0].interleaved = FALSE;
+  dst->format[0].class  = STREAM;
+  
+  return(TRUE);
+  
+} /* PrepECPhotoG32D */
+
+Bool PrepECPhotoG42D(flo, ped, tec) 
+     floDefPtr flo;
+     peDefPtr  ped;
+     xieTecEncodeG42D *tec;
+{
+  outFloPtr dst = &ped->outFlo;
+  
+  if(tec->encodedOrder  != xieValLSFirst &&	    /* check encoding-order  */
+     tec->encodedOrder  != xieValMSFirst)
+    return(FALSE);
+  
+  dst->format[0].interleaved = FALSE;
+  dst->format[0].class  = STREAM;
+  
+  return(TRUE);
+  
+} /* PrepECPhotoG42D */
+
+Bool PrepECPhotoTIFF2(flo, ped, tec) 
+     floDefPtr flo;
+     peDefPtr  ped;
+     xieTecEncodeTIFF2 *tec;
+{
+  outFloPtr dst = &ped->outFlo;
+  
+  if(tec->encodedOrder  != xieValLSFirst &&	    /* check encoding-order  */
+     tec->encodedOrder  != xieValMSFirst)
+    return(FALSE);
+  
+  dst->format[0].interleaved = FALSE;
+  dst->format[0].class  = STREAM;
+  
+  return(TRUE);
+  
+} /* PrepECPhotoTIFF2 */
+
+Bool PrepECPhotoTIFFPackBits(flo, ped, tec) 
+     floDefPtr flo;
+     peDefPtr  ped;
+     xieTecEncodeTIFFPackBits *tec;
+{
+  outFloPtr dst = &ped->outFlo;
+  
+  if(tec->encodedOrder  != xieValLSFirst &&	    /* check encoding-order  */
+     tec->encodedOrder  != xieValMSFirst)
+    return(FALSE);
+  
+  dst->format[0].interleaved = FALSE;
+  dst->format[0].class  = STREAM;
+  
+  return(TRUE);
+} /* PrepECPhotoTIFFPackBits */
+  
+#if XIE_FULL
+/* Prep routine for uncompressed triple band data */
+Bool PrepECPhotoUnTriple(flo, ped, tec) 
+     floDefPtr flo;
+     peDefPtr  ped;
      xieTecEncodeUncompressedTriple *tec;
 {
   outFloPtr dst = &ped->outFlo;
@@ -475,67 +568,9 @@ Bool PrepECPhotoUnTriple(flo, ped, raw, tec)
   return(TRUE);
 } /* PrepECPhotoUnTriple */
 
-Bool PrepECPhotoG31D(flo, ped, raw, tec) 
+Bool PrepECPhotoJPEGBaseline(flo, ped, tec) 
      floDefPtr flo;
      peDefPtr  ped;
-     xieFloExportClientPhoto *raw;
-     xieTecEncodeG31D *tec;
-{
-  outFloPtr dst = &ped->outFlo;
-  
-  if(tec->encodedOrder  != xieValLSFirst &&	    /* check encoding-order  */
-     tec->encodedOrder  != xieValMSFirst)
-    return(FALSE);
-  
-  dst->format[0].interleaved = FALSE;
-  dst->format[0].class  = STREAM;
-  
-  return(TRUE);
-  
-} /* PrepECPhotoG31D */
-
-Bool PrepECPhotoG32D(flo, ped, raw, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieFloExportClientPhoto *raw;
-     xieTecEncodeG32D *tec;
-{
-  outFloPtr dst = &ped->outFlo;
-  
-  if(tec->encodedOrder  != xieValLSFirst &&	    /* check encoding-order  */
-     tec->encodedOrder  != xieValMSFirst)
-    return(FALSE);
-  
-  dst->format[0].interleaved = FALSE;
-  dst->format[0].class  = STREAM;
-  
-  return(TRUE);
-  
-} /* PrepECPhotoG32D */
-
-Bool PrepECPhotoG42D(flo, ped, raw, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieFloExportClientPhoto *raw;
-     xieTecEncodeG42D *tec;
-{
-  outFloPtr dst = &ped->outFlo;
-  
-  if(tec->encodedOrder  != xieValLSFirst &&	    /* check encoding-order  */
-     tec->encodedOrder  != xieValMSFirst)
-    return(FALSE);
-  
-  dst->format[0].interleaved = FALSE;
-  dst->format[0].class  = STREAM;
-  
-  return(TRUE);
-  
-} /* PrepECPhotoG42D */
-
-Bool PrepECPhotoJPEGBaseline(flo, ped, raw, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieFloExportClientPhoto *raw;
      xieTecEncodeJPEGBaseline *tec;
 {
   outFloPtr dst = &ped->outFlo;
@@ -555,8 +590,13 @@ Bool PrepECPhotoJPEGBaseline(flo, ped, raw, tec)
       dst->format[1].interleaved =
 	dst->format[2].interleaved =
 	  (tec->interleave == xieValBandByPixel);
-    dst->format[1].class  = STREAM;
-    dst->format[2].class  = STREAM;
+
+    if (tec->interleave == xieValBandByPixel)
+      dst->bands = 1;
+    else {
+      dst->format[1].class  = STREAM;
+      dst->format[2].class  = STREAM;
+    }
   }
   
   dst->format[0].class  = STREAM;
@@ -565,10 +605,9 @@ Bool PrepECPhotoJPEGBaseline(flo, ped, raw, tec)
   
 } /* PrepECPhotoJPEGBaseline */
 
-Bool PrepECPhotoJPEGLossless(flo, ped, raw, tec) 
+Bool PrepECPhotoJPEGLossless(flo, ped, tec) 
      floDefPtr flo;
      peDefPtr  ped;
-     xieFloExportClientPhoto *raw;
      xieTecEncodeJPEGLossless *tec;
 {
   outFloPtr dst = &ped->outFlo;
@@ -619,8 +658,13 @@ Bool PrepECPhotoJPEGLossless(flo, ped, raw, tec)
       dst->format[1].interleaved  =
 	dst->format[2].interleaved  =
 	  (tec->interleave == xieValBandByPixel);
-    dst->format[1].class  = STREAM;
-    dst->format[2].class  = STREAM;
+
+    if (tec->interleave == xieValBandByPixel)
+      dst->bands = 1;
+    else {
+      dst->format[1].class  = STREAM;
+      dst->format[2].class  = STREAM;
+    }
   }
   
   dst->format[0].class  = STREAM;
@@ -628,42 +672,6 @@ Bool PrepECPhotoJPEGLossless(flo, ped, raw, tec)
   return(TRUE);
   
 } /* PrepECPhotoJPEGLossless */
+#endif
 
-Bool PrepECPhotoTIFF2(flo, ped, raw, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieFloExportClientPhoto *raw;
-     xieTecEncodeTIFF2 *tec;
-{
-  outFloPtr dst = &ped->outFlo;
-  
-  if(tec->encodedOrder  != xieValLSFirst &&	    /* check encoding-order  */
-     tec->encodedOrder  != xieValMSFirst)
-    return(FALSE);
-  
-  dst->format[0].interleaved = FALSE;
-  dst->format[0].class  = STREAM;
-  
-  return(TRUE);
-  
-} /* PrepECPhotoTIFF2 */
-
-Bool PrepECPhotoTIFFPackBits(flo, ped, raw, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieFloExportClientPhoto *raw;
-     xieTecEncodeTIFFPackBits *tec;
-{
-  outFloPtr dst = &ped->outFlo;
-  
-  if(tec->encodedOrder  != xieValLSFirst &&	    /* check encoding-order  */
-     tec->encodedOrder  != xieValMSFirst)
-    return(FALSE);
-  
-  dst->format[0].interleaved = FALSE;
-  dst->format[0].class  = STREAM;
-  
-  return(TRUE);
-  
-} /* PrepECPhotoTIFFPackBits */
 /* end module ecphoto.c */

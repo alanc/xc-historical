@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mpblend.c,v 1.1 93/10/26 09:47:28 rws Exp $ */
 /**** module mpblend.c ****/
 /******************************************************************************
 				NOTICE
@@ -81,7 +81,7 @@ terms and conditions:
 #include <texstr.h>
 
 
-typedef RealPixel BlendFloat;
+typedef float BlendFloat;
 /*
  *  routines referenced by other DDXIE modules
  */
@@ -91,7 +91,6 @@ int	miAnalyzeBlend();
  *  routines used internal to this module
  */
 static int CreateBlend();
-static int InitializeBlend();
 static int FlushBlend();
 static int ResetBlend();
 static int DestroyBlend();
@@ -138,8 +137,6 @@ int miAnalyzeBlend(flo,ped)
   xieFloBlend *raw = (xieFloBlend *)ped->elemRaw;
   pBlendDefPtr pvt = (pBlendDefPtr)ped->elemPvt;
   CARD16 aindex    = pvt->aindex;
-  inFloPtr inf;
-  int b, i;
   
   /* for now just stash our entry point vector in the peDef */
   ped->ddVec = BlendVec;
@@ -160,7 +157,6 @@ int miAnalyzeBlend(flo,ped)
   		ped->ddVec.activate   = MonoBlend;
 	}
   }
-  /* NOTE: no support for process domain input yet */
 
   return(TRUE);
 }                               /* end miAnalyzeBlend */
@@ -175,7 +171,7 @@ static int CreateBlend(flo,ped)
   int auxsize = xieValMaxBands * sizeof(mpBlendPvtRec);
 
   /* always force syncing between inputs (is nop if only one input) */
-  return (MakePETex(flo, ped, auxsize, TRUE , 0) );
+  return MakePETex(flo, ped, auxsize, SYNC , NO_SYNC);
 }                               /* end CreateBlend */
 
 
@@ -192,19 +188,18 @@ static int InitializeMonoBlend(flo,ped)
   peTexPtr      pet = ped->peTex;
   receptorPtr   rcp = pet->receptor;
   mpBlendPvtPtr pvt = (mpBlendPvtPtr) pet->private;
-  int band, nbands, status;
+  int band, nbands;
   bandPtr iband;
-
-
-  if (!(InitReceptor(flo,ped,&rcp[SRCt1],NO_DATAMAP,1,msk,~msk) && 
-        InitProcDomain(flo, ped, raw->domainPhototag, raw->domainOffsetX, 
-				raw->domainOffsetY) &&
-        InitEmitter(flo,ped,0,SRCt1)))
-	return (FALSE);
 
    /* If processing domain, allow replication */
   if (raw->domainPhototag)
       pet->receptor[ped->inCnt-1].band[0].replicate = msk;
+
+  if (!(InitReceptor(flo,ped,&rcp[SRCt1],NO_DATAMAP,1,msk,~msk) && 
+        InitProcDomain(flo, ped, raw->domainPhototag, raw->domainOffsetX, 
+				raw->domainOffsetY) &&
+        InitEmitter(flo,ped,NO_DATAMAP,SRCt1)))
+	return (FALSE);
  
   /* Figure out the appropriate action vector */
   nbands = pet->receptor[SRCtag].inFlo->bands;
@@ -237,20 +232,20 @@ static int InitializeDualBlend(flo,ped)
   CARD8         msk = raw->bandMask;
   receptorPtr   rcp = pet->receptor;
   mpBlendPvtPtr pvt = (mpBlendPvtPtr) pet->private;
-  int band, nbands, status;
+  int band, nbands;
   bandPtr iband;
 
+   /* If processing domain, allow replication */
+  if (raw->domainPhototag)
+      pet->receptor[ped->inCnt-1].band[0].replicate = msk;
+
   if (!(InitReceptor(flo,ped,&rcp[SRCt1],NO_DATAMAP,1,msk,~msk) && 
-        InitReceptor(flo,ped,&rcp[SRCt2],NO_DATAMAP,1,msk,~msk) && 
+        InitReceptor(flo,ped,&rcp[SRCt2],NO_DATAMAP,1,msk,NO_BANDS) && 
 	InitProcDomain(flo, ped, raw->domainPhototag, raw->domainOffsetX, 
 					raw->domainOffsetY) &&
         InitEmitter(flo,ped,0,SRCt1)))
 	return (FALSE);
 
-   /* If processing domain, allow replication */
-  if (raw->domainPhototag)
-      pet->receptor[ped->inCnt-1].band[0].replicate = msk;
- 
   /* Figure out the appropriate action vector */
   nbands = pet->receptor[SRCtag].inFlo->bands;
   iband = &(pet->receptor[SRCtag].band[0]);
@@ -279,33 +274,34 @@ static int InitializeMonoAlphaBlend(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  peTexPtr pet	    = ped->peTex;
-  xieFloBlend *raw  = (xieFloBlend *)ped->elemRaw;
+  peTexPtr      pet = ped->peTex;
+  xieFloBlend  *raw = (xieFloBlend *)ped->elemRaw;
   CARD8         msk = raw->bandMask;
   receptorPtr   rcp = pet->receptor;
-  CARD16 aindex     = ((pBlendDefPtr)ped->elemPvt)->aindex;
-  bandPtr ab        = &pet->receptor[aindex].band[0];
+  CARD16     aindex = ((pBlendDefPtr)ped->elemPvt)->aindex;
+  bandPtr        ab = &pet->receptor[aindex].band[0];
+  CARD8      nbands = pet->receptor[SRCtag].inFlo->bands;
+  CARD8      abands = pet->receptor[aindex].inFlo->bands;
   mpBlendPvtPtr pvt = (mpBlendPvtPtr) pet->private;
-  int band, nbands, status;
+  int band;
   bandPtr iband;
 
-
-  if (!(InitReceptor(flo,ped,&rcp[SRCt1],NO_DATAMAP,1,msk,~msk) && 
-        InitReceptor(flo,ped,&rcp[SRCt2],NO_DATAMAP,1,msk,~msk) && 
-	InitProcDomain(flo, ped, raw->domainPhototag, raw->domainOffsetX, 
-					raw->domainOffsetY) &&
-        InitEmitter(flo,ped,0,SRCt1)))
-	return (FALSE);
-
   /* Replicate the alpha plane to all active bands */
-  ab->replicate = msk;
+  if (nbands == 3 && abands == 1)
+      ab->replicate = msk;
 
    /* If processing domain, allow replication */
   if (raw->domainPhototag)
       pet->receptor[ped->inCnt-1].band[0].replicate = msk;
 
+  if (!(InitReceptor(flo,ped,&rcp[SRCt1],NO_DATAMAP,1,msk,~msk) && 
+        InitReceptor(flo,ped,&rcp[aindex],NO_DATAMAP,1,1,NO_BANDS) && 
+	InitProcDomain(flo, ped, raw->domainPhototag, raw->domainOffsetX, 
+					raw->domainOffsetY) &&
+        InitEmitter(flo,ped,0,SRCt1)))
+	return (FALSE);
+
   /* Figure out the appropriate action vector based on src and alpha plane */
-  nbands = pet->receptor[SRCtag].inFlo->bands;
   iband = &(pet->receptor[SRCtag].band[0]);
   for(band = 0; band < nbands; band++, pvt++, iband++) {
       switch (iband->format->class) {
@@ -372,33 +368,35 @@ static int InitializeDualAlphaBlend(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  peTexPtr pet	    = ped->peTex;
-  xieFloBlend *raw  = (xieFloBlend *)ped->elemRaw;
+  peTexPtr      pet = ped->peTex;
+  xieFloBlend  *raw = (xieFloBlend *)ped->elemRaw;
   CARD8         msk = raw->bandMask;
   receptorPtr   rcp = pet->receptor;
-  CARD16 aindex     = ((pBlendDefPtr)ped->elemPvt)->aindex;
-  bandPtr ab        = &pet->receptor[aindex].band[0];
+  CARD16     aindex = ((pBlendDefPtr)ped->elemPvt)->aindex;
+  bandPtr        ab = &pet->receptor[aindex].band[0];
   mpBlendPvtPtr pvt = (mpBlendPvtPtr) pet->private;
-  int band, nbands, status;
+  CARD8      nbands = pet->receptor[SRCtag].inFlo->bands;
+  CARD8      abands = pet->receptor[aindex].inFlo->bands;
+  int band;
   bandPtr iband;
 
-  if (!(InitReceptor(flo,ped,&rcp[SRCt1],NO_DATAMAP,1,msk,~msk) && 
-        InitReceptor(flo,ped,&rcp[SRCt2],NO_DATAMAP,1,msk,~msk) && 
-        InitReceptor(flo,ped,&rcp[SRCt3],NO_DATAMAP,1,msk,~msk) && 
-	InitProcDomain(flo, ped, raw->domainPhototag, raw->domainOffsetX, 
-				raw->domainOffsetY) &&
-        InitEmitter(flo,ped,0,SRCt1)))
-	return (FALSE);
-
   /* Replicate the alpha plane to all active bands */
-  ab->replicate = msk;
+  if (nbands == 3 && abands == 1)
+      ab->replicate = msk;
 
    /* If processing domain, allow replication */
   if (raw->domainPhototag)
       pet->receptor[ped->inCnt-1].band[0].replicate = msk;
 
+  if (!(InitReceptor(flo,ped,&rcp[SRCt1],NO_DATAMAP,1,msk,~msk) && 
+        InitReceptor(flo,ped,&rcp[SRCt2],NO_DATAMAP,1,msk,NO_BANDS) && 
+        InitReceptor(flo,ped,&rcp[aindex],NO_DATAMAP,1,1,NO_BANDS) && 
+	InitProcDomain(flo, ped, raw->domainPhototag, raw->domainOffsetX, 
+				raw->domainOffsetY) &&
+        InitEmitter(flo,ped,0,SRCt1)))
+	return (FALSE);
+
   /* Figure out the appropriate action vector based on src and alpha plane */
-  nbands = pet->receptor[SRCtag].inFlo->bands;
   iband = &(pet->receptor[SRCtag].band[0]);
   for(band = 0; band < nbands; band++, pvt++, iband++) {
       switch (iband->format->class) {
@@ -473,7 +471,7 @@ static int MonoBlend(flo,ped,pet)
   bandPtr bnd        = &pet->emitter[0];
   mpBlendPvtPtr mpvt = (mpBlendPvtPtr) pet->private;
   void *sr1, *dst;
-  CARD32 i, b;
+  CARD32 b;
   
   for(b = 0; b < bands; b++, sb1++, bnd++, sconst++, mpvt++) {
     BlendFloat offset = *sconst * aconst1;
@@ -487,7 +485,7 @@ static int MonoBlend(flo,ped,pet)
 				SyncDomain(flo,ped,bnd,FLUSH)) {
       INT32  run, currentx = 0;
 
-      if (sr1 != dst) bcopy (sr1, dst, bnd->pitch);
+      if (sr1 != dst) memcpy (dst, sr1, bnd->pitch);
       
       while (run = GetRun(flo,pet,bnd)) {
 	if (run > 0) {
@@ -502,7 +500,7 @@ static int MonoBlend(flo,ped,pet)
       dst = GetNextDst(void,flo,pet,bnd,TRUE);
     }
     /* make sure the scheduler knows how much src we used */
-    FreeData(void,flo,pet,sb1,sb1->current);
+    FreeData(flo,pet,sb1,sb1->current);
   }
   return(TRUE);
 }                               /* end MonoBlend */
@@ -524,7 +522,7 @@ static int DualBlend(flo,ped,pet)
   bandPtr bnd        = &pet->emitter[0];
   mpBlendPvtPtr mpvt = (mpBlendPvtPtr) pet->private;
   void *sr1, *sr2, *dst;
-  CARD32 i, b, w;
+  CARD32 b, w;
   
   for(b = 0; b < bands; b++,sb1++,sb2++,bnd++,mpvt++) {
 
@@ -544,7 +542,7 @@ static int DualBlend(flo,ped,pet)
 				SyncDomain(flo,ped,bnd,FLUSH)) {
       INT32  run, currentx = 0;
 
-      if (sr1 != dst) bcopy (sr1, dst, bnd->pitch);
+      if (sr1 != dst) memcpy (dst, sr1, bnd->pitch);
       
       while ((run = GetRun(flo,pet,bnd)) && currentx < w) {
 	if (run > 0) {
@@ -568,8 +566,8 @@ static int DualBlend(flo,ped,pet)
     else if(!sr2 && sb2->final)		/* when sr2 runs out, pass-thru sr1 */
       BypassSrc(flo,pet,sb1);
     else { 	/* both inputs still active, keep the scheduler up to date  */
-      FreeData(void,flo,pet,sb1,sb1->current);
-      FreeData(void,flo,pet,sb2,sb2->current);
+      FreeData(flo,pet,sb1,sb1->current);
+      FreeData(flo,pet,sb2,sb2->current);
     }
   }
   return(TRUE);
@@ -594,9 +592,9 @@ static int MonoAlphaBlend(flo,ped,pet)
   double *sconst       = pvt->constant;
   mpBlendPvtPtr mpvt   = (mpBlendPvtPtr) pet->private;
   void *sr1, *alpha, *dst;
-  CARD32 i, b, w;
+  CARD32 b, w;
   
-  for(b = 0; b < bands; b++,sb1++,bnd++,sconst++, mpvt++) {
+  for(b = 0; b < bands; b++,sb1++,bnd++,sconst++, mpvt++, aband++) {
     BlendFloat scalefactor = *sconst * invaconst;
 
     /* Figure out if any data from the first band passes through unchanged */
@@ -615,7 +613,7 @@ static int MonoAlphaBlend(flo,ped,pet)
 				SyncDomain(flo,ped,bnd,FLUSH)) {
       INT32  run, currentx = 0;
 
-      if (sr1 != dst) bcopy (sr1, dst, bnd->pitch);
+      if (sr1 != dst) memcpy (dst, sr1, bnd->pitch);
       
       while ((run = GetRun(flo,pet,bnd)) && currentx < w ) {
 	if (run > 0) {
@@ -639,8 +637,8 @@ static int MonoAlphaBlend(flo,ped,pet)
       pet->inSync = FALSE;		/* No need to sync anymore	    */
       BypassSrc(flo,pet,sb1);
     } else { 	/* both inputs still active, keep the scheduler up to date  */
-      FreeData(void,flo,pet,sb1,sb1->current);
-      FreeData(void,flo,pet,aband,aband->current);
+      FreeData(flo,pet,sb1,sb1->current);
+      FreeData(flo,pet,aband,aband->current);
     }
   }
 
@@ -666,9 +664,9 @@ static int DualAlphaBlend(flo,ped,pet)
   bandPtr bnd          = &pet->emitter[0];
   mpBlendPvtPtr mpvt   = (mpBlendPvtPtr) pet->private;
   void *sr1, *sr2, *alpha, *dst;
-  CARD32 i, b, w;
+  CARD32 b, w;
 
-  for(b = 0; b < bands; b++,sb1++,sb2++,bnd++,mpvt++) {
+  for(b = 0; b < bands; b++,sb1++,sb2++,bnd++,mpvt++,aband++) {
 
     /* Figure out if any data from the first band passes through unchanged */
     /* Pass through if either sb2 or alpha runs out 			   */
@@ -690,7 +688,7 @@ static int DualAlphaBlend(flo,ped,pet)
 				SyncDomain(flo,ped,bnd,FLUSH)) {
       INT32  run, currentx = 0;
 
-      if (sr1 != dst) bcopy (sr1, dst, bnd->pitch);
+      if (sr1 != dst) memcpy (dst, sr1, bnd->pitch);
       
       while ((run = GetRun(flo,pet,bnd)) && currentx < w ) {
 	if (run > 0) {
@@ -720,9 +718,9 @@ static int DualAlphaBlend(flo,ped,pet)
       }
       BypassSrc(flo,pet,sb1);
     } else { 	/* both inputs still active, keep the scheduler up to date  */
-      FreeData(void,flo,pet,sb1,sb1->current);
-      FreeData(void,flo,pet,sb2,sb2->current);
-      FreeData(void,flo,pet,aband,aband->current);
+      FreeData(flo,pet,sb1,sb1->current);
+      FreeData(flo,pet,sb2,sb2->current);
+      FreeData(flo,pet,aband,aband->current);
     }
   }
 

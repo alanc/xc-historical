@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: edraw.c,v 1.1 93/10/26 10:02:56 rws Exp $ */
 /**** module edraw.c ****/
 /******************************************************************************
 				NOTICE
@@ -72,6 +72,7 @@ terms and conditions:
 #include <dixstruct.h>
 #include <pixmapstr.h>
 #include <gcstruct.h>
+#include <scrnintstr.h>
   /*
    *  Server XIE Includes
    */
@@ -124,7 +125,7 @@ peDefPtr MakeEDraw(flo,tag,pe)
   /*
    * copy the client element parameters (swap if necessary)
    */
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
     cpswaps(stuff->src, raw->src);
@@ -134,7 +135,7 @@ peDefPtr MakeEDraw(flo,tag,pe)
     cpswapl(stuff->gc, raw->gc);
   }
   else
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloExportDrawable));
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloExportDrawable));
   /*
    * assign phototags to inFlos
    */
@@ -157,6 +158,8 @@ static Bool PrepEDraw(flo,ped)
   inFloPtr    inf = &ped->inFloLst[SRCtag];
   outFloPtr   src = &inf->srcDef->outFlo; 
   outFloPtr   dst = &ped->outFlo; 
+  formatPtr   df  = &dst->format[0];
+  CARD32  f, right_padm1;
   /*
    * check out drawable and gc
    */
@@ -165,15 +168,26 @@ static Bool PrepEDraw(flo,ped)
   /*
    * check for: constrained, single-band, and levels matching drawable depth
    */
-  if(!IsConstrained(src->format[0].class) ||
+  if(IsntConstrained(src->format[0].class) ||
      src->bands != 1  ||  pvt->pDraw->depth != src->format[0].depth)
     MatchError(flo,ped, return(FALSE));
   /*
    * grab a copy of the input attributes and propagate them to our output
    */
-  dst->bands     = inf->bands     = src->bands;
-  dst->format[0] = inf->format[0] = src->format[0];
-  
+  dst->bands = inf->bands = src->bands;
+  df[0]  = inf->format[0] = src->format[0];
+
+  /* search for the stride and pitch requirements that match our depth
+   */
+  for(f = 0; (f < screenInfo.numPixmapFormats &&
+	      df[0].depth != screenInfo.formats[f].depth); ++f);
+  if(f == screenInfo.numPixmapFormats)
+    DrawableError(flo,ped,raw->drawable, return(FALSE));
+
+  right_padm1  = screenInfo.formats[f].scanlinePad - 1;
+  df[0].stride = screenInfo.formats[f].bitsPerPixel;
+  df[0].pitch  = df[0].width * df[0].stride + right_padm1 & ~right_padm1;
+
   return(TRUE);
 }                               /* end PrepEDraw */
 
@@ -189,10 +203,12 @@ Bool DrawableAndGC(flo,ped,draw_id,gc_id,draw_ret,gc_ret)
      DrawablePtr  *draw_ret;
      GCPtr        *gc_ret;
 {
-  register ClientPtr	client = flo->client;
+  register ClientPtr	client = flo->runClient;
   register DrawablePtr	draw;
   register GCPtr	gc;
   
+  if(client->clientGone) AccessError(flo,ped, return(FALSE));
+
   if((client->lastDrawableID != draw_id) ||
      (client->lastGCID != gc_id)) {
     if(client->lastDrawableID != draw_id)

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pbande.c,v 1.1 93/10/26 10:01:47 rws Exp $ */
 /**** module pbande.c ****/
 /******************************************************************************
 				NOTICE
@@ -105,10 +105,10 @@ peDefPtr MakeBandExt(flo,tag,pe)
      xieTypPhototag tag;
      xieFlo        *pe;
 {
-  int inputs, index;
-  double *coef;
-  peDefPtr ped;
-  inFloPtr inFlo;
+  double        *coef;
+  peDefPtr       ped;
+  inFloPtr       inFlo;
+  pBandExtDefPtr pvt;
   ELEMENT(xieFloBandExtract);
   ELEMENT_SIZE_MATCH(xieFloBandExtract);
   ELEMENT_NEEDS_1_INPUT(src); 
@@ -119,23 +119,28 @@ peDefPtr MakeBandExt(flo,tag,pe)
   ped->diVec	     = &pBandExtVec;
   ped->phototag      = tag;
   ped->flags.process = TRUE;
-  raw = (xieFloBandExtract *)ped->elemRaw;
-  coef = ((pBandExtDefPtr)ped->elemPvt)->coef;
+  raw  = (xieFloBandExtract *)ped->elemRaw;
+  pvt  = (pBandExtDefPtr)ped->elemPvt;
+  coef = pvt->coef;
   /*
    * copy the client element parameters (swap if necessary)
    */
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
     cpswaps(stuff->src, raw->src);
-    coef[0] = ConvertFromIEEE(lswapl(stuff->constant0));
-    coef[1] = ConvertFromIEEE(lswapl(stuff->constant1));
-    coef[2] = ConvertFromIEEE(lswapl(stuff->constant2));
+    cpswapl(stuff->levels, raw->levels);
+    pvt->bias = ConvertFromIEEE(lswapl(stuff->bias));
+    coef[0]   = ConvertFromIEEE(lswapl(stuff->constant0));
+    coef[1]   = ConvertFromIEEE(lswapl(stuff->constant1));
+    coef[2]   = ConvertFromIEEE(lswapl(stuff->constant2));
+    coef[2]   = ConvertFromIEEE(lswapl(stuff->constant2));
   } else {
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloBandExtract));
-    coef[0] = ConvertFromIEEE(stuff->constant0);
-    coef[1] = ConvertFromIEEE(stuff->constant1);
-    coef[2] = ConvertFromIEEE(stuff->constant2);
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloBandExtract));
+    pvt->bias = ConvertFromIEEE(stuff->bias);
+    coef[0]   = ConvertFromIEEE(stuff->constant0);
+    coef[1]   = ConvertFromIEEE(stuff->constant1);
+    coef[2]   = ConvertFromIEEE(stuff->constant2);
   }
   /* assign phototags to inFlos
    */
@@ -157,48 +162,28 @@ static Bool PrepBandExt(flo,ped)
   inFloPtr           inf = &ped->inFloLst[SRCtag]; 
   outFloPtr          src = &inf->srcDef->outFlo;
   outFloPtr          dst = &ped->outFlo;
-  pBandExtDefPtr    pvt  = (pBandExtDefPtr)ped->elemPvt;
-  double           *coef = pvt->coef;
   
-  pvt->mix_bands = FALSE;
-  
-  /* All inputs must be single band */
-  if (src->bands != 3)
+  /* verify input attribute compatibility */
+  if(src->bands != 3 ||
+     IsntCanonic(src->format[0].class) ||
+     src->format[0].width  != src->format[1].width ||
+     src->format[1].width  != src->format[2].width ||
+     src->format[0].height != src->format[1].height ||
+     src->format[1].height != src->format[2].height)
     MatchError(flo,ped, return(FALSE));
   
-  if (coef[0] == 1.0 && coef[1] == 0.0 && coef[2] == 0.0)
-    pvt->out_band = 0;
-  else if (coef[1] == 1.0 && coef[0] == 0.0 && coef[2] == 0.0)
-    pvt->out_band = 1;
-  else if (coef[2] == 1.0 && coef[0] == 0.0 && coef[1] == 0.0)
-    pvt->out_band = 2;
-  else {
-    /* If mixing bands, dimensions must match */
-    if (src->format[0].width  != src->format[1].width ||
-	src->format[1].width  != src->format[2].width ||
-	src->format[0].height != src->format[1].height ||
-	src->format[1].height != src->format[2].height) {
-      MatchError(flo,ped, return(FALSE));
-    } else {		
-      pvt->mix_bands = TRUE;
-      /* Set out_band to the index of input band with hightest coefficient */
-      if (coef[0] >= coef[1] && coef[0] >= coef[1])
-	pvt->out_band = 0;
-      else if (coef[1] >= coef[0] && coef[1] >= coef[2])
-	pvt->out_band = 1;
-      else
-	pvt->out_band = 2;
-    }
-  }
   inf->bands = 3;
   dst->bands = 1;
-  inf->format[0]      = src->format[0];
-  inf->format[1]      = src->format[1];
-  inf->format[2]      = src->format[2];
-  dst->format[0]      = src->format[pvt->out_band];
-  dst->format[0].band = 0;
-  
-  return( TRUE );
+  inf->format[0] = src->format[0];
+  inf->format[1] = src->format[1];
+  inf->format[2] = src->format[2];
+  dst->format[0] = src->format[0];
+  if(IsConstrained(src->format[0].class)) {
+    dst->format[0].levels = raw->levels;
+    if(!UpdateFormatfromLevels(ped))
+      MatchError(flo,ped, return(FALSE));
+  }
+  return TRUE;
 }                               /* end PrepBandExt */
 
 /* end module pbande.c */

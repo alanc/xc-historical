@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: domain.c,v 1.1 93/10/26 09:44:37 rws Exp $ */
 /**** module domain.c ****/
 /******************************************************************************
 				NOTICE
@@ -87,20 +87,15 @@ terms and conditions:
 Bool  InitProcDomain();
 void  ResetProcDomain();
 
-
-static Bool  RunLengthSyncDomain();
-static Bool  ControlPlaneSyncDomain();
 static Bool  NoDomainSyncDomain();
-
-static INT32 RunLengthGetRun();
-static INT32 ControlPlaneGetRun();
 static INT32 NoDomainGetRun();
 
-
-/* XXX, when we add replication of RUN_LENGTH and Control Plane bands,
-** then the places marked with RBAND may need changes.
-*/
-#define RBAND 0
+#if XIE_FULL
+static Bool  RunLengthSyncDomain();
+static INT32 RunLengthGetRun();
+static Bool  ControlPlaneSyncDomain();
+static INT32 ControlPlaneGetRun();
+#endif
 
 Bool InitProcDomain(flo,ped,dtag,offX,offY)
 floDefPtr flo;
@@ -117,18 +112,21 @@ receptorPtr rcp  = &pet->receptor[ped->inCnt-1];
 
 	    return TRUE;
 	}
-
+#if !XIE_FULL
+	else
+	  ImplementationError(flo,ped, return(FALSE));
+#else
 	if (!InitReceptor(flo,ped,rcp,0,1,ALL_BANDS,NO_BANDS))
 		return FALSE;
 
 	pet->domXoff = offX;
 	pet->domYoff = offY;
 
-	if (rcp->band[RBAND].format->class == RUN_LENGTH) {
+	if (rcp->band[0].format->class == RUN_LENGTH) {
 	    pet->roiinit = RunLengthSyncDomain;
 	    pet->roiget  = RunLengthGetRun;
 	} else {
-	    bandPtr rband = &rcp->band[RBAND];
+	    bandPtr rband = &rcp->band[0]; 
 	    bandPtr band  = &pet->emitter[0];
 	    CARD32 b;
 
@@ -136,7 +134,7 @@ receptorPtr rcp  = &pet->receptor[ped->inCnt-1];
 	    pet->roiget  = ControlPlaneGetRun;
 
 	    /* See if there is some intersection between the ROI and image*/
-  	    for(b = 0; b < ped->outFlo.bands; b++, band++)  
+  	    for(b = 0; b < ped->outFlo.bands; b++, band++, rband++)  
 	    	if ( pet->domXoff +  (INT32)rband->format->width  <= 0 ||
 	             pet->domXoff >= (INT32)band->format->width        ||
 	             pet->domYoff +  (INT32)rband->format->height <= 0 || 
@@ -146,9 +144,34 @@ receptorPtr rcp  = &pet->receptor[ped->inCnt-1];
 	                 band->allpass = TRUE; /* No regions any line */
 		     }
 	}
-
 	return (TRUE);
+#endif
 }
+
+
+void ResetProcDomain(ped)
+peDefPtr ped;
+{
+peTexPtr pet     = ped->peTex;
+bandPtr	 band	 = &pet->emitter[0];
+int b;
+
+  pet->roi     = (void *) NULL;
+  pet->roiinit = (Bool  (*)()) NULL;
+  pet->roiget  = (INT32 (*)()) NULL;
+  pet->domXoff = 0;
+  pet->domYoff = 0;
+
+  for(b = 0; b < ped->outFlo.bands; b++, band++) {
+      band->pcroi    = (void *)NULL;
+      band->xindex  = 0;	
+      band->xcount  = 0;	
+      band->ypass   = FALSE;	
+      band->inside  = FALSE;	
+      band->allpass = FALSE;	
+  }
+}
+
 
 /* Called when elements do not have an optional process domain */
 static Bool NoDomainSyncDomain(flo,ped,bnd,purge)
@@ -172,6 +195,7 @@ bandPtr   bnd;
 	return(bnd->xcount = (INT32)bnd->format->width);
 }
 
+#if XIE_FULL
 /* Initialize run length structures for desired line */
 static Bool RunLengthSyncDomain(flo,ped,bnd,purge)
 floDefPtr flo;
@@ -179,36 +203,36 @@ peDefPtr  ped;
 bandPtr   bnd;
 Bool	  purge;
 {
-peTexPtr  	pet	= ped->peTex;
-bandPtr 	rband	= &pet->receptor[ped->inCnt-1].band[RBAND];
-RunLengthTbl	*tp, *table_end;
-RunLengthPtr	rlp;
-INT32		ytrans;
+peTexPtr pet	= ped->peTex;
+bandPtr  rband	= &pet->receptor[ped->inCnt-1].band[bnd->band];
+ROIPtr	 proi;
+linePtr	 lp;
+INT32	 ytrans;
 
 	/* Grab table if necessary */
 	if (!pet->roi) 
 	    if (!(pet->roi = GetSrcBytes(void,flo,pet,rband,0,1,KEEP)))
 		return (FALSE);
 
-	rlp = (RunLengthPtr)pet->roi;
+	proi = (ROIPtr)pet->roi;
 
 	/* Make sure that there is some intersection between the ROI and image*/
 	if (bnd->allpass ||
-	    rlp->x + pet->domXoff + rlp->width  <= 0           ||
-	    rlp->x + pet->domXoff >= (INT32)bnd->format->width ||
-	    rlp->y + pet->domYoff + rlp->height <= 0           || 
-	    rlp->y + pet->domYoff >= (INT32)bnd->format->height) {
+	    proi->x + pet->domXoff + proi->width  <= 0           ||
+	    proi->x + pet->domXoff >= (INT32)bnd->format->width ||
+	    proi->y + pet->domYoff + proi->height <= 0           || 
+	    proi->y + pet->domYoff >= (INT32)bnd->format->height) {
 	    bnd->allpass = TRUE; /* No regions any line */
 	    bnd->xcount = 0;
 	    return (TRUE);
 	}
 
 	/* If no table or current y is past y desired, start at the beginning */
-	tp = (RunLengthTbl *)bnd->pcroi;
+	lp = (linePtr)bnd->pcroi;
 	ytrans = bnd->current - pet->domYoff;
-	if (!tp || tp->hdr.y > ytrans) {
-	    tp = (RunLengthTbl *)&(rlp[1]);
-	    if (tp->hdr.y > ytrans) {	/* Make sure we are after first entry */
+	if (!lp || lp->y > ytrans) {
+	    lp = (linePtr)&proi[1];
+	    if (lp->y > ytrans) {	/* Make sure we are after first entry */
 		bnd->ypass  = TRUE;	/* No regions this line */
 		bnd->xcount = 0;
 		return (TRUE);
@@ -219,21 +243,20 @@ INT32		ytrans;
           step through structures until corresponding y is found or until
  	  table is exhausted
 	*/
-	table_end = (RunLengthTbl *)((CARD32)&(rlp[1]) + rlp->size);
-	while (tp < table_end && ytrans >= tp->hdr.y + tp->hdr.nline) 
-	  tp = (RunLengthTbl *)(&tp->pair[tp->hdr.npair]);
+	while (lp < proi->lend && ytrans >= lp->y + lp->nline) 
+	    lp = (linePtr)RUNPTR(lp->nrun);
 
 	/* If some domains for this line, set up for processing */
-	if (!(bnd->ypass = tp >= table_end || ytrans < tp->hdr.y)) {
-	  bnd->pcroi   = (void *)tp;
-	  bnd->xcount = (tp->hdr.x + pet->domXoff) < 0 ? 
-					 tp->hdr.x + pet->domXoff : 0;
+	if (!(bnd->ypass = lp >= proi->lend || ytrans < lp->y)) {
+	  bnd->pcroi  = (void *)lp;
+	  bnd->xcount = (proi->x + pet->domXoff) < 0 ? 
+					 proi->x + pet->domXoff : 0;
   	  bnd->xindex = 0;	
-	  bnd->inside = tp->hdr.npair && !tp->pair[0].count && 
-					tp->hdr.x + pet->domXoff <= 0;
+	  bnd->inside = lp->nrun && !RUNPTR(0)->dstart && 
+					proi->x + pet->domXoff <= 0;
 	} else {
 	  bnd->xcount = 0;
-	  if (tp >= table_end) /* Tidy up garbage pointer */
+	  if (lp >= proi->lend) /* Tidy up garbage pointer */
 	    bnd->pcroi = (void *)NULL;  
 	}
 	
@@ -245,16 +268,17 @@ floDefPtr flo;
 peTexPtr  pet;
 bandPtr   bnd;
 {
-RunLengthTbl	*tp = (RunLengthTbl *)bnd->pcroi;
-RunLengthPair	*pair;
-INT32		width	= (INT32)bnd->format->width;
-INT32		xcount	= bnd->xcount;
-INT32		startx, nextx, length;
-CARD32		xindex, npair;
-Bool		inside;
+ROIPtr  proi = (ROIPtr)pet->roi;
+linePtr	lp = (linePtr)bnd->pcroi;
+runPtr	rp;
+INT32	width	= (INT32)bnd->format->width;
+INT32	xcount	= bnd->xcount;
+INT32	startx, nextx, length;
+CARD32	xindex, nrun;
+Bool	inside;
 
 	/* Make sure that SyncDomain was called first */
-	if (!pet->roi) ImplementationError(flo,pet->peDef,return(0));
+	if (!proi) ImplementationError(flo,pet->peDef,return(0));
 
 	/* See if there are any processing domains for the current line */
 	if (bnd->allpass || bnd->ypass || xcount >= width) {
@@ -264,25 +288,25 @@ Bool		inside;
 		return (-(bnd->xcount = width));
 	}
 
-	pair  = tp->pair;
-	npair = tp->hdr.npair;
+	rp     = RUNPTR(0);
+	nrun   = lp->nrun;
 	inside = bnd->inside;
 	xindex = bnd->xindex;
 
 	/* Handle left clip */
 	if (xcount < 0) {
-	    while (xindex < npair && 
-		  (!inside && xcount + pair[xindex].count  < 0 ||
-		    inside && xcount + pair[xindex].length < 0)) {
+	    while (xindex < nrun && 
+		  (!inside && xcount + rp[xindex].dstart < 0 ||
+		    inside && xcount + rp[xindex].length < 0)) {
 		if (inside)
-			xcount += pair[xindex++].length;
+			xcount += rp[xindex++].length;
 		else
-			xcount += pair[xindex].count;
+			xcount += rp[xindex].dstart;
 		inside = !inside;
 	    }
 
 	    /* This should have already been caught in init */
-	    if (xindex >= npair) { /* no intersection */
+	    if (xindex >= nrun) { /* no intersection */
 		bnd->ypass = TRUE;	
 		return (-(bnd->xcount = width));
 	    }
@@ -292,18 +316,18 @@ Bool		inside;
 	    startx = xcount;
 
 	/* Handle right clip */
-	if (xindex >= npair ||
-	     inside && xcount + pair[xindex].length > width ||
-	    !inside && xcount + pair[xindex].count  > width) {
+	if (xindex >= nrun ||
+	     inside && xcount + rp[xindex].length > width ||
+	    !inside && xcount + rp[xindex].dstart > width) {
 	    bnd->ypass = TRUE;	
 	    nextx = width;
 	} else if (inside) 
-	    nextx = xcount + pair[xindex++].length;
+	    nextx = xcount + rp[xindex++].length;
 	else {
-	    nextx = xcount + pair[xindex].count;
+	    nextx = xcount + rp[xindex].dstart;
 	    /* Handle case where first domain starts past start of image */
-	    if (!xindex && tp->hdr.x + pet->domXoff > 0)
-		nextx += tp->hdr.x + pet->domXoff;
+	    if (!xindex && proi->x + pet->domXoff > 0)
+		nextx += proi->x + pet->domXoff;
 	}
 
 	length = (inside) ? nextx - startx : startx - nextx;
@@ -333,7 +357,7 @@ INT32	ytrans;
 	if (bnd->allpass)
 	    return (TRUE);
 
-	rband = &pet->receptor[ped->inCnt-1].band[RBAND];
+	rband = &pet->receptor[ped->inCnt-1].band[bnd->band];
 	ytrans = bnd->current - pet->domYoff;
 
 	if (ytrans < 0 || ytrans >= (INT32)rband->format->height) {
@@ -345,7 +369,7 @@ INT32	ytrans;
 	/* Grab control plane line */
         if (!(pet->roi = bnd->pcroi = GetSrc(void,flo,pet,rband,ytrans,purge))){
 	    if (purge)
-		FreeData(void,flo,pet,rband,rband->current);
+		FreeData(flo,pet,rband,rband->current);
 	    else
 		SetBandThreshold(rband,rband->available + 1);
 	    return (FALSE);
@@ -398,7 +422,7 @@ peTexPtr  pet;
 bandPtr   bnd;
 {
 peDefPtr  ped = pet->peDef;
-bandPtr rband = &pet->receptor[ped->inCnt-1].band[RBAND];
+bandPtr rband = &pet->receptor[ped->inCnt-1].band[bnd->band];
 INT32  xcount = bnd->xcount;
 INT32   width = (INT32)bnd->format->width;
 
@@ -450,28 +474,6 @@ INT32  xindex, dwidth, Xoff, length, edge;
 
 	return ((inside) ? length : -length);
 }
-
-void ResetProcDomain(ped)
-peDefPtr ped;
-{
-peTexPtr pet     = ped->peTex;
-bandPtr	 band	 = &pet->emitter[0];
-int b;
-
-  pet->roi     = (void *) NULL;
-  pet->roiinit = (Bool  (*)()) NULL;
-  pet->roiget  = (INT32 (*)()) NULL;
-  pet->domXoff = 0;
-  pet->domYoff = 0;
-
-  for(b = 0; b < ped->outFlo.bands; b++, band++) {
-      band->pcroi    = (void *)NULL;
-      band->xindex  = 0;	
-      band->xcount  = 0;	
-      band->ypass   = FALSE;	
-      band->inside  = FALSE;	
-      band->allpass = FALSE;	
-  }
-}
+#endif
 
 /* end domain.c */

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: sched.h,v 1.1 93/10/26 09:50:40 rws Exp $ */
 /**** module sched.h ****/
 /******************************************************************************
 				NOTICE
@@ -69,15 +69,15 @@ typedef struct _schedvec {
  * returns Bool: true if scheduler has exited to core X since last checked
  * (useful for determining if fresh lookups are needed for core X resources)
  */
-#define Resumed(pet) \
-		(pet->schedCnt == pet->floTex->exitCnt ? FALSE \
-                 : ((pet->schedCnt = pet->floTex->exitCnt), TRUE))
+#define Resumed(flo,pet) \
+		(pet->schedCnt == flo->floTex->exitCnt ? FALSE \
+                 : ((pet->schedCnt = flo->floTex->exitCnt), TRUE))
 
 /* toggle the band's ready bit if "available >= threshold" status has changed
  * and return the updated ready mask;
  * if the ready bit doesn't toggle, return NO_BANDS
  */
-#define CheckSrcReady(rcp,bnd,bmsk) \
+#define CheckSrcReady(bnd,bmsk) \
 		(bnd->receptor->ready & (bmsk) \
 		 ? (bnd->available < bnd->threshold \
 		    ? (bnd->receptor->ready &= ~(bmsk)) : NO_BANDS) \
@@ -89,11 +89,11 @@ typedef struct _schedvec {
  * nothing is returned, but pet->scheduled indicates which bands are runnable
  */
 #define Schedule(flo,pet,rcp,bnd,bmsk) \
-		{ bandMsk r = CheckSrcReady(rcp,bnd,bmsk) & rcp->attend; \
+		{ bandMsk r = CheckSrcReady(bnd,bmsk) & rcp->attend; \
 		  if(r && !pet->scheduled) { \
 		    if(!pet->inSync) { \
 		      if(!pet->bandSync || r == (rcp->active & rcp->attend)) {\
-		        pet->scheduled |= bmsk; \
+		        pet->scheduled |= r; \
 			InsertMember(pet, &flo->floTex->schedHead); \
 		      } \
 		    } else if(r = (*flo->schedVec->runnable)(flo,pet)) { \

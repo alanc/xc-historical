@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: flostr.h,v 1.1 93/10/26 10:03:28 rws Exp $ */
 /**** module flostr.h ****/
 /****************************************************************************
 				NOTICE
@@ -128,8 +128,8 @@ typedef struct _pedef {
   techVecPtr	  techVec;	/* technique vectors			   */
   ddPETexPtr	  peTex;	/* DDXIE execution context		   */
   inFloPtr	  inFloLst;	/* pointer to in-line array of input info  */
-  xieTypPhototag  phototag;     /* phototag of this element                */
   CARD16	  inCnt;	/* number of inputs (inc. LUT & domain)    */
+  xieTypPhototag  phototag;     /* phototag of this element                */
   struct {
     unsigned int import   :  1;	/* element performs import functions	   */
     unsigned int process  :  1;	/* element performs processing		   */
@@ -138,8 +138,9 @@ typedef struct _pedef {
     unsigned int putData  :  1;	/* element allows PutClientData		   */
     unsigned int modified :  1;	/* modified attributes or parameters       */
     unsigned int loop     :  1;	/* loop-detection flag                     */
-    unsigned int reserved : 25;
+    unsigned int reserved :  1;
   } flags;
+  CARD8 swapUnits[xieValMaxBands]; /* size of client data aggregates       */
   diElemVecPtr	  diVec;	/* DIXIE entry point vector		   */
   ddElemVecRec	  ddVec;	/* DDXIE entry point vector (in-line)	   */
   outFloRec	  outFlo;	/* output attribute/connection info	   */
@@ -158,7 +159,10 @@ typedef struct _pedlst {
 typedef struct _flodef {
   struct _flodef *flink;	/* foreword link in nameSpace (immed only) */
   struct _flodef *blink;	/* backword link in nameSpace (immed only) */
-  ClientPtr	 client;	/* client that created the flo		   */
+  ClientPtr	 runClient;	/* client that is running the flo	   */
+  ClientPtr	 reqClient;	/* client that is making current request   */
+  ClientPtr	*awakenPtr;	/* list of clients Awaiting flo done       */
+  CARD32	 awakenCnt;	/* number of clients Awaiting flo done     */
   CARD32         ID;		/* instance-id within nameSpace            */
   CARD32         spaceID;	/* photospace-id or 0 (serverIDspace)      */
   photospacePtr  space;		/* photospacePtr or NULL		   */
@@ -174,10 +178,9 @@ typedef struct _flodef {
   struct {
     unsigned int active   :  1; /* execute requested (else inactive)       */
     unsigned int modified :  1; /* something changed since last execution  */
-    unsigned int awaken   :  1; /* the client is Awaiting flo completion   */
     unsigned int notify   :  1; /* send an event upon flo completion	   */
     unsigned int aborted  :  1; /* the client aborted execution		   */
-    unsigned int reserved : 11;
+    unsigned int reserved : 12;
   } flags;
   xieFloEvn	 event;		/* generic event packet                    */
   xieFloErr	 error;		/* generic error packet                    */

@@ -1,4 +1,4 @@
-/* $XConsortium: mpgeom.h,v 1.1 93/07/19 10:17:45 rws Exp $ */
+/* $XConsortium: mpgeom.h,v 1.1 93/10/26 09:51:17 rws Exp $ */
 /**** module mpgeom.h ****/
 /******************************************************************************
 				NOTICE
@@ -54,10 +54,8 @@ terms and conditions:
 /*
  * peTex extension for the Geometry element
  */
-
-#ifndef old_stuff
 typedef struct _mpgeombanddef {
-  	int 	finished;	/* done with this band */
+  	int	finished;	/* done with this band */
 	int	yOut;		/* what output line we are on */
 	int	out_of_bounds;	/* if entire input image is missed */
 
@@ -87,11 +85,11 @@ typedef struct _mpgeombanddef {
 	int	in_height;
 
 	/* keep track of what input lines we've come across */
-	int     lo_src_available;
-	int     hi_src_available;
+	int	lo_src_available;
+	int	hi_src_available;
 
-	void    (*linefunc) ();
-	void    (*fillfunc) ();
+	void	(*linefunc) ();
+	void	(*fillfunc) ();
   }
   mpGeometryBandRec, *mpGeometryBandPtr;
 
@@ -101,115 +99,5 @@ typedef struct _mpgeometrydef {
   	mpGeometryBandPtr bandInfo[xieValMaxBands];
   }
   mpGeometryDefRec, *mpGeometryDefPtr;
-#else
-typedef struct _mpgeometrydef {
-  int 	started[xieValMaxBands];
-  int 	lastY[xieValMaxBands];
-  int   n_instrips[xieValMaxBands];
-  int   first_valid[xieValMaxBands];
-  int   last_valid[xieValMaxBands];
-  stripPtr 
-	*instrip_array[xieValMaxBands], 
-	out_strip[xieValMaxBands];
-  int	
-	pending_strip_low[ xieValMaxBands],
-  	pending_strip_high[xieValMaxBands],
-  	current_strip_low[ xieValMaxBands],
-  	current_strip_high[xieValMaxBands],
-  	saved_strip_low[   xieValMaxBands],
-  	saved_strip_high[  xieValMaxBands];
-  unsigned char	**iline_data[xieValMaxBands]; 
-	/* for a given line of input and a given band, point to start
-	   of line data */
-} 
-  mpGeometryDefRec, *mpGeometryDefPtr;
 
-/*** nasty macros for mpgeom.c ***/
-#define CreateOrAccessOutputStrip() { 				\
-	  if (!pvt->started[b]) {				\
-	    if (!(out_strip = MakeStrip(flo, 			\
-		&ped->outFlo.format[b],				\
-		pvt->lastY[b],					\
-		in_strip->unitCnt,				\
- 		TRUE)))						\
-  		    AllocError(flo, ped, return(FALSE));	\
-	    pvt->out_strip[b] = out_strip;			\
-	    pvt->started[b] = 1;				\
-	  } else						\
-		out_strip = pvt->out_strip[b];			\
-	}
-
-#define UpdatePendingInputStrips(pvt,b) 			\
-        if (in_strip->final || src_img_height <= in_start + in_size) 	\
-		last_instrip = 1;				\
-		/* if this is last strip, stop tracking */	\
-	else if (in_start == pvt->pending_strip_low[b]) {	\
-	    pvt->pending_strip_low[b] =in_start + in_size;	\
-	    pvt->current_strip_low[b] =in_start;		\
-	    pvt->current_strip_high[b]=in_end;			\
-	}							\
-	else {							\
-		pvt->finished[b] = 1;				\
-      		ImplementationError(flo,ped, return(FALSE));	\
-	}
-
-/***	This macro returns TRUE when a line has all the strips	***/
-/***	it needs,  meaning that there are no more strips coming ***/
-/***	in that will be useful. (the ones available may not be  ***/
-/***	useful either,  in which case the line will be filled   ***/
-/***	in with a constant value				***/
-
-#define CurrentLineIsReady()     					\
-   (last_instrip	|| 	/* there ain't no more 	   */ 	     	\
-    pedpvt->first_ilow > (pvt->pending_strip_high[b]+fudge)  ||	        \
-			/* current line out of bounds high */ 	    	\
-    pedpvt->first_ihigh< (pvt->pending_strip_low[b]-fudge)	        \
-			/* current line lower than pending strips */ 	\
-    )
-
-#define NextOutputLine() \
-  ( ! ((++(pvt->lastY[b]) >= out_strip->format[b].height)))
-
-#define OutputStripFull() 					\
-  (pvt->lastY[b]>= out_strip[b].start +out_strip[b].unitCnt)
-
-#define ThisStripIsUseless()					\
-    (in_start > pedpvt->global_ihigh+fudge ||			\
-    (in_end)  < pedpvt->global_ilow-fudge   ) 
-      
-#define SaveStrip() {						\
-       /* save this strip in our strip reserve */		\
-       if ( pvt->first_valid[b] < 0) {				\
-       	  pvt->first_valid[b] = 0;				\
-       	  pvt->last_valid[b] = 0;				\
-	  strip_array[0] = in_strip;				\
-       } 							\
-       else {							\
-          int i = ++(pvt->last_valid[b]);			\
-	  strip_array[i] = in_strip;				\
-       }							\
-    }
-
-#define UpdateRanges() {						\
-    /* we are looking to see what range of lines are required */	\
-    /* for the next input line. y_in = c*x_out + d*y_out + ty */	\
-    /* if the range for y_out=N was (old_low,old_high), then  */ 	\
-    /* the range for y_out=N+1 must be (old_low+d,old_high+d) */	\
-    /* thus: */								\
-    pedpvt->first_mlow  += pedpvt->coeffs[3]; 				\
-    pedpvt->first_mhigh += pedpvt->coeffs[3]; 				\
-									\
-    /* take floor of low value, ceiling of high value */		\
-    pedpvt->first_ilow  = (int)pedpvt->first_mlow;			\
-    pedpvt->first_ihigh = 1+(int)pedpvt->first_mhigh;			\
-									\
-    /* now for global limits, if d>0, lower bound is creeping up */	\
-    /* otherwise, upper limit is creeping down                   */	\
-    if (normal_order) 							\
-	pedpvt->global_mlow = pedpvt->first_ilow; 			\
-    else								\
-	pedpvt->global_mhigh = pedpvt->first_ihigh; 			\
-    }
-
-#endif /* old stuff */
 #endif /* module _XIEH_MPGEOM */

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: melut.c,v 1.1 93/10/26 09:49:05 rws Exp $ */
 /**** module melut.c ****/
 /******************************************************************************
 				NOTICE
@@ -94,7 +94,6 @@ int	miAnalyzeELUT();
 static int CreateELUT();
 static int InitializeELUT();
 static int ActivateELUT();
-static int FlushELUT();
 static int ResetELUT();
 static int DestroyELUT();
 
@@ -105,7 +104,7 @@ static ddElemVecRec ELUTVec = {
   CreateELUT,
   InitializeELUT,
   ActivateELUT,
-  FlushELUT,
+  (xieIntProc)NULL,
   ResetELUT,
   DestroyELUT
   };
@@ -132,7 +131,7 @@ static int CreateELUT(flo,ped)
      peDefPtr  ped;
 {
   /* attach an execution context to the lut element definition */
-  return(MakePETex(flo, ped, 0, FALSE, FALSE));
+  return(MakePETex(flo, ped, NO_PRIVATE, NO_SYNC, NO_SYNC));
 }                               /* end CreateELUT */
 
 /*------------------------------------------------------------------------
@@ -142,7 +141,8 @@ static int InitializeELUT(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  return(InitReceptors(flo,ped,0,1) && InitEmitter(flo,ped,0,-1));
+  return InitReceptors(flo,ped,NO_DATAMAP,1) &&
+	 InitEmitter(flo,ped,NO_DATAMAP,NO_INPLACE);
 }                               /* end InitializeELUT */
 
 /*------------------------------------------------------------------------
@@ -153,7 +153,6 @@ static int ActivateELUT(flo,ped,pet)
      peDefPtr  ped;
      peTexPtr  pet;
 {
-  lutPtr  lut = ((eLUTDefPtr)ped->elemPvt)->lut;
   receptorPtr  rcp =  pet->receptor;
   CARD32     bands =  rcp->inFlo->bands;
   bandPtr     sbnd = &rcp->band[0];
@@ -171,21 +170,10 @@ static int ActivateELUT(flo,ped,pet)
       return(FALSE);
 
     /* free the amount of src strip(s) we've used */
-    FreeData(CARD8,flo,pet,sbnd,sbnd->maxLocal);
+    FreeData(flo,pet,sbnd,sbnd->maxLocal);
   }
   return(TRUE);
 }                               /* end ActivateELUT */
-
-/*------------------------------------------------------------------------
---------------------------- get rid of left overs ------------------------
-------------------------------------------------------------------------*/
-static int FlushELUT(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  /* since Activate was suppose to do the whole image, there's nothing to do */
-  return(TRUE);
-}                               /* end FlushELUT */
 
 /*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
@@ -214,7 +202,6 @@ static int DestroyELUT(flo,ped)
   ped->ddVec.create     = (xieIntProc) NULL;
   ped->ddVec.initialize = (xieIntProc) NULL;
   ped->ddVec.activate   = (xieIntProc) NULL;
-  ped->ddVec.flush      = (xieIntProc) NULL;
   ped->ddVec.reset      = (xieIntProc) NULL;
   ped->ddVec.destroy    = (xieIntProc) NULL;
 

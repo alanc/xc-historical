@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pconv.c,v 1.1 93/10/26 10:00:45 rws Exp $ */
 /**** module pconv.c ****/
 /******************************************************************************
 				NOTICE
@@ -114,7 +114,7 @@ peDefPtr MakeConvolve(flo,tag,pe)
   int inputs;
   peDefPtr ped;
   inFloPtr inFlo;
-  double *pvt;
+  ConvFloat *pvt;
   xieTypFloat *kptr;
   int i, numke;
   ELEMENT(xieFloConvolve);
@@ -126,7 +126,7 @@ peDefPtr MakeConvolve(flo,tag,pe)
   numke = stuff->kernelSize * stuff->kernelSize;
 
   if(!(ped = MakePEDef(inputs, (CARD32)stuff->elemLength<<2,
-			       numke * sizeof(double))))
+			       numke * sizeof(ConvFloat))))
     FloAllocError(flo, tag, xieElemConvolve, return(NULL));
 
   ped->diVec	     = &pConvolveVec;
@@ -136,7 +136,7 @@ peDefPtr MakeConvolve(flo,tag,pe)
   /*
    * copy the client element parameters (swap if necessary)
    */
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
     cpswaps(stuff->src, raw->src);
@@ -149,12 +149,12 @@ peDefPtr MakeConvolve(flo,tag,pe)
     cpswaps(stuff->lenParams, raw->lenParams);
   }
   else
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloConvolve));
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloConvolve));
 
   /* Copy over and convert the kernel */
   kptr = (xieTypFloat *)&stuff[1];
-  pvt = (double *)ped->elemPvt;
-  if (flo->client->swapped)
+  pvt = (ConvFloat *)ped->elemPvt;
+  if (flo->reqClient->swapped)
 	  for (i = 0; i < numke; i++) {
 		/* can't use *pvt++ = ConvertFromIEEE(lswapl(*kptr++)); */
 		/* because lswapl is a macro, and overincrements kptr   */
@@ -175,10 +175,12 @@ peDefPtr MakeConvolve(flo,tag,pe)
    * Note that we must skip past the convolution kernel to get there
    */
   if(!(ped->techVec = FindTechnique(xieValConvolve, raw->convolve)) ||
-     !(ped->techVec->copyfnc(flo, ped,  &stuff[1] + numke * 4,
-					&raw[1] + numke * 4, 
-					raw->lenParams))) 
-    TechniqueError(flo,ped,raw->convolve,raw->lenParams, return(ped));
+     !(ped->techVec->copyfnc(flo, ped, (CARD8 *)&stuff[1] + numke * 4,
+				       (CARD8 *)&raw[1] + numke * 4, 
+				        raw->lenParams, 
+					raw->convolve == xieValDefault))) 
+    TechniqueError(flo,ped,xieValConvolve,raw->convolve,raw->lenParams,
+		   return(ped));
 
   /*
    * assign phototags to inFlos
@@ -194,30 +196,25 @@ peDefPtr MakeConvolve(flo,tag,pe)
 ---------------- routine: copy routine for Constant technique  ---------
 ------------------------------------------------------------------------*/
 
-Bool CopyConvolveConstant(flo, ped, sparms, rparms, tsize) 
+Bool CopyConvolveConstant(flo, ped, sparms, rparms, tsize, isDefault) 
      floDefPtr  flo;
      peDefPtr   ped;
      xieTecConvolveConstant *sparms, *rparms;
      CARD16	tsize;
+     Bool	isDefault;
 {
      pTecConvolveConstantDefPtr pvt;
 
-     if (tsize && tsize != sizeof(xieTecConvolveConstant) >> 2) return(FALSE);
+     VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
 
      if (!(ped->techPvt=(void *)XieMalloc(sizeof(pTecConvolveConstantDefRec))))
 	     FloAllocError(flo, ped->phototag, xieElemConvolve, return(TRUE));
 
      pvt = (pTecConvolveConstantDefPtr)ped->techPvt;
 
-    /*
-     *	Convolve Constant can be called with no parameters
-     */
-     if (!tsize) {
+     if (isDefault || !tsize) {
 	     pvt->constant[0] = pvt->constant[1] = pvt->constant[2] = 0;
-	     return(TRUE);
-     }
-
-     if( flo->client->swapped ) {
+     } else if( flo->reqClient->swapped ) {
 	     pvt->constant[0] = ConvertFromIEEE(lswapl(sparms->constant0));
 	     pvt->constant[1] = ConvertFromIEEE(lswapl(sparms->constant1));
 	     pvt->constant[2] = ConvertFromIEEE(lswapl(sparms->constant2));
@@ -234,11 +231,12 @@ Bool CopyConvolveConstant(flo, ped, sparms, rparms, tsize)
 ---------------- routine: copy routine for no param techniques -------------
 ------------------------------------------------------------------------*/
 
-Bool CopyConvolveReplicate(flo, ped, sparms, rparms, tsize) 
+Bool CopyConvolveReplicate(flo, ped, sparms, rparms, tsize, isDefault) 
      floDefPtr  flo;
      peDefPtr   ped;
      void *sparms, *rparms;
      CARD16	tsize;
+     Bool	isDefault;
 {
   return(tsize == 0);
 }
@@ -261,7 +259,7 @@ static Bool PrepConvolve(flo,ped)
   if(raw->domainPhototag) {
     ind = &ped->inFloLst[ped->inCnt-1];
     dom = &ind->srcDef->outFlo;
-    if((ind->bands = dom->bands) != 1)
+    if((ind->bands = dom->bands) != 1 || IsntDomain(dom->format[0].class))
       DomainError(flo,ped,raw->domainPhototag, return(FALSE));
     ind->format[0] = dom->format[0];
   } else
@@ -271,14 +269,15 @@ static Bool PrepConvolve(flo,ped)
   dst->bands = in->bands = src->bands;
 
   for(b = 0; b < dst->bands; b++) {
-	if (!IsCanonic(src->format[b].class))
+	if (IsntCanonic(src->format[b].class) || 
+	     ((raw->bandMask & (1<<b)) && src->format[b].class == BIT_PIXEL))
 		MatchError(flo, ped, return(FALSE));
 	dst->format[b] = in->format[b] = src->format[b];
   }
 
   if(!(ped->techVec->prepfnc(flo, ped, raw, &raw[1] + 
 		raw->kernelSize * raw->kernelSize * 4)))
-    TechniqueError(flo, ped, raw->convolve, raw->lenParams,
+    TechniqueError(flo,ped,xieValConvolve,raw->convolve,raw->lenParams,
 		   return(FALSE));
 
   return( TRUE );
@@ -292,11 +291,6 @@ Bool PrepConvolveStandard(flo, ped, raw, tec)
      peDefPtr   ped;
      void *raw, *tec;
 {
-  ped->outFlo.format[0].params 	= (void *)NULL;
-  if (ped->outFlo.bands > 1) {
-	  ped->outFlo.format[1].params 	= (void *)NULL;
-	  ped->outFlo.format[2].params 	= (void *)NULL;
-  }
   return(TRUE);
 }
 /* end module pconv.c */

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: domain.h,v 1.1 93/10/26 09:50:22 rws Exp $ */
 /**** module domain.h ****/
 /******************************************************************************
 				NOTICE
@@ -42,9 +42,9 @@ terms and conditions:
      Logic, Inc.
 ******************************************************************************
   
-	domain.h -- DDXIE MI prototype Process Domain definitions
+	domain.h -- DDXIE MI Process Domain definitions
   
-	James H Weida  -- AGE Logic, Inc. July 1993
+	Dean Verheiden  -- AGE Logic, Inc. August 1993
   
 *****************************************************************************/
 
@@ -61,47 +61,32 @@ extern Bool  InitProcDomain();
 extern void  ResetProcDomain();
 
 #endif /* ! defined _XIEC_DOMAIN */
+
 /*
- * run-length table definition
+ * Rectangles of Interest structure definitions 
  */
 
-#define NPAIR 1
-#define NUM_OF_BYTE_BITS  8
+#define RUNPTR(idx)	(&((runPtr)&lp[1])[idx])
+#define LEND(rband)	((linePtr)&rband->strip->data[rband->strip->length])
 
-typedef CARD32 RUNLEN;	/* sizeof run-length entries */
-typedef CARD8  CTLLEN;	/* sizeof control-plane entries */
+typedef struct _runRec {
+	CARD32 dstart; 		/* delta to start of run */
+	CARD32 length;		/* length of run */
+} runRec, *runPtr;
 
-typedef struct _runlengthhdr
-{
-	INT32 x, y; 		/* x & y coodinates */
-	CARD32 nline;		/* number of repeats for this line */
-	CARD32 npair;		/* number of run-length pairs */
-}
-RunLengthHdr;
+typedef struct _linerec {
+	INT32	y;		/* starting y coodinate of this y-x band */
+	CARD32	nline;		/* height of y-x band */
+	CARD32  nrun;		/* number of runRecs for this y-x band */
+/*      runRec  run[nrun]; */
+} lineRec, *linePtr;
 
-typedef struct _runlengthpair
-{
-	RUNLEN count; 
-	RUNLEN length;		/* length of process domain */
-}
-RunLengthPair;
-
-typedef struct _runlengthtbl
-{
-	RunLengthHdr  hdr;			/* run-length header */
-	RunLengthPair pair[NPAIR];	/* run-length pairs */
-}
-RunLengthTbl;
-
-typedef struct _runlengthframe
-{
-	INT32 x, y;		/* min x and y coordinates */
-	CARD32 width;		/* max width, i.e. width of table */
-
-	CARD32 height;		/* height of table */
-	CARD32 nentry;		/* number of run-length entries in table */
-	CARD32 size;		/* size of table in bytes */
-}
-RunLengthRec, *RunLengthPtr, RLFrameRec, *RLFramePtr;
+typedef struct _ROIrec {
+	INT32   x, y;		/* min x and y coordinates of bounding box */
+	CARD32  width;		/* width  of bounding box 		   */
+	CARD32  height;		/* height of bounding box 		   */
+	CARD32  nrects;		/* number of rectangles in this ROI 	   */
+	linePtr lend;		/* first address past end of ROI table	   */
+} ROIRec, *ROIPtr;
 
 #endif /* module _XIEH_DOMAIN */

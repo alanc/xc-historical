@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mpbandc.c,v 1.1 93/10/26 09:47:54 rws Exp $ */
 /**** module mpbandc.c ****/
 /******************************************************************************
 				NOTICE
@@ -126,7 +126,7 @@ static int CreateBandCom(flo,ped)
      peDefPtr  ped;
 {
   /* attach an execution context to the photo element definition */
-  return( MakePETex(flo, ped, 0, FALSE, FALSE) );
+  return MakePETex(flo, ped, NO_PRIVATE, NO_SYNC, NO_SYNC);
 }                               /* end CreateBandCom */
 
 
@@ -137,7 +137,9 @@ static int InitializeBandCom(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  return( InitReceptors(flo,ped,0,1) && InitEmitter(flo,ped,0,-1) );
+  return
+    InitReceptors(flo, ped, NO_DATAMAP, 1) &&
+      InitEmitter(flo, ped, NO_DATAMAP, NO_INPLACE);
 }                               /* end InitializeBandCom */
 
 
@@ -158,14 +160,15 @@ static int ActivateBandCom(flo,ped,pet)
   for(b = 0; b < xieValMaxBands; ++rcp, ++dbnd, ++b) {
     sbnd = rcp->band;
     if(!GetCurrentSrc(void,flo,pet,sbnd)) continue;
+
     do {
       /* pass a clone of the current src strip downstream
        */
       if(!PassStrip(flo,pet,dbnd,sbnd->strip))
 	return(FALSE);
-    } while(GetSrc(void,flo,pet,sbnd,sbnd->maxLocal,TRUE));
+    } while(GetSrc(void,flo,pet,sbnd,sbnd->maxLocal,FLUSH));
 
-    FreeData(void,flo,pet,sbnd,sbnd->maxLocal);
+    FreeData(flo,pet,sbnd,sbnd->maxLocal);
   }
   return(TRUE);
 }                               /* end ActivateBandCom */

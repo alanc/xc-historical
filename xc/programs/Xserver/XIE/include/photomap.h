@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: photomap.h,v 1.1 93/10/26 10:04:24 rws Exp $ */
 /**** module photomap.h ****/
 /******************************************************************************
 				NOTICE
@@ -60,13 +60,21 @@ typedef struct _photomap *photomapPtr;
 
 typedef struct _photomap {
   xieTypPhotomap ID;
-  CARD16	 refCnt;
-  CARD16	 technique;	/* decode technique needed to decompress*/
-  CARD8		 bands;		/* number of bands {0=unpopulated,1,3}	*/
-  xieTypDataType dataType;	/* {constrained,unconstrined}		*/
-  formatRec	 format[xieValMaxBands];    /* format of data in strips */
-  stripLstRec	 strips[xieValMaxBands];    /* lists of image strips    */
+  CARD16	  refCnt;
+  CARD16	  technique;	/* decode technique needed to decompress*/
+  xieTypDataClass dataClass;	/* SingleBand or TripleBand. 		*/
+  CARD8		  bands;	/* number of bands {0=unpopulated,1,3}	*/
+				/* Tripleband, interleaved has bands=1, */
+				/* so this parameter is *not* redundant */
+  xieTypDataType  dataType;	/* {constrained,unconstrined}		*/
+  CARD8		  pad;
+  void		  *tecParms;	/* contains technique specific decode   */
+				/* parameters				*/
+  void		  *pvtParms;	/* decode hints				*/
+  formatRec	  format[xieValMaxBands];   /* format of data in strips */
+  stripLstRec	  strips[xieValMaxBands];   /* lists of image strips    */
 } photomapRec;
+
 
 #endif
 /* end _XIEH_PHOTOMAP */

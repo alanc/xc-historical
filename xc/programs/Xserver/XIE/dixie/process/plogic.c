@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: plogic.c,v 1.1 93/10/26 10:00:58 rws Exp $ */
 /**** module plogic.c ****/
 /******************************************************************************
 				NOTICE
@@ -44,7 +44,7 @@ terms and conditions:
   
 	plogic.c -- DIXIE routines for managing the Logical element
   
-	Robert NC Shelley & James H Weida -- AGE Logic, Inc. April 1993
+	Robert NC Shelley -- AGE Logic, Inc. April 1993
   
 *****************************************************************************/
 
@@ -110,14 +110,10 @@ peDefPtr MakeLogic(flo,tag,pe)
 	peDefPtr ped;
 	inFloPtr inFlo;
 	pLogicDefPtr pvt;
-	CARD32 src2;
 	ELEMENT(xieFloLogical);
 	ELEMENT_SIZE_MATCH(xieFloLogical);
 	ELEMENT_NEEDS_1_INPUT(src1);
 
-#if defined(VERBOSE)
-ErrorF("XIE ProcessLogic: MakeLogic\n");
-#endif
 	inputs = 1 + (stuff->src2 ? 1 : 0) + (stuff->domainPhototag ? 1 :0);
 	
 	if (!(ped =
@@ -131,8 +127,7 @@ ErrorF("XIE ProcessLogic: MakeLogic\n");
 	/*
 	 * copy the client element parameters (swap if necessary)
 	 */
-	if (flo->client->swapped)
-	{
+	if (flo->reqClient->swapped) {
 		raw->elemType   = stuff->elemType;
 		raw->elemLength = stuff->elemLength;
 		cpswaps(stuff->src1, raw->src1);
@@ -147,10 +142,9 @@ ErrorF("XIE ProcessLogic: MakeLogic\n");
 		cpswapl(stuff->constant2, raw->constant2);
 	}
 	else
-		bcopy((char *)stuff, (char *)raw, sizeof(xieFloLogical));
+		memcpy((char *)raw, (char *)stuff, sizeof(xieFloLogical));
 
-	if(!raw->src2)
-	{
+	if(!raw->src2) {
 		/* convert constants */
 		pvt = (pLogicDefPtr)ped->elemPvt;
 		pvt->constant[0] = ConvertFromIEEE(raw->constant0);
@@ -164,6 +158,7 @@ ErrorF("XIE ProcessLogic: MakeLogic\n");
 		inFlo[SRCt2].srcTag = raw->src2;
 	if(raw->domainPhototag)
 		inFlo[ped->inCnt-1].srcTag = raw->domainPhototag;
+
 	return ped;
 }                               /* end MakeLogic */
 
@@ -179,46 +174,47 @@ static Bool PrepLogic(flo,ped)
 	inFloPtr  ind, in2, in1 = &ped->inFloLst[SRCt1];
 	outFloPtr dom, sr2, sr1 = &in1->srcDef->outFlo;
 	outFloPtr dst = &ped->outFlo;
+	CARD8 bmask = raw->bandMask;
 	int b;
 
-#if defined(VERBOSE)
-ErrorF("XIE ProcessLogic: PrepLogic\n");
-#endif
+	if (IsntConstrained(sr1->format[0].class))
+       	    MatchError(flo,ped, return(FALSE));
+
+	/* Make sure levels are a power of 2 */
+	for (b = 0; b < sr1->bands; b++)
+	    if ((bmask & (1<<b)) &&  
+		(sr1->format[b].levels & (sr1->format[b].levels - 1)))
+	        MatchError(flo,ped, return(FALSE));
+
 	/* check out our second source */
-	if(raw->src2)
-	{
-		in2 = &ped->inFloLst[SRCt2];
-		sr2 = &in2->srcDef->outFlo;
-		if(sr1->bands != sr2->bands)
-			MatchError(flo,ped, return(FALSE));
-		in2->bands = sr2->bands;
-	} else
-		sr2 = NULL;
+	if(raw->src2) {
+    	    in2 = &ped->inFloLst[SRCt2];
+	    sr2 = &in2->srcDef->outFlo;
+	    if(sr1->bands != sr2->bands)
+	      MatchError(flo,ped, return(FALSE));
+	    in2->bands = sr2->bands;
+	    for (b = 0; b < sr1->bands; b++) {
+		if ((bmask & (1<<b)) == 0) continue;
+		if (sr1->format[b].class  != sr2->format[b].class ||
+		    sr1->format[b].levels != sr2->format[b].levels)
+         		MatchError(flo,ped, return(FALSE));
+    	    }
+  	} else 
+	    sr2 = NULL;
 
 	/* check out our process domain */
-	if(raw->domainPhototag)
-	{
-		ind = &ped->inFloLst[ped->inCnt-1];
-		dom = &ind->srcDef->outFlo;
-		if((ind->bands = dom->bands) != 1)
-			DomainError(flo,ped,raw->domainPhototag, return(FALSE));
-		ind->format[0] = dom->format[0];
-	}
-	else
-		dom = NULL;
-
-	/* grab a copy of the input attributes and propagate them to our output */
-	dst->bands = in1->bands = sr1->bands;
-	for(b = 0; b < dst->bands; b++)
-	{
-		dst->format[b] = in1->format[b] = sr1->format[b];
-		if(sr2)
-			in2->format[b] = sr2->format[b];
-	}
+	if(raw->domainPhototag) {
+	    ind = &ped->inFloLst[ped->inCnt-1];
+	    dom = &ind->srcDef->outFlo;
+	    if(IsntDomain(dom->format[0].class) ||
+	       (ind->bands = dom->bands) != 1)
+		DomainError(flo,ped,raw->domainPhototag, return(FALSE));
+	    ind->format[0] = dom->format[0];
+  	} else
+	    dom = NULL;
 
 	/* check out our operator */
-	switch(raw->operator)
-	{
+	switch(raw->operator) {
 	case GXclear:         /* 0x0  0 */
 	case GXand:           /* 0x1  src-1 AND src-2 */
 	case GXandReverse:    /* 0x2  src-1 AND (NOT src-2) */
@@ -237,6 +233,14 @@ ErrorF("XIE ProcessLogic: PrepLogic\n");
 	case GXcopyInverted:  /* 0xc  NOT src-1 */
 		break;
 	default: OperatorError(flo,ped,raw->operator, return(FALSE));
+	}
+
+	/* grab a copy of the input attributes and propagate them to output */
+	dst->bands = in1->bands = sr1->bands;
+	for(b = 0; b < dst->bands; b++) {
+	    dst->format[b] = in1->format[b] = sr1->format[b];
+	    if(sr2)
+		in2->format[b] = sr2->format[b];
 	}
 	return TRUE;
 }                               /* end PrepLogic */

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pgeom.c,v 1.1 93/10/26 10:00:51 rws Exp $ */
 /**** module pgeom.c ****/
 /******************************************************************************
 				NOTICE
@@ -88,10 +88,15 @@ terms and conditions:
 peDefPtr	MakeGeometry();
 Bool		CopyGeomNearestNeighbor();
 Bool		PrepGeomNearestNeighbor();
-Bool		CopyGeomBilinearInterp();
-Bool		PrepGeomBilinearInterp();
 Bool		CopyGeomAntiAlias();
 Bool		PrepGeomAntiAlias();
+
+#if XIE_FULL
+Bool		CopyGeomBilinearInterp();
+Bool		PrepGeomBilinearInterp();
+Bool		CopyGeomGaussian();
+Bool		PrepGeomGaussian();
+#endif
 
 /*
  *  routines internal to this module
@@ -137,7 +142,7 @@ peDefPtr MakeGeometry(flo,tag,pe)
   /*
    * copy the client element parameters (swap if necessary)
    */
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
     cpswaps(stuff->src, raw->src);
@@ -148,36 +153,31 @@ peDefPtr MakeGeometry(flo,tag,pe)
     cpswaps(stuff->lenParams, raw->lenParams);
   }
   else
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloGeometry));
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloGeometry));
 
   /* Copy over and convert the floating point stuff */
   kptr = (xieTypFloat *)&stuff->a;
   pvt = (pGeomDefPtr)ped->elemPvt;
 
-  if (flo->client->swapped) {
-	  for (i = 0; i < 6; i++) {
+  if (flo->reqClient->swapped) {
+	  for (i = 0; i < 6; ++kptr, ++i)
 		pvt->coeffs[i] = ConvertFromIEEE(lswapl(*kptr));
-		++kptr;
-	  }
-	  for (i = 0; i < 3; i++) {
+	  for (i = 0; i < xieValMaxBands; ++kptr, ++i)
 		pvt->constant[i] = ConvertFromIEEE(lswapl(*kptr));
-		++kptr;
-	  }
-  }
-  else {
+  } else {
 	  for (i = 0; i < 6; i++) 
 		pvt->coeffs[i] = ConvertFromIEEE(*kptr++);
-	  for (i = 0; i < 3; i++) 
+	  for (i = 0; i < xieValMaxBands; i++) 
 		pvt->constant[i] = ConvertFromIEEE(*kptr++);
   }
-
-	
   /*
    * copy technique data (if any) 
    */
   if(!(ped->techVec = FindTechnique(xieValGeometry, raw->sample)) ||
-     !(ped->techVec->copyfnc(flo, ped,  &stuff[1], &raw[1], raw->lenParams))) 
-    TechniqueError(flo,ped,raw->sample,raw->lenParams, return(ped));
+     !(ped->techVec->copyfnc(flo, ped,  &stuff[1], &raw[1], raw->lenParams,
+					raw->sample == xieValDefault))) 
+    TechniqueError(flo,ped,xieValGeometry,raw->sample,raw->lenParams,
+		   return(ped));
 
   /*
    * assign phototags to inFlos
@@ -192,19 +192,16 @@ peDefPtr MakeGeometry(flo,tag,pe)
 ----------- routine: copy routine for NearestNeighbor technique  ---------
 ------------------------------------------------------------------------*/
 
-Bool CopyGeomNearestNeighbor(flo, ped, sparms, rparms, tsize) 
+Bool CopyGeomNearestNeighbor(flo, ped, sparms, rparms, tsize, isDefault) 
      floDefPtr  flo;
      peDefPtr   ped;
      xieTecGeomNearestNeighbor *sparms, *rparms;
      CARD16	tsize;
+     Bool	isDefault;
 {
      pTecGeomNearestNeighborDefPtr pvt;
 
-    /*
-     *  Nearest Neighbor doesn't *require* a parameter
-     */
-     if (tsize && tsize != sizeof(xieTecGeomNearestNeighbor) >> 2) 
-	return(FALSE);
+     VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
 
      if (!(ped->techPvt=(void *)
 	XieMalloc(sizeof(pTecGeomNearestNeighborDefRec))))
@@ -215,50 +212,97 @@ Bool CopyGeomNearestNeighbor(flo, ped, sparms, rparms, tsize)
     /*
      *	Nearest Neighbor can be called with no parameters
      */
-     if (!tsize) {
-	     pvt->modify = xieValFavorUp;
-	     return(TRUE);
-     }
-
-	pvt->modify = sparms->modify;
+     if (isDefault)
+         pvt->modify = xieValFavorUp;
+     else
+         pvt->modify = sparms->modify;
 
      return (TRUE);
 }
 
+#if XIE_FULL
 /*------------------------------------------------------------------------
 ------ routine: copy routine for bilinear interpolation technique --------
 ------------------------------------------------------------------------*/
 
-Bool CopyGeomBilinearInterp(flo, ped, sparms, rparms, tsize) 
+Bool CopyGeomBilinearInterp(flo, ped, sparms, rparms, tsize, isDefault) 
      floDefPtr  flo;
      peDefPtr   ped;
      void *sparms, *rparms;
      CARD16	tsize;
+     Bool	isDefault;
 {
-	return( CopyGeomNoParams(flo, ped, sparms, rparms, tsize) );
+     VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
+
+     return( CopyGeomNoParams(flo, ped, sparms, rparms, tsize, isDefault) );
 }
+/*------------------------------------------------------------------------
+------ routine: copy routine for gaussian interpolation technique --------
+------------------------------------------------------------------------*/
+Bool CopyGeomGaussian(flo, ped, sparms, rparms, tsize, isDefault) 
+     floDefPtr  flo;
+     peDefPtr   ped;
+     xieTecGeomGaussian *sparms, *rparms;
+     CARD16	tsize;
+     Bool	isDefault;
+{
+     pTecGeomGaussianDefPtr pvt;
+
+     VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
+
+     if (!(ped->techPvt=(void *)XieMalloc(sizeof(pTecGeomGaussianDefRec))))
+	     FloAllocError(flo, ped->phototag, xieElemGeometry, return(TRUE));
+
+     pvt = (pTecGeomGaussianDefPtr)ped->techPvt;
+
+      if( flo->reqClient->swapped ) {
+	     pvt->sigma     = ConvertFromIEEE(lswapl(sparms->sigma));
+	     pvt->normalize = ConvertFromIEEE(lswapl(sparms->normalize));
+      } else {
+	     pvt->sigma     = ConvertFromIEEE(sparms->sigma);
+	     pvt->normalize = ConvertFromIEEE(sparms->normalize);
+      }
+      pvt->radius = sparms->radius;
+      pvt->simple = sparms->simple;
+
+     if (pvt->radius < 1)
+	return(FALSE);		
+
+     if (pvt->sigma == 0.0)
+	return(FALSE);		/* musn't divide by zero, deary */
+
+     if (pvt->normalize <= 0.0)
+	return(FALSE);		/* don't want to bother clipping pixels < 0 */
+
+     return (TRUE);
+}
+#endif
 
 /*------------------------------------------------------------------------
 ------ routine: copy routine for antialias technique --------
 ------------------------------------------------------------------------*/
 
-Bool CopyGeomAntiAlias(flo, ped, sparms, rparms, tsize) 
+Bool CopyGeomAntiAlias(flo, ped, sparms, rparms, tsize, isDefault) 
      floDefPtr  flo;
      peDefPtr   ped;
      void *sparms, *rparms;
      CARD16	tsize;
+     Bool	isDefault;
 {
-	return( CopyGeomNoParams(flo, ped, sparms, rparms, tsize) );
+     VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
+
+     return( CopyGeomNoParams(flo, ped, sparms, rparms, tsize, isDefault) );
 }
 
 /*------------------------------------------------------------------------
 ------------ routine: copy routine for techniques with no params  --------
 ------------------------------------------------------------------------*/
-static Bool CopyGeomNoParams(flo, ped, sparms, rparms, tsize) 
+static Bool CopyGeomNoParams(flo, ped, sparms, rparms, tsize, isDefault) 
      floDefPtr  flo;
      peDefPtr   ped;
      void *sparms, *rparms;
      CARD16	tsize;
+     Bool	isDefault;
 {
   return(tsize == 0);
 }
@@ -281,7 +325,7 @@ static Bool PrepGeometry(flo,ped)
   dst->bands = in->bands = src->bands;
 
   for(b = 0; b < dst->bands; b++) {
-	if (!IsCanonic(src->format[b].class))
+	if (IsntCanonic(src->format[b].class))
 		MatchError(flo, ped, return(FALSE));
 
 	dst->format[b] = in->format[b] = src->format[b];
@@ -295,7 +339,7 @@ static Bool PrepGeometry(flo,ped)
   }
 
   if(!(ped->techVec->prepfnc(flo, ped, raw, &raw[1]))) {
-    TechniqueError(flo, ped, raw->sample, raw->lenParams,
+    TechniqueError(flo,ped,xieValGeometry,raw->sample,raw->lenParams,
 		   return(FALSE));
   }
 
@@ -311,10 +355,10 @@ Bool PrepGeomNearestNeighbor(flo, ped, raw, tec)
      xieFloGeometry *raw;
      void *tec;
 {
-  pGeomDefPtr pvt = (pGeomDefPtr)ped->elemPvt;
-
   return(TRUE);
 }
+
+#if XIE_FULL
 /*------------------------------------------------------------------------
 ---------- routine: prep routine for bilinear interpolation --------------
 ------------------------------------------------------------------------*/
@@ -327,6 +371,19 @@ Bool PrepGeomBilinearInterp(flo, ped, raw, tec)
   return(TRUE);
 }
 /*------------------------------------------------------------------------
+---------- routine: prep routine for gaussian ----------------------------
+------------------------------------------------------------------------*/
+Bool PrepGeomGaussian(flo, ped, raw, tec) 
+     floDefPtr  flo;
+     peDefPtr   ped;
+     xieFloGeometry *raw;
+     void *tec;
+{
+  return(TRUE);
+}
+#endif
+
+/*------------------------------------------------------------------------
 ---------- routine: prep routine for antialias ---------------------------
 ------------------------------------------------------------------------*/
 Bool PrepGeomAntiAlias(flo, ped, raw, tec) 
@@ -337,4 +394,5 @@ Bool PrepGeomAntiAlias(flo, ped, raw, tec)
 {
   return(TRUE);
 }
+
 /* end module pgeom.c */

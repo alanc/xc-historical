@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: iclut.c,v 1.1 93/10/26 09:59:48 rws Exp $ */
 /**** module iclut.c ****/
 /******************************************************************************
 				NOTICE
@@ -78,6 +78,7 @@ terms and conditions:
 #include <error.h>
 #include <macro.h>
 #include <element.h>
+#include <lut.h>
 
 
 /*
@@ -120,7 +121,7 @@ peDefPtr MakeICLUT(flo,tag,pe)
   /*
    * copy the client element parameters (swap if necessary)
    */
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
     raw->class  = stuff->class;
@@ -128,12 +129,12 @@ peDefPtr MakeICLUT(flo,tag,pe)
     cpswapl(stuff->length0, raw->length0);
     cpswapl(stuff->length1, raw->length1);
     cpswapl(stuff->length2, raw->length2);
-    cpswapl(stuff->level0,  raw->level0);
-    cpswapl(stuff->level1,  raw->level1);
-    cpswapl(stuff->level2,  raw->level2);
+    cpswapl(stuff->levels0, raw->levels0);
+    cpswapl(stuff->levels1, raw->levels1);
+    cpswapl(stuff->levels2, raw->levels2);
   }    
   else
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloImportClientLUT));
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloImportClientLUT));
 
   return(ped);
 }                               /* end MakeICLUT */
@@ -161,20 +162,21 @@ static Bool PrepICLUT(flo,ped)
   switch(raw->class) {
   case xieValSingleBand :
 
-    if(!raw->length0 || !raw->level0)
+    if(!raw->length0 || !raw->levels0)
       ValueError(flo,ped,0, return(FALSE));
-    if(raw->level0 > MAX_LEVELS(1))
+    if(raw->levels0 > MAX_LEVELS(1))
       MatchError(flo,ped, return(FALSE));
     inflo->bands = 1;
     break;
+#if XIE_FULL
   case xieValTripleBand :
-    if(!raw->length0 || !raw->level0 ||
-       !raw->length1 || !raw->level1 ||
-       !raw->length2 || !raw->level2)
+    if(!raw->length0 || !raw->levels0 ||
+       !raw->length1 || !raw->levels1 ||
+       !raw->length2 || !raw->levels2)
       ValueError(flo,ped,0, return(FALSE));
-    if(raw->level0 > MAX_LEVELS(3) ||
-       raw->level1 > MAX_LEVELS(3) ||
-       raw->level2 > MAX_LEVELS(3))
+    if(raw->levels0 > MAX_LEVELS(3) ||
+       raw->levels1 > MAX_LEVELS(3) ||
+       raw->levels2 > MAX_LEVELS(3))
       MatchError(flo,ped, return(FALSE));
 
     inflo->bands	    = 3;
@@ -182,32 +184,33 @@ static Bool PrepICLUT(flo,ped)
     inflo->format[2].band   = 2;
     ped->outFlo.format[1] = inflo->format[1];
     ped->outFlo.format[2] = inflo->format[2];
-    ped->outFlo.format[1].levels =  raw->level1;
-    ped->outFlo.format[2].levels =  raw->level2;
+    ped->outFlo.format[1].levels =  raw->levels1;
+    ped->outFlo.format[2].levels =  raw->levels2;
     ped->outFlo.format[1].height =  raw->length1;
     ped->outFlo.format[2].height =  raw->length2;
     break;
+#endif
   default :
     ValueError(flo,ped,raw->class, return(FALSE));
   }
 
   inflo->format[0].band   = 0;
   ped->outFlo.format[0] = inflo->format[0];
-  ped->outFlo.format[0].levels =  raw->level0;
+  ped->outFlo.format[0].levels =  raw->levels0;
   ped->outFlo.format[0].height =  raw->length0;
 
   for (b=0; b < inflo->bands; b++) {
 	formatPtr fmt = &(ped->outFlo.format[b]);
 
   	inflo->format[b].class  = STREAM;
+	ped->swapUnits[b] = LutPitch(fmt->levels);
 
-	fmt->class = LUT_ARRAY;
+	fmt->class  = LUT_ARRAY;
 	fmt->interleaved = FALSE;
-	fmt->width = raw->bandOrder; /* see miclut.c, mppoint crazypixel */
-	fmt->depth = 8;
+	fmt->width  = raw->bandOrder; /* see miclut.c, mppoint crazypixel */
+	fmt->depth  = 8;
 	fmt->stride = 8;
-	fmt->pitch = 8 * fmt->height;
-	fmt->params = NULL;
+	fmt->pitch  = 8 * fmt->height;
   }
 
   ped->outFlo.bands = inflo->bands;

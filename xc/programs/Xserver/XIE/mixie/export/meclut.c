@@ -1,4 +1,4 @@
-/* $XConsortium: meclut.c,v 1.1 93/07/19 10:13:40 rws Exp $ */
+/* $XConsortium: meclut.c,v 1.1 93/10/26 09:49:37 rws Exp $ */
 /**** module meclut.c ****/
 /******************************************************************************
 				NOTICE
@@ -90,7 +90,6 @@ int	miAnalyzeECLUT();
 static int CreateECLUT();
 static int InitializeECLUT();
 static int ActivateECLUT();
-static int FlushECLUT();
 static int ResetECLUT();
 static int DestroyECLUT();
 
@@ -100,7 +99,7 @@ static ddElemVecRec ECLUTVec = {
   CreateECLUT,
   InitializeECLUT,
   ActivateECLUT,
-  FlushECLUT,
+  (xieIntProc)NULL,
   ResetECLUT,
   DestroyECLUT
   };
@@ -126,7 +125,7 @@ static int CreateECLUT(flo,ped)
      peDefPtr  ped;
 {
   /* attach an execution context to the photo element definition */
-  return(MakePETex(flo, ped, 0, FALSE, FALSE));
+  return MakePETex(flo, ped, NO_PRIVATE, NO_SYNC, NO_SYNC);
 }                               /* end CreateECLUT */
 
 /*------------------------------------------------------------------------
@@ -136,7 +135,8 @@ static int InitializeECLUT(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  return(InitReceptors(flo,ped,0,1) && InitEmitter(flo,ped,0,-1));
+  return InitReceptors(flo,ped,NO_DATAMAP,1) &&
+	 InitEmitter(flo,ped,NO_DATAMAP,NO_INPLACE);
 }                               /* end InitializeECLUT */
 
 /*------------------------------------------------------------------------
@@ -150,72 +150,46 @@ static int ActivateECLUT(flo,ped,pet)
   xieFloExportClientLUT *raw = (xieFloExportClientLUT *)ped->elemRaw;
   receptorPtr	rcp = pet->receptor;
   CARD32	bands = rcp->inFlo->bands;
-  bandPtr	sbnd = &rcp->band[0];
-  bandPtr	dbnd = &pet->emitter[0];
+  bandPtr	dbnd, sbnd = &rcp->band[0];
   CARD32	*start  = &(raw->start0);
   CARD32	*length = &(raw->length0);
   CARD8	 	*src, *dst;
-  CARD32	b, dlen, byteInt, byteExt;
+  CARD32	b, pitch, nentry, dlen;
+  Bool		swizzle;
 
-  /* XXX band-order for triple band data (XieTypOrientation) */
-  /* XXX Compress from Quad to Triple */
-  /* XXX TripleSwap for QuadPixels */
+  swizzle = (bands == 3) && (raw->bandOrder != xieValLSFirst);
   
-  for(b = 0; b < bands; ++sbnd, ++dbnd, ++b) {
+  for(b = 0; b < bands; ++sbnd, ++b) {
+    
+    if (!(src = GetCurrentSrc(CARD8,flo,pet,sbnd))) continue; 
 
-    byteInt = LutPitch(sbnd->format->levels);
-    byteExt = (byteInt == 4) ? 3 : byteInt;
-    if (byteInt == 4) /* XXX */
-	ImplementationError(flo,ped, return(FALSE));
- 
-    if (!(src  = GetCurrentSrc(CARD8,flo,pet,sbnd))) continue; 
+    dbnd = &pet->emitter[swizzle ? xieValMaxBands - b - 1 : b];
+    
+    nentry = length[b] ? length[b] : sbnd->format->height;
+    pitch = LutPitch(sbnd->format->levels);
+    dlen = nentry * pitch;
+    
+    if (!(dst = GetDstBytes(CARD8,flo,pet,dbnd,dbnd->current,dlen,KEEP)))
+      return FALSE;
 
-    dlen = (length[b] ? length[b] : sbnd->format->height) * byteExt;
+    if (start[b])
+      src += start[b] * pitch;       /* Adjust via start[b] && length[b] */
 
-    if (start[b] || (dlen != sbnd->format->height * byteExt) ||
-	(byteInt == 4) || (flo->client->swapped && byteInt != 1)) {
-	if (!(dst = GetDstBytes(CARD8,flo,pet,dbnd,dbnd->current,dlen,FALSE)))
-	    return FALSE;
-	if (start[b]) {
-	    /* Adjust via start[b] && length[b] */
-	    src += start[b] * byteInt;
-	}
-	if (byteInt == 1) {
-	    bcopy(src,dst,dlen);
-	} else if (byteInt == 2) {
-	    bcopy(src,dst,dlen);
-	    if (flo->client->swapped)
-		SwapShorts((short *)dst, dlen);
-	} else { /* Must be 4 (er 3) byte entries */
-	    /* ... Convert From 4 bytes to 3 bytes */
-	    ImplementationError(flo,ped, return(FALSE)); /* XXX */
-	}
-        SetBandFinal(dbnd);
-	PutData(flo,pet,dbnd,dbnd->maxGlobal);
-    } else if(!PassStrip(flo,pet,dbnd,sbnd->strip)) {
-	/* Get the Entire Range, Unswapped */
-	return(FALSE);
-    }
-    FreeData(CARD8,flo,pet,sbnd,sbnd->maxLocal);
+    memcpy(dst,src,dlen);
+
+    SetBandFinal(dbnd);
+    PutData(flo,pet,dbnd,dbnd->maxGlobal);
+    
+    FreeData(flo,pet,sbnd,sbnd->maxLocal);
+
     switch(raw->notify) {
-	case xieValFirstData:	/* fall thru */
-	case xieValNewData:	SendExportAvailableEvent(flo,ped,b,0,0,0);
-	default:		break;
+    case xieValFirstData:	/* fall thru */
+    case xieValNewData:		SendExportAvailableEvent(flo,ped,b,nentry,0,0);
+    default:			break;
     }
   }
-
   return(TRUE);
 }                               /* end ActivateECLUT */
-
-/*------------------------------------------------------------------------
---------------------------- get rid of left overs ------------------------
-------------------------------------------------------------------------*/
-static int FlushECLUT(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  return(TRUE);
-}                               /* end FlushECLUT */
 
 /*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
@@ -244,7 +218,6 @@ static int DestroyECLUT(flo,ped)
   ped->ddVec.create     = (xieIntProc) NULL;
   ped->ddVec.initialize = (xieIntProc) NULL;
   ped->ddVec.activate   = (xieIntProc) NULL;
-  ped->ddVec.flush      = (xieIntProc) NULL;
   ped->ddVec.reset      = (xieIntProc) NULL;
   ped->ddVec.destroy    = (xieIntProc) NULL;
 

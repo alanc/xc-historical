@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: error.h,v 1.1 93/10/26 10:03:47 rws Exp $ */
 /**** module error.h ****/
 /******************************************************************************
 				NOTICE
@@ -77,53 +77,60 @@ extern	void	 ErrValue();
  * convenience macros for general flo errors
  */
 #define	FloAccessError(flo,tag,type,xfer) \
-		{FloError(flo,tag,type,xieErrNoFloAccess); xfer;}
+		{FloError(flo,(xieTypPhototag)tag,(CARD16)type,\
+			  (CARD8)xieErrNoFloAccess); xfer;}
 #define	FloAllocError(flo,tag,type,xfer) \
-		{FloError(flo,tag,type,xieErrNoFloAlloc); xfer;}
+		{FloError(flo,(xieTypPhototag)tag,(CARD16)type,\
+			  (CARD8)xieErrNoFloAlloc); xfer;}
 #define	FloElementError(flo,tag,type,xfer) \
-		{FloError(flo,tag,type,xieErrNoFloElement); xfer;}
+		{FloError(flo,(xieTypPhototag)tag,(CARD16)type,\
+			  (CARD8)xieErrNoFloElement); xfer;}
 #define	FloImplementationError(flo,tag,type,xfer) \
-		{FloError(flo,tag,type,xieErrNoFloImplementation); xfer;}
+		{FloError(flo,(xieTypPhototag)tag,(CARD16)type,\
+			  (CARD8)xieErrNoFloImplementation); xfer;}
 #define	FloLengthError(flo,tag,type,xfer) \
-		{FloError(flo,tag,type,xieErrNoFloLength); xfer;}
+		{FloError(flo,(xieTypPhototag)tag,(CARD16)type,\
+			  (CARD8)xieErrNoFloLength); xfer;}
 #define	FloSourceError(flo,tag,type,xfer) \
-		{FloError(flo,tag,type,xieErrNoFloSource); xfer;}
+		{FloError(flo,(xieTypPhototag)tag,(CARD16)type,\
+			  (CARD8)xieErrNoFloSource); xfer;}
 
 /*
- * convenience macros for element-specific errors
+ * convenience macros for element-specific flo errors
  */
 #define	AccessError(flo,ped,xfer) \
-		{ErrGeneric(flo,ped,xieErrNoFloAccess); xfer;}
+		{ErrGeneric(flo,ped,(CARD8)xieErrNoFloAccess); xfer;}
 #define	AllocError(flo,ped,xfer) \
-		{ErrGeneric(flo,ped,xieErrNoFloAlloc); xfer;}
+		{ErrGeneric(flo,ped,(CARD8)xieErrNoFloAlloc); xfer;}
 #define	ColorListError(flo,ped,id,xfer) \
-		{ErrResource(flo,ped,xieErrNoFloColorList,id); xfer;}
+		{ErrResource(flo,ped,(CARD8)xieErrNoFloColorList,id); xfer;}
 #define	ColormapError(flo,ped,id,xfer) \
-		{ErrResource(flo,ped,xieErrNoFloColormap,id); xfer;}
+		{ErrResource(flo,ped,(CARD8)xieErrNoFloColormap,id); xfer;}
 #define	DomainError(flo,ped,dom,xfer) \
 		{ErrDomain(flo,ped,dom); xfer;}
 #define	DrawableError(flo,ped,id,xfer) \
-		{ErrResource(flo,ped,xieErrNoFloDrawable,id); xfer;}
+		{ErrResource(flo,ped,(CARD8)xieErrNoFloDrawable,id); xfer;}
 #define	ElementError(flo,ped,xfer) \
-		{ErrGeneric(flo,ped,xieErrNoFloElement); xfer;}
+		{ErrGeneric(flo,ped,(CARD8)xieErrNoFloElement); xfer;}
 #define	GCError(flo,ped,id,xfer) \
-		{ErrResource(flo,ped,xieErrNoFloGC,id); xfer;}
+		{ErrResource(flo,ped,(CARD8)xieErrNoFloGC,id); xfer;}
 #define	ImplementationError(flo,ped,xfer) \
-		{ErrGeneric(flo,ped,xieErrNoFloImplementation); xfer;}
+		{ErrGeneric(flo,ped,(CARD8)xieErrNoFloImplementation); xfer;}
 #define	LUTError(flo,ped,id,xfer) \
-		{ErrResource(flo,ped,xieErrNoFloLUT,id); xfer;}
+		{ErrResource(flo,ped,(CARD8)xieErrNoFloLUT,id); xfer;}
 #define	MatchError(flo,ped,xfer) \
-		{ErrGeneric(flo,ped,xieErrNoFloMatch); xfer;}
+		{ErrGeneric(flo,ped,(CARD8)xieErrNoFloMatch); xfer;}
 #define	OperatorError(flo,ped,op,xfer) \
-		{ErrOperator(flo,ped,op); xfer;}
+		{ErrOperator(flo,ped,(CARD8)op); xfer;}
 #define	PhotomapError(flo,ped,id,xfer) \
-		{ErrResource(flo,ped,xieErrNoFloPhotomap,id); xfer;}
+		{ErrResource(flo,ped,(CARD8)xieErrNoFloPhotomap,id); xfer;}
 #define	ROIError(flo,ped,id,xfer) \
-		{ErrResource(flo,ped,xieErrNoFloROI,id); xfer;}
+		{ErrResource(flo,ped,(CARD8)xieErrNoFloROI,id); xfer;}
 #define	SourceError(flo,ped,xfer) \
-		{ErrGeneric(flo,ped,xieErrNoFloSource); xfer;}
-#define	TechniqueError(flo,ped,tech,len,xfer) \
-		{ErrTechnique(flo,ped,tech,len); xfer;}
+		{ErrGeneric(flo,ped,(CARD8)xieErrNoFloSource); xfer;}
+#define	TechniqueError(flo,ped,group,tech,len,xfer) \
+		{ErrTechnique(flo,ped,(CARD8)group,(CARD16)tech,(CARD16)len); \
+		   xfer;}
 #define	ValueError(flo,ped,value,xfer) \
 		{ErrValue(flo,ped,value); xfer;}
 

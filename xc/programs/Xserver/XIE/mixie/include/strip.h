@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: strip.h,v 1.1 93/10/26 09:50:46 rws Exp $ */
 /**** module strip.h ****/
 /******************************************************************************
 				NOTICE
@@ -60,10 +60,13 @@ typedef struct _stripvec {
   xieBoolProc	map_data;
   xieDataProc	get_data;
   xieBoolProc	put_data;
-  xieDataProc	free_data;
+  xieVoidProc	free_data;
   xieBoolProc	pass_strip;
+  xieBoolProc	import_strips;
+  xieBoolProc	alter_src;
   xieVoidProc	bypass_src;
   xieVoidProc	disable_src;
+  xieVoidProc	disable_dst;
 } stripVecRec;
 
 /* per-band scanline/byte data management info
@@ -82,8 +85,8 @@ typedef struct _band {
   CARD8	          **dataMap;	/* pointers for multi-line random access    */
   CARD32	    threshold;	/* line/bytes needed for execution     	    */
   CARD32	    available;	/* line/bytes available in stripLst	    */
+  bandMsk	    replicate;	/* replicate data from band 0 to bands 1 & 2*/
   CARD8		    band;	/* band number				    */
-  CARD8		    bits;	/* for bit-offset bookkeeping               */
   BOOL		    final;	/* true when last line/byte is in stripLst  */
   BOOL		    isInput;	/* band type: true = input, false = output  */
   struct _receptor *receptor;	/* receptor if isInput, otherwise NULL      */
@@ -95,7 +98,7 @@ typedef struct _band {
   BOOL		    ypass;	/* True = no processing domain this line    */
   BOOL		    inside;	/* indicates if inside or outside domain    */
   BOOL		    allpass;	/* indicates no lines fall in ROI	    */ 
-  bandMsk	    replicate;	/* replicate data from band 0 to bands 1 & 2*/
+  CARD8		    pad;
 } bandRec, *bandPtr;
 
 /**************************************************************************
@@ -111,10 +114,13 @@ typedef struct _band {
  * (type*) GetDstBytes(type,flo,pet,bnd,unit,len,purge) contiguous Dst bytes
  *  Bool   MapData(flo,pet,bnd,map,unit,len,purge)	map  multi-lines/bytes
  *  Bool   PutData(flo,pet,bnd,unit)			put  multi-lines/bytes
- * (type*) FreeData(type,flo,pet,bnd,unit)		free multi-lines/bytes
+ *  void   FreeData(flo,pet,bnd,unit)			free multi-lines/bytes
  *  Bool   PassStrip(flo,pet,bnd,strip)			forward clone of strip
+ *  Bool   ImportStrips(flo,pet,bnd,strips)		import Photomap strips
+ *  Bool   AlterSrc(flo,pet,strip)			see if Src is mutable
  *  void   BypassSrc(flo,pet,bnd)			bypass element for bnd
  *  void   DisableSrc(flo,pet,bnd,purge)		disable input for bnd
+ *  void   DisableDst(flo,pet,bnd)			signal no bnd output
  *
  * key to common arguments:
  *	type	data type returned (e.g. BitPixel, PairPixel, CARD16, ...)
@@ -135,45 +141,52 @@ typedef struct _band {
  *	IgnoreBand(bnd) ------- scheduler will ignore this band
  *	AttendReceptor(rcp) --- scheduler will consider this receptor (default)
  *	IgnoreReceptor(rcp) --- scheduler will ignore this receptor
- *      BandBits(bnd) --------- access bit offset (not used by data manager)
  *      SetBandFinal(bnd) ----- set final "true" for band and current strip
  *      SetBandThreshold(bnd,value) -- set new threshold value
+ *      TruncateStrip(bnd,value) ----- adjust end of strip to value
  **************************************************************************/
 
 /* utility macros for strip manager internal use only
  */
-#define _is_local(bnd)		   (bnd->minLocal  <= bnd->current && \
-				    bnd->current   <  bnd->maxLocal)
-#define _is_global(bnd)		   (bnd->minGlobal <= bnd->current && \
-				    bnd->current   <  bnd->maxGlobal)
-#define _is_local_contig(bnd,len)  (bnd->minLocal    <= bnd->current && \
-				    bnd->current+len <= bnd->maxLocal)
-#define _is_global_contig(bnd,len) (bnd->minGlobal   <= bnd->current && \
-				    bnd->current+len <= bnd->maxGlobal)
+#define _is_local(bnd)		   ((bnd)->minLocal    <= (bnd)->current && \
+				    (bnd)->current     <  (bnd)->maxLocal)
+#define _is_global(bnd)		   ((bnd)->minGlobal   <= (bnd)->current && \
+				    (bnd)->current     <  (bnd)->maxGlobal)
+#define _is_local_contig(bnd,len)  ((bnd)->minLocal    <= (bnd)->current && \
+				    (bnd)->current+len <= (bnd)->maxLocal)
+#define _is_global_contig(bnd,len) ((bnd)->minGlobal   <= (bnd)->current && \
+				    (bnd)->current+len <= (bnd)->maxGlobal)
 #define _byte_ptr(bnd) \
-	 (&bnd->strip->data[bnd->current - bnd->strip->start])
+	 (&(bnd)->strip->data[(bnd)->current - (bnd)->strip->start])
 #define _line_ptr(bnd) \
-	 (&bnd->strip->data[bnd->pitch * (bnd->current - bnd->strip->start)])
+	 (&(bnd)->strip->data \
+	  [(bnd)->pitch * ((bnd)->current-(bnd)->strip->start)])
 #define _release_ok(bnd) \
-	 (!ListEmpty(&bnd->stripLst) && \
-	  (bnd->current > bnd->stripLst.flink->end || !bnd->maxGlobal))
+	 (!ListEmpty(&(bnd)->stripLst) && \
+	  ((bnd)->current > (bnd)->stripLst.flink->end || !(bnd)->maxGlobal))
 
 /**************************************************************************
  * public data management macros for handling strip/scanline/other data
  */
 #define AttendBand(bnd) ((bnd)->receptor->attend |= \
 			 (bnd)->receptor->active & 1<<(bnd)->band)
-#define IgnoreBand(bnd) ((bnd)->receptor->attend &= ~(1<<(bnd)->band))
 #define AttendReceptor(rcp) (rcp->attend = rcp->active)
+#define IgnoreBand(bnd) ((bnd)->receptor->attend &= ~(1<<(bnd)->band))
 #define IgnoreReceptor(rcp) (rcp->attend = NO_BANDS)
-#define BandBits(bnd)   ((bnd)->bits)
+#define SetBandFinal(bnd) ((bnd)->strip \
+			   ? ((bnd)->final = (bnd)->strip->final = TRUE) \
+			   : ((bnd)->final = TRUE))
 #define SetBandThreshold(bnd,value) \
 		if( ((bnd)->threshold = value) > (bnd)->available) \
 		     (bnd)->receptor->ready &= ~(1<<(bnd)->band); \
 		else (bnd)->receptor->ready |=   1<<(bnd)->band
-#define SetBandFinal(bnd) ((bnd)->strip \
-			   ? ((bnd)->final = (bnd)->strip->final = TRUE) \
-			   : ((bnd)->final = TRUE))
+#define TruncateStrip(bnd,value) \
+		{(bnd)->current = (value); \
+		 if((bnd)->strip && _is_local(bnd)) { \
+		   int q = (bnd)->maxLocal - (value); \
+		   (bnd)->strip->length -= q; (bnd)->strip->end -= q; \
+		   (bnd)->available -= q + (bnd)->maxGlobal - (bnd)->maxLocal;\
+		   (bnd)->maxGlobal  = (bnd)->maxLocal = value; }}
 
 /* return the current line/byte pointer (NULL if not currently available)
  *	{BitPixel, BytePixel, ...} type;
@@ -247,28 +260,40 @@ typedef struct _band {
 #define MapData(flo,pet,bnd,map,unit,len,purge) \
 	(*flo->stripVec->map_data)(flo,pet,bnd,map,unit,len,purge)
 
-/* release lines/bytes to downstream recipients (upto but not including unit)
+/* release lines/bytes to downstream recipients (up to but not including unit)
  * upon return, bnd info points to unit, if previously available
  * returns TRUE if the element should suspend itself
  *	floDefPtr flo; peTexPtr pet; bandPtr bnd; CARD32 unit;
  */
 #define PutData(flo,pet,bnd,unit) \
-	((bnd)->current = unit, _release_ok(bnd) \
-	 ? (*flo->stripVec->put_data)(flo,pet,bnd) : FALSE)
+	((bnd)->data = (bnd)->current == unit ? (bnd)->data \
+	 : ((bnd)->current = unit, _is_local(bnd) ? _line_ptr(bnd) : NULL), \
+	 _release_ok(bnd) ? (*flo->stripVec->put_data)(flo,pet,bnd) : FALSE)
 
-/* free lines/bytes (upto but not including unit)
+/* free lines/bytes (up to but not including unit)
  * upon return, bnd info points to unit, if previously available
- *	{BitPixel, BytePixel, ...} type;
  *	floDefPtr flo; peTexPtr pet; bandPtr bnd; CARD32 unit;
  */
-#define	FreeData(type,flo,pet,bnd,unit) \
-	(type*)((bnd)->current = unit,(*flo->stripVec->free_data)(flo,pet,bnd))
+#define	FreeData(flo,pet,bnd,unit) \
+	((bnd)->current = unit, (*flo->stripVec->free_data)(flo,pet,bnd))
+
+/* import a list of strips from a Photomap
+ *	floDefPtr flo; peTexPtr pet; bandPtr bnd; stripLstPtr strips;
+ */
+#define ImportStrips(flo,pet,bnd,strips) \
+	(*flo->stripVec->import_strips)(flo,pet,bnd,strips)
 
 /* clone a strip and pass it on to downstream elements
  *	floDefPtr flo; peTexPtr pet; bandPtr bnd; stripPtr strip;
  */
 #define PassStrip(flo,pet,bnd,strip) \
 	(*flo->stripVec->pass_strip)(flo,pet,bnd,strip)
+
+/* check Src strip to see if its data can be over written
+ *	floDefPtr flo; peTexPtr pet; bandPtr bnd; stripPtr strip;
+ */
+#define AlterSrc(flo,pet,strip) \
+	(*flo->stripVec->alter_src)(flo,pet,strip)
 
 /* flush data from bnd to downstream elements, then set bnd in bypass mode
  *	floDefPtr flo; peTexPtr pet; bandPtr bnd;
@@ -281,5 +306,11 @@ typedef struct _band {
  */
 #define DisableSrc(flo,pet,bnd,purge) \
 	(*flo->stripVec->disable_src)(flo,pet,bnd,purge)
+
+/* disable any further output from bnd (i.e. send final, but no data)
+ *	floDefPtr flo; peTexPtr pet; bandPtr bnd;
+ */
+#define DisableDst(flo,pet,bnd) \
+	(*flo->stripVec->disable_dst)(flo,pet,bnd)
 
 #endif /* end _XIEH_STRIP */

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: iphoto.c,v 1.1 93/10/26 09:59:29 rws Exp $ */
 /**** module iphoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -91,7 +91,19 @@ peDefPtr	MakeIPhoto();
  *  routines internal to this module
  */
 static Bool	PrepIPhoto();
+static Bool	PrepIPhotoUnPlane();
+static Bool	PrepIPhotoG31D();
+static Bool	PrepIPhotoG32D();
+static Bool	PrepIPhotoG42D();
+static Bool	PrepIPhotoTIFF2();
+static Bool	PrepIPhotoTIFFPackBits();
 static Bool	DebriefIPhoto();
+
+#if XIE_FULL
+static Bool	PrepIPhotoUnTripleInterleaved();
+static Bool	PrepIPhotoJPEGBaseline();
+static Bool	PrepIPhotoJPEGLossless();
+#endif
 
 /*
  * dixie entry points
@@ -125,14 +137,14 @@ peDefPtr MakeIPhoto(flo,tag,pe)
   /*
    * copy the client element parameters (swap if necessary)
    */
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
     cpswapl(stuff->photomap, raw->photomap);
     raw->notify = stuff->notify;
   }
   else
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloImportPhotomap));
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloImportPhotomap));
 
   return(ped);
 }                               /* end MakeIPhoto */
@@ -156,18 +168,275 @@ static Bool PrepIPhoto(flo,ped)
   if( !(map = (photomapPtr) LookupIDByType(raw->photomap, RT_PHOTOMAP)) )
 	PhotomapError(flo,ped,raw->photomap, return(FALSE));
   ++map->refCnt;
-  pvt->map = map;
+
+  /* Load up a generic structure for importing photos from map and client */
+  pvt->map = (void *)map;
 
   if(!map->bands)
     AccessError(flo,ped, return(FALSE));
 
   /* grab a copy of the input attributes and propagate them to our output */
-  dst->bands = inf->bands = map->bands;
-  for(b = 0; b < dst->bands; b++)
-    dst->format[b] = inf->format[b] = map->format[b];
+  inf->bands = map->bands;
 
+  /* copy map formats to inflo format */
+  for(b = 0; b < inf->bands; b++) 
+    inf->format[b] = map->format[b];
+
+  /* also copy them to the outflo format, handling interleave if necessary  */
+  dst->bands =  (map->dataClass == xieValTripleBand)? 3 : 
+		(map->dataClass == xieValSingleBand)? 1 : 0;
+
+  for(b = 0; b < dst->bands; b++)  {
+    dst->format[b] = map->format[b];
+    dst->format[b].interleaved = FALSE;
+  }
+  /* NOTE: the loop is over dst->bands,  not map->bands. This is because
+   * dst->bands can be 3 when map->bands is 1. The in ephoto.c saves all 
+   * the formats of the inflo in the photomap, so they are available now 
+   * when we need them. interleaved is FALSE by definition because only
+   * ExportPhotomap elements can *produce* interleaved data.
+   */
+  
+  switch(map->technique) {
+    case xieValDecodeUncompressedSingle:
+	return(PrepIPhotoUnPlane(flo, ped));
+	break;
+    case xieValDecodeG31D:
+        return(PrepIPhotoG31D(flo, ped));
+	break;
+    case xieValDecodeG32D:
+        return(PrepIPhotoG32D(flo, ped));
+	break;
+    case xieValDecodeG42D:
+        return(PrepIPhotoG42D(flo, ped));
+	break;
+    case xieValDecodeTIFF2:
+        return(PrepIPhotoTIFF2(flo, ped));
+	break;
+    case xieValDecodeTIFFPackBits:
+        return (PrepIPhotoTIFFPackBits(flo, ped));
+	break;
+#if XIE_FULL
+    case xieValDecodeUncompressedTriple:
+	if (inf->format[0].interleaved)
+	    return(PrepIPhotoUnTripleInterleaved(flo, ped));
+	else
+	    return(PrepIPhotoUnPlane(flo, ped));
+	break;
+    case xieValDecodeJPEGBaseline:
+        return(PrepIPhotoJPEGBaseline(flo, ped));
+	break;
+    case xieValDecodeJPEGLossless:
+        return(PrepIPhotoJPEGLossless(flo, ped));
+	break;
+#endif
+    default:
+        ImplementationError(flo, ped, return(FALSE));
+  }
   return(TRUE);
 }                               /* end PrepIPhoto */
+
+/*------------------------------------------------------------------------
+---------- routines: prepare for analysis and execution ------------------
+------------------------------------------------------------------------*/
+
+/* Note: parameters are "guaranteed" to be correct because they were 
+   introduced into the photomap structure by ExportPhotomap.
+*/
+
+/* Prep routine for uncompressed plane data */
+static Bool PrepIPhotoUnPlane(flo, ped) 
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  inFloPtr   inf =  &ped->inFloLst[IMPORT];
+  int i;
+
+  ped->outFlo.bands = inf->bands;
+
+  /* Copy input to output, setting differing output parameters when necessary */
+  for (i = 0; i < ped->outFlo.bands; i++) {
+     ped->outFlo.format[i] = inf->format[i];
+     ped->outFlo.format[i].interleaved = FALSE;
+  }
+
+   /* Fill in other format parameters based on the number of output levels */
+  if (UpdateFormatfromLevels(ped) == FALSE)
+     ImplementationError(flo, ped, return(FALSE));
+
+  return(TRUE);
+} /* PrepIPhotoUnPlane */
+
+static Bool PrepIPhotoG31D(flo, ped) 
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  inFloPtr   inf =  &ped->inFloLst[IMPORT];
+  int i;
+  /*
+   * determine output attributes from input parameters
+   */
+  ped->outFlo.bands = inf->bands;
+  for (i = 0; i < inf->bands; i++) {
+    ped->outFlo.format[i] = inf->format[i];
+    ped->outFlo.format[i].interleaved = FALSE;
+  }
+
+  if (UpdateFormatfromLevels(ped) == FALSE)
+	ImplementationError(flo, ped, return(FALSE));
+
+  return(TRUE);
+
+} /* PrepIPhotoG31D */
+
+static Bool PrepIPhotoG32D(flo, ped) 
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  inFloPtr   inf =  &ped->inFloLst[IMPORT];
+  int i;
+
+  /*
+   * determine output attributes from input parameters
+   */
+  ped->outFlo.bands = inf->bands;
+  for (i = 0; i < inf->bands; i++) {
+    ped->outFlo.format[i] = inf->format[i];
+    ped->outFlo.format[i].interleaved = FALSE;
+  }
+
+  if (UpdateFormatfromLevels(ped) == FALSE)
+	ImplementationError(flo, ped, return(FALSE));
+
+  return(TRUE);
+
+} /* PrepIPhotoG32D */
+
+static Bool PrepIPhotoG42D(flo, ped) 
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  inFloPtr   inf =  &ped->inFloLst[IMPORT];
+  int i;
+
+  /*
+   * determine output attributes from input parameters
+   */
+  ped->outFlo.bands = inf->bands;
+  for (i = 0; i < inf->bands; i++) {
+    ped->outFlo.format[i] = inf->format[i];
+    ped->outFlo.format[i].interleaved = FALSE;
+  }
+
+  if (UpdateFormatfromLevels(ped) == FALSE)
+	ImplementationError(flo, ped, return(FALSE));
+
+  return(TRUE);
+
+} /* PrepIPhotoG42D */
+
+static Bool PrepIPhotoTIFF2(flo, ped) 
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  inFloPtr   inf =  &ped->inFloLst[IMPORT];
+  int i;
+
+  /*
+   * determine output attributes from input parameters
+   */
+  ped->outFlo.bands = inf->bands;
+  for (i = 0; i < inf->bands; i++) {
+    ped->outFlo.format[i] = inf->format[i];
+    ped->outFlo.format[i].interleaved = FALSE;
+  }
+
+  if (UpdateFormatfromLevels(ped) == FALSE)
+	ImplementationError(flo, ped, return(FALSE));
+
+  return(TRUE);
+
+} /* PrepIPhotoTIFF2 */
+
+static Bool PrepIPhotoTIFFPackBits(flo, ped) 
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  inFloPtr   inf =  &ped->inFloLst[IMPORT];
+  int i;
+
+  /*
+   * determine output attributes from input parameters
+   */
+  ped->outFlo.bands = inf->bands;
+  for (i = 0; i < inf->bands; i++) {
+    ped->outFlo.format[i] = inf->format[i];
+    ped->outFlo.format[i].interleaved = FALSE;
+  }
+
+  if (UpdateFormatfromLevels(ped) == FALSE)
+	ImplementationError(flo, ped, return(FALSE));
+
+  return(TRUE);
+
+} /* PrepIPhotoTIFFPackBits */
+
+
+#if XIE_FULL
+/* Prep routine for uncompressed triple band data interleaved by pixel */
+static Bool PrepIPhotoUnTripleInterleaved(flo, ped) 
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  inFloPtr   inf =  &ped->inFloLst[IMPORT];
+
+  /* Set up 3 outflows for the one interleaved inflo */
+  ped->outFlo.bands = 3;
+
+   /* Fill in other format parameters based on the number of output levels */
+  if (UpdateFormatfromLevels(ped) == FALSE)
+     ImplementationError(flo, ped, return(FALSE));
+
+  return(TRUE);
+} /* PrepIPhotoUnTripleInterleaved */
+
+static Bool PrepIPhotoJPEGBaseline(flo, ped) 
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  /*
+   * determine output attributes from input parameters
+   */
+  if(!UpdateFormatfromLevels(ped))
+    MatchError(flo, ped, return(FALSE));
+
+  return(TRUE);
+
+} /* PrepIPhotoJPEGBaseline */
+
+static Bool PrepIPhotoJPEGLossless(flo, ped) 
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  inFloPtr   inf =  &ped->inFloLst[IMPORT];
+  int i;
+
+  /*
+   * determine output attributes from input parameters
+   */
+  ped->outFlo.bands = inf->bands;
+  for (i = 0; i < inf->bands; i++) {
+    ped->outFlo.format[i] = inf->format[i];
+    ped->outFlo.format[i].interleaved = FALSE;
+  }
+
+  if (UpdateFormatfromLevels(ped) == FALSE)
+	ImplementationError(flo, ped, return(FALSE));
+
+  return(TRUE);
+
+} /* PrepIPhotoJPEGLossless */
+#endif
 
 
 /*------------------------------------------------------------------------
@@ -178,13 +447,17 @@ static Bool DebriefIPhoto(flo,ped,ok)
      peDefPtr   ped;
      Bool	ok;
 {
+  xieFloImportPhotomap *raw = (xieFloImportPhotomap *)ped->elemRaw;
   iPhotoDefPtr pvt = (iPhotoDefPtr) ped->elemPvt;
+  photomapPtr map;
 
-  if(pvt && pvt->map)
-    if(pvt->map->refCnt == 1)
-      FreeResourceByType(pvt->map->ID, RT_PHOTOMAP, RT_NONE);
+  if(pvt && (map = (photomapPtr)pvt->map))
+    if(map->refCnt > 1)
+      --map->refCnt;
+    else if(LookupIDByType(raw->photomap, RT_PHOTOMAP))
+      FreeResourceByType(map->ID, RT_PHOTOMAP, RT_NONE);
     else
-      --pvt->map->refCnt;
+      DeletePhotomap(map, map->ID);
 
   return(TRUE);
 }                               /* end DebriefIPhoto */

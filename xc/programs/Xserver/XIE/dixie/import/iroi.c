@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: iroi.c,v 1.1 93/10/26 09:59:35 rws Exp $ */
 /**** module iroi.c ****/
 /******************************************************************************
 				NOTICE
@@ -44,7 +44,7 @@ terms and conditions:
   
 	iroi.c -- DIXIE routines for managing the ImportROI element
   
-	Robert NC Shelley and James H Weida -- AGE Logic, Inc. April 1993
+	Robert NC Shelley  -- AGE Logic, Inc. April 1993
   
 *****************************************************************************/
 
@@ -97,7 +97,7 @@ static Bool    DebriefIROI();
  */
 static diElemVecRec iROIVec =
 {
-	PrepIROI,			/* prepare for analysis and execution	*/
+	PrepIROI,		/* prepare for analysis and execution	*/
 	DebriefIROI		/* debrief */
 };
 
@@ -114,29 +114,27 @@ peDefPtr MakeIROI(flo,tag,pe)
   ELEMENT(xieFloImportROI);
   ELEMENT_SIZE_MATCH(xieFloImportROI);
   
-  ped = MakePEDef(1, (CARD32)stuff->elemLength<<2, sizeof(iROIDefRec)); 
-  if (!ped)
-    FloAllocError(flo,tag,xieElemImportROI, return(NULL));
+  if(!(ped = MakePEDef(1, (CARD32)stuff->elemLength<<2, sizeof(iROIDefRec))))
+      FloAllocError(flo,tag,xieElemImportROI, return(NULL));
   
-  ped->diVec	   = &iROIVec;
+  ped->diVec	    = &iROIVec;
   ped->phototag     = tag;
   ped->flags.import = TRUE;
   raw = (xieFloImportROI *)ped->elemRaw;
   /*
    * copy the standard client element parameters (swap if necessary)
    */
-  if (flo->client->swapped)
-    {
+  if (flo->reqClient->swapped) {
       raw->elemType   = stuff->elemType;
       raw->elemLength = stuff->elemLength;
       cpswapl(stuff->roi, raw->roi);
-    }
-  else  
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloImportROI));
+  } else  
+      memcpy((char *)raw, (char *)stuff, sizeof(xieFloImportROI));
   /*
    * assign phototags to inFlos
    */
   inFlo = ped->inFloLst;
+
   return ped;
 }                               /* end MakeIROI */
 
@@ -151,33 +149,22 @@ static Bool PrepIROI(flo,ped)
   xieFloImportROI *raw = (xieFloImportROI *)ped->elemRaw;
   iROIDefPtr pvt = (iROIDefPtr) ped->elemPvt;
   inFloPtr inf   = &ped->inFloLst[IMPORT];
-  outFloPtr src  = &inf->srcDef->outFlo;
   outFloPtr dst  = &ped->outFlo;
   roiPtr roi;
   
   /* grab roi resource */
-  roi = (roiPtr)LookupIDByType(raw->roi, RT_ROI);
-  if (!roi)
-    {
+  if (!(roi = (roiPtr)LookupIDByType(raw->roi, RT_ROI)))
       ROIError(flo,ped,raw->roi,return(FALSE));
-    }
+ 
+  /* Make sure the roi has been populated */
+  if (ListEmpty(&roi->strips))
+      AccessError(flo,ped, return(FALSE));
+
   roi->refCnt++;
   pvt->roi = roi;
   
-  inf->bands = 1;
-  inf->format[0].class = RUN_LENGTH;
-  inf->format[0].band   = 0;
-  inf->format[0].width  = 0;
-  inf->format[0].height = 0;
-  inf->format[0].levels = 0;
-  
-  /* propagate ROI attributes to output */
-  dst->bands = 1;
-  dst->format[0].class = RUN_LENGTH;
-  dst->format[0].band   = 0;
-  dst->format[0].width  = 0;
-  dst->format[0].height = 0;
-  dst->format[0].levels = 0;
+  dst->bands = inf->bands = 1;
+  dst->format[0].class = inf->format[0].class = RUN_LENGTH;
   
   return TRUE;
 }                               /* end PrepIROI */
@@ -190,14 +177,18 @@ static Bool DebriefIROI(flo,ped,ok)
      peDefPtr   ped;
      Bool	ok;
 {
+  xieFloImportROI *raw = (xieFloImportROI *)ped->elemRaw;
   iROIDefPtr pvt = (iROIDefPtr)ped->elemPvt;
-  
-  if(pvt && pvt->roi)
-    if(pvt->roi->refCnt == 1)
+  roiPtr roi;
+
+  if(pvt && (roi = pvt->roi))
+    if(pvt->roi->refCnt > 1)
+      --roi->refCnt;
+    else if(LookupIDByType(raw->roi, RT_ROI))
       FreeResourceByType(pvt->roi->ID, RT_ROI, RT_NONE);
     else
-      --pvt->roi->refCnt;
-  
+      DeleteROI(roi, roi->ID);
+
   return TRUE;
 }			                         /* end DebriefIROI */
 

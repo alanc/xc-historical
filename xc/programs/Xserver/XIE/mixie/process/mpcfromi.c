@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mpcfromi.c,v 1.1 93/10/26 09:48:19 rws Exp $ */
 /**** module mpcfromi.c ****/
 /******************************************************************************
 				NOTICE
@@ -81,6 +81,7 @@ terms and conditions:
 #include <macro.h>
 #include <colorlst.h>
 #include <element.h>
+#include <xiemd.h>
 #include <texstr.h>
 
 extern int QueryColors(); /* in ...server/dix/colormap.c */
@@ -114,41 +115,34 @@ static ddElemVecRec mpCfromIVec = {
 /* Local Declarations.
  */
 typedef struct _mpcfromi {
+  pCfromIDefPtr  dix;
+  xieIntProc	 action;
   bandPtr        iband;
   bandPtr        oband;
   Pixel         *pixLst;
   xrgb          *rgbLst;
-  Bool           gray;
   CARD32	 width;
-  xieIntProc	 action;
+  void		*ibuf;
+  void		*obuf[xieValMaxBands];
 } mpCfromIRec, *mpCfromIPtr;
 
 /* action routines
  */
-#define    CfromI_1bb (xieIntProc)NULL
-#define    CfromI_1bB (xieIntProc)NULL
-#define    CfromI_1bP (xieIntProc)NULL
-#define    CfromI_1Bb (xieIntProc)NULL
-static int CfromI_1BB();
-static int CfromI_1BP();
-#define    CfromI_1Pb (xieIntProc)NULL
-static int CfromI_1PB();
-static int CfromI_1PP();
-#define    CfromI_1Qb (xieIntProc)NULL
-static int CfromI_1QB();
-static int CfromI_1QP();
-#define    CfromI_3bb (xieIntProc)NULL
-#define    CfromI_3bB (xieIntProc)NULL
-#define    CfromI_3bP (xieIntProc)NULL
-#define    CfromI_3Bb (xieIntProc)NULL
-static int CfromI_3BB();
-static int CfromI_3BP();
-#define    CfromI_3Pb (xieIntProc)NULL
-static int CfromI_3PB();
-static int CfromI_3PP();
-#define    CfromI_3Qb (xieIntProc)NULL
-static int CfromI_3QB();
-static int CfromI_3QP();
+#define    CfromI_1bb CfromI_1BB
+#define    CfromI_1bB CfromI_1BB
+#define    CfromI_1bP CfromI_1BP
+#define    CfromI_1Bb CfromI_1BB
+#define    CfromI_1Pb CfromI_1PB
+#define    CfromI_1Qb CfromI_1QB
+#define    CfromI_3bb CfromI_3BB
+#define    CfromI_3bB CfromI_3BB
+#define    CfromI_3bP CfromI_3BP
+#define    CfromI_3Bb CfromI_3BB
+#define    CfromI_3Pb CfromI_3PB
+#define    CfromI_3Qb CfromI_3QB
+static int CfromI_1BB(), CfromI_1BP(), CfromI_3BB(), CfromI_3BP();
+static int CfromI_1PB(), CfromI_1PP(), CfromI_3PB(), CfromI_3PP();
+static int CfromI_1QB(), CfromI_1QP(), CfromI_3QB(), CfromI_3QP();
 
 static int (*action_CfromI[2][3][4])() = {
   CfromI_1bb, CfromI_1Bb, CfromI_1Pb, CfromI_1Qb, /* single, o=1, i=1..4 */
@@ -199,36 +193,47 @@ static int InitCfromI(flo,ped)
   pCfromIDefPtr dix = (pCfromIDefPtr) ped->elemPvt;
   mpCfromIPtr   ddx = (mpCfromIPtr)pet->private;
   CARD32  i, pseudo = !dix->pixMsk[0];
-  CARD32        odx =  ped->outFlo.bands == 1 ? 0 : 1;
+  CARD32 cells, odx =  ped->outFlo.bands == 1 ? 0 : 1;
+  CARD8          oc = oft->class, ic = ift->class;
   Pixel  *p;
   xrgb   *rgb;
   
   /* set up action parameters
    */
-  ddx->gray   = dix->class <= GrayScale;
+  ddx->dix    = dix;
   ddx->width  = oft->width;
   ddx->iband  = &pet->receptor[SRCtag].band[0];
   ddx->oband  = &pet->emitter[0];
-  ddx->action = action_CfromI[odx][oft->class-1][ift->class-1];
-  if(!ddx->action)
-    ImplementationError(flo,ped, return(FALSE));
+  ddx->action = action_CfromI[odx][oc-1][ift->class-1];
+  if(!ddx->action) ImplementationError(flo,ped, return(FALSE));
   ped->ddVec.activate = !odx ? DoSingleCfromI : DoTripleCfromI;
 
+  if(ic == BIT_PIXEL && !(ddx->ibuf = (BytePixel*)XieMalloc(ddx->width+7)))
+    AllocError(flo,ped, return(FALSE));
+
+  if(oc == BIT_PIXEL)
+    if( odx && (!(ddx->obuf[0] = (BytePixel*)XieMalloc(ddx->width+7))  ||
+		!(ddx->obuf[1] = (BytePixel*)XieMalloc(ddx->width+7))  ||
+		!(ddx->obuf[2] = (BytePixel*)XieMalloc(ddx->width+7))) ||
+       !odx &&  !(ddx->obuf[0] = (BytePixel*)XieMalloc(ddx->width+7)))
+      AllocError(flo,ped, return(FALSE));
+  
   /* snapshot the current contents of the colormap
    */
-  if(!(ddx->pixLst = (Pixel*) XieMalloc(dix->cells * sizeof(Pixel))) ||
-     !(ddx->rgbLst = (xrgb *) XieMalloc(dix->cells * sizeof(xrgb))))
+  SetDepthFromLevels(dix->cells,i); cells = 1<<i;
+  if(!(ddx->pixLst = (Pixel*) XieMalloc(cells * sizeof(Pixel))) ||
+     !(ddx->rgbLst = (xrgb *) XieMalloc(cells * sizeof(xrgb))))
     AllocError(flo,ped, return(FALSE));
-  for(p = ddx->pixLst, i = 0; i < dix->cells; ++i)
-    *p++ = pseudo ? i : ((i & dix->pixMsk[0]) << dix->pixPos[0] |
-                         (i & dix->pixMsk[1]) << dix->pixPos[1] |
-                         (i & dix->pixMsk[2]) << dix->pixPos[2]);
-  if(QueryColors(dix->cmap,dix->cells,ddx->pixLst,ddx->rgbLst))
+  for(p = ddx->pixLst, i = 0; i < cells; ++i)
+    *p++ = pseudo ? i : (i << dix->pixPos[0] & dix->pixMsk[0] |
+                         i << dix->pixPos[1] & dix->pixMsk[1] |
+                         i << dix->pixPos[2] & dix->pixMsk[2]);
+  if(QueryColors(dix->cmap,cells,ddx->pixLst,ddx->rgbLst))
     ColormapError(flo,ped,raw->colormap, return(FALSE));   /* XXX hmmm? */
 
   /* adjust the RGB values according to the client's precision requirements
    */
-  for(rgb = ddx->rgbLst, i = 0; i < dix->cells; ++rgb, ++i) {
+  for(rgb = ddx->rgbLst, i = 0; i < cells; ++rgb, ++i) {
     rgb->red   >>= dix->precShift;
     rgb->green >>= dix->precShift;
     rgb->blue  >>= dix->precShift;
@@ -247,19 +252,26 @@ static int DoSingleCfromI(flo,ped,pet)	/* one band out */
      peDefPtr  ped;
      peTexPtr  pet;
 {
-  mpCfromIPtr   ddx = (mpCfromIPtr) pet->private;
+  mpCfromIPtr  ddx = (mpCfromIPtr) pet->private;
+  bandPtr    iband = ddx->iband;
+  bandPtr    oband = ddx->oband;
+  CARD32     width = iband->format->width;
   void *src, *dst;
   
-  if((src = GetCurrentSrc(void,flo,pet,ddx->iband)) &&
-     (dst = GetCurrentDst(void,flo,pet,ddx->oband)))
+  if((src = GetCurrentSrc(void,flo,pet,iband)) &&
+     (dst = GetCurrentDst(void,flo,pet,oband)))
     do {
-      (*ddx->action)(ddx, src, dst);
+      if(ddx->ibuf) src = bitexpand(src,ddx->ibuf,width,(char)1,(char)0);
 
-      src = GetNextSrc(void,flo,pet,ddx->iband,FLUSH);
-      dst = GetNextDst(void,flo,pet,ddx->oband,FLUSH);
+      (*ddx->action)(ddx, src, ddx->obuf[0] ? ddx->obuf[0] : dst);
+
+      if(ddx->obuf[0]) bitshrink(ddx->obuf[0],dst,width,(char)1);
+
+      src = GetNextSrc(void,flo,pet,iband,FLUSH);
+      dst = GetNextDst(void,flo,pet,oband,FLUSH);
     } while(src && dst);
     
-  FreeData(void,flo,pet,ddx->iband,ddx->iband->current);
+  FreeData(flo,pet,iband,iband->current);
 
   return(TRUE);
 }                               /* end DoSingleCfromI */
@@ -269,23 +281,36 @@ static int DoTripleCfromI(flo,ped,pet)	/* three bands out */
      peDefPtr  ped;
      peTexPtr  pet;
 {
-  mpCfromIPtr   ddx = (mpCfromIPtr) pet->private;
+  mpCfromIPtr  ddx = (mpCfromIPtr) pet->private;
+  bandPtr    iband = ddx->iband;
+  bandPtr    oband = ddx->oband;
+  CARD32     width = iband->format->width;
   void *src, *dstR, *dstG, *dstB;
   
-  if((src  = GetCurrentSrc(void,flo,pet,ddx->iband))   &&
-     (dstR = GetCurrentDst(void,flo,pet,ddx->oband+0)) &&
-     (dstG = GetCurrentDst(void,flo,pet,ddx->oband+1)) &&
-     (dstB = GetCurrentDst(void,flo,pet,ddx->oband+2)))
-    do {
-      (*ddx->action)(ddx, src, dstR, dstG, dstB);
+  src  = GetCurrentSrc(void,flo,pet,iband);
+  dstR = GetCurrentDst(void,flo,pet,oband); oband++;
+  dstG = GetCurrentDst(void,flo,pet,oband); oband++;
+  dstB = GetCurrentDst(void,flo,pet,oband); oband -=2;
 
-      src  = GetNextSrc(void,flo,pet,ddx->iband,FLUSH);
-      dstR = GetNextDst(void,flo,pet,ddx->oband+0,FLUSH);
-      dstG = GetNextDst(void,flo,pet,ddx->oband+1,FLUSH);
-      dstB = GetNextDst(void,flo,pet,ddx->oband+2,FLUSH);
-    } while(src && dstR && dstG && dstB);
-    
-  FreeData(void,flo,pet,ddx->iband,ddx->iband->current);
+  while(src && dstR && dstG && dstB) {
+        
+    if(ddx->ibuf) src = bitexpand(src,ddx->ibuf,width,(char)1,(char)0);
+
+    (*ddx->action)(ddx, src,
+		   ddx->obuf[0] ? ddx->obuf[0] : dstR,
+		   ddx->obuf[1] ? ddx->obuf[1] : dstG,
+		   ddx->obuf[2] ? ddx->obuf[2] : dstB);
+
+    if(ddx->obuf[0]) bitshrink(ddx->obuf[0],dstR,width,(char)1);
+    if(ddx->obuf[1]) bitshrink(ddx->obuf[1],dstG,width,(char)1);
+    if(ddx->obuf[2]) bitshrink(ddx->obuf[2],dstB,width,(char)1);
+
+    src  = GetNextSrc(void,flo,pet,iband,FLUSH);
+    dstR = GetNextDst(void,flo,pet,oband,FLUSH); oband++;
+    dstG = GetNextDst(void,flo,pet,oband,FLUSH); oband++;
+    dstB = GetNextDst(void,flo,pet,oband,FLUSH); oband -=2;
+  }
+  FreeData(flo,pet,iband,iband->current);
 
   return(TRUE);
 }                               /* end DoTripleCfromI */
@@ -301,8 +326,12 @@ static int ResetCfromI(flo,ped)
 {
   mpCfromIPtr ddx = (mpCfromIPtr) ped->peTex->private;
 
-  if(ddx->pixLst) ddx->pixLst = (Pixel*) XieFree(ddx->pixLst);
-  if(ddx->rgbLst) ddx->rgbLst = (xrgb *) XieFree(ddx->rgbLst);
+  if(ddx->pixLst ) ddx->pixLst  = (Pixel*) XieFree(ddx->pixLst );
+  if(ddx->rgbLst ) ddx->rgbLst  = (xrgb *) XieFree(ddx->rgbLst );
+  if(ddx->ibuf   ) ddx->ibuf    = (void *) XieFree(ddx->ibuf   );
+  if(ddx->obuf[0]) ddx->obuf[0] = (void *) XieFree(ddx->obuf[0]);
+  if(ddx->obuf[1]) ddx->obuf[1] = (void *) XieFree(ddx->obuf[1]);
+  if(ddx->obuf[2]) ddx->obuf[2] = (void *) XieFree(ddx->obuf[2]);
 
   ResetReceptors(ped);
   ResetEmitter(ped);
@@ -333,15 +362,28 @@ static int DestroyCfromI(flo,ped)
 
 /* Single band output action routines:
  */
-#define DO_SINGLE_CFROMI(fn_do,itype,otype)		\
-static int fn_do(ddx,SRC,DST)				\
-    mpCfromIPtr ddx; void *SRC; void *DST;		\
-{							\
-  itype *s = (itype *)SRC;				\
-  otype *d = (otype *)DST;				\
-  xrgb  *x =  ddx->rgbLst;				\
-  int    w =  ddx->width;				\
-  while(w--) *d++ = x[*s++].red;			\
+
+#define DO_SINGLE_CFROMI(fn_do,itype,otype)			\
+static int fn_do(ddx,SRC,DST)					\
+  mpCfromIPtr ddx; void *SRC; void *DST;			\
+{								\
+  itype *s = (itype *)SRC;					\
+  otype *d = (otype *)DST;					\
+  xrgb  *x =  ddx->rgbLst;					\
+  int    w =  ddx->width;					\
+  switch(ddx->dix->class) {					\
+  case StaticGray:						\
+  case GrayScale:						\
+  case StaticColor:						\
+  case PseudoColor:						\
+    while(w--) *d++ = x[*s++].red;				\
+    break;							\
+  case TrueColor:						\
+  case DirectColor:						\
+    { int rm = ddx->dix->pixMsk[0], rs = ddx->dix->pixPos[0];	\
+      while(w--) *d++ = x[(*s++ & rm) >> rs].red;		\
+    }								\
+  }								\
 }
 /* bit versions - nyi */
 /*		 CfromI_1bb,BitPixel, BitPixel  */
@@ -360,23 +402,42 @@ DO_SINGLE_CFROMI(CfromI_1QP,QuadPixel,PairPixel)
 
 /* Triple band output action routines:
  */
-#define DO_TRIPLE_CFROMI(fn_do,itype,otype)		\
-static int fn_do(ddx,SRC,DSTR,DSTG,DSTB)		\
-    mpCfromIPtr ddx; void *SRC, *DSTR, *DSTG, *DSTB;	\
-{							\
-  itype  *s = (itype *)SRC;				\
-  otype  *r = (otype *)DSTR;				\
-  otype  *g = (otype *)DSTG;				\
-  otype  *b = (otype *)DSTB;				\
-  xrgb   *x =  ddx->rgbLst;				\
-  int     w =  ddx->width;				\
-  if(ddx->gray)						\
-    while(w--) *r++ = *g++ = *b++ = x[*s++].red;	\
-  else							\
-    while(w--) {					\
-      xrgb *p = x + *s++;				\
-      *r++ = p->red; *g++ = p->green; *b++ = p->blue;	\
-    }							\
+
+#define DO_TRIPLE_CFROMI(fn_do,itype,otype)			\
+static int fn_do(ddx,SRC,DSTR,DSTG,DSTB)			\
+    mpCfromIPtr ddx; void *SRC, *DSTR, *DSTG, *DSTB;		\
+{								\
+  itype  *s = (itype *)SRC;					\
+  otype  *r = (otype *)DSTR;					\
+  otype  *g = (otype *)DSTG;					\
+  otype  *b = (otype *)DSTB;					\
+  xrgb   *x =  ddx->rgbLst;					\
+  int     w =  ddx->width;					\
+  switch(ddx->dix->class) {					\
+  case StaticGray:						\
+  case GrayScale:						\
+    while(w--) *r++ = *g++ = *b++ = x[*s++].red;		\
+    break;							\
+  case StaticColor:						\
+  case PseudoColor:						\
+    while(w--) {						\
+      xrgb *p = x + *s++;					\
+      *r++ = p->red; *g++ = p->green; *b++ = p->blue;		\
+    }								\
+    break;							\
+  case TrueColor:						\
+  case DirectColor:						\
+    { int rm = ddx->dix->pixMsk[0], rs = ddx->dix->pixPos[0];	\
+      int gm = ddx->dix->pixMsk[1], gs = ddx->dix->pixPos[1];	\
+      int bm = ddx->dix->pixMsk[2], bs = ddx->dix->pixPos[2];	\
+      while(w--) {						\
+	Pixel p = *s++;						\
+	*r++ = x[(p & rm) >> rs].red;				\
+	*g++ = x[(p & gm) >> gs].green;				\
+	*b++ = x[(p & bm) >> bs].blue;				\
+      }								\
+    }								\
+  }								\
 }
 /* bit versions - nyi */
 /*		 CfromI_3bb,BitPixel, BitPixel  */
@@ -391,6 +452,5 @@ DO_TRIPLE_CFROMI(CfromI_3PP,PairPixel,PairPixel)
      /*		 CfromI_3Qb,QuadPixel,BitPixel  */
 DO_TRIPLE_CFROMI(CfromI_3QB,QuadPixel,BytePixel)
 DO_TRIPLE_CFROMI(CfromI_3QP,QuadPixel,PairPixel)
-     
 
 /* end module mpcfromi.c */

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: tables.h,v 1.1 93/10/26 10:04:31 rws Exp $ */
 /**** module tables.h ****/
 /******************************************************************************
 				NOTICE
@@ -58,17 +58,7 @@ extern	void		init_proc_tables();
 extern	peDefPtr	(*MakeTable[])();
 
 #else  /* _XIEC_TABLES */
-	/* colorlist.c */
-extern	int		ProcCreateColorList();
-extern	int		ProcDestroyColorList();
-extern	int		ProcPurgeColorList();
-extern	int		ProcQueryColorList();
-extern	int		SProcCreateColorList();
-extern	int		SProcDestroyColorList();
-extern	int		SProcPurgeColorList();
-extern	int		SProcQueryColorList();
-	/* error.c */
-extern	int		ProcNotImplemented();
+
 	/* flo.c */
 extern  int		ProcAbort();
 extern  int		ProcAwait();
@@ -99,11 +89,6 @@ extern	int		ProcQueryPhotomap();
 extern	int		SProcCreatePhotomap();
 extern	int		SProcDestroyPhotomap();
 extern	int		SProcQueryPhotomap();
-	/* roi.c */
-extern	int		ProcCreateROI();
-extern	int		ProcDestroyROI();
-extern	int		SProcCreateROI();
-extern	int		SProcDestroyROI();
 	/* stored.c */
 extern	int		ProcCreatePhotoflo();
 extern	int		ProcDestroyPhotoflo();
@@ -119,37 +104,65 @@ extern	int		SProcRedefinePhotoflo();
 extern	int		ProcQueryTechniques();
 extern	int		SProcQueryTechniques();
 
+#if XIE_FULL
+	/* colorlist.c */
+extern	int		ProcCreateColorList();
+extern	int		ProcDestroyColorList();
+extern	int		ProcPurgeColorList();
+extern	int		ProcQueryColorList();
+extern	int		SProcCreateColorList();
+extern	int		SProcDestroyColorList();
+extern	int		SProcPurgeColorList();
+extern	int		SProcQueryColorList();
+	/* roi.c */
+extern	int		ProcCreateROI();
+extern	int		ProcDestroyROI();
+extern	int		SProcCreateROI();
+extern	int		SProcDestroyROI();
+#endif
+
 /* elements */
 extern	peDefPtr	MakeIDraw();
 extern	peDefPtr	MakeIDrawP();
 extern	peDefPtr	MakeICLUT();
-extern	peDefPtr	MakeICPhoto();
-extern	peDefPtr	MakeICROI();
 extern	peDefPtr	MakeILUT();
+extern	peDefPtr	MakeICPhoto();
 extern	peDefPtr	MakeIPhoto();
+extern	peDefPtr	MakeGeometry();
+extern	peDefPtr	MakePoint();
+extern	peDefPtr	MakeEDraw();
+extern	peDefPtr	MakeEDrawPlane();
+extern	peDefPtr	MakeECLUT();
+extern	peDefPtr	MakeELUT();
+extern	peDefPtr	MakeECPhoto();
+extern	peDefPtr	MakeEPhoto();
+
+#if XIE_FULL
+extern	peDefPtr	MakeICROI();
 extern	peDefPtr	MakeIROI();
 extern	peDefPtr	MakeArith();
 extern	peDefPtr	MakeBandCom();
 extern	peDefPtr	MakeBandExt();
+extern	peDefPtr	MakeBandSel();
 extern	peDefPtr	MakeBlend();
+extern	peDefPtr	MakeCompare();
 extern	peDefPtr	MakeConstrain();
 extern	peDefPtr	MakeConvertFromIndex();
+extern	peDefPtr	MakeConvertFromRGB();
 extern	peDefPtr	MakeConvertToIndex();
+extern	peDefPtr	MakeConvertToRGB();
 extern	peDefPtr	MakeConvolve();
 extern	peDefPtr	MakeDither();
-extern	peDefPtr	MakeGeometry();
 extern	peDefPtr	MakeLogic();
+extern	peDefPtr	MakeMatchHistogram();
+extern	peDefPtr	MakeMath();
 extern	peDefPtr	MakePasteUp();
-extern	peDefPtr	MakePoint();
 extern	peDefPtr	MakeUnconstrain();
-extern	peDefPtr	MakeECLUT();
-extern	peDefPtr	MakeECPhoto();
-extern	peDefPtr	MakeEDraw();
-extern	peDefPtr	MakeEDrawPlane();
-extern	peDefPtr	MakeELUT();
-extern	peDefPtr	MakeEPhoto();
-extern	peDefPtr	MakeEROI();
+extern	peDefPtr	MakeECHistogram();
 extern	peDefPtr	MakeECROI();
+extern	peDefPtr	MakeEROI();
+#endif
+
 #endif /* _XIEC_TABLES */
 
 #endif /* _XIEH_TABLES */

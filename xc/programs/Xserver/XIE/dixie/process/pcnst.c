@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pcnst.c,v 1.1 93/10/26 10:00:08 rws Exp $ */
 /**** module pcnst.c ****/
 /******************************************************************************
 				NOTICE
@@ -55,9 +55,7 @@ terms and conditions:
  */
 #include <stdio.h>
 
-#ifndef XoftWare
 #define XoftWare
-#endif
   /*
    *  Core X Includes
    */
@@ -129,24 +127,25 @@ peDefPtr MakeConstrain(flo,tag,pe)
   /*
    * copy the client element parameters (swap if necessary)
    */
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
     cpswaps(stuff->src, raw->src);
-    cpswapl(stuff->level0,  raw->level0);
-    cpswapl(stuff->level1,  raw->level1);
-    cpswapl(stuff->level2,  raw->level2);
+    cpswapl(stuff->levels0,  raw->levels0);
+    cpswapl(stuff->levels1,  raw->levels1);
+    cpswapl(stuff->levels2,  raw->levels2);
     cpswaps(stuff->lenParams, raw->lenParams);
     cpswaps(stuff->constrain, raw->constrain);
   }
   else
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloConstrain));
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloConstrain));
   /*
    * copy technique data (if any)
    */
   if(!(ped->techVec = FindTechnique(xieValConstrain, raw->constrain)) ||
      !(ped->techVec->copyfnc(flo, ped, &stuff[1], &raw[1], raw->lenParams)))
-    TechniqueError(flo,ped,raw->constrain,raw->lenParams, return(ped));
+    TechniqueError(flo,ped,xieValConstrain,raw->constrain,raw->lenParams,
+		   return(ped));
 
  /*
    * assign phototag to inFlo
@@ -182,39 +181,39 @@ Bool CopyPConstrainClipScale(flo, ped, sparms, rparms, tsize)
 {
      pCnstDefPtr pvt;
 
-     if (tsize != sizeof(xieTecClipScale) >> 2) return(FALSE);
+     VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
 
      if (!(ped->techPvt = (void *)XieMalloc(sizeof(pCnstDefRec))))
 	     FloAllocError(flo, ped->phototag,xieElemConstrain, return(TRUE));
 
      pvt = (pCnstDefPtr)ped->techPvt;
 
-     if( flo->client->swapped ) {
-	     pvt->input_low[0] = ConvertFromIEEE(lswapl(sparms->input_low0));
-	     pvt->input_low[1] = ConvertFromIEEE(lswapl(sparms->input_low1));
-	     pvt->input_low[2] = ConvertFromIEEE(lswapl(sparms->input_low2));
-	     pvt->input_high[0] = ConvertFromIEEE(lswapl(sparms->input_high0));
-	     pvt->input_high[1] = ConvertFromIEEE(lswapl(sparms->input_high1));
-	     pvt->input_high[2] = ConvertFromIEEE(lswapl(sparms->input_high2));
-	     cpswapl(sparms->output_low0,  pvt->output_low[0]);
-	     cpswapl(sparms->output_low1,  pvt->output_low[1]);
-	     cpswapl(sparms->output_low2,  pvt->output_low[2]);
-	     cpswapl(sparms->output_high0, pvt->output_high[0]);
-	     cpswapl(sparms->output_high1, pvt->output_high[1]);
-	     cpswapl(sparms->output_high2, pvt->output_high[2]);
+     if( flo->reqClient->swapped ) {
+	     pvt->input_low[0] = ConvertFromIEEE(lswapl(sparms->inputLow0));
+	     pvt->input_low[1] = ConvertFromIEEE(lswapl(sparms->inputLow1));
+	     pvt->input_low[2] = ConvertFromIEEE(lswapl(sparms->inputLow2));
+	     pvt->input_high[0] = ConvertFromIEEE(lswapl(sparms->inputHigh0));
+	     pvt->input_high[1] = ConvertFromIEEE(lswapl(sparms->inputHigh1));
+	     pvt->input_high[2] = ConvertFromIEEE(lswapl(sparms->inputHigh2));
+	     cpswapl(sparms->outputLow0,  pvt->output_low[0]);
+	     cpswapl(sparms->outputLow1,  pvt->output_low[1]);
+	     cpswapl(sparms->outputLow2,  pvt->output_low[2]);
+	     cpswapl(sparms->outputHigh0, pvt->output_high[0]);
+	     cpswapl(sparms->outputHigh1, pvt->output_high[1]);
+	     cpswapl(sparms->outputHigh2, pvt->output_high[2]);
       } else {
-	     pvt->input_low[0] = ConvertFromIEEE(sparms->input_low0);
-	     pvt->input_low[1] = ConvertFromIEEE(sparms->input_low1);
-	     pvt->input_low[2] = ConvertFromIEEE(sparms->input_low2);
-	     pvt->input_high[0] = ConvertFromIEEE(sparms->input_high0);
-	     pvt->input_high[1] = ConvertFromIEEE(sparms->input_high1);
-	     pvt->input_high[2] = ConvertFromIEEE(sparms->input_high2);
-	     pvt->output_low[0] = sparms->output_low0;
-	     pvt->output_low[1] = sparms->output_low1;
-	     pvt->output_low[2] = sparms->output_low2;
-	     pvt->output_high[0] = sparms->output_high0;
-	     pvt->output_high[1] = sparms->output_high1;
-	     pvt->output_high[2] = sparms->output_high2;
+	     pvt->input_low[0] = ConvertFromIEEE(sparms->inputLow0);
+	     pvt->input_low[1] = ConvertFromIEEE(sparms->inputLow1);
+	     pvt->input_low[2] = ConvertFromIEEE(sparms->inputLow2);
+	     pvt->input_high[0] = ConvertFromIEEE(sparms->inputHigh0);
+	     pvt->input_high[1] = ConvertFromIEEE(sparms->inputHigh1);
+	     pvt->input_high[2] = ConvertFromIEEE(sparms->inputHigh2);
+	     pvt->output_low[0] = sparms->outputLow0;
+	     pvt->output_low[1] = sparms->outputLow1;
+	     pvt->output_low[2] = sparms->outputLow2;
+	     pvt->output_high[0] = sparms->outputHigh0;
+	     pvt->output_high[1] = sparms->outputHigh1;
+	     pvt->output_high[2] = sparms->outputHigh2;
       }
 
      return (TRUE);
@@ -227,12 +226,6 @@ Bool PrepPConstrainStandard(flo, ped, raw, tec)
      peDefPtr   ped;
      void *raw, *tec;
 {
-  ped->outFlo.format[0].params 	= (void *)NULL;
-  if (ped->outFlo.bands > 1) {
-	  ped->outFlo.format[1].params 	= (void *)NULL;
-	  ped->outFlo.format[2].params 	= (void *)NULL;
-  }
-
   return(TRUE);
 }
 /*------------------------------------------------------------------------
@@ -245,7 +238,6 @@ Bool PrepPConstrainClipScale(flo, ped, raw, tec)
 {
   pCnstDefPtr pvt = ped->techPvt;
 
-  ped->outFlo.format[0].params 	= (void *)NULL;
   if (pvt->input_low[0] == pvt->input_high[0] ||
       pvt->output_low[0] > ped->outFlo.format[0].levels - 1 ||
       pvt->output_high[0] > ped->outFlo.format[0].levels - 1)
@@ -258,8 +250,6 @@ Bool PrepPConstrainClipScale(flo, ped, raw, tec)
 	      pvt->output_low[2] > ped->outFlo.format[2].levels - 1 ||
 	      pvt->output_high[2] > ped->outFlo.format[2].levels - 1)
 		return(FALSE);
-	  ped->outFlo.format[1].params 	= (void *)NULL;
-	  ped->outFlo.format[2].params 	= (void *)NULL;
   }
 
   return(TRUE);
@@ -284,7 +274,7 @@ static Bool PrepPConstrain(flo,ped)
   for(b = 0; b < src->bands; b++) {
 
 	/* This should be impossible */
-	if (!IsCanonic(src->format[b].class))
+	if (IsntCanonic(src->format[b].class))
 		ImplementationError(flo, ped, return(FALSE));
 
 	inf->format[b] = src->format[b];
@@ -295,26 +285,23 @@ static Bool PrepPConstrain(flo,ped)
 	dst->format[b].width 		= src->format[b].width;
 	dst->format[b].height 		= src->format[b].height;
   }
-
-  /* Pull in level information from the element description */ 
-  if ((dst->format[0].levels = raw->level0) > MAX_LEVELS(src->bands))
-	ValueError(flo,ped,raw->level0,return(FALSE));
+  /* Pull in levels information from the element description */ 
+  if ((dst->format[0].levels = raw->levels0) > MAX_LEVELS(src->bands))
+	ValueError(flo,ped,raw->levels0,return(FALSE));
   if (dst->bands > 1) {
-  	if ((dst->format[1].levels = raw->level1) > MAX_LEVELS(src->bands))
-		ValueError(flo,ped,raw->level1,return(FALSE));
-	if ((dst->format[2].levels = raw->level2) > MAX_LEVELS(src->bands))
-		ValueError(flo,ped,raw->level2,return(FALSE));
+  	if ((dst->format[1].levels = raw->levels1) > MAX_LEVELS(src->bands))
+		ValueError(flo,ped,raw->levels1,return(FALSE));
+	if ((dst->format[2].levels = raw->levels2) > MAX_LEVELS(src->bands))
+		ValueError(flo,ped,raw->levels2,return(FALSE));
   }
-
   /* Set depth, class, stride, and pitch */
-  UpdateFormatfromLevels(ped);
+  if(!UpdateFormatfromLevels(ped))
+    MatchError(flo,ped, return(FALSE));
 
   /* Take care of any technique parameters */
   if (!(ped->techVec->prepfnc(flo, ped, raw, &raw[1])))
-	TechniqueError(flo, ped, raw->constrain, raw->lenParams,
-		return(FALSE));
-
-
+	TechniqueError(flo,ped,xieValConstrain,raw->constrain,raw->lenParams,
+		       return(FALSE));
   return (TRUE);
 }	
 

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: edrawp.c,v 1.1 93/10/26 10:02:25 rws Exp $ */
 /**** module edrawp.c ****/
 /******************************************************************************
 				NOTICE
@@ -124,7 +124,7 @@ peDefPtr MakeEDrawPlane(flo,tag,pe)
   /*
    * copy the client element parameters (swap if necessary)
    */
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
     cpswaps(stuff->src, raw->src);
@@ -134,7 +134,7 @@ peDefPtr MakeEDrawPlane(flo,tag,pe)
     cpswapl(stuff->gc, raw->gc);
   }
   else
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloExportDrawablePlane));
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloExportDrawablePlane));
   /*
    * assign phototags to inFlos
    */
@@ -155,17 +155,15 @@ static Bool PrepEDrawPlane(flo,ped)
   xieFloExportDrawablePlane *raw = (xieFloExportDrawablePlane *)ped->elemRaw;
   eDrawPDefPtr pvt = (eDrawPDefPtr) ped->elemPvt;
   inFloPtr    inf = &ped->inFloLst[SRCtag];
-  outFloPtr   src = &inf->srcDef->outFlo; 
-  outFloPtr   dst = &ped->outFlo; 
-
+  outFloPtr   src = &inf->srcDef->outFlo;
+  outFloPtr   dst = &ped->outFlo;
   /*
    * check out drawable and gc
    */
   if(!DrawableAndGC(flo,ped,raw->drawable,raw->gc,&(pvt->pDraw),&(pvt->pGC)))
     return(FALSE);
   /*
-   * check for: constrained, single-band, and levels matching drawable depth
-   *   	(src->format[0].levels > 2) ||
+   * check for: constrained, single-band, bitonal image
    */
   if( (src->format[0].class != BIT_PIXEL) || (src->bands != 1))
     MatchError(flo,ped, return(FALSE));

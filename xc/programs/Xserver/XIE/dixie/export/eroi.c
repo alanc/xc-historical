@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: eroi.c,v 1.1 93/10/26 10:02:44 rws Exp $ */
 /**** module eroi.c ****/
 /******************************************************************************
 				NOTICE
@@ -44,7 +44,7 @@ terms and conditions:
   
 	eroi.c -- DIXIE routines for managing the ExportROI element
   
-	Robert NC Shelley and J. Weida -- AGE Logic, Inc. April 1993
+	Robert NC Shelley -- AGE Logic, Inc. April 1993
   
 *****************************************************************************/
 
@@ -115,11 +115,7 @@ peDefPtr MakeEROI(flo,tag,pe)
   ELEMENT_SIZE_MATCH(xieFloExportROI);
   ELEMENT_NEEDS_1_INPUT(src);
   
-#if defined(VERBOSE)
-  ErrorF("XIE MakeEROI\n");
-#endif
-  ped = MakePEDef(1, (CARD32)stuff->elemLength<<2, sizeof(eROIDefRec)); 
-  if (!ped)
+  if (!(ped = MakePEDef(1, (CARD32)stuff->elemLength<<2, sizeof(eROIDefRec))))
     FloAllocError(flo,tag,xieElemExportROI, return(NULL));
   
   ped->diVec	   = &eROIVec;
@@ -129,16 +125,13 @@ peDefPtr MakeEROI(flo,tag,pe)
   /*
    * copy the standard client element parameters (swap if necessary)
    */
-  if( flo->client->swapped )
-    {
+  if( flo->reqClient->swapped ) {
       raw->elemType   = stuff->elemType;
       raw->elemLength = stuff->elemLength;
       cpswaps(stuff->src, raw->src);
-      cpswapl(stuff->pad, raw->pad);
       cpswapl(stuff->roi, raw->roi);
-    }
-  else  
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloExportROI));
+  } else  
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloExportROI));
   /*
    * assign phototags to inFlos
    */
@@ -157,14 +150,11 @@ static Bool PrepEROI(flo,ped)
 {
   xieFloExportROI *raw = (xieFloExportROI *)ped->elemRaw;
   eROIDefPtr pvt = (eROIDefPtr) ped->elemPvt;
-  inFloPtr inf   = &ped->inFloLst[IMPORT];
+  inFloPtr inf   = &ped->inFloLst[0];
   outFloPtr src  = &inf->srcDef->outFlo;
   outFloPtr dst  = &ped->outFlo;
   roiPtr roi;
   
-#if defined(VERBOSE)
-  ErrorF("XIE PrepEROI\n");
-#endif
   /* grab roi resource */
   if(!(roi = (roiPtr)LookupIDByType(raw->roi, RT_ROI)))
     ROIError(flo,ped,raw->roi,return(FALSE));
@@ -172,23 +162,11 @@ static Bool PrepEROI(flo,ped)
   pvt->roi = roi;
   roi->refCnt++;
   
-  if (src->format[0].class != RUN_LENGTH)
+  if (src->bands != 1 || src->format[0].class != RUN_LENGTH)
     FloSourceError(flo,raw->src,raw->elemType, return(FALSE));
   
-  inf->bands = 1;
-  inf->format[0].class  = RUN_LENGTH;
-  inf->format[0].band   = 0;
-  inf->format[0].width  = 0;
-  inf->format[0].height = 0;
-  inf->format[0].levels = 0;
-  
-  /* propagate ROI attributes to output */
-  dst->bands = 1;
-  dst->format[0].class = RUN_LENGTH;
-  dst->format[0].band   = 0;
-  dst->format[0].width  = 0;
-  dst->format[0].height = 0;
-  dst->format[0].levels = 0;
+  dst->bands = inf->bands = src->bands;
+  dst->format[0].class = inf->format[0].class = src->format[0].class;
   
   return TRUE;
 }                               /* end PrepEROI */
@@ -201,6 +179,7 @@ static Bool DebriefEROI(flo,ped,ok)
      peDefPtr   ped;
      Bool	ok;
 {
+  xieFloExportROI *raw = (xieFloExportROI *)ped->elemRaw;
   eROIDefPtr pvt = (eROIDefPtr)ped->elemPvt;
   roiPtr roi;
   
@@ -217,10 +196,12 @@ static Bool DebriefEROI(flo,ped,ok)
   FreeStrips(&ped->outFlo.export[0]);
   
   /* unbind ourself from the roi */
-  if(roi->refCnt == 1)
+  if(roi->refCnt > 1)
+    --roi->refCnt;
+  else if(LookupIDByType(raw->roi, RT_ROI))
     FreeResourceByType(roi->ID, RT_ROI, RT_NONE);
   else
-    roi->refCnt--;
+    DeleteROI(roi, roi->ID);
 
   return TRUE;
 }			                         /* end DebriefEROI */

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: gbits.h,v 1.1 93/10/26 09:52:58 rws Exp $ */
 /**** module fax/gbits.h ****/
 /******************************************************************************
 				NOTICE
@@ -90,7 +90,7 @@ terms and conditions:
 
 #define do_magic(byteptr,bitpos,endptr)					 \
 	{								 \
-	  int i,o;							 \
+	  int o;							 \
 	  if (state->use_magic) {					 \
 	     /* already using magic strip, switch back to normal */	 \
 	     								 \
@@ -308,6 +308,10 @@ terms and conditions:
 	)
 
 	/* Notice endptr isn't actually used, it's just there for show */
+
+#define get_pbyte(byteptr,endptr)					\
+	(  *byteptr )
+
 
 /* ------------------------------------------------------------------- */
 /*

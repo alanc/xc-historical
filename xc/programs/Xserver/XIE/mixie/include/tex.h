@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: tex.h,v 1.1 93/10/26 09:50:53 rws Exp $ */
 /**** module tex.h ****/
 /****************************************************************************
 				NOTICE
@@ -51,17 +51,66 @@ terms and conditions:
 #ifndef _XIEH_TEX
 #define _XIEH_TEX
 
-#define ALL_BANDS	((bandMsk)~0)
-#define NO_BANDS	((bandMsk)0)
-#define NO_INPLACE	((INT32)-1)
-#define NO_DATAMAP	((CARD32)0)
-#define NO_PRIVATE	((CARD32)0)
-#define NO_SYNC		((Bool)FALSE)
-#define SYNC		((Bool)TRUE)
+/* symbolic constants -- for flo manager initialization routines
+ */
+	/* Band mask constants for specifying all posible bands or no bands.
+	 */
+#define ALL_BANDS  ((bandMsk)~0)
+#define NO_BANDS   ((bandMsk) 0)
 
-#define FLUSH		((Bool)TRUE)
-#define KEEP		((Bool)FALSE)
+	/* Constant for specifying that in-place operations are not wanted
+	 * (i.e. use new Dst buffers).  The alternative is to specify a Src
+	 * (e.g. SRCtag or SRCt1) whose buffer contents can be replaced with
+	 * the result.  When requesting a Dst line, the data manager will map
+	 * the requested Dst line to the corresponding Src line (the Src and
+	 * Dst canonic data types must match for this to work).
+	 */
+#define NO_INPLACE ((INT32)-1)
 
+	/* Constant for specifying that no space needs to be allotted for a
+	 * data manager DataMap (i.e. data will be accessed on a line by line
+	 * basis).  The alternative is to specify the maximum number of lines
+	 * that will be needed in the DataMap (anywhere from a few lines to
+	 * the full image).
+	 */
+#define NO_DATAMAP ((CARD32) 0)
+
+	/* Constant for specifying that the element does not require any
+	 * private parameter space.  The alternative is to specify the number
+	 * of bytes of private storage that will be needed for parameters etc.
+	 * The private area is allocated as contiguous bytes beyond the peTex
+	 * structure, and therefore should not be freed explicitly.
+	 */
+#define NO_PRIVATE ((CARD32) 0)
+
+	/* Constants for specifying whether or not the data manager and
+	 * scheduler should cooperate to keep inputs and/or bands in sync.
+	 */
+#define SYNC	   ((Bool) 1)
+#define NO_SYNC	   ((Bool) 0)
+
+
+/* symbolic constants -- for data manager macros
+ */
+	/* The following pair of constants can be supplied for the "purge"
+	 * argument in many of the data manager's strip access macros.
+	 *
+	 * KEEP specifies that all data currently owned by the Src or Dst
+	 * should be retained (either the data will be needed again or there
+	 * is no advantage in releasing the data as it is consumed).
+	 *
+	 * FLUSH specifies that all data that precedes the current unit (line
+	 * or byte) can be dispensed with.  Src data may be freed, whereas Dst
+	 * data may be forwarded to downstream elements.  FLUSH is a suggestion
+	 * rather than a command.  Whether or not the data is actually flushed
+	 * depends on the crossing of strip boundaries.  If one or more strips
+	 * precede the strip containing the current unit, they will be flushed.
+	 * If a downstream element becomes runnable as a result of forwarding
+	 * a Dst strip, the data manager will signal to the calling element
+	 * that it should defer to the downstream element(s).
+	 */
+#define KEEP	((Bool) 0)
+#define FLUSH	((Bool) 1)
 
 
 #ifndef _XIEC_FLOMAN

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: flo.h,v 1.1 93/10/26 10:03:53 rws Exp $ */
 /**** module flo.h ****/
 /****************************************************************************
 				NOTICE
@@ -76,6 +76,7 @@ extern  void		PrepFlo();
 extern	struct _flodef *FreeFlo();
 extern	struct _pedef  *MakePEDef();
 extern	struct _pedef  *FreePEDef();
+extern  void		SendClientData();
 extern  Bool		UpdateFormatfromLevels();
 #endif
 

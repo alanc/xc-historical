@@ -1,4 +1,4 @@
-/* $XConsortium: event.c,v 1.1 93/07/19 10:10:01 rws Exp $ */
+/* $XConsortium: event.c,v 1.1 93/10/26 09:57:55 rws Exp $ */
 /**** module event.c ****/
 /****************************************************************************
 				NOTICE
@@ -90,16 +90,17 @@ void SendFloEvent(flo)
   register int n;
   xieFloEvn evn;
   
+  if(flo->runClient->clientGone) return;
   /*
    * Take care of the common part
    */
   evn = flo->event;
-  evn.sequenceNum 	= flo->client->sequence;
+  evn.sequenceNum 	= flo->runClient->sequence;
   evn.time		= currentTime.milliseconds;
   evn.instanceNameSpace = flo->spaceID;
   evn.instanceFloID	= flo->ID;
   
-  if( flo->client->swapped ) {
+  if( flo->runClient->swapped ) {
     swaps(&evn.sequenceNum, n);
     swapl(&evn.time, n);
     swapl(&evn.instanceNameSpace, n);
@@ -149,7 +150,7 @@ void SendFloEvent(flo)
   evn.event += extEntry->eventBase;
   
   if( status == Success )
-    WriteToClient(flo->client, sz_xieFloEvn, (char *)&evn);
+    WriteToClient(flo->runClient, sz_xieFloEvn, (char *)&evn);
   
 }                               /* end SendFloEvent */
 

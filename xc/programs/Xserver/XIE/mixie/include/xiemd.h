@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xiemd.h,v 1.1 93/10/26 09:51:23 rws Exp $ */
 /**** module xiemd.h ****/
 /******************************************************************************
 				NOTICE
@@ -54,6 +54,10 @@ terms and conditions:
 #include <X.h>
 #include <servermd.h>
 
+#ifndef _XIEC_MPBITFUN
+extern unsigned char _ByteReverseTable[];
+#endif
+
 /*
 ** Bit operations:
 **
@@ -72,18 +76,14 @@ terms and conditions:
 **  LOGLEFT -	LeftMost bit (from screen perspective) in a LogInt.
 **  LOGRIGHT -	In place shift of a LogInt right 1 bit (in screen perspective)>
 **
-**  LOGINDX,LOGBIT - Used by LOG_XXXbit macros for individual access to bits.
+**  LOGINDX,LOGBIT - Used by LOG_xxxbit macros for individual access to bits.
 **  LOG_tstbit - test if a bit from memory is set.
 **  LOG_chgbit - test if a bit in memory differs from a constant.
 **  LOG_setbit,LOG_clrbit,LOG_xorbit  - set, clr, or xor a bit in memory.
 **  
 **  Some pieces of bit related code have been written to use word loops
 **  using LogInt Bits at a time.  Some algorithms use LOG_xxxbit macros
-**  to access individual bits.  In fact some algorithms are provided in
-**  both forms.  In the latter case the define "LOG_XXXbit" will select
-**  the use of the individual bit access macros.
-**
-**	#define LOG_XXXbit 
+**  to access individual bits.  
 */
 
 typedef unsigned long	LogInt;
@@ -91,7 +91,7 @@ typedef unsigned long	LogInt;
 #define LOGSIZE		(sizeof(LogInt)<<3)
 #define LOGMASK		(LOGSIZE-1)
 
-#if (BITMAP_BIT_ORDER == MSBFirst)
+#if (IMAGE_BYTE_ORDER == MSBFirst)
 #define BitLeft(V,N)	((V) << (N))
 #define BitRight(V,N)	((V) >> (N))
 #else
@@ -101,6 +101,8 @@ typedef unsigned long	LogInt;
 
 #define LOGLEFT		BitLeft(((LogInt)~0),LOGMASK)
 #define LOGRIGHT(M)	(M=BitRight(M,1))
+#define LOGONES		~((LogInt)0)
+#define LOGZERO		((LogInt)0)
 
 #define LOGINDX(X)	((X)>>LOGSHIFT)
 #define LOGBIT(X)	BitRight(LOGLEFT,(X) & LOGMASK)
@@ -110,23 +112,75 @@ typedef unsigned long	LogInt;
 #define LOG_setbit(P,N)		((P)[LOGINDX(N)] |= LOGBIT(N))
 #define LOG_xorbit(P,N)		((P)[LOGINDX(N)] ^= LOGBIT(N))
 
+/* Special version for unsigned bytes used for byte streams that might not be
+   LogInt aligned
+*/
+typedef unsigned char		LogByte;
+#define LOGBYTESHIFT		(3)
+#define LOGBYTESIZE		(sizeof(LogByte)<<3)
+#define LOGBYTEMASK		(LOGBYTESIZE-1)
+
+#define LOGBYTELEFT		BitLeft(((LogByte)~0),LOGBYTEMASK)
+#define LOGBYTERIGHT(M)		(M=BitRight(M,1))
+#define LOGBYTEONES		~((LogByte)0)
+#define LOGBYTEZERO		((LogByte)0)
+
+#define LOGBYTEINDX(X)		((X)>>LOGBYTESHIFT)
+#define LOGBYTEBIT(X)		BitRight(LOGBYTELEFT,(X) & LOGBYTEMASK)
+#define LOGBYTE_chgbit(P,N,C)	(((P)[LOGBYTEINDX(N)] ^ C) & LOGBYTEBIT(N))
+#define LOGBYTE_tstbit(P,N)	((P)[LOGBYTEINDX(N)] & LOGBYTEBIT(N))
+#define LOGBYTE_clrbit(P,N)	((P)[LOGBYTEINDX(N)] &= ~LOGBYTEBIT(N))
+#define LOGBYTE_setbit(P,N)	((P)[LOGBYTEINDX(N)] |= LOGBYTEBIT(N))
+#define LOGBYTE_xorbit(P,N)	((P)[LOGBYTEINDX(N)] ^= LOGBYTEBIT(N))
+/*
+**  Bit Fun.  Fun with Bits.  Functions for bits:
+**
+**	bitexpand() - expand a bunch of bits to fg,bg bytes.
+*/
+
+void *bitexpand();
+void  bitshrink();
+void  action_clear();
+void  action_set();
+void  action_invert();
+
+/*
+**  We envision a triangular matrix of conversion routines for 
+**  indexing into smaller data quantums, such as to return a byte
+**  from an array as a short.
+*/
+
 /*
 **  Floating Point Considerations.
 **
-**  RealPixel	- Defined in xie/include/flodata.h for type of unconstrained
-**		  data (typically float).
-**
 ** The following definitions are used in individual modules. We might
-** want to regularaize all these in this one file:
+** want to regularaize all these in this one file, or even make these
+** into one tyepdef like ProcessFloat.  The goal is so that the server
+** can consistently use floats instead of doubles on machines which 
+** can do floats quicker than doubles:
 **
-**	typedef RealPixel BlendFloat;
-**	typedef RealPixel ConstrainFloat;
-**	typedef RealPixel DitherFloat;
+**	typedef float BlendFloat;	(see mpblend.c)
+**	typedef float ConstrainFloat;	(see mpcnst.c)
+**	typedef float DitherFloat;	(see mpdither.c)
+**	typedef float ConvolveFloat;	(see element.h)
+**	typedef float PasteUpFloat;	(see element.h)
 **
-** Probably should be rewritten to use:
+** Some functions are not yet written to this standard.  For instance
+** geometry is susceptible to roundoff errors keeping track of scanline
+** threshold data maps.
 **
-**	typedef RealPixel ConvolveFloat;
 **	typedef RealPixel GeomFloat;
+*/
+
+/* 
+** USE_FLOATS is used in mpcnst.c to enable the originaly easy to
+** program floating point ClipScale routines.  The current integer
+** based routine no longer does a divide and is hence probably faster
+** on all rational machines.  We may come up with other choices for
+** integer versus floating algorithms in the future.  We would perhaps
+** like to select between them here.
+**
+**		#define USE_FLOATS
 */
 
 

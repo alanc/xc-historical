@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mecroi.c,v 1.1 93/10/26 09:48:58 rws Exp $ */
 /**** module mecroi.c ****/
 /******************************************************************************
 				NOTICE
@@ -44,7 +44,7 @@ terms and conditions:
   
 	mecroi.c -- DDXIE export client roi element
   
-	James H Weida -- AGE Logic, Inc. June, 1993
+	Larry Hare && Dean Verheiden -- AGE Logic, Inc. August, 1993
   
 *****************************************************************************/
 
@@ -91,7 +91,6 @@ static int InitializeECROI();
 static int ActivateECROI();
 static int ResetECROI();
 static int DestroyECROI();
-static CARD32 ConvertRunLengthROI();
 
 /* DDXIE ExportClientROI entry points
  */
@@ -105,16 +104,15 @@ static ddElemVecRec ECROIVec =
   DestroyECROI
 };
 
-/*  Local things.
- */
-static CARD32 ConvertRunLengthROI();
+/* Local routines */
+static void ConvertToRect();
 
 /*------------------------------------------------------------------------
 ------------------- see if we can handle this element --------------------
 ------------------------------------------------------------------------*/
 int miAnalyzeECROI(flo,ped)
-	floDefPtr flo;
-	peDefPtr  ped;
+floDefPtr flo;
+peDefPtr  ped;
 {
 	/* for now just stash our entry point vector in the peDef */
 	ped->ddVec = ECROIVec;
@@ -125,8 +123,8 @@ int miAnalyzeECROI(flo,ped)
 ---------------------------- create peTex . . . --------------------------
 ------------------------------------------------------------------------*/
 static int CreateECROI(flo,ped)
-	floDefPtr flo;
-	peDefPtr  ped;
+floDefPtr flo;
+peDefPtr  ped;
 {
 	/* attach an execution context to the roi element definition */
 	return MakePETex(flo, ped, NO_PRIVATE, NO_SYNC, NO_SYNC);
@@ -136,8 +134,8 @@ static int CreateECROI(flo,ped)
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
 static int InitializeECROI(flo,ped)
-	floDefPtr flo;
-	peDefPtr  ped;
+floDefPtr flo;
+peDefPtr  ped;
 {
 	return InitReceptors(flo,ped,NO_DATAMAP,1) &&
 	         InitEmitter(flo,ped,NO_DATAMAP,NO_INPLACE);
@@ -151,42 +149,69 @@ static int ActivateECROI(flo,ped,pet)
      peDefPtr  ped;
      peTexPtr  pet;
 {
-	xieFloExportClientROI *raw = (xieFloExportClientROI*)ped->elemRaw;
-	receptorPtr	rcp = pet->receptor;
-	bandPtr		sbnd = &rcp->band[0];
-	bandPtr		dbnd = &pet->emitter[0];
-	CARD8	 	*src, *dst;
-	CARD32		szrects;
-
-	if (!(src = GetCurrentSrc(CARD8,flo,pet,sbnd)))
-	    return FALSE;
-
-	/* One pass to compute transformed size of rectangle list */
-	szrects = sizeof(xieTypRectangle) * ConvertRunLengthROI(src,NULL,FALSE);
-	if (!(dst = GetDstBytes(CARD8,flo,pet,dbnd,0,szrects,FALSE)))
-		return FALSE;
-
-	/* Now actually crank the data */
-	(void) ConvertRunLengthROI(src,dst,TRUE);
-
-	SetBandFinal(dbnd);
-	PutData(flo,pet,dbnd,szrects);
-	FreeData(void,flo,pet,sbnd,sbnd->maxLocal);
-
-	switch(raw->notify) {
-	  case xieValFirstData:	/* fall thru */
-	  case xieValNewData:	SendExportAvailableEvent(flo,ped,0,0,0,0);
-	  default:		break;
-	}
-	return TRUE;
+  xieFloExportClientROI *raw = (xieFloExportClientROI*)ped->elemRaw;
+  receptorPtr       rcp  = pet->receptor;
+  bandPtr	    sbnd = &rcp->band[0];
+  bandPtr	    dbnd = &pet->emitter[0];
+  CARD32	    rectSize;
+  xieTypRectangle  *prect;
+  ROIPtr	    proi;
+  
+  if (!(proi = GetCurrentSrc(ROIRec,flo,pet,sbnd)))
+    return FALSE;
+  
+  rectSize = sizeof(xieTypRectangle) * proi->nrects;
+  
+  if (!(prect = GetDstBytes(xieTypRectangle,flo,pet,dbnd,0,rectSize,KEEP)))
+    return FALSE;
+  
+  ConvertToRect(proi,prect);
+  
+  SetBandFinal(dbnd);
+  PutData(flo,pet,dbnd,rectSize);
+  FreeData(flo,pet,sbnd,sbnd->maxLocal);
+  
+  switch(raw->notify) {
+  case xieValFirstData:	/* fall thru */
+  case xieValNewData:	SendExportAvailableEvent(flo,ped,0,proi->nrects,0,0);
+  default:		break;
+  }
+  
+  return TRUE;
 }                               /* end ActivateECROI */
+
+static void ConvertToRect(proi,prect) 
+ROIPtr	        proi;
+xieTypRectangle *prect;
+{
+	CARD32	nrects = 0;
+	linePtr lp;
+
+	/* Convert run lengths to xieTypRectangles */
+	lp = (linePtr)&proi[1];
+	while (lp < proi->lend) {
+	    register runPtr rp = RUNPTR(0);
+	    register CARD32 x = proi->x;
+            register CARD32 j = lp->nrun;	
+
+	    while (j--) {
+		    x += rp->dstart;
+		    prect[nrects].x        = x;
+		    prect[nrects].y        = lp->y;
+		    prect[nrects].width    = rp->length;
+		    prect[nrects++].height = lp->nline;
+		    x += (rp++)->length;
+	    }
+	    lp = (linePtr)RUNPTR(lp->nrun);
+	}
+}
 
 /*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
 ------------------------------------------------------------------------*/
 static int ResetECROI(flo,ped)
-	floDefPtr flo;
-	peDefPtr  ped;
+floDefPtr flo;
+peDefPtr  ped;
 {
 	ResetReceptors(ped);
 	ResetEmitter(ped);
@@ -198,8 +223,8 @@ static int ResetECROI(flo,ped)
 -------------------------- get rid of this element -----------------------
 ------------------------------------------------------------------------*/
 static int DestroyECROI(flo,ped)
-	floDefPtr flo;
-	peDefPtr  ped;
+floDefPtr flo;
+peDefPtr  ped;
 {
 	/* get rid of the peTex structure  */
 	ped->peTex = (peTexPtr) XieFree(ped->peTex);
@@ -214,44 +239,3 @@ static int DestroyECROI(flo,ped)
 
 	return TRUE;
 }                               /* end DestroyECROI */
-
-
-/*------------------------------------------------------------------------
---------------- convert from internal RL to external ROI  ----------------
-------------------------------------------------------------------------*/
-
-static CARD32
-ConvertRunLengthROI(frame,roi,doit)
-RunLengthPtr	frame;
-xieTypRectangle *roi;
-BOOL		doit;
-{
-	register int i, j;
-	register CARD32 ndx;
-	register RunLengthTbl *tbl;
-	register INT32 x;
-	INT32 xmin;
-
-	tbl = (RunLengthTbl*)&frame[1];
-
-	xmin = tbl->hdr.x;
-	for (ndx = 0, i = 0; i < frame->nentry; i++) {
-	    x = xmin;
-	    for (j = 0; j < tbl->hdr.npair; j++) {
-		if (doit) {
-		    x += tbl->pair[j].count;
-		    roi[ndx].x      = x;
-		    roi[ndx].y      = tbl->hdr.y;
-		    roi[ndx].width  = tbl->pair[j].length;
-		    roi[ndx].height = tbl->hdr.nline;
-		    x += tbl->pair[j].length;
-		}
-		ndx++;
-	    }
-	    tbl = (RunLengthTbl *)(&tbl->pair[tbl->hdr.npair]);
-	}
-
-	return ndx;
-}					/* end ConvertRunLengthROI */
-
-/* end module mecroi.c */

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mpctoi.c,v 1.1 93/10/26 09:47:41 rws Exp $ */
 /**** module mpctoi.c ****/
 /******************************************************************************
 				NOTICE
@@ -82,8 +82,11 @@ terms and conditions:
 #include <colorlst.h>
 #include <element.h>
 #include <texstr.h>
+#include <xiemd.h>
+#include <technq.h>
 
-extern int AllocColor();  /* in ...server/dix/colormap.c */
+
+extern int AllocColor();  /* in . . . server/dix/colormap.c */
 
 
 /* routines referenced by other DDXIE modules
@@ -93,34 +96,24 @@ int	miAnalyzeCvtToInd();
 /* routines used internal to this module
  */
 static int CreateCtoIAll();
-
-static int InitSingleCtoIAll();
-static int InitTripleCtoIAll();
-
-static int DoSingleCtoIAll();
-static int DoTripleCtoIAll();
-
+static int InitializeCtoIAll();
+static int DoGrayCtoIAll();
+static int DoRGB1CtoIAll();
+static int DoRGB3CtoIAll();
+static int DoRGB3CtoIAll();
 static int ResetCtoIAll();
-
 static int DestroyCtoI();
 
+static int allocDirect();
+static void *cvt();
 
 
 /* DDXIE ConvertToIndex entry points
  */
-static ddElemVecRec mpSingleCtoIAllVec = {
+static ddElemVecRec mpCtoIAllVec = {
   CreateCtoIAll,
-  InitSingleCtoIAll,
-  DoSingleCtoIAll,
+  InitializeCtoIAll,
   (xieIntProc)NULL,
-  ResetCtoIAll,
-  DestroyCtoI
-  };
-
-static ddElemVecRec mpTripleCtoIAllVec = {
-  CreateCtoIAll,
-  InitTripleCtoIAll,
-  DoTripleCtoIAll,
   (xieIntProc)NULL,
   ResetCtoIAll,
   DestroyCtoI
@@ -129,62 +122,119 @@ static ddElemVecRec mpTripleCtoIAllVec = {
 
 /* Local Declarations.
  */
-#define HR  19
+#define HASH_POINT 14         /* use hash table if sum of depth exceeds this */
+
+#define HR  19		      /* prime hash multipliers (sum also prime)     */
 #define HG  23
 #define HB  17
+
+#define NADA (xieVoidProc)NULL
 
 typedef struct _ctihash {
   CARD32	 rgbVal;
   Pixel		 pixdex;
 } ctiHashRec, *ctiHashPtr;
 
+
 typedef struct _mpctiall {
-  xieVoidProc	 action;
-  ColormapPtr    cmap;
-  int		 clindex;
-  Pixel		*pixLst;
-  CARD32	 pixCnt;
-  CARD32	 pixBad;
-  CARD32	 width;
-  CARD32	 fill;
-  CARD32	 mask[xieValMaxBands];
-  CARD32         mult[xieValMaxBands];
-  float		 coef[xieValMaxBands];
-  void          *hitLst[xieValMaxBands];
-  CARD8 	 truncate[xieValMaxBands];
-  BOOL		 singleMap;
-  Bool		 hashing;
-  CARD32         slop;
+  xieVoidProc	 action;		   /* scanline action routine        */
+  xieVoidProc	 action2;		   /* pass 2 scanline action routine */
+  ColormapPtr    cmap;			   /* colormap-id		     */
+  int		 cmapFull;		   /* == Success until allocs fail   */
+  int		 clindex;		   /* index of client doing allocs   */
+  Pixel		*pixLst;		   /* list of alloc'd pixels         */
+  CARD32	 pixCnt;		   /* count of alloc'd pixels        */
+  CARD32	 width;			   /* image width		     */
+  CARD32	 fill;			   /* value to use if alloc fails    */
+  BOOL		 hashing;		   /* true if using hash table	     */
+  CARD8 	 trim[xieValMaxBands];     /* # LS bits to trim from pixels  */
+  CARD32	 mask[xieValMaxBands];     /* mask for keeping useful bits   */
+  CARD32         shft[xieValMaxBands];     /* crazy-pixel shift counts       */
+  float		 coef[xieValMaxBands];     /* scale pixel up to 16 bits      */
+  CARD32	 tmpLen[xieValMaxBands];   /* length of tmpLsts...           */
+  void          *tmpLst[xieValMaxBands];   /* lists where we remember stuff  */
+  Bool		 tmpSet;		   /* initialize tmpLsts to 0 or ~0  */
+  void		*auxbuf[xieValMaxBands];   /* format-class conversion buffers*/
+  CARD8		 iclass[xieValMaxBands];   /* input format classes	     */
+  CARD8		 cclass;		   /* conversion format class	     */
 } ctiAllRec, *ctiAllPtr;
 
 
-/* AllocAll action routines
+/*****************************************************************************
+ *
+ * Convert to Index alloc-All action routines:
+ * CtoIall_bmctio
+ *         |||||`-- output format class (b=bit, B=byte, P=pair, Q=quad)
+ *         ||||`--- input  format class (b=bit, B=byte, P=pair, Q=quad)
+ *         |||`---- L:lookup, H:hash, U:usage map
+ *         ||`----- class colormap: d=dynamic, s=static
+ *         |`------ 1 or 3 map colormap (blank if it supports both)
+ *         `------- 1 or 3 band image
  */
-#define     CtoI_1bb     (xieVoidProc)NULL
-#define     CtoI_1bB     (xieVoidProc)NULL
-#define     CtoI_1bP     (xieVoidProc)NULL
-#define     CtoI_1Bb     (xieVoidProc)NULL
-static void CtoI_1BB();
-static void CtoI_1BP();
-#define     CtoI_1Pb     (xieVoidProc)NULL
-static void CtoI_1PB();
-static void CtoI_1PP();
+static void CtoIall_1_dLBB(), CtoIall_1_dLBP(), CtoIall_1_dLBQ();
+static void CtoIall_1_dLPB(), CtoIall_1_dLPP(), CtoIall_1_dLPQ();
+static void CtoIall_31dLBB(), CtoIall_31dLBP();
+static void CtoIall_31dLPB(), CtoIall_31dLPP();
+static void CtoIall_31dHBB(), CtoIall_31dHBP();
+static void CtoIall_31dHPB(), CtoIall_31dHPP();
 
-static void (*single_action[3][3])() = {
-  CtoI_1bb, CtoI_1Bb, CtoI_1Pb,         /* out=1, in=1..3 */
-  CtoI_1bB, CtoI_1BB, CtoI_1PB,         /* out=2, in=1..3 */
-  CtoI_1bP, CtoI_1BP, CtoI_1PP,         /* out=3, in=1..3 */
+static void CtoIall_33dUB_(), CtoIall_33dUP_();
+
+static void CtoIall_33dLBB(), CtoIall_33dLBP(), CtoIall_33dLBQ();
+static void CtoIall_33dLPB(), CtoIall_33dLPP(), CtoIall_33dLPQ();
+
+/* input bits are promoted to bytes, so they share the same action routines
+ */
+#define     CtoIall_1_dLbB    CtoIall_1_dLBB
+#define     CtoIall_1_dLbP    CtoIall_1_dLBP
+#define     CtoIall_1_dLbQ    CtoIall_1_dLBQ
+#define     CtoIall_31dLbB    CtoIall_31dLBB
+#define     CtoIall_31dLbP    CtoIall_31dLBP
+#define     CtoIall_31dHbB    CtoIall_31dHBB
+#define     CtoIall_31dHbP    CtoIall_31dHBP
+#define     CtoIall_33dUb_    CtoIall_33dUB_
+#define     CtoIall_33dLbB    CtoIall_33dLBB
+#define     CtoIall_33dLbP    CtoIall_33dLBP
+#define     CtoIall_33dLbQ    CtoIall_33dLBQ
+
+
+/* single band image, single or triple dynamic colormap, linear lookup tables
+ */
+static void (*gray_action[4][3])() = {
+  NADA,          NADA,          NADA,         	  /* out=b, in=b..P */
+  CtoIall_1_dLbB, CtoIall_1_dLBB, CtoIall_1_dLPB, /* out=B, in=b..P */
+  CtoIall_1_dLbP, CtoIall_1_dLBP, CtoIall_1_dLPP, /* out=P, in=b..P */
+  CtoIall_1_dLbQ, CtoIall_1_dLBQ, CtoIall_1_dLPQ, /* out=Q, in=b..P */
 };
 
-static void CtoI_31BBB();
-static void CtoI_31BHB();
-#define     CtoI_33BBB   (xieVoidProc)NULL
-#define     CtoI_33BHB   (xieVoidProc)NULL
-
-static void (*triple_action[2][2])() = {
-  CtoI_31BHB, CtoI_31BBB,   /* singleMap (bytes in/out), hashing..!hashing */
-  CtoI_33BHB, CtoI_33BBB,   /* tripleMap (bytes in/out), hashing..!hashing */
+/* triple band image, single dynamic colormap, linear or hash tables
+ */
+static void (*rgb1_action[2][4][3])() = {
+  NADA,           NADA,           NADA,		  /* lut,  out=b, in=b..P */
+  CtoIall_31dLbB, CtoIall_31dLBB, CtoIall_31dLPB, /* lut,  out=B, in=b..P */
+  CtoIall_31dLbP, CtoIall_31dLBP, CtoIall_31dLPP, /* lut,  out=P, in=b..P */
+  NADA,           NADA,           NADA,		  /* lut,  out=Q, in=b..P */
+  NADA,           NADA,           NADA,		  /* hash, out=b, in=b..P */
+  CtoIall_31dHbB, CtoIall_31dHBB, CtoIall_31dHPB, /* hash, out=B, in=b..P */
+  CtoIall_31dHbP, CtoIall_31dHBP, CtoIall_31dHPP, /* hash, out=P, in=b..P */
+  NADA,           NADA,           NADA,		  /* hash, out=Q, in=b..P */
 };
+
+/* triple band image, triple dynamic colormap, map usage (Boolean histogram)
+ */
+static void (*rgb3_action_usage[3])() = {
+  CtoIall_33dUb_, CtoIall_33dUB_, CtoIall_33dUP_, /* usage map out, in=b..P */
+};
+
+/* triple band image, triple dynamic colormap, linear lookup tables
+ */
+static void (*rgb3_action_remap[4][3])() = {
+  NADA,           NADA,           NADA,		  /* out=b, in=b..P */
+  CtoIall_33dLbB, CtoIall_33dLBB, CtoIall_33dLPB, /* out=B, in=b..P */
+  CtoIall_33dLbP, CtoIall_33dLBP, CtoIall_33dLPP, /* out=P, in=b..P */
+  CtoIall_33dLbQ, CtoIall_33dLBQ, CtoIall_33dLPQ, /* out=Q, in=b..P */
+};
+
 
 /*------------------------------------------------------------------------
 ------------------- see if we can handle this element --------------------
@@ -194,28 +244,19 @@ int miAnalyzeCvtToInd(flo,ped)
      peDefPtr  ped;
 {
   xieFloConvertToIndex *raw = (xieFloConvertToIndex *)ped->elemRaw;
-  pCtoIDefPtr dix = (pCtoIDefPtr) ped->elemPvt;
-  formatPtr   fmt = &ped->outFlo.format[0];
-  int      nbands = ped->inFloLst[SRCtag].bands;
-
-  /* alpha release of SI only required to support 1 and 8 bit drawables :-)
-   */
-  if(fmt->depth != 1 && fmt->depth != 8)
-    ImplementationError(flo,ped, return(FALSE));
 
   /* stash the appropriate entry point vector in the peDef
    */
-  switch(raw->colorAlloc) {
-  case xieValColorAllocAll :
-    ped->ddVec = nbands == 1 ? mpSingleCtoIAllVec   : mpTripleCtoIAllVec;
-    break;
-    
-  case xieValColorAllocMatch : /* delayed until beta */
-  case xieValColorAllocRequantize :	/* beyond SI */
-  default : ImplementationError(flo,ped, return(FALSE));
+  switch(ped->techVec->number) {
+  case xieValColorAllocAll:	ped->ddVec = mpCtoIAllVec;	break;
+  case xieValColorAllocMatch:
+  case xieValColorAllocRequantize:
+  default: TechniqueError(flo, ped, xieValColorAlloc,
+			  raw->colorAlloc, raw->lenParams, return(FALSE));
   }
   return(TRUE);
 }                               /* end miAnalyzeCvtToInd */
+
 
 /*------------------------------------------------------------------------
 ---------------------------- create peTex . . . --------------------------
@@ -224,127 +265,126 @@ static int CreateCtoIAll(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  int nbands = ped->inFloLst[SRCtag].bands;
+  pCtoIDefPtr dix = (pCtoIDefPtr) ped->elemPvt;
+  Bool  band_sync = !dix->graySrc || dix->class != DirectColor;
 
-  return(MakePETex(flo, ped, sizeof(ctiAllRec), NO_SYNC, nbands == 3));
+  return(MakePETex(flo, ped, sizeof(ctiAllRec), NO_SYNC, band_sync));
 }                               /* end CreateCtoIAll */
 
 
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
-static int InitSingleCtoIAll(flo,ped)
+static int InitializeCtoIAll(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  xieFloConvertToIndex *raw = (xieFloConvertToIndex *)ped->elemRaw;
-  xieTecColorAllocAll  *tec = (xieTecColorAllocAll *) &raw[1];
-  peTexPtr    pet = ped->peTex;
-  formatPtr   ift = &ped->inFloLst[SRCtag].format[0];
-  formatPtr   oft = &ped->outFlo.format[0];
-  pCtoIDefPtr dix = (pCtoIDefPtr) ped->elemPvt;
-  ctiAllPtr   ddx = (ctiAllPtr)   pet->private;
-  CARD32 length, ic = ift->class, oc = oft->class;
-
-  /* init color allocation params
+  xieFloConvertToIndex  *raw = (xieFloConvertToIndex *)ped->elemRaw;
+  xieTecColorAllocAll   *tec = (xieTecColorAllocAll *) &raw[1];
+  peTexPtr		 pet = ped->peTex;
+  formatPtr		 ift = &ped->inFloLst[SRCtag].format[0];
+  formatPtr		 oft = &ped->outFlo.format[0];
+  pCtoIDefPtr		 dix = (pCtoIDefPtr) ped->elemPvt;
+  ctiAllPtr		 ddx = (ctiAllPtr)   pet->private;
+  CARD8       depth,   bands = dix->graySrc ? 1 : 3;
+  CARD32 ic = BYTE_PIXEL, oc = oft->class;
+  CARD32 b, size;
+  
+  /* init generic color allocation params
    */
   ddx->cmap        = dix->cmap;
-  ddx->clindex     = dix->list->clindex;
+  ddx->clindex     = dix->list->client->index;
   ddx->fill	   = tec->fill;
   ddx->width       = oft->width;
-  ddx->singleMap   = dix->class <= PseudoColor;
-  ddx->pixBad      = 0;
+  ddx->cmapFull    = FALSE;
   ddx->pixCnt      = 0;
-  if(!(ddx->pixLst = (Pixel*) XieMalloc(dix->cells * sizeof(Pixel))))
+  if(!(ddx->pixLst = (Pixel*) XieCalloc(dix->cells * sizeof(Pixel))))
     AllocError(flo,ped, return(FALSE));
-
-  /* init pixel to color cell conversion parameters
+  
+  /* examine input data format-classes
    */
-  ddx->truncate[0] = (ift[0].depth > dix->stride ?
-		      ift[0].depth - dix->stride : 0);
-  ddx->mask[0]     = (1 << ift->depth - ddx->truncate[0]) - 1;
-  ddx->coef[0]     = 65535.0 / ((ift->levels >> ddx->truncate[0]) - 1);
-  ddx->action      = single_action[oc-1][ic-1];
-  if(!ddx->action)
-    ImplementationError(flo,ped, return(FALSE));
-
-  /* initialize a pixel "hit list"
-   */
-  length = (ddx->mask[0] + 1) * sizeof(Pixel);
-  if(!(ddx->hitLst[0] = (void *)XieMalloc(length)))
-    AllocError(flo,ped, return(FALSE));
-  memset((char *)ddx->hitLst[0], ~0, length);
-
-  return(InitReceptors(flo, ped, NO_DATAMAP, 1) &&
-         InitEmitter(flo, ped, NO_DATAMAP, NO_INPLACE));
-}                               /* end InitSingleCtoIAll */
-
-static int InitTripleCtoIAll(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  xieFloConvertToIndex *raw = (xieFloConvertToIndex *)ped->elemRaw;
-  xieTecColorAllocAll  *tec = (xieTecColorAllocAll *) &raw[1];
-  peTexPtr    pet =  ped->peTex;
-  formatPtr   ift = &ped->inFloLst[SRCtag].format[0];
-  formatPtr   oft = &ped->outFlo.format[0];
-  pCtoIDefPtr dix = (pCtoIDefPtr) ped->elemPvt;
-  ctiAllPtr   ddx = (ctiAllPtr)   pet->private;
-  CARD32  b, levels, length;
-
-  /* init color allocation params
-   */
-  ddx->cmap        = dix->cmap;
-  ddx->clindex     = dix->list->clindex;
-  ddx->fill	   = tec->fill;
-  ddx->width       = oft->width;
-  ddx->singleMap   = dix->class <= PseudoColor;
-  ddx->pixBad      = 0;
-  ddx->pixCnt      = 0;
-  if(!(ddx->pixLst = (Pixel*) XieMalloc(dix->cells * sizeof(Pixel))))
-    AllocError(flo,ped, return(FALSE));
-
-  /* init per-band pixel to color cell conversion parameters
-   */
-  for(levels = 1, b = 0; b < xieValMaxBands; ++b) {
-    ddx->truncate[b] = (ift[b].depth > dix->stride ?
-			ift[b].depth - dix->stride : 0);
-    ddx->mask[b] = (1<<ift[b].depth - ddx->truncate[b]) - 1;
-    ddx->coef[b] = 65535.0 / ((ift[b].levels>>ddx->truncate[b])-1);
-    ddx->mult[b] = b == 0 ? 1 : ddx->mult[b-1] * ift[b-1].levels;
-    if(ddx->singleMap)
-      levels *= ift[b].levels;
-    else
-      levels  = max(levels, ift[b].levels);
+  for(b = 0; b < bands; ++b) {
+    ddx->iclass[b] = ift[b].class;
+    ic = max(ddx->iclass[b],ic);
   }
-  /* init a "hit list"; if levels from above is too big, we will be hashing
+  ddx->cclass = ic;
+  size = (ic == BYTE_PIXEL ? sz_BytePixel : sz_PairPixel) >> 3;
+
+  /* init format-class and pixel to RGB cell conversion parameters
    */
-  if(ddx->hashing = levels > 256) {
-    ddx->slop = dix->cells;
-    length = ((HR+HG+HB) * dix->cells + ddx->slop) * sizeof(ctiHashRec);
-  } else {
-    length = min(1<<dix->stride,levels) * sizeof(Pixel);
-  }
-  for(b = 0; b < (ddx->singleMap ? 1 : 3); ++b) {
-    if(!(ddx->hitLst[b] = (void*)XieMalloc(length)))
+  for(b = 0; b < bands; ++b) {
+    if(ift[b].class != ic &&
+       !(ddx->auxbuf[b] = (void*) XieMalloc((ift->width+7)*size)))
       AllocError(flo,ped, return(FALSE));
-    memset((char*)ddx->hitLst[b], ddx->hashing ? 0 : ~0, length);
-  }
-  /* let's hope we have an action routine that can do what we need
-   */
-  ddx->action = triple_action[ddx->singleMap ? 0 : 1][ddx->hashing ? 0 : 1];
-  if(!ddx->action)
-    ImplementationError(flo,ped, return(FALSE));
 
+    ddx->trim[b] = ift[b].depth > dix->stride ? ift[b].depth - dix->stride : 0;
+    ddx->mask[b] = (1 << ift[b].depth - ddx->trim[b]) - 1;
+    ddx->coef[b] = 65535.0 / ((ift[b].levels >> ddx->trim[b]) - 1);
+  }    
+  /* init stuff specific to the image class and visual class
+   */
+  if(dix->graySrc) {
+    /*
+     * grayscale image, visual class doesn't matter
+     */
+    ddx->tmpSet    = TRUE;
+    ddx->tmpLen[0] = (ddx->mask[0] + 1) * sizeof(Pixel);
+    ddx->action    = gray_action[oc-1][ic-1];
+    ped->ddVec.activate = DoGrayCtoIAll;
+    
+  } else if(dix->class <= PseudoColor) {
+    /*
+     * RGB image, visual class has a single channel colormap
+     */
+    for(depth = 0, b = 0; b < xieValMaxBands; ++b) {
+      SetDepthFromLevels(ddx->mask[b]+1,size);
+      ddx->shft[b] = depth;
+      depth += size;
+    }
+    /* if we have too many levels, we'll have to use a hash table
+     */
+    if(ddx->hashing  = depth > HASH_POINT) {
+      ddx->tmpLen[0] = (HR+HG+HB) * (dix->cells + 1) * sizeof(ctiHashRec);
+      ddx->tmpSet    = FALSE;
+    } else {
+      ddx->tmpLen[0] = (1<<depth) * sizeof(Pixel);
+      ddx->tmpSet    = TRUE;
+    }
+    bands       = 1;	    /* only 1 colormap band */
+    ddx->action = rgb1_action[ddx->hashing ? 1 : 0][oc-1][ic-1];
+    ped->ddVec.activate = DoRGB1CtoIAll;
+    
+  } else {
+    /*
+     * RGB image, visual class has a three channel colormap
+     */
+    for(b = 0; b < bands; ++b) {
+      SetDepthFromLevels(ddx->mask[b]+1,depth);
+      ddx->tmpLen[b] = (1<<depth) * sizeof(Pixel);
+    }
+    ddx->tmpSet  = FALSE;
+    ddx->action  = rgb3_action_usage[ic-1];
+    ddx->action2 = rgb3_action_remap[oc-1][ic-1];
+    ped->ddVec.activate = DoRGB3CtoIAll;
+  }
+  if(!ddx->action)  ImplementationError(flo,ped, return(FALSE));
+  
+  /* alloc/init whatever temporary storage we need
+   */
+  for(b = 0; b < bands; ++b) {
+    if(!(ddx->tmpLst[b] = (void *) XieMalloc(ddx->tmpLen[b])))
+      AllocError(flo,ped, return(FALSE));
+    memset((char*)ddx->tmpLst[b],(char)(ddx->tmpSet ? ~0 : 0),ddx->tmpLen[b]);
+  }
   return(InitReceptors(flo, ped, NO_DATAMAP, 1) &&
-         InitEmitter(flo, ped, NO_DATAMAP, NO_INPLACE));
-}                               /* end InitTripleCtoIAll */
+	 InitEmitter(flo, ped, NO_DATAMAP, NO_INPLACE));
+}                               /* end InitializeCtoIAll */
 
 
 /*------------------------------------------------------------------------
 ------------------------- crank some input data --------------------------
 ------------------------------------------------------------------------*/
-static int DoSingleCtoIAll(flo,ped,pet)
+static int DoGrayCtoIAll(flo,ped,pet)
      floDefPtr flo;
      peDefPtr  ped;
      peTexPtr  pet;
@@ -355,29 +395,32 @@ static int DoSingleCtoIAll(flo,ped,pet)
   bandPtr oband = &pet->emitter[0];
   void   *ivoid, *ovoid;
   
-  if(Resumed(pet) &&
-     ddx->cmap != (ColormapPtr) LookupIDByType(raw->colormap, RT_COLORMAP))
+  if(Resumed(flo,pet) &&
+     (flo->runClient->clientGone ||
+      ddx->cmap != (ColormapPtr) LookupIDByType(raw->colormap, RT_COLORMAP)))
     ColormapError(flo,ped,raw->colormap, return(FALSE));
 
   if((ivoid = GetCurrentSrc(void,flo,pet,iband)) &&
      (ovoid = GetCurrentDst(void,flo,pet,oband)))
   do {
+    if(ddx->auxbuf[0]) ivoid = cvt(ivoid, ddx, (CARD8)0);
+
     (*ddx->action)(ddx, ovoid, ivoid);
 
     ivoid = GetNextSrc(void,flo,pet,iband,FLUSH);
     ovoid = GetNextDst(void,flo,pet,oband,FLUSH);
   } while(ivoid && ovoid);
 
-  FreeData(void,flo,pet,iband,iband->current);
+  FreeData(flo,pet,iband,iband->current);
 
   return(TRUE);
-}                               /* end DoSingleCtoIAll */
+}                               /* end DoGrayCtoIAll */
 
 
 /*------------------------------------------------------------------------
 ------------------------- crank some input data --------------------------
 ------------------------------------------------------------------------*/
-static int DoTripleCtoIAll(flo,ped,pet)
+static int DoRGB1CtoIAll(flo,ped,pet)
      floDefPtr flo;
      peDefPtr  ped;
      peTexPtr  pet;
@@ -388,8 +431,9 @@ static int DoTripleCtoIAll(flo,ped,pet)
   bandPtr oband = &pet->emitter[0];
   void *ovoid, *ivoid0, *ivoid1, *ivoid2;
   
-  if(Resumed(pet) &&
-     ddx->cmap != (ColormapPtr) LookupIDByType(raw->colormap, RT_COLORMAP))
+  if(Resumed(flo,pet) &&
+     (flo->runClient->clientGone ||
+      ddx->cmap != (ColormapPtr) LookupIDByType(raw->colormap, RT_COLORMAP)))
     ColormapError(flo,ped,raw->colormap, return(FALSE));
 
   ovoid  = GetCurrentDst(void,flo,pet,oband);
@@ -398,7 +442,11 @@ static int DoTripleCtoIAll(flo,ped,pet)
   ivoid2 = GetCurrentSrc(void,flo,pet,iband); iband -= 2;
   
   while(ovoid && ivoid0 && ivoid1 && ivoid2) {
-    
+
+    if(ddx->auxbuf[0]) ivoid0 = cvt(ivoid0, ddx, (CARD8)0);
+    if(ddx->auxbuf[1]) ivoid1 = cvt(ivoid1, ddx, (CARD8)1);
+    if(ddx->auxbuf[2]) ivoid2 = cvt(ivoid2, ddx, (CARD8)2);
+
     (*ddx->action)(ddx, ovoid, ivoid0, ivoid1, ivoid2);
 
     ovoid  = GetNextDst(void,flo,pet,oband,FLUSH);
@@ -406,12 +454,87 @@ static int DoTripleCtoIAll(flo,ped,pet)
     ivoid1 = GetNextSrc(void,flo,pet,iband,FLUSH); iband++;
     ivoid2 = GetNextSrc(void,flo,pet,iband,FLUSH); iband -= 2;
   }
-  FreeData(void,flo,pet,iband,iband->current); iband++;
-  FreeData(void,flo,pet,iband,iband->current); iband++;
-  FreeData(void,flo,pet,iband,iband->current);
+  FreeData(flo,pet,iband,iband->current); iband++;
+  FreeData(flo,pet,iband,iband->current); iband++;
+  FreeData(flo,pet,iband,iband->current);
   
   return(TRUE);
-}                               /* end DoTripleCtoIAll */
+}                               /* end DoRGB1CtoIAll */
+
+
+/*------------------------------------------------------------------------
+------------------------- crank some input data --------------------------
+------------------------------------------------------------------------*/
+static int DoRGB3CtoIAll(flo,ped,pet)
+     floDefPtr flo;
+     peDefPtr  ped;
+     peTexPtr  pet;
+{
+  bandPtr   iband = &pet->receptor[SRCtag].band[0];
+  ctiAllPtr   ddx = (ctiAllPtr)   pet->private;
+  
+  if(ddx->action) {
+    BOOL  final = TRUE;
+    void *ivoid;
+    int   b;
+
+    /* PASS 1: generate per-band usage maps of the colors needed
+     */
+    for(b = 0; b < xieValMaxBands; b++, iband++) {
+      for(ivoid = GetCurrentSrc(void,flo,pet,iband); ivoid;
+	  ivoid = GetNextSrc(void,flo,pet,iband,KEEP)) {
+
+	if(ddx->auxbuf[b]) ivoid = cvt(ivoid, ddx, (CARD8)b);
+
+	(*ddx->action)(ddx, ivoid, b);
+      }
+      /* if we're done with the band, go back to the first scanline, otherwise
+       *  increase the threshold to keep the scheduler out of our hair
+       */
+      if(iband->final)
+	iband->current = 0;
+      else {
+	final = FALSE;
+	SetBandThreshold(iband, iband->current + 1);
+      }
+    }
+    /* now that we know what we need, it's time to allocate colors.
+     * we'll continue with PASS 2 when we return from the scheduler
+     */
+    if(final) {
+      ddx->action = (xieVoidProc)NULL;
+      return(allocDirect(flo,ped,pet,ddx));
+    }
+  } else {
+    bandPtr oband = &pet->emitter[0];
+    void   *ovoid, *ivoid0, *ivoid1, *ivoid2;
+    
+    /* PASS 2: map src pixesl to allocated colors
+     */
+    ivoid0 = GetCurrentSrc(void,flo,pet,iband); iband++;
+    ivoid1 = GetCurrentSrc(void,flo,pet,iband); iband++;
+    ivoid2 = GetCurrentSrc(void,flo,pet,iband); iband -= 2;
+    ovoid  = GetCurrentDst(void,flo,pet,oband);
+    
+    while(ovoid && ivoid0 && ivoid1 && ivoid2) {
+
+      if(ddx->auxbuf[0]) ivoid0 = cvt(ivoid0, ddx, (CARD8)0);
+      if(ddx->auxbuf[1]) ivoid1 = cvt(ivoid1, ddx, (CARD8)1);
+      if(ddx->auxbuf[2]) ivoid2 = cvt(ivoid2, ddx, (CARD8)2);
+
+      (*ddx->action2)(ddx, ovoid, ivoid0, ivoid1, ivoid2);
+      
+      ivoid0 = GetNextSrc(void,flo,pet,iband,FLUSH); iband++;
+      ivoid1 = GetNextSrc(void,flo,pet,iband,FLUSH); iband++;
+      ivoid2 = GetNextSrc(void,flo,pet,iband,FLUSH); iband -= 2;
+      ovoid  = GetNextDst(void,flo,pet,oband,FLUSH);
+    }
+    FreeData(flo,pet,iband,iband->current); iband++;
+    FreeData(flo,pet,iband,iband->current); iband++;
+    FreeData(flo,pet,iband,iband->current);
+  }  
+  return(TRUE);
+}                               /* end DoRGB3CtoIAll */
 
 
 /*------------------------------------------------------------------------
@@ -427,37 +550,35 @@ static int ResetCtoIAll(flo,ped)
   colorListPtr lst = dix->list;
   CARD32       b, i;
   /*
-   * give the list to the ColorList resource
-   * if we've got pixels, they might need to be transfered into the list
+   * if we've got pixels, they might need to be transfered into the ColorList
    */
   if((lst->cellPtr = ddx->pixLst) && (lst->cellCnt = ddx->pixCnt)) {
 
     if(ddx->hashing) {
-      ctiHashPtr hash = (ctiHashPtr) ddx->hitLst[0];
+      ctiHashPtr hash = (ctiHashPtr) ddx->tmpLst[0];
 
       for(i = 0; i < ddx->pixCnt; ++hash)
         if(hash->rgbVal)
           lst->cellPtr[i++] = hash->pixdex;
 
-    } else if(ddx->singleMap) {
-      Pixel p, *ppix = (Pixel*) ddx->hitLst[0];
+    } else if(dix->graySrc || dix->class <= PseudoColor) {
+      Pixel p, *ppix = (Pixel*) ddx->tmpLst[0];
 
       for(i = 0; i < ddx->pixCnt; ++ppix)
         if((long int)(p = *ppix) >= 0)
           lst->cellPtr[i++] = p;
 
-    }/* else tripleMap and pixels are already in place (if there was code) */
+    }/* else triple band/map and pixels are already in place */
   }
-  if(ddx->pixBad && raw->notify && !ferrCode(flo) && !flo->flags.aborted)
-    SendColorAllocEvent(flo, ped, lst->mapID, raw->colorAlloc, ddx->pixBad);
+  if(raw->notify && ddx->cmapFull && !ferrCode(flo) && !flo->flags.aborted)
+    SendColorAllocEvent(flo, ped, lst->mapID, raw->colorAlloc, ddx->pixCnt);
   
-  for(b = 0; b < (ddx->singleMap ? 1 : 3); ++b)
-    if(ddx->hitLst[b])
-       ddx->hitLst[b] = (void *) XieFree(ddx->hitLst[b]);
-
+  for(b = 0; b < xieValMaxBands; ++b) {
+    if(ddx->tmpLst[b]) ddx->tmpLst[b] = (void *) XieFree(ddx->tmpLst[b]);
+    if(ddx->auxbuf[b]) ddx->auxbuf[b] = (void *) XieFree(ddx->auxbuf[b]);
+  }
   ddx->pixLst = NULL;  
   ddx->pixCnt = 0;
-  ddx->pixBad = 0;
   ResetReceptors(ped);
   ResetEmitter(ped);
   
@@ -487,124 +608,263 @@ static int DestroyCtoI(flo,ped)
 
 
 /*------------------------------------------------------------------------
-------------- action routines: macro-ize for BB, BP, PB, PP  -------------
-------------- b?, ?b not yet implemented; Q?, ?Q not allowed -------------
+------------- allocate DirectColors based on usage map -------------------
 ------------------------------------------------------------------------*/
-#define DO_SINGLE_CTOI_ALL(fn_do,itype,otype)				      \
+static int allocDirect(flo,ped,pet,ddx)
+     floDefPtr flo;
+     peDefPtr  ped;
+     peTexPtr  pet;
+     ctiAllPtr ddx;
+{
+  xieFloConvertToIndex *raw = (xieFloConvertToIndex *)ped->elemRaw;
+  pCtoIDefPtr	    dix = (pCtoIDefPtr) ped->elemPvt;
+  formatPtr	    fmt = &ped->inFloLst[SRCtag].format[0];
+  short 	    value[xieValMaxBands];
+  int   	  b, next[xieValMaxBands];
+  Bool        final, done[xieValMaxBands];
+  Pixel       *pix, *used[xieValMaxBands];
+  
+  if(Resumed(flo,pet) &&
+     (flo->runClient->clientGone ||
+      ddx->cmap != (ColormapPtr)LookupIDByType(raw->colormap,RT_COLORMAP)))
+    ColormapError(flo,ped,raw->colormap, return(FALSE));
+  
+  /* find the first color needed in each usage map
+   */
+  for(b = 0; b < xieValMaxBands; ++b) {
+    done[b] = FALSE;
+    next[b] = 0;
+    used[b] = (Pixel*)ddx->tmpLst[b];
+    while(!(used[b][next[b]])) ++next[b];
+  }
+  do {
+    /* plant the current round of RGB values
+     */
+    for(b = 0; b < xieValMaxBands; ++b)
+      if(!done[b])
+	 value[b] = next[b] * ddx->coef[b];
+    
+    /* alloc a triplet of color cells
+     */
+    pix = &ddx->pixLst[ddx->pixCnt];
+    if( ddx->cmapFull ||
+       (ddx->cmapFull = AllocColor(ddx->cmap,&value[0],&value[1],&value[2],
+				   pix,ddx->clindex)))
+      *pix = ddx->fill;
+    else
+      ++ddx->pixCnt;
+    
+    /* save the result and find the next color needed in each usage map
+     */
+    for(final = TRUE, b = 0; b < xieValMaxBands; ++b)
+      if(!done[b]) {
+	used[b][next[b]] = *pix & dix->mask[b];
+	while(!(done[b]  = ++next[b] >= fmt[b].levels >> ddx->trim[b]) &&
+	      !(used[b][next[b]]));
+	final &= done[b];
+      }
+  } while(!final);
+
+  return(TRUE);
+}
+
+/*------------------------------------------------------------------------
+------------- convert bits to bytes or pairs, or bytes to pairs ----------
+------------------------------------------------------------------------*/
+static void *cvt(src, ddx, band)
+     void       *src;
+     ctiAllPtr	 ddx;
+     CARD8       band;
+{
+  if(ddx->iclass[band] == BIT_PIXEL) {
+    if(ddx->cclass == BYTE_PIXEL) {
+      bitexpand(src,ddx->auxbuf[band],ddx->width,(BytePixel)0,(BytePixel)1);
+      
+    } else /* BIT_PIXEL --> PAIR_PIXEL */ {
+      LogInt	*i = (LogInt *) src, ival, M;
+      PairPixel	*o = (PairPixel *) ddx->auxbuf[band];
+      int	bw = ddx->width, nw = bw >> LOGSHIFT;
+
+      while(nw--)
+	for(ival = *i++, M = LOGLEFT; M; LOGRIGHT(M))
+	  *o++ = (ival & M) ? (PairPixel) 1 : (PairPixel) 0;
+      if(bw &= LOGMASK)
+	for(ival = *i, M = LOGLEFT; bw--; LOGRIGHT(M))
+	  *o++ = (ival & M) ? (PairPixel) 1 : (PairPixel) 0;
+    }
+  } else /* BYTE_PIXEL --> PAIR_PIXEL */ {
+    CARD32  i, width = ddx->width;
+    BytePixel *ip = (BytePixel*)src;
+    PairPixel *op = (PairPixel*)ddx->auxbuf[band];
+    
+    for(i = 0; i < width; *op++ = *ip++, ++i);
+  }
+  return(ddx->auxbuf[band]);
+}
+
+/*------------------------------------------------------------------------
+-- action routines: single band image, single or triple dynamic colormap -
+------------------------------------------------------------------------*/
+#define DO_GRAY_CtoI_ALL(fn_do,itype,otype)				      \
 static void fn_do(ddx, DST, SRC)  					      \
   ctiAllPtr ddx; void *DST,*SRC; 					      \
 {									      \
   itype *src = (itype *)SRC;						      \
   otype *dst = (otype *)DST;						      \
-  Pixel  pv, *pp, *lst = ddx->hitLst[0];				      \
-  CARD32 w, mask = ddx->mask[0], trim = ddx->truncate[0];		      \
-  CARD16 r, g, b, val;							      \
-  for(w = ddx->width; w--; *dst++ = pv) {				      \
-    if((long int)(pv = *(pp = &lst[(val = *src++ >> trim & mask)])) < 0) {    \
-      r = g = b = (unsigned short)((float)val * ddx->coef[0]);		      \
-      if(!ddx->pixBad) {				        	      \
-	if(AllocColor(ddx->cmap, &r, &g, &b, pp, ddx->clindex) == Success) {  \
+  Pixel  px, *pp, *lst = ddx->tmpLst[0];				      \
+  CARD32  w, val, mask = ddx->mask[0], trim = ddx->trim[0];		      \
+  CARD16  r, g, b;							      \
+  for(w = ddx->width; w--; *dst++ = px) {				      \
+    if((long int)(px = *(pp = &lst[(val = *src++ >> trim & mask)])) < 0) {    \
+      if(!ddx->cmapFull) {						      \
+	r = g = b = (unsigned short)((float)val * ddx->coef[0]);	      \
+	if(!(ddx->cmapFull = AllocColor(ddx->cmap,&r,&g,&b,pp,ddx->clindex))){\
 	  ++ddx->pixCnt;						      \
-	  pv = *pp;							      \
+	  px = *pp;							      \
 	  continue;							      \
 	}								      \
-	++ddx->pixBad;							      \
       }									      \
-      pv = ddx->fill;							      \
+      px = ddx->fill;							      \
     }									      \
   }									      \
 }
+DO_GRAY_CtoI_ALL(CtoIall_1_dLBB, BytePixel, BytePixel)
+DO_GRAY_CtoI_ALL(CtoIall_1_dLBP, BytePixel, PairPixel)
+DO_GRAY_CtoI_ALL(CtoIall_1_dLBQ, BytePixel, QuadPixel)
+DO_GRAY_CtoI_ALL(CtoIall_1_dLPB, PairPixel, BytePixel)
+DO_GRAY_CtoI_ALL(CtoIall_1_dLPP, PairPixel, PairPixel)
+DO_GRAY_CtoI_ALL(CtoIall_1_dLPQ, PairPixel, QuadPixel)
 
-DO_SINGLE_CTOI_ALL(CtoI_1BB, BytePixel, BytePixel)
-DO_SINGLE_CTOI_ALL(CtoI_1PB, PairPixel, BytePixel)
-DO_SINGLE_CTOI_ALL(CtoI_1BP, BytePixel, PairPixel)
-DO_SINGLE_CTOI_ALL(CtoI_1PP, PairPixel, PairPixel)
 
-
-static void CtoI_31BBB(ddx, DST, SRCR, SRCG, SRCB)
-       ctiAllPtr ddx; void *DST,*SRCR,*SRCG,*SRCB;
-{
-  BytePixel *srcR = (BytePixel *)SRCR;
-  BytePixel *srcG = (BytePixel *)SRCG;
-  BytePixel *srcB = (BytePixel *)SRCB;
-  BytePixel *dst  = (BytePixel *)DST;
-  CARD32    Rmask = ddx->mask[0], Rtrim = ddx->truncate[0];
-  CARD32    Gmask = ddx->mask[1], Gtrim = ddx->truncate[1];
-  CARD32    Bmask = ddx->mask[2], Btrim = ddx->truncate[2];
-  CARD32    Gmult = ddx->mult[1], Bmult = ddx->mult[2];
-  Pixel     pv, *pp, *lst = (Pixel*)ddx->hitLst[0];
-  CARD32    val, rv, gv, bv, w;
-  CARD16    r, g, b;
-
-  for(w = ddx->width; w--; *dst++ = pv) {
-    rv  = *srcR++ >> Rtrim & Rmask;
-    gv  = *srcG++ >> Gtrim & Gmask;
-    bv  = *srcB++ >> Btrim & Bmask;
-    /*
-     * first see if we already have what we're looking for
-     */
-    if((long int)(pv = *(pp = &lst[val = rv + gv * Gmult + bv * Bmult])) < 0) {
-      /*
-       * good grief, we have to go begging
-       */
-      if(!ddx->pixBad) {
-	r = (unsigned short)((float)rv * ddx->coef[0]);
-	g = (unsigned short)((float)gv * ddx->coef[1]);
-	b = (unsigned short)((float)bv * ddx->coef[2]);
-	if(AllocColor(ddx->cmap, &r, &g, &b, pp, ddx->clindex) == Success) {
-	  ++ddx->pixCnt;
-	  pv = *pp;
-	  continue;
-	}
-	++ddx->pixBad;
-      }
-      pv = ddx->fill;
-    }
-  }
+/*------------------------------------------------------------------------
+--- triple band, single dynamic colormap, sum of depths <= HASH_POINT ----
+------------------------------------------------------------------------*/
+#define DO_RGB31L_CtoI_ALL(fn_do,itype,otype)				      \
+static void fn_do(ddx, DST, SRCR, SRCG, SRCB)				      \
+  ctiAllPtr ddx; void *DST,*SRCR,*SRCG,*SRCB;				      \
+{									      \
+  itype  *srcR = (itype*)SRCR, *srcG = (itype*)SRCG, *srcB = (itype*)SRCB;    \
+  otype  *dst  = (otype*)DST;						      \
+  CARD32 Rmask = ddx->mask[0], Rtrim = ddx->trim[0];			      \
+  CARD32 Gmask = ddx->mask[1], Gtrim = ddx->trim[1];			      \
+  CARD32 Bmask = ddx->mask[2], Btrim = ddx->trim[2];			      \
+  CARD32 Gshft = ddx->shft[1], Bshft = ddx->shft[2];			      \
+  Pixel  px, *pp, *lst = (Pixel*)ddx->tmpLst[0];			      \
+  CARD32 rv, gv, bv, w;							      \
+  CARD16 r, g, b;							      \
+  for(w = ddx->width; w--; *dst++ = px) {				      \
+    rv  = *srcR++ >> Rtrim & Rmask;					      \
+    gv  = *srcG++ >> Gtrim & Gmask;					      \
+    bv  = *srcB++ >> Btrim & Bmask;					      \
+    if((long int)(px = *(pp = &lst[rv | gv<<Gshft | bv<<Bshft])) < 0) {	      \
+      if(!ddx->cmapFull) {					      	      \
+	r = (unsigned short)((float)rv * ddx->coef[0]);			      \
+	g = (unsigned short)((float)gv * ddx->coef[1]);			      \
+	b = (unsigned short)((float)bv * ddx->coef[2]);			      \
+	if(!(ddx->cmapFull = AllocColor(ddx->cmap,&r,&g,&b,pp,ddx->clindex))){\
+	  ++ddx->pixCnt;						      \
+	  px = *pp;							      \
+	  continue;							      \
+	}								      \
+      }									      \
+      px = ddx->fill;							      \
+    }									      \
+  }									      \
 }
-static void CtoI_31BHB(ddx, DST, SRCR, SRCG, SRCB)
-       ctiAllPtr ddx; void *DST,*SRCR,*SRCG,*SRCB;
-{
-  BytePixel *srcR = (BytePixel *)SRCR;
-  BytePixel *srcG = (BytePixel *)SRCG;
-  BytePixel *srcB = (BytePixel *)SRCB;
-  BytePixel *dst  = (BytePixel *)DST;
-  CARD32    Rmask = ddx->mask[0], Rtrim = ddx->truncate[0];
-  CARD32    Gmask = ddx->mask[1], Gtrim = ddx->truncate[1];
-  CARD32    Bmask = ddx->mask[2], Btrim = ddx->truncate[2];
-  ctiHashPtr lst  = (ctiHashPtr)ddx->hitLst[0];
-  ctiHashPtr hit;
-  CARD32    w = ddx->width, slop = ddx->slop;
-  CARD16    r, g, b;
-  union{ CARD32 rgbGlob; CARD8 rgbVals[4]; } rgb;
+DO_RGB31L_CtoI_ALL(CtoIall_31dLBB,BytePixel,BytePixel)
+DO_RGB31L_CtoI_ALL(CtoIall_31dLBP,BytePixel,PairPixel)
+DO_RGB31L_CtoI_ALL(CtoIall_31dLPB,PairPixel,BytePixel)
+DO_RGB31L_CtoI_ALL(CtoIall_31dLPP,PairPixel,PairPixel)
 
-  rgb.rgbVals[3] = 1;
-  while(w--) {
-    hit = &lst[HR * (rgb.rgbVals[0] = *srcR++ >> Rtrim & Rmask) +
-	       HG * (rgb.rgbVals[1] = *srcG++ >> Gtrim & Gmask) +
-	       HB * (rgb.rgbVals[2] = *srcB++ >> Btrim & Bmask) + slop];
 
-    while(hit->rgbVal && hit->rgbVal != rgb.rgbGlob) --hit;
-
-    if(hit->rgbVal) {
-      *dst++ = hit->pixdex;
-      continue;
-    }
-    if(!ddx->pixBad) {
-      r = (unsigned short)((float)rgb.rgbVals[0] * ddx->coef[0]);
-      g = (unsigned short)((float)rgb.rgbVals[1] * ddx->coef[1]);
-      b = (unsigned short)((float)rgb.rgbVals[2] * ddx->coef[2]);
-
-      if(AllocColor(ddx->cmap,&r,&g,&b,&hit->pixdex,ddx->clindex) == Success) {
-        ++ddx->pixCnt;
-        *dst++ = hit->pixdex;
-	hit->rgbVal = rgb.rgbGlob;
-        continue;
-      }
-      ++ddx->pixBad;
-    }
-    *dst++ = ddx->fill;
-  }
+/*------------------------------------------------------------------------
+--- triple band, single dynamic colormap, sum of depths > HASH_POINT -----
+------------------------------------------------------------------------*/
+#define DO_RGB31H_CtoI_ALL(fn_do,itype,otype)				      \
+static void fn_do(ddx, DST, SRCR, SRCG, SRCB)				      \
+  ctiAllPtr ddx; void *DST,*SRCR,*SRCG,*SRCB;				      \
+{									      \
+  itype  *srcR = (itype*)SRCR, *srcG = (itype*)SRCG, *srcB = (itype*)SRCB;    \
+  otype  *dst  = (otype*)DST;						      \
+  CARD32 Rmask = ddx->mask[0], Rtrim = ddx->trim[0];			      \
+  CARD32 Gmask = ddx->mask[1], Gtrim = ddx->trim[1];			      \
+  CARD32 Bmask = ddx->mask[2], Btrim = ddx->trim[2];			      \
+  CARD32 width = ddx->width;						      \
+  ctiHashPtr  hash, list = (ctiHashPtr)ddx->tmpLst[0];			      \
+  CARD16      r, g, b;							      \
+  union{ CARD32 rgbGlob; CARD8 rgbVals[4]; } rgb;			      \
+  rgb.rgbVals[3] = 1;							      \
+  while(width--) {							      \
+    hash = &list[HR * (rgb.rgbVals[0] = *srcR++ >> Rtrim & Rmask) +	      \
+		 HG * (rgb.rgbVals[1] = *srcG++ >> Gtrim & Gmask) +	      \
+		 HB * (rgb.rgbVals[2] = *srcB++ >> Btrim & Bmask)];	      \
+    while(hash->rgbVal && hash->rgbVal != rgb.rgbGlob) ++hash;		      \
+    if(hash->rgbVal) { *dst++ = hash->pixdex; continue; }		      \
+    if(!ddx->cmapFull) {						      \
+      r = (unsigned short)((float)rgb.rgbVals[0] * ddx->coef[0]);	      \
+      g = (unsigned short)((float)rgb.rgbVals[1] * ddx->coef[1]);	      \
+      b = (unsigned short)((float)rgb.rgbVals[2] * ddx->coef[2]);	      \
+      if(!(ddx->cmapFull =						      \
+	   AllocColor(ddx->cmap,&r,&g,&b,&hash->pixdex,ddx->clindex))) {      \
+	++ddx->pixCnt;							      \
+	*dst++ = hash->pixdex;						      \
+	hash->rgbVal = rgb.rgbGlob;					      \
+	continue;							      \
+      }									      \
+    }									      \
+    *dst++ = ddx->fill;							      \
+  }									      \
 }
+DO_RGB31H_CtoI_ALL(CtoIall_31dHBB,BytePixel,BytePixel)
+DO_RGB31H_CtoI_ALL(CtoIall_31dHBP,BytePixel,PairPixel)
+DO_RGB31H_CtoI_ALL(CtoIall_31dHPB,PairPixel,BytePixel)
+DO_RGB31H_CtoI_ALL(CtoIall_31dHPP,PairPixel,PairPixel)
+
+
+/*------------------------------------------------------------------------
+------------- action routines for triple band, triple colormap -----------
+------------- U? routines generate usage maps of src pixels    -----------
+------------- L? routines re-map src pixels thru lookup tables -----------
+------------------------------------------------------------------------*/
+#define DO_RGB33U_CtoI_ALL(fn_do,itype)					      \
+static void fn_do(ddx, SRC, band)  					      \
+  ctiAllPtr ddx; void *SRC; CARD8 band;					      \
+{									      \
+  itype   *src = (itype *)SRC;						      \
+  CARD32  mask = ddx->mask[band];					      \
+  CARD32  trim = ddx->trim[band];					      \
+  Pixel  *used = (Pixel*)ddx->tmpLst[band];				      \
+  CARD32  w    = ddx->width;						      \
+  while(w--) used[*src++ >> trim & mask] = TRUE;			      \
+}
+DO_RGB33U_CtoI_ALL(CtoIall_33dUB_, BytePixel)
+DO_RGB33U_CtoI_ALL(CtoIall_33dUP_, PairPixel)
+
+
+#define DO_RGB33L_CtoI_ALL(fn_do,itype,otype)				      \
+static void fn_do(ddx, DST, SRCR, SRCG, SRCB) 				      \
+  ctiAllPtr ddx; void *DST,*SRCR,*SRCG,*SRCB;				      \
+{									      \
+  itype  *srcR = (itype *)SRCR;						      \
+  itype  *srcG = (itype *)SRCG;						      \
+  itype  *srcB = (itype *)SRCB;						      \
+  otype  *dst  = (otype *)DST;						      \
+  CARD32 Rmask = ddx->mask[0], Rtrim = ddx->trim[0];			      \
+  CARD32 Gmask = ddx->mask[1], Gtrim = ddx->trim[1];			      \
+  CARD32 Bmask = ddx->mask[2], Btrim = ddx->trim[2];			      \
+  Pixel  *Rlut = (Pixel*)ddx->tmpLst[0];				      \
+  Pixel  *Glut = (Pixel*)ddx->tmpLst[1];				      \
+  Pixel  *Blut = (Pixel*)ddx->tmpLst[2];				      \
+  CARD32  w    = ddx->width;						      \
+  while(w--) *dst++ = (Rlut[*srcR++ >> Rtrim & Rmask] |			      \
+		       Glut[*srcG++ >> Gtrim & Gmask] |			      \
+		       Blut[*srcB++ >> Btrim & Bmask]);			      \
+}
+DO_RGB33L_CtoI_ALL(CtoIall_33dLBB, BytePixel, BytePixel)
+DO_RGB33L_CtoI_ALL(CtoIall_33dLBP, BytePixel, PairPixel)
+DO_RGB33L_CtoI_ALL(CtoIall_33dLBQ, BytePixel, QuadPixel)
+DO_RGB33L_CtoI_ALL(CtoIall_33dLPB, PairPixel, BytePixel)
+DO_RGB33L_CtoI_ALL(CtoIall_33dLPP, PairPixel, PairPixel)
+DO_RGB33L_CtoI_ALL(CtoIall_33dLPQ, PairPixel, QuadPixel)
 
 /* end module mpctoi.c */

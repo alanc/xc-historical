@@ -1,5 +1,5 @@
-/* $XConsortium: colorlst.c,v 1.1 93/07/19 10:09:42 rws Exp $ */
-/**** colorlst.c ****/
+/* $XConsortium: colorlst.c,v 1.1 93/10/26 09:59:04 rws Exp $ */
+/**** module colorlst.c ****/
 /****************************************************************************
 				NOTICE
                               
@@ -118,7 +118,6 @@ int ProcCreateColorList(client)
   
   clst->ID      = stuff->colorList;
   clst->refCnt  = 1;
-  clst->clindex = client->index;
   clst->cellPtr = NULL;
 
   ResetColorList(clst, NULL);
@@ -189,7 +188,7 @@ int ProcQueryColorList(client)
   /*
    * Fill in the reply header
    */
-  memset(&rep, 0, sz_xieQueryColorListReply);
+  bzero((char *)&rep, sz_xieQueryColorListReply);
   rep.type        = X_Reply;
   rep.sequenceNum = client->sequence;
   rep.colormap    = clst->mapID;
@@ -281,25 +280,22 @@ void ResetColorList(clst, cmap)
  ColormapPtr  cmap;
 {
   if( clst->cellPtr ) {
-    if( cmap )
+    if(cmap && !clst->client->clientGone) {
       /*
-       * Free our colors from the colormap
+       * free our colors from the colormap
        */
-      FreeColors(cmap, clst->clindex, clst->cellCnt, clst->cellPtr, 0);
-
-    /*
-     * Free our list
-     */
+      FreeColors(cmap, clst->client->index, clst->cellCnt, clst->cellPtr, 0);
+    }
     XieFree(clst->cellPtr);
   }
 
-  /*
-   * Reset the ColorList to its create-time state
+  /* reset the ColorList to its create-time state
    */
   clst->mapID   = 0;
   clst->mapPtr  = NULL;
   clst->cellCnt = 0;
   clst->cellPtr = NULL;
+  clst->client  = NULL;
 }                               /* end ResetColorList */
 
 

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: memory.c,v 1.1 93/10/26 09:58:20 rws Exp $ */
 /* Module memory.c */
 
 /****************************************************************************
@@ -87,7 +87,7 @@ void *XieCalloc(size)
 
   if(memptr) {
     ++ALLOCS; /* DEBUG */
-    memset(memptr,0,size);
+    bzero(memptr,size);
   }
   return (void *)(memptr);
 }

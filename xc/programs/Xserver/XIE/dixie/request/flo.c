@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: flo.c,v 1.1 93/10/26 09:58:02 rws Exp $ */
 /**** module flo.c ****/
 /******************************************************************************
 				NOTICE
@@ -90,6 +90,7 @@ void	  PrepFlo();
 floDefPtr FreeFlo();
 peDefPtr  MakePEDef();
 peDefPtr  FreePEDef();
+void      SendClientData();
 Bool      UpdateFormatfromLevels();
 
 /*
@@ -116,9 +117,9 @@ floDefPtr MakeFlo(client,peCnt,peLst)
 				    (peCnt+1) * sizeof(xieFlo *))) )
     return(NULL);
   
-  flo->client  =  client;
-  flo->peCnt   =  peCnt;
-  flo->peArray = (peDefPtr *) &flo[1];
+  flo->reqClient  =  client;
+  flo->peCnt      =  peCnt;
+  flo->peArray    = (peDefPtr *) &flo[1];
   flo->flags.modified = TRUE;
   ListInit(&flo->defDAG);
   ListInit(&flo->optDAG);
@@ -168,7 +169,7 @@ Bool EditFlo(flo,start,end,peLst)
   peDefPtr old, tmp;
 
   for(pe = peLst, tag = start; !ferrCode(flo) && tag <= end; tag++) {
-    if(flo->client->swapped) {
+    if(flo->reqClient->swapped) {
       register int n;
       swaps(&pe->elemType, n);
       swaps(&pe->elemLength, n);
@@ -237,12 +238,13 @@ floDefPtr FreeFlo(flo)
   
   while( !ListEmpty(&flo->optDAG) ) {
     /* free peDefs from the optimized DAG */
-    FreePEDef( RemoveMember(ped, flo->optDAG.flink) );
+    RemoveMember(ped, flo->optDAG.flink);
+    FreePEDef(ped);
   }
-  for(tag = 1; tag <= flo->peCnt; tag++)
+  for(tag = 1; tag <= flo->peCnt; tag++) {
     /* free the peDef and parameter block for each client element */
     FreePEDef(flo->peArray[tag]);
-
+  }
   /* finally, free the floDef itself */
   XieFree(flo);  
 
@@ -299,14 +301,77 @@ peDefPtr MakePEDef(inFloCnt, rawLen, pvtLen)
 peDefPtr FreePEDef(ped)
      peDefPtr ped;
 {
+  int b;
+
   if( ped ) {
+    /*
+     * empty the outFlo
+     */
+    for(b = 0; b < xieValMaxBands; ++b) {
+      if(!ListEmpty(&ped->outFlo.export[b]))
+	FreeStrips(&ped->outFlo.export[b]);
+    }
+    /* free element parameter structures
+     */
     if( ped->elemRaw )	XieFree(ped->elemRaw);
     if( ped->elemPvt )	XieFree(ped->elemPvt);
     if( ped->techPvt )	XieFree(ped->techPvt);
+
     XieFree(ped);
   }
   return(NULL);
 }                               /* end FreePEDef */
+
+
+/*------------------------------------------------------------------------
+----------------------------- Send Client Data ---------------------------
+------------------------------------------------------------------------*/
+void SendClientData(flo,ped,data,bytes,swapUnits,state)
+  floDefPtr flo;
+  peDefPtr  ped;
+  CARD8   *data;
+  CARD32  bytes;
+  CARD8   swapUnits;
+  CARD8   state;
+{
+  xieGetClientDataReply rep;
+  
+  if(flo->reqClient->clientGone) return;
+
+  bzero((char *)&rep, sz_xieGetClientDataReply);
+  rep.newState    = state;
+  rep.type        = X_Reply;
+  rep.sequenceNum = flo->reqClient->sequence;
+  rep.length      = bytes+3>>2;
+  rep.byteCount   = bytes;
+  
+  if( flo->reqClient->swapped ) {      
+    register int n;
+    swaps(&rep.sequenceNum, n);
+    swapl(&rep.length, n);
+    swapl(&rep.byteCount, n);
+  }
+  WriteToClient(flo->reqClient, sz_xieGetClientDataReply, (char *)&rep);
+  
+  if( bytes ) {
+    /* if the data needs to be swapped, do it now
+     */
+    if( flo->reqClient->swapped ) switch(swapUnits) {
+    case  0:
+    case  1:
+      break;
+    case  2:
+       SwapShorts((CARD16*)data,bytes>>1);
+      break;
+    case  4:
+    case  8:
+    case 16:
+       SwapLongs((CARD32*)data,bytes>>2);
+      break;
+    }
+    WriteToClient(flo->reqClient, bytes, (char *)data);
+  }
+}                               /* end SendClientData */
 
 
 /*------------------------------------------------------------------------

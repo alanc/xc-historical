@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: idraw.c,v 1.1 93/10/26 09:59:54 rws Exp $ */
 /**** module idraw.c ****/
 /******************************************************************************
 				NOTICE
@@ -110,7 +110,6 @@ peDefPtr MakeIDraw(flo,tag,pe)
      xieFlo        *pe;
 {
   peDefPtr ped;
-  inFloPtr inflo;
   ELEMENT(xieFloImportDrawable);
   ELEMENT_SIZE_MATCH(xieFloImportDrawable);
   
@@ -124,7 +123,7 @@ peDefPtr MakeIDraw(flo,tag,pe)
   /*
    * copy the client element parameters (swap if necessary)
    */
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
     raw->notify     = stuff->notify; 
@@ -136,7 +135,7 @@ peDefPtr MakeIDraw(flo,tag,pe)
     cpswapl(stuff->fill, raw->fill);
   }
   else
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloImportDrawable));
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloImportDrawable));
   
   return(ped);
 }                               /* end MakeIDraw */
@@ -149,67 +148,53 @@ static Bool PrepIDraw(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
+  xieFloImportDrawable *raw = (xieFloImportDrawable *) ped->elemRaw;
   iDrawDefPtr pvt 	    = (iDrawDefPtr) ped->elemPvt;
   inFloPtr    inf 	    = &ped->inFloLst[IMPORT];
-  outFloPtr   dst 	    = &ped->outFlo; 
-  xieFloImportDrawable *raw = (xieFloImportDrawable *) ped->elemRaw;
-  register DrawablePtr pd; 
-  CARD32 format, padmask;
+  outFloPtr   dst 	    = &ped->outFlo;
+  formatPtr   fmt           = &inf->format[0]; 
+  DrawablePtr pd; 
+  CARD32   f, padmask;
 
-  if (!(pd = pvt->pDraw = 
-		(DrawablePtr)LookupIDByClass(raw->drawable, RC_DRAWABLE)))
+  if(!(pd = pvt->pDraw = ((DrawablePtr)
+			  LookupIDByClass(raw->drawable, RC_DRAWABLE))))
+    DrawableError(flo,ped,raw->drawable, return(FALSE));
+
+  if(!(pd->type == DRAWABLE_WINDOW && ((WindowPtr)pd)->realized ||
+       pd->type == DRAWABLE_PIXMAP))
+    DrawableError(flo,ped,raw->drawable, return(FALSE));
+
+  if(raw->srcX < 0) {
+    ValueError(flo,ped,raw->srcX, return(FALSE));
+  } else if (raw->srcY < 0) {
+    ValueError(flo,ped,raw->srcY, return(FALSE));
+  } else if (raw->srcX + raw->width  > pd->width) {
+    ValueError(flo,ped,raw->width, return(FALSE));
+  } else if (raw->srcY + raw->height > pd->height) {
+    ValueError(flo,ped,raw->height, return(FALSE));
+  }
+  /* find the screen format that matches this drawable and fill in the format
+   */
+  for(f = 0; f < screenInfo.numPixmapFormats
+      && pd->depth != screenInfo.formats[f].depth; ++f);
+  if(f == screenInfo.numPixmapFormats)
     DrawableError(flo,ped,raw->drawable,return(FALSE));
-
-  /* If window, make sure we are within the screen */
-  /* Check one at a time so offending value can be returned */
-  if ( pd->type == DRAWABLE_WINDOW ) {
-	if (!((WindowPtr)pd)->realized) {
-    		DrawableError(flo,ped,raw->drawable,return(FALSE));
-	} else if (raw->srcX < 0) {
-    		ValueError(flo,ped,raw->srcX,return(FALSE));
-	} else if (raw->srcY < 0) {
-    		ValueError(flo,ped,raw->srcY,return(FALSE));
-	} else if (raw->srcX + raw->width  > pd->pScreen->width) {
-    		ValueError(flo,ped,raw->width,return(FALSE));
-	} else if (raw->srcY + raw->height > pd->pScreen->height) {
-    		ValueError(flo,ped,raw->height,return(FALSE));
-	}
-  } else if (pd->type != DRAWABLE_PIXMAP) 
-    	DrawableError(flo,ped,raw->drawable,return(FALSE));
-
-
-  inf->bands = 1;
-  inf->format[0].band   = 0;
-  inf->format[0].interleaved = FALSE;
-  inf->format[0].depth	= pd->depth;
-  inf->format[0].width  = pd->width;
-  inf->format[0].height = pd->height;
-  inf->format[0].levels = 1<<pd->depth;
-  inf->format[0].params = NULL;
-
-  for( format = 0; format < screenInfo.numPixmapFormats
-	&& pd->depth != screenInfo.formats[format].depth; format++ );
-
-  /* XXX oops, if (format >= screenInfo.numPixmapFormats) XXX */
-
-  /* 
-   * setting up the inflo format seems bizarre, but dagonizer may require it.
-   */
-  inf->format[0].stride = screenInfo.formats[format].bitsPerPixel;
-  padmask = screenInfo.formats[format].scanlinePad - 1;
-  inf->format[0].pitch  =
-		(inf->format[0].stride * pd->width + padmask) & ~padmask;
-
+  padmask = screenInfo.formats[f].scanlinePad - 1;
+  fmt->interleaved = FALSE;
+  fmt->band   = 0;
+  fmt->depth  = pd->depth;
+  fmt->width  = raw->width;
+  fmt->height = raw->height;
+  fmt->levels = 1<<pd->depth;
+  fmt->stride = screenInfo.formats[f].bitsPerPixel;
+  fmt->pitch  = fmt->stride * raw->width + padmask & ~padmask;
   /*
-   * determine output attributes from input parameters
+   * set output attributes from input format (stride and pitch may differ)
    */
-  dst->bands = inf->bands;
+  dst->bands     = inf->bands = 1;
   dst->format[0] = inf->format[0];
-  dst->format[0].width = raw->width;
-  dst->format[0].height = raw->height;
-
-  if (UpdateFormatfromLevels(ped) == FALSE)
-	MatchError(flo, ped, return(FALSE));
+  if(!UpdateFormatfromLevels(ped))
+    MatchError(flo,ped, return(FALSE));
 
   return(TRUE);
 }                               /* end PrepIDraw */

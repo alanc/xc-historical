@@ -1,4 +1,4 @@
-/* $XConsortium: photomap.c,v 1.1 93/07/19 10:10:27 rws Exp $ */
+/* $XConsortium: photomap.c,v 1.1 93/10/26 09:58:27 rws Exp $ */
 /**** module photomap.c ****/
 /****************************************************************************
 				NOTICE
@@ -160,7 +160,7 @@ int ProcQueryPhotomap(client)
   
   /* Fill in the reply header
    */
-  memset(&rep, 0, sz_xieQueryPhotomapReply);
+  bzero((char *)&rep, sz_xieQueryPhotomapReply);
   rep.type        = X_Reply;
   rep.sequenceNum = client->sequence;
   rep.length 	  = sz_xieQueryPhotomapReply-32>>2;
@@ -168,19 +168,18 @@ int ProcQueryPhotomap(client)
   if( map->bands ) {
     rep.populated       = TRUE;
     rep.dataType        = map->dataType;
-    rep.data            = map->bands == 1 ? xieValSingleBand
-					  : xieValTripleBand;
+    rep.data            = map->dataClass;
     rep.width0          = map->format[0].width;
     rep.height0         = map->format[0].height;
-    rep.level0          = map->format[0].levels;
+    rep.levels0         = map->format[0].levels;
     rep.decodeTechnique = map->technique;
     if( map->bands == xieValMaxBands ) {
       rep.width1  = map->format[1].width;
       rep.height1 = map->format[1].height;
-      rep.level1  = map->format[1].levels;
+      rep.levels1 = map->format[1].levels;
       rep.width2  = map->format[2].width;
       rep.height2 = map->format[2].height;
-      rep.level2  = map->format[2].levels;
+      rep.levels2 = map->format[2].levels;
     }
   } else {
     rep.populated = FALSE;
@@ -198,14 +197,14 @@ int ProcQueryPhotomap(client)
       swaps(&rep.decodeTechnique,n);
       swapl(&rep.width0,n);
       swapl(&rep.height0,n);
-      swapl(&rep.level0,n);
+      swapl(&rep.levels0,n);
       if (rep.data == xieValTripleBand) {
 	swapl(&rep.width1,n);
 	swapl(&rep.height1,n);
-	swapl(&rep.level1,n);
+	swapl(&rep.levels1,n);
 	swapl(&rep.width2,n);
 	swapl(&rep.height2,n);
-	swapl(&rep.level2,n);
+	swapl(&rep.levels2,n);
       }
     }
   }
@@ -229,12 +228,14 @@ int DeletePhotomap(map, id)
   
   /* free compression parameters and image data
    */
-  for(i = 0; i < map->bands; i++) {
-    if(map->format[i].params)
-      XieFree(map->format[i].params);
+  if (map->tecParms)
+      map->tecParms = (void *)XieFree(map->tecParms);
+  if (map->pvtParms)
+      map->pvtParms = (void *)XieFree(map->pvtParms);
+  for(i = 0; i < map->bands; i++) 
     FreeStrips(&map->strips[i]);
-  }
-  /* Free the Photomap structure.
+  /* 
+	Free the Photomap structure.
    */
   XieFree(map);
   

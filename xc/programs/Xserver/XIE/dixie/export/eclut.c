@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: eclut.c,v 1.1 93/10/26 10:03:15 rws Exp $ */
 /**** module eclut.c ****/
 /******************************************************************************
 				NOTICE
@@ -77,6 +77,7 @@ terms and conditions:
 #include <error.h>
 #include <macro.h>
 #include <element.h>
+#include <lut.h>
 
 
 /*
@@ -121,7 +122,7 @@ peDefPtr MakeECLUT(flo,tag,pe)
   /*
    * copy the standard client element parameters (swap if necessary)
    */
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
     cpswaps(stuff->src,  raw->src);
@@ -135,7 +136,7 @@ peDefPtr MakeECLUT(flo,tag,pe)
     cpswapl(stuff->length2, raw->length2);
   }
   else
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloExportClientLUT));
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloExportClientLUT));
 
   /* assign phototag to inFlo
    */
@@ -171,11 +172,13 @@ static Bool PrepECLUT(flo,ped)
   /* Validate and Propagate input attributes to our output */
   dst->bands = inf->bands = src->bands;
   for(b = 0; b < src->bands; ++b) {
-    if (src->format[b].class != LUT_ARRAY)
+    if (IsntLut(src->format[b].class))
        FloSourceError(flo,raw->src,raw->elemType, return(FALSE));
-    dst->format[b] = inf->format[b] = src->format[b];
-    if ( start[b] + length[b] > dst->format[b].height )
+    if ( start[b] + length[b] > src->format[b].height )
        MatchError(flo,ped, return(FALSE));
+
+    dst->format[b] = inf->format[b] = src->format[b];
+    ped->swapUnits[b] = LutPitch(dst->format[b].levels);
   }
   return(TRUE);
 }                               /* end PrepECLUT */

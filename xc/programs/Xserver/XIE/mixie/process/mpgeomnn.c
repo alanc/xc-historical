@@ -1,4 +1,4 @@
-/* $XConsortium: mpgeomnn.c,v 1.1 93/07/19 10:20:06 rws Exp $ */
+/* $XConsortium: mpgeomnn.c,v 1.1 93/10/26 09:47:48 rws Exp $ */
 /**** module mpgeomnn.c ****/
 /******************************************************************************
 				NOTICE
@@ -82,7 +82,8 @@ terms and conditions:
 #include <element.h>
 #include <texstr.h>
 #include <xiemd.h>
-#include <mpgeom.h>
+/* #include <mpgeom.h> */
+#include <technq.h>
 
 /*
  *  routines referenced by other DDXIE modules
@@ -93,7 +94,6 @@ int	miAnalyzeGeomNN();
  *  routines used internal to this module, technique dependent
  */
 
-/* antialias by lowpass using boxcar filter*/
 static int CreateGeomNN();
 static int InitializeGeomNN();
 static int ActivateGeomNN();
@@ -112,29 +112,85 @@ static ddElemVecRec NearestNeighborVec = {
   DestroyGeomNN
   };
 
-static void SL_R(), SL_b(), SL_B(), SL_P(), SL_Q();
+/*
+ * private
+ */
+#define	PIX0	((double)(0.0001))
+
+typedef struct _mpgeombanddef {
+
+	double	first_mlow,	/* lowest  input line mapped by first output */
+		first_mhigh;	/* highest input line mapped by first output */
+	int	first_ilow,	/* rounded first_mlow   */
+		first_ihigh;	/* rounded first_mhigh  */
+
+	double	*s_locs;	/* useful data precalculated for scaling */
+	int	*x_locs;	/* useful data precalculated for scaling */
+	int	x_start;
+	int	x_end;
+	int	int_constant;	/* precalculated for Constrained data fill */
+	RealPixel flt_constant;	/* precalculated for UnConstrained data fill */
+
+	int	yOut;		/* what output line we are on */
+	int	out_width;	/* output image size */
+	int	out_height;	/* ... not used */
+	int	in_width;	/* input image size */
+	int	in_height;
+
+	int	lo_src_available; /* which input lines we've come across */
+	int	hi_src_available;
+
+	void	(*linefunc) ();
+	void	(*fillfunc) ();
+} mpGeometryBandRec, *mpGeometryBandPtr;
+
+typedef struct _mpgeometrydef {
+  	int	upside_down;
+  	mpGeometryBandPtr bandInfo[xieValMaxBands];
+} mpGeometryDefRec, *mpGeometryDefPtr;
+
 static void FL_R(), FL_b(), FL_B(), FL_P(), FL_Q();
+static void (*fill_lines[5])()  = {FL_R, FL_b, FL_B, FL_P, FL_Q,};
+
+static void SL_R(), SL_b(), SL_B(), SL_P(), SL_Q();
 static void GL_R(), GL_b(), GL_B(), GL_P(), GL_Q();
-static void (*scale_lines[5])() = { SL_R, SL_b, SL_B, SL_P, SL_Q, };
-static void (*fill_lines[5])()  = { FL_R, FL_b, FL_B, FL_P, FL_Q, };
-static void (*ggen_lines[5])()  = { GL_R, GL_b, GL_B, GL_P, GL_Q, };
+static void (*scale_lines[5])() = {SL_R, SL_b, SL_B, SL_P, SL_Q,};
+static void (*ggen_lines[5])()  = {GL_R, GL_b, GL_B, GL_P, GL_Q,};
+
+#if XIE_FULL
+static void BiSL_R(), BiSL_b(), BiSL_B(), BiSL_P(), BiSL_Q();
+static void BiGL_R(), BiGL_b(), BiGL_B(), BiGL_P(), BiGL_Q();
+static void (*biscale_lines[5])() = {BiSL_R, BiSL_b, BiSL_B, BiSL_P, BiSL_Q,};
+static void (*bigen_lines[5])()   = {BiGL_R, BiGL_b, BiGL_B, BiGL_P, BiGL_Q,};
+#endif
 
 /*------------------------------------------------------------------------
 ------------------------  fill in the vector  ---------------------------
 ------------------------------------------------------------------------*/
+#if XIE_FULL
+int miAnalyzeGeomBi(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+   switch(ped->techVec->number) {
+   case xieValGeomBilinearInterp:
+	ped->ddVec = NearestNeighborVec;	/* Yes */
+	break;
+   default:
+    	return(FALSE);
+   }
+  return(TRUE);
+}                               /* end miAnalyzeGeomBi */
+#endif
+
 int miAnalyzeGeomNN(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  xieFloGeometry *raw = (xieFloGeometry *)ped->elemRaw;
-  inFloPtr  insrc= &ped->inFloLst[SRCtag];
-  
-   switch(raw->sample) {
-   case xieValGeomDefault:
+   switch(ped->techVec->number) {
    case xieValGeomNearestNeighbor:
 	ped->ddVec = NearestNeighborVec;
 	break;
-
    default:
     	return(FALSE);
    }
@@ -152,6 +208,7 @@ static int CreateGeomNN(flo,ped)
   /* allocate space for private data */
   return(MakePETex(flo, ped, sizeof(mpGeometryDefRec), NO_SYNC, NO_SYNC));
 }                               /* end CreateGeomNN */
+
 /*------------------------------------------------------------------------
 ---------------------------- free private data . . . ---------------------
 ------------------------------------------------------------------------*/
@@ -160,24 +217,23 @@ static int FreeBandData(flo,ped)
      peDefPtr  ped;
 {
   mpGeometryDefPtr pvt = (mpGeometryDefPtr) (ped->peTex->private);
-  mpGeometryBandPtr pvtband;
-  inFloPtr  inf = &ped->inFloLst[SRCtag];
-  int band;
+  int band, nbands = ped->inFloLst[SRCtag].bands;
   
 /*
  *  Look for private data to free
  */
-  for (band = 0 ; band < inf->bands ; band++) { 
-    pvtband = pvt->bandInfo[band];
-    if (pvtband != NULL) {
-
-      if (pvtband->x_locs != NULL)
+  for (band = 0 ; band < nbands ; band++) { 
+    mpGeometryBandPtr pvtband = pvt->bandInfo[band];
+    if (pvtband) {
+      if (pvtband->x_locs)
 	XieFree(pvtband->x_locs);
-
-      pvt->bandInfo[band] = (mpGeometryBandPtr) XieFree(pvt->bandInfo[band]);
+      if (pvtband->s_locs)
+	XieFree(pvtband->s_locs);
+      pvt->bandInfo[band] = (mpGeometryBandPtr) XieFree(pvtband);
     }
   }
 }
+
 /*------------------------------------------------------------------------
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
@@ -186,16 +242,21 @@ static int InitializeGeomNN(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  mpGeometryDefPtr pvt = (mpGeometryDefPtr) (ped->peTex->private);
-  peTexPtr pet = ped->peTex;
+  peTexPtr	    pet = ped->peTex;
+  mpGeometryDefPtr  pvt = (mpGeometryDefPtr) (pet->private);
+  xieFloGeometry    *raw = (xieFloGeometry *) (ped->elemRaw);
+  pGeomDefPtr       pedpvt = (pGeomDefPtr) (ped->elemPvt); 
+  bandPtr 	    iband = &(pet->receptor[SRCtag].band[0]);
+  bandPtr	    oband = &(pet->emitter[0]);
+  int		    band, nbands = ped->inFloLst[SRCtag].bands;
   mpGeometryBandPtr pvtband;
-  xieFloGeometry *raw = (xieFloGeometry *)ped->elemRaw;
-  pGeomDefPtr pedpvt = (pGeomDefPtr)ped->elemPvt; 
-  inFloPtr  inf = &ped->inFloLst[SRCtag];
-  int band;
-  int in_height;
+#if XIE_FULL
+  BOOL		    bilinear = (ped->techVec->number ==
+					xieValGeomBilinearInterp);
+#endif
  /*
-  * access coordinates for y_in = c * x_out + d * y_out + ty
+  * x_in = a * x_out + b * y_out + tx 	
+  * y_in = c * x_out + d * y_out + ty
   */
   double a  = pedpvt->coeffs[0];
   double b  = pedpvt->coeffs[1];
@@ -203,61 +264,71 @@ static int InitializeGeomNN(flo,ped)
   double d  = pedpvt->coeffs[3];
   double tx = pedpvt->coeffs[4];
   double ty = pedpvt->coeffs[5];
-  int	width =raw->width;
-  int	height=raw->height;
   int threshold;
-  double left_map,right_map;
   
 /*
  *  Initialize parameters for tracking input lines, etc.
  */
-  pvt->input_line_increases_as_output_line_increases =
-	(pedpvt->coeffs[3] > 0.0);
+  pvt->upside_down = (d < 0.0);
 
-
-
-  for (band = 0 ; band < inf->bands ; band++) { 
+  for (band = 0 ; band < nbands ; band++, iband++, oband++) { 
     if (pedpvt->do_band[band]) {
+	CARD32 dataclass = pet->emitter[band].format->class;
 
-        pvt->bandInfo[band] = 
-	  (mpGeometryBandPtr) XieMalloc(sizeof(mpGeometryBandRec));
-	if (!pvt->bandInfo[band]) {
+        pvt->bandInfo[band] = pvtband =
+		  (mpGeometryBandPtr) XieCalloc(sizeof(mpGeometryBandRec));
+	if (!pvtband) {
 	   FreeBandData(flo,ped);
   	   AllocError(flo, ped, return(FALSE));
 	}
-        pvtband = pvt->bandInfo[band];
-	bzero (pvtband, sizeof(mpGeometryBandRec));
-	pvtband->int_constant = pedpvt->constant[band] + .5;	
-	pvtband->flt_constant = (RealPixel) pedpvt->constant[band];	
-
+	if (IsConstrained(dataclass))
+	    pvtband->int_constant = ConstrainConst(pedpvt->constant[band],
+					   pet->emitter[band].format->levels);
+	else
+	    pvtband->flt_constant = (RealPixel) pedpvt->constant[band];	
 
 	pvtband->fillfunc = 
-		fill_lines[IndexClass(pet->emitter[band].format->class)]; 
-	pvtband->linefunc =
-		ggen_lines[IndexClass(pet->emitter[band].format->class)]; 
-
-	pvtband->in_width = inf->format[band].width;
-	pvtband->in_height = inf->format[band].height;
+		fill_lines[IndexClass(dataclass)];
+#if XIE_FULL
+	pvtband->linefunc = bilinear
+		? bigen_lines[IndexClass(dataclass)]
+		: ggen_lines[IndexClass(dataclass)];
+#else
+	pvtband->linefunc = ggen_lines[IndexClass(dataclass)];
+#endif
+	pvtband->out_width = oband->format->width;
+	pvtband->in_width = iband->format->width;
+	pvtband->in_height = iband->format->height;
 
 	if (c == 0 && b == 0 ) {
-	   int x;
-	   int in_width = pvtband->in_width;
-	   double in_x;
-	   int    in_x_coord;
+	   int	   in_width = pvtband->in_width;
+	   int	   width = pvtband->out_width;
+	   int	   x, in_x_coord;
+	   double  in_x;
+
 	   /*    For Scaling, can precalculate a lot 	*/
 
 	   if (a == 1 && d == 1) {
 	       /* just Cropping, no real resampling to be done */
 	   }
-	   pvtband->linefunc =
-		scale_lines[IndexClass(pet->emitter[band].format->class)]; 
-
-	   pvtband->x_locs = (int *) XieMalloc(width * sizeof(int));
-	   if (!pvtband->x_locs) {
+#if XIE_FULL
+	   pvtband->linefunc = bilinear
+		? biscale_lines[IndexClass(dataclass)]
+		: scale_lines[IndexClass(dataclass)];
+#else
+	   pvtband->linefunc = scale_lines[IndexClass(dataclass)];
+#endif
+	   if (!(pvtband->x_locs = (int *) XieMalloc(width * sizeof(int)))) {
 	      FreeBandData(flo,ped);
   	      AllocError(flo, ped, return(FALSE));
 	   }
-
+#if XIE_FULL
+	   if (bilinear && !(pvtband->s_locs = (double *)
+				XieMalloc(width * sizeof(double)))) {
+	      FreeBandData(flo,ped);
+  	      AllocError(flo, ped, return(FALSE));
+	   }
+#endif
 	   /*  coordinate of line is   x_in = a * x_out + tx 	*/
 	   /*  however, we will map pixel centers to centers,   */
 	   /*  so we plug in output pixel location x_out+0.5	*/
@@ -266,28 +337,26 @@ static int InitializeGeomNN(flo,ped)
 	   /*  location is then found simply by truncating	*/
 
 	   /* initialize to nonsense values */
-	   pvtband->x_start = in_width;
+	   pvtband->x_start = width;
 	   pvtband->x_end   = -1;
-	   pvtband->out_of_bounds = 1;
 
-	   in_x = 0.5*a + tx;	/* location of center  */
-	   in_x_coord = in_x;	/* closest input pixel */
-	   if (in_x_coord >= 0 && in_x_coord < in_width) {
-	   	pvtband->x_start = 0;
-	   	pvtband->x_end   = 0;
-		pvtband->x_locs[0] =  in_x_coord;
-	   }
+	   in_x = a*PIX0 + tx;	/* location of center  */
 
-	   for (x=1; x<width; ++x) {
-		in_x += a;		/* next center location */
+	   for (x=0; x<width; ++x) {
 	   	in_x_coord = in_x;	/* closest input pixel */
 	        if (in_x_coord >= 0 && in_x_coord < in_width) {
 		   /* this pixel is useful */
-		   if (pvtband->x_start == in_width)
-			pvtband->x_start = x;
 		   pvtband->x_end = x;
+		   if (pvtband->x_start >= width)
+			pvtband->x_start = x;
 		   pvtband->x_locs[x] = in_x_coord;
-		}
+#if XIE_FULL
+		   if (bilinear)
+		       pvtband->s_locs[x] =  in_x - in_x_coord;
+#endif
+		} else 
+		   pvtband->x_locs[x] = -1; /* ignore this */
+		in_x += a;		/* next center location */
 	   }
 	}
 
@@ -323,68 +392,36 @@ static int InitializeGeomNN(flo,ped)
        /*
         * first line of output image
         */
-        left_map  = c * 0.5         + d * 0.5 + ty;
-        right_map = c * (width-0.5) + d * 0.5 + ty;
+	{
+  	double left_map,right_map;
+        left_map  = c * PIX0         + d * PIX0 + ty;
+        right_map = c * ((pvtband->out_width-1) + PIX0) + d * PIX0 + ty;
         pvtband->first_mlow  = (left_map <= right_map)? left_map : right_map;
         pvtband->first_mhigh = (left_map >= right_map)? left_map : right_map;
-
-       /*
-        * last line of output image
-        */
-        left_map  = c * 0.5         + d * (height-0.5) + ty;
-        right_map = c * (width-0.5) + d * (height-0.5) + ty;
-        pvtband->last_mlow  = (left_map <= right_map)? left_map : right_map;
-        pvtband->last_mhigh = (left_map >= right_map)? left_map : right_map;
-
-        pvtband->global_mlow  =  (pvtband->first_mlow  <= pvtband->last_mlow)? 
-		pvtband->first_mlow  :  pvtband->last_mlow;
-
-        pvtband->global_mhigh =  (pvtband->first_mhigh >= pvtband->last_mhigh)? 
-		pvtband->first_mhigh :  pvtband->last_mhigh;
-
+	}
 
        /* 
         *  coordinates with center closest are just truncated doubles
         */
-        pvtband->last_ilow  = pvtband->last_mlow;
-        pvtband->last_ihigh = pvtband->last_mhigh;
         pvtband->first_ilow  = pvtband->first_mlow;
         pvtband->first_ihigh = pvtband->first_mhigh;
-        pvtband->global_ilow  = pvtband->global_mlow;
-        pvtband->global_ihigh = pvtband->global_mhigh;
-	{
-	int first_map_size = pvtband->first_ihigh - pvtband->first_ilow + 1;
-	if (first_map_size > pvt->input_map_size)
-		pvt->input_map_size = first_map_size;
-	}
 
-    }   /* end of if do_band[] */
-  }	/* end of for loop */
-
-/* 
- * Now adjust thresholds so we won't be called until all the data
- * for the first input line is ready
- */
-  for (band = 0 ; band < inf->bands ; band++) { 
-    bandPtr iband = &(pet->receptor[SRCtag].band[band]);
-    if (pedpvt->do_band[band]) {
-
-        pvtband = pvt->bandInfo[band];
 
 	/* set threshold so we get all needed src lines */
+	/* ...if we need line 256, must ask for 257! */
  	threshold = pvtband->first_ihigh + 1;
-		/* if we need line 256, must ask for 257! */
-
+#if XIE_FULL
+	if (bilinear) threshold++;
+#endif
 	/* make sure we get something */
 	if (threshold < 1)
 	    threshold = 1;
 
 	/* but don't ask for stuff we can't ever get! */
-	if (threshold > inf->format[band].height)
-	    threshold = inf->format[band].height;
+	if (threshold > pvtband->in_height)
+	    threshold = pvtband->in_height;
 
-	if(!InitBand(flo, ped, iband,
-		     inf->format[band].height, threshold, NO_INPLACE))
+	if(!InitBand(flo,ped,iband,pvtband->in_height,threshold,NO_INPLACE))
 	    return(FALSE);
     } else {
       /* we're suppose to pass this band thru unscathed */
@@ -400,23 +437,26 @@ static int ActivateGeomNN(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  peTexPtr pet = ped->peTex;
-  pGeomDefPtr pedpvt = (pGeomDefPtr)ped->elemPvt; 
-  mpGeometryDefPtr pvt = (mpGeometryDefPtr) ped->peTex->private;
-  bandPtr oband = &(pet->emitter[0]);
-  bandPtr iband = &(pet->receptor[SRCtag].band[0]);
-  int band, nbands = pet->receptor[SRCtag].inFlo->bands;
-  inFloPtr  insrc = &ped->inFloLst[SRCtag];
-  xieFloGeometry *raw = (xieFloGeometry *)ped->elemRaw;
-  int	width =raw->width;
-  int	height=raw->height;
+  peTexPtr	pet = ped->peTex;
+  pGeomDefPtr	pedpvt = (pGeomDefPtr) (ped->elemPvt); 
+  mpGeometryDefPtr pvt = (mpGeometryDefPtr) (ped->peTex->private);
+  bandPtr	oband = &(pet->emitter[0]);
+  bandPtr	iband = &(pet->receptor[SRCtag].band[0]);
+  int		band, nbands = pet->receptor[SRCtag].inFlo->bands;
   register void *outp;
+#if XIE_FULL
+  BOOL		bilinear = (ped->techVec->number == xieValGeomBilinearInterp);
+#endif
 
   for(band = 0; band < nbands; band++, iband++, oband++) {
-  int sline = iband->current;
-  mpGeometryBandPtr pvtband = pvt->bandInfo[band];
 
-      if (! pvt->input_line_increases_as_output_line_increases) {
+    mpGeometryBandPtr pvtband = pvt->bandInfo[band];
+    int width = pvtband->out_width;	/* action routine could get */
+
+    if (!pvtband)
+	continue;
+
+    if (pvt->upside_down) {
 
 	  /* we're going backwards, which is actually *simpler*, 
 	   * because we don't get ANY data until we have ALL data.
@@ -430,124 +470,89 @@ static int ActivateGeomNN(flo,ped)
 	     pvtband->hi_src_available = iband->maxGlobal-1;
 	  }
 	   
-	   outp = GetCurrentDst(void,flo,pet,oband);
-	   while (outp) {
+	  outp = GetCurrentDst(void,flo,pet,oband);
+	  while (outp) {
 		int lo_in,hi_in;
 
 		/* get range of src lines for this output line */
 		lo_in = pvtband->first_ilow;
 		hi_in = pvtband->first_ihigh;
 			
-		if (hi_in < 0) {
-		  /* rest of output image is off input image */
-	     	  (*pvtband->fillfunc)(outp,iband->dataMap,
-			width,pvt,pvtband);
-		}
-		else if (lo_in > pvtband->in_height) {
-		  /* haven't reach input image yet */
-	     	  (*pvtband->fillfunc)(outp,iband->dataMap,
-			width,pvt,pvtband);
-		}
-		else {
+		/* rest of output image is off input image */
+		if ( (hi_in < 0) || (lo_in > pvtband->in_height))
+	     	    (*pvtband->fillfunc)(outp,width,pvtband);
+		else
 		   /* Compute output pixels for this line */
-		   (*pvtband->linefunc)(outp,iband->dataMap,
-		   	width,hi_in,pedpvt,pvt,pvtband);
-
-		   /* now compute highest input line for next oline */
-		}
-
+#if XIE_FULL
+		    (*pvtband->linefunc)(outp,iband->dataMap,width,
+			bilinear ? lo_in : hi_in, pedpvt, pvtband);
+#else
+		    (*pvtband->linefunc)(outp,iband->dataMap,width,
+					   hi_in, pedpvt, pvtband);
+#endif
 		pvtband->first_mlow  += pedpvt->coeffs[3];
 		pvtband->first_mhigh += pedpvt->coeffs[3];
 		pvtband->first_ilow  = (int) pvtband->first_mlow ;
 		pvtband->first_ihigh = (int) pvtband->first_mhigh;
 		pvtband->yOut++;
 		outp = GetNextDst(void,flo,pet,oband,TRUE);
-	   }
-	  /* 2 possible reasons for no more dst: done, or scheduler 
-	   * wants us to be nice and give up control to somebody else
-	   */
-	   if (oband->final)
+	  }
+	  if (oband->final)
 		DisableSrc(flo,pet,iband,FLUSH);
 
-	   continue;	/* go to the next band*/
-       }
+    } else {
       /* 
        * nice normal image progression.  This means that I know when
        * I am done with an input line for the current output line,  I 
        * can purge it,  because it won't be needed for subsequent 
        * output lines.
        */
-       else {
 
-       while (!ferrCode(flo)) {		
+	while (!ferrCode(flo)) {		
 	  int map_lo;		/* lowest  line mapped by output line */
 	  int map_hi;		/* highest line mapped by output line */
-          int last_src_line = insrc->format[band].height - 1;
-	  int len=2;
+          int last_src_line = pvtband->in_height - 1;
 	  int threshold;
-	  register int i;
-   	  Bool ok;
-	   /* access current output line */
-	   outp = GetDst(void,flo,pet,oband,pvtband->yOut,FLUSH);
-	   if (!outp) {
-		if (oband->final) {
-       		  DisableSrc(flo, pet, iband, FLUSH);
-		}
-		else  {
-		  /* Since we still have to produce more output lines */
-		  /* we must have gotten NULL because the strip manager */
-		  /* wants us to exit, to give the scheduler a chance  */
-		  /* to let some element run 			 */
 
-		  if (iband->current != 0)  {
-		    /* we shouldn't free data if we still need the first line
-		     */
-       		      FreeData(void, flo, pet, iband, iband->current);
-		  }
-		}
+	  /* access current output line */
+	  if (!(outp = GetDst(void,flo,pet,oband,pvtband->yOut,FLUSH))) {
+		if (oband->final)
+       		    DisableSrc(flo, pet, iband, FLUSH);
+		else if (iband->current != 0)
+       		    FreeData(flo, pet, iband, iband->current);
 		goto breakout;
-	   }
+	  }
 
-	  sline = pvtband->first_ilow;
-	  if (sline < 0)
-		sline = 0;
+	  map_lo = pvtband->first_ilow;
+	  if (map_lo < 0)
+		map_lo = 0;
 
 	  map_hi = pvtband->first_ihigh;
+#if XIE_FULL
+	  if (bilinear) map_hi++;
+#endif
 	  if (map_hi > last_src_line)
 		map_hi = last_src_line;
 
-	  if (map_hi < 0 || sline > last_src_line) {
-	     /* whole line is off the input image */
-	     /* XXX could reduce arguments to fill func */
-	     (*pvtband->fillfunc)(outp,iband->dataMap,width,pvt,pvtband);
-	  }
+	  if (map_hi < 0 || map_lo > last_src_line)
+	     (*pvtband->fillfunc)(outp,width,pvtband);
 	  else {
-	     len = map_hi - sline + 1;
-	     
 
-	     if(!(ok  = MapData(flo,pet,iband,sline,sline,len,KEEP)))
+	     threshold = map_hi - map_lo + 1;
+	     if(!MapData(flo,pet,iband,map_lo,map_lo,threshold,KEEP))
 		break;
 
-	     if (sline != iband->current) 
+	     if (map_lo != iband->current) {
       		   ImplementationError(flo,ped, return(FALSE));
+	     }
 
 	     pvtband->lo_src_available = 0;
 	     pvtband->hi_src_available = iband->maxGlobal-1;
 
-	      /***	Compute output pixels for this line ***/
-	      (*pvtband->linefunc)(outp,iband->dataMap,
-		   width,sline,pedpvt,pvt,pvtband);
+	     (*pvtband->linefunc)(outp,iband->dataMap,
+					   width,map_lo,pedpvt,pvtband);
 
 	    }
-
-	     /* Now we need to compute the input line range
-		for the next destination line. We use the fact
-		that since y_in = c * x_out + d*y_out + ty, 
-		
-		if the range of values for y_in on line y_out=N 
-		was (old_low,old_high),   the range of values for
-		y_in on line y_out=N+1 must be (old_low+d,old_high+d)
-	     */
 
     	     pvtband->first_mlow  += pedpvt->coeffs[3]; 
     	     pvtband->first_mhigh += pedpvt->coeffs[3];
@@ -555,15 +560,13 @@ static int ActivateGeomNN(flo,ped)
    	     /* have to be careful about -0.5 rounding to 0, not -1 */
 	     if (pvtband->first_ilow < 0) {
 
-		if (pvtband->first_mlow < 0)
-		   pvtband->first_ilow = -1;
-		else
-    	           pvtband->first_ilow  = (int)pvtband->first_mlow;	
+    	        pvtband->first_ilow = (pvtband->first_mlow < 0)
+						? -1
+						: (int)pvtband->first_mlow;	
 	     
-		if (pvtband->first_mhigh < 0)
-		   pvtband->first_ihigh = -1;
-		else
-    	           pvtband->first_ihigh = (int)pvtband->first_mhigh;
+    	        pvtband->first_ihigh = (pvtband->first_mhigh < 0)
+						? -1
+						: (int)pvtband->first_mhigh;
 	     } 
 	     else {
 		/* if ilow was positive before, needn't check for negative */
@@ -573,27 +576,23 @@ static int ActivateGeomNN(flo,ped)
 
 	     ++pvtband->yOut;						
 
-		if (pvtband->first_ilow > last_src_line) {
+	     if (pvtband->first_ilow > last_src_line) {
 	          /* rest of output image is off the input image */
 		  /* we will exit after filling output strip */
-	          while(outp=GetDst(void,flo,pet,oband,pvtband->yOut,FLUSH)) {
-
-		   /* XXX could reduce arguments to fill func */
-		   (*pvtband->fillfunc)(outp,iband->dataMap,width,pvt,pvtband);
-		   pvtband->yOut++;
+	         while(outp=GetDst(void,flo,pet,oband,pvtband->yOut,FLUSH)) {
+		     (*pvtband->fillfunc)(outp,width,pvtband);
+		     pvtband->yOut++;
 		 }
-		   if (oband->final) {
-		      /* out of destination lines */
+		 if (oband->final)
 		      DisableSrc(flo, pet, iband, FLUSH);
-		    }
-		    else  
-			goto breakout;
-		  /* Be nice and let downstream element eat our data */
-		  /* notice we don't free input data, because then the */
-		  /* silly scheduler would turn us off */
-		}
+		 else  
+		      goto breakout;
+	     }
 
 	     map_hi = pvtband->first_ihigh;
+#if XIE_FULL
+	     if (bilinear) map_hi++;
+#endif
 	     if (map_hi > last_src_line)
 		map_hi = last_src_line;
 
@@ -604,22 +603,22 @@ static int ActivateGeomNN(flo,ped)
 	         threshold = 1;
 
 	     /* but don't ask for stuff we can't ever get! */
-	     if (threshold > insrc->format[band].height)
-	         threshold = insrc->format[band].height;
+	     if (threshold > pvtband->in_height)
+	         threshold = pvtband->in_height;
 
        	     SetBandThreshold(iband, threshold);
 	     if (map_hi >= (int) iband->maxGlobal) {
 		/* we need to let someone else generate more data */
 		break;
 	     }
-	   }  /* end of while no flo err */
-       /* want to make sure we GetSrc at least once before Freeing */
-       if (iband->current)
-          FreeData(void, flo, pet, iband, iband->current);
-       }  /* end of else on normal order */
+	}  /* end of while no flo err */
+	/* want to make sure we GetSrc at least once before Freeing */
+	if (iband->current)
+	    FreeData(flo, pet, iband, iband->current);
+    }  /* end of else on normal order */
 breakout:
 	;
-    }	/* end of band loop */
+  }	/* end of band loop */
   return(TRUE);
 }                               /* end ActivateGeometry */
 
@@ -658,41 +657,31 @@ static int DestroyGeomNN(flo,ped)
   return(TRUE);
 }                               /* end DestroyGeomNN */
 
-/**********************************************************************/
-/* fill routines */
-static void FL_b (OUTP,srcimg,width,pvt,pvtband)
-	register void *OUTP, **srcimg;
-	register int width;
-	mpGeometryDefPtr pvt;
+/**********************************************************************
+****************************   Fill Routines **************************
+**********************************************************************/
+
+static void FL_b (OUTP,width,pvtband)
+	void *OUTP;
+	int width;
 	mpGeometryBandPtr pvtband;
 {
-	register LogInt constant = (LogInt) pvtband->int_constant;
-	register LogInt *outp	= (LogInt *) OUTP;
-	register int	i;
-
-	if (constant) constant = ~0;
-	/*
-	** NOTE: Following code assume filling entire line. Which is
-	** currently true.  In the future we may need to abide by
-	** bit boundaries. Conversely code for bytes and pairs below
-	** could be sped up by doing something similar 
-	*/
-	width = (width + 31) >> 5;
-	for (i=0; i < width; ++i) *outp++ = constant;
+	if (pvtband->int_constant)
+		action_set(OUTP, width, 0);
+	else
+		action_clear(OUTP, width, 0);
 }
 
 #define DO_FL(funcname, iotype, CONST)					\
-static void funcname (OUTP,srcimg,width,pvt,pvtband)			\
-register void *OUTP;							\
-register void **srcimg;							\
-register int width;							\
-mpGeometryDefPtr pvt;							\
+static void funcname (OUTP,width,pvtband)				\
+void		*OUTP;							\
+register int	width;							\
 mpGeometryBandPtr pvtband;						\
 {									\
 register iotype constant = (iotype) pvtband->CONST;			\
 register iotype *outp	= (iotype *) OUTP;				\
-register int	i;							\
-	for (i=0; i < width; ++i) *outp++ = constant;			\
+									\
+	for ( ; width > 0; width--) *outp++ = constant;			\
 }
 
 DO_FL	(FL_R, RealPixel, flt_constant)
@@ -700,32 +689,32 @@ DO_FL	(FL_B, BytePixel, int_constant)
 DO_FL	(FL_P, PairPixel, int_constant)
 DO_FL	(FL_Q, QuadPixel, int_constant)
 
-/**********************************************************************/
+/**********************************************************************
+**********************   Neareast Neighbor - Separable ****************
+**********************************************************************/
+
 /* (x,y) separable routines (eg, scale, mirror_x, mirror_y)  */
 
-static void SL_b (OUTP,srcimg,width,sline,pedpvt,pvt,pvtband)
-	register void *OUTP, **srcimg;
-	register int width,sline;
-	mpGeometryDefPtr pvt;
+static void SL_b (OUTP,srcimg,width,sline,pedpvt,pvtband)
+	void *OUTP, **srcimg;
+	register int width;
+	int sline;
 	pGeomDefPtr pedpvt; 
 	mpGeometryBandPtr pvtband;
 {
 	register int	xbeg	= pvtband->x_start;
 	register int	xend	= pvtband->x_end;
 	register int	*x_locs	= pvtband->x_locs;
-	register LogInt constant = (LogInt) pvtband->int_constant;
 	register LogInt *src	= (LogInt *) (srcimg[sline]);
 	register LogInt *outp	= (LogInt *) OUTP;
 	register LogInt outval, M, fill;
 	register int	i= 0, w;
 
-	fill = (constant ? ~(LogInt)0 : 0);
-
+	fill = (pvtband->int_constant ? ~(LogInt)0 : 0);
 
 	for (w = xbeg >> LOGSHIFT; w > 0; w--, i+=LOGSIZE)  *outp++ = fill;
 
 	if (xbeg & LOGMASK)  {
-	    /* XXX Do funny word */
 	    outval = BitLeft(fill,LOGSIZE-i);
 	    for (i = xbeg, M=LOGBIT(i) ; M && i <= xend ; LOGRIGHT(M), i++)
 		if (LOG_tstbit(src,x_locs[i]))
@@ -758,12 +747,11 @@ static void SL_b (OUTP,srcimg,width,sline,pedpvt,pvt,pvtband)
 }
 
 #define DO_SL(funcname, iotype, CONST)					\
-static void funcname (OUTP,srcimg,width,sline,pedpvt,pvt,pvtband)	\
+static void funcname (OUTP,srcimg,width,sline,pedpvt,pvtband)		\
 register void *OUTP;							\
 register void **srcimg;							\
 register int width,sline;						\
 pGeomDefPtr pedpvt; 							\
-mpGeometryDefPtr pvt;							\
 mpGeometryBandPtr pvtband;						\
 {									\
 register int	xbeg	= pvtband->x_start;				\
@@ -783,30 +771,132 @@ DO_SL	(SL_B, BytePixel, int_constant)
 DO_SL	(SL_P, PairPixel, int_constant)
 DO_SL	(SL_Q, QuadPixel, int_constant)
 
-/**********************************************************************/
-/* general routines (should be able to handle any valid map) */
+/**********************************************************************
+*************************  Bilinear - Seperable  **********************
+**********************************************************************/
+#if XIE_FULL
 
-static void GL_b (OUTP,srcimg,width,sline,pedpvt,pvt,pvtband)
-register void *OUTP;
-register void **srcimg;
-register int width,sline;
-pGeomDefPtr pedpvt; 
-mpGeometryDefPtr pvt;
+/* note - could use BiGL_b since this is a silly anyway */
+
+static void BiSL_b (OUTP,srcimg,width,sline,pedpvt,pvtband)
+void	 	  *OUTP;
+void	 	  **srcimg;
+register int	  width;
+int     	  sline;
+pGeomDefPtr	  pedpvt; 
 mpGeometryBandPtr pvtband;
 {
-double 	 b  = 	pedpvt->coeffs[1];
-double 	 d  = 	pedpvt->coeffs[3];
-double 	 tx = 	pedpvt->coeffs[4];
-double 	 ty = 	pedpvt->coeffs[5];
+register double s, t, st, result;
+register int    isrcpix;
+register int	*x_locs	= pvtband->x_locs;
+register double *s_locs = pvtband->s_locs;
+register LogInt constant, val, M, *ptrIn, *ptrJn;
+register LogInt *outp	= (LogInt *) OUTP;
+register int 	srcwidth  = pvtband->in_width - 1;
+
+	if ( (sline >= pvtband->hi_src_available) ||
+	     (sline <  pvtband->lo_src_available) ) {
+	    FL_b(outp, width, pvtband);
+	    return;
+	}
+		
+	t = pvtband->first_mlow; t -= ((int)t);
+	M=LOGLEFT; val = 0;
+    	constant = pvtband->int_constant;
+	ptrIn = (LogInt *) srcimg[sline];
+	ptrJn = (LogInt *) srcimg[sline+1];
+	while ( width > 0 ) { 
+	    isrcpix = *x_locs++;
+	    s = *s_locs++;
+	    if ( (isrcpix >= 0) && (isrcpix < srcwidth) ) {
+		st = s * t;
+		result = 0.;
+		if (LOG_tstbit(ptrIn,isrcpix))   result  =
+					  ((double)1. - s - t + st);
+		if (LOG_tstbit(ptrIn,isrcpix+1)) result += (s - st);
+		if (LOG_tstbit(ptrJn,isrcpix))   result += (t - st);
+		if (LOG_tstbit(ptrJn,isrcpix+1)) result += st;
+		if (result > 0.5) val |= M;
+	    } else if (constant) val |= M;
+	    width--;
+	    LOGRIGHT(M); if (!M) { *outp++ = val; M=LOGLEFT; val = 0; }
+	}
+	if (M != LOGLEFT) *outp = val;
+}
+
+#define BI_SL(funcname, iotype, CONST)					\
+static void funcname (OUTP,srcimg,width,sline,pedpvt,pvtband)		\
+void		*OUTP;							\
+void		**srcimg;						\
+register int	width;							\
+int		sline;							\
+pGeomDefPtr	pedpvt; 						\
+mpGeometryBandPtr pvtband;						\
+{									\
+register int	*x_locs	= pvtband->x_locs;				\
+register double *s_locs = pvtband->s_locs;				\
+register iotype constant = (iotype) pvtband->CONST;			\
+register iotype *outp	= (iotype *) OUTP;				\
+register iotype *src	= (iotype *) (srcimg[sline]);			\
+register iotype *trc;							\
+register int i, j, in_width = pvtband->in_width - 1;			\
+register double s, t, st;						\
+register iotype val;							\
+									\
+	t = pvtband->first_mlow; t -= ((int)t);				\
+	if (sline >= pvtband->hi_src_available)				\
+		trc = src; /* or fill line with constant */		\
+	else								\
+		trc =  (iotype *) (srcimg[sline+1]);			\
+        for (i = 0; i < width; i++) {					\
+	    j = x_locs[i];						\
+	    s = s_locs[i];						\
+	    val = constant;						\
+	    if (j >= 0 && j < in_width) {				\
+		st = s * t;						\
+		val = src[j]   * ((float)1. - s - t + st) +		\
+		      src[j+1] * (s - st) +				\
+		      trc[j]   * (t - st) +				\
+		      trc[j+1] * (st);					\
+	    }								\
+	    *outp++ = val;						\
+	}								\
+}
+
+BI_SL	(BiSL_R, RealPixel, flt_constant)
+BI_SL	(BiSL_B, BytePixel, int_constant)
+BI_SL	(BiSL_P, PairPixel, int_constant)
+BI_SL	(BiSL_Q, QuadPixel, int_constant)
+#endif
+
+/**********************************************************************
+**********************   Neareast Neighbor - General ******************
+**********************************************************************/
+
+/* NOTE: for GL routines, would be better to keep running srcpix,
+**	and srcline variables outside of scan line routine.
+*/
+
+static void GL_b (OUTP,srcimg,width,sline,pedpvt,pvtband)
+void *OUTP;
+void **srcimg;
+register int width;
+int sline;
+pGeomDefPtr pedpvt; 
+mpGeometryBandPtr pvtband;
+{
 register double a  = pedpvt->coeffs[0];
 register double c  = pedpvt->coeffs[2];
-register double srcline = c*0.5 + d * pvtband->yOut + ty;
-register double srcpix  = a*0.5 + b * pvtband->yOut + tx;
+register double srcpix  = a * PIX0 +
+			  pedpvt->coeffs[1] * (pvtband->yOut + PIX0) +
+			  pedpvt->coeffs[4];
+register double srcline = c * PIX0 +
+			  pedpvt->coeffs[3] * (pvtband->yOut + PIX0) +
+			  pedpvt->coeffs[5];
 register int 	isrcline,isrcpix;
 register LogInt constant, val, M, *ptrIn;
 register LogInt *outp	= (LogInt *) OUTP;
 register int 	srcwidth  = pvtband->in_width;
-register int 	srcheight = pvtband->in_height;
 register int 	minline  = pvtband->lo_src_available;
 register int 	maxline  = pvtband->hi_src_available;
 
@@ -836,22 +926,22 @@ register int 	maxline  = pvtband->hi_src_available;
 
 
 #define DO_GL(funcname, iotype, CONST)					\
-static void funcname (OUTP,srcimg,width,sline,pedpvt,pvt,pvtband)	\
-register void *OUTP;							\
-register void **srcimg;							\
-register int width,sline;						\
+static void funcname (OUTP,srcimg,width,sline,pedpvt,pvtband)		\
+void *OUTP;								\
+void **srcimg;								\
+register int width;							\
+int sline;								\
 pGeomDefPtr pedpvt; 							\
-mpGeometryDefPtr pvt;							\
 mpGeometryBandPtr pvtband;						\
 {									\
-double 	 b  = 	pedpvt->coeffs[1];					\
-double 	 d  = 	pedpvt->coeffs[3];					\
-double 	 tx = 	pedpvt->coeffs[4];					\
-double 	 ty = 	pedpvt->coeffs[5];					\
 register double a  = pedpvt->coeffs[0];					\
 register double c  = pedpvt->coeffs[2];					\
-register double srcline = c*0.5 + d * pvtband->yOut + ty;		\
-register double srcpix  = a*0.5 + b * pvtband->yOut + tx;		\
+register double srcpix  = a * PIX0 +					\
+			  pedpvt->coeffs[1] * (pvtband->yOut + PIX0) +	\
+			  pedpvt->coeffs[4];				\
+register double srcline = c * PIX0 +					\
+			  pedpvt->coeffs[3] * (pvtband->yOut + PIX0) +	\
+			  pedpvt->coeffs[5];				\
 register int 	isrcline,isrcpix;					\
 register iotype constant = (iotype) pvtband->CONST;			\
 register iotype *outp	= (iotype *) OUTP;				\
@@ -862,15 +952,12 @@ register int 	srcwidth  = pvtband->in_width;				\
 register int 	minline  = pvtband->lo_src_available;			\
 register int 	maxline  = pvtband->hi_src_available;			\
 									\
-	/* in our coordinate system, truncate does a round */		\
 	while ( width > 0 ) { 						\
 		isrcline = srcline; 					\
-		isrcpix  = srcpix; /* no fpu?, move down in 'if' */	\
-		/* prepare for next loop */				\
+		isrcpix  = srcpix; 					\
 		width--; 						\
 		srcline += c; 						\
 		srcpix  += a; 						\
-		/* if (isrcline,isrcpix) not in src image, fill w/val*/	\
 		val = constant; 					\
 		if ( (isrcline >= minline) && (isrcline <= maxline) ) { \
 		     ptrIn = (iotype *) srcimg[isrcline];  		\
@@ -884,60 +971,127 @@ register int 	maxline  = pvtband->hi_src_available;			\
 }
 
 DO_GL	(GL_R, RealPixel, flt_constant)
-#if 1
 DO_GL	(GL_B, BytePixel, int_constant)
-#else
-/* note: due to the glory of cdefs, there's no reason to take this out! :) */
-static void GL_B (OUTP,srcimg,width,sline,pedpvt,pvt,pvtband)	
-register void *OUTP;						
-register void **srcimg;					
-register int width,sline;				
-pGeomDefPtr pedpvt; 
-mpGeometryDefPtr pvt;	
-mpGeometryBandPtr pvtband;
-{				
-double 	 b  = 	pedpvt->coeffs[1];
-double 	 d  = 	pedpvt->coeffs[3];
-double 	 tx = 	pedpvt->coeffs[4];
-double 	 ty = 	pedpvt->coeffs[5];
-register double a  = pedpvt->coeffs[0];
-register double c  = pedpvt->coeffs[2];
-register double srcline = c*0.5 + d * pvtband->yOut + ty;
-register double srcpix  = a*0.5 + b * pvtband->yOut + tx;
-register int 	isrcline,isrcpix;				
-register BytePixel constant = (BytePixel) pvtband->int_constant;		
-register BytePixel *outp	= (BytePixel *) OUTP;		
-register BytePixel *ptrIn;					
-register BytePixel val;					
-register int 	srcwidth  = pvtband->in_width;	
-register int 	srcheight = pvtband->in_height;
-register int 	minline  = pvtband->lo_src_available;
-register int 	maxline  = pvtband->hi_src_available;
-						
-	/* in our coordinate system, truncate does a round */
-	while ( width > 0 ) { 					
-		isrcline = srcline; 			
-		isrcpix  = srcpix; /* no fpu?, move down in 'if' */
-		/* prepare for next loop */			
-		width--; 				
-		srcline += c; 			
-		srcpix  += a; 		
-		/* if (isrcline,isrcpix) not in src image, fill w/val*/
-		val = constant; 				
-		if ( (isrcline >= minline) && (isrcline <= maxline) ) { 
-		     ptrIn = (BytePixel *) srcimg[isrcline];  	
-		     if ( (isrcpix >= 0) &&		
-			  (isrcpix < srcwidth) &&
-			  ptrIn )		
-			val = ptrIn[isrcpix]; 
-		}			
-		*outp++ = val; 	
-	}		
-}
-#endif
-
 DO_GL	(GL_P, PairPixel, int_constant)
 DO_GL	(GL_Q, QuadPixel, int_constant)
 
+/**********************************************************************
+*************************  Bilinear - General  ************************
+**********************************************************************/
+#if XIE_FULL
+
+static void BiGL_b (OUTP,srcimg,width,sline,pedpvt,pvtband)
+void *OUTP;
+void **srcimg;
+register int width;
+int sline;
+pGeomDefPtr pedpvt; 
+mpGeometryBandPtr pvtband;
+{
+register double s, t, st, result;
+register double a  = pedpvt->coeffs[0];
+register double c  = pedpvt->coeffs[2];
+register double srcpix  = a * PIX0 +
+			  pedpvt->coeffs[1] * (pvtband->yOut + PIX0) +
+			  pedpvt->coeffs[4];
+register double srcline = c * PIX0 +
+			  pedpvt->coeffs[3] * (pvtband->yOut + PIX0) +
+			  pedpvt->coeffs[5];
+register int 	isrcline,isrcpix;
+register LogInt constant, val, M, *ptrIn, *ptrJn;
+register LogInt *outp	= (LogInt *) OUTP;
+register int 	srcwidth  = pvtband->in_width;
+register int 	minline  = pvtband->lo_src_available;
+register int 	maxline  = pvtband->hi_src_available;
+
+    	constant = pvtband->int_constant;
+	M=LOGLEFT; val = 0;
+	while ( width > 0 ) { 
+	    isrcline = srcline;
+	    isrcpix  = srcpix;
+	    if ( (isrcline >= minline) && (isrcline <= maxline) ) { 
+		s = srcpix - isrcpix;
+		t = srcline - isrcline;
+		ptrIn = (LogInt *) srcimg[isrcline];
+		ptrJn = (LogInt *) srcimg[isrcline+1];
+		if ( (isrcpix >= 0) && (isrcpix < srcwidth) ) {
+		    st = s * t;
+		    result = 0.;
+		    if (LOG_tstbit(ptrIn,isrcpix))   result  =
+					      ((double)1. - s - t + st);
+		    if (LOG_tstbit(ptrIn,isrcpix+1)) result += (s - st);
+		    if (LOG_tstbit(ptrJn,isrcpix))   result += (t - st);
+		    if (LOG_tstbit(ptrJn,isrcpix+1)) result += st;
+		    if (result > 0.5) val |= M;
+		} else if (constant) val |= M;
+	    } else if (constant) val |= M;
+	    LOGRIGHT(M); if (!M) { *outp++ = val; M=LOGLEFT; val = 0; }
+	    width--;
+	    srcline += c;
+	    srcpix  += a;
+	}
+	if (M != LOGLEFT) *outp = val;
+}
+
+#define BI_GL(funcname, iotype, CONST)					\
+static void funcname (OUTP,srcimg,width,sline,pedpvt,pvtband)		\
+void *OUTP;								\
+void **srcimg;								\
+register int width;							\
+int sline;								\
+pGeomDefPtr pedpvt; 							\
+mpGeometryBandPtr pvtband;						\
+{									\
+register double s, t, st;						\
+register double a  = pedpvt->coeffs[0];					\
+register double c  = pedpvt->coeffs[2];					\
+register double srcpix  = a * PIX0 +					\
+			  pedpvt->coeffs[1] * (pvtband->yOut + PIX0) +	\
+			  pedpvt->coeffs[4];				\
+register double srcline = c * PIX0 +					\
+			  pedpvt->coeffs[3] * (pvtband->yOut + PIX0) +	\
+			  pedpvt->coeffs[5];				\
+register int 	isrcline,isrcpix;					\
+register iotype constant = (iotype) pvtband->CONST;			\
+register iotype *outp	= (iotype *) OUTP;				\
+register iotype *ptrIn, *ptrJn;						\
+register iotype val;							\
+/* some variables which describe available input data (for clipping) */	\
+register int 	srcwidth = pvtband->in_width - 1;			\
+register int 	minline  = pvtband->lo_src_available;			\
+register int 	maxline  = pvtband->hi_src_available;			\
+									\
+	/* in our coordinate system, truncate does a round */		\
+	while ( width > 0 ) { 						\
+		isrcline = srcline; 					\
+		isrcpix  = srcpix; /* no fpu?, move down in 'if' */	\
+		val = constant; 					\
+		if ( (isrcline >= minline) && (isrcline < maxline) ) {	\
+		    s = srcpix - isrcpix;				\
+		    ptrIn = (iotype *) srcimg[isrcline];  		\
+		    t = srcline - isrcline;				\
+		    ptrJn = (iotype *) srcimg[isrcline+1];  		\
+		    st = s * t;						\
+		    if ( (isrcpix >= 0) && (isrcpix < srcwidth) )	\
+			val =						\
+			    ptrIn[isrcpix]   * ((float)1. - s - t + st) + \
+			    ptrIn[isrcpix+1] * (s - st) +		\
+			    ptrJn[isrcpix]   * (t - st) +		\
+			    ptrJn[isrcpix+1] * (st);			\
+		}							\
+		/* prepare for next loop */				\
+		width--; 						\
+		srcline += c; 						\
+		srcpix  += a; 						\
+		*outp++ = val; 						\
+	}								\
+}
+
+BI_GL	(BiGL_R, RealPixel, flt_constant)
+BI_GL	(BiGL_B, BytePixel, int_constant)
+BI_GL	(BiGL_P, PairPixel, int_constant)
+BI_GL	(BiGL_Q, QuadPixel, int_constant)
+#endif
 /**********************************************************************/
+
 /* end module mpgeomnn.c */

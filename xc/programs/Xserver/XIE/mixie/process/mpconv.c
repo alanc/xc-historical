@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mpconv.c,v 1.1 93/10/26 09:46:54 rws Exp $ */
 /**** module mpconv.c ****/
 /******************************************************************************
 				NOTICE
@@ -81,6 +81,7 @@ terms and conditions:
 #include <element.h>
 #include <flostr.h>
 #include <texstr.h>
+#include <technq.h>
 
 
 /*
@@ -91,7 +92,8 @@ int	miAnalyzeConvolve();
 /*
  *  routines used internal to this module
  */
-static int CreateConvolve();
+static int CreateConvolveConstant();
+static int CreateConvolveReplicate();
 static int InitializeConvolveConstant();
 static int InitializeConvolveReplicate();
 static int ActivateConvolveConstant();
@@ -105,7 +107,7 @@ static int DestroyConvolve();
  * DDXIE Convolve entry points
  */
 static ddElemVecRec ConvolveConstantVec = {
-  CreateConvolve,
+  CreateConvolveConstant,
   InitializeConvolveConstant,
   ActivateConvolveConstant,
   FlushConvolve,
@@ -114,14 +116,26 @@ static ddElemVecRec ConvolveConstantVec = {
   };
 
 static ddElemVecRec ConvolveReplicateVec = {
-  CreateConvolve,
+  CreateConvolveReplicate,
   InitializeConvolveReplicate,
   ActivateConvolveReplicate,
   FlushConvolve,
-  InitializeConvolveReplicate,
+  ResetConvolveReplicate,
   DestroyConvolve
   };
 
+typedef struct _mpconvconst {
+	void *carray;		/* stores constant convolution lines */
+	ConvFloat *sums;	/* stores constant * kernel vals     */
+	void (*action)();	/* band specific action function     */	    
+	ConvFloat minClip;	/* constrained data min clip value   */
+	ConvFloat maxClip;	/* constrained data max clip value   */
+} mpConvConstRec, *mpConvConstPtr;
+
+static void RealConvolveConstant();
+static void QuadConvolveConstant();
+static void PairConvolveConstant();
+static void ByteConvolveConstant();
 /*------------------------------------------------------------------------
 ------------------------  fill in the vector  ---------------------------
 ------------------------------------------------------------------------*/
@@ -130,8 +144,7 @@ int miAnalyzeConvolve(flo,ped)
      peDefPtr  ped;
 {
   /* based on the technique, fill in the appropriate entry point vector */
-  switch(((xieFloConvolve *)ped->elemRaw)->convolve) {
-	case	xieValConvolveDefault:
+  switch(ped->techVec->number) {
 	case	xieValConvolveConstant:
 		ped->ddVec = ConvolveConstantVec;
 		break;
@@ -146,15 +159,29 @@ int miAnalyzeConvolve(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- create peTex . . . --------------------------
 ------------------------------------------------------------------------*/
-static int CreateConvolve(flo,ped)
+static int CreateConvolveConstant(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
   /* Allocate space for an array of pointers to constant convolution lines */
-  return(MakePETex(flo, ped,
-                   ped->inFloLst[SRCtag].bands * sizeof(void *),
-		   FALSE, FALSE));
+  return(MakePETex(flo, 
+		   ped, 
+		   sizeof(mpConvConstRec) * ped->inFloLst[SRCtag].bands, 
+		   SYNC, 
+		   NO_SYNC));
 }                               /* end CreateConvolve */
+
+
+#define GenConst(itype)  						    \
+	CARD32 iwidth = bnd->format->width;				    \
+	itype *cline; 							    \
+	register itype cconst = (itype)*tconst;		 	    	    \
+	register CARD32 i;					 	    \
+	if (!(cpvt->carray = cline =					    \
+		(itype *)XieMalloc(sizeof(itype) * iwidth)))	 	    \
+		AllocError(flo,ped,return(FALSE));		 	    \
+	for (i = 0; i < iwidth; i++) *cline++ = cconst;	 	    	    \
+	for (i = 0; i < ks2; i++) bnd->dataMap[i] = (CARD8 *)cpvt->carray;  
 
 
 /*------------------------------------------------------------------------
@@ -164,84 +191,88 @@ static int InitializeConvolveConstant(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
- CARD32   ksize = ((xieFloConvolve *)ped->elemRaw)->kernelSize;
- double *tconst = (double *)ped->techPvt;
- peTexPtr   pet = ped->peTex;
- CARD32  b, ks2 = ksize/2;
- bandPtr    bnd;
+ xieFloConvolve  *raw = (xieFloConvolve *)ped->elemRaw;
+ CARD8            msk = raw->bandMask;
+ INT32          ksize = raw->kernelSize;
+ ConvFloat    *tconst = (ConvFloat *)ped->techPvt;
+ ConvFloat    *kernel = (ConvFloat *)ped->elemPvt;
+ peTexPtr         pet = ped->peTex;
+ mpConvConstPtr  cpvt = (mpConvConstPtr)pet->private;
+ receptorPtr      rcp = pet->receptor;
+ INT32         b, ks2 = ksize>>1;
+ bandPtr bnd;
+
+    /* If processing domain, allow replication */
+    if (raw->domainPhototag)
+         pet->receptor[ped->inCnt-1].band[0].replicate = msk;
  
-    if(!(InitReceptors(flo,ped,ksize,ks2+1) &&
-         InitEmitter(flo,ped,0,-1)))
+    if(!(InitReceptor(flo, ped, &rcp[SRCtag], ksize, ks2+1, msk, ~msk) &&
+	 InitProcDomain(flo, ped, raw->domainPhototag, raw->domainOffsetX,
+         			                       raw->domainOffsetY) &&
+         InitEmitter(flo,ped,SRCtag,NO_INPLACE)))
       return(FALSE);
 
-    /* Create constant lines for each band */
-    for(b = 0; b < ped->inFloLst[SRCtag].bands; b++) {
+    /* Create constants for each band */
+    for(b = 0; b < ped->inFloLst[SRCtag].bands; b++, cpvt++, tconst++) {
+	int i, j;
+	ConvFloat *sums;
+
+	if ((msk & (1<<b)) == 0) continue;
+
+        /* Precompute constants for columns falling outside of image */ 
+        if (!(cpvt->sums = sums = 
+			(ConvFloat *)XieMalloc(sizeof(ConvFloat) * ksize)))
+	    AllocError(flo,ped,return(FALSE));
+
+    	for (i = 0; i < ksize; i++) {
+	    sums[i] = 0;	
+	    if (i == ks2) continue;	/* Don't need a middle */
+	    for (j = 0; j < ksize; j++)
+		sums[i] += kernel[j * ksize + i] * *tconst;
+    	}
+	/* Accumulate totals for multiple columns */
+	if (ksize > 3) {
+		for (i = ks2 - 1; i > -1; i--) 
+			sums[i] += sums[i+1];
+		for (i = ks2 + 1; i < ksize; i++)
+			sums[i] += sums[i-1];
+	}
+
         bnd = &pet->receptor[SRCtag].band[b];
 	 switch (bnd->format->class) {
-	 case	UNCONSTRAINED:
+	 case	UNCONSTRAINED:  
 		{
- 		CARD32 iwidth = bnd->format->width;
-		register RealPixel *cline;
-		register RealPixel cconst = tconst[b];
-		register int i;
-		RealPixel **carray = (RealPixel **)pet->private;
-
-		if (!(carray[b] = cline = 
-			(RealPixel *)XieMalloc(sizeof(RealPixel) * iwidth)))
-			AllocError(flo,ped,return(FALSE));
-		
-		for (i = 0; i < iwidth; i++) *cline++ = cconst;
-		}
-	 	break;
-	 case	QUAD_PIXEL:
-		{
- 		CARD32 iwidth = bnd->format->width;
-		register QuadPixel *cline;
-		register QuadPixel cconst = tconst[b];
-		register int i;
-		QuadPixel **carray = (QuadPixel **)pet->private;
-
-		if (!(carray[b] = cline = 
-			(QuadPixel *)XieMalloc(sizeof(QuadPixel) * iwidth)))
-			AllocError(flo,ped,return(FALSE));
-		
-		for (i = 0; i < iwidth; i++) *cline++ = cconst;
+			GenConst(RealPixel);
+			cpvt->action  = RealConvolveConstant;
+			cpvt->minClip = 0; /* Unsued for RealPixels */
+			cpvt->maxClip = 0; /* Unused for RealPixels */
 		}
 		break;
-	 case	PAIR_PIXEL:
+	 case	QUAD_PIXEL:	
 		{
- 		CARD32 iwidth = bnd->format->width;
-		register PairPixel *cline;
-		register PairPixel cconst = tconst[b];
-		register int i;
-		PairPixel **carray = (PairPixel **)pet->private;
-
-		if (!(carray[b] = cline = 
-			(PairPixel *)XieMalloc(sizeof(PairPixel) * iwidth)))
-			AllocError(flo,ped,return(FALSE));
-		
-		for (i = 0; i < iwidth; i++) *cline++ = cconst;
+			GenConst(QuadPixel);
+			cpvt->action  = QuadConvolveConstant;
+			cpvt->minClip = 0;
+			cpvt->maxClip = (ConvFloat)bnd->format->levels - 1;
+		}
+	    	break;
+	 case	PAIR_PIXEL:	
+		{
+			GenConst(PairPixel);
+			cpvt->action  = PairConvolveConstant;
+			cpvt->minClip = 0;
+			cpvt->maxClip = (ConvFloat)bnd->format->levels - 1;
 		}
 		break;
-	 case	BYTE_PIXEL:
+	 case	BYTE_PIXEL:	
 		{
- 		int iwidth = bnd->format->width;
-		BytePixel *cline;
-		char cconst = tconst[b];
-		register int i;
-		BytePixel **carray = (BytePixel **)pet->private;
-
-		if (!(carray[b] = cline = 
-			(BytePixel *)XieMalloc(sizeof(BytePixel) * iwidth)))
-			AllocError(flo,ped,return(FALSE));
-		
-		memset((char *)cline, cconst, iwidth);
-		for (i = 0; i < ks2; i++) bnd->dataMap[i] = carray[b];
+			GenConst(BytePixel);
+			cpvt->action  = ByteConvolveConstant;
+			cpvt->minClip = 0;
+			cpvt->maxClip = (ConvFloat)bnd->format->levels - 1;
 		}
 		break;
-	 case	BIT_PIXEL:
-		return(FALSE); /* Hey, fix this */
-		break;
+	 case	BIT_PIXEL:	/* SILLY_BITONAL, not supported */
 	 default:
 		return(FALSE);
 	 }
@@ -249,15 +280,82 @@ static int InitializeConvolveConstant(flo,ped)
  return(TRUE);
 }                               /* end InitializeConvolveConstant */
 
-/*------------------------------------------------------------------------
----------------------------- initialize peTex . . . ----------------------
-------------------------------------------------------------------------*/
-static int InitializeConvolveReplicate(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-return (FALSE);	/* Not implemented in the SI */
-}                               /* end InitializeConvolveReplicate */
+#define inane_compilers_should_die(dtype)				 \
+    /* Handle the left edge */						      \
+    endx = (k2 <= currX + run) ? k2 : currX + run;		      	      \
+    for(i = currX; i < endx; i++, currX++, run--){		      	      \
+	ConvFloat count = 0.0;						      \
+        for(j = 0 ; j < ks; j++)					      \
+            for(k = -i; k <= k2; k++)					      \
+	        count += br[j][i+k] * kernel[j * ks + k + k2]; 		      \
+        if (*tconst) 							      \
+	    count += cpvt->sums[i]; /* Sum of left side pad */ 		      \
+	ClipIt;								      \
+        *dst++ = (dtype) count;						      \
+    }									      \
+    if (run <= 0) return;						      \
+    /* Handle the middle */						      \
+    endx = (w <=  currX + run) ? w : currX + run;			      \
+    for(i = (k2 < currX) ? currX : k2; i < endx; i++,currX++,run--) {	      \
+	ConvFloat count = 0.0;						      \
+	for(j = 0 ; j < ks; j++)					      \
+	    for(k = -k2; k <= k2; k++)					      \
+		count += br[j][i+k] * kernel[j * ks + k + k2];		      \
+	ClipIt;								      \
+        *dst++ = (dtype) count;						      \
+    }									      \
+    if (run <= 0) return;						      \
+    /* Handle the right edge */						      \
+    endx = (width <= currX + run) ? width : currX + run;		      \
+    for(i = ((w < currX) ? w : currX); i < endx; i++,currX++,run--) {	      \
+        ConvFloat count = 0.0;						      \
+	for(j = 0 ; j < ks; j++)					      \
+	    for(k = -k2; k < width - i; k++)				      \
+		count += br[j][i+k] * kernel[j * ks + k + k2];		      \
+	if (*tconst)							      \
+            count += cpvt->sums[k2 + 1 + i - w];			      \
+	ClipIt;								      \
+        *dst++ = (dtype) count;						      \
+    }									      \
+
+#define ConvConstAction(name,dtype)				      	      \
+static void name(cpvt,kernel,tconst,run,currX,br,dst,ks,width)	      	      \
+mpConvConstPtr cpvt;							      \
+ConvFloat *kernel, *tconst;						      \
+INT32 run, currX, ks;						      	      \
+dtype *dst, **br;							      \
+CARD32 width;								      \
+{									      \
+    ConvFloat minClip = cpvt->minClip;					      \
+    ConvFloat maxClip = cpvt->maxClip;					      \
+    INT32 k2 = ks/2;							      \
+    INT32  w = width - k2;      					      \
+    INT32 endx;								      \
+    int i,j,k;								      \
+    /* Adjust destination to current location */			      \
+    dst += currX;							      \
+    /* Outside of region, pass these pixels */				      \
+    if (run < 0) {							      \
+        memcpy(dst, &br[k2][currX], -run * sizeof(dtype));		      \
+	return;								      \
+    }									      \
+    inane_compilers_should_die(dtype);					      \
+}
+
+
+/* Macro for clipping of constrained data */
+#define ClipIt								      \
+if (count < minClip)							      \
+    count = minClip;							      \
+else if (count > maxClip) 						      \
+    count = maxClip;
+
+ConvConstAction(ByteConvolveConstant,BytePixel)
+ConvConstAction(PairConvolveConstant,PairPixel)
+ConvConstAction(QuadConvolveConstant,QuadPixel)
+#undef ClipIt
+#define ClipIt
+ConvConstAction(RealConvolveConstant,RealPixel)
 
 /*------------------------------------------------------------------------
 ----------------------------- crank some data ----------------------------
@@ -268,83 +366,62 @@ static int ActivateConvolveConstant(flo,ped,pet)
      peTexPtr  pet;
 {
   xieFloConvolve *raw = (xieFloConvolve *)ped->elemRaw;
-  CARD32 end, ks = raw->kernelSize;
-  CARD8    bmask = raw->bandMask;
-  double *kernel = (double *)ped->elemPvt;			
-  void  **carray = (void **)pet->private;
-  bandPtr iband, oband; 
-  Bool ok;
-  int map,sline,dline,len,b,w,i,j,k, k2 = ks/2;
+  mpConvConstPtr cpvt = (mpConvConstPtr)pet->private;
+  bandPtr       iband = &pet->receptor[SRCtag].band[0];
+  bandPtr       oband = &pet->emitter[0];
+  ConvFloat   *tconst = (ConvFloat *)ped->techPvt;
+  ConvFloat   *kernel = (ConvFloat *)ped->elemPvt;			
+  INT32            ks = raw->kernelSize;
+  INT32            k2 = ks/2;
+  CARD8         bmask = raw->bandMask;
+  int b; 
 
-    for(b = 0; b < ped->inFloLst[SRCtag].bands; b++) 
+    for(b = 0; b < ped->inFloLst[SRCtag].bands; b++, cpvt++, tconst++, iband++,
+						oband++) 
       if(bmask & 1<<b) {
 
-	iband = &pet->receptor[SRCtag].band[b];
-	oband = &pet->emitter[b];
-        end   = iband->format->height - ks;
-        w     = oband->format->width  - k2;      /* is this a hack Dean? */
-        map   = 0;
-        sline = iband->current;
-        dline = oband->current;
-        len   = ks;
+        CARD32    end = iband->format->height - 1 - k2;
+	CARD32  width = oband->format->width;
+        CARD32  sline = iband->current;
+        CARD32  dline = oband->current;
+        CARD32    len = ks;
+        CARD32    map = 0;
+        void     **br = (void **)iband->dataMap;
+	void *dst;
+        Bool ok;
 
-	switch (iband->format->class) {
-	case	UNCONSTRAINED:
-	 	break;
-	case	QUAD_PIXEL:
-		break;
-	case	PAIR_PIXEL:
-		break;
-	case	BYTE_PIXEL:
-		{
-		BytePixel *dst, **br = (BytePixel **)iband->dataMap;
+	while(!ferrCode(flo)) {
+	    INT32 run, currX = 0;
 
-		while(!ferrCode(flo)) {
-		    /* do special handling at top and bottom of image */
-		    if(dline <= k2) {
-			len   = iband->threshold;
-                        map   = ks - len;
-			sline = 0;
-			if(dline < k2)
-       		            SetBandThreshold(iband, len + 1);
-		    }
-		    if(dline > end) {
-			len = iband->threshold - 1;
-			br[len] = carray[b];
-       		        SetBandThreshold(iband, len);
- 		    }
-		    ok  = MapData(flo,pet,iband,map,sline++,len,TRUE);
-		    dst = GetDst(BytePixel,flo,pet,oband,dline++,TRUE);
-		    if(!ok || !dst) break;
+	    /* do special handling at top and bottom of image */
+	    if(dline <= k2) {
+		len = iband->threshold;
+                map = ks - len;
+		sline = 0;
+		if(dline < k2)
+       	            SetBandThreshold(iband, len + 1);
+	    }
+	   if(dline > end) {
+		len = iband->threshold - 1;
+		br[len] = (void *)cpvt->carray;
+       	        SetBandThreshold(iband, len);
+ 	    }
 
-                    for(i = k2; i < w; i++) {
-			double count = 0.0;
-			for(j = 0 ; j < ks; j++)
-			    for(k = -k2; k <= k2; k++)
-				count += br[j][i+k] * kernel[j * ks + k + k2];
-			if(count < 0.0)	       *dst++ = (BytePixel) 0;
-			else if(count > 255.0) *dst++ = (BytePixel) 255;
-			else	               *dst++ = (BytePixel) count;
-		    }
-		}
-		FreeData(BytePixel,flo,pet,iband,iband->current); 
-		}
-		break;
-	case	BIT_PIXEL:
-		break;
+	    ok  = MapData(flo,pet,iband,map,sline++,len,TRUE);
+	    dst = GetDst(void,flo,pet,oband,dline++,TRUE);
+
+	    if(!ok || !dst || !SyncDomain(flo,ped,oband,FLUSH)) break;
+
+	    while (run = GetRun(flo,pet,oband)) {
+		(*cpvt->action)(cpvt,kernel,tconst,run,currX,br,dst,ks,width);
+		currX += (run > 0) ? run : -run;
+	    }
 	}
+	FreeData(flo,pet,iband,iband->current); 
    }
   return(TRUE);
-}                               /* end ActivateUnconstrain */
+}                               /* end ActivateConvolveConstant */
 
-
-/* Stub for now */
-static int ActivateConvolveReplicate(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  return(FALSE);
-}
 
 /*------------------------------------------------------------------------
 --------------------------- get rid of left overs ------------------------
@@ -365,27 +442,22 @@ static int ResetConvolveConstant(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  void **carray = (void **)ped->peTex->private;
+  mpConvConstPtr  cpvt = (mpConvConstPtr)ped->peTex->private;
   int b;
 
-  for(b = 0; b < ped->inFloLst[SRCtag].bands; b++) 
-  	if(carray[b]) carray[b] = (void *) XieFree(carray[b]);
-  
+  for(b = 0; b < ped->inFloLst[SRCtag].bands; b++, cpvt++) {
+  	if (cpvt->carray) cpvt->carray = (void *) XieFree(cpvt->carray);
+	if (cpvt->sums)     cpvt->sums = (ConvFloat *) XieFree(cpvt->sums);
+	cpvt->action = (void (*)())NULL;
+	cpvt->minClip = 0;
+	cpvt->maxClip = 0;
+  }
+
   ResetReceptors(ped);
   ResetEmitter(ped);
 
   return(TRUE);
 }                               /* end ResetConvolveConstant */
-
-/*------------------------------------------------------------------------
------------------------- get rid of run-time stuff -----------------------
-------------------------------------------------------------------------*/
-static int ResetConvolveReplicate(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  return(FALSE); /* Not implemented in the SI */
-}                               /* end ResetConvolveReplicate */
 
 /*------------------------------------------------------------------------
 -------------------------- get rid of this element -----------------------
@@ -411,3 +483,43 @@ static int DestroyConvolve(flo,ped)
 
 /* end module mpconv.c */
 
+/*------------------------------------------------------------------------
+---------------------------- Create peTex . . . --------------------------
+------------------------------------------------------------------------*/
+static int CreateConvolveReplicate(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+return (FALSE);	/* Not implemented in the SI */
+}                               /* end CreateConvolveReplicate */
+
+/*------------------------------------------------------------------------
+---------------------------- initialize peTex . . . ----------------------
+------------------------------------------------------------------------*/
+static int InitializeConvolveReplicate(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+return (FALSE);	/* Not implemented in the SI */
+}                               /* end InitializeConvolveReplicate */
+
+/*------------------------------------------------------------------------
+---------------------------- activate routine ----------------------------
+------------------------------------------------------------------------*/
+static int ActivateConvolveReplicate(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+return (FALSE);	/* Not implemented in the SI */
+}				/* end ActivateConvolveReplicate   */
+
+
+/*------------------------------------------------------------------------
+------------------------ get rid of run-time stuff -----------------------
+------------------------------------------------------------------------*/
+static int ResetConvolveReplicate(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  return(FALSE); /* Not implemented in the SI */
+}                               /* end ResetConvolveReplicate */

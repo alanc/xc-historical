@@ -1,5 +1,5 @@
-/* $XConsortium$ */
-/**** module colorlst.h ****/
+/* $XConsortium: colorlst.h,v 1.1 93/10/26 10:04:37 rws Exp $ */
+/**** colorlst.h ****/
 /******************************************************************************
 				NOTICE
                               
@@ -51,17 +51,16 @@ terms and conditions:
 #ifndef _XIEH_COLORLST
 #define _XIEH_COLORLST
 
-/*
- *  colorlist structure definition
+/* colorlist structure definition
  */
 typedef struct _colorlist {
   xieTypColorList ID;
-  INT32           refCnt;
-  INT32           clindex;
-  Colormap        mapID;
-  ColormapPtr     mapPtr;
-  CARD32          cellCnt;
-  Pixel          *cellPtr;
+  INT32		 refCnt;
+  ClientPtr	 client;
+  Colormap	 mapID;
+  ColormapPtr	 mapPtr;
+  CARD32	 cellCnt;
+  Pixel		*cellPtr;
 } colorListRec, *colorListPtr;
 
 #ifndef _XIEC_COLORLST

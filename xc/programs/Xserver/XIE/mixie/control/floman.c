@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: floman.c,v 1.1 93/10/26 09:44:17 rws Exp $ */
 /**** module floman.c ****/
 /******************************************************************************
 				NOTICE
@@ -139,14 +139,13 @@ int MakePETex(flo,ped,extend,inSync,bandSync)
   int b, i;
   
   /* attach an execution context to the photo element definition */
-  if(!(pet = (peTexPtr) XieCalloc(sizeof(peTexRec) + extend +
+  if(!(pet = (peTexPtr) XieCalloc(sizeof(peTexRec) + (extend + 4) +
 				  ped->inCnt * sizeof(receptorRec))))
     AllocError(flo,ped, return(FALSE));
   
   /* init the new peTex */
   ped->peTex    = pet;
   pet->peDef    = ped;
-  pet->floTex   = flo->floTex;
   pet->inSync   = inSync;
   pet->bandSync = bandSync;
   pet->outFlo   = &ped->outFlo;
@@ -171,8 +170,11 @@ int MakePETex(flo,ped,extend,inSync,bandSync)
       ListInit(&bnd->stripLst);
     }
   }
-  if(extend)
-    pet->private = (void *) &pet->receptor[ped->inCnt];
+  if(extend) {
+    /* In case private structure has 'double', round up */
+    unsigned char *ptr = (void *) &pet->receptor[ped->inCnt];
+    pet->private = (void *) ((((int) ptr) & 4) ? ptr + 4 : ptr);
+  }
 
   return(TRUE);
 }                               /* end MakePETex */
@@ -213,7 +215,7 @@ Bool InitReceptor(flo,ped,rcp,mapSize,threshold,process,bypass)
   
   /* choose which bands to pass rather than process */
   rcp->bypass = (rcp->inFlo->index == SRCt1
-		 ? bypass & ~process & (1<<bands)-1 : 0);
+		 ? (bandMsk)(bypass & ~process & (1<<bands)-1) : NO_BANDS);
 
   /* initialize each band */
   for(b = 0; b < bands; ++bnd, ++b)
@@ -238,13 +240,13 @@ Bool InitEmitter(flo,ped,mapSize,inPlace)
   int b;
 
   /* initialize the outFlo and emitter */
-  ped->outFlo.active = 0;
-  ped->outFlo.ready  = 0;
+  ped->outFlo.active = NO_BANDS;
+  ped->outFlo.ready  = NO_BANDS;
 
   /* initialize each band */
   for(b = 0; b < ped->outFlo.bands; b++) {
     if(pet->receptor[SRCt1].bypass & 1<<b)   continue;
-      if(!InitBand(flo, ped, &pet->emitter[b], mapSize, 0, inPlace))
+      if(!InitBand(flo, ped, &pet->emitter[b], mapSize, (CARD32) 0, inPlace))
 	return(FALSE);
   }
   return(TRUE);
@@ -283,29 +285,38 @@ Bool InitBand(flo,ped,bnd,mapSize,threshold,inPlace)
     bnd->inPlace = NULL;
     if(bnd->band == 0 || !bnd->receptor->band[0].replicate) {
       if(ped->flags.putData)
-	++ped->peTex->floTex->imports;
+	++flo->floTex->imports;
       
       if(!bnd->receptor->admit)
 	++ped->peTex->admissionCnt;
       bnd->receptor->admit |= 1<<bnd->band;
       
-      if(bnd->replicate & 1<<1)
-	InitBand(flo,ped,&bnd[1],NO_DATAMAP,threshold,NO_INPLACE);
-      if(bnd->replicate & 1<<2)
-	InitBand(flo,ped,&bnd[2],NO_DATAMAP,threshold,NO_INPLACE);
+      if(bnd->replicate) {
+	int b = 1;
+	/* replicate band zero's format (into the phantom bands
+	 * that will be sharing its data) and initialize them too
+	 */
+	do
+	  if(bnd->replicate & 1<<b) {
+	    *bnd[b].format = *bnd->format;
+	     bnd[b].format->band = b;
+	    InitBand(flo,ped,&bnd[b],NO_DATAMAP,threshold,NO_INPLACE);
+	  } 
+	while(++b < xieValMaxBands);
+      }
     }
   } else { /* IsEmitter */
-    bnd->inPlace = (inPlace == NO_INPLACE ? NULL
-		    : &ped->peTex->receptor[inPlace].band[bnd->band]);
+    bnd->inPlace = ((inPlace == NO_INPLACE)
+		    ? NULL : &ped->peTex->receptor[inPlace].band[bnd->band]);
     ped->peTex->emitting |= 1<<bnd->band;
     if(ped->flags.getData) {
       ped->outFlo.active |= 1<<bnd->band;
-      ped->peTex->floTex->exports++;
+      flo->floTex->exports++;
     }
   }
   return(TRUE);
 }                               /* end InitBand */
-
+    
 
 /*------------------------------------------------------------------------
 ------------------- get rid of left over strips etc. ---------------------
@@ -321,11 +332,11 @@ void ResetReceptors(ped)
     for(rcp = &pet->receptor[i], b = 0; b < xieValMaxBands; ++b)
       ResetBand(&rcp->band[b]);
 
-    rcp->admit  = 0;
-    rcp->ready  = 0;
-    rcp->active = 0;
-    rcp->attend = 0;
-    rcp->bypass = 0;
+    rcp->admit  = NO_BANDS;
+    rcp->ready  = NO_BANDS;
+    rcp->active = NO_BANDS;
+    rcp->attend = NO_BANDS;
+    rcp->bypass = NO_BANDS;
   }
 }                               /* end ResetReceptors */
 
@@ -339,7 +350,7 @@ void ResetEmitter(ped)
   peTexPtr pet = ped->peTex;
   int b;
 
-  pet->emitting = 0;
+  pet->emitting = NO_BANDS;
 
   for(b = 0; b < ped->outFlo.bands; ++b)
     ResetBand(&pet->emitter[b]);
@@ -352,7 +363,7 @@ void ResetEmitter(ped)
 void ResetBand(bnd)
      bandPtr  bnd;
 {
-  bnd->replicate = 0;
+  bnd->replicate = NO_BANDS;
 
   FreeStrips(&bnd->stripLst);
 
@@ -372,17 +383,18 @@ static int link(flo)
   pedLstPtr lst = ListEmpty(&flo->optDAG) ? &flo->defDAG : &flo->optDAG;
   
   /* create and initialize our photoflo's execution context */
-  if(!flo->floTex &&!(flo->floTex = (floTexPtr) XieMalloc(sizeof(floTexRec))))
+  if(!flo->floTex && !(flo->floTex = (floTexPtr) XieMalloc(sizeof(floTexRec))))
     FloAllocError(flo,0,0, return(FALSE));
+
   flo->floTex->yieldPtr = NULL;
 
   /* create new element execution contexts for elements that have changed */
   for(ped = lst->flink; !ListEnd(ped,lst); ped = ped->flink)
-    if(flo->flags.modified) {   /* XXX  should be ped->flags.modified   */
-      if(ped->peTex) {		/* XXX  fix this after alpha release    */
-	vec = ped->ddVec;	/* XXX  shouldn't have to save vetors   */
-	Destroy(flo,ped);	/* destroy the old element context      */
-	ped->ddVec = vec;	/* XXX  shouldn't have to put them back */
+    if(flo->flags.modified) {		/* XXX should be ped->flags.modified */
+      if(ped->peTex) {			/*     fix this after beta release   */
+	vec = ped->ddVec;		/*     shouldn't have to save vetors */
+	Destroy(flo,ped);	/* destroy the old element context */
+	ped->ddVec = vec;		/*     shouldn't have to restore them*/
       }
       if(!Create(flo,ped))
         return(FALSE);
@@ -420,11 +432,9 @@ static int startup(flo)
   }
   flo->flags.active   = TRUE;
   flo->flags.aborted  = FALSE;
-  flo->flags.awaken   = FALSE;
   flo->flags.modified = FALSE;
 
-  /* Call the scheduler
-   * since this is the first time, there are no ImportClient elements
+  /* Call the scheduler -- there are no ImportClient elements the first time
    */
   if(ferrCode(flo)) {
     shutdown(flo);
@@ -457,21 +467,28 @@ static int shutdown(flo)
   peDefPtr ped;
   pedLstPtr lst = ListEmpty(&flo->optDAG) ? &flo->defDAG : &flo->optDAG;
   
-  /* reset all the elements */
-  for(ped = lst->flink; !ListEnd(ped,lst); ped = ped->flink)
-    Reset(flo,ped);
-  
-  /* empty the strip cache */
-  flo->floTex->stripSize = 0;
-  if(flo->floTex->stripHead.flink)
-    FreeStrips(&flo->floTex->stripHead);
-
-  if(flo->flags.awaken)
-    AttendClient(flo->client);
-  
-  flo->flags.awaken = FALSE;
-  flo->flags.active = FALSE;
-  
+  if(flo->floTex) {
+    /* reset all the elements */
+    for(ped = lst->flink; !ListEnd(ped,lst); ped = ped->flink)
+      Reset(flo,ped);
+    
+    /* empty the strip cache */
+    flo->floTex->stripSize = 0;
+    if(flo->floTex->stripHead.flink)
+      FreeStrips(&flo->floTex->stripHead);
+    
+    if(flo->awakenPtr) {
+      /* awaken snoozing clients
+       */
+      while(flo->awakenCnt) {
+	ClientPtr client = flo->awakenPtr[--flo->awakenCnt];
+	if(!client->clientGone)
+	  AttendClient(client);
+      }
+      flo->awakenPtr = (ClientPtr*)XieFree(flo->awakenPtr);
+    }
+    flo->flags.active = FALSE;
+  }        
   return(TRUE);
 }                               /* end shutdown */
 

@@ -1,4 +1,4 @@
-/* $XConsortium: strip.c,v 1.2 93/07/19 20:16:28 rws Exp $ */
+/* $XConsortium: strip.c,v 1.1 93/10/26 09:44:24 rws Exp $ */
 /**** module strip.c ****/
 /*****************************************************************************
 				NOTICE
@@ -103,14 +103,16 @@ static CARD8	*make_lines();
 static Bool	 map_data();
 static CARD8	*get_data();
 static Bool	 put_data();
-static CARD8	*free_data();
+static void	 free_data();
 static Bool	 pass_strip();
+static Bool	 import_strips();
+static Bool	 alter_src();
 static void	 bypass_src();
 static void	 disable_src();
+static void	 disable_dst();
 
 /* routines used internal to this module
  */
-static void	 disable_dst();
 static stripPtr	 alter_data();
 static stripPtr	 contig_data();
 static stripPtr	 make_strip();
@@ -136,8 +138,11 @@ static stripVecRec stripManagerVec = {
   put_data,
   free_data,
   pass_strip,
+  import_strips,
+  alter_src,
   bypass_src,
-  disable_src
+  disable_src,
+  disable_dst
   };
 
 INT32  STRIPS = 0; /* DEBUG */
@@ -191,7 +196,7 @@ int DebriefStrips(i_head,o_head)
       } else {				/* copy multiply referenced data  */
 	if(!(child->data = (CARD8*)XieMalloc(child->bufSiz)))
 	  return(FALSE);
-	bcopy(parent->data, child->data, child->bufSiz);
+	memcpy((char*)child->data, (char*)parent->data, (int)child->bufSiz);
 	child->parent = NULL;		/* de-reference child from parent */
 	--parent->refCnt;
 	BYTES += child->bufSiz; /*DEBUG*/
@@ -218,11 +223,12 @@ int DebriefStrips(i_head,o_head)
 void  FreeStrips(head)
      stripLstPtr head;
 {
-  stripPtr strip;
-
-  while( !ListEmpty(head) )
-    free_strip(NULL, RemoveMember(strip, head->flink));
-
+  while( !ListEmpty(head) ) {
+    stripPtr strip;
+    
+    RemoveMember(strip, head->flink);
+    free_strip(NULL, strip);
+  }
 }                               /* end FreeStrips */
 
 
@@ -267,7 +273,7 @@ static int import_data(flo,ped,band,data,len,final)
     if(bnd->final = final) {
       if(!(rcp->admit &= ~msk))
 	--pet->admissionCnt;
-      --pet->floTex->imports;
+      --flo->floTex->imports;
     }
   }
   /* fire up the scheduler -- then we're outa here */
@@ -278,54 +284,57 @@ static int import_data(flo,ped,band,data,len,final)
 /*------------------------------------------------------------------------
 -------------------------- Output for GetClientData ----------------------
 ------------------------------------------------------------------------*/
-static int export_data(flo,ped,band,data,bytes,maxLen,term)
+static int export_data(flo,ped,band,maxLen,term)
      floDefPtr flo;
      peDefPtr  ped;
      CARD8    band;
-     CARD8  **data;
-     CARD32 *bytes;
      CARD32 maxLen;
      BOOL     term;
 {
-  BOOL release = FALSE, final = FALSE;
-  stripLstPtr lst = &ped->outFlo.export[band];
-  stripPtr  strip;
-  peTexPtr  pet;
+  BOOL       release = FALSE, final = FALSE;
+  stripLstPtr    lst = &ped->outFlo.export[band];
+  stripPtr     strip = NULL;
+  CARD32 bytes, want = maxLen;
+  CARD8  state, *data;
 
-  if(*bytes = ListEmpty(lst) ? 0 : min(lst->flink->length,maxLen)) {
+  /* if this is multi-byte data, make sure we send/swap complete aggregates
+   */
+  if(ped->swapUnits[band] > 1)
+    want &= ~(ped->swapUnits[band]-1);
+
+  if(bytes = ListEmpty(lst) ? 0 : min(lst->flink->length, want)) {
     strip = lst->flink;
-    *data = strip->data + (strip->bitOff>>3);
-    if(strip->length -= *bytes) {
-      strip->start   += *bytes;
-      strip->bitOff  += *bytes<<3;  
+    data  = strip->data + (strip->bitOff>>3);
+    if(strip->length -= bytes) {
+      strip->start   += bytes;
+      strip->bitOff  += bytes<<3;  
     } else {
+      RemoveMember(strip, strip);
       final   = strip->final;
       release = TRUE;
-      RemoveMember(strip,strip);
       if(ListEmpty(lst))
 	ped->outFlo.ready &= ~(1<<band);
     }
+  } else {
+    data = NULL;
   }
-  if(term || final) {
-    /* shut down this output band */
-    ped->outFlo.active &= ~(1<<band);
-    ped->outFlo.ready  &= ~(1<<band);
-    pet = ped->peTex;
-    pet->floTex->exports--;
-    if(!final)
-      disable_dst(flo,pet,&pet->emitter[band]);
+  if(final)
+    flo->floTex->exports--;
+  else if(term) {
+    /* shut down the output band prematurely */
+    ped->outFlo.ready &= ~(1<<band);
+    disable_dst(flo,ped->peTex,&ped->peTex->emitter[band]);
   }
-  /* if we took any data, give the scheduler a poke before we leave
+  /* figure out our current state and send a reply to the client
    */
-  if(*bytes)
-    Execute(flo,NULL);
-
+  state = ped->outFlo.ready  & 1<<band ? xieValExportMore
+	: ped->outFlo.active & 1<<band ? xieValExportEmpty
+	: xieValExportDone;
+  SendClientData(flo,ped,data,bytes,ped->swapUnits[band],state);
   if(release)
-    free_strip(flo->flags.active ? flo : NULL ,strip);
+    free_strip(flo,strip);
 
-  return(   ferrCode(flo)      ? xieValExportError
-	 : !ped->outFlo.active ? xieValExportDone
-	 :  ListEmpty(lst)     ? xieValExportEmpty : xieValExportMore);
+  return(bytes ? Execute(flo,NULL) : TRUE);
 }                               /* end export_data */
 
 
@@ -419,7 +428,7 @@ static CARD8* make_lines(flo,pet,bnd,purge)
      bandPtr	bnd;
      Bool     purge;
 {
-  stripPtr strip;
+  stripPtr strip = NULL;
   formatPtr  fmt;
   CARD32 size, units;
   
@@ -427,7 +436,7 @@ static CARD8* make_lines(flo,pet,bnd,purge)
     return(bnd->data = NULL);	/* force element to suspend processing */
   
   if(_is_global(bnd))	  	/* we already have it, just go find it */
-    return(get_data(flo,pet,bnd,1,FALSE));
+    return(get_data(flo,pet,bnd,(CARD32) 1,FALSE));
   
   fmt = bnd->format;
   if(bnd->current >= fmt->height)
@@ -474,7 +483,8 @@ static Bool map_data(flo,pet,bnd,map,unit,len,purge)
      Bool	purge;
 {
   CARD32 line, pitch;
-  CARD8 *next, *last, **ptr = bnd->dataMap + map;
+  CARD8 *next = (CARD8 *)NULL, *last = (CARD8 *)NULL;
+  CARD8 **ptr = bnd->dataMap + map;
   stripPtr strip;
 
   /* first map the last unit and then the first unit -- if we have to make
@@ -589,18 +599,19 @@ static Bool put_data(flo,pet,bnd)
 /*------------------------------------------------------------------------
 ---------- free strip(s) from a receptor band or an emitter band ---------
 ------------------------------------------------------------------------*/
-static CARD8 *free_data(flo,pet,bnd)
+static void free_data(flo,pet,bnd)
      floDefPtr   flo;
      peTexPtr    pet;
      bandPtr     bnd;
 {
-  stripPtr strip;
   bandMsk  msk = 1<<bnd->band;
   
   /* free strips until we run out or reach the one we're working in
    */
   while(_release_ok(bnd)) {
-    RemoveMember(strip,bnd->stripLst.flink);
+    stripPtr strip;
+
+    RemoveMember(strip, bnd->stripLst.flink);
     bnd->available -= strip->length - (bnd->minGlobal - strip->start);
     bnd->minGlobal  = strip->end + 1;
     free_strip(flo,strip);
@@ -610,7 +621,7 @@ static CARD8 *free_data(flo,pet,bnd)
   bnd->available -= bnd->current - bnd->minGlobal;
   bnd->minGlobal  = bnd->current;
   if(bnd->isInput) {
-    CheckSrcReady(bnd->receptor,bnd,msk);
+    CheckSrcReady(bnd,msk);
   }
   if(bnd->final && bnd->isInput && ListEmpty(&bnd->stripLst)) {
     bnd->receptor->active &= ~msk;
@@ -618,9 +629,43 @@ static CARD8 *free_data(flo,pet,bnd)
   }
   if(!(bnd->data = _is_local(bnd) ? _line_ptr(bnd) : NULL))
     bnd->strip = NULL;
-
-  return(NULL);
 }                               /* end free_data */
+
+
+/*------------------------------------------------------------------------
+---- take list of strips passed in (most likely from a photomap), clone --
+---- the headers, and hang them on the input receptor to make the data  --
+---- accessable by standard macros					--
+------------------------------------------------------------------------*/
+static Bool import_strips(flo,pet,bnd,strips)
+     floDefPtr	 flo;
+     peTexPtr    pet;
+     bandPtr     bnd;
+     stripLstPtr strips;
+{
+  stripPtr  strip = strips->flink, clone = NULL;
+  receptorPtr rcp = pet->receptor; 
+  CARD8 msk = 1<<bnd->band;
+  
+  for(strip = strips->flink; !ListEnd(strip,strips); strip = strip->flink) {
+    
+    if(!(clone = clone_strip(flo, strip)))
+      AllocError(flo,pet->peDef, return(FALSE));
+    
+    clone->format = bnd->format;	  /* this had better be right! */
+    
+    bnd->available += clone->length;
+    
+    InsertMember(clone,bnd->stripLst.blink);
+  }
+  bnd->final     = clone->final;
+  bnd->maxGlobal = clone->end + 1;
+  
+  if(!(rcp->admit &= ~msk))
+    --pet->admissionCnt;
+  
+  return(TRUE);
+}                               /* end import_strips */
 
 
 /*------------------------------------------------------------------------
@@ -654,6 +699,26 @@ static Bool pass_strip(flo,pet,bnd,strip)
 
 
 /*------------------------------------------------------------------------
+------------ see if it's ok to over write the data in a src strip --------
+------------------------------------------------------------------------*/
+static Bool alter_src(flo,pet,strip)
+     floDefPtr flo;
+     peTexPtr  pet;
+     stripPtr  strip;
+{
+  stripPtr chk;
+  
+  if(!strip->data || strip->Xowner)
+    return(FALSE);
+
+  /* make sure there are no other users of this strip's data
+   */
+  for(chk = strip; chk->parent && chk->refCnt == 1; chk = chk->parent);
+  return(chk->refCnt == 1);
+}                               /* end alter_src */
+
+
+/*------------------------------------------------------------------------
 --------- pass all remaining input for this band straight through --------
 ------------------------------------------------------------------------*/
 static void bypass_src(flo,pet,sbnd)
@@ -661,7 +726,6 @@ static void bypass_src(flo,pet,sbnd)
      peTexPtr	pet;
      bandPtr   sbnd;
 {
-  receptorPtr rcp;
   stripPtr  strip;
   bandPtr    dbnd = &pet->emitter[sbnd->band];
   CARD8      *src;
@@ -677,7 +741,7 @@ static void bypass_src(flo,pet,sbnd)
 	src = GetNextSrc(CARD8,flo,pet,sbnd,KEEP),
 	dst = GetNextDst(CARD8,flo,pet,dbnd,!src)) {
       if(src != dst)
-	bcopy(src, dst, dbnd->pitch);
+	memcpy((char*)dst, (char*)src, (int)dbnd->pitch);
     }
     /* if there's a partial strip still here, adjust its length
      */
@@ -686,7 +750,7 @@ static void bypass_src(flo,pet,sbnd)
       if(strip->start < dbnd->current) {
 	strip->end    = dbnd->current - 1;
 	strip->length = dbnd->current - strip->start;
-	put_data(flo,pet,dbnd,dbnd->current);
+	put_data(flo,pet,dbnd);
       }
     }
     /* shut down the src band, or the dst band if we're all done
@@ -714,7 +778,7 @@ static void disable_src(flo,pet,bnd,purge)
   bandMsk msk = 1<<bnd->band;
 
   if(bnd->receptor->admit & msk && pet->peDef->flags.putData)
-    --pet->floTex->imports;		/* one less import client band    */
+    --flo->floTex->imports;		/* one less import client band    */
 
   if(bnd->receptor->admit && !(bnd->receptor->admit &= ~msk))
     --pet->admissionCnt;		/* one less receptor needing data */
@@ -722,7 +786,7 @@ static void disable_src(flo,pet,bnd,purge)
   bnd->final = TRUE;
 
   if(purge)
-    FreeData(void,flo,pet,bnd,bnd->maxGlobal);
+    FreeData(flo,pet,bnd,bnd->maxGlobal);
 }                               /* end disable_src */
 
 
@@ -734,21 +798,25 @@ static void disable_dst(flo,pet,dbnd)
      peTexPtr	pet;
      bandPtr	dbnd;
 {
-  receptorPtr rcp, rend = &pet->receptor[pet->peDef->inCnt];
+  peDefPtr    ped = pet->peDef;
+  receptorPtr rcp, rend = &pet->receptor[ped->inCnt];
   bandMsk mask;
   bandPtr sbnd;
 
-  /* if this is the last emitter band to turned off and this isn't an import 
+  /* if this is the last emitter band to turn off and this isn't an import 
    * client element, we'll step thru all the receptor bands and kill them too
    */
-  if(!(pet->emitting &= ~(1<<dbnd->band)) && !pet->peDef->flags.putData)
+  if(!(pet->emitting &= ~(1<<dbnd->band)) && !ped->flags.putData)
     for(rcp = pet->receptor; rcp < rend; ++rcp)
       for(mask = 1, sbnd = rcp->band; rcp->active; mask <<= 1, ++sbnd)
 	if(rcp->active & mask)
 	  disable_src(flo,pet,sbnd,TRUE);
+  if(ped->flags.getData) {
+    ped->outFlo.active &= ~(1<<dbnd->band);
+    if(!(ped->outFlo.ready & 1<<dbnd->band))
+      flo->floTex->exports--;
+  }
 }                               /* end disable_dst */
-
-
 /*------------------------------------------------------------------------
 - Get permission for an emitter to write into an existing receptor strip -
 ------------------------------------------------------------------------*/
@@ -786,7 +854,6 @@ static stripPtr	alter_data(flo,pet,db)
 ----------    {if a new strip must be created (to hold at least     ------
 ----------     contig bytes), available data will be copied to it}  ------
 ---------- return with a strip containing "contig" contiguous bytes ------
----------- of space (even if the actual data aren't available)      ------
 ------------------------------------------------------------------------*/
 static stripPtr contig_data(flo,pet,bnd,i_strip,contig)
      floDefPtr	flo;
@@ -804,14 +871,19 @@ static stripPtr contig_data(flo,pet,bnd,i_strip,contig)
     /* i_strip too small, make a new one and copy available data into it
      */
     if(!(o_strip = make_strip(flo, bnd->format, bnd->current, avail,
-			  contig+Align(contig,flo->floTex->stripSize),TRUE)))
+			      contig + Align(contig, flo->floTex->stripSize),
+			      TRUE)))
       AllocError(flo,pet->peDef, return(NULL));
     InsertMember(o_strip,i_strip);
-    bcopy(&i_strip->data[bnd->current-i_strip->start], o_strip->data, avail);
+    memcpy((char*)o_strip->data,
+	   (char*)&i_strip->data[bnd->current-i_strip->start], (int)avail);
     if(i_strip->length -= avail)
-       i_strip->end -= avail;
-    else
-      free_strip(flo, RemoveMember(n_strip,i_strip));
+       i_strip->end    -= avail;
+    else {
+      RemoveMember(n_strip,i_strip);
+      o_strip->final = n_strip->final;
+      free_strip(flo, n_strip);
+    }
   }
   /* determine how far we can extend our o_strip
    */
@@ -827,11 +899,15 @@ static stripPtr contig_data(flo,pet,bnd,i_strip,contig)
     n_strip = o_strip->flink;
     skip    = start - n_strip->start;
     avail   = min(n_strip->length - skip, limit - start);
-    bcopy(&n_strip->data[skip], &o_strip->data[o_strip->length], avail);
+    memcpy((char*)&o_strip->data[o_strip->length],
+	   (char*)&n_strip->data[skip], (int)avail);
     o_strip->end    += avail;
     o_strip->length += avail;
-    if(avail+skip == n_strip->length)
-      free_strip(flo, RemoveMember(n_strip,n_strip));
+    if(avail+skip == n_strip->length) {
+      RemoveMember(n_strip, n_strip);
+      o_strip->final = n_strip->final;
+      free_strip(flo, n_strip);
+    }
   }
  if(!bnd->isInput) {
     limit = bnd->current + contig;
@@ -879,7 +955,7 @@ static stripPtr	make_strip(flo,fmt,start,units,bytes,allocData)
     strip->bufSiz  = bytes;
 
     if(allocData && bytes && !strip->data)
-      if(strip->data = (CARD8 *) XieMalloc(bytes))
+      if(strip->data = (CARD8 *) XieCalloc(bytes)) /* calloc to hush purify */
 	BYTES += bytes; /*DEBUG*/
       else
 	strip  = free_strip(NULL,strip);

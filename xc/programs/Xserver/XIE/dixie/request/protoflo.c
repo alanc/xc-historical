@@ -1,4 +1,4 @@
-/* $XConsortium: protoflo.c,v 1.3 93/07/19 20:13:49 rws Exp $ */
+/* $XConsortium: protoflo.c,v 1.1 93/10/26 09:57:41 rws Exp $ */
 /**** module protoflo.c ****/
 /****************************************************************************
 				NOTICE
@@ -80,7 +80,7 @@ terms and conditions:
 
 
 /*
- *  Xie protocol proceedures called from the dispatcher
+ *  Xie protocol procedures called from the dispatcher
  */
 int  ProcCreatePhotospace();
 int  ProcDestroyPhotospace();
@@ -274,6 +274,7 @@ int ProcExecutePhotoflo(client)
   if( flo->flags.active ) 
     FloAccessError(flo,0,0, return(SendFloError(client,flo)));
   flo->flags.notify = stuff->notify;
+  ferrCode(flo) = 0;
 
   /* try to execute it */
   return(RunFlo(client,flo));
@@ -362,9 +363,10 @@ int ProcAbort(client)
   
   if( flo = LookupExecutable(stuff->nameSpace, stuff->floID) )
     if( flo->flags.active ) {
+      flo->reqClient     = client;
       flo->flags.aborted = TRUE;
       ddShutdown(flo);
-      FloDone(client,flo);
+      FloDone(flo);
     }
   return(Success);
 }                               /* end ProcAbort */
@@ -376,19 +378,27 @@ int ProcAbort(client)
 int ProcAwait(client)
      ClientPtr client;
 {
+  ClientPtr *awaken;
   floDefPtr flo;
   REQUEST( xieAwaitReq );
   REQUEST_SIZE_MATCH( xieAwaitReq );
   
   if( (flo = LookupExecutable(stuff->nameSpace, stuff->floID))
      && flo->flags.active ) {
-    /*
-     * tell core X to ignore this client, we'll awaken it when the flo is done
-     */
-    IgnoreClient(client);
-    flo->flags.awaken = TRUE;
+    if(awaken = (ClientPtr*)(flo->awakenCnt
+			     ? XieRealloc( flo->awakenPtr,
+					  (flo->awakenCnt+1)*sizeof(ClientPtr))
+			     : XieMalloc(sizeof(ClientPtr)))) {
+      /*
+       * tell core X to ignore this client until the flo is done
+       */
+      awaken[flo->awakenCnt++] = client;
+      flo->awakenPtr = awaken;
+      IgnoreClient(client);
+    } else {
+      return(BadAlloc);
+    }
   }
-  
   return(Success);
 }                               /* end ProcAwait */
 
@@ -399,53 +409,35 @@ int ProcAwait(client)
 int ProcGetClientData(client)
      ClientPtr client;
 {
-  CARD8   *data;
-  CARD32  bytes;
   floDefPtr flo;
   peDefPtr  ped;
-  xieGetClientDataReply rep;
   REQUEST( xieGetClientDataReq );
   REQUEST_SIZE_MATCH( xieGetClientDataReq );
   
-  if( !(flo = LookupExecutable(stuff->nameSpace, stuff->floID)) )
-    return( SendFloIDError(client, stuff->nameSpace, stuff->floID) );
-  
-  if( !flo->flags.active )
+  /* find the flo and make sure it's active
+   */
+  if(!(flo = LookupExecutable(stuff->nameSpace, stuff->floID)))
+    return SendFloIDError(client, stuff->nameSpace, stuff->floID);
+  if(!flo->flags.active)
     FloAccessError(flo,stuff->element,0, return(SendFloError(client,flo)));
   
   /* verify that the specified element and band are OK
    */
-  ped = stuff->element && stuff->element <= flo->peCnt
-    ? flo->peArray[stuff->element] : NULL;
-  if( !ped || !ped->flags.getData )
+  flo->reqClient = client;
+  ped = (stuff->element && stuff->element <= flo->peCnt
+	 ? flo->peArray[stuff->element] : NULL);
+  if(!ped || !ped->flags.getData)
     FloElementError(flo, stuff->element, ped ? ped->elemRaw->elemType : 0,
                     goto egress);
-  if( stuff->bandNumber >= ped->inFloLst[0].bands )
+  if(stuff->bandNumber >= ped->inFloLst[0].bands)
     ValueError(flo,ped,stuff->bandNumber, goto egress);
   
-  /* get some data and fill in the reply header
+  /* grab some data and have it sent to the client
    */
-  memset(&rep, 0, sz_xieGetClientDataReply);
-  rep.newState    = ddOutput(flo, ped, stuff->bandNumber, &data, &bytes,
-			     stuff->maxBytes, stuff->terminate);
-  rep.type        = X_Reply;
-  rep.sequenceNum = client->sequence;
-  rep.length      = bytes+3>>2;
-  rep.byteCount   = bytes;
-  
-  if( client->swapped ) {      
-    register int n;
-    swaps(&rep.sequenceNum, n);
-    swapl(&rep.length, n);
-    swapl(&rep.byteCount, n);
-  }
-  WriteToClient(client, sz_xieGetClientDataReply, (char *)&rep);
-  
-  if( bytes )
-    WriteToClient(client, bytes, (char *)data);
+  ddOutput(flo, ped, stuff->bandNumber, stuff->maxBytes, stuff->terminate);
 
  egress:  
-  return(ferrCode(flo) || !flo->flags.active ? FloDone(client,flo) : Success);
+  return(ferrCode(flo) || !flo->flags.active ? FloDone(flo) : Success);
 }                               /* end ProcGetClientData */
 
 
@@ -460,14 +452,16 @@ int ProcPutClientData(client)
   REQUEST( xiePutClientDataReq );
   REQUEST_AT_LEAST_SIZE(xiePutClientDataReq);
   
+  /* find the flo and make sure it's active
+   */
   if( !(flo = LookupExecutable(stuff->nameSpace, stuff->floID)) )
     return( SendFloIDError(client, stuff->nameSpace, stuff->floID) );
-  
   if( !flo->flags.active )
     FloAccessError(flo,stuff->element,0, return(SendFloError(client,flo)));
   
   /* verify that the target element and band are OK
    */
+  flo->reqClient = client;
   ped = stuff->element && stuff->element <= flo->peCnt
     ? flo->peArray[stuff->element] : NULL;
   if( !ped || !ped->flags.putData )
@@ -476,12 +470,34 @@ int ProcPutClientData(client)
   if( stuff->bandNumber >= ped->inFloLst[0].bands )
     ValueError(flo,ped,stuff->bandNumber, goto egress);
   
+  /* check for partial aggregates and swap the data as required
+   */
+  switch(ped->swapUnits[stuff->bandNumber]) {
+  case  0:
+  case  1:
+    break;
+  case  2:
+    if(stuff->byteCount & 1)
+      ValueError(flo,ped,stuff->byteCount, goto egress);
+    if (client->swapped) 
+      SwapShorts((CARD16*)&stuff[1],stuff->byteCount>>1);
+    break;
+  case  4:
+  case  8:
+  case 16:
+    if(stuff->byteCount & (ped->swapUnits[stuff->bandNumber]-1))
+      ValueError(flo,ped,stuff->byteCount, goto egress);
+    if(client->swapped) 
+      SwapLongs((CARD32*)&stuff[1],stuff->byteCount>>2);
+    break;
+  }
   /* pass the byte-stream to the target element
    */
-  ddInput(flo, ped, stuff->bandNumber, (CARD8 *)&stuff[1],
-          stuff->byteCount, stuff->final);
+  ddInput(flo, ped, stuff->bandNumber,
+	  (CARD8*)&stuff[1], stuff->byteCount, stuff->final);
+
  egress:  
-  return(ferrCode(flo) || !flo->flags.active ? FloDone(client,flo) : Success);
+  return(ferrCode(flo) || !flo->flags.active ? FloDone(flo) : Success);
 }                               /* end ProcPutClientData */
 
 
@@ -499,7 +515,7 @@ int ProcQueryPhotoflo(client)
   REQUEST( xieQueryPhotofloReq );
   REQUEST_SIZE_MATCH( xieQueryPhotofloReq );
   
-  memset(&rep, 0, sz_xieQueryPhotofloReply);
+  bzero((char *)&rep, sz_xieQueryPhotofloReply);
   rep.state = ((flo = LookupExecutable(stuff->nameSpace, stuff->floID))
 	       ? (flo->flags.active ? xieValActive : xieValInactive)
 	       : xieValNonexistent);
@@ -550,9 +566,18 @@ int DeletePhotospace(space, id)
 {
   /* abort and destroy all flos in the photospace
    */
-  while( space->floCnt )
-    DeleteImmediate( space->floLst.flink );
-  
+  while( space->floCnt ) {
+    floDefPtr flo = space->floLst.flink;
+    /*
+     * abort it's execution, and then let it go away quietly (no error/events)
+     */
+    flo->reqClient = flo->runClient;
+    flo->flags.aborted = TRUE;
+    flo->flags.notify  = FALSE;
+    ddShutdown(flo);
+    ferrCode(flo) = 0;
+    FloDone(flo);
+  }
   /* Free the Photospace structure.
    */
   XieFree(space);
@@ -568,10 +593,19 @@ int DeletePhotoflo(flo, id)
      floDefPtr     flo;
      xieTypPhotoflo id;
 {
+  if(flo->flags.active) {
+    /*
+     * abort it's execution, and then let it go away quietly (no error/events)
+     */
+    flo->reqClient = flo->runClient;
+    flo->flags.aborted = TRUE;
+    flo->flags.notify  = FALSE;
+    ddShutdown(flo);
+    ferrCode(flo) = 0;
+    FloDone(flo);
+  }
   /* destroy any lingering ddxie structures
    */
-  if(flo->flags.active)
-    ddShutdown(flo);
   ddDestroy(flo);
   
   /* free the dixie element structures
@@ -633,6 +667,8 @@ static int RunFlo(client,flo)
      ClientPtr client;
      floDefPtr flo;
 {
+  flo->runClient = flo->reqClient = client;
+
   /* validate parameters and propagate attributes between elements */
   if( !ferrCode(flo) )
     PrepFlo(flo);
@@ -640,16 +676,16 @@ static int RunFlo(client,flo)
   /* choose the "best" set of handlers for this DAG (this also
    * establishes all DDXIE entry points in the floDef and peDefs)
    */
-  if( !ferrCode(flo) )
+  if(!ferrCode(flo) && flo->flags.modified)
     DAGalyze(flo);
   
   /* create all the new handlers that were chosen by DAGalyze */
-  if( !ferrCode(flo) && flo->flags.modified )
+  if(!ferrCode(flo) && flo->flags.modified)
     ddLink(flo);
   
   /* begin (and maybe complete) execution */
   if( ferrCode(flo) || !ddStartup(flo) )
-    FloDone(client,flo);
+    FloDone(flo);
   
   return(Success);
 }                               /* end RunFlo */
@@ -658,8 +694,7 @@ static int RunFlo(client,flo)
 /*------------------------------------------------------------------------
 -------- Handle Photoflo Done: send error and event, then clean up -------
 ------------------------------------------------------------------------*/
-static int FloDone(client,flo)
-     ClientPtr client;
+static int FloDone(flo)
      floDefPtr flo;
 {
   peDefPtr ped;
@@ -669,17 +704,19 @@ static int FloDone(client,flo)
   /* debrief import elements */
   for(ped = lst->flink; ped && !ListEnd(ped,lst); ped = ped->clink)
     if(ped->diVec->debrief)
-      (*ped->diVec->debrief)(flo,ped,ok);
+      ok &= (*ped->diVec->debrief)(flo,ped,ok);
 
   /* debrief all other elements (e.g. export and ConvertToIndex) */
   for(ped = lst->flink; ped && !ListEnd(ped,lst); ped = ped->flink)
     if(!ped->flags.import && ped->diVec->debrief)
-      (*ped->diVec->debrief)(flo,ped,ok);
+      ok &= (*ped->diVec->debrief)(flo,ped,ok);
 
   /* handle errors */
   if(ferrCode(flo)) {
     ddShutdown(flo);
-    SendFloError(client,flo);
+    SendFloError(flo->runClient,flo);
+    if(flo->reqClient != flo->runClient)
+      SendFloError(flo->reqClient,flo);
   }
   /* handle events */
   if(flo->flags.notify) {
@@ -717,7 +754,8 @@ static void DeleteImmediate(flo)
   /* remove the photoflo from the photospace and destroy it
    */
   flo->space->floCnt--;
-  FreeFlo( RemoveMember(tmp,flo) );
+  RemoveMember(tmp, flo);
+  FreeFlo(tmp);
 }                               /* end DeleteImmediate */
 
 

@@ -1,4 +1,4 @@
-/* $XConsortium: mplogic.c,v 1.3 93/07/20 20:26:03 dpw Exp $ */
+/* $XConsortium: mplogic.c,v 1.1 93/10/26 09:47:21 rws Exp $ */
 /**** module mplogic.c ****/
 /******************************************************************************
 				NOTICE
@@ -120,7 +120,7 @@ static ddElemVecRec LogicVec = {
 typedef struct _mplogicdef {
 	void	(*action) ();
 	void	(*action2) ();
-	CARD32	constant;
+	CARD32	cnst;
 	CARD32	endrun;
 	CARD32	endix;
 } mpLogicPvtRec, *mpLogicPvtPtr;
@@ -130,12 +130,13 @@ typedef struct _mplogicdef {
   shift = _lev <= 256 ? (_lev <= 2 ? 0 : 3 ) : (_lev <=65536 ? 4 : 5); \
 }
 
+static CARD32 rep_cnst();
+
 /*
 ** NOTE:  might change over to use mergerops (see mfb/mergerop.h)
 ** NOTE:  might change constant operations to use dyads with prefilled
-**		constant strip;
-** XXX:	  does not worry about upper bits when levls not stock power of two
-** XXX:   assumes Pixel Size same for Dyad operations.
+**		constant strip; this would slow them down, but would
+**		conserve code space.
 */
 
 /*------------------------------------------------------------------------
@@ -148,7 +149,6 @@ int miAnalyzeLogic(flo,ped)
     ped->ddVec = LogicVec;
     return TRUE;
 }
-
 
 /*------------------------------------------------------------------------
 ---------------------------- create peTex . . . --------------------------
@@ -187,12 +187,12 @@ static int ActivateLogicM(flo,ped,pet)
 	    !(dvoid = GetCurrentDst(void,flo,pet,dband))) continue;
 
 	do {
-	    (*(pvt->action)) (dvoid, svoid, pvt->constant, pitch);
+	    (*(pvt->action)) (dvoid, svoid, pvt->cnst, pitch);
 	    svoid = GetNextSrc(void,flo,pet,sband,FLUSH);
 	    dvoid = GetNextDst(void,flo,pet,dband,FLUSH);
 	} while (!ferrCode(flo) && svoid && dvoid) ;
 
-	FreeData(void, flo, pet, sband, sband->current);
+	FreeData(flo, pet, sband, sband->current);
     }
     return TRUE;
 }
@@ -230,8 +230,8 @@ static int ActivateLogicD(flo,ped,pet)
 	else if(!tvoid && tband->final)	/* when sr2 runs out, pass-thru sr1 */
 	    BypassSrc(flo,pet,sband);
 	else { 	/* both inputs still active, keep the scheduler up to date  */
-	    FreeData(void,flo,pet,sband,sband->current);
-	    FreeData(void,flo,pet,tband,tband->current);
+	    FreeData(flo,pet,sband,sband->current);
+	    FreeData(flo,pet,tband,tband->current);
 	}
     }
     return TRUE;
@@ -245,9 +245,7 @@ static int ActivateLogicMROI(flo,ped,pet)
     mpLogicPvtPtr pvt = (mpLogicPvtPtr) pet->private;
     int band, nbands  = pet->receptor[SRCt1].inFlo->bands;
     bandPtr sband     = &(pet->receptor[SRCt1].band[0]);
-    bandPtr rband     = &(pet->receptor[ped->inCnt-1].band[0]);
     bandPtr dband     = &(pet->emitter[0]);
-    INT32 Xoffset     = ((xieFloLogical *)ped->elemRaw)->domainOffsetX;
 
     for(band = 0; band < nbands; band++, pvt++, sband++, dband++) {
 	void *svoid, *dvoid;
@@ -262,11 +260,11 @@ static int ActivateLogicMROI(flo,ped,pet)
 				SyncDomain(flo,ped,dband,FLUSH)) {
 	    INT32 run, ix = 0;
 	   
-    	    if (svoid != dvoid) bcopy(svoid, dvoid, dband->pitch);
+    	    if (svoid != dvoid) memcpy(dvoid, svoid, dband->pitch);
 
 	    while (run = GetRun(flo,pet,dband)) {
 		if (run > 0) {
-	    	    (*(pvt->action)) (dvoid, pvt->constant,
+	    	    (*(pvt->action)) (dvoid, pvt->cnst,
 					run << shift, ix << shift);
 		    ix += run;
 		} else
@@ -276,7 +274,7 @@ static int ActivateLogicMROI(flo,ped,pet)
 	    dvoid = GetNextDst(void,flo,pet,dband,FLUSH);
 	}
 
-	FreeData(void, flo, pet, sband, sband->current);
+	FreeData(flo, pet, sband, sband->current);
     }
     return TRUE;
 }
@@ -290,9 +288,7 @@ static int ActivateLogicDROI(flo,ped,pet)
     int band, nbands  = pet->receptor[SRCt1].inFlo->bands;
     bandPtr sband     = &(pet->receptor[SRCt1].band[0]);
     bandPtr tband     = &(pet->receptor[SRCt2].band[0]);
-    bandPtr rband     = &(pet->receptor[ped->inCnt-1].band[0]);
     bandPtr dband     = &(pet->emitter[0]);
-    INT32 Xoffset     = ((xieFloLogical *)ped->elemRaw)->domainOffsetX;
 
     for(band = 0; band < nbands; band++, pvt++, sband++, tband++, dband++) {
 	void *svoid, *tvoid, *dvoid;
@@ -311,7 +307,7 @@ static int ActivateLogicDROI(flo,ped,pet)
 				SyncDomain(flo,ped,dband,FLUSH)) {
 	    INT32 run, ix = 0;
 	   
-    	    if (svoid != dvoid) bcopy(svoid, dvoid, dband->pitch);
+    	    if (svoid != dvoid) memcpy(dvoid, svoid, dband->pitch);
 
 	    while (run = GetRun(flo,pet,dband)) {
 		if (run > 0) {
@@ -336,8 +332,8 @@ static int ActivateLogicDROI(flo,ped,pet)
 	else if(!tvoid && tband->final)	/* when sr2 runs out, pass-thru sr1 */
 	    BypassSrc(flo,pet,sband);
 	else { 	/* both inputs still active, keep the scheduler up to date  */
-	    FreeData(void,flo,pet,sband,sband->current);
-	    FreeData(void,flo,pet,tband,tband->current);
+	    FreeData(flo,pet,sband,sband->current);
+	    FreeData(flo,pet,tband,tband->current);
 	}
     }
     return TRUE;
@@ -396,7 +392,7 @@ static int DestroyLogic(flo,ped)
 ** it simpler to make fine tuned assembly or C code.  
 */
 
-/* M:	(*(pvt->action)) (dvoid, svoid, pvt->constant, bw); */
+/* M:	(*(pvt->action)) (dvoid, svoid, pvt->cnst, bw); */
 /* D:	(*(pvt->action)) (dvoid, svoid, tvoid, bw); */
 
 #define MakeM1(name, op)						\
@@ -465,39 +461,40 @@ static void name(d,src1,src2,bits)					\
 }
 
 #define NaDa
-MakeM1	(mono_clear, 	   (LogInt) 0)
-MakeM2	(mono_and, NaDa	, &  con)
-MakeM2	(mono_andrev,NaDa, & ~con)
-MakeM2	(mono_copy, NaDa,   NaDa)
-MakeM2	(mono_andinv, ~	, &  con)
-MakeM1	(mono_noop,	     con)
-MakeM2	(mono_xor, NaDa , ^  con)
-MakeM2	(mono_or, NaDa	, |  con)
-MakeM2	(mono_nor,    ~	, & ~con)
-MakeM2	(mono_equiv,  ~	, ^  con)
-MakeM1	(mono_invert,	    ~con)
-MakeM2 	(mono_orrev,NaDa, | ~con)
-MakeM2	(mono_copyinv,~	,   NaDa)
-MakeM2	(mono_orinv,  ~	, |  con)
-MakeM2	(mono_nand,   ~	, | ~con)
-MakeM1 	(mono_set,	    ~(LogInt) 0)
 
-#define dyad_clear	mono_clear
-MakeD2	(dyad_and, NaDa	, &  )
-MakeD2	(dyad_andrev,NaDa, & ~)
-#define dyad_copy	mono_copy
-MakeD2	(dyad_andinv, ~	, &  )
-MakeD1	(dyad_noop,	mono_copy)
-MakeD2	(dyad_xor, NaDa	, ^  )
-MakeD2	(dyad_or, NaDa	, |  )
-MakeD2	(dyad_nor,    ~	, & ~)
-MakeD2	(dyad_equiv,  ~	, ^  )
-MakeD1	(dyad_invert,	mono_copyinv)
-MakeD2 	(dyad_orrev,NaDa, | ~)
-#define dyad_copyinv	mono_copyinv
-MakeD2	(dyad_orinv,  ~	, |  )
-MakeD2	(dyad_nand,   ~	, | ~)
-#define dyad_set	mono_set
+MakeM1	(mono_clear,		   (LogInt) 0)
+MakeM2	(mono_and,	NaDa,	&  con)
+MakeM2	(mono_andrev,	~,	&  con)
+MakeM1	(mono_copy,		   con)
+MakeM2	(mono_andinv,	NaDa,	& ~con)
+MakeM2	(mono_noop,	NaDa,	   NaDa)
+MakeM2	(mono_xor,	NaDa,	^  con)
+MakeM2	(mono_or,	NaDa,	|  con)
+MakeM2	(mono_nor,	~,	& ~con)
+MakeM2	(mono_equiv,	NaDa,	^ ~con)
+MakeM2	(mono_invert,	~,	   NaDa)
+MakeM2	(mono_orrev,	~,	|  con)
+MakeM1	(mono_copyinv,		  ~con)
+MakeM2	(mono_orinv,	NaDa,	| ~con)
+MakeM2	(mono_nand,	~,	| ~con)
+MakeM1 	(mono_set,	          ~(LogInt) 0)
+
+#define dyad_clear		mono_clear
+MakeD2	(dyad_and,	NaDa,	&  )
+MakeD2	(dyad_andrev,	~,	&  )
+MakeD1  (dyad_copy,		mono_noop)
+MakeD2	(dyad_andinv,	NaDa,	& ~)
+#define  dyad_noop		mono_noop
+MakeD2	(dyad_xor,	NaDa,	^  )
+MakeD2	(dyad_or,	NaDa,	|  )
+MakeD2	(dyad_nor,	~,	& ~)
+MakeD2	(dyad_equiv,	NaDa,	^ ~)
+#define  dyad_invert		mono_invert
+MakeD2	(dyad_orrev,	~,	|  )
+MakeD1  (dyad_copyinv,		mono_invert)
+MakeD2	(dyad_orinv,	NaDa,	| ~)
+MakeD2	(dyad_nand,	~,	| ~)
+#define dyad_set		mono_set
 
 static void (*action_mono[16])() = {
 	mono_clear,	mono_and,	mono_andrev,	mono_copy,
@@ -516,12 +513,10 @@ static void (*action_dyad[16])() = {
 ---------------------  ROI operations work on subranges ------------------
 ------------------------------------------------------------------------*/
 
-/* MROI: (*(pvt->action)) (dvoid, pvt->constant, run, ix); */
+/* MROI: (*(pvt->action)) (dvoid, pvt->cnst, run, ix); */
 /* DROI: (*(pvt->action)) (dvoid, src2, run, ix); */
 
-#define ONES ~((LogInt)0)
-
-#define MakeROIM1(name, op)					\
+#define MakeROIM1(name, op)						\
 static void name(d,con,run,ix)						\
     LogInt *d, con;							\
     CARD32 run, ix;							\
@@ -531,18 +526,18 @@ static void name(d,con,run,ix)						\
     d += (ix >>= LOGSHIFT); 						\
     if (sbit + run > LOGSIZE) {						\
 	if (sbit) {							\
-	    M = BitRight(ONES,sbit); run -= (LOGSIZE - sbit);		\
+	    M = BitRight(LOGONES,sbit); run -= (LOGSIZE - sbit);	\
 	    D = *d; *d = (D & ~M) | (op & M); d++;			\
 	}								\
 	for (sbit = run >> LOGSHIFT; sbit > 0; sbit--, d++ ) {		\
 	    *d = op;							\
 	}								\
 	if (run &= LOGMASK) {						\
-	    M = ~BitRight(ONES,run);					\
+	    M = ~BitRight(LOGONES,run);					\
 	    D = *d; *d = (D & ~M) | (op & M);				\
 	}								\
     } else {								\
-	M = BitRight(ONES,sbit) & ~(BitRight(ONES,sbit+run));		\
+	M = BitRight(LOGONES,sbit) & ~(BitRight(LOGONES,sbit+run));	\
 	D = *d; *d = (D & ~M) | (op & M);				\
     }									\
 }
@@ -557,18 +552,18 @@ static void name(d,con,run,ix)						\
     d += (ix >>= LOGSHIFT); 						\
     if (sbit + run > LOGSIZE) {						\
 	if (sbit) {							\
-	    M = BitRight(ONES,sbit); run -= (LOGSIZE - sbit);		\
+	    M = BitRight(LOGONES,sbit); run -= (LOGSIZE - sbit);	\
 	    D = *d; *d = (D & ~M) | (((rev D) op) & M); d++;		\
 	}								\
 	for (sbit = run >> LOGSHIFT; sbit > 0; sbit--, d++ ) {		\
 	    *d = (rev *d) op;						\
 	}								\
 	if (run &= LOGMASK) {						\
-	    M = ~BitRight(ONES,run);					\
+	    M = ~BitRight(LOGONES,run);					\
 	    D = *d; *d = (D & ~M) | (((rev D) op) & M);			\
 	}								\
     } else {								\
-	M = BitRight(ONES,sbit) & ~(BitRight(ONES,sbit+run));		\
+	M = BitRight(LOGONES,sbit) & ~(BitRight(LOGONES,sbit+run));	\
 	D = *d; *d = (D & ~M) | (((rev D) op) & M); d++;		\
     }									\
 }
@@ -581,7 +576,7 @@ static void name(d,con,run,ix)						\
     return;	/* NoOp */						\
 }
 
-#define MakeROID1(name, op) 					\
+#define MakeROID1(name, op) 						\
 static void name(d,src2,run,ix)						\
     LogInt *d, *src2;							\
     CARD32 run, ix;							\
@@ -591,18 +586,18 @@ static void name(d,src2,run,ix)						\
     ix >>= LOGSHIFT; d += ix; src2 += ix;				\
     if (sbit + run > LOGSIZE) {						\
 	if (sbit) {							\
-	    M = BitRight(ONES,sbit); run -= (LOGSIZE - sbit);		\
+	    M = BitRight(LOGONES,sbit); run -= (LOGSIZE - sbit);	\
 	    D = *d; *d = (D & ~M) | ((op *src2++) & M); d++;		\
 	}								\
 	for (sbit = run >> LOGSHIFT; sbit > 0; sbit--, d++, src2++ ) {	\
 	    *d = op *src2;						\
 	}								\
 	if (run &= LOGMASK) {						\
-	    M = ~BitRight(ONES,run);					\
+	    M = ~BitRight(LOGONES,run);					\
 	    D = *d; *d = (D & ~M) | ((op *src2) & M); 			\
 	}								\
     } else {								\
-	M = BitRight(ONES,sbit) & ~(BitRight(ONES,sbit+run));		\
+	M = BitRight(LOGONES,sbit) & ~(BitRight(LOGONES,sbit+run));	\
 	D = *d; *d = (D & ~M) | ((op *src2) & M);			\
     }									\
 }
@@ -617,55 +612,55 @@ static void name(d,src2,run,ix)						\
     ix >>= LOGSHIFT; d += ix; src2 += ix;				\
     if (sbit + run > LOGSIZE) {						\
 	if (sbit) {							\
-	    M = BitRight(ONES,sbit); run -= (LOGSIZE - sbit);		\
+	    M = BitRight(LOGONES,sbit); run -= (LOGSIZE - sbit);	\
 	    D = *d; *d = (D & ~M) | (((rev D) op *src2++) & M); d++;	\
 	}								\
 	for (sbit = run >> LOGSHIFT; sbit > 0; sbit--, d++, src2++ ) {	\
 	    *d = (rev *d) op *src2;					\
 	}								\
 	if (run &= LOGMASK) {						\
-	    M = ~BitRight(ONES,run);					\
+	    M = ~BitRight(LOGONES,run);					\
 	    D = *d; *d = (D & ~M) | (((rev D) op *src2) & M);		\
 	}								\
     } else {								\
-	M = BitRight(ONES,sbit) & ~(BitRight(ONES,sbit+run));		\
+	M = BitRight(LOGONES,sbit) & ~(BitRight(LOGONES,sbit+run));	\
 	D = *d; *d = (D & ~M) | (((rev D) op *src2) & M);		\
     }									\
 }
 
-MakeROIM1	(mroi_clear, 	   (LogInt) 0)
-MakeROIM2	(mroi_and, NaDa	, &  con)
-MakeROIM2	(mroi_andrev,NaDa, & ~con)
-MakeROIM3	(mroi_copy		)
-MakeROIM2	(mroi_andinv, ~	, &  con)
-MakeROIM1	(mroi_noop,	     con)
-MakeROIM2	(mroi_xor, NaDa	, ^  con)
-MakeROIM2	(mroi_or, NaDa	, |  con)
-MakeROIM2	(mroi_nor,    ~	, & ~con)
-MakeROIM2	(mroi_equiv,  ~	, ^  con)
-MakeROIM1	(mroi_invert,	    ~con)
-MakeROIM2 	(mroi_orrev,NaDa, | ~con)
-MakeROIM2	(mroi_copyinv,~	,   NaDa)
-MakeROIM2	(mroi_orinv,  ~	, |  con)
-MakeROIM2	(mroi_nand,   ~	, | ~con)
-MakeROIM1 	(mroi_set,	    ~(LogInt) 0)
+MakeROIM1	(mroi_clear,		   (LogInt) 0)
+MakeROIM2	(mroi_and,	NaDa,	&  con)
+MakeROIM2	(mroi_andrev,	~,	&  con)
+MakeROIM1	(mroi_copy,		   con)
+MakeROIM2	(mroi_andinv,	NaDa,	& ~con)
+MakeROIM3	(mroi_noop		      )
+MakeROIM2	(mroi_xor,	NaDa,	^  con)
+MakeROIM2	(mroi_or,	NaDa,	|  con)
+MakeROIM2	(mroi_nor,	~,	& ~con)
+MakeROIM2	(mroi_equiv,	NaDa,	^ ~con)
+MakeROIM2	(mroi_invert,	~,	   NaDa)
+MakeROIM2	(mroi_orrev,	~,	|  con)
+MakeROIM1	(mroi_copyinv,		  ~con)
+MakeROIM2	(mroi_orinv,	NaDa,	| ~con)
+MakeROIM2	(mroi_nand,	~,	| ~con)
+MakeROIM1 	(mroi_set,	          ~(LogInt) 0)
 
-#define		droi_clear	mroi_clear
-MakeROID2	(droi_and, NaDa	, &  )
-MakeROID2	(droi_andrev,NaDa, & ~)
-#define		droi_copy	mroi_copy
-MakeROID2	(droi_andinv, ~	, &  )
-MakeROID1	(droi_noop,	 NaDa)
-MakeROID2	(droi_xor, NaDa	, ^  )
-MakeROID2	(droi_or, NaDa	, |  )
-MakeROID2	(droi_nor,    ~	, & ~)
-MakeROID2	(droi_equiv,  ~	, ^  )
-MakeROID1	(droi_invert,	  ~  )
-MakeROID2 	(droi_orrev,NaDa, | ~)
-#define		droi_copyinv	mroi_copyinv
-MakeROID2	(droi_orinv,  ~	, |  )
-MakeROID2	(droi_nand,   ~	, | ~)
-#define		droi_set	mroi_set
+#define		 droi_clear		mroi_clear
+MakeROID2	(droi_and,	NaDa,	&  )
+MakeROID2	(droi_andrev,	~,	&  )
+MakeROID1	(droi_copy,		NaDa)
+MakeROID2	(droi_andinv,	NaDa,	& ~)
+#define		 droi_noop		mroi_noop
+MakeROID2	(droi_xor,	NaDa,	^  )
+MakeROID2	(droi_or,	NaDa,	|  )
+MakeROID2	(droi_nor,	~,	& ~)
+MakeROID2	(droi_equiv,	NaDa,	^ ~)
+#define		 droi_invert		mroi_invert
+MakeROID2	(droi_orrev,	~,	|  )
+MakeROID1	(droi_copyinv,		  ~)
+MakeROID2	(droi_orinv,	NaDa,	| ~)
+MakeROID2	(droi_nand,	~,	| ~)
+#define		 droi_set		mroi_set
 
 static void (*action_monoROI[16])() = {
 	mroi_clear,	mroi_and,	mroi_andrev,	mroi_copy,
@@ -693,30 +688,30 @@ static void action_tail(d, src, run, ix)
     ix >>= LOGSHIFT; d += ix; src += ix;
     if (sbit + run > LOGSIZE) {
 	if (sbit) {
-	    M = BitRight(ONES,sbit); run -= (LOGSIZE - sbit);
+	    M = BitRight(LOGONES,sbit); run -= (LOGSIZE - sbit);
 	    D = *d; *d = (D & ~M) | (*src++ & M); d++;
 	}
 	for (sbit = run >> LOGSHIFT; sbit > 0; sbit--) {
 	    *d++ = *src++;
 	}
 	if (run &= LOGMASK) {	/* may be unnecessary due to padding */
-	    M = ~BitRight(ONES,run);
+	    M = ~BitRight(LOGONES,run);
 	    D = *d; *d = (D & ~M) | (*src & M);
 	}
     } else {
-	M = BitRight(ONES,sbit) & ~(BitRight(ONES,sbit+run));
+	M = BitRight(LOGONES,sbit) & ~(BitRight(LOGONES,sbit+run));
 	D = *d; *d = (D & ~M) | (*src & M);
     }
 }
 
-static CARD32 replicate_const(levels, con)
+static CARD32
+rep_cnst(levels, dconst)
     CARD32 levels;
-    CARD32 con;
+    double dconst;
 {
-    /* XXX needs to look for partial powers and clear bits.  Not
-    ** necessary until we also add masking operations in logical
-    ** operations.  not a pretty thing. sigh.
-    */
+
+    CARD32 con = ConstrainConst(dconst,levels);
+
     if (levels <= 0x100) {
 	if ( levels > 2) {
 	    con &= 0xff; con |= con << 8; return con | (con << 16); 
@@ -730,7 +725,7 @@ static CARD32 replicate_const(levels, con)
     }
     return con & 0xffffff;
 }
-	
+
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
@@ -772,8 +767,7 @@ static int InitializeLogic(flo,ped)
     for (band=0; band<nbands; band++, pvt++, dband++) {
 	pvt->action = act;
 	if (!raw->src2) {
-	    pvt->constant = replicate_const(dband->format->levels,
-					(CARD32)(epvt->constant[band] + 0.5));
+	    pvt->cnst = rep_cnst(dband->format->levels, epvt->constant[band]);
 	} else if (!hasROI) {
 	    /* gack, an alternative is to use INPLACE for SRCt1 */
     	    bandPtr tband = &(pet->receptor[SRCt2].band[band]);
@@ -788,6 +782,10 @@ static int InitializeLogic(flo,ped)
 	}
     }
 
+    /* If processing domain, allow replication */
+    if (hasROI)
+	pet->receptor[ped->inCnt-1].band[0].replicate = msk;
+
     InitReceptor(flo, ped, &rcp[SRCt1], NO_DATAMAP, 1, msk, ~msk);
     if (msk && raw->src2)
 	InitReceptor(flo, ped, &rcp[SRCt2], NO_DATAMAP, 1, msk, NO_BANDS);
@@ -797,11 +795,8 @@ static int InitializeLogic(flo,ped)
     if (msk)
 	InitEmitter(flo, ped, NO_DATAMAP, hasROI ? SRCt1 : NO_INPLACE);
 
-    /* If processing domain, allow replication */
-    if (hasROI)
-	pet->receptor[ped->inCnt-1].band[0].replicate = msk;
-
     return !ferrCode(flo);
 }
+	
 
-/* end module mpqlogic.c */
+/* end module mplogic.c */

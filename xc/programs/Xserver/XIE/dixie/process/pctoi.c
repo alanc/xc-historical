@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pctoi.c,v 1.1 93/10/26 10:00:14 rws Exp $ */
 /**** module pctoi.c ****/
 /******************************************************************************
 				NOTICE
@@ -44,7 +44,7 @@ terms and conditions:
   
 	pctoi.c -- DIXIE routines for managing the ConvertToIndex element
   
-	Dean Verheiden -- AGE Logic, Inc. June 1993
+	Dean Verheiden && Robert NC Shelley -- AGE Logic, Inc. June 1993
   
 *****************************************************************************/
 
@@ -92,7 +92,6 @@ Bool 		CopyCtoIAllocAll();
 Bool 		CopyCtoIAllocMatch();
 Bool 		CopyCtoIAllocRequantize();
 Bool 		PrepCtoIAllocAll();
-Bool 		PrepCtoIAllocMatch();
 
 /* routines internal to this module
  */
@@ -131,7 +130,7 @@ peDefPtr MakeConvertToIndex(flo,tag,pe)
   /*
    * copy the standard client element parameters (swap if necessary)
    */
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
     cpswaps(stuff->src, raw->src);
@@ -142,7 +141,7 @@ peDefPtr MakeConvertToIndex(flo,tag,pe)
     cpswaps(stuff->lenParams, raw->lenParams);
   }
   else  
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloConvertToIndex));
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloConvertToIndex));
   /*
    * assign phototags to inFlos
    */
@@ -153,8 +152,10 @@ peDefPtr MakeConvertToIndex(flo,tag,pe)
    * copy technique data (if any)
    */
   if(!(ped->techVec = FindTechnique(xieValColorAlloc,raw->colorAlloc)) ||
-     !(ped->techVec->copyfnc(flo, ped, &stuff[1], &raw[1], raw->lenParams)))
-    TechniqueError(flo,ped,raw->colorAlloc,raw->lenParams, return(ped));
+     !(ped->techVec->copyfnc(flo, ped, &stuff[1], &raw[1], raw->lenParams, 
+					raw->colorAlloc == xieValDefault)))
+    TechniqueError(flo,ped,xieValColorAlloc,raw->colorAlloc,raw->lenParams,
+		   return(ped));
 
   return(ped);
 }                               /* end MakeConvertToIndex */
@@ -163,15 +164,18 @@ peDefPtr MakeConvertToIndex(flo,tag,pe)
 -----------------------  copy routines for techniques  -------------------
 ------------------------------------------------------------------------*/
 
-Bool CopyCtoIAllocAll(flo, ped, sparms, rparms, tsize) 
+Bool CopyCtoIAllocAll(flo, ped, sparms, rparms, tsize, isDefault) 
      floDefPtr  flo;
      peDefPtr   ped;
      xieTecColorAllocAll *sparms, *rparms;
      CARD16	tsize;
+     Bool       isDefault;
 {
-  TECHNIQUE_SIZE_MATCH(xieTecColorAllocAll,tsize);
+  VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
   
-  if( flo->client->swapped ) {
+  if (isDefault) 
+    rparms->fill = 0; /* Not really a good way to pick this so . . . */
+  else if( flo->reqClient->swapped ) {
     cpswapl(sparms->fill, rparms->fill);
   } else
     rparms->fill = sparms->fill;
@@ -179,21 +183,23 @@ Bool CopyCtoIAllocAll(flo, ped, sparms, rparms, tsize)
   return(TRUE);
 }
 
-Bool CopyCtoIAllocMatch(flo, ped, sparms, rparms, tsize) 
+Bool CopyCtoIAllocMatch(flo, ped, sparms, rparms, tsize, isDefault) 
      floDefPtr  flo;
      peDefPtr   ped;
      xieTecColorAllocMatch *sparms, *rparms;
      CARD16	tsize;
+     Bool       isDefault;
 {
   pConvertToIndexMatchDefPtr pvt;
-  TECHNIQUE_SIZE_MATCH(xieTecColorAllocMatch,tsize);
+
+  VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
   
   if (!(ped->techPvt=(void *)XieMalloc(sizeof(pTecConvertToIndexMatchDefRec))))
     AllocError(flo,ped, return(TRUE));
   
   pvt = (pConvertToIndexMatchDefPtr)ped->techPvt;
   
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     pvt->matchLimit = ConvertFromIEEE(lswapl(sparms->matchLimit));
     pvt->grayLimit  = ConvertFromIEEE(lswapl(sparms->grayLimit));
   } else {
@@ -203,15 +209,16 @@ Bool CopyCtoIAllocMatch(flo, ped, sparms, rparms, tsize)
   return(TRUE);
 }
 
-Bool CopyCtoIAllocRequantize(flo, ped, sparms, rparms, tsize) 
+Bool CopyCtoIAllocRequantize(flo, ped, sparms, rparms, tsize, isDefault) 
      floDefPtr  flo;
      peDefPtr   ped;
      xieTecColorAllocRequantize *sparms, *rparms;
      CARD16	tsize;
+     Bool       isDefault;
 {
-  TECHNIQUE_SIZE_MATCH(xieTecColorAllocRequantize,tsize);
+  VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
   
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ){
     cpswapl(sparms->maxCells, rparms->maxCells);
   } else
     rparms->maxCells = sparms->maxCells;
@@ -233,19 +240,29 @@ static Bool PrepConvertToIndex(flo,ped)
   outFloPtr   dst = &ped->outFlo;
   formatPtr   sf  = &src->format[0];
   formatPtr   df  = &dst->format[0];
-  CARD32 b, f, right_padm1;
+  CARD32      b;
 
-  /* must be constrained and inter-band dimensions must match */
-  if(!IsConstrained(sf[0].class) ||
-     src->bands == 3 && (!IsConstrained(sf[1].class)  ||
-			 !IsConstrained(sf[2].class)  ||
+  /* must be constrained and inter-band dimensions must match
+   */
+  if(IsntConstrained(sf[0].class) ||
+     src->bands == 3 && (IsntConstrained(sf[1].class)  ||
+			 IsntConstrained(sf[2].class)  ||
 			 sf[0].width  != sf[1].width  ||
 			 sf[1].width  != sf[2].width  ||
 			 sf[0].height != sf[1].height ||
 			 sf[1].height != sf[2].height))
     MatchError(flo,ped, return(FALSE));
 
-  /* find the ColorList and Colormap resources */
+  /* determine our output attributes from the input (figure out levels later)
+   */
+  df[0] = sf[0];
+  dst->bands = 1;
+  inf->bands = src->bands;
+  for(b = 0; b < src->bands; ++b)
+    inf->format[b] = sf[b];
+
+  /* find the ColorList and Colormap resources
+   */
   if(raw->colorList) {
     if(!(pvt->list = LookupColorList(raw->colorList)))
       ColorListError(flo,ped,raw->colorList, return(FALSE));
@@ -263,69 +280,59 @@ static Bool PrepConvertToIndex(flo,ped)
   pvt->class   = pvt->cmap->class;
   pvt->visual  = pvt->cmap->pVisual;
   pvt->stride  = pvt->visual->bitsPerRGBValue;
+  pvt->cells   = pvt->visual->ColormapEntries;
   pvt->mask[0] = pvt->visual->redMask;
   pvt->mask[1] = pvt->visual->greenMask;
   pvt->mask[2] = pvt->visual->blueMask;
   pvt->shft[0] = pvt->visual->offsetRed;
   pvt->shft[1] = pvt->visual->offsetGreen;
   pvt->shft[2] = pvt->visual->offsetBlue;
-  SetDepthFromLevels(pvt->visual->ColormapEntries, pvt->depth);
-  pvt->cells   = 1<<pvt->depth;
+  pvt->dynamic = pvt->cmap->class & DynamicClass;
+  pvt->graySrc = src->bands == 1;
+  pvt->preFmt  = pvt->doHist = FALSE;
 
-  pvt->preFmt = pvt->doHist = FALSE;
   switch(pvt->class) {
   case DirectColor :
-    pvt->doHist = TRUE;           	  /* used by Match technique */
   case TrueColor   :
   case StaticColor :
     for(b = 0; b < 3; ++b)
       pvt->levels[b] = pvt->mask[b] >> pvt->shft[b];
-
-    /* see if we have a full set of masks while turning them into levels
+    
+    /* see if we have a full set of masks (by turning them into levels)
      */
     if(pvt->levels[0]++ & pvt->levels[1]++ & pvt->levels[2]++) {
-      /*
-       * if doing grayscale with a static Colormap, all pvt->levels must match
-       */
-      if(src->bands == 1 && !(pvt->cmap->class & DynamicClass) &&
-	 (pvt->levels[0] != pvt->levels[1] ||
-	  pvt->levels[1] != pvt->levels[2]))
+      /* see what limitations we have for grayscale images */
+      if(pvt->graySrc && !pvt->dynamic && (pvt->levels[0] != pvt->levels[1] ||
+					   pvt->levels[1] != pvt->levels[2]))
 	MatchError(flo,ped, return(FALSE));
+
+      /* set output levels and depth based on colormap masks
+       */
+      df[0].levels = pvt->levels[0] * pvt->levels[1] * pvt->levels[2];
+      SetDepthFromLevels(df[0].levels, pvt->depth);
       break;
-    }                     /* for StaticColor with no masks, we'll fall thru */
+    }                     /* for StaticColor with no asks, we'll fall thru */
   case PseudoColor :
-    pvt->levels[1] = pvt->levels[2] = 1;  /* for df levels calc (see below) */
+    pvt->levels[1] = pvt->levels[2] = 1;
   case GrayScale   :
-    pvt->doHist    = TRUE;                /* used by Match technique */
   case StaticGray  :
-    pvt->preFmt    = src->bands > 1;      /* used by Match technique */
-    pvt->levels[0] = pvt->cells;
+    /* set output levels and depth based on colormap size
+     */
+    SetDepthFromLevels(pvt->cells, pvt->depth);
+    df[0].levels = 1<<pvt->depth;
+    if((pvt->preFmt = !pvt->graySrc) && pvt->class <= GrayScale)
+      MatchError(flo,ped, return(FALSE));
   }
-  /* determine our output attributes from the input and Colormap levels
+  /* set output stride and pitch to match the colormap depth
    */
-  for(b = 0; b < src->bands; ++b)
-    inf->format[b] = sf[b];
-  df[0] = sf[0];
-  inf->bands = src->bands;
-  dst->bands = 1;
-  if(!(df[0].levels = pvt->levels[0] * pvt->levels[1] * pvt->levels[2]))
-    MatchError(flo,ped, return(FALSE)); /* can't do RGB using gray Colormap */
+  if(!UpdateFormatfromLevels(ped))
+    MatchError(flo,ped, return(FALSE));
 
-  /* search for the stride and pitch requirements that match our depth
-   */
-  UpdateFormatfromLevels(ped);
-  for(f = 0; (f < screenInfo.numPixmapFormats &&
-	      df[0].depth != screenInfo.formats[f].depth); ++f);
-  if(df[0].stride != screenInfo.formats[f].bitsPerPixel)
-    ImplementationError(flo,ped, return(FALSE)); /* XXX what to do ? */
-
-  right_padm1 = screenInfo.formats[f].scanlinePad - 1;
-  df[0].pitch = df[0].width * df[0].stride + right_padm1 & ~right_padm1;
-  
   /* go do technique-specific stuff
    */
   if(!(ped->techVec->prepfnc(flo, ped, raw, &raw[1])))
-    TechniqueError(flo, ped, raw->colorAlloc, raw->lenParams, return(FALSE));
+    TechniqueError(flo,ped,xieValColorAlloc,raw->colorAlloc,raw->lenParams,
+		   return(FALSE));
 
   /* init the colorlist resource
    */
@@ -333,6 +340,7 @@ static Bool PrepConvertToIndex(flo,ped)
     ResetColorList(pvt->list, pvt->list->mapPtr);
     pvt->list->mapID  = raw->colormap;
     pvt->list->mapPtr = pvt->cmap;
+    pvt->list->client = flo->runClient;
   }
   return(TRUE);
 }                               /* end PrepConvertToIndex */
@@ -343,81 +351,28 @@ static Bool PrepConvertToIndex(flo,ped)
 Bool PrepCtoIAllocAll(flo, ped, raw, tec) 
      floDefPtr flo;
      peDefPtr  ped;
-     xieFloConvertToIndex  *raw;
-     xieTecColorAllocMatch *tec;
+     xieFloConvertToIndex *raw;
+     xieTecColorAllocAll  *tec;
 {
   pCtoIDefPtr pvt = (pCtoIDefPtr) ped->elemPvt;
   inFloPtr     inf = &ped->inFloLst[SRCtag];
   formatPtr    fmt = &inf->format[0];
   
-  if(!(pvt->class & DynamicClass) || !pvt->list || pvt->class == DirectColor)
-    return(FALSE);	/* AllocAll needs a dynamic colormap and a colorlist
-                         * (also, alpha release doesn't support direct color)
-                         */
+  if(!(pvt->class & DynamicClass) || !pvt->list)
+    return(FALSE);	/* AllocAll needs a dynamic colormap and a colorlist */
   
-  /* XXX check levels for each band to make sure they're within reason...
-   *     I think it's unreasonable to expect AllocAll to handle a potential
-   *     of more than 2^16 gray shades or 2^8 colors per band (RNCS).
-   *     (ddx only supports BYTE_PIXEL 3-band images so far)
+  /* Check the depth of each band to make sure they're reasonable ... deep
+   * images have to have sparse histograms to avoid running out of colors
+   *
+   *     XIE only supports up to 16 bits per band for "non-index" data,
+   *     we will further limit RGB images to a total depth of 31.
    */
-  if(inf->bands == 1 &&  fmt[0].levels > 1<<16 ||
-     inf->bands == 3 && (fmt[0].class != BYTE_PIXEL   ||
-			 fmt[0].class != fmt[1].class ||
-			 fmt[1].class != fmt[2].class ))
+  if(inf->bands == 1 &&  fmt[0].depth > 16 ||
+     inf->bands == 3 && (fmt[0].depth + fmt[1].depth + fmt[2].depth > 31))
     return(FALSE);
   
   return(TRUE);
 }				/* end PrepCtoIAllocAll */
-
-/*------------------------------------------------------------------------
------------------------- technique prep routines  ------------------------
-------------------------------------------------------------------------*/
-Bool PrepCtoIAllocMatch(flo, ped, raw, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieFloConvertToIndex  *raw;
-     xieTecColorAllocMatch *tec;
-{
-  pConvertToIndexMatchDefPtr tp = (pConvertToIndexMatchDefPtr)ped->techPvt;
-  pCtoIDefPtr dix = (pCtoIDefPtr) ped->elemPvt;
-  inFloPtr     inf = &ped->inFloLst[SRCtag];
-  formatPtr    fmt = &inf->format[0];
-
-  if(dix->class & DynamicClass && !dix->list)
-    return(FALSE);	/* Match needs a colorlist if colormap is dynamic */
-  
-  /* Limits must be between 0.0 and 1.0 */
-  if(tp->matchLimit < 0.0 || tp->matchLimit > 1.0 ||
-     tp->grayLimit  < 0.0 || tp->grayLimit  > 1.0)
-    return(FALSE);
-  
-  /* XXX check levels for each band to make sure they're within "reason" . . .
-   *     When I conceived the AllocMatch technique (1989), it was intended
-   *     to be a good citizen and make a "best attempt" at fitting an
-   *     image's gray/color requirements into a shared colormap (e.g. the
-   *     default colormap).  The number of levels in the input image should
-   *     not exceed the total number of cells in the colormap.  AllocMatch
-   *     can handle images with more levels than the colormap size, but it is
-   *     computationally intense (n^2 or worse situation) and also requires
-   *     sufficient memory to perform histogram and lookup table operations
-   *     on (red.levels * green.levels * blue.levels) different pixel values.
-   *     Therefore the SI will punt if the product of the levels is much
-   *     greater than the colormap size (4x suggested in the protocol doc),
-   *     or if levels for a single band image exceeds 2^16.  After all, XIE
-   *     offers dither, constrain, arithmetic, and other wonderful ways to
-   *     be "reasonable" (RNCS).
-   */
-  if(inf->bands == 1 &&  fmt[0].levels > 1<<16 ||
-     inf->bands == 3 &&
-     fmt[0].levels * fmt[1].levels * fmt[2].levels > dix->cells * 4)
-    return(FALSE);
-
-  /* NOTE: due to the above restrictions the AllocAll technique is being
-   *       substituted for the Match technique for the alpha release at
-   *       MIT's request.
-   */
-  return(FALSE);
-}				/* end PrepCtoIAllocMatch */
 
 /*------------------------------------------------------------------------
 ---------------------- routine: post execution cleanup -------------------
@@ -427,18 +382,18 @@ static Bool DebriefConvertToIndex(flo,ped,ok)
      peDefPtr   ped;
      Bool	ok;
 {
-  xieFloConvertToIndex *raw = (xieFloConvertToIndex *)ped->elemRaw;
   pCtoIDefPtr pvt = (pCtoIDefPtr) ped->elemPvt;
   colorListPtr lst;
   
   if(pvt && (lst = pvt->list))
-    if(lst->refCnt == 1) {
-      FreeResourceByType(lst->ID, RT_COLORLIST, RT_NONE);
-    } else {
+    if(lst->refCnt > 1) {
       if(!ok || !lst->cellCnt)
 	ResetColorList(lst, lst->mapPtr);
-
-      --lst->refCnt;	/* nice doing business with you */
+      --lst->refCnt;
+    } else if(LookupIDByType(lst->ID, RT_COLORLIST)) {
+      FreeResourceByType(lst->ID, RT_COLORLIST, RT_NONE);
+    } else {
+      DeleteColorList(lst, lst->ID);
     }
   return(TRUE);
 }                               /* end DebriefConvertToIndex */

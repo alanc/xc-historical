@@ -1,4 +1,4 @@
-/* $XConsortium: bits.h,v 1.1 93/07/19 10:15:12 rws Exp $ */
+/* $XConsortium: bits.h,v 1.1 93/10/26 09:52:07 rws Exp $ */
 /**** module fax/bits.h ****/
 /******************************************************************************
 				NOTICE
@@ -66,24 +66,6 @@ terms and conditions:
  *	current desired run length.
  */
 
-#ifdef XoftWare
-/*
-	Should consider replacing:
-
-	    makeup = _WhiteFaxTable[code].makeup;
-	
-	with
-
-	    makeup = (rl>=64);
-
-	Also,  should consider declaring _WhiteFaxTable as an array
-	of longs,  just fetch the long value, then pick it apart using
-	shifts and masks.  Hopefully it's not a factor because most
-	chips will not really do a load on _WhiteFaxTable[code].n_bits
-	and _WhiteFaxTable[code].makeup, but will rather just access
-	the word in an internal cache?
-*/
-#endif
 #define get_white_run_length(next_goal)					\
 	{ 								\
 	register int code=0,nbits,makeup;				\
@@ -99,10 +81,10 @@ terms and conditions:
 		goal = FAX_GOAL_RecoverZero;				\
 	        break;							\
 	      }								\
-              else {                                                    \
-                goal = FAX_GOAL_FallOnSword;                            \
-                break;                                                  \
-              }                                                         \
+	      else {							\
+		goal = FAX_GOAL_FallOnSword;				\
+	        break;							\
+	      }								\
 	    }								\
 	    if (rl != EOL_RUN_LENGTH)					\
 	      length_acc += rl;						\
@@ -130,10 +112,10 @@ terms and conditions:
 		goal = FAX_GOAL_RecoverZero;				\
 	        break;							\
 	      }								\
-              else {                                                    \
-                goal = FAX_GOAL_FallOnSword;                            \
-                break;                                                  \
-              }                                                         \
+	      else {							\
+		goal = FAX_GOAL_FallOnSword;				\
+	        break;							\
+	      }								\
 	    }								\
 	    if (rl != EOL_RUN_LENGTH)					\
 	      length_acc += rl;						\
@@ -223,7 +205,9 @@ terms and conditions:
 	    width		= state->width;				\
 	    rl			= state->rl;				\
 	    g32d_horiz		= state->g32d_horiz;
-#else  /* if not defined(_G32D) */
+#endif  /* if defined(_G32D) */
+
+#if defined(_G31D) || defined(_G4)
 #define save_state_and_return(state) 					\
 	{								\
 	    state->a0_color 	= a0_color;				\
@@ -260,7 +244,32 @@ terms and conditions:
 	    last_b1_idx		= state->last_b1_idx;			\
 	    width		= state->width;				\
 	    rl			= state->rl;
-#endif  /* !defined(_G32D) */
+#endif  /* defined(_G31D) */
+
+#if defined(_PBits)
+#define save_state_and_return(state) 					\
+	{								\
+	    state->a0_color 	= a0_color;				\
+	    state->a0_pos   	= a0_pos;				\
+	    state->bits.byteptr = byteptr;				\
+	    state->bits.endptr  = endptr;				\
+	    state->goal     	= goal;					\
+	    state->length_acc	= length_acc;				\
+	    state->width	= width;				\
+	    state->rl		= rl;					\
+	    return(lines_found);					\
+	}
+
+#define	localize_state(state)						\
+	    a0_color  		= state->a0_color;			\
+	    a0_pos	  	= state->a0_pos;			\
+	    byteptr	  	= state->bits.byteptr;			\
+	    endptr    		= state->bits.endptr;			\
+	    goal	  	= state->goal;				\
+	    length_acc		= state->length_acc;			\
+	    width		= state->width;				\
+	    rl			= state->rl;
+#endif  /* defined(_Pbits) */
 
 /* ------------------------------------------------------------------- */
 /*

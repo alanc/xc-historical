@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pblend.c,v 1.1 93/10/26 10:01:10 rws Exp $ */
 /**** module pblend.c ****/
 /******************************************************************************
 				NOTICE
@@ -127,7 +127,7 @@ peDefPtr MakeBlend(flo,tag,pe)
   /*
    * copy the client element parameters (swap if necessary)
    */
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
     cpswaps(stuff->src1, raw->src1);
@@ -143,7 +143,7 @@ peDefPtr MakeBlend(flo,tag,pe)
     cpswapl(stuff->alphaConst, raw->alphaConst);
   }
   else
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloBlend));
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloBlend));
 
   /*
    * convert constants
@@ -158,14 +158,9 @@ peDefPtr MakeBlend(flo,tag,pe)
 	index = SRCt2;
 
   pvt->alphaConst = ConvertFromIEEE(raw->alphaConst);
+  pvt->aindex     = (raw->alpha) ? ++index : 0;
+  pvt->dindex     = (raw->domainPhototag) ? ++index : 0;
 
-  pvt->aindex = (raw->alpha) ? ++index : 0;
-  pvt->dindex = (raw->domainPhototag) ? ++index : 0;
-
- if ( raw->alpha && pvt->alphaConst == 0.0 || 
-     !raw->alpha && (pvt->alphaConst < 0.0 || pvt->alphaConst > 1.0))
-    		ValueError(flo, ped, raw->alphaConst, return(NULL));
-  
   /*
    * assign phototags to inFlos
    */
@@ -191,17 +186,32 @@ static Bool PrepBlend(flo,ped)
   inFloPtr  ind, ina, in2, in1 = &ped->inFloLst[SRCt1];
   outFloPtr dom, sra, sr2, sr1 = &in1->srcDef->outFlo;
   outFloPtr dst = &ped->outFlo;
-  int b;
-  int aindex = pvt->aindex, dindex = pvt->dindex;
+  int aindex = pvt->aindex, dindex = pvt->dindex, b;
+  CARD8 bmask = raw->bandMask;
+
+  if ( raw->alpha &&  pvt->alphaConst <= 0.0 || 
+      !raw->alpha && (pvt->alphaConst <  0.0 || pvt->alphaConst > 1.0))
+    	ValueError(flo, ped, raw->alphaConst, return(FALSE));
+
+  for (b = 0; b < sr1->bands; b++)
+    if (IsntCanonic(sr1->format[b].class) ||
+	((bmask & (1<<b)) && sr1->format[b].class == BIT_PIXEL))
+      	MatchError(flo,ped,return(FALSE));
 
   /* check out our second source */
   if(raw->src2) {
     in2 = &ped->inFloLst[SRCt2];
     sr2 = &in2->srcDef->outFlo;
-    if(sr1->bands != sr2->bands) {
+    if(sr1->bands != sr2->bands)
       MatchError(flo,ped, return(FALSE));
-    }
     in2->bands = sr2->bands;
+    for (b = 0; b < sr1->bands; b++) {
+	if ((bmask & (1<<b)) == 0) continue;
+	if (sr1->format[b].class != sr2->format[b].class ||
+	    IsConstrained(sr1->format[b].class) && 
+	    sr1->format[b].levels != sr2->format[b].levels)
+      		MatchError(flo,ped, return(FALSE));
+    }
   } else 
     sr2 = NULL;
 
@@ -210,16 +220,20 @@ static Bool PrepBlend(flo,ped)
   if(aindex) {
     ina = &ped->inFloLst[aindex];
     sra = &ina->srcDef->outFlo;
-    if((ina->bands = sra->bands) != 1 || sra->format[0].class == UNCONSTRAINED)
-      MatchError(flo,ped, return(FALSE));
-    ina->format[0] = sra->format[0];
+    ina->bands = sra->bands;
+    for (b = 0; b < sra->bands; b++) {
+	if (IsCanonic(sra->format[b].class))
+            ina->format[b] = sra->format[b];
+	else
+            MatchError(flo,ped, return(FALSE));
+    }
   } 
 
   /* check out our process domain */
   if(dindex) {
     ind = &ped->inFloLst[dindex];
     dom = &ind->srcDef->outFlo;
-    if((ind->bands = dom->bands) != 1)
+    if((ind->bands = dom->bands) != 1 || IsntDomain(dom->format[0].class))
       DomainError(flo,ped,raw->domainPhototag, return(FALSE));
     ind->format[0] = dom->format[0];
   } 

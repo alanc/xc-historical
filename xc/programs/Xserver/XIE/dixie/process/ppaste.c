@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ppaste.c,v 1.1 93/10/26 10:01:17 rws Exp $ */
 /**** module ppaste.c ****/
 /******************************************************************************
 				NOTICE
@@ -115,7 +115,7 @@ peDefPtr MakePasteUp(flo,tag,pe)
   ELEMENT_AT_LEAST_SIZE(xieFloPasteUp);
   ELEMENT_NEEDS_1_INPUT(numTiles);
 
-  if ( flo->client->swapped ) {
+  if ( flo->reqClient->swapped ) {
  	cpswaps(stuff->numTiles, inputs);
   } else
 	inputs = stuff->numTiles;
@@ -133,7 +133,7 @@ peDefPtr MakePasteUp(flo,tag,pe)
    * copy the client element parameters (swap if necessary)
    */
 
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     xieTypTile *sp = (xieTypTile *) &(stuff[1]);
 
     raw->elemType   = stuff->elemType;
@@ -152,7 +152,7 @@ peDefPtr MakePasteUp(flo,tag,pe)
     }
   }
   else
-    bcopy((char *)stuff, (char *)raw, (CARD32)stuff->elemLength<<2);
+    memcpy((char *)raw, (char *)stuff, (CARD32)stuff->elemLength<<2);
 
   /*
    * convert constants
@@ -194,8 +194,13 @@ static Bool PrepPasteUp(flo,ped)
 
   dst->bands = in->bands = src->bands;
 
+  if (raw->numTiles <= 0)
+      	MatchError(flo,ped,return(FALSE));
+
   for(b = 0; b < dst->bands; b++) {
 	CARD32 bits;
+	if (IsntCanonic(src->format[b].class))
+      		MatchError(flo,ped,return(FALSE));
 	dst->format[b] = in->format[b] = src->format[b];
 	dst->format[b].width = bits = raw->width;
 	dst->format[b].height = raw->height;

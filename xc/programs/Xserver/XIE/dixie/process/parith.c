@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: parith.c,v 1.1 93/10/26 10:00:20 rws Exp $ */
 /**** module parith.c ****/
 /******************************************************************************
 				NOTICE
@@ -125,7 +125,7 @@ peDefPtr MakeArith(flo,tag,pe)
   /*
    * copy the client element parameters (swap if necessary)
    */
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
     cpswaps(stuff->src1, raw->src1);
@@ -140,7 +140,7 @@ peDefPtr MakeArith(flo,tag,pe)
     cpswapl(stuff->constant2, raw->constant2);
   }
   else
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloArithmetic));
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloArithmetic));
 
   if(!raw->src2) {
     /*
@@ -174,7 +174,14 @@ static Bool PrepArith(flo,ped)
   inFloPtr  ind, in2, in1 = &ped->inFloLst[SRCt1];
   outFloPtr dom, sr2, sr1 = &in1->srcDef->outFlo;
   outFloPtr dst = &ped->outFlo;
+  CARD8 bmask = raw->bandMask;
   int b;
+
+  /* make sure input is not bitonal */
+  for (b = 0; b < sr1->bands; b++)
+    if (IsntCanonic(sr1->format[b].class) ||
+	((bmask & (1<<b)) && sr1->format[b].class == BIT_PIXEL))
+	    MatchError(flo,ped, return(FALSE));
 
   /* check out our second source */
   if(raw->src2) {
@@ -182,6 +189,13 @@ static Bool PrepArith(flo,ped)
     sr2 = &in2->srcDef->outFlo;
     if(sr1->bands != sr2->bands)
       MatchError(flo,ped, return(FALSE));
+    for (b = 0; b < sr1->bands; b++) {
+	if ((bmask & (1<<b)) == 0) continue;
+	if (sr1->format[b].class != sr2->format[b].class ||
+	    IsConstrained(sr1->format[b].class) && 
+	    sr1->format[b].levels != sr2->format[b].levels)
+	    MatchError(flo,ped, return(FALSE));
+    }
     in2->bands = sr2->bands;
   } else
     sr2 = NULL;
@@ -190,7 +204,8 @@ static Bool PrepArith(flo,ped)
   if(raw->domainPhototag) {
     ind = &ped->inFloLst[ped->inCnt-1];
     dom = &ind->srcDef->outFlo;
-    if((ind->bands = dom->bands) != 1)
+    if(IsntDomain(dom->format[0].class) || 
+       (ind->bands = dom->bands) != 1)
       DomainError(flo,ped,raw->domainPhototag, return(FALSE));
     ind->format[0] = dom->format[0];
   } else

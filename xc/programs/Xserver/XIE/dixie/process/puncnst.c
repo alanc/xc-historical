@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: puncnst.c,v 1.1 93/10/26 10:00:39 rws Exp $ */
 /**** module puncnst.c ****/
 /******************************************************************************
 				NOTICE
@@ -120,13 +120,13 @@ peDefPtr MakeUnconstrain(flo,tag,pe)
   /*
    * copy the client element parameters (swap if necessary)
    */
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
     cpswaps(stuff->src, raw->src);
   }
   else
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloUnconstrain));
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloUnconstrain));
   /*
    * assign phototags to the inFlo
    */
@@ -153,7 +153,7 @@ static Bool PrepUnconstrain(flo,ped)
   dst->bands = inf->bands = src->bands;
   for(b = 0; b < dst->bands; b++) {
 	/* All band formats should be the same but check anyway */
-	if (!IsCanonic(src->format[b].class))
+	if (IsntCanonic(src->format[b].class))
 		MatchError(flo, ped, return(FALSE));
 
 	/* First, copy everything over */

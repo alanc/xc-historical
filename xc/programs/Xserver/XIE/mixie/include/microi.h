@@ -1,5 +1,5 @@
-/* $XConsortium$ */
-/**** module icroi.h ****/
+/* $XConsortium: microi.h,v 1.1 93/10/26 09:50:34 rws Exp $ */
+/**** module microi.h ****/
 /******************************************************************************
 				NOTICE
                               
@@ -42,29 +42,55 @@ terms and conditions:
      Logic, Inc.
 ******************************************************************************
   
-	icroi.h -- DDXIE MI prototype ImportClientROI definitions
+	microi.h -- DDXIE MI ImportClientROI definitions
   
-	Robert NC Shelley and J. Weida -- AGE Logic, Inc. April 1993
+	Dean Verheiden -- AGE Logic, Inc. August 1993
   
 *****************************************************************************/
 
 #ifndef _XIEH_MICROI
 #define _XIEH_MICROI
 
-/*
- * peTex extension for the ImportClientROI element
- */
-typedef struct _microidef
-{
-	CARD32	nroi;			/* number of rectangles */
-	CARD32	dataLast;			/* index of last of received data */
-	CARD32	size;			/* size of data in bytes */
-	union
-	{
-		CARD8 *data;			/* raw strip data       */
-     	xieTypRectangle *roi;	/* list of rectangles   */
-	} u;
-}
-miCROIDefRec, *miCROIDefPtr;
+
+typedef struct _XieDDXPoint {
+    INT32 x, y;
+} XieDDXPointRec, *XieDDXPointPtr;
+
+typedef struct _XieBox {
+    INT32 x1, y1, x2, y2;
+} XieBoxRec, *XieBoxPtr;
+
+typedef struct _XieRegData {
+    long	size;
+    long 	numRects;
+/*  BoxRec	rects[size];   in memory but not explicitly declared */
+} XieRegDataRec, *XieRegDataPtr;
+
+typedef struct _XieRegion {
+    XieBoxRec 		extents;
+    XieRegDataPtr	data;
+} XieRegionRec, *XieRegionPtr;
+
+#ifdef _XIEC_MIREGION
+
+#define XieNullRegion ((XieRegionPtr)0)
+
+#define XIEREGION_NIL(reg) ((reg)->data && !(reg)->data->numRects)
+#define XIEREGION_NUM_RECTS(reg) ((reg)->data ? (reg)->data->numRects : 1)
+#define XIEREGION_SIZE(reg) ((reg)->data ? (reg)->data->size : 0)
+#define XIEREGION_RECTS(reg) ((reg)->data ? (XieBoxPtr)((reg)->data + 1) \
+			               : &(reg)->extents)
+#define XIEREGION_BOXPTR(reg) ((XieBoxPtr)((reg)->data + 1))
+#define XIEREGION_BOX(reg,i) (&XIEREGION_BOXPTR(reg)[i])
+#define XIEREGION_TOP(reg) XIEREGION_BOX(reg, (reg)->data->numRects)
+#define XIEREGION_END(reg) XIEREGION_BOX(reg, (reg)->data->numRects - 1)
+#define XIEREGION_SZOF(n) (sizeof(XieRegDataRec) + ((n) * sizeof(XieBoxRec)))
+
+#else  /* defined _XIEC_MIREGION */
+
+extern XieRegionPtr miXieRegionCreate();
+extern Bool miXieRegionValidate();
+
+#endif
 
 #endif /* module _XIEH_MICROI */

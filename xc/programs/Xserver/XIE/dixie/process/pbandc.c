@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pbandc.c,v 1.1 93/10/26 10:01:41 rws Exp $ */
 /**** module pbandc.c ****/
 /******************************************************************************
 				NOTICE
@@ -104,7 +104,6 @@ peDefPtr MakeBandCom(flo,tag,pe)
      xieTypPhototag tag;
      xieFlo        *pe;
 {
-  int inputs, index;
   peDefPtr ped;
   inFloPtr inFlo;
   ELEMENT(xieFloBandCombine);
@@ -121,7 +120,7 @@ peDefPtr MakeBandCom(flo,tag,pe)
   /*
    * copy the client element parameters (swap if necessary)
    */
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
     cpswaps(stuff->src1, raw->src1);
@@ -129,11 +128,9 @@ peDefPtr MakeBandCom(flo,tag,pe)
     cpswaps(stuff->src3, raw->src3);
   }
   else
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloBandCombine));
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloBandCombine));
 
-  
-  /*
-   * assign phototags to inFlos
+  /* assign phototags to inFlos
    */
   inFlo = ped->inFloLst;
   inFlo[SRCt1].srcTag = raw->src1;
@@ -151,7 +148,6 @@ static Bool PrepBandCom(flo,ped)
      floDefPtr  flo;
      peDefPtr   ped;
 {
-  xieFloBandCombine *raw = (xieFloBandCombine *)ped->elemRaw;
   inFloPtr  in1 = &ped->inFloLst[SRCt1]; 
   inFloPtr  in2 = &ped->inFloLst[SRCt2]; 
   inFloPtr  in3 = &ped->inFloLst[SRCt3]; 
@@ -163,24 +159,18 @@ static Bool PrepBandCom(flo,ped)
   int b;
 
   /* All inputs must be single band */
-  if (sr1->bands != 1 || sr2->bands != 1 || sr3->bands != 1)
+  if(sr1->bands != 1 || sr2->bands != 1 || sr3->bands != 1)
     MatchError(flo,ped, return(FALSE));
   
   /* All sources must be either constrained or unconstrained */
-  if (IsConstrained(sr1->format[0].class)) {
-    if (!(IsConstrained(sr2->format[0].class) || 
-	!(IsConstrained(sr3->format[0].class))))
-      MatchError(flo,ped, return(FALSE));
-  } else if (sr1->format[0].class == LUT_ARRAY) {
-    if ((sr2->format[0].class != LUT_ARRAY) ||
-	(sr3->format[0].class != LUT_ARRAY) ||
-	(sr2->format[0].width != sr1->format[0].width) ||
-	(sr3->format[0].width != sr1->format[0].width))
+  if(IsConstrained(sr1->format[0].class)) {
+    if(IsntConstrained(sr2->format[0].class) || 
+       IsntConstrained(sr3->format[0].class))
       MatchError(flo,ped, return(FALSE));
   } else {
-    if (sr1->format[0].class != UNCONSTRAINED ||
-	sr2->format[0].class != UNCONSTRAINED ||
-	sr3->format[0].class != UNCONSTRAINED)
+    if(sr1->format[0].class != UNCONSTRAINED ||
+       sr2->format[0].class != UNCONSTRAINED ||
+       sr3->format[0].class != UNCONSTRAINED)
       MatchError(flo,ped, return(FALSE));
   }
   /* grab a copy of the input attributes and propagate them to our output */
@@ -189,6 +179,9 @@ static Bool PrepBandCom(flo,ped)
   for(b = 0; b < xieValMaxBands; ++inf, ++b) {
     dst->format[b] = inf->format[0] = inf->srcDef->outFlo.format[0];
     dst->format[b].band = b;
+    if(IsConstrained(dst->format[b].class) &&
+       dst->format[b].depth > MAX_DEPTH(xieValMaxBands))
+      MatchError(flo,ped, return(FALSE));
   }
   return( TRUE );
 }                               /* end PrepBandCom */

@@ -1,4 +1,4 @@
-/* $XConsortium: micphoto.c,v 1.1 93/07/19 10:16:11 rws Exp $ */
+/* $XConsortium: micphoto.c,v 1.1 93/10/26 09:44:50 rws Exp $ */
 /**** module micphoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -42,9 +42,11 @@ terms and conditions:
      Logic, Inc.
 *****************************************************************************
   
-	micphoto.c -- DDXIE prototype import client photo element
+	micphoto.c -- DDXIE import client photo element
   
-	Robert NC Shelley -- AGE Logic, Inc. April, 1993
+	Robert NC Shelley && Dean Verheiden -- AGE Logic, Inc. April, 1993
+
+	Fax stuff added by Ben Fahy
   
 *****************************************************************************/
 
@@ -79,25 +81,11 @@ terms and conditions:
 #include <element.h>
 #include <texstr.h>
 #include <xiemd.h>
+#include <miuncomp.h>
 
 /*
  * Local Declarations. 
  */
-
-typedef struct _actionparms {
-  void   (*action)();
-  CARD32 Bstride;
-  CARD8	 srcoffset;	/* Number of bytes offset to this pixel's band 	*/
-  CARD8  mask;		/* For obtaining subbyte pixels 	 	*/
-  CARD8  shift;		/* Necessary shift after obtaining pixel 	*/
-  CARD8	 pad;
-} miCPhotoActionRec, *miCPhotoActionPtr;
-
-typedef struct _micphotoun {
-  miCPhotoActionRec aarray[xieValMaxBands];
-  CARD8		    bandMap[xieValMaxBands];
-} miCPhotoUnRec, *miCPhotoUnPtr;
-
 
 /*
  *  routines referenced by other DDXIE modules
@@ -107,87 +95,84 @@ int	miAnalyzeICPhoto();
 /*
  *  routines used internal to this module
  */
-static int ResetICPhoto();
-
 static int CreateICPhotoUn();
-static int InitializeICPhotoUn();
+static int InitializeICPhotoUncomByPlane();
 static int ActivateICPhotoUncomByPlane();
-static int ActivateICPhotoUncomByPixel();
+static int ResetICPhoto();
 static int DestroyICPhotoUn();
 
-static int CreateICPhotoG31D();
-static int InitializeICPhotoG31D();
-static int ActivateICPhotoG31D();
-static int DestroyICPhotoG31D();
+#if XIE_FULL
+static int InitializeICPhotoUncomByPixel();
+static int ActivateICPhotoUncomByPixel();
+#endif
 
-static int CreateICPhotoG32D();
-static int InitializeICPhotoG32D();
-static int ActivateICPhotoG32D();
-static int DestroyICPhotoG32D();
-
+#ifdef optional
+static int CreateICPhotoJPEGLoss();
+static int InitializeICPhotoJPEGLoss();
+static int ActivateICPhotoJPEGLoss();
+static int DestroyICPhotoJPEGLoss();
+#endif
 
 /*
  * routines we need from somewhere else
  */
 
-extern int CreateICPhotoG42D();
-extern int InitializeICPhotoG42D();
-extern int ActivateICPhotoG42D();
-extern int DestroyICPhotoG42D();
+extern int CreateICPhotoFax();
+extern int InitializeICPhotoFax();
+extern int ActivateICPhotoFax();
+extern int ResetICPhotoFax();
+extern int DestroyICPhotoFax();
+
+#if XIE_FULL
+extern int CreateIPhotoJpegBase();
+extern int InitializeICPhotoJpegBase();
+extern int ActivateIPhotoJpegBase();
+extern int ResetIPhotoJpegBase();
+extern int DestroyIPhotoJpegBase();
+#endif /* XIE_FULL */
 
 /*
  * DDXIE ImportClientPhoto entry points
  */
 static ddElemVecRec ICPhotoUncomByPlaneVec = {
   CreateICPhotoUn,
-  InitializeICPhotoUn,
+  InitializeICPhotoUncomByPlane,
   ActivateICPhotoUncomByPlane,
   (xieIntProc)NULL,
   ResetICPhoto,
   DestroyICPhotoUn
   };
 
+#if XIE_FULL
 static ddElemVecRec ICPhotoUncomByPixelVec = {
   CreateICPhotoUn,
-  InitializeICPhotoUn,
+  InitializeICPhotoUncomByPixel,
   ActivateICPhotoUncomByPixel,
   (xieIntProc)NULL,
   ResetICPhoto,
   DestroyICPhotoUn
   };
+#endif /* XIE_FULL */
 
-static ddElemVecRec ICPhotoG31DVec = {
-  CreateICPhotoG31D,
-  InitializeICPhotoG31D,
-  ActivateICPhotoG31D,
+static ddElemVecRec ICPhotoFaxVec = {
+  CreateICPhotoFax,
+  InitializeICPhotoFax,
+  ActivateICPhotoFax,
   (xieIntProc)NULL,
-  ResetICPhoto,
-  DestroyICPhotoG31D
+  ResetICPhotoFax,
+  DestroyICPhotoFax
   };
 
-static ddElemVecRec ICPhotoG32DVec = {
-  CreateICPhotoG32D,
-  InitializeICPhotoG32D,
-  ActivateICPhotoG32D,
+#if XIE_FULL
+static ddElemVecRec ICPhotoJpegBaseVec = {
+  CreateIPhotoJpegBase,
+  InitializeICPhotoJpegBase,	/* only thing not shared with ImportPmap */
+  ActivateIPhotoJpegBase,
   (xieIntProc)NULL,
-  ResetICPhoto,
-  DestroyICPhotoG32D
+  ResetIPhotoJpegBase,
+  DestroyIPhotoJpegBase
   };
-
-static ddElemVecRec ICPhotoG42DVec = {
-  CreateICPhotoG42D,
-  InitializeICPhotoG42D,
-  ActivateICPhotoG42D,
-  (xieIntProc)NULL,
-  ResetICPhoto,
-  DestroyICPhotoG42D
-  };
-
-/* Bit reversal routine for single band uncompressed bitonal images */
-static void reverse_bits(), pass_bits();
-
-/* Action routines used by Triple band by pixel decoding */
-static void StoB(), StoP(), StosP(), SbtoB(), Sbtob();
+#endif /* XIE_FULL */
 
 /*------------------------------------------------------------------------
 ------------------- see if we can handle this element --------------------
@@ -196,53 +181,483 @@ int miAnalyzeICPhoto(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  xieFloImportClientPhoto *raw = (xieFloImportClientPhoto *) ped->elemRaw;
+  xieFloImportClientPhoto *raw = (xieFloImportClientPhoto *)ped->elemRaw;
   
   switch(raw->decodeTechnique) {
   case xieValDecodeUncompressedSingle:
-    if(ped->inFloLst[IMPORT].format[0].stride !=  1 &&
-       ped->inFloLst[IMPORT].format[0].stride !=  8 &&
-       ped->inFloLst[IMPORT].format[0].stride != 16)
-      ImplementationError(flo,ped, return(FALSE));
     ped->ddVec = ICPhotoUncomByPlaneVec;
     break;
     
+#if XIE_FULL
   case xieValDecodeUncompressedTriple:
 
-    switch(((xieTecDecodeUncompressedTriple *) &raw[1])->interleave) {
-    case xieValBandByPlane:
-      {	int b;
-	
-	for(b = 0; b < xieValMaxBands; ++b)
-	  if(ped->inFloLst[IMPORT].format[b].stride !=  1 &&
-	     ped->inFloLst[IMPORT].format[b].stride !=  8 &&
-	     ped->inFloLst[IMPORT].format[b].stride != 16 )
-	    ImplementationError(flo,ped, return(FALSE));
+    if ((((xieTecDecodeUncompressedTriple *)&raw[1])->interleave) == 
+							xieValBandByPlane) {
 	ped->ddVec = ICPhotoUncomByPlaneVec;
-      }
-    break;
-
-    case xieValBandByPixel:
-      if(ped->inFloLst[IMPORT].format[0].stride !=  8  &&
-	 ped->inFloLst[IMPORT].format[0].stride != 16  &&
-	 ped->inFloLst[IMPORT].format[0].stride != 24  &&
-	 ped->inFloLst[IMPORT].format[0].stride != 32 )
-	ImplementationError(flo,ped, return(FALSE));
+    } else {  /* xieValBandByPixel */
       ped->ddVec = ICPhotoUncomByPixelVec;
       break;
     }
     break;
+
+#endif /* XIE_FULL */
+
   case xieValDecodeG31D:
   case xieValDecodeG32D:
   case xieValDecodeG42D:
-    ped->ddVec = ICPhotoG42DVec;
+  case xieValDecodeTIFF2:
+  case xieValDecodeTIFFPackBits:
+    ped->ddVec = ICPhotoFaxVec;
     break;
-    
+
+#if XIE_FULL
+  case xieValDecodeJPEGBaseline:
+    ped->ddVec = ICPhotoJpegBaseVec;
+    break;
+#endif /* XIE_FULL */
+
   default:
     ImplementationError(flo,ped, return(FALSE));
   }
   return(TRUE);
 }                               /* end miAnalyzeICPhoto */
+
+
+/*------------------------------------------------------------------------
+---------------------------- create peTex . . . --------------------------
+------------------------------------------------------------------------*/
+static int CreateICPhotoUn(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  /* attach an execution context to the photo element definition */
+  return( MakePETex(flo, ped, xieValMaxBands * sizeof(miUncompRec), 
+			      NO_SYNC, NO_SYNC) );
+}                               /* end CreateICPhotoUn */
+
+/*------------------------------------------------------------------------
+---------------------------- initialize peTex . . . ----------------------
+------------------------------------------------------------------------*/
+static int InitializeICPhotoUncomByPlane(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  xieFloImportClientPhoto *raw = (xieFloImportClientPhoto *)ped->elemRaw;
+  peTexPtr                 pet = ped->peTex;
+  miUncompPtr              pvt = (miUncompPtr)pet->private;
+  CARD32	        nbands = ped->outFlo.bands,b,s;
+  formatPtr                inf = ped->inFloLst[IMPORT].format;
+  xieTypOrientation pixelOrder, fillOrder;
+  CARD8 *ppad;
+  
+  if (nbands == 1) {
+    xieTecDecodeUncompressedSingle *tec = ((xieTecDecodeUncompressedSingle*)
+					   &raw[1]);
+    pixelOrder   = tec->pixelOrder;
+    fillOrder    = tec->fillOrder;
+    pvt->bandMap = 0;
+    ppad         = &tec->leftPad;
+  } else {
+    xieTecDecodeUncompressedTriple *tec = ((xieTecDecodeUncompressedTriple*)
+					   &raw[1]);
+    pixelOrder = tec->pixelOrder;
+    fillOrder  = tec->fillOrder;
+    ppad       = tec->leftPad;
+    if (tec->bandOrder == xieValLSFirst) 
+      for(b = 0; b < xieValMaxBands; ++b) 
+	pvt[b].bandMap = b;
+    else 
+      for(s = 0, b = xieValMaxBands; b--; ++s)
+	pvt[s].bandMap = b;
+  }
+  
+  for (b = 0; b < nbands; b++, pvt++, ppad++, inf++) {
+    pvt->bitOff =  pvt->leftPad = *ppad;
+    if (inf->depth == 1) {  
+#if (IMAGE_BYTE_ORDER == MSBFirst)
+      if (pvt->leftPad & 7 || inf->stride != 1) {
+	   pvt->action = (fillOrder == xieValMSFirst) ? CPextractstreambits:
+						   CPextractswappedstreambits;
+      } else {
+      	   pvt->action = (fillOrder == xieValMSFirst) ? CPpass_bits : 
+						        CPreverse_bits;
+      }
+#else
+      if (pvt->leftPad & 7 || inf->stride != 1) {
+	   pvt->action = (fillOrder == xieValLSFirst) ? CPextractstreambits:
+						   CPextractswappedstreambits;
+      } else {
+      	   pvt->action = (fillOrder == xieValLSFirst) ? CPpass_bits : 
+						        CPreverse_bits;
+      }
+#endif
+    } else if (inf->depth <= 8) {
+      if (pvt->leftPad & 7 || inf->stride & 7) {
+	/* They chose . . . poorly */
+	if (pixelOrder == xieValMSFirst) {
+	  if(fillOrder == xieValMSFirst)
+	    pvt->action = MMUBtoB;
+	  else
+	    pvt->action = MLUBtoB;
+	} else {
+	  if(fillOrder == xieValMSFirst)
+	    pvt->action = LMUBtoB;
+	  else
+	    pvt->action = LLUBtoB;
+	}
+      } else {
+	/* They chose wisely */
+	pvt->action = CPpass_bytes; 
+      }
+    } else if (inf->depth <= 16) {
+      if (pvt->leftPad & 15 || inf->stride & 15) {
+	/* They chose . . . poorly */
+	if (pixelOrder == xieValMSFirst) {
+	  if(fillOrder == xieValMSFirst)
+	    pvt->action = MMUPtoP;
+	  else
+	    pvt->action = MLUPtoP;
+	} else {
+	  if(fillOrder == xieValMSFirst)
+	    pvt->action = LMUPtoP;
+	  else
+	    pvt->action = LLUPtoP;
+	}
+      } else {
+	/* They chose wisely */
+#if (IMAGE_BYTE_ORDER == MSBFirst)
+	pvt->action = (fillOrder==xieValMSFirst) ? CPpass_pairs : CPswap_pairs;
+#else
+	pvt->action = (fillOrder==xieValLSFirst) ? CPpass_pairs : CPswap_pairs;
+#endif
+      }
+    } else if (inf->depth <= 24) {
+      if (pvt->leftPad & 31 || inf->stride & 31) {
+	/* They chose . . . poorly */
+	if (pixelOrder == xieValMSFirst) {
+	  if(fillOrder == xieValMSFirst)
+	    pvt->action = MMUQtoQ;
+	  else
+	    pvt->action = MLUQtoQ;
+	} else {
+	  if(fillOrder == xieValMSFirst)
+	    pvt->action = LMUQtoQ;
+	  else
+	    pvt->action = LLUQtoQ;
+	}
+      } else {
+	/* They chose wisely */
+#if (IMAGE_BYTE_ORDER == MSBFirst)
+	pvt->action = (fillOrder==xieValMSFirst) ? CPpass_quads : CPswap_quads;
+#else
+	pvt->action = (fillOrder==xieValLSFirst) ? CPpass_quads : CPswap_quads;
+#endif
+      }
+    } else {
+      ImplementationError(flo,ped, return(FALSE));
+    }
+  }
+  return(InitReceptors(flo, ped, NO_DATAMAP, 1) &&
+	 InitEmitter(flo, ped, NO_DATAMAP, NO_INPLACE));
+}                               /* end InitializeICPhotoUnSingle */
+
+
+/*------------------------------------------------------------------------
+----------------------------- crank some data ----------------------------
+------------------------------------------------------------------------*/
+static int ActivateICPhotoUncomByPlane(flo,ped,pet)
+     floDefPtr flo;
+     peDefPtr  ped;
+     peTexPtr  pet;
+{
+  xieFloImportClientPhoto *raw = (xieFloImportClientPhoto *)ped->elemRaw;
+  miUncompPtr              pvt = (miUncompPtr)pet->private;
+  CARD32 	        nbands = ped->inFloLst[IMPORT].bands;
+  bandPtr                 sbnd = pet->receptor[IMPORT].band, dbnd;
+  CARD32 oldslen, nextslen, b;
+  void *src = (void *)NULL, *dst = (void *)NULL;
+
+  for(b = 0; b < nbands; ++sbnd, ++b, pvt++) {
+    void (*action)() = pvt->action;
+
+    nextslen = pvt->bitOff + sbnd->format->pitch + 7 >> 3;
+    dbnd = &pet->emitter[pvt->bandMap];
+    if(pet->scheduled & 1<<b &&
+       (src = GetSrcBytes(void,flo,pet,sbnd,sbnd->current,nextslen,KEEP)) &&
+       (dst = GetCurrentDst(void,flo,pet,dbnd))) {
+      do {
+
+	(*action)(src, dst, sbnd->format->width, pvt->bitOff,
+					  (CARD32)sbnd->format->depth,
+					  sbnd->format->stride);
+
+        pvt->bitOff = pvt->bitOff + sbnd->format->pitch & 7;	/* Set next */
+	oldslen = (pvt->bitOff) ? nextslen - 1 : nextslen;
+	nextslen = pvt->bitOff + sbnd->format->pitch + 7 >> 3;
+	src = GetSrcBytes(void,flo,pet,sbnd,sbnd->current+oldslen, nextslen,
+									KEEP);
+	dst = GetNextDst(void,flo,pet,dbnd,FLUSH);
+      } while(src && dst);
+    }
+    
+    if(!src && sbnd->final && dbnd->current < dbnd->format->height) {
+      /*
+       * the client lied about the image size!
+       */
+      if(raw->notify)
+	SendDecodeNotifyEvent(flo, ped, dbnd->band,
+			      xieValDecodeUncompressedSingle,
+			      dbnd->format->width, dbnd->current, TRUE);
+      /* 
+       * If the client didn't send enough data, we could zero-fill the
+       * remaining lines.  Since we sent the "aborted" status, we won't
+       * bother (the protocol offers both choices).
+       */
+      ValueError(flo,ped,dbnd->format->height, return(FALSE));
+    }
+    if (!src || dbnd->final) {
+      /* free whatever we've used so far and
+       * set the threshold to one byte more than whatever is left over
+       */
+      FreeData(flo, pet, sbnd, sbnd->final ? sbnd->maxGlobal : sbnd->current);
+      SetBandThreshold(sbnd, sbnd->available + 1);
+    }
+  }
+  return(TRUE);
+}                               /* end ActivateICPhotoUncomByPlane */
+
+
+#if XIE_FULL
+/*------------------------------------------------------------------------
+---------------------------- initialize peTex . . . ----------------------
+------------------------------------------------------------------------*/
+static int InitializeICPhotoUncomByPixel(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  xieFloImportClientPhoto *raw = (xieFloImportClientPhoto *)ped->elemRaw;
+  peTexPtr                 pet = ped->peTex;
+  miUncompPtr              pvt = (miUncompPtr)pet->private;
+  bandPtr                 sbnd = &ped->peTex->receptor[IMPORT].band[0];
+  CARD32               sstride = sbnd->format->stride>>3;
+  xieTecDecodeUncompressedTriple *tec = ((xieTecDecodeUncompressedTriple*)
+					 &raw[1]);
+  CARD8                leftPad =  tec->leftPad[0]>>3;
+  CARD32 depth1, depth2, depth3;
+  int s, d;
+  
+  pvt->unaligned = FALSE;	/* Hope for the best */
+  
+  if(tec->bandOrder == xieValLSFirst)
+    for(d = 0; d < xieValMaxBands; ++d)
+      pvt[d].bandMap = d;
+  else 
+    for(s = 0, d = xieValMaxBands; d--; ++s)
+      pvt[s].bandMap = d;
+  
+  depth1 = pet->emitter[pvt[0].bandMap].format->depth;
+  depth2 = pet->emitter[pvt[1].bandMap].format->depth;
+  depth3 = pet->emitter[pvt[2].bandMap].format->depth;
+  
+  pvt->bitOff = pvt->leftPad = tec->leftPad[0];
+  
+  /* See if data is nicely aligned */
+  if (!(tec->leftPad[0] & 7) && !(sbnd->format->stride & 7)) {
+    if (depth1 == 16 && depth2 == 16 && depth3 == 16) {
+#if (IMAGE_BYTE_ORDER == MSBFirst)
+      void (*pa)() = (tec->pixelOrder == xieValMSFirst) ? StoP  : StosP;
+#else
+      void (*pa)() = (tec->pixelOrder == xieValMSFirst) ? StosP : StoP;
+#endif
+      for(s = 0; s < xieValMaxBands; s++, pvt++) {
+	pvt->action    = pa;
+	pvt->Bstride   = sstride;
+	pvt->srcoffset = s + leftPad;
+	pvt->mask      = 0; /* Unused */
+	pvt->shift     = 0; /* Unused */
+      }
+    } else if (depth1 == 8 && depth2 == 8 && depth3 == 8) {
+      for(s = 0; s < xieValMaxBands; s++, pvt++) {
+	pvt->action    = StoB;
+	pvt->Bstride   = sstride;
+	pvt->srcoffset = s + leftPad;
+	pvt->mask      = 0; /* Unused */
+	pvt->shift     = 0; /* Unused */
+      }
+    } else if (depth1 == 4 && depth2 == 4 && depth3 == 4) {
+      if (tec->fillOrder == xieValMSFirst) {
+	pvt->action    = SbtoB;
+	pvt->Bstride   = sstride;
+	pvt->srcoffset = leftPad;
+	pvt->mask      = 0xf0; 
+	(pvt++)->shift = 4; 
+	pvt->action    = SbtoB;
+	pvt->Bstride   = sstride;
+	pvt->srcoffset = leftPad;
+	pvt->mask      = 0x0f; 
+	(pvt++)->shift = 0; 
+	pvt->action    = SbtoB;
+	pvt->Bstride   = sstride;
+	pvt->srcoffset = 1 + leftPad;
+	pvt->mask      = 0xf0; 
+	pvt->shift     = 4; 
+      } else { /* xieValLSFirst */
+	pvt->action    = SbtoB;
+	pvt->Bstride   = sstride;
+	pvt->srcoffset = leftPad;
+	pvt->mask      = 0x0f; 
+	(pvt++)->shift = 0; 
+	pvt->action    = SbtoB;
+	pvt->Bstride   = sstride;
+	pvt->srcoffset = leftPad;
+	pvt->mask      = 0xf0; 
+	(pvt++)->shift = 4; 
+	pvt->action    = SbtoB;
+	pvt->Bstride   = sstride;
+	pvt->srcoffset = 1 + leftPad;
+	pvt->mask      = 0x0f; 
+	pvt->shift     = 0; 
+      }
+    } else if (depth1 + depth2 + depth3 <= 8) {
+      CARD8 ones = ~0,smask1,smask2,smask3,shift1,shift2,shift3;
+      if (tec->fillOrder == xieValMSFirst) {
+	smask1 = ~(ones>>depth1);
+	smask2 = ~(ones>>(depth1 + depth2) | smask1);
+	smask3 = ~(ones>>(depth1 + depth2 + depth3) | smask1 | smask2);
+	shift1 = 8 - depth1;
+	shift2 = 8 - (depth1 + depth2);
+	shift3 = 8 - (depth1 + depth2 + depth3);
+      } else { /* fillOrder == xieValLSFirst */
+	smask3 = ~(ones<<depth3);
+	smask2 = ~(ones<<(depth2 + depth3) | smask3);
+	smask1 = ~(ones<<(depth1 + depth2 + depth3) | smask2 | smask3);
+	shift3 = 0;
+	shift2 = depth3;
+	shift1 = depth2 + depth3;
+      }
+      pvt->action    = (depth1 > 1) ? SbtoB : Sbtob;
+      pvt->Bstride   = sstride;
+      pvt->srcoffset = leftPad;
+      pvt->mask      = smask1;
+      (pvt++)->shift = shift1;
+      pvt->action    = (depth2 > 1) ? SbtoB : Sbtob;
+      pvt->Bstride   = sstride;
+      pvt->srcoffset = leftPad;
+      pvt->mask      = smask2;
+      (pvt++)->shift = shift2; 
+      pvt->action    = (depth3 > 1) ? SbtoB : Sbtob;
+      pvt->Bstride   = sstride;
+      pvt->srcoffset = leftPad;
+      pvt->mask      = smask3;
+      pvt->shift     = shift3; 
+    } else {
+      pvt->unaligned = TRUE;
+    }
+  } else {
+    pvt->unaligned = TRUE;
+  }
+  
+  /* Wasn't nicely aligned, do it the hard way */
+  if (((miUncompPtr)pet->private)->unaligned) {
+    pvt->action = ExtractTripleFuncs
+      [(tec->pixelOrder == xieValLSFirst) ? 0 : 1]
+	[(tec->fillOrder  == xieValLSFirst) ? 0 : 1]
+	  [(depth1 <= 8) ? 0 : 1] 
+	    [(depth2 <= 8) ? 0 : 1] 
+	      [(depth3 <= 8) ? 0 : 1];
+  }
+  return(InitReceptors(flo, ped, NO_DATAMAP, 1) &&
+	 InitEmitter(flo, ped, NO_DATAMAP, NO_INPLACE));
+}                               /* end InitializeICPhotoUnTriple */
+
+/*------------------------------------------------------------------------
+----------------------------- crank some data ----------------------------
+------------------------------------------------------------------------*/
+static int ActivateICPhotoUncomByPixel(flo,ped,pet)
+     floDefPtr flo;
+     peDefPtr  ped;
+     peTexPtr  pet;
+{
+  xieFloImportClientPhoto *raw = (xieFloImportClientPhoto *)ped->elemRaw;
+  miUncompPtr pvt = (miUncompPtr) (pet->private);
+  bandPtr    sbnd = &pet->receptor[IMPORT].band[0];
+  bandPtr     db0 = &pet->emitter[pvt[0].bandMap];
+  bandPtr     db1 = &pet->emitter[pvt[1].bandMap];
+  bandPtr     db2 = &pet->emitter[pvt[2].bandMap];
+  CARD32    width = db0->format->width;
+  void       *dp0 = NULL, *dp1 = NULL, *dp2 = NULL;
+  BytePixel  *src;
+  
+  if (pvt->unaligned) {
+    CARD32 oldslen, nextslen;
+    void (*action)() = pvt->action;
+    CARD32 depth0 = db0->format->depth;
+    CARD32 depth1 = db1->format->depth;
+    CARD32 depth2 = db2->format->depth;
+    CARD32 stride = sbnd->format->stride;
+    
+    nextslen = pvt->bitOff + sbnd->format->pitch + 7 >> 3;
+    if((src = GetSrcBytes(BytePixel,flo,pet,sbnd,sbnd->current,nextslen,KEEP))
+       && (dp0 = GetCurrentDst(void,flo,pet,db0)) &&
+       (dp1 = GetCurrentDst(void,flo,pet,db1)) && 
+       (dp2 = GetCurrentDst(void,flo,pet,db2)))
+      do {
+	
+	(*action)(src,dp0,dp1,dp2,width,pvt->bitOff,depth0,depth1,depth2, 
+		  stride);
+	
+	pvt->bitOff = pvt->bitOff + sbnd->format->pitch & 7;	/* Set next */
+	oldslen = (pvt->bitOff) ? nextslen - 1 : nextslen;
+	nextslen = pvt->bitOff + sbnd->format->pitch + 7 >> 3;
+	src = GetSrcBytes(BytePixel,flo,pet,sbnd,sbnd->current+oldslen,
+			  nextslen,KEEP);
+	dp0 = GetNextDst(void,flo,pet,db0,FLUSH);
+	dp1 = GetNextDst(void,flo,pet,db1,FLUSH);
+	dp2 = GetNextDst(void,flo,pet,db2,FLUSH);
+      } while(src && dp0 && dp1 && dp2);
+  } else {
+    CARD32   slen = sbnd->format->pitch+7>>3;
+    if((src = GetSrcBytes(BytePixel,flo,pet,sbnd,sbnd->current,slen,KEEP)) && 
+       (dp0 = GetCurrentDst(void,flo,pet,db0)) &&
+       (dp1 = GetCurrentDst(void,flo,pet,db1)) && 
+       (dp2 = GetCurrentDst(void,flo,pet,db2)))
+      do {
+	
+	(*pvt[0].action)(src,dp0,width,&pvt[0]);
+	(*pvt[1].action)(src,dp1,width,&pvt[1]);
+	(*pvt[2].action)(src,dp2,width,&pvt[2]);
+	
+	src =GetSrcBytes(BytePixel,flo,pet,sbnd,sbnd->current+slen,slen,KEEP);
+	dp0 = GetNextDst(void,flo,pet,db0,FLUSH);
+	dp1 = GetNextDst(void,flo,pet,db1,FLUSH);
+	dp2 = GetNextDst(void,flo,pet,db2,FLUSH);
+      } while(src && dp0 && dp1 && dp2);
+  }
+  if(!src && sbnd->final && db0->current < db0->format->height) {
+    /*
+     * the client lied about the image size!
+     */
+    if(raw->notify)
+      SendDecodeNotifyEvent(flo, ped, 0, xieValDecodeUncompressedTriple,
+			    db0->format->width, db0->current, TRUE);
+    /* 
+     * If the client didn't send enough data, we could zero-fill the
+     * remaining lines.  Since we sent the "aborted" status, we won't
+     * bother (the protocol offers both choices).
+     */
+    ValueError(flo,ped,db0->format->height, return(FALSE));
+  }
+  if (!src || db0->final) {
+    /* free whatever we've used so far and
+     * set the threshold to one byte more than whatever is left over
+     */
+    FreeData(flo, pet, sbnd, sbnd->final ? sbnd->maxGlobal : sbnd->current);
+    SetBandThreshold(sbnd, sbnd->available + 1);
+  }
+  return(TRUE);
+}                               /* end ActivateICPhotoUncomByPixel */
+#endif /* XIE_FULL */
+
 
 /*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
@@ -256,165 +671,6 @@ static int ResetICPhoto(flo,ped)
   
   return(TRUE);
 }                               /* end ResetICPhoto */
-
-
-/*------------------------------------------------------------------------
----------------------------- create peTex . . . --------------------------
-------------------------------------------------------------------------*/
-static int CreateICPhotoUn(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  /* attach an execution context to the photo element definition */
-  return( MakePETex(flo, ped, sizeof(miCPhotoUnRec), NO_SYNC, NO_SYNC) );
-}                               /* end CreateICPhotoUn */
-
-/*------------------------------------------------------------------------
----------------------------- initialize peTex . . . ----------------------
-------------------------------------------------------------------------*/
-static int InitializeICPhotoUn(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  peTexPtr pet = ped->peTex;
-  xieFloImportClientPhoto *raw = (xieFloImportClientPhoto *)ped->elemRaw;
-  miCPhotoUnPtr pvt = (miCPhotoUnPtr) (ped->peTex->private);
-
-  if(raw->class == xieValSingleBand) {
-    xieTecDecodeUncompressedSingle *tec = 
-  			        (xieTecDecodeUncompressedSingle *)&raw[1];
-    pvt->bandMap[0] = 0;
-#if (BITMAP_BIT_ORDER == MSBFirst)
-    if (tec->fillOrder == xieValLSFirst && 
-			pet->emitter[pvt->bandMap[0]].format->depth == 1)
-    	pvt->aarray[0].action = reverse_bits;
-    else
-    	pvt->aarray[0].action = pass_bits;
-#else
-    if (tec->fillOrder == xieValMSFirst && 
-			pet->emitter[pvt->bandMap[0]].format->depth == 1)
-    	pvt->aarray[0].action = reverse_bits;
-    else
-    	pvt->aarray[0].action = pass_bits;
-#endif
-  } else {
-    int s, d;
-    xieTecDecodeUncompressedTriple *tec = 
-  			        (xieTecDecodeUncompressedTriple *)&raw[1];
-    /* XXX	should this match the order of the R, G, and B masks for True
-     *		and Direct (and some Static) Color Visauls?  (probably not)
-     */
-    if(((xieTecDecodeUncompressedTriple*)&raw[1])->bandOrder == xieValLSFirst)
-      for(d = 0; d < xieValMaxBands; ++d)
-	pvt->bandMap[d] = d;
-    else 
-      for(s = 0, d = xieValMaxBands; d--; ++s)
-	pvt->bandMap[s] = d;
-
-    /* If interleaved data coming in, set up action structure */
-    if(tec->interleave == xieValBandByPixel) {
-	miCPhotoActionPtr aa = &(pvt->aarray[0]);
-  	bandPtr         sbnd = &ped->peTex->receptor[IMPORT].band[0];
-  	CARD32       sstride = sbnd->format->stride>>3;
-	CARD8        leftPad = tec->leftPad[0]>>3;
-  	CARD32 depth1 = pet->emitter[pvt->bandMap[0]].format->depth;
-  	CARD32 depth2 = pet->emitter[pvt->bandMap[1]].format->depth;
-  	CARD32 depth3 = pet->emitter[pvt->bandMap[2]].format->depth;
-	
-	if (depth1 == 16 && depth2 == 16 && depth3 == 16) {
-#if (BITMAP_BIT_ORDER == MSBFirst)
-	    void (*pa)() = (tec->pixelOrder == xieValMSFirst) ? StoP : StosP;
-#else
-	    void (*pa)() = (tec->pixelOrder == xieValMSFirst) ? StosP : StoP;
-#endif
-            for(s = 0; s < xieValMaxBands; s++, aa++) {
-	        aa->action    = pa;
-  	        aa->Bstride   = sstride;
-	        aa->srcoffset = s + leftPad;
-	        aa->mask      = 0; /* Unused */
-	        aa->shift     = 0; /* Unused */
-	    }
-	} else if (depth1 == 8 && depth2 == 8 && depth3 == 8) {
-            for(s = 0; s < xieValMaxBands; s++, aa++) {
-	        aa->action    = StoB;
-  	        aa->Bstride   = sstride;
-	        aa->srcoffset = s + leftPad;
-	        aa->mask      = 0; /* Unused */
-	        aa->shift     = 0; /* Unused */
-	    }
-	} else if (depth1 == 4 && depth2 == 4 && depth3 == 4) {
-	    if (tec->fillOrder == xieValMSFirst) {
-	        aa->action    = SbtoB;
-  	        aa->Bstride   = sstride;
-	        aa->srcoffset = leftPad;
-	        aa->mask      = 0xf0; 
-	        (aa++)->shift = 4; 
-	        aa->action    = SbtoB;
-  	        aa->Bstride   = sstride;
-	        aa->srcoffset = leftPad;
-	        aa->mask      = 0x0f; 
-	        (aa++)->shift = 0; 
-	        aa->action    = SbtoB;
-  	        aa->Bstride   = sstride;
-	        aa->srcoffset = 1 + leftPad;
-	        aa->mask      = 0xf0; 
-	        aa->shift     = 4; 
-	    } else { /* xieValLSFirst */
-	        aa->action    = SbtoB;
-  	        aa->Bstride   = sstride;
-	        aa->srcoffset = leftPad;
-	        aa->mask      = 0x0f; 
-	        (aa++)->shift = 0; 
-	        aa->action    = SbtoB;
-  	        aa->Bstride   = sstride;
-	        aa->srcoffset = leftPad;
-	        aa->mask      = 0xf0; 
-	        (aa++)->shift = 4; 
-	        aa->action    = SbtoB;
-  	        aa->Bstride   = sstride;
-	        aa->srcoffset = 1 + leftPad;
-	        aa->mask      = 0x0f; 
-	        aa->shift     = 0; 
-	    }
-	} else if (depth1 + depth2 + depth3 <= 8) {
-	    CARD8 ones = 0xff,smask1,smask2,smask3,shift1,shift2,shift3;
-	    if (tec->fillOrder == xieValMSFirst) {
-	        smask1 = ~(ones>>depth1);
-	        smask2 = ~(ones>>(depth1 + depth2) | smask1);
-	        smask3 = ~(ones>>(depth1 + depth2 + depth3) | smask1 | smask2);
-	        shift1 = 8 - depth1;
-	    	shift2 = 8 - (depth1 + depth2);
-	    	shift3 = 8 - (depth1 + depth2 + depth3);
-	    } else { /* fillOrder == xieValLSFirst */
-		smask3 = ~(ones<<depth3);
-		smask2 = ~(ones<<(depth2 + depth3) | smask3);
-		smask1 = ~(ones<<(depth1 + depth2 + depth3) | smask2 | smask3);
-		shift3 = 0;
-		shift2 = depth3;
-		shift1 = depth2 + depth3;
-	    }
-	    aa->action    = (depth1 > 1) ? SbtoB : Sbtob;
-  	    aa->Bstride   = sstride;
-	    aa->srcoffset = leftPad;
-	    aa->mask      = smask1;
-	    (aa++)->shift = shift1;
-	    aa->action    = (depth2 > 1) ? SbtoB : Sbtob;
-  	    aa->Bstride   = sstride;
-	    aa->srcoffset = leftPad;
-	    aa->mask      = smask2;
-	    (aa++)->shift = shift2; 
-	    aa->action    = (depth3 > 1) ? SbtoB : Sbtob;
-  	    aa->Bstride   = sstride;
-	    aa->srcoffset = leftPad;
-	    aa->mask      = smask3;
-	    aa->shift     = shift3; 
-	} else 
-      	    ImplementationError(flo,ped, return(FALSE));
-    }
-  }
-  return(InitReceptors(flo, ped, NO_DATAMAP, 1) &&
-	 InitEmitter(flo, ped, NO_DATAMAP, NO_INPLACE));
-}                               /* end InitializeICPhotoUn */
 
 /*------------------------------------------------------------------------
 -------------------------- get rid of this element -----------------------
@@ -437,460 +693,4 @@ static int DestroyICPhotoUn(flo,ped)
   return(TRUE);
 }                               /* end DestroyICPhotoUn */
 
-
-/*------------------------------------------------------------------------
------------------------------ crank some data ----------------------------
-------------------------------------------------------------------------*/
-static int ActivateICPhotoUncomByPlane(flo,ped,pet)
-     floDefPtr flo;
-     peDefPtr  ped;
-     peTexPtr  pet;
-{
-  miCPhotoUnPtr pvt = (miCPhotoUnPtr) (pet->private);
-  bandPtr  dbnd;
-  bandPtr  sbnd = pet->receptor[IMPORT].band;
-  CARD32 nbands = ped->inFloLst[IMPORT].bands;
-  CARD32  slen, b;
-  void *src, *dst;
-
-  for(b = 0; b < nbands; ++sbnd, ++b) {
-    void (*action)() = pvt->aarray[0].action;
-
-    slen = sbnd->format->pitch+7>>3;
-    dbnd = &pet->emitter[pvt->bandMap[b]];
-    if(pet->scheduled & 1<<b &&
-       (src = GetSrcBytes(void,flo,pet,sbnd,sbnd->current,slen,KEEP)) &&
-       (dst = GetCurrentDst(void,flo,pet,dbnd)))
-      do {
-/*
- * XXX for > 8-bit: swapping should happen here (if needed)
- * XXX for < 8-bit: "pixel order within byte" should get fixed here (if needed)
- */
-	(*action)(src, dst, dbnd->pitch);
-
-	src = GetSrcBytes(void,flo,pet,sbnd,sbnd->current+slen,slen,KEEP);
-	dst = GetNextDst(void,flo,pet,dbnd,FLUSH);
-      } while(src && dst);
-    
-    if(!src && sbnd->final || !dst && dbnd->final) {
-      if(dbnd->current != dbnd->format->height) {
-	/*
-	 * the client lied about the image size!
-	 */
-	if(((xieFloImportClientPhoto*)ped->elemRaw)->notify)
-	  SendDecodeNotifyEvent(flo, ped, dbnd->band,
-				xieValDecodeUncompressedSingle,
-				dbnd->format->width, dbnd->current, TRUE);
-	/* 
-	 * If the client didn't send enough data, we could zero-fill the
-	 * remaining lines.  Since we sent the "aborted" status, we won't
-	 * bother (the protocol offers both choices).
-	 */
-	ValueError(flo,ped,dbnd->format->height, return(FALSE));
-      }
-      FreeData(void,flo,pet,sbnd,sbnd->maxGlobal);
-    } else if (!src) {
-      /* free whatever we've used so far and
-       * set the threshold to one byte more than whatever is left over
-       */
-      FreeData(void,flo,pet,sbnd,sbnd->current);
-      SetBandThreshold(sbnd, sbnd->available + 1);
-    }
-  }
-  return(TRUE);
-}                               /* end ActivateICPhotoUncomByPlane */
-
-/*------------------------------------------------------------------------
------------------------------ crank some data ----------------------------
-------------------------------------------------------------------------*/
-static int ActivateICPhotoUncomByPixel(flo,ped,pet)
-     floDefPtr flo;
-     peDefPtr  ped;
-     peTexPtr  pet;
-{
-/* XXX   the following should work for a RGB:332 BytePixels in and 3 separate
- *	 BytePixels out. --- have fun doing all the cases ---
- */
-  miCPhotoUnPtr pvt = (miCPhotoUnPtr) (pet->private);
-  bandPtr  sbnd = &pet->receptor[IMPORT].band[0];
-  bandPtr   db0 = &pet->emitter[pvt->bandMap[0]];
-  bandPtr   db1 = &pet->emitter[pvt->bandMap[1]];
-  bandPtr   db2 = &pet->emitter[pvt->bandMap[2]];
-  CARD32   slen = sbnd->format->pitch+7>>3;
-  CARD32  width = db0->format->width;
-  miCPhotoActionPtr aap1 = &(pvt->aarray[0]);
-  miCPhotoActionPtr aap2 = &(pvt->aarray[1]);
-  miCPhotoActionPtr aap3 = &(pvt->aarray[2]);
-  BytePixel *src, *dp0, *dp1, *dp2;
-
-  if((src = GetSrcBytes(BytePixel,flo,pet,sbnd,sbnd->current,slen,KEEP)) && 
-     (dp0 = GetCurrentDst(BytePixel,flo,pet,db0)) &&
-     (dp1 = GetCurrentDst(BytePixel,flo,pet,db1)) && 
-     (dp2 = GetCurrentDst(BytePixel,flo,pet,db2)))
-    do {
-      /* XXX	this is where you'll need a for loop that walks across the
-       *	line and copies the three sub-parts of each src pixel into
-       *	their respective dst bands
-       */
-      (*aap1->action)(src,dp0,width,aap1);
-      (*aap2->action)(src,dp1,width,aap2);
-      (*aap3->action)(src,dp2,width,aap3);
-
-      src = GetSrcBytes(BytePixel,flo,pet,sbnd,sbnd->current+slen,slen,KEEP);
-      dp0 = GetNextDst(BytePixel,flo,pet,db0,FLUSH);
-      dp1 = GetNextDst(BytePixel,flo,pet,db1,FLUSH);
-      dp2 = GetNextDst(BytePixel,flo,pet,db2,FLUSH);
-    } while(src && dp0 && dp1 && dp2);
-
-  if(!src && sbnd->final || !dp0 && db0->final) {
-    if(db0->current != db0->format->height) {
-      /*
-       * the client lied about the image size!
-       */
-      if(((xieFloImportClientPhoto*)ped->elemRaw)->notify)
-        SendDecodeNotifyEvent(flo, ped, 0, xieValDecodeUncompressedTriple,
-                              db0->format->width, db0->current, TRUE);
-      /* 
-       * If the client didn't send enough data, we could zero-fill the
-       * remaining lines.  Since we sent the "aborted" status, we won't
-       * bother (the protocol offers both choices).
-       */
-      ValueError(flo,ped,db0->format->height, return(FALSE));
-    }
-    FreeData(void,flo,pet,sbnd,sbnd->maxGlobal);
-  } else if (!src) {
-    /* free whatever we've used so far and
-     * set the threshold to one byte more than whatever is left over
-     */
-    FreeData(void,flo,pet,sbnd,sbnd->current);
-    SetBandThreshold(sbnd, sbnd->available + 1);
-  }
-  return(TRUE);
-}                               /* end ActivateICPhotoUncomByPixel */
-
-/*------------------------------------------------------------------------
----------------------------- create peTex . . . --------------------------
-------------------------------------------------------------------------*/
-static int CreateICPhotoG31D(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  /* attach an execution context to the photo element definition */
-  return( MakePETex(flo,ped,0,FALSE,FALSE) );
-}                               /* end CreateICPhoto */
-
-
-/*------------------------------------------------------------------------
----------------------------- initialize peTex . . . ----------------------
-------------------------------------------------------------------------*/
-static int InitializeICPhotoG31D(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  return( InitReceptors(flo,ped,0,1) && InitEmitter(flo,ped,0,-1) );
-}                               /* end InitializeICPhoto */
-
-
-/*------------------------------------------------------------------------
------------------------------ crank some data ----------------------------
-------------------------------------------------------------------------*/
-static int ActivateICPhotoG31D(flo,ped,pet)
-     floDefPtr flo;
-     peDefPtr  ped;
-     peTexPtr  pet;
-{
-  bandPtr   sbnd = &pet->receptor[IMPORT].band[0];
-  bandPtr   dbnd = &pet->emitter[0];
-  CARD32    slen = sbnd->format->pitch+7>>3;
-  BytePixel *src, *dst;
-
-  for(src = GetSrcBytes(BytePixel,flo,pet,sbnd,sbnd->current,slen,FALSE),
-      dst = GetCurrentDst(BytePixel,flo,pet,dbnd);
-      src && dst;
-      src = GetSrcBytes(BytePixel,flo,pet,sbnd,sbnd->current+slen,slen,TRUE),
-      dst = GetNextDst(BytePixel,flo,pet,dbnd,TRUE)) {
-
-    bcopy(src, dst, dbnd->pitch);
-  }
-  /* free what we've used so far */
-  FreeData(BytePixel,flo,pet,sbnd,sbnd->current);
-
-  /* ImportClient elements (i.e. STREAM data) have to tell the scheduler when
-   * they can't go any farther (left over bytes are buffered in the receptor)
-   */
-  return(src != NULL);
-}                               /* end ActivateICPhoto */
-
-
-
-/*------------------------------------------------------------------------
--------------------------- get rid of this element -----------------------
-------------------------------------------------------------------------*/
-static int DestroyICPhotoG31D(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  /* get rid of the peTex structure  */
-  if(ped->peTex)
-    ped->peTex = (peTexPtr) XieFree(ped->peTex);
-
-  /* zap this element's entry point vector */
-  ped->ddVec.create     = (xieIntProc) NULL;
-  ped->ddVec.initialize = (xieIntProc) NULL;
-  ped->ddVec.activate   = (xieIntProc) NULL;
-  ped->ddVec.flush      = (xieIntProc) NULL;
-  ped->ddVec.reset      = (xieIntProc) NULL;
-  ped->ddVec.destroy    = (xieIntProc) NULL;
-
-  return(TRUE);
-}                               /* end DestroyICPhoto */
-
-/*------------------------------------------------------------------------
----------------------------- create peTex . . . --------------------------
-------------------------------------------------------------------------*/
-static int CreateICPhotoG32D(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  /* attach an execution context to the photo element definition */
-  return( MakePETex(flo,ped,0,FALSE,FALSE) );
-}                               /* end CreateICPhoto */
-
-
-/*------------------------------------------------------------------------
----------------------------- initialize peTex . . . ----------------------
-------------------------------------------------------------------------*/
-static int InitializeICPhotoG32D(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  return( InitReceptors(flo,ped,0,1) && InitEmitter(flo,ped,0,-1) );
-}                               /* end InitializeICPhoto */
-
-
-/*------------------------------------------------------------------------
------------------------------ crank some data ----------------------------
-------------------------------------------------------------------------*/
-static int ActivateICPhotoG32D(flo,ped,pet)
-     floDefPtr flo;
-     peDefPtr  ped;
-     peTexPtr  pet;
-{
-  bandPtr   sbnd = &pet->receptor[IMPORT].band[0];
-  bandPtr   dbnd = &pet->emitter[0];
-  CARD32    slen = sbnd->format->pitch+7>>3;
-  BytePixel *src, *dst;
-
-  for(src = GetSrcBytes(BytePixel,flo,pet,sbnd,sbnd->current,slen,FALSE),
-      dst = GetCurrentDst(BytePixel,flo,pet,dbnd);
-      src && dst;
-      src = GetSrcBytes(BytePixel,flo,pet,sbnd,sbnd->current+slen,slen,TRUE),
-      dst = GetNextDst(BytePixel,flo,pet,dbnd,TRUE)) {
-
-    bcopy(src, dst, dbnd->pitch);
-  }
-  /* free what we've used so far */
-  FreeData(BytePixel,flo,pet,sbnd,sbnd->current);
-
-  /* ImportClient elements (i.e. STREAM data) have to tell the scheduler when
-   * they can't go any farther (left over bytes are buffered in the receptor)
-   */
-  return(src != NULL);
-}                               /* end ActivateICPhoto */
-
-
-
-/*------------------------------------------------------------------------
--------------------------- get rid of this element -----------------------
-------------------------------------------------------------------------*/
-static int DestroyICPhotoG32D(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  /* get rid of the peTex structure  */
-  if(ped->peTex)
-    ped->peTex = (peTexPtr) XieFree(ped->peTex);
-
-  /* zap this element's entry point vector */
-  ped->ddVec.create     = (xieIntProc) NULL;
-  ped->ddVec.initialize = (xieIntProc) NULL;
-  ped->ddVec.activate   = (xieIntProc) NULL;
-  ped->ddVec.flush      = (xieIntProc) NULL;
-  ped->ddVec.reset      = (xieIntProc) NULL;
-  ped->ddVec.destroy    = (xieIntProc) NULL;
-
-  return(TRUE);
-}                               /* end DestroyICPhoto */
-
-/*------------------------------------------------------------------------
----------------------------- create peTex . . . --------------------------
-------------------------------------------------------------------------*/
-static int CreateICPhotoTIFF2(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  /* attach an execution context to the photo element definition */
-  return( MakePETex(flo,ped,0,FALSE,FALSE) );
-}                               /* end CreateICPhoto */
-
-
-/*------------------------------------------------------------------------
----------------------------- initialize peTex . . . ----------------------
-------------------------------------------------------------------------*/
-static int InitializeICPhotoTIFF2(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  return( InitReceptors(flo,ped,0,1) && InitEmitter(flo,ped,0,-1) );
-}                               /* end InitializeICPhoto */
-
-
-/*------------------------------------------------------------------------
------------------------------ crank some data ----------------------------
-------------------------------------------------------------------------*/
-static int ActivateICPhotoTIFF2(flo,ped,pet)
-     floDefPtr flo;
-     peDefPtr  ped;
-     peTexPtr  pet;
-{
-  bandPtr   sbnd = &pet->receptor[IMPORT].band[0];
-  bandPtr   dbnd = &pet->emitter[0];
-  CARD32    slen = sbnd->format->pitch+7>>3;
-  BytePixel *src, *dst;
-
-  for(src = GetSrcBytes(BytePixel,flo,pet,sbnd,sbnd->current,slen,FALSE),
-      dst = GetCurrentDst(BytePixel,flo,pet,dbnd);
-      src && dst;
-      src = GetSrcBytes(BytePixel,flo,pet,sbnd,sbnd->current+slen,slen,TRUE),
-      dst = GetNextDst(BytePixel,flo,pet,dbnd,TRUE)) {
-
-    bcopy(src, dst, dbnd->pitch);
-  }
-  /* free what we've used so far */
-  FreeData(BytePixel,flo,pet,sbnd,sbnd->current);
-
-  /* ImportClient elements (i.e. STREAM data) have to tell the scheduler when
-   * they can't go any farther (left over bytes are buffered in the receptor)
-   */
-  return(src != NULL);
-}                               /* end ActivateICPhoto */
-
-
-
-/*------------------------------------------------------------------------
--------------------------- get rid of this element -----------------------
-------------------------------------------------------------------------*/
-static int DestroyICPhotoTIFF2(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  /* get rid of the peTex structure  */
-  if(ped->peTex)
-    ped->peTex = (peTexPtr) XieFree(ped->peTex);
-
-  /* zap this element's entry point vector */
-  ped->ddVec.create     = (xieIntProc) NULL;
-  ped->ddVec.initialize = (xieIntProc) NULL;
-  ped->ddVec.activate   = (xieIntProc) NULL;
-  ped->ddVec.flush      = (xieIntProc) NULL;
-  ped->ddVec.reset      = (xieIntProc) NULL;
-  ped->ddVec.destroy    = (xieIntProc) NULL;
-
-  return(TRUE);
-}                               /* end DestroyICPhoto */
-
-/* Triple Band Byte by Pixel Action routines */
-
-/* Stream bits to bits */
-static void Sbtob(src,idst,count,aap)
-BytePixel *src, *idst;
-CARD32 count;
-miCPhotoActionPtr aap;
-{
-CARD32 Bstride = aap->Bstride;
-CARD8     mask = aap->mask;
-LogInt	  *dst = (LogInt *)idst;
-int i;
-
-	bzero(dst,count+7>>3);	/* zero out the output, only set ones */
-	src += aap->srcoffset;
-	for (i = 0; i < count; i++, src+=Bstride) 
-	    if ((*src & mask) != 0)
-		LOG_setbit(dst,count);
-}
-
-/* Stream in nibbles to BytePixels */
-static void SbtoB(src,dst,count,aap)
-BytePixel *src, *dst;
-CARD32 count;
-miCPhotoActionPtr aap;
-{
-CARD32 Bstride = aap->Bstride;
-CARD8     mask = aap->mask;
-CARD8    shift = aap->shift;
-int i;
-
-	src += aap->srcoffset;
-	for (i = 0; i < count; i++, src+=Bstride) 
-		*dst++ = (*src & mask) >> shift;
-}
-
-/* Stream to BytePixel */
-static void StoB(src,dst,count,aap)
-BytePixel *src, *dst;
-CARD32 count;
-miCPhotoActionPtr aap;
-{
-CARD32 Bstride = aap->Bstride;
-int i;
-
-	src += aap->srcoffset;
-	for (i = 0; i < count; i++, src+=Bstride) 
-		*dst++ = *src;
-}
-
-/* Stream to PairPixel (unswapped) */
-static void StoP(isrc,dst,count,aap)
-PairPixel *isrc, *dst;
-CARD32 count;
-miCPhotoActionPtr aap;
-{
-CARD32 Bstride = aap->Bstride;
-CARD8 *src = ((CARD8 *)isrc) + aap->srcoffset;
-int i;
-	for (i = 0; i < count; i++, src+=Bstride) 
-		*dst++ = *(PairPixel *)src;
-}
-
-/* Stream to PairPixel (swapped) */
-static void StosP(isrc,dst,count,aap)
-PairPixel *isrc, *dst;
-CARD32 count;
-miCPhotoActionPtr aap;
-{
-CARD32 Bstride = aap->Bstride;
-CARD8 *src = ((CARD8 *)isrc) + aap->srcoffset;
-int i;
-	for (i = 0; i < count; i++, src+=Bstride) {
-		PairPixel sval = *(PairPixel *)src;
-		*dst++ = (sval >> 8) | (sval << 8);
-	}
-}
-
-extern unsigned char _ByteReverseTable[];
-
-static void reverse_bits(src,dst,count)
-BytePixel *src, *dst;
-CARD32 count;
-{
-int i;
-	for (i = 0; i < count; i++) *dst++ = _ByteReverseTable[*src++];
-}
-
-static void pass_bits(src,dst,count)
-BytePixel *src, *dst;
-CARD32 count;
-{
-	bcopy((char *)src,(char *)dst,(int)count);
-}
 /* end module micphoto.c */

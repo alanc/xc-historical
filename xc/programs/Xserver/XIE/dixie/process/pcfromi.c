@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pcfromi.c,v 1.1 93/10/26 10:01:35 rws Exp $ */
 /**** module pcfromi.c ****/
 /******************************************************************************
 				NOTICE
@@ -80,7 +80,6 @@ terms and conditions:
 #include <error.h>
 #include <macro.h>
 #include <element.h>
-#include <technq.h>
 
 
 /* routines referenced by other modules.
@@ -122,7 +121,7 @@ peDefPtr MakeConvertFromIndex(flo,tag,pe)
   /*
    * copy the standard client element parameters (swap if necessary)
    */
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
     cpswaps(stuff->src, raw->src);
@@ -131,7 +130,7 @@ peDefPtr MakeConvertFromIndex(flo,tag,pe)
     cpswapl(stuff->colormap, raw->colormap);
   }
   else  
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloConvertFromIndex));
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloConvertFromIndex));
   /*
    * assign phototags to inFlos
    */
@@ -154,27 +153,20 @@ static Bool PrepConvertFromIndex(flo,ped)
   inFloPtr      inf = &ped->inFloLst[SRCt1];
   outFloPtr     src = &inf->srcDef->outFlo;
   outFloPtr     dst = &ped->outFlo;
-  CARD32        mapDepth, b;
+  CARD32        depth, levels, b;
 
-  /* verify that args, colormap, and src image are compatible
+  /* check client parameters
    */
-  dst->bands = (raw->class == xieValSingleBand) ? 1 : 3;
   if(raw->class != xieValSingleBand &&
      raw->class != xieValTripleBand ||
      raw->precision < 1 || raw->precision > 16)
     ValueError(flo,ped,raw->precision, return(FALSE));
 
-  if(!(pvt->cmap = (ColormapPtr) LookupIDByType(raw->colormap, RT_COLORMAP)))
-    ColormapError(flo,ped,raw->colormap, return(FALSE));
-  SetDepthFromLevels(pvt->cmap->pVisual->ColormapEntries, mapDepth);
-
-  if(!IsConstrained(src->format[0].class)
-    || src->bands > 1 || src->format[0].depth != mapDepth)
-    MatchError(flo,ped,return(FALSE));
-
   /* grab attributes from colormap, visual, ...
    */
-  pvt->cells     = 1<<mapDepth;
+  if(!(pvt->cmap = (ColormapPtr) LookupIDByType(raw->colormap, RT_COLORMAP)))
+    ColormapError(flo,ped,raw->colormap, return(FALSE));
+  pvt->precShift = 16 - raw->precision;
   pvt->class     = pvt->cmap->class;
   pvt->visual    = pvt->cmap->pVisual;
   pvt->pixMsk[0] = pvt->visual->redMask;
@@ -183,10 +175,18 @@ static Bool PrepConvertFromIndex(flo,ped)
   pvt->pixPos[0] = pvt->visual->offsetRed;
   pvt->pixPos[1] = pvt->visual->offsetGreen;
   pvt->pixPos[2] = pvt->visual->offsetBlue;
-  pvt->precShift = 16 - raw->precision;
+  pvt->cells     = pvt->visual->ColormapEntries;
+  levels = (pvt->class <= PseudoColor ? pvt->cells :
+           (pvt->pixMsk[0] | pvt->pixMsk[1] | pvt->pixMsk[2]) + 1);
+  SetDepthFromLevels(levels,depth);
+
+  if(IsntConstrained(src->format[0].class)
+    || src->bands > 1 || src->format[0].levels != 1<<depth)
+    MatchError(flo,ped, return(FALSE));
 
   /* generate output attributes from input attributes and precision arg
    */
+  dst->bands = (raw->class == xieValSingleBand) ? 1 : 3;
   inf->bands = src->bands;
   for(b = 0; b < dst->bands; b++) {
     dst->format[b] = inf->format[0] = src->format[0];

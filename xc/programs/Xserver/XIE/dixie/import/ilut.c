@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ilut.c,v 1.1 93/10/26 09:59:42 rws Exp $ */
 /**** module ilut.c ****/
 /******************************************************************************
 				NOTICE
@@ -123,13 +123,13 @@ peDefPtr MakeILUT(flo,tag,pe)
   /*
    * copy the client element parameters (swap if necessary)
    */
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
     cpswapl(stuff->lut, raw->lut);
   }
   else
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloImportLUT));
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloImportLUT));
 
   return(ped);
 }                               /* end MakeILUT */
@@ -169,10 +169,9 @@ static Bool PrepILUT(flo,ped)
       b < nbands; b++, dfp++, ifp++) {
     dfp->band	= ifp->band	= b;
     dfp->class	= ifp->class	= LUT_ARRAY;
-    dfp->params	= ifp->params	= FALSE;
     dfp->levels	= ifp->levels	= lut->format[b].level;
-    dfp->height	= ifp->height	= lut->format[b].length;
-    dfp->width	= ifp->width	= lut->format[b].bandOrder;
+    dfp->height	= ifp->height	= lut->format[b].length;	/* ugly hack */
+    dfp->width	= ifp->width	= lut->format[b].bandOrder;	/* ugly hack */
     dfp->interleaved = ifp->interleaved = FALSE;
     /* width = 1; depth=8?; stride=8; pitch = 8*height; */
   }
@@ -189,13 +188,17 @@ static Bool DebriefILUT(flo,ped,ok)
      peDefPtr   ped;
      Bool	ok;
 {
+  xieFloImportLUT *raw = (xieFloImportLUT *)ped->elemRaw;
   iLUTDefPtr pvt = (iLUTDefPtr) ped->elemPvt;
+  lutPtr lut;
 
-  if(pvt && pvt->lut)
-    if(pvt->lut->refCnt == 1)
-      FreeResourceByType(pvt->lut->ID, RT_LUT, RT_NONE);
+  if(pvt && (lut = pvt->lut))
+    if(lut->refCnt > 1)
+      --lut->refCnt;
+    else if(LookupIDByType(raw->lut, RT_LUT))
+      FreeResourceByType(lut->ID, RT_LUT, RT_NONE);
     else
-      --pvt->lut->refCnt;
+      DeleteLUT(lut, lut->ID);
 
   return(TRUE);
 }                               /* end DebriefILUT */

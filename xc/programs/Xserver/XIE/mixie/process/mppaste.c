@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mppaste.c,v 1.1 93/10/26 09:47:08 rws Exp $ */
 /**** module mppaste.c ****/
 /******************************************************************************
 				NOTICE
@@ -44,7 +44,8 @@ terms and conditions:
   
 	mppaste.c -- DDXIE paste up element
   
-	Dean Verheiden && Larry Hare -- AGE Logic, Inc. July, 1993
+	Dean Verheiden, Larry Hare && Robert NC Shelley -- AGE Logic, Inc. 
+							   July, 1993
   
 *****************************************************************************/
 
@@ -82,7 +83,6 @@ terms and conditions:
 #include <xiemd.h>
 
 
-typedef RealPixel PasteUpFloat;
 /*
  *  routines referenced by other DDXIE modules
  */
@@ -127,10 +127,23 @@ static ddElemVecRec PasteUpVec = {
  * Local Declarations. 
  */
 
+typedef struct _pasterect {
+    Bool   active;	/* indicates this src is not finished yet  */
+    INT32  sxoff;	/* src x offset */
+    INT32  dxoff;	/* dst x offset */
+    INT32  dyoff;	/* dst y offset */
+    CARD32 width;	/* clipped width  of src on output window */
+    CARD32 height;	/* clipped height of src on output window */
+    CARD32 receptorIndex;
+} PasteRectRec, *PasteRectPtr;
+
 typedef struct _mppasteupdef {
-	void	(*fill) ();
-	void	(*action) ();
-	CARD32	nextline;
+	void	     (*fill)();
+	void	     (*action)();
+	CARD32	     nextline;
+	CARD32       iconstant;
+	CARD32	     numRects;	/* Number of interesting src for this band */
+	PasteRectPtr rects;
 } mpPasteUpPvtRec, *mpPasteUpPvtPtr;
 
 
@@ -168,54 +181,33 @@ static int InitializePasteUp(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  xieFloPasteUp *raw  = (xieFloPasteUp *)ped->elemRaw;
-  xieTypTile *tp      = (xieTypTile *)&(raw[1]); 
-  peTexPtr pet	      = ped->peTex;
-  mpPasteUpPvtPtr pvt = (mpPasteUpPvtPtr)pet->private;
-  CARD32 nbands	      = pet->receptor[SRCt1].inFlo->bands;
-  bandPtr iband;		
-  INT32 miny; 
-  CARD32 t, band;
+  xieFloPasteUp *raw   = (xieFloPasteUp *)ped->elemRaw;
+  peTexPtr pet	       = ped->peTex;
+  CARD32 nbands	       = pet->receptor[SRCt1].inFlo->bands;
+  PasteUpFloat *fconst = ((pPasteUpDefPtr)ped->elemPvt)->constant;
+  mpPasteUpPvtPtr pvt;
+  xieTypTile *tp;
+  bandPtr iband, oband;		
+  CARD32 b, t;
 
   if (!(InitReceptors(flo, ped, NO_DATAMAP, 1) && 
 	InitEmitter(flo, ped, NO_DATAMAP, NO_INPLACE)))
     return (FALSE);
 
-  miny = pet->emitter[0].format->height;
-  for (t = 0; t < raw->numTiles; t++)  {
-	if (tp[t].dstY < miny) 
-		miny = tp[t].dstY;
-  }
-
-  if (miny < 0)
-      miny = 0;
-
-  /* XXX Should consider building derived structures which reflect
-  ** totally clipped tiles.  Currently Y- clipped tiles are disabled 
-  ** Y+ clipped tiles are simply ignored till shutdown, and X clipped
-  ** tiles are processed anyway.
-  */
-  /* Set inactivity mask of all images without minimum y */
-  for (t = 0; t < raw->numTiles; t++) { 
-	if (tp[t].dstY != miny) {
-            iband = &(pet->receptor[t].band[0]);
-  	    for(band = 0; band < nbands; band++, iband++) {
-		if (tp[t].dstY > miny) {
-		    IgnoreBand(iband);
-		} else if ((tp[t].dstY + (INT32)iband->format->height) < 0) {
-		    DisableSrc(flo,pet,iband,FLUSH);
-		} else {
-		    SetBandThreshold(iband,-tp[t].dstY+1);
-		}
-	    }
-	}
-  }
-
- 
   /* Figure out the appropriate action vector */
   /* Use first source for the band types since they all must be the same */
-  iband = &(pet->receptor[SRCt1].band[0]);
-  for(band = 0; band < nbands; band++, pvt++, iband++) {
+  iband  = &(pet->receptor[SRCt1].band[0]);
+  pvt = (mpPasteUpPvtPtr)pet->private;
+  for(b = 0; b < nbands; b++, pvt++, iband++, fconst++) {
+
+      /* Zero out "interesting" rectangle counters */
+      pvt->numRects = 0;
+      pvt->nextline = pet->emitter[b].format->height - 1;
+
+      /* Clip fill for constrained data */
+      if (IsConstrained(iband->format->class))
+          pvt->iconstant = ConstrainConst(*fconst,iband->format->levels);
+
       switch (iband->format->class) {
       case UNCONSTRAINED:     
 		pvt->fill   = FillReal; 
@@ -241,7 +233,89 @@ static int InitializePasteUp(flo,ped)
 		ImplementationError(flo, ped, return(FALSE));
                 break;
       }
-      pvt->nextline = miny;
+  }
+
+  /* Disable completely clipped srcs, determine minimum y of non clipped src */
+  tp = (xieTypTile *)&(raw[1]);
+  for (t = 0; t < raw->numTiles; t++, tp++)  {
+	iband = &(pet->receptor[t].band[0]);
+	oband = &pet->emitter[0];
+  	pvt   = (mpPasteUpPvtPtr)pet->private;
+	for(b = 0; b < nbands; b++, iband++, oband++, pvt++) {
+  	    INT32 dst_width  = oband->format->width;
+  	    INT32 dst_height = oband->format->height;
+	    if ((tp->dstY +  (INT32)iband->format->height) <= 0 ||
+	        (tp->dstX +  (INT32)iband->format->width)  <= 0 ||
+	        (tp->dstX >= dst_width) 	  		||
+	        (tp->dstY >= dst_height)) 
+		    DisableSrc(flo,pet,iband,FLUSH);
+	    else {
+	        pvt->numRects++;
+		if (tp->dstY < pvt->nextline) 
+			pvt->nextline = (tp->dstY > 0) ? tp->dstY : 0;
+	    }
+	}
+  }
+
+  /* Allocate space for srcs that are not completely clipped */
+  pvt = (mpPasteUpPvtPtr)pet->private;
+  for (b = 0; b < nbands; b++, pvt++) 
+	if (pvt->numRects) {
+	    pvt->rects = 
+		(PasteRectPtr)XieMalloc(pvt->numRects * sizeof(PasteRectRec));
+	    pvt->numRects = 0; /* Will be used as list is built */
+	} else
+	    pvt->rects = (PasteRectPtr)NULL;
+
+  /* 
+     Build list for each band containing srcs that are displayed, adjust 
+     thresholds for srcs without minimum y 
+  */
+  tp = (xieTypTile *)&(raw[1]);
+  for (t = 0; t < raw->numTiles; t++, tp++)  {
+	CARD8 amask = 1, active = pet->receptor[t].active;
+	iband = &(pet->receptor[t].band[0]);
+	oband = &pet->emitter[0];
+  	pvt   = (mpPasteUpPvtPtr)pet->private;
+	for(b = 0; b < nbands; b++, iband++, oband++, amask <<= 1, pvt++) {
+	    if (active & amask) {
+  	        INT32 dst_width  = oband->format->width;
+  	        INT32 dst_height = oband->format->height;
+		PasteRectPtr pr  = &(pvt->rects[pvt->numRects++]); /* Yuck */
+
+		pr->active = TRUE;
+		pr->receptorIndex = t;
+		if (tp->dstX >= 0) {			/* clip left */
+		    pr->sxoff = 0;
+		    pr->dxoff = tp->dstX;
+		    pr->width = iband->format->width;
+    		} else {
+		    pr->sxoff = -tp->dstX;
+		    pr->dxoff = 0;
+		    pr->width = iband->format->width - pr->sxoff;
+		}
+		if (pr->dxoff + pr->width > dst_width)	/* clip right */
+		    pr->width = dst_width - pr->dxoff;
+
+		if (tp->dstY >= 0) {			/* clip top */
+		    pr->dyoff  = tp->dstY;
+		    pr->height = iband->format->height;
+		} else {
+		    pr->dyoff  = 0;
+		    pr->height = iband->format->height - (-tp->dstY);
+		}
+		if (pr->dyoff + pr->height > dst_height)/* clip bottom */
+		    pr->height = dst_height - pr->dyoff;
+		    
+		/* Adjust thresholds if necessary */
+        	if (tp->dstY != pvt->nextline) {
+	            if (tp->dstY > pvt->nextline) 
+	        	IgnoreBand(iband);
+	            else 
+	                SetBandThreshold(iband,-tp->dstY+1);
+	        }
+	    }
+	}
   }
 
   return( TRUE );
@@ -256,32 +330,29 @@ static int ActivatePasteUp(flo,ped,pet)
      peTexPtr  pet;
 {
   pPasteUpDefPtr pvt   = (pPasteUpDefPtr) ped->elemPvt;
-  xieFloPasteUp *raw   = (xieFloPasteUp *)ped->elemRaw;
-  xieTypTile *tp       = (xieTypTile *)&(raw[1]); 
-  double *fconst       = pvt->constant;
+  PasteUpFloat *fconst = pvt->constant;
   receptorPtr rcp      = pet->receptor;
   CARD32 bands         = rcp[SRCt1].inFlo->bands;
   bandPtr dbnd         = &pet->emitter[0];
   mpPasteUpPvtPtr mpvt = (mpPasteUpPvtPtr) pet->private;
   void *src, *dst;
+  PasteRectPtr tp;
   CARD32 t, b;
   
-    /* XXX add .5 for non floats ??? */
-    /* XXX should do fconst conversion once in Initialize */
-
     for(b = 0; b < bands; b++, dbnd++, mpvt++, fconst++) {
 	INT32 dst_width = dbnd->format->width;
 
 	/* Get pointer for dst scanline, Fill with constant */
 	if (!(dst = GetCurrentDst(void,flo,pet,dbnd)))
 	    break;
-	(*(mpvt->fill)) (dst,*fconst,dst_width);
+
+	(*(mpvt->fill)) (dst,*fconst,mpvt->iconstant,dst_width);
 
 	/* Skip any constant lines */
 	if (dbnd->current < mpvt->nextline) {
 	    while (dbnd->current < mpvt->nextline)  {
 		if (dst = GetNextDst(void,flo,pet,dbnd,KEEP)) {
-		    (*(mpvt->fill)) (dst,*fconst,dst_width);
+		    (*(mpvt->fill)) (dst,*fconst,mpvt->iconstant,dst_width);
 		} else {
 		    PutData(flo,pet,dbnd,dbnd->current);
 		    return TRUE;
@@ -290,45 +361,34 @@ static int ActivatePasteUp(flo,ped,pet)
 	}
 
 	mpvt->nextline = dbnd->format->height;
-	for (t = 0; t < raw->numTiles; t++) {
-	    bandPtr sbnd = &rcp[t].band[b];
-	    INT32 soff, doff, twidth;
-	    INT32 tdy = tp[t].dstY;
-	    INT32 tdend = tdy + sbnd->format->height;
-	    if (tdend <= (INT32) dbnd->current)
-		continue;
-	    if (((INT32)dbnd->current >= tdy) &&
-		((INT32)dbnd->current < (tdend))) {
+  	tp = mpvt->rects;
+	for (t = 0; t < mpvt->numRects; t++, tp++){
+	    bandPtr sbnd = &rcp[tp->receptorIndex].band[b];
+	    INT32 tdy = tp->dyoff;
+	    INT32 tdend = tdy + tp->height;
+
+	    if (!tp->active) continue;
+
+	    /* see if this src has a line for the destination */
+	    if ((INT32)dbnd->current >= tdy && (INT32)dbnd->current < tdend) {
 
 	        if (sbnd->threshold > 1) {
 		    src = GetSrc(void,flo,pet,sbnd,sbnd->threshold - 1,KEEP);
 		    SetBandThreshold(sbnd,1);
-		} else
+		} else 
 		    src = GetCurrentSrc(void,flo,pet,sbnd);
-		if (!src) {
-		    /* mpvt->nextline = dbnd->current; causes infinite loop */
-		    return TRUE;
-		}
-		soff = 0;
-		doff = tp[t].dstX;
-		twidth = sbnd->format->width;
+		if (!src) 	/* all tiles for this line should be ready */
+		    ImplementationError(flo, ped, return(FALSE));
 
-		if (doff < 0) {				/* clip on left side */
-		    soff -= doff;
-		    twidth += doff;
-		    doff  = 0;
-		}
-		if ((doff + twidth) > dst_width)	/* clip on right */
-		    twidth = dst_width - doff;
+	        (*(mpvt->action)) (src, tp->sxoff, dst, tp->dxoff, tp->width);
 
-		if (twidth > 0)
-		    (*(mpvt->action)) (src, soff, dst, doff, twidth);
-
-		FreeData(void,flo,pet,sbnd,sbnd->current+1);
+		FreeData(flo,pet,sbnd,sbnd->current+1);
 		if ((dbnd->current + 1) < tdend)
 		    mpvt->nextline = dbnd->current + 1;
+		else
+		    tp->active = FALSE;
 	    } else if (tdy == (dbnd->current + 1)) {
-		/* TILE missed. Maybe we need it next time? */
+		/* Tile missed on this line but will be needed for next line */
 		AttendBand(sbnd);
 		mpvt->nextline = dbnd->current + 1;
 	    } else if (tdy < mpvt->nextline) {
@@ -341,25 +401,18 @@ static int ActivatePasteUp(flo,ped,pet)
 	    (void) GetNextDst(void,flo,pet,dbnd,FLUSH);
 	    if (mpvt->nextline != dbnd->current) {
 	        /* ... find the Next bunch of tiles */
-		for (t = 0; t < raw->numTiles; t++)
-		    if (tp[t].dstY == mpvt->nextline) {
-		        AttendBand(&rcp[t].band[b]);
+  		tp = mpvt->rects;
+		for (t = 0; t < mpvt->numRects; t++, tp++)
+		    if (tp->active && tp->dyoff == mpvt->nextline) {
+		        AttendBand(&rcp[tp->receptorIndex].band[b]);
 		    }
 	    }
 	} else {
-	    /* ... no more tiles to copy; kill remainder */
-	    for (t = 0; t < raw->numTiles; t++) {
-		bandPtr sbnd = &rcp[t].band[b];
-	        if (tp[t].dstY + sbnd->format->height > mpvt->nextline)
-      		    DisableSrc(flo,pet,sbnd,FLUSH);
-	    }
 	    /* ... fill in remaining destination with constant */
 	    while((dst = GetNextDst(void,flo,pet,dbnd,KEEP)))
-	        (*(mpvt->fill)) (dst,*fconst,dst_width);
+	        (*(mpvt->fill)) (dst,*fconst,mpvt->iconstant,dst_width);
 	    PutData(flo,pet,dbnd,dbnd->current);
 	} 
-
-	/* XXX we never kill of any tiles which end before line 0 */
 
     }
     return(TRUE);
@@ -372,8 +425,19 @@ static int ResetPasteUp(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
+  peTexPtr	  pet = ped->peTex;
+  mpPasteUpPvtPtr pvt = (mpPasteUpPvtPtr)pet->private;
+  CARD32 nbands       = pet->receptor[SRCt1].inFlo->bands;
+  CARD32 b;
+
+  /* Free any lists that were malloced */
+  for (b = 0; b < nbands; b++, pvt++)
+	if (pvt->rects)
+		pvt->rects = (PasteRectPtr)XieFree(pvt->rects);
+
   ResetReceptors(ped);
   ResetEmitter(ped);
+
   
   return(TRUE);
 }                               /* end ResetPasteUp */
@@ -402,29 +466,35 @@ static int DestroyPasteUp(flo,ped)
 /*------------------------------------------------------------------------
 --------------------------PasteUp fill routines  ------------------------
 ------------------------------------------------------------------------*/
+static void FillReal(dst,ffill,ifill,width) 
+	RealPixel *dst;
+	PasteUpFloat ffill;
+	CARD32	ifill,width;
+{
+	while (width-- > 0) *dst++ = ffill;			
+}
 
 #define PasteFill(fname,stype)					\
-static void fname(din,ifill,width)	 			\
+static void fname(din,ffill,ifill,width)	 		\
 void *din;							\
-double ifill;							\
-CARD32 width;							\
+PasteUpFloat ffill;						\
+CARD32 ifill,width;						\
 {								\
 stype *dst = (stype *)din, fill = (stype)ifill;			\
 	while (width-- > 0) *dst++ = fill;			\
 }
 
-PasteFill(FillReal,RealPixel)
 PasteFill(FillQuad,QuadPixel)
 PasteFill(FillPair,PairPixel)
 PasteFill(FillByte,BytePixel)
 
-static void FillBit(dst,ifill,width) 
-	double  ifill;
+
+static void FillBit(dst,ffill,ifill,width) 
 	BitPixel *dst;
-	CARD32	width;
+	PasteUpFloat ffill;
+	CARD32	ifill,width;
 {
-	int fill =  (ifill > .5) ? ~0 : 1;
-	memset((char *)dst,fill,(width+7)>>3);
+	memset((char *)dst, (ifill ? ~0 : 0), (width+7)>>3);
 }
 
 /*------------------------------------------------------------------------

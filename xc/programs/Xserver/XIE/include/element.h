@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: element.h,v 1.1 93/10/26 10:03:41 rws Exp $ */
 /* module element.h */
 /*****************************************************************************
 				NOTICE
@@ -94,10 +94,10 @@ typedef struct _ilutdef {
  * dixie element-private data for the ImportPhotomap element
  */
 typedef struct _iphotodef {
-  CARD32	pvtBytes;
-  photomapPtr   map;
+  CARD32		pvtBytes;
+  photomapPtr		map;		
 } iPhotoDefRec, *iPhotoDefPtr;
-#endif /* _XIEC_IPHOTO */
+#endif /* _XIEC_IPHOTO || _XIEC_ICPHOTO */
 
 #if defined(_XIEC_IROI)
 /*
@@ -126,8 +126,7 @@ typedef struct _parith {
 typedef struct _pbandext {
   CARD32	pvtBytes;
   double	coef[3];
-  CARD8		out_band;
-  BOOL		mix_bands;
+  double	bias;
 } pBandExtDefRec, *pBandExtDefPtr;
 #endif /* _XIEC_PBANDE */
 
@@ -143,6 +142,42 @@ typedef struct _pblend {
   double	alphaConst;
 } pBlendDefRec, *pBlendDefPtr;
 #endif /* _XIEC_PBLEND */
+
+#if defined(_XIEC_PCFRGB)
+/*
+ * dixie element-private technique data for the ConvertFromRGB element
+ */
+typedef struct _ptecRBGtoCIELab_and_XYZdef {
+  double	             matrix[9];
+  double		     whitePoint[3]; /* Optional whitePoint correction */
+  techVecPtr		     whiteTec;
+  xieTypWhiteAdjustTechnique whiteAdjusted; 
+  CARD16		     lenParams;	    /* Length for whitePoint params   */
+} pTecRGBToCIEDefRec, *pTecRGBToCIEDefPtr;
+
+typedef struct _ptecRGBToYCbCr {
+  CARD32 levels0;
+  CARD32 levels1;
+  CARD32 levels2;
+  double red;
+  double green;
+  double blue;
+  double bias0;
+  double bias1;
+  double bias2;
+} pTecRGBToYCbCrDefRec, *pTecRGBToYCbCrDefPtr;
+
+typedef struct _ptecRGBToYCC {
+  CARD32 levels0;
+  CARD32 levels1;
+  CARD32 levels2;
+  double red;
+  double green;
+  double blue;
+  double scale;
+} pTecRGBToYCCDefRec, *pTecRGBToYCCDefPtr;
+
+#endif /* _XIEC_PCFRGB */
 
 #if defined(_XIEC_PCFROMI)
 /*
@@ -172,12 +207,24 @@ typedef struct _pcnst {
 } pCnstDefRec, *pCnstDefPtr;
 #endif /* _XIEC_PCNST */
 
+#if defined(_XIEC_PCOMP)
+/*
+ * dixie element-private data for the Arithmetic element
+ */
+typedef struct _pcompare {
+  CARD32	pvtBytes;
+  double        constant[xieValMaxBands];
+} pCompareDefRec, *pCompareDefPtr;
+#endif /* _XIEC_PCOMP */
+
 #if defined(_XIEC_PCONV)
 /*
  * constant technique private data for the Convolve element
  */ 
+#define	ConvFloat	float
+
 typedef struct _pconv {
-  double	constant[3];
+  ConvFloat	constant[3];
 } pTecConvolveConstantDefRec, *pTecConvolveConstantDefPtr;
 #endif /* _XIEC_PCONV */
 
@@ -196,6 +243,8 @@ typedef struct _pctoidef {
   CARD8		class;
   CARD8		depth;
   CARD8		stride;
+  BOOL		graySrc;
+  BOOL		dynamic;
   BOOL		preFmt;
   BOOL		doHist;
   CARD32	levels[3];
@@ -207,6 +256,51 @@ typedef struct _pTecConvertToIndexMatchdef {
   double	grayLimit;
 } pTecConvertToIndexMatchDefRec, *pConvertToIndexMatchDefPtr;
 #endif /* _XIEC_PCTOI */
+
+#if defined(_XIEC_PCTRGB)
+/*
+ * dixie element-private technique data for the ConvertToRGB element
+ */
+typedef struct _ptecCIELab_and_XYZtoRGBdef {
+  double	             matrix[9];
+  double		     whitePoint[3]; /* Optional whitePoint correction */
+  techVecPtr		     whiteTec;
+  xieTypWhiteAdjustTechnique whiteAdjusted; 
+  CARD16		     numWhiteParams;/* Length for whitePoint params   */
+  techVecPtr		     gamutTec;
+  xieTypGamutTechnique       gamutTechnique; 
+  CARD16		     numGamutParams;/* Length for gamut params   */
+} pTecCIEToRGBDefRec, *pTecCIEToRGBDefPtr;
+
+typedef struct _ptecYCCToRGB {
+  CARD32 levels0;
+  CARD32 levels1;
+  CARD32 levels2;
+  double red;
+  double green;
+  double blue;
+  double scale;
+  techVecPtr		     gamutTec;
+  xieTypGamutTechnique       gamutTechnique; 
+  CARD16		     numGamutParams;/* Length for gamut params   */
+} pTecYCCToRGBDefRec, *pTecYCCToRGBDefPtr;
+
+typedef struct _ptecYCbCrToRGB {
+  CARD32 levels0;
+  CARD32 levels1;
+  CARD32 levels2;
+  double red;
+  double green;
+  double blue;
+  double bias0;
+  double bias1;
+  double bias2;
+  techVecPtr		     gamutTec;
+  xieTypGamutTechnique       gamutTechnique; 
+  CARD16		     numGamutParams;/* Length for gamut params   */
+} pTecYCbCrToRGBDefRec, *pTecYCbCrToRGBDefPtr;
+
+#endif /* _XIEC_PCTRGB */
 
 
 #if defined(_XIEC_PGEOM)
@@ -225,7 +319,33 @@ typedef struct _geom_elem {
 typedef struct _geom_nn {
   int modify;
 } pTecGeomNearestNeighborDefRec, *pTecGeomNearestNeighborDefPtr;
+
+typedef struct _geom_gauss {
+  double	sigma;
+  double	normalize;
+  int 		radius;
+  Bool		simple;
+} pTecGeomGaussianDefRec, *pTecGeomGaussianDefPtr;
+
 #endif /* _XIEC_PGEOM */
+
+#if defined(_XIEC_PHIST)
+
+/* 
+ * technique private structures
+ */
+
+typedef struct _pmhistgaussian {
+  double	mean;
+  double	sigma;
+} pTecHistogramGaussianDefRec, *pTecHistogramGaussianDefPtr;
+
+typedef struct _pmhisthyperbolic {
+  double	constant;
+  Bool		shapeFactor;
+} pTecHistogramHyperbolicDefRec, *pTecHistogramHyperbolicDefPtr;
+
+#endif /* _XIEC_PHIST */
 
 #if defined(_XIEC_PLOGIC)
 /*
@@ -241,9 +361,11 @@ typedef struct _plogic {
 /*
  * dixie element-private data for the Paste Up element
  */
+#define	PasteUpFloat	float
+
 typedef struct _ppasteup {
   CARD32	pvtBytes;
-  double        constant[xieValMaxBands];
+  PasteUpFloat  constant[xieValMaxBands];
 } pPasteUpDefRec, *pPasteUpDefPtr;
 #endif /* _XIEC_PPASTE */
 
@@ -298,6 +420,7 @@ typedef struct _elutdef {
 typedef struct _ephotodef {
   CARD32	pvtBytes;
   photomapPtr   map;
+  void		*pvtParms;
 } ePhotoDefRec, *ePhotoDefPtr;
 #endif /* _XIEC_EPHOTO */
 
@@ -307,12 +430,8 @@ typedef struct _ephotodef {
  */
 typedef struct _eroidef {
   CARD32	pvtBytes;
-  roiPtr   roi;
+  roiPtr   	roi;
 } eROIDefRec, *eROIDefPtr;
 #endif /* _XIEC_EROI */
 
 #endif /* module _XIEH_ELEMENT */
-
-
-
-

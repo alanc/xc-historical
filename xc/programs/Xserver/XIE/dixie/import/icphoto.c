@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: icphoto.c,v 1.1 93/10/26 09:59:11 rws Exp $ */
 /**** module icphoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -140,7 +140,7 @@ peDefPtr MakeICPhoto(flo,tag,pe)
   /*
    * copy the standard client element parameters (swap if necessary)
    */
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
     raw->notify = stuff->notify;
@@ -151,20 +151,21 @@ peDefPtr MakeICPhoto(flo,tag,pe)
     cpswapl(stuff->height0, raw->height0);
     cpswapl(stuff->height1, raw->height1);
     cpswapl(stuff->height2, raw->height2);
-    cpswapl(stuff->level0,  raw->level0);
-    cpswapl(stuff->level1,  raw->level1);
-    cpswapl(stuff->level2,  raw->level2);
+    cpswapl(stuff->levels0, raw->levels0);
+    cpswapl(stuff->levels1, raw->levels1);
+    cpswapl(stuff->levels2, raw->levels2);
     cpswaps(stuff->decodeTechnique, raw->decodeTechnique);
     cpswaps(stuff->lenParams, raw->lenParams);
   }
   else
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloImportClientPhoto));
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloImportClientPhoto));
   /*
    * copy technique data (if any)
    */
   if(!(ped->techVec = FindTechnique(xieValDecode, raw->decodeTechnique)) ||
      !(ped->techVec->copyfnc(flo, ped, &stuff[1], &raw[1], raw->lenParams)))
-    TechniqueError(flo,ped,raw->decodeTechnique,raw->lenParams, return(ped));
+    TechniqueError(flo,ped,xieValDecode,raw->decodeTechnique,raw->lenParams,
+		   return(ped));
 
   return(ped);
 }                               /* end MakeICPhoto */
@@ -176,10 +177,10 @@ Bool CopyICPhotoUnSingle(flo, ped, rparms, cparms, tsize)
      xieTecDecodeUncompressedSingle *rparms, *cparms;
      CARD16	tsize;
 {
-  TECHNIQUE_SIZE_MATCH(xieTecDecodeUncompressedSingle,tsize);
+  VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
   /* Nothing to swap for this technique */
-  bcopy((char *)rparms, (char *)cparms, tsize<<2);
+  memcpy((char *)cparms, (char *)rparms, tsize<<2);
   
   return(TRUE);
 }
@@ -190,10 +191,10 @@ Bool CopyICPhotoUnTriple(flo, ped, rparms, cparms, tsize)
      xieTecDecodeUncompressedTriple *rparms, *cparms;
      CARD16	tsize;
 {
-  TECHNIQUE_SIZE_MATCH(xieTecDecodeUncompressedTriple,tsize);
+  VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
   /* Nothing to swap for this technique */
-  bcopy((char *)rparms, (char *)cparms, tsize<<2);
+  memcpy((char *)cparms, (char *)rparms, tsize<<2);
   
   return(TRUE);
 }
@@ -204,10 +205,10 @@ Bool CopyICPhotoG31D(flo, ped, rparms, cparms, tsize)
      xieTecDecodeG31D *rparms, *cparms;
      CARD16	tsize;
 {
-  TECHNIQUE_SIZE_MATCH(xieTecDecodeG31D,tsize);
+  VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
   /* Nothing to swap for this technique */
-  bcopy((char *)rparms, (char *)cparms, tsize<<2);
+  memcpy((char *)cparms, (char *)rparms, tsize<<2);
   
   return(TRUE);
 }
@@ -218,10 +219,10 @@ Bool CopyICPhotoG32D(flo, ped, rparms, cparms, tsize)
      xieTecDecodeG32D *rparms, *cparms;
      CARD16	tsize;
 {
-  TECHNIQUE_SIZE_MATCH(xieTecDecodeG32D,tsize);
+  VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
   /* Nothing to swap for this technique */
-  bcopy((char *)rparms, (char *)cparms, tsize<<2);
+  memcpy((char *)cparms, (char *)rparms, tsize<<2);
   
   return(TRUE);
 }
@@ -232,10 +233,10 @@ Bool CopyICPhotoG42D(flo, ped, rparms, cparms, tsize)
      xieTecDecodeG42D *rparms, *cparms;
      CARD16	tsize;
 {
-  TECHNIQUE_SIZE_MATCH(xieTecDecodeG42D,tsize);
+  VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
   /* Nothing to swap for this technique */
-  bcopy((char *)rparms, (char *)cparms, tsize<<2);
+  memcpy((char *)cparms, (char *)rparms, tsize<<2);
   
   return(TRUE);
 }
@@ -246,10 +247,10 @@ Bool CopyICPhotoJPEGBaseline(flo, ped, rparms, cparms, tsize)
      xieTecDecodeJPEGBaseline *rparms, *cparms;
      CARD16	tsize;
 {
-  TECHNIQUE_SIZE_MATCH(xieTecDecodeJPEGBaseline,tsize);
+  VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
   /* Nothing to swap for this technique */
-  bcopy((char *)rparms, (char *)cparms, tsize<<2);
+  memcpy((char *)cparms, (char *)rparms, tsize<<2);
   
   return(TRUE);
 }
@@ -260,10 +261,10 @@ Bool CopyICPhotoJPEGLossless(flo, ped, rparms, cparms, tsize)
      xieTecDecodeJPEGLossless *rparms, *cparms;
      CARD16	tsize;
 {
-  TECHNIQUE_SIZE_MATCH(xieTecDecodeJPEGLossless,tsize);
+  VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
   /* Nothing to swap for this technique */
-  bcopy((char *)rparms, (char *)cparms, tsize<<2);
+  memcpy((char *)cparms, (char *)rparms, tsize<<2);
   
   return(TRUE);
 }
@@ -274,10 +275,10 @@ Bool CopyICPhotoTIFF2(flo, ped, rparms, cparms, tsize)
      xieTecDecodeTIFF2 *rparms, *cparms;
      CARD16	tsize;
 {
-  TECHNIQUE_SIZE_MATCH(xieTecDecodeTIFF2,tsize);
+  VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
   /* Nothing to swap for this technique */
-  bcopy((char *)rparms, (char *)cparms, tsize<<2);
+  memcpy((char *)cparms, (char *)rparms, tsize<<2);
   
   return(TRUE);
 }
@@ -288,10 +289,10 @@ Bool CopyICPhotoTIFFPackBits(flo, ped, rparms, cparms, tsize)
      xieTecDecodeTIFFPackBits *rparms, *cparms;
      CARD16	tsize;
 {
-  TECHNIQUE_SIZE_MATCH(xieTecDecodeTIFFPackBits,tsize);
+  VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
   /* Nothing to swap for this technique */
-  bcopy((char *)rparms, (char *)cparms, tsize<<2);
+  memcpy((char *)cparms, (char *)rparms, tsize<<2);
   
   return(TRUE);
 }
@@ -304,38 +305,39 @@ static Bool PrepICPhoto(flo,ped)
      floDefPtr  flo;
      peDefPtr   ped;
 {
-  int i, bits;
+  int i;
   xieFloImportClientPhoto *raw = (xieFloImportClientPhoto *)ped->elemRaw;
   inFloPtr inflo = &ped->inFloLst[IMPORT];
+
   /*
    * check for data-class, dimension, and levels errors, and stash attributes
    */
   switch(raw->class) {
   case xieValSingleBand :
-    if(!raw->width0 || !raw->height0 || !raw->level0)
+    if(!raw->width0 || !raw->height0 || !raw->levels0)
       ValueError(flo,ped,0, return(FALSE));
-    if(raw->level0 > MAX_LEVELS(1))
+    if(raw->levels0 > MAX_LEVELS(1))
       MatchError(flo,ped, return(FALSE));
     inflo->bands = 1;
     break;
   case xieValTripleBand :
-    if(!raw->width0 || !raw->height0 || !raw->level0 ||
-       !raw->width1 || !raw->height1 || !raw->level1 ||
-       !raw->width2 || !raw->height2 || !raw->level2)
+    if(!raw->width0 || !raw->height0 || !raw->levels0 ||
+       !raw->width1 || !raw->height1 || !raw->levels1 ||
+       !raw->width2 || !raw->height2 || !raw->levels2)
       ValueError(flo,ped,0, return(FALSE));
-    if(raw->level0 > MAX_LEVELS(3) ||
-       raw->level1 > MAX_LEVELS(3) ||
-       raw->level2 > MAX_LEVELS(3))
+    if(raw->levels0 > MAX_LEVELS(3) ||
+       raw->levels1 > MAX_LEVELS(3) ||
+       raw->levels2 > MAX_LEVELS(3))
     MatchError(flo,ped, return(FALSE));
     inflo->bands	    = 3;
     inflo->format[1].band   = 1;
     inflo->format[1].width  = raw->width1;
     inflo->format[1].height = raw->height1;
-    inflo->format[1].levels = raw->level1;
+    inflo->format[1].levels = raw->levels1;
     inflo->format[2].band   = 2;
     inflo->format[2].width  = raw->width2;
     inflo->format[2].height = raw->height2;
-    inflo->format[2].levels = raw->level2;
+    inflo->format[2].levels = raw->levels2;
     break;
   default :
     ValueError(flo,ped,raw->class, return(FALSE));
@@ -343,13 +345,13 @@ static Bool PrepICPhoto(flo,ped)
   inflo->format[0].band   = 0;
   inflo->format[0].width  = raw->width0;
   inflo->format[0].height = raw->height0;
-  inflo->format[0].levels = raw->level0;
+  inflo->format[0].levels = raw->levels0;
 
   for(i = 0; i < inflo->bands; i++)
     SetDepthFromLevels(inflo->format[i].levels, inflo->format[i].depth);
 
   if(!(ped->techVec->prepfnc(flo, ped, raw, &raw[1])))
-    TechniqueError(flo, ped, raw->decodeTechnique, raw->lenParams,
+    TechniqueError(flo,ped,xieValDecode,raw->decodeTechnique,raw->lenParams,
 		   return(FALSE));
 
   return(TRUE);
@@ -381,8 +383,7 @@ Bool PrepICPhotoUnSingle(flo, ped, raw, tec)
   if(tec->pixelOrder != xieValLSFirst &&	    /* check pixel-order    */
      tec->pixelOrder != xieValMSFirst)
     return(FALSE);
-  if(tec->pixelStride < inf->format[0].depth ||     /* check pixel-stride   */
-     tec->pixelStride > 32)
+  if(tec->pixelStride < inf->format[0].depth)       /* check pixel-stride   */
     return(FALSE);
   if(ALIGNMENT == xieValAlignable && !aligned ||    /* alignment & left-pad */
      ALIGNMENT == xieValAlignable &&  aligned &&
@@ -407,7 +408,6 @@ Bool PrepICPhotoUnSingle(flo, ped, raw, tec)
   for (i = 0; i < inf->bands; i++) {
     ped->outFlo.format[i] = inf->format[i];
     ped->outFlo.format[i].interleaved = FALSE;
-    ped->outFlo.format[i].params = NULL;
   }
 
   if (UpdateFormatfromLevels(ped) == FALSE)
@@ -444,10 +444,6 @@ Bool PrepICPhotoUnTriple(flo, ped, raw, tec)
        inf->format[0].height != inf->format[1].height  ||
        inf->format[1].height != inf->format[2].height))
     return(FALSE);
-  if(tec->pixelStride[0] < inf->format[0].depth ||  /* check pixel-stride   */
-     tec->pixelStride[1] < inf->format[1].depth || 
-     tec->pixelStride[2] < inf->format[2].depth)
-    return(FALSE);
   if(raw->class != xieValTripleBand)
     return(FALSE);
   if (tec->interleave == xieValBandByPlane) {
@@ -457,6 +453,8 @@ Bool PrepICPhotoUnTriple(flo, ped, raw, tec)
 					tec->leftPad[i];
       BOOL   aligned = !(tec->pixelStride[i] & (tec->pixelStride[i] - 1));
 
+     if(tec->pixelStride[i] < inf->format[i].depth)   /* check pixel-stride   */
+        return(FALSE);
       if(inf->format[i].depth > MAX_DEPTH(3)) 	      /* check pixel-depth   */
  	return(FALSE);
       if(ALIGNMENT == xieValAlignable && !aligned ||  /* alignment & left-pad */
@@ -512,7 +510,6 @@ Bool PrepICPhotoUnTriple(flo, ped, raw, tec)
   for (i = 0; i < ped->outFlo.bands; i++) {
      ped->outFlo.format[i] = inf->format[i];
      ped->outFlo.format[i].interleaved = FALSE;
-     ped->outFlo.format[i].params = NULL;
   }
 
    /* Fill in other format parameters based on the number of output levels */
@@ -545,7 +542,6 @@ Bool PrepICPhotoG31D(flo, ped, raw, tec)
   for (i = 0; i < inf->bands; i++) {
     ped->outFlo.format[i] = inf->format[i];
     ped->outFlo.format[i].interleaved = FALSE;
-    ped->outFlo.format[i].params = NULL;
   }
 
   if (UpdateFormatfromLevels(ped) == FALSE)
@@ -577,7 +573,6 @@ Bool PrepICPhotoG32D(flo, ped, raw, tec)
   for (i = 0; i < inf->bands; i++) {
     ped->outFlo.format[i] = inf->format[i];
     ped->outFlo.format[i].interleaved = FALSE;
-    ped->outFlo.format[i].params = NULL;
   }
 
   if (UpdateFormatfromLevels(ped) == FALSE)
@@ -610,7 +605,6 @@ Bool PrepICPhotoG42D(flo, ped, raw, tec)
   for (i = 0; i < inf->bands; i++) {
     ped->outFlo.format[i] = inf->format[i];
     ped->outFlo.format[i].interleaved = FALSE;
-    ped->outFlo.format[i].params = NULL;
   }
 
   if (UpdateFormatfromLevels(ped) == FALSE)
@@ -657,8 +651,16 @@ Bool PrepICPhotoJPEGBaseline(flo, ped, raw, tec)
   for (i = 0; i < inf->bands; i++) {
     ped->outFlo.format[i] = inf->format[i];
     ped->outFlo.format[i].interleaved = FALSE;
-    ped->outFlo.format[i].params = NULL;
   }
+
+  /*
+   * except if TripleBand Interleaved, we lied:  there's only one 
+   * band coming in. We copy the bogus inflos first just because 
+   * we can assume they have been set up suitably by nice general
+   * purpose code above.  :-)
+   */
+  if (raw->class == xieValTripleBand && tec->interleave == xieValBandByPixel)
+      inf->bands = 1;
 
   if (UpdateFormatfromLevels(ped) == FALSE)
 	MatchError(flo, ped, return(FALSE));
@@ -704,7 +706,6 @@ Bool PrepICPhotoJPEGLossless(flo, ped, raw, tec)
   for (i = 0; i < inf->bands; i++) {
     ped->outFlo.format[i] = inf->format[i];
     ped->outFlo.format[i].interleaved = FALSE;
-    ped->outFlo.format[i].params = NULL;
   }
 
   if (UpdateFormatfromLevels(ped) == FALSE)
@@ -737,7 +738,6 @@ Bool PrepICPhotoTIFF2(flo, ped, raw, tec)
   for (i = 0; i < inf->bands; i++) {
     ped->outFlo.format[i] = inf->format[i];
     ped->outFlo.format[i].interleaved = FALSE;
-    ped->outFlo.format[i].params = NULL;
   }
 
   if (UpdateFormatfromLevels(ped) == FALSE)
@@ -770,7 +770,6 @@ Bool PrepICPhotoTIFFPackBits(flo, ped, raw, tec)
   for (i = 0; i < inf->bands; i++) {
     ped->outFlo.format[i] = inf->format[i];
     ped->outFlo.format[i].interleaved = FALSE;
-    ped->outFlo.format[i].params = NULL;
   }
 
   if (UpdateFormatfromLevels(ped) == FALSE)

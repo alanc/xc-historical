@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miclut.c,v 1.1 93/10/26 09:45:03 rws Exp $ */
 /**** module miclut.c ****/
 /******************************************************************************
 				NOTICE
@@ -93,7 +93,6 @@ int	miAnalyzeICLUT();
 static int CreateICLUT();
 static int InitializeICLUT();
 static int ActivateICLUT();
-static int FlushICLUT();
 static int ResetICLUT();
 static int DestroyICLUT();
 
@@ -105,7 +104,7 @@ static ddElemVecRec ICLUTVec = {
   CreateICLUT,
   InitializeICLUT,
   ActivateICLUT,
-  FlushICLUT,
+  (xieIntProc)NULL,
   ResetICLUT,
   DestroyICLUT
   };
@@ -117,6 +116,7 @@ static ddElemVecRec ICLUTVec = {
 typedef struct _lutpvt {
   int byteptr;		/* current number of bytes received */
   int bytelength;	/* selects total size of array */
+  int striplength;	/* actual strip size, round up to power of 2 */
   int bytetype;		/* selects array element size */
   int bandnum;		/* for interleave, to swizzle bands */
 } lutPvtRec, *lutPvtPtr;
@@ -128,8 +128,6 @@ int miAnalyzeICLUT(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  xieFloImportClientLUT *raw = (xieFloImportClientLUT *) ped->elemRaw;
-
   /* for now just copy our entry point vector into the peDef */
   ped->ddVec = ICLUTVec;
 
@@ -143,10 +141,7 @@ static int CreateICLUT(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  int status;
-  lutPvtPtr ext;
-  
-  return MakePETex(flo,ped, xieValMaxBands * sizeof(lutPvtRec), FALSE,FALSE); 
+  return MakePETex(flo,ped,xieValMaxBands * sizeof(lutPvtRec),NO_SYNC,NO_SYNC); 
 }
 
 /*------------------------------------------------------------------------
@@ -160,19 +155,21 @@ static int InitializeICLUT(flo,ped)
   lutPvtPtr ext = (lutPvtPtr) ped->peTex->private;
   int band, nbands = ped->peTex->receptor[SRCtag].inFlo->bands;
   CARD32 *lengths = &(raw->length0);
-  CARD32 *levels = &(raw->level0);
+  CARD32 *levels = &(raw->levels0);
 
   for (band = 0; band < nbands; band++, ext++, lengths++, levels++) {
+	int deep;
 	ext->byteptr = 0;
 	ext->bytetype = LutPitch(*levels);
 	ext->bytelength = *lengths * ext->bytetype;
+	SetDepthFromLevels(ext->bytelength, deep);
+	ext->striplength = (1 << deep);
 	ext->bandnum = (raw->class == xieValSingleBand ||
 			raw->bandOrder == xieValLSFirst)
 			? band : xieValMaxBands - band - 1;
-        if (flo->client->swapped && (ext->bytetype == 4))
-	     ImplementationError(flo,ped, return(FALSE));
   }
-  return InitReceptors(flo,ped,0,1) && InitEmitter(flo,ped,0,-1);
+  return InitReceptors(flo,ped,NO_DATAMAP,1) &&
+	 InitEmitter(flo,ped,NO_DATAMAP,NO_INPLACE);
 }
 
 /*------------------------------------------------------------------------
@@ -185,18 +182,15 @@ static int ActivateICLUT(flo,ped,pet)
 {
   int band, nbands = pet->receptor[SRCtag].inFlo->bands;
   bandPtr iband = &(pet->receptor[SRCtag].band[0]);
-  bandPtr oband;
   lutPvtPtr ext = (lutPvtPtr) pet->private;
   
   for(band = 0; band < nbands; band++, ext++, iband++) {
-    void * ivoid, *ovoid;
-    int ilen, icopy;
+    bandPtr oband = &(pet->emitter[ext->bandnum]);
+    void   *ivoid, *ovoid;
+    int     ilen, icopy;
 
-    oband = &(pet->emitter[ext->bandnum]);	/* Band Swap ?? */
-    
-    if(!(ovoid = GetDstBytes(void,flo,pet,oband,0,ext->bytelength,FALSE)))
+    if(!(ovoid = GetDstBytes(void,flo,pet,oband,0,ext->striplength,FALSE)))
       return(FALSE);
-    
     /*
     **  We have no guarantee to get all the output in one packet.  In 
     **  fact we have no guarantee we will ever get all the output, or
@@ -204,49 +198,28 @@ static int ActivateICLUT(flo,ped,pet)
     **  would like to notify the user but the protocol does provide
     **  something similar to a decodeNotify.
     */
-    for (ilen = 0;
-	 ivoid = GetSrcBytes(void,flo,pet,iband,iband->current+ilen,1,FALSE);
-	 ) {
+    for(ilen = 0;
+	ivoid = GetSrcBytes(void,flo,pet,iband,iband->current+ilen,1,FALSE);) {
       icopy = ilen = iband->strip->length;
       
       if ((ext->byteptr + ilen) > ext->bytelength)
 	icopy = ext->bytelength - ext->byteptr;
       
-      /* XXX (levels > 2**16) will require padding of 3 bytes to 4 */
-      
       if (icopy) {
-	bcopy((unsigned char *) ivoid,
-	      ((unsigned char *) ovoid) + ext->byteptr, icopy);
+	memcpy( ((char *) ovoid) + ext->byteptr, (char *) ivoid, icopy);
 	ext->byteptr += icopy;
       }
     }
-    FreeData(void, flo, pet, iband, iband->maxLocal);
+    FreeData(flo, pet, iband, iband->maxLocal);
     
     /* if final, process the data received */
     if (iband->final) {
-      if (flo->client->swapped) switch(ext->bytetype) {
-      case 1: break;
-      case 2: SwapShorts(ovoid, ext->bytelength>>1);
-	break;
-      case 4:	/* XXX, GACK */
-      default: break;
-      }
       SetBandFinal(oband);
-      PutData(flo,pet,oband,ext->bytelength);
+      PutData(flo,pet,oband,ext->striplength);
     }
   }
   return TRUE;
 }              
-
-/*------------------------------------------------------------------------
---------------------------- get rid of left overs ------------------------
-------------------------------------------------------------------------*/
-static int FlushICLUT(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  return(TRUE);
-}
 
 /*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------

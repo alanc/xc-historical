@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mpuncnst.c,v 1.1 93/10/26 09:46:28 rws Exp $ */
 /**** module mpuncnst.c ****/
 /******************************************************************************
 				NOTICE
@@ -140,7 +140,7 @@ static int CreateUnconstrain(flo,ped)
 {
     int auxsize = xieValMaxBands * sizeof(mpUncnstPvtRec);
 
-    return MakePETex(flo,ped,auxsize,FALSE,FALSE);
+    return MakePETex(flo,ped,auxsize,NO_SYNC,NO_SYNC);
 }
 
 /*------------------------------------------------------------------------
@@ -157,7 +157,8 @@ static int InitializeUnconstrain(flo,ped)
 
     /* ped->flags.modified = FALSE; */
 
-    status = InitReceptors(flo,ped,0,1) && InitEmitter(flo,ped,0,-1);
+    status = InitReceptors(flo,ped,NO_DATAMAP,1) &&
+		InitEmitter(flo,ped,NO_DATAMAP,-1);
 
     nbands = pet->receptor[SRCtag].inFlo->bands;
     iband = &(pet->receptor[SRCtag].band[0]);
@@ -209,7 +210,7 @@ static int ActivateUnconstrain(flo,ped,pet)
 
 	} while (!ferrCode(flo) && voidp && outp) ;
 
-	FreeData(void, flo, pet, iband, iband->current);
+	FreeData(flo, pet, iband, iband->current);
     }
     return TRUE;
 }
@@ -261,34 +262,6 @@ static int DestroyUnconstrain(flo,ped)
 ---------------------  Lotsa Little Action Routines  ---------------------
 ------------------------------------------------------------------------*/
 
-#if defined(XoftWare)
-	/* Might only use this for eg bytes ?? */
-#define MakeCast(fn_name,itype)					\
-static void fn_name(voidp,outp,bw)				\
-	void * voidp; RealPixel *outp; int bw;			\
-{								\
-	register RealPixel A, B, C, D;				\
-	register itype *inp = (itype *) voidp;			\
-	register int ix;					\
-	for (ix = bw - 4; ix >= 0; ) {				\
-		A = (RealPixel) *inp++;				\
-		B = (RealPixel) *inp++;				\
-		C = (RealPixel) *inp++;				\
-		D = (RealPixel) *inp++;				\
-		ix -= 4;					\
-		*outp++ = A;					\
-		*outp++ = B;					\
-		*outp++ = C;					\
-		*outp++ = D;					\
-	} ix += 3;						\
-	switch (ix) {						\
-	case 3:		*outp++ = (RealPixel) *inp++;		\
-	case 2:		*outp++ = (RealPixel) *inp++;		\
-	case 1:		*outp   = (RealPixel) *inp;		\
-	default:	break;					\
-	}							\
-}
-#else
 #define MakeCast(fn_name,itype)					\
 static void fn_name(voidp,outp,bw)				\
 	void * voidp; RealPixel *outp; int bw;			\
@@ -298,32 +271,17 @@ static void fn_name(voidp,outp,bw)				\
 	for (ix = 0; ix < bw; ix++)				\
 		*outp++ = (RealPixel) *inp++;			\
 }
-#endif
 
 MakeCast	(CastQuad,QuadPixel)
 MakeCast	(CastPair,PairPixel)
 MakeCast	(CastByte,BytePixel)
 
-#if defined(LOG_XXXint)
-static void CastBit(voidp,outp,bw)
-	void * voidp; RealPixel *outp; int bw;
-{
-	register LogInt *inp = (LogInt *) voidp;
-	register RealPixel One  (RealPixel) 1.0;
-	register RealPixel Zero (RealPixel) 0.0;
-	register int ix;
-	for (ix = 0; ix < bw; ix++)
-		outp[ix] = LOG_tstbit(inp,ix) ? One : Zero;
-}
-
-#else
 static void CastBit(voidp,outp,bw)
 	void * voidp; RealPixel *outp; int bw;
 {
 	register LogInt *inp	= (LogInt *) voidp;
 	register RealPixel One  = (RealPixel) 1.0;
 	register RealPixel Zero = (RealPixel) 0.0;
-	register int ix;
 	register LogInt M, inval;
 	for ( ; bw >= LOGSIZE ; bw -= 32)
 	    for (M=LOGLEFT, inval = *inp++; M; LOGRIGHT(M))
@@ -332,7 +290,6 @@ static void CastBit(voidp,outp,bw)
 	    for (M=LOGLEFT, inval = *inp++; bw; bw--, LOGRIGHT(M))
 		*outp++ = (inval & M) ? One : Zero;
 }
-#endif /* LOG_XXXbit */
 
 static void CastNothing(voidp,outp,bw)
 	void * voidp; RealPixel *outp; int bw;

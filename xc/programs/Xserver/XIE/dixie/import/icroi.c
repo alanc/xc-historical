@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: icroi.c,v 1.1 93/10/26 09:59:23 rws Exp $ */
 /**** module icroi.c ****/
 /******************************************************************************
 				NOTICE
@@ -44,7 +44,7 @@ terms and conditions:
   
 	icroi.c -- DIXIE routines for managing the ImportClientROI element
   
-	Robert NC Shelley, Dean Verheiden, Jim Weida -- AGE Logic, Inc. April 1993
+	Robert NC Shelley, Dean Verheiden -- AGE Logic, Inc. April 1993
 
 *****************************************************************************/
 
@@ -77,7 +77,6 @@ terms and conditions:
 #include <error.h>
 #include <macro.h>
 #include <element.h>
-#include <technq.h>
 
 /*
  *  routines referenced by other modules
@@ -112,23 +111,20 @@ peDefPtr MakeICROI(flo,tag,pe)
 	if (!(ped = MakePEDef(1, (CARD32)stuff->elemLength<<2, 0))) 
 		FloAllocError(flo,tag,xieElemImportClientROI, return(NULL)) ;
 
-	ped->diVec	     = &iCROIVec;
+	ped->diVec	   = &iCROIVec;
 	ped->phototag      = tag;
 	ped->flags.import  = TRUE;
 	ped->flags.putData = TRUE;
 	raw = (xieFloImportClientROI *)ped->elemRaw;
 	/*
 	 * copy the standard client element parameters (swap if necessary)
-	 * (-: xieFloImportClientROI has no floats to convert :-)
 	 */
-	if (flo->client->swapped)
-	{
+	if (flo->reqClient->swapped) {
 		raw->elemType   = stuff->elemType;
 		raw->elemLength = stuff->elemLength;
 		cpswapl(stuff->rectangles, raw->rectangles);
-	}
-	else
-		bcopy((char *)stuff, (char *)raw, sizeof(xieFloImportClientROI));
+	} else
+		memcpy((char *)raw, (char *)stuff, sizeof(xieFloImportClientROI));
 
 	return ped;
 }
@@ -140,23 +136,14 @@ static Bool PrepICROI(flo,ped)
 	floDefPtr  flo;
 	peDefPtr   ped;
 {
-	xieFloImportClientROI *raw = (xieFloImportClientROI *)ped->elemRaw;
 	inFloPtr inflo   = &ped->inFloLst[IMPORT];
 	outFloPtr outflo = &ped->outFlo;
 
-	if (inflo && outflo)
-	{
- 		inflo->bands = 1;
- 		inflo->format[0].class  = STREAM;
- 		inflo->format[0].band   = 0;
- 		inflo->format[0].width  = 0;
- 		inflo->format[0].height = 0;
- 		inflo->format[0].levels = 0;
+ 	inflo->bands = outflo->bands = 1;
+ 	inflo->format[0].class  = STREAM;
+	outflo->format[0].class = RUN_LENGTH;
+	ped->swapUnits[0] = sizeof(xieTypRectangle);
 
- 		outflo->bands = 1;
- 		outflo->format[0] = inflo->format[0];
- 		outflo->format[0].class  = RUN_LENGTH;
-	}
 	return TRUE;
 }                               /* end PrepICROI */
 

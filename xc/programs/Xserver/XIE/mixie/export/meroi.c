@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: meroi.c,v 1.1 93/10/26 09:48:45 rws Exp $ */
 /**** module meroi.c ****/
 /******************************************************************************
 				NOTICE
@@ -42,9 +42,9 @@ terms and conditions:
      Logic, Inc.
 *****************************************************************************
   
-	meroi.c -- DDXIE prototype export roi element
+	meroi.c -- DDXIE export roi element
   
-	James H Weida -- AGE Logic, Inc. April, 1993
+	Dean Verheiden -- AGE Logic, Inc. August, 1993
   
 *****************************************************************************/
 
@@ -89,8 +89,6 @@ int	miAnalyzeEROI();
  */
 static int CreateEROI();
 static int InitializeEROI();
-static int ActivateEROI();
-static int FlushEROI();
 static int ResetEROI();
 static int DestroyEROI();
 
@@ -101,8 +99,8 @@ static ddElemVecRec meROIVec =
 {
 	CreateEROI,
 	InitializeEROI,
-	ActivateEROI,
-	FlushEROI,
+	(xieIntProc)NULL,
+	(xieIntProc)NULL,
 	ResetEROI,
 	DestroyEROI
 };
@@ -128,10 +126,8 @@ static int CreateEROI(flo,ped)
 	floDefPtr flo;
 	peDefPtr  ped;
 {
-	xieFloImportROI *raw;
-  
 	/* attach an execution context to the roi element definition */
-	return MakePETex(flo,ped,NO_PRIVATE,SYNC,NO_SYNC);
+	return MakePETex(flo,ped,NO_PRIVATE,NO_SYNC,NO_SYNC);
 }                               /* end CreateEROI */
 
 
@@ -142,49 +138,11 @@ static int InitializeEROI(flo,ped)
 	floDefPtr flo;
 	peDefPtr  ped;
 {
-	return InitReceptors(flo,ped,NO_DATAMAP,1) &&
-	       InitEmitter(flo,ped,NO_DATAMAP,NO_INPLACE);
+ /* Allows data manager to bypass element entirely */
+  return(InitReceptor(flo, ped, ped->peTex->receptor, NO_DATAMAP, 1, NO_BANDS, 
+								ALL_BANDS));
+
 }                               /* end InitializeEROI */
-
-
-/*------------------------------------------------------------------------
------------------------------ crank some data ----------------------------
-------------------------------------------------------------------------*/
-static int ActivateEROI(flo,ped,pet)
-     floDefPtr flo;
-     peDefPtr  ped;
-	peTexPtr  pet;
-{
-	receptorPtr  rcp =  pet->receptor;
-	CARD32     bands =  rcp->inFlo->bands;
-	bandPtr     sbnd = &rcp->band[0];
-	bandPtr     dbnd = &pet->emitter[0];
-	CARD8       *src;
-	CARD32 b;
-
-	/* get pointer to the initial src data (i.e. beginning of strip) */
-	src = GetCurrentSrc(CARD8,flo,pet,sbnd);
-
-	/* pass a clone of the current src strip to DIXIE */
-	if(!PassStrip(flo,pet,dbnd,sbnd->strip))
-		return FALSE;
-
-	/* free the src strip(s) we've used */
-	FreeData(CARD8,flo,pet,sbnd,sbnd->maxLocal);
-
-	return TRUE;
-}                               /* end ActivateEROI */
-
-
-/*------------------------------------------------------------------------
---------------------------- get rid of left overs ------------------------
-------------------------------------------------------------------------*/
-static int FlushEROI(flo,ped)
-	floDefPtr flo;
-	peDefPtr  ped;
-{
-	return TRUE;
-}                               /* end FlushEROI */
 
 
 /*------------------------------------------------------------------------
@@ -195,7 +153,6 @@ static int ResetEROI(flo,ped)
 	peDefPtr  ped;
 {
 	ResetReceptors(ped);
-	ResetEmitter(ped);
 	return TRUE;
 }                               /* end ResetEROI */
 
@@ -213,8 +170,6 @@ static int DestroyEROI(flo,ped)
 	/* zap this element's entry point vector */
 	ped->ddVec.create = (xieIntProc) NULL;
 	ped->ddVec.initialize = (xieIntProc) NULL;
-	ped->ddVec.activate = (xieIntProc) NULL;
-	ped->ddVec.flush = (xieIntProc) NULL;
 	ped->ddVec.reset = (xieIntProc) NULL;
 	ped->ddVec.destroy = (xieIntProc) NULL;
 	return TRUE;

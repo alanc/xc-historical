@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: analyze.c,v 1.1 93/10/26 09:44:11 rws Exp $ */
 /**** module analyze.c ****/
 /******************************************************************************
 				NOTICE
@@ -104,6 +104,7 @@ int DAGalyze(flo)
    */
   for(ped = lst->flink; ok && !ListEnd(ped,lst); ped = ped->flink)
     switch(ped->elemRaw->elemType) {
+#if XIE_FULL
       case xieElemImportClientLUT:   ok = miAnalyzeICLUT(flo,ped);       break;
       case xieElemImportClientPhoto: ok = miAnalyzeICPhoto(flo,ped);     break;
       case xieElemImportClientROI:   ok = miAnalyzeICROI(flo,ped);       break;
@@ -112,16 +113,27 @@ int DAGalyze(flo)
       case xieElemImportLUT:         ok = miAnalyzeILUT(flo,ped);        break;
       case xieElemImportPhotomap:    ok = miAnalyzeIPhoto(flo,ped);      break;
       case xieElemImportROI:         ok = miAnalyzeIROI(flo,ped);        break;
+      case xieElemArithmetic:	     ok = miAnalyzeArith(flo,ped);       break;
+      case xieElemBandCombine:	     ok = miAnalyzeBandCom(flo,ped);     break;
+      case xieElemBandExtract:	     ok = miAnalyzeBandExt(flo,ped);     break;
+      case xieElemBandSelect:	     ok = miAnalyzeBandSel(flo,ped);     break;
       case xieElemBlend:	     ok = miAnalyzeBlend(flo,ped);       break;
+      case xieElemCompare:	     ok = miAnalyzeCompare(flo,ped);     break;
       case xieElemConstrain:	     ok = miAnalyzeConstrain(flo,ped);   break;
       case xieElemConvertFromIndex:  ok = miAnalyzeCvtFromInd(flo,ped);  break;
+      case xieElemConvertFromRGB:    ok = miAnalyzeFromRGB(flo,ped);     break;
       case xieElemConvertToIndex:    ok = miAnalyzeCvtToInd(flo,ped);    break;
+      case xieElemConvertToRGB:      ok = miAnalyzeToRGB(flo,ped);       break;
+      case xieElemConvolve:	     ok = miAnalyzeConvolve(flo,ped);    break;
       case xieElemDither:	     ok = miAnalyzeDither(flo,ped);      break;
       case xieElemGeometry:	     ok = miAnalyzeGeometry(flo,ped);    break;
       case xieElemLogical:	     ok = miAnalyzeLogic(flo,ped);       break;
+      case xieElemMatchHistogram:    ok = miAnalyzeMatchHist(flo,ped);   break;
+      case xieElemMath:              ok = miAnalyzeMath(flo,ped);        break;
       case xieElemPasteUp:           ok = miAnalyzePasteUp(flo,ped);     break;
       case xieElemPoint:	     ok = miAnalyzePoint(flo,ped);       break;
       case xieElemUnconstrain:       ok = miAnalyzeUnconstrain(flo,ped); break;
+      case xieElemExportClientHistogram:ok = miAnalyzeECHist(flo,ped);   break;
       case xieElemExportClientLUT:   ok = miAnalyzeECLUT(flo,ped);       break;
       case xieElemExportClientPhoto: ok = miAnalyzeECPhoto(flo,ped);     break;
       case xieElemExportClientROI:   ok = miAnalyzeECROI(flo,ped);       break;
@@ -130,7 +142,23 @@ int DAGalyze(flo)
       case xieElemExportLUT:         ok = miAnalyzeELUT(flo,ped);        break;
       case xieElemExportPhotomap:    ok = miAnalyzeEPhoto(flo,ped);      break;
       case xieElemExportROI:         ok = miAnalyzeEROI(flo,ped);        break;
-      default: ImplementationError(flo,ped, return(FALSE));
+#else
+      case xieElemImportClientLUT:   ok = miAnalyzeICLUT(flo,ped);       break;
+      case xieElemImportClientPhoto: ok = miAnalyzeICPhoto(flo,ped);     break;
+      case xieElemImportDrawable:    ok = miAnalyzeIDraw(flo,ped);       break;
+      case xieElemImportDrawablePlane:ok = miAnalyzeIDrawP(flo,ped);     break;
+      case xieElemImportLUT:         ok = miAnalyzeILUT(flo,ped);        break;
+      case xieElemImportPhotomap:    ok = miAnalyzeIPhoto(flo,ped);      break;
+      case xieElemGeometry:	     ok = miAnalyzeGeometry(flo,ped);    break;
+      case xieElemPoint:	     ok = miAnalyzePoint(flo,ped);       break;
+      case xieElemExportClientLUT:   ok = miAnalyzeECLUT(flo,ped);       break;
+      case xieElemExportClientPhoto: ok = miAnalyzeECPhoto(flo,ped);     break;
+      case xieElemExportDrawable:    ok = miAnalyzeEDraw(flo,ped);       break;
+      case xieElemExportDrawablePlane:ok = miAnalyzeEDrawP(flo,ped);     break;
+      case xieElemExportLUT:         ok = miAnalyzeELUT(flo,ped);        break;
+      case xieElemExportPhotomap:    ok = miAnalyzeEPhoto(flo,ped);      break;
+#endif
+      default: ElementError(flo,ped, return(FALSE));
     }
   return(ok);
 }                               /* end DAGalyze */

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mpcnst.c,v 1.1 93/10/26 09:46:34 rws Exp $ */
 /**** module mpcnst.c ****/
 /******************************************************************************
 				NOTICE
@@ -169,7 +169,6 @@ int miAnalyzeConstrain(flo,ped)
 
     /* based on the technique, fill in the appropriate entry point vector */
 
-    /* XXX may have to defer some of this when modify is done */
     switch(((xieFloConstrain *)ped->elemRaw)->constrain) {
 	case	xieValConstrainClipScale:
 	case	xieValConstrainHardClip:
@@ -189,9 +188,9 @@ static int CreateConstrain(flo,ped)
     floDefPtr flo;
     peDefPtr  ped;
 {
-    return MakePETex(flo,ped,
-		     xieValMaxBands * sizeof(mpCnstPvtRec),
-		     FALSE,FALSE);
+    int auxsize = xieValMaxBands * sizeof(mpCnstPvtRec);
+
+    return MakePETex(flo,ped,auxsize,NO_SYNC,NO_SYNC);
 } 
 
 
@@ -210,7 +209,8 @@ static int InitializeConstrain(flo,ped)
     bandPtr iband;
     int band, nbands, status;
 
-    status =  InitReceptors(flo,ped,0,1) && InitEmitter(flo,ped,0,-1);
+    status =  InitReceptors(flo,ped,NO_DATAMAP,1) &&
+		InitEmitter(flo,ped,NO_DATAMAP,NO_INPLACE);
 
     nbands = pet->receptor[SRCtag].inFlo->bands;
     iband = &(pet->receptor[SRCtag].band[0]);
@@ -262,7 +262,7 @@ static int ActivateConstrain(flo,ped,pet)
 		    return(FALSE);
 	    	ivoid = GetSrc(void,flo,pet,iband,iband->maxLocal,TRUE);
 	    } while (!ferrCode(flo) && ivoid) ;
-	    FreeData(void, flo, pet, iband, iband->current);
+	    FreeData(flo, pet, iband, iband->current);
 	    continue;
 	}
 
@@ -275,7 +275,7 @@ static int ActivateConstrain(flo,ped,pet)
 	    ovoid = GetNextDst(void,flo,pet,oband,TRUE);
 	} while (!ferrCode(flo) && ivoid && ovoid) ;
 
-	FreeData(void, flo, pet, iband, iband->current);
+	FreeData(flo, pet, iband, iband->current);
     }
     return TRUE;
 }
@@ -297,6 +297,14 @@ static int ResetConstrain(flo,ped)
     floDefPtr flo;
     peDefPtr  ped;
 {
+    mpCnstPvtPtr pvt = (mpCnstPvtPtr) ped->peTex->private;
+    int band;
+
+    /* free any dynamic private data */
+    for (band = 0 ; band < xieValMaxBands ; band++, pvt++)
+	if (pvt->lut)
+	    pvt->lut = (void *) XieFree(pvt->lut);
+
     ResetReceptors(ped);
     ResetEmitter(ped);
   
@@ -310,11 +318,6 @@ static int DestroyConstrain(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-    if (ped->peTex) {
-	mpCnstPvtPtr pvt = (mpCnstPvtPtr) (ped->peTex->private);
-	if (pvt->lut) pvt->lut = (void *) XieFree(pvt->lut);
-    }
-
     /* get rid of the peTex structure  */
     ped->peTex = (peTexPtr) XieFree(ped->peTex);
 
@@ -338,6 +341,7 @@ static int DestroyConstrain(flo,ped)
 /*
 **  DO_HCb	- consume bits, produce bits.
 **  DO_HCc	- consume bits, produce otype.
+**  DO_HCcx	- consume bits, produce otype (using bitexpand).
 **  DO_HCp	- consume itype, produce bits..
 **  DO_HCfp	- consume floats, produce bits.
 **  DO_HClt	- consume itype, produce otype (itype < otype).
@@ -365,24 +369,30 @@ static void (*cs_nop(iband,oband,pvt,techpvt,band))()
 static void clearbitline(INP,OUTP,pvt,bw)
 	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw;
 {
-	bzero((char *)OUTP, (bw+7)>>3);
+	action_clear(OUTP, bw, 0);
 }
 
 static void setbitline(INP,OUTP,pvt,bw)
 	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw;
 {
-	memset((char *)OUTP, ~0, (bw+7)>>3);
+	action_set(OUTP, bw, 0);
+}
+
+static void copybitline(INP,OUTP,pvt,bw)
+	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw;
+{
+	passcopy_bit(OUTP, INP, bw, 0);
+}
+
+static void invertbitline(INP,OUTP,pvt,bw)
+	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw;
+{
+	action_invert(OUTP, bw, 0);
 }
 
 #define LEVELSM1(T) *((T *) &(pvt->pad[0]))
 
 #define DO_HCb(fn_prep,fn_do_a, fn_do_b,itype,otype) 			\
-static void 								\
-fn_do_a(INP,OUTP,pvt,bw) 						\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
-{ 									\
-	bcopy((char *) INP, (char *)OUTP, (bw+7)>>3); 			\
-} 									\
 static void 								\
 (*fn_prep (iband,oband,pvt,techpvt,band))() 				\
 	bandPtr iband, oband; mpCnstPvtPtr pvt; pCnstDefPtr techpvt; int band; \
@@ -391,7 +401,7 @@ static void 								\
 		return clearbitline; 					\
 	if (oband->format->levels == 1) 				\
 		return clearbitline; 					\
-	return fn_do_a; 						\
+	return copybitline; 						\
 } 
 
 #define DO_HCc(fn_prep,fn_do_a, fn_do_b,itype,otype) 			\
@@ -413,6 +423,7 @@ fn_do_b(INP,OUTP,pvt,bw) 						\
 	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
 	bzero((char *)OUTP, bw * sizeof(otype)); 			\
+	/* action_clear(OUTP, (bw * sizeof(otype)) << 3, 0); */		\
 } 									\
 static void 								\
 (*fn_prep (iband,oband,pvt,techpvt,band))() 				\
@@ -421,6 +432,29 @@ static void 								\
 	if (iband->format->levels == 1) 				\
 		return fn_do_b; 					\
 	return fn_do_a; 						\
+} 
+
+#define DO_HCcx(fn_prep,fn_do,fn_do_b,itype,otype)                      \
+static void 								\
+fn_do(INP,OUTP,pvt,bw) 							\
+	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+{ 									\
+	bitexpand(INP, OUTP, bw, 0, 1);					\
+} 									\
+static void 								\
+fn_do_b(INP,OUTP,pvt,bw) 						\
+	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+{ 									\
+	bzero((char *)OUTP, bw * sizeof(otype)); 			\
+	/* action_clear(OUTP, (bw * sizeof(otype)) << 3, 0); */		\
+} 									\
+static void 								\
+(*fn_prep (iband,oband,pvt,techpvt,band))() 				\
+    bandPtr iband, oband; mpCnstPvtPtr pvt; pCnstDefPtr techpvt; int band; \
+{ 									\
+	if (iband->format->levels == 1) 				\
+		return fn_do_b; 					\
+	return fn_do;							\
 } 
 
 #define DO_HCp(fn_prep,fn_do_a, fn_do_b,itype,otype) 			\
@@ -508,12 +542,7 @@ fn_do_a(INP,OUTP,pvt,bw) 						\
 		*outp++ = (otype) inval; 				\
 	} 								\
 } 									\
-static void 								\
-fn_do_b(INP,OUTP,pvt,bw) 						\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
-{ 									\
-	bcopy((char *) INP, (char *)OUTP, bw * sizeof(otype)); 		\
-} 									\
+/* fn_do_b was memcpy, now done at higher level with PassStrip */	\
 static void 								\
 (*fn_prep (iband,oband,pvt,techpvt,band))() 				\
 	bandPtr iband, oband; mpCnstPvtPtr pvt; pCnstDefPtr techpvt; int band; \
@@ -584,7 +613,7 @@ DO_HCp	(HCp_Pb, HCa_Pb, HCb_Pb, PairPixel, BitPixel)
 DO_HCp	(HCp_Qb, HCa_Qb, HCb_Qb, QuadPixel, BitPixel)
 DO_HCfp	(HCp_Rb, HCa_Rb, HCb_Rb, RealPixel, BitPixel)
 
-DO_HCc	(HCp_bB, HCa_bB, HCb_bB, BitPixel,  BytePixel)
+DO_HCcx	(HCp_bB, HCa_bB, HCb_bB, BitPixel,  BytePixel)
 DO_HCeq	(HCp_BB, HCa_BB, HCb_BB, BytePixel, BytePixel)
 DO_HCgt	(HCp_PB, HCa_PB, HCb_PB, PairPixel, BytePixel)
 DO_HCgt	(HCp_QB, HCa_QB, HCb_QB, QuadPixel, BytePixel)
@@ -606,8 +635,8 @@ DO_HCf	(HCp_RQ, HCa_RQ, HCb_RQ, RealPixel, QuadPixel)
 
 /*----------------------------- ClipScale --------------------------------*/
 
-typedef RealPixel ConstrainFloat; /* XXX ??? */
-#define HALF	((RealPixel) 0.5)
+typedef float	ConstrainFloat;
+#define HALF	((ConstrainFloat) 0.5)
 
 #define	LBOUND(T)	*((T *) &(pvt->pad[0]))
 #define	UBOUND(T)	*((T *) &(pvt->pad[1]))
@@ -618,32 +647,66 @@ typedef RealPixel ConstrainFloat; /* XXX ??? */
 #define	INT_SF		*((INT32 *) &(pvt->pad[4]))
 #define	INT_OFF		*((INT32 *) &(pvt->pad[5]))
 
+static void
+cs_scale_equation(pvt,techpvt,band)
+    mpCnstPvtPtr pvt; pCnstDefPtr techpvt; int band;
+{
+    QuadPixel olow = techpvt->output_low[band];
+    ConstrainFloat ilow = techpvt->input_low[band];
+    ConstrainFloat sf = (techpvt->output_high[band] - olow) /
+				(techpvt->input_high[band] - ilow);
+    FLT_SF = sf;
+    FLT_OFF = (ConstrainFloat) olow - sf * ilow;
+}
+
+static void
+cs_fix_bits(pvt,techpvt,band)
+    mpCnstPvtPtr pvt; pCnstDefPtr techpvt; int band;
+{
+    ConstrainFloat  ilow = techpvt->input_low[band];
+    ConstrainFloat ihigh = techpvt->input_high[band];
+    QuadPixel       olow = techpvt->output_low[band];
+    QuadPixel      ohigh = techpvt->output_high[band];
+    /*  Prep guarantees ilow != ihigh, but what if ilow > ihigh */ 
+    if (ilow == 0.0 && ihigh == 1.0) {
+	OLOW(QuadPixel) = olow;
+	OHIGH(QuadPixel) = ohigh;
+	return;
+    } else if (ilow == 1.0 && ihigh == 0.0) {
+	OLOW(QuadPixel) = ohigh;
+	OHIGH(QuadPixel) = olow;
+	return;
+    }
+    cs_scale_equation(pvt,techpvt,band);
+    if (ilow < ihigh) {
+	if	(0.0 <= ilow)	OLOW(QuadPixel) = olow;
+	else if (0.0 >= ihigh)	OLOW(QuadPixel) = ohigh;
+	else 			OLOW(QuadPixel) = FLT_SF * 0. + FLT_OFF + HALF;
+	if	(1.0 <= ilow)	OHIGH(QuadPixel) = olow;
+	else if (1.0 >= ihigh)	OHIGH(QuadPixel) = ohigh;
+	else 			OHIGH(QuadPixel) = FLT_SF * 1. + FLT_OFF + HALF;
+    } else {
+	if	(0.0 >= ilow)	OLOW(QuadPixel) = olow;
+	else if (0.0 <= ihigh)	OLOW(QuadPixel) = ohigh;
+	else 			OLOW(QuadPixel) = FLT_SF * 0. + FLT_OFF + HALF;
+	if	(1.0 >= ilow)	OHIGH(QuadPixel) = olow;
+	else if (1.0 <= ihigh)	OHIGH(QuadPixel) = ohigh;
+	else 			OHIGH(QuadPixel) = FLT_SF * 1. + FLT_OFF + HALF;
+    }
+}
+
 #define DO_CSb(fn_prep,fn_do,fn_do_b,itype,otype) 			\
 static void 								\
-fn_do(INP,OUTP,pvt,bw) 							\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
-{ 									\
-	bcopy((char *)INP, (char *) OUTP, (bw+7)>>3); 			\
-} 									\
-static void 								\
-fn_do_b(INP,OUTP,pvt,bw) 						\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
-{ 									\
-	LogInt *inp = (LogInt *)INP; LogInt *outp = (LogInt *) OUTP; 	\
-	bw = (bw + LOGMASK) / LOGSIZE; 					\
-	while (bw-- > 0) *outp++ = *inp++ ^ (LogInt) ~0; 		\
-} 									\
-static void 								\
 (*fn_prep (iband,oband,pvt,techpvt,band))()				\
-    bandPtr iband, oband; mpCnstPvtPtr pvt; pCnstDefPtr techpvt; int band; \
+    bandPtr iband, oband;						\
+    mpCnstPvtPtr pvt; pCnstDefPtr techpvt; int band; 			\
 {									\
-	int ordered = (techpvt->input_low[band] < techpvt->input_high[band]); \
-	if (iband->format->levels == 1)					\
+	if (iband->format->levels == 1 || oband->format->levels == 1)	\
 		return clearbitline;					\
-	if (oband->format->levels == 1)					\
-		return clearbitline;					\
-	/* XXX: Solve equation. (ihigh+ilow)/2>0 --> all zeros, etc */	\
-	return ordered ? fn_do : fn_do_b;				\
+	cs_fix_bits(pvt,techpvt,band);					\
+	return (OLOW(QuadPixel) == OHIGH(QuadPixel)) 			\
+	       ? ((OLOW(QuadPixel) == 0) ? clearbitline: setbitline)	\
+	       : ((OLOW(QuadPixel) == 0) ? copybitline: invertbitline);	\
 } 
 
 
@@ -664,49 +727,33 @@ fn_do(INP,OUTP,pvt,bw) 							\
 } 									\
 static void 								\
 (*fn_prep (iband,oband,pvt,techpvt,band))() 				\
-    bandPtr iband, oband; mpCnstPvtPtr pvt; pCnstDefPtr techpvt; int band; \
+    bandPtr iband, oband;						\
+    mpCnstPvtPtr pvt; pCnstDefPtr techpvt; int band; 			\
 { 									\
-	int ordered = (techpvt->input_low[band] < techpvt->input_high[band]); \
-	/* TODO NOTE: Solve equation.  OHIGH is for when bit is 1. */ 	\
-	/*  Prep guarantees ilow != ihigh, but what if ilow > ihigh */ 	\
-	if (ordered) { /* 1 bit selects output_high */ 			\
-		OLOW(otype) =  techpvt->output_low[band]; 		\
-		OHIGH(otype) = techpvt->output_high[band]; 		\
-	} else { /* 1 bit selects output_low */ 			\
-		OHIGH(otype) =  techpvt->output_low[band]; 		\
-		OLOW(otype) = techpvt->output_high[band]; 		\
-	} 								\
+	cs_fix_bits(pvt,techpvt,band);					\
+	OLOW(otype)  = OLOW(QuadPixel);					\
+	OHIGH(otype) = OHIGH(QuadPixel);				\
 	return fn_do; 							\
 } 
 
-
-	/* uses 4way bit expansion utility */
 #define DO_CScx(fn_prep,fn_do,fn_do_b,itype,otype)                      \
 static void 								\
 fn_do(INP,OUTP,pvt,bw) 							\
 	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
-	void  bitexpand();						\
         otype olow = OLOW(otype), ohigh = OHIGH(otype); 		\
 	bitexpand(INP, OUTP, bw, olow, ohigh);				\
 } 									\
 static void 								\
 (*fn_prep (iband,oband,pvt,techpvt,band))() 				\
-    bandPtr iband, oband; mpCnstPvtPtr pvt; pCnstDefPtr techpvt; int band; \
+    bandPtr iband, oband;						\
+    mpCnstPvtPtr pvt; pCnstDefPtr techpvt; int band; 			\
 { 									\
-	int ordered = (techpvt->input_low[band] < techpvt->input_high[band]); \
-	/* TODO NOTE: Solve equation.  OHIGH is for when bit is 1. */ 	\
-	/*  Prep guarantees ilow != ihigh, but what if ilow > ihigh */ 	\
-	if (ordered) { /* 1 bit selects output_high */ 			\
-		OLOW(otype) =  techpvt->output_low[band]; 		\
-		OHIGH(otype) = techpvt->output_high[band]; 		\
-	} else { /* 1 bit selects output_low */ 			\
-		OHIGH(otype) =  techpvt->output_low[band]; 		\
-		OLOW(otype) = techpvt->output_high[band]; 		\
-	} 								\
-	return fn_do;							\
+	cs_fix_bits(pvt,techpvt,band);					\
+	OLOW(otype)  = OLOW(QuadPixel);					\
+	OHIGH(otype) = OHIGH(QuadPixel);				\
+	return fn_do; 							\
 } 
-
 
 #define DO_CSp(fn_prep,fn_do,fn_do_b,itype,otype) 			\
 static void 								\
@@ -747,77 +794,19 @@ fn_do_b(INP,OUTP,pvt,bw) 						\
 } 									\
 static void 								\
 (*fn_prep (iband,oband,pvt,techpvt,band))() 				\
-    bandPtr iband, oband; mpCnstPvtPtr pvt; pCnstDefPtr techpvt; int band; \
-{ 									\
-	itype i1, i2; 							\
-	otype olow = techpvt->output_low[band]; 			\
-	otype ohigh = techpvt->output_high[band]; 			\
-	int ordered = (techpvt->input_low[band] < techpvt->input_high[band]); \
-	if (olow == ohigh) 						\
-		return (olow == 0) ? clearbitline : setbitline; 	\
-	/* round to ints first ?? */ 					\
-	i2 = (itype) (techpvt->input_high[band] + HALF); 		\
-	i1 = (itype) (techpvt->input_low[band] + HALF); 		\
-	UBOUND(itype) = (i1 + i2) / 2; 					\
-	return ordered ? fn_do : fn_do_b; 				\
-} 
-
-/* NOTE: Same as DO_CSp except median calculatio does not round */
-#define DO_CSfp(fn_prep,fn_do,fn_do_b,itype,otype) 			\
-static void 								\
-fn_do(INP,OUTP,pvt,bw) 							\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
-{ 									\
-	itype *inp = (itype *) INP; 					\
-	LogInt outval, M, *outp = (LogInt *) OUTP; 			\
-        itype imedian = UBOUND(itype); 					\
-	for ( ; bw >= LOGSIZE ; *outp++ = outval, bw -= LOGSIZE) 	\
-		for (M=LOGLEFT, outval = 0; M; LOGRIGHT(M)) 		\
-			if (*inp++ > imedian) 				\
-				outval |= M; 				\
-	if (bw > 0) { 							\
-		for (M=LOGLEFT, outval = 0; bw; bw--, LOGRIGHT(M)) 	\
-			if (*inp++ > imedian) 				\
-				outval |= M; 				\
-		*outp = outval; 					\
-	} 								\
-} 									\
-static void 								\
-fn_do_b(INP,OUTP,pvt,bw) 						\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
-{ 									\
-	itype *inp = (itype *) INP; 					\
-	LogInt outval, M, *outp = (LogInt *) OUTP; 			\
-        itype imedian = UBOUND(itype); 					\
-	for ( ; bw >= LOGSIZE ; *outp++ = outval, bw -= LOGSIZE) 	\
-		for (M=LOGLEFT, outval = 0; M; LOGRIGHT(M)) 		\
-			if (*inp++ <= imedian) 				\
-				outval |= M; 				\
-	if (bw > 0) { 							\
-		for (M=LOGLEFT, outval = 0; bw; bw--, LOGRIGHT(M)) 	\
-			if (*inp++ <= imedian) 				\
-				outval |= M; 				\
-		*outp = outval; 					\
-	} 								\
-} 									\
-static void 								\
-(*fn_prep (iband,oband,pvt,techpvt,band))() 				\
-    bandPtr iband, oband; mpCnstPvtPtr pvt; pCnstDefPtr techpvt; int band; \
+    bandPtr iband, oband;						\
+    mpCnstPvtPtr pvt; pCnstDefPtr techpvt; int band; 			\
 { 									\
 	otype olow = techpvt->output_low[band]; 			\
 	otype ohigh = techpvt->output_high[band]; 			\
-	int ordered = (techpvt->input_low[band] < techpvt->input_high[band]); \
 	if (olow == ohigh) 						\
 		return (olow == 0) ? clearbitline : setbitline; 	\
-	/* round to ints first ?? */ 					\
-	UBOUND(itype) = ( (techpvt->input_high[band]) + 		\
-			  (techpvt->input_low[band]) ) * HALF; 		\
-	return ordered ? fn_do : fn_do_b; 				\
+	UBOUND(itype) = HALF *						\
+		(techpvt->input_low[band] + techpvt->input_high[band]);	\
+	return	(techpvt->input_low[band] < techpvt->input_high[band])	\
+			? fn_do : fn_do_b;				\
 } 
 
-/* XXX need integer or LUT based approach */
-/* XXX need to insure that rounded delta input != 0. */
-/* XXX verify negative ramp capability, probable rounding error */
 #define DO_CS(fn_prep,fn_do,fn_do_b,itype,otype) 			\
 static void 								\
 fn_do(INP,OUTP,pvt,bw) 							\
@@ -838,28 +827,45 @@ fn_do(INP,OUTP,pvt,bw) 							\
 	} 								\
 } 									\
 static void 								\
-(*fn_prep (iband,oband,pvt,techpvt,band))() 				\
-    bandPtr iband, oband; mpCnstPvtPtr pvt; pCnstDefPtr techpvt; int band; \
+fn_do_b(INP,OUTP,pvt,bw) 						\
+	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
-	otype olow; ConstrainFloat sf; 					\
-	OLOW(otype) = olow = techpvt->output_low[band]; 		\
+	itype *inp = (itype *) INP; otype *outp = (otype *) OUTP; 	\
+	itype inv, lbound = LBOUND(itype), ubound = UBOUND(itype); 	\
+        otype out, olow = OLOW(otype), ohigh = OHIGH(otype); 		\
+	ConstrainFloat sf = FLT_SF, offset = FLT_OFF; 			\
+	while (bw-- > 0) { 						\
+		inv = *inp++; 						\
+		out = ohigh; 						\
+		if (inv >= lbound) 					\
+			out = olow; 					\
+		else if (inv > ubound)	 				\
+			out = (otype)(sf * inv + offset); 		\
+		*outp++ = out; 						\
+	} 								\
+} 									\
+static void 								\
+(*fn_prep (iband,oband,pvt,techpvt,band))() 				\
+    bandPtr iband, oband;						\
+    mpCnstPvtPtr pvt; pCnstDefPtr techpvt; int band; 			\
+{ 									\
+	OLOW(otype) = techpvt->output_low[band];	 		\
 	OHIGH(otype) = techpvt->output_high[band]; 			\
 	LBOUND(itype) = (itype) (techpvt->input_low[band] + HALF); 	\
 	UBOUND(itype) = (itype) (techpvt->input_high[band] + HALF); 	\
-	FLT_SF = sf = (OHIGH(otype) - OLOW(otype) /			\
-		  (UBOUND(itype) - LBOUND(itype));			\
-	FLT_OFF = HALF + olow - sf *  techpvt->input_low[band];		\
-	return fn_do; 							\
+        cs_scale_equation(pvt,techpvt,band);				\
+	FLT_OFF += HALF;						\
+	return (FLT_SF >= 0.0) ? fn_do : fn_do_b; 			\
 }
 
 #if defined(USE_FLOATS)
 #define DO_CSi(fn_prep,fn_do,fn_do_b,itype,otype,shift)			\
-	DO_CSf(fn_prep,fn_do,fn_do_b,itype,otype) 
+	DO_CS(fn_prep,fn_do,fn_do_b,itype,otype) 
 #else
-/* XXX: A lookup table would be better, at least for short things */
-#define DO_CSi(fn_prep,fn_do,fn_do_b,itype,otype,shift)			\
+/* XXX need LUT based approach for small sizes */
+#define DO_CSi_part1(fna,itype,otype,shift)				\
 static void 								\
-fn_do(INP,OUTP,pvt,bw) 							\
+fna(INP,OUTP,pvt,bw) 							\
 	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
 	itype *inp = (itype *) INP; otype *outp = (otype *) OUTP; 	\
@@ -879,27 +885,58 @@ fn_do(INP,OUTP,pvt,bw) 							\
 	    }								\
 	    *outp++ = out;						\
 	} 								\
-} 									\
+}
+#define DO_CSi_part2(fnb,itype,otype,shift)				\
+static void 								\
+fnb(INP,OUTP,pvt,bw) 							\
+	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+{ 									\
+	itype *inp = (itype *) INP; otype *outp = (otype *) OUTP; 	\
+        otype out, olow = OLOW(otype), ohigh = OHIGH(otype); 		\
+	INT32 lbound = (INT32) LBOUND(itype);				\
+	INT32 ubound = (INT32) UBOUND(itype); 				\
+	INT32 int_sf = INT_SF, int_off = INT_OFF;	 		\
+	CARD32 inv;							\
+	while (bw > 0) { 						\
+	    inv = *inp++; 						\
+	    out = olow; 						\
+	    bw--;							\
+	    if (inv < lbound) { 					\
+		out = (otype)((int_sf * inv + int_off)>>shift);		\
+		if (inv <= ubound)					\
+			out = ohigh; 					\
+	    }								\
+	    *outp++ = out;						\
+	} 								\
+}
+/* some compilers gag on long macros. somehow this helps */
+#define DO_CSi(fn_prep,fn_do,fn_do_b,itype,otype,shift)			\
+DO_CSi_part1(fn_do,itype,otype,shift)					\
+DO_CSi_part2(fn_do_b,itype,otype,shift)					\
 static void 								\
 (*fn_prep (iband,oband,pvt,techpvt,band))() 				\
-    bandPtr iband, oband; mpCnstPvtPtr pvt; pCnstDefPtr techpvt; int band; \
+    bandPtr iband, oband;						\
+    mpCnstPvtPtr pvt; pCnstDefPtr techpvt; int band; 			\
 { 									\
 	CARD32 olow, ohigh; INT32 int_sf, int_off;			\
 	olow = techpvt->output_low[band];  				\
 	ohigh = techpvt->output_high[band]; 				\
 	LBOUND(itype) = (itype) (techpvt->input_low[band] + HALF); 	\
 	UBOUND(itype) = (itype) (techpvt->input_high[band] + HALF); 	\
-	OLOW(otype) = olow;	olow <<= shift;				\
-	OHIGH(otype) = ohigh;	ohigh <<= shift;			\
-	int_sf = (ohigh - olow) / (UBOUND(itype) - LBOUND(itype));	\
-	int_off = (1<<(shift-1)) + olow - int_sf * (INT32) LBOUND(itype);\
+	OLOW(otype) = olow = techpvt->output_low[band];			\
+	OHIGH(otype) = ohigh = techpvt->output_high[band];		\
+	olow <<= shift;							\
+	ohigh <<= shift;						\
+	INT_SF = int_sf = (ohigh - olow) /				\
+		(techpvt->input_high[band] - techpvt->input_low[band]);	\
+	INT_OFF = int_off = (1<<(shift-1)) + olow -			\
+			int_sf * (INT32) techpvt->input_low[band];	\
 	INT_SF = int_sf; 						\
 	INT_OFF = int_off;						\
-	return fn_do; 							\
+	return (int_sf >= 0) ? fn_do : fn_do_b; 			\
 }
 #endif
 
-/* XXX verify negative ramp capability */
 #define DO_CSf(fn_prep,fn_do,fn_do_b,itype,otype) 			\
 static void 								\
 fn_do(INP,OUTP,pvt,bw) 							\
@@ -908,37 +945,53 @@ fn_do(INP,OUTP,pvt,bw) 							\
 	itype *inp = (itype *) INP; otype *outp = (otype *) OUTP; 	\
 	itype inv, lbound = LBOUND(itype), ubound = UBOUND(itype); 	\
         otype out, olow = OLOW(otype), ohigh = OHIGH(otype); 		\
-	ConstrainFloat sf = FLT_SF, offset = FLT_SF; 			\
+	ConstrainFloat sf = FLT_SF, offset = FLT_OFF; 			\
 	while (bw-- > 0) { 						\
 		inv = *inp++; 						\
 		out = olow; 						\
-		if (inv > ubound) 					\
+		if (inv >= ubound) 					\
 			out = ohigh; 					\
-		else if (inv >= lbound) 				\
+		else if (inv > lbound) 					\
+			out = (otype)(sf * inv + offset); 		\
+		*outp++ = out; 						\
+	} 								\
+} 									\
+static void 								\
+fn_do_b(INP,OUTP,pvt,bw) 						\
+	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+{ 									\
+	itype *inp = (itype *) INP; otype *outp = (otype *) OUTP; 	\
+	itype inv, lbound = LBOUND(itype), ubound = UBOUND(itype); 	\
+        otype out, olow = OLOW(otype), ohigh = OHIGH(otype); 		\
+	ConstrainFloat sf = FLT_SF, offset = FLT_OFF; 			\
+	while (bw-- > 0) { 						\
+		inv = *inp++; 						\
+		out = ohigh; 						\
+		if (inv >= lbound) 					\
+			out = olow; 					\
+		else if (inv > ubound) 					\
 			out = (otype)(sf * inv + offset); 		\
 		*outp++ = out; 						\
 	} 								\
 } 									\
 static void 								\
 (*fn_prep (iband,oband,pvt,techpvt,band))() 				\
-    bandPtr iband, oband; mpCnstPvtPtr pvt; pCnstDefPtr techpvt; int band; \
+    bandPtr iband, oband;						\
+    mpCnstPvtPtr pvt; pCnstDefPtr techpvt; int band; 			\
 { 									\
-	otype olow, ohigh; ConstrainFloat sf; 				\
-	OLOW(otype) = olow = techpvt->output_low[band]; 		\
-	OHIGH(otype) = ohigh = techpvt->output_high[band];		\
+	OLOW(otype) = techpvt->output_low[band]; 			\
+	OHIGH(otype) = techpvt->output_high[band];			\
 	LBOUND(itype) = (itype) techpvt->input_low[band]; 		\
 	UBOUND(itype) = (itype) techpvt->input_high[band]; 		\
-	FLT_SF = sf = (ohigh - olow) /					\
-			  (UBOUND(itype) - LBOUND(itype));		\
-	FLT_OFF =  olow - sf *  LBOUND(itype); 				\
-	return fn_do; 							\
+    	cs_scale_equation(pvt,techpvt,band);				\
+	return (FLT_SF >= 0.0) ? fn_do : fn_do_b; 			\
 }
 
 DO_CSb	(CSp_bb, CSa_bb, CSb_bb, BitPixel,  BitPixel)
 DO_CSp	(CSp_Bb, CSa_Bb, CSb_Bb, BytePixel, BitPixel)
 DO_CSp	(CSp_Pb, CSa_Pb, CSb_Pb, PairPixel, BitPixel)
 DO_CSp	(CSp_Qb, CSa_Qb, CSb_Qb, QuadPixel, BitPixel)
-DO_CSfp	(CSp_Rb, CSa_Rb, CSb_Rb, RealPixel, BitPixel)
+DO_CSf	(CSp_Rb, CSa_Rb, CSb_Rb, RealPixel, BitPixel)
 
 DO_CScx	(CSp_bB, CSa_bB, CSb_bB, BitPixel,  BytePixel)
 DO_CSi	(CSp_BB, CSa_BB, CSb_BB, BytePixel, BytePixel, 22)

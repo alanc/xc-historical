@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: flodata.h,v 1.1 93/10/26 10:03:59 rws Exp $ */
 /**** module flodata.h ****/
 /******************************************************************************
 				NOTICE
@@ -66,10 +66,23 @@ terms and conditions:
 #define STREAM		128	/* non-canonic generic stream		*/
 #define ENCODED		129	/* non-canonic compressed stream	*/
 
-#define IsCanonic(df)     !(df & (LUT_ARRAY | RUN_LENGTH | STREAM))
-#define IsConstrained(df) \
-		!(df & (LUT_ARRAY | RUN_LENGTH | STREAM | UNCONSTRAINED))
+#define IsntLut(df)         (df != LUT_ARRAY)
+#define IsntDomain(df)      (df & ~(RUN_LENGTH | BIT_PIXEL))
+#define IsntCanonic(df)     (df & (LUT_ARRAY | RUN_LENGTH | STREAM))
+#define IsntConstrained(df) \
+		  (df & (LUT_ARRAY | RUN_LENGTH | STREAM | UNCONSTRAINED))
+
+#define IsLut(df)         (df == LUT_ARRAY)
+#define IsDomain(df)      (!IsntDomain(df))
+#define IsCanonic(df)     (!IsntCanonic(df))
+#define IsConstrained(df) (!IsntConstrained(df))
+
 #define IndexClass(df)    (df == UNCONSTRAINED ? 0 : df )
+
+#define ConstrainConst(fconst,levels) \
+	( (fconst <= 0.)	? (CARD32) 0 : \
+	  (fconst >= levels)	? (CARD32) (levels - 1) : \
+				  (CARD32) (fconst + 0.5))
 
 /*
  * Data types and sizes for supported format classes
@@ -96,7 +109,6 @@ typedef struct _format {
   CARD32  levels;	/* quantization levels				*/
   CARD32  stride;	/* distance between adjacent pixels in bits	*/
   CARD32  pitch;	/* distance between adjacent scanlines in bits	*/
-  void   *params;	/* pointer to technique-specific parameters	*/
 } formatRec, *formatPtr;
 
 

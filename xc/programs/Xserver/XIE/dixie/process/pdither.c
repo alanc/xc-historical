@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pdither.c,v 1.1 93/10/26 10:01:23 rws Exp $ */
 /**** module pdither.c ****/
 /******************************************************************************
 				NOTICE
@@ -86,9 +86,12 @@ terms and conditions:
  *  routines referenced by other modules
  */
 peDefPtr	MakeDither();
+
 Bool		CopyPDitherErrorDiffusion();
 Bool		PrepPDitherErrorDiffusion();
 
+Bool		CopyPDitherOrdered();
+Bool		PrepPDitherOrdered();
 
 /*
  *  routines internal to this module
@@ -127,24 +130,27 @@ peDefPtr MakeDither(flo,tag,pe)
   /*
    * copy the client element parameters (swap if necessary)
    */
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
     cpswaps(stuff->src, raw->src);
-    cpswapl(stuff->level0,  raw->level0);
-    cpswapl(stuff->level1,  raw->level1);
-    cpswapl(stuff->level2,  raw->level2);
+    raw->bandMask = stuff->bandMask;
+    cpswapl(stuff->levels0,  raw->levels0);
+    cpswapl(stuff->levels1,  raw->levels1);
+    cpswapl(stuff->levels2,  raw->levels2);
     cpswaps(stuff->lenParams, raw->lenParams);
     cpswaps(stuff->dither, raw->dither);
   }
   else
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloDither));
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloDither));
   /*
    * copy technique data (if any)
    */
   if(!(ped->techVec = FindTechnique(xieValDither, raw->dither)) ||
-     !(ped->techVec->copyfnc(flo, ped, &stuff[1], &raw[1], raw->lenParams)))
-    TechniqueError(flo,ped,raw->dither,raw->lenParams, return(ped));
+     !(ped->techVec->copyfnc(flo, ped, &stuff[1], &raw[1], raw->lenParams,
+					  raw->dither == xieValDefault)))
+    TechniqueError(flo,ped,xieValDither,raw->dither,raw->lenParams,
+		   return(ped));
 
  /*
    * assign phototag to inFlo
@@ -156,36 +162,41 @@ peDefPtr MakeDither(flo,tag,pe)
 }                               /* end MakePDither */
 
 /*------------------------------------------------------------------------
----------------- routine: copy routine for no param techniques -------------
-------------------------------------------------------------------------*/
-
-static
-Bool CopyPDitherStandard(flo, ped, sparms, rparms, tsize) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     void *sparms, *rparms;
-     CARD16	tsize;
-{
-  return(tsize == 0);
-}
-
-/*------------------------------------------------------------------------
 ---------------- routine: copy routine for no Error Diffusion technique --
 ------------------------------------------------------------------------*/
 
-Bool CopyPDitherErrorDiffusion(flo, ped, sparms, rparms, tsize) 
+Bool CopyPDitherErrorDiffusion(flo, ped, sparms, rparms, tsize, isDefault) 
      floDefPtr  flo;
      peDefPtr   ped;
      void *sparms, *rparms;
      CARD16	tsize;
+     Bool	isDefault;
 {
-  return CopyPDitherStandard(flo, ped, sparms, rparms, tsize);
+  VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
+
+  return(tsize == 0);
 }
 
 /*------------------------------------------------------------------------
 ---------------- routine: copy routine for Ordered techniques  ---------
 ------------------------------------------------------------------------*/
 
+Bool CopyPDitherOrdered(flo, ped, sparms, rparms, tsize, isDefault) 
+     floDefPtr  flo;
+     peDefPtr   ped;
+     xieTecDitherOrdered *sparms, *rparms;
+     CARD16	tsize;
+     Bool	isDefault;
+{
+     VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
+
+     if (tsize) 
+	rparms->thresholdOrder = sparms->thresholdOrder;
+     else
+    	rparms->thresholdOrder = 4;
+
+     return(TRUE);
+}
 
 /*------------------------------------------------------------------------
 ---------------- routine: prep routine for no param techniques -------------
@@ -196,12 +207,6 @@ Bool PrepPDitherStandard(flo, ped, raw, tec)
      peDefPtr   ped;
      void *raw, *tec;
 {
-  ped->outFlo.format[0].params 	= (void *)NULL;
-  if (ped->outFlo.bands > 1) {
-	  ped->outFlo.format[1].params 	= (void *)NULL;
-	  ped->outFlo.format[2].params 	= (void *)NULL;
-  }
-
   return(TRUE);
 }
 
@@ -217,6 +222,17 @@ Bool PrepPDitherErrorDiffusion(flo, ped, raw, tec)
   return PrepPDitherStandard(flo, ped, (void *) raw, tec);
 }
 
+/*------------------------------------------------------------------------
+---------------- routine: prep routine for Ordered technique -------------
+------------------------------------------------------------------------*/
+Bool PrepPDitherOrdered(flo, ped, raw, tec) 
+     floDefPtr  flo;
+     peDefPtr   ped;
+     xieFloDither *raw;
+     xieTecDitherOrdered *tec;
+{
+  return PrepPDitherStandard(flo, ped, (void *) raw, (void *) tec);
+}
 
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
@@ -230,35 +246,24 @@ static Bool PrepPDither(flo,ped)
   outFloPtr src = &inf->srcDef->outFlo;
   outFloPtr dst = &ped->outFlo;
   xieFloDither *raw = (xieFloDither *)ped->elemRaw;
+  CARD32 *levels = &(raw->levels0);
   int b;
 
   /* grab a copy of the src attributes and propagate them to our input */
   dst->bands = inf->bands = src->bands;
   for(b = 0; b < src->bands; b++) {
 
-	if (src->format[b].class == UNCONSTRAINED)
+	dst->format[b] = inf->format[b] = src->format[b];
+
+	if ((raw->bandMask & (1<<b)) == 0)
+	    continue;
+
+	if (IsntConstrained(src->format[b].class) &&
+	    src->format[b].class == BIT_PIXEL)
 		MatchError(flo, ped, return(FALSE));
 
-	if (!IsConstrained(src->format[b].class))
-		ImplementationError(flo, ped, return(FALSE));
-
-	inf->format[b] = src->format[b];
-
-	/* Copy outFlo values that are unchanged by dither */
-	dst->format[b].band 		= b;
-  	dst->format[b].interleaved 	= src->format[b].interleaved;
-	dst->format[b].width 		= src->format[b].width;
-	dst->format[b].height 		= src->format[b].height;
-  }
-
-  /* Pull in level information from the element description */ 
-  if ((dst->format[0].levels = raw->level0) > src->format[0].levels)
-	ValueError(flo,ped,raw->level0,return(FALSE));
-  if (dst->bands > 1) {
-  	if ((dst->format[1].levels = raw->level1) > src->format[1].levels)
-		ValueError(flo,ped,raw->level1,return(FALSE));
-	if ((dst->format[2].levels = raw->level2) > src->format[2].levels)
-		ValueError(flo,ped,raw->level2,return(FALSE));
+  	if ((dst->format[b].levels = *(levels+b)) > src->format[b].levels)
+		ValueError(flo,ped,*(levels+b),return(FALSE));
   }
 
   /* Set depth, class, stride, and pitch */
@@ -267,8 +272,8 @@ static Bool PrepPDither(flo,ped)
 
   /* Take care of any technique parameters */
   if (!(ped->techVec->prepfnc(flo, ped, raw, &raw[1])))
-	TechniqueError(flo, ped, raw->dither, raw->lenParams,
-		return(FALSE));
+	TechniqueError(flo,ped,xieValDither,raw->dither,raw->lenParams,
+		       return(FALSE));
 
   return (TRUE);
 }	

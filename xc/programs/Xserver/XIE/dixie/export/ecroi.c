@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ecroi.c,v 1.1 93/10/26 10:02:50 rws Exp $ */
 /**** module ecroi.c ****/
 /******************************************************************************
 				NOTICE
@@ -44,7 +44,7 @@ terms and conditions:
   
 	ecroi.c -- DIXIE routines for managing the ExportClientROI element
   
-	Robert NC Shelley and J. Weida -- AGE Logic, Inc. April 1993
+	Dean Verheiden -- AGE Logic, Inc. August 1993
   
 *****************************************************************************/
 
@@ -102,43 +102,41 @@ static diElemVecRec eROIVec = {
 ----------------- routine: make an ExportClientROI element ----------------
 ------------------------------------------------------------------------*/
 peDefPtr MakeECROI(flo,tag,pe)
-	floDefPtr      flo;
-	xieTypPhototag tag;
-	xieFlo        *pe;
+     floDefPtr      flo;
+     xieTypPhototag tag;
+     xieFlo        *pe;
 {
-	peDefPtr ped;
-	inFloPtr inFlo;
-	ELEMENT(xieFloExportClientROI);
-	ELEMENT_AT_LEAST_SIZE(xieFloExportClientROI);
-	ELEMENT_NEEDS_1_INPUT(src);
+  peDefPtr ped;
+  inFloPtr inFlo;
+  ELEMENT(xieFloExportClientROI);
+  ELEMENT_AT_LEAST_SIZE(xieFloExportClientROI);
+  ELEMENT_NEEDS_1_INPUT(src);
   
-	if(!(ped = MakePEDef(1, (CARD32)stuff->elemLength<<2, 0))) 
-		FloAllocError(flo,tag,xieElemExportClientROI, return(NULL));
-
-	ped->diVec	    = &eROIVec;
-	ped->phototag     = tag;
-	ped->flags.export = TRUE;
-	raw = (xieFloExportClientROI *)ped->elemRaw;
-	/*
-	 * copy the standard client element parameters (swap if necessary)
-	 */
-	if (flo->client->swapped)
-	{
-		raw->elemType   = stuff->elemType;
-		raw->elemLength = stuff->elemLength;
-		cpswaps(stuff->src, raw->src);
-		cpswapl(stuff->notify, raw->notify);
-		cpswapl(stuff->pad, raw->pad);
-	}
-	else	
-		bcopy((char *)stuff, (char *)raw, sizeof(xieFloExportClientROI));
-	/*
-	 * assign phototags to inFlos
-	 */
-	inFlo = ped->inFloLst;
-	inFlo[SRCtag].srcTag = raw->src;
-
-	return(ped);
+  if(!(ped = MakePEDef(1, (CARD32)stuff->elemLength<<2, 0))) 
+    FloAllocError(flo,tag,xieElemExportClientROI, return(NULL));
+  
+  ped->diVec	     = &eROIVec;
+  ped->phototag      = tag;
+  ped->flags.export  = TRUE;
+  ped->flags.getData = TRUE;
+  raw = (xieFloExportClientROI *)ped->elemRaw;
+  /*
+   * copy the standard client element parameters (swap if necessary)
+   */
+  if (flo->reqClient->swapped) {
+    raw->elemType   = stuff->elemType;
+    raw->elemLength = stuff->elemLength;
+    cpswaps(stuff->src, raw->src);
+    raw->notify = stuff->notify; 
+  } else	
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloExportClientROI));
+  /*
+   * assign phototags to inFlos
+   */
+  inFlo = ped->inFloLst;
+  inFlo[SRCtag].srcTag = raw->src;
+  
+  return(ped);
 }                               /* end MakeECROI */
 
 
@@ -149,31 +147,27 @@ static Bool PrepECROI(flo,ped)
      floDefPtr  flo;
      peDefPtr   ped;
 {
-	xieFloExportClientROI *raw = (xieFloExportClientROI *)ped->elemRaw;
-	inFloPtr inflo = &ped->inFloLst[IMPORT];
-	outFloPtr outflo = &ped->outFlo;
-	roiPtr roi;
-
-	/* grab roi resource */
-	if( !(roi = (roiPtr)LookupIDByType(raw->src, RT_ROI)) )
-	{
-	    ROIError(flo,ped,raw->src,return( FALSE ));
-	}
-	if (inflo && outflo)
-	{
-		inflo->bands = 1;
-		inflo->format[0].class  = RUN_LENGTH;
-		inflo->format[0].band   = 0;
-		inflo->format[0].width  = 0;
-		inflo->format[0].height = 0;
-		inflo->format[0].levels = 0;
-
-		outflo->bands = 1;
-		outflo->format[0] = inflo->format[0];
-		outflo->format[0].class  = STREAM;
-		return(TRUE);
-	}
-	return(FALSE);
+  xieFloExportClientROI *raw = (xieFloExportClientROI *)ped->elemRaw;
+  inFloPtr inf   = &ped->inFloLst[SRCtag];
+  outFloPtr src  = &inf->srcDef->outFlo;
+  outFloPtr dst  = &ped->outFlo;
+  
+  /* Make sure notify value is valid
+   */ 
+  if(raw->notify != xieValDisable   &&
+     raw->notify != xieValFirstData &&
+     raw->notify != xieValNewData)
+    ValueError(flo,ped,raw->notify, return(FALSE));
+  
+  /* Validate and Propagate input attributes to our output */
+  if (src->bands != 1 || src->format[0].class != RUN_LENGTH)
+    FloSourceError(flo,raw->src,raw->elemType, return(FALSE));
+  
+  dst->bands = inf->bands = src->bands;
+  dst->format[0] = inf->format[0] = src->format[0];
+  ped->swapUnits[0] = sizeof(xieTypRectangle);
+  
+  return(TRUE);
 }                               /* end PrepECROI */
 
 /* end module ecroi.c */

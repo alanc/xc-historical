@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: texstr.h,v 1.1 93/10/26 09:50:59 rws Exp $ */
 /**** module texstr.h ****/
 /****************************************************************************
 				NOTICE
@@ -102,7 +102,6 @@ typedef struct _petex {
   struct _petex *flink;		  /* foreword link for scheduler list	  */
   struct _petex *blink;		  /* backword link for scheduler list	  */
   peDefPtr       peDef;		  /* pointer to the DIXIE element def     */
-  floTexPtr	 floTex;	  /* pointer to the DDXIE flo context	  */
   outFloPtr      outFlo;	  /* pointer to element's outFlo	  */
   receptorPtr    receptor;	  /* pointer to in-line receptors	  */
   void	        *private;	  /* pointer to in-line private info	  */

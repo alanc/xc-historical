@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: tables.c,v 1.1 93/10/26 09:58:08 rws Exp $ */
 /**** tables.c ****/
 /****************************************************************************
 				NOTICE
@@ -64,9 +64,30 @@ terms and conditions:
 #include <error.h>
 #include <tables.h>
 
-static peDefPtr ElementNotImplemented();
 
-static int (*ProcTable413[])() = {
+/*------------------------------------------------------------------------
+------------------------ Procedure Not Implemented -----------------------
+------------------------------------------------------------------------*/
+static int ProcNotImplemented(client)
+     ClientPtr client;
+{
+  return( BadRequest );
+}                                   /* end ProcNotImplemented */
+
+
+/*------------------------------------------------------------------------
+---------------- Error stub for unsupported element types ----------------
+------------------------------------------------------------------------*/
+static peDefPtr ElementNotImplemented(flo,tag,pe)
+     floDefPtr      flo;
+     xieTypPhototag tag;
+     xieFlo        *pe;
+{
+  FloElementError(flo,tag,pe->elemType, return(NULL));
+}
+
+#if XIE_FULL
+static int (*ProcTable414[])() = {
 /* 00 */  ProcNotImplemented,	/* Illegal protocol request */	
 /* 01 */  ProcNotImplemented,	/* QueryImageExtension doesn't use the table */
 /* 02 */  ProcQueryTechniques,
@@ -95,9 +116,8 @@ static int (*ProcTable413[])() = {
 /* 25 */  ProcAwait,
 /* 26 */  ProcAbort
   };
-     
 
-static int (*SProcTable413[])() = {
+static int (*SProcTable414[])() = {
 /* 00 */  ProcNotImplemented,	/* Illegal protocol request */	
 /* 01 */  ProcNotImplemented,	/* QueryImageExtension doesn't use the table */
 /* 02 */  SProcQueryTechniques,
@@ -140,33 +160,137 @@ peDefPtr (*MakeTable[])() = {
 /* 09 */  MakeArith,
 /* 10 */  MakeBandCom,
 /* 11 */  MakeBandExt,
-/* 12 */  MakeBlend,
-/* 13 */  ElementNotImplemented,
-/* 14 */  MakeConstrain,
-/* 15 */  MakeConvertFromIndex,
-/* 16 */  ElementNotImplemented,
-/* 17 */  MakeConvertToIndex,
-/* 18 */  ElementNotImplemented,
-/* 19 */  MakeConvolve,
-/* 20 */  MakeDither,
-/* 21 */  MakeGeometry,
-/* 22 */  MakeLogic,
-/* 23 */  ElementNotImplemented,
-/* 24 */  ElementNotImplemented,
-/* 25 */  MakePasteUp,
-/* 26 */  MakePoint,
-/* 27 */  MakeUnconstrain,
-/* 28 */  ElementNotImplemented,
-/* 29 */  MakeECLUT,
-/* 30 */  MakeECPhoto,
-/* 31 */  MakeECROI,
-/* 32 */  MakeEDraw,
-/* 33 */  MakeEDrawPlane,
-/* 34 */  MakeELUT,
-/* 35 */  MakeEPhoto,
-/* 36 */  MakeEROI
+/* 12 */  MakeBandSel,
+/* 13 */  MakeBlend,
+/* 14 */  MakeCompare,
+/* 15 */  MakeConstrain,
+/* 16 */  MakeConvertFromIndex,
+/* 17 */  MakeConvertFromRGB,
+/* 18 */  MakeConvertToIndex,
+/* 19 */  MakeConvertToRGB,
+/* 20 */  MakeConvolve,
+/* 21 */  MakeDither,
+/* 22 */  MakeGeometry,
+/* 23 */  MakeLogic,
+/* 24 */  MakeMatchHistogram,
+/* 25 */  MakeMath,
+/* 26 */  MakePasteUp,
+/* 27 */  MakePoint,
+/* 28 */  MakeUnconstrain,
+/* 29 */  MakeECHistogram,
+/* 30 */  MakeECLUT,
+/* 31 */  MakeECPhoto,
+/* 32 */  MakeECROI,
+/* 33 */  MakeEDraw,
+/* 34 */  MakeEDrawPlane,
+/* 35 */  MakeELUT,
+/* 36 */  MakeEPhoto,
+/* 37 */  MakeEROI
   };
 
+#else /* XIEdis */
+
+static int (*ProcTable414[])() = {
+/* 00 */  ProcNotImplemented,	/* Illegal protocol request */	
+/* 01 */  ProcNotImplemented,	/* QueryImageExtension doesn't use the table */
+/* 02 */  ProcQueryTechniques,
+/* 03 */  ProcNotImplemented,		/* CreateColorList */
+/* 04 */  ProcNotImplemented,		/* DestroyColorList */
+/* 05 */  ProcNotImplemented,		/* PurgeColorList */
+/* 06 */  ProcNotImplemented,		/* QueryColorList */
+/* 07 */  ProcCreateLUT,
+/* 08 */  ProcDestroyLUT,
+/* 09 */  ProcCreatePhotomap,
+/* 10 */  ProcDestroyPhotomap,
+/* 11 */  ProcQueryPhotomap,
+/* 12 */  ProcNotImplemented,		/* CreateROI */
+/* 13 */  ProcNotImplemented,		/* DestroyROI */
+/* 14 */  ProcCreatePhotospace,
+/* 15 */  ProcDestroyPhotospace,
+/* 16 */  ProcExecuteImmediate,
+/* 17 */  ProcCreatePhotoflo,
+/* 18 */  ProcDestroyPhotoflo,
+/* 19 */  ProcExecutePhotoflo,
+/* 20 */  ProcModifyPhotoflo,
+/* 21 */  ProcRedefinePhotoflo,
+/* 22 */  ProcPutClientData,
+/* 23 */  ProcGetClientData,
+/* 24 */  ProcQueryPhotoflo,
+/* 25 */  ProcAwait,
+/* 26 */  ProcAbort
+  };
+
+static int (*SProcTable414[])() = {
+/* 00 */  ProcNotImplemented,	/* Illegal protocol request */	
+/* 01 */  ProcNotImplemented,	/* QueryImageExtension doesn't use the table */
+/* 02 */  SProcQueryTechniques,
+/* 03 */  ProcNotImplemented,		/* CreateColorList */
+/* 04 */  ProcNotImplemented,		/* DestroyColorList */
+/* 05 */  ProcNotImplemented,		/* PurgeColorList */
+/* 06 */  ProcNotImplemented,		/* QueryColorList */
+/* 07 */  SProcCreateLUT,
+/* 08 */  SProcDestroyLUT,
+/* 09 */  SProcCreatePhotomap,
+/* 10 */  SProcDestroyPhotomap,
+/* 11 */  SProcQueryPhotomap,
+/* 12 */  ProcNotImplemented,		/* CreateROI */
+/* 13 */  ProcNotImplemented,		/* DestroyROI */
+/* 14 */  SProcCreatePhotospace,
+/* 15 */  SProcDestroyPhotospace,
+/* 16 */  SProcExecuteImmediate,
+/* 17 */  SProcCreatePhotoflo,
+/* 18 */  SProcDestroyPhotoflo,
+/* 19 */  SProcExecutePhotoflo,
+/* 20 */  SProcModifyPhotoflo,
+/* 21 */  SProcRedefinePhotoflo,
+/* 22 */  SProcPutClientData,
+/* 23 */  SProcGetClientData,
+/* 24 */  SProcQueryPhotoflo,
+/* 25 */  SProcAwait,
+/* 26 */  SProcAbort
+  };
+     
+peDefPtr (*MakeTable[])() = {
+/* 00 */  ElementNotImplemented,
+/* 01 */  MakeICLUT,
+/* 02 */  MakeICPhoto,
+/* 03 */  ElementNotImplemented,	/* ICROI */
+/* 04 */  MakeIDraw,
+/* 05 */  MakeIDrawP,
+/* 06 */  MakeILUT,
+/* 07 */  MakeIPhoto,
+/* 08 */  ElementNotImplemented,	/* IROI */
+/* 09 */  ElementNotImplemented,	/* Arith */
+/* 10 */  ElementNotImplemented,	/* BandCom */
+/* 11 */  ElementNotImplemented,	/* BandExt */
+/* 12 */  ElementNotImplemented,	/* BandSel */
+/* 13 */  ElementNotImplemented,	/* Blend */
+/* 14 */  ElementNotImplemented,	/* Compare */
+/* 15 */  ElementNotImplemented,	/* Constrain */
+/* 16 */  ElementNotImplemented,	/* ConvertFromIndex */
+/* 17 */  ElementNotImplemented,	/* ConvertFromRGB */
+/* 18 */  ElementNotImplemented,	/* ConvertToIndex */
+/* 19 */  ElementNotImplemented,	/* ConvertToRGB */
+/* 20 */  ElementNotImplemented,	/* Convolve */
+/* 21 */  ElementNotImplemented,	/* Dither */
+/* 22 */  MakeGeometry,
+/* 23 */  ElementNotImplemented,	/* Logic */
+/* 24 */  ElementNotImplemented,	/* MatchHistogram */
+/* 25 */  ElementNotImplemented,	/* Math */
+/* 26 */  ElementNotImplemented,	/* PasteUp */
+/* 27 */  MakePoint,
+/* 28 */  ElementNotImplemented,	/* Unconstrain */
+/* 29 */  ElementNotImplemented,	/* ECHistogram */
+/* 30 */  MakeECLUT,
+/* 31 */  MakeECPhoto,
+/* 32 */  ElementNotImplemented,	/* ECROI */
+/* 33 */  MakeEDraw,
+/* 34 */  MakeEDrawPlane,
+/* 35 */  MakeELUT,
+/* 36 */  MakeEPhoto,
+/* 37 */  ElementNotImplemented		/* EROI */
+  };
+#endif
    
 /************************************************************************
      Fill in the version specific tables for the selected minor protocol 
@@ -178,27 +302,14 @@ void init_proc_tables(minorVersion, ptable, sptable)
 {
   /* Kind of boring with only one version to work with */
   switch (minorVersion) {
-  case 13:
-    *ptable = ProcTable413;
-    *sptable = SProcTable413;
+  case 14:
+    *ptable = ProcTable414;
+    *sptable = SProcTable414;
     break;
   default:
-    *ptable = ProcTable413;
-    *sptable = SProcTable413;
+    *ptable = ProcTable414;
+    *sptable = SProcTable414;
   }
 }
 
-/*------------------------------------------------------------------------
----------------- Error stub for unsupported element types ----------------
-------------------------------------------------------------------------*/
-static peDefPtr ElementNotImplemented(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
-{
-  FloImplementationError(flo,tag,pe->elemType, return(NULL));
-}
-
 /* end module tables.c */
-
-

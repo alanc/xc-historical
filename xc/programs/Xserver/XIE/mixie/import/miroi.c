@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miroi.c,v 1.1 93/10/26 09:44:43 rws Exp $ */
 /**** module miroi.c ****/
 /******************************************************************************
 				NOTICE
@@ -135,8 +135,6 @@ static int CreateIROI(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  xieFloImportROI *raw;
-  
   /* attach an execution context to the roi element definition */
   return MakePETex(flo,ped,sizeof(miROIDefRec),NO_SYNC,NO_SYNC);
 }                               /* end CreateIROI */

@@ -1,4 +1,4 @@
-/* $XConsortium: mpgeomaa.c,v 1.2 93/07/20 19:42:56 rws Exp $ */
+/* $XConsortium: mpgeomaa.c,v 1.2 93/10/26 09:47:34 rws Exp $ */
 /**** module mpgeomaa.c ****/
 /******************************************************************************
 				NOTICE
@@ -83,6 +83,7 @@ terms and conditions:
 #include <texstr.h>
 #include <xiemd.h>
 #include <mpgeom.h>
+#include <technq.h>
 
 
 /*
@@ -114,84 +115,76 @@ static ddElemVecRec AntiAliasVec = {
   DestroyGeomAA
   };
 
-static void SL_R(), SL_b(), SL_B(), SL_P(), SL_Q();
-static void FL_R(), FL_b(), FL_B(), FL_P(), FL_Q();
-static void GL_R(), GL_b(), GL_B(), GL_P(), GL_Q();
-static void (*scale_lines[5])() = { SL_R, SL_b, SL_B, SL_P, SL_Q, };
-static void (*fill_lines[5])()  = { FL_R, FL_b, FL_B, FL_P, FL_Q, };
-static void (*ggen_lines[5])()  = { GL_R, GL_b, GL_B, GL_P, GL_Q, };
+static void AASL_R(), AASL_b(), AASL_B(), AASL_P(), AASL_Q(); /* AA scale */
+static void AAGL_R(), AAGL_b(), AAGL_B(), AAGL_P(), AAGL_Q(); /* AA general */
+static void XXFL_R(), XXFL_b(), XXFL_B(), XXFL_P(), XXFL_Q(); /* fill */
+static void (*aa_scl_lines[5])() = { AASL_R, AASL_b, AASL_B, AASL_P, AASL_Q };
+static void (*aa_gen_lines[5])() = { AAGL_R, AAGL_b, AAGL_B, AAGL_P, AAGL_Q };
+static void (*fill_lines[5])()   = { XXFL_R, XXFL_b, XXFL_B, XXFL_P, XXFL_Q };
+
+#if XIE_FULL
+static void GAGL_R(),           GAGL_B(), GAGL_P(), GAGL_Q(); /* GA general */
+static void (*ga_scl_lines[5])() = { GAGL_R, AASL_b, GAGL_B, GAGL_P, GAGL_Q };
+static void (*ga_gen_lines[5])() = { GAGL_R, AAGL_b, GAGL_B, GAGL_P, GAGL_Q };
+#endif
 
 typedef struct _bounding_rect {
 	double 	xmin,xmax,ymin,ymax;
 } brect;
 
-typedef struct _mpaabanddef {
-  	int 	finished;	/* done with this band */
-	int	yOut;		/* what output line we are on */
-	int	out_of_bounds;	/* if entire input image is missed */
+#define FLG_A_NOT_ZERO 0x01
+#define FLG_B_NOT_ZERO 0x02
+#define FLG_C_NOT_ZERO 0x04
+#define FLG_D_NOT_ZERO 0x08
+#define FLG_BACKWARDS  0x10
+#define FLG_SKIP_BAND  0x20
 
-	double	first_mlow,	/* lowest  input line mapped by first output */
-		first_mhigh;	/* highest input line mapped by first output */
+typedef struct _mpaabanddef {
+	CARD32  flags;		/* see FLG_xxx above */
+	int	yOut;		/* what output line we are on */
 
 	int	first_ilow,	/* rounded first_mlow   */
 		first_ihigh;	/* rounded first_mhigh  */
 
+	double	first_mlow,	/* lowest  input line mapped by first output */
+		first_mhigh;	/* highest input line mapped by first output */
+
 	brect 	left_br;	/* bounding rectangle, left  side */
 
-	/* useful data precalculated for scaling */
-	int	*ixmin;
+	int	*ixmin;		/* useful data precalculated for scaling */
 	int	*ixmax;
 
-/*** XXX - nuke these  after bit routines rewritten ***/
-	int	*x_locs;
-	int	x_start;
-	int	x_end;
-
+	int	level_clip;	/* in case we need to clip our pixel */
 	int	int_constant;	/* precalculated for Constrained data fill */
 	RealPixel flt_constant;	/* precalculated for UnConstrained data fill */
 
-	/* required by general line filling routine */
-	int	in_width;
+	int	in_width;	/* source image size */
 	int	in_height;
 
-	/* keep track of what input lines we've come across */
-	int	lo_src_available;
-	int	hi_src_available;
+	int	lo_src_avail;	/* lines we think are available */
+	int	hi_src_avail;
 
-	/* need these to do any work! */
-	void    (*linefunc) ();
+	void    (*linefunc) ();	/* action routines based on pixel size */
 	void    (*fillfunc) ();
   }
-  mpAntiAliasBandRec, *mpAntiAliasBandPtr;
+mpAABandRec, *mpAABandPtr;
 
-typedef struct _mpaadef {
-  	int	input_line_increases_as_output_line_increases;
-  	int	a_not_zero;
-  	int	b_not_zero;
-  	int	c_not_zero;
-  	int	d_not_zero;
-  	mpAntiAliasBandPtr bandInfo[xieValMaxBands];
-  }
-  mpAntiAliasDefRec, *mpAntiAliasDefPtr;
 /*------------------------------------------------------------------------
 ------------------------  fill in the vector  ---------------------------
 ------------------------------------------------------------------------*/
 int miAnalyzeGeomAA(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+    floDefPtr flo;
+    peDefPtr  ped;
 {
-  xieFloGeometry *raw = (xieFloGeometry *)ped->elemRaw;
-  inFloPtr  insrc= &ped->inFloLst[SRCtag];
-  
-   switch(raw->sample) {
-   case xieValGeomAntialias:
+    switch(ped->techVec->number) {
+    case xieValGeomAntialias:
+    case xieValGeomGaussian:	/* safe, but slow and sometimes ugly */
 	ped->ddVec = AntiAliasVec;
 	break;
-
-   default:
+    default:
     	return(FALSE);
-   }
-  return(TRUE);
+    }
+    return(TRUE);
 }                               /* end miAnalyzeGeomAA */
 
 
@@ -199,58 +192,51 @@ int miAnalyzeGeomAA(flo,ped)
 ---------------------------- create peTex . . . --------------------------
 ------------------------------------------------------------------------*/
 static int CreateGeomAA(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+    floDefPtr flo;
+    peDefPtr  ped;
 {
-  /* allocate space for private data */
-  return(MakePETex(flo, ped, sizeof(mpAntiAliasDefRec), NO_SYNC, NO_SYNC));
+    int auxsize = sizeof(mpAABandRec) * xieValMaxBands;
+
+    return(MakePETex(flo, ped, auxsize, NO_SYNC, NO_SYNC));
+
 }                               /* end CreateGeomAA */
 /*------------------------------------------------------------------------
 ---------------------------- free private data . . . ---------------------
 ------------------------------------------------------------------------*/
 static int FreeBandData(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+    floDefPtr flo;
+    peDefPtr  ped;
 {
-  mpAntiAliasDefPtr pvt = (mpAntiAliasDefPtr) (ped->peTex->private);
-  mpAntiAliasBandPtr pvtband;
-  inFloPtr  inf = &ped->inFloLst[SRCtag];
-  int band;
+    mpAABandPtr pvtband = (mpAABandPtr) (ped->peTex->private); 
+    int band, nbands = ped->inFloLst[SRCtag].bands;
   
-/*
- *  Look for private data to free
- */
-  for (band = 0 ; band < inf->bands ; band++) { 
-    pvtband = pvt->bandInfo[band];
-    if (pvtband != NULL) {
+    for (band = 0 ; band < nbands ; band++, pvtband++) { 
+	if (pvtband->flags & FLG_SKIP_BAND)
+	    continue;
+	if (pvtband->ixmin != NULL)
+	    pvtband->ixmin = (int *) XieFree(pvtband->ixmin);
 
-      if (pvtband->x_locs != NULL)
-	XieFree(pvtband->x_locs);
-      if (pvtband->ixmin != NULL)
-	XieFree(pvtband->ixmin);
-      if (pvtband->ixmax != NULL)
-	XieFree(pvtband->ixmax);
-
-      pvt->bandInfo[band] = (mpAntiAliasBandPtr) XieFree(pvt->bandInfo[band]);
     }
-  }
 }
 /*------------------------------------------------------------------------
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
 static int InitializeGeomAA(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+  floDefPtr flo;
+  peDefPtr  ped;
 {
-  mpAntiAliasDefPtr pvt = (mpAntiAliasDefPtr) (ped->peTex->private);
-  peTexPtr pet = ped->peTex;
-  mpAntiAliasBandPtr pvtband;
-  xieFloGeometry *raw = (xieFloGeometry *)ped->elemRaw;
-  pGeomDefPtr pedpvt = (pGeomDefPtr)ped->elemPvt; 
-  inFloPtr  inf = &ped->inFloLst[SRCtag];
-  int band;
-  int in_height;
+  peTexPtr	   pet = ped->peTex;
+  xieFloGeometry  *raw = (xieFloGeometry *)ped->elemRaw;
+  pGeomDefPtr	pedpvt = (pGeomDefPtr)ped->elemPvt; 
+  mpAABandPtr  pvtband = (mpAABandPtr) (pet->private);
+  bandPtr	 iband = &(pet->receptor[SRCtag].band[0]);
+  bandPtr	 oband = &(pet->emitter[0]);
+  int		nbands = ped->inFloLst[SRCtag].bands;
+#if XIE_FULL
+  BOOL	      gaussian = (ped->techVec->number == xieValGeomGaussian);
+#endif
+  int		 band;
  /*
   * access coordinates for y_in = c * x_out + d * y_out + ty
   */
@@ -260,53 +246,49 @@ static int InitializeGeomAA(flo,ped)
   double d  = pedpvt->coeffs[3];
   double tx = pedpvt->coeffs[4];
   double ty = pedpvt->coeffs[5];
-  int	width =raw->width;
-  int	height=raw->height;
+  int width = raw->width;
   int threshold;
-  double left_map,right_map;
-  double upper_left_x,upper_left_y;
-  double upper_rite_x,upper_rite_y;
-  double lower_left_x,lower_left_y;
-  double lower_rite_x,lower_rite_y;
-  double left_xmin,left_xmax,left_ymin,left_ymax;
-  double rite_xmin,rite_xmax,rite_ymin,rite_ymax;
-  double xmin,ymin,xmax,ymax;
-  
+  double xmin,xmax,ymin,ymax,tot_ymin,tot_ymax;
+  CARD32 dataclass;
+  CARD32 band_flags;
+
 /*
  *  Initialize parameters for tracking input lines, etc.
  */
-  pvt->input_line_increases_as_output_line_increases =
-	(pedpvt->coeffs[3] > 0.0);
+  band_flags = 0;
 
-  pvt->a_not_zero = (a != 0.0);
-  pvt->b_not_zero = (b != 0.0);
-  pvt->c_not_zero = (c != 0.0);
-  pvt->d_not_zero = (d != 0.0);
+  if (a != 0.0) band_flags |= FLG_A_NOT_ZERO;
+  if (b != 0.0) band_flags |= FLG_B_NOT_ZERO;
+  if (c != 0.0) band_flags |= FLG_C_NOT_ZERO;
+  if (d != 0.0) band_flags |= FLG_D_NOT_ZERO;
+  if (d  < 0.0) band_flags |= FLG_BACKWARDS;
 
+  for (band = 0 ; band < nbands; band++, iband++, oband++, pvtband++) { 
 
-
-  for (band = 0 ; band < inf->bands ; band++) { 
     if (pedpvt->do_band[band]) {
 
-        pvt->bandInfo[band] = 
-	  (mpAntiAliasBandPtr) XieMalloc(sizeof(mpAntiAliasBandRec));
-	if (!pvt->bandInfo[band]) {
-	   FreeBandData(flo,ped);
-  	   AllocError(flo, ped, return(FALSE));
-	}
-        pvtband = pvt->bandInfo[band];
-	bzero (pvtband, sizeof(mpAntiAliasBandRec));
-	pvtband->int_constant = pedpvt->constant[band] + .5;	
-	pvtband->flt_constant = (RealPixel) pedpvt->constant[band];	
+	pvtband->flags = band_flags;
+	pvtband->yOut  = 0;		/* what output line we are on */
 
+	dataclass =oband->format->class;
+	if (IsConstrained(dataclass))
+	    pvtband->int_constant = ConstrainConst(pedpvt->constant[band],
+						   iband->format->levels);
+	else
+	    pvtband->flt_constant = (RealPixel) pedpvt->constant[band];	
 
-	pvtband->fillfunc = 
-		fill_lines[IndexClass(pet->emitter[band].format->class)]; 
-	pvtband->linefunc =
-		ggen_lines[IndexClass(pet->emitter[band].format->class)]; 
+	pvtband->fillfunc = fill_lines[IndexClass(dataclass)];
+#if XIE_FULL
+	pvtband->linefunc = gaussian
+		? ga_gen_lines[IndexClass(dataclass)]
+		: aa_gen_lines[IndexClass(dataclass)];
+#else
+	pvtband->linefunc = aa_gen_lines[IndexClass(dataclass)];
+#endif
 
-	pvtband->in_width = inf->format[band].width;
-	pvtband->in_height = inf->format[band].height;
+	pvtband->level_clip = oband->format->levels;
+	pvtband->in_width = iband->format->width;
+	pvtband->in_height = iband->format->height;
 
  /*
   * THE BASIC IDEA - 
@@ -452,136 +434,102 @@ static int InitializeGeomAA(flo,ped)
   *
   */
 
-/***  Calculate bounding rectangle of first pixel, first output line ***/
+/***  Calculate bounding rectangle of first pixel, ylimits of first line ***/
 
-       /*
-        * The zero's are for clarity, not to slow code down.  :)
-	* If your compiler can't optimize away a*0, get a better one!
-        */
-        upper_left_x  = a * 0  + b * 0  + tx;
-        upper_left_y  = c * 0  + d * 0  + ty;
-        upper_rite_x  = a * 1  + b * 0  + tx;
-        upper_rite_y  = c * 1  + d * 0  + ty;
+	xmin = xmax = tx;
+	ymin = ymax = tot_ymin = tot_ymax = ty;
 
-        lower_left_x  = a * 0  + b * 1  + tx;
-        lower_left_y  = c * 0  + d * 1  + ty;
-        lower_rite_x  = a * 1  + b * 1  + tx;
-        lower_rite_y  = c * 1  + d * 1  + ty;
+#if XIE_FULL
+	if (gaussian) {
+	    pTecGeomGaussianDefPtr tkpvt = (pTecGeomGaussianDefPtr)ped->techPvt;
 
-/***	Bounding rectangle for this pixel is (xmin,ymin; xmax,ymax)  ***/
+	    if (tkpvt->radius < 1) tkpvt->radius = 2;
 
-	xmin = upper_left_x;
-	xmin = (upper_rite_x < xmin)? upper_rite_x : xmin;
-	xmin = (lower_left_x < xmin)? lower_left_x : xmin;
-	xmin = (lower_rite_x < xmin)? lower_rite_x : xmin;
+	    /* conservatively pick a bounding box for datamgr calculations */
+	    xmin -= ((double) tkpvt->radius + 1.00001);
+	    xmax += ((double) tkpvt->radius + 1.99999);
+	    ymin -= ((double) tkpvt->radius + 1.00001);
+	    ymax += ((double) tkpvt->radius + 1.99999);
+	    tot_ymin = ymin + (c < 0.0 ? (width * c) : 0.0);
+	    tot_ymax = ymax + (c > 0.0 ? (width * c) : 0.0);
+	} else
+#endif
+	{
+	    if (a < 0) xmin += a;
+	    else       xmax += a;
+	    if (b < 0) xmin += b;
+	    else       xmax += b;
 
-	ymin = upper_left_y;
-	ymin = (upper_rite_y < ymin)? upper_rite_y : ymin;
-	ymin = (lower_left_y < ymin)? lower_left_y : ymin;
-	ymin = (lower_rite_y < ymin)? lower_rite_y : ymin;
+	    if (c < 0) { ymin += c; tot_ymin += (width * c); }
+	    else       { ymax += c; tot_ymax += (width * c); }
+	    if (d < 0) { ymin += d; tot_ymin += d; }
+	    else       { ymax += d; tot_ymax += d; }
+	}
 
-	xmax = upper_left_x;
-	xmax = (upper_rite_x > xmax)? upper_rite_x : xmax;
-	xmax = (lower_left_x > xmax)? lower_left_x : xmax;
-	xmax = (lower_rite_x > xmax)? lower_rite_x : xmax;
+	pvtband->left_br.xmin = xmin;
+	pvtband->left_br.ymin = ymin;
+	pvtband->left_br.xmax = xmax;
+	pvtband->left_br.ymax = ymax;
 
-	ymax = upper_left_y;
-	ymax = (upper_rite_y > ymax)? upper_rite_y : ymax;
-	ymax = (lower_left_y > ymax)? lower_left_y : ymax;
-	ymax = (lower_rite_y > ymax)? lower_rite_y : ymax;
+        pvtband->first_mlow  = tot_ymin;
+        pvtband->first_mhigh = tot_ymax;
 
-/***	remember  this as left brect for first line  ***/
-	pvtband->left_br.xmin = left_xmin = xmin;
-	pvtband->left_br.ymin = left_ymin = ymin;
-	pvtband->left_br.xmax = left_xmax = xmax;
-	pvtband->left_br.ymax = left_ymax = ymax;
-
-/***	compute right brect using translation rules   ***/
-	rite_xmin = left_xmin + a*(width-1);
-	rite_xmax = left_xmax + a*(width-1);
-	rite_ymin = left_ymin + c*(width-1);
-	rite_ymax = left_ymax + c*(width-1);
-
-/***	Now compute ymin and ymax for the whole line	***/
-	ymin = (left_ymin < rite_ymin) ? left_ymin : rite_ymin;
-	ymax = (left_ymax > rite_ymax) ? left_ymax : rite_ymax;
-
-/***	Save them away for using to track input image availability  ***/
-        pvtband->first_mlow  = ymin;
-        pvtband->first_mhigh = ymax;
         pvtband->first_ilow  = pvtband->first_mlow;
         pvtband->first_ihigh = pvtband->first_mhigh;
 
 /***	Check for some special cases 	***/
-	if (c == 0 && b == 0 ) {
-	   int i,maxpixl  = pvtband->in_width - 1;
+	if ((band_flags & (FLG_C_NOT_ZERO | FLG_B_NOT_ZERO)) == 0) {
+	    int i, maxpixl  = pvtband->in_width - 1;
 
-	   if (a == 1 && d == 1) {
-	       /* just Cropping, no real resampling to be done */
-	       /* will come up with a special case for this in Beta */
-	   }
-	   pvtband->linefunc =
-		scale_lines[IndexClass(pet->emitter[band].format->class)]; 
+#if XIE_FULL
+	    pvtband->linefunc = gaussian
+		? ga_scl_lines[IndexClass(dataclass)]
+		: aa_scl_lines[IndexClass(dataclass)];
+#else
+	    pvtband->linefunc = aa_scl_lines[IndexClass(dataclass)];
+#endif
 
-	   pvtband->ixmin = (int *) XieMalloc(width * sizeof(int));
-	   if (!pvtband->ixmin) {
-	      FreeBandData(flo,ped);
-  	      AllocError(flo, ped, return(FALSE));
-	   }
-	   pvtband->ixmax = (int *) XieMalloc(width * sizeof(int));
-	   if (!pvtband->ixmax) {
-	      FreeBandData(flo,ped);
-  	      AllocError(flo, ped, return(FALSE));
-	   }
-	   /* precalculate the range of x coordinates to look at   */
-	   /* for each output pixel location.  This doesn't change */
-	   /* from line to line because b=0			   */
-	   for  ( i=0; i<width; ++i) { 
+	    if (!(pvtband->ixmin = (int *) XieMalloc(width * 2*sizeof(int)))) {
+		FreeBandData(flo,ped);
+		AllocError(flo, ped, return(FALSE));
+	    }
+	    pvtband->ixmax = pvtband->ixmin + width;
+	    /* Valid X coord domain will remain same for entire image */
+	    for  ( i=0; i<width; ++i) { 
 		register int ixmin,ixmax;
-	   	ixmin = xmin; 
-	   	if (ixmin < 0)	  ixmin = 0;
-	   	pvtband->ixmin[i] = ixmin;
 
-	   	ixmax = xmax; 
-	   	if (ixmax >= maxpixl) ixmax = maxpixl;
-	   	if (ixmax > ixmin)	  ixmax--;
-	  	pvtband->ixmax[i] = ixmax;
+		ixmin = xmin; 		
+		ixmax = xmax; 
+		xmin += a; 
+		xmax += a; 
 
-	   	xmin += a; 
-	   	xmax += a; 
-	   }
+		if (ixmin < 0)		ixmin = 0;
+		if (ixmax > maxpixl)	ixmax = maxpixl;
+		if (ixmax > ixmin)	ixmax--;
+
+		pvtband->ixmin[i] = ixmin;
+		pvtband->ixmax[i] = ixmax;
+	    }
 	}
-    }   /* end of if do_band[] */
-  }	/* end of for loop */
-
-/* 
- * Now adjust thresholds so we won't be called until all the data
- * for the first input line is ready
- */
-  for (band = 0 ; band < inf->bands ; band++) { 
-    bandPtr iband = &(pet->receptor[SRCtag].band[band]);
-    if (pedpvt->do_band[band]) {
-
-        pvtband = pvt->bandInfo[band];
 
 	/* set threshold so we get all needed src lines */
- 	threshold = pvtband->first_ihigh + 1;
-		/* if we need line 256, must ask for 257! */
+	/* if we need line 256, must ask for 257! */
+	threshold = pvtband->first_ihigh + 1;
 
 	/* make sure we get something */
 	if (threshold < 1)
 	    threshold = 1;
 
 	/* but don't ask for stuff we can't ever get! */
-	if (threshold > inf->format[band].height)
-	    threshold = inf->format[band].height;
+	if (threshold > iband->format->height)
+	    threshold = iband->format->height;
 
-	if(!InitBand(flo, ped, iband,
-		     inf->format[band].height, threshold, NO_INPLACE))
+	if(!InitBand(flo, ped, iband, iband->format->height,
+						     threshold, NO_INPLACE))
 	    return(FALSE);
     } else {
-      /* we're suppose to pass this band thru unscathed */
-      BypassSrc(flo,pet,iband);
+	pvtband->flags = FLG_SKIP_BAND;
+	BypassSrc(flo,pet,iband);
     }
   }
   return(raw->bandMask ? InitEmitter(flo,ped,NO_DATAMAP,NO_INPLACE) : TRUE);
@@ -593,227 +541,158 @@ static int ActivateGeomAA(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  peTexPtr pet = ped->peTex;
-  pGeomDefPtr pedpvt = (pGeomDefPtr)ped->elemPvt; 
-  mpAntiAliasDefPtr pvt = (mpAntiAliasDefPtr) ped->peTex->private;
-  bandPtr oband = &(pet->emitter[0]);
-  bandPtr iband = &(pet->receptor[SRCtag].band[0]);
-  int band, nbands = pet->receptor[SRCtag].inFlo->bands;
-  inFloPtr  insrc = &ped->inFloLst[SRCtag];
-  xieFloGeometry *raw = (xieFloGeometry *)ped->elemRaw;
-  int	width =raw->width;
-  int	height=raw->height;
+  peTexPtr	  pet = ped->peTex;
+  pGeomDefPtr  pedpvt = (pGeomDefPtr) ped->elemPvt; 
+  mpAABandPtr pvtband = (mpAABandPtr) pet->private;
+  bandPtr	oband = &(pet->emitter[0]);
+  bandPtr	iband = &(pet->receptor[SRCtag].band[0]);
+  int    band, nbands = pet->receptor[SRCtag].inFlo->bands;
+  int    	width = oband->format->width; /* consider use of pvtband */
+  double	    d = pedpvt->coeffs[3];
   register void *outp;
 
-  for(band = 0; band < nbands; band++, iband++, oband++) {
-      int sline = iband->current;
-      mpAntiAliasBandPtr pvtband = pvt->bandInfo[band];
+  for(band = 0; band < nbands; band++, iband++, oband++, pvtband++) {
 
-      if (! pvt->input_line_increases_as_output_line_increases) {
+    if (pvtband->flags & FLG_SKIP_BAND)
+	continue;       
 
-	  /* we're going backwards, which is actually *simpler*, 
-	   * because we don't get ANY data until we have ALL data.
-	   * Thus, first time through, just map everything we have.
-	   */
-	   if (!pvtband->yOut)  {
-	     if (!MapData(flo,pet,iband,0,0,iband->maxGlobal,KEEP)) {
-      		   ImplementationError(flo,ped, return(FALSE));
-	     }
-	     pvtband->lo_src_available = 0;
-	     pvtband->hi_src_available = iband->maxGlobal-1;
-	  }
-	   
-	   outp = GetCurrentDst(void,flo,pet,oband);
-	   while (outp) {
-		int lo_in,hi_in;
+    if (pvtband->flags & FLG_BACKWARDS) {
 
-		/* get range of src lines for this output line */
-		lo_in = pvtband->first_ilow;
-		hi_in = pvtband->first_ihigh;
-			
-		if (hi_in < 0) {
-		  /* rest of output image is off input image */
-	     	  (*pvtband->fillfunc)(outp,iband->dataMap,
-			width,pvt,pvtband);
-		}
-		else if (lo_in > pvtband->in_height) {
-		  /* haven't reach input image yet */
-	     	  (*pvtband->fillfunc)(outp,iband->dataMap,
-			width,pvt,pvtband);
-		}
-		else {
-		   /* Compute output pixels for this line */
-		   (*pvtband->linefunc)(outp,iband->dataMap,
-		   	width,hi_in,pedpvt,pvt,pvtband);
+	/* we're going backwards, which is actually *simpler*, 
+	* because we don't get ANY data until we have ALL data.
+	* Thus, first time through, just map everything we have.
+	*/
+	if (!pvtband->yOut)  {
+	    if (!MapData(flo,pet,iband,0,0,iband->maxGlobal,KEEP)) 
+		ImplementationError(flo,ped, return(FALSE));
+	    pvtband->lo_src_avail = 0;
+	    pvtband->hi_src_avail = iband->maxGlobal-1;
+	}
 
-		   /* now compute highest input line for next oline */
-		}
+	outp = GetCurrentDst(void,flo,pet,oband);
+	while (outp) {
 
-		pvtband->first_mlow  += pedpvt->coeffs[3];
-		pvtband->first_mhigh += pedpvt->coeffs[3];
-		pvtband->first_ilow  = (int) pvtband->first_mlow ;
-		pvtband->first_ihigh = (int) pvtband->first_mhigh;
-		pvtband->yOut++;
-		outp = GetNextDst(void,flo,pet,oband,TRUE);
-	   }
-	  /* 2 possible reasons for no more dst: done, or scheduler 
-	   * wants us to be nice and give up control to somebody else
-	   */
-	   if (oband->final)
-		DisableSrc(flo,pet,iband,FLUSH);
+	    if ((pvtband->first_ihigh < 0) ||
+		(pvtband->first_ilow  > pvtband->in_height))
 
-	   continue;	/* go to the next band*/
-       }
-      /* 
-       * nice normal image progression.  This means that I know when
-       * I am done with an input line for the current output line,  I 
-       * can purge it,  because it won't be needed for subsequent 
-       * output lines.
-       */
-       else {
+		(*pvtband->fillfunc)(outp,width,pvtband);
+	    else 
+		(*pvtband->linefunc)(outp,iband->dataMap,width,ped,pvtband);
 
-       while (!ferrCode(flo)) {		
-	  int map_lo;		/* lowest  line mapped by output line */
-	  int map_hi;		/* highest line mapped by output line */
-          int last_src_line = insrc->format[band].height - 1;
-	  int len=2;
-	  int threshold;
-	  register int i;
-   	  Bool ok;
+	    /* now compute highest input line for next oline */
+	    pvtband->first_mlow  += d;
+	    pvtband->first_mhigh += d;
+	    pvtband->first_ilow  = (int) pvtband->first_mlow ;
+	    pvtband->first_ihigh = (int) pvtband->first_mhigh;
+	    pvtband->yOut++;
+	    outp = GetNextDst(void,flo,pet,oband,TRUE);
+	}
+	if (oband->final)
+	    DisableSrc(flo,pet,iband,FLUSH);
 
-	   /* access current output line */
-	   outp = GetDst(void,flo,pet,oband,pvtband->yOut,FLUSH);
-	   if (!outp) {
-		if (oband->final) {
-       		  DisableSrc(flo, pet, iband, FLUSH);
-		}
-		else  {
-		  /* Since we still have to produce more output lines */
-		  /* we must have gotten NULL because the strip manager */
-		  /* wants us to exit, to give the scheduler a chance  */
-		  /* to let some element run 			 */
+    } else {
 
-		  if (iband->current != 0)  {
-		    /* we shouldn't free data if we still need the first line
-		     */
-       		      FreeData(void, flo, pet, iband, iband->current);
-		  }
-		}
+	while (!ferrCode(flo)) {		
+	    int map_lo;		/* lowest  line mapped by output line */
+	    int map_hi;		/* highest line mapped by output line */
+	    int last_src_line = pvtband->in_height - 1;
+	    int threshold;
+
+	    /* access current output line */
+	    outp = GetDst(void,flo,pet,oband,pvtband->yOut,FLUSH);
+	    if (!outp) {
+		if (oband->final)
+		    DisableSrc(flo, pet, iband, FLUSH);
+		else if (iband->current != 0) 
+		    FreeData(flo, pet, iband, iband->current);
 		goto breakout;
 	   }
 
-	  sline = pvtband->first_ilow;
-	  if (sline < 0)
-		sline = 0;
+	    map_lo = pvtband->first_ilow;
+	    if (map_lo < 0)
+		map_lo = 0;
 
-	  map_hi = pvtband->first_ihigh;
-	  if (map_hi > last_src_line)
+	    map_hi = pvtband->first_ihigh;
+	    if (map_hi > last_src_line)
 		map_hi = last_src_line;
 
-	  if (map_hi < 0 || sline > last_src_line) {
-	     /* whole line is off the input image */
-	     /* XXX could reduce arguments to fill func */
-	     (*pvtband->fillfunc)(outp,iband->dataMap,width,pvt,pvtband);
-	  }
-	  else {
-	     len = map_hi - sline + 1;
-	     
+	    if (map_hi < 0 || map_lo > last_src_line)
+		(*pvtband->fillfunc)(outp,width,pvtband);
+	    else {
+	        if(!MapData(flo,pet,iband,map_lo,map_lo,(map_hi-map_lo+1),KEEP))
+		    break;
+		pvtband->lo_src_avail = 0;
+		pvtband->hi_src_avail = iband->maxGlobal-1;
 
-	     if(!(ok  = MapData(flo,pet,iband,sline,sline,len,KEEP)))
-		break;
-	     pvtband->lo_src_available = 0;
-	     pvtband->hi_src_available = iband->maxGlobal-1;
-
-	      if (sline != iband->current) {
-      		   ImplementationError(flo,ped, return(FALSE));
-	       }
+		if (map_lo != iband->current) 
+		    ImplementationError(flo,ped, return(FALSE));
 
 		/***	Compute output pixels for this line ***/
-		(*pvtband->linefunc)(outp,iband->dataMap,
-		   width,sline,pedpvt,pvt,pvtband);
-
+		(*pvtband->linefunc)(outp,iband->dataMap,width,ped,pvtband);
 	    }
 
-	     /* Now we need to compute the input line range
-		for the next destination line. We use the fact
-		that since y_in = c * x_out + d*y_out + ty, 
-		
-		if the range of values for y_in on line y_out=N 
-		was (old_low,old_high),   the range of values for
-		y_in on line y_out=N+1 must be (old_low+d,old_high+d)
-	     */
+	    /* increment to next line. */
 
-    	     pvtband->first_mlow  += pedpvt->coeffs[3]; 
-    	     pvtband->first_mhigh += pedpvt->coeffs[3];
+	    pvtband->first_mlow  += d;
+	    pvtband->first_mhigh += d;
 					
-   	     /* have to be careful about -0.5 rounding to 0, not -1 */
-	     if (pvtband->first_ilow < 0) {
-
-		if (pvtband->first_mlow < 0)
-		   pvtband->first_ilow = -1;
-		else
-    	           pvtband->first_ilow  = (int)pvtband->first_mlow;	
-	     
-		if (pvtband->first_mhigh < 0)
-		   pvtband->first_ihigh = -1;
-		else
-    	           pvtband->first_ihigh = (int)pvtband->first_mhigh;
-	     } 
-	     else {
+	    /* have to be careful about -0.5 rounding to 0, not -1 */
+	    if (pvtband->first_ilow < 0) {
+		pvtband->first_ilow = (pvtband->first_mlow < 0)
+					? -1
+					: (int)pvtband->first_mlow;
+		pvtband->first_ihigh = (pvtband->first_mhigh < 0)
+					? -1
+					: (int)pvtband->first_mhigh;
+	    } else {
 		/* if ilow was positive before, needn't check for negative */
-    	        pvtband->first_ilow  = (int)pvtband->first_mlow;	
-    	        pvtband->first_ihigh = (int)pvtband->first_mhigh;
-	     }
+		pvtband->first_ilow  = (int)pvtband->first_mlow;	
+		pvtband->first_ihigh = (int)pvtband->first_mhigh;
+	    }
 
-	     ++pvtband->yOut;						
-
-		if (pvtband->first_ilow > last_src_line) {
-	          /* rest of output image is off the input image */
-		  /* we will exit after filling output strip */
-	          while(outp=GetDst(void,flo,pet,oband,pvtband->yOut,FLUSH)) {
-
-		   /* XXX could reduce arguments to fill func */
-		   (*pvtband->fillfunc)(outp,iband->dataMap,width,pvt,pvtband);
-		   pvtband->yOut++;
-		 }
-		   if (oband->final) {
-		      /* out of destination lines */
-		      DisableSrc(flo, pet, iband, FLUSH);
-		    }
-		    else  
-		      goto breakout;
-		  /* Be nice and let downstream element eat our data */
-		  /* notice we don't free input data, because then the */
-		  /* silly scheduler would turn us off */
+	    ++pvtband->yOut;						
+	    if (pvtband->first_ilow > last_src_line) {
+		/* rest of output image is off the input image */
+		/* we will exit after filling output strip */
+		while(outp=GetDst(void,flo,pet,oband,pvtband->yOut,FLUSH)) {
+		    (*pvtband->fillfunc)(outp,width,pvtband);
+		    pvtband->yOut++;
 		}
+		if (oband->final) /* out of destination lines */
+		    DisableSrc(flo, pet, iband, FLUSH);
+		else  
+		    goto breakout;
+		/* Be nice and let downstream element eat our data */
+		/* notice we don't free input data, because then the */
+		/* silly scheduler would turn us off */
+	    }
 
-	     map_hi = pvtband->first_ihigh;
-	     if (map_hi > last_src_line)
+	    map_hi = pvtband->first_ihigh;
+	    if (map_hi > last_src_line)
 		map_hi = last_src_line;
 
-	     threshold = map_hi - iband->current + 1;
+	    threshold = map_hi - iband->current + 1;
 
-	     /* make sure we get something */
-	     if (threshold <= 1)
-	         threshold = 1;
+	    /* make sure we get something */
+	    if (threshold <= 1)
+		threshold = 1;
 
-	     /* but don't ask for stuff we can't ever get! */
-	     if (threshold > insrc->format[band].height)
-	         threshold = insrc->format[band].height;
+	    /* but don't ask for stuff we can't ever get! */
+	    if (threshold > pvtband->in_height)
+		threshold = pvtband->in_height;
 
-       	     SetBandThreshold(iband, threshold);
-	     if (map_hi >= (int) iband->maxGlobal) {
+	    SetBandThreshold(iband, threshold);
+	    if (map_hi >= (int) iband->maxGlobal) {
 		/* we need to let someone else generate more data */
 		break;
-	     }
-	   }
-       /* want to make sure we GetSrc at least once before Freeing */
-       if (iband->current)
-          FreeData(void, flo, pet, iband, iband->current);
-       }
-breakout:
-	;
-    }	/* end of band loop */
+	    }
+	}
+	/* want to make sure we GetSrc at least once before Freeing */
+	if (iband->current)
+	    FreeData(flo, pet, iband, iband->current);
+    }	/* end of backwards/forwards */
+breakout: ;
+  }	/* end of band loop */
   return(TRUE);
 }                               /* end ActivateGeometry */
 
@@ -821,44 +700,42 @@ breakout:
 ------------------------ get rid of run-time stuff -----------------------
 ------------------------------------------------------------------------*/
 static int ResetGeomAA(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+    floDefPtr flo;
+    peDefPtr  ped;
 {
-  FreeBandData(flo,ped);
-  ResetReceptors(ped);
-  ResetEmitter(ped);
+    FreeBandData(flo,ped);
+    ResetReceptors(ped);
+    ResetEmitter(ped);
   
-  return(TRUE);
+    return(TRUE);
 }                               /* end ResetGeomAA */
 
 /*------------------------------------------------------------------------
 -------------------------- get rid of this element -----------------------
 ------------------------------------------------------------------------*/
 static int DestroyGeomAA(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+    floDefPtr flo;
+    peDefPtr  ped;
 {
-  /* get rid of the peTex structure  */
-  ped->peTex = (peTexPtr) XieFree(ped->peTex);
+    /* get rid of the peTex structure  */
+    ped->peTex = (peTexPtr) XieFree(ped->peTex);
 
-  /* zap this element's entry point vector */
-  ped->ddVec.create = (xieIntProc)NULL;
-  ped->ddVec.initialize = (xieIntProc)NULL;
-  ped->ddVec.activate = (xieIntProc)NULL;
-  ped->ddVec.flush = (xieIntProc)NULL;
-  ped->ddVec.reset = (xieIntProc)NULL;
-  ped->ddVec.destroy = (xieIntProc)NULL;
+    /* zap this element's entry point vector */
+    ped->ddVec.create = (xieIntProc)NULL;
+    ped->ddVec.initialize = (xieIntProc)NULL;
+    ped->ddVec.activate = (xieIntProc)NULL;
+    ped->ddVec.reset = (xieIntProc)NULL;
+    ped->ddVec.destroy = (xieIntProc)NULL;
 
-  return(TRUE);
+    return(TRUE);
 }                               /* end DestroyGeomAA */
 
 /**********************************************************************/
 /* fill routines */
-static void FL_b (OUTP,srcimg,width,pvt,pvtband)
-	register void *OUTP, **srcimg;
+static void XXFL_b (OUTP,width,pvtband)
+	register void *OUTP;
 	register int width;
-	mpAntiAliasDefPtr pvt;
-	mpAntiAliasBandPtr pvtband;
+	mpAABandPtr pvtband;
 {
 	register LogInt constant = (LogInt) pvtband->int_constant;
 	register LogInt *outp	= (LogInt *) OUTP;
@@ -869,69 +746,68 @@ static void FL_b (OUTP,srcimg,width,pvt,pvtband)
 	** NOTE: Following code assume filling entire line. Which is
 	** currently true.  In the future we may need to abide by
 	** bit boundaries. Conversely code for bytes and pairs below
-	** could be sped up by doing something similar 
+	** could be sped up by doing something similar. perhaps we need
+	** an action_constant(outp,run,ix,constant) routine similar to
+	** action_set().
 	*/
 	width = (width + 31) >> 5;
 	for (i=0; i < width; ++i) *outp++ = constant;
 }
 
 #define DO_FL(funcname, iotype, CONST)					\
-static void funcname (OUTP,srcimg,width,pvt,pvtband)			\
-register void *OUTP;							\
-register void **srcimg;							\
-register int width;							\
-mpAntiAliasDefPtr pvt;							\
-mpAntiAliasBandPtr pvtband;						\
+static void funcname (OUTP,width,pvtband)				\
+    register void *OUTP;						\
+    register int width;							\
+    mpAABandPtr pvtband;						\
 {									\
-register iotype constant = (iotype) pvtband->CONST;			\
-register iotype *outp	= (iotype *) OUTP;				\
-register int	i;							\
-	for (i=0; i < width; ++i) *outp++ = constant;			\
+    register iotype constant = (iotype) pvtband->CONST;			\
+    register iotype *outp = (iotype *) OUTP;				\
+									\
+    for ( ; width > 0; width--) *outp++ = constant;			\
 }
 
-DO_FL	(FL_R, RealPixel, flt_constant)
-DO_FL	(FL_B, BytePixel, int_constant)
-DO_FL	(FL_P, PairPixel, int_constant)
-DO_FL	(FL_Q, QuadPixel, int_constant)
+DO_FL	(XXFL_R, RealPixel, flt_constant)
+DO_FL	(XXFL_B, BytePixel, int_constant)
+DO_FL	(XXFL_P, PairPixel, int_constant)
+DO_FL	(XXFL_Q, QuadPixel, int_constant)
 
 /**********************************************************************/
-/* (x,y) separable routines (eg, scale, mirror_x, mirror_y)  */
-
+/* (x,y) separable routines (eg, scale, mirror_x, mirror_y) 	      */
 /**********************************************************************/
-/* NOTE - see caveat for GL_b for why the user shouldn't really be
+/*
+ * NOTE - see caveat for GL_b for why the user shouldn't really be
  * asking for antialias in the first place...
  */
-static void SL_b (OUTP,srcimg,width,sline,pedpvt,pvt,pvtband)
-register void *OUTP, **srcimg;
-register int width,sline;
-pGeomDefPtr pedpvt; 
-mpAntiAliasDefPtr pvt;
-mpAntiAliasBandPtr pvtband;
+static void AASL_b (OUTP,srcimg,width,ped,pvtband)
+    register void *OUTP, **srcimg;
+    register int width;
+    peDefPtr  ped;
+    mpAABandPtr pvtband;
 {
-double d  = 	pedpvt->coeffs[3];
+    pGeomDefPtr	pedpvt = (pGeomDefPtr)ped->elemPvt; 
+    double d = pedpvt->coeffs[3];
 
-/* These variables describe the limits of the bounding rectangle */
+    /* These variables describe the limits of the bounding rectangle */
 
-/* since x and y separable, x limits are precalculated once */
-register int *ixminptr=pvtband->ixmin;
-register int *ixmaxptr=pvtband->ixmax;
-register int ixmin,ixmax;	
+    /* since x and y separable, x limits are precalculated once */
+    register int *ixminptr=pvtband->ixmin;
+    register int *ixmaxptr=pvtband->ixmax;
+    register int ixmin,ixmax;	
 
-/* since x and y separable, y limits will be set once this line */
-register int iymin,iymax;
+    /* since x and y separable, y limits will be set once this line */
+    register int iymin,iymax;
 
-/* some variables which describe available input data (for clipping) */
-register int 	minline  = pvtband->lo_src_available;
-register int 	maxline  = pvtband->hi_src_available;
+    /* some variables which describe available input data (for clipping) */
+    register int minline = pvtband->lo_src_avail;
+    register int maxline = pvtband->hi_src_avail;
 
 
-/* cast of constant, output and input pointers to correct type */
-register LogInt *outp	= (LogInt *) OUTP;
-register LogInt *ptrIn;
-register LogInt constant;
-register LogInt value,outval,M;
-register int	nfound;
-register int	i= 0, w;
+    /* cast of constant, output and input pointers to correct type */
+    register LogInt *outp = (LogInt *) OUTP;
+    register LogInt *ptrIn;
+    register LogInt constant;
+    register LogInt value,outval,M;
+    register int nfound;
 
     	constant = pvtband->int_constant ? ~(LogInt) 0 : 0;
 
@@ -948,7 +824,12 @@ register int	i= 0, w;
 	M=LOGLEFT; 
 	
 	/* val accumulates the output bits */
+#define kludge_based
+#ifdef kludge_based
 	outval = 0;
+#else
+	outval = constant;
+#endif
 
 	/* loop through all the output pixels on this line */
 	while ( width-- > 0 ) { 
@@ -965,14 +846,22 @@ register int	i= 0, w;
 
 		for (ix=ixmin; ix<=ixmax; ++ix) {
 		  ++nfound;
+#ifdef kludge_based
 		  if (LOG_tstbit(ptrIn,ix)) {
 		    ++value;
+#else
+		  if (!LOG_tstbit(ptrIn,ix)) {
+		    /* set this pixel black */
+		    outval &= ~M;
+		    goto next;
+#endif
 		  }
 		}
 	    } /* end of iy loop */
 
 /* See GL_b() for an explanation of the kludge below */
 
+#ifdef kludge_based
 #define kludge 8/7
     /* note: 4/3 relies on C evaluating left to right */
 
@@ -980,6 +869,15 @@ register int	i= 0, w;
 		outval |= (constant&M);	/* set to background */
 	    else if (value*kludge >= nfound)
 		outval |= M;
+#else
+
+	    if (!nfound)
+		outval &= (constant&M);	/* set to background */
+	    else
+	        outval |= M;		/* set bit on */
+next:
+
+#endif
 	    /* shift our active bit over one */
 	    LOGRIGHT(M); 
 		
@@ -1029,14 +927,14 @@ register int	i= 0, w;
 	    for (iy=iymin; iy<=iymax; ++iy) {				\
 		ptrIn = ixmin + (iotype *) srcimg[iy];  		\
 		for (ix=ixmin; ix<=ixmax; ++ix) {			\
-		  value += *ptrIn++;		  			\
+		  value += *ptrIn++;					\
 		  ++nfound;			  			\
 		}				  			\
 	    } /* end of iy loop */					\
 									\
-	    if (nfound) { 						\
+	    if (nfound) 						\
 		value /= nfound;					\
-	    } else							\
+	    else							\
 	        value = constant;					\
 									\
 	    *outp++ = value;						\
@@ -1044,49 +942,48 @@ register int	i= 0, w;
 	}   /* end of for loop */					\
 									\
 	/* before leaving, update bounding rect for next line */	\
-	if (pvt->d_not_zero) {						\
-	   pvtband->left_br.ymin += d;					\
-	   pvtband->left_br.ymax += d;					\
-	}								
+	pvtband->left_br.ymin += d;					\
+	pvtband->left_br.ymax += d;					\
 
-#define DO_SL(funcname, iotype, valtype, CONST)				\
-static void funcname (OUTP,srcimg,width,sline,pedpvt,pvt,pvtband)	\
-register void *OUTP;							\
-register void **srcimg;							\
-register int width;							\
-int sline;								\
-pGeomDefPtr pedpvt; 							\
-mpAntiAliasDefPtr pvt;							\
-mpAntiAliasBandPtr pvtband;						\
+#define DO_AASL(funcname, iotype, valtype, CONST)			\
+static void								\
+funcname (OUTP,srcimg,width,ped,pvtband)				\
+    register void *OUTP;						\
+    register void **srcimg;						\
+    register int width;							\
+    peDefPtr  ped;							\
+    mpAABandPtr pvtband;						\
 {									\
-/* Mapping coefficients */						\
-double d  = 	pedpvt->coeffs[3];					\
+    pGeomDefPtr	pedpvt = (pGeomDefPtr)ped->elemPvt; 			\
 									\
-/* These variables describe the limits of the bounding rectangle */	\
-register int *ixminptr=pvtband->ixmin;					\
-register int *ixmaxptr=pvtband->ixmax;					\
-register int ixmin,iymin,ixmax,iymax;					\
+    /* Mapping coefficients */						\
+    double d = pedpvt->coeffs[3];					\
 									\
-/* some variables which describe available input data (for clipping) */	\
-register int 	maxpixl  = pvtband->in_width - 1;			\
-register int 	minline  = pvtband->lo_src_available;			\
-register int 	maxline  = pvtband->hi_src_available;			\
+    /* These variables describe the limits of the bounding rectangle */	\
+    register int *ixminptr = pvtband->ixmin;				\
+    register int *ixmaxptr = pvtband->ixmax;				\
+    register int ixmin,iymin,ixmax,iymax;				\
 									\
-/* cast of constant, output and input pointers to correct type */	\
-register iotype constant = (iotype) pvtband->CONST;			\
-register iotype *outp	= (iotype *) OUTP;				\
-register iotype *ptrIn;							\
+    /* variables which describe available input data (for clipping) */	\
+    register int minline = pvtband->lo_src_avail;			\
+    register int maxline = pvtband->hi_src_avail;			\
 									\
-register valtype value; 						\
-register int	i,nfound;						\
+    /* cast of constant, output and input pointers to correct type */	\
+    register iotype constant = (iotype) pvtband->CONST;			\
+    register iotype *outp = (iotype *) OUTP;				\
+    register iotype *ptrIn;						\
+									\
+    register valtype value; 						\
+    register int i,nfound;						\
 									\
 	aalinsep_func(funcname, iotype, valtype, CONST)			\
 }
 
-DO_SL	(SL_R, RealPixel, RealPixel, flt_constant)
-DO_SL	(SL_B, BytePixel, QuadPixel, int_constant)
-DO_SL	(SL_P, PairPixel, QuadPixel, int_constant)
-DO_SL	(SL_Q, QuadPixel, QuadPixel, int_constant)
+DO_AASL	(AASL_R, RealPixel, RealPixel, flt_constant)
+DO_AASL	(AASL_B, BytePixel, QuadPixel, int_constant)
+DO_AASL	(AASL_P, PairPixel, QuadPixel, int_constant)
+DO_AASL	(AASL_Q, QuadPixel, QuadPixel, int_constant)
+
 
 /**********************************************************************/
 /* general routines (should be able to handle any valid map) */
@@ -1100,43 +997,44 @@ DO_SL	(SL_Q, QuadPixel, QuadPixel, int_constant)
  * eliminate line dropouts at the expense of decreasing fine 
  * image detail.
  */
-static void GL_b (OUTP,srcimg,width,sline,pedpvt,pvt,pvtband)
-register void *OUTP, **srcimg;
-register int width,sline;
-pGeomDefPtr pedpvt; 
-mpAntiAliasDefPtr pvt;
-mpAntiAliasBandPtr pvtband;
+
+static void
+AAGL_b (OUTP,srcimg,width,ped,pvtband)
+    register void *OUTP, **srcimg;
+    register int width;
+    peDefPtr  ped;
+    mpAABandPtr pvtband;
 {
-/* Mapping coefficients */
-double a  = 	pedpvt->coeffs[0]; 
-double b  = 	pedpvt->coeffs[1];
-double c  = 	pedpvt->coeffs[2];
-double d  = 	pedpvt->coeffs[3];
-int a_not_zero = pvt->a_not_zero;
-int c_not_zero = pvt->c_not_zero;
+    pGeomDefPtr	pedpvt = (pGeomDefPtr)ped->elemPvt;
 
-/* These variables describe the limits of the bounding rectangle */
-double xmin = 	pvtband->left_br.xmin;
-double ymin = 	pvtband->left_br.ymin;
-double xmax = 	pvtband->left_br.xmax;
-double ymax = 	pvtband->left_br.ymax;
-register int ixmin,iymin,ixmax,iymax;	
+    /* Mapping coefficients */
+    double a = pedpvt->coeffs[0]; 
+    double b = pedpvt->coeffs[1];
+    double c = pedpvt->coeffs[2];
+    double d = pedpvt->coeffs[3];
 
-/* loop variables for roaming through the bounding rectangle */
-register int 	ix,iy;
+    /* These variables describe the limits of the bounding rectangle */
+    double xmin = pvtband->left_br.xmin;
+    double ymin = pvtband->left_br.ymin;
+    double xmax = pvtband->left_br.xmax;
+    double ymax = pvtband->left_br.ymax;
+    register int ixmin,iymin,ixmax,iymax;	
 
-/* some variables which describe available input data (for clipping) */
-register int 	maxpixl  = pvtband->in_width - 1;
-register int 	minline  = pvtband->lo_src_available;
-register int 	maxline  = pvtband->hi_src_available;
+    /* loop variables for roaming through the bounding rectangle */
+    register int ix,iy;
 
-/* cast of constant, output and input pointers to correct type */
-register LogInt *outp	= (LogInt *) OUTP;
-register LogInt *ptrIn;
-register LogInt constant;
-register LogInt value,outval,M;
-register int	nfound;
-register int	i= 0, w;
+    /* some variables which describe available input data (for clipping) */
+    register int maxpixl = pvtband->in_width - 1;
+    register int minline = pvtband->lo_src_avail;
+    register int maxline = pvtband->hi_src_avail;
+    CARD32	 flags	 = pvtband->flags;
+
+    /* cast of constant, output and input pointers to correct type */
+    register LogInt *outp = (LogInt *) OUTP;
+    register LogInt *ptrIn;
+    register LogInt constant;
+    register LogInt value,outval,M;
+    register int nfound;
 
     	constant = pvtband->int_constant ? ~(LogInt) 0 : 0;
 
@@ -1156,7 +1054,12 @@ register int	i= 0, w;
 	M=LOGLEFT; 
 	
 	/* val accumulates the output bits */
+#define kludge_based_not
+#ifdef kludge_based
 	outval = 0;
+#else
+	outval = constant;
+#endif
 
 	/* loop through all the output pixels on this line */
 	while ( width > 0 ) { 
@@ -1170,9 +1073,17 @@ register int	i= 0, w;
 
 		for (ix=ixmin; ix<=ixmax; ++ix) {
 		  ++nfound;
+#ifdef kludge_based
 		  if (LOG_tstbit(ptrIn,ix)) {
 		    ++value;
 		  }
+#else
+		  if (!LOG_tstbit(ptrIn,ix)) {
+		    /* set this pixel black */
+		    outval &= ~M;
+		    goto next;
+		  }
+#endif
 		}
 	    } /* end of iy loop */
 
@@ -1196,6 +1107,7 @@ register int	i= 0, w;
    image, then we should set 'val' to the background value (constant).
 */
 
+#ifdef kludge_based
 #define kludge 8/7
     /* note: 4/3 relies on C evaluating left to right */
 
@@ -1203,6 +1115,15 @@ register int	i= 0, w;
 		outval |= (constant&M);	/* set to background */
 	    else if (value*kludge >= nfound)
 		outval |= M;
+#else
+
+	    if (!nfound)
+		outval &= (constant&M);	/* set to background */
+	    else
+	        outval |= M;		/* set bit on */
+next:
+
+#endif
 	    /* shift our active bit over one */
 	    LOGRIGHT(M); 
 		
@@ -1217,7 +1138,7 @@ register int	i= 0, w;
 	    width--; 
 	    ixmin = xmin;
 	    ixmax = xmax;     
-	    if (c_not_zero) {
+	    if (flags & FLG_C_NOT_ZERO) {
 		ymin += c; 
 		ymax += c; 
 		iymin = ymin;     
@@ -1226,20 +1147,20 @@ register int	i= 0, w;
 	       	if (iymax >= maxline)	iymax = maxline;
 		if (iymax > iymin)	iymax--;
 	    } 
-		if (ixmin < 0)		ixmin = 0;
-		if (ixmax >= maxpixl)	ixmax = maxpixl;
-		if (ixmax > ixmin)	ixmax--;
+	    if (ixmin < 0)		ixmin = 0;
+	    if (ixmax >= maxpixl)	ixmax = maxpixl;
+	    if (ixmax > ixmin)	ixmax--;
 	} /* end of line loop */
 
 	/* if we didn't write all the pixels out, do so now */
 	if (M != LOGLEFT) *outp = outval;
 
 	/* before leaving, update bounding rect for next line */
-	if (pvt->b_not_zero) {
+	if (flags & FLG_B_NOT_ZERO) {
 	   pvtband->left_br.xmin += b;
 	   pvtband->left_br.xmax += b;
 	}
-	if (pvt->d_not_zero) {
+	if (flags & FLG_D_NOT_ZERO) {
 	   pvtband->left_br.ymin += d;
 	   pvtband->left_br.ymax += d;
 	}
@@ -1248,7 +1169,7 @@ register int	i= 0, w;
 /* NOTE: too bad paper is white is 255, otherwise you can often avoid the
 ** divide by "if (value) value /= nfound;"
 */
-#define some_compilers_are_asinine(funcname, iotype, valtype, CONST)	\
+#define inscrutable_compiler(funcname, iotype, valtype, CONST)		\
 	/* round bounding rectangle limits to ints */			\
 	ixmin = xmin;		     					\
 	iymin = ymin;     						\
@@ -1276,16 +1197,16 @@ register int	i= 0, w;
 		}				  			\
 	    } /* end of iy loop */					\
 									\
-	    if (nfound) { 						\
+	    if (nfound) 						\
 		value /= nfound;					\
-	    } else							\
+	    else							\
 	        value = constant;					\
 									\
 	    /* prepare for next loop */					\
 	    width--; 							\
 	    ixmin = xmin;		     				\
 	    ixmax = xmax;     						\
-	    if (c_not_zero) {						\
+	    if (flags & FLG_C_NOT_ZERO) {				\
 		ymin += c; 						\
 		ymax += c; 						\
 		iymin = ymin;     					\
@@ -1294,69 +1215,194 @@ register int	i= 0, w;
 	       	if (iymax >= maxline)	iymax = maxline;		\
 		if (iymax > iymin)	iymax--;			\
 	    } 								\
-		if (ixmin < 0)		ixmin = 0;			\
-		if (ixmax >= maxpixl)	ixmax = maxpixl;		\
-		if (ixmax > ixmin)	ixmax--;			\
+	    if (ixmin < 0)		ixmin = 0;			\
+	    if (ixmax >= maxpixl)	ixmax = maxpixl;		\
+	    if (ixmax > ixmin)		ixmax--;			\
 	    *outp++ = value;						\
 	}/* end of line loop */						\
 									\
 	/* before leaving, update bounding rect for next line */	\
-	if (pvt->b_not_zero) {						\
+	if (flags & FLG_B_NOT_ZERO) {					\
 	   pvtband->left_br.xmin += b;					\
 	   pvtband->left_br.xmax += b;					\
 	}								\
-	if (pvt->d_not_zero) {						\
+	if (flags & FLG_D_NOT_ZERO) {					\
 	   pvtband->left_br.ymin += d;					\
 	   pvtband->left_br.ymax += d;					\
 	}								
 
-#define DO_GL(funcname, iotype, valtype, CONST)				\
-static void funcname (OUTP,srcimg,width,sline,pedpvt,pvt,pvtband)	\
-register void *OUTP;							\
-register void **srcimg;							\
-register int width,sline;						\
-pGeomDefPtr pedpvt; 							\
-mpAntiAliasDefPtr pvt;							\
-mpAntiAliasBandPtr pvtband;						\
+#define DO_AAGL(funcname, iotype, valtype, CONST)			\
+static void								\
+funcname (OUTP,srcimg,width,ped,pvtband)				\
+    register void *OUTP;						\
+    register void **srcimg;						\
+    register int width;							\
+    peDefPtr  ped;							\
+    mpAABandPtr pvtband;						\
 {									\
-/* Mapping coefficients */						\
-double a  = 	pedpvt->coeffs[0]; 					\
-double b  = 	pedpvt->coeffs[1];					\
-double c  = 	pedpvt->coeffs[2]; 					\
-double d  = 	pedpvt->coeffs[3];					\
-int a_not_zero = pvt->a_not_zero;					\
-int c_not_zero = pvt->c_not_zero;					\
+    pGeomDefPtr	pedpvt = (pGeomDefPtr)ped->elemPvt; 			\
 									\
-/* These variables describe the limits of the bounding rectangle */	\
-double xmin = 	pvtband->left_br.xmin;					\
-double ymin = 	pvtband->left_br.ymin;					\
-double xmax = 	pvtband->left_br.xmax;					\
-double ymax = 	pvtband->left_br.ymax;					\
-register int ixmin,iymin,ixmax,iymax;					\
+    /* Mapping coefficients */						\
+    double a = pedpvt->coeffs[0]; 					\
+    double b = pedpvt->coeffs[1];					\
+    double c = pedpvt->coeffs[2]; 					\
+    double d = pedpvt->coeffs[3];					\
+    CARD32 flags = pvtband->flags;					\
 									\
-/* loop variables for roaming through the bounding rectangle */		\
-register int 	ix,iy;							\
+    /* These variables describe the limits of the bounding rectangle */	\
+    double xmin = pvtband->left_br.xmin;				\
+    double ymin = pvtband->left_br.ymin;				\
+    double xmax = pvtband->left_br.xmax;				\
+    double ymax = pvtband->left_br.ymax;				\
+    register int ixmin,iymin,ixmax,iymax;				\
 									\
-/* some variables which describe available input data (for clipping) */	\
-register int 	maxpixl  = pvtband->in_width - 1;			\
-register int 	minline  = pvtband->lo_src_available;			\
-register int 	maxline  = pvtband->hi_src_available;			\
+    /* loop variables for roaming through the bounding rectangle */	\
+    register int ix,iy;							\
 									\
-/* cast of constant, output and input pointers to correct type */	\
-register iotype constant = (iotype) pvtband->CONST;			\
-register iotype *outp	= (iotype *) OUTP;				\
-register iotype *ptrIn;							\
+    /* variables which describe available input data (for clipping) */	\
+    register int maxpixl = pvtband->in_width - 1;			\
+    register int minline = pvtband->lo_src_avail;			\
+    register int maxline = pvtband->hi_src_avail;			\
 									\
-register valtype value;							\
-register int	nfound;							\
+    /* cast of constant, output and input pointers to correct type */	\
+    register iotype constant = (iotype) pvtband->CONST;			\
+    register iotype *outp = (iotype *) OUTP;				\
+    register iotype *ptrIn;						\
 									\
-	some_compilers_are_asinine(funcname, iotype, valtype, CONST)	\
+    register valtype value;						\
+    register int nfound;						\
+									\
+    inscrutable_compiler(funcname, iotype, valtype, CONST)		\
 }
 
-DO_GL	(GL_R, RealPixel, RealPixel, flt_constant)
-DO_GL	(GL_B, BytePixel, QuadPixel, int_constant)
-DO_GL	(GL_P, PairPixel, QuadPixel, int_constant)
-DO_GL	(GL_Q, QuadPixel, QuadPixel, int_constant)
+DO_AAGL	(AAGL_R, RealPixel, RealPixel, flt_constant)
+DO_AAGL	(AAGL_B, BytePixel, QuadPixel, int_constant)
+DO_AAGL	(AAGL_P, PairPixel, QuadPixel, int_constant)
+DO_AAGL	(AAGL_Q, QuadPixel, QuadPixel, int_constant)
+
+#if XIE_FULL
+/************************************************************************/
+/*			Gaussian Routines				*/
+/************************************************************************/
+/* NOTES:
+** this is so slow, we don't try to do a special scale routine.
+** should use #include <math.h>?
+** should consider using float (e.g. fexp()) but tends to be machine specific.
+** should generate pow(2,K) as (1 << floor(k)) + table[fraction(K)].
+** (pow(2,K) is half the speed of exp() which defeats the purpose).
+** issue of whether to pick points within a radius? or to use a constant
+** ...size box of size 2 * radius ?
+
+	(((uv2 = ((ix-xcen)*(ix-xcen)+(iy-ycen)*(iy-ycen))) <= rad2 )	\
+		? ((double)(P)) * (simple				\
+			?  pow(2.0, sigma * uv2)			\
+			: exp(sigma * uv2))				\
+		: 0.0 )
+*/
+
+extern double exp(), pow();
+
+
+#define gauss_loop(funcname, iotype, valtype, CONST)			\
+									\
+	/* loop through all the output pixels on this line */		\
+	while ( width-- > 0 ) { 					\
+									\
+	    iymin = ycen - (radius-1);					\
+	    iymax = iymin + (radius+radius-1);				\
+	    if (iymin < minline)	iymin = minline;		\
+	    if (iymax >= maxline)	iymax = maxline;		\
+									\
+	    ixmin = xcen - (radius - 1);				\
+	    ixmax = ixmin + (radius + radius - 1);			\
+	    if (ixmin < 0)		ixmin = 0;			\
+	    if (ixmax >= maxpixl)	ixmax = maxpixl;		\
+									\
+	    nfound = 0;     						\
+	    value = 0.;     						\
+	    for (iy = iymin; iy <= iymax; ++iy) {			\
+		ptrIn = (iotype *) srcimg[iy];  			\
+		for (ix = ixmin; ix <= ixmax; ++ix) {			\
+		  uv2 = ((ix-xcen)*(ix-xcen)+(iy-ycen)*(iy-ycen));	\
+		  value += ((double)(ptrIn[ix])) * (simple		\
+				? pow(2.0, sigma * uv2)			\
+				: exp(sigma * uv2));			\
+		  ++nfound;			  			\
+		}				  			\
+	    } /* end of iy loop */					\
+									\
+	    if (nfound) { 						\
+		value *= tkpvt->normalize; /* xxx clip */		\
+		*outp++ = value < levels ? value : levels;		\
+	    } else							\
+	        *outp++ = constant;					\
+									\
+    	    xcen += a;							\
+	    ycen += c;							\
+	}/* end of line loop */						\
+									\
+	/* before leaving, update bounding rect for next line */	\
+	if (flags & FLG_B_NOT_ZERO) {					\
+	   pvtband->left_br.xmin += b;					\
+	   pvtband->left_br.xmax += b;					\
+	}								\
+	if (flags & FLG_D_NOT_ZERO) {					\
+	   pvtband->left_br.ymin += d;					\
+	   pvtband->left_br.ymax += d;					\
+	}								
+
+#define DO_GAGL(funcname, iotype, valtype, CONST)			\
+static void								\
+funcname (OUTP,srcimg,width,ped,pvtband)				\
+    register void *OUTP;						\
+    register void **srcimg;						\
+    register int width;							\
+    peDefPtr  ped;							\
+    mpAABandPtr pvtband;						\
+{									\
+    pGeomDefPtr	pedpvt = (pGeomDefPtr)ped->elemPvt; 			\
+									\
+    /* Mapping coefficients */						\
+    double a = pedpvt->coeffs[0]; 					\
+    double b = pedpvt->coeffs[1];					\
+    double c = pedpvt->coeffs[2]; 					\
+    double d = pedpvt->coeffs[3];					\
+    CARD32 flags = pvtband->flags;					\
+									\
+    register double xcen = pvtband->yOut * b + pedpvt->coeffs[4];	\
+    register double ycen = pvtband->yOut * d + pedpvt->coeffs[5];	\
+    register int ixmin,iymin,ixmax,iymax;				\
+									\
+    /* loop variables for roaming through the bounding rectangle */	\
+    register int ix,iy;							\
+									\
+    /* variables which describe available input data (for clipping) */	\
+    register int maxpixl = pvtband->in_width - 1;			\
+    register int minline = pvtband->lo_src_avail;			\
+    register int maxline = pvtband->hi_src_avail;			\
+									\
+    /* cast of constant, output and input pointers to correct type */	\
+    register iotype constant = (iotype) pvtband->CONST;			\
+    register iotype *outp = (iotype *) OUTP;				\
+    register iotype *ptrIn;						\
+									\
+    register double value, levels = pvtband->level_clip - 1;		\
+    register int nfound;						\
+    pTecGeomGaussianDefPtr tkpvt = (pTecGeomGaussianDefPtr)ped->techPvt;\
+    int			  simple = tkpvt->simple;			\
+    int			  radius = tkpvt->radius;			\
+    double		   sigma = (simple ? -1.0 : -0.5) /		\
+					(tkpvt->sigma * tkpvt->sigma);	\
+    register double	     uv2;					\
+									\
+    gauss_loop(funcname, iotype, valtype, CONST)			\
+}
+
+DO_GAGL	(GAGL_R, RealPixel, RealPixel, flt_constant)
+DO_GAGL	(GAGL_B, BytePixel, QuadPixel, int_constant)
+DO_GAGL	(GAGL_P, PairPixel, QuadPixel, int_constant)
+DO_GAGL	(GAGL_Q, QuadPixel, QuadPixel, int_constant)
+#endif
 
 /**********************************************************************/
 /* end module mpgeomaa.c */

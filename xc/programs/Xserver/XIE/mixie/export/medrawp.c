@@ -1,4 +1,4 @@
-/* $XConsortium: medrawp.c,v 1.2 93/07/19 11:38:16 rws Exp $ */
+/* $XConsortium: medrawp.c,v 1.1 93/10/26 09:49:24 rws Exp $ */
 /**** module medrawp.c ****/
 /******************************************************************************
 				NOTICE
@@ -82,6 +82,7 @@ terms and conditions:
 #include <macro.h>
 #include <element.h>
 #include <texstr.h>
+#include <xiemd.h>
 
 extern Bool	DrawableAndGC();
 
@@ -96,7 +97,6 @@ int	miAnalyzeEDrawP();
 static int CreateEDrawP();
 static int InitializeEDrawP();
 static int ActivateEDrawP(), ActivateEDrawPTrans();
-static int FlushEDrawP();
 static int ResetEDrawP();
 static int DestroyEDrawP();
 
@@ -107,10 +107,15 @@ static ddElemVecRec EDrawPVec = {
   CreateEDrawP,
   InitializeEDrawP,
   ActivateEDrawP,
-  FlushEDrawP,
+  (xieIntProc)NULL,
   ResetEDrawP,
   DestroyEDrawP
   };
+
+typedef struct _medrawp {
+  BytePixel *buf;
+} meDrawPRec, *meDrawPPtr;
+
 
 /*------------------------------------------------------------------------
 ------------------- see if we can handle this element --------------------
@@ -133,7 +138,7 @@ static int CreateEDrawP(flo,ped)
      peDefPtr  ped;
 {
   /* attach an execution context to the photo element definition */
-  return( MakePETex(flo,ped,0,FALSE,FALSE) );
+  return MakePETex(flo, ped, sizeof(meDrawPRec), NO_SYNC, NO_SYNC);
 }                               /* end CreateEDrawP */
 
 /*------------------------------------------------------------------------
@@ -144,20 +149,26 @@ static int InitializeEDrawP(flo,ped)
      peDefPtr  ped;
 {
   xieFloExportDrawablePlane *raw = (xieFloExportDrawablePlane *) ped->elemRaw;
-  eDrawPDefPtr	pvt = (eDrawPDefPtr) ped->elemPvt;
+  eDrawPDefPtr	dix = (eDrawPDefPtr) ped->elemPvt;
 
-  if (!DrawableAndGC(flo,ped,raw->drawable,raw->gc,&pvt->pDraw,&pvt->pGC))
+  if (!DrawableAndGC(flo,ped,raw->drawable,raw->gc,&dix->pDraw,&dix->pGC))
     return FALSE;
 
-  if (pvt->pGC->fillStyle == FillStippled) {
-
+  if (dix->pGC->fillStyle == FillStippled)
     	ped->ddVec.activate = ActivateEDrawPTrans;
-
-  } else { /* normal case: FillSolid || FillTiled || FillOpaqueStippled */
-
+  else		/* normal case: FillSolid || FillTiled || FillOpaqueStippled */
     	ped->ddVec.activate = ActivateEDrawP;
+
+#if (BITMAP_BIT_ORDER != IMAGE_BYTE_ORDER)
+  {
+  meDrawPPtr ddx = (meDrawPPtr) ped->peTex->private;
+  if(!(ddx->buf = ((BytePixel*)XieMalloc(max(ped->outFlo.format[0].pitch+7>>3,
+					     flo->floTex->stripSize)))))
+    AllocError(flo,ped, return(FALSE));
   }
-  return( InitReceptors(flo,ped,0,1) );
+#endif
+
+  return InitReceptors(flo,ped,NO_DATAMAP,1);
 }                               /* end InitializeEDrawP */
 
 
@@ -170,37 +181,47 @@ static int ActivateEDrawP(flo,ped,pet)
      peTexPtr  pet;
 {
   xieFloExportDrawablePlane *raw = (xieFloExportDrawablePlane *) ped->elemRaw;
-  eDrawPDefPtr	pvt = (eDrawPDefPtr) ped->elemPvt;
-  bandPtr	bnd = &pet->receptor[SRCtag].band[0];
-  DrawablePtr	draw;
-  BytePixel	*src;
-  CARD32	pixtype;
-  
-  src = GetSrc(BytePixel,flo,pet,bnd,bnd->minGlobal,FALSE);
+  eDrawPDefPtr	 dix = (eDrawPDefPtr) ped->elemPvt;
+  bandPtr	 bnd = &pet->receptor[SRCtag].band[0];
+  BytePixel	*src = GetCurrentSrc(BytePixel,flo,pet,bnd);
+  CARD32    pixtype, depth;
+
   if(src) {
-    if (!DrawableAndGC(flo,ped,raw->drawable,raw->gc,&pvt->pDraw,&pvt->pGC))
+    if(!DrawableAndGC(flo,ped,raw->drawable,raw->gc,&dix->pDraw,&dix->pGC))
       return FALSE;
-    draw = pvt->pDraw;
-    pixtype = (draw->type == DRAWABLE_PIXMAP) ? XYPixmap : XYBitmap;
-    do    
-      (*pvt->pGC->ops->PutImage)(draw,			  /* drawable	 */
-				 pvt->pGC,		  /* gc		 */
-				 (pixtype == XYBitmap) ?
-				 1 :
-				 draw->depth,		  /* depth	 */
+    pixtype = (dix->pDraw->type == DRAWABLE_PIXMAP) ? XYPixmap : XYBitmap;
+    depth   = (pixtype == XYBitmap) ? 1 : dix->pDraw->depth;
+
+    do {
+#if (BITMAP_BIT_ORDER != IMAGE_BYTE_ORDER)
+      {
+	meDrawPPtr ddx = (meDrawPPtr) pet->private;
+	BytePixel *op, *dst;
+	int   nb = bnd->pitch * bnd->strip->length;
+	dst = op = AlterSrc(flo,pet,bnd->strip) ? src : ddx->buf;
+	
+	while (nb--)
+	  *op++ = _ByteReverseTable[*src++];
+	src = dst;
+      }
+#endif
+      (*dix->pGC->ops->PutImage)(dix->pDraw,		  /* drawable	 */
+				 dix->pGC,		  /* gc		 */
+				 depth,			  /* depth	 */
 				 raw->dstX,		  /* drawable-x	 */
 				 raw->dstY+bnd->minLocal, /* drawable-y	 */
 				 bnd->format->width,	  /* width	 */
 				 bnd->strip->length,	  /* height	 */
 				 bnd->strip->bitOff,	  /* padding? 	 */
 				 pixtype,		  /* data format */
-				 (char *)src		  /* data buffer */
+				 (char*)src		  /* data buffer */
 				 );
-    while(src = GetSrc(BytePixel,flo,pet,bnd,bnd->maxLocal,FALSE));
-    /* make sure the scheduler knows how much src we used */
-    FreeData(BytePixel,flo,pet,bnd,bnd->current);
-  }
+    }
+    while(src = GetSrc(BytePixel,flo,pet,bnd,bnd->maxLocal,KEEP));
 
+    /* make sure the scheduler knows how much src we used */
+    FreeData(flo,pet,bnd,bnd->current);
+  }
   return(TRUE);
 }                               /* end ActivateEDrawP */
 
@@ -210,7 +231,7 @@ static int ActivateEDrawPTrans(flo,ped,pet)
      peTexPtr  pet;
 {
   xieFloExportDrawablePlane *raw = (xieFloExportDrawablePlane *) ped->elemRaw;
-  eDrawPDefPtr	pvt = (eDrawPDefPtr) ped->elemPvt;
+  eDrawPDefPtr	dix = (eDrawPDefPtr) ped->elemPvt;
   bandPtr	bnd = &pet->receptor[SRCtag].band[0];
   DrawablePtr	draw;
   GCPtr		gc, scratch;
@@ -221,11 +242,11 @@ static int ActivateEDrawPTrans(flo,ped,pet)
   
   src = GetSrc(BytePixel,flo,pet,bnd,bnd->minGlobal,FALSE);
   if(src) {
-    if (!DrawableAndGC(flo,ped,raw->drawable,raw->gc,&pvt->pDraw,&pvt->pGC))
+    if (!DrawableAndGC(flo,ped,raw->drawable,raw->gc,&dix->pDraw,&dix->pGC))
       return FALSE;
 
-    draw = pvt->pDraw;
-    gc = pvt->pGC;
+    draw = dix->pDraw;
+    gc   = dix->pGC;
 
     /*
     ** We use PushPixels with a solid fill to move the one bits onto the
@@ -244,8 +265,8 @@ static int ActivateEDrawPTrans(flo,ped,pet)
 
     /*
     ** Core X does not seem to provide an official interface to create
-    ** a pixmap header, or even to replace the data pointer.  We cant
-    ** simply bcopy our data to it either, it might be on a separate
+    ** a pixmap header, or even to replace the data pointer.  We can't
+    ** simply memcpy our data to it either, it might be on a separate
     ** cpu/memory system, or even upside down.  So we just use PutImage
     ** to prepare our data. Sigh.  On most cpu's, just explicitly
     ** create a pixmap header yourself and call PushPixels directly.
@@ -287,6 +308,18 @@ static int ActivateEDrawPTrans(flo,ped,pet)
 
     do {
 	int iy, ny;
+#if (BITMAP_BIT_ORDER != IMAGE_BYTE_ORDER)
+	{
+	  meDrawPPtr ddx = (meDrawPPtr) pet->private;
+	  BytePixel *op, *dst;
+	  int   nb = bnd->pitch * bnd->strip->length;
+	  dst = op = AlterSrc(flo,pet,bnd->strip) ? src : ddx->buf;
+	
+	  while (nb--)
+	    *op++ = _ByteReverseTable[*src++];
+	  src = dst;
+	}
+#endif
 	for (iy = 0 ; iy < bnd->strip->length; iy += ny) {
 	    ny = bnd->strip->length - iy;
 	    if (ny > NLINES)
@@ -303,7 +336,7 @@ static int ActivateEDrawPTrans(flo,ped,pet)
 		ny,				/* height	*/
 		bnd->strip->bitOff,		/* padding? 	*/
 		XYPixmap,			/* data format	*/
-		(char *)src			/* data buffer	*/
+		(char*)src			/* data buffer	*/
 		);
 	    if ((gc->serialNumber) != (draw->serialNumber))
 		ValidateGC(draw, gc);
@@ -321,7 +354,7 @@ static int ActivateEDrawPTrans(flo,ped,pet)
     } while(src = GetSrc(BytePixel,flo,pet,bnd,bnd->maxLocal,FALSE)) ;
 
     /* make sure the scheduler knows how much src we used */
-    FreeData(BytePixel,flo,pet,bnd,bnd->current);
+    FreeData(flo,pet,bnd,bnd->current);
 
     ChangeGC(gc, GCFillStyle, (XID *)&oldstyle);
     ValidateGC(draw, gc);
@@ -333,17 +366,6 @@ static int ActivateEDrawPTrans(flo,ped,pet)
   return(TRUE);
 }                               /* end ActivateEDrawPTrans */
 
-/*------------------------------------------------------------------------
---------------------------- get rid of left overs ------------------------
-------------------------------------------------------------------------*/
-static int FlushEDrawP(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  /* Activate was suppose to do the whole image -- there's nothing to do */
-  return(TRUE);
-}                               /* end FlushEDrawP */
-
 
 /*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
@@ -352,6 +374,10 @@ static int ResetEDrawP(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
+  meDrawPPtr ddx = (meDrawPPtr) ped->peTex->private;
+
+  if(ddx->buf) ddx->buf = (BytePixel*)XieFree(ddx->buf);
+
   ResetReceptors(ped);
   
   return(TRUE);
@@ -373,7 +399,6 @@ static int DestroyEDrawP(flo,ped)
   ped->ddVec.create     = (xieIntProc) NULL;
   ped->ddVec.initialize = (xieIntProc) NULL;
   ped->ddVec.activate   = (xieIntProc) NULL;
-  ped->ddVec.flush      = (xieIntProc) NULL;
   ped->ddVec.reset      = (xieIntProc) NULL;
   ped->ddVec.destroy    = (xieIntProc) NULL;
 

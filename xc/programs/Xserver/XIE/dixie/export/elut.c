@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: elut.c,v 1.1 93/10/26 10:02:19 rws Exp $ */
 /**** module elut.c ****/
 /******************************************************************************
 				NOTICE
@@ -123,7 +123,7 @@ peDefPtr MakeELUT(flo,tag,pe)
   /*
    * copy the standard client element parameters (swap if necessary)
    */
-  if( flo->client->swapped ) {
+  if( flo->reqClient->swapped ) {
     raw->elemType   = stuff->elemType;
     raw->elemLength = stuff->elemLength;
     raw->merge	    = stuff->merge;
@@ -134,7 +134,7 @@ peDefPtr MakeELUT(flo,tag,pe)
     cpswapl(stuff->start2, raw->start2);
   }
   else  
-    bcopy((char *)stuff, (char *)raw, sizeof(xieFloExportLUT));
+    memcpy((char *)raw, (char *)stuff, sizeof(xieFloExportLUT));
   /*
    * assign phototags to inFlos
    */
@@ -172,7 +172,7 @@ static Bool PrepELUT(flo,ped)
   /* Validate and Propagate input attributes to our output */
   dst->bands = inf->bands = src->bands;
   for(b = 0; b < src->bands; ++b) {
-    if (src->format[b].class != LUT_ARRAY)
+    if (IsntLut(src->format[b].class))
 	FloSourceError(flo,raw->src,raw->elemType, return(FALSE));
     if (raw->merge) {
 	if ( (src->format[b].levels != lut->format[b].level) ||
@@ -206,8 +206,8 @@ static Bool DebriefELUT(flo,ped,ok)
   	CARD32 *start = &(raw->start0);
 	for(b = 0; b < lut->lutCnt; b++) {
 	   int nbytes = LutPitch(lut->format[b].level);
-	   bcopy(ped->outFlo.export[b].flink->data,
-		 lut->strips[b].flink->data + start[b] * nbytes,
+	   memcpy(lut->strips[b].flink->data + start[b] * nbytes,
+	   	 ped->outFlo.export[b].flink->data,
 		 ped->outFlo.export[b].flink->length * nbytes);
 	} /* transient strips freed below */
     } else { 
@@ -218,8 +218,8 @@ static Bool DebriefELUT(flo,ped,ok)
 	/* stash our new attributes and data into the LUT */
 	lut->lutCnt = ped->outFlo.bands;
 	for(b = 0; b < lut->lutCnt; ++b) {
-	    lut->format[b].bandOrder = ped->outFlo.format[b].width; /* XXX */
-	    lut->format[b].length = ped->outFlo.format[b].height; /* XXX */
+	    lut->format[b].bandOrder = ped->outFlo.format[b].width;/*ugly hack*/
+	    lut->format[b].length = ped->outFlo.format[b].height;/* ugly hack */
 	    lut->format[b].level  = ped->outFlo.format[b].levels;
 	    DebriefStrips(&ped->outFlo.export[b],&lut->strips[b]);
 	}
@@ -232,11 +232,13 @@ static Bool DebriefELUT(flo,ped,ok)
   
   /* unbind ourself from the LUT
    */
-  if(pvt->lut->refCnt == 1)
-    FreeResourceByType(pvt->lut->ID, RT_LUT, RT_NONE);
+  if(lut->refCnt > 1)
+    --lut->refCnt;
+  else if(LookupIDByType(raw->lut, RT_LUT))
+    FreeResourceByType(lut->ID, RT_LUT, RT_NONE);
   else
-    --pvt->lut->refCnt;
-  
+    DeleteLUT(lut, lut->ID);
+
   return(TRUE);
 }                               /* end DebriefELUT */
 

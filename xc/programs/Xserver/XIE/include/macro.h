@@ -1,4 +1,4 @@
-/* $XConsortium: macro.h,v 1.2 93/07/19 11:31:37 rws Exp $ */
+/* $XConsortium: macro.h,v 1.1 93/10/26 10:04:05 rws Exp $ */
 /**** module macro.h ****/
 /******************************************************************************
 				NOTICE
@@ -65,8 +65,8 @@ terms and conditions:
  */
 #define ddInput(flo,ped,band,data,bytes,final) \
   		(*flo->dataVec->input)(flo,ped,band,data,bytes,final)
-#define ddOutput(flo,ped,band,data,bytes,maxLen,term) \
-  		(*flo->dataVec->output)(flo,ped,band,data,bytes,maxLen,term)
+#define ddOutput(flo,ped,band,maxLen,term) \
+  		(*flo->dataVec->output)(flo,ped,band,maxLen,term)
 #define ddQuery(flo,lst,im,ex) (*flo->dataVec->query)(flo,lst,im,ex)
 
 /* List management macros
@@ -88,7 +88,7 @@ terms and conditions:
 #define RemoveMember(ptr,old) \
 		(ptr=old, \
 		 ((lstPtr)(ptr))->blink->flink = ((lstPtr)(ptr))->flink, \
-		 ((lstPtr)(ptr))->flink->blink = ((lstPtr)(ptr))->blink, (ptr))
+		 ((lstPtr)(ptr))->flink->blink = ((lstPtr)(ptr))->blink)
 
 
 /* return amount that should be added to 'len' to make it modulo 'pad'
@@ -180,11 +180,5 @@ terms and conditions:
 #define ELEMENT_NEEDS_3_INPUTS(input1,input2,input3) \
 		if(!(stuff->input1) || !(stuff->input2) || !(stuff->input3)) \
 		  FloSourceError(flo,tag,stuff->elemType, return(NULL))
-
-#define TECHNIQUE_SIZE_MATCH(tstruct,size) \
-	if (sizeof(tstruct)>>2 != size) return(FALSE);
-
-#define TECHNIQUE_AT_LEAST_SIZE(tstruct,size) \
-	if (sizeof(tstruct)>>2 > size) return(FALSE);
 
 #endif /* end _XIEH_MACRO */

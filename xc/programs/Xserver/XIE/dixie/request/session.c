@@ -1,4 +1,4 @@
-/* $XConsortium: session.c,v 1.1 93/07/19 10:10:46 rws Exp $ */
+/* $XConsortium: session.c,v 1.1 93/10/26 09:58:39 rws Exp $ */
 /**** session.c ****/
 /****************************************************************************
 				NOTICE
@@ -42,7 +42,7 @@ terms and conditions:
      Logic, Inc.
 *****************************************************************************
 
-	session.c: Initialization code for the XIE V412 server. 
+	session.c: Initialization code for the XIE V4.14 server. 
 
 	Dean Verheiden -- AGE Logic, Inc  March, 1993
 
@@ -59,7 +59,7 @@ terms and conditions:
 #include <stdio.h>		/* needed if we do any printf's		*/
 
 #include "XIE.h"		
-#include "XIEproto.h"		/* Xie v4.12 protocol specification	*/
+#include "XIEproto.h"		/* Xie v4.14 protocol specification	*/
 #include <corex.h>		/* core X interface routine definitions */ 
 #include <tables.h>
 #include <macro.h>		/* server internal macros		*/
@@ -74,14 +74,25 @@ static	int	XieDispatch(),	/* dispatcher for XIE opcodes */
 static void	XieReset();	/* reset the XIE code, eg, on reboot */
 static int	DdxInit();
 
+#define REPORT_MEMORY_LEAKS
+#ifdef  REPORT_MEMORY_LEAKS
+extern int ALLOCS;
+extern int STRIPS;
+extern int BYTES;
+#endif
+
 ExtensionEntry	*extEntry;
 RESTYPE		RC_XIE;			/* XIE Resource Class		*/
+#if XIE_FULL
 RESTYPE		RT_COLORLIST;		/* ColorList resource type	*/
+#endif
 RESTYPE		RT_LUT;			/* Lookup table resource type	*/
 RESTYPE		RT_PHOTOFLO;		/* Photoflo   resource type	*/
 RESTYPE		RT_PHOTOMAP;		/* Photomap   resource type	*/
 RESTYPE		RT_PHOTOSPACE;		/* Photospace resource type	*/
+#if XIE_FULL
 RESTYPE		RT_ROI;			/* Region Of Interest type	*/
+#endif
 RESTYPE		RT_XIE_CLIENT;		/* XIE Type for Shutdown Notice */
 
 struct _client_table {
@@ -99,12 +110,16 @@ void XieInit()
   
   /* Initialize XIE Resources */
   RC_XIE	= CreateNewResourceClass();
+#if XIE_FULL
   RT_COLORLIST	= RC_XIE | CreateNewResourceType(DeleteColorList);
+#endif
   RT_LUT	= RC_XIE | CreateNewResourceType(DeleteLUT);
   RT_PHOTOFLO	= RC_XIE | CreateNewResourceType(DeletePhotoflo);
   RT_PHOTOMAP	= RC_XIE | CreateNewResourceType(DeletePhotomap);
   RT_PHOTOSPACE	= RC_XIE | CreateNewResourceType(DeletePhotospace);
+#if XIE_FULL
   RT_ROI	= RC_XIE | CreateNewResourceType(DeleteROI);
+#endif
   RT_XIE_CLIENT	= RC_XIE | CreateNewResourceType(DeleteXieClient);
   
   
@@ -122,10 +137,27 @@ void XieInit()
   
   XieReset(extEntry);
 
-  technique_init();	/* Initialize sizes of technique names */
-  
-  if (DdxInit() != Success)
+  if (!technique_init() || DdxInit() != Success)
     FatalError(" could not add Xie as an extension\n");
+}
+
+/**********************************************************************/
+/* Register client with core X under a FakeClientID */
+static int RegisterXieClient(client, minor)
+ClientPtr client;
+CARD16 minor;
+{
+    client_table[client->index].Shutdown_id  = FakeClientID(client->index);
+    client_table[client->index].minorVersion = minor;
+    
+    init_proc_tables(minor,
+		     &(client_table[client->index].proc_table),
+		     &(client_table[client->index].sproc_table));
+    
+    /* Register the client with Core X for shutdown */
+    return (AddResource(client_table[client->index].Shutdown_id,
+		    RT_XIE_CLIENT,
+		    &(client_table[client->index])));
 }
 
 /**********************************************************************/
@@ -134,17 +166,17 @@ static int XieDispatch (client)
 {
   REQUEST(xieReq); 	/* make "stuff" point to client's request buffer */
   
-  /* Make sure version compatability is established */
+  /* QueryImageExtension establishes a communication version */
   if (stuff->opcode == X_ieQueryImageExtension)
     return (ProcQueryImageExtension(client));		
 
-  else if (client_table[client->index].Shutdown_id == 0) 
-    return( BadAccess );
-
-  else if (stuff->opcode > 0 && stuff->opcode <= xieNumProtoReq) 
+  /* First make sure that a communication version has been established  */
+  if (client_table[client->index].Shutdown_id == 0 && /* Pick a favorite */
+      !RegisterXieClient(client, xieMinorVersion))    /* minor version   */
+	return ( BadAlloc );
+  if (stuff->opcode > 0 && stuff->opcode <= xieNumProtoReq) 
     /* Index into version specific routines */
     return (CallProc(client));
-
   else 
     return ( BadRequest);
 }
@@ -156,21 +188,21 @@ static int SXieDispatch (client)
 {
   REQUEST(xieReq);	/* make "stuff" point to client's request buffer */
   
-  /* Make sure version compatability is established */
+  /* QueryImageExtension establishes a communication version */
   if (stuff->opcode == X_ieQueryImageExtension)
     return (SProcQueryImageExtension(client));		
 
-  else if (client_table[client->index].Shutdown_id == 0) 
-    return( BadAccess );
-
-  else if (stuff->opcode > 0 && stuff->opcode <= xieNumProtoReq) 
+  /* First make sure that a communication version has been established  */
+  if (client_table[client->index].Shutdown_id == 0 && /* Pick a favorite */
+      !RegisterXieClient(client, xieMinorVersion))    /* minor version   */
+	return ( BadAlloc );
+  if (stuff->opcode > 0 && stuff->opcode <= xieNumProtoReq) 
     /* Index into version specific routines */
     return (CallSProc(client));
 
   else 
     return ( BadRequest);
 }
-
 
 /**********************************************************************/
 ProcQueryImageExtension(client)
@@ -195,31 +227,23 @@ ProcQueryImageExtension(client)
 
   reply.length = sizeof(Preferred_levels)>>2;
   
+#if XIE_FULL
   reply.serviceClass          = xieValFull;
+#else
+  reply.serviceClass          = xieValDIS;
+#endif
   reply.alignment             = ALIGNMENT;
   reply.unconstrainedMantissa = UNCONSTRAINED_MANTISSA;
   reply.unconstrainedMaxExp   = UNCONSTRAINED_MAX_EXPONENT;
   reply.unconstrainedMinExp   = UNCONSTRAINED_MIN_EXPONENT;
   
-  if (client_table[client->index].Shutdown_id == 0) {
-    
-    /* If this is the first QueryImageExtension for this client,
-       register fake_id with Core X to get a closedown notification
-       later 
-       */
-    client_table[client->index].Shutdown_id  = FakeClientID(client->index);
-    client_table[client->index].minorVersion = reply.minorVersion; 
-    
-    init_proc_tables(reply.minorVersion, 
-		     &(client_table[client->index].proc_table),
-		     &(client_table[client->index].sproc_table));
-    
-    /* Register the client with Core X for shutdown */
-    if (AddResource(client_table[client->index].Shutdown_id,
-		    RT_XIE_CLIENT,
-		    &(client_table[client->index])) == FALSE)
-      return ( BadAlloc );
-  }
+  /* 
+    If this is the first QueryImageExtension for this client, register fake_id 
+    with Core X to get a closedown notification later 
+  */
+  if (client_table[client->index].Shutdown_id == 0) 
+  	if (!RegisterXieClient(client, reply.minorVersion)) 
+        	return ( BadAlloc );
   
   /***	Take care of swapping bytes if necessary	***/
   if (client->swapped) {
@@ -233,17 +257,16 @@ ProcQueryImageExtension(client)
     swapl(&reply.unconstrainedMaxExp,n);
     swapl(&reply.unconstrainedMinExp,n);
   }
-  
-  WriteToClient(client,sz_xieQueryImageExtensionReply, (char *)&reply);
+  WriteToClient(client,sz_xieQueryImageExtensionReply,(char*)&reply);
 
   /*
    * Send the list of preferred levels (swapped as necessary)
    */
-  if (reply.length)
-      if( client->swapped )
-	CopySwap32Write(client, sizeof(Preferred_levels), Preferred_levels);
-      else
-	WriteToClient(client, sizeof(Preferred_levels), (char *)Preferred_levels);
+  if(reply.length)
+    if(client->swapped)
+      CopySwap32Write(client,sizeof(Preferred_levels),Preferred_levels);
+    else
+      WriteToClient(client,sizeof(Preferred_levels),(char*)Preferred_levels);
   
   return(Success);
 }
@@ -273,8 +296,7 @@ static int DeleteXieClient(data, id)
 pointer data;
 XID id;
 {
-  memset((char *)&(client_table[CLIENT_ID(id)]), 0, 
-	 sizeof(struct _client_table));
+  bzero((char *)&(client_table[CLIENT_ID(id)]), sizeof(struct _client_table));
 }
 
 /**********************************************************************/
@@ -282,9 +304,19 @@ static void XieReset (extEntry)
      ExtensionEntry	*extEntry;
 {
   /* Initialize client table */
-  memset((char *)client_table, 0, sizeof(client_table));
-  
+  bzero((char *)client_table, sizeof(client_table));
+
+#ifdef REPORT_MEMORY_LEAKS
+
+  /* memory leak debug code
+   */
+  if(ALLOCS)		/* check on outstanding mallocs and callocs */
+    ErrorF("XieReset: %d allocs still outstanding.\n", ALLOCS);
+
+  if(STRIPS || BYTES)	/* check on outstanding data manager allocs */
+    ErrorF("XieReset: %d strips with %d data bytes still outstanding.\n",
+	   STRIPS, BYTES);
+#endif  
 }
 
 /**** End of session.c ****/
-

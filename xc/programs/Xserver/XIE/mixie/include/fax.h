@@ -1,4 +1,4 @@
-/* $XConsortium: fax.h,v 1.1 93/07/19 10:17:03 rws Exp $ */
+/* $XConsortium: fax.h,v 1.1 93/10/26 09:50:16 rws Exp $ */
 /**** module fax.h ****/
 /******************************************************************************
 				NOTICE
@@ -51,9 +51,11 @@ terms and conditions:
 #include <stdio.h>
 
 /***	entry points */
-int decode_g4();
-int decode_g32d();
-int decode_g31d();
+extern int decode_g4();
+extern int decode_g32d();
+extern int decode_g31d();
+extern int decode_tiff2();
+extern int decode_tiffpb();
 
 /* must match what is in pretab.h */
 #define	FAX_MODE_Unknown	0
@@ -107,12 +109,20 @@ int decode_g31d();
 #define FAX_DECODE_DONE_ErrorPastWidth		7
 #define FAX_DECODE_DONE_ErrorBadCode		8
 #define FAX_DECODE_DONE_ErrorBadPtr		9
+#define FAX_DECODE_DONE_ErrorBadZero		10
+#define FAX_DECODE_DONE_ErrorBada0a1		11
+#define FAX_DECODE_DONE_ErrorBada1a2		12
+#define FAX_DECODE_DONE_ErrorBadEOL		13
+#define FAX_DECODE_DONE_ErrorBadA0pos		14
+#define FAX_DECODE_DONE_ErrorPassAboveAllWhite	15
+#define FAX_DECODE_DONE_ErrorMissingEOL		16
 
-#if defined(XoftWare) && defined(HandleTiffStrips)
-#define FAX_GOAL_StripEnd1stAdj  31
-#define FAX_GOAL_StripEnd2ndAdj  32
-#define FAX_GOAL_StripEndSkipEOL 33
-#endif
+
+#define PB_GOAL_StartNewLine		0
+#define PB_GOAL_GetRunLength		1
+#define PB_GOAL_GetLiteralBytes		2
+#define PB_GOAL_GetRepeatByte		3
+#define PB_GOAL_RepeatBytes		4
 
 typedef struct _bit_stream {
   int		 started;	/* 0 if requires initialization	    */
@@ -158,6 +168,7 @@ typedef struct _fax_state {
 	int width;	 /* width of image.  So we know end of line	*/
 	int g32d_horiz;	 /* only relevant for g32d encoding		*/
 	int rl;		 /* needed if I get EOL in get_a0a1 or get_a1a2 */
+	int radiometric; /* if 1, then expand white as 1, else 0	*/
 } FaxState;
 
 /* these definitions should agree with what is in pretab.h */
@@ -168,5 +179,18 @@ typedef struct _fax_state {
 #define MIN_BYTES_NEEDED 7
 	/* sorry, we can't handle strips of less than 7 bytes.  :-(    */
 	/* it wreaks havoc with our magic strips if we try to go lower */
+
+#define WriteLineData(olp,w)	\
+	zero_even(olp,new_trans,n_new_trans,w,state->radiometric);
+
+#define FlushLineData()						    	\
+	{								\
+	   WriteLineData((char *)state->o_lines[lines_found],width); 	\
+	   ++lines_found;						\
+	}								
+/* 
+   note: I'm declaring this with no functions, so the caller won't
+   be tempted to call with lines_found++, which wouldn't work
+*/
 
 /**** module fax.h ****/

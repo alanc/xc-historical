@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: corex.h,v 1.1 93/10/26 10:03:35 rws Exp $ */
 /**** module corex.h ****/
 /******************************************************************************
 				NOTICE
@@ -68,7 +68,7 @@ terms and conditions:
 #define MAX_DEPTH(nbands)  (nbands > 1 ? MAX_TRIPLE : MAX_SINGLE)
 #define MAX_LEVELS(nbands) (nbands > 1 ? (1<<MAX_TRIPLE) : (1<<MAX_SINGLE))
 
-#define ALIGNMENT  xieValAlignable	/* beta SI will be xieTypArbitrary */
+#define ALIGNMENT  xieValArbitrary	
 
 #define PITCH_MOD 32			/* default scanline pitch	   */
 
@@ -79,8 +79,8 @@ terms and conditions:
  * See QueryImageExtension for description
  * Return values for Single Precision IEEE floats for now
  */
-#define UNCONSTRAINED_MANTISSA		24
-#define UNCONSTRAINED_MAX_EXPONENT	128	
+#define UNCONSTRAINED_MANTISSA		  24
+#define UNCONSTRAINED_MAX_EXPONENT	 128	
 #define UNCONSTRAINED_MIN_EXPONENT	-126	
 
 CARD32       Preferred_levels[] = 
@@ -102,16 +102,20 @@ extern void         FreeResource();
 extern ExtensionEntry 	*extEntry;
 
 extern RESTYPE	RC_XIE;			/* XIE Resource Class		*/
+#if XIE_FULL
 extern RESTYPE	RT_COLORLIST;		/* ColorList resource type	*/
+#endif
 extern RESTYPE	RT_LUT;			/* Lookup table resource type	*/
 extern RESTYPE	RT_PHOTOFLO;		/* Photoflo   resource type	*/
 extern RESTYPE	RT_PHOTOMAP;		/* Photomap   resource type	*/
 extern RESTYPE	RT_PHOTOSPACE;		/* Photospace resource type	*/
+#if XIE_FULL
 extern RESTYPE	RT_ROI;			/* Region Of Interest type	*/
+#endif
 extern RESTYPE	RT_XIE_CLIENT;		/* XIE Type for Shutdown Notice */
 #endif
 
-#ifndef _XIEC_COLORLST
+#if !defined(_XIEC_COLORLST) && (XIE_FULL)
 extern	int		DeleteColorList();
 #endif
 #ifndef _XIEC_LUT
@@ -124,7 +128,7 @@ extern	int		DeletePhotomap();
 extern	int		DeletePhotoflo();
 extern	int		DeletePhotospace();
 #endif
-#ifndef _XIEC_ROI
+#if !defined(_XIEC_ROI) && (XIE_FULL)
 extern	int		DeleteROI();
 #endif
 #ifndef _XIEC_SESSION

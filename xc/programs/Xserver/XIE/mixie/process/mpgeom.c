@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mpgeom.c,v 1.1 93/10/26 09:46:47 rws Exp $ */
 /**** module mpgeom.c ****/
 /******************************************************************************
 				NOTICE
@@ -57,6 +57,8 @@ terms and conditions:
  */
 #include <stdio.h>
 
+#define XoftWare
+
 /*
  *  Core X Includes
  */
@@ -91,13 +93,17 @@ int	miAnalyzeGeometry();
 /*
  *  routines which we reference from other DDXIE modules
  */
-extern int	miAnalyzeGeomNN();
 extern int	miAnalyzeGeomAA();
+#if XIE_FULL
 extern int	miAnalyzeGeomBi();
+#endif
+extern int	miAnalyzeGeomNN();
 
 static xieIntProc miAnalyzeGeomVecs[] = {
 	miAnalyzeGeomAA,
+#if XIE_FULL
 	miAnalyzeGeomBi,
+#endif
 	miAnalyzeGeomNN,
 	(xieIntProc) NULL
 };
@@ -110,12 +116,12 @@ int miAnalyzeGeometry(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-int i;
+  int i;
+  
+  for (i=0; i<n_vecs; ++i)
+    if (miAnalyzeGeomVecs[i](flo,ped) == TRUE)
+      return(TRUE);
 
-	for (i=0; i<n_vecs; ++i) {
-		if (miAnalyzeGeomVecs[i](flo,ped) == TRUE)
-			return(TRUE);
-	}
-	return(FALSE);
+  return(FALSE);
 }                               /* end miAnalyzeGeometry */
 /* end module mpgeom.c */

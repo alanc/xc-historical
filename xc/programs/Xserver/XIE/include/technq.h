@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: technq.h,v 1.1 93/10/26 10:04:12 rws Exp $ */
 /**** module technq.h ****/
 /******************************************************************************
 				NOTICE
@@ -57,96 +57,169 @@ terms and conditions:
  * dixie import client photo technique entry points
  */
 extern Bool	CopyICPhotoUnSingle();
-extern Bool	CopyICPhotoUnTriple();
 extern Bool	CopyICPhotoG31D();
 extern Bool	CopyICPhotoG32D();
 extern Bool	CopyICPhotoG42D();
-extern Bool	CopyICPhotoJPEGBaseline();
-extern Bool	CopyICPhotoJPEGLossless();
 extern Bool	CopyICPhotoTIFF2();
 extern Bool	CopyICPhotoTIFFPackBits();
 extern Bool	PrepICPhotoUnSingle();
-extern Bool	PrepICPhotoUnTriple();
 extern Bool	PrepICPhotoG31D();
 extern Bool	PrepICPhotoG32D();
 extern Bool	PrepICPhotoG42D();
-extern Bool	PrepICPhotoJPEGBaseline();
-extern Bool	PrepICPhotoJPEGLossless();
 extern Bool	PrepICPhotoTIFF2();
 extern Bool	PrepICPhotoTIFFPackBits();
+#if XIE_FULL
+extern Bool	CopyICPhotoUnTriple();
+extern Bool	PrepICPhotoUnTriple();
+extern Bool	CopyICPhotoJPEGBaseline();
+extern Bool	PrepICPhotoJPEGBaseline();
+extern Bool	CopyICPhotoJPEGLossless();
+extern Bool	PrepICPhotoJPEGLossless();
+#endif
 
 /*
  * dixie constrain technique entry points
  */
+#if XIE_FULL
 extern Bool	CopyPConstrainStandard();
 extern Bool	CopyPConstrainClipScale();
 extern Bool	PrepPConstrainStandard();
 extern Bool	PrepPConstrainClipScale();
+#endif
 
 /*
  * dixie convolve technique entry points
  */
+#if XIE_FULL
 extern Bool     CopyConvolveConstant();
 extern Bool     CopyConvolveReplicate();
 extern Bool     PrepConvolveStandard();
+#endif
 
 /*
  * dixie dither technique entry points
  */
+#if XIE_FULL
 extern Bool	CopyPDitherErrorDiffusion();
 extern Bool	PrepPDitherErrorDiffusion();
+extern Bool	CopyPDitherOrdered();
+extern Bool	PrepPDitherOrdered();
+#endif
 
 /*
  * dixie geometry technique entry points
  */
-
 extern Bool     CopyGeomNearestNeighbor();
 extern Bool     PrepGeomNearestNeighbor();
-extern Bool     CopyGeomBilinearInterp();
-extern Bool     PrepGeomBilinearInterp();
 extern Bool     CopyGeomAntiAlias();
 extern Bool     PrepGeomAntiAlias();
+#if XIE_FULL
+extern Bool     CopyGeomBilinearInterp();
+extern Bool     PrepGeomBilinearInterp();
+extern Bool     CopyGeomGaussian();
+extern Bool     PrepGeomGaussian();
+#endif
+
+/*
+ * dixie match histogram technique entry points
+ */
+#if XIE_FULL
+extern Bool	CopyPHistogramFlat();
+extern Bool	CopyPHistogramGaussian();
+extern Bool	CopyPHistogramHyperbolic();
+extern Bool	PrepPHistogramFlat();
+extern Bool	PrepPHistogramGaussian();
+extern Bool	PrepPHistogramHyperbolic();
+#endif
 
 /*
  * dixie convert to index technique entry points
  */
-
+#if XIE_FULL
 extern Bool 	CopyCtoIAllocAll();
 extern Bool 	CopyCtoIAllocMatch();
 extern Bool 	CopyCtoIAllocRequantize();
 extern Bool 	PrepCtoIAllocAll();
-extern Bool 	PrepCtoIAllocMatch();
+#endif
+
 /*
  * dixie export client photo technique entry points
  */
 extern Bool	CopyECPhotoUnSingle();
-extern Bool	CopyECPhotoUnTriple();
 extern Bool	CopyECPhotoG31D();
 extern Bool	CopyECPhotoG32D();
 extern Bool	CopyECPhotoG42D();
-extern Bool	CopyECPhotoJPEGBaseline();
-extern Bool	CopyECPhotoJPEGLossless();
 extern Bool	CopyECPhotoTIFF2();
 extern Bool	CopyECPhotoTIFFPackBits();
 
 extern Bool	PrepECPhotoUnSingle();
-extern Bool	PrepECPhotoUnTriple();
 extern Bool	PrepECPhotoG31D();
 extern Bool	PrepECPhotoG32D();
 extern Bool	PrepECPhotoG42D();
-extern Bool	PrepECPhotoJPEGBaseline();
-extern Bool	PrepECPhotoJPEGLossless();
 extern Bool	PrepECPhotoTIFF2();
 extern Bool	PrepECPhotoTIFFPackBits();
+#if XIE_FULL
+extern Bool	CopyECPhotoUnTriple();
+extern Bool	PrepECPhotoUnTriple();
+extern Bool	CopyECPhotoJPEGBaseline();
+extern Bool	PrepECPhotoJPEGBaseline();
+extern Bool	CopyECPhotoJPEGLossless();
+extern Bool	PrepECPhotoJPEGLossless();
+#endif
 
+/*
+ * dixie convert to and from RBG technique entry points
+ */
+#if XIE_FULL
+extern Bool     CopyPConvertFromRGBCIE();
+extern Bool     CopyPConvertFromRGBYCC();
+extern Bool     CopyPConvertFromRGBYCbCr();
+extern Bool     CopyPConvertToRGBCIE();
+extern Bool     CopyPConvertToRGBYCC();
+extern Bool     CopyPConvertToRGBYCbCr();
+extern Bool     CopyPWhiteAdjustNone();
+extern Bool     CopyPWhiteAdjustCIELabShift();
+extern Bool     CopyPGamut();
 
+extern Bool     PrepPConvertFromRGBCIE();
+extern Bool     PrepPConvertFromRGBYCC();
+extern Bool     PrepPConvertFromRGBYCbCr();
+extern Bool     PrepPConvertToRGBCIE();
+extern Bool     PrepPConvertToRGBYCC();
+extern Bool     PrepPConvertToRGBYCbCr();
+extern Bool     PrepPWhiteAdjustNone();
+extern Bool     PrepPWhiteAdjustCIELabShift();
+extern Bool     PrepPGamut();
+#endif
 
 /* Global definitions for referencing techniques */
 
 typedef struct _techvec {
-  xieBoolProc   copyfnc;
-  xieBoolProc   prepfnc;
+  BOOL		NoTech;	      /* If true, this technique has no parameters  */
+  BOOL		OptionalTech; /* If true, parameters are optional	    */
+  BOOL		FixedTech;    /* If true, parameter size is fixed	    */
+  BOOL		pad;
+  CARD16	techSize;     /* size of parameters (possibly optional)     */
+  CARD16        number;
+  xieBoolProc   copyfnc;      /* function to copy parameter from client     */
+  xieBoolProc   prepfnc;      /* function to prepare for activation         */
 } techVecRec;
+
+/* 
+   Standard macro to verify correct technique parameter sizes . . .
+   Should work for any technique that has been properly defined 
+*/
+			 
+
+#define VALIDATE_TECHNIQUE_SIZE(tv, size, isDefault) 			\
+	if (isDefault && size || (!isDefault && 			\
+	    (tv->FixedTech && 						\
+		(!tv->OptionalTech && tv->techSize != size ||		\
+	          tv->OptionalTech && size && tv->techSize != size)) ||	\
+	    (!tv->FixedTech &&						\
+		(!tv->OptionalTech && tv->techSize > size ||		\
+		  tv->OptionalTech && size && tv->techSize > size))))	\
+	     return(FALSE);
 
 
 #if defined(_XIEC_TECHNQ)
@@ -154,866 +227,979 @@ typedef struct _techvec {
  *  Technique resource definition
  */
 
-/* 
-   Always assume that if there is a default technique, then it is the first
-   element of the group specific array. A non zero value in default indicates
-   that this element is the default technique. If the first element's default
-   flag is not set, then there is no default technique. No search is made of
-   the remaining elements in the array for a default technique.
-*/
-
-
 typedef struct _technique {
-	BOOL			needsParam;
-	xieTypTechniqueGroup	group;	
-	CARD16			number;
 	CARD8			speed;
 	CARD8			nameLength;
-	CARD16			Param_size;   /* Minimum parameter size   */
-	BOOL			tech_default; /* TRUE = default technique */
-	BOOL			fixed_size;   /* TRUE = fixed size tech   */
-	BOOL			swap; 	      /* TRUE = has "swapables"	  */
-	BOOL			has_floats;   /* TRUE = has floats	  */
+	CARD16			techSize;
 	CARD8			*name;
-	techVecRec		tip;
-} Technique;
+	techVecRec		techvec;
+} TechRec, *TechPtr;
+
+typedef struct _techgroup {
+	xieTypTechniqueGroup	group;
+	CARD16			numTechniques;
+	CARD16			defaultNumber;
+	CARD16			defaultIndex;
+	CARD32			groupSize;	/* Size in words */
+	TechPtr			tech;
+} TechGroupRec, *TechGroupPtr;
+
+typedef struct _techtable {
+	CARD16			numGroups;	/* Number of tech groups      */
+	CARD16			numDefaults;	/* Number of default groups   */
+	CARD16			numTechniques;	/* Total number of techniques */
+	CARD16			pad;
+	CARD32			tableSize;	/* All tech size (in words)   */
+	CARD32			defaultSize;	/* Default size (in words)    */
+	TechGroupPtr 		techgroups;
+} TechTable;
 
 #define DEFAULT_SPEED		128
-#define NUM_TECH_DEFAULTS	6
+
+#define NO_DEFAULT		0
+#define UNINITIALIZED		0
+
+#define TECH_HAS_NO_PARMS	TRUE
+#define TECH_HAS_PARMS		FALSE
+#define TECH_PARMS_OPTIONAL	TRUE
+#define TECH_PARMS_REQUIRED	FALSE
+#define TECH_FIXED_SIZE		TRUE
+#define TECH_VARIABLE_SIZE	FALSE
 
 /* 
-   Initialize nameLength to 0 and compute at runtime. Some compilers do not
-   support the use of sizeof(static string) at compile time
-*/
+ * Initialize nameLength to 0 and compute at runtime. Some compilers do not
+ * support the use of sizeof(static string) at compile time
+ */
 
 static Bool NoParamCheck();
 static Bool NoTechYet(); 
 
-
+#if XIE_FULL
 /* Array of techniques for coloralloc */
-Technique	Tcoloralloc[] = { 
-	{	TRUE,
-		xieValColorAlloc, 
-		xieValColorAllocAll,
-		DEFAULT_SPEED,	
-		0,
-		sz_xieTecColorAllocAll,
-		FALSE,
-		TRUE,
-		TRUE,
-		FALSE,
+TechRec		Tcoloralloc[] = { 
+	{ 	DEFAULT_SPEED,	
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"ALLOC-ALL",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+			sz_xieTecColorAllocAll / 4,
+			xieValColorAllocAll,
 			CopyCtoIAllocAll,
 			PrepCtoIAllocAll
                 }
-	},
-	{	TRUE,
-		xieValColorAlloc, 
-		xieValColorAllocMatch,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecColorAllocMatch,	
-		TRUE,
-		TRUE,
-		TRUE,
-		TRUE,	
+	}
+#ifdef	BEYOND_SI
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"MATCH",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+			sz_xieTecColorAllocMatch / 4,
+			xieValColorAllocMatch,
 			CopyCtoIAllocMatch,
-			PrepCtoIAllocMatch
+			NoTechYet
 		}
-#ifdef	BEYOND_SI
-	},
-	{	TRUE,
-		xieValColorAlloc, 
-		xieValColorAllocRequantize,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecColorAllocRequantize,
-		FALSE,
-		TRUE,
-		TRUE,
-		FALSE,
+	}
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"REQUANTIZE",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecColorAllocRequantize / 4,
+                        xieValColorAllocRequantize,
 			CopyCtoIAllocRequantize,
 			NoTechYet
                 }
-#endif
 	}
+#endif /* BEYOND_SI */
 };
-	
+#endif
+
+#if XIE_FULL
 /* Array of techniques for constrain */
-Technique	Tconstrain[] = { 
-	{	FALSE,
-		xieValConstrain, 
-		xieValConstrainClipScale,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecClipScale,
-		FALSE,
-		FALSE,
-		TRUE,
-		TRUE,
+TechRec		Tconstrain[] = { 
+	{ 	DEFAULT_SPEED,	
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"CLIP-SCALE",
 		{
+			TECH_HAS_NO_PARMS,
+			TECH_HAS_NO_PARMS,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecClipScale / 4,
+                        xieValConstrainClipScale,
 			CopyPConstrainClipScale,
 			PrepPConstrainClipScale
                 }
-	},
-	{	FALSE,
-		xieValConstrain, 
-		xieValConstrainHardClip,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecHardClip,
-		FALSE,
-		TRUE,
-		FALSE,
-		FALSE,
+	}
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"HARD-CLIP",
 		{
+			TECH_HAS_NO_PARMS,
+			TECH_HAS_NO_PARMS,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecHardClip / 4,
+                        xieValConstrainHardClip,
 			CopyPConstrainStandard,
 			PrepPConstrainStandard
                 }
 	}
 };
+#endif
 
+#if XIE_FULL
 /* Array of techniques for conversion from RGB to another colorspace */
-Technique	Tconvertfromrgb[] = { 
-	{	TRUE,
-		xieValConvertFromRGB, 
-		xieValCIELab,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecRGBToCIELab,
-		FALSE,
-		FALSE,
-		TRUE,
-		TRUE,
+TechRec		Tconvertfromrgb[] = { 
+	{ 	DEFAULT_SPEED,	
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"CIELAB",
 		{
-                        NoParamCheck, 
-			NoTechYet
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_VARIABLE_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecRGBToCIELab / 4,
+                        xieValCIELab,
+                        CopyPConvertFromRGBCIE, 
+                        PrepPConvertFromRGBCIE
                 }
-	},
-	{	TRUE,
-		xieValConvertFromRGB, 
-		xieValCIEXYZ,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecRGBToCIEXYZ,
-		FALSE,
-		FALSE,
-		TRUE,
-		TRUE,
+	}
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"CIEXYZ",
 		{
-                        NoParamCheck, 
-			NoTechYet
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_VARIABLE_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecRGBToCIEXYZ / 4,
+                        xieValCIEXYZ,
+                        CopyPConvertFromRGBCIE, 
+                        PrepPConvertFromRGBCIE
                 }
-	},
-	{	TRUE,
-		xieValConvertFromRGB, 
-		xieValYCbCr,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecRGBToYCbCr,
-		FALSE,
-		TRUE,
-		TRUE,
-		TRUE,
+	}
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"YCbCr",
 		{
-                        NoParamCheck, 
-			NoTechYet
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecRGBToYCbCr / 4,
+                        xieValYCbCr,
+                        CopyPConvertFromRGBYCbCr, 
+                        PrepPConvertFromRGBYCbCr
                 }
-	},
-	{	TRUE,
-		xieValConvertFromRGB, 
-		xieValYCC,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecRGBToYCC,
-		FALSE,
-		TRUE,
-		TRUE,
-		TRUE,
+	}
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"YCC",
 		{
-                        NoParamCheck, 
-			NoTechYet
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecRGBToYCC / 4,
+                        xieValYCC,
+                        CopyPConvertFromRGBYCC, 
+                        PrepPConvertFromRGBYCC
                 }
 	}
 };
+#endif
 
+#if XIE_FULL
 /* Array of techniques for converting to RGB from another colorspace */
-Technique	Tconverttorgb[] = { 
-	{	TRUE,
-		xieValConvertToRGB, 
-		xieValCIELab,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecCIELabToRGB,
-		FALSE,
-		FALSE,
-		TRUE,
-		TRUE,
+TechRec		Tconverttorgb[] = { 
+	{ 	DEFAULT_SPEED,	
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"CIELAB",
 		{
-                        NoParamCheck, 
-			NoTechYet
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_VARIABLE_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecCIELabToRGB / 4,
+                        xieValCIELab,
+                        CopyPConvertToRGBCIE, 
+                        PrepPConvertToRGBCIE
                 }
-	},
-	{	TRUE,
-		xieValConvertToRGB, 
-		xieValCIEXYZ,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecCIEXYZToRGB,
-		FALSE,
-		FALSE,
-		TRUE,
-		TRUE,
+	}
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"CIEXYZ",
 		{
-                        NoParamCheck, 
-			NoTechYet
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_VARIABLE_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecCIEXYZToRGB / 4,
+                        xieValCIEXYZ,
+                        CopyPConvertToRGBCIE, 
+                        PrepPConvertToRGBCIE
                 }
-	},
-	{	TRUE,
-		xieValConvertToRGB, 
-		xieValYCbCr,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecYCbCrToRGB,
-		FALSE,
-		TRUE,
-		TRUE,
-		TRUE,
+	}
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"YCbCr",
 		{
-                        NoParamCheck, 
-			NoTechYet
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecYCbCrToRGB / 4,
+                        xieValYCbCr,
+                        CopyPConvertToRGBYCbCr, 
+			PrepPConvertToRGBYCbCr
                 }
-	},
-	{	TRUE,
-		xieValConvertToRGB, 
-		xieValYCC,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecYCCToRGB,
-		FALSE,
-		TRUE,
-		TRUE,
-		TRUE,
+	}
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"YCC",
 		{
-                        NoParamCheck, 
-			NoTechYet
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecYCCToRGB / 4,
+                        xieValYCC,
+                        CopyPConvertToRGBYCC, 
+			PrepPConvertToRGBYCC
                 }
 	}
 };
+#endif
 
+#if XIE_FULL
 /* Array of techniques for convolve */
-Technique	Tconvolve[] = { 
-	{	FALSE,
-		xieValConvolve, 
-		xieValConvolveConstant,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecConvolveConstant,
-		TRUE,
-		TRUE,
-		TRUE,
-		TRUE,
+TechRec		Tconvolve[] = { 
+	{ 	DEFAULT_SPEED,	
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"CONSTANT",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_OPTIONAL,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecConvolveConstant / 4,
+                        xieValConvolveConstant,
                         CopyConvolveConstant, 
 			PrepConvolveStandard
                 }
-	},
-	{	FALSE,
-		xieValConvolve, 
-		xieValConvolveReplicate,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecConvolveReplicate,
-		FALSE,
-		TRUE,
-		FALSE,
-		FALSE,
+	}
+#ifdef	BEYOND_SI
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"REPLICATE",
 		{
+			TECH_HAS_NO_PARMS,
+			TECH_HAS_NO_PARMS,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecConvolveReplicate / 4,
+                        xieValConvolveReplicate,
                         CopyConvolveReplicate, 
 			PrepConvolveStandard
                 }
 	}
+#endif /* BEYOND_SI */
 };
+#endif
 
 /* Array of techniques for decode */
-Technique	Tdecode[] = { 
-	{	TRUE,
-		xieValDecode, 
-		xieValDecodeUncompressedSingle,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecDecodeUncompressedSingle,	
-		FALSE,	
-		TRUE,
-		FALSE,
-		FALSE,
+TechRec		Tdecode[] = { 
+	{ 	DEFAULT_SPEED,	
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"UNCOMPRESSED-SINGLE",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecDecodeUncompressedSingle / 4,
+                        xieValDecodeUncompressedSingle,
 			CopyICPhotoUnSingle,
 			PrepICPhotoUnSingle
 		}
-	},
-	{	TRUE,
-		xieValDecode, 
-		xieValDecodeUncompressedTriple,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecDecodeUncompressedTriple,	
-		FALSE,	
-		TRUE,
-		FALSE,
-		FALSE,
+	}
+#if XIE_FULL
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"UNCOMPRESSED-TRIPLE",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecDecodeUncompressedTriple / 4,
+                        xieValDecodeUncompressedTriple,
 			CopyICPhotoUnTriple, 
 			PrepICPhotoUnTriple
 		}
-	},
-	{	TRUE,
-		xieValDecode, 
-		xieValDecodeG31D,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecDecodeG31D,	
-		FALSE,	
-		TRUE,
-		FALSE,
-		FALSE,
+	}
+#endif
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"CCITT-G31D",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecDecodeG31D / 4,
+                        xieValDecodeG31D,
 			CopyICPhotoG31D, 
 			PrepICPhotoG31D 
 		}
-	},
-	{	TRUE,
-		xieValDecode, 
-		xieValDecodeG32D,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecDecodeG32D,	
-		FALSE,	
-		TRUE,
-		FALSE,
-		FALSE,
+	}
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"CCITT-G32D",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecDecodeG32D / 4,
+                        xieValDecodeG32D,
 			CopyICPhotoG32D, 
 			PrepICPhotoG32D
 		}
-	},
-	{	TRUE,
-		xieValDecode, 
-		xieValDecodeG42D,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecDecodeG42D,	
-		FALSE,	
-		TRUE,
-		FALSE,
-		FALSE,
+	}
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"CCITT-G42D",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecDecodeG42D / 4,
+                        xieValDecodeG42D,
 			CopyICPhotoG42D, 
 			PrepICPhotoG42D
 		}
-	},
-	{	TRUE,
-		xieValDecode, 
-		xieValDecodeJPEGBaseline,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecDecodeJPEGBaseline,	
-		FALSE,	
-		FALSE,
-		FALSE,
-		FALSE,
+	}
+#if XIE_FULL
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"JPEG-BASELINE",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_VARIABLE_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecDecodeJPEGBaseline / 4,
+                        xieValDecodeJPEGBaseline,
 			CopyICPhotoJPEGBaseline, 
 			PrepICPhotoJPEGBaseline
 		}
-	},
+	}
 #ifdef	BEYOND_SI
-	{	TRUE,
-		xieValDecode, 
-		xieValDecodeJPEGLossless,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecDecodeJPEGLossless,	
-		FALSE,	
-		FALSE,
-		FALSE,
-		FALSE,
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"JPEG-LOSSLESS",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecDecodeJPEGLossless / 4,
+                        xieValDecodeJPEGLossless,
 			CopyICPhotoJPEGLossless, 
 			PrepICPhotoJPEGLossless
 		}
-	},
+	}
+#endif /* BEYOND_SI */
 #endif
-	{	TRUE,
-		xieValDecode, 
-		xieValDecodeTIFF2,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecDecodeTIFF2,	
-		FALSE,	
-		TRUE,
-		FALSE,
-		FALSE,
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"TIFF-2",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecDecodeTIFF2 / 4,
+                        xieValDecodeTIFF2,
 			CopyICPhotoTIFF2, 
 			PrepICPhotoTIFF2
 		}
-	},
-	{	TRUE,
-		xieValDecode, 
-		xieValDecodeTIFFPackBits,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecDecodeTIFFPackBits,	
-		FALSE,	
-		TRUE,
-		FALSE,
-		FALSE,
+	}
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"TIFF-PACKBITS",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecDecodeTIFFPackBits / 4,
+                        xieValDecodeTIFFPackBits,
 			CopyICPhotoTIFFPackBits, 
 			PrepICPhotoTIFFPackBits
 		}
 	}
 };
 
+#if XIE_FULL
 /* Array of techniques for dither */
-Technique	Tdither[] = { 
-	{	FALSE,
-		xieValDecode, 
-		xieValDitherErrorDiffusion,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecDitherErrorDiffusion,	
-		TRUE,		/* Default ! */
-		TRUE,
-		FALSE,
-		FALSE,
+TechRec		Tdither[] = { 
+	{ 	DEFAULT_SPEED,	
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"ERROR-DIFFUSION",
 		{
+			TECH_HAS_NO_PARMS,
+			TECH_HAS_NO_PARMS,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecDitherErrorDiffusion / 4,
+                        xieValDitherErrorDiffusion,
                         CopyPDitherErrorDiffusion, 
 			PrepPDitherErrorDiffusion
                 }
-	},
-	{	TRUE,
-		xieValDecode, 
-		xieValDitherOrdered,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecDitherOrdered,	
-		FALSE,
-		TRUE,
-		FALSE,
-		FALSE,
+	}
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"ORDERED",
 		{
-                        NoParamCheck, 
-			NoTechYet
+			TECH_HAS_PARMS,
+			TECH_PARMS_OPTIONAL,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecDitherOrdered / 4,
+                        xieValDitherOrdered,
+                        CopyPDitherOrdered, 
+			PrepPDitherOrdered
                 }
 	}
 };
+#endif
 
 /* Array of techniques for encode */
-Technique	Tencode[] = { 
-	{	TRUE,
-		xieValEncode, 
-		xieValEncodeUncompressedSingle,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecEncodeUncompressedSingle,	
-		FALSE,	
-		TRUE,
-		FALSE,
-		FALSE,
+TechRec		Tencode[] = { 
+	{ 	DEFAULT_SPEED,	
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"UNCOMPRESSED-SINGLE",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecEncodeUncompressedSingle / 4,
+                        xieValEncodeUncompressedSingle,
                         CopyECPhotoUnSingle, 
 			PrepECPhotoUnSingle
                 }
-	},
-	{	TRUE,
-		xieValEncode, 
-		xieValEncodeUncompressedTriple,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecEncodeUncompressedTriple,	
-		FALSE,	
-		TRUE,
-		FALSE,
-		FALSE,
+	}
+#if XIE_FULL
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"UNCOMPRESSED-TRIPLE",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecEncodeUncompressedTriple / 4,
+                        xieValEncodeUncompressedTriple,
                         CopyECPhotoUnTriple, 
 			PrepECPhotoUnTriple
                 }
-	},
-	{	TRUE,
-		xieValEncode, 
-		xieValEncodeG31D,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecEncodeG31D,	
-		FALSE,	
-		TRUE,
-		FALSE,
-		FALSE,
+	}
+#endif
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"CCITT-G31D",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecEncodeG31D / 4,
+                        xieValEncodeG31D,
 			CopyECPhotoG31D, 
 			PrepECPhotoG31D 
                 }
-	},
-	{	TRUE,
-		xieValEncode, 
-		xieValEncodeG32D,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecEncodeG32D,	
-		FALSE,	
-		TRUE,
-		FALSE,
-		FALSE,
+	}
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"CCITT-G32D",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecEncodeG32D / 4,
+                        xieValEncodeG32D,
 			CopyECPhotoG32D, 
 			PrepECPhotoG32D
                 }
-	},
-	{	TRUE,
-		xieValEncode, 
-		xieValEncodeG42D,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecEncodeG42D,	
-		FALSE,	
-		TRUE,
-		FALSE,
-		FALSE,
+	}
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"CCITT-G42D",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecEncodeG42D / 4,
+                        xieValEncodeG42D,
 			CopyECPhotoG42D, 
 			PrepECPhotoG42D
                 }
-	},
-	{	TRUE,
-		xieValEncode, 
-		xieValEncodeJPEGBaseline,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecEncodeJPEGBaseline,	
-		FALSE,	
-		FALSE,
-		FALSE,
-		FALSE,
+	}
+#if XIE_FULL
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"JPEG-BASELINE",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_VARIABLE_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecEncodeJPEGBaseline / 4,
+                        xieValEncodeJPEGBaseline,
 			CopyECPhotoJPEGBaseline, 
 			PrepECPhotoJPEGBaseline
                 }
-	},
+	}
 #ifdef	BEYOND_SI
-	{	TRUE,
-		xieValEncode, 
-		xieValEncodeJPEGLossless,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecEncodeJPEGLossless,	
-		FALSE,	
-		FALSE,
-		FALSE,
-		FALSE,
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"JPEG-LOSSLESS",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecEncodeJPEGLossless / 4,
+                        xieValEncodeJPEGLossless,
 			CopyECPhotoJPEGLossless, 
 			PrepECPhotoJPEGLossless
                 }
-	},
+	}
+#endif /* BEYOND_SI */
 #endif
-	{	TRUE,
-		xieValEncode, 
-		xieValEncodeTIFF2,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecEncodeTIFF2,	
-		FALSE,	
-		TRUE,
-		FALSE,
-		FALSE,
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"TIFF-2",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecEncodeTIFF2 / 4,
+                        xieValEncodeTIFF2,
 			CopyECPhotoTIFF2, 
 			PrepECPhotoTIFF2
                 }
-	},
-	{	TRUE,
-		xieValEncode, 
-		xieValEncodeTIFFPackBits,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecEncodeTIFFPackBits,	
-		FALSE,	
-		TRUE,
-		FALSE,
-		FALSE,
+	}
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"TIFF-PACKBITS",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecEncodeTIFFPackBits / 4,
+                        xieValEncodeTIFFPackBits,
 			CopyECPhotoTIFFPackBits, 
 			PrepECPhotoTIFFPackBits
                 }
 	}
 };
 
+#if XIE_FULL
 /* Array of techniques for gamut */
-Technique	Tgamut[] = { 
-	{	FALSE,
-		xieValGamut, 
-		xieValGamutNone,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecGamutNone,	
-		TRUE,	
-		TRUE,
-		FALSE,
-		FALSE,
+TechRec		Tgamut[] = { 
+	{ 	DEFAULT_SPEED,	
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"NONE",
 		{
-                        NoParamCheck, 
-			NoTechYet
+			TECH_HAS_NO_PARMS,
+			TECH_HAS_NO_PARMS,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecGamutNone / 4,
+                        xieValGamutNone,
+                        CopyPGamut, 
+                        PrepPGamut
                 }
-	},
-	{	FALSE,
-		xieValGamut, 
-		xieValGamutClipRGB,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecGamutClipRGB,	
-		FALSE,	
-		TRUE,
-		FALSE,
-		FALSE,
+	}
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"CLIP-RGB",
 		{
-                        NoParamCheck, 
-			NoTechYet
+			TECH_HAS_NO_PARMS,
+			TECH_HAS_NO_PARMS,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecGamutClipRGB / 4,
+                        xieValGamutClipRGB,
+                        CopyPGamut, 
+                        PrepPGamut
                 }
 	}
 };
+#endif
 
 /* Array of techniques for geometry */
-Technique	Tgeometry[] = { 
-	{	FALSE,
-		xieValGeometry, 
-		xieValGeomNearestNeighbor,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecGeomNearestNeighbor,
-		TRUE,
-		TRUE,
-		FALSE,
-		FALSE,
-		(CARD8 *)"NEAREST-NEIGHBOR",
-		{
-                        CopyGeomNearestNeighbor, 
-			PrepGeomNearestNeighbor
-                }
-	},
-	{	FALSE,
-		xieValGeometry, 
-		xieValGeomAntialias,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecGeomAntialias,
-		FALSE,
-		TRUE,
-		FALSE,
-		FALSE,
+TechRec		Tgeometry[] = { 
+	{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"ANTIALIAS",
 		{
+			TECH_HAS_NO_PARMS,
+			TECH_HAS_NO_PARMS,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecGeomAntialias / 4,
+                        xieValGeomAntialias,
                         CopyGeomAntiAlias, 
 			PrepGeomAntiAlias
                 }
-	},
-	{	TRUE,
-		xieValGeometry, 
-		xieValGeomAntialiasByArea,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecGeomAntialiasByArea,
-		FALSE,
-		TRUE,
-		TRUE,
-		FALSE,
+	}
+#ifdef BEYOND_SI
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"ANTIALIAS-BY-AREA",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecGeomAntialiasByArea / 4,
+                        xieValGeomAntialiasByArea,
                         NoParamCheck, 
 			NoTechYet
                 }
-	},
-	{	TRUE,
-		xieValGeometry, 
-		xieValGeomAntialiasByLPF,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecGeomAntialiasByLowpass,
-		FALSE,
-		TRUE,
-		TRUE,
-		FALSE,
+	}
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"ANTIALIAS-BY-LOWPASS",
 		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecGeomAntialiasByLowpass / 4,
+                        xieValGeomAntialiasByLPF,
                         NoParamCheck, 
 			NoTechYet
                 }
-	},
-	{	FALSE,
-		xieValGeometry, 
-		xieValGeomBilinearInterp,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecGeomBilinearInterpolation,
-		FALSE,
-		TRUE,
-		FALSE,
-		FALSE,
+	}
+#endif
+#if XIE_FULL
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"BILINEAR-INTERPOLATION",
 		{
+			TECH_HAS_NO_PARMS,
+			TECH_HAS_NO_PARMS,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecGeomBilinearInterpolation / 4,
+                        xieValGeomBilinearInterp,
                         CopyGeomBilinearInterp, 
                         PrepGeomBilinearInterp 
                 }
-	},
-	{	TRUE,
-		xieValGeometry, 
-		xieValGeomGaussian,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecGeomGaussian,
-		FALSE,
-		TRUE,
-		TRUE,
-		TRUE,
+	}
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"GAUSSIAN",
 		{
-                        NoParamCheck, 
-			NoTechYet
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecGeomGaussian / 4,
+                        xieValGeomGaussian,
+                        CopyGeomGaussian, 
+			PrepGeomGaussian
+                }
+	}
+#endif
+	,{ 	DEFAULT_SPEED,	
+		UNINITIALIZED,
+		UNINITIALIZED,
+		(CARD8 *)"NEAREST-NEIGHBOR",
+		{
+			TECH_HAS_PARMS,
+			TECH_PARMS_OPTIONAL,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecGeomNearestNeighbor / 4,
+                        xieValGeomNearestNeighbor,
+                        CopyGeomNearestNeighbor, 
+			PrepGeomNearestNeighbor
                 }
 	}
 };
 
+#if XIE_FULL
 /* Array of techniques for histogram */
-Technique	Thistogram[] = { 
-	{	FALSE,
-		xieValHistogram, 
-		xieValHistogramFlat,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecHistogramFlat,
-		FALSE,
-		TRUE,
-		FALSE,
-		FALSE,
+TechRec		Thistogram[] = { 
+	{ 	DEFAULT_SPEED,	
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"FLAT",
 		{
-                        NoParamCheck, 
-			NoTechYet
+			TECH_HAS_NO_PARMS,
+			TECH_HAS_NO_PARMS,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecHistogramFlat / 4,
+                        xieValHistogramFlat,
+                        CopyPHistogramFlat, 
+                        PrepPHistogramFlat
                 }
-	},
-	{	TRUE,
-		xieValHistogram, 
-		xieValHistogramGaussian,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecHistogramGaussian,
-		FALSE,
-		TRUE,
-		TRUE,
-		TRUE,
+	}
+	,{ 	DEFAULT_SPEED,	
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"GAUSSIAN",
 		{
-                        NoParamCheck, 
-			NoTechYet
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecHistogramGaussian / 4,
+                        xieValHistogramGaussian,
+                        CopyPHistogramGaussian, 
+                        PrepPHistogramGaussian
                 }
-	},
-	{	TRUE,
-		xieValHistogram, 
-		xieValHistogramHyperbolic,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecHistogramHyperbolic,
-		FALSE,
-		TRUE,
-		TRUE,
-		TRUE,
+	}
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"HYPERBOLIC",
 		{
-                        NoParamCheck, 
-			NoTechYet
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecHistogramHyperbolic / 4,
+                        xieValHistogramHyperbolic,
+                        CopyPHistogramHyperbolic, 
+                        PrepPHistogramHyperbolic
                 }
 	}
 };
+#endif
 
+#if XIE_FULL
 /* Array of techniques for white adjust */
-Technique	Twhiteadjust[] = { 
-	{	FALSE,
-		xieValWhiteAdjust, 
-		xieValWhiteAdjustNone,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecWhiteAdjustNone,
-		TRUE,
-		TRUE,
-		FALSE,
-		FALSE,
+TechRec		Twhiteadjust[] = { 
+	{ 	DEFAULT_SPEED,	
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"NONE",
 		{
-                        NoParamCheck, 
-			NoTechYet
+			TECH_HAS_NO_PARMS,
+			TECH_HAS_NO_PARMS,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecWhiteAdjustNone / 4,
+                        xieValWhiteAdjustNone,
+                        CopyPWhiteAdjustNone, 
+                        PrepPWhiteAdjustNone
                 }
-	},
-	{	TRUE,
-		xieValWhiteAdjust, 
-		xieValWhiteAdjustCIELabShift,
-		DEFAULT_SPEED,
-		0,
-		sz_xieTecWhiteAdjustCIELabShift,
-		FALSE,
-		TRUE,
-		TRUE,
-		TRUE,
+	}
+	,{ 	DEFAULT_SPEED,
+		UNINITIALIZED,
+		UNINITIALIZED,
 		(CARD8 *)"CIELAB-SHIFT",
 		{
-                        NoParamCheck, 
-			NoTechYet
+			TECH_HAS_PARMS,
+			TECH_PARMS_REQUIRED,
+			TECH_FIXED_SIZE,
+			UNINITIALIZED,	
+                        sz_xieTecWhiteAdjustCIELabShift / 4,
+                        xieValWhiteAdjustCIELabShift,
+                        CopyPWhiteAdjustCIELabShift, 
+                        PrepPWhiteAdjustCIELabShift
                 }
 	}
 };
+#endif
+
+TechGroupRec techArray[] = {
+#if XIE_FULL
+	{	
+		xieValColorAlloc,
+		sizeof(Tcoloralloc)/sizeof(TechRec),
+		xieValColorAllocAll,
+		UNINITIALIZED,
+		UNINITIALIZED,
+		Tcoloralloc
+	}
+	,{	
+		xieValConstrain,
+		sizeof(Tconstrain)/sizeof(TechRec),
+		NO_DEFAULT,
+		UNINITIALIZED,
+		UNINITIALIZED,
+		Tconstrain
+	}
+	,{	
+		xieValConvertFromRGB,
+		sizeof(Tconvertfromrgb)/sizeof(TechRec),
+		NO_DEFAULT,
+		UNINITIALIZED,
+		UNINITIALIZED,
+		Tconvertfromrgb
+	}
+	,{	
+		xieValConvertToRGB,
+		sizeof(Tconverttorgb)/sizeof(TechRec),
+		NO_DEFAULT,
+		UNINITIALIZED,
+		UNINITIALIZED,
+		Tconverttorgb
+	}
+	,{	
+		xieValConvolve,
+		sizeof(Tconvolve)/sizeof(TechRec),
+		xieValConvolveConstant,
+		UNINITIALIZED,
+		UNINITIALIZED,
+		Tconvolve
+	},
+#endif
+	 {	
+		xieValDecode,
+		sizeof(Tdecode)/sizeof(TechRec),
+		NO_DEFAULT,
+		UNINITIALIZED,
+		UNINITIALIZED,
+		Tdecode
+	}
+#if XIE_FULL
+	,{	
+		xieValDither,
+		sizeof(Tdither)/sizeof(TechRec),
+		xieValDitherErrorDiffusion,
+		UNINITIALIZED,
+		UNINITIALIZED,
+		Tdither	
+	}
+#endif
+	,{	
+		xieValEncode,
+		sizeof(Tencode)/sizeof(TechRec),
+		NO_DEFAULT,
+		UNINITIALIZED,
+		UNINITIALIZED,
+		Tencode	
+	}
+#if XIE_FULL
+	,{	
+		xieValGamut,
+		sizeof(Tgamut)/sizeof(TechRec),
+		xieValGamutNone,
+		UNINITIALIZED,
+		UNINITIALIZED,
+		Tgamut	
+	}
+#endif
+	,{	
+		xieValGeometry,
+		sizeof(Tgeometry)/sizeof(TechRec),
+		xieValGeomNearestNeighbor,
+		UNINITIALIZED,
+		UNINITIALIZED,
+		Tgeometry	
+	}
+#if XIE_FULL
+	,{	
+		xieValHistogram,
+		sizeof(Thistogram)/sizeof(TechRec),
+		NO_DEFAULT,
+		UNINITIALIZED,
+		UNINITIALIZED,
+		Thistogram	
+	}
+	,{	
+		xieValWhiteAdjust,
+		sizeof(Twhiteadjust)/sizeof(TechRec),
+		xieValWhiteAdjustNone,
+		UNINITIALIZED,
+		UNINITIALIZED,
+		Twhiteadjust	
+	}
+#endif
+};
+
+TechTable	techTable = {
+	sizeof(techArray)/sizeof(TechGroupRec),
+	UNINITIALIZED,
+	UNINITIALIZED,
+	UNINITIALIZED,
+	UNINITIALIZED,
+	UNINITIALIZED,
+	techArray
+};
+
 #else	/* if defined(_XIEC_TECHNQ) */
 
-extern	int 		technique_init();
+extern	Bool 		technique_init();
 extern	Bool 		TechNeedsParams();
 extern	CARD16 		TechDefault();
 extern	techVecPtr 	FindTechnique();

@@ -1,4 +1,4 @@
-/* $XConsortium: medraw.c,v 1.1 93/07/19 10:14:00 rws Exp $ */
+/* $XConsortium: medraw.c,v 1.1 93/10/26 09:48:52 rws Exp $ */
 /**** module medraw.c ****/
 /******************************************************************************
 				NOTICE
@@ -81,6 +81,7 @@ terms and conditions:
 #include <macro.h>
 #include <element.h>
 #include <texstr.h>
+#include <xiemd.h>
 
 
 /*
@@ -93,11 +94,13 @@ int	miAnalyzeEDraw();
  */
 static int CreateEDraw();
 static int InitializeEDraw();
-static int ActivateEDraw();
-static int FlushEDraw();
+static int ActivateEDrawAlign();
+static int ActivateEDrawStrip();
 static int ResetEDraw();
 static int DestroyEDraw();
 
+static void adjustStride8to4();
+static void adjustStride32to24();
 
 extern Bool	DrawableAndGC();
 
@@ -107,11 +110,16 @@ extern Bool	DrawableAndGC();
 static ddElemVecRec EDrawVec = {
   CreateEDraw,
   InitializeEDraw,
-  ActivateEDraw,
-  FlushEDraw,
+  (xieIntProc)NULL,
+  (xieIntProc)NULL,
   ResetEDraw,
   DestroyEDraw
   };
+
+typedef struct _medraw {
+  xieVoidProc	 adjust;
+  char		*buf;
+} meDrawRec, *meDrawPtr;
 
 
 /*------------------------------------------------------------------------
@@ -135,7 +143,7 @@ static int CreateEDraw(flo,ped)
      peDefPtr  ped;
 {
   /* attach an execution context to the photo element definition */
-  return( MakePETex(flo,ped,0,FALSE,FALSE) );
+  return MakePETex(flo, ped, sizeof(meDrawRec), NO_SYNC, NO_SYNC);
 }                               /* end CreateEDraw */
 
 /*------------------------------------------------------------------------
@@ -145,22 +153,91 @@ static int InitializeEDraw(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  return( InitReceptors(flo,ped,0,1) );
+  peTexPtr    pet = ped->peTex;
+  meDrawPtr   ddx = (meDrawPtr) pet->private;
+  formatPtr   sf  = &ped->inFloLst[SRCtag].format[0];
+  formatPtr   df  = &ped->outFlo.format[0];
+  Bool adj_stride = sf->stride != df->stride;
+  Bool adj_pitch  = sf->pitch  != df->pitch;
+  
+  if(adj_stride || adj_pitch) {
+    ped->ddVec.activate = ActivateEDrawAlign;
+
+    if(adj_stride) {
+      if(!(ddx->buf = (char*) XieMalloc(df->pitch>>3)))
+	AllocError(flo,ped, return(FALSE));
+      
+      if(sf->stride == 32 && df->stride == 24)
+	ddx->adjust  = adjustStride32to24;
+      
+      else if(sf->stride == 8 && df->stride == 4)
+	ddx->adjust  = adjustStride8to4;
+      
+      /* add more adjustment routines as required */
+    }
+  } else {
+    ped->ddVec.activate = ActivateEDrawStrip;
+  }
+  return(InitReceptors(flo,ped,NO_DATAMAP,1));
 }                               /* end InitializeEDraw */
 
 
 /*------------------------------------------------------------------------
 ----------------------------- crank some data ----------------------------
 ------------------------------------------------------------------------*/
-static int ActivateEDraw(flo,ped,pet)
+static int ActivateEDrawAlign(flo,ped,pet)
      floDefPtr flo;
      peDefPtr  ped;
      peTexPtr  pet;
 {
-  xieFloExportDrawable *raw = (xieFloExportDrawable *) ped->elemRaw;
-  eDrawDefPtr pvt = (eDrawDefPtr) ped->elemPvt;
-  bandPtr     bnd = &pet->receptor[SRCtag].band[0];
-  BytePixel  *src = GetSrc(BytePixel,flo,pet,bnd,bnd->minGlobal,FALSE);
+  xieFloExportDrawable  *raw = (xieFloExportDrawable *) ped->elemRaw;
+  eDrawDefPtr		 dix = (eDrawDefPtr) ped->elemPvt;
+  meDrawPtr		 ddx = (meDrawPtr) pet->private;
+  bandPtr		 bnd = &pet->receptor[SRCtag].band[0];
+  char		  *dst, *src = GetCurrentSrc(char,flo,pet,bnd);
+  CARD32	       width = bnd->format->width;
+
+  if (!DrawableAndGC(flo,ped,raw->drawable,raw->gc,&dix->pDraw,&dix->pGC))
+    return FALSE;
+  
+  do {
+    if(ddx->adjust) {
+      dst = AlterSrc(flo,pet,bnd->strip) ? src : ddx->buf;
+      (*ddx->adjust)(dst, src, width);
+    } else
+      dst = src;
+
+    (*dix->pGC->ops->PutImage)(dix->pDraw,		  /* drawable	   */
+			       dix->pGC,		  /* gc		   */
+			       dix->pDraw->depth,	  /* depth	   */
+			       raw->dstX,		  /* drawable-x	   */
+			       raw->dstY + bnd->current,  /* drawable-y	   */
+			       width, 1,		  /* width, height */
+			       bnd->strip->bitOff,	  /* padding? 	   */
+			       ZPixmap,		  	  /* data format   */
+			       dst			  /* data buffer   */
+			       );
+  } while(src = GetNextSrc(char,flo,pet,bnd,KEEP));
+  
+  /* make sure the scheduler knows how much src we used */
+  FreeData(flo,pet,bnd,bnd->current);
+  
+  return(TRUE);
+}                               /* end ActivateEDrawAlign */
+
+
+/*------------------------------------------------------------------------
+----------------------------- crank some data ----------------------------
+------------------------------------------------------------------------*/
+static int ActivateEDrawStrip(flo,ped,pet)
+     floDefPtr flo;
+     peDefPtr  ped;
+     peTexPtr  pet;
+{
+  xieFloExportDrawable  *raw = (xieFloExportDrawable *) ped->elemRaw;
+  eDrawDefPtr		 pvt = (eDrawDefPtr) ped->elemPvt;
+  bandPtr		 bnd = &pet->receptor[SRCtag].band[0];
+  char			*src = GetCurrentSrc(char,flo,pet,bnd);
   
   if(src) {
     if (!DrawableAndGC(flo,ped,raw->drawable,raw->gc,&pvt->pDraw,&pvt->pGC))
@@ -175,27 +252,15 @@ static int ActivateEDraw(flo,ped,pet)
 				 bnd->strip->length,	  /* height	 */
 				 bnd->strip->bitOff,	  /* padding? 	 */
 				 ZPixmap,		  /* data format */
-				 (char *)src		  /* data buffer */
+				 src			  /* data buffer */
 				 );
-    while(src = GetSrc(BytePixel,flo,pet,bnd,bnd->maxLocal,FALSE));
+    while(src = GetSrc(char,flo,pet,bnd,bnd->maxLocal,KEEP));
   }
   /* make sure the scheduler knows how much src we used */
-  FreeData(BytePixel,flo,pet,bnd,bnd->current);
+  FreeData(flo,pet,bnd,bnd->current);
 
   return(TRUE);
-}                               /* end ActivateEDraw */
-
-
-/*------------------------------------------------------------------------
---------------------------- get rid of left overs ------------------------
-------------------------------------------------------------------------*/
-static int FlushEDraw(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
-{
-  /* Activate was suppose to do the whole image -- there's nothing to do */
-  return(TRUE);
-}                               /* end FlushEDraw */
+}                               /* end ActivateEDrawStrip */
 
 
 /*------------------------------------------------------------------------
@@ -205,6 +270,11 @@ static int ResetEDraw(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
+  meDrawPtr ddx = (meDrawPtr) ped->peTex->private;
+
+  if(ddx->buf) ddx->buf = (char*)XieFree(ddx->buf);
+  ddx->adjust = (xieVoidProc)NULL;
+
   ResetReceptors(ped);
   
   return(TRUE);
@@ -226,11 +296,67 @@ static int DestroyEDraw(flo,ped)
   ped->ddVec.create     = (xieIntProc) NULL;
   ped->ddVec.initialize = (xieIntProc) NULL;
   ped->ddVec.activate   = (xieIntProc) NULL;
-  ped->ddVec.flush      = (xieIntProc) NULL;
   ped->ddVec.reset      = (xieIntProc) NULL;
   ped->ddVec.destroy    = (xieIntProc) NULL;
 
   return(TRUE);
 }                               /* end DestroyEDraw */
+
+
+/*------------------------------------------------------------------------
+---------------------------- alignment routines --------------------------
+------------------------------------------------------------------------*/
+static void adjustStride32to24(dst,src,width)
+     char      *dst;
+     char      *src;
+     CARD32	width;
+{
+  register char *ip, *op;
+  int   i;
+  
+#if (BITMAP_BIT_ORDER == IMAGE_BYTE_ORDER)
+  ip = src;
+  op = dst;
+  for(i = 0; i < width; ip += 2, ++i) {
+    *op++ = *ip++; *op++ = *ip++; *op++ = *ip;
+  }
+#else
+  /* we'll do the first 2 pixels by hand in case we're doing this in-place
+   */
+  char tmp = src[0];
+  dst[0]   = src[2];
+  dst[2]   = tmp;
+  if(width > 1) {
+    tmp    = src[4];
+    dst[3] = src[6];
+    dst[4] = src[5];
+    dst[5] = tmp;
+  }
+  if(width > 2) {
+      ip = src + 8;
+      op = dst + 6;
+      for(i = 2; i < width; ip += 4, ++i) {
+	*op++ = ip[2]; *op++ = ip[1]; *op++ = *ip;
+      }
+    }
+#endif
+}
+
+static void adjustStride8to4(dst,src,width)
+     char      *dst;
+     char      *src;
+     CARD32	width;
+{
+  register char *ip = src, *op = dst;
+  int   i;
+  
+  for(i = 0; i < width; ip += 2, ++i) {
+#if (BITMAP_BIT_ORDER == LSBFirst)
+    *op++ = *ip | *(ip+1)<<8;
+#else
+    *op++ = *ip<<8 | *(ip+1);
+#endif
+  }
+}
 
 /* end module medraw.c */

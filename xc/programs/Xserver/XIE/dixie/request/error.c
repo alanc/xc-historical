@@ -1,4 +1,4 @@
-/* $XConsortium: error.c,v 1.1 93/07/19 10:09:55 rws Exp $ */
+/* $XConsortium: error.c,v 1.1 93/10/26 09:57:48 rws Exp $ */
 /**** module error.c ****/
 /****************************************************************************
 				NOTICE
@@ -64,15 +64,11 @@ terms and conditions:
 #include <misc.h>
 #include <extnsionst.h>
 #include <dixstruct.h>
+#include <opaque.h>
 
 #include <corex.h>
 #include <macro.h>
 #include <flostr.h>
-
-/*
- *  Xie protocol proceedures called from the dispatcher
- */
-int ProcNotImplemented();
 
 /*
  *  routines referenced by other modules.
@@ -90,16 +86,6 @@ void	ErrValue();
 
 
 /*------------------------------------------------------------------------
------------------------- Not Implemented Procedure -----------------------
-------------------------------------------------------------------------*/
-int ProcNotImplemented(client)
-     ClientPtr client;
-{
-  return( BadImplementation );
-}                                   /* end ProcNotImplemented */
-
-
-/*------------------------------------------------------------------------
 -------------------------- Send Resource Error ---------------------------
 ------------------------------------------------------------------------*/
 int SendResourceError(client, code, id)
@@ -109,21 +95,25 @@ int SendResourceError(client, code, id)
 {
   xieResourceErr err;
   REQUEST(xieReq);
+
+  if(client->clientGone) return(Success);
   
-  memset(&err, 0, sz_xieResourceErr);
+  bzero((char *)&err, sz_xieResourceErr);
   err.error       = X_Error;
   err.code        = code + extEntry->errorBase;
   err.sequenceNum = client->sequence;
   err.resourceID  = id;
-  err.opcode	  = stuff->opcode;
-  
+  err.minorOpcode = stuff->opcode;
+  err.majorOpcode = stuff->reqType;
+
   if( client->swapped ) {
     register int n;
     swaps(&err.sequenceNum,n);
     swapl(&err.resourceID,n);
   }
   WriteToClient(client, sz_xieResourceErr, (char *)&err);
-  
+  isItTimeToYield = TRUE;
+
   return(Success);
 }                               /* end SendResourceError */
 
@@ -138,14 +128,17 @@ int SendFloIDError(client, spaceID, floID)
   xieFloIDErr err;
   REQUEST(xieReq);
   
-  memset(&err, 0, sz_xieFloErr);
+  if(client->clientGone) return(Success);
+
+  bzero((char *)&err, sz_xieFloErr);
   err.error        = X_Error;
   err.code         = xieErrNoFlo + extEntry->errorBase;
   err.sequenceNum  = client->sequence;
-  err.nameSpace    = spaceID;
   err.floID        = floID;
   err.floErrorCode = xieErrNoFloID;
-  err.opcode	   = stuff->opcode;
+  err.minorOpcode  = stuff->opcode;
+  err.majorOpcode  = stuff->reqType;
+  err.nameSpace    = spaceID;
   
   if( client->swapped ) {
     register int n;
@@ -154,6 +147,7 @@ int SendFloIDError(client, spaceID, floID)
     swapl(&err.floID, n);
   }
   WriteToClient(client, sz_xieFloErr, (char *)&err);
+  isItTimeToYield = TRUE;
   
   return(Success);
 }                               /* end SendFloIDError */
@@ -170,6 +164,7 @@ int SendFloError(client, flo)
   xieFloErr err;
   REQUEST(xieReq);
   
+  if(client->clientGone) return(Success);
   /*
    * Take care of the common part
    */
@@ -177,9 +172,10 @@ int SendFloError(client, flo)
   err.error 	  = X_Error;
   err.code        = xieErrNoFlo + extEntry->errorBase;
   err.sequenceNum = client->sequence;
-  err.nameSpace   = flo->spaceID;
   err.floID       = flo->ID;
-  err.opcode	  = stuff->opcode;
+  err.minorOpcode = stuff->opcode;
+  err.majorOpcode = stuff->reqType;
+  err.nameSpace   = flo->spaceID;
   
   if( client->swapped ) {
     swaps(&err.sequenceNum, n);
@@ -188,9 +184,7 @@ int SendFloError(client, flo)
     swaps(&err.phototag, n);
     swaps(&err.type, n);
   }
-  
-  /*
-   * Take care of the unique parts
+  /* take care of the unique parts
    */
   switch( ferrCode(flo) ) {
   case	xieErrNoFloAccess:
@@ -234,9 +228,10 @@ int SendFloError(client, flo)
     break;
   }
   
-  if( status == Success )
+  if( status == Success ) {
     WriteToClient(client, sz_xieFloErr, (char *)&err);
-  
+    isItTimeToYield = TRUE;
+  }
   return(status);
 }                               /* end SendFloError */
 
@@ -289,15 +284,17 @@ void ErrOperator(flo,ped,operator)
   ((xieFloOperatorErr *)(&flo->error))->operator = operator;
 }
 
-void ErrTechnique(flo,ped,tech,lenParams)
+void ErrTechnique(flo,ped,group,tech,lenParams)
      floDefPtr flo;
      peDefPtr  ped;
+     CARD8     group;
      CARD16    tech;
      CARD16    lenParams;
 {
   ferrError(flo,ped->phototag,ped->elemRaw->elemType,xieErrNoFloTechnique);
+  ((xieFloTechniqueErr *)(&flo->error))->techniqueGroup  = group;
   ((xieFloTechniqueErr *)(&flo->error))->techniqueNumber = tech;
-  ((xieFloTechniqueErr *)(&flo->error))->lenTechParams = lenParams;
+  ((xieFloTechniqueErr *)(&flo->error))->lenTechParams   = lenParams;
 }
 
 void ErrValue(flo,ped,value)

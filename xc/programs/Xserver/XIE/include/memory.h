@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: memory.h,v 1.1 93/10/26 10:05:01 rws Exp $ */
 /**** module memory.h ****/
 /******************************************************************************
 				NOTICE
@@ -53,7 +53,7 @@ terms and conditions:
 
 extern	void *XieMalloc();
 extern	void *XieCalloc();
-extern	void *XieRalloc();
+extern	void *XieRealloc();
 extern	void *XieFree();
 
 #endif

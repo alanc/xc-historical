@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mppoint.c,v 1.1 93/10/26 09:46:41 rws Exp $ */
 /**** module mppoint.c ****/
 /******************************************************************************
 				NOTICE
@@ -93,14 +93,18 @@ int	miAnalyzePoint();
  */
 static int CreatePoint();
 static int InitializePoint();
-static int FlushPoint();
+static int ActivatePoint();
 static int ResetPoint();
 static int DestroyPoint();
 
+#if XIE_FULL
 static int ActivatePointExplode();
+static int ActivatePointExplodeMsk();
 static int ActivatePointCombine();
 static int ActivatePointROI();
-static int ActivatePoint();
+
+#define LUT_EXPLODE
+#endif
 
 /*
  * DDXIE Point entry points
@@ -109,7 +113,7 @@ static ddElemVecRec PointVec = {
   CreatePoint,
   InitializePoint,
   ActivatePoint,
-  FlushPoint,
+  (xieIntProc) NULL,
   ResetPoint,
   DestroyPoint
   };
@@ -117,11 +121,20 @@ static ddElemVecRec PointVec = {
 /*
 * Local Declarations.
 */
-
 typedef struct _mppointdef {
 	void	(*action) ();
-	void	(*action2) ();
+#if XIE_FULL
+				/* below here for crazy pixels only */
+	void	*(*convert) ();
+	void	*buffer;
 	CARD32	constant;
+	CARD8   shiftok;
+	CARD8   shiftamt;
+	CARD32	mask;		/* for all 3 bands */
+	CARD32	width;		/* for all 3 bands */
+	void	(*merge) ();	/* for all 3 bands */
+	void	(*store) ();	/* for all 3 bands */
+#endif
 } mpPointPvtRec, *mpPointPvtPtr;
 
 static void P11_bb0(), P11_bb1();
@@ -137,13 +150,34 @@ static void (*action_pnt11[4][4])() = {
 	P11_bQ, P11_BQ, P11_PQ, P11_QQ,	/* [out=4][inp=1...4] */
 };
 
+#if XIE_FULL
+static void Proi11_bb0();
 static void Proi11_bb(), Proi11_BB(), Proi11_PP(), Proi11_QQ();
+
 static void (*action_pntroi11[4])() = {
 	Proi11_bb, Proi11_BB, Proi11_PP, Proi11_QQ /* [out==inp=1...4] */
 };
 
-static void CrazyPixels();
+static void crazy_horse();
 
+static void CPM_B3BB(), CPS_B3BB(), CPA_B3BB();
+
+static void CPMRG_B(), CPMRG_P(), CPMRG_Q();
+
+static void (*action_merge[3])() = {	/* [intclass - 2] */
+	CPMRG_B, CPMRG_P, CPMRG_Q	/* [byte,pair,quad] */
+};
+
+static void *CPCNV_bB(), *CPCNV_BB();
+static void *CPCNV_bP(), *CPCNV_BP(), *CPCNV_PP();
+static void *CPCNV_bQ(), *CPCNV_BQ(), *CPCNV_PQ();
+
+static void * (*action_convert[3][3])() = { /* [intclass-2][ii-1] */
+	CPCNV_bB, CPCNV_BB, 0,		/* [out=Byte] [inp=bits,byte,pair] */
+	CPCNV_bP, CPCNV_BP, CPCNV_PP,	/* [out=Pair] [inp=bits,byte,pair] */
+	CPCNV_bQ, CPCNV_BQ, CPCNV_PQ	/* [out=Quad] [inp=bits,byte,pair] */
+};
+#endif
 
 /*------------------------------------------------------------------------
 ------------------------  fill in the vector  ---------------------------
@@ -166,134 +200,204 @@ static int CreatePoint(flo,ped)
 {
     return MakePETex(flo,ped,
 		     xieValMaxBands * sizeof(mpPointPvtRec),
-		     TRUE,	/* InSync: Make sure Lut exists first */
-		     FALSE	/* bandSync: see InitializePoint */
+		     SYNC,	/* InSync: Make sure Lut exists first */
+		     NO_SYNC	/* bandSync: see InitializePoint */
 		     );
 } 
 
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
-
 static int InitializePoint(flo,ped)
-    floDefPtr flo;
-    peDefPtr  ped;
+     floDefPtr flo;
+     peDefPtr  ped;
 {
-    xieFloPoint     *raw = (xieFloPoint *)ped->elemRaw;
-    peTexPtr 	     pet = ped->peTex;
-    mpPointPvtPtr    pvt = (mpPointPvtPtr) pet->private;
-    receptorPtr      rcp = pet->receptor;
-    CARD32	  nbands = pet->receptor[SRCtag].inFlo->bands;
-    CARD32	  lbands = pet->receptor[LUTtag].inFlo->bands;
-    bandPtr	   iband = &(pet->receptor[SRCtag].band[0]);
-    bandPtr	   oband = &(pet->emitter[0]);
-    CARD8	     msk = raw->bandMask;
-    BOOL        bandsync = FALSE;
-    CARD8	  passmsk, lutmask;
-    CARD32	  band;
-
-    if (nbands == 3 && lbands == 1) {
+  xieFloPoint     *raw = (xieFloPoint *)ped->elemRaw;
+  peTexPtr 	     pet = ped->peTex;
+  mpPointPvtPtr    pvt = (mpPointPvtPtr) pet->private;
+  receptorPtr      rcp = pet->receptor;
+  CARD32	  nbands = pet->receptor[SRCtag].inFlo->bands;
+  CARD32	  lbands = pet->receptor[LUTtag].inFlo->bands;
+  bandPtr	   iband = &(pet->receptor[SRCtag].band[0]);
+  bandPtr	   oband = &(pet->emitter[0]);
+  CARD8	     msk = raw->bandMask;
+  BOOL        bandsync = FALSE;
+  CARD8	  passmsk, lutmask;
+  CARD32	  band;
+  
+#if XIE_FULL
+  if (nbands == 3 && lbands == 1) {
+    int oo = oband->format->class;
+    int ii = iband->format->class;
+    int intclass;
+    CARD32 c0, c1, c2, ctotal;
+    CARD32 iimin = ii, iimax = ii;
+    
+    pvt->width = iband->format->width;
+    
+    c1 = (iband+1)->format->class;
+    if (c1 > iimax) iimax = c1; else if (c1 < iimin) iimin = c1;
+    c2 = (iband+2)->format->class;
+    if (c2 > iimax) iimax = c2; else if (c2 < iimin) iimin = c2;
+    
+    /* Create CRAZY pixels by multiply/accumulate */
+    if (pet->receptor[LUTtag].band[0].format->width == xieValLSFirst) {
+      (pvt+0)->constant = c0 = 1;
+      (pvt+1)->constant = c1 = (iband+0)->format->levels;
+      (pvt+2)->constant = c2 = (iband+0)->format->levels *
+	(iband+1)->format->levels;
+      ctotal = c2 * (iband+2)->format->levels;
+    } else { /* swizzle band-order MSFirst */
+      (pvt+2)->constant = c2 = 1;
+      (pvt+1)->constant = c1 = (iband+2)->format->levels;
+      (pvt+0)->constant = c0 = (iband+2)->format->levels *
+	(iband+1)->format->levels;
+      ctotal = c0 * (iband+0)->format->levels;
+    }
+    
+    if ((c0 & (c0-1)) == 0) {
+      (pvt+0)->shiftamt = ffs(c0) - 1;
+      (pvt+0)->shiftok = 1;
+    } else  (pvt+0)->shiftok = 0;
+    if ((c1 & (c1-1)) == 0) {
+      (pvt+1)->shiftamt = ffs(c1) - 1;
+      (pvt+1)->shiftok = 1;
+    } else  (pvt+1)->shiftok = 0;
+    if ((c2 & (c2-1)) == 0) {
+      (pvt+2)->shiftamt = ffs(c2) - 1;
+      (pvt+2)->shiftok = 1;
+    } else  (pvt+2)->shiftok = 0;
+    
+    if (ctotal <= 2) /* Could happen if levels were 1/1/2. pretty silly */
+      ctotal = 4;
+    
+    SetDepthFromLevels(ctotal,c2);
+    pvt->mask = (1<<c2) - 1;
+    
+    intclass = (ctotal <=   256) ? BYTE_PIXEL :
+      (ctotal <= 65536) ? PAIR_PIXEL : QUAD_PIXEL;
+    
+    if (iimin == BYTE_PIXEL && iimax == BYTE_PIXEL &&
+	intclass == BYTE_PIXEL && oo == BYTE_PIXEL ) {
+      
+      /* BYTE/BYTE/BYTE --> BYTE -> BYTE */
+      pvt->action = ((pvt+0)->shiftok &&
+		     (pvt+1)->shiftok &&
+		     (pvt+2)->shiftok) ? CPS_B3BB : CPM_B3BB;
+    } else {
+      /* Do it the hard way */
+      pvt->action = crazy_horse;
+      if (intclass == BYTE_PIXEL && oo == BYTE_PIXEL) {
+	pvt->merge = CPA_B3BB;
+	pvt->store = 0;
+      } else {
+	pvt->merge = action_merge[intclass-2];
+	pvt->store = (oband->format->levels == 1)
+	  ? P11_bb0
+	    : action_pnt11[oo-1][intclass-1];
+      }
+      for(band = 0; band < nbands; band++, pvt++, iband++) {
+	ii = iband->format->class;
+	pvt->width = iband->format->width;
+	/* might allocate extra space and use lut instead of multiply */
+	pvt->convert = action_convert[intclass-2][ii-1];
+	if (!(pvt->buffer = (void *)
+	      XieMalloc(pvt->width << (intclass - BYTE_PIXEL))))
+	  AllocError(flo,ped,return(FALSE));
+      }
+    }
+    
+    /* protocol requires msk == ALL_BANDS */
+    msk = ALL_BANDS; passmsk = 0, lutmask = 1; bandsync = TRUE;
+    ped->ddVec.activate = ActivatePointCombine;
+    
+  } else if (nbands == 1 && lbands == 3) {
+    
+    for(band = 0; band < lbands; band++, pvt++, oband++) {
+      int oo = oband->format->class;
+      int ii = iband->format->class;
+      
+      if (oband->format->levels == 1)
+	pvt->action = P11_bb0;
+      else if ((iband->format->levels == 1) && (oo == BIT_PIXEL))
+	pvt->action = P11_bb1;
+      else
+	pvt->action = action_pnt11[oo-1][ii-1];
+    }
+#if defined(LUT_EXPLODE)
+    if ((msk & 7) == 7) {
+      /* Only works when all 3 bands selected */
+      msk = 1; passmsk = 0; lutmask = ALL_BANDS; bandsync = TRUE;
+      ped->ddVec.activate = ActivatePointExplode;
+    } else
+#endif
+      {
+	/* must actually activate these bands instead of using passmsk */
+	ped->ddVec.activate = ActivatePointExplodeMsk;
+	lutmask = msk; msk = 1; passmsk = NO_BANDS; bandsync = FALSE;
+	rcp[SRCtag].band[0].replicate = ~msk;
+      }
+    
+  } else if (nbands == lbands) {
+    /* Standard Case.  Map each band thru its own LUT */
+    
+    if (raw->domainPhototag) {
+      for(band = 0; band < nbands; band++, pvt++, iband++, oband++) {
+	int oo = oband->format->class;
+	
+	pvt->action = (oband->format->levels == 1)
+	  ? Proi11_bb0
+	    : action_pntroi11[oo-1];
+      }
+      passmsk = ~msk; lutmask = msk;
+      rcp[ped->inCnt-1].band[0].replicate = msk;
+      ped->ddVec.activate = ActivatePointROI;
+    } else {
+#endif  
+      for(band = 0; band < nbands; band++, pvt++, iband++, oband++) {
 	int oo = oband->format->class;
 	int ii = iband->format->class;
-	/* Create CRAZY pixels by multiply/accumulate */
-        if (pet->receptor[LUTtag].band[0].format->width == xieValLSFirst) {
-	    (pvt+0)->constant = 1;
-	    (pvt+1)->constant = (pvt+0)->constant * (iband+0)->format->levels;
-	    (pvt+2)->constant = (pvt+1)->constant * (iband+1)->format->levels;
-        } else { /* swizzle band-order MSFirst */
-	    (pvt+2)->constant = 1;
-	    (pvt+1)->constant = (pvt+2)->constant * (iband+2)->format->levels;
-	    (pvt+0)->constant = (pvt+1)->constant * (iband+1)->format->levels;
-	}
-	/* XXX
-	**  Only does bytes to bytes now.  Need to generate temporary
-	**  storage rather than usurping destination space, or build in
-	**  lookup into the multiplication phase.
-	*/
-	pvt->action2 = CrazyPixels;
-
-	if (oband->format->levels == 1)
-	    pvt->action = P11_bb0;
-	else
-	    pvt->action = action_pnt11[oo-1][ii-1];
-
-	/* protocol requires msk == 7 */
-	msk = 7; passmsk = 0, lutmask = 1; bandsync = TRUE;
-    	ped->ddVec.activate = ActivatePointCombine;
-
-    } else if (nbands == 1 && lbands == 3) {
 	
-	/* XXX: Jam in replicate mask here, then treat like 3x3 */
-
-	for(band = 0; band < lbands; band++, pvt++, oband++) {
-	    int oo = oband->format->class;
-	    int ii = iband->format->class;
-
-	    if (oband->format->levels == 1)
-		pvt->action = P11_bb0;
-	    else if ((iband->format->levels == 1) && (oo == BIT_PIXEL))
-		pvt->action = P11_bb1;
-	    else
-		pvt->action = action_pnt11[oo-1][ii-1];
-	}
-	/*
-	** XXX, might argue that a band mask of 5 would apply luts
-	** on band 0 and 2, while passing thru band 1 untouched. If 
-	** so we need to add support in dixie and here.  Would rather
-	** disable this from protocol.
-	*/
-	msk = 1; passmsk = 0; lutmask = 7; bandsync = TRUE;
-    	ped->ddVec.activate = ActivatePointExplode;
-
-    } else if (nbands == lbands) {
-	  /* Standard Case.  Map each band thru its own LUT */
-
-	if (raw->domainPhototag) {
-	    for(band = 0; band < nbands; band++, pvt++, iband++, oband++) {
-	      int oo = oband->format->class;
-
-	      if (oband->format->levels == 1)
-		  pvt->action = P11_bb0; /* XXX could passthrough source here*/
-	      else
-		  pvt->action = action_pntroi11[oo-1];
-	    }
-	    passmsk = ~msk; lutmask = msk;
-	    ped->ddVec.activate = ActivatePointROI;
-	    pet->receptor[ped->inCnt-1].band[0].replicate = msk;
-        } else {
-	    for(band = 0; band < nbands; band++, pvt++, iband++, oband++) {
-	      int oo = oband->format->class;
-	      int ii = iband->format->class;
-
-	      if (oband->format->levels == 1)
-		  pvt->action = P11_bb0;
-	      else if ((iband->format->levels == 1) && (oo == BIT_PIXEL))
-		  pvt->action = P11_bb1;
-	      else
-		  pvt->action = action_pnt11[oo-1][ii-1];
-	    }
-	    passmsk = ~msk; lutmask = msk;
-	    ped->ddVec.activate = ActivatePoint;
-	  }
-  
-    } else 
-	ImplementationError(flo,ped, return(FALSE));
-
-    pet->bandSync = bandsync;
-    return  InitReceptor(flo, ped, &rcp[SRCtag], 0, 1, msk, passmsk) &&
-	    InitReceptor(flo, ped, &rcp[LUTtag], 0, 1, lutmask, (CARD8)0) &&
-	    (!raw->domainPhototag || InitProcDomain(flo, ped, 
-			raw->domainPhototag, raw->domainOffsetX, 
-					raw->domainOffsetY)) &&
-	    InitEmitter(flo,ped,0,(raw->domainPhototag) ? SRCtag : NO_INPLACE);
-
+	if (oband->format->levels == 1)
+	  pvt->action = P11_bb0;
+	else if ((iband->format->levels == 1) && (oo == BIT_PIXEL))
+	  pvt->action = P11_bb1;
+	else
+	  pvt->action = action_pnt11[oo-1][ii-1];
+      }
+      passmsk = ~msk; lutmask = msk;
+      ped->ddVec.activate = ActivatePoint;
+#if XIE_FULL
+    }
+  } else 
+    ImplementationError(flo,ped, return(FALSE));
+#endif  
+  pet->bandSync = bandsync;
+  return(InitReceptor(flo,ped,&rcp[SRCtag],NO_DATAMAP,1,msk,passmsk) &&
+	 InitReceptor(flo,ped,&rcp[LUTtag],NO_DATAMAP,1,lutmask,NO_BANDS) &&
+	 (!raw->domainPhototag ||
+	  InitProcDomain(flo, ped, raw->domainPhototag,
+			 raw->domainOffsetX, raw->domainOffsetY)) &&
+	 InitEmitter(flo, ped, NO_DATAMAP,
+		     (raw->domainPhototag ? SRCtag : NO_INPLACE)));
 }
 
 /*------------------------------------------------------------------------
 ----------------------------- crank some data ----------------------------
 ------------------------------------------------------------------------*/
-
 /*------------------  (1 Band, 3 LUTS) --> (3 Bands) -------------------*/
+
+#if XIE_FULL
+#if defined(LUT_EXPLODE)
+/*
+** NOTE:
+**	This code was used in the SI alpha drop and works fine.  However
+** 	using our new band replication feature, we can replicate the
+**	image band and use the 3x3 mapping code.  On the three machines
+**	I compared the execution times on, the results were within a few
+**	percent; but this code was faster.  If you want to save a bit
+**	of code space, turn off the define LUT_EXPLODE.
+*/
 
 static int ActivatePointExplode(flo,ped,pet)
      floDefPtr flo;
@@ -301,7 +405,6 @@ static int ActivatePointExplode(flo,ped,pet)
      peTexPtr  pet;
 {
     mpPointPvtPtr pvt = (mpPointPvtPtr) pet->private;
-    int band, nbands = pet->receptor[SRCtag].inFlo->bands;
     bandPtr iband = &(pet->receptor[SRCtag].band[0]);
     bandPtr lband = &(pet->receptor[LUTtag].band[0]);
     bandPtr oband = &(pet->emitter[0]);
@@ -333,11 +436,60 @@ static int ActivatePointExplode(flo,ped,pet)
 	ovoid1 = GetNextDst(void,flo,pet,oband,TRUE); oband++;
 	ovoid2 = GetNextDst(void,flo,pet,oband,TRUE); oband -= 2;
     }
-    FreeData(void, flo, pet, iband, iband->current);
+    FreeData(flo, pet, iband, iband->current);
     if (iband->final) {
-	FreeData(void, flo, pet, lband ,lband->current); lband--;
-	FreeData(void, flo, pet, lband ,lband->current); lband--;
-	FreeData(void, flo, pet, lband ,lband->current); 
+	FreeData(flo, pet, lband ,lband->current); lband--;
+	FreeData(flo, pet, lband ,lband->current); lband--;
+	FreeData(flo, pet, lband ,lband->current); 
+    }
+    return TRUE;
+}
+#endif
+
+static int ActivatePointExplodeMsk(flo,ped,pet)
+     floDefPtr flo;
+     peDefPtr  ped;
+     peTexPtr  pet;
+{
+    mpPointPvtPtr pvt = (mpPointPvtPtr) pet->private;
+    xieFloPoint *raw = (xieFloPoint *)ped->elemRaw;
+    int band, nbands = pet->receptor[LUTtag].inFlo->bands;
+    bandPtr iband = &(pet->receptor[SRCtag].band[0]);
+    bandPtr lband = &(pet->receptor[LUTtag].band[0]);
+    bandPtr oband = &(pet->emitter[0]);
+    CARD8     msk = raw->bandMask;
+    void * lvoid;
+
+    for(band = 0; band < nbands; band++, pvt++, iband++, oband++, lband++) {
+	register int bw = iband->format->width;
+	void *ivoid, *ovoid;
+
+	if ((msk & (1<<band)) == 0) { 
+	    /* Pass source band similar to BandSelect code */
+	    if(GetCurrentSrc(void,flo,pet,iband)) {
+		do {
+		    if(!PassStrip(flo,pet,oband,iband->strip))
+			return(FALSE);
+		} while(GetSrc(void,flo,pet,iband,iband->maxLocal,FLUSH));
+		FreeData(flo,pet,iband,iband->maxLocal);
+	    }
+	    continue;
+	}
+
+	/* Or process similar to ordinary Point code. */
+    	if (!(lvoid = GetSrcBytes(void,flo,pet,lband,0,1,FALSE)) ||
+	    !(ivoid = GetCurrentSrc(void,flo,pet,iband)) ||
+	    !(ovoid = GetCurrentDst(void,flo,pet,oband))) continue;
+
+	do {
+	    (*(pvt->action)) (ivoid, ovoid, lvoid, bw);
+	    ivoid = GetNextSrc(void,flo,pet,iband,TRUE);
+	    ovoid = GetNextDst(void,flo,pet,oband,TRUE);
+	} while (!ferrCode(flo) && ivoid && ovoid) ;
+
+	FreeData(flo, pet, iband, iband->current);
+	if (iband->final)
+	    FreeData(flo, pet, lband, lband->current);
     }
     return TRUE;
 }
@@ -354,7 +506,6 @@ static int ActivatePointCombine(flo,ped,pet)
     bandPtr lband = &(pet->receptor[LUTtag].band[0]);
     bandPtr oband = &(pet->emitter[0]);
     void    *ivoid0, *ivoid1, *ivoid2, *lvoid, *ovoid;
-    int     bw = iband->format->width;
 
     /* asking for 1 should fetch entire lut strip */
     if (!(lvoid = GetSrcBytes(void,flo,pet,lband,0,1,FALSE)))
@@ -367,13 +518,7 @@ static int ActivatePointCombine(flo,ped,pet)
 
     while (!ferrCode(flo) && ovoid && ivoid0 && ivoid1 && ivoid2) {
 
-	/* XXX Currently operates in place (B*B*B==>B==>any) */
-        (*(pvt->action2)) (ivoid0, (pvt)->constant,
-			   ivoid1, (pvt+1)->constant,
-			   ivoid2, (pvt+2)->constant,
-			   ovoid, bw);
-
-        (*(pvt->action)) (ovoid, ovoid, lvoid, bw);
+        (*(pvt->action)) (ivoid0, ivoid1, ivoid2, lvoid, ovoid, pvt);
 
 	ovoid  = GetNextDst(void,flo,pet,oband,TRUE);
 	ivoid0 = GetNextSrc(void,flo,pet,iband,TRUE); iband++;
@@ -381,12 +526,12 @@ static int ActivatePointCombine(flo,ped,pet)
 	ivoid2 = GetNextSrc(void,flo,pet,iband,TRUE); iband -= 2;
     }
 
-    FreeData(void, flo, pet, iband, iband->current); iband++;
-    FreeData(void, flo, pet, iband, iband->current); iband++;
-    FreeData(void, flo, pet, iband, iband->current);
+    FreeData(flo, pet, iband, iband->current); iband++;
+    FreeData(flo, pet, iband, iband->current); iband++;
+    FreeData(flo, pet, iband, iband->current);
 
     if (iband->final)
-	FreeData(void, flo, pet, lband, lband->current);
+	FreeData(flo, pet, lband, lband->current);
 
     return TRUE;
 }
@@ -401,17 +546,14 @@ static int ActivatePointROI(flo,ped,pet)
 {
     
     mpPointPvtPtr pvt = (mpPointPvtPtr) pet->private;
-    int band, nbands  = pet->receptor[SRCtag].inFlo->bands;
+    int band, nbands  = pet->receptor[LUTtag].inFlo->bands; /* ??? */
     bandPtr iband     = &(pet->receptor[SRCtag].band[0]);
     bandPtr lband     = &(pet->receptor[LUTtag].band[0]);
     bandPtr rband     = &(pet->receptor[ped->inCnt-1].band[0]);
     bandPtr oband     = &(pet->emitter[0]);
-    INT32 Xoffset     = ((xieFloPoint *)ped->elemRaw)->domainOffsetX;
     void * lvoid;
 
-
     for(band=0; band < nbands; band++,pvt++,iband++,oband++,lband++,rband++) {
-	register int bw   = iband->format->width;
 	void *ivoid, *ovoid;
 
 	/* 1 should fetch entire lut strip */
@@ -423,7 +565,7 @@ static int ActivatePointROI(flo,ped,pet)
 				SyncDomain(flo,ped,oband,FLUSH)) {
 	    INT32 run, currentx = 0;
 	   
-    	    if(ivoid != ovoid) bcopy(ivoid, ovoid, oband->pitch);
+    	    if(ivoid != ovoid) memcpy(ovoid, ivoid, oband->pitch);
 
 	    while (run = GetRun(flo,pet,oband)) {
 		if (run > 0) {
@@ -437,14 +579,14 @@ static int ActivatePointROI(flo,ped,pet)
 	    ovoid = GetNextDst(void,flo,pet,oband,TRUE);
 	}
 
-	FreeData(void, flo, pet, iband, iband->current);
+	FreeData(flo, pet, iband, iband->current);
 	if (iband->final)
-	    FreeData(void, flo, pet, lband, lband->current);
+	    FreeData(flo, pet, lband, lband->current);
     }
     return TRUE;
 }
-
-
+#endif
+      
 /*------------------  (3 Band, 3 LUTS) --> (3 Bands) -------------------*/
 /*------------------  (1 Band, 1 LUTS) --> (1 Bands) -------------------*/
 
@@ -454,7 +596,7 @@ static int ActivatePoint(flo,ped,pet)
      peTexPtr  pet;
 {
     mpPointPvtPtr pvt = (mpPointPvtPtr) pet->private;
-    int band, nbands = pet->receptor[SRCtag].inFlo->bands;
+    int band, nbands = pet->receptor[LUTtag].inFlo->bands;
     bandPtr iband = &(pet->receptor[SRCtag].band[0]);
     bandPtr lband = &(pet->receptor[LUTtag].band[0]);
     bandPtr oband = &(pet->emitter[0]);
@@ -475,22 +617,12 @@ static int ActivatePoint(flo,ped,pet)
 	    ovoid = GetNextDst(void,flo,pet,oband,TRUE);
 	} while (!ferrCode(flo) && ivoid && ovoid) ;
 
-	FreeData(void, flo, pet, iband, iband->current);
+	FreeData(flo, pet, iband, iband->current);
 	if (iband->final)
-	    FreeData(void, flo, pet, lband, lband->current);
+	    FreeData(flo, pet, lband, lband->current);
     }
     return TRUE;
 }
-
-/*------------------------------------------------------------------------
---------------------------- get rid of left overs ------------------------
-------------------------------------------------------------------------*/
-static int FlushPoint(flo,ped)
-    floDefPtr flo;
-    peDefPtr  ped;
-{
-    return TRUE;
-}               
 
 /*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
@@ -499,6 +631,16 @@ static int ResetPoint(flo,ped)
     floDefPtr flo;
     peDefPtr  ped;
 {
+#if XIE_FULL
+    mpPointPvtPtr pvt = (mpPointPvtPtr) (ped->peTex->private);
+    int band;
+
+    /* free any dynamic private data */
+    if (pvt)
+	for (band = 0 ; band < xieValMaxBands ; band++, pvt++)
+	    if (pvt->buffer)
+		pvt->buffer = (CARD32 *) XieFree(pvt->buffer);
+#endif
     ResetReceptors(ped);
     ResetProcDomain(ped);
     ResetEmitter(ped);
@@ -520,7 +662,6 @@ static int DestroyPoint(flo,ped)
     ped->ddVec.create = (xieIntProc)NULL;
     ped->ddVec.initialize = (xieIntProc)NULL;
     ped->ddVec.activate = (xieIntProc)NULL;
-    ped->ddVec.flush = (xieIntProc)NULL;
     ped->ddVec.reset = (xieIntProc)NULL;
     ped->ddVec.destroy = (xieIntProc)NULL;
 
@@ -531,126 +672,62 @@ static int DestroyPoint(flo,ped)
 ---------------------  Lotsa Little Action Routines  ---------------------
 ------------------------------------------------------------------------*/
 
+/*
+**  bitonal ---> LUT ---> bitonal (only 4 possibilities)
+*/
+
 static void
 P11_bb(INP,OUTP,LUTP,bw)
 	void *INP; void *OUTP; void *LUTP; int bw;
 {
-	unsigned char *inp = (unsigned char *) INP;
-	unsigned char *outp = (unsigned char *) OUTP;
 	unsigned char *lutp = (unsigned char *) LUTP;
-	/*
-	** bitonal ---> LUT ---> bitonal
-	**
-	** 1) We could try to infer the lut relationships once and
-	**    jam a new action routine, but this is not convenient.
-	**    P11_bb1 below is used when input levels ==1 ;
-	**
-	** 2) following code may modify bit pixels in pad area. an
-	**    alternative would be to work hard and not molest these
-	**    pixels.
-	**
-	** 3) should we use bytes and thus bzero, bcopy, and perhaps memset
-	**	to pick up cpu optimized routines automatically, OR, should
-	**	we use unsigned longs (or perhaps LogInts which might be
-	**	eg 64 bit ints on R4000?) and do cpu loops which may need
-	**	to be unrolled?  Have fun out there?
-	*/
-	bw = (bw + 7) >> 3;
-	if (lutp[0] == 0) {
-	    if (lutp[1] == 0) 
-		bzero(outp, bw);
+
+	if (*lutp++ == 0) {
+	    if (*lutp == 0)
+		action_clear  (OUTP, bw, 0);	
 	    else
-		bcopy(inp, outp, bw);
-	} else {
-	    if (lutp[1] == 0)
-		while (bw-- > 0) { *outp++ = *inp++ ^ (unsigned char) ~0; }
-	    else
-		memset(outp, ~0, bw);
-	}
+		passcopy_bit  (OUTP, INP, bw, 0);
+	} else  if (*lutp == 0) {
+		passcopy_bit  (OUTP, INP, bw, 0);
+		action_invert (OUTP, bw, 0);
+	} else		
+		action_set    (OUTP, bw, 0);
 }
+
+/*
+**  bitonal ---> LUT ---> bitonal (input is single level) 
+*/
 
 static void
 P11_bb1(INP,OUTP,LUTP,bw)
 	void *INP; void *OUTP; void *LUTP; int bw;
 {
-	unsigned char *inp = (unsigned char *) INP;
-	unsigned char *outp = (unsigned char *) OUTP;
-	unsigned char *lutp = (unsigned char *) LUTP;
+	CARD8 *lutp = (CARD8 *) LUTP;
 
-	/*
-	** bitonal ---> LUT ---> bitonal (input is single level aka 0)
-	*/
-	bw = (bw + 7) >> 3;
-	if (lutp[0] == 0) 
-	    bzero(outp, bw);
-	else
-	    memset(outp, ~0, bw);
+	if (*lutp)	action_set(OUTP, bw, 0);
+	else		action_clear(OUTP, bw, 0);
 }
+
+/*
+** anything ---> LUT ---> bitonal (output is single level)
+*/
 
 static void
 P11_bb0(INP,OUTP,LUTP,bw)
 	void *INP; void *OUTP; void *LUTP; int bw;
 {
-	unsigned char *outp = (unsigned char *) OUTP;
-	/*
-	** anything ---> LUT ---> bitonal (output is single level aka 0)
-	*/
-	bw = (bw + 7) >> 3;
-	bzero(outp, bw);
+	action_clear(OUTP, bw, 0);
 }
 
 /*
 ** DO_P11b - single band, single lut, bit to bit
 ** DO_P11c - single band, single lut, consume bits
+** DO_P11x - single band, single lut, consume bits (to bytes only)
 ** DO_P11p - single band, single lut, produce bits
 ** DO_P11  - single band, single lut, non-bit versions
 */
 
 #define DO_P11b(fd_do,itype,otype)	/* see P11_bb, P11_bb1, P11_bb0 above */
-
-/*
-** Consume bits. (DO_P11c)
-**  1) Could be implemented to use small lookup table as used in typical
-**	color expansion code, in which case we would need to precalculate
-**	the table somewhere and pass in a pointer.  Would need more endian
-**	specific macros.
-**  2) Could look for runs of zero's and one's and try to use faster ways
-**	of setting blocks of pixels.  ffs() type instructions could help.
-**
-** Produce bits. (DO_P11p)
-**  1) Probably about as good as it will get. Perhaps add some unrolling.
-*/
-
-#if defined(LOG_XXXbit)
-	/* This is the really slow way.  You don't want to use this */
-#define DO_P11c(fn_do,itype,otype)					\
-static void								\
-fn_do(INP,OUTP,LUTP,bw)							\
-	void *INP; void *OUTP; void *LUTP; int bw;			\
-{									\
-	LogInt *inp = (LogInt *) INP;					\
-	otype *outp = (otype *) OUTP;					\
-	otype *lutp = (otype *) LUTP;					\
-	otype outval, loval = lutp[0], hival = lutp[1];			\
-	int ix;								\
-	for (ix=0; ix < bw; ix++)					\
-		outp[ix] = LOG_tstbit(inp,ix) ? hival : loval;		\
-}
-#define DO_P11p(fn_do,itype,otype)					\
-static void								\
-fn_do(INP,OUTP,LUTP,bw)							\
-	void *INP; void *OUTP; void *LUTP; int bw;			\
-{									\
-	itype *inp = (itype *) INP;					\
-	LogInt *outp = (LogInt *) OUTP;					\
-	unsigned char *lutp = (otype *) LUTP;				\
-	int ix;								\
-	bzero((unsigned char *) OUTP, (bw+7)>>3);			\
-	for (ix=0; ix < bw; ix++)					\
-	    if (lutp[inp[ix]])						\
-		LOG_setbit(outp,ix);					\
-}
-#else
 
 #define DO_P11c(fn_do,itype,otype)					\
 static void								\
@@ -688,23 +765,15 @@ fn_do(INP,OUTP,LUTP,bw)							\
 	    *outp++ = outval;						\
 	}								\
 }
-#endif
-
-	/*
-	** This is the optimal way to convert bits to bytes.  You may
-	** be able to improve on the bitexpand subroutine yourself ...
-	*/
 
 #define DO_P11x(fn_do,itype,otype)					\
 static void								\
 fn_do(INP,OUTP,LUTP,bw)							\
 	void *INP; void *OUTP; void *LUTP; int bw;			\
 { 									\
-	void  bitexpand();						\
 	otype *lutp = (otype *) LUTP;					\
 	bitexpand(INP,OUTP,bw, lutp[0], lutp[1]);			\
 }
-
 
 #define DO_P11(fn_do,itype,otype)					\
 static void								\
@@ -719,8 +788,8 @@ fn_do(INP,OUTP,LUTP,bw)							\
 
 /*
 ** DO_P11b - bit to bit
-** DO_P11c - consume bits (also DO_P11x)
-** DO_P11x - consume bits (faster bit eXpander)
+** DO_P11c - consume bits 
+** DO_P11x - consume bits (faster bit eXpander for bytes only)
 ** DO_P11p - produce bits
 ** DO_P11  - non-bit versions
 */
@@ -746,83 +815,200 @@ DO_P11	(P11_PQ, PairPixel, QuadPixel)
 DO_P11	(P11_QQ, QuadPixel, QuadPixel)
 
 /*------------------------------------------------------------------------
----------------------  Crazy Pixels Action Routines  ---------------------
-------------------------------------------------------------------------*/
-
-/* Only one right now takes (bytes*bytes*bytes) ==> bytes */
-
-static void
-CrazyPixels(ivoid0, c0, ivoid1, c1, ivoid2, c2, ovoid, bw)
-    void  *ivoid0, *ivoid1, *ivoid2, *ovoid;
-    int   c0, c1, c2, bw;
-{
-    BytePixel *inp0 = (BytePixel *) ivoid0;
-    BytePixel *inp1 = (BytePixel *) ivoid1;
-    BytePixel *inp2 = (BytePixel *) ivoid2;
-    BytePixel *outp = (BytePixel *) ovoid;
-    while (bw-- > 0) {
-	/* We could do lookups here too, but variations will kill us */
-	*outp++ = (c0 * *inp0++) + (c1 * *inp1++) + (c2 * *inp2++);
-    }
-}
-
-/*------------------------------------------------------------------------
 ---------------------  ROI operations work on subranges ------------------
 ------------------------------------------------------------------------*/
-
+#if XIE_FULL
 /*
-**  The ROI routines only map within a single type.  It would
-**  have been possible to call the regular P11_XX routines above,
-**  by clever adjusting of the input arguments to offset to the
-**  correct pixel.  However, we decided to use new routines here,
-**  which take a subscript as an input.  This will allow the P11_XX
-**  routines to be optimized on the assumption the arrays start 
-**  on a word boundary (for instance the P11_BB routine could load
-**  and store 4 pixels at a time and reduce the number of memory
-**  operations by a factor of two.)
-*/
-
-/* XXX keep it simple this time.  see mplogic.c for code to process
-** a word at a time with masking at the edges.
+**  The Proi11_XX routines only map within a single type.  By making new 
+**  routines here, instead of using the P11_XX routines above, it
+**  may be easier to optimize the more important P11_XX routines by
+**  virtue of starting on nicely aligned boundaries.
 */
 
 static void
-Proi11_bb(INP,LUTP,bw,ix)
-	void *INP; void *LUTP; int bw; int ix;
+Proi11_bb0(INP,LUTP,run,ix)
+	void *INP; void *LUTP; int run; int ix;
 {
-	LogInt *inp  = ((LogInt *) INP);
-	CARD8 *lutp = (CARD8 *) LUTP;
-
-	/* Too bad we don't know the LUT at CreatePoint time ... */
-
-	if (*lutp == 0) {
-		if (*(lutp+1) == 1)
-			return;  /* identity mapping */
-	} else if (*(lutp+1) == 0)
-		while ( bw-- ) { LOG_xorbit (inp, ix); ix++; }
-	else if (*(lutp+1) & 1) 
-		while ( bw-- ) { LOG_setbit (inp, ix); ix++; }
-	else 
-		while ( bw-- ) { LOG_clrbit (inp, ix); ix++; }
-
-	/* Should do RROP type stuff with start/end mask .... */
+	action_clear  (INP, run, ix);	
 }
 
-#define ROI_P11b(fn_do,iotype)	/* see Proi11_bb above */
+static void
+Proi11_bb(INP,LUTP,run,ix)
+	void *INP; void *LUTP; int run; int ix;
+{
+	CARD8 *lutp = (CARD8 *) LUTP;
+
+	if (*lutp++ == 0) {
+		if (*lutp == 0) action_clear  (INP, run, ix);	
+	} else  if (*lutp == 0) action_invert (INP, run, ix);
+	else			action_set    (INP, run, ix);
+}
 
 #define ROI_P11(fn_do,iotype)					\
 static void 							\
-fn_do(INP,LUTP,bw,ix) 						\
-	void *INP; void *LUTP; INT32 bw; INT32 ix;		\
+fn_do(INP,LUTP,run,ix) 						\
+	void *INP; void *LUTP; INT32 run; INT32 ix;		\
 { 								\
 	iotype *inp  = ((iotype *) INP) + ix;			\
 	iotype *lutp = (iotype *) LUTP; 			\
-	while (bw-- > 0) { *inp = lutp[*inp]; inp++; }		\
+	while (run-- > 0) { *inp = lutp[*inp]; inp++; }		\
 }
 
-ROI_P11b	(Proi11_bb, BitPixel)
 ROI_P11		(Proi11_BB, BytePixel)
 ROI_P11		(Proi11_PP, PairPixel)
 ROI_P11		(Proi11_QQ, QuadPixel)
+#endif
+
+/*------------------------------------------------------------------------
+---------------------  Crazy Pixels Action Routines  ---------------------
+------------------------------------------------------------------------*/
+#if XIE_FULL
+/*
+**  The Activate routine will nominally call this routine to do all
+**  the necessary moderation per scanline.  However in the typical
+**  case of going from a triple byte to a single byte image, one of the
+**  CPM_B3BB or CPS_B3BB routines will get called instead.
+*/
+
+static void
+crazy_horse(ivoid0, ivoid1, ivoid2, lvoid, ovoid, pvt)
+    void  *ivoid0, *ivoid1, *ivoid2, *lvoid, *ovoid;
+    mpPointPvtPtr pvt;
+{
+	ivoid0 = (*(pvt->convert)) (ivoid0, pvt); pvt++;
+	ivoid1 = (*(pvt->convert)) (ivoid1, pvt); pvt++;
+	ivoid2 = (*(pvt->convert)) (ivoid2, pvt); pvt -= 2;
+	if (pvt->store) {
+	    (*(pvt->merge)) (ivoid0, ivoid1, ivoid2, lvoid, pvt->buffer, pvt);
+	    (*(pvt->store)) (pvt->buffer, ovoid, lvoid, pvt->width);
+	} else
+	    (*(pvt->merge)) (ivoid0, ivoid1, ivoid2, lvoid, ovoid, pvt);
+}
+
+/*
+**  Some cpu's are not to good at multiplies, so we need two versions.
+*/
+
+#define MakeCrazyPix(name, itype, otype, OP, field)			\
+static void								\
+name(ivoid0, ivoid1, ivoid2, lvoid, ovoid, pvt)				\
+    void  *ivoid0, *ivoid1, *ivoid2, *lvoid, *ovoid;			\
+    mpPointPvtPtr pvt;							\
+{									\
+    itype *i0 = (itype *) ivoid0;					\
+    itype *i1 = (itype *) ivoid1;					\
+    itype *i2 = (itype *) ivoid2;					\
+    otype *l  = (otype *) lvoid;					\
+    otype *o  = (otype *) ovoid;					\
+    CARD32 c0 = (pvt+0)->field;						\
+    CARD32 c1 = (pvt+1)->field;						\
+    CARD32 c2 = (pvt+2)->field;						\
+    CARD32 msk = pvt->mask;						\
+    CARD32 bw  = pvt->width;						\
+    CARD32 j;								\
+    for (j = 0; j < bw; j++) 						\
+	*o++ = l[((i0[j] OP c0) + (i1[j] OP c1) + (i2[j] OP c2)) & msk];\
+}
+
+#define MakeCrazyMergeLut(name, itype, otype)				\
+static void								\
+name(ivoid0, ivoid1, ivoid2, lvoid, ovoid, pvt)				\
+    void  *ivoid0, *ivoid1, *ivoid2, *lvoid, *ovoid;			\
+    mpPointPvtPtr pvt;							\
+{									\
+    itype *i0 = (itype *) ivoid0;					\
+    itype *i1 = (itype *) ivoid1;					\
+    itype *i2 = (itype *) ivoid2;					\
+    otype *l  = (otype *) lvoid;					\
+    otype *o  = (otype *) ovoid;					\
+    CARD32 msk = pvt->mask;						\
+    CARD32 bw  = pvt->width;						\
+    CARD32 j;								\
+    for (j = 0; j < bw; j++) 						\
+	*o++ = l[(i0[j] + i1[j] + i2[j]) & msk];			\
+}
+
+#define MakeCrazyMerge(name, iotype)					\
+static void								\
+name(ivoid0, ivoid1, ivoid2, lvoid, ovoid, pvt)				\
+    void  *ivoid0, *ivoid1, *ivoid2, *lvoid, *ovoid;			\
+    mpPointPvtPtr pvt;							\
+{									\
+    iotype *i0 = (iotype *) ivoid0;					\
+    iotype *i1 = (iotype *) ivoid1;					\
+    iotype *i2 = (iotype *) ivoid2;					\
+    iotype *op = (iotype *) ovoid;					\
+    CARD32 msk = pvt->mask;						\
+    CARD32 bw  = pvt->width;						\
+    CARD32 j;								\
+    for (j = 0; j < bw; j++) 						\
+	op[j] = (i0[j] + i1[j] + i2[j]) & msk;				\
+}
+
+#define MakeCrazyConvert(name, itype, otype)				\
+static void *								\
+name(ivoid,pvt)								\
+    void  *ivoid;							\
+    mpPointPvtPtr pvt;							\
+{									\
+    itype *i = (itype *) ivoid;						\
+    otype *o = (otype *) pvt->buffer;					\
+    CARD32 c = pvt->constant;						\
+    CARD32 bw = pvt->width;						\
+    if ( (sizeof(itype) == sizeof(otype))  && (c == 1))			\
+	return ivoid;							\
+    if (pvt->shiftok) 							\
+	for (c = pvt->shiftamt ; bw > 0; bw--) *o++ = *i++ << c;  	\
+    else								\
+	for ( ; bw > 0; bw--) *o++ = *i++ * c;  			\
+    return pvt->buffer;							\
+}
+
+static void *
+CPCNV_bB(ivoid,pvt)
+    void  *ivoid;
+    mpPointPvtPtr pvt;
+{
+    bitexpand(ivoid, pvt->buffer, pvt->width, 0, pvt->constant);
+    return pvt->buffer;
+}
+
+#define MakeCrazyConvertBit(name, otype)				\
+static void *								\
+name(ivoid,pvt)								\
+    void  *ivoid;							\
+    mpPointPvtPtr pvt;							\
+{									\
+    LogInt *i = (LogInt *) ivoid, ival, M;				\
+    otype  *o = (otype *) pvt->buffer;					\
+    CARD32  c = pvt->constant;						\
+    int    bw = pvt->width;						\
+    int    nw = bw >> LOGSHIFT;						\
+    for ( ; nw > 0; nw--)						\
+	for (ival = *i++, M=LOGLEFT; M ; LOGRIGHT(M))			\
+	    *o++ = (ival & M) ? c : 0;					\
+    if ((bw &= LOGMASK))						\
+	for (ival = *i, M=LOGLEFT; bw > 0 ; bw--, LOGRIGHT(M))		\
+	    *o++ = (ival & M) ? c : 0;					\
+    return pvt->buffer;							\
+}
+
+
+MakeCrazyPix		(CPM_B3BB, BytePixel, BytePixel,  *, constant)
+MakeCrazyPix		(CPS_B3BB, BytePixel, BytePixel, <<, shiftamt)
+MakeCrazyMergeLut	(CPA_B3BB, BytePixel, BytePixel    )
+MakeCrazyMerge		(CPMRG_B, BytePixel)
+MakeCrazyMerge		(CPMRG_P, PairPixel)
+MakeCrazyMerge		(CPMRG_Q, QuadPixel)
+
+
+MakeCrazyConvert	(CPCNV_BB, BytePixel, BytePixel)
+MakeCrazyConvert	(CPCNV_BP, BytePixel, PairPixel)
+MakeCrazyConvert	(CPCNV_BQ, BytePixel, QuadPixel)
+MakeCrazyConvert	(CPCNV_PP, PairPixel, PairPixel)
+MakeCrazyConvert	(CPCNV_PQ, PairPixel, QuadPixel)
+MakeCrazyConvertBit	(CPCNV_bP, PairPixel)
+MakeCrazyConvertBit	(CPCNV_bQ, QuadPixel)
+#endif
 
 /* end module mppoint.c */
