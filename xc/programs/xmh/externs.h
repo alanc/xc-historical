@@ -1,5 +1,5 @@
 /*
- * $Header: externs.h,v 1.8 88/01/19 14:24:16 swick Locked $
+ * $Header: externs.h,v 2.8 88/01/19 14:24:16 swick Locked $
  */
 
 /*
@@ -74,3 +74,6 @@ extern void IconInit();
 
 extern void OpenFolder();
 extern void OpenSequence();
+
+extern int GetWidth();
+extern int GetHeight();
