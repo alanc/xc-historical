@@ -14,7 +14,7 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $Header: imake.c,v 1.12 87/08/05 13:20:06 toddb Locked $
+ * $Header: imake.c,v 1.13 87/08/08 15:37:50 toddb Locked $
  * $Locker: toddb $
  *
  * Author:
@@ -519,15 +519,6 @@ CleanCppOutput(tmpfd)
 	char	*input;
 	int	blankline = 0;
 
-#ifdef REDUCED_TO_ASCII_SPACE
-	fprintf(tmpfd, "#\n");
-	fprintf(tmpfd, "#Warning: the cpp used on this machine replaces\n");
-	fprintf(tmpfd, "#all newlines and multiple tabs/spaces in a macro\n");
-	fprintf(tmpfd, "#expansion with a single space.  Imake tries to\n");
-	fprintf(tmpfd, "#compensate for this, but is not always successful.\n");
-	fprintf(tmpfd, "#\n");
-#endif REDUCED_TO_ASCII_SPACE
-
 	while(input = ReadLine(tmpfd)) {
 		if (isempty(input)) {
 			if (blankline++)
@@ -609,6 +600,15 @@ char *ReadLine(tmpfd)
 		lseek(fileno(tmpfd), 0, 0);
 		ftruncate(fileno(tmpfd), 0);
 		initialized = TRUE;
+#ifdef REDUCED_TO_ASCII_SPACE
+	fprintf(tmpfd, "#\n");
+	fprintf(tmpfd, "# Warning: the cpp used on this machine replaces\n");
+	fprintf(tmpfd, "# all newlines and multiple tabs/spaces in a macro\n");
+	fprintf(tmpfd, "# expansion with a single space.  Imake tries to\n");
+	fprintf(tmpfd, "# compensate for this, but is not always\n");
+	fprintf(tmpfd, "# successful.\n");
+	fprintf(tmpfd, "#\n");
+#endif REDUCED_TO_ASCII_SPACE
 	}
 
 	for (p1 = pline; p1 < end; p1++) {
