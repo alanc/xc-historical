@@ -1,5 +1,5 @@
 /*
- * $XConsortium: DviP.h,v 1.2 89/03/03 13:58:13 keith Exp $
+ * $XConsortium: DviP.h,v 1.3 89/04/13 13:34:59 keith Exp $
  */
 
 /* 
@@ -137,6 +137,7 @@ typedef struct {
 	int		current_page;
 	int		font_size;
 	int		font_number;
+	int		device_resolution;
 	int		line_width;
 	int		line_style;
 	int		backing_store;

@@ -4,7 +4,7 @@
  * build/parse X Font name strings
  */
 
-# include	"Xlib.h"
+# include	<X11/Xlib.h>
 # include	"XFontName.h"
 #include	<ctype.h>
 
@@ -48,6 +48,8 @@ extractUnsignedField (name, result, attrp, bit)
 	name = extractStringField (name, buf, sizeof (buf), attrp, bit);
 	if (!name)
 		return 0;
+	if (!(*attrp & bit))
+		return name;
 	i = 0;
 	for (c = buf; *c; c++) {
 		if (!isdigit (*c))

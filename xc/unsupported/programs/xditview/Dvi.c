@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.3 89/03/05 19:38:03 keith Exp $";
+static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.4 89/04/13 13:34:56 keith Exp $";
 #endif lint
 
 /*
@@ -30,34 +30,34 @@ static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.3 89/03/05 19:38:03 keith Exp $"
 /* Private Data */
 
 static char default_font_map[] =  "\
-R	-*-times-medium-r-normal--*-%s-75-75-*-*-iso8859-1\n\
-I	-*-times-medium-i-normal--*-%s-75-75-*-*-iso8859-1\n\
-B	-*-times-bold-r-normal--*-%s-75-75-*-*-iso8859-1\n\
-F	-*-times-bold-i-normal--*-%s-75-75-*-*-iso8859-1\n\
-C	-*-courier-medium-r-normal--*-%s-75-75-*-*-iso8859-1\n\
-CO	-*-courier-medium-o-normal--*-%s-75-75-*-*-iso8859-1\n\
-CB	-*-courier-bold-r-normal--*-%s-75-75-*-*-iso8859-1\n\
-CF	-*-courier-bold-o-normal--*-%s-75-75-*-*-iso8859-1\n\
-H	-*-helvetica-medium-r-normal--*-%s-75-75-*-*-iso8859-1\n\
-HO	-*-helvetica-medium-o-normal--*-%s-75-75-*-*-iso8859-1\n\
-HB	-*-helvetica-bold-r-normal--*-%s-75-75-*-*-iso8859-1\n\
-HF	-*-helvetica-bold-o-normal--*-%s-75-75-*-*-iso8859-1\n\
-N	-*-new century schoolbook-medium-r-normal--*-%s-75-75-*-*-iso8859-1\n\
-NI	-*-new century schoolbook-medium-i-normal--*-%s-75-75-*-*-iso8859-1\n\
-NB	-*-new century schoolbook-bold-r-normal--*-%s-75-75-*-*-iso8859-1\n\
-NF	-*-new century schoolbook-bold-i-normal--*-%s-75-75-*-*-iso8859-1\n\
-A	-*-charter-medium-r-normal--*-%s-75-75-*-*-iso8859-1\n\
-AI	-*-charter-medium-i-normal--*-%s-75-75-*-*-iso8859-1\n\
-AB	-*-charter-bold-r-normal--*-%s-75-75-*-*-iso8859-1\n\
-AF	-*-charter-bold-i-normal--*-%s-75-75-*-*-iso8859-1\n\
-S	-*-symbol-medium-r-normal--*-%s-75-75-*-*-adobe-fontspecific\n\
-S2	-*-symbol-medium-r-normal--*-%s-75-75-*-*-adobe-fontspecific\n\
+R	-*-times-medium-r-normal--*-*-*-*-*-*-iso8859-1\n\
+I	-*-times-medium-i-normal--*-*-*-*-*-*-iso8859-1\n\
+B	-*-times-bold-r-normal--*-*-*-*-*-*-iso8859-1\n\
+F	-*-times-bold-i-normal--*-*-*-*-*-*-iso8859-1\n\
+C	-*-courier-medium-r-normal--*-*-*-*-*-*-iso8859-1\n\
+CO	-*-courier-medium-o-normal--*-*-*-*-*-*-iso8859-1\n\
+CB	-*-courier-bold-r-normal--*-*-*-*-*-*-iso8859-1\n\
+CF	-*-courier-bold-o-normal--*-*-*-*-*-*-iso8859-1\n\
+H	-*-helvetica-medium-r-normal--*-*-*-*-*-*-iso8859-1\n\
+HO	-*-helvetica-medium-o-normal--*-*-*-*-*-*-iso8859-1\n\
+HB	-*-helvetica-bold-r-normal--*-*-*-*-*-*-iso8859-1\n\
+HF	-*-helvetica-bold-o-normal--*-*-*-*-*-*-iso8859-1\n\
+N	-*-new century schoolbook-medium-r-normal--*-*-*-*-*-*-iso8859-1\n\
+NI	-*-new century schoolbook-medium-i-normal--*-*-*-*-*-*-iso8859-1\n\
+NB	-*-new century schoolbook-bold-r-normal--*-*-*-*-*-*-iso8859-1\n\
+NF	-*-new century schoolbook-bold-i-normal--*-*-*-*-*-*-iso8859-1\n\
+A	-*-charter-medium-r-normal--*-*-*-*-*-*-iso8859-1\n\
+AI	-*-charter-medium-i-normal--*-*-*-*-*-*-iso8859-1\n\
+AB	-*-charter-bold-r-normal--*-*-*-*-*-*-iso8859-1\n\
+AF	-*-charter-bold-i-normal--*-*-*-*-*-*-iso8859-1\n\
+S	-*-symbol-medium-r-normal--*-*-*-*-*-*-adobe-fontspecific\n\
+S2	-*-symbol-medium-r-normal--*-*-*-*-*-*-adobe-fontspecific\n\
 ";
 
 #define offset(field) XtOffset(DviWidget, field)
 
-# define MY_WIDTH	675
-# define MY_HEIGHT	825
+# define MY_WIDTH(dw)	(dw->dvi.device_resolution * 9)
+# define MY_HEIGHT(dw)	(dw->dvi.device_resolution * 11)
 
 static XtResource resources[] = { 
 	{XtNfontMap, XtCFontMap, XtRString, sizeof (char *),
@@ -153,6 +153,7 @@ static void Initialize(request, new)
 	dw->dvi.cache.index = 0;
 	dw->dvi.file = 0;
 	dw->dvi.seek = False;
+	dw->dvi.device_resolution = 75;
 }
 
 static void
@@ -309,14 +310,30 @@ QueryGeometry (w, request, geometry_return)
 	XtWidgetGeometry	*request, *geometry_return;
 {
 	XtGeometryResult	ret;
+	DviWidget		dw = (DviWidget) w;
 
 	ret = XtGeometryYes;
-	if (request->width < MY_WIDTH || request->height < MY_HEIGHT)
+	if (request->width < MY_WIDTH(dw) || request->height < MY_HEIGHT(dw))
 		ret = XtGeometryAlmost;
-	geometry_return->width = MY_WIDTH;
-	geometry_return->height = MY_HEIGHT;
+	geometry_return->width = MY_WIDTH(dw);
+	geometry_return->height = MY_HEIGHT(dw);
 	geometry_return->request_mode = CWWidth|CWHeight;
 	return ret;
+}
+
+SetDeviceResolution (dw, resolution)
+	DviWidget   dw;
+	int	    resolution;
+{
+	XtWidgetGeometry	request, reply;
+
+	if (resolution != dw->dvi.device_resolution) {
+		dw->dvi.device_resolution = resolution;
+		request.request_mode = CWWidth|CWHeight;
+		request.width = MY_WIDTH(dw);
+		request.height = MY_HEIGHT(dw);
+		XtMakeGeometryRequest (dw, &request, &reply);
+	}
 }
 
 static void

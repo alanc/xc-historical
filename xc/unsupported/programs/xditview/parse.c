@@ -307,7 +307,7 @@ ParseDeviceControl(dw)				/* Parse the x commands */
 		GetWord(dw, str, 20);
 		break;
 	case 'i':				/* initialize */
-		InitTypesetter(dw);
+		InitTypesetter (dw);
 		break;
 	case 't':				/* trailer */
 		break;
@@ -317,7 +317,7 @@ ParseDeviceControl(dw)				/* Parse the x commands */
 		StopSeen = 1;
 		return;
 	case 'r':				/* resolution when prepared */
-		(void) GetNumber(dw);
+		SetDeviceResolution (dw, GetNumber (dw));
 		break;
 	case 'f':				/* font used */
 		n = GetNumber(dw);

@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include "DviP.h"
+#include "XFontName.h"
 
 extern char	*malloc ();
 
@@ -103,17 +104,26 @@ InstallFontSizes (dw, f)
 	DviWidget	dw;
 	DviFontList	*f;
 {
-	char	font_name[2048];
+	char	fontNameString[2048];
 	char	**fonts;
 	int	i, count;
 	int	size;
 	DviFontSizeList	*head, *new;
+	XFontName	fontName;
+	unsigned int	fontNameAttributes;
 
 	f->sizes = 0;
 	if (!f->x_name)
 		return;
-	sprintf (font_name, f->x_name, "*");
-	fonts = XListFonts (XtDisplay (dw), font_name, 10000000, &count);
+	if (!XParseFontName (f->x_name, &fontName, &fontNameAttributes))
+		return;
+	fontNameAttributes &= ~(FontNamePixelSize|FontNamePointSize);
+	fontNameAttributes |= FontNameResolutionX;
+	fontNameAttributes |= FontNameResolutionY;
+	fontName.ResolutionX = dw->dvi.device_resolution;
+	fontName.ResolutionY = dw->dvi.device_resolution;
+	XFormatFontName (&fontName, fontNameAttributes, fontNameString);
+	fonts = XListFonts (XtDisplay (dw), fontNameString, 10000000, &count);
 	for (i = 0; i < count; i++) {
 		if ((size = ConvertFontNameToSize (fonts[i])) != -1) {
 			new = (DviFontSizeList *) malloc (sizeof *new);
