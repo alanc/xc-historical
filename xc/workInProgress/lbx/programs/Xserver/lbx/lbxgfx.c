@@ -1,4 +1,4 @@
-/* $XConsortium: lbxgfx.c,v 1.5 94/09/13 17:16:32 mor Exp mor $ */
+/* $XConsortium: lbxgfx.c,v 1.6 94/09/13 21:33:06 mor Exp mor $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -38,6 +38,8 @@
 #include "dixstruct.h"
 #include "resource.h"
 #include "servermd.h"
+#include "windowstr.h"
+#include "scrnintstr.h"
 #define _XLBX_SERVER_
 #include "lbxstr.h"
 #include "lbxserve.h"
@@ -272,14 +274,14 @@ register ClientPtr  client;
 
     if (stuff->compressionMethod == LbxImageCompressFaxG42D)
     {
-	len = ImageDecodeFaxG42D (
+	len = LbxImageDecodeFaxG42D (
 	    (unsigned char *) in, (unsigned char *) &xreq[1],
 	    (int) ((stuff->xLength << 2) - sz_xPutImageReq),
 	    (int) stuff->width);
     }
     else
     {
-	len = ImageDecodePackBits (in, (char *) &xreq[1],
+	len = LbxImageDecodePackBits (in, (char *) &xreq[1],
 	    (int) stuff->height, (int) stuff->width);
     }
 
@@ -302,3 +304,226 @@ register ClientPtr  client;
     return retval;
 }
 
+
+
+int
+GetTheImage (client, stuff, depth, visual, theImage, imageBytes)
+
+register ClientPtr client;
+xLbxGetImageReq *stuff;
+int *depth;
+VisualID *visual;
+char **theImage;
+int *imageBytes;
+
+{
+    register DrawablePtr pDraw;
+    int			lines, linesPerBuf;
+    register int	height;
+    long		widthBytesLine, length;
+    Mask		plane;
+    char		*pBuf;
+
+    height = stuff->height;
+    if ((stuff->format != XYPixmap) && (stuff->format != ZPixmap))
+    {
+	client->errorValue = stuff->format;
+        return(BadValue);
+    }
+
+    VERIFY_DRAWABLE(pDraw, stuff->drawable, client);
+
+    *depth = pDraw->depth;
+
+    if(pDraw->type == DRAWABLE_WINDOW)
+    {
+      if( /* check for being viewable */
+	 !((WindowPtr) pDraw)->realized ||
+	  /* check for being on screen */
+         pDraw->x + stuff->x < 0 ||
+ 	 pDraw->x + stuff->x + (int)stuff->width > pDraw->pScreen->width ||
+         pDraw->y + stuff->y < 0 ||
+         pDraw->y + stuff->y + height > pDraw->pScreen->height ||
+          /* check for being inside of border */
+         stuff->x < - wBorderWidth((WindowPtr)pDraw) ||
+         stuff->x + (int)stuff->width >
+		wBorderWidth((WindowPtr)pDraw) + (int)pDraw->width ||
+         stuff->y < -wBorderWidth((WindowPtr)pDraw) ||
+         stuff->y + height >
+		wBorderWidth ((WindowPtr)pDraw) + (int)pDraw->height
+        )
+	    return(BadMatch);
+	*visual = wVisual (((WindowPtr) pDraw));
+    }
+    else
+    {
+      if(stuff->x < 0 ||
+         stuff->x+(int)stuff->width > pDraw->width ||
+         stuff->y < 0 ||
+         stuff->y+height > pDraw->height
+        )
+	    return(BadMatch);
+	*visual = None;
+    }
+    if(stuff->format == ZPixmap)
+    {
+	widthBytesLine = PixmapBytePad(stuff->width, pDraw->depth);
+	length = widthBytesLine * height;
+    }
+    else 
+    {
+	widthBytesLine = BitmapBytePad(stuff->width);
+	plane = ((Mask)1) << (pDraw->depth - 1);
+	/* only planes asked for */
+	length = widthBytesLine * height *
+		 Ones(stuff->planeMask & (plane | (plane - 1)));
+    }
+
+    *imageBytes = length;
+
+    if (widthBytesLine == 0 || height == 0)
+	linesPerBuf = 0;
+    else
+	linesPerBuf = height;
+    length = linesPerBuf * widthBytesLine;
+
+    if(!(pBuf = *theImage = (char *) malloc(length + 4)))
+        return (BadAlloc);
+
+    if (linesPerBuf == 0)
+    {
+	/* nothing to do */
+    }
+    else if (stuff->format == ZPixmap)
+    {
+	(*pDraw->pScreen->GetImage) (pDraw,
+	                                 stuff->x,
+				         stuff->y,
+				         stuff->width, 
+				         height,
+				         stuff->format,
+				         stuff->planeMask,
+				         (pointer) pBuf);
+    }
+    else /* XYPixmap */
+    {
+	char *bufptr = pBuf;
+
+        for (; plane; plane >>= 1)
+	{
+	    if (stuff->planeMask & plane)
+	    {
+		(*pDraw->pScreen->GetImage) (pDraw,
+	                                         stuff->x,
+				                 stuff->y,
+				                 stuff->width, 
+				                 height,
+				                 stuff->format,
+				                 plane,
+				                 (pointer)bufptr);
+
+		    bufptr += (height * widthBytesLine);
+            }
+	}
+    }
+
+    return (client->noClientException);
+}
+
+
+
+int
+LbxDecodeGetImage (client)
+
+register ClientPtr  client;
+
+{
+    REQUEST		(xLbxGetImageReq);
+    xLbxGetImageReply	*reply = NULL;
+    int			depth, uncompLen, lbxLen, n;
+    VisualID		visual;
+    char		*theImage;
+    int			method, bytes, status;
+
+    REQUEST_SIZE_MATCH(xLbxGetImageReq);
+
+    status = GetTheImage (client, stuff,
+	&depth, &visual, &theImage, &uncompLen);
+
+    if (status != Success)
+	return (status);
+
+    if (!((stuff->format == ZPixmap && depth == 8) || depth == 1))
+    {
+	status = LBX_IMAGE_COMPRESS_UNSUPPORTED_FORMAT;
+    }
+    else if ((reply = (xLbxGetImageReply *) xalloc (
+	sz_xLbxGetImageReply + uncompLen)) == NULL)
+    {
+	status = LBX_IMAGE_COMPRESS_BAD_MALLOC;
+    }
+    else
+    {
+	if (depth == 1)
+	{
+	    status = LbxImageEncodeFaxG42D ((unsigned char *) theImage,
+		      (unsigned char *) reply + sz_xLbxGetImageReply,
+		      uncompLen, uncompLen, (int) stuff->width, &bytes);
+
+	    method = LbxImageCompressFaxG42D;
+	}
+	else /* depth 8 and ZPixmap format */
+	{
+	    status = LbxImageEncodePackBits ((char *) theImage,
+		      (char *) reply + sz_xLbxGetImageReply, uncompLen,
+		      (int) stuff->height, (int) stuff->width, &bytes);
+
+	    method = LbxImageCompressPackBits;
+	}
+    }
+
+    reply->type = X_Reply;
+    reply->depth = depth;
+    reply->sequenceNumber = client->sequence;
+    reply->visual = visual;
+
+    if (status != LBX_IMAGE_COMPRESS_SUCCESS)
+    {
+	reply->compressionMethod = LbxImageCompressNone;
+	reply->lbxLength = reply->xLength = (uncompLen + 3) >> 2;
+    }
+    else
+    {
+	reply->compressionMethod = method;
+	reply->lbxLength = (bytes + 3) >> 2;
+	reply->xLength = (uncompLen + 3) >> 2;
+    }
+
+    lbxLen = reply->lbxLength;
+
+    if (client->swapped)
+    {
+	swaps (&reply->sequenceNumber, n);
+	swapl (&reply->lbxLength, n);
+	swapl (&reply->xLength, n);
+	swapl (&reply->visual, n);
+    }
+
+    if (reply->compressionMethod != LbxImageCompressNone)
+    {
+	UncompressedWriteToClient (client,
+	    sz_xLbxGetImageReply + (lbxLen << 2), reply);
+    }
+    else
+    {
+	UncompressedWriteToClient (client, sz_xLbxGetImageReply, reply);
+	UncompressedWriteToClient (client, lbxLen << 2, theImage);
+    }
+
+    free (theImage);
+
+    if (reply)
+	xfree ((char *) reply);
+
+    return (Success);
+}
