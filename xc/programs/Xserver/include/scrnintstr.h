@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 5.10 90/09/23 16:41:33 rws Exp $ */
+/* $XConsortium: scrnintstr.h,v 5.11 91/05/10 17:39:47 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -111,9 +111,9 @@ typedef struct _Screen {
     Bool (* ChangeWindowAttributes)();	/* pWin, mask */
     Bool (* RealizeWindow)();		/* pWin */
     Bool (* UnrealizeWindow)();		/* pWin */
-    int  (* ValidateTree)();		/* pParent, pChild, top, anyMarked */
+    int  (* ValidateTree)();		/* pParent, pChild, kind */
+    void (* PostValidateTree)();	/* pParent, pChild, kind */
     void (* WindowExposures)();       /* pWin: WindowPtr, pRegion: RegionPtr */
-
     void (* PaintWindowBackground)();	/* pWin, pRgn, which */
     void (* PaintWindowBorder)();	/* pWin, pRgn, which */
     void (* CopyWindow)();		/* pWin, oldPt, pOldRegion */
