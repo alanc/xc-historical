@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.21 91/04/02 20:14:05 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.22 91/04/03 10:39:55 rws Exp $
  */
 
 /*
@@ -39,7 +39,7 @@
 #define MAXLOCALE	64	/* buffer size of locale name */
 
 XLocale		_Xlocale_ = (XLocale)0;		/* global locale */
-XLocaleTable   *_xlctbl_ = (XLocaleTable *)0;	/* locale data base table */
+XLocaleTable   *_Xlctbl_ = (XLocaleTable *)0;	/* locale data base table */
 #ifndef lint
 static int lock;
 static int lock_tbl;
@@ -57,14 +57,14 @@ _XSetLocaleDB(lc_name)
 
     LockMutex(&lock_tbl);
 
-    if (_xlctbl_ == (XLocaleTable *)0) {
-	_xlctbl_ = (XLocaleTable *) Xmalloc(sizeof(XLocaleTable));
-	if (!_xlctbl_) {
+    if (_Xlctbl_ == (XLocaleTable *)0) {
+	_Xlctbl_ = (XLocaleTable *) Xmalloc(sizeof(XLocaleTable));
+	if (!_Xlctbl_) {
 	    UnlockMutex(&lock_tbl);
 	    return (XLocaleDB *)0;
 	}
-	_xlctbl_->num_loc = 0;
-	_xlctbl_->template = (XLocaleList *)0;
+	_Xlctbl_->num_loc = 0;
+	_Xlctbl_->template = (XLocaleList *)0;
     }
     /* set current locale from template. */
     if ((template = _XlcGetLocaleTemplate(lc_name)) == (XLocaleDB *)0) {
@@ -75,54 +75,6 @@ _XSetLocaleDB(lc_name)
     }
     UnlockMutex(&lock_tbl);
     return (template);
-}
-
-char *
-_XlcSetLocaleModifiers(xlocale, modifiers)
-    XLocale     xlocale;
-    char	*modifiers;
-{
-    int		i, len;
-    char       *p, *q;
-
-    if (!xlocale) {
-	if (!_Xlocale_) {
-	    _Xsetlocale(LC_ALL, setlocale(LC_ALL, (char *)NULL));
-	    if (!_Xlocale_)
-		return (NULL);
-	}
-	xlocale = _Xlocale_;
-    }
-    if (modifiers == NULL)
-	return (xlocale->lc_modifier);
-
-/* for modifiers */
-    len = strlen(modifiers);
-    for (i = 0, p = modifiers;  i < len; i++)
-	if (*p++ == '@') break;
-    if (! (xlocale->lc_modifier = XREALLOC(xlocale->lc_modifier, 
-					(unsigned)strlen(p) + 1)))
-	return (NULL);
-    strcpy(xlocale->lc_modifier, p);
-
-/* for im : @im=xxxx,... */
-    len = strlen(p);
-    for (i = 0;  i < len; i++, p++) {
-	if (strncmp(p, "im=", 3) == NULL) {
-	    p += 3;
-	    break;
-	}
-    }
-    len = strlen(p);
-    for (i = 0, q = p;  i < len; i++)
-        if (*q++ == '@' || *q++ == ',') break;
-
-    if (! (xlocale->lc_im = XREALLOC(xlocale->lc_im, (unsigned)i + 1)))
-	return (NULL);
-    strncpy(xlocale->lc_im, p, i);
-    *(xlocale->lc_im + i) = '\0';
-
-    return (xlocale->lc_modifier);
 }
 
 #ifndef X_NOT_STDC_ENV
@@ -202,10 +154,8 @@ _XSetLocale(lc_category, lc_name)
     if (! (xlocale = (XLocale) Xmalloc(sizeof(XLocaleRec))))
 	return ((XLocale)0);
     xlocale->lc_lang = NULL;
-    xlocale->lc_im = NULL;
-    xlocale->lc_modifier = NULL;
     if (! _XChangeLocale(xlocale, lc_category, lc_name)) {
-	_XFreeLocale(xlocale);
+	_XlcFreeLocale(xlocale);
 	return ((XLocale)0);
     }
     return (xlocale);
