@@ -15,6 +15,7 @@ InstallProgram(makedepend,$(BINDIR))
 #endif
 InstallNamedProg(lndir.sh,lndir,$(BINDIR))
 InstallManPage(lndir,$(MANDIR))
+InstallNamedProg(xon.sh,xon,$(BINDIR))
 #if SystemV
 InstallNamedProg(bsdinst.sh,bsdinst,$(BINDIR))
 #endif
