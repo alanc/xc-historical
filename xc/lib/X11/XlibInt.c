@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.208 94/01/20 16:03:58 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.209 94/01/29 18:30:00 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1631,7 +1631,6 @@ _XReply (dpy, rep, extra, discard)
 		break;
 	    }
 	}
-    dpy->flags &= ~XlibDisplayReply;
 }   
 
 static char *
