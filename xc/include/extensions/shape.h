@@ -26,13 +26,18 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.h,v 1.2 89/02/14 14:34:10 keith Exp $ */
+/* $XConsortium: shape.h,v 1.3 89/03/23 20:10:50 keith Exp $ */
+
+#ifndef _SHAPE_H_
+#define _SHAPE_H_
 
 #define X_ShapeRectangles		1
 #define X_ShapeMask			2
 #define X_ShapeCombine			3
 #define X_ShapeOffset			4
 #define X_ShapeQuery			5
+#define X_ShapeSelectInput		6
+#define X_ShapeGetRectangles		7
 
 #define ShapeSet			0
 #define ShapeUnion			1
@@ -42,3 +47,23 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #define ShapeWindow			0
 #define ShapeBorder			1
+
+#define ShapeNotify			0
+
+#define ShapeNumberEvents		(ShapeNotify + 1)
+
+#ifndef _SHAPE_SERVER_
+typedef struct {
+    int	type;		    /* of event */
+    unsigned long serial;   /* # of last request processed by server */
+    Bool send_event;	    /* true if this came frome a SendEvent request */
+    Display *display;	    /* Display the event was read from */
+    Window window;	    /* window of event */
+    int kind;		    /* ShapeWindow or ShapeBorder */
+    int x, y;		    /* extents of new region */
+    unsigned width, height;
+    Time time;
+} XShapeEvent;
+#endif
+
+#endif
