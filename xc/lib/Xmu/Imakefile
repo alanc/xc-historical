@@ -42,6 +42,7 @@ SRCS = \
 	StrToBmap.c \
 	StrToCurs.c \
 	StrToJust.c \
+	StrToLong.c \
 	StrToOrnt.c \
 	StrToWidg.c \
 	VisCmap.c
@@ -71,6 +72,7 @@ OBJS = \
 	StrToBmap.o \
 	StrToCurs.o \
 	StrToJust.o \
+	StrToLong.o \
 	StrToOrnt.o \
 	StrToWidg.o \
 	VisCmap.o

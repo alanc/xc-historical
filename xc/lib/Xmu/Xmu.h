@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.20 89/05/19 14:34:23 converse Exp $
+ * $XConsortium: Xmu.h,v 1.21 89/05/24 11:06:06 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -84,6 +84,7 @@ void XmuCvtFunctionToCallback();
 void XmuCvtStringToBackingStore();
 void XmuCvtStringToCursor();
 void XmuCvtStringToJustify();
+void XmuCvtStringToLong();
 void XmuCvtStringToOrientation();
 void XmuCvtStringToPixmap();
 void XmuCvtStringToWidget();
