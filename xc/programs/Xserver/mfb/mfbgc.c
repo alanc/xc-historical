@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbgc.c,v 1.113 87/09/01 16:47:23 toddb Locked $ */
+/* $Header: mfbgc.c,v 1.114 87/09/02 03:14:24 toddb Locked $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -80,6 +80,7 @@ mfbCreateGC(pGC)
     pGC->LineHelper = miMiter;
     pGC->ChangeClip = mfbChangeClip;
     pGC->DestroyClip = mfbDestroyClip;
+    pGC->CopyClip = mfbCopyClip;
 
     /* mfb wants to translate before scan convesion */
     pGC->miTranslate = 1;
