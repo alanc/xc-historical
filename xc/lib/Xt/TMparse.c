@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.73 88/09/06 16:29:14 jim Exp $";
+static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.74 89/02/03 10:56:00 swick Exp $";
 /* $oHeader: TMparse.c,v 1.4 88/09/01 17:30:39 asente Exp $ */
 #endif lint
 
@@ -987,9 +987,9 @@ static String ParseQuotedStringEvent(str, event,error)
 {
     register int j;
 
-    ModifierMask ctrlMask;
-    ModifierMask metaMask;
-    ModifierMask shiftMask;
+    Value ctrlMask;
+    Value metaMask;
+    Value shiftMask;
     register char	c;
     char	s[2];
     Cardinal	tmEvent;
@@ -999,9 +999,6 @@ static String ParseQuotedStringEvent(str, event,error)
                  FALSE,(Value *) &metaMask,TRUE);
     (void) _XtLookupModifier("Shift",(LateBindingsPtr*)NULL,
                  FALSE,(Value *) &shiftMask,TRUE);
-/*
-    event->event.modifierMask = ctrlMask | metaMask | shiftMask;
-*/
     for (j=0; j < 2; j++)
 	if (*str=='^' && !(event->event.modifiers | ctrlMask)) {
 	    str++;
@@ -1387,7 +1384,13 @@ static String ParseEventSeq(str, eventSeqP, actionsP,error)
                 event->next = NULL;
                 event->actions = NULL;
 		str = ParseQuotedStringEvent(str, event,error);
-
+		if (*error) {
+		    XtWarningMsg("translationParseError", "nonLatin1",
+			"XtToolkitError",
+			"... probably due to non-Latin1 character in quoted string",
+			(String*)NULL, (Cardinal*)NULL);
+		    return PanicModeRecovery(str);
+		}
 		*nextEvent = event;
 		*actionsP = &event->actions;
 		nextEvent = &event->next;
