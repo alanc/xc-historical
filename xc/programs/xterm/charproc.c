@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.90 89/08/07 19:28:33 jim Exp $
+ * $XConsortium: charproc.c,v 1.91 89/08/10 13:28:07 jim Exp $
  */
 
 
@@ -139,7 +139,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.90 89/08/07 19:28:33 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.91 89/08/10 13:28:07 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1982,39 +1982,7 @@ static void VTInitialize (request, new)
 
    set_character_class (new->screen.charClass);
 
-   create_dummy_menu_hack ();		/* to initialize menu actions */
-
-#ifdef notdef
-   new->screen.mainMenu = CreateMainMenu (new, toplevel);
-   new->screen.vtMenu = CreateVTMenu (new, toplevel);
-
-    /* and turn off the alternate screen entry */
-   set_sensitivity (new->screen.vtMenu,
-		    vtMenuEntries[vtMenu_altscreen].name, FALSE);
-
-#define term new			/* for macros */
-    update_securekbd();
-    update_allowsends();
-    update_visualbell();
-    update_logging();
-    update_scrollbar();
-    update_jumpscroll();
-    update_reversevideo();
-    update_autowrap();
-    update_reversewrap();
-    update_autolinefeed();
-    update_appcursor();
-    update_appkeypad();
-    update_scrollkey();
-    update_scrollinput();
-    update_allow132();
-    update_cursesemul();
-    update_marginbell();
-#undef term
-
-   XtRealizeWidget (new->screen.mainMenu);
-   XtRealizeWidget (new->screen.vtMenu);
-#endif
+   create_dummy_menu_hack ();		/* XXX - to initialize menu actions */
 
    /* create it, but don't realize it */
    ScrollBarOn (new, TRUE, FALSE);

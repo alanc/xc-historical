@@ -106,31 +106,6 @@ void create_dummy_menu_hack ()
     XtDestroyWidget (w);
 }
 
-#ifdef notdef
-Widget CreateMainMenu (xtw, toplevel)
-    XtermWidget xtw;
-    Widget toplevel;
-{
-    return create_menu (xtw, toplevel, "mainMenu",
-			mainMenuEntries, XtNumber(mainMenuEntries));
-}
-
-Widget CreateVTMenu (xtw, toplevel)
-    Widget toplevel;
-{
-    return create_menu (xtw, toplevel, "vtMenu",
-			vtMenuEntries, XtNumber(vtMenuEntries));
-}
-
-Widget CreateTekMenu (xtw, toplevel)
-    XtermWidget xtw;
-    Widget toplevel;
-{
-    return create_menu (xtw, toplevel, "tekMenu",
-			tekMenuEntries, XtNumber(tekMenuEntries));
-}
-#endif
-
 
 void HandleCreateMenu (w, event, params, param_count)
     Widget w;

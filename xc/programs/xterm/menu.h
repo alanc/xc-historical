@@ -1,7 +1,3 @@
-#ifdef notdef
-Widget CreateMainMenu(), CreateVTMenu(), CreateTekMenu();
-#endif
-
 typedef struct _MenuEntry {
     char *name;
     void (*function)();

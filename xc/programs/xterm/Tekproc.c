@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.61 89/08/07 19:28:27 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.62 89/08/10 13:27:57 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -110,7 +110,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.61 89/08/07 19:28:27 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.62 89/08/10 13:27:57 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
@@ -1124,13 +1124,6 @@ static void TekRealize (gw, valuemaskp, values)
     char Tdefault[32];
     extern char *malloc();
 
-#ifdef notdef
-    screen->tekMenu = CreateTekMenu (term, toplevel);
-#endif
-    /*
-     * XXX - need to set menu checkmark
-     */
-
     tw->core.border_pixel = term->core.border_pixel;
 
     for (i = 0; i < TEKNUMFONTS; i++) {
@@ -1345,11 +1338,7 @@ static void TekRealize (gw, valuemaskp, values)
     line_pt = Tline;
     Ttoggled = TRUE;
     screen->page = screen->cur;
-#ifdef notdef
-    set_tekfont_menu_item (screen->cur.fontsize, TRUE);
-    XtRealizeWidget (screen->tekMenu);
-#endif
-    create_dummy_menu_hack ();		/* to initialize menu actions */
+    create_dummy_menu_hack ();		/* XXX - to initialize menu actions */
     return;
 }
 
