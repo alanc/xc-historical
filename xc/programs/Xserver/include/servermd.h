@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $Header: servermd.h,v 1.26 87/09/13 00:56:46 rws Locked $ */
+/* $Header: servermd.h,v 1.27 87/12/16 15:19:23 rws Locked $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -110,7 +110,7 @@ SOFTWARE.
 
 #define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the HP only */
 #define BITMAP_BIT_ORDER	MSBFirst
-#define	GLYPHPADBYTES		4
+#define	GLYPHPADBYTES		2
 #define	GETLEFTBITS_ALIGNMENT	4
 
 #    endif
