@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 1.71 89/03/22 10:49:44 rws Exp $ */
+/* $XConsortium: mibitblt.c,v 1.72 89/03/30 09:16:23 rws Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -519,7 +519,7 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
     gcv[0] = GXinvert;
     DoChangeGC(pGCT, GCFunction, gcv, 0);
     ValidateGC((DrawablePtr)pPixmap, pGCT);
-    (*pGCT->CopyArea)(pPixmap, pPixmap, pGCT, 0, 0, w, h, 0, 0);
+    (*pGCT->CopyArea)(pPixmap, pPixmap, pGCT, 0, 0, w + srcx, h, 0, 0);
 
     /* Swap foreground and background colors on the GC for the drawable.
      * Now when we fill the drawable, we will fill in the "Background"
