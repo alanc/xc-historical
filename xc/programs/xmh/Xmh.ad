@@ -130,6 +130,8 @@ Xmh*viewButtons.save.Translations:#override\n\
 	<Btn1Down>,<Btn1Up>:	XmhSaveView()unset()\n
 Xmh*viewButtons.print.Translations:#override\n\
 	<Btn1Down>,<Btn1Up>:	XmhPrintView()unset()\n
+Xmh*viewButtons.delete.Translations:#override\n\
+	<Btn1Down>,<Btn1Up>:	XmhViewMarkDelete()unset()\n
 
 Xmh*compButtons.close.Translations:#override\n\
 	<Btn1Down>,<Btn1Up>:	XmhCloseView()unset()\n
