@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.56 94/04/01 19:59:13 kaleb Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.57 94/04/02 08:40:51 kaleb Exp kaleb $
 
 #ifdef SonyBsdArchitecture
 
@@ -44,6 +44,7 @@ XCOMM platform:  $XConsortium: sony.cf,v 1.56 94/04/01 19:59:13 kaleb Exp $
 #define OSMinorVersion		0
 #define BootstrapCFlags		-Dsony
 #define SystemV4		YES
+#define HasVFork		NO
 #define CcCmd			/usr/bin/cc
 #if OSMajorVersion >= 6
 #define DefaultCCOptions	-Xc -Wf,-XNp9000,-XNd6000
