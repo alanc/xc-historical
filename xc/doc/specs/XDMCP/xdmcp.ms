@@ -57,7 +57,81 @@ complexity of the protocol.
 .tl ''\fB % \fP''
 ..
 .NH 1
-Overview
+Purpose and Goals
+.LP
+The purpose of XDMCP is to provide a uniform mechanism for an autonomous
+display to request login service from a remote host.  By "autonomous" we mean
+the display consists of hardware and processes that are independent of any
+particular host where login service is desired.  (For example, the server
+cannot simply be started by a fork/exec sequence on the host.)  An "X terminal"
+(screen, keyboard, mouse, processor, network interface) is a prime example of
+an autonomous display.
+.LP
+From the point of view of the end user, it is very important to make
+autonomous displays as easy to use as traditional hardwired character
+terminals.  Specifically, you can typically just power on a hardwired
+terminal, and be greeted with a login prompt.  The same should be possible
+with autonomous displays.  However, in a network environment with multiple
+hosts, the end user may want to choose which host(s) to connect to.  In an
+environment with many displays and many hosts, a site administrator may want
+to associate particular collections of hosts with particular displays.  We
+would like to support the following options:
+.RS
+.LP
+The display has a "hardwired" host that it should connect to.  It should be
+possible to "power on" the display and receive a login prompt, without user
+intervention.
+.LP
+Any one of several hosts on a (sub)net may be acceptable for accepting login
+from the display.  (For example, the user's file systems can be mounted onto
+any such host, providing comparable environments.)  It should be possible
+for the display to "broadcast" to find such hosts, and to have the display
+either automatically choose a host, or present the possible hosts to the
+user for selection.
+.LP
+The display has a fixed set of hosts that it can connect to.  It should be
+possible for the display to have that set "wired in", but it should also be
+possible for a site administrator to be able to maintain host sets for a
+large number of displays using a centralized facility, without having to
+interact (physically or electronically) with each individual display.
+Particular hosts should be allowed to refuse login service, based on
+whatever local criteria are desired.
+.RE
+.LP
+The control protocol should be designed in such a way that it can be used over
+a reasonable variety of communication transport layers.  In fact, it is quite
+desirable if every major network protocol family that supports the standard X
+protocol is also capable of supporting XDMCP, since the end result of XDMCP
+negotiation will be standard X protocol connections to the display.  However,
+since the number of displays per host may be large, a connection-based protocol
+appears less desirable than a connection-less protocol.
+.LP
+In order to keep the burden on displays at a minimum (since display cost is not
+a factor that can be ignored), it is desirable that displays not be required to
+maintain permanent state (across power cycles) for the purposes of the control
+protocol, and it is desirable to keep required state at a minimum while the
+display is powered on.
+.LP
+Security is an important consideration, and must be an integral part of the
+design.  The important of security goals in the context of XDMCP are:
+.RS
+.LP
+It should be possible for the display to verify that it is communicating
+with a legitimate host login service.  Since the user will present
+credentials (e.g. password) to this service, it is important to avoid spoof
+attacks.
+.LP
+It should be possible for the display and the login service to negotiate the
+authorization mechanism to be used for the standard X protocol.
+.LP
+It should be possible to provide the same level of security in verifying the
+login service as is provided by the negotiated authorization mechanism.
+.LP
+Since there are no firm standards yet in the area of security, XDMCP must be
+flexible enough to accomodate a variety of security mechanisms.
+.RE
+.NH 1
+Overview of the protocol
 .LP
 XDMCP is designed to provide authenticated access to display management
 services for remote displays.  A new network server, called a \fBDisplay
@@ -73,10 +147,10 @@ running on a display which has been turned off must be identifiable.  This
 is made possible by requiring a three-way handshake to start a session.  If
 the handshake succeeds, any existing session is terminated immediately and a
 new session started.  There is the problem (at least with TCP) that
-connections may not be closed when the display is turned off.  The manager
-could reduce this problem by periodically XSync'ing on its own connection,
-and terminating the session if its own connection ever closes.  This,
-however, could add considerable network load in a large network.
+connections may not be closed when the display is turned off.  In most
+environments, the manager should reduce this problem by periodically XSync'ing
+on its own connection, perhaps every five to ten minutes, and terminating the
+session if its own connection ever closes.
 .LP
 Displays should not be required to retain permanent state for purposes of
 the control protocol.  One solution to packets received out of sequence
@@ -101,8 +175,8 @@ the response was lost) and duplicates must be ignored.
 .NH 1
 Data Types
 .LP
-XDMCP packets contain several types of data.  For multi-byte integers, the
-values are stored in ``Big Endian'' order; most significant byte first.
+XDMCP packets contain several types of data.  Integer values are always
+stored most significant byte first in the packet (``Big Endian'' order).
 As XDMCP will not be used to transport large quantities of data, this
 restriction will not substantially hamper the efficiency of any
 implementation.  Also, no padding of any sort will occur within the packets.
@@ -465,7 +539,7 @@ Additional Fields:
 CARD16
 .RS
 The index of this particular server for the host on which the display is
-resident.
+resident.  This value will be zero for most autonomous displays.
 .RE
 \f7Connection Types\fP:
 ARRAY16
@@ -699,7 +773,7 @@ in the
 packet.
 .RE
 \f7Display Number\fP:
-CARD32
+CARD16
 .RS
 This field must match the value sent in the previous
 \f8Request\fP
@@ -865,8 +939,19 @@ Display \(-> Manager
 .br
 Additional Fields:
 .RS
+\f7Display Number\fP:
+CARD16
+.RS
+Set to the display index for the display host.
+.RE
+.RE
+.RS
 \f7Session ID\fP:
 CARD32
+.RS
+This field should be set to the \f7Session ID\fP received in the
+\f8Manage\fP packet during the negotiation for the current session.
+.RE
 .RE
 Sematics:
 .RS
@@ -875,10 +960,10 @@ display to discover if the manager is running.  The manager should respond
 with \f8Alive\fP whenever it receives this type of packet.
 .LP
 This allows the display to discover when the manager host is no longer running.
-A display is not required to send KeepAlive packets, and, upon receipt, is not
-required to perform any specific action.
+A display is not required to send \f8KeepAlive\fP packets, and, upon lack of
+receipt of \f8Alive\fP packets, is not required to perform any specific action.
 .LP
-An expected use of this packet is to terminate an active session when the
+The expected use of this packet is to terminate an active session when the
 manager host or network link fails.  The display should keep track of the
 time since any packet has been received from the manager host and
 use \f8KeepAlive\fP packets when a substantial time has elapsed since the
@@ -902,7 +987,7 @@ No \f8Alive\fP packet returned
 Solution:
 .RS
 Retransmit the packet with an exponential backoff; start at 2 seconds and
-assume the host is not up after 30 seconds.
+assume the host is not up after no less than 30 seconds.
 .RE
 .RE
 .RE
@@ -941,16 +1026,20 @@ determine the status of the manager.
 Session Termination
 .LP
 When the session is over, the initial connection with the display (the one
-which ack's the \f8Manage\fP packet) will be closed by the manager.  At this
-point, all other display connections should be closed by the display and the
-display can request another session.
+which ack's the \f8Manage\fP packet) will be closed by the manager.  If only
+a single session was active on the display, all other connections should be
+closed by the display and the display should be reset.  If multiple sessions
+are active simultaneously, and the display can identify which connections
+belong to the terminated sesssion, those connections should be closed.
+Otherwise all connections should be closed and the display reset only when
+all sessions have been terminated (i.e. all initial connections closed).
 .LP
 The session may also be terminated at any time by the display if the
 managing host no longer responds to \f8KeepAlive\fP packets.  The exact
 time-outs for sending \f8KeepAlive\fP packets is not specified in this
-protocol as the trade off between 1: loading an otherwise idle system with
-spurious \f8KeepAlive\fP packets and 2: not noticing that the manager host is
-down for a long time should not be fixed.
+protocol as the trade off should not be fixed between loading an otherwise
+idle system with spurious \f8KeepAlive\fP packets and not noticing that the
+manager host is down for a long time.
 .NH 1
 State Diagrams
 .LP
@@ -1074,8 +1163,6 @@ timeout \(-> \f6start-connection\fP
 .RS
 Save \f7Session ID\fP
 .br
-Close all existing display connections.
-.br
 Send \f8Manage\fP packet with \f7Session ID\fP
 .br
 \(-> \f6await-manage-response\fP
@@ -1143,7 +1230,11 @@ timeout \(-> \f6keep-alive\fP
 .LP
 \f6reset-display\fP:
 .RS
-close all display connections
+(if possible) \(-> close all display connections associated with this session
+
+.br
+last session \(-> close all display connections
+
 .br
 \(-> \f6start\fP
 .RE
@@ -1340,6 +1431,9 @@ Send \f8Alive\fP packet containing current status.
 .NH 1
 Protocol Encoding
 .LP
+When XDMCP is implemented on top of UDP (the Internet User Datagram Protocol),
+port number 177 is to be used.
+.LP
 The version number in all packets will be 1.
 .LP
 Packet opcodes are 16 bit integers.
@@ -1419,7 +1513,7 @@ c l l.
 Length	Type	Description
 _
 2	CARD16	version number (always 1)
-2	CARD16	opcode (always \f8Willing\fP
+2	CARD16	opcode (always \f8Willing\fP)
 2	CARD16	length (2 + m + n + o)
 1	CARD8	Length of \f7Authentication Name\fP (m)
 m	CARD8	\f7Authentication Name\fP
@@ -1523,9 +1617,9 @@ Length	Type	Description
 _
 2	CARD16	version number (always 1)
 2	CARD16	opcode (always \f8Manage\fP)
-2	CARD16	length (9 + m)
+2	CARD16	length (7 + m)
 4	CARD32	\f7Session ID\fP
-4	CARD32	\f7Display Number\fP
+2	CARD16	\f7Display Number\fP
 1	CARD8	Length of \f7Display Class\fP (m)
 m	CARD8	\f7Display Class\fP
 .TE
@@ -1570,7 +1664,8 @@ Length	Type	Description
 _
 2	CARD16	version number (always 1)
 2	CARD16	opcode (always \f8KeepAlive\fP)
-2	CARD16	length (4)
+2	CARD16	length (6)
+2	CARD16	\f7Display Number\fP
 4	CARD32	\f7Session ID\fP
 .TE
 .RE
@@ -1592,9 +1687,8 @@ _
 .NH 1
 Display Class Format
 .LP
-The
-\f7Display Class\fP
-packet field is used by the display manager to collect common sorts of
+The \f7Display Class\fP field of the \f8Manage\fP packet is used by the
+display manager to collect common sorts of
 displays into manageable groups.  This field is a string encoded of
 ISO-LATIN-1 characters in the following format:
 .nf
@@ -1616,9 +1710,9 @@ Manufacturer Display ID Format
 .LP
 To authenticate the manager, the display and manager will share a private
 key.  The manager, then, must be able to discover which key to use for a
-particular device.  The
-\f7Manufacturer Display ID\fP
-field is intended for this purpose.  Typically, the manager host will
+particular device.
+The \f7Manufacturer Display ID\fP field of the \f8Request\fP packet is
+intended for this purpose.  Typically, the manager host will
 contain a map between this number and the key.  This field is intended to be
 unique per display, possibly the ethernet address of the display in the form:
 .nf
@@ -1732,26 +1826,26 @@ To create authorization information for connection setup with the X server
 using the XDM-AUTHORIZATION-1 authorization protocol, the client computes the
 following:
 .EQ
-A mark = "X client host address (32 bits)"
-.EN C
-.EQ
-P lineup = "X client ``uniquifier''. Typically socket port id (16 bits)"
+N mark = "X client identifier"
 .EN C
 .EQ
 T lineup = "Current time in seconds on client host (32 bits)"
 .EN
 .EQ C
-beta lineup = oc rho A P T cc sup sigma
+beta lineup = oc rho N T cc sup sigma
 .EN
 .LP
-The result is 192 bits of authorization data, which is sent in the
-connection setup to the server.  The server receives the packet, decrypts
-the contents.  To accept the connection, the following must hold:
+For TCP connections @N@ is 48 bits long and contains the 32 bit IP address of
+the client host followed by the 16 bit port number of the client socket.
+Formats for other connections must be registered.
+The resulting value, @beta@, is 192 bits of authorization data which is sent
+in the connection setup to the server.  The server receives the packet,
+decrypts the contents.  To accept the connection, the following must hold:
 .IP 1
 @rho@ must match the value generated for the most recent XDMCP negotiation.
 .IP 2
 @T@ must be within 1200 seconds of the internally stored time.  If no time
 been received before, the current time is set to @T@.
 .IP 3
-No packet containing the same triple (@A@, @P@, @T@) may have been received
+No packet containing the same pair (@N@, @T@) can have been received
 in the last 1200 seconds (20 minutes).
