@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillrct.c,v 5.2 89/07/17 10:23:49 rws Exp $ */
+/* $XConsortium: mfbfillrct.c,v 5.3 89/07/28 11:57:31 rws Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "pixmapstr.h"
@@ -84,16 +84,7 @@ mfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     {
         prect = prectInit;
 	n = nrectFill;
-#ifndef PURDUE
-        while(n--)
-        {
-	    prect->x += xorg;
-	    prect->y += yorg;
-	    prect++;
-        }
-#else
 	Duff (n, prect->x += xorg; prect->y += yorg; prect++);
-#endif
     }
 
     prect = prectInit;

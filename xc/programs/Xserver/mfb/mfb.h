@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.9 89/07/28 09:41:55 rws Exp $ */
+/* $XConsortium: mfb.h,v 5.10 89/09/05 20:12:50 keith Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -234,29 +234,6 @@ than a switch on the rop per item (span or rectangle.)
 #define fnNAND(src, dst)	(~(src & dst))
 #define fnSET(src, dst)		(~0)
 
-#ifndef PURDUE
-/* Binary search to figure out what to do for the raster op.  It may
- * do 5 comparisons, but at least it does no function calls 
- * Special cases copy because it's so frequent 
- */
-#define DoRop(alu, src, dst) \
-( ((alu) == GXcopy) ? (src) : \
-    (((alu) >= GXnor) ? \
-     (((alu) >= GXcopyInverted) ? \
-       (((alu) >= GXnand) ? \
-         (((alu) == GXnand) ? ~((src) & (dst)) : ~0) : \
-         (((alu) == GXcopyInverted) ? ~(src) : (~(src) | (dst)))) : \
-       (((alu) >= GXinvert) ? \
-	 (((alu) == GXinvert) ? ~(dst) : ((src) | ~(dst))) : \
-	 (((alu) == GXnor) ? ~((src) | (dst)) : (~(src) ^ (dst)))) ) : \
-     (((alu) >= GXandInverted) ? \
-       (((alu) >= GXxor) ? \
-	 (((alu) == GXxor) ? ((src) ^ (dst)) : ((src) | (dst))) : \
-	 (((alu) == GXnoop) ? (dst) : (~(src) & (dst)))) : \
-       (((alu) >= GXandReverse) ? \
-	 (((alu) == GXandReverse) ? ((src) & ~(dst)) : (src)) : \
-	 (((alu) == GXand) ? ((src) & (dst)) : 0)))  ) )
-#else  /* PURDUE */
 /*  Using a "switch" statement is much faster in most cases
  *  since the compiler can do a look-up table or multi-way branch
  *  instruction, depending on the architecture.  The result on
@@ -324,7 +301,6 @@ than a switch on the rop per item (span or rectangle.)
 	    break; \
 	} \
 }
-#endif  /* PURDUE */
 
 
 #define DoRRop(alu, src, dst) \
@@ -333,7 +309,6 @@ than a switch on the rop per item (span or rectangle.)
  ((alu) == RROP_INVERT) ? ((dst) ^ (src)) : \
   (dst))
 
-#ifdef PURDUE
 /* A generalized form of a x4 Duff's Device */
 #define Duff(counter, block) { \
   while (counter >= 4) {\
@@ -351,4 +326,3 @@ than a switch on the rop per item (span or rectangle.)
      counter = 0; \
    } \
 }
-#endif  /* PURDUE */

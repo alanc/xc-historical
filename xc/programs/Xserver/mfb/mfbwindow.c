@@ -1,4 +1,4 @@
-/* $XConsortium: mfbwindow.c,v 5.6 89/07/18 18:03:37 rws Exp $ */
+/* $XConsortium: mfbwindow.c,v 5.7 89/07/28 11:59:33 rws Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -170,16 +170,11 @@ mfbCopyWindow(pWin, ptOldOrg, prgnSrc)
 	return;
     ppt = pptSrc;
 
-#ifndef PURDUE
     for (i=nbox; --i >= 0; ppt++, pbox++)
     {
 	ppt->x = pbox->x1 + dx;
 	ppt->y = pbox->y1 + dy;
     }
-#else
-    i = nbox;
-    Duff(i, ppt->x = pbox->x1 + dx; ppt->y = pbox->y1 + dy; ppt++; pbox++);
-#endif  /* PURDUE */
 
     mfbDoBitblt((DrawablePtr)pwinRoot, (DrawablePtr)pwinRoot,
 		GXcopy, prgnDst, pptSrc);

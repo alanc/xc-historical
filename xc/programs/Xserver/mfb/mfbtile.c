@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbtile.c,v 1.7 89/03/16 14:47:34 jim Exp $ */
+/* $XConsortium: mfbtile.c,v 5.0 89/06/09 15:07:07 keith Exp $ */
 #include "X.h"
 
 #include "windowstr.h"
@@ -109,16 +109,11 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
 	    {
 		srcpix = psrc[iy];
 		iy = ++iy < tileHeight ? iy : 0;
-#ifndef PURDUE
-		*p = (*p & ~startmask) |
-		     (DoRop(alu, srcpix, *p) & startmask);
-#else  /* PURDUE */
 		{
 		    unsigned _p;
 		    DoRop(_p, alu, srcpix, *p);
 		    *p = (*p & ~startmask) | (_p & startmask);
 		}
-#endif  /* PURDUE */
 		p += nlwExtra;
 	    }
 	}
@@ -135,26 +130,12 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
 		    srcpix = psrc[iy];
 		    iy = ++iy < tileHeight ? iy : 0;
 		    nlw = nlwMiddle;
-#ifndef PURDUE
-		    *p = (*p & ~startmask) | 
-			 (DoRop(alu, srcpix, *p) & startmask);
-#else  /* PURDUE */
 		    {
 			unsigned _p;
 			DoRop(_p, alu, srcpix, *p);
 			*p = (*p & ~startmask) | (_p & startmask);
 		    }
-#endif  /* PURDUE */
 		    p++;
-#ifndef PURDUE
-		    while (nlw--)
-		    {
-			*p = DoRop(alu, srcpix, *p);
-			p++;
-		    }
-		    *p = (*p & ~endmask) |
-		         (DoRop(alu, srcpix, *p) & endmask);
-#else  /* PURDUE */
 		    while (nlw--)
 		    {
 			DoRop(*p, alu, srcpix, *p);
@@ -166,7 +147,6 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
 			DoRop(_p, alu, srcpix, *p);
 			*p = (*p & ~endmask) | (_p & endmask);
 		    }
-#endif  /* PURDUE */
 		    p += nlwExtra;
 		}
 	    }
@@ -178,24 +158,15 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
 		    srcpix = psrc[iy];
 		    iy = ++iy < tileHeight ? iy : 0;
 		    nlw = nlwMiddle;
-#ifndef PURDUE
-		    *p = (*p & ~startmask) | 
-			 (DoRop(alu, srcpix, *p) & startmask);
-#else  /* PURDUE */
 		    {
 			unsigned _p;
 			DoRop(_p, alu, srcpix, *p);
 			*p = (*p & ~startmask) | (_p & startmask);
 		    }
-#endif  /* PURDUE */
 		    p++;
 		    while (nlw--)
 		    {
-#ifndef PURDUE
-			*p = DoRop(alu, srcpix, *p);
-#else  /* PURDUE */
 		        DoRop(*p, alu, srcpix, *p); 
-#endif  /* PURDUE */
 			p++;
 		    }
 		    p += nlwExtra;
@@ -208,15 +179,6 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
 		    srcpix = psrc[iy];
 		    iy = ++iy < tileHeight ? iy : 0;
 		    nlw = nlwMiddle;
-#ifndef PURDUE
-		    while (nlw--)
-		    {
-			*p = DoRop(alu, srcpix, *p);
-			p++;
-		    }
-		    *p = (*p & ~endmask) |
-		         (DoRop(alu, srcpix, *p) & endmask);
-#else  /* PURDUE */
 		    while (nlw--)
 		    {
 			DoRop(*p, alu, srcpix, *p);
@@ -228,7 +190,6 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
 			DoRop(_p, alu, srcpix, *p);
 			*p = (*p & ~endmask) | (_p & endmask);
 		    }
-#endif  /* PURDUE */
 		    p += nlwExtra;
 		}
 	    }
@@ -241,11 +202,7 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
 		    nlw = nlwMiddle;
 		    while (nlw--)
 		    {
-#ifndef PURDUE
-			*p = DoRop(alu, srcpix, *p);
-#else  /* PURDUE */
 			DoRop(*p, alu, srcpix, *p);
-#endif  /* PURDUE */
 			p++;
 		    }
 		    p += nlwExtra;

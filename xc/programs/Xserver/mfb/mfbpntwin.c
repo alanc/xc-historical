@@ -1,4 +1,4 @@
-/* $XConsortium: mfbpntwin.c,v 5.3 89/07/17 10:25:03 rws Exp $ */
+/* $XConsortium: mfbpntwin.c,v 5.4 89/07/20 13:47:39 keith Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -195,12 +195,7 @@ mfbPaintWindow32(pWin, pRegion, what)
 		    nlw = nlwMiddle;
 		    *p = (*p & ~startmask) | (srcpix & startmask);
 		    p++;
-#ifndef PURDUE
-		    while (nlw--)
-			*p++ = srcpix;
-#else
 		    Duff (nlw, *p++ = srcpix );
-#endif  /* PURDUE */
 		    *p = (*p & ~endmask) | (srcpix & endmask);
 		    p += nlwExtra;
 		}
@@ -215,12 +210,7 @@ mfbPaintWindow32(pWin, pRegion, what)
 		    nlw = nlwMiddle;
 		    *p = (*p & ~startmask) | (srcpix & startmask);
 		    p++;
-#ifndef PURDUE
-		    while (nlw--)
-			*p++ = srcpix;
-#else
-		Duff (nlw, *p++ = srcpix );
-#endif  /* PURDUE */
+		    Duff (nlw, *p++ = srcpix );
 		    p += nlwExtra;
 		}
 	    }
@@ -231,12 +221,7 @@ mfbPaintWindow32(pWin, pRegion, what)
 		    srcpix = psrc[y%tileHeight];
 		    y++;
 		    nlw = nlwMiddle;
-#ifndef PURDUE
-		    while (nlw--)
-			*p++ = srcpix;
-#else
-		Duff (nlw, *p++ = srcpix);
-#endif  /* PURDUE */
+		    Duff (nlw, *p++ = srcpix);
 		    *p = (*p & ~endmask) | (srcpix & endmask);
 		    p += nlwExtra;
 		}
@@ -248,12 +233,7 @@ mfbPaintWindow32(pWin, pRegion, what)
 		    srcpix = psrc[y%tileHeight];
 		    y++;
 		    nlw = nlwMiddle;
-#ifndef PURDUE
-		    while (nlw--)
-			*p++ = srcpix;
-#else
-		Duff (nlw, *p++ = srcpix);
-#endif  /* PURDUE */
+		    Duff (nlw, *p++ = srcpix);
 		    p += nlwExtra;
 		}
 	    }

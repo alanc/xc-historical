@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbsetsp.c,v 5.1 89/07/09 15:59:51 rws Exp $ */
+/* $XConsortium: mfbsetsp.c,v 5.2 89/07/14 17:10:55 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -74,12 +74,7 @@ mfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst)
 
     if (dstBit + w <= 32) 
     { 
-#ifndef PURDUE
-	getbits(psrc, offSrc, w, tmpSrc);
-	putbitsrop(tmpSrc, dstBit, w, pdst, alu);
-#else
 	getandputrop(psrc, offSrc, dstBit, w, pdst, alu)
-#endif  /* PURDUE */
     } 
     else 
     { 
@@ -95,12 +90,7 @@ mfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst)
 	    nend = 0; 
 	if (startmask) 
 	{ 
-#ifndef PURDUE
-	    getbits(psrc, offSrc, nstart, tmpSrc);
-	    putbitsrop(tmpSrc, dstBit, nstart, pdst, alu);
-#else
 	    getandputrop(psrc, offSrc, dstBit, nstart, pdst, alu)
-#endif  /* PURDUE */	    
 	    pdst++; 
 	    offSrc += nstart;
 	    if (offSrc > 31)
@@ -113,22 +103,13 @@ mfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst)
 	while (nl--) 
 	{ 
 	    getbits(psrc, offSrc, 32, tmpSrc);
-#ifndef PURDUE
-	    *pdst = DoRop(alu, tmpSrc, *pdst); 
-#else  /* PURDUE */
 	    DoRop(*pdst, alu, tmpSrc, *pdst); 
-#endif  /* PURDUE */
 	    pdst++; 
 	    psrc++; 
 	} 
 	if (endmask) 
 	{ 
-#ifndef PURDUE
-	    getbits(psrc, offSrc, nend, tmpSrc);
-	    putbitsrop(tmpSrc, 0, nend, pdst, alu);
-#else
 	    getandputrop0(psrc, offSrc, nend, pdst, alu);
-#endif  /* PURDUE */
 	} 
 	 
     } 

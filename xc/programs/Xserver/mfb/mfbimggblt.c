@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimggblt.c,v 5.1 89/07/09 15:57:20 rws Exp $ */
+/* $XConsortium: mfbimggblt.c,v 5.2 89/07/17 10:23:32 rws Exp $ */
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
@@ -279,9 +279,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	int glyphRow;		/* first row of glyph not wholly
 				   clipped out */
 	int glyphCol;		/* leftmost visible column of glyph */
-#ifdef PURDUE
 	int getWidth;		/* bits to get from glyph */
-#endif  /* PURDUE */
 
 	if(!(ppos = (TEXTPOS *)ALLOCATE_LOCAL(nglyph * sizeof(TEXTPOS))))
 	    return;
@@ -381,9 +379,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
 		glyphCol = (leftEdge - ppos[i].xpos) -
 			   (pci->metrics.leftSideBearing);
-#ifdef PURDUE
 		getWidth = w + glyphCol;
-#endif  /* PURDUE */
 		xoff = xchar + (leftEdge - ppos[i].xpos);
 		if (xoff > 31)
 		{
@@ -401,11 +397,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		    maskpartialbits(xoff, w, startmask);
 		    while (h--)
 		    {
-#ifndef PURDUE
-			getshiftedleftbits(pglyph, glyphCol, w, tmpSrc);
-#else  /* PURDUE */
 			getshiftedleftbits(pglyph, glyphCol, getWidth, tmpSrc);
-#endif  /* PURDUE */
 			*pdst OPEQ (SCRRIGHT(tmpSrc, xoff) & startmask);
 			pglyph += widthGlyph;
 			pdst += widthDst;
@@ -417,11 +409,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		    nFirst = 32 - xoff;
 		    while (h--)
 		    {
-#ifndef PURDUE
-			getshiftedleftbits(pglyph, glyphCol, w, tmpSrc);
-#else  /* PURDUE */
 			getshiftedleftbits(pglyph, glyphCol, getWidth, tmpSrc);
-#endif  /* PURDUE */
 			*pdst OPEQ (SCRRIGHT(tmpSrc, xoff) & startmask);
 			*(pdst+1) OPEQ (SCRLEFT(tmpSrc, nFirst) & endmask);
 			pglyph += widthGlyph;

@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgetsp.c,v 5.2 89/07/20 13:47:52 keith Exp $ */
+/* $XConsortium: mfbgetsp.c,v 5.3 89/07/26 12:12:15 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 
@@ -91,12 +91,7 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 
 	if (srcBit + w <= 32) 
 	{ 
-#ifndef PURDUE
-	    getbits(psrc, srcBit, w, tmpSrc);
-	    putbits(tmpSrc, 0, w, pdst); 
-#else
 	    getandputbits0(psrc, srcBit, w, pdst);
-#endif  /* PURDUE */
 	    pdst++;
 	} 
 	else 
@@ -112,17 +107,12 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 	    srcStartOver = srcBit + nstart > 31;
 	    if (startmask) 
 	    { 
-#ifndef PURDUE
-		getbits(psrc, srcBit, nstart, tmpSrc);
-		putbits(tmpSrc, 0, nstart, pdst);
-#else
 		getandputbits0(psrc, srcBit, nstart, pdst);
-#endif  /* PURDUE */
 		if(srcStartOver)
 		    psrc++;
 	    } 
 	    nl = nlMiddle; 
-#if defined(PURDUE) && defined(FASTPUTBITS)
+#ifdef FASTPUTBITS
 	    Duff(nl, putbits(*psrc, nstart, 32, pdst); psrc++; pdst++;);
 #else
 	    while (nl--) 
@@ -135,12 +125,7 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 #endif
 	    if (endmask) 
 	    { 
-#ifndef PURDUE
-		getbits(psrc, 0, nend, tmpSrc);
-		putbits(tmpSrc, nstart, nend, pdst);
-#else
 		putbits(*psrc, nstart, nend, pdst);
-#endif  /* PURDUE */
 		if(nstart + nend > 32)
 		    pdst++;
 	    } 

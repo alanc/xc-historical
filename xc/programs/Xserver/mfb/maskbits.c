@@ -1,4 +1,4 @@
-/* $XConsortium: maskbits.c,v 1.3 88/09/06 14:53:29 jim Exp $ */
+/* $XConsortium: maskbits.c,v 1.4 89/03/16 14:46:59 jim Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -117,7 +117,7 @@ int endtab[32] =
 	0xFFFFFFFE
     };
 
-#if !defined(PURDUE) || defined(ibm032)
+#if NEED_OLD_MFB_MASKS
 /* a hack, for now, since the entries for 0 need to be all
    1 bits, not all zeros.
    this means the code DOES NOT WORK for segments of length
@@ -195,7 +195,7 @@ int endpartial[32] =
 	0xFFFFFFFE
     };
 #endif
-#ifdef PURDUE
+
 unsigned int partmasks[32][32] = {
      {0xFFFFFFFF, 0x80000000, 0xC0000000, 0xE0000000,
       0xF0000000, 0xF8000000, 0xFC000000, 0xFE000000,
@@ -454,7 +454,7 @@ unsigned int partmasks[32][32] = {
       0x00000000, 0x00000000, 0x00000000, 0x00000000,
       0x00000000, 0x00000000, 0x00000000, 0x00000000},
 };
-#endif  /* PURDUE */
+
 #else		/* LSBFirst */
 /* NOTE:
 the first element in starttab could be 0xffffffff.  making it 0
@@ -534,7 +534,7 @@ int endtab[32] =
 	0x7FFFFFFF
 	};
 
-#ifndef PURDUE
+#ifdef NEED_OLD_MFB_MASKS
 /* a hack, for now, since the entries for 0 need to be all
    1 bits, not all zeros.
    this means the code DOES NOT WORK for segments of length
@@ -611,7 +611,8 @@ int endpartial[32] =
 	0x3FFFFFFF,
 	0x7FFFFFFF
 	};
-#else  /* PURDUE */
+#endif
+
 unsigned int partmasks[32][32] = {
      {0xFFFFFFFF, 0x00000001, 0x00000003, 0x00000007,
       0x0000000F, 0x0000001F, 0x0000003F, 0x0000007F,
@@ -870,7 +871,6 @@ unsigned int partmasks[32][32] = {
       0x00000000, 0x00000000, 0x00000000, 0x00000000,
       0x00000000, 0x00000000, 0x00000000, 0x00000000},
 };
-#endif  /* PURDUE */
 #endif
 
 

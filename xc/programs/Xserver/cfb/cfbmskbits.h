@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.h,v 4.9 89/04/11 10:03:48 rws Exp $ */
+/* $XConsortium: cfbmskbits.h,v 4.10 89/04/27 19:39:07 keith Exp $ */
 
 extern int cfbstarttab[];
 extern int cfbendtab[];
@@ -279,7 +279,7 @@ else \
     *((pdst)+1) = (*((pdst)+1) & (cfbstarttab[n] | ~pm)) | \
 	(SCRLEFT(src, m) & (cfbendtab[n] & pm)); \
 }
-#if defined(__GNUC__) && defined(mc68020) && defined(PURDUE)
+#if defined(__GNUC__) && defined(mc68020)
 #undef getbits
 #define FASTGETBITS(psrc, x, w, dst) \
     asm ("bfextu %3{%1:%2},%0" \

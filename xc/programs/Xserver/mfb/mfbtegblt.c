@@ -1,4 +1,4 @@
-/* $XConsortium: mfbtegblt.c,v 1.3 89/03/16 14:47:33 jim Exp $ */
+/* $XConsortium: mfbtegblt.c,v 5.0 89/06/09 15:07:05 keith Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -158,10 +158,8 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    hTmp = h;
 	    pdst = pdstBase;
 
-#ifdef PURDUE
 #if defined(NO_3_60_CG4) && defined(FASTPUTBITS) && defined(FASTGETBITS)
 #define FASTCHARS
-#endif
 #endif
 
 #ifndef FASTCHARS

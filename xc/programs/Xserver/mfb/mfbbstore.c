@@ -64,18 +64,8 @@ mfbSaveAreas(pPixmap, prgnSave, xorg, yorg)
     
     pBox = REGION_RECTS(prgnSave);
     pPt = pPtsInit;
-#ifndef PURDUE
-    for (i = numRects; --i >= 0; ) {
-	pPt->x = pBox->x1 + xorg;
-	pPt->y = pBox->y1 + yorg;
-	pPt++;
-	pBox++;
-    }
-#else
     i = numRects;
     Duff(i, pPt->x = pBox->x1 + xorg; pPt->y = pBox->y1 + yorg; pPt++; pBox++);
-#endif  /* PURDUE */
-
 
     mfbDoBitblt((DrawablePtr)pPixmap->drawable.pScreen->devPrivate,
 		(DrawablePtr)pPixmap,
@@ -126,18 +116,8 @@ mfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg)
     
     pBox = REGION_RECTS(prgnRestore);
     pPt = pPtsInit;
-#ifndef PURDUE
-    for (i = numRects; --i >= 0; ) {
-	pPt->x = pBox->x1 - xorg;
-	pPt->y = pBox->y1 - yorg;
-	pPt++;
-	pBox++;
-    }
-#else
     i = numRects;
     Duff(i, pPt->x = pBox->x1 - xorg; pPt->y = pBox->y1 - yorg; pPt++; pBox++);
-#endif  /* PURDUE */
-
 
     mfbDoBitblt((DrawablePtr)pPixmap,
 		(DrawablePtr)pPixmap->drawable.pScreen->devPrivate,

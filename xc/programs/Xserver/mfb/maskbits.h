@@ -22,19 +22,14 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: maskbits.h,v 1.18 89/07/21 13:55:12 keith Exp $ */
+/* $XConsortium: maskbits.h,v 1.19 89/07/21 14:18:12 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
 
 extern int starttab[];
 extern int endtab[];
-#ifndef PURDUE
-extern int startpartial[];
-extern int endpartial[];
-#else  /* PURDUE */
 extern unsigned partmasks[32][32];
-#endif  /* PURDUE */
 extern int rmask[];
 extern int mask[];
 
@@ -219,105 +214,12 @@ getshiftedleftbits(psrc, offset, w, dst)
     else \
 	nlw = (w) >> 5;
 
-#ifndef PURDUE
-#define maskpartialbits(x, w, mask) \
-    mask = startpartial[(x) & 0x1f] & endpartial[((x) + (w)) & 0x1f];
-#else  /* PURDUE */
 #define maskpartialbits(x, w, mask) \
     mask = partmasks[(x)&0x1f][(w)&0x1f];
-#endif  /* PURDUE */
 
 #define mask32bits(x, w, startmask, endmask) \
     startmask = starttab[(x)&0x1f]; \
     endmask = endtab[((x)+(w)) & 0x1f];
-
-
-#ifndef PURDUE
-
-#define getbits(psrc, x, w, dst) \
-if ( ((x) + (w)) <= 32) \
-{ \
-    dst = SCRLEFT(*(psrc), (x)); \
-} \
-else \
-{ \
-    int m; \
-    m = 32-(x); \
-    dst = (SCRLEFT(*(psrc), (x)) & endtab[m]) | \
-	  (SCRRIGHT(*((psrc)+1), m) & starttab[m]); \
-}
-
-
-#define putbits(src, x, w, pdst) \
-if ( ((x)+(w)) <= 32) \
-{ \
-    unsigned int tmpmask; \
-    maskpartialbits((x), (w), tmpmask); \
-    *(pdst) = (*(pdst) & ~tmpmask) | (SCRRIGHT(src, x) & tmpmask); \
-} \
-else \
-{ \
-    int m; \
-    int n; \
-    m = 32-(x); \
-    n = (w) - m; \
-    *(pdst) = (*(pdst) & endtab[x]) | (SCRRIGHT(src, x) & starttab[x]); \
-    *((pdst)+1) = (*((pdst)+1) & starttab[n]) | (SCRLEFT(src, m) & endtab[n]); \
-}
-
-#define putbitsrop(src, x, w, pdst, rop) \
-if ( ((x)+(w)) <= 32) \
-{ \
-    int tmpmask; \
-    int t1, t2; \
-    maskpartialbits((x), (w), tmpmask); \
-    t1 = SCRRIGHT((src), (x)); \
-    t2 = DoRop(rop, t1, *(pdst)); \
-    *(pdst) = (*(pdst) & ~tmpmask) | (t2 & tmpmask); \
-} \
-else \
-{ \
-    int m; \
-    int n; \
-    int t1, t2; \
-    m = 32-(x); \
-    n = (w) - m; \
-    t1 = SCRRIGHT((src), (x)); \
-    t2 = DoRop(rop, t1, *(pdst)); \
-    *(pdst) = (*(pdst) & endtab[x]) | (t2 & starttab[x]); \
-    t1 = SCRLEFT((src), m); \
-    t2 = DoRop(rop, t1, *((pdst) + 1)); \
-    *((pdst)+1) = (*((pdst)+1) & starttab[n]) | (t2 & endtab[n]); \
-}
-
-
-#define putbitsrrop(src, x, w, pdst, rop) \
-if ( ((x)+(w)) <= 32) \
-{ \
-    int tmpmask; \
-    int t1, t2; \
-    maskpartialbits((x), (w), tmpmask); \
-    t1 = SCRRIGHT((src), (x)); \
-    t2 = DoRRop(rop, t1, *(pdst)); \
-    *(pdst) = (*(pdst) & ~tmpmask) | (t2 & tmpmask); \
-} \
-else \
-{ \
-    int m; \
-    int n; \
-    int t1, t2; \
-    m = 32-(x); \
-    n = (w) - m; \
-    t1 = SCRRIGHT((src), (x)); \
-    t2 = DoRRop(rop, t1, *(pdst)); \
-    *(pdst) = (*(pdst) & endtab[x]) | (t2 & starttab[x]); \
-    t1 = SCRLEFT((src), m); \
-    t2 = DoRRop(rop, t1, *((pdst) + 1)); \
-    *((pdst)+1) = (*((pdst)+1) & starttab[n]) | (t2 & endtab[n]); \
-}
-
-#else  /* PURDUE */
-
 
 #ifdef __GNUC__
 #ifdef vax
@@ -389,9 +291,8 @@ else \
     } \
     else \
     { \
-	register unsigned int *ptmp_ = (unsigned *) (pdst)+1; \
 	*(pdst) = (*(pdst) & endtab[x]) | (SCRRIGHT((unsigned) (src), x)); \
-	*ptmp_ = (*ptmp_ & starttab[n]) | \
+	(pdst)[1] = ((pdst)[1] & starttab[n]) | \
 		(SCRLEFT((unsigned) src, 32-(x)) & endtab[n]); \
     } \
 }
@@ -441,11 +342,10 @@ else \
     else \
     { \
 	int m = 32-(x); \
-	register unsigned int *ptmp_ = (unsigned *) (pdst)+1; \
 	*(pdst) = (*(pdst) & endtab[x]) | (t2 & starttab[x]); \
 	t1 = SCRLEFT((src), m); \
-	DoRop(t2, rop, t1, *ptmp_); \
-	*ptmp_ = (*ptmp_ & starttab[n]) | (t2 & endtab[n]); \
+	DoRop(t2, rop, t1, (pdst)[1]); \
+	(pdst)[1] = ((pdst)[1] & starttab[n]) | (t2 & endtab[n]); \
     } \
 }
 
@@ -516,22 +416,16 @@ else \
     else \
     { \
 	int m = 32-(x); \
-	register unsigned int *ptmp_ = (unsigned *) (pdst)+1; \
 	*(pdst) = (*(pdst) & endtab[x]) | (t2 & starttab[x]); \
 	t1 = SCRLEFT((src), m); \
-	t2 = DoRRop(rop, t1, *ptmp_); \
-	*ptmp_ = (*ptmp_ & starttab[n]) | (t2 & endtab[n]); \
+	t2 = DoRRop(rop, t1, (pdst)[1]); \
+	(pdst)[1] = ((pdst)[1] & starttab[n]) | (t2 & endtab[n]); \
     } \
 }
 #endif
-#endif  /* PURDUE */
 
 #if GETLEFTBITS_ALIGNMENT == 1
-#ifndef PURDUE
-#define getleftbits(psrc, w, dst)	getbits((unsigned int *)psrc, 0, w, dst)
-#else  /* PURDUE */
 #define getleftbits(psrc, w, dst)	dst = *((unsigned int *) psrc)
-#endif
 #endif /* GETLEFTBITS_ALIGNMENT == 1 */
 
 #if GETLEFTBITS_ALIGNMENT == 2
@@ -561,7 +455,6 @@ else \
 	getleftbits((psrc), (w), (dst)); \
 	dst = SCRLEFT((dst), (offset));
 
-#ifdef PURDUE
 /* FASTGETBITS and FASTPUTBITS are not necessarily correct implementations of
  * getbits and putbits, but they work if used together.
  *
@@ -685,4 +578,3 @@ else \
 }
 
 #endif  /* FASTGETBITS && FASTPUTBITS */
-#endif  /* PURDUE */

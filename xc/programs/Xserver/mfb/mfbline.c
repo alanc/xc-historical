@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbline.c,v 1.3 89/09/01 15:45:27 keith Exp $ */
+/* $XConsortium: mfbline.c,v 5.4 89/09/05 20:12:53 keith Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -84,18 +84,6 @@ actual clipping.
 #define SignTimes(sign, n) \
     ( ((sign)<0) ? -(n) : (n) )
 
-#ifndef PURDUE
-#define SWAPPT(p1, p2, pttmp) \
-pttmp = p1; \
-p1 = p2; \
-p2 = pttmp;
-
-#define SWAPINT(i, j, t) \
-t = i; \
-i = j; \
-j = t;
-
-#else
 #define SWAPINT(i, j) \
 {  register int _t = i; \
    i = j; \
@@ -108,7 +96,6 @@ j = t;
    i = j; \
    j = _t; \
 }
-#endif  /* PURDUE */
    
 
 void
@@ -215,9 +202,8 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 	    */
 	    if (y1 > y2)
 	    {
-#ifdef PURDUE
 		register int tmp;
-#endif
+
 		tmp = y2;
 		y2 = y1 + 1;
 		y1 = tmp + 1;
@@ -266,9 +252,8 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 	    */
 	    if (x1 > x2)
 	    {
-#ifdef PURDUE
 		register int tmp;
-#endif
+
 		tmp = x2;
 		x2 = x1 + 1;
 		x1 = tmp + 1;
@@ -869,15 +854,9 @@ int *pclip1, *pclip2;
 	    clipDone = 1;
 	    if (swapped)
 	    {
-#ifndef PURDUE
-	        SWAPPT(pt1, pt2, ptTmp);
-	        SWAPINT(oc1, oc2, tmp);
-	        SWAPINT(clip1, clip2, tmp);
-#else
 	        SWAPPT(pt1, pt2);
 	        SWAPINT(oc1, oc2);
 	        SWAPINT(clip1, clip2);
-#endif  /* PURDUE */
 	    }
         }
         else /* have to clip */
@@ -885,15 +864,9 @@ int *pclip1, *pclip2;
 	    /* only clip one point at a time */
 	    if (!oc1)
 	    {
-#ifndef PURDUE
-	        SWAPPT(pt1, pt2, ptTmp);
-	        SWAPINT(oc1, oc2, tmp);
-	        SWAPINT(clip1, clip2, tmp);
-#else
 	        SWAPPT(pt1, pt2);
 	        SWAPINT(oc1, oc2);
 	        SWAPINT(clip1, clip2);
-#endif  /* PURDUE */
 	        swapped = !swapped;
 	    }
     
