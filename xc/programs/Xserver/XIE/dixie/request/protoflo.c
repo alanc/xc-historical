@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: protoflo.c,v 1.1 93/07/19 10:10:33 rws Exp $ */
 /**** module protoflo.c ****/
 /****************************************************************************
 				NOTICE
@@ -401,6 +401,7 @@ int ProcGetClientData(client)
 {
   CARD8   *data;
   CARD32  bytes;
+  BOOL    freeit;
   floDefPtr flo;
   peDefPtr  ped;
   xieGetClientDataReply rep;
@@ -427,7 +428,7 @@ int ProcGetClientData(client)
    */
   memset(&rep, 0, sz_xieGetClientDataReply);
   rep.newState    = ddOutput(flo, ped, stuff->bandNumber, &data, &bytes,
-			     stuff->maxBytes, stuff->terminate);
+			     stuff->maxBytes, stuff->terminate, &freeit);
   rep.type        = X_Reply;
   rep.sequenceNum = client->sequence;
   rep.length      = bytes+3>>2;
@@ -439,10 +440,10 @@ int ProcGetClientData(client)
     swapl(&rep.length, n);
     swapl(&rep.byteCount, n);
   }
-  WriteToClient(client, sz_xieGetClientDataReply, &rep);
+  WriteToClient(client, sz_xieGetClientDataReply, (char *)&rep);
   
   if( bytes )
-    WriteToClient(client, bytes, data);
+    WriteToClient(client, bytes, (char *)data);
 
  egress:  
   return(ferrCode(flo) || !flo->flags.active ? FloDone(client,flo) : Success);
@@ -527,14 +528,14 @@ int ProcQueryPhotoflo(client)
     swaps(&rep.expectedCount,n);
     swaps(&rep.availableCount,n);
   }
-  WriteToClient(client, sz_xieQueryPhotofloReply, &rep);
+  WriteToClient(client, sz_xieQueryPhotofloReply, (char *)&rep);
   
   if(shorts) {
     /* Send the list of pending import/export(s) (swapped as necessary)
      */
     if( client->swapped )
-      SwapShorts(list, shorts);
-    WriteToClient(client, shorts<<1, list);
+      SwapShorts((short *)list, shorts);
+    WriteToClient(client, shorts<<1, (char *)list);
     XieFree(list);
   }
   return(Success);
