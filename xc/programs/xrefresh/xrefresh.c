@@ -25,7 +25,6 @@ SOFTWARE.
 #include <errno.h>
 #include <X11/Xlib.h>
 #include <sys/types.h>
-#include <sys/timeb.h>
 
 char *malloc();
 
@@ -68,7 +67,6 @@ char	*argv[];
     XSetWindowAttributes xswa;
     XWindowChanges xwc;
     char    line[30];
-    struct timeb    start, stop;
     Display *dpy;
 
     dpy = StartConnectionToServer(argc, argv);
