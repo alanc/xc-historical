@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xclipboard.c,v 1.22 91/02/16 21:52:29 dave Exp $
+ * $XConsortium: xclipboard.c,v 1.23 91/02/17 12:05:43 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,8 +24,6 @@
  * Updated for R4:  Chris D. Peterson,  MIT X Consortium.
  * Reauthored by: Keith Packard, MIT X Consortium.
  */
-
-/* $XConsortium: xclipboard.c,v 1.22 91/02/16 21:52:29 dave Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -664,39 +662,33 @@ char **argv;
 
     set_button_state ();
 
-    fileDialogShell = XtCreatePopupShell("fileDialogShell", transientShellWidgetClass,
+    fileDialogShell = XtCreatePopupShell("fileDialogShell",
+					 transientShellWidgetClass,
 					 top, NULL, ZERO);
     fileDialog = XtCreateManagedWidget ("fileDialog", dialogWidgetClass,
 					fileDialogShell, NULL, ZERO);
     XawDialogAddButton(fileDialog, "accept", NULL, NULL);
     XawDialogAddButton(fileDialog, "cancel", NULL, NULL);
 
-    XtRealizeWidget (fileDialogShell);
-
-    failDialogShell = XtCreatePopupShell("failDialogShell", transientShellWidgetClass,
+    failDialogShell = XtCreatePopupShell("failDialogShell",
+					 transientShellWidgetClass,
 					 top, NULL, ZERO);
     failDialog = XtCreateManagedWidget ("failDialog", dialogWidgetClass,
 					failDialogShell, NULL, ZERO);
     XawDialogAddButton (failDialog, "continue", NULL, NULL);
 
-    XtRealizeWidget (failDialogShell);
-
     XtRealizeWidget(top);
-
+    XtRealizeWidget(fileDialogShell);
+    XtRealizeWidget(failDialogShell);
     XtOwnSelection(top, ManagerAtom, CurrentTime,
 		   RefuseSelection, LoseManager, NULL);
-    if (XGetSelectionOwner (XtDisplay(top), ClipboardAtom))
-    {
+    if (XGetSelectionOwner (XtDisplay(top), ClipboardAtom)) {
 	LoseSelection (top, &ClipboardAtom);
-    }
-    else
-    {
+    } else {
     	XtOwnSelection(top, ClipboardAtom, CurrentTime,
 		       ConvertSelection, LoseSelection, NULL);
     }
-    wm_delete_window = 
-      XInternAtom(XtDisplay(top), "WM_DELETE_WINDOW", False);
-    (void) XSetWMProtocols (XtDisplay(top), XtWindow(top),
-                            &wm_delete_window, 1);
+    wm_delete_window = XInternAtom(XtDisplay(top), "WM_DELETE_WINDOW", False);
+    (void) XSetWMProtocols(XtDisplay(top), XtWindow(top), &wm_delete_window,1);
     XtAppMainLoop(xtcontext);
 }
