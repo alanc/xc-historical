@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.171 91/07/16 18:30:20 converse Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.172 92/04/15 19:15:24 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -892,12 +892,7 @@ static char *ExtractLocaleName(lang)
     }
 #endif	/* hpux */
 
-    /*  If result is "C", return NULL instead. */
-
-    if (strcmp(lang, "C"))
-        return lang;
-    else
-      return NULL;
+    return lang;
 }
 
 static void FillInLangSubs(subs, pd)
