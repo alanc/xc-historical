@@ -30,50 +30,60 @@ in this Software without prior written authorization from the X Consortium.
 #include <fcntl.h>
 
 
-Status
-LockSession (session_name)
-
-char *session_name;
+static char *
+GetPath ()
 
 {
-    char *path;
-    char lock_file[PATH_MAX];
-    struct flock lock;
-    Status status = 1;
-    int fd;
+    char *path = (char *) getenv ("SM_SAVE_DIR");
 
-    path = (char *) getenv ("SM_SAVE_DIR");
     if (!path)
     {
 	path = (char *) getenv ("HOME");
 	if (!path)
 	    path = ".";
     }
+}
+
+
+Status
+LockSession (session_name, write_id)
+
+char *session_name;
+Bool write_id;
+
+{
+    char *path;
+    char lock_file[PATH_MAX];
+    char temp_lock_file[PATH_MAX];
+    Status status;
+    int fd;
+
+    path = GetPath ();
 
     sprintf (lock_file, "%s/.XSMlock-%s", path, session_name);
+    sprintf (temp_lock_file, "%s/.XSMtlock-%s", path, session_name);
 
-    if ((fd = open (lock_file, O_RDWR|O_CREAT, 0666)) == -1)
+    if ((fd = creat (temp_lock_file, 0444)) < 0)
 	return (0);
 
-    lock.l_type = F_WRLCK;
-    lock.l_whence = SEEK_SET;
-    lock.l_start = lock.l_len = 0;
-
-    if (fcntl (fd, F_SETLK, &lock) == -1)
-	status = 0;
-    else if (ftruncate (fd, 0) < 0)
-	status = 0;
-    else if (write (fd, networkIds,
-	strlen (networkIds)) != strlen (networkIds))
-	status = 0;
-
-    if (!status)
+    if (write_id &&
+        write (fd, networkIds, strlen (networkIds)) != strlen (networkIds))
     {
 	close (fd);
 	return (0);
     }
-    else
-	return (1);
+
+    close (fd);
+
+    status = 1;
+
+    if (link (temp_lock_file, lock_file) < 0)
+	status = 0;
+
+    if (unlink (temp_lock_file) < 0)
+	status = 0;
+
+    return (status);
 }
 
 
@@ -83,7 +93,14 @@ UnlockSession (session_name)
 char *session_name;
 
 {
-    ;
+    char *path;
+    char lock_file[PATH_MAX];
+
+    path = GetPath ();
+
+    sprintf (lock_file, "%s/.XSMlock-%s", path, session_name);
+
+    unlink (lock_file);
 }
 
 
@@ -95,43 +112,35 @@ Bool get_id;
 char **id_ret;
 
 {
-    char *path;
-    char lock_file[PATH_MAX];
-    struct flock lock;
-    int fd, stat;
-
-    path = (char *) getenv ("SM_SAVE_DIR");
-    if (!path)
-    {
-	path = (char *) getenv ("HOME");
-	if (!path)
-	    path = ".";
-    }
-
-    sprintf (lock_file, "%s/.XSMlock-%s", path, session_name);
-
-    if ((fd = open (lock_file, O_RDWR|O_CREAT, 0666)) == -1)
-	return (1);
-
-    lock.l_type = F_WRLCK;
-    lock.l_whence = SEEK_SET;
-    lock.l_start = lock.l_len = 0;
-
-    stat = fcntl (fd, F_GETLK, &lock);
-
     if (get_id)
     {
-	FILE *fp = fdopen (fd, "r+");
+	char *path;
+	FILE *fp;
+	char lock_file[PATH_MAX];
 	char buf[256];
+
+	path = GetPath ();
+
+	sprintf (lock_file, "%s/.XSMlock-%s", path, session_name);
+
+	if ((fp = fopen (lock_file, "r")) == NULL)
+	{
+	    *id_ret = NULL;
+	    return (0);
+	}
 
 	buf[0] = '\0';
 	fscanf (fp, "%s\n", buf);
 	*id_ret = XtNewString (buf);
+
+	fclose (fp);
     }
 
-    close (fd);
+    if (!LockSession (session_name, False))
+	return (1);
 
-    return (stat == -1 || lock.l_type != F_UNLCK);
+    UnlockSession (session_name);
+    return (0);
 }
 
 
