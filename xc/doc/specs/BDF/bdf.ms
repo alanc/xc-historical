@@ -1,6 +1,6 @@
 \&
 .sp 1
-.ce 5
+.ce 4
 \s+1\fBBitmap Distribution Format\fP\s-1
 
 \s+1\fBVersion 2.1\fP\s-1
@@ -8,9 +8,9 @@
 MIT X Consortium Standard
 
 X Version 11, Release 5
-.sp 2
+.sp 3
 Copyright 1984, 1987, 1988 Adobe Systems, Inc.
-.sp 2
+.sp 1
 Permission to use, copy, modify, and distribute this
 software and its documentation for any purpose and without
 fee is hereby granted, provided that the above copyright
