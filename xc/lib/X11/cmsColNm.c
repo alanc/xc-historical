@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.21 91/07/23 12:11:21 rws Exp $" */
+/* $XConsortium: XcmsColNm.c,v 1.22 91/07/25 01:08:32 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -55,6 +55,7 @@ extern char *bsearch();
 #endif
 extern XcmsColorSpace **_XcmsDIColorSpaces;
 static Status LoadColornameDB();
+void _XcmsCopyISOLatin1Lowered();
 
 /*
  *      LOCAL DEFINES
@@ -177,52 +178,6 @@ _XcmsColorSpaceOfString(ccc, color_string)
 
 /*
  *	NAME
- *		_XcmsCopyISOLatin1Lowered
- *
- *	SYNOPSIS
- */
-static void
-_XcmsCopyISOLatin1Lowered(dst, src)
-    char *dst, *src;
-/*
- *	DESCRIPTION
- *		ISO Latin-1 case conversion routine
- *		Identical to XmuCopyISOLatin1Lowered() but provided here
- *		to eliminate need to link with libXmu.a.
- *
- *		IMPLEMENTORS NOTE:
- *		    This routine is currently used by _XcmsParseColorString
- *		    and _XcmsLookupColorName.  When _XcmsLookupColorName is
- *		    replaced by the appropriate i18n database support
- *		    routine, the contents of this routine can be placed
- *		    directly into _XcmsParseColorString.
- *
- *	RETURNS
- *		Void
- *
- */
-{
-    register unsigned char *dest, *source;
-
-    for (dest = (unsigned char *)dst, source = (unsigned char *)src;
-	 *source;
-	 source++, dest++)
-    {
-	if ((*source >= XK_A) && (*source <= XK_Z))
-	    *dest = *source + (XK_a - XK_A);
-	else if ((*source >= XK_Agrave) && (*source <= XK_Odiaeresis))
-	    *dest = *source + (XK_agrave - XK_Agrave);
-	else if ((*source >= XK_Ooblique) && (*source <= XK_Thorn))
-	    *dest = *source + (XK_oslash - XK_Ooblique);
-	else
-	    *dest = *source;
-    }
-    *dest = '\0';
-}
-
-
-/*
- *	NAME
  *		_XcmsParseColorString
  *
  *	SYNOPSIS
@@ -247,7 +202,7 @@ _XcmsParseColorString(ccc, color_string, pColor)
  */
 {
     XcmsColorSpace	*pColorSpace;
-    char		string_lowered_64[64];
+    char		string_buf[64];
     char		*string_lowered;
     int			len;
     int			res;
@@ -259,29 +214,29 @@ _XcmsParseColorString(ccc, color_string, pColor)
     /*
      * While copying color_string to string_lowered, convert to lowercase
      */
-    if ((len = strlen(color_string)) > 63) {
+    if ((len = strlen(color_string)) >= sizeof(string_buf)) {
 	string_lowered = (char *) Xmalloc(len+1);
     } else {
-	string_lowered = string_lowered_64;
+	string_lowered = string_buf;
     }
 
-    _XcmsCopyISOLatin1Lowered((char *)string_lowered, (char *)color_string);
+    _XcmsCopyISOLatin1Lowered(string_lowered, color_string);
 
     if (*string_lowered == '#') {
 	if ((pColorSpace = _XcmsColorSpaceOfString(ccc, "rgb:")) != NULL) {
 	    res = (*pColorSpace->parseString)(string_lowered, pColor);
-	    if (len > 63) Xfree(string_lowered);
+	    if (len >= sizeof(string_buf)) Xfree(string_lowered);
 	    return res;
 	}
     }
 
     if ((pColorSpace = _XcmsColorSpaceOfString(ccc, string_lowered)) != NULL) {
 	res = (*pColorSpace->parseString)(string_lowered, pColor);
-	if (len > 63) Xfree(string_lowered);
+	if (len >= sizeof(string_buf)) Xfree(string_lowered);
 	return res;
     }
 
-    if (len > 63) Xfree(string_lowered);
+    if (len >= sizeof(string_buf)) Xfree(string_lowered);
     return(0);
 }
 
@@ -479,7 +434,7 @@ Retry:
 	name_lowered = name_lowered_64;
     }
 
-    _XcmsCopyISOLatin1Lowered((char *)name_lowered, (char *)tmpName);
+    _XcmsCopyISOLatin1Lowered(name_lowered, tmpName);
 
     /*
      * Now, remove spaces.
@@ -730,11 +685,11 @@ ReadColornameDB(stream, pRec, pString)
 
 	/* Left String */
 	pRec->first = pString;
-	_XcmsCopyISOLatin1Lowered((char *)pString, (char *)f1);
+	_XcmsCopyISOLatin1Lowered(pString, f1);
 	pString += (1 + RemoveSpaces(pString));
 	pRec->second = pString;
 	/* Right String */
-	_XcmsCopyISOLatin1Lowered((char *)pString, (char *)f2);
+	_XcmsCopyISOLatin1Lowered(pString, f2);
 	pString += RemoveSpaces(pString) + 1;
 	pRec++;
 
@@ -846,6 +801,48 @@ XcmsFreeColorDB()
  *									*
  ************************************************************************/
 
+/*
+ *	NAME
+ *		_XcmsCopyISOLatin1Lowered
+ *
+ *	SYNOPSIS
+ */
+void
+_XcmsCopyISOLatin1Lowered(dst, src)
+    char *dst, *src;
+/*
+ *	DESCRIPTION
+ *		ISO Latin-1 case conversion routine
+ *		Identical to XmuCopyISOLatin1Lowered() but provided here
+ *		to eliminate need to link with libXmu.a.
+ *
+ *		IMPLEMENTORS NOTE:
+ *		    This routine is also used in XcmsFormatOfPrefix.
+ *
+ *	RETURNS
+ *		Void
+ *
+ */
+{
+    register unsigned char *dest, *source;
+
+    for (dest = (unsigned char *)dst, source = (unsigned char *)src;
+	 *source;
+	 source++, dest++)
+    {
+	if ((*source >= XK_A) && (*source <= XK_Z))
+	    *dest = *source + (XK_a - XK_A);
+	else if ((*source >= XK_Agrave) && (*source <= XK_Odiaeresis))
+	    *dest = *source + (XK_agrave - XK_Agrave);
+	else if ((*source >= XK_Ooblique) && (*source <= XK_Thorn))
+	    *dest = *source + (XK_oslash - XK_Ooblique);
+	else
+	    *dest = *source;
+    }
+    *dest = '\0';
+}
+
+
 /*
  *	NAME
  *		_XcmsResolveColorString - 
