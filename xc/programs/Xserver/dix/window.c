@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.23 89/07/17 16:10:20 keith Exp $ */
+/* $XConsortium: window.c,v 5.24 89/07/17 19:13:19 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -573,16 +573,12 @@ CreateRootWindow(screen)
     ScreenPtr	pScreen;
     PixmapFormatRec *format;
 
-    pWin = (WindowPtr)xalloc(sizeof(WindowRec));
+    pWin = (WindowPtr)xalloc(sizeof(WindowRec) +
+			     windowPrivateCount * sizeof (DevUnion));
     if (!pWin)
 	return FALSE;
 
-    pWin->devPrivates = (DevUnion *) xalloc (windowPrivateCount * sizeof (DevUnion));
-    if (!pWin->devPrivates)
-    {
-	xfree (pWin);
-	return FALSE;
-    }
+    pWin->devPrivates = (DevUnion *)(pWin + 1);
 
     savedScreenInfo[screen].pWindow = NULL;
     savedScreenInfo[screen].wid = FakeClientID(0);
@@ -842,19 +838,14 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
         return NullWindow;
     }
 
-    pWin = (WindowPtr) xalloc( sizeof(WindowRec) );
+    pWin = (WindowPtr) xalloc(sizeof(WindowRec) +
+			      windowPrivateCount * sizeof (DevUnion));
     if (!pWin)
     {
 	*error = BadAlloc;
         return NullWindow;
     }
-    pWin->devPrivates = (DevUnion *) xalloc (windowPrivateCount * sizeof (DevUnion));
-    if (!pWin->devPrivates)
-    {
-	xfree (pWin);
-	*error = BadAlloc;
-	return NullWindow;
-    }
+    pWin->devPrivates = (DevUnion *)(pWin + 1);
     pWin->drawable = pParent->drawable;
     pWin->drawable.depth = depth;
     if (depth == pParent->drawable.depth)
@@ -1007,7 +998,6 @@ FreeWindowResources(pWin)
     /* We SHOULD check for an error value here XXX */
     (* pScreen->DestroyWindow)(pWin);
     DisposeWindowOptional (pWin);
-    xfree (pWin->devPrivates);
 }
 
 static void
@@ -3592,7 +3582,7 @@ UnmapSubwindows(pWin)
 	    DeliverEvents(pChild, &event, 1, NullWindow);
 	    if (pChild->viewable)
 	    {
-		MarkWindow(pChild);
+		pChild->valdata = UnmapValData;
 		anyMarked = TRUE;
 	    }
 	    pChild->mapped = FALSE;
