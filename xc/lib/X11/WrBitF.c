@@ -80,7 +80,7 @@ int XWriteBitmapFile(display, filename, bitmap, width, height, x_hot, y_hot)
     return(BitmapOpenFailed);
 
   /* Convert bitmap to an image */
-  image = XGetImage(display, bitmap, 0,0,width, height, 1L, XYBitmap);
+  image = XGetImage(display, bitmap, 0,0,width, height, 1L, XYPixmap);
 
   /* Get standard format for data */
   data = Format_Image(image, &size);
