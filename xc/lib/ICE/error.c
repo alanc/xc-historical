@@ -1,4 +1,4 @@
-/* $XConsortium: error.c,v 1.4 93/09/22 17:55:19 mor Exp $ */
+/* $XConsortium: error.c,v 1.5 93/09/24 15:51:30 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -355,6 +355,8 @@ IcePointer	values;
 	    str = "";
 	}
 
+    fprintf (stderr, "\n");
+
     fprintf (stderr, "ICE error:  Offending minor opcode    = %d (%s)\n",
 	offendingMinorOpcode, str);
 
@@ -459,8 +461,8 @@ IcePointer	values;
 	    break;
     }
 
-    if (severity == IceFatalToProtocol || severity == IceFatalToConnection)
-	exit (1);
+    fprintf (stderr, "\n");
+    exit (1);
 }
 
 
