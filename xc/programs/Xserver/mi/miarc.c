@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.14 90/01/29 20:35:51 keith Exp $ */
+/* $XConsortium: miarc.c,v 5.15 90/05/03 14:52:32 keith Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -34,6 +34,7 @@ SOFTWARE.
 #include "windowstr.h"
 #include "mifpoly.h"
 #include "mi.h"
+#include "mifillarc.h"
 
 double	miDsin(), miDcos(), miDasin(), miDatan2();
 
@@ -71,9 +72,6 @@ ICEILTEMPDECL
 # define X_AXIS 0
 # define Y_AXIS 1
 #endif
-
-/* 360 degrees * 64 sub-degree positions */
-#define FULLCIRCLE (360 * 64)
 
 # define RIGHT_END	0
 # define LEFT_END	1
@@ -255,6 +253,134 @@ miArcSegment(pDraw, pGC, tarc, right, left)
 	     right, left);
 }
 
+static void
+miFillWideSpecialCircle(pDraw, pGC, parc)
+    DrawablePtr	pDraw;
+    GCPtr	pGC;
+    xArc	*parc;
+{
+    xArc inner, outer;
+    int width, half;
+    int doinner;
+    int x, y, e, ex;
+    int yk, xk, ym, xm, dx, dy, xorg, yorg;
+    int slw;
+    int inx, iny, ine, inex;
+    int inyk, inxk, inym, inxm, indx, indy, inxorg;
+    int inslw;
+    miFillArcRec info, ininfo;
+    DDXPointPtr points;
+    register DDXPointPtr pts;
+    int *widths;
+    register int *wids;
+
+    width = pGC->lineWidth;
+    half = width >> 1;
+    outer = *parc;
+    outer.x -= half;
+    outer.y -= half;
+    outer.width += width;
+    outer.height += width;
+    points = (DDXPointPtr)ALLOCATE_LOCAL((sizeof(DDXPointRec) * 2) *
+					 outer.height);
+    if (!points)
+	return;
+    widths = (int *)ALLOCATE_LOCAL((sizeof(int) * 2) * outer.height);
+    if (!widths)
+    {
+	DEALLOCATE_LOCAL(points);
+	return;
+    }
+    miFillArcSetup(&outer, &info);
+    MIFILLARCSETUP();
+    if (width < parc->width)
+    {
+	inner = *parc;
+	inner.x += half;
+	inner.y += half;
+	inner.width -= width;
+	inner.height -= width;
+	miFillArcSetup(&inner, &ininfo);
+	inx = 0;
+	iny = ininfo.y;
+	ine = ininfo.e;
+	inex = ininfo.ex;
+	inxk = ininfo.xk;
+	inxm = ininfo.xm;
+	inyk = ininfo.yk;
+	inym = ininfo.ym;
+	indx = ininfo.dx;
+	indy = ininfo.dy;
+	inxorg = ininfo.xorg;
+    }
+    doinner = -width;
+    if (pGC->miTranslate)
+    {
+	xorg += pDraw->x;
+	yorg += pDraw->y;
+	inxorg += pDraw->x;
+    }
+    pts = points;
+    wids = widths;
+    while (y)
+    {
+	MIFILLCIRCSTEP(slw);
+	if (++doinner > 0)
+	{
+	    ine += (iny << 3) - inxk;
+	    while (ine >= 0)
+	    {
+		inx++;
+		ine += (inex = -((inx << 3) + inxk));
+	    }
+	    iny--;
+	    inslw = (inx << 1) + indx;
+	    if ((ine == inex) && (inslw > 1))
+		inslw--;
+	    pts->x = xorg - x;
+	    pts->y = yorg - y;
+	    *wids++ = inxorg - inx - pts->x;
+	    pts++;
+	    pts->x = inxorg - inx + inslw;
+	    pts->y = yorg - y;
+	    *wids++ = xorg - x + slw - pts->x;
+	    pts++;
+	}
+	else
+	{
+	    pts->x = xorg - x;
+	    pts->y = yorg - y;
+	    pts++;
+	    *wids++ = slw;
+	}
+	if (miFillArcLower(slw))
+	{
+	    if ((doinner > 0) &&
+		(((iny + indy) != 0) && ((inslw > 1) || (ine != inex))))
+	    {
+		pts->x = xorg - x;
+		pts->y = yorg + y + dy;
+		*wids++ = inxorg - inx - pts->x;
+		pts++;
+		pts->x = inxorg - inx + inslw;
+		pts->y = yorg + y + dy;
+		*wids++ = xorg - x + slw - pts->x;
+		pts++;
+	    }
+	    else
+	    {
+		pts->x = xorg - x;
+		pts->y = yorg + y + dy;
+		pts++;
+		*wids++ = slw;
+	    }
+	}
+    }
+    (*pGC->ops->FillSpans)(pDraw, pGC, pts - points, points, widths, FALSE);
+    DEALLOCATE_LOCAL(widths);
+    DEALLOCATE_LOCAL(points);
+}
+
 /*
  * miPolyArc strategy:
  *
@@ -275,6 +401,7 @@ miPolyArc(pDraw, pGC, narcs, parcs)
     xArc	*parcs;
 {
     register int		i;
+    xArc			*parc;
     int				xMin, xMax, yMin, yMax;
     int				dx, dy;
     int				xOrg, yOrg;
@@ -290,13 +417,27 @@ miPolyArc(pDraw, pGC, narcs, parcs)
     width = pGC->lineWidth;
     if(width == 0 && pGC->lineStyle == LineSolid)
     {
-	for(i = 0; i < narcs; i++)
-	    miArcSegment( pDraw, pGC, parcs[i],
+	for(i = narcs, parc = parcs; --i >= 0; parc++)
+	    miArcSegment( pDraw, pGC, parc,
  	    (miArcFacePtr) 0, (miArcFacePtr) 0 );
 	fillSpans (pDraw, pGC);
     }
     else 
     {
+	if ((pGC->lineStyle == LineSolid) && !(width & 1))
+	{
+	    while (narcs && (parcs->width == parcs->height) &&
+		   ((parcs->angle2 >= FULLCIRCLE) ||
+		    (parcs->angle2 <= -FULLCIRCLE)))
+	    {
+		miFillWideSpecialCircle(pDraw, pGC, parcs);
+		narcs--;
+		parcs++;
+	    }
+	    if (!narcs)
+		return;
+	}
+
 	/* Set up pDrawTo and pGCTo based on the rasterop */
 	switch(pGC->alu)
 	{
@@ -314,12 +455,12 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	    xMin = yMin = MAXSHORT;
 	    xMax = yMax = MINSHORT;
 
-	    for(i = 0; i < narcs; i++)
+	    for(i = narcs, parc = parcs; --i >= 0; parc++)
 	    {
-		xMin = min (xMin, parcs[i].x);
-		yMin = min (yMin, parcs[i].y);
-		xMax = max (xMax, (parcs[i].x + (int) parcs[i].width));
-		yMax = max (yMax, (parcs[i].y + (int) parcs[i].height));
+		xMin = min (xMin, parc->x);
+		yMin = min (yMin, parc->y);
+		xMax = max (xMax, (parc->x + (int) parc->width));
+		yMax = max (yMax, (parc->y + (int) parc->height));
 	    }
 
 	    pGCTo = GetScratchGC(1, pDraw->pScreen);
@@ -337,10 +478,10 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	    yOrg = yMin - (width + 1)/2;
 	    dx = (xMax - xMin) + width + 1;
 	    dy = (yMax - yMin) + width + 1;
-	    for(i = 0; i < narcs; i++)
+	    for(i = narcs, parc = parcs; --i >= 0; parc++)
 	    {
-		parcs[i].x -= xOrg;
-		parcs[i].y -= yOrg;
+		parc->x -= xOrg;
+		parc->y -= yOrg;
 	    }
 	    if (pGC->miTranslate)
 	    {
