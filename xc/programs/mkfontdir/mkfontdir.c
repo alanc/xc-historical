@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: mkfontdir.c,v 1.7 92/11/22 22:47:52 gildea Exp $ */
+/* $XConsortium: mkfontdir.c,v 1.8 93/06/14 15:31:46 dpw Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
@@ -38,7 +38,11 @@ SOFTWARE.
 #endif
 #endif
 #ifndef PATH_MAX
+#ifdef WIN32
+#define PATH_MAX 512
+#else
 #include <sys/param.h>
+#endif
 #ifndef PATH_MAX
 #ifdef MAXPATHLEN
 #define PATH_MAX MAXPATHLEN
