@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.30 94/04/17 20:26:40 dpw Exp kaleb $ */
+/* $XConsortium: main.c,v 5.31 94/11/02 15:58:17 kaleb Exp dpw $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -359,7 +359,7 @@ main(argc, argv)
 
 	xfree(ConnectionInfo);
     }
-    exit(0);
+    return(0);
 }
 
 static int padlength[4] = {0, 3, 2, 1};
