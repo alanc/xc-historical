@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.63 91/10/31 09:05:56 rws Exp $
+ * $XConsortium: lex.l,v 1.64 93/07/29 13:21:27 rws Exp $
  *
  * .twmrc lex file
  *
@@ -43,7 +43,7 @@ extern char *ProgramName;
 
 extern int ParseError;
 #ifdef bsdi
-extern int yylineno;
+int yylineno;
 
 #undef YY_INPUT
 #define YY_INPUT(buf,result,max_size) \
