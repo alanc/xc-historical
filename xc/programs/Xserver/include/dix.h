@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.64 93/09/03 08:36:53 dpw Exp $ */
+/* $XConsortium: dix.h,v 1.65 93/09/18 13:47:40 dpw Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -300,15 +300,17 @@ extern void BlockHandler(
 
 extern void WakeupHandler(
 #if NeedFunctionPrototypes
-    unsigned long /*result*/,
+    int /*result*/,
     pointer /*pReadmask*/
 #endif
 );
 
+typedef struct timeval ** OSTimePtr;
+
 typedef void (* BlockHandlerProcPtr)(
 #if NeedNestedPrototypes
     pointer /* blockData */,
-    pointer /* pTimeout */,
+    OSTimePtr /* pTimeout */,
     pointer /* pReadmask */
 #endif
 );
@@ -316,7 +318,7 @@ typedef void (* BlockHandlerProcPtr)(
 typedef void (* WakeupHandlerProcPtr)(
 #if NeedNestedPrototypes
     pointer /* blockData */,
-    unsigned long /* result */,
+    int /* result */,
     pointer /* pReadmask */
 #endif
 );
