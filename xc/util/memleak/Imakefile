@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.18 91/07/16 22:53:38 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.1 92/04/07 14:40:28 keith Exp $
 #define DoNormalLib YES
 #define DoSharedLib NO
 #define DoDebugLib NO
@@ -28,8 +28,6 @@ DEFINES = 	-DTOP_OF_STACK=TopOfStack -DBOTTOM_OF_DATA=BottomOfData\
 
 CDEBUGFLAGS = DebuggableCDebugFlags
 
-HEADERS = memleak.h
-
 SRCS =	fmalloc.c $(GRA_SRCS)
 
 OBJS =	fmalloc.o $(GRA_OBJS)
@@ -51,9 +49,6 @@ InstallLibrary(memleak_d,$(USRLIBDIR))
 
 LintLibraryTarget(memleak,$(SRCS))
 InstallLintLibrary(memleak,$(LINTLIBDIR))
-
-BuildIncludes($(HEADERS),.,.)
-InstallMultiple($(HEADERS),$(INCDIR))
 
 #ifdef HasSaberC
 saber_src:
