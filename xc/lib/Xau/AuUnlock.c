@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuUnlock.c,v 1.6 93/09/03 14:43:29 rws Exp $
+ * $XConsortium: AuUnlock.c,v 1.7 93/09/24 15:10:09 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -19,6 +19,7 @@
  */
 
 #include <X11/Xauth.h>
+#include <X11/Xos.h>
 
 #if NeedFunctionPrototypes
 XauUnlockAuth (
@@ -28,20 +29,21 @@ XauUnlockAuth (file_name)
 char	*file_name;
 #endif
 {
-#ifndef WIN32 /* XXX */
     char	creat_name[1025], link_name[1025];
-    char	*strcpy (), *strcat ();
 
     if (strlen (file_name) > 1022)
 	return;
+#ifndef WIN32
     (void) strcpy (creat_name, file_name);
     (void) strcat (creat_name, "-c");
+#endif
     (void) strcpy (link_name, file_name);
     (void) strcat (link_name, "-l");
     /*
      * I think this is the correct order
      */
+#ifndef WIN32
     (void) unlink (creat_name);
-    (void) unlink (link_name);
 #endif
+    (void) unlink (link_name);
 }
