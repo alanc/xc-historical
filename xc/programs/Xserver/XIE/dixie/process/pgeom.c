@@ -1,4 +1,4 @@
-/* $XConsortium: pgeom.c,v 1.1 93/10/26 10:00:51 rws Exp $ */
+/* $XConsortium: pgeom.c,v 1.2 93/10/31 09:40:35 dpw Exp $ */
 /**** module pgeom.c ****/
 /******************************************************************************
 				NOTICE
@@ -203,7 +203,7 @@ Bool CopyGeomNearestNeighbor(flo, ped, sparms, rparms, tsize, isDefault)
 
      VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
 
-     if (!(ped->techPvt=(void *)
+     if (!(ped->techPvt=(pointer )
 	XieMalloc(sizeof(pTecGeomNearestNeighborDefRec))))
 	     FloAllocError(flo, ped->phototag, xieElemGeometry, return(TRUE));
 
@@ -228,7 +228,7 @@ Bool CopyGeomNearestNeighbor(flo, ped, sparms, rparms, tsize, isDefault)
 Bool CopyGeomBilinearInterp(flo, ped, sparms, rparms, tsize, isDefault) 
      floDefPtr  flo;
      peDefPtr   ped;
-     void *sparms, *rparms;
+     pointer sparms, rparms;
      CARD16	tsize;
      Bool	isDefault;
 {
@@ -250,7 +250,7 @@ Bool CopyGeomGaussian(flo, ped, sparms, rparms, tsize, isDefault)
 
      VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
 
-     if (!(ped->techPvt=(void *)XieMalloc(sizeof(pTecGeomGaussianDefRec))))
+     if (!(ped->techPvt=(pointer )XieMalloc(sizeof(pTecGeomGaussianDefRec))))
 	     FloAllocError(flo, ped->phototag, xieElemGeometry, return(TRUE));
 
      pvt = (pTecGeomGaussianDefPtr)ped->techPvt;
@@ -285,7 +285,7 @@ Bool CopyGeomGaussian(flo, ped, sparms, rparms, tsize, isDefault)
 Bool CopyGeomAntiAlias(flo, ped, sparms, rparms, tsize, isDefault) 
      floDefPtr  flo;
      peDefPtr   ped;
-     void *sparms, *rparms;
+     pointer sparms, rparms;
      CARD16	tsize;
      Bool	isDefault;
 {
@@ -300,7 +300,7 @@ Bool CopyGeomAntiAlias(flo, ped, sparms, rparms, tsize, isDefault)
 static Bool CopyGeomNoParams(flo, ped, sparms, rparms, tsize, isDefault) 
      floDefPtr  flo;
      peDefPtr   ped;
-     void *sparms, *rparms;
+     pointer sparms, rparms;
      CARD16	tsize;
      Bool	isDefault;
 {
@@ -353,7 +353,7 @@ Bool PrepGeomNearestNeighbor(flo, ped, raw, tec)
      floDefPtr  flo;
      peDefPtr   ped;
      xieFloGeometry *raw;
-     void *tec;
+     pointer tec;
 {
   return(TRUE);
 }
@@ -366,7 +366,7 @@ Bool PrepGeomBilinearInterp(flo, ped, raw, tec)
      floDefPtr  flo;
      peDefPtr   ped;
      xieFloGeometry *raw;
-     void *tec;
+     pointer tec;
 {
   return(TRUE);
 }
@@ -377,7 +377,7 @@ Bool PrepGeomGaussian(flo, ped, raw, tec)
      floDefPtr  flo;
      peDefPtr   ped;
      xieFloGeometry *raw;
-     void *tec;
+     pointer tec;
 {
   return(TRUE);
 }
@@ -390,7 +390,7 @@ Bool PrepGeomAntiAlias(flo, ped, raw, tec)
      floDefPtr  flo;
      peDefPtr   ped;
      xieFloGeometry *raw;
-     void *tec;
+     pointer tec;
 {
   return(TRUE);
 }
