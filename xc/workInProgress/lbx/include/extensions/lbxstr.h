@@ -1,4 +1,4 @@
-/* $XConsortium: lbxstr.h,v 1.7 94/11/08 19:50:28 mor Exp $ */
+/* $XConsortium: lbxstr.h,v 1.8 94/12/01 20:02:04 mor Exp mor $ */
 /*
  * $NCDId: @(#)lbxstr.h,v 1.25 1994/11/18 20:29:52 lemke Exp $
  *
@@ -201,9 +201,57 @@ typedef struct _LbxQueryFont {
 } xLbxQueryFontReq;
 #define	sz_xLbxQueryFontReq	8
 
+/* an LBX squished charinfo packs the data in a CARD32 as follows */
+#define	LBX_WIDTH_SHIFT		26
+#define	LBX_LEFT_SHIFT		20
+#define	LBX_RIGHT_SHIFT		13
+#define	LBX_ASCENT_SHIFT	7
+#define	LBX_DESCENT_SHIFT	0
+
+#define	LBX_WIDTH_BITS		6
+#define	LBX_LEFT_BITS		6
+#define	LBX_RIGHT_BITS		7
+#define	LBX_ASCENT_BITS		6
+#define	LBX_DESCENT_BITS	7
+
+#define	LBX_WIDTH_MASK		0xfc000000
+#define	LBX_LEFT_MASK		0x03f00000
+#define	LBX_RIGHT_MASK		0x000fe000
+#define	LBX_ASCENT_MASK		0x00001f80
+#define	LBX_DESCENT_MASK	0x0000007f
+
+#define	LBX_MASK_BITS(val, n)	((unsigned int) ((val) & ((1 << (n)) - 1)))
+
+typedef struct {
+    CARD32	metrics B32;
+} xLbxCharInfo;
+
+/* note that this is identical to xQueryFontReply except for missing 
+ * first 2 words
+ */
+typedef struct {
+    xCharInfo minBounds; 
+/* XXX do we need to leave this gunk? */
+#ifndef WORD64
+    CARD32 walign1 B32;
+#endif
+    xCharInfo maxBounds; 
+#ifndef WORD64
+    CARD32 walign2 B32;
+#endif
+    CARD16 minCharOrByte2 B16, maxCharOrByte2 B16;
+    CARD16 defaultChar B16;
+    CARD16 nFontProps B16;  /* followed by this many xFontProp structures */
+    CARD8 drawDirection;
+    CARD8 minByte1, maxByte1;
+    BOOL allCharsExist;
+    INT16 fontAscent B16, fontDescent B16;
+    CARD32 nCharInfos B32; /* followed by this many xLbxCharInfo structures */
+} xLbxFontInfo;
+
 typedef struct {
     BYTE	type;			/* X_Reply */
-    CARD8	pad;
+    CARD8	compression;
     CARD16	sequenceNumber B16;
     CARD32	length B32;
     CARD32	tag B32;
@@ -216,8 +264,7 @@ typedef struct {
      * but we hope that it won't be needed, (and it won't fit in 32 bytes
      * with the tag anyways)
      *
-     * if additional data is needed, its sent just like X_QueryFont, with
-     * an xQueryFontReply struct plus the xCharInfos
+     * if any additional data is needed, its sent in a xLbxFontInfo
      */
 } xLbxQueryFontReply;
 #define sz_xLbxQueryFontReply	32
