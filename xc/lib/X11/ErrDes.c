@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: XErrDes.c,v 11.28 88/09/19 13:55:50 jim Exp $
  */
 
 /***********************************************************
@@ -52,7 +52,7 @@ char *XErrorList[] = {
     	/* BadGC   	*/  	"parameter not a GC",
 	/* BadIDChoice  */	"invalid resource ID for this connection",
 	/* BadName	*/	"font or color name does not exist",
-	/* BadLength	*/	"request length incorrect; internal Xlib error",
+	/* BadLength	*/	"request too long or internal Xlib length error",
 	/* BadImplementation */	"server does not implement function",
 };
 int XErrorListSize = sizeof(XErrorList);
