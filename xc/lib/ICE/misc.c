@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.18 94/03/15 13:35:15 mor Exp $ */
+/* $XConsortium: misc.c,v 1.19 94/03/17 15:37:31 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -476,9 +476,10 @@ int	 	*data;
 }
 
 
-IceReadData16 (iceConn, nbytes, data)
+IceReadData16 (iceConn, swap, nbytes, data)
 
 IceConn 	iceConn;
+Bool		swap;
 unsigned long 	nbytes;
 short  		*data;
 
@@ -487,9 +488,10 @@ short  		*data;
 }
 
 
-IceReadData32 (iceConn, nbytes, data)
+IceReadData32 (iceConn, swap, nbytes, data)
 
 IceConn 	iceConn;
+Bool		swap;
 unsigned long  	nbytes;
 int	 	*data;
 
