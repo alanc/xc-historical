@@ -49,6 +49,7 @@ extern void InitFonts();
 extern void InitAtoms();
 extern void InitExtensions();
 extern void ProcessCmdLine();
+static Bool create_connection_block();
 
 extern int  serverNum;
 extern ClientPtr currentClient;
