@@ -29,6 +29,8 @@ SRCS = \
 	mailfull \
 	mailfullmsk \
 	mensetmanus \
+	menu8 \
+	menu16 \
 	noletters \
 	opendot \
 	opendotMask \
