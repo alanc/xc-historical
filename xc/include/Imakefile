@@ -8,7 +8,8 @@ EXPORTS = \
 	Xprotostr.h \
 	copyright.h \
 	keysym.h \
-	keysymdef.h
+	keysymdef.h \
+	DECkeysym.h
 
 IMPORTS = \
 	$(OLDXMENUSRC)/XMenu.h \
