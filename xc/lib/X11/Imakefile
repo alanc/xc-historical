@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.122 91/07/24 23:32:54 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.123 91/07/25 11:58:01 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -722,8 +722,7 @@ LCHDRS = \
 	TextExtBd.c \
 	TextPerBd.c
 
-LCSRCS = \
-	XSetLocale.c \
+LCSYMSRCS = \
 	ProtoFlt.c \
 	XCnvCTToWC.c \
 	XCnvMBToCT.c \
@@ -758,6 +757,10 @@ LCSRCS = \
 	XwcTextExt.c \
 	XwcTextPer.c \
 	XwcTextPrp.c
+
+LCSRCS = \
+	XSetLocale.c \
+	$(LCSYMSRCS)
 
 LCOBJS = \
 	XSetLocale.o \
@@ -855,8 +858,7 @@ LCHDRS = \
 	XIMProto.h \
 	Ximplc.h
 
-LCSRCS = \
-	XSetLocale.o \
+LCSYMSRCS = \
 	XimpCT.c \
 	XimpCallbk.c \
 	XimpConv.c \
@@ -895,6 +897,10 @@ LCSRCS = \
 	XimpWTxtPr.c \
 	XimpXConv.c \
 	Ximpint.c
+
+LCSRCS = \
+	XSetLocale.c \
+	$(LCSYMSRCS)
 
 LCOBJS = \
 	XSetLocale.o \
@@ -1043,15 +1049,15 @@ ks_tables.h: $(INCLUDESRC)/keysymdef.h util/makekeys.c
 	$(MV) ks_tables_h $@
 	$(RM) makekeys ks_tables_h
 
-includes:: ks_tables.h Wrap.h $(AUTHSRCS) $(XDMAUTHSRCS) $(LCHDRS) $(LCSRCS)
+includes:: ks_tables.h Wrap.h $(AUTHSRCS) $(XDMAUTHSRCS) $(LCHDRS) $(LCSYMSRCS)
 
-depend:: ks_tables.h Wrap.h $(AUTHSRCS) $(XDMAUTHSRCS) $(LCHDRS) $(LCSRCS)
+depend:: ks_tables.h Wrap.h $(AUTHSRCS) $(XDMAUTHSRCS) $(LCHDRS) $(LCSYMSRCS)
 
 clean::
 	$(RM) ks_tables_h ks_tables.h makekeys
 
 clean::
-	$(RM) $(AUTHSRCS) $(XDMAUTHSRCS) $(LCHDRS) $(LCSRCS)
+	$(RM) $(AUTHSRCS) $(XDMAUTHSRCS) $(LCHDRS) $(LCSYMSRCS)
 
 DependTarget3($(SRCS1),$(SRCS2),$(SRCS3))
 
