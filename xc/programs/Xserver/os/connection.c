@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.149 92/10/20 09:29:05 rws Exp $ */
+/* $XConsortium: connection.c,v 1.150 92/10/21 11:06:03 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -69,6 +69,10 @@ SOFTWARE.
 #   include <netinet/tcp.h>
 #  endif
 # endif
+#endif
+
+#if defined(SO_DONTLINGER) && defined(SO_LINGER)
+#undef SO_DONTLINGER
 #endif
 
 #ifdef UNIXCONN

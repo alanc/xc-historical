@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.20 92/08/10 20:49:33 eswu Exp $ */
+/* $XConsortium: connection.c,v 1.21 92/11/18 21:30:58 gildea Exp $ */
 /*
  * handles connections
  */
@@ -73,6 +73,10 @@
 #include	"globals.h"
 #include	"osstruct.h"
 #include	"servermd.h"
+
+#if defined(SO_DONTLINGER) && defined(SO_LINGER)
+#undef SO_DONTLINGER
+#endif
 
 extern int  errno;
 
