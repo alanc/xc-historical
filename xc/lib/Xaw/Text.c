@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.78 88/12/13 09:21:03 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.79 89/02/01 11:29:22 swick Exp $";
 #endif
 
 
@@ -833,16 +833,21 @@ static void LoseSelection(w, selection)
 	}
     }
 
-    for (i = ctx->text.s.atom_count; i; i--) {
-	if (ctx->text.s.selections[i-1] != 0) break;
+    while (ctx->text.s.atom_count &&
+	   ctx->text.s.selections[ctx->text.s.atom_count-1] == 0) {
+	ctx->text.s.atom_count--;
     }
-    ctx->text.s.atom_count = i;
 
+    /* must walk the selection list in opposite order from UnsetSelection */
     for (i = 0, atomP = ctx->text.s.selections;
 	 i < ctx->text.s.atom_count; i++, atomP++)
     {
 	if (*atomP == (Atom)0) {
 	    *atomP = ctx->text.s.selections[--ctx->text.s.atom_count];
+	    while (ctx->text.s.atom_count &&
+		   ctx->text.s.selections[ctx->text.s.atom_count-1] == 0) {
+		ctx->text.s.atom_count--;
+	    }
 	}
     }
 
@@ -1874,17 +1879,11 @@ void XtTextUnsetSelection(w)
     int i;
     void (*nullProc)() = NULL;
 
-    ctx->text.s.left = ctx->text.s.right = ctx->text.insertPos;
-    if (ctx->text.source->SetSelection != nullProc) {
-	(*ctx->text.source->SetSelection) (ctx->text.source, ctx->text.s.left,
-					   ctx->text.s.right,
-					   ctx->text.s.atom_count ? 
-					   ctx->text.s.selections[0] : NULL);
-    }
-
+    /* must walk the selection list in opposite order from LoseSelection */
     for (i = ctx->text.s.atom_count; i;) {
 	Atom selection = ctx->text.s.selections[--i];
 	switch (selection) {
+	  case 0:		/* LoseSelection called once */
 	  case XA_CUT_BUFFER0:
 	  case XA_CUT_BUFFER1:
 	  case XA_CUT_BUFFER2:
@@ -1896,7 +1895,9 @@ void XtTextUnsetSelection(w)
 	}
 	XtDisownSelection(w, selection);
 	LoseSelection(w, &selection); /* in case it wasn't just called */
+	if (i > ctx->text.s.atom_count) i = ctx->text.s.atom_count;
     }
+    /* LoseSelection will have called SetNewSelection on the empty list */
 }
 
 
