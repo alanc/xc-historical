@@ -1,6 +1,5 @@
-/* $XConsortium: AllCmap.c,v 1.1 89/03/09 13:22:16 converse Exp $ */
-
-/* 
+/* $XConsortium: AllCmap.c,v 1.2 89/03/20 14:54:13 converse Exp $
+ * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -13,6 +12,14 @@
  * suitability of this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  *
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
+ * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * Author:  Donna Converse, MIT X Consortium
  */
 
 #include <stdio.h>
@@ -20,7 +27,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
  
-static XVisualInfo	*getDeepestVisual();
+static XVisualInfo *getDeepestVisual();
 
 /*
  * To create all of the appropriate standard colormaps for every visual of
@@ -29,7 +36,7 @@ static XVisualInfo	*getDeepestVisual();
  * Define and retain as permanent resources all standard colormaps which are
  * meaningful for the visuals of each screen of the display.  Return 0 on
  * failure, non-zero on success.  If the property of any standard colormap 
- * is already defined, do not redefine it.
+ * is already defined, redefine it.
  *
  * This interface is intended to be used by window managers or a client
  * upon start-up of a session.
@@ -47,7 +54,7 @@ static XVisualInfo	*getDeepestVisual();
  *		RGB_DEFAULT_MAP
  *		RGB_GRAY_MAP
  *
- * Therefore a screen may have at most 6 standard colormaps defined.
+ * Therefore a screen may have at most 6 standard colormap properties defined.
  *
  * A standard colormap is associated with a particular visual of the screen.
  * A screen may have multiple visuals defined, including visuals of the same
@@ -67,27 +74,21 @@ static XVisualInfo	*getDeepestVisual();
  *	3. TrueColor and GrayScale
  *	4. StaticColor and StaticGray
  *
+ * Allows partial success by screenful.  For example, if a map on screen 1
+ * fails, the maps on screen 0, created earlier, will remain.  However,
+ * none on screen 1 will remain.  If a map on 0 fails, none will remain.
+ *
  * See the comments under XmuVisualStandardColormaps() for notes on which
  * standard colormaps are meaningful under these classes of visuals.
  */
 
-Status XmuAllStandardColormaps(display)
-    Display	*display;	/* Specifies the connection to the X server */
+Status XmuAllStandardColormaps(dpy)
+    Display	*dpy;		/* Specifies the connection to the X server */
 {
-    Display	*dpy;
     int 	nvisuals, scr;
     Status	status;
     long	vinfo_mask;
-    XVisualInfo	template, *vinfo, *v;
-    
-    /* open a new connection to the server */
-    if ((dpy = XOpenDisplay(DisplayString(display))) == NULL) 
-    {
-	(void) fprintf(stderr,
-	         "XmuAllStandardColormaps: cannot open display \"%s\".\n",
-	         DisplayString(display));
-	return 0;
-    }
+    XVisualInfo	template, *vinfo = NULL, *v1 = NULL, *v2 = NULL;
     
     /* for each screen, determine all visuals of this server */
     for (scr=0; scr < ScreenCount(dpy); scr++)
@@ -98,37 +99,41 @@ Status XmuAllStandardColormaps(display)
 	if (vinfo == NULL) /* unexpected: a screen with no visuals */
 	    continue;
 
-	if (((v = getDeepestVisual(DirectColor, vinfo, nvisuals)) != NULL) ||
-	    ((v = getDeepestVisual(PseudoColor, vinfo, nvisuals)) != NULL))
-	    status = XmuVisualStandardColormaps(dpy, scr, v->visualid,
-						(unsigned int) v->depth, 0);
-	else
-	{
-	    if (((v = getDeepestVisual(TrueColor, vinfo, nvisuals)) != NULL) ||
-		((v = getDeepestVisual(StaticColor, vinfo, nvisuals)) != NULL))
-		status = XmuVisualStandardColormaps(dpy, scr, v->visualid,
-						   (unsigned int) v->depth, 0);
+	v1 = getDeepestVisual(DirectColor, vinfo, nvisuals);
+	v2 = getDeepestVisual(PseudoColor, vinfo, nvisuals);
+
+	if (v2 &&
+	    (!v1 || (v2->colormap_size >=
+		     ((v1->red_mask | v1->green_mask | v1->blue_mask) + 1))))
+	    status = XmuVisualStandardColormaps(dpy, scr, v2->visualid,
+						(unsigned) v2->depth, 1, 1);
+	else if (v1)
+	    status = XmuVisualStandardColormaps(dpy, scr, v1->visualid,
+						(unsigned) v1->depth, 1, 1);
+
+	else {
+	    if (((v1 = getDeepestVisual(TrueColor, vinfo, nvisuals)) != NULL)
+		|| ((v1 = getDeepestVisual(StaticColor, vinfo, nvisuals)) !=
+		NULL))
+		status = XmuVisualStandardColormaps(dpy, scr, v1->visualid,
+						   (unsigned) v1->depth, 1, 1);
 	    if (status && 
-	       (((v = getDeepestVisual(GrayScale, vinfo, nvisuals)) != NULL) ||
-		((v = getDeepestVisual(StaticGray, vinfo, nvisuals)) != NULL)))
-		status = XmuVisualStandardColormaps(dpy, scr, v->visualid,
-						   (unsigned int) v->depth, 0);
+	       (((v1 = getDeepestVisual(GrayScale, vinfo, nvisuals)) != NULL)
+		|| ((v1 = getDeepestVisual(StaticGray, vinfo, nvisuals)) != 
+		    NULL)))
+		status = XmuVisualStandardColormaps(dpy, scr, v1->visualid,
+						   (unsigned) v1->depth, 1, 1);
 	}
-	XFree((char *) vinfo);
+	XFree ((char *) vinfo);
 	if (!status) break;
     }
-    
-    /* if all went well, retain any new properties until the server recycles */
-    if (status)
-	XSetCloseDownMode(dpy, RetainPermanent);
-    XCloseDisplay(dpy);
     return status;
 }
 
 static XVisualInfo *getDeepestVisual(visual_class, vinfo, nvisuals)
-    int		visual_class;
-    XVisualInfo	*vinfo;
-    int		nvisuals;
+    int		visual_class;	/* specifies the visual class */
+    XVisualInfo	*vinfo;		/* specifies all visuals for a screen */
+    int		nvisuals;	/* specifies number of visuals in the list */
 {
     register int	i;
     unsigned int	maxdepth = 0;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.17 89/04/07 16:06:26 jim Exp $
+ * $XConsortium: Xmu.h,v 1.19 89/05/11 14:01:56 kit Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -73,7 +73,6 @@ typedef caddr_t CloseHook;
 /*
  * public entry points
  */
-Status XmuAllStandardColormaps( /* Display* */ );
 Window XmuClientWindow();
 Boolean XmuConvertStandardSelection( /* Widget, Time, Atom*, ... */ );
 void XmuCopyISOLatin1Lowered();
@@ -94,15 +93,20 @@ AtomPtr XmuMakeAtom( /* char* */ );
 Atom XmuInternAtom( /* Display*, AtomPtr */ );
 void XmuInternStrings( /* Display*, String*, Cardinal, Atom* */);
 char *XmuGetAtomName( /* Display*, Atom */ );
-Status XmuGetColormapAllocation();
 char *XmuNameOfAtom( /* AtomPtr */ );
 int XmuReadBitmapData(), XmuReadBitmapDataFromFile();
 int XmuPrintDefaultErrorMessage();
-Status XmuStandardColormap( /* Display*, int, Visual*, ... */);
-Status XmuVisualStandardColormaps( /* Display*, int, Visual*, int */);
 CloseHook XmuAddCloseDisplayHook (/* Display *, int (*)(), caddr_t */);
 Bool XmuRemoveCloseDisplayHook (/* Display *,CloseHook,int (*)(),caddr_t */);
 Bool XmuLookupCloseDisplayHook (/* Display *,CloseHook,int (*)(),caddr_t */);
+
+Status XmuAllStandardColormaps( /* Display* */ );
+Status XmuCreateColormap( /* Display*, XStandardColormap* */ );
+void   XmuDeleteStandardCoormap( /* Display*, int, Atom */ );
+Status XmuGetColormapAllocation( /* XVisualInfo*, Atom, unsigned long, ... */);
+Status XmuLookupColormap( /* Display*, int, VisualID, ... */ );
+XStandardColormap *XmuStandardColormap( /* Display*, int, VisualID, ... */ );
+Status XmuVisualStandardColormaps( /* Display*, int, VisualID, ... */ );
 
 
 #ifndef _Atoms_c_
