@@ -1,8 +1,4 @@
-/*
-* $Header: Constraint.h,v 1.2 88/02/03 15:11:29 swick Exp $
-*/
-
-
+/* $xHeader$ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -33,7 +29,7 @@ SOFTWARE.
 typedef struct _ConstraintClassRec *ConstraintWidgetClass;
 
 #ifndef CONSTRAINT
-globalref WidgetClass constraintWidgetClass;
+externalref WidgetClass constraintWidgetClass;
 #endif
 
 #endif _XtConstraint_h
