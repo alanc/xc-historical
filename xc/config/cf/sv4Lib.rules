@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sv4Lib.rules,v 1.10 93/09/04 16:02:16 rws Exp $
+XCOMM $XConsortium: sv4Lib.rules,v 1.11 93/09/11 17:58:53 rws Exp $
 
 /*
  * SVR4 shared library rules
@@ -27,6 +27,13 @@ XCOMM $XConsortium: sv4Lib.rules,v 1.10 93/09/04 16:02:16 rws Exp $
 #define PositionIndependentCFlags -fpic
 #else
 #define PositionIndependentCFlags -K PIC
+#endif
+#endif
+#ifndef PositionIndependentCplusplusFlags
+#if HasGcc2ForCplusplus
+#define PositionIndependentCplusplusFlags -fpic
+#else
+#define PositionIndependentCplusplusFlags -Kpic
 #endif
 #endif
 
