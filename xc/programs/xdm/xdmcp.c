@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: xdmcp.c,v 1.8 92/08/10 11:05:48 gildea Exp $
+ * $XConsortium: xdmcp.c,v 1.9 93/09/20 18:03:33 hersh Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -523,14 +523,16 @@ all_query_respond (from, fromlen, authenticationNames, type)
     ARRAY8	status;
     ARRAY8	addr;
     CARD16	connectionType;
+    int		family;
     int		length;
 
-    connectionType = ConvertAddr(from, &length, &(addr.data));
+    family = ConvertAddr(from, &length, &(addr.data));
     addr.length = length;	/* convert int to short */
     Debug ("all_query_respond: conntype=%d, addr=%lx, len=%d\n",
-	   connectionType, *(addr.data), addr.length);
-    if (connectionType < 0)
+	   family, *(addr.data), addr.length);
+    if (family < 0)
 	return;
+    connectionType = family;
 
     if (type == INDIRECT_QUERY)
 	RememberIndirectClient (&addr, connectionType);
