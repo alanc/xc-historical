@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.50 93/09/20 17:39:18 hersh Exp $ */
+/* $XConsortium: xhost.c,v 11.51 93/09/26 15:40:49 gildea Exp $ */
  
 /*
 
@@ -158,6 +158,7 @@ main(argc, argv)
 	register char *arg;
 	int i, nhosts;
 	char *hostname;
+	int nfailed = 0;
 	XHostAddress *list;
 	Bool enabled = False;
 #ifdef DNETCONN
@@ -219,10 +220,12 @@ main(argc, argv)
 				  list[i].family);
 #endif
 		      }
-		      if (nameserver_timedout)
-			printf("\t(no nameserver response within %d seconds)\n",
-			        NAMESERVER_TIMEOUT);
-		      else printf("\n");
+		      if (nameserver_timedout) {
+			  printf("\t(no nameserver response within %d seconds)\n",
+				 NAMESERVER_TIMEOUT);
+			  nameserver_timedout = 0;
+		      } else
+			  printf("\n");
 		    }
 		    free(list);
 		    endhostent();
@@ -247,6 +250,7 @@ main(argc, argv)
 		    if (!change_host (dpy, arg, False)) {
 			fprintf (stderr, "%s:  bad hostname \"%s\"\n",
 				 ProgramName, arg);
+			nfailed++;
 		    }
 		}
 	    } else {
@@ -260,12 +264,13 @@ main(argc, argv)
 		    if (!change_host (dpy, arg, True)) {
 			fprintf (stderr, "%s:  bad hostname \"%s\"\n",
 				 ProgramName, arg);
+			nfailed++;
 		    }
 		}
 	    }
 	}
 	XCloseDisplay (dpy);  /* does an XSync first */
-	exit(0);
+	exit(nfailed);
 }
 
  
@@ -306,39 +311,58 @@ int change_host (dpy, name, add)
   namelen = strlen(name);
   if ((lname = (char *)malloc(namelen)) == NULL) {
     fprintf (stderr, "%s: malloc bombed in change_host\n", ProgramName);
-    return -1;
+    exit (1);
   }
   for (i = 0; i < namelen; i++) {
     lname[i] = tolower(name[i]);
   }
-#ifdef TCPCONN
   if (!strncmp("inet:", lname, 5)) {
+#ifdef TCPCONN
     family = FamilyInternet;
     name += 5;
-  }
+#else
+    fprintf (stderr, "%s: not compiled for TCP/IP\n", ProgramName);
+    return 0;
 #endif
-#ifdef DNETCONN
+  }
   if (!strncmp("dnet:", lname, 5)) {
+#ifdef DNETCONN
     family = FamilyDECnet;
     name += 5;
-  }
+#else
+    fprintf (stderr, "%s: not compiled for DECnet\n", ProgramName);
+    return 0;
 #endif
-#ifdef SECURE_RPC
+  }
   if (!strncmp("nis:", lname, 4)) {
+#ifdef SECURE_RPC
     family = FamilyNetname;
     name += 4;
-  }
+#else
+    fprintf (stderr, "%s: not compiled for Secure RPC\n", ProgramName);
+    return 0;
 #endif
-#ifdef K5AUTH
+  }
   if (!strncmp("krb:", lname, 4)) {
+#ifdef K5AUTH
     family = FamilyKrb5Principal;
     name +=4;
-  }
+#else
+    fprintf (stderr, "%s: not compiled for Kerberos V5\n", ProgramName);
+    return 0;
 #endif
+  }
   if (!strncmp("local:", lname, 6)) {
     family = FamilyLocalHost;
   }
+  if (family == FamilyWild && (cp = strchr(lname, ':'))) {
+    *cp = '\0';
+    fprintf (stderr, "%s: unknown address family \"%s\"\n",
+	     ProgramName, lname);
+    return 0;
+  }
   free(lname);
+
 #ifdef DNETCONN
   if (family == FamilyDECnet ||
       (cp = strchr(name, ':')) && (*(cp + 1) == ':') &&
@@ -348,7 +372,7 @@ int change_host (dpy, name, add)
       dnaddr = *dnaddrp;
     } else {
       if ((np = getnodebyname (name)) == NULL) {
-	  fprintf (stderr, "%s:  unble to get node name for \"%s::\"\n",
+	  fprintf (stderr, "%s:  unable to get node name for \"%s::\"\n",
 		   ProgramName, name);
 	  return 0;
       }
@@ -499,6 +523,7 @@ int change_host (dpy, name, add)
     return 1;
   }
 #endif /* NEEDSOCKETS */
+  return 0;
 }
 
 
@@ -527,6 +552,7 @@ static char *get_hostname (ha)
   char *kname;
   static char kname_out[255];
 #endif
+
 #ifdef TCPCONN
   if (ha->family == FamilyInternet) {
     /* gethostbyaddr can take a LONG time if the host does not exist.
@@ -535,7 +561,6 @@ static char *get_hostname (ha)
        gethostbyaddr will continue after a signal, so we have to
        jump out of it. 
        */
-    nameserver_timedout = 0;
     signal(SIGALRM, nameserver_lost);
     alarm(4);
     if (setjmp(env) == 0) {
