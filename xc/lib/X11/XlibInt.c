@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.112 89/08/15 14:28:08 jim Exp $
+ * $XConsortium: XlibInt.c,v 11.113 89/11/08 17:08:22 converse Exp $
  */
 
 #include "copyright.h"
@@ -1337,6 +1337,7 @@ char *_XAllocScratch (dpy, nbytes)
 	    if (dpy->scratch_buffer) Xfree (dpy->scratch_buffer);
 	    if (dpy->scratch_buffer = Xmalloc((unsigned) nbytes))
 		dpy->scratch_length = nbytes;
+	    else dpy->scratch_lenth = 0;
 	}
 	return (dpy->scratch_buffer);
 }
