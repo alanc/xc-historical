@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.91 91/10/31 09:33:48 rws Exp $
+ *	$XConsortium: misc.c,v 1.92 92/03/13 17:02:08 gildea Exp $
  */
 
 /*
@@ -59,6 +59,8 @@ extern char *getenv();
 #if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
 char *malloc();
 #endif /* macII */
+
+char *truedir();
 
 static void DoSpecialEnterNotify();
 static void DoSpecialLeaveNotify();
@@ -533,14 +535,14 @@ register TScreen *screen;
 		if(access(screen->logfile, F_OK) == 0) {
 			if(access(screen->logfile, W_OK) < 0)
 				return;
-		} else if(cp = rindex(screen->logfile, '/')) {
-			*cp = 0;
-			i = access(screen->logfile, W_OK);
-			*cp = '/';
-			if(i < 0)
-				return;
-		} else if(access(".", W_OK) < 0)
+		} else {
+		    char *dirname = truedir(screen->logfile);
+
+		    if (!dirname)
 			return;
+		    if (access(dirname, W_OK) < 0)
+			return;
+		}
 		if((screen->logfd = open(screen->logfile, O_WRONLY | O_APPEND |
 		 O_CREAT, 0644)) < 0)
 			return;
@@ -550,6 +552,72 @@ register TScreen *screen;
 	screen->logstart = screen->TekEmu ? Tbptr : bptr;
 	screen->logging = TRUE;
 	update_logging();
+}
+
+/* truedir - return the directory the file is (or would be) in,
+   following symbolic links.  Returns a pointer to static storage.
+   Returns NULL if gets an error.
+   By gildea, Dec 1992.
+   */
+char *truedir(pathname)
+    char *pathname;
+{
+#define TRUEDIRMAX 1024
+    static char dirname[TRUEDIRMAX];
+    char *filep = pathname;
+    char *cp;
+    int len;
+#ifndef NO_SYMLINKS
+    int i;
+    char linkval[TRUEDIRMAX];
+    int loopcount;
+    
+    for (loopcount=0; ; loopcount++)
+    {
+	if (loopcount > 20)	/* arbitrary limit, but >= POSIX_SYMLOOP */
+	    return NULL;
+	i = readlink(filep, linkval, TRUEDIRMAX-1);
+	if (i < 0 && (errno == EINVAL || errno == ENOENT))
+	    break;		/* EINVAL means not a symlink */
+	if (i < 0 || i >= TRUEDIRMAX-1)
+	    return NULL;
+	linkval[i] = '\0';
+
+	if (linkval[0] == '/') {
+	    strcpy(dirname, linkval);
+	} else {
+	    /* relative name read from link--take dir from link name */
+	    cp = strrchr(filep, '/');
+	    if (cp) {
+		cp++;
+		if (cp - filep + i >= TRUEDIRMAX)
+		    return NULL;
+		*cp = '\0';
+		strcpy(dirname, filep);
+	    } else
+		dirname[0] = '\0';
+	    strcat(dirname, linkval);
+	}
+	filep = dirname;
+    }
+#endif
+    
+    cp = strrchr(filep, '/');
+    if (cp) {
+	if (cp == filep)
+	    cp++;		/* root directory */
+	len = cp - filep;
+	if (len >= TRUEDIRMAX)
+	    return NULL;
+	if (filep != dirname) {
+	    strncpy(dirname, filep, len);
+	    cp = dirname + len;
+	}
+	*cp = '\0';
+    } else
+	strcpy(dirname, ".");
+
+    return dirname;
 }
 
 CloseLog(screen)
