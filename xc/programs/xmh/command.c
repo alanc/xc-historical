@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: command.c,v 1.9 88/01/07 11:55:15 swick Locked $";
+static char rcs_id[] = "$Header: command.c,v 2.9 88/01/07 11:55:15 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -109,32 +109,36 @@ DoCommand(argv, inputfile, outputfile)
     (void) signal(SIGCHLD, ChildDone);
     pid = vfork();
     if (inputfile) {
-        fclose(fin);
-        dup2(old_stdin,  fileno(stdin));
+	fclose(fin);
+	if (pid != 0) dup2(old_stdin,  fileno(stdin));
 	close(old_stdin);
     }
     if (outputfile) {
-        fclose(fout);
-        dup2(old_stdout, fileno(stdout));
+	fclose(fout);
+	if (pid != 0) dup2(old_stdout, fileno(stdout));
 	close(old_stdout);
     }
     if (!debug) {
-        fclose(ferr);
-        dup2(old_stderr, fileno(stderr));
+	fclose(ferr);
+	if (pid != 0) dup2(old_stderr, fileno(stderr));
 	close(old_stderr);
 	if (!outputfile) {
-	    dup2(old_stdout, fileno(stdout));
+	    if (pid != 0) dup2(old_stdout, fileno(stdout));
 	    close(old_stdout);
 	}
     }
     if (pid == -1) Punt("Couldn't fork!");
     if (pid) {			/* We're the parent process. */
 	while (!childdone) {
+	    XEvent event;
 	    readfds = fds;
 	    (void) select(ConnectionNumber(theDisplay)+1, (int *) &readfds,
 			  (int *) NULL, (int *) NULL, (struct timeval *) NULL);
 	    if (FD_ISSET(ConnectionNumber(theDisplay), &readfds)) {
 		(void) XPending(theDisplay);
+		while (XCheckTypedEvent( theDisplay, Expose, &event )) {
+		    XtDispatchEvent( &event );
+		}
 	    }
 	}
 #ifdef SYSV
