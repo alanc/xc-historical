@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: XlibInt.c,v 11.82 88/09/02 14:47:33 jim Exp $";
+static char rcsid[] = "$XConsortium: XlibInt.c,v 11.83 88/09/06 16:09:43 jim Exp $";
 #endif
 
 /*
@@ -105,6 +105,7 @@ _XFlush (dpy)
 	 * and size decremented as buffer is written out.
 	 */
 	while (size) {
+	    errno = 0;
 	    write_stat = WriteToServer(dpy->fd, bufindex, (int) todo);
 	    if (write_stat >= 0) {
 		size -= write_stat;
@@ -112,6 +113,10 @@ _XFlush (dpy)
 		bufindex += write_stat;
 #ifdef EWOULDBLOCK
 	    } else if (errno == EWOULDBLOCK) {
+		_XWaitForWritable(dpy);
+#endif
+#ifdef SUNSYSV
+	    } else if (errno == 0) {
 		_XWaitForWritable(dpy);
 #endif
 #ifdef EMSGSIZE
@@ -224,6 +229,7 @@ _XRead (dpy, data, size)
 	register long bytes_read;
 
 	if (size == 0) return;
+	errno = 0;
 	while ((bytes_read = ReadFromServer(dpy->fd, data, (int)size))
 		!= size) {
 
@@ -237,6 +243,11 @@ _XRead (dpy, data, size)
 		    errno = 0;
 		}
 #endif		
+#ifdef SUNSYSV
+		else if (errno == 0) {
+		    _XWaitForReadable(dpy);
+		}
+#endif
 		else if (bytes_read == 0) {
 		    /* Read failed because of end of file! */
 		    errno = EPIPE;
@@ -397,6 +408,7 @@ _XReadPad (dpy, data, size)
 	iov[1].iov_base = pad;
 	size += iov[1].iov_len;
 
+	errno = 0;
 	while ((bytes_read = ReadvFromServer (dpy->fd, iov, 2)) != size) {
 
 	    if (bytes_read > 0) {
@@ -413,6 +425,11 @@ _XReadPad (dpy, data, size)
 	    else if (errno == EWOULDBLOCK) {
 		_XWaitForReadable(dpy);
 		errno = 0;
+	    }
+#endif
+#ifdef SUNSYSV
+	    else if (errno == 0) {
+		_XWaitForReadable(dpy);
 	    }
 #endif
 	    else if (bytes_read == 0) {
@@ -477,12 +494,17 @@ _XSend (dpy, data, size)
 	    /* Provide 32-bit aligned padding as necessary */
 	    InsertIOV(pad, padlength[size & 3])
     
+	    errno = 0;
 	    if ((len = WritevToServer(dpy->fd, iov, i)) >= 0) {
 		skip += len;
 		total -= len;
 		todo = total;
 #ifdef EWOULDBLOCK
 	    } else if (errno == EWOULDBLOCK) {
+		_XWaitForWritable(dpy);
+#endif
+#ifdef SUNSYSV
+	    } else if (errno == 0) {
 		_XWaitForWritable(dpy);
 #endif
 #ifdef EMSGSIZE
