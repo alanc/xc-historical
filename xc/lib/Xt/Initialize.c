@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.192 91/06/11 15:08:19 converse Exp $ */
+/* $XConsortium: Initialize.c,v 1.193 91/06/12 09:10:12 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -267,7 +267,7 @@ static Bool StoreDBEntry(db, bindings, quarks, type, value, data)
     XrmQuarkList	quarks;
     XrmRepresentation   *type;
     XrmValuePtr		value;
-    caddr_t		data;
+    XPointer		data;
 {
     XrmQPutResource((XrmDatabase *)data, bindings, quarks, *type, value);
     return False;
@@ -280,7 +280,7 @@ static XrmDatabase CopyDB(db)
     XrmQuark empty = NULLQUARK;
 
     XrmEnumerateDatabase(db, &empty, &empty, XrmEnumAllLevels,
-			 StoreDBEntry, (caddr_t)&copy);
+			 StoreDBEntry, (XPointer)&copy);
     return copy;
 }
 
