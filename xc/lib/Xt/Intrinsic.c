@@ -641,9 +641,9 @@ void Recursive(widget,proc)
       for (i=cwidget->composite.num_children;
            i != 0; --i) {
          Recursive(cwidget->composite.children[i-1],proc);
-         (*proc)(cwidget);
-  } }
-  proc(widget);  
+      }
+  } 
+  (*proc)(widget);  
   return;
 }
 
@@ -699,7 +699,25 @@ void XtDestroyWidget (widget)
 static void CoreDestroy (widget)
     Widget    widget;
 {
-/* ||| */
+   register EventRec *p1,*p2;
+   XtFree((char*)(widget->core.name));
+   if (widget->core.background_pixmap != NULL) 
+      XFreePixmap(XtDisplay(widget),widget->core.background_pixmap);
+   if (widget->core.border_pixmap != NULL)
+      XFreePixmap(XtDisplay(widget),widget->core.border_pixmap);
+   p1 = widget->core.event_table;
+   while(p1 != NULL){
+     p2 = p1;
+     p1 = p1->next;
+     XtFree((char*)p2);
+   }
+   if (widget->core.translations != NULL)
+     TranslateTableFree(widget->core.translations);
+   UnregisterWindow(widget->core.window,widget);
+/* if (onGrabList(widget))RemoveGrab(widget); */
+   XtFree((char*)widget);
+   return;
+     
 }
 
 static void CoreSetValues()
