@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.98 92/06/27 21:54:44 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.99 92/06/28 17:48:11 rws Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -27,7 +27,10 @@ XTWARNINGPREFIX = XtWarningPrefix
 #undef AllocateLocalDefines
 #define AllocateLocalDefines SharedAllocateLocalDefines
 #endif
-        DEFINES = AllocateLocalDefines $(ALIGN_DEFINES) XtExtraDefines
+#if HasPoll
+   POLL_DEFINES = -DUSE_POLL
+#endif
+        DEFINES = $(POLL_DEFINES) AllocateLocalDefines $(ALIGN_DEFINES) XtExtraDefines
      DB_DEFINES = -DERRORDB=\"$(LIBDIR)/XtErrorDB\" \
 		  -DXTERROR_PREFIX=\"$(XTERRORPREFIX)\" \
 		  -DXTWARNING_PREFIX=\"$(XTWARNINGPREFIX)\"
