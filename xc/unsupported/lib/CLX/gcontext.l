@@ -285,14 +285,17 @@
   (declare (type gcontext gcontext)
 	   (type (or null (member :unsorted :y-sorted :yx-sorted :yx-banded)) ordering)
 	   (type (or (member :none) pixmap rect-seq) clip-mask))
+  (unless clip-mask (x-type-error clip-mask '(or (member :none) pixmap rect-seq)))
   (modify-gcontext (gcontext local-state)
     ;; need single setf for atomicity
     (setf (gcontext-internal-clip local-state)
 	  (cons (encode-type (or null (member :unsorted :y-sorted :yx-sorted :yx-banded))
 			     ordering)
-		(if (type? clip-mask 'sequence)
-		    (list nil (or clip-mask (vector)))
-		    (list (encode-type (or (member :none) pixmap) clip-mask)))))
+		(typecase clip-mask
+		  (pixmap (list (pixmap-id clip-mask)))
+		  ((member :none) '(0))
+		  (sequence (list nil clip-mask))
+		  (otherwise (x-type-error clip-mask '(or (member :none) pixmap rect-seq))))))
     clip-mask))
 
 (defun gcontext-dashes (gcontext)
