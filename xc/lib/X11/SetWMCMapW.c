@@ -38,16 +38,16 @@ Status XSetWMColormapWindows (dpy, w, windows, count)
     Window *windows;
     int count;
 {
-    if (dpy->atoms.wm_colormap_windows == None) {
+    if (dpy->atoms->wm_colormap_windows == None) {
 	Atom a = XInternAtom (dpy, "WM_COLORMAP_WINDOWS", False);
 
 	if (a == None) return False;
 	LockDisplay (dpy);
-	dpy->atoms.wm_colormap_windows = a;
+	dpy->atoms->wm_colormap_windows = a;
 	UnlockDisplay (dpy);
     }
 
-    XChangeProperty (dpy, w, dpy->atoms.wm_colormap_windows, XA_WINDOW, 32,
+    XChangeProperty (dpy, w, dpy->atoms->wm_colormap_windows, XA_WINDOW, 32,
 		     PropModeReplace, (unsigned char *) windows, count);
     return True;
 }

@@ -43,18 +43,18 @@ Status XIconifyWindow (dpy, w, screen)
     XClientMessageEvent ev;
     Window root = RootWindow (dpy, screen);
 
-    if (dpy->atoms.wm_change_state == None) {
+    if (dpy->atoms->wm_change_state == None) {
 	Atom a = XInternAtom (dpy, "WM_CHANGE_STATE", False);
 
 	if (a == None) return False;
 	LockDisplay (dpy);
-	dpy->atoms.wm_change_state = a;
+	dpy->atoms->wm_change_state = a;
 	UnlockDisplay (dpy);
     }
 
     ev.type = ClientMessage;
     ev.window = w;
-    ev.message_type = dpy->atoms.wm_change_state;
+    ev.message_type = dpy->atoms->wm_change_state;
     ev.format = 32;
     ev.data.l[0] = IconicState;
     return (XSendEvent (dpy, root, False,

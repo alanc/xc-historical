@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: GetWMCMapW.c,v 1.5 89/03/28 16:23:23 jim Exp $ */
+/* $XConsortium: GetWMCMapW.c,v 1.1 89/03/28 18:11:34 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -41,17 +41,17 @@ Status XGetWMColormapWindows (dpy, w, colormapWindows, countReturn)
     int actual_format;
     unsigned long leftover, nitems;
 
-    if (dpy->atoms.wm_colormap_windows == None) {
+    if (dpy->atoms->wm_colormap_windows == None) {
 	Atom a = XInternAtom (dpy, "WM_COLORMAP_WINDOWS", False);
 
 	if (a == None) return False;
 	LockDisplay (dpy);
-	dpy->atoms.wm_colormap_windows = a;
+	dpy->atoms->wm_colormap_windows = a;
 	UnlockDisplay (dpy);
     }
 
     /* get the property */
-    if (XGetWindowProperty (dpy, w, dpy->atoms.wm_colormap_windows, 
+    if (XGetWindowProperty (dpy, w, dpy->atoms->wm_colormap_windows, 
     			    0L, 1000000L, False,
 			    XA_WINDOW, &actual_type, &actual_format,
 			    &nitems, &leftover, (unsigned char **) &data)

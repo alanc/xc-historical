@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.153 89/04/19 15:09:18 jim Exp $ */
+/* $XConsortium: Xlib.h,v 11.154 89/04/25 19:20:11 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -427,6 +427,22 @@ XModifierKeymap *XNewModifiermap(),
 #endif /* _XSTRUCT_ */
 
 
+
+/*
+ * internal atoms used for ICCCM things; not to be used by client
+ */
+
+struct _DisplayAtoms {
+    Atom text;
+    Atom wm_state;
+    Atom wm_protocols;
+    Atom wm_save_yourself;
+    Atom wm_change_state;
+    Atom wm_colormap_windows;
+    /* add new atoms to end of list */
+};
+
+
 /*
  * Display datatype maintaining display specific data.
  */
@@ -494,14 +510,7 @@ typedef struct _XDisplay {
 	/*
 	 * ICCCM information, version 1
 	 */
-	struct {		/* internal atoms used for ICCCM things */
-	    Atom text;
-	    Atom wm_state;
-	    Atom wm_protocols;
-	    Atom wm_save_yourself;
-	    Atom wm_change_state;
-	    Atom wm_colormap_windows;
-	} atoms;
+	struct _DisplayAtoms *atoms;
 	struct {			/* for XReconfigureWMWindow */
 	    long sequence_number;
 	    int (*old_handler)();

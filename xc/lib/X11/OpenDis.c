@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.83 89/03/28 18:14:04 jim Exp $
+ * $XConsortium: XOpenDis.c,v 11.84 89/04/25 19:20:20 jim Exp $
  */
 
 #include "copyright.h"
@@ -318,6 +318,7 @@ Display *XOpenDisplay (display)
 	dpy->display_name = NULL;
 	dpy->vendor = NULL;
 	dpy->buffer = NULL;
+	dpy->atoms = NULL;
 
 /*
  * now extract the vendor string...  String must be null terminated,
@@ -470,6 +471,14 @@ Display *XOpenDisplay (display)
 	dpy->head = dpy->tail = NULL;
 	dpy->qlen = 0;
  
+	/* set all the cached ICCCM atoms to None, fill in as needed */
+	if (!(dpy->atoms = ((struct _DisplayAtoms *) 
+			   Xcalloc (1, sizeof (struct _DisplayAtoms))))) {
+	    OutOfMemory (dpy, setup);
+	    UnlockMutex (&lock);
+	    return (NULL);
+	}
+
 /*
  * Now start talking to the server to setup all other information...
  */
@@ -509,10 +518,6 @@ Display *XOpenDisplay (display)
 	dpy->next = _XHeadOfDisplayList;
 	_XHeadOfDisplayList = dpy;
 
-/*
- * set all the cached ICCCM atoms to None
- */
-	bzero ((char *) &dpy->atoms, sizeof (dpy->atoms));
 
 /*
  * and done mucking with the display
@@ -623,6 +628,8 @@ _XFreeDisplayStructure(dpy)
 
         if (dpy->buffer)
 	   Xfree (dpy->buffer);
+	if (dpy->atoms)
+	   Xfree ((char *) dpy->atoms);
 	if (dpy->keysyms)
 	   Xfree ((char *) dpy->keysyms);
 	if (dpy->modifiermap)
