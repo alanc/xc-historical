@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtName-To-Widget XtWidget-To-Window wid-get
+.hw XtName-To-Widget XtWindow-To-Widget wid-get
 .na
 .de Ds
 .nf
@@ -99,7 +99,7 @@
 .ny0
 .TH XtNameToWidget 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtNameToWidget, XtWidgetToWindow \- translating strings to widgets or widgets to windows
+XtNameToWidget, XtWindowToWidget \- translating strings to widgets or widgets to windows
 .SH SYNTAX
 Widget XtNameToWidget(\fIreference\fP, \fInames\fP);
 .br
