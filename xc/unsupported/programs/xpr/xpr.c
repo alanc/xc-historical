@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.33 89/01/20 18:06:39 rws Exp $";
+static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.34 89/01/21 18:05:50 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -72,7 +72,7 @@ enum device {LN01, LN03, LA100, PS, PP};
 #define F_INVERT 256
 #define F_GRAY 512
 
-char *infilename = "stdin", *whoami;
+char *infilename = NULL, *whoami;
 
 char *malloc();
 char *convert_data();
@@ -217,6 +217,27 @@ char **argv;
     if (device != PS && (flags & F_DUMP)) dump_sixmap(sixmap, iw, ih);
 }
 
+usage()
+{
+    fprintf(stderr, "usage: %s [options] [file]\n", whoami);
+    fprintf(stderr, "    -append <file>  -noff  -output <file>\n");
+    fprintf(stderr, "    -compact\n");
+    fprintf(stderr, "    -device {ln03 | la100 | ps | lw | pp}\n");
+    fprintf(stderr, "    -dump\n");
+    fprintf(stderr, "    -gray\n");
+    fprintf(stderr, "    -height <inches>  -width <inches>\n");
+    fprintf(stderr, "    -header <string>\n  -trailer <string>");
+    fprintf(stderr, "    -landscape  -portrait\n");
+    fprintf(stderr, "    -left <inches>  -top <inches>\n");
+    fprintf(stderr, "    -nosixopt\n");
+    fprintf(stderr, "    -plane <n>\n");
+    fprintf(stderr, "    -report\n");
+    fprintf(stderr, "    -rv\n");
+    fprintf(stderr, "    -scale <scale>\n");
+    fprintf(stderr, "    -split <n-pages>\n");
+    exit(1);
+}
+
 parse_args(argc, argv, scale, width, height, left, top, device, flags, 
 	   split, header, trailer, plane)
 register int argc;
@@ -254,28 +275,39 @@ int *plane;
     if (!(whoami = argv[0]))
       whoami = "xpr";
     
-    argc--;
-    argv++;
-
-    while (argc > 0 && argv[0][0] == '-') {
+    for (argc--, argv++; argc > 0; argc--, argv++) {
+	if (argv[0][0] != '-') {
+	    infilename = *argv;
+	    continue;
+	}
 	len = strlen(*argv);
 	switch (argv[0][1]) {
 	case 'a':		/* -append <filename> */
 	    if (!bcmp(*argv, "-append", len)) {
 		argc--; argv++;
+		if (argc == 0) usage();
 		output_filename = *argv;
 		*flags |= F_APPEND;
-	    }
+	    } else
+		usage();
 	    break;
 
-	case 'd':		/* -device {ln03 | la100 | ps | lw} | -dump */
-	    if (len <= 2) {
-		fprintf(stderr, "xpr: ambiguous option: \"%s\"\n", *argv);
-		exit(1);
-	    }
+	case 'c':		/* -compact */
+	    if (!bcmp(*argv, "-compact", len)) {
+		*flags |= F_COMPACT;
+	    } else
+		usage();
+	    break;
+
+	case 'd':	/* -device {ln03 | la100 | ps | lw | pp} | -dump */
+	    if (len <= 2)
+		usage();
 	    if (!bcmp(*argv, "-device", len)) {
 		argc--; argv++;
+		if (argc == 0) usage();
 		len = strlen(*argv);
+		if (len < 2)
+		    usage();
 		if (!bcmp(*argv, "ln03", len)) {
 		    *device = LN03;
 		} else if (!bcmp(*argv, "la100", len)) {
@@ -286,154 +318,151 @@ int *plane;
 		    *device = PS;
 		} else if (!bcmp(*argv, "pp", len)) {
 		    *device = PP;
-		} else {
-		    fprintf(stderr, 
-			    "xpr: device \"%s\" not supported\n", *argv);
-		    exit(1);
-		}
+		} else
+		    usage();
 	    } else if (!bcmp(*argv, "-dump", len)) {
 		*flags |= F_DUMP;
-	    }
+	    } else
+		usage();
 	    break;
 
 	case 'g':		/* -gray */
 	    if (!bcmp(*argv, "-gray", len) ||
 		!bcmp(*argv, "-grey", len)) {
 		*flags |= F_GRAY;
-	    }
+	    } else
+		usage();
 	    break;
 
-	case 'h':		/* -height <inches> */
-	    if (len <= 3) {
-		fprintf(stderr, "xpr: ambiguous option: \"%s\"\n", *argv);
-		exit(1);
-	    }
+	case 'h':		/* -height <inches> | -header <string> */
+	    if (len <= 3)
+		usage();
 	    if (!bcmp(*argv, "-height", len)) {
 		argc--; argv++;
+		if (argc == 0) usage();
 		*height = (int)(300.0 * atof(*argv));
 	    } else if (!bcmp(*argv, "-header", len)) {
 		argc--; argv++;
+		if (argc == 0) usage();
 		*header = *argv;
-	    }
+	    } else
+		usage();
 	    break;
 
 	case 'l':		/* -landscape | -left <inches> */
-	    if (len <= 2) {
-		fprintf(stderr, "xpr: ambigous option: \"%s\"\n", *argv);
-		exit(1);
-	    }
+	    if (len <= 2)
+		usage();
 	    if (!bcmp(*argv, "-landscape", len)) {
 		*flags |= F_LANDSCAPE;
 	    } else if (!bcmp(*argv, "-left", len)) {
 		argc--; argv++;
+		if (argc == 0) usage();
 		*left = (int)(300.0 * atof(*argv));
-	    }
+	    } else
+		usage();
 	    break;
 
 	case 'n':		/* -nosixopt | -noff */
-	    if (len <= 3) {
-		fprintf(stderr, "xpr: ambiguous option: \"%s\"\n", *argv);
-		exit(1);
-	    }
+	    if (len <= 3)
+		usage();
 	    if (!bcmp(*argv, "-nosixopt", len)) {
 		*flags |= F_NOSIXOPT;
 	    } else if (!bcmp(*argv, "-noff", len)) {
 		*flags |= F_NOFF;
-	    }
+	    } else
+		usage();
 	    break;
 
 	case 'o':		/* -output <filename> */
 	    if (!bcmp(*argv, "-output", len)) {
 		argc--; argv++;
+		if (argc == 0) usage();
 		output_filename = *argv;
-	    }
+	    } else
+		usage();
 	    break;
 
 	case 'p':		/* -portrait | -plane <n> */
-	    if (len <= 2) {
-		fprintf(stderr, "xpr: ambiguous option: \"%s\"\n", *argv);
-		exit(1);
-	    }
+	    if (len <= 2)
+		usage();
 	    if (!bcmp(*argv, "-portrait", len)) {
 		*flags |= F_PORTRAIT;
 	    } else if (!bcmp(*argv, "-plane", len)) {
 		argc--; argv++;
+		if (argc == 0) usage();
 		*plane = atoi(*argv);
-	    }
-	    break;
-
-	case 'c':		/* -compact */
-	    if (!bcmp(*argv, "-compact", len)) {
-		*flags |= F_COMPACT;
-	    }
+	    } else
+		usage();
 	    break;
 
 	case 'r':		/* -report | -rv */
-	    if (len <= 2) {
-		fprintf(stderr, "xpr: ambigous option: \"%s\"\n", *argv);
-		exit(1);
-	    }
+	    if (len <= 2)
+		usage();
 	    if (!bcmp(*argv, "-report", len)) {
 		*flags |= F_REPORT;
 	    } else if (!bcmp(*argv, "-rv", len)) {
 		*flags |= F_INVERT;
-	    }
+	    } else
+		usage();
 	    break;
 
 	case 's':		/* -scale <scale> | -split <n-pages> */
-	    if (len <= 2) {
-		fprintf(stderr, "xpr: ambigous option: \"%s\"\n", *argv);
-		exit(1);
-	    }
+	    if (len <= 2)
+		usage();
 	    if (!bcmp(*argv, "-scale", len)) {
 		argc--; argv++;
+		if (argc == 0) usage();
 		*scale = atoi(*argv);
 	    } else if (!bcmp(*argv, "-split", len)) {
 		argc--; argv++;
+		if (argc == 0) usage();
 		*split = atoi(*argv);
-	    }
+	    } else
+		usage();
 	    break;
 
-	case 't':		/* -top <inches> */
-	    if (len <= 2) {
-		fprintf(stderr, "xpr: ambigous option: \"%s\"\n", *argv);
-		exit(1);
-	    }
+	case 't':		/* -top <inches> | -trailer <string> */
+	    if (len <= 2)
+		usage();
 	    if (!bcmp(*argv, "-top", len)) {
 		argc--; argv++;
+		if (argc == 0) usage();
 		*top = (int)(300.0 * atof(*argv));
 	    } else if (!bcmp(*argv, "-trailer", len)) {
 		argc--; argv++;
+		if (argc == 0) usage();
 		*trailer = *argv;
-	    }
+	    } else
+		usage();
 	    break;
 
 	case 'w':		/* -width <inches> */
 	    if (!bcmp(*argv, "-width", len)) {
 		argc--; argv++;
+		if (argc == 0) usage();
 		*width = (int)(300.0 * atof(*argv));
-	    }
+	    } else
+		usage();
 	    break;
 
+	default:
+	    usage();
+	    break;
 	}
-	argc--; argv++;
     }
 
-    if (argc > 0) {
-	f = open(*argv, O_RDONLY, 0);
+    if (infilename) {
+	f = open(infilename, O_RDONLY, 0);
 	if (f < 0) {
-	    fprintf(stderr, "xpr: error opening \"%s\" for input\n", *argv);
+	    fprintf(stderr, "xpr: error opening \"%s\" for input\n",
+		    infilename);
 	    perror("");
 	    exit(1);
 	}
 	dup2(f, 0);
 	close(f);
-	infilename = *argv;
-/*	if (output_filename == NULL) {
-	    output_filename = malloc(strlen(*argv)+10);
-	    build_output_filename(*argv, *device, output_filename);
-	} */
-    }
+    } else
+	infilename = "stdin";
 
     if (output_filename != NULL) {
 	if (!(*flags & F_APPEND)) {
