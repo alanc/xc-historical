@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: streams.c,v 1.1 91/07/16 23:40:30 gildea Exp $
+ * $XConsortium: streams.c,v 1.2 91/08/25 10:50:29 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -78,7 +78,7 @@ CreateWellKnownSockets ()
     bind_addr.addr.buf = servaddrs->n_addrs[0].buf;
     bind_addr.addr.len = servaddrs->n_addrs[0].len;
     it = t_bind(xdmcpFd, &bind_addr, &bind_addr);
-    netdir_free(servaddrs, ND_ADDRLIST);
+    netdir_free((char *)servaddrs, ND_ADDRLIST);
     if (it < 0)
     {
 	LogError ("error binding STREAMS address %d\n", request_port);
