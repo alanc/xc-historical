@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.95 91/02/05 16:58:52 gildea Exp $ */
+/* $XConsortium: Shell.c,v 1.96 91/02/05 19:36:21 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1133,13 +1133,11 @@ static void _popup_set_prop(w)
 				 );
 	}
 
-	classhint.res_name = w->core.name;
-	/* For the class, look up to the top of the tree */
-	for (p = (Widget)w; p->core.parent != NULL; p = p->core.parent);
-	if (XtIsApplicationShell(p)) {
+	if (XtIsApplicationShell((Widget)w)) {
+	    classhint.res_name = w->core.name;
 	    classhint.res_class =
-		((ApplicationShellWidget)p)->application.class;
-	} else classhint.res_class = XtClass(p)->core_class.class_name;
+		((ApplicationShellWidget)w)->application.class;
+	} 
 
 	if (XtIsApplicationShell((Widget)w)
 	    && (argc = appshell->application.argc) != -1)
@@ -1155,7 +1153,7 @@ static void _popup_set_prop(w)
 			 argv, argc,
 			 size_hints,
 			 &wmshell->wm.wm_hints,
-			 &classhint);
+			 XtIsApplicationShell((Widget)w) ? &classhint : NULL);
 	XFree((char*)size_hints);
 }
 
