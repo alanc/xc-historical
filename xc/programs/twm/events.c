@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.158 90/04/20 14:59:41 jim Exp $
+ * $XConsortium: events.c,v 1.159 90/04/24 09:28:48 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.158 90/04/20 14:59:41 jim Exp $";
+"$XConsortium: events.c,v 1.159 90/04/24 09:28:48 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1963,7 +1963,10 @@ HandleEnterNotify()
 	XUnmapWindow (dpy, ActiveMenu->w);
 	ActiveMenu->mapped = UNMAPPED;
 	UninstallRootColormap ();
-	if (ActiveItem) ActiveItem->state = 0;
+	if (ActiveItem) {
+	    ActiveItem->state = 0;
+	    PaintEntry (ActiveMenu, ActiveItem,  False);
+	}
 	ActiveItem = NULL;
 	ActiveMenu = mr;
 	MenuDepth--;
