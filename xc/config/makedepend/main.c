@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.31 89/07/18 09:29:44 jim Exp $
+ * $XConsortium: main.c,v 1.32 89/07/21 11:31:22 jim Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -488,7 +488,7 @@ redirect(line, makefile)
 		puts(line); /* same as fputs(fdout); but with newline */
 	}
 	fflush(fdout);
-#if USG
+#ifdef USG
 	chmod(makefile, st.st_mode);
 #else
         fchmod(fileno(fdout), st.st_mode);
