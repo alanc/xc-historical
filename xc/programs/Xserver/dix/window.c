@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.2 87/08/14 12:21:44 newman Locked $ */
+/* $Header: window.c,v 1.161 87/08/14 22:42:42 swick Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1620,18 +1620,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	      default:
                    break;
 	    }
-/*
-	    if (dw < 0)
-	    {
-		width = w;
-		if (x < pWin->absCorner.x) x = pWin->absCorner.x;
-	    }
-	    if (dh < 0)
-	    {
-		height = h;
-		if (y < pWin->absCorner.y) y = pWin->absCorner.y;
-	    }
-*/
+
 	    (* pScreen->ValidateTree)(pParent, pFirstChange, TRUE, anyMarked);
 	    DoObscures(pParent);
 	    if (pWin->backStorage && (pWin->backingStore != NotUseful))
