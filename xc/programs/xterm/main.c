@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.58 88/07/22 14:39:55 xguest Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.59 88/07/28 16:42:04 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -184,8 +184,8 @@ char *ProgramName;
 
 static char *icon_geometry;
 static char *title;
-
 static Boolean utmpInhibit = FALSE;
+Boolean sunFunctionKeys = FALSE;
 
 /* used by VT (charproc.c) */
 
@@ -198,6 +198,8 @@ static XtResource application_resources[] = {
 	(Cardinal)&title, XtRString, (caddr_t) NULL},
     {"utmpInhibit", "UtmpInhibit", XtRBoolean, sizeof (Boolean),
 	(Cardinal)&utmpInhibit, XtRString, "false"},
+    {"sunFunctionKeys", "SunFunctionKeys", XtRBoolean, sizeof (Boolean),
+	(Cardinal)&sunFunctionKeys, XtRString, "false"},
 };
 
 /* Command line options table.  Only resources are entered here...there is a
@@ -238,6 +240,8 @@ static XrmOptionDescRec optionDescList[] = {
 {"+s",		"*multiScroll",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-sb",		"*scrollBar",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+sb",		"*scrollBar",	XrmoptionNoArg,		(caddr_t) "off"},
+{"-sf",		"*sunFunctionKeys", XrmoptionNoArg,	(caddr_t) "on"},
+{"+sf",		"*sunFunctionKeys", XrmoptionNoArg,	(caddr_t) "off"},
 {"-si",		"*scrollInput",	XrmoptionNoArg,		(caddr_t) "off"},
 {"+si",		"*scrollInput",	XrmoptionNoArg,		(caddr_t) "on"},
 {"-sk",		"*scrollKey",	XrmoptionNoArg,		(caddr_t) "on"},
@@ -298,6 +302,7 @@ static char *options[] = {
 "-/+rw                       turn on/off reverse wraparound",
 "-/+s                        turn on/off multiscroll",
 "-/+sb                       turn on/off scrollbar",
+"-/+sf                       turn on/off Sun Function Key escape codes",
 "-/+si                       turn on/off scroll-on-input inhibit",
 "-/+sk                       turn on/off scroll-on-keypress",
 "-sl number                  number of scrolled lines to save",

@@ -1,9 +1,9 @@
 /*
- *	$Header: input.c,v 1.1 88/02/10 13:08:06 jim Exp $
+ *	$Header: input.c,v 1.2 88/07/12 11:35:16 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_input_c = "$Header: input.c,v 1.1 88/02/10 13:08:06 jim Exp $";
+static char *rcsid_input_c = "$Header: input.c,v 1.2 88/07/12 11:35:16 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -34,7 +34,7 @@ static char *rcsid_input_c = "$Header: input.c,v 1.1 88/02/10 13:08:06 jim Exp $
 /* input.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: input.c,v 1.1 88/02/10 13:08:06 jim Exp $";
+static char rcs_id[] = "$Header: input.c,v 1.2 88/07/12 11:35:16 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -51,6 +51,10 @@ static XComposeStatus compose_status = {NULL, 0};
 static char *kypd_num = " XXXXXXXX\tXXX\rXXXxxxxXXXXXXXXXXXXXXXXXXXXX*+,-.\\0123456789XXX=";
 static char *kypd_apl = " ABCDEFGHIJKLMNOPQRSTUVWXYZ??????abcdefghijklmnopqrstuvwxyzXXX";
 static char *cur = "DACB";
+
+static int funcvalue(), sunfuncvalue();
+extern Boolean sunFunctionKeys;
+
 
 Input (keyboard, screen, event)
 register TKeyboard	*keyboard;
@@ -107,8 +111,13 @@ register XKeyPressedEvent *event;
 	 	keycode == DXK_Remove) {
 		reply.a_type = CSI;
 		reply.a_nparam = 1;
-		reply.a_param[0] = funcvalue(keycode);
-		reply.a_final = '~';
+		if (sunFunctionKeys) {
+		    reply.a_param[0] = sunfuncvalue (keycode);
+		    reply.a_final = 'z';
+		} else {
+		    reply.a_param[0] = funcvalue (keycode);
+		    reply.a_final = '~';
+		}
 		if (reply.a_param[0] > 0)
 			unparseseq(&reply, pty);
 		key = TRUE;
@@ -149,7 +158,8 @@ register XKeyPressedEvent *event;
 	return;
 }
 
-funcvalue(keycode)
+static int funcvalue (keycode)
+	int keycode;
 {
 	switch (keycode) {
 		case XK_F1:	return(11);
@@ -185,3 +195,59 @@ funcvalue(keycode)
 		default:	return(-1);
 	}
 }
+
+
+static int sunfuncvalue (keycode)
+	int keycode;
+  {
+  	switch (keycode) {
+		case XK_F1:	return(224);
+		case XK_F2:	return(225);
+		case XK_F3:	return(226);
+		case XK_F4:	return(227);
+		case XK_F5:	return(228);
+		case XK_F6:	return(229);
+		case XK_F7:	return(230);
+		case XK_F8:	return(231);
+		case XK_F9:	return(232);
+		case XK_F10:	return(233);
+		case XK_F11:	return(192);
+		case XK_F12:	return(193);
+		case XK_F13:	return(194);
+		case XK_F14:	return(195);
+		case XK_F15:	return(196);
+		case XK_Help:	return(196);
+		case XK_F16:	return(197);
+		case XK_Menu:	return(197);
+		case XK_F17:	return(198);
+		case XK_F18:	return(199);
+		case XK_F19:	return(200);
+		case XK_F20:	return(201);
+
+		case XK_R1:	return(208);
+		case XK_R2:	return(209);
+		case XK_R3:	return(210);
+		case XK_R4:	return(211);
+		case XK_R5:	return(212);
+		case XK_R6:	return(213);
+		case XK_R7:	return(214);
+		case XK_R8:	return(215);
+		case XK_R9:	return(216);
+		case XK_R10:	return(217);
+		case XK_R11:	return(218);
+		case XK_R12:	return(219);
+		case XK_R13:	return(220);
+		case XK_R14:	return(221);
+		case XK_R15:	return(222);
+  
+		case XK_Find :	return(1);
+		case XK_Insert:	return(2);
+		case XK_Delete:	return(3);
+		case DXK_Remove: return(3);
+		case XK_Select:	return(4);
+		case XK_Prior:	return(5);
+		case XK_Next:	return(6);
+		default:	return(-1);
+	}
+}
+
