@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.26 94/01/29 18:30:04 gildea Exp $
+ * $XConsortium: locking.c,v 1.27 94/02/09 23:22:09 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -294,20 +294,22 @@ static void _XPopReader(dpy, cvl, list, tail)
 	/* we never added ourself in the first place */
 	return;
 
-    /* with XLockDisplay, which puts itself on the front of the event
-       awaiters list, we the reader may not be at the front of the
-       list.  So we have to look for ourselves.
-       */
-    while (cvl && cvl != front) {
-	list = &front->next;
-	front = *list;
+    if (front) {
+	/* with XLockDisplay, which puts itself on the front of the event
+	   awaiters list, we the reply reader may not be at the front of the
+	   list.  So we have to look for ourselves.
+	   */
+	while (cvl && cvl != front) {
+	    list = &front->next;
+	    front = *list;
+	}
+	*list = front->next;
+	if (*tail == &front->next)	/* did we free the last elt? */
+	    *tail = list;
+	xcondition_clear(front->cv);
+	Xfree((char *)front->cv);
+	Xfree((char *)front);
     }
-    *list = front->next;
-    if (*tail == &front->next)	/* did we free the last elt? */
-	*tail = list;
-    xcondition_clear(front->cv);
-    Xfree((char *)front->cv);
-    Xfree((char *)front);
 
     /* signal new front after it is in place */
     if (dpy->lock->reply_awaiters) {
