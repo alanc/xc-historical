@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.128 87/09/03 20:08:23 swick Locked $ */
+/* $Header: Xlib.h,v 11.129 87/09/08 13:07:39 newman Locked $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -491,7 +491,7 @@ typedef struct {
 	Window window;	        /* "event" window it is reported relative to */
 	Window root;	        /* root window that the event occured on */
 	Window subwindow;	/* child window */
-	unsigned long time;	/* milliseconds */
+	Time time;		/* milliseconds */
 	int x, y;		/* pointer x, y coordinates in event window */
 	int x_root, y_root;	/* coordinates relative to root */
 	unsigned int state;	/* key or button mask */
@@ -507,7 +507,7 @@ typedef struct {
 	Window window;	        /* "event" window it is reported relative to */
 	Window root;	        /* root window that the event occured on */
 	Window subwindow;	/* child window */
-	unsigned long time;	/* milliseconds */
+	Time time;		/* milliseconds */
 	int x, y;		/* pointer x, y coordinates in event window */
 	int x_root, y_root;	/* coordinates relative to root */
 	unsigned int state;	/* key or button mask */
@@ -523,7 +523,7 @@ typedef struct {
 	Window window;	        /* "event" window reported relative to */
 	Window root;	        /* root window that the event occured on */
 	Window subwindow;	/* child window */
-	unsigned long time;	/* milliseconds */
+	Time time;		/* milliseconds */
 	int x, y;		/* pointer x, y coordinates in event window */
 	int x_root, y_root;	/* coordinates relative to root */
 	unsigned int state;	/* key or button mask */
@@ -538,7 +538,7 @@ typedef struct {
 	Window window;	        /* "event" window reported relative to */
 	Window root;	        /* root window that the event occured on */
 	Window subwindow;	/* child window */
-	unsigned long time;	/* milliseconds */
+	Time time;		/* milliseconds */
 	int x, y;		/* pointer x, y coordinates in event window */
 	int x_root, y_root;	/* coordinates relative to root */
 	int mode;		/* NotifyNormal, NotifyGrab, NotifyUngrab */
@@ -919,43 +919,47 @@ typedef struct {
 
 XFontStruct *XLoadQueryFont(), *XQueryFont();
 
-
-GC XCreateGC();
-int XGetWindowProperty();
 XTimeCoord *XGetMotionEvents();
 #endif
 /* 
  * X function declarations.
  */
 Display *XOpenDisplay();
-Display *XSetDisplay();
 
 char *XFetchBytes();
 char *XFetchBuffer();
 char *XGetAtomName();
 char *XGetDefault();
-char *XLookupMapping();
 char *XDisplayName();
+char *XKeysymToString();
 
-char *XGetDefault();
 int (*XSynchronize())();
 int (*XSetAfterFunction())();
 Atom XInternAtom();
 Colormap XCopyColormapAndFree(), XCreateColormap();
 Cursor XCreatePixmapCursor(), XCreateGlyphCursor(), XCreateFontCursor();
 Font XLoadFont();
+GC XCreateGC();
+GContext XGContextFromGC();
 Pixmap XCreatePixmap();
 Pixmap XCreateBitmapFromData();
 Window XCreateSimpleWindow(), XGetSelectionOwner(), XGetIconWindow();
 Window XCreateWindow(); 
 Colormap *XListInstalledColormaps();
 char **XListFonts(), **XListFontsWithInfo(), **XGetFontPath();
-char *XGetAtomName();
+char **XListExtensions();
 Atom *XListProperties();
-XImage *XGetImage();
+XImage *XCreateImage(), *XGetImage();
 XHostAddress *XListHosts();
 KeySym XKeycodeToKeysym(), XLookupKeysym(), *XGetKeyboardMapping();
-XModifierKeymap *XNewModifierMap();
+KeySym XStringToKeysym();
+
+/* routines for dealing with extensions */
+XExtCodes *XInitExtension();
+int (*XESetCreateGC()), (*XESetCopyGC()), (*XESetFlushGC()),
+    (*XESetFreeGC()), (*XESetCreateFont()), (*XESetFreeFont()), 
+    (*XESetCloseDisplay()), (*XESetWireToEvent()), (*XESetEventToWire()),
+    (*XESetError()), (*XESetErrorString());
 
 /* these are routines for which there are also macros */
 Window XRootWindow(), XDefaultRootWindow(), XRootWindowOfScreen();
@@ -967,4 +971,5 @@ char *XServerVendor(), *XDisplayString();
 Colormap XDefaultColormap(), XDefaultColormapOfScreen();
 Display *XDisplayOfScreen();
 Screen *XScreenOfDisplay(), *XDefaultScreenOfDisplay();
+long XEventMaskOfScreen();
 #endif /* _XLIB_H_ */
