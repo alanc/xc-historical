@@ -24,7 +24,9 @@ customization of \fIxman\fP.
 allows customization of both the directories to be searched for manual pages,
 and the name that each directory will map to in the \fISections\fP
 menu.  Xman determines which directories it will
-search by reading the \fIMANPATH\fP environment variable.  This environment
+search by reading the \fIMANPATH\fP environment variable.  If no
+\fIMANPATH\fP is found then the directory is /usr/man is searched on
+POSIX systems.  This environment
 is expected to be a colon-separated list of directories for xman to search.
 .sp
 .nf
@@ -79,7 +81,7 @@ character determines which of the sections will be added under this label.
 For instance suppose that you would like to create an extra menu item that 
 contains all programmer subroutines.  This label should contain all manual
 pages in both sections two and three.  The \fImandesc\fP file
-would look like this.
+would look like this:
 .nf     
         
 2Programmer Subroutines
@@ -99,7 +101,7 @@ then add the line:
 no default sections
 
 .fi
-Anywhere in your mandesc file.  This keeps xman from searching
+anywhere in your mandesc file.  This keeps xman from searching
 the default manual sections \fIIn that directory only\fP.  As an example,
 suppose you want to do the same thing as above, but you don't think that
 it is useful to have the \fISystem Calls\fP or \fISubroutines\fP sections
@@ -125,10 +127,6 @@ Xman will read any section that is of the from \fIman<character>\fP, where
 <character> is an upper or lower case letter (they are treated distinctly) or
 a numeral (0-9).  Be warned, however, that man(1) and catman(8) will 
 not search directories that are non-standard.
-.PP
-.I Xman
-creates temporary files in /tmp for all unformatted man pages and all apropos
-searches.
 .PP
 .SH "COMMAND LINE OPTIONS"
 .PP
@@ -157,24 +155,24 @@ Intrinsics\fP for the each widget's list of settable resources.
 xman - Xman (This widget is never used)
 	topbox - TopLevelShell
 		form - Form
-			topLabel      - Label
-			helpButton    - Command
-			quitButton    - Command
+			topLabel - Label
+			helpButton - Command
+			quitButton - Command
 			manpageButton - Command
 		search - TransientShell
 			dialog - DialogWidgetClass
-				label       - Label
-				value       - Text
-				manualPage  - Command
-				apropos     - Command
-				cancel      - Command
+				label - Label
+				value - Text
+				manualPage - Command
+				apropos - Command
+				cancel - Command
 		pleaseStandBy - TransientShell
 			label - Label
 	manualBroser - TopLevelShell
 		Manpage_Vpane - Paned
 			horizPane - Paned
-				options   - MenuButton
-				sections  - MenuButton
+				options - MenuButton
+				sections - MenuButton
 				manualBrowser - Label
 			directory - Viewport
 				directory - List	
@@ -184,28 +182,54 @@ xman - Xman (This widget is never used)
 				.  created "on the fly")
 				.
 			manualPage - ScrollByLine
+		optionMenu - SimpleMenu
+			displayDirectory - SmeBSB
+			displayManualPage - SmeBSB
+			help - SmeBSB
+			search - SmeBSB
+			showBothScreens - SmeBSB
+			removeThisManpage - SmeBSB
+			openNewManpage - SmeBSB
+			showVersion - SmeBSB
+			quit - SmeBSB
+		sectionMenu - SimpleMenu
+			<name of section> - SmeBSB
+			 	.
+				. (one for each section)
+				.
 		search - TransientShell
 			dialog - DialogWidgetClass
-				label       - Label
-				value       - Text
-				manualPage  - Command
-				apropos     - Command
-				cancel      - Command
+				label - Label
+				value - Text
+				manualPage - Command
+				apropos - Command
+				cancel - Command
 		pleaseStandBy - TransientShell
 			label - Label
 		likeToSave - TransientShell
 			dialog - Dialog
 				label - Label
 				value - Text
-				yes   - Command
-				no    - Command
+				yes - Command
+				no - Command
 	help - TopLevelShell
 		Manpage_Vpane - Paned
 			horizPane - Paned
-				options   - MenuButton
-				sections  - MenuButton
+				options - MenuButton
+				sections - MenuButton
 				manualBrowser - Label
 			manualPage - ScrollByLine
+		optionMenu - SimpleMenu
+			displayDirectory - SmeBSB
+			displayManualPage - SmeBSB
+			help - SmeBSB
+			search - SmeBSB
+			showBothScreens - SmeBSB
+			removeThisManpage - SmeBSB
+			openNewManpage - SmeBSB
+			showVersion - SmeBSB
+			quit - SmeBSB
+
 .fi
 .SH "APPLICATION RESOURCES"
 \fIxman\fP has the following application-specific resources which allow
@@ -309,13 +333,15 @@ This action may be called from any manual page or help display window, and
 will cause the informational display line to show the current version
 of xman.
 .SH FILES
-\fI<manpath directory>\fPman? 
-.br
-\fI<manpath directory>\fPcat? 
-.br 
-\fI<manpath directory>\fP/mandesc
-.br
-/usr/lib/X11/app-defaults/Xman - specifies required resources
+.IP \fI<manpath directory>\fP/man<\fIcharacter\fP> 2.5i
+.IP \fI<manpath directory>\fP/cat<\fIcharacter\fP> 
+.IP \fI<manpath directory>\fP/mandesc 
+.IP /usr/lib/X11/app-defaults/Xman
+specifies required resources
+.IP /tmp
+.I Xman
+creates temporary files in /tmp for all unformatted man pages and all apropos
+searches.
 .PP
 .SH "SEE ALSO"
 X(1), X(8C), man(1), apropos(1), catman(8), X Toolkit Athena Widgets
@@ -347,4 +373,4 @@ Copyright 1988 by Massachusetts Institute of Technology.
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHORS
 Chris Peterson, MIT X Consortium from the V10 version written by Barry
-Shein of Boston University.
+Shein formerly of Boston University.
