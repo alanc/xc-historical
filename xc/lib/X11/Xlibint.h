@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $Header: Xlibint.h,v 11.46 88/08/09 15:56:45 jim Exp $ */
+/* $Header: Xlibint.h,v 11.47 88/08/09 17:12:27 jim Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -277,6 +277,10 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 #define NEXTPTR(p,t) (t *) (((char *) p) + SIZEOF(t))
 #define INCPTR(p,t) p = (t *) (((char *) p) + SIZEOF(t))
 
+/* a little bit of magic */
+#define OneDataCard32(dpy,dstaddr,srcvar) \
+  { dpy->bufptr -= 4; Data32 (dpy, (char *) &(srcvar), 4); }
+
 #define sizeof_xSegment 8
 #define sizeof_xPoint 4
 #define sizeof_xRectangle 8
@@ -433,8 +437,12 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 #else /* else not WORD64, this is used for 32-bit machines */
 
 #define SIZEOF(x) sizeof(x)
-#define NEXTPTR(p,t) p+1
-#define INCPTR(p,t) p++
+#define NEXTPTR(p,t) ((p)+1)
+#define INCPTR(p,t) (p++)
+
+/* srcvar must be a variable for large architecture version */
+#define OneDataCard32(dpy,dstaddr,srcvar) \
+  { *(unsigned long *)(dstaddr) = (srcvar); }
 
 #endif /* WORD64 - used by CRAY */
 
