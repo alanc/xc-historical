@@ -48,8 +48,6 @@ static Bool miPointerDisplayCursor ();
 static void miPointerConstrainCursor (),    miPointerPointerNonInterestBox();
 static void miPointerCursorLimits ();
 static Bool miPointerSetCursorPosition ();
-static void miPointerSetCursor();
-static void miPointerCheckScreen();
 
 static Bool miPointerCloseScreen();
 
