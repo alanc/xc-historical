@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: filewr.c,v 1.1 91/09/07 11:58:12 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -24,6 +24,7 @@
  */
 
 #include <fontfileio.h>
+#include <X11/Xos.h>
 
 FontFilePtr
 FontFileOpenWrite (name)
@@ -31,7 +32,11 @@ FontFileOpenWrite (name)
 {
     int	fd;
 
+#ifdef WIN32
+    fd = open (name, O_CREAT|O_TRUNC|O_RDWR|O_BINARY, 0666);
+#else
     fd = creat (name, 0666);
+#endif
     if (fd < 0)
 	return 0;
     return (FontFilePtr) BufFileOpenWrite (fd);

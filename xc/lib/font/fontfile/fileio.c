@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: fileio.c,v 1.1 91/09/07 11:58:03 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -24,6 +24,10 @@
  */
 
 #include <fontfileio.h>
+#include <X11/Xos.h>
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
 
 FontFilePtr
 FontFileOpen (name)
@@ -33,7 +37,7 @@ FontFileOpen (name)
     int		len;
     BufFilePtr	raw, cooked;
 
-    fd = open (name, 0);
+    fd = open (name, O_BINARY);
     if (fd < 0)
 	return 0;
     raw = BufFileOpenRead (fd);
