@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.29 89/06/30 19:33:27 jim Exp $
+ * $XConsortium: resize.c,v 1.30 89/06/30 20:13:08 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.29 89/06/30 19:33:27 jim Exp $";
+"$XConsortium: resize.c,v 1.30 89/06/30 20:13:08 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -690,20 +690,17 @@ int x, y, w, h;
 
     if (tmp_win->title_height)
     {
-        xwcm = CWX;
-        xwc.x = title_width - Scr->TitleHeight;
-        XConfigureWindow(dpy, tmp_win->resize_w, xwcm, &xwc);
-
-        width = title_width - TitleBarX - TitleBarX - 5 - tmp_win->name_width;
+        width = (title_width - TitleBarX - TitleBarX - tmp_win->name_width -
+		 TITLEBAR_ITEM_PADDING * 2);
 
         if (width <= 0)
         {
-            xwc.x = Scr->MyDisplayWidth;
+            xwc.x = Scr->MyDisplayWidth;	/* move offscreen */
             xwc.width = 1;
         }
         else
         {
-            xwc.x = TitleBarX + tmp_win->name_width + 6;
+            xwc.x = TitleBarX + tmp_win->name_width + TITLEBAR_ITEM_PADDING;
             xwc.width = width;
         }
 
