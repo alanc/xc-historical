@@ -1,4 +1,4 @@
-/* $XConsortium: miDDCtoGC.c,v 5.2 91/04/03 15:11:03 hersh Exp $ */
+/* $XConsortium: miDDCtoGC.c,v 5.3 92/11/09 18:52:44 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -69,26 +69,7 @@ GCPtr		pgc;	/* X GC handle */
       miColourEntry	*plinecolour;
       ddULONG		colourindex;
       ddSHORT		linewidth;
-      unsigned char     alu;
 
-
-      /*
-       * Set the GC Function based on Echo Mode.
-       * We are using XOR to Echo and Unecho, so
-       * set the GC function to XOR for these two cases.
-       * Else, set the default - copy src to dest.
-       */
-
-      if (pddc->Static.attrs->echoMode == PEXEcho ||
-          pddc->Static.attrs->echoMode == PEXUnEcho)
-        alu = GXxor;
-      else
-        alu = GXcopy;
-
-      if (alu != pgc->alu) {
-        gcmask |= GCFunction;
-        pgc->alu = alu;
-        }
 
       /*
        * Set line colour. 
@@ -100,8 +81,12 @@ GCPtr		pgc;	/* X GC handle */
       /*
        * Calculate final color index.
        */
-      linecolour = pddc->Static.attrs->lineColour;
-      miColourtoIndex(	pRend, pddc->Dynamic->pPCAttr->colourApproxIndex,
+      if (pddc->Static.attrs->echoMode == PEXEcho) 
+	    linecolour = pddc->Static.attrs->echoColour;
+      else 
+	    linecolour = pddc->Static.attrs->lineColour;
+
+      miColourtoIndex(pRend, pddc->Dynamic->pPCAttr->colourApproxIndex,
 			&linecolour, &colourindex);
 
       /* Only set GC value if necessary */
@@ -265,26 +250,7 @@ GCPtr		pgc;	/* X GC handle */
       miColourEntry	*pedgecolour;
       ddULONG		colourindex;
       ddSHORT		edgewidth;
-      unsigned char     alu;
 
-
-      /*
-       * Set the GC Function based on Echo Mode.
-       * We are using XOR to Echo and Unecho, so
-       * set the GC function to XOR for these two cases.
-       * Else, set the default - copy src to dest.
-       */
-
-      if (pddc->Static.attrs->echoMode == PEXEcho ||
-          pddc->Static.attrs->echoMode == PEXUnEcho)
-        alu = GXxor;
-      else
-        alu = GXcopy;
-
-      if (alu != pgc->alu) {
-        gcmask |= GCFunction;
-        pgc->alu = alu;
-        }
 
       /*
        * Set edge colour. 
@@ -296,9 +262,14 @@ GCPtr		pgc;	/* X GC handle */
       /*
        * Calculate final color index.
        */
-      edgecolour = pddc->Static.attrs->edgeColour;
-      miColourtoIndex(	pRend, pddc->Dynamic->pPCAttr->colourApproxIndex,
+      if (pddc->Static.attrs->echoMode == PEXEcho) 
+	  edgecolour = pddc->Static.attrs->echoColour;
+      else 
+	  edgecolour = pddc->Static.attrs->edgeColour;
+
+      miColourtoIndex(pRend, pddc->Dynamic->pPCAttr->colourApproxIndex,
 			&edgecolour, &colourindex);
+      
 
       /* Only set GC value if necessary */
       if (colourindex != pgc->fgPixel) {
@@ -452,26 +423,8 @@ miDDContext	*pddc;	/* dd Context handle */
 GCPtr		pgc;	/* X GC handle */
 {
       ddLONG		gcmask = 0;
-      unsigned char     alu;
 
 
-      /*
-       * Set the GC Function based on Echo Mode.
-       * We are using XOR to Echo and Unecho, so
-       * set the GC function to XOR for these two cases.
-       * Else, set the default - copy src to dest.
-       */
-
-      if (pddc->Static.attrs->echoMode == PEXEcho ||
-          pddc->Static.attrs->echoMode == PEXUnEcho)
-        alu = GXxor;
-      else
-        alu = GXcopy;
-
-      if (alu != pgc->alu) {
-        gcmask |= GCFunction;
-        pgc->alu = alu;
-        }
 }
 
 /*++
@@ -504,26 +457,7 @@ GCPtr		pgc;	/* X GC handle */
       ddColourSpecifier		markercolour;
       miColourEntry		*pmarkercolour;
       ddULONG			colourindex;
-      unsigned char     alu;
 
-
-      /*
-       * Set the GC Function based on Echo Mode.
-       * We are using XOR to Echo and Unecho, so
-       * set the GC function to XOR for these two cases.
-       * Else, set the default - copy src to dest.
-       */
-
-      if (pddc->Static.attrs->echoMode == PEXEcho ||
-          pddc->Static.attrs->echoMode == PEXUnEcho)
-        alu = GXxor;
-      else
-        alu = GXcopy;
-
-      if (alu != pgc->alu) {
-        gcmask |= GCFunction;
-        pgc->alu = alu;
-        }
 
       /*
        * Set the marker colour. 
@@ -535,8 +469,12 @@ GCPtr		pgc;	/* X GC handle */
       /*
        * Calculate final color index.
        */
-      markercolour = pddc->Static.attrs->markerColour;
-      miColourtoIndex(	pRend, pddc->Dynamic->pPCAttr->colourApproxIndex,
+      if (pddc->Static.attrs->echoMode == PEXEcho) 
+	  markercolour = pddc->Static.attrs->echoColour;
+      else 
+	  markercolour = pddc->Static.attrs->markerColour;
+
+      miColourtoIndex(pRend, pddc->Dynamic->pPCAttr->colourApproxIndex,
 			&markercolour, &colourindex);
 
 
@@ -589,26 +527,6 @@ GCPtr		pgc;	/* X GC handle */
       ddColourSpecifier	textcolour;
       miColourEntry	*ptextcolour;
       ddULONG		colourindex;
-      unsigned char     alu;
-
-
-      /*
-       * Set the GC Function based on Echo Mode.
-       * We are using XOR to Echo and Unecho, so
-       * set the GC function to XOR for these two cases.
-       * Else, set the default - copy src to dest.
-       */
-
-      if (pddc->Static.attrs->echoMode == PEXEcho ||
-          pddc->Static.attrs->echoMode == PEXUnEcho)
-        alu = GXxor;
-      else
-        alu = GXcopy;
-
-      if (alu != pgc->alu) {
-        gcmask |= GCFunction;
-        pgc->alu = alu;
-        }
 
       /*
        * Set text colour. 
@@ -620,8 +538,12 @@ GCPtr		pgc;	/* X GC handle */
       /*
        * Calculate final color index.
        */
-      textcolour = pddc->Static.attrs->textColour;
-      miColourtoIndex(	pRend, pddc->Dynamic->pPCAttr->colourApproxIndex,
+      if (pddc->Static.attrs->echoMode == PEXEcho) 
+	  textcolour = pddc->Static.attrs->echoColour;
+      else 
+	  textcolour = pddc->Static.attrs->textColour;
+
+      miColourtoIndex(pRend, pddc->Dynamic->pPCAttr->colourApproxIndex,
 			&textcolour, &colourindex);
 
 

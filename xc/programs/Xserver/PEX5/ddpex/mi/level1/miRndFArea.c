@@ -1,4 +1,4 @@
-/* $XConsortium: miRndFArea.c,v 5.1 91/02/16 09:55:07 rws Exp $ */
+/* $XConsortium: miRndFArea.c,v 5.2 91/07/24 17:57:52 hersh Exp $ */
 
 
 /***********************************************************
@@ -192,8 +192,12 @@ miRenderFillArea(pRend, pddc, input_list, input_facet, shape, noedges)
 		(!MI_DDC_IS_HIGHLIGHT(pddc)) ) {
 
 	    /* Compute index value for ddx */
-	    intcolour.colourType = PEXRgbFloatColour;
-	    intcolour.colour.rgbFloat = *input_facet->facets.pFacetRgbFloat;
+	    if (pddc->Static.attrs->echoMode == PEXEcho)
+		intcolour = pddc->Static.attrs->echoColour;
+	    else {
+		intcolour.colourType = PEXRgbFloatColour;
+		intcolour.colour.rgbFloat = *input_facet->facets.pFacetRgbFloat;
+	    }
 	    miColourtoIndex(pRend, pddc->Dynamic->pPCAttr->colourApproxIndex,
 			    &intcolour, &colourindex);
 
@@ -236,7 +240,10 @@ miRenderFillArea(pRend, pddc, input_list, input_facet, shape, noedges)
 	     * Surface attributes are set to highlight colour 
 	     * if highlighting
 	     */
-	    intcolour = pddc->Static.attrs->surfaceColour;
+	    if (pddc->Static.attrs->echoMode == PEXEcho) 
+		intcolour = pddc->Static.attrs->echoColour;
+	    else 
+		intcolour = pddc->Static.attrs->surfaceColour;
 
 	    miColourtoIndex( pRend,
 			     pddc->Dynamic->pPCAttr->colourApproxIndex,
@@ -359,8 +366,12 @@ miRenderFillArea(pRend, pddc, input_list, input_facet, shape, noedges)
 		(!MI_DDC_IS_HIGHLIGHT(pddc)) ) {
 
 	    /* Compute index value for ddx */
-	    intcolour.colourType = PEXRgbFloatColour;
-	    intcolour.colour.rgbFloat = *input_facet->facets.pFacetRgbFloat;
+	    if (pddc->Static.attrs->echoMode == PEXEcho) 
+		intcolour = pddc->Static.attrs->echoColour;
+	    else {
+		intcolour.colourType = PEXRgbFloatColour;
+		intcolour.colour.rgbFloat = *input_facet->facets.pFacetRgbFloat;
+	    }
 	    miColourtoIndex(pRend, pddc->Dynamic->pPCAttr->colourApproxIndex, 
 			    &intcolour, &colourindex);
 
@@ -404,7 +415,10 @@ miRenderFillArea(pRend, pddc, input_list, input_facet, shape, noedges)
 	     * Surface attributes are set to highlight colour 
 	     * if highlighting
 	     */
-	    intcolour = pddc->Static.attrs->surfaceColour;
+	    if (pddc->Static.attrs->echoMode == PEXEcho)
+		intcolour = pddc->Static.attrs->echoColour;
+	    else 
+		intcolour = pddc->Static.attrs->surfaceColour;
 
 	    miColourtoIndex( pRend,
 			     pddc->Dynamic->pPCAttr->colourApproxIndex,

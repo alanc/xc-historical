@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miRndTStrip.c,v 5.1 91/02/16 09:55:08 rws Exp $ */
 
 
 /***********************************************************
@@ -232,8 +232,12 @@ miRenderTriStrip(pRend, pddc, input_list, input_facet)
             pGC = pddc->Static.misc.pFillAreaGC;
             out_fct = input_facet->facets;
             DDFacetSIZE(input_facet->type, facet_size);
-            intcolour.colourType = PEXRgbFloatColour;
-            intcolour.colour.rgbFloat = *out_fct.pFacetRgbFloat;
+	    if (pddc->Static.attrs->echoMode == PEXEcho)
+		intcolour = pddc->Static.attrs->echoColour;
+	    else {
+		intcolour.colourType = PEXRgbFloatColour;
+		intcolour.colour.rgbFloat = *out_fct.pFacetRgbFloat;
+	    }
             miColourtoIndex(	pRend, pddc->Dynamic->pPCAttr->colourApproxIndex,
 				&intcolour, &colourindex);
 
@@ -247,7 +251,11 @@ miRenderTriStrip(pRend, pddc, input_list, input_facet)
 	     * the surface color attribute which has been set to the 
 	     * highlight color
              */
-            intcolour = pddc->Static.attrs->surfaceColour;
+	    if (pddc->Static.attrs->echoMode == PEXEcho)
+		intcolour = pddc->Static.attrs->echoColour;
+	    else {
+		intcolour = pddc->Static.attrs->surfaceColour;
+	    }
                
 	    miColourtoIndex( pRend, 
 			     pddc->Dynamic->pPCAttr->colourApproxIndex,
@@ -314,8 +322,12 @@ miRenderTriStrip(pRend, pddc, input_list, input_facet)
                  (DD_IsFacetColour(input_facet->type)) ) {
 		 out_fct.pNoFacet += facet_size;
 	
-            	 intcolour.colourType = PEXRgbFloatColour;
-            	 intcolour.colour.rgbFloat = *out_fct.pFacetRgbFloat;
+		  if (pddc->Static.attrs->echoMode == PEXEcho)
+		      intcolour = pddc->Static.attrs->echoColour;
+		  else {
+		      intcolour.colourType = PEXRgbFloatColour;
+		      intcolour.colour.rgbFloat = *out_fct.pFacetRgbFloat;
+		  }
             	 miColourtoIndex(   pRend, 
 				    pddc->Dynamic->pPCAttr->colourApproxIndex,
 				    &intcolour, &colourindex);
@@ -460,7 +472,6 @@ miRenderTriStrip(pRend, pddc, input_list, input_facet)
             out_fct = input_facet->facets;
             DDFacetSIZE(input_facet->type, facet_size);
  
-            intcolour.colourType = PEXRgbFloatColour;
  
             /* Render each bound as a polygon */
 
@@ -486,7 +497,12 @@ miRenderTriStrip(pRend, pddc, input_list, input_facet)
 
 
                 /* Compute index value for ddx */
-                intcolour.colour.rgbFloat = *out_fct.pFacetRgbFloat;
+		if (pddc->Static.attrs->echoMode == PEXEcho)
+		    intcolour = pddc->Static.attrs->echoColour;
+		else {
+		    intcolour.colourType = PEXRgbFloatColour;
+		    intcolour.colour.rgbFloat = *out_fct.pFacetRgbFloat;
+		}
                 miColourtoIndex(pRend, pddc->Dynamic->pPCAttr->colourApproxIndex,
                                 &intcolour, &colourindex);
  
@@ -531,7 +547,11 @@ miRenderTriStrip(pRend, pddc, input_list, input_facet)
 	     * the surface color attribute which has been set to the 
 	     * highlight color
              */
-            intcolour = pddc->Static.attrs->surfaceColour;
+	    if (pddc->Static.attrs->echoMode == PEXEcho)
+		intcolour = pddc->Static.attrs->echoColour;
+	    else {
+		intcolour = pddc->Static.attrs->surfaceColour;
+	    }
                
 	    miColourtoIndex( pRend,
 			     pddc->Dynamic->pPCAttr->colourApproxIndex,
