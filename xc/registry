@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.30 91/04/30 19:48:42 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.31 91/05/07 17:20:55 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -32,6 +32,7 @@ Name						Reference
 "SGI"						[6]
 "SONY"						[37]
 "stellar"					[28]
+"STI"						[73]
 "Sun"						[58]
 "TEK"						[43]
 "visual"					[5]
@@ -990,4 +991,9 @@ REFERENCES
 [71]	JIS X 0208-1990
 
 [72]	JIS X 0212-1990
+
+[73]	Dan Greening
+	Software Transformation
+	1601 Saratoga-Sunnyvale Rd
+	Cupertino, CA 95014
 Sumitomo Electric Workstation Corp.	[77]
