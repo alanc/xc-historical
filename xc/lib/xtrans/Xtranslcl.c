@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranslcl.c,v 1.21 95/01/19 18:06:04 mor Exp mor $ */
+/* $XConsortium: Xtranslcl.c,v 1.22 95/03/28 19:49:02 mor Exp mor $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -1820,9 +1820,6 @@ char *host;
 #endif
     char buf[256];
 
-    if (strcmp (host, "unix") == 0)
-	return (1);
-
 #ifdef NEED_UTSNAME
     if (uname (&name) >= 0 && strcmp (host, name.nodename) == 0)
 	return (1);
@@ -1863,7 +1860,7 @@ char *port;
      * we know for sure it will fail.
      */
 
-    if (!HostReallyLocal (host))
+    if (strcmp (host, "unix") != 0 && !HostReallyLocal (host))
     {
 	PRMSG (1,
 	   "TRANS(LocalOpenClient): Cannot connect to non-local host %s\n",
