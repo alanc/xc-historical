@@ -1,4 +1,4 @@
-/* $XConsortium: Threads.c,v 1.8 93/09/09 16:01:50 kaleb Exp $ */
+/* $XConsortium: Threads.c,v 1.10 93/09/11 14:19:22 rws Exp $ */
 
 /************************************************************
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -322,7 +322,7 @@ PushThread(app)
  */
 
 static void
-#if NeeddFunctionPrototypes
+#if NeedFunctionPrototypes
 PopThread(
     XtAppContext app)
 #else
