@@ -71,33 +71,31 @@ lisp:	compile-CLX
 
 compile-CLX:	$(C_OBJS)
 	$(ECHO) " \
-		(set-case-mode :case-sensitive-lower) \
-		(proclaim '(optimize (speed $(SPEED)) (safety $(SAFETY)))) \
-		(compile-file-if-needed \"defsystem\") \
-		(load \"defsystem\") \
-		#+allegro (compile-system :clx) \
-		#-allegro (compile-clx) \
-		#+allegro (compile-system :clx-debug)" \
-		| $(CL) $(CLOPTS) -batch
+	(set-case-mode :case-sensitive-lower) \
+	(proclaim '(optimize (speed $(SPEED)) (safety $(SAFETY)))) \
+	(load \"defsystem\") \
+	#+allegro (compile-system :clx) \
+	#-allegro (compile-clx) \
+	#+allegro (compile-system :clx-debug)" \
+	| $(CL) $(CLOPTS) -batch
 
 
 compile-closified-CLX:	$(C_OBJS)
 	$(ECHO) " \
-		(proclaim '(optimize (speed $(SPEED)) (safety $(SAFETY)))) \
-		(setq excl::*print-nickname* t) \
-		(unless (or (find-package 'clos) (find-package 'pcl)) \
-		  (let ((spread (sys:gsgc-parameter :generation-spread))) \
-		    (setf (sys:gsgc-parameter :generation-spread) 1) \
-		    (require :pcl) \
-		    (provide :pcl) \
-		    (gc) (gc) \
-		    (setf (sys:gsgc-parameter :generation-spread) spread))) \
-		(compile-file-if-needed \"defsystem\") \
-		(load \"defsystem\") \
-		#+allegro (compile-system :clx) \
-		#-allegro (compile-clx) \
-		#+allegro (compile-system :clx-debug)" \
-		| $(CL) $(CLOPTS) -batch
+	(proclaim '(optimize (speed $(SPEED)) (safety $(SAFETY)))) \
+	(setq excl::*print-nickname* t) \
+	(unless (or (find-package 'clos) (find-package 'pcl)) \
+	  (let ((spread (sys:gsgc-parameter :generation-spread))) \
+	    (setf (sys:gsgc-parameter :generation-spread) 1) \
+	    (require :pcl) \
+	    (provide :pcl) \
+	    (gc) (gc) \
+	    (setf (sys:gsgc-parameter :generation-spread) spread))) \
+	(load \"defsystem\") \
+	#+allegro (compile-system :clx) \
+	#-allegro (compile-clx) \
+	#+allegro (compile-system :clx-debug)" \
+	| $(CL) $(CLOPTS) -batch
 
 
 cat:
@@ -105,18 +103,17 @@ cat:
 
 
 load-CLX:
-	$(ECHO)  '(load "defsystem")' \
-		 "(let (#+allegro (spread (sys:gsgc-parameter :generation-spread)))" \
-		 "  #+allegro (setf (sys:gsgc-parameter :generation-spread) 1)" \
-		 "  #+allegro (load-system :clx)" \
-		 "  #-allegro (load-clx)" \
-		 "  #+allegro (gc :tenure)" \
-		 "  #+allegro (setf (sys:gsgc-parameter :generation-spread) spread)" \
-		 ")" \
-		 '#+allegro (gc t)' \
-		 '(dumplisp :name "$(CLX)" #+allegro :checkpoint #+allegro nil)' \
-		 '(exit)' | $(CL) $(CLOPTS)
-
+	$(ECHO) " \
+	(let ((spread (sys:gsgc-parameter :generation-spread))) \
+	  (setf (sys:gsgc-parameter :generation-spread) 1) \
+	  (load \"defsystem\") \
+	  #+allegro (load-system :clx) \
+	  #-allegro (load-clx) \
+	  (gc :tenure) \
+	  (setf (sys:gsgc-parameter :generation-spread) spread)) \
+	(gc t)" \
+	'(dumplisp :name "$(CLX)" #+allegro :checkpoint #+allegro nil)' \
+	"(exit)" | $(CL) $(CLOPTS)
 
 clean:
 	$(RM) -f *.fasl debug/*.fasl $(CLX) core $(C_OBJS)
