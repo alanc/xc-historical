@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: icon.c,v 1.2 87/07/31 09:35:48 weissman Exp $";
+static char rcs_id[] = "$Header: icon.c,v 1.2 87/09/11 08:19:38 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -32,48 +32,18 @@ static char rcs_id[] = "$Header: icon.c,v 1.2 87/07/31 09:35:48 weissman Exp $";
 #include "nomail.bit"
 #include "newmail.bit"
 
-#ifdef X11
-static Pixmap MakePixmap(dpy, root, data, width, height) 
-Display *dpy;
-Drawable root;
-short *data;
-unsigned int width, height;
-{
-    XImage ximage;
-    GC pgc;
-    XGCValues gcv;
-    Pixmap pid;
-
-    pid = XCreatePixmap(dpy, root, width, height,
-			(unsigned int) DefaultDepth(dpy, 0));
-    gcv.foreground = BlackPixel(dpy, 0);
-    gcv.background = WhitePixel(dpy, 0);
-    pgc = XCreateGC(dpy, pid, GCForeground | GCBackground, &gcv);
-    ximage.height = height;
-    ximage.width = width;
-    ximage.xoffset = 0;
-    ximage.format = XYBitmap;
-    ximage.data = (char *)data;
-    ximage.byte_order = LSBFirst;
-    ximage.bitmap_unit = 16; 
-    ximage.bitmap_bit_order = LSBFirst;
-    ximage.bitmap_pad = 16;
-    ximage.bytes_per_line = (width+15)/16 * 2;
-    ximage.depth = 1;
-
-    XPutImage(dpy, pid, pgc, &ximage, 0, 0, 0, 0, width, height);
-    XFreeGC(dpy, pgc);
-    return(pid);
-}
-#endif
-
 
 void IconInit()
 {
 #ifdef X11
-    NoMailPixmap = MakePixmap(theDisplay, DefaultRootWindow(theDisplay),
-			      nomail_bits, nomail_width, nomail_height);
-    NewMailPixmap =MakePixmap(theDisplay, DefaultRootWindow(theDisplay),
-			      newmail_bits, newmail_width, newmail_height);
+    NoMailPixmap = XCreateBitmapFromData( theDisplay,
+					  DefaultRootWindow(theDisplay),
+					  nomail_bits,
+					  nomail_width, nomail_height );
+
+    NewMailPixmap = XCreateBitmapFromData( theDisplay,
+					   DefaultRootWindow(theDisplay),
+					   newmail_bits,
+					   newmail_width, newmail_height);
 #endif
 }
