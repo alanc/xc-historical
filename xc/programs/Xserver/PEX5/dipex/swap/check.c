@@ -1,4 +1,4 @@
-/* $XConsortium: check.c,v 5.3 91/07/01 16:42:42 hersh Exp $ */
+/* $XConsortium: check.c,v 5.4 91/12/30 18:23:45 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -320,5 +320,16 @@ RequestFunction set_tables[] = {
 /*  90	*/	NoFloat,		/* PEXQueryFont */
 /*  91	*/	NoFloat,		/* PEXListFonts */
 /*  92	*/	NoFloat,		/* PEXListFontsWithInfo */
-/*  93	*/	CheckFloat		/* PEXQueryTextExtents */
+/*  93	*/	CheckFloat,		/* PEXQueryTextExtents */
+/*  94	*/	NoFloat,    		/* PEXMatchRendererTargets */
+/*  95	*/	NoFloat,    		/* PEXEscape */
+/*  96	*/	NoFloat,    		/* PEXEscapeWithReply */
+/*  97	*/	NoFloat,    		/* PEXRenderElements */
+/*  98	*/	NoFloat,    		/* PEXAccumulateState */
+/*  99	*/	CheckFloat,    		/* PEXBeginPickOne */
+/* 100	*/	NoFloat,    		/* PEXEndPickOne */
+/* 101	*/	CheckFloat,    		/* PEXPickOne */
+/* 102	*/	CheckFloat,    		/* PEXBeginPickAll */
+/* 103	*/	NoFloat,    		/* PEXEndPickAll */
+/* 104	*/	CheckFloat    		/* PEXPickAll */
 };

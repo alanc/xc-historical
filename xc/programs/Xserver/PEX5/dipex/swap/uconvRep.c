@@ -1,4 +1,4 @@
-/* $XConsortium: uconvRep.c,v 5.6 91/10/01 02:40:50 hersh Exp $ */
+/* $XConsortium: uconvRep.c,v 5.7 92/01/02 15:21:44 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -799,6 +799,117 @@ pexGetPickMeasureReply	*reply;
 }
 
 void
+SWAP_FUNC_PREFIX(ConvertEndPickOneReply) (cntxtPtr, strmPtr, reply)
+pexContext		*cntxtPtr;
+pexEndPickOneReq	*strmPtr;
+pexEndPickOneReply	*reply;
+{
+    pexPickElementRef *p_data;
+    CARD32  i;
+
+    pexSwap *swapPtr = cntxtPtr->swap;
+
+    SWAP_CARD16 (reply->sequenceNumber);
+    SWAP_CARD32 (reply->length);	
+
+    /* JSH commented out because until the Pick Functionality is
+       actually written this will seg fault on a NULL pointer
+
+    p_data = (pexPickElementRef *)(reply+1);
+    for (i=0; i < reply->numPickElRefs; i++, p_data++) 
+	    SWAP_PICK_ELEMENT_REF((*p_data));
+    
+    */
+    SWAP_CARD32 (reply->numPickElRefs);
+}
+
+void
+SWAP_FUNC_PREFIX(ConvertPickOneReply) (cntxtPtr, strmPtr, reply)
+pexContext		*cntxtPtr;
+pexPickOneReq		*strmPtr;
+pexPickOneReply		*reply;
+{
+    pexPickElementRef *p_data;
+    CARD32  i;
+
+    pexSwap *swapPtr = cntxtPtr->swap;
+
+    SWAP_CARD16 (reply->sequenceNumber);
+    SWAP_CARD32 (reply->length);
+
+    /* JSH commented out because until the Pick Functionality is
+       actually written this will seg fault on a NULL pointer
+
+    p_data = (pexPickElementRef *)(reply+1);
+    for (i=0; i < reply->numPickElRefs; i++, p_data++) 
+	    SWAP_PICK_ELEMENT_REF((*p_data));
+    
+    */
+    SWAP_CARD32 (reply->numPickElRefs);
+}
+
+void
+SWAP_FUNC_PREFIX(ConvertEndPickAllReply) (cntxtPtr, strmPtr, reply)
+pexContext		*cntxtPtr;
+pexEndPickAllReq	*strmPtr;
+pexEndPickAllReply	*reply;
+{
+    pexPickElementRef *p_data;
+    CARD32 i, j, num, *buf;
+
+    pexSwap *swapPtr = cntxtPtr->swap;
+
+    SWAP_CARD16 (reply->sequenceNumber);
+    SWAP_CARD32 (reply->length);
+
+    /* JSH commented out because until the Pick Functionality is
+       actually written this will seg fault on a NULL pointer
+
+    for ( i=0, buf=(CARD32 *)(reply+1); i < reply->numPicked; i++) {
+	num = *buf;
+	SWAP_CARD32((*buf));
+	buf++;
+	for ( j=0, p_data = (pexPickElementRef *)(buf); j < num; j++, p_data++)
+	    SWAP_PICK_ELEMENT_REF((*p_data));
+	buf = (CARD32 *)p_data;
+    }
+
+    */
+    SWAP_CARD32 (reply->numPicked);
+}
+
+void
+SWAP_FUNC_PREFIX(ConvertPickAllReply) (cntxtPtr, strmPtr, reply)
+pexContext		*cntxtPtr;
+pexPickAllReq	*strmPtr;
+pexPickAllReply	*reply;
+{
+    pexPickElementRef *p_data;
+    CARD32 i, j, num, *buf;
+
+    pexSwap *swapPtr = cntxtPtr->swap;
+
+    SWAP_CARD16 (reply->sequenceNumber);
+    SWAP_CARD32 (reply->length);
+
+    /* JSH commented out because until the Pick Functionality is
+       actually written this will seg fault on a NULL pointer
+
+    for ( i=0, buf=(CARD32 *)(reply+1); i < reply->numPicked; i++) {
+	num = *buf;
+	SWAP_CARD32((*buf));
+	buf++;
+	for ( j=0, p_data = (pexPickElementRef *)(buf); j < num; j++, p_data++)
+	    SWAP_PICK_ELEMENT_REF((*p_data));
+	buf = (CARD32 *)p_data;
+    }
+
+    */
+    SWAP_CARD32 (reply->numPicked);
+}
+
+
+void
 SWAP_FUNC_PREFIX(ConvertQueryFontReply) (cntxtPtr, strmPtr, reply)
 pexContext	    *cntxtPtr;
 pexQueryFontReq	    *strmPtr;
@@ -925,6 +1036,42 @@ pexGetImpDepConstantsReply  *reply;
 		break;
 	}
     }
+}
+
+void
+SWAP_FUNC_PREFIX(ConvertMatchRendererTargetsReply) (cntxtPtr, strmPtr, reply)
+pexContext		    *cntxtPtr;
+pexMatchRendererTargetsReq  *strmPtr;
+pexMatchRendererTargetsReply    *reply;
+{
+    pexSwap *swapPtr = cntxtPtr->swap;
+    CARD32 i, numTargets;
+    pexRendererTarget *rd_data;
+
+    numTargets = reply->length / 2;
+    SWAP_CARD16 (reply->sequenceNumber);
+    SWAP_CARD32 (reply->length);	/* not 0 */
+
+    rd_data = (pexRendererTarget *)(reply + 1);
+
+    for ( i = 0; i < numTargets; i++, rd_data++ )
+	SWAP_RENDERER_TARGET((*rd_data));
+
+}
+
+void
+SWAP_FUNC_PREFIX(EscapeWithReplyReply) (cntxtPtr, strmPtr, reply)
+pexContext		    *cntxtPtr;
+pexEscapeWithReplyReq       *strmPtr;
+pexEscapeWithReplyReply     *reply;
+{
+    pexSwap *swapPtr = cntxtPtr->swap;
+
+    SWAP_CARD16 (reply->sequenceNumber);
+    SWAP_CARD32 (reply->length);	/* not 0 */
+    SWAP_CARD32 (reply->escapeID);
+
+    /* vendor specific stuff goes here */
 }
 
 void
@@ -1159,12 +1306,12 @@ unsigned char	*p_data;
     if (im & PEXPMPath) {
 	CARD32 i;
 	CARD32 numRefs = *((CARD32 *)ptr);
-	pexPickPath *pp;
+	pexPickElementRef *pp;
 
 	SWAP_CARD32((*((CARD32 *)ptr)));
 	ptr += sizeof(CARD32);
-	for (i=0, pp = (pexPickPath *)ptr; i<numRefs; i++, pp++) {
-	    SWAP_PICK_PATH((*pp));
+	for (i=0, pp = (pexPickElementRef *)ptr; i<numRefs; i++, pp++) {
+	    SWAP_PICK_ELEMENT_REF((*pp));
 	}
     }
 }
@@ -1777,8 +1924,8 @@ unsigned char	*pdata;
 	len = (int)(*ptr);
 	SWAP_CARD32 ((*((CARD32 *)ptr)));
 	ptr += sizeof(CARD32);
-	for (i=0; i<len; i++, ptr += sizeof(pexPickPath)) {
-	    SWAP_PICK_PATH ((*((pexPickPath *)ptr)));
+	for (i=0; i<len; i++, ptr += sizeof(pexPickElementRef)) {
+	    SWAP_PICK_ELEMENT_REF ((*((pexPickElementRef *)ptr)));
 	};
     };
 
@@ -1951,5 +2098,46 @@ CARD8	*p_data;
 	SWAP_CARD32 ((*((CARD32 *)ptr)));
 	ptr += sizeof(CARD32);
 	SwapDeviceRects (swapPtr, num, (pexDeviceRect *)ptr);
+    }
+
+    if (im & PEXRDPickInclusion) {
+	SWAP_CARD32 ((*((CARD32 *)ptr)));
+	ptr += sizeof(CARD32);
+    }
+
+    if (im & PEXRDPickExclusion) {
+	SWAP_CARD32 ((*((CARD32 *)ptr)));
+	ptr += sizeof(CARD32);
+    }
+
+    if (im & PEXRDPickStartPath) {
+	num = *((CARD32 *)ptr);
+	SWAP_CARD32 ((*((CARD32 *)ptr)));
+	ptr += sizeof(CARD32);
+	for (i=0; i<num; i++, ptr += sizeof(pexElementRef))
+	    SWAP_ELEMENT_REF((*((pexElementRef *)ptr)));
+    }
+
+    if (im & PEXRDBackgroundColour) {
+	ptr = SWAP_FUNC_PREFIX(SwapColourSpecifier) (swapPtr,
+						   (pexColourSpecifier *)ptr);
+    }
+
+    /* this is CARD8 cast into a CARD32 so it must get swapped as CARD32 */
+    if (im & PEXRDClearI) {
+	SWAP_CARD32 ((*((CARD32 *)ptr)));
+	ptr += sizeof(CARD32);
+    }
+
+    /* this is CARD8 cast into a CARD32 so it must get swapped as CARD32 */
+    if (im & PEXRDClearZ) {
+	SWAP_CARD32 ((*((CARD32 *)ptr)));
+	ptr += sizeof(CARD32);
+    }
+
+    /* this is CARD16 cast into a CARD32 so it must get swapped as CARD32 */
+    if (im & PEXRDEchoMode) {
+	SWAP_CARD32 ((*((CARD32 *)ptr)));
+	ptr += sizeof(CARD32);
     }
 }

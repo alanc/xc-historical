@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: convReq.h,v 5.1 91/02/16 09:57:11 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -25,10 +25,12 @@ SOFTWARE.
 ******************************************************************/
 
 LOCAL_FLAG ErrorCode
+	SWAP_FUNC_PREFIX(PEXRequestUnused)(),
 	SWAP_FUNC_PREFIX(PEXGenericRequest) (),
 	SWAP_FUNC_PREFIX(PEXGenericResourceRequest) (),
 	SWAP_FUNC_PREFIX(PEXGetExtensionInfo) (),
 	SWAP_FUNC_PREFIX(PEXGetEnumeratedTypeInfo) (),
+	SWAP_FUNC_PREFIX(PEXGetImpDepConstants) (),
 	SWAP_FUNC_PREFIX(PEXCreateLookupTable) (),
 	SWAP_FUNC_PREFIX(PEXCopyLookupTable) (),
 	SWAP_FUNC_PREFIX(PEXGetTableInfo) (),
@@ -97,14 +99,25 @@ LOCAL_FLAG ErrorCode
 	SWAP_FUNC_PREFIX(PEXListFonts) (),
 	SWAP_FUNC_PREFIX(PEXListFontsWithInfo) (),
 	SWAP_FUNC_PREFIX(PEXQueryTextExtents) (),
-	SWAP_FUNC_PREFIX(PEXGetImpDepConstants) (),
-	SWAP_FUNC_PREFIX(PEXRequestUnused)();
+        SWAP_FUNC_PREFIX(PEXMatchRendererTargets) (),
+	SWAP_FUNC_PREFIX(PEXEscape) (),
+	SWAP_FUNC_PREFIX(PEXEscapeWithReply) (),
+	SWAP_FUNC_PREFIX(PEXRenderElements) (),
+	SWAP_FUNC_PREFIX(PEXAccumulateState) (),
+	SWAP_FUNC_PREFIX(PEXBeginPickOne) (),
+	SWAP_FUNC_PREFIX(PEXEndPickOne) (),
+        SWAP_FUNC_PREFIX(PEXPickOne) (),
+	SWAP_FUNC_PREFIX(PEXBeginPickAll) (),
+	SWAP_FUNC_PREFIX(PEXEndPickAll) (),
+	SWAP_FUNC_PREFIX(PEXPickAll) ();
+
 
 LOCAL_FLAG void
 	SWAP_FUNC_PREFIX(SwapTable)(),
 	SWAP_FUNC_PREFIX(SwapSearchContext)(),
 	SWAP_FUNC_PREFIX(SwapPickMeasAttr) (),
 	SWAP_FUNC_PREFIX(SwapPickDevAttr) (),
+	SWAP_FUNC_PREFIX(SwapPickRecord) (),
 	SWAP_FUNC_PREFIX(SwapRendererAttributes) ();
 
 LOCAL_FLAG unsigned char * SWAP_FUNC_PREFIX(SwapLightEntry) ();

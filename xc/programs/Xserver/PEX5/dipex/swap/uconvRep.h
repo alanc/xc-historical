@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: uconvRep.h,v 5.1 91/02/16 09:57:21 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -28,6 +28,7 @@ SOFTWARE.
 LOCAL_FLAG void
     SWAP_FUNC_PREFIX(ConvertGetExtensionInfoReply) (),
     SWAP_FUNC_PREFIX(ConvertGetEnumeratedTypeInfoReply) (),
+    SWAP_FUNC_PREFIX(ConvertGetImpDepConstantsReply) (),
     SWAP_FUNC_PREFIX(ConvertGetTableInfoReply) (),
     SWAP_FUNC_PREFIX(ConvertGetPredefinedEntriesReply) (),
     SWAP_FUNC_PREFIX(ConvertGetDefinedIndicesReply) (),
@@ -57,7 +58,12 @@ LOCAL_FLAG void
     SWAP_FUNC_PREFIX(ConvertListFontsReply) (),
     SWAP_FUNC_PREFIX(ConvertListFontsWithInfoReply) (),
     SWAP_FUNC_PREFIX(ConvertQueryTextExtentsReply) (),
-    SWAP_FUNC_PREFIX(ConvertGetImpDepConstantsReply) (),
+    SWAP_FUNC_PREFIX(ConvertMatchRendererTargetsReply) (),
+    SWAP_FUNC_PREFIX(EscapeWithReplyReply) (),
+    SWAP_FUNC_PREFIX(ConvertEndPickOneReply) (),
+    SWAP_FUNC_PREFIX(ConvertPickOneReply) (),
+    SWAP_FUNC_PREFIX(ConvertEndPickAllReply) (),
+    SWAP_FUNC_PREFIX(ConvertPickAllReply) (),
     SWAP_FUNC_PREFIX(NoReply)();
 
 

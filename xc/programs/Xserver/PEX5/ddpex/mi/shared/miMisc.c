@@ -1,4 +1,4 @@
-/* $XConsortium: miMisc.c,v 5.2 91/03/19 18:13:33 keith Exp $ */
+/* $XConsortium: miMisc.c,v 5.3 91/07/10 09:08:10 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -27,6 +27,7 @@ SOFTWARE.
 #include "mipex.h"
 #include "miInfo.h"
 #include "pexUtils.h"
+#include "PEXprotost.h"
 
 /* pex device dependent initialization */
 ddpex43rtn
@@ -722,3 +723,95 @@ InquireEnumTypeInfo(pDrawable, itemMask, numEnumTypes, pEnumTypeList, pNumLists,
     return (Success);
 }				  /* InquireEnumTypeInfo */
 
+/*************************************************************************
+ * macro for MatchRendererTargets.
+ */
+
+/* 30 is arbitrary constant */
+#define ADD_TRIPLET(d,t,v) { int diff; \
+          if ((pexBuffer->dataSize + sizeof(pexRendererTarget)) > \
+                                                pexBuffer->bufSize){\
+            diff = (unsigned long)p - (unsigned long)pexBuffer->pBuf; \
+            puBuffRealloc(pexBuffer,pexBuffer->bufSize + \
+                                             30*sizeof(pexRendererTarget)); \
+	    p = (pexRendererTarget *)(((unsigned long)pexBuffer->pBuf) +diff);\
+	  } \
+	  p->depth = (d); \
+          p->type = (t); \
+	  p->visualID = (v); \
+	  pexBuffer->dataSize += sizeof(pexRendererTarget); \
+          p++; nTargets++; \
+          if (nTargets >= maxTriplets) return (Success); \
+          }
+/*++
+ |
+ |  Function Name:  MatchRendererTargets    
+ |
+ |  Function Description:
+ |       Handles Match Renderer Taregets Request.
+ |       Given a visualID, depth & drawable type, tell whether PEX will
+ |       render into it.  Real life: PEX does not do all drawables.
+ |
+ |  Note(s):
+ |
+ --*/
+			       
+
+ddpex43rtn
+MatchRendererTargets(pDraw, depth, drawType, visualID, maxTriplets, pexBuffer)
+    DrawablePtr pDraw;
+    int         depth;
+    int         drawType;
+    VisualID    visualID;
+    int         maxTriplets;
+    ddBuffer   *pexBuffer;
+{
+    int i;
+    int nTargets = 0;
+
+    register ScreenPtr pScreen;
+    int idepth, ivisual;
+    DepthPtr pDepth;
+
+    pexRendererTarget *p = (pexRendererTarget *)pexBuffer->pBuf;
+
+/*
+ * Code originally lifted from CreateWindow (x11/server/dix/window.c)
+ */
+    pScreen = pDraw->pScreen;
+
+    for(idepth = 0; idepth < pScreen->numDepths; idepth++) {
+
+      pDepth = (DepthPtr) &pScreen->allowedDepths[idepth];
+
+      /*
+       * if depth is wild carded, then we need to walk them all.
+       */
+      if ((depth == pDepth->depth) || (depth == 0)) {
+
+	for (ivisual = 0; ivisual < pDepth->numVids; ivisual++)	{
+
+	  /* if visual is a match or it's wildcarded then do it */
+	  if ((visualID == pDepth->vids[ivisual]) || (visualID == 0)) {
+	    /*
+             * Here is the moment of truth, this is just going to say
+             * that everything is available for PEX rendering. It is possible
+             * that vendors will want to create a global table that hangs
+             * around.  That way they can be qualified in ddpexInit().
+             * If compiled with -DMULTIBUFFER it assumes that mutli buffers
+             * are fair game.
+             */
+	    if ((drawType == PEXWindow) || (drawType == PEXDontCare))
+	      ADD_TRIPLET(pDepth->depth, pDepth->vids[ivisual], PEXWindow);
+	    if ((drawType == PEXPixmap) || (drawType == PEXDontCare))
+	      ADD_TRIPLET(pDepth->depth, pDepth->vids[ivisual], PEXPixmap);
+#ifdef MULTIBUFFER
+	    if ((drawType == PEXBuffer) || (drawType == PEXDontCare))
+	      ADD_TRIPLET(pDepth->depth, pDepth->vids[ivisual], PEXBuffer);
+#endif	      
+	  }
+	}
+      }
+    }
+    return (Success);
+}

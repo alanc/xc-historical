@@ -1,4 +1,4 @@
-/* $XConsortium: dipexExt.c,v 5.4 91/07/21 12:01:49 rws Exp $ */
+/* $XConsortium: dipexExt.c,v 5.5 91/12/30 18:22:00 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -152,7 +152,7 @@ PexExtensionInit()
 	return;
     }
 
-    PextEntry = AddExtension(   PEX_NAME_STRING, 0, (PEXMaxError+1),
+    PextEntry = AddExtension( PEX_NAME_STRING, PEXNumberEvents, (PEXMaxError+1),
 				    ProcPEXDispatch, ProcPEXDispatch,
 				    PEXResetProc, StandardMinorOpcode);
     if (!PextEntry) {
@@ -161,6 +161,9 @@ PexExtensionInit()
 
     PexReqCode = PextEntry->base;
     PexErrorBase = PextEntry->errorBase;
+    PexEventBase = PextEntry->eventBase;
+    EventSwapVector[PexEventBase + PEXMaxHitsReached] = 
+						    SwapPEXMaxHitsReachedEvent;
     
 }
 

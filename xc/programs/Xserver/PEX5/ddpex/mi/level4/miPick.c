@@ -1,4 +1,4 @@
-/* $XConsortium: miPick.c,v 5.2 91/10/01 02:29:03 hersh Exp $ */
+/* $XConsortium: miPick.c,v 5.3 92/02/06 11:19:03 mor Exp $ */
 
 
 /***********************************************************
@@ -627,11 +627,12 @@ FreePickMeasure(pPM, PMid)
     if (ppm->devPriv) xfree(ppm->devPriv);
 
     /* go through the path and update the structures' ref. count */
-    path_update_struct_refs(	ppm->path, (diResourceHandle) NULL,
-				PICK_RESOURCE, REMOVE);
+    if (ppm->path) path_update_struct_refs( ppm->path, (diResourceHandle) NULL,
+					    PICK_RESOURCE, REMOVE);
 
     if (ppm->path) puDeleteList(ppm->path);
 
+    if (ppm->pWks)
     UpdateWksRefs(ppm->pWks, (diResourceHandle) ppm, PICK_RESOURCE, REMOVE);
 
     if (ppm->incl_handle)

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pexInfo.c,v 5.1 91/02/16 09:56:56 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -30,6 +30,9 @@ SOFTWARE.
  *	Contents:   PEXGetExtensionInfo
  *		    PEXGetEnumeratedTypeInfo
  *		    PEXGetImpDepConstants
+ *		    PEXMatchRendererTargets
+ *		    PEXEscape
+ *		    PEXEscapeWithReply
  *
  --*/
 
@@ -40,6 +43,7 @@ SOFTWARE.
 #include "dipex.h"
 #include "pexError.h"
 #include "pexLookup.h"
+#include "pexExtract.h"
 #ifdef min
 #undef min
 #endif
@@ -140,6 +144,81 @@ pexGetImpDepConstantsReq	*strmPtr;
     return( err );
 
 } /* end-PEXGetImpDepConstants() */
+
+ErrorCode
+PEXMatchRendererTargets( cntxtPtr, strmPtr )
+pexContext			*cntxtPtr;
+pexMatchRendererTargetsReq      *strmPtr;
+{
+    ErrorCode err = Success;
+    DrawablePtr d;
+    extern ddBuffer *pPEXBuffer;
+
+    LU_DRAWABLE (strmPtr->drawable, d);
+
+    /* no way to check visualID besides doing the work of Match */
+
+    SETUP_INQ(pexMatchRendererTargetsReply);
+
+    err = MatchRendererTargets(d, (int)strmPtr->depth, (int)strmPtr->type, 
+			   (VisualID)strmPtr->visualID,
+			   (int)strmPtr->maxTriplets, pPEXBuffer );
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+
+    {
+	SETUP_VAR_REPLY(pexMatchRendererTargetsReply);
+	WritePEXBufferReply(pexMatchRendererTargetsReply);
+    }
+    return( err );
+
+} /* end-PEXMatchRendererTargets() */
+
+ErrorCode
+PEXEscape( cntxtPtr, strmPtr )
+pexContext		  	*cntxtPtr;
+pexEscapeReq	   	 	*strmPtr;
+{
+    ErrorCode err = Success;
+    ddRendererStr *prend = 0;
+    pexEscapeSetEchoColourData *ptr;
+    CARD8 *pcs;
+
+    ptr = (pexEscapeSetEchoColourData *)(strmPtr + 1);
+    pcs = (CARD8 *)(ptr+1); 
+
+    LU_RENDERER(ptr->rdr, prend);
+
+    /* Support the one Registered Escape, Set Echo Color */
+    switch (strmPtr->escapeID) {
+	case  PEXEscapeSetEchoColour: {
+	  EXTRACT_COLOUR_SPECIFIER(prend->echoColour,pcs);
+	  break;
+	}
+    }
+
+
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+
+    return( err );
+
+} /* end-PEXEscape() */
+
+
+ErrorCode
+PEXEscapeWithReply( cntxtPtr, strmPtr )
+pexContext		  	*cntxtPtr;
+pexEscapeWithReplyReq	   	*strmPtr;
+{
+    ErrorCode err = Success;
+
+    /* Do nothing here, Escape is not implemented in SI 
+    */
+
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+
+    return( err );
+
+} /* end-PEXEscapeWithReply() */
 /*++
  *
  *	End of File

@@ -1,4 +1,4 @@
-/* $XConsortium: cOCprim.c,v 5.4 91/06/14 15:48:34 hersh Exp $ */
+/* $XConsortium: cOCprim.c,v 5.5 91/07/01 16:38:43 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -765,4 +765,11 @@ pexParaSurfCharacteristics *strmPtr;
 	}
     }
 
+}
+
+ErrorCode
+SWAP_FUNC_PREFIX(PEXNoop) (swapPtr, strmPtr)
+pexSwap	*swapPtr;
+pexNoop	*strmPtr;
+{
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: miWks.c,v 5.5 91/10/01 02:29:46 hersh Exp $ */
+/* $XConsortium: miWks.c,v 5.6 91/10/01 15:31:03 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -282,6 +282,10 @@ CreatePhigsWks(pInitInfo, pWKS)
 	MIWKS_SETNS(pInitInfo->pHighExclSet, prend->ns[(int) DD_HIGH_EXCL_NS], pWKS);
 	MIWKS_SETNS(pInitInfo->pInvisInclSet, prend->ns[(int) DD_INVIS_INCL_NS], pWKS);
 	MIWKS_SETNS(pInitInfo->pInvisExclSet, prend->ns[(int) DD_INVIS_EXCL_NS], pWKS);
+        /* These are for Renderer Picking, not used for Wks */
+        MIWKS_SETNS(0, prend->ns[(int) DD_PICK_INCL_NS], pWKS);
+        MIWKS_SETNS(0, prend->ns[(int) DD_PICK_EXCL_NS], pWKS);
+
 
 	prend->hlhsrMode = PEXHlhsrOff;
 	prend->npcSubvolume = NPCInit;

@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.3 91/02/18 11:27:07 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.4 91/07/24 16:58:06 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -46,9 +46,9 @@ INCLUDES = -I. \
 	-I$(PEXSERVINC) \
 	-I$(SERVERSRC)/include
 
-SRCS = miRender.c 
+SRCS = miRender.c miRndrPick.c
 
-OBJS = miRender.o 
+OBJS = miRender.o miRndrPick.o
 
 NormalLibraryObjectRule()
 

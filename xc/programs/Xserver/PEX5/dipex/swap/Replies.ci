@@ -1,4 +1,4 @@
-/* $XConsortium: Replies.ci,v 5.1 91/02/16 09:57:03 rws Exp $ */
+/* $XConsortium: Replies.ci,v 5.2 91/03/15 18:31:38 keith Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -126,4 +126,15 @@ ReplyFunction SWAP_FUNC_PREFIX(PEXReply)[] = {
 /*  91  */   SWAP_FUNC_PREFIX(ConvertListFontsReply),
 /*  92  */   SWAP_FUNC_PREFIX(ConvertListFontsWithInfoReply),
 /*  93  */   SWAP_FUNC_PREFIX(ConvertQueryTextExtentsReply),
+/*  94  */   SWAP_FUNC_PREFIX(ConvertMatchRendererTargetsReply),
+/*  95  */   SWAP_FUNC_PREFIX(NoReply),   /*Escape*/
+/*  96  */   SWAP_FUNC_PREFIX(EscapeWithReplyReply),   /*EscapeWithReply*/
+/*  97  */   SWAP_FUNC_PREFIX(NoReply),   /*RenderElements*/
+/*  98  */   SWAP_FUNC_PREFIX(NoReply),   /*AccumulateState*/
+/*  99  */   SWAP_FUNC_PREFIX(NoReply),   /*BeginPickOne*/
+/* 100  */   SWAP_FUNC_PREFIX(ConvertEndPickOneReply),
+/* 101  */   SWAP_FUNC_PREFIX(ConvertPickOneReply),
+/* 102  */   SWAP_FUNC_PREFIX(NoReply),   /*BeginPickAll*/
+/* 103  */   SWAP_FUNC_PREFIX(ConvertEndPickAllReply),
+/* 104  */   SWAP_FUNC_PREFIX(ConvertPickAllReply)
 };

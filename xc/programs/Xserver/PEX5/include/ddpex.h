@@ -1,4 +1,4 @@
-/* $XConsortium: ddpex.h,v 5.5 91/09/13 18:22:40 hersh Exp $ */
+/* $XConsortium: ddpex.h,v 5.6 91/10/29 18:37:43 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -28,6 +28,7 @@ SOFTWARE.
 #include "X.h"
 #include "PEX.h"
 #include "pixmapstr.h"
+#include "dix.h"
 
 #ifndef DDPEX_H
 #define DDPEX_H
@@ -206,9 +207,16 @@ typedef struct {
 } ddViewport;
 
 typedef struct {
+    ddCoord2DS      position;
+    ddFLOAT         distance;
+} ddDC_HitBox;
+
+typedef struct {
     ddCoord3D	minval;
     ddCoord3D	maxval;
 } ddNpcSubvolume;
+
+typedef  ddNpcSubvolume ddNPC_HitVolume;
 
 typedef struct {
 	ddUSHORT	clipFlags;
@@ -244,6 +252,14 @@ typedef struct {
         ddULONG         offset;		/* handle by diPEX */
         ddULONG         pickid;
 } ddPickPath;
+
+typedef struct {
+      ddUSHORT        pickType;
+      union {
+	  ddDC_HitBox        DC_HitBox;
+	  ddNPC_HitVolume    NPC_HitVolume;
+      } hit_box;
+} ddPickRecord;
 
 typedef struct {
 	ddUSHORT	elementType;
@@ -522,8 +538,20 @@ typedef enum {
 	DD_HIGH_EXCL_NS=1,
 	DD_INVIS_INCL_NS=2,
 	DD_INVIS_EXCL_NS=3,
-	DD_MAX_FILTERS=4
+	DD_PICK_INCL_NS=4,
+	DD_PICK_EXCL_NS=5,
+	DD_MAX_FILTERS=6
 } ddNSFilters; 
+
+typedef struct {
+	ddBOOL            pick_op;
+	ddBOOL            send_event;
+	ddULONG           max_hits;
+	ClientPtr         client;       /* need to send the event */
+        diStructHandle    strHandle;	/* the struct handle for PickOne */
+	ddULONG           sid;          /* the structure id for BeginPick? */
+	diPMHandle	  pseudoPM;      /* fake PM for Renderer Pick */
+} ddRdrPickStr, *ddRdrPickPtr;       /* need to send the event */ 
 
 typedef struct {
 	ddULONG 		rendId;		/* renderer id */
@@ -539,6 +567,16 @@ typedef struct {
 	ddNpcSubvolume		npcSubvolume;
 	ddViewport		viewport;
 	listofObj		*clipList;	 /* clip list */
+						 /* Begin 5.1 additions */
+						 /* pick_inclusion is in ns */
+						 /* pick_exclusion is in ns */
+	listofObj		*pickStartPath;	 /* pick start path */
+	ddColourSpecifier	backgroundColour;
+	ddBOOL			clearI;
+	ddBOOL			clearZ;
+	ddUSHORT		echoMode;
+	ddColourSpecifier	echoColour;
+						 /* End 5.1 additions */
 	ddBitmask		tablesMask;	/* renderer dynamics */
 	ddBitmask		namesetsMask;	/* renderer dynamics */
 	ddBitmask		attrsMask;	/* renderer dynamics */
@@ -549,7 +587,13 @@ typedef struct {
 	ddBOOL			immediateMode;
 	ddUSHORT		render_mode;
 	ddPointer		pDDContext;	/* device dependent attribute context */
+	ddRdrPickStr		pickstr;
 } ddRendererStr, *ddRendererPtr;
+
+typedef struct {
+	ddULONG			numElRefs;	/* number of element refs */
+	listofObj		*Path;		/* path */
+} ddAccStStr, *ddAccStPtr;
 
 /* render_mode values */
 #define	MI_REND_DRAWING 0

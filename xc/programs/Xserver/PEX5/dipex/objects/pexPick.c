@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pexPick.c,v 5.1 91/02/16 09:56:45 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -26,12 +26,15 @@ SOFTWARE.
 
 
 /*++
+ *  --- Workstation Picking ---
+ *
  *	PEXCreatePickMeasure
  *	PEXFreePickMeasure
  *	PEXGetPickDevice
  *	PEXChangePickDevice
  *	PEXGetPickMeasure
  *	PEXUpdatePickMeasure
+ *
  --*/
 
 #include "X.h"
@@ -169,11 +172,11 @@ pexChangePickDeviceReq	*strmPtr;
     if (strmPtr->itemMask & PEXPDPickStatus) ptr++;
 
     if (strmPtr->itemMask & PEXPDPickPath) {
-	pexPickPath *per;
+	pexPickElementRef *per;
 	diStructHandle sh, *psh;
 	CARD32 i, numRefs = *((CARD32 *)(ptr));
 	ptr++;
-	for (i=0, per = (pexPickPath *)ptr; i<numRefs; i++, per++) {
+	for (i=0, per = (pexPickElementRef *)ptr; i<numRefs; i++, per++) {
 		LU_STRUCTURE(per->sid,sh);
 		psh = (diStructHandle *)&(per->sid);
 		*psh = sh;
@@ -250,6 +253,8 @@ pexUpdatePickMeasureReq *strmPtr;
     return( err );
 
 } /* end-PEXUpdatePickMeasure() */
+
+
 /*++
  *
  *	End of File

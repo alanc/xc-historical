@@ -1,4 +1,4 @@
-/* $XConsortium: convReq.c,v 5.9 91/10/01 02:39:59 hersh Exp $ */
+/* $XConsortium: convReq.c,v 5.10 91/12/30 18:23:40 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -337,7 +337,7 @@ pexCreateRendererReq	*strmPtr;
 {
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
-    SWAP_INT16 (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
     SWAP_RENDERER (strmPtr->rdr);
     SWAP_DRAWABLE (strmPtr->drawable);
     SWAP_BITMASK (strmPtr->itemMask);
@@ -357,7 +357,7 @@ pexChangeRendererReq	*strmPtr;
 {
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
-    SWAP_INT16 (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
     SWAP_RENDERER (strmPtr->rdr);
     SWAP_BITMASK (strmPtr->itemMask);
 
@@ -374,7 +374,7 @@ pexGetRendererAttributesReq	*strmPtr;
 {
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
-    SWAP_INT16 (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
     SWAP_RENDERER (strmPtr->rdr);
     SWAP_BITMASK (strmPtr->itemMask);
     CALL_REQUEST;
@@ -425,6 +425,42 @@ pexRenderOutputCommandsReq	*strmPtr;
     CALL_REQUEST;
 }
 /* individual output commands may be found in the section "Output Commands" */
+
+
+ErrorCode
+SWAP_FUNC_PREFIX(PEXRenderElements) (cntxtPtr, strmPtr)
+pexContext		*cntxtPtr;
+pexRenderElementsReq	*strmPtr;
+{
+    pexSwap *swapPtr = cntxtPtr->swap;
+    SWAP_CARD16 (strmPtr->length);
+    SWAP_RENDERER (strmPtr->rdr);
+    SWAP_STRUCTURE (strmPtr->sid);
+    SwapElementRange (swapPtr, &strmPtr->range);
+
+    CALL_REQUEST;
+}
+
+
+ErrorCode
+SWAP_FUNC_PREFIX(PEXAccumulateState) (cntxtPtr, strmPtr)
+pexContext		*cntxtPtr;
+pexAccumulateStateReq	*strmPtr;
+{
+    pexElementRef	*pe;
+    CARD32              i;
+
+    pexSwap *swapPtr = cntxtPtr->swap;
+    SWAP_CARD16 (strmPtr->length);
+    SWAP_RENDERER (strmPtr->rdr);
+    SWAP_CARD32 (strmPtr->numElRefs);
+
+    pe = (pexElementRef *)(strmPtr+1);
+    for (i = 0; i < strmPtr->numElRefs; i++, pe++)
+	SWAP_ELEMENT_REF (*pe);
+
+    CALL_REQUEST;
+}
 
 
 ErrorCode
@@ -492,7 +528,7 @@ pexGetElementInfoReq	*strmPtr;
 {
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
-    SWAP_CARD16 (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
     SWAP_STRUCTURE (strmPtr->sid);
 
     SwapElementRange (swapPtr, &strmPtr->range);
@@ -736,7 +772,7 @@ pexCreateSearchContextReq	*strmPtr;
 {
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
-    SWAP_INT16 (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
     SWAP_SC (strmPtr->sc);
     SWAP_BITMASK (strmPtr->itemMask);
 
@@ -768,7 +804,7 @@ pexGetSearchContextReq	*strmPtr;
 {
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
-    SWAP_INT16 (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
     SWAP_SC (strmPtr->sc);
     SWAP_BITMASK (strmPtr->itemMask);
     CALL_REQUEST;
@@ -781,7 +817,7 @@ pexChangeSearchContextReq	*strmPtr;
 {
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
-    SWAP_INT16 (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
     SWAP_SC (strmPtr->sc);
     SWAP_BITMASK (strmPtr->itemMask);
 
@@ -830,7 +866,7 @@ pexGetWksInfoReq	*strmPtr;
 {
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
-    SWAP_INT16 (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
     SWAP_PHIGS_WKS (strmPtr->wks);
     SWAP_BITMASK (strmPtr->itemMask[0]);
     SWAP_BITMASK (strmPtr->itemMask[1]);
@@ -855,7 +891,7 @@ pexGetViewRepReq	*strmPtr;
 {
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
-    SWAP_INT16 (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
     SWAP_TABLE_INDEX (strmPtr->index);
     SWAP_PHIGS_WKS (strmPtr->wks);
     CALL_REQUEST;
@@ -921,7 +957,7 @@ pexMapDCtoWCReq	*strmPtr;
     pexDeviceCoord *pc;
 
     SWAP_CARD16 (strmPtr->length);
-    SWAP_INT16 (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
     SWAP_PHIGS_WKS (strmPtr->wks);
     SWAP_CARD32 (strmPtr->numCoords);
 
@@ -941,7 +977,7 @@ pexMapWCtoDCReq	*strmPtr;
     pexCoord3D *pc;
 
     SWAP_CARD16 (strmPtr->length);
-    SWAP_INT16 (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
     SWAP_CARD16 (strmPtr->index);
     SWAP_PHIGS_WKS (strmPtr->wks);
     SWAP_CARD32 (strmPtr->numCoords);
@@ -959,7 +995,7 @@ pexSetViewRepReq	*strmPtr;
 {
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
-    SWAP_INT16 (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
     SWAP_PHIGS_WKS (strmPtr->wks);
 
     SwapViewRep (swapPtr, &strmPtr->viewRep);
@@ -974,7 +1010,7 @@ pexSetWksWindowReq	*strmPtr;
 {
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
-    SWAP_INT16 (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
     SWAP_PHIGS_WKS (strmPtr->wks);
     SwapNpcSubvolume (swapPtr, &strmPtr->npcSubvolume);
 
@@ -988,7 +1024,7 @@ pexSetWksViewportReq	*strmPtr;
 {
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
-    SWAP_INT16 (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
     SWAP_PHIGS_WKS (strmPtr->wks);
 
     SwapViewport (swapPtr, &strmPtr->viewport);
@@ -1027,7 +1063,7 @@ pexPostStructureReq	*strmPtr;
 {
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
-    SWAP_CARD16 (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
     SWAP_PHIGS_WKS (strmPtr->wks);
     SWAP_STRUCTURE (strmPtr->sid);
     SWAP_FLOAT (strmPtr->priority);
@@ -1059,7 +1095,7 @@ pexGetPickDeviceReq	*strmPtr;
 {
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
-    SWAP_INT16 (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
     SWAP_ENUM_TYPE_INDEX (strmPtr->devType);
     SWAP_PHIGS_WKS (strmPtr->wks);
     SWAP_BITMASK (strmPtr->itemMask);
@@ -1073,7 +1109,7 @@ pexChangePickDeviceReq	*strmPtr;
 {
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
-    SWAP_CARD16 (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
     SWAP_PHIGS_WKS (strmPtr->wks);
     SWAP_ENUM_TYPE_INDEX (strmPtr->devType);
     SWAP_BITMASK (strmPtr->itemMask);
@@ -1152,6 +1188,104 @@ pexUpdatePickMeasureReq	*strmPtr;
 }
 
 ErrorCode
+SWAP_FUNC_PREFIX(PEXBeginPickOne) (cntxtPtr, strmPtr)
+pexContext		*cntxtPtr;
+pexBeginPickOneReq	*strmPtr;
+{
+    pexSwap *swapPtr = cntxtPtr->swap;
+    SWAP_CARD16 (strmPtr->length);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
+    SWAP_RENDERER (strmPtr->rdr);
+    SWAP_DRAWABLE (strmPtr->drawable);
+    SWAP_CARD32 (strmPtr->sid);
+
+    SWAP_FUNC_PREFIX(SwapPickRecord) (swapPtr, 
+				    (pexPickRecord *)(strmPtr+1));
+
+    CALL_REQUEST;
+}
+
+ErrorCode
+SWAP_FUNC_PREFIX(PEXEndPickOne) (cntxtPtr, strmPtr)
+pexContext		*cntxtPtr;
+pexEndPickOneReq	*strmPtr;
+{
+    pexSwap *swapPtr = cntxtPtr->swap;
+    SWAP_CARD16 (strmPtr->length);
+    SWAP_RENDERER (strmPtr->rdr);
+
+    CALL_REQUEST;
+}
+
+ErrorCode
+SWAP_FUNC_PREFIX(PEXPickOne) (cntxtPtr, strmPtr)
+pexContext		*cntxtPtr;
+pexPickOneReq	*strmPtr;
+{
+    pexSwap *swapPtr = cntxtPtr->swap;
+    SWAP_CARD16 (strmPtr->length);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
+    SWAP_RENDERER (strmPtr->rdr);
+    SWAP_DRAWABLE (strmPtr->drawable);
+    SWAP_STRUCTURE (strmPtr->sid);
+
+    SWAP_FUNC_PREFIX(SwapPickRecord) (swapPtr, 
+				    (pexPickRecord *)(strmPtr+1));
+
+    CALL_REQUEST;
+}
+
+ErrorCode
+SWAP_FUNC_PREFIX(PEXBeginPickAll) (cntxtPtr, strmPtr)
+pexContext		*cntxtPtr;
+pexBeginPickAllReq	*strmPtr;
+{
+    pexSwap *swapPtr = cntxtPtr->swap;
+    SWAP_CARD16 (strmPtr->length);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
+    SWAP_RENDERER (strmPtr->rdr);
+    SWAP_DRAWABLE (strmPtr->drawable);
+    SWAP_CARD32 (strmPtr->sid);
+    SWAP_CARD32 (strmPtr->pickMaxHits);
+
+    SWAP_FUNC_PREFIX(SwapPickRecord) (swapPtr, 
+				    (pexPickRecord *)(strmPtr+1));
+
+    CALL_REQUEST;
+}
+
+ErrorCode
+SWAP_FUNC_PREFIX(PEXEndPickAll) (cntxtPtr, strmPtr)
+pexContext		*cntxtPtr;
+pexEndPickAllReq	*strmPtr;
+{
+    pexSwap *swapPtr = cntxtPtr->swap;
+    SWAP_CARD16 (strmPtr->length);
+    SWAP_RENDERER (strmPtr->rdr);
+
+    CALL_REQUEST;
+}
+
+ErrorCode
+SWAP_FUNC_PREFIX(PEXPickAll) (cntxtPtr, strmPtr)
+pexContext		*cntxtPtr;
+pexPickAllReq	*strmPtr;
+{
+    pexSwap *swapPtr = cntxtPtr->swap;
+    SWAP_CARD16 (strmPtr->length);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
+    SWAP_RENDERER (strmPtr->rdr);
+    SWAP_DRAWABLE (strmPtr->drawable);
+    SWAP_CARD32 (strmPtr->pickMaxHits);
+
+    SWAP_FUNC_PREFIX(SwapPickRecord) (swapPtr, 
+				    (pexPickRecord *)(strmPtr+1));
+
+    CALL_REQUEST;
+}
+
+
+ErrorCode
 SWAP_FUNC_PREFIX(PEXOpenFont) (cntxtPtr, strmPtr)
 pexContext	*cntxtPtr;
 pexOpenFontReq	*strmPtr;
@@ -1207,7 +1341,7 @@ pexQueryTextExtentsReq	*strmPtr;
 {
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
-    SWAP_CARD16 (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
     SWAP_CARD16 (strmPtr->textPath);
     SWAP_CARD16 (strmPtr->fontGroupIndex);
     SWAP_CARD32 (strmPtr->id);
@@ -1234,7 +1368,7 @@ pexGetImpDepConstantsReq	*strmPtr;
     CARD32 i;
 
     SWAP_CARD16 (strmPtr->length);
-    SWAP_CARD16 (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
     SWAP_CARD32 (strmPtr->drawable);
     SWAP_CARD32 (strmPtr->numNames);
 
@@ -1244,6 +1378,68 @@ pexGetImpDepConstantsReq	*strmPtr;
     CALL_REQUEST;
 }
 
+ErrorCode
+SWAP_FUNC_PREFIX(PEXMatchRendererTargets) (cntxtPtr, strmPtr)
+pexContext			*cntxtPtr;
+pexMatchRendererTargetsReq     	*strmPtr;
+{
+    pexSwap *swapPtr = cntxtPtr->swap;
+
+    SWAP_CARD16 (strmPtr->length);
+    SWAP_CARD32 (strmPtr->drawable);
+    SWAP_CARD16 (strmPtr->type);
+    SWAP_CARD32 (strmPtr->visualID);
+    SWAP_CARD32 (strmPtr->maxTriplets);
+
+    CALL_REQUEST;
+}
+
+ErrorCode
+SWAP_FUNC_PREFIX(PEXEscape) (cntxtPtr, strmPtr)
+pexContext			*cntxtPtr;
+pexEscapeReq               	*strmPtr;
+{
+    pexSwap *swapPtr = cntxtPtr->swap;
+
+    SWAP_CARD16 (strmPtr->length);
+    SWAP_CARD32 (strmPtr->escapeID);
+
+    /* do MIT Registered Escapes */
+    switch (strmPtr->escapeID) {
+      case  PEXEscapeSetEchoColour: {
+	pexEscapeSetEchoColourData *psec;
+
+	psec = (pexEscapeSetEchoColourData *)(strmPtr+1);
+	SWAP_ENUM_TYPE_INDEX (psec->fpFormat);
+	SWAP_CARD32 (psec->rdr);
+	SWAP_FUNC_PREFIX(SwapColourSpecifier) (swapPtr,
+					      (pexColourSpecifier *)(psec+1));
+	break;
+      }
+    }
+	  
+    CALL_REQUEST;
+}
+
+ErrorCode
+SWAP_FUNC_PREFIX(PEXEscapeWithReply) (cntxtPtr, strmPtr)
+pexContext			*cntxtPtr;
+pexEscapeWithReplyReq          	*strmPtr;
+{
+    pexSwap *swapPtr = cntxtPtr->swap;
+
+    SWAP_CARD16 (strmPtr->length);
+    SWAP_CARD16 (strmPtr->escapeID);
+
+    /* do MIT Registered Escapes , none with Replies */
+    /*
+    switch (strmPtr->escapeID) {
+    }
+    */
+	  
+
+    CALL_REQUEST;
+}
 
 ErrorCode
 SWAP_FUNC_PEX_PFX(RequestUnused)()
@@ -1444,31 +1640,6 @@ pexFontInfo	*pfi;
     return (ptr);
 }
 
-
-void
-SWAP_FUNC_PREFIX(SwapPickMeasAttr) (swapPtr, im, p_data)
-pexSwap		*swapPtr;
-CARD32		im;
-unsigned char	*p_data;
-{
-    unsigned char *ptr = p_data;
-
-    if (im & PEXPMStatus) {
-	SWAP_CARD32((*((CARD32 *)ptr)));
-	ptr += sizeof(CARD32);
-    }
-
-    if (im & PEXPMPath) {
-	CARD32 i;
-	CARD32 numRefs = *((CARD32 *)ptr);
-	pexPickPath *pp;
-	SWAP_CARD32((*((CARD32 *)ptr)));
-	ptr += sizeof(CARD32);
-	for (i=0, pp = (pexPickPath *)ptr; i<numRefs; i++, pp++) {
-	    SWAP_PICK_PATH((*pp));
-	}
-    }
-}
 
 unsigned char *
 SWAP_FUNC_PREFIX(SwapLightEntry) (swapPtr, p_data) 
@@ -2078,8 +2249,8 @@ unsigned char	*pdata;
 	SWAP_CARD32 ((*((CARD32 *)ptr)));
 	len = (int)(*ptr);
 	ptr += sizeof(CARD32);
-	for (i=0; i<len; i++, ptr += sizeof(pexPickPath)) {
-	    SWAP_PICK_PATH ((*((pexPickPath *)ptr)));
+	for (i=0; i<len; i++, ptr += sizeof(pexPickElementRef)) {
+	    SWAP_PICK_ELEMENT_REF ((*((pexPickElementRef *)ptr)));
 	};
     };
 
@@ -2253,5 +2424,82 @@ CARD8	    *p_data;
 	ptr += sizeof(CARD32);
 	SwapDeviceRects (swapPtr, num, (pexDeviceRect *)ptr);
     }
+
+    if (im & PEXRDPickInclusion) {
+	SWAP_NAMESET ((*((pexNameSet *)ptr)));
+	ptr += sizeof(pexNameSet);
+    }
+
+    if (im & PEXRDPickExclusion) {
+	SWAP_NAMESET ((*((pexNameSet *)ptr)));
+	ptr += sizeof(pexNameSet);
+    }
+
+    if (im & PEXRDPickStartPath) {
+	SWAP_CARD32 ((*((CARD32 *)ptr)));
+	num = *((CARD32 *)ptr);
+	ptr += sizeof(CARD32);
+	for (i=0; i<num; i++, ptr += sizeof(pexElementRef))
+	    SWAP_ELEMENT_REF((*((pexElementRef *)ptr)));
+    }
+
+    if (im & PEXRDBackgroundColour) {
+	ptr = SWAP_FUNC_PREFIX(SwapColourSpecifier) (swapPtr,
+						   (pexColourSpecifier *)ptr);
+    }
+
+    /* this is CARD8 cast into a CARD32 so it must get swapped as CARD32 */
+    if (im & PEXRDClearI) {
+	SWAP_CARD32 ((*((CARD32 *)ptr)));
+	ptr += sizeof(CARD32);
+    }
+
+    /* this is CARD8 cast into a CARD32 so it must get swapped as CARD32 */
+    if (im & PEXRDClearZ) {
+	SWAP_CARD32 ((*((CARD32 *)ptr)));
+	ptr += sizeof(CARD32);
+    }
+
+    /* this is CARD16 cast into a CARD32 so it must get swapped as CARD32 */
+    if (im & PEXRDEchoMode) {
+	SWAP_CARD32 ((*((CARD32 *)ptr)));
+	ptr += sizeof(CARD32);
+    }
+}
+
+void
+SWAP_FUNC_PREFIX(SwapPickRecord) (swapPtr, p_data)
+pexSwap	  		    *swapPtr;
+pexPickRecord	            *p_data;
+{
+
+    SWAP_CARD16 (p_data->pickType);
+
+    switch(p_data->pickType) {
+	case PEXPickDeviceDC_HitBox: {
+	  unsigned char *ptr = (unsigned char *)(p_data+1);
+	  SWAP_CARD16 ((*((CARD16 *)ptr)));
+	  ptr += sizeof(CARD16);
+	  SWAP_CARD16 ((*((CARD16 *)ptr)));
+	  ptr += sizeof(CARD16);
+	  SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	  break;
+	} 
+	case PEXPickDeviceNPC_HitVolume: {
+	  unsigned char *ptr = (unsigned char *)(p_data+1);
+	  SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	  ptr += sizeof(PEXFLOAT);
+	  SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	  ptr += sizeof(PEXFLOAT);
+	  SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	  ptr += sizeof(PEXFLOAT);
+	  SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	  ptr += sizeof(PEXFLOAT);
+	  SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	  ptr += sizeof(PEXFLOAT);
+	  SWAP_FLOAT ((*((PEXFLOAT *)ptr)));
+	  break;
+	} 
+    } 
 }
 

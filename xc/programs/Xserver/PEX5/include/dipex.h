@@ -1,4 +1,4 @@
-/* $XConsortium: dipex.h,v 5.2 91/02/18 21:08:05 rws Exp $ */
+/* $XConsortium: dipex.h,v 5.3 91/03/15 18:27:41 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -60,6 +60,7 @@ SOFTWARE.
 
 LOCAL_FLAG ErrorCode PexReqCode;
 LOCAL_FLAG ErrorCode PexErrorBase;
+LOCAL_FLAG ErrorCode PexEventBase;
 
 /* resources */
 extern Bool AddResource();

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: OCprim.h,v 5.1 91/02/16 09:57:28 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -60,4 +60,5 @@ LOCAL_FLAG ErrorCode
 	SWAP_FUNC_PEX_PFX(Text2D) (),
 	SWAP_FUNC_PEX_PFX(AnnotationText) (),
 	SWAP_FUNC_PEX_PFX(AnnotationText2D) (),
-	SWAP_FUNC_PEX_PFX(ParaSurfCharacteristics) ();
+	SWAP_FUNC_PEX_PFX(ParaSurfCharacteristics) (),
+	SWAP_FUNC_PREFIX(PEXNoop) ();

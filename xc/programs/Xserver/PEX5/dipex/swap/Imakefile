@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.6 91/07/19 21:16:48 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.7 91/07/24 17:01:28 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -51,11 +51,11 @@ XCOMM PERFORMANCE OF THIS SOFTWARE.
 
 SRCS =  convUtil.c cOCprim.c uOCprim.c floatconv.c check.c \
 	OCattr.c OCcolour.c convReq.c uconvRep.c Convert.c \
-	OCTables.c ReqTables.c RepTables.c
+	OCTables.c ReqTables.c RepTables.c convEv.c
 
 OBJS =  convUtil.o cOCprim.o uOCprim.o floatconv.o check.o \
 	OCattr.o OCcolour.o convReq.o uconvRep.o Convert.o \
-	OCTables.o ReqTables.o RepTables.o
+	OCTables.o ReqTables.o RepTables.o convEv.o
 
 
 PEX_SW_LIBNAME = libdiswapex.a

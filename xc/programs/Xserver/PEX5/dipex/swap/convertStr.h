@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: convertStr.h,v 5.1 91/02/16 09:57:14 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -161,7 +161,7 @@ extern unsigned char temp;	/* only used for conversions */
 	SWAP_TEXT_H_ALIGNMENT((A).horizontal); \
 	SWAP_TEXT_V_ALIGNMENT((A).vertical); }
 
-#define SWAP_PICK_PATH(P) \
+#define SWAP_PICK_ELEMENT_REF(P) \
 	SWAP_STRUCTURE ((P).sid); \
 	SWAP_CARD32 ((P).offset); \
 	SWAP_CARD32 ((P).pickid);
@@ -171,5 +171,8 @@ extern unsigned char temp;	/* only used for conversions */
 	SWAP_STRUCTURE((S).sid); \
 	SWAP_FLOAT((S).priority);
 
+#define SWAP_RENDERER_TARGET(S) \
+	SWAP_CARD16((S).type); \
+	SWAP_CARD32((S).visualID);
 
 #endif	/* CONVERTSTR_H */

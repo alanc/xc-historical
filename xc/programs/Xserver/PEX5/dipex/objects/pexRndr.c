@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.5 91/09/12 16:55:16 hersh Exp $ */
+/* $XConsortium: pexRndr.c,v 5.6 91/10/01 02:34:23 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -33,6 +33,8 @@ SOFTWARE.
  *	PEXEndRendering
  *	PEXBeginStructure
  *	PEXEndStructure
+ *	PEXRenderElements
+ *	PEXAccumulateState
  *	PEXRenderNetwork
  *	PEXRenderOutputCommands
  --*/
@@ -48,6 +50,7 @@ SOFTWARE.
 #include "X.h"
 #include "pexError.h"
 #include "ddpex3.h"
+#include "ddpex4.h"
 #include "pexLookup.h"
 #include "pexExtract.h"
 #include "pexUtils.h"
@@ -136,6 +139,7 @@ pexCreateRendererReq    *strmPtr;
     ErrorCode freeRenderer();
     ddRendererStr *prend = 0;
     CARD8 *ptr = (CARD8 *)(strmPtr+1);
+    XID  fakepm;
 	
     if (prend = (ddRendererStr *) LookupIDByType (strmPtr->rdr, PEXRendType))
 	PEX_ERR_EXIT(BadIDChoice,strmPtr->rdr,cntxtPtr);
@@ -145,6 +149,22 @@ pexCreateRendererReq    *strmPtr;
 
     prend->rendId = strmPtr->rdr;
 
+    /* allocate a handle to the pseudo Pick Measure used for Renderer Picking 
+       the Pick measure itself is done with CreatePseudoPickMeasure
+       in the BeginPick...  routines 
+    */
+    fakepm = FakeClientID(cntxtPtr->client->index);
+    prend->pickstr.pseudoPM = (diPMHandle) Xalloc ((unsigned long)sizeof(ddPMResource));
+    if (!prend->pickstr.pseudoPM)  PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
+    (prend->pickstr.pseudoPM)->id = fakepm;
+    err = CreatePseudoPickMeasure (prend);
+    if (err){
+	Xfree((pointer)(prend->pickstr.pseudoPM));
+	PEX_ERR_EXIT(err,0,cntxtPtr);	
+    }
+
+    ADDRESOURCE(fakepm, PEXPickType, prend->pickstr.pseudoPM);
+
     LU_DRAWABLE(strmPtr->drawable, prend->pDrawable);
     prend->drawableId = strmPtr->drawable;
     prend->drawExample.type = prend->pDrawable->type;
@@ -152,12 +172,6 @@ pexCreateRendererReq    *strmPtr;
     prend->drawExample.depth = prend->pDrawable->depth;
     prend->drawExample.rootDepth = prend->pDrawable->pScreen->rootDepth;
     prend->drawExample.rootVisual = prend->pDrawable->pScreen->rootVisual;
-
-    prend->curPath = puCreateList(DD_ELEMENT_REF);	
-    if (!(prend->curPath)) {
-        Xfree((pointer)prend);
-        PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
-    }
 
     prend->state = PEXIdle;
     /* renderer dynamics masks are set by ddPEX */
@@ -181,6 +195,8 @@ pexCreateRendererReq    *strmPtr;
     prend->ns[(unsigned)DD_HIGH_EXCL_NS] = 0;
     prend->ns[(unsigned)DD_INVIS_INCL_NS] = 0;
     prend->ns[(unsigned)DD_INVIS_EXCL_NS] = 0;
+    prend->ns[(unsigned)DD_PICK_INCL_NS] = 0;
+    prend->ns[(unsigned)DD_PICK_EXCL_NS] = 0;
 
     if (strmPtr->itemMask & PEXRDPipelineContext) {
 	ddPCStr *ppc = 0;
@@ -193,6 +209,12 @@ pexCreateRendererReq    *strmPtr;
 	    PEX_ERR_EXIT(err,0,cntxtPtr); }
     } else prend->pPC = 0;
 
+
+    prend->curPath = puCreateList(DD_ELEMENT_REF);	
+    if (!(prend->curPath)) {
+        Xfree((pointer)prend);
+        PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
+    }
     if (strmPtr->itemMask & PEXRDCurrentPath)  {
 	unsigned long npaths;
 
@@ -302,6 +324,43 @@ pexCreateRendererReq    *strmPtr;
 	puAddToList((ddPointer)ptr, nrects, prend->clipList);
 	SKIP_STRUCT(ptr, nrects, pexDeviceRect);
     }; /* else prend->clipList = 0;*/				/* default */
+
+    if (strmPtr->itemMask & PEXRDPickInclusion) {
+	CHANGENS(DD_PICK_INCL_NS, PEXDynPickNameset);
+    }
+
+    if (strmPtr->itemMask & PEXRDPickExclusion) {
+	CHANGENS(DD_PICK_EXCL_NS, PEXDynPickNameset);
+    }
+
+
+    prend->pickStartPath = puCreateList(DD_ELEMENT_REF);	
+    if (!(prend->pickStartPath)) {
+        Xfree((pointer)prend);
+        PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
+    }
+    if (strmPtr->itemMask & PEXRDPickStartPath) {
+	unsigned long numpaths;
+	EXTRACT_CARD32( numpaths, ptr);
+	puAddToList((ddPointer)ptr, numpaths, prend->pickStartPath);
+	SKIP_STRUCT(ptr, numpaths, pexElementRef);
+    }
+
+    if (strmPtr->itemMask & PEXRDBackgroundColour) {
+	EXTRACT_COLOUR_SPECIFIER(prend->backgroundColour,ptr);
+    }
+
+    if (strmPtr->itemMask & PEXRDClearI) {
+	EXTRACT_CARD8_FROM_4B(prend->clearI,ptr);
+    }
+
+    if (strmPtr->itemMask & PEXRDClearZ) {
+	EXTRACT_CARD8_FROM_4B(prend->clearZ,ptr);
+    }
+
+    if (strmPtr->itemMask & PEXRDEchoMode) {
+	EXTRACT_CARD16_FROM_4B(prend->echoMode,ptr);
+    }
 
     err = InitRenderer(prend);
     if (err) {
@@ -481,6 +540,41 @@ pexChangeRendererReq 	*strmPtr;
 	SKIP_STRUCT(ptr, nrects, pexDeviceRect);
     }
 
+    if (strmPtr->itemMask & PEXRDPickInclusion) {
+	CHANGENS(DD_PICK_INCL_NS, PEXDynPickNameset);
+    }
+
+    if (strmPtr->itemMask & PEXRDPickExclusion) {
+	CHANGENS(DD_PICK_EXCL_NS, PEXDynPickNameset);
+    }
+
+    if (strmPtr->itemMask & PEXRDPickStartPath) {
+	unsigned long numpaths;
+	EXTRACT_CARD32( numpaths, ptr);
+	PU_EMPTY_LIST(prend->pickStartPath);
+	puAddToList((ddPointer)ptr, numpaths, prend->pickStartPath);
+	SKIP_STRUCT(ptr, numpaths, pexElementRef);
+    }
+
+
+    if (strmPtr->itemMask & PEXRDBackgroundColour) {
+	EXTRACT_COLOUR_SPECIFIER(prend->backgroundColour,ptr);
+    }
+
+    if (strmPtr->itemMask & PEXRDClearI) {
+	EXTRACT_CARD8_FROM_4B(prend->clearI,ptr);
+    }
+
+    if (strmPtr->itemMask & PEXRDClearZ) {
+	EXTRACT_CARD8_FROM_4B(prend->clearZ,ptr);
+    }
+
+    if (strmPtr->itemMask & PEXRDEchoMode) {
+	EXTRACT_CARD16_FROM_4B(prend->echoMode,ptr);
+	prend->attrsChanges |= PEXDynEchoMode;
+    }
+
+
     return( err );
 
 } /* end-PEXChangeRenderer() */
@@ -507,11 +601,15 @@ pexGetRendererAttributesReq 	*strmPtr;
     ptr = (CARD8 *) (pPEXBuffer->pBuf);
 
     lwords_mask = strmPtr->itemMask
-			& ~(PEXRDNpcSubvolume | PEXRDViewport | PEXRDClipList);
+		  & ~(PEXRDNpcSubvolume | PEXRDViewport | PEXRDClipList |
+		      PEXRDBackgroundColour);
     CountOnes(lwords_mask, num_lwords);
     num_lwords += ((strmPtr->itemMask & PEXRDCurrentPath)
 		    ? (prend->curPath->numObj * sizeof(pexElementRef) / 4) + 1
 		    : 0);
+    num_lwords += ((strmPtr->itemMask & PEXRDPickStartPath)
+		    ? (prend->pickStartPath->numObj * sizeof(pexElementRef) / 4)
+		    + 1 : 0);
     CHK_PEX_BUF(size, sizeof(pexGetRendererAttributesReply)
 			+ num_lwords * sizeof(CARD32),
 		reply, pexGetRendererAttributesReply, ptr);
@@ -524,7 +622,7 @@ pexGetRendererAttributesReq 	*strmPtr;
 	unsigned long i;
 	ddElementRef *per = (ddElementRef *)(prend->curPath->pList);
 	PACK_CARD32( prend->curPath->numObj, ptr);
-	for (i=0, prend->curPath->pList; i<prend->curPath->numObj; i++, per++) {
+	for (i=0; i<prend->curPath->numObj; i++, per++) {
 	    sid = GetId(per->structure);
 	    PACK_CARD32(sid, ptr);
 	    PACK_CARD32(per->offset, ptr);
@@ -610,6 +708,38 @@ pexGetRendererAttributesReq 	*strmPtr;
 	bcopy((char *)(prend->clipList->pList), (char *)ptr, num_bytes);
 	ptr += num_bytes + 4;
     }
+
+    if (strmPtr->itemMask & PEXRDPickInclusion)
+	PACK_CARD32( GetId(prend->ns[(unsigned)DD_PICK_INCL_NS]), ptr);
+
+    if (strmPtr->itemMask & PEXRDPickExclusion)
+	PACK_CARD32( GetId(prend->ns[(unsigned)DD_PICK_EXCL_NS]), ptr);
+
+    if (strmPtr->itemMask & PEXRDPickStartPath) {
+	pexStructure sid = 0;
+	unsigned long i;
+	ddElementRef *per = (ddElementRef *)(prend->pickStartPath->pList);
+	PACK_CARD32( prend->pickStartPath->numObj, ptr);
+	for (i=0; i<prend->pickStartPath->numObj; i++, per++) {
+	    sid = GetId(per->structure);
+	    PACK_CARD32(sid, ptr);
+	    PACK_CARD32(per->offset, ptr);
+	}
+    }
+
+    if (strmPtr->itemMask & PEXRDBackgroundColour) {
+        CHK_PEX_BUF(size, sizeof(CARD32) 
+			  + SIZE_COLOURSPEC(prend->backgroundColour),
+			  reply, pexGetRendererAttributesReply, ptr);
+	PACK_COLOUR_SPECIFIER(prend->backgroundColour,ptr);
+    }
+    
+    if (strmPtr->itemMask & PEXRDClearI) PACK_CARD32( prend->clearI, ptr);
+
+    if (strmPtr->itemMask & PEXRDClearZ) PACK_CARD32( prend->clearZ, ptr);
+
+    if (strmPtr->itemMask & PEXRDEchoMode) PACK_CARD32( prend->echoMode, ptr);
+
 
     reply->length = (unsigned long)(ptr) - (unsigned long)(pPEXBuffer->pBuf) +1;
     reply->length = LWORDS(reply->length);
@@ -728,7 +858,8 @@ static fakeRenderNetwork froc = {
     sizeof(pexExecuteStructure),    /* length	    */
     0				    /* id	    */
 };
-
+/*++	PEXRenderNetwork
+ --*/
 ErrorCode
 PEXRenderNetwork( cntxtPtr, strmPtr )
 pexContext      	*cntxtPtr;
@@ -757,8 +888,72 @@ pexRenderNetworkReq    	*strmPtr;
 
 } /* end-PEXRenderNetwork() */
 
-/*++	PEXRenderNetwork
- --*/
+
+ErrorCode
+PEXRenderElements( cntxtPtr, strmPtr )
+pexContext      	*cntxtPtr;
+pexRenderElementsReq    	*strmPtr;
+{
+    ErrorCode err = PEXNYI;
+    ddRendererStr *prend = 0;
+    diStructHandle ps = 0;
+    ddElementRange *range;
+
+    LU_RENDERER(strmPtr->rdr, prend);
+    LU_STRUCTURE(strmPtr->sid, ps);
+
+    range = (ddElementRange *) &(strmPtr->range);
+  
+    err = RenderElements(prend, ps, range );
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+
+    return( err );
+
+} /* end-PEXRenderElements() */
+
+
+ErrorCode
+PEXAccumulateState( cntxtPtr, strmPtr )
+pexContext      	*cntxtPtr;
+pexAccumulateStateReq   *strmPtr;
+{
+    ErrorCode err = PEXNYI;
+    ddRendererStr *prend = 0;
+    ddAccStStr    *pAccSt = 0;
+    pexElementRef *per;
+    diStructHandle sh, *psh;
+    CARD32 i;
+    extern ddpex4rtn ValidateStructurePath();
+
+    LU_RENDERER(strmPtr->rdr, prend);
+
+    pAccSt = (ddAccStStr *)Xalloc((unsigned long)sizeof(ddAccStStr));
+    if (!pAccSt) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
+
+    pAccSt->numElRefs = strmPtr->numElRefs;
+
+    per = (pexElementRef *)(strmPtr+1);
+    for (i = 0 ; i < strmPtr->numElRefs; i++, per++) {
+	LU_STRUCTURE(per->structure,sh);
+	psh = (diStructHandle *)&(per->structure);
+	*psh = sh;
+    }
+
+    if (pAccSt->Path) puDeleteList(pAccSt->Path);
+    pAccSt->Path = puCreateList(DD_ELEMENT_REF);
+    if (!(pAccSt->Path)) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
+    puAddToList((ddPointer)(strmPtr+1),  pAccSt->numElRefs, pAccSt->Path);
+    err = ValidateStructurePath(pAccSt->Path);
+    if (err != Success) PEX_ERR_EXIT(err,0,cntxtPtr);
+
+    err = AccumulateState(prend, pAccSt );
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+
+    return( err );
+
+} /* end-PEXAccumulateState() */
+
+
 ErrorCode
 PEXGetRendererDynamics( cntxtPtr, strmPtr )
 pexContext		    *cntxtPtr;
@@ -811,10 +1006,7 @@ pexRenderOutputCommandsReq  *strmPtr;
      */
     LU_DRAWABLE(prend->drawableId, prend->pDrawable);
 
-    curOC = (CARD32 *)(strmPtr + 1);
-
-    for (i = 0, curOC = (CARD32 *)(strmPtr + 1);
-	 i < strmPtr->numCommands;
+    for (i = 0, curOC = (CARD32 *)(strmPtr + 1); i < strmPtr->numCommands;
 	 i++, curOC += pe->length  ) {
 	pe = (pexElementInfo *)curOC;
     	if ((PEXOCAll < pe->elementType ) && (pe->elementType <= PEXMaxOC)) { 
@@ -824,10 +1016,9 @@ pexRenderOutputCommandsReq  *strmPtr;
 		*ps = (pexStructure)(ph);
 	    }
 	}
-
     }
 
-    err = RenderOCs(prend, strmPtr->numCommands, (strmPtr+1), &pErr);
+    err = RenderOCs(prend, strmPtr->numCommands, (strmPtr+1));
 
     if (err) PEX_OC_ERROR(pErr, cntxtPtr);
 
