@@ -892,17 +892,17 @@ Creating a Top-Level Window
 A client would normally expect to create its top-level windows
 as children of one or more of the root windows,  using some
 boilerplate like:
-.LS
+.Ls
 win = XCreateSimpleWindow(dpy, DefaultRootWindow(dpy),
 			      xsh.x, xsh.y, xsh.width, xsh.height,
 			      bw, bd, bg);
-.LE
+.Le
 or,  if a particular one of the roots was required,  like:
-.LS
+.Ls
 win = XCreateSimpleWindow(dpy, RootWindow(dpy, screen),
 			      xsh.x, xsh.y, xsh.width, xsh.height,
 			      bw, bd, bg);
-.LE
+.Le
 .LP
 Ideally,  it should be possible to override the choice of a root
 window and allow clients (including window managers) to treat a
@@ -1037,7 +1037,7 @@ WM_NORMAL_HINTS
 .LP
 The WM_NORMAL_HINTS property is a XSizeHints structure describing
 the desired window geometry.
-.LS
+.Ls
 typedef struct {
 	long flags;
 	int x, y;
@@ -1051,7 +1051,7 @@ typedef struct {
 	} min_aspect, max_aspect;
 	int base_width, base_height;
 } XSizeHints;
-.LE
+.Le
 .Pp
 In this and other property structure definitions,  it is assumed that
 sizeof (int) and sizeof (long) are 4.
@@ -1112,7 +1112,7 @@ ratios it prefers.
 .NH 4
 WM_HINTS
 .LP
-.LS
+.Ls
 typedef struct {
 	long flags;
 	Bool input;
@@ -1124,7 +1124,7 @@ typedef struct {
 	XID window_group;
 	unsigned int messages;
 } XWMHints;
-.LE
+.Le
 .LP
 The definitions for the flags field are:
 .sp
@@ -1843,12 +1843,12 @@ focus,  they should set the focus and leave the pointer alone.
 .LP
 Once a client has the focus in one of its windows,  it may 
 transfer it to another of its windows using:
-.LS
+.Ls
 SetInputFocus
 	focus:		WINDOW or PointerRoot or None
 	revert-to:	{Parent, PointerRoot, None}
 	time:		TIMESTAMP or CurrentTime
-.LE
+.Le
 .LP
 .Cp
 Clients using SetInputFocus must set the ``time'' field to
