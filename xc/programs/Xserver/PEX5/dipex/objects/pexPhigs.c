@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pexPhigs.c,v 5.1 91/02/16 09:56:44 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -325,6 +325,7 @@ pexGetDynamicsReq    	*strmPtr;
     pexGetDynamicsReply *reply = (pexGetDynamicsReply *)(pPEXBuffer->pHead);
 
     LU_DRAWABLE(strmPtr->drawable, pdraw);
+    SETUP_INQ(pexGetDynamicsReply);
 
     err = InquireWksDynamics (pdraw, (ddWksDynamics *)&(reply->viewRep));
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
@@ -351,6 +352,8 @@ pexGetViewRepReq    	*strmPtr;
     unsigned long size = 0;
 
     LU_PHIGSWKS(strmPtr->wks, pw);
+
+    SETUP_INQ(pexGetViewRepReply);
 
     if (pPEXBuffer->bufSize < size) {
 	err = puBuffRealloc(pPEXBuffer, size);
