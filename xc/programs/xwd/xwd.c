@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.37 88/08/18 15:50:02 jim Exp $";
+static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.38 88/09/06 17:12:32 jim Exp $";
 #endif
 
 /*%
@@ -61,9 +61,24 @@ int format = ZPixmap;
 Bool nobdrs = False;
 Bool standard_out = True;
 Bool debug = False;
+unsigned long add_pixel_value = 0;
 
 extern int (*_XErrorFunction)();
 extern int _XDefaultError();
+
+static unsigned long parse_unsigned_long (s)
+    char *s;
+{
+    char *fmt = "%lu";
+    unsigned long retval = 0L;
+
+    if (s && s[0]) {
+	if (s[0] == '0') s++, fmt = "%lo";
+	if (s[0] == 'x' || s[0] == 'X') s++, fmt = "%lx";
+	(void) sscanf (s, fmt, &retval);
+    }
+    return retval;
+}
 
 main(argc, argv)
     int argc;
@@ -100,6 +115,11 @@ main(argc, argv)
 	}
 	if (!strcmp(argv[i], "-xy")) {
 	    format = XYPixmap;
+	    continue;
+	}
+	if (!strcmp(argv[i], "-add")) {
+	    if (++i >= argc) usage();
+	    add_pixel_value = parse_unsigned_long (argv[i]);
 	    continue;
 	}
 	usage();
@@ -189,7 +209,14 @@ Window_Dump(window, out)
     bw = nobdrs ? 0 : win_info.border_width;
     x = absx - win_info.x - bw;
     y = absy - win_info.y - bw;
-    image = XGetImage (dpy, window, x, y, width, height, ~0, format);
+    image = XGetImage (dpy, window, x, y, width, height, AllPlanes, format);
+    if (!image) {
+	fprintf (stderr, "%s:  unable to get image at %dx%d+%d+%d\n",
+		 program_name, width, height, x, y);
+	exit (1);
+    }
+
+    if (add_pixel_value != 0) XAddPixel (image, add_pixel_value);
 
     /*
      * Determine the pixmap size.
@@ -301,7 +328,7 @@ usage()
     fprintf (stderr,
 "usage: %s [-display host:dpy] [-debug] [-help] %s [-nobdrs] [-out <file>]",
 	   program_name, SELECT_USAGE);
-    fprintf (stderr, " [-xy]\n");
+    fprintf (stderr, " [-xy] [-add value]\n");
     exit(1);
 }
 
