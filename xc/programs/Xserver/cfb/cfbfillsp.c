@@ -212,6 +212,48 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	    }
 	}
     }
+    else if ((rop == GXxor && (planemask & PMSK) == PMSK) || rop == GXinvert)
+    {
+	if (rop == GXinvert)
+	    fill = planemask;
+	while (n--)
+	{
+	    x = ppt->x;
+	    addrl = addrlBase + (ppt->y * nlwidth);
+	    ++ppt;
+	    width = *pwidth++;
+	    if (!width)
+		continue;
+#if PPW == 4
+	    if (width <= 4)
+	    {
+		register char	*addrb;
+
+		addrb = ((char *) addrl) + x;
+		while (width--)
+		    *addrb++ ^= fill;
+	    }
+#else
+	    if ( ((x & PIM) + width) <= PPW)
+	    {
+		addrl += x >> PWSH;
+		maskpartialbits(x, width, startmask);
+		*addrl ^= (fill & startmask);
+	    }
+#endif
+	    else
+	    {
+		addrl += x >> PWSH;
+		maskbits(x, width, startmask, endmask, nlmiddle);
+		if ( startmask )
+		    *addrl++ ^= (fill & startmask);
+		while ( nlmiddle-- )
+		    *addrl++ ^= fill;
+		if ( endmask )
+		    *addrl ^= (fill & endmask);
+	    }
+	}
+    }
     else
     {
     	while (n--)
