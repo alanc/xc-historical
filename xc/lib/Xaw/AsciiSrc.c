@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.3 89/07/07 14:28:53 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.4 89/07/07 16:43:08 kit Exp $";
 #endif /* lint && SABER */
 
 /*
@@ -398,6 +398,87 @@ Boolean	              include;
   return(position);
 }
 
+/*	Function Name: Search
+ *	Description: Searchs the text source for the text block passed
+ *	Arguments: src - the AsciiSource.
+ *                 position - the position to start scanning.
+ *                 dir - direction to scan.
+ *                 text - the text block to search for.
+ *	Returns: the position of the item found.
+ */
+
+static XawTextPosition 
+Search(src, position, dir, text)
+XawTextSource         src;
+XawTextPosition       position;
+XawTextScanDirection  dir;
+XawTextBlock *        text;
+{
+  AsciiSourcePtr data = (AsciiSourcePtr) src->data;
+  register int inc, count = 0;
+  register char * ptr;
+  Piece * piece;
+  char * buf;
+  XawTextPosition first;
+
+  if ( dir == XawsdRight )
+    inc = 1;
+  else {
+    inc = -1;
+    if (position == 0)
+      return(XawTextSearchError);	/* scanning left from 0??? */
+    position--;
+  }
+
+  buf = XtMalloc(sizeof(char) * text->length);
+  strncpy(buf, (text->ptr + text->firstPos), text->length);
+  piece = FindPiece(data, position, &first);
+  ptr = (position - first) + piece->text;
+
+  while (TRUE) {
+    if (*ptr == ((dir == XawsdRight) ? *(buf + count) 
+		                     : *(buf + text->length - count - 1)) ) {
+      if (count == (text->length - 1))
+	break;
+      else
+	count++;
+    }
+    else {
+      if (count != 0) {
+	position -=inc * count;
+	ptr -= inc * count;
+      }
+      count = 0;
+    }
+
+    ptr += inc;
+    position += inc;
+    
+    while ( ptr < piece->text ) {
+      piece = piece->prev;
+      if (piece == NULL) {	/* Begining of text. */
+	XtFree(buf);
+	return(XawTextSearchError);
+      }
+      ptr = piece->text + piece->used - 1;
+    }
+   
+    while ( ptr >= (piece->text + piece->used) ) {
+      piece = piece->next;
+      if (piece == NULL) {	/* End of text. */
+	XtFree(buf);
+	return(XawTextSearchError);
+      }
+      ptr = piece->text;
+    }
+  }
+
+  XtFree(buf);
+  if (dir == XawsdLeft)
+    return(position);
+  return(position - (text->length - 1));
+}
+
 /*	Function Name: SetValuesHook
  *	Description: Sets the values for the AsciiSource.
  *	Arguments: src - the text source.
@@ -564,6 +645,7 @@ Cardinal num_args;
   src->Replace = ReplaceText;
   src->SetLastPos = DiskSetLastPos;
   src->Scan = Scan;
+  src->Search = Search;
   src->SetSelection = NULL;
   src->ConvertSelection = NULL;
   src->SetValuesHook = SetValuesHook;
