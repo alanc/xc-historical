@@ -1,4 +1,4 @@
-/* $XConsortium: swaprep.c,v 1.5 91/07/27 02:30:02 keith Exp $ */
+/* $XConsortium: swaprep.c,v 1.6 92/01/31 17:44:19 eswu Exp $ */
 /*
  * font server reply swapping
  */
@@ -7,26 +7,24 @@
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
- * MIT not be used in advertising or publicity pertaining to distribution of
- * the software without specific, written prior permission.
+ * M.I.T. not be used in advertising or publicity pertaining to distribution
+ * of the software without specific, written prior permission.
  *
- * NETWORK COMPUTING DEVICES, DIGITAL AND MIT DISCLAIM ALL WARRANTIES WITH
- * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES, DIGITAL OR MIT BE
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * $NCDId: @(#)swaprep.c,v 4.2 1991/06/27 16:34:43 lemke Exp $
- *
+ * NETWORK COMPUTING DEVICES, DIGITAL AND M.I.T. DISCLAIM ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES,
+ * DIGITAL OR M.I.T. BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ * THIS SOFTWARE.
  */
+
 #include	"FSproto.h"
 #include	"clientstr.h"
 #include	"misc.h"
@@ -321,10 +319,10 @@ SQueryXInfoReply(client, size, pRep)
 }
 
 void
-SQueryXExtents8Reply(client, size, pRep)
+SQueryXExtentsReply(client, size, pRep)
     ClientPtr   client;
     int         size;
-    fsQueryXExtents8Reply *pRep;
+    fsQueryXExtents8Reply *pRep; /* QueryXExtents16Reply is the same */
 {
     int         n;
 
@@ -335,10 +333,10 @@ SQueryXExtents8Reply(client, size, pRep)
 }
 
 void
-SQueryXBitmaps8Reply(client, size, pRep)
+SQueryXBitmapsReply(client, size, pRep)
     ClientPtr   client;
     int         size;
-    fsQueryXBitmaps8Reply *pRep;
+    fsQueryXBitmaps8Reply *pRep; /* QueryXBitmaps16Reply is the same */
 {
     int         n;
 

@@ -1,4 +1,4 @@
-/* $XConsortium: tables.c,v 1.3 91/07/16 20:23:45 keith Exp $ */
+/* $XConsortium: tables.c,v 1.4 92/04/24 11:20:24 gildea Exp $ */
 /*
  * all the dispatch, error, event and reply vectors
  */
@@ -7,24 +7,25 @@
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
- * MIT not be used in advertising or publicity pertaining to distribution of
- * the software without specific, written prior permission.
+ * M.I.T. not be used in advertising or publicity pertaining to distribution
+ * of the software without specific, written prior permission.
  *
- * NETWORK COMPUTING DEVICES, DIGITAL AND MIT DISCLAIM ALL WARRANTIES WITH
- * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES, DIGITAL OR MIT BE
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * NETWORK COMPUTING DEVICES, DIGITAL AND M.I.T. DISCLAIM ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES,
+ * DIGITAL OR M.I.T. BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ * THIS SOFTWARE.
  */
-#include	"globals.h"
+
+#include "globals.h"
 
 extern int  ProcInitialConnection(), ProcEstablishConnection();
 
@@ -32,8 +33,8 @@ extern int  ProcSetAuthorization(),
             ProcSetResolution(), ProcGetResolution(), ProcNoop(),
             ProcListExtensions(), ProcQueryExtension(),
             ProcListFonts(), ProcListFontsWithXInfo(),
-            ProcOpenBitmapFont(), ProcQueryXInfo(), ProcQueryXExtents8(),
-            ProcQueryXBitmaps8(), ProcCloseFont(),
+            ProcOpenBitmapFont(), ProcQueryXInfo(), ProcQueryXExtents(),
+            ProcQueryXBitmaps(), ProcCloseFont(),
             ProcListCatalogues(), ProcSetCatalogues(), ProcGetCatalogues(),
             ProcSetEventMask(), ProcGetEventMask(),
             ProcCreateAC(), ProcFreeAC();
@@ -43,8 +44,8 @@ extern int  SProcSimpleRequest(), SProcResourceRequest(),
             SProcSetResolution(),
             SProcQueryExtension(),
             SProcListFonts(), SProcListFontsWithXInfo(),
-            SProcOpenBitmapFont(), SProcQueryXExtents8(),
-            SProcQueryXBitmaps8(),
+            SProcOpenBitmapFont(), SProcQueryXExtents(),
+            SProcQueryXBitmaps(),
             SProcCreateAC();
 
 extern void SErrorEvent();
@@ -55,8 +56,8 @@ extern void NotImplemented(), SGenericReply(),
             SQueryExtensionReply(),
             SListFontsReply(), SListFontsWithXInfoReply(),
             SOpenBitmapFontReply(),
-            SQueryXInfoReply(), SQueryXExtents8Reply(),
-            SQueryXBitmaps8Reply(),
+            SQueryXInfoReply(), SQueryXExtentsReply(),
+            SQueryXBitmapsReply(),
             SGetEventMaskReply(), SCreateACReply(), SGetResolutionReply(),
             SOpenBitmapFontReply();
 
@@ -87,10 +88,10 @@ int         (*ProcVector[NUM_PROC_VECTORS]) () =
     ProcListFontsWithXInfo,
     ProcOpenBitmapFont,		/* 15 */
     ProcQueryXInfo,
-    ProcQueryXExtents8,
-    ProcQueryXExtents8,
-    ProcQueryXBitmaps8,
-    ProcQueryXBitmaps8,		/* 20 */
+    ProcQueryXExtents,
+    ProcQueryXExtents,
+    ProcQueryXBitmaps,
+    ProcQueryXBitmaps,		/* 20 */
     ProcCloseFont,
     0,
     0,
@@ -116,10 +117,10 @@ int         (*SwappedProcVector[NUM_PROC_VECTORS]) () =
     SProcListFontsWithXInfo,
     SProcOpenBitmapFont,	/* 15 */
     SProcResourceRequest,
-    SProcQueryXExtents8,
-    SProcQueryXExtents8,
-    SProcQueryXBitmaps8,
-    SProcQueryXBitmaps8,	/* 20 */
+    SProcQueryXExtents,
+    SProcQueryXExtents,
+    SProcQueryXBitmaps,
+    SProcQueryXBitmaps,		/* 20 */
     SProcResourceRequest,
     0,
     0,
@@ -157,10 +158,10 @@ void        (*ReplySwapVector[NUM_PROC_VECTORS]) () =
     SListFontsWithXInfoReply,
     SOpenBitmapFontReply,	/* 15 */
     SQueryXInfoReply,
-    SQueryXExtents8Reply,
-    SQueryXExtents8Reply,
-    SQueryXBitmaps8Reply,
-    SQueryXBitmaps8Reply,	/* 20 */
+    SQueryXExtentsReply,
+    SQueryXExtentsReply,
+    SQueryXBitmapsReply,
+    SQueryXBitmapsReply,	/* 20 */
     NotImplemented,		/* Close */
     NotImplemented,
     NotImplemented

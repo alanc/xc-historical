@@ -1,4 +1,4 @@
-/* $XConsortium: swapreq.c,v 1.3 91/07/16 20:23:43 keith Exp $ */
+/* $XConsortium: swapreq.c,v 1.4 92/05/15 12:43:10 gildea Exp $ */
 /*
  * swapped requests
  */
@@ -7,22 +7,22 @@
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
- * MIT not be used in advertising or publicity pertaining to distribution of
- * the software without specific, written prior permission.
+ * M.I.T. not be used in advertising or publicity pertaining to distribution
+ * of the software without specific, written prior permission.
  *
- * NETWORK COMPUTING DEVICES, DIGITAL AND MIT DISCLAIM ALL WARRANTIES WITH
- * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES, DIGITAL OR MIT BE
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * NETWORK COMPUTING DEVICES, DIGITAL AND M.I.T. DISCLAIM ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES,
+ * DIGITAL OR M.I.T. BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ * THIS SOFTWARE.
  */
 
 #include	"misc.h"
@@ -247,32 +247,32 @@ SProcOpenBitmapFont(client)
 }
 
 int
-SProcQueryXExtents8(client)
+SProcQueryXExtents(client)
     ClientPtr   client;
 {
     char        n;
 
-    REQUEST(fsQueryXExtents8Req);
+    REQUEST(fsQueryXExtents8Req); /* 8 and 16 are the same here */
     swaps(&stuff->length, n);
     swapl(&stuff->fid, n);
     swapl(&stuff->num_ranges, n);
 
-    return ((*ProcVector[FS_QueryXExtents8]) (client));
+    return ((*ProcVector[stuff->reqType]) (client));
 }
 
 int
-SProcQueryXBitmaps8(client)
+SProcQueryXBitmaps(client)
     ClientPtr   client;
 {
     char        n;
 
-    REQUEST(fsQueryXBitmaps8Req);
+    REQUEST(fsQueryXBitmaps8Req); /* 8 and 16 are the same here */
     swaps(&stuff->length, n);
     swapl(&stuff->fid, n);
     swapl(&stuff->format, n);
     swapl(&stuff->num_ranges, n);
 
-    return ((*ProcVector[FS_QueryXBitmaps8]) (client));
+    return ((*ProcVector[stuff->reqType]) (client));
 }
 
 SwapConnClientPrefix(pCCP)

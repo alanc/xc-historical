@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.11 92/05/12 18:08:05 gildea Exp $ */
+/* $XConsortium: dispatch.c,v 1.12 92/05/26 17:37:00 gildea Exp $ */
 /*
  * protocol dispatcher
  */
@@ -275,7 +275,8 @@ ProcEstablishConnection(client)
 	(void) WriteToClient(client, altservers[i].namelen + 2, tmp);
     }
 
-    (void) WriteToClient(client, auth_len, (char *) server_auth_data);
+    if (auth_len)
+	(void) WriteToClient(client, auth_len, (char *) server_auth_data);
 
     if (auth_accept != AuthSuccess) {
 	nClients--;
@@ -571,6 +572,7 @@ alloc_failure:
     return client->noClientException;
 }
 
+/* ARGSUSED */
 int
 DeleteAuthCont (value, id)
     pointer value;
@@ -763,13 +765,11 @@ ProcQueryXInfo(client)
     case AllocError:
 	SendErrToClient(client, FSBadAlloc, (pointer) 0);
 	return err;
-	break;
     default:
 	ErrorF("ProcQueryXInfo: unexpected return val %d from LoadXFontInfo",
 	       err);
 	SendErrToClient(client, FSBadImplementation, (pointer) 0);
 	return err;
-	break;
     }
     lendata = sizeof(fsPropInfo) +
 	prop_info->num_offsets * sizeof(fsPropOffset) +
@@ -787,7 +787,7 @@ ProcQueryXInfo(client)
 }
 
 int
-ProcQueryXExtents8(client)
+ProcQueryXExtents(client)
     ClientPtr   client;
 {
     ClientFontPtr cfp;
@@ -816,7 +816,7 @@ ProcQueryXExtents8(client)
 }
 
 int
-ProcQueryXBitmaps8(client)
+ProcQueryXBitmaps(client)
     ClientPtr   client;
 {
     ClientFontPtr cfp;
