@@ -66,6 +66,13 @@ cfbPaintWindow(pWin, pRegion, what)
 				  pPrivWin->pRotatedBackground);
 		return;
 	    }
+	    else if (pWin->background.pixmap->drawable.width > 32)
+	    {
+		cfbFillBoxTileOdd (pWin, REGION_NUM_RECTS(pRegion), REGION_RECTS(pRegion),
+				  pWin->background.pixmap,
+				  (int) pWin->drawable.x, (int) pWin->drawable.y);
+		return;
+	    }
 	    break;
 	case BackgroundPixel:
 	    cfbFillBoxSolid (pWin, REGION_NUM_RECTS(pRegion), REGION_RECTS(pRegion),
@@ -84,6 +91,13 @@ cfbPaintWindow(pWin, pRegion, what)
 	{
 	    cfbFillBoxTile32 (pWin, REGION_NUM_RECTS(pRegion), REGION_RECTS(pRegion),
 				  pPrivWin->pRotatedBorder);
+	    return;
+	}
+	else if (pWin->border.pixmap->drawable.width > 32)
+	{
+	    cfbFillBoxTileOdd (pWin, REGION_NUM_RECTS(pRegion), REGION_RECTS(pRegion),
+			       pWin->border.pixmap,
+			       (int) pWin->drawable.x, (int) pWin->drawable.y);
 	    return;
 	}
 	break;

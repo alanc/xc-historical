@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.20 89/09/04 11:06:45 rws Exp $ */
+/* $XConsortium: cfbgc.c,v 5.21 89/09/05 20:10:01 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -283,8 +283,7 @@ cfbValidateGC(pGC, changes, pDrawable)
      * we need to recompute the composite clip 
      */
 
-    if ((changes & (GCClipXOrigin | GCClipYOrigin | GCClipMask)) ||
-	(changes & GCSubwindowMode) ||
+    if ((changes & (GCClipXOrigin|GCClipYOrigin|GCClipMask|GCSubwindowMode)) ||
 	(pDrawable->serialNumber != (pGC->serialNumber & DRAWABLE_SERIAL_BITS))
 	)
     {
@@ -687,16 +686,21 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    }
 	    break;
 	case FillTiled:
+	    if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK)
+	    {
+		pGC->ops->PolyFillRect = cfbPolyFillRect;
+	    }
+	    break;
 #if (PPW == 4)
 	case FillStippled:
 	case FillOpaqueStippled:
-#endif
 	    if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK &&
 	        devPriv->pRotatedPixmap)
 	    {
 		pGC->ops->PolyFillRect = cfbPolyFillRect;
 	    }
 	    break;
+#endif
 	}
     }
 }

@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbfillrct.c,v 5.3 89/07/28 12:03:01 rws Exp $ */
+/* $XConsortium: cfbfillrct.c,v 5.4 89/08/18 16:46:42 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -326,7 +326,9 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     Bool isCopy;
     Pixel pixel;
     Bool fillTiled;
+    PixmapPtr	pRoTile;
     PixmapPtr	pTile;
+    int		xrot, yrot;
 
     priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
     prgnClip = priv->pCompositeClip;
@@ -340,8 +342,14 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	    pixel = pGC->planemask;
 	break;
     case FillTiled:
-	pTile = ((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
+	pRoTile = ((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
 							pRotatedPixmap;
+	if (!pRoTile)
+	{
+	    pTile = pGC->tile.pixmap;
+	    xrot = pDrawable->x + pGC->patOrg.x;
+	    yrot = pDrawable->y + pGC->patOrg.y;
+	}
 	break;
 #if (PPW == 4)
     case FillStippled:
@@ -415,7 +423,10 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 		cfbFillBoxSolid (pDrawable, 1, &box, pixel, isCopy);
 		break;
 	    case FillTiled:
-		cfbFillBoxTile32 (pDrawable, 1, &box, pTile);
+		if (pRoTile)
+		    cfbFillBoxTile32 (pDrawable, 1, &box, pRoTile);
+		else
+		    cfbFillBoxTileOdd (pDrawable, 1, &box, pTile, xrot, yrot);
 		break;
 #if (PPW == 4)
 	    case FillStippled:
@@ -465,8 +476,12 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 				 pboxClippedBase, pixel, isCopy);
 		break;
 	    case FillTiled:
-		cfbFillBoxTile32 (pDrawable, pboxClipped-pboxClippedBase, 
-				 pboxClippedBase, pTile);
+		if (pRoTile)
+		    cfbFillBoxTile32 (pDrawable, pboxClipped-pboxClippedBase, 
+				      pboxClippedBase, pRoTile);
+		else
+		    cfbFillBoxTileOdd (pDrawable, pboxClipped-pboxClippedBase, 
+				      pboxClippedBase, pTile, xrot, yrot);
 		break;
 #if (PPW == 4)
 	    case FillStippled:
