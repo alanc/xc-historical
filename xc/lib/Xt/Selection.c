@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.91 94/03/14 13:45:26 kaleb Exp $ */
+/* $XConsortium: Selection.c,v 1.92 94/03/15 11:23:11 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -825,7 +825,7 @@ Boolean *cont;
 				     p->target, p->property, widget,
 				     &incremental)) {
 
-			p->property = None;
+			p->target = None;
 			writeback = TRUE;
 			StartProtectedSection(ctx->dpy, ev.requestor);
 		  }
@@ -1369,8 +1369,8 @@ Boolean *cont;
        for (length = length / IndirectPairWordSize, p = pairs, 
 	    c = info->req_closure;
 	    length; length--, p++, c++, info->current++) {
-	    if ((event->property == None) || (format != 32) || 
-		 (p->property == None)) {
+	    if (event->property == None || format != 32 || p->target == None
+		|| /* bug compatibility */ p->property == None) {
 		HandleNone(widget, info->callbacks[info->current],
 			   *c, event->selection);
 		if (p->property != None)
