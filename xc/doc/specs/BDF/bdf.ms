@@ -1,16 +1,25 @@
 \&
 .sp 1
-.ce 5
-\s+1\fBAppendix H\fP\s-1
-
+.ce 4
 \s+1\fBBitmap Distribution Format\fP\s-1
 
 \s+1\fBVersion 2.1\fP\s-1
+
+X Version 11, Release 5
 .sp 2
+Copyright 1984, 1987, 1988 Adobe Systems, Inc.
+.sp 2
+Permission to use, copy, modify, and distribute this
+software and its documentation for any purpose and without
+fee is hereby granted, provided that the above copyright
+notice appear in all copies and that both that copyright
+notice and this permission notice appear in supporting
+documentation.
+.sp 3
 .na
 .LP
 .XS
-Appendix H: Bitmap Distribution Format
+Bitmap Distribution Format
 .XE
 .LP
 The Bitmap Distribution Format (BDF), Version 2.1,
@@ -34,14 +43,16 @@ followed by the information and bitmaps for the individual characters.
 .LP
 A font bitmap description file has the following general form, 
 where each item is contained on a separate line of text in the file.
-Items on a line are separated by spaces. 
+Tokens on a line are separated by spaces. 
+Keywords are in upper-case, and must appear in upper-case in the file.
 .IP 1. 5
 The word STARTFONT followed by a version number indicating the exact
 file format used.
 The version described here is 2.1.
 .IP 2. 5
-One or more lines beginning with the word COMMENT.
-These lines may be ignored by any program reading the file.
+Lines beginning with the word COMMENT may appear anywhere between the
+STARTFONT line and the ENDFONT line.
+These lines are ignored by font compilers.
 .IP 3. 5
 The word FONT followed by either the XLFD font name (as specified in part III)
 or some private font name.
@@ -65,7 +76,7 @@ Optionally, the word STARTPROPERTIES followed by the number of properties
 Then come \fIp\fP lines consisting of a word for the \fIproperty name\fP 
 followed by either an integer or string surrounded by double-quote (octal 042).
 Internal double-quote characters are indicated by using two in a row.
-.IP 8. 5
+.IP
 Properties named FONT_ASCENT, FONT_DESCENT, and DEFAULT_CHAR
 should be provided to define the logical font-ascent and font-descent
 and the default-char for the font.
@@ -74,12 +85,12 @@ in the binary form produced by a compiler.
 If these properties are not provided, 
 a compiler may reject the font or may compute (arbitrary) values 
 for these properties.
-.IP 9. 5
+.IP 8. 5
 The property section, if it exists, is terminated by ENDPROPERTIES.
-.IP 10. 5
+.IP 9. 5
 The word CHARS followed by the number of character segments (\^\fIc\fP\^) 
 that follow.
-.IP 11. 5
+.IP 10. 5
 Then come \fIc\fP character segments of the form:
 .RS
 .IP a. 5
@@ -147,30 +158,30 @@ padded on the right with zeros to the nearest byte (that is, multiple of 8).
 .IP i. 5
 The word ENDCHAR.
 .RE
-.IP 12. 5
+.IP 11. 5
 The file is terminated with the word ENDFONT.
 .SH
 Metric Information
 .LP
-Figures H\-1 and H\-2 best illustrate the bitmap format and
+Figures 1 and 2 best illustrate the bitmap format and
 character metric information.
 .bp
 \&
 .sp 30
 .ce
-Figure H\-1
+Figure 1
 .bp
 \&
 .sp 30
 .ce
-Figure H\-2
+Figure 2
 .bp
 .SH
 An Example File
 .LP
 The following is an abbreviated example of a bitmap file containing 
 the specification of two characters (the j and quoteright 
-in figures H\-1 and H\-2).
+in figures 1 and 2).
 .LP
 .Ds 
 STARTFONT 2.1
