@@ -1,4 +1,14 @@
         DEFINES = ConnectionFlags -DBINDIR=\"$(BINDIR)\"
 LOCAL_LIBRARIES = $(XLIB)
+          SRCS1 = xinit.c 
+          OBJS1 = xinit.o 
+       PROGRAMS = xinit xstartup
 
-SimpleProgramTarget(xinit)
+ComplexProgramTarget_1(xinit,$(XLIB),)
+
+xstartup:  xstartup.cpp
+	$(RM) xstartup
+	$(CPP) $(STD_SYS_DEFINES) <xstartup.cpp >xstartup
+	chmod a+x xstartup
+
+InstallProgram(xstartup,$(BINDIR))
