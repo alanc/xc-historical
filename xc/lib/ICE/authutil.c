@@ -1,4 +1,4 @@
-/* $XConsortium: authutil.c,v 1.9 94/01/28 23:32:05 rws Exp $ */
+/* $XConsortium: authutil.c,v 1.10 94/02/06 15:23:26 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -38,6 +38,8 @@ extern char *getenv();
 #else
 #ifndef WIN32
 extern unsigned	sleep ();
+#else
+#define link rename
 #endif
 #endif
 
@@ -116,7 +118,6 @@ int	timeout;
 long	dead;
 
 {
-#ifndef WIN32
     char	creat_name[1025], link_name[1025];
     struct stat	statb;
     Time_t	now;
@@ -181,9 +182,6 @@ long	dead;
     }
 
     return (IceAuthLockTimeout);
-#else
-    return (IceAuthLockSuccess);
-#endif
 }
 
 
@@ -195,19 +193,24 @@ char	*file_name;
 
 {
 #ifndef WIN32
-    char	creat_name[1025], link_name[1025];
+    char	creat_name[1025];
+#endif
+    char	link_name[1025];
 
     if ((int) strlen (file_name) > 1022)
 	return;
 
+#ifndef WIN32
     strcpy (creat_name, file_name);
     strcat (creat_name, "-c");
+#endif
     strcpy (link_name, file_name);
     strcat (link_name, "-l");
 
+#ifndef WIN32
     unlink (creat_name);
-    unlink (link_name);
 #endif
+    unlink (link_name);
 }
 
 
