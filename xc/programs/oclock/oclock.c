@@ -1,5 +1,5 @@
 /*
- * $XConsortium: oclock.c,v 1.12 91/01/09 18:30:51 gildea Exp $
+ * $XConsortium: oclock.c,v 1.13 91/01/10 21:33:48 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -56,7 +56,7 @@ void usage()
     fprintf(stderr,
 "       [-minute {color}] [-hour {color}] [-jewel {color}]\n");
     fprintf(stderr,
-"       [-backing {backing-store}]\n");
+"       [-backing {backing-store}] [-shape] [-noshape] [-transparent]\n");
     exit(1);
 }
 
