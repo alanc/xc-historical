@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.23 91/04/11 09:04:08 rws Exp $
+/* $XConsortium: CvtStdSel.c,v 1.24 93/08/16 14:27:24 rws Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -170,7 +170,7 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
     Widget w;
     Time time;
     Atom *selection, *target, *type;
-    caddr_t *value;
+    XPointer *value;
     unsigned long *length;
     int *format;
 {
@@ -308,7 +308,7 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
 #ifdef DNETCONN
 	std_targets[i++] = XA_DECNET_ADDRESS(d);
 #endif
-	*value = (caddr_t)std_targets;
+	*value = (XPointer)std_targets;
 	*type = XA_ATOM;
 	*length = NUM_TARGETS;
 	*format = 32;

@@ -1,4 +1,4 @@
-/* $XConsortium: StrToOrnt.c,v 1.5 90/11/30 17:00:32 rws Exp $ */
+/* $XConsortium: StrToOrnt.c,v 1.6 90/12/20 13:33:20 converse Exp $ */
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -22,7 +22,7 @@
 
 
 #define	done(address, type) \
-	{ (*toVal).size = sizeof(type); (*toVal).addr = (caddr_t) address; }
+	{ (*toVal).size = sizeof(type); (*toVal).addr = (XPointer) address; }
 
 /* ARGSUSED */
 void

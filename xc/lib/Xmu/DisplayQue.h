@@ -1,4 +1,4 @@
-/* $XConsortium: DisplayQue.h,v 1.4 91/05/28 16:18:29 converse Exp $
+/* $XConsortium: DisplayQue.h,v 1.5 91/07/22 23:45:45 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -34,7 +34,7 @@
  * XmuDisplayQueue *XmuDQCreate (closefunc, freefunc, data)
  *     XmuCloseDisplayQueueProc closefunc;
  *     XmuFreeDisplayQueueProc freefunc;
- *     caddr_t data;
+ *     XPointer data;
  * 
  *         Creates and returns a queue into which displays may be placed.  When
  *         the display is closed, the closefunc (if non-NULL) is upcalled with
@@ -67,7 +67,7 @@
  * XmuDisplayQueueEntry *XmuDQAddDisplay (q, dpy, data)
  *     XmuDisplayQueue *q;
  *     Display *dpy;
- *     caddr_t data;
+ *     XPointer data;
  *
  *         Adds the indicated display to the end of the queue or NULL if it
  *         is unable to allocate memory.  The data field may be used by the
@@ -105,7 +105,7 @@ struct _XmuDisplayQueueEntry {
     struct _XmuDisplayQueueEntry *prev, *next;
     Display *display;
     CloseHook closehook;
-    caddr_t data;
+    XPointer data;
 };
 
 struct _XmuDisplayQueue {
@@ -113,7 +113,7 @@ struct _XmuDisplayQueue {
     XmuDisplayQueueEntry *head, *tail;
     XmuCloseDisplayQueueProc closefunc;
     XmuFreeDisplayQueueProc freefunc;
-    caddr_t data;
+    XPointer data;
 };
 
 _XFUNCPROTOBEGIN
@@ -122,7 +122,7 @@ extern XmuDisplayQueue *XmuDQCreate(
 #if NeedFunctionPrototypes
     XmuCloseDisplayQueueProc	/* closefunc */,
     XmuFreeDisplayQueueProc	/* freefunc */,
-    caddr_t	/* data */
+    XPointer	/* data */
 #endif
 );
 
@@ -144,7 +144,7 @@ extern XmuDisplayQueueEntry *XmuDQAddDisplay(
 #if NeedFunctionPrototypes
     XmuDisplayQueue*	/* q */,
     Display*		/* dpy */,
-    caddr_t		/* data */
+    XPointer		/* data */
 #endif
 );
 

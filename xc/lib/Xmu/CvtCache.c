@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CvtCache.c,v 1.5 89/11/30 18:21:32 rws Exp $
+ * $XConsortium: CvtCache.c,v 1.6 90/12/19 18:21:33 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -100,7 +100,7 @@ XmuCvtCache *_XmuCCLookupDisplay (dpy)
 	/*
 	 * Add the display to the queue
 	 */
-	e = XmuDQAddDisplay (dq, dpy, (caddr_t) c);
+	e = XmuDQAddDisplay (dq, dpy, (XPointer) c);
 	if (!e) {
 	    free ((char *) c);
 	    return NULL;

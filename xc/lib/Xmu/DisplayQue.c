@@ -1,5 +1,5 @@
 /*
- * $XConsortium: DisplayQue.c,v 1.3 89/10/08 14:59:33 rws Exp $
+ * $XConsortium: DisplayQue.c,v 1.4 91/05/28 16:16:46 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -39,7 +39,7 @@ static int _DQCloseDisplay();
 XmuDisplayQueue *XmuDQCreate (closefunc, freefunc, data)
     XmuCloseDisplayQueueProc closefunc;
     XmuFreeDisplayQueueProc freefunc;
-    caddr_t data;
+    XPointer data;
 {
     XmuDisplayQueue *q = (XmuDisplayQueue *) malloc (sizeof (XmuDisplayQueue));
     if (q) {
@@ -98,7 +98,7 @@ XmuDisplayQueueEntry *XmuDQLookupDisplay (q, dpy)
 XmuDisplayQueueEntry *XmuDQAddDisplay (q, dpy, data)
     XmuDisplayQueue *q;
     Display *dpy;
-    caddr_t data;
+    XPointer data;
 {
     XmuDisplayQueueEntry *e;
 
@@ -106,7 +106,7 @@ XmuDisplayQueueEntry *XmuDQAddDisplay (q, dpy, data)
 	return NULL;
     }
     if (!(e->closehook = XmuAddCloseDisplayHook (dpy, _DQCloseDisplay,
-						 (caddr_t) q))) {
+						 (XPointer) q))) {
 	free ((char *) e);
 	return NULL;
     }
@@ -148,7 +148,7 @@ Bool XmuDQRemoveDisplay (q, dpy)
 	    else
 	      e->next->prev = e->prev;	/* else splice out */
 	    (void) XmuRemoveCloseDisplayHook (dpy, e->closehook,
-					      _DQCloseDisplay, (caddr_t) q);
+					      _DQCloseDisplay, (XPointer) q);
 	    free ((char *) e);
 	    q->nentries--;
 	    return True;
@@ -168,7 +168,7 @@ Bool XmuDQRemoveDisplay (q, dpy)
  */
 static int _DQCloseDisplay (dpy, arg)
     Display *dpy;
-    caddr_t arg;
+    XPointer arg;
 {
     XmuDisplayQueue *q = (XmuDisplayQueue *) arg;
     XmuDisplayQueueEntry *e;

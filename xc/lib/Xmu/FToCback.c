@@ -1,5 +1,5 @@
 /* static char rcsid[] =
-	"$XConsortium: FToCback.c,v 1.1 89/12/07 10:52:21 rws Exp $"; */
+	"$XConsortium: FToCback.c,v 1.2 90/07/15 16:18:34 rws Exp $"; */
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -32,5 +32,5 @@ XmuCvtFunctionToCallback(args, num_args, fromVal, toVal)
     callback[0].callback = *(XtCallbackProc *)fromVal->addr;
 
     toVal->size = sizeof(XtCallbackList);
-    toVal->addr = (caddr_t)&callback_list;
+    toVal->addr = (XPointer)&callback_list;
 }

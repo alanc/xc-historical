@@ -1,5 +1,5 @@
 /*
- * $XConsortium: StrToLong.c,v 1.2 89/07/14 18:05:40 jim Exp $
+ * $XConsortium: StrToLong.c,v 1.3 90/10/26 16:43:40 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -26,7 +26,7 @@
 #include "Converters.h"
 
 #define done(address, type) \
-        { (*toVal).size = sizeof(type); (*toVal).addr = (caddr_t) address; }
+        { (*toVal).size = sizeof(type); (*toVal).addr = (XPointer) address; }
 
 void XmuCvtStringToLong (args, num_args, fromVal, toVal)
     XrmValuePtr args;

@@ -1,4 +1,4 @@
-/* $XConsortium: StdSel.h,v 1.2 90/12/19 18:10:28 converse Exp $
+/* $XConsortium: StdSel.h,v 1.3 91/07/22 23:46:07 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -32,7 +32,7 @@ extern Boolean XmuConvertStandardSelection(
     Atom*		/* selection */,
     Atom*		/* target */,
     Atom*		/* type_return */,
-    caddr_t *		/* value_return */,
+    XPointer *		/* value_return */,
     unsigned long *	/* length_return */,
     int *		/* format_return */
 #endif

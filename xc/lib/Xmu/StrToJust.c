@@ -1,4 +1,4 @@
-/* $XConsortium: StrToJust.c,v 1.5 90/11/30 17:00:43 rws Exp $ */
+/* $XConsortium: StrToJust.c,v 1.6 90/12/20 13:30:18 converse Exp $ */
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -50,7 +50,7 @@ XmuCvtStringToJustify(args, num_args, fromVal, toVal)
     q = XrmStringToQuark(lowerName);
 
     toVal->size = sizeof(XtJustify);
-    toVal->addr = (caddr_t) &e;
+    toVal->addr = (XPointer) &e;
 
     if (q == XrmQEleft)   { e = XtJustifyLeft;   return; }
     if (q == XrmQEcenter) { e = XtJustifyCenter; return; }

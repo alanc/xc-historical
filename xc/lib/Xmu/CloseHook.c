@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CloseHook.c,v 1.6 91/05/28 15:01:24 converse Exp $
+ * $XConsortium: CloseHook.c,v 1.7 91/05/28 16:15:34 converse Exp $
  *
  * CloseDisplayHook package - provide callback on XCloseDisplay
  *
@@ -30,19 +30,19 @@
  * CloseHook XmuAddCloseDisplayHook (dpy, func, arg)
  *     Display *dpy;
  *     XmuCloseHookProc func;
- *     caddr_t arg;
+ *     XPointer arg;
  * 
  * Bool XmuRemoveCloseDisplayHook (dpy, hook, func, arg)
  *     Display *dpy;
  *     CloseHook hook;
  *     XmuCloseHookProc func;
- *     caddr_t arg;
+ *     XPointer arg;
  * 
  * Bool XmuLookupCloseDisplayHook (dpy, hook, func, arg)
  *     Display *dpy;
  *     CloseHook hook;
  *     XmuCloseHookProc func;
- *     caddr_t arg;
+ *     XPointer arg;
  * 
  */
 
@@ -63,7 +63,7 @@ extern char *malloc();					/* should be void * */
 typedef struct _CallbackRec {
     struct _CallbackRec *next;		/* next link in chain */
     XmuCloseHookProc func;		/* function to call */
-    caddr_t arg;			/* argument to pass with function */
+    XPointer arg;			/* argument to pass with function */
 } CallbackRec;
 
 
@@ -103,14 +103,14 @@ static DisplayEntry *_FindDisplayEntry();
 CloseHook XmuAddCloseDisplayHook (dpy, func, arg)
     Display *dpy;
     XmuCloseHookProc func;		/* function to call on close display */
-    caddr_t arg;			/* arg to pass */
+    XPointer arg;			/* arg to pass */
 {
     DisplayEntry *de;
     CallbackRec *cb;
 
     /* allocate ahead of time so that we can fail atomically */
     cb = (CallbackRec *) malloc (sizeof (CallbackRec));
-    if (!cb) return ((caddr_t) NULL);
+    if (!cb) return ((XPointer) NULL);
 
     de = _FindDisplayEntry (dpy, NULL);
     if (!de) {
@@ -150,7 +150,7 @@ Bool XmuRemoveCloseDisplayHook (dpy, handle, func, arg)
     Display *dpy;
     CloseHook handle;			/* value from XmuAddCloseDisplayHook */
     XmuCloseHookProc func;		/* function to call on close display */
-    caddr_t arg;			/* arg to pass */
+    XPointer arg;			/* arg to pass */
 {
     DisplayEntry *de = _FindDisplayEntry (dpy, NULL);
     register CallbackRec *h, *prev;
@@ -190,7 +190,7 @@ Bool XmuLookupCloseDisplayHook (dpy, handle, func, arg)
     Display *dpy;
     CloseHook handle;			/* value from XmuAddCloseDisplayHook */
     XmuCloseHookProc func;		/* function to call on close display */
-    caddr_t arg;			/* arg to pass */
+    XPointer arg;			/* arg to pass */
 {
     DisplayEntry *de = _FindDisplayEntry (dpy, NULL);
     register CallbackRec *h;

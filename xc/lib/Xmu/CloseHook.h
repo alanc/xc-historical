@@ -1,4 +1,4 @@
-/* $XConsortium: CloseHook.h,v 1.4 91/05/28 16:11:53 converse Exp $
+/* $XConsortium: CloseHook.h,v 1.5 91/07/22 23:45:30 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -23,12 +23,12 @@
 
 #include <X11/Xfuncproto.h>
 
-typedef caddr_t CloseHook;
+typedef XPointer CloseHook;
 
 typedef int (*XmuCloseHookProc)(
 #if NeedFunctionPrototypes
     Display*	/* dpy */,
-    caddr_t	/* data */
+    XPointer	/* data */
 #endif 
 );
 
@@ -38,7 +38,7 @@ extern CloseHook XmuAddCloseDisplayHook(
 #if NeedFunctionPrototypes
     Display *	/* dpy */,
     XmuCloseHookProc	/* proc */,
-    caddr_t	/* arg */
+    XPointer	/* arg */
 #endif
 );
 
@@ -47,7 +47,7 @@ extern Bool XmuLookupCloseDisplayHook(
     Display *	/* dpy */,
     CloseHook	/* handle */,
     XmuCloseHookProc	/* proc */,
-    caddr_t	/* arg  */
+    XPointer	/* arg  */
 #endif
 );
 
@@ -56,7 +56,7 @@ extern Bool XmuRemoveCloseDisplayHook(
     Display *	/* dpy */,
     CloseHook	/* handle */,
     XmuCloseHookProc	/* proc */,
-    caddr_t	/* arg */
+    XPointer	/* arg */
 #endif
 );
 

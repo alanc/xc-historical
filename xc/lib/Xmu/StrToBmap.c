@@ -1,4 +1,4 @@
-/* static char rcsid[] = "$XConsortium: StrToBmap.c,v 1.10 90/07/15 16:18:54 rws Exp $"; */
+/* static char rcsid[] = "$XConsortium: StrToBmap.c,v 1.11 91/03/09 17:08:48 rws Exp $"; */
 
 
 /***********************************************************
@@ -45,7 +45,7 @@ SOFTWARE.
  * To use, include the following in your ClassInitialize procedure:
 
 static XtConvertArgRec screenConvertArg[] = {
-    {XtBaseOffset, (caddr_t) XtOffset(Widget, core.screen), sizeof(Screen *)}
+    {XtBaseOffset, (XtPointer) XtOffset(Widget, core.screen), sizeof(Screen *)}
 };
 
     XtAddConverter("String", "Bitmap", XmuCvtStringToBitmap,
@@ -54,7 +54,7 @@ static XtConvertArgRec screenConvertArg[] = {
  */
 
 #define	done(address, type) \
-	{ (*toVal).size = sizeof(type); (*toVal).addr = (caddr_t) address; }
+	{ (*toVal).size = sizeof(type); (*toVal).addr = (XPointer) address; }
 
 
 /*ARGSUSED*/

@@ -1,4 +1,4 @@
-/* $XConsortium: Initer.c,v 1.6 90/12/28 19:56:15 gildea Exp $ */
+/* $XConsortium: Initer.c,v 1.7 91/05/28 16:08:34 converse Exp $ */
 
 /* 
  * Copyright 1988, 1989 by the Massachusetts Institute of Technology
@@ -25,7 +25,7 @@
 
 struct InitializerList {
   XmuInitializerProc function;	/* function to call */
-  caddr_t data;			/* Data to pass the function. */
+  XPointer data;		/* Data to pass the function. */
   XtAppContext * app_con_list;	/* a null terminated list of app_contexts. */
 };
   
@@ -37,7 +37,7 @@ static Boolean AddToAppconList();
 void
 XmuAddInitializer(func, data) 
 XmuInitializerProc func;
-caddr_t data;
+XPointer data;
 {
   init_list_length++;
   init_list = (struct InitializerList *) XtRealloc( (char *) init_list, 
