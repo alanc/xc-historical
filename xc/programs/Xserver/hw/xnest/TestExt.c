@@ -1,4 +1,4 @@
-/* $XConsortium: TestExt.c,v 1.1 93/07/12 15:28:51 rws Exp $ */
+/* $XConsortium: TestExt.c,v 1.2 93/09/23 18:57:14 rws Exp dpw $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -19,6 +19,7 @@ is" without express or implied warranty.
 #include "misc.h"
 #include "scrnintstr.h"
 #include "servermd.h"
+#define XTestSERVER_SIDE
 #include "xtestext1.h"
 
 extern CARD32 lastEventTime;

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.2 93/07/19 17:48:55 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.3 93/09/04 17:37:04 rws Exp dpw $
 #include <Server.tmpl>
 
 SRCS = 	Args.c \
@@ -16,8 +16,10 @@ SRCS = 	Args.c \
 	Pixmap.c \
 	Pointer.c \
 	Screen.c \
+	TestExt.c \
 	Visual.c \
-	Window.c
+	Window.c \
+	stubs.c
 
 OBJS = 	Args.o \
 	Color.o \
@@ -34,15 +36,18 @@ OBJS = 	Args.o \
 	Pixmap.o \
 	Pointer.o \
 	Screen.o \
+	TestExt.o \
 	Visual.o \
-	Window.o
-
+	Window.o \
+	stubs.o
 
 INCLUDES = -I. -I$(BUILDINCDIR) -I$(FONTINCSRC) \
 	   -I../../mi -I../../include -I../../os  \
            -I$(EXTINCSRC) -I$(INCLUDESRC)
 
 all:: $(OBJS)
+
+LinkSourceFile(stubs.c,../../Xi)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(xnest,$(OBJS))
