@@ -1,4 +1,4 @@
-/* $XConsortium: gcstruct.h,v 5.5 93/09/20 18:09:11 dpw Exp $ */
+/* $XConsortium: gcstruct.h,v 5.6 93/11/16 10:56:35 rob Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -365,7 +365,7 @@ typedef struct _GC {
     pointer		clientClip;
     unsigned long	stateChanges;	/* masked with GC_<kind> */
     unsigned long       serialNumber;
-#ifdef MTX
+#ifdef XTHREADS
     unsigned int	lockBits;	/* lock status bits */
 #endif
     GCFuncs		*funcs;

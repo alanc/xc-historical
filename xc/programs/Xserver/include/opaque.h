@@ -1,4 +1,4 @@
-/* $XConsortium: opaque.h,v 1.13 93/09/23 16:52:11 rws Exp $ */
+/* $XConsortium: opaque.h,v 1.14 94/01/02 09:17:26 rob Exp $ */
 
 #ifndef OPAQUE_H
 #define OPAQUE_H
@@ -12,7 +12,7 @@ extern char *rgbPath;
 extern int MaxClients;
 extern char isItTimeToYield;
 extern char dispatchException;
-#ifdef MTX
+#ifdef XTHREADS
 extern char serverException;
 #endif
 

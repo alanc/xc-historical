@@ -1,4 +1,4 @@
-/* $XConsortium: pixmapstr.h,v 5.1 93/06/24 10:30:41 dpw Exp $ */
+/* $XConsortium: pixmapstr.h,v 5.2 93/11/16 10:56:37 rob Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -41,7 +41,7 @@ typedef struct _Drawable {
     unsigned short	height;
     ScreenPtr		pScreen;
     unsigned long	serialNumber;
-#ifdef MTX
+#ifdef XTHREADS
     unsigned int	lockBits;	/* lock status bits */
 #endif
 } DrawableRec;

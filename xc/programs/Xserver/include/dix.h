@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.70 93/11/18 20:35:52 rob Exp $ */
+/* $XConsortium: dix.h,v 1.71 93/12/01 20:33:08 rob Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -126,7 +126,7 @@ SOFTWARE.
 	ValidateGC(pDraw, pGC);
 
 /* MTX changes the way reply structures are declared to minimize #ifdef's */
-#ifdef MTX
+#ifdef XTHREADS
 
 #define REPLY_DECL(_type,_name)				\
 	PooledMessagePtr msg;				\
@@ -136,25 +136,25 @@ SOFTWARE.
 	if (!_name)					\
 		return _error_value
 
-#else /* MTX */
+#else /* XTHREADS */
 
 #define REPLY_DECL(_type,_name)				\
 	_type _reply_buf_, *_name = &_reply_buf_
 
 #define MTX_REP_CHECK_RETURN(_name,_error_value)	/* nothing */
 
-#endif /* MTX */
+#endif /* XTHREADS */
 
 /* MTX cannot use local memory for data of global message pool */
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_LOCAL_ALLOC xalloc
 #define MTX_LOCAL_FREE xfree
-#else /* MTX */
+#else /* XTHREADS */
 #define MTX_LOCAL_ALLOC ALLOCATE_LOCAL
 #define MTX_LOCAL_FREE DEALLOCATE_LOCAL
-#endif /* MTX */
+#endif /* XTHREADS */
 
-#ifdef MTX
+#ifdef XTHREADS
 /* MTX assumes routines that call WriteReplyToClient have local variable msg */
 #define WriteReplyToClient(pClient, size, pReply) \
     SendReplyToClient(pClient, msg);
