@@ -20,7 +20,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * $NCDId: @(#)swapreq.c,v 1.2 1994/03/24 17:55:10 lemke Exp $
- * $XConsortium: utils.c,v 1.5 94/03/17 19:46:39 dpw Exp $
+ * $XConsortium: swapreq.c,v 1.1 94/03/27 14:27:44 dpw Exp mor $
  */
 
 #include	<stdio.h>
@@ -1304,6 +1304,39 @@ SwapGetProperty(r)
     swapl(&r->type, n);
     swapl(&r->longOffset, n);
     swapl(&r->longLength, n);
+}
+
+void
+SwapPutImage (r)
+
+xLbxPutImageReq *r;
+
+{
+    char n;
+
+    swaps (&r->xLength, n);
+    swapl (&r->drawable, n);
+    swapl (&r->gc, n);
+    swaps (&r->width, n);
+    swaps (&r->height, n);
+    swaps (&r->dstX, n);
+    swaps (&r->dstY, n);
+}
+
+void
+SwapGetImage (r)
+
+xLbxGetImageReq *r;
+
+{
+    char n;
+
+    swapl (&r->drawable, n);
+    swaps (&r->x, n);
+    swaps (&r->y, n);
+    swaps (&r->width, n);
+    swaps (&r->height, n);
+    swapl (&r->planeMask, n);
 }
 
 void
