@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 1.17 88/10/13 19:53:54 rws Exp $ */
+/* $XConsortium: mibstore.c,v 1.18 88/10/13 21:25:33 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -545,6 +545,7 @@ miBSGetImage (pWin, pOldPixmapPtr, x, y, w, h, format, planeMask, pImage)
     BoxRec		box;
     GCPtr		pGC;
     static void		miBSDoGetImage ();
+    int			depth;
 
     pScreen = pWin->drawable.pScreen;
 
@@ -574,21 +575,22 @@ miBSGetImage (pWin, pOldPixmapPtr, x, y, w, h, format, planeMask, pImage)
      * if no pixmap was given to us, create one now
      */
 
-    pGC = GetScratchGC (pWin->drawable.depth, pScreen);
+    depth = format == ZPixmap ? pWin->drawable.depth : 1;
+    
+    pGC = GetScratchGC (depth, pScreen);
+
     /*
      * make sure the CopyArea operations below never
      * end up sending NoExpose or GraphicsExpose events.
      */
     pGC->graphicsExposures = FALSE;
     if (!pOldPixmapPtr && pImage) {
-	pNewPixmapPtr = (*pScreen->CreatePixmap) (pScreen, w, h, pWin->drawable.depth);
+	pNewPixmapPtr = (*pScreen->CreatePixmap) (pScreen, w, h, depth);
 	if (pNewPixmapPtr) {
-	    pGC->fgPixel = planeMask;
-	    pGC->bgPixel = 0;
 	    ValidateGC ((DrawablePtr)pNewPixmapPtr, pGC);
 	    (*pGC->PutImage) (pNewPixmapPtr, pGC,
- 		pWin->drawable.depth, 0, 0, w, h, 0,
-		(format == XYPixmap) ? XYBitmap : format, pImage);
+ 			      depth, 0, 0, w, h, 0,
+			      ZPixmap, pImage);
 	}
 	pPixmapPtr = pNewPixmapPtr;
     }
@@ -608,7 +610,7 @@ miBSGetImage (pWin, pOldPixmapPtr, x, y, w, h, format, planeMask, pImage)
     {
 	(* pScreen->TranslateRegion) (pRgn, -pWin->absCorner.x, -pWin->absCorner.y);
 
-	miBSDoGetImage (pWin, pPixmapPtr, pRgn, x, y, pGC);
+	miBSDoGetImage (pWin, pPixmapPtr, pRgn, x, y, pGC, planeMask);
     }
 
     /*
@@ -618,7 +620,8 @@ miBSGetImage (pWin, pOldPixmapPtr, x, y, w, h, format, planeMask, pImage)
 
     if (pNewPixmapPtr)
     {
-	(*pScreen->GetImage) (pNewPixmapPtr, 0, 0, w, h, format, planeMask, pImage);
+	(*pScreen->GetImage) (pNewPixmapPtr, 0, 0, w, h,
+ 			      format, (format == ZPixmap) ? planeMask : 1, pImage);
 	(*pScreen->DestroyPixmap) (pNewPixmapPtr);
     }
     FreeScratchGC (pGC);
@@ -632,7 +635,7 @@ miBSGetImage (pWin, pOldPixmapPtr, x, y, w, h, format, planeMask, pImage)
  */
 
 static void
-miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, pixel, tile, use_pixel)
+miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, pixel, tile, use_pixel, planeMask)
     DrawablePtr		pDrawable;
     GCPtr		pGC;
     RegionPtr		pRgn;
@@ -640,10 +643,11 @@ miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, pixel, tile, use_pixel)
     int			x, y;
     PixmapPtr		tile;
     PixmapPtr		use_pixel;
+    unsigned long	planeMask;
 {
     int		i;
     BITS32	gcmask;
-    XID		gcval[4];
+    XID		gcval[5];
     xRectangle	*pRect;
     BoxPtr	pBox;
     WindowPtr	pWin;
@@ -659,6 +663,8 @@ miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, pixel, tile, use_pixel)
     }
     i = 0;
     gcmask = 0;
+    gcval[i++] = planeMask;
+    gcmask |= GCPlaneMask;
     if (tile == use_pixel)
     {
 	if (pGC->fgPixel != pixel)
@@ -728,12 +734,13 @@ miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, pixel, tile, use_pixel)
  */
 
 static void
-miBSDoGetImage (pWin, pPixmap, pRgn, x, y, pGC)
+miBSDoGetImage (pWin, pPixmap, pRgn, x, y, pGC, planeMask)
     WindowPtr	pWin;
     PixmapPtr	pPixmap;
     RegionPtr	pRgn;
     int		x, y;
     GCPtr	pGC;
+    unsigned long	planeMask;
 {
     MIBackingStorePtr	pBackingStore;
     BoxPtr	pBox;
@@ -746,21 +753,23 @@ miBSDoGetImage (pWin, pPixmap, pRgn, x, y, pGC)
     pBox = pRgn->rects;
     pScreen = pWin->drawable.pScreen;
     pBackingStore = (MIBackingStorePtr)pWin->devBackingStore;
+    pBackRgn = (*pScreen->RegionCreate) (NULL, 1);
     if (pWin->backingStore != NotUseful && pWin->backStorage &&
         pBackingStore->status != StatusNoPixmap)
     {
-	pBackRgn = (*pScreen->RegionCreate) (NULL, 1);
 	(*pScreen->Intersect) (pBackRgn, pRgn, pBackingStore->pSavedRegion);
 
 	if ((*pScreen->RegionNotEmpty) (pBackRgn))
 	{
 	    if (!pBackingStore->pBackingPixmap &&
- 		pBackingStore->backgroundTile != (PixmapPtr) ParentRelative)
+ 		pBackingStore->backgroundTile != (PixmapPtr) ParentRelative &&
+		pWin->drawable.depth == pPixmap->drawable.depth)
 	    {
 		miBSFillVirtualBits ((DrawablePtr)pPixmap, pGC, pBackRgn, x, y,
 	    			     pBackingStore->backgroundPixel,
 				     pBackingStore->backgroundTile,
-				     (PixmapPtr) USE_BACKGROUND_PIXEL);
+				     (PixmapPtr) USE_BACKGROUND_PIXEL,
+				     planeMask);
 	    }
 	    else
 	    {
@@ -769,63 +778,93 @@ miBSDoGetImage (pWin, pPixmap, pRgn, x, y, pGC)
 
 		if (pBackingStore->pBackingPixmap != NullPixmap)
 		{
+		    if (pWin->drawable.depth != pPixmap->drawable.depth && pBackRgn->numRects)
+		    {
+			XID	gcval[3];
+
+			gcval[0] = 1;	/* plane mask */
+			gcval[1] = 1;	/* foreground */
+			gcval[2] = 0;	/* background */
+			DoChangeGC (pGC, GCPlaneMask|GCForeground|GCBackground, gcval, 1);
+			ValidateGC ((DrawablePtr) pPixmap, pGC);
+		    }
 		    pBox = pBackRgn->rects;
 		    for (n = 0; n < pBackRgn->numRects; n++)
 		    {
-			(*pGC->CopyArea) (pBackingStore->pBackingPixmap,
+			if (pWin->drawable.depth == pPixmap->drawable.depth)
+			    (*pGC->CopyArea) (pBackingStore->pBackingPixmap,
  					  pPixmap, pGC,
 					  pBox->x1, pBox->y1,
  					  pBox->x2 - pBox->x1,
  					    pBox->y2 - pBox->y1,
 					  pBox->x1 - x, pBox->y1 - y);
+			else
+			    (*pGC->CopyPlane) (pBackingStore->pBackingPixmap,
+			    		  pPixmap, pGC,
+					  pBox->x1, pBox->y1,
+ 					  pBox->x2 - pBox->x1,
+ 					    pBox->y2 - pBox->y1,
+					  pBox->x1 - x, pBox->y1 - y, planeMask);
 			pBox++;
 		    }
 		}
 	    }
 	}
+    }
 
-	/*
-	 * draw the border of this window into the pixmap
-	 */
+    /*
+     * draw the border of this window into the pixmap
+     */
 
-	if (pWin->borderWidth > 0)
+    /* XXX can't tile the border into the wrong depth pixmap */
+
+    if (pWin->borderWidth > 0 &&
+	(pWin->drawable.depth == pPixmap->drawable.depth ||
+	 pWin->borderTile == (PixmapPtr) USE_BORDER_PIXEL))
+    {
+	unsigned long	pixel;
+
+	pBox = (*pScreen->RegionExtents) (pRgn);
+
+	if (pBox->x1 < 0 || pBox->y1 < 0 ||
+	    pWin->borderWidth + pWin->clientWinSize.width < pBox->x2 ||
+	    pWin->borderWidth + pWin->clientWinSize.height < pBox->y2)
 	{
-	    pBox = (*pScreen->RegionExtents) (pRgn);
+	    /*
+	     * compute areas of border to display
+	     */
 
-	    if (pBox->x1 < 0 || pBox->y1 < 0 ||
-		pWin->borderWidth + pWin->clientWinSize.width < pBox->x2 ||
- 		pWin->borderWidth + pWin->clientWinSize.height < pBox->y2)
+	    (*pScreen->Subtract) (pBackRgn, pWin->borderSize, pWin->winSize);
+
+	    /*
+	     * translate relative to pWin
+	     */
+	    (*pScreen->TranslateRegion) (pBackRgn,
+ 					 -pWin->absCorner.x,
+ 					 -pWin->absCorner.y);
+
+	    /*
+	     * extract regions to fill
+	     */
+
+	    (*pScreen->Intersect) (pBackRgn, pBackRgn, pRgn);
+
+	    if ((*pScreen->RegionNotEmpty) (pBackRgn))
 	    {
-		/*
-		 * compute areas of border to display
-		 */
-		(*pScreen->Subtract) (pBackRgn,
-				      pWin->borderSize, pWin->winSize);
-
-		/*
-		 * translate relative to pWin
-		 */
-		(*pScreen->TranslateRegion) (pBackRgn,
- 					     -pWin->absCorner.x,
- 					     -pWin->absCorner.y);
-
-		/*
-		 * extract regions to fill
-		 */
-		(*pScreen->Intersect) (pBackRgn, pBackRgn, pRgn);
-
-		if ((*pScreen->RegionNotEmpty) (pBackRgn))
-		{
-		    miBSFillVirtualBits ((DrawablePtr)pPixmap, pGC, pBackRgn,
-					 x, y,
-					 pWin->borderPixel,
-					 pWin->borderTile,
-					 (PixmapPtr) USE_BORDER_PIXEL);
-		}
+	        pixel = pWin->borderPixel;
+	        if (pWin->drawable.depth != pPixmap->drawable.depth)
+		    pixel = (pWin->borderPixel & planeMask) != 0;
+	        miBSFillVirtualBits ((DrawablePtr)pPixmap, pGC, pBackRgn,
+				     x, y,
+				     pixel,
+				     pWin->borderTile,
+				     (PixmapPtr) USE_BORDER_PIXEL, planeMask);
 	    }
 	}
-	(*pScreen->RegionDestroy) (pBackRgn);
     }
+
+    (*pScreen->RegionDestroy) (pBackRgn);
+
     /*
      * now fetch any bits from children's backing store
      */
@@ -843,7 +882,8 @@ miBSDoGetImage (pWin, pPixmap, pRgn, x, y, pGC)
 
 	    (*pScreen->TranslateRegion) (pRgn, -dx, -dy);
 
-	    miBSDoGetImage (pChild, pPixmap, pRgn, x - dx, y - dy, pGC);
+	    miBSDoGetImage (pChild, pPixmap, pRgn, x - dx, y - dy,
+ 	    		    pGC, planeMask);
 
 	    (*pScreen->TranslateRegion) (pRgn, dx, dy);
 	}
@@ -3479,7 +3519,7 @@ miExposeCopy (pSrc, pDst, pGC, prgnExposed, srcx, srcy, dstx, dsty, plane)
 	pGC = GetScratchGC (pDst->depth, pDst->pScreen);
 	miBSFillVirtualBits (pDst, pGC, tempRgn, dx, dy,
 		pBackingStore->backgroundPixel, pBackingStore->backgroundTile,
-		(PixmapPtr) USE_BACKGROUND_PIXEL);
+		(PixmapPtr) USE_BACKGROUND_PIXEL, ~0L);
 	FreeScratchGC (pGC);
 	break;
     case StatusContents:
