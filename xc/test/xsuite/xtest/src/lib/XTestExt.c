@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: XTestExt.c,v 1.6 92/06/11 15:48:34 rws Exp $
  */
 #ifdef GENERATE_PIXMAPS
 /* in this case we never want to do anything like real buffer stuffing or
@@ -23,7 +23,8 @@
 
 
 #define NULL	0
-#include	"Xlibint.h"
+#include	"Xlib.h"
+#include	<extensions/XInput.h>
 
 Status
 SimulateKeyPressEvent(dpy, keycode)
@@ -32,6 +33,21 @@ KeyCode	keycode;
 {
 #ifdef XTESTEXTENSION
 	XTestFakeKeyEvent(dpy, keycode, 1, 0);
+	return(True);
+#else       
+	return(False);
+#endif /* XTESTEXTENSION */
+}
+
+
+Status
+SimulateDeviceKeyPressEvent(dpy, dev, keycode)
+Display	*dpy;
+XDevice *dev;
+KeyCode	keycode;
+{
+#ifdef XTESTEXTENSION
+	XTestFakeDeviceKeyEvent(dpy, dev, keycode, 1, NULL, 0, 0);
 	return(True);
 #else       
 	return(False);
@@ -52,6 +68,20 @@ KeyCode	keycode;
 }
 
 Status
+SimulateDeviceKeyReleaseEvent(dpy, dev, keycode)
+Display	*dpy;
+XDevice *dev;
+KeyCode	keycode;
+{
+#ifdef XTESTEXTENSION
+	XTestFakeDeviceKeyEvent(dpy, dev, keycode, 0, NULL, 0, 0);
+	return(True);
+#else
+	return(False);
+#endif /* XTESTEXTENSION */
+}
+
+Status
 SimulateButtonPressEvent(dpy, button)
 Display		*dpy;
 unsigned int	button;
@@ -65,12 +95,40 @@ unsigned int	button;
 }
 
 Status
+SimulateDeviceButtonPressEvent(dpy, dev, button)
+Display		*dpy;
+XDevice *dev;
+unsigned int	button;
+{
+#ifdef XTESTEXTENSION
+	XTestFakeDeviceButtonEvent(dpy, dev, button, 1, NULL, 0, 0);
+	return(True);
+#else
+	return(False);
+#endif /* XTESTEXTENSION */
+}
+
+Status
 SimulateButtonReleaseEvent(dpy, button)
 Display		*dpy;
 unsigned int	button;
 {
 #ifdef XTESTEXTENSION
 	XTestFakeButtonEvent(dpy, button, 0, 0);
+	return(True);
+#else
+	return(False);
+#endif /* XTESTEXTENSION */
+}
+
+Status
+SimulateDeviceButtonReleaseEvent(dpy, dev, button)
+Display		*dpy;
+XDevice *dev;
+unsigned int	button;
+{
+#ifdef XTESTEXTENSION
+	XTestFakeDeviceButtonEvent(dpy, dev, button, 0, NULL, 0, 0);
 	return(True);
 #else
 	return(False);
@@ -111,6 +169,23 @@ int	y;
 {
 #ifdef XTESTEXTENSION
 	XTestFakeMotionEvent(dpy, screen, x, y, 0);
+	return(True);
+#else
+	return(False);
+#endif /* XTESTEXTENSION */
+}
+
+Status
+SimulateDeviceMotionEvent(dpy, dev, is_relative, n_axes, axes, first)
+Display	*dpy;
+XDevice *dev;
+Bool	is_relative;
+int	n_axes;
+int	*axes;
+int	first;
+{
+#ifdef XTESTEXTENSION
+	XTestFakeDeviceMotionEvent(dpy, dev, is_relative, first, axes, n_axes, 0);
 	return(True);
 #else
 	return(False);

@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: RcvRep.c,v 1.9 92/06/11 15:51:22 rws Exp $
+ * $XConsortium: RcvRep.c,v 1.10 92/12/22 09:12:54 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -79,6 +79,10 @@ int client;   /* */
 	unsigned long bytes_there = (long)(rp->generic.length<<2) + sizeof(xReply);
 
 	Log_Debug2("Rcv_Rep(): type = %d, length = %d\n", type, rp->generic.length);
+	if (type > X_NoOperation) {
+	    Rcv_Ext_Rep(rp,rbuf,((rp->generic.data1<<8) | type),client);
+	    return(valid);
+	}
 	switch (type) {
 	case X_GetWindowAttributes:
 		if (rp->generic.length != 3) {

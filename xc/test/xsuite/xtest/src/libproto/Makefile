@@ -12,7 +12,7 @@
 #  make no representations about the suitability of this software for any
 #  purpose.  It is provided "as is" without express or implied warranty.
 # 
-# $XConsortium: Makefile,v 1.10 92/06/11 15:51:00 rws Exp $
+# $XConsortium: Makefile,v 1.11 92/06/30 19:49:57 rws Exp $
 #
 #
 #	Makefile for server tester library
@@ -31,15 +31,24 @@ HDRS=\
 
 CFILES=\
 	ShowReq.c\
+	ShowExtReq.c\
 	SendReq.c\
+	SendXIReq.c\
 	SendEvt.c\
 	ShowRep.c\
+	ShowExtRep.c\
 	MakeReq.c\
+	MakeXIReq.c\
 	RcvRep.c\
+	RcvExtRep.c\
 	RcvEvt.c\
+	RcvExtEvt.c\
 	RcvErr.c\
+	RcvExtErr.c\
 	ShowEvt.c\
+	ShowExtEvt.c\
 	ShowErr.c\
+	ShowExtErr.c\
 	DfltVals.c\
 	ResMng.c\
 	Log.c\
@@ -64,14 +73,23 @@ CFILES=\
 
 OFILES =\
 	ShowReq.o\
+	ShowExtReq.o\
 	SendReq.o\
+	SendXIReq.o\
 	SendEvt.o\
 	ShowRep.o\
+	ShowExtRep.o\
 	MakeReq.o\
+	MakeXIReq.o\
 	RcvRep.o\
+	RcvExtRep.o\
 	RcvEvt.o\
+	RcvExtEvt.o\
 	RcvErr.o\
+	RcvExtErr.o\
 	ShowEvt.o\
+	ShowExtEvt.o\
+	ShowExtErr.o\
 	ShowErr.o\
 	DfltVals.o\
 	ResMng.o\

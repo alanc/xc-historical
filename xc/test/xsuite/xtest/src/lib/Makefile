@@ -12,7 +12,7 @@
 #  make no representations about the suitability of this software for any
 #  purpose.  It is provided "as is" without express or implied warranty.
 # 
-# $XConsortium: Makefile,v 1.31 92/06/30 19:33:15 rws Exp $
+# $XConsortium: Makefile,v 1.32 92/06/30 19:35:22 rws Exp $
 #
 
 ##########################################################################
@@ -41,7 +41,7 @@ CFILES =	startup.c ex_startup.c \
 	bitcount.c config.c makewin2.c block.c winh.c pointer.c events.c \
 	gettime.c maxsize.c buildtree.c exposechk.c \
 	settimeout.c makeregion.c xthost.c pfcount.c XTestExt.c devcntl.c \
-	extenavail.c environ.c cursor.c
+	extenavail.c environ.c cursor.c XInput.c
 OFILES =	startup.o ex_startup.o \
 	lookupname.o err.o getevent.o stackorder.o report.o \
 	iponlywin.o badwin.o startcall.o makewin.o checkevent.o \
@@ -55,7 +55,7 @@ OFILES =	startup.o ex_startup.o \
 	bitcount.o config.o makewin2.o block.o winh.o pointer.o events.o \
 	gettime.o maxsize.o buildtree.o exposechk.o \
 	settimeout.o makeregion.o xthost.o pfcount.o XTestExt.o devcntl.o \
-	extenavail.o environ.o cursor.o
+	extenavail.o environ.o cursor.o XInput.o
 
 RM_FILES = *.ln *.o core *.a
 

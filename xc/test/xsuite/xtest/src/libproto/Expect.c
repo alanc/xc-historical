@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: Expect.c,v 1.16 92/12/21 09:21:20 rws Exp $
+ * $XConsortium: Expect.c,v 1.17 92/12/22 09:12:36 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -426,7 +426,8 @@ int     type;     /* request type */
 	    if (class == EXPECT_REPLY) {
 		return (match);	/* wanted one, got one */
 	    }
-            got = enames (EXPECT_REPLY, Xst_clients[client].cl_reqtype);
+            got = enames (EXPECT_REPLY, Xst_clients[client].cl_reqtype  |
+		(Xst_clients[client].cl_minor << 8));
 	    (*Log_Rtn) ("Expect: wanted %s, got %s\n", wanted, got);
 	    Show_Rep (rep, UNKNOWN_REQUEST_TYPE, so_far);
 	    return (NULL);

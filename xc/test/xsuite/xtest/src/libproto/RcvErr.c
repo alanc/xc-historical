@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: RcvErr.c,v 1.2 92/06/11 15:51:07 rws Exp $
+ * $XConsortium: RcvErr.c,v 1.3 92/12/22 09:12:48 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -55,6 +55,11 @@ int client;
 	int valid = 1;			/* assume all is OK */
 
 	rbp += ERROR_HEADER;
+
+	if (rp->errorCode > FirstExtensionError) {
+	    Rcv_Ext_Err(rp, rbuf, client);
+	    return(valid);
+	}
 
 	switch (rp->errorCode) {
 	case BadRequest:

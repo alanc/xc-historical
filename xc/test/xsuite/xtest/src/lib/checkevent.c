@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: checkevent.c,v 1.9 92/06/11 15:41:36 rws Exp $
  */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -115,6 +115,8 @@ SOFTWARE.
 #include "xtest.h"
 #include "tet_api.h"
 #include "Xlib.h"
+#include "extensions/XIproto.h"
+#include "extensions/XInput.h"
 #include "Xutil.h"
 #include "xtestlib.h"
 #include "pixval.h"
@@ -543,9 +545,201 @@ char	tempstr[50];
 		break;
 
 	default:
+		fail = check_ext_event(good,ev);
+		    break;
+	}                                                               
+
+	/*
+	 * We need to check that the correct number of passes have occurred
+	 * on an induvidual basis.  At present check that at least we didn't
+	 * just fall through without checking anything.
+	 */ 
+	if (fail == 0 && pass == 0)
+		fail = -1;
+
+	return(fail);
+}
+
+check_ext_event(good,ev)
+XEvent *good, *ev;
+{
+int i;
+int 	fail;
+int 	pass;
+extern int XInputFirstEvent;
+char	tempstr[50];
+
+	fail = 0;
+	pass = 0;
+	switch (good->type-XInputFirstEvent) {
+	case XI_DeviceKeyPress:
+	case XI_DeviceKeyRelease:
+	case XI_DeviceButtonPress:
+	case XI_DeviceButtonRelease:
+	case XI_DeviceMotionNotify:
+	case XI_ProximityIn:
+	case XI_ProximityOut:
+		{
+		XDeviceKeyEvent *g = (XDeviceKeyEvent *) good;
+		XDeviceKeyEvent *e = (XDeviceKeyEvent *) ev;
+
+		UCMP(g->window, e->window, "window");
+		UCMP(g->root, e->root, "root");
+		UCMP(g->subwindow, e->subwindow, "subwindow");
+		DCMP((long)g->x, (long)e->x, "x coord");
+		DCMP((long)g->y, (long)e->y, "y coord");
+		DCMP((long)g->x_root, (long)e->x_root, "x_root");
+		DCMP((long)g->y_root, (long)e->y_root, "y_root");
+
+		switch (g->type) {
+		case XI_DeviceKeyPress:
+		case XI_DeviceKeyRelease:
+		case XI_DeviceButtonPress:
+		case XI_DeviceButtonRelease:
+			UCMP((unsigned long)g->state,
+				(unsigned long)e->state, "state");	      
+			DCMP((long)g->same_screen,
+				(long)e->same_screen, "same screen");
+			UCMP((unsigned long)g->device_state,
+				(unsigned long)e->device_state, "device_state");
+			ACMP((unsigned char)g->first_axis,
+				(unsigned char)e->first_axis, "first_axis");
+			ACMP((unsigned char)g->axes_count,
+				(unsigned char)e->axes_count, "axes_count");
+			for(i=0; i<g->axes_count; i++)
+				ACMP((unsigned char)g->axis_data[i],
+				(unsigned char)e->axis_data[i], "axes_count");
+			break;
+		case XI_DeviceMotionNotify:
+			{
+			XDeviceMotionEvent *g = (XDeviceMotionEvent *) good;
+			XDeviceMotionEvent *e = (XDeviceMotionEvent *) ev;
+
+			UCMP((unsigned long)g->state,
+				(unsigned long)e->state, "state");	      
+			DCMP((long)g->is_hint,
+				(long)e->is_hint, "is hint");
+			DCMP((long)g->same_screen,
+				(long)e->same_screen, "same screen");
+			UCMP((unsigned long)g->device_state,
+				(unsigned long)e->device_state, "device_state");
+			ACMP((unsigned char)g->first_axis,
+				(unsigned char)e->first_axis, "first_axis");
+			ACMP((unsigned char)g->axes_count,
+				(unsigned char)e->axes_count, "axes_count");
+			for(i=0; i<g->axes_count; i++)
+				ACMP((unsigned char)g->axis_data[i],
+				(unsigned char)e->axis_data[i], "axes_count");
+			}
+			break;
+		}
+
+		switch (g->type) {
+		case XI_DeviceKeyPress:
+		case XI_DeviceKeyRelease:
+
+			UCMP((unsigned long)g->keycode,
+				(unsigned long)e->keycode, "keycode");
+			break;
+		case XI_DeviceButtonPress:
+		case XI_DeviceButtonRelease:
+			{
+			XDeviceButtonEvent *g = (XDeviceButtonEvent *) good;
+			XDeviceButtonEvent *e = (XDeviceButtonEvent *) ev;
+
+			UCMP((unsigned long)g->button,
+				(unsigned long)e->button, "button");
+			break;
+			}
+		}
+		break;
+
+		}
+	case XI_DeviceFocusIn:
+	case XI_DeviceFocusOut:
+		{
+		XDeviceFocusChangeEvent *g = (XDeviceFocusChangeEvent *) good;
+		XDeviceFocusChangeEvent *e = (XDeviceFocusChangeEvent *) ev;
+
+		UCMP(g->window, e->window, "window");
+		UCMP(g->deviceid, e->deviceid, "deviceid");
+		DCMP((long)g->mode, (long)e->mode, "mode");
+		DCMP((long)g->detail, (long)e->detail, "detail");
+		}
+		break;
+
+	case XI_DeviceStateNotify:
+		{
+		XDeviceStateNotifyEvent *g = (XDeviceStateNotifyEvent *) good;
+		XDeviceStateNotifyEvent *e = (XDeviceStateNotifyEvent *) ev;
+		XKeyStatus *kg = (XKeyStatus *) g->data;
+		XKeyStatus *ke = (XKeyStatus *) e->data;
+
+		UCMP(g->window, e->window, "window");
+		UCMP(g->deviceid, e->deviceid, "deviceid");
+		DCMP((long)g->num_classes, (long)e->num_classes, "num_classes");
+		UCMP(kg->class, ke->class, "class");
+		UCMP(kg->length, ke->length, "length");
+		if (kg->class == KeyClass) {
+			DCMP(kg->num_keys, ke->num_keys, "num_keys");
+			for (i = 0; i < kg->num_keys/8; i++) {
+			(void)sprintf(tempstr, "key vector[%d]",i);
+			DCMP(kg->keys[i], ke->keys[i], tempstr);
+			}
+		}
+		else if (kg->class == ButtonClass) {
+			XButtonStatus *bg = (XButtonStatus *) g->data;
+			XButtonStatus *be = (XButtonStatus *) e->data;
+
+			DCMP(bg->num_buttons, be->num_buttons, "num_buttons");
+			for (i = 0; i < bg->num_buttons/8; i++) {
+			(void)sprintf(tempstr, "button vector[%d]",i);
+			DCMP(bg->buttons[i], be->buttons[i], tempstr);
+			}
+		}
+		else if (kg->class == ValuatorClass) {
+			XValuatorStatus *vg = (XValuatorStatus *) g->data;
+			XValuatorStatus *ve = (XValuatorStatus *) e->data;
+			UCMP(vg->mode, ve->mode, "num_valuators");
+			DCMP(vg->num_valuators, ve->num_valuators, "num_valuators");
+			for (i = 0; i < vg->num_valuators; i++) {
+			(void)sprintf(tempstr, "valuator vector[%d]",i);
+			DCMP(vg->valuators[i], ve->valuators[i], tempstr);
+			}
+		}
+		}
+		break;
+	case XI_DeviceMappingNotify:
+		{
+		XDeviceMappingEvent *g = (XDeviceMappingEvent *) good;
+		XDeviceMappingEvent *e = (XDeviceMappingEvent *) ev;
+
+		UCMP(g->window, e->window, "window");
+		UCMP(g->deviceid, e->deviceid, "deviceid");
+		DCMP((long)g->request, (long)e->request, "request");
+		if (g->request == MappingKeyboard) {
+			DCMP((long)g->first_keycode, (long)e->first_keycode,
+				"first keycode");
+			DCMP((long)g->count, (long)e->count, "count");
+		}
+		}
+		break;
+	case XI_ChangeDeviceNotify:
+		{
+		XChangeDeviceNotifyEvent *g = (XChangeDeviceNotifyEvent *) good;
+		XChangeDeviceNotifyEvent *e = (XChangeDeviceNotifyEvent *) ev;
+
+		UCMP(g->window, e->window, "window");
+		UCMP(g->deviceid, e->deviceid, "deviceid");
+		DCMP((long)g->request, (long)e->request, "request");
+		}
+		break;
+	default:
 		report("Invalid event type %d", good->type);
 		tet_result(TET_UNRESOLVED);
 		fail = -1;
+	        return(fail);
+		break;
 	}                                                               
 
 	/*

@@ -12,14 +12,20 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: lookupname.c,v 1.1 92/06/11 15:49:47 rws Exp $
+ * $XConsortium: lookupname.c,v 1.2 92/06/30 18:11:03 rws Exp $
  */
 #include "xtest.h"
 #include "Xlib.h"
 #include "Xproto.h"
+#include "extensions/XIproto.h"
 #include "Xutil.h"
 #include "Xatom.h"
 #include "xtestlib.h"
+
+#define	   XInputNumErrors	5
+extern int XInputMajorOpcode;
+extern int XInputFirstError;
+extern int XInputFirstEvent;
 
 static char	buf[100];
 static char	*bp;
@@ -160,6 +166,25 @@ struct valname S_event[] = {
 };
 int 	NS_event = NELEM(S_event);
 
+struct valname XI_event[] = {
+	XI_DeviceValuator, "DeviceValuator",
+	XI_DeviceKeyPress, "DeviceKeyPress",
+	XI_DeviceKeyRelease, "DeviceKeyRelease",
+	XI_DeviceButtonPress, "DeviceButtonPress",
+	XI_DeviceButtonRelease, "DeviceButtonRelease",
+	XI_DeviceMotionNotify, "DeviceMotionNotify",
+	XI_DeviceFocusIn, "DeviceFocusIn",
+	XI_DeviceFocusOut, "DeviceFocusOut",
+	XI_ProximityIn, "ProximityIn",
+	XI_ProximityOut, "ProximityOut",
+	XI_DeviceStateNotify, "DeviceStateNotify",
+	XI_DeviceMappingNotify, "DeviceMappingNotify",
+	XI_ChangeDeviceNotify, "ChangeDeviceNotify",
+	XI_DeviceKeystateNotify, "DeviceKeyStateNotify",
+	XI_DeviceButtonstateNotify, "DeviceButtonStateNotify",
+};
+int 	NXI_event = NELEM(XI_event);
+
 /*
  * Return a character representation of the given event value.
  */
@@ -170,6 +195,10 @@ int 	val;
 struct valname *vp;
 
 	for (vp = S_event; vp < &S_event[NELEM(S_event)]; vp++) {
+		if (vp->val == val)
+			return(vp->name);
+	}
+	for (vp = XI_event; vp < &XI_event[NELEM(XI_event)]; vp++) {
 		if (vp->val == val)
 			return(vp->name);
 	}
@@ -521,19 +550,35 @@ struct valname S_error[] = {
 };
 int 	NS_error = NELEM(S_error);
 
+struct valname S_XIerror[] = {
+	0, "BadDevice",
+	1, "BadEvent",
+	2, "BadMode",
+	3, "DeviceBusy",
+	4, "BadClass",
+};
+int 	NS_XIerror = NELEM(S_XIerror);
+
 /*
  * Return a character representation of the given error value.
  */
 char *
 errorname(val)
-int 	val;
+int val;
 {
 struct valname *vp;
 
-	for (vp = S_error; vp < &S_error[NELEM(S_error)]; vp++) {
+	if (val < FirstExtensionError)
+	    for (vp = S_error; vp < &S_error[NELEM(S_error)]; vp++) {
 		if (vp->val == val)
 			return(vp->name);
-	}
+	    }
+	else if (val >= XInputFirstError &&
+	    val < XInputFirstError + XInputNumErrors)
+	    for (vp = S_XIerror; vp < &S_XIerror[NELEM(S_XIerror)]; vp++) {
+		if (vp->val == val)
+			return(vp->name);
+	    }
 	sprintf(buf, "UNDEFINED (%d)", val);
 	return(buf);
 }
@@ -935,20 +980,65 @@ struct valname S_proto[] = {
 };
 int 	NS_proto = NELEM(S_proto);
 
+struct valname XI_proto[] = {
+	X_GetExtensionVersion, "X_GetExtensionVersion",
+	X_ListInputDevices, "X_ListInputDevices",
+	X_OpenDevice, "X_OpenDevice",
+	X_CloseDevice, "X_CloseDevice",
+	X_SetDeviceMode, "X_SetDeviceMode",
+	X_SelectExtensionEvent, "X_SelectExtensionEvent",
+	X_GetSelectedExtensionEvents, "X_GetSelectedExtensionEvents",
+	X_ChangeDeviceDontPropagateList, "X_ChangeDeviceDontPropagateList",
+	X_GetDeviceDontPropagateList, "X_GetDeviceDontPropagateList",
+	X_GetDeviceMotionEvents, "X_GetDeviceMotionEvents ",
+	X_ChangeKeyboardDevice, "X_ChangeKeyboardDevice",
+	X_ChangePointerDevice, "X_ChangePointerDevice",
+	X_GrabDevice, "X_GrabDevice",
+	X_UngrabDevice, "X_UngrabDevice",
+	X_GrabDeviceKey, "X_GrabDeviceKey",
+	X_UngrabDeviceKey, "X_UngrabDeviceKey",
+	X_GrabDeviceButton, "X_GrabDeviceButton",
+	X_UngrabDeviceButton, "X_UngrabDeviceButton",
+	X_AllowDeviceEvents, "X_AllowDeviceEvents",
+	X_GetDeviceFocus, "X_GetDeviceFocus",
+	X_SetDeviceFocus, "X_SetDeviceFocus",
+	X_GetFeedbackControl, "X_GetFeedbackControl",
+	X_ChangeFeedbackControl, "X_ChangeFeedbackControl",
+	X_GetDeviceKeyMapping, "X_GetDeviceKeyMapping",
+	X_ChangeDeviceKeyMapping, "X_ChangeDeviceKeyMapping",
+	X_GetDeviceModifierMapping, "X_GetDeviceModifierMapping",
+	X_SetDeviceModifierMapping, "X_SetDeviceModifierMapping",
+	X_GetDeviceButtonMapping, "X_GetDeviceButtonMapping",
+	X_SetDeviceButtonMapping, "X_SetDeviceButtonMapping",
+	X_QueryDeviceState, "X_QueryDeviceState",
+	X_SendExtensionEvent, "X_SendExtensionEvent",
+	X_DeviceBell, "X_DeviceBell",
+	X_SetDeviceValuators, "X_SetDeviceValuators",
+	X_GetDeviceControl, "X_GetDeviceControl",
+	X_ChangeDeviceControl, "X_ChangeDeviceControl",
+};
+int 	NXI_proto = NELEM(XI_proto);
+
 /*
  * Return a character representation of the given proto value.
  */
 char *
 protoname(val)
-int 	val;
+int val;
 {
 struct valname *vp;
 
-	for (vp = S_proto; vp < &S_proto[NELEM(S_proto)]; vp++) {
+	if (val < X_NoOperation)
+	    for (vp = S_proto; vp < &S_proto[NELEM(S_proto)]; vp++) {
 		if (vp->val == val)
 			return(vp->name);
-	}
-	sprintf(buf, "UNDEFINED (%d)", val);
+	    }
+	else if ((val & 0x0ff) == XInputMajorOpcode)
+	    for (vp = XI_proto; vp < &XI_proto[NELEM(XI_proto)]; vp++) {
+		if (vp->val == val >> 8)
+			return(vp->name);
+	    }
+	sprintf(buf, "UNDEFINED (major=%d, minor=%d)", val & 0x0ff, val >> 8);
 	return(buf);
 }
 

@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ShowEvt.c,v 1.4 92/06/11 15:52:08 rws Exp $
+ * $XConsortium: ShowEvt.c,v 1.5 92/12/22 09:13:10 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -39,6 +39,7 @@
  * ***************************************************************************
  */
 
+#define FirstExtensionEvent 64
 #include "XstlibInt.h"
 
 void
@@ -49,6 +50,12 @@ xEvent *mmp;
 
 	bcopy((char *)mmp, (char *)mp, (unsigned)sizeof(xEvent));
 	/* always ensure we've got enough room */
+
+	if (real_type(mp->u.u.type) > FirstExtensionEvent) {
+	    Show_Ext_Evt (mp);
+	    Free_Event(mp);
+	    return;
+	}
 
 	switch (real_type(mp->u.u.type)) {
 	case KeyPress:

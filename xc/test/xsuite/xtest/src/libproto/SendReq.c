@@ -13,7 +13,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: SendReq.c,v 1.9 92/06/11 15:51:45 rws Exp $
+ * $XConsortium: SendReq.c,v 1.10 92/12/22 09:12:58 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -87,6 +87,7 @@ int pollreq;
 
 	if (!pollreq) {
 	    Xst_clients[client].cl_reqtype = rp->reqType;	/* stash for Expect */
+	    Xst_clients[client].cl_minor = 0;		/* stash for Expect */
 	}
 
 	dpy->request++;

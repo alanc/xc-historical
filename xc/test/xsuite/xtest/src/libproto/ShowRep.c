@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ShowRep.c,v 1.6 92/06/11 15:52:18 rws Exp $
+ * $XConsortium: ShowRep.c,v 1.7 92/12/22 09:13:15 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -67,6 +67,13 @@ long bytes_given;
 
 	valuePtr = (char *) ((char *) mp + sizeof(xReply));
 	endPtr = ((char *) mp) + bytes_needed;
+
+	if (type > X_NoOperation) {
+	    Show_Ext_Rep(mp, type, bytes_given);
+	    if (free_it)
+		Free_Reply(mp);
+	    return;
+	}
 
 	switch (type) {
 	case X_GetWindowAttributes:

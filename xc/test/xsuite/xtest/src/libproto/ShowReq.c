@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ShowReq.c,v 1.7 92/06/11 15:52:29 rws Exp $
+ * $XConsortium: ShowReq.c,v 1.8 92/12/22 09:13:20 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -49,6 +49,11 @@ xReq *mp;
 	 * This is really one switch, it is split up here to accomodate
 	 * compilers that cannot cope with large switches properly.
 	 */
+	if (mp->reqType > X_NoOperation) {
+	    Show_Ext_Req(mp);
+	    return;
+	}
+
 	switch (mp->reqType) {
 	case X_CreateWindow:
 		BPRINTF1("CreateWindow:\n");

@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: Xstlib.h,v 1.12 92/12/21 09:22:37 rws Exp $
+ * $XConsortium: Xstlib.h,v 1.13 92/12/22 09:16:15 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -51,7 +51,9 @@
 #define NEED_EVENTS
 
 #include <X11/Xproto.h>
+#include <X11/extensions/XIproto.h>
 #include <X11/Xlib.h>
+#include <X11/extensions/XInput.h>
 #include <X11/X.h>
 
 /*
@@ -92,6 +94,7 @@ typedef struct cl {	/* client entry */
     Window cl_window;	/* default window */
     xEvent cl_event;    /* default event */
     TestType cl_test_type;	/* test for success or two types of BadLength */
+    int cl_minor;	/* minor opcode of outstanding request */
 } CL;
 
 extern CL Xst_clients[MAX_CLIENTS];
@@ -157,6 +160,7 @@ extern CL Xst_clients[MAX_CLIENTS];
 #define Expect_01Event(client,type)	((xEvent *)Expect(client,EXPECT_01EVENT,type))
 #define Expect_Nothing(client)	((int) Expect(client,EXPECT_NOTHING,0))
 #define Expect_Reply(client,type)	((xReply *)Expect(client,EXPECT_REPLY,type))
+#define Expect_Ext_Reply(client,type,major)((xReply *)Expect(client,EXPECT_REPLY,((type<<8)|major)))
 
 /*
  *	Free_*

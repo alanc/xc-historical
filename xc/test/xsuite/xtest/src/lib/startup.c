@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: startup.c,v 1.26 92/06/11 15:42:57 rws Exp $
+ * $XConsortium: startup.c,v 1.27 93/07/16 11:01:36 rws Exp $
  */
 
 #include "stdio.h"
@@ -22,6 +22,7 @@
 #include "xtest.h"
 #include "Xlib.h"
 #include "Xutil.h"
+#include "extensions/XInput.h"
 #include "xtestlib.h"
 #include "pixval.h"
 
@@ -34,7 +35,14 @@
 #define LINELEN 1024
 char    buf[LINELEN];
 
+extern  struct valname S_XIerror[];
+extern  struct valname XI_event[];
 extern	int 	ntests;
+extern	int 	NXI_event;
+int XInputMajorOpcode;
+int XInputFirstError;
+int XInputFirstEvent;
+XID baddevice;
 
 Display	*Dsp;
 Window	Win;
@@ -137,6 +145,12 @@ extern	int 	io_err();
 	 */
 	(void) XSetErrorHandler(unexp_err);
 	(void) XSetIOErrorHandler(io_err);
+
+	/*
+	 * Initialize the errors for the input device extension.
+	 */
+
+	 (void) init_xinput(Dsp);
 
 	/*
 	 * Set up the default resources for error tests. At present
@@ -354,4 +368,26 @@ void
 reset_delay()
 {
 	sleep(config.reset_delay);
+}
+
+Bool
+init_xinput(dpy)
+Display *dpy;
+{
+struct valname *vp;
+
+	if (!XQueryExtension (dpy, "XInputExtension", &XInputMajorOpcode, 
+		&XInputFirstEvent, &XInputFirstError))
+		return False;
+	if (!XI_event[0].val)
+	    for (vp = XI_event; vp < &XI_event[NXI_event]; vp++) {
+		vp->val += XInputFirstEvent;
+	}
+	BadDevice(dpy,S_XIerror[0].val);
+	BadDevice(dpy,baddevice);
+	BadEvent(dpy,S_XIerror[1].val);
+	BadMode(dpy,S_XIerror[2].val);
+	DeviceBusy(dpy,S_XIerror[3].val);
+	BadClass(dpy,S_XIerror[4].val);
+	return True;
 }

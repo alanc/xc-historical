@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: RcvEvt.c,v 1.4 92/06/11 15:51:14 rws Exp $
+ * $XConsortium: RcvEvt.c,v 1.5 92/12/22 09:12:51 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -45,6 +45,7 @@
 #endif
 #include "DataMove.h"
 
+#define FirstExtensionEvent	64
 #define EVENT_HEADER	4	/* constant header */
 
 #ifdef Xpi
@@ -71,6 +72,10 @@ int client;
 
 	rbp += EVENT_HEADER;
 
+	if (real_type(rp->u.u.type) > FirstExtensionEvent) {
+	    Rcv_Ext_Evt(rp,rbuf,client);
+	    return(valid);
+	}
 	switch (real_type(rp->u.u.type)) {
 	case KeyPress:
 		rp->u.keyButtonPointer.time = unpack4(&rbp,needswap);

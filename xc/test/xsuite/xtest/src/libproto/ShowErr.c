@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ShowErr.c,v 1.3 92/06/11 15:52:00 rws Exp $
+ * $XConsortium: ShowErr.c,v 1.4 92/12/22 09:13:06 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -45,6 +45,11 @@ void
 Show_Err(mp)
 xError *mp;
 {
+	if (mp->errorCode > FirstExtensionError) {
+	    Show_Ext_Err(mp);
+	    return;
+	}
+
 	switch (mp->errorCode) {
 	case BadRequest:
 		BPRINTF1("Request:\n");

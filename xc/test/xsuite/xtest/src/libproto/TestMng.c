@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: TestMng.c,v 1.9 92/06/11 15:52:46 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -87,6 +87,13 @@ int
 Required_Byte_Sex()
 {
 	return(Xst_required_byte_sex);
+}
+
+void
+Set_Required_Byte_Sex(set_to)
+int	set_to;
+{
+	Xst_required_byte_sex = set_to;
 }
 
 void

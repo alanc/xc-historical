@@ -12,15 +12,16 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: devcntl.c,v 1.7 92/06/11 15:48:41 rws Exp $
  */
 
 #include	"xtest.h"
 #include	<Xlib.h>
 #include	<Xutil.h>
+#include	<extensions/XInput.h>
 #include	"xtestlib.h"
 
-#define	MAXBUT	200
+#define	MAXBUT	256
 #define	MAXKEY	256
 
 static	struct	butsave {
@@ -55,6 +56,23 @@ unsigned int     button;
 	buttons[butind++].button = button;
 }
 
+void
+devicebuttonpress(disp, dev, button)
+Display *disp;
+XDevice *dev;
+unsigned int     button;
+{
+	if (!SimulateDeviceButtonPressEvent(disp, dev, button)) {
+		delete("XTEST extension not configured or in use");
+		return;
+	}
+	XSync(disp, False);
+	debug(1, "Button press %d", button);
+
+	buttons[butind].disp = disp;
+	buttons[butind++].button = button;
+}
+
 /*
  * Simulate a button release, the corresponding saved event is removed.
  */
@@ -66,6 +84,32 @@ unsigned int     button;
 int 	i;
 
 	if (!SimulateButtonReleaseEvent(disp, button)) {
+		delete("XTEST extension not configured or in use");
+		return;
+	}
+	XSync(disp, False);
+	debug(1, "Button release %d", button);
+
+	/*
+	 * Remove the corresponding button down.
+	 */
+	for (i = butind-1; i >= 0; i--) {
+		if (buttons[i].button == button) {
+			buttons[i].disp = 0;
+			break;
+		}
+	}
+}
+
+void
+devicebuttonrel(disp, dev, button)
+Display *disp;
+XDevice *dev;
+unsigned int     button;
+{
+int 	i;
+
+	if (!SimulateDeviceButtonReleaseEvent(disp, dev, button)) {
 		delete("XTEST extension not configured or in use");
 		return;
 	}
@@ -106,6 +150,26 @@ int     key;
 	keys[keyind++].key = key;
 }
 
+void
+devicekeypress(disp, dev, key)
+Display *disp;
+XDevice *dev;
+int     key;
+{
+	if (key == NoSymbol)
+		return;
+
+	if (!SimulateDeviceKeyPressEvent(disp, dev, key)) {
+		delete("XTEST extension not configured or in use");
+		return;
+	}
+	XSync(disp, False);
+	debug(1, "Key press %d", key);
+
+	keys[keyind].disp = disp;
+	keys[keyind++].key = key;
+}
+
 /*
  * Simulate a key release, the corresponding saved event is removed.
  */
@@ -116,7 +180,37 @@ int     key;
 {
 int 	i;
 
+	if (key == NoSymbol)
+		return;
 	if (!SimulateKeyReleaseEvent(disp, key)) {
+		delete("XTEST extension not configured or in use");
+		return;
+	}
+	XSync(disp, False);
+	debug(1, "Key release %d", key);
+
+	/*
+	 * Remove the corresponding key down.
+	 */
+	for (i = keyind-1; i >= 0; i--) {
+		if (keys[i].key == key) {
+			keys[i].disp = 0;
+			break;
+		}
+	}
+}
+
+void
+devicekeyrel(disp, dev, key)
+Display *disp;
+XDevice *dev;
+int     key;
+{
+int 	i;
+
+	if (key == NoSymbol)
+		return;
+	if (!SimulateDeviceKeyReleaseEvent(disp, dev, key)) {
 		delete("XTEST extension not configured or in use");
 		return;
 	}
@@ -149,6 +243,19 @@ int 	i;
 	butind = 0;
 }
 
+void
+devicerelbuttons(dev)
+XDevice *dev;
+{
+int 	i;
+
+	for (i = butind-1; i >= 0; i--) {
+		if (buttons[i].disp)
+			devicebuttonrel(buttons[i].disp, dev, buttons[i].button);
+	}
+	butind = 0;
+}
+
 /*
  * Release keys pressed with keypress, in reverse order of pressing.
  */
@@ -160,6 +267,17 @@ int 	i;
 	for (i = keyind-1; i >= 0; i--) {
 		if (keys[i].disp)
 			keyrel(keys[i].disp, keys[i].key);
+	}
+	keyind = 0;
+}
+devicerelkeys(dev)
+XDevice *dev;
+{
+int 	i;
+
+	for (i = keyind-1; i >= 0; i--) {
+		if (keys[i].disp)
+			devicekeyrel(keys[i].disp, dev, keys[i].key);
 	}
 	keyind = 0;
 }
@@ -175,11 +293,11 @@ relalldev()
 	relkeys();
 }
 
-
 #define	NMODS	8	/* Number of modifiers */
 
 static	XModifierKeymap	*origmap;
 static	XModifierKeymap	*curmap;
+static	XModifierKeymap	*devcurmap;
 
 /*
  * Given the number of modifiers that you want it returns a modifier
@@ -192,8 +310,9 @@ static	XModifierKeymap	*curmap;
  * case.
  */
 unsigned int
-wantmods(disp, want)
+_wantmods(disp, dev, want)
 Display	*disp;
+XDevice *dev;
 int 	want;
 {
 unsigned int 	mask;
@@ -201,7 +320,10 @@ int 	nmods;
 int 	i;
 
 	if (curmap == NULL)
+	    if (dev == NULL)
 		curmap = XGetModifierMapping(disp);
+	    else
+		curmap = XGetDeviceModifierMapping(disp, dev);
 	if (curmap == NULL)
 		return(0);
 
@@ -245,7 +367,25 @@ int 	i;
 	return(mask);
 }
 
+unsigned int
+wantdevmods(disp, dev, want)
+Display	*disp;
+XDevice *dev;
+int 	want;
+{
+	return (_wantmods(disp, dev, want));
+}
+
+unsigned int
+wantmods(disp, want)
+Display	*disp;
+int 	want;
+{
+	return (_wantmods(disp, NULL, want));
+}
+
 static void modthing(/* disp, mask */);
+static void devmodthing(/* disp, dev, mask */);
 
 /*
  * Simulate pressing a bunch of modifier keys.  The mask passed to this
@@ -257,6 +397,14 @@ Display	*disp;
 unsigned int 	mask;
 {
 	modthing(disp, mask, True);
+}
+
+devmodpress(disp, dev, mask)
+Display	*disp;
+XDevice *dev;
+unsigned int 	mask;
+{
+	devmodthing(disp, dev, mask, True);
 }
 
 /*
@@ -271,6 +419,14 @@ unsigned int 	mask;
 	modthing(disp, mask, False);
 }
 
+devmodrel(disp, dev, mask)
+Display	*disp;
+XDevice *dev;
+unsigned int 	mask;
+{
+	devmodthing(disp, dev, mask, False);
+}
+
 static void
 modthing(disp, mask, pressing)
 Display	*disp;
@@ -278,6 +434,7 @@ unsigned int 	mask;
 int pressing;
 {
 int 	mod;
+int 	ent;
 void	(*func)();
 
 	if (curmap == NULL) {
@@ -292,7 +449,43 @@ void	(*func)();
 
 	for (mod = 0; mod < NMODS; mod++) {
 		if (mask & (1 << mod))
+			{
+			for (ent=mod*curmap->max_keypermod; 
+			     ent<(mod+1) *curmap->max_keypermod; ent++)
+			    if (curmap->modifiermap[ent]) {
+				(*func)(disp, curmap->modifiermap[ent]);
+				break;
+			    }
+			/*
 			(*func)(disp, curmap->modifiermap[mod*curmap->max_keypermod]);
+			*/
+			}
+	}
+}
+
+static void
+devmodthing(disp, dev, mask, pressing)
+Display	*disp;
+unsigned int 	mask;
+int pressing;
+{
+int 	mod;
+void	(*func)();
+
+	if (curmap == NULL) {
+		delete("Programming error: wantmods() not called");
+		return;
+	}
+
+	if (dev)
+	    if (pressing)
+		func = devicekeypress;
+	    else
+		func = devicekeyrel;
+
+	for (mod = 0; mod < NMODS; mod++) {
+		if (mask & (1 << mod))
+			(*func)(disp, dev, devcurmap->modifiermap[mod*devcurmap->max_keypermod]);
 	}
 }
 
@@ -380,12 +573,11 @@ Display	*display;
 static	int 	minkc, maxkc;
 static	int 	curkey;
 
-	if (minkc == 0) {
-		XDisplayKeycodes(display, &minkc, &maxkc);
-		if (minkc < 8)
-			minkc = 8;
+	XDisplayKeycodes(display, &minkc, &maxkc);
+	if (minkc < 8)
+		minkc = 8;
+	if (!curkey)
 		curkey = minkc;
-	}
 
 	if (curkey > maxkc)
 		curkey = minkc;

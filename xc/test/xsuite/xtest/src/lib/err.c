@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: err.c,v 1.11 92/06/11 15:41:44 rws Exp $
  */
 
 #include	<unistd.h>
@@ -49,6 +49,8 @@ XErrorEvent *errevent;
 		Resourceid = errevent->resourceid;
 	}
 	trace("Received error type %s", errorname(errevent->error_code));
+	trace("Request was %s", 
+	    protoname (errevent->request_code | (errevent->minor_code << 8)));
 	return(0);	/* This is not used (?) */
 
 }
@@ -71,7 +73,8 @@ char	text[TEXTLEN];
 
 	report("Unexpected error %s", errorname(errevent->error_code));
 	report(text);
-	report("Protocol request was %s", protoname(errevent->request_code));
+	report("Protocol request was %s",
+	    protoname (errevent->request_code | (errevent->minor_code << 8)));
 
 	/* Cause to test to not pass */
 	delete("Unexpected Xlib error");
