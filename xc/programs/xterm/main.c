@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.106 89/03/22 14:53:54 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.107 89/03/22 18:21:38 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -1686,7 +1686,7 @@ spawn ()
 		    screen->max_row = handshake.rows;
 		    screen->max_col = handshake.cols;
 #ifdef sun
-#ifdef TIOCCSSIZE
+#ifdef TIOCSSIZE
 		    ts.ts_lines = screen->max_row + 1;
 		    ts.ts_cols = screen->max_col + 1;
 #endif
