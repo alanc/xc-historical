@@ -1,4 +1,4 @@
-/* $XConsortium: new_ents.c,v 5.1 91/02/16 10:07:45 rws Exp $ */
+/* $XConsortium: new_ents.c,v 5.2 91/04/03 09:40:32 rws Exp $ */
 /***********************************************************
 Copyright(c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -165,6 +165,7 @@ char *malloc();
 #include "bifmacro.h"
 #include "ph_map.h"
 #include "globals.h"
+#include <X11/Xfuncs.h>
 
 /*--------------------------------------------------------------------*\
 |	Local Macros

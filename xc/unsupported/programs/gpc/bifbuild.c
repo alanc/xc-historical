@@ -1,4 +1,4 @@
-/* $XConsortium: bifbuild.c,v 5.2 91/07/12 18:05:16 hersh Exp $ */
+/* $XConsortium: bifbuild.c,v 5.3 91/07/19 14:13:56 hersh Exp $ */
 /***********************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -221,6 +221,7 @@ SOFTWARE.
 #include "macfunct.h"
 #include "brftypes.h"
 #include "brfexption.h"
+#include <X11/Xfuncs.h>
     
     
 /*--------------------------------------------------------------------*\

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: doentity.c,v 5.1 91/02/16 10:07:28 rws Exp $ */
 /***********************************************************
 Copyright(c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -145,6 +145,7 @@ SOFTWARE.
 #include "db_tools.h"
 #include "globals.h"
 #include "ph_map.h"
+#include <X11/Xfuncs.h>
 
 
 /* ---------------------------------------------------------------------*\
