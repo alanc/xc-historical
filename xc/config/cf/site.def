@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.133 94/08/18 22:36:35 matt Exp matt $
+XCOMM site:  $XConsortium: site.def,v 1.134 94/08/30 15:48:13 matt Exp matt $
 
 /***************************************************************************
  *                                                                         *
@@ -137,12 +137,10 @@ XCOMM site:  $XConsortium: site.def,v 1.133 94/08/18 22:36:35 matt Exp matt $
 #define HasCodeCenter	YES
 #define HasTestCenter	YES
 #endif
-#endif
 
 #ifdef __hp9000s800
 #define HasCodeCenter	YES
 #define HasTestCenter	YES
-#endif
 #endif
 
 #if HasGcc2
