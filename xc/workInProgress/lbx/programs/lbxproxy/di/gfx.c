@@ -1,4 +1,4 @@
-/* $XConsortium: gfx.c,v 1.10 94/11/09 17:18:05 mor Exp mor $ */
+/* $XConsortium: gfx.c,v 1.11 94/11/22 22:26:51 mor Exp mor $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -405,7 +405,9 @@ ClientPtr   client;
 		      (unsigned char *) newreq + sz_xLbxPutImageReq,
 		      len - sz_xLbxPutImageReq,
 		      len - sz_xPutImageReq,
-		      (int) stuff->width, &compBytes);
+		      (int) stuff->width,
+		      LBXBitmapBitOrder(client) == LSBFirst,
+		      &compBytes);
 
 	    method = LbxImageCompressFaxG42D;
 	}
@@ -602,7 +604,8 @@ char       *data;
 	LbxImageDecodeFaxG42D (
 	    (unsigned char *) &rep[1], (unsigned char *) imageData,
 	    (int) ((rep->xLength << 2) - sz_xPutImageReq),
-	    (int) nr->request_info.lbxgetimage.width);
+	    (int) nr->request_info.lbxgetimage.width,
+	    LBXBitmapBitOrder(client) == LSBFirst);
     }
     else if (rep->compressionMethod == LbxImageCompressPackBits)
     {

@@ -1,4 +1,4 @@
-/* $XConsortium: lbxgfx.c,v 1.10 94/11/17 14:49:59 mor Exp mor $ */
+/* $XConsortium: lbxgfx.c,v 1.11 94/11/18 18:10:44 mor Exp mor $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -48,6 +48,8 @@
 #include "lbximage.h"
 
 extern int (*ProcVector[256])();
+
+extern char *ConnectionInfo;
 
 int
 LbxDecodePoly(client, xreqtype, decode_rtn)
@@ -277,7 +279,8 @@ register ClientPtr  client;
 	len = LbxImageDecodeFaxG42D (
 	    (unsigned char *) in, (unsigned char *) &xreq[1],
 	    (int) ((stuff->xLength << 2) - sz_xPutImageReq),
-	    (int) stuff->width);
+	    (int) stuff->width,
+	    ((xConnSetup *) ConnectionInfo)->bitmapBitOrder == LSBFirst);
     }
     else
     {
@@ -466,7 +469,9 @@ register ClientPtr  client;
     {
 	status = LbxImageEncodeFaxG42D ((unsigned char *) theImage,
 	      (unsigned char *) reply + sz_xLbxGetImageReply,
-	      uncompLen, uncompLen, (int) stuff->width, &bytes);
+	      uncompLen, uncompLen, (int) stuff->width,
+	      ((xConnSetup *) ConnectionInfo)->bitmapBitOrder == LSBFirst,
+	      &bytes);
 
 	method = LbxImageCompressFaxG42D;
     }
