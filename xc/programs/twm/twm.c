@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.67 89/09/19 17:51:43 jim Exp $
+ * $XConsortium: twm.c,v 1.68 89/10/05 18:31:39 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.67 89/09/19 17:51:43 jim Exp $";
+"$XConsortium: twm.c,v 1.68 89/10/05 18:31:39 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -252,10 +252,12 @@ main(argc, argv, environ)
     FirstScreen = TRUE;
     for (scrnum = firstscrn ; scrnum <= lastscrn; scrnum++)
     {
+	XWindowAttributes attr;
+
 	RedirectError = FALSE;
 	XSetErrorHandler(Other);
 	XSelectInput(dpy, RootWindow (dpy, scrnum),
-	    ColormapChangeMask |
+	    ColormapChangeMask | EnterWindowMask | 
 	    SubstructureRedirectMask | KeyPressMask |
 	    ButtonPressMask | ButtonReleaseMask | ExposureMask);
 	XSync(dpy, 0);
@@ -310,19 +312,28 @@ main(argc, argv, environ)
 	Scr->d_visual = DefaultVisual(dpy, scrnum);
 	Scr->Root = RootWindow(dpy, scrnum);
 	XSaveContext (dpy, Scr->Root, ScreenContext, Scr);
-	Scr->CMap = DefaultColormap(dpy, scrnum);
+	XGetWindowAttributes(dpy, Scr->Root, &attr);
+	/* use the colormap on the root window instead of the
+	 * DefaultColormap
+	 */
+	Scr->CMap = attr.colormap;
+	XInstallColormap(dpy, Scr->CMap);
 	Scr->MyDisplayWidth = DisplayWidth(dpy, scrnum);
 	Scr->MyDisplayHeight = DisplayHeight(dpy, scrnum);
 
-	/* setup default colors */
-	black = Scr->Black = BlackPixel(dpy, scrnum);
-	white = Scr->White = WhitePixel(dpy, scrnum);
 	Scr->XORvalue = (((unsigned long) 1) << Scr->d_depth) - 1;
 
 	if (DisplayCells(dpy, scrnum) < 3)
 	    Scr->Monochrome = MONOCHROME;
 	else
 	    Scr->Monochrome = COLOR;
+
+	/* setup default colors */
+	Scr->FirstTime = TRUE;
+	GetColor(Scr->Monochrome, &black, "black");
+	Scr->Black = black;
+	GetColor(Scr->Monochrome, &white, "white");
+	Scr->White = white;
 
 	if (FirstScreen)
 	{

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.22 89/07/26 12:47:26 jim Exp $
+ * $XConsortium: util.c,v 1.23 89/08/18 13:04:52 jim Exp $
  *
  * utility routines for twm
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.22 89/07/26 12:47:26 jim Exp $";
+"$XConsortium: util.c,v 1.23 89/08/18 13:04:52 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -46,6 +46,7 @@ static char RCSinfo[]=
 #include "util.h"
 #include "gram.h"
 #include "screen.h"
+#include <X11/Xatom.h>
 #include <X11/Xmu/Drawing.h>
 
 int HotX, HotY;
@@ -408,6 +409,17 @@ char *name;
     return pm;
 }
 
+/* list of standard colormaps */
+static Atom colormaps[] = {
+XA_RGB_COLOR_MAP,
+XA_RGB_BEST_MAP,
+XA_RGB_BLUE_MAP,
+XA_RGB_DEFAULT_MAP,
+XA_RGB_GRAY_MAP,
+XA_RGB_GREEN_MAP,
+XA_RGB_RED_MAP };
+
+static int nummaps = sizeof(colormaps) / sizeof(Atom);
 
 int
 GetColor(kind, what, name)
@@ -415,6 +427,7 @@ int kind;
 int *what;
 char *name;
 {
+    static XStandardColormap last = {0,0,0,0,0,0,0,0};
     XColor color, junkcolor;
     Status stat;
 
@@ -430,11 +443,55 @@ char *name;
      * small hack to avoid extra roundtrip for color allocation
      */
     if (!((name[0] == '#')
-	  ? (XParseColor (dpy, Scr->CMap, name, &color) &&
+	  ? ((stat = XParseColor (dpy, Scr->CMap, name, &color)) &&
 	     XAllocColor (dpy, Scr->CMap, &color))
-	  : XAllocNamedColor (dpy, Scr->CMap, name, &color, &junkcolor))) {
-	fprintf (stderr, "twm: invalid color \"%s\"\n", name);
-	return;
+	  : XAllocNamedColor (dpy, Scr->CMap, name, &color, &junkcolor)))
+    {
+	/* if we could not allocate the color, let's see if this is a
+	 * standard colormap
+	 */
+
+	/* parse the named color */
+	if (name[0] != '#')
+	    stat = XParseColor (dpy, Scr->CMap, name, &color);
+	if (!stat)
+	{
+	    fprintf (stderr, "twm: invalid color \"%s\"\n", name);
+	    return;
+	}
+
+        /* check to see if this is one of the standard colormaps */
+        if (last.colormap != Scr->CMap)
+        {
+            int i;
+            for (i = 0; i < nummaps; i++)
+            {
+                if (XGetStandardColormap(dpy, Scr->Root, &last, colormaps[i]))
+                {
+                    if (last.colormap == Scr->CMap)
+                        break;
+                }
+            }
+            if (last.colormap != Scr->CMap)
+                last.colormap = 0;
+        }
+
+	/* if we found a standard colormap, figure out the pixel value */
+        if (last.colormap)
+        {
+            color.pixel = last.base_pixel +
+		(unsigned long)((color.red / 65535.0) * last.red_max + 0.5) *
+		last.red_mult +
+                (unsigned long)((color.green /65535.0) * last.green_max + 0.5)*
+		last.green_mult +
+		(unsigned long)((color.blue  / 65535.0) * last.blue_max + 0.5)*
+		last.blue_mult;
+        }
+        else
+	{
+	    fprintf (stderr, "twm: couldn't allocate color \"%s\"\n", name);
+	    return;
+	}
     }
 
     *what = color.pixel;

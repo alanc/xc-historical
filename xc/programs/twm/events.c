@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.89 89/09/01 11:33:51 jim Exp $
+ * $XConsortium: events.c,v 1.90 89/10/05 18:31:36 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.89 89/09/01 11:33:51 jim Exp $";
+"$XConsortium: events.c,v 1.90 89/10/05 18:31:36 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -292,6 +292,33 @@ HandleColormapNotify()
 #ifdef DEBUG_EVENTS
     fprintf(stderr, "ColormapNotify\n");
 #endif
+
+    if (cevent->window == Scr->Root)
+    {
+	XWindowAttributes attr;
+
+	/* Did the colormap change? */
+	if (cevent->new == True)
+	    Scr->CMap = cevent->colormap;
+
+	/* If the pointer is not over a child, install it */
+	if (cevent->state == ColormapUninstalled)
+	{
+	    sameScreen = XQueryPointer (dpy, Scr->Root, &JunkRoot, &child,
+					&JunkX, &JunkY, &JunkX, &JunkY,
+					&JunkMask);
+	    if (sameScreen && child == None)
+	    {
+#ifdef DEBUG_EVENTS
+		fprintf(stderr, "    installing 0x%x\n",
+		    Tmp_win->attr.colormap);
+		printf ("installa from HandleColormapNotify\n");
+#endif
+		InstallAColormap(dpy, Scr->CMap);
+	    }
+	}
+	return;
+    }
 
     if (Tmp_win == NULL)
 	return;
@@ -1507,6 +1534,15 @@ HandleEnterNotify()
 #ifdef DEBUG_EVENTS
     fprintf(stderr, "EnterNotify\n");
 #endif
+
+    if (ActiveMenu == NULL && Event.xcrossing.window == Scr->Root)
+    {
+#ifdef DEBUG_EVENTS
+	printf ("installa from EnterNotify into frame or icon\n");
+#endif
+	InstallAColormap(dpy, Scr->CMap);
+	return;
+    }
 
     if (ActiveMenu == NULL && Tmp_win != NULL)
     {
