@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.3 94/02/22 18:17:32 mor Exp $ */
+/* $XConsortium: save.c,v 1.4 94/04/17 21:15:18 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -35,7 +35,10 @@ static Bool	 getline();
 
 
 void
-read_save()
+read_save(sm_id)
+
+char **sm_id;
+
 {
     char		*buf;
     int			buflen;
@@ -59,6 +62,7 @@ read_save()
     if(!f) {
 	if (app_resources.verbose)
 	    printf("No session save file.\n");
+	*sm_id = NULL;
 	return;
     }
     if (app_resources.verbose)
@@ -66,6 +70,11 @@ read_save()
 
     buf = NULL;
     buflen = 0;
+
+    /* Read SM's id */
+    getline(&buf, &buflen, f);
+    *sm_id = XtNewString(buf);
+
     state = 0;
     while(getline(&buf, &buflen, f)) {
 	if(p = strchr(buf, '\n')) *p = '\0';
@@ -147,7 +156,10 @@ read_save()
 
 
 void
-write_save()
+write_save(sm_id)
+
+char *sm_id;
+
 {
     FILE *f;
     ClientRec *client;
@@ -159,6 +171,7 @@ write_save()
     {
 	perror("open session save file for write");
     } else {
+	fprintf(f, "%s\n", sm_id);
 	for(client = ClientList; client; client = client->next)
 	{
 	    fprintf(f, "%s\n", client->clientId);
