@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.21 89/11/13 17:10:32 keith Exp $
+ * $XConsortium: miwideline.c,v 1.22 89/11/16 18:26:45 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -635,7 +635,7 @@ miLineArcD (pDraw, pGC, xorg, yorg, points, widths,
     if (edge1IsMin)
     {
 	ymin = ymin1;
-	if (edge2IsMin && ymin1 < ymin2)
+	if (edge2IsMin && ymin1 > ymin2)
 	    ymin = ymin2;
     } else if (edge2IsMin)
 	ymin = ymin2;
