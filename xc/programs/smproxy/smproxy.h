@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.h,v 1.4 94/08/10 19:46:13 mor Exp mor $ */
+/* $XConsortium: smproxy.h,v 1.5 94/08/25 20:18:51 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -54,8 +54,7 @@ typedef struct WinInfo {
     XTextProperty wm_client_machine;
     struct WinInfo *next;
 
-    unsigned int waiting_for_required_props : 1;
-    unsigned int got_wm_state : 1;
+    unsigned int tested_for_sm_client_id : 1;
     unsigned int has_save_yourself : 1;
     unsigned int waiting_for_update : 1;
     unsigned int got_first_save_yourself : 1;
