@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: dispatch.c,v 1.1 93/12/15 16:06:08 rob Exp $ */
+/* $XConsortium: dispatch.c,v 1.3 94/01/06 23:02:40 rob Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -128,7 +128,16 @@ static void DeleteClientFromAnySelections(
 #endif
 );
 
-static int nextFreeClientID; /* always MIN free client ID */
+/*
+ * XXX:SM For MTX this is referenced in connection.c.
+ *   - Choice: either do what I've done here or do what the original MTX
+ *     did and globally declare it in cit.c.
+ */
+#ifdef MTX
+int nextFreeClientID;        /* always MIN free client ID */
+#else
+static int nextFreeClientID;
+#endif
 
 static int	nClients;	/* number active clients */
 
@@ -4161,16 +4170,41 @@ SendErrorToClient(client, majorCode, minorCode, resId, errorCode)
     XID resId;
     int errorCode;
 {
-    xError rep;
+/*
+ * XXX:SM -Could have been made into macros like "REPLY_DECL", but it looks
+ * like this is the only occurrence.
+ */
+    xError rep, *error = &rep;
+#ifdef MTX
+    PooledMessagePtr message;
+    message = GetPooledMessage();
+    error = GetErrorPointer(xError, message);
+#endif
 
-    rep.type = X_Error;
-    rep.sequenceNumber = client->sequence;
-    rep.errorCode = errorCode;
-    rep.majorCode = majorCode;
-    rep.minorCode = minorCode;
-    rep.resourceID = resId;
+    error->type = X_Error;
+#ifdef MTX
+    if (client->swapped)
+    {
+        register char n;
+        swaps(&error->sequenceNumber, n);
+        swapl(&error->resourceID, n);
+        swaps(&error->minorCode, n);
+    }
+#else
+    error->sequenceNumber = client->sequence;
+#endif
+    error->errorCode = errorCode;
+    error->majorCode = majorCode;
+    error->minorCode = minorCode;
+    error->resourceID = resId;
 
-    WriteEventsToClient (client, 1, (xEvent *)&rep);
+#ifdef MTX
+    message->type = error_message;
+    BufferMessageForClient(client, message);
+#else
+    WriteEventsToClient (client, 1, (xEvent *)error);
+#endif
+
 }
 
 void
