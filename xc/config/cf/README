@@ -2,7 +2,7 @@
 				X Window System
 			   Imake Configuration Guide
 
-				Release 4beta
+				   Release 4
 
 
 
@@ -18,7 +18,7 @@ to a new platform or attempting to change the default installation.
 0.  Overview
 
 Sources for a paper giving an overview of the build system may be found in
-doc/config/usenixws/paper.ms.
+./doc/config/usenixws/paper.ms.
 
 
 
@@ -51,7 +51,7 @@ and then has a series of conditional blocks for setting the platform type.
 
 This requires that there be a unique preprocessor symbol that can be used to
 identify which configuration block to use.  Systems whose cpp does not define
-such a symbol must add one to the cpp_argv table in util/imake/imake.c and 
+such a symbol must add one to the cpp_argv table in config/imakemdep.h and 
 build with BOOTSTRAPCFLAGS set to the appropriate name.  Any additional flags
 (such as -DSYSV or -DUSG) that are needed to compile imake.c should be added 
 to the file ccflags.c.
@@ -96,6 +96,7 @@ a new one is to:
 		HasPutenv, NeedBerklibInXlib, ConnectionFlags, CcCmd, LnCmd,
 		setTtyGroup, UnalignedReferencesAllowed
 
+
 Imake.tmpl provides defaults for the following variables:
 
 	ArCmd			command used to create libraries
@@ -113,26 +114,26 @@ Imake.tmpl provides defaults for the following variables:
 	DefaultCCOptions	default special C compiler options
 	DefaultCDebugFlags	debug/optimize flags for programs
 	DestDir			prefix to root directory when installed
-	ExecableScripts		boolean indicating that #!/bin/sh execs
+	ExecableScripts		boolean for systems that can exec() #!/bin/sh
 	ExtraLibraries		system-specific libraries need to link
 	ExtraLoadFlags		system-specific loader flags
 	FilesToClean		files to delete in make clean
 	FortranCmd		command to run Fortran compiler
 	FortranDebugFlags	flags for Fortran debug info
 	FortranFlags		Fortran compiler flags
-	HasBsearch		boolean indicating libc has bsearch()
-	HasDESLibrary		boolean indicating system has DES library
-	HasFortran		boolean indicating system has Fortran compiler
-	HasGcc			boolean indicating system has GNU C compiler
-	HasLargeTmp		boolean indicating system has /tmp space
-	HasNdbm			boolean indicating system has ndbm routines
-	HasPutenv		boolean indicating libc has putenv()
-	HasSaberC		boolean indicating system has Saber C
-	HasSharedLibraries	boolean indicating system has shared libraries
-	HasSockets		boolean indicating system has BSD sockets
-	HasSunOSSharedLibraries	boolean indicating system has SunOS shared libs
-	HasVFork		boolean indicating system has vfork()
-	HasVoidSignalReturn	boolean indicating POSIX signal() procs
+	HasBsearch		boolean for libc has bsearch()
+	HasDESLibrary		boolean for system has DES library
+	HasFortran		boolean for system has Fortran compiler
+	HasGcc			boolean for system has GNU C compiler
+	HasLargeTmp		boolean for system has /tmp space
+	HasNdbm			boolean for system has ndbm routines
+	HasPutenv		boolean for libc has putenv()
+	HasSaberC		boolean for system has Saber C
+	HasSharedLibraries	boolean for system has shared libraries
+	HasSockets		boolean for system has BSD sockets
+	HasSunOSSharedLibraries	boolean for system has SunOS shared libs
+	HasVFork		boolean for system has vfork()
+	HasVoidSignalReturn	boolean for POSIX signal() procs
 	IncRoot			parent of X11 include directory
 	InstDatFlags		install flags for data files
 	InstIncFlags		install flags for header files
@@ -175,12 +176,12 @@ Imake.tmpl provides defaults for the following variables:
 	StandardCppDefines	-D's for running cpp
 	StandardDefines		-D's for running C compiler
 	StandardIncludes	-I's for running C compiler
-	StripInstalledPrograms	boolean indicating that install should do -s 
-	SystemV			boolean indicating that system is at least SVR2
+	StripInstalledPrograms	boolean for sites that want to install -s
+	SystemV			boolean for systems that are at least SVR2
 	TOPDIR			relative path to top of sources
 	TagsCmd			command to run tags
 	UNCOMPRESSPATH		command to run uncompress
-	UnalignedReferencesAllowed	boolean indicating unaligned copies ok
+	UnalignedReferencesAllowed	boolean for unaligned copies ok
 	UsrLibDir		directory in which to install libraries
 
 
@@ -190,119 +191,103 @@ Project.tmpl provides defaults for the following variables:
 	AllocateLocalDefines	-D's to turn on alloca()
 	AwmDir			directory containing awm config files
 	BDFTOSNFFILT		command to run bdftosnf
-	BandAidLibraryNeeded	boolean indicating that extra Xlib needed
+	BandAidLibraryNeeded	boolean for systems that need extra Xlib stuff
 	BandAidLibraryObjects	Xlib object files to merge in
 	BandAidLibrarySources	Xlib source files to merge in
 	BinDir			directory in which to install programs
-	BuildExamples		boolean indicating that examples should be made
+	BuildExamples		boolean controlling make of examples stuff
 	BuildIncRoot		relative path to location of headers in build
-	BuildIncTop		
-	BuildServer
-	BuildXawBC
-	ConfigDir
-	ConnectionFlags
-	ContribDir
-	CppSources
-	CppSourcesPresent
-	DebugLibX
-	DebugLibXArchive
-	DebugLibXaw
-	DebugLibXext
-	DebugLibXmu
-	DebugLibXt
-	DebugOldLibX
-	DefaultFontPath
-	DefaultRGBDatabase
-	DefaultSystemPath
-	DefaultSystemShell
-	DefaultUserPath
-	DependCmd
-	DependDir
-	DoInstallExtensionsIntoXlib
-	ExtensionDefines
-	FontCompilerFlags
-	FontDefines
-	FontDir
-	FontFilters
-	GwmDir
-	HasInputExtension
-	IncRoot
-	InstallAppDefFiles
-	InstallOldHeaderFiles
-	InstallXdmConfig
-	InstallXinitConfig
-	LibDir
-	LibManSuffix
-	LibmanDir
-	LibraryDefines
-	LintlibDir
-	ManDir
-	ManDirectoryRoot
-	ManPath
-	ManSourcePath
-	ManSuffix
-	NeedBerklibInXlib
-	NeedDefaultDepLibs
-	OsNameDefines
-	PrimaryScreenResolution
-	ProfileLibX
-	ProfileLibXArchive
-	ProfileLibXaw
-	ProfileLibXext
-	ProfileLibXmu
-	ProfileLibXt
-	ProfileOldLibX
-	ProjectX
-	RemoveTargetProgramByMoving
-	SHELLPATH
-	ServerCDebugFlags
-	ServerDefines
-	SharedLibX
-	SharedLibXaw
-	SharedLibXext
-	SharedLibXmu
-	SharedLibXt
-	SharedOldLibX
-	SharedOldXRev
-	SharedXawRev
-	SharedXextRev
-	SharedXlibRev
-	SharedXmuRev
-	SharedXtRev
-	TwmDir
-	UNCOMPRESSFILT
-	UseCCMakeDepend
-	XAppLoadDir
-	XawClientDepLibs
-	XawClientLibs
-	XdmConfigurationSubdirectory
-	XdmDir
-	XinitDir
-	ZBDFTOSNFFILT
+	BuildIncTop		path from build includes directory to top
+	BuildServer		boolean controlling make of server stuff
+	BuildXawBC		boolean controlling R3 compatibility in Xaw
+	ConfigDir		install directory for config files
+	ConnectionFlags		-D's for supported transports
+	ContribDir		location of user-contributed sources
+	DebugLibX		boolean for compiling extra Xlib -g
+	DebugLibXArchive	boolean for building extra libX11_g.a
+	DebugLibXaw		boolean for compiling/building) libXaw_g
+	DebugLibXext		boolean for compiling/building) libXext_g
+	DebugLibXmu		boolean for compiling/building) libXmu_g
+	DebugLibXt		boolean for compiling/building) libXt_g
+	DebugOldLibX		boolean for compiling/building) liboldX_g
+	DefaultFontPath		default server font path
+	DefaultRGBDatabase	default server rgb color database
+	DefaultSystemPath	default system xdm PATH environment variable
+	DefaultSystemShell	default /bin/sh
+	DefaultUserPath		default user xdm PATH environment variable
+	DependCmd		command to run makedepend
+	DependDir		build directory containing makedepend program
+	DoInstallExtensionsIntoXlib	merge -lXext into -lX11
+	ExtensionDefines	-D's for extensions
+	FontCompilerFlags	flags for bdftosnf
+	FontDefines		-D's to turn on font options
+	FontDir			directory in which to install fonts
+	FontFilters		-D's to specify font conversion filters
+	GwmDir			directory in which to install gwm config stuff
+	HasInputExtension	boolean for systems that want XInput extension
+	IncRoot			parent directory of installed header files
+	InstallAppDefFiles	boolean for installing new app defaults files
+	InstallOldHeaderFiles	boolean for installing R3-compatible headers
+	InstallXdmConfig	boolean for installing xdm config files
+	InstallXinitConfig	boolean for installing xinit files
+	LibDir			directory in which to install X11 data files
+	LibManSuffix		man suffix for library pages
+	LibmanDir		directory in which to install library man pages
+	LibraryDefines		-D's for libraries
+	LintlibDir		directory in which to install lint libs
+	ManDir			directory in which to install program man pages
+	ManDirectoryRoot	parent of man directories relative to root
+	ManPath			full path of parent directory
+	ManSourcePath		common prefix of man page directories
+	ManSuffix		man suffix for programs
+	NeedBerklibInXlib	boolean for systems that need BSD emulation
+	NeedDefaultDepLibs	boolean for enabling default DEPLIBS
+	PrimaryScreenResolution	resolution of default server screen
+	ProfileLibX		boolean for compiling -p Xlib
+	ProfileLibXArchive	boolean for building libX11_p
+	ProfileLibXaw		boolean for compiling/building libXaw_p
+	ProfileLibXext		boolean for compiling/building libXext_p
+	ProfileLibXmu		boolean for compiling/building libXmu_p
+	ProfileLibXt		boolean for compiling/building libXt_p
+	ProfileOldLibX		boolean for compiling/building liboldX_p
+	ProjectX		boolean indicating this is the X Window System
+	RemoveTargetProgramByMoving	boolean for rm -f that doesn't
+	SHELLPATH		-D for /bin/sh
+	ServerCDebugFlags	server debug/opt compiler flags
+	ServerDefines		-D's for server
+	SharedLibX		boolean for making sharable libX11
+	SharedLibXaw		boolean for making sharable libXaw
+	SharedLibXext		boolean for making sharable libXext
+	SharedLibXmu		boolean for making sharable libXmu
+	SharedLibXt		boolean for making sharable libXt
+	SharedOldLibX		boolean for making sharable liboldX
+	SharedOldXRev		version number for shared libX11
+	SharedXawRev		version number for shared libXaw
+	SharedXextRev		version number for shared libXext
+	SharedXlibRev		version number for shared libXmu
+	SharedXmuRev		version number for shared libXt
+	SharedXtRev		version number for shared liboldX
+	TwmDir			directory in which to install twm config files
+	UNCOMPRESSFILT		-D of command to run uncompress
+	UseCCMakeDepend		boolean for using alternate makedepend script
+	XAppLoadDir		directory in which to install app defaults
+	XawClientDepLibs	DEPLIBS for clients that use Xaw
+	XawClientLibs		LOCAL_LIBRARIES for clients that use Xaw
+	XdmConfigurationSubdirectory	name of default xdm configuration
+	XdmDir			directory in which to install xdm files
+	XinitDir		directory in which to install xinit files
+	ZBDFTOSNFFILT		-D to run uncompress and bdftosnf
 
 
 4.  Site-specific site.def file
 
-The site.def file is used to set configuration parameters that apply to all
-all servers in a given site.  It should use #ifndef so that servers may 
-still override it.
+The site.def file is used to set configuration parameters that apply to all all
+servers in a given site.  It should use #ifndef so that servers may still
+override it.  The second use for site.def is to define installation directories
+and flags.  The following additional build parameters are defined:
 
-The second use for site.def is to define installation directories and flags.
-We strongly recommend that people try to use the default directories if at
-all possible so that X11 can coexist peacefully with X10.
-
-	BuildXawBC
-	CcCmd
-	CompatibilityFlags
-	ContribDir
-	DoInstallExtensionsIntoXlib
-	ExtensionDefines
-	HasGcc
-	HasLargeTmp
-	HasXcuWidgets
-	HasXwWidgets
-	InstallOldHeaderFiles
-	SharedLibXext
+	HasXcuWidgets		include Xcu make variables in Makefiles
+	HasXwWidgets		include Xw make variables in Makefiles
 
 
 
@@ -329,3 +314,9 @@ of these rules use auxillary make variables:
 
 The easiest way to write an Imakefile is to find another one that does the
 same thing and modify it.
+
+The most important guidelines are that the X Libraries be refered to by their
+make variables names (e.g. $(XLIB)) rather than -llib, and should go in
+LOCAL_LIBRARIES rather than SYSTEM_LIBRARIES (which is only for things like
+-lm).
+
