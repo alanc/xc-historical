@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.32 90/03/01 16:42:52 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.33 90/03/10 15:50:21 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -623,225 +623,6 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
     }
 }
 
-static unsigned long	copyPlaneBitPlane;
-
-#define mfbmaskbits(x, w, startmask, endmask, nlw) \
-    startmask = starttab[(x)&0x1f]; \
-    endmask = endtab[((x)+(w)) & 0x1f]; \
-    if (startmask) \
-	nlw = (((w) - (32 - ((x)&0x1f))) >> 5); \
-    else \
-	nlw = (w) >> 5;
-
-#define mfbmaskpartialbits(x, w, mask) \
-    mask = partmasks[(x)&0x1f][(w)&0x1f];
-
-#if BITMAP_BIT_ORDER == MSBFirst
-#define LeftMost    31
-#define StepBit(bit, inc)  ((bit) -= (inc))
-#else
-#define LeftMost    0
-#define StepBit(bit, inc)  ((bit) += (inc))
-#endif
-
-#define MROP	0
-#undef PFILL
-
-#include "mergerop.h"
-
-#define GetBits(psrc, nBits, curBit, bitPos, bits) {\
-    bits = 0; \
-    while (nBits--) \
-    { \
-	bits |= ((*psrc++ >> bitPos) & 1) << curBit; \
-	StepBit (curBit, 1); \
-    } \
-}
-
-cfbCopyImagePlane (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
-    DrawablePtr pSrcDrawable;
-    DrawablePtr pDstDrawable;
-    int	rop;
-    unsigned long planemask;
-    RegionPtr prgnDst;
-    DDXPointPtr pptSrc;
-{
-    copyPlaneBitPlane = planemask;
-    cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
-		      (unsigned long) ~0L);
-}
-
-cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
-    DrawablePtr pSrcDrawable;
-    DrawablePtr pDstDrawable;
-    int	rop;
-    RegionPtr prgnDst;
-    DDXPointPtr pptSrc;
-    unsigned long planemask;
-{
-    int			    srcx, srcy, dstx, dsty, width, height;
-    unsigned char	    *psrcBase;
-    unsigned int	    *pdstBase;
-    int			    widthSrc, widthDst;
-    unsigned char	    *psrcLine;
-    unsigned int	    *pdstLine;
-    register unsigned char  *psrc;
-    register int	    i;
-    register int	    curBit;
-    register int	    bitPos;
-    register unsigned int   bits;
-    register unsigned int   *pdst;
-    unsigned int	    startmask, endmask;
-    int			    niStart, niEnd;
-    int			    bitStart, bitEnd;
-    int			    nl, nlMiddle;
-    int			    nbox;
-    BoxPtr		    pbox;
-    MROP_DECLARE()
-
-    extern int starttab[32], endtab[32];
-    extern unsigned int partmasks[32][32];
-
-    if (!(planemask & 1))
-	return;
-
-    if (rop != GXcopy)
-	MROP_INITIALIZE (rop, planemask);
-
-    if (pSrcDrawable->type == DRAWABLE_WINDOW)
-    {
-	psrcBase = (unsigned char *)
-		(((PixmapPtr)(pSrcDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	widthSrc = (int)
-		   ((PixmapPtr)(pSrcDrawable->pScreen->devPrivate))->devKind;
-    }
-    else
-    {
-	psrcBase = (unsigned char *)(((PixmapPtr)pSrcDrawable)->devPrivate.ptr);
-	widthSrc = (int)(((PixmapPtr)pSrcDrawable)->devKind);
-    }
-
-    if (pDstDrawable->type == DRAWABLE_WINDOW)
-    {
-	pdstBase = (unsigned int *)
-		(((PixmapPtr)(pDstDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	widthDst = (int)
-		   ((PixmapPtr)(pDstDrawable->pScreen->devPrivate))->devKind
-		    >> 2;
-    }
-    else
-    {
-	pdstBase = (unsigned int *)(((PixmapPtr)pDstDrawable)->devPrivate.ptr);
-	widthDst = (int)(((PixmapPtr)pDstDrawable)->devKind) >> 2;
-    }
-
-    bitPos = ffs (copyPlaneBitPlane) - 1;
-
-    nbox = REGION_NUM_RECTS(prgnDst);
-    pbox = REGION_RECTS(prgnDst);
-    while (nbox--)
-    {
-	dstx = pbox->x1;
-	dsty = pbox->y1;
-	srcx = pptSrc->x;
-	srcy = pptSrc->y;
-	width = pbox->x2 - pbox->x1;
-	height = pbox->y2 - pbox->y1;
-	pbox++;
-	pptSrc++;
-	psrcLine = psrcBase + srcy * widthSrc + srcx;
-	pdstLine = pdstBase + dsty * widthDst + (dstx >> 5);
-	if (dstx + width <= 32)
-	{
-	    mfbmaskpartialbits(dstx, width, startmask);
-	    nlMiddle = 0;
-	    endmask = 0;
-	}
-	else
-	{
-	    mfbmaskbits (dstx, width, startmask, endmask, nlMiddle);
-	}
-	if (startmask)
-	{
-	    niStart = 32 - (dstx & 0x1f);
-	    bitStart = LeftMost;
-	    StepBit (bitStart, (dstx & 0x1f));
-	}
-	if (endmask)
-	{
-	    niEnd = (dstx + width) & 0x1f;
-	    bitEnd = LeftMost;
-	}
-	if (rop == GXcopy)
-	{
-	    while (height--)
-	    {
-	    	psrc = psrcLine;
-	    	pdst = pdstLine;
-	    	psrcLine += widthSrc;
-	    	pdstLine += widthDst;
-	    	if (startmask)
-	    	{
-		    i = niStart;
-		    curBit = bitStart;
-		    GetBits (psrc, i, curBit, bitPos, bits);
-		    *pdst = *pdst & ~startmask | bits;
-		    pdst++;
-	    	}
-	    	nl = nlMiddle;
-	    	while (nl--)
-	    	{
-		    i = 32;
-		    curBit = LeftMost;
-		    GetBits (psrc, i, curBit, bitPos, bits);
-		    *pdst++ = bits;
-	    	}
-	    	if (endmask)
-	    	{
-		    i = niEnd;
-		    curBit = bitEnd;
-		    GetBits (psrc, i, curBit, bitPos, bits);
-		    *pdst = *pdst & ~endmask | bits;
-	    	}
-	    }
-	}
-	else
-	{
-	    while (height--)
-	    {
-	    	psrc = psrcLine;
-	    	pdst = pdstLine;
-	    	psrcLine += widthSrc;
-	    	pdstLine += widthDst;
-	    	if (startmask)
-	    	{
-		    i = niStart;
-		    curBit = bitStart;
-		    GetBits (psrc, i, curBit, bitPos, bits);
-		    *pdst = MROP_MASK(bits, *pdst, startmask);
-		    pdst++;
-	    	}
-	    	nl = nlMiddle;
-	    	while (nl--)
-	    	{
-		    i = 32;
-		    curBit = LeftMost;
-		    GetBits (psrc, i, curBit, bitPos, bits);
-		    *pdst = MROP_SOLID(bits, *pdst);
-		    pdst++;
-	    	}
-	    	if (endmask)
-	    	{
-		    i = niEnd;
-		    curBit = bitEnd;
-		    GetBits (psrc, i, curBit, bitPos, bits);
-		    *pdst = MROP_MASK (bits, *pdst, endmask);
-	    	}
-	    }
-	}
-    }
-}
-
 #endif
 
 RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
@@ -858,6 +639,9 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
     extern RegionPtr    miHandleExposures();
 
 #if (PPW == 4)
+    extern unsigned long cfbCopyPlaneBitPlane;
+    extern cfbCopyPlane8to1();
+
     if (pSrcDrawable->depth == 1 && pDstDrawable->depth == 8)
     {
     	if (bitPlane == 1)
@@ -883,7 +667,7 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	    pGC->alu = InverseAlu[pGC->alu];
     	else if (pGC->fgPixel == pGC->bgPixel)
 	    pGC->alu = mfbReduceRop(pGC->alu, pGC->fgPixel);
-	copyPlaneBitPlane = bitPlane;
+	cfbCopyPlaneBitPlane = bitPlane;
 	doBitBlt = cfbCopyPlane8to1;
 	ret = cfbCopyArea (pSrcDrawable, pDstDrawable,
 		    pGC, srcx, srcy, width, height, dstx, dsty);
@@ -911,7 +695,7 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	 * right thing", which GXcopy will.
 	 */
 	ValidateGC ((DrawablePtr) pBitmap, pGC1);
-	copyPlaneBitPlane = bitPlane;
+	cfbCopyPlaneBitPlane = bitPlane;
 	doBitBlt = cfbCopyPlane8to1;
 	/* no exposures here, scratch GC's don't get graphics expose */
 	(void) cfbCopyArea (pSrcDrawable, (DrawablePtr) pBitmap,
