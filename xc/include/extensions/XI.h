@@ -1,4 +1,4 @@
-/* $XConsortium: XI.h,v 1.4 89/12/06 20:43:42 rws Exp $ */
+/* $XConsortium: XI.h,v 1.5 90/05/18 11:36:27 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -80,6 +80,25 @@ SOFTWARE.
 #define sz_xSendExtensionEventReq		16
 
 #define INAME 			"XInputExtension"
+
+#define XI_MOUSE	"MOUSE"
+#define XI_TABLET	"TABLET"
+#define XI_TOUCHSCREEN	"TOUCHSCREEN"
+#define XI_TOUCHPAD	"TOUCHPAD"
+#define XI_BARCODE	"BARCODE"
+#define XI_BUTTONBOX	"BUTTONBOX"
+#define XI_KNOB_BOX	"KNOB_BOX"
+#define XI_ONE_KNOB	"ONE_KNOB"
+#define XI_NINE_KNOB	"NINE_KNOB"
+#define XI_TRACKBALL	"TRACKBALL"
+#define XI_QUADRATURE	"QUADRATURE"
+#define XI_ID_MODULE	"ID_MODULE"
+#define XI_SPACEBALL	"SPACEBALL"
+#define XI_DATAGLOVE	"DATAGLOVE"
+#define XI_EYETRACKER	"EYETRACKER"
+#define XI_CURSORKEYS	"CURSORKEYS"
+#define XI_FOOTMOUSE	"FOOTMOUSE"
+
 #define Dont_Check		0
 #define XInput_Initial_Release	1
 #define NoSuchExtension		1
