@@ -1,7 +1,7 @@
 /*
  * xkill - simple program for destroying unwanted clients
  *
- * $XConsortium: xkill.c,v 1.6 88/10/10 15:51:01 jim Exp $
+ * $XConsortium: xkill.c,v 1.7 88/10/15 18:47:15 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -294,13 +294,14 @@ XID get_window_id (dpy, screen, button, msg)
 }
 
 
-catch_window_errors (dpy, ev)
+int catch_window_errors (dpy, ev)
     Display *dpy;
     XErrorEvent *ev;
 {
-    if (ev->request_code == X_KillClient) return;
-    XmuPrintDefaultErrorMessage (dpy, ev, stderr);
-    return;
+    if (ev->request_code != X_KillClient) {
+	XmuPrintDefaultErrorMessage (dpy, ev, stderr);
+    }
+    return 0;
 }
 
 int kill_all_windows (dpy, screenno)
