@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: wdt4.c,v 5.1 91/02/16 10:01:19 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -231,24 +231,25 @@ verify_def_loc()
 	Pstore store;
 	Ppoint pos;
 	Pint_list pets;
+	Pint_list *p_pets;
 	Plimit earea;
-	Pint plen;
 	Pint intbuf[BUFSIZE];
 
 	pets.ints = intbuf;
+	p_pets = &pets;
 	err = BOGUSERR;
 	pcreate_store(&err,&store);
 	ERROR("pcreate_store");
 	for (i=0;i< num_locator_dev; i++) {
 		dev = list_locator_dev_num[i];
-		pinq_def_loc_data(wstype,dev,BUFSIZE,0,store,&err,&pos,
-			&pets,&plen,&earea,&data);
+		pinq_def_loc_data(wstype,dev,store,&err,&pos,
+			&p_pets,&earea,&data);
 		ERROR("pinq_def_loc_data");
 		if (! i_compare_Ppoint(pos,list_locator_init_pos[i]))
 			tfprintf("failed: locator device (%d): initial position != expected\n",dev);
 		exppet.num_ints = list_locator_num_pet[i];
 		exppet.ints = list_locator_list_pet[i];
-		if (! i_compare_Pint_list(pets,exppet))
+		if (! i_compare_Pint_list(&pets,exppet))
 			tfprintf("failed: locator device (%d): list of prompt and echo types != expected\n",dev);
 		if (! i_compare_Plimit(earea,list_locator_def_echo_area[i]))
 			tfprintf("failed: locator device (%d): default echo area!= expected\n",dev);
@@ -270,24 +271,25 @@ verify_def_loc3()
 	Pstore store;
 	Ppoint3 pos;
 	Pint_list pets;
+	Pint_list *p_pets;
 	Plimit3 evolume;
-	Pint plen;
 	Pint intbuf[BUFSIZE];
 
 	pets.ints = intbuf;
+	p_pets = &pets;
 	err = BOGUSERR;
 	pcreate_store(&err,&store);
 	ERROR("pcreate_store");
 	for (i=0;i< num_locator_dev; i++) {
 		dev = list_locator3_dev_num[i];
-		pinq_def_loc_data3(wstype,dev,BUFSIZE,0,store,&err,&pos,
-			&pets,&plen,&evolume,&data);
+		pinq_def_loc_data3(wstype,dev,store,&err,&pos,
+			&p_pets,&evolume,&data);
 		ERROR("pinq_def_loc_data3");
 		if (! i_compare_Ppoint3(pos,list_locator3_init_pos[i]))
 			tfprintf("failed: locator3 device (%d): initial position != expected\n",dev);
 		exppet.num_ints = list_locator3_num_pet[i];
 		exppet.ints = list_locator3_list_pet[i];
-		if (! i_compare_Pint_list(pets,exppet))
+		if (! i_compare_Pint_list(&pets,exppet))
 			tfprintf("failed: locator3 device (%d): list of prompt and echo types != expected\n",dev);
 		if (! i_compare_Plimit3(evolume,list_locator3_def_echo_volume[i]))
 			tfprintf("failed: locator3 device (%d): default echo volume != expected\n",dev);
@@ -308,25 +310,26 @@ verify_def_choice()
 	Pchoice_data *data;
 	Pstore store;
 	Pint_list pets;
+	Pint_list *p_pets;
 	Plimit earea;
 	Pint maxchoice;
 	Pint intbuf[BUFSIZE];
-	Pint plen;
 
 	pets.ints = intbuf;
+	p_pets = &pets;
 	err = BOGUSERR;
 	pcreate_store(&err,&store);
 	ERROR("pcreate_store");
 	for (i=0;i< num_choice_dev; i++) {
 		dev = list_choice_dev_num[i];
-		pinq_def_choice_data(wstype,dev,BUFSIZE,0,store,&err,
-			&maxchoice,&pets,&plen, &earea,&data);
+		pinq_def_choice_data(wstype,dev,store,&err,
+			&maxchoice,&p_pets, &earea,&data);
 		ERROR("pinq_def_choice_data");
 		if ( maxchoice != list_choice_max_num_choice[i])
 			tfprintf("failed: choice device (%d): maximum # of choices = %d,expected %d\n",dev,maxchoice,list_choice_max_num_choice[i]);
 		exppet.num_ints = list_choice_num_pet[i];
 		exppet.ints = list_choice_list_pet[i];
-		if (! i_compare_Pint_list(pets,exppet))
+		if (! i_compare_Pint_list(&pets,exppet))
 			tfprintf("failed: choice device (%d): list of prompt and echo types != expected\n",dev);
 		if (! i_compare_Plimit(earea,list_choice_def_echo_area[i]))
 			tfprintf("failed: choice device (%d): default echo area!= expected\n",dev);
@@ -346,26 +349,25 @@ verify_def_choice3()
 	int i;
 	Pchoice_data3 *data;
 	Pstore store;
-	Pint_list pets;
+	Pint_list *pets;
 	Plimit3 evolume;
 	Pint maxchoice;
 	Pint intbuf[BUFSIZE];
-	Pint plen;
 
-	pets.ints = intbuf;
+	(*pets).ints = intbuf;
 	err = BOGUSERR;
 	pcreate_store(&err,&store);
 	ERROR("pcreate_store");
 	for (i=0;i< num_choice_dev; i++) {
 		dev = list_choice3_dev_num[i];
-		pinq_def_choice_data3(wstype,dev,BUFSIZE,0,store,&err,
-			&maxchoice,&pets,&plen, &evolume,&data);
+		pinq_def_choice_data3(wstype,dev,store,&err,
+			&maxchoice,&pets, &evolume,&data);
 		ERROR("pinq_def_choice_data3");
 		if ( maxchoice != list_choice3_max_num_choice[i])
 			tfprintf("failed: choice3 device (%d): maximum # of choices = %d,expected %d\n",dev,maxchoice,list_choice3_max_num_choice[i]);
 		exppet.num_ints = list_choice3_num_pet[i];
 		exppet.ints = list_choice3_list_pet[i];
-		if (! i_compare_Pint_list(pets,exppet))
+		if (! i_compare_Pint_list(*pets,exppet))
 			tfprintf("failed: choice3 device (%d): list of prompt and echo types != expected\n",dev);
 		if (! i_compare_Plimit3(evolume,list_choice3_def_echo_volume[i]))
 			tfprintf("failed: choice3 device (%d): default echo volume!= expected\n",dev);
@@ -386,25 +388,24 @@ verify_def_val()
 	Pval_data *data;
 	Pstore store;
 	Pfloat defval;
-	Pint_list pets;
+	Pint_list *pets;
 	Plimit earea;
 	Pint intbuf[BUFSIZE];
-	Pint plen;
 
-	pets.ints = intbuf;
+	(*pets).ints = intbuf;
 	err = BOGUSERR;
 	pcreate_store(&err,&store);
 	ERROR("pcreate_store");
 	for (i=0;i< num_valuator_dev; i++) {
 		dev = list_valuator_dev_num[i];
-		pinq_def_val_data(wstype,dev,BUFSIZE,0,store,&err,&defval,
-			&pets,&plen,&earea,&data);
+		pinq_def_val_data(wstype,dev,store,&err,&defval,
+			&pets,&earea,&data);
 		ERROR("pinq_def_val_data");
 		if ( fne(defval, list_valuator_def_init_value[i]))
 			tfprintf("failed: valuator device (%d): default initial value = %.4f,expected %.4f\n",dev,defval,list_valuator_def_init_value[i]);
 		exppet.num_ints = list_valuator_num_pet[i];
 		exppet.ints = list_valuator_list_pet[i];
-		if (! i_compare_Pint_list(pets,exppet))
+		if (! i_compare_Pint_list(*pets,exppet))
 			tfprintf("failed: valuator device (%d): list of prompt and echo types != expected\n",dev);
 		if (! i_compare_Plimit(earea,list_valuator_def_echo_area[i]))
 			tfprintf("failed: valuator device (%d): default echo area!= expected\n",dev);
@@ -425,25 +426,24 @@ verify_def_val3()
 	Pval_data3 *data;
 	Pstore store;
 	Pfloat defval;
-	Pint_list pets;
+	Pint_list *pets;
 	Plimit3 evolume;
 	Pint intbuf[BUFSIZE];
-	Pint plen;
 
-	pets.ints = intbuf;
+	(*pets).ints = intbuf;
 	err = BOGUSERR;
 	pcreate_store(&err,&store);
 	ERROR("pcreate_store");
 	for (i=0;i< num_valuator_dev; i++) {
 		dev = list_valuator3_dev_num[i];
-		pinq_def_val_data3(wstype,dev,BUFSIZE,0,store,&err,&defval,
-			&pets,&plen,&evolume,&data);
+		pinq_def_val_data3(wstype,dev,store,&err,&defval,
+			&pets,&evolume,&data);
 		ERROR("pinq_def_val_data3");
 		if ( fne(defval , list_valuator3_def_init_value[i]))
 			tfprintf("failed: valuator3 device (%d): default initial value = %.4f,expected %.4f\n",dev,defval,list_valuator3_def_init_value[i]);
 		exppet.num_ints = list_valuator3_num_pet[i];
 		exppet.ints = list_valuator3_list_pet[i];
-		if (! i_compare_Pint_list(pets,exppet))
+		if (! i_compare_Pint_list(*pets,exppet))
 			tfprintf("failed: valuator3 device (%d): list of prompt and echo types != expected\n",dev);
 		if (! i_compare_Plimit3(evolume,list_valuator3_def_echo_volume[i]))
 			tfprintf("failed: valuator3 device (%d): default echo volume!= expected\n",dev);
@@ -464,25 +464,24 @@ verify_def_stroke()
 	Pstroke_data *data;
 	Pstore store;
 	Pint maxbuf;
-	Pint_list pets;
+	Pint_list *pets;
 	Plimit earea;
 	Pint intbuf[BUFSIZE];
-	Pint plen;
 
-	pets.ints = intbuf;
+	(*pets).ints = intbuf;
 	err = BOGUSERR;
 	pcreate_store(&err,&store);
 	ERROR("pcreate_store");
 	for (i=0;i< num_stroke_dev; i++) {
 		dev = list_stroke_dev_num[i];
-		pinq_def_stroke_data(wstype,dev,BUFSIZE,0,store,&err,&maxbuf,
-			&pets,&plen,&earea, &data);
+		pinq_def_stroke_data(wstype,dev,store,&err,&maxbuf,
+			&pets,&earea, &data);
 		ERROR("pinq_def_stroke_data");
 		if ( maxbuf != list_stroke_avail_bufsize[i])
 			tfprintf("failed: stroke device (%d): available input buffer size = %d,expected %d\n",dev,maxbuf,list_stroke_avail_bufsize[i]);
 		exppet.num_ints = list_stroke_num_pet[i];
 		exppet.ints = list_stroke_list_pet[i];
-		if (! i_compare_Pint_list(pets,exppet))
+		if (! i_compare_Pint_list(*pets,exppet))
 			tfprintf("failed: stroke device (%d): list of prompt and echo types != expected\n",dev);
 		if (! i_compare_Plimit(earea,list_stroke_def_echo_area[i]))
 			tfprintf("failed: stroke device (%d): default echo area!= expected\n",dev);
@@ -503,25 +502,24 @@ verify_def_stroke3()
 	Pstroke_data3 *data;
 	Pstore store;
 	Pint maxbuf;
-	Pint_list pets;
+	Pint_list *pets;
 	Plimit3 evolume;
 	Pint intbuf[BUFSIZE];
-	Pint plen;
 
-	pets.ints = intbuf;
+	(*pets).ints = intbuf;
 	err = BOGUSERR;
 	pcreate_store(&err,&store);
 	ERROR("pcreate_store");
 	for (i=0;i< num_stroke_dev; i++) {
 		dev = list_stroke3_dev_num[i];
-		pinq_def_stroke_data3(wstype,dev,BUFSIZE,0,store,&err,&maxbuf,
-			&pets,&plen,&evolume,&data);
+		pinq_def_stroke_data3(wstype,dev,store,&err,&maxbuf,
+			&pets,&evolume,&data);
 		ERROR("pinq_def_stroke_data3");
 		if ( maxbuf != list_stroke3_avail_bufsize[i])
 			tfprintf("failed: stroke3 device (%d): available input buffer size = %d,expected %d\n",dev,maxbuf,list_stroke3_avail_bufsize[i]);
 		exppet.num_ints = list_stroke3_num_pet[i];
 		exppet.ints = list_stroke3_list_pet[i];
-		if (! i_compare_Pint_list(pets,exppet))
+		if (! i_compare_Pint_list(*pets,exppet))
 			tfprintf("failed: stroke3 device (%d): list of prompt and echo types != expected\n",dev);
 		if (! i_compare_Plimit3(evolume,list_stroke3_def_echo_volume[i]))
 			tfprintf("failed: stroke3 device (%d): default echo volume!= expected\n",dev);
@@ -542,25 +540,24 @@ verify_def_string()
 	Pstring_data *data;
 	Pstore store;
 	Pint maxbuf;
-	Pint_list pets;
+	Pint_list *pets;
 	Plimit earea;
 	Pint intbuf[BUFSIZE];
-	Pint plen;
 
-	pets.ints = intbuf;
+	(*pets).ints = intbuf;
 	err = BOGUSERR;
 	pcreate_store(&err,&store);
 	ERROR("pcreate_store");
 	for (i=0;i< num_string_dev; i++) {
 		dev = list_string_dev_num[i];
-		pinq_def_string_data(wstype,dev,BUFSIZE,0,store,&err,&maxbuf,
-			&pets,&plen, &earea, &data);
+		pinq_def_string_data(wstype,dev,store,&err,&maxbuf,
+			&pets, &earea, &data);
 		ERROR("pinq_def_string_data");
 		if ( maxbuf != list_string_avail_bufsize[i])
 			tfprintf("failed: string device (%d): available input buffer size = %d,expected %d\n",dev,maxbuf,list_string_avail_bufsize[i]);
 		exppet.num_ints = list_string_num_pet[i];
 		exppet.ints = list_string_list_pet[i];
-		if (! i_compare_Pint_list(pets,exppet))
+		if (! i_compare_Pint_list(*pets,exppet))
 			tfprintf("failed: string device (%d): list of prompt and echo types != expected\n",dev);
 		if (! i_compare_Plimit(earea,list_string_def_echo_area[i]))
 			tfprintf("failed: string device (%d): default echo area!= expected\n",dev);
@@ -581,25 +578,24 @@ verify_def_string3()
 	Pstring_data3 *data;
 	Pstore store;
 	Pint maxbuf;
-	Pint_list pets;
+	Pint_list *pets;
 	Plimit3 evolume;
 	Pint intbuf[BUFSIZE];
-	Pint plen;
 
-	pets.ints = intbuf;
+	(*pets).ints = intbuf;
 	err = BOGUSERR;
 	pcreate_store(&err,&store);
 	ERROR("pcreate_store");
 	for (i=0;i< num_string_dev; i++) {
 		dev = list_string3_dev_num[i];
-		pinq_def_string_data3(wstype,dev,BUFSIZE,0,store,&err,&maxbuf,
-			&pets,&plen,&evolume,&data);
+		pinq_def_string_data3(wstype,dev,store,&err,&maxbuf,
+			&pets,&evolume,&data);
 		ERROR("pinq_def_string_data3");
 		if ( maxbuf != list_string3_avail_bufsize[i])
 			tfprintf("failed: string3 device (%d): available input buffer size = %d,expected %d\n",dev,maxbuf,list_string3_avail_bufsize[i]);
 		exppet.num_ints = list_string3_num_pet[i];
 		exppet.ints = list_string3_list_pet[i];
-		if (! i_compare_Pint_list(pets,exppet))
+		if (! i_compare_Pint_list(*pets,exppet))
 			tfprintf("failed: string3 device (%d): list of prompt and echo types != expected\n",dev);
 		if (! i_compare_Plimit3(evolume,list_string3_def_echo_volume[i]))
 			tfprintf("failed: string3 device (%d): default echo volume!= expected\n",dev);
@@ -619,24 +615,22 @@ verify_def_pick()
 	int i;
 	Ppick_data *data;
 	Pstore store;
-	Pint_list pets;
+	Pint_list *pets;
 	Plimit earea;
 	Pint intbuf[BUFSIZE];
-	Pint plen;
-	Ppath_order path_order;
 
-	pets.ints = intbuf;
+	(*pets).ints = intbuf;
 	err = BOGUSERR;
 	pcreate_store(&err,&store);
 	ERROR("pcreate_store");
 	for (i=0;i< num_pick_dev; i++) {
 		dev = list_pick_dev_num[i];
-		pinq_def_pick_data(wstype,dev,BUFSIZE,0,store,&err,&pets,&plen,
-			&earea,&data, &path_order);
+		pinq_def_pick_data(wstype,dev,store,&err,&pets,
+			&earea,&data);
 		ERROR("pinq_def_pick_data");
 		exppet.num_ints = list_pick_num_pet[i];
 		exppet.ints = list_pick_list_pet[i];
-		if (! i_compare_Pint_list(pets,exppet))
+		if (! i_compare_Pint_list(*pets,exppet))
 			tfprintf("failed: pick device (%d): list of prompt and echo types != expected\n",dev);
 		if (! i_compare_Plimit(earea,list_pick_def_echo_area[i]))
 			tfprintf("failed: pick device (%d): default echo area!= expected\n",dev);
@@ -656,24 +650,22 @@ verify_def_pick3()
 	int i;
 	Ppick_data3 *data;
 	Pstore store;
-	Pint_list pets;
+	Pint_list *pets;
 	Plimit3 evolume;
 	Pint intbuf[BUFSIZE];
-	Pint plen;
-	Ppath_order path_order;
 
-	pets.ints = intbuf;
+	(*pets).ints = intbuf;
 	err = BOGUSERR;
 	pcreate_store(&err,&store);
 	ERROR("pcreate_store");
 	for (i=0;i< num_pick_dev; i++) {
 		dev = list_pick3_dev_num[i];
-		pinq_def_pick_data3(wstype,dev,BUFSIZE,0,store,&err,&pets,&plen,
-			&evolume,&data,&path_order);
+		pinq_def_pick_data3(wstype,dev,store,&err,&pets,
+			&evolume,&data);
 		ERROR("pinq_def_pick_data3");
 		exppet.num_ints = list_pick3_num_pet[i];
 		exppet.ints = list_pick3_list_pet[i];
-		if (! i_compare_Pint_list(pets,exppet))
+		if (! i_compare_Pint_list(*pets,exppet))
 			tfprintf("failed: pick3 device (%d): list of prompt and echo types != expected\n",dev);
 		if (! i_compare_Plimit3(evolume,list_pick3_def_echo_volume[i]))
 			tfprintf("failed: pick3 device (%d): default echo volume != expected\n",dev);
