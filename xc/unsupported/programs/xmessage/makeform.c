@@ -1,4 +1,4 @@
-/* $XConsortium: makeform.c,v 1.3 94/04/17 20:45:56 gildea Exp $ */
+/* $XConsortium: makeform.c,v 1.4 94/06/03 15:58:33 gildea Exp $ */
 /*
 
 Copyright (c) 1988, 1991  X Consortium
@@ -264,7 +264,7 @@ Widget make_queryform(parent, msgstr, msglen,
 	 */
 	XtVaGetValues(text, XtNtopMargin, &top, XtNbottomMargin, &bottom,
 		      XtNleftMargin, &left, XtNrightMargin, &right, NULL);
-	label = XtVaCreateWidget("temp-label", labelWidgetClass, form,
+	label = XtVaCreateWidget("message", labelWidgetClass, form,
 				 XtNlabel, msgstr,
 				 XtNinternalWidth, (left+right+1)/2,
 				 XtNinternalHeight, (top+bottom+1)/2,
@@ -278,7 +278,7 @@ Widget make_queryform(parent, msgstr, msglen,
 	if (width > max_width) {
 	    width = max_width;
 	    /* add in the height of any horizontal scroll bar */
-	    scroll = XtVaCreateWidget("tmp-scroll", scrollbarWidgetClass, text,
+	    scroll = XtVaCreateWidget("hScrollbar", scrollbarWidgetClass, text,
 				      XtNorientation, XtorientHorizontal,
 				      NULL);
 	    XtVaGetValues(scroll, XtNheight, &scroll_size,
@@ -289,7 +289,7 @@ Widget make_queryform(parent, msgstr, msglen,
 	if (height > max_height) {
 	    height = max_height;
 	    /* add in the width of any vertical scroll bar */
-	    scroll = XtVaCreateWidget("tmp-scroll", scrollbarWidgetClass, text,
+	    scroll = XtVaCreateWidget("vScrollbar", scrollbarWidgetClass, text,
 				      XtNorientation, XtorientVertical, NULL);
 	    XtVaGetValues(scroll, XtNwidth, &scroll_size,
 			  XtNborderWidth, &border_width, NULL);
