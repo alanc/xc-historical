@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AIXV3.c,v 1.2 91/05/10 07:43:11 jap Exp $
+ * $XConsortium: hftQueue.c,v 1.1 91/05/10 08:28:54 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -38,7 +38,7 @@
 #include "aixCursor.h"
 #include "ibmScreen.h"
 
-#include "trace.h"
+#include "ibmTrace.h"
 #include "aixError.h"
 #include "hftQueue.h"
 

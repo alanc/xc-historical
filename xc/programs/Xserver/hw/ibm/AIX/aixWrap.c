@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AIXV3.c,v 1.2 91/05/10 07:43:11 jap Exp $
+ * $XConsortium: aixWrap.c,v 1.1 91/05/10 08:28:50 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -42,7 +42,7 @@
 #include "ibmMouse.h"
 #include "ibmKeybd.h"
 #include "ibmScreen.h"
-#include "trace.h"
+#include "ibmTrace.h"
 
 #include "OSio.h"
 #include "hftQueue.h"
