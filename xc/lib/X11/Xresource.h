@@ -1,4 +1,4 @@
-/* $XConsortium: Xresource.h,v 1.27 90/11/30 11:46:51 rws Exp $ */
+/* $XConsortium: Xresource.h,v 1.28 90/12/01 18:26:57 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -289,13 +289,26 @@ extern Bool XrmQGetSearchResource(
  *
  ****************************************************************/
 
+extern void XrmSetDatabase(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    XrmDatabase		/* database */
+#endif
+);
+
+extern XrmDatabase XrmGetDatabase(
+#if NeedFunctionPrototypes
+    Display*		/* display */
+#endif
+);
+
 extern XrmDatabase XrmGetFileDatabase(
 #if NeedFunctionPrototypes
     const char*		/* filename */
 #endif
 );
 
-void XrmCombineFileDatabase(
+extern Status XrmCombineFileDatabase(
 #if NeedFunctionPrototypes
     const char* 	/* filename */,
     XrmDatabase*	/* target */,
@@ -331,6 +344,25 @@ extern void XrmCombineDatabase(
 #endif
 );
 
+#define XrmEnumAllLevels 0
+#define XrmEnumOneLevel  1
+
+extern Bool XrmEnumerateDatabase(
+#if NeedFunctionPrototypes
+    XrmDatabase		/* db */,
+    XrmNameList		/* name_prefix */,
+    XrmClassList	/* class_prefix */,
+    int			/* mode */,
+    Bool (*)(XrmDatabase*	/* db */,
+	     XrmBindingList	/* bindings */,
+	     XrmQuarkList	/* quarks */,
+	     XrmRepresentation*	/* type */,
+	     XrmValue*		/* value */,
+	     caddr_t		/* closure */
+	     )		/* proc */,
+    caddr_t		/* closure */
+#endif
+);
 
 
 /****************************************************************
