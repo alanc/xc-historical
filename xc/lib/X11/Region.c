@@ -1,4 +1,4 @@
-/* $XConsortium: XRegion.c,v 11.29 91/01/09 15:16:08 rws Exp $ */
+/* $XConsortium: XRegion.c,v 11.30 91/01/12 11:21:24 rws Exp $ */
 /************************************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -193,8 +193,9 @@ XSetRegion( dpy, gc, r )
 	    pr->width = pb->x2 - pb->x1;
 	    pr->height = pb->y2 - pb->y1;
 	}
-	_XSetClipRectangles(dpy, gc, 0, 0, xr, r->numRects, YXBanded);
     }
+    if (xr || !r->numRects)
+	_XSetClipRectangles(dpy, gc, 0, 0, xr, r->numRects, YXBanded);
     UnlockDisplay(dpy);
     SyncHandle();
 }
