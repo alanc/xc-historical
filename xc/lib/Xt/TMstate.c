@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.123 90/12/12 14:53:28 rws Exp $ */
+/* $XConsortium: TMstate.c,v 1.124 90/12/28 17:20:57 gildea Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -163,43 +163,39 @@ static String PrintEventType(buf, len, str, event)
 {
     CHECK_STR_OVERFLOW;
     switch (event) {
-#if __STDC__
-#define PRINTEVENT(event) case event: (void)strcpy(str, "<" #event ">"); break;
-#else
-#define PRINTEVENT(event) case event: (void)strcpy(str, "<event>"); break;
-#endif
-	PRINTEVENT(KeyPress)
-	PRINTEVENT(KeyRelease)
-	PRINTEVENT(ButtonPress)
-	PRINTEVENT(ButtonRelease)
-	PRINTEVENT(MotionNotify)
-	PRINTEVENT(EnterNotify)
-	PRINTEVENT(LeaveNotify)
-	PRINTEVENT(FocusIn)
-	PRINTEVENT(FocusOut)
-	PRINTEVENT(KeymapNotify)
-	PRINTEVENT(Expose)
-	PRINTEVENT(GraphicsExpose)
-	PRINTEVENT(NoExpose)
-	PRINTEVENT(VisibilityNotify)
-	PRINTEVENT(CreateNotify)
-	PRINTEVENT(DestroyNotify)
-	PRINTEVENT(UnmapNotify)
-	PRINTEVENT(MapNotify)
-	PRINTEVENT(MapRequest)
-	PRINTEVENT(ReparentNotify)
-	PRINTEVENT(ConfigureNotify)
-	PRINTEVENT(ConfigureRequest)
-	PRINTEVENT(GravityNotify)
-	PRINTEVENT(ResizeRequest)
-	PRINTEVENT(CirculateNotify)
-	PRINTEVENT(CirculateRequest)
-	PRINTEVENT(PropertyNotify)
-	PRINTEVENT(SelectionClear)
-	PRINTEVENT(SelectionRequest)
-	PRINTEVENT(SelectionNotify)
-	PRINTEVENT(ColormapNotify)
-	PRINTEVENT(ClientMessage)
+#define PRINTEVENT(event, name) case event: (void) strcpy(str, name); break;
+	PRINTEVENT(KeyPress, "<KeyPress>")
+	PRINTEVENT(KeyRelease, "<KeyRelease>")
+	PRINTEVENT(ButtonPress, "<ButtonPress>")
+	PRINTEVENT(ButtonRelease, "<ButtonRelease>")
+	PRINTEVENT(MotionNotify, "<MotionNotify>")
+	PRINTEVENT(EnterNotify, "<EnterNotify>")
+	PRINTEVENT(LeaveNotify, "<LeaveNotify>")
+	PRINTEVENT(FocusIn, "<FocusIn>")
+	PRINTEVENT(FocusOut, "<FocusOut>")
+	PRINTEVENT(KeymapNotify, "<KeymapNotify>")
+	PRINTEVENT(Expose, "<Expose>")
+	PRINTEVENT(GraphicsExpose, "<GraphicsExpose>")
+	PRINTEVENT(NoExpose, "<NoExpose>")
+	PRINTEVENT(VisibilityNotify, "<VisibilityNotify>")
+	PRINTEVENT(CreateNotify, "<CreateNotify>")
+	PRINTEVENT(DestroyNotify, "<DestroyNotify>")
+	PRINTEVENT(UnmapNotify, "<UnmapNotify>")
+	PRINTEVENT(MapNotify, "<MapNotify>")
+	PRINTEVENT(MapRequest, "<MapRequest>")
+	PRINTEVENT(ReparentNotify, "<ReparentNotify>")
+	PRINTEVENT(ConfigureNotify, "<ConfigureNotify>")
+	PRINTEVENT(ConfigureRequest, "<ConfigureRequest>")
+	PRINTEVENT(GravityNotify, "<GravityNotify>")
+	PRINTEVENT(ResizeRequest, "<ResizeRequest>")
+	PRINTEVENT(CirculateNotify, "<CirculateNotify>")
+	PRINTEVENT(CirculateRequest, "<CirculateRequest>")
+	PRINTEVENT(PropertyNotify, "<PropertyNotify>")
+	PRINTEVENT(SelectionClear, "<SelectionClear>")
+	PRINTEVENT(SelectionRequest, "<SelectionRequest>")
+	PRINTEVENT(SelectionNotify, "<SelectionNotify>")
+	PRINTEVENT(ColormapNotify, "<ColormapNotify>")
+	PRINTEVENT(ClientMessage, "<ClientMessage>")
 	case _XtEventTimerEventType: (void) strcpy(str,"<EventTimer>"); break;
 	default: (void) sprintf(str, "<0x%x>", (int) event);
 #undef PRINTEVENT
