@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.14 91/05/24 12:41:41 swick Exp $ */
+/* $XConsortium: TMaction.c,v 1.15 91/07/31 13:09:21 swick Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -805,7 +805,7 @@ static void _XtMenuPopdownAction(widget, event, params, num_params)
 	popup_shell = _XtFindPopup(widget, params[0]);
 	if (popup_shell == NULL) {
             XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-			    "invalidPopup","xtMenuPopup",XtCXtToolkitError,
+			    "invalidPopup","xtMenuPopdown",XtCXtToolkitError,
 			    "Can't find popup widget \"%s\" in XtMenuPopdown",
 			    params, num_params);
 	    return;
