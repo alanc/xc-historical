@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: luna.cf,v 1.7 91/04/02 19:31:22 rws Exp $
+XCOMM platform:  $XConsortium: luna.cf,v 1.8 91/04/09 14:40:50 rws Exp $
 #ifdef Mc68000Architecture
 #define OSName            UNIOS-B 4.3BSD UNIX: 1.50
 #define OSMajorVersion    1
@@ -12,11 +12,12 @@ XCOMM platform:  $XConsortium: luna.cf,v 1.7 91/04/02 19:31:22 rws Exp $
 XCOMM operating system:  OSName
 
 #define BootstrapCFlags		-Dluna
-#define StandardDefines		-Dluna
+#define StandardDefines		-Dluna -DNOSTDHDRS
 #define HasPutenv		NO
 #define HasBsearch		NO
 #define HasSaberC		NO
 #define HasVoidSignalReturn	NO
+#define HasGcc			YES	/* XXX remove in R5 */
 
 #define PrimaryScreenResolution 100
 
@@ -24,11 +25,9 @@ XCOMM operating system:  OSName
 #define BuildServer YES
 #define XlunaServer Xluna
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
-/* #define HasGcc YES */
 #endif
 
 #ifdef Mc88000Architecture
-#define BuildServer NO
-#define XlunaServer Xluna
+#define BuildServer		YES /* XXX remove in R5 */
+#define XnonServer Xnon /* XXX remove in R5 */
 #endif
-
