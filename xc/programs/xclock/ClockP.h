@@ -35,6 +35,12 @@ typedef struct  {
 	 XtIntervalId interval_id;
    } Clock;
 
+/* Full instance record declaration */
+typedef struct {
+   Core core;
+   Clock clock;
+   } ClockData, *ClockWidget;
+
 /* New fields for the Clock widget class record */
 typedef struct {int dummy;} ClockClass;
 
