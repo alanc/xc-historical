@@ -1,5 +1,5 @@
 #! /bin/sh
-#$XConsortium: Xmark.sh,v 1.3 93/04/11 16:18:16 rws Exp $
+#$XConsortium: Xmark.sh,v 1.4 93/04/12 20:10:46 rws Exp $
 #XPC Header: Xmark,v 1.15 93/04/12 10:10:07 hmgr Exp
 #
 ############################################################
@@ -50,13 +50,13 @@
 # where: 'datafile' is created by running x11perf Rev 1.3
 # with the flags below:
 #
-#      x11perf -display mysystem:0.0 -rop GXcopy GXxor -all > datafile
+#      x11perf -display mysystem:0.0 -v1.3 -rop GXcopy GXxor -all > datafile
 #   or
-#      x11perf -display mysystem:0.0 -rop GXcopy -all > datafile
-#      x11perf -display mysystem:0.0 -rop GXxor -all >> datafile
+#      x11perf -display mysystem:0.0 -v1.3 -rop GXcopy -all > datafile
+#      x11perf -display mysystem:0.0 -v1.3 -rop GXxor -all >> datafile
 #   or
-#      x11perf -display mysystem:0.0 -rop GXxor -all > datafile
-#      x11perf -display mysystem:0.0 -rop GXcopy -all >> datafile
+#      x11perf -display mysystem:0.0 -v1.3 -rop GXxor -all > datafile
+#      x11perf -display mysystem:0.0 -v1.3 -rop GXcopy -all >> datafile
 #
 # Xmark summarizes the results relative to the data contained in
 # the datafile.  Xmark writes to standard out, so if you want to
