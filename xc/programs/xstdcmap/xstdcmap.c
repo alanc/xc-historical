@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: xcmap.c,v 1.1 89/03/27 13:44:33 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -190,22 +190,26 @@ static XVisualInfo *getBestVisual(property, vinfo, nvisuals)
     XVisualInfo *vinfo;		/* specifies all visuals of the screen */
     int		nvisuals;	/* specifies number of visuals of screen */
 {	
-    XVisualInfo	*v = NULL;
+    XVisualInfo	*v1 = NULL, *v2 = NULL;
 
     if (vinfo == NULL)		 /* unexpected: a screen with no visuals */
-	return v;
-    if (((v = getDeepestVisual(DirectColor, vinfo, nvisuals)) != NULL) ||
-	((v = getDeepestVisual(PseudoColor, vinfo, nvisuals)) != NULL))
-	return v;
+	return v1;
+    v1 = getDeepestVisual(DirectColor, vinfo, nvisuals);
+    v2 = getDeepestVisual(PseudoColor, vinfo, nvisuals);
+    if (v2 && (!v1 || (v2->colormap_size >=
+		       ((v1->red_mask | v1->green_mask | v1->blue_mask) + 1))))
+	return v2;
+    else if (v1)
+	return v1;
     if (property == XA_RGB_BEST_MAP)
-	if (((v = getDeepestVisual(TrueColor, vinfo, nvisuals)) != NULL) ||
-	    ((v = getDeepestVisual(StaticColor, vinfo, nvisuals)) != NULL))
-	    return v;
+	if (((v1 = getDeepestVisual(TrueColor, vinfo, nvisuals)) != NULL) ||
+	    ((v1 = getDeepestVisual(StaticColor, vinfo, nvisuals)) != NULL))
+	    return v1;
     if (property == XA_RGB_GRAY_MAP)
-	if (((v = getDeepestVisual(GrayScale, vinfo, nvisuals)) != NULL) ||
-	    ((v = getDeepestVisual(StaticGray, vinfo, nvisuals)) != NULL))
-	    return v;
-    return v;
+	if (((v1 = getDeepestVisual(GrayScale, vinfo, nvisuals)) != NULL) ||
+	    ((v1 = getDeepestVisual(StaticGray, vinfo, nvisuals)) != NULL))
+	    return v1;
+    return v1;
 
 }
 
