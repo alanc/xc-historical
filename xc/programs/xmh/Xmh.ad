@@ -9,7 +9,7 @@ Xmh*menuBox.messageButton.Label:	Message
 Xmh*menuBox.sequenceButton.Label:	Sequence
 Xmh*menuBox.viewButton.Label:		View
 Xmh*menuBox.optionButton.Label:		Options
-Xmh*SimpleMenu*LineMenuEntry.Height:	20
+Xmh*SimpleMenu*SmeLine.Height:		20
 
 Xmh.*close.Label:		Close Window
 Xmh*compose.Label:		Compose Message
