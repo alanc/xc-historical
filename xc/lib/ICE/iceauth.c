@@ -1,4 +1,4 @@
-/* $XConsortium: iceauth.c,v 1.6 93/11/22 17:43:20 mor Exp $ */
+/* $XConsortium: iceauth.c,v 1.7 93/11/24 15:24:02 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -129,7 +129,8 @@ char    	**errorStringRet;
 	 * it in authentication.
 	 */
 
-	entry = IceGetAuthDataEntry (listenObj, "ICE", "ICE-MAGIC-COOKIE-1");
+	entry = IceGetAuthenticationData (listenObj,
+	    "ICE", "ICE-MAGIC-COOKIE-1");
 
 	if (!entry)
 	{
