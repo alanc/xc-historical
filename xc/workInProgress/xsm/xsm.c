@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.12 94/02/04 15:29:57 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.13 94/02/05 03:00:20 rws Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -23,20 +23,31 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 #include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>
-#include <X11/Shell.h>
 #include <X11/Xaw/Box.h>
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Dialog.h>
 #include <X11/Xaw/Toggle.h>
-#include <X11/SM/SMlib.h>
 #include <X11/Xfuncs.h>
+#ifndef _POSIX_SOURCE
+#define _POSIX_SOURCE
 #include <stdio.h>
+#undef _POSIX_SOURCE
+#else
+#include <stdio.h>
+#endif
+#include <X11/Shell.h>
+#include <X11/SM/SMlib.h>
 #include <ctype.h>
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #endif
 #include <setjmp.h>
 #include <sys/param.h>
+
+/* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
+#if defined(SYSV) && defined(SYSV386) && defined(__STDC__) && defined(ISC)
+extern FILE *fdopen(int, char const *);
+#endif
 
 #include "list.h"
 
