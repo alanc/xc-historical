@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.34 89/09/28 17:10:20 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.35 89/09/29 12:07:31 swick Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif /*lint*/
 
@@ -36,7 +36,8 @@ SOFTWARE.
 #include <X11/Xlib.h>
 #include "IntrinsicI.h"
 
-#define HEAP_SEGMENT_SIZE 8180
+#ifndef HEAP_SEGMENT_SIZE
+#define HEAP_SEGMENT_SIZE 1492
 
 static void _XtHeapInit();
 static void _XtHeapFree();
@@ -258,6 +259,9 @@ XtAppContext XtCreateApplicationContext()
 	app->count = app->max = app->last = 0;
 	app->timerQueue = NULL;
 	app->workQueue = NULL;
+	app->selectRqueue = NULL;
+	app->selectWqueue = NULL;
+	app->selectEqueue = NULL;
 	app->outstandingQueue = NULL;
 	app->errorDB = NULL;
 	_XtSetDefaultErrorHandlers(&app->errorMsgHandler, 
@@ -388,13 +392,26 @@ char* _XtHeapAlloc(heap, bytes)
     register char* heap_loc;
     if (heap == NULL) return XtMalloc(bytes);
     if (heap->bytes_remaining < bytes) {
-	int segment_size = ((bytes + sizeof(char*)) > HEAP_SEGMENT_SIZE)
-			    ? bytes + sizeof(char*) : HEAP_SEGMENT_SIZE;
-	heap_loc = XtMalloc((unsigned)segment_size);
+	if ((bytes + sizeof(char*)) >= (HEAP_SEGMENT_SIZE>>1)) {
+	    /* preserve current segment; insert this one in front */
+#ifdef _TRACE_HEAP
+	    printf( "allocating large segment (%d bytes) on heap %#x\n",
+		    bytes, heap );
+#endif
+	    heap_loc = XtMalloc(bytes + sizeof(char*));
+	    *(char**)heap_loc = *(char**)heap->start;
+	    *(char**)heap->start = heap_loc;
+	    return heap_loc;
+	}
+	/* else discard remainder of this segment */
+#ifdef _TRACE_HEAP
+	printf( "allocating new segment on heap %#x\n", heap );
+#endif
+	heap_loc = XtMalloc((unsigned)HEAP_SEGMENT_SIZE);
 	*(char**)heap_loc = heap->start;
 	heap->start = heap_loc;
 	heap->current = heap_loc + sizeof(char*);
-	heap->bytes_remaining = segment_size - sizeof(char*);
+	heap->bytes_remaining = HEAP_SEGMENT_SIZE - sizeof(char*);
     }
 #ifdef WORD64
     /* round to nearest 8-byte boundary */
@@ -405,7 +422,7 @@ char* _XtHeapAlloc(heap, bytes)
 #endif /* WORD64 */
     heap_loc = heap->current;
     heap->current += bytes;
-    heap->bytes_remaining -= bytes; /* can be negative */
+    heap->bytes_remaining -= bytes; /* can be negative, if rounded */
     return heap_loc;
 }
 
