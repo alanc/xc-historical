@@ -385,7 +385,7 @@ ServerTarget(Xibm,$(EXTDIR) $(FONTUTILDIR) $(IBMDIRS),$(IBMOBJS),$(IBMLIBS),$(IB
 #define need_ddx_apollo_apc
 #define need_os_42bsd
 APOLLODIRS = dix ddx/snf ddx/mi ddx/mfb ddx/apollo ddx/apollo/apc os/4.2bsd
-APOLLOOBJS = ddx/apollo/ap_init.o /sys/traits/io_traits $(FONTUTIL)
+APOLLOOBJS = ddx/apollo/ap_init.o /sys/traits/io_traits.2 $(FONTUTIL)
 APOLLOLIBS = $(APOLLO) $(APC) $(DIX) $(BSD) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
 XapolloDIRS = $(APOLLODIRS)
 
