@@ -1,4 +1,4 @@
-/* $XConsortium: bbox.h,v 2.9 89/09/27 19:10:50 converse Exp $ */
+/* $XConsortium: bbox.h,v 2.10 89/10/06 14:48:32 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -53,5 +53,6 @@ extern int	 BBoxNumButtons	      (/*  ButtonBox  */);
 extern char *	 BBoxNameOfButton     (/*  Button  */);
 extern Widget	 BBoxMenuOfButton     (/*  Button  */);
 extern void	 BBoxLockSize	      (/*  ButtonBox  */);
+extern Boolean	 BBoxIsGrandparent    (/*  ButtonBox, Widget  */);
 
 #endif /* _bbox_h */

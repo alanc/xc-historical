@@ -1,5 +1,5 @@
 /*
- * $XConsortium: externs.h,v 2.27 89/11/16 21:03:50 converse Exp $
+ * $XConsortium: externs.h,v 2.28 89/11/20 21:05:27 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -65,7 +65,7 @@ extern void 	AddMenuEntry		(/* Widget, char *, ... */);
 extern void	DoRememberMenuSelection (/* Widget, XtPointer, XtPointer */);
 extern void	SendMenuEntryEnableMsg	(/* Button, char *, int */);
 extern void	SetSequenceMenuItem	(/* Widget */);
-extern void	ToggleMenuItem		(/* Widget, char *, Boolean */);
+extern void	ToggleMenuItem		(/* Widget, Boolean */);
 
 	/* from msg.c */
 

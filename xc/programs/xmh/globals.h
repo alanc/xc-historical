@@ -1,5 +1,5 @@
 /*
- *  $XConsortium: globals.h,v 2.28 89/10/27 16:41:59 swick Exp $
+ *  $XConsortium: globals.h,v 2.29 89/11/15 11:03:24 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -86,6 +86,7 @@ ext Toc		DraftsFolder;	/* Toc containing drafts. */
 ext Scrn	*scrnList;	/* Array of scrns in use. */
 ext int		numScrns;	/* Number of scrns in above array. */
 ext Widget	NoMenuForButton;/* Flag menu widget value: no menu */
+ext Widget	LastMenuButtonPressed;	/* to `toggle' menu buttons */
 ext Widget      NullSource;	/* null text widget source */
 ext Dimension	rootwidth;	/* Dimensions of root window.  */
 ext Dimension	rootheight;

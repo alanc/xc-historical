@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xmh.h,v 2.26 89/10/11 11:52:28 jim Exp $
+ * $XConsortium: xmh.h,v 2.27 89/11/16 21:04:29 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -107,7 +107,6 @@ typedef struct _ScrnRec {
    ButtonBox	folderbuttons;	/* Folder buttons. */
    Widget	toclabel;	/* Toc titlebar. */
    Widget	tocwidget;	/* Toc text. */
-   ButtonBox 	seqbuttons;	/* Sequence buttons. */
    ButtonBox	miscbuttons;	/* optional miscellaneous command buttons */
    Widget	viewlabel;	/* View titlebar. */
    Widget	viewwidget;	/* View text. */

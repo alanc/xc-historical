@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.h,v 2.8 89/09/15 16:10:29 converse Exp $
+ * $XConsortium: toc.h,v 2.9 89/10/06 14:50:47 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -50,7 +50,7 @@ extern int	TocHasSequences		(/* Toc */);
 extern void	TocChangeViewedSeq	(/* Toc, Sequence */);
 extern Sequence	TocViewedSequence	(/* Toc */);
 extern Sequence	TocGetSeqNamed		(/* Toc, char * */);
-extern void	TocSetSelectedSequence	(/* Toc, char * */);
+extern void	TocSetSelectedSequence	(/* Toc, Sequence */);
 extern Sequence	TocSelectedSequence	(/* Toc */);
 
 extern MsgList	TocCurMsgList		(/* Toc */);
