@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.62 91/12/09 15:34:37 converse Exp $ */
+/* $XConsortium: InitialI.h,v 1.63 92/05/20 16:04:33 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -55,7 +55,6 @@ SOFTWARE.
 typedef struct _TimerEventRec {
         struct timeval        te_timer_value;
 	struct _TimerEventRec *te_next;
-	Display		      *te_dpy;
 	XtTimerCallbackProc   te_proc;
 	XtAppContext	      app;
 	XtPointer	      te_closure;
