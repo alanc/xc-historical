@@ -1,5 +1,5 @@
 /*
- * $XHeader: charproc.c,v 1.41 88/07/13 11:11:23 jim Exp $
+ * $XHeader: charproc.c,v 1.42 88/07/28 17:52:33 jim Exp $
  */
 
 
@@ -122,7 +122,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XHeader: charproc.c,v 1.41 88/07/13 11:11:23 jim Exp $";
+static char rcs_id[] = "$XHeader: charproc.c,v 1.42 88/07/28 17:52:33 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2247,7 +2247,7 @@ ShowCursor()
 		XDrawLine(screen->display, TextWindow(screen), currentGC,
 			x, y+1, x + FontWidth(screen), y+1);
 	if (!screen->select && !screen->always_highlight) {
-		screen->box->x = x + screen->fnt_norm->max_bounds.lbearing;
+		screen->box->x = x;
 		screen->box->y = y - screen->fnt_norm->max_bounds.ascent;
 		XDrawLines (screen->display, TextWindow(screen), 
 			    screen->cursoroutlineGC ? screen->cursoroutlineGC 
