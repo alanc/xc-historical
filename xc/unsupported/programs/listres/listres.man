@@ -8,16 +8,16 @@ listres - list resources in widgets
 .PP
 The \fIlistres\fP program generates a list of a widget's resource database.  
 The class in which each resource is first defined, the instance and class
-name, and the type of each resource is listed.  
+name, and the type of each resource is listed.  If no specific widgets
+or the \fI-all\fP switch are given, a two-column list of widget names and
+their class hierarchies is printed.
 .SH OPTIONS
 \fIListres\fP accepts all of the standard toolkit command line options along
 with those listed below:
 .TP 8
-.B \-known
-This option indicates that \fIlistres\fP should print a two-column 
-list of all of the widgets about which it has information.  The name of the
-external widget class record variable is shown on the left and the 
-superclass to subclass widget hierarchy is given on the right.
+.B \-all
+This option indicates that \fIlistres\fP should print information for all
+known widgets and objects. 
 .TP 8
 .B \-nosuper
 This option indicates that resources that are inherited from a superclass
