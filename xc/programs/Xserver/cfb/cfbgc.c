@@ -21,6 +21,9 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+
+/* $XConsortium: Exp $ */
+
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -52,7 +55,7 @@ static GCFuncs cfbFuncs = {
     cfbCopyClip,
 };
 
-extern void mfbPushPixels();
+extern void mfbPushPixels(), cfbPushPixels8();
 
 static GCOps	cfbTEOps = {
     cfbSolidFS,
@@ -75,11 +78,12 @@ static GCOps	cfbTEOps = {
 #if PPW == 4
     cfbTEGlyphBlt8,
     cfbPolyGlyphBlt8,
+    cfbPushPixels8,
 #else
-    cfbTEGlyphBlt
-    miPolyGlyphBlt
-#endif
+    cfbTEGlyphBlt,
+    miPolyGlyphBlt,
     mfbPushPixels,
+#endif
     miMiter,
 };
 
@@ -104,10 +108,11 @@ static GCOps	cfbNonTEOps = {
     miImageGlyphBlt,
 #if PPW == 4
     cfbPolyGlyphBlt8,
+    cfbPushPixels8,
 #else
     miPolyGlyphBlt,
-#endif
     mfbPushPixels,
+#endif
     miMiter,
 };
 
@@ -615,6 +620,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 
     if (new_fillrct) {
 	pGC->ops->PolyFillRect = miPolyFillRect;
+	pGC->ops->PushPixels = mfbPushPixels;
 	switch (pGC->fillStyle)
 	{
 	case FillSolid:
@@ -623,6 +629,11 @@ cfbValidateGC(pGC, changes, pDrawable)
 		pGC->alu == GXinvert)
 	    {
 		pGC->ops->PolyFillRect = cfbPolyFillRect;
+	    }
+	    if (pGC->alu == GXcopy &&
+		((pGC->planemask & PMSK) == PMSK))
+	    {
+		pGC->ops->PushPixels = cfbPushPixels8;
 	    }
 	    break;
 	case FillTiled:
