@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.129 89/12/06 15:32:24 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.130 89/12/08 12:36:12 swick Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -692,6 +692,33 @@ XawTextPosition left, right;
   return(result);
 }
 
+/* like _XawTextGetText, but enforces ICCCM STRING type encoding */
+
+char *
+_XawTextGetSTRING(ctx, left, right)
+TextWidget ctx;
+XawTextPosition left, right;
+{
+  register unsigned char *s;
+  register unsigned char c;
+  register int i, j, n;
+
+  s = (unsigned char *)_XawTextGetText(ctx, left, right);
+  /* only HT and NL control chars are allowed, strip out others */
+  n = strlen((char *)s);
+  i = 0;
+  for (j = 0; j < n; j++) {
+    c = s[j];
+    if (((c >= 0x20) && c <= 0x7f) ||
+	(c >= 0xa0) || (c == '\t') || (c == '\n')) {
+      s[i] = c;
+      i++;
+    }
+  }
+  s[i] = 0;
+  return (char *)s;
+}
+
 /* 
  * This routine maps an x and y position in a window that is displaying text
  * into the corresponding position in the source.
@@ -1350,11 +1377,12 @@ int *format;
 				target, type, (caddr_t*)&std_targets,
 				&std_length, format);
     
-    *value = XtRealloc(*value, sizeof(Atom)*(std_length + 6 + *length));
+    *value = XtRealloc(*value, sizeof(Atom)*(std_length + 7 + *length));
     targetP = *(Atom**)value + *length;
-    *length += std_length + 5;
+    *length += std_length + 6;
     *targetP++ = XA_STRING;
     *targetP++ = XA_TEXT(d);
+    *targetP++ = XA_COMPOUND_TEXT(d);
     *targetP++ = XA_LENGTH(d);
     *targetP++ = XA_LIST_LENGTH(d);
     *targetP++ = XA_CHARACTER_POSITION(d);
@@ -1376,10 +1404,15 @@ int *format;
   if ( SrcCvtSel(src, selection, target, type, value, length, format) )
     return True;
 
-  if (*target == XA_STRING || *target == XA_TEXT(d)) {
-    *type = XA_STRING;
-    *value = _XawTextGetText(ctx, ctx->text.s.left, ctx->text.s.right);
-    *length = (long) strlen(*value);
+  if (*target == XA_STRING ||
+      *target == XA_TEXT(d) ||
+      *target == XA_COMPOUND_TEXT(d)) {
+    if (*target == XA_COMPOUND_TEXT(d))
+      *type = *target;
+    else
+      *type = XA_STRING;
+    *value = _XawTextGetSTRING(ctx, ctx->text.s.left, ctx->text.s.right);
+    *length = strlen(*value);
     *format = 8;
     return True;
   }
@@ -1540,7 +1573,8 @@ Cardinal count;
  */
 
       if ((buffer = GetCutBufferNumber(selection)) != NOT_A_CUT_BUFFER) {
-	char *ptr = _XawTextGetText(ctx, ctx->text.s.left, ctx->text.s.right);
+	char *ptr;
+	ptr = _XawTextGetSTRING(ctx, ctx->text.s.left, ctx->text.s.right);
 	if (buffer == 0) {
 	  _CreateCutBuffers(XtDisplay(w));
 	  XRotateBuffers(XtDisplay(w), 1);
