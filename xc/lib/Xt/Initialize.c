@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.91 87/12/14 15:09:45 rws Locked $";
+static char rcsid[] = "$Header: Initialize.c,v 1.92 87/12/20 12:47:11 swick Locked $";
 #endif lint
 
 /*
@@ -347,10 +347,10 @@ Cardinal *num_args;
 		if(flag & YNegative) 
 		    w->core.y += HeightOfScreen(XtScreen(w))
 			         - w->core.height - (w->core.border_width<<1);
-	} else 	w->shell.clientspecified = FALSE;
+	}
 	if(w->core.width != 0 && w->core.height != 0) {
 	  	w->shell.clientspecified = TRUE;
-        }
+        } else 	w->shell.clientspecified = FALSE;
 	XtAddEventHandler(
 	    new, (EventMask) StructureNotifyMask,
 	    FALSE, EventHandler, (Opaque) NULL);
@@ -573,11 +573,12 @@ Widget wid;
 	if (w->composite.children[i]->core.managed) {
 	    childwid = w->composite.children[i];
 	    if (!XtIsRealized ((Widget) wid)) {
-		if ((w->core.width == 0	&& w->core.height == 0) ||
-		    ! w->shell.clientspecified) {
-	            /* we inherit our child's attributes */
-		    w->core.width = childwid->core.width;
-		    w->core.height = childwid->core.height;
+		/* we inherit our child's width and height if either is 0 */
+		if (w->core.width == 0 || w->core.height == 0) {
+		    if (w->core.width == 0)
+			w->core.width = childwid->core.width;
+		    if (w->core.height == 0)
+			w->core.height = childwid->core.height;
 		    w->shell.sizehints.flags |= PSize;
 		} else 
 		     needresize = TRUE;
