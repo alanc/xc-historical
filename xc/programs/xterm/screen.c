@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.24 91/01/30 17:48:12 gildea Exp $
+ *	$XConsortium: screen.c,v 1.25 91/04/22 13:43:47 gildea Exp $
  */
 
 /*
@@ -29,6 +29,7 @@
 
 #include "ptyx.h"
 #include "error.h"
+#include "data.h"
 
 #include <stdio.h>
 #include <signal.h>
@@ -75,22 +76,24 @@ Char **addr;
 }
 
 /*
- *  This is called when the screen is resized. Not complex if you do
- *  things in the right order...
+ *  This is called when the screen is resized.
+ *  Returns the number of lines the text was moved down (neg for up).
+ *  (Return value only necessary with SouthWestGravity.)
  */
-static void
+static
 Reallocate(sbuf, sbufaddr, nrow, ncol, oldrow, oldcol)
-ScrnBuf *sbuf;
-Char **sbufaddr;
-int nrow, ncol, oldrow, oldcol;
+    ScrnBuf *sbuf;
+    Char **sbufaddr;
+    int nrow, ncol, oldrow, oldcol;
 {
 	register ScrnBuf base;
 	register Char *tmp;
 	register int i, minrows, mincols;
 	Char *oldbuf;
+	int move_down = 0, move_up = 0;
 	
 	if (sbuf == NULL || *sbuf == NULL)
-		return;
+		return 0;
 
 	oldrow *= 2;
 	oldbuf = *sbufaddr;
@@ -100,39 +103,57 @@ int nrow, ncol, oldrow, oldcol;
 	 * update of the additional lines in sbuf
 	 */
 
+	/* this is a good idea, but doesn't seem to be implemented.  -gildea */
+
 	/* 
-	 *  realloc sbuf; we don't care about losing the lower lines if the
-	 *  screen shrinks. It might be cleaner to readjust the screen so
-	 *  that the UPPER lines vanish when the screen shrinks but that's
-	 *  more work...
+	 * realloc sbuf, the pointers to all the lines.
+	 * If the screen shrinks, remove lines off the top of the buffer
+	 * if resizeGravity resource says to do so.
 	 */
 	nrow *= 2;
+	if (nrow < oldrow  &&  term->misc.resizeGravity == SouthWestGravity) {
+	    /* Remove lines off the top of the buffer if necessary. */
+	    move_up = oldrow-nrow 
+		        - 2*(term->screen.max_row - term->screen.cur_row);
+	    if (move_up < 0)
+		move_up = 0;
+	    /* Overlapping bcopy here! */
+	    bcopy(*sbuf+move_up, *sbuf,
+		  (oldrow-move_up)*sizeof((*sbuf)[0]) );
+	}
 	*sbuf = (ScrnBuf) realloc((char *) (*sbuf),
-	 (unsigned) (nrow * sizeof(char *)));
+				  (unsigned) (nrow * sizeof(char *)));
 	if (*sbuf == 0)
-		SysError(ERROR_RESIZE);
+	    SysError(ERROR_RESIZE);
 	base = *sbuf;
 
 	/* 
 	 *  create the new buffer space and copy old buffer contents there
-	 *  line by line, updating the pointers in sbuf as we go; then free
-	 *  the old buffer
+	 *  line by line.
 	 */
 	if ((tmp = calloc((unsigned) (nrow * ncol), sizeof(char))) == 0)
 		SysError(ERROR_SREALLOC);
 	*sbufaddr = tmp;
 	minrows = (oldrow < nrow) ? oldrow : nrow;
 	mincols = (oldcol < ncol) ? oldcol : ncol;
-	for(i = 0; i < minrows; i++, tmp += ncol) {
+	if (nrow > oldrow  &&  term->misc.resizeGravity == SouthWestGravity) {
+	    /* move data down to bottom of expanded screen */
+	    move_down = Min(nrow-oldrow, 2*term->screen.savedlines);
+	    tmp += ncol*move_down;
+	}
+	for (i = 0; i < minrows; i++, tmp += ncol) {
 		bcopy(base[i], tmp, mincols);
-		base[i] = tmp;
 	}
-	if (oldrow < nrow) {
-		for (i = minrows; i < nrow; i++, tmp += ncol)
-			base[i] = tmp;
-	}
-	/* Now free the old buffer - simple, see... */
+	/*
+	 * update the pointers in sbuf
+	 */
+	for (i = 0, tmp = *sbufaddr; i < nrow; i++, tmp += ncol)
+	    base[i] = tmp;
+
+        /* Now free the old buffer */
 	free(oldbuf);
+
+	return move_down ? move_down/2 : -move_up/2; /* convert to rows */
 }
 
 ScreenWrite (screen, str, flags, length)
@@ -441,29 +462,30 @@ register int first, last;
 		bzero (screen->buf [first++], (screen->max_col + 1));
 }
 
-ScreenResize (screen, width, height, flags)
 /*
-   Resizes screen:
-   1. If new window would have fractional characters, sets window size so as to
-      discard fractional characters and returns -1.
-      Minimum screen size is 1 X 1.
-      Note that this causes another ExposeWindow event.
-   2. Enlarges screen->buf if necessary.  New space is appended to the bottom
-      and to the right
-   3. Reduces  screen->buf if necessary.  Old space is removed from the bottom
-      and from the right
-   4. Cursor is positioned as closely to its former position as possible
-   5. Sets screen->max_row and screen->max_col to reflect new size
-   6. Maintains the inner border (and clears the border on the screen).
-   7. Clears origin mode and sets scrolling region to be entire screen.
-   8. Returns 0
- */
-register TScreen *screen;
-int width, height;
-unsigned *flags;
+  Resizes screen:
+  1. If new window would have fractional characters, sets window size so as to
+  discard fractional characters and returns -1.
+  Minimum screen size is 1 X 1.
+  Note that this causes another ExposeWindow event.
+  2. Enlarges screen->buf if necessary.  New space is appended to the bottom
+  and to the right
+  3. Reduces  screen->buf if necessary.  Old space is removed from the bottom
+  and from the right
+  4. Cursor is positioned as closely to its former position as possible
+  5. Sets screen->max_row and screen->max_col to reflect new size
+  6. Maintains the inner border (and clears the border on the screen).
+  7. Clears origin mode and sets scrolling region to be entire screen.
+  8. Returns 0
+  */
+ScreenResize (screen, width, height, flags)
+    register TScreen *screen;
+    int width, height;
+    unsigned *flags;
 {
 	int rows, cols;
 	int border = 2 * screen->border;
+	int move_down_by;
 #ifdef sun
 #ifdef TIOCSSIZE
 	struct ttysize ts;
@@ -495,29 +517,54 @@ unsigned *flags;
 	if (rows < 1) rows = 1;
 	if (cols < 1) cols = 1;
 
-	/* change buffers if the screen has changed size */
+	/* update buffers if the screen has changed size */
 	if (screen->max_row != rows - 1 || screen->max_col != cols - 1) {
 		register int savelines = screen->scrollWidget ?
 		 screen->savelines : 0;
+		int delta_rows = rows - (screen->max_row + 1);
 		
 		if(screen->cursor_state)
 			HideCursor();
 		if (screen->altbuf) 
-			Reallocate(&screen->altbuf, (Char **)&screen->abuf_address,
+		    (void) Reallocate(&screen->altbuf, (Char **)&screen->abuf_address,
 			 rows, cols, screen->max_row + 1, screen->max_col + 1);
-		Reallocate(&screen->allbuf, (Char **)&screen->sbuf_address,
-		 rows + savelines, cols,
-		 screen->max_row + 1 + savelines, screen->max_col + 1);
+		move_down_by = Reallocate(&screen->allbuf,
+					  (Char **)&screen->sbuf_address,
+					  rows + savelines, cols,
+					  screen->max_row + 1 + savelines,
+					  screen->max_col + 1);
 		screen->buf = &screen->allbuf[2 * savelines];
-		 
-		screen->max_row = rows - 1;
+
+		screen->max_row += delta_rows;
 		screen->max_col = cols - 1;
+
+		if ( term->misc.resizeGravity == SouthWestGravity) {
+		    screen->savedlines -= move_down_by;
+		    if (screen->savedlines < 0)
+			screen->savedlines = 0;
+		    if (screen->savedlines > screen->savelines)
+			screen->savedlines = screen->savelines;
+		    if (screen->topline < -screen->savedlines)
+			screen->topline = -screen->savedlines;
+		    screen->cur_row += move_down_by;
+		    screen->cursor_row += move_down_by;
+		    ScrollSelection(screen, move_down_by);
+		}
+
+		if ( move_down_by != delta_rows
+		     && term->misc.resizeGravity == SouthWestGravity)
+		    /* bit gravity did the wrong thing */
+		    if (delta_rows > 0)
+			ScrnRefresh(screen, delta_rows, 0,
+				    screen->max_row + 1 - delta_rows, cols, 1);
+		    else
+			ScrnRefresh(screen, 0, 0, rows, cols, 1);
 	
 		/* adjust scrolling region */
 		screen->top_marg = 0;
 		screen->bot_marg = screen->max_row;
 		*flags &= ~ORIGIN;
-	
+
 		if (screen->cur_row > screen->max_row)
 			screen->cur_row = screen->max_row;
 		if (screen->cur_col > screen->max_col)
