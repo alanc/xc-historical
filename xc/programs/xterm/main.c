@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.46 88/07/12 10:41:16 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.47 88/07/12 11:08:16 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -966,10 +966,10 @@ spawn ()
 			ttydev = malloc((unsigned) (strlen(ptr) + 1));
 			(void) strcpy(ttydev, ptr);
 		}
-		if (screen->respond != Xsocket + 1) {
-			dup2 (screen->respond, Xsocket + 1);
+		if (screen->respond < 3) {
+			int newrespond = dupHigh (screen->respond);
 			close (screen->respond);
-			screen->respond = Xsocket + 1;
+			screen->respond = newrespond;
 		}
 
 		/* change ownership of tty to real group and user id */
@@ -978,10 +978,10 @@ spawn ()
 		/* change protection of tty */
 		chmod (ttydev, 0622);
 
-		if (tty != Xsocket + 2)	{
-			dup2 (tty, Xsocket + 2);
+		if (tty < 3) {
+			int newtty = dupHigh (tty);
 			close (tty);
-			tty = Xsocket + 2;
+			tty = newtty;
 		}
 
 		/* set the new terminal's state to be the old one's 
@@ -1520,7 +1520,26 @@ char *fmt;
 #endif	/* TIOCNOTTY */
 }
 
-checklogin()
+int dupHigh(oldfd)
+{
+    int desc[3],i,j;
+    /* Find an fd > 2 */
+    for (i=0;i<3;i++) {
+	desc[i] = dup(oldfd);
+	if (desc[i] > 2)
+	    break;
+	}
+    if (i==3) {
+	fprintf(stderr,"dupHigh failed\n");
+	exit(1);
+	}
+    /* Close unneeded ones */
+    for (j=0;j<i;j++)
+	close(desc[j]);
+    return  desc[i];
+}
+
+checklogin() 
 {
 	register int ts, i;
 	register struct passwd *pw;
