@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: Berklib.c,v 1.4 90/08/27 15:29:40 swick Exp $ */
 
 /*
  * This file is used by System V based systems.
@@ -71,20 +71,6 @@ unsigned int	mask;
 	mask = mask >> 1;
     }
     return i;
-}
-
-char * 
-index (s, c)
-char *s, c;
-{
-    return ((char *) strchr (s, c));
-}
-
-char * 
-rindex (s, c)
-char *s, c;
-{
-    return ((char *) strrchr (s, c));
 }
 
 /*
