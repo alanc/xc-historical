@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parse.c,v 1.19 91/04/05 17:34:07 rws Exp $
+ * $XConsortium: parse.c,v 1.20 91/05/12 21:35:42 rws Exp $
  */
 #include "def.h"
 
@@ -14,6 +14,7 @@ find_includes(filep, file, file_red, recursion, failOK)
 {
 	register char	*line;
 	register int	type;
+	boolean recfailOK;
 
 	while (line = getline(filep)) {
 		switch(type = deftype(line, filep, file_red, file, TRUE)) {
@@ -21,28 +22,28 @@ find_includes(filep, file, file_red, recursion, failOK)
 		doif:
 			type = find_includes(filep, file,
 				file_red, recursion+1, failOK);
-			while ((type == ELIF) || (type == ELIFFALSE))
+			while ((type == ELIF) || (type == ELIFFALSE) ||
+			       (type == ELIFGUESSFALSE))
 				type = gobble(filep, file, file_red);
 			if (type == ELSE)
 				gobble(filep, file, file_red);
 			break;
 		case IFFALSE:
+		case IFGUESSFALSE:
 		    doiffalse:
+			if (type == IFGUESSFALSE || type == ELIFGUESSFALSE)
+			    recfailOK = TRUE;
+			else
+			    recfailOK = failOK;
 			type = gobble(filep, file, file_red);
 			if (type == ELSE)
 			    find_includes(filep, file,
-					  file_red, recursion+1,
-#ifdef	CPP
-					  failOK
-#else
-					  TRUE
-#endif
-					  );
+					  file_red, recursion+1, recfailOK);
 			else
 			if (type == ELIF)
 			    goto doif;
 			else
-			if (type == ELIFFALSE)
+			if ((type == ELIFFALSE) || (type == ELIFGUESSFALSE))
 			    goto doiffalse;
 			break;
 		case IFDEF:
@@ -71,6 +72,7 @@ find_includes(filep, file, file_red, recursion, failOK)
 			break;
 		case ELSE:
 		case ELIFFALSE:
+		case ELIFGUESSFALSE:
 		case ELIF:
 			if (!recursion)
 				gobble(filep, file, file_red);
@@ -140,10 +142,12 @@ gobble(filep, file, file_red)
 		switch(type = deftype(line, filep, file_red, file, FALSE)) {
 		case IF:
 		case IFFALSE:
+		case IFGUESSFALSE:
 		case IFDEF:
 		case IFNDEF:
 			type = gobble(filep, file, file_red);
-			while ((type == ELIF) || (type == ELIFFALSE))
+			while ((type == ELIF) || (type == ELIFFALSE) ||
+			       (type == ELIFGUESSFALSE))
 			    type = gobble(filep, file, file_red);
 			if (type == ELSE)
 			        (void)gobble(filep, file, file_red);
@@ -166,6 +170,7 @@ gobble(filep, file, file_red)
 			break;
 		case ELIF:
 		case ELIFFALSE:
+		case ELIFGUESSFALSE:
 			return(type);
 		case -1:
 			warning("%s, line %d: unknown directive == \"%s\"\n",
@@ -219,15 +224,19 @@ int deftype (line, filep, file_red, file, parse_it)
 	     */
 	    debug(0,("%s, line %d: #elif %s ",
 		   file->i_file, filep->f_line, p));
-	    if (zero_value(p, filep, file_red))
+	    ret = zero_value(p, filep, file_red);
+	    if (ret != IF)
 	    {
 		debug(0,("false...\n"));
-		return(ELIFFALSE);
+		if (ret == IFFALSE)
+		    return(ELIFFALSE);
+		else
+		    return(ELIFGUESSFALSE);
 	    }
 	    else
 	    {
 		debug(0,("true...\n"));
-		return(ret);
+		return(ELIF);
 	    }
 	}
 
@@ -246,8 +255,7 @@ int deftype (line, filep, file_red, file, parse_it)
 		 */
 		debug(0,("%s, line %d: #if %s\n",
 			file->i_file, filep->f_line, p));
-		if (zero_value(p, filep, file_red))
-			ret = IFFALSE;
+		ret = zero_value(p, filep, file_red);
 		break;
 	case IFDEF:
 	case IFNDEF:
@@ -375,7 +383,7 @@ struct symtab *slookup(symbol, stab)
 }
 
 /*
- * Return true if the #if expression evaluates to 0
+ * Return type based on if the #if expression evaluates to 0
  */
 zero_value(exp, filep, file_red)
 	register char	*exp;
@@ -383,9 +391,12 @@ zero_value(exp, filep, file_red)
 	register struct inclist *file_red;
 {
 #ifdef	CPP
-	return (cppsetup(exp, filep, file_red) == 0);
+	if (cppsetup(exp, filep, file_red))
+	    return(IFFALSE);
+	else
+	    return(IF);
 #else
-	return(TRUE);
+	return(IFGUESSFALSE);
 #endif /* CPP */
 }
 
