@@ -1,4 +1,4 @@
-/* $XConsortium: lbx.h,v 1.3 94/02/20 11:13:39 dpw Exp $ */
+/* $XConsortium: lbx.h,v 1.4 95/05/17 18:23:24 dpw Exp mor $ */
 /*
  * $NCDOr$
  *
@@ -182,6 +182,7 @@ typedef struct _Client {
     Bool	big_requests;		/* supports large requests */
 
 #ifdef DEBUG
+#define MAX_REQUEST_LOG 100
     unsigned char requestLog[MAX_REQUEST_LOG];
     int         requestLogIndex;
 #endif
@@ -210,6 +211,11 @@ typedef struct _Client {
     ReplyDataPtr replydata;	/* list of delayed short-circuited replies */
     Drawable	drawableCache[GFX_CACHE_SIZE];
     GContext	gcontextCache[GFX_CACHE_SIZE];
+
+    int		server_client_index; /* We need to keep track of the client */
+				     /* index used by server.  The 'index' */
+				     /* field of ClientRec is the index used */
+				     /* by the proxy. */
 }           ClientRec;
 
 #define WriteToClient(client,len,buf)   (((client)->public.writeToClient)(client,len,buf))
@@ -238,6 +244,9 @@ extern ClientPtr *clients;
 #define NullClient ((ClientPtr) 0)
 extern ClientPtr serverClient;
 extern int currentMaxClients;
+
+extern ClientPtr lastLbxClientIndexLookup; /* see di/resource.c for comments */
+
 
 /*
  * Notes on request short-circuiting

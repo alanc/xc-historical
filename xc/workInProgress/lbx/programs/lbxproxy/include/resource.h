@@ -1,4 +1,4 @@
-/* $XConsortium: copyright.h,v 1.14 95/04/13 16:08:25 dpw Exp $ */
+/* $XConsortium: resource.h,v 1.1 95/05/16 20:35:49 dpw Exp mor $ */
 
 /*
 
@@ -85,6 +85,12 @@ extern Bool InitClientResources(
 extern XID FakeClientID(
 #if NeedFunctionPrototypes
     int /*client*/
+#endif
+);
+
+extern int LbxClientIndex(
+#if NeedFunctionPrototypes
+    XID /*id*/
 #endif
 );
 
