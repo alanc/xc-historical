@@ -62,6 +62,8 @@ IMPORTS2 = \
 	$(AWIDGETSRC)/GripP.h \
 	$(AWIDGETSRC)/Label.h \
 	$(AWIDGETSRC)/LabelP.h \
+	$(AWIDGETSRC)/List.h \
+	$(AWIDGETSRC)/ListP.h \
 	$(AWIDGETSRC)/Load.h \
 	$(AWIDGETSRC)/LoadP.h \
 	$(AWIDGETSRC)/Logo.h \
