@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.155 90/07/10 13:46:22 rws Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.156 90/07/15 18:09:18 rws Exp $";
 #endif	/* lint */
 
 /*
@@ -744,9 +744,9 @@ char **argv;
 #endif	/* TIOCCONS */
 		continue;
 	     case 'S':
-		sscanf(*argv + 2, "%c%c%d", passedPty, passedPty+1,
-		 &am_slave);
-		if (am_slave <= 0) Syntax(*argv);
+		if (sscanf(*argv + 2, "%c%c%d", passedPty, passedPty+1,
+			   &am_slave) != 3)
+		    Syntax(*argv);
 		continue;
 #ifdef DEBUG
 	     case 'D':
