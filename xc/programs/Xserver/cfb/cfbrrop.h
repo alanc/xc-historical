@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbrrop.h,v 1.4 90/11/29 19:34:07 keith Exp $
+ * $XConsortium: cfbrrop.h,v 1.5 90/12/11 13:30:33 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -115,14 +115,14 @@
     switch (part) {\
 	RROP_UNROLL_CASE((unsigned long *) (pdst)) \
     } \
-    while ((nmiddle)--) { \
+    while (--(nmiddle) >= 0) { \
 	(pdst) += RROP_UNROLL * (sizeof (unsigned long) / sizeof (*pdst)); \
 	RROP_UNROLL_LOOP((unsigned long *) (pdst)) \
     } \
 }
 #else
 #define RROP_SPAN(pdst,nmiddle) \
-    while (nmiddle--) { \
+    while (--(nmiddle) >= 0) { \
 	RROP_SOLID((unsigned long *) (pdst)); \
 	(pdst) += sizeof (unsigned long) / sizeof (*pdst); \
     }

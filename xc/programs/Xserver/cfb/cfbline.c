@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbline.c,v 1.14 90/01/31 12:31:42 keith Exp $ */
+/* $XConsortium: cfbline.c,v 1.16 90/11/19 17:28:00 keith Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -120,7 +120,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     unsigned int oc1;		/* outcode of point 1 */
     unsigned int oc2;		/* outcode of point 2 */
 
-    int *addrl;		/* address of destination pixmap */
+    unsigned long *addrl;		/* address of destination pixmap */
     int nlwidth;		/* width in longwords of destination pixmap */
     int xorg, yorg;		/* origin of window */
 
@@ -146,18 +146,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	addrl = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrl = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDrawable, nlwidth, addrl)
 
     alu = devPriv->rop;
     xor = devPriv->xor;
@@ -519,7 +508,7 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     register unsigned int oc1;		/* outcode of point 1 */
     register unsigned int oc2;		/* outcode of point 2 */
 
-    int *addrl;		/* address of destination pixmap */
+    unsigned long *addrl;		/* address of destination pixmap */
     int nlwidth;		/* width in longwords of destination pixmap */
     int xorg, yorg;		/* origin of window */
 
@@ -562,18 +551,7 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	addrl = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrl = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDrawable, nlwidth, addrl)
 
     /* compute initial dash values */
      

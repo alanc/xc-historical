@@ -50,7 +50,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 5.12 90/03/10 15:50:02 keith Exp $ */
+/* $XConsortium: cfbfillsp.c,v 5.13 90/05/15 18:40:16 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -260,18 +260,7 @@ int fSorted;
      *		Pointer to pixels = addrlBase
      */
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pdstBase = (unsigned long *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwDst = (int)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pdstBase = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDrawable, nlwDst, pdstBase)
 
     /* this replaces rotating the stipple. Instead we just adjust the offset
      * at which we start grabbing bits from the stipple.
@@ -389,22 +378,24 @@ int *pwidthInit;		/* pointer to list of n widths */
 int fSorted;
 {
 				/* next three parameters are post-clip */
-    int n;			/* number of spans to fill */
-    register DDXPointPtr ppt;	/* pointer to list of start points */
-    register int *pwidth;	/* pointer to list of n widths */
-    int		iline;		/* first line of tile to use */
-    int		*addrlBase;	/* pointer to start of bitmap */
-    int		 nlwidth;	/* width in longwords of bitmap */
-    register int *pdst;		/* pointer to current word in bitmap */
-    PixmapPtr	pStipple;	/* pointer to stipple we want to fill with */
-    register int w;
-    int		width,  x, xrem, xSrc, ySrc;
-    unsigned int tmpSrc, tmpDst1, tmpDst2;
-    int 	stwidth, stippleWidth, *psrcS, rop, stiprop;
-    int		stippleHeight;
-    int *pwidthFree;		/* copies of the pointers to free */
-    DDXPointPtr pptFree;
-    unsigned int fgfill, bgfill;
+    int			    n;		/* number of spans to fill */
+    register DDXPointPtr    ppt;	/* pointer to list of start points */
+    register unsigned long  *pwidth;	/* pointer to list of n widths */
+    int			    iline;	/* first line of tile to use */
+    unsigned long	    *addrlBase;	/* pointer to start of bitmap */
+    int			    nlwidth;	/* width in longwords of bitmap */
+    register unsigned long  *pdst;	/* pointer to current word in bitmap */
+    PixmapPtr		    pStipple;	/* pointer to stipple we want to fill with */
+    register int	    w;
+    int			    width,  x, xrem, xSrc, ySrc;
+    unsigned long	    tmpSrc, tmpDst1, tmpDst2;
+    int			    stwidth, stippleWidth;
+    unsigned long	    *psrcS;
+    int			    rop, stiprop;
+    int			    stippleHeight;
+    int			    *pwidthFree;    /* copies of the pointers to free */
+    DDXPointPtr		    pptFree;
+    unsigned long	    fgfill, bgfill;
 
     if (!(pGC->planemask))
 	return;
@@ -467,18 +458,7 @@ int fSorted;
      *		Pointer to pixels = addrlBase
      */
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	addrlBase = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDrawable, nlwidth, addrlBase)
 
     /* this replaces rotating the stipple. Instead we just adjust the offset
      * at which we start grabbing bits from the stipple.
@@ -573,22 +553,22 @@ cfbTile32FS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int n;			/* number of spans to fill */
     DDXPointPtr ppt;		/* pointer to list of start points */
     int *pwidth;		/* pointer to list of n widths */
-    int *addrlBase;		/* pointer to start of bitmap */
+    unsigned long *addrlBase;	/* pointer to start of bitmap */
     int nlwidth;		/* width in longwords of bitmap */
-    register int *addrl;	/* pointer to current longword in bitmap */
+    register unsigned long *addrl;/* pointer to current longword in bitmap */
     register int width;		/* current span width */
-    register int fill;
+    register unsigned long fill;
     register int nlmiddle;
     register int x;
-    register int startmask;
-    register int endmask;
+    register unsigned long startmask;
+    register unsigned long endmask;
     int y;
     int rop;			/* rasterop */
-    int planemask;
+    unsigned long planemask;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
     PixmapPtr pTile;
-    int *psrc;		/* pointer to bits in tile, if needed */
+    unsigned long *psrc;	/* pointer to bits in tile, if needed */
     int tileHeight;	/* height of the tile */
     MROP_DECLARE ()
 
@@ -610,18 +590,7 @@ cfbTile32FS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		     pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted);
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	addrlBase = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDrawable, nlwidth, addrlBase)
 
     rop = pGC->alu;
     planemask = PFILL(planemask);
@@ -629,7 +598,7 @@ cfbTile32FS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     pTile = ((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
 							pRotatedPixmap;
     tileHeight = pTile->drawable.height;
-    psrc = (int *) pTile->devPrivate.ptr;
+    psrc = (unsigned long *) pTile->devPrivate.ptr;
     if (rop == GXcopy && (planemask & PMSK) == PMSK)
     {
 	if (!(tileHeight & (tileHeight-1)))
@@ -799,18 +768,7 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     src = (unsigned long *)stipple->devPrivate.ptr;
     stippleHeight = stipple->drawable.height;
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pbits = (unsigned long *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwDst = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pbits = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDrawable, nlwDst, pbits)
 
     while (n--)
     {
@@ -1022,18 +980,7 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     src = (unsigned long *)stipple->devPrivate.ptr;
     stippleHeight = stipple->drawable.height;
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pbits = (unsigned long *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwDst = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pbits = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDrawable, nlwDst, pbits)
 
     while (n--)
     {

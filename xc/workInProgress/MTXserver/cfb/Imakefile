@@ -67,6 +67,8 @@ saber_src:
 stipplemipste.s: stipplemips.s
 	$(RM) $@
 	$(LN) stipplemips.s stipplemipste.s
+clean::
+	$(RM) stipplemipste.s
 
 stipplemipste.o: stipplemipste.s
 	$(AS) -o $@ -DTETEXT stipplemipste.s
@@ -75,6 +77,8 @@ stipplemipste.o: stipplemipste.s
 stipplesparcte.s: stipplesparc.s
 	$(RM) $@
 	$(LN) stipplesparc.s stipplesparcte.s
+clean::
+	$(RM) stipplesparcte.s
 
 stipplesparc.o: stipplesparc.s
 	$(CPP) stipplesparc.s | $(AS) -o $@ -

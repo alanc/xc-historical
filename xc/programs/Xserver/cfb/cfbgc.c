@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.45 91/01/27 13:02:48 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.46 91/03/11 14:58:00 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -45,17 +45,6 @@ SOFTWARE.
 static void cfbValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
 static void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
 static cfbDestroyOps();
-
-extern void cfbTile32FS();
-#if PPW == 4
-extern void cfb8Stipple32FS(), cfb8OpaqueStipple32FS();
-extern void cfb8LineSS1Rect(), cfb8SegmentSS1Rect ();
-extern void cfbImageGlyphBlt8();
-#endif
-
-extern void cfbFillPoly1RectCopy(), cfbFillPoly1RectGeneral();
-
-extern void cfbSolidSpansCopy(), cfbSolidSpansXor (), cfbSolidSpansGeneral();
 
 static GCFuncs cfbFuncs = {
     cfbValidateGC,
@@ -354,7 +343,7 @@ cfbValidateGC(pGC, changes, pDrawable)
     int         mask;		/* stateChanges */
     int         index;		/* used for stepping through bitfields */
     int		new_rrop;
-    int         new_line, new_text, new_fillspans, new_fillrct;
+    int         new_line, new_text, new_fillspans, new_fillarea;
     int		new_rotate;
     int		xrot, yrot;
     /* flags for changing the proc vector */
@@ -381,7 +370,7 @@ cfbValidateGC(pGC, changes, pDrawable)
     new_line = FALSE;
     new_text = FALSE;
     new_fillspans = FALSE;
-    new_fillrct = FALSE;
+    new_fillarea = FALSE;
 
     /*
      * if the client clip is different or moved OR the subwindowMode has
@@ -492,7 +481,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    }
 	}			/* end of composute clip for pixmap */
 	oneRect = REGION_NUM_RECTS(devPriv->pCompositeClip) == 1;
-	if (pGC->lineWidth == 0 && oneRect != devPriv->oneRect)
+	if (oneRect != devPriv->oneRect)
 	    new_line = TRUE;
 	devPriv->oneRect = oneRect;
     }
@@ -512,37 +501,33 @@ cfbValidateGC(pGC, changes, pDrawable)
 	 */
 	switch (index) {
 	case GCFunction:
-	    new_fillrct = TRUE;
 	case GCForeground:
 	    new_rrop = TRUE;
-	    new_text = TRUE;
 	    break;
 	case GCPlaneMask:
 	    new_rrop = TRUE;
 	    new_text = TRUE;
-	    new_fillrct = TRUE;
 	    break;
 	case GCBackground:
-	    new_fillspans = TRUE;
 	    break;
 	case GCLineStyle:
 	case GCLineWidth:
-	case GCJoinStyle:
 	    new_line = TRUE;
 	    break;
+	case GCJoinStyle:
 	case GCCapStyle:
 	    break;
 	case GCFillStyle:
 	    new_text = TRUE;
 	    new_fillspans = TRUE;
 	    new_line = TRUE;
-	    new_fillrct = TRUE;
+	    new_fillarea = TRUE;
 	    break;
 	case GCFillRule:
 	    break;
 	case GCTile:
 	    new_fillspans = TRUE;
-	    new_fillrct = TRUE;
+	    new_fillarea = TRUE;
 	    break;
 
 	case GCStipple:
@@ -560,7 +545,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 		}
 	    }
 	    new_fillspans = TRUE;
-	    new_fillrct = TRUE;
+	    new_fillarea = TRUE;
 	    break;
 
 	case GCTileStipXOrigin:
@@ -665,11 +650,12 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    new_line = TRUE;
 	    new_text = TRUE;
 #endif
-	    new_fillrct = TRUE;
+	    new_fillspans = TRUE;
+	    new_fillarea = TRUE;
 	}
     }
 
-    if (new_line || new_fillspans || new_text || new_fillrct || new_rrop)
+    if (new_rrop || new_fillspans || new_text || new_fillarea || new_line)
     {
 	GCOps	*newops;
 
@@ -678,7 +664,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    if (pGC->ops->devPrivate.val)
 		cfbDestroyOps (pGC->ops);
 	    pGC->ops = newops;
-	    new_rrop = new_line = new_fillspans = new_text = new_fillrct = 0;
+	    new_rrop = new_line = new_fillspans = new_text = new_fillarea = 0;
 	}
  	else
  	{
@@ -693,7 +679,6 @@ cfbValidateGC(pGC, changes, pDrawable)
     /* deal with the changes we've collected */
     if (new_line)
     {
-	pGC->ops->PolySegment = miPolySegment;
 	pGC->ops->FillPolygon = miFillPolygon;
 	if (devPriv->oneRect && pGC->fillStyle == FillSolid)
 	{
@@ -730,6 +715,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	}
 	else
 	    pGC->ops->PolyArc = miPolyArc;
+	pGC->ops->PolySegment = miPolySegment;
 	switch (pGC->lineStyle)
 	{
 	case LineSolid:
@@ -844,24 +830,19 @@ cfbValidateGC(pGC, changes, pDrawable)
 		pGC->ops->FillSpans = cfbUnnaturalStippleFS;
 	    break;
 	case FillOpaqueStippled:
-	    if (pGC->fgPixel == pGC->bgPixel)
-		pGC->ops->FillSpans = cfbSolidSpansCopy;
-	    else
 #if PPW == 4
-		if (devPriv->pRotatedPixmap)
-		    pGC->ops->FillSpans = cfb8OpaqueStipple32FS;
-		else
+	    if (devPriv->pRotatedPixmap)
+		pGC->ops->FillSpans = cfb8OpaqueStipple32FS;
+	    else
 #endif
-		    pGC->ops->FillSpans = cfbUnnaturalStippleFS;
+		pGC->ops->FillSpans = cfbUnnaturalStippleFS;
 	    break;
 	default:
 	    FatalError("cfbValidateGC: illegal fillStyle\n");
 	}
     } /* end of new_fillspans */
 
-    if (new_fillrct) {
-	pGC->ops->PolyFillArc = miPolyFillArc;
-	pGC->ops->PushPixels = mfbPushPixels;
+    if (new_fillarea) {
 #if PPW != 4
 	pGC->ops->PolyFillRect = miPolyFillRect;
 	if (pGC->fillStyle == FillSolid || pGC->fillStyle == FillTiled)
@@ -870,9 +851,11 @@ cfbValidateGC(pGC, changes, pDrawable)
 	}
 #endif
 #if PPW == 4
+	pGC->ops->PushPixels = mfbPushPixels;
 	if (pGC->fillStyle == FillSolid && devPriv->rop == GXcopy)
 	    pGC->ops->PushPixels = cfbPushPixels8;
 #endif
+	pGC->ops->PolyFillArc = miPolyFillArc;
 	if (pGC->fillStyle == FillSolid)
 	{
 	    switch (devPriv->rop)
@@ -880,11 +863,6 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    case GXcopy:
 		pGC->ops->PolyFillArc = cfbPolyFillArcSolidCopy;
 		break;
-#ifdef NOTDEF
-	    case GXxor:
-		pGC->ops->PolyFillArc = cfbPolyFillArcSolidXor;
-		break;
-#endif
 	    default:
 		pGC->ops->PolyFillArc = cfbPolyFillArcSolidGeneral;
 		break;

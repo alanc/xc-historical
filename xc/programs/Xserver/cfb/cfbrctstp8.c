@@ -18,7 +18,7 @@ Author: Keith Packard, MIT X Consortium
 
 */
 
-/* $XConsortium: cfbrctstp8.c,v 1.11 90/02/09 13:12:34 rws Exp $ */
+/* $XConsortium: cfbrctstp8.c,v 1.12 90/02/09 13:14:28 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -74,18 +74,7 @@ cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
     stippleHeight = stipple->drawable.height;
     src = (unsigned long *)stipple->devPrivate.ptr;
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pbits = (unsigned long *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwDst = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pbits = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDrawable, nlwDst, pbits)
 
     while (nBox--)
     {
@@ -265,18 +254,7 @@ cfb8FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
 
     cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pbits = (unsigned long *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwDst = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pbits = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDrawable, nlwDst, pbits)
 
     while (nBox--)
     {
@@ -524,18 +502,7 @@ cfb8FillRectStippledUnnatural (pDrawable, pGC, nBox, pBox)
     xSrc = pDrawable->x;
     ySrc = pDrawable->y;
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pdstBase = (unsigned long *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwDst = (int)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pdstBase = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDrawable, nlwDst, pdstBase)
 
     /* this replaces rotating the stipple. Instead we just adjust the offset
      * at which we start grabbing bits from the stipple.

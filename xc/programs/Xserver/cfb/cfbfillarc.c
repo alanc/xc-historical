@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbfillarc.c,v 5.10 90/10/06 13:57:45 rws Exp $ */
+/* $XConsortium: cfbfillarc.c,v 5.11 90/11/19 17:29:23 keith Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -46,27 +46,18 @@ RROP_NAME(cfbFillEllipseSolid) (pDraw, pGC, arc)
     STUPID int x, y, e;
     STUPID int yk, xk, ym, xm, dx, dy, xorg, yorg;
     miFillArcRec info;
-    int *addrlt, *addrlb;
-    register int *addrl;
+    unsigned long *addrlt, *addrlb;
+    register unsigned long *addrl;
     register int n;
     int nlwidth;
     RROP_DECLARE
     register int xpos;
     register int slw;
-    int startmask, endmask, nlmiddle;
+    unsigned long startmask, endmask;
+    int	nlmiddle;
 
-    if (pDraw->type == DRAWABLE_WINDOW)
-    {
-	addrlt = (int *)
-	       (((PixmapPtr)(pDraw->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-	       (((PixmapPtr)(pDraw->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrlt = (int *)(((PixmapPtr)pDraw)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDraw)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDraw, nlwidth, addrlt)
+
     RROP_FETCH_GC(pGC);
     miFillArcSetup(arc, &info);
     MIFILLARCSETUP();
@@ -173,25 +164,15 @@ RROP_NAME(cfbFillArcSliceSolid)(pDraw, pGC, arc)
     miFillArcRec info;
     miArcSliceRec slice;
     int xl, xr, xc;
-    int *addrlt, *addrlb;
-    register int *addrl;
+    unsigned long *addrlt, *addrlb;
+    register unsigned long *addrl;
     register int n;
     int nlwidth;
     RROP_DECLARE
-    int startmask, endmask;
+    unsigned long startmask, endmask;
 
-    if (pDraw->type == DRAWABLE_WINDOW)
-    {
-	addrlt = (int *)
-	       (((PixmapPtr)(pDraw->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-	       (((PixmapPtr)(pDraw->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrlt = (int *)(((PixmapPtr)pDraw)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDraw)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDraw, nlwidth, addrlt)
+
     RROP_FETCH_GC(pGC);
     miFillArcSetup(arc, &info);
     miFillArcSliceSetup(arc, &slice, pGC);

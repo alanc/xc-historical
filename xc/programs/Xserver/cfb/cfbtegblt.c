@@ -1,4 +1,4 @@
-/* $XConsortium: cfbtegblt.c,v 5.1 89/07/26 10:41:20 keith Exp $ */
+/* $XConsortium: cfbtegblt.c,v 5.2 91/01/27 13:02:51 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -67,7 +67,7 @@ cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 {
     FontPtr	pfont = pGC->font;
     int widthDst;
-    unsigned int *pdstBase;	/* pointer to longword with top row 
+    unsigned long *pdstBase;	/* pointer to longword with top row 
 				   of current glyph */
 
     int w;			/* width of glyph and char */
@@ -87,18 +87,7 @@ cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     xpos += pDrawable->x;
     ypos += pDrawable->y;
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pdstBase = (unsigned int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	widthDst = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pdstBase = (unsigned int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase)
 
     wtmp = FONTMAXBOUNDS(pfont,characterWidth);
     h = FONTASCENT(pfont) + FONTDESCENT(pfont);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8line.c,v 1.13 91/01/24 13:54:41 keith Exp $
+ * $XConsortium: cfb8line.c,v 1.14 91/04/09 19:25:11 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -211,6 +211,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 #endif
     extents = &devPriv->pCompositeClip->extents;
     c2 = *((int *) &pDrawable->x);
+    c2 -= (c2 & 0x8000) << 1;
     upperleft = *((int *) &extents->x1) - c2;
     lowerright = *((int *) &extents->x2) - c2 - 0x00010001;
     addr = addr + WIDTH_MUL(pDrawable->y,nwidth) + pDrawable->x;

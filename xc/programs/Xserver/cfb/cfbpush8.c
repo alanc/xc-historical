@@ -15,7 +15,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbpush8.c,v 5.7 90/02/09 12:02:46 rws Exp $ */
+/* $XConsortium: cfbpush8.c,v 5.8 91/01/27 13:02:54 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -68,18 +68,7 @@ cfbPushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
 	return;
     }
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pdstBase = (unsigned long *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	dstWidth = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pdstBase = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	dstWidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDrawable, dstWidth, pdstBase)
 
     psrcLine = (unsigned long *) pBitmap->devPrivate.ptr;
     srcWidth = (int) pBitmap->devKind >> 2;

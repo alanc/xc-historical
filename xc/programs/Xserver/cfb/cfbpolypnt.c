@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbpolypnt.c,v 5.9 90/01/31 12:31:49 keith Exp $ */
+/* $XConsortium: cfbpolypnt.c,v 5.10 91/02/11 14:08:18 keith Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -26,19 +26,6 @@ without any express or implied warranty.
 #include "cfb.h"
 #include "cfbmskbits.h"
 
-
-#if BITMAP_BIT_ORDER == MSBFirst
-#define intToCoord(i,x,y)   (((x) = ((i) >> 16)), ((y) = ((i) & 0xFFFF)))
-#define coordToInt(x,y)	(((x) << 16) | (y))
-#define intToX(i)	((i) >> 16)
-#define intToY(i)	((i) & 0xFFFF)
-#else
-#define intToCoord(i,x,y)   (((x) = ((i) & 0xFFFF)), ((y) = ((i) >> 16)))
-#define coordToInt(x,y)	(((y) << 16) | (x))
-#define intToX(i)	((i) & 0xFFFF)
-#define intToY(i)	((i) >> 16)
-#endif
-
 #define isClipped(c,ul,lr)  ((((c) - (ul)) | ((lr) - (c))) & ClipMask)
 
 #define PointLoop(fill) { \
@@ -46,9 +33,9 @@ without any express or implied warranty.
 	 --nbox >= 0; \
 	 pbox++) \
     { \
-	c1 = *((int *) &pbox->x1) - off; \
-	c2 = *((int *) &pbox->x2) - off; \
-	for (ppt = (int *) pptInit, i = npt; --i >= 0;) \
+	c1 = *((long *) &pbox->x1) - off; \
+	c2 = *((long *) &pbox->x2) - off; \
+	for (ppt = (long *) pptInit, i = npt; --i >= 0;) \
 	{ \
 	    pt = *ppt++; \
 	    if (!isClipped(pt,c1,c2)) { \
@@ -66,18 +53,18 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     int npt;
     xPoint *pptInit;
 {
-    register int    pt;
-    register int    c1, c2;
-    register int    ClipMask = 0x80008000;
-    register long   xor;
+    register long   pt;
+    register long   c1, c2;
+    register long   ClipMask = 0x80008000;
+    register unsigned long   xor;
 #if PPW == 4
-    register char   *addrb;
+    register unsigned char   *addrb;
     register int    nbwidth;
-    char	    *addrbt;
+    unsigned char   *addrbt;
 #else
-    register long    *addrl;
+    register unsigned long    *addrl;
     register int    nlwidth;
-    int		    *addrlt;
+    unsigned long   *addrlt;
 #endif
     register long   *ppt;
     RegionPtr	    cclip;

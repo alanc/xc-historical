@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: cfb8cppl.c,v 1.1 90/03/29 18:31:35 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -36,7 +36,7 @@
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 #include "windowstr.h"
-#include "mfb.h"
+#include "cfb.h"
 #include "maskbits.h"
 
 #include "mergerop.h"
@@ -83,17 +83,17 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 {
     int			    srcx, srcy, dstx, dsty, width, height;
     unsigned char	    *psrcBase;
-    unsigned int	    *pdstBase;
+    unsigned long	    *pdstBase;
     int			    widthSrc, widthDst;
     unsigned char	    *psrcLine;
-    unsigned int	    *pdstLine;
+    unsigned long	    *pdstLine;
     register unsigned char  *psrc;
     register int	    i;
     register int	    curBit;
     register int	    bitPos;
-    register unsigned int   bits;
-    register unsigned int   *pdst;
-    unsigned int	    startmask, endmask;
+    register unsigned long  bits;
+    register unsigned long  *pdst;
+    unsigned long	    startmask, endmask;
     int			    niStart, niEnd;
     int			    bitStart, bitEnd;
     int			    nl, nlMiddle;
@@ -110,32 +110,9 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
     if (rop != GXcopy)
 	MROP_INITIALIZE (rop, planemask);
 
-    if (pSrcDrawable->type == DRAWABLE_WINDOW)
-    {
-	psrcBase = (unsigned char *)
-		(((PixmapPtr)(pSrcDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	widthSrc = (int)
-		   ((PixmapPtr)(pSrcDrawable->pScreen->devPrivate))->devKind;
-    }
-    else
-    {
-	psrcBase = (unsigned char *)(((PixmapPtr)pSrcDrawable)->devPrivate.ptr);
-	widthSrc = (int)(((PixmapPtr)pSrcDrawable)->devKind);
-    }
+    cfbGetByteWidthAndPointer (pSrcDrawable, widthSrc, psrcBase)
 
-    if (pDstDrawable->type == DRAWABLE_WINDOW)
-    {
-	pdstBase = (unsigned int *)
-		(((PixmapPtr)(pDstDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	widthDst = (int)
-		   ((PixmapPtr)(pDstDrawable->pScreen->devPrivate))->devKind
-		    >> 2;
-    }
-    else
-    {
-	pdstBase = (unsigned int *)(((PixmapPtr)pDstDrawable)->devPrivate.ptr);
-	widthDst = (int)(((PixmapPtr)pDstDrawable)->devKind) >> 2;
-    }
+    mfbGetLongWidthAndPointer (pDstDrawable, widthDst, pdstBase)
 
     bitPos = ffs (cfbCopyPlaneBitPlane) - 1;
 

@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbtileodd.c,v 1.9 90/04/06 10:07:28 rws Exp $ */
+/* $XConsortium: cfbtileodd.c,v 1.10 90/05/15 18:40:44 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -137,18 +137,7 @@ MROP_NAME(cfbFillBoxTileOdd) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
     }
     pSrcBase = (unsigned long *)tile->devPrivate.ptr;
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pDstBase = (unsigned long *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	widthDst = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pDstBase = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDrawable, widthDst, pDstBase)
 
     tileEndPart = tileWidth & PIM;
     tileEndMask = cfbendpartial[tileEndPart];
@@ -364,18 +353,7 @@ MROP_NAME(cfbFillSpanTileOdd) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
     }
     pSrcBase = (unsigned long *)tile->devPrivate.ptr;
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pDstBase = (unsigned long *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	widthDst = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pDstBase = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDrawable, widthDst, pDstBase)
 
     tileEndPart = tileWidth & PIM;
     tileEndMask = cfbendpartial[tileEndPart];
@@ -621,18 +599,7 @@ MROP_NAME(cfbFillBoxTile32s) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
     tileWidth = tile->drawable.width;
     widthSrc = tileWidth >> PWSH;
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pdstBase = (unsigned long *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	widthDst = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pdstBase = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase)
 
     while (nBox--)
     {
@@ -909,18 +876,7 @@ MROP_NAME(cfbFillSpanTile32s) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
     tileWidth = tile->drawable.width;
     widthSrc = tileWidth >> PWSH;
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pdstBase = (unsigned long *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	widthDst = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pdstBase = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase)
 
     while (n--)
     {

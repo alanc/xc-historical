@@ -31,6 +31,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "gc.h"
 #include "colormap.h"
 #include "miscstruct.h"
+#include "servermd.h"
+#include "mfb.h"
 
 extern Bool cfbScreenInit();
 extern void cfbQueryBestSize();
@@ -60,17 +62,21 @@ extern void miPolyFillArc();
 extern void cfbZeroPolyArcSS8Copy(), cfbZeroPolyArcSS8Xor();
 extern void cfbZeroPolyArcSS8General();
 extern void cfbLineSS(), cfbLineSD(), cfbSegmentSS(), cfbSegmentSD();
+extern void cfb8LineSS1Rect(), cfb8SegmentSS1Rect ();
 extern RegionPtr cfbCopyPlane();
 extern void cfbPolyFillArcSolidCopy(),cfbPolyFillArcSolidXor();
 extern void cfbPolyFillArcSolidGeneral();
 extern RegionPtr cfbCopyArea();
+extern void cfbFillPoly1RectCopy(), cfbFillPoly1RectGeneral();
 
 extern void cfbPushPixels8();
 extern void cfbSetSpans();
 extern void cfbGetSpans();
-extern void cfbSolidFS();
+extern void cfbSolidSpansCopy(), cfbSolidSpansXor (), cfbSolidSpansGeneral();
 extern void cfbUnnaturalTileFS();
 extern void cfbUnnaturalStippleFS();
+extern void cfbTile32FS();
+extern void cfb8Stipple32FS(), cfb8OpaqueStipple32FS();
 extern void cfbFillBoxTileOdd();
 extern void cfbFillBoxTile32();
 extern void cfbFillBoxSolid();
@@ -79,6 +85,7 @@ extern void cfbTEGlyphBlt();
 extern void cfbTEGlyphBlt8();
 extern void cfbPolyGlyphBlt8();
 extern void cfbPolyGlyphRop8();
+extern void cfbImageGlyphBlt8();
 
 extern void cfbSaveAreas();
 extern void cfbRestoreAreas();
@@ -96,8 +103,6 @@ extern void mfbQueryBestSize();
 extern RegionPtr mfbPixmapToRegion();
 extern void mfbCopyRotatePixmap();
 
-extern void miNotMiter();
-extern void miMiter();
 extern PixmapPtr cfbCopyPixmap();
 extern void  cfbConvertRects();
 extern void  miPolyArc();
@@ -167,120 +172,56 @@ typedef struct {
 
 /* Common macros for extracting drawing information */
 
-#define cfbGetByteWidth(pDrawable) (((pDrawable)->type == DRAWABLE_WINDOW) ? \
-    (int) (((PixmapPtr)((pDrawable)->pScreen->devPrivate))->devKind) : \
-    (int)(((PixmapPtr)pDrawable)->devKind))
+#define cfbGetTypedWidth(pDrawable,wtype) (\
+    (((pDrawable)->type == DRAWABLE_WINDOW) ? \
+     (int) (((PixmapPtr)((pDrawable)->pScreen->devPrivate))->devKind) : \
+     (int)(((PixmapPtr)pDrawable)->devKind)) / sizeof (wtype))
+
+#define cfbGetByteWidth(pDrawable) cfbGetTypedWidth(pDrawable, unsigned char)
+
+#define cfbGetLongWidth(pDrawable) cfbGetTypedWidth(pDrawable, unsigned long)
     
-#define cfbGetByteWidthAndPointer(pDrawable, width, pointer) { \
-    if ((pDrawable)->type == DRAWABLE_WINDOW) { \
-	(pointer) = (char *) \
-		(((PixmapPtr)((pDrawable)->pScreen->devPrivate))->devPrivate.ptr); \
-	(width) = (int) \
-		(((PixmapPtr)((pDrawable)->pScreen->devPrivate))->devKind); \
-    } else { \
-	(pointer) = (char *)(((PixmapPtr)pDrawable)->devPrivate.ptr); \
-	(width) = (int)(((PixmapPtr)pDrawable)->devKind); \
-    } \
+#define cfbGetTypedWidthAndPointer(pDrawable, width, pointer, wtype, ptype) {\
+    PixmapPtr   _pPix; \
+    if ((pDrawable)->type == DRAWABLE_WINDOW) \
+	_pPix = (PixmapPtr) (pDrawable)->pScreen->devPrivate; \
+    else \
+	_pPix = (PixmapPtr) (pDrawable); \
+    (pointer) = (ptype *) _pPix->devPrivate.ptr; \
+    (width) = ((int) _pPix->devKind) / sizeof (wtype); \
 }
 
-#define cfbGetLongWidthAndPointer(pDrawable, width, pointer) { \
-    if ((pDrawable)->type == DRAWABLE_WINDOW) { \
-	(pointer) = (unsigned long *) \
-		(((PixmapPtr)((pDrawable)->pScreen->devPrivate))->devPrivate.ptr); \
-	(width) = (int) \
-		(((PixmapPtr)((pDrawable)->pScreen->devPrivate))->devKind) >> 2; \
-    } else { \
-	(pointer) = (unsigned long *) \
-		(((PixmapPtr)pDrawable)->devPrivate.ptr); \
-	(width) = (int)(((PixmapPtr)pDrawable)->devKind) >> 2; \
-    } \
+#define cfbGetByteWidthAndPointer(pDrawable, width, pointer) \
+    cfbGetTypedWidthAndPointer(pDrawable, width, pointer, unsigned char, unsigned char)
+
+#define cfbGetLongWidthAndPointer(pDrawable, width, pointer) \
+    cfbGetTypedWidthAndPointer(pDrawable, width, pointer, unsigned long, unsigned long)
+
+#define cfbGetWindowTypedWidthAndPointer(pWin, width, pointer, wtype, ptype) {\
+    PixmapPtr	_pPix = (PixmapPtr) (pWin)->drawable.pScreen->devPrivate; \
+    (pointer) = (ptype *) _pPix->devPrivate.ptr; \
+    (width) = ((int) _pPix->devKind) / sizeof (wtype); \
 }
 
-/* precomputed information about each glyph for GlyphBlt code.
-   this saves recalculating the per glyph information for each
-box.
-*/
-typedef struct _pos{
-    int xpos;		/* xposition of glyph's origin */
-    int xchar;		/* x position mod 32 */
-    int leftEdge;
-    int rightEdge;
-    int topEdge;
-    int bottomEdge;
-    int *pdstBase;	/* longword with character origin */
-    int widthGlyph;	/* width in bytes of this glyph */
-} TEXTPOS;
+#define cfbGetWindowLongWidthAndPointer(pWin, width, pointer) \
+    cfbGetWindowTypedWidthAndPointer(pWin, width, pointer, unsigned long, unsigned long)
 
-/* reduced raster ops for cfb */
-#define RROP_BLACK	GXclear
-#define RROP_WHITE	GXset
-#define RROP_NOP	GXnoop
-#define RROP_INVERT	GXinvert
+#define cfbGetWindowByteWidthAndPointer(pWin, width, pointer) \
+    cfbGetWindowTypedWidthAndPointer(pWin, width, pointer, unsigned char, unsigned char)
 
-/* out of clip region codes */
-#define OUT_LEFT 0x08
-#define OUT_RIGHT 0x04
-#define OUT_ABOVE 0x02
-#define OUT_BELOW 0x01
+/* Macros which handle a coordinate in a single register */
 
-/* major axis for bresenham's line */
-#define X_AXIS	0
-#define Y_AXIS	1
-
-/* optimization codes for FONT's devPrivate field */
-#define FT_VARPITCH	0
-#define FT_SMALLPITCH	1
-#define FT_FIXPITCH	2
-
-/* macros for cfbbitblt.c, cfbfillsp.c
-   these let the code do one switch on the rop per call, rather
-than a switch on the rop per item (span or rectangle.)
-*/
-
-#define fnCLEAR(src, dst)	(0)
-#define fnAND(src, dst) 	(src & dst)
-#define fnANDREVERSE(src, dst)	(src & ~dst)
-#define fnCOPY(src, dst)	(src)
-#define fnANDINVERTED(src, dst)	(~src & dst)
-#define fnNOOP(src, dst)	(dst)
-#define fnXOR(src, dst)		(src ^ dst)
-#define fnOR(src, dst)		(src | dst)
-#define fnNOR(src, dst)		(~(src | dst))
-#define fnEQUIV(src, dst)	(~src ^ dst)
-#define fnINVERT(src, dst)	(~dst)
-#define fnORREVERSE(src, dst)	(src | ~dst)
-#define fnCOPYINVERTED(src, dst)(~src)
-#define fnORINVERTED(src, dst)	(~src | dst)
-#define fnNAND(src, dst)	(~(src & dst))
-#define fnSET(src, dst)		(~0)
-
-/* Binary search to figure out what to do for the raster op.  It may
- * do 5 comparisons, but at least it does no function calls 
- * Special cases copy because it's so frequent 
- * XXX - can't use this in many cases because it has no plane mask.
- */
-#define DoRop(alu, src, dst) \
-( ((alu) == GXcopy) ? (src) : \
-    (((alu) >= GXnor) ? \
-     (((alu) >= GXcopyInverted) ? \
-       (((alu) >= GXnand) ? \
-         (((alu) == GXnand) ? ~((src) & (dst)) : ~0) : \
-         (((alu) == GXcopyInverted) ? ~(src) : (~(src) | (dst)))) : \
-       (((alu) >= GXinvert) ? \
-	 (((alu) == GXinvert) ? ~(dst) : ((src) | ~(dst))) : \
-	 (((alu) == GXnor) ? ~((src) | (dst)) : (~(src) ^ (dst)))) ) : \
-     (((alu) >= GXandInverted) ? \
-       (((alu) >= GXxor) ? \
-	 (((alu) == GXxor) ? ((src) ^ (dst)) : ((src) | (dst))) : \
-	 (((alu) == GXnoop) ? (dst) : (~(src) & (dst)))) : \
-       (((alu) >= GXandReverse) ? \
-	 (((alu) == GXandReverse) ? ((src) & ~(dst)) : (src)) : \
-	 (((alu) == GXand) ? ((src) & (dst)) : 0)))  ) )
-
-#define DoRRop(dst, and, xor)	(((dst) & (and)) ^ (xor))
-
-#define DoMaskRRop(dst, and, xor, mask) \
-    (((dst) & ((and) | ~(mask))) ^ (xor & mask))
+#if IMAGE_BYTE_ORDER == MSBFirst
+#define intToCoord(i,x,y)   (((x) = ((i) / 65536)), ((y) = (int) ((short) (i))))
+#define coordToInt(x,y)	(((x) << 16) | (y))
+#define intToX(i)	((i) / 65536)
+#define intToY(i)	((int) ((short) i))
+#else
+#define intToCoord(i,x,y)   (((x) = (int) ((short) (i))), ((y) = ((i) / 65536)))
+#define coordToInt(x,y)	(((y) << 16) | (x))
+#define intToX(i)	((int) ((short) (i)))
+#define intToY(i)	((i) / 65536)
+#endif
 
 /*
  * MIPSCO compiler does horrible things when given register declarations

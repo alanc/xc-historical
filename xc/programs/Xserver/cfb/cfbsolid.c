@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbsolid.c,v 1.1 90/05/15 18:40:25 keith Exp $
+ * $XConsortium: cfbsolid.c,v 1.2 90/11/19 17:29:27 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -122,18 +122,8 @@ RROP_NAME(cfbFillRectSolid) (pDrawable, pGC, nBox, pBox)
     cfbPrivGCPtr    devPriv;
 
     devPriv = ((cfbPrivGCPtr) (pGC->devPrivates[cfbGCPrivateIndex].ptr));
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pdstBase = (unsigned long *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	widthDst = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pdstBase = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+
+    cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase)
 
     RROP_FETCH_GC(pGC)
     
@@ -248,18 +238,7 @@ RROP_NAME(cfbSolidSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		     pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted);
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pdstBase = (unsigned long *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	widthDst = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pdstBase = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase)
 
     while (n--)
     {

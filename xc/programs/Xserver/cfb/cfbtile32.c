@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbtile32.c,v 1.1 90/05/15 18:40:37 keith Exp $ */
+/* $XConsortium: cfbtile32.c,v 1.2 90/11/19 17:29:29 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -137,18 +137,7 @@ MROP_NAME(cfbFillRectTile32) (pDrawable, pGC, nBox, pBox)
 
     MROP_INITIALIZE(pGC->alu, pGC->planemask);
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pbits = (unsigned long *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwDst = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pbits = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDrawable, nlwDst, pbits)
 
     while (nBox--)
     {

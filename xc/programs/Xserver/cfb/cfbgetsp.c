@@ -48,44 +48,35 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
     register DDXPointPtr ppt;		/* points to start copying from */
     int			*pwidth;	/* list of number of bits to copy */
     int			nspans;		/* number of scanlines to copy */
-    unsigned int	*pdstStart;	/* where to put the bits */
+    unsigned long	*pdstStart;	/* where to put the bits */
 {
-    register unsigned int	*pdst;		/* where to put the bits */
-    register unsigned int	*psrc;		/* where to get the bits */
-    register unsigned int	tmpSrc;		/* scratch buffer for bits */
-    unsigned int		*psrcBase;	/* start of src bitmap */
+    register unsigned long	*pdst;		/* where to put the bits */
+    register unsigned long	*psrc;		/* where to get the bits */
+    register unsigned long	tmpSrc;		/* scratch buffer for bits */
+    unsigned long		*psrcBase;	/* start of src bitmap */
     int			widthSrc;	/* width of pixmap in bytes */
     register DDXPointPtr pptLast;	/* one past last point to get */
     int         	xEnd;		/* last pixel to copy from */
     register int	nstart; 
     int	 		nend; 
     int	 		srcStartOver; 
-    int	 		startmask, endmask, nlMiddle, nl, srcBit;
+    unsigned long	startmask, endmask;
+    int			nlMiddle, nl, srcBit;
     int			w;
-    unsigned int	*pdstNext;
+    unsigned long	*pdstNext;
 
-    switch (pDrawable->depth) {
+    switch (pDrawable->bitsPerPixel) {
 	case 1:
 	    mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
 	    return;
-	case 8:
+	case PSZ:
 	    break;
 	default:
 	    FatalError("cfbGetSpans: invalid depth\n");
     }
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	psrcBase = (unsigned int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	widthSrc = (int)
-		   ((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind;
-    }
-    else
-    {
-	psrcBase = (unsigned int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	widthSrc = (int)(((PixmapPtr)pDrawable)->devKind);
-    }
+    
+    cfbGetLongWidthAndPointer (pDrawable, widthSrc, psrcBase)
 
 #if PPW == 4
     if ((nspans == 1) && (*pwidth == 1))

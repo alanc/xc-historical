@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbresd.c,v 1.7 90/01/31 12:31:17 keith Exp $ */
+/* $XConsortium: cfbbresd.c,v 1.8 91/03/11 14:58:04 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -113,7 +113,7 @@ int len;		/* length of line */
 		if (isDoubleDash) {
 		    Loop(*addrb = xorBg)
 		} else {
-		    Loop()
+		    Loop(;)
 		}
 	    } else {
 		Loop(*addrb = xorFg)
@@ -132,7 +132,7 @@ int len;		/* length of line */
 		if (isDoubleDash) {
 		    Loop(*addrb = DoRRop(*addrb,andBg, xorBg))
 		} else {
-		    Loop()
+		    Loop(;)
 		}
 	    } else {
 		Loop(*addrb = DoRRop(*addrb,andFg, xorFg))

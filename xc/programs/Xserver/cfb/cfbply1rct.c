@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbply1rct.c,v 1.3 91/03/12 13:31:58 keith Exp $
+ * $XConsortium: cfbply1rct.c,v 1.5 91/04/09 19:23:20 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -72,10 +72,9 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 	miFillPolygon (pDrawable, pGC, shape, mode, count, ptsIn);
 	return;
     }
-    cfbGetLongWidthAndPointer(pDrawable, nwidth, addrl);
-    nwidth <<= 2;
     devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
     origin = *((int *) &pDrawable->x);
+    origin -= (origin & 0x8000) << 1;
     extents = &devPriv->pCompositeClip->extents;
     RROP_FETCH_GCPRIV(devPriv);
     vertex1 = *((int *) &extents->x1) - origin;
@@ -105,9 +104,10 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 	return;
     }
 
-#define AddrYPlus(a,y)  (unsigned long *) (((char *) (a)) + (y) * nwidth)
+#define AddrYPlus(a,y)  (unsigned long *) (((unsigned char *) (a)) + (y) * nwidth)
 
-    addrl = AddrYPlus(addrl,y + intToY(origin));
+    cfbGetTypedWidthAndPointer(pDrawable, nwidth, addrl, unsigned char, unsigned long);
+    addrl = AddrYPlus(addrl,y + pDrawable->y);
     origin = intToX(origin);
     vertex2p = vertex1p;
     vertex2 = vertex1 = *vertex2p++;

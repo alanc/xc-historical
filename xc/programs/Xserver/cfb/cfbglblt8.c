@@ -16,7 +16,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbglblt8.c,v 5.15 91/01/27 13:02:57 keith Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.16 91/02/17 13:39:05 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -166,18 +166,8 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     pixel = ((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->xor;
 #endif
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pdstBase = (unsigned long *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	bwidthDst = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind);
-    }
-    else
-    {
-	pdstBase = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	bwidthDst = (int)(((PixmapPtr)pDrawable)->devKind);
-    }
+    cfbGetTypedWidthAndPointer (pDrawable, bwidthDst, pdstBase, char, unsigned long)
+
     widthDst = bwidthDst >> 2;
     while (nglyph--)
     {
@@ -267,18 +257,8 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     pixel = ((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->xor;
 #endif
     
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pdstBase = (unsigned long *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	bwidthDst = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind);
-    }
-    else
-    {
-	pdstBase = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	bwidthDst = (int)(((PixmapPtr)pDrawable)->devKind);
-    }
+    cfbGetTypedWidthAndPointer (pDrawable, bwidthDst, pdstBase, char, unsigned long)
+
     widthDst = bwidthDst >> 2;
     maxAscent = FONTMAXBOUNDS(pfont,ascent);
     maxDescent = FONTMAXBOUNDS(pfont,descent);

@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbteblt8.c,v 5.12 90/11/29 19:33:41 keith Exp $ */
+/* $XConsortium: cfbteblt8.c,v 5.13 91/01/27 13:02:52 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -371,18 +371,8 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	cfb8SetPixels (pGC->fgPixel, pGC->bgPixel);
 
     leftChar = 0;
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pdstBase = (unsigned long *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	widthDst = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pdstBase = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+
+    cfbGetLongWidthAndPointer(pDrawable, widthDst, pdstBase)
 
 #if NGLYPHS == 2
     widthGlyphs = widthGlyph << 1;

@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.h,v 4.16 90/12/09 16:02:27 keith Exp $ */
+/* $XConsortium: cfbmskbits.h,v 4.17 91/03/11 17:25:49 keith Exp $ */
 
 extern int cfbstarttab[];
 extern int cfbendtab[];
@@ -231,6 +231,15 @@ getleftbits(psrc, w, dst)
     pf |= (pf << 2*PSZ); \
 }
 
+/*
+ * Reduced raster op - using precomputed values, perform the above
+ * in three instructions
+ */
+
+#define DoRRop(dst, and, xor)	(((dst) & (and)) ^ (xor))
+
+#define DoMaskRRop(dst, and, xor, mask) \
+    (((dst) & ((and) | ~(mask))) ^ (xor & mask))
 
 #define maskbits(x, w, startmask, endmask, nlw) \
     startmask = cfbstarttab[(x)&PIM]; \
@@ -326,7 +335,7 @@ if ( ((x)+(w)) <= PPW) \
     PFILL2(planemask, t1); \
     tmpmask &= t1; \
     t1 = SCRRIGHT((src), (x)); \
-    t2 = DoRop(rop, t1, *(pdst)); \
+    DoRop(t2, rop, t1, *(pdst)); \
     *(pdst) = (*(pdst) & ~tmpmask) | (t2 & tmpmask); \
 } \
 else \
@@ -339,10 +348,10 @@ else \
     m = PPW-(x); \
     n = (w) - m; \
     t1 = SCRRIGHT((src), (x)); \
-    t2 = DoRop(rop, t1, *(pdst)); \
+    DoRop(t2, rop, t1, *(pdst)); \
     *(pdst) = (*(pdst) & (cfbendtab[x] | ~pm)) | (t2 & (cfbstarttab[x] & pm));\
     t1 = SCRLEFT((src), m); \
-    t2 = DoRop(rop, t1, *((pdst) + 1)); \
+    DoRop(t2, rop, t1, *((pdst) + 1)); \
     *((pdst)+1) = (*((pdst)+1) & (cfbstarttab[n] | ~pm)) | \
 	(t2 & (cfbendtab[n] & pm)); \
 }

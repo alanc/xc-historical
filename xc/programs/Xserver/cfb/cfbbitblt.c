@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.35 91/01/27 13:12:41 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.36 91/04/07 17:58:57 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -349,46 +349,22 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 {
     int	srcx, srcy, dstx, dsty, width, height;
     int xoffSrc, xoffDst;
-    unsigned int *psrcBase, *pdstBase;
+    unsigned long *psrcBase, *pdstBase;
     int	widthSrc, widthDst;
-    unsigned int *psrcLine, *pdstLine;
-    register unsigned int *psrc, *pdst;
-    register unsigned int bits, tmp;
+    unsigned long *psrcLine, *pdstLine;
+    register unsigned long *psrc, *pdst;
+    register unsigned long bits, tmp;
     register int leftShift, rightShift;
-    unsigned int startmask, endmask;
+    unsigned long startmask, endmask;
     register int nl, nlMiddle;
     int firstoff, secondoff;
-    unsigned int    src;
+    unsigned long    src;
     int nbox;
     BoxPtr  pbox;
 
-    if (pSrcDrawable->type == DRAWABLE_WINDOW)
-    {
-	psrcBase = (unsigned int *)
-		(((PixmapPtr)(pSrcDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	widthSrc = (int)
-		   ((PixmapPtr)(pSrcDrawable->pScreen->devPrivate))->devKind
-		    >> 2;
-    }
-    else
-    {
-	psrcBase = (unsigned int *)(((PixmapPtr)pSrcDrawable)->devPrivate.ptr);
-	widthSrc = (int)(((PixmapPtr)pSrcDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pSrcDrawable, widthSrc, psrcBase)
 
-    if (pDstDrawable->type == DRAWABLE_WINDOW)
-    {
-	pdstBase = (unsigned int *)
-		(((PixmapPtr)(pDstDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	widthDst = (int)
-		   ((PixmapPtr)(pDstDrawable->pScreen->devPrivate))->devKind
-		    >> 2;
-    }
-    else
-    {
-	pdstBase = (unsigned int *)(((PixmapPtr)pDstDrawable)->devPrivate.ptr);
-	widthDst = (int)(((PixmapPtr)pDstDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDstDrawable, widthDst, pdstBase)
 
     nbox = REGION_NUM_RECTS(prgnDst);
     pbox = REGION_RECTS(prgnDst);

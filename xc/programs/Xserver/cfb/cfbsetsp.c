@@ -129,13 +129,13 @@ void
 cfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
     DrawablePtr		pDrawable;
     GCPtr		pGC;
-    int			*psrc;
+    unsigned long	*psrc;
     register DDXPointPtr ppt;
     int			*pwidth;
     int			nspans;
     int			fSorted;
 {
-    int 		*pdstBase;	/* start of dst bitmap */
+    unsigned long	*pdstBase;	/* start of dst bitmap */
     int 		widthDst;	/* width of bitmap in words */
     register BoxPtr 	pbox, pboxLast, pboxTest;
     register DDXPointPtr pptLast;
@@ -149,19 +149,8 @@ cfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 
     pptLast = ppt + nspans;
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pdstBase = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	widthDst = (int)
-		   ((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind
-		    >> 2;
-    }
-    else
-    {
-	pdstBase = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase)
+
     yMax = (int) pDrawable->y + (int) pDrawable->height;
 
     pbox = REGION_RECTS(prgnDst);
