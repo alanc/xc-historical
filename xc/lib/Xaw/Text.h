@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Text.h,v 1.19 89/05/11 01:06:55 kit Exp $
+* $XConsortium: Text.h,v 1.20 89/05/11 14:20:31 kit Exp $
 */
 
 
@@ -133,6 +133,13 @@ typedef struct _XawTextSink XtTextSinkRec, *XtTextSink;
 #define XtTextBlock                XawTextBlock
 #define XtTextBlockPtr             XawTextBlockPtr
 
+#define EditDone	   XawEditDone
+#define EditError	   XawEditError
+#define PositionError	   XawPositionError
+
+#define XtEditDone	   XawEditDone
+#define XtEditError	   XawEditError
+#define XtPositionError	   XawPositionError
 
 #define XttextRead                 XawtextRead
 #define XttextAppend               XawtextAppend

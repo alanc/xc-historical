@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextSrcP.h,v 1.3 89/05/11 01:06:58 kit Exp $
+* $XConsortium: TextSrcP.h,v 1.4 89/05/11 14:20:38 kit Exp $
 */
 
 
@@ -86,14 +86,6 @@ typedef enum  {Normal, Selected }highlightType;
 #ifdef XAW_BC
 /*************************************************************
  * For Compatibility only.                                   */
-
-#define EditDone	   XawEditDone
-#define EditError	   XawEditError
-#define PositionError	   XawPositionError
-
-#define XtEditDone	   XawEditDone
-#define XtEditError	   XawEditError
-#define XtPositionError	   XawPositionError
 
 #define _XtTextSink        _XawTextSink
 #define _XtTextSource      _XawTextSource
