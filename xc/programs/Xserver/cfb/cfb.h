@@ -57,6 +57,7 @@ extern void cfbPaintWindow();
 extern void miPolyFillRect();
 extern void cfbPolyFillRect();
 extern void miPolyFillArc();
+extern void cfbZeroPolyArcSS8();
 
 extern void cfbLineSS(), cfbDashLine();
 extern RegionPtr cfbCopyArea();
