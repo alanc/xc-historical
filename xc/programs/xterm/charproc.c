@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.120 89/12/15 18:17:48 jim Exp $
+ * $XConsortium: charproc.c,v 1.121 89/12/15 19:07:43 jim Exp $
  */
 
 
@@ -149,7 +149,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.120 89/12/15 18:17:48 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.121 89/12/15 19:07:43 jim Exp $";
 #endif	/* lint */
 
 static int nparam;
@@ -180,7 +180,7 @@ extern void HandleFocusChange();
 static void HandleKeymapChange();
 extern void HandleInsertSelection();
 extern void HandleSelectStart(), HandleKeyboardSelectStart();
-extern void HandleSelectExtend();
+extern void HandleSelectExtend(), HandleSelectSet();
 extern void HandleSelectEnd(), HandleKeyboardSelectEnd();
 extern void HandleStartExtend(), HandleKeyboardStartExtend();
 static void HandleBell();
@@ -250,6 +250,7 @@ static XtActionsRec actionsList[] = {
     { "select-start",	  HandleSelectStart },
     { "select-extend",	  HandleSelectExtend },
     { "select-end",	  HandleSelectEnd },
+    { "select-set",	  HandleSelectSet },
     { "select-cursor-start",	  HandleKeyboardSelectStart },
     { "select-cursor-end",	  HandleKeyboardSelectEnd },
     { "set-vt-font",	  HandleSetFont },
