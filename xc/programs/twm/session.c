@@ -1,4 +1,4 @@
-/* $XConsortium: session.c,v 1.8 94/07/26 12:39:34 mor Exp mor $ */
+/* $XConsortium: session.c,v 1.9 94/08/02 20:05:53 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -34,7 +34,7 @@ Author:  Ralph Mor, X Consortium
 #include "twm.h"
 #include "screen.h"
 
-SmcConn smcConn;
+SmcConn smcConn = NULL;
 XtInputId iceInputId;
 char *twm_clientId;
 TWMWinConfigEntry *winConfigHead = NULL;
@@ -595,11 +595,12 @@ SmPointer clientData;
     FILE *configFile;
     char *path, *filename;
     Bool success = True;
-    SmProp prop1, prop2, prop3, prop4, *props[4];
-    SmPropValue prop2val, prop3val, prop4val;
-    char discardCommand[80], userId[20];
+    SmProp prop1, prop2, prop3, *props[3];
+    SmPropValue prop1val, prop2val, prop3val;
+    char discardCommand[80];
     int numVals, i;
     char yes = 1;
+    static int first_time = 1;
 
     path = getenv ("SM_SAVE_DIR");
     if (!path)
@@ -641,11 +642,53 @@ SmPointer clientData;
     
     fclose (configFile);
 
+    if (first_time)
+    {
+	char userId[20];
+	char hint = SmRestartAnyway;
+
+	prop1.name = SmProgram;
+	prop1.type = SmARRAY8;
+	prop1.num_vals = 1;
+	prop1.vals = &prop1val;
+	prop1val.value = Argv[0];
+	prop1val.length = strlen (Argv[0]);
+
+	sprintf (userId, "%d", getuid());
+	prop2.name = SmUserID;
+	prop2.type = SmARRAY8;
+	prop2.num_vals = 1;
+	prop2.vals = &prop2val;
+	prop2val.value = (SmPointer) userId;
+	prop2val.length = strlen (userId);
+	
+	prop3.name = SmRestartStyleHint;
+	prop3.type = SmCARD8;
+	prop3.num_vals = 1;
+	prop3.vals = &prop3val;
+	prop3val.value = (SmPointer) &hint;
+	prop3val.length = 1;
+	
+	props[0] = &prop1;
+	props[1] = &prop2;
+	props[2] = &prop3;
+
+	SmcSetProperties (smcConn, 3, props);
+
+	first_time = 0;
+    }
+
     prop1.name = SmRestartCommand;
     prop1.type = SmLISTofARRAY8;
 
     prop1.vals = (SmPropValue *) malloc (
 	(Argc + 4) * sizeof (SmPropValue));
+
+    if (!prop1.vals)
+    {
+	SmcSaveYourselfDone (smcConn, False);
+	return;
+    }
 
     numVals = 0;
 
@@ -677,36 +720,19 @@ SmPointer clientData;
 
     prop1.num_vals = numVals;
 
-    prop2.name = SmProgram;
+    sprintf (discardCommand, "rm %s", filename);
+    prop2.name = SmDiscardCommand;
     prop2.type = SmARRAY8;
     prop2.num_vals = 1;
     prop2.vals = &prop2val;
-    prop2val.value = Argv[0];
-    prop2val.length = strlen (Argv[0]);
-
-    sprintf (discardCommand, "rm %s", filename);
-    prop3.name = SmDiscardCommand;
-    prop3.type = SmARRAY8;
-    prop3.num_vals = 1;
-    prop3.vals = &prop3val;
-    prop3val.value = (SmPointer) discardCommand;
-    prop3val.length = strlen (discardCommand);
-
-    sprintf (userId, "%d", getuid());
-    prop4.name = SmUserID;
-    prop4.type = SmARRAY8;
-    prop4.num_vals = 1;
-    prop4.vals = &prop4val;
-    prop4val.value = (SmPointer) userId;
-    prop4val.length = strlen (userId);
+    prop2val.value = (SmPointer) discardCommand;
+    prop2val.length = strlen (discardCommand);
 
     props[0] = &prop1;
     props[1] = &prop2;
-    props[2] = &prop3;
-    props[3] = &prop4;
 
-    SmcSetProperties (smcConn, 4, props);
-    free (prop1.vals);
+    SmcSetProperties (smcConn, 2, props);
+    free ((char *) prop1.vals);
 
     SmcSaveYourselfDone (smcConn, success);
 }
