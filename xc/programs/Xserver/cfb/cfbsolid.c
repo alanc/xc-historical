@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbsolid.c,v 1.3 91/04/10 11:42:11 keith Exp $
+ * $XConsortium: cfbsolid.c,v 1.4 91/04/26 21:33:55 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -261,7 +261,7 @@ RROP_NAME(cfbSolidSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	    }
 	}
 #else
-	if ((x & PIM) + width <= PPW)
+	if ((x & PIM) + w <= PPW)
 	{
 	    pdst += x >> PWSH;
 	    maskpartialbits (x, w, startmask);
