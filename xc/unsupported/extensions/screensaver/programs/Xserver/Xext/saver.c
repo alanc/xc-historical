@@ -1,5 +1,5 @@
 /*
- * $XConsortium: saver.c,v 1.3 92/02/13 21:26:25 keith Exp $
+ * $XConsortium: saver.c,v 1.4 92/02/28 17:54:56 keith Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -394,6 +394,16 @@ static void
 UninstallSaverColormap (pScreen)
     ScreenPtr	pScreen;
 {
+    SetupScreen(pScreen);
+
+    if (pPriv && pPriv->installedMap != None)
+    {
+	pCmap = (ColormapPtr) LookupIDByType (pPriv->installedMap, RT_COLORMAP);
+	if (pCmap)
+	    (*pCmap->pScreen->UninstallColormap) (pCmap);
+	pPriv->installedMap = None;
+	CheckScreenPrivate (pScreen);
+    }
 }
 
 static Bool
@@ -420,7 +430,7 @@ CreateSaverWindow (pScreen)
 	FreeResource (pSaver->wid, RT_NONE);
 	if (pPriv)
 	{
-	    if (pPriv->installedMap != None)
+	    UninstallSaverColormap (pScreen);
 	    pPriv->hasWindow = FALSE;
 	    CheckScreenPrivate (pScreen);
 	}
@@ -535,13 +545,8 @@ DestroySaverWindow (pScreen)
 	FreeResource (pSaver->wid);
     }
     pPriv->hasWindow = FALSE;
-    if (pPriv->installedMap != None)
-    {
-	pCmap = (ColormapPtr) LookupIDByType (pPriv->installedMap, RT_COLORMAP);
-	if (pCmap)
-	    (*pCmap->pScreen->UninstallColormap) (pCmap);
-	pPriv->installedMap = None;
-    }
+    CheckScreenPrivate (pScreen);
+    UninstallSaverColormap (pScreen);
     return TRUE;
 }
 
@@ -630,20 +635,23 @@ ProcScreenSaverQueryInfo (client)
 	if (ScreenSaverTime)
 	    rep.tilOrSince = lastInput - ScreenSaverTime;
 	else
-	    rep.tilOrSince = ~0;
+	    rep.tilOrSince = 0;
     }
     else
     {
-	rep.state = ScreenSaverOff;
 	if (ScreenSaverTime)
 	{
+	    rep.state = ScreenSaverOff;
 	    if (ScreenSaverTime < lastInput)
 		rep.tilOrSince = 0;
 	    else
 		rep.tilOrSince = ScreenSaverTime - lastInput;
 	}
 	else
-	    rep.tilOrSince =~0;
+	{
+	    rep.state = ScreenSaverDisabled;
+	    rep.tilOrSince = 0;
+	}
     }
     rep.idle = lastInput;
     rep.eventMask = getEventMask (pDraw->pScreen, client);
