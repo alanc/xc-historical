@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.68 91/04/09 16:19:36 converse Exp $ */
+/* $XConsortium: Converters.c,v 1.69 91/04/09 17:08:57 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1292,11 +1292,13 @@ CvtStringToVisual(dpy, args, num_args, fromVal, toVal, closure_ret)
     String str = (String)fromVal->addr;
     int vc;
     XVisualInfo vinfo;
-    if (*num_args != 2)
+    if (*num_args != 2) {
 	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
 		  XtNwrongParameters,"cvtStringToVisual",XtCXtToolkitError,
                   "String to Visual conversion needs screen and depth arguments",
                    (String *) NULL, (Cardinal *)NULL);
+	return False;
+    }
 
          if (CompareISOLatin1(str, "StaticGray") == 0)	vc = StaticGray;
     else if (CompareISOLatin1(str, "StaticColor") == 0)	vc = StaticColor;
@@ -1342,12 +1344,13 @@ CvtStringToAtom(dpy, args, num_args, fromVal, toVal, closure_ret)
     XtPointer	*closure_ret;
 {
     Atom atom;
-    if (*num_args != 1)
+    if (*num_args != 1) {
 	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
 		  XtNwrongParameters,"cvtStringToAtom",XtCXtToolkitError,
                   "String to Atom conversion needs Display argument",
                    (String *) NULL, (Cardinal *)NULL);
-
+	return False;
+    }
     
     atom =  XInternAtom( *(Display**)args->addr, (char*)fromVal->addr, False );
     done(Atom, atom);
