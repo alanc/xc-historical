@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.3 94/06/15 14:50:00 mor Exp $ */
+/* $XConsortium: smproxy.c,v 1.4 94/06/16 13:17:00 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -61,6 +61,7 @@ typedef struct {
 typedef struct ProxyFileEntry
 {
     struct ProxyFileEntry *next;
+    int tag;
     char *client_id;
     XClassHint class;
     char *wm_name;
@@ -276,6 +277,7 @@ ProxyFileEntry **pentry;
     if (!*pentry)
 	return 0;
 
+    entry->tag = 0;
     entry->client_id = NULL;
     entry->class.res_name = NULL;
     entry->class.res_class = NULL;
@@ -386,7 +388,8 @@ WinInfo *theWindow;
     ptr = proxyFileHead;
     while (ptr && !found)
     {
-	if (strcmp (theWindow->class.res_name, ptr->class.res_name) == 0 &&
+	if (!ptr->tag &&
+            strcmp (theWindow->class.res_name, ptr->class.res_name) == 0 &&
 	    strcmp (theWindow->class.res_class, ptr->class.res_class) == 0 &&
 	    strcmp (theWindow->wm_name, ptr->wm_name) == 0)
 	{
@@ -409,7 +412,10 @@ WinInfo *theWindow;
     }
 
     if (found)
+    {
+	ptr->tag = 1;
 	return (ptr->client_id);
+    }
     else
 	return NULL;
 }
@@ -771,6 +777,63 @@ WinInfo *winInfo;
 
 
 
+AddNewWindow (window, client_window)
+
+Window window;
+Window client_window;
+
+{
+    Bool has_xsmp_support, has_save_yourself;
+    Bool has_wm_command, has_transient_for;
+
+    has_xsmp_support = HasXSMPsupport (client_window);
+    has_save_yourself = HasSaveYourself (client_window);
+    has_wm_command = GetWmCommand (client_window,
+	&win_list[win_count].wm_command,
+	&win_list[win_count].wm_command_count);
+    has_transient_for = HasTransientFor (client_window);
+
+    win_list[win_count].frame = window;
+    win_list[win_count].window = client_window;
+    win_list[win_count].has_save_yourself = has_save_yourself;
+    win_list[win_count].waiting_for_update = 0;
+
+    win_list[win_count].class.res_name = NULL;
+    win_list[win_count].class.res_class = NULL;
+    win_list[win_count].wm_name = NULL;
+    
+    if (!has_xsmp_support && !has_transient_for &&
+	(has_save_yourself || has_wm_command))
+    {
+	XFetchName (disp, client_window, &win_list[win_count].wm_name);
+	XGetClassHint (disp, client_window, &win_list[win_count].class);
+	
+	ConnectClientToSM (&win_list[win_count]);
+    }
+    else
+    {
+	win_list[win_count].smc_conn = NULL;
+	win_list[win_count].client_id = NULL;
+    }
+
+    if (debug)
+    {
+	printf ("Added window\n");
+	printf ("    frame = 0x%x\n", window);
+	printf ("    window = 0x%x\n", client_window);
+	printf ("    has SM_CLIENT_ID = %d\n", has_xsmp_support);
+	printf ("    has WM_SAVE_YOURSELF = %d\n", has_save_yourself);
+	printf ("    has WM_COMMAND = %d\n", has_wm_command);
+	printf ("    has WM_TRANSIENT_FOR = %d\n", has_transient_for);
+	printf ("\n");
+    }
+
+    win_count++;
+}
+
+
+
+
 void
 HandleMap (event, map)
 
@@ -778,14 +841,21 @@ XMapEvent *event;
 Bool map;
 
 {
-    Window frame;
-    Window window;
-    int i;
+    Window client_window;
+    int i, has_frame;
 
-    printf ("MAP ID = %x\n", event->window);
+    client_window = XmuClientWindow (disp, event->window);
 
     for (i = 0; i < win_count; i++)
     {
+	has_frame = win_list[i].frame != win_list[i].window;
+
+	if (!has_frame && client_window != event->window &&
+	    win_list[i].window == client_window)
+	{
+	    win_list[i].frame = event->window;
+	}
+
 	if (win_list[i].frame == event->window ||
 	    win_list[i].window == event->window)
 	{
@@ -796,54 +866,8 @@ Bool map;
 
     if (i >= win_count)
     {
-	Bool has_xsmp_support, has_save_yourself;
-	Bool has_wm_command, has_transient_for;
-
-	frame = event->window;
-	window = XmuClientWindow (disp, frame);
-
-	has_xsmp_support = HasXSMPsupport (window);
-	has_save_yourself = HasSaveYourself (window);
-	has_wm_command = GetWmCommand (window,
-	    &win_list[win_count].wm_command,
-	    &win_list[win_count].wm_command_count);
-	has_transient_for = HasTransientFor (window);
-
-	win_list[win_count].frame = frame;
-	win_list[win_count].window = window;
 	win_list[win_count].mapped = map;
-	win_list[win_count].has_save_yourself = has_save_yourself;
-	win_list[win_count].waiting_for_update = 0;
-
-	if (!has_xsmp_support && !has_transient_for &&
-	    (has_save_yourself || has_wm_command))
-	{
-	    XFetchName (disp, window, &win_list[win_count].wm_name);
-	    win_list[win_count].class.res_name = NULL;
-	    win_list[win_count].class.res_class = NULL;
-	    XGetClassHint (disp, window, &win_list[win_count].class);
-	    
-	    ConnectClientToSM (&win_list[win_count]);
-	}
-	else
-	{
-	    win_list[win_count].smc_conn = NULL;
-	    win_list[win_count].client_id = NULL;
-	}
-
-	if (debug)
-	{
-	    printf ("Added window\n");
-	    printf ("    frame = 0x%x\n", frame);
-	    printf ("    window = 0x%x\n", window);
-	    printf ("    has SM_CLIENT_ID = %d\n", has_xsmp_support);
-	    printf ("    has WM_SAVE_YOURSELF = %d\n", has_save_yourself);
-	    printf ("    has WM_COMMAND = %d\n", has_wm_command);
-	    printf ("    has WM_TRANSIENT_FOR = %d\n", has_transient_for);
-	    printf ("\n");
-	}
-
-	win_count++;
+	AddNewWindow (event->window, client_window);
     }
 }
 
@@ -883,6 +907,12 @@ XDestroyWindowEvent *event;
 
 	    if (win_list[i].wm_name)
 		XFree (win_list[i].wm_name);
+
+	    if (win_list[i].class.res_name)
+		XFree (win_list[i].class.res_name);
+
+	    if (win_list[i].class.res_class)
+		XFree (win_list[i].class.res_class);
 
 	    if (i < win_count - 1)
 		win_list[i] = win_list[win_count - 1];
@@ -1118,6 +1148,30 @@ XErrorEvent *event;
 
 
 
+void
+CheckFirst ()
+
+{
+    Window dontCare1, dontCare2, *children, client_window;
+    unsigned int nchildren, i;
+
+    XGrabServer (disp);
+    XSync (disp, 0);
+
+    XQueryTree (disp, root, &dontCare1, &dontCare2, &children, &nchildren);
+
+    for (i = 0; i < nchildren; i++)
+    {
+	client_window = XmuClientWindow (disp, children[i]);
+	AddNewWindow (children[i], client_window);
+    }
+    
+    XUngrabServer (disp);
+    XSync (disp, 0);
+}
+
+
+
 main (argc, argv)
 
 int argc;
@@ -1166,6 +1220,8 @@ char **argv;
     wmTransientForAtom = XInternAtom (disp, "WM_TRANSIENT_FOR", False);
     smClientIdAtom = XInternAtom (disp, "SM_CLIENT_ID", False);
 
+    CheckFirst ();
+
     while (1)
     {
 	XEvent event;
@@ -1179,7 +1235,6 @@ char **argv;
 	    break;
 
 	case UnmapNotify:
-	    printf ("got unmap\n");
 #if 0
 	    HandleMap (&event.xunmap, 0);
 #endif
