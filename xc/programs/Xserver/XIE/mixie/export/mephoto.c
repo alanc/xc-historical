@@ -1,4 +1,4 @@
-/* $XConsortium: mephoto.c,v 1.4 93/11/06 15:27:19 rws Exp $ */
+/* $XConsortium: mephoto.c,v 1.5 94/01/12 20:08:35 rws Exp $ */
 /**** module mephoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -514,7 +514,7 @@ static int InitializeEPhotoUncomByPixel(flo,ped)
   CARD32 depth1,depth2,depth3,dstride;
   int s, d;
   
-  pvt->unaligned = FALSE;
+  pvt->unaligned = (tec->pixelStride[0] & 7) != 0;
   
   if(tec->bandOrder == xieValLSFirst)
     for(d = 0; d < xieValMaxBands; ++d)
@@ -532,8 +532,8 @@ static int InitializeEPhotoUncomByPixel(flo,ped)
   dstride = tec->pixelStride[0]>>3;
   pvt[0].width = pvt[1].width = pvt[2].width = sbnd1->format->width;
 
-  /* See if data is nicely aligned */
-  if (!(tec->pixelStride[0] & 7)) {
+  if (!pvt->unaligned) {
+    /* Look for special cases */
     if (depth1 == 16 && depth2 == 16 && depth3 == 16) {
 #if (IMAGE_BYTE_ORDER == MSBFirst)
       void (*pa)() = (tec->pixelOrder == xieValMSFirst) ? PtoIS : sPtoIS;
@@ -632,10 +632,12 @@ static int InitializeEPhotoUncomByPixel(flo,ped)
       pvt->mask      = smask3;
       pvt->clear_dst = TRUE;
       pvt->shift     = shift3; 
-    }
-  } else {
-    /* Wasn't nicely aligned, do it the hard way */
-    pvt->unaligned = TRUE;
+    } else
+	pvt->unaligned = TRUE;
+  } 
+  pvt = (meUncompPtr)pet->private;
+  if (pvt->unaligned) { 
+    /* No special cases, do it the hard way */
     pvt[0].pitch = outf->pitch;
     pvt->action = EncodeTripleFuncs[tec->pixelOrder == xieValLSFirst ? 0 : 1]
 				   [tec->fillOrder  == xieValLSFirst ? 0 : 1]
