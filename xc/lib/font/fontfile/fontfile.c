@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfile.c,v 1.23 94/02/10 19:27:20 gildea Exp $
+ * $XConsortium: fontfile.c,v 1.24 94/02/15 18:13:12 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -236,11 +236,11 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
     if (namelen >= MAXFONTNAMELEN)
 	return AllocError;
     dir = (FontDirectoryPtr) fpe->private;
-    ranges = FontParseRanges(lowerName, &nranges);
 
     /* Match non-scalable pattern */
     CopyISOLatin1Lowered (lowerName, name, namelen);
     lowerName[namelen] = '\0';
+    ranges = FontParseRanges(lowerName, &nranges);
     tmpName.name = lowerName;
     tmpName.length = namelen;
     tmpName.ndashes = FontFileCountDashes (lowerName, namelen);

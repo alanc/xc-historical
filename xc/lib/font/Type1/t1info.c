@@ -1,4 +1,4 @@
-/* $XConsortium: t1info.c,v 1.15 94/02/08 12:29:56 gildea Exp $ */
+/* $XConsortium: t1info.c,v 1.16 94/03/08 15:43:48 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -78,7 +78,7 @@ typedef struct _fontProp {
 static fontProp fontNamePropTable[] = {  /* Example: */
     "FOUNDRY", 0, atom,                  /* adobe */
     "FAMILY_NAME", 0, atom,              /* times roman */
-    "WEIGHT_NAME", 0, truncate_atom,     /* bold */
+    "WEIGHT_NAME", 0, atom,     	 /* bold */
     "SLANT", 0, atom,			 /* i */
     "SETWIDTH_NAME", 0, atom,            /* normal */
     "ADD_STYLE_NAME", 0, atom,		 /* */
@@ -323,8 +323,7 @@ ComputeStdProps(pInfo, Vals, Filename, Fontname, sAscent, sDescent, sWidth)
 	case truncate_atom:
             *is_str = TRUE;
 	    for (ptr3 = ptr1; *ptr3; ptr3++)
-		if (*ptr3 == '=' || *ptr3 == '-' ||
-		    *ptr3 == '+' || *ptr3 == '~')
+		if (*ptr3 == '[')
 		    break;
 	    pp->value = MakeAtom(ptr1, ptr3 - ptr1, TRUE);
 	    break;

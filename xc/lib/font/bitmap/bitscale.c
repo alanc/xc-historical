@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitscale.c,v 1.24 94/02/14 17:33:55 gildea Exp $
+ * $XConsortium: bitscale.c,v 1.25 94/03/08 15:43:47 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -50,7 +50,7 @@ static unsigned long fontGeneration = 0;	/* initialization flag */
 static fontProp fontNamePropTable[] = {
     "FOUNDRY", 0, atom,
     "FAMILY_NAME", 0, atom,
-    "WEIGHT_NAME", 0, truncate_atom,
+    "WEIGHT_NAME", 0, atom,
     "SLANT", 0, atom,
     "SETWIDTH_NAME", 0, atom,
     "ADD_STYLE_NAME", 0, atom,
@@ -609,8 +609,7 @@ ComputeScaledProperties(sourceFontInfo, name, vals, dx, dy, sdx, sdy,
 	    break;
 	case truncate_atom:
 	    for (ptr3 = ptr1; *ptr3; ptr3++)
-		if (*ptr3 == '=' || *ptr3 == '-' ||
-		    *ptr3 == '+' || *ptr3 == '~')
+		if (*ptr3 == '[')
 		    break;
 	    if (!*ptr3) ptr3 = ptr2;
 	    fp->value = MakeAtom(ptr1, ptr3 - ptr1, TRUE);
