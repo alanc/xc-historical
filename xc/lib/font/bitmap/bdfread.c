@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfread.c,v 1.2 91/05/10 15:58:19 keith Exp $ */
+/* $XConsortium: bdfread.c,v 1.3 91/05/14 15:43:34 rws Exp $ */
 
 #include <ctype.h>
 #include "fontfilest.h"
@@ -756,6 +756,8 @@ bdfReadFont(pFont, file, bit, byte, glyph, scan)
 	if (pFont->info.firstRow <= r && r <= pFont->info.lastRow &&
 		pFont->info.firstCol <= c && c <= pFont->info.lastCol) {
 	    cols = pFont->info.lastCol - pFont->info.firstCol + 1;
+	    r = r - pFont->info.firstRow;
+	    c = c - pFont->info.firstCol;
 	    bitmapFont->pDefault = bitmapFont->encoding[r * cols + c];
 	}
     }

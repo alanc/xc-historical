@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: snfread.c,v 1.4 91/05/26 16:49:36 rws Exp $ */
+/* $XConsortium: snfread.c,v 1.5 91/05/29 18:45:10 keith Exp $ */
 
 #include <ctype.h>
 #include "fontfilest.h"
@@ -289,6 +289,8 @@ snfReadFont(pFont, file, bit, byte, glyph, scan)
 	if (pFont->info.firstRow <= r && r <= pFont->info.lastRow &&
 		pFont->info.firstCol <= c && c <= pFont->info.lastCol) {
 	    cols = pFont->info.lastCol - pFont->info.firstCol + 1;
+	    r = r - pFont->info.firstRow;
+	    c = c - pFont->info.firstCol;
 	    bitmapFont->pDefault = &bitmapFont->metrics[r * cols + c];
 	}
     }
