@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.104 89/12/07 12:39:46 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.105 89/12/08 13:01:26 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif /* lint */
 
@@ -1332,6 +1332,30 @@ static void HandleFocus(widget, client_data, event, continue_to_dispatch)
     SendFocusNotify(descendant, add ? FocusIn : FocusOut);
 }
 
+/*ARGSUSED*/
+static void RemoveHandleFocus(w, closure, callData)
+    Widget w;			/* keyboard focus destination */
+    XtPointer closure;		/* keyboard focus source */
+    XtPointer callData;
+{
+    Widget src = (Widget)closure;
+    register GrabList gl, prev;
+
+    RemoveEventHandler(src, XtAllEvents, True, HandleFocus, w, FALSE, TRUE);
+    RemoveEventHandler(src, XtAllEvents, True, ForwardEvent, w, FALSE, TRUE);
+    for (prev = NULL, gl = focusList; gl != NULL; gl = gl->next) {
+	if (gl->widget == src)
+	    if (gl->keyboard_focus == w) {
+		if (prev) prev->next = gl->next;
+		else focusList = gl->next;
+		XtFree((XtPointer)gl);
+		focusTraceGood = False;	/* invalidate the cache */
+		return;
+	    }
+	prev = gl;
+    }
+}
+
 static void AddForwardingHandler(w, descendant)
     Widget w, descendant;
 {
@@ -1428,6 +1452,8 @@ void XtSetKeyboardFocus(widget, descendant)
             descendant = (Widget)p->closure;
 	    RemoveEventHandler(widget, XtAllEvents, True, HandleFocus, NULL,
 			   FALSE, FALSE); /* not raw, don't check closure */
+	    XtRemoveCallback(descendant, XtNdestroyCallback,
+			     RemoveHandleFocus, (XtPointer)widget);
         }
 	RemoveEventHandler(widget, XtAllEvents, True, ForwardEvent, NULL,
 			   FALSE, FALSE); /* not raw, don't check closure */
@@ -1446,6 +1472,9 @@ void XtSetKeyboardFocus(widget, descendant)
 
     AddEventHandler(widget, mask, False, HandleFocus, (XtPointer)descendant,
 		    XtListHead, FALSE, FALSE, FALSE);
+
+    XtAddCallback(descendant, XtNdestroyCallback, RemoveHandleFocus,
+		  (XtPointer)widget);       
 
     /* If his translations aren't installed, we'll have to wait 'till later */
 
