@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.21 90/08/18 19:18:23 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.22 90/08/20 09:33:37 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -582,7 +582,7 @@ miFillWideEllipse(pDraw, pGC, parc)
     if (!(parc->height & 1)) {
 	outx = w + r;
 	inx = w - r;
-	if (Nk < 0.0)
+	if ((Nk < 0.0) && (-Nk < Hs))
 	    inx = w * sqrt(1 + Nk / Hs) - sqrt(rs + Nk);
 	if (inx <= 0.0)
 	{
