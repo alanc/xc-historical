@@ -8,6 +8,8 @@ xgc - X graphics demo
 The
 .I xgc
 program demonstrates various features of the X graphics primitives.
+Try the buttons, see what they do; we haven't the time to document
+them, perhaps you do?
 .SH OPTIONS
 .I Xgc
 accepts all of the standard X Toolkit command line options.
