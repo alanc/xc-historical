@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.26 92/03/24 15:52:09 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.27 92/03/24 19:07:56 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -712,7 +712,7 @@ process(buf, n, len)
 		continue;
 	    } else if (curbscount) {
 		while (curbscount)
-		    undo_stoke();
+		    undo_stroke();
 	    } else if (in_control_seq) {
 		fprintf(stderr, "still in control seq\n");
 		debug_state();
