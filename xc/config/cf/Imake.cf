@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imake.cf,v 1.10 94/02/10 20:05:22 rws Exp $
+XCOMM $XConsortium: Imake.cf,v 1.11 94/03/26 18:08:11 rws Exp $
 /*
  * To add support for another platform:
  * 
@@ -47,6 +47,48 @@ XCOMM $XConsortium: Imake.cf,v 1.10 94/02/10 20:05:22 rws Exp $
 #undef bsdi
 #define BSD386Architecture
 #endif /* bsdi */
+
+#ifdef __NetBSD__
+#define MacroIncludeFile <NetBSD.cf>
+#define MacroFile NetBSD.cf
+#undef __NetBSD__
+#ifdef __i386__
+#define i386BsdArchitecture
+#endif
+#endif /* NetBSD */
+
+#ifdef __FreeBSD__
+#define MacroIncludeFile <FreeBSD.cf>
+#define MacroFile FreeBSD.cf
+#undef __FreeBSD__
+#ifdef __i386__
+#define FreeBSDArchitecture
+#define i386BsdArchitecture
+#endif
+#endif /* __FreeBSD__ */
+
+#ifdef AMOEBA
+/* Should be before the 'sun' entry because we may be cross-compiling */
+#define MacroIncludeFile <Amoeba.cf>
+#define MacroFile Amoeba.cf
+#if defined(i80386) || defined(__i80386__)
+#define i386Architecture
+#else
+#if defined(mc68000) || defined(__mc68000__)
+#define Sun3Architecture
+#define SunArchitecture
+#else
+#if defined(sparc) || defined(__sparc__)
+#define SparcArchitecture
+#define SunArchitecture
+#endif
+#endif
+#endif
+#undef i80386
+#undef mc68000
+#undef sparc
+#undef sun
+#endif /* AMOEBA */
 
 #ifdef sun
 #define MacroIncludeFile <sun.cf>
@@ -222,11 +264,14 @@ XCOMM $XConsortium: Imake.cf,v 1.10 94/02/10 20:05:22 rws Exp $
 #endif /* MOTOROLA */
 
 #ifdef SYSV386
-# define MacroIncludeFile <x386.cf>
-# define MacroFile x386.cf
 # ifdef SVR4
+#  define i386Architecture
 #  define i386SVR4Architecture
+#  define MacroIncludeFile <svr4.cf>
+#  define MacroFile svr4.cf
 # else
+#  define MacroIncludeFile <x386.cf>
+#  define MacroFile x386.cf
 #  define i386SVR3Architecture
 # endif
 #endif /* SYSV386 */
@@ -281,6 +326,13 @@ XCOMM $XConsortium: Imake.cf,v 1.10 94/02/10 20:05:22 rws Exp $
 #undef NCR
 #define SVR4Architecture
 #endif /* NCR */
+
+#ifdef linux 
+#define MacroIncludeFile <linux.cf>
+#define MacroFile linux.cf
+#undef linux
+#define LinuxArchitecture
+#endif /* linux */
 
 #ifdef __uxp__
 #define MacroIncludeFile <fujitsu.cf>
