@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbresd.c,v 1.2 89/09/14 17:04:17 rws Exp $ */
+/* $XConsortium: cfbbresd.c,v 1.3 89/09/19 15:35:10 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -43,16 +43,16 @@ SOFTWARE.
 	    dontdraw = (dashIndex & 1); \
     }
 cfbBresD(rop, fg, bg, planemask,
-	 dashIndex, pDash, numInDashList, dashOffset, isDoubleDash,
+	 pdashIndex, pDash, numInDashList, pdashOffset, isDoubleDash,
 	 addrl, nlwidth,
 	 signdx, signdy, axis, x1, y1, e, e1, e2, len)
 int rop;
 unsigned long fg, bg;
 unsigned long planemask;
-int dashIndex;		/* current dash */
+int *pdashIndex;	/* current dash */
 unsigned char *pDash;	/* dash list */
 int numInDashList;	/* total length of dash list */
-int dashOffset;		/* offset into current dash */
+int *pdashOffset;	/* offset into current dash */
 int isDoubleDash;
 int *addrl;		/* pointer to base of bitmap */
 int nlwidth;		/* width in longwords of bitmap */
@@ -67,9 +67,14 @@ int len;		/* length of line */
     register int yinc;	/* increment to next scanline, in bytes */
     register unsigned char *addrb;
     register int e3 = e2-e1;
+    int dashIndex;
+    int dashOffset;
     int dashRemaining;
     unsigned long pixel;
     int dontdraw;
+
+    dashOffset = *pdashOffset;
+    dashIndex = *pdashIndex;
     dashRemaining = pDash[dashIndex] - dashOffset;
     pixel = fg;
     if (isDoubleDash)
@@ -283,5 +288,7 @@ int len;		/* length of line */
 	    	}
     	    }
     	} /* else Y_AXIS */
-    } 
-} 
+    }
+    *pdashIndex = dashIndex;
+    *pdashOffset = dashOffset;
+}

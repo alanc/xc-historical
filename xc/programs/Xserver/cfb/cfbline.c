@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbline.c,v 1.7 89/09/15 08:12:27 keith Exp $ */
+/* $XConsortium: cfbline.c,v 1.8 89/09/19 15:34:53 keith Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -316,12 +316,18 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 	}
 	else	/* sloped line */
 	{
-	    adx = x2 - x1;
-	    ady = y2 - y1;
-	    signdx = sign(adx);
-	    signdy = sign(ady);
-	    adx = abs(adx);
-	    ady = abs(ady);
+	    signdx = 1;
+	    if ((adx = x2 - x1) < 0)
+	    {
+		adx = -adx;
+		signdx = -1;
+	    }
+	    signdy = 1;
+	    if ((ady = y2 - y1) < 0)
+	    {
+		ady = -ady;
+		signdy = -1;
+	    }
 
 	    if (adx > ady)
 	    {
@@ -646,12 +652,12 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 		    unclippedlen++;
 #endif
 		cfbBresD (alu, fg, bg, planemask,
-		      dashIndex, pDash, numInDashList,
-		      dashOffset, isDoubleDash,
+		      &dashIndex, pDash, numInDashList,
+		      &dashOffset, isDoubleDash,
 		      addrl, nlwidth,
 		      signdx, signdy, axis, x1, y1,
 		      e, e1, e2, unclippedlen);
-		break;
+		goto dontStep;
 	    }
 	    else if (oc1 & oc2)
 	    {
@@ -729,8 +735,8 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 		    	else
 			    err = e;
 		    	cfbBresD (alu, fg, bg, planemask,
-			      	  dashIndexTmp, pDash, numInDashList,
-			      	  dashOffsetTmp, isDoubleDash,
+			      	  &dashIndexTmp, pDash, numInDashList,
+			      	  &dashOffsetTmp, isDoubleDash,
 			      	  addrl, nlwidth,
 			      	  signdx, signdy, axis, pt1Copy.x, pt1Copy.y,
 			      	  err, e1, e2, len);
@@ -746,6 +752,7 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 	miStepDash (unclippedlen, &dashIndex, pDash,
 		    numInDashList, &dashOffset);
 #endif
+dontStep:	;
     } /* while (nline--) */
 
 #ifndef POLYSEGMENT
