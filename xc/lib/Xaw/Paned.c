@@ -1,4 +1,4 @@
-/* $XConsortium: Paned.c,v 1.24 91/10/16 21:36:16 eswu Exp $ */
+/* $XConsortium: Paned.c,v 1.25 94/01/31 10:48:29 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -425,7 +425,6 @@ Boolean shrink;
 	    childP = pw->composite.children + _index;
 	}
     }
-    return( NULL );
 }
 
 /*	Function Name: StatisfiesRule1
