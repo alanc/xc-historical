@@ -1,9 +1,10 @@
 #define IHaveSubdirs
-#define PassCDebugFlags /* as nothing */
+#define PassCDebugFlags /**/
 
 SUBDIRS = bitmaps
 
-EXPORTS = \
+HEADERS = DECkeysym.h \
+	JUSkeysym.h \
 	X.h \
 	XWDFile.h \
 	Xatom.h \
@@ -13,136 +14,67 @@ EXPORTS = \
 	Xprotostr.h \
 	copyright.h \
 	keysym.h \
-	keysymdef.h \
-	DECkeysym.h \
-	JUSkeysym.h
+	keysymdef.h 
 
-IMPORTSTOP = \
-	$(XAUTHSRC)/Xauth.h \
-	$(OLDXLIBSRC)/X10.h \
-	$(XLIBSRC)/Xlib.h \
-	$(XLIBSRC)/Xresource.h \
-	$(XLIBSRC)/Xutil.h \
-	$(XLIBSRC)/cursorfont.h \
-	$(TOOLKITSRC)/Composite.h \
-	$(TOOLKITSRC)/CompositeP.h \
-	$(TOOLKITSRC)/Constraint.h \
-	$(TOOLKITSRC)/ConstrainP.h \
-	$(TOOLKITSRC)/Core.h \
-	$(TOOLKITSRC)/CoreP.h \
-	$(TOOLKITSRC)/Intrinsic.h \
-	$(TOOLKITSRC)/IntrinsicP.h \
-	$(TOOLKITSRC)/Quarks.h \
-	$(TOOLKITSRC)/Selection.h \
-	$(TOOLKITSRC)/Shell.h \
-	$(TOOLKITSRC)/ShellP.h \
-	$(TOOLKITSRC)/StringDefs.h \
-	$(TOOLKITSRC)/Vendor.h \
-	$(TOOLKITSRC)/VendorP.h
+all::
 
-IMPORTSXAW = \
-	$(AWIDGETSRC)/AsciiSrc.h \
-	$(AWIDGETSRC)/AsciiSrcP.h \
-	$(AWIDGETSRC)/AsciiText.h \
-	$(AWIDGETSRC)/AsciiTextP.h \
-	$(AWIDGETSRC)/Box.h \
-	$(AWIDGETSRC)/BoxP.h \
-	$(AWIDGETSRC)/Cardinals.h \
-	$(AWIDGETSRC)/Clock.h \
-	$(AWIDGETSRC)/ClockP.h \
-	$(AWIDGETSRC)/Command.h \
-	$(AWIDGETSRC)/CommandP.h \
-	$(AWIDGETSRC)/Dialog.h \
-	$(AWIDGETSRC)/DialogP.h \
-	$(AWIDGETSRC)/Form.h \
-	$(AWIDGETSRC)/FormP.h \
-	$(AWIDGETSRC)/Grip.h \
-	$(AWIDGETSRC)/GripP.h \
-	$(AWIDGETSRC)/Label.h \
-	$(AWIDGETSRC)/LabelP.h \
-	$(AWIDGETSRC)/List.h \
-	$(AWIDGETSRC)/ListP.h \
-	$(AWIDGETSRC)/Load.h \
-	$(AWIDGETSRC)/LoadP.h \
-	$(AWIDGETSRC)/Logo.h \
-	$(AWIDGETSRC)/LogoP.h \
-	$(AWIDGETSRC)/Mailbox.h \
-	$(AWIDGETSRC)/MailboxP.h \
-	$(AWIDGETSRC)/MenuButton.h \
-	$(AWIDGETSRC)/MenuButtoP.h \
-	$(AWIDGETSRC)/Paned.h \
-	$(AWIDGETSRC)/PanedP.h \
-	$(AWIDGETSRC)/Scroll.h \
-	$(AWIDGETSRC)/ScrollP.h \
-	$(AWIDGETSRC)/Simple.h \
-	$(AWIDGETSRC)/SimpleP.h \
-	$(AWIDGETSRC)/SimpleMenu.h \
-	$(AWIDGETSRC)/SimpleMenP.h \
-	$(AWIDGETSRC)/Text.h \
-	$(AWIDGETSRC)/TextP.h \
-	$(AWIDGETSRC)/TextSrcP.h \
-	$(AWIDGETSRC)/Toggle.h \
-	$(AWIDGETSRC)/ToggleP.h \
-	$(AWIDGETSRC)/Viewport.h \
-	$(AWIDGETSRC)/ViewportP.h \
-	$(AWIDGETSRC)/VPaned.h
-
-IMPORTSXMU = \
-	$(XMUSRC)/Xmu.h \
-	$(XMUSRC)/Misc.h 
-
-IMPORTSEXT = \
-	$(EXTENSIONSRC)/include/zoid.h \
-	$(EXTENSIONSRC)/include/bezier.h \
-	$(EXTENSIONSRC)/include/shape.h \
-	$(EXTENSIONSRC)/include/plxvideo.h \
-	$(EXTENSIONSRC)/include/xtestext1.h
-   
-INSTALLFLAGS = $(INSTINCFLAGS)
-
-all:: $(IMPORTSTOP) 
-	@-(list=`echo $(IMPORTSTOP) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
-	$(LN) $(IMPORTSTOP) .
-
-MakeSubincludesForBuild(all,Xaw,$(IMPORTSXAW))
-MakeSubincludesForBuild(all,Xmu,$(IMPORTSXMU))
-MakeSubincludesForBuild(all,extensions,$(IMPORTSEXT))
+BuildIncludes($(HEADERS),.,.)
 
 #if InstallOldHeaderFiles
-/*
- * This will be removed when all core (and contrib?) programs have been fixed
- * to include Athena widgets as <X11/Xaw/header.h> and Xmu headers as
- * <X11/Xmu/header.h>.
- */
-all::
+XAWDUMMIES = \
+	AsciiText.h \
+	AsciiTextP.h \
+	Box.h \
+	BoxP.h \
+	Cardinals.h \
+	Clock.h \
+	ClockP.h \
+	Command.h \
+	CommandP.h \
+	Dialog.h \
+	DialogP.h \
+	Form.h \
+	FormP.h \
+	Grip.h \
+	GripP.h \
+	Label.h \
+	LabelP.h \
+	List.h \
+	ListP.h \
+	Load.h \
+	LoadP.h \
+	Logo.h \
+	LogoP.h \
+	Mailbox.h \
+	MailboxP.h \
+	Scroll.h \
+	ScrollP.h \
+	Simple.h \
+	SimpleP.h \
+	Text.h \
+	TextP.h \
+	TextSrcP.h \
+	VPaned.h \
+	Viewport.h \
+	ViewportP.h
+
+XMUDUMMIES = Xmu.h
+
+includes::
 	@echo "+ Adding backwards compatibility links for Xaw and Xmu headers."
-	@-(list=`echo $(IMPORTSXAW) | sed -e 's/[^ ]*\///g'`; set -x; \
-		$(RM) $$list; for i in $$list; do $(LN) Xaw/$$i .; done)
-	@-(list=`echo $(IMPORTSXMU) | sed -e 's/[^ ]*\///g'`; set -x; \
-		$(RM) $$list; for i in $$list; do $(LN) Xmu/$$i .; done)
-
-clean::
-	@-(list=`echo $(IMPORTSXAW) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
-	@-(list=`echo $(IMPORTSXMU) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
-
-all::
-	@-$(RM) XawMisc.h
-	$(LN) Xmu/Misc.h XawMisc.h
-
-clean::
-	$(RM) XawMisc.h
+	@-(list=`echo $(XAWDUMMIES) | sed -e 's/[^ ]*\///g'`; set -x; \
+		$(RM) $$list; cd $(BUILDINCDIR); for i in $$list; do $(LN) Xaw/$$i .; done)
+	@-(list=`echo $(XMUDUMMIES) | sed -e 's/[^ ]*\///g'`; set -x; \
+		$(RM) $$list; cd $(BUILDINCDIR); for i in $$list; do $(LN) Xmu/$$i . ; done)
+	@-(cd $(BUIlDINCDIR); set -x; \
+		$(RM) XawMisc.h; $(LN) Xmu/Misc.h XawMisc.h)
 #endif
 
 
-
-MakeDirectories(install, $(INCDIR))
-InstallMultiple($(EXPORTS),$(INCDIR))
+MakeDirectories(install,$(INCDIR))
+InstallMultiple($(HEADERS),$(INCDIR))
 MakeSubdirs($(SUBDIRS))
 
+depend::
 
 clean::
-	@-(list=`echo $(IMPORTSTOP) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
-
-depend:
-	@echo "skipping make depend in ./X11"
-
