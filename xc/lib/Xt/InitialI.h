@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.28 89/10/09 13:35:57 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.29 89/11/17 12:11:59 swick Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -202,9 +202,6 @@ extern XtPerDisplay _XtSortPerDisplayList();
      ? &_XtperDisplayList->perDpy \
      : _XtSortPerDisplayList(display))
 #endif /*DEBUG*/
-
-extern XtAppContext XtDisplayToApplicationContext();
-    /* Display *dpy */
 
 extern void _XtDisplayInitialize();
     /* 	Display *dpy; */
