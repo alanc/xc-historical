@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.21 91/05/05 19:28:33 rws Exp $
+ * $XConsortium: verify.c,v 1.22 91/07/15 22:01:15 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -45,6 +45,22 @@ struct spwd spjoeblow = {
 	"Nobody", "**************"
 };
 #endif
+
+static char *envvars[] = {
+#if defined(sony) && !defined(SYSTYPE_SYSV)
+    "bootdev",
+    "boothowto",
+    "cputype",
+    "ioptype",
+    "machine",
+    "model",
+    "CONSDEVTYPE",
+    "SYS_LANGUAGE",
+    "SYS_CODE",
+    "TZ",
+#endif
+    NULL
+};
 
 Verify (d, greet, verify)
 struct display		*d;
@@ -132,6 +148,8 @@ struct display	*d;
 char	*user, *home, *shell;
 {
     char	**env;
+    char	**envvar;
+    char	*str;
     
     env = defaultEnv ();
     env = setEnv (env, "DISPLAY", d->name);
@@ -139,6 +157,11 @@ char	*user, *home, *shell;
     env = setEnv (env, "USER", user);
     env = setEnv (env, "PATH", d->userPath);
     env = setEnv (env, "SHELL", shell);
+    for (envvar = envvars; *envvar; envvar++)
+    {
+	if (str = getenv(*envvar))
+	    env = setEnv (env, *envvar, str);
+    }
     return env;
 }
 
