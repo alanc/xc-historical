@@ -79,7 +79,7 @@
 /* see below for ServerDefines */
 
 
-XCOMM platform:  $XConsortium: sun.cf,v 1.44 91/02/13 10:25:34 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.45 91/02/26 10:38:33 rws Exp $
 XCOMM operating system:  OSName
 
 #if HasGcc
@@ -98,7 +98,7 @@ XCOMM operating system:  OSName
 #endif
 
 /* define this as you like for server compilation */
-#if OSMajorVersion >= 4 || defined(SparcArchitecture)
+#if (OSMajorVersion >= 4 || defined(SparcArchitecture)) && !HasGcc
 #define AllocateLocalDefines -DINCLUDE_ALLOCA_H
 #else
 #define AllocateLocalDefines /**/
