@@ -1,4 +1,4 @@
-/* $XConsortium: Alloc.c,v 1.36 90/12/30 15:04:38 rws Exp $ */
+/* $XConsortium: Alloc.c,v 1.37 90/12/31 15:17:50 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -100,7 +100,7 @@ char* _XtHeapAlloc(heap, bytes)
 {
     register char* heap_loc;
     if (heap == NULL) return XtMalloc(bytes);
-    if (heap->bytes_remaining < bytes) {
+    if (heap->bytes_remaining < (int)bytes) {
 	if ((bytes + sizeof(char*)) >= (HEAP_SEGMENT_SIZE>>1)) {
 	    /* preserve current segment; insert this one in front */
 #ifdef _TRACE_HEAP
