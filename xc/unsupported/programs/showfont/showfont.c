@@ -1,4 +1,4 @@
-/* $XConsortium: showfont.c,v 1.10 92/05/20 16:27:11 gildea Exp $ */
+/* $XConsortium: showfont.c,v 1.11 92/11/18 21:31:28 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -172,8 +172,10 @@ main(argc, argv)
 	FSCloseFont(svr, fid);
     } else {
 	fprintf(stderr, "couldn't get font %s\n", fontname);
+	FSCloseServer(svr);
 	exit(1);
     }
+    FSCloseServer(svr);
     exit(0);
 }
 
