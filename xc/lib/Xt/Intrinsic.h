@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.169 91/06/12 13:59:06 rws Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.170 91/06/17 14:48:53 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2171,6 +2171,17 @@ extern GC XtGetGC(
     Widget 		/* widget */,
     XtGCMask 		/* valueMask */,
     XGCValues* 		/* values */
+#endif
+);
+
+extern GC XtAllocateGC(
+#if NeedFunctionPrototypes
+    Widget 		/* widget */,
+    Cardinal		/* depth */,
+    XtGCMask 		/* valueMask */,
+    XGCValues* 		/* values */,
+    XtGCMask		/* dynamicMask */,
+    XtGCMask		/* unusedMask */
 #endif
 );
 
