@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t	-*- Nroff -*-
-.\" $XConsortium: xlfd.tbl.ms,v 1.26 94/01/08 09:41:39 gildea Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.27 94/03/25 14:26:43 gildea Exp $
 .de sC			\" start change
 .mc \s+5\(br\s0\"	\" make tall enough to span paragraph skip
 ..
@@ -23,9 +23,9 @@
 
 \fBVersion 1.5\fP
 
-\fBPublic Review Draft\fP
+\fBPost-Public Review Draft 1\fP
 .br
-(with change bars against version 1.4)
+(with change bars against Public Review Draft)
 
 \fBX Consortium Draft Standard\fP
 .sp 6
@@ -76,8 +76,8 @@ subject to change.
 .ps 11
 .nr PS 11
 .bp 1
-.EH '\fBX Logical Font Description Conventions\fP''\fBPublic Review Draft\fP'
-.OH '\fBX Logical Font Description Conventions\fP''\fBPublic Review Draft\fP'
+.EH '\fBX Logical Font Description Conventions\fP''\fBPost-Public Review Draft 1\fP'
+.OH '\fBX Logical Font Description Conventions\fP''\fBPost-Public Review Draft 1\fP'
 .EF ''\fB\\\\n(PN\fP''
 .OF ''\fB\\\\n(PN\fP''
 .NH 1 
@@ -1333,10 +1333,8 @@ END_SPACE
 \*(SN END_SPACE
 .XE
 .LP
-.sC
 END_SPACE is an integer value (of type INT32)
 that gives the recommended spacing at the end of sentences.
-.eC
 .LP
 END_SPACE can be approximated if not provided as a font property, 
 according to the following algorithm:
@@ -1352,13 +1350,11 @@ AVG_CAPITAL_WIDTH
 .XE
 .LP
 AVG_CAPITAL_WIDTH is an integer value (of type INT32)
-.sC
 that gives the unweighted arithmetic mean of the absolute value of the
 width of each capital glyph in the font, in tenths of pixels,
 multiplied by \-1 if the dominant
 writing direction for the font is right-to-left.
 This property applies to both Latin and non-Latin fonts.
-.eC
 For Latin fonts, 
 capitals are the glyphs A through Z.
 This property is usually used for font matching or substitution.
@@ -1368,11 +1364,9 @@ according to the following algorithm:
 .LP
 .DS I
 if (AVG_CAPITAL_WIDTH undefined) then
-.sC
    AVG_CAPITAL_WIDTH = ROUND (MEAN
                   (ABS (width of each capital glyph)) * 10)
 	* if (dominant writing direction L-to-R) then 1 else \-1
-.eC
 .DE
 .NH 3
 AVG_LOWERCASE_WIDTH
@@ -1381,13 +1375,11 @@ AVG_LOWERCASE_WIDTH
 .XE
 .LP
 AVG_LOWERCASE_WIDTH is an integer value (of type INT32)
-.sC
 that gives the unweighted arithmetic mean width of the absolute value
 of the width of each lowercase glyph in the font in tenths of pixels,
 multiplied by \-1 if the dominant
 writing direction for the font is right-to-left.
 For Latin fonts, 
-.eC
 lowercase are the glyphs a through z.
 This property is usually used for font matching or substitution.
 .LP
@@ -1398,11 +1390,9 @@ according to the following algorithm:
 .DS
 if (AVG_LOWERCASE_WIDTH undefined) then
    if (lowercase exists) then
-.sC
       AVG_LOWERCASE_WIDTH = ROUND (MEAN
                        (ABS (width of each lowercase glyph)) * 10)
 	* if (dominant writing direction L-to-R) then 1 else \-1
-.eC
    else AVG_LOWERCASE_WIDTH undefined
 .DE
 .NH 3
@@ -1532,11 +1522,9 @@ SUPERSCRIPT_SIZE
 \*(SN SUPERSCRIPT_SIZE
 .XE
 .LP
-.sC
 SUPERSCRIPT_SIZE is an integer value (of type INT32)
 that gives the recommended body size of synthetic superscripts 
 to be used with this font, in pixels.
-.eC
 This will generally be smaller than the size of the current font;
 that is, superscripts are imaged from a smaller font
 offset according to SUPERSCRIPT_X and SUPERSCRIPT_Y.
@@ -1554,11 +1542,9 @@ SUBSCRIPT_SIZE
 \*(SN SUBSCRIPT_SIZE
 .XE
 .LP
-.sC
 SUBSCRIPT_SIZE is an integer value (of type INT32)
 that gives the recommended body size of synthetic subscripts 
 to be used with this font, in pixels.
-.eC
 As with SUPERSCRIPT_SIZE, 
 this will generally be smaller than the size of the current font; 
 that is, subscripts are imaged from a smaller 
@@ -1577,11 +1563,9 @@ SMALL_CAP_SIZE
 \*(SN SMALL_CAP_SIZE
 .XE
 .LP
-.sC
 SMALL_CAP_SIZE is an integer value (of type INT32)
 that gives the recommended body size of synthetic small capitals 
 to be used with this font, in pixels.
-.eC
 Small capitals are generally imaged from a smaller font 
 of slightly more weight.
 No offset [X,Y] is necessary.
@@ -1600,11 +1584,9 @@ UNDERLINE_POSITION
 \*(SN UNDERLINE_POSITION
 .XE
 .LP
-.sC
 UNDERLINE_POSITION is an integer value (of type INT32)
 that gives the recommended vertical offset in pixels
 from the baseline to the top of the underline.
-.eC
 If the current position point is at [X,Y], 
 the top of the baseline is given by [X, Y + UNDERLINE_POSITION].
 .LP
@@ -1623,10 +1605,8 @@ UNDERLINE_THICKNESS
 \*(SN UNDERLINE_THICKNESS
 .XE
 .LP
-.sC
 UNDERLINE_THICKNESS is an integer value (of type INT32)
 that gives the recommended underline thickness, in pixels.
-.eC
 .LP
 UNDERLINE_THICKNESS can be approximated if not provided as a font property, 
 according to the following algorithm:
@@ -1701,12 +1681,9 @@ CAP_HEIGHT
 \*(SN CAP_HEIGHT
 .XE
 .LP
-.sC
 CAP_HEIGHT is an integer value (of type INT32)
 that gives the nominal height of the capital letters contained in the font, 
 as specified by the FOUNDRY or typeface designer.
-.br
-.eC
 .LP
 Certain clients require CAP_HEIGHT to compute scale factors and 
 positioning offsets for synthesized glyphs where this 
@@ -1731,13 +1708,10 @@ X_HEIGHT
 \*(SN X_HEIGHT
 .XE
 .LP
-.sC
 X_HEIGHT is a integer value (of type INT32)
 that gives the nominal height above the baseline of the lowercase glyphs 
 contained in the font, 
 as specified by the FOUNDRY or typeface designer.
-.br
-.eC
 .LP
 As with CAP_HEIGHT, 
 X_HEIGHT is required by certain clients to compute scale factors 
@@ -1753,9 +1727,7 @@ if (X_HEIGHT undefined) then
    if (Latin font) then
       X_HEIGHT = XCharStruct.ascent[glyph x]
    else if (lowercase exists) then
-.sC
         X_HEIGHT = XCharStruct.ascent[some lowercase glyph without an ascender]
-.eC
    else X_HEIGHT undefined
 .DE
 .NH 3
@@ -1769,11 +1741,8 @@ that gives the coded proportionate width of the font,
 relative to all known fonts of the same typeface family, 
 according to the type designer's or FOUNDRY's judgment.
 .LP
-.sC
 RELATIVE_SETWIDTH ranges from 10 to 90, or is 0 if undefined or unknown.
 The following reference values are defined:
-.br
-.eC
 .TS H
 lw(.5i) lw(1i) lw(2.75i).
 _
@@ -1807,11 +1776,8 @@ if (RELATIVE_SETWIDTH undefined) then
    RELATIVE_SETWIDTH = 50
 .DE
 .LP
-.sC
 For polymorphic fonts, RELATIVE_SETWIDTH is not necessarily a
 linear function of the font's setwidth axis.
-.br
-.eC
 .LP
 X clients that want to obtain a calculated proportionate width of the 
 font (that is, a font-independent way of identifying the proportionate 
@@ -1834,11 +1800,8 @@ that gives the coded weight of the font,
 relative to all known fonts of the same typeface family, 
 according to the type designer's or FOUNDRY's judgment.
 .LP
-.sC
 RELATIVE_WEIGHT ranges from 10 to 90, or is 0 if undefined or unknown.
 The following reference values are defined:
-.br
-.eC
 .TS H
 lw(.5i) lw(1i) lw(3.75i).
 _
@@ -1874,11 +1837,8 @@ if (RELATIVE_WEIGHT undefined) then
    RELATIVE_WEIGHT = 50
 .DE
 .LP
-.sC
 For polymorphic fonts, RELATIVE_WEIGHT is not necessarily a
 linear function of the font's weight axis.
-.br
-.eC
 .NH 3 
 WEIGHT
 .XS
@@ -1924,23 +1884,17 @@ X clients are encouraged to discontinue use of the RESOLUTION property
 and are encouraged to use the appropriate X,Y resolution properties,
 as required.
 .NE			\" Note End
-.sC
 .NH 3
 FONT
-.br
-.eC
 .XS
 \*(SN FONT
 .XE
-.sC
 .LP
 FONT is a string (of type ATOM) that gives the full XLFD name of the
 font\*-that is, the value can be used to open another
 instance of the same font.
 .LP
 If not provided, the FONT property cannot be calculated.
-.br
-.eC
 .NH 3
 FACE_NAME 
 .XS
@@ -1955,21 +1909,14 @@ This property may be used as feedback during font selection.
 .LP
 FACE_NAME cannot be calculated or approximated if not provided as a font 
 property.
-.br
-.sC
 .NH 3
 FULL_NAME
-.br
-.eC
 .XS
 \*(SN FULL_NAME
 .XE
-.sC
 .LP
 FULL_NAME is the same as FACE_NAME.  Its use is depreciated, but
 it is found on some old fonts.
-.br
-.eC
 .NH 3
 COPYRIGHT 
 .XS
@@ -2049,17 +1996,11 @@ T}
 _
 .TE
 
-
-.br
-.sC
 .NH 3
 FONT_TYPE
-.br
-.eC
 .XS
 \*(SN FONT_TYPE
 .XE
-.sC
 .LP
 FONT_TYPE is a human-understandable string (of type ATOM) which
 describes the format of a font before any rasterization
@@ -2071,7 +2012,6 @@ without regard to the rasterizer used to render the font.
 Predefined values are
 .TS H
 l lw(5i).
-.sC
 _
 .sp 6p
 .B
@@ -2082,16 +2022,13 @@ _
 .TH
 .R
 \*QBitmap\*U	T{
-.eC
 Hand-tuned bitmap fonts.  Some
 attempt has been made to optimized
 the visual appearance of the font
 for the requested size and
 resolution.
 T}
-.sC
 \*QPrebuilt\*U	T{
-.eC
 All bitmap format fonts which
 cannot be described as \*QBitmap\*U,
 that is, hand-tuned.  For example,
@@ -2100,7 +2037,6 @@ generated mechanically using a
 scalable font rasterizer
 would be considered \*QPrebuilt\*U, not \*QBitmap\*U.
 T}
-.sC
 \*QType 1\*U	Any Type 1 font.
 \*QTrueType\*U	Any TrueType font.
 \*QSpeedo\*U	Any Speedo font.
@@ -2111,24 +2047,18 @@ _
 Other values may be registered with the X Consortium.
 .NH 3
 FONT_VERSION
-.br
-.eC
 .XS
 \*(SN FONT_VERSION
 .XE
-.sC
 .LP
 FONT_VERSION is a human-understandable string (of type ATOM)
 which describes the formal or informal version of the font.
 \fBNone\fP is a valid value.
 .NH 3
 RASTERSIZER_NAME
-.br
-.eC
 .XS
 \*(SN RASTERSIZER_NAME
 .XE
-.sC
 .LP
 RASTERIZER_NAME is a human-understandable string (of type ATOM)
 which is the specific name of the
@@ -2140,21 +2070,16 @@ recommended:
 .SM
 .TS
 rw(1.5i) lw(3.75i).
-.sC
 RasterizerName ::=	OrganizationId Space Rasterizer
 OrganizationId ::=	T{
-.eC
 STRING8\*-the X Registry ORGANIZATION name
 of the rasterizer implementor or maintainer.
 T}
-.sC
 Rasterizer ::=	T{
-.eC
 the case-sensitive, human-understandable product name
 of the rasterizer.  Words within this
 name should be separated by a single SPACE.
 T}
-.sC
 Space ::=	OCTET\-the value of ISO 8859-1 SPACE (Column/Row 02/00)
 .TE
 .NL
@@ -2171,20 +2096,15 @@ If RASTERIZER_NAME is not defined, or is \fBNone\fP, no
 rasterization operation has been applied to the FONT_TYPE.
 .NH 3
 RASTERSIZER_VERSION
-.br
-.eC
 .XS
 \*(SN RASTERSIZER_VERSION
 .XE
-.sC
 .LP
 RASTERIZER_VERSION is a human-understandable string (of type
 ATOM) which represents the formal or informal version of a
 font rasterizer.
 The RASTERIZER_VERSION should match the corresponding
 product version number known to users, when applicable.
-.br
-.eC
 .NH 2
 Built-in Font Property Atoms
 .XS
@@ -2225,9 +2145,7 @@ WEIGHT	CARD32
 POINT_SIZE	INT32
 RESOLUTION	CARD32 \- deprecated
 COPYRIGHT	ATOM
-.sC
 FULL_NAME	ATOM \- deprecated
-.eC
 FAMILY_NAME	ATOM
 DEFAULT_CHAR	CARD32
 .sp 6p
@@ -2235,15 +2153,11 @@ _
 .TE
 .br
 .\" section \n(sM
-.sC
 .NH 1
 Matrix Transformations
-.br
-.eC
 .XS
 \*(SN Matrix Transformations
 .XE
-.sC
 .LP
 An XLFD name presented to the server can have the POINT_SIZE or PIXEL_SIZE
 field begin with the character \*Q[\*U.  If the first character of the field
@@ -2288,12 +2202,9 @@ other.
 .\"
 .NH 2
 Metrics and Font Properties
-.br
-.eC
 .XS
 \*(SN Metrics and Font Properties
 .XE
-.sC
 .LP
 In this section, the phrase \*Qcorresponding 1000 pixel metrics\*U means the
 metrics that would be obtained if the rasterizer took the base untransformed
@@ -2351,8 +2262,6 @@ displacements have as their value the y component of the transformed
 height or displacement.  Each such property will be accompanied by a new
 property, named as the original except prefixed with \*QRAW_\*U, that gives
 the value of the width, height, or displacement in 1000 pixel metrics.
-.br
-.eC
 .NH 1
 Scalable Fonts
 .XS
@@ -2478,15 +2387,11 @@ X servers are permitted, but not required,
 to use a more sophisticated matching algorithm.
 .br
 .\" section \n(sP
-.sC
 .NH 1
 Polymorphic Fonts
-.br
-.eC
 .XS
 \*(SN Polymorphic Fonts
 .XE
-.sC
 .LP
 Fonts that can be varied in ways other than size or resolution are called
 \fIpolymorphic fonts.\fP  Multiple Master Type 1 font programs are one type of
@@ -2633,8 +2538,6 @@ The result of specifying an out-of-range value for a polymorphic field is
 undefined.  The font source may treat this as a \fBBadName\fP error, treat the
 value as if it were the closest legal value, or extrapolate to try to
 accommodate the value.
-.br
-.eC
 .NH 1
 Affected Elements of Xlib and the X Protocol
 .XS
