@@ -429,8 +429,7 @@ Display_Stats_Info(window)
 
   rx = win_attributes.x;
   ry = win_attributes.y;
-  (void) XTranslateCoordinates (dpy, window, win_attributes.root, 
-				win_attributes.x, win_attributes.y, 
+  (void) XTranslateCoordinates (dpy, window, win_attributes.root, 0, 0,
 				&rx, &ry, &dummywin);
 				
   xright = (dw - rx - win_attributes.border_width * 2 -
@@ -439,17 +438,18 @@ Display_Stats_Info(window)
 	    win_attributes.height);
 
   printf("\n");
-  printf("         ==> Absolute left X:  %s\n", xscale(rx));
-  printf("         ==> Absolute left Y:  %s\n", yscale(ry));
-  printf("         ==> Upper left X: %s\n", xscale(win_attributes.x));
-  printf("         ==> Upper left Y: %s\n", yscale(win_attributes.y));
+  printf("         ==> Absolute upper-left X:  %s\n", xscale(rx));
+  printf("         ==> Absolute upper-left Y:  %s\n", yscale(ry));
+  printf("         ==> Relative upper-left X:  %s\n", xscale(win_attributes.x));
+  printf("         ==> Relative upper-left Y:  %s\n", yscale(win_attributes.y));
   printf("         ==> Width: %s\n", xscale(win_attributes.width));
   printf("         ==> Height: %s\n", yscale(win_attributes.height));
   printf("         ==> Depth: %d\n", win_attributes.depth);
   printf("         ==> Border width: %s\n", bscale(win_attributes.border_width));
   printf("         ==> Window class: %s\n",
   	 Lookup(win_attributes.class, _window_classes));
-  printf("         ==> Colormap: 0x%lx\n", win_attributes.colormap);
+  printf("         ==> Colormap: 0x%lx (%sinstalled)\n", 
+	 win_attributes.colormap, win_attributes.map_installed ? "" : "not ");
   printf("         ==> Window Bit Gravity State: %s\n",
   	 Lookup(win_attributes.bit_gravity, _bit_gravity_states));
   printf("         ==> Window Window Gravity State: %s\n",
