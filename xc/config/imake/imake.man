@@ -1,4 +1,4 @@
-.\" $XConsortium: imake.man,v 1.16 91/07/31 23:44:36 gildea Exp $
+.\" $XConsortium: imake.man,v 1.17 92/09/07 11:58:46 rws Exp $
 .TH IMAKE 1 "Release 5" "X Version 11"
 .SH NAME
 imake \- C preprocessor interface to the make utility
@@ -159,9 +159,9 @@ The indentation shows what files include what other files.
         Project.tmpl	X-specific variables
             *Lib.tmpl	shared library variables
         Imake.rules	rules
-    Imakefile
-        Library.tmpl	library rules
-        Server.tmpl	server rules
+        Imakefile
+            Library.tmpl	library rules
+            Server.tmpl	server rules
 .fi
 .LP
 Note that \fIsite.def\fP gets included twice, once before the
@@ -177,6 +177,10 @@ one of these symbols.
 .SH FILES
 .ta 3i
 Imakefile.c	temporary input file for cpp
+.br
+/tmp/Imf.XXXXXX	temporary Makefile for -s
+.br
+/tmp/IIf.XXXXXX	temporary Imakefile if specified Imakefile uses # comments
 .br
 /lib/cpp	default C preprocessor
 .DT
