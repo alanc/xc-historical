@@ -1,53 +1,54 @@
-/* $XConsortium: Berklib.c,v 1.4 90/08/27 15:29:40 swick Exp $ */
-
-/*
- * This file is used by System V based systems.
- */
+/* $XConsortium: Berklib.c,v 1.5 90/12/24 14:44:05 rws Exp $ */
 
 #include <sys/types.h>
 
 /*
- * These are routines found in BSD and not found in many SysV's.  They are
- * included so that some clients can compile.
+ * These are routines found in BSD but not on all other systems.  The core
+ * MIT distribution does not use them, but they are provided in case you do.
+ * Enable only the ones that you need for your system, and include this .o
+ * file in ExtraLoadFlags in your config file.
  */
 
+#ifdef SYSV
 bcopy (b1, b2, length)
-register unsigned char *b1, *b2;
-register length;
+    register char *b1, *b2;
+    register length;
 {
     if (b1 < b2) {
 	b2 += length;
 	b1 += length;
-	while (length--) {
+	while (length--)
 	    *--b2 = *--b1;
-	}
-    }
-    else {
-	while (length--) {
+    } else {
+	while (length--)
 	    *b2++ = *b1++;
-	}
     }
 }
+#endif
 
+/* you should use Xfuncs.h instead of this in most cases */
+#if 0
 bcmp (b1, b2, length)
-register unsigned char *b1, *b2;
-register length;
+    register char *b1, *b2;
+    register length;
 {
     while (length--) {
 	if (*b1++ != *b2++) return 1;
     }
     return 0;
 }
+#endif
 
+/* you should use Xfuncs.h instead of this in most cases */
+#if 0
 bzero (b, length)
-register unsigned char *b;
-register length;
+    register char *b;
+    register length;
 {
-    while (length--) {
+    while (length--)
 	*b++ = '\0';
-    }
 }
-
+#endif
 
 /* Find the first set bit
  * i.e. least signifigant 1 bit:
@@ -58,6 +59,7 @@ register length;
  * 4 => 3
  */
 
+#if 0
 int
 ffs(mask)
 unsigned int	mask;
@@ -72,6 +74,7 @@ unsigned int	mask;
     }
     return i;
 }
+#endif
 
 /*
  * insque, remque - insert/remove element from a queue
@@ -86,6 +89,7 @@ unsigned int	mask;
  *      ``VAX Architecture Handbook'', pp. 228-235.
  */
 
+#if 0
 struct qelem {
     struct    qelem *q_forw;
     struct    qelem *q_back;
@@ -116,7 +120,7 @@ register struct qelem *elem;
 
     /* insert unlocking code here */
 }
-
+#endif
 
 /*
  * Berkeley random()
@@ -124,11 +128,13 @@ register struct qelem *elem;
  * We simulate via System V's rand()
  */
 
+#if 0
 int
 random()
 {
    return (rand());
 }
+#endif
 
 /*
  * Berkeley srandom()
@@ -136,55 +142,14 @@ random()
  * We simulate via System V's rand()
  */
 
+#if 0
 int
 srandom(seed)
 int seed;
 {
    return (srand(seed));
 }
-
-
-#ifdef hpux
-
-/** on hpux 5.n, readv/writev don't work on sockets;
- ** Even on 6.0, we'll keep these routines around for doing
- ** extra large writes; (> 4000); (this caused the Bezier
- ** demo to blow up.)
- **/
-
-#include <sys/uio.h>
-
-#define min(x,y) ((x)>(y)?(y):(x))
-
-int swWritev(fildes, iov, iovcnt)
-int fildes;
-register struct iovec *iov;
-register int iovcnt;
-{
-    while (iovcnt && iov->iov_len == 0)
-	iovcnt--, iov++;
-
-    if (iovcnt)
-	return(write(fildes,iov->iov_base,min(iov->iov_len,4000)));
-    else
-	return(0);
-}
-
-int swReadv(fildes, iov, iovcnt)
-int fildes;
-register struct iovec *iov;
-register int iovcnt;
-{
-    while (iovcnt && iov->iov_len == 0)
-	iovcnt--, iov++;
-
-    if (iovcnt)
-	return(read(fildes,iov->iov_base,iov->iov_len));
-    else
-	return(0);
-}
-
-#endif /* hpux */
+#endif
 
 /*
  * gettimeofday emulation
@@ -193,7 +158,7 @@ register int iovcnt;
  *  - does not return timezone info.
  */
 
-#if defined(USG) && !defined(CRAY)
+#if 0
 int gettimeofday (tvp, tzp)
     struct timeval *tvp;
     struct timezone *tzp;
