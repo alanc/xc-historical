@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Varargs.c,v 1.10 89/12/12 15:07:31 jim Exp $";
+    "$XConsortium: Varargs.c,v 1.11 90/02/09 14:21:34 kit Exp $";
 #endif
 /*
 
@@ -193,8 +193,12 @@ _XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources)
     XrmValue            from_val, to_val;
     register int        i;
       
+
     if (widget == NULL) {
-        XtWarning("XtVaTypedArg conversion needs non-NULL widget handle\n");
+        XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+            "nullWidget", "xtConvertVarTArgList", "XtToolkitError",
+	    "XtVaTypedArg conversion needs non-NULL widget handle");
+            (String *)NULL, (Cardinal *)NULL);
         return(0);
     }
        
@@ -209,7 +213,7 @@ _XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources)
     }
 
     if (to_type == NULL) {
-        XtAppWarningMsg(XtDisplayToApplicationContext(XtDisplay(widget)),
+        XtAppWarningMsg(XtWidgetToApplicationContext(widget),
             "unknownType", "xtConvertVarTArgList", "XtToolkitError",
             "Unable to find type of resource for conversion",
             (String *)NULL, (Cardinal *)NULL);
@@ -228,7 +232,7 @@ _XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources)
     XtConvert(widget, typed_arg->type, &from_val, to_type, &to_val);
  
     if (to_val.addr == NULL) {
-        XtAppWarningMsg(XtDisplayToApplicationContext(XtDisplay(widget)),
+        XtAppWarningMsg(XtWidgetToApplicationContext(widget),
             "conversionFailed", "xtConvertVarToArgList", "XtToolkitError",
             "Type conversion failed", (String *)NULL, (Cardinal *)NULL);
         return(0);
