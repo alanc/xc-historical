@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.133 90/03/19 10:19:04 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.134 90/03/19 10:35:59 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -64,10 +64,12 @@ SOFTWARE.
 #endif /* __STDC__ */
 #endif /* NeedVarargsPrototypes */
 
+typedef char *String;
+
 #if defined(__cplusplus) || defined(c_plusplus)
 #define CONST const
 /* make const String do the right thing */
-#define String		char*
+#define String char*
 #else
 #define CONST
 #endif /* __cplusplus */
@@ -99,7 +101,6 @@ SOFTWARE.
 
 #define XtNumber(arr)		((Cardinal) (sizeof(arr) / sizeof(arr[0])))
 
-typedef char *String;
 typedef struct _WidgetRec *Widget;
 typedef Widget *WidgetList;
 typedef struct _WidgetClassRec *WidgetClass;
