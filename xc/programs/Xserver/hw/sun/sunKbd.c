@@ -62,6 +62,8 @@ extern CARD8 *sunModMap[];
 extern KeySymsRec sunKeySyms[];
 extern CARD16 keyModifiersList[];
 
+extern void	ProcessInputEvents();
+
 static void 	  sunBell();
 static void 	  sunKbdCtrl();
 static Firm_event *sunKbdGetEvents();
@@ -565,6 +567,7 @@ sunKbdProcessEvent (pKeyboard, fe)
  *
  *-----------------------------------------------------------------------
  */
+/*ARGSUSED*/
 static void
 sunKbdDoneEvents (pKeyboard)
     DevicePtr	  pKeyboard;
@@ -749,7 +752,7 @@ sunKbdProcessEventSunWin(pKeyboard,se)
 }
 #endif SUN_WINDOWS
 
-
+/*ARGSUSED*/
 Bool
 LegalModifier(key)
 {

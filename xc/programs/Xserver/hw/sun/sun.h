@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$XConsortium: sun.h,v 4.6 88/03/15 14:29:43 rws Exp $ SPRITE (Berkeley)"
+ *	"$XConsortium: sun.h,v 4.7 88/09/06 15:10:52 jim Exp $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
@@ -256,7 +256,7 @@ extern void 	  sunMoveCursor();
 /*
  * Initialization
  */
-extern void 	  sunScreenInit();
+extern Bool 	  sunScreenInit();
 extern int  	  sunOpenFrameBuffer();
 
 /*

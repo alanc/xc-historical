@@ -201,6 +201,7 @@ sunMouseProc (pMouse, what)
  *
  *-----------------------------------------------------------------------
  */
+/*ARGSUSED*/
 static void
 sunMouseCtrl (pMouse)
     DevicePtr	  pMouse;
@@ -221,6 +222,7 @@ sunMouseCtrl (pMouse)
  *
  *-----------------------------------------------------------------------
  */
+/*ARGSUSED*/
 static int
 sunMouseGetMotionEvents (buff, start, stop)
     CARD32 start, stop;
