@@ -103,6 +103,11 @@ Runs the tests in synchronous mode.
 Normally only useful for debugging 
 .I x11perf .
 .TP 14
+.B \-pack
+Runs rectangle tests so that they pack rectangles right next to each other.
+This makes it easy to debug server code for stipples and tiles...if the
+pattern looks ugly, you've got alignment problems.
+.TP 14
 .B \-repeat \fI<n>\fP
 Repeats each test 
 .I n
