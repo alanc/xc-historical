@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.112 93/09/09 11:18:24 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.113 93/09/09 11:48:04 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -109,7 +109,7 @@ World World.Win32::
 	$(MAKE) $(MFLAGS) clean
 	$(MAKE) $(MFLAGS) includes
 	$(MAKE) $(MFLAGS) depend
-	$(MAKE) $(MFLAGS) $(WORLDOPTS)
+	$(MAKE) $(MFLAGS) $(WIN32WORLDOPTS)
 	@echo :
 	@echo :
 	@echo Full build of Release 6alpha of the X Window System complete.
@@ -128,7 +128,7 @@ Everything::
 	$(MAKE) $(MFLAGS) Makefiles
 	$(MAKE) $(MFLAGS) includes
 	$(MAKE) $(MFLAGS) depend
-	$(MAKE) $(MFLAGS) $(WORLDOPTS)
+	$(MAKE) $(MFLAGS) $(WIN32WORLDOPTS)
 	@echo :
 	@echo :
 	@echo Rebuild of Release 6alpha of the X Window System complete.
