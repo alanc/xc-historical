@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Label.c,v 1.26 87/12/01 12:05:06 swick Locked $";
+static char rcsid[] = "$Header: Label.c,v 1.27 87/12/04 10:57:10 swick Locked $";
 #endif lint
 
 /*
@@ -44,6 +44,8 @@ static char rcsid[] = "$Header: Label.c,v 1.26 87/12/01 12:05:06 swick Locked $"
 #include "Label.h"
 #include "LabelP.h"
 #include "Atoms.h"
+
+#define IsSensitive(w)	((w)->core.sensitive && (w)->core.ancestor_sensitive)
 
 /****************************************************************
  *
@@ -248,7 +250,7 @@ static void Realize(w, valueMask, attributes)
 	case XtJustifyRight:	attributes->bit_gravity = EastGravity;   break;
     }
     
-    if (!(w->core.sensitive))
+    if (!IsSensitive(lw))
       {
 	  /* change border to gray */
 	lw->core.border_pixmap = lw->label.gray_pixmap;
@@ -277,7 +279,7 @@ static void Redisplay(w, event)
 
    XDrawString(
 	XtDisplay(w), XtWindow(w),
-	lw->core.sensitive ? lw->label.normal_GC : lw->label.gray_GC,
+	IsSensitive(lw) ? lw->label.normal_GC : lw->label.gray_GC,
 	lw->label.label_x, lw->label.label_y,
 	lw->label.label, (int) lw->label.label_len);
 }
@@ -417,8 +419,10 @@ static Boolean SetValues(current, request, new, last)
 	    XtDisplay(newlw), newlw->core.window, valueMask, &attributes);
     }
 
-    if (curlw->core.sensitive != newlw->core.sensitive && XtIsRealized(newlw))
-        if (newlw->core.sensitive)
+    if ((curlw->core.sensitive != newlw->core.sensitive ||
+	 curlw->core.ancestor_sensitive != newlw->core.ancestor_sensitive)
+	&& XtIsRealized(newlw))
+        if (IsSensitive(newlw))
 	    XSetWindowBorder( XtDisplay(newlw), XtWindow(newlw), 
 			      newlw->core.border_pixel );
 	else
