@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.23 94/08/10 20:47:56 mor Exp mor $ */
+/* $XConsortium: smproxy.c,v 1.24 94/08/25 17:41:37 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -853,8 +853,7 @@ SmcConn smcConn;
 SmPointer clientData;
 
 {
-    FILE *proxyFile;
-    char *path, *filename;
+    char *filename;
     Bool success = True;
     SmProp prop1, prop2, prop3, *props[3];
     SmPropValue prop1val, prop2val, prop3val;
@@ -863,31 +862,10 @@ SmPointer clientData;
     WinInfo *winptr;
     static int first_time = 1;
 
-    path = getenv ("SM_SAVE_DIR");
-    if (!path)
-    {
-	path = getenv ("HOME");
-	if (!path)
-	    path = ".";
-    }
+    filename = WriteProxyFile ();
 
-    filename = tempnam (path, ".PRX");
-    proxyFile = fopen (filename, "wb");
-
-    winptr = win_head;
-    while (winptr)
-    {
-	if (winptr->client_id)
-	    if (!WriteProxyFileEntry (proxyFile, winptr))
-	    {
-		success = False;
-		break;
-	    }
-
-	winptr = winptr->next;
-    }
-
-    fclose (proxyFile);
+    if (!filename)
+	success = False;
 
     if (first_time)
     {
