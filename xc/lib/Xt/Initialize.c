@@ -305,6 +305,7 @@ Widget wid;
 	if(w->top.title == NULL) {
 		w->top.title = w->top.icon_name;
 	}
+	w->top.hints.flags = 0;
 	w->core.background_pixmap = None;
 /*
 	w->core.border_width = 0;
