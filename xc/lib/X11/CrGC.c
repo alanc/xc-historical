@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XCrGC.c,v 11.27 88/08/11 14:52:01 jim Exp $ */
+/* $XConsortium: XCrGC.c,v 11.28 88/09/06 16:05:46 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -135,149 +135,149 @@ _XGenerateGCList (dpy, gc, req)
     }
 
 
-_XUpdateGCCache (gc, mask, att)
+_XUpdateGCCache (gc, mask, attr)
     register unsigned long mask;
-    register XGCValues *att;
+    register XGCValues *attr;
     register GC gc;
     {
     register XGCValues *gv = &gc->values;
 
     if (mask & GCFunction)
-        if (gv->function != att->function) {
-	  gv->function = att->function;
+        if (gv->function != attr->function) {
+	  gv->function = attr->function;
 	  gc->dirty |= GCFunction;
 	}
 	
     if (mask & GCPlaneMask)
-        if (gv->plane_mask != att->plane_mask) {
-            gv->plane_mask = att->plane_mask;
+        if (gv->plane_mask != attr->plane_mask) {
+            gv->plane_mask = attr->plane_mask;
 	    gc->dirty |= GCPlaneMask;
 	  }
 
     if (mask & GCForeground)
-        if (gv->foreground != att->foreground) {
-            gv->foreground = att->foreground;
+        if (gv->foreground != attr->foreground) {
+            gv->foreground = attr->foreground;
 	    gc->dirty |= GCForeground;
 	  }
 
     if (mask & GCBackground)
-        if (gv->background != att->background) {
-            gv->background = att->background;
+        if (gv->background != attr->background) {
+            gv->background = attr->background;
 	    gc->dirty |= GCBackground;
 	  }
 
     if (mask & GCLineWidth)
-        if (gv->line_width != att->line_width) {
-            gv->line_width = att->line_width;
+        if (gv->line_width != attr->line_width) {
+            gv->line_width = attr->line_width;
 	    gc->dirty |= GCLineWidth;
 	  }
 
     if (mask & GCLineStyle)
-        if (gv->line_style != att->line_style) {
-            gv->line_style = att->line_style;
+        if (gv->line_style != attr->line_style) {
+            gv->line_style = attr->line_style;
 	    gc->dirty |= GCLineStyle;
 	  }
 
     if (mask & GCCapStyle)
-        if (gv->cap_style != att->cap_style) {
-            gv->cap_style = att->cap_style;
+        if (gv->cap_style != attr->cap_style) {
+            gv->cap_style = attr->cap_style;
 	    gc->dirty |= GCCapStyle;
 	  }
     
     if (mask & GCJoinStyle)
-        if (gv->join_style != att->join_style) {
-            gv->join_style = att->join_style;
+        if (gv->join_style != attr->join_style) {
+            gv->join_style = attr->join_style;
 	    gc->dirty |= GCJoinStyle;
 	  }
 
     if (mask & GCFillStyle)
-        if (gv->fill_style != att->fill_style) {
-            gv->fill_style = att->fill_style;
+        if (gv->fill_style != attr->fill_style) {
+            gv->fill_style = attr->fill_style;
 	    gc->dirty |= GCFillStyle;
 	  }
 
     if (mask & GCFillRule)
-        if (gv->fill_rule != att->fill_rule) {
-    	    gv->fill_rule = att->fill_rule;
+        if (gv->fill_rule != attr->fill_rule) {
+    	    gv->fill_rule = attr->fill_rule;
 	    gc->dirty |= GCFillRule;
 	  }
 
     if (mask & GCArcMode)
-        if (gv->arc_mode != att->arc_mode) {
-	    gv->arc_mode = att->arc_mode;
+        if (gv->arc_mode != attr->arc_mode) {
+	    gv->arc_mode = attr->arc_mode;
 	    gc->dirty |= GCArcMode;
 	  }
 
     /* always write through tile change, since client may have changed pixmap contents */
     if (mask & GCTile) {
-	    gv->tile = att->tile;
+	    gv->tile = attr->tile;
 	    gc->dirty |= GCTile;
 	  }
 
     /* always write through stipple change, since client may have changed pixmap contents */
     if (mask & GCStipple) {
-	    gv->stipple = att->stipple;
+	    gv->stipple = attr->stipple;
 	    gc->dirty |= GCStipple;
 	  }
 
     if (mask & GCTileStipXOrigin)
-        if (gv->ts_x_origin != att->ts_x_origin) {
-    	    gv->ts_x_origin = att->ts_x_origin;
+        if (gv->ts_x_origin != attr->ts_x_origin) {
+    	    gv->ts_x_origin = attr->ts_x_origin;
 	    gc->dirty |= GCTileStipXOrigin;
 	  }
 
     if (mask & GCTileStipYOrigin)
-        if (gv->ts_y_origin != att->ts_y_origin) {
-	    gv->ts_y_origin = att->ts_y_origin;
+        if (gv->ts_y_origin != attr->ts_y_origin) {
+	    gv->ts_y_origin = attr->ts_y_origin;
 	    gc->dirty |= GCTileStipYOrigin;
 	  }
 
     if (mask & GCFont)
-        if (gv->font != att->font) {
-	    gv->font = att->font;
+        if (gv->font != attr->font) {
+	    gv->font = attr->font;
 	    gc->dirty |= GCFont;
 	  }
 
     if (mask & GCSubwindowMode)
-        if (gv->subwindow_mode != att->subwindow_mode) {
-	    gv->subwindow_mode = att->subwindow_mode;
+        if (gv->subwindow_mode != attr->subwindow_mode) {
+	    gv->subwindow_mode = attr->subwindow_mode;
 	    gc->dirty |= GCSubwindowMode;
 	  }
 
     if (mask & GCGraphicsExposures)
-        if (gv->graphics_exposures != att->graphics_exposures) {
-	    gv->graphics_exposures = att->graphics_exposures;
+        if (gv->graphics_exposures != attr->graphics_exposures) {
+	    gv->graphics_exposures = attr->graphics_exposures;
 	    gc->dirty |= GCGraphicsExposures;
 	  }
 
     if (mask & GCClipXOrigin)
-        if (gv->clip_x_origin != att->clip_x_origin) {
-	    gv->clip_x_origin = att->clip_x_origin;
+        if (gv->clip_x_origin != attr->clip_x_origin) {
+	    gv->clip_x_origin = attr->clip_x_origin;
 	    gc->dirty |= GCClipXOrigin;
 	  }
 
     if (mask & GCClipYOrigin)
-        if (gv->clip_y_origin != att->clip_y_origin) {
-	    gv->clip_y_origin = att->clip_y_origin;
+        if (gv->clip_y_origin != attr->clip_y_origin) {
+	    gv->clip_y_origin = attr->clip_y_origin;
 	    gc->dirty |= GCClipYOrigin;
 	  }
 
     /* always write through mask change, since client may have changed pixmap contents */
     if (mask & GCClipMask) {
-	    gv->clip_mask = att->clip_mask;
+	    gv->clip_mask = attr->clip_mask;
 	    gc->dirty |= GCClipMask;
 	    gc->rects = 0;
 	  }
 
     if (mask & GCDashOffset)
-        if (gv->dash_offset != att->dash_offset) {
-	    gv->dash_offset = att->dash_offset;
+        if (gv->dash_offset != attr->dash_offset) {
+	    gv->dash_offset = attr->dash_offset;
 	    gc->dirty |= GCDashOffset;
 	  }
 
     if (mask & GCDashList)
-        if ((gv->dashes != att->dashes) || (gc->dashes == True)) {
-            gv->dashes = att->dashes;
+        if ((gv->dashes != attr->dashes) || (gc->dashes == True)) {
+            gv->dashes = attr->dashes;
 	    gc->dirty |= GCDashList;
 	    gc->dashes = 0;
 	    }
