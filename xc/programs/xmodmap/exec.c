@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: exec.c,v 1.8 88/10/08 15:15:00 jim Exp $
+ * $XConsortium: exec.c,v 1.9 88/10/08 15:16:10 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  * Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -39,26 +39,18 @@
 #include "xmodmap.h"
 #include "wq.h"
 
-static mapping_busy (timeout)
+static mapping_busy_key (timeout)
     int timeout;
 {
     int i;
     unsigned char keymap[32];
     static unsigned int masktable[8] = {
 	0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
-    Window root, child;			/* dummy variables */
-    int rx, ry, wx, wy;			/* dummy variables */
-    unsigned int mask;
-    static unsigned int masks[5] = {
-	Button1, Button2, Button3, Button4, Button5 };
 
     XQueryKeymap (dpy, (char *) keymap);
-    if (!XQueryPointer (dpy, RootWindow(dpy,DefaultScreen(dpy)),
-			&root, &child, &rx, &ry, &wx, &wy, &mask))
-      mask = 0;
 
     fprintf (stderr,
-     "%s:  please release the following keys or buttons within %d seconds:\n",
+	     "%s:  please release the following keys within %d seconds:\n",
 	     ProgramName, timeout);
     for (i = 0; i < 256; i++) {
 	if (keymap[i >> 3] & masktable[i & 7]) {
@@ -68,6 +60,27 @@ static mapping_busy (timeout)
 		     cp ? cp : "UNNAMED", ks, i);
 	}
     }
+    sleep (timeout);
+    return;
+}
+
+static mapping_busy_pointer (timeout)
+    int timeout;
+{
+    int i;
+    Window root, child;			/* dummy variables */
+    int rx, ry, wx, wy;			/* dummy variables */
+    unsigned int mask;
+    static unsigned int masks[5] = {
+	Button1Mask, Button2Mask, Button3Mask, Button4Mask, Button5Mask };
+
+    if (!XQueryPointer (dpy, RootWindow(dpy,DefaultScreen(dpy)),
+			&root, &child, &rx, &ry, &wx, &wy, &mask))
+      mask = 0;
+
+    fprintf (stderr,
+	     "%s:  please release the following buttons within %d seconds:\n",
+	     ProgramName, timeout);
     for (i = 0; i < 5; i++) {
 	if (mask & masks[i]) 
 	  fprintf (stderr, "    Button%d\n", i+1);
@@ -95,7 +108,7 @@ int UpdateModifierMapping (map)
 	  case MappingSuccess:	/* Success */
 	    return (0);
 	  case MappingBusy:		/* Busy */
-	    mapping_busy (timeout);
+	    mapping_busy_key (timeout);
 	    continue;
 	  case MappingFailed:
 	    fprintf (stderr, "%s: bad set modifier mapping.\n",
@@ -295,9 +308,7 @@ int SetPointerMap (map, n)
 	  case MappingSuccess:
 	    return 0;
 	  case MappingBusy:
-	    fprintf (stderr, "%s:  You have %d seconds to list your hands\n",
-		     ProgramName, timeout);
-	    mapping_busy (timeout);
+	    mapping_busy_pointer (timeout);
 	    continue;
 	  case MappingFailed:
 	    fprintf (stderr, "%s:  bad pointer mapping\n", ProgramName);
