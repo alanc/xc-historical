@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.2 91/07/17 16:01:33 gildea Exp $
-SRCS = ../util/macros.t protocol.ms
+XCOMM $XConsortium: Imakefile,v 1.1 91/07/23 17:07:12 rws Exp $
+SRCS = ../../util/macros.t protocol.ms
 
 all: fsproto.PS
 
