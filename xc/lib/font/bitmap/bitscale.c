@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitscale.c,v 1.9 91/07/22 20:46:06 keith Exp $
+ * $XConsortium: bitscale.c,v 1.10 92/03/20 14:34:06 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -434,8 +434,6 @@ ScaleFont(opf, widthMult, heightMult, props, propCount, isStringProp)
     pf->glyph = opf->glyph;
     pf->scan = opf->scan;
 
-    pf->get_bitmaps = bitmapGetBitmaps;
-    pf->get_extents = bitmapGetExtents;
     pf->get_glyphs = bitmapGetGlyphs;
     pf->get_metrics = bitmapGetMetrics;
     pf->unload_font = bitmapUnloadScalable;
@@ -479,8 +477,11 @@ ScaleFont(opf, widthMult, heightMult, props, propCount, isStringProp)
     pfi->anamorphic = FALSE;
     if (heightMult != widthMult)
 	pfi->anamorphic = TRUE;
-    pfi->fontDescent *= heightMult;
-    pfi->fontAscent *= heightMult;
+
+    newHeight = (opfi->fontAscent + opfi->fontDescent) * heightMult;
+    pfi->fontAscent = opfi->fontAscent * heightMult;
+    pfi->fontDescent = newHeight - pfi->fontAscent;
+
     pfi->minbounds.leftSideBearing = MAXSHORT;
     pfi->minbounds.rightSideBearing = MAXSHORT;
     pfi->minbounds.ascent = MAXSHORT;
@@ -616,6 +617,7 @@ ScaleFont(opf, widthMult, heightMult, props, propCount, isStringProp)
 	    	glyphBytes += BYTES_FOR_GLYPH(pci, glyph);
 	    }
     	}
+	FontComputeInfoAccelerators (pfi);
     	xfree(scratch);
     }
 
@@ -728,8 +730,8 @@ ScaleBitmap(pFont, opci, pci, scratch, pink)
     if (pink) {
 	pink->leftSideBearing = MAXSHORT;
 	pink->rightSideBearing = MINSHORT;
-	pink->ascent = 0;
-	pink->descent = 0;
+	pink->ascent = MINSHORT;
+	pink->descent = MINSHORT;
 	pink->characterWidth = pci->metrics.characterWidth;
 	pink->attributes = pci->metrics.attributes;
     }
@@ -851,16 +853,19 @@ ScaleBitmap(pFont, opci, pci, scratch, pink)
 		if (newHeight >= pink->ascent)
 		    pink->ascent = newHeight;
 		pink->descent = newHeight;
+		newBit = pci->metrics.leftSideBearing + newWidth - newBit - 1;
+		if (newBit < pink->leftSideBearing)
+		    pink->leftSideBearing = newBit;
 	    }
-	    newBit = pci->metrics.leftSideBearing + newWidth - newBit - 1;
-	    if (newBit < pink->leftSideBearing)
-		pink->leftSideBearing = newBit;
 	    for (acc = scratch + newWidth, newBit = newWidth;
 		    --newBit >= 0 && *--acc >= 0;
 		);
-	    newBit = pci->metrics.leftSideBearing + newBit + 1;
-	    if (newBit > pink->rightSideBearing)
-		pink->rightSideBearing = newBit;
+	    if (newBit >= 0)
+	    {
+	    	newBit = pci->metrics.leftSideBearing + newBit + 1;
+	    	if (newBit > pink->rightSideBearing)
+		    pink->rightSideBearing = newBit;
+	    }
 	}
     }
 #define MINMAX(field) \
@@ -870,6 +875,15 @@ ScaleBitmap(pFont, opci, pci, scratch, pink)
 	pFont->info.ink_maxbounds.field = pink->field
 
     if (pink) {
+	if (pink->ascent == MINSHORT)
+	{
+	    /* hack to make computation below work */
+	    pink->ascent = pci->metrics.descent;
+	    /* these would also have not been set as this character is empty */
+	    pink->descent = pink->ascent + 1;
+	    pink->leftSideBearing = 0;
+	    pink->rightSideBearing = 0;
+	}
 	height = pink->ascent - pink->descent + 1;
 	pink->ascent = pci->metrics.ascent -
 	    (GLYPHHEIGHTPIXELS(pci) - pink->ascent);
