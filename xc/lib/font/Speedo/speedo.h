@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: speedo.h,v 1.2 91/05/11 09:56:10 rws Exp $ */
 
 /*
 
@@ -289,7 +289,11 @@ typedef struct specs_tag
                                    /*   Bit 14: Clip top if set             */
                                    /*   Bit 15: Clip bottom if set          */
                                    /*   Bits 16-31   not used               */
+#if __STDC__
     void *out_info;                /* information for output module         */
+#else
+    char *out_info;
+#endif
     }
 specs_t;                           /* Specs structure for fw_set_specs      */
 
