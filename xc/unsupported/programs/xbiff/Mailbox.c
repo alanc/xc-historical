@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.55 91/04/14 12:00:20 rws Exp $
+ * $XConsortium: Mailbox.c,v 1.56 91/04/17 09:51:33 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -393,7 +393,7 @@ static void Destroy (gw)
 
     XtFree (w->mailbox.filename);
     if (w->mailbox.interval_id) XtRemoveTimeOut (w->mailbox.interval_id);
-    XtDestroyGC (w->mailbox.gc);
+    XtReleaseGC(gw, w->mailbox.gc);
 #define freepix(p) if (p) XFreePixmap (dpy, p)
     freepix (w->mailbox.full.bitmap);		/* until cvter does ref cnt */
     freepix (w->mailbox.full.mask);		/* until cvter does ref cnt */
@@ -559,7 +559,7 @@ static Boolean SetValues (gcurrent, grequest, gnew)
 
     if (current->mailbox.foreground_pixel != new->mailbox.foreground_pixel ||
 	current->core.background_pixel != new->core.background_pixel) {
-	XtDestroyGC (current->mailbox.gc);
+	XtReleaseGC (gcurrent, current->mailbox.gc);
 	new->mailbox.gc = get_mailbox_gc (new);
 	redisplay = TRUE;
     }
