@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.17 92/03/23 16:13:29 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.18 92/03/23 19:33:03 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -513,18 +513,13 @@ undo_backspaces()
 	do_char('\b');
 }
 
-Bool
-do_backspace(c, up)
+undo *
+do_backspace(c)
     char c;
-    undo **up;
 {
     undo *u;
     Bool partial = False;
 
-    if (c != '\b') {
-	undo_backspaces();
-	return False;
-    }
     curbscount++;
     for (u = undos; u->bscount; u++) {
 	if (history_end >= u->seq_len &&
@@ -535,15 +530,13 @@ do_backspace(c, up)
 		/* do it */
 		history_end -= u->seq_len;
 		curbscount -= u->bscount;
-		*up = u;
-		return True;
+		return u;
 	    }
 	}
     }
-    *up = NULL;
     if (!partial)
 	undo_backspaces();
-    return True;
+    return NULL;
 }
 
 main(argc, argv)
@@ -650,9 +643,8 @@ main(argc, argv)
 	if (n <= 0)
 	    quit(0);
 	for (i = 0; i < n; i++) {
-	    if (((buf[i] == '\b') || curbscount) &&
-		do_backspace(buf[i], &u)) {
-		if (!u)
+	    if (buf[i] == '\b') {
+		if (!(u = do_backspace(buf[i])))
 		    continue;
 		if (i < u->undo_len) {
 		    bcopy(buf+i, buf+u->undo_len, n - i);
@@ -661,7 +653,8 @@ main(argc, argv)
 		}
 		i -= u->undo_len;
 		bcopy(u->undo, buf+i, u->undo_len);
-	    }
+	    } else if (curbscount)
+		undo_backspaces();
 	    if (buf[i] != control_char) {
 		if (history_end == sizeof(history))
 		    trim_history();
