@@ -1,4 +1,4 @@
-/* $XConsortium: xkmout.c,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: xkmout.c,v 1.1 94/04/02 17:09:46 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -37,7 +37,7 @@
 
 #include <X11/extensions/XKB.h>
 #include <X11/XKBlib.h>
-#include <X11/extensions/XKMformat.h>
+#include "XKMformat.h"
 
 
 typedef struct _XkmInfo {

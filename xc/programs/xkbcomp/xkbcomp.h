@@ -1,4 +1,4 @@
-/* $XConsortium: xkbcomp.h,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: xkbcomp.h,v 1.1 94/04/02 17:08:36 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -40,7 +40,7 @@
 #include "utils.h"
 #include "strtbl.h"
 
-#include <X11/extensions/XKM.h>
+#include "XKM.h"
 
 extern char *scanFile;
 
