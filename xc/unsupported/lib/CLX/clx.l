@@ -428,7 +428,7 @@
   (resource-id-byte nil)			; resource ID mask field (used with DPB & LDB)
   (resource-id-count 0 :type resource-id)	; resource ID mask count
 						; (used for allocating ID's)
-  (resource-id-map (make-hash-table :test #.(if (> #x1fffffff most-positive-fixnum)
+  (resource-id-map (make-hash-table :test (if #.(> #x1fffffff most-positive-fixnum)
 						#'eql #'eq)
 				    :size *resource-id-map-size*)
 		   :type hash-table)		; hash table maps resource-id's to
