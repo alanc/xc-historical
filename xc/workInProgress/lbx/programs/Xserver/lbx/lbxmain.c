@@ -1,4 +1,4 @@
-/* $XConsortium: lbxmain.c,v 1.11 94/03/27 13:09:25 dpw Exp mor $ */
+/* $XConsortium: lbxmain.c,v 1.12 94/09/13 17:14:27 mor Exp mor $ */
 /*
  * $NCDId: @(#)lbxmain.c,v 1.45 1994/03/24 17:54:24 lemke Exp $
  * $NCDOr: lbxmain.c,v 1.4 1993/12/06 18:47:18 keithp Exp keithp $
@@ -84,6 +84,7 @@ void	LbxShutdownProxy ();
 
 int	LbxWritev ();
 int	LbxWriteToClient ();
+int	LbxUncompressedWriteToClient ();
 
 LbxProxyPtr proxyList;
 static unsigned char LbxReqCode;
@@ -867,6 +868,25 @@ LbxWriteToClient (client, len, buf)
     return (*lbxClient->writeToClient) (client, len, buf);
 }
 
+int
+LbxUncompressedWriteToClient (client, len, buf)
+    ClientPtr	client;
+    int		len;
+    char	*buf;
+{
+    LbxClientPtr    lbxClient = LbxClient(client);
+
+    /* see if this is extraneous motion */
+    /* XXX will this handle mutiple events at the same time? */
+    if ((len == sizeof(xEvent)) && 
+	LbxThrottleMotionEvents(client, (xEvent *) buf)) 
+    {
+	    return Success;
+    }
+    lbxAnyOutputPending = TRUE;
+    return (*lbxClient->uncompressedWriteToClient) (client, len, buf);
+}
+
 Bool
 LbxInitClient (proxy, client, index)
     LbxProxyPtr	proxy;
@@ -888,11 +908,13 @@ LbxInitClient (proxy, client, index)
     lbxClient->reading_pending = FALSE;
     lbxClient->reqs_pending = 0;
     lbxClient->writeToClient = client->public.writeToClient;
+    lbxClient->uncompressedWriteToClient = client->public.uncompressedWriteToClient;
     lbxClient->readRequest = client->public.readRequest;
     lbxClients[client->index] = lbxClient;
     proxy->lbxClients[index] = lbxClient;
     proxy->numClients++;
     client->public.writeToClient = LbxWriteToClient;
+    client->public.uncompressedWriteToClient = LbxUncompressedWriteToClient;
     client->public.readRequest = LbxReadRequestFromClient;
 #ifdef notused
     client->public.requestLength = LbxRequestLength;
@@ -925,6 +947,7 @@ LbxFreeClient (client)
     proxy->lbxClients[lbxClient->index] = 0;
     lbxClients[client->index] = 0;
     client->public.writeToClient = lbxClient->writeToClient;
+    client->public.uncompressedWriteToClient = lbxClient->uncompressedWriteToClient;
     client->public.readRequest = lbxClient->readRequest;
     xfree (lbxClient);
 }
@@ -1501,6 +1524,13 @@ ProcLbxPutImage(client)
 }
 
 int
+ProcLbxGetImage(client)
+    register ClientPtr	client;
+{
+    return LbxDecodeGetImage(client);
+}
+
+int
 ProcLbxDispatch (client)
     register ClientPtr	client;
 {
@@ -1561,6 +1591,8 @@ ProcLbxDispatch (client)
 	return ProcLbxTagData (client);
     case X_LbxPutImage:
 	return ProcLbxPutImage (client);
+    case X_LbxGetImage:
+	return ProcLbxGetImage (client);
     default:
 	return BadRequest;
     }
