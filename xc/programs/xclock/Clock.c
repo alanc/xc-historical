@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Clock.c,v 1.44 89/03/30 16:53:21 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Clock.c,v 1.45 89/05/11 01:04:50 kit Exp $";
 #endif /* lint */
 
 
@@ -64,29 +64,29 @@ static erase_hands(), round();
 
 static XtResource resources[] = {
     {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
-	goffset(width), XtRString, "0"},
+	goffset(width), XtRImmediate, (caddr_t) 0},
     {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
-	goffset(height), XtRString, "0"},
+	goffset(height), XtRImmediate, (caddr_t) 0},
     {XtNbackground, XtCBackground, XtRPixel, sizeof(Pixel),
-	goffset(background_pixel), XtRString, "white"},
+	goffset(background_pixel), XtRString, "XtdefaultBackground"},
     {XtNupdate, XtCInterval, XtRInt, sizeof(int), 
-        offset(update), XtRString, "60" },
+        offset(update), XtRImmediate, (caddr_t) 60 },
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-        offset(fgpixel), XtRString, "black"},
+        offset(fgpixel), XtRString, "XtdefaultForeground"},
     {XtNhand, XtCForeground, XtRPixel, sizeof(Pixel),
-        offset(Hdpixel), XtRString, "black"},
+        offset(Hdpixel), XtRString, "XtdefaultForeground"},
     {XtNhighlight, XtCForeground, XtRPixel, sizeof(Pixel),
-        offset(Hipixel), XtRString, "black"},
+        offset(Hipixel), XtRString, "XtdefaultForeground"},
     {XtNanalog, XtCBoolean, XtRBoolean, sizeof(Boolean),
-        offset(analog), XtRString, "TRUE"},
+        offset(analog), XtRImmediate, (caddr_t) TRUE},
     {XtNchime, XtCBoolean, XtRBoolean, sizeof(Boolean),
-	offset(chime), XtRString, "FALSE" },
+	offset(chime), XtRImmediate, (caddr_t) FALSE },
     {XtNpadding, XtCMargin, XtRInt, sizeof(int),
-        offset(padding), XtRString, "8"},
+        offset(padding), XtRImmediate, (caddr_t) 8},
     {XtNfont, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
         offset(font), XtRString, "fixed"},
     {XtNreverseVideo, XtCReverseVideo, XtRBoolean, sizeof (Boolean),
-	offset (reverse_video), XtRString, "FALSE"},
+	offset (reverse_video), XtRImmediate, (caddr_t) FALSE},
     {XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
     	offset (backing_store), XtRString, "default"},
 };
@@ -185,30 +185,6 @@ static void Initialize (request, new)
 	w->core.width = min_width;
     if (w->core.height == 0)
 	w->core.height = min_height;
-
-    /*
-     * set the colors if reverse video; this is somewhat tricky since there
-     * are 5 colors:
-     *
-     *     background - paper		white
-     *     foreground - text, ticks	black
-     *     border - border		black (foreground)
-     *     highlight - edge of hands	black (foreground)
-     *     hands - solid parts		black (foreground)
-     *
-     * This doesn't completely work since the parent has already made up a 
-     * border.  Sigh.
-     */
-    if (w->clock.reverse_video) {
-	Pixel fg = w->clock.fgpixel;
-	Pixel bg = w->core.background_pixel;
-
-	if (w->clock.Hdpixel == fg) w->clock.Hdpixel = bg;
-	if (w->clock.Hipixel == fg) w->clock.Hipixel = bg;
-	if (w->core.border_pixel == fg) w->core.border_pixel = bg;
-	w->clock.fgpixel = bg;
-	w->core.background_pixel = fg;
-    }
 
     myXGCV.foreground = w->clock.fgpixel;
     myXGCV.background = w->core.background_pixel;
@@ -716,8 +692,10 @@ ClockWidget w;
 	w->clock.segbuffptr = w->clock.segbuff;
 	w->clock.numseg = 0;
 	for (i = 0; i < 60; i++)
-		DrawLine(w, (i % 5) == 0 ? w->clock.second_hand_length : (w->clock.radius - delta),
-                   w->clock.radius, ((double) i)/60.);
+		DrawLine(w, ( (i % 5) == 0 ? 
+			     w->clock.second_hand_length :
+			     (w->clock.radius - delta) ),
+			 w->clock.radius, ((double) i)/60.);
 	/*
 	 * Go ahead and draw it.
 	 */
