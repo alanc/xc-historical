@@ -30,7 +30,7 @@ depend:: lex.c gram.c deftwmrc.c
 
 ComplexProgramTarget(twm)
 MakeDirectories(install,$(TWMDIR))
-InstallNonExec(system.twmrc, $(TWMDIR))
+InstallNonExec(system.twmrc, $(TWMDIR)/system.twmrc)
 
 gram.h gram.c: gram.y
 	yacc $(YFLAGS) gram.y
