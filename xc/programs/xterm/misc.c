@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.48 89/09/22 12:30:25 jim Exp $
+ *	$XConsortium: misc.c,v 1.49 89/10/06 16:05:40 jim Exp $
  */
 
 
@@ -58,7 +58,7 @@ static void DoSpecialEnterNotify();
 static void DoSpecialLeaveNotify();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.48 89/09/22 12:30:25 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.49 89/10/06 16:05:40 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -560,6 +560,10 @@ int (*func)();
 		if(screen->logfile)
 			free(screen->logfile);
 		screen->logfile = cp;
+		break;
+
+	case 50:
+		try_new_font (screen, buf, NULL, True);
 		break;
 
 #ifdef ALLOW_WRITEBACK

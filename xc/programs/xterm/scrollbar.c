@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.25 89/06/12 12:09:22 jim Exp $
+ *	$XConsortium: scrollbar.c,v 1.26 89/06/22 19:06:38 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -46,7 +46,7 @@
 extern void bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.25 89/06/12 12:09:22 jim Exp $";
+static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.26 89/06/22 19:06:38 jim Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -152,6 +152,13 @@ static void ResizeScreen(xw, min_width, min_height )
 	XChangeWindowAttributes( screen->display, TextWindow(screen),
 				 CWEventMask|CWBitGravity,
 				 &newAttributes );
+}
+
+void DoResizeScreen (xw)
+    register XtermWidget xw;
+{
+    int border = 2 * xw->screen.border;
+    ResizeScreen (xw, border, border);
 }
 
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.96 89/09/21 17:53:49 jim Exp $
+ * $XConsortium: charproc.c,v 1.97 89/10/03 12:41:15 jim Exp $
  */
 
 
@@ -140,7 +140,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.96 89/09/21 17:53:49 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.97 89/10/03 12:41:15 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2033,32 +2033,24 @@ XSetWindowAttributes *values;
 	TabReset (term->tabs);
 
 	screen->fnt_norm = screen->fnt_bold = NULL;
-	
-	/* do the XFont calls */
-
-	if ((screen->fnt_norm = XLoadQueryFont(screen->display, term->misc.f_n)) == NULL) {
-	    fprintf(stderr, "%s: Could not open font %s; using server default\n", 
-		    xterm_name, term->misc.f_n);
+	if (!try_new_font (screen, term->misc.f_n, term->misc.f_b, False)) {
+	    fprintf (stderr, "%s:  unable to use font%s \"%s\"",
+		     xterm_name, term->misc.f_b ? "s" : "", 
+		     term->misc.f_n);
+	    if (term->misc.f_b) {
+		fprintf (stderr, " and \"%s\"\n", term->misc.f_b);
+	    } else {
+		fprintf (stderr, "\n");
+	    }
 	    screen->fnt_norm =
 		  XQueryFont(screen->display,
 			     DefaultGC(screen->display,
 				       DefaultScreen(screen->display)
 				       )->gid
 			     );
-	    VTgcFontMask = 0;
+	    screen->enbolden = TRUE;
+	    update_font_info (screen);
 	}
-
-	if (!term->misc.f_b || !VTgcFontMask
-	    || !(screen->fnt_bold = XLoadQueryFont(screen->display, term->misc.f_b))) {
-		screen->fnt_bold = screen->fnt_norm;
-		screen->enbolden = TRUE;  /*no bold font */
-	}
-
-	/* find the max width and higth of the font */
-
-	screen->fullVwin.f_width = screen->fnt_norm->max_bounds.width;
-	screen->fullVwin.f_height = screen->fnt_norm->ascent +
-				    screen->fnt_norm->descent;
 
 	/* making cursor */
 	if (!screen->pointer_cursor) 
@@ -2161,44 +2153,6 @@ XSetWindowAttributes *values;
 		InputOutput, CopyFromParent,	
 		*valuemask|CWBitGravity, values);
 
-	/* do the GC stuff */
-
-	mask = VTgcFontMask | GCForeground | GCBackground 
-	  	| GCGraphicsExposures | GCFunction;
-
-	xgcv.graphics_exposures = TRUE;	/* default */
-	xgcv.function = GXcopy;
-	xgcv.font = screen->fnt_norm->fid;
-	xgcv.foreground = screen->foreground;
-	xgcv.background = term->core.background_pixel;
-
-	screen->normalGC = XtGetGC((Widget)term, mask, &xgcv);
-
-	if (screen->enbolden) { /* there is no bold font */
-		xgcv.font = screen->fnt_norm->fid;
-		screen->normalboldGC = screen->normalGC;
-	} else {
-		xgcv.font = screen->fnt_bold->fid;
-		screen->normalboldGC = XtGetGC((Widget)term, mask, &xgcv);
-	}
-
-	xgcv.font = screen->fnt_norm->fid;
-	xgcv.foreground = term->core.background_pixel;
-	xgcv.background = screen->foreground;
-
-	screen->reverseGC = XtGetGC((Widget)term, mask, &xgcv);
-
-	if (screen->enbolden) /* there is no bold font */
-		xgcv.font = screen->fnt_norm->fid;
-	else
-		xgcv.font = screen->fnt_bold->fid;
-
-	screen->reverseboldGC = XtGetGC((Widget)term, mask, &xgcv);
-
-	/* we also need a set of caret (called a cursor here) gc's */
-
-	xgcv.font = screen->fnt_norm->fid;
-
 	/*
 	 * Let's see, there are three things that have "color":
 	 *
@@ -2226,6 +2180,7 @@ XSetWindowAttributes *values;
 	    unsigned long fg = screen->foreground;
 	    unsigned long bg = term->core.background_pixel;
 
+	    mask = (GCForeground | GCBackground);
 	    if (cc != fg && cc != bg) {
 		/* we have a colored cursor */
 		xgcv.foreground = fg;
@@ -2648,4 +2603,108 @@ static void HandleIgnore(w, event, params, param_count)
 {
     /* do nothing, but check for funny escape sequences */
     (void) SendMousePosition(w, event);
+}
+
+int try_new_font (screen, nfontname, bfontname, doresize)
+    TScreen *screen;
+    char *nfontname, *bfontname;
+    Bool doresize;
+{
+    XFontStruct *nfs = NULL, *bfs = NULL;
+    XGCValues xgcv;
+    unsigned long mask;
+    GC new_normalGC = NULL, new_normalboldGC = NULL;
+    GC new_reverseGC = NULL, new_reverseboldGC = NULL;
+
+    if (!nfontname) return 0;
+
+    if (!(nfs = XLoadQueryFont (screen->display, nfontname))) goto bad;
+    if (!(bfontname && 
+	  (bfs = XLoadQueryFont (screen->display, nfontname))))
+      bfs = nfs;
+
+    mask = (GCFont | GCForeground | GCBackground | GCGraphicsExposures |
+	    GCFunction);
+
+    xgcv.graphics_exposures = TRUE;	/* default */
+    xgcv.function = GXcopy;
+    xgcv.font = nfs->fid;
+    xgcv.foreground = screen->foreground;
+    xgcv.background = term->core.background_pixel;
+
+    new_normalGC = XtGetGC((Widget)term, mask, &xgcv);
+    if (!new_normalGC) goto bad;
+
+    if (nfs == bfs) {			/* there is no bold font */
+	new_normalboldGC = new_normalGC;
+    } else {
+	xgcv.font = bfs->fid;
+	new_normalboldGC = XtGetGC((Widget)term, mask, &xgcv);
+	if (!new_normalboldGC) goto bad;
+    }
+
+    xgcv.font = nfs->fid;
+    xgcv.foreground = term->core.background_pixel;
+    xgcv.background = screen->foreground;
+    new_reverseGC = XtGetGC((Widget)term, mask, &xgcv);
+    if (!new_reverseGC) goto bad;
+
+    if (nfs == bfs) {			/* there is no bold font */
+	new_reverseboldGC = new_reverseGC;
+    } else {
+	xgcv.font = bfs->fid;
+	new_reverseboldGC = XtGetGC((Widget)term, mask, &xgcv);
+	if (!new_reverseboldGC) goto bad;
+    }
+
+    XtReleaseGC ((Widget) term, screen->normalGC);
+    if (screen->normalGC != screen->normalboldGC)
+      XtReleaseGC ((Widget) term, screen->normalboldGC);
+    XtReleaseGC ((Widget) term, screen->reverseGC);
+    if (screen->reverseGC != screen->reverseboldGC)
+      XtReleaseGC ((Widget) term, screen->reverseboldGC);
+    screen->normalGC = new_normalGC;
+    screen->normalboldGC = new_normalboldGC;
+    screen->reverseGC = new_reverseGC;
+    screen->reverseboldGC = new_reverseboldGC;
+    screen->fnt_norm = nfs;
+    screen->fnt_bold = bfs;
+    screen->fnt_bold = screen->fnt_norm;
+    screen->enbolden = (nfs == bfs);
+    update_font_info (screen, doresize);
+   /*
+     * XXX - need to resize and redisplay
+     */
+    return 1;
+
+  bad:
+    if (new_normalGC)
+      XtReleaseGC ((Widget) term, screen->normalGC);
+    if (new_normalGC && new_normalGC != new_normalboldGC)
+      XtReleaseGC ((Widget) term, new_normalboldGC);
+    if (new_reverseGC)
+      XtReleaseGC ((Widget) term, new_reverseGC);
+    if (new_reverseGC && new_reverseGC != new_reverseboldGC)
+      XtReleaseGC ((Widget) term, new_reverseboldGC);
+    if (nfs) XFreeFont (screen->display, nfs);
+    if (nfs && nfs != bfs) XFreeFont (screen->display, bfs);
+    return 0;
+}
+
+
+update_font_info (screen, doresize)
+    TScreen *screen;
+    Bool doresize;
+{
+    screen->fullVwin.f_width = screen->fnt_norm->max_bounds.width;
+    screen->fullVwin.f_height = (screen->fnt_norm->ascent +
+				 screen->fnt_norm->descent);
+    if (doresize) {
+	if (VWindow(screen)) {
+	    XClearWindow (screen->display, VWindow(screen));
+	}
+	DoResizeScreen (term);
+	VTConfigure (term);
+	Redraw ();
+    }
 }
