@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: multibuf.c,v 1.9 91/01/05 16:33:35 rws Exp $ */
+/* $XConsortium: multibuf.c,v 1.10 91/05/09 21:04:29 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -1630,6 +1630,7 @@ EventSelectForMultibuffer (pMultibuffer, client, mask)
 	}
 	RecalculateMultibufferOtherEvents (pMultibuffer);
     }
+    return (client->noClientException);
 }
 
 static void
