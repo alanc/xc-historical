@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.36 91/07/05 15:19:31 converse Exp $
+ * $XConsortium: folder.c,v 2.37 91/07/09 11:59:56 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -123,11 +123,7 @@ void XmhClose(w, event, params, num_params)
     String	*params;	/* unused */
     Cardinal	*num_params;	/* unused */
 {
-    Scrn	scrn;
-    if (event->type == ClientMessage &&
-	event->xclient.data.l[0] != wm_delete_window)
-	return;
-    scrn = ScrnFromWidget(w);
+    Scrn 	scrn = ScrnFromWidget(w);
     DoClose(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
@@ -447,12 +443,12 @@ void CheckAndDeleteFolder(widget, client_data, call_data)
 		char *c = index( strcpy(parent_folder, foldername), '/');
 		*c = '\0';
 
-/* Since menus are built upon demand, and are a per-screen resource, 
- * resources, not all toc & view screens will have the same menus built.
+/* Since menus are built upon demand, and are a per-xmh-screen resource, 
+ * not all xmh toc & view screens will have the same menus built.
  * So the menu entry deletion routines must be able to handle a button
  * whose menu field is null.  It would be better to share folder menus
- * between screens, but accelerators call action procedures which depend
- * upon being able to get the screen from the widget argument.
+ * between xmh screens, but accelerators call action procedures which depend
+ * upon being able to get the xmh screen (Scrn) from the widget argument.
  */
 
 		DeleteFolderMenuEntry
@@ -887,4 +883,93 @@ void XmhPopFolder(w, event, params, count)
 
     if ((folder = Pop(&scrn->folder_stack)) != NULL)
 	SetCurrentFolderName(scrn, folder);
+}
+
+static Boolean InParams(str, p, n)
+    String str;
+    String *p;
+    Cardinal n;
+{
+    int i;
+    for (i=0; i < n; p++, i++)
+	if (! XmuCompareISOLatin1(*p, str)) return True;
+    return False;
+}
+
+/* generalized routine for xmh participation in WM protocols */
+
+/*ARGSUSED*/
+void XmhWMProtocols(w, event, params, num_params)
+    Widget	w;	/* NULL if from checkpoint timer */
+    XEvent *	event;	/* NULL if from checkpoint timer */
+    String *	params;
+    Cardinal *	num_params;
+{
+    Boolean	dw = False;	/* will we do delete window? */
+    Boolean	sy = False;	/* will we do save yourself? */
+    static char*WM_DELETE_WINDOW = "WM_DELETE_WINDOW";
+    static char*WM_SAVE_YOURSELF = "WM_SAVE_YOURSELF";
+
+#define DO_DELETE_WINDOW InParams(WM_DELETE_WINDOW, params, *num_params)
+#define DO_SAVE_YOURSELF InParams(WM_SAVE_YOURSELF, params, *num_params)
+
+    /* Respond to a recognized WM protocol request iff 
+     * event type is ClientMessage and no parameters are passed, or
+     * event type is ClientMessage and event data is matched to parameters, or
+     * event type isn't ClientMessage and parameters make a request.
+     */
+
+    if (event && event->type == ClientMessage) {
+	if (event->xclient.message_type == wm_protocols) {
+	    if (event->xclient.data.l[0] == wm_delete_window &&
+		(*num_params == 0 || DO_DELETE_WINDOW))
+		dw = True;
+	    else if (event->xclient.data.l[0] == wm_save_yourself &&
+		     (*num_params == 0 || DO_SAVE_YOURSELF))
+		sy = True;
+	}
+    } else {
+	if (DO_DELETE_WINDOW)
+	    dw = True;
+	if (DO_SAVE_YOURSELF)
+	    sy = True;
+    }
+
+#undef DO_DELETE_WINDOW
+#undef DO_SAVE_YOURSELF
+
+    if (sy) {
+	register int i;
+	for (i=0; i<numScrns; i++)
+	    if (scrnList[i]->msg) 
+		MsgCheckPoint(scrnList[i]->msg);
+	if (w) /* don't generate a property notify via the checkpoint timer */
+	    XChangeProperty(XtDisplay(toplevel), XtWindow(toplevel),
+			    XInternAtom(XtDisplay(toplevel),"WM_COMMAND", 0),
+			    XInternAtom(XtDisplay(toplevel), "STRING", 0),
+			    8, PropModeAppend, (unsigned char *)NULL, 0);
+    }
+    if (dw && w) {
+	Scrn scrn;
+
+	while (w && !XtIsShell(w))
+	    w = XtParent(w);
+	if (XtIsTransientShell(w)) {
+	    WMDeletePopup(w, event);
+	    return;
+	}
+	scrn = ScrnFromWidget(w);
+	switch (scrn->kind) {
+	  case STtocAndView:
+	    DoClose(w, (XtPointer)scrn, (XtPointer)NULL);
+	    break;
+	  case STview:
+	  case STcomp:
+	    DoCloseView(w, (XtPointer)scrn, (XtPointer)NULL);
+	    break;
+	  case STpick:
+	    DestroyScrn(scrn);
+	    break;
+	}
+    }
 }
