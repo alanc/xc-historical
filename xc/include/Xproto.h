@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: Xproto.h,v 1.81 88/10/22 10:15:49 jim Exp $
+ *	$XConsortium: Xproto.h,v 1.82 89/12/11 10:31:01 jim Exp $
  */
 
 /* Definitions for the X window system used by server and c bindings */
@@ -759,7 +759,7 @@ typedef struct {
     CARD32 length B32;
     CARD16 nPixels B16;
     CARD16 pad2 B16;
-    CARD32 redMask B16, greenMask B16, blueMask B16;
+    CARD32 redMask B32, greenMask B32, blueMask B32;
     CARD32 pad3 B32;
     CARD32 pad4 B32;
     } xAllocColorPlanesReply;
