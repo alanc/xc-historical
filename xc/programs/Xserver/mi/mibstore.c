@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 1.14 88/10/02 14:42:52 rws Exp $ */
+/* $XConsortium: mibstore.c,v 1.15 88/10/12 20:13:54 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2223,7 +2223,9 @@ miInitBackingStore(pWin, SaveAreas, RestoreAreas)
     BackingStorePtr	    pBS;
 	
 
-    if (pWin->devBackingStore == (pointer)NULL) {
+    if ((pWin->devBackingStore == (pointer)NULL) &&
+	(pWin->drawable.pScreen->backingStoreSupport != NotUseful))
+    {
 	XID false = xFalse;
 
 	pScreen = pWin->drawable.pScreen;
