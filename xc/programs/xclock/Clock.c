@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Clock.c,v 1.33 88/07/11 12:53:29 jim Exp $";
+static char rcsid[] = "$Header: Clock.c,v 1.34 88/07/11 13:27:33 jim Exp $";
 #endif lint
 
 
@@ -84,6 +84,8 @@ static XtResource resources[] = {
         offset(font), XtRString, "fixed"},
     {XtNreverseVideo, XtCReverseVideo, XtRBoolean, sizeof (Boolean),
 	offset (reverse_video), XtRString, "FALSE"},
+    {XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
+    	offset (backing_store), XtRString, "default"},
 };
 
 #undef offset
@@ -229,10 +231,19 @@ static void Realize (gw, valueMask, attrs)
      XtValueMask *valueMask;
      XSetWindowAttributes *attrs;
 {
+     ClockWidget	w = (ClockWidget) gw;
 #ifdef notdef
      *valueMask |= CWBitGravity;
      attrs->bit_gravity = ForgetGravity;
 #endif
+     switch (w->clock.backing_store) {
+     case Always:
+     case NotUseful:
+     case WhenMapped:
+     	*valueMask |=CWBackingStore;
+	attrs->backing_store = w->clock.backing_store;
+	break;
+     }
      XtCreateWindow( gw, InputOutput, (Visual *)CopyFromParent,
 		     *valueMask, attrs);
      Resize(gw);
