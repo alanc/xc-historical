@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: fontfile.h,v 1.1 91/05/11 09:11:58 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -67,6 +67,6 @@ typedef struct _FontRenderer	    *FontRendererPtr;
 extern FontEntryPtr	FontFileFindNameInDir ();
 extern FontDirectoryPtr	FontFileMakeDir ();
 extern FontRendererPtr	FontFileMatchRenderer ();
-extern char		*SaveString ();
+extern char		*FontFileSaveString ();
 extern FontScaledPtr	FontFileFindScaledInstance ();
 #endif /* _FONTFILE_H_ */
