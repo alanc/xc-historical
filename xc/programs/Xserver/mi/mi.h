@@ -1,4 +1,4 @@
-/* $XConsortium: mi.h,v 1.6 89/09/02 15:13:19 rws Exp $ */
+/* $XConsortium: mi.h,v 1.7 90/06/12 13:12:27 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -59,7 +59,6 @@ extern void  miZeroLine();
 extern void  miPaintWindow();
 extern miDashPtr   miDashLine();
 extern void  miPushPixels();
-extern void  miGetPts(), miRoundCap(), miOneSegWide();
 extern int   miPtToAngle();
 extern RegionPtr miRegionCreate();
 extern void miRegionInit();
