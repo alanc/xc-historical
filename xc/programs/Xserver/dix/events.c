@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.64 93/07/13 09:40:35 rws Exp $ */
+/* $XConsortium: events.c,v 5.65 93/09/03 08:03:47 dpw Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -575,7 +575,7 @@ PlayReleasedEvents()
     register DeviceIntPtr dev;
 
     prev = &syncEvents.pending;
-    while (qe = *prev)
+    while ( (qe = *prev) )
     {
 	if (!qe->device->sync.frozen)
 	{
@@ -1108,8 +1108,8 @@ DeliverEventsToWindow(pWin, pEvents, count, filter, grab, mskidx)
 	if (filter != CantBeFiltered &&
 	    !((wOtherEventMasks(pWin)|pWin->eventMask) & filter))
 	    return 0;
-	if (attempt = TryClientEvents(wClient(pWin), pEvents, count,
-				      pWin->eventMask, filter, grab))
+	if ( (attempt = TryClientEvents(wClient(pWin), pEvents, count,
+				      pWin->eventMask, filter, grab)) )
 	{
 	    if (attempt > 0)
 	    {
@@ -1136,8 +1136,8 @@ DeliverEventsToWindow(pWin, pEvents, count, filter, grab, mskidx)
 	    other = (InputClients *)wOtherClients(pWin);
 	for (; other; other = other->next)
 	{
-	    if (attempt = TryClientEvents(rClient(other), pEvents, count,
-					  other->mask[mskidx], filter, grab))
+	    if ( (attempt = TryClientEvents(rClient(other), pEvents, count,
+					  other->mask[mskidx], filter, grab)) )
 	    {
 		if (attempt > 0)
 		{
@@ -1481,6 +1481,7 @@ CheckMotion(xE)
     return TRUE;
 }
 
+void
 WindowsRestructured()
 {
     (void) CheckMotion((xEvent *)NULL);
@@ -2091,6 +2092,7 @@ OtherClientGone(value, id)
     }
     FatalError("client not on event list");
     /*NOTREACHED*/
+    return -1; /* make compiler happy */
 }
 
 int
@@ -2322,7 +2324,7 @@ LeaveNotifies(child, ancestor, mode, detail)
     WindowPtr child, ancestor;
     int detail, mode;
 {
-    register WindowPtr  pWin, prev;
+    register WindowPtr  pWin;
 
     if (ancestor == child)
 	return;
@@ -2429,6 +2431,7 @@ static void
 FocusOutEvents(dev, child, ancestor, mode, detail, doAncestor)
     DeviceIntPtr dev;
     WindowPtr child, ancestor;
+    int mode;
     int detail;
     Bool doAncestor;
 {
@@ -3410,9 +3413,9 @@ DeleteWindowFromAnyEvents(pWin, freeResources)
     {
 	if (pWin->dontPropagate)
 	    DontPropagateRefCnts[pWin->dontPropagate]--;
-	while (oc = wOtherClients(pWin))
+	while ( (oc = wOtherClients(pWin)) )
 	    FreeResource(oc->resource, RT_NONE);
-	while (passive = wPassiveGrabs(pWin))
+	while ( (passive = wPassiveGrabs(pWin)) )
 	    FreeResource(passive->resource, RT_NONE);
      }
 #ifdef XINPUT

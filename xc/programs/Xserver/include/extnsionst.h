@@ -1,4 +1,4 @@
-/* $XConsortium: extnsionst.h,v 1.9 89/08/31 18:41:12 rws Exp $ */
+/* $XConsortium: extnsionst.h,v 1.10 93/07/12 09:44:40 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -126,7 +126,7 @@ extern unsigned short MinorOpcodeOfRequest(
 #endif
 );
 
-extern int CloseDownExtensions(
+extern void CloseDownExtensions(
 #if NeedFunctionPrototypes
     void
 #endif

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: extension.c,v 1.49 91/12/10 11:26:36 rws Exp $ */
+/* $XConsortium: extension.c,v 1.50 93/09/03 08:02:09 dpw Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -166,6 +166,7 @@ MinorOpcodeOfRequest(client)
     return (*extensions[major]->MinorOpcode)(client);
 }
 
+void
 CloseDownExtensions()
 {
     register int i,j;
@@ -197,7 +198,6 @@ CloseDownExtensions()
 	spentry->procList = (ProcEntryPtr)NULL;
     }
 }
-
 
 
 int
