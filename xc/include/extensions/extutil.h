@@ -1,5 +1,5 @@
 /*
- * $XConsortium: extutil.h,v 1.7 89/10/08 17:01:36 jim Exp $
+ * $XConsortium: extutil.h,v 1.8 89/11/21 11:31:49 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -29,6 +29,8 @@
  * ARE SUBJECT TO CHANGE!
  */
 
+#ifndef _EXTUTIL_H_
+#define _EXTUTIL_H_
 
 /*
  * We need to keep a list of open displays since the Xlib display list isn't
@@ -117,3 +119,4 @@ int proc (dpy, code, codes, buf, n) \
     return 1; \
 }
 
+#endif
