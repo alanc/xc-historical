@@ -20,7 +20,7 @@
 /**/#	This script should
 /**/#	work on both USG and BSD systems.  However, when System V.4 comes out,
 /**/#	USG users will probably have to change "silent" to "-s" instead of
-/**/#	"-" (at least, that's what the documentation implies).
+/**/#	"-" (at least, that is what the documentation implies).
 /**/#
 CC=PREPROC
 
