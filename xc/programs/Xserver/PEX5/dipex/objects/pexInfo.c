@@ -1,4 +1,4 @@
-/* $XConsortium: pexInfo.c,v 5.1 91/02/16 09:56:56 rws Exp $ */
+/* $XConsortium: pexInfo.c,v 5.2 92/03/04 14:16:15 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -183,17 +183,21 @@ pexEscapeReq	   	 	*strmPtr;
     pexEscapeSetEchoColourData *ptr;
     CARD8 *pcs;
 
-    ptr = (pexEscapeSetEchoColourData *)(strmPtr + 1);
-    pcs = (CARD8 *)(ptr+1); 
-
-    LU_RENDERER(ptr->rdr, prend);
 
     /* Support the one Registered Escape, Set Echo Color */
     switch (strmPtr->escapeID) {
 	case  PEXEscapeSetEchoColour: {
+	  ptr = (pexEscapeSetEchoColourData *)(strmPtr + 1);
+	  pcs = (CARD8 *)(ptr+1); 
+
+	  LU_RENDERER(ptr->rdr, prend);
 	  EXTRACT_COLOUR_SPECIFIER(prend->echoColour,pcs);
 	  break;
 	}
+
+	default: 
+	  err = BadValue;
+	  break;
     }
 
 
@@ -211,7 +215,7 @@ pexEscapeWithReplyReq	   	*strmPtr;
 {
     ErrorCode err = Success;
 
-    /* Do nothing here, Escape is not implemented in SI 
+    /* Do nothing here, Escape with Reply is not implemented in SI 
     */
 
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
