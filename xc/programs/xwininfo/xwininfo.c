@@ -45,7 +45,7 @@ main(argc, argv)
      char **argv;
 {
   register int i;
-  int tree, stats, bits, events, wm, size  = 0;
+  int tree = 0, stats = 0, bits = 0, events = 0, wm = 0, size  = 0;
 
   INIT_NAME;
 
