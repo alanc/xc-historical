@@ -1,4 +1,4 @@
-/* $XConsortium: wsb.c,v 5.2 91/04/05 17:29:49 hersh Exp $ */
+/* $XConsortium: wsb.c,v 5.3 91/07/12 20:26:27 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -346,7 +346,7 @@ wsb_init_resources( ws )
     CARD32		size, *rid_list;
     pexTableIndex	start;
     pexBitmask		pmask[PEXMSPipeline], rmask;
-    CARD16		*card16_p;
+    CARD32		*card32_p;
     pexReflectionAttr	*refl_attr, *bf_refl_attr;
     pexFloatColour	*spec_colr, *bf_spec_colr;
     pexViewport		*vp;
@@ -383,8 +383,8 @@ wsb_init_resources( ws )
     bf_spec_colr = (pexFloatColour *)(bf_refl_attr + 1);
     *bf_spec_colr = *spec_colr;
     PEX_BITSET(pmask,PEXPCCullingMode); size += sizeof(CARD32);
-    card16_p = (CARD16 *)(bf_spec_colr + 1);
-    *card16_p = 0;
+    card32_p = (CARD32 *)(bf_spec_colr + 1);
+    *card32_p = 0;
     (void)PEXChangePipelineContext( ws->display, ws->out_ws.model.b.pipeline,
 	pmask, size, (char *)ws->scratch.buf );
 
@@ -430,8 +430,7 @@ wsb_init_resources( ws )
     rmask |= PEXRDInvisibilityExcl; size += sizeof(CARD32);
 	*rid_list++ = ws->out_ws.nset.invis_excl;
     rmask |= PEXRDHlhsrMode; size += sizeof(CARD32);
-	card16_p = (CARD16 *)rid_list++;
-	*card16_p = (CARD16)PEX_CONV_PHIGS_HLHSR_MODE(PHIGS_HLHSR_MODE_NONE);
+	*rid_list++ = (CARD32)PEX_CONV_PHIGS_HLHSR_MODE(PHIGS_HLHSR_MODE_NONE);
     rmask |= PEXRDViewport; size += sizeof(pexViewport);
 	vp = (pexViewport *)rid_list++;
 	vp->minval.x = ws->out_ws.model.b.req_ws_viewport.x_min;

@@ -1,4 +1,4 @@
-/* $XConsortium: wsa.c,v 5.1 91/02/16 09:50:29 rws Exp $ */
+/* $XConsortium: wsa.c,v 5.2 91/04/05 17:30:41 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -154,7 +154,7 @@ init_view_table( ws )
     pexViewRep		pvr;
     pexViewRep		view_zero;
     CARD32		count;
-    pexTableIndex	*indices;
+    CARD32              *indices;
     pexBitmask		mask[PEXMSGetWksInfo];
     caddr_t		buf;
     Hash_table		htab;
@@ -199,7 +199,7 @@ init_view_table( ws )
 
     } else {
 	count = *(CARD32 *)buf;
-	indices = (pexTableIndex *)(buf + 4);
+	indices = (CARD32 *)(buf + 4);
 	for ( i = 0; i < count; i++ ) {
 	    if ( !phg_ut_htab_add_entry( ws->out_ws.htab.view, (int)indices[i],
 		    (caddr_t)NULL ) ) {

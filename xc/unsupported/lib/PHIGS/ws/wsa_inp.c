@@ -1,4 +1,4 @@
-/* $XConsortium: wsa_inp.c,v 5.1 91/02/16 09:50:37 rws Exp $ */
+/* $XConsortium: wsa_inp.c,v 5.2 91/04/05 17:27:23 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -193,7 +193,7 @@ phg_wsa_resolve_pick( ws, dev, dc_pt, status, depth, path )
     if ( !PEXGetPickMeasure( ws->display, dev->measure, mask[0], &buf ) )
 	return 0;	/* TODO: use phg_pex_errno */
 
-    *status = *((CARD16 *)buf);
+    *status = (CARD16) *((CARD32 *)buf);
     *depth = *((CARD32 *)(buf + sizeof(CARD32)));
     *path = (pexPickPath *)(buf + 2 * sizeof(CARD32));
 
@@ -220,27 +220,32 @@ phg_wsa_pick_enable( ws, dev, init_path_size, init_path )
 
     /* Set the device data and create a pick measure for this interaction. */
     mask |= PEXPDPickStatus;
-    card16_p = (CARD16 *)buf; buf += sizeof(CARD32);
-    *card16_p = dev->pick.status == PIN_STATUS_OK ? PEXOk : PEXNoPick;
+    card32_p = (CARD32 *)buf; 
+    *card32_p = dev->pick.status == PIN_STATUS_OK ? PEXOk : PEXNoPick;
+    buf += sizeof(CARD32);
 
     mask |= PEXPDPickPathOrder;
-    card16_p = (CARD16 *)buf; buf += sizeof(CARD32);
-    *card16_p = dev->order == PORDER_TOP_FIRST ? PEXTopFirst : PEXBottomFirst;
+    card32_p = (CARD32 *)buf; 
+    *card32_p = dev->order == PORDER_TOP_FIRST ? PEXTopFirst : PEXBottomFirst;
+    buf += sizeof(CARD32);
 
     mask |= PEXPDPickIncl;
-    xid_p = (XID *)buf; buf += sizeof(CARD32);
+    xid_p = (XID *)buf; 
     *xid_p = dev->filter.incl;
+    buf += sizeof(CARD32);
 
     mask |= PEXPDPickExcl;
-    xid_p = (XID *)buf; buf += sizeof(CARD32);
+    xid_p = (XID *)buf; 
     *xid_p = dev->filter.excl;
+    buf += sizeof(CARD32);
 
     mask |= PEXPDPickPromptEchoType;
-    int16_p = (INT16 *)buf; buf += sizeof(CARD32);
-    *int16_p = dev->pet;
+    card32_p = (CARD32 *)buf; 
+    *card32_p = (CARD32)dev->pet;
+    buf += sizeof(CARD32);
 
     mask |= PEXPDPickEchoVolume;
-    ev = (pexViewport *)buf; buf += sizeof(pexViewport);
+    ev = (pexViewport *)buf; 
     ev->minval.x = dev->e_volume.x_min;
     ev->minval.y = dev->e_volume.y_min;
     ev->minval.z = dev->e_volume.z_min;
@@ -248,10 +253,12 @@ phg_wsa_pick_enable( ws, dev, init_path_size, init_path )
     ev->maxval.y = dev->e_volume.y_max;
     ev->maxval.z = dev->e_volume.z_max;
     ev->useDrawable = 0;
+    buf += sizeof(pexViewport);
 
     mask |= PEXPDPickEchoSwitch;
-    card16_p = (CARD16 *)buf; buf += sizeof(CARD32);
-    *card16_p = dev->esw == PSWITCH_ECHO ? PEXEcho : PEXNoEcho;
+    card32_p = (CARD32 *)buf; 
+    *card32_p = dev->esw == PSWITCH_ECHO ? PEXEcho : PEXNoEcho;
+    buf += sizeof(CARD32);
 
     (void)PEXChangePickDevice( ws->display, ws->rid, dev->dev_type, mask,
 															(CARD32)sizeof(buffer), buffer );
