@@ -180,9 +180,9 @@ static void FreeGrab(pGrab)
       XtFree((char *)pGrab->modifiersDetail.pMask);
     
     if (pGrab->detail.pMask != NULL)
-      XtFree(pGrab->detail.pMask);
+      XtFree((XtPointer)pGrab->detail.pMask);
     
-    XtFree(pGrab);
+    XtFree((XtPointer)pGrab);
 }
 
 
@@ -693,7 +693,8 @@ static void  RealizeHandler (widget, pwi, event)
  * combination.
  */
 
-void  GrabKeyOrButton (widget, keyOrButton, modifiers, owner_events,
+static
+void GrabKeyOrButton (widget, keyOrButton, modifiers, owner_events,
 		       pointer_mode, keyboard_mode, event_mask,
 		       confine_to, cursor, isKeyboard)
     Widget	widget;
@@ -705,6 +706,7 @@ void  GrabKeyOrButton (widget, keyOrButton, modifiers, owner_events,
     Mask	event_mask;
     Window 	confine_to;
     Cursor 	cursor;
+    Boolean	isKeyboard;
 {
     XtServerGrabPtr	*passiveListPtr;
     XtServerGrabPtr 	newGrab, *nextPtr;
@@ -713,8 +715,9 @@ void  GrabKeyOrButton (widget, keyOrButton, modifiers, owner_events,
     
     
     if (!XtIsWidget(widget)){
-	XtWarningMsg("invalidWidget", "XtGrabKeyOrButton", "XtToolkitError",
-		     "widget to be grabbed must be a window object",
+	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+		     "invalidWidget", "grabKeyOrButton", "XtToolkitError",
+		     "Widget specified in grab is not a widget",
 		     (String *)NULL, (Cardinal *)NULL);
 	return;
     }
@@ -754,6 +757,7 @@ void  GrabKeyOrButton (widget, keyOrButton, modifiers, owner_events,
 }
 
 
+static
 void   UngrabKeyOrButton (widget, keyOrButton, modifiers, isKeyboard)
     Widget	widget;
     int		keyOrButton;
@@ -766,8 +770,9 @@ void   UngrabKeyOrButton (widget, keyOrButton, modifiers, isKeyboard)
     XtPerWidgetInput	pwi;
     
     if (!XtIsWidget(widget)){
-	XtWarningMsg("invalidWidget", "XtUngrabKeyOrButton", "XtToolkitError",
-		     "widget to be ungrabbed must be a window object",
+	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+		     "invalidWidget", "ungrabKeyOrButton", "XtToolkitError",
+		     "Widget specified in ungrab is not a widget",
 		     (String *)NULL, (Cardinal *)NULL);
 	return;
     }
@@ -796,8 +801,9 @@ void   UngrabKeyOrButton (widget, keyOrButton, modifiers, isKeyboard)
      */
     if (!pwi || !passiveListPtr)
       {
-	  XtWarningMsg("invalidGrab", "xtUngrabKeyOrButton", "XtToolkitError",
-		       "attempt to remove non-existant passive grab",
+	  XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+		       "invalidGrab", "ungrabKeyOrButton", "XtToolkitError",
+		       "Attempt to remove non-existant passive grab",
 		       (String *)NULL, (Cardinal *)NULL);
 	  return;
       }
@@ -899,7 +905,10 @@ static int GrabDevice (widget, owner_events,
     int			returnVal;
     
     if (!XtIsWidget(widget) || !XtIsRealized(widget))
-      XtError("grab widget must be a realized window object");
+      XtAppErrorMsg(XtWidgetToApplicationContext(widget),
+		    "invalidWidget", "grabDevice", "XtToolkitError",
+		    "Grab widget must be a realized widget",
+		    (String*)NULL, (Cardinal*)NULL);
     
     pdi = _XtGetPerDisplayInput(XtDisplay(widget));
     
@@ -946,8 +955,11 @@ static void   UngrabDevice(widget, time, isKeyboard)
     XtDevice		device = isKeyboard ? &pdi->keyboard : &pdi->pointer;
 
     if (!XtIsWidget(widget) || !XtIsRealized(widget))
-      XtWarning("grab widget must be a realized window object");
-    
+      XtAppErrorMsg(XtWidgetToApplicationContext(widget),
+		    "invalidWidget", "ungrabDevice", "XtToolkitError",
+		    "Grab widget must be a realized widget",
+		    (String*)NULL, (Cardinal*)NULL);
+     
     if (device->grabType != XtNoServerGrab)
       {
 	  if (device->grabType != XtPseudoPassiveServerGrab)
