@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.87 89/11/08 17:16:21 keith Exp $ */
+/* $XConsortium: utils.c,v 1.89 89/12/13 09:08:48 rws Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -93,15 +93,6 @@ GiveUp()
 }
 
 
-/*VARARGS1*/
-void
-ErrorF( f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
-    char *f;
-    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
-{
-    fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-}
-
 static void
 AbortServer()
 {
@@ -117,19 +108,6 @@ Error(str)
     char *str;
 {
     perror(str);
-}
-
-/*VARARGS1*/
-void
-FatalError(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
-    char *f;
-    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
-{
-    ErrorF("\nFatal server bug!\n");
-    ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-    ErrorF("\n");
-    AbortServer();
-    /*NOTREACHED*/
 }
 
 #if defined (UTEK) || defined (UTEKV)
@@ -689,3 +667,25 @@ DumpMemorySince ()
 }
 #endif
 #endif /* SPECIAL_MALLOC */
+
+/*VARARGS1*/
+void
+FatalError(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
+    char *f;
+    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
+{
+    ErrorF("\nFatal server bug!\n");
+    ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
+    ErrorF("\n");
+    AbortServer();
+    /*NOTREACHED*/
+}
+
+/*VARARGS1*/
+void
+ErrorF( f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
+    char *f;
+    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
+{
+    fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
+}
