@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mizerline.c,v 5.0 89/06/09 15:08:54 keith Exp $ */
+/* $XConsortium: mizerline.c,v 5.1 89/07/28 16:23:13 rws Exp $ */
 #include "X.h"
 
 #include "misc.h"
@@ -262,3 +262,16 @@ DDXPointRec *pptInit;	/* points in the polyline */
 	(*pgc->ops->FillSpans)(dst, pgc, 1, ppt, &width, TRUE);
     }
 } 
+
+miZeroDashLine(dst, pgc, mode, nptInit, pptInit)
+DrawablePtr dst;
+GCPtr pgc;
+int mode;
+int nptInit;		/* number of points in polyline */
+DDXPointRec *pptInit;	/* points in the polyline */
+{
+    /* XXX kludge until real zero-width dash code is written */
+    pgc->lineWidth = 1;
+    miWideDash (dst, pgc, mode, nptInit, pptInit);
+    pgc->lineWidth = 0;
+}

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.16 89/11/04 13:05:42 keith Exp $
+ * $XConsortium: miwideline.c,v 1.17 89/11/05 15:19:25 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1446,6 +1446,12 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
     SpanDataRec	    spanDataRec;
     SpanDataPtr	    spanData;
 
+    /* XXX backward compatibility */
+    if (pGC->lineWidth == 0)
+    {
+	miZeroDashLine (pDrawable, pGC, mode, npt, pPts);
+	return;
+    }
     if (npt == 0)
 	return;
     spanData = miSetupSpanData (pGC, &spanDataRec, npt);
