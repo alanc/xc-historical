@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: pick.c,v 1.13 88/01/18 13:17:21 swick Exp $";
+static char rcs_id[] = "$Header: pick.c,v 1.14 88/01/19 14:39:07 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -714,7 +714,7 @@ int position;
     static Arg arglist1[] = {
 	{XtNallowHoriz, (XtArgVal)TRUE},
 	{XtNallowVert, (XtArgVal)TRUE},
-	{XtNallowResize, (XtArgVal)TRUE},
+/* %%%	{XtNallowResize, (XtArgVal)TRUE}, */
 	{XtNmin, 50},
 	{XtNmax, 1500}
     };
@@ -723,14 +723,11 @@ int position;
     };
     FormBox result;
     result = (FormBox) XtMalloc(sizeof(FormBoxRec));
-/*    result->outer = XtScrolledWidgetCreate(pick->scrn->widget, */
-    result->outer = XtCreateManagedWidget( "pick", buttonBoxWidgetClass,
+    result->outer = XtCreateManagedWidget( "pick", viewportWidgetClass,
 					   pick->scrn->widget,
 					   arglist1, XtNumber(arglist1) );
-/*    result->inner = XtFormCreate(XtScrolledWidgetGetFrame(result->outer), */
     result->inner = XtCreateManagedWidget(NULL, formWidgetClass, result->outer,
 					  arglist2, XtNumber(arglist2));
-/*    XtScrolledWidgetSetChild(result->outer, result->inner); */
     result->pick = pick;
     result->numgroups = 0;
     result->glist = (Group *) XtMalloc(1);
