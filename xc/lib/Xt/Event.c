@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.134 91/08/26 14:20:42 swick Exp $ */
+/* $XConsortium: Event.c,v 1.135 91/10/25 13:19:23 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -510,7 +510,7 @@ void _XtFreeWWTable(pd)
 
 #define EHMAXSIZE 25 /* do not make whopping big */
 
-static void CallEventHandlers(widget, event, mask)
+static Boolean CallEventHandlers(widget, event, mask)
     Widget     widget;
     XEvent    *event;
     EventMask  mask;
@@ -551,6 +551,7 @@ static void CallEventHandlers(widget, event, mask)
 	(*(proc[i]))(widget, closure[i], event, &cont_to_disp);
     if (numprocs > EHMAXSIZE)
 	XtFree((char *)proc);
+    return cont_to_disp;
 }
 
 static Region nullRegion;
@@ -574,6 +575,7 @@ static Boolean DispatchEvent(event, widget, mask, pd)
     XEvent nextEvent;
     Boolean was_dispatched = XtDidNothing;
     Boolean call_tm = XtDidNothing;
+    Boolean cont_to_disp;
 
     if (XFilterEvent(event, XtWindow(widget)))
 	return XtDidFilter;
@@ -652,6 +654,8 @@ static Boolean DispatchEvent(event, widget, mask, pd)
     if (widget->core.tm.translations &&
 	(mask & widget->core.tm.translations->eventMask))
 	call_tm = XtDidDispatch;
+
+    cont_to_disp = True;
     p=widget->core.event_table;
     if (p) {
 	if (p->next) {
@@ -673,22 +677,20 @@ static Boolean DispatchEvent(event, widget, mask, pd)
 	    }
 	    if (numprocs) {
 		if (p) {
-		    CallEventHandlers(widget, event, mask);
+		    cont_to_disp = CallEventHandlers(widget, event, mask);
 		} else {
 		    int i;
-		    Boolean cont_to_disp = True;
 		    for (i = 0; i < numprocs && cont_to_disp; i++)
 			(*(proc[i]))(widget, closure[i], event, &cont_to_disp);
 		}
 		was_dispatched = XtDidDispatch;
 	    }
 	} else if (mask & p->mask) {
-	    was_dispatched = XtDidDispatch;
-	    (*p->proc)(widget, p->closure, event, &was_dispatched);
+	    (*p->proc)(widget, p->closure, event, &cont_to_disp);
 	    was_dispatched = XtDidDispatch;
 	}
     }
-    if (call_tm)
+    if (call_tm && cont_to_disp)
 	_XtTranslateEvent(widget, event);
     return (was_dispatched|call_tm);
 }
