@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.32 94/01/12 18:04:55 dpw Exp $ */
+/* $XConsortium: mfbgc.c,v 5.33 94/01/21 22:02:13 dpw Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -610,7 +610,7 @@ mfbValidateGC(pGC, changes, pDrawable)
 	/* destroy any previously rotated tile or stipple */
 	if (!new_pix && devPriv->pRotatedPixmap)
 	{
-	    mfbDestroyPixmap(devPriv->pRotatedPixmap);
+	    (*pDrawable->pScreen->DestroyPixmap)(devPriv->pRotatedPixmap);
 	    devPriv->pRotatedPixmap = (PixmapPtr)NULL;
 	}
     }
