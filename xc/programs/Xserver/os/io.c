@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.85 94/03/22 10:16:43 dpw Exp $ */
+/* $XConsortium: io.c,v 1.86 94/03/27 13:06:32 dpw Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -60,7 +60,7 @@ extern int errno;
 #endif
 #endif
 
-extern FdSet ClientsWithInput;
+extern FdSet ClientsWithInput, IgnoredClientsWithInput, AllClients;
 extern FdSet ClientsWriteBlocked;
 extern FdSet OutputPending;
 extern int ConnectionTranslation[];
@@ -769,7 +769,14 @@ ResetCurrentRequest(client)
     request = (xReq *)oci->bufptr;
     if (gotnow >= RequestLength (request, client, gotnow, &part) && !part)
     {
-	BITSET(ClientsWithInput, fd);
+	if (GETBIT(AllClients, fd))
+	{
+	    BITSET(ClientsWithInput, fd);
+	}
+	else
+	{
+	    BITSET(IgnoredClientsWithInput, fd);
+	}
 	YieldControl();
     }
     else
@@ -798,7 +805,14 @@ ResetCurrentRequest(client)
 #endif
 	if (gotnow >= (needed << 2))
 	{
-	    BITSET(ClientsWithInput, fd);
+	    if (GETBIT(AllClients, fd))
+	    {
+		BITSET(ClientsWithInput, fd);
+	    }
+	    else
+	    {
+		BITSET(IgnoredClientsWithInput, fd);
+	    }
 	    YieldControl();
 	}
 	else
