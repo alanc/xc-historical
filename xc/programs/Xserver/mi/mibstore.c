@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.14 89/07/14 17:14:14 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.15 89/07/16 21:00:17 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -128,7 +128,8 @@ static Bool	    miBSCreateGCPrivate();
  * wrappers for screen funcs
  */
 
-static int  miBSScreenIndex = -1;
+static int  miBSScreenIndex;
+static unsigned long miBSGeneration = 0;
 
 static Bool	    miBSCloseScreen();
 static void	    miBSGetImage();
@@ -150,7 +151,7 @@ static void	    miBSClearBackingStore(),	miBSDrawGuarantee();
  * wrapper vectors for GC funcs and ops
  */
 
-static int  miBSGCIndex = -1;
+static int  miBSGCIndex;
 
 static void miBSValidateGC (),	miBSCopyGC (),	    miBSDestroyGC();
 static void miBSChangeGC();
@@ -233,21 +234,18 @@ miInitializeBackingStore (pScreen, funcs)
 {
     miBSScreenPtr    pScreenPriv;
 
+    if (miBSGeneration != serverGeneration)
+    {
+	miBSScreenIndex = AllocateScreenPrivateIndex ();
+	if (miBSScreenIndex < 0)
+	    return;
+	miBSGCIndex = AllocateGCPrivateIndex ();
+	miBSGeneration = serverGeneration;
+    }
     pScreenPriv = (miBSScreenPtr) xalloc (sizeof (miBSScreenRec));
     if (!pScreenPriv)
 	return;
 
-    if (miBSScreenIndex == -1)
-    {
-	miBSScreenIndex = AllocateScreenPrivateIndex ();
-	if (miBSScreenIndex == -1)
-	{
-	    xfree ((pointer) pScreenPriv);
-	    return;
-	}
-    }
-    if (miBSGCIndex == -1)
-	miBSGCIndex = AllocateGCPrivateIndex ();
     pScreenPriv->CloseScreen = pScreen->CloseScreen;
     pScreenPriv->GetImage = pScreen->GetImage;
     pScreenPriv->GetSpans = pScreen->GetSpans;

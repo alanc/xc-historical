@@ -2,7 +2,7 @@
  * mipointer.c
  */
 
-/* $XConsortium: mipointer.c,v 5.4 89/07/09 15:55:08 rws Exp $ */
+/* $XConsortium: mipointer.c,v 5.5 89/07/10 14:55:45 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -30,7 +30,8 @@ purpose.  It is provided "as is" without express or implied warranty.
 # include   "mipointrst.h"
 # include   "cursorstr.h"
 
-static int  miPointerScreenIndex = -1;
+static int  miPointerScreenIndex;
+static unsigned long miPointerGeneration = 0;
 
 /*
  * until more than one pointer device exists.
@@ -60,11 +61,12 @@ miPointerInitialize (pScreen, spriteFuncs, cursorFuncs)
 {
     miPointerScreenPtr	pScreenPriv;
 
-    if (miPointerScreenIndex == -1)
+    if (miPointerGeneration != serverGeneration)
     {
 	miPointerScreenIndex = AllocateScreenPrivateIndex();
-	if (miPointerScreenIndex == -1)
+	if (miPointerScreenIndex < 0)
 	    return FALSE;
+	miPointerGeneration = serverGeneration;
     }
     pScreenPriv = (miPointerScreenPtr) xalloc (sizeof (miPointerScreenRec));
     if (!pScreenPriv)

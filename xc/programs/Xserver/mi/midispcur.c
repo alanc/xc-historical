@@ -4,7 +4,7 @@
  * machine independent cursor display routines
  */
 
-/* $XConsortium: midispcur.c,v 5.4 89/07/09 15:54:46 rws Exp $ */
+/* $XConsortium: midispcur.c,v 5.5 89/07/13 20:23:42 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -38,7 +38,8 @@ extern WindowPtr    *WindowTable;
 
 /* per-screen private data */
 
-static int	miDCScreenIndex = -1;
+static int	miDCScreenIndex;
+static unsigned long miDCGeneration = 0;
 
 static Bool	miDCCloseScreen();
 
@@ -81,11 +82,12 @@ miDCInitialize (pScreen, cursorFuncs)
 {
     miDCScreenPtr   pScreenPriv;
 
-    if (miDCScreenIndex == -1)
+    if (miDCGeneration != serverGeneration)
     {
 	miDCScreenIndex = AllocateScreenPrivateIndex ();
-	if (miDCScreenIndex == -1)
+	if (miDCScreenIndex < 0)
 	    return FALSE;
+	miDCGeneration = serverGeneration;
     }
     pScreenPriv = (miDCScreenPtr) xalloc (sizeof (miDCScreenRec));
     if (!pScreenPriv)

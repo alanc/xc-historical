@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbscrinit.c,v 5.4 89/07/12 17:17:53 keith Exp $ */
+/* $XConsortium: mfbscrinit.c,v 5.5 89/07/16 17:25:19 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -39,7 +39,21 @@ SOFTWARE.
 
 extern RegionPtr mfbPixmapToRegion();
 
-int mfbWindowPrivateIndex = -1, mfbGCPrivateIndex = -1;
+int mfbWindowPrivateIndex;
+int mfbGCPrivateIndex;
+static unsigned long mfbGeneration = 0;
+
+static VisualRec visual = {
+/* vid  class       bpRGB cmpE nplan rMask gMask bMask oRed oGreen oBlue */
+   0,   StaticGray, 1,    2,   1,    0,    0,    0,    0,   0,     0
+};
+
+static VisualID VID;
+
+static DepthRec depth = {
+/* depth	numVid		vids */
+    1,		1,		&VID
+};
 
 miBSFuncRec mfbBSFuncRec = {
     mfbSaveAreas,
@@ -49,44 +63,54 @@ miBSFuncRec mfbBSFuncRec = {
     (PixmapPtr (*)()) 0,
 };
 
+Bool
+mfbAllocatePrivates(pScreen, pWinIndex, pGCIndex)
+    ScreenPtr pScreen;
+    int *pWinIndex, *pGCIndex;
+{
+    if (mfbGeneration != serverGeneration)
+    {
+	mfbWindowPrivateIndex = AllocateWindowPrivateIndex();
+	mfbGCPrivateIndex = AllocateGCPrivateIndex();
+	visual.vid = FakeClientID(0);
+	VID = visual.vid;
+	mfbGeneration = serverGeneration;
+	if (pWinIndex)
+	    *pWinIndex = mfbWindowPrivateIndex;
+	if (pGCIndex)
+	    *pGCIndex = mfbGCPrivateIndex;
+    }
+    return (AllocateWindowPrivate(pScreen, mfbWindowPrivateIndex,
+				  sizeof(mfbPrivWin)) &&
+	    AllocateGCPrivate(pScreen, mfbGCPrivateIndex, sizeof(mfbPrivGC)));
+}
+
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
 Bool
-mfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy, width)
-    int index;
+mfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     register ScreenPtr pScreen;
     pointer pbits;		/* pointer to screen bitmap */
     int xsize, ysize;		/* in pixels */
     int dpix, dpiy;		/* dots per inch */
     int width;			/* pixel width of frame buffer */
 {
-    DepthPtr	pDepth;
-    VisualPtr	pVisual;
-    VisualID	*pVids;
     register PixmapPtr pPixmap;
 
-    pDepth = (DepthPtr)xalloc(sizeof(DepthRec));
-    pVisual = (VisualPtr)xalloc(sizeof (VisualRec));
-    pPixmap = (PixmapPtr)xalloc(sizeof(PixmapRec));
-    pVids = (VisualID *)xalloc(sizeof (VisualID));
-    if (!pDepth || !pVisual || !pPixmap || !pVids)
-    {
-	xfree(pDepth);
-	xfree(pVisual);
-	xfree(pPixmap);
-	xfree(pVids);
+    if 	(!mfbAllocatePrivates(pScreen, (int *)NULL, (int *)NULL))
 	return FALSE;
-    }
+    pPixmap = (PixmapPtr)xalloc(sizeof(PixmapRec));
+    if (!pPixmap)
+	return FALSE;
 
-    pScreen->myNum = index;
     pScreen->width = xsize;
     pScreen->height = ysize;
     pScreen->mmWidth = (xsize * 254) / (dpix * 10);
     pScreen->mmHeight = (ysize * 254) / (dpiy * 10);
     pScreen->numDepths = 1;
-    pScreen->allowedDepths = pDepth;
+    pScreen->allowedDepths = &depth;
 
     pScreen->rootDepth = 1;
-    pScreen->rootVisual = FakeClientID(0);
+    pScreen->rootVisual = VID;
     pScreen->defColormap = (Colormap) FakeClientID(0);
     pScreen->minInstalledCmaps = 1;
     pScreen->maxInstalledCmaps = 1;
@@ -98,7 +122,7 @@ mfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     /* cursmin and cursmax are device specific */
 
     pScreen->numVisuals = 1;
-    pScreen->visuals = pVisual;
+    pScreen->visuals = &visual;
 
     pPixmap->drawable.type = DRAWABLE_PIXMAP;
     pPixmap->drawable.depth = 1;
@@ -175,24 +199,6 @@ mfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->WakeupHandler = NoopDDA;
     pScreen->blockData = (pointer)NULL;
     pScreen->wakeupData = (pointer)NULL;
-
-    pVisual->vid = pScreen->rootVisual;
-    pVisual->screen = index;
-    pVisual->class = StaticGray;
-    pVisual->redMask = 0;
-    pVisual->greenMask = 0;
-    pVisual->blueMask = 0;
-    pVisual->bitsPerRGBValue = 1;
-    pVisual->ColormapEntries = 2;
-
-    pDepth->depth = 1;
-    pDepth->numVids = 1;
-    pDepth->vids = pVids;
-    pVids[0] = pScreen->rootVisual;	/* our one and only visual */
-    if (mfbGCPrivateIndex == -1)
-	mfbGCPrivateIndex = AllocateGCPrivateIndex ();
-    if (mfbWindowPrivateIndex == -1)
-	mfbWindowPrivateIndex = AllocateWindowPrivateIndex ();
 
     miInitializeBackingStore (pScreen, &mfbBSFuncRec);
     return TRUE;

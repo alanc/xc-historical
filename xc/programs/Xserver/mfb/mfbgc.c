@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.3 89/07/09 15:56:27 rws Exp $ */
+/* $XConsortium: mfbgc.c,v 5.4 89/07/17 10:22:59 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -326,19 +326,13 @@ mfbCreateGC(pGC)
     /* mfb wants to translate before scan convesion */
     pGC->miTranslate = 1;
 
-    pPriv = (mfbPrivGC *)xalloc(sizeof(mfbPrivGC));
-    if (!pPriv)
-	return FALSE;
-    else
-    {
-	pPriv->rop = mfbReduceRop(pGC->alu, pGC->fgPixel);
-	pPriv->fExpose = TRUE;
-	pGC->devPrivates[mfbGCPrivateIndex].ptr = (pointer)pPriv;
-	pPriv->pRotatedTile = NullPixmap;
-	pPriv->pRotatedStipple = NullPixmap;
-	pPriv->freeCompClip = FALSE;
-	pPriv->FillArea = mfbSolidInvertArea;
-    }
+    pPriv = (mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr);
+    pPriv->rop = mfbReduceRop(pGC->alu, pGC->fgPixel);
+    pPriv->fExpose = TRUE;
+    pPriv->pRotatedTile = NullPixmap;
+    pPriv->pRotatedStipple = NullPixmap;
+    pPriv->freeCompClip = FALSE;
+    pPriv->FillArea = mfbSolidInvertArea;
     return TRUE;
 }
 
@@ -389,7 +383,6 @@ mfbDestroyGC(pGC)
 	mfbDestroyPixmap(pPriv->pRotatedStipple);
     if (pPriv->freeCompClip)
 	(*pGC->pScreen->RegionDestroy)(pPriv->pCompositeClip);
-    xfree(pGC->devPrivates[mfbGCPrivateIndex].ptr);
     mfbDestroyOps (pGC->ops);
 }
 

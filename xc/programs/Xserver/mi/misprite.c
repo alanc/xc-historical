@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.11 89/07/16 21:03:17 keith Exp $ */
+/* $XConsortium: misprite.c,v 5.12 89/07/17 10:54:03 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -41,7 +41,8 @@ purpose.  It is provided "as is" without express or implied warranty.
  * screen wrappers
  */
 
-static int  miSpriteScreenIndex = -1;
+static int  miSpriteScreenIndex;
+static unsigned long miSpriteGeneration = 0;
 
 static Bool	    miSpriteCloseScreen();
 static void	    miSpriteGetImage();
@@ -70,7 +71,7 @@ static RegionPtr    miSpriteRestoreAreas();
  * GC func wrappers
  */
 
-static int  miSpriteGCIndex = -1;
+static int  miSpriteGCIndex;
 
 static void miSpriteValidateGC (),  miSpriteCopyGC ();
 static void miSpriteDestroyGC(),    miSpriteChangeGC();
@@ -203,14 +204,16 @@ miSpriteInitialize (pScreen, spriteFuncs, pointerFuncs)
     VisualPtr		pVisual;
     int			i;
     
-    if (miSpriteScreenIndex == -1)
+    if (miSpriteGeneration != serverGeneration)
     {
 	miSpriteScreenIndex = AllocateScreenPrivateIndex ();
-	if (miSpriteScreenIndex == -1)
+	if (miSpriteScreenIndex < 0)
 	    return FALSE;
-    }
-    if (miSpriteGCIndex == -1)
+	miSpriteGeneration = serverGeneration;
 	miSpriteGCIndex = AllocateGCPrivateIndex ();
+    }
+    if (!AllocateGCPrivate(pScreen, miSpriteGCIndex, sizeof(miSpriteGCRec)))
+	return FALSE;
     pPriv = (miSpriteScreenPtr) xalloc (sizeof (miSpriteScreenRec));
     if (!pPriv)
 	return FALSE;
@@ -390,15 +393,13 @@ miSpriteCreateGC (pGC)
 
     SCREEN_PROLOGUE (pScreen, CreateGC);
     
-    pPriv = (miSpriteGCPtr) xalloc (sizeof (miSpriteGCRec));
-    if (pPriv && (*pScreen->CreateGC) (pGC))
-    {
-	pPriv->wrapOps = NULL;
-	pPriv->wrapFuncs = pGC->funcs;
-    	pGC->devPrivates[miSpriteGCIndex].ptr = (pointer) pPriv;
-    	pGC->funcs = &miSpriteGCFuncs;
-	ret = TRUE;
-    }
+    pPriv = (miSpriteGCPtr)pGC->devPrivates[miSpriteGCIndex].ptr;
+
+    ret = (*pScreen->CreateGC) (pGC);
+
+    pPriv->wrapOps = NULL;
+    pPriv->wrapFuncs = pGC->funcs;
+    pGC->funcs = &miSpriteGCFuncs;
 
     SCREEN_EPILOGUE (pScreen, CreateGC, miSpriteCreateGC);
 
@@ -783,8 +784,6 @@ miSpriteDestroyGC (pGC)
     (*pGC->funcs->DestroyGC) (pGC);
     
     GC_FUNC_EPILOGUE (pGC);
-
-    xfree ((pointer) pGCPriv);
 }
 
 static void
