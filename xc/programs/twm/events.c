@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.153 90/04/13 13:34:42 jim Exp $
+ * $XConsortium: events.c,v 1.154 90/04/13 13:36:08 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.153 90/04/13 13:34:42 jim Exp $";
+"$XConsortium: events.c,v 1.154 90/04/13 13:36:08 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -758,9 +758,10 @@ HandlePropertyNotify()
 		 * Now, if the old window isn't ours, unmap it, otherwise
 		 * just get rid of it completely.
 		 */
-		if (Tmp_win->icon_not_ours)
-		    XUnmapWindow(dpy, Tmp_win->icon_w);
-		else
+		if (Tmp_win->icon_not_ours) {
+		    if (Tmp_win->icon_w != Tmp_win->wmhints->icon_window)
+			XUnmapWindow(dpy, Tmp_win->icon_w);
+		} else
 		    XDestroyWindow(dpy, Tmp_win->icon_w);
 
 		/*
