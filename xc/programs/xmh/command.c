@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: command.c,v 2.21 89/06/01 15:10:49 kit Exp $";
+static char rcs_id[] = "$XConsortium: command.c,v 2.22 89/06/05 08:25:11 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -36,6 +36,9 @@ static char rcs_id[] = "$XConsortium: command.c,v 2.21 89/06/01 15:10:49 kit Exp
 #endif	/* SYSV */
 #include <sys/resource.h>
 
+/* number of user input events to queue before malloc */
+#define TYPEAHEADSIZE 20
+
 #ifdef macII
 #define vfork() fork()
 #endif /* macII */
@@ -59,11 +62,14 @@ typedef struct _CommandStatus {
     Widget	popup;		 /* must be first; see PopupStatus */
     struct _LastInput lastInput; /* must be second; ditto */
     int		child_pid;
+    XtInputId	output_inputId;
     XtInputId	error_inputId;
     int		output_pipe[2];
     int		error_pipe[2];
-    char*	error_output;
-    int		buf_size;
+    char*	output_buffer;
+    int		output_buf_size;
+    char*	error_buffer;
+    int		error_buf_size;
 } CommandStatusRec, *CommandStatus;
 
 typedef char* Pointer;
@@ -89,6 +95,26 @@ static char *FullPathOfCommand(str)
     static char result[100];
     (void) sprintf(result, "%s/%s", app_resources.defMhPath, str);
     return result;
+}
+
+
+static void ReadStdout(closure, fd, id)
+    caddr_t closure;
+    int *fd;
+    XtInputId *id;
+{
+    register CommandStatus status = (CommandStatus)closure;
+    CheckReadFromPipe(*fd, &status->output_buffer, &status->output_buf_size);
+}
+
+
+static void ReadStderr(closure, fd, id)
+    caddr_t closure;
+    int *fd;
+    XtInputId *id;
+{
+    register CommandStatus status = (CommandStatus)closure;
+    CheckReadFromPipe(*fd, &status->error_buffer, &status->error_buf_size);
 }
 
 
@@ -144,12 +170,12 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
 	    old_stdout = dup(fileno(stdout));
 	    (void) dup2(status->output_pipe[1], fileno(stdout));
 	    FD_SET(status->output_pipe[0], &fds);
-#ifdef notdef
 	    status->output_inputId =
-		XtAddInput( output_pipe[0], (caddr_t)XtInputReadMask,
+		XtAddInput( status->output_pipe[0], (caddr_t)XtInputReadMask,
 			    ReadStdout, (caddr_t)status
 			   );
-#endif /*notdef*/
+	    status->output_buffer = NULL;
+	    status->output_buf_size = 0;
 	    output_to_pipe = True;
 	}
     }
@@ -166,19 +192,17 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
 	old_stderr = dup(fileno(stderr));
 	(void) dup2(status->error_pipe[1], fileno(stderr));
 	FD_SET(status->error_pipe[0], &fds);
-#ifdef notdef
 	status->error_inputId =
-	    XtAddInput( err_pipe[0], (caddr_t)XtInputReadMask,
+	    XtAddInput( status->error_pipe[0], (caddr_t)XtInputReadMask,
 		        ReadStderr, (caddr_t)status
 		       );
-#endif /*notdef*/
     }
 
     childdone = FALSE;
     status->popup = (Widget)NULL;
     status->lastInput = lastInput;
-    status->error_output = NULL;
-    status->buf_size = 0;
+    status->error_buffer = NULL;
+    status->error_buf_size = 0;
     (void) signal(SIGCHLD, ChildDone);
     pid = vfork();
     if (inputfd != -1) {
@@ -196,35 +220,86 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
 
     if (pid == -1) Punt("Couldn't fork!");
     if (pid) {			/* We're the parent process. */
-	int num_fds = (ConnectionNumber(theDisplay) < status->error_pipe[0])
-	    ? status->error_pipe[0]+1 : ConnectionNumber(theDisplay)+1;
+	XEvent typeAheadQueue[TYPEAHEADSIZE], *eventP = typeAheadQueue;
+	XEvent *altQueue = NULL;
+	int type_ahead_count = 0, alt_queue_size = 0, alt_queue_count = 0;
+	XtAppContext app = XtWidgetToApplicationContext(toplevel);
+	int num_fds = ConnectionNumber(theDisplay)+1;
+	if (status->output_pipe[0] >= num_fds)
+	    num_fds = status->output_pipe[0]+1;
+	if (status->error_pipe[0] >= num_fds)
+	    num_fds = status->error_pipe[0]+1;
 	status->child_pid = pid;
 	DEBUG1( " pid=%d", pid )
 	while (!childdone) {
-	    XEvent event;
-	    while (XCheckTypedEvent( theDisplay, Expose, &event )) {
-		XtDispatchEvent( &event );
-	    }
-	    readfds = fds;
-	    (void) select(num_fds, (int *) &readfds,
+	    while (!(XtAppPending(app) & XtIMXEvent)) {
+		/* this is gross, but the only other way is by
+		 * polling on timers or an extra pipe, since we're not
+		 * guaranteed to be able to malloc in a signal handler.
+		 */
+		readfds = fds;
+		(void) select(num_fds, (int *) &readfds,
 			  (int *) NULL, (int *) NULL, (struct timeval *) NULL);
-	    if (output_to_pipe && FD_ISSET(status->output_pipe[0], &readfds)) {
-		CheckReadFromPipe( status->output_pipe[0], bufP, lenP );
+		if (childdone) break;
+		if (!FD_ISSET(ConnectionNumber(theDisplay), &readfds))
+		    XtProcessEvent(XtIMAlternateInput);
 	    }
-	    if (FD_ISSET(status->error_pipe[0], &readfds)) {
-		CheckReadFromPipe( status->error_pipe[0],
-				   &status->error_output,
-				   &status->buf_size
-				  );
+	    if (childdone) break;
+	    XtAppNextEvent(app, eventP);
+	    switch(eventP->type) {
+	      case LeaveNotify:
+		if (type_ahead_count) {
+		    /* do compress_enterleave here to save memory */
+		    XEvent *prevEvent;
+		    if (alt_queue_size && (alt_queue_count == 0))
+			prevEvent = &typeAheadQueue[type_ahead_count-1];
+		    else
+			prevEvent = eventP - 1;
+		    if (prevEvent->type == EnterNotify
+		      && prevEvent->xany.display == eventP->xany.display
+		      && prevEvent->xany.window == eventP->xany.window) {
+			eventP = prevEvent;
+			if (alt_queue_count > 0)
+			    alt_queue_count--;
+			else
+			    type_ahead_count--;
+			break;
+		    }
+		}
+		/* fall through */
+	      case KeyPress:
+	      case KeyRelease:
+	      case EnterNotify:
+	      case ButtonPress:
+	      case ButtonRelease:
+	      case MotionNotify:
+		if (type_ahead_count < TYPEAHEADSIZE) {
+		    if (++type_ahead_count == TYPEAHEADSIZE) {
+			altQueue = (XEvent*)XtMalloc(
+				(Cardinal)TYPEAHEADSIZE*sizeof(XEvent) );     
+			alt_queue_size = TYPEAHEADSIZE;
+			eventP = altQueue;
+		    }
+		    else
+			eventP++;
+		}
+		else {
+		    if (++alt_queue_count == alt_queue_size) {
+			alt_queue_size += TYPEAHEADSIZE;
+			altQueue = (XEvent*)XtRealloc(
+				(char*)altQueue,
+				(Cardinal)alt_queue_size*sizeof(XEvent) );
+			eventP = &altQueue[alt_queue_count];
+		    }
+		    else
+			eventP++;
+		}
+		break;
+
+	      default:
+		XtDispatchEvent(eventP);
 	    }
 	}
-	if (output_to_pipe && FD_ISSET(status->output_pipe[0], &readfds)) {
-	    CheckReadFromPipe( status->output_pipe[0], bufP, lenP );
-	}
-	CheckReadFromPipe( status->error_pipe[0],
-			   &status->error_output,
-			   &status->buf_size
-			  );
 #ifdef SYSV
 	(void) wait((int *) NULL);
 #else /* !SYSV */
@@ -233,25 +308,46 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
 
 	DEBUG(" done\n")
 	if (output_to_pipe) {
+	    CheckReadFromPipe( status->output_pipe[0],
+			       &status->output_buffer,
+			       &status->output_buf_size
+			      );
+	    *bufP = status->output_buffer;
+	    *lenP = status->output_buf_size;
 	    close( status->output_pipe[0] );
 	    close( status->output_pipe[1] );
+	    XtRemoveInput( status->output_inputId );
 	}
 	if (status->error_pipe[0]) {
+	    CheckReadFromPipe( status->error_pipe[0],
+			       &status->error_buffer,
+			       &status->error_buf_size
+			      );
 	    close( status->error_pipe[0] );
 	    close( status->error_pipe[1] );
+	    XtRemoveInput( status->error_inputId );
 	}
-	if (status->error_output != NULL) {
-	    while (status->error_output[status->buf_size-1]  == '\0')
-		status->buf_size--;
-	    while (status->error_output[status->buf_size-1]  == '\n')
-		status->error_output[--status->buf_size] = '\0';
-	    DEBUG1( "stderr = \"%s\"\n", status->error_output );
-	    PopupNotice( status->error_output, FreeStatus, (Pointer)status );
+	if (status->error_buffer != NULL) {
+	    while (status->error_buffer[status->error_buf_size-1]  == '\0')
+		status->error_buf_size--;
+	    while (status->error_buffer[status->error_buf_size-1]  == '\n')
+		status->error_buffer[--status->error_buf_size] = '\0';
+	    DEBUG1( "stderr = \"%s\"\n", status->error_buffer );
+	    PopupNotice( status->error_buffer, FreeStatus, (Pointer)status );
 	    return_status = -1;
 	}
 	else {
-	    FreeStatus( (Widget)NULL, (Pointer)status, (Pointer)NULL );
+	    XtFree( (Pointer)status );
 	    return_status = 0;
+	}
+	for (;alt_queue_count;alt_queue_count--) {
+	    XPutBackEvent(theDisplay, --eventP);
+	}
+	if (type_ahead_count) {
+	    if (alt_queue_size) eventP = &typeAheadQueue[type_ahead_count];
+	    for (;type_ahead_count;type_ahead_count--) {
+		XPutBackEvent(theDisplay, --eventP);
+	    }
 	}
     } else {			/* We're the child process. */
 	(void) execv(FullPathOfCommand(argv[0]), argv);
@@ -301,10 +397,7 @@ static void FreeStatus( w, closure, call_data )
 	XtPopdown( status->popup );
 	XtDestroyWidget( status->popup );
     }
-#ifdef notdef
-    XtRemoveInput( status->error_inputId );
-#endif /*notdef*/
-    if (status->error_output != NULL) XtFree(status->error_output);
+    if (status->error_buffer != NULL) XtFree(status->error_buffer);
     XtFree( closure );
 }
 
