@@ -1,4 +1,4 @@
-/* $Header: XPolyReg.c,v 11.10 87/07/20 12:34:13 toddb Locked $ */
+/* $Header: XPolyReg.c,v 11.11 87/09/13 22:01:50 rws Locked $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -403,18 +403,20 @@ static int PtsToRegion(numFullPtBlocks, iCurPtBlock, FirstPtBlock, reg)
         CurPtBlock = CurPtBlock->next;
     }
 
-    extents->y2 = CurPtBlock->pts[iCurPtBlock-1].y+1;
-    pts = CurPtBlock->pts;
-    iCurPtBlock >>= 1;
-    while (iCurPtBlock--) {
-        rects->x1 = pts->x,  rects->y1 = pts->y;
-        extents->x1 = MIN(extents->x1, pts->x);
-        pts++;
-        rects->x2 = pts->x,  rects->y2 = pts->y + 1;
-        extents->x2 = MAX(extents->x2, pts->x);
-        rects++,  pts++;
+    if (iCurPtBlock) {
+	pts = CurPtBlock->pts;
+	iCurPtBlock >>= 1;
+	while (iCurPtBlock--) {
+	    rects->x1 = pts->x,  rects->y1 = pts->y;
+	    extents->x1 = MIN(extents->x1, pts->x);
+	    pts++;
+	    rects->x2 = pts->x,  rects->y2 = pts->y + 1;
+	    extents->x2 = MAX(extents->x2, pts->x);
+	    rects++,  pts++;
+	}
     }
- 
+
+    extents->y2 = pts[-1].y + 1;
     reg->size = reg->numRects = numRects;
  
     return(TRUE);
