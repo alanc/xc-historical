@@ -2,9 +2,9 @@ SRCS =	\
 	macIIInit.c \
 	macIIInitC.c \
 	macIIInitS.c \
-	macIIBW2.c \
-	macIIBW2zd.c \
-	macIICG4C.c \
+	macIIMono.c \
+	macIIMonoz.c \
+	macIIColor.c \
 	macIICrsr.c \
 	macIIIo.c \
 	macIIKbd.c \
@@ -20,9 +20,9 @@ SRCS =	\
 OFILES = macIIInit.o macIIInitC.o macIIInitS.o slotmgr.o
 
 OBJS = \
-	macIIBW2.o \
-	macIIBW2zd.o \
-	macIICG4C.o \
+	macIIMono.o \
+	macIIMonoz.o \
+	macIIColor.o \
 	macIICrsr.o \
 	macIIIo.o \
 	macIIKbd.o \
