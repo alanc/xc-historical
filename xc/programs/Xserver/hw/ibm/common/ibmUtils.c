@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ibmUtils.c,v 1.3 91/12/20 18:15:18 eswu Exp $
+ * $XConsortium: ibmUtils.c,v 1.4 93/09/05 15:39:53 rws Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -154,22 +154,24 @@ int	ibmShouldDumpArena= 0;
 static	char	*ibmArenaFile= 0;
 
 static
-ibmMarkDumpArena()
+ibmMarkDumpArena(sig)
+    int sig;
 {
 
-    (void) signal( SIGUSR1, ibmMarkDumpArena ) ;
+    (void) OsSignal( SIGUSR1, ibmMarkDumpArena ) ;
     ibmShouldDumpArena= 1;
 
     return 0;
 }
 
-ibmDumpArena()
+ibmDumpArena(sig)
+    int sig;
 {
 FILE  *mfil;
 static	char	fileName[100];
 static	int	dumpNum= 0;
 
-   (void) signal( SIGUSR2, ibmDumpArena ) ;
+   (void) OsSignal( SIGUSR2, ibmDumpArena ) ;
    (void) sprintf(fileName,ibmArenaFile,dumpNum++);
 
    mfil= fopen(fileName,"a");
@@ -187,7 +189,8 @@ static	int	dumpNum= 0;
    return 1 ;
 }
 
-ibmNoteHit()
+ibmNoteHit(sig)
+    int sig;
 {
 static int old= 4;
 
@@ -204,9 +207,9 @@ extern exit() ;
 
     ibmInfoMsg( "Setting up plumber to dump to %s\n", name ) ;
     (void) unlink( ibmArenaFile = name ) ;
-    (void) signal( SIGUSR1, ibmMarkDumpArena ) ;
-    (void) signal( SIGUSR2, ibmDumpArena ) ;
-    (void) signal( SIGTERM, ibmNoteHit ) ;
+    (void) OsSignal( SIGUSR1, ibmMarkDumpArena ) ;
+    (void) OsSignal( SIGUSR2, ibmDumpArena ) ;
+    (void) OsSignal( SIGTERM, ibmNoteHit ) ;
     return 1 ;
 }
 
