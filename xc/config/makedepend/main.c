@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.20 88/10/22 11:26:14 jim Exp $
+ * $XConsortium: main.c,v 1.21 89/02/09 15:59:07 jim Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -57,6 +57,12 @@ struct symtab	predefs[] = {
 #endif
 #ifdef ultrix
 	{"ultrix", NULL},
+#endif
+#ifdef mc68000
+	{"mc68000", NULL},
+#endif
+#ifdef mc68020
+	{"mc68020", NULL},
 #endif
 	{NULL, NULL}
 };
