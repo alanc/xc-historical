@@ -2,7 +2,7 @@
 
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
 
-/* $XConsortium: XWDFile.h,v 1.11 89/10/08 16:24:45 rws Exp $ */
+/* $XConsortium: XWDFile.h,v 1.12 89/10/08 16:33:57 rws Exp $ */
 /*
  * XWDFile.h	MIT Project Athena, X Window system window raster
  *		image dumper, dump file format header file.
@@ -78,7 +78,7 @@ typedef struct _xwd_file_header {
 #endif
 } XWDFileHeader;
 
-struct {
+typedef struct {
         CARD32	pixel B32;
         CARD16	red B16;
 	CARD16	green B16;
