@@ -1,4 +1,4 @@
-/* $XConsortium: XTest.c,v 1.5 92/02/05 16:17:47 rws Exp $ */
+/* $XConsortium: XTest.c,v 1.6 92/03/19 11:25:45 rws Exp $ */
 /*
 
 Copyright 1990, 1991 by UniSoft Group Limited
@@ -25,7 +25,7 @@ without express or implied warranty.
 
 static XExtensionInfo _xtest_info_data;
 static XExtensionInfo *xtest_info = &_xtest_info_data;
-static /* const */ char *xtest_extension_name = XTESTNAME;
+static /* const */ char *xtest_extension_name = XTestExtensionName;
 
 #define XTestCheckExtension(dpy,i,val) \
   XextCheckExtension (dpy, i, xtest_extension_name, val)
@@ -79,8 +79,8 @@ XTestQueryExtension (dpy, event_basep, error_basep, majorp, minorp)
 	GetReq(XTestGetVersion, req);
 	req->reqType = info->codes->major_opcode;
 	req->xtReqType = X_XTestGetVersion;
-	req->majorVersion = XTEST_MAJOR;
-	req->minorVersion = XTEST_MINOR;
+	req->majorVersion = XTestMajorVersion;
+	req->minorVersion = XTestMinorVersion;
 	if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	    UnlockDisplay(dpy);
 	    SyncHandle();

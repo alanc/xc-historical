@@ -1,4 +1,4 @@
-/* $XConsortium: xtest.c,v 1.10 92/03/23 16:12:07 rws Exp $ */
+/* $XConsortium: xtest.c,v 1.11 92/04/17 17:16:34 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -25,6 +25,8 @@ without express or implied warranty.
 #include "windowstr.h"
 #include "inputstr.h"
 #include "scrnintstr.h"
+#define _XTEST_SERVER_
+#include "XTest.h"
 #include "xteststr.h"
 
 static unsigned char XTestReqCode;
@@ -39,7 +41,7 @@ XTestExtensionInit()
 {
     ExtensionEntry *extEntry, *AddExtension();
 
-    if (extEntry = AddExtension(XTESTNAME, 0, 0,
+    if (extEntry = AddExtension(XTestExtensionName, 0, 0,
 				 ProcXTestDispatch, SProcXTestDispatch,
 				 XTestResetProc, StandardMinorOpcode))
 	XTestReqCode = (unsigned char)extEntry->base;
@@ -64,8 +66,8 @@ ProcXTestGetVersion(client)
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    rep.majorVersion = XTEST_MAJOR;
-    rep.minorVersion = XTEST_MINOR;
+    rep.majorVersion = XTestMajorVersion;
+    rep.minorVersion = XTestMinorVersion;
     if (client->swapped) {
     	swaps(&rep.sequenceNumber, n);
 	swaps(&rep.minorVersion, n);
@@ -244,9 +246,9 @@ ProcXTestFakeInput(client)
 	}
 	break;
     }
-    ev->u.keyButtonPointer.time = currentTime.milliseconds;
     if (screenIsSaved == SCREEN_SAVER_ON)
 	SaveScreens(SCREEN_SAVER_OFF, ScreenSaverReset);
+    ev->u.keyButtonPointer.time = currentTime.milliseconds;
     (*dev->public.processInputProc)(ev, (DevicePtr)dev, 1); 
     return client->noClientException;
 }
