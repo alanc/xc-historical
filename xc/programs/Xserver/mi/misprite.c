@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: Exp $ */
+/* $XConsortium: misprite.c,v 5.0 89/06/09 15:09:27 keith Exp $ */
 
 # include   "X.h"
 # include   "misc.h"
@@ -161,9 +161,21 @@ static GCOps miSpriteGCOps = {
  * the saved cursor area
  */
 
-#define GC_SETUP(pDrawable, pGC)\
-    if (((miSpriteScreenPtr) (pDrawable->pScreen->devPrivates[miSpriteScreenIndex].ptr))->isUp) \
-	miSpriteRemoveCursor(pDrawable->pScreen)
+#define GC_SETUP(pDrawable)					    \
+    miSpriteScreenPtr	pScreenPriv = (miSpriteScreenPtr)	    \
+	(pDrawable)->pScreen->devPrivates[miSpriteScreenIndex].ptr;
+
+#define GC_SETUP_AND_CHECK(pDrawable)				    \
+    GC_SETUP(pDrawable);					    \
+    if (GC_CHECK((WindowPtr)pDrawable))				    \
+	miSpriteRemoveCursor (pDrawable->pScreen);
+    
+#define GC_CHECK(pWin)						    \
+    (pScreenPriv->isUp && (pWin)->viewable &&			    \
+	(pWin)->drawable.x < pScreenPriv->saved.x2 &&		    \
+	pScreenPriv->saved.x1 < (pWin)->drawable.x + (int) (pWin)->drawable.width && \
+	(pWin)->drawable.y < pScreenPriv->saved.y2 &&		    \
+	pScreenPriv->saved.y1 < (pWin)->drawable.y + (int) (pWin)->drawable.height)
 
 #define GC_OP_PROLOGUE(pGC) (\
     ((pGC)->funcs = \
@@ -647,7 +659,7 @@ miSpritePaintWindowBackground (pWin, pRegion, what)
 	 * region to paint for the cursor and remove it as necessary
 	 */
 	if ((* pScreen->RectIn) (pRegion, &pScreenPriv->saved) != rgnOUT)
-	    miSpriteRemoveCursor(pScreen);
+	    miSpriteRemoveCursor (pScreen);
     }
 
     (*pWin->funcs->PaintWindowBackground) (pWin, pRegion, what);
@@ -676,7 +688,7 @@ miSpritePaintWindowBorder (pWin, pRegion, what)
 	 * region to paint for the cursor and remove it as necessary
 	 */
 	if ((* pScreen->RectIn) (pRegion, &pScreenPriv->saved) != rgnOUT)
-	    miSpriteRemoveCursor(pScreen);
+	    miSpriteRemoveCursor (pScreen);
     }
 
     (*pWin->funcs->PaintWindowBorder) (pWin, pRegion, what);
@@ -716,7 +728,7 @@ miSpriteCopyWindow (pWin, ptOldOrg, pRegion)
 	cursorBox.y2 -= dy;
 	if ((* pScreen->RectIn) (pRegion, &pScreenPriv->saved) != rgnOUT ||
 	    (* pScreen->RectIn) (pRegion, &cursorBox) != rgnOUT)
-	    miSpriteRemoveCursor(pScreen);
+	    miSpriteRemoveCursor (pScreen);
     }
 
     (*pWin->funcs->CopyWindow) (pWin, ptOldOrg, pRegion);
@@ -742,9 +754,9 @@ miSpriteClearToBackground (pWin, x, y, w, h, generateExposures)
     if (pScreenPriv->isUp)
     {
 	if (!(realw = w))
-	    realw = pWin->drawable.width - x;
+	    realw = (int) pWin->drawable.width - x;
 	if (!(realh = h))
-	    realh = pWin->drawable.height - y;
+	    realh = (int) pWin->drawable.height - y;
 	if (ORG_OVERLAP(&pScreenPriv->saved, pWin->drawable.x, pWin->drawable.y,
 			x, y, realw, realh))
 	{
@@ -872,7 +884,25 @@ miSpriteFillSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int		*pwidthInit;		/* pointer to list of n widths */
     int 	fSorted;
 {
-    GC_SETUP(pDrawable, pGC);
+    GC_SETUP(pDrawable);
+
+    if (GC_CHECK((WindowPtr) pDrawable))
+    {
+	register DDXPointPtr    pts;
+	register int    	*widths;
+	register int    	nPts;
+
+	for (pts = pptInit, widths = pwidthInit, nPts = nInit;
+	     nPts--;
+	     pts++, widths++)
+ 	{
+	     if (SPN_OVERLAP(&pScreenPriv->saved,pts->y,pts->x,*widths))
+	     {
+		 miSpriteRemoveCursor (pDrawable->pScreen);
+		 break;
+	     }
+	}
+    }
 
     GC_OP_PROLOGUE (pGC);
 
@@ -891,7 +921,25 @@ miSpriteSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
     int			nspans;
     int			fSorted;
 {
-    GC_SETUP(pDrawable, pGC);
+    GC_SETUP(pDrawable);
+
+    if (GC_CHECK((WindowPtr) pDrawable))
+    {
+	register DDXPointPtr    pts;
+	register int    	*widths;
+	register int    	nPts;
+
+	for (pts = ppt, widths = pwidth, nPts = nspans;
+	     nPts--;
+	     pts++, widths++)
+ 	{
+	     if (SPN_OVERLAP(&pScreenPriv->saved,pts->y,pts->x,*widths))
+	     {
+		 miSpriteRemoveCursor(pDrawable->pScreen);
+		 break;
+	     }
+	}
+    }
 
     GC_OP_PROLOGUE (pGC);
 
@@ -912,7 +960,16 @@ miSpritePutImage(pDrawable, pGC, depth, x, y, w, h, leftPad, format, pBits)
     int	    	  format;
     char    	  *pBits;
 {
-    GC_SETUP(pDrawable, pGC);
+    GC_SETUP(pDrawable);
+
+    if (GC_CHECK((WindowPtr) pDrawable))
+    {
+	if (ORG_OVERLAP(&pScreenPriv->saved,pDrawable->x,pDrawable->y,
+			x,y,w,h))
+ 	{
+	    miSpriteRemoveCursor (pDrawable->pScreen);
+	}
+    }
 
     GC_OP_PROLOGUE (pGC);
 
@@ -933,7 +990,29 @@ miSpriteCopyArea (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty)
     int	    	  dstx;
     int	    	  dsty;
 {
-    GC_SETUP(pDst, pGC);
+    GC_SETUP(pDst);
+
+    /*
+     * check both destination and source for overlap.  Avoid
+     * the source check when source == destination
+     */
+    if (GC_CHECK((WindowPtr) pDst) && (
+	 ORG_OVERLAP(&pScreenPriv->saved,pDst->x,pDst->y,dstx,dsty,w,h) ||
+	 (pSrc == pDst &&
+	  ORG_OVERLAP(&pScreenPriv->saved,pSrc->x,pSrc->y,srcx,srcy,w,h))))
+    {
+	miSpriteRemoveCursor (pDst->pScreen);
+    }
+    else if (pSrc != pDst && pSrc->type == DRAWABLE_WINDOW)
+    {
+	GC_SETUP(pSrc);
+
+    	if (GC_CHECK((WindowPtr) pSrc) &&
+	    ORG_OVERLAP(&pScreenPriv->saved,pSrc->x,pSrc->y,srcx,srcy,w,h))
+    	{
+	    miSpriteRemoveCursor (pSrc->pScreen);
+    	}
+    }
 
     GC_OP_PROLOGUE (pGC);
 
@@ -955,7 +1034,29 @@ miSpriteCopyPlane (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
 		  dsty;
     unsigned long  plane;
 {
-    GC_SETUP(pDst, pGC);
+    GC_SETUP(pDst);
+
+    /*
+     * check both destination and source for overlap.  Avoid
+     * the source check when source == destination
+     */
+    if (GC_CHECK((WindowPtr) pDst) && (
+	 ORG_OVERLAP(&pScreenPriv->saved,pDst->x,pDst->y,dstx,dsty,w,h) ||
+	 (pSrc == pDst &&
+	  ORG_OVERLAP(&pScreenPriv->saved,pSrc->x,pSrc->y,srcx,srcy,w,h))))
+    {
+	miSpriteRemoveCursor (pDst->pScreen);
+    }
+    else if (pSrc != pDst && pSrc->type == DRAWABLE_WINDOW)
+    {
+	GC_SETUP(pSrc);
+
+    	if (GC_CHECK((WindowPtr) pSrc) &&
+	    ORG_OVERLAP(&pScreenPriv->saved,pSrc->x,pSrc->y,srcx,srcy,w,h))
+    	{
+	    miSpriteRemoveCursor (pSrc->pScreen);
+    	}
+    }
 
     GC_OP_PROLOGUE (pGC);
 
@@ -972,7 +1073,7 @@ miSpritePolyPoint (pDrawable, pGC, mode, npt, pptInit)
     int		npt;
     xPoint 	*pptInit;
 {
-    GC_SETUP(pDrawable, pGC);
+    GC_SETUP_AND_CHECK(pDrawable);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -989,7 +1090,7 @@ miSpritePolylines (pDrawable, pGC, mode, npt, pptInit)
     int	    	  npt;
     DDXPointPtr	  pptInit;
 {
-    GC_SETUP(pDrawable, pGC);
+    GC_SETUP_AND_CHECK(pDrawable);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1005,7 +1106,7 @@ miSpritePolySegment(pDrawable, pGC, nseg, pSegs)
     int		nseg;
     xSegment	*pSegs;
 {
-    GC_SETUP(pDrawable, pGC);
+    GC_SETUP_AND_CHECK(pDrawable);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1021,7 +1122,7 @@ miSpritePolyRectangle(pDrawable, pGC, nrects, pRects)
     int		nrects;
     xRectangle	*pRects;
 {
-    GC_SETUP(pDrawable, pGC);
+    GC_SETUP_AND_CHECK(pDrawable);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1037,7 +1138,7 @@ miSpritePolyArc(pDrawable, pGC, narcs, parcs)
     int		narcs;
     xArc	*parcs;
 {
-    GC_SETUP(pDrawable, pGC);
+    GC_SETUP_AND_CHECK(pDrawable);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1054,7 +1155,7 @@ miSpriteFillPolygon(pDrawable, pGC, shape, mode, count, pPts)
     register int	count;
     DDXPointPtr		pPts;
 {
-    GC_SETUP(pDrawable, pGC);
+    GC_SETUP_AND_CHECK(pDrawable);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1070,7 +1171,24 @@ miSpritePolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     int		nrectFill; 	/* number of rectangles to fill */
     xRectangle	*prectInit;  	/* Pointer to first rectangle to fill */
 {
-    GC_SETUP(pDrawable, pGC);
+    GC_SETUP(pDrawable);
+
+    if (GC_CHECK((WindowPtr) pDrawable))
+    {
+	register int	    nRect;
+	register xRectangle *pRect;
+	register int	    xorg, yorg;
+
+	xorg = pDrawable->x;
+	yorg = pDrawable->y;
+
+	for (nRect = nrectFill, pRect = prectInit; nRect--; pRect++) {
+	    if (ORGRECT_OVERLAP(&pScreenPriv->saved,xorg,yorg,pRect)){
+		miSpriteRemoveCursor(pDrawable->pScreen);
+		break;
+	    }
+	}
+    }
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1086,7 +1204,7 @@ miSpritePolyFillArc(pDrawable, pGC, narcs, parcs)
     int		narcs;
     xArc	*parcs;
 {
-    GC_SETUP(pDrawable, pGC);
+    GC_SETUP_AND_CHECK(pDrawable);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1105,7 +1223,7 @@ miSpritePolyText8(pDrawable, pGC, x, y, count, chars)
 {
     int	ret;
 
-    GC_SETUP(pDrawable, pGC);
+    GC_SETUP_AND_CHECK(pDrawable);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1125,7 +1243,7 @@ miSpritePolyText16(pDrawable, pGC, x, y, count, chars)
 {
     int	ret;
 
-    GC_SETUP(pDrawable, pGC);
+    GC_SETUP_AND_CHECK(pDrawable);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1143,7 +1261,7 @@ miSpriteImageText8(pDrawable, pGC, x, y, count, chars)
     int		count;
     char	*chars;
 {
-    GC_SETUP(pDrawable, pGC);
+    GC_SETUP_AND_CHECK(pDrawable);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1160,7 +1278,7 @@ miSpriteImageText16(pDrawable, pGC, x, y, count, chars)
     int		count;
     unsigned short *chars;
 {
-    GC_SETUP(pDrawable, pGC);
+    GC_SETUP_AND_CHECK(pDrawable);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1178,7 +1296,7 @@ miSpriteImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     CharInfoPtr *ppci;		/* array of character info */
     pointer 	pglyphBase;	/* start of array of glyphs */
 {
-    GC_SETUP(pDrawable, pGC);
+    GC_SETUP_AND_CHECK(pDrawable);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1196,7 +1314,7 @@ miSpritePolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     CharInfoPtr *ppci;		/* array of character info */
     char 	*pglyphBase;	/* start of array of glyphs */
 {
-    GC_SETUP(pDrawable, pGC);
+    GC_SETUP_AND_CHECK(pDrawable);
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1212,7 +1330,13 @@ miSpritePushPixels(pGC, pBitMap, pDrawable, w, h, x, y)
     DrawablePtr pDrawable;
     int		w, h, x, y;
 {
-    GC_SETUP(pDrawable, pGC);
+    GC_SETUP (pDrawable);
+
+    if (GC_CHECK((WindowPtr) pDrawable) &&
+	ORG_OVERLAP(&pScreenPriv->saved,pDrawable->x,pDrawable->y,x,y,w,h))
+    {
+	miSpriteRemoveCursor (pDrawable->pScreen);
+    }
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1230,7 +1354,7 @@ miSpriteLineHelper(pDrawable, pGC, cap, npts, pts, xOrg, yOrg)
     pointer	pts;
     int		xOrg, yOrg;
 {
-    GC_SETUP(pDrawable, pGC);
+    GC_SETUP_AND_CHECK(pDrawable);
 
     GC_OP_PROLOGUE (pGC);
 
