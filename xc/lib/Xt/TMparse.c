@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.139 93/10/22 10:58:48 kaleb Exp $ */
+/* $XConsortium: TMparse.c,v 1.140 94/04/17 20:14:53 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1025,6 +1025,7 @@ static String ParseTable(str, closure, event,error)
     Boolean* error;
 {
     register String start = str;
+    Value detail;
     char tableSymName[100];
 
     event->event.eventCode = 0L;
@@ -1037,12 +1038,12 @@ static String ParseTable(str, closure, event,error)
     }
     (void) memmove(tableSymName, start, str-start);
     tableSymName[str-start] = '\0';
-    if (! _XtLookupTableSym((NameValueTable)closure, tableSymName, 
-            (Value *)&event->event.eventCode)) {
+    if (! _XtLookupTableSym((NameValueTable)closure, tableSymName, &detail)) {
 	Syntax("Unknown Detail Type:  ",tableSymName);
         *error = TRUE;
         return PanicModeRecovery(str);
     }
+    event->event.eventCode = detail;
     event->event.eventCodeMask = ~0L;
 
     return str;
