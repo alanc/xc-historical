@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.45 89/07/21 16:11:43 jim Exp $
+ *	$XConsortium: misc.c,v 1.46 89/09/07 10:36:17 jim Exp $
  */
 
 
@@ -53,7 +53,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.45 89/07/21 16:11:43 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.46 89/09/07 10:36:17 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -526,6 +526,7 @@ int (*func)();
 
 	 case 100:	/* send back display name */
 		unparsefputs (DisplayString(screen->display), screen->respond);
+		unparseputc ('\r', screen->respond);
 		break;
 
 	}
