@@ -1,4 +1,4 @@
-/* $XConsortium: ddContext.c,v 5.6 92/12/03 19:41:45 hersh Exp $ */
+/* $XConsortium: ddContext.c,v 5.7 93/01/12 17:41:13 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -357,7 +357,6 @@ DeleteDDContext(pDDContext)
     while (pdddc) {
 	pdddc2 = pdddc->next;
 	deleteDynamicDDContext(pdddc);
-	pdddc->next = 0;
 	pdddc = pdddc2;
     }
 
