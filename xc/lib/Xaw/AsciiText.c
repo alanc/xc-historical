@@ -1,8 +1,10 @@
-#include <X/copyright.h>
+#ifndef lint
+static char rcsid[] = "$Header: AsciiText.c,v 1.2 88/01/07 13:52:35 swick Locked $";
+#endif lint
 
-/* $Header: AsciiText.c,v 1.1 87/12/23 16:38:54 swick Locked $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
+#include <X/copyright.h>
 #include <X/Intrinsic.h>
 #include <X/Atoms.h>
 #include <X/AsciiText.h>
