@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.28 88/01/02 14:46:35 rws Locked $ */
+/* $Header: dispatch.c,v 1.29 88/01/02 15:43:44 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1140,7 +1140,7 @@ ProcQueryTextExtents(client)
     length = length << 1;
     if (stuff->oddLength)
         length--;
-    QueryTextExtents(pFont, length, (unsigned short *)&stuff[1], &info);   
+    QueryTextExtents(pFont, length, (unsigned char *)&stuff[1], &info);   
     reply.type = X_Reply;
     reply.length = 0;
     reply.sequenceNumber = client->sequence;
@@ -2816,7 +2816,7 @@ ProcSetFontPath(client)
     
     REQUEST_AT_LEAST_SIZE(xSetFontPathReq);
     
-    SetFontPath(stuff->nFonts, stuff->length, &stuff[1]);
+    SetFontPath(stuff->nFonts, stuff->length, (char *)&stuff[1]);
     return (client->noClientException);
 }
 
