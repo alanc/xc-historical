@@ -1,28 +1,22 @@
 
-XCalc.toplevel.icon_name:	Calculator
 XCalc*cursor:			hand2
+XCalc.toplevel.icon_name:	Calculator
 XCalc*iconPixmap:		calculator
-XCalc*bevel.background:	black
 XCalc*font:			*-helvetica-medium-r-normal--*-100-*-*-*-*-*-*
 XCalc*bevel.screen.LCD.font:	*-helvetica-bold-r-normal--*-120-*-*-*-*-*-*
 
-XCalc*Command.horizDistance:			2
-XCalc*Command.vertDistance:			4
-XCalc*Command.width:				32
-XCalc*Command.height:				15
-XCalc*Command.internalWidth:			1
-
-XCalc*bevel.screen.Label.horizDistance:		0
-XCalc*bevel.screen.Label.vertDistance:		0
-XCalc*bevel.screen.Label.internalHeight:	1
-XCalc*bevel.screen.Label.internalWidth:		1
-
+XCalc*bevel.background:			black
 XCalc*bevel.horizDistance:			25
 XCalc*bevel.vertDistance:			6
 
 XCalc*bevel.screen.horizDistance:		6
 XCalc*bevel.screen.vertDistance:    		2
 XCalc*bevel.screen.defaultDistance:		0
+
+XCalc*bevel.screen.Label.horizDistance:		0
+XCalc*bevel.screen.Label.vertDistance:		0
+XCalc*bevel.screen.Label.internalHeight:	1
+XCalc*bevel.screen.Label.internalWidth:		1
 
 XCalc*bevel.screen.LCD.label:		88888888888
 XCalc*bevel.screen.LCD.fromHoriz:	M
@@ -47,6 +41,11 @@ XCalc*bevel.screen.P.fromHoriz:		GRAD
 XCalc*bevel.screen.P.fromVert:		LCD
 XCalc*bevel.screen.P.horizDistance:		2
 
+XCalc*Command.horizDistance:			2
+XCalc*Command.vertDistance:			4
+XCalc*Command.width:				32
+XCalc*Command.height:				15
+XCalc*Command.internalWidth:			1
 
 
 XCalc.ti.geometry:				171x252
@@ -82,33 +81,33 @@ XCalc.ti.bevel.screen.LCD.translations:	#replace\n\
 				<Key>KP_Subtract:subtract()\n\
 				<Key>KP_Decimal:decimal()\n\
 				<Key>KP_Divide:divide()\n\
-				<Key>Clear:clear()\n\
 				<Key>KP_Tab:equal()\n\
-				None<Key>.:decimal()\n\
-				None<Key>+:add()\n\
-				None<Key>-:subtract()\n\
-				None<Key>*:multiply()\n\
-				None<Key>/:divide()\n\
-				None<Key>(:leftParen()\n\
-				None<Key>):rightParen()\n\
-			        None<Key>!:factorial()\n\
-				None<Key>e:e()\n\
-				None<Key>^:power()\n\
-				None<Key>p:pi()\n\
-				None<Key>i:inverse()\n\
-				None<Key>s:sine()\n\
-				None<Key>c:cosine()\n\
-				None<Key>t:tangent()\n\
-				None<Key>d:degree()\n\
-				None<Key>l:naturalLog()\n\
-				None<Key>=:equal()\n\
-				None<Key>n:negate()\n\
-				None<Key>r:squareRoot()\n\
-				None<Key>space:clear()\n\
-				None<Key>q:quit()\n\
-				None<Key>Delete:clear()\n\
-				None<Key>BackSpace:clear()\n\
-				<Btn1Down>:toggle()cut()\n
+				<Key>Clear:clear()\n\
+				<Key>.:decimal()\n\
+				<Key>+:add()\n\
+				<Key>-:subtract()\n\
+				<Key>*:multiply()\n\
+				<Key>/:divide()\n\
+				<Key>(:leftParen()\n\
+				<Key>):rightParen()\n\
+			        <Key>!:factorial()\n\
+				<Key>e:e()\n\
+				<Key>^:power()\n\
+				<Key>p:pi()\n\
+				<Key>i:inverse()\n\
+				<Key>s:sine()\n\
+				<Key>c:cosine()\n\
+				<Key>t:tangent()\n\
+				<Key>d:degree()\n\
+				<Key>l:naturalLog()\n\
+				<Key>=:equal()\n\
+				<Key>n:negate()\n\
+				<Key>r:squareRoot()\n\
+				<Key>space:clear()\n\
+				<Key>q:quit()\n\
+				<Key>Delete:clear()\n\
+				<Key>BackSpace:clear()\n\
+				<Btn1Down>,<Btn1Up>:toggle()selection()\n
 
 
 XCalc.ti.button1.label:		1/x
@@ -318,37 +317,37 @@ XCalc.hp.bevel.screen.LCD.translations:	#replace\n\
 				<Key>KP_7:digit(7)\n\
 				<Key>KP_8:digit(8)\n\
 				<Key>KP_9:digit(9)\n\
-				<Key>KP_Enter:equal()\n\
-				<Key>KP_Equal:equal()\n\
+				<Key>KP_Enter:enter()\n\
 				<Key>KP_Multiply:multiply(HP)\n\
 				<Key>KP_Add:add(HP)\n\
 				<Key>KP_Subtract:subtract(HP)\n\
 				<Key>KP_Decimal:decimal()\n\
 				<Key>KP_Divide:divide(HP)\n\
-				None<Key>.:decimal()\n\
-				None<Key>+:add(HP)\n\
-				None<Key>-:subtract(HP)\n\
-				None<Key>*:multiply(HP)\n\
-				None<Key>/:divide(HP)\n\
-			        None<Key>!:factorial()\n\
-				None<Key>e:e()\n\
-				None<Key>^:power(HP)\n\
-				None<Key>p:pi()\n\
-				None<Key>i:inverse()\n\
-				None<Key>s:sine()\n\
-				None<Key>c:cosine()\n\
-				None<Key>t:tangent()\n\
-				None<Key>d:degree()\n\
-				None<Key>l:naturalLog()\n\
-				None<Key>=:equal()\n\
-				None<Key>n:negate()\n\
-				None<Key>r:squareRoot()\n\
-				None<Key>space:clear()\n\
-				None<Key>q:quit()\n\
-				None<Key>Delete:back()\n\
-				None<Key>Return:enter()\n\
-				None<Key>Linefeed:enter()\n\
-				None<Key>x:XexchangeY()\n
+				<Key>.:decimal()\n\
+				<Key>+:add(HP)\n\
+				<Key>-:subtract(HP)\n\
+				<Key>*:multiply(HP)\n\
+				<Key>/:divide(HP)\n\
+			        <Key>!:factorial()\n\
+				<Key>e:e()\n\
+				<Key>^:power(HP)\n\
+				<Key>p:pi()\n\
+				<Key>i:inverse()\n\
+				<Key>s:sine()\n\
+				<Key>c:cosine()\n\
+				<Key>t:tangent()\n\
+				<Key>d:degree()\n\
+				<Key>l:naturalLog()\n\
+				<Key>n:negate()\n\
+				<Key>r:squareRoot()\n\
+				<Key>space:clear()\n\
+				<Key>q:quit()\n\
+				<Key>Delete:back()\n\
+				<Key>Return:enter()\n\
+				<Key>Linefeed:enter()\n\
+				<Key>x:XexchangeY()\n\
+				<Key>BackSpace:back()\n\
+				<Btn1Down>,<Btn1Up>:toggle()selection()\n
 
 
 
