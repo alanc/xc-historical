@@ -141,7 +141,11 @@ sunKbdProc (pKeyboard, what)
 		sysKbPriv.fd = kbdFd;
 		(void) ioctl (kbdFd, KIOCTYPE, &sysKbPriv.type);
 		(void) ioctl (kbdFd, KIOCGTRANS, &sunKbPriv.trans);
+#ifdef KB_SUN4
+		if (sysKbPriv.type < 0 || sysKbPriv.type > KB_SUN4
+#else
 		if (sysKbPriv.type < 0 || sysKbPriv.type > KB_SUN3
+#endif
 		    || sunKeySyms[sysKbPriv.type].map == NULL)
 		    FatalError("Unsupported keyboard type %d\n", 
 			sysKbPriv.type);
