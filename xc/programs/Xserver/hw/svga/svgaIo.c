@@ -1,4 +1,4 @@
-/* $XConsortium: svgaIo.c,v 1.2 93/09/18 18:16:02 rws Exp $ */
+/* $XConsortium: svgaIo.c,v 1.3 93/09/20 12:07:17 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -67,7 +67,7 @@ ProcessInputEvents()
   miPointerUpdate();
 }
 
-long
+CARD32
 GetTimeInMillis()
 {
   return max(XqueLastEventTime, XqueQaddr->xq_curtime);
