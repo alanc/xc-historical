@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Clock.h,v 1.25 89/05/11 15:11:38 kit Exp $
+* $XConsortium: Clock.h,v 1.26 89/07/16 14:36:23 jim Exp $
 */
 
 
@@ -66,20 +66,23 @@ SOFTWARE.
 
 /* Resource names used to the clock widget */
 
-#define XtNupdate		"update"
 		/* Int: how often to update hands? */
-#define XtNhand			"hands"
+#define XtNupdate "update"
+
 		/* color of hands */
-#define XtNhighlight		"highlight"
+#define XtNhand "hands"
+
 		/* color of hand outline */
-#define XtNanalog		"analog"
+#define XtNhighlight "highlight"
+
 		/* Boolean: digital if FALSE */
-#define XtNbackingStore		"backingStore"
-		/* when server should use backing store */
-#define XtNchime		"chime"
+#define XtNanalog "analog"
+
 		/* Boolean:  */
-#define XtNpadding		"padding"
+#define XtNchime "chime"
+
 		/* Int: amount of space around outside of clock */
+#define XtNpadding "padding"
 
 typedef struct _ClockRec *ClockWidget;  /* completely defined in ClockPrivate.h */
 typedef struct _ClockClassRec *ClockWidgetClass;    /* completely defined in ClockPrivate.h */
