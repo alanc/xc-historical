@@ -1,5 +1,5 @@
 #!/bin/sh
-# $XConsortium$
+# $XConsortium: xon.sh,v 1.6 92/01/24 16:48:29 rws Exp $
 # start up xterm (or any other X command) on the specified host
 # Usage: xon host [arguments] [command]
 case $# in
@@ -13,7 +13,14 @@ target=$1
 shift
 label=$target
 resource=xterm-$label
-rcmd="rsh $target -n"
+if [ -x /usr/bin/remsh ]; then
+    rsh=/usr/bin/remsh
+elif [ -x /usr/bin/rcmd ]; then
+    rsh=/usr/bin/rcmd
+else
+    rsh=rsh
+fi
+rcmd="$rsh $target -n"
 case $DISPLAY in
 unix:*)
 	DISPLAY=`echo $DISPLAY | sed 's/unix//'`
@@ -51,7 +58,7 @@ while $continue; do
 		shift
 		username="-l $1"
 		label="$target $1"
-		rcmd="rsh $target $username -n"
+		rcmd="$rsh $target $username -n"
 		shift
 		case x$XAUTHORITY in
 		x)
