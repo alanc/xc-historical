@@ -1,4 +1,4 @@
-/* $XConsortium: XGtSelect.c,v 1.6 91/05/05 16:31:24 rws Exp $ */
+/* $XConsortium: XGtSelect.c,v 1.7 93/01/28 19:42:50 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -33,7 +33,6 @@ SOFTWARE.
 #include "XI.h"
 #include "XIproto.h"
 #include "Xlibint.h"
-#include "Xproto.h"
 #include "XInput.h"
 #include "extutil.h"
 
