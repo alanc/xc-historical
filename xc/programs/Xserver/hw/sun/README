@@ -23,6 +23,7 @@ the following configurations:
 	Sun/2		bw2	cg2/3/5
 	Sun/3		bw2	cg2/3/4/5
 	Sun/4		bw2	cg2/4
+	Sun/386i	mono	color
 
 The following configurations are NOT supported:
 
