@@ -23,7 +23,8 @@ SRCS = \
 	charB24.bdf charBI08.bdf charBI10.bdf charBI12.bdf charBI14.bdf \
 	charBI18.bdf charBI24.bdf charI08.bdf charI10.bdf charI12.bdf \
 	charI14.bdf charI18.bdf charI24.bdf charR08.bdf charR10.bdf \
-	charR12.bdf charR14.bdf charR18.bdf charR24.bdf
+	charR12.bdf charR14.bdf charR18.bdf charR24.bdf \
+	tech14.bdf techB14.bdf term14.bdf termB14.bdf 
 
 
 OBJS = \
@@ -51,7 +52,9 @@ OBJS = \
 	charB24.snf charBI08.snf charBI10.snf charBI12.snf charBI14.snf \
 	charBI18.snf charBI24.snf charI08.snf charI10.snf charI12.snf \
 	charI14.snf charI18.snf charI24.snf charR08.snf charR10.snf \
-	charR12.snf charR14.snf charR18.snf charR24.snf
+	charR12.snf charR14.snf charR18.snf charR24.snf \
+	tech14.snf techB14.snf term14.snf termB14.snf 
+
 
 FONTINSTDIR = $(FONTDIR)/75dpi
 
@@ -183,6 +186,10 @@ FontTarget(charR12)
 FontTarget(charR14)
 FontTarget(charR18)
 FontTarget(charR24)
+FontTarget(tech14)
+FontTarget(techB14)
+FontTarget(term14)
+FontTarget(termB14)
 
 
 InstallFonts($(FONTINSTDIR))
