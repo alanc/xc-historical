@@ -1,4 +1,4 @@
-.\" $XConsortium: xdm.man,v 1.30 94/04/11 16:03:18 matt Exp $
+.\" $XConsortium: xdm.man,v 1.31 94/04/13 21:08:30 gildea Exp $
 .\" Copyright 1988 Massachusetts Institute of Technology
 .\"
 .\" Permission to use, copy, modify, distribute, and sell this software and
@@ -12,7 +12,7 @@
 .\" without express or implied warranty.
 .TH XDM 1 "Release 6" "X Version 11"
 .SH NAME
-xdm \- X Display Manager with support for XDMCP
+xdm \- X Display Manager with support for XDMCP, host chooser
 .SH SYNOPSIS
 .B xdm
 [
@@ -209,7 +209,9 @@ For local displays, the resource name and class are as read from the
 .PP
 For remote displays, the resource name is what the network address of
 the display resolves to.  See the \fBremoveDomain\fP resource.  The
-name must match exactly.  If the name resolve fails, the address is
+name must match exactly; \fIxdm\fP is not aware of
+all the network aliases that might reach a given display.
+If the name resolve fails, the address is
 used.  The resource class is as sent by the display in the XDMCP
 Manage request.
 .PP
@@ -555,7 +557,7 @@ named \fIxdm-config\fP:
 
 .fi
 .PP
-Note that this file simply contains references to other files.  Note also
+Note that this file mostly contains references to other files.  Note also
 that some of the resources are specified with ``*'' separating the
 components.  These resources can be made unique for each different display,
 by replacing the ``*'' with the display-name, but normally this is not very
@@ -1020,7 +1022,8 @@ This example recognizes
 the special
 ``failsafe'' mode, specified in the translations
 in the \fIXresources\fP file, to provide an escape
-from the ordinary session:
+from the ordinary session.  It also requires that the .xsession file
+be executable so we don't have to guess what shell it wants to use.
 .nf
 .ta .5i 1i 1.5i
 
@@ -1043,12 +1046,11 @@ from the ordinary session:
 	startup=$HOME/.xsession
 	resources=$HOME/.Xresources
 	
-	if [ \-f $startup ]; then
-		exec $startup
-		exec /bin/sh $startup
+	if [ \-f "$startup" ]; then
+		exec "$startup"
 	else
-		if [ \-f $resources ]; then
-			xrdb \-load $resources
+		if [ \-f "$resources" ]; then
+			xrdb \-load "$resources"
 		fi
 		twm &
 		xman \-geometry +10\-10 &
