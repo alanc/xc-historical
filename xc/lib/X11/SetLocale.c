@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.17 91/04/02 15:49:34 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.18 91/04/02 16:21:06 rws Exp $
  */
 
 /*
@@ -40,6 +40,10 @@
 
 XLocale		_Xlocale_ = (XLocale)0;		/* global locale */
 XLocaleTable   *_xlctbl_ = (XLocaleTable *)0;	/* locale data base table */
+#ifndef lint
+static int lock;
+static int lock_tbl;
+#endif
 
 #define XREALLOC(p, size)	((p) ? Xrealloc(p, size) : Xmalloc(size))
 
@@ -51,18 +55,25 @@ _XSetLocaleDB(lc_name)
     extern XLocaleDB *_XlcGetLocaleTemplate();
     extern XLocaleDB *_XlcLoadTemplate();
 
+    LockMutex(&lock_tbl);
+
     if (_xlctbl_ == (XLocaleTable *)0) {
 	_xlctbl_ = (XLocaleTable *) Xmalloc(sizeof(XLocaleTable));
-	if (!_xlctbl_)
+	if (!_xlctbl_) {
+	    UnlockMutex(&lock_tbl);
 	    return (XLocaleDB *)0;
+	}
 	_xlctbl_->num_loc = 0;
 	_xlctbl_->template = (XLocaleList *)0;
     }
     /* set current locale from template. */
     if ((template = _XlcGetLocaleTemplate(lc_name)) == (XLocaleDB *)0) {
-	if ((template = _XlcLoadTemplate(lc_name)) == (XLocaleDB *)0)
+	if ((template = _XlcLoadTemplate(lc_name)) == (XLocaleDB *)0) {
+	    UnlockMutex(&lock_tbl);
 	    return((XLocaleDB *)0);
+	}
     }
+    UnlockMutex(&lock_tbl);
     return (template);
 }
 
@@ -184,12 +195,11 @@ _XSetLocale(lc_category, lc_name)
 	    lc_name = "C"; /* Setting gloval locale with "C" */
     }
 
-    xlocale = (XLocale) Xmalloc(sizeof(XLocaleRec));
+    if (! (xlocale = (XLocale) Xmalloc(sizeof(XLocaleRec))))
+	return ((XLocale)0);
     xlocale->lc_lang = NULL;
     xlocale->lc_im = NULL;
     xlocale->lc_modifier = NULL;
-    if (!xlocale)
-	return ((XLocale)0);
     if (! _XChangeLocale(xlocale, lc_category, lc_name)) {
 	_XFreeLocale(xlocale);
 	return ((XLocale)0);
@@ -210,6 +220,8 @@ _Xsetlocale(lc_category, lc_name)
     char           *lc_name;        /* locale name */
 #endif
 {
+    LockMutex(&lock);
+
     if (_Xlocale_) {
 	char save[256];
 	strcpy(save, setlocale(lc_category, NULL)); /* save */
@@ -220,6 +232,7 @@ _Xsetlocale(lc_category, lc_name)
 	if (!(_Xlocale_ = _XSetLocale(lc_category, lc_name)))
 	    _Xlocale_ = _XSetLocale(lc_category, "C");
     }
+    UnlockMutex(&lock);
 
     if (!_Xlocale_)
 	return NULL; 
@@ -230,6 +243,9 @@ _Xsetlocale(lc_category, lc_name)
 #ifdef X_NOT_STDC_ENV
 /* alternative setlocale() for OS does not have */
 static char locale_name[MAXLOCALE] = "C";
+#ifndef lint
+static int lock_name;
+#endif
 
 /*ARGSUSED*/
 char *
@@ -238,13 +254,18 @@ _XSetLocale(category, name)
     char       *name;
 {
     extern char *getenv();
+    char	*lang;
 
     if (name != NULL) {
-	if (*name == NULL) {
-	    strcpy(locale_name, getenv("LANG"));
+	LockMutex(&lock_name);
+	if (*name == '\0') {
+	    lang = getenv("LANG");
+	    if (*lang)
+		strcpy(locale_name, lang);
 	} else {
 	    strcpy(locale_name, name);
 	}
+	UnlockMutex(&lock_name);
 	if (!_Xsetlocale(LC_CTYPE, locale_name))
 	    return (NULL);
     }
@@ -256,6 +277,10 @@ _XSetLocale(category, name)
  * derives the locale name as used in the sample implementation from
  * that returned by setlocale  for example HP would use the following:
  */
+#ifndef lint
+static int lock_name;
+#endif
+
 #ifdef hpux
 static char *
 _XGetOSLocaleName()
@@ -265,6 +290,8 @@ _XGetOSLocaleName()
     int             len;
     static char     new_name[MAXLOCALE];
 
+    LockMutex(&lock_name);
+
     lc_name = setlocale(LC_CTYPE, NULL);  /* "/:<locale_name>;/" */
     lc_name = strchr (lc_name, ':');
     lc_name++;
@@ -272,6 +299,7 @@ _XGetOSLocaleName()
     len = end - lc_name;
     strncpy(new_name, lc_name, len);
     *(new_name + len) = '\0';
+    UnlockMutex(&lock_name);
     return new_name;
 }
 #else

@@ -1,5 +1,6 @@
 /*
- * $XConsortium: XRegstFlt.c,v 1.4 91/02/19 19:38:38 rws Exp $
+ * $Header: XRegstFlt.c,v 1.2 91/02/04 12:05:52 morisaki Exp $
+ * $Id: XRegstFlt.c,v 1.3 91/02/01 08:09:30 proj Exp Locker: proj $
  */
 
  /*
@@ -39,8 +40,8 @@ _XFreeIMFilters(display)
     register XFilterEventList fl;
 
     while (fl = display->im_filters) {
-	display->im_filters = fl->next;
-	Xfree((char *)fl);
+        display->im_filters = fl->next;
+        Xfree((char *)fl);
     }
 }
 
