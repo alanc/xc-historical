@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.35 94/02/07 14:49:28 gildea Exp $ */
+/* $XConsortium: fserve.c,v 1.36 94/02/07 14:50:05 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -915,6 +915,7 @@ fs_read_extent_info(fpe, blockrec)
     if (_fs_read_pad(conn, (char *) fsci,
 		     SIZEOF(fsXCharInfo) * rep.num_extents) == -1) {
 	fs_free_font(bfont);
+	xfree(fsci);
 	return StillWorking;
     }
     fsd->glyphs_to_get = 0;
