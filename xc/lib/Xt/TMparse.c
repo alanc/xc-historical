@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.107 91/04/19 19:02:48 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.108 91/04/19 19:58:22 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -45,13 +45,7 @@ SOFTWARE.
 
 static String XtNtranslationParseError = "translationParseError";
 
-/* Private definitions. */
-#define LF 0x0a
-#define BSLASH '\\'
-
 typedef int		EventType;
-typedef unsigned int	XtEventType;
-typedef unsigned int	EventCode;
 
 typedef String (*ParseProc)(); /* str, closure, event ,error */
     /* String str; */
