@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcs_id[] =
-    "$XConsortium: util.c,v 2.18 88/08/26 13:27:01 swick Exp $";
+    "$XConsortium: util.c,v 2.19 88/09/02 17:04:55 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -347,7 +347,7 @@ Scrn scrn;
 int position;
 {
     Widget result;
-    int width, height;
+    int height;
     static Arg arglist[] = {
 	{XtNlabel, NULL},
     };
@@ -385,9 +385,10 @@ MsgList CurMsgListOrCurMsg(toc)
 int GetHeight(w)
    Widget w;
 {
-    static Dimension height;
-    static Arg args[] = { {XtNheight, (XtArgVal)&height} } ;
+    Dimension height;
+    Arg args[1];
 
+    XtSetArg(args[0], XtNheight, &height);
     XtGetValues( w, args, (Cardinal)1 );
     return (int)height;
 }
@@ -396,9 +397,10 @@ int GetHeight(w)
 int GetWidth(w)
    Widget w;
 {
-    static Dimension width;
-    static Arg args[] = { {XtNwidth, (XtArgVal)&width} } ;
+    Dimension width;
+    Arg args[1];
 
+    XtSetArg(args[0], XtNwidth, &width);
     XtGetValues( w, args, (Cardinal)1 );
     return (int)width;
 }
