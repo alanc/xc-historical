@@ -1,11 +1,11 @@
-/* $XConsortium: CmdTbl.h,v 1.2 91/02/15 18:38:03 dave Exp $ */
+/* $XConsortium: CmdTbl.h,v 1.4 91/02/16 17:14:10 rws Exp $ */
 
 #ifndef TEKCMS_LT
 #define TEKCMS_LT
 
 #define LIBTEST_CMDTBL	LibTstCmdTbl 
 #define LIBTEST_COMMENT_CHAR    '#'
-#define LIBTEST_PROMPT	"TekCMS > "
+#define LIBTEST_PROMPT	"XCMS > "
 
 
 extern FuncTableEntry LibTstCmdTbl [];

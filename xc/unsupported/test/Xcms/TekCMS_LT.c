@@ -1,4 +1,4 @@
-/* $XConsortium: TekCMS_LT.c,v 1.2 91/02/15 18:39:11 dave Exp $ */
+/* $XConsortium: TekCMS_LT.c,v 1.3 91/02/17 17:17:43 rws Exp $ */
 
 /*
  * (c) Copyright 1990, Tektronix Inc.
@@ -144,7 +144,7 @@ XcmsCCC  *_pTest_CCC = NULL;
  */
 #define LIBTEST_CMDTBL	LibTstCmdTbl
 #define LIBTEST_COMMENT_CHAR    '#'
-#define LIBTEST_PROMPT	"TekCMS > "
+#define LIBTEST_PROMPT	"XCMS > "
 
 
 FuncTableEntry LibTstCmdTbl[] = {
