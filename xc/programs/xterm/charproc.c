@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.88 89/07/21 16:11:25 jim Exp $
+ * $XConsortium: charproc.c,v 1.89 89/07/27 16:52:39 jim Exp $
  */
 
 
@@ -139,7 +139,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.88 89/07/21 16:11:25 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.89 89/07/27 16:52:39 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2006,6 +2006,9 @@ static void VTInitialize (request, new)
     update_cursesemul();
     update_marginbell();
 #undef term
+
+   XtRealizeWidget (new->screen.mainMenu);
+   XtRealizeWidget (new->screen.vtMenu);
 
    /* create it, but don't realize it */
    ScrollBarOn (new, TRUE, FALSE);

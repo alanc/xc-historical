@@ -156,7 +156,7 @@ static Widget create_menu (xtw, toplevel, name, entries, nentries)
 	XawSimpleMenuAddEntry (m, entries->name, &arg, (Cardinal) 1);
     }
 
-    XtRealizeWidget (m);
+    /* do not realize at this point */
     return m;
 }
 
