@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.195 88/02/02 18:35:28 rws Exp $ */
+/* $Header: window.c,v 1.196 88/02/03 10:07:46 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -618,7 +618,7 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
             pParent->borderTile->refcnt++;
     }
     pWin->borderPixel = pParent->borderPixel;
-    pWin->visibility = VisibilityFullyObscured;
+    pWin->visibility = VisibilityNotViewable;
 		
     pWin->clientWinSize.x = x + (int)bw;
     pWin->clientWinSize.y = y + (int)bw;
