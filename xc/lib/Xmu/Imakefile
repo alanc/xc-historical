@@ -49,6 +49,7 @@ SRCS = \
 	DefErrMsg.c \
 	DelCmap.c \
 	DisplayQue.c \
+	Distinct.c \
 	DrawLogo.c \
 	DrRndRect.c \
 	EditresCom.c \
@@ -94,6 +95,7 @@ OBJS = \
 	DefErrMsg.o \
 	DelCmap.o \
 	DisplayQue.o \
+	Distinct.o \
 	DrawLogo.o \
 	DrRndRect.o \
 	EditresCom.o \
