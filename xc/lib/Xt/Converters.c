@@ -1,6 +1,6 @@
-/* $Header: Converters.c,v 1.8 88/02/03 23:01:31 swick Locked $ */
+/* $Header: Converters.c,v 1.9 88/02/03 23:02:08 swick Locked $ */
 #ifndef lint
-static char rcsid[] = "$Header: Converters.c,v 1.8 88/02/03 23:01:31 swick Locked $";
+static char rcsid[] = "$Header: Converters.c,v 1.9 88/02/03 23:02:08 swick Locked $";
 #endif lint
 
 /*
@@ -71,7 +71,6 @@ static void CvtStringToFontStruct();
 static void CvtStringToGeometry();
 static void CvtStringToInt();
 static void CvtStringToPixel();
-static void CvtStringToPixmap();
 
 /*ARGSUSED*/
 static void CvtIntToBoolean(args, num_args, fromVal, toVal)
