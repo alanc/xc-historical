@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.16 89/10/20 13:36:06 jim Exp $
+ * $XConsortium: listres.c,v 1.17 89/10/20 14:25:19 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -37,11 +37,13 @@ extern int nwidgets;
 static XrmOptionDescRec Options[] = {
   { "-top", "*topObject", XrmoptionSepArg, (caddr_t) NULL },
   { "-format", "*resourceFormat", XrmoptionSepArg, (caddr_t) NULL },
+  { "-tree", "*showTree", XrmoptionNoArg, (caddr_t) "on" },
   { "-nosuper", "*showSuper", XrmoptionNoArg, (caddr_t) "off" },
   { "-variable", "*showVariable", XrmoptionNoArg, (caddr_t) "on" },
 };
 
 static struct _appresources {
+    Boolean show_tree;
     Boolean show_all;
     Boolean show_variable;
     Boolean show_superclass;
@@ -52,6 +54,8 @@ static struct _appresources {
 
 static XtResource Resources[] = {
 #define offset(field) XtOffset(struct _appresources *, field)
+  { "showTree", "ShowTree", XtRBoolean, sizeof(Boolean),
+      offset(show_tree), XtRImmediate, (caddr_t) FALSE },
   { "showSuper", "ShowSuper", XtRBoolean, sizeof(Boolean),
       offset(show_superclass), XtRImmediate, (caddr_t) TRUE },
   { "showVariable", "ShowVariable", XtRBoolean, sizeof(Boolean),
@@ -74,6 +78,8 @@ usage ()
     fprintf(stderr,
 	    "    -all             list all known widget and object classes\n");
     fprintf(stderr,
+	    "    -tree            list all widgets and objects in a tree\n");
+    fprintf(stderr,
 	    "    -nosuper         do not print superclass resources\n");
     fprintf(stderr,
 	    "    -variable        show variable name instead of class name\n");
@@ -83,6 +89,34 @@ usage ()
 	    "    -format string   printf format for instance, class, type\n");
     fprintf(stderr, "\n");
     exit (1);
+}
+
+static void print_tree_level (wn, level)
+    register WidgetNode *wn;
+    register int level;
+{
+    register int i;
+
+    if (!wn) return;
+
+    for (i = 0; i < level; i++) {
+	putchar (' '); putchar (' '); 
+    }
+    printf ("%s    (%s)\n", WnClassname(wn), wn->label);
+    print_tree_level (wn->children, level + 1);
+    print_tree_level (wn->siblings, level);
+}
+
+static void tree_known_widgets ()
+{
+    register int i;
+    register WidgetNode *wn;
+
+    for (i = 0, wn = widget_list; i < nwidgets; i++, wn++) {
+	if (!wn->superclass) {		/* list all rooted objects */
+	    print_tree_level (wn, 0);
+	}
+    }
 }
 
 static void list_known_widgets ()
@@ -102,7 +136,6 @@ static void list_known_widgets ()
 	print_classname (wn, NULL, 0, False);
 	putchar ('\n');
     }
-    exit (0);
 }
 
 
@@ -124,7 +157,14 @@ main (argc, argv)
     XtGetApplicationResources (toplevel, (caddr_t) &Appresources,
 			       Resources, XtNumber(Resources), NULL, ZERO);
     initialize_nodes (widget_list, nwidgets);
-    if (argc == 1) list_known_widgets();
+    if (argc == 1) {
+	if (Appresources.show_tree) {
+	    tree_known_widgets();
+	} else {
+	    list_known_widgets();
+	}
+	exit (0);
+    }
 
     topnode = name_to_node (widget_list, nwidgets, Appresources.top_object);
     argc--, argv++;			/* skip command */
