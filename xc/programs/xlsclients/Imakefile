@@ -1,0 +1,5 @@
+LOCAL_LIBRARIES = $(XMU) $(XLIB)
+           SRCS = xlsclients.c 
+           OBJS = xlsclients.o 
+
+ComplexProgramTarget(xlsclients)
