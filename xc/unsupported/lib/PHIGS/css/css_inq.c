@@ -1,4 +1,4 @@
-/* $XConsortium: css_inq.c,v 5.3 91/05/05 15:33:23 rws Exp $ */
+/* $XConsortium: css_inq.c,v 5.4 91/07/12 20:25:13 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -315,9 +315,17 @@ Pint_list	*csslist, *arlist, *conflist;
 }
 
 static int
+#ifdef __STDC__
+css_inq_sort(n1_param, n2_param)
+register const void *n1_param, *n2_param;
+{
+    register const int *n1 = (int *) n1_param;
+    register const int *n2 = (int *) n2_param;
+#else
 css_inq_sort(n1, n2)
 register int *n1, *n2;
 {
+#endif
     if (*n1 < *n2 )
        	return(-1);
     else if (*n1 == *n2)
