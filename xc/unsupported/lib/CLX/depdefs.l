@@ -300,7 +300,7 @@
   #+clx-overlapping-arrays
   (obuf32 *empty-longs* :type buffer-longs)
   ;; Holding buffer for 16-bit text
-  (tbuf16 (make-sequence 'buffer-text16 *buffer-text16-size*))
+  (tbuf16 (make-sequence 'buffer-text16 *buffer-text16-size* :initial-element 0))
   ;; Probably EQ to Output-Stream
   (input-stream nil :type (or null stream))
   ;; Buffer for replies
