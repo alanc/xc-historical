@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: Xct.c,v 1.8 89/07/27 10:54:10 rws Exp $
+ * $XConsortium: Xct.c,v 1.9 89/10/07 14:06:35 rws Exp $
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -26,8 +26,10 @@ typedef struct _XctPriv {
     unsigned		flags;
     XctHDirection	*dirstack;
     unsigned		dirsize;
-    XctString		*encodings;
+    char		**encodings;
     unsigned		enc_count;
+    XctString		itembuf;
+    unsigned		buf_count;
 } *XctPriv;
 
 #define IsMore(priv) ((priv)->ptr != (priv)->ptrend)
@@ -60,6 +62,7 @@ char *realloc();
 #define HasC  1
 #define HasGL 2
 #define HasGR 4
+#define ToGL  8
 
 static void
 ComputeGLGR(data)
@@ -109,29 +112,29 @@ HandleMultiGL(data, c)
     switch (c) {
     case 0x41:
 	data->GL = "\101";
-	data->GL_char_size = 2;
 	data->GL_encoding = "GB2312.1980-0";
 	break;
     case 0x42:
 	data->GL = "\102";
-	data->GL_char_size = 2;
 	data->GL_encoding = "JISX0208.1983-0";
 	break;
     case 0x43:
 	data->GL = "\103";
-	data->GL_char_size = 2;
 	data->GL_encoding = "KSC5601.1987-0";
 	break;
     default:
 	return 0;
     }
     data->GL_set_size = 94;
+    data->GL_char_size = 2;
+#ifdef notdef
     if (c < 0x60)
 	data->GL_char_size = 2;
     else if (c < 0x70)
 	data->GL_char_size = 3;
     else
 	data->GL_char_size = 4;
+#endif
     data->GLGR_encoding = (char *)NULL;
     return 1;
 }
@@ -149,6 +152,7 @@ Handle94GR(data, c)
     default:
 	return 0;
     }
+    data->priv->flags &= ~ToGL;
     data->GR_set_size = 94;
     data->GR_char_size = 1;
     data->GLGR_encoding = (char *)NULL;
@@ -200,6 +204,7 @@ Handle96GR(data, c)
     default:
 	return 0;
     }
+    data->priv->flags &= ~ToGL;
     data->GR_set_size = 96;
     data->GR_char_size = 1;
     ComputeGLGR(data);
@@ -214,27 +219,42 @@ HandleMultiGR(data, c)
     switch (c) {
     case 0x41:
 	data->GR = "\101";
-	data->GR_encoding = "GB2312.1980-1";
+	if (data->flags & XctShiftMultiGRToGL)
+	    data->GR_encoding = "GB2312.1980-0";
+	else
+	    data->GR_encoding = "GB2312.1980-1";
 	break;
     case 0x42:
 	data->GR = "\102";
-	data->GR_encoding = "JISX0208.1983-1";
+	if (data->flags & XctShiftMultiGRToGL)
+	    data->GR_encoding = "JISX0208.1983-0";
+	else
+	    data->GR_encoding = "JISX0208.1983-1";
 	break;
     case 0x43:
 	data->GR = "\103";
-	data->GR_encoding = "KSC5601.1987-1";
+	if (data->flags & XctShiftMultiGRToGL)
+	    data->GR_encoding = "KSC5601.1987-0";
+	else
+	    data->GR_encoding = "KSC5601.1987-1";
 	break;
     default:
 	return 0;
     }
+    if (data->flags & XctShiftMultiGRToGL)
+	data->priv->flags |= ToGL;
+    else
+	data->priv->flags &= ~ToGL;
     data->GR_set_size = 94;
     data->GR_char_size = 2;
+#ifdef notdef
     if (c < 0x60)
 	data->GR_char_size = 2;
     else if (c < 0x70)
 	data->GR_char_size = 3;
     else
 	data->GR_char_size = 4;
+#endif
     data->GLGR_encoding = (char *)NULL;
     return 1;
 }
@@ -258,7 +278,7 @@ HandleExtended(data, c)
     len = ptr - enc;
     for (i = 0;
 	 (i < priv->enc_count) &&
-	 strncmp((char *)priv->encodings[i], (char *)enc, len);
+	 strncmp(priv->encodings[i], (char *)enc, len);
 	 i++)
 	;
     if (i == priv->enc_count) {
@@ -273,16 +293,44 @@ HandleExtended(data, c)
 	ptr[len] = 0x00;
 	priv->enc_count++;
 	if (priv->encodings)
-	    priv->encodings = (XctString *)realloc(
-				       (char *)priv->encodings,
-				       priv->enc_count * sizeof(XctString));
+	    priv->encodings = (char **)realloc(
+					    (char *)priv->encodings,
+					    priv->enc_count * sizeof(char *));
 	else
-	    priv->encodings = (XctString *)malloc(sizeof(XctString));
-	priv->encodings[i] = ptr;
+	    priv->encodings = (char **)malloc(sizeof(char *));
+	priv->encodings[i] = (char *)ptr;
     }
-    data->encoding = (char *)priv->encodings[i];
+    data->encoding = priv->encodings[i];
     data->char_size = c - 0x30;
     return 1;
+}
+
+ShiftGRToGL(data, hasCdata)
+    register XctData data;
+    int hasCdata;
+{
+    register XctPriv priv = data->priv;
+    register int i;
+
+    if (data->item_length > priv->buf_count) {
+	priv->buf_count = data->item_length;
+	if (priv->itembuf)
+	    priv->itembuf = (XctString)realloc((char *)priv->itembuf,
+					       priv->buf_count);
+	else
+	    priv->itembuf = (XctString)malloc(priv->buf_count);
+    }
+    bcopy((char *)data->item, (char *)priv->itembuf, data->item_length);
+    data->item = priv->itembuf;
+    if (hasCdata) {
+	for (i = data->item_length; --i >= 0; ) {
+	    if (IsGR(data->item[i]))
+		data->item[i] &= 0x7f;
+	}
+    } else {
+	for (i = data->item_length; --i >= 0; )
+	    data->item[i] &= 0x7f;
+    }
 }
 
 /* Create an XctData structure for parsing a Compound Text string. */
@@ -298,14 +346,16 @@ XctCreate(string, length, flags)
     data = (XctData)malloc(sizeof(struct _XctRec) + sizeof(struct _XctPriv));
     if (!data)
 	return data;
-    data->priv = priv = (XctPriv)((char *)data + sizeof(struct _XctRec));
+    data->priv = priv = (XctPriv)(data + 1);
     data->total_string = string;
     data->total_length = length;
     data->flags = flags;
     priv->dirstack = (XctHDirection *)NULL;
     priv->dirsize = 0;
-    priv->encodings = (XctString *)NULL;
+    priv->encodings = (char **)NULL;
     priv->enc_count = 0;
+    priv->itembuf = (XctString)NULL;
+    priv->buf_count = 0;
     XctReset(data);
     return data;
 }
@@ -510,7 +560,10 @@ XctNextItem(data)
 		     (priv->flags & UsedDirection)))
 		    return XctError;
 		priv->flags |= UsedGraphic;
-		return XctGRSegment;
+		if (!(priv->flags & ToGL))
+		    return XctGRSegment;
+		ShiftGRToGL(data, 0);
+		return XctGLSegment;
 	    }
 	} else {
 	    bits = 0;
@@ -524,8 +577,11 @@ XctNextItem(data)
 		    NEXT;
 		} else {
 		    len = data->item_length;
-		    NEXT;
 		    if (IsGL(c)) {
+			if ((data->flags & XctShiftMultiGRToGL) &&
+			    (bits & HasGR))
+			    break;
+			NEXT;
 			bits |= HasGL;
 			while (IsMore(priv) && IsGL(*priv->ptr)) {
 			    NEXT;
@@ -534,6 +590,10 @@ XctNextItem(data)
 			    ((data->item_length - len) % data->GL_char_size))
 			    return XctError;
 		    } else {
+			if ((data->flags & XctShiftMultiGRToGL) &&
+			    (bits & HasGL))
+			    break;
+			NEXT;
 			bits |= HasGR;
 			while (IsMore(priv) && IsGR(*priv->ptr)) {
 			    NEXT;
@@ -553,6 +613,8 @@ XctNextItem(data)
 		    if ((data->horz_depth == 0) &&
 			(priv->flags & UsedDirection))
 			return XctError;
+		    if ((data->flags & XctShiftMultiGRToGL) && (bits & HasGR))
+			ShiftGRToGL(data, bits & HasC);
 		}
 		if ((bits == (HasGL|HasGR)) ||
 		    (data->GLGR_encoding && !(bits & HasC))) {
@@ -604,8 +666,10 @@ XctFree(data)
     if (data->flags & XctFreeString)
 	free((char *)data->total_string);
     for (i = 0; i < priv->enc_count; i++)
-	free((char *)priv->encodings[i]);
+	free(priv->encodings[i]);
     if (priv->encodings)
 	free((char *)priv->encodings);
+    if (priv->itembuf)
+	free((char *)priv->itembuf);
     free((char *)data);
 }
