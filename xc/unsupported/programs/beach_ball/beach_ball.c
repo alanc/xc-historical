@@ -1,4 +1,4 @@
-/* $XConsortium: beach_ball.c,v 5.3 91/04/01 19:35:32 hersh Exp $ */
+/* $XConsortium: beach_ball.c,v 5.4 91/04/01 19:45:45 hersh Exp $ */
 /***********************************************************
 Copyright 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 
@@ -30,7 +30,12 @@ SOFTWARE.
 #include <stdio.h>
 #include <errno.h>
 #include <ctype.h>
+#include <X11/Xosdefs.h>
+#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
+#else
+extern int rand();
+#endif
 #include <math.h>
 #ifdef PEX_SI_PHIGS
 #include <X11/Xlib.h>
