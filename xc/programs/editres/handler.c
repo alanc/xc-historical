@@ -67,7 +67,7 @@ XtPointer value, call_data;
     if (!XtIsWidget(w))     /* Make sure that we use a "Real" widget here. */
 	w = XtParent(w);
 
-    _XawResetStream(&(global_client.stream)); /* an empty message. */
+    _EresResetStream(&(global_client.stream)); /* an empty message. */
     SetCommand(w, LocalSendWidgetTree, NULL);
 }
 
@@ -260,8 +260,8 @@ XtPointer junk, garbage;
      * No resoruces, fetch them from the client.
      */
 
-    _XawResetStream(stream); 
-    _XawInsert16(stream, (unsigned short) 1);
+    _EresResetStream(stream); 
+    _EresInsert16(stream, (unsigned short) 1);
     InsertWidgetFromNode(stream, node);
     SetCommand(global_tree_info->tree_widget, LocalGetResources, NULL);
 }
@@ -690,18 +690,18 @@ XtPointer node_ptr, junk;
     XrmPutLineResource(&(info.database), value);
 
 
-    _XawResetStream(stream);
-    _XawInsertString8(stream, info.name); /* Insert name */
-    _XawInsertString8(stream, XtRString); /* insert type */
+    _EresResetStream(stream);
+    _EresInsertString8(stream, info.name); /* Insert name */
+    _EresInsertString8(stream, XtRString); /* insert type */
 
     /*
      * Insert value.
      */
 
     value = GetResourceValueForSetValues(node, &size);
-    _XawInsert16(stream, size);    
+    _EresInsert16(stream, size);    
     for (i = 0; i < size; i++) 
-	_XawInsert8(stream, value[i]);
+	_EresInsert8(stream, value[i]);
     XtFree(value);
     len = stream->current - stream->top;
 
@@ -709,7 +709,7 @@ XtPointer node_ptr, junk;
      * Insert the widget count, overriden later. 
      */
 
-    _XawInsert16(stream, 0); 
+    _EresInsert16(stream, 0); 
 
     ExecuteOverAllNodes(node->tree_info->top_node,
 			CreateSetValuesCommand, (XtPointer) &info);

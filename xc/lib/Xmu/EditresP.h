@@ -240,9 +240,9 @@ typedef struct _ProtocolStream {
  *
  ************************************************************/
 
-void _XawInsertString8(), _XawInsert8(), _XawInsert16(), _XawInsert32();
-void _XawInsertWidgetInfo(), _XawInsertWidget(), _XawResetStream();
+void _EresInsertString8(), _EresInsert8(), _EresInsert16(), _EresInsert32();
+void _EresInsertWidgetInfo(), _EresInsertWidget(), _EresResetStream();
 
-Boolean _XawRetrieve8(), _XawRetrieve16(), _XawRetrieveSigned16();
-Boolean _XawRetrieve32(), _XawRetrieveString8(), _XawRetrieveWidgetInfo();
+Boolean _EresRetrieve8(), _EresRetrieve16(), _EresRetrieveSigned16();
+Boolean _EresRetrieve32(), _EresRetrieveString8(), _EresRetrieveWidgetInfo();
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: geometry.c,v 1.6 90/06/25 18:09:25 kit Exp $
+ * $XConsortium: geometry.c,v 1.7 90/06/28 12:10:56 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -64,10 +64,10 @@ Widget w;
 	if (node != NULL) {
 	    ProtocolStream * stream = &(global_client.stream);	    
 	    
-	    _XawResetStream(stream);
+	    _EresResetStream(stream);
 	    InsertWidgetFromNode(stream, node);
-	    _XawInsert16(stream, (short) x);
-	    _XawInsert16(stream, (short) y);
+	    _EresInsert16(stream, (short) x);
+	    _EresInsert16(stream, (short) y);
 	    SetCommand(w, LocalFindChild, NULL);
 	    return;
 	}
@@ -181,11 +181,11 @@ TreeInfo * tree_info;
 	return;
     }
 	
-    _XawResetStream(stream); 
+    _EresResetStream(stream); 
     /*
      * Insert the number of widgets. 
      */
-    _XawInsert16(stream, (unsigned short) tree_info->num_nodes);
+    _EresInsert16(stream, (unsigned short) tree_info->num_nodes);
 
     for (i = 0; i < tree_info->num_nodes; i++) 
 	InsertWidgetFromNode(stream, global_tree_info->active_nodes[i]);

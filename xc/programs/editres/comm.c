@@ -364,7 +364,7 @@ int * format;
 	return;
     }
 
-    (void) _XawRetrieve8(stream, &ident);
+    (void) _EresRetrieve8(stream, &ident);
     if (global_client.ident != ident) {
 #ifdef DEBUG
 	if (global_resources.debug)
@@ -377,8 +377,8 @@ int * format;
 	return;
     }
 
-    (void) _XawRetrieve8(stream, &error_code); 
-    (void) _XawRetrieve32(stream, &(stream->size));
+    (void) _EresRetrieve8(stream, &error_code); 
+    (void) _EresRetrieve32(stream, &(stream->size));
     stream->top = stream->current; /* reset stream to top of value.*/
 
     switch ((int) error_code) {
@@ -452,7 +452,7 @@ CurrentClient * client_data;
     stream->current = stream->real_top;
     stream->alloc = stream->size + (2 * HEADER_SIZE);	
     
-    _XawInsert8(stream, client_data->ident);
+    _EresInsert8(stream, client_data->ident);
     switch(client_data->command) {
     case LocalSendWidgetTree:
 	command = SendWidgetTree;
@@ -474,8 +474,8 @@ CurrentClient * client_data;
 	break;
     }
 				  
-    _XawInsert8(stream, (unsigned char) command);
-    _XawInsert32(stream, old_size);
+    _EresInsert8(stream, (unsigned char) command);
+    _EresInsert32(stream, old_size);
 
     stream->alloc = old_alloc;
     stream->current = old_current;
@@ -507,7 +507,7 @@ ProtocolStream * stream;
 
 	    send_event->type = SendWidgetTree;
 
-	    if (!_XawRetrieve16(stream, &(send_event->num_entries)))
+	    if (!_EresRetrieve16(stream, &(send_event->num_entries)))
 		goto done;
 	    
 	    send_event->info = (WidgetTreeInfo *)
@@ -516,10 +516,10 @@ ProtocolStream * stream;
 
 	    for (i = 0; i < send_event->num_entries; i++) {
 		WidgetTreeInfo * info = send_event->info + i;
-		if (!(_XawRetrieveWidgetInfo(stream, &(info->widgets)) &&
-		      _XawRetrieveString8(stream, &(info->name)) &&
-		      _XawRetrieveString8(stream, &(info->class)) &&
-		      _XawRetrieve32(stream, &(info->window)))) 
+		if (!(_EresRetrieveWidgetInfo(stream, &(info->widgets)) &&
+		      _EresRetrieveString8(stream, &(info->name)) &&
+		      _EresRetrieveString8(stream, &(info->class)) &&
+		      _EresRetrieve32(stream, &(info->window)))) 
 		{
 		    goto done;
 		}
@@ -532,7 +532,7 @@ ProtocolStream * stream;
 
 	    sv_event->type = SetValues;
 
-	    if (!_XawRetrieve16(stream, &(sv_event->num_entries)))
+	    if (!_EresRetrieve16(stream, &(sv_event->num_entries)))
 		goto done;
 	    
 	    sv_event->info = (SetValuesInfo *) XtCalloc(sizeof(SetValuesInfo),
@@ -540,8 +540,8 @@ ProtocolStream * stream;
 
 	    for (i = 0; i < sv_event->num_entries; i++) {
 		SetValuesInfo * info = sv_event->info + i;
-		if (!(_XawRetrieveWidgetInfo(stream, &(info->widgets)) &&
-		      _XawRetrieveString8(stream, &(info->message))))
+		if (!(_EresRetrieveWidgetInfo(stream, &(info->widgets)) &&
+		      _EresRetrieveString8(stream, &(info->message))))
 		{
 		    goto done;
 		}
@@ -554,7 +554,7 @@ ProtocolStream * stream;
 	    
 	    res_event->type = GetGeometry;
 
-	    if (!_XawRetrieve16(stream, &(res_event->num_entries)))
+	    if (!_EresRetrieve16(stream, &(res_event->num_entries)))
 		goto done;
 
 	    res_event->info = (GetResourcesInfo *) 
@@ -563,19 +563,19 @@ ProtocolStream * stream;
 
 	    for (i = 0; i < res_event->num_entries; i++) {
 		GetResourcesInfo * res_info = res_event->info + i;
-		if (!(_XawRetrieveWidgetInfo(stream, &(res_info->widgets)) &&
-		      _XawRetrieveBoolean(stream, &(res_info->error))))
+		if (!(_EresRetrieveWidgetInfo(stream, &(res_info->widgets)) &&
+		      _EresRetrieveBoolean(stream, &(res_info->error))))
 		{
 		    goto done;
 		}
 		if (res_info->error) {
-		    if (!_XawRetrieveString8(stream, &(res_info->message))) 
+		    if (!_EresRetrieveString8(stream, &(res_info->message))) 
 			goto done;
 		}
 		else {
 		    unsigned int j;
 
-		    if (!_XawRetrieve16(stream, &(res_info->num_resources)))
+		    if (!_EresRetrieve16(stream, &(res_info->num_resources)))
 			goto done;
 
 		    res_info->res_info = (ResourceInfo *) 
@@ -584,10 +584,10 @@ ProtocolStream * stream;
 
 		    for (j = 0; j < res_info->num_resources; j++) {
 			ResourceInfo * info = res_info->res_info + j;
-			if (!(_XawRetrieveResType(stream, &(info->res_type)) &&
-			      _XawRetrieveString8(stream, &(info->name)) &&
-			      _XawRetrieveString8(stream, &(info->class)) &&
-			      _XawRetrieveString8(stream, &(info->type))))
+			if (!(_EresRetrieveResType(stream, &(info->res_type)) &&
+			      _EresRetrieveString8(stream, &(info->name)) &&
+			      _EresRetrieveString8(stream, &(info->class)) &&
+			      _EresRetrieveString8(stream, &(info->type))))
 			{
 			    goto done;
 			}
@@ -603,7 +603,7 @@ ProtocolStream * stream;
 
 	    geom_event->type = GetGeometry;
 
-	    if (!_XawRetrieve16(stream, &(geom_event->num_entries)))
+	    if (!_EresRetrieve16(stream, &(geom_event->num_entries)))
 		goto done;
 	    
 	    geom_event->info = (GetGeomInfo *) XtCalloc(sizeof(GetGeomInfo),
@@ -611,22 +611,22 @@ ProtocolStream * stream;
 
 	    for (i = 0; i < geom_event->num_entries; i++) {
 		GetGeomInfo * info = geom_event->info + i;
-		if (!(_XawRetrieveWidgetInfo(stream, &(info->widgets)) &&
-		      _XawRetrieveBoolean(stream, &(info->error))))
+		if (!(_EresRetrieveWidgetInfo(stream, &(info->widgets)) &&
+		      _EresRetrieveBoolean(stream, &(info->error))))
 		{
 		    goto done;
 		}
 		if (info->error) {
-		    if (!_XawRetrieveString8(stream, &(info->message)))
+		    if (!_EresRetrieveString8(stream, &(info->message)))
 			goto done;
 		}
 		else {
-		    if (!(_XawRetrieveBoolean(stream, &(info->visable)) &&
-			  _XawRetrieveSigned16(stream, &(info->x)) &&
-			  _XawRetrieveSigned16(stream, &(info->y)) &&
-			  _XawRetrieve16(stream, &(info->width)) &&
-			  _XawRetrieve16(stream, &(info->height)) &&
-			  _XawRetrieve16(stream, &(info->border_width))))
+		    if (!(_EresRetrieveBoolean(stream, &(info->visable)) &&
+			  _EresRetrieveSigned16(stream, &(info->x)) &&
+			  _EresRetrieveSigned16(stream, &(info->y)) &&
+			  _EresRetrieve16(stream, &(info->width)) &&
+			  _EresRetrieve16(stream, &(info->height)) &&
+			  _EresRetrieve16(stream, &(info->border_width))))
 		    {
 			goto done;
 		    }
@@ -640,7 +640,7 @@ ProtocolStream * stream;
 
 	    find_event->type = FindChild;
 
-	    if (!_XawRetrieveWidgetInfo(stream, &(find_event->widgets)))
+	    if (!_EresRetrieveWidgetInfo(stream, &(find_event->widgets)))
 		goto done;
 	}
 	break;

@@ -27,8 +27,8 @@ extern void exit();
  * Retrieving ResType and Boolean is the same as retrieving a Card8.
  */
 
-#define _XawRetrieveBoolean _XawRetrieve8
-#define _XawRetrieveResType _XawRetrieve8
+#define _EresRetrieveBoolean _EresRetrieve8
+#define _EresRetrieveResType _EresRetrieve8
 
 /*
  * Contexts to use with the X Context Manager.

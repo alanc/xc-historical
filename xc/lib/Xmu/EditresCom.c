@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditResCom.c,v 1.11 90/06/25 18:08:36 kit Exp $
+ * $XConsortium: EditResCom.c,v 1.12 90/06/28 12:11:45 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -34,8 +34,8 @@
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Xaw/EditRes.h>
 
-#define _XawInsertBool _XawInsert8	
-#define _XawInsertResourceType _XawInsert8
+#define _EresInsertBool _EresInsert8	
+#define _EresInsertResourceType _EresInsert8
 
 /************************************************************
  *
@@ -165,8 +165,8 @@ Boolean *cont;
 	res_comm = c_event->data.l[1];
 	ident = (ResIdent) c_event->data.l[2];
 	if (c_event->data.l[3] != CURRENT_PROTOCOL_VERSION) {
-	    _XawResetStream(&global_stream);
-	    _XawInsert8(&global_stream, CURRENT_PROTOCOL_VERSION);
+	    _EresResetStream(&global_stream);
+	    _EresInsert8(&global_stream, CURRENT_PROTOCOL_VERSION);
 	    SendCommand(w, res_comm, ident, ProtocolMismatch, &global_stream);
 	    return;
 	}
@@ -216,15 +216,15 @@ unsigned long length;
 	return(NULL);
     }
 
-    (void) _XawRetrieve8(stream, &temp);
+    (void) _EresRetrieve8(stream, &temp);
     if (temp != ident)		/* Id's don't match, ignore request. */
 	return(NULL);		
 
     event = (EditresEvent *) XtCalloc(sizeof(EditresEvent), 1);
 
-    (void) _XawRetrieve8(stream, &temp);
+    (void) _EresRetrieve8(stream, &temp);
     event->any_event.type = (EditresCommand) temp;
-    (void) _XawRetrieve32(stream, &(stream->size));
+    (void) _EresRetrieve32(stream, &(stream->size));
     stream->top = stream->current; /* reset stream to top of value.*/
 	
     /*
@@ -238,8 +238,8 @@ unsigned long length;
         {
 	    SetValuesEvent * sv_event = (SetValuesEvent *) event;
 	    
-	    if ( !(_XawRetrieveString8(stream, &(sv_event->name)) &&
-		   _XawRetrieveString8(stream, &(sv_event->res_type))))
+	    if ( !(_EresRetrieveString8(stream, &(sv_event->name)) &&
+		   _EresRetrieveString8(stream, &(sv_event->res_type))))
 	    {
 		goto done;
 	    }
@@ -249,14 +249,14 @@ unsigned long length;
 	     * value out by hand.
 	     */
 
-	    if (!_XawRetrieve16(stream, &(sv_event->value_len)))
+	    if (!_EresRetrieve16(stream, &(sv_event->value_len)))
 		goto done;
 
 	    sv_event->value = XtMalloc(sizeof(char) * 
 				       (sv_event->value_len + 1));
 
 	    for (i = 0; i < sv_event->value_len; i++) {
-		if (!_XawRetrieve8(stream, 
+		if (!_EresRetrieve8(stream, 
 				   (unsigned char *) sv_event->value + i)) 
 		{
 		    goto done;
@@ -264,14 +264,14 @@ unsigned long length;
 	    }
 	    sv_event->value[i] = '\0'; /* NULL terminate that sucker. */
 
-	    if (!_XawRetrieve16(stream, &(sv_event->num_entries)))
+	    if (!_EresRetrieve16(stream, &(sv_event->num_entries)))
 		goto done;
 
 	    sv_event->widgets = (WidgetInfo *)
 		XtCalloc(sizeof(WidgetInfo), sv_event->num_entries);
 	    
 	    for (i = 0; i < sv_event->num_entries; i++) {
-		if (!_XawRetrieveWidgetInfo(stream, sv_event->widgets + i))
+		if (!_EresRetrieveWidgetInfo(stream, sv_event->widgets + i))
 		    goto done;
 	    }
 	}
@@ -283,9 +283,9 @@ unsigned long length;
 	    find_event->widgets = (WidgetInfo *) 
 		                  XtCalloc(sizeof(WidgetInfo), 1);
 
-	    if (!(_XawRetrieveWidgetInfo(stream, find_event->widgets) &&
-		  _XawRetrieveSigned16(stream, &(find_event->x)) &&
-		  _XawRetrieveSigned16(stream, &(find_event->y))))
+	    if (!(_EresRetrieveWidgetInfo(stream, find_event->widgets) &&
+		  _EresRetrieveSigned16(stream, &(find_event->x)) &&
+		  _EresRetrieveSigned16(stream, &(find_event->y))))
 	    {
 		goto done;
 	    }	    				
@@ -297,13 +297,13 @@ unsigned long length;
         {
 	    GenericGetEvent * get_event = (GenericGetEvent *) event;
 	    
-	    if (!_XawRetrieve16(stream, &(get_event->num_entries)))
+	    if (!_EresRetrieve16(stream, &(get_event->num_entries)))
 		goto done;
 		
 	    get_event->widgets = (WidgetInfo *)
 		XtCalloc(sizeof(WidgetInfo), get_event->num_entries);
 	    for (i = 0; i < get_event->num_entries; i++) {
-		if (!_XawRetrieveWidgetInfo(stream, get_event->widgets + i)) 
+		if (!_EresRetrieveWidgetInfo(stream, get_event->widgets + i)) 
 		    goto done;
 	    }
 	}
@@ -427,7 +427,7 @@ EditresEvent * event;
 	}
     }
 
-    _XawResetStream(&global_stream);
+    _EresResetStream(&global_stream);
     if ((str = (*func)(w, event, &global_stream)) == NULL)
 	SendCommand(w, sel, ident, PartialSuccess, &global_stream);
     else {
@@ -501,8 +501,8 @@ Atom sel;
 ResIdent ident;
 char * str;
 {
-    _XawResetStream(&global_stream);
-    _XawInsertString8(&global_stream, str);
+    _EresResetStream(&global_stream);
+    _EresInsertString8(&global_stream, str);
     SendCommand(w, sel, ident, Failure, &global_stream);
 }
 
@@ -541,9 +541,9 @@ ProtocolStream * stream;
     stream->current = stream->real_top;
     stream->alloc = stream->size + (2 * HEADER_SIZE);	
     
-    _XawInsert8(stream, ident);
-    _XawInsert8(stream, (unsigned char) command);
-    _XawInsert32(stream, old_size);
+    _EresInsert8(stream, ident);
+    _EresInsert8(stream, (unsigned char) command);
+    _EresInsert32(stream, old_size);
 
     stream->alloc = old_alloc;
     stream->current = old_current;
@@ -729,12 +729,12 @@ ProtocolStream * stream;
     unsigned short count = 0;
     SetValuesEvent * sv_event = (SetValuesEvent *) event;
     
-    _XawInsert16(stream, count); /* insert 0, will be overwritten later. */
+    _EresInsert16(stream, count); /* insert 0, will be overwritten later. */
 
     for (i = 0 ; i < sv_event->num_entries; i++) {
 	if ((str = VerifyWidget(w, &(sv_event->widgets[i]))) != NULL) {
-	    _XawInsertWidgetInfo(stream, &(sv_event->widgets[i]));
-	    _XawInsertString8(stream, str);
+	    _EresInsertWidgetInfo(stream, &(sv_event->widgets[i]));
+	    _EresInsertString8(stream, str);
 	    XtFree(str);
 	    count++;
 	}
@@ -795,8 +795,8 @@ Cardinal * num_params;
      */ 
 
     (*(info->count))++;
-    _XawInsertWidgetInfo(info->stream, info->entry);
-    _XawInsertString8(info->stream, buf);
+    _EresInsertWidgetInfo(info->stream, info->entry);
+    _EresInsertString8(info->stream, buf);
 }
 
 /*	Function Name: ExecuteSetValues
@@ -867,7 +867,7 @@ ProtocolStream * stream;
      * hold space for count, overwritten later. 
      */
 
-    _XawInsert16(stream, (unsigned int) 0);
+    _EresInsert16(stream, (unsigned int) 0);
 
     DumpChildren(w, stream, &count);
 
@@ -903,7 +903,7 @@ unsigned short *count;
 	
     InsertWidget(stream, w);       /* Insert the widget into the stream. */
 
-    _XawInsertString8(stream, XtName(w)); /* Insert name */
+    _EresInsertString8(stream, XtName(w)); /* Insert name */
 
     if (XtIsApplicationShell(w)) { /* Class */
 	ApplicationShellWidget a = (ApplicationShellWidget) w;
@@ -912,7 +912,7 @@ unsigned short *count;
     else
 	class = XtClass(w)->core_class.class_name;
 
-    _XawInsertString8(stream, class); /* Insert class */
+    _EresInsertString8(stream, class); /* Insert class */
 
      if (XtIsWidget(w))
 	 if (XtIsRealized(w))
@@ -922,7 +922,7 @@ unsigned short *count;
      else
 	 window = EDITRES_IS_OBJECT;
 
-    _XawInsert32(stream, window); /* Insert window id. */
+    _EresInsert32(stream, window); /* Insert window id. */
 
     /*
      * Find children and recurse.
@@ -959,7 +959,7 @@ ProtocolStream * stream;
     char * str;
     GetGeomEvent * geom_event = (GetGeomEvent *) event;
     
-    _XawInsert16(stream, geom_event->num_entries);
+    _EresInsert16(stream, geom_event->num_entries);
 
     for (i = 0 ; i < geom_event->num_entries; i++) {
 
@@ -967,10 +967,10 @@ ProtocolStream * stream;
 	 * Send out the widget id. 
 	 */
 
-	_XawInsertWidgetInfo(stream, &(geom_event->widgets[i]));
+	_EresInsertWidgetInfo(stream, &(geom_event->widgets[i]));
 	if ((str = VerifyWidget(w, &(geom_event->widgets[i]))) != NULL) {
-	    _XawInsertBool(stream, True); /* an error occured. */
-	    _XawInsertString8(stream, str);	/* set message. */
+	    _EresInsertBool(stream, True); /* an error occured. */
+	    _EresInsertString8(stream, str);	/* set message. */
 	    XtFree(str);
 	}
 	else 
@@ -999,10 +999,10 @@ ProtocolStream * stream;
     Position x, y;
     
     if ( !XtIsRectObj(w) || (XtIsWidget(w) && !XtIsRealized(w)) ) {
-	_XawInsertBool(stream, False); /* no error. */
-	_XawInsertBool(stream, False); /* not visable. */
+	_EresInsertBool(stream, False); /* no error. */
+	_EresInsertBool(stream, False); /* not visable. */
 	for (i = 0; i < 5; i++) /* fill in extra space with 0's. */
-	    _XawInsert16(stream, 0);
+	    _EresInsert16(stream, 0);
 	return;
     }
 
@@ -1023,29 +1023,29 @@ ProtocolStream * stream;
 	
 	if (XGetWindowAttributes(XtDisplay(w), XtWindow(w), &attrs) != 0) {
 	    if (attrs.map_state != IsViewable) {
-		_XawInsertBool(stream, False); /* no error. */
-		_XawInsertBool(stream, False); /* not visable. */
+		_EresInsertBool(stream, False); /* no error. */
+		_EresInsertBool(stream, False); /* not visable. */
 		for (i = 0; i < 5; i++) /* fill in extra space with 0's. */
-		    _XawInsert16(stream, 0);
+		    _EresInsert16(stream, 0);
 		return;
 	    }
 	}
 	else {
-	    _XawInsert8(stream, True); /* Error occured. */
-	    _XawInsertString8(stream, "XGetWindowAttributes failed.");
+	    _EresInsert8(stream, True); /* Error occured. */
+	    _EresInsertString8(stream, "XGetWindowAttributes failed.");
 	    return;
 	}
     }
 
     XtTranslateCoords(w, -((int) border_width), -((int) border_width), &x, &y);
 
-    _XawInsertBool(stream, False); /* no error. */
-    _XawInsertBool(stream, True); /* Visable. */
-    _XawInsert16(stream, x);
-    _XawInsert16(stream, y);
-    _XawInsert16(stream, width);
-    _XawInsert16(stream, height);
-    _XawInsert16(stream, border_width);
+    _EresInsertBool(stream, False); /* no error. */
+    _EresInsertBool(stream, True); /* Visable. */
+    _EresInsert16(stream, x);
+    _EresInsert16(stream, y);
+    _EresInsert16(stream, width);
+    _EresInsert16(stream, height);
+    _EresInsert16(stream, border_width);
 }
 
 /************************************************************
@@ -1197,20 +1197,20 @@ ProtocolStream * stream;
     char * str;
     GetResEvent * res_event = (GetResEvent *) event;
     
-    _XawInsert16(stream, res_event->num_entries); /* number of replys */
+    _EresInsert16(stream, res_event->num_entries); /* number of replys */
 
     for (i = 0 ; i < res_event->num_entries; i++) {
 	/* 
 	 * Send out the widget id. 
 	 */
-	_XawInsertWidgetInfo(stream, &(res_event->widgets[i]));
+	_EresInsertWidgetInfo(stream, &(res_event->widgets[i]));
 	if ((str = VerifyWidget(w, &(res_event->widgets[i]))) != NULL) {
-	    _XawInsertBool(stream, True); /* an error occured. */
-	    _XawInsertString8(stream, str);	/* set message. */
+	    _EresInsertBool(stream, True); /* an error occured. */
+	    _EresInsertString8(stream, str);	/* set message. */
 	    XtFree(str);
 	}
 	else {
-	    _XawInsertBool(stream, False); /* no error occured. */
+	    _EresInsertBool(stream, False); /* no error occured. */
 	    ExecuteGetResources(res_event->widgets[i].real_widget,
 				stream);
 	}
@@ -1245,17 +1245,17 @@ ProtocolStream * stream;
     else
 	num_cons = 0;
 
-    _XawInsert16(stream, num_norm + num_cons); /* how many resources. */
+    _EresInsert16(stream, num_norm + num_cons); /* how many resources. */
     
     /*
      * Insert all the normal resources.
      */
 
     for ( i = 0; i < (int) num_norm; i++) {
-	_XawInsertResourceType(stream, NormalResource);
-	_XawInsertString8(stream, norm_list[i].resource_name);
-	_XawInsertString8(stream, norm_list[i].resource_class);
-	_XawInsertString8(stream, norm_list[i].resource_type);
+	_EresInsertResourceType(stream, NormalResource);
+	_EresInsertString8(stream, norm_list[i].resource_name);
+	_EresInsertString8(stream, norm_list[i].resource_class);
+	_EresInsertString8(stream, norm_list[i].resource_type);
     }
     XtFree((char *) norm_list);
 
@@ -1265,10 +1265,10 @@ ProtocolStream * stream;
 
     if (num_cons > 0) {
 	for ( i = 0; i < (int) num_cons; i++) {
-	    _XawInsertResourceType(stream, ConstraintResource);
-	    _XawInsertString8(stream, cons_list[i].resource_name);
-	    _XawInsertString8(stream, cons_list[i].resource_class);
-	    _XawInsertString8(stream, cons_list[i].resource_type);
+	    _EresInsertResourceType(stream, ConstraintResource);
+	    _EresInsertString8(stream, cons_list[i].resource_name);
+	    _EresInsertString8(stream, cons_list[i].resource_class);
+	    _EresInsertString8(stream, cons_list[i].resource_type);
 	}
 	XtFree((char *) cons_list);
     }
@@ -1311,9 +1311,9 @@ Widget w;
     for (i--, temp = w; temp != NULL; temp = XtParent(temp), i--) 
 	widget_list[i] = (unsigned long) temp;
 	
-    _XawInsert16(stream, num_widgets);	/* insert number of widgets. */
+    _EresInsert16(stream, num_widgets);	/* insert number of widgets. */
     for (i = 0; i < num_widgets; i++) /* insert Widgets themselves. */
-	_XawInsert32(stream, widget_list[i]);
+	_EresInsert32(stream, widget_list[i]);
     
     XtFree(widget_list);
 }
@@ -1324,7 +1324,7 @@ Widget w;
  *
  ************************************************************/
 
-/*	Function Name: _XawInsertString8
+/*	Function Name: _EresInsertString8
  *	Description: Inserts a string into the protocol stream.
  *	Arguments: stream - stream to insert string into.
  *                 str - string to insert.
@@ -1332,18 +1332,18 @@ Widget w;
  */
 
 void
-_XawInsertString8(stream, str)
+_EresInsertString8(stream, str)
 ProtocolStream * stream;
 char * str;
 {
     int i, len = strlen(str);
 
-    _XawInsert16(stream, len);
+    _EresInsert16(stream, len);
     for (i = 0 ; i < len ; i++, str++)
-	_XawInsert8(stream, *str);
+	_EresInsert8(stream, *str);
 }
 
-/*	Function Name: _XawInsert8
+/*	Function Name: _EresInsert8
  *	Description: Inserts an 8 bit integer into the protocol stream.
  *	Arguments: stream - stream to insert string into.
  *                 value - value to insert.
@@ -1351,7 +1351,7 @@ char * str;
  */
 
 void
-_XawInsert8(stream, value)
+_EresInsert8(stream, value)
 ProtocolStream * stream;
 unsigned int value;
 {
@@ -1370,7 +1370,7 @@ unsigned int value;
     (stream->size)++;
 }
 
-/*	Function Name: _XawInsert16
+/*	Function Name: _EresInsert16
  *	Description: Inserts a 16 bit integer into the protocol stream.
  *	Arguments: stream - stream to insert string into.
  *                 value - value to insert.
@@ -1378,15 +1378,15 @@ unsigned int value;
  */
 
 void
-_XawInsert16(stream, value)
+_EresInsert16(stream, value)
 ProtocolStream * stream;
 unsigned int value;
 {
-    _XawInsert8(stream, (value >> BYTE) & BYTE_MASK);
-    _XawInsert8(stream, value & BYTE_MASK);
+    _EresInsert8(stream, (value >> BYTE) & BYTE_MASK);
+    _EresInsert8(stream, value & BYTE_MASK);
 }
 
-/*	Function Name: _XawInsert32
+/*	Function Name: _EresInsert32
  *	Description: Inserts a 32 bit integer into the protocol stream.
  *	Arguments: stream - stream to insert string into.
  *                 value - value to insert.
@@ -1394,17 +1394,17 @@ unsigned int value;
  */
 
 void
-_XawInsert32(stream, value)
+_EresInsert32(stream, value)
 ProtocolStream * stream;
 unsigned long value;
 {
     int i;
 
     for (i = 3; i >= 0; i--) 
-	_XawInsert8(stream, (value >> (BYTE*i)) & BYTE_MASK);
+	_EresInsert8(stream, (value >> (BYTE*i)) & BYTE_MASK);
 }
 
-/*	Function Name: _XawInsertWidgetInfo
+/*	Function Name: _EresInsertWidgetInfo
  *	Description: Inserts the widget info into the protocol stream.
  *	Arguments: stream - stream to insert widget info into.
  *                 info - info to insert.
@@ -1412,15 +1412,15 @@ unsigned long value;
  */
 
 void
-_XawInsertWidgetInfo(stream, info)
+_EresInsertWidgetInfo(stream, info)
 ProtocolStream * stream;
 WidgetInfo * info;
 {
     int i;
 
-    _XawInsert16(stream, info->num_widgets);
+    _EresInsert16(stream, info->num_widgets);
     for (i = 0; i < info->num_widgets; i++) 
-	_XawInsert32(stream, info->ids[i]);
+	_EresInsert32(stream, info->ids[i]);
 }
 
 /************************************************************
@@ -1429,14 +1429,14 @@ WidgetInfo * info;
  *
  ************************************************************/
     
-/*	Function Name: _XawResetStream
+/*	Function Name: _EresResetStream
  *	Description: resets the protocol stream
  *	Arguments: stream - the stream to reset.
  *	Returns: none.
  */
 
 void
-_XawResetStream(stream)
+_EresResetStream(stream)
 ProtocolStream * stream;
 {
     stream->current = stream->top;
@@ -1458,7 +1458,7 @@ ProtocolStream * stream;
  * and "size" fields.
  */
 
-/*	Function Name: _XawRetrieveg8
+/*	Function Name: _EresRetrieveg8
  *	Description: Retrieves an unsigned 8 bit value
  *                   from the protocol stream.
  *	Arguments: stream.
@@ -1467,7 +1467,7 @@ ProtocolStream * stream;
  */
 
 Boolean
-_XawRetrieve8(stream, val)
+_EresRetrieve8(stream, val)
 ProtocolStream * stream;
 unsigned char * val;
 {
@@ -1478,7 +1478,7 @@ unsigned char * val;
     return(TRUE);
 }
 
-/*	Function Name: _XawRetrieve16
+/*	Function Name: _EresRetrieve16
  *	Description: Retrieves an unsigned 16 bit value
  *                   from the protocol stream.
  *	Arguments: stream.
@@ -1487,20 +1487,20 @@ unsigned char * val;
  */
 
 Boolean
-_XawRetrieve16(stream, val)
+_EresRetrieve16(stream, val)
 ProtocolStream * stream;
 unsigned short * val;
 {
     unsigned char temp1, temp2;
 
-    if ( !(_XawRetrieve8(stream, &temp1) && _XawRetrieve8(stream, &temp2)) )
+    if ( !(_EresRetrieve8(stream, &temp1) && _EresRetrieve8(stream, &temp2)) )
 	return(FALSE);
     
     *val = (((unsigned short) temp1 << BYTE) + ((unsigned short) temp2));
     return(TRUE);
 }
 
-/*	Function Name: _XawRetrieveSigned16
+/*	Function Name: _EresRetrieveSigned16
  *	Description: Retrieves an signed 16 bit value from the protocol stream.
  *	Arguments: stream.
  *                 val - a pointer to value to return.
@@ -1508,13 +1508,13 @@ unsigned short * val;
  */
 
 Boolean
-_XawRetrieveSigned16(stream, val)
+_EresRetrieveSigned16(stream, val)
 ProtocolStream * stream;
 short * val;
 {
     unsigned char temp1, temp2;
 
-    if ( !(_XawRetrieve8(stream, &temp1) && _XawRetrieve8(stream, &temp2)) )
+    if ( !(_EresRetrieve8(stream, &temp1) && _EresRetrieve8(stream, &temp2)) )
 	return(FALSE);
     
     if (temp1 & (1 << (BYTE - 1))) { /* If the sign bit is active. */
@@ -1528,7 +1528,7 @@ short * val;
     return(TRUE);
 }
 
-/*	Function Name: _XawRetrieve32
+/*	Function Name: _EresRetrieve32
  *	Description: Retrieves an unsigned 32 bit value
  *                   from the protocol stream.
  *	Arguments: stream.
@@ -1537,13 +1537,13 @@ short * val;
  */
 
 Boolean
-_XawRetrieve32(stream, val)
+_EresRetrieve32(stream, val)
 ProtocolStream * stream;
 unsigned long * val;
 {
     unsigned short temp1, temp2;
 
-    if ( !(_XawRetrieve16(stream, &temp1) && _XawRetrieve16(stream, &temp2)) )
+    if ( !(_EresRetrieve16(stream, &temp1) && _EresRetrieve16(stream, &temp2)) )
 	return(FALSE);
     
     *val = (((unsigned short) temp1 << (BYTE * 2)) + 
@@ -1551,7 +1551,7 @@ unsigned long * val;
     return(TRUE);
 }
 
-/*	Function Name: _XawRetrieveString8
+/*	Function Name: _EresRetrieveString8
  *	Description: Retrieves an 8 bit string value from the protocol stream.
  *	Arguments: stream - the protocol stream
  *                 str - the string to retrieve.
@@ -1559,21 +1559,21 @@ unsigned long * val;
  */
 
 Boolean
-_XawRetrieveString8(stream, str)
+_EresRetrieveString8(stream, str)
 ProtocolStream * stream;
 char ** str;
 {
     unsigned short len;
     register int i;
 
-    if (!_XawRetrieve16(stream, &len)) {
+    if (!_EresRetrieve16(stream, &len)) {
 	return(FALSE);
     }
 
     *str = XtMalloc(sizeof(char) * (len + 1));
 
     for (i = 0; i < len; i++) {
-	if (!_XawRetrieve8(stream, (unsigned char *) *str + i)) {
+	if (!_EresRetrieve8(stream, (unsigned char *) *str + i)) {
 	    XtFree(*str);
 	    *str = NULL;
 	    return(FALSE);
@@ -1583,7 +1583,7 @@ char ** str;
     return(TRUE);
 }
 
-/*	Function Name: _XawRetrieveWidgetInfo
+/*	Function Name: _EresRetrieveWidgetInfo
  *	Description: Retrieves the list of widgets that follow and stores
  *                   them in the widget info structure provided.
  *	Arguments: stream - the protocol stream
@@ -1592,19 +1592,19 @@ char ** str;
  */
 
 Boolean
-_XawRetrieveWidgetInfo(stream, info)
+_EresRetrieveWidgetInfo(stream, info)
 ProtocolStream * stream;
 WidgetInfo * info;
 {
     int i;
 
-    if (!_XawRetrieve16(stream, &(info->num_widgets))) 
+    if (!_EresRetrieve16(stream, &(info->num_widgets))) 
 	return(FALSE);
 
     info->ids = (unsigned long *) XtMalloc(sizeof(long) * (info->num_widgets));
 
     for (i = 0; i < info->num_widgets; i++) {
-	if (!_XawRetrieve32(stream, info->ids + i)) {
+	if (!_EresRetrieve32(stream, info->ids + i)) {
 	    XtFree(info->ids);
 	    info->ids = NULL;
 	    return(FALSE);

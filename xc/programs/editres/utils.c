@@ -807,9 +807,9 @@ WNode * node;
     for (i--, temp = node; temp != 0; temp = temp->parent, i--) 
 	widget_list[i] = temp->id;
 	
-    _XawInsert16(stream, num_widgets);	/* insert number of widgets. */
+    _EresInsert16(stream, num_widgets);	/* insert number of widgets. */
     for (i = 0; i < num_widgets; i++) 	/* insert Widgets themselves. */
-	_XawInsert32(stream, widget_list[i]);
+	_EresInsert32(stream, widget_list[i]);
     
     XtFree(widget_list);
 }
@@ -826,7 +826,7 @@ ProtocolStream * stream;
 {
     char * return_str;
 
-    if (_XawRetrieveString8(stream, &return_str)) 
+    if (_EresRetrieveString8(stream, &return_str)) 
 	return(return_str);
 
     return(XtNewString("Unable to unpack protocol request."));
@@ -846,7 +846,7 @@ ProtocolStream * stream;
     char buf[BUFSIZ];
     unsigned char version;
 
-    if (!_XawRetrieve8(stream, &version)) 
+    if (!_EresRetrieve8(stream, &version)) 
 	return(XtNewString("Unable to unpack protocol request."));
 
     sprintf(buf, "This version of editres uses protocol version %d.\n%s%d",

@@ -273,11 +273,11 @@ caddr_t junk, garbage;
     XtSetArg(args[0], XtNstring, &res_value);
     XtGetValues(global_screen_data.val_text, args, ONE);
     
-    _XawResetStream(stream);
-    _XawInsertString8(stream, res_name);
-    _XawInsertString8(stream, XtRString);
-    _XawInsertString8(stream, res_value);
-    _XawInsert16(stream, global_tree_info->num_nodes);
+    _EresResetStream(stream);
+    _EresInsertString8(stream, res_name);
+    _EresInsertString8(stream, XtRString);
+    _EresInsertString8(stream, res_value);
+    _EresInsert16(stream, global_tree_info->num_nodes);
 
     for (i = 0; i < global_tree_info->num_nodes; i++) 
 	InsertWidgetFromNode(stream, global_tree_info->active_nodes[i]);
