@@ -1,4 +1,5 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.15 91/07/17 00:45:19 gildea Exp $
+
 OBJS1 =	FontObj(courB08) FontObj(courB10) FontObj(courB12) FontObj(courB14) \
 	FontObj(courB18) FontObj(courB24) FontObj(courBO08) \
 	FontObj(courBO10) FontObj(courBO12) FontObj(courBO14) \
@@ -28,10 +29,7 @@ OBJS1 =	FontObj(courB08) FontObj(courB10) FontObj(courB12) FontObj(courB14) \
 	FontObj(timR10) FontObj(timR12) FontObj(timR14) FontObj(timR18) \
 	FontObj(timR24)
 
-OBJS2 = FontObj(charB08) FontObj(charB10) FontObj(charB12) \
-	FontObj(charB14) FontObj(charB18) FontObj(charB24) FontObj(charBI08) \
-	FontObj(charBI10) FontObj(charBI12) FontObj(charBI14) \
-	FontObj(charBI18) FontObj(charBI24) FontObj(charI08) \
+OBJS2 = FontObj(charI08) \
 	FontObj(charI10) FontObj(charI12) FontObj(charI14) FontObj(charI18) \
 	FontObj(charI24) FontObj(charR08) FontObj(charR10) FontObj(charR12) \
 	FontObj(charR14) FontObj(charR18) FontObj(charR24) FontObj(tech14) \
@@ -163,18 +161,6 @@ FontTarget(timR12)
 FontTarget(timR14)
 FontTarget(timR18)
 FontTarget(timR24)
-FontTarget(charB08)
-FontTarget(charB10)
-FontTarget(charB12)
-FontTarget(charB14)
-FontTarget(charB18)
-FontTarget(charB24)
-FontTarget(charBI08)
-FontTarget(charBI10)
-FontTarget(charBI12)
-FontTarget(charBI14)
-FontTarget(charBI18)
-FontTarget(charBI24)
 FontTarget(charI08)
 FontTarget(charI10)
 FontTarget(charI12)
