@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xmh.h,v 2.30 91/01/09 17:33:20 rws Exp $
+ * $XConsortium: xmh.h,v 2.31 91/04/02 19:28:34 gildea Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -48,7 +48,13 @@
 #include <X11/Xaw/Toggle.h>
 #include <X11/Xaw/Viewport.h>
 #include <X11/Xaw/Paned.h>
+#if defined(sun) && defined(SVR4)
+#define _XOPEN_SOURCE
 #include <stdio.h>
+#undef _XOPEN_SOURCE
+#else
+#include <stdio.h>
+#endif
 
 #define DELETEABORTED	-1
 #define NEEDS_CONFIRMATION	-1
