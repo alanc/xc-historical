@@ -1,5 +1,5 @@
 /*
- * $XConsortium: gethost.c,v 1.7 89/11/11 16:21:50 rws Exp $
+ * $XConsortium: gethost.c,v 1.8 89/12/06 20:39:14 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -32,10 +32,12 @@
 #include <sys/types.h>
 #define __TYPES__
 #endif
-#include <sys/socket.h>
 #include <stdio.h>
+#ifndef STREAMSCONN
+#include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#endif
 #include <errno.h>
 extern int errno;			/* for stupid errno.h files */
 #ifdef DNETCONN
@@ -76,6 +78,7 @@ char *get_hostname (auth)
     static char nodeaddr[16];
 #endif /* DNETCONN */
 
+#ifdef TCPCONN
     if (auth->family == FamilyInternet) {
 	/* gethostbyaddr can take a LONG time if the host does not exist.
 	   Assume that if it does not respond in NAMESERVER_TIMEOUT seconds
@@ -95,6 +98,7 @@ char *get_hostname (auth)
 	else
 	  return (inet_ntoa(*((struct in_addr *)(auth->address))));
     }
+#endif
 #ifdef DNETCONN
     if (auth->family == FamilyDECnet) {
 	if (np = getnodebyaddr(auth->address, auth->address_length,
@@ -110,6 +114,7 @@ char *get_hostname (auth)
     return (NULL);
 }
 
+#ifdef TCPCONN
 /*
  * cribbed from lib/X/XConnDis.c
  */
@@ -140,6 +145,7 @@ static Bool get_inet_address (name, resultp)
     *resultp = hostinetaddr;
     return True;
 }
+#endif
 
 #ifdef DNETCONN
 static Bool get_dnet_address (name, resultp)
@@ -171,8 +177,10 @@ char *get_address_info (family, fulldpyname, prefix, host, lenp)
     char *retval = NULL;
     int len;
     char *src;
+#ifdef TCPCONN
     unsigned long hostinetaddr;
     struct sockaddr_in inaddr;		/* dummy variable for size calcs */
+#endif
 #ifdef DNETCONN
     struct dn_naddr dnaddr;
 #endif
@@ -201,10 +209,14 @@ char *get_address_info (family, fulldpyname, prefix, host, lenp)
 	}
 	break;
       case FamilyInternet:		/* host:0 */
+#ifdef TCPCONN
 	if (!get_inet_address (host, &hostinetaddr)) return NULL;
 	src = (char *) &hostinetaddr;
 	len = (sizeof inaddr.sin_addr);
 	break;
+#else
+	return NULL;
+#endif
       case FamilyDECnet:		/* host::0 */
 #ifdef DNETCONN
 	if (!get_dnet_address (host, &dnaddr)) return NULL;
