@@ -1,4 +1,4 @@
-/* $XConsortium: mecroi.c,v 1.1 93/10/26 09:48:58 rws Exp $ */
+/* $XConsortium: mecroi.c,v 1.2 93/10/31 09:43:33 dpw Exp $ */
 /**** module mecroi.c ****/
 /******************************************************************************
 				NOTICE
@@ -157,12 +157,12 @@ static int ActivateECROI(flo,ped,pet)
   xieTypRectangle  *prect;
   ROIPtr	    proi;
   
-  if (!(proi = GetCurrentSrc(ROIRec,flo,pet,sbnd)))
+  if (!(proi = GetCurrentSrc(ROIRec *,flo,pet,sbnd)))
     return FALSE;
   
   rectSize = sizeof(xieTypRectangle) * proi->nrects;
   
-  if (!(prect = GetDstBytes(xieTypRectangle,flo,pet,dbnd,0,rectSize,KEEP)))
+  if (!(prect = GetDstBytes(xieTypRectangle *,flo,pet,dbnd,0,rectSize,KEEP)))
     return FALSE;
   
   ConvertToRect(proi,prect);
