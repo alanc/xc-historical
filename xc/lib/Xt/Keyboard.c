@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.16 90/07/26 10:10:09 swick Exp $ */
+/* $XConsortium: Keyboard.c,v 1.17 90/07/26 17:41:20 swick Exp $ */
 
 /********************************************************
 
@@ -542,7 +542,7 @@ void _XtHandleFocus(widget, client_data, event, cont)
 	  Widget	descendant = pwi->focusKid;
 
 	  if ((oldFocalPoint == XtUnrelated) &&
-	      InActiveSubtree(widget))
+	      InActiveSubtree(widget) != NotActive)
 	    {
 		pdi->focusWidget = NULL; /* invalidate the cache */
 		pwi->haveFocus = TRUE;
