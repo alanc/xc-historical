@@ -1,4 +1,4 @@
-/* $XConsortium: Composite.c,v 1.17 91/02/17 13:56:48 converse Exp $ */
+/* $XConsortium: Composite.c,v 1.18 91/04/04 20:52:53 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -131,9 +131,11 @@ static void CompositeClassPartInitialize(widgetClass)
 }
 
 static void CompositeDestroy(w)
-    CompositeWidget	w;
+    Widget	w;
 {
-    XtFree((char *) w->composite.children);
+    register CompositeWidget cw = (CompositeWidget) w;
+
+    XtFree((char *) cw->composite.children);
 }
 
 static void CompositeInsertChild(w)
