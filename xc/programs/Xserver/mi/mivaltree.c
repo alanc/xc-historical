@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.17 89/08/25 17:03:32 rws Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.18 89/09/06 19:37:43 keith Exp $ SPRITE (Berkeley)";
 #endif
 
 #include    "X.h"
@@ -253,7 +253,7 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     if (pChild = pParent->firstChild)
     {
 	(*pScreen->RegionInit) (&childUniverse, NullBox, 0);
-	(*pScreen->RegionInit) (&childUnion, NullBox, 0);
+	(*pScreen->RegionInit) (&childUnion, NullBox, 200);
 	if ((pChild->drawable.y < pParent->lastChild->drawable.y) ||
 	    ((pChild->drawable.y == pParent->lastChild->drawable.y) &&
 	     (pChild->drawable.x < pParent->lastChild->drawable.x)))
@@ -439,7 +439,7 @@ miValidateTree (pParent, pChild, kind)
      * is the area which can be divied up among the marked
      * children in their new configuration.
      */
-    (*pScreen->RegionInit) (&totalClip, NullBox, 0);
+    (*pScreen->RegionInit) (&totalClip, NullBox, 200);
     if ((pChild->drawable.y < pParent->lastChild->drawable.y) ||
 	((pChild->drawable.y == pParent->lastChild->drawable.y) &&
 	 (pChild->drawable.x < pParent->lastChild->drawable.x)))
@@ -485,7 +485,7 @@ miValidateTree (pParent, pChild, kind)
 	 * lower than the cost of multiple Subtracts in the
 	 * loop below.
 	 */
-	(*pScreen->RegionInit) (&childUnion, NullBox, 0);
+	(*pScreen->RegionInit) (&childUnion, NullBox, 200);
 	for (pWin = pChild; pWin; pWin = pWin->nextSib)
 	    if (pWin->valdata && pWin->viewable)
 		(* pScreen->RegionAppend) (&childUnion, &pWin->borderSize);
