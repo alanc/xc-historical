@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.78 89/05/04 18:25:41 rws Exp $ */
+/* $XConsortium: utils.c,v 1.79 89/06/16 17:02:52 keith Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -46,6 +46,7 @@ extern int limitDataSpace, limitStackSpace;
 extern int defaultColorVisualClass;
 extern long ScreenSaverTime;		/* for forcing reset */
 extern Bool permitOldBugs;
+extern int monitorResolution;
 
 Bool clientsDoomed = FALSE;
 Bool GivingUp = FALSE;
@@ -67,9 +68,6 @@ static void CheckNode();
 #endif
 
 Bool Must_have_memory = FALSE;
-
-int ErrorfOn = 1;
-int MessagefOn = 0;
 
 char *dev_tty_from_init = NULL;		/* since we need to parse it anyway */
 
@@ -104,18 +102,7 @@ ErrorF( f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
     char *f;
     char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
 {
-    if (ErrorfOn)
-	fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-}
-
-/*VARARGS1*/
-void
-MessageF( f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
-    char *f;
-    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
-{
-    if (MessagefOn)
-	fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
+    fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
 }
 
 static void
@@ -171,6 +158,7 @@ void UseMsg()
     ErrorF("c #                    key-click volume (0-100)\n");
     ErrorF("-cc int                default color visual class\n");
     ErrorF("-co string             color database file\n");
+    ErrorF("-dpi int               screen resolution in dots per inch\n");
     ErrorF("-f #                   bell base (0-100)\n");
     ErrorF("-fc string             cursor font\n");
     ErrorF("-fn string             default font name\n");
@@ -285,21 +273,12 @@ char	*argv[];
 	    else
 		UseMsg();
 	}
-	else if ( strcmp( argv[i], "-debug") == 0)
+	else if ( strcmp( argv[i], "-dpi") == 0)
 	{
-	    ErrorfOn++;
-	}
-	else if ( strcmp( argv[i], "+debug") == 0)
-	{
-	    ErrorfOn = 0;
-	}
-	else if ( strcmp( argv[i], "-messages") == 0)
-	{
-	    MessagefOn++;
-	}
-	else if ( strcmp( argv[i], "+messages") == 0)
-	{
-	    MessagefOn = 0;
+	    if(++i < argc)
+	        monitorResolution = atoi(argv[i]);
+	    else
+		UseMsg();
 	}
 	else if ( strcmp( argv[i], "-f") == 0)
 	{
