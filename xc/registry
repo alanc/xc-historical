@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.43 91/05/31 14:48:32 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.44 91/06/04 13:18:52 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -692,6 +692,7 @@ Value	Name					Reference
 9	Stardent Computer			[80]
 10	Sony Microsystems			[81]
 11	Digital Equipment Corp.			[82]
+12	Network Computing Devices		[66]
 
 
 REFERENCES
