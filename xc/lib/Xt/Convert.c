@@ -1,6 +1,7 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium$";
-/* $oHeader: Convert.c,v 1.2 88/08/18 15:36:30 asente Exp $ */
+static char rcsid[] =
+    "$XConsortium: Convert.c,v 1.11 88/09/04 12:17:33 swick Exp $";
+/* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
 
@@ -50,10 +51,29 @@ typedef struct _ConverterRec {
 #define CONVERTHASHMASK	511
 #define ProcHash(from_type, to_type) (2 * (from_type) + to_type)
 
-typedef ConverterPtr ConverterTable[CONVERTHASHSIZE];
+void _XtSetDefaultConverterTable(table)
+	ConverterTable *table;
+{
+	*table = (ConverterTable) XtCalloc(CONVERTHASHSIZE, 
+		sizeof(ConverterPtr));
+	_XtAddDefaultConverters(*table);
+}
 
-static ConverterTable	converterTable;
+void _XtFreeConverterTable(table)
+	ConverterTable table;
+{
+	register int i;
+	register ConverterPtr p;
 
+	for (i = 0; i < CONVERTHASHSIZE; i++) {
+	    while (table[i] != NULL) {
+		p = table[i];
+		table[i] = p->next;
+		XtFree(p);
+	    }
+	}
+	XtFree(table);
+}	
 
 /* Data cache hash table */
 
@@ -75,7 +95,8 @@ typedef CachePtr CacheHashTable[CACHEHASHSIZE];
 
 static CacheHashTable	cacheHashTable;
 
-void _XtAddConverter(from_type, to_type, converter, convert_args, num_args)
+void _XtTableAddConverter(table,from_type, to_type, converter, convert_args, num_args)
+    ConverterTable	table;
     XrmRepresentation   from_type, to_type;
     XtConverter		converter;
     XtConvertArgList    convert_args;
@@ -84,7 +105,7 @@ void _XtAddConverter(from_type, to_type, converter, convert_args, num_args)
     register ConverterPtr	*pHashEntry;
     register ConverterPtr	p;
 
-    pHashEntry= &converterTable[ProcHash(from_type, to_type) & CONVERTHASHMASK];
+    pHashEntry= &table[ProcHash(from_type, to_type) & CONVERTHASHMASK];
     /* ||| Check for existing entry, overwrite if exists */
     p		    = (ConverterPtr) Xpermalloc(sizeof(ConverterRec));
     p->next	    = *pHashEntry;
@@ -102,7 +123,18 @@ void XtAddConverter(from_type, to_type, converter, convert_args, num_args)
     XtConvertArgList    convert_args;
     Cardinal		num_args;
 {
-    _XtAddConverter(
+    XtAppAddConverter(_XtDefaultAppContext(),
+	    from_type, to_type, converter, convert_args, num_args);
+}
+
+void XtAppAddConverter(app, from_type, to_type, converter, convert_args, num_args)
+    XtAppContext	app;
+    register String	from_type, to_type;
+    XtConverter		converter;
+    XtConvertArgList    convert_args;
+    Cardinal		num_args;
+{
+    _XtTableAddConverter(app->converterTable,
 	XrmStringToRepresentation(from_type),
         XrmStringToRepresentation(to_type),
 	converter, convert_args, num_args);
@@ -235,7 +267,8 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 		    (XrmQuark) convert_args[i].address_id, &offset)) {
 		params[0]=
                   XrmQuarkToString((XrmQuark) convert_args[i].address_id);
-               XtWarningMsg("invalidResourceName","computeArgs","XtToolkitError",
+               XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+		    "invalidResourceName","computeArgs","XtToolkitError",
 		    "Cannot find resource name %s as argument to conversion",
                      params,&num_params);
 		offset = 0;
@@ -301,9 +334,10 @@ void _XtConvert(widget, from_type, from, to_type, to)
     XrmValue		stack_args[20], *args;
     String              params[2];
     Cardinal		num_params = 0;
+    XtAppContext	app = XtWidgetToApplicationContext(widget);
 
     /* Look for type converter */
-    p = converterTable[ProcHash(from_type, to_type) & CONVERTHASHMASK];
+    p = app->converterTable[ProcHash(from_type, to_type) & CONVERTHASHMASK];
     for (; p != NULL; p = p->next) {
 	if (from_type == p->from && to_type == p->to) {
 	    /* Compute actual arguments from widget and arg descriptor */
@@ -323,7 +357,7 @@ void _XtConvert(widget, from_type, from, to_type, to)
 
 	params[0] = XrmRepresentationToString(from_type);
 	params[1] = XrmRepresentationToString(to_type);
-    XtWarningMsg("typeConversionError","noConverter","XtToolkitError",
+    XtAppWarningMsg(app, "typeConversionError","noConverter","XtToolkitError",
 	     "No type converter registered for '%s' to '%s' conversion.",
              params,&num_params);
     to->addr = NULL;
