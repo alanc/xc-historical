@@ -1,5 +1,4 @@
-
-.\" $XConsortium: ddx.tbl.ms,v 1.23 89/12/04 17:11:23 keith Exp $
+.\" $XConsortium: ddx.tbl.ms,v 1.24 89/12/18 19:21:23 keith Exp $
 .EF 'Porting Layer Definition'- % -'March 1, 1988'
 .OF 'Porting Layer Definition'- % -'March 1, 1988'
 .EH '''
@@ -24,7 +23,7 @@ Bob Scheifler
 .AI
 Massachusetts Institute of Technology
 .sp
-Revised for release 4 by
+Revised for Release 4 by
 .AU
 Keith Packard
 .AI
@@ -109,8 +108,8 @@ The X Window System, or simply "X," is a
 windowing system that provides high-performance, high-level,
 device-independent graphics.
 
-X is a windowing system designed for bitmaped graphic displays.  with with
-150,000 to 2 million or more pixels on the screen.  The display can have a
+X is a windowing system designed for bitmaped graphic displays.
+The display can have a
 simple, monochrome display or it can have a color display with up to 32 bits
 per pixel with a special graphics processor doing the work.  (In this
 document, monochrome means a black and white display with one bit per pixel.
@@ -122,7 +121,7 @@ users can run applications on machines other than their own workstations.
 Sometimes, the connection is over an Ethernet network with a protocol such as TCP/IP;
 but, any "reliable" byte stream is allowable.
 A high-bandwidth byte stream is preferable; RS-232 at
-9600 baud would be slow.
+9600 baud would be slow without compression techniques.
 
 X by itself allows great freedom of design.
 For instance, it does not include any user interface standard.
@@ -183,11 +182,11 @@ Extensions incorporate new functionality into the server; and require
 additional functionality over a simple DDX.
 .LP
 The following sections outline the functions of the layers.
-Section 2 briefly tells what you need to know about the DIX layer.
-The OS layer is explained in Section 3.
-Section 4 gives the theory of operation and procedural interface for the
+Section 3 briefly tells what you need to know about the DIX layer.
+The OS layer is explained in Section 4.
+Section 5 gives the theory of operation and procedural interface for the
 DDX layer.
-Section 5 describes the functions which exist for the extension writer.
+Section 6 describes the functions which exist for the extension writer.
 
 .NH 2
 Notes On Resources and Large Structs
@@ -636,7 +635,7 @@ The sample server on the distribution tape supports a simple authorization
 scheme.  The only interface seen by DIX is:
 .nf
 
-	char * 
+	char *
 	ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
 	    ClientPtr client;
 	    char *auth_proto, *auth_string;
@@ -772,6 +771,20 @@ It returns the number of bytes written, but for simplicity,
 the number returned must be either the same value as the number
 requested, or -1, signaling an error.
 The sample server implementation is in server/os/4.2bsd/io.c.
+.LP
+.nf
+	SendErrorToClient(client, majorCode, minorCode, resId, errorCode)
+	    ClientPtr client;
+	    unsigned majorCode;
+	    unsigned short minorCode;
+	    XID resId;
+	    int errorCode;
+.fi
+SendErrorToClient can be used to send errors back to clients,
+although in most cases your request function should simply return
+the error code, having set client->errorValue to the appropriate
+error value to return to the client, and DIX will call this
+function with the correct opcodes for you.
 .LP
 .nf
 
@@ -2782,38 +2795,6 @@ pScreen is the screen to save.
 	    ScreenPtr pScreen;
 .fi
 When the server is reset, it calls this routine for each screen.
-.LP
-As a convenience, the Screen structure contains an array of 
-GCs that are preallocated, one at each depth the screen supports.
-These are useful in the mi code.  Two routines must be used to
-get these GC:
-.nf
-
-	GCPtr GetScratchGC(pScreen, depth)
-	    ScreenPtr pScreen;
-	    int depth;
-
-
-	FreeScratchGC(pGC)
-	    GCPtr pGC;
-.fi
-Always use these two routines, don't try to extract the scratch
-GC yourself -- someone else might be using it, so a new one must
-be created on the fly.
-.LP
-If you need a GC for a very long time, say until the server is restarted,
-you should not take one from the pool used by GetScratchGC, but should
-get your own from CreateScratchGC.  
-This leaves the ones in the pool free for routines that only need it for
-a little while and don't want to pay a heavy cost to get it.
-.nf
-	GCPtr CreateScratchGC(pScreen, depth)
-	    ScreenPtr pScreen;
-	    int depth;
-
-.fi
-NULL is returned if the GC cannot be created.
-The GC returned can be freed with FreeScratchGC.
 .NH 2
 Drawables
 .XS
@@ -3326,6 +3307,76 @@ server/include/gcstruct.h.
 Also included in each GC is an array of devPrivates which portions of the
 DDX can use for any reason.  Entries in this array are allocated with
 AllocateGCPrivateIndex() (see Wrappers and Privates below).
+
+The DIX routines available for manipulating GCs are
+CreateGC, ChangeGC, CopyGC, SetClipRects, SetDashes, and FreeGC.
+.nf
+	
+	GCPtr CreateGC(pDrawable, mask, pval, pStatus)
+	    DrawablePtr pDrawable;
+	    BITS32 mask;
+	    XID *pval;
+	    int *pStatus;
+
+	int ChangeGC(pGC, mask, pval)
+	    GC *pGC;
+	    BITS32 mask;
+	    XID *pval;
+
+	int CopyGC(pgcSrc, pgcDst, mask)
+	    GC *pgcSrc;
+	    GC *pgcDst;
+	    BITS32 mask;
+
+	int SetClipRects(pGC, xOrigin, yOrigin, nrects, prects, ordering)
+	    GCPtr pGC;
+	    int xOrigin, yOrigin;
+	    int nrects;
+	    xRectangle *prects;
+	    int ordering;
+
+	SetDashes(pGC, offset, ndash, pdash)
+	    GCPtr pGC;
+	    unsigned offset;
+	    unsigned ndash;
+	    unsigned char *pdash;
+
+	int FreeGC(pGC, gid)
+	    GCPtr pGC;
+	    GContext gid;
+.fi
+
+As a convenience, each Screen structure contains an array of 
+GCs that are preallocated, one at each depth the screen supports.
+These are particularly useful in the mi code.  Two DIX routines
+must be used to get these GCs:
+.nf
+
+	GCPtr GetScratchGC(pScreen, depth)
+	    ScreenPtr pScreen;
+	    int depth;
+
+	FreeScratchGC(pGC)
+	    GCPtr pGC;
+
+.fi
+Always use these two routines, don't try to extract the scratch
+GC yourself -- someone else might be using it, so a new one must
+be created on the fly.
+
+If you need a GC for a very long time, say until the server is restarted,
+you should not take one from the pool used by GetScratchGC, but should
+get your own using CreateGC or CreateScratchGC.
+This leaves the ones in the pool free for routines that only need it for
+a little while and don't want to pay a heavy cost to get it.
+.nf
+	GCPtr CreateScratchGC(pScreen, depth)
+	    ScreenPtr pScreen;
+	    int depth;
+
+.fi
+NULL is returned if the GC cannot be created.
+The GC returned can be freed with FreeScratchGC.
 
 .NH 3
 Details of operation
@@ -4593,6 +4644,67 @@ all resources, so you can lookup the union of multiple classes.
 .LP
 Note that the appropriate class bits must be or'ed into the value returned
 by CreateNewResourceType when calling resource lookup functions.
+.LP
+If you need to create a ``private'' resource ID for internal use, you
+can call FakeClientID.
+.nf
+	XID FakeClientID(client)
+	    int client;
+.fi
+This allocates from ID space reserved for the server.
+.LP
+To associate a resource value with an ID, use AddResource.
+.nf
+	Bool AddResource(id, type, value)
+	    XID id;
+	    RESTYPE type;
+	    pointer value;
+.fi
+The type should be the full type of the resource, including any class
+bits.  If AddResource fails to allocate memory to store the resource,
+it will call the deleteFunc for the type, and then return False.
+.LP
+To free a resource, use one of the following.
+.nf
+	void FreeResource(id, skipDeleteFuncType)
+	    XID id;
+	    RESTYPE skipDeleteFuncType;
+
+	void FreeResourceByType(id, type, skipFree)
+	    XID id;
+	    RESTYPE type;
+	    Bool    skipFree;
+.nf
+FreeResource frees all resources matching the given id, regardless of
+type; the type's deleteFunc will be called on each matching resource,
+except that skipDeleteFuncType can be set to a single type for which
+the deleteFunc should not be called (otherwise pass RT_NONE).
+FreeResourceByType frees a specific resource matching a given id
+and type; if skipFree is true, then the deleteFunc is not called.
+.LP
+To look up a resource, use one of the following.
+.nf
+	pointer LookupIDByType(id, rtype)
+	    XID id;
+	    RESTYPE rtype;
+
+	pointer LookupIDByClass(id, classes)
+	    XID id;
+	    RESTYPE classes;
+.fi
+LookupIDByType finds a resource with the given id and exact type.
+LookupIDByClass finds a resource with the given id whose type is
+included in any one of the specified classes.
+.NH 2
+Macros and Other Helpers
+.LP
+There are a number of macros in server/include/dix.h which
+are useful to the extension writer.  Ones of particular interest
+are: REQUEST, REQUEST_SIZE_MATCH, REQUEST_AT_LEAST_SIZE,
+REQUEST_FIXED_SIZE, LEGAL_NEW_RESOURCE, LOOKUP_DRAWABLE, VERIFY_GC, and
+VALIDATE_DRAWABLE_AND_GC. Useful byte swapping macros can be found
+in server/include/misc.h: lswapl, lswaps, LengthRestB, LengthRestS,
+LengthRestL, SwapRestS, SwapRestL, swapl, swaps, cpswapl, and cpswaps.
 .NH 1
 Summary of Routines
 .XS
