@@ -1,4 +1,4 @@
-/* $XConsortium: Form.c,v 1.42 90/12/31 13:33:50 gildea Exp $ */
+/* $XConsortium: Form.c,v 1.43 91/02/17 15:01:51 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -38,7 +38,7 @@ static int default_value = -99999;
 #define Offset(field) XtOffsetOf(FormRec, form.field)
 static XtResource resources[] = {
     {XtNdefaultDistance, XtCThickness, XtRInt, sizeof(int),
-	Offset(default_spacing), XtRImmediate, (caddr_t)4}
+	Offset(default_spacing), XtRImmediate, (XtPointer)4}
 };
 #undef Offset
 
@@ -226,6 +226,7 @@ static void Initialize(request, new)
     fw->form.no_refigure = False;
     fw->form.needs_relayout = False;
     fw->form.resize_in_layout = True;
+    fw->form.resize_is_no_op = False;
 }
 
 /*	Function Name: ChangeFormGeometry
