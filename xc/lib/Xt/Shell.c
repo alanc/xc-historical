@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Shell.c,v 1.24 88/02/27 15:25:24 rws Exp $";
+static char rcsid[] = "$Header: Shell.c,v 1.25 88/03/31 12:32:01 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -864,8 +864,24 @@ static void ShellDestroy(widget)
     Boolean found = FALSE;
     register Widget parent;
     parent = widget->core.parent;
-    if (parent == NULL | parent->core.being_destroyed) return;
-    for (i=0;i<=parent->core.num_popups-1;i++)
+    /*
+     * problem: we try to optimize widget destruction by destroying
+     * only the top-most window of the sub-tree (in XtDestroyWidget).
+     * This doesn't work when there are popup children, but we need
+     * an efficient way to know when and where to destroy the popup window.
+     *
+     * solution: we determine whether or not we were the target
+     * of XtDestroyWidget based upon whether or not our parent is
+     * being destroyed.  If we are not the target, then we'll
+     * re-use the popup list in the parent to cache our window id
+     * so that the CoreDestroy in the parent can zap it after our
+     * widget record has been freed.  It's a bit of a hack but it
+     * saves extra testing in XtDestroyWidget.  Note that it does
+     * assume that popups are on the same display as their parent.
+     */
+    if (parent == NULL)
+	return;
+    for (i=0;i<parent->core.num_popups;i++)
         if (parent->core.popup_list[i] == widget){
             found = TRUE; break;
         }
@@ -873,9 +889,13 @@ static void ShellDestroy(widget)
         XtWarning("ShellDestroy, widget not on parent popup list");
         return;
     }
-    for (i=0;i<parent->core.num_popups-1;i++)
-        parent->core.popup_list[i]= parent->core.popup_list[i+1];
+    if (parent->core.being_destroyed) {	
+	parent->core.popup_list[i] = (Widget)XtWindow(widget);
+	return;
+    }
     parent->core.num_popups--;
+    for (;i<parent->core.num_popups;i++)
+        parent->core.popup_list[i]= parent->core.popup_list[i+1];
 }
 
 
