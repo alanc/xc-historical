@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: VisCmap.c,v 1.1 89/03/09 14:16:23 converse Exp $ */
 
 /* 
  * Copyright 1989 by the Massachusetts Institute of Technology
@@ -24,111 +24,153 @@
 static int default_allocation();
 static void best_allocation();
 
-/*	Define all appropriate standard colormaps for the given visual.
- *	Return 0 on failure, non-zero on success.
+/*
+ * To create all of the appropriate standard colormaps for a given visual on
+ * a given screen, use XmuVisualStandardColormaps.
+ * 
+ * Define all appropriate standard colormap properties for the given visual.
+ * If replace is true, any previous definition will not be retained.  
+ * Return 0 on failure, non-zero on success.
+ *
+ * Not all standard colormaps are meaningful to all visual classes.  This
+ * routine will check and define the following properties for the following
+ * classes, provided that the size of the colormap is not too small.
+ *
+ *	DirectColor and PseudoColor
+ *	    RGB_BEST_MAP
+ *	    RGB_RED_MAP
+ *	    RGB_GREEN_MAP
+ * 	    RGB_BLUE_MAP
+ *	    RGB_DEFAULT_MAP
+ *          RGB_GRAY_MAP
+ *
+ *	TrueColor and StaticColor
+ *	    RGB_BEST_MAP
+ *
+ *	GrayScale and StaticGray
+ *	    RGB_GRAY_MAP
  */
-Status XmuVisualStandardColormaps(dpy, screen, visual, flag)
-    Display	*dpy;
-    int		screen;
-    Visual	*visual;
-    int		flag;	/* 0: replace, non-zero: do not replace property */
+
+Status XmuVisualStandardColormaps(dpy, screen, visualid, depth, replace)
+    Display		*dpy;		/* server connection */
+    int			screen;		/* screen number */
+    VisualID		visualid;	/* for identification of the visual */
+    unsigned int	depth;		/* for identification of the visual */
+    Bool		replace;	/* if true, replace old definition */
 {
-    unsigned long	red_max, green_max, blue_max;
-    unsigned long	max;
+    unsigned long	rmax, gmax, bmax;	/* maximum values */
+    unsigned long	max;			/* single maximum */
     Status		status;
-    
-    max = (unsigned long) (visual->map_entries - 1);
-    switch (visual->class)
+    int			n;
+    long		vinfo_mask;
+    XVisualInfo		vinfo_template, *vinfo;
+        
+    vinfo_template.screen = screen;
+    vinfo_template.visualid = visualid;
+    vinfo_template.depth = depth;
+    vinfo_mask = VisualScreenMask | VisualIDMask | VisualDepthMask;
+    if ((vinfo = XGetVisualInfo(dpy, vinfo_mask, &vinfo_template, &n)) == NULL)
+	return 0;
+    if (vinfo->colormap_size <= 2)
+    {			/* monochrome visuals have no standard maps */
+	XFree((char *) vinfo);
+	return 1;
+    }
+    max = (unsigned long) (vinfo->colormap_size - 1);
+
+    switch (vinfo->class)
     {
       case PseudoColor:
       case DirectColor:
-	if (default_allocation(visual, &red_max, &green_max, &blue_max))
+	if (default_allocation(vinfo->colormap_size, &rmax, &gmax, &bmax))
 	{
-	    status = XmuStandardColormap(dpy, screen, visual, red_max,
-					 green_max, blue_max,
-					 XA_RGB_DEFAULT_MAP, flag);
+	    status = XmuStandardColormap(dpy, screen, visualid, depth,
+					 rmax, gmax, bmax,
+					 XA_RGB_DEFAULT_MAP, replace);
 	    if (!status) break;
 	}
-	status = XmuStandardColormap(dpy, screen, visual, max, 0L, 0L,
-				     XA_RGB_GRAY_MAP, flag);
+	status = XmuStandardColormap(dpy, screen, visualid, depth,
+				     max, 0L, 0L, XA_RGB_GRAY_MAP, replace);
 	if (!status) break;
-	status = XmuStandardColormap(dpy, screen, visual, max, 0L, 0L,
-				     XA_RGB_RED_MAP, flag);
+	status = XmuStandardColormap(dpy, screen, visualid, depth,
+				     max, 0L, 0L, XA_RGB_RED_MAP, replace);
 	if (!status) break;
-	status = XmuStandardColormap(dpy, screen, visual, 0L, max, 0L,
-				     XA_RGB_GREEN_MAP, flag);
+	status = XmuStandardColormap(dpy, screen, visualid, depth,
+				     0L, max, 0L, XA_RGB_GREEN_MAP, replace);
 	if (!status) break;
-	status = XmuStandardColormap(dpy, screen, visual, 0L, 0L, max,
-				     XA_RGB_BLUE_MAP, flag);
+	status = XmuStandardColormap(dpy, screen, visualid, depth,
+				     0L, 0L, max, XA_RGB_BLUE_MAP, replace);
 	if (!status) break;
 	/* fall through */
       case StaticColor:
       case TrueColor:
-	best_allocation(visual, &red_max, &green_max, &blue_max);
-	status = XmuStandardColormap(dpy, screen, visual, red_max, green_max,
-				     blue_max, XA_RGB_BEST_MAP, flag);
+	best_allocation(vinfo, &rmax, &gmax, &bmax);
+	status = XmuStandardColormap(dpy, screen, visualid, depth,
+				     rmax, gmax, bmax,
+				     XA_RGB_BEST_MAP, replace);
 	break;
       case StaticGray:
       case GrayScale:
-	status = XmuStandardColormap(dpy, screen, visual, max, 0L, 0L,
-				     XA_RGB_GRAY_MAP, flag);
+	status = XmuStandardColormap(dpy, screen, visualid, depth,
+				     max, 0L, 0L, XA_RGB_GRAY_MAP, replace);
 	break;
     }
+    XFree((char *) vinfo);
     return status;
 }
 
-/*	Determine an appropriate color allocation for the RGB_DEFAULT_MAP.
+/* Determine an appropriate color allocation for the RGB_DEFAULT_MAP.
+ * If a map has less than a minimum number of definable entries, we do not
+ * produce an allocation for an RGB_DEFAULT_MAP.  To determine the default
+ * rgb allocation, let n = the number of colormap entries.  Then,
+ * maximum red value = floor(cube_root(n - 125)) - 1
+ * Maximum green and maximum blue values are identical to maximum red.
+ * This leaves at least 125 cells which clients can allocate.
+ * Return 0 if an allocation has been determined, non-zero otherwise.
  */
-static int default_allocation(visual, red, green, blue)
-    Visual		*visual;
+static int default_allocation(colormap_size, red, green, blue)
+    int			colormap_size;
     unsigned long	*red, *green, *blue;
 {
-    /* If a map has less than 254 definable entries, we do not produce an
-     * allocation for an RGB_DEFAULT_MAP.  To determine the default rgb
-     * allocation, let n = the number of colormap entries.
-     * Then maximum red value = floor(cube_root(n - 125)) - 1
-     * Maximum green and maximum blue values are identical to maximum red.
-     * Return 0 if an allocation has been determined, non-zero otherwise.
-     */
-    if (visual->map_entries < 254)	/* skip it */
+    if (colormap_size < 250)	/* skip it */
 	return 0;
 
     *red = *green = *blue = (unsigned long)
-	floor(pow((double) (visual->map_entries - 125), (double) 1.0/3.0)) - 1;
+      (floor(pow((double) (colormap_size - 125), (double) 1.0/3.0)) - 1);
     return 1;
 }
 
-/*	Determine an appropriate color allocation for the RGB_BEST_MAP.
+/* Determine an appropriate color allocation for the RGB_BEST_MAP.
  *
- *	For a DirectColor or TrueColor visual, the allocation is determined
- *	by the red_mask, green_mask, and blue_mask members of the visual.
+ * For a DirectColor or TrueColor visual, the allocation is determined
+ * by the red_mask, green_mask, and blue_mask members of the visual info.
  *
- *	Otherwise, if the colormap size is an integral power of 2, determine
- *	the allocation according to the number of bits given to each color,
- *	with green getting more than red, and red more than blue, if there
- *	are to be inequities in the distribution.  If the colormap size is
- *	not an integral power of 2, let n = the number of colormap entries.
- *	Then	maximum red value =	floor(cube_root(n)) - 1;
- *		maximum blue value =	floor(cube_root(n)) - 1;
- *		maximum green value =	n / ((max red value) * (max green val))
- *	Which, on a GPX, allows for 252 entries in the best map, out of 254
- * 	defineable colormap entries.
+ * Otherwise, if the colormap size is an integral power of 2, determine
+ * the allocation according to the number of bits given to each color,
+ * with green getting more than red, and red more than blue, if there
+ * are to be inequities in the distribution.  If the colormap size is
+ * not an integral power of 2, let n = the number of colormap entries.
+ * Then maximum red value = floor(cube_root(n)) - 1;
+ * 	maximum blue value = floor(cube_root(n)) - 1;
+ *	maximum green value = n / ((# red values) * (# blue values)) - 1;
+ * Which, on a GPX, allows for 252 entries in the best map, out of 254
+ * defineable colormap entries.
  */
  
-static void best_allocation(visual, red, green, blue)
-    Visual		*visual;
+static void best_allocation(vinfo, red, green, blue)
+    XVisualInfo		*vinfo;
     unsigned long	*red, *green, *blue;
 {
 
-    if (visual->class == DirectColor ||	visual->class == TrueColor)
+    if (vinfo->class == DirectColor ||	vinfo->class == TrueColor)
     {
-	*red = visual->red_mask;
+	*red = vinfo->red_mask;
 	while ((*red & 01) == 0)
 	    *red >>= 1;
-	*green = visual->green_mask;
+	*green = vinfo->green_mask;
 	while ((*green & 01) == 0)
 	    *green >>=1;
-	*blue = visual->blue_mask;
+	*blue = vinfo->blue_mask;
 	while ((*blue & 01) == 0)
 	    *blue >>= 1;
     }
@@ -141,7 +183,7 @@ static void best_allocation(visual, red, green, blue)
          */
 	n = 1;
 	bits = 0;
-	while (visual->map_entries > n)
+	while (vinfo->colormap_size > n)
 	{
 	    n = n << 1;
 	    bits++;
@@ -153,7 +195,7 @@ static void best_allocation(visual, red, green, blue)
 	 * which, when multiplied together, do not exceed the number of 
 	 * colormap entries.
 	 */
-	if (n == visual->map_entries)
+	if (n == vinfo->colormap_size)
 	{
 	    register int r, g, b;
 	    b = bits / 3;
@@ -165,10 +207,10 @@ static void best_allocation(visual, red, green, blue)
 	}
 	else
 	{
-	    *red = (int) floor(pow((double) visual->map_entries, 
+	    *red = (int) floor(pow((double) vinfo->colormap_size, 
 				   (double) 1.0/3.0));
 	    *blue = *red;	
-	    *green = (visual->map_entries / ((*red) * (*blue)));
+	    *green = (vinfo->colormap_size / ((*red) * (*blue)));
 	}
 	(*red)--;
 	(*green)--;
