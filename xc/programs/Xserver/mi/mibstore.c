@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.36 90/03/28 20:00:09 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.37 90/03/30 11:57:02 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -479,8 +479,12 @@ miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
 	    }
 	}
 
+	(*pScreen->RegionUninit) (&Remaining);
+
 	if (pPixmap)
 	{
+	    (*pScreen->RegionUninit) (&Border);
+	    (*pScreen->RegionUninit) (&Inside);
 	    (*pScreen->GetImage) ((DrawablePtr) pPixmap,
 		0, 0, w, h, format, planemask, pdstLine);
 	    (*pScreen->DestroyPixmap) (pPixmap);
