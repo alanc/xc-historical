@@ -43,7 +43,7 @@ the left and right edges of the titlebar.
 .PP
 Pressing pointer Button1 (usually the left-most
 button unless it has been changed with \fIxmodmap\fP) on a 
-titlebuttons will invoke the function associated with the button.
+titlebutton will invoke the function associated with the button.
 In the default interface, windows are iconified by clicking (pressing
 and then immediately releasing) the left titlebutton (which looks
 like a small X).  Conversely, windows are deiconified by clicking in the
@@ -126,7 +126,7 @@ Widgets\fP manual and \fIxrdb(1)\fP).
 \fITwm\fP startup files are logically broken up into three types of 
 specifications:  \fIVariables\fP, \fIBindings\fP, \fIMenus\fP.  The 
 \fIVariables\fP section must come first and is used to describe the
-fonts, colors, cursors, border widths, icon and window placement, highlighting
+fonts, colors, cursors, border widths, icon and window placement, highlighting,
 autoraising, layout of titles, warping, use of the icon manager.
 The \fIBindings\fP section usually comes second and is used to specify
 the functions that should be
@@ -196,7 +196,7 @@ initially sizing the window with pointer Button2 or when resizing it)
 should not wait until the pointer has crossed the window edges.
 Instead, moving
 the pointer automatically causes the nearest edge or edges to move by the
-same amount.  This allows simplifies the resizing windows that extend off 
+same amount.  This allows allows the resizing windows that extend off 
 the edge of the screen.
 If the pointer is
 in the center of the window, or if the resize is begun by pressing a 
@@ -513,7 +513,7 @@ red, and the background will be half-way between green and white.
 This variable specifies a list of windows on which a titlebar should be placed
 and is used to request titles on specific windows when \fBNoTitle\fP has been
 set.
-.TP "\fBMaxWindowSize\fP \fIstring\fP" 8
+.IP "\fBMaxWindowSize\fP \fIstring\fP" 8
 This variable specifies a geometry in which the width and height
 give the maximum size for a given window.  This is typically used to 
 restrict windows to the size of the screen.  The default is "30000x30000".
