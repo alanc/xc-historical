@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: cursor.c,v 1.34 89/07/03 13:25:04 rws Exp $ */
+/* $XConsortium: cursor.c,v 1.35 89/07/03 14:28:40 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -62,7 +62,7 @@ FreeCursorBits(bits)
 	if (this)
 	{
 	    *prev = this->next;
-	    CloseFont(this->font);
+	    CloseFont(this->font, (Font)0);
 	    xfree(this);
 	}
 	xfree(bits);

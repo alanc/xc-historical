@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.1 89/06/12 16:30:31 keith Exp $ */
+/* $XConsortium: gc.c,v 5.2 89/06/16 16:54:01 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -781,7 +781,7 @@ go with CreateGC() or ChangeGC().)
 GCPtr
 CreateScratchGC(pScreen, depth)
     ScreenPtr pScreen;
-    int depth;
+    unsigned depth;
 {
     register GCPtr pGC;
     extern FontPtr defaultFont;
@@ -1089,7 +1089,7 @@ SetClipRects(pGC, xOrigin, yOrigin, nrects, prects, ordering)
 */
 GCPtr
 GetScratchGC(depth, pScreen)
-    register int depth;
+    register unsigned depth;
     register ScreenPtr pScreen;
 {
     register int i;
