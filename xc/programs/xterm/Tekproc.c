@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.109 91/10/31 09:32:49 rws Exp $
+ * $XConsortium: Tekproc.c,v 1.110 92/01/26 16:20:36 rws Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -335,8 +335,9 @@ static void Tekparse()
 	register int c, x, y;
 	char ch;
 
-	for( ; ; )
-		switch(Tparsestate[c = input()]) {
+	for( ; ; ) {
+	    c = input();
+	    switch(Tparsestate[c]) {
 		 case CASE_REPORT:
 			/* report address */
 			if(screen->TekGIN) {
@@ -626,6 +627,7 @@ static void Tekparse()
 			Tparsestate = curstate;
 			break;
 		}
+	}
 }			
 
 static int rcnt;
