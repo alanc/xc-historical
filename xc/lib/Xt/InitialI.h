@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.63 92/05/20 16:04:33 converse Exp $ */
+/* $XConsortium: InitialI.h,v 1.64 93/01/08 16:04:57 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -70,6 +70,14 @@ typedef struct _InputEvent {
 	XtInputMask	      ie_condition;
 } InputEvent;
 
+typedef struct _SignalEventRec {
+	XtSignalCallbackProc  se_proc;
+	XtPointer	      se_closure;
+	struct _SignalEventRec *se_next;
+	XtAppContext	      app;
+	Boolean		      se_notice;
+} SignalEventRec;
+
 typedef struct _WorkProcRec {
 	XtWorkProc proc;
 	XtPointer closure;
@@ -116,6 +124,7 @@ typedef struct _XtAppStruct {
     WorkProcRec *workQueue;
     InputEvent **input_list;
     InputEvent *outstandingQueue;
+    SignalEventRec *signalQueue;
     XrmDatabase errorDB;
     XtErrorMsgHandler errorMsgHandler, warningMsgHandler;
     XtErrorHandler errorHandler, warningHandler;
@@ -222,14 +231,15 @@ extern void _XtCloseDisplays(
 extern int _XtAppDestroyCount;
 extern int _XtDpyDestroyCount;
 
-extern int _XtwaitForSomething(
+extern int _XtWaitForSomething(
 #if NeedFunctionPrototypes
+    XtAppContext	/* app */,
+    _XtBoolean 		/* ignoreEvents */,
     _XtBoolean 		/* ignoreTimers */,
     _XtBoolean 		/* ignoreInputs */,
-    _XtBoolean 		/* ignoreEvents */,
+    _XtBoolean		/* ignoreSignals */,
     _XtBoolean 		/* block */,
-    unsigned long*	/* howlong */,
-    XtAppContext 	/* app */
+    unsigned long*	/* howlong */
 #endif
 );
 
