@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.132 90/03/08 15:56:40 jim Exp $
+ * $XConsortium: events.c,v 1.133 90/03/13 15:29:18 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.132 90/03/08 15:56:40 jim Exp $";
+"$XConsortium: events.c,v 1.133 90/03/13 15:29:18 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -74,6 +74,8 @@ int DragX;
 int DragY;
 int DragWidth;
 int DragHeight;
+int CurrentDragX;
+int CurrentDragY;
 
 static int enter_flag;
 static int ColortableThrashing;
@@ -1436,6 +1438,8 @@ HandleButtonRelease()
 		yt = Scr->MyDisplayHeight - h;
 	}
 
+	CurrentDragX = xl;
+	CurrentDragY = yt;
 	if (DragWindow == Tmp_win->frame)
 	    SetupWindow (Tmp_win, xl, yt,
 			 Tmp_win->frame_width, Tmp_win->frame_height, -1);
@@ -1584,6 +1588,8 @@ HandleButtonPress()
 	 * down, we need to cancel the operation we were doing
 	 */
 	Cancel = TRUE;
+	CurrentDragX = origDragX;
+	CurrentDragY = origDragY;
 	if (Scr->OpaqueMove && DragWindow != None) {
 	    XMoveWindow (dpy, DragWindow, origDragX, origDragY);
 	} else {

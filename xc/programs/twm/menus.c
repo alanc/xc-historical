@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.145 90/03/13 11:46:56 jim Exp $
+ * $XConsortium: menus.c,v 1.146 90/03/13 15:29:11 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.145 90/03/13 11:46:56 jim Exp $";
+"$XConsortium: menus.c,v 1.146 90/03/13 15:29:11 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1359,6 +1359,8 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 
 	origX = eventp->xbutton.x_root;
 	origY = eventp->xbutton.y_root;
+	CurrentDragX = origDragX;
+	CurrentDragY = origDragY;
 
 	/*
 	 * only do the constrained move if timer is set; need to check it
@@ -1417,7 +1419,10 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		{
 		    MoveOutline(rootw, 0, 0, 0, 0, 0, 0);
 		    done = TRUE;
-		    if (moving_icon) tmp_win->icon_moved = TRUE;
+		    if (moving_icon &&
+			((CurrentDragX != origDragX ||
+			  CurrentDragY != origDragY)))
+		      tmp_win->icon_moved = TRUE;
 		    break;
 		}
 	    }
@@ -1490,6 +1495,8 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 			if (yb > Scr->MyDisplayHeight)
 			    yt = Scr->MyDisplayHeight - h;
 		    }
+		    CurrentDragX = xl;
+		    CurrentDragY = yt;
 		    if (Scr->OpaqueMove)
 			XMoveWindow(dpy, DragWindow, xl, yt);
 		    else
@@ -1523,6 +1530,8 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 			yt = Scr->MyDisplayHeight - h;
 		}
 
+		CurrentDragX = xl;
+		CurrentDragY = yt;
 		if (Scr->OpaqueMove)
 		    XMoveWindow(dpy, DragWindow, xl, yt);
 		else
