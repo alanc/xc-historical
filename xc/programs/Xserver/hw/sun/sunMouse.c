@@ -157,7 +157,7 @@ sunMouseProc (pMouse, what)
 	    map[2] = 2;
 	    map[3] = 3;
 	    InitPointerDeviceStruct(
-		pMouse, map, 3, sunMouseGetMotionEvents, sunMouseCtrl);
+		pMouse, map, 3, sunMouseGetMotionEvents, sunMouseCtrl, 0);
 	    break;
 
 	case DEVICE_ON:
