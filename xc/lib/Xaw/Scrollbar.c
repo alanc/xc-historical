@@ -55,12 +55,19 @@ static char *defaultTranslationTable[] = {
 /* grodyness needed because Xrm wants pointer to thing, not thing... */
 static caddr_t defaultTranslations = (caddr_t)defaultTranslationTable;
 static float floatZero = 0.0;
+static int DEFAULTVALUE = 99999;
 
 #define Offset(field) XtOffset(ScrollbarWidget, field)
 
 static XtResource resources[] = {
   {XtNwidth, XtCWidth, XrmRInt, sizeof(int),
-	     Offset(core.width), XtRString, "14"},
+	     Offset(core.width), XrmRInt, (caddr_t)&DEFAULTVALUE},
+  {XtNheight, XtCHeight, XrmRInt, sizeof(int),
+	     Offset(core.height), XrmRInt, (caddr_t)&DEFAULTVALUE},
+  {XtNlength, XtCLength, XrmRInt, sizeof(int),
+	     Offset(scrollbar.length), XtRString, "1"},
+  {XtNthickness, XtCThickness, XrmRInt, sizeof(int),
+	     Offset(scrollbar.thickness), XtRString, "14"},
   {XtNorientation, XtCOrientation, XtROrientation, sizeof(XtOrientation),
 	     Offset(scrollbar.orientation), XtRString, "vertical"},
   {XtNscrollProc, XtCCallback, XtRPointer, sizeof(caddr_t),
@@ -145,8 +152,6 @@ WidgetClass scrollbarWidgetClass = (WidgetClass)&scrollbarClassRec;
 #define NoButton -1
 #define PICKLENGTH(widget, x, y) \
     ((widget->scrollbar.orientation == XtorientHorizontal) ? x : y)
-#define PICKTHICKNESS(widget, x, y) \
-    ((widget->scrollbar.orientation == XtorientHorizontal) ? y : x)
 #define MIN(x,y)	((x) < (y) ? (x) : (y))
 #define MAX(x,y)	((x) > (y) ? (x) : (y))
 
@@ -270,13 +275,12 @@ static FillArea(w, top, bottom, thumb)
 static void PaintThumb( w )
   ScrollbarWidget w;
 {
-    int length, oldtop, oldbot, newtop, newbot;
+    int oldtop, oldbot, newtop, newbot;
 
-    length = PICKLENGTH(w, w->core.width, w->core.height);
     oldtop = w->scrollbar.topLoc;
     oldbot = oldtop + w->scrollbar.shownLength;
-    newtop = length * w->scrollbar.top;
-    newbot = newtop + length * (w->scrollbar.shown);
+    newtop = w->scrollbar.length * w->scrollbar.top;
+    newbot = newtop + w->scrollbar.length * w->scrollbar.shown;
     if (newbot < newtop + MINBARHEIGHT) newbot = newtop + MINBARHEIGHT;
     w->scrollbar.topLoc = newtop;
     w->scrollbar.shownLength = newbot - newtop;
@@ -286,6 +290,20 @@ static void PaintThumb( w )
 	if (newtop > oldtop) FillArea(w, oldtop, MIN(newtop, oldbot), 0);
 	if (newbot < oldbot) FillArea(w, MAX(newbot, oldtop), oldbot, 0);
 	if (newbot > oldbot) FillArea(w, MAX(newtop, oldbot), newbot, 1);
+    }
+}
+
+
+static void SetDimensions(w)
+    ScrollbarWidget w;
+{
+    if (w->scrollbar.orientation == XtorientVertical) {
+	w->scrollbar.length = w->core.height;
+	w->scrollbar.thickness = w->core.width;
+    }
+    else {
+	w->scrollbar.length = w->core.width;
+	w->scrollbar.thickness = w->core.height;
     }
 }
 
@@ -311,9 +329,15 @@ static void Initialize( request, new, args, num_args )
 			       GCForeground | GCFillStyle | GCTile,
 			       &gcValues);
 
-    if (w->core.width == 0)  w->core.width = 1;
-    if (w->core.height == 0) w->core.height = 1;
+    if (w->core.width == DEFAULTVALUE)
+	w->core.width = (w->scrollbar.orientation == XtorientVertical)
+	    ? w->scrollbar.thickness : w->scrollbar.length;
 
+    if (w->core.height == DEFAULTVALUE)
+	w->core.height = (w->scrollbar.orientation == XtorientHorizontal)
+	    ? w->scrollbar.thickness : w->scrollbar.length;
+
+    SetDimensions( w );
 }
 
 static void Realize( gw, valueMask, attributes )
@@ -385,6 +409,7 @@ static void Resize( gw )
 {
     /* ForgetGravity has taken care of background, but thumb may
      * have to move as a result of the new size. */
+    SetDimensions( (ScrollbarWidget)gw );
     Redisplay( gw, (XEvent*)NULL );
 }
 
@@ -462,12 +487,10 @@ static void DoScroll( gw, event, params, num_params   )
         case 'p':    call_data = InRange( PICKLENGTH( w, event->xmotion.x,
 						      event->xmotion.y),
 					  0,
-					  PICKLENGTH( w, w->core.width,
-						      w->core.height)); break;
+					  w->scrollbar.length); break;
 
         case 'F':    /* FullLength */
-        case 'f':    call_data = PICKLENGTH( w, w->core.width,
-					     w->core.height); break;
+        case 'f':    call_data = w->scrollbar.length; break;
     }
 
     switch( w->scrollbar.direction ) {
