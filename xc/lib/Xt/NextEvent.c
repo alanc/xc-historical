@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.88 90/08/24 09:47:32 swick Exp $ */
+/* $XConsortium: NextEvent.c,v 1.90 90/09/27 12:22:22 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -538,12 +538,24 @@ void XtRemoveInput( id )
 	if(app->input_list && (sptr = app->input_list[source]) != NULL) {
 		for( lptr = NULL ; sptr; sptr = sptr->ie_next ){
 			if(sptr == (InputEvent *) id) {
+				XtInputMask condition;
 				if(lptr == NULL) {
-					app->input_list[source] = sptr->ie_next;
-					FD_CLR(source, &app->fds.rmask);
+				    app->input_list[source] = sptr->ie_next;
 				} else {
-					lptr->ie_next = sptr->ie_next;
+				    lptr->ie_next = sptr->ie_next;
 				}
+				for (condition = 0, lptr = sptr;
+				     lptr; lptr = lptr->ie_next)
+				    condition |= lptr->ie_condition;
+				if ((sptr->ie_condition & XtInputReadMask) &&
+				    !(condition & XtInputReadMask))
+				   FD_CLR(source, &app->fds.rmask);
+				if ((sptr->ie_condition & XtInputWriteMask) &&
+				    !(condition & XtInputWriteMask))
+				   FD_CLR(source, &app->fds.wmask);
+				if ((sptr->ie_condition & XtInputExceptMask) &&
+				    !(condition & XtInputExceptMask))
+				   FD_CLR(source, &app->fds.emask);
 				XtFree((char *) sptr);
 				found = True;
 				break;
