@@ -1,4 +1,4 @@
-/* $Header: XPolyReg.c,v 11.11 87/09/13 22:01:50 rws Locked $ */
+/* $Header: XPolyReg.c,v 11.13 88/01/30 15:02:04 rws Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -453,7 +453,30 @@ XPolygonRegion(Pts, Count, rule)
     POINTBLOCK *tmpPtBlock;
     int numFullPtBlocks = 0;
  
-    pETEs = (EdgeTableEntry *)Xalloca(sizeof(EdgeTableEntry) * Count);
+    region = XCreateRegion();
+
+    /* special case a rectangle */
+    pts = Pts;
+    if (((Count == 4) ||
+	 ((Count == 5) && (pts[4].x == pts[0].x) && (pts[4].y == pts[0].y))) &&
+	(((pts[0].y == pts[1].y) &&
+	  (pts[1].x == pts[2].x) &&
+	  (pts[2].y == pts[3].y) &&
+	  (pts[3].x == pts[0].x)) ||
+	 ((pts[0].x == pts[1].x) &&
+	  (pts[1].y == pts[2].y) &&
+	  (pts[2].x == pts[3].x) &&
+	  (pts[3].y == pts[0].y)))) {
+	region->extents.x1 = min(pts[0].x, pts[2].x);
+	region->extents.y1 = min(pts[0].y, pts[2].y);
+	region->extents.x2 = max(pts[0].x, pts[2].x);
+	region->extents.y2 = max(pts[0].y, pts[2].y);
+	region->numRects = 1;
+	*(region->rects) = region->extents;
+	return(region);
+    }
+
+    pETEs = (EdgeTableEntry *)Xmalloc(sizeof(EdgeTableEntry) * Count);
     pts = FirstPtBlock.pts;
     CreateETandAET(Count, Pts, &ET, &AET, pETEs, &SLLBlock);
     pSLL = ET.scanlines.next;
@@ -486,7 +509,7 @@ XPolygonRegion(Pts, Count, rule)
                  *  send out the buffer
                  */
                 if (iPts == NUMPTSTOBUFFER) {
-                    tmpPtBlock = (POINTBLOCK *)Xalloca(sizeof(POINTBLOCK));
+                    tmpPtBlock = (POINTBLOCK *)Xmalloc(sizeof(POINTBLOCK));
                     curPtBlock->next = tmpPtBlock;
                     curPtBlock = tmpPtBlock;
                     pts = curPtBlock->pts;
@@ -532,7 +555,7 @@ XPolygonRegion(Pts, Count, rule)
                      *  send out the buffer
                      */
                     if (iPts == NUMPTSTOBUFFER) {
-                        tmpPtBlock = (POINTBLOCK *)Xalloca(sizeof(POINTBLOCK));
+                        tmpPtBlock = (POINTBLOCK *)Xmalloc(sizeof(POINTBLOCK));
                         curPtBlock->next = tmpPtBlock;
                         curPtBlock = tmpPtBlock;
                         pts = curPtBlock->pts;
@@ -554,7 +577,12 @@ XPolygonRegion(Pts, Count, rule)
         }
     }
     FreeStorage(SLLBlock.next);	
-    region = XCreateRegion();
     (void) PtsToRegion(numFullPtBlocks, iPts, &FirstPtBlock, region);
+    for (curPtBlock = FirstPtBlock.next; --numFullPtBlocks >= 0;) {
+	tmpPtBlock = curPtBlock->next;
+	Xfree((char *)curPtBlock);
+	curPtBlock = tmpPtBlock;
+    }
+    Xfree((char *)pETEs);
     return(region);
 }
