@@ -1,4 +1,4 @@
-/* $XConsortium: Functions.c,v 1.2 89/10/05 11:18:05 swick Exp $ */
+/* $XConsortium: Functions.c,v 1.3 91/01/06 13:32:11 rws Exp $ */
 
 /*
 
@@ -19,7 +19,7 @@ without express or implied warranty.
 
 */
 
-#include <X11/Intrinsic.h>
+#include "IntrinsicI.h"
 #include <X11/Shell.h>
 #include <X11/Vendor.h>
 
