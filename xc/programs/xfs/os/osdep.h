@@ -1,4 +1,4 @@
-/* $XConsortium: osdep.h,v 1.4 92/01/31 17:45:07 eswu Exp $ */
+/* $XConsortium: osdep.h,v 1.5 93/09/20 18:08:54 hersh Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -172,6 +172,7 @@ typedef struct _osComm {
     ConnectionInputPtr input;
     ConnectionOutputPtr output;
     long        conn_time;	/* timestamp if not established, else 0  */
+    struct _XtransConnInfo *trans_conn; /* transport connection object */
 }           OsCommRec, *OsCommPtr;
 
 extern Bool CloneSelf;
