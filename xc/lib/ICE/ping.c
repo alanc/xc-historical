@@ -1,4 +1,4 @@
-/* $XConsortium: ping.c,v 1.5 93/12/07 11:04:12 mor Exp $ */
+/* $XConsortium: ping.c,v 1.6 94/03/18 15:59:20 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -20,7 +20,7 @@ Author: Ralph Mor, X Consortium
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
 
-void
+Status
 IcePing (iceConn, pingReplyProc, clientData)
 
 IceConn		 iceConn;
@@ -30,6 +30,9 @@ IcePointer	 clientData;
 {
     _IcePingWait *newping = (_IcePingWait *) malloc (sizeof (_IcePingWait));
     _IcePingWait *ptr = iceConn->ping_waits;
+
+    if (newping == NULL)
+	return (0);
 
     newping->ping_reply_proc = pingReplyProc;
     newping->client_data = clientData;
@@ -45,4 +48,6 @@ IcePointer	 clientData;
 
     IceSimpleMessage (iceConn, 0, ICE_Ping);
     IceFlush (iceConn);
+
+    return (1);
 }
