@@ -131,7 +131,7 @@ ServerTarget(Xhp,$(EXTDIR) $(HPDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
 #
 # ibm server
 #
-#if RtSpecialMalloc
+#if SpecialMalloc
 IBMALLOCLIB = ddx/ibm/rt/librtalloc.a
 #else
 IBMALLOCLIB = 
