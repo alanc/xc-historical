@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.64 90/05/03 18:34:44 jim Exp $
+ * $XConsortium: viewres.c,v 1.65 90/09/25 19:12:29 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -152,6 +152,8 @@ static XtActionsRec viewres_actions[] = {
     { "Select", ActionSelect },
     { "Resources", ActionResources },
 };
+
+static Atom wm_delete_window;
 
 #define BOOL_OFF 0
 #define BOOL_ON 1
@@ -878,6 +880,9 @@ main (argc, argv)
     if (argc != 1) usage ();
     XtAppAddActions (app_con, viewres_actions, XtNumber (viewres_actions));
 
+    XtOverrideTranslations
+	(toplevel, XtParseTranslationTable ("<Message>WM_PROTOCOLS: Quit()"));
+
     initialize_widgetnode_list (&selected_list.elements,
 				&selected_list.max_elements, 10);
 
@@ -1011,6 +1016,11 @@ main (argc, argv)
      * size the panner appropriately.
      */
     XtRealizeWidget (toplevel);
+
+    wm_delete_window = XInternAtom(XtDisplay(toplevel), "WM_DELETE_WINDOW",
+				   False);
+    (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
+                            &wm_delete_window, 1);
 
     XtSetArg (args[0], XtNwidth, &canvasWidth);
     XtSetArg (args[1], XtNheight, &canvasHeight);
