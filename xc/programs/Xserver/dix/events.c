@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.139 88/02/01 11:03:26 rws Exp $ */
+/* $Header: events.c,v 1.140 88/02/02 10:48:01 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1106,20 +1106,14 @@ ProcWarpPointer(client)
     {
 	dest = LookupWindow(stuff->dstWid, client);
 	if (!dest)
-	{
-	    client->errorValue = stuff->dstWid;
 	    return BadWindow;
-	}
     }
     if (stuff->srcWid != None)
     {
 	int     winX, winY;
         WindowPtr source = LookupWindow(stuff->srcWid, client);
 	if (!source)
-	{
-	    client->errorValue = stuff->srcWid;
 	    return BadWindow;
-	}
 	winX = source->absCorner.x;
 	winY = source->absCorner.y;
 	if (
@@ -1992,10 +1986,7 @@ ProcSetInputFocus(client)
     if ((stuff->focus == None) || (stuff->focus == PointerRoot))
 	focusWin = (WindowPtr)(stuff->focus);
     else if (!(focusWin = LookupWindow(stuff->focus, client)))
-    {
-	client->errorValue = stuff->focus;
 	return BadWindow;
-    }
     else
     {
  	/* It is a match error to try to set the input focus to an 
@@ -2087,20 +2078,14 @@ ProcGrabPointer(client)
 
     pWin = LookupWindow(stuff->grabWindow, client);
     if (!pWin)
-    {
-	client->errorValue = stuff->grabWindow;
 	return BadWindow;
-    }
     if (stuff->confineTo == None)
 	confineTo = NullWindow;
     else
     {
 	confineTo = LookupWindow(stuff->confineTo, client);
 	if (!confineTo)
-	{
-	    client->errorValue = stuff->grabWindow;
 	    return BadWindow;
-	}
     }
     if (stuff->cursor == None)
 	cursor = NullCursor;
@@ -2108,7 +2093,10 @@ ProcGrabPointer(client)
     {
 	cursor = (CursorPtr)LookupID(stuff->cursor, RT_CURSOR, RC_CORE);
 	if (!cursor)
+	{
+	    client->errorValue = stuff->cursor;
 	    return BadCursor;
+	}
     }
 	/* at this point, some sort of reply is guaranteed. */
     time = ClientTimeToServerTime(stuff->time);
@@ -2171,7 +2159,10 @@ ProcChangeActivePointerGrab(client)
     {
 	newCursor = (CursorPtr)LookupID(stuff->cursor, RT_CURSOR, RC_CORE);
 	if (!newCursor)
+	{
+	    client->errorValue = stuff->cursor;
 	    return BadCursor;
+	}
     }
     time = ClientTimeToServerTime(stuff->time);
     if ((CompareTimeStamps(time, currentTime) == LATER) ||
@@ -2227,10 +2218,7 @@ ProcGrabKeyboard(client)
     }
     pWin = LookupWindow(stuff->grabWindow, client);
     if (!pWin)
-    {
-	client->errorValue = stuff->grabWindow;
 	return BadWindow;
-    }
     time = ClientTimeToServerTime(stuff->time);
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
@@ -3341,10 +3329,7 @@ ProcGetMotionEvents(client)
     REQUEST_SIZE_MATCH(xGetMotionEventsReq);
     pWin = LookupWindow(stuff->window, client);
     if (!pWin)
-    {
-	client->errorValue = stuff->window;
 	return BadWindow;
-    }
     if (motionHintWindow)
 	MaybeStopHint(client);
     rep.type = X_Reply;
@@ -3404,10 +3389,7 @@ ProcQueryPointer(client)
     REQUEST_SIZE_MATCH(xResourceReq);
     pWin = LookupWindow(stuff->id, client);
     if (!pWin)
-    {
-	client->errorValue = stuff->id;
 	return BadWindow;
-    }
     if (motionHintWindow)
 	MaybeStopHint(client);
     rep.type = X_Reply;
@@ -3508,10 +3490,7 @@ ProcSendEvent(client)
     else
 	pWin = LookupWindow(stuff->destination, client);
     if (!pWin)
-    {
-	client->errorValue = stuff->destination;
 	return BadWindow;
-    }
     stuff->event.u.u.type |= 0x80;
     if (stuff->propagate)
     {
@@ -3542,10 +3521,7 @@ ProcUngrabKey(client)
     REQUEST_SIZE_MATCH(xUngrabKeyReq);
     pWin = LookupWindow(stuff->grabWindow, client);
     if (!pWin)
-    {
-	client->errorValue = stuff->grabWindow;
 	return BadWindow;
-    }
 
     temporaryGrab.client = client;
     temporaryGrab.device = inputInfo.keyboard;
@@ -3577,12 +3553,8 @@ ProcGrabKey(client)
         return BadValue;
     }
     pWin = LookupWindow(stuff->grabWindow, client);
-    client->errorValue = stuff->grabWindow;
     if (!pWin)
-    {
-	client->errorValue = stuff->grabWindow;
 	return BadWindow;
-    }
 
     temporaryGrab = CreateGrab(client, inputInfo.keyboard, pWin, 
 	(Mask)(KeyPressMask | KeyReleaseMask), (Bool)stuff->ownerEvents,
@@ -3634,20 +3606,14 @@ ProcGrabButton(client)
 
     pWin = LookupWindow(stuff->grabWindow, client);
     if (!pWin)
-    {
-	client->errorValue = stuff->grabWindow;
 	return BadWindow;
-    }
     if (stuff->confineTo == None)
 	confineTo = NullWindow;
     else
     {
 	confineTo = LookupWindow(stuff->confineTo, client);
 	if (!confineTo)
-	{
-	    client->errorValue = stuff->confineTo;
 	    return BadWindow;
-	}
     }
     if (stuff->cursor == None)
 	cursor = NullCursor;
@@ -3700,10 +3666,7 @@ ProcUngrabButton(client)
     REQUEST_SIZE_MATCH(xUngrabButtonReq);
     pWin = LookupWindow(stuff->grabWindow, client);
     if (!pWin)
-    {
-	client->errorValue = stuff->grabWindow;
 	return BadWindow;
-    }
 
     temporaryGrab.client = client;
     temporaryGrab.device = inputInfo.pointer;
