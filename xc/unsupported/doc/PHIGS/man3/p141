@@ -1,5 +1,5 @@
 .\"
-.\" $XConsortium$
+.\" $XConsortium: p141,v 5.1 91/02/16 09:39:22 rws Exp $
 .\"
 .\" 
 .\" Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -61,7 +61,7 @@ detected by this function.
 .IP \fIstate\fP
 A pointer to a location in which the system returns the
 \fI\s-2HLHSR\s+2 update state\fP.  Pupd_st is one of the values
-\s-2PUPD_NOT_PENDING\s+2 (\fINot Pending\fP) or \s-2PUPD_PENDING\s+2 (\fIPending\fP).
+\s-2PUPD_NOT_PEND\s+2 (\fINot Pending\fP) or \s-2PUPD_PEND\s+2 (\fIPending\fP).
 .IP \fIcur_mode\fP
 A pointer to a location in which the system returns the current
 \fI\s-2HLHSR\s+2 mode\fP.
