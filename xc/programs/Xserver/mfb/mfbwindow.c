@@ -225,7 +225,7 @@ mfbChangeWindowAttributes(pWin, mask)
 	  case CWBackingStore:
 	      if (pWin->backingStore != NotUseful)
 	      {
-		  miInitBackingStore(pWin, mfbSaveAreas, mfbRestoreAreas);
+		  miInitBackingStore(pWin, mfbSaveAreas, mfbRestoreAreas, (void (*)()) 0);
 	      }
 	      else
 	      {
