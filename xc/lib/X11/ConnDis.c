@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.46 89/06/15 11:52:23 jim Exp $
+ * $XConsortium: XConnDis.c,v 1.1 89/06/20 18:55:13 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -34,8 +34,557 @@
 #include <X11/Xos.h>
 #include "Xlibint.h"
 #include <X11/Xauth.h>
+#include <ctype.h>
 
-#ifdef USG
+extern char *getenv();
+
+#ifdef STREAMSCONN
+extern int _XMakeStreamsConnection();
+#endif
+#ifdef DNETCONN
+static int MakeDECnetConnection();
+#endif
+#ifdef UNIXCONN
+static int MakeUNIXSocketConnection();
+#endif
+#ifdef TCPCONN
+static int MakeTCPConnection();
+#endif
+
+static char *copystring (src, len)
+    char *src;
+    int len;
+{
+    char *dst = Xmalloc (len + 1);
+
+    if (dst) {
+	strncpy (dst, src, len);
+	dst[len] = '\0';
+    }
+
+    return dst;
+}
+
+
+/* 
+ * Attempts to connect to server, given display name. Returns file descriptor
+ * (network socket) or -1 if connection fails.  Display names may be of the
+ * following format:
+ *
+ *     [hostname] : [:] displaynumber [.screennumber]
+ *
+ * The second colon indicates a DECnet style name.  No hostname is interpretted
+ * as the most efficient local connection to a server on the same machine.  
+ * This is usually:
+ *
+ *     o  shared memory
+ *     o  local stream
+ *     o  UNIX domain socket
+ *     o  TCP to local host
+ */
+int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
+		      familyp, saddrlenp, saddrp)
+    char *display_name;
+    char **fullnamep;			/* RETURN */
+    int *dpynump;			/* RETURN */
+    int *screenp;			/* RETURN */
+    int *familyp;			/* RETURN */
+    int *saddrlenp;			/* RETURN */
+    char **saddrp;			/* RETURN, freed by caller */
+{
+    char *lastp, *p;			/* char pointers */
+    char *phostname = NULL;		/* start of host of display */
+    char *pdpynum = NULL;		/* start of dpynum of display */
+    char *pscrnum = NULL;		/* start of screen of display */
+    Bool dnet = False;			/* if true, then DECnet format */
+    int idisplay;			/* required display number */
+    int iscreen = 0;			/* optional screen number */
+    int (*connfunc)() = NULL;		/* method to create connection */
+    int fd = -1;			/* file descriptor to return */
+    int len;				/* length tmp variable */
+
+    p = display_name;
+
+    *saddrlenp = 0;			/* set so that we can clear later */
+    *saddrp = NULL;
+
+    /*
+     * Step 1, find the hostname.  This is delimited by the required 
+     * first colon.
+     */
+    for (lastp = p; *p && *p != ':'; p++) ;
+    if (!*p) return -1;		/* must have a colon */
+
+    if (p != lastp) {		/* no hostname given */
+	phostname = copystring (lastp, p - lastp);
+	if (!phostname) goto bad;	/* no memory */
+    }
+
+
+    /*
+     * Step 2, see if this is a DECnet address by looking for the optional
+     * second colon.
+     */
+    if (p[1] == ':') {			/* then DECnet format */
+	dnet = True;
+	p++;
+    }
+
+    /*
+     * see if we're allowed to have a DECnet address
+     */
+#ifndef DNETCONN
+    if (dnet) goto bad;
+#endif
+
+    
+    /*
+     * Step 3, find the display number.  This field is required and is 
+     * delimited either by a nul or a period, depending on whether or not
+     * a screen number is present.
+     */
+
+    for (lastp = ++p; *p && isascii(*p) && isdigit(*p); p++) ;
+    if ((p == lastp) ||			/* required field */
+	(*p != '\0' && *p != '.') ||	/* invalid non-digit terminator */
+	!(pdpynum = copystring (lastp, p - lastp)))  /* no memory */
+      goto bad;
+    idisplay = atoi (pdpynum);
+
+
+    /*
+     * Step 4, find the screen number.  This field is optional.  It is 
+     * present only if the display number was followed by a period (which
+     * we've already verified is the only non-nul character).
+     */
+
+    if (*p) {
+	for (lastp = ++p; *p && isascii(*p) && isdigit (*p); p++) ;
+	if (*p ||			/* non-digits */
+	    !(pscrnum = copystring (lastp, p - lastp)))	 /* no memory */
+	  goto bad;
+	iscreen = atoi (lastp);
+    }
+
+
+
+    /*
+     * At this point, we know the following information:
+     *
+     *     phostname                hostname string or NULL
+     *     idisplay                 display number
+     *     iscreen                  screen number
+     *     dnet                     DECnet boolean
+     * 
+     * We can now decide which transport to use based on the ConnectionFlags
+     * build parameter the hostname string.  If phostname is NULL or equals
+     * the string "local", then choose the best transport.  If phostname
+     * is "unix", then choose BSD UNIX domain sockets (if configured).
+     *
+     * First, choose default transports:  DECnet else (TCP or STREAMS)
+     */
+
+
+#ifdef DNETCONN
+    if (dnet)
+      connfunc = MakeDECnetConnection;
+    else
+#endif
+#ifdef TCPCONN
+      connfunc = MakeTCPConnection;
+#else
+#ifdef STREAMSCONN
+      connfunc = _XMakeStreamsConnection;
+#endif
+#endif
+
+    /*
+     * Now that the defaults have been established, see if we have any 
+     * special names that we have to override:
+     *
+     *     :0         =>     if DNETCONN then decnet-socket else 
+     *                                if UNIXCONN then unix-domain-socket
+     *     unix:0     =>     if UNIXCONN then unix-domain-socket
+     *
+     * Note that if UNIXCONN isn't defined, then we can use the default
+     * transport connection function set above.
+     */
+    if (!phostname) {
+#ifdef DNETCONN
+	connfunc = MakeDECnetConnection;  /* force DECnet */
+#else
+#ifdef UNIXCONN
+	connfunc = MakeUNIXSocketConnection;
+#endif
+#endif
+    }
+#ifdef UNIXCONN
+    else if (strcmp (phostname, "unix") == 0) {
+	connfunc = MakeUNIXSocketConnection;
+    }
+#endif
+
+
+#ifdef UNIXCONN
+#define LOCALCONNECTION (!phostname || connfunc == MakeUNIXSocketConnection)
+#else
+#define LOCALCONNECTION (!phostname)
+#endif
+
+    if (LOCALCONNECTION) {
+	/*
+	 * Get the auth info for local hosts so that it doesn't have to be
+	 * repeated everywhere; the particular values in these fields are
+	 * not part of the protocol.
+	 */
+	char hostnamebuf[256];
+	int len = _XGetHostname (hostnamebuf, sizeof hostnamebuf);
+
+	*familyp = FamilyLocal;
+	if (len > 0) {
+	    *saddrp = Xmalloc (len + 1);
+	    if (*saddrp) {
+		strcpy (*saddrp, hostnamebuf);
+		*saddrlenp = len;
+	    } else {
+		*saddrlenp = 0;
+	    }
+	}
+    }
+#undef LOCALCONNECTION
+
+
+    /*
+     * Make the connection, also need to get the auth address info for
+     * non-local connections
+     */
+    fd = (*connfunc) (phostname, idisplay, familyp, saddrlenp, saddrp);
+    if (fd < 0) {
+	goto bad;
+    }
+
+
+    /*
+     * Set the connection non-blocking since we use select() to block; also
+     * set close-on-exec so that programs that fork() doesn't get confused.
+     */
+#ifdef FIOSNBIO
+    {
+	int arg = 1;
+	ioctl (fd, FIOSNBIO, &arg);
+    }
+#else
+    (void) fcntl (fd, F_SETFL, FNDELAY);
+#endif /* FIOSNBIO */
+
+    (void) fcntl (fd, F_SETFD, 1);
+
+
+    /*
+     * Build the expanded display name:
+     *
+     *     [host] : [:] dpy . scr \0
+     */
+    len = ((phostname ? strlen(phostname) : 0) + 1 + (dnet ? 1 : 0) +
+	   strlen(pdpynum) + 1 + (pscrnum ? strlen(pscrnum) : 1) + 1);
+    *fullnamep = (char *) Xmalloc (len);
+    if (!*fullnamep) goto bad;
+
+    sprintf (*fullnamep, "%s%s%d.%d",
+	     (phostname ? phostname : ""), (dnet ? "::" : ":"),
+	     idisplay, iscreen);
+
+    *dpynump = idisplay;
+    *screenp = iscreen;
+    if (phostname) free (phostname);
+    if (pdpynum) free (pdpynum);
+    if (pscrnum) free (pscrnum);
+    return fd;
+
+
+    /*
+     * error return; make sure everything is cleaned up.
+     */
+  bad:
+    if (fd >= 0) (void) close (fd);
+    if (*saddrp) {
+	free (*saddrp);
+	*saddrp = NULL;
+    }
+    *saddrlenp = 0;
+    if (phostname) free (phostname);
+    if (pdpynum) free (pdpynum);
+    if (pscrnum) free (pscrnum);
+    return -1;
+
+}
+
+
+/*****************************************************************************
+ *                                                                           *
+ *			   Make Connection Routines                          *
+ *                                                                           *
+ *****************************************************************************/
+
+#ifdef DNETCONN				/* stupid makedepend */
+#define NEED_BSDISH
+#endif
+#ifdef UNIXCONN
+#define NEED_BSDISH
+#endif
+#ifdef TCPCONN
+#define NEED_BSDISH
+#endif
+
+#ifdef NEED_BSDISH			/* makedepend can't handle #if */
+/*
+ * 4.2bsd-based systems
+ */
+#include <sys/socket.h>
+
+#ifndef hpux
+#ifndef apollo			/* nest ifndefs because makedepend is broken */
+#include <netinet/tcp.h>
+#endif
+#endif
+void bcopy();
+#endif /* NEED_BSDISH */
+
+
+#ifdef DNETCONN
+static int MakeDECnetConnection (phostname, idisplay,
+				 familyp, saddrlenp, saddrp)
+    char *phostname;
+    int idisplay;
+    int *familyp;			/* RETURN */
+    int *saddrlenp;			/* RETURN */
+    char **saddrp;			/* RETURN */
+{
+    int fd;
+    char objname[20];
+    extern int dnet_conn();
+    struct dn_naddr *dnaddrp, dnaddr;
+    struct nodeent *np;
+
+    if (phostname) phostname = "0";
+
+    /*
+     * build the target object name.
+     */
+    sprintf (objname, "X$X%d", idisplay);
+
+    /*
+     * Attempt to open the DECnet connection, return -1 if fails.
+     */
+    if ((fd = dnet_conn (phostname, objname, SOCK_STREAM, 0, 0, 0, 0)) < 0) {
+	return -1;
+    }
+
+    *familyp = FamilyDECnet;
+    if (dnaddrp = dnet_addr (phostname)) {  /* stolen from xhost */
+	dnaddr = *dnaddrp;
+    } else {
+	if ((np = getnodebyname (phostname)) == NULL) {
+	    (void) close (fd);
+	    return -1;
+	}
+	dnaddr.a_len = np->n_length;
+	bcopy (np->n_addr, dnaddr.a_addr, np->n_length);
+    }
+
+    *saddrlenp = sizeof (struct dn_anaddr);
+    *saddrp = Xmalloc (*saddrlenp);
+    if (!*saddrp) {
+	(void) close (fd);
+	return -1;
+    }
+    bcopy ((char *)&dnaddr, *saddrp, *saddrlenp);
+    return fd;
+}
+#endif /* DNETCONN */
+
+
+#ifdef UNIXCONN
+#include <sys/un.h>
+
+#ifndef X_UNIX_PATH
+#define X_UNIX_PATH "/tmp/.X11-unix/X"
+#endif /* X_UNIX_PATH */
+
+static int MakeUNIXSocketConnection (phostname, idisplay,
+				     familyp, saddrlenp, saddrp)
+    char *phostname;
+    int idisplay;
+    int *familyp;			/* RETURN */
+    int *saddrlenp;			/* RETURN */
+    char **saddrp;			/* RETURN */
+{
+    struct sockaddr_un unaddr;		/* UNIX socket data block */
+    struct sockaddr *addr;		/* generic socket pointer */
+    int addrlen;			/* length of addr */
+    int fd;				/* socket file descriptor */
+
+    unaddr.sun_family = AF_UNIX;
+    sprintf (unaddr.sun_path, "%s%d", X_UNIX_PATH, idisplay);
+
+    addr = (struct sockaddr *) &unaddr;
+    addrlen = strlen(unaddr.sun_path) + sizeof(unaddr.sun_family);
+
+    /*
+     * Open the network connection.
+     */
+    if ((fd = socket ((int) addr->sa_family, SOCK_STREAM, 0)) < 0) {
+	return -1;
+    }
+
+    if (connect (fd, addr, addrlen) == -1) {
+	(void) close (fd);
+	return -1;
+    }
+
+    /*
+     * Don't need to get auth info since we're local
+     */
+    return fd;
+}
+#endif /* UNIXCONN */
+
+
+#ifdef TCPCONN
+static int MakeTCPConnection (phostname, idisplay,
+			      familyp, saddrlenp, saddrp)
+    char *phostname;
+    int idisplay;
+    int *familyp;			/* RETURN */
+    int *saddrlenp;			/* RETURN */
+    char **saddrp;			/* RETURN */
+{
+    char hostnamebuf[256];		/* tmp space */
+    unsigned long hostinetaddr;		/* result of inet_addr of arpa addr */
+    struct sockaddr_in inaddr;		/* IP socket */
+    struct sockaddr *addr;		/* generic socket pointer */
+    int addrlen;			/* length of addr */
+    struct hostent *hp;			/* entry in hosts table */
+    char *cp;				/* character pointer iterator */
+    int fd;				/* file descriptor to return */
+    int len;				/* length tmp variable */
+
+    if (!phostname) {
+	hostnamebuf[0] = '\0';
+	(void) _XGetHostname (hostnamebuf, sizeof hostnamebuf);
+	phostname = hostnamebuf;
+    }
+
+    /*
+     * if numeric host name then try to parse it as such
+     */
+    if (isascii(phostname[0]) && isdigit(phostname[0])) {
+	hostinetaddr = inet_addr (phostname);
+    } else {
+	hostinetaddr = -1;
+    }
+
+    /*
+     * try numeric
+     */
+    if (hostinetaddr == -1) {
+	if ((hp = gethostbyname(phostname)) == NULL) {
+	    /* No such host! */
+	    errno = EINVAL;
+	    return -1;
+	}
+	if (hp->h_addrtype != AF_INET) {  /* is IP host? */
+	    /* Not an Internet host! */
+	    errno = EPROTOTYPE;
+	    return -1;
+	}
+ 
+	/* Set up the socket data. */
+	inaddr.sin_family = hp->h_addrtype;
+#if defined(CRAY) && defined(OLDTCP)
+	/* Only Cray UNICOS3 and UNICOS4 will define this */
+	{
+	    long t;
+	    bcopy ((char *)hp->h_addr, (char *)&t, sizeof(t));
+	    inaddr.sin_addr = t;
+	}
+#else
+	bcopy ((char *)hp->h_addr, (char *)&inaddr.sin_addr, 
+	       sizeof(inaddr.sin_addr));
+#endif /* CRAY and OLDTCP */
+    } else {
+#if defined(CRAY) && defined(OLDTCP)
+	/* Only Cray UNICOS3 and UNICOS4 will define this */
+	inaddr.sin_addr = hostinetaddr;
+#else
+	inaddr.sin_addr.s_addr = hostinetaddr;
+#endif /* CRAY and OLDTCP */
+	inaddr.sin_family = AF_INET;
+    }
+
+    addr = (struct sockaddr *) &inaddr;
+    addrlen = sizeof (struct sockaddr_in);
+    inaddr.sin_port = X_TCP_PORT + idisplay;
+    inaddr.sin_port = htons (inaddr.sin_port);	/* may be funky macro */
+
+
+    /*
+     * Open the network connection.
+     */
+    if ((fd = socket ((int) addr->sa_family, SOCK_STREAM, 0)) < 0) {
+	return -1;
+    }
+
+    /*
+     * save the auth information
+     */
+
+#if defined(CRAY) && defined(OLDTCP)
+    len = sizeof(inaddr.sin_addr);
+    cp = (char *) &inaddr.sin_addr;
+#else
+    len = sizeof(inaddr.sin_addr.s_addr);
+    cp = (char *) &inaddr.sin_addr.s_addr;
+#endif /* CRAY and OLDTCP */
+
+    /*
+     * We are special casing the BSD hack localhost address
+     * 127.0.0.1, since this address shouldn't be copied to
+     * other machines.  So, we simply omit generating the auth info
+     * since we set it to the local machine before calling this routine!
+     */
+    if (!((len == 4) && (cp[0] == 127) && (cp[1] == 0) &&
+	  (cp[2] == 0) && (cp[3] == 1))) {
+	*saddrp = Xmalloc (len);
+	if (*saddrp) {
+	    *saddrlenp = len;
+	    bcopy (cp, *saddrp, len);
+	    *familyp = FamilyInternet;
+	} else {
+	    *saddrlenp = 0;
+	}
+    }
+
+    /* make sure to turn off TCP coalescence */
+#ifdef TCP_NODELAY
+    {
+	int mi = 1;
+	setsockopt (fd, IPPROTO_TCP, TCP_NODELAY, &mi, sizeof (int));
+    }
+#endif
+
+    if (connect (fd, addr, addrlen) == -1) {
+	(void) close (fd);
+	return -1;
+    }
+
+    return fd;
+}
+#endif /* TCPCONN */
+
+
+
+#ifdef STREAMSCONN
 /*
  * UNIX System V Release 3.2
  *
@@ -58,23 +607,17 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
-*/
-
-/*
- * THIS IS AN OS DEPENDENT FILE FOR SYSV BASED SYSTEMS
  */
+
 #ifdef TLI
 #include <sys/tiuser.h>
 #endif
 
-#include <ctype.h>
 #include <memory.h>
 #include <signal.h>
 #include <sys/utsname.h>
 #include <X11/Xproto.h>
-#include <errno.h>
 
-extern char *getenv();
 /* if you change this define (for BUFFERSIZE) here remember to change it in
  * Xstreams.c as well.   (I know, I know, I know ) 
  */
@@ -83,660 +626,82 @@ extern char * _XsInputBuffer[];
 extern int _XsInputBuffersize[];
 extern int _XsInputBufferptr[];
 
-#ifdef DEBUG
-#	define ERROR(x)		{ fprintf x; return -1; }
-#else
-#	define ERROR(x)		{ return -1; }
-#endif
-
-
-#define MAX_BUF 256
-
-/* 
- * Attempts to connect to server, given display name. Returns file descriptor
- * (network socket) or -1 if connection fails. The expanded display name
- * of the form hostname:number.screen ("::" if DECnet) is returned in a result
- * parameter. The screen number to use is also returned.
- */
-int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num,
-		      dpy_numlen, dpy_num, conn_family,
-		      server_addrlen, server_addr)
-    char *display_name;
-    char *expanded_name;	/* return */
-    char *prop_name;		/* return */
-    int *screen_num;		/* return */
-    int *dpy_numlen;		/* return */
-    char **dpy_num;		/* return */
-    int *conn_family;		/* return */
-    int *server_addrlen;	/* return */
-    char **server_addr;		/* return */ /* caller frees when done */
+int _XBytesReadable (fd, ptr)
+    int fd;
+    int *ptr;
 {
-	struct utsname local;
+    int inbuf = _XsInputBuffersize[fd] - _XsInputBufferptr[fd];
+    int n;
+    int flg;
 
-	char		buf [MAX_BUF];
-	char *		p = buf;
-	char *		host = buf;
-	char *		display;
-	char *		screen;
-	int		idisplay;
-	int		iscreen;
-        int		fd;
-	int		server;
-	char *		slave;
-	unsigned char	c;
-	struct iovec	v[2];
-	void		(*savef)();
+    /*
+     * XXX - ought to have code for other types of connections in here too...
+     */
 
-	/*
-	 * get system name (local.sysname) and network name (local.nodename)
-	 */
-	if (uname (&local) < 0)
-		ERROR ((stderr, "bad return from uname\n"));
-	/*
-	 * fill buf and check for overflow
-	 */
-	if ((p = memccpy (buf, display_name, '\0', MAX_BUF)) == NULL)
-		ERROR ((stderr, "buf overflow\n"));
-	/*
-	 * find ':' in buf else error
-	 */
-	if ((p = memchr (buf, ':', p-buf)) == NULL)
-		ERROR ((stderr, "no : in display_name\n"));
-	/*
-	 * get display number and validate
-	 */
-	*p = '\0';
-	display = ++p;
-	while (*p && isascii(*p) && isdigit(*p))
-		++p;
-	if (p == display)
-		ERROR ((stderr, "no display number given\n"));
-	/*
-	 * get screen number if present else set to "0"
-	 */
-	prop_name[0] = '\0';
-	switch (*p)
-	{
-		case '\0':
-			screen = "0";
-			break;
-		case '.':
-			*p = '\0';
-			screen = ++p;
-			while (*p && isascii(*p) && isdigit(*p))
-				++p;
-			if (*p == '.') {
-			    strcpy (prop_name, p);
-			    *p = '\0';
-			} 
-			if (*p) 
-			  ERROR ((stderr, "bad char in screen number\n"));
-
-			if (p == screen)
-				screen = "0";
-			break;
-		default:
-			ERROR ((stderr, "bad char in display number\n"));
-	}
-	idisplay = atoi (display);
-	iscreen = atoi (screen);
-	/*
-	 * set host to local machine name if not set
-	 */
-	if (!*host)
-		host = local.sysname;
-	/*
-	 * check for local server
-	 */
-	
-	*server_addr = NULL;
-	fd = GetConnectionType (host, idisplay, conn_family,
-				server_addrlen, server_addr);
-	
-	if(fd < 0){
-		if (*server_addr) free (*server_addr);
-		return(-1);
-		}
-	/*
-	 * set it non-blocking.  This is so we can read data when blocked
-	 * for writing in the library.
-	 */
-	(void) fcntl(fd, F_SETFL, FNDELAY);
-
-	/*
-	 * set it to close-on-exec so that forks don't get screwed
-	 */
-	(void) fcntl(fd, F_SETFD, 1);
-
-	/*
-	 * Return the id if the connection succeeded. Rebuild the expanded
-	 * spec and return it in the result parameter.
-	 */
-	strcpy (expanded_name, host);
-	strcat (expanded_name, ":");
-	strcat (expanded_name, display);
-	strcat (expanded_name, ".");
-	strcat (expanded_name, screen);
-	*screen_num = iscreen;
-	*dpy_numlen = strlen (display);
-	*dpy_num = (char *) malloc ((*dpy_numlen) + 1);
-	if (!*dpy_num) {
-	    if (*server_addr) free (*server_addr);
-	    return -1;
-	}
-	strcpy (*dpy_num, display);
-	return (fd);
-}
-
-int _BytesReadable (fd, ptr)
-int fd;
-int * ptr;
-{
-	int inbuf = _XsInputBuffersize[fd] - _XsInputBufferptr[fd];
-	int n;
-	int flg;
-
-        if (inbuf >= sizeof(xReply))
-	{
-		*ptr = inbuf;
-		return (0);
-	}
-
-	if (_XsInputBufferptr[fd] > 0)
-	{
-		/* move tidbit to front of buffer */
-		bcopy(&_XsInputBuffer[fd][_XsInputBufferptr[fd]],
-		      &_XsInputBuffer[fd][0], inbuf);
-
-		/* Adjust pointers in buffer to reflect move */
-		_XsInputBuffersize[fd] = inbuf;
-		_XsInputBufferptr[fd] = 0;
-	}
-
-	if (inbuf < 0)
-	{
-		inbuf = 0;
-		_XsInputBuffersize[fd] = 0;
-	}
-	/* Read no more than number of bytes left in buffer */
-
-        errno = 0;
-
-	if(_XsTypeOfStream[fd] == X_LOCAL_STREAM)
-	   	n = read(fd, &_XsInputBuffer[fd][inbuf], BUFFERSIZE-inbuf);
-	else
-	   	n = t_rcv(fd, &_XsInputBuffer[fd][inbuf], BUFFERSIZE-inbuf, &flg);
-
-	if (n > 0)
-	{
-		_XsInputBuffersize[fd] += n;
-		*ptr = _XsInputBuffersize[fd];
-		return (0);
-	}
-	else
-	{
-#ifdef EWOULDBLOCK
-		if (errno == EWOULDBLOCK)
-		{
-			*ptr = _XsInputBuffersize[fd];
-			return (0);
-		}
-		else
-#endif
-		{
-			if (n == 0)
-			{
-				errno = EPIPE;
-				return (-1);
-			}
-			else
-			{
-				if (errno != EINTR)
-					return (-1);
-				else
-				{
-					*ptr = _XsInputBuffersize[fd];
-					return (0);
-				}
-			}
-		}
-	}
-}
-
-
-/*
- * XXX - what is this used for?
- */
-int
-XSelect(dpy, nfds, r_mask, w_mask, e_mask, timeout)
-  Display		*dpy;
-  int			nfds;
-  unsigned long		*r_mask, *w_mask, *e_mask;
-  struct timeval	*timeout;
-{
-  int	retval = 0;
-  
-
-  if ((GETBIT(r_mask, dpy->fd) &&
-       (_XsInputBuffersize[ dpy->fd ] - _XsInputBufferptr[ dpy->fd ]) > 0))
-    {
-      BITCLEAR(r_mask, dpy->fd);
-      if (ANYSET(r_mask))
-	{
-	  struct timeval	notime;
-	  
-	  notime.tv_sec = notime.tv_usec = 0;
-	  if ((retval = select(nfds, r_mask, w_mask, e_mask, notime)) < 0)
-	    return retval;
-	}
-      BITSET(r_mask, dpy->fd);
-      return retval + 1;
+    if (inbuf >= sizeof(xReply)) {
+	*ptr = inbuf;
+	return (0);
     }
-  else
-    return select(nfds, r_mask, w_mask, e_mask, timeout);
-} 
 
-#else					/* else is bsd-ish system */
-/*
- * 4.2bsd-based systems
- */
-#include <sys/socket.h>
+    if (_XsInputBufferptr[fd] > 0) {
+	/* move tidbit to front of buffer */
+	bcopy (&_XsInputBuffer[fd][_XsInputBufferptr[fd]],
+	       &_XsInputBuffer[fd][0], inbuf);
 
-#ifndef hpux
-#ifndef apollo			/* nest ifndefs because makedepend is broken */
-#include <netinet/tcp.h>
-#endif
-#endif
+	/* Adjust pointers in buffer to reflect move */
+	_XsInputBuffersize[fd] = inbuf;
+	_XsInputBufferptr[fd] = 0;
+    }
 
-#ifdef UNIXCONN
-#include <sys/un.h>
-#ifndef X_UNIX_PATH
-#define X_UNIX_PATH "/tmp/.X11-unix/X"
-#endif /* X_UNIX_PATH */
-#endif /* UNIXCONN */
-void bcopy();
+    if (inbuf < 0) {
+	inbuf = 0;
+	_XsInputBuffersize[fd] = 0;
+    }
 
+    /* Read no more than number of bytes left in buffer */
+    errno = 0;
 
-/* 
- * Attempts to connect to server, given display name. Returns file descriptor
- * (network socket) or -1 if connection fails. The expanded display name
- * of the form hostname:number.screen ("::" if DECnet) is returned in a result
- * parameter. The screen number to use is also returned.
- */
-int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num,
-		      dpy_numlen, dpy_num, conn_family,
-		      server_addrlen, server_addr)
-    char *display_name;
-    char *expanded_name;	/* return */
-    char *prop_name;		/* return */
-    int *screen_num;		/* return */
-    int *dpy_numlen;		/* return */
-    char **dpy_num;		/* return */
-    int *conn_family;		/* return */
-    int *server_addrlen;	/* return */
-    char **server_addr;		/* return */ /* caller frees when done */
-{
-	char displaybuf[256];		/* Display string buffer */	
-	register char *display_ptr;	/* Display string buffer pointer */
-	register char *numbuf_ptr;	/* Server number buffer pointer */
-	char *screen_ptr;		/* Pointer for locating screen num */
-	int display_num;		/* Display number */
-	struct sockaddr_in inaddr;	/* INET socket address. */
-	unsigned long hostinetaddr;	/* result of inet_addr of arpa addr */
-#ifdef UNIXCONN
-	struct sockaddr_un unaddr;	/* UNIX socket address. */
-#endif
-	struct sockaddr *addr;		/* address to connect to */
-        struct hostent *host_ptr;
-	int addrlen;			/* length of address */
-	extern char *getenv();
-	extern struct hostent *gethostbyname();
-        int fd;				/* Network socket */
-	char numberbuf[16];
-	char *dot_ptr = NULL;		/* Pointer to . before screen num */
-#ifdef DNETCONN
-	int dnet = 0;
-	char objname[20];
-	extern int dnet_conn();
-#endif
-	int tmp_dpy_numlen = 0;
-	char *tmp_dpy_num = NULL;
-	int tmp_server_addrlen = 0;
-	char *tmp_server_addr = NULL;
-	int tmpfamily = -1;		/* since protocol families >= 0 */
+    if (_XsTypeOfStream[fd] == X_LOCAL_STREAM)
+      n = read(fd, &_XsInputBuffer[fd][inbuf], BUFFERSIZE-inbuf);
+    else
+      n = t_rcv(fd, &_XsInputBuffer[fd][inbuf], BUFFERSIZE-inbuf, &flg);
 
-	/* 
-	 * Find the ':' seperator and extract the hostname and the
-	 * display number.
-	 * NOTE - if DECnet is to be used, the display name is formatted
-	 * as "host::number"
-	 */
-	(void) strncpy(displaybuf, display_name, sizeof(displaybuf));
-	if ((display_ptr = SearchString(displaybuf,':')) == NULL) return (-1);
-#ifdef DNETCONN
-	if (*(display_ptr + 1) == ':') {
-	    dnet++;
-	    *(display_ptr++) = '\0';
-	}
-#endif
-	*(display_ptr++) = '\0';
- 
-	/* displaybuf now contains only a null-terminated host name, and
-	 * display_ptr points to the display number.
-	 * If the display number is missing there is an error. */
-
-	if (*display_ptr == '\0') return(-1);
-
-	tmp_server_addrlen = 0;
-	tmp_server_addr = NULL;
-
-	/*
-	 * Build a string of the form <display-number>.<screen-number> in
-	 * numberbuf, using ".0" as the default.
-	 */
-	screen_ptr = display_ptr;		/* points to #.#.propname */
-	numbuf_ptr = numberbuf;			/* beginning of buffer */
-	while (*screen_ptr != '\0') {
-	    if (*screen_ptr == '.') {		/* either screen or prop */
-		if (dot_ptr) {			/* then found prop_name */
-		    screen_ptr++;
-		    break;
-		}
-		dot_ptr = numbuf_ptr;		/* found screen_num */
-		*(screen_ptr++) = '\0';
-		*(numbuf_ptr++) = '.';
-	    } else {
-		*(numbuf_ptr++) = *(screen_ptr++);
-	    }
-	}
-
-	/*
-	 * If the spec doesn't include a screen number, add ".0" (or "0" if
-	 * only "." is present.)
-	 */
-	if (dot_ptr == NULL) {			/* no screen num or prop */
-	    dot_ptr = numbuf_ptr;
-	    *(numbuf_ptr++) = '.';
-	    *(numbuf_ptr++) = '0';
+    if (n > 0) {
+	_XsInputBuffersize[fd] += n;
+	*ptr = _XsInputBuffersize[fd];
+	return (0);
+    } else {
+#ifdef EWOULDBLOCK
+	if (errno == EWOULDBLOCK) {
+	    *ptr = _XsInputBuffersize[fd];
+	    return (0);
 	} else {
-	    if (*(numbuf_ptr - 1) == '.')
-		*(numbuf_ptr++) = '0';
-	}
-	*numbuf_ptr = '\0';
-
-	/*
-	 * Return the screen number and property names in the result parameters
-	 */
-	*screen_num = atoi(dot_ptr + 1);
-	strcpy (prop_name, screen_ptr);
-
-	/*
-	 * Convert the server number string to an integer.
-	 */
-	display_num = atoi(display_ptr);
-	tmp_dpy_numlen = strlen (display_ptr);
-	tmp_dpy_num = Xmalloc (tmp_dpy_numlen + 1);
-	if (!tmp_dpy_num) {
-	    return(-1);
-	}
-	strcpy (tmp_dpy_num, display_ptr);
-
-	/*
-	 * If the display name is missing, use current host.
-	 */
-	if (displaybuf[0] == '\0')
-#ifdef DNETCONN
-	    if (dnet) 
-		(void) strcpy (displaybuf, "0");
-            else
 #endif
-#ifdef UNIXCONN
-		;	/* Do nothing if UNIX DOMAIN. Will be handled below. */
-#else
-	        (void) _XGetHostname (displaybuf, sizeof displaybuf);
-#endif /* UNIXCONN else TCPCONN (assumed) */
-
-#ifdef DNETCONN
-	if (dnet) {
-	    struct dn_naddr *dnaddrp, dnaddr;
-	    struct nodeent *np;
-
-	    /*
-	     * build the target object name.
-	     */
-	    sprintf(objname, "X$X%d", display_num);
-	    /*
-	     * Attempt to open the DECnet connection, return -1 if fails.
-	     */
-	    if ((fd = dnet_conn(displaybuf, 
-		   objname, SOCK_STREAM, 0, 0, 0, 0)) < 0) {
-		if (tmp_dpy_num) Xfree (tmp_dpy_num);
-		return(-1);	    /* errno set by dnet_conn. */
-	    }
-
-	    tmpfamily = FamilyDECnet;
-	    if (dnaddrp = dnet_addr(displaybuf)) {  /* stolen from xhost */
-		dnaddr = *dnaddrp;
+	    if (n == 0) {
+		errno = EPIPE;
+		return (-1);
 	    } else {
-		if ((np = getnodebyname (name)) == NULL) {
-		    (void) close (fd);
-		    if (tmp_dpy_num) Xfree (tmp_dpy_num);
-		    return(-1);
+		if (errno != EINTR)
+		  return (-1);
+		else {
+		    *ptr = _XsInputBuffersize[fd];
+		    return (0);
 		}
-		dnaddr.a_len = np->n_length;
-		bcopy (np->n_addr, dnaddr.a_addr, np->n_length);
 	    }
-	    tmp_server_addrlen = sizeof(struct dn_anaddr);
-	    tmp_server_addr = Xmalloc(tmp_server_addrlen);
-	    if (!tmp_server_addr) {
-		(void) close (fd);
-		if (tmp_dpy_num) Xfree (tmp_dpy_num);
-		return(-1);
-	    }
-	    bcopy ((char *)&dnaddr, tmp_server_addr, tmp_server_addrlen);
-	} else
-#endif
-	{
-#ifdef UNIXCONN
-	    if ((displaybuf[0] == '\0') || 
-		(strcmp("unix", displaybuf) == 0)) {
-		/* Connect locally using Unix domain. */
-		unaddr.sun_family = AF_UNIX;
-		(void) strcpy(unaddr.sun_path, X_UNIX_PATH);
-		strcat(unaddr.sun_path, display_ptr);
-		addr = (struct sockaddr *) &unaddr;
-		addrlen = strlen(unaddr.sun_path) + 2;
-		/*
-		 * Open the network connection.
-	 	 */
-	        if ((fd = socket((int) addr->sa_family, SOCK_STREAM, 0)) < 0) {
-		    if (tmp_dpy_num) Xfree (tmp_dpy_num);
-		    return(-1);	    /* errno set by system call. */
-		}
-
-		/*
-		 * This is a hack and is not part of the protocol
-		 */
-		tmpfamily = FamilyLocal;
-		{
-		    char tmpbuf[1024];
-
-		    tmp_server_addrlen = _XGetHostname (tmpbuf, sizeof tmpbuf);
-		    tmp_server_addr = Xmalloc (tmp_server_addrlen + 1);
-		    if (!tmp_server_addr) {
-			if (tmp_dpy_num) Xfree (tmp_dpy_num);
-			(void) close (fd);
-			return(-1);
-		    }
-		    strcpy (tmp_server_addr, tmpbuf);
-		}
-	    } else
-#endif
-	    {
-		/* Get the statistics on the specified host. */
-		hostinetaddr = inet_addr (displaybuf);
-		if (hostinetaddr == -1) {
-			if ((host_ptr = gethostbyname(displaybuf)) == NULL) {
-				/* No such host! */
-				errno = EINVAL;
-				if (tmp_dpy_num) Xfree (tmp_dpy_num);
-				return(-1);
-			}
-			/* Check the address type for an internet host. */
-			if (host_ptr->h_addrtype != AF_INET) {
-				/* Not an Internet host! */
-				errno = EPROTOTYPE;
-				if (tmp_dpy_num) Xfree (tmp_dpy_num);
-				return(-1);
-			}
- 
-			/* Set up the socket data. */
-			inaddr.sin_family = host_ptr->h_addrtype;
-#if defined(CRAY) && defined(OLDTCP)
-			/* Only Cray UNICOS3 and UNICOS4 will define this */
-			{
-				long t;
-				bcopy((char *)host_ptr->h_addr,
-				      (char *)&t,
-				      sizeof(t));
-				inaddr.sin_addr = t;
-			}
-#else
-			bcopy((char *)host_ptr->h_addr, 
-			      (char *)&inaddr.sin_addr, 
-			      sizeof(inaddr.sin_addr));
-#endif /* CRAY and OLDTCP */
-		} else {
-#if defined(CRAY) && defined(OLDTCP)
-			/* Only Cray UNICOS3 and UNICOS4 will define this */
-			inaddr.sin_addr = hostinetaddr;
-#else
-			inaddr.sin_addr.s_addr = hostinetaddr;
-#endif /* CRAY and OLDTCP */
-			inaddr.sin_family = AF_INET;
-		}
-		tmpfamily = FamilyInternet;
-		addr = (struct sockaddr *) &inaddr;
-		addrlen = sizeof (struct sockaddr_in);
-		inaddr.sin_port = display_num;
-		inaddr.sin_port += X_TCP_PORT;
-		inaddr.sin_port = htons(inaddr.sin_port);
-		/*
-		 * Open the network connection.
-		 */
-
-		if ((fd = socket((int) addr->sa_family, SOCK_STREAM, 0)) < 0) {
-		    if (tmp_dpy_num) Xfree (tmp_dpy_num);
-		    return(-1);	    /* errno set by system call. */
-		}
-
-		/* save address information */
-		{
-		    char *cp;
-		    char tmpbuf[1024];
-#if defined(CRAY) && defined(OLDTCP)
-		    tmp_server_addrlen = sizeof(inaddr.sin_addr);
-		    cp = (char *) &inaddr.sin_addr;
-#else
-		    tmp_server_addrlen = sizeof(inaddr.sin_addr.s_addr);
-		    cp = (char *) &inaddr.sin_addr.s_addr;
-#endif /* CRAY and OLDTCP */
-		    if ((tmp_server_addrlen == 4) &&
-			(cp[0] == 127) && (cp[1] == 0) &&
-			(cp[2] == 0) && (cp[3] == 1))
-		    {
-			/*
-			 * We are special casing the BSD hack localhost address
-			 * 127.0.0.1, since this address shouldn't be copied to
-			 * other machines.  So, we convert it to FamilyLocal.
-			 * This is a hack and is not part of the protocol
-			 */
-			tmpfamily = FamilyLocal;
-			tmp_server_addrlen = _XGetHostname (tmpbuf, sizeof tmpbuf);
-			cp = tmpbuf;
-		    }
-		    tmp_server_addr = Xmalloc (tmp_server_addrlen);
-		    if (!tmp_server_addr) {
-			(void) close (fd);
-			if (tmp_dpy_num) Xfree (tmp_dpy_num);
-			return(-1);
-		    }
-		    bcopy (cp, tmp_server_addr, tmp_server_addrlen);
-		}
-
-		/* make sure to turn off TCP coalescence */
-#ifdef TCP_NODELAY
-		{
-		int mi = 1;
-		setsockopt (fd, IPPROTO_TCP, TCP_NODELAY, &mi, sizeof (int));
-		}
-#endif
-	    }
- 
-
-	    if (connect(fd, addr, addrlen) == -1) {
-		(void) close (fd);
-		if (tmp_dpy_num) Xfree (tmp_dpy_num);
-		if (tmp_server_addr) Xfree (tmp_server_addr);
-		return(-1); 	    /* errno set by system call. */
-	    }
-        }
-	/*
-	 * set it non-blocking.  This is so we can read data when blocked
-	 * for writing in the library.
-	 */
-#ifdef FIOSNBIO
-	{
-	    int arg = 1;
-	    ioctl(fd, FIOSNBIO, &arg);
+#ifdef EWOULDBLOCK
 	}
-#else
-	(void) fcntl(fd, F_SETFL, FNDELAY);
-#endif /* FIOSNBIO */
-
-	/*
-	 * set it to close-on-exec
-	 */
-	(void) fcntl(fd, F_SETFD, 1);
-
-	/*
-	 * Return the id if the connection succeeded. Rebuild the expanded
-	 * spec and return it in the result parameter.
-	 */
-	display_ptr = displaybuf-1;
-	while (*(++display_ptr) != '\0')
-	    ;
-	*(display_ptr++) = ':';
-#ifdef DNETCONN
-	if (dnet)
-	    *(display_ptr++) = ':';
 #endif
-	numbuf_ptr = numberbuf;
-	while (*numbuf_ptr != '\0')
-	    *(display_ptr++) = *(numbuf_ptr++);
-	if (prop_name[0] != '\0') {
-	    char *cp;
-
-	    *(display_ptr++) = '.';
-	    for (cp = prop_name; *cp; cp++) *(display_ptr++) = *cp;
-	}
-	*display_ptr = '\0';
-	(void) strcpy(expanded_name, displaybuf);
-	*conn_family = tmpfamily;
-	*server_addrlen = tmp_server_addrlen;
-	*server_addr = tmp_server_addr;
-	*dpy_numlen = tmp_dpy_numlen;
-	*dpy_num = tmp_dpy_num;
-	return(fd);
-
+    }
 }
-
-#endif /* USG else bsd */
-
+#endif /* STREAMSCONN */
 
 
 
-
+/*****************************************************************************
+ *                                                                           *
+ *			  Connection Utility Routines                        *
+ *                                                                           *
+ *****************************************************************************/
 
 /* 
  * Disconnect from server.
@@ -749,6 +714,8 @@ int _XDisconnectDisplay (server)
 {
     (void) close(server);
 }
+
+
 
 #undef NULL
 #define NULL ((char *) 0)

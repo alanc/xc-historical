@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.85 89/04/25 19:36:26 jim Exp $
+ * $XConsortium: XOpenDis.c,v 1.1 89/06/20 18:58:29 jim Exp $
  */
 
 #include "copyright.h"
@@ -102,9 +102,9 @@ Display *XOpenDisplay (display)
 	xConnSetupPrefix prefix;	/* prefix information */
 	int vendorlen;			/* length of vendor string */
 	char *setup;			/* memory allocated at startup */
-	char displaybuf[256];		/* buffer to receive expanded name */
-	char prop_name[256];		/* buffer to receive property name */
-	int screen_num;			/* screen number */
+	char *fullname = NULL;		/* expanded name of display */
+	int idisplay;			/* display number */
+	int iscreen;			/* screen number */
 	union {
 		xConnSetup *setup;
 		char *failure;
@@ -113,7 +113,7 @@ Display *XOpenDisplay (display)
 		xWindowRoot *rp;
 		xDepth *dp;
 		xVisualType *vp;
-	} u;
+	} u;				/* proto data returned from server */
 	long setuplength;	/* number of bytes in setup message */
 	Xauth *authptr = NULL;
 	char *server_addr = NULL;
@@ -121,8 +121,6 @@ Display *XOpenDisplay (display)
 	char *conn_auth_name, *conn_auth_data;
 	int conn_auth_namelen, conn_auth_datalen;
 	int conn_family;
-	int dpy_numlen;
-	char *dpy_num;
 	extern int _XSendClientPrefix();
 	extern int _XConnectDisplay();
 	extern char *getenv();
@@ -167,15 +165,13 @@ Display *XOpenDisplay (display)
 
 /*
  * Call the Connect routine to get the network socket. If 0 is returned, the
- * connection failed. The connect routine will return the expanded display
- * name in displaybuf.
+ * connection failed. The connect routine will set fullname to point to the
+ * expanded name.
  */
 
-	displaybuf[0] = prop_name[0] = '\0';
-	if ((dpy->fd = _XConnectDisplay(display_name, displaybuf, prop_name, 
-					&screen_num, &dpy_numlen, &dpy_num,
-					&conn_family,
-					&server_addrlen, &server_addr)) < 0) {
+	if ((dpy->fd = _XConnectDisplay (display_name, &fullname, &idisplay,
+					 &iscreen, &conn_family,
+					 &server_addrlen, &server_addr)) < 0) {
 		Xfree ((char *) dpy);
 		UnlockMutex(&lock);
 		return(NULL);		/* errno set by XConnectDisplay */
@@ -190,11 +186,14 @@ Display *XOpenDisplay (display)
 	    conn_auth_datalen = xauth_datalen;
 	    conn_auth_data = xauth_data;
 	} else {
+	    char dpynumbuf[40];		/* big enough to hold 2^64 and more */
+	    sprintf (dpynumbuf, "%d", idisplay);
+
 	    authptr = XauGetAuthByAddr ((unsigned short) conn_family,
 					(unsigned short) server_addrlen,
 					server_addr,
-					(unsigned short) dpy_numlen,
-					dpy_num, 
+					(unsigned short) strlen (dpynumbuf),
+					dpynumbuf,
 					(unsigned short) xauth_namelen,
 					xauth_name);
 	    if (authptr) {
@@ -210,7 +209,6 @@ Display *XOpenDisplay (display)
 	    }
 	}
 	if (server_addr) (void) Xfree (server_addr);
-	if (dpy_num) (void) Xfree (dpy_num);
 /*
  * The xConnClientPrefix describes the initial connection setup information
  * and is followed by the authorization information.  Sites that are interested
@@ -261,7 +259,7 @@ Display *XOpenDisplay (display)
 		/* XXX - printing messages marks a bad programming interface */
 		fprintf (stderr, 
 			 "%s:  connection to \"%s\" refused by server\r\n%s:  ",
-			 "Xlib", displaybuf, "Xlib");
+			 "Xlib", fullname, "Xlib");
 		(void) fwrite (u.failure, sizeof(char),
 			(int)prefix.lengthReason, stderr);
 		(void) fwrite ("\r\n", sizeof(char), 2, stderr);
@@ -457,17 +455,11 @@ Display *XOpenDisplay (display)
 	dpy->synchandler = NULL;
 	dpy->request = 0;
 	dpy->last_request_read = 0;
-	dpy->default_screen = screen_num;  /* Value returned by ConnectDisplay */
+	dpy->default_screen = iscreen;  /* Value returned by ConnectDisplay */
 	dpy->last_req = (char *)&_dummy_request;
 
 	/* Salt away the host:display string for later use */
-	if ((dpy->display_name = Xmalloc(
-		(unsigned) (strlen(displaybuf) + 1))) == NULL) {
-	        OutOfMemory (dpy, setup);
-		UnlockMutex(&lock);
-		return(NULL);
-	}
-	(void) strcpy (dpy->display_name, displaybuf);
+	dpy->display_name = fullname;
  
 	/* Set up the output buffers. */
 	if ((dpy->bufptr = dpy->buffer = Xmalloc(BUFSIZE)) == NULL) {
@@ -498,7 +490,7 @@ Display *XOpenDisplay (display)
 /*
  * Make sure default screen is legal.
  */
-	if (screen_num >= dpy->nscreens) {
+	if (iscreen >= dpy->nscreens) {
 	    _XDisconnectDisplay (dpy->fd);
 	    _XFreeDisplayStructure (dpy);
 	    errno = EINVAL;
