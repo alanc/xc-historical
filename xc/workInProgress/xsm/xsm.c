@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.32 94/03/31 18:10:55 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.33 94/04/08 11:24:55 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -872,6 +872,15 @@ XtPointer 	callData;
 	    SmsDie (client->smsConn);
 	    if (app_resources.verbose)
 		printf ("Client Id = %s, sent DIE\n", client->clientId);
+	    client = client->next;
+	}
+    } else {
+	client = ClientList;
+	while (client) {
+	    SmsSaveComplete (client->smsConn);
+	    if (app_resources.verbose)
+		printf ("Client Id = %s, sent SAVE COMPLETE\n",
+		    client->clientId);
 	    client = client->next;
 	}
     }
