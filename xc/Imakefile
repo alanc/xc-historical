@@ -163,7 +163,7 @@ InstallSubdirs(config)
  */
 /**/# check all filenames for length, letters, and content
 checkfilenames::  $(CHECKFNSRC)/checkfn
-	@find . -type d -exec $(CHECKFNSRC)/find.sh $(CHECKFN) {} \;
+	@find . -type d \! -name RCS -exec $(CHECKFNSRC)/find.sh $(CHECKFN) {} \;
 
 /**/# clean out link tree looking for stuff that should get checked in
 flushlinks::
