@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.1 89/06/12 16:28:23 keith Exp $ */
+/* $XConsortium: mfbgc.c,v 5.2 89/06/16 16:57:59 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -348,6 +348,7 @@ mfbCreateGC(pGC)
     return TRUE;
 }
 
+/*ARGSUSED*/
 static void
 mfbChangeGC(pGC, mask)
     GC	    *pGC;
@@ -522,7 +523,7 @@ mfbValidateGC(pGC, changes, pDrawable)
 	    }
 	    else
 	    {
-	        pregWin = pWin->clipList;
+	        pregWin = &pWin->clipList;
 		freeTmpClip = REPLACE_CC;
 	    }
 	    freeCompClip = devPriv->freeCompClip;
@@ -1249,7 +1250,7 @@ mfbChangeClip(pGC, type, pvalue, nrects)
     if(type == CT_PIXMAP)
     {
 	/* convert the pixmap to a region */
-	pGC->clientClip = (pointer) mfbPixmapToRegion((PixmapPtr)pvalue);
+	pGC->clientClip = (pointer) (*pGC->pScreen->BitmapToRegion)((PixmapPtr)pvalue);
 	/* you wouldn't do this if you were leaving the pixmap in
 	   rather than converting it.
 	*/
@@ -1262,7 +1263,7 @@ mfbChangeClip(pGC, type, pvalue, nrects)
     }
     else if (type != CT_NONE)
     {
-	pGC->clientClip = (pointer) miRectsToRegion(pGC, nrects,
+	pGC->clientClip = (pointer) (*pGC->pScreen->RectsToRegion)(nrects,
 						    (xRectangle *)pvalue,
 						    type);
 	xfree(pvalue);
