@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.13 94/02/06 15:22:54 mor Exp $
+XCOMM $XConsortium: Imakefile,v 1.14 94/03/18 15:59:50 mor Exp $
 
 #define DoNormalLib NormalLibICE
 #define DoSharedLib SharedLibICE
@@ -9,9 +9,9 @@ XCOMM $XConsortium: Imakefile,v 1.13 94/02/06 15:22:54 mor Exp $
 #define IncSubdir ICE
 
 #if (SystemV || SystemV4) && !HasSockets
-CONN_DEFINES = -DTCPCONN -DICE_t
+CONN_DEFINES = -DTCPCONN -DICE_t -DTRANS_CLIENT -DTRANS_SERVER
 #else
-CONN_DEFINES = ConnectionFlags -DICE_t
+CONN_DEFINES = ConnectionFlags -DICE_t -DTRANS_CLIENT -DTRANS_SERVER
 #endif
 
 #if HasBSD44Sockets
