@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.7 88/10/22 21:49:29 keith Exp $
+ * $XConsortium: session.c,v 1.8 88/11/17 17:05:04 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -182,8 +182,8 @@ int			*pidp;
 		setpgrp (0, getpid ());
 #ifdef NGROUPS
 
-		setgroups (verify->ngroups, verify->groups);
 		setgid (verify->groups[0]);
+		setgroups (verify->ngroups, verify->groups);
 #else
 		setgid (verify->gid);
 #endif
