@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.171 94/01/20 09:47:41 rws Exp $ */
+/* $XConsortium: connection.c,v 1.1 94/02/10 20:08:35 dpw Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -123,6 +123,12 @@ static int unixDomainConnection = -1;
 
 typedef long CCID;      /* mask of indices into client socket table */
 
+#ifndef X_NOT_POSIX
+#include <unistd.h>
+#else
+extern int read(), close();
+#endif
+
 #ifndef X_UNIX_PATH
 #ifdef hpux
 #define X_UNIX_DIR	"/usr/spool/sockets/X11"
@@ -207,14 +213,6 @@ open_tcp_socket ()
 #endif /* SO_LINGER */
 #endif /* SO_DONTLINGER */
 
-#ifdef AIXV3
-#ifndef FORCE_DISPLAY_NUM
-    extern int AIXTCPSocket;
-    if (AIXTCPSocket>=0) {
-        request= AIXTCPSocket;
-    } else
-#endif /* FORCE_DISPLAY_NUM */
-#endif /* AIX && etc. */
     if ((request = socket (AF_INET, SOCK_STREAM, 0)) < 0) 
     {
 	Error ("Creating TCP socket");
@@ -227,11 +225,6 @@ open_tcp_socket ()
 	setsockopt(request, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
     }
 #endif /* SO_REUSEADDR */
-#ifdef AIXV3
-#ifndef FORCE_DISPLAY_NUMBER
-    if (AIXTCPSocket<0)
-#endif
-#endif
     {
     bzero ((char *)&insock, sizeof (insock));
 #ifdef BSD44SOCKETS
@@ -1623,7 +1616,6 @@ AllocNewConnection (fd, Read, Writev, Close)
 	    BITSET(AllSockets, fd);
 	}
     }
-    oc->vfd = client->index;	/* XXX better be no larger than MAX_FDS */
     client->public.readRequest = StandardReadRequestFromClient;
     client->public.writeToClient = StandardWriteToClient;
     client->public.requestLength = StandardRequestLength;
@@ -1660,6 +1652,14 @@ StartOutputCompression(client, CompressOn, CompressOff)
 }
 #endif
 
+int Writev(fd, iov, iovcnt)
+int fd;
+struct iovec *iov;
+int iovcnt;
+{
+    return writev(fd, iov, iovcnt);
+}
+
 /*****************
  * EstablishNewConnections
  *    If anyone is waiting on listened sockets, accept them.
@@ -1680,9 +1680,6 @@ EstablishNewConnections(clientUnused, closure)
     register int i;
     register ClientPtr client;
     register OsCommPtr oc;
-#ifdef LBX
-    extern int  read(), writev(), close();
-#endif
 
 #ifdef TCP_NODELAY
     union {
@@ -1759,7 +1756,7 @@ EstablishNewConnections(clientUnused, closure)
 #endif
 
 #ifdef LBX
-	client = AllocNewConnection (newconn, read, writev, CloseDownFileDescriptor);
+	client = AllocNewConnection (newconn, read, Writev, CloseDownFileDescriptor);
 	if (!client)
 	{
 	    ErrorConnMax(newconn);
@@ -1851,7 +1848,7 @@ ErrorConnMax(fd)
 	iov[1].iov_base = NOROOM;
 	iov[2].iov_len = (4 - (csp.lengthReason & 3)) & 3;
 	iov[2].iov_base = pad;
-	(void)writev(fd, iov, 3);
+	(void)Writev(fd, iov, 3);
     }
 }
 

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.38 94/02/04 16:03:45 mor Exp $ */
+/* $XConsortium: osdep.h,v 1.1 94/02/17 15:29:33 dpw Exp $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
@@ -208,9 +208,6 @@ typedef struct _k5_state {
 
 typedef struct _osComm {
     int fd;
-#ifdef LBX
-    int	vfd;
-#endif
     ConnectionInputPtr input;
     ConnectionOutputPtr output;
 #ifdef LBX

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.76 93/09/23 10:51:17 dpw Exp $ */
+/* $XConsortium: io.c,v 1.1 94/02/10 20:08:51 dpw Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -687,9 +687,6 @@ InsertFakeRequest(client, data, count)
 	    return FALSE;
 	oc->input = oci;
     }
-#ifdef LBX
-    oc->vfd = client->index;
-#endif
     oci->bufptr += oci->lenLastReq;
     oci->lenLastReq = 0;
     gotnow = oci->bufcnt + oci->buffer - oci->bufptr;
@@ -1055,6 +1052,24 @@ FlushClient(who, oc, extraBuf, extraCount)
 }
 
 #ifdef LBX
+static int
+ExpandOutputBuffer(oco, len)
+    ConnectionOutputPtr oco;
+    int len;
+{
+    unsigned char *obuf;
+
+    obuf = (unsigned char *)xrealloc(oco->buf, len + BUFSIZE);
+    if (!obuf)
+    {
+	oco->count = 0;
+	return(-1);
+    }
+    oco->size = len + BUFSIZE;
+    oco->buf = obuf;
+    return 0;
+}
+
 int
 LbxFlushClient(who, oc, extraBuf, extraCount)
     ClientPtr who;
@@ -1373,23 +1388,6 @@ AllocateUncompBuffer(count)
     return oco;
 }
 
-static int
-ExpandOutputBuffer(oco, len)
-    ConnectionOutputPtr oco;
-    int len;
-{
-    unsigned char *obuf;
-
-    obuf = (unsigned char *)xrealloc(oco->buf, len + BUFSIZE);
-    if (!obuf)
-    {
-	oco->count = 0;
-	return(-1);
-    }
-    oco->size = len + BUFSIZE;
-    oco->buf = obuf;
-    return 0;
-}
 #endif
 
 void
