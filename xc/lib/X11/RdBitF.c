@@ -39,8 +39,8 @@ int XReadBitmapFile(display, d, filename, width, height, bitmap, x_hot, y_hot)
   int version10p;
   int padding;
   int bytes_per_line;
-  int ww = 0;
-  int hh = 0;
+  unsigned int ww = 0;
+  unsigned int hh = 0;
   int hx = -1;
   int hy = -1;
   Pixmap pix;
@@ -62,9 +62,9 @@ int XReadBitmapFile(display, d, filename, width, height, bitmap, x_hot, y_hot)
       else
 	type++;
       if (!strcmp("width", type))
-	ww=value;
+	ww=(unsigned int) value;
       if (!strcmp("height", type))
-	hh=value;
+	hh=(unsigned int) value;
       if (!strcmp("hot", type)) {
 	if (type--==name_and_type || type--==name_and_type)
 	  continue;
