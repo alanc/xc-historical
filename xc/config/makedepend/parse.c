@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parse.c,v 1.12 89/11/03 10:21:24 jim Exp $
+ * $XConsortium: parse.c,v 1.13 89/12/09 16:00:18 jim Exp $
  */
 #include "def.h"
 #include	<sys/signal.h>
@@ -43,20 +43,20 @@ find_includes(filep, file, file_red, recursion)
 		case IFNDEF:
 			if ((type == IFDEF && isdefined(line, file_red))
 			 || (type == IFNDEF && !isdefined(line, file_red))) {
-				debug1(type == IFNDEF ?
+				debug(1,(type == IFNDEF ?
 				    "line %d: %s !def'd in %s via %s%s\n" : "",
 				    filep->f_line, line,
-				    file->i_file, file_red->i_file, ": doit");
+				    file->i_file, file_red->i_file, ": doit"));
 				type = find_includes(filep, file,
 					file_red, recursion+1);
 				if (type == ELSE)
 					gobble(filep, file, file_red);
 			}
 			else {
-				debug1(type == IFDEF ?
+				debug(1,(type == IFDEF ?
 				    "line %d: %s !def'd in %s via %s%s\n" : "",
 				    filep->f_line, line,
-				    file->i_file, file_red->i_file, ": gobble");
+				    file->i_file, file_red->i_file, ": gobble"));
 				type = gobble(filep, file, file_red);
 				if (type == ELSE)
 					find_includes(filep, file,
@@ -144,9 +144,9 @@ gobble(filep, file, file_red)
 			break;
 		case ELSE:
 		case ENDIF:
-			debug0("%s, line %d: #%s\n",
+			debug(0,("%s, line %d: #%s\n",
 				file->i_file, filep->f_line,
-				directives[type]);
+				directives[type]));
 			return(type);
 		case DEFINE:
 		case UNDEF:
@@ -211,22 +211,16 @@ int deftype (line, filep, file_red, file, parse_it)
 	    /*
 	     * parse an expression.
 	     */
-#ifdef DEBUG
-	    debug0("%s, line %d: #elif %s ",
-		   file->i_file, filep->f_line, p);
-#endif
+	    debug(0,("%s, line %d: #elif %s ",
+		   file->i_file, filep->f_line, p));
 	    if (zero_value(p, filep, file_red))
 	    {
-#ifdef DEBUG
-		debug0("false...\n");
-#endif
+		debug(0,("false...\n"));
 		return(ELIFFALSE);
 	    }
 	    else
 	    {
-#ifdef DEBUG
-		debug0("true...\n");
-#endif
+		debug(0,("true...\n"));
 		return(ret);
 	    }
 	}
@@ -244,19 +238,15 @@ int deftype (line, filep, file_red, file, parse_it)
 		/*
 		 * parse an expression.
 		 */
-#ifdef DEBUG
-		debug0("%s, line %d: #if %s\n",
-			file->i_file, filep->f_line, p);
-#endif
+		debug(0,("%s, line %d: #if %s\n",
+			file->i_file, filep->f_line, p));
 		if (zero_value(p, filep, file_red))
 			ret = IFFALSE;
 		break;
 	case IFDEF:
 	case IFNDEF:
-#ifdef DEBUG
-		debug0("%s, line %d: #%s %s\n",
-			file->i_file, filep->f_line, directives[ret], p);
-#endif
+		debug(0,("%s, line %d: #%s %s\n",
+			file->i_file, filep->f_line, directives[ret], p));
 	case UNDEF:
 		/*
 		 * separate the name of a single symbol.
@@ -266,22 +256,18 @@ int deftype (line, filep, file_red, file, parse_it)
 		*line = '\0';
 		break;
 	case INCLUDE:
-#ifdef DEBUG
-		debug2("%s, line %d: #include %s\n",
-			file->i_file, filep->f_line, p);
-#endif
+		debug(2,("%s, line %d: #include %s\n",
+			file->i_file, filep->f_line, p));
 
 		/* Support ANSI macro substitution */
 		{
 		    struct symtab *sym = isdefined(p, file_red);
 		    while (sym) {
 			p = sym->s_value;
-#ifdef DEBUG
-			debug3("%s : #includes SYMBOL %s = %s\n",
+			debug(3,("%s : #includes SYMBOL %s = %s\n",
 			       file->i_incstring,
 			       sym -> s_name,
-			       sym -> s_value);
-#endif
+			       sym -> s_value));
 			/* mark file as having included a 'soft include' */
 			file->i_included_sym = TRUE; 
 			sym = isdefined(p, file_red);
@@ -318,10 +304,8 @@ int deftype (line, filep, file_red, file, parse_it)
 	case IDENT:
 	case SCCS:
 	case EJECT:
-#ifdef DEBUG
-		debug0("%s, line %d: #%s\n",
-			file->i_file, filep->f_line, directives[ret]);
-#endif
+		debug(0,("%s, line %d: #%s\n",
+			file->i_file, filep->f_line, directives[ret]));
 		/*
 		 * nothing to do.
 		 */
@@ -337,12 +321,12 @@ struct symtab *isdefined(symbol, file)
 	register struct symtab	*val;
 
 	if (val = slookup(symbol, deflist)) {
-		debug1("%s defined on command line\n", symbol);
+		debug(1,("%s defined on command line\n", symbol));
 		return(val);
 	}
 	if (val = fdefined(symbol, file))
 		return(val);
-	debug1("%s not defined in %s\n", symbol, file->i_file);
+	debug(1,("%s not defined in %s\n", symbol, file->i_file));
 	return(NULL);
 }
 
@@ -359,12 +343,12 @@ struct symtab *fdefined(symbol, file)
 		return(NULL);
 	file->i_defchecked = TRUE;
 	if (val = slookup(symbol, file->i_defs))
-		debug1("%s defined in %s\n", symbol, file->i_file);
+		debug(1,("%s defined in %s\n", symbol, file->i_file));
 	if (val == NULL && file->i_list)
 		for (ip = file->i_list, i=0; i < file->i_listlen; i++, ip++)
 			if (val = fdefined(symbol, *ip)) {
-				debug1("%s defined in %s\n",
-					symbol, (*ip)->i_file);
+				debug(1,("%s defined in %s\n",
+					symbol, (*ip)->i_file));
 				break;
 			}
 	recurse_lvl--;

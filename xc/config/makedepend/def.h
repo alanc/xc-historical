@@ -1,5 +1,5 @@
 /*
- * $XConsortium: def.h,v 1.8 89/06/13 18:52:47 jim Exp $
+ * $XConsortium: def.h,v 1.9 89/11/03 10:21:22 jim Exp $
  */
 #include <stdio.h>
 #include <ctype.h>
@@ -39,22 +39,19 @@
 #define INCLUDEDOT      17     /* pseudo value --- never matched */
 
 #ifdef DEBUG
-extern int	debug;
-#define	debug0	((debug&0x0001)==0) ? debug : log /* show ifn*(def)*,endif */
-#define	debug1	((debug&0x0002)==0) ? debug : log /* trace defined/!defined */
-#define	debug2	((debug&0x0004)==0) ? debug : log /* show #include */
-#define	debug3	((debug&0x0008)==0) ? debug : log /* show #include SYMBOL */
-#define	debug4	((debug&0x0010)==0) ? debug : log /* unused */
-#define	debug5	((debug&0x0020)==0) ? debug : log /* unused */
-#define	debug6	((debug&0x0040)==0) ? debug : log /* unused */
+extern int	_debugmask;
+/*
+ * debug levels are:
+ * 
+ *     0	show ifn*(def)*,endif
+ *     1	trace defined/!defined
+ *     2	show #include
+ *     3	show #include SYMBOL
+ *     4-6	unused
+ */
+#define debug(level,arg) { if (_debugmask & (1 << level)) log arg; }
 #else
-#define	debug0
-#define	debug1
-#define	debug2
-#define	debug3
-#define	debug4
-#define	debug5
-#define	debug6
+#define	debug(level,arg) /**/
 #endif /* DEBUG */
 
 typedef	u_char	boolean;

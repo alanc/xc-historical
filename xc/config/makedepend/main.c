@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.33 89/07/21 11:35:21 jim Exp $
+ * $XConsortium: main.c,v 1.34 89/10/16 12:13:01 jim Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -10,7 +10,7 @@
 
 
 #ifdef DEBUG
-int	debug;
+int	_debugmask;
 #endif
 
 char *ProgramName;
@@ -158,7 +158,7 @@ main(argc, argv)
 			verbose = TRUE;
 #ifdef DEBUG
 			if (argv[0][2])
-				debug = atoi(argv[0]+2);
+				_debugmask = atoi(argv[0]+2);
 #endif
 			break;
 		case 's':
