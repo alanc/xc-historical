@@ -38,22 +38,24 @@ static String FallbackResources[] = {
 NULL
 };
 
+#define Offset(field) XtOffsetOf(LabData, field)
 static XtResource resources[] = {
   { "timestepSize", "TimestepSize", XtRFloat, sizeof(float),
-      XtOffset( LabDataPtr, timestepSize), XtRString, "3.0" },
+      Offset(timestepSize), XtRString, "3.0" },
   { "delay", "Delay", XtRInt, sizeof(int),
-      XtOffset( LabDataPtr, delay), XtRString, "50" },
+      Offset(delay), XtRImmediate, (XtPointer) 50 },
   { "randomBounce", "RandomBounce", XtRFloat, sizeof(float),
-      XtOffset( LabDataPtr, randomBounce), XtRString, "0.1" },
+      Offset(randomBounce), XtRString, "0.1" },
   { "equilibrium", "Equilibrium", XtRFloat, sizeof(float),
-      XtOffset( LabDataPtr, equilibrium), XtRString, "0.5" },
+      Offset(equilibrium), XtRString, "0.5" },
   { "maxMolecules", "MaxMolecules", XtRInt, sizeof(int),
-      XtOffset( LabDataPtr, maxMolecules), XtRString, "100" },
+      Offset(maxMolecules), XtRImmediate, (XtPointer) 100 },
   { XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-      XtOffset( LabDataPtr, foreground), XtRString, "XtDefaultForeground" },
+      Offset(foreground), XtRString, XtDefaultForeground },
   { XtNbackground, XtCBackground, XtRPixel, sizeof(Pixel),
-      XtOffset( LabDataPtr, background), XtRString, "XtDefaultBackground" },
+      Offset(background), XtRString, XtDefaultBackground },
 };
+#undef Offset
 
 /*
  *  Global array describing wall and corner geometry.
