@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.111 91/04/09 14:39:05 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.112 91/04/15 18:00:36 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -149,15 +149,12 @@ XCOMM
 #define StellarArchitecture
 #endif
 
-
-#if (defined(_IBMR2) || defined(ibm032) || defined(aix)) && !defined(ibm)
-#define ibm
-#endif
-
-#if defined(ibm)
+#if defined(ibm) || defined(_IBMR2) || defined(ibm032) || defined(aix)
 #define MacroIncludeFile <ibm.cf>
 #define MacroFile ibm.cf
+#ifdef ibm
 #undef ibm
+#endif
 #define IBMArchitecture
 #ifdef i386
 #undef i386
