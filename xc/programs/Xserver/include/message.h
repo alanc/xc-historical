@@ -28,10 +28,9 @@
  *
  ************************************************************************/
 
-/* $XConsortium: message.h,v 1.1 93/11/12 17:03:07 rob Exp $ */
-
 #ifndef _message_h
 #define _message_h
+
 
 #include "Xmd.h"
 
@@ -97,7 +96,7 @@ typedef struct
 #define ReturnPooledMessage(p) (ReturnPooledMessages(p))
 
 #ifdef MTX
-#define MTXReturnPooledMessage ReturnPooledMessage
+#define MTXReturnPooledMessage ReturnPooledMessage(msg)
 #else
 #define MTXReturnPooledMessage
 #endif
@@ -140,23 +139,23 @@ typedef struct
  *
  ***********************************************************************/
 #ifdef MTX
-#define MTXGetReplyMessage(mapping, msg, rep, repRec, MTX_UNLOCK_SOMETHING)\
+#define MTXGetReplyMessage(mapping, rep, repRec, MTX_UNLOCK_SOMETHING)	\
     if (!(rep = GetReplyMessage (mapping, msg )))			\
     {									\
 	MTX_UNLOCK_SOMETHING;						\
 	return BadAlloc;						\
     }
 #else
-#define MTXGetReplyMessage( mapping, msg, rep, repRec, MTX_UNLOCK_SOMETHING )\
-    rep = &repRec
+#define MTXGetReplyMessage(mapping, rep, repRec, MTX_UNLOCK_SOMETHING)	\
+{									\
+    rep = &repRec;							\
+}
 #endif
 
 
 extern PooledMessagePtr GetPooledMessages();
 extern char *GetPooledReplyMessage();
-#ifdef MTX
 extern void ReturnPooledMessages();
-#endif
 extern int  InitializeMessageMonitor();
 extern void CleanupMessageMonitor();
 extern MsgBufferPtr RegisterLocalMessageBufferForThread();
