@@ -1,4 +1,4 @@
-/* $XConsortium: FSConnServ.c,v 1.20 93/08/22 12:07:20 rws Exp $ */
+/* $XConsortium: FSConnServ.c,v 1.21 93/08/22 12:35:58 rws Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;
@@ -55,7 +55,7 @@
 #ifndef WIN32
 #ifndef hpux
 #ifndef apollo			/* nest ifndefs because makedepend is broken */
-#ifdef __OSF1__
+#ifdef __osf__
 #include <sys/param.h>
 #endif
 #include <netinet/tcp.h>

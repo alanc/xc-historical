@@ -1,4 +1,4 @@
-/* $XConsortium: Vendor.c,v 1.22 91/10/16 21:40:24 eswu Exp $ */
+/* $XConsortium: Vendor.c,v 1.23 92/06/28 20:56:11 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -126,7 +126,7 @@ static void XawVendorShellClassInitialize()
 		   screenConvertArg, XtNumber(screenConvertArg));
 }
 
-#ifdef __OSF1__
+#ifdef __osf__
 /* stupid OSF/1 shared libraries have the wrong semantics */
 /* symbols do not get resolved external to the shared library */
 void _XawFixupVendorShell()

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.52 91/10/31 09:45:48 rws Exp $
+ * $XConsortium: dm.h,v 1.53 93/03/10 09:51:06 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -236,7 +236,7 @@ struct greet_info {
 };
 
 /* setgroups is not covered by POSIX, arg type varies */
-#if defined(SYSV) || defined(SVR4) || defined(__OSF1__)
+#if defined(SYSV) || defined(SVR4) || defined(__osf__)
 #define GID_T gid_t
 #else
 #define GID_T int

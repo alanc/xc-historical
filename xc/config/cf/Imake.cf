@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imake.cf,v 1.189 93/09/10 11:56:14 rws Exp $
+XCOMM $XConsortium: Imake.cf,v 1.1 93/09/10 12:00:03 rws Exp $
 /*
  * To add support for another platform:
  * 
@@ -242,16 +242,16 @@ XCOMM $XConsortium: Imake.cf,v 1.189 93/09/10 11:56:14 rws Exp $
 # define ConvexArchitecture
 #endif /* _convex_ */
 
-#ifdef __OSF1__
+#ifdef __osf__
 #define MacroIncludeFile <osf1.cf>
 #define MacroFile osf1.cf
 #define OSF1Architecture
-#undef __OSF1__
+#undef __osf__
 #ifdef __mips__
 #undef __mips__
 #define MipsArchitecture
 #endif
-#endif /* __OSF1__ */
+#endif /* __osf__ */
 
 #ifdef Oki
 #define MacroIncludeFile <Oki.cf>

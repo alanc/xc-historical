@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ConnDis.c,v 11.99 93/08/15 13:36:31 rws Exp $
+ * $XConsortium: ConnDis.c,v 11.100 93/09/07 21:30:28 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -372,7 +372,7 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
 #endif
 #endif
 #ifndef NO_TCP_H
-#ifdef __OSF1__
+#ifdef __osf__
 #include <sys/param.h>
 #endif
 #include <netinet/tcp.h>

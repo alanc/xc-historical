@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.59 93/08/15 17:12:01 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.60 93/08/26 13:33:00 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.
  * When porting imake, read each of the steps below and add in any necessary
@@ -258,8 +258,8 @@ char *cpp_argv[ARGUMENTS] = {
 	"-DDELL",
 #endif
 #endif
-#if defined(__OSF1__) || defined(__osf__)
-	"-D__OSF1__",
+#ifdef __osf__
+	"-D__osf__",
 # ifdef __mips__
 	"-D__mips__",
 # endif
@@ -424,9 +424,6 @@ struct symtab	predefs[] = {
 #ifdef SYSTYPE_SYSV
 	{"SYSTYPE_SYSV", "1"},
 #endif
-#endif
-#ifdef __OSF1__
-	{"__OSF1__", "1"},
 #endif
 #ifdef __osf__
 	{"__osf__", "1"},
