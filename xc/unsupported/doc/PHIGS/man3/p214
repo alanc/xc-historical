@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: p214,v 5.1 91/02/16 09:40:50 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -60,7 +60,7 @@ Values for Pstruct_status are defined in phigs.h as follows:
 .sp
 	PSTRUCT_STATUS_NON_EXISTENT
 	PSTRUCT_STATUS_EMPTY
-	PSTRUCT_STATUS_NON_EMPTY
+	PSTRUCT_STATUS_NOT_EMPTY
 .fi
 .SH ERRORS
 .IP 002
