@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.35 89/10/09 16:19:54 jim Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.36 89/12/11 14:42:56 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -77,7 +77,7 @@ AsciiTextClassRec asciiTextClassRec = {
     /* num_ resource    */      0,
     /* xrm_class        */      NULLQUARK,
     /* compress_motion  */      TRUE,
-    /* compress_exposure*/      XtExposeGraphicsExpose,
+    /* compress_exposure*/      XtExposeGraphicsExpose | XtExposeNoExpose,
     /* compress_enterleave*/	TRUE,
     /* visible_interest */      FALSE,
     /* destroy          */      Destroy,

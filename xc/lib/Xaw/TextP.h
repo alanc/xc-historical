@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.42 89/11/21 15:48:03 swick Exp $
+* $XConsortium: TextP.h,v 1.43 90/02/01 16:03:00 keith Exp $
 */
 
 
@@ -130,6 +130,11 @@ typedef int (*ActionProc)();
 
 typedef struct {int empty;} TextClassPart;
 
+struct text_move {
+    int h, v;
+    struct text_move * next;
+};
+
 /* Full class record declaration */
 typedef struct _TextClassRec {
     CoreClassPart	core_class;
@@ -182,6 +187,7 @@ typedef struct _TextPart {
     Boolean         single_char;    /* Single character replaced. */
     XawTextPosition  old_insert;    /* Last insertPos for batched updates */
     short           mult;	    /* Multiplier. */
+    struct text_move * copy_area_offsets; /* Text offset area (linked list) */
 
     /* private state, shared w/Source and Sink */
     Boolean	    redisplay_needed; /* in SetValues */

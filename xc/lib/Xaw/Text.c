@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.143 90/04/20 16:41:55 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.144 90/04/20 17:57:12 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -69,9 +69,9 @@ extern char* sys_errlist[];
  */
 
 static void VScroll(), VJump(), HScroll(), HJump(), ClearWindow(); 
-static void DisplayTextWindow(), ModifySelection();
-static void UpdateTextInLine(), UpdateTextInRectangle();
-static Boolean LineAndXYForPosition();
+static void DisplayTextWindow(), ModifySelection(), PushCopyQueue();
+static void UpdateTextInLine(), UpdateTextInRectangle(), PopCopyQueue();
+static Boolean LineAndXYForPosition(), TranslateExposeRegion();
 static XawTextPosition FindGoodPosition(), _BuildLineTable();
 
 void _XawTextAlterSelection(), _XawTextExecuteUpdate();
@@ -460,6 +460,7 @@ Cardinal *num_args;		/* unused */
   ctx->text.old_insert = -1;
   ctx->text.mult = 1;
   ctx->text.single_char = FALSE;
+  ctx->text.copy_area_offsets = NULL;
 
 #ifdef XAW_BC
 /*******************************
@@ -1037,6 +1038,8 @@ int n;
       XCopyArea(XtDisplay(ctx), XtWindow(ctx), XtWindow(ctx), ctx->text.gc,
 		0, y, (int)ctx->core.width, (int)ctx->core.height - y,
 		0, ctx->text.margin.top);
+
+      PushCopyQueue(ctx, 0, (int) -y);
       SinkClearToBG(ctx->text.sink, 
 		    (Position) 0,
 		    (Position) (ctx->text.margin.top + ctx->core.height - y),
@@ -1074,6 +1077,7 @@ int n;
     if ( updateTo == target ) {
       XCopyArea(XtDisplay(ctx), XtWindow(ctx), XtWindow(ctx), ctx->text.gc, 
 		0, ctx->text.margin.top, (int) ctx->core.width, height, 0, y);
+      PushCopyQueue(ctx, 0, (int) y);
       SinkClearToBG(ctx->text.sink, (Position) 0, ctx->text.margin.top,
 		   (Dimension) ctx->core.width, (Dimension) clear_height);
       
@@ -1116,6 +1120,8 @@ caddr_t callData;		/* #pixels */
 	      pixels, (int) rect.y,
 	      (unsigned int) rect.x, (unsigned int) ctx->core.height,
 	      0, (int) rect.y);
+
+    PushCopyQueue(ctx, (int) -pixels, 0);
   }
   else if (pixels < 0) {
     rect.x = 0;
@@ -1133,6 +1139,8 @@ caddr_t callData;		/* #pixels */
 	      (unsigned int) ctx->core.width - rect.width,
 	      (unsigned int) rect.height,
 	      (int) rect.x + rect.width, (int) rect.y);
+
+    PushCopyQueue(ctx, (int) rect.width, 0);
 
 /*
  * Redraw the line overflow marks.
@@ -2361,6 +2369,7 @@ Region region;			/* Unused. */
 {
     TextWidget ctx = (TextWidget) w;
     XRectangle expose, cursor;
+    Boolean need_to_draw;
     
     if (event->type == Expose) {
 	expose.x = event->xexpose.x;
@@ -2368,13 +2377,24 @@ Region region;			/* Unused. */
 	expose.width = event->xexpose.width;
 	expose.height = event->xexpose.height;
     }
-    else {  /* Graphics Expose. */
+    else if (event->type == GraphicsExpose) {
 	expose.x = event->xgraphicsexpose.x;
 	expose.y = event->xgraphicsexpose.y;
 	expose.width = event->xgraphicsexpose.width;
 	expose.height = event->xgraphicsexpose.height;
     }      
-    
+    else { /* No Expose */
+	PopCopyQueue(ctx);		
+	return;			/* no more processing necessary. */
+    }
+
+    need_to_draw = TranslateExposeRegion(ctx, &expose);
+    if ((event->type == GraphicsExpose) && (event->xgraphicsexpose.count == 0))
+	PopCopyQueue(ctx);	
+
+    if (!need_to_draw) 
+	return;			/* don't draw if we don't need to. */
+
     _XawTextPrepareToUpdate(ctx);
     UpdateTextInRectangle(ctx, &expose);
     XawTextSinkGetCursorBounds(ctx->text.sink, &cursor);
@@ -2701,6 +2721,127 @@ XawTextPosition pos;
   return ( ((pos > ctx->text.lastPos) ? ctx->text.lastPos : pos) );
 }
 
+/************************************************************
+ * 
+ * Routines for handling the copy area expose queue.
+ *
+ ************************************************************/
+
+/*	Function Name: PushCopyQueue
+ *	Description: Pushes a value onto the copy queue.
+ *	Arguments: ctx - the text widget.
+ *                 h, v - amount of offset in the horiz and vert directions.
+ *	Returns: none
+ */
+
+static void
+PushCopyQueue(ctx, h, v)
+TextWidget ctx;
+int h, v;
+{
+    struct text_move * offsets = XtNew(struct text_move);
+
+    offsets->h = h;
+    offsets->v = v;
+    offsets->next = NULL;
+
+    if (ctx->text.copy_area_offsets == NULL)
+	ctx->text.copy_area_offsets = offsets;
+    else {
+	struct text_move * end = ctx->text.copy_area_offsets;
+	for ( ; end->next != NULL; end = end->next) {}
+	end->next = offsets;
+    }
+}
+
+/*	Function Name: PopCopyQueue
+ *	Description: Pops the top value off of the copy queue.
+ *	Arguments: ctx - the text widget.
+ *	Returns: none.
+ */
+
+static void
+PopCopyQueue(ctx)
+TextWidget ctx;
+{
+    struct text_move * offsets = ctx->text.copy_area_offsets;
+
+    if (offsets == NULL)
+	printf("empty copy queue\n");
+    else {
+	ctx->text.copy_area_offsets = offsets->next;
+	XtFree(offsets);	/* free what you allocate. */
+    }
+}
+
+/*	Function Name:  TranslateExposeRegion
+ *	Description: Translates the expose that came into
+ *                   the cordinates that now exist in the Text widget.
+ *	Arguments: ctx - the text widget.
+ *                 expose - a Rectanle, who's region currently
+ *                          contains the expose event location.
+ *                          this region will be returned containing
+ *                          the new rectangle.
+ *	Returns: True if there is drawing that needs to be done.
+ */
+
+static Boolean
+TranslateExposeRegion(ctx, expose)
+TextWidget ctx;
+XRectangle * expose;
+{
+    struct text_move * offsets = ctx->text.copy_area_offsets;
+    int value;
+
+    /*
+     * Skip over the first one, this has already been taken into account.
+     */
+
+    if ( (offsets == NULL) || ((offsets = offsets->next) == NULL) )
+	return(TRUE);
+
+    while (offsets != NULL) {
+	expose->x += offsets->h;
+	expose->y += offsets->v;
+
+	offsets = offsets->next;
+    }
+
+    /*
+     * remove that area of the region that is now outside the window.
+     */
+
+    if (expose->y < 0) {
+	expose->height += expose->y;
+	expose->y = 0;
+    }
+
+    value = expose->y + expose->height - ctx->core.height;
+    if (value > 0)
+	expose->height -= value;
+
+    if (expose->height <= 0)
+	return(FALSE);		/* no need to draw outside the window. */
+
+    /*
+     * and now in the horiz direction...
+     */
+
+    if (expose->x < 0) {
+	expose->width += expose->x;
+	expose->x = 0;
+    }
+
+    value = expose->x + expose->width - ctx->core.width;
+    if (value > 0)
+	expose->width -= value;
+
+    if (expose->width <= 0)
+	return(FALSE);		/* no need to draw outside the window. */
+    
+    return(TRUE);
+}
+
 /*******************************************************************
 The following routines provide procedural interfaces to Text window state
 setting and getting. They need to be redone so than the args code can use
@@ -3011,7 +3152,7 @@ TextClassRec textClassRec = {
     /* num_ resource    */      XtNumber(resources),
     /* xrm_class        */      NULLQUARK,
     /* compress_motion  */      TRUE,
-    /* compress_exposure*/      XtExposeGraphicsExpose,
+    /* compress_exposure*/      XtExposeGraphicsExpose | XtExposeNoExpose,
     /* compress_enterleave*/	TRUE,
     /* visible_interest */      FALSE,
     /* destroy          */      TextDestroy,
