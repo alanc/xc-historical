@@ -4,6 +4,10 @@
 #define DoProfileLib ProfileLibX
 #include <Library.tmpl>
 
+#ifndef MotifContextBug
+#define MotifContextBug NO
+#endif
+
 #ifndef BuildXimp
 #define BuildXimp NO
 #endif
@@ -34,6 +38,7 @@
      KDB_DEFINES = -DKEYSYMDB=\"$(LIBDIR)/XKeysymDB\"
      CMS_DEFINES = -DLIBDIR=\"$(LIBDIR)\"
      NLS_DEFINES = -DXNLSPATHDEFAULT=\"$(NLSDIR)\"
+    MBUG_DEFINES = -DMOTIFBUG
    INSTALLFLAGS = $(INSTINCFLAGS)
        AUTHOBJS = AuDispose.o AuGetBest.o AuFileName.o AuRead.o 
        AUTHSRCS = AuDispose.c AuGetBest.c AuFileName.c AuRead.c 
@@ -576,6 +581,9 @@ SpecialLibObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialLibObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialLibObjectRule(XcmsColNm.o,$(ICONFIGFILES),$(CMS_DEFINES))
 SpecialLibObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
+#if MotifContextBug
+SpecialLibObjectRule(Context.o,$(ICONFIGFILES),$(MBUG_DEFINES))
+#endif
 
 LCRules()
 
