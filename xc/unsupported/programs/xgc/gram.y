@@ -3,7 +3,7 @@
 */
 
 %{
-#define YYDEBUG
+#define YYDEBUG 1
 
 #include <stdio.h>
 #include <X11/X.h>
