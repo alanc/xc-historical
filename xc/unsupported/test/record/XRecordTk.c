@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: XRecordTk.c,v 1.1 94/01/29 17:46:18 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices; 
  * Portions Copyright 1988 by Digital Equipment Corporation
@@ -23,8 +23,8 @@
 #define NEED_EVENTS
 #define NEED_REPLIES
 #include <X11/Xlibint.h>
+#include <X11/Xtrans.h>
 #include <X11/Xos.h>
-#include "Xlibnet.h"
 
 #include <stdio.h>
 #include <errno.h>
@@ -123,10 +123,10 @@ XNCDParseConn(dpy)
     BYTE		buf[BUFSIZE];
     int			nbytes = SIZEOF(xRecordEnableConfigReply);
     register int	len; 
-    int			numread; 
+    BytesReadable_t	numread; 
     register xRecordEnableConfigReply *reply;   
 
-    if(BytesReadable(xfd, (char *)&numread) < 0)
+    if(_X11TransBytesReadable(dpy->trans_conn, &numread) < 0)
     {
         perror ("Error while reading input");
 	fprintf(stderr, "IO error on  \"%s\"\n", 

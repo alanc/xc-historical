@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xrecord.c,v 1.1 94/01/29 17:46:25 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices; 
  * Portions Copyright 1988 by Digital Equipment Corporation
@@ -41,7 +41,7 @@
 #include <X11/Xlib.h> 
 #include <X11/Xmd.h>
 #define NEED_EVENTS
-#define NEED_REPLIES  
+#define NEED_REPLIES
 #include <X11/Xproto.h>
 #include "recordstr.h" 
 #include "record.h"
@@ -90,8 +90,7 @@ static void SetGlobalDone()
 {
     GlobalDone = 1L;
     fprintf(stderr,"Process Completed!\n");
-    (void)XRecordEnableCG(dpy2, rec_config1, 
-	rec_flags1, False, &rec_enable);
+    (void)XRecordEnableCG(dpy2, rec_config1, False, &rec_enable);
 
     XRecordFreeCG(dpy1, rec_config1);   
     XCloseDisplay(dpy1); 
@@ -199,11 +198,11 @@ main(argc,argv)
    for errors and replies. */
 
     rec_flags1 = (XRecordFlags* )malloc(sizeof(XRecordFlags)); 
-    memset(rec_flags1, 0L, sizeof(XRecordFlags)); 
+    bzero((char *)rec_flags1, sizeof(XRecordFlags)); 
     rec_config1 = XRecordCreateCG(dpy1, rec_flags1); 
 
     rec_state = (XRecordState*)malloc(sizeof(XRecordState));
-    memset(rec_state, 0L, sizeof(XRecordState)); 
+    bzero((char *)rec_state, sizeof(XRecordState)); 
 
     if(id)
     {
@@ -244,7 +243,7 @@ main(argc,argv)
     status = XRecordEnableCG(dpy2, rec_config1, True, &rec_enable); 
 
     rec_flags2 = (XRecordFlags* )malloc(sizeof(XRecordFlags)); 
-    memset(rec_flags2, 0L, sizeof(XRecordFlags)); 
+    bzero((char *)rec_flags2, sizeof(XRecordFlags)); 
     
     _InitExceptionHandling((void_function)SetGlobalDone); 
     XRecordEnableLoop(dpy2, &GlobalDone); 
