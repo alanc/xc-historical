@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: smproxy.h,v 1.1 94/07/07 11:20:29 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -42,7 +42,7 @@ extern char *malloc(), *calloc(), *realloc(), *getenv();
 extern void free();
 #endif
 
-typedef struct {
+typedef struct WinInfo {
     Window window;
     Bool waiting_for_required_props;
     Bool got_wm_state;
@@ -55,6 +55,7 @@ typedef struct {
     char *wm_name;
     Bool has_save_yourself;
     Bool waiting_for_update;
+    struct WinInfo *next;
 } WinInfo;
 
 
