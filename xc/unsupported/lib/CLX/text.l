@@ -617,10 +617,14 @@
 				(type array-index buffer-boffset))
 		       ;; This changes the gcontext font in the server
 		       ;; Update the gcontext cache (both local and server state)
-		       (setf (gcontext-internal-font-obj (gcontext-local-state gcontext)) font
-			     (gcontext-internal-font-obj (gcontext-server-state gcontext)) font
-			     (gcontext-internal-font (gcontext-local-state gcontext)) font-id
-			     (gcontext-internal-font (gcontext-server-state gcontext)) font-id)
+		       (let ((local-state (gcontext-local-state gcontext))
+			     (server-state (gcontext-server-state gcontext)))
+			 (declare (type gcontext-state local-state server-state))
+			 (setf (gcontext-internal-font-obj server-state) font
+			       (gcontext-internal-font server-state) font-id)
+			 (without-interrupts
+			   (setf (gcontext-internal-font-obj local-state) font
+				 (gcontext-internal-font local-state) font-id)))
 		       (card8-put 0 #xff)
 		       (card8-put 1 (ldb (byte 8 24) font-id))
 		       (card8-put 2 (ldb (byte 8 16) font-id))
@@ -717,10 +721,14 @@
 				(type array-index buffer-boffset))
 		       ;; This changes the gcontext font in the SERVER
 		       ;; Update the gcontext cache (both local and server state)
-		       (setf (gcontext-internal-font-obj (gcontext-local-state gcontext)) font
-			     (gcontext-internal-font-obj (gcontext-server-state gcontext)) font
-			     (gcontext-internal-font (gcontext-local-state gcontext)) font-id
-			     (gcontext-internal-font (gcontext-server-state gcontext)) font-id)
+		       (let ((local-state (gcontext-local-state gcontext))
+			     (server-state (gcontext-server-state gcontext)))
+			 (declare (type gcontext-state local-state server-state))
+			 (setf (gcontext-internal-font-obj server-state) font
+			       (gcontext-internal-font server-state) font-id)
+			 (without-interrupts
+			   (setf (gcontext-internal-font-obj local-state) font
+				 (gcontext-internal-font local-state) font-id)))
 		       (card8-put 0 #xff)
 		       (card8-put 1 (ldb (byte 8 24) font-id))
 		       (card8-put 2 (ldb (byte 8 16) font-id))
