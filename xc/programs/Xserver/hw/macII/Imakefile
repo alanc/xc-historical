@@ -1,5 +1,6 @@
 SRCS =	\
 	macIIInit.c \
+	macIIInitC.c \
 	macIIBW2.c \
 	macIIBW2zd.c \
 	macIICrsr.c \
@@ -13,7 +14,7 @@ SRCS =	\
 	X11R2 \
 	def.x11start
 
-OFILES = macIIInit.o
+OFILES = macIIInit.o macIIInitC.o
 
 OBJS = \
 	macIIBW2.o \
