@@ -1,4 +1,4 @@
-/* $XConsortium: osglue.c,v 1.10 94/04/17 19:56:07 dpw Exp kaleb $ */
+/* $XConsortium: osglue.c,v 1.11 95/03/02 20:13:00 kaleb Exp kaleb $ */
 /*
 Copyright (c) 1987  X Consortium
 
@@ -302,7 +302,10 @@ CloneMyself()
 
     old_listen_arg[0] = '\0';
 
-#if !defined(X_NOT_POSIX) && !defined(__FreeBSD__) && !defined(__386BSD__) && !defined(__NetBSD__)
+#ifdef XNO_SYSCONF	/* should only be on FreeBSD 1.x and NetBSD 0.x */
+#undef _SC_OPEN_MAX
+#endif
+#ifdef _SC_OPEN_MAX
     lastfdesc = sysconf(_SC_OPEN_MAX) - 1;
 #else
 #ifdef hpux
