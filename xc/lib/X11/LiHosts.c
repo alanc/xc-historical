@@ -1,4 +1,4 @@
-/* $XConsortium: XLiHosts.c,v 11.18 90/12/26 10:25:49 rws Exp $ */
+/* $XConsortium: XLiHosts.c,v 11.19 91/01/06 11:46:46 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -59,9 +59,16 @@ XHostAddress *XListHosts (dpy, nhosts, enabled)
 	_XRead (dpy, (char *) buf, nbytes);
 
 	for (i = 0; i < reply.nHosts; i++) {
+#ifdef WORD64
+	    xHostEntry xhe;
+	    bcopy(bp, (char *)&xhe, SIZEOF(xHostEntry));
+	    op->family = xhe.family;
+	    op->length = xhe.length;
+#else
 	    op->family = ((xHostEntry *) bp)->family;
 	    op->length =((xHostEntry *) bp)->length; 
-	    op->address = (char *) (((xHostEntry *) bp) + 1);
+#endif
+	    op->address = (char *) (bp + SIZEOF(xHostEntry));
 	    bp += SIZEOF(xHostEntry) + (((op->length + 3) >> 2) << 2);
 	    op++;
 	}
