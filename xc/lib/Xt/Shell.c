@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.72 89/10/05 12:00:53 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.73 89/10/05 13:23:48 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -1620,7 +1620,7 @@ static XtGeometryResult RootGeometryManager(w, request, reply)
 			request->border_width;
     }
     if (mask & CWWidth) {
-	    if (w->core.width == values.width) mask &= ~CWWidth;
+	    if (w->core.width == request->width) mask &= ~CWWidth;
 	    else {
 		w->core.width = values.width = request->width;
 		if (wm) {
@@ -1631,7 +1631,7 @@ static XtGeometryResult RootGeometryManager(w, request, reply)
 	    }
     }
     if (mask & CWHeight) {
-	    if (w->core.height == values.height) mask &= ~CWHeight;
+	    if (w->core.height == request->height) mask &= ~CWHeight;
 	    else {
 		w->core.height = values.height = request->height;
 		if (wm) {
