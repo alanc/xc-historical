@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.173 91/01/18 17:26:24 dave Exp $
+ * $XConsortium: menus.c,v 1.174 91/03/05 16:07:18 dave Exp $
  *
  * twm menu code
  *
@@ -48,6 +48,7 @@
 #include "parse.h"
 #include "gram.h"
 #include "screen.h"
+#include <X11/Xmu/CharSet.h>
 #include <X11/bitmaps/menu12>
 #include "version.h"
 
@@ -970,6 +971,13 @@ Bool PopUpMenu (menu, x, y, center)
     int x, y;
     Bool center;
 {
+    int WindowNameOffset, WindowNameCount;
+    TwmWindow **WindowNames;
+    TwmWindow *tmp_win2,*tmp_win3;
+    int i;
+    int (*compar)() = 
+      (Scr->CaseSensitive ? strcmp : XmuCompareISOLatin1);
+
     if (!menu) return False;
 
     InstallRootColormap();
@@ -987,15 +995,40 @@ Bool PopUpMenu (menu, x, y, center)
 	menu->items = 0;
 	menu->width = 0;
 	menu->mapped = NEVER_MAPPED;
+  	AddToMenu(menu, "TWM Windows", NULLSTR, NULL, F_TITLE,NULLSTR,NULLSTR);
+  
+        WindowNameOffset=(char *)Scr->TwmRoot.next->name -
+                               (char *)Scr->TwmRoot.next;
+        for(tmp_win = Scr->TwmRoot.next , WindowNameCount=0;
+            tmp_win != NULL;
+            tmp_win = tmp_win->next)
+          WindowNameCount++;
+        WindowNames =
+          (TwmWindow **)malloc(sizeof(TwmWindow *)*WindowNameCount);
+        WindowNames[0] = Scr->TwmRoot.next;
+        for(tmp_win = Scr->TwmRoot.next->next , WindowNameCount=1;
+            tmp_win != NULL;
+            tmp_win = tmp_win->next,WindowNameCount++)
+        {
+            tmp_win2 = tmp_win;
+            for (i=0;i<WindowNameCount;i++)
+            {
+                if ((*compar)(tmp_win2->name,WindowNames[i]->name) < 0)
+                {
+                    tmp_win3 = tmp_win2;
+                    tmp_win2 = WindowNames[i];
+                    WindowNames[i] = tmp_win3;
+                }
+            }
+            WindowNames[WindowNameCount] = tmp_win2;
+        }
+        for (i=0; i<WindowNameCount; i++)
+        {
+            AddToMenu(menu, WindowNames[i]->name, (char *)WindowNames[i],
+                      NULL, F_POPUP,NULL,NULL);
+        }
+        free(WindowNames);
 
-	AddToMenu(menu, "TWM Windows", NULLSTR, NULL, F_TITLE,NULLSTR,NULLSTR);
-	for (tmp_win = Scr->TwmRoot.next;
-	     tmp_win != NULL;
-	     tmp_win = tmp_win->next)
-	{
-	    AddToMenu (menu, tmp_win->name, (char *) tmp_win, NULL, F_POPUP, 
-		       NULLSTR, NULLSTR);
-	}
 	MakeMenu(menu);
     }
 
