@@ -1,6 +1,6 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Logo.c,v 1.5 88/09/04 12:32:43 swick Exp $";
-static char rcsid[] = "$Header: Logo.c,v 1.5 88/09/04 12:32:43 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Logo.c,v 1.6 88/09/06 09:56:50 swick Exp $";
+static char rcsid[] = "$Header: Logo.c,v 1.6 88/09/06 09:56:50 swick Exp $";
 #endif
 
 /*
@@ -147,9 +147,9 @@ static Boolean SetValues (gcurrent, grequest, gnew)
 	XtDestroyGC (current->logo.foreGC);
 	XtDestroyGC (current->logo.backGC);
 	gcv.foreground = new->logo.fgpixel;
-	new->logo.foreGC = XtGetGC(gcurrent, GCForeground, &gcv);
+	new->logo.foreGC = XtGetGC(gnew, GCForeground, &gcv);
 	gcv.foreground = new->core.background_pixel;
-	new->logo.backGC = XtGetGC(gcurrent, GCForeground, &gcv);
+	new->logo.backGC = XtGetGC(gnew, GCForeground, &gcv);
 	redisplay = TRUE;
     }
    
