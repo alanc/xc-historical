@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.20 93/11/18 14:22:46 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.21 93/11/22 16:25:41 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -549,7 +549,7 @@ extern int		 _IceAuthDataEntryCount;
 extern IceAuthDataEntry *_IceAuthDataEntries;
 
 extern IceHostBasedAuthProc _IceHostBasedAuthProc;
-extern IcePointer	    _IceHostBasedAuthProcClientData = NULL;
+extern IcePointer	    _IceHostBasedAuthProcClientData;
 
 extern int		_IceVersionCount;
 extern _IceVersion	_IceVersions[];
