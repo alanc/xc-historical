@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.135 88/01/30 18:58:13 rws Exp $ */
+/* $Header: Xlib.h,v 11.136 88/02/03 19:25:03 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -440,7 +440,7 @@ typedef struct _XDisplay {
 	char *bufptr;		/* Output buffer index pointer. */
 	char *bufmax;		/* Output buffer maximum+1 address. */
 	unsigned max_request_size; /* maximum number 32 bit words in request*/
-	struct _XrmResourceDataBase *db;
+	struct _XrmHashBucketRec *db;
 	int (*synchandler)();	/* Synchronization handler */
 	char *display_name;	/* "host:display" string used on this connect*/
 	int default_screen;	/* default screen for operations */
