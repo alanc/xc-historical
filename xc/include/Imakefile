@@ -24,7 +24,6 @@ IMPORTSTOP = \
 	$(XLIBSRC)/Xresource.h \
 	$(XLIBSRC)/Xutil.h \
 	$(XLIBSRC)/cursorfont.h \
-	$(XMUSRC)/Xmu.h \
 	$(TOOLKITSRC)/Composite.h \
 	$(TOOLKITSRC)/CompositeP.h \
 	$(TOOLKITSRC)/Constraint.h \
@@ -87,7 +86,8 @@ IMPORTSXAW = \
 	$(AWIDGETSRC)/ViewportP.h \
 	$(AWIDGETSRC)/XawMisc.h
 
-IMPORTS = $(IMPORTSTOP) $(IMPORTSXAW)
+IMPORTSXMU = \
+	$(XMUSRC)/Xmu.h 
 
 IMPORTSEXT = \
 	$(EXTENSIONSRC)/include/zoid.h \
@@ -103,20 +103,25 @@ all:: $(IMPORTSTOP)
 	$(LN) $(IMPORTSTOP) .
 
 MakeSubincludesForBuild(all,Xaw,$(IMPORTSXAW))
+MakeSubincludesForBuild(all,Xmu,$(IMPORTSXMU))
 MakeSubincludesForBuild(all,extensions,$(IMPORTSEXT))
 
 #if InstallOldXawLinks
 /*
  * This will be removed when all core (and contrib?) programs have been fixed
- * to include Athena widgets as <X11/Xaw/header.h>.
+ * to include Athena widgets as <X11/Xaw/header.h> and Xmu headers as
+ * <X11/Xmu/header.h>.
  */
 all::
-	@echo "Adding backwards compatibility links for Xaw headers"
+	@echo "+ Adding backwards compatibility links for Xaw and Xmu headers."
 	@-(list=`echo $(IMPORTSXAW) | sed -e 's/[^ ]*\///g'`; set -x; \
 		$(RM) $$list; for i in $$list; do $(LN) Xaw/$$i .; done)
+	@-(list=`echo $(IMPORTSXMU) | sed -e 's/[^ ]*\///g'`; set -x; \
+		$(RM) $$list; for i in $$list; do $(LN) Xmu/$$i .; done)
 
 clean::
 	@-(list=`echo $(IMPORTSXAW) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
+	@-(list=`echo $(IMPORTSXMU) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
 #endif
 
 
@@ -131,5 +136,4 @@ clean::
 
 depend:
 	@echo "skipping make depend in ./X11"
-
 
