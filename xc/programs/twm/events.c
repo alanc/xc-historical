@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.105 89/11/13 18:11:14 jim Exp $
+ * $XConsortium: events.c,v 1.106 89/11/14 13:22:22 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.105 89/11/13 18:11:14 jim Exp $";
+"$XConsortium: events.c,v 1.106 89/11/14 13:22:22 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -528,6 +528,22 @@ static void free_window_names (tmp, nukefull, nukename, nukeicon)
     return;
 }
 
+void free_colormap_windows (tmp)
+    TwmWindow *tmp;
+{
+    if (tmp->cmap_windows) {
+	if (tmp->xfree_cmap_windows) {
+	    XFree ((char *) tmp->cmap_windows);
+	} else {
+	    free ((char *) tmp->cmap_windows);
+	}
+	tmp->cmap_windows = NULL;
+    }
+    tmp->number_cmap_windows = 0;
+    tmp->current_cmap_window = 0;
+    tmp->xfree_cmap_windows = False;
+}
+
 /***********************************************************************
  *
  *  Procedure:
@@ -673,13 +689,9 @@ HandlePropertyNotify()
 
     default:
 	if (Event.xproperty.atom == _XA_WM_COLORMAP_WINDOWS) {
-	    if (Tmp_win->cmap_windows) {
-		if (Tmp_win->xfree_cmap_windows) {
-		    XFree ((char *) Tmp_win->cmap_windows);
-		} else {
-		    free ((char *) Tmp_win->cmap_windows);
-		}
-	    }
+	    FetchWmColormapWindows (Tmp_win);	/* frees old data */
+	    break;
+	} else if (Event.xproperty.atom == _XA_WM_PROTOCOLS) {
 	    FetchWmProtocols (Tmp_win);
 	    break;
 	}
@@ -1003,13 +1015,7 @@ HandleDestroyNotify()
       XFree ((char *)Tmp_win->class.res_name);
     if (Tmp_win->class.res_class && Tmp_win->class.res_class != NoName) /* 6 */
       XFree ((char *)Tmp_win->class.res_class);
-    if (Tmp_win->cmap_windows) {				/* 9 */
-	if (Tmp_win->xfree_cmap_windows) {
-	    XFree ((char *) Tmp_win->cmap_windows);
-	} else {
-	    free ((char *) Tmp_win->cmap_windows);
-	}
-    }
+    free_colormap_windows (Tmp_win);				/* 9 */
     if (Tmp_win->titlebuttons)					/* 10 */
       free ((char *) Tmp_win->titlebuttons);
     free((char *)Tmp_win);
@@ -1697,7 +1703,7 @@ HandleEnterNotify()
 
 
     if (XFindContext(dpy, Event.xany.window, MenuContext, &mr) != 0)
-	return;
+      return;
 
     mr->entered = TRUE;
     if (ActiveMenu && mr == ActiveMenu->prev && RootFunction == NULL)

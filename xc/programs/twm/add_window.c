@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.106 89/11/10 16:38:51 jim Exp $
+ * $XConsortium: add_window.c,v 1.107 89/11/13 18:11:06 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.106 89/11/10 16:38:51 jim Exp $";
+"$XConsortium: add_window.c,v 1.107 89/11/13 18:11:06 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -166,6 +166,7 @@ IconMgr *iconp;
     tmp_win->zoomed = ZOOM_NONE;
     tmp_win->iconmgr = iconm;
     tmp_win->iconmgrp = iconp;
+    tmp_win->cmap_windows = NULL;
 
     XSelectInput(dpy, tmp_win->w, PropertyChangeMask);
     XGetWindowAttributes(dpy, tmp_win->w, &tmp_win->attr);
@@ -1313,11 +1314,9 @@ FetchWmColormapWindows (tmp)
     TwmWindow *tmp;
 {
     register int i;
+    extern void free_colormap_windows();
 
-    tmp->cmap_windows = NULL;
-    tmp->number_cmap_windows = 0;
-    tmp->current_cmap_window = 0;
-    tmp->xfree_cmap_windows = False;
+    free_colormap_windows (tmp);
 
     if (XGetWMColormapWindows (dpy, tmp->w, &tmp->cmap_windows, 
 			       &tmp->number_cmap_windows) &&
