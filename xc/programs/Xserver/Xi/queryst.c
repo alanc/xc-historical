@@ -1,4 +1,4 @@
-/* $Header: xqueryst.c,v 1.3 90/11/07 16:52:49 gms Exp $ */
+/* $Header: xqueryst.c,v 1.6 91/01/24 16:39:11 rws Exp $ */
 
 /***********************************************************************
  *
@@ -60,7 +60,7 @@ ProcXQueryDeviceState(client)
     xValuatorState		*tv;
     xQueryDeviceStateReply	rep;
     DeviceIntPtr		dev;
-    unsigned int		*values;
+    int				*values;
 
     REQUEST(xQueryDeviceStateReq);
     REQUEST_SIZE_MATCH(xQueryDeviceStateReq);
@@ -97,7 +97,7 @@ ProcXQueryDeviceState(client)
     if (v != NULL)
 	{
 	total_length += (sizeof(xValuatorState) + 
-			(v->numAxes * sizeof(unsigned int)));
+			(v->numAxes * sizeof(int)));
 	num_classes++;
 	}
     buf = (char *) Xalloc (total_length);
@@ -141,12 +141,12 @@ ProcXQueryDeviceState(client)
 	buf += sizeof(xValuatorState);
 	for (i=0, values=v->axisVal; i<v->numAxes; i++)
 	    {
-	    *((unsigned int *) buf) = *values++;
+	    *((int *) buf) = *values++;
 	    if (client->swapped)
 		{
-		swapl ((unsigned int *) buf, n);/* macro - braces needed */
+		swapl ((int *) buf, n);/* macro - braces needed */
 		}
-	    buf += sizeof(unsigned int);
+	    buf += sizeof(int);
 	    }
 	}
 
