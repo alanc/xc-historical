@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mibitblt.c,v 1.48 87/09/07 18:58:52 drewry Locked $ */
+/* $Header: mibitblt.c,v 1.49 87/09/08 16:16:16 rws Locked $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -646,13 +646,13 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
 	}
 
         linelength = PixmapBytePad(w, depth);
+	srcx = sx;
+	srcy = sy;
 	if(pDraw->type == DRAWABLE_WINDOW)
 	{
-	    srcx = ((WindowPtr)pDraw)->absCorner.x;
-	    srcy = ((WindowPtr)pDraw)->absCorner.y;
+	    srcx += ((WindowPtr)pDraw)->absCorner.x;
+	    srcy += ((WindowPtr)pDraw)->absCorner.y;
 	}
-	else
-	    srcx = srcy = 0;
 	for(i = 0; i < h; i++)
 	{
 	    pt.x = srcx;
