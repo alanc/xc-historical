@@ -163,6 +163,23 @@ function causes the \*(xI read routine to stop watching for input
 from the input source.
 .SH "SEE ALSO"
 XtAppAddTimeOut(3Xt),XtAppAddSignal(3Xt)
+.SH "BUGS"
+In ANSI C it is necessary to cast the condition to an XtPointer, e.g.:
+.RS 4
+.br
+XtAppAddInput(app_context, 
+.RS 4
+.br
+source,
+.br
+.B (XtPointer)
+XtInputReadMask | XtInputWriteMask,
+.br
+proc,
+.br
+client_data);
+.RE
+.LP
 .br
 \fI\*(xT\fP
 .br
