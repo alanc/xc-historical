@@ -1,4 +1,4 @@
-/* $XConsortium: SMlibint.h,v 1.10 93/12/06 19:58:23 mor Exp $ */
+/* $XConsortium: SMlibint.h,v 1.11 93/12/07 11:05:27 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -151,6 +151,155 @@ typedef struct {
     Status  	status;		/* if 1, client successfully registered */
     char	*client_id;
 } _SmcRegisterClientReply;
+
+
+/*
+ * Waiting for Interact
+ */
+
+typedef struct _SmcInteractWait {
+    SmcInteractProc		interact_proc;
+    SmPointer			client_data;
+    struct _SmcInteractWait 	*next;
+} _SmcInteractWait;
+
+
+/*
+ * Waiting for Properties Reply
+ */
+
+typedef struct _SmcPropReplyWait {
+    SmcPropReplyProc		prop_reply_proc;
+    SmPointer			client_data;
+    struct _SmcPropReplyWait 	*next;
+} _SmcPropReplyWait;
+
+
+
+/*
+ * Client connection object
+ */
+
+struct _SmcConn {
+
+    /*
+     * We use ICE to esablish a connection with the SM.
+     */
+
+    IceConn		iceConn;
+
+
+    /*
+     * Major and minor versions of the XSMP.
+     */
+
+    int			proto_major_version;
+    int			proto_minor_version;
+
+
+    /*
+     * The session manager vendor and release number.
+     */
+
+    char		*vendor;
+    char		*release;
+
+
+    /*
+     * The Client Id uniquely identifies this client to the session manager.
+     */
+
+    char		*client_id;
+
+
+    /*
+     * Callbacks to be invoked when messages arrive from the session manager.
+     * These callbacks are specified at SmcOpenConnection time.
+     */
+
+    SmcCallbacks	callbacks;
+
+
+    /*
+     * We keep track of all Interact Requests sent by the client.  When the
+     * Interact message arrives, we remove it from the list (a FIFO list
+     * is maintained).
+     */
+
+    _SmcInteractWait	*interact_waits;
+
+
+    /*
+     * We keep track of all Get Properties sent by the client.  When the
+     * Properties Reply arrives, we remove it from the list (a FIFO list
+     * is maintained).
+     */
+
+    _SmcPropReplyWait	*prop_reply_waits;
+
+
+    /*
+     * Did we receive a SaveYourself with Shutdown = True?
+     */
+
+    Bool		shutdown_in_progress;
+};
+
+
+
+/*
+ * Session manager connection object
+ */
+
+struct _SmsConn {
+
+    /*
+     * We use ICE to esablish a connection with the client.
+     */
+
+    IceConn		iceConn;
+
+
+    /*
+     * Major and minor versions of the XSMP.
+     */
+
+    int			proto_major_version;
+    int			proto_minor_version;
+
+
+    /*
+     * The vendor and release number of the SMlib used by the client.
+     */
+
+    char		*vendor;
+    char		*release;
+
+
+    /*
+     * The Client Id uniquely identifies this client to the session manager.
+     */
+
+    char		*client_id;
+
+
+    /*
+     * Callbacks to be invoked when messages arrive from the client.
+     */
+
+    SmsCallbacks	callbacks;
+
+
+    /*
+     * Some state.
+     */
+
+    char		save_yourself_in_progress;
+    char		interaction_allowed;
+    char		can_cancel_shutdown;
+    char		interact_in_progress;
+};
+
 
 
 /*
