@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.38 91/02/06 20:51:02 rws Exp $ */
+/* $XConsortium: xhost.c,v 11.39 91/02/11 20:51:02 keith Exp $ */
  
 /*
 
@@ -409,7 +409,7 @@ static char *get_hostname (ha)
         len = ha->length;
     else
         len = sizeof(netname) - 1;
-    memcpy(netname, ha->address, len);
+    bcopy(ha->address, netname, len);
     netname[len] = '\0';
     return (netname);
   }
