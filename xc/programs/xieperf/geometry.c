@@ -66,6 +66,8 @@ static int constrainflag = 0;
 static int drawableplaneflag = 0;
 
 static XieDecodeG42DParam *G42Ddecode_params=NULL;
+static XieDecodeG32DParam *G32Ddecode_params=NULL;
+static XieDecodeG31DParam *G31Ddecode_params=NULL;
 static XiePhotoElement *flograph;
 static XiePhotospace photospace;
 static int flo_elements;
@@ -102,6 +104,10 @@ int InitGeometry(xp, p, reps)
 	if ( reps )
 	{
 		if ( p->decode == xieValDecodeG42D )
+			XIEPhotomap = GetXIEFAXPhotomap( xp, p, 1 );
+		else if ( p->decode == xieValDecodeG32D )
+			XIEPhotomap = GetXIEFAXPhotomap( xp, p, 1 );
+		else if ( p->decode == xieValDecodeG31D )
 			XIEPhotomap = GetXIEFAXPhotomap( xp, p, 1 );
 		else
 			XIEPhotomap = GetXIEPhotomap( xp, p, 1 );
@@ -225,11 +231,34 @@ int InitGeometryFAX(xp, p, reps)
 	if ( reps )	
         	if ( !GetImageData( xp, p, 1 ) )
 			reps = 0;
-		else
+		else  {
+		    if ( p->decode == xieValDecodeG42D )
        			G42Ddecode_params = XieTecDecodeG42D(
                 		xieValLSFirst, /* XXX needs config */
                 		True    /* XXX needs config */
 			);
+		    else if ( p->decode == xieValDecodeG32D )
+       			G32Ddecode_params = XieTecDecodeG32D(
+                		xieValLSFirst, /* XXX needs config */
+                		True    /* XXX needs config */
+			);
+		    else if ( p->decode == xieValDecodeG31D )
+       			G31Ddecode_params = XieTecDecodeG31D(
+                		xieValMSFirst, /* XXX needs config */
+                		True    /* XXX needs config */
+			);
+		    else {
+			fprintf(stderr," bogus decode, %d, expected",
+			   p->decode);
+			fprintf(stderr," xieValDecodeG42D (%d) \n",
+				xieValDecodeG42D);
+			fprintf(stderr," or xieValDecodeG32D (%d) \n",
+				xieValDecodeG32D);
+			fprintf(stderr," or xieValDecodeG31D (%d) \n",
+				xieValDecodeG31D);
+			exit(1);
+		    }
+		}
 
 	if ( reps )
 	{
@@ -250,6 +279,10 @@ int InitGeometryFAX(xp, p, reps)
 	if ( reps )
 	{
 		if ( p->decode == xieValDecodeG42D )
+			XIEPhotomap = GetXIEFAXPhotomap( xp, p, 1 );
+		else if ( p->decode == xieValDecodeG32D )
+			XIEPhotomap = GetXIEFAXPhotomap( xp, p, 1 );
+		else if ( p->decode == xieValDecodeG31D )
 			XIEPhotomap = GetXIEFAXPhotomap( xp, p, 1 );
 		else
 			XIEPhotomap = GetXIEPhotomap( xp, p, 1 );
@@ -281,17 +314,32 @@ void DoGeometryFAX(xp, p, reps)
         mylevels[ 0 ] = p->levels;
 
 	idx = 0;
-        XieFloImportClientPhoto(&flograph[idx],
-                p->class,
+	if ( p->decode == xieValDecodeG42D )
+            XieFloImportClientPhoto(&flograph[idx],
+                p->data_class,
                 width, height, mylevels,
                 False,
                 p->decode, (char *)G42Ddecode_params
-        ); idx++;
+            ); 
+	else if ( p->decode == xieValDecodeG32D )
+            XieFloImportClientPhoto(&flograph[idx],
+                p->data_class,
+                width, height, mylevels,
+                False,
+                p->decode, (char *)G32Ddecode_params
+            ); 
+	else if ( p->decode == xieValDecodeG31D )
+            XieFloImportClientPhoto(&flograph[idx],
+                p->data_class,
+                width, height, mylevels,
+                False,
+                p->decode, (char *)G31Ddecode_params
+            ); 
+	idx++;
  
 	geo_tech = p->geo.geoTech;
 
 	SetCoefficients( xp, p, p->geo.geoType, coeffs );
-
 
 	if ( constrainflag )
 	{
@@ -314,11 +362,12 @@ void DoGeometryFAX(xp, p, reps)
 		geo_tech_params
 	); idx++;
 
+printf(" xp->w is %d\n",xp->w);
 	if ( drawableplaneflag ) {
 		XieFloExportDrawablePlane(&flograph[idx],
 			idx, 		/* source phototag number */
 			xp->w,
-			xp->fggc,
+			xp->bggc,
 			p->dst_x,       /* x offset in window */
 			p->dst_y        /* y offset in window */
 		); idx++;
@@ -327,7 +376,7 @@ void DoGeometryFAX(xp, p, reps)
 		XieFloExportDrawable(&flograph[idx],
 			idx, 		/* source phototag number */
 			xp->w,
-			xp->fggc,
+			xp->bggc,
 			p->dst_x,       /* x offset in window */
 			p->dst_y        /* y offset in window */
 		); idx++;
