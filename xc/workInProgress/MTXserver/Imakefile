@@ -655,7 +655,7 @@ MakeMakeSubdirs($(ALLSUBDIRS),AllMakefiles)
 
 
 $(EXTDIR) $(SUBDIRS): FRC
-	@cd $@ ; echo "making $@"; \
+	@cd $@ ; echo "making all in $(CURRENT_DIR)/$@..."; \
 	$(MAKE) $(MFLAGS) PassCDebugFlags all
 
 clean::
