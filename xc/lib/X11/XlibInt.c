@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.221 94/03/29 13:27:54 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.222 94/03/30 11:05:31 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -2845,7 +2845,7 @@ int _XError (dpy, rep)
 	    (*dpy->lock->user_lock_display)(dpy);
 	UnlockDisplay(dpy);
 #endif /* XTHREADS */
-	rtn_val = (*_XErrorFunction)(dpy, &event);	/* upcall */
+	rtn_val = (*_XErrorFunction)(dpy, (XErrorEvent *)&event); /* upcall */
 #ifdef XTHREADS
 	LockDisplay(dpy);
 	if (dpy->lock)
