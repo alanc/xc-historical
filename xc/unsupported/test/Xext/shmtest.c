@@ -15,7 +15,7 @@ implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: shmtest.c,v 1.0 89/08/21 08:10:35 rws Exp $ */
+/* $XConsortium: shmtest.c,v 1.0 89/08/21 08:55:57 rws Exp $ */
 
 #ifndef MITSHM
 main()
@@ -55,6 +55,7 @@ main(argc, argv)
     Bool sharedPixmaps;
     int Completion;
     Bool ok, update;
+    int busy;
 
     display = NULL;
     for(--argc, ++argv; argc; --argc, ++argv) {
@@ -125,6 +126,7 @@ main(argc, argv)
     gcv.graphics_exposures = False;
     gc = XCreateGC(dpy, putwin, GCGraphicsExposures, &gcv);
     ok = update = False;
+    busy = 0;
     while (1) {
 	XNextEvent(dpy, &event);
 	switch(event.type) {
@@ -137,6 +139,12 @@ main(argc, argv)
 		x = maxx;
 	    if (y > maxy)
 		y = maxy;
+	    if (XEventsQueued(dpy, QueuedAfterReading))
+	    {
+		XPeekEvent(dpy, &event);
+		if (event.xany.type == MotionNotify)
+		    break;
+	    }
 	    update = ok;
 	    break;
 	case ButtonRelease:
@@ -156,10 +164,12 @@ main(argc, argv)
 		    expose->width = image->width - expose->x;
 		if ((image->height - expose->y) < expose->height)
 		    expose->height = image->height - expose->y;
-		if (expose->window == putwin)
+		if (expose->window == putwin) {
 		    XShmPutImage(dpy, expose->window, gc, image,
 				 expose->x, expose->y, expose->x, expose->y,
 				 expose->width, expose->height, True);
+		    busy++;
+		}
 		else if (sharedPixmaps && (expose->window == pixwin))
 		    XCopyArea(dpy, pix, expose->window, gc,
 			      expose->x, expose->y,
@@ -169,9 +179,9 @@ main(argc, argv)
 	    break;
 	default:
 	    if (event.xany.type == Completion)
-		update = ok;
+		busy--;
 	}
-	if (update && ((curx != x) || (cury != y))) {
+	if (update && !busy && ((curx != x) || (cury != y))) {
 	    update = False;
 	    curx = x;
 	    cury = y;
@@ -179,6 +189,7 @@ main(argc, argv)
 			 x, y, AllPlanes);
 	    XShmPutImage(dpy, putwin, gc, image, 0, 0, 0, 0,
 			 image->width, image->height, True);
+	    busy++;
 	    if (sharedPixmaps)
 		XCopyArea(dpy, pix, pixwin, gc, 0, 0,
 			  image->width, image->height, 0, 0);
