@@ -1,5 +1,5 @@
 /*
- * $XConsortium: mergerop.h,v 1.2 90/03/01 16:33:58 keith Exp $
+ * $XConsortium: mergerop.h,v 1.3 90/03/29 14:30:52 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -146,7 +146,7 @@ extern mergeRopRec	mergeRopBits[16];
 #define MROP_NAME(prefix)	MROP_NAME_CAT(prefix,General)
 #endif
 
-#ifdef __STDC__
+#if defined(__STDC__) && !defined(UNIXCPP)
 #define MROP_NAME_CAT(prefix,suffix)	prefix##suffix
 #else
 #define MROP_NAME_CAT(prefix,suffix)	prefix/**/suffix
