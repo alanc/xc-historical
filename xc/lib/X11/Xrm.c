@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.73 92/06/27 21:53:30 rws Exp $
+ * $XConsortium: Xrm.c,v 1.74 92/09/10 19:29:31 rws Exp $
  */
 
 /***********************************************************
@@ -745,6 +745,7 @@ void XrmCombineDatabase(from, into, override)
 		    *prev = ftable;
 	    }
 	}
+	(from->methods->destroy)(from->mbstate);
 	Xfree((char *)from);
     }
 }
