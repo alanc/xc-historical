@@ -1,8 +1,37 @@
+#ifndef lint
+static char rcs_id[] = "$Header: xedit.c,v 1.10 87/08/20 15:03:19 gringort Exp $";
+#endif
+
+/*
+ *			  COPYRIGHT 1987
+ *		   DIGITAL EQUIPMENT CORPORATION
+ *		       MAYNARD, MASSACHUSETTS
+ *			ALL RIGHTS RESERVED.
+ *
+ * THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE WITHOUT NOTICE AND
+ * SHOULD NOT BE CONSTRUED AS A COMMITMENT BY DIGITAL EQUIPMENT CORPORATION.
+ * DIGITAL MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THIS SOFTWARE FOR
+ * ANY PURPOSE.  IT IS SUPPLIED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY.
+ *
+ * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT RIGHTS,
+ * APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN ADDITION TO THAT
+ * SET FORTH ABOVE.
+ *
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting documentation,
+ * and that the name of Digital Equipment Corporation not be used in advertising
+ * or publicity pertaining to distribution of the software without specific, 
+ * written prior permission.
+ */
+
 /*
  * this program is used to load, or dump the resource manager database
  * in the server.
  *
- * Author: Jim Gettys, August 25, 1987
+ * Author: Jim Gettys, August 28, 1987
  */
 
 #include <stdio.h>
