@@ -2,22 +2,20 @@
 			    xbugs@expo.lcs.mit.edu
 
 
-
-
 VERSION:
-    R3
+    R4alpha
 
 CLIENT MACHINE and OPERATING SYSTEM:
-    [Sun 3/280 running SunOS 3.4, Microvax II running Ultrix 2.2, ...]
+    [e.g. Sun 3/280 running SunOS 4.0.1, Microvax II running Ultrix 3.1, ...]
 
 DISPLAY:
-    [Digital QVSS, Sun CG4, HP Topcat, IBM APA16, Apollo 4 plane, ...]
+    [e.g. Digital QVSS, Sun CG4, HP Topcat, IBM APA16, Apollo 4 plane, ...]
 
 WINDOW MANAGER:
-    [uwm, twm, awm, wm, rtl, ...]
+    [e.g. uwm, twm, awm, wm, rtl, ...]
 
 AREA:
-    [Xlib, xterm, uwm, server, doc, config, ...]
+    [e.g. Xlib, xterm, uwm, server, doc, config, ...]
 
 SYNOPSIS:
     [brief description of the problem and where it is located]
