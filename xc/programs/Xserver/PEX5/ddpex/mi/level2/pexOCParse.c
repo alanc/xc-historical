@@ -1,4 +1,4 @@
-/* $XConsortium: pexOCParse.c,v 5.1 91/02/16 09:55:22 rws Exp $ */
+/* $XConsortium: pexOCParse.c,v 5.2 91/05/01 14:37:56 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1309,9 +1309,9 @@ OC_PARSER_FUNC_HEADER(NurbCurve)
     pointSize = ((pNurb->coordType == PEXRational)
 		    ? sizeof(ddCoord4D) : sizeof(ddCoord3D));
     GET_DD_STORAGE( ddNurb, miNurbStruct, (sizeof(miNurbStruct)
-		    + sizeof(listofddPoint) + pNurb->numKnots * sizeof(FLOAT)
+		    + sizeof(listofddPoint) + pNurb->numKnots * sizeof(ddFLOAT)
 		    + pNurb->numPoints) * pointSize);
-    ddNurb->pKnots = (FLOAT *)(ddNurb+1);
+    ddNurb->pKnots = (ddFLOAT *)(ddNurb+1);
     ddNurb->points.ddList = (listofddPoint *)(ddNurb->pKnots + pNurb->numKnots);
     EXTRACT_CARD16(ddNurb->order, ptr);
     SKIP_PADDING(ptr,2);		/* place holder for type */
@@ -1320,7 +1320,7 @@ OC_PARSER_FUNC_HEADER(NurbCurve)
     EXTRACT_CARD32(ddNurb->numKnots, ptr);
     EXTRACT_CARD32(ddNurb->points.ddList->numPoints, ptr);
 
-    EXTRACT_STRUCT(ddNurb->numKnots, FLOAT, ddNurb->pKnots, ptr);
+    EXTRACT_STRUCT(ddNurb->numKnots, PEXFLOAT, ddNurb->pKnots, ptr);
     if (pNurb->coordType == PEXRational) {
 	ddNurb->points.type = DDPT_4D;
 	ddNurb->points.ddList->pts.p4Dpt =
@@ -1854,8 +1854,8 @@ OC_PARSER_FUNC_HEADER(NurbSurface)
     EXTRACT_CARD16(ddNurb->nPts, ptr);
     EXTRACT_CARD32(ddNurb->numTrimCurveLists, ptr);	/* is pNurb->numLists */
 
-    EXTRACT_STRUCT(ddNurb->numUknots, FLOAT, ddNurb->pUknots, ptr);
-    EXTRACT_STRUCT(ddNurb->numVknots, FLOAT, ddNurb->pVknots, ptr);
+    EXTRACT_STRUCT(ddNurb->numUknots, PEXFLOAT, ddNurb->pUknots, ptr);
+    EXTRACT_STRUCT(ddNurb->numVknots, PEXFLOAT, ddNurb->pVknots, ptr);
 
     ddNurb->points.numLists = 1;
     ddNurb->points.maxLists = 1;
@@ -1901,7 +1901,7 @@ OC_PARSER_FUNC_HEADER(NurbSurface)
 		destroyNurbSurface(ddNurb);
 		return(BadAlloc);
 	    }
-	    EXTRACT_STRUCT( ddtc->numKnots, FLOAT, ddtc->pKnots, ptr);
+	    EXTRACT_STRUCT( ddtc->numKnots, PEXFLOAT, ddtc->pKnots, ptr);
 	    if (type == PEXRational) {
 		/* Note this only works because these points are never
 								transformed */

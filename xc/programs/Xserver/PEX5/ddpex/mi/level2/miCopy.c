@@ -1,4 +1,4 @@
-/* $XConsortium: miCopy.c,v 5.1 91/02/16 09:55:37 rws Exp $ */
+/* $XConsortium: miCopy.c,v 5.2 91/04/02 16:46:42 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -527,9 +527,9 @@ OC_COPY_FUNC_HEADER(NurbCurve)
 		    ? sizeof(ddCoord4D) : sizeof(ddCoord3D);
     DST_STORE_AND_COPY( dstNurb, miNurbStruct,
 			sizeof(miNurbStruct) + sizeof(listofddPoint)
-			+ srcNurb->numKnots * sizeof(FLOAT)
+			+ srcNurb->numKnots * sizeof(PEXFLOAT)
 			+ srcNurb->points.ddList->numPoints * pointSize);
-    dstNurb->pKnots = (FLOAT *)(dstNurb+1);
+    dstNurb->pKnots = (ddFLOAT *)(dstNurb+1);
     dstNurb->points.ddList =
 			(listofddPoint *)(dstNurb->pKnots + srcNurb->numKnots);
     if (srcNurb->points.type == DDPT_4D) {
