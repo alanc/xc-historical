@@ -1,7 +1,4 @@
-/*
-* $XConsortium: IntrinsicP.h,v 1.50 90/12/12 14:52:28 rws Exp $
-* $oHeader: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
-*/
+/* $XConsortium: IntrinsicP.h,v 1.51 91/01/10 21:04:07 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -145,12 +142,6 @@ typedef void (*XtRealizeProc)(
     Widget 		  /* widget */,
     XtValueMask* 	  /* mask */,
     XSetWindowAttributes* /* attributes */
-#endif
-);
-
-typedef void (*XtCreatePopupChildProc)(
-#if NeedFunctionPrototypes
-    Widget	/* shell */
 #endif
 );
 

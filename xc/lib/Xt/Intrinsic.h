@@ -1,7 +1,4 @@
-/*
-* $XConsortium: Intrinsic.h,v 1.147 90/12/19 20:05:51 rws Exp $
-* $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
-*/
+/* $XConsortium: Intrinsic.h,v 1.148 91/01/09 20:11:10 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -409,6 +406,12 @@ typedef void (*XtErrorMsgHandler)(
 typedef void (*XtErrorHandler)(
 #if NeedFunctionPrototypes
   String		/* msg */
+#endif
+);
+
+typedef void (*XtCreatePopupChildProc)(
+#if NeedFunctionPrototypes
+    Widget	/* shell */
 #endif
 );
 
