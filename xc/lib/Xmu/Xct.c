@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: Xct.c,v 1.6 89/05/24 11:59:39 rws Exp $
+ * $XConsortium: Xct.c,v 1.7 89/07/25 13:58:54 rws Exp $
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -186,6 +186,10 @@ Handle96GR(data, c)
     case 0x48:
 	data->GR = "\110";
 	data->GR_encoding = "ISO8859-8";
+	break;
+    case 0x4c:
+	data->GR = "\114";
+	data->GR_encoding = "ISO8859-5";
 	break;
     case 0x4d:
 	data->GR = "\115";
