@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.85 89/09/29 13:59:13 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.86 89/10/02 08:36:47 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -40,6 +40,8 @@ SOFTWARE.
 
 /* usual number of expected keycodes in XtKeysymToKeycodeList */
 #define KEYCODE_ARRAY_SIZE 10
+
+static String PrintState();
 
 typedef struct _GrabActionRec {
     struct _GrabActionRec* next;
@@ -91,7 +93,6 @@ static void FreeActions(action)
 	    XtFree((char *)action->params);
 	}
 
-	XtFree(action->token);
 	XtFree((char *)action);
 	action = next;
     }
@@ -147,7 +148,7 @@ static String PrintEventType(buf, len, str, event)
 {
     CHECK_STR_OVERFLOW;
     switch (event) {
-#define PRINTEVENT(event) case event: (void) sprintf(str, "<event>"); break;
+#define PRINTEVENT(event) case event: (void) strcat(str, "<event>"); break;
 	PRINTEVENT(KeyPress)
 	PRINTEVENT(KeyRelease)
 	PRINTEVENT(ButtonPress)
@@ -180,8 +181,7 @@ static String PrintEventType(buf, len, str, event)
 	PRINTEVENT(SelectionNotify)
 	PRINTEVENT(ColormapNotify)
 	PRINTEVENT(ClientMessage)
-	case _XtEventTimerEventType: (void) sprintf(str,"<EventTimer>"); break;
-	case _XtTimerEventType: (void) sprintf(str, "<Timer>"); break;
+	case _XtEventTimerEventType: (void) strcat(str,"<EventTimer>"); break;
 	default: (void) sprintf(str, "<0x%x>", (int) event);
 #undef PRINTEVENT
     }
@@ -199,7 +199,7 @@ static String PrintCode(buf, len, str, mask, code)
     if (mask != 0) {
 	if (mask != (unsigned long)~0L)
 	    (void) sprintf(str, "0x%lx:0x%lx", mask, code);
-	else (void) sprintf(str, "0x%lx", code);
+	else (void) sprintf(str, /*"0x%lx"*/ "%d", code);
 	str += strlen(str);
     }
     return str;
@@ -265,7 +265,7 @@ static String PrintActions(buf, len, str, actions, quarkTable)
     register ActionPtr actions;
     XrmQuark* quarkTable;
 {
-    while (actions != NULL /* && actions->token != NULL */) {
+    while (actions != NULL) {
 	String proc = XrmQuarkToString(quarkTable[actions->index]);
 	ExpandToFit( proc );
         (void) sprintf(str, " %s(", proc);
@@ -779,13 +779,13 @@ static void _XtTranslateEvent (w, closure, event, continue_to_dispatch)
 	   /* non-accelerator context */
            if (proc_table[actions->index] != NULL) {
 	       ActionHook hook;
+	       String procName =
+		   XrmQuarkToString( stateTable->quarkTable[actions->index] );
+
 	       for (hook = actionHookList; hook != NULL; hook = hook->next) {
 		   (*hook->proc)( w,
 				  hook->closure,
-				  (actions->token != NULL)
-				     ? actions->token
-				     : XrmQuarkToString( stateTable->
-						quarkTable[actions->index] ),
+				  procName,
 				  event,
 				  actions->params,
 				  &actions->num_params
@@ -804,10 +804,13 @@ static void _XtTranslateEvent (w, closure, event, continue_to_dispatch)
 		&& XtIsSensitive(widget)) {
 
 		ActionHook hook;
+		String procName =
+		    XrmQuarkToString( stateTable->accQuarkTable[temp] );
+
 		for (hook = actionHookList; hook != NULL; hook = hook->next) {
 		    (*hook->proc)( widget,
 				   hook->closure,
-				   actions->token,
+				   procName,
 				   event,
 				   actions->params,
 				   &actions->num_params
@@ -1443,7 +1446,6 @@ static void MergeStates(old, new, override, indexMap,
         b = new->actions;
         while (b != NULL) {
            a = XtNew(ActionRec); 
-           a->token = NULL;
            if (b->index >= 0)
                a->index = quarkIndexMap[b->index];
            else
@@ -1472,8 +1474,12 @@ static void MergeStates(old, new, override, indexMap,
 "Trying to merge translation tables with cycles, and can't resolve this cycle."
 			     , (String *)NULL, (Cardinal *)NULL);
 	    (*old)->nextLevel = temp->old;
+	    (*old)->cycle = True;
 	} else if (! (*old)->cycle || override) {
-	    if ((*old)->cycle) (*old)->nextLevel = NULL;
+	    if ((*old)->cycle) {
+		(*old)->nextLevel = NULL;
+		(*old)->cycle = False;
+	    }
 	    MergeStates(
 	        &(*old)->nextLevel,
 		new->nextLevel,
@@ -1743,7 +1749,6 @@ void _XtFreeTranslations(app, toVal, closure, args, num_args)
 	register StatePtr nextState = state->forw;
 	for (action = state->actions; action;) {
 	    ActionPtr nextAction = action->next;
-	    XtFree( action->token );
 	    for (i = action->num_params; i;) {
 		XtFree( action->params[--i] );
 	    }
@@ -1830,8 +1835,12 @@ void XtInstallAccelerators(destination,source)
 	 int i;
          str[0] = '\0';
 	 for (i = 0; i < source->core.accelerators->numEvents;) {
-	     str = PrintEvent(&str, &len, str,
-			    &source->core.accelerators->eventObjTbl[i].event);
+	     str = PrintState( &buf, &len, str,
+			       source->core.accelerators->eventObjTbl[i].state,
+			       source->core.accelerators->accQuarkTable,
+			       source->core.accelerators->eventObjTbl,
+			       False
+			     );
 	     if (++i == source->core.accelerators->numEvents) break;
 	     else {
 		 *str++ = '\n';
@@ -1841,7 +1850,8 @@ void XtInstallAccelerators(destination,source)
          (*(XtClass(source)->core_class.display_accelerator))(source,buf);
 	 XtFree(buf);
     }
-}         
+}
+  
 void XtInstallAllAccelerators(destination,source)
     Widget destination,source;
 {
@@ -1900,64 +1910,155 @@ void XtAugmentTranslations(widget, new)
     }
 }
 
-static void PrintState(buf, len, str, state, quarkTable, eot)
+static Boolean LookAheadForCycleOrMulticlick(state, eot, countP, nextLevelP)
+    register StatePtr state;
+    EventObjPtr eot;
+    int *countP;
+    StatePtr *nextLevelP;
+{
+    int index = state->index;
+    int repeatCount = 0;
+
+    *nextLevelP = NULL;
+    for (state = state->nextLevel; state != NULL; state = state->nextLevel) {
+	if (state->cycle) {
+	    *countP = repeatCount;
+	    return True;
+	}
+	if (state->index == index) {
+	    repeatCount++;
+	    *nextLevelP = state;
+	}
+	else if (eot[state->index].event.eventType == _XtEventTimerEventType)
+	    continue;
+	else /* not same event as starting event and not timer */ {
+	    Event *start_evP = &eot[index].event;
+	    Event *evP = &eot[state->index].event;
+	    unsigned int type = eot[index].event.eventType;
+	    unsigned int t = eot[state->index].event.eventType;
+	    if (   (type == ButtonPress	  && t != ButtonRelease)
+		|| (type == ButtonRelease && t != ButtonPress)
+		|| (type == KeyPress	  && t != KeyRelease)
+		|| (type == KeyRelease	  && t != KeyPress)
+		|| evP->eventCode != start_evP->eventCode
+		|| evP->modifiers != start_evP->modifiers
+		|| evP->modifierMask != start_evP->modifierMask
+		|| evP->lateModifiers != start_evP->lateModifiers
+		|| evP->eventCodeMask != start_evP->eventCodeMask
+		|| evP->matchEvent != start_evP->matchEvent
+		|| evP->standard != start_evP->standard)
+		/* not inverse of starting event, either */
+		break;
+	}
+    }
+    *countP = repeatCount;
+    return False;
+}
+
+static String PrintState(buf, len, str, state, quarkTable, eot, printActions)
     String *buf;
     int *len;
     register String str;
     StatePtr state;
     XrmQuark* quarkTable;
     EventObjPtr eot;
+    Boolean printActions;
 {
-    register String old = str;
+    int oldOffset = str - *buf;
+    int clickCount;
+    Boolean cycle = state->cycle;
+    StatePtr nextLevel;
+    StatePtr sameLevel = state->next;
+
     /* print the current state */
-    if (state == NULL) return;
+    if (state == NULL) return str;
 
     str = PrintEvent(buf, len, str, &eot[state->index].event);
+
+    cycle |= LookAheadForCycleOrMulticlick(state, eot, &clickCount, &nextLevel);
+    if (cycle || clickCount > 0) {
+	if (clickCount > 0)
+	    sprintf( str, "(%d%s)", clickCount+1, cycle ? "+" : "" );
+	else
+	    bcopy("(+)", str, 4);
+	str += strlen(str);
+	if (state->actions == NULL && nextLevel != NULL)
+	    state = nextLevel;
+    }
+
     if (state->actions != NULL) {
-	int offset = str - *buf;
-	CHECK_STR_OVERFLOW;
-	(void) sprintf(str, "%s: ", (state->cycle ? "(+)" : ""));
-	while (*str) str++;
-	(void) PrintActions(buf, len, str, state->actions, quarkTable);
-	(void) printf("%s\n", *buf);
-	str = *buf + offset; *str = '\0';
+	if (printActions) {
+	    int offset = str - *buf;
+	    CHECK_STR_OVERFLOW;
+	    *str++ = ':';
+	    *str = '\0';
+	    (void) PrintActions(buf, len, str, state->actions, quarkTable);
+	    (void) printf("%s\n", *buf);
+	    str = *buf + offset; *str = '\0';
+	}
+    } else {
+	*str++ = ',';
+	*str = '\0';
     }
 
     /* print succeeding states */
-    if (!state->cycle)
-	PrintState(buf, len, str, state->nextLevel, quarkTable, eot);
+    if (state->nextLevel != NULL && !state->cycle)
+	PrintState(buf, len, str, state->nextLevel, quarkTable, eot, printActions);
 
-    str = old; *str = '\0';
-
-    /* print sibling states */
-    PrintState(buf, len, str, state->next, quarkTable, eot);
-    *str = '\0';
-
+    str = *buf + oldOffset; *str = '\0';
+    if (sameLevel != NULL) {
+	/* print sibling states */
+	PrintState(buf, len, str, sameLevel, quarkTable, eot, printActions);
+	*str = '\0';
+    }
+    return str;
 }
 
-#ifdef lint
-void TranslateTablePrint(translations)
-#else
-static void TranslateTablePrint(translations)
-#endif
+#ifndef NO_MIT_HACKS
+void _XtTranslateTablePrint(translations)
     XtTranslations translations;
 {
     register Cardinal i;
     int len = 1000;
-    char *buf = XtMalloc((Cardinal)1000);
+    char *buf;
 
+    if (translations == NULL) return;
+    buf = XtMalloc((Cardinal)1000);
     for (i = 0; i < translations->numEvents; i++) {
 	buf[0] = '\0';
-	PrintState(
-	   &buf,
-	   &len,
-	   buf,
-	   translations->eventObjTbl[i].state,
-           translations->quarkTable,
-	   translations->eventObjTbl);
+	(void) PrintState(
+			   &buf,
+			   &len,
+			   buf,
+			   translations->eventObjTbl[i].state,
+			   translations->quarkTable,
+			   translations->eventObjTbl,
+			   True
+			 );
     }
     XtFree(buf);
 }
+
+/*ARGSUSED*/
+static void _XtDisplayTranslations(widget, event, params, num_params)
+    Widget widget;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
+{
+    _XtTranslateTablePrint(widget->core.tm.translations);
+}
+
+/*ARGSUSED*/
+static void _XtDisplayAccelerators(widget, event, params, num_params)
+    Widget widget;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
+{
+    _XtTranslateTablePrint(widget->core.accelerators);
+}
+#endif /*NO_MIT_HACKS*/
 
 /***********************************************************************
  *
@@ -2199,6 +2300,10 @@ static XtActionsRec tmActions[] = {
     {"XtMenuPopdown", _XtMenuPopdownAction},
     {"MenuPopup", XtMenuPopupAction}, /* old & obsolete */
     {"MenuPopdown", _XtMenuPopdownAction}, /* ditto */
+#ifndef NO_MIT_HACKS
+    {"XtDisplayTranslations", _XtDisplayTranslations},
+    {"XtDisplayAccelerators", _XtDisplayAccelerators},
+#endif
 };
 
 
