@@ -155,7 +155,7 @@ selected list element will be put into X cut buffer 0.
 .Xy
 .NH 3
 List Actions
-.IN "List widget" "List Actions"
+.IN "List widget" "actions"
 .LP
 The List widget supports the following actions:
 .IP \(bu 5
@@ -190,7 +190,7 @@ about the currently selected list element is passed in the
 \fIcall_data\fP argument (see \fBList Callbacks\fP below).
 .NH 3
 List Callbacks
-.IN "List widget" "List callbacks"
+.IN "List widget" "callbacks"
 .LP
 All procedures on the List widget's callback list will have a
 \fBXawListReturnStruct\fP passed to them as \fIcall_data\fP.  The

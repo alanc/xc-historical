@@ -5,7 +5,6 @@ Text Widget Actions.
 .XS
 	Actions Supported by all Text Widgets
 .XE
-.IN "Actions" "Text Widgets" "@DEF@"
 .IN "Text Widgets" "Actions" "@DEF@"
 
 All editing functions are performed by translation manager actions that may

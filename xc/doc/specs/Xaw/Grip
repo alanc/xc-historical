@@ -102,7 +102,7 @@ used to flood fill the entire Grip widget.
 .Xy
 .NH 3
 Grip Actions
-.IN "Grip widget" "Grip actions"
+.IN "Grip widget" "actions"
 .LP
 The Grip widget does not declare any default event translation bindings,
 but it does declare a single action routine named \fBGripAction\fP.  The
