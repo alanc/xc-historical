@@ -1,7 +1,7 @@
 /*
- * $XConsortium: RdBitF.c,v 1.2 88/09/05 10:52:01 jim Exp $
+ * $XConsortium: RdBitF.c,v 1.3 88/09/05 11:17:55 jim Exp $
  *
- * Copyright, 1987, Massachusetts Institute of Technology
+ * Copyright 1988 Massachusetts Institute of Technology
  *
  * This file contains miscellaneous utility routines and is not part of the
  * Xlib standard.
