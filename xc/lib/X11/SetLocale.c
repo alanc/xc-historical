@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.15 91/04/02 15:04:20 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.16 91/04/02 15:23:18 rws Exp $
  */
 
 /*
@@ -146,7 +146,7 @@ _XSetLocale(lc_category, lc_name)
      * name from environment.
      */
     if (*lc_name == '\0') {
-#ifdef OS_SUPPORTS_LOCALE
+#ifndef X_NOT_STDC_ENV
 	lc_name = _XGetOSLocaleName();
 #else
 	lc_name = setlocale(LC_CTYPE, (char *)NULL);
@@ -217,7 +217,7 @@ _Xsetlocale(lc_category, lc_name)
     return _Xlocale_->xlc_db->lc_name;
 }
 
-#ifndef OS_SUPPORTS_LOCALE
+#ifdef X_NOT_STDC_ENV
 /* alternative setlocale() for OS does not have */
 static char locale_name[MAXLOCALE] = "C";
 
@@ -264,6 +264,11 @@ _XGetOSLocaleName()
     *(new_name + len) = '\0';
     return new_name;
 }
+#else
+static char *
+_XGetOSLocaleName()
+{
+    return setlocale(LC_CTYPE, NULL);
+}
 #endif
-#endif  /* OS_SUPPORTS_LOCALE */
-
+#endif  /* X_NOT_STDC_ENV */
