@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.49 89/12/10 20:45:17 jim Exp $
+ *	$XConsortium: button.c,v 1.51 90/06/05 17:48:42 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.49 89/12/10 20:45:17 jim Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.51 90/06/05 17:48:42 jim Exp $";
 #endif	/* lint */
 
 #include "ptyx.h"		/* Xlib headers included here. */
@@ -996,6 +996,7 @@ Cardinal num_params;
 {
 	register TScreen *screen = &term->screen;
 	register int i, j = 0;
+	int eol;
 	char *line, *lp;
 	static _OwnSelection();
 
@@ -1030,20 +1031,22 @@ Cardinal num_params;
 
 	line[j] = '\0';		/* make sure it is null terminated */
 	lp = line;		/* lp points to where to save the text */
-	if ( row == crow ) lp = SaveText(screen, row, ccol, col, lp);
+	if ( row == crow ) lp = SaveText(screen, row, ccol, col, lp, &eol);
 	else {
-		lp = SaveText(screen, crow, ccol, screen->max_col, lp);
-		*lp ++ = '\n';	/* put in newline at end of line */
+		lp = SaveText(screen, crow, ccol, screen->max_col, lp, &eol);
+		if (eol)
+			*lp ++ = '\n';	/* put in newline at end of line */
 		for(i = crow +1; i < row; i++) {
-			lp = SaveText(screen, i, 0, screen->max_col, lp);
-			*lp ++ = '\n';
+			lp = SaveText(screen, i, 0, screen->max_col, lp, &eol);
+			if (eol)
+				*lp ++ = '\n';
 			}
 		if (col >= 0)
-			lp = SaveText(screen, row, 0, col, lp);
+			lp = SaveText(screen, row, 0, col, lp, &eol);
 	}
 	*lp = '\0';		/* make sure we have end marked */
 	
-	screen->selection_length = j;
+	screen->selection_length = (lp - line);
 	_OwnSelection(term, params, num_params);
 }
 
@@ -1272,18 +1275,34 @@ register TScreen *screen;
 }
 
 /* copies text into line, preallocated */
-char *SaveText(screen, row, scol, ecol, lp)
+char *SaveText(screen, row, scol, ecol, lp, eol)
 int row;
 int scol, ecol;
 TScreen *screen;
 register char *lp;		/* pointer to where to put the text */
+int *eol;
 {
 	register int i = 0;
 	register Char *ch = screen->buf[2 * (row + screen->topline)];
+	Char attr;
+	int oldecol = ecol;
 	register int c;
 
+	*eol = 1;
 	if ((i = Length(screen, row, scol, ecol)) == 0) return(lp);
 	ecol = scol + i;
+	*eol = (ecol < oldecol) ? 1 : 0;
+	if (*eol == 0) {
+		if(ScrnGetAttributes(screen, row, ecol - 1, &attr, 1) == 1) {
+			*eol = (attr & ENDLINE) ? 1 : 0;
+		} else {
+			/* If we can't get the attributes, assume ENDLINE */
+			/* CANTHAPPEN */
+			(void)fprintf(stderr, "%s: no attributes for %d, %d\n",
+				xterm_name, row, ecol - 1);
+			*eol = 1;
+		}
+	}
 	for (i = scol; i < ecol; i++) {
 		if ((c = ch[i]) == 0)
 			c = ' ';

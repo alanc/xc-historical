@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.40 89/12/14 18:49:38 jim Exp $
+ *	$XConsortium: ptyx.h,v 1.42 90/06/05 17:48:47 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -434,7 +434,15 @@ typedef struct _TekWidgetRec {
 #define REVERSE_VIDEO	0x10	/* true if screen white on black */
 #define ORIGIN		0x20	/* true if in origin mode */
 #define INSERT		0x40	/* true if in insert mode */
-#define SMOOTHSCROLL	0x80	/* true if in smooth scroll mode */
+#define ENDLINE		0x80	/*
+				 * always false in term->flags, used to
+				 * indicate the end of a line in the
+				 * screen->buf attributes so we can tell the
+				 * difference between lines that have wrapped
+				 * around and lines that have ended naturally
+				 * with a CR at column max_col.
+				 */
+#define SMOOTHSCROLL	0x100	/* true if in smooth scroll mode */
 #define IN132COLUMNS	0x200	/* true if in 132 column mode */
 #define LINEFEED	0x400
 #define	REVERSEWRAP	0x800	/* true if reverse wraparound mode */

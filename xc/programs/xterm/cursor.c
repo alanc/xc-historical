@@ -1,9 +1,9 @@
 /*
- *	$XConsortium: cursor.c,v 1.6 89/03/24 11:42:11 jim Exp $
+ *	$XConsortium: cursor.c,v 1.8 90/06/05 17:48:46 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_cursor_c = "$XConsortium: cursor.c,v 1.6 89/03/24 11:42:11 jim Exp $";
+static char *rcsid_cursor_c = "$XConsortium: cursor.c,v 1.8 90/06/05 17:48:46 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -35,7 +35,7 @@ static char *rcsid_cursor_c = "$XConsortium: cursor.c,v 1.6 89/03/24 11:42:11 ji
 
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: cursor.c,v 1.6 89/03/24 11:42:11 jim Exp $";
+static char rcs_id[] = "$XConsortium: cursor.c,v 1.8 90/06/05 17:48:46 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -219,6 +219,10 @@ register int	amount;
 CarriageReturn(screen)
 register TScreen *screen;
 {
+	extern void ScrnSetAttributes();
+	
+	ScrnSetAttributes(screen, screen->cur_row, screen->cur_col,
+			  ENDLINE, ENDLINE, 1);
 	screen->cur_col = 0;
 	screen->do_wrap = 0;
 	_CheckSelection(screen);

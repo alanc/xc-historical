@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.16 89/12/10 20:44:52 jim Exp $
+ *	$XConsortium: screen.c,v 1.18 90/06/05 17:48:49 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* screen.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: screen.c,v 1.16 89/12/10 20:44:52 jim Exp $";
+static char rcs_id[] = "$XConsortium: screen.c,v 1.18 90/06/05 17:48:49 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -555,6 +555,63 @@ unsigned *flags;
 	return (0);
 }
 
+/*
+ * Sets the attributes from the row, col, to row, col + length according to
+ * mask and value. The bits in the attribute byte specified by the mask are
+ * set to the corresponding bits in the value byte. If length would carry us
+ * over the end of the line, it stops at the end of the line.
+ */
+void
+ScrnSetAttributes(screen, row, col, mask, value, length)
+TScreen *screen;
+int row, col;
+unsigned mask, value;
+register int length;		/* length of string */
+{
+	register Char *attrs;
+	register int avail  = screen->max_col - col + 1;
+
+	if (length > avail)
+	    length = avail;
+	if (length <= 0)
+		return;
+	attrs = screen->buf[2 * row + 1] + col;
+	value &= mask;	/* make sure we only change the bits allowed by mask*/
+	while(length-- > 0) {
+		*attrs &= mask;		/* clear the bits */
+		*attrs |= value;	/* copy in the new values */
+		attrs++;
+	}
+}
+
+/*
+ * Gets the attributes from the row, col, to row, col + length into the
+ * supplied array, which is assumed to be big enough.  If length would carry us
+ * over the end of the line, it stops at the end of the line. Returns
+ * the number of bytes of attributes (<= length)
+ */
+int
+ScrnGetAttributes(screen, row, col, str, length)
+TScreen *screen;
+int row, col;
+Char *str;
+register int length;		/* length of string */
+{
+	register Char *attrs;
+	register int avail  = screen->max_col - col + 1;
+	int ret;
+
+	if (length > avail)
+	    length = avail;
+	if (length <= 0)
+		return 0;
+	ret = length;
+	attrs = screen->buf[2 * row + 1] + col;
+	while(length-- > 0) {
+		*str++ = *attrs++;
+	}
+	return ret;
+}
 Bool
 non_blank_line(sb, row, col, len)
 ScrnBuf sb;
