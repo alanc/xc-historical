@@ -1,6 +1,5 @@
 /*
-* $XConsortium: Shell.h,v 1.20 89/09/21 13:09:40 swick Exp $
-* $oHeader: Shell.h,v 1.2 88/08/18 15:56:14 asente Exp $
+* $XConsortium: Shell.h,v 1.21 89/12/13 08:57:08 swick Exp $
 */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -35,8 +34,11 @@ SOFTWARE.
  *
  ***********************************************************************/
 /*
- * Shell specific atoms
+ * Shell-specific resources names, classes, and a representation type.
  */
+
+#ifdef XTSTRINGDEFINES
+
 #define XtNiconName "iconName"
 #define XtCIconName "IconName"
 #define XtNiconPixmap "iconPixmap"
@@ -74,12 +76,52 @@ SOFTWARE.
 
 #define XtRAtom "Atom"
 
+#else 
+extern char XtNiconName[];
+extern char XtCIconName[];
+extern char XtNiconPixmap[];
+extern char XtCIconPixmap[];
+extern char XtNiconWindow[];
+extern char XtCIconWindow[];
+extern char XtNiconMask[];
+extern char XtCIconMask[];
+extern char XtNwindowGroup[];
+extern char XtCWindowGroup[];
+extern char XtNvisual[];
+extern char XtCVisual[];
+extern char XtNtitleEncoding[];
+extern char XtCTitleEncoding[];
+ 
+extern char XtNsaveUnder[];
+extern char XtCSaveUnder[];
+extern char XtNtransient[];
+extern char XtCTransient[];
+extern char XtNoverrideRedirect[];
+extern char XtCOverrideRedirect[];
+extern char XtNtransientFor[];
+extern char XtCTransientFor[];
+
+extern char XtNiconNameEncoding[];
+extern char XtCIconNameEncoding[];
+
+extern char XtNallowShellResize[];
+extern char XtCAllowShellResize[];
+extern char XtNcreatePopupChildProc[];
+extern char XtCCreatePopupChildProc[];
+
+extern char XtNtitle[];
+extern char XtCTitle[];
+
+extern char XtRAtom[];
+#endif
+
 /* 
  * The following are only used at creation and can not be changed via 
  * SetValues.
  */
 
-#define XtNargc		"argc"
+#ifdef XTSTRINGDEFINES
+#define XtNargc	"argc"
 #define XtCArgc "Argc"
 #define XtNargv "argv"
 #define XtCArgv "Argv"
@@ -125,6 +167,54 @@ SOFTWARE.
 #define XtCWmTimeout "WmTimeout"
 #define XtNwaitForWm "waitforwm"
 #define XtCWaitForWm "Waitforwm"
+#else
+extern char XtNargc[];
+extern char XtCArgc[];
+extern char XtNargv[];
+extern char XtCArgv[];
+extern char XtNiconX[];
+extern char XtCIconX[];
+extern char XtNiconY[];
+extern char XtCIconY[];
+extern char XtNinput[];
+extern char XtCInput[];
+extern char XtNiconic[];
+extern char XtCIconic[];
+extern char XtNinitialState[];
+extern char XtCInitialState[];
+extern char XtNgeometry[];
+extern char XtCGeometry[];
+extern char XtNbaseWidth[];
+extern char XtCBaseWidth[];
+extern char XtNbaseHeight[];
+extern char XtCBaseHeight[];
+extern char XtNwinGravity[];
+extern char XtCWinGravity[];
+extern char XtNminWidth[];
+extern char XtCMinWidth[];
+extern char XtNminHeight[];
+extern char XtCMinHeight[];
+extern char XtNmaxWidth[];
+extern char XtCMaxWidth[];
+extern char XtNmaxHeight[];
+extern char XtCMaxHeight[];
+extern char XtNwidthInc[];
+extern char XtCWidthInc[];
+extern char XtNheightInc[];
+extern char XtCHeightInc[];
+extern char XtNminAspectY[];
+extern char XtCMinAspectY[];
+extern char XtNmaxAspectY[];
+extern char XtCMaxAspectY[];
+extern char XtNminAspectX[];
+extern char XtCMinAspectX[];
+extern char XtNmaxAspectX[];
+extern char XtCMaxAspectX[];
+extern char XtNwmTimeout[];
+extern char XtCWmTimeout[];
+extern char XtNwaitForWm[];
+extern char XtCWaitForWm[];
+#endif
 
 /* Class record constants */
 
