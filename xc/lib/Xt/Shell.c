@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Shell.c,v 1.29 88/09/02 20:28:21 swick Exp $";
+    "$XConsortium: Shell.c,v 1.30 88/09/03 09:09:00 swick Exp $";
 /* $oHeader: Shell.c,v 1.6 88/08/19 16:49:51 asente Exp $ */
 #endif lint
 
@@ -1074,10 +1074,12 @@ static void ChangeManaged(wid)
 	}
     }
 
-    if (childwid != NULL)
+    if (childwid != NULL) {
 	XtMoveWidget (childwid,
 		      (int)(-childwid->core.border_width),
 		      (int)(-childwid->core.border_width));
+	XtSetKeyboardFocus(wid, childwid);
+    }
 }
 
 /*
