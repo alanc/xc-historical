@@ -16,7 +16,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbglblt8.c,v 5.3 89/09/19 15:36:23 keith Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.4 89/11/17 14:20:36 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -62,9 +62,9 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     register unsigned long  c;
     register unsigned long  pixel;
     register unsigned long  *dst;
-    register int	    ewTmp;
-    register int	    xoff;
     register glyphPointer   glyphBits;
+    register int	    xoff;
+    register int	    ewTmp;
     int			    c1;
 
     CharInfoPtr		pci;
@@ -245,9 +245,9 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     register unsigned long  c;
     register unsigned long  pixel;
     register unsigned long  *dst;
-    register int	    ewTmp;
-    register int	    xoff;
     register glyphPointer   glyphBits;
+    register int	    xoff;
+    register int	    ewTmp;
     int			    c1;
 
     CharInfoPtr		pci;
