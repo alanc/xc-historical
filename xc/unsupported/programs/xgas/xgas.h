@@ -105,6 +105,7 @@ typedef struct _labData {
     int timestep;		/* number of this timestep */
 
     /* Resources */
+    Boolean autoStart;  /* automatic initialization */
     float timestepSize;	/* resolution of simulated time in microseconds */
     int delay;		/* delay between calls to doTimestep */
     float randomBounce;	/* randomness of collision: 0 none, 1 all */

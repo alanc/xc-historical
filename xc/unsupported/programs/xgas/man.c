@@ -1,4 +1,4 @@
-/* $XConsortium: man.c,v 1.3 91/08/26 13:31:22 rws Exp $ */
+/* $XConsortium: man.c,v 1.4 91/08/30 12:06:50 dave Exp $ */
 char *man[]={"\
 \n\
 \n\
@@ -30,6 +30,8 @@ OPTIONS\n\
      This is a toolkit program;\n\
              all the usual toolkit options are available.\n\
 \n\
+     -as     Sets the autoStart resource.\n\
+\n\
      -ts     Sets the timeStepSize resource.\n\
 \n\
      -d      Sets the delay resource.\n\
@@ -46,6 +48,10 @@ OPTIONS\n\
 \n\
 RESOURCES\n\
      The xgas program uses the following X resources:\n\
+\n\
+     autoStart\n\
+             Starts  the  simulation  automatically.   Good   for\n\
+             canned demos.\n\
 \n\
      timeStepSize\n\
              Specifies   the   simulated   time    duration    in\n\

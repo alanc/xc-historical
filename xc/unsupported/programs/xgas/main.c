@@ -40,6 +40,8 @@ NULL
 
 #define Offset(field) XtOffsetOf(LabData, field)
 static XtResource resources[] = {
+  { "autoStart", "AutoStart", XtRBoolean, sizeof(Boolean),
+      Offset(autoStart), XtRImmediate, (XtPointer)False},
   { "timestepSize", "TimestepSize", XtRFloat, sizeof(float),
       Offset(timestepSize), XtRString, "3.0" },
   { "delay", "Delay", XtRInt, sizeof(int),
@@ -58,6 +60,7 @@ static XtResource resources[] = {
 #undef Offset
 
 static XrmOptionDescRec optionDesc[] = {
+  { "-as", "*autoStart",    XrmoptionNoArg,  (XtPointer)"on"},
   { "-ts", "*timestepSize", XrmoptionSepArg, (XtPointer)NULL },
   { "-d",  "*delay",        XrmoptionSepArg, (XtPointer)NULL },
   { "-rb", "*randomBounce", XrmoptionSepArg, (XtPointer)NULL },
@@ -88,6 +91,19 @@ WallType WallParam[] =	{
   { 	{-1,-1}, {{0,1},{-1,0}},  {{0,-1},{1,0}}},	/* NE */
 };
 
+/*
+ * Report the syntax for calling xgas.
+ */
+Syntax(call)
+        char *call;
+{
+        (void) printf ("Usage: %s [-as] [-ts <microsec>] [-d <time>]\n", call);
+        (void) printf ("       [-rb <randomfac>] [-eq <equilibriumfac>]\n");
+        (void) printf ("       [-mm <numMolecules>] \n");
+	(void) printf ("       [-fg <color>] [-bg <color>]\n");
+        exit(1);
+}
+
 main( argc, argv )
      int argc;
      char *argv[];
@@ -108,6 +124,9 @@ main( argc, argv )
 			     &argc, argv, FallbackResources, NULL, 
 			     (Cardinal)0);
   
+  /* Check parameters */
+  if (argc != 1) Syntax(argv[0]);
+
   /* Get Resources */
   XtGetApplicationResources( toplevel, (XtPointer) &labData, resources,
 			    XtNumber( resources), (ArgList)NULL, 0);
@@ -232,6 +251,17 @@ main( argc, argv )
   /* Initialize temperature */
   XtCallCallbacks( labData.chamber[0].control, XtNscrollProc, (XtPointer)300);
   XtCallCallbacks( labData.chamber[1].control, XtNscrollProc, (XtPointer)300);
-  
+
+  if (labData.autoStart) {
+    XEvent ev;
+    Arg wargs[2];
+    Dimension labW, labH;
+    XtSetArg(wargs[0], XtNwidth, &labW);
+    XtSetArg(wargs[1], XtNheight, &labH);
+    XtGetValues(lab, wargs, 2);
+    ev.xbutton.x = labW/2; ev.xbutton.y = labH/2; ev.xbutton.button = 2;
+    addMolecules(lab, &labData, &ev);
+    XtCallCallbacks( run, XtNcallback, (XtPointer)NULL);
+  }
   XtAppMainLoop(app);
 }

@@ -25,6 +25,9 @@ at the cursor position.
 This is a toolkit program;
 all the usual toolkit options are available.
 .TP 8
+.B \-as
+Sets the autoStart resource.
+.TP 8
 .B \-ts
 Sets the timeStepSize resource.
 .TP 8
@@ -47,6 +50,9 @@ Sets the foreground.
 Sets the background.
 .SH RESOURCES
 The \fIxgas\fP program uses the following X resources:
+.TP 8
+.B autoStart
+Starts the simulation automatically.  Good for canned demos.
 .TP 8
 .B timeStepSize
 Specifies the simulated time duration in microseconds for each cycle of
