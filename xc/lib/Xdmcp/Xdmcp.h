@@ -49,7 +49,7 @@ struct xdm_host_table {
   char name[XDM_MAX_STR_LEN];
   char status[XDM_MAX_STR_LEN];
 };
-#endif NOTDEF
+#endif /* NOTDEF */
 
 typedef CARD8	*CARD8Ptr;
 typedef CARD16	*CARD16Ptr;
