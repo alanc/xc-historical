@@ -1,4 +1,4 @@
-/* $XConsortium: EventI.h,v 1.13 90/07/26 09:58:17 swick Exp $ */
+/* $XConsortium: EventI.h,v 1.14 90/08/20 15:26:28 swick Exp $ */
 /* $oHeader: EventI.h,v 1.3 88/08/24 09:21:11 asente Exp $ */
 
 /***********************************************************
@@ -62,12 +62,11 @@ extern void _XtUnregisterWindow(
 typedef struct _XtEventRec {
      XtEventTable	next;
      EventMask		mask;
-     Boolean		non_filter;
-     Boolean		select;
-     Boolean		raw;
-     Boolean		async;
      XtEventHandler	proc;
      XtPointer		closure;
+     int		select:1;
+     int		raw:1;
+     int		async:1; /* not used, here for Digital extension? */
 } XtEventRec;
 
 typedef struct _XtGrabRec {
@@ -94,6 +93,12 @@ extern Boolean _XtOnGrabList(
 extern void _XtRemoveAllInputs(
 #if NeedFunctionPrototypes
     XtAppContext /* app */
+#endif
+);
+
+extern EventMask _XtConvertTypeToMask(
+#if NeedFunctionPrototypes
+    int		/* eventType */
 #endif
 );
 
