@@ -1,4 +1,4 @@
-/* $XConsortium: cp_ccom.c,v 5.9 91/04/04 21:53:17 gildea Exp $ */
+/* $XConsortium: cp_ccom.c,v 5.10 91/04/14 12:03:54 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -39,9 +39,13 @@ SOFTWARE.
 #endif /* ! PEX_API_SOCKET_IPC */
 
 #ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
+#include <sys/wait.h>
+#else
 #define _POSIX_SOURCE
 #include <sys/wait.h>
 #undef _POSIX_SOURCE
+#endif
 # define waitSig(w)	WTERMSIG(w)
 typedef int		waitType;
 #else

@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.50 91/04/02 10:40:12 rws Exp $ */
+/* $XConsortium: InitialI.h,v 1.51 91/04/08 14:44:40 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -31,9 +31,13 @@ SOFTWARE.
  ****************************************************************/
 
 #ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
+#include <limits.h>
+#else
 #define _POSIX_SOURCE
 #include <limits.h>
 #undef _POSIX_SOURCE
+#endif
 #endif
 #ifndef PATH_MAX
 #include <sys/param.h>

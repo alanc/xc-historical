@@ -1,4 +1,4 @@
-/* $XConsortium: cp.h,v 5.3 91/03/27 09:29:36 rws Exp $ */
+/* $XConsortium: cp.h,v 5.4 91/04/02 09:43:44 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -151,9 +151,13 @@ typedef struct {
 } Cp_shm_buf;
 
 #ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
+#include <limits.h>
+#else
 #define _POSIX_SOURCE
 #include <limits.h>
 #undef _POSIX_SOURCE
+#endif
 #endif
 #ifndef OPEN_MAX
 #include <sys/param.h>

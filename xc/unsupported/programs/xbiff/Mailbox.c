@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.54 91/04/04 16:15:44 gildea Exp $
+ * $XConsortium: Mailbox.c,v 1.55 91/04/14 12:00:20 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -31,9 +31,13 @@
 #include <pwd.h>			/* for getting username */
 
 #ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
+# include <sys/wait.h>
+#else
 #define _POSIX_SOURCE
 # include <sys/wait.h>
 #undef _POSIX_SOURCE
+#endif
 # define waitCode(w)	WEXITSTATUS(w)
 # define waitSig(w)	WIFSIGNALED(w)
 typedef int		waitType;

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.56 91/04/02 11:53:47 rws Exp $
+ * $XConsortium: dm.c,v 1.57 91/04/11 09:34:38 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,12 +25,12 @@
 # include	"dm.h"
 
 # include	<stdio.h>
-#ifndef X_NOT_POSIX
+#if defined(X_NOT_POSIX) || defined(_POSIX_SOURCE)
+# include	<signal.h>
+#else
 #define _POSIX_SOURCE
 # include	<signal.h>
 #undef _POSIX_SOURCE
-#else
-# include	<signal.h>
 #endif
 
 #ifndef sigmask

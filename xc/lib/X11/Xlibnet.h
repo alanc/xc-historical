@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.6 91/04/02 09:56:47 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.7 91/04/04 18:57:31 gildea Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -62,9 +62,13 @@ without express or implied warranty.
 #endif /* STREAMSCONN else */
 
 #ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
+#include <limits.h>
+#else
 #define _POSIX_SOURCE
 #include <limits.h>
 #undef _POSIX_SOURCE
+#endif
 #endif
 #ifndef OPEN_MAX
 #include <sys/param.h>
