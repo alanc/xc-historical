@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibos.h,v 1.15 93/09/22 18:59:01 rws Exp $ */
+/* $XConsortium: FSlibos.h,v 1.16 93/09/22 21:52:01 rws Exp $ */
 
 /* @(#)FSlibos.h	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -112,16 +112,18 @@ typedef long BytesReadable_t;
 #undef dirty
 #endif
 
-#ifdef CRAY
-#define WORD64
-#endif
-
 #if OPEN_MAX > 256
 #undef OPEN_MAX
 #define OPEN_MAX 256
 #endif
 
-#define MSKCNT ((OPEN_MAX + 31) / 32)
+#ifdef WORD64
+#define NMSKBITS 64
+#else
+#define NMSKBITS 32
+#endif
+
+#define MSKCNT ((OPEN_MAX + NMSKBITS - 1) / NMSKBITS)
 
 #ifdef LONG64
 typedef unsigned int FdSet[MSKCNT];
@@ -135,8 +137,8 @@ typedef unsigned long FdSet[MSKCNT];
 #endif
 
 #if (MSKCNT>1)
-#define BITMASK(i) (1 << ((i) & 31))
-#define MASKIDX(i) ((i) >> 5)
+#define BITMASK(i) (1 << ((i) & (NMSKBITS - 1)))
+#define MASKIDX(i) ((i) / NMSKBITS)
 #endif
 
 #define MASKWORD(buf, i) buf[MASKIDX(i)]

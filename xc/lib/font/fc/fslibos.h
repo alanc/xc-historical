@@ -1,4 +1,4 @@
-/* $XConsortium: fslibos.h,v 1.9 93/09/20 15:56:44 gildea Exp $ */
+/* $XConsortium: fslibos.h,v 1.10 93/09/23 17:08:41 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -71,7 +71,13 @@
 #define OPEN_MAX 256
 #endif
 
-#define MSKCNT ((OPEN_MAX + 31) / 32)
+#ifdef WORD64
+#define NMSKBITS 64
+#else
+#define NMSKBITS 32
+#endif
+
+#define MSKCNT ((OPEN_MAX + NMSKBITS - 1) / NMSKBITS)
 
 typedef unsigned long FdSet[MSKCNT];
 typedef FdSet FdSetPtr;
@@ -82,8 +88,8 @@ typedef FdSet FdSetPtr;
 #endif
 
 #if (MSKCNT>1)
-#define BITMASK(i) (1 << ((i) & 31))
-#define MASKIDX(i) ((i) >> 5)
+#define BITMASK(i) (1 << ((i) & (NMSKBITS - 1)))
+#define MASKIDX(i) ((i) / NMSKBITS)
 #endif
 
 #define MASKWORD(buf, i) buf[MASKIDX(i)]
