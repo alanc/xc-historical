@@ -1,4 +1,4 @@
-/* $XConsortium: xcmsdb.c,v 1.3 91/07/22 14:57:35 rws Exp $ */
+/* $XConsortium: xcmsdb.c,v 1.4 91/07/22 16:31:08 rws Exp $ */
 
 /*
  * (c) Copyright 1990 Tektronix Inc.
@@ -480,7 +480,7 @@ QuerySCCDataRGB(dpy, root)
 	     */
 	    visualID = _XcmsGetElement(format, &pChar, &nitems);
 	    while (count--) {
-		visualID = visualID << 8;
+		visualID = visualID << format;
 		visualID |= _XcmsGetElement(format, &pChar, &nitems);
 	    }
 
@@ -664,7 +664,7 @@ QuerySCCDataGray(dpy, root)
 	     */
 	    visualID = _XcmsGetElement(format, &pChar, &nitems);
 	    while (count--) {
-		visualID = visualID << 8;
+		visualID = visualID << format;
 		visualID |= _XcmsGetElement(format, &pChar, &nitems);
 	    }
 
