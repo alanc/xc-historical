@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Scroll.c,v 1.31 88/03/03 14:43:39 swick Exp $";
+static char rcsid[] = "$Header: Scroll.c,v 1.32 88/06/29 11:27:02 jim Exp $";
 #endif lint
 
 /***********************************************************
@@ -117,7 +117,7 @@ static XtActionsRec actions[] = {
 };
 
 
-static ScrollbarClassRec scrollbarClassRec = {
+ScrollbarClassRec scrollbarClassRec = {
 /* core fields */
     /* superclass       */      (WidgetClass) &widgetClassRec,
     /* class_name       */      "Scrollbar",
