@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.30 91/07/16 23:03:46 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.31 91/07/18 11:51:41 gildea Exp $
 OBJS = FontObj(5x7) FontObj(5x8) FontObj(6x9) FontObj(6x10) FontObj(6x12) \
 	FontObj(6x13) FontObj(6x13B) FontObj(7x13) FontObj(7x13B) FontObj(8x13) \
 	FontObj(8x13B) FontObj(9x15) FontObj(9x15B) FontObj(10x20) \
@@ -16,7 +16,8 @@ OBJS = FontObj(5x7) FontObj(5x8) FontObj(6x9) FontObj(6x10) FontObj(6x12) \
 	FontObj(k14) FontObj(7x14) FontObj(7x14B) FontObj(7x14rk) \
 	FontObj(12x24) FontObj(12x24rk) FontObj(8x16) FontObj(8x16rk) \
 	FontObj(jiskan16) FontObj(jiskan24) \
-	FontObj(hanglg16) FontObj(hanglm16) FontObj(hanglm24)
+	FontObj(hanglg16) FontObj(hanglm16) FontObj(hanglm24) \
+	FontObj(gb16fs) FontObj(gb16st) FontObj(gb24st)
 
 FONTINSTDIR = $(FONTDIR)/misc
 
@@ -91,6 +92,9 @@ FontTarget(jiskan24)
 FontTarget(hanglg16)
 FontTarget(hanglm16)
 FontTarget(hanglm24)
+FontTarget(gb16fs)
+FontTarget(gb16st)
+FontTarget(gb24st)
 
 InstallFonts($(FONTINSTDIR))
 InstallFontAliases($(FONTINSTDIR))
