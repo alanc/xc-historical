@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.h,v 1.12 91/07/22 18:03:44 ackerman Exp $
+/* $XConsortium: Converters.h,v 1.13 91/07/22 23:45:33 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -234,7 +234,7 @@ extern void XmuCvtStringToWidget(
 /******************************************************************************
  * XmuNewCvtStringToWidget
  */
-extern void XmuNewCvtStringToWidget(
+extern Boolean XmuNewCvtStringToWidget(
 #if NeedFunctionPrototypes
     Display*            /* display */,
     XrmValue*		/* args */,
