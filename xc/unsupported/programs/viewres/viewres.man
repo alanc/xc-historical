@@ -6,8 +6,8 @@ viewres - graphical class browser for Xt
 [-option ...]
 .SH DESCRIPTION
 .PP
-The \fIviewres\fP program displays a tree showing the widget class hiearchy of
-the Athena widget widget.  Each node in the tree can be expanded to show the
+The \fIviewres\fP program displays a tree showing the widget class hierarchy of
+the Athena Widget Set.  Each node in the tree can be expanded to show the
 resources that the corresponding class adds (i.e. does not inherit from its
 parent) when a widget is created.  This application allows the user to visually
 examine the structure and inherited resources for the Athena Widget Set.
