@@ -1,4 +1,4 @@
-.\" $XConsortium: xmessage.man,v 1.6 94/07/26 20:53:57 gildea Exp $
+.\" $XConsortium: xmessage.man,v 1.7 94/07/28 21:34:07 gildea Exp gildea $
 .TH XMESSAGE 1 "26 July 1994" "X Version 11"
 .SH NAME
 xmessage \- display a message or query in a window (X-based /bin/echo)
@@ -25,7 +25,9 @@ xmessage \- display a message or query in a window (X-based /bin/echo)
 .I message
 \&.\|.\|.
 .SH DESCRIPTION
-.I Xmessage
+The 
+.I xmessage
+program
 displays a window containing a message from the command line, a file,
 or standard input.
 Along the lower edge of the message is row
@@ -34,7 +36,7 @@ on any of these buttons will cause \fIxmessage\fP to exit.
 Which button was pressed is returned in the exit status and,
 optionally, by writing the label of the button to standard output.
 .PP
-.I Xmessage
+The program
 is typically used by shell scripts to display information to the user
 or to ask the user to make a choice.
 .PP
@@ -77,7 +79,7 @@ Either \fB\-file\fP or a message on the command line
 should be provided, but not both.
 .TP 8
 .B \-print
-This will cause the program to print the label of the button pressed to
+This will cause the program to write the label of the button pressed to
 standard output.  Equivalent to setting the \fBprintValue\fP resource
 to TRUE.
 This is one way to get feedback as to which button was pressed.
@@ -96,7 +98,7 @@ clicked on a button yet.
 The corresponding resource is \fBtimeout\fP.
 .SH "WIDGET HIERARCHY"
 Knowing the name and position in the hierarchy of each widget is
-useful when specifying resources for them.  In the chart below, the
+useful when specifying resources for them.  In the following chart, the
 class and name of each widget is given.
 .LP
 .nf
@@ -110,7 +112,7 @@ Xmessage (xmessage)
 		.
 .fi
 .SH RESOURCES
-\fIXmessage\fP has a few top-level application resources that allow
+The program has a few top-level application resources that allow
 customizations that are specific to \fIxmessage\fP. 
 .TP 8
 .B file
@@ -125,7 +127,8 @@ A String specifying a default button by label.
 .TP 8
 .B printValue
 A Boolean value specifying whether the label of the 
-button pressed to exit the program is printed.  The default is FALSE.
+button pressed to exit the program is written to standard output.
+The default is FALSE.
 .TP 8
 .B center
 A Boolean value specifying whether to pop up the window at the center
