@@ -3,7 +3,8 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(EXTENSIONLIB) $(XLIB)
 SYS_LIBRARIES = -lm
 SRCS = listres.c util.c widgets.c 
 OBJS = listres.o util.o widgets.o 
-HEADERS = $(AWIDGETSRC)\/*.h $(TOOLKITSRC)\/*.h
+PLACESTOLOOK = $(AWIDGETSRC)\/libXaw.a $(TOOLKITSRC)\/libXt.a
+
 
 AllTarget(listres)
 
@@ -17,4 +18,4 @@ InstallAppDefaults(Listres)
 
 widgets.c: genlist.sh
 	$(RM) $@
-	sh genlist.sh $(HEADERS) >$@
+	sh genlist.sh $(PLACESTOLOOK) >$@
