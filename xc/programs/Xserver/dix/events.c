@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.60 92/12/30 18:38:57 rws Exp $ */
+/* $XConsortium: events.c,v 5.61 93/02/25 14:23:49 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -146,7 +146,7 @@ extern Bool permitOldBugs;
 extern Bool Must_have_memory;
 extern int lastEvent;
 #ifdef XINPUT
-extern int DeviceMotionNotify, DeviceButtonPress;
+extern int DeviceMotionNotify, DeviceButtonPress, DeviceKeyPress;
 #endif
 
 static Mask lastEventMask;
@@ -1631,7 +1631,16 @@ CheckPassiveGrabsOnWindow(pWin, device, xE, count)
     for (; grab; grab = grab->next)
     {
 	tempGrab.modifierDevice = grab->modifierDevice;
-	tempGrab.modifiersDetail.exact = grab->modifierDevice->key->state;
+	if (device == grab->modifierDevice &&
+	    (xE->u.u.type == KeyPress
+#ifdef XINPUT
+	     || xE->u.u.type == DeviceKeyPress
+#endif
+	     ))
+	    tempGrab.modifiersDetail.exact =
+		grab->modifierDevice->key->prev_state;
+	else
+	    tempGrab.modifiersDetail.exact = grab->modifierDevice->key->state;
 	if (GrabMatchesSecond(&tempGrab, grab) &&
 	    (!grab->confineTo ||
 	     (grab->confineTo->realized &&
@@ -1686,6 +1695,13 @@ CheckDeviceGrabs(device, xE, checkFirst, count)
     register int i;
     register WindowPtr pWin;
     register FocusClassPtr focus = device->focus;
+
+    if ((xE->u.u.type == ButtonPress
+#ifdef XINPUT
+	 || xE->u.u.type == DeviceButtonPress
+#endif
+	 ) && device->button->buttonsDown != 1)
+	return FALSE;
 
     i = checkFirst;
 
@@ -1872,6 +1888,7 @@ ProcessKeyboardEvent (xE, keybd, count)
 	    }
 	    inputInfo.pointer->valuator->motionHintWindow = NullWindow;
 	    *kptr |= bit;
+	    keyc->prev_state = keyc->state;
 	    for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
 	    {
 		if (mask & modifiers)
@@ -1893,6 +1910,7 @@ ProcessKeyboardEvent (xE, keybd, count)
 		return;
 	    inputInfo.pointer->valuator->motionHintWindow = NullWindow;
 	    *kptr &= ~bit;
+	    keyc->prev_state = keyc->state;
 	    for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
 	    {
 		if (mask & modifiers) {
