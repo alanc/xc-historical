@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.35 89/07/13 11:28:52 jim Exp $
+ * $XConsortium: resize.c,v 1.36 89/07/14 11:10:42 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.35 89/07/13 11:28:52 jim Exp $";
+"$XConsortium: resize.c,v 1.36 89/07/14 11:10:42 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -389,20 +389,12 @@ int height;
         dheight /= tmp_win->hints.height_inc;
     }
 
-    sprintf(str, "%d x %d", dwidth, dheight);
-
-    /*
-     * XXX - This is hideously expensive.  It should just choose a max number
-     * of digits and show that so that we aren't doing massive numbers of 
-     * resizes.
-     */
-    width = XTextWidth(Scr->SizeFont.font, str, strlen(str)) + 20;
-    strcat(str, "        ");
-    XResizeWindow(dpy, Scr->SizeWindow, width, Scr->SizeFont.height + 4);
+    sprintf(str, " %4d x %-4d ", dwidth, dheight);
     XRaiseWindow(dpy, Scr->SizeWindow);
     FBF(Scr->DefaultC.fore, Scr->DefaultC.back, Scr->SizeFont.font->fid);
-    XDrawImageString(dpy, Scr->SizeWindow, Scr->NormalGC,
-        10, 2 + Scr->SizeFont.font->ascent, str, strlen(str));
+    XDrawImageString (dpy, Scr->SizeWindow, Scr->NormalGC,
+		      0, Scr->SizeFont.font->ascent + Scr->SizeFont.height/4,
+		      str, 13);
 }
 
 /***********************************************************************

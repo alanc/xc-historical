@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.57 89/07/06 18:34:53 jim Exp $
+ * $XConsortium: twm.c,v 1.58 89/07/07 13:07:01 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.57 89/07/06 18:34:53 jim Exp $";
+"$XConsortium: twm.c,v 1.58 89/07/07 13:07:01 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -134,7 +134,7 @@ main(argc, argv, environ)
 {
     Window w, root, parent, *children;
     TwmWindow *tmp_win;
-    int nchildren, i, j;
+    int nchildren, i, j, width;
     int m, d, y;
     char *display_name;
     unsigned long valuemask;	/* mask for create windows */
@@ -237,6 +237,8 @@ main(argc, argv, environ)
     {
 	firstscrn = lastscrn = DefaultScreen(dpy);
     }
+
+    InfoLines = 0;
 
     /* for simplicity, always allocate NumScreens ScreenInfo struct pointers */
     ScreenList = (ScreenInfo **) calloc (NumScreens, sizeof (ScreenInfo *));
@@ -421,11 +423,18 @@ main(argc, argv, environ)
 	    }
 	}
 
-	Scr->InfoWindow = XCreateSimpleWindow(dpy, Scr->Root,
-		0, 0, 5, 5, BW,
-		Scr->DefaultC.fore,Scr->DefaultC.back);
-	XSelectInput(dpy, Scr->InfoWindow, ExposureMask |
-	    KeyPressMask | ButtonPressMask);
+	
+	attributes.border_pixel = Scr->DefaultC.fore;
+	attributes.background_pixel = Scr->DefaultC.back;
+	attributes.event_mask = (ExposureMask |
+				 KeyPressMask | ButtonPressMask);
+	attributes.backing_store = NotUseful;
+	attributes.cursor = XCreateFontCursor (dpy, XC_hand2);
+	valuemask = (CWBorderPixel | CWBackPixel | CWEventMask | 
+		     CWBackingStore | CWCursor);
+	Scr->InfoWindow = XCreateWindow (dpy, Scr->Root, 0, 0, 5, 5, BW, 0,
+					 CopyFromParent, CopyFromParent,
+					 valuemask, &attributes);
 
 	Scr->InitialWindow = XCreateSimpleWindow(dpy, Scr->Root,
 		0, 0, 5, Scr->InitialFont.height + 4, BW,
@@ -464,9 +473,12 @@ main(argc, argv, environ)
 	if (Scr->ShowVersion)
 	    XMapWindow(dpy, Scr->VersionWindow);
 
-	Scr->SizeWindow = XCreateSimpleWindow(dpy, Scr->Root,
-		0, 0, 100, Scr->SizeFont.height + 4, BW,
-		Scr->DefaultC.fore, Scr->DefaultC.back);
+	width = XTextWidth (Scr->SizeFont.font, " 8888 x 8888 ", 13);
+	if (width <= 0) width = 100;
+	Scr->SizeWindow = XCreateSimpleWindow (dpy, Scr->Root, 0, 0, width,
+					       (Scr->SizeFont.height * 3)/2, 
+					       BW, Scr->DefaultC.fore,
+					       Scr->DefaultC.back);
 
 	XUngrabServer(dpy);
 

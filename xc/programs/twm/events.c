@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.76 89/07/14 11:06:24 jim Exp $
+ * $XConsortium: events.c,v 1.77 89/07/14 11:10:31 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.76 89/07/14 11:06:24 jim Exp $";
+"$XConsortium: events.c,v 1.77 89/07/14 11:10:31 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -312,7 +312,7 @@ HandleKeyPress()
     FuncKey *key;
     int len;
 
-    XUnmapWindow(dpy, Scr->InfoWindow);
+    if (InfoLines) XUnmapWindow(dpy, Scr->InfoWindow);
     Context = C_NO_CONTEXT;
 
     if (Event.xany.window == Scr->Root)
@@ -688,7 +688,7 @@ HandleExpose()
     if (Event.xexpose.count != 0)
 	return;
 
-    if (Event.xany.window == Scr->InfoWindow)
+    if (Event.xany.window == Scr->InfoWindow && InfoLines)
     {
 	int i;
 	int height;
@@ -926,7 +926,7 @@ HandleMapRequest()
     {
 	DeIconify(Tmp_win);
     }
-    XRaiseWindow(dpy, Scr->VersionWindow);
+    if (Scr->ShowVersion) XRaiseWindow(dpy, Scr->VersionWindow);
 }
 
 /***********************************************************************
@@ -959,7 +959,7 @@ HandleMapNotify()
     Tmp_win->icon = FALSE;
     Tmp_win->icon_on = FALSE;
 
-    XRaiseWindow(dpy, Scr->VersionWindow);
+    if (Scr->ShowVersion) XRaiseWindow(dpy, Scr->VersionWindow);
 }
 
 /***********************************************************************
@@ -1231,8 +1231,14 @@ HandleButtonPress()
     if (ActiveMenu != NULL)
 	PopDownMenu();
 
-    XUnmapWindow(dpy, Scr->InfoWindow);
-    XUnmapWindow(dpy, Scr->VersionWindow);
+    if (InfoLines) {
+	XUnmapWindow(dpy, Scr->InfoWindow);
+	InfoLines = 0;
+    }
+    if (Scr->ShowVersion) {
+	XUnmapWindow(dpy, Scr->VersionWindow);
+	Scr->ShowVersion = FALSE;
+    }
     XSync(dpy, 0);
 
     if (ButtonPressed != -1)
@@ -1521,8 +1527,10 @@ HandleLeaveNotify()
     if (Tmp_win != NULL)
     {
 	if (Event.xcrossing.mode == NotifyNormal &&
-	    Event.xcrossing.detail != NotifyInferior)
+	    Event.xcrossing.detail != NotifyInferior) {
 		XUnmapWindow(dpy, Scr->VersionWindow);
+		Scr->ShowVersion = FALSE;
+	}
 
 	if (Scr->FocusRoot)
 	{

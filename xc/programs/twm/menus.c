@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.81 89/07/13 11:51:21 jim Exp $
+ * $XConsortium: menus.c,v 1.82 89/07/14 11:10:35 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.81 89/07/13 11:51:21 jim Exp $";
+"$XConsortium: menus.c,v 1.82 89/07/14 11:10:35 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1620,6 +1620,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 
     case F_VERSION:
 	XMapRaised(dpy, Scr->VersionWindow);
+	Scr->ShowVersion = TRUE;
 	break;
 
     case F_EXEC:
@@ -2246,7 +2247,6 @@ TwmWindow *t;
     sprintf(Info[n++], "Geometry/root    = %dx%d+%d+%d", wwidth, wheight,x,y);
     sprintf(Info[n++], "Border width     = %d", bw);
     sprintf(Info[n++], "Depth            = %d", depth);
-    InfoLines = n;
 
     /* figure out the width and height of the info window */
     height = n * (Scr->DefaultFont.height+2);
@@ -2258,10 +2258,10 @@ TwmWindow *t;
 	if (twidth > width)
 	    width = twidth;
     }
-    XUnmapWindow(dpy, Scr->InfoWindow);
-    XFlush(dpy);
+    if (InfoLines) XUnmapWindow(dpy, Scr->InfoWindow);
     XResizeWindow(dpy, Scr->InfoWindow, width+10, height);
     XMapRaised(dpy, Scr->InfoWindow);
+    InfoLines = n;
 /*
          ==> Upper left X: 577
          ==> Upper left Y: 162
