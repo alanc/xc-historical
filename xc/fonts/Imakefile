@@ -34,11 +34,11 @@ snf:
 	mkdir snf
 
 depend:
-	for i in $(SUBDIRS) ; \
+	@for i in $(SUBDIRS) ; \
 	do \
 		(cd $$i; echo depending $$i ;make $(MFLAGS) depend) ;\
-	done
-	@echo "done"
+	done; \
+	echo "done"
 
 clean::
 	for i in $(SUBDIRS) ; \
