@@ -1,7 +1,8 @@
-XCOMM $XConsortium: Imakefile,v 1.5 91/07/17 16:04:28 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.6 93/08/20 11:40:56 rws Exp $
 LOCAL_LIBRARIES = $(FONTLIB)
 DEPLIBS = $(DEPFONTLIB)
 INCLUDES = -I$(FONTSRC)/include -I$(FONTLIBSRC)/include
+SYS_LIBRARIES = MathLibrary
 SRCS = mkfontdir.c
 OBJS = mkfontdir.o
 
