@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.26 94/08/17 17:40:42 mor Exp mor $ */
+/* $XConsortium: xsm.h,v 1.27 94/08/24 21:25:28 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -76,7 +76,7 @@ extern FILE *fdopen(int, char const *);
  * the version.
  */
 
-#define SAVEFILE_VERSION 1
+#define SAVEFILE_VERSION 2
 
 #define DEFAULT_SESSION_NAME "Default"
 #define FAILSAFE_SESSION_NAME "Fail Safe"
@@ -163,7 +163,7 @@ extern Bool		wantShutdown;
 extern int		sessionNameCount;
 extern String		*sessionNames;
 
-extern int		num_clients_restarted;
+extern int		num_clients_in_last_session;
 
 extern Widget		topLevel;
 
