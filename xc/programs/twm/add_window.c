@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.70 89/07/06 10:33:33 jim Exp $
+ * $XConsortium: add_window.c,v 1.71 89/07/06 10:59:50 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.70 89/07/06 10:33:33 jim Exp $";
+"$XConsortium: add_window.c,v 1.71 89/07/06 10:59:50 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -1052,10 +1052,10 @@ TwmWindow *tmp_win;
     }
 
     attributes.win_gravity = NorthWestGravity;
-    attributes.background_pixmap = None;
+    attributes.background_pixel = tmp_win->title.back;
     attributes.event_mask = (ButtonPressMask | ButtonReleaseMask |
 			     ExposureMask);
-    valuemask = (CWWinGravity | CWBackPixmap | CWEventMask);
+    valuemask = (CWWinGravity | CWBackPixel | CWEventMask);
     x = y = Scr->FramePadding + Scr->ButtonIndent;
     tmp_win->iconify_w = XCreateWindow (dpy, tmp_win->title_w, x, y,
 					h, h, 0, 0, 
