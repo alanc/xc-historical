@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.178 91/05/10 17:54:25 dave Exp $
+ * $XConsortium: events.c,v 1.179 91/05/11 17:36:08 dave Exp $
  *
  * twm event handling
  *
@@ -2448,12 +2448,10 @@ HandleUnknown()
  */
 
 int
-Transient(w)
-    Window w;
+Transient(w, propw)
+    Window w, *propw;
 {
-    Window propw;
-
-    return (XGetTransientForHint(dpy, w, &propw));
+    return (XGetTransientForHint(dpy, w, propw));
 }
 
 

@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.150 91/03/14 11:55:14 dave Exp $
+ * $XConsortium: add_window.c,v 1.151 91/05/01 11:00:48 dave Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -190,7 +190,7 @@ IconMgr *iconp;
      * fields in the WM_NORMAL_HINTS property.
      */
 
-    tmp_win->transient = Transient(tmp_win->w);
+    tmp_win->transient = Transient(tmp_win->w, &tmp_win->transientfor);
 
     if (tmp_win->name == NULL)
 	tmp_win->name = NoName;

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.179 91/05/11 17:35:56 dave Exp $
+ * $XConsortium: menus.c,v 1.180 91/05/13 16:31:51 dave Exp $
  *
  * twm menu code
  *
@@ -2460,38 +2460,34 @@ TwmWindow *tmp_win;
     tmp_win->icon_on = FALSE;
 
 
-    /* now de-iconify group members (if any) */
-    if (tmp_win->group == tmp_win->w)
-    {
+    /* now de-iconify transients */
 	for (t = Scr->TwmRoot.next; t != NULL; t = t->next)
 	{
-	    if (tmp_win->group == t->group &&
-		tmp_win->group != t->w && t->icon)
+	  if (t->transient && t->transientfor == tmp_win->w)
 	    {
-		if (t->icon_on)
-		    Zoom(t->icon_w, t->frame);
-		else
-		    Zoom(tmp_win->icon_w, t->frame);
-
-		XMapWindow(dpy, t->w);
-		t->mapped = TRUE;
-		if (Scr->NoRaiseDeicon)
-		    XMapWindow(dpy, t->frame);
-		else
-		    XMapRaised(dpy, t->frame);
-		SetMapStateProp(t, NormalState);
-
-		if (t->icon_w) {
-		    XUnmapWindow(dpy, t->icon_w);
-		    IconDown (t);
-		}
-		if (t->list) XUnmapWindow(dpy, t->list->icon);
-		t->icon = FALSE;
-		t->icon_on = FALSE;
+	      if (t->icon_on)
+		Zoom(t->icon_w, t->frame);
+	      else
+		Zoom(tmp_win->icon_w, t->frame);
+	      
+	      XMapWindow(dpy, t->w);
+	      t->mapped = TRUE;
+	      if (Scr->NoRaiseDeicon)
+		XMapWindow(dpy, t->frame);
+	      else
+		XMapRaised(dpy, t->frame);
+	      SetMapStateProp(t, NormalState);
+	      
+	      if (t->icon_w) {
+		XUnmapWindow(dpy, t->icon_w);
+		IconDown (t);
+	      }
+	      if (t->list) XUnmapWindow(dpy, t->list->icon);
+	      t->icon = FALSE;
+	      t->icon_on = FALSE;
 	    }
 	}
-    }
-
+    
     XSync (dpy, 0);
 }
 
@@ -2521,48 +2517,44 @@ int def_x, def_y;
     XGetWindowAttributes(dpy, tmp_win->w, &winattrs);
     eventMask = winattrs.your_event_mask;
 
-    /* iconify group members first */
-    if (tmp_win->group == tmp_win->w)
-    {
-	for (t = Scr->TwmRoot.next; t != NULL; t = t->next)
-	{
-	    if (tmp_win->group == t->group && tmp_win->group != t->w &&
-		t->transient)
-	    {
-		if (iconify)
-		{
-		    if (t->icon_on)
+    /* iconify transients first */
+    for (t = Scr->TwmRoot.next; t != NULL; t = t->next)
+      {
+	if (t->transient && t->transientfor == tmp_win->w)
+	  {
+	    if (iconify)
+	      {
+		if (t->icon_on)
 			Zoom(t->icon_w, tmp_win->icon_w);
-		    else
-			Zoom(t->frame, tmp_win->icon_w);
-		}
-
-		/*
-		 * Prevent the receipt of an UnmapNotify, since that would
-		 * cause a transition to the Withdrawn state.
-		 */
-		t->mapped = FALSE;
-		XSelectInput(dpy, t->w, eventMask & ~StructureNotifyMask);
-		XUnmapWindow(dpy, t->w);
-		XSelectInput(dpy, t->w, eventMask);
-		XUnmapWindow(dpy, t->frame);
-		if (t->icon_w)
-		    XUnmapWindow(dpy, t->icon_w);
-		SetMapStateProp(t, IconicState);
-		SetBorder (t, False);
-		if (t == Scr->Focus)
-		{
-		    SetFocus ((TwmWindow *) NULL, LastTimestamp());
-		    Scr->Focus = NULL;
-		    Scr->FocusRoot = TRUE;
-		}
-		if (t->list) XMapWindow(dpy, t->list->icon);
-		t->icon = TRUE;
-		t->icon_on = FALSE;
-	    }
-	}
-    }
-
+		else
+		  Zoom(t->frame, tmp_win->icon_w);
+	      }
+	    
+	    /*
+	     * Prevent the receipt of an UnmapNotify, since that would
+	     * cause a transition to the Withdrawn state.
+	     */
+	    t->mapped = FALSE;
+	    XSelectInput(dpy, t->w, eventMask & ~StructureNotifyMask);
+	    XUnmapWindow(dpy, t->w);
+	    XSelectInput(dpy, t->w, eventMask);
+	    XUnmapWindow(dpy, t->frame);
+	    if (t->icon_w)
+	      XUnmapWindow(dpy, t->icon_w);
+	    SetMapStateProp(t, IconicState);
+	    SetBorder (t, False);
+	    if (t == Scr->Focus)
+	      {
+		SetFocus ((TwmWindow *) NULL, LastTimestamp());
+		Scr->Focus = NULL;
+		Scr->FocusRoot = TRUE;
+	      }
+	    if (t->list) XMapWindow(dpy, t->list->icon);
+	    t->icon = TRUE;
+	    t->icon_on = FALSE;
+	  }
+      } 
+    
     if (iconify)
 	Zoom(tmp_win->frame, tmp_win->icon_w);
 
