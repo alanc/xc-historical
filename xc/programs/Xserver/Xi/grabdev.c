@@ -110,7 +110,6 @@ ProcXGrabDevice(client)
     dev = LookupDeviceIntRec (stuff->deviceid);
     if (dev == NULL)
 	{
-	rep.status = -1;
 	SendErrorToClient(client, IReqCode, X_GrabDevice, 0, BadDevice);
 	return Success;
 	}
@@ -119,13 +118,12 @@ ProcXGrabDevice(client)
 	stuff->event_count, tmp, dev, X_GrabDevice) != Success)
 	return Success;
 
-    rep.status = GrabDevice (client, dev, stuff->this_device_mode, 
+    error = GrabDevice (client, dev, stuff->this_device_mode, 
 	stuff->other_devices_mode, stuff->grabWindow, stuff->ownerEvents, 
-	stuff->time, tmp, &error);
+	stuff->time, tmp, &rep.status);
 
-    if (error != 0)
+    if (error != Success)
 	{
-	rep.status = -1;
 	SendErrorToClient(client, IReqCode, X_GrabDevice, 0, error);
 	return Success;
 	}
