@@ -1,4 +1,4 @@
-! $XConsortium: string.list,v 1.8 94/04/01 14:13:38 converse Exp $
+! $XConsortium: string.list,v 1.9 94/04/01 16:31:46 kaleb Exp $
 ! NOTE: To maintain binary compatibility, you can only APPEND items within
 !	a given list!!!!
 
@@ -377,3 +377,4 @@ NsessionID
 CSessionID
 NshutdownCommand
 CShutdownCommand
+NerrorCallback
