@@ -1,4 +1,4 @@
-/* $XConsortium: miRndrPick.c,v 1.4 92/10/05 17:04:55 hersh Exp $ */
+/* $XConsortium: miRndrPick.c,v 1.5 92/11/10 19:00:00 hersh Exp $ */
 
 /************************************************************
 Copyright 1992 by The Massachusetts Institute of Technology
@@ -184,8 +184,6 @@ ddUSHORT        *betterPick;
     pexPickElementRef   *dest;
     ddPickPath          *sIDpp;
 
-    err = EndPicking(pRend, pRend->pickstr.pseudoPM);
-
     ppm = (miPickMeasureStr *) (pRend->pickstr.pseudoPM)->deviceData;
     *numPickElRefs = 0;
     *pickStatus = ppm->status;
@@ -324,8 +322,11 @@ ddBufferPtr     pBuffer;    /* list of pick element ref */
 	/* remove the list from the list of list */
 	puRemoveFromList( (ddPointer) &list, pRend->pickstr.list);
 
-	/* if there are more hits save the last hit into the start path */
-	if ((pRend->pickstr.more_hits == PEXMoreHits) && (i == numObj-1)) 
+	/* if there are more hits when doing a server side pick all
+	   save the last hit into the start path 
+	*/
+	if ((pRend->pickstr.more_hits == PEXMoreHits) && (i == numObj-1)
+	    && (pRend->pickstr.server == DD_SERVER)) 
 	    pRend->pickStartPath = list;
 	else 
 	    puDeleteList( list);
@@ -334,8 +335,7 @@ ddBufferPtr     pBuffer;    /* list of pick element ref */
 
     /* if there were no more hits empty the pickStartPath */
     if (pRend->pickstr.more_hits == PEXNoMoreHits) {
-	puDeleteList( pRend->pickStartPath);
-	pRend->pickStartPath = puCreateList( DD_PICK_PATH);
+	PU_EMPTY_LIST(pRend->pickStartPath);
     }
 
     pRend->pickstr.more_hits = PEXNoMoreHits;
