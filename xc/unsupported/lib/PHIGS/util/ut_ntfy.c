@@ -1,4 +1,4 @@
-/* $XConsortium: ut_ntfy.c,v 5.4 91/05/14 17:28:37 rws Exp $ */
+/* $XConsortium: ut_ntfy.c,v 5.5 91/07/10 09:23:18 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -180,17 +180,6 @@ unsigned long	usecs;		    /* when alarm should go off */
 	    timer_list_array[which] = curr->next;
 
 	curr->in_use = 0;
-	
-	/** Remove signal handler if none left on list **/
-	if (!timer_list_array[which])
-#if !defined(AIXrt) && !(defined(SYSV) && defined(SYSV386))
-	    if (which == ITIMER_REAL)
-		(void)signal(SIGALRM, SIG_DFL);
-	    else
-		(void)signal(SIGVTALRM, SIG_DFL);
-#else
-		(void)signal(SIGALRM, SIG_DFL);
-#endif
 	
     } else {
 	
