@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.56 89/04/20 16:20:46 rws Exp $ */
+/* $XConsortium: io.c,v 1.57 89/04/25 20:39:28 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -452,6 +452,13 @@ FlushClient(who, oc, extraBuf, extraCount)
 
     /* everything was flushed out */
     oc->output.count = 0;
+    /* check to see if this client was write blocked */
+    if (AnyClientsWriteBlocked)
+    {
+	BITCLEAR(ClientsWriteBlocked, oc->fd);
+ 	if (! ANYSET(ClientsWriteBlocked))
+	    AnyClientsWriteBlocked = FALSE;
+    }
     if (oc->output.size > OutputBufferSize)
     {
 	unsigned char *obuf;
