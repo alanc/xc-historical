@@ -1,4 +1,4 @@
-/* $XConsortium: miConvert.c,v 5.3 91/05/05 18:50:02 rws Exp $ */
+/* $XConsortium: miConvert.c,v 5.4 92/04/10 19:46:06 hersh Exp $ */
 
 
 /***********************************************************
@@ -124,7 +124,7 @@ ddRgbFloatColour	**out_col;
     /* Insure that LUT entry is in correct color model */
     if (pintcolour->entry.colourType != PEXRgbFloatColour)
      ColourConversionRoutine[pintcolour->entry.colourType*PEXRdrColourModelRGB]
-			(&pintcolour->entry.colour.rgbFloat, out_col);
+			(pRend, &pintcolour->entry.colour.rgbFloat, out_col);
     else *((*out_col)++) = pintcolour->entry.colour.rgbFloat;
 
 }
