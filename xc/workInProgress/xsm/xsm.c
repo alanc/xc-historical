@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.9 94/01/19 21:05:46 converse Exp $ */
+/* $XConsortium: xsm.c,v 1.10 94/01/20 17:53:03 converse Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -161,10 +161,16 @@ SmProp	*prop;
     printf ("   Name:	%s\n", prop->name);
     printf ("   Type:	%s\n", prop->type);
     printf ("   Num values:	%d\n", prop->num_vals);
-    for (j = 0; j < prop->num_vals; j++)
-    {
-	printf ("   Value %d:	%s\n", j + 1,
-	    (char *) prop->vals[j].value);
+    if (strcmp(prop->type, SmCARD8) == 0) {
+	/* must be restart style */
+	char *style = prop->vals->value;
+	int value = *style;
+	printf ("   Value 1:\t%d\n", value);
+    } else {
+	for (j = 0; j < prop->num_vals; j++) {
+	    printf ("   Value %d:	%s\n", j + 1,
+		    (char *) prop->vals[j].value);
+	}
     }
     printf ("\n");
 }
