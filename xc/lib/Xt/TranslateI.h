@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.34 91/02/07 21:27:14 converse Exp $ */
+/* $XConsortium: TranslateI.h,v 1.35 91/02/08 16:57:07 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -51,7 +51,7 @@ typedef Boolean (*MatchProc)();
 typedef struct _ModToKeysymTable {
     Modifiers mask;
     int count;
-    int index;
+    int idx;
 } ModToKeysymTable;
 
 typedef struct _LateBindings {
@@ -64,7 +64,7 @@ typedef short ModifierMask;
 
 typedef struct _ActionsRec *ActionPtr;
 typedef struct _ActionsRec {
-    int index;			/* index into quarkTable to find proc */
+    int idx;			/* index into quarkTable to find proc */
     String *params;		/* pointer to array of params */
     Cardinal num_params;	/* number of params */
     ActionPtr next;		/* next action to perform */
@@ -299,12 +299,12 @@ extern TMGlobalRec _XtGlobalTM;
 #define TM_MOD_SEGMENT_SIZE 	16
 #define TM_TYPE_SEGMENT_SIZE 	16
 
-#define TMGetTypeMatch(index) \
+#define TMGetTypeMatch(idx) \
   ((TMTypeMatch) \
-   &((_XtGlobalTM.typeMatchSegmentTbl[((index) >> 4)])[(index) & 15]))
-#define TMGetModifierMatch(index) \
+   &((_XtGlobalTM.typeMatchSegmentTbl[((idx) >> 4)])[(idx) & 15]))
+#define TMGetModifierMatch(idx) \
   ((TMModifierMatch) \
-   &((_XtGlobalTM.modMatchSegmentTbl[(index) >> 4])[(index) & 15]))
+   &((_XtGlobalTM.modMatchSegmentTbl[(idx) >> 4])[(idx) & 15]))
 
 /* Useful Access Macros */
 #define TMNewMatchSemantics() (_XtGlobalTM.newMatchSemantics)
