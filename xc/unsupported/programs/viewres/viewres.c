@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.71 91/03/11 17:31:01 gildea Exp $
+ * $XConsortium: viewres.c,v 1.72 91/07/23 21:04:33 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -868,6 +868,7 @@ main (argc, argv)
     char **argv;
 {
     Widget toplevel, pane, box, dummy, porthole, panner, form;
+    XmuWidgetNode *rootNode; /* always the root of the resource hierarchy */
     XtAppContext app_con;
     Arg args[6];
     Dimension canvasWidth, canvasHeight, sliderWidth, sliderHeight;
@@ -907,9 +908,10 @@ main (argc, argv)
     XtSetArg (args[0], XtNwidth, 1);
     XtSetArg (args[1], XtNheight, 1);
     dummy = XtCreateWidget ("dummy", widgetClass, toplevel, args, TWO);
+    rootNode = XmuWnNameToNode(widget_list, nwidgets, "Object");
     for (i = 0; i < nwidgets; i++) {
 	XmuWidgetNode *node = &widget_list[i];
-	XmuWnFetchResources (node, dummy, topnode);
+	XmuWnFetchResources (node, dummy, rootNode);
 	node->data = (XtPointer) create_viewres_data (node);
     }
     XtDestroyWidget (dummy);
