@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.h,v 5.0 89/09/02 15:29:28 rws Exp $ */
+/* $XConsortium: mizerarc.h,v 5.0 89/09/02 17:09:41 rws Exp $ */
 
 #define FULLCIRCLE (360 * 64)
 #define EIGHTH (45 * 64)
@@ -33,6 +33,7 @@ typedef struct {
     int xorgo, yorgo;
     int initialMask, startMask, endMask;
     int startx, endx;
+    int startAngle, endAngle;
 } miZeroCircleRec;
 
 extern void miZeroCircleSetup();
