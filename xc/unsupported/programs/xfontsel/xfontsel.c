@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: xfontsel.c,v 1.15 89/12/09 17:29:47 rws Exp $";
+static char Xrcsid[] = "$XConsortium: xfontsel.c,v 1.16 89/12/12 14:10:48 rws Exp $";
 #endif
 
 /*
@@ -192,7 +192,7 @@ void main(argc, argv)
     if (argc != 1) Syntax(argv[0]);
 
     appCtx = XtWidgetToApplicationContext(topLevel);
-    XtGetApplicationResources( topLevel, &AppRes,
+    XtGetApplicationResources( topLevel, (XtPointer)&AppRes,
 			       resources, XtNumber(resources), NZ );
     if (AppRes.app_defaults_version < MIN_APP_DEFAULTS_VERSION) {
 	XrmDatabase rdb = XtDatabase(XtDisplay(topLevel));
@@ -436,7 +436,8 @@ void GetFontNames( closure )
 		}
 	    }
 	    else
-		XtAppWarning( "internal error; pattern didn't match first font" );
+		XtAppWarning( appCtx, 
+		    "internal error; pattern didn't match first font" );
 	}
 	else {
 	    SetNoFonts();
@@ -471,11 +472,12 @@ void ParseFontNames( closure )
 	for (f = 0, p = *fontNames++; f < FIELD_COUNT; f++) {
 	    char *fieldP;
 
-	    if (*p) fieldP = ++p;
+	    if (*p) ++p;
 	    if (*p == DELIM || *p == '\0') {
 		fieldP = "";
 		len = 0;
 	    } else {
+		fieldP = p;
 		while (*p && *++p != DELIM);
 		len = p - fieldP;
 	    }
@@ -494,7 +496,7 @@ void ParseFontNames( closure )
 		if (count == fieldValues[f]->allocated) {
 		    int allocated = (fieldValues[f]->allocated += 10);
 		    fieldValues[f] = (FieldValueList*)
-			XtRealloc( fieldValues[f],
+			XtRealloc( (char *) fieldValues[f],
 				   sizeof(FieldValueList) +
 					(allocated-1) * sizeof(FieldValue) );
 		}
@@ -516,7 +518,8 @@ void ParseFontNames( closure )
 	    fontValues->value_index[f] = fieldValues[f]->count - i;
 	    if ((i = v->count++) == v->allocated) {
 		int allocated = (v->allocated += 10);
-		v->font = (int*)XtRealloc( v->font, allocated * sizeof(int) );
+		v->font = (int*)XtRealloc( (char *) v->font, 
+					  allocated * sizeof(int) );
 	    }
 	    v->font[i] = font - numBadFonts;
 	}
@@ -553,7 +556,7 @@ void MakeFieldMenu(closure)
 	SetNoFonts();
 	return;
     }
-    XtGetSubresources(menu, values, "options", "Options",
+    XtGetSubresources(menu, (XtPointer) values, "options", "Options",
 		      menuResources, XtNumber(menuResources), NZ);
     XtAddCallback(menu, XtNpopupCallback, EnableOtherValues,
 		  (XtPointer)makeRec->field );
@@ -966,11 +969,11 @@ void EnableMenu(closure)
     }
     if (pManaged != managed) {
 	XtManageChildren(managed, pManaged - managed);
-	XtFree(managed);
+	XtFree((char *) managed);
     }
     if (pUnmanaged != unmanaged) {
 	XtUnmanageChildren(unmanaged, pUnmanaged - unmanaged);
-	XtFree(unmanaged);
+	XtFree((char *) unmanaged);
     }
     enabledMenuIndex = field;
 }
@@ -1049,8 +1052,8 @@ void OwnSelection(w, closure, callData)
     XtPointer closure, callData;
 {
     Time time = XtLastTimestampProcessed(XtDisplay(w));
-    Boolean primary = (Boolean)closure;
-    Boolean own = (Boolean)callData;
+    Boolean primary = (Boolean) (int) closure;
+    Boolean own = (Boolean) (int) callData;
 
     if (_XA_PRIMARY_FONT == NULL)
 	_XA_PRIMARY_FONT = XmuMakeAtom("PRIMARY_FONT");
