@@ -1,4 +1,4 @@
-/* $XConsortium: dsimple.c,v 1.9 89/12/10 16:48:30 rws Exp $ */
+/* $XConsortium: dsimple.c,v 1.10 89/12/13 11:47:19 rws Exp $ */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -304,8 +304,6 @@ Window Select_Window_Args(rargc, argv)
  * Send bugs, etc. to chariot@athena.mit.edu.
  */
 
-
-#define NULL 0
 
 extern Display *dpy;
 extern int screen;
