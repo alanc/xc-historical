@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.2 91/02/16 09:56:57 rws Exp $
+# $XConsortium: Imakefile,v 5.3 91/02/18 11:33:22 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -67,34 +67,30 @@ all:: libdiswapex.a
 OCTables.o: cOCTables.ci uOCTables.ci
 
 cOCTables.ci: OCTables.awk $(PEXINCLUDE)/PEX.h OCReduce.awk OCReduce.sed
-	rm -f OCTables.temp
-	rm -f cOCTables.ci
-	rm -f OCReduce.temp
+	$(RM) OCTables.temp
+	$(RM) cOCTables.ci
+	$(RM) OCReduce.temp
 	echo "STUB_NAME " "cPEX" | cat > OCTables.temp
 	sed -n '/##/!p' OCReduce.sed > OCReduce.temp
-	echo "/*      %""Z%""%M""% %""I% %""E% SMI      */" | cat > cOCTables.ci
-	awk -f OCTables.awk OCTables.temp $(PEXINCLUDE)/PEX.h | awk -f OCReduce.awk | sed -f OCReduce.temp >> cOCTables.ci
+	awk -f OCTables.awk OCTables.temp $(PEXINCLUDE)/PEX.h | awk -f OCReduce.awk | sed -f OCReduce.temp > cOCTables.ci
 
 uOCTables.ci: OCTables.awk $(PEXINCLUDE)/PEX.h OCReduce.awk OCReduce.sed
-	rm -f OCTables.temp
-	rm -f uOCTables.ci
-	rm -f OCReduce.temp
+	$(RM) OCTables.temp
+	$(RM) uOCTables.ci
+	$(RM) OCReduce.temp
 	echo "STUB_NAME " "uPEX" | cat > OCTables.temp
 	sed -n '/##/!p' OCReduce.sed > OCReduce.temp
-	echo "/*      %""Z%""%M""% %""I% %""E% SMI      */" | cat > uOCTables.ci
-	awk -f OCTables.awk OCTables.temp $(PEXINCLUDE)/PEX.h | awk -f OCReduce.awk | sed -f OCReduce.temp >> uOCTables.ci
+	awk -f OCTables.awk OCTables.temp $(PEXINCLUDE)/PEX.h | awk -f OCReduce.awk | sed -f OCReduce.temp > uOCTables.ci
 
 ReqTables.o: Requests.h Requests.ci
 
 Requests.h: ReqTab.awk $(PEXINCLUDE)/PEX.h
-	rm -f Requests.h
-	echo "/*      %""Z%""%M""% %""I% %""E% SMI      */" | cat > Requests.h
-	awk -f ReqTab.awk $(PEXINCLUDE)/PEX.h >> Requests.h
+	$(RM) Requests.h
+	awk -f ReqTab.awk $(PEXINCLUDE)/PEX.h > Requests.h
 
 Requests.ci: Requests.h ReqSame.awk
-	rm -f Requests.ci
-	echo "/*      %""Z%""%M""% %""I% %""E% SMI      */" | cat > Requests.ci
-	sed -n '/\%Z\%\%M\% \%I\% \%E\% SMI/!p' Requests.h | sed -n '/*      @(#)Requests.h /!p' | awk -f ReqSame.awk >> Requests.ci
+	$(RM) Requests.ci
+	awk -f ReqSame.awk Requests.h > Requests.ci
 
 
 #
