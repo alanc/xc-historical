@@ -1,4 +1,4 @@
-/* $XConsortium: memory.h,v 1.1 93/10/26 10:05:01 rws Exp $ */
+/* $XConsortium: memory.h,v 1.2 93/10/31 09:49:00 dpw Exp $ */
 /**** module memory.h ****/
 /******************************************************************************
 				NOTICE
@@ -51,10 +51,12 @@ terms and conditions:
 #ifndef _XIEH_MEMORY
 #define _XIEH_MEMORY
 
-extern	void *XieMalloc();
-extern	void *XieCalloc();
-extern	void *XieRealloc();
-extern	void *XieFree();
+#include "misc.h" /* for pointer */
+
+extern	pointer XieMalloc();
+extern	pointer XieCalloc();
+extern	pointer XieRealloc();
+extern	pointer XieFree();
 
 #endif
 /* end _XIEH_MEMORY */
