@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.14 89/08/18 16:47:31 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.15 89/08/22 18:33:13 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -49,6 +49,8 @@ static void cfbValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
 static void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
 static cfbDestroyOps();
 
+extern void cfbLineSS(), cfbLineSD(), cfbSegmentSS(), cfbSegmentSD();
+
 static GCFuncs cfbFuncs = {
     cfbValidateGC,
     cfbChangeGC,
@@ -69,7 +71,7 @@ static GCOps	cfbTEOps = {
     miCopyPlane,
     cfbPolyPoint,
     cfbLineSS,
-    miPolySegment,
+    cfbSegmentSS,
     miPolyRectangle,
     miPolyArc,
     miFillPolygon,
@@ -99,7 +101,7 @@ static GCOps	cfbNonTEOps = {
     miCopyPlane,
     cfbPolyPoint,
     cfbLineSS,
-    miPolySegment,
+    cfbSegmentSS,
     miPolyRectangle,
     miPolyArc,
     miFillPolygon,
@@ -558,14 +560,18 @@ cfbValidateGC(pGC, changes, pDrawable)
 
     if (new_line)
     {
+	pGC->ops->PolySegment = miPolySegment;
 	switch (pGC->lineStyle)
 	{
 	case LineSolid:
 	    if(pGC->lineWidth == 0)
 	    {
 		if ((pGC->planemask & PMSK) == PMSK || pGC->alu == GXinvert)
+		{
 		    pGC->ops->Polylines = cfbLineSS;
-		else
+		    pGC->ops->PolySegment = cfbSegmentSS;
+		}
+ 		else
 		    pGC->ops->Polylines = miZeroLine;
 	    }
 	    else
@@ -574,8 +580,10 @@ cfbValidateGC(pGC, changes, pDrawable)
 	case LineOnOffDash:
 	case LineDoubleDash:
 	    if (pGC->lineWidth == 0 && (pGC->planemask & PMSK) == PMSK)
-		pGC->ops->Polylines = cfbDashLine;
-	    else
+	    {
+		pGC->ops->Polylines = cfbLineSD;
+		pGC->ops->PolySegment = cfbSegmentSD;
+	    } else
 		pGC->ops->Polylines = miWideDash;
 	    break;
 	}
