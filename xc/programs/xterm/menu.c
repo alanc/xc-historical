@@ -140,6 +140,8 @@ static Widget create_menu (xtw, toplevel, name, entries, nentries)
 {
     Widget m;
     TScreen *screen = &xtw->screen;
+    static XtCallbackRec cb[2] = { { NULL, NULL }, { NULL, NULL }};
+    static Arg arg = { XtNcallback, (XtArgVal) cb };
 
     if (screen->menu_item_bitmap == None) {
 	screen->menu_item_bitmap =
@@ -150,15 +152,9 @@ static Widget create_menu (xtw, toplevel, name, entries, nentries)
 
     m = XtCreatePopupShell (name, simpleMenuWidgetClass, toplevel, NULL, 0);
 
-   
-    /*
-     * XXX - this is temporary until this crocky interface is rewritten
-     */
     for (; nentries > 0; nentries--, entries++) {
-	XawSimpleMenuAddEntry (m, entries->name, NULL, (Cardinal) 0);
-	if (entries->function)
-	  XawSimpleMenuAddEntryCallback (m, entries->name, entries->function,
-					 entries->name);
+	cb[0].callback = (XtCallbackProc) entries->function;
+	XawSimpleMenuAddEntry (m, entries->name, &arg, (Cardinal) 1);
     }
 
     XtRealizeWidget (m);
