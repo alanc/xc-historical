@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.176 93/08/27 16:27:37 kaleb Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.177 93/09/09 14:03:33 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -766,6 +766,7 @@ Boolean XtIsObject(object)
 	    UNLOCK_PROCESS;
 	    return False;
 	}
+    UNLOCK_PROCESS;
 
     if (XtIsWidget(object)) {
 	if (object->core.name == NULL ||
