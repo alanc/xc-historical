@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbfillsp.c,v 1.30 88/04/10 17:19:38 xguest Locked $ */
+/* $Header: mfbfillsp.c,v 1.31 88/07/21 10:26:16 xguest Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -757,7 +757,7 @@ int fSorted;
     int n;			/* number of spans to fill */
     register DDXPointPtr ppt;	/* pointer to list of start points */
     register int *pwidth;	/* pointer to list of n widths */
-    int		*addrlBase;	/* pointer to start of bitmap */
+    unsigned int *addrlBase;	/* pointer to start of bitmap */
     int		 nlwidth;	/* width in longwords of bitmap */
     register unsigned int *pdst;/* pointer to current word in bitmap */
     register unsigned int *psrc;/* pointer to current word in tile */
@@ -803,7 +803,7 @@ int fSorted;
 
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
-	addrlBase = (int *)
+	addrlBase = (unsigned int *)
 		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate);
 	nlwidth = (int)
 		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
@@ -812,7 +812,7 @@ int fSorted;
     }
     else
     {
-	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate);
+	addrlBase = (unsigned int *)(((PixmapPtr)pDrawable)->devPrivate);
 	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
 	xSrc = 0;
 	ySrc = 0;
@@ -832,7 +832,7 @@ int fSorted;
     {
 	iline = (ppt->y - ySrc) % pTile->height;
         pdst = addrlBase + (ppt->y * nlwidth) + (ppt->x >> 5);
-        psrcT = (int *) pTile->devPrivate + (iline * tlwidth);
+        psrcT = (unsigned int *) pTile->devPrivate + (iline * tlwidth);
 	x = ppt->x;
 
 	if (*pwidth)
