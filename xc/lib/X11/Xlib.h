@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.123 87/08/24 15:54:41 susan Exp $ */
+/* $Header: Xlib.h,v 11.123 87/08/26 20:52:02 toddb Locked $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -368,11 +368,14 @@ typedef struct {
 /* Data structure for X{Set,Get}ModifierMapping */
 
 typedef struct {
-	int max_keypermod;	/* This server's max number of keys per modifier */
-	KeyCode *modifiermap;	/* An 8 by max_keypermod array of the modifiers */
+ 	int max_keypermod;	/* The server's max # of keys per modifier */
+ 	KeyCode *modifiermap;	/* An 8 by max_keypermod array of modifiers */
 } XModifierKeymap;
 
-XModifierKeymap *XNewModifiermap(), *XGetModifierMapping();
+XModifierKeymap *XNewModifiermap(),
+		*XGetModifierMapping(),
+		*XDeleteModifiermapEntry(),
+		*XInsertModifiermapEntry();
 
 #endif /* _XSTRUCT_ */
 /*
