@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.c,v 1.24 91/07/13 16:33:29 rws Exp $
- * $Header: ScrollByL.c,v 1.24 91/07/13 16:33:29 rws Exp $
+ * $XConsortium: ScrollByL.c,v 1.25 91/07/21 11:31:45 rws Exp $
+ * $Header: ScrollByL.c,v 1.25 91/07/21 11:31:45 rws Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -990,7 +990,7 @@ int  start_line, num_lines, location;
 
 	(void) DumpText(w, x_loc, y_loc, buf, bufp - buf,
 			WHICH(italicflag, bold));
-	
+
 	if (bold)
 	  first = FALSE;
       }
@@ -1029,7 +1029,7 @@ int  start_line, num_lines, location;
       h_c = c + 1;
       while (*h_c == ' ') h_c++;
 
-      if (h_c - c < 3)
+      if (h_c - c < 4)
 	{
 	  *bufp++ = *c;
 	  break;
@@ -1041,11 +1041,10 @@ int  start_line, num_lines, location;
       bufp = buf; 
       italicflag = FALSE;
 
-      x_loc = sblw->scroll.offset + sblw->scroll.indent;
+      x_loc = sblw->scroll.offset + sblw->scroll.indent; 
       h_col += (h_c - c);
-      x_loc += h_width * h_col;
+      x_loc += h_width * h_col; 
       c = h_c - 1;
-
       break;
 
     case '\033':		/* ignore esc sequences for now */
