@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: miregion.c,v 1.22 87/08/13 15:26:52 drewry Exp $ */
+/* $Header: miregion.c,v 1.27 87/08/19 19:38:59 swick Locked $ */
 
 #include "miscstruct.h"
 #include "regionstr.h"
@@ -706,8 +706,10 @@ miUnion(newReg, reg1, reg2)
             while ((pART1->y2 < ART2->y1) && (pART1 != r1End))
             {
                  MEMCHECK(newReg, rects, FirstRect);
-                 ADDRECTNOX(newReg, rects, pART1->x1, pART1->y1,
+		 tempmin = max(prevY, pART1->y1);
+                 ADDRECTNOX(newReg, rects, pART1->x1, tempmin,
                              pART1->x2, pART1->y2);
+		 prevX = pART1->x2;
                  pART1++;
             }             
             ART1 = pART1;
@@ -718,13 +720,16 @@ miUnion(newReg, reg1, reg2)
             while ((pART2->y2 < ART1->y1)&& (pART2 != r2End))
             {
                  MEMCHECK(newReg, rects, FirstRect);
-                 ADDRECTNOX(newReg, rects, pART2->x1, pART2->y1,
+		 tempmin = max(prevY, pART2->y1);
+                 ADDRECTNOX(newReg, rects, pART2->x1, tempmin,
                              pART2->x2, pART2->y2);
+		 prevX = pART2->x2;
                  pART2++;
             }             
             ART2 = pART2;
             goto Coalesce;
         }
+
       /*
        * y1 is now the top of the intersection of the two active rectangles
        * and y2 is the bottom of that intersection.
@@ -1148,10 +1153,7 @@ miSubtract(regD, regM, regS)
     FirstRect = rects;
 
     ymax = min(regM->extents.y2, regS->extents.y2);
-    y1 = max(regM->extents.y1, regS->extents.y1);
-
-    /* setting y2 = y1 lets first band be treated like others */
-    y2 = y1;
+    y2 = max(regM->extents.y1, regS->extents.y1);
 
                    /*  reset extents of new Region */
     regD->extents.x1 = MAXSHORT;
@@ -1160,26 +1162,24 @@ miSubtract(regD, regM, regS)
     regD->extents.y2 = MINSHORT;
 
 
-    artM = IndexRects(regM->rects, regM->numRects, y1);
-    artS = IndexRects(regS->rects, regS->numRects, y1);
+    artM = IndexRects(regM->rects, regM->numRects, y2);
+    artS = IndexRects(regS->rects, regS->numRects, y2);
     rMEnd = regM->rects + regM->numRects;
     rSEnd = regS->rects + regS->numRects;
     regD->numRects = 0;
 
     /* Add rectangles from regM before intersection */
-    if (oldy1 < y1) 
+    if (oldy1 < y2) 
     {
 	tempRect = regM->rects;
-	while((tempRect < rMEnd) && (tempRect->y1 < y1))
+	while((tempRect < rMEnd) && (tempRect->y1 < y2))
 	{
 	    MEMCHECK(regD, rects, FirstRect);
 	    ADDRECT(regD, rects, tempRect->x1, tempRect->y1, tempRect->x2,
-		min(tempRect->y2, y1));
+		min(tempRect->y2, y2));
 	    tempRect++;
 	}
     }
-
-    artMEnd = artM,  artSEnd = artS;
 
     irectPrevStart = -1; 	/* initally, there are no previous rects */
        /* for each y bracket do the following
@@ -1211,10 +1211,10 @@ miSubtract(regD, regM, regS)
         while ((artSEnd < rSEnd) && (artSEnd->y1 <= y1))
 	    artSEnd++;
 
+        irectBandStart = rects - FirstRect;
         rMBeg = artM;
         while (rMBeg != artMEnd) 
 	{
-            irectBandStart = rects - FirstRect;
             rSBeg = artS;
 	    x1 = rMBeg->x1;
             while (rSBeg != artSEnd) 
@@ -1233,8 +1233,8 @@ miSubtract(regD, regM, regS)
 
 		    /* left part of this minuend is subtracted out, but
 		     * keep looking */
-		    x1 = x2 = rSBeg->x2;
-		    if(x2 >= rMBeg->x2)
+		    x1 = rSBeg->x2;
+		    if(x1 >= rMBeg->x2)
 		    {
 			/* subtrahend rectangle cross all of this minuend
 			 * none of minuend between y1 and rSBeg->y2 could
@@ -1251,13 +1251,12 @@ miSubtract(regD, regM, regS)
 		    x2 = rSBeg->x1;
                     MEMCHECK(regD, rects, FirstRect);
                     ADDRECT(regD, rects, x1, y1, x2, y2);
-		    x1 = x2 = rSBeg->x2;
+		    x1 = rSBeg->x2;
+		    if (x1 >= rMBeg->x2)
+		      break;     /* minuend is now all gone */
 		}
 		else
 		{
-		    x2 = rMBeg->x2;
-                    MEMCHECK(regD, rects, FirstRect);
-                    ADDRECT(regD, rects, x1, y1, x2, y2);
 		    /* All the remaining artS rects must be to the right 
 		     * of rMBeg so we can skip looking at them */
 		    break;  
@@ -1266,10 +1265,11 @@ miSubtract(regD, regM, regS)
                 rSBeg++;
 	    }
 
-	    if(rMBeg->x2 > x1)
+	    x2 = rMBeg->x2;
+	    if(x2 > x1)
 	    {
 		MEMCHECK(regD, rects, FirstRect);
-		ADDRECT(regD, rects, x1, y1, rMBeg->x2, y2);
+		ADDRECT(regD, rects, x1, y1, x2, y2);
 	    }
             rMBeg++;
 	}
@@ -1376,30 +1376,35 @@ miRegionReset(pRegion, pBox)
 }
 
 #define INBOX(r, x, y) \
-      ( ( ((r).x2 >= x)) && \
+      ( ( ((r).x2 >  x)) && \
         ( ((r).x1 <= x)) && \
-        ( ((r).y2 >= y)) && \
+        ( ((r).y2 >  y)) && \
         ( ((r).y1 <= y)) )
 
 Bool
 miPointInRegion(pRegion, x, y, box)
-    RegionPtr pRegion;
-    int x, y;
+    register RegionPtr pRegion;
+    register int x, y;
     BOX *box;     /* "return" value */
 {
-    int i;
+    register BOX *pbox, *pboxEnd;
 
     if (pRegion->numRects == 0)
         return(FALSE);
     if (!INBOX(pRegion->extents, x, y))
         return(FALSE);
-    for (i=0; i<pRegion->numRects; i++)
+    for (pbox = pRegion->rects, pboxEnd = pbox + pRegion->numRects;
+	 pbox < pboxEnd;
+	 pbox++)
     {
-        if (INBOX (pRegion->rects[i], x, y))
-        {
-	    *box = pRegion->rects[i];
-	    return(TRUE);
-	}
+        if (y >= pbox->y2)
+	   continue;		/* not there yet */
+	if ((y < box->y1) || (x < box->x1))
+	   break;		/* missed it */
+	if (x >= pbox->x2)
+	   continue;		/* not there yet */
+	*box = *pbox;
+	return(TRUE);
     }
     return(FALSE);
 }
