@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: hp.cf,v 1.32 91/03/26 08:43:53 rws Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.33 91/03/27 09:13:07 rws Exp $
 
 #define OSName                 HP-UX 7.0
 XCOMM operating system:  OSName
@@ -7,12 +7,11 @@ XCOMM operating system:  OSName
 
 #define SystemV                YES
 #ifdef hp9000s800
-#define StandardDefines        -DSYSV
-#define LintOpts               -ax -DSYSV
 #define OptimizedCDebugFlags   +O1
 #else
-#define StandardDefines        -Wc,-Nd4000,-Ns3600,-Ne700,-Np200 -DSYSV
-#define LintOpts               -ax -Nd4000 -Ns3600 -Ne700 -Np200 -Na25000 -DSYSV
+/* you can substitute -Ns3600 if you are not building PEX client side */
+#define DefaultCCOptions       -Wc,-Nd4000,-Ns8000,-Ne700,-Np200
+#define LintOpts               -ax -Nd4000 -Ns8000 -Ne700 -Np200 -Na25000
 #endif
 #define LnCmd                  ln -s
 #define MvCmd                  mv -f
