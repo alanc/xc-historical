@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.50 89/08/23 18:56:25 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.51 89/08/24 10:40:01 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -601,14 +601,7 @@ $(IMAKE):								@@\
 #define	BuildMakefileTarget(imakefile,imakeflags)			@@\
 ImakeDependency(Makefile)						@@\
 									@@\
-Makefile:: imakefile $(ICONFIGFILES)					@@\
-	-@if [ -f Makefile ]; then \					@@\
-		echo "	$(RM) Makefile.bak; $(MV) Makefile Makefile.bak"; \ @@\
-		$(RM) Makefile.bak; $(MV) Makefile Makefile.bak; \	@@\
-	else exit 0; fi							@@\
-	$(IMAKE_CMD) -DTOPDIR=$(TOP) -DCURDIR=$(CURRENT_DIR) imakeflags	@@\
-									@@\
-forceMakefile::								@@\
+Makefile:: 								@@\
 	-@if [ -f Makefile ]; then \					@@\
 		echo "	$(RM) Makefile.bak; $(MV) Makefile Makefile.bak"; \ @@\
 		$(RM) Makefile.bak; $(MV) Makefile Makefile.bak; \	@@\
