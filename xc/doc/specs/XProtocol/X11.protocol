@@ -2685,7 +2685,7 @@ The string should use the ISO Latin-1 encoding.
 Uppercase and lowercase matter.
 .LP
 The lifetime of an atom is not tied to the interning client.
-Atoms remained defined until server reset (see section 10).
+Atoms remain defined until server reset (see section 10).
 .sp
 .LP
 .\" Start marker code here
