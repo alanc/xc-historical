@@ -1,4 +1,4 @@
-/* $XConsortium: xtesttest.c,v 1.2 92/01/27 11:41:22 rws Exp $ */
+/* $XConsortium: xtesttest.c,v 1.3 92/02/01 15:08:26 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -38,14 +38,15 @@ main (argc, argv)
     Display *dpy;
     int i;    
     int event_base, error_base;
-    int major, minor;
+    int major_version, minor_version;
     unsigned long req;
     GC gc;
     XID gid;
     Window w;
     XSetWindowAttributes swa;
     int key, minkey, maxkey;
-    XEvent ev;
+    XEvent ev, second_ev, third_ev;
+    long    delta_time;
 
     ProgramName = argv[0];
     for (i = 1; i < argc; i++) {
@@ -69,7 +70,7 @@ main (argc, argv)
 	exit (1);
     }
 
-    if (!XTestQueryExtension (dpy, &event_base, &error_base, &major, &minor)) {
+    if (!XTestQueryExtension (dpy, &event_base, &error_base, &major_version, &minor_version)) {
 	fprintf (stderr, 
 	 "%s:  XTest extension not supported on server \"%s\"\n",
 		 ProgramName, DisplayString(dpy));
@@ -78,8 +79,8 @@ main (argc, argv)
     }
     printf ("XTest information for server \"%s\":\n",
 	    DisplayString(dpy));
-    printf ("  Major version:       %d\n", major);
-    printf ("  Minor version:       %d\n", minor);
+    printf ("  Major version:       %d\n", major_version);
+    printf ("  Minor version:       %d\n", minor_version);
     printf ("  First event number:  %d\n", event_base);
     printf ("  First error number:  %d\n", error_base);
 
@@ -119,25 +120,31 @@ main (argc, argv)
 	ev.xkey.y_root != 10)
 	printf("error: bad event received for key release\n");
     XTestFakeButtonEvent(dpy, 1, True, 0);
+    XTestFakeMotionEvent(dpy, DefaultScreen(dpy), 9, 8, 1000);
+    XTestFakeButtonEvent(dpy, 1, False, 2000);
     XNextEvent(dpy, &ev);
     if (ev.type != ButtonPress ||
 	ev.xbutton.button != 1 ||
 	ev.xbutton.x_root != 10 ||
 	ev.xbutton.y_root != 10)
 	printf("error: bad event received for button press\n");
-    XTestFakeMotionEvent(dpy, DefaultScreen(dpy), 9, 8, 0);
-    XNextEvent(dpy, &ev);
-    if (ev.type != MotionNotify ||
-	ev.xmotion.x_root != 9 ||
-	ev.xmotion.y_root != 8)
+    XNextEvent(dpy, &second_ev);
+    if (second_ev.type != MotionNotify ||
+	second_ev.xmotion.x_root != 9 ||
+	second_ev.xmotion.y_root != 8)
 	printf("error: bad event received for motion\n");
-    XTestFakeButtonEvent(dpy, 1, False, 0);
-    XNextEvent(dpy, &ev);
-    if (ev.type != ButtonRelease ||
-	ev.xbutton.button != 1 ||
-	ev.xbutton.x_root != 9 ||
-	ev.xbutton.y_root != 8)
+    delta_time = second_ev.xmotion.time - ev.xbutton.time;
+    if (delta_time > 1100 || delta_time < 900)
+	printf ("Poor event spacing is %d should be %d\n", delta_time, 1000);
+    XNextEvent(dpy, &third_ev);
+    if (third_ev.type != ButtonRelease ||
+	third_ev.xbutton.button != 1 ||
+	third_ev.xbutton.x_root != 9 ||
+	third_ev.xbutton.y_root != 8)
 	printf("error: bad event received for button release\n");
+    delta_time = third_ev.xbutton.time - second_ev.xmotion.time;
+    if (delta_time > 2100 || delta_time < 1900)
+	printf ("Poor event spacing is %d should be %d\n", delta_time, 2000);
     gc = DefaultGC(dpy, DefaultScreen(dpy));
     req = NextRequest(dpy);
     XDrawPoint(dpy, w, gc, 0, 0);
