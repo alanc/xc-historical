@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XICWrap.c,v 11.1 91/04/06 13:18:45 rws Exp $
+ * $XConsortium: XICWrap.c,v 11.2 91/04/06 18:46:23 rws Exp $
  */
 
 /*
@@ -236,14 +236,10 @@ XGetIMValues(im, va_alist)
      */
     Va_start(var, im);
     _XIMVaToNestedList(var, total_count, &args);
-
-    /*
-     * and do it
-     */
-    ret = (*im->methods->get_values) (im, args);
-
     va_end(var);
 
+    ret = (*im->methods->get_values) (im, args);
+    if (args) Xfree((char *)args);
     return ret;
 }
 
@@ -279,16 +275,14 @@ XCreateIC(im, va_alist)
      */
     Va_start(var, im);
     _XIMVaToNestedList(var, total_count, &args);
-
-    /*
-     * and do it
-     */
-    ic = (XIC) (*im->methods->create_ic) (im, args);
-
-    (*im->methods->add_ic) (im, ic);
-
     va_end(var);
 
+    ic = (XIC) (*im->methods->create_ic) (im, args);
+    if (args) Xfree((char *)args);
+    if (ic) {
+	ic->core.next = im->core.ic_chain;
+	im->core.ic_chain = ic;
+    }
     return ic;
 }
 
@@ -300,10 +294,17 @@ XDestroyIC(ic)
     XIC ic;
 {
     XIM im = ic->core.im;
+    XIC *prev;
 
     (*ic->methods->destroy) (ic);
-    if (im)
-	(*im->methods->remove_ic) (im, ic);
+    if (im) {
+	for (prev = &im->core.ic_chain; *prev; prev = &(*prev)->core.next) {
+	    if (*prev == ic) {
+		*prev = ic->core.next;
+		break;
+	    }
+	}
+    }
     Xfree ((char *) ic);
 }
 
@@ -320,7 +321,7 @@ XGetICValues(ic, va_alist)
     va_list var;
     int     total_count;
     XIMArg *args;
-    char    *ret;
+    char   *ret;
 
     if (!ic->core.im)
 	return (char *) NULL;
@@ -337,14 +338,10 @@ XGetICValues(ic, va_alist)
      */
     Va_start(var, ic);
     _XIMVaToNestedList(var, total_count, &args);
-
-    /*
-     * and do it
-     */
-    ret = ((*ic->methods->get_values) (ic, args));
-
     va_end(var);
 
+    ret = (*ic->methods->get_values) (ic, args);
+    if (args) Xfree((char *)args);
     return ret;
 }
 
@@ -378,14 +375,10 @@ XSetICValues(ic, va_alist)
      */
     Va_start(var, ic);
     _XIMVaToNestedList(var, total_count, &args);
-
-    /*
-     * and do it
-     */
-    ret = ((*ic->methods->set_values) (ic, args));
-
     va_end(var);
 
+    ret = (*ic->methods->set_values) (ic, args);
+    if (args) Xfree((char *)args);
     return ret;
 }
 
