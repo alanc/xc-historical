@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.74 89/07/12 16:32:22 jim Exp $
+ * $XConsortium: add_window.c,v 1.75 89/07/13 09:46:20 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.74 89/07/12 16:32:22 jim Exp $";
+"$XConsortium: add_window.c,v 1.75 89/07/13 09:46:20 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -1045,7 +1045,7 @@ TwmWindow *tmp_win;
 	/*
 	 * draw the resize button, 
 	 */
-	w = (h * 2 + 2) / 3;
+	w = (h * 2) / 3;
 	segs[0].x1 = w; segs[0].y1 = 0; segs[0].x2 = w; segs[0].y2 = w;
 	segs[1].x1 = 0; segs[1].y1 = w; segs[1].x2 = w; segs[1].y2 = w;
 	w = w / 2;
