@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*-
  * sunMouse.c --
  *	Functions for playing cat and mouse... sorry.
@@ -454,7 +455,7 @@ sunMouseEnqueueEventSunWin(pMouse,se)
     register int	  	bmask;	/* Temporary button mask */
     register PtrPrivPtr		pPriv;	/* Private data for pointer */
     register SunMsPrivPtr	pSunPriv; /* Private data for mouse */
-    short			x, y;
+    int				x, y;
     unsigned long		time;
 
     pPriv = (PtrPrivPtr)pMouse->devicePrivate;
