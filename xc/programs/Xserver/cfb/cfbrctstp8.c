@@ -18,7 +18,7 @@ Author: Keith Packard, MIT X Consortium
 
 */
 
-/* $XConsortium: cfbrctstip8.c,v 1.2 89/08/21 19:08:06 rws Exp $ */
+/* $XConsortium: cfbrctstip8.c,v 1.3 89/08/23 13:59:34 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -257,61 +257,61 @@ cfb8FillBoxTransparentStippled32 (pDrawable, nBox, pBox, stipple, fg)
 	dst += 8; \
     }
 #if (BITMAP_BIT_ORDER == MSBFirst)
-		switch (bits) {
+		switch (GetFourBits(bits)) {
 	    	case 0:
 	    	    break;
 	    	case 1:
-	    	    BitLoop (((char *) (dst))[3] = (pixel);)
+	    	    BitLoop (((char *) (dst))[3] = (fg);)
 	    	    break;
 	    	case 2:
-	    	    BitLoop (((char *) (dst))[2] = (pixel);)
+	    	    BitLoop (((char *) (dst))[2] = (fg);)
 	    	    break;
 	    	case 3:
-	    	    BitLoop (((short *) (dst))[1] = (pixel);)
+	    	    BitLoop (((short *) (dst))[1] = (fg);)
 	    	    break;
 	    	case 4:
-	    	    BitLoop (((char *) (dst))[1] = (pixel);)
+	    	    BitLoop (((char *) (dst))[1] = (fg);)
 	    	    break;
 	    	case 5:
-	    	    BitLoop (((char *) (dst))[3] = (pixel);
-			     ((char *) (dst))[1] = (pixel);)
+	    	    BitLoop (((char *) (dst))[3] = (fg);
+			     ((char *) (dst))[1] = (fg);)
 	    	    break;
 	    	case 6:
-	    	    BitLoop (((char *) (dst))[2] = (pixel);
-			     ((char *) (dst))[1] = (pixel);)
+	    	    BitLoop (((char *) (dst))[2] = (fg);
+			     ((char *) (dst))[1] = (fg);)
 	    	    break;
 	    	case 7:
-	    	    BitLoop (((short *) (dst))[1] = (pixel);
-			     ((char *) (dst))[1] = (pixel);)
+	    	    BitLoop (((short *) (dst))[1] = (fg);
+			     ((char *) (dst))[1] = (fg);)
 	    	    break;
 	    	case 8:
-	    	    BitLoop (((char *) (dst))[3] = (pixel);)
+	    	    BitLoop (((char *) (dst))[3] = (fg);)
 	    	    break;
 	    	case 9:
-	    	    BitLoop (((char *) (dst))[3] = (pixel);
-			     ((char *) (dst))[0] = (pixel);)
+	    	    BitLoop (((char *) (dst))[3] = (fg);
+			     ((char *) (dst))[0] = (fg);)
 	    	    break;
 	    	case 10:
-	    	    BitLoop (((char *) (dst))[2] = (pixel);
-			     ((char *) (dst))[0] = (pixel);)
+	    	    BitLoop (((char *) (dst))[2] = (fg);
+			     ((char *) (dst))[0] = (fg);)
 	    	    break;
 	    	case 11:
-	    	    BitLoop (((short *) (dst))[1] = (pixel);
-			     ((char *) (dst))[0] = (pixel);)
+	    	    BitLoop (((short *) (dst))[1] = (fg);
+			     ((char *) (dst))[0] = (fg);)
 	    	    break;
 	    	case 12:
-	    	    BitLoop (((short *) (dst))[0] = (pixel);)
+	    	    BitLoop (((short *) (dst))[0] = (fg);)
 	    	    break;
 	    	case 13:
-	    	    BitLoop (((char *) (dst))[3] = (pixel);
-			     ((short *) (dst))[0] = (pixel);)
+	    	    BitLoop (((char *) (dst))[3] = (fg);
+			     ((short *) (dst))[0] = (fg);)
 	    	    break;
 	    	case 14:
-	    	    BitLoop (((char *) (dst))[2] = (pixel);)
-	    	    ((short *) (dst))[0] = (pixel);
+	    	    BitLoop (((char *) (dst))[2] = (fg);)
+	    	    ((short *) (dst))[0] = (fg);
 	    	    break;
 	    	case 15:
-	    	    BitLoop (((long *) (dst))[0] = (pixel);)
+	    	    BitLoop (((long *) (dst))[0] = (fg);)
 	    	    break;
 		}
 #else
