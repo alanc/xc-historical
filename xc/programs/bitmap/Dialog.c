@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Dialog.c,v 1.8 91/01/11 14:34:39 dmatic Exp $
+ * $XConsortium: Dialog.c,v 1.9 91/02/08 18:13:40 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -28,6 +28,7 @@
 #include <X11/Shell.h>
 #include <X11/Xaw/Dialog.h>
 #include <X11/Xaw/Command.h>
+#include <X11/Xmu/CharSet.h>
     
 #include "Dialog.h"
 
