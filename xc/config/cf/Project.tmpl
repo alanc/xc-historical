@@ -1,6 +1,6 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.240 94/04/08 19:01:43 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.241 94/04/09 15:43:51 rws Exp $
 
 /****************************************************************************
  *                                                                          *
@@ -68,7 +68,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.240 94/04/08 19:01:43 rws Exp $
 #define BuildXKB		NO
 #endif
 #ifndef BuildXKBlib
-#define BuildXKBlib		YES
+#define BuildXKBlib		NO	/* not yet a standard part of Xlib */
 #endif
 #ifndef BuildFresco
 #if HasCplusplus && !HasGcc2ForCplusplus
@@ -383,10 +383,6 @@ XCOMM $XConsortium: Project.tmpl,v 1.240 94/04/08 19:01:43 rws Exp $
 #define ForceNormalLib (HasGcc && !HasGcc2)
 #endif
 
-#ifndef DoInstallExtensionsIntoXlib
-#define DoInstallExtensionsIntoXlib NO	/* merge libXext.a into libX11.a */
-#endif
-
 XCOMM -----------------------------------------------------------------------
 XCOMM X Window System make variables; these need to be coordinated with rules
 
@@ -470,9 +466,17 @@ XCOMM X Window System make variables; these need to be coordinated with rules
 #ifndef SharedX11Rev
 #define SharedX11Rev 6.0
 #endif
+#if BuildXKBlib
+SharedLibReferences(XONLY,X11kb,$(XLIBSRC),SOXLIBREV,SharedX11Rev)
+#else
 SharedLibReferences(XONLY,X11,$(XLIBSRC),SOXLIBREV,SharedX11Rev)
+#endif
+#else
+#if BuildXKBlib
+UnsharedLibReferences(XONLY,X11kb,$(XLIBSRC))
 #else
 UnsharedLibReferences(XONLY,X11,$(XLIBSRC))
+#endif
 #endif
          XLIBONLY = $(XONLYLIB)
 
