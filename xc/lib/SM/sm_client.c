@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.24 94/03/30 21:03:32 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.25 94/03/30 21:49:05 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -491,7 +491,7 @@ Bool	global;
 
 
 Status
-SmcSaveYourselfPhase2Request (smcConn, saveYourselfPhase2Proc, clientData)
+SmcRequestSaveYourselfPhase2 (smcConn, saveYourselfPhase2Proc, clientData)
 
 SmcConn 			smcConn;
 SmcSaveYourselfPhase2Proc	saveYourselfPhase2Proc;

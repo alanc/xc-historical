@@ -1,4 +1,4 @@
-/* $XConsortium: SMlib.h,v 1.18 94/03/18 10:26:50 mor Exp $ */
+/* $XConsortium: SMlib.h,v 1.19 94/03/30 20:52:06 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -441,7 +441,7 @@ extern void SmcRequestSaveYourself (
 #endif
 );
 
-extern Status SmcSaveYourselfPhase2Request (
+extern Status SmcRequestSaveYourselfPhase2 (
 #if NeedFunctionPrototypes
     SmcConn			/* smcConn */,
     SmcSaveYourselfPhase2Proc	/* saveYourselfPhase2Proc */,
