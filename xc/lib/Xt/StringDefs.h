@@ -1,5 +1,5 @@
 /*
-* $Header: Atoms.h,v 1.23 87/12/04 16:48:26 swick Locked $
+* $Header: Atoms.h,v 1.24 87/12/21 08:31:16 swick Locked $
 */
 
 /*
@@ -59,10 +59,8 @@
 #define XtNinternalHeight	"internalHeight"
 #define XtNinternalWidth	"internalWidth"
 #define XtNjustify		"justify"
-#define XtNknobHeight		"knobHeight"
 #define XtNknobIndent		"knobIndent"
 #define XtNknobPixel		"knobPixel"
-#define XtNknobWidth		"knobWidth"
 #define XtNlabel		"label"
 #define XtNlength		"length"
 #define XtNlowerRight		"lowerRight"
@@ -81,7 +79,7 @@
 #define XtNscrollUCursor	"scrollUpCursor"
 #define XtNscrollVCursor	"scrollVerticalCursor"
 #define XtNselection		"selection"
-#define XtNselectionArray	"selectionArray"
+#define XtNselectTypes		"selectTypes"
 #define XtNsensitive		"sensitive"
 #define XtNshown		"shown"
 #define XtNspace		"space"
@@ -129,10 +127,8 @@
 #define XtCIndex		"Index"
 #define XtCInterval		"Interval"
 #define XtCJustify		"Justify"
-#define XtCKnobHeight		"KnobHeight"
 #define XtCKnobIndent		"KnobIndent"
 #define XtCKnobPixel		"KnobPixel"
-#define XtCKnobWidth		"KnobWidth"
 #define XtCLabel		"Label"
 #define XtCLength		"Length"
 #define XtCMappedWhenManaged	"MappedWhenManaged"
@@ -155,7 +151,7 @@
 #define XtCScrollVCursor	"ScrollVerticalCursor"
 #define XtCSelection		"Selection"
 #define XtCSensitive		"Sensitive"
-#define XtCSelectionArray	"SelectionArray"
+#define XtCSelectTypes		"SelectTypes"
 #define XtCSpace		"Space"
 #define XtCString		"String"
 #define XtCTextOptions		"TextOptions"
