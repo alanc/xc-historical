@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: VarCreate.c,v 1.2 89/10/09 13:38:15 swick Exp $";
+    "$XConsortium: VarCreate.c,v 1.3 89/11/08 17:46:42 swick Exp $";
 #endif
 
 /*
@@ -248,7 +248,7 @@ XtVaAppInitialize(app_context_return, application_class, options,
 {
 	Widget		w;
 	ArgList		args = (ArgList)NULL;
-	int		num_args;
+	Cardinal	num_args;
 	va_list		var;
 	int		total_count, typed_count;		
 
