@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfread.c,v 1.19 94/02/07 13:11:40 gildea Exp $ */
+/* $XConsortium: bdfread.c,v 1.20 94/02/07 14:49:14 gildea Exp $ */
 
 #include <ctype.h>
 #include "fntfilst.h"
@@ -529,7 +529,7 @@ bdfReadProperties(file, pFont, pState)
     FontPtr     pFont;
     bdfFileState *pState;
 {
-    int         nProps,
+    int         nProps, props_left,
                 nextProp;
     char       *stringProps;
     FontPropPtr props;
@@ -567,10 +567,12 @@ bdfReadProperties(file, pFont, pState)
 	goto BAILOUT;
     }
     nextProp = 0;
-    while (nProps-- > 0) {
+    props_left = nProps;
+    while (props_left-- > 0) {
 	line = bdfGetLine(file, lineBuf, BDFLINELEN);
 	if (line == NULL || bdfIsPrefix(line, "ENDPROPERTIES")) {
-	    bdfError("%d too few properites\n", nProps + 1);
+	    bdfError("\"STARTPROPERTIES %d\" followed by only %d properties\n",
+		     nProps, nProps - props_left - 1);
 	    goto BAILOUT;
 	}
 	while (*line && isspace(*line))
