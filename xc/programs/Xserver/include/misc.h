@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: misc.h,v 1.46 87/12/07 18:11:32 rws Locked $ */
+/* $Header: misc.h,v 1.47 88/01/02 12:04:22 rws Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -56,7 +56,6 @@ typedef unsigned long ATOM;
 #define NullBox ((BoxPtr)0)
 #define MILLI_PER_MIN (1000 * 60)
 #define MILLI_PER_SECOND (1000)
-#define DEFAULT_SCREEN_SAVER_TIME (10 * MILLI_PER_MIN)
 
     /* this next is used with None and ParentRelative to tell
        PaintWin() what to use to paint the background. Also used
