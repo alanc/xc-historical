@@ -1,5 +1,4 @@
-/* $XConsortium: Event.c,v 1.127 91/01/08 19:17:41 rws Exp $ */
-/* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
+/* $XConsortium: Event.c,v 1.128 91/01/12 17:18:23 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -84,17 +83,12 @@ Boolean	        raw;
     XtEventRec *p, **pp;
     EventMask oldMask = XtBuildEventMask(widget);
 
+    if (raw) raw = 1;
     pp = &widget->core.event_table;
-    while ((p = *pp) && (p->proc != proc || p->closure != closure))
+    while ((p = *pp) &&
+	   (p->proc != proc || p->closure != closure || p->select == raw))
 	pp = &p->next;
     if (!p) return;
-
-    if (raw)
-	p->raw = FALSE; 
-    else 
-	p->select = FALSE;
-
-    if (p->raw || p->select) return;
 
     /* un-register it */
     eventMask &= ~NonMaskableMask;
@@ -152,8 +146,10 @@ XtListPosition  position;
     
     if (XtIsRealized(widget) && !raw) oldMask = XtBuildEventMask(widget);
     
+    if (raw) raw = 1;
     pp = &widget->core.event_table;
-    while ((p = *pp) && (p->proc != proc || p->closure != closure))
+    while ((p = *pp) &&
+	   (p->proc != proc || p->closure != closure || p->select == raw))
 	pp = &p->next;
 
     if (!p) {		                /* New proc to add to list */
@@ -162,7 +158,6 @@ XtListPosition  position;
 	p->closure = closure;
 	p->mask = eventMask;
 	p->select = ! raw;
-	p->raw = raw;
 	
 	if (position == XtListHead) {
 	    p->next = widget->core.event_table;
@@ -192,8 +187,6 @@ XtListPosition  position;
 
 	/* update existing proc */
 	p->mask |= eventMask;
-	p->select |= ! raw;
-	p->raw |= raw;
     }
 
     if (XtIsRealized(widget) && !raw) {
