@@ -1,4 +1,4 @@
-/* $XConsortium: dipexExt.c,v 5.2 91/02/18 21:09:05 rws Exp $ */
+/* $XConsortium: dipexExt.c,v 5.3 91/07/12 17:56:33 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -82,9 +82,7 @@ PexExtensionInit()
 		FreePickMeasure(), dipexFreePhigsWks(), FreePipelineContext(),
 		FreeNameSet(), FreeLUT(), FreePEXFont(), FreeWksDrawable();
     extern ddpex43rtn OpenPEXFont();
-    extern Atom MakeAtom();
 
-    (void) MakeAtom (PEX_NAME_STRING, (unsigned)(strlen(PEX_NAME_STRING)), TRUE);
     PEXStructType   = CreateNewResourceType (DeleteStructure);
     PEXSearchType   = CreateNewResourceType (FreeSearchContext);
     PEXRendType	    = CreateNewResourceType (FreeRenderer);
