@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.39 91/06/06 14:13:17 rws Exp $
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.40 91/07/03 14:39:12 rws Exp $
 
 #define OSName            Ultrix-32 4.2
 XCOMM operating system:  OSName
@@ -25,9 +25,11 @@ XCOMM operating system:  OSName
 #ifdef MipsArchitecture
 #if OSMajorVersion > 4 || (OSMajorVersion == 4 && OSMinorVersion >= 2)
 #define XdecServer YES
+#define AllocateLocalDefines -DINCLUDE_ALLOCA_H
 #else
 #define XmfbpmaxServer NO
 #define XcfbpmaxServer YES
+#define AllocateLocalDefines /**/
 #endif
 #define NeedFunctionPrototypes YES
 #define PexCCOptions -Wf,-XNp15000,-XNd15000
@@ -36,4 +38,7 @@ XCOMM operating system:  OSName
 #if HasGcc
 #define CcCmd gcc -ansi -Dvax -Dultrix -fpcc-struct-return
 #define ServerCCOptions /* */
+#define AllocateLocalDefines /* */
 #endif
+
+#define ServerOSDefines AllocateLocalDefines
