@@ -1,6 +1,6 @@
 #ifndef XMD_H
 #define XMD_H 1
-/* $Header: Xmd.h,v 1.16 87/06/15 15:33:57 toddb Locked $ */
+/* $Header: Xmd.h,v 1.17 87/06/17 17:19:37 toddb Locked $ */
 /*
  *  MACHINE DEPENDENT DECLARATIONS.
  *
@@ -99,7 +99,7 @@ typedef struct _PaddingInfo {
 	int	scanlinePad;
 	int	bitmapPadLog2;
 } PaddingInfo;
-extern PaddingInfo PixmapWidthPaddingInfo;
+extern PaddingInfo PixmapWidthPaddingInfo[];
 
 #define PixmapWidthInPadUnits(w, d) \
     (((w) + PixmapWidthPaddingInfo[d].scanlinePad) >> \
