@@ -1,22 +1,16 @@
-XCOMM $XConsortium: Imakefile,v 5.36 94/04/07 18:06:35 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.37 94/04/08 16:11:07 erik Exp $
 #include <Server.tmpl>
 
 #if HasShm
   SHMSRCS = shm.c
   SHMOBJS = shm.o
 #endif
-#if BuildXKB
-  XKBSRCS = xkb.c xkbUtils.c xkbEvents.c xkbAccessX.c xkbStubs.c xkbSwap.c \
-            xkbInit.c xkbPrKeyEv.c xkbReadXkm.c
-  XKBOBJS = xkb.o xkbUtils.o xkbEvents.o xkbAccessX.o xkbStubs.o xkbSwap.o \
-            xkbInit.o xkbPrKeyEv.o xkbReadXkm.o
-#endif
        SRCS = shape.c $(SHMSRCS) mbuf.c mbufpx.c mbufbf.c	\
               mitmisc.c xtest.c xtest1di.c xtest1dd.c sleepuntil.c	\
-	      bigreq.c sync.c xcmisc.c $(XKBSRCS)
+	      bigreq.c sync.c xcmisc.c
        OBJS = shape.o $(SHMOBJS) mbuf.o mbufpx.o mbufbf.o	\
               mitmisc.o xtest.o xtest1di.o xtest1dd.o sleepuntil.o	\
-              bigreq.o sync.o xcmisc.o $(XKBOBJS)
+              bigreq.o sync.o xcmisc.o
    INCLUDES = -I../include -I$(INCLUDESRC) -I$(EXTINCSRC)
    LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln
 
