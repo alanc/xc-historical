@@ -1,6 +1,6 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.236 94/04/01 19:56:56 kaleb Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.237 94/04/02 08:35:45 kaleb Exp $
 
 /****************************************************************************
  *                                                                          *
@@ -40,9 +40,6 @@ XCOMM $XConsortium: Project.tmpl,v 1.236 94/04/01 19:56:56 kaleb Exp $
 #ifndef BuildServer
 #define BuildServer		HasXServer
 #endif
-#ifndef BuildMTXServer
-#define BuildMTXServer		NO
-#endif
 #ifndef XServerThreaded
 #define XServerThreaded		NO	/* turn on threads in merged server */
 #endif
@@ -74,14 +71,11 @@ XCOMM $XConsortium: Project.tmpl,v 1.236 94/04/01 19:56:56 kaleb Exp $
 #define BuildXKBlib		NO
 #endif
 #ifndef BuildFresco
-#if HasCplusplus
+#if HasCplusplus && !HasGcc2ForCplusplus
 #define BuildFresco		YES
 #else
 #define BuildFresco		NO
 #endif
-#endif
-#ifndef BuildLBX
-#define BuildLBX		NO
 #endif
 #ifndef InstallLibManPages
 #define InstallLibManPages	YES
@@ -119,11 +113,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.236 94/04/01 19:56:56 kaleb Exp $
 #define ThreadedProject ThreadedX
 #endif
 #ifndef HasWChar32
-#if SystemV4
-#define HasWChar32		YES
-#else
-#define HasWChar32		NO
-#endif
+#define HasWChar32		SystemV4
 #endif
 #ifndef HasXdmAuth
 #define HasXdmAuth		NO	/* if you can not use XDM-AUTH* */
@@ -213,23 +203,20 @@ XCOMM $XConsortium: Project.tmpl,v 1.236 94/04/01 19:56:56 kaleb Exp $
 #define XkbDefines /**/
 #endif
 #endif
-#ifndef LBXDefines
-#if BuildLBX
-#define LBXDefines -DLBX
-#define BigReqDefines /**/
-#else
-#define LBXDefines /**/
-#define BigReqDefines -DBIGREQS
-#endif
-#endif
 #ifndef BigReqDefines
 #define BigReqDefines -DBIGREQS
 #endif
+#ifndef SitePervasiveExtensionDefines
+#define SitePervasiveExtensionDefines /**/
+#endif
 #ifndef PervasiveExtensionDefines
-#define PervasiveExtensionDefines -DSHAPE XInputDefines XkbDefines LBXDefines
+#define PervasiveExtensionDefines -DSHAPE XInputDefines XkbDefines SitePervasiveExtensionDefines
+#endif
+#ifndef SiteExtensionDefines
+#define SiteExtensionDefines /**/
 #endif
 #ifndef BaseExtensionDefines
-#define BaseExtensionDefines -DMULTIBUFFER -DMITMISC -DXTEST -DXSYNC -DSCREENSAVER -DXCMISC -DXRECORD PexDefines ShmDefines XieDefines BigReqDefines
+#define BaseExtensionDefines -DMULTIBUFFER -DMITMISC -DXTEST -DXSYNC -DXCMISC PexDefines ShmDefines XieDefines BigReqDefines SiteExtensionDefines
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
 #endif
