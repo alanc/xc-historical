@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.70 89/10/27 14:01:36 jim Exp $
+ * $XConsortium: twm.c,v 1.71 89/10/27 15:54:37 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.70 89/10/27 14:01:36 jim Exp $";
+"$XConsortium: twm.c,v 1.71 89/10/27 15:54:37 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -687,6 +687,10 @@ RestoreWithdrawnLocation (tmp)
 
 	    xwc.x -= (xoff + 1) * tmp->old_bw;
 	    xwc.y -= (yoff + 1) * tmp->old_bw;
+	}
+	if (!Scr->ClientBorderWidth) {
+	    xwc.x += gravx * tmp->frame_bw;
+	    xwc.y += gravy * tmp->frame_bw;
 	}
 
 	mask = (CWX | CWY);
