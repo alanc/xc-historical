@@ -5,9 +5,11 @@
 
 #define N_START 1000  /* Maximum # of fonts to start with */
 
+int max_output_line_width = 79;
+int output_line_padding = 3;
+int columns = 0;
+
 int	long_list;
-int	force_columns;
-int	force_1column;
 int	nnames = N_START;
 int	font_cnt;
 int	min_max;
@@ -24,15 +26,19 @@ usage()
 		 program_name);
 	fprintf (stderr, "where options include:\n");
 	fprintf (stderr,
-	    "    -l                       give long info about each font\n");
+	"    -l                       give long info about each font\n");
 	fprintf (stderr,
-	    "    -m                       give min and max bounds\n");
+	"    -m                       give min and max bounds\n");
 	fprintf (stderr,
-	    "    -C                       force columns\n");
+	"    -C                       force columns\n");
 	fprintf (stderr,
-	    "    -1                       force single column\n");
+	"    -1                       force single column\n");
 	fprintf (stderr,
-	    "    -display displayname     X server to contact\n");
+	"    -w width                 maximum width for multiple columns\n");
+	fprintf (stderr,
+	"    -n columns               number of columns if multi column\n");
+	fprintf (stderr,
+	"    -display displayname     X server to contact\n");
 	fprintf (stderr,
 	    "\n");
 	exit(1);
@@ -60,19 +66,27 @@ char **argv;
 					min_max++;
 					break;
 				case 'C':
-					force_columns++;
-					force_1column = 0;
+					columns = 0;
 					break;
 				case '1':
-					force_1column++;
-					force_columns = 0;
+					columns = 1;
 					break;
 				case 'f':
 					if (--argc <= 0) usage ();
 					argcnt++;
 					argv++;
 					get_list(argv[0]);
-					goto done;	/* stupid C */
+					goto next;
+				case 'w':
+					if (--argc <= 0) usage ();
+					argv++;
+					max_output_line_width = atoi(argv[0]);
+					goto next;
+				case 'n':
+					if (--argc <= 0) usage ();
+					argv++;
+					columns = atoi(argv[0]);
+					goto next;
 				default:
 					usage();
 					break;
@@ -83,7 +97,7 @@ char **argv;
 			argcnt++;
 			get_list(argv[0]);
 		}
-	  done: ;
+	  next: ;
 	}
 	if (argcnt == 0)
 		get_list("*");
@@ -238,10 +252,9 @@ show_fonts()
 		return;
 	}
 
-	if ((!force_1column && isatty(1)) || force_columns) {
+	if ((columns == 0 && isatty(1)) || columns > 1) {
 		int	width,
 			max_width = 0,
-			columns,
 			lines_per_column,
 			j,
 			index;
@@ -253,8 +266,21 @@ show_fonts()
 		}
 		if (max_width == 0)
 			Fatal_Error("Max width of font names is 0!");
-		max_width += 3;				/* 3 for padding */
-		columns = (79 + 3) / max_width;		/* 79 for dumb terms */
+
+		if (columns == 0) {
+		    if ((max_width * 2) + output_line_padding >
+			max_output_line_width) {
+			columns = 1;
+		    } else {
+			max_width += output_line_padding;
+			columns = ((max_output_line_width +
+				    output_line_padding) / max_width);
+		    }
+		} else {
+		    max_width += output_line_padding;
+		}
+		if (columns <= 1) goto single_column;
+
 		if (font_cnt < columns)
 			columns = font_cnt;
 		lines_per_column = (font_cnt + columns - 1) / columns;
@@ -276,6 +302,7 @@ show_fonts()
 		return;
 	}
 
+      single_column:
 	for (i=0; i<font_cnt; i++)
 		printf("%s\n", font_list[i].name);
 }
