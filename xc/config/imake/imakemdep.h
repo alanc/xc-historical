@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.18 91/02/06 19:24:37 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.19 91/02/13 11:18:13 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -161,7 +161,7 @@ char *cpp_argv[ARGUMENTS] = {
  * Step 6:  predefs
  *     If your compiler and/or preprocessor define any specific symbols, add
  *     them to the the following table.  The definition of struct symtab is
- *     in util/makedepend/main.c.
+ *     in util/makedepend/def.h.
  */
 struct symtab	predefs[] = {
 #ifdef apollo
