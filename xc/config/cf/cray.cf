@@ -1,9 +1,9 @@
-XCOMM platform:  $XConsortium: cray.cf,v 1.40 93/09/29 17:11:15 rws Exp $
+XCOMM platform:  $XConsortium: cray.cf,v 1.41 93/10/13 15:30:46 rws Exp $
 
-#define OSName			UNICOS 6.1
+#define OSName			UNICOS 8.0
 XCOMM operating system:  OSName
-#define OSMajorVersion		6
-#define OSMinorVersion		1
+#define OSMajorVersion		8
+#define OSMinorVersion		0
 
 #define SystemV			YES
 #define Malloc0ReturnsNull	YES
