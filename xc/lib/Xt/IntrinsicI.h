@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicI.h,v 1.32 89/09/11 17:42:52 swick Exp $
+* $XConsortium: IntrinsicI.h,v 1.33 89/09/12 16:46:48 swick Exp $
 * $oHeader: IntrinsicI.h,v 1.5 88/08/31 16:21:08 asente Exp $
 */
 
@@ -44,6 +44,14 @@ SOFTWARE.
 #include "InitialI.h"
 #include "ResourceI.h"
 #include "EventI.h"
+
+#define RectObjClassFlag	0x02
+#define WidgetClassFlag		0x04
+#define CompositeClassFlag	0x08
+#define ConstraintClassFlag	0x10
+#define ShellClassFlag		0x20
+#define WMShellClassFlag	0x40
+#define TopLevelClassFlag	0x80
 
 /****************************************************************
  *
