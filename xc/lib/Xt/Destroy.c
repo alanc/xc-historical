@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Destroy.c,v 1.12 88/09/04 12:17:57 swick Exp $";
+    "$XConsortium: Destroy.c,v 1.13 88/09/04 14:36:48 swick Exp $";
 /* $oHeader: Destroy.c,v 1.3 88/09/01 11:27:27 asente Exp $ */
 #endif lint
 
@@ -114,7 +114,7 @@ static void XtPhase2Destroy (widget, closure, call_data)
     parent = widget->core.parent;
     window = 0;
 
-    if (parent != NULL 
+    if (parent != NULL
 	    && (XtIsComposite(parent) || XtIsCompositeObject(parent))) {
         if (XtIsRectObject(widget)) {
        	    XtUnmanageChild(widget);
@@ -141,7 +141,10 @@ static void XtPhase2Destroy (widget, closure, call_data)
     }
     Recursive(widget, Phase2Callbacks);
     Recursive(widget, Phase2Destroy);
-    if (window != NULL) XDestroyWindow(display, window);
+
+    /* popups destroy their own window if parent->being_destroyed */
+    if (window != NULL && (parent == NULL || !parent->core.being_destroyed))
+	XDestroyWindow(display, window);
 } /* XtPhase2Destroy */
 
 
