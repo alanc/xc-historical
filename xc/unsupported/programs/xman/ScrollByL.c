@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.c,v 1.12 89/12/18 15:29:50 rws Exp $
- * $Header: ScrollByL.c,v 1.12 89/12/18 15:29:50 rws Exp $
+ * $XConsortium: ScrollByL.c,v 1.13 90/01/11 20:09:00 keith Exp $
+ * $Header: ScrollByL.c,v 1.13 90/01/11 20:09:00 keith Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -788,7 +788,7 @@ Widget w;
 
   if ( sblw->scroll.top_line != NULL) {
     XtFree(*(sblw->scroll.top_line)); /* free characters. */
-    XtFree(sblw->scroll.top_line); /* free lines. */
+    XtFree((char *)sblw->scroll.top_line); /* free lines. */
   }
   sblw->scroll.top_line = NULL;
 
@@ -840,7 +840,7 @@ Widget w;
       *line_pointer++ = page + 1;
 
       if (line_pointer >= top_line + nlines) {
-	top_line = (char **) XtRealloc( top_line, (nlines +
+	top_line = (char **) XtRealloc( (char *) top_line, (nlines +
 					  ADD_MORE_MEM) * sizeof(char *) );
 	line_pointer = top_line + nlines;
 	nlines += ADD_MORE_MEM;
@@ -854,7 +854,7 @@ Widget w;
  */
 
   sblw->scroll.lines = nlines = line_pointer - top_line - 1;
-  top_line = (char **) XtRealloc(top_line, nlines * sizeof(char *));
+  top_line = (char **) XtRealloc((char *) top_line, nlines * sizeof(char *));
 
 /*
  * Store the memory pointers
