@@ -1,5 +1,5 @@
 LOCAL_LIBRARIES = $(XLIB)
-           SRCS = xlsfonts.c simple.c
-           OBJS = xlsfonts.o simple.o
+           SRCS = xlsfonts.c jdisplay.c jowindow.c ostuff.c
+           OBJS = xlsfonts.o jdisplay.o jowindow.o ostuff.o
 
 ComplexProgramTarget(xlsfonts, $(BINDIR))
