@@ -66,10 +66,10 @@ static char *sccsid = "@(#)Command.c	1.15	2/25/87";
 /* Private Data */
 
 static char *defaultTranslation[] = {
-    "<Btn1Down>:       set\n",
-    "<Btn1Up>:       notify unset\n",
-    "<EnterWindow>:       highlight\n",
-    "<LeaveWindow>:       unhighlight\n",
+    "<Btn1Down>:       set()",
+    "<Btn1Up>:       notify() unset()",
+    "<EnterWindow>:       highlight()",
+    "<LeaveWindow>:       unhighlight()",
     NULL
 };
 static caddr_t defaultTranslations = (caddr_t)defaultTranslation;
