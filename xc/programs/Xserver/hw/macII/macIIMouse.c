@@ -151,7 +151,7 @@ macIIMouseProc (pMouse, what)
 	    map[2] = 2;
 	    map[3] = 3;
 	    InitPointerDeviceStruct(
-		pMouse, map, 3, macIIMouseGetMotionEvents, macIIMouseCtrl);
+		pMouse, map, 3, macIIMouseGetMotionEvents, macIIMouseCtrl, 0);
 	    break;
 
 	case DEVICE_ON:

@@ -92,9 +92,6 @@ DevicePtr pPointerDevice, pKeyboardDevice;
 int macIISigIO = 0;	 /* For use with SetInputCheck */
 static int autoRepeatHandlersInstalled; /* FALSE each time InitOutput called */
 
-	/* What should this *really* be? */
-#define MOTION_BUFFER_SIZE 0
-
 /*-
  *-----------------------------------------------------------------------
  * SigIOHandler --
@@ -332,7 +329,7 @@ InitInput(argc, argv)
     pPointerDevice = p;
     pKeyboardDevice = k;
 
-    RegisterPointerDevice(p, MOTION_BUFFER_SIZE);
+    RegisterPointerDevice(p);
     RegisterKeyboardDevice(k);
     miRegisterPointerDevice(screenInfo.screens[0], p);
 
