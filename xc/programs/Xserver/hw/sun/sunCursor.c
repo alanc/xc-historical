@@ -110,14 +110,34 @@ sunLoadCursor (pScreen, pCursor, x, y)
     fbcursor.cmap.red = r;
     fbcursor.cmap.green = g;
     fbcursor.cmap.blue = b;
-    if (w > pCurPriv->width)
-	w = pCurPriv->width;
-    if (h > pCurPriv->height)
-	h = pCurPriv->height;
-    fbcursor.size.x = w;
-    fbcursor.size.y = h;
     fbcursor.image = (char *) pCursor->bits->source;
     fbcursor.mask = (char *) pCursor->bits->mask;
+    if (w > pCurPriv->width)
+    {
+	while (fbcursor.hot.x > pCurPriv->width && w >= 8)
+	{
+	    fbcursor.hot.x -= 8;
+	    fbcursor.image++;
+	    fbcursor.mask++;
+	    w -= 8;
+	}
+	if (w > pCurPriv->width)
+	    w = pCurPriv->width;
+    }
+    if (h > pCurPriv->height)
+    {
+	while (fbcursor.hot.y > pCurPriv->height && h >= 8)
+	{
+	    fbcursor.hot.y -= 8;
+	    fbcursor.image += PixmapBytePad (pCursor->bits->width, 1);
+	    fbcursor.mask +=  PixmapBytePad (pCursor->bits->width, 1);
+	    h -= 8;
+	}
+	if (h > pCurPriv->height)
+	    h = pCurPriv->height;
+    }
+    fbcursor.size.x = w;
+    fbcursor.size.y = h;
     (void) ioctl (sunFbs[pScreen->myNum].fd, FBIOSCURSOR, &fbcursor);
 }
 
