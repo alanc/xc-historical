@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.10 90/03/19 18:55:09 keith Exp $ */
+/* $XConsortium: main.c,v 5.11 90/09/24 09:15:23 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -38,6 +38,7 @@ SOFTWARE.
 #include "cursorstr.h"
 #include "opaque.h"
 #include "servermd.h"
+#include "site.h"
 
 extern long defaultScreenSaverTime;
 extern long defaultScreenSaverInterval;
