@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.45 89/10/03 19:47:14 keith Exp $ */
+/* $XConsortium: servermd.h,v 1.46 89/11/14 18:57:06 keith Exp $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -74,7 +74,7 @@ SOFTWARE.
  * the server to run incorrectly, but defining these correctly will
  * cause some noticeable speed improvements:
  *
- *  AVOID_FRAME_BUFFER_READ - (8-bit cfb only)
+ *  AVOID_MEMORY_READ - (8-bit cfb only)
  *	When stippling pixels on the screen (polytext and pushpixels),
  *	don't read long words from the display and mask in the
  *	appropriate values.  Rather, perform multiple byte/short/long
@@ -86,7 +86,7 @@ SOFTWARE.
  *  FAST_CONSTANT_OFFSET_MODE - (cfb and mfb)
  *	This define is used on machines which have no auto-increment
  *	addressing mode, but do have an effectively free constant-offset
- *	addressing mode. MIPS and SPARC use this currently.
+ *	addressing mode.  Only MIPS uses this currently.
  *	
  *  LARGE_INSTRUCTION_CACHE -
  *	This define increases the number of times some loops are
@@ -117,7 +117,6 @@ SOFTWARE.
 
 #   ifdef sparc
 #    define AVOID_MEMORY_READ
-#    define FAST_CONSTANT_OFFSET_MODE
 #    define LARGE_INSTRUCTION_CACHE
 #   endif
 
