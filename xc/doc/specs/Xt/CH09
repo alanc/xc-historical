@@ -1,4 +1,4 @@
-.\" $XConsortium: CH09,v 1.12 94/04/18 18:48:24 rws Exp $
+.\" $XConsortium: CH09,v 1.13 94/04/18 20:20:42 rws Exp $
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -948,7 +948,7 @@ input values of representation type
 .PN XtRString .
 .LP
 .TS
-lw(1.5i) lw(2.25i) lw(1.5i) .
+lw(1.7i) lw(2.25i) lw(1.5i) .
 _
 .sp 6p
 Target Representation	Converter Name	Additional Args
@@ -1168,7 +1168,7 @@ is required in a different locale.
 .LP
 The String-to-Gravity conversion accepts string values which are the
 names of window and bit gravities and their numerical equivalents,
-as defined in \*(xL;
+as defined in \fI\*(xL\fP:
 .PN ForgetGravity ,
 .PN UnmapGravity ,
 .PN NorthWestGravity ,
@@ -1181,7 +1181,7 @@ as defined in \*(xL;
 .PN SouthGravity , 
 .PN SouthEastGravity , 
 and
-.PN StaticGravity ,
+.PN StaticGravity .
 Alphabetic case is not significant in the conversion.
 .LP
 The String-to-CommandArgArray conversion parses a String into an
@@ -1193,8 +1193,8 @@ array element.
 .LP
 .IN "XtCurrentDirectory" "" "@DEF@"
 The String-to-DirectoryString conversion recognizes the
-string "XtCurrentDirectory"
-and returns the result of a call to get the current directory.
+string "XtCurrentDirectory" and returns the result of a call
+to the operating system to get the current directory.
 .LP
 The String-to-RestartStyle conversion accepts the values 
 .PN RestartIfRunning ,
@@ -1541,7 +1541,7 @@ static Boolean CvtStringToPixel(dpy, args, num_args, fromVal, toVal, converter_d
 
 
 	status = XAllocNamedColor(DisplayOfScreen(screen), colormap, (char*)fromVal->addr, 
-				       &screenColor, &exactColor);
+				               &screenColor, &exactColor);
 
 	if (status == 0) {
 		String params[1];
@@ -1549,9 +1549,9 @@ static Boolean CvtStringToPixel(dpy, args, num_args, fromVal, toVal, converter_d
 		params[0] = (String)fromVal->addr;
 		XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
 			"noColormap", "cvtStringToPixel", "XtToolkitError",
-			"Cannot allocate colormap entry for \\"%s\\"", params,
-&num_params);
-	        *converter_data = False;
+			"Cannot allocate colormap entry for \\"%s\\"", params,\
+ &num_params);
+	        *converter_data = (char *) False;
                 return False;
 	} else {
                 *converter_data = (char *) True;
@@ -2061,20 +2061,20 @@ Boolean XtCallConverter( \fIdisplay\fP, \fIconverter\fP, \
 .br
       XtCacheRef *\fIcache_ref_return\fP;
 .FN
-.IP \fIdisplay\fP 1i
+.IP \fIdisplay\fP 1.5i
 Specifies the display with which the conversion is to be associated.
-.IP \fIconverter\fP 1i
+.IP \fIconverter\fP 1.5i
 Specifies the conversion procedure to be called.
-.IP \fIconversion_args\fP 1i
+.IP \fIconversion_args\fP 1.5i
 Specifies the additional conversion arguments needed
 to perform the conversion, or NULL.
-.IP \fInum_args\fP 1i
+.IP \fInum_args\fP 1.5i
 Specifies the number of entries in \fIconversion_args\fP.
-.IP \fIfrom\fP 1i
+.IP \fIfrom\fP 1.5i
 Specifies a descriptor for the source value.
-.IP \fIto_in_out\fP 1i
+.IP \fIto_in_out\fP 1.5i
 Returns the converted value.
-.IP \fIcache_ref_return\fP 1i
+.IP \fIcache_ref_return\fP 1.5i
 Returns a conversion cache id.
 .LP
 The
