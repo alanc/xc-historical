@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.23 89/04/12 15:09:43 jim Exp $
+ * $XConsortium: Mailbox.c,v 1.24 89/04/12 16:03:07 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -574,7 +574,7 @@ static void redraw_mailbox (w)
 	if (im->mask != w->mailbox.shape_cache.mask ||
 	    x != w->mailbox.shape_cache.x || y != w->mailbox.shape_cache.y) {
 	    XShapeCombineMask (XtDisplay(parent), XtWindow(parent),
-			       ShapeBounding, im->mask, ShapeSet, x, y);
+			       ShapeBounding, x, y, im->mask, ShapeSet);
 	    w->mailbox.shape_cache.mask = im->mask;
 	    w->mailbox.shape_cache.x = x;
 	    w->mailbox.shape_cache.y = y;
