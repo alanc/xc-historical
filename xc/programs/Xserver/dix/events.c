@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.97 87/08/25 10:17:18 swick Exp $ */
+/* $Header: events.c,v 1.101 87/08/28 15:16:59 karlton Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1195,15 +1195,18 @@ CheckPassiveGrabsOnWindow(pWin, device, xE, isKeyboard)
     return FALSE;
 }
 
-/* "CheckDeviceGrabs" handles both keyboard and pointer events that may cause a 
-passive grab to be activated.  If the event is a keyboard event, the
+/*
+"CheckDeviceGrabs" handles both keyboard and pointer events that may cause
+a passive grab to be activated.  If the event is a keyboard event, the
 ancestors of the focus window are traced down and tried to see if they have
-any passive grabs to be activated.  If the focus window itself is reached and it's
-descendants contain they pointer, the ancestors of the window that the pointer
-is in are then traced down starting at the focus window, otherwise no grabs
-are activated.  If the event is a pointer event, the ancestors of the window
-that the pointer is in are traced down starting at the root until CheckPassiveGrabs
-causes a passive grab to activate or all the windows are tried. PRH*/
+any passive grabs to be activated.  If the focus window itself is reached and
+it's descendants contain they pointer, the ancestors of the window that the
+pointer is in are then traced down starting at the focus window, otherwise no
+grabs are activated.  If the event is a pointer event, the ancestors of the
+window that the pointer is in are traced down starting at the root until
+CheckPassiveGrabs causes a passive grab to activate or all the windows are
+tried. PRH
+*/
 
 static Bool
 CheckDeviceGrabs(device, xE, checkFirst, isKeyboard)
@@ -3727,3 +3730,4 @@ WriteEventsToClient(pClient, count, events)
 	WriteToClient(pClient, count * sizeof(xEvent), (char *) events);
     }
 }
+
