@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.84 93/09/06 12:00:22 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.85 93/09/10 12:22:42 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -121,12 +121,6 @@ clean::									@@\
 #ifdef SonyBsdArchitecture
 #undef HasSecureRPC
 #endif
-#endif
-
-#ifdef SVR4Architecture
-#undef ServerOSDefines
-#undef X386Server
-#define XnestServer YES
 #endif
 
 #ifdef BSD386Architecture
