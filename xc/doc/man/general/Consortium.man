@@ -1,4 +1,4 @@
-.\" $XConsortium: Consortium.man,v 1.29 92/08/17 10:54:49 rws Exp $
+.\" $XConsortium: Consortium.man,v 1.30 94/02/10 13:55:32 rws Exp $
 .TH XCONSORTIUM 1 "Release 6"  "X Version 11"
 .SH NAME
 X Consortium \- X Consortium information
@@ -96,7 +96,6 @@ membership@x.org
 .nf
 Adobe Systems Inc.
 Apple Computer, Inc.
-Convex Computer Corporation
 Cray Research, Inc.
 Digital Equipment Corp.
 Fujitsu Limited
@@ -105,8 +104,9 @@ Hitachi Ltd.
 Hughes Aircraft Company
 IBM Corporation
 Kubota Corp.
+Megatek Corp.
 Motorola, Inc.
-NCR Corporation (includes American Telephone & Telegraph Company)
+NCR Corporation (representing ADDS/NCR/AT&T)
 NEC Corporation
 Nippon Telegraph and Telephone Corporation
 Oki Electric Industry Co., Ltd.
@@ -139,8 +139,9 @@ BARCO Chromatics, Inc.
 Congruent Corp.
 Diagnostic/Retrieval Systems, Inc.
 Gallium Software, Inc.
+Georgia Institute of Technology
+Human Designed Systems, Inc.
 Hummingbird Communications Ltd.
-Institute for Information Industry
 Integrated Computer Solutions, Inc.
 Investment Management Services, Inc.
 IXI Limited
@@ -152,21 +153,21 @@ Locus Computing Corporation
 Mercury Interactive Corp.
 Metheus Corporation
 Metro Link, Inc.
+M3i Systems, Inc.
 Object Management Group, Inc.
 Open Software Foundation
 O'Reilly & Associates, Inc.
 ParcPlace Systems
-PCS Computer Systeme GmbH
 Performance Awareness Corp.
 Peritek Corp.
 Petrotechnical Open Software Corp.
 Phase X Systems, Inc.
-Snitily Graphics Consulting Services
 SOUM Corporation
 Tatung Science and Technology
 Tech-Source, Inc.
 User Interface Technologies Ltd.
 Veritas Software, Inc.
+VisiCom Laboratories, Inc.
 VisionWare Ltd.
 Visix Software, Inc.
 Visual Information Technologies, Inc.
