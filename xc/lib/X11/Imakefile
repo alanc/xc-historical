@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.129 91/12/17 17:54:51 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.130 92/01/19 17:33:38 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -850,9 +850,9 @@ LinkSourceFile(XwcText.c,Xsi)						@@\
 LinkSourceFile(XwcTextExt.c,Xsi)					@@\
 LinkSourceFile(XwcTextPer.c,Xsi)					@@\
 LinkSourceFile(XwcTextPrp.c,Xsi)					@@\
-SpecialLibObjectRule(XConnIM.o,$(ICONFIGFILES),$(CONN_DEFINES))		@@\
-SpecialLibObjectRule(XlcLoad.o,$(ICONFIGFILES),$(NLS_DEFINES))		@@\
-SpecialLibObjectRule(XLocalIM.o,$(ICONFIGFILES),$(NLS_DEFINES))
+SpecialCLibObjectRule(XConnIM,$(ICONFIGFILES),$(CONN_DEFINES))		@@\
+SpecialCLibObjectRule(XlcLoad,$(ICONFIGFILES),$(NLS_DEFINES))		@@\
+SpecialCLibObjectRule(XLocalIM,$(ICONFIGFILES),$(NLS_DEFINES))
 
 #endif /* BuildXsi */
 
@@ -985,7 +985,7 @@ LinkSourceFile(XimpWPrTxt.c,Ximp)					@@\
 LinkSourceFile(XimpWTxtPr.c,Ximp)					@@\
 LinkSourceFile(XimpXConv.c,Ximp)					@@\
 LinkSourceFile(Ximpint.c,Ximp)						@@\
-SpecialLibObjectRule(XimpLCUtil.o,$(ICONFIGFILES),$(SRCH_DEFINES))
+SpecialCLibObjectRule(XimpLCUtil,$(ICONFIGFILES),$(SRCH_DEFINES))
 
 #endif /* BuildXimp */
 
@@ -993,16 +993,16 @@ OBJS = $(OBJS1) $(OBJS2) $(OBJS3)
 
 LibraryObjectRule()
 
-SpecialLibObjectRule(XErrDes.o,$(ICONFIGFILES),$(EDB_DEFINES))
-SpecialLibObjectRule(XStrKeysym.o,$(ICONFIGFILES),$(KDB_DEFINES))
-SpecialLibObjectRule(XConnDis.o,$(ICONFIGFILES),$(XDMAUTHDEFS) $(RPCDEFS) $(CONN_DEFINES))
-SpecialLibObjectRule(XOpenDis.o,$(ICONFIGFILES),$(BC_DEFINES))
-SpecialLibObjectRule(Wrap.o,$(ICONFIGFILES),$(XDMAUTHDEFS))
-SpecialLibObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialLibObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialLibObjectRule(XcmsColNm.o,$(ICONFIGFILES),$(CMS_DEFINES))
-SpecialLibObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialLibObjectRule(Context.o,$(ICONFIGFILES),$(BC_DEFINES))
+SpecialCLibObjectRule(XErrDes,$(ICONFIGFILES),$(EDB_DEFINES))
+SpecialCLibObjectRule(XStrKeysym,$(ICONFIGFILES),$(KDB_DEFINES))
+SpecialCLibObjectRule(XConnDis,$(ICONFIGFILES),$(XDMAUTHDEFS) $(RPCDEFS) $(CONN_DEFINES))
+SpecialCLibObjectRule(XOpenDis,$(ICONFIGFILES),$(BC_DEFINES))
+SpecialCLibObjectRule(Wrap,$(ICONFIGFILES),$(XDMAUTHDEFS))
+SpecialCLibObjectRule(Xstreams,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialCLibObjectRule(XlibInt,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialCLibObjectRule(XcmsColNm,$(ICONFIGFILES),$(CMS_DEFINES))
+SpecialCLibObjectRule(globals,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialCLibObjectRule(Context,$(ICONFIGFILES),$(BC_DEFINES))
 
 LCRules()
 
