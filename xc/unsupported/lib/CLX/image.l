@@ -51,6 +51,14 @@
 	  bitmap-image
 	  image-pixmap))
 
+;; Image-Plist accessors:
+(defmacro image-name (image) `(getf (image-plist ,image) :name))
+(defmacro image-x-hot (image) `(getf (image-plist ,image) :x-hot))
+(defmacro image-y-hot (image) `(getf (image-plist ,image) :y-hot))
+(defmacro image-red-mask (image) `(getf (image-plist ,image) :red-mask))
+(defmacro image-blue-mask (image) `(getf (image-plist ,image) :blue-mask))
+(defmacro image-green-mask (image) `(getf (image-plist ,image) :green-mask))
+
 (defun print-image (image stream depth)
   (declare (ignore depth))
   (printing-object (image stream)
@@ -69,14 +77,6 @@
   (height 0 :type card16 :read-only t)
   (depth 1 :type card8 :read-only t)
   (plist nil :type list))
-
-;; Image-Plist accessors:
-(defmacro image-name (image) `(getf (image-plist ,image) :name))
-(defmacro image-x-hot (image) `(getf (image-plist ,image) :x-hot))
-(defmacro image-y-hot (image) `(getf (image-plist ,image) :y-hot))
-(defmacro image-red-mask (image) `(getf (image-plist ,image) :red-mask))
-(defmacro image-blue-mask (image) `(getf (image-plist ,image) :blue-mask))
-(defmacro image-green-mask (image) `(getf (image-plist ,image) :green-mask))
 
 (defconstant *empty-data-x* #.(make-sequence '(array card8 (*)) 0))
 
