@@ -46,6 +46,9 @@ provided ``as is'' without express or implied warranty.
 .OF ''\fB % \fP''
 .NH 1
 Introduction
+.XS
+\*(SN Introduction
+.XE
 .LP
 The management of fonts in large, heterogeneous environments is one of the
 hardest aspects of using the X Window System.*
@@ -93,6 +96,9 @@ designed to allow subsets of the font data to be requested, displays may easily
 implement a variety of strategies for fine-grained demand-loading of glyphs.
 .NH 1
 Architectural Model
+.XS
+\*(SN Architectural Model
+.XE
 .LP
 In this document, the words ``client'' and ``server'' refer to the consumer and
 provider of a font, respectively, unless otherwise indicated.  It is important
@@ -188,6 +194,9 @@ accompanying change in the major or minor version numbers) is reserved to the X
 Consortium.
 .NH 1
 Font Server Naming
+.XS
+\*(SN Font Server Naming
+.XE
 .LP
 Font clients that expose font server names to the user are encouraged to
 provide ways of naming font servers symbolically (e.g. DEPARTMENT-FONTS).
@@ -198,6 +207,9 @@ described below.  Formats for additional transports may be registered with the
 MIT X Consortium.
 .NH 2
 TCP/IP Names
+.XS
+\*(SN TCP/IP Names
+.XE
 .LP
 The following syntax should be used for TCP/IP names:
 .DS
@@ -214,6 +226,9 @@ that may be requested.  For example:
 .DE
 .NH 2
 DECnet Names
+.XS
+\*(SN DECnet Names
+.XE
 .LP
 The following syntax should be used for DECnet names:
 .DS
@@ -231,6 +246,9 @@ requested.  For example:
 .DE
 .NH 1
 Protocol
+.XS
+\*(SN Protocol
+.XE
 .LP
 The protocol described below uses the request/reply/error model and is
 specified using the same conventions outlined in Section 2 of the core X Window
@@ -265,6 +283,9 @@ A type with a prefix ``LISTof'' represents a counted list of
 elements of that type, as in:  LISTofCARD8
 .NH 2
 Data Types
+.XS
+\*(SN Data Types
+.XE
 .LP
 The following data types are used in the core X Font Server protocol:
 .LP
@@ -836,6 +857,9 @@ this font.
 This structure is padded to 32-bit alignment.
 .NH 2
 Requests
+.XS
+\*(SN Requests
+.XE
 .LP
 This section describes the requests that may be sent by the client and the
 replies or errors that are generated in response.  Versions of the protocol
@@ -1951,6 +1975,9 @@ free to release any storage or licenses allocated on behalf of
 the client that made the connection.
 .NH 2
 Errors
+.XS
+\*(SN Errors
+.XE
 .LP
 All errors are at least 16 bytes long and contain the following fields:
 .TA .75i
@@ -2164,6 +2191,9 @@ conformance to the protocol.
 Additional errors may be defined by extensions.
 .NH 2
 Events
+.XS
+\*(SN Events
+.XE
 .LP
 Events may be generated in response to requests or at the server's discretion
 after the initial connection setup information has been exchanged.  Each event
@@ -2255,6 +2285,9 @@ is False.
 Additional events may be defined by extensions.
 .NH 1
 Protocol Encoding
+.XS
+\*(SN Protocol Encoding
+.XE
 .LP
 Numbers that are prefixed with ``#x'' are in hexadecimal (base 16).  All other
 numbers are in decimal.  Requests, replies, errors, events, and compound types
@@ -2292,6 +2325,9 @@ multiple of four:
 .RE
 .NH 2
 Data Types
+.XS
+\*(SN Data Types
+.XE
 .ft P
 .sp 6p
 .TS
@@ -2621,6 +2657,9 @@ but none of the following bits set:
 n		PROPINFO	property data
 .NH 2
 Requests
+.XS
+\*(SN Requests
+.XE
 .ft P
 .TS
 tab (@) ;
@@ -3153,6 +3192,10 @@ CloseFont
 .TE
 .NH 2
 Errors
+.XS
+\*(SN Errors
+.XE
+.LP
 .ft P
 .TS
 tab (@) ;
@@ -3354,6 +3397,10 @@ Implementation
 .TE
 .NH 2
 Events
+.XS
+\*(SN Events
+.XE
+.LP
 .ft P
 .TS
 tab (@) ;
@@ -3401,6 +3448,9 @@ FontListNotify
 .TE
 .NH 1
 Acknowledgements
+.XS
+\*(SN Acknowledgements
+.XE
 .LP
 This document represents the culmination of several years of debate and
 experiments done under the auspices of the MIT X Consortium font working group.
@@ -3412,6 +3462,9 @@ which never failed to make this a better document.  Finally, David Lemke
 deserves great credit for designing and coding the sample implementation.
 .NH 1
 References
+.XS
+\*(SN References
+.XE
 .LP
 All of the following documents are X Consortium standards available from MIT:
 .LP

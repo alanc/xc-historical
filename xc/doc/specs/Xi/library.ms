@@ -73,6 +73,9 @@ chapters 7 and 8, "Window Manager functions" and
 manual and describe how to use the input extension.
 .NH 2
 Design Approach
+.XS
+\*(SN Design Approach
+.XE
 .LP
 The design approach of the extension is to define functions
 and events analogous to the core functions and events. This allows
@@ -83,6 +86,9 @@ reporting of n-dimensional motion data as well as other data that
 is not currently reportable via the core input events.
 .NH 2
 Core Input Devices
+.XS
+\*(SN Core Input Devices
+.XE
 .LP
 The X server core protocol supports two input devices:  a pointer and a
 keyboard.  The pointer device has two major functions. 
@@ -116,6 +122,9 @@ allow client programs to change which physical devices are used as the
 core devices.
 .NH 2
 Extension Input Devices
+.XS
+\*(SN Extension Input Devices
+.XE
 .LP
 The input extension controls access to input devices other than the X keyboard
 and X pointer.  It allows client programs to select input from these devices 
@@ -162,6 +171,9 @@ not explicitly focused,  their focus
 is determined by the location of the core X pointer.
 .NH 3
 Input Device Classes
+.XS
+\*(SN Input Device Classes
+.XE
 .LP
 Some of the input extension requests divide input devices into classes
 based on their functionality.  This is intended to allow new classes of input
@@ -195,6 +207,9 @@ new classes can be added without forcing existing clients that use
 these functions to be recompiled.
 .NH 2
 Using Extension Input Devices
+.XS
+\*(SN Using Extension Input Devices
+.XE
 .LP
 A client that wishes to access an input device does so through the library
 functions defined in the following sections.  A typical sequence of requests
@@ -232,6 +247,9 @@ extension device, and to send input extension events to another client.
 These functions are described in the following sections.
 .NH 1
 Library Extension Requests
+.XS
+\*(SN Library Extension Requests
+.XE
 .LP
 Extension input devices are accessed by client programs through the 
 use of new protocol requests.
@@ -247,8 +265,14 @@ Input extension requests cannot be used to access the X keyboard and
 X pointer devices.
 .NH 2
 Window Manager Functions
+.XS
+\*(SN Window Manager Functions
+.XE
 .NH 3
 Changing The Core Devices
+.XS
+\*(SN Changing The Core Devices
+.XE
 .LP
 These functions are provided to change which physical device is used
 as the X pointer or X keyboard.
@@ -373,6 +397,9 @@ Errors returned by this function:  \fBBadDevice\fP, \fBBadMatch\fP,
 \fBAlreadyGrabbed\fP, and \fBGrabFrozen\fP.
 .NH 3
 Event Synchronization And Core Grabs
+.XS
+\*(SN Event Synchronization And Core Grabs
+.XE
 .LP
 Implementation of the input extension requires an extension of the
 meaning of event synchronization for the core grab requests.  This is
@@ -392,6 +419,9 @@ requests, the synchronization of extension devices
 is controlled by the mode specified for the device not being grabbed.
 .NH 3
 Extension Active Grabs
+.XS
+\*(SN Extension Active Grabs
+.XE
 .LP
 Active grabs of
 extension devices are supported via the 
@@ -577,6 +607,9 @@ Errors returned by this function:  \fBBadDevice\fP.
 .sp 2
 .NH 3
 Passively Grabbing A Key
+.XS
+\*(SN Passively Grabbing A Key
+.XE
 .LP
 To passively grab a single key on an extension device, use \fBXGrabDeviceKey\fP.
 That device must have previously been opened using the
@@ -751,6 +784,9 @@ Errors returned by this function:  \fBBadDevice\fP, \fBBadWindow\fP,
 .sp 2
 .NH 3
 Passively Grabbing A Button
+.XS
+\*(SN Passively Grabbing A Button
+.XE
 .LP
 To establish a passive grab for a single button on an extension device,
 use \fBXGrabDeviceButton\fP.
@@ -928,6 +964,9 @@ modifiers).
 \fBBadWindow\fP, \fBBadValue\fP, and \fBBadAlloc\fP errors.
 .NH 3
 Thawing A Device
+.XS
+\*(SN Thawing A Device
+.XE
 .LP
 To allow further events to be processed when a device has been frozen,
 use \fBXAllowDeviceEvents\fR.
@@ -1042,6 +1081,9 @@ again be processed.
 Errors returned by this function:  \fBBadDevice\fP, \fBBadValue\fP.
 .NH 3
 Controlling Device Focus
+.XS
+\*(SN Controlling Device Focus
+.XE
 .LP
 The current focus window for an extension input device can be 
 determined using the \fBXGetDeviceFocus\fP function.
@@ -1177,6 +1219,9 @@ Errors returned by this function:  \fBBadDevice\fP, \fBBadMatch\fP,
 \fBBadValue\fP, and \fBBadWindow\fP.
 .NH 3
 Controlling Device Feedback
+.XS
+\*(SN Controlling Device Feedback
+.XE
 .LP
 To determine the current feedback settings of an extension input device, 
 use \fBXGetFeedbackControl\fP.
@@ -1658,6 +1703,9 @@ Errors returned by this function: \fBBadDevice\fP, \fBBadMatch\fP,
 \fBBadFeedBack\fP.
 .NH 3
 Ringing a Bell on an Input Device
+.XS
+\*(SN Ringing a Bell on an Input Device
+.XE
 .LP
 To ring a bell on a extension input device, use \fBXDeviceBell\fP.
 .DS
@@ -1710,6 +1758,9 @@ To change the base volume of the bell, use \fBXChangeFeedbackControl\fP.
 Errors returned by this function: \fBBadDevice\fP, \fBBadValue\fP.
 .NH 3
 Controlling Device Encoding
+.XS
+\*(SN Controlling Device Encoding
+.XE
 .LP
 To get the key mapping of an extension device that supports input class 
 \fBKeys\fP, use 
@@ -1946,6 +1997,9 @@ status.
 .sp 2
 .NH 3
 Controlling Button Mapping
+.XS
+\*(SN Controlling Button Mapping
+.XE
 .LP
 To set the mapping of the buttons on an extension device, use
 \fBXSetDeviceButtonMapping\fP.
@@ -2034,6 +2088,9 @@ Errors returned by this function: \fBBadDevice\fP, \fBBadMatch\fP.
 .sp 2
 .NH 3
 Obtaining The State Of A Device
+.XS
+\*(SN Obtaining The State Of A Device
+.XE
 .LP
 To obtain information that describes the state of the keys, buttons and 
 valuators of an extension device, use \fBXQueryDeviceState\fP.
@@ -2171,6 +2228,9 @@ a previous call to \fBXQueryDeviceState\fP.
 This function frees the device state data.
 .NH 2
 Events and Event-Handling Functions
+.XS
+\*(SN Events and Event-Handling Functions
+.XE
 .LP
 The input extension creates input events analogous to the core input events.
 These extension input events are generated by manipulating one of the
@@ -2178,6 +2238,9 @@ extension input devices.  The following sections describe these events
 and explain how a client program can receive them.
 .NH 3
 Event Types
+.XS
+\*(SN Event Types
+.XE
 .LP
 Event types are integer numbers that a client can use to determine what
 kind of event it has received.  The client compares the type field of 
@@ -2232,6 +2295,9 @@ Device change events	\fIChangeDeviceNotify\fP
 .sp
 .NH 3
 Event Classes
+.XS
+\*(SN Event Classes
+.XE
 .LP
 Event classes are integer numbers that are used in the same way as the
 core event masks.  They are used by a client program to indicate to the
@@ -2277,6 +2343,9 @@ An input device will only support
 as many button motion classes as it has buttons.
 .NH 3
 Event Structures
+.XS
+\*(SN Event Structures
+.XE
 .LP
 Each extension event type has a corresponding structure declared in
 \fB<X11/XInput.h>\fP.  All event structures have the following members:
@@ -2301,6 +2370,9 @@ In addition, if the device reports motion data and is reporting absolute data,
 the current value of any valuators the device contains is also reported.
 .NH 4
 Device Key Events
+.XS
+\*(SN Device Key Events
+.XE
 .LP
 Key events from extension devices contain all the information that is
 contained in a key event from the X keyboard.  In addition, they contain
@@ -2354,6 +2426,9 @@ typedef XDeviceKeyEvent XDeviceKeyReleasedEvent;
 .ps
 .NH 4
 Device Button Events
+.XS
+\*(SN Device Button Events
+.XE
 .LP
 Button events from extension devices contain all the information that is
 contained in a button event from the X pointer.  In addition, they contain
@@ -2404,6 +2479,9 @@ typedef XDeviceButtonEvent XDeviceButtonReleasedEvent;
 .ps
 .NH 4
 Device Motion Events
+.XS
+\*(SN Device Motion Events
+.XE
 .LP
 Motion events from extension devices contain all the information that is
 contained in a motion event from the X pointer.  In addition, they contain
@@ -2451,6 +2529,9 @@ typedef struct
 .ps
 .NH 4
 Device Focus Events
+.XS
+\*(SN Device Focus Events
+.XE
 .LP
 These events are equivalent to the core focus events.
 They contain the same information, with the addition
@@ -2489,6 +2570,9 @@ typedef XDeviceFocusChangeEvent XDeviceFocusOutEvent;
 .DE
 .NH 4
 Device StateNotify Event
+.XS
+\*(SN Device StateNotify Event
+.XE
 .LP
 This event is analogous to the core keymap event, but
 reports the current state of the device for each
@@ -2576,6 +2660,9 @@ typedef struct {
 .DE
 .NH 4
 Device Mapping Event
+.XS
+\*(SN Device Mapping Event
+.XE
 .LP
 This event is equivalent to the core MappingNotify event.
 It notifies client programs when the mapping of keys,
@@ -2599,6 +2686,9 @@ typedef struct {
 .DE
 .NH 4
 ChangeDeviceNotify Event
+.XS
+\*(SN ChangeDeviceNotify Event
+.XE
 .LP
 This event has no equivalent in the core protocol.  It notifies client
 programs when one of the core devices has been changed.
@@ -2619,6 +2709,9 @@ typedef struct {
 .DE
 .NH 4
 Proximity Events
+.XS
+\*(SN Proximity Events
+.XE
 .LP
 These events have no equivalent in the core protocol.  Some input
 devices such as graphics tablets or touchscreens may send these
@@ -2668,6 +2761,9 @@ typedef XProximityNotifyEvent XProximityOutEvent;
 .DE
 .NH 3
 Determining The Extension Version
+.XS
+\*(SN Determining The Extension Version
+.XE
 .LP
 .DS
 \f(C
@@ -2712,6 +2808,9 @@ versions.
 You should use \fBXFree\fP to free the data returned by this function.
 .NH 3
 Listing Available Devices
+.XS
+\*(SN Listing Available Devices
+.XE
 .LP
 A client program that wishes to access a specific device
 must first determine whether that device is connected to the X server.  This
@@ -2883,6 +2982,9 @@ a previous call to \fBXListInputDevices\fP.
 This function frees the list of input device information.
 .NH 3
 Enabling And Disabling Extension Devices
+.XS
+\*(SN Enabling And Disabling Extension Devices
+.XE
 .LP
 Each
 client program that wishes to access an extension device must request that
@@ -2994,6 +3096,9 @@ the \fBXDevice\fP structure.
 Errors returned by this function:  \fBBadDevice\fP.
 .NH 3
 Changing The Mode Of A Device
+.XS
+\*(SN Changing The Mode Of A Device
+.XE
 .LP
 Some devices are capable of reporting either relative or absolute motion
 data.  To change the mode of a device from relative to absolute, use the
@@ -3036,6 +3141,9 @@ Errors returned by this function:  \fBBadDevice\fP, \fBBadMatch\fP,
 \fBBadMode\fP, \fBDeviceBusy\fP.
 .NH 3
 Initializing Valuators on an Input Device
+.XS
+\*(SN Initializing Valuators on an Input Device
+.XE
 .LP
 Some devices that report absolute positional data can be initialized to a 
 starting value.  Devices that are capable of reporting relative motion or
@@ -3087,6 +3195,9 @@ This request can fail with \fBBadLength\fP, \fBBadDevice\fP, \fBBadMatch\fP,
 and \fBBadValue\fP errors.
 .NH 3 
 Getting Input Device Controls
+.XS
+\*(SN Getting Input Device Controls
+.XE
 .LP
 Some input devices support various configuration controls
 that can be queried or changed by clients.  The set of supported
@@ -3176,6 +3287,9 @@ a BadMatch error if the specified device has no valuators.
 Other errors returned by this request:  BadValue.
 .NH 3 
 Changing Input Device Controls
+.XS
+\*(SN Changing Input Device Controls
+.XE
 .LP
 Some input devices support various configuration controls
 that can be changed by clients.  Typically, this would be
@@ -3288,6 +3402,9 @@ a BadValue error will result.
 .LP  
 .NH 3
 Selecting Extension Device Events
+.XS
+\*(SN Selecting Extension Device Events
+.XE
 .LP
 Device input events are selected using the \fBXSelectExtensionEvent\fP
 function.
@@ -3353,6 +3470,9 @@ Errors returned by this function:  \fBBadWindow\fP, \fBBadAccess\fP,
 \fBBadClass\fP, \fBBadLength\fP.
 .NH 3
 Determining Selected Device Events
+.XS
+\*(SN Determining Selected Device Events
+.XE
 .LP
 To determine which extension events are currently selected from a given
 window, use \fBXGetSelectedExtensionEvents\fP.
@@ -3401,6 +3521,9 @@ You should use \fBXFree\fP to free the two arrays returned by this function.
 Errors returned by this function: \fBBadWindow\fP.
 .NH 3
 Controlling Event Propagation
+.XS
+\*(SN Controlling Event Propagation
+.XE
 .LP
 Extension events propagate up the window hierarchy in the same manner
 as core events.  If a window is not interested in an extension event, 
@@ -3486,6 +3609,9 @@ This function can return a \fBBadWindow\fP error.
 You should use \fBXFree\fP to free the data returned by this function.
 .NH 3
 Sending An Event
+.XS
+\*(SN Sending An Event
+.XE
 .LP
 \fBXSendExtensionEvent\fP allows a client to send an extension event
 to another client.
@@ -3574,6 +3700,9 @@ This function can generate \fBBadDevice\fP, \fBBadValue\fP, \fBBadWindow\fP,
 or \fBBadClass\fP errors.
 .NH 3
 Getting Motion History
+.XS
+\*(SN Getting Motion History
+.XE
 .LP
 .DS
 \f(C
@@ -3689,7 +3818,7 @@ header file:
 \f(C
 .ps 8
 
-/* $Header: lib.spec,v 1.9 91/07/26 12:06:36 gms Exp $ */
+/* $Header: library.ms,v 1.3 91/07/26 16:44:38 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -4372,7 +4501,7 @@ XExtensionVersion      *XGetExtensionVersion();
 XDeviceState           *XQueryDeviceState();
 XEventClass            *XGetDeviceDontPropagateList();
 #endif /* _XINPUT_H_ */
-/* $Header: lib.spec,v 1.9 91/07/26 12:06:36 gms Exp $ */
+/* $Header: library.ms,v 1.3 91/07/26 16:44:38 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -4595,4 +4724,5 @@ typedef struct {
 #endif /* _XI_H_ */
 \fP
 .DE
-.TC
+.bp
+.PX
