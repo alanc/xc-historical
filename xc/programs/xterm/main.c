@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.63 88/08/08 13:43:06 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.64 88/08/09 10:42:11 swick Locked $";
 #endif	/* lint */
 
 /*
@@ -181,35 +181,42 @@ static int tslot;
 static jmp_buf env;
 
 char *ProgramName;
+Boolean sunFunctionKeys;
 
-static char *icon_geometry;
-static char *title;
-static Boolean utmpInhibit = FALSE;
-Boolean sunFunctionKeys = FALSE;
+static struct _resource {
+    char *xterm_name;
+    char *icon_geometry;
+    char *title;
+    Boolean utmpInhibit;
+    Boolean sunFunctionKeys;	/* %%% should be widget resource? */
+    Boolean bash_title_icon_strings; /* default for -e; override with -E */
+} resource;
 
 #ifndef GETTY_EXE
 #define GETTY_EXE "/etc/getty"
 #endif /* GETTY_EXE */
 
 static char *getty_program = GETTY_EXE;
-Boolean bash_title_icon_strings = TRUE;	 /* default for -e; override with -E */
 
 /* used by VT (charproc.c) */
 
+#define offset(field)	XtOffset(struct _resource *, field)
+
 static XtResource application_resources[] = {
     {"name", "Name", XtRString, sizeof(char *),
-	(Cardinal)&xterm_name, XtRString, "xterm"},
+	offset(xterm_name), XtRString, "xterm"},
     {"iconGeometry", "IconGeometry", XtRString, sizeof(char *),
-	(Cardinal)&icon_geometry, XtRString, (caddr_t) NULL},
+	offset(icon_geometry), XtRString, (caddr_t) NULL},
     {XtNtitle, XtCTitle, XtRString, sizeof(char *),
-	(Cardinal)&title, XtRString, (caddr_t) NULL},
+	offset(title), XtRString, (caddr_t) NULL},
     {"utmpInhibit", "UtmpInhibit", XtRBoolean, sizeof (Boolean),
-	(Cardinal)&utmpInhibit, XtRString, "false"},
+	offset(utmpInhibit), XtRString, "false"},
     {"sunFunctionKeys", "SunFunctionKeys", XtRBoolean, sizeof (Boolean),
-	(Cardinal)&sunFunctionKeys, XtRString, "false"},
+	offset(sunFunctionKeys), XtRString, "false"},
     {"forceTitleStrings", "ForceTitleStrings", XtRBoolean, sizeof (Boolean),
-       (Cardinal)&bash_title_icon_strings, XtRString, "true"},
+       offset(bash_title_icon_strings), XtRString, "true"},
 };
+#undef offset
 
 /* Command line options table.  Only resources are entered here...there is a
    pass over the remaining options after XtParseCommand is let loose. */
@@ -505,11 +512,13 @@ char **argv;
 	toplevel = XtInitialize("main", "XTerm",
 		optionDescList, XtNumber(optionDescList), &argc, argv);
 
-	XtGetApplicationResources( toplevel, 0, application_resources,
+	XtGetApplicationResources( toplevel, &resource, application_resources,
 				   XtNumber(application_resources), NULL, 0 );
 
+	xterm_name = resource.xterm_name;
+	sunFunctionKeys = resource.sunFunctionKeys;
 	if (strcmp(xterm_name, "-") == 0) xterm_name = "xterm";
-	if (icon_geometry != NULL) {
+	if (resource.icon_geometry != NULL) {
 	    int scr, junk;
 	    Arg args[2];
 
@@ -519,8 +528,9 @@ char **argv;
 
 	    args[0].name = XtNiconX;
 	    args[1].name = XtNiconY;
-	    XGeometry(XtDisplay(toplevel), scr, icon_geometry, "", 0, 0, 0,
-		      0, 0, &args[0].value, &args[1].value, &junk, &junk);
+	    XGeometry(XtDisplay(toplevel), scr, resource.icon_geometry, "",
+		      0, 0, 0, 0, 0, &args[0].value, &args[1].value,
+		      &junk, &junk);
 	    XtSetValues( toplevel, args, 2);
 	}
 
@@ -634,7 +644,7 @@ char **argv;
 		continue;
 #endif	/* DEBUG */
 	     case 'E':
-		bash_title_icon_strings = FALSE;
+		resource.bash_title_icon_strings = FALSE;
 	     case 'e':
 		if (argc <= 1) Syntax (*argv);
 		command_to_exec = ++argv;
@@ -669,7 +679,8 @@ char **argv;
 
 	term->initflags = term->flags;
 
-	if ((get_ty || command_to_exec) && !title && bash_title_icon_strings) {
+	if ((get_ty || command_to_exec) && !resource.title
+	    && resource.bash_title_icon_strings) {
 	    char window_title[1024];
 	    static Arg args[] = {
 		{XtNtitle, NULL},
@@ -1194,7 +1205,7 @@ spawn ()
 		added_utmp_entry = utmpInhibit ? False : True;
 #else	/* not USE_SYSV_UTMP, it is bsd */
 		added_utmp_entry = False;
-		if (!utmpInhibit &&
+		if (!resource.utmpInhibit &&
 		    (pw = getpwuid(screen->uid)) &&
 		    (i = open(etc_utmp, O_WRONLY)) >= 0) {
 			bzero((char *)&utmp, sizeof(struct utmp));
@@ -1532,7 +1543,7 @@ int n;
 	register int i;
 	struct utmp utmp;
 
-	if (!utmpInhibit && added_utmp_entry &&
+	if (!resource.utmpInhibit && added_utmp_entry &&
 	    (!am_slave && tslot > 0 && (i = open(etc_utmp, O_WRONLY)) >= 0)) {
 		bzero((char *)&utmp, sizeof(struct utmp));
 		lseek(i, (long)(tslot * sizeof(struct utmp)), 0);
