@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.30 91/01/08 15:16:38 gildea Exp $
+ * $XConsortium: Xos.h,v 1.31 91/01/08 15:18:27 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -84,6 +84,9 @@
  * Get open(2) constants
  */
 #ifdef SYSV
+#ifdef sun
+#include <unistd.h>
+#endif
 #ifndef macII
 #include <fcntl.h>
 #endif
@@ -104,7 +107,7 @@
  */
 
 #ifdef SYSV
-#if defined(sgi) || defined(CRAY) || defined(stellar)
+#if defined(sgi) || defined(CRAY) || defined(stellar) || defined(sun)
 #include <sys/time.h>				/* SYSV sys/time.h */
 #ifdef CRAY
 #include <time.h>
