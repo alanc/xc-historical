@@ -1,4 +1,4 @@
-.\" $Header: ddx.doc.tbl.ms,v 1.12 88/08/09 18:25:29 rws Exp $
+.\" $Header: ddx.doc.tbl.ms,v 1.13 88/08/21 10:10:55 rws Exp $
 .EF 'Porting Layer Definition'- % -'March 1, 1988'
 .OF 'Porting Layer Definition'- % -'March 1, 1988'
 .EH '''
@@ -1810,7 +1810,17 @@ RegionExtents returns a rectangle that is the smallest
 possible superset of the entire region.
 The caller will not modify this rectangle, so it can be the one
 in your region struct.
-
+.nf
+	void pScreen->SendGraphicsExpose(client,pRegion,drawable,major,minor)
+		ClientPtr client;
+		RegionPtr pRegion;
+		XID drawable;
+		unsigned char major;
+		unsigned short minor;
+.fi
+SendGraphicsExpose dispatches a list of GraphicsExposure events which
+span the region to the specified client.  If the region is empty, or
+a NULL pointer, a NoExpose event is sent instead.
 .NH 3
 Cursor Routines for a Screen
 .XS
@@ -3099,22 +3109,26 @@ This routine looks at the obscured region of the window and tries to save
 those pixels somewhere.
 .nf
 
-	void pBackingStore->RestoreAreas(pWin);
+	RegionPtr pBackingStore->RestoreAreas(pWin);
 		WindowPtr pWin;
 .fi
 This looks at the exposed region of the window.  
 It tries to restore to the screen the parts that have been saved.
 It removes the restored parts from the backing storage (because
 they are now on the screen) and subtracts the areas from
-the exposed region.
+the exposed region.  The returned region is the area of the window
+which should have expose events generated for and can be either a new
+region, pWin->exposed, or NULL.  The region left in pWin->exposed
+is set to the area of the window which should be painted with
+the backgroundTile.
 .nf
 
 	void pBackingStore->TranslateBackingStore(pWin, dx, dy);
 		WindowPtr pWin;
 		int dx, dy;
 .fi
-This is called when the window is moved so that the backing store can be 
-translated if necessary.
+This is called when the window is moved or resized so that the backing
+store can be translated if necessary.
 
 
 .NH 2
@@ -3549,39 +3563,40 @@ The Drawing Primitives are as follows:
 
 .nf
 
-	pGC->CopyArea(src, dst, pGC, srcx, srcy, w, h, dstx, dsty)
+	RegionPtr pGC->CopyArea(src, dst, pGC, srcx, srcy, w, h, dstx, dsty)
 		DrawablePtr dst, src;
 		GCPtr pGC;
 		int srcx, srcy, w, h, dstx, dsty;
 .fi
-CopyArea copies a rectangle of pixels from one drawable to 
-another of the same depth.
-To effect scrolling, this must be able to copy from any drawable to itself,
-overlapped.
-No squeezing or stretching is done because the source and destination
-are the same size. 
-However, everything is still clipped to the clip regions
-of the destination drawable.
+CopyArea copies a rectangle of pixels from one drawable to another of
+the same depth.  To effect scrolling, this must be able to copy from
+any drawable to itself, overlapped.  No squeezing or stretching is done
+because the source and destination are the same size.  However,
+everything is still clipped to the clip regions of the destination
+drawable.
 
-If the source drawable is a window and 
-there are parts of it hidden by other windows or are 
-in an unpainted (exposed) state, these parts will be added to the 
-destination window's exposure region.  Furthermore, the 
-invalid bits of the source are not copied to the destination.
-For instance, imagine a window that is partially obscured by other windows in 
-front of it.
-As text is scrolled on your window, the pixels that are scrolled out from 
-under obscuring windows will not be available 
-on the screen to copy to the right places,
-and so you must generate an exposure event for the client to correctly 
-repaint them.
-Of course, if you implement some sort of backing store, you could do this
+If pGC->graphicsExposures is True, any portions of the desination which
+were not valid in the source (either occluded by covering windows, or
+outside the bounds of the drawable) should be collected together and
+returned as a region (if this resultant region is empty, NULL can be
+returned instead).  Furthermore, the invalid bits of the source are
+not copied to the destination and (when the destination is a window)
+are filled with the background tile.  The sample routine
+miHandleExposures generates the appropriate return value and fills the
+invalid area using pWindow->PaintWindowBackground.
+
+For instance, imagine a window that is partially obscured by other
+windows in front of it.  As text is scrolled on your window, the pixels
+that are scrolled out from under obscuring windows will not be
+available on the screen to copy to the right places, and so an exposure
+event must be sent for the client to correctly repaint them.  Of
+course, if you implement some sort of backing store, you could do this
 without resorting to exposure events.
 
 An example implementation is mfbCopyArea() in server/ddx/mfb/mfbbitblt.c.
 .nf
 
-	pGC->CopyPlane(src, dst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
+	RegionPtr pGC->CopyPlane(src, dst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
 		DrawablePtr dst, src;
 		GCPtr pGC;
 		int srcx, srcy, w, h, dstx, dsty;
