@@ -1,4 +1,4 @@
-/* $Header: cfbgc.c,v 1.3 87/07/14 21:19:51 toddb Locked $ */
+/* $Header: cfbgc.c,v 1.4 87/07/20 11:49:30 toddb Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

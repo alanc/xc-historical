@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: cfbwindow.c,v 1.1 87/08/08 17:07:14 toddb Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: cfb.h,v 1.1 87/08/08 17:05:33 toddb Locked $ */
 /*
  * The Sun X drivers are a product of Sun Microsystems, Inc. and are provided
  * for unrestricted use provided that this legend is included on all tape
