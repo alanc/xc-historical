@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.53 89/03/08 08:37:41 rws Exp $ */
+/* $XConsortium: dix.h,v 1.54 89/03/23 09:17:28 rws Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -52,15 +52,15 @@ SOFTWARE.
          return(BadLength)
 
 #define WriteReplyToClient(pClient, size, pReply) \
-   if (pClient->swapped) \
-      (*ReplySwapVector[((xReq *)pClient->requestBuffer)->reqType]) \
-           (pClient, (int)size, pReply); \
-      else (void) WriteToClient(pClient, (int)size, (char *) pReply);
+   if ((pClient)->swapped) \
+      (*ReplySwapVector[((xReq *)(pClient)->requestBuffer)->reqType]) \
+           (pClient, (int)(size), pReply); \
+      else (void) WriteToClient(pClient, (int)(size), (char *)(pReply));
 
 #define WriteSwappedDataToClient(pClient, size, pbuf) \
-   if (pClient->swapped) \
-      (*pClient->pSwapReplyFunc)(pClient, (int)size, pbuf); \
-   else (void) WriteToClient (pClient, (int)size, (char *) pbuf);
+   if ((pClient)->swapped) \
+      (*(pClient)->pSwapReplyFunc)(pClient, (int)(size), pbuf); \
+   else (void) WriteToClient (pClient, (int)(size), (char *)(pbuf));
 
 typedef struct _TimeStamp *TimeStampPtr;
 typedef struct _Client *ClientPtr;
