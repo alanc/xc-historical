@@ -1,6 +1,6 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.212 94/03/18 17:33:17 matt Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.213 94/03/23 15:31:16 gildea Exp $
 XCOMM
 
 /*
@@ -242,6 +242,13 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef UseCCMakeDepend			/* use slow cc -E script */
 #define UseCCMakeDepend NO
+#endif
+
+/* DefaultUsrBin is independent of ProjectRoot.
+   This is a directory where programs will be found even if PATH
+   is not set, for example when coming in remotely via rsh. */
+#ifndef DefaultUsrBin
+#define	DefaultUsrBin /usr/bin
 #endif
 
 #ifndef UsrLibDir
