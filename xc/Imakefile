@@ -11,16 +11,24 @@ BOOTSTRAPCFLAGS =
 #
 # Preserve this order: include comes first, clients, demos, contrib come last.
 #
-     DIRSTOMAKE = \
+  LIBDIRSTOMAKE = \
 		$(INCLUDESRC) \
 		$(LIBSRC) \
+		$(EXTENSIONSRC) 
+#ifndef ClientSideOnly
+SERVERDIRSTOMAKE = \
 		$(SERVERSRC) \
-		$(FONTSRC) \
-		$(EXTENSIONSRC) \
+		$(FONTSRC) 
+#endif
+CLIENTDIRSTOMAKE = \
 		$(CLIENTSRC) \
 		$(DEMOSRC) \
 		$(EXAMPLESRC) \
 		$(CONTRIBDIRS)
+     DIRSTOMAKE = \
+		$(LIBDIRSTOMAKE) \
+		$(SERVERDIRSTOMAKE) \
+		$(CLIENTDIRSTOMAKE) 
         SUBDIRS = \
 		$(DIRSTOMAKE) \
 		$(UTILSRC) \
@@ -47,9 +55,14 @@ install::
 	-mkdir $(LINTLIBDIR)
 	-mkdir $(XAPPLOADDIR)
 	-mkdir $(INCDIR)
-	-mkdir $(FONTDIR)
 	-mkdir $(UWMDIR)
 	-mkdir $(MANDIR)
+
+#ifdef ClientSideOnly
+install::
+	-mkdir $(FONTDIR)
+#endif
+
 
 InstallManPage(X,$(MANDIR))
 
