@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbscrinit.c,v 5.12 90/09/24 10:19:29 rws Exp $ */
+/* $XConsortium: mfbscrinit.c,v 5.13 92/03/13 16:17:17 eswu Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -127,7 +127,7 @@ mfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->InstallColormap = mfbInstallColormap;
     pScreen->UninstallColormap = mfbUninstallColormap;
     pScreen->ListInstalledColormaps = mfbListInstalledColormaps;
-    pScreen->StoreColors = NoopDDA;
+    pScreen->StoreColors = (void (*)())NoopDDA;
     pScreen->ResolveColor = mfbResolveColor;
     pScreen->BitmapToRegion = mfbPixmapToRegion;
     return miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,

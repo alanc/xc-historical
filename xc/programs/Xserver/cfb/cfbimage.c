@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbimage.c,v 1.9 91/12/19 18:36:36 keith Exp $ */
+/* $XConsortium: cfbimage.c,v 1.10 93/06/24 10:25:22 dpw Exp $ */
 
 #include "X.h"
 #include "windowstr.h"
@@ -59,11 +59,11 @@ cfbPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	
     	((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->fExpose = FALSE;
 	if (format == ZPixmap)
-	    (void)(*pGC->ops->CopyArea)(pPixmap, pDraw, pGC, leftPad, 0,
-					w, h, x, y);
+	    (void)(*pGC->ops->CopyArea)((DrawablePtr)pPixmap, pDraw, pGC,
+					leftPad, 0, w, h, x, y);
 	else
-	    (void)(*pGC->ops->CopyPlane)(pPixmap, pDraw, pGC, leftPad, 0,
-					 w, h, x, y, 1);
+	    (void)(*pGC->ops->CopyPlane)((DrawablePtr)pPixmap, pDraw, pGC,
+					 leftPad, 0, w, h, x, y, 1);
 	((cfbPrivGC*)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->fExpose = TRUE;
         FreeScratchPixmapHeader(pPixmap);
     }

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.153 92/12/17 11:46:30 rws Exp $ */
+/* $XConsortium: connection.c,v 1.154 92/12/17 12:41:36 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -95,12 +95,6 @@ static int unixDomainConnection = -1;
 #include <netdnet/dn.h>
 #endif /* DNETCONN */
 
-#ifdef SIGNALRETURNSINT
-#define SIGVAL int
-#else
-#define SIGVAL void
-#endif
-
 typedef long CCID;      /* mask of indices into client socket table */
 
 #ifndef X_UNIX_PATH
@@ -146,12 +140,19 @@ int GrabInProgress = 0;
 int ConnectionTranslation[MAXSOCKS];
 extern int auditTrailLevel;
 extern ClientPtr NextAvailableClient();
-
-extern SIGVAL AutoResetServer();
-extern SIGVAL GiveUp();
 extern XID CheckAuthorization();
-static void CloseDownFileDescriptor(), ErrorConnMax();
-extern void FreeOsBuffers(), ResetOsBuffers();
+
+static void ErrorConnMax(
+#if NeedFunctionPrototypes
+    register int /*fd*/
+#endif
+);
+
+static void CloseDownFileDescriptor(
+#if NeedFunctionPrototypes
+    register OsCommPtr /*oc*/
+#endif
+);
 
 #ifdef XDMCP
 void XdmcpOpenDisplay(), XdmcpInit(), XdmcpReset(), XdmcpCloseDisplay();
@@ -582,7 +583,7 @@ char *
 ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
     ClientPtr client;
     char *auth_proto, *auth_string;
-    unsigned short proto_n, string_n;
+    unsigned int proto_n, string_n;
 {
     register OsCommPtr priv;
     union {

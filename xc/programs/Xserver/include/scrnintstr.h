@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 5.12 91/05/13 23:44:14 rws Exp $ */
+/* $XConsortium: scrnintstr.h,v 5.13 93/06/24 10:33:01 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -31,7 +31,11 @@ SOFTWARE.
 #include "pixmap.h"
 #include "gc.h"
 #include "colormap.h"
-
+#include "cursor.h"
+#include "validate.h"
+#include "window.h"
+#include "X11/Xproto.h"
+#include "dix.h"
 
 typedef struct _PixmapFormat {
     unsigned char	depth;
@@ -97,112 +101,584 @@ typedef struct _Screen {
 
     /* Random screen procedures */
 
-    Bool (* CloseScreen)();		/* index, pScreen */
-    void (* QueryBestSize)();		/* class, pwidth, pheight, pScreen */
-    Bool (* SaveScreen)();		/* pScreen, on */
-    void (* GetImage)();		/* pDrawable, sx, sy, w, h, format, 
-					 * planemask, pdestbits */
-    void (* GetSpans)();		/* pDrawable, wMax, ppt, pwidth,
-					 * nspans, pdstbits */
-    void (* PointerNonInterestBox)();	/* pScr, BoxPtr */
+    Bool (* CloseScreen)(
+#if NeedNestedPrototypes
+	int /*index*/,
+	ScreenPtr /*pScreen*/
+#endif
+);
 
-    void (* SourceValidate)();		/* pDrawable, x, y, w, h */
+    void (* QueryBestSize)(
+#if NeedNestedPrototypes
+	int /*class*/,
+	unsigned short */*pwidth*/,
+	unsigned short */*pheight*/,
+	ScreenPtr /*pScreen*/
+#endif
+);
+
+    Bool (* SaveScreen)(
+#if NeedNestedPrototypes
+	 ScreenPtr /*pScreen*/,
+	 int /*on*/
+#endif
+);
+
+    void (* GetImage)(
+#if NeedNestedPrototypes
+	DrawablePtr /*pDrawable*/,
+	int /*sx*/,
+	int /*sy*/,
+	int /*w*/,
+	int /*h*/,
+	unsigned int /*format*/,
+	unsigned long /*planeMask*/,
+	pointer /*pdstLine*/
+#endif
+);
+
+    void (* GetSpans)(
+#if NeedNestedPrototypes
+	DrawablePtr /*pDrawable*/,
+	int /*wMax*/,
+	DDXPointPtr /*ppt*/,
+	int */*pwidth*/,
+	int /*nspans*/,
+	unsigned int */*pdstStart*/
+#endif
+);
+
+    void (* PointerNonInterestBox)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	BoxPtr /*pBox*/
+#endif
+);
+
+    void (* SourceValidate)(
+#if NeedNestedPrototypes
+	DrawablePtr /*pDrawable*/,
+	int /*x*/,
+	int /*y*/,
+	int /*width*/,
+	int /*height*/
+#endif
+);
 
     /* Window Procedures */
 
-    Bool (* CreateWindow)();		/* pWin */
-    Bool (* DestroyWindow)();		/* pWin */
-    Bool (* PositionWindow)();		/* pWin, x, y */
-    Bool (* ChangeWindowAttributes)();	/* pWin, mask */
-    Bool (* RealizeWindow)();		/* pWin */
-    Bool (* UnrealizeWindow)();		/* pWin */
-    int  (* ValidateTree)();		/* pParent, pChild, kind */
-    void (* PostValidateTree)();	/* pParent, pChild, kind */
-    void (* WindowExposures)();         /* pWin, pRegion, pBSRegion */
-    void (* PaintWindowBackground)();	/* pWin, pRgn, which */
-    void (* PaintWindowBorder)();	/* pWin, pRgn, which */
-    void (* CopyWindow)();		/* pWin, oldPt, pOldRegion */
-    void (* ClearToBackground)();	/* pWin, x,y,w,h, sendExpose */
-    void (* ClipNotify)();              /* pWin, dx, dy */
+    Bool (* CreateWindow)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/
+#endif
+);
+
+    Bool (* DestroyWindow)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/
+#endif
+);
+
+    Bool (* PositionWindow)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	int /*x*/,
+	int /*y*/
+#endif
+);
+
+    Bool (* ChangeWindowAttributes)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	BITS32 /*mask*/
+#endif
+);
+
+    Bool (* RealizeWindow)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/
+#endif
+);
+
+    Bool (* UnrealizeWindow)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/
+#endif
+);
+
+    int  (* ValidateTree)(
+#if NeedNestedPrototypes
+	WindowPtr /*pParent*/,
+	WindowPtr /*pChild*/,
+	VTKind /*kind*/
+#endif
+);
+
+    void (* PostValidateTree)(
+#if NeedNestedPrototypes
+	WindowPtr /*pParent*/,
+	WindowPtr /*pChild*/,
+	VTKind /*kind*/
+#endif
+);
+
+    void (* WindowExposures)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	RegionPtr /*prgn*/,
+	RegionPtr /*other_exposed*/
+#endif
+);
+
+    void (* PaintWindowBackground)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	RegionPtr /*pRegion*/,
+	int /*what*/
+#endif
+);
+
+    void (* PaintWindowBorder)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	RegionPtr /*pRegion*/,
+	int /*what*/
+#endif
+);
+
+    void (* CopyWindow)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	DDXPointRec /*ptOldOrg*/,
+	RegionPtr /*prgnSrc*/
+#endif
+);
+
+    void (* ClearToBackground)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	int /*x*/,
+	int /*y*/,
+	int /*w*/,
+	int /*h*/,
+	Bool /*generateExposures*/
+#endif
+);
+
+    void (* ClipNotify)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	int /*dx*/,
+	int /*dy*/
+#endif
+);
 
     /* Pixmap procedures */
 
-    PixmapPtr (* CreatePixmap)(); 	/* pScreen, width, height, depth */
-    Bool (* DestroyPixmap)();		/* pPixmap */
+    PixmapPtr (* CreatePixmap)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	int /*width*/,
+	int /*height*/,
+	int /*depth*/
+#endif
+);
+
+    Bool (* DestroyPixmap)(
+#if NeedNestedPrototypes
+	PixmapPtr /*pPixmap*/
+#endif
+);
 
     /* Backing store procedures */
 
-    void (* SaveDoomedAreas)();		/* pWin, pRegion, dx, dy */
-    RegionPtr (* RestoreAreas)();	/* pWin, pRegion */
-    void (* ExposeCopy)();		/* pSrc, pDst, pGC, pRegion, */
-					/* srcx, srcy, dstx, dsty, plane */
-    RegionPtr (* TranslateBackingStore)();/* pWin, dx, dy, pOldClip */
-    RegionPtr (* ClearBackingStore)();	/* pWin, x, y, w, h, sendExpose */
-    void (* DrawGuarantee)();		/* pWin, pGC, guarantee */
+    void (* SaveDoomedAreas)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	RegionPtr /*prgnSave*/,
+	int /*xorg*/,
+	int /*yorg*/
+#endif
+);
+
+    RegionPtr (* RestoreAreas)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	RegionPtr /*prgnRestore*/
+#endif
+);
+
+    void (* ExposeCopy)(
+#if NeedNestedPrototypes
+	WindowPtr /*pSrc*/,
+	DrawablePtr /*pDst*/,
+	GCPtr /*pGC*/,
+	RegionPtr /*prgnExposed*/,
+	int /*srcx*/,
+	int /*srcy*/,
+	int /*dstx*/,
+	int /*dsty*/,
+	unsigned long /*plane*/
+#endif
+);
+
+    RegionPtr (* TranslateBackingStore)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	int /*windx*/,
+	int /*windy*/,
+	RegionPtr /*oldClip*/,
+	int /*oldx*/,
+	int /*oldy*/
+#endif
+);
+
+    RegionPtr (* ClearBackingStore)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	int /*x*/,
+	int /*y*/,
+	int /*w*/,
+	int /*h*/,
+	Bool /*generateExposures*/
+#endif
+);
+
+    void (* DrawGuarantee)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	GCPtr /*pGC*/,
+	int /*guarantee*/
+#endif
+);
     
     /* Font procedures */
 
-    Bool (* RealizeFont)();		/* pScr, pFont */
-    Bool (* UnrealizeFont)();		/* pScr, pFont */
+    Bool (* RealizeFont)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	FontPtr /*pFont*/
+#endif
+);
+
+    Bool (* UnrealizeFont)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	FontPtr /*pFont*/
+#endif
+);
 
     /* Cursor Procedures */
-    void (* ConstrainCursor)();   	/* pScr, BoxPtr */
-    void (* CursorLimits)();		/* pScr, pCurs, BoxPtr, BoxPtr */
-    Bool (* DisplayCursor)();		/* pScr, pCurs */
-    Bool (* RealizeCursor)();		/* pScr, pCurs */
-    Bool (* UnrealizeCursor)();		/* pScr, pCurs */
-    void (* RecolorCursor)();		/* pScr, pCurs, displayed */
-    Bool (* SetCursorPosition)();	/* pScr, x, y */
+    void (* ConstrainCursor)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	BoxPtr /*pBox*/
+#endif
+);
+
+    void (* CursorLimits)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	CursorPtr /*pCursor*/,
+	BoxPtr /*pHotBox*/,
+	BoxPtr /*pTopLeftBox*/
+#endif
+);
+
+    Bool (* DisplayCursor)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	CursorPtr /*pCursor*/
+#endif
+);
+
+    Bool (* RealizeCursor)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	CursorPtr /*pCursor*/
+#endif
+);
+
+    Bool (* UnrealizeCursor)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	CursorPtr /*pCursor*/
+#endif
+);
+
+    void (* RecolorCursor)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	CursorPtr /*pCursor*/,
+	Bool /*displayed*/
+#endif
+);
+
+    Bool (* SetCursorPosition)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	int /*x*/,
+	int /*y*/,
+	Bool /*generateEvent*/
+#endif
+);
 
     /* GC procedures */
 
-    Bool (* CreateGC)();		/* pGC */
+    Bool (* CreateGC)(
+#if NeedNestedPrototypes
+	GCPtr /*pGC*/
+#endif
+);
 
     /* Colormap procedures */
 
-    Bool (* CreateColormap)();		/* pcmap */
-    void (* DestroyColormap)();		/* pcmap */
-    void (* InstallColormap)();		/* pcmap */
-    void (* UninstallColormap)();	/* pcmap */
-    int (* ListInstalledColormaps) (); 	/* pScreen, pmaps */
-    void (* StoreColors)();		/* pmap, ndef, pdef */
-    void (* ResolveColor)();		/* preg, pgreen, pblue */
+    Bool (* CreateColormap)(
+#if NeedNestedPrototypes
+	ColormapPtr /*pColormap*/
+#endif
+);
+
+    void (* DestroyColormap)(
+#if NeedNestedPrototypes
+	ColormapPtr /*pColormap*/
+#endif
+);
+
+    void (* InstallColormap)(
+#if NeedNestedPrototypes
+	ColormapPtr /*pColormap*/
+#endif
+);
+
+    void (* UninstallColormap)(
+#if NeedNestedPrototypes
+	ColormapPtr /*pColormap*/
+#endif
+);
+
+    int (* ListInstalledColormaps) (
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	XID */*pmaps */
+#endif
+);
+
+    void (* StoreColors)(
+#if NeedNestedPrototypes
+	ColormapPtr /*pColormap*/,
+	int /*ndef*/,
+	xColorItem * /*pdef*/
+#endif
+);
+
+    void (* ResolveColor)(
+#if NeedNestedPrototypes
+	unsigned short */*pred*/,
+	unsigned short */*pgreen*/,
+	unsigned short */*pblue*/,
+	VisualPtr /*pVisual*/
+#endif
+);
 
     /* Region procedures */
 
-    RegionPtr (* RegionCreate)(); 	/* rect, size */
-    void (* RegionInit)();		/* pRegion, rect, size */
-    Bool (* RegionCopy)();		/* dstrgn, srcrgn */
-    void (* RegionDestroy)();		/* pRegion */
-    void (* RegionUninit)();		/* pRegion */
-    Bool (* Intersect)();		/* newReg, reg1, reg2 */
-    Bool (* Union)();			/* newReg, reg1, reg2 */
-    Bool (* Subtract)();		/* regD, regM, regS */
-    Bool (* Inverse)();			/* newReg, reg1, invRect */
-    void (* RegionReset)();		/* pRegion, pBox */
-    void (* TranslateRegion)();		/* pRegion, x, y */
-    int (* RectIn)();			/* pRegion, pRect */
-    Bool (* PointInRegion)();		/* pRegion, x, y, pBox */
-    Bool (* RegionNotEmpty)();      	/* pRegion: RegionPtr */
-    void (* RegionEmpty)();        	/* pRegion: RegionPtr */
-    BoxPtr (* RegionExtents)(); 	/* pRegion: RegionPtr */
-    Bool (* RegionAppend)();		/* pRegion, pRegion */
-    Bool (* RegionValidate)();		/* pRegion, pOverlap */
-    RegionPtr (* BitmapToRegion)();	/* PixmapPtr */
-    RegionPtr (* RectsToRegion)();	/* nrects, pRects, ordering */
-    void (* SendGraphicsExpose)();	/* client, rgn, draw, major, minor */
+    RegionPtr (* RegionCreate)(
+#if NeedNestedPrototypes
+	BoxPtr /*rect*/,
+	int /*size*/
+#endif
+);
+
+    void (* RegionInit)(
+#if NeedNestedPrototypes
+	RegionPtr /*pReg*/,
+	BoxPtr /*rect*/,
+	int /*size*/
+#endif
+);
+
+    Bool (* RegionCopy)(
+#if NeedNestedPrototypes
+	RegionPtr /*dst*/,
+	RegionPtr /*src*/
+#endif
+);
+
+    void (* RegionDestroy)(
+#if NeedNestedPrototypes
+	RegionPtr /*pReg*/
+#endif
+);
+
+    void (* RegionUninit)(
+#if NeedNestedPrototypes
+	RegionPtr /*pReg*/
+#endif
+);
+
+    Bool (* Intersect)(
+#if NeedNestedPrototypes
+	RegionPtr /*newReg*/,
+	RegionPtr /*reg1*/,
+	RegionPtr /*reg2*/
+#endif
+);
+
+    Bool (* Union)(
+#if NeedNestedPrototypes
+	RegionPtr /*newReg*/,
+	RegionPtr /*reg1*/,
+	RegionPtr /*reg2*/
+#endif
+);
+
+    Bool (* Subtract)(
+#if NeedNestedPrototypes
+	RegionPtr /*regD*/,
+	RegionPtr /*regM*/,
+	RegionPtr /*regS*/
+#endif
+);
+
+    Bool (* Inverse)(
+#if NeedNestedPrototypes
+	RegionPtr /*newReg*/,
+	RegionPtr /*reg1*/,
+	BoxPtr /*invRect*/
+#endif
+);
+
+    void (* RegionReset)(
+#if NeedNestedPrototypes
+	RegionPtr /*pReg*/,
+	BoxPtr /*pBox*/
+#endif
+);
+
+    void (* TranslateRegion)(
+#if NeedNestedPrototypes
+	RegionPtr /*pReg*/,
+	int /*x*/,
+	int /*y*/
+#endif
+);
+
+    int (* RectIn)(
+#if NeedNestedPrototypes
+	RegionPtr /*region*/,
+	BoxPtr /*prect*/
+#endif
+);
+
+    Bool (* PointInRegion)(
+#if NeedNestedPrototypes
+	RegionPtr /*pReg*/,
+	int /*x*/,
+	int /*y*/,
+	BoxPtr /*box*/
+#endif
+);
+
+    Bool (* RegionNotEmpty)(
+#if NeedNestedPrototypes
+	RegionPtr /*pReg*/
+#endif
+);
+
+    void (* RegionEmpty)(
+#if NeedNestedPrototypes
+	RegionPtr /*pReg*/
+#endif
+);
+
+    BoxPtr (* RegionExtents)(
+#if NeedNestedPrototypes
+	RegionPtr /*pReg*/
+#endif
+);
+
+    Bool (* RegionAppend)(
+#if NeedNestedPrototypes
+	RegionPtr /*dstrgn*/,
+	RegionPtr /*rgn*/
+#endif
+);
+
+    Bool (* RegionValidate)(
+#if NeedNestedPrototypes
+	RegionPtr /*badreg*/,
+	Bool */*pOverlap*/
+#endif
+);
+
+    RegionPtr (* BitmapToRegion)(
+#if NeedNestedPrototypes
+	PixmapPtr /*pPix*/
+#endif
+);
+
+    RegionPtr (* RectsToRegion)(
+#if NeedNestedPrototypes
+	int /*nrects*/,
+	xRectangle */*prect*/,
+	int /*ctype*/
+#endif
+);
+
+    void (* SendGraphicsExpose)(
+#if NeedNestedPrototypes
+	ClientPtr /*client*/,
+	RegionPtr /*pRgn*/,
+	XID /*drawable*/,
+	int /*major*/,
+	int /*minor*/
+#endif
+);
 
     /* os layer procedures */
-    void (* BlockHandler)();		/* data: pointer */
-    void (* WakeupHandler)();		/* data: pointer */
+    void (* BlockHandler)(
+#if NeedNestedPrototypes
+	int /*i*/,
+	pointer /*blockData*/,
+	pointer /*pTimeout*/,
+	pointer /*pReadmask*/
+#endif
+);
+
+    void (* WakeupHandler)(
+#if NeedNestedPrototypes
+	 int /*screenNum*/,
+	 pointer /*wakeupData*/,
+	 unsigned long /*result*/,
+	 pointer /*pReadMask*/
+#endif
+);
+
     pointer blockData;
     pointer wakeupData;
 
     /* anybody can get a piece of this array */
     DevUnion	*devPrivates;
 
-    Bool (* CreateScreenResources)();   /* pScreen */
-    Bool (* ModifyPixmapHeader)(); /* pPixmap, w, h, depth, bpp, devKind, pixdata */
+    Bool (* CreateScreenResources)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/
+#endif
+);
+
+    Bool (* ModifyPixmapHeader)(
+#if NeedNestedPrototypes
+	PixmapPtr /*pPixmap*/,
+	int /*width*/,
+	int /*height*/,
+	int /*depth*/,
+	int /*bitsPerPixel*/,
+	int /*devKind*/,
+	pointer /*pPixData*/
+#endif
+);
+
     PixmapPtr pScratchPixmap;		/* scratch pixmap "pool" */
 } ScreenRec;
 
@@ -220,8 +696,5 @@ typedef struct _ScreenInfo {
 } ScreenInfo;
 
 extern ScreenInfo screenInfo;
-
-extern int AllocateWindowPrivateIndex(), AllocateGCPrivateIndex();
-extern Bool AllocateWindowPrivate(), AllocateGCPrivate();
 
 #endif /* SCREENINTSTRUCT_H */

@@ -1,4 +1,4 @@
-/* $XConsortium: propertyst.h,v 1.1 87/09/11 07:50:45 toddb Exp $ */
+/* $XConsortium: propertyst.h,v 1.2 88/09/06 15:49:12 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -38,10 +38,6 @@ typedef struct _Property {
 	long		size;       /* size of data in (format/8) bytes */
 	pointer         data;       /* private to client */
 } PropertyRec;
-
-extern int ProcGetProperty();
-extern int ProcListProperties();
-extern int ProcChangeProperty();
 
 #endif /* PROPERTYSTRUCT_H */
 

@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.37 91/07/11 20:36:45 keith Exp $ */
+/* $XConsortium: misprite.c,v 5.38 91/07/19 23:19:31 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -954,7 +954,7 @@ static void
 miSpriteSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
     DrawablePtr		pDrawable;
     GCPtr		pGC;
-    int			*psrc;
+    unsigned int	*psrc;
     register DDXPointPtr ppt;
     int			*pwidth;
     int			nspans;
@@ -1056,7 +1056,7 @@ static RegionPtr
 miSpriteCopyPlane (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
     DrawablePtr	  pSrc;
     DrawablePtr	  pDst;
-    register GC   *pGC;
+    register GCPtr pGC;
     int     	  srcx,
 		  srcy;
     int     	  w,
@@ -1747,11 +1747,11 @@ miSpriteImageText16(pDrawable, pGC, x, y, count, chars)
 static void
 miSpriteImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     DrawablePtr pDrawable;
-    GC 		*pGC;
+    GCPtr 	pGC;
     int 	x, y;
-    unsigned long nglyph;
+    unsigned int nglyph;
     CharInfoPtr *ppci;		/* array of character info */
-    pointer 	pglyphBase;	/* start of array of glyphs */
+    char * 	pglyphBase;	/* start of array of glyphs */
 {
     GC_SETUP(pDrawable, pGC);
 
@@ -1772,7 +1772,7 @@ miSpritePolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     DrawablePtr pDrawable;
     GCPtr	pGC;
     int 	x, y;
-    unsigned long nglyph;
+    unsigned int nglyph;
     CharInfoPtr *ppci;		/* array of character info */
     char 	*pglyphBase;	/* start of array of glyphs */
 {

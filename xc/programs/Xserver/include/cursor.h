@@ -21,13 +21,60 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cursor.h,v 1.16 87/09/11 07:50:25 toddb Exp $ */
+/* $XConsortium: cursor.h,v 1.17 88/09/06 15:48:50 jim Exp $ */
 #ifndef CURSOR_H
 #define CURSOR_H 
+
 #define NullCursor ((CursorPtr)NULL)
 
 typedef struct _Cursor *CursorPtr;
 typedef struct _CursorMetric *CursorMetricPtr;
 
 extern CursorPtr rootCursor;
+
+extern int FreeCursor(
+#if NeedFunctionPrototypes
+    pointer /*pCurs*/,
+    XID /*cid*/
+#endif
+);
+
+extern CursorPtr AllocCursor(
+#if NeedFunctionPrototypes
+    unsigned char */*psrcbits*/,
+    unsigned char */*pmaskbits*/,
+    CursorMetricPtr /*cm*/,
+    unsigned /*foreRed*/,
+    unsigned /*foreGreen*/,
+    unsigned /*foreBlue*/,
+    unsigned /*backRed*/,
+    unsigned /*backGreen*/,
+    unsigned /*backBlue*/
+#endif
+);
+
+extern int AllocGlyphCursor(
+#if NeedFunctionPrototypes
+    Font /*source*/,
+    unsigned int /*sourceChar*/,
+    Font /*mask*/,
+    unsigned int /*maskChar*/,
+    unsigned /*foreRed*/,
+    unsigned /*foreGreen*/,
+    unsigned /*foreBlue*/,
+    unsigned /*backRed*/,
+    unsigned /*backGreen*/,
+    unsigned /*backBlue*/,
+    CursorPtr */*ppCurs*/,
+    ClientPtr /*client*/
+#endif
+);
+
+extern CursorPtr CreateRootCursor(
+#if NeedFunctionPrototypes
+    char */*pfilename*/,
+    unsigned int /*glyph*/
+#endif
+);
+
 #endif /* CURSOR_H */

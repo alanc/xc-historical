@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AIXinit.c,v 1.3 91/07/16 12:56:15 jap Exp $
+ * $XConsortium: AIXinit.c,v 1.4 92/08/10 17:49:38 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -76,7 +76,7 @@ struct sockaddr_in insock ;
 int sockNum, sockFD ;
 
     if ((sockFD = socket (AF_INET, SOCK_STREAM, 0)) < 0) {
-	Error("creating TCP socket (in FindATCPSocket)\n",NULL);
+	Error("creating TCP socket (in FindATCPSocket)\n");
 	display= "0";
 	return;
     }

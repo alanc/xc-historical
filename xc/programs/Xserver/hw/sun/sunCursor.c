@@ -1,4 +1,4 @@
-/* $XConsortium: sunCursor.c,v 5.11 92/05/06 17:59:12 keith Exp $ */
+/* $XConsortium: sunCursor.c,v 5.12 93/06/24 10:36:06 dpw Exp $ */
 /*-
  * sunCursor.c --
  *	Functions for maintaining the Sun software cursor...
@@ -175,7 +175,7 @@ miPointerSpriteFuncRec sunPointerSpriteFuncs = {
 static void
 sunQueryBestSize (class, pwidth, pheight, pScreen)
     int	class;
-    short   *pwidth, *pheight;
+    unsigned short   *pwidth, *pheight;
     ScreenPtr	pScreen;
 {
     SetupCursor (pScreen);

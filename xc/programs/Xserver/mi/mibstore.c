@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.55 93/02/09 16:34:15 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.56 93/02/09 16:49:59 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -256,6 +256,7 @@ static GCFuncs miBSCheapGCFuncs = {
  * and wraps appropriate per-screen functions
  */
 
+void
 miInitializeBackingStore (pScreen, funcs)
     ScreenPtr	pScreen;
     miBSFuncPtr	funcs;
@@ -416,8 +417,8 @@ miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
 			y += pSrcWin->origin.y;
 			pSrcWin = pSrcWin->parent;
 		    }
-		    (*pGC->ops->CopyArea) (pSrcWin,
- 					    pPixmap, pGC,
+		    (*pGC->ops->CopyArea) ((DrawablePtr)pSrcWin,
+ 					    (DrawablePtr)pPixmap, pGC,
 					    x, y, w, h,
 					    0, 0);
 		    (*pScreen->Subtract) (&Remaining, &Remaining,
@@ -442,8 +443,9 @@ miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
 			pBox = REGION_RECTS(&Inside);
 			for (n = REGION_NUM_RECTS(&Inside); --n >= 0;)
 			{
-			    (*pGC->ops->CopyArea) (pWindowPriv->pBackingPixmap,
-						   pPixmap, pGC,
+			    (*pGC->ops->CopyArea) (
+				(DrawablePtr)pWindowPriv->pBackingPixmap,
+						   (DrawablePtr)pPixmap, pGC,
 						   pBox->x1 - pWindowPriv->x,
 						   pBox->y1 - pWindowPriv->y,
 						   pBox->x2 - pBox->x1,
@@ -912,7 +914,7 @@ static void
 miBSSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
     DrawablePtr		pDrawable;
     GCPtr		pGC;
-    int			*psrc;
+    unsigned int	*psrc;
     register DDXPointPtr ppt;
     int			*pwidth;
     int			nspans;
@@ -931,8 +933,8 @@ miBSSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 	copyData(ppt, pptCopy, nspans, MoreCopy0);
 	bcopy((char *)pwidth,(char *)pwidthCopy,nspans*sizeof(int));
 
-	(* pGC->ops->SetSpans)(pDrawable, pGC, psrc, ppt, pwidth,
-			    nspans, fSorted);
+	(* pGC->ops->SetSpans)(pDrawable, pGC, (unsigned int *)psrc,
+			       ppt, pwidth, nspans, fSorted);
 	if (pGC->miTranslate)
 	{
 	    int	dx, dy;
@@ -950,8 +952,7 @@ miBSSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 	    }
 	}
 	(* pBackingGC->ops->SetSpans)(pBackingDrawable, pBackingGC,
-				 psrc, pptCopy, pwidthCopy, nspans,
-				 fSorted);
+		 (unsigned int *)psrc, pptCopy, pwidthCopy, nspans, fSorted);
     }
     if (pwidthCopy) DEALLOCATE_LOCAL(pwidthCopy);
     if (pptCopy) DEALLOCATE_LOCAL(pptCopy);
@@ -2038,11 +2039,11 @@ miBSImageText16(pDrawable, pGC, x, y, count, chars)
 static void
 miBSImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     DrawablePtr pDrawable;
-    GC 		*pGC;
+    GCPtr 	pGC;
     int 	x, y;
     unsigned int nglyph;
     CharInfoPtr *ppci;		/* array of character info */
-    pointer 	pglyphBase;	/* start of array of glyphs */
+    char * 	pglyphBase;	/* start of array of glyphs */
 {
     SETUP_BACKING (pDrawable, pGC);
     PROLOGUE(pGC);
@@ -2286,7 +2287,8 @@ miBSClearBackingStore(pWin, x, y, w, h, generateExposures)
 			rects[i].width = pBox->x2 - pBox->x1;
 			rects[i].height = pBox->y2 - pBox->y1;
 		    }
-		    (* pGC->ops->PolyFillRect) (pBackingStore->pBackingPixmap,
+		    (* pGC->ops->PolyFillRect) (
+				(DrawablePtr)pBackingStore->pBackingPixmap,
 				       pGC, numRects, rects);
 		    DEALLOCATE_LOCAL(rects);
 		}	
@@ -2652,7 +2654,8 @@ miResizeBackingStore(pWin, dx, dy, saveBits)
 		 * by only copying the old extents, rather than the entire
 		 * pixmap
 		 */
-	    	(*pGC->ops->CopyArea)(pBackingPixmap, pNewPixmap, pGC,
+	    	(*pGC->ops->CopyArea)((DrawablePtr)pBackingPixmap,
+				      (DrawablePtr)pNewPixmap, pGC,
 				      0, 0,
 				      pBackingPixmap->drawable.width,
 				      pBackingPixmap->drawable.height,

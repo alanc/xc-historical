@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miglblt.c,v 5.5 91/07/18 22:53:03 keith Exp $ */
+/* $XConsortium: miglblt.c,v 5.6 91/12/18 18:52:27 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -149,9 +149,10 @@ miPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
 	    if ((pGCtmp->serialNumber) != (pPixmap->drawable.serialNumber))
 		ValidateGC((DrawablePtr)pPixmap, pGCtmp);
-	    (*pGCtmp->ops->PutImage)(pPixmap, pGCtmp, pPixmap->drawable.depth,
+	    (*pGCtmp->ops->PutImage)((DrawablePtr)pPixmap, pGCtmp,
+				pPixmap->drawable.depth,
 				0, 0, gWidth, gHeight, 
-				0, XYBitmap, pb);
+				0, XYBitmap, (char *)pb);
 
 	    if ((pGC->serialNumber) != (pDrawable->serialNumber))
 		ValidateGC(pDrawable, pGC);
@@ -214,7 +215,8 @@ miImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     gcvals[0] = oldFG;
     DoChangeGC(pGC, GCForeground, gcvals, 0);
     ValidateGC(pDrawable, pGC);
-    (*pGC->ops->PolyGlyphBlt)(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+    (*pGC->ops->PolyGlyphBlt)(pDrawable, pGC, x, y, nglyph, ppci,
+			      (char *)pglyphBase);
 
     /* put all the toys away when done playing */
     gcvals[0] = oldAlu;

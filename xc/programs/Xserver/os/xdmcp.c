@@ -1,4 +1,4 @@
-/* $XConsortium: xdmcp.c,v 1.22 92/05/19 17:22:10 keith Exp $ */
+/* $XConsortium: xdmcp.c,v 1.23 92/08/10 17:46:51 eswu Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -32,8 +32,6 @@
 #undef REQUEST
 #include "Xdmcp.h"
 
-extern int argcGlobal;
-extern char **argvGlobal;
 extern char *display;
 extern long EnabledDevices[];
 extern long AllClients[];
@@ -58,23 +56,147 @@ static XdmcpBuffer	    buffer;
 
 static struct sockaddr_in   ManagerAddress;
 
-static get_manager_by_name(), get_xdmcp_sock();
+static get_xdmcp_sock(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 
-static	receive_packet(), send_packet();
-static	timeout(), restart();
+static void send_query_msg(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 
-static	recv_willing_msg();
-static	recv_accept_msg(),	recv_decline_msg();
-static	recv_refuse_msg(),	recv_failed_msg();
-static	recv_alive_msg();
+static void recv_willing_msg(
+#if NeedFunctionPrototypes
+    struct sockaddr_in */*from*/,
+    int /*fromlen*/,
+    unsigned /*length*/
+#endif
+);
 
-static	send_query_msg();
-static	send_request_msg();
-static	send_manage_msg();
-static	send_keepalive_msg();
+static void send_request_msg(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 
-static XdmcpFatal(), XdmcpWarning();
-static void XdmcpBlockHandler(), XdmcpWakeupHandler();
+static void recv_accept_msg(
+#if NeedFunctionPrototypes
+    unsigned /*length*/
+#endif
+);
+
+static void recv_decline_msg(
+#if NeedFunctionPrototypes
+    unsigned /*length*/
+#endif
+);
+
+static void send_manage_msg(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+static void recv_refuse_msg(
+#if NeedFunctionPrototypes
+    unsigned /*length*/
+#endif
+);
+
+static void recv_failed_msg(
+#if NeedFunctionPrototypes
+    unsigned /*length*/
+#endif
+);
+
+static void send_keepalive_msg(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+static void recv_alive_msg(
+#if NeedFunctionPrototypes
+    unsigned /*length*/
+#endif
+);
+
+static XdmcpFatal(
+#if NeedFunctionPrototypes
+    char */*type*/,
+    ARRAY8Ptr /*status*/
+#endif
+);
+
+static XdmcpWarning(
+#if NeedFunctionPrototypes
+    char */*str*/
+#endif
+);
+
+static get_manager_by_name(
+#if NeedFunctionPrototypes
+    int /*argc*/,
+    char **/*argv*/,
+    int /*i*/
+#endif
+);
+
+static void receive_packet(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+static send_packet(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern int XdmcpDeadSession(
+#if NeedFunctionPrototypes
+    char */*reason*/
+#endif
+);
+
+static void timeout(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+static restart(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+static void XdmcpBlockHandler(
+#if NeedFunctionPrototypes
+    pointer /*data*/,
+    struct timeval **/*wt*/,
+    long */*LastSelectMask*/
+#endif
+);
+
+static void XdmcpWakeupHandler(
+#if NeedFunctionPrototypes
+    pointer /*data*/,
+    int /*i*/,
+    long */*LastSelectMask*/
+#endif
+);
+
+void XdmcpRegisterManufacturerDisplayID(
+#if NeedFunctionPrototypes
+    char    * /*name*/,
+    int	    /*length*/
+#endif
+);
 
 static short	xdm_udp_port = XDM_UDP_PORT;
 static Bool	OneSession = FALSE;
@@ -161,6 +283,7 @@ XdmcpOptions(argc, argv, i)
 static struct sockaddr_in   BroadcastAddresses[MAX_BROADCAST];
 static int		    NumBroadcastAddresses;
 
+void
 XdmcpRegisterBroadcastAddress (addr)
     struct sockaddr_in	*addr;
 {
@@ -192,6 +315,7 @@ typedef struct _AuthenticationFuncs {
 
 static AuthenticationFuncsPtr	AuthenticationFuncsList;
 
+void
 XdmcpRegisterAuthentication (name, namelen, data, datalen, Validator, Generator, AddAuth)
     char    *name;
     int	    namelen;
@@ -249,6 +373,7 @@ ARRAY8Ptr	AuthenticationName = &noAuthenticationName;
 ARRAY8Ptr	AuthenticationData = &noAuthenticationData;
 AuthenticationFuncsPtr	AuthenticationFuncs;
 
+void
 XdmcpSetAuthentication (name)
     ARRAY8Ptr	name;
 {
@@ -272,6 +397,7 @@ static ARRAY16		ConnectionTypes;
 static ARRAYofARRAY8	ConnectionAddresses;
 static long		xdmcpGeneration;
 
+void
 XdmcpRegisterConnection (type, address, addrlen)
     int	    type;
     char    *address;
@@ -314,12 +440,14 @@ XdmcpRegisterConnection (type, address, addrlen)
 
 static ARRAYofARRAY8	AuthorizationNames;
 
+void
 XdmcpRegisterAuthorizations ()
 {
     XdmcpDisposeARRAYofARRAY8 (&AuthorizationNames);
     RegisterAuthorizations ();
 }
 
+void
 XdmcpRegisterAuthorization (name, namelen)
     char    *name;
     int	    namelen;
@@ -347,6 +475,7 @@ XdmcpRegisterAuthorization (name, namelen)
 
 ARRAY8	DisplayClass;
 
+void
 XdmcpRegisterDisplayClass (name, length)
     char    *name;
     int	    length;
@@ -366,6 +495,7 @@ XdmcpRegisterDisplayClass (name, length)
 
 ARRAY8 ManufacturerDisplayID;
 
+void
 XdmcpRegisterManufacturerDisplayID (name, length)
     char    *name;
     int	    length;
@@ -577,7 +707,7 @@ XdmcpAddHost(from, fromlen, AuthenticationName, hostname, status)
 
 ARRAY8	UnwillingMessage = { (CARD8) 14, (CARD8 *) "Host unwilling" };
 
-static
+static void
 receive_packet()
 {
     struct sockaddr_in from;
@@ -673,7 +803,7 @@ XdmcpDeadSession (reason)
  * Timeout waiting for an XDMCP response.
  */
 
-static 
+static void
 timeout()
 {
     timeOutRtx++;
@@ -765,7 +895,7 @@ get_xdmcp_sock()
 #endif /* SO_BROADCAST */
 }
 
-static
+static void
 send_query_msg()
 {
     XdmcpHeader	header;
@@ -809,7 +939,7 @@ send_query_msg()
     }
 }
 
-static
+static void
 recv_willing_msg(from, fromlen, length)
     struct sockaddr_in	*from;
     int			fromlen;
@@ -846,7 +976,7 @@ recv_willing_msg(from, fromlen, length)
     XdmcpDisposeARRAY8 (&status);
 }
 
-static
+static void
 send_request_msg()
 {
     XdmcpHeader	    header;
@@ -896,7 +1026,7 @@ send_request_msg()
 	state = XDM_AWAIT_REQUEST_RESPONSE;
 }
 
-static
+static void
 recv_accept_msg(length)
     unsigned		length;
 {
@@ -947,7 +1077,7 @@ recv_accept_msg(length)
     XdmcpDisposeARRAY8 (&AcceptAuthorizationData);
 }
 
-static
+static void
 recv_decline_msg(length)
     unsigned		length;
 {
@@ -974,7 +1104,7 @@ recv_decline_msg(length)
     XdmcpDisposeARRAY8 (&DeclineAuthenticationData);
 }
 
-static
+static void
 send_manage_msg()
 {
     XdmcpHeader	header;
@@ -992,7 +1122,7 @@ send_manage_msg()
     XdmcpFlush (xdmcpSocket, &buffer, &req_sockaddr, req_socklen);
 }
 
-static
+static void
 recv_refuse_msg(length)
     unsigned		length;
 {
@@ -1012,7 +1142,7 @@ recv_refuse_msg(length)
     }
 }
 
-static
+static void
 recv_failed_msg(length)
     unsigned		length;
 {
@@ -1034,7 +1164,7 @@ recv_failed_msg(length)
     XdmcpDisposeARRAY8 (&Status);
 }
 
-static
+static void
 send_keepalive_msg()
 {
     XdmcpHeader	header;
@@ -1051,7 +1181,7 @@ send_keepalive_msg()
     XdmcpFlush (xdmcpSocket, &buffer, &req_sockaddr, req_socklen);
 }
 
-static
+static void
 recv_alive_msg (length)
     unsigned		length;
 {

@@ -1,4 +1,3 @@
-
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -22,10 +21,16 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: gc.h,v 1.50 89/09/12 09:27:42 rws Exp $ */
+/* $XConsortium: gc.h,v 1.51 91/07/09 15:58:13 rws Exp $ */
 
 #ifndef GC_H
 #define GC_H 
+
+#include "misc.h"	/* for Bool */
+#include "X11/X.h"	/* for GContext, Mask */
+#include "X11/Xproto.h"
+#include "screenint.h"	/* for ScreenPtr */
+#include "pixmap.h"	/* for DrawablePtr */
 
 /* clientClipType field in GC */
 #define CT_NONE			0
@@ -54,12 +59,133 @@ SOFTWARE.
 
 typedef struct _GCInterest *GCInterestPtr;
 typedef struct _GC    *GCPtr;
-extern void  ValidateGC();
-extern int ChangeGC();
-extern GCPtr CreateGC();
-extern int CopyGC();
-extern int FreeGC();
-extern void SetGCMask();
-extern GCPtr GetScratchGC();
-extern void  FreeScratchGC();
+
+extern void ValidateGC(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/
+#endif
+);
+
+extern int ChangeGC(
+#if NeedFunctionPrototypes
+    GCPtr/*pGC*/,
+    BITS32 /*mask*/,
+    XID */*pval*/
+#endif
+);
+
+extern int DoChangeGC(
+#if NeedFunctionPrototypes
+    GCPtr/*pGC*/,
+    BITS32 /*mask*/,
+    XID */*pval*/,
+    int /*fPointer*/
+#endif
+);
+
+extern GCPtr CreateGC(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    BITS32 /*mask*/,
+    XID */*pval*/,
+    int */*pStatus*/
+#endif
+);
+
+extern int CopyGC(
+#if NeedFunctionPrototypes
+    GCPtr/*pgcSrc*/,
+    GCPtr/*pgcDst*/,
+    BITS32 /*mask*/
+#endif
+);
+
+extern int FreeGC(
+#if NeedFunctionPrototypes
+    pointer /*pGC*/,
+    XID /*gid*/
+#endif
+);
+
+extern void SetGCMask(
+#if NeedFunctionPrototypes
+    GCPtr /*pGC*/,
+    Mask /*selectMask*/,
+    Mask /*newDataMask*/
+#endif
+);
+
+extern GCPtr CreateScratchGC(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    unsigned /*depth*/
+#endif
+);
+
+extern int FreeGCperDepth(
+#if NeedFunctionPrototypes
+    int /*screenNum*/
+#endif
+);
+
+extern Bool CreateGCperDepth(
+#if NeedFunctionPrototypes
+    int /*screenNum*/
+#endif
+);
+
+extern Bool CreateDefaultStipple(
+#if NeedFunctionPrototypes
+    int /*screenNum*/
+#endif
+);
+
+extern int FreeDefaultStipple(
+#if NeedFunctionPrototypes
+    int /*screenNum*/
+#endif
+);
+
+extern int SetDashes(
+#if NeedFunctionPrototypes
+    GCPtr /*pGC*/,
+    unsigned /*offset*/,
+    unsigned /*ndash*/,
+    unsigned char */*pdash*/
+#endif
+);
+
+extern int VerifyRectOrder(
+#if NeedFunctionPrototypes
+    int /*nrects*/,
+    xRectangle */*prects*/,
+    int /*ordering*/
+#endif
+);
+
+extern int SetClipRects(
+#if NeedFunctionPrototypes
+    GCPtr /*pGC*/,
+    int /*xOrigin*/,
+    int /*yOrigin*/,
+    int /*nrects*/,
+    xRectangle */*prects*/,
+    int /*ordering*/
+#endif
+);
+
+extern GCPtr GetScratchGC(
+#if NeedFunctionPrototypes
+    unsigned /*depth*/,
+    ScreenPtr /*pScreen*/
+#endif
+);
+
+extern void FreeScratchGC(
+#if NeedFunctionPrototypes
+    GCPtr /*pGC*/
+#endif
+);
+
 #endif /* GC_H */

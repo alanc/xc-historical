@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ibmInit.c,v 1.4 91/09/09 13:23:00 rws Exp $
+ * $XConsortium: ibmInit.c,v 1.5 91/12/20 18:13:55 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -275,7 +275,7 @@ static DevicePtr mouse;
 void
 InitInput()
 {
-extern  DevicePtr       OS_MouseProc(),OS_KeybdProc();
+extern  DeviceProc OS_MouseProc,OS_KeybdProc;
 
     TRACE(("InitInput()\n"));
 
@@ -283,7 +283,7 @@ extern  DevicePtr       OS_MouseProc(),OS_KeybdProc();
     mouse=      AddInputDevice(OS_MouseProc,    TRUE);
     keyboard=   AddInputDevice(OS_KeybdProc,    TRUE);
 
-    RegisterPointerDevice( mouse, MOTION_BUFFER_SIZE );
+    RegisterPointerDevice( mouse );
     RegisterKeyboardDevice( keyboard );
 #ifdef SOFTWARE_CURSOR
     miRegisterPointerDevice(ibmScreens[ibmCurrentScreen]->ibm_Screen, mouse);

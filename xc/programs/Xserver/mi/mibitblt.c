@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 5.14 91/04/07 17:09:36 keith Exp $ */
+/* $XConsortium: mibitblt.c,v 5.15 91/12/18 18:52:23 keith Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -212,7 +212,7 @@ miCopyArea(pSrcDrawable, pDstDrawable,
 	if (pbits)
 	{
 	    (*pSrcDrawable->pScreen->GetSpans)(pSrcDrawable, width, pptFirst,
-					       pwidthFirst, height, pbits);
+					   (int *)pwidthFirst, height, pbits);
 	    ppt = pptFirst;
 	    pwidth = pwidthFirst;
 	    xMin -= (srcx - dstx);
@@ -225,7 +225,7 @@ miCopyArea(pSrcDrawable, pDstDrawable,
 	    }
 
 	    (*pGC->ops->SetSpans)(pDstDrawable, pGC, pbits, pptFirst,
-				  pwidthFirst, height, TRUE);
+				  (int *)pwidthFirst, height, TRUE);
 	    xfree(pbits);
 	}
     }
@@ -303,7 +303,7 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 	if(bitsPerPixel == 1)
 	{
 	    (*pDraw->pScreen->GetSpans)(pDraw, width, &pt, &width, 1,
-					(unsigned long *)pCharsOut);
+					(unsigned int *)pCharsOut);
 	    pCharsOut += widthInBytes;
 	}
 	else
@@ -313,7 +313,7 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 	    {
 		/* Fetch the next pixel */
 		(*pDraw->pScreen->GetSpans)(pDraw, width, &pt, &width, 1,
-					    &pixel);
+					    (unsigned int *)&pixel);
 		/*
 		 * Now get the bit and insert into a bitmap in XY format.
 		 */
@@ -414,7 +414,8 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
 	*pwidth++ = w + srcx;
     }
 
-    (*pGCT->ops->SetSpans)(pPixmap, pGCT, pbits, pptFirst, pwidthFirst, h, TRUE);
+    (*pGCT->ops->SetSpans)((DrawablePtr)pPixmap, pGCT, (unsigned int *)pbits,
+			   pptFirst, pwidthFirst, h, TRUE);
     DEALLOCATE_LOCAL(pwidthFirst);
     DEALLOCATE_LOCAL(pptFirst);
 
@@ -452,7 +453,8 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
     gcv[0] = GXinvert;
     DoChangeGC(pGCT, GCFunction, gcv, 0);
     ValidateGC((DrawablePtr)pPixmap, pGCT);
-    (*pGCT->ops->CopyArea)(pPixmap, pPixmap, pGCT, 0, 0, w + srcx, h, 0, 0);
+    (*pGCT->ops->CopyArea)((DrawablePtr)pPixmap, (DrawablePtr)pPixmap,
+			   pGCT, 0, 0, w + srcx, h, 0, 0);
 
     /* Swap foreground and background colors on the GC for the drawable.
      * Now when we fill the drawable, we will fill in the "Background"
@@ -605,7 +607,7 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
     XID			gcv[2];
     PixmapPtr		pPixmap = (PixmapPtr)NULL;
     GCPtr		pGC;
-    pointer		pDst = pdstLine;
+    unsigned char *	pDst = pdstLine;
 
     depth = pDraw->depth;
     if(format == ZPixmap)
@@ -637,16 +639,17 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
 	    pt.y = srcy + i;
 	    width = w;
 	    (*pDraw->pScreen->GetSpans)(pDraw, w, &pt, &width, 1,
-					(unsigned long *)pDst);
+					(unsigned int *)pDst);
 	    if (pPixmap)
 	    {
 	       pt.x = 0;
 	       pt.y = 0;
 	       width = w;
-	       (*pGC->ops->SetSpans)(pPixmap, pGC, (unsigned long *)pDst,
+	       (*pGC->ops->SetSpans)((DrawablePtr)pPixmap, pGC,
+				     (unsigned int *)pDst,
 				     &pt, &width, 1, TRUE);
-	       (*pDraw->pScreen->GetSpans)(pPixmap, w, &pt, &width, 1,
-					   (unsigned long *)pDst);
+	       (*pDraw->pScreen->GetSpans)((DrawablePtr)pPixmap, w, &pt,
+					   &width, 1, (unsigned int *)pDst);
 	    }
 	    pDst += linelength;
 	}
@@ -736,7 +739,7 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	        DoChangeGC(pGC, GCPlaneMask, gcv, 0);
 	        ValidateGC(pDraw, pGC);
 	        (*pGC->ops->PutImage)(pDraw, pGC, 1, x, y, w, h, leftPad,
-			         XYBitmap, pImage);
+			         XYBitmap, (char *)pImage);
 	    }
 	}
 	gcv[0] = oldPlanemask;
@@ -770,7 +773,8 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	    *pwidth++ = w;
 	}
 
-	(*pGC->ops->SetSpans)(pDraw, pGC, pImage, pptFirst, pwidthFirst, h, TRUE);
+	(*pGC->ops->SetSpans)(pDraw, pGC, (unsigned int *)pImage, pptFirst,
+			      pwidthFirst, h, TRUE);
 	DEALLOCATE_LOCAL(pwidthFirst);
 	DEALLOCATE_LOCAL(pptFirst);
 	break;

@@ -1,4 +1,4 @@
-/* $XConsortium: font.h,v 1.7 91/07/16 20:34:07 keith Exp $ */
+/* $XConsortium: font.h,v 1.8 91/07/19 21:03:49 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -32,12 +32,21 @@ SOFTWARE.
 #endif
 
 /* data structures */
+#ifndef _XTYPEDEF_FONTPTR
 typedef struct _Font *FontPtr;
+#define _XTYPEDEF_FONTPTR
+#endif
+
 typedef struct _FontInfo *FontInfoPtr;
 typedef struct _FontProp *FontPropPtr;
 typedef struct _ExtentInfo *ExtentInfoPtr;
 typedef struct _FontPathElement *FontPathElementPtr;
+
+#ifndef _XTYPEDEF_CHARINFOPTR
 typedef struct _CharInfo *CharInfoPtr;
+#define _XTYPEDEF_CHARINFOPTR
+#endif
+
 typedef struct _FontNames *FontNamesPtr;
 typedef struct _FontResolution *FontResolutionPtr;
 
@@ -84,8 +93,14 @@ typedef int DrawDirection;
 
 typedef char *closure;
 
-extern int  StartListFontsWithInfo( /* client, length, pattern, maxNames */ );
-extern int  ListFonts( /* client, length, pattern, maxNames */ );
+extern int StartListFontsWithInfo(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    int /*length*/,
+    unsigned char */*pattern*/,
+    int /*max_names*/
+#endif
+);
 
 extern FontNamesPtr MakeFontNamesRecord( /* size */ );
 extern void FreeFontNames();

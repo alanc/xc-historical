@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipushpxl.c,v 5.1 89/07/26 12:18:19 rws Exp $ */
+/* $XConsortium: mipushpxl.c,v 5.2 91/12/18 18:52:30 keith Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "scrnintstr.h"
@@ -73,8 +73,8 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 	h++, ptThisLine.y++)
     {
 
-	(*pBitMap->drawable.pScreen->GetSpans)(pBitMap, dx, &ptThisLine, &dx,
-					       1, pwLineStart);
+	(*pBitMap->drawable.pScreen->GetSpans)((DrawablePtr)pBitMap, dx,
+			&ptThisLine, &dx, 1, (unsigned int *)pwLineStart);
 
 	pw = pwLineStart;
 	/* Process all words which are fully in the pixmap */

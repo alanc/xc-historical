@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: misc.h,v 1.58 91/04/10 08:53:39 rws Exp $ */
+/* $XConsortium: misc.h,v 1.59 92/08/21 19:30:27 rws Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -29,11 +29,12 @@ SOFTWARE.
  *
  */
 
-
 extern unsigned long globalSerialNumber;
 extern unsigned long serverGeneration;
 
 #include <X11/Xosdefs.h>
+#include <X11/Xfuncproto.h>
+#include <X11/Xmd.h>
 
 #ifndef NULL
 #ifndef X_NOT_STDC_ENV
@@ -48,7 +49,11 @@ extern unsigned long serverGeneration;
 #define MAXFORMATS	8
 #define MAXVISUALS_PER_SCREEN 50
 
+#if NeedFunctionPrototypes
+typedef void *pointer;
+#else
 typedef unsigned char *pointer;
+#endif
 typedef int Bool;
 typedef unsigned long PIXEL;
 typedef unsigned long ATOM;
@@ -58,6 +63,17 @@ typedef unsigned long ATOM;
 #define TRUE 1
 #define FALSE 0
 #endif
+
+#ifndef _XTYPEDEF_FONTPTR
+typedef struct _Font *FontPtr; /* also in fonts/include/font.h */
+#define _XTYPEDEF_FONTPTR
+#endif
+
+#ifndef _XTYPEDEF_CLIENTPTR
+typedef struct _Client *ClientPtr; /* also in dix.h */
+#define _XTYPEDEF_CLIENTPTR
+#endif
+
 #include "os.h" 	/* for ALLOCATE_LOCAL and DEALLOCATE_LOCAL */
 #include <X11/Xfuncs.h> /* for bcopy, bzero, and bcmp */
 
@@ -121,7 +137,7 @@ typedef unsigned long ATOM;
     SwapShorts((short *)(stuff + 1), LengthRestS(stuff))
 
 #define SwapRestL(stuff) \
-    SwapLongs((long *)(stuff + 1), LengthRestL(stuff))
+    SwapLongs((CARD32 *)(stuff + 1), LengthRestL(stuff))
 
 /* byte swap a long */
 #define swapl(x, n) n = ((char *) (x))[0];\
@@ -148,10 +164,32 @@ typedef unsigned long ATOM;
 		 ((char *) &(dst))[0] = ((char *) &(src))[1];\
 		 ((char *) &(dst))[1] = ((char *) &(src))[0];
 
-extern void SwapLongs();
-extern void SwapShorts();
+extern void SwapLongs(
+#if NeedFunctionPrototypes
+    CARD32 *list,
+    unsigned long count
+#endif
+);
 
-typedef struct _DDXPoint *DDXPointPtr;
+extern void SwapShorts(
+#if NeedFunctionPrototypes
+    short *list,
+    unsigned long count
+#endif
+);
+
+typedef struct _xPoint *DDXPointPtr;
 typedef struct _Box *BoxPtr;
+typedef struct _xEvent *xEventPtr;
+
+/*  typedefs from other places - duplicated here to minimize the amount
+ *  of unnecessary junk that one would normally have to include to get
+ *  these symbols defined
+ */
+
+#ifndef _XTYPEDEF_CHARINFOPTR
+typedef struct _CharInfo *CharInfoPtr; /* also in fonts/include/font.h */
+#define _XTYPEDEF_CHARINFOPTR
+#endif
 
 #endif /* MISC_H */

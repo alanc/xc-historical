@@ -1,4 +1,4 @@
-/* $XConsortium: dixfont.h,v 1.6 91/02/23 00:34:17 keith Exp $ */
+/* $XConsortium: dixfont.h,v 1.7 91/05/11 11:45:47 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -32,26 +32,206 @@ SOFTWARE.
 
 typedef struct _DIXFontProp *DIXFontPropPtr;
 
-#ifndef R4_FONT_STRUCTURES
-
-extern void UseFPE();
-extern void FreeFPE();
-extern void QueueFontWakeup();
-extern void RemoveFontWakeup();
-extern int FontWakeup();
-
-#else
-
-typedef struct _R4Font *FontPtr;
-
-/*
- * this type is for people who want to talk about the font encoding
- */
-
-typedef enum {
-    Linear8Bit, TwoD8Bit, Linear16Bit, TwoD16Bit
-}           FontEncoding;
-
+extern void UseFPE(
+#if NeedFunctionPrototypes
+    FontPathElementPtr /*fpe*/
 #endif
+);
+
+extern void FreeFPE(
+#if NeedFunctionPrototypes
+    FontPathElementPtr /*fpe*/,
+    Bool /*force*/
+#endif
+);
+
+extern int FontToXError(
+#if NeedFunctionPrototypes
+    int /*err*/
+#endif
+);
+
+extern Bool SetDefaultFont(
+#if NeedFunctionPrototypes
+    char */*defaultfontname*/
+#endif
+);
+
+extern void QueueFontWakeup(
+#if NeedFunctionPrototypes
+    FontPathElementPtr /*fpe*/
+#endif
+);
+
+extern void RemoveFontWakeup(
+#if NeedFunctionPrototypes
+    FontPathElementPtr /*fpe*/
+#endif
+);
+
+extern int FontWakeup(
+#if NeedFunctionPrototypes
+    pointer /*data*/,
+    int /*count*/,
+    long */*LastSelectMask*/
+#endif
+);
+
+extern int OpenFont(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    XID /*fid*/,
+    Mask /*flags*/,
+    unsigned /*lenfname*/,
+    char */*pfontname*/
+#endif
+);
+
+extern int CloseFont(
+#if NeedFunctionPrototypes
+    pointer /*pfont*/,
+    XID /*fid*/
+#endif
+);
+
+typedef struct _xQueryFontReply *xQueryFontReplyPtr;
+
+extern void QueryFont(
+#if NeedFunctionPrototypes
+    FontPtr /*pFont*/,
+    xQueryFontReplyPtr /*pReply*/,
+    int /*nProtoCCIStructs*/
+#endif
+);
+
+extern int ListFonts(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    unsigned char */*pattern*/,
+    unsigned int /*length*/,
+    unsigned int /*max_names*/
+#endif
+);
+
+extern int SetFontPath(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    int /*npaths*/,
+    unsigned char */*paths*/,
+    int */*error*/
+#endif
+);
+
+extern int SetDefaultFontPath(
+#if NeedFunctionPrototypes
+    char */*path*/
+#endif
+);
+
+extern unsigned char *GetFontPath(
+#if NeedFunctionPrototypes
+    int */*count*/,
+    int */*length*/
+#endif
+);
+
+extern int LoadGlyphs(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    FontPtr /*pfont*/,
+    unsigned /*nchars*/,
+    int /*item_size*/,
+    unsigned char */*data*/
+#endif
+);
+
+extern int DeleteClientFontStuff(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+extern int InitFonts(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern int GetDefaultPointSize(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern struct resolution *GetClientResolutions(
+#if NeedFunctionPrototypes
+    int */*num*/
+#endif
+);
+
+/* XXX leave these unprototyped for now -- need to do groundwork in 
+ * fonts/include/fontstruct.h before we do these
+ */
+extern int RegisterFPEFunctions(
+#if NeedFunctionPrototypes
+    Bool (*/*name_func*/)(),
+    int (*/*init_func*/)(),
+    int (*/*free_func*/)(),
+    int (*/*reset_func*/)(),
+    int (*/*open_func*/)(),
+    int (*/*close_func*/)(),
+    int (*/*list_func*/)(),
+    int (*/*start_lfwi_func*/)(),
+    int (*/*next_lfwi_func*/)(),
+    int (*/*wakeup_func*/)(),
+    int (*/*client_died*/)()
+#endif
+);
+
+extern int FreeFonts(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern FontPtr find_old_font(
+#if NeedFunctionPrototypes
+    XID /*id*/
+#endif
+);
+
+extern Font GetNewFontClientID(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern int StoreFontClientFont(
+#if NeedFunctionPrototypes
+    FontPtr /*pfont*/,
+    Font /*id*/
+#endif
+);
+
+extern int DeleteFontClientID(
+#if NeedFunctionPrototypes
+    Font /*id*/
+#endif
+);
+
+extern int init_fs_handlers(
+#if NeedFunctionPrototypes
+    FontPathElementPtr /*fpe*/,
+    int (*/*block_handler*/)(/*XXX*/)
+#endif
+);
+
+extern int remove_fs_handlers(
+#if NeedFunctionPrototypes
+    FontPathElementPtr /*fpe*/,
+    int (*/*block_handler*/)(/*XXX*/),
+    Bool /*all*/
+#endif
+);
 
 #endif				/* DIXFONT_H */

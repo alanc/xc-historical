@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: inputstr.h,v 1.28 91/07/24 15:45:57 rws Exp $ */
+/* $XConsortium: inputstr.h,v 1.29 93/02/26 11:37:59 rws Exp $ */
 
 #ifndef INPUTSTRUCT_H
 #define INPUTSTRUCT_H
@@ -30,7 +30,6 @@ SOFTWARE.
 #include "input.h"
 #include "window.h"
 #include "dixstruct.h"
-#include "screenint.h"
 
 #define BitIsOn(ptr, bit) (((BYTE *) (ptr))[(bit)>>3] & (1 << ((bit) & 7)))
 
@@ -61,8 +60,6 @@ typedef struct _OtherInputMasks {
     Mask		dontPropagateMask[EMASKSIZE];
     InputClientsPtr	inputClients;
 } OtherInputMasks;
-
-typedef struct _DeviceIntRec *DeviceIntPtr;
 
 /*
  * The following structure gets used for both active and passive grabs. For
@@ -119,7 +116,7 @@ typedef struct _AxisInfo {
 } AxisInfo, *AxisInfoPtr;
 
 typedef struct _ValuatorClassRec {
-    int		 	(*GetMotionProc) ();
+    ValuatorMotionProcPtr GetMotionProc;
     int		 	numMotionEvents;
     WindowPtr    	motionHintWindow;
     AxisInfoPtr 	axes;
@@ -158,39 +155,39 @@ typedef struct _BellFeedbackClassRec *BellFeedbackPtr;
 typedef struct _LedFeedbackClassRec *LedFeedbackPtr;
 
 typedef struct _KbdFeedbackClassRec {
-    void		(*BellProc) ();
-    void		(*CtrlProc) ();
+    BellProcPtr		BellProc;
+    KbdCtrlProcPtr	CtrlProc;
     KeybdCtrl	 	ctrl;
     KbdFeedbackPtr	next;
 } KbdFeedbackClassRec;
 
 typedef struct _PtrFeedbackClassRec {
-    void		(*CtrlProc) ();
+    PtrCtrlProcPtr	CtrlProc;
     PtrCtrl		ctrl;
     PtrFeedbackPtr	next;
 } PtrFeedbackClassRec;
 
 typedef struct _IntegerFeedbackClassRec {
-    void		(*CtrlProc) ();
+    IntegerCtrlProcPtr	CtrlProc;
     IntegerCtrl	 	ctrl;
     IntegerFeedbackPtr	next;
 } IntegerFeedbackClassRec;
 
 typedef struct _StringFeedbackClassRec {
-    void		(*CtrlProc) ();
+    StringCtrlProcPtr	CtrlProc;
     StringCtrl	 	ctrl;
     StringFeedbackPtr	next;
 } StringFeedbackClassRec;
 
 typedef struct _BellFeedbackClassRec {
-    void		(*BellProc) ();
-    void		(*CtrlProc) ();
+    BellProcPtr		BellProc;
+    BellCtrlProcPtr	CtrlProc;
     BellCtrl	 	ctrl;
     BellFeedbackPtr	next;
 } BellFeedbackClassRec;
 
 typedef struct _LedFeedbackClassRec {
-    void		(*CtrlProc) ();
+    LedCtrlProcPtr	CtrlProc;
     LedCtrl	 	ctrl;
     LedFeedbackPtr	next;
 } LedFeedbackClassRec;
@@ -231,8 +228,19 @@ typedef struct _DeviceIntRec {
     CARD8		activatingKey;
     Bool		fromPassiveGrab;
     GrabRec		activeGrab;
-    void		(*ActivateGrab)();
-    void		(*DeactivateGrab)();
+    void		(*ActivateGrab) (
+#if NeedNestedPrototypes
+			DeviceIntPtr /*device*/,
+			GrabPtr /*grab*/,
+			TimeStamp /*time*/,
+			Bool /*autoGrab*/
+#endif
+);
+    void		(*DeactivateGrab)(
+#if NeedNestedPrototypes
+			DeviceIntPtr /*device*/
+#endif
+);
     KeyClassPtr		key;
     ValuatorClassPtr	valuator;
     ButtonClassPtr	button;

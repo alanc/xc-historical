@@ -1,4 +1,4 @@
-/* $XConsortium: property.h,v 1.1 87/09/11 07:50:31 toddb Exp $ */
+/* $XConsortium: property.h,v 1.2 88/09/06 15:48:53 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -25,4 +25,31 @@ SOFTWARE.
 #ifndef PROPERTY_H
 #define PROPERTY_H 
 typedef struct _Property *PropertyPtr;
+
+extern int ChangeWindowProperty(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    Atom /*property*/,
+    Atom /*type*/,
+    int /*format*/,
+    int /*mode*/,
+    unsigned long /*len*/,
+    pointer /*value*/,
+    Bool /*sendevent*/
+#endif
+);
+
+extern int DeleteProperty(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    Atom /*propName*/
+#endif
+);
+
+extern int DeleteAllWindowProperties(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
 #endif  /* PROPERTY_H */

@@ -1,4 +1,4 @@
-/* $XConsortium: dipexExt.c,v 5.8 92/11/24 13:05:48 mor Exp $ */
+/* $XConsortium: dipexExt.c,v 5.9 93/01/25 16:12:22 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -268,10 +268,11 @@ ClientPtr client;
  ******************************************************************************
  */
 
-static DeletePexClient(cntxtPtr, pexId)
-pexContext *cntxtPtr;
-int pexId;
+static int DeletePexClient(value, pexId)
+pointer value;
+XID pexId;
 {
+    pexContext *cntxtPtr = (pexContext *)value;
 
     /* Free space allocated for the client context */
     if (cntxtPtr) Xfree( (pointer)cntxtPtr );

@@ -1,4 +1,4 @@
-/* $XConsortium: miscstruct.h,v 5.0 89/06/09 15:00:33 keith Exp $ */
+/* $XConsortium: miscstruct.h,v 5.2 89/06/09 17:54:23 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -26,11 +26,9 @@ SOFTWARE.
 #define MISCSTRUCT_H 1
 
 #include "misc.h"
+#include "X11/Xprotostr.h"
 
-extern unsigned long globalSerialNumber;
-typedef struct _DDXPoint {
-    short x, y;
-} DDXPointRec;
+typedef xPoint DDXPointRec;
 
 typedef struct _Box {
     short x1, y1, x2, y2;

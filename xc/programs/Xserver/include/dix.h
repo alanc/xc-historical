@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.61 91/11/20 14:50:30 keith Exp $ */
+/* $XConsortium: dix.h,v 1.62 92/08/21 19:24:23 rws Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -137,7 +137,11 @@ SOFTWARE.
    else (void) WriteToClient (pClient, (int)(size), (char *)(pbuf));
 
 typedef struct _TimeStamp *TimeStampPtr;
-typedef struct _Client *ClientPtr;
+
+#ifndef _XTYPEDEF_CLIENTPTR
+typedef struct _Client *ClientPtr; /* also in misc.h */
+#define _XTYPEDEF_CLIENTPTR
+#endif
 
 typedef struct _WorkQueue	*WorkQueuePtr;
 
@@ -148,37 +152,43 @@ extern ClientPtr serverClient;
 extern int currentMaxClients;
 extern long *checkForInput[2];
 
-extern int ProcAllowEvents();
-extern int ProcBell();
-extern int ProcChangeActivePointerGrab();
-extern int ProcChangeKeyboardControl();
-extern int ProcChangePointerControl();
-extern int ProcGetKeyboardMapping();
-extern int ProcGetPointerMapping();
-extern int ProcGetInputFocus();
-extern int ProcGetKeyboardControl();
-extern int ProcGetMotionEvents();
-extern int ProcGetPointerControl();
-extern int ProcGrabButton();
-extern int ProcGrabKey();
-extern int ProcGrabKeyboard();
-extern int ProcGrabPointer();
-extern int ProcQueryKeymap();
-extern int ProcQueryPointer();
-extern int ProcSetInputFocus();
-extern int ProcSetKeyboardMapping();
-extern int ProcSetPointerMapping();
-extern int ProcSendEvent();
-extern int ProcUngrabButton();
-extern int ProcUngrabKey();
-extern int ProcUngrabKeyboard();
-extern int ProcUngrabPointer();
-extern int ProcWarpPointer();
-extern int ProcRecolorCursor();
+extern WindowPtr LookupWindow(
+#if NeedFunctionPrototypes
+    XID /*rid*/,
+    ClientPtr /*client*/
+#endif
+);
 
-extern WindowPtr LookupWindow();
-extern pointer LookupDrawable();
+extern pointer LookupDrawable(
+#if NeedFunctionPrototypes
+    XID /*rid*/,
+    ClientPtr /*client*/
+#endif
+);
 
-extern void NoopDDA();
+extern void NoopDDA(
+#if NeedVarargsPrototypes
+    void *,
+    ...
+#endif
+);
+
+extern void CloseDownClient(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+extern void UpdateCurrentTime(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void UpdateCurrentTimeIf(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 
 #endif /* DIX_H */

@@ -1,4 +1,4 @@
-/* $XConsortium: resource.h,v 1.11 90/03/27 15:39:20 rws Exp $ */
+/* $XConsortium: resource.h,v 1.12 91/05/03 17:57:10 keith Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -70,14 +70,100 @@ typedef unsigned long RESTYPE;
 
 #define BAD_RESOURCE 0xe0000000
 
-RESTYPE CreateNewResourceType();
-RESTYPE CreateNewResourceClass();
-unsigned long FakeClientID();
-Bool AddResource();
-void FreeResource();
-void FreeClientResources();
-Bool LegalNewID();
-pointer LookupIDByType();
-pointer LookupIDByClass();
+typedef int (*DeleteType)(
+#if NeedNestedPrototypes
+    pointer /*value*/,
+    XID /*id*/
+#endif
+);
+
+extern RESTYPE CreateNewResourceType(
+#if NeedFunctionPrototypes
+    DeleteType /*deleteFunc*/
+#endif
+);
+
+extern RESTYPE CreateNewResourceClass(
+#if NeedFunctionPrototypes
+void
+#endif
+);
+
+extern Bool InitClientResources(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+extern XID FakeClientID(
+#if NeedFunctionPrototypes
+    int /*client*/
+#endif
+);
+
+extern Bool AddResource(
+#if NeedFunctionPrototypes
+    XID /*id*/,
+    RESTYPE /*type*/,
+    pointer /*value*/
+#endif
+);
+
+extern void FreeResource(
+#if NeedFunctionPrototypes
+    XID /*id*/,
+    RESTYPE /*skipDeleteFuncType*/
+#endif
+);
+
+extern void FreeResourceByType(
+#if NeedFunctionPrototypes
+    XID /*id*/,
+    RESTYPE /*type*/,
+    Bool /*skipFree*/
+#endif
+);
+
+extern Bool ChangeResourceValue(
+#if NeedFunctionPrototypes
+    XID /*id*/,
+    RESTYPE /*rtype*/,
+    pointer /*value*/
+#endif
+);
+
+extern void FreeClientResources(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+extern int FreeAllResources(
+#if NeedFunctionPrototypes
+void
+#endif
+);
+
+extern Bool LegalNewID(
+#if NeedFunctionPrototypes
+    XID /*id*/,
+    ClientPtr /*client*/
+#endif
+);
+
+extern pointer LookupIDByType(
+#if NeedFunctionPrototypes
+    XID /*id*/,
+    RESTYPE /*rtype*/
+#endif
+);
+
+extern pointer LookupIDByClass(
+#if NeedFunctionPrototypes
+    XID /*id*/,
+    RESTYPE /*classes*/
+#endif
+);
 
 #endif /* RESOURCE_H */
+

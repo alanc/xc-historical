@@ -14,7 +14,7 @@ without express or implied warranty.
 
 */
 
-/* $XConsortium: miscrinit.c,v 5.2 91/05/14 11:17:40 rws Exp $ */
+/* $XConsortium: miscrinit.c,v 5.3 93/06/24 10:20:26 dpw Exp $ */
 
 #include "X.h"
 #include "servermd.h"
@@ -175,8 +175,8 @@ miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
     /* BitmapToRegion */
     pScreen->RectsToRegion = miRectsToRegion;
     pScreen->SendGraphicsExpose = miSendGraphicsExpose;
-    pScreen->BlockHandler = NoopDDA;
-    pScreen->WakeupHandler = NoopDDA;
+    pScreen->BlockHandler = (void (*)())NoopDDA;
+    pScreen->WakeupHandler = (void (*)())NoopDDA;
     pScreen->blockData = (pointer)0;
     pScreen->wakeupData = (pointer)0;
     if (bsfuncs)

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: OSio.h,v 1.2 91/07/16 12:56:49 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -38,7 +38,6 @@ extern	void	AIXWakeupHandler();
 extern	void	AIXInitEventHandlers();
 extern	int	AIXProcessArgument();
 extern	void	hftTermQueue();
-extern	void	NoopDDA() ;
 
 #define	setCursorPosition(x,y)	{ AIXCurrentX= (x); AIXCurrentY= (y); }
 

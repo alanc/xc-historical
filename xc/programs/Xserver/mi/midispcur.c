@@ -4,7 +4,7 @@
  * machine independent cursor display routines
  */
 
-/* $XConsortium: midispcur.c,v 5.10 90/03/12 14:10:02 rws Exp $ */
+/* $XConsortium: midispcur.c,v 5.11 91/04/26 21:45:56 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -193,29 +193,29 @@ miDCRealize (pScreen, pCursor)
     }
 
     ValidateGC ((DrawablePtr)pPriv->sourceBits, pGC);
-    (*pGC->ops->PutImage) (pPriv->sourceBits, pGC, 1,
+    (*pGC->ops->PutImage) ((DrawablePtr)pPriv->sourceBits, pGC, 1,
 			   0, 0, pCursor->bits->width, pCursor->bits->height,
- 			   0, XYPixmap, pCursor->bits->source);
+ 			   0, XYPixmap, (char *)pCursor->bits->source);
     gcvals[0] = GXand;
     ChangeGC (pGC, GCFunction, gcvals);
     ValidateGC ((DrawablePtr)pPriv->sourceBits, pGC);
-    (*pGC->ops->PutImage) (pPriv->sourceBits, pGC, 1,
+    (*pGC->ops->PutImage) ((DrawablePtr)pPriv->sourceBits, pGC, 1,
 			   0, 0, pCursor->bits->width, pCursor->bits->height,
- 			   0, XYPixmap, pCursor->bits->mask);
+ 			   0, XYPixmap, (char *)pCursor->bits->mask);
 
     /* mask bits -- pCursor->mask & ~pCursor->source */
     gcvals[0] = GXcopy;
     ChangeGC (pGC, GCFunction, gcvals);
     ValidateGC ((DrawablePtr)pPriv->maskBits, pGC);
-    (*pGC->ops->PutImage) (pPriv->maskBits, pGC, 1,
+    (*pGC->ops->PutImage) ((DrawablePtr)pPriv->maskBits, pGC, 1,
 			   0, 0, pCursor->bits->width, pCursor->bits->height,
- 			   0, XYPixmap, pCursor->bits->mask);
+ 			   0, XYPixmap, (char *)pCursor->bits->mask);
     gcvals[0] = GXandInverted;
     ChangeGC (pGC, GCFunction, gcvals);
     ValidateGC ((DrawablePtr)pPriv->maskBits, pGC);
-    (*pGC->ops->PutImage) (pPriv->maskBits, pGC, 1,
+    (*pGC->ops->PutImage) ((DrawablePtr)pPriv->maskBits, pGC, 1,
 			   0, 0, pCursor->bits->width, pCursor->bits->height,
- 			   0, XYPixmap, pCursor->bits->source);
+ 			   0, XYPixmap, (char *)pCursor->bits->source);
     FreeScratchGC (pGC);
     return pPriv;
 }
@@ -558,8 +558,8 @@ miDCMoveCursor (pScreen, pCursor, x, y, w, h, dx, dy, source, mask)
     pGC = pScreenPriv->pMoveGC;
     if (pGC->serialNumber != pTemp->drawable.serialNumber)
 	ValidateGC ((DrawablePtr) pTemp, pGC);
-    (*pGC->ops->CopyArea)
-	(pScreenPriv->pSave, pTemp, pGC, 0, 0, w, h, 0, 0);
+    (*pGC->ops->CopyArea)((DrawablePtr)pScreenPriv->pSave,
+			  (DrawablePtr)pTemp, pGC, 0, 0, w, h, 0, 0);
     
     /*
      * draw the cursor in the temporary pixmap

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.119 92/10/19 17:01:12 rws Exp $ */
+/* $XConsortium: utils.c,v 1.119 92/10/19 17:19:22 rws Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -34,10 +34,13 @@ SOFTWARE.
 #endif
 #include <time.h>
 
-#ifdef SIGNALRETURNSINT
-#define SIGVAL int
+/* lifted from Xt/VarargsI.h */
+#if NeedVarargsPrototypes
+# include <stdarg.h>
+# define Va_start(a,b) va_start(a,b)
 #else
-#define SIGVAL void
+# include <varargs.h>
+# define Va_start(a,b) va_start(a)
 #endif
 
 extern char *display;
@@ -62,7 +65,6 @@ extern int limitStackSpace;
 extern int limitNoFile;
 #endif
 extern int defaultColorVisualClass;
-extern long ScreenSaverTime;		/* for forcing reset */
 extern Bool permitOldBugs;
 extern int monitorResolution;
 extern Bool defeatAccessControl;
@@ -647,9 +649,14 @@ OsInitAllocator ()
 
 /*VARARGS1*/
 void
-AuditF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
+AuditF(
+#if NeedVarargsPrototypes
+    char * f, ...)
+#else
+ f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
     char *f;
     char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
+#endif
 {
 #ifdef X_NOT_STDC_ENV
     long tm;
@@ -657,6 +664,9 @@ AuditF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
     time_t tm;
 #endif
     char *autime, *s;
+#if NeedVarargsPrototypes
+    va_list args;
+#endif
 
     if (*f != ' ')
     {
@@ -670,37 +680,80 @@ AuditF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
 	    s = argvGlobal[0];
 	ErrorF("AUDIT: %s: %d %s: ", autime, getpid(), s);
     }
+#if NeedVarargsPrototypes
+    Va_start(args, f);
+    ErrorF(f, args);
+    va_end(args);
+#else
     ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
+#endif
 }
 
 /*VARARGS1*/
 void
-FatalError(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
+FatalError(
+#if NeedVarargsPrototypes
+    char *f, ...)
+#else
+f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
     char *f;
     char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
+#endif
 {
+#if NeedVarargsPrototypes
+    va_list args;
+#endif
     ErrorF("\nFatal server error:\n");
+#if NeedVarargsPrototypes
+    Va_start(args, f);
+    ErrorF(f, args);
+    va_end(args);
+#else
     ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
+#endif
     ErrorF("\n");
     AbortServer();
     /*NOTREACHED*/
 }
 
+
 /*VARARGS1*/
 void
-ErrorF( f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
+ErrorF(
+#if NeedVarargsPrototypes
+    char * f, ...)
+#else
+ f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
     char *f;
     char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
+#endif
 {
-#ifdef AIXV3
-    fprintf(aixfd, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-    fflush (aixfd);
+#if NeedVarargsPrototypes
+    va_list args;
+    Va_start(args, f);
+#endif
 
+#ifdef AIXV3
+
+#if NeedVarargsPrototypes
+    vfprintf(aixfd, f, args);
+    va_end(args);
+#else
+    fprintf(aixfd, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
+#endif
+    fflush (aixfd);
     if (SyncOn)
         sync();
+
+#else /* not AIXV3 */
+
+#if NeedVarargsPrototypes
+    vfprintf(stderr, f, args);
+    va_end(args);
 #else
     fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
 #endif
+#endif /* AIXV3 */
 }
 
 #ifdef AIXV3

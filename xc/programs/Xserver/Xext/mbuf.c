@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: multibuf.c,v 1.16 92/11/14 16:40:25 rws Exp $ */
+/* $XConsortium: multibuf.c,v 1.17 93/07/08 14:41:23 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -1572,10 +1572,11 @@ MultibufferPositionWindow (pWin, x, y)
 /* Resource delete func for MultibufferDrawableResType */
 /*ARGSUSED*/
 static int
-MultibufferDrawableDelete (pDrawable, id)
-    DrawablePtr	pDrawable;
+MultibufferDrawableDelete (value, id)
+    pointer	value;
     XID		id;
 {
+    DrawablePtr	pDrawable = (DrawablePtr)value;
     WindowPtr	pWin;
     MultibuffersPtr	pMultibuffers;
     PixmapPtr	pPixmap;
@@ -1597,10 +1598,11 @@ MultibufferDrawableDelete (pDrawable, id)
 /* Resource delete func for MultibufferResType */
 /*ARGSUSED*/
 static int
-MultibufferDelete (pMultibuffer, id)
-    MultibufferPtr	pMultibuffer;
+MultibufferDelete (value, id)
+    pointer	value;
     XID		id;
 {
+    MultibufferPtr	pMultibuffer = (MultibufferPtr)value;
     MultibuffersPtr	pMultibuffers;
 
     pMultibuffers = pMultibuffer->pMultibuffers;
@@ -1616,10 +1618,11 @@ MultibufferDelete (pMultibuffer, id)
 /* Resource delete func for MultibuffersResType */
 /*ARGSUSED*/
 static int
-MultibuffersDelete (pMultibuffers, id)
-    MultibuffersPtr	pMultibuffers;
+MultibuffersDelete (value, id)
+    pointer	value;
     XID		id;
 {
+    MultibuffersPtr	pMultibuffers = (MultibuffersPtr)value;
     int	i;
 
     if (pMultibuffers->refcnt == pMultibuffers->numMultibuffer)
@@ -1633,20 +1636,22 @@ MultibuffersDelete (pMultibuffers, id)
 /* Resource delete func for DisplayRequestResType */
 /*ARGSUSED*/
 static int
-DisplayRequestDelete (pRequest, id)
-    DisplayRequestPtr	pRequest;
+DisplayRequestDelete (value, id)
+    pointer	value;
     XID			id;
 {
+    DisplayRequestPtr	pRequest = (DisplayRequestPtr)value;
     DisposeDisplayRequest (pRequest);
     return TRUE;
 }
 
 /* Resource delete func for OtherClientResType */
 static int
-OtherClientDelete (pMultibuffer, id)
-    MultibufferPtr	pMultibuffer;
+OtherClientDelete (value, id)
+    pointer	value;
     XID		id;
 {
+    MultibufferPtr	pMultibuffer = (MultibufferPtr)value;
     register OtherClientsPtr	other, prev;
 
     prev = 0;

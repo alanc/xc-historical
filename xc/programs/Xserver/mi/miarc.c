@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.42 92/05/28 09:05:28 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.43 92/07/26 14:19:43 rws Exp $ */
 /* Author: Keith Packard and Bob Scheifler */
 /* Warning: this code is toxic, do not dally very long here. */
 
@@ -1199,8 +1199,8 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 		    if (fTricky) {
 			if (pGC->serialNumber != pDraw->serialNumber)
 			    ValidateGC (pDraw, pGC);
-		    	(*pGC->ops->PushPixels) (pGC, pDrawTo, pDraw, dx,
-					    dy, xOrg, yOrg);
+		    	(*pGC->ops->PushPixels) (pGC, (PixmapPtr)pDrawTo,
+						 pDraw, dx, dy, xOrg, yOrg);
 			miClearDrawable ((DrawablePtr) pDrawTo, pGCTo);
 		    }
 		}

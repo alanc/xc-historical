@@ -1,4 +1,4 @@
-/* $XConsortium: opaque.h,v 1.8 89/07/03 18:37:01 rws Exp $ */
+/* $XConsortium: opaque.h,v 1.9 89/07/16 14:37:10 rws Exp $ */
 
 #ifndef OPAQUE_H
 #define OPAQUE_H
@@ -15,8 +15,6 @@ extern char dispatchException;
 #define DE_RESET     1
 #define DE_TERMINATE 2
 
-extern int CloseFont();
-extern void FreeResource();
 extern long TimeOutValue;
 extern long ScreenSaverTime;
 extern long ScreenSaverInterval;

@@ -25,7 +25,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XConsortium: cfbscrinit.c,v 5.24 92/03/31 17:52:52 keith Exp $ */
+/* $XConsortium: cfbscrinit.c,v 5.25 92/07/30 10:43:43 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -110,12 +110,12 @@ cfbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->UnrealizeFont = mfbUnrealizeFont;
     pScreen->CreateGC = cfbCreateGC;
     pScreen->CreateColormap = cfbInitializeColormap;
-    pScreen->DestroyColormap = NoopDDA;
+    pScreen->DestroyColormap = (void (*)())NoopDDA;
 #ifdef	STATIC_COLOR
     pScreen->InstallColormap = cfbInstallColormap;
     pScreen->UninstallColormap = cfbUninstallColormap;
     pScreen->ListInstalledColormaps = cfbListInstalledColormaps;
-    pScreen->StoreColors = NoopDDA;
+    pScreen->StoreColors = (void (*)())NoopDDA;
 #endif
     pScreen->ResolveColor = cfbResolveColor;
     pScreen->BitmapToRegion = mfbPixmapToRegion;

@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 5.15 92/07/23 10:15:24 rws Exp $ */
+/* $XConsortium: windowstr.h,v 5.16 92/12/18 16:41:02 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -34,7 +34,8 @@ SOFTWARE.
 #include "resource.h"	/* for ROOT_WINDOW_ID_BASE */
 #include "dix.h"
 #include "miscstruct.h"
-#include "Xprotostr.h"
+#include "X11/Xprotostr.h"
+#include "opaque.h"
 
 #define GuaranteeNothing	0
 #define GuaranteeVisBack	1
@@ -113,7 +114,6 @@ typedef struct _Window {
  * fields (or filling the appropriate default value)
  */
 
-extern WindowPtr    FindWindowWithOptional();
 extern Mask	    DontPropagateMasks[];
 
 #define wTrackParent(w,field)	((w)->optional ? \
@@ -153,29 +153,17 @@ extern Mask	    DontPropagateMasks[];
 #define HasBorder(w)	((w)->borderWidth)
 #endif
 
-extern int DeleteWindow();
-extern int ChangeWindowAttributes();
-extern int WalkTree();
-extern Bool CreateRootWindow();
-extern WindowPtr CreateWindow();
-extern int DeleteWindow();
-extern int DestroySubwindows();
-extern int ChangeWindowAttributes();
-extern int GetWindowAttributes();
-extern int ConfigureWindow();
-extern int ReparentWindow();
-extern int MapWindow();
-extern int MapSubwindow();
-extern int UnmapWindow();
-extern int UnmapSubwindow();
-extern RegionPtr NotClippedByChildren();
-extern void SendVisibilityNotify();
-
 typedef struct _ScreenSaverStuff {
     WindowPtr pWindow;
     XID       wid;
     char      blanked;
-    Bool      (*ExternalScreenSaver)();	
+    Bool      (*ExternalScreenSaver)(
+#if NeedNestedPrototypes
+	ScreenPtr	/*pScreen*/,
+	int		/*xstate*/,
+	Bool		/*force*/
+#endif
+    );
 } ScreenSaverStuffRec, *ScreenSaverStuffPtr;
 
 #define SCREEN_IS_BLANKED   0
@@ -185,9 +173,7 @@ typedef struct _ScreenSaverStuff {
 
 #define HasSaverWindow(i)   (savedScreenInfo[i].pWindow != NullWindow)
 
-extern int ScreenSaverBlanking, ScreenSaverAllowExposures;
 extern int screenIsSaved;
-
 extern ScreenSaverStuffRec savedScreenInfo[MAXSCREENS];
 
 #endif /* WINDOWSTRUCT_H */

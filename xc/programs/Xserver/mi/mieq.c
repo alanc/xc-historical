@@ -1,5 +1,5 @@
 /*
- * $XConsortium: mieq.c,v 1.4 91/07/19 23:20:26 keith Exp $
+ * $XConsortium: mieq.c,v 1.5 92/01/30 13:43:06 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -176,11 +176,11 @@ mieqProcessInputEvents ()
 	    case KeyPress:
 	    case KeyRelease:
 	    	(*miEventQueue.pKbd->processInputProc)
-					    (&xe, miEventQueue.pKbd, 1);
+				(&xe, (DeviceIntPtr)miEventQueue.pKbd, 1);
 	    	break;
 	    default:
 	    	(*miEventQueue.pPtr->processInputProc)
-					    (&xe, miEventQueue.pPtr, 1);
+				(&xe, (DeviceIntPtr)miEventQueue.pPtr, 1);
 	    	break;
 	    }
 	}

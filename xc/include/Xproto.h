@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: Xproto.h,v 1.85 91/04/06 12:57:05 rws Exp $
+ *	$XConsortium: Xproto.h,v 1.86 92/10/18 16:33:19 rws Exp $
  */
 
 /* Definitions for the X window system used by server and c bindings */
@@ -602,7 +602,7 @@ typedef struct {
     } xQueryKeymapReply;
 
 /* Warning: this MUST match (up to component renaming) xListFontsWithInfoReply */
-typedef struct {
+typedef struct _xQueryFontReply {
     BYTE type;  /* X_Reply */
     BYTE pad1;
     CARD16 sequenceNumber B16;
@@ -977,7 +977,7 @@ typedef struct {
 				     the symbol table in the library
 				     is too big to link */
 
-typedef struct {
+typedef struct _xEvent {
     union {
 	struct {
 	    BYTE type;

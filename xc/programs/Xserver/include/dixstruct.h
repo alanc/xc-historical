@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dixstruct.h,v 1.16 92/03/13 15:39:45 rws Exp $ */
+/* $XConsortium: dixstruct.h,v 1.17 92/08/21 19:26:00 rws Exp $ */
 
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
@@ -32,6 +32,7 @@ SOFTWARE.
 #include "cursor.h"
 #include "gc.h"
 #include "pixmap.h"
+#include "X11/Xmd.h"
 
 /*
  * 	direct-mapped hash table, used by resource manager to store
@@ -53,7 +54,13 @@ typedef struct _Client {
     pointer     requestBuffer;
     pointer     osPrivate;	/* for OS layer, including scheduler */
     Bool        swapped;
-    void        (*pSwapReplyFunc) ();
+    void        (*pSwapReplyFunc) (
+#if NeedNestedPrototypes
+		ClientPtr	/* pClient */,
+		int		/* size */,
+		void *		/* pbuf */
+#endif
+);
     XID         errorValue;
     int         sequence;
     int         closeDownMode;
@@ -67,7 +74,11 @@ typedef struct _Client {
     pointer    *saveSet;
     int         numSaved;
     pointer     screenPrivate[MAXSCREENS];
-    int         (**requestVector) ();
+    int         (**requestVector) (
+#if NeedNestedPrototypes
+		ClientPtr /* pClient */
+#endif
+);
     unsigned long req_len;		/* length of current request */
     Bool	big_requests;		/* supports large requests */
 
@@ -79,17 +90,23 @@ typedef struct _Client {
 
 typedef struct _WorkQueue {
     struct _WorkQueue *next;
-    Bool        (*function) ();
+    Bool        (*function) (
+#if NeedNestedPrototypes
+		ClientPtr	/* pClient */,
+		pointer		/* closure */
+#endif
+);
     ClientPtr   client;
     pointer     closure;
 }           WorkQueueRec;
 
 extern TimeStamp currentTime;
 extern TimeStamp lastDeviceEventTime;
-extern void CloseDownClient();
 
-extern TimeStamp ClientTimeToServerTime();
-extern void UpdateCurrentTime();
-extern void UpdateCurrentTimeIf();
+extern TimeStamp ClientTimeToServerTime(
+#if NeedFunctionPrototypes
+    CARD32 /*c*/
+#endif
+);
 
 #endif				/* DIXSTRUCT_H */

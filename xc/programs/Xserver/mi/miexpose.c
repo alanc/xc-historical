@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 5.15 92/03/13 16:03:50 eswu Exp $ */
+/* $XConsortium: miexpose.c,v 5.16 92/11/14 15:20:42 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -200,7 +200,7 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	 * Copy any areas from the source backing store. Modifies
 	 * rgnExposed.
 	 */
-	(* pSrcWin->drawable.pScreen->ExposeCopy) (pSrcDrawable,
+	(* pSrcWin->drawable.pScreen->ExposeCopy) ((WindowPtr)pSrcDrawable,
 					      pDstDrawable,
 					      pGC,
 					      &rgnExposed,
@@ -270,9 +270,8 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	    /* PaintWindowBackground doesn't clip, so we have to */
 	    (*pscr->Intersect)(&rgnExposed, &rgnExposed, &pWin->clipList);
 	}
-	(*pWin->drawable.pScreen->PaintWindowBackground)(pDstDrawable,
-							 &rgnExposed, 
-							 PW_BACKGROUND);
+	(*pWin->drawable.pScreen->PaintWindowBackground)(
+			(WindowPtr)pDstDrawable, &rgnExposed, PW_BACKGROUND);
 
 	if (extents)
 	    (*pscr->RegionReset)(&rgnExposed, &expBox);
@@ -503,11 +502,12 @@ static int numGCs = 0;
 static GCPtr	screenContext[MAXSCREENS];
 
 /*ARGSUSED*/
-static
-tossGC (pGC, id)
-GCPtr pGC;
-GContext id;
+static int
+tossGC (value, id)
+pointer value;
+XID id;
 {
+    GCPtr pGC = (GCPtr)value;
     screenContext[pGC->pScreen->myNum] = (GCPtr)NULL;
     FreeGC (pGC, id);
     numGCs--;
@@ -746,7 +746,7 @@ int what;
 	prect->height = pbox->y2 - pbox->y1;
     }
     prect -= numRects;
-    (*pGC->ops->PolyFillRect)(pWin, pGC, numRects, prect);
+    (*pGC->ops->PolyFillRect)((DrawablePtr)pWin, pGC, numRects, prect);
     DEALLOCATE_LOCAL(prect);
 
     if (pWin->backStorage)

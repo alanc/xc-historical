@@ -1,4 +1,4 @@
-/* $XConsortium: extnsionst.h,v 1.8 89/07/03 19:48:53 rws Exp $ */
+/* $XConsortium: extnsionst.h,v 1.9 89/08/31 18:41:12 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -24,10 +24,19 @@ SOFTWARE.
 ******************************************************************/
 #ifndef EXTENSIONSTRUCT_H
 #define EXTENSIONSTRUCT_H 
+
+#include "misc.h"
+#include "screenint.h"
 #include "extension.h"
+#include "gc.h"
+
 typedef struct _ExtensionEntry {
     int index;
-    void (* CloseDown)();	/* called at server shutdown */
+    void (* CloseDown)(	/* called at server shutdown */
+#if NeedNestedPrototypes
+	struct _ExtensionEntry * /* extension */
+#endif
+);
     char *name;               /* extension name */
     int base;                 /* base request number */
     int eventBase;            
@@ -37,12 +46,22 @@ typedef struct _ExtensionEntry {
     int num_aliases;
     char **aliases;
     pointer extPrivate;
-    unsigned short (* MinorOpcode)();	/* called for errors */
+    unsigned short (* MinorOpcode)(	/* called for errors */
+#if NeedNestedPrototypes
+	ClientPtr /* client */
+#endif
+);
 } ExtensionEntry;
 
+/* any attempt to declare the types of the parameters to the functions
+ * in EventSwapVector fails.  The functions take pointers to two events,
+ * but the exact event types that are declared vary from one function 
+ * to another.  You can't even put void *, void * (the ibm compiler
+ * complains, anyway).
+ */
 extern void (* EventSwapVector[128]) ();
 
-typedef void (* ExtensionLookupProc)();
+typedef void (* ExtensionLookupProc)(/*args indeterminate*/);
 
 typedef struct _ProcEntry {
     char *name;
@@ -59,15 +78,89 @@ typedef struct _ScreenProcEntry {
 
 #define    GetGCValue(pGC, GCElement)    (pGC->GCElement)
 
-extern void InitExtensions();
-extern int ProcQueryExtension();
-extern int ProcListExtensions();
-extern ExtensionEntry *AddExtension();
-extern Bool AddExtensionAlias();
-extern ExtensionLookupProc LookupProc();
-extern Bool RegisterProc();
-extern Bool RegisterScreenProc();
-extern unsigned short MinorOpcodeOfRequest();
-extern unsigned short StandardMinorOpcode();
+
+extern ExtensionEntry *AddExtension(
+#if NeedFunctionPrototypes
+    char */*name*/,
+    int /*NumEvents*/,
+    int /*NumErrors*/,
+    int (*/*MainProc*/)(
+#if NeedNestedPrototypes
+	ClientPtr /*client*/
+#endif
+),
+    int (*/*SwappedMainProc*/)(
+#if NeedNestedPrototypes
+	ClientPtr /*client*/
+#endif
+),
+    void (*/*CloseDownProc*/)(
+#if NeedNestedPrototypes
+	ExtensionEntry * /*extension*/
+#endif
+),
+    unsigned short (*/*MinorOpcodeProc*/)(
+#if NeedNestedPrototypes
+	ClientPtr /*client*/
+#endif
+	)
+#endif /* NeedFunctionPrototypes */
+);
+
+extern Bool AddExtensionAlias(
+#if NeedFunctionPrototypes
+    char */*alias*/,
+    ExtensionEntry * /*extension*/
+#endif
+);
+
+extern unsigned short StandardMinorOpcode(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+extern unsigned short MinorOpcodeOfRequest(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+extern int CloseDownExtensions(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern ExtensionLookupProc LookupProc(
+#if NeedFunctionPrototypes
+    char */*name*/,
+    GCPtr /*pGC*/
+#endif
+);
+
+extern Bool RegisterProc(
+#if NeedFunctionPrototypes
+    char */*name*/,
+    GCPtr /*pGC*/,
+    ExtensionLookupProc /*proc*/
+#endif
+);
+
+extern Bool RegisterScreenProc(
+#if NeedFunctionPrototypes
+    char */*name*/,
+    ScreenPtr /*pScreen*/,
+    ExtensionLookupProc /*proc*/
+#endif
+);
+
+extern void InitExtensions(
+#if NeedFunctionPrototypes
+    int argc,
+    char **argv
+#endif
+);
 
 #endif /* EXTENSIONSTRUCT_H */
+

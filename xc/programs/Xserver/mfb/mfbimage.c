@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimage.c,v 5.4 91/12/28 15:00:41 keith Exp $ */
+/* $XConsortium: mfbimage.c,v 5.5 93/06/24 10:22:43 dpw Exp $ */
 
 #include "X.h"
 
@@ -88,9 +88,11 @@ mfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
 
     ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->fExpose = FALSE;
     if (format != XYBitmap)
-	(*pGC->ops->CopyArea)(pPixmap, dst, pGC, leftPad, 0, w, h, x, y);
+	(*pGC->ops->CopyArea)((DrawablePtr)pPixmap, dst, pGC, leftPad, 0,
+			      w, h, x, y);
     else
-	(*pGC->ops->CopyPlane)(pPixmap, dst, pGC, leftPad, 0, w, h, x, y, 1);
+	(*pGC->ops->CopyPlane)((DrawablePtr)pPixmap, dst, pGC, leftPad, 0,
+			       w, h, x, y, 1);
     ((mfbPrivGC*)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->fExpose = TRUE;
     FreeScratchPixmapHeader(pPixmap);
 }

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.54 92/05/19 17:23:02 keith Exp $ */
+/* $XConsortium: access.c,v 1.55 93/02/06 13:56:27 rws Exp $ */
 
 #include "Xos.h"
 #include "X.h"
@@ -76,8 +76,29 @@ Bool defeatAccessControl = FALSE;
 #define getpeername(fd, from, fromlen)	hpux_getpeername(fd, from, fromlen)
 #endif
 
-static int ConvertAddr(), CheckAddr();
-static Bool NewHost();
+static int ConvertAddr(
+#if NeedFunctionPrototypes
+    struct sockaddr */*saddr*/,
+    int */*len*/,
+    pointer */*addr*/
+#endif
+);
+
+static int CheckAddr(
+#if NeedFunctionPrototypes
+    int /*family*/,
+    pointer /*pAddr*/,
+    unsigned /*length*/
+#endif
+);
+
+static Bool NewHost(
+#if NeedFunctionPrototypes
+    int /*family*/,
+    pointer /*addr*/,
+    int /*len*/
+#endif
+);
 
 typedef struct _host {
 	short		family;
@@ -157,7 +178,7 @@ DefineSelf (fd)
 	inetaddr = (struct sockaddr_in *) (&(saddr.sa));
 	acopy ( hp->h_addr, &(inetaddr->sin_addr), hp->h_length);
 	len = sizeof(saddr.sa);
-	family = ConvertAddr ( &(saddr.sa), &len, &addr);
+	family = ConvertAddr ( &(saddr.sa), &len, (pointer *)&addr);
 	if ( family != -1 && family != FamilyLocal )
 	{
 	    for (host = selfhosts;
@@ -191,7 +212,7 @@ DefineSelf (fd)
     struct ifconf	ifc;
     register int	n;
     int 		len;
-    pointer 		addr;
+    unsigned char *	addr;
     int 		family;
     register HOST 	*host;
     register struct ifreq *ifr;
@@ -204,7 +225,7 @@ DefineSelf (fd)
      */
     if (dnaddr)
     {    
-	addr = (pointer) dnaddr;
+	addr = (unsigned char *) dnaddr;
 	len = dnaddr->a_len + sizeof(dnaddr->a_len);
 	family = AF_DECnet;
 	for (host = selfhosts;
@@ -240,7 +261,7 @@ DefineSelf (fd)
 	if (ifr->ifr_addr.sa_family == AF_DECnet)
 	    continue;
 #endif /* DNETCONN */
-	family = ConvertAddr (&ifr->ifr_addr, &len, &addr);
+	family = ConvertAddr (&ifr->ifr_addr, &len, (pointer *)&addr);
         if (family == -1 || family == FamilyLocal)
 	    continue;
         for (host = selfhosts;
@@ -318,7 +339,7 @@ AugmentSelf(from, len)
     pointer addr;
     register HOST *host;
 
-    family = ConvertAddr(from, &len, &addr);
+    family = ConvertAddr(from, &len, (pointer *)&addr);
     if (family == -1 || family == FamilyLocal)
 	return;
     for (host = selfhosts; host; host = host->next)
@@ -399,7 +420,7 @@ ResetHosts (display)
 		/* node was specified by name */
 		saddr.sa.sa_family = np->n_addrtype;
 		len = sizeof(saddr.sa);
-		if (ConvertAddr (&saddr.sa, &len, &addr) == FamilyDECnet)
+		if (ConvertAddr (&saddr.sa, &len, (pointer *)&addr) == FamilyDECnet)
 		{
 		    bzero ((char *) &dnaddr, sizeof (dnaddr));
 		    dnaddr.a_len = np->n_length;
@@ -408,7 +429,7 @@ ResetHosts (display)
 		}
     	    }
 	    if (dnaddrp)
-		(void) NewHost((short)FamilyDECnet, (pointer)dnaddrp,
+		(void) NewHost(FamilyDECnet, (pointer)dnaddrp,
 			(int)(dnaddrp->a_len + sizeof(dnaddrp->a_len)));
     	}
 	else
@@ -428,7 +449,7 @@ ResetHosts (display)
 	    {
     		saddr.sa.sa_family = hp->h_addrtype;
 		len = sizeof(saddr.sa);
-    		if ((family = ConvertAddr (&saddr.sa, &len, &addr)) != -1)
+    		if ((family = ConvertAddr (&saddr.sa, &len, (pointer *)&addr)) != -1)
 		{
 #ifdef h_addr				/* new 4.3bsd version of gethostent */
 		    char **list;
@@ -462,7 +483,7 @@ AuthorizedClient(client)
     alen = sizeof (from);
     if (!getpeername (((OsCommPtr)client->osPrivate)->fd, &from, &alen))
     {
-	family = ConvertAddr (&from, &alen, &addr);
+	family = ConvertAddr (&from, &alen, (pointer *)&addr);
 	if (family == -1)
 	    return FALSE;
 	if (family == FamilyLocal)
@@ -536,7 +557,7 @@ ForEachHostInFamily (family, func, closure)
  * called when starting or resetting the server */
 static Bool
 NewHost (family, addr, len)
-    short	family;
+    int		family;
     pointer	addr;
     int		len;
 {
@@ -614,7 +635,7 @@ GetHosts (data, pnHosts, pLen, pEnabled)
 {
     int			len;
     register int 	n = 0;
-    register pointer	ptr;
+    register unsigned char *ptr;
     register HOST	*host;
     int			nHosts = 0;
 
@@ -703,7 +724,7 @@ InvalidHost (saddr, len)
 
     if (!AccessEnabled)   /* just let them in */
         return(0);    
-    family = ConvertAddr (saddr, &len, &addr);
+    family = ConvertAddr (saddr, &len, (pointer *)&addr);
     if (family == -1)
         return 1;
     if (family == FamilyLocal)

@@ -1,4 +1,4 @@
-/* $XConsortium: window.h,v 1.3 88/09/06 15:48:19 jim Exp $ */
+/* $XConsortium: window.h,v 1.4 89/07/04 16:09:11 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -25,6 +25,11 @@ SOFTWARE.
 
 #ifndef WINDOW_H
 #define WINDOW_H
+
+#include "misc.h"
+#include "region.h"
+#include "screenint.h"
+
 #define TOTALLY_OBSCURED 0
 #define UNOBSCURED 1
 #define OBSCURED 2
@@ -40,5 +45,286 @@ SOFTWARE.
 
 typedef struct _BackingStore *BackingStorePtr;
 typedef struct _Window *WindowPtr;
+
+extern Bool CheckSubSaveUnder(
+#if NeedFunctionPrototypes
+    WindowPtr /*pParent*/,
+    WindowPtr /*pFirst*/,
+    RegionPtr /*pRegion*/
+#endif
+);
+
+extern Bool CheckSaveUnder(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+extern Bool ChangeSaveUnder(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    WindowPtr /*first*/
+#endif
+);
+
+extern void DoChangeSaveUnder(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    WindowPtr /*pFirst*/
+#endif
+);
+
+typedef int (*VisitWindowProcPtr)(
+#if NeedNestedPrototypes
+    WindowPtr /*pWin*/,
+    pointer /*data*/
+#endif
+);
+
+extern int TraverseTree(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    VisitWindowProcPtr /*func*/,
+    pointer /*data*/
+#endif
+);
+
+extern int WalkTree(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    VisitWindowProcPtr /*func*/,
+    pointer /*data*/
+#endif
+);
+
+extern WindowPtr AllocateWindow(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/
+#endif
+);
+
+extern Bool CreateRootWindow(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/
+#endif
+);
+
+extern void InitRootWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+extern int ClippedRegionFromBox(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    RegionPtr /*Rgn*/,
+    int /*x*/,
+    int /*y*/,
+    int /*w*/,
+    int /*h*/
+#endif
+);
+
+extern WindowPtr RealChildHead(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+extern WindowPtr CreateWindow(
+#if NeedFunctionPrototypes
+    Window /*wid*/,
+    WindowPtr /*pParent*/,
+    int /*x*/,
+    int /*y*/,
+    unsigned int /*w*/,
+    unsigned int /*h*/,
+    unsigned int /*bw*/,
+    unsigned int /*class*/,
+    Mask /*vmask*/,
+    XID */*vlist*/,
+    int /*depth*/,
+    ClientPtr /*client*/,
+    VisualID /*visual*/,
+    int */*error*/
+#endif
+);
+
+extern int DeleteWindow(
+#if NeedFunctionPrototypes
+    pointer /*pWin*/,
+    XID /*wid*/
+#endif
+);
+
+extern int DestroySubwindows(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    ClientPtr /*client*/
+#endif
+);
+
+extern int ChangeWindowAttributes(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    Mask /*vmask*/,
+    XID */*vlist*/,
+    ClientPtr /*client*/
+#endif
+);
+
+extern int GetWindowAttributes(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    ClientPtr /*client*/
+#endif
+);
+
+extern RegionPtr CreateUnclippedWinSize(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+extern void GravityTranslate(
+#if NeedFunctionPrototypes
+    int /*x*/,
+    int /*y*/,
+    int /*oldx*/,
+    int /*oldy*/,
+    int /*dw*/,
+    int /*dh*/,
+    unsigned /*gravity*/,
+    int */*destx*/,
+    int */*desty*/
+#endif
+);
+
+extern int ConfigureWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    Mask /*mask*/,
+    XID */*vlist*/,
+    ClientPtr /*client*/
+#endif
+);
+
+extern int SetShape(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+extern int CirculateWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pParent*/,
+    int /*direction*/,
+    ClientPtr /*client*/
+#endif
+);
+
+extern int ReparentWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    WindowPtr /*pParent*/,
+    int /*x*/,
+    int /*y*/,
+    ClientPtr /*client*/
+#endif
+);
+
+extern int MapWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    ClientPtr /*client*/
+#endif
+);
+
+extern int MapSubwindows(
+#if NeedFunctionPrototypes
+    WindowPtr /*pParent*/,
+    ClientPtr /*client*/
+#endif
+);
+
+extern int UnmapWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    Bool /*fromConfigure*/
+#endif
+);
+
+extern void UnmapSubwindows(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+extern void HandleSaveSet(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+extern Bool VisibleBoundingBoxFromPoint(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    int /*x*/,
+    int /*y*/,
+    BoxPtr /*box*/
+#endif
+);
+
+extern Bool PointInWindowIsVisible(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    int /*x*/,
+    int /*y*/
+#endif
+);
+
+extern RegionPtr NotClippedByChildren(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+extern void SendVisibilityNotify(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+extern void SaveScreens(
+#if NeedFunctionPrototypes
+    int /*on*/,
+    int /*mode*/
+#endif
+);
+
+extern WindowPtr FindWindowWithOptional(
+#if NeedFunctionPrototypes
+    WindowPtr /*w*/
+#endif
+);
+
+extern void CheckWindowOptionalNeed(
+#if NeedFunctionPrototypes
+    WindowPtr /*w*/
+#endif
+);
+
+extern Bool MakeWindowOptional(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+extern void DisposeWindowOptional(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
 
 #endif /* WINDOW_H */

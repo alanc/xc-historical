@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$XConsortium: sun.h,v 5.15 92/11/18 14:09:49 rws Exp $ SPRITE (Berkeley)"
+ *	"$XConsortium: sun.h,v 5.16 93/03/14 16:20:03 rws Exp $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
@@ -223,13 +223,13 @@ typedef struct {
  *	fbPriv	  	Data private to the frame buffer type.
  */
 typedef struct {
-    pointer 	  	fb; 	    /* Frame buffer itself */
+    unsigned char *	fb; 	    /* Frame buffer itself */
     Bool    	  	mapped;	    /* TRUE if frame buffer already mapped */
     Bool		parent;	    /* TRUE if fd is a SunWindows window */
     int	    	  	fd; 	    /* Descriptor open to frame buffer */
     struct fbtype 	info;	    /* Frame buffer characteristics */
     void		(*EnterLeave)();    /* screen switch */
-    pointer 	  	fbPriv;	    /* Frame-buffer-dependent data */
+    unsigned char * 	fbPriv;	    /* Frame-buffer-dependent data */
 } fbFd;
 
 extern Bool sunSupportsDepth8;

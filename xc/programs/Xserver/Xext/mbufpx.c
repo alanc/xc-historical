@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: multibufpx.c,v 1.1 92/03/17 17:01:31 eswu Exp $ */
+/* $XConsortium: multibufpx.c,v 1.2 93/07/08 14:09:28 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -71,7 +71,7 @@ pixMultibufferInit(pScreen, pMBScreen)
     mbufPixmapPrivPtr	pMBPriv;
 
     pMBScreen->CreateImageBuffers = pixCreateImageBuffers;
-    pMBScreen->DestroyImageBuffers = NoopDDA;
+    pMBScreen->DestroyImageBuffers = (void (*)())NoopDDA;
     pMBScreen->DisplayImageBuffers = pixDisplayImageBuffers;
     pMBScreen->ClearImageBufferArea = pixClearImageBufferArea;
     pMBScreen->ChangeMBufferAttributes = NoopDDA_True;

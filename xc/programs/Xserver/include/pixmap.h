@@ -1,4 +1,4 @@
-/* $XConsortium: pixmap.h,v 5.3 92/02/27 18:11:45 eswu Exp $ */
+/* $XConsortium: pixmap.h,v 5.4 93/06/24 10:29:37 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -24,6 +24,9 @@ SOFTWARE.
 ******************************************************************/
 #ifndef PIXMAP_H
 #define PIXMAP_H
+
+#include "misc.h"
+#include "screenint.h"
 
 /* types for Drawable */
 #define DRAWABLE_WINDOW 0
@@ -57,7 +60,41 @@ typedef union _PixUnion {
 #define WindowDrawable(type) \
 	((type == DRAWABLE_WINDOW) || (type == UNDRAWABLE_WINDOW))
 
-extern PixmapPtr GetScratchPixmapHeader();
-extern void FreeScratchPixmapHeader();
+extern PixmapPtr GetScratchPixmapHeader(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    int /*width*/,
+    int /*height*/,
+    int /*depth*/,
+    int /*bitsPerPixel*/,
+    int /*devKind*/,
+    pointer /*pPixData*/
+#endif
+);
+
+extern void FreeScratchPixmapHeader(
+#if NeedFunctionPrototypes
+    PixmapPtr /*pPixmap*/
+#endif
+);
+
+extern Bool CreateScratchPixmapsForScreen(
+#if NeedFunctionPrototypes
+    int /*scrnum*/
+#endif
+);
+
+extern void FreeScratchPixmapsForScreen(
+#if NeedFunctionPrototypes
+    int /*scrnum*/
+#endif
+);
+
+extern PixmapPtr AllocatePixmap(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    int /*pixDataSize*/
+#endif
+);
 
 #endif /* PIXMAP_H */

@@ -1,4 +1,4 @@
-/* $XConsortium: dixfontstr.h,v 1.9 91/02/20 19:39:23 keith Exp $ */
+/* $XConsortium: dixfontstr.h,v 1.10 91/02/22 21:53:12 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -30,15 +30,10 @@ SOFTWARE.
 #include "dixfont.h"
 #include "fontstruct.h"
 #include "misc.h"
+#include "closure.h"
+#define NEED_REPLIES
+#include "X11/Xproto.h" /* for xQueryFontReply */
 
-#ifdef NOTDEF
-extern FontPtr FontFileLoad( /* name, length */ );	/* implemented in OS
-							 * layer */
-extern Bool FontFilePropLoad( /* name, length, *font, fi, *props */ );
-extern void FontUnload( /* font */ );
-#endif
-
-#ifndef R4_FONT_STRUCTURES
 #define FONTCHARSET(font)	  (font)
 #define FONTMAXBOUNDS(font,field) (font)->info.maxbounds.field
 #define FONTMINBOUNDS(font,field) (font)->info.minbounds.field
@@ -59,59 +54,6 @@ extern void FontUnload( /* font */ );
 #define FONTPROPS(font)		  (font)->info.props
 #define FONTGLYPHBITS(base,pci)	  ((unsigned char *) (pci)->bits)
 #define FONTINFONPROPS(font)	  (font)->info.nprops
-#else
-
-typedef struct _DIXFontProp {
-    ATOM        name;
-    INT32       value;		/* assumes ATOM is not larger than INT32 */
-}           DIXFontProp;
-
-/*
- * FONT is created at font load time; it is not part of the
- * font file format.
- */
-typedef struct _Font {
-    FontInfoPtr pFI;
-    DIXFontProp *pFP;
-    CharInfoPtr pCI;		/* bitmap metrics and offset */
-    char       *pGlyphs;
-    pointer     osPrivate;
-    int         fileType;	/* tag for OS layer */
-    int         refcnt;		/* free storage when this goes to 0 */
-    pointer     devPriv[MAXSCREENS];	/* information private to screen */
-    CharInfoPtr pInkCI;		/* ink metrics */
-    CharInfoPtr pInkMin;	/* ink metrics */
-    CharInfoPtr pInkMax;	/* ink metrics */
-}           FontRec;
-
-#define FONTCHARSET(font)	  (font)->pFI
-#define FONTMAXBOUNDS(font,field) (font)->pFI->maxbounds.metrics.field
-#define FONTMINBOUNDS(font,field) (font)->pFI->minbounds.metrics.field
-#define TERMINALFONT(font)	  (font)->pFI->terminalFont
-#define FONTASCENT(font)	  (font)->pFI->fontAscent
-#define FONTDESCENT(font)	  (font)->pFI->fontDescent
-#define FONTGLYPHS(font)	  (font)->pGlyphs
-#define FONTCONSTMETRICS(font)	  (font)->pFI->constantMetrics
-#define FONTCONSTWIDTH(font)	  (font)->pFI->constantWidth
-#define FONTALLEXIST(font)	  (font)->pFI->allExist
-#define FONTFIRSTCOL(font)	  (font)->pFI->firstCol
-#define FONTLASTCOL(font)	  (font)->pFI->lastCol
-#define FONTFIRSTROW(font)	  (font)->pFI->firstRow
-#define FONTLASTROW(font)	  (font)->pFI->lastRow
-#define FONTDEFAULTCH(font)	  (font)->pCI->chDefault
-#define FONTHASINK(font)	  (font)->pFI->inkMetrics
-#define FONTINKMIN(font)	  (&(font)->pInkMin.metrics)
-#define FONTINKMAX(font)	  (&(font)->pInkMax.metrics)
-#define FONTPROPS(font)		  (font)->pFP
-#define FONTGLYPHBITS(base,pci)	  (((unsigned char *) base) + (pci)->byteOffset)
-#define FONTINFONPROPS(pfi)	  (pfi)->nProps
-
-typedef struct _FontInfoRec FontInfoRec,
-           *FontInfoPtr;
-typedef struct _DIXFontProp DIXFontPropRec,
-           *DIXFontPropPtr;
-
-#endif
 
 /* some things haven't changed names, but we'll be careful anyway */
 
@@ -127,18 +69,6 @@ typedef struct _DIXFontProp DIXFontPropRec,
  */
 #define N2dChars(pfont)	(N1dChars(pfont) * \
 			 (FONTLASTROW(pfont) - FONTFIRSTROW(pfont) + 1))
-
-
-/* in dixfont.c */
-extern Bool SetDefaultFont();
-extern int  CloseFont();
-extern Bool DescribeFont();
-extern void ServerBitmapFromGlyph();
-extern Bool CursorMetricsFromGlyph();
-extern void GetGlyphs();
-extern int  LoadGlyphs();
-extern Bool QueryTextExtents();
-extern int  ListFonts();
 
 #ifndef GLYPHPADBYTES
 #define GLYPHPADBYTES -1
@@ -163,5 +93,12 @@ extern int  ListFonts();
 #define	GLYPHWIDTHBYTESPADDED(pci)	((GLYPHWIDTHBYTES(pci)+7) & ~0x7)
 #define	PADGLYPHWIDTHBYTES(w)		(((((w)+7)>>3)+7) & ~0x7)
 #endif
+
+extern int doListFontsWithInfo(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    LFWIclosurePtr /*c*/
+#endif
+);
 
 #endif				/* DIXFONTSTRUCT_H */

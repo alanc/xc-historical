@@ -1,4 +1,4 @@
-/* $XConsortium: cursorstr.h,v 1.5 89/07/03 13:20:16 rws Exp $ */
+/* $XConsortium: cursorstr.h,v 1.6 89/08/04 18:23:09 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -26,8 +26,6 @@ SOFTWARE.
 #define CURSORSTRUCT_H 
 
 #include "cursor.h"
-#include "pixmap.h"
-#include "misc.h"
 /* 
  * device-independent cursor storage
  */
@@ -55,11 +53,5 @@ typedef struct _Cursor {
 typedef struct _CursorMetric {
     unsigned short width, height, xhot, yhot;
 } CursorMetricRec;
-
-extern int		FreeCursor();
-extern CursorPtr	AllocCursor();		/* also realizes it */
-extern int		AllocGlyphCursor();	/* also realizes it */
-				/* created from default cursor font */
-extern CursorPtr	CreateRootCursor();
 
 #endif /* CURSORSTRUCT_H */

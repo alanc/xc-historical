@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.26 92/02/24 19:05:58 keith Exp $ */
+/* $XConsortium: mfbgc.c,v 5.27 92/05/05 13:30:04 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -408,7 +408,7 @@ mfbCreateGC(pGC)
 /*ARGSUSED*/
 void
 mfbChangeGC(pGC, mask)
-    GC	    *pGC;
+    GCPtr   pGC;
     BITS32  mask;
 {
     return;
@@ -426,7 +426,7 @@ mfbCopyGC (pGCSrc, changes, pGCDst)
 
 void
 mfbDestroyGC(pGC)
-    GC 			*pGC;
+    GCPtr pGC;
 {
     mfbPrivGC *pPriv;
 
@@ -933,7 +933,7 @@ mfbValidateGC(pGC, changes, pDrawable)
 		else if (rrop == RROP_INVERT)
 		    pGC->ops->PolyGlyphBlt = mfbPolyGlyphBltInvert;
 		else
-		    pGC->ops->PolyGlyphBlt = NoopDDA;
+		    pGC->ops->PolyGlyphBlt = (void (*)())NoopDDA;
 	    }
 	    else
 	    {
@@ -967,8 +967,8 @@ mfbValidateGC(pGC, changes, pDrawable)
 		pGC->ops->FillPolygon = mfbFillPolyInvert;
 		break;
 	      case RROP_NOP:
-		pGC->ops->FillSpans = NoopDDA;
-		pGC->ops->FillPolygon = NoopDDA;
+		pGC->ops->FillSpans = (void (*)())NoopDDA;
+		pGC->ops->FillPolygon = (void (*)())NoopDDA;
 		break;
 	    }
 	}
@@ -997,7 +997,7 @@ mfbValidateGC(pGC, changes, pDrawable)
 		pGC->ops->FillSpans = mfbInvertStippleFS;
 		break;
 	      case RROP_NOP:
-		pGC->ops->FillSpans = NoopDDA;
+		pGC->ops->FillSpans = (void (*)())NoopDDA;
 		break;
 	    }
 	}
@@ -1041,7 +1041,7 @@ mfbValidateGC(pGC, changes, pDrawable)
 		    devPriv->FillArea = mfbSolidInvertArea;
 		    break;
 		  case RROP_NOP:
-		    devPriv->FillArea = NoopDDA;
+		    devPriv->FillArea = (void (*)())NoopDDA;
 		    break;
 		}
 	    }
@@ -1059,7 +1059,7 @@ mfbValidateGC(pGC, changes, pDrawable)
 		    devPriv->FillArea = mfbStippleInvertArea;
 		    break;
 		  case RROP_NOP:
-		    devPriv->FillArea = NoopDDA;
+		    devPriv->FillArea = (void (*)())NoopDDA;
 		    break;
 		}
 	    }
@@ -1242,7 +1242,7 @@ mfbDestroyClip(pGC)
 void
 mfbChangeClip(pGC, type, pvalue, nrects)
     GCPtr	    pGC;
-    unsigned int    type;
+    int		    type;
     pointer	    pvalue;
     int		    nrects;
 {

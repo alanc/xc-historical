@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: ibmSave.c,v 1.2 91/07/16 13:09:55 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -62,7 +62,6 @@ extern WindowPtr *WindowTable;
 /***====================================================================***/
 
 static	WindowPtr obscuringWins[MAXSCREENS];
-extern	int	ScreenSaverTime,ScreenSaverInterval;
 static	int	realSaverTime;
 static	int	realSaverInterval;
 	int	ibmRefreshOnActivate= TRUE ;
@@ -101,7 +100,7 @@ int		result;
     AddResource(pWin->drawable.id,RT_WINDOW,(pointer)pWin);
     pWin->overrideRedirect= TRUE;
     TRACE(("before Map is \n",pWin));
-    MapWindow( pWin, TRUE, FALSE, FALSE, (ClientPtr)NULL);
+    MapWindow( pWin, (ClientPtr)NULL);
 
     return;
 }
@@ -189,7 +188,7 @@ Hotkey Back:
 	5) call a function to turn on direct window access.
 
 */
-#else AIXV3
+#else /* AIXV3 */
 #endif /* AIXV3 */
 
 #ifdef AIXV3
@@ -263,7 +262,7 @@ int		scrn;
     return;
 }
 
-#else AIXV3
+#else /* AIXV3 */
 
 void
 ibmDeactivateScreens()
@@ -307,7 +306,7 @@ int		scrn;
     DontListenToAnybody();
     return;
 }
-#endif AIXV3
+#endif /* AIXV3 */
 	
 void
 ibmReactivateScreens()
