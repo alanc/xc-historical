@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: xdmauth.c,v 1.1 89/12/13 15:23:06 keith Exp $
+ * $XConsortium: xdmauth.c,v 1.2 90/09/13 18:28:50 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -35,7 +35,7 @@ static int	auth_name_len;
 
 XdmPrintDataHex (s, a, l)
     char	    *s;
-    BYTE	    *a;
+    char	    *a;
     int		    l;
 {
     int	i;
@@ -50,14 +50,14 @@ XdmPrintKey (s, k)
     char	    *s;
     XdmAuthKeyRec   *k;
 {
-    XdmPrintDataHex (s, k->data, 8);
+    XdmPrintDataHex (s, (char *) k->data, 8);
 }
 
 XdmPrintArray8Hex (s, a)
     char	*s;
     ARRAY8Ptr	a;
 {
-    XdmPrintDataHex (s, a->data, a->length);
+    XdmPrintDataHex (s, (char *) a->data, a->length);
 }
 
 XdmInitAuth (name_len, name)
@@ -233,11 +233,11 @@ XdmGetKey (pdpy, displayID)
     return FALSE;
 }
 
+/*ARGSUSED*/
 XdmCheckAuthentication (pdpy, displayID, authenticationName, authenticationData)
     struct protoDisplay	*pdpy;
     ARRAY8Ptr		displayID, authenticationName, authenticationData;
 {
-    int		    newlen;
     XdmAuthKeyPtr   incoming;
 
     if (!XdmGetKey (pdpy, displayID))

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.18 90/08/21 14:37:45 keith Exp $
+ * $XConsortium: socket.c,v 1.19 90/09/13 18:28:36 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -214,6 +214,7 @@ direct_query_respond (from, fromlen, length, type)
     XdmcpDisposeARRAYofARRAY8 (&queryAuthenticationNames);
 }
 
+/*ARGSUSED*/
 static int
 sendForward (connectionType, address, closure)
     CARD16	connectionType;
@@ -299,7 +300,6 @@ indirect_respond (from, fromlen, length)
     	case AF_INET:
     	    {
 	    	struct sockaddr_in	*in_addr;
-		short			port;
     	
 	    	in_addr = (struct sockaddr_in *) from;
 	    	if (XdmcpAllocARRAY8 (&clientAddress, 4) &&
@@ -354,6 +354,7 @@ indirect_respond (from, fromlen, length)
     XdmcpDisposeARRAYofARRAY8 (&queryAuthenticationNames);
 }
 
+/*ARGSUSED*/
 forward_respond (from, fromlen, length)
     struct sockaddr	*from;
     int			fromlen;
@@ -401,7 +402,6 @@ forward_respond (from, fromlen, length)
 	    case AF_INET:
 		{
 		    struct sockaddr_in	in_addr;
-		    short		port;
 
 		    if (clientAddress.length != 4 ||
 		        clientPort.length != 2)
@@ -434,12 +434,10 @@ forward_respond (from, fromlen, length)
 #ifdef AF_CHAOS
 	    case AF_CHAOS:
 		goto badAddress;
-		break;
 #endif
 #ifdef AF_DECnet
 	    case AF_DECnet:
 		goto badAddress;
-		break;
 #endif
     	    }
 	    all_query_respond (client, clientlen, &authenticationNames,
@@ -479,7 +477,7 @@ all_query_respond (from, fromlen, authenticationNames, type)
 	break;
 #endif
     default:
-	return 0;
+	return;
     }
     authenticationName = ChooseAuthentication (authenticationNames);
     if (Willing (&addr, connectionType, authenticationName, &status, type))
@@ -607,6 +605,7 @@ request_respond (from, fromlen, length)
 	    pdpy = 0;
 	    goto decline;
 	}
+	/* SUPPRESS 560 */
 	if (pdpy = FindProtoDisplay (from, fromlen, displayNumber))
 	    goto accept;
 	reason = Accept (from, fromlen, displayNumber);
@@ -806,6 +805,8 @@ manage (from, fromlen, length)
 	    d = FindDisplayByName (name);
 	    if (d)
 	    {
+		extern void StopDisplay ();
+
 		Debug ("Terminating active session for %s\n", d->name);
 		StopDisplay (d);
 	    }
@@ -1103,7 +1104,7 @@ CARD16Ptr   connectionTypep;
 ARRAY8Ptr   connectionAddress;
 CARD16Ptr   displayNumber;
 {
-    char    *colon, *period, *display_number;
+    char    *colon, *display_number;
     char    hostname[1024];
     int	    dnet = FALSE;
     CARD16  number;

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: cryptokey.c,v 1.3 90/05/03 18:47:35 keith Exp $
+ * $XConsortium: cryptokey.c,v 1.4 90/09/13 18:28:48 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -175,7 +175,6 @@ sumFile (name, sum)
 char	*name;
 long	sum[2];
 {
-    long    data[2];
     long    buf[1024*2];
     int	    cnt;
     int	    fd;
@@ -188,7 +187,7 @@ long	sum[2];
 	return 0;
     reads = FILE_LIMIT;
     while ((cnt = read (fd, buf, sizeof (buf))) > 0 && --reads > 0) {
-	loops = cnt / sizeof (data);
+	loops = cnt / (2 * sizeof (long));
 	for (i = 0; i < loops; i+= 2) {
 	    sum[0] += buf[i];
 	    sum[1] += buf[i+1];

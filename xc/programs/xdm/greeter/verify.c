@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.11 90/08/23 13:15:48 keith Exp $
+ * $XConsortium: verify.c,v 1.12 90/09/14 16:31:04 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -160,6 +160,7 @@ int			gid;
 	ngroups = 0;
 	verify->groups[ngroups++] = gid;
 	setgrent ();
+	/* SUPPRESS 560 */
 	while (g = getgrent()) {
 		/*
 		 * make the list unique

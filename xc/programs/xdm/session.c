@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.35 90/08/23 13:15:43 keith Exp $
+ * $XConsortium: session.c,v 1.36 90/09/13 18:28:28 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -74,6 +74,7 @@ extern void	exit ();
  * server to terminate.  For other X errors, we should give up.
  */
 
+/*ARGSUSED*/
 static
 IOErrorHandler (dpy)
     Display *dpy;
@@ -95,6 +96,7 @@ ErrorHandler(dpy, event)
     LogError("X error\n");
     if (XmuPrintDefaultErrorMessage (dpy, event, stderr) == 0) return 0;
     exit(UNMANAGE_DISPLAY);
+    /*NOTREACHED*/
 }
 
 ManageSession (d)
@@ -446,9 +448,9 @@ runAndWait (args, environ)
 	Debug ("fork failed\n");
 	LogError ("can't fork to execute %s\n", args[0]);
 	return 1;
-	break;
     default:
 	while (wait (&result) != pid)
+		/* SUPPRESS 530 */
 		;
 	break;
     }
@@ -513,7 +515,8 @@ char	**environ;
 	Debug ("Shell script execution: %s (optarg %s)\n",
 		p, optarg ? optarg : "(null)");
 	for (av = argv, argc = 0; *av; av++, argc++)
-		;
+	    /* SUPPRESS 530 */
+	    ;
 	newargv = (char **) malloc ((argc + (optarg ? 3 : 2)) * sizeof (char *));
 	if (!newargv)
 	    return;
@@ -521,7 +524,9 @@ char	**environ;
 	*av++ = p;
 	if (optarg)
 	    *av++ = optarg;
+	/* SUPPRESS 560 */
 	while (*av++ = *argv++)
+	    /* SUPPRESS 530 */
 	    ;
 	execve (newargv[0], newargv, environ);
     }

@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: access.c,v 1.1 90/09/13 18:29:42 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -172,6 +172,7 @@ ReadWord (file, EOFatEOL)
 		break;
 	    }
 	    while ((c = getc (file)) != EOF && c != '\n')
+		/* SUPPRESS 530 */
 		;
 	case EOF:
 	case '\n':
@@ -271,10 +272,8 @@ ReadDisplayEntry (file)
     char	    *displayOrAlias;
     DisplayEntry    *d;
     struct _display *display;
-    CARD16	    displayNumber;
     HostEntry	    *h, **prev;
     struct hostent  *hostent;
-    int		    c;
     
     displayOrAlias = ReadWord (file, FALSE);
     if (!displayOrAlias)
@@ -350,6 +349,7 @@ ReadDisplayEntry (file)
     	}
     }
     prev = &d->hosts;
+    /* SUPPRESS 560 */
     while (h = ReadHostEntry (file))
     {
 	*prev = h;
@@ -366,6 +366,7 @@ ReadAccessDatabase (file)
     DisplayEntry    *d, **prev;
 
     prev = &database;
+    /* SUPPRESS 560 */
     while (d = ReadDisplayEntry (file))
     {
 	*prev = d;
@@ -376,7 +377,6 @@ ReadAccessDatabase (file)
 
 ScanAccessDatabase ()
 {
-    static int	initialized;
     FILE	*datafile;
 
     datafile = fopen (accessFile, "r");
@@ -411,7 +411,7 @@ scanHostlist (h, clientAddress, connectionType, function, closure, depth)
 	switch (h->type) {
 	case HOST_ALIAS:
 	    if (indirectAlias (h->entry.aliasName, clientAddress,
-			   connectionType, function, closure, 0))
+			   connectionType, function, closure, depth))
 		haveLocalhost = 1;
 	    break;
 	case HOST_ADDRESS:
@@ -467,7 +467,6 @@ indirectAlias (alias, clientAddress, connectionType, function, closure, depth)
     int		depth;
 {
     DisplayEntry    *d;
-    HostEntry	    *h;
     int		    haveLocalhost = 0;
 
     if (depth == MAX_DEPTH)
@@ -493,7 +492,6 @@ ForEachMatchingIndirectHost (clientAddress, connectionType, function, closure)
 {
     int		    haveLocalhost = 0;
     DisplayEntry    *d;
-    HostEntry	    *h;
     char	    *clientName = 0, *NetworkAddressToHostname ();
 
     for (d = database; d; d = d->next)

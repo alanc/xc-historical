@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.41 90/08/21 14:37:33 keith Exp $
+ * $XConsortium: dm.c,v 1.42 90/09/13 18:27:45 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -88,6 +88,7 @@ char	**argv;
     }
     if (debugLevel == 0 && daemonMode)
 	    BecomeDaemon ();
+    /* SUPPRESS 560 */
     if (oldpid = StorePid ())
     {
 	if (oldpid == -1)
@@ -315,7 +316,8 @@ WaitForChild ()
 	Debug ("Manager wait returns pid: %d\n", pid);
 	if (autoRescan)
 	    RescanIfMod ();
-	if ((d = FindDisplayByPid (pid))) {
+	/* SUPPRESS 560 */
+	if (d = FindDisplayByPid (pid)) {
 	    d->pid = -1;
 	    switch (waitVal (status)) {
 	    case UNMANAGE_DISPLAY:
@@ -382,6 +384,7 @@ WaitForChild ()
 		break;
 	    }
 	}
+	/* SUPPRESS 560 */
 	else if (d = FindDisplayByServerPid (pid))
 	{
 	    d->serverPid = -1;
@@ -657,6 +660,7 @@ va_dcl
     va_start(args);
     *p++ = '-';
     --left;
+    /* SUPPRESS 558 */ /* SUPPRESS 560 */
     while (s = va_arg (args, char *))
     {
 	while (*s && left > 0)

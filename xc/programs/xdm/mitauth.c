@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: mitauth.c,v 1.4 89/12/13 15:22:21 keith Exp $
+ * $XConsortium: mitauth.c,v 1.5 89/12/19 15:43:08 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,8 +25,8 @@
  * for MIT-MAGIC-COOKIE-1 type authorization
  */
 
-# include   <X11/Xauth.h>
 # include   <X11/Xos.h>
+# include   "dm.h"
 
 # define AUTH_DATA_LEN	16	/* bytes of authorization data */
 static char	auth_name[256];

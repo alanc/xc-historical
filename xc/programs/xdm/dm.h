@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.33 90/08/23 13:15:45 keith Exp $
+ * $XConsortium: dm.h,v 1.34 90/09/13 18:28:33 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -233,6 +233,7 @@ extern struct display	*FindDisplayByName (),
 extern struct protoDisplay	*FindProtoDisplay (),
 				*NewProtoDisplay ();
 
+extern char		*localHostname ();
 /*
  * CloseOnFork flags
  */
@@ -241,6 +242,7 @@ extern struct protoDisplay	*FindProtoDisplay (),
 # define LEAVE_FOR_DISPLAY  1
 
 extern char	*malloc (), *realloc (), *strcpy ();
+extern void	free (), exit (), bcopy ();
 
 #ifdef SIGNALRETURNSINT
 #define SIGVAL int

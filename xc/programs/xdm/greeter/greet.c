@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.21 90/08/21 14:37:42 keith Exp $
+ * $XConsortium: greet.c,v 1.22 90/09/13 18:28:31 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -43,6 +43,7 @@ static Widget		login;
 static XtAppContext	context;
 static XtIntervalId	pingTimeout;
 
+/*ARGSUSED*/
 static void
 GreetPingServer (closure, intervalId)
     XtPointer	    closure;

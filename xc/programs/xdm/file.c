@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: file.c,v 1.11 89/12/06 19:31:56 keith Exp $
+ * $XConsortium: file.c,v 1.12 89/12/07 20:29:34 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -103,16 +103,18 @@ copyArgs (args)
     char    **args;
 {
     char    **a, **new, **n;
-    int	    i;
 
     for (a = args; *a; a++)
+	/* SUPPRESS 530 */
 	;
     new = (char **) malloc ((a - args + 1) * sizeof (char *));
     if (!new)
 	return NULL;
     n = new;
     a = args;
+    /* SUPPRESS 560 */
     while (*n++ = *a++)
+	/* SUPPRESS 530 */
 	;
     return new;
 }

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: policy.c,v 1.3 89/12/13 15:25:16 keith Exp $
+ * $XConsortium: policy.c,v 1.4 90/08/21 14:37:48 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -94,11 +94,12 @@ SelectAuthorizationTypeIndex (authenticationName, authorizationNames)
     }
     for (i = 0; i < authorizationNames->length; i++)
 	if (ValidAuthorization (authorizationNames->data[i].length,
-				authorizationNames->data[i].data))
+				(char *) authorizationNames->data[i].data))
 	    return i;
     return -1;
 }
 
+/*ARGSUSED*/
 int
 Willing (addr, connectionType, authenticationName, status, type)
     ARRAY8Ptr	    addr;
@@ -124,6 +125,7 @@ Willing (addr, connectionType, authenticationName, status, type)
     return ret;
 }
 
+/*ARGSUSED*/
 ARRAY8Ptr
 Accept (from, fromlen, displayNumber)
     struct sockaddr *from;
@@ -133,6 +135,7 @@ Accept (from, fromlen, displayNumber)
     return 0;
 }
 
+/*ARGSUSED*/
 int
 SelectConnectionTypeIndex (connectionTypes, connectionAddresses)
     ARRAY16Ptr	     connectionTypes;
