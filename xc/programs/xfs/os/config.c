@@ -1,4 +1,4 @@
-/* $XConsortium: config.c,v 1.7 92/02/04 15:14:37 eswu Exp $ */
+/* $XConsortium: config.c,v 1.8 92/04/03 11:30:03 eswu Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -535,14 +535,12 @@ config_parse_endian(c, ret, pval)
     return config_parse_nameVal (c, ret, pval, endian_val);
 }
 
+/* ARGSUSED */
 static char *
 config_set_snf_format (parm, val)
     ConfigOptionPtr parm;
     char	    *val;
 {
-    char    *start = val,
-	    t;
-    int	    err;
     int	    bit, byte, glyph, scan;
     int	    ret;
     

@@ -1,25 +1,23 @@
-/* $XConsortium: fserve.c,v 1.22 92/05/13 15:41:49 gildea Exp $ */
+/* $XConsortium: fserve.c,v 1.23 92/05/18 18:00:38 rws Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
+ * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of Network Computing Devices not be
- * used in advertising or publicity pertaining to distribution of the
- * software without specific, written prior permission.  Network Computing
- * Devices makes no representations about the suitability of this software
- * for any purpose.  It is provided "as is" without express or implied
- * warranty.
+ * documentation, and that the names of Network Computing Devices, Digital or
+ * M.I.T. not be used in advertising or publicity pertaining to distribution
+ * of the software without specific, written prior permission.
  *
- * NETWORK COMPUTING DEVICES DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
- * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
- * IN NO EVENT SHALL NETWORK COMPUTING DEVICES BE LIABLE FOR ANY SPECIAL,
- * INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
- * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
- * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
- * OR PERFORMANCE OF THIS SOFTWARE.
+ * NETWORK COMPUTING DEVICES, DIGITAL AND M.I.T. DISCLAIM ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES,
+ * DIGITAL OR M.I.T. BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ * THIS SOFTWARE.
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  */
@@ -68,7 +66,7 @@ static int  fs_read_list_info();
 static int  fs_font_type;
 extern unsigned long fs_fd_mask[];
 
-static int  fs_block_handler();
+static void fs_block_handler();
 static int  fs_wakeup();
 
 static FSFpePtr awaiting_reconnect;
@@ -124,7 +122,7 @@ static Bool
 fs_name_check(name)
     char       *name;
 {
-    return (!strncmp(name, "tcp/", MIN(4, strlen(name))));
+    return (!strncmp(name, "tcp/", MIN(4, (int) strlen(name))));
 }
 
 /*
@@ -366,7 +364,8 @@ fs_free_fpe(fpe)
     FSFpePtr    recon,
                *prev;
     prev = &awaiting_reconnect;
-    while (recon = *prev) {
+    while (*prev) {
+	recon = *prev;
 	if (conn == recon) {
 	    *prev = recon->next_reconnect;
 	    break;
@@ -666,7 +665,6 @@ fs_read_extent_info(fpe, blockrec)
     Bool	haveInk = FALSE; /* need separate ink metrics? */
     CharInfoPtr ci,
                 pCI;
-    xCharInfo	teInfo;
     FSFontPtr   fsfont = (FSFontPtr) bfont->pfont->fontPrivate;
     fsCharInfo *fsci,
                *fscip;
@@ -884,7 +882,7 @@ fs_do_open_font(fpe, blockrec, readheader)
 }
 
 /* ARGSUSED */
-static int
+static void
 fs_block_handler(data, wt, LastSelectMask)
     pointer     data;
     struct timeval **wt;
@@ -914,7 +912,6 @@ fs_block_handler(data, wt, LastSelectMask)
 	    **wt = recon_timeout;
 	}
     }
-    return Successful;
 }
 
 static void

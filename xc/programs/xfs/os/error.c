@@ -1,4 +1,4 @@
-/* $XConsortium: error.c,v 1.4 91/12/09 16:49:23 converse Exp $ */
+/* $XConsortium: error.c,v 1.5 92/05/20 17:40:35 gildea Exp $ */
 /*
  * error message handling
  */
@@ -55,8 +55,6 @@
 
 Bool        UseSyslog;
 char        ErrorFile[PATH_MAX];
-
-static Bool log_open;
 
 static void
 abort_server()
