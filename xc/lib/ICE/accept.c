@@ -1,4 +1,4 @@
-/* $XConsortium: accept.c,v 1.2 93/08/20 15:36:11 rws Exp $ */
+/* $XConsortium: accept.c,v 1.3 93/08/26 17:06:06 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -24,6 +24,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include <sys/socket.h>
 
 #ifdef TCPCONN
+# include <sys/param.h>
 # include <netinet/in.h>
 # ifndef hpux
 #  ifdef apollo
