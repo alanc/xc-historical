@@ -1,4 +1,6 @@
-XCOMM $XConsortium: Imakefile,v 1.9 92/09/29 10:39:36 rws Exp $
+#if ProjectX > 4
+XCOMM $XConsortium: Imakefile,v 1.10 92/10/04 11:04:11 rws Exp $
+#endif
 
 /* turn on one or more of the following */
 #define BuildWithXTest		YES
@@ -31,7 +33,9 @@ LOCAL_LIBRARIES = $(XMULIB) $(XTESTGENLIB) $(XTRAPGENLIB) $(XLIB)
 
 SimpleProgramTarget(a2x)
 
+#ifdef InstallNamedProg
 InstallNamedProg(DragonDictate,DragonDictate,$(BINDIR))
+#endif
 
 a2x.PS: a2x.ms
 	$(TROFF) $(MSMACROS) a2x.ms > $@
