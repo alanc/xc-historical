@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Text.h,v 1.23 89/07/06 16:00:46 kit Exp $
+* $XConsortium: Text.h,v 1.24 89/07/10 17:38:15 kit Exp $
 */
 
 
@@ -118,6 +118,7 @@ typedef enum {XawselectNull, XawselectPosition, XawselectChar, XawselectWord,
 #define resizeWidth		0x10
 #define resizeHeight		0x20
 #define editable		0x40
+#define lineWrap                0x80
 
 typedef struct {
     int  firstPos;
