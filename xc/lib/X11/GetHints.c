@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetHints.c,v 11.25 89/03/28 18:14:08 jim Exp $ */
+/* $XConsortium: XGetHints.c,v 11.26 89/11/08 17:06:46 converse Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -214,7 +214,7 @@ Status XGetCommand (dpy, w, argvp, argcp)
     int argc;
     char **argv;
 
-    if (!XGetWMCommand (dpy, w, &tp)) return 0;
+    if (!XGetTextProperty (dpy, w, &tp, XA_WM_COMMAND)) return 0;
 
     if (tp.encoding != XA_STRING || tp.format != 8) {
 	if (tp.value) Xfree ((char *) tp.value);
