@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XPutImage.c,v 11.33 87/09/09 13:14:27 rws Locked $ */
+/* $Header: XPutImage.c,v 11.34 87/09/11 15:46:16 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
@@ -72,12 +72,11 @@ static PutImageRequest(dpy, d, gc, image, req_xoffset,req_yoffset, x, y, req_wid
 		    &&(dpy->byte_order == image->byte_order)
 		    &&(dpy->bitmap_bit_order == image->bitmap_bit_order)
 		    &&(image->width == req_width)
-		    &&(total_xoffset < dpy->bitmap_pad)
-		    &&(req_yoffset == 0)) {
+		    &&(total_xoffset < dpy->bitmap_pad)) {
 		      length = image->bytes_per_line * req_height;
 		      req->length += length >> 2;
 		      req->leftPad = total_xoffset;
-		      _XSend (dpy, image->data, length);
+		      _XSend (dpy, image->data + req_yoffset * image->bytes_per_line, length);
 		  }
 		else {
 		       long nbytes;
@@ -125,7 +124,7 @@ static PutImageRequest(dpy, d, gc, image, req_xoffset,req_yoffset, x, y, req_wid
 		  
 		break;
 
-	      case XYPixmap:	/* not yet implemented */
+	      case XYPixmap:
 		/*
 		 * If the client side format matches the screen, we win!
 		 */
@@ -146,7 +145,7 @@ static PutImageRequest(dpy, d, gc, image, req_xoffset,req_yoffset, x, y, req_wid
 		       long nbytes;
 		       char *row_addr;
 		       register char *p;
-		       char* tempbuf;
+		       char *tempbuf;
 		       int bytes_per_plane,j;
 		       /*
 			* compute length of image data; round up to next length
@@ -201,14 +200,15 @@ static PutImageRequest(dpy, d, gc, image, req_xoffset,req_yoffset, x, y, req_wid
 	        /*
 		 * If the client side format matches the screen, we win!
 		 */
-		/* XXX is this right? */
 		req->leftPad = 0;
 
 		if ((dpy->byte_order == image->byte_order)
-		   &&(dpy->bitmap_pad == image->bitmap_pad)) {
-		    length = image->bytes_per_line * image->height;
+		    &&(dpy->bitmap_pad == image->bitmap_pad)
+		    &&(image->width == req_width)
+		    &&(total_xoffset == 0)) {
+		    length = image->bytes_per_line * req_height;
 		    req->length += length >> 2;
-		    _XSend (dpy, image->data, length);
+		    _XSend (dpy, image->data + req_yoffset * image->bytes_per_line, length);
 		  }
 		else {
 		    /*
@@ -220,13 +220,12 @@ static PutImageRequest(dpy, d, gc, image, req_xoffset,req_yoffset, x, y, req_wid
 		    unsigned char *row = (unsigned char *) (image->data + req_yoffset * image->bytes_per_line);
 		    unsigned char *tempbuf, *p;
 		    int bit_xoffset, pseudoLeftPad, byte_xoffset;
-		    int j;
 
 		    nbytes = length = ROUNDUP(req_width * image->bits_per_pixel, dpy->bitmap_pad) >> 3;
     
-		    tempbuf = p = (unsigned char *)_XAllocScratch(dpy, (unsigned long)nbytes * req_height);
-
 		    length *= req_height;
+		    tempbuf = p = (unsigned char *)_XAllocScratch(dpy, (unsigned long)length);
+
 		    req->length += length >> 2;
 
 		    bit_xoffset = req_xoffset * image->bits_per_pixel;
@@ -240,16 +239,23 @@ static PutImageRequest(dpy, d, gc, image, req_xoffset,req_yoffset, x, y, req_wid
 			 */
 		     
 
-		    if (pseudoLeftPad != 0)
-		    {
-			for ( j=0; j < nbytes; j++)
+			if (pseudoLeftPad != 0)
 			{
-			    p[j] = (row[byte_xoffset + j] >> (pseudoLeftPad)) | (row[byte_xoffset + j + 1] << ( 8 - pseudoLeftPad));
+			    register unsigned char *pp = p;
+			    register unsigned char *rp = row + byte_xoffset;
+			    register unsigned char *endp = pp + nbytes;
+			    register int pseudoRightPad = 8 - pseudoLeftPad;
+			    if (image->bitmap_bit_order == MSBFirst)
+				for (; pp < endp; pp++, rp++)
+				    *pp = *rp << pseudoLeftPad |
+					  *(rp+1) >> pseudoRightPad;
+			    else
+				for (; pp < endp; pp++, rp++)
+				    *pp = *rp >> pseudoLeftPad |
+					  *(rp+1) << pseudoRightPad;
 			}
-		
-		    }
-		    else
-			bcopy (row + ((req_xoffset * image->bits_per_pixel) >> 3), p, (int)nbytes);
+			else
+			    bcopy (row + byte_xoffset, p, (int)nbytes);
 			if (image->byte_order != dpy->byte_order) {
 			  if(image->bits_per_pixel == 32) _swaplong(p, nbytes);
 			  else if (image->bits_per_pixel == 24)
@@ -257,7 +263,7 @@ static PutImageRequest(dpy, d, gc, image, req_xoffset,req_yoffset, x, y, req_wid
 			  else if (image->bits_per_pixel == 16) 
 			      _swapshort (p, nbytes);
 			}
-		      }
+		    }
 		    _XSend(dpy, tempbuf, length);
 		}
 	        break;
