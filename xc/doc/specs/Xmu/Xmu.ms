@@ -547,6 +547,8 @@ Pixmap XmuLocateBitmapFile(\fIscreen\fP, \fIname\fP, \fIsrcname\fP, \fIsrcnamele
     int \fIsrcnamelen\fP;
     int *\fIwidthp\fP, *\fIheightp\fP, *\fIxhotp\fP, *\fIyhotp\fP;
 .FN
+.IP \fIscreen\fP 1i
+specifies the screen the pixmap is created on
 .IP \fIname\fP 1i
 specifies the file to read from
 .IP \fIsrcname\fP 1i
@@ -1610,6 +1612,8 @@ CloseHook XmuAddCloseDisplayHook(\fIdpy\fP, \fIfunc\fP, \fIarg\fP)
 .br
       caddr_t \fIarg\fP;
 .FN
+.IP \fIdpy\fP 1i
+specifies the connection to the X server
 .IP \fIfunc\fP 1i
 specifies the function to call at display close
 .IP \fIarg\fP 1i
@@ -1668,7 +1672,7 @@ Bool XmuLookupCloseDisplayHook(\fIdpy\fP, \fIhandle\fP, \fIfunc\fP, \fIarg\fP)
 .br
       caddr_t \fIarg\fP;
 .FN
-.IP \fdpy\fP 1i
+.IP \fIdpy\fP 1i
 specifies the connection to the X server
 .IP \fIhandle\fP 1i
 specifies the callback by id, or NULL
