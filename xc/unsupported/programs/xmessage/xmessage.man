@@ -1,5 +1,5 @@
-.\" $XConsortium: xmessage.man,v 1.3 94/04/17 20:45:57 gildea Exp $
-.TH XMESSAGE 1 "26 April 1994" "X Version 11"
+.\" $XConsortium: xmessage.man,v 1.4 94/06/03 15:58:36 gildea Exp $
+.TH XMESSAGE 1 "26 July 1994" "X Version 11"
 .SH NAME
 xmessage \- display a message or query in a window (X-based /bin/echo)
 .SH SYNOPSIS
@@ -35,6 +35,11 @@ optionally, by writing the label of the button to standard output.
 .I Xmessage
 is typically used by shell scripts to display information to the user
 or to ask the user to make a choice.
+.PP
+Unless a size is specified, \fIxmessage\fP
+sizes itself to fit the size of the message, up to a maximum size.
+If the message is too big for the window, \fIxmessage\fP will display
+scroll bars.
 .SH OPTIONS
 These are the command line options that \fIxmessage\fP understands.
 .TP 8
@@ -74,6 +79,19 @@ This will cause the program to print the label of the button pressed to
 standard output.  Equivalent to setting the \fBprintValue\fP resource
 to TRUE.
 This is one way to get feedback as to which button was pressed.
+.TP 8
+.B \-center
+Pop up the window at the center of the screen.
+Equivalent to setting the \fBcenter\fP resource to TRUE.
+.TP 8
+.B \-nearmouse
+Pop up the window near the mouse cursor.
+Equivalent to setting the \fBnearMouse\fP resource to TRUE.
+.TP 8
+.B \-timeout \fIsecs\fP
+Exit with status 0 after \fIsecs\fP seconds if the user has not
+clicked on a button yet.
+The corresponding resource is \fBtimeout\fP.
 .SH "WIDGET HIERARCHY"
 Knowing the name and position in the hierarchy of each widget is
 useful when specifying resources for them.  In the chart below, the
@@ -106,6 +124,28 @@ A String resource specifying a default button by label.
 .B printValue
 A Boolean resource that determines whether or not the label of the 
 button pressed to exit the program is printed.  The default is FALSE.
+.TP 8
+.B center
+Pop up the window at the center of the screen.
+The default is FALSE.
+.TP 8
+.B nearMouse
+Pop up the window near the mouse cursor.
+The default is FALSE.
+.TP 8
+.B timeout
+Exit with status 0 after \fIsecs\fP seconds.
+The default is 0, which means never time out.
+.TP 8
+.B "maxHeight (\fPclass\fB Maximum)
+If no size was specified in the geometry, this resource specifies the
+maximum height of the text part of the window.
+The default is 0, which means use 70% of the height of the screen.
+.TP 8
+.B "maxWidth (\fPclass\fB Maximum)
+If no size was specified in the geometry, this resource specifies the
+maximum width of the text part of the window.
+The default is 0, which means use 70% of the width of the screen.
 .SH ACTIONS
 .TP 8
 .B exit(\fIvalue\fP)
