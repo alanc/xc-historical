@@ -147,8 +147,7 @@ SimpleMenuClassRec simpleMenuClassRec = {
     /* resources          */    menu_resources,
     /* resource_count     */	XtNumber(menu_resources),
     /* xrm_class          */    NULLQUARK,
-    /* compress_motion    */    FALSE,  /* currently there is a bug in 
-                                           motion compression. CDP 3/24/89. */
+    /* compress_motion    */    TRUE, 
     /* compress_exposure  */    TRUE,
     /* compress_enterleave*/ 	TRUE,
     /* visible_interest   */    FALSE,
