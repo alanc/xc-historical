@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.160 91/05/06 17:48:06 gildea Exp $
+ * $XConsortium: charproc.c,v 1.161 91/05/08 21:28:07 gildea Exp $
  */
 
 /*
@@ -193,6 +193,9 @@ extern void HandleScrollBack();
 extern void HandleCreateMenu(), HandlePopupMenu();
 extern void HandleSetFont();
 extern void SetVTFont();
+
+extern Boolean SendMousePosition();
+extern void ScrnSetAttributes();
 
 /*
  * NOTE: VTInitialize zeros out the entire ".screen" component of the 

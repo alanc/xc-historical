@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.185 91/05/09 16:52:47 gildea Exp $ */
+/* $XConsortium: main.c,v 1.185 91/05/09 16:59:55 gildea Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -48,6 +48,7 @@ SOFTWARE.
 
 #include <X11/Xos.h>
 #include <X11/cursorfont.h>
+#include <X11/Xaw/SimpleMenu.h>
 #include <pwd.h>
 #include <ctype.h>
 
@@ -651,6 +652,7 @@ extern void do_hangup();
 /*
  * DeleteWindow(): Action proc to implement ICCCM delete_window.
  */
+/* ARGSUSED */
 void
 DeleteWindow(w, event, params, num_params)
     Widget w;
@@ -1068,7 +1070,8 @@ char *name;
 {
 	register char *cp;
 
-	return((cp = rindex(name, '/')) ? cp + 1 : name);
+	cp = rindex(name, '/');
+	return(cp ? cp + 1 : name);
 }
 
 /* This function opens up a pty master and stuffs its value into pty.

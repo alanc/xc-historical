@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.27 91/04/24 18:04:08 gildea Exp $
+ *	$XConsortium: screen.c,v 1.28 91/05/06 17:12:16 gildea Exp $
  */
 
 /*

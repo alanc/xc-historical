@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.100 91/05/08 19:21:16 gildea Exp $
+ * $XConsortium: Tekproc.c,v 1.101 91/05/09 14:42:42 gildea Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -734,7 +734,7 @@ static void TekConfigure(w)
 /*ARGSUSED*/
 void TekExpose(w, event, region)
     Widget w;
-    XExposeEvent *event;
+    XEvent *event;
     Region region;
 {
 	register TScreen *screen = &term->screen;
@@ -784,7 +784,7 @@ dorefresh()
 TekPage()
 {
 	register TScreen *screen = &term->screen;
-	register TekLink *tek, *tek2;
+	register TekLink *tek;
 
 	XClearWindow(screen->display, TWindow(screen));
 	screen->cur_X = 0;
@@ -797,11 +797,14 @@ TekPage()
 	tek->fontsize = screen->cur.fontsize;
 	tek->count = 0;
 	tek->ptr = tek->data;
-	if(tek = tek->next)
+	tek = tek->next;
+	if(tek)
 		do {
-			tek2 = tek->next;
+			TekLink *tek2 = tek->next;
+
 			free((char *)tek);
-		} while(tek = tek2);
+			tek = tek2;
+		} while(tek);
 	TekRecord->next = (TekLink *)0;
 	TekRefresh = (TekLink *)0;
 	Ttoggled = TRUE;
@@ -1536,9 +1539,10 @@ TekCopy()
 	 screen->page.linetype + '`');
 	write(tekcopyfd, buf, 4);
 	Tp = &Tek0; 
-	do
+	do {
 		write(tekcopyfd, (char *)Tp->data, Tp->count);
-	while(Tp = Tp->next);
+		Tp = Tp->next;
+	} while(Tp);
 	close(tekcopyfd);
 }
 

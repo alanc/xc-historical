@@ -1,4 +1,4 @@
-/* $XConsortium: menu.c,v 1.55 91/05/07 15:20:40 gildea Exp $ */
+/* $XConsortium: menu.c,v 1.56 91/05/08 18:42:42 gildea Exp $ */
 /*
 Copyright 1989 Massachusetts Institute of Technology
 
@@ -24,6 +24,8 @@ without express or implied warranty.
 #include <X11/Xaw/SmeLine.h>
 #include <stdio.h>
 #include <signal.h>
+
+extern void FindFontSelection();
 
 Arg menuArgs[2] = {{ XtNleftBitmap, (XtArgVal) 0 },
 		   { XtNsensitive, (XtArgVal) 0 }};
@@ -129,6 +131,7 @@ static unsigned char check_bits[] = {
  * public interfaces
  */
 
+/* ARGSUSED */
 static Bool domenu (w, event, params, param_count)
     Widget w;
     XEvent *event;              /* unused */
@@ -286,6 +289,7 @@ static Widget create_menu (xtw, toplevelw, name, entries, nentries)
     return m;
 }
 
+/* ARGSUSED */
 static void handle_send_signal (gw, sig)
     Widget gw;
     int sig;
@@ -300,6 +304,7 @@ static void handle_send_signal (gw, sig)
  * action routines
  */
 
+/* ARGSUSED */
 void DoSecureKeyboard (time)
     Time time;
 {
@@ -341,7 +346,6 @@ static void do_allowsends (gw, closure, data)
     update_allowsends ();
 }
 
-
 static void do_visualbell (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
@@ -351,7 +355,6 @@ static void do_visualbell (gw, closure, data)
     screen->visualbell = !screen->visualbell;
     update_visualbell();
 }
-
 
 static void do_logging (gw, closure, data)
     Widget gw;
@@ -382,6 +385,7 @@ static void do_redraw (gw, closure, data)
  */
 
 
+/* ARGSUSED */
 static void do_suspend (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
@@ -391,7 +395,7 @@ static void do_suspend (gw, closure, data)
 #endif
 }
 
-
+/* ARGSUSED */
 static void do_continue (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
@@ -401,7 +405,7 @@ static void do_continue (gw, closure, data)
 #endif
 }
 
-
+/* ARGSUSED */
 static void do_interrupt (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
@@ -409,7 +413,7 @@ static void do_interrupt (gw, closure, data)
     handle_send_signal (gw, SIGINT);
 }
 
-
+/* ARGSUSED */
 void do_hangup (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
@@ -417,7 +421,7 @@ void do_hangup (gw, closure, data)
     handle_send_signal (gw, SIGHUP);
 }
 
-
+/* ARGSUSED */
 static void do_terminate (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
@@ -425,14 +429,13 @@ static void do_terminate (gw, closure, data)
     handle_send_signal (gw, SIGTERM);
 }
 
-
+/* ARGSUSED */
 static void do_kill (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
     handle_send_signal (gw, SIGKILL);
 }
-
 
 static void do_quit (gw, closure, data)
     Widget gw;
@@ -604,7 +607,7 @@ static void handle_tekshow (gw, allowswitch)
       Bell();
 }
 
-
+/* ARGSUSED */
 static void do_tekshow (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
@@ -612,7 +615,7 @@ static void do_tekshow (gw, closure, data)
     handle_tekshow (gw, True);
 }
 
-
+/* ARGSUSED */
 static void do_tekonoff (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
@@ -620,7 +623,7 @@ static void do_tekonoff (gw, closure, data)
     handle_tekshow (gw, False);
 }
 
-
+/* ARGSUSED */
 static void do_altscreen (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
@@ -870,6 +873,7 @@ void HandleLogging(w, event, params, param_count)
 		   params, *param_count, w, NULL, NULL);
 }
 
+/* ARGSUSED */
 void HandleRedraw(w, event, params, param_count)
     Widget w;
     XEvent *event;
@@ -879,9 +883,10 @@ void HandleRedraw(w, event, params, param_count)
     do_redraw(w, NULL, NULL);
 }
 
+/* ARGSUSED */
 void HandleSendSignal(w, event, params, param_count)
     Widget w;
-    XEvent *event;
+    XEvent *event;		/* unused */
     String *params;
     Cardinal *param_count;
 {
@@ -921,6 +926,7 @@ void HandleSendSignal(w, event, params, param_count)
     Bell();
 }
 
+/* ARGSUSED */
 void HandleQuit(w, event, params, param_count)
     Widget w;
     XEvent *event;
@@ -1071,6 +1077,7 @@ void HandleAltScreen(w, event, params, param_count)
 		   params, *param_count, w, NULL, NULL);
 }
 
+/* ARGSUSED */
 void HandleSoftReset(w, event, params, param_count)
     Widget w;
     XEvent *event;
@@ -1080,6 +1087,7 @@ void HandleSoftReset(w, event, params, param_count)
     do_softreset(w, NULL, NULL);
 }
 
+/* ARGSUSED */
 void HandleHardReset(w, event, params, param_count)
     Widget w;
     XEvent *event;
@@ -1135,6 +1143,7 @@ void HandleVisibility(w, event, params, param_count)
     }
 }
 
+/* ARGSUSED */
 void HandleSetTekText(w, event, params, param_count)
     Widget w;
     XEvent *event;
@@ -1160,6 +1169,7 @@ void HandleSetTekText(w, event, params, param_count)
     else Bell();
 }
 
+/* ARGSUSED */
 void HandleTekPage(w, event, params, param_count)
     Widget w;
     XEvent *event;
@@ -1169,6 +1179,7 @@ void HandleTekPage(w, event, params, param_count)
     do_tekpage(w, NULL, NULL);
 }
 
+/* ARGSUSED */
 void HandleTekReset(w, event, params, param_count)
     Widget w;
     XEvent *event;
@@ -1178,6 +1189,7 @@ void HandleTekReset(w, event, params, param_count)
     do_tekreset(w, NULL, NULL);
 }
 
+/* ARGSUSED */
 void HandleTekCopy(w, event, params, param_count)
     Widget w;
     XEvent *event;

@@ -1,4 +1,4 @@
-/* $XConsortium: button.c,v 1.63 91/05/04 19:55:26 gildea Exp $ */
+/* $XConsortium: button.c,v 1.64 91/05/06 17:11:49 gildea Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -41,6 +41,8 @@ button.c	Handles button events in the terminal emulator.
 #include "menu.h"
 
 extern char *malloc();
+
+extern void DoSecureKeyboard();
 
 #define KeyState(x) (((x) & (ShiftMask|ControlMask)) + (((x) & Mod1Mask) ? 2 : 0))
     /* adds together the bits:
@@ -189,7 +191,6 @@ Cardinal *num_params;		/* unused */
 
 static void EndExtend();
 
-/*ARGSUSED*/
 static void do_select_end (w, event, params, num_params, use_cursor_loc)
 Widget w;
 XEvent *event;			/* must be XButtonEvent */
@@ -200,12 +201,12 @@ Bool use_cursor_loc;
 	((XtermWidget)w)->screen.selection_time = event->xbutton.time;
 	switch (eventMode) {
 		case NORMAL :
-		        (void) SendMousePosition(w, event);
-			break;
+		    (void) SendMousePosition(w, event);
+		    break;
 		case LEFTEXTENSION :
 		case RIGHTEXTENSION :
-			EndExtend(event, params, *num_params, use_cursor_loc);
-			break;
+		    EndExtend(w, event, params, *num_params, use_cursor_loc);
+		    break;
 	}
 }
 
@@ -333,6 +334,7 @@ int *format;
 }
 
 
+void
 HandleInsertSelection(w, event, params, num_params)
 Widget w;
 XEvent *event;			/* assumed to be XButtonEvent* */
@@ -372,6 +374,7 @@ int startrow, startcol;
 }
 
 /* ARGSUSED */
+void
 HandleSelectStart(w, event, params, num_params)
 Widget w;
 XEvent *event;			/* must be XButtonEvent* */
@@ -389,6 +392,7 @@ Cardinal *num_params;		/* unused */
 
 
 /* ARGSUSED */
+void
 HandleKeyboardSelectStart(w, event, params, num_params)
 Widget w;
 XEvent *event;			/* must be XButtonEvent* */
@@ -476,7 +480,8 @@ StartSelect(startrow, startcol)
 }
 
 static void
-EndExtend(event, params, num_params, use_cursor_loc)
+EndExtend(w, event, params, num_params, use_cursor_loc)
+    Widget w;
     XEvent *event;			/* must be XButtonEvent */
     String *params;			/* selections */
     Cardinal num_params;
@@ -517,23 +522,26 @@ EndExtend(event, params, num_params, use_cursor_loc)
 			TrackText(0, 0, 0, 0);
 		}
 	}
-	SelectSet(event, params, num_params);
+	SelectSet(w, event, params, num_params);
 	eventMode = NORMAL;
 }
 
+void
 HandleSelectSet(w, event, params, num_params)
-Widget w;
-XEvent *event;
-String *params;
-Cardinal *num_params;
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
-	SelectSet (event, params, *num_params);
+	SelectSet (w, event, params, *num_params);
 }
 
 static void SaltTextAway();
 
+/* ARGSUSED */
 static void
-SelectSet (event, params, num_params)
+SelectSet (w, event, params, num_params)
+    Widget	w;
     XEvent	*event;
     String	*params;
     Cardinal    num_params;
@@ -1323,6 +1331,7 @@ DisownSelection(termw)
 
 
 /* returns number of chars in line from scol to ecol out */
+/* ARGSUSED */
 static int
 Length(screen, row, scol, ecol)
     register int row, scol, ecol;

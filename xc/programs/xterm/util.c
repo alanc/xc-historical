@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: util.c,v 1.24 91/05/04 19:17:18 gildea Exp $
+ *	$XConsortium: util.c,v 1.25 91/05/06 17:12:19 gildea Exp $
  */
 
 /*

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.38 91/01/09 16:52:32 rws Exp $
+ *	$XConsortium: scrollbar.c,v 1.39 91/02/05 19:44:34 gildea Exp $
  */
 
 /*
@@ -60,7 +60,6 @@ static void ResizeScreen(xw, min_width, min_height )
 	long supp;
 #endif
 	XtGeometryResult geomreqresult;
-	Dimension oldWidth, oldHeight;
 	Dimension reqWidth, reqHeight, repWidth, repHeight;
 
 	/*
@@ -144,8 +143,6 @@ static void ResizeScreen(xw, min_width, min_height )
 		      XtNminHeight, min_height + FontHeight(screen),
 		      NULL);
 
-	oldWidth = xw->core.width;
-	oldHeight = xw->core.height;
 	reqWidth = (screen->max_col + 1) * FontWidth(screen) + min_width;
 	reqHeight = FontHeight(screen) * (screen->max_row + 1) + min_height;
 	geomreqresult = XtMakeResizeRequest ((Widget)xw, reqWidth, reqHeight,

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.21 91/05/04 20:15:41 gildea Exp $
+ *	$XConsortium: resize.c,v 1.22 91/05/06 17:12:14 gildea Exp $
  */
 
 /*
@@ -205,7 +205,8 @@ main (argc, argv)
 	extern char *ttyname();
 #endif
 
-	if(ptr = rindex(myname = argv[0], '/'))
+	ptr = rindex(myname = argv[0], '/');
+	if(ptr)
 		myname = ptr + 1;
 	if(strcmp(myname, sunname) == 0)
 		emu = SUN;
@@ -237,7 +238,8 @@ main (argc, argv)
 			/* this is the same default that xterm uses */
 			ptr = "/bin/sh";
 
-		if (shell = rindex(ptr, '/'))
+		shell = rindex(ptr, '/');
+		if(shell)
 			shell++;
 		else
 			shell = ptr;
@@ -468,7 +470,7 @@ readstring(fp, buf, str)
     register char *buf;
     char *str;
 {
-	register int i, last, c;
+	register int last, c;
 	SIGNAL_T timeout();
 #ifndef USG
 	struct itimerval it;
@@ -491,8 +493,9 @@ readstring(fp, buf, str)
 		fprintf(stderr, "%s: unknown character, exiting.\r\n", myname);
 		onintr(0);
 	}
-	last = str[i = strlen(str) - 1];
-	while((*buf++ = getc(fp)) != last);
+	last = str[strlen(str) - 1];
+	while((*buf++ = getc(fp)) != last)
+	    ;
 #ifdef USG
 	alarm (0);
 #else
@@ -518,6 +521,7 @@ timeout(sig)
 	onintr(sig);
 }
 
+/* ARGSUSED */
 SIGNAL_T
 onintr(sig)
     int sig;

@@ -1,4 +1,4 @@
-/* $XConsortium: menu.h,v 1.18 91/04/15 13:53:15 gildea Exp $ */
+/* $XConsortium: menu.h,v 1.19 91/04/26 15:03:47 gildea Exp $ */
 
 /* Copyright 1989 Massachusetts Institute of Technology */
 
@@ -52,7 +52,7 @@ extern void HandleSetTekText();
 extern void HandleTekPage();
 extern void HandleTekReset();
 extern void HandleTekCopy();
-
+extern void DoSecureKeyboard();
 
 /*
  * The following definitions MUST match the order of entries given in 

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: input.c,v 1.14 91/04/01 12:03:12 gildea Exp $
+ *	$XConsortium: input.c,v 1.15 91/05/09 17:23:26 gildea Exp $
  */
 
 /*
@@ -66,7 +66,7 @@ register TScreen *screen;
 Input (keyboard, screen, event, eightbit)
     register TKeyboard	*keyboard;
     register TScreen	*screen;
-    register XKeyPressedEvent *event;
+    register XKeyEvent *event;
     Bool eightbit;
 {
 
@@ -84,7 +84,7 @@ Input (keyboard, screen, event, eightbit)
 	int	count;
 	XEvent	ev;
 
-	count = XLookupString ((XKeyEvent *)event, tmp, STRBUFSIZE,
+	count = XLookupString (event, tmp, STRBUFSIZE,
 			       &keysym, &compose_status);
 	strncpy(bp, tmp, count);
 	bp += count;

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: cursor.c,v 1.11 91/01/30 15:56:05 gildea Exp $
+ *	$XConsortium: cursor.c,v 1.12 91/04/22 13:43:56 gildea Exp $
  */
 
 /*

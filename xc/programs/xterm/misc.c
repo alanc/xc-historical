@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.82 91/05/07 15:20:37 gildea Exp $
+ *	$XConsortium: misc.c,v 1.83 91/05/07 15:36:21 gildea Exp $
  */
 
 /*
@@ -130,7 +130,7 @@ void HandleKeyPressed(w, event, params, nparams)
 #ifdef ACTIVEWINDOWINPUTONLY
     if (w == (screen->TekEmu ? (Widget)tekWidget : (Widget)term))
 #endif
-	Input (&term->keyboard, screen, event, False);
+	Input (&term->keyboard, screen, &event->xkey, False);
 }
 /* ARGSUSED */
 void HandleEightBitKeyPressed(w, event, params, nparams)
@@ -144,7 +144,7 @@ void HandleEightBitKeyPressed(w, event, params, nparams)
 #ifdef ACTIVEWINDOWINPUTONLY
     if (w == (screen->TekEmu ? (Widget)tekWidget : (Widget)term))
 #endif
-	Input (&term->keyboard, screen, event, True);
+	Input (&term->keyboard, screen, &event->xkey, True);
 }
 
 /* ARGSUSED */
