@@ -1,4 +1,4 @@
-/* $XConsortium: shutdown.c,v 1.2 93/09/12 14:21:29 mor Exp $ */
+/* $XConsortium: shutdown.c,v 1.3 93/09/12 16:22:23 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -25,34 +25,57 @@ IceConn iceConn;
 int	majorOpcode;
 
 {
-    if (majorOpcode < 1 || majorOpcode > _IceLastMajorOpcode ||
-        iceConn->proto_ref_count == 0)
+    if (iceConn->proto_ref_count == 0 || iceConn->process_msg_info == NULL ||
+        majorOpcode < 1 || majorOpcode > _IceLastMajorOpcode)
     {
 	return (0);
     }
     else
     {
 	/*
-	 * TO DO:
-	 * We should really check that the majorOpcode is being used.
-	 * If it's not, we should return bad status.
+	 * Make sure this majorOpcode is really being used.
 	 */
 
-	iceConn->proto_ref_count--;
+	int i;
 
-	return (1);
+	for (i = iceConn->his_min_opcode; i <= iceConn->his_max_opcode; i++)
+	{
+	    if (iceConn->process_msg_info[
+		i - iceConn->his_min_opcode].in_use &&
+                iceConn->process_msg_info[
+		i - iceConn->his_min_opcode].my_opcode == majorOpcode)
+		break;
+	}
+
+	if (i > iceConn->his_max_opcode)
+	{
+	    return (0);
+	}
+	else
+	{
+	    /*
+	     * OK, we can shut down the protocol.
+	     */
+
+	    iceConn->process_msg_info[
+		i - iceConn->his_min_opcode].in_use = False;
+	    iceConn->proto_ref_count--;
+
+	    return (1);
+	}
     }
 }
 
 
 
 void
-IceSkipShutdownNegotiation (iceConn)
+IceSetShutdownNegotiation (iceConn, negotiate)
 
-IceConn     iceConn;
+IceConn     	iceConn;
+Bool		negotiate;
 
 {
-    iceConn->skip_want_to_close = True;
+    iceConn->skip_want_to_close = negotiate ? False : True;
 }
 
 
