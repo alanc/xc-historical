@@ -1,4 +1,4 @@
-/* $XConsortium: xtest.c,v 1.6 92/02/24 18:54:58 keith Exp $ */
+/* $XConsortium: xtest.c,v 1.7 92/02/24 19:02:14 keith Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -117,7 +117,7 @@ ProcXTestFakeInput(client)
 {
     REQUEST(xReq);
     int nev;
-    int	i;
+    int	n;
     xEvent *ev;
     DeviceIntPtr dev;
     WindowPtr root;
@@ -130,6 +130,18 @@ ProcXTestFakeInput(client)
 	return BadLength; /* for now */
     UpdateCurrentTime();
     ev = (xEvent *)&stuff[1];
+    switch (ev->u.u.type & 0177)
+    {
+    case KeyPress:
+    case KeyRelease:
+    case MotionNotify:
+    case ButtonPress:
+    case ButtonRelease:
+	break;
+    default:
+	client->errorValue = ev->u.u.type;
+	return BadValue;
+    }
     if (ev->u.keyButtonPointer.time)
     {
 	TimeStamp activateTime;
@@ -144,9 +156,8 @@ ProcXTestFakeInput(client)
 	/* swap the request back so we can simply re-execute it */
 	if (client->swapped)
 	{
-	    register int n;
-    	    swaps(&stuff->length, n);
-    	    (void) XTestSwapFakeInput(stuff);
+    	    (void) XTestSwapFakeInput(client, stuff);
+	    swaps(&stuff->length, n);
 	}
 	ResetCurrentRequest (client);
 	client->sequence--;
@@ -164,7 +175,7 @@ ProcXTestFakeInput(client)
 	}
 	return Success;
     }
-    switch (ev->u.u.type)
+    switch (ev->u.u.type & 0177)
     {
     case KeyPress:
     case KeyRelease:
@@ -199,31 +210,30 @@ ProcXTestFakeInput(client)
 	    return BadValue;
 	}
 	if (root != GetCurrentRootWindow())
+	{
 	    NewCurrentScreen(root->drawable.pScreen,
 			     ev->u.keyButtonPointer.rootX,
 			     ev->u.keyButtonPointer.rootY);
-	else
-	    (*root->drawable.pScreen->SetCursorPosition)
-		(root->drawable.pScreen,
-		 ev->u.keyButtonPointer.rootX,
-		 ev->u.keyButtonPointer.rootY, FALSE);
+	    return client->noClientException;
+	}
+	(*root->drawable.pScreen->SetCursorPosition)
+	    (root->drawable.pScreen,
+	     ev->u.keyButtonPointer.rootX,
+	     ev->u.keyButtonPointer.rootY, FALSE);
 	break;
     case ButtonPress:
     case ButtonRelease:
 	dev = (DeviceIntPtr)LookupPointerDevice();
-	for (i = 1; i <= dev->button->numButtons; i++)
-	    if (dev->button->map[i] == ev->u.u.detail)
+	for (n = 1; n <= dev->button->numButtons; n++)
+	    if (dev->button->map[n] == ev->u.u.detail)
 		break;
-	if (i > dev->button->numButtons)
+	if (n > dev->button->numButtons)
 	{
 	    client->errorValue = ev->u.u.detail;
 	    return BadValue;
 	}
-	ev->u.u.detail = i;
+	ev->u.u.detail = n;
 	break;
-    default:
-	client->errorValue = ev->u.u.type;
-	return BadValue;
     }
     ev->u.keyButtonPointer.time = currentTime.milliseconds;
     (*dev->public.processInputProc)(ev, (DevicePtr)dev, 1); 
@@ -276,11 +286,13 @@ SProcXTestCompareCursor(client)
 }
 
 static int
-XTestSwapFakeInput(req)
+XTestSwapFakeInput(client, req)
+    register ClientPtr	client;
     xReq *req;
 {
     register int nev;
     register xEvent *ev;
+    xEvent sev;
     void (*proc)(), NotImplemented();
 
     nev = ((req->length << 2) - sizeof(xReq)) / sizeof(xEvent);
@@ -289,9 +301,12 @@ XTestSwapFakeInput(req)
     	/* Swap event */
     	proc = EventSwapVector[ev->u.u.type & 0177];
 	/* no swapping proc; invalid event type? */
-    	if (!proc || (int (*)()) proc == (int (*)()) NotImplemented)
-       	   return (BadValue);
-    	(*proc)(ev, ev);
+    	if (!proc || (int (*)()) proc == (int (*)()) NotImplemented) {
+	    client->errorValue = ev->u.u.type;
+	    return BadValue;
+	}
+    	(*proc)(ev, &sev);
+	*ev = sev;
     }
     return Success;
 }
@@ -304,7 +319,7 @@ SProcXTestFakeInput(client)
     REQUEST(xReq);
 
     swaps(&stuff->length, n);
-    n = XTestSwapFakeInput(stuff);
+    n = XTestSwapFakeInput(client, stuff);
     if (n != Success)
 	return n;
     return ProcXTestFakeInput(client);
