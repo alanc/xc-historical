@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.39 94/06/17 13:20:46 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.40 94/06/27 14:20:19 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -59,9 +59,9 @@ static XrmOptionDescRec options[] = {
 List		*PendingList;
 ClientRec	*ClientList = NULL;
 int		numClients = 0;
-int		pingCount = 0;
 int		saveDoneCount = 0;
 int		interactCount = 0;
+Bool		shutdownDialogUp = False;
 Bool		shutdownInProgress = False;
 Bool		shutdownCancelled = False;
 jmp_buf		JumpHere;
@@ -74,11 +74,15 @@ int		numTransports = 0;
 int		saveTypeData[] = {SmSaveGlobal,
 			  	  SmSaveLocal,
 		  		  SmSaveBoth};
-Bool		shutdownData[] = {1, 0};
+
 int		interactStyleData[] = {SmInteractStyleNone,
 			       	       SmInteractStyleErrors,
 		       		       SmInteractStyleAny};
-Bool		fastData[] = {1, 0};
+
+Bool		client_info_visible = 0;
+
+String 		*clientNames = NULL;
+int		numClientNames = 0;
 
 XtAppContext	appContext;
 
@@ -86,14 +90,25 @@ Widget		topLevel;
 
 Widget		    mainWindow;
 
-Widget		        listButton;
-Widget			saveButton;
-Widget			pingButton;
-Widget			startButton;
+Widget		        clientInfoButton;
+Widget			checkPointButton;
+Widget			shutdownButton;
 
-Widget		    listPopup;
+Widget		    clientInfoPopup;
 
-Widget			listClientsWidget;
+Widget		    	clientInfoForm;
+
+Widget			    viewPropButton;
+Widget			    killClientButton;
+Widget			    clientInfoDoneButton;
+Widget			    clientListWidget;
+
+Widget		    clientPropPopup;
+
+Widget		    	clientPropForm;
+
+Widget			    clientPropDoneButton;
+Widget			    clientPropTextWidget;
 
 Widget		    savePopup;
 
@@ -104,18 +119,10 @@ Widget			    saveTypeGlobal;
 Widget			    saveTypeLocal;
 Widget			    saveTypeBoth;
 
-Widget			    shutdownLabel;
-Widget			    shutdownYes;
-Widget			    shutdownNo;
-
 Widget			    interactStyleLabel;
 Widget			    interactStyleNone;
 Widget			    interactStyleErrors;
 Widget			    interactStyleAny;
-
-Widget			    fastLabel;
-Widget			    fastYes;
-Widget			    fastNo;
 
 Widget			    saveOkButton;
 Widget			    saveCancelButton;
@@ -170,6 +177,60 @@ exit_sm ()
 	printf ("\nSESSION MANAGER GOING AWAY!\n");
     free_auth (numTransports, authDataEntries);
     exit (0);
+}
+
+
+
+void
+UpdateClientList ()
+
+{
+    ClientRec *client = ClientList;
+    char *progName;
+    int i, j, k;
+
+    if (clientNames)
+    {
+	/*
+	 * Free the previous list of names.  Xaw doesn't make a copy of
+	 * our list, so we need to keep it around.
+	 */
+
+	for (i = 0; i < numClientNames; i++)
+	    XtFree (clientNames[i]);
+	free ((char *) clientNames);
+    }
+
+    clientNames = (String *) malloc (numClients * sizeof (String));
+    numClientNames = numClients;
+
+    for (i = 0; i < numClients; i++, client = client->next)
+    {
+	progName = NULL;
+
+	for (j = 0; j < client->numProps && !progName; j++)
+	    if (strcmp (client->props[j]->name, SmProgram) == 0)
+	    {
+		char *temp = client->props[j]->vals[0].value;
+		char *lastSlash = NULL;
+
+		for (k = 0; k < strlen (temp); k++)
+		    if (temp[k] == '/')
+			lastSlash = &temp[k];
+
+		if (lastSlash)
+		    temp = lastSlash + 1;
+
+		progName = (String) XtMalloc (
+		    strlen (client->clientHostname) + strlen (temp) + 4);
+		sprintf (progName, "%s : %s", client->clientHostname, temp);
+	    }
+
+	clientNames[i] = progName;
+    }
+
+    XawListChange (clientListWidget, clientNames, numClients, 0, True);
+    XawListHighlight (clientListWidget, 0);
 }
 
 
@@ -436,6 +497,8 @@ CloseConnectionProc (smsConn, managerData, count, reasonMsgs)
     {
 	exit_sm ();
     }
+    else if (client_info_visible)
+	UpdateClientList ();
 }
 
 
@@ -502,12 +565,14 @@ SmProp 		**props;
 
 {
     ClientRec	*client = (ClientRec *) managerData;
-    int		i;
+    int		update, i;
 
     if (app_resources.verbose) {
 	printf ("Client Id = %s, received SET PROPERTIES ", client->clientId);
 	printf ("[Num props = %d]\n", numProps);
     }
+
+    update = client->numProps == 0 && numProps > 0 && client_info_visible;
 
     for (i = 0; i < numProps; i++) {
 	if(app_resources.verbose)
@@ -515,6 +580,9 @@ SmProp 		**props;
 	SetProperty(client, props[i]);
     }
     free ((char *) props);
+
+    if (update)
+	UpdateClientList ();
 }
 
 
@@ -574,20 +642,6 @@ SmPointer 	managerData;
 	printf ("Client Id = %s, sent PROPERTIES REPLY [Num props = %d]\n",
 		client->clientId, client->numProps);
     }
-}
-
-
-
-void
-PingReplyProc (ice_conn, client_data)
-
-IceConn		ice_conn;
-IcePointer	client_data;
-
-{
-    ClientRec *client = (ClientRec *) client_data;
-    printf ("Client Id = %s, received PING REPLY\n", client->clientId);
-    pingCount--;
 }
 
 
@@ -681,48 +735,18 @@ char 		**failureReasonRet;
  */
 
 void
-ListClientsXtProc (w, client_data, callData)
+ClientInfoXtProc (w, client_data, callData)
     Widget	w;
     XtPointer 	client_data;
     XtPointer 	callData;
 
 {
-    ClientRec *client = ClientList;
-    String *clientNames;
-    char *progName;
-    int i, j, k;
-
-    clientNames = (String *) malloc (numClients * sizeof (String));
-
-    for (i = 0; i < numClients; i++, client = client->next)
+    if (!client_info_visible)
     {
-	progName = NULL;
-
-	for (j = 0; j < client->numProps && !progName; j++)
-	    if (strcmp (client->props[j]->name, SmProgram) == 0)
-	    {
-		char *temp = client->props[j]->vals[0].value;
-		char *lastSlash = NULL;
-
-		for (k = 0; k < strlen (temp); k++)
-		    if (temp[k] == '/')
-			lastSlash = &temp[k];
-
-		if (lastSlash)
-		    temp = lastSlash + 1;
-
-		progName = (String) XtMalloc (
-		    strlen (client->clientHostname) + strlen (temp) + 4);
-		sprintf (progName, "%s : %s", client->clientHostname, temp);
-	    }
-
-	clientNames[i] = progName;
+	UpdateClientList ();
+	XtPopup (clientInfoPopup, XtGrabNone);
+	client_info_visible = 1;
     }
-
-    XawListChange (listClientsWidget, clientNames, numClients, 0, True);
-    XawListHighlight (listClientsWidget, 0);
-
-    XtPopup (listPopup, XtGrabNone);
 }
 
 
@@ -737,11 +761,10 @@ XtPointer 	callData;
 {
     ClientRec *client = ClientList;
     XawListReturnStruct *current;
-    int client_index;
+    int client_index, i, j;
 
-    current = XawListShowCurrent (listClientsWidget);
+    current = XawListShowCurrent (clientListWidget);
     client_index = current->list_index;
-    XtFree ((char *) current);
 
     while (client_index > 0)
     {
@@ -749,26 +772,127 @@ XtPointer 	callData;
 	client_index--;
     }
 
-    if (client->numProps == 0) {
-	printf("Client Id = %s, no properties are set\n", client->clientId);
-    } else {
-	int i;
+    if (client->numProps > 0)
+    {
+	char buffer[1024];
+	char number[10];
 
-	printf ("Client Id = %s, the following properties are set:\n",
-		client->clientId);
+	buffer[0] = '\0';
+
 	for (i = 0; i < client->numProps; i++)
-	    print_prop(client->props[i]);
+	{
+	    SmProp *prop = client->props[i];
+
+	    strcat (buffer, "Name:		");
+	    strcat (buffer, prop->name);
+	    strcat (buffer, "\n");
+	    strcat (buffer, "Type:		");
+	    strcat (buffer, prop->type);
+	    strcat (buffer, "\n");
+	    strcat (buffer, "Num values:	");
+	    sprintf (number, "%d", prop->num_vals);
+	    strcat (buffer, number);
+	    strcat (buffer, "\n");
+
+	    if (strcmp (prop->type, SmCARD8) == 0)
+	    {
+		char *card8 = prop->vals->value;
+		int value = *card8;
+		strcat (buffer, "Value 1:	");
+		sprintf (number, "%d", value);
+		strcat (buffer, number);
+		strcat (buffer, "\n");
+	    }
+	    else
+	    {
+		for (j = 0; j < prop->num_vals; j++)
+		{
+		    strcat (buffer, "Value ");
+		    sprintf (number, "%d", j + 1);
+		    strcat (buffer, number);
+		    strcat (buffer, ":	");
+		    strcat (buffer, (char *) prop->vals[j].value);
+		    strcat (buffer, "\n");
+		}
+	    }
+
+	    if (i < client->numProps - 1)
+		strcat (buffer, "\n");
+	}
+
+	XtVaSetValues (clientPropTextWidget,
+	    XtNstring, buffer,
+	    NULL);
+
+	sprintf (buffer, "SM Properties : %s", current->string);
+
+	XtVaSetValues (clientPropPopup,
+	    XtNtitle, buffer,
+	    NULL);
+
+	XtPopup (clientPropPopup, XtGrabNone);
     }
+
+    XtFree ((char *) current);
 }
 
 
 
 void
-SaveYourselfXtProc (w, client_data, callData)
+KillClientXtProc (w, client_data, callData)
 
 Widget		w;
 XtPointer 	client_data;
 XtPointer 	callData;
+
+{
+    ClientRec *client = ClientList;
+    XawListReturnStruct *current;
+    int client_index, i, j;
+
+    current = XawListShowCurrent (clientListWidget);
+    client_index = current->list_index;
+
+    while (client_index > 0)
+    {
+	client = client->next;
+	client_index--;
+    }
+
+    SmsDie (client->smsConn);
+}
+
+
+
+void
+listDoneXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    XtPopdown (clientInfoPopup);
+    client_info_visible = 0;
+}
+
+
+
+void
+clientPropDoneXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    XtPopdown (clientPropPopup);
+}
+
+
+
+void
+PopupSaveDialog ()
 
 {
     Position	x, y, rootx, rooty;
@@ -785,18 +909,48 @@ XtPointer 	callData;
     {
 	XawToggleSetCurrent (saveTypeBoth,
 	    (XtPointer) &saveTypeData[2]);
-	XawToggleSetCurrent (shutdownNo,
-	    (XtPointer) &shutdownData[1]);
 	XawToggleSetCurrent (interactStyleAny,
 	    (XtPointer) &interactStyleData[2]);
-	XawToggleSetCurrent (fastNo,
-	    (XtPointer) &fastData[1]);
 
 	XtMoveWidget (savePopup, rootx, rooty);
+
+	XtVaSetValues (savePopup,
+	    XtNtitle, shutdownDialogUp ? "Shutdown" : "Checkpoint",
+	    NULL);
+
 	XtPopup (savePopup, XtGrabNone);
     }
 
     XtSetSensitive (mainWindow, 0);
+}
+
+
+
+void
+CheckPointXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    shutdownDialogUp = False;
+    PopupSaveDialog ();
+}
+
+
+
+
+void
+ShutdownXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    shutdownDialogUp = True;
+    PopupSaveDialog ();
 }
 
 
@@ -812,25 +966,17 @@ XtPointer 	callData;
     ClientRec	*client;
     XtPointer	ptr;
     int		saveType;
-    Bool	shutdown;
     int		interactStyle;
-    Bool	fast;
+    Bool	fast = False;
     char	*_saveType;
     char	*_shutdown;
     char	*_interactStyle;
-    char	*_fast;
 
     ptr = XawToggleGetCurrent (saveTypeGlobal /* just 1 of the group */);
     saveType = *((int *) ptr);
 
-    ptr = XawToggleGetCurrent (shutdownYes /* just 1 of the group */);
-    shutdown = *((Bool *) ptr);
-
     ptr = XawToggleGetCurrent (interactStyleNone /* just 1 of the group */);
     interactStyle = *((int *) ptr);
-
-    ptr = XawToggleGetCurrent (fastYes /* just 1 of the group */);
-    fast = *((Bool *) ptr);
 
     if (saveType == SmSaveGlobal)
 	_saveType = "Global";
@@ -839,7 +985,7 @@ XtPointer 	callData;
     else
 	_saveType = "Both";
 
-    if (shutdown)
+    if (shutdownDialogUp)
 	_shutdown = "True";
     else
 	_shutdown = "False";
@@ -851,23 +997,17 @@ XtPointer 	callData;
     else
 	_interactStyle = "Any";
 
-    if (fast)
-	_fast = "True";
-    else
-	_fast = "False";
-
     XtSetSensitive (savePopup, 0);
 
     for (client = ClientList; client; client = client->next)
     {
 	SmsSaveYourself (client->smsConn,
-	    saveType, shutdown, interactStyle, fast);
+	    saveType, shutdownDialogUp, interactStyle, fast);
 
 	if (app_resources.verbose) {
 	    printf ("Client Id = %s, sent SAVE YOURSELF [", client->clientId);
 	    printf ("Save Type = %s, Shutdown = %s, ", _saveType, _shutdown);
-	    printf ("Interact Style = %s, Fast = %s]\n",
-		    _interactStyle, _fast);
+	    printf ("Interact Style = %s, Fast = False]\n", _interactStyle);
 	}
     }
     if (app_resources.verbose) {
@@ -938,9 +1078,9 @@ XtPointer 	callData;
 
     write_save(sm_id);
 
-    if (shutdown && shutdownCancelled) {
+    if (shutdownDialogUp && shutdownCancelled) {
 	shutdownCancelled = False;
-    } else if (shutdown) {
+    } else if (shutdownDialogUp) {
 	shutdownInProgress = True;
 	client = ClientList;
 	while (client) {
@@ -1007,60 +1147,6 @@ XtPointer 	callData;
 {
     XtPopdown (shutdownPopup);
     XtSetSensitive (mainWindow, 1);
-}
-
-
-
-void
-StartXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
-{
-    switch(fork()) {
-	case -1:
-	    perror("fork");
-	    break;
-	case 0:
-	    execlp("xsmclient", "xsmclient", (char *)NULL);
-	    perror("xsmclient");
-	    _exit(255);
-	default:
-	    break;
-    }
-}
-
-
-
-void
-PingXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
-{
-    ClientRec *client = ClientList;
-
-    pingCount = 0;
-    printf ("\n");
-    if (client == NULL ) {
-	printf ("There are no clients registered with the SM\n");
-	printf ("\n");
-	return;
-    }
-    while (client) {
-	IcePing (client->ice_conn, PingReplyProc, (IcePointer) client);
-	pingCount++;
-	printf ("Client Id = %s, sent PING\n", client->clientId);
-	client = client->next;
-    }
-    printf ("\n");
-    while (pingCount > 0)
-	XtAppProcessEvent(appContext, XtIMAll);
-    printf ("\n");
 }
 
 
@@ -1180,6 +1266,8 @@ IceConn 	ice_conn;
 	    {
 		exit_sm ();
 	    }
+	    else if (client_info_visible)
+		UpdateClientList ();
 	}
     }
 
@@ -1205,12 +1293,11 @@ IceConn 	ice_conn;
  */
 
 Widget
-AddToggle (widgetName, parent, label, state, radioGroup, radioData,
+AddToggle (widgetName, parent, state, radioGroup, radioData,
     fromHoriz, fromVert)
 
 char 		*widgetName;
 Widget 		parent;
-char 		*label;
 int 		state;
 Widget 		radioGroup;
 XtPointer 	radioData;
@@ -1223,7 +1310,6 @@ Widget 		fromVert;
 
     toggle = XtVaCreateManagedWidget (
 	widgetName, toggleWidgetClass, parent,
-	XtNlabel, label,
         XtNstate, state,
         XtNradioGroup, radioGroup,
         XtNradioData, radioData,
@@ -1285,7 +1371,7 @@ main(argc, argv)
 
     p = strrchr(argv[0], '/');
     progName = (p ? p + 1 : argv[0]);
-    topLevel = XtVaAppInitialize (&appContext, "SAMPLE-SM", options, 
+    topLevel = XtVaAppInitialize (&appContext, "XSm", options, 
 	XtNumber(options), &argc, argv, NULL,
         XtNmappedWhenManaged, False,
 	NULL);
@@ -1336,60 +1422,116 @@ main(argc, argv)
 
     InitWatchProcs (appContext);
 
-    mainWindow = XtCreateManagedWidget (
-	"mainWindow", boxWidgetClass, topLevel, NULL, 0);
-
-    listButton = XtVaCreateManagedWidget (
-	"listButton", commandWidgetClass, mainWindow,
-	XtNlabel, "Client Info",
+    mainWindow = XtVaCreateManagedWidget (
+	"mainWindow", boxWidgetClass, topLevel,
+	XtNorientation, XtorientVertical,
 	NULL);
 
-    XtAddCallback (listButton, XtNcallback, ListClientsXtProc, 0);
-
-    saveButton = XtVaCreateManagedWidget (
-	"saveButton", commandWidgetClass, mainWindow,
-	XtNlabel, "Save Yourself with option to Shutdown",
+    clientInfoButton = XtVaCreateManagedWidget (
+	"clientInfoButton", commandWidgetClass, mainWindow,
 	NULL);
 
-    XtAddCallback (saveButton, XtNcallback, SaveYourselfXtProc, 0);
+    XtAddCallback (clientInfoButton, XtNcallback, ClientInfoXtProc, 0);
 
-    if (app_resources.debug)
-    {
-	pingButton = XtVaCreateManagedWidget (
-	    "pingButton", commandWidgetClass, mainWindow,
-	    XtNlabel, "Ping all clients",
-	    NULL);
+    checkPointButton = XtVaCreateManagedWidget (
+	"checkPointButton", commandWidgetClass, mainWindow,
+	NULL);
 
-	XtAddCallback (pingButton, XtNcallback, PingXtProc, 0);
+    XtAddCallback (checkPointButton, XtNcallback, CheckPointXtProc, 0);
 
-	startButton = XtVaCreateManagedWidget (
-	    "startButton", commandWidgetClass, mainWindow,
-	    XtNlabel, "Start a new xsmclient",
-	    NULL);
+    shutdownButton = XtVaCreateManagedWidget (
+	"shutdownButton", commandWidgetClass, mainWindow,
+	NULL);
 
-	XtAddCallback (startButton, XtNcallback, StartXtProc, 0);
-    }
+    XtAddCallback (shutdownButton, XtNcallback, ShutdownXtProc, 0);
 
 
     /*
      * Pop up for List Clients button.
      */
 
-    listPopup = XtVaCreatePopupShell (
-	"listPopup", transientShellWidgetClass, topLevel,
-	XtNtitle, "List Clients",
+    clientInfoPopup = XtVaCreatePopupShell (
+	"clientInfoPopup", transientShellWidgetClass, topLevel,
 	XtNallowShellResize, True,
 	NULL);
     
 
-    listClientsWidget = XtVaCreateManagedWidget (
-	"listClientsWidget", listWidgetClass, listPopup,
-        XtNdefaultColumns, 1,
-	XtNforceColumns, True,
+    clientInfoForm = XtVaCreateManagedWidget (
+	"clientInfoForm", formWidgetClass, clientInfoPopup,
 	NULL);
 
-    XtAddCallback (listClientsWidget, XtNcallback, GetClientInfoXtProc, 0);
+    viewPropButton = XtVaCreateManagedWidget (
+	"viewPropButton", commandWidgetClass, clientInfoForm,
+        XtNfromHoriz, NULL,
+        XtNfromVert, NULL,
+        NULL);
+    
+    XtAddCallback (viewPropButton, XtNcallback, GetClientInfoXtProc, 0);
 
+
+    killClientButton = XtVaCreateManagedWidget (
+	"killClientButton", commandWidgetClass, clientInfoForm,
+        XtNfromHoriz, viewPropButton,
+        XtNfromVert, NULL,
+        NULL);
+    
+    XtAddCallback (killClientButton, XtNcallback, KillClientXtProc, 0);
+
+
+    clientInfoDoneButton = XtVaCreateManagedWidget (
+	"clientInfoDoneButton", commandWidgetClass, clientInfoForm,
+        XtNfromHoriz, killClientButton,
+        XtNfromVert, NULL,
+        NULL);
+
+    XtAddCallback (clientInfoDoneButton, XtNcallback, listDoneXtProc, 0);
+
+
+    clientListWidget = XtVaCreateManagedWidget (
+	"clientListWidget", listWidgetClass, clientInfoForm,
+	XtNresizable, True,
+        XtNdefaultColumns, 1,
+	XtNforceColumns, True,
+        XtNfromHoriz, NULL,
+        XtNfromVert, viewPropButton,
+	NULL);
+
+
+
+    /*
+     * Pop up for viewing client properties
+     */
+
+    clientPropPopup = XtVaCreatePopupShell (
+	"clientPropPopup", transientShellWidgetClass, topLevel,
+	XtNallowShellResize, True,
+	NULL);
+    
+
+    clientPropForm = XtVaCreateManagedWidget (
+	"clientPropForm", formWidgetClass, clientPropPopup,
+	XtNresizable, True,
+	NULL);
+
+    clientPropDoneButton = XtVaCreateManagedWidget (
+	"clientPropDoneButton", commandWidgetClass, clientPropForm,
+        XtNfromHoriz, NULL,
+        XtNfromVert, NULL,
+        NULL);
+
+    XtAddCallback (clientPropDoneButton, XtNcallback, clientPropDoneXtProc, 0);
+
+
+    clientPropTextWidget = XtVaCreateManagedWidget (
+	"clientPropTextWidget", asciiTextWidgetClass, clientPropForm,
+        XtNfromHoriz, NULL,
+        XtNfromVert, clientPropDoneButton,
+	XtNeditType, XawtextRead,
+        XtNdisplayCaret, False,
+/*	XtNresize, XawtextResizeBoth, */
+	XtNscrollVertical, XawtextScrollWhenNeeded,
+	XtNscrollHorizontal, XawtextScrollWhenNeeded,
+	NULL);
 
 
     /*
@@ -1398,7 +1540,6 @@ main(argc, argv)
 
     savePopup = XtVaCreatePopupShell (
 	"savePopup", transientShellWidgetClass, topLevel,
-	XtNtitle, "Save Yourself Parameters",
 	NULL);
     
     saveForm = XtCreateManagedWidget (
@@ -1406,7 +1547,6 @@ main(argc, argv)
 
     saveTypeLabel = XtVaCreateManagedWidget (
 	"saveTypeLabel", labelWidgetClass, saveForm,
-	XtNlabel, "Save Type     ",
         XtNfromHoriz, NULL,
         XtNfromVert, NULL,
         XtNborderWidth, 0,
@@ -1415,7 +1555,6 @@ main(argc, argv)
     saveTypeGlobal = AddToggle (
 	"saveTypeGlobal", 			/* widgetName */
 	saveForm,				/* parent */
-        "Global",				/* label */
 	0,					/* state */
         NULL,					/* radioGroup */
         (XtPointer) &saveTypeData[0],		/* radioData */
@@ -1426,7 +1565,6 @@ main(argc, argv)
     saveTypeLocal = AddToggle (
 	"saveTypeLocal", 			/* widgetName */
 	saveForm,				/* parent */
-        "Local",				/* label */
 	0,					/* state */
         saveTypeGlobal,				/* radioGroup */
         (XtPointer) &saveTypeData[1],		/* radioData */
@@ -1437,7 +1575,6 @@ main(argc, argv)
     saveTypeBoth = AddToggle (
 	"saveTypeBoth", 			/* widgetName */
 	saveForm,				/* parent */
-        "Both",					/* label */
 	1,					/* state */
         saveTypeGlobal,				/* radioGroup */
         (XtPointer) &saveTypeData[2],		/* radioData */
@@ -1446,115 +1583,48 @@ main(argc, argv)
     );
 
 
-    shutdownLabel = XtVaCreateManagedWidget (
-	"shutdownLabel", labelWidgetClass, saveForm,
-	XtNlabel, "Shutdown?",
-        XtNfromHoriz, NULL,
-        XtNfromVert, saveTypeLabel,
-        XtNborderWidth, 0,
-	NULL);
-
-    shutdownYes = AddToggle (
-	"shutdownYes", 				/* widgetName */
-	saveForm,				/* parent */
-        "Yes",					/* label */
-	0,					/* state */
-        NULL,					/* radioGroup */
-        (XtPointer) &shutdownData[0],		/* radioData */
-        saveTypeLabel,				/* fromHoriz */
-        saveTypeLabel				/* fromVert */
-    );
-
-    shutdownNo = AddToggle (
-	"shutdownNo", 				/* widgetName */
-	saveForm,				/* parent */
-        "No",					/* label */
-	1,					/* state */
-        shutdownYes,				/* radioGroup */
-        (XtPointer) &shutdownData[1],		/* radioData */
-        shutdownYes,				/* fromHoriz */
-        saveTypeLabel				/* fromVert */
-    );
-
-
     interactStyleLabel = XtVaCreateManagedWidget (
 	"interactStyleLabel", labelWidgetClass, saveForm,
-	XtNlabel, "Interact Style",
         XtNfromHoriz, NULL,
-        XtNfromVert, shutdownLabel,
+        XtNfromVert, saveTypeLabel,
         XtNborderWidth, 0,
 	NULL);
 
     interactStyleNone = AddToggle (
 	"interactStyleNone", 			/* widgetName */
 	saveForm,				/* parent */
-        "None",					/* label */
 	0,					/* state */
         NULL,					/* radioGroup */
         (XtPointer) &interactStyleData[0],	/* radioData */
         saveTypeLabel,				/* fromHoriz */
-        shutdownLabel				/* fromVert */
+        saveTypeLabel				/* fromVert */
     );
 
     interactStyleErrors = AddToggle (
 	"interactStyleErrors", 			/* widgetName */
 	saveForm,				/* parent */
-        "Errors",				/* label */
 	0,					/* state */
         interactStyleNone,			/* radioGroup */
         (XtPointer) &interactStyleData[1],	/* radioData */
         interactStyleNone,			/* fromHoriz */
-        shutdownLabel				/* fromVert */
+        saveTypeLabel				/* fromVert */
     );
 
     interactStyleAny = AddToggle (
 	"interactStyleAny", 			/* widgetName */
 	saveForm,				/* parent */
-        "Any",					/* label */
 	1,					/* state */
         interactStyleNone,			/* radioGroup */
         (XtPointer) &interactStyleData[2],	/* radioData */
         interactStyleErrors,			/* fromHoriz */
-        shutdownLabel				/* fromVert */
-    );
-
-
-    fastLabel = XtVaCreateManagedWidget (
-	"fastLabel", labelWidgetClass, saveForm,
-	XtNlabel, "Fast?",
-        XtNfromHoriz, NULL,
-        XtNfromVert, interactStyleLabel,
-        XtNborderWidth, 0,
-	NULL);
-
-    fastYes = AddToggle (
-	"fastYes", 				/* widgetName */
-	saveForm,				/* parent */
-        "Yes",					/* label */
-	0,					/* state */
-        NULL,					/* radioGroup */
-        (XtPointer) &fastData[0],		/* radioData */
-        saveTypeLabel,				/* fromHoriz */
-        interactStyleLabel			/* fromVert */
-    );
-
-    fastNo = AddToggle (
-	"fastNo", 				/* widgetName */
-	saveForm,				/* parent */
-        "No",					/* label */
-	1,					/* state */
-        fastYes,				/* radioGroup */
-        (XtPointer) &fastData[1],		/* radioData */
-        fastYes,				/* fromHoriz */
-        interactStyleLabel			/* fromVert */
+        saveTypeLabel				/* fromVert */
     );
 
 
     saveOkButton = XtVaCreateManagedWidget (
 	"saveOkButton",	commandWidgetClass, saveForm,
-	XtNlabel, "OK",
         XtNfromHoriz, NULL,
-        XtNfromVert, fastLabel,
+        XtNfromVert, interactStyleLabel,
         XtNvertDistance, 30,
         NULL);
     
@@ -1562,9 +1632,8 @@ main(argc, argv)
 
     saveCancelButton = XtVaCreateManagedWidget (
 	"saveCancelButton", commandWidgetClass, saveForm,
-        XtNlabel, "Cancel",
         XtNfromHoriz, saveOkButton,
-        XtNfromVert, fastLabel,
+        XtNfromVert, interactStyleLabel,
         XtNvertDistance, 30,
         NULL);
 
@@ -1577,20 +1646,21 @@ main(argc, argv)
 
     shutdownPopup = XtVaCreatePopupShell ("shutdownPopup",
 	transientShellWidgetClass, topLevel,
-	XtNtitle, "Shutdown Prompt", NULL);
+	NULL);
     
     shutdownDialog = XtVaCreateManagedWidget ("shutdownDialog",
 	dialogWidgetClass, shutdownPopup,
-	XtNlabel, "There are no active clients.  OK to shutdown?",
         NULL);					      
 
     shutdownOkButton = XtVaCreateManagedWidget ("shutdownOkButton",
-	commandWidgetClass, shutdownDialog, XtNlabel, "OK", NULL);
+	commandWidgetClass, shutdownDialog,
+	NULL);
     
     XtAddCallback (shutdownOkButton, XtNcallback, ShutdownOkXtProc, 0);
 
     shutdownCancelButton = XtVaCreateManagedWidget ("shutdownCancelButton",
-	commandWidgetClass, shutdownDialog, XtNlabel, "Cancel", NULL);
+	commandWidgetClass, shutdownDialog,
+	NULL);
 
     XtAddCallback (shutdownCancelButton, XtNcallback, ShutdownCancelXtProc, 0);
 
