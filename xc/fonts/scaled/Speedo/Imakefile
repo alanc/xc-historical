@@ -1,6 +1,6 @@
 OBJS = font0648.spd font0649.spd font0709.spd font0710.spd
 
-FONTINSTDIR = $(FONTDIR)/speedo
+FONTINSTDIR = $(FONTDIR)/Speedo
 
 MakeFontsDir()
 
