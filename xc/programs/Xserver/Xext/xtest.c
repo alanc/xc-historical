@@ -1,4 +1,4 @@
-/* $XConsortium: xtest.c,v 1.14 93/02/02 19:07:02 rws Exp $ */
+/* $XConsortium: xtest.c,v 1.15 93/02/05 17:33:35 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -40,10 +40,7 @@ static int XTestSwapFakeInput();
 CursorPtr GetSpriteCursor();
 WindowPtr GetCurrentRootWindow();
 #ifdef XINPUT
-extern int DeviceKeyPress, DeviceKeyRelease;
-extern int DeviceButtonPress, DeviceButtonRelease;
-extern int DeviceMotionNotify, DeviceValuator;
-extern int ProximityIn, ProximityOut;
+extern int DeviceValuator;
 DeviceIntPtr LookupDeviceIntRec();
 #endif /* XINPUT */
 
@@ -151,11 +148,17 @@ ProcXTestFakeInput(client)
     {
 	if (nev > 2)
 	    return BadLength;
-	if (type != DeviceKeyPress && type != DeviceKeyRelease &&
-	    type != DeviceButtonPress && type != DeviceButtonRelease &&
-	    type != DeviceMotionNotify &&
-	    type != ProximityIn && type != ProximityOut)
-	{
+	type -= DeviceValuator;
+	switch (type) {
+	case XI_DeviceKeyPress:
+	case XI_DeviceKeyRelease:
+	case XI_DeviceButtonPress:
+	case XI_DeviceButtonRelease:
+	case XI_DeviceMotionNotify:
+	case XI_ProximityIn:
+	case XI_ProximityOut:
+	    break;
+	default:
 	    client->errorValue = ev->u.u.type;
 	    return BadValue;
 	}
@@ -173,9 +176,9 @@ ProcXTestFakeInput(client)
 		return BadValue;
 	    }
 	}
-	else if (type == DeviceMotionNotify)
+	else if (type == XI_DeviceMotionNotify)
 	    return BadLength;
-	type = type - DeviceKeyPress + KeyPress;
+	type = type - XI_DeviceKeyPress + KeyPress;
 	extension = TRUE;
     }
     else
