@@ -1,5 +1,5 @@
 /*
- *	$Header: main.c,v 1.20 88/02/21 15:45:41 jim Exp $
+ *	$Header: main.c,v 1.21 88/02/22 09:42:12 jim Exp $
  *
  * WARNING:  This code (particularly, the tty setup code) is a historical
  * relic and should not be confused with a real toolkit application or a
@@ -34,7 +34,7 @@
 /* main.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.20 88/02/21 15:45:41 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.21 88/02/22 09:42:12 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xos.h>
@@ -155,6 +155,8 @@ static jmp_buf env;
 static char *icon_geometry;
 static char *title;
 
+/* used by VT (charproc.c) */
+
 static XtResource application_resources[] = {
     {"name", "Name", XtRString, sizeof(char *),
 	(Cardinal)&xterm_name, XtRString, "xterm"},
@@ -162,162 +164,6 @@ static XtResource application_resources[] = {
 	(Cardinal)&icon_geometry, XtRString, (caddr_t) NULL},
     {XtNtitle, XtCTitle, XtRString, sizeof(char *),
 	(Cardinal)&title, XtRString, (caddr_t) NULL},
-};
-
-#define	XtNboldFont		"boldFont"
-#define	XtNc132			"c132"
-#define	XtNcurses		"curses"
-#define	XtNcursorColor		"cursorColor"
-#define XtNtekGeometry		"tekGeometry"
-#define	XtNinternalBorder	"internalBorder"
-#define	XtNjumpScroll		"jumpScroll"
-#define	XtNlogFile		"logFile"
-#define	XtNlogging		"logging"
-#define	XtNlogInhibit		"logInhibit"
-#define	XtNloginShell		"loginShell"
-#define	XtNmarginBell		"marginBell"
-#define	XtNpointerColor		"pointerColor"
-#define	XtNpointerShape		"pointerShape"
-#define	XtNmultiScroll		"multiScroll"
-#define	XtNnMarginBell		"nMarginBell"
-#define	XtNreverseWrap		"reverseWrap"
-#define	XtNsaveLines		"saveLines"
-#define	XtNscrollBar		"scrollBar"
-#define	XtNscrollInput		"scrollInput"
-#define	XtNscrollKey		"scrollKey"
-#define XtNscrollPos    	"scrollPos"
-#define	XtNsignalInhibit	"signalInhibit"
-#define	XtNtekInhibit		"tekInhibit"
-#define	XtNtekStartup		"tekStartup"
-#define	XtNvisualBell		"visualBell"
-
-#define	XtCC132			"C132"
-#define	XtCCurses		"Curses"
-#define	XtCJumpScroll		"JumpScroll"
-#define	XtCLogfile		"Logfile"
-#define	XtCLogging		"Logging"
-#define	XtCLogInhibit		"LogInhibit"
-#define	XtCLoginShell		"LoginShell"
-#define	XtCMarginBell		"MarginBell"
-#define	XtCMultiScroll		"MultiScroll"
-#define	XtCColumn		"Column"
-#define	XtCReverseVideo		"ReverseVideo"
-#define	XtCReverseWrap		"ReverseWrap"
-#define XtCSaveLines		"SaveLines"
-#define	XtCScrollBar		"ScrollBar"
-#define XtCScrollPos     	"ScrollPos"
-#define	XtCScrollCond		"ScrollCond"
-#define	XtCSignalInhibit	"SignalInhibit"
-#define	XtCTekInhibit		"TekInhibit"
-#define	XtCTekStartup		"TekStartup"
-#define	XtCVisualBell		"VisualBell"
-
-/* Defaults */
-static  Boolean	defaultFALSE	   = FALSE;
-static  Boolean	defaultTRUE	   = TRUE;
-static	int	defaultBorderWidth = DEFBORDERWIDTH;
-static	int	defaultIntBorder   = DEFBORDER;
-static  int	defaultSaveLines   = SAVELINES;
-static	int	defaultNMarginBell = N_MARGINBELL;
-
-
-/*
- * NOTE: VTInitialize zeros out the entire ".screen" component of the 
- * XtermWidget, so make sure to add an assignment statement in VTInitialize() 
- * for each new ".screen" field added to this resource list.
- */
-
-static XtResource resources[] = {
-{XtNfont, XtCFont, XtRString, sizeof(char *),
-	XtOffset(XtermWidget, misc.f_n), XtRString,
-	DEFFONT},
-{XtNboldFont, XtCFont, XtRString, sizeof(char *),
-	XtOffset(XtermWidget, misc.f_b), XtRString,
-	DEFBOLDFONT},
-{XtNc132, XtCC132, XtRBoolean, sizeof(Boolean),
-	XtOffset(XtermWidget, screen.c132),
-	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNcurses, XtCCurses, XtRBoolean, sizeof(Boolean),
-	XtOffset(XtermWidget, screen.curses),
-	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNbackground, XtCBackground, XtRPixel, sizeof(Pixel),
-	XtOffset(XtermWidget, core.background_pixel),
-	XtRString, "White"},
-{XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-	XtOffset(XtermWidget, screen.foreground),
-	XtRString, "Black"},
-{XtNcursorColor, XtCForeground, XtRPixel, sizeof(Pixel),
-	XtOffset(XtermWidget, screen.cursorcolor),
-	XtRString, "Black"},
-{XtNgeometry,XtCGeometry, XtRString, sizeof(char *),
-	XtOffset(XtermWidget, misc.geo_metry),
-	XtRString, (caddr_t) NULL},
-{XtNtekGeometry,XtCGeometry, XtRString, sizeof(char *),
-	XtOffset(XtermWidget, misc.T_geometry),
-	XtRString, (caddr_t) NULL},
-{XtNinternalBorder,XtCBorderWidth,XtRInt, sizeof(int),
-	XtOffset(XtermWidget, screen.border),
-	XtRInt, (caddr_t) &defaultIntBorder},
-{XtNjumpScroll, XtCJumpScroll, XtRBoolean, sizeof(Boolean),
-	XtOffset(XtermWidget, screen.jumpscroll),
-	XtRBoolean, (caddr_t) &defaultTRUE},
-{XtNlogFile, XtCLogfile, XtRString, sizeof(char *),
-	XtOffset(XtermWidget, screen.logfile),
-	XtRString, (caddr_t) NULL},
-{XtNlogging, XtCLogging, XtRBoolean, sizeof(Boolean),
-	XtOffset(XtermWidget, misc.log_on),
-	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNlogInhibit, XtCLogInhibit, XtRBoolean, sizeof(Boolean),
-	XtOffset(XtermWidget, misc.logInhibit),
-	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNloginShell, XtCLoginShell, XtRBoolean, sizeof(Boolean),
-	XtOffset(XtermWidget, misc.login_shell),
-	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNmarginBell, XtCMarginBell, XtRBoolean, sizeof(Boolean),
-	XtOffset(XtermWidget, screen.marginbell),
-	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNpointerColor, XtCForeground, XtRPixel, sizeof(Pixel),
-	XtOffset(XtermWidget, screen.mousecolor),
-	XtRString, "Black"},
-{XtNpointerShape,XtCCursor, XtRString, sizeof(Cursor),
-	XtOffset(XtermWidget, misc.curs_shape),
-	XtRString, (caddr_t) "xterm"},
-{XtNmultiScroll,XtCMultiScroll, XtRBoolean, sizeof(Boolean),
-	XtOffset(XtermWidget, screen.multiscroll),
-	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNnMarginBell,XtCColumn, XtRInt, sizeof(int),
-	XtOffset(XtermWidget, screen.nmarginbell),
-	XtRInt, (caddr_t) &defaultNMarginBell},
-{XtNreverseVideo,XtCReverseVideo,XtRBoolean, sizeof(Boolean),
-	XtOffset(XtermWidget, misc.re_verse),
-	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNreverseWrap,XtCReverseWrap, XtRBoolean, sizeof(Boolean),
-	XtOffset(XtermWidget, misc.reverseWrap),
-	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNsaveLines, XtCSaveLines, XtRInt, sizeof(int),
-	XtOffset(XtermWidget, screen.savelines),
-	XtRInt, (caddr_t) &defaultSaveLines},
-{XtNscrollBar, XtCScrollBar, XtRBoolean, sizeof(Boolean),
-	XtOffset(XtermWidget, misc.scrollbar),
-	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNscrollInput,XtCScrollCond, XtRBoolean, sizeof(Boolean),
-	XtOffset(XtermWidget, screen.scrollinput),
-	XtRBoolean, (caddr_t) &defaultTRUE},
-{XtNscrollKey, XtCScrollCond, XtRBoolean, sizeof(Boolean),
-	XtOffset(XtermWidget, screen.scrollkey),
-	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNsignalInhibit,XtCSignalInhibit,XtRBoolean, sizeof(Boolean),
-	XtOffset(XtermWidget, misc.signalInhibit),
-	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNtekInhibit, XtCTekInhibit, XtRBoolean, sizeof(Boolean),
-	XtOffset(XtermWidget, misc.tekInhibit),
-	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNtekStartup, XtCTekStartup, XtRBoolean, sizeof(Boolean),
-	XtOffset(XtermWidget, screen.TekEmu),
-	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNvisualBell, XtCVisualBell, XtRBoolean, sizeof(Boolean),
-	XtOffset(XtermWidget, screen.visualbell),
-	XtRBoolean, (caddr_t) &defaultFALSE}
 };
 
 /* Command line options table.  Only resources are entered here...there is a
@@ -375,44 +221,7 @@ static XrmOptionDescRec optionDescList[] = {
 {"-w",		".TopLevelShell.borderWidth", XrmoptionSepArg, (caddr_t) NULL},
 };
 
-extern void VTRealize(), VTExpose(), VTConfigure();
-static void VTInitialize();
-
-WidgetClassRec xtermClassRec = {
-  {
-/* core_class fields */	
-    /* superclass	  */	(WidgetClass) &widgetClassRec,
-    /* class_name	  */	"VT100",
-    /* widget_size	  */	sizeof(XtermWidgetRec),
-    /* class_initialize   */    NULL,
-    /* class_part_initialize */ NULL,
-    /* class_inited       */	FALSE,
-    /* initialize	  */	VTInitialize,
-    /* initialize_hook    */    NULL,				
-    /* realize		  */	VTRealize,
-    /* actions		  */	NULL,
-    /* num_actions	  */	0,
-    /* resources	  */	resources,
-    /* num_resources	  */	XtNumber(resources),
-    /* xrm_class	  */	NULLQUARK,
-    /* compress_motion	  */	TRUE,
-    /* compress_exposure  */	FALSE,
-    /* compress_enterleave */   TRUE,
-    /* visible_interest	  */	FALSE,
-    /* destroy		  */	NULL,
-    /* resize		  */	VTConfigure,
-    /* expose		  */	VTExpose,
-    /* set_values	  */	NULL,
-    /* set_values_hook    */    NULL,
-    /* set_values_almost  */    NULL,
-    /* get_values_hook    */    NULL,
-    /* accept_focus	  */	NULL,
-    /* version            */    XtVersion,
-    /* callback_offsets   */    NULL,
-    /* tm_table           */    NULL,				
-  }
-};
-#define xtermWidgetClass ((WidgetClass)&xtermClassRec)
+extern WidgetClass xtermWidgetClass;
 
 Arg ourTopLevelShellArgs[] = {
 	{ XtNallowShellResize, (XtArgVal) TRUE },	
@@ -779,65 +588,6 @@ char **argv;
 		} else
 			VTRun();
 }
-
-static void VTInitialize (request, new)
-   XtermWidget request, new;
-   {
-   /* Zero out the entire "screen" component of "new" widget,
-      then do field-by-field assigment of "screen" fields
-      that are named in the resource list. */
-
-   bzero ((char *) &new->screen, sizeof(new->screen));
-   new->screen.c132 = request->screen.c132;
-   new->screen.curses = request->screen.curses;
-   new->screen.foreground = request->screen.foreground;
-   new->screen.cursorcolor = request->screen.cursorcolor;
-   new->screen.border = request->screen.border;
-   new->screen.jumpscroll = request->screen.jumpscroll;
-   new->screen.logfile = request->screen.logfile;
-   new->screen.marginbell = request->screen.marginbell;
-   new->screen.mousecolor = request->screen.mousecolor;
-   new->screen.multiscroll = request->screen.multiscroll;
-   new->screen.nmarginbell = request->screen.nmarginbell;
-   new->screen.savelines = request->screen.savelines;
-   new->screen.scrollinput = request->screen.scrollinput;
-   new->screen.scrollkey = request->screen.scrollkey;
-   new->screen.visualbell = request->screen.visualbell;
-   new->screen.TekEmu = request->screen.TekEmu;
-   new->misc.re_verse = request->misc.re_verse;
-
-    /*
-     * set the colors if reverse video; this is somewhat tricky since
-     * there are 5 colors:
-     *
-     *     background - paper		white
-     *     foreground - text		black
-     *     border - border			black (foreground)
-     *     textcursor - block		black (foreground)
-     *     mousecursor - mouse		black (foreground)
-     *
-     */
-    if (new->misc.re_verse) {
-	unsigned long fg = new->screen.foreground;
-	unsigned long bg = new->core.background_pixel;
-
-	if (new->screen.mousecolor == fg) new->screen.mousecolor = bg;
-	if (new->screen.cursorcolor == fg) new->screen.cursorcolor = bg;
-	if (new->core.border_pixel == fg) new->core.border_pixel = bg;
-	new->screen.foreground = bg;
-	new->core.background_pixel = fg;
-    }	
-
-   new->keyboard.flags = 0;
-   new->screen.display = new->core.screen->display;
-   new->core.height = new->core.width = 1;
-      /* dummy values so that we don't try to Realize the parent shell 
-	 with height or width of 0, which is illegal in X.  The real
-	 size is computed in the xtermWidget's Realize proc,
-	 but the shell's Realize proc is called first, and must see
-	 a valid size. */
-   }
-
 
 char *basename(name)
 char *name;
