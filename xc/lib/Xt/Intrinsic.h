@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.107 89/10/04 11:01:07 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.108 89/10/04 12:22:36 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -1001,6 +1001,13 @@ extern void XrmCompileResourceList(); /* resources, num_resources */
     /* XtResourceList resources; */
     /* Cardinal	    num_resources; */
 
+extern void XtGetApplicationResources();
+    /* Widget		w;		*/
+    /* XtPointer	base;		*/
+    /* XtResourceList	resources;	*/
+    /* Cardinal		num_resources;	*/
+    /* ArgList		args;		*/
+    /* Cardinal		num_args;	*/
 
 extern void XtGetSubresources();
     /* Widget		widget;		*/
