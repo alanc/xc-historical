@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.c,v 1.14 94/02/06 16:03:12 mor Exp $ */
+/* $XConsortium: Xtrans.c,v 1.15 94/02/07 14:40:41 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -29,39 +29,58 @@
  * family. All operations that can be made on the transport go through this
  * table.
  *
+ * Each transport is assigned a unique transport id.
+ *
  * New transports can be added by adding an entry in this table.
+ * For compatiblity, the transport ids should never be renumbered.
+ * Always add to the end of the list.
  */
 
+#define TRANS_TLI_INET_INDEX		1
+#define TRANS_TLI_TCP_INDEX		2
+#define TRANS_TLI_TLI_INDEX		3
+#define TRANS_SOCKET_UNIX_INDEX		4
+#define TRANS_SOCKET_LOCAL_INDEX	5
+#define TRANS_SOCKET_INET_INDEX		6
+#define TRANS_SOCKET_TCP_INDEX		7
+#define TRANS_DNET_INDEX		8
+#define TRANS_LOCAL_LOCAL_INDEX		9
+#define TRANS_LOCAL_PTS_INDEX		10
+#define TRANS_LOCAL_NAMED_INDEX		11
+#define TRANS_LOCAL_ISC_INDEX		12
+#define TRANS_LOCAL_SCO_INDEX		13
+
+
 static
-Xtransport *Xtransports[] = {
+Xtransport_table Xtransports[] = {
 #if defined(STREAMSCONN)
-    &TRANS(TLIINETFuncs),
-    &TRANS(TLITCPFuncs),
-    &TRANS(TLITLIFuncs),
+    &TRANS(TLIINETFuncs),	TRANS_TLI_INET_INDEX,
+    &TRANS(TLITCPFuncs),	TRANS_TLI_TCP_INDEX,
+    &TRANS(TLITLIFuncs),	TRANS_TLI_TLI_INDEX,
 #endif /* STREAMSCONN */
 #if defined(UNIXCONN)
-    &TRANS(SocketUNIXFuncs),
+    &TRANS(SocketUNIXFuncs),	TRANS_SOCKET_UNIX_INDEX,
 #if !defined(LOCALCONN)
-    &TRANS(SocketLocalFuncs),
+    &TRANS(SocketLocalFuncs),	TRANS_SOCKET_LOCAL_INDEX,
 #endif /* !LOCALCONN */
 #endif /* UNIXCONN */
 #if defined(TCPCONN)
-    &TRANS(SocketINETFuncs),
-    &TRANS(SocketTCPFuncs),
+    &TRANS(SocketINETFuncs),	TRANS_SOCKET_INET_INDEX,
+    &TRANS(SocketTCPFuncs),	TRANS_SOCKET_TCP_INDEX,
 #endif /* TCPCONN */
 #if defined(DNETCONN)
-    &TRANS(DNETFuncs),
+    &TRANS(DNETFuncs),		TRANS_DNET_INDEX,
 #endif /* DNETCONN */
 #if defined(LOCALCONN)
-    &TRANS(LocalFuncs),
-    &TRANS(PTSFuncs),
-    &TRANS(NAMEDFuncs),
-    &TRANS(ISCFuncs),
-    &TRANS(SCOFuncs),
+    &TRANS(LocalFuncs),		TRANS_LOCAL_LOCAL_INDEX,
+    &TRANS(PTSFuncs),		TRANS_LOCAL_PTS_INDEX,
+    &TRANS(NAMEDFuncs),		TRANS_LOCAL_NAMED_INDEX,
+    &TRANS(ISCFuncs),		TRANS_LOCAL_ISC_INDEX,
+    &TRANS(SCOFuncs),		TRANS_LOCAL_SCO_INDEX,
 #endif /* LOCALCONN */
 };
 
-#define NUMTRANS	(sizeof(Xtransports)/sizeof(Xtransport *))
+#define NUMTRANS	(sizeof(Xtransports)/sizeof(Xtransport_table))
 
 
 #ifdef WIN32
@@ -87,6 +106,9 @@ XtransConnInfo ciptr;
 
     if (ciptr->peeraddr)
 	free (ciptr->peeraddr);
+
+    if (ciptr->port)
+	free (ciptr->port);
 
     free ((char *) ciptr);
 }
@@ -120,8 +142,8 @@ char *protocol;
 
     for (i = 0; i < NUMTRANS; i++)
     {
-	if (!strcmp (protobuf, Xtransports[i]->TransName))
-	    return Xtransports[i];
+	if (!strcmp (protobuf, Xtransports[i].transport->TransName))
+	    return Xtransports[i].transport;
     }
 
     return NULL;
@@ -369,13 +391,93 @@ char	*address;
     }
 
     ciptr->transptr = thistrans;
+    ciptr->port = port;			/* We need this for TRANS(Reopen) */
 
     free (protocol);
     free (host);
-    free (port);
 
     return ciptr;
 }
+
+
+#ifdef TRANS_REOPEN
+
+/*
+ * We might want to create an XtransConnInfo object based on a previously
+ * opened connection.  For example, the font server may clone itself and
+ * pass file descriptors to the parent.
+ */
+
+static XtransConnInfo
+TRANS(Reopen) (type, trans_id, fd, port)
+
+int	type;
+int	trans_id;
+int	fd;
+char	*port;
+
+{
+    XtransConnInfo	ciptr = NULL;
+    Xtransport		*thistrans = NULL;
+    char		*save_port;
+    int			i;
+
+    PRMSG (2,"TRANS(Reopen) (%d,%d,%s)\n", trans_id, fd, port);
+
+    /* Determine the transport type */
+
+    for (i = 0; i < NUMTRANS; i++)
+	if (Xtransports[i].transport_id == trans_id)
+	{
+	    thistrans = Xtransports[i].transport;
+	    break;
+	}
+
+    if (thistrans == NULL)
+    {
+	PRMSG (1,"TRANS(Reopen): Unable to find transport id %d\n",
+	       trans_id, 0, 0);
+
+	return NULL;
+    }
+
+    if ((save_port = (char *) malloc (strlen (port) + 1)) == NULL)
+    {
+	PRMSG (1,"TRANS(Reopen): Unable to malloc port string\n", 0, 0, 0);
+
+	return NULL;
+    }
+
+    strcpy (save_port, port);
+
+    /* Get a new XtransConnInfo object */
+
+    switch (type)
+    {
+    case XTRANS_OPEN_COTS_SERVER:
+	ciptr = thistrans->ReopenCOTSServer(thistrans, fd, port);
+	break;
+    case XTRANS_OPEN_CLTS_SERVER:
+	ciptr = thistrans->ReopenCLTSServer(thistrans, fd, port);
+	break;
+    default:
+	PRMSG (1,"TRANS(Reopen): Bad Open type %d\n", type, 0, 0);
+    }
+
+    if (ciptr == NULL)
+    {
+	PRMSG (1,"TRANS(Reopen): transport open failed\n", 0, 0, 0);
+	return NULL;
+    }
+
+    ciptr->transptr = thistrans;
+    ciptr->port = save_port;
+
+    return ciptr;
+}
+
+#endif /* TRANS_REOPEN */
+
 
 
 /*
@@ -422,6 +524,66 @@ char	*address;
     PRMSG (2,"TRANS(OpenCLTSServer) (%s)\n", address, 0, 0);
     return TRANS(Open) (XTRANS_OPEN_CLTS_SERVER, address);
 }
+
+
+#ifdef TRANS_REOPEN
+
+XtransConnInfo
+TRANS(ReopenCOTSServer) (trans_id, fd, port)
+
+int  trans_id;
+int  fd;
+char *port;
+
+{
+    PRMSG (2,"TRANS(ReopenCOTSServer) (%d, %d, %s)\n", trans_id, fd, port);
+    return TRANS(Reopen) (XTRANS_OPEN_COTS_SERVER, trans_id, fd, port);
+}
+
+XtransConnInfo
+TRANS(ReopenCLTSServer) (trans_id, fd, port)
+
+int  trans_id;
+int  fd;
+char *port;
+
+{
+    PRMSG (2,"TRANS(ReopenCLTSServer) (%d, %d, %s)\n", trans_id, fd, port);
+    return TRANS(Reopen) (XTRANS_OPEN_CLTS_SERVER, trans_id, fd, port);
+}
+
+
+int
+TRANS(GetReopenInfo) (ciptr, trans_id, fd, port)
+
+XtransConnInfo	ciptr;
+int		*trans_id;
+int		*fd;
+char		**port;
+
+{
+    int i;
+
+    for (i = 0; i < NUMTRANS; i++)
+	if (Xtransports[i].transport == ciptr->transptr)
+	{
+	    *trans_id = Xtransports[i].transport_id;
+	    *fd = ciptr->fd;
+
+	    if ((*port = (char *) malloc (strlen (ciptr->port) + 1)) == NULL)
+		return 0;
+	    else
+	    {
+		strcpy (*port, ciptr->port);
+		return 1;
+	    }
+	}
+
+    return 0;
+}
+
+#endif /* TRANS_REOPEN */
+
 
 int
 TRANS(SetOption) (ciptr, option, arg)
@@ -660,6 +822,23 @@ XtransConnInfo	ciptr;
     return ret;
 }
 
+int
+TRANS(CloseForCloning) (ciptr)
+
+XtransConnInfo	ciptr;
+
+{
+    int ret;
+
+    PRMSG (2,"TRANS(CloseForCloning) (%d)\n", ciptr->fd, 0, 0);
+
+    ret = ciptr->transptr->CloseForCloning (ciptr);
+
+    TRANS(FreeConnInfo) (ciptr);
+
+    return ret;
+}
+
 #ifdef not_yet
 TRANS(NameToAddr) (XtransConnInfo ciptr /*???what else???*/)
 {
@@ -760,10 +939,10 @@ complete_network_count ()
 
     for (i = 0; i < NUMTRANS; i++)
     {
-	if (Xtransports[i]->flags & TRANS_ALIAS)
+	if (Xtransports[i].transport->flags & TRANS_ALIAS)
 	    continue;
 
-	if (Xtransports[i]->flags & TRANS_LOCAL)
+	if (Xtransports[i].transport->flags & TRANS_LOCAL)
 	    found_local = 1;
 	else
 	    count++;
@@ -793,10 +972,12 @@ XtransConnInfo 	**ciptrs_ret;
 
     for (i = 0; i < NUMTRANS; i++)
     {
-	if (Xtransports[i]->flags&TRANS_ALIAS)
+	Xtransport *trans = Xtransports[i].transport;
+
+	if (trans->flags&TRANS_ALIAS)
 	    continue;
 
-	sprintf(buffer,"%s/:%s", Xtransports[i]->TransName, port ? port : "");
+	sprintf(buffer,"%s/:%s", trans->TransName, port ? port : "");
 
 	PRMSG (5,"TRANS(MakeAllCOTSServerListeners) opening %s\n",
 	       buffer, 0, 0);
@@ -805,7 +986,7 @@ XtransConnInfo 	**ciptrs_ret;
 	{
 	    PRMSG (1,
 	  "TRANS(MakeAllCOTSServerListeners) failed to open listener for %s\n",
-		  Xtransports[i]->TransName, 0, 0);
+		  trans->TransName, 0, 0);
 	    continue;
 	}
 
@@ -813,13 +994,13 @@ XtransConnInfo 	**ciptrs_ret;
 	{
 	    PRMSG (1,
 	"TRANS(MakeAllCOTSServerListeners) failed to create listener for %s\n",
-		  Xtransports[i]->TransName, 0, 0);
+		  trans->TransName, 0, 0);
 	    continue;
 	}
 
 	PRMSG (5,
 	      "TRANS(MakeAllCOTSServerListeners) opened listener for %s, %d\n",
-	      Xtransports[i]->TransName, ciptr->fd, 0);
+	      trans->TransName, ciptr->fd, 0);
 
 	temp_ciptrs[*count_ret] = ciptr;
 	(*count_ret)++;
@@ -870,10 +1051,12 @@ XtransConnInfo 	**ciptrs_ret;
 
     for (i = 0; i < NUMTRANS; i++)
     {
-	if (Xtransports[i]->flags&TRANS_ALIAS)
+	Xtransport *trans = Xtransports[i].transport;
+
+	if (trans->flags&TRANS_ALIAS)
 	    continue;
 
-	sprintf(buffer,"%s/:%s", Xtransports[i]->TransName, port ? port : "");
+	sprintf(buffer,"%s/:%s", trans->TransName, port ? port : "");
 
 	PRMSG (5,"TRANS(MakeAllCLTSServerListeners) opening %s\n",
 	    buffer, 0, 0);
@@ -882,7 +1065,7 @@ XtransConnInfo 	**ciptrs_ret;
 	{
 	    PRMSG (1,
 	"TRANS(MakeAllCLTSServerListeners) failed to open listener for %s\n",
-		  Xtransports[i]->TransName, 0, 0);
+		  trans->TransName, 0, 0);
 	    continue;
 	}
 
@@ -890,13 +1073,13 @@ XtransConnInfo 	**ciptrs_ret;
 	{
 	    PRMSG (1,
 	"TRANS(MakeAllCLTSServerListeners) failed to create listener for %s\n",
-		  Xtransports[i]->TransName, 0, 0);
+		  trans->TransName, 0, 0);
 	    continue;
 	}
 
 	PRMSG (5,
 	"TRANS(MakeAllCLTSServerListeners) opened listener for %s, %d\n",
-	      Xtransports[i]->TransName, ciptr->fd, 0);
+	      trans->TransName, ciptr->fd, 0);
 	temp_ciptrs[*count_ret] = ciptr;
 	(*count_ret)++;
     }

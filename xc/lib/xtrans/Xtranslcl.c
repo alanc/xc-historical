@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranslcl.c,v 1.11 94/02/09 16:48:05 mor Exp $ */
+/* $XConsortium: Xtranslcl.c,v 1.12 94/02/09 17:54:47 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -78,13 +78,82 @@
 /* Type Not Supported */
 
 static int
-TRANS(Fail)(ciptr, port)
+TRANS(OpenFail)(ciptr, port)
 
 XtransConnInfo	ciptr;
 char		*port;
 
 {
     return -1;
+}
+
+static int
+TRANS(ReopenFail)(ciptr, fd, port)
+
+XtransConnInfo	ciptr;
+int		fd;
+char		*port;
+
+{
+    return 0;
+}
+
+
+
+static int
+TRANS(FillAddrInfo)(ciptr, sun_path, peer_sun_path)
+
+XtransConnInfo	ciptr;
+char		*sun_path;
+char		*peer_sun_path;
+
+{
+    struct sockaddr_un	*sunaddr;
+    struct sockaddr_un	*p_sunaddr;
+
+    ciptr->family = AF_UNIX;
+    ciptr->addrlen = sizeof (struct sockaddr_un);
+
+    if ((sunaddr = (struct sockaddr_un *) malloc (ciptr->addrlen)) == NULL)
+    {
+	PRMSG(1,"TRANS(FillAddrInfo)() failed to allocate memory for addr\n",
+									0,0,0);
+	return 0;
+    }
+
+    sunaddr->sun_family = AF_UNIX;
+
+    strcpy (sunaddr->sun_path, sun_path);
+#ifdef BSD44SOCKETS
+    sunaddr->sun_len = strlen (sunaddr->sun_path);
+#endif
+
+    ciptr->addr = (char *) sunaddr;
+
+    ciptr->peeraddrlen = sizeof (struct sockaddr_un);
+
+    if ((p_sunaddr = (struct sockaddr_un *) malloc (
+	ciptr->peeraddrlen)) == NULL)
+    {
+	PRMSG(1,
+	   "TRANS(FillAddrInfo)() failed to allocate memory for peer addr\n",
+									0,0,0);
+	free ((char *) sunaddr);
+	ciptr->addr = NULL;
+
+	return 0;
+    }
+
+    p_sunaddr->sun_family = AF_UNIX;
+
+    strcpy (p_sunaddr->sun_path, peer_sun_path);
+#ifdef BSD44SOCKETS
+    p_sunaddr->sun_len = strlen (p_sunaddr->sun_path);
+#endif
+
+    ciptr->peeraddr = (char *) p_sunaddr;
+
+    return 1;
 }
 
 
@@ -169,7 +238,6 @@ char		*port;
     char		*slave, namelen;
     char		buf[20]; /* MAX_PATH_LEN?? */
     PFV			savef;
-    struct sockaddr_un	*sunaddr;
 
     PRMSG(2,"TRANS(PTSOpenClient)(%s)\n", port, 0,0 );
 
@@ -283,41 +351,13 @@ char		*port;
      * Everything looks good: fill in the XtransConnInfo structure.
      */
 
-    ciptr->family=AF_UNIX;
-    ciptr->addrlen=sizeof(struct sockaddr_un);
-    if( (sunaddr=(struct sockaddr_un *)malloc(ciptr->addrlen)) == NULL )
+    if (TRANS(FillAddrInfo) (ciptr, slave, server_path) == 0)
     {
-	PRMSG(1,"TRANS(PTSOpenClient)() failed to allocate memory for addr\n",
-									0,0,0);
+	PRMSG(1,"TRANS(PTSOpenClient)() failed to fill in addr info\n",
+								0,0,0);
 	close(fd);
 	return -1;
     }
-
-    sunaddr->sun_family=AF_UNIX;
-    strcpy(sunaddr->sun_path,slave);
-#ifdef BSD44SOCKETS
-    sunaddr->sun_len=strlen(sunaddr->sun_path);
-#endif
-
-    ciptr->addr=(char *)sunaddr;
-
-    ciptr->peeraddrlen=sizeof(struct sockaddr_un);
-    if( (sunaddr=(struct sockaddr_un *)malloc(ciptr->peeraddrlen)) == NULL )
-    {
-	PRMSG(1,
-	   "TRANS(PTSOpenClient)() failed to allocate memory for peer addr\n",
-									0,0,0);
-	close(fd);
-	return -1;
-    }
-
-    sunaddr->sun_family=AF_UNIX;
-    strcpy(sunaddr->sun_path,server_path);
-#ifdef BSD44SOCKETS
-    sunaddr->sun_len=strlen(sunaddr->sun_path);
-#endif
-
-    ciptr->peeraddr=(char *)sunaddr;
 
     return(fd);
 }
@@ -331,7 +371,6 @@ char		*port;
 {
     int fd, server;
     char server_path[64], *slave;
-    struct	sockaddr_un	*sunaddr;
 
     PRMSG(2,"TRANS(PTSOpenServer)(%s)\n", port, 0,0 );
 
@@ -354,7 +393,7 @@ char		*port;
     chmod(X_STREAMS_DIR, 0777);
 
     if( (fd=open(server_path, O_RDWR)) >= 0 ) {
-	PRMSG(1, "An X server is already running for display %s\n", port, 0,0 );
+	PRMSG(1, "A server is already running on port %s\n", port, 0,0 );
 	PRMSG(1, "Remove %s if this is incorrect.\n", server_path, 0,0 );
 	close(fd);
 	return(-1);
@@ -400,23 +439,13 @@ char		*port;
      * Everything looks good: fill in the XtransConnInfo structure.
      */
 
-    ciptr->family=AF_UNIX;
-    ciptr->addrlen=sizeof(struct sockaddr_un);
-    if( (sunaddr=(struct sockaddr_un *)malloc(ciptr->addrlen)) == NULL )
+    if (TRANS(FillAddrInfo) (ciptr, server_path, server_path) == 0)
     {
-	PRMSG(1,"TRANS(PTSOpenServer)() failed to allocate memory for addr\n",
-									0,0,0);
+	PRMSG(1,"TRANS(PTSOpenServer)() failed to fill in addr info\n",
+								0,0,0);
 	close(fd);
 	return -1;
     }
-
-    sunaddr->sun_family=AF_UNIX;
-    strcpy(sunaddr->sun_path,server_path);
-#ifdef BSD44SOCKETS
-    sunaddr->sun_len=strlen(sunaddr->sun_path);
-#endif
-
-    ciptr->addr=(char *)sunaddr;
 
     return fd;
 }
@@ -520,7 +549,6 @@ char		*port;
     int			fd;
     char		server_path[64];
     struct stat		filestat;
-    struct sockaddr_un	*sunaddr;
     extern int		isastream();
 
     PRMSG(2,"TRANS(NAMEDOpenClient)(%s)\n", port, 0,0 );
@@ -566,43 +594,17 @@ char		*port;
 	return -1;
     }
 
-/*
- * Everything looks good: fill in the XtransConnInfo structure.
- */
+    /*
+     * Everything looks good: fill in the XtransConnInfo structure.
+     */
 
-    ciptr->family=AF_UNIX;
-    ciptr->addrlen=sizeof(struct sockaddr_un);
-    if( (sunaddr=(struct sockaddr_un *)malloc(ciptr->addrlen)) == NULL ) {
-	PRMSG(1,"TRANS(NAMEDOpenClient)() failed to allocate memory for addr\n",
-									0,0,0);
+    if (TRANS(FillAddrInfo) (ciptr, server_path, server_path) == 0)
+    {
+	PRMSG(1,"TRANS(NAMEDOpenClient)() failed to fill in addr info\n",
+								0,0,0);
 	close(fd);
 	return -1;
     }
-
-    sunaddr->sun_family=AF_UNIX;
-    strcpy(sunaddr->sun_path,server_path);
-#ifdef BSD44SOCKETS
-    sunaddr->sun_len=strlen(sunaddr->sun_path);
-#endif
-
-    ciptr->addr=(char *)sunaddr;
-
-    ciptr->peeraddrlen=sizeof(struct sockaddr_un);
-    if( (sunaddr=(struct sockaddr_un *)malloc(ciptr->peeraddrlen)) == NULL ) {
-	PRMSG(1,
-	   "TRANS(NAMEDOpenClient)() failed to allocate memory for peer addr\n",
-									0,0,0);
-	close(fd);
-	return -1;
-    }
-
-    sunaddr->sun_family=AF_UNIX;
-    strcpy(sunaddr->sun_path,server_path);
-#ifdef BSD44SOCKETS
-    sunaddr->sun_len=strlen(sunaddr->sun_path);
-#endif
-
-    ciptr->peeraddr=(char *)sunaddr;
 
     return(fd);
 }
@@ -617,7 +619,6 @@ char		*port;
     int			fd, pipefd[2];
     char		server_path[64];
     struct stat		sbuf;
-    struct sockaddr_un	*sunaddr;
 
     PRMSG(2,"TRANS(NAMEDOpenServer)(%s)\n", port, 0,0 );
 
@@ -679,40 +680,13 @@ char		*port;
      * Everything looks good: fill in the XtransConnInfo structure.
      */
 
-    ciptr->family=AF_UNIX;
-    ciptr->addrlen=sizeof(struct sockaddr_un);
-    if( (sunaddr=(struct sockaddr_un *)malloc(ciptr->addrlen)) == NULL ) {
-	PRMSG(1,"TRANS(NAMEDOpenClient)() failed to allocate memory for addr\n",
-									0,0,0);
-	close(fd);
-	return -1;
-    }
-
-    sunaddr->sun_family=AF_UNIX;
-    strcpy(sunaddr->sun_path,server_path);
-#ifdef BSD44SOCKETS
-    sunaddr->sun_len=strlen(sunaddr->sun_path);
-#endif
-
-    ciptr->addr=(char *)sunaddr;
-
-    ciptr->peeraddrlen=sizeof(struct sockaddr_un);
-    if( (sunaddr=(struct sockaddr_un *)malloc(ciptr->peeraddrlen)) == NULL )
+    if (TRANS(FillAddrInfo) (ciptr, server_path, server_path) == 0)
     {
-	PRMSG(1,
-	 "TRANS(NAMEDOpenClient)() failed to allocate memory for peer addr\n",
-									0,0,0);
+	PRMSG(1,"TRANS(NAMEDOpenServer)() failed to fill in addr info\n",
+								0,0,0);
 	close(fd);
 	return -1;
     }
-
-    sunaddr->sun_family=AF_UNIX;
-    strcpy(sunaddr->sun_path,server_path);
-#ifdef BSD44SOCKETS
-    sunaddr->sun_len=strlen(sunaddr->sun_path);
-#endif
-
-    ciptr->peeraddr=(char *)sunaddr;
 
     return(pipefd[1]);
 }
@@ -842,7 +816,6 @@ char		*port;
     long	temp;
     o_mode_t 	spmode;
     struct stat 	filestat;
-    struct sockaddr_un	*sunaddr;
     
     PRMSG(2,"TRANS(ICSOpenClient)(%s)\n", port, 0,0 );
     
@@ -928,41 +901,14 @@ char		*port;
      * Everything looks good: fill in the XtransConnInfo structure.
      */
     
-    ciptr->family=AF_UNIX;
-    ciptr->addrlen=sizeof(struct sockaddr_un);
-    if( (sunaddr=(struct sockaddr_un *)malloc(ciptr->addrlen)) == NULL ) {
-	PRMSG(1,"TRANS(NAMEDOpenClient)() failed to allocate memory for addr\n",
-									0,0,0);
-	close(fd);
-	return -1;
-    }
-
-    sunaddr->sun_family=AF_UNIX;
-    strcpy(sunaddr->sun_path,server_path);
-#ifdef BSD44SOCKETS
-    sunaddr->sun_len=strlen(sunaddr->sun_path);
-#endif
-
-    ciptr->addr=(char *)sunaddr;
-
-    ciptr->peeraddrlen=sizeof(struct sockaddr_un);
-    if( (sunaddr=(struct sockaddr_un *)malloc(ciptr->peeraddrlen)) == NULL )
+    if (TRANS(FillAddrInfo) (ciptr, server_path, server_path) == 0)
     {
-	PRMSG(1,
-	      "TRANS(NAMEDOpenClient)() failed to allocate memory for peer addr\n",
-	      0,0,0);
+	PRMSG(1,"TRANS(ISCOpenClient)() failed to fill in addr info\n",
+								0,0,0);
 	close(fd);
 	return -1;
     }
 
-    sunaddr->sun_family=AF_UNIX;
-    strcpy(sunaddr->sun_path,server_path);
-#ifdef BSD44SOCKETS
-    sunaddr->sun_len=strlen(sunaddr->sun_path);
-#endif
-
-    ciptr->peeraddr=(char *)sunaddr;
-    
     return (fd);
 }
 
@@ -975,7 +921,6 @@ char		*port;
 {
     int	fd = -1,fds = -1;
     char	server_path[64],server_unix_path[64];
-    struct sockaddr_un	*sunaddr;
     
     PRMSG(2,"TRANS(ISCOpenServer)(%s)\n", port, 0,0 );
     
@@ -1040,6 +985,18 @@ char		*port;
 #endif /* SVR4 */
 #endif /* !UNIXCONN */
     
+    /*
+     * Everything looks good: fill in the XtransConnInfo structure.
+     */
+    
+    if (TRANS(FillAddrInfo) (ciptr, server_path, server_path) == 0)
+    {
+	PRMSG(1,"TRANS(ISCOpenServer)() failed to fill in addr info\n",
+								0,0,0);
+	close(fd);
+	return -1;
+    }
+
     return fd;
 }
 
@@ -1106,7 +1063,6 @@ char		*port;
     unsigned long	alarm_time;
     void		(*savef)();
     long		temp;
-    struct sockaddr_un	*sunaddr;
     extern int	getmsg(), putmsg();
     
     PRMSG(2,"TRANS(SCOOpenClient)(%s)\n", port, 0,0 );
@@ -1163,47 +1119,19 @@ char		*port;
      * Everything looks good: fill in the XtransConnInfo structure.
      */
     
-    ciptr->family=AF_UNIX;
-    ciptr->addrlen=sizeof(struct sockaddr_un);
-    if( (sunaddr=(struct sockaddr_un *)malloc(ciptr->addrlen)) == NULL ) {
-	PRMSG(1,"TRANS(SCOOpenClient)() failed to allocate memory for addr\n",
-	      0,0,0);
-	close(fd);
-	return -1;
-    }
-    
-    sunaddr->sun_family=AF_UNIX;
-    strcpy(sunaddr->sun_path,server_path);
-#ifdef BSD44SOCKETS
-    sunaddr->sun_len=strlen(sunaddr->sun_path);
-#endif
-    
-    ciptr->addr=(char *)sunaddr;
-    
-    ciptr->peeraddrlen=sizeof(struct sockaddr_un);
-    if( (sunaddr=(struct sockaddr_un *)malloc(ciptr->peeraddrlen)) == NULL )
+    if (TRANS(FillAddrInfo) (ciptr, server_path, server_path) == 0)
     {
-	PRMSG(1,
-	      "TRANS(SCOOpenClient)() failed to allocate memory for peer addr\n",
+	PRMSG(1,"TRANS(SCOOpenClient)() failed to fill addr info\n",
 	      0,0,0);
 	close(fd);
 	return -1;
     }
-    
-    sunaddr->sun_family=AF_UNIX;
-    strcpy(sunaddr->sun_path,server_path);
-#ifdef BSD44SOCKETS
-    sunaddr->sun_len=strlen(sunaddr->sun_path);
-#endif
-    
-    ciptr->peeraddr=(char *)sunaddr;
     
     return(fd);
 }
 
 
 static int
-
 TRANS(SCOOpenServer)(ciptr, port)
 
 XtransConnInfo	ciptr;
@@ -1214,7 +1142,6 @@ char		*port;
     char		serverS_path[64];
     int	fdr = -1;
     int	fds = -1;
-    struct sockaddr_un	*sunaddr;
     
     PRMSG(2,"TRANS(SCOOpenServer)(%s)\n", port, 0,0 );
     
@@ -1248,42 +1175,14 @@ char		*port;
      * Everything looks good: fill in the XtransConnInfo structure.
      */
     
-    ciptr->family=AF_UNIX;
-    ciptr->addrlen=sizeof(struct sockaddr_un);
-    if( (sunaddr=(struct sockaddr_un *)malloc(ciptr->addrlen)) == NULL ) {
-	PRMSG(1,"TRANS(SCOOpenClient)() failed to allocate memory for addr\n",
-	      0,0,0);
-	close(fds);
-	close(fdr);
-	return -1;
-    }
-    
-    sunaddr->sun_family=AF_UNIX;
-    strcpy(sunaddr->sun_path,serverS_path);
-#ifdef BSD44SOCKETS
-    sunaddr->sun_len=strlen(sunaddr->sun_path);
-#endif
-    
-    ciptr->addr=(char *)sunaddr;
-    
-    ciptr->peeraddrlen=sizeof(struct sockaddr_un);
-    if( (sunaddr=(struct sockaddr_un *)malloc(ciptr->peeraddrlen)) == NULL )
+    if (TRANS(FillAddrInfo) (ciptr, serverS_path, serverR_path) == 0)
     {
-	PRMSG(1,
-	      "TRANS(SCOOpenClient)() failed to allocate memory for peer addr\n",
+	PRMSG(1,"TRANS(SCOOpenServer)() failed to fill in addr info\n",
 	      0,0,0);
 	close(fds);
 	close(fdr);
 	return -1;
     }
-    
-    sunaddr->sun_family=AF_UNIX;
-    strcpy(sunaddr->sun_path,serverR_path);
-#ifdef BSD44SOCKETS
-    sunaddr->sun_len=strlen(sunaddr->sun_path);
-#endif
-    
-    ciptr->peeraddr=(char *)sunaddr;
     
     return(fds);
 }
@@ -1345,6 +1244,151 @@ XtransConnInfo	newciptr;
     
     return(fd);
 }
+
+
+
+#ifdef TRANS_REOPEN
+
+static int
+TRANS(PTSReopenServer)(ciptr, fd, port)
+
+XtransConnInfo	ciptr;
+int		fd;
+char		*port;
+{
+    char server_path[64];
+
+    PRMSG(2,"TRANS(PTSReopenServer)(%d,%s)\n", fd, port, 0 );
+
+#if !defined(PTSNODENAME)
+    PRMSG(1,"Protocol is not supported by a pts connection\n", 0,0,0);
+    return 0;
+#else
+    if (port && *port ) {
+	if( *port == '/' ) { /* A full pathname */
+		(void) sprintf(server_path, "%s", port);
+	    } else {
+		(void) sprintf(server_path, "%s%s", PTSNODENAME, port);
+	    }
+    } else {
+	(void) sprintf(server_path, "%s%d", PTSNODENAME, getpid());
+    }
+#endif /* !PTSNODENAME */
+
+    if (TRANS(FillAddrInfo) (ciptr, server_path, server_path) == 0)
+    {
+	PRMSG(1,"TRANS(PTSReopenServer)() failed to fill in addr info\n",
+								0,0,0);
+	return 0;
+    }
+
+    return 1;
+}
+
+
+static int
+TRANS(NAMEDReopenServer)(ciptr, fd, port)
+
+XtransConnInfo	ciptr;
+int		fd;
+char		*port;
+
+{
+    char server_path[64];
+
+    PRMSG(2,"TRANS(NAMEDReopenServer)(%s)\n", port, 0,0 );
+
+#if !defined(NAMEDNODENAME)
+    PRMSG(1,"Protocol is not supported by a NAMED connection\n", 0,0,0);
+    return 0;
+#else
+    if ( port && *port ) {
+	if( *port == '/' ) { /* A full pathname */
+	    (void) sprintf(server_path, "%s", port);
+	} else {
+	    (void) sprintf(server_path, "%s%s", NAMEDNODENAME, port);
+	}
+    } else {
+	(void) sprintf(server_path, "%s%d", NAMEDNODENAME, getpid());
+    }
+#endif /* !NAMEDNODENAME */
+
+    if (TRANS(FillAddrInfo) (ciptr, server_path, server_path) == 0)
+    {
+	PRMSG(1,"TRANS(NAMEDReopenServer)() failed to fill in addr info\n",
+								0,0,0);
+	return 0;
+    }
+
+    return 1;
+}
+
+
+static int
+TRANS(ISCReopenServer)(ciptr, fd, port)
+
+XtransConnInfo	ciptr;
+int		fd;
+char		*port;
+
+{
+    char server_path[64],server_unix_path[64];
+    
+    PRMSG(2,"TRANS(ISCReopenServer)(%s)\n", port, 0,0 );
+    
+#if !defined(ISCDEVNODENAME)
+    PRMSG(1,"Protocol is not supported by a ISC connection\n", 0,0,0);
+    return 0;
+#else
+    (void) sprintf(server_path, ISCDEVNODENAME, port);
+    (void) sprintf(server_unix_path, ISCTMPNODENAME, port);
+#endif /* !ISCDEVNODE */
+
+    if (TRANS(FillAddrInfo) (ciptr, server_path, server_path) == 0)
+    {
+	PRMSG(1,"TRANS(ISCReopenServer)() failed to fill in addr info\n",
+								0,0,0);
+	return 0;
+    }
+    
+    return 1;
+}
+
+
+static int
+TRANS(SCOReopenServer)(ciptr, fd, port)
+
+XtransConnInfo	ciptr;
+int		fd;
+char		*port;
+
+{
+    char		serverR_path[64];
+    char		serverS_path[64];
+    
+    PRMSG(2,"TRANS(SCOReopenServer)(%s)\n", port, 0,0 );
+    
+#if !defined(SCORNODENAME)
+    PRMSG(1,"Protocol is not supported by a SCO connection\n", 0,0,0);
+    return 0;
+#else
+    (void) sprintf(serverR_path, SCORNODENAME, port);
+    (void) sprintf(serverS_path, SCOSNODENAME, port);
+#endif /* SCORNODENAME */
+    
+    if (TRANS(FillAddrInfo) (ciptr, serverS_path, serverR_path) == 0)
+    {
+	PRMSG(1,"TRANS(SCOReopenServer)() failed to fill in addr info\n",
+	      0,0,0);
+	return 0;
+    }
+    
+    return 1;
+}
+
+#endif /* TRANS_REOPEN */
+
+
 
 /*
  * This table contains all of the entry points for the different local
@@ -1378,6 +1422,26 @@ typedef struct _LOCALtrans2dev {
 #endif
 );
 
+#ifdef TRANS_REOPEN
+
+    int	(*devcotsreopenserver)(
+#if NeedFunctionPrototypes
+	XtransConnInfo,
+	int, 	/* fd */
+	char * 	/* port */
+#endif
+);
+
+    int	(*devcltsreopenserver)(
+#if NeedFunctionPrototypes
+	XtransConnInfo,
+	int, 	/* fd */
+	char *	/* port */
+#endif
+);
+
+#endif /* TRANS_REOPEN */
+
     int	(*devaccept)(
 #if NeedFunctionPrototypes
 	XtransConnInfo, XtransConnInfo
@@ -1388,19 +1452,48 @@ typedef struct _LOCALtrans2dev {
 
 static LOCALtrans2dev LOCALtrans2devtab[] = {
 {"",TRANS(PTSOpenClient),TRANS(PTSOpenServer),
-     TRANS(Fail),TRANS(Fail),TRANS(PTSAccept)},
+     TRANS(OpenFail),TRANS(OpenFail),
+#ifdef TRANS_REOPEN
+     TRANS(PTSReopenServer),TRANS(ReopenFail),
+#endif
+     TRANS(PTSAccept)},
+
 {"local",TRANS(PTSOpenClient),TRANS(PTSOpenServer),
-     TRANS(Fail),TRANS(Fail),TRANS(PTSAccept)},
+     TRANS(OpenFail),TRANS(OpenFail),
+#ifdef TRANS_REOPEN
+     TRANS(PTSReopenServer),TRANS(ReopenFail),
+#endif
+     TRANS(PTSAccept)},
+
 {"pts",TRANS(PTSOpenClient),TRANS(PTSOpenServer),
-     TRANS(Fail),TRANS(Fail),TRANS(PTSAccept)},
+     TRANS(OpenFail),TRANS(OpenFail),
+#ifdef TRANS_REOPEN
+     TRANS(PTSReopenServer),TRANS(ReopenFail),
+#endif
+     TRANS(PTSAccept)},
+
 #ifdef SVR4
 {"named",TRANS(NAMEDOpenClient),TRANS(NAMEDOpenServer),
-     TRANS(Fail),TRANS(Fail),TRANS(NAMEDAccept)},
+     TRANS(OpenFail),TRANS(OpenFail),
+#ifdef TRANS_REOPEN
+     TRANS(NAMEDReopenServer),TRANS(ReopenFail),
+#endif
+     TRANS(NAMEDAccept)},
 #endif /* SVR4 */
+
 {"isc",TRANS(ISCOpenClient),TRANS(ISCOpenServer),
-     TRANS(Fail),TRANS(Fail),TRANS(ISCAccept)},
+     TRANS(OpenFail),TRANS(OpenFail),
+#ifdef TRANS_REOPEN
+     TRANS(ISCReopenServer),TRANS(ReopenFail),
+#endif
+     TRANS(ISCAccept)},
+
 {"sco",TRANS(SCOOpenClient),TRANS(SCOOpenServer),
-     TRANS(Fail),TRANS(Fail),TRANS(SCOAccept)},
+     TRANS(OpenFail),TRANS(OpenFail),
+#ifdef TRANS_REOPEN
+     TRANS(SCOReopenServer),TRANS(ReopenFail),
+#endif
+     TRANS(SCOAccept)},
 };
 
 #define NUMTRANSPORTS	(sizeof(LOCALtrans2devtab)/sizeof(LOCALtrans2dev))
@@ -1469,7 +1562,8 @@ TRANS(LocalGetNextTransport)()
 	     */
 	    strncpy(typebuf,typetocheck,TYPEBUFSIZE);
 	    for(j=0;j<TYPEBUFSIZE;j++)
-		typebuf[j]=tolower(typebuf[j]);
+		if (isupper(typebuf[j]))
+		    typebuf[j]=tolower(typebuf[j]);
 	    
 	    /* Now, see if they match */
 	    if(!strcmp(LOCALtrans2devtab[i].transname,typebuf))
@@ -1492,6 +1586,7 @@ char *port;
     int	fd = -1;
     LOCALtrans2dev *transptr;
     XtransConnInfo ciptr;
+    int index;
     
     PRMSG(3,"TRANS(LocalOpenClient)()\n", 0,0,0 );
     
@@ -1518,8 +1613,9 @@ char *port;
     
     TRANS(LocalInitTransports)(protocol);
     
+    index = 0;
     for(transptr=TRANS(LocalGetNextTransport)();
-	transptr!=NULL;transptr=TRANS(LocalGetNextTransport)())
+	transptr!=NULL;transptr=TRANS(LocalGetNextTransport)(), index++)
     {
 	switch( type )
 	{
@@ -1553,6 +1649,7 @@ char *port;
     }
     
     ciptr->priv=(char *)transptr;
+    ciptr->index = index;
     
     return ciptr;
 }
@@ -1611,6 +1708,7 @@ char *port;
 	}
 	if( ciptr->fd >= 0 ) {
 	    ciptr->priv=(char *)&LOCALtrans2devtab[i];
+	    ciptr->index=i;
 	    ciptr->flags=1;
 	    return ciptr;
 	}
@@ -1619,6 +1717,61 @@ char *port;
     free(ciptr);
     return NULL;
 }
+
+
+
+#ifdef TRANS_REOPEN
+
+static XtransConnInfo
+TRANS(LocalReopenServer)(type, index, fd, port)
+
+int  type;
+int  index;
+int  fd;
+char *port;
+
+{
+    XtransConnInfo ciptr;
+    int stat;
+    
+    PRMSG(2,"TRANS(LocalReopenServer)(%d,%d,%d)\n", type, index, fd);
+    
+    if( (ciptr=(XtransConnInfo)calloc(1,sizeof(struct _XtransConnInfo))) == NULL )
+    {
+	PRMSG(1,"TRANS(LocalReopenServer)() calloc(1,%d) failed\n",
+	      sizeof(struct _XtransConnInfo),0,0 );
+	return NULL;
+    }
+    
+    ciptr->fd = fd;
+
+    switch( type )
+    {
+    case XTRANS_OPEN_COTS_SERVER:
+	stat = LOCALtrans2devtab[index].devcotsreopenserver(ciptr,fd,port);
+	break;
+    case XTRANS_OPEN_CLTS_SERVER:
+	stat = LOCALtrans2devtab[index].devcltsreopenserver(ciptr,fd,port);
+	break;
+    default:
+	PRMSG(1,"TRANS(LocalReopenServer): Unknown Open type %d\n",
+	  type ,0,0);
+    }
+
+    if( stat > 0 ) {
+	ciptr->priv=(char *)&LOCALtrans2devtab[index];
+	ciptr->index=index;
+	ciptr->flags=1;
+	return ciptr;
+    }
+    
+    free(ciptr);
+    return NULL;
+}
+
+#endif /* TRANS_REOPEN */
+
+
 
 /*
  * This is the Local implementation of the X Transport service layer
@@ -1680,6 +1833,69 @@ char *port;
     return TRANS(LocalOpenServer)(XTRANS_OPEN_CLTS_SERVER, protocol, host, port);
 }
 
+
+#ifdef TRANS_REOPEN
+
+static XtransConnInfo
+TRANS(LocalReopenCOTSServer)(thistrans, fd, port)
+
+Xtransport *thistrans;
+int  	   fd;
+char	   *port;
+
+{
+    int index;
+
+    PRMSG(2,"TRANS(LocalReopenCOTSServer)(%d,%s)\n", fd, port, 0);
+    
+    for(index=1;index<NUMTRANSPORTS;index++)
+    {
+	if( strcmp(thistrans->TransName,
+	    LOCALtrans2devtab[index].transname) == 0 )
+	    break;
+    }
+    
+    if (index >= NUMTRANSPORTS)
+    {
+	return (NULL);
+    }
+
+    return TRANS(LocalReopenServer)(XTRANS_OPEN_COTS_SERVER,
+	index, fd, port);
+}
+
+static XtransConnInfo
+TRANS(LocalReopenCLTSServer)(thistrans, fd, port)
+
+Xtransport *thistrans;
+int  	   fd;
+char	   *port;
+
+{
+    int index;
+
+    PRMSG(2,"TRANS(LocalReopenCLTSServer)(%d,%s)\n", fd, port, 0);
+    
+    for(index=1;index<NUMTRANSPORTS;index++)
+    {
+	if( strcmp(thistrans->TransName,
+	    LOCALtrans2devtab[index].transname) == 0 )
+	    break;
+    }
+    
+    if (index >= NUMTRANSPORTS)
+    {
+	return (NULL);
+    }
+
+    return TRANS(LocalReopenServer)(XTRANS_OPEN_CLTS_SERVER,
+	index, fd, port);
+}
+
+#endif /* TRANS_REOPEN */
+
+
+
 static
 TRANS(LocalSetOption)(ciptr, option, arg)
 
@@ -1734,6 +1950,7 @@ XtransConnInfo ciptr;
     }
     
     newciptr->priv=(char *)transptr;
+    newciptr->index = ciptr->index;
     
     return newciptr;
 }
@@ -1853,6 +2070,23 @@ XtransConnInfo ciptr;
     return ret;
 }
 
+static int
+TRANS(LocalCloseForCloning)(ciptr)
+
+XtransConnInfo ciptr;
+
+{
+    int ret;
+
+    PRMSG(2,"TRANS(LocalCloseForCloning)(%x->%d)\n", ciptr, ciptr->fd ,0);
+    
+    /* Don't unlink path */
+
+    ret=close(ciptr->fd);
+    
+    return ret;
+}
+
 static
 TRANS(LocalNameToAddr)(ciptr /* ???what else??? */)
 
@@ -1887,6 +2121,10 @@ Xtransport	TRANS(LocalFuncs) = {
 	TRANS(LocalOpenCOTSServer),
 	TRANS(LocalOpenCLTSClient),
 	TRANS(LocalOpenCLTSServer),
+#ifdef TRANS_REOPEN
+	TRANS(LocalReopenCOTSServer),
+	TRANS(LocalReopenCLTSServer),
+#endif
 	TRANS(LocalSetOption),
 	TRANS(LocalCreateListener),
 	NULL,					/* ResetListener */
@@ -1899,6 +2137,7 @@ Xtransport	TRANS(LocalFuncs) = {
 	TRANS(LocalWritev),
 	TRANS(LocalDisconnect),
 	TRANS(LocalClose),
+	TRANS(LocalCloseForCloning),
 	TRANS(LocalNameToAddr),
 	TRANS(LocalAddrToName),
 };
@@ -1911,6 +2150,10 @@ Xtransport	TRANS(PTSFuncs) = {
 	TRANS(LocalOpenCOTSServer),
 	TRANS(LocalOpenCLTSClient),
 	TRANS(LocalOpenCLTSServer),
+#ifdef TRANS_REOPEN
+	TRANS(LocalReopenCOTSServer),
+	TRANS(LocalReopenCLTSServer),
+#endif
 	TRANS(LocalSetOption),
 	TRANS(LocalCreateListener),
 	NULL,					/* ResetListener */
@@ -1923,6 +2166,7 @@ Xtransport	TRANS(PTSFuncs) = {
 	TRANS(LocalWritev),
 	TRANS(LocalDisconnect),
 	TRANS(LocalClose),
+	TRANS(LocalCloseForCloning),
 	TRANS(LocalNameToAddr),
 	TRANS(LocalAddrToName),
 };
@@ -1935,6 +2179,10 @@ Xtransport	TRANS(NAMEDFuncs) = {
 	TRANS(LocalOpenCOTSServer),
 	TRANS(LocalOpenCLTSClient),
 	TRANS(LocalOpenCLTSServer),
+#ifdef TRANS_REOPEN
+	TRANS(LocalReopenCOTSServer),
+	TRANS(LocalReopenCLTSServer),
+#endif
 	TRANS(LocalSetOption),
 	TRANS(LocalCreateListener),
 	NULL,					/* ResetListener */
@@ -1947,6 +2195,7 @@ Xtransport	TRANS(NAMEDFuncs) = {
 	TRANS(LocalWritev),
 	TRANS(LocalDisconnect),
 	TRANS(LocalClose),
+	TRANS(LocalCloseForCloning),
 	TRANS(LocalNameToAddr),
 	TRANS(LocalAddrToName),
 };
@@ -1959,6 +2208,10 @@ Xtransport	TRANS(ISCFuncs) = {
 	TRANS(LocalOpenCOTSServer),
 	TRANS(LocalOpenCLTSClient),
 	TRANS(LocalOpenCLTSServer),
+#ifdef TRANS_REOPEN
+	TRANS(LocalReopenCOTSServer),
+	TRANS(LocalReopenCLTSServer),
+#endif
 	TRANS(LocalSetOption),
 	TRANS(LocalCreateListener),
 	NULL,					/* ResetListener */
@@ -1971,6 +2224,7 @@ Xtransport	TRANS(ISCFuncs) = {
 	TRANS(LocalWritev),
 	TRANS(LocalDisconnect),
 	TRANS(LocalClose),
+	TRANS(LocalCloseForCloning),
 	TRANS(LocalNameToAddr),
 	TRANS(LocalAddrToName),
 };
@@ -1982,6 +2236,10 @@ Xtransport	TRANS(SCOFuncs) = {
 	TRANS(LocalOpenCOTSServer),
 	TRANS(LocalOpenCLTSClient),
 	TRANS(LocalOpenCLTSServer),
+#ifdef TRANS_REOPEN
+	TRANS(LocalReopenCOTSServer),
+	TRANS(LocalReopenCLTSServer),
+#endif
 	TRANS(LocalSetOption),
 	TRANS(LocalCreateListener),
 	NULL,					/* ResetListener */
@@ -1994,6 +2252,7 @@ Xtransport	TRANS(SCOFuncs) = {
 	TRANS(LocalWritev),
 	TRANS(LocalDisconnect),
 	TRANS(LocalClose),
+	TRANS(LocalCloseForCloning),
 	TRANS(LocalNameToAddr),
 	TRANS(LocalAddrToName),
 };

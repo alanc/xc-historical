@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransdnet.c,v 1.7 94/02/07 21:10:46 mor Exp $ */
+/* $XConsortium: Xtransdnet.c,v 1.8 94/02/09 16:23:52 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -170,6 +170,8 @@ char		*port;
 	return NULL;
     }
 
+    ciptr->index = 0;		/* only one form of DECnet */
+
     /* nothing else to do here */
 
     return ciptr;
@@ -202,6 +204,8 @@ char		*port;
 	return NULL;
     }
 
+    ciptr->index = 0;		/* only one form of DECnet */
+
     return (ciptr);
 }
 
@@ -226,6 +230,8 @@ char		*port;
 	return NULL;
     }
 
+    ciptr->index = 0;		/* only one form of DECnet */
+
     /* nothing else to do here */
 
     return ciptr;
@@ -246,6 +252,61 @@ char		*port;
     PRMSG (2,"TRANS(DNETOpenCLTSServer) (%s,%s,%s)\n", protocol, host, port);
     return NULL;
 }
+
+
+#ifdef TRANS_REOPEN
+
+static XtransConnInfo
+TRANS(DNETReopenCOTSServer) (thistrans, fd, port)
+
+Xtransport	*thistrans;
+int		fd;
+char		*port;
+
+{
+    XtransConnInfo	ciptr;
+
+    PRMSG (2,"TRANS(DNETReopenCOTSServer) (%d, %s)\n", fd, port, 0);
+
+    if ((ciptr = (XtransConnInfo) calloc (
+	1, sizeof(struct _XtransConnInfo))) == NULL)
+    {
+	PRMSG (1, "TRANS(DNETReopenCOTSServer): malloc failed\n", 0, 0, 0);
+	return NULL;
+    }
+
+    ciptr->fd = fd;
+    ciptr->index = 0;		/* only one form of DECnet */
+
+    return (ciptr);
+}
+
+static XtransConnInfo
+TRANS(DNETReopenCLTSServer) (thistrans, fd, port)
+
+Xtransport	*thistrans;
+int		fd;
+char		*port;
+
+{
+    XtransConnInfo	ciptr;
+
+    PRMSG (2,"TRANS(DNETReopenCLTSServer) (%d, %s)\n", fd, port, 0);
+
+    if ((ciptr = (XtransConnInfo) calloc (
+	1, sizeof(struct _XtransConnInfo))) == NULL)
+    {
+	PRMSG (1, "TRANS(DNETReopenCLTSServer): malloc failed\n", 0, 0, 0);
+	return NULL;
+    }
+
+    ciptr->fd = fd;
+    ciptr->index = 0;		/* only one form of DECnet */
+
+    return (ciptr);
+}
+
+#endif /* TRANS_REOPEN */
 
 
 static int
@@ -559,6 +620,10 @@ Xtransport	TRANS(DNETFuncs) = {
     TRANS(DNETOpenCOTSServer),
     TRANS(DNETOpenCLTSClient),
     TRANS(DNETOpenCLTSServer),
+#ifdef TRANS_REOPEN
+    TRANS(DNETReopenCOTSServer),
+    TRANS(DNETReopenCLTSServer),
+#endif /* TRANS_REOPEN */
     TRANS(DNETSetOption),
     TRANS(DNETCreateListener),
     NULL,		       			/* ResetListener */
@@ -570,6 +635,7 @@ Xtransport	TRANS(DNETFuncs) = {
     TRANS(DNETReadv),
     TRANS(DNETWritev),
     TRANS(DNETDisconnect),
+    TRANS(DNETClose),
     TRANS(DNETClose),
     TRANS(DNETNameToAddr),
     TRANS(DNETAddrToName),

@@ -1,4 +1,4 @@
-/* $XConsortium: utils.c,v 1.14 94/02/09 16:20:35 gildea Exp $ */
+/* $XConsortium: utils.c,v 1.15 94/02/09 18:16:41 gildea Exp $ */
 /*
  * misc os utilities
  */
@@ -67,8 +67,10 @@
 extern char *configfilename;
 char       *progname;
 Bool        CloneSelf;
-int         ListenSock = -1;
 extern int  ListenPort;
+
+OldListenRec *OldListen = NULL;
+int 	     OldListenCount = 0;
 
 /* ARGSUSED */
 SIGVAL
@@ -180,6 +182,82 @@ OsInitAllocator ()
 #endif
 }
 
+
+/*
+ * The '-ls' option is used for cloning the font server.
+ *
+ * We expect a single string of the form...
+ *
+ *     transport_id/fd/portnum[,transport_id/fd/portnum]...
+ *
+ * [] denotes optional and ... denotes repitition.
+ *
+ * The string must be _exactly_ in the above format.  Since this is
+ * an internal option used by the font server, it's ok to be strict
+ * about the format of the string.
+ */
+
+void
+ProcessLSoption (str)
+
+char *str;
+
+{
+    char *ptr = str;
+    char *slash, *next;
+    char number[20];
+    int count = 0;
+    int len, i;
+
+    while (*ptr != '\0')
+    {
+	if (*ptr == ',')
+	    count++;
+	ptr++;
+    }
+  
+    OldListenCount = count + 1;
+    OldListen = (OldListenRec *) malloc (
+	OldListenCount * sizeof (OldListenRec));
+
+    ptr = str;
+
+    for (i = 0; i < OldListenCount; i++)
+    {
+	slash = (char *) strchr (ptr, '/');
+	len = slash - ptr;
+	strncpy (number, ptr, len);
+	number[len] = '\0';
+	OldListen[i].trans_id = atoi (number);
+
+	ptr = slash + 1;
+
+	slash = (char *) strchr (ptr, '/');
+	len = slash - ptr;
+	strncpy (number, ptr, len);
+	number[len] = '\0';
+	OldListen[i].fd = atoi (number);
+
+	ptr = slash + 1;
+
+	if (i == OldListenCount - 1)
+	    OldListen[i].portnum = atoi (ptr);
+	else
+	{
+	    char *comma = (char *) strchr (ptr, ',');
+
+	    len = comma - ptr;
+	    strncpy (number, ptr, len);
+	    number[len] = '\0';
+	    OldListen[i].portnum = atoi (number);
+
+	    ptr = comma + 1;
+	}
+    }
+}
+
+
+
 /* ARGSUSED */
 void
 ProcessCmdLine(argc, argv)
@@ -197,7 +275,7 @@ ProcessCmdLine(argc, argv)
 		usage();
 	} else if (!strcmp(argv[i], "-ls")) {
 	    if (argv[i + 1])
-		ListenSock = atoi(argv[++i]);
+		ProcessLSoption (argv[++i]);
 	    else
 		usage();
 	} else if (!strcmp(argv[i], "-cf") || !strcmp(argv[i], "-config")) {
@@ -248,7 +326,6 @@ unsigned long *
 FSalloc (amount)
     unsigned long amount;
 {
-    char		*malloc();
     register pointer  ptr;
 	
     if ((long)amount < 0)
@@ -297,7 +374,6 @@ FSrealloc (ptr, amount)
     register pointer ptr;
     unsigned long amount;
 {
-    char *malloc();
     char *realloc();
 
 #ifdef MEMBUG

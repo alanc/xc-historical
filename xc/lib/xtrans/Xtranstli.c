@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranstli.c,v 1.8 94/02/06 16:03:27 mor Exp $ */
+/* $XConsortium: Xtranstli.c,v 1.9 94/02/09 16:57:57 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -302,6 +302,40 @@ char	*device;
 }
 
 
+#ifdef TRANS_REOPEN
+
+static XtransConnInfo
+TRANS(TLIReopen)(device, fd, port)
+
+char	*device;
+int	fd;
+char	*port;
+
+{
+    XtransConnInfo	ciptr;
+    
+    PRMSG(3,"TRANS(TLIReopen)(%s,%d, %s)\n", device, fd, port );
+    
+    if (t_sync (fd) < 0)
+    {
+	PRMSG(1, "TRANS(TLIReopen): t_sync failed\n", 0,0,0 );
+	return NULL;
+    }
+
+    if( (ciptr=(XtransConnInfo)calloc(1,sizeof(struct _XtransConnInfo))) == NULL )
+    {
+	PRMSG(1, "TRANS(TLIReopen): calloc failed\n", 0,0,0 );
+	return NULL;
+    }
+    
+    ciptr->fd = fd;
+    
+    return ciptr;
+}
+
+#endif /* TRANS_REOPEN */
+
+
 static	int
 TRANS(TLIAddrToNetbuf)(tlifamily, host, port, netbufp)
 
@@ -371,7 +405,7 @@ char		*port;
     XtransConnInfo	ciptr;
     int 		i;
     
-    PRMSG(2,"TRANS(TLIOpenCOTSClient)(%d,%s,%s)\n", protocol, host, port );
+    PRMSG(2,"TRANS(TLIOpenCOTSClient)(%s,%s,%s)\n", protocol, host, port );
     
     if( (i=TRANS(TLISelectFamily)(thistrans->TransName)) < 0 )
     {
@@ -408,7 +442,7 @@ char		*port;
     }
     
     /* Save the TLIFamily for later use in TLIAddrToNetbuf() lookups */
-    ciptr->priv=(char *)i;
+    ciptr->index = i;
     
     return ciptr;
 }
@@ -426,7 +460,7 @@ char		*port;
     XtransConnInfo	ciptr;
     int 		i;
     
-    PRMSG(2,"TRANS(TLIOpenCOTSServer)(%d,%s,%s)\n", protocol, host, port );
+    PRMSG(2,"TRANS(TLIOpenCOTSServer)(%s,%s,%s)\n", protocol, host, port );
     
     if( (i=TRANS(TLISelectFamily)(thistrans->TransName)) < 0 )
     {
@@ -446,7 +480,7 @@ char		*port;
     
     /* Save the TLIFamily for later use in TLIAddrToNetbuf() lookups */
     
-    ciptr->priv=(char *)i;
+    ciptr->index = i;
     
     return ciptr;
 }
@@ -464,7 +498,7 @@ char		*port;
     XtransConnInfo	ciptr;
     int 		i;
     
-    PRMSG(2,"TRANS(TLIOpenCLTSClient)(%d,%s,%s)\n", protocol, host, port );
+    PRMSG(2,"TRANS(TLIOpenCLTSClient)(%s,%s,%s)\n", protocol, host, port );
     
     if( (i=TRANS(TLISelectFamily)(thistrans->TransName)) < 0 )
     {
@@ -518,7 +552,7 @@ char		*port;
     XtransConnInfo	ciptr;
     int 		i;
     
-    PRMSG(2,"TRANS(TLIOpenCLTSServer)(%d,%s,%s)\n", protocol, host, port );
+    PRMSG(2,"TRANS(TLIOpenCLTSServer)(%s,%s,%s)\n", protocol, host, port );
     
     if( (i=TRANS(TLISelectFamily)(thistrans->TransName)) < 0 )
     {
@@ -538,6 +572,84 @@ char		*port;
     
     return ciptr;
 }			
+
+
+#ifdef TRANS_REOPEN
+
+static XtransConnInfo
+TRANS(TLIReopenCOTSServer)(thistrans, fd, port)
+
+Xtransport	*thistrans;
+int	   	fd;
+char		*port;
+
+{
+    XtransConnInfo	ciptr;
+    int			i;
+    
+    PRMSG(2,"TRANS(TLIReopenCOTSServer)(%d, %s)\n", fd, port, 0 );
+    
+    if( (i=TRANS(TLISelectFamily)(thistrans->TransName)) < 0 )
+    {
+	PRMSG(1,
+	      "TRANS(TLIReopenCOTSServer): Unable to determine device for %s\n",
+	      thistrans->TransName, 0,0 );
+	return NULL;
+    }
+
+    if( (ciptr=TRANS(TLIReopen)(
+	TLItrans2devtab[i].devcotsname, fd, port)) == NULL )
+    {
+	PRMSG(1,
+	      "TRANS(TLIReopenCOTSServer): Unable to open device for %s\n",
+	      thistrans->TransName, 0,0 );
+	return NULL;
+    }
+    
+    /* Save the TLIFamily for later use in TLIAddrToNetbuf() lookups */
+    
+    ciptr->index = i;
+    
+    return ciptr;
+}
+
+
+static XtransConnInfo
+TRANS(TLIReopenCLTSServer)(thistrans, fd, port)
+
+Xtransport	*thistrans;
+int	   	fd;
+char		*port;
+
+{
+    XtransConnInfo	ciptr;
+    int 		i;
+    
+    PRMSG(2,"TRANS(TLIReopenCLTSServer)(%d, %s)\n", fd, port, 0 );
+    
+    if( (i=TRANS(TLISelectFamily)(thistrans->TransName)) < 0 )
+    {
+	PRMSG(1,
+	      "TRANS(TLIReopenCLTSServer): Unable to determine device for %s\n",
+	      thistrans->TransName, 0,0 );
+	return NULL;
+    }
+
+    if( (ciptr=TRANS(TLIReopen)(
+	TLItrans2devtab[i].devcltsname, fd, port)) == NULL )
+    {
+	PRMSG(1,
+	      "TRANS(TLIReopenCLTSServer): Unable to open device for %s\n",
+	      thistrans->TransName, 0,0 );
+	return NULL;
+    }
+    
+    ciptr->index = i;
+
+    return ciptr;
+}			
+
+#endif /* TRANS_REOPEN */
 
 
 static
@@ -660,7 +772,7 @@ char		*port;
 	    return -1;
 	}
 	
-	if(TRANS(TLIAddrToNetbuf)(ciptr->priv,HOST_SELF,port,&(req->addr)) < 0)
+	if(TRANS(TLIAddrToNetbuf)(ciptr->index,HOST_SELF,port,&(req->addr)) < 0)
 	{
 	    PRMSG(1,
 		  "TRANS(TLICreateListener): can't resolve name:HOST_SELF.%s\n",
@@ -766,7 +878,7 @@ XtransConnInfo	ciptr;
      * Now we need to set up the new endpoint for the incoming connection.
      */
     
-    i=(int)ciptr->priv; /* Makes the next line more readable */
+    i=ciptr->index; /* Makes the next line more readable */
     
     if( (newciptr=TRANS(TLIOpen)(TLItrans2devtab[i].devcotsname)) == NULL )
     {
@@ -944,7 +1056,7 @@ char		*port;
 	return -1;
     }
     
-    if( TRANS(TLIAddrToNetbuf)(ciptr->priv, host, portbuf, &(sndcall->addr) ) < 0 )
+    if( TRANS(TLIAddrToNetbuf)(ciptr->index, host, portbuf, &(sndcall->addr) ) < 0 )
     {
 	PRMSG(1, "TRANS(TLIINETConnect)() unable to resolve name:%s.%s\n",
 	      host, portbuf, 0 );
@@ -1092,7 +1204,24 @@ XtransConnInfo	ciptr;
     PRMSG(2, "TRANS(TLIClose)(%x->%d)\n", ciptr, ciptr->fd, 0 );
     
     t_unbind(ciptr->fd);
-    t_close(ciptr->fd);
+
+    return (t_close(ciptr->fd));
+}
+
+
+static
+TRANS(TLICloseForCloning)(ciptr)
+
+XtransConnInfo	ciptr;
+
+{
+    /*
+     * Don't unbind.
+     */
+
+    PRMSG(2, "TRANS(TLICloseForCloning)(%x->%d)\n", ciptr, ciptr->fd, 0 );
+    
+    return (t_close(ciptr->fd));
 }
 
 
@@ -1122,6 +1251,10 @@ Xtransport	TRANS(TLIINETFuncs) = {
 	TRANS(TLIOpenCOTSServer),
 	TRANS(TLIOpenCLTSClient),
 	TRANS(TLIOpenCLTSServer),
+#ifdef TRANS_REOPEN
+	TRANS(TLIReopenCOTSServer),
+	TRANS(TLIReopenCLTSServer),
+#endif
 	TRANS(TLISetOption),
 	TRANS(TLIINETCreateListener),
 	NULL,		       			/* ResetListener */
@@ -1134,6 +1267,7 @@ Xtransport	TRANS(TLIINETFuncs) = {
 	TRANS(TLIWritev),
 	TRANS(TLIDisconnect),
 	TRANS(TLIClose),
+	TRANS(TLICloseForCloning),
 	TRANS(TLINameToAddr),
 	TRANS(TLIAddrToName),
 };
@@ -1146,6 +1280,10 @@ Xtransport	TRANS(TLITCPFuncs) = {
 	TRANS(TLIOpenCOTSServer),
 	TRANS(TLIOpenCLTSClient),
 	TRANS(TLIOpenCLTSServer),
+#ifdef TRANS_REOPEN
+	TRANS(TLIReopenCOTSServer),
+	TRANS(TLIReopenCLTSServer),
+#endif
 	TRANS(TLISetOption),
 	TRANS(TLIINETCreateListener),
 	NULL,		       			/* ResetListener */
@@ -1158,6 +1296,7 @@ Xtransport	TRANS(TLITCPFuncs) = {
 	TRANS(TLIWritev),
 	TRANS(TLIDisconnect),
 	TRANS(TLIClose),
+	TRANS(TLICloseForCloning),
 	TRANS(TLINameToAddr),
 	TRANS(TLIAddrToName),
 };
@@ -1170,6 +1309,10 @@ Xtransport	TRANS(TLITLIFuncs) = {
 	TRANS(TLIOpenCOTSServer),
 	TRANS(TLIOpenCLTSClient),
 	TRANS(TLIOpenCLTSServer),
+#ifdef TRANS_REOPEN
+	TRANS(TLIReopenCOTSServer),
+	TRANS(TLIReopenCLTSServer),
+#endif
 	TRANS(TLISetOption),
 	TRANS(TLITLICreateListener),
 	NULL,		       			/* ResetListener */
@@ -1182,6 +1325,7 @@ Xtransport	TRANS(TLITLIFuncs) = {
 	TRANS(TLIWritev),
 	TRANS(TLIDisconnect),
 	TRANS(TLIClose),
+	TRANS(TLICloseForCloning),
 	TRANS(TLINameToAddr),
 	TRANS(TLIAddrToName),
 };

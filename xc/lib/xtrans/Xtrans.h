@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.h,v 1.13 94/02/06 16:03:21 mor Exp $ */
+/* $XConsortium: Xtrans.h,v 1.14 94/02/08 20:54:38 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -177,6 +177,7 @@ typedef struct _XtransConnInfo *XtransConnInfo;
 /*
  * Function prototypes for the exposed interface
  */
+
 XtransConnInfo TRANS(OpenCOTSClient)(
 #if NeedFunctionPrototypes
     char *		/* address */
@@ -200,6 +201,37 @@ XtransConnInfo TRANS(OpenCLTSServer)(
     char *		/* address */
 #endif
 );
+
+
+#ifdef TRANS_REOPEN
+
+XtransConnInfo TRANS(ReopenCOTSServer)(
+#if NeedFunctionPrototypes
+    int,		/* trans_id */
+    int,		/* fd */
+    char *		/* port */
+#endif
+);
+
+XtransConnInfo TRANS(ReopenCLTSServer)(
+#if NeedFunctionPrototypes
+    int,		/* trans_id */
+    int,		/* fd */
+    char *		/* port */
+#endif
+);
+
+int TRANS(GetReopenInfo)(
+#if NeedFunctionPrototypes
+    XtransConnInfo,	/* ciptr */
+    int *,		/* trans_id */
+    int *,		/* fd */
+    char **		/* port */
+#endif
+);
+
+#endif /* TRANS_REOPEN */
+
 
 int TRANS(SetOption)(
 #if NeedFunctionPrototypes
@@ -281,6 +313,12 @@ int TRANS(Disconnect)(
 );
 
 int TRANS(Close)(
+#if NeedFunctionPrototypes
+    XtransConnInfo	/* ciptr */
+#endif
+);
+
+int TRANS(CloseForCloning)(
 #if NeedFunctionPrototypes
     XtransConnInfo	/* ciptr */
 #endif

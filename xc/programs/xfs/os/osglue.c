@@ -1,4 +1,4 @@
-/* $XConsortium: osglue.c,v 1.5 91/10/24 21:46:59 rws Exp $ */
+/* $XConsortium: osglue.c,v 1.6 93/09/20 18:08:56 hersh Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -31,6 +31,7 @@
  * Catalogue support, alternate servers, and cloneing
  */
 
+#include <X11/Xtrans.h>
 #include "osstruct.h"
 #include <stdio.h>
 #define  XK_LATIN1
@@ -38,12 +39,15 @@
 
 Bool        drone_server = FALSE;
 extern Bool CloneSelf;
-extern int  ListenSock;
 extern char *progname;
 extern char *configfilename;
 
 static int  num_alts;
 static AlternateServerPtr alt_servers = (AlternateServerPtr) 0;
+
+extern XtransConnInfo 	*ListenTransConns;
+extern int	       	*ListenTransFds;
+extern int		ListenTransCount;
 
 /*
  * XXX
@@ -262,14 +266,17 @@ int
 CloneMyself()
 {
     int         child;
-    char        sockarg[32];
-    int         i;
+    char        old_listen_arg[256];
+    char	*arg_ptr = old_listen_arg;
+    int         i, j;
     int         lastfdesc;
 
     assert(!drone_server);	/* a drone shouldn't hit this */
 
     if (!CloneSelf)
 	return -1;
+
+    old_listen_arg[0] = '\0';
 
 #if defined(hpux) || defined(SVR4)
     lastfdesc = _NFILE - 1;
@@ -298,15 +305,42 @@ CloneMyself()
 	NoticeF("Clone: parent revitalizing as %s\n", progname);
 	CloseErrors();
 	/* XXX should we close stdio as well? */
-	for (i = 3; i < lastfdesc; i++) {
-	    if (i != ListenSock)
+	for (i = 3; i < lastfdesc; i++)
+	{
+	    for (j = 0; j < ListenTransCount; j++)
+		if (ListenTransFds[j] == i)
+		    break;
+	    
+	    if (j >= ListenTransCount)
 		(void) close(i);
 	}
-	sprintf(sockarg, "%d", ListenSock);
-	execlp(progname, progname,
-	       "-ls", sockarg,
-	       "-cf", configfilename,
-	       NULL);
+
+	for (i = 0; i < ListenTransCount; i++)
+	{
+	    int trans_id, fd;
+	    char *port;
+
+	    if (!_FONTTransGetReopenInfo (ListenTransConns[i],
+		&trans_id, &fd, &port))
+		continue;
+
+	    sprintf (arg_ptr, "%d/%d/%s", trans_id, fd, port);
+	    arg_ptr += strlen (arg_ptr);
+	    free (port);
+
+	    if (i < ListenTransCount - 1)
+	    {
+		strcat (arg_ptr, ",");
+		arg_ptr++;
+	    }
+	}
+
+	if (*old_listen_arg != '\0')
+	    execlp(progname, progname,
+		   "-ls", old_listen_arg,
+		   "-cf", configfilename,
+		   NULL);
+
 	InitErrors();		/* reopen errors, since we don't want to lose
 				 * this */
 	Error("Clone failed");

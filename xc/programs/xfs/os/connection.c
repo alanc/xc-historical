@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.25 94/02/09 15:41:56 gildea Exp $ */
+/* $XConsortium: connection.c,v 1.26 94/02/09 16:20:33 gildea Exp $ */
 /*
  * handles connections
  */
@@ -48,6 +48,7 @@
  */
 
 #include	<X11/Xtrans.h>
+#include	"misc.h"
 #include	<stdio.h>
 #include	<errno.h>
 #include	<sys/param.h>
@@ -134,7 +135,7 @@ StopListening()
     for (i = 0; i < ListenTransCount; i++)
     {
 	BITCLEAR (AllSockets, ListenTransFds[i]);
-	_FONTTransClose (ListenTransConns[i]);
+	_FONTTransCloseForCloning (ListenTransConns[i]);
     }
 
     free ((char *) ListenTransFds);
@@ -150,8 +151,11 @@ StopListening()
  * only called when server first started
  */
 void
-CreateSockets(oldsock)
-    int         oldsock;
+CreateSockets(old_listen_count, old_listen)
+
+int 	     old_listen_count;
+OldListenRec *old_listen;
+
 {
     int         request,
                 i;
@@ -175,32 +179,42 @@ CreateSockets(oldsock)
     }
     WellKnownConnections = 0;
 
-    if (oldsock >= 0) {		/* must be forked, and have a different socket
-				 * to listen to */
+    if (old_listen_count > 0) {
 
-	    FatalError("Cannot re-establish the listening socket\n");
-	    return;
-#if 0
-/*
- * This is currently broken!
- *
- * The problem is that the new process does not have the transport
- * objects for these fds.  The xtrans lib needs some kind of function
- * which takes an fd and transport type and creates a transport object.
- *
- * Plus, now that we support multiple transports, we should check for
- * a list of fds, not just the single oldsock variable.
- */
+	/*
+	 * The font server cloned itself.  Re-use previously opened
+	 * transports for listening.
+	 */
 
-	if (listen(oldsock, 5)) {
-	    Error("TCP listening");
-	    close(oldsock);
-	    FatalError("Cannot re-establish the listening socket\n");
-	    return;
+	ListenTransConns = (XtransConnInfo *) malloc (
+	    old_listen_count * sizeof (XtransConnInfo));
+
+	ListenTransFds = (int *) malloc (old_listen_count * sizeof (int));
+
+	ListenTransCount = 0;
+
+	for (i = 0; i < old_listen_count; i++)
+	{
+	    char portnum[10];
+
+	    if (old_listen[i].portnum != ListenPort)
+		continue;		/* this should never happen */
+	    else
+		sprintf (portnum, "%d", old_listen[i].portnum);
+
+	    if ((ListenTransConns[ListenTransCount] =
+		_FONTTransReopenCOTSServer (old_listen[i].trans_id,
+		old_listen[i].fd, portnum)) != NULL)
+	    {
+		ListenTransFds[ListenTransCount] = old_listen[i].fd;
+		WellKnownConnections |= (1L << old_listen[i].fd);
+
+		NoticeF("Reusing existing file descriptor %d\n",
+		    old_listen[i].fd);
+
+		ListenTransCount++;
+	    }
 	}
-#endif
-	NoticeF("Reusing existing file descriptor %d\n", oldsock);
-	WellKnownConnections |= (1L << oldsock);
     } else {
 	char port[20];
 	int partial;

@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.12 94/02/09 16:20:29 gildea Exp $ */
+/* $XConsortium: main.c,v 1.13 94/02/09 16:52:00 gildea Exp $ */
 /*
  * Font server main routine
  */
@@ -53,10 +53,13 @@ extern void InitExtensions();
 extern void ProcessCmdLine();
 static Bool create_connection_block();
 
-extern int  ListenSock;
 extern ClientPtr currentClient;
 char       *configfilename;
 extern Bool drone_server;
+
+extern OldListenRec *OldListen;
+extern int 	     OldListenCount;
+
 
 main(argc, argv)
     int         argc;
@@ -87,7 +90,7 @@ main(argc, argv)
 	if (serverGeneration == 1) {
 	    /* do first time init */
 	    serverCache = CacheInit(SERVER_CACHE_SIZE);
-	    CreateSockets(ListenSock);
+	    CreateSockets(OldListenCount, OldListen);
 	    InitProcVectors();
 	    clients = (ClientPtr *) fsalloc(MAXCLIENTS * sizeof(ClientPtr));
 	    if (!clients)

@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranssock.c,v 1.17 94/02/07 14:45:17 mor Exp $ */
+/* $XConsortium: Xtranssock.c,v 1.18 94/02/07 22:40:01 rws Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -310,6 +310,36 @@ int type;
 }
 
 
+#ifdef TRANS_REOPEN
+
+static XtransConnInfo
+TRANS(SocketReopen) (i, type, fd, port)
+
+int  i;
+int  type;
+int  fd;
+char *port;
+
+{
+    XtransConnInfo	ciptr;
+
+    PRMSG (3,"TRANS(SocketReopen) (%d,%d,%s)\n", type, fd, port);
+
+    if ((ciptr = (XtransConnInfo) calloc (
+	1, sizeof(struct _XtransConnInfo))) == NULL)
+    {
+	PRMSG (1, "TRANS(SocketReopen): malloc failed\n", 0, 0, 0);
+	return NULL;
+    }
+
+    ciptr->fd = fd;
+
+    return ciptr;
+}
+
+#endif /* TRANS_REOPEN */
+
+
 /*
  * These functions are the interface supplied in the Xtransport structure
  */
@@ -345,9 +375,9 @@ char       *port;
 	return NULL;
     }
 
-    /* Save the Family for later use */
+    /* Save the index for later use */
 
-    ciptr->priv = (char *) i;
+    ciptr->index = i;
 
     return ciptr;
 }
@@ -396,9 +426,9 @@ char 	   *port;
     }
 #endif
 
-    /* Save the Family for later use */
+    /* Save the index for later use */
 
-    ciptr->priv = (char *) i;
+    ciptr->index = i;
 
     return ciptr;
 }
@@ -434,9 +464,9 @@ char 	   *port;
 	return NULL;
     }
 
-    /* Save the Family for later use */
+    /* Save the index for later use */
 
-    ciptr->priv = (char *) i;
+    ciptr->index = i;
 
     return ciptr;
 }
@@ -471,12 +501,95 @@ char 	   *port;
 	return NULL;
     }
 
-    /* Save the Family for later use */
+    /* Save the index for later use */
 
-    ciptr->priv = (char *) i;
+    ciptr->index = i;
 
     return ciptr;
 }
+
+
+#ifdef TRANS_REOPEN
+
+static XtransConnInfo
+TRANS(SocketReopenCOTSServer) (thistrans, fd, port)
+
+Xtransport *thistrans;
+int	   fd;
+char	   *port;
+
+{
+    XtransConnInfo	ciptr;
+    int			i;
+
+    PRMSG (2,
+	"TRANS(SocketReopenCOTSServer) (%d, %s)\n", fd, port, 0);
+
+    if ((i = TRANS(SocketSelectFamily) (thistrans->TransName)) < 0)
+    {
+	PRMSG (1,
+       "TRANS(SocketReopenCOTSServer): Unable to determine socket type for %s\n",
+	    thistrans->TransName, 0, 0);
+	return NULL;
+    }
+
+    if ((ciptr = TRANS(SocketReopen) (
+	i, Sockettrans2devtab[i].devcotsname, fd, port)) == NULL)
+    {
+	PRMSG (1,
+	    "TRANS(SocketReopenCOTSServer): Unable to reopen socket for %s\n",
+	    thistrans->TransName, 0, 0);
+	return NULL;
+    }
+
+    /* Save the index for later use */
+
+    ciptr->index = i;
+
+    return ciptr;
+}
+
+static XtransConnInfo
+TRANS(SocketReopenCLTSServer) (thistrans, fd, port)
+
+Xtransport *thistrans;
+int	   fd;
+char	   *port;
+
+{
+    XtransConnInfo	ciptr;
+    int			i;
+
+
+    PRMSG (2,
+	"TRANS(SocketReopenCLTSServer) (%d, %s)\n", fd, port, 0);
+
+    if ((i = TRANS(SocketSelectFamily) (thistrans->TransName)) < 0)
+    {
+	PRMSG (1,
+       "TRANS(SocketReopenCLTSServer): Unable to determine socket type for %s\n",
+	      thistrans->TransName, 0, 0);
+	return NULL;
+    }
+
+    if ((ciptr = TRANS(SocketReopen) (
+	i, Sockettrans2devtab[i].devcotsname, fd, port)) == NULL)
+    {
+	PRMSG (1,
+	     "TRANS(SocketReopenCLTSServer): Unable to reopen socket for %s\n",
+	     thistrans->TransName, 0, 0);
+	return NULL;
+    }
+
+    /* Save the index for later use */
+
+    ciptr->index = i;
+
+    return ciptr;
+}
+
+#endif /* TRANS_REOPEN */
+
 
 static int
 TRANS(SocketSetOption) (ciptr, option, arg)
@@ -506,7 +619,7 @@ int		socknamelen;
 
     PRMSG (3, "TRANS(SocketCreateListener) (%x,%d)\n", ciptr, fd, 0);
 
-    if (Sockettrans2devtab[(int) ciptr->priv].family == AF_INET)
+    if (Sockettrans2devtab[ciptr->index].family == AF_INET)
 	retry = 20;
     else
 	retry = 0;
@@ -526,7 +639,7 @@ int		socknamelen;
 #endif /* SO_REUSEDADDR */
     }
 
-    if (Sockettrans2devtab[(int)ciptr->priv].family == AF_INET) {
+    if (Sockettrans2devtab[ciptr->index].family == AF_INET) {
 #ifdef SO_DONTLINGER
 	setsockopt (fd, SOL_SOCKET, SO_DONTLINGER, (char *) NULL, 0);
 #else
@@ -1441,6 +1554,26 @@ XtransConnInfo ciptr;
     return ret;
 }
 
+static int
+TRANS(SocketUNIXCloseForCloning) (ciptr)
+
+XtransConnInfo ciptr;
+
+{
+    /*
+     * Don't unlink path.
+     */
+
+    int ret;
+
+    PRMSG (2,"TRANS(SocketUNIXCloseForCloning) (%x,%d)\n",
+	ciptr, ciptr->fd, 0);
+
+    ret = close(ciptr->fd);
+
+    return ret;
+}
+
 #endif /* UNIXCONN */
 
 
@@ -1473,6 +1606,10 @@ Xtransport	TRANS(SocketINETFuncs) = {
 	TRANS(SocketOpenCOTSServer),
 	TRANS(SocketOpenCLTSClient),
 	TRANS(SocketOpenCLTSServer),
+#ifdef TRANS_REOPEN
+	TRANS(SocketReopenCOTSServer),
+	TRANS(SocketReopenCLTSServer),
+#endif
 	TRANS(SocketSetOption),
 	TRANS(SocketINETCreateListener),
 	NULL,		       			/* ResetListener */
@@ -1484,6 +1621,7 @@ Xtransport	TRANS(SocketINETFuncs) = {
 	TRANS(SocketReadv),
 	TRANS(SocketWritev),
 	TRANS(SocketDisconnect),
+	TRANS(SocketINETClose),
 	TRANS(SocketINETClose),
 	TRANS(SocketNameToAddr),
 	TRANS(SocketAddrToName),
@@ -1497,6 +1635,10 @@ Xtransport	TRANS(SocketTCPFuncs) = {
 	TRANS(SocketOpenCOTSServer),
 	TRANS(SocketOpenCLTSClient),
 	TRANS(SocketOpenCLTSServer),
+#ifdef TRANS_REOPEN
+	TRANS(SocketReopenCOTSServer),
+	TRANS(SocketReopenCLTSServer),
+#endif
 	TRANS(SocketSetOption),
 	TRANS(SocketINETCreateListener),
 	NULL,		       			/* ResetListener */
@@ -1508,6 +1650,7 @@ Xtransport	TRANS(SocketTCPFuncs) = {
 	TRANS(SocketReadv),
 	TRANS(SocketWritev),
 	TRANS(SocketDisconnect),
+	TRANS(SocketINETClose),
 	TRANS(SocketINETClose),
 	TRANS(SocketNameToAddr),
 	TRANS(SocketAddrToName),
@@ -1523,6 +1666,10 @@ Xtransport	TRANS(SocketUNIXFuncs) = {
 	TRANS(SocketOpenCOTSServer),
 	TRANS(SocketOpenCLTSClient),
 	TRANS(SocketOpenCLTSServer),
+#ifdef TRANS_REOPEN
+	TRANS(SocketReopenCOTSServer),
+	TRANS(SocketReopenCLTSServer),
+#endif
 	TRANS(SocketSetOption),
 	TRANS(SocketUNIXCreateListener),
 	TRANS(SocketUNIXResetListener),
@@ -1535,6 +1682,7 @@ Xtransport	TRANS(SocketUNIXFuncs) = {
 	TRANS(SocketWritev),
 	TRANS(SocketDisconnect),
 	TRANS(SocketUNIXClose),
+	TRANS(SocketUNIXCloseForCloning),
 	TRANS(SocketNameToAddr),
 	TRANS(SocketAddrToName),
 	};
@@ -1548,6 +1696,10 @@ Xtransport	TRANS(SocketLocalFuncs) = {
 	TRANS(SocketOpenCOTSServer),
 	TRANS(SocketOpenCLTSClient),
 	TRANS(SocketOpenCLTSServer),
+#ifdef TRANS_REOPEN
+	TRANS(SocketReopenCOTSServer),
+	TRANS(SocketReopenCLTSServer),
+#endif
 	TRANS(SocketSetOption),
 	TRANS(SocketUNIXCreateListener),
 	TRANS(SocketUNIXResetListener),
@@ -1560,6 +1712,7 @@ Xtransport	TRANS(SocketLocalFuncs) = {
 	TRANS(SocketWritev),
 	TRANS(SocketDisconnect),
 	TRANS(SocketUNIXClose),
+	TRANS(SocketUNIXCloseForCloning),
 	TRANS(SocketNameToAddr),
 	TRANS(SocketAddrToName),
 	};

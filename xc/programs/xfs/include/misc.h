@@ -1,4 +1,4 @@
-/* $XConsortium: misc.h,v 1.5 93/02/08 09:51:45 rws Exp $ */
+/* $XConsortium: misc.h,v 1.6 94/02/04 09:15:57 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -161,5 +161,13 @@ extern long GetTimeInMillis();
  \
     (packet)->font_header_font_ascent = (structure)->fontAscent; \
     (packet)->font_header_font_descent = (structure)->fontDescent
+
+
+typedef struct {		/* when cloning, need old transport info */
+    int trans_id;
+    int fd;
+    int portnum;
+} OldListenRec;
+
 
 #endif				/* _MISC_H_ */

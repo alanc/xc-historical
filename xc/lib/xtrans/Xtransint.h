@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransint.h,v 1.12 94/02/08 20:55:09 mor Exp $ */
+/* $XConsortium: Xtransint.h,v 1.13 94/02/10 10:26:17 rws Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -118,9 +118,11 @@ extern int  errno;		/* Internal system error number. */
 
 struct _XtransConnInfo {
     struct _Xtransport     *transptr;
+    int		index;
     char	*priv;
     int		flags;
     int		fd;
+    char	*port;
     int		family;
     char	*addr;
     int		addrlen;
@@ -173,6 +175,28 @@ typedef struct _Xtransport {
 	char *			/* port */
 #endif
     );
+
+
+#ifdef TRANS_REOPEN
+
+    XtransConnInfo (*ReopenCOTSServer)(
+#if NeedNestedPrototypes
+	struct _Xtransport *,	/* transport */
+        int,			/* fd */
+        char *			/* port */
+#endif
+    );
+
+    XtransConnInfo (*ReopenCLTSServer)(
+#if NeedNestedPrototypes
+	struct _Xtransport *,	/* transport */
+        int,			/* fd */
+        char *			/* port */
+#endif
+    );
+
+#endif /* TRANS_REOPEN */
+
 
     int	(*SetOption)(
 #if NeedNestedPrototypes
@@ -260,6 +284,12 @@ typedef struct _Xtransport {
 #endif
     );
 
+    int	(*CloseForCloning)(
+#if NeedNestedPrototypes
+	XtransConnInfo		/* connection */
+#endif
+    );
+
     int	(*NameToAddr)(
 #if NeedNestedPrototypes
 	XtransConnInfo		/* connection */
@@ -275,6 +305,12 @@ typedef struct _Xtransport {
     );
 
 } Xtransport;
+
+
+typedef struct _Xtransport_table {
+    Xtransport	*transport;
+    int		transport_id;
+} Xtransport_table;
 
 
 /*
