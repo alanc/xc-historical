@@ -1445,7 +1445,7 @@
   ;; Timeout and interval are in seconds, will be rounded to minutes.
   (declare (type display display)
 	   (type (or (member :default) int16) timeout interval)
-	   (type (or (member :on :off :default :yes :no) blanking exposures)))
+	   (type (member :on :off :default :yes :no) blanking exposures))
   (case blanking (:yes (setq blanking :on)) (:no (setq blanking :off)))
   (case exposures (:yes (setq exposures :on)) (:no (setq exposures :off)))
   (when (eq timeout :default) (setq timeout -1))
