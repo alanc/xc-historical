@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.73 91/07/30 16:21:37 rws Exp $ */
+/* $XConsortium: Xutil.h,v 11.74 93/09/13 13:50:25 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -519,6 +519,14 @@ extern XIntersectRegion(
     Region		/* sra */,
     Region		/* srb */,
     Region		/* dr_return */
+#endif
+);
+
+extern void XConvertCase(
+#if NeedFunctionPrototypes
+    KeySym		/* sym */,
+    KeySym*		/* lower */,
+    KeySym*		/* upper */
 #endif
 );
 
