@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Exp $
+ * $XConsortium: miwideline.c,v 1.1 89/10/25 15:15:59 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -62,7 +62,6 @@ miFillPolyHelper (pDrawable, pGC, pixel, y, overall_height,
     int	left_height, right_height;
 
     DDXPointPtr	ppt, pptInit;
-    int		nspans;
     int		*pwidth, *pwidthInit;
     int		oldPixel;
     int		xorg;
@@ -70,30 +69,27 @@ miFillPolyHelper (pDrawable, pGC, pixel, y, overall_height,
     left_height = 0;
     right_height = 0;
     
-    ppt = pptInit = (DDXPointPtr) ALLOCATE_LOCAL (overall_height * sizeof *ppt);
-    pwidth = pwidthInit = (int *) ALLOCATE_LOCAL (overall_height * sizeof *pwidth);
-    if (!ppt || !pwidth)
+    pptInit = (DDXPointPtr) ALLOCATE_LOCAL (overall_height * sizeof(*ppt));
+    if (!pptInit)
+	return;
+    pwidthInit = (int *) ALLOCATE_LOCAL (overall_height * sizeof(*pwidth));
+    if (!pwidth)
     {
-	DEALLOCATE_LOCAL ((pointer) ppt);
-	DEALLOCATE_LOCAL ((pointer) pwidth);
+	DEALLOCATE_LOCAL (ppt);
 	return;
     }
+    ppt = pptInit;
+    pwidth = pwidthInit;
 
     oldPixel = pGC->fgPixel;
     if (pixel != oldPixel)
-    {
-	XID pix;
-
-	pix = pixel;
-	DoChangeGC (pGC, GCForeground, &pix, FALSE);
-    }
+	DoChangeGC (pGC, GCForeground, (XID *)&pixel, FALSE);
 
     if (pGC->miTranslate)
     {
 	y += pDrawable->y;
 	xorg = pDrawable->x;
     }
-    nspans = 0;
     while ((left_count || left_height) &&
 	   (right_count || right_height))
     {
@@ -113,10 +109,8 @@ miFillPolyHelper (pDrawable, pGC, pixel, y, overall_height,
 	    {
 		ppt->y = y;
 		ppt->x = left_x + xorg;
-		++ppt;
-		*pwidth = right_x - left_x + 1;
-		++pwidth;
-		++nspans;
+		ppt++;
+		*pwidth++ = right_x - left_x + 1;
 	    }
     	    y++;
     	
@@ -125,16 +119,11 @@ miFillPolyHelper (pDrawable, pGC, pixel, y, overall_height,
 	    MIPOLYSTEPRIGHT
 	}
     }
-    (*pGC->ops->FillSpans) (pDrawable, pGC, nspans, pptInit, pwidthInit, TRUE);
-    DEALLOCATE_LOCAL ((pointer) pptInit);
-    DEALLOCATE_LOCAL ((pointer) pwidthInit);
+    (*pGC->ops->FillSpans) (pDrawable, pGC, ppt - pptInit, pptInit, pwidthInit, TRUE);
+    DEALLOCATE_LOCAL (pwidthInit);
+    DEALLOCATE_LOCAL (pptInit);
     if (pixel != oldPixel)
-    {
-	XID pix;
-
-	pix = oldPixel;
-	DoChangeGC (pGC, GCForeground, &pix, FALSE);
-    }
+	DoChangeGC (pGC, GCForeground, (XID *)&oldPixel, FALSE);
 }
 
 int
@@ -393,6 +382,7 @@ miLineJoin (pDrawable, pGC, pixel, FillPoly, pLeft, pRight)
     switch (joinStyle)
     {
     case JoinRound:
+	miLineRoundCapJoin(pDrawable, pGC, pixel, pLeft->x, pLeft->y);
 	return;
     case JoinMiter:
 	slopes[2].dx = pLeft->dx;
@@ -438,13 +428,84 @@ miLineJoin (pDrawable, pGC, pixel, FillPoly, pLeft, pRight)
     (*FillPoly) (pDrawable, pGC, pixel, y, height, left, right, nleft, nright);
 }
 
-miLineCapRound (pDrawable, pGC, pixel, face, left)
-    DrawablePtr	    pDrawable;
+miLineRoundCapJoin (pDraw, pGC, pixel, xorg, yorg)
+    DrawablePtr	    pDraw;
+    GCPtr	    pGC;
+    unsigned long   pixel;
+    int		    xorg, yorg;
+{
+    register int x, y, e, ex, slw;
+    DDXPointPtr points;
+    register DDXPointPtr pts;
+    int *widths;
+    register int *wids;
+    unsigned long oldPixel;
+
+    points = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * pGC->lineWidth);
+    if (!points)
+	return;
+    widths = (int *)ALLOCATE_LOCAL(sizeof(int) * pGC->lineWidth);
+    if (!widths)
+    {
+	DEALLOCATE_LOCAL(points);
+	return;
+    }
+    pts = points;
+    wids = widths;
+    oldPixel = pGC->fgPixel;
+    if (pixel != oldPixel)
+	DoChangeGC(pGC, GCForeground, (XID *)&pixel, FALSE);
+    if (pGC->miTranslate)
+    {
+	xorg += pDraw->x;
+	yorg += pDraw->y;
+    }
+    y = (pGC->lineWidth >> 1) + 1;
+    if (pGC->lineWidth & 1)
+	e = - ((y << 2) + 3);
+    else
+	e = - (y << 3);
+    ex = -4;
+    x = 0;
+    while (y)
+    {
+	e += (y << 3) - 4;
+	while (e >= 0)
+	{
+	    x++;
+	    e += (ex = -((x << 3) + 4));
+	}
+	y--;
+	slw = (x << 1) + 1;
+	if ((e == ex) && (slw > 1))
+	    slw--;
+	pts->x = xorg - x;
+	pts->y = yorg - y;
+	pts++;
+	*wids++ = slw;
+	if ((y != 0) && ((slw > 1) || (e != ex)))
+	{
+	    pts->x = xorg - x;
+	    pts->y = yorg + y;
+	    pts++;
+	    *wids++ = slw;
+	}
+    }
+    (*pGC->ops->FillSpans)(pDraw, pGC, pts - points, points, widths, FALSE);
+    DEALLOCATE_LOCAL(widths);
+    DEALLOCATE_LOCAL(points);
+    if (pixel != oldPixel)
+	DoChangeGC(pGC, GCForeground, (XID *)&oldPixel, FALSE);
+}
+
+miLineCapRound (pDraw, pGC, pixel, face, left)
+    DrawablePtr	    pDraw;
     GCPtr	    pGC;
     unsigned long   pixel;
     LineFacePtr	    face;
     Bool	    left;
 {
+    miLineRoundCapJoin(pDraw, pGC, pixel, face->x, face->y);
 }
 
 void
@@ -511,14 +572,14 @@ miWideSegment (pDrawable, pGC, pixel, FillPoly,
 
     if (dy == 0)
     {
-	leftFace->xa = 0;
-	leftFace->ya = -(double) lw / 2.0;
 	rightFace->xa = 0;
 	rightFace->ya = (double) lw / 2.0;
+	leftFace->xa = 0;
+	leftFace->ya = -rightFace->ya;
 	lefts[0].height = lw;
 	lefts[0].x = x1;
 	if (projectLeft)
-	    lefts[0].x -= lw / 2;
+	    lefts[0].x -= (lw >> 1);
 	lefts[0].stepx = 0;
 	lefts[0].signdx = 1;
 	lefts[0].e = 0;
@@ -527,20 +588,20 @@ miWideSegment (pDrawable, pGC, pixel, FillPoly,
 	rights[0].height = lw;
 	rights[0].x = x2 - 1;
 	if (projectRight)
-	    rights[0].x += lw / 2;
+	    rights[0].x += (lw >> 1);
 	rights[0].stepx = 0;
 	rights[0].signdx = 1;
 	rights[0].e = 0;
 	rights[0].dx = 0;
 	rights[0].dy = lw;
-	(*FillPoly) (pDrawable, pGC, pixel, y1 - ((lw + 1) / 2), lw,
+	(*FillPoly) (pDrawable, pGC, pixel, y1 - (lw >> 1), lw,
 		     lefts, rights, 1, 1);
     }
     else if (dx == 0)
     {
 	leftFace->xa =  (double) lw / 2.0;
 	leftFace->ya = 0;
-	rightFace->xa = -(double) lw / 2.0;
+	rightFace->xa = -leftFace->xa;;
 	rightFace->ya = 0;
 	topy = y1;
 	bottomy = y1 + dy;
@@ -549,7 +610,7 @@ miWideSegment (pDrawable, pGC, pixel, FillPoly,
 	if (projectRight)
 	    bottomy += lw/2;
 	lefts[0].height = bottomy - topy;
-	lefts[0].x = x1 - ((lw + 1) / 2);
+	lefts[0].x = x1 - (lw >> 1);
 	lefts[0].stepx = 0;
 	lefts[0].signdx = 1;
 	lefts[0].e = 0;
@@ -704,8 +765,11 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
 	if (x1 == x2 && y1 == y2)
 	    continue;
 	projectLeft = FALSE;
+	projectRight = FALSE;
 	if (first)
 	{
+	    if (pGC->capStyle == CapProjecting)
+		projectLeft = TRUE;
 	}
 	if (npt == 1)
 	{
@@ -723,9 +787,9 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
 	{
 	    miLineJoin (pDrawable, pGC, pixel, FillPoly, &leftFace,
 		        &prevRightFace);
-	    if (npt == 1 && pGC->capStyle == CapRound)
-		miLineCapRound (pDrawable, pGC, pixel, &rightFace, FALSE);
 	}
+	if (npt == 1 && pGC->capStyle == CapRound)
+	    miLineCapRound (pDrawable, pGC, pixel, &rightFace, FALSE);
 	prevRightFace = rightFace;
 	first = FALSE;
     }
