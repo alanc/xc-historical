@@ -1,6 +1,4 @@
-/*
- * $XConsortium: Label.h,v 1.28 91/06/22 19:34:33 rws Exp $
- */
+/* $XConsortium: Label.h,v 1.29 91/06/22 21:25:13 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -36,7 +34,6 @@ SOFTWARE.
  ***********************************************************************/
 
 #include <X11/Xaw/Simple.h>
-#include <X11/Xmu/Converters.h>
 
 /* Resources:
 
