@@ -2064,11 +2064,10 @@
 	    (declare (type array-index request-src-y height-remaining
 			   request-height))
 	    (let* ((request-bytes (index* request-bytes-per-line request-height))
-		   (request-pad (index-mod request-bytes 4))
-		   (request-length (index+ (index-ceiling request-bytes 4) 6)))
+		   (request-words (index-ceiling request-bytes 4))
+		   (request-length (index+ request-words 6)))
 	      (declare (type array-index request-bytes)
-		       (type card16 request-length)
-		       (type card8 request-pad))
+		       (type card16 request-words request-length))
 	      (with-buffer-request (display *x-putimage* :gc-force gcontext)
 		((data (member :bitmap :xy-pixmap :z-pixmap))
 		 (cond ((or (eq format :bitmap) bitmap-p) :bitmap)
@@ -2111,7 +2110,8 @@
 			padded-bytes-per-line
 			unit byte-lsb-first-p bit-lsb-first-p)))
 		  ;; Be sure the request is padded to a multiple of 4 bytes
-		  (buffer-pad-request display request-pad))))))))))
+		  (buffer-pad-request display (index- (index* request-words 4) request-bytes))
+		  )))))))))
 
 ;;;-----------------------------------------------------------------------------
 ;;; COPY-IMAGE
