@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.27 91/07/21 20:35:42 converse Exp $
+ * $XConsortium: misc.c,v 1.28 91/07/24 18:37:14 keith Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -541,6 +541,7 @@ Widget widget;
 int x,y,above,left;
 int h_space,v_space;
 {
+  Arg wargs[2];
   int x_temp,y_temp;		/* location of the new window. */
   int parent_height,parent_width; /* Height and width of the parent widget or
 				   the root window if it has no parent. */
@@ -567,7 +568,9 @@ int h_space,v_space;
   if ( x_temp + Width(widget) + h_space > parent_width )
       x_temp = parent_width - Width(widget) - h_space; 
 
-  XtMoveWidget(widget,x_temp,y_temp);
+  XtSetArg(wargs[0], XtNx, x_temp); 
+  XtSetArg(wargs[1], XtNy, y_temp); 
+  XtSetValues(widget, wargs, 2);
 }  
 
 /*	Function Name: ParseEntry(entry, path, sect, page)
