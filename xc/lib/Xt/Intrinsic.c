@@ -1,5 +1,6 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.115 88/02/26 12:40:28 swick Exp $";
+static char rcsid[] = "$xHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $";
+/* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif lint
 
 /***********************************************************
@@ -30,13 +31,9 @@ SOFTWARE.
 
 #include "IntrinsicI.h"
 #include "StringDefs.h"
-#include "Event.h"
+
 
 static void SetAncestorSensitive();
-
-globaldef XrmDatabase XtDefaultDB = NULL;
-globaldef XrmName XtApplicationName;
-globaldef XrmClass XtApplicationClass;
 
 Boolean XtIsSubclass(widget, widgetClass)
     Widget    widget;
@@ -49,21 +46,32 @@ Boolean XtIsSubclass(widget, widgetClass)
     return (FALSE);
 } /* XtIsSubclass */
 
+Bool _XtClassIsSubclass(subWidgetClass,widgetClass)
+    WidgetClass  subWidgetClass,widgetClass;
+{
+    register WidgetClass w;
+    for (w=subWidgetClass;w != NULL;
+                          w = w->core_class.superclass)
+        if (w == widgetClass) return (TRUE);
+    return (FALSE);
+}; /*_XtClassIsSubclass */
+    
+
 static void ComputeWindowAttributes(widget,value_mask,values)
     Widget		 widget;
     XtValueMask		 *value_mask;
     XSetWindowAttributes *values;
 {
     *value_mask = CWEventMask;
-    (*values).event_mask = _XtBuildEventMask(widget);
-    if (widget->core.background_pixmap != UnspecifiedPixmap) {
+    (*values).event_mask = XtBuildEventMask(widget);
+    if (widget->core.background_pixmap != 2) {
 	*value_mask |= CWBackPixmap;
 	(*values).background_pixmap = widget->core.background_pixmap;
     } else {
 	*value_mask |= CWBackPixel;
 	(*values).background_pixel = widget->core.background_pixel;
     }
-    if (widget->core.border_pixmap != UnspecifiedPixmap) {
+    if (widget->core.border_pixmap != 2) {
 	*value_mask |= CWBorderPixmap;
 	(*values).border_pixmap = widget->core.border_pixmap;
     } else {
@@ -81,80 +89,163 @@ static void ComputeWindowAttributes(widget,value_mask,values)
 static void CallChangeManaged(widget)
     register Widget		widget;
 {
-    register CompositeWidget	cw;
     register Cardinal		i;
     XtWidgetProc		change_managed;
     register WidgetList		children;
     int    			managed_children = 0;
 
+    register CompositePtr cpPtr;
+    register CompositePartPtr clPtr;
+   
     if (XtIsComposite (widget)) {
-	cw = (CompositeWidget) widget;
-	children = cw->composite.children;
+	cpPtr = (CompositePtr)&((CompositeWidget) widget)->composite;
+        clPtr = (CompositePartPtr)&((CompositeWidgetClass)
+                   widget->core.widget_class)->composite_class;
+    } else if (XtIsCompositeObject(widget)) {
+        cpPtr = (CompositePtr)&((CompositeObject) widget)->composite;
+        clPtr = (CompositePartPtr)&((CompositeObjectClass)
+                  widget->core.widget_class)->composite_class;
+    } else return;
 
-	/* CallChangeManaged for all children */
-	for (i = cw->composite.num_children; i != 0; --i) {
-	    CallChangeManaged (children[i-1]);
-	    if (XtIsManaged(children[i-1])) managed_children++;
-	}
+    children = cpPtr->children;
+    change_managed = clPtr->change_managed;
 
-	change_managed = ((CompositeWidgetClass) widget->core.widget_class)->
-		composite_class.change_managed;
-    
-	if (change_managed != NULL && managed_children != 0) {
-	    (*change_managed) (widget);
-	}
+    /* CallChangeManaged for all children */
+    for (i = cpPtr->num_children; i != 0; --i) {
+	CallChangeManaged (children[i-1]);
+	if (XtIsManaged(children[i-1])) managed_children++;
+    }
+
+    if (change_managed != NULL && managed_children != 0) {
+	(*change_managed) (widget);
     }
 } /* CallChangeManaged */
+
+
+static void MapChildren(cwp)
+    CompositePart *cwp;
+{
+    Cardinal i;
+    WidgetList children;
+    register Widget child;
+
+    children = cwp->children;
+    for (i = 0; i <  cwp->num_children; i++) {
+	child = children[i];
+	if (XtIsWindowObject (child)){
+	    if (child->core.managed && child->core.mapped_when_managed) {
+		XtMapWidget (children[i]);
+	    }
+	} else if (XtIsCompositeObject(child)) {
+	    MapChildren(&((CompositeObject)child)->composite);
+	}
+    }
+} /* MapChildren */
+
+
+static Boolean ShouldMapAllChildren(cwp)
+    CompositePart *cwp;
+{
+    Cardinal i;
+    WidgetList children;
+    register Widget child;
+
+    children = cwp->children;
+    for (i = 0; i < cwp->num_children; i++) {
+	child = children[i];
+	if (XtIsWindowObject(child)) {
+	    if (XtIsRealized(child) && (! (child->core.managed 
+					  && child->core.mapped_when_managed))){
+		    return False;
+	    }
+	} else if (XtIsCompositeObject(child)) {
+	    if (! ShouldMapAllChildren(&((CompositeObject)child)->composite)) {
+		return False;
+	    }
+	}
+    }
+
+    return True;
+} /* ShouldMapAllChildren */
+
 
 static void RealizeWidget(widget)
     register Widget		widget;
 {
-    register CompositeWidget	cw;
+    register CompositePart	*cwp;
     XtValueMask			value_mask;
     XSetWindowAttributes	values;
-    register Cardinal		left_to_map, i;
+    register Cardinal		i;
     XtRealizeProc		realize;
     register WidgetList		children;
+    Window			window;
+    Display			*dpy;
 
-    if (XtIsRealized(widget)) return;
+    if (XtIsWindowObject(widget)) {
+	if (XtIsRealized(widget)) return;
 
-    _XtBindActions(widget, &widget->core.tm,0);
-    _XtInstallTranslations(widget, widget->core.tm.translations);
+	dpy = XtDisplay(widget);
 
-    ComputeWindowAttributes (widget, &value_mask, &values);
-    realize = widget->core.widget_class->core_class.realize;
+	if (widget->core.tm.proc_table == NULL)
+	    _XtBindActions(widget, &widget->core.tm,0);
+	_XtInstallTranslations(widget, widget->core.tm.translations);
 
-    if (realize == NULL) XtError("No realize class procedure defined");
-    else (*realize) (widget, &value_mask, &values);
+	ComputeWindowAttributes (widget, &value_mask, &values);
+	realize = widget->core.widget_class->core_class.realize;
+	if (realize == NULL)
+	    XtErrorMsg("invalidProcedure","realizeProc","XtToolkitError",
+                "No realize class procedure defined",
+                  (String *)NULL, (Cardinal *)NULL);
+	else (*realize) (widget, &value_mask, &values);
+	window = XtWindow(widget);
 
-    _XtRegisterGrabs(widget,&widget->core.tm);
-    _XtRegisterWindow (widget->core.window, widget);
+	_XtRegisterAsyncHandlers(widget);
+	_XtRegisterGrabs(widget,&widget->core.tm);
+	_XtRegisterWindow (window, widget);
+    } else {
+	/* No window associated with object, look up parent chain */
+	Widget parent;
+	parent = widget->core.parent;
+	while (parent != NULL && ! XtIsWindowObject(parent)) {
+	    parent = parent->core.parent;
+	}
+	if (parent == NULL) { /* Should never happen */
+	    XtErrorMsg("invalidParent", "realize", "XtToolkitError",
+		"Application shell is not a windowed widget?",
+		(String *) NULL, (Cardinal *)NULL);
+	} else {
+	    window = XtWindow(parent);
+	    dpy = XtDisplay(parent);
+	}
+    }
 
+    cwp = NULL;
     if (XtIsComposite (widget)) {
-	cw = (CompositeWidget) widget;
-	children = cw->composite.children;
+	cwp = &(((CompositeWidget) widget)->composite);
+    } else if (XtIsCompositeObject(widget)) {
+	cwp = &(((CompositeObject) widget)->composite);
+    }
+    if (cwp != NULL) {
+	children = cwp->children;
 	/* Realize all children */
-	for (i = cw->composite.num_children; i != 0; --i) {
+	for (i = cwp->num_children; i != 0; --i) {
 	    RealizeWidget (children[i-1]);
 	}
 	/* Map children that are managed and mapped_when_managed */
-	if (cw->composite.num_children == cw->composite.num_mapped_children) {
-	    XMapSubwindows (XtDisplay (widget), XtWindow (widget));
-	} else {
-	    for (i = 0, left_to_map = cw->composite.num_mapped_children;
-                 left_to_map != 0;
-                 i++) {
-		if (children[i]->core.managed &&
-			children[i]->core.mapped_when_managed) {
-		    XtMapWidget (children[i]);
-		    left_to_map--;
-		}
+
+	if (cwp->num_children != 0) {
+	    if (ShouldMapAllChildren(cwp)) {
+		XMapSubwindows (dpy, window);
+	    } else {
+		MapChildren(cwp);
 	    }
 	}
     }
 
     /* If this is the application's popup shell, map it */
-    if (widget->core.parent == NULL) XtMapWidget (widget);
+    if (widget->core.parent == NULL && widget->core.mapped_when_managed) {
+	XtMapWidget (widget);
+    }
 } /* RealizeWidget */
 
 void XtRealizeWidget (widget)
@@ -165,6 +256,73 @@ void XtRealizeWidget (widget)
     CallChangeManaged(widget);
     RealizeWidget(widget);
 } /* XtRealizeWidget */
+
+
+static void UnrealizeWidget(widget)
+    register Widget		widget;
+{
+    register CompositeWidget	cw;
+    register Cardinal		i;
+    register WidgetList		children;
+
+    if (! XtIsRealized(widget)) return;
+
+    /* If this is the application's popup shell, unmap it? */
+    /* no, the window is being destroyed */
+
+    /* Recurse on children */
+    if (XtIsComposite (widget)) {
+	cw = (CompositeWidget) widget;
+	children = cw->composite.children;
+	/* Unrealize all children */
+	for (i = cw->composite.num_children; i != 0; --i) {
+	    UnrealizeWidget (children[i-1]);
+	}
+	/* Unmap children that are managed and mapped_when_managed? */
+	/* No, it's ok to be managed and unrealized as long as your parent */
+	/* is unrealized. XtUnrealize widget makes sure the "top" widget */
+	/* is unmanaged, we can ignore all descendents */
+    }
+
+    /* Unregister window */
+    _XtUnregisterWindow(XtWindow(widget), widget);
+
+    /* Remove Event Handlers */
+    /* remove async handlers, how? */
+    /* remove grabs. Happens automatically when window is destroyed. */
+
+    /* Destroy X Window, done at outer level with one request */
+    widget->core.window = NULL;
+
+    /* Unbind actions? Nope, we check in realize to see if done. */
+    /* Uninstall Translations? */
+    XtUninstallTranslations(widget);
+
+} /* UnrealizeWidget */
+
+
+void XtUnrealizeWidget (widget)
+    register Widget		widget;
+{
+    Window window = XtWindow(widget);
+
+    if (! XtIsRealized (widget)) return;
+
+    if (widget->core.parent != NULL) XtUnmanageChild(widget);
+
+    UnrealizeWidget(widget);
+
+    if (window != NULL) XDestroyWindow(XtDisplay(widget), window);
+} /* XtUnrealizeWidget */
+
+
+void _XtInherit()
+
+{
+    XtErrorMsg("invalidProcedure","inheritanceProc","XtToolkitError",
+            "Unresolved inheritance operation",
+              (String *)NULL, (Cardinal *)NULL);
+}
 
 void XtCreateWindow(widget, window_class, visual, value_mask, attributes)
     Widget		 widget;
@@ -249,12 +407,13 @@ static Widget NameListToWidget(root, names)
 
     name = *names;
     if (name == NULLQUARK) return root;
-    if (! XtIsComposite(root)) return NULL;
-
-    children = ((CompositeWidget) root)->composite.children;
-    for (i = 0; i < ((CompositeWidget) root)->composite.num_children; i++) {
-	if (name == children[i]->core.xrm_name)
-	    return NameListToWidget(children[i], &names[1]);
+    if (XtIsComposite(root)) {
+        children = ((CompositeWidget) root)->composite.children;
+        for (i = 0;
+                i < ((CompositeWidget) root)->composite.num_children; i++) {
+            if (name == children[i]->core.xrm_name)
+	        return NameListToWidget(children[i], &names[1]);
+        }
     }
     children = root->core.popup_list;
     for (i = 0; i < root->core.num_popups; i++) {
@@ -268,16 +427,12 @@ Widget XtNameToWidget(root, name)
     Widget root;
     String name;
 {
-    XrmName	names[1000];
-    XrmStringToNameList(name, names);
-    if (names[0] == NULLQUARK) return NULL;
-    return NameListToWidget(root, names);
-} /* XtNameToWidget */
+    XrmName	names[100];
 
-void _XtInherit()
-{
-    XtError("Unresolved inheritance operation");
-}
+    XrmStringToNameList(name, names);
+    if (names[0] != root->core.xrm_name) return NULL;
+    return NameListToWidget(root, &names[1]);
+} /* XtNameToWidget */
 
 /* Define user versions of intrinsics macros */
 
@@ -332,24 +487,24 @@ Boolean XtIsManaged(widget)
 #undef XtIsRealized
 
 Boolean XtIsRealized (widget)
-    Widget   widget;
+	Widget   widget;
 {
-    return (widget->core.window != NULL);
+	return widget->core.window != NULL;
 } /* XtIsRealized */
-
-#undef XtParent
-
-Widget XtParent(widget)
-    Widget widget;
-{
-    return (widget->core.parent);
-}
-
 
 #undef XtIsSensitive
 
 Boolean XtIsSensitive(widget)
-    Widget widget;
+	Widget	widget;
 {
-    return (widget->core.sensitive && widget->core.ancestor_sensitive);
+	return widget->core.sensitive && widget->core.ancestor_sensitive;
 }
+
+#undef XtParent
+
+Widget XtParent(widget)
+	Widget widget;
+{
+	return widget->core.parent;
+}
+
