@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Xrm.c,v 1.11 88/04/09 16:21:21 rws Exp $";
+static char rcsid[] = "$Header: Xrm.c,v 1.12 88/06/03 10:42:48 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -653,8 +653,8 @@ static void PutLineResources(pdb, get_line, closure)
 	if (s == NULL) return;
 
 	/* Scan to start of resource name/class specification */
-	for (; isspace(*s); s++) {};
-	if ((*s == '\0') || (*s == '\n') || (*s == '#')) continue;
+	for (; ((ch = *s) != '\n') && isspace(ch); s++) {};
+	if ((ch == '\0') || (ch == '\n') || (ch == '#')) continue;
     
 	/* Scan to end of resource name/class specification */
 	for (nameStr = s, ts = s-1; ; s++) {
@@ -672,7 +672,7 @@ static void PutLineResources(pdb, get_line, closure)
 	ts[1] = '\0';
 	
 	/* Scan to start of resource value */
-	for (; isspace(*s); s++) {};
+	for (; *s != '\n' && isspace(*s); s++) {};
     
 	/* Scan to end of resource value */
 	for (valStr = ts = s; ((ch = *s) != '\0' && ch != '\n');s++) {
