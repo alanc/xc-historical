@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.103 88/02/02 19:24:29 swick Locked $";
+static char rcsid[] = "$Header: Initialize.c,v 1.104 88/02/03 10:29:45 swick Locked $";
 #endif lint
 
 /*
@@ -113,6 +113,36 @@ Display *dpy;
 }
 
 
+static char *GetHomeDir( dest )
+char *dest;
+{
+	int uid;
+	extern char *getenv();
+	extern int getuid();
+	extern struct passwd *getpwuid();
+	struct passwd *pw;
+	register char *ptr;
+
+	if((ptr = getenv("HOME")) != NULL) {
+		(void) strcpy(dest, ptr);
+
+	} else {
+		if((ptr = getenv("USER")) != NULL) {
+			pw = getpwnam(ptr);
+		} else {
+			uid = getuid();
+			pw = getpwuid(uid);
+		}
+		if (pw) {
+			(void) strcpy(dest, pw->pw_dir);
+		} else {
+		        *dest = '\0';
+		}
+	}
+	return dest;
+}
+
+
 /*
     Load the resource data base.
 
@@ -132,6 +162,7 @@ char *name;
 	char filenamebuf[1024];
 	char *filename = &filenamebuf[0];
 	static Boolean first = TRUE;
+	char *environment;
 	
 	if(name != NULL) { /* application provided a file */
 		rdb = XrmGetFileDatabase(name);
@@ -165,33 +196,25 @@ char *name;
 			    }
 #endif
 		/* Open .Xdefaults file and merge into existing data base */
-		    int uid;
-		    extern char *getenv();
-		    extern int getuid();
-		    extern struct passwd *getpwuid();
-		    struct passwd *pw;
-		    register char *ptr;
-
-		    if((ptr = getenv("HOME")) != NULL) {
-			    (void) strcpy(filename, ptr);
-
-		    } else {
-			    if((ptr = getenv("USER")) != NULL) {
-				    pw = getpwnam(ptr);
-			    } else {
-				    uid = getuid();
-				    pw = getpwuid(uid);
-			    }
-			    if (pw) {
-				    (void) strcpy(filename, pw->pw_dir);
-			    }
-		    }
+		    (void) GetHomeDir(filename);
 		    (void) strcat(filename, "/.Xdefaults");
 
 		    rdb = XrmGetFileDatabase(filename);
 		}
 		XrmMergeDatabases(rdb, &XtDefaultDB);
 	}
+
+	/* Open XENVIRONMENT file and merge into existing data base */
+	if ((environment = getenv("XENVIRONMENT")) == NULL) {
+	    int len;
+	    environment = GetHomeDir(filename);
+	    strcat(environment, "/.Xdefaults-");
+	    len = strlen(environment);
+	    gethostname(environment+len, 1024-len);
+	}
+	rdb = XrmGetFileDatabase(environment);
+	XrmMergeDatabases(rdb, &XtDefaultDB);
+
     return rdb;
 }
 
