@@ -1,5 +1,5 @@
 /*
- * $XConsortium: OSio.h,v 1.2 91/07/16 12:56:49 jap Exp $
+ * $XConsortium: OSio.h,v 1.3 93/07/12 09:26:24 dpw Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -46,18 +46,26 @@ extern	void	hftTermQueue();
 #define	OS_MouseProc			AIXMouseProc
 #define	OS_KeybdProc			AIXKeybdProc
 
+/*
 #define OS_CapsLockFeedback(dir)	NoopDDA()
+*/
 
 #define	OS_PreScreenInit()		AIXMachineDependentInit()
+/*
 #define	OS_PostScreenInit()		NoopDDA()
 #define	OS_ScreenStateChange(e)		NoopDDA()
+*/
 
+/*
 #define OS_AddAndRegisterOtherDevices()	NoopDDA()
+*/
 #define	OS_GetDefaultScreens()		AIXGetDefaultScreens()
 
 #define	OS_InitInput()			AIXInitEventHandlers()
+/*
 #define	OS_SaveState()			NoopDDA()
 #define	OS_RestoreState()		NoopDDA()
+*/
 
 #define	OS_GiveUp()			hftTermQueue()
 #define	OS_Abort()			hftTermQueue()
