@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.96 89/09/20 15:46:47 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.97 89/09/22 17:52:38 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif /* lint */
 
@@ -757,7 +757,7 @@ static struct {
     {0,				pass},      /* SelectionNotify  */
     {ColormapChangeMask,	pass},      /* ColormapNotify   */
     {0,				pass},      /* ClientMessage	*/
-    {0,				pass},      /* MappingNotify ???*/
+    {0,				pass},      /* MappingNotify	*/
   };
 
     eventType &= 0x7f;	/* Events sent with XSendEvent have high bit set. */
