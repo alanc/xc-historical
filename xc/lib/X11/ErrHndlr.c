@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XErrHndlr.c,v 11.11 89/03/28 18:14:19 jim Exp $ */
+/* $XConsortium: XErrHndlr.c,v 11.12 89/07/18 11:06:19 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -17,6 +17,9 @@ int (*XSetErrorHandler(handler))()
     register int (*handler)();
 {
     int (*oldhandler)() = _XErrorFunction;
+
+    if (!oldhandler)
+	oldhandler = _XDefaultError;
 
     if (handler != NULL) {
 	_XErrorFunction = handler;
@@ -39,6 +42,9 @@ int (*XSetIOErrorHandler(handler))()
     register int (*handler)();
 {
     int (*oldhandler)() = _XIOErrorFunction;
+
+    if (!oldhandler)
+	oldhandler = _XDefaultIOError;
 
     if (handler != NULL) {
 	_XIOErrorFunction = handler;
