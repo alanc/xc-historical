@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: MButton.c,v 1.7 89/07/07 12:57:33 converse Exp $";
+static char Xrcsid[] = "$XConsortium: MenuButton.c,v 1.8 89/07/12 13:50:09 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -172,7 +172,7 @@ Cardinal * num_params;
   Widget menu, temp;
   Arg arglist[2];
   Cardinal num_args;
-  int menu_x, menu_y, menu_width, menu_height, button_width;
+  int menu_x, menu_y, menu_width, menu_height, button_width, button_height;
   Position button_x, button_y;
 
   temp = w;
@@ -196,12 +196,13 @@ Cardinal * num_params;
   
   menu_width = menu->core.width + 2 * menu->core.border_width;
   button_width = w->core.width + 2 * w->core.border_width;
+  button_height = w->core.height + 2 * w->core.border_width;
 
   menu_height = menu->core.height + 2 * menu->core.border_width;
 
   XtTranslateCoords(w, 0, 0, &button_x, &button_y);
-  menu_x = button_x + (button_width - menu_width)/2;
-  menu_y = button_y;
+  menu_x = button_x;
+  menu_y = button_y + button_height;
 
   if (menu_x < 0) 
     menu_x = 0;
