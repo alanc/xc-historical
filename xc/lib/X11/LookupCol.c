@@ -1,4 +1,4 @@
-/* $XConsortium: XLookupCol.c,v 11.16 91/05/14 10:58:39 rws Exp $ */
+/* $XConsortium: XLookupCol.c,v 11.17 91/06/27 10:52:08 dave Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -19,7 +19,7 @@ without express or implied warranty.
 #include "Xcmsint.h"
 
 extern void _XcmsRGB_to_XColor();
-extern void _XcmsResolveColor();
+extern void _XUnresolveColor();
 
 #if NeedFunctionPrototypes
 Status XLookupColor (
@@ -51,7 +51,7 @@ Status XLookupColor (dpy, cmap, spec, def, scr)
 		    &cmsColor_exact, XcmsRGBFormat) == XcmsSuccess) {
 		_XcmsRGB_to_XColor(&cmsColor_exact, def, 1);
 		bcopy((char *)def, (char *)scr, sizeof(XColor));
-		_XcmsResolveColor(ccc, scr, 1);
+		_XUnresolveColor(ccc, scr);
 		return(1);
 	    }
 	    /*
