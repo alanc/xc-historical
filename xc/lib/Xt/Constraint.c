@@ -1,7 +1,7 @@
 #ifndef lint
-static char rcsid[] = "$Header: Constraint.c,v 1.4 88/02/14 14:52:50 rws Exp $";
+static char rcsid[] = "$xHeader: Constraint.c,v 1.2 88/08/18 15:35:57 asente Exp $";
+/* $oHeader: Constraint.c,v 1.2 88/08/18 15:35:57 asente Exp $ */
 #endif lint
-
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -29,16 +29,16 @@ SOFTWARE.
 
 #define CONSTRAINT
 #include "IntrinsicI.h"
-#include <X11/StringDefs.h>
-#include "Resource.h"
+#include "StringDefs.h"
 
-globaldef ConstraintClassRec constraintClassRec = {
+static void ConstraintPartInitialize();
+externaldef(constraintclassrec) ConstraintClassRec constraintClassRec = {
   { /******* CorePart *******/
     /* superclass	    */	(WidgetClass) &compositeClassRec,
     /* class_name	    */	"Constraint",
     /* widget_size	    */	sizeof(ConstraintRec),
     /* class_initialize     */  NULL,
-    /* class_part_initialize*/	NULL,
+    /* class_part_initialize*/	ConstraintPartInitialize,
     /* class_inited	    */	FALSE,
     /* initialize	    */	NULL,
     /* initialize_hook      */	NULL,		
@@ -63,24 +63,37 @@ globaldef ConstraintClassRec constraintClassRec = {
     /* version		    */	XtVersion,
     /* callback_offsets     */  NULL,
     /* tm_table		    */  NULL,
-  },
-  { /**** CompositePart *****/
+    /* query_geometry	    */  NULL,
+    /* display_accelerator  */  NULL,
+    /* extension	    */  NULL
+  },{ /**** CompositePart *****/
     /* geometry_handler     */  NULL,
     /* change_managed       */  NULL,
     /* insert_child	    */  XtInheritInsertChild,
     /* delete_child	    */  XtInheritDeleteChild,
-    /* move_focus_to_next   */  NULL,
-    /* move_focus_to_prev   */  NULL
-  },
-  { /**** ConstraintPart ****/
+    /* extension	    */  NULL
+  },{ /**** ConstraintPart ****/
     /* resources	    */  NULL,
     /* num_resources	    */  0,
     /* constraint_size      */  0,
     /* initialize	    */  NULL,
     /* destroy		    */  NULL,
-    /* set_values	    */  NULL
+    /* set_values	    */  NULL,
+    /* extension	    */  NULL
   }
 };
 
-globaldef WidgetClass constraintWidgetClass =
+externaldef(constraintwidgetclass) WidgetClass constraintWidgetClass =
 	(WidgetClass) &constraintClassRec;
+
+
+static void ConstraintPartInitialize(wc)
+    WidgetClass wc;
+{
+    ConstraintWidgetClass cwc = (ConstraintWidgetClass)wc;
+    if (cwc->constraint_class.resources != NULL) {
+         XrmCompileResourceList(cwc ->constraint_class.resources,
+                                cwc->constraint_class.num_resources);
+    }
+    _XtConstraintResDependencies((ConstraintWidgetClass)wc);
+}
