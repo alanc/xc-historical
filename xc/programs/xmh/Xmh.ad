@@ -2,6 +2,7 @@
 Xmh.AppDefaultsVersion:		1
 
 Xmh.Geometry:			508x750
+Xmh.ReplyInsertFilter:		cat
 Xmh*ShapeStyle:			Oval
 Xmh*Command.BorderWidth:	1
 Xmh*MenuButton.BorderWidth:	1
