@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.44 89/12/16 03:33:44 converse Exp $
+ * $XConsortium: init.c,v 2.45 90/01/22 17:37:16 swick Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -33,6 +33,13 @@
 #include <sys/errno.h>
 
 #define MIN_APP_DEFAULTS_VERSION 1
+
+static String FallbackResources[] = {
+"*folderButton.label: Close",
+"*folderButton.borderWidth: 4",
+"*folderButton.translations: #override <Btn1Down>: XmhClose()",
+NULL
+};
 
 static Boolean static_variable;	 /* whose address is not a widget ID */
 
@@ -217,6 +224,7 @@ char **argv;
     FILEPTR fid;
     char str[500], str2[500], *ptr;
     Scrn scrn;
+    XtAppContext app;
     static XtActionsRec actions[] = {
 
 	/* general Xmh action procedures */
@@ -312,8 +320,9 @@ char **argv;
     if (ptr) progName = ptr + 1;
     else progName = argv[0];
 
-    toplevel = XtInitialize("main", "Xmh", table, XtNumber(table),
-			    &argc, argv);
+    toplevel = XtAppInitialize(&app, "Xmh", table, XtNumber(table),
+			       &argc, argv, FallbackResources,
+			       NULL, (Cardinal)0);
     if (argc > 1) Syntax(progName);
 
     XSetIOErrorHandler(_IOErrorHandler);
