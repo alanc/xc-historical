@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Clock.c,v 1.51 90/04/11 17:27:25 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Clock.c,v 1.52 90/04/26 17:35:10 converse Exp $";
 #endif /* lint */
 
 
@@ -67,16 +67,14 @@ static XtResource resources[] = {
 	goffset(width), XtRImmediate, (caddr_t) 0},
     {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
 	goffset(height), XtRImmediate, (caddr_t) 0},
-    {XtNbackground, XtCBackground, XtRPixel, sizeof(Pixel),
-	goffset(background_pixel), XtRString, "XtdefaultBackground"},
     {XtNupdate, XtCInterval, XtRInt, sizeof(int), 
         offset(update), XtRImmediate, (caddr_t) 60 },
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-        offset(fgpixel), XtRString, "XtdefaultForeground"},
+        offset(fgpixel), XtRString, XtDefaultForeground},
     {XtNhand, XtCForeground, XtRPixel, sizeof(Pixel),
-        offset(Hdpixel), XtRString, "XtdefaultForeground"},
+        offset(Hdpixel), XtRString, XtDefaultForeground},
     {XtNhighlight, XtCForeground, XtRPixel, sizeof(Pixel),
-        offset(Hipixel), XtRString, "XtdefaultForeground"},
+        offset(Hipixel), XtRString, XtDefaultForeground},
     {XtNanalog, XtCBoolean, XtRBoolean, sizeof(Boolean),
         offset(analog), XtRImmediate, (caddr_t) TRUE},
     {XtNchime, XtCBoolean, XtRBoolean, sizeof(Boolean),
@@ -85,8 +83,6 @@ static XtResource resources[] = {
         offset(padding), XtRImmediate, (caddr_t) 8},
     {XtNfont, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
         offset(font), XtRString, "fixed"},
-    {XtNreverseVideo, XtCReverseVideo, XtRBoolean, sizeof (Boolean),
-	offset (reverse_video), XtRImmediate, (caddr_t) FALSE},
     {XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
     	offset (backing_store), XtRString, "default"},
 };
