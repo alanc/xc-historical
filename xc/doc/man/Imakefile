@@ -3,7 +3,7 @@
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 #endif
 
-SUBDIRS = Xlib Xt XI
+SUBDIRS = Xlib Xt Xext XI
 
 all::
 
