@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbzerarc.c,v 5.14 89/09/20 18:55:05 rws Exp $ */
+/* $XConsortium: cfbzerarc.c,v 5.15 89/11/24 18:26:19 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -46,13 +46,13 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
     miZeroArcRec info;
     Bool do360;
     register int x;
-    int y, a, b, d, mask;
-    int k1, k3, dx, dy;
     char *addrb;
     register char *yorgb, *yorgob;
     register unsigned long pixel = pGC->fgPixel;
     register int yoffset;
     int nlwidth, dyoffset;
+    register int y, a, b, d, mask;
+    register int k1, k3, dx, dy;
 
     if (pDraw->type == DRAWABLE_WINDOW)
     {
