@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium$";
+static char Xrcsid[] = "$XConsortium: EventUtil.c,v 1.1 89/12/14 14:57:29 swick Exp $";
 #endif
 
 /********************************************************
@@ -118,12 +118,13 @@ XtPerWidgetInput _XtGetPerWidgetInput(widget, create)
 	  pwi->keyList =
 	    pwi->ptrList = NULL;
 
-	  pwi->haveFocus = 
-	    pwi->realize_handler_added = 
-	      pwi->active_handler_added = FALSE;
+	  pwi->haveFocus =
+	      pwi->map_handler_added =
+		  pwi->realize_handler_added = 
+		      pwi->active_handler_added = FALSE;
 	  
 	  XtAddCallback(widget, XtNdestroyCallback, 
-			_XtDestroyServerGrabs,(caddr_t)pwi);
+			_XtDestroyServerGrabs, (XtPointer)pwi);
 
 	  (void) XSaveContext(dpy, 
 			      (Window)widget, 
@@ -199,7 +200,7 @@ Widget _XtFindRemapWidget(event, widget, mask, pdi)
       {
 	  extern Widget _XtProcessPointerEvent();
 
-	  dspWidget = _XtProcessPointerEvent(event, widget,
+	  dspWidget = _XtProcessPointerEvent((XButtonEvent*)event, widget,
 					     pdi);
       }
     return dspWidget;
