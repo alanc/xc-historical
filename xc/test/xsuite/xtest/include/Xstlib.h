@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: Xstlib.h,v 1.10 92/06/11 15:31:40 rws Exp $
+ * $XConsortium: Xstlib.h,v 1.11 92/07/01 10:59:42 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -40,7 +40,7 @@
  */
 
 /*
- *	$Header: Xstlib.h,v 1.10 92/06/11 15:31:40 rws Exp $
+ *	$Header: Xstlib.h,v 1.11 92/07/01 10:59:42 rws Exp $
  */
 
 /*
@@ -142,6 +142,7 @@ extern CL Xst_clients[MAX_CLIENTS];
 #define EXPECT_ERROR	1
 #define EXPECT_EVENT	2
 #define EXPECT_NOTHING	3
+#define EXPECT_01EVENT	4
 /*
  *	General defines
  */
@@ -157,6 +158,7 @@ extern CL Xst_clients[MAX_CLIENTS];
  */
 #define Expect_Error(client,type)	((xError *)Expect(client,EXPECT_ERROR,type))
 #define Expect_Event(client,type)	((xEvent *)Expect(client,EXPECT_EVENT,type))
+#define Expect_01Event(client,type)	((xEvent *)Expect(client,EXPECT_01EVENT,type))
 #define Expect_Nothing(client)	((int) Expect(client,EXPECT_NOTHING,0))
 #define Expect_Reply(client,type)	((xReply *)Expect(client,EXPECT_REPLY,type))
 
