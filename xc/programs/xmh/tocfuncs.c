@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocfuncs.c,v 2.28 89/11/30 20:07:20 converse Exp $
+ * $XConsortium: tocfuncs.c,v 2.29 89/12/10 17:31:00 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -28,6 +28,7 @@
 /* tocfuncs.c -- action procedures concerning things in the toc widget. */
 
 #include "xmh.h"
+#include "tocutil.h"
 
 #define MAX_SYSTEM_LEN 510
 
@@ -736,7 +737,6 @@ void DoSelectSequence(widget, client_data, call_data)
     if ((seq = TocSelectedSequence(toc)) != NULL) {
 	Widget	item, menu;
 	Button	button;
-	char	*name;
 
 	button = BBoxFindButtonNamed
 	    (scrn->mainbuttons, MenuBoxButtons[XMH_SEQUENCE].button_name);
