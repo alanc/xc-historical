@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: strings.mit,v 1.5 93/08/02 11:20:46 gildea Exp $
 .ds tk X Toolkit
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xI Intrinsics
@@ -6,7 +6,7 @@
 .ds xL Xlib \- C Language X Interface
 .ds xC Inter-Client Communication Conventions Manual
 .ds xP X Window System Protocol
-.ds Rn 5
+.ds Rn 6
 .ds Vn 2.2
 .ds oI Must be of class Object or any subclass thereof.
 .ds rI Must be of class RectObj or any subclass thereof.
