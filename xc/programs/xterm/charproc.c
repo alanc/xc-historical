@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.99 89/10/17 18:22:04 jim Exp $
+ * $XConsortium: charproc.c,v 1.100 89/10/17 18:40:07 jim Exp $
  */
 
 
@@ -140,7 +140,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.99 89/10/17 18:22:04 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.100 89/10/17 18:40:07 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -181,6 +181,7 @@ extern void HandleSecure();
 extern void HandleScrollForward();
 extern void HandleScrollBack();
 extern void HandleCreateMenu();
+extern void HandleSetFont();
 
 /*
  * NOTE: VTInitialize zeros out the entire ".screen" component of the 
@@ -234,6 +235,7 @@ static XtActionsRec actionsList[] = {
     { "select-end",	  HandleSelectEnd },
     { "select-cursor-start",	  HandleKeyboardSelectStart },
     { "select-cursor-end",	  HandleKeyboardSelectEnd },
+    { "set-font",	  HandleSetFont },
     { "start-extend",	  HandleStartExtend },
     { "start-cursor-extend",	  HandleKeyboardStartExtend },
     { "string",		  HandleStringEvent },
@@ -2546,6 +2548,29 @@ static void HandleIgnore(w, event, params, param_count)
     (void) SendMousePosition(w, event);
 }
 
+
+/* ARGSUSED */
+void HandleSetFont(w, event, params, param_count)
+    Widget w;
+    XEvent *event;		/* unused */
+    String *params;		/* unused */
+    Cardinal *param_count;	/* unused */
+{
+    int didit = 0;
+
+    switch (*param_count) {
+      case 1:
+	didit = try_new_font (&term->screen, params[0], NULL, True);
+	break;
+      case 2:
+	didit = try_new_font (&term->screen, params[0], params[1], True);
+	break;
+      default:
+	Bell();			/* want to ring twice */
+    }
+	
+    if (!didit) Bell();
+}
 
 
 int try_new_font (screen, nfontname, bfontname, doresize)
