@@ -1,5 +1,5 @@
 /*
- * $XConsortium: vendor.c,v 1.7 92/04/15 11:11:34 rws Exp $
+ * $XConsortium: vendor.c,v 1.8 92/11/21 13:41:38 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -24,7 +24,7 @@ typedef struct sectionName {
     char *	suffix;
 } SectionNameRec;
 
-#if defined(SYSV) || defined(__OSF1__)
+#if defined(SYSV) || defined(__osf__)
 
 static SectionNameRec SectionNames[] = {
     {"(1) User Commands",		"1"},

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: vendor.h,v 1.9 93/07/29 14:20:16 rws Exp $
+ * $XConsortium: vendor.h,v 1.10 93/07/29 14:22:17 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -50,7 +50,7 @@
 #ifdef macII
 #  define SYSMANPATH "/usr/catman/u_man:/usr/catman/a_man"
 #endif /* macII */
-#if defined(SVR4) || defined(__OSF1__)
+#if defined(SVR4) || defined(__osf__)
 #  define SYSMANPATH "/usr/share/man"
 #endif /* SVR4 */
 #ifdef hcx
