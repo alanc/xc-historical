@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: data.c,v 1.8 89/05/26 18:10:43 jim Exp $
+ *	$XConsortium: data.c,v 1.9 91/01/06 12:47:31 rws Exp $
  */
 
 /*
@@ -25,11 +25,9 @@
  * SOFTWARE.
  */
 
-#include <setjmp.h>
-#include <X11/Xlib.h>
-#include <X11/Intrinsic.h>
-#include "ptyx.h"
+#include "ptyx.h"		/* gets Xt stuff, too */
 #include "data.h"
+#include <setjmp.h>
 
 XPoint T_boxlarge[NBOX] = {
 	{0, 0},
