@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: VarCreate.c,v 1.5 89/11/10 17:47:07 swick Exp $";
+    "$XConsortium: VarCreate.c,v 1.6 89/11/10 20:01:05 swick Exp $";
 #endif
 
 /*
@@ -32,23 +32,24 @@ extern Widget _XtAppCreateShell();
 extern Widget _XtCreatePopupShell();
 
 static Widget
-_XtVaCreateWidget(name, widget_class, parent, var)
+_XtVaCreateWidget(name, widget_class, parent, var, count)
     String      name;
     WidgetClass widget_class;
     Widget      parent;
     va_list     var;
+    int		count;
 {
     register Widget         widget;
     XtTypedArgList	    typed_args = NULL;
     Cardinal		    num_args;
 
-    _XtVaToTypedArgList(var, &typed_args, &num_args);
+    _XtVaToTypedArgList(var, count, &typed_args, &num_args);
 
     widget = _XtCreateWidget(name, widget_class, parent, (ArgList)NULL, 
 		    (Cardinal)0, typed_args, num_args);
 
     if (typed_args != NULL) {
-        XtFree((char *)typed_args);
+        XtFree((XtPointer)typed_args);
     }    
 
     return(widget);
@@ -69,9 +70,14 @@ Widget XtVaCreateWidget(name, widget_class, parent, va_alist)
 {
     va_list                 var;
     register Widget         widget;
+    int			    total_count, typed_count;
 
     Va_start(var,parent);
-    widget = _XtVaCreateWidget(name, widget_class, parent, var);
+    _XtCountVaList(var, &total_count, &typed_count);
+    va_end(var);
+
+    Va_start(var,parent);
+    widget = _XtVaCreateWidget(name, widget_class, parent, var, total_count);
     va_end(var);
 
     return(widget);
@@ -92,9 +98,14 @@ Widget XtVaCreateManagedWidget(name, widget_class, parent, va_alist)
 {
     va_list		var;
     register Widget	widget;
+    int			total_count, typed_count;
 
     Va_start(var,parent);
-    widget = _XtVaCreateWidget(name, widget_class, parent, var);
+    _XtCountVaList(var, &total_count, &typed_count);
+    va_end(var);
+
+    Va_start(var,parent);
+    widget = _XtVaCreateWidget(name, widget_class, parent, var, total_count);
     XtManageChild(widget);
     va_end(var);
 
@@ -119,14 +130,19 @@ Widget XtVaAppCreateShell(name, class, widget_class, display, va_alist)
     register Widget         widget;
     XtTypedArgList          typed_args = NULL;
     Cardinal                num_args;
+    int			    total_count, typed_count;
+
+    Va_start(var,display);
+    _XtCountVaList(var, &total_count, &typed_count);
+    va_end(var);
 
     Va_start(var,display);
 
-    _XtVaToTypedArgList(var, &typed_args, &num_args);
+    _XtVaToTypedArgList(var, total_count, &typed_args, &num_args);
     widget = _XtAppCreateShell(name, class, widget_class, display,
 		(ArgList)NULL, (Cardinal)0, typed_args, num_args);
     if (typed_args != NULL) {
-	XtFree((char *)typed_args);
+	XtFree((XtPointer)typed_args);
     }
  
     va_end(var);
@@ -150,14 +166,19 @@ Widget XtVaCreatePopupShell(name, widget_class, parent, va_alist)
     register Widget         widget;
     XtTypedArgList          typed_args = NULL;
     Cardinal                num_args;
+    int			    total_count, typed_count;
+
+    Va_start(var,parent);
+    _XtCountVaList(var, &total_count, &typed_count);
+    va_end(var);
 
     Va_start(var,parent);
 
-    _XtVaToTypedArgList(var, &typed_args, &num_args);
+    _XtVaToTypedArgList(var, total_count, &typed_args, &num_args);
     widget = _XtCreatePopupShell(name, widget_class, parent,
 		(ArgList)NULL, (Cardinal)0, typed_args, num_args);
     if (typed_args != NULL) {
-	XtFree((char *)typed_args);
+	XtFree((XtPointer)typed_args);
     }
 
     va_end(var);
@@ -177,13 +198,18 @@ void XtVaSetValues(widget, va_alist)
     va_list                 var;
     ArgList                 args = NULL;
     Cardinal                num_args;
+    int			    total_count, typed_count;
+
+    Va_start(var,widget);
+    _XtCountVaList(var, &total_count, &typed_count);
+    va_end(var);
 
     Va_start(var,widget);
 
-    _XtVaToArgList(widget, &args, &num_args, var);
+    _XtVaToArgList(widget, var, total_count, &args, &num_args);
     XtSetValues(widget, args, num_args);
     if (args != NULL) {
-	XtFree((char *)args);
+	XtFree((XtPointer)args);
     }
 
     va_end(var);
@@ -208,19 +234,20 @@ void XtVaSetSubvalues(base, resources, num_resources, va_alist)
     int		total_count, typed_count;		
 
     Va_start(var, num_resources);
-
     _XtCountVaList(var, &total_count, &typed_count);
+    va_end(var);
 
     if (typed_count != 0) {
 	XtWarning("XtVaTyped is an invalid argument to XtVaSetSubvalues()\n");
     }
 
-    _XtVaToArgList((Widget)NULL, &args, &num_args, var);
+    Va_start(var, num_resources);
+    _XtVaToArgList((Widget)NULL, var, total_count, &args, &num_args);
 
     XtSetSubvalues(base, resources, num_resources, args, num_args);
 
     if (num_args != 0) {
-        XtFree((char *)args);
+        XtFree((XtPointer)args);
     }    
 
     va_end(var);

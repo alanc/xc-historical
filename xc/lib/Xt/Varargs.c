@@ -291,34 +291,33 @@ _XtNestedArgtoArg(widget, avlist, args, resources, num_resources)
  */
 #if IncludePrototypes
 void
-_XtVaToArgList(Widget widget, ArgList *args_return, Cardinal *num_args_return, va_list var)
+_XtVaToArgList(Widget widget, va_list var, int max_count, ArgList *args_return, Cardinal *num_args_return)
 #else
 void
-_XtVaToArgList(widget, args_return, num_args_return, var)
+_XtVaToArgList(widget, var, max_count, args_return, num_args_return)
     Widget		widget;
+    va_list     	var;
+    int			max_count;
     ArgList		*args_return;
     Cardinal		*num_args_return;
-    va_list     	var;
 #endif
 {
     String		attr;
-    int			count = 0, total_count = 0, typed_count = 0;
+    int			count = 0;
     ArgList		args = (ArgList)NULL;
     XtTypedArg		typed_arg;
     XtResourceList	resources = (XtResourceList)NULL;
     Cardinal		num_resources = 0;
     Boolean		fetched_resource_list = False;
 
-    _XtCountVaList(var, &total_count, &typed_count);
-
-    if (total_count  == 0) {
+    if (max_count  == 0) {
 	*num_args_return = 0;
 	*args_return = (ArgList)NULL;
 	return;
     }
 
 
-    args = (ArgList)XtMalloc((unsigned)(total_count * sizeof(Arg)));
+    args = (ArgList)XtMalloc((unsigned)(max_count * sizeof(Arg)));
 
     for(attr = va_arg(var, String) ; attr != NULL;
 			attr = va_arg(var, String)) {
@@ -353,7 +352,7 @@ _XtVaToArgList(widget, args_return, num_args_return, var)
     }
 
     if (resources != (XtResourceList)NULL) {
-	XtFree((char *)resources);
+	XtFree((XtPointer)resources);
     }
 
     *num_args_return = (Cardinal)count;
@@ -396,23 +395,22 @@ static int _XtNestedArgtoTypedArg(args, avlist)
  */
 #if IncludePrototypes
 void
-_XtVaToTypedArgList(va_list var, XtTypedArgList *args_return, Cardinal *num_args_return)
+_XtVaToTypedArgList(va_list var, int max_count, XtTypedArgList *args_return, Cardinal *num_args_return)
 #else
 void
-_XtVaToTypedArgList(var, args_return, num_args_return)
+_XtVaToTypedArgList(var, max_count, args_return, num_args_return)
     va_list             var;
+    int			max_count;
     XtTypedArgList   	*args_return;
     Cardinal            *num_args_return;
 #endif
 {
     XtTypedArgList	args = NULL;
     String              attr;
-    int			count, total_count, typed_count;
+    int			count;
 
-    _XtCountVaList(var, &total_count, &typed_count);
-
-    args = (XtTypedArgList)XtMalloc((unsigned)(total_count * 
-				sizeof(XtTypedArg))); 
+    args = (XtTypedArgList)
+	XtMalloc((unsigned)(max_count * sizeof(XtTypedArg))); 
 
     for(attr = va_arg(var, String), count = 0 ; attr != NULL;
 		    attr = va_arg(var, String)) {

@@ -43,17 +43,21 @@ void XtVaGetSubresources(widget, base, name, class, resources, num_resources, va
     va_list                 var;
     ArgList                 args;
     Cardinal                num_args;
+    int			    total_count, typed_count;
+
+    Va_start(var, num_resources);
+    _XtCountVaList(var, &total_count, &typed_count);
+    va_end(var);
 	 
     Va_start(var, num_resources);
 	      
-		   
-    _XtVaToArgList(widget, &args, &num_args, var);
+    _XtVaToArgList(widget, var, total_count, &args, &num_args);
 
     XtGetSubresources(widget, base, name, class, resources, num_resources, 
 	args, num_args);
 
     if (num_args != 0) {
-	XtFree((char *)args);
+	XtFree((XtPointer)args);
     }    
 
     va_end(var);
@@ -76,17 +80,21 @@ void XtVaGetApplicationResources(widget, base, resources, num_resources, va_alis
     va_list                 var;
     ArgList                 args; 
     Cardinal                num_args; 
+    int			    total_count, typed_count;
 
+    Va_start(var,num_resources);
+    _XtCountVaList(var, &total_count, &typed_count);
+    va_end(var);
+	
     Va_start(var,num_resources); 
-               
-                    
-    _XtVaToArgList(widget, &args, &num_args, var);
+
+    _XtVaToArgList(widget, var, total_count, &args, &num_args);
                                 
     XtGetApplicationResources(widget, base, resources, num_resources, 
 	args, num_args); 
 
     if (num_args != 0) {
-	XtFree((char *)args);
+	XtFree((XtPointer)args);
     }    
 
     va_end(var);         
@@ -105,7 +113,7 @@ _XtGetTypedArg(widget, typed_arg, resources, num_resources)
     XrmValue            from_val, to_val;
     register int        i;
     Arg			arg;
-    caddr_t		value;
+    XtPointer		value;
 
     /* note we presume that the XtResourceList to be un-compiled */
 
@@ -125,7 +133,7 @@ _XtGetTypedArg(widget, typed_arg, resources, num_resources)
  	return;
     }
 
-    value = (caddr_t)XtMalloc(from_size);
+    value = XtMalloc(from_size);
     XtSetArg(arg, typed_arg->name, value);
     XtGetValues(widget, &arg, 1);
 
@@ -151,7 +159,7 @@ _XtGetTypedArg(widget, typed_arg, resources, num_resources)
     }
 
     bcopy((char *)to_val.addr, (char *)typed_arg->value, (int)to_val.size);
-    XtFree((char *)value);
+    XtFree(value);
 }
 
 static int
@@ -207,7 +215,9 @@ void XtVaGetValues(widget, va_alist)
 				* sizeof(Arg)));
     }
     else args = NULL;		/* for lint; really unused */
+    va_end(var);
 
+    Va_start(var,widget);
     for(attr = va_arg(var, String), count = 0 ; attr != NULL;
 			attr = va_arg(var, String)) {
 	if (strcmp(attr, XtVaTypedArg) == 0) {
@@ -232,12 +242,12 @@ void XtVaGetValues(widget, va_alist)
     }
 
     if (resources != (XtResourceList)NULL) { 
-	XtFree((char *)resources); 
+	XtFree((XtPointer)resources); 
     }
 
     if (total_count != typed_count) {
 	XtGetValues(widget, args, count);
-	XtFree((char *)args);
+	XtFree((XtPointer)args);
     }
        
     va_end(var);
@@ -267,13 +277,15 @@ void XtVaGetSubvalues(base, resources, num_resources, va_alist)
     if (typed_count != 0) {
 	XtWarning("XtVaTypedArg is an invalid argument to XtVaGetSubvalues()\n");
     }
+    va_end(var);
 
-    _XtVaToArgList((Widget)NULL, &args, &num_args, var);
+    Va_start(var,num_resources);
+    _XtVaToArgList((Widget)NULL, var, total_count, &args, &num_args);
 
     XtGetSubvalues(base, resources, num_resources, args, num_args);
 
     if (num_args != 0) {
-        XtFree((char *)args);
+        XtFree((XtPointer)args);
     }    
 
     va_end(var);
