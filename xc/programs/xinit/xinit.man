@@ -1,4 +1,4 @@
-.TH XINIT 1 "1 March 1988" "X Version 11"
+.TH XINIT 1 "24 October 1988" "X Version 11"
 .SH NAME
 xinit - X Window System initializer
 .SH SYNOPSIS

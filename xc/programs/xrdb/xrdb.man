@@ -1,4 +1,4 @@
-.TH XRDB 1 "1 March 1988" "X Version 11"
+.TH XRDB 1 "29 June 1988" "X Version 11"
 .SH NAME
 xrdb - X server resource database utility
 .SH SYNOPSIS
