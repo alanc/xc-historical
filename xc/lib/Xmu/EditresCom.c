@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditResCom.c,v 1.5 90/03/14 16:59:27 kit Exp $
+ * $XConsortium: EditResCom.c,v 1.6 90/03/16 13:58:29 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -1199,12 +1199,12 @@ FindChild(parent, x, y)
 Widget parent;
 int x, y;
 {
-    int i, num_children;
     Widget * children;
+    int i = FindAllChildren(parent, &children);
 
-    num_children = FindAllChildren(parent, &children);
+    while (i > 0) {
+	i--;
 
-    for (i = 0; i < num_children; i++) {
 	if (PositionInChild(children[i], x, y)) {
 	    Widget child = children[i];
 	    
