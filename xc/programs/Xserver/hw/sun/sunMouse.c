@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: sunMouse.c,v 1.1 87/08/08 14:23:44 toddb Locked $ */
 /*-
  * sunMouse.c --
  *	Functions for playing cat and mouse... sorry.

@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: kbd_mode.c,v 1.1 87/08/08 14:20:35 toddb Locked $ */
 /*
 kbd_mode: libcps.a kbd_mode.o
 	cc -o $@ $@.o libcps.a -lm

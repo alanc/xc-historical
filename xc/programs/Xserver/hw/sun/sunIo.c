@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: sunIo.c,v 1.1 87/08/08 14:22:53 toddb Locked $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.

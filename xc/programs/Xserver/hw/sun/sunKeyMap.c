@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: sunKeyMap.c,v 1.1 87/08/08 14:23:27 toddb Locked $ */
 /*
  * The Sun X drivers are a product of Sun Microsystems, Inc. and are provided
  * for unrestricted use provided that this legend is included on all tape
