@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: fntchoosr.c,v 1.7 89/11/08 09:02:41 swick Exp $";
+static char Xrcsid[] = "$XConsortium: xfontsel.c,v 1.8 89/11/10 17:34:46 swick Exp $";
 #endif
 
 /*
@@ -177,7 +177,7 @@ void main(argc, argv)
 {
     Widget topLevel, pane;
 
-    topLevel = XtInitialize( NULL, "FntChoosr", options, XtNumber(options),
+    topLevel = XtInitialize( NULL, "XFontSel", options, XtNumber(options),
 			     &argc, argv );
 
     if (argc != 1) Syntax(argv[0]);
@@ -189,7 +189,7 @@ void main(argc, argv)
 	XrmDatabase rdb = XtDatabase(XtDisplay(topLevel));
 	XtWarning( "app-defaults file not properly installed." );
 	XrmPutLineResource( &rdb,
-"*sampleText*Label:FntChoosr app-defaults file not properly installed;\\n\
+"*sampleText*Label:XFontSel app-defaults file not properly installed;\\n\
 see 'fntchoosr' manual page."
 			  );
     }

@@ -1,7 +1,7 @@
-           SRCS = fntchoosr.c
-           OBJS = fntchoosr.o
+           SRCS = xfontsel.c
+           OBJS = xfontsel.o
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
 
-ComplexProgramTarget(fntchoosr)
+ComplexProgramTarget(xfontsel)
 
-InstallAppDefaults(FntChoosr)
+InstallAppDefaults(XFontSel)

@@ -11,21 +11,21 @@
 .if n .sp 1
 .if t .sp .5
 ..
-.TH fntchoosr 1 "7 November 1989" "X Version 11"
+.TH xfontsel 1 "7 November 1989" "X Version 11"
 .SH NAME
 .PP
-fntchoosr - point & click interface for selecting X11 font names
+xfontsel - point & click interface for selecting X11 font names
 .PP
 .SH SYNTAX
 .PP
-\fBfntchoosr\fP [-\fItoolkitoption\fP ...]
+\fBxfontsel\fP [-\fItoolkitoption\fP ...]
 [\fB-pattern \fIfontname\fP]
 [\fB-print\fP]
 [\fB-sample \fItext\fP]
 .PP
 .SH DESCRIPTION
 .PP
-The \fIfntchoosr\fP application provides a simple way to display
+The \fIxfontsel\fP application provides a simple way to display
 the fonts known to your X server, examine samples of each, and
 retrieve the X Logical Font Description ("XLFD") full name for a font.
 .PP
@@ -64,13 +64,13 @@ some other application takes the PRIMARY selection away.
 .PP
 .SH RESOURCES
 .PP
-The application class is \fBFntChoosr\fP.  Most of the user-interface
+The application class is \fBXFontSel\fP.  Most of the user-interface
 is configured in the app-defaults file; if this file is missing
 a warning message will be printed to standard output and the
 resulting window will be nearly incomprehensible.
 .PP
 Most of the significant parts of the widget hierarchy are documented
-in the app-defaults file (normally /usr/lib/X11/app-defaults/FntChoosr).
+in the app-defaults file (normally /usr/lib/X11/app-defaults/XFontSel).
 .PP
 Application specific resources:
 .PP
@@ -91,7 +91,7 @@ Equivalent to the \fB-print\fP option.
 .PP
 .SH FILES
 .PP
- $XFILESEARCHPATH/FntChoosr
+ $XFILESEARCHPATH/XFontSel
 .PP
 .SH SEE ALSO
 xrdb(1)
@@ -107,7 +107,7 @@ sample output, though possibly resulting in no matching font.
 Should be able to return a FONT for the PRIMARY selection, not
 just a STRING.
 .PP
-Any change in field value will cause \fIfntchoosr\fP to assert
+Any change in field value will cause \fIxfontsel\fP to assert
 ownership of the PRIMARY_FONT selection.  This is for future work.
 .PP
 .SH COPYRIGHT
