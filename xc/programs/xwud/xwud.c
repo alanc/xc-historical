@@ -1,4 +1,4 @@
-/* $XConsortium: xwud.c,v 1.39 91/01/06 12:17:27 rws Exp $ */
+/* $XConsortium: xwud.c,v 1.40 91/01/22 18:39:09 gildea Exp $ */
 /* Copyright 1985, 1986, 1988 Massachusetts Institute of Technology */
 
 /*
@@ -159,7 +159,7 @@ main(argc, argv)
     if (file_name) {
 	in_file = fopen(file_name, "r");
 	if (in_file == NULL)
-	    Error("Can't open output file as specified.");
+	    Error("Can't open input file as specified.");
     }
     
     dpy = XOpenDisplay(display_name);
