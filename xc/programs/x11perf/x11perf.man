@@ -1,4 +1,4 @@
-.\" $XConsortium: x11perf.man,v 1.13 92/11/11 14:34:52 rws Exp $
+.\" $XConsortium: x11perf.man,v 1.14 92/11/11 14:36:01 rws Exp $
 .TH X11PERF 1 "Release 5" "X Version 11"
 .SH NAME
 x11perf \- X11 server performance test program
@@ -862,6 +862,15 @@ PutImage 100x100 square.
 .B \-putimage500
 PutImage 500x500 square.
 .TP 14
+.B \-putimagexy10
+PutImage XY format 10x10 square.
+.TP 14
+.B \-putimagexy100
+PutImage XY format 100x100 square.
+.TP 14
+.B \-putimagexy500
+PutImage XY format 500x500 square.
+.TP 14
 .B \-shmput10
 PutImage 10x10 square, MIT shared memory extension.
 .TP 14
@@ -871,6 +880,15 @@ PutImage 100x100 square, MIT shared memory extension.
 .B \-shmput500
 PutImage 500x500 square, MIT shared memory extension.
 .TP 14
+.B \-shmputxy10
+PutImage XY format 10x10 square, MIT shared memory extension.
+.TP 14
+.B \-shmputxy100
+PutImage XY format 100x100 square, MIT shared memory extension.
+.TP 14
+.B \-shmputxy500
+PutImage XY format 500x500 square, MIT shared memory extension.
+.TP 14
 .B \-getimage10
 GetImage 10x10 square.
 .TP 14
@@ -879,6 +897,15 @@ GetImage 100x100 square.
 .TP 14
 .B \-getimage500
 GetImage 500x500 square.
+.TP 14
+.B \-getimagexy10
+GetImage XY format 10x10 square.
+.TP 14
+.B \-getimagexy100
+GetImage XY format 100x100 square.
+.TP 14
+.B \-getimagexy500
+GetImage XY format 500x500 square.
 .TP 14
 .B \-noop
 X protocol NoOperation.
