@@ -220,7 +220,7 @@ static KeySym Sun3Map[] = {
 	XK_F7,		NoSymbol,		/* 0x10 */
 	XK_F8,		NoSymbol,		/* 0x11 */
 	XK_F9,		NoSymbol,		/* 0x12 */
-	XK_Break,	NoSymbol,		/* 0x13 */
+	XK_Alt_R,	NoSymbol,		/* 0x13 */
 	NoSymbol,	NoSymbol,		/* 0x14 */
 	XK_R1,		NoSymbol,		/* 0x15 */
 	XK_R2,		NoSymbol,		/* 0x16 */
