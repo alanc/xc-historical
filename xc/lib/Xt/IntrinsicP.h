@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicP.h,v 1.55 91/06/11 18:26:30 converse Exp $ */
+/* $XConsortium: IntrinsicP.h,v 1.56 91/06/14 17:58:06 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -184,31 +184,31 @@ typedef struct _XtTMRec {
 
 #undef XtIsRectObj
 #define XtIsRectObj(obj) \
-    (((Object)obj)->object.widget_class->core_class.class_inited & 0x02)
+    (((Object)(obj))->object.widget_class->core_class.class_inited & 0x02)
 
 #undef XtIsWidget
 #define XtIsWidget(obj) \
-    (((Object)obj)->object.widget_class->core_class.class_inited & 0x04)
+    (((Object)(obj))->object.widget_class->core_class.class_inited & 0x04)
 
 #undef XtIsComposite
 #define XtIsComposite(obj) \
-    (((Object)obj)->object.widget_class->core_class.class_inited & 0x08)
+    (((Object)(obj))->object.widget_class->core_class.class_inited & 0x08)
 
 #undef XtIsConstraint
 #define XtIsConstraint(obj) \
-    (((Object)obj)->object.widget_class->core_class.class_inited & 0x10)
+    (((Object)(obj))->object.widget_class->core_class.class_inited & 0x10)
 
 #undef XtIsShell
 #define XtIsShell(obj) \
-    (((Object)obj)->object.widget_class->core_class.class_inited & 0x20)
+    (((Object)(obj))->object.widget_class->core_class.class_inited & 0x20)
 
 #undef XtIsWMShell
 #define XtIsWMShell(obj) \
-    (((Object)obj)->object.widget_class->core_class.class_inited & 0x40)
+    (((Object)(obj))->object.widget_class->core_class.class_inited & 0x40)
 
 #undef XtIsTopLevelShell
 #define XtIsTopLevelShell(obj) \
-    (((Object)obj)->object.widget_class->core_class.class_inited & 0x80)
+    (((Object)(obj))->object.widget_class->core_class.class_inited & 0x80)
 
 #ifdef DEBUG
 #define XtCheckSubclass(w, widget_class_ptr, message)	\
@@ -218,7 +218,7 @@ typedef struct _XtTMRec {
 	    params[0] = ((Widget)(w))->core.widget_class->core_class.class_name;\
 	    params[1] = (widget_class_ptr)->core_class.class_name;	     \
 	    params[2] = (message);					     \
-	    XtAppErrorMsg(XtWidgetToApplicationContext((Widget)w),	     \
+	    XtAppErrorMsg(XtWidgetToApplicationContext((Widget)(w)),	     \
 		    "subclassMismatch", "xtCheckSubclass", "XtToolkitError", \
 		    "Widget class %s found when subclass of %s expected: %s",\
 		    params, &num_params);		\
