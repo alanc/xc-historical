@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Scroll.c,v 1.6 87/09/13 13:21:07 swick Locked $";
+static char rcsid[] = "$Header: Scroll.c,v 1.7 87/09/14 00:43:28 swick Locked $";
 #endif lint
 
 /*
@@ -30,7 +30,6 @@ static char rcsid[] = "$Header: Scroll.c,v 1.6 87/09/13 13:21:07 swick Locked $"
 
 #include "Xlib.h"
 #include "Xresource.h"
-/*#include "Conversion.h"*/
 #include "Intrinsic.h"
 #include "Scroll.h"
 #include "ScrollP.h"
@@ -40,13 +39,13 @@ static char rcsid[] = "$Header: Scroll.c,v 1.6 87/09/13 13:21:07 swick Locked $"
 /* Private definitions. */
 
 static char *defaultTranslationTable[] = {
-	"<Btn1Down>:		StartPageBack\n", /* should be generic... */
-	"<Btn2Down>:		StartScroll\n",
-	"<Btn3Down>:		StartPageForward\n", /* ...but needs TM args */
-	"<Btn1Up>:		DoPageBack\n",
-	"<Btn2Up>:		DoScroll\n",
-	"<Btn3Up>:		DoPageForward\n",
-	"<Motion>2:		MoveThumb\n", /* bug? in TM forces button spec here */
+	"<Btn1Down>:		StartPageBack()", /* should be generic... */
+	"<Btn2Down>:		StartScroll()",
+	"<Btn3Down>:		StartPageForward()", /* ...but needs TM args */
+	"<Btn1Up>:		DoPageBack()",
+	"<Btn2Up>:		DoScroll()",
+	"<Btn3Up>:		DoPageForward()",
+	"<Motion>2:		MoveThumb()", /* bug? in TM forces button spec here */
 	NULL
 };
 
@@ -56,12 +55,10 @@ static caddr_t defaultTranslations = (caddr_t)defaultTranslationTable;
 static XtResource resources[] = {
   {XtNorientation, XtCOrientation, XtROrientation, sizeof(XtOrientation),
      XtOffset(ScrollbarWidget, scrollbar.orientation), XtRString, "vertical"},
-  {XtNscrollProc, XtCScrollProc, XtRFunction, sizeof(XtCallbackProc),
-     XtOffset(ScrollbarWidget, scrollbar.scrollProc), XtRFunction, NULL},
-  {XtNthumbProc, XtCScrollProc, XtRFunction, sizeof(XtCallbackProc),
-     XtOffset(ScrollbarWidget, scrollbar.thumbProc), XtRFunction, NULL},
-  {XtNparameter, XtCParameter, XtRPointer, sizeof(caddr_t),
-     XtOffset(ScrollbarWidget, scrollbar.closure), XtRPointer, NULL},
+  {XtNscrollProc, XtCCallback, XtRPointer, sizeof(caddr_t),
+     XtOffset(ScrollbarWidget, scrollbar.scrollProc), XtRPointer, NULL},
+  {XtNthumbProc, XtCCallback, XtRPointer, sizeof(caddr_t),
+     XtOffset(ScrollbarWidget, scrollbar.thumbProc), XtRPointer, NULL},
   {XtNthumb, XtCThumb, XtRPixmap, sizeof(Pixmap),
      XtOffset(ScrollbarWidget, scrollbar.thumb), XtRPixmap, NULL},
   {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
@@ -78,8 +75,9 @@ static XtResource resources[] = {
      XtOffset(ScrollbarWidget, scrollbar.leftCursor), XtRString, "sb_left_arrow"},
   {XtNscrollRCursor, XtCScrollRCursor, XtRCursor, sizeof(Cursor),
      XtOffset(ScrollbarWidget, scrollbar.rightCursor), XtRString, "sb_right_arrow"},
-  {XtNeventBindings, XtCEventBindings, XtRStringTable, sizeof(_XtTranslations),
-     XtOffset(ScrollbarWidget, core.translations), XtRStringTable, (caddr_t)&defaultTranslations},
+  {XtNtranslations, XtCTranslations, XtRTranslationTable,
+     sizeof(XtTranslations), XtOffset(ScrollbarWidget, core.translations),
+     XtRTranslationTable, (caddr_t)&defaultTranslations},
 };
 
 static void ClassInitialize();
@@ -98,13 +96,13 @@ static void DoPageForward();
 static void MoveThumb();
 
 static XtActionsRec actions[] = {
-	{"StartPageBack",	(caddr_t)StartPageBack},
-	{"StartScroll",		(caddr_t)StartSmoothScroll},
-	{"StartPageForward",	(caddr_t)StartPageForward},
-	{"DoPageBack",		(caddr_t)DoPageBack},
-	{"DoScroll",		(caddr_t)DoSmoothScroll},
-	{"DoPageForward",	(caddr_t)DoPageForward},
-	{"MoveThumb",		(caddr_t)MoveThumb},
+	{"StartPageBack",	StartPageBack},
+	{"StartScroll",		StartSmoothScroll},
+	{"StartPageForward",	StartPageForward},
+	{"DoPageBack",		DoPageBack},
+	{"DoScroll",		DoSmoothScroll},
+	{"DoPageForward",	DoPageForward},
+	{"MoveThumb",		MoveThumb},
 	{NULL,NULL}
 };
 
@@ -131,6 +129,8 @@ static ScrollbarClassRec scrollbarClassRec = {
     /* expose           */      Redisplay,
     /* set_values       */      SetValues,
     /* accept_focus     */      NULL,
+    /* callback_private */      NULL,
+    /* reserved_private */      NULL,
 };
 
 WidgetClass scrollbarWidgetClass = (WidgetClass)&scrollbarClassRec;
@@ -156,17 +156,17 @@ static	XrmQuark  XtQEvertical;
 
 extern void _XLowerCase();
 
-static void CvtStringToOrientation(dpy, fromVal, toVal)
-    Display	*dpy;
-    XrmValue	fromVal;
-    XrmValue	*toVal;
+static void CvtStringToOrientation(screen, fromVal, toVal)
+    Screen	*screen;
+    XrmValuePtr	fromVal;
+    XrmValuePtr	toVal;
 {
     static XtOrientation orient;
     XrmQuark	q;
     char	lowerName[1000];
 
 /* ||| where to put LowerCase */
-    _XLowerCase((char *) fromVal.addr, lowerName);
+    _XLowerCase((char *) fromVal->addr, lowerName);
     q = XrmAtomToQuark(lowerName);
     if (q == XtQEhorizontal) {
     	orient = XtorientHorizontal;
@@ -284,9 +284,12 @@ static void PaintThumb( w )
 }
 
 
-static void Initialize( request, new )
+/* ARGSUSED */
+static void Initialize( request, new, args, num_args )
    Widget request;		/* what the client asked for */
    Widget new;			/* what we're going to give him */
+   ArgList args;
+   Cardinal *num_args;
 {
     ScrollbarWidget w = (ScrollbarWidget) new;
     XGCValues gcValues;
@@ -295,9 +298,12 @@ static void Initialize( request, new )
         w->scrollbar.thumb = XtGrayPixmap( XtScreen(w) );
     }
 
+    gcValues.foreground = w->scrollbar.foreground;
     gcValues.fill_style = FillTiled;
     gcValues.tile = w->scrollbar.thumb;
-    w->scrollbar.gc = XtGetGC( w, GCFillStyle | GCTile, &gcValues);
+    w->scrollbar.gc = XtGetGC( w,
+			       GCForeground | GCFillStyle | GCTile,
+			       &gcValues);
 
     if (w->core.width == 0)  w->core.width = 1;
     if (w->core.height == 0) w->core.height = 1;
@@ -306,37 +312,30 @@ static void Initialize( request, new )
 
 static void Realize( gw, valueMask, attributes )
    Widget gw;
-   Mask valueMask;
+   Mask *valueMask;
    XSetWindowAttributes *attributes;
 {
     ScrollbarWidget w = (ScrollbarWidget) gw;
-    XSetWindowAttributes winAttr;
-    Mask attrMask;
 
     w->scrollbar.inactiveCursor =
       (w->scrollbar.orientation == XtorientVertical)
 	? w->scrollbar.verCursor
 	: w->scrollbar.horCursor;
 
-    winAttr = *attributes;
-    winAttr.cursor = w->scrollbar.inactiveCursor;
-    attrMask = valueMask | CWCursor;
+    attributes->cursor = w->scrollbar.inactiveCursor;
+    *valueMask |= CWCursor;
     
-    w->core.window =
-      XCreateWindow(
-		     XtDisplay( w ), XtWindow(w->core.parent),
-		     w->core.x, w->core.y,
-		     w->core.width, w->core.height,
-		     w->core.border_width, w->core.depth,
-		     InputOutput, (Visual *)CopyFromParent,
-		     attrMask, &winAttr );
+    XtCreateWindow( gw, InputOutput, (Visual *)CopyFromParent,
+		    *valueMask, attributes );
 }
 
 
-static Boolean SetValues( current, request, desired )
+/* ARGSUSED */
+static Boolean SetValues( current, request, desired, last )
    Widget current,		/* what I am */
           request,		/* what he wants me to be */
           desired;		/* what I will become */
+   Boolean last;
 {
     ScrollbarWidget w = (ScrollbarWidget) current;
     ScrollbarWidget rw = (ScrollbarWidget) request;
@@ -472,16 +471,17 @@ static void DoScroll( gw, event, direction )
         case 'B':
 	case 'b':
         case 'F':
-	case 'f':    if (w->scrollbar.scrollProc)
-			(*(w->scrollbar.scrollProc))
-			  ( w, w->scrollbar.closure,
-			    InRange( PICKLENGTH( w,
-						 event->xmotion.x,
-						 event->xmotion.y),
-				     0,
-				     (int)PICKLENGTH( w,
-						      w->core.width,
-						      w->core.height)));
+	case 'f':    XtCallCallbacks(
+			    gw,
+			    XtNscrollProc,
+			    (caddr_t)InRange( PICKLENGTH( w,
+							  event->xmotion.x,
+							  event->xmotion.y),
+					      0,
+					      (int)PICKLENGTH( w,
+							       w->core.width,
+							       w->core.height))
+			    );
 	             break;
 
         case 'S':
@@ -531,8 +531,7 @@ static void MoveThumb( gw, event )
 
 /*    XFlush(XtDisplay(w)); */
 
-    if (w->scrollbar.thumbProc)
-       (*(w->scrollbar.thumbProc)) (w, w->scrollbar.closure, w->scrollbar.top);
+    XtCallCallbacks( gw, XtNthumbProc, (caddr_t)w->scrollbar.top);
 
     w->scrollbar.direction = 'S';
 }
