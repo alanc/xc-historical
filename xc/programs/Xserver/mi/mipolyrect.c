@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolyrect.c,v 5.0 89/06/09 15:08:38 keith Exp $ */
+/* $XConsortium: mipolyrect.c,v 5.1 89/07/14 17:14:10 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "miscstruct.h"
@@ -37,26 +37,79 @@ miPolyRectangle(pDraw, pGC, nrects, pRects)
 {
     int i;
     xRectangle *pR = pRects;
-    DDXPointRec rect[5];
 
-    for (i=0; i<nrects; i++)
+    if (pGC->lineStyle == LineSolid && pGC->joinStyle == JoinMiter)
     {
-	rect[0].x = pR->x;
-	rect[0].y = pR->y;
+	xRectangle  *tmp, *t;
+	int	    ntmp;
+	int	    offset1, offset2, offset3;
+	int	    x, y, width, height;
 
-	rect[1].x = pR->x + (int) pR->width;
-	rect[1].y = rect[0].y;
+	ntmp = (nrects << 2);
+	offset2 = pGC->lineWidth;
+	if (offset2 == 0)
+	    offset2 = 1;
+	offset1 = offset2 >> 1;
+	offset3 = offset2 - offset1;
+	tmp = (xRectangle *) ALLOCATE_LOCAL(ntmp * sizeof (xRectangle));
+	if (!tmp)
+	    return;
+	t = tmp;
+	for (i = 0; i < nrects; i++)
+	{
+	    x = pR->x;
+	    y = pR->y;
+	    width = pR->width;
+	    height = pR->height;
+	    pR++;
 
-	rect[2].x = rect[1].x;
-	rect[2].y = pR->y + (int) pR->height;
+	    t->x = x - offset1;
+	    t->y = y - offset1;
+	    t->width = width + offset2;
+	    t->height = offset2;
+	    t++;
+	    t->x = x - offset1;
+	    t->y = y + offset3;
+	    t->width = offset2;
+	    t->height = height - offset2;
+	    t++;
+	    t->x = x + width - offset1;
+	    t->y = y + offset3;
+	    t->width = offset2;
+	    t->height = height - offset2;
+	    t++;
+	    t->x = x - offset1;
+	    t->y = y + height - offset1;
+	    t->width = width + offset2;
+	    t->height = offset2;
+	    t++;
+	}
+	(*pGC->ops->PolyFillRect) (pDraw, pGC, ntmp, tmp);
+	DEALLOCATE_LOCAL ((pointer) tmp);
+    }
+    else
+    {
+	DDXPointRec rect[5];
 
-	rect[3].x = rect[0].x;
-	rect[3].y = rect[2].y;
-
-	rect[4].x = rect[0].x;
-	rect[4].y = rect[1].y;
-
-        (*pGC->ops->Polylines)(pDraw, pGC, CoordModeOrigin, 5, rect);
-	pR++;
+    	for (i=0; i<nrects; i++)
+    	{
+	    rect[0].x = pR->x;
+	    rect[0].y = pR->y;
+    
+	    rect[1].x = pR->x + (int) pR->width;
+	    rect[1].y = rect[0].y;
+    
+	    rect[2].x = rect[1].x;
+	    rect[2].y = pR->y + (int) pR->height;
+    
+	    rect[3].x = rect[0].x;
+	    rect[3].y = rect[2].y;
+    
+	    rect[4].x = rect[0].x;
+	    rect[4].y = rect[1].y;
+    
+            (*pGC->ops->Polylines)(pDraw, pGC, CoordModeOrigin, 5, rect);
+	    pR++;
+    	}
     }
 }
