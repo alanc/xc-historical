@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.133 88/03/15 15:12:38 rws Exp $ */
+/* $Header: main.c,v 1.134 88/03/15 15:20:49 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -165,8 +165,8 @@ main(argc, argv)
             serverClient->lastDrawable = (DrawablePtr)NULL;
 	    serverClient->lastDrawableID = INVALID;
             serverClient->lastGC = (GCPtr)NULL;
-	    serverClient->lastGCID = None;
-	    serverClient->numSaved = None;
+	    serverClient->lastGCID = INVALID;
+	    serverClient->numSaved = 0;
 	    serverClient->saveSet = (pointer *)NULL;
 	    serverClient->index = 0;
 	}
@@ -254,7 +254,7 @@ CreateConnectionBlock()
     xPixmapFormat format;
     unsigned long vid;
     int i, j, k,
-        lenofblock=0,
+        lenofblock,
         sizesofar = 0;
     char *pBuf;
 
