@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.23 94/04/07 13:55:14 mor Exp $ */
+/* $XConsortium: misc.c,v 1.24 94/04/17 20:15:35 mor Exp $ */
 /******************************************************************************
 
 
@@ -603,23 +603,5 @@ _IceGetPeerName (iceConn)
 IceConn iceConn;
 
 {
-    int		family, peer_addrlen;
-    Xtransaddr	*peer_addr;
-    char 	*networkId;
-
-
-    if (_IceTransGetPeerAddr (iceConn->trans_conn,
-	&family, &peer_addrlen, &peer_addr) < 0)
-    {
-	return (NULL);
-    }
-    else
-    {
-	networkId = _IceTransGetPeerNetworkId (
-	    family, peer_addrlen, peer_addr);
-
-	free (peer_addr);
-
-	return (networkId);
-    }
+    return (_IceTransGetPeerNetworkId (iceConn->trans_conn));
 }
