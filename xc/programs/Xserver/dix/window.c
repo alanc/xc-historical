@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.187 87/12/10 13:38:26 rws Locked $ */
+/* $Header: window.c,v 1.188 87/12/30 08:11:28 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -78,10 +78,17 @@ extern void (* ReplySwapVector[256]) ();
 
 static void ResizeChildrenWinSize();
 extern void CheckCursorConfinement();
+extern void DeleteWindowFromAnySelections();
+extern void DeleteWindowFromAnyEvents();
+extern Mask EventMaskForClient();
+extern void WindowHasNewCursor();
+extern void RecalculateDeliverableEvents();
+extern long random();
 
 #define INPUTONLY_LEGAL_MASK (CWWinGravity | CWEventMask | \
 			      CWDontPropagate | CWOverrideRedirect | CWCursor )
 
+#ifdef notdef
 /******
  * PrintWindowTree
  *    For debugging only
@@ -120,7 +127,7 @@ PrintWindowTree()
 	PrintChildren(p1, 4);
     }
 }
-
+#endif
 
 int
 TraverseTree(pWin, func, data)
@@ -158,7 +165,7 @@ int
 WalkTree(pScreen, func, data)
     ScreenPtr pScreen;
     int (* func)();
-    char *data;
+    pointer data;
 {
     WindowPtr pWin;
     
@@ -224,7 +231,9 @@ HandleExposures(pWin)
     }
 }
 
-extern int NotImplemented();
+#ifdef DEBUG
+extern void NotImplemented();
+#endif
 
 static void
 InitProcedures(pWin)
@@ -234,7 +243,7 @@ InitProcedures(pWin)
     void (**j) ();
     for (j = &pWin->PaintWindowBackground;
          j < &pWin->ClearToBackground; j++ )
-        *j = (void (*) ())NotImplemented;
+        *j = NotImplemented;
 #endif /* DEBUG */
 
 }
@@ -296,8 +305,8 @@ MakeRootCursor(pWin)
 	cm.xhot=8;
 	cm.yhot=8;
 
-        srcbits = (unsigned char *)Xalloc( PixmapBytePad(32, 1)*16); 
-        mskbits = (unsigned char *)Xalloc( PixmapBytePad(32, 1)*16); 
+        srcbits = (unsigned char *)xalloc( PixmapBytePad(32, 1)*16); 
+        mskbits = (unsigned char *)xalloc( PixmapBytePad(32, 1)*16); 
         for (i=0; i<PixmapBytePad(32, 1)*16; i++)
 	{
 	    srcbits[i] = mskbits[i] = 0xff;
@@ -332,7 +341,7 @@ MakeRootTile(pWin)
 	ChangeGC(pGC, GCForeground | GCBackground, attributes);
     }
 
-   ValidateGC(pWin->backgroundTile, pGC);
+   ValidateGC((DrawablePtr)pWin->backgroundTile, pGC);
 
    from = (screenInfo.bitmapBitOrder == LSBFirst) ? _back_lsb : _back_msb;
    to = back;
@@ -410,7 +419,7 @@ CreateRootWindow(screen)
     pWin->borderPixel = pScreen->blackPixel;
     pWin->borderWidth = 0;
 
-    AddResource(pWin->wid, RT_WINDOW, pWin, DeleteWindow, RC_CORE);
+    AddResource(pWin->wid, RT_WINDOW, (pointer)pWin, DeleteWindow, RC_CORE);
 
     MakeRootTile(pWin);
     pWin->borderTile = (PixmapPtr)USE_BORDER_PIXEL;
@@ -426,7 +435,7 @@ CreateRootWindow(screen)
     (*pScreen->ChangeWindowAttributes)(pWin, CWBackPixmap | CWBorderPixel);
 
     (*pWin->PaintWindowBackground)(pWin, pWin->clipList, PW_BACKGROUND);
-    EventSelectForWindow(pWin, serverClient, 0);
+    EventSelectForWindow(pWin, serverClient, (Mask)0);
     return(Success);
 }
 
@@ -442,9 +451,9 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     WindowPtr pParent;    /* already looked up in table to do error checking*/
     short x,y;
     unsigned short w, h, bw;
-    int class;
-    int vmask;
-    long *vlist;
+    unsigned short class;
+    Mask vmask;
+    XID *vlist;
     int depth;
     ClientPtr client;
     VisualID visual;
@@ -526,7 +535,7 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
         return (WindowPtr)NULL;
     }
 
-    pWin = (WindowPtr) Xalloc( sizeof(WindowRec) );
+    pWin = (WindowPtr) xalloc( sizeof(WindowRec) );
     InitProcedures(pWin);
     pWin->drawable = pParent->drawable;
     pWin->drawable.depth = depth;
@@ -624,7 +633,7 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     /* We SHOULD check for an error value here XXX */
     (*pScreen->PositionWindow)(pWin, pWin->absCorner.x, pWin->absCorner.y);
     if ((vmask & CWEventMask) == 0)
-        EventSelectForWindow(pWin, client, 0);
+        EventSelectForWindow(pWin, client, (Mask)0);
 
     if (vmask)
         *error = ChangeWindowAttributes(pWin, vmask, vlist, pWin->client);
@@ -633,7 +642,7 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 
     if (*error != Success)
     {
-        EventSelectForWindow(pWin, client, 0);
+        EventSelectForWindow(pWin, client, (Mask)0);
 	DeleteWindow(pWin, wid);
 	return (WindowPtr)NULL;
     }
@@ -676,7 +685,7 @@ FreeWindowResources(pWin)
     if (pWin->backStorage)
     {
         (* proc)(pWin->backStorage->obscured);
-	Xfree(pWin->backStorage);
+	xfree(pWin->backStorage);
     }
     (* pScreen->DestroyPixmap)(pWin->borderTile);
     (* pScreen->DestroyPixmap)(pWin->backgroundTile);
@@ -712,7 +721,7 @@ CrushTree(pWin)
 	pWin->viewable = FALSE;
 	(* pWin->drawable.pScreen->UnrealizeWindow)(pWin);
 	FreeWindowResources(pWin);
-	Xfree(pWin);
+	xfree(pWin);
 	pWin = pSib;
     }
 }
@@ -722,9 +731,10 @@ CrushTree(pWin)
  *       Deletes child of window then window itself
  *****/
 
+/*ARGSUSED*/
 DeleteWindow(pWin, wid)
     WindowPtr pWin;
-    int wid;
+    Window wid;
 {
     WindowPtr pParent;
     xEvent event;
@@ -749,10 +759,11 @@ DeleteWindow(pWin, wid)
             pWin->nextSib->prevSib = pWin->prevSib;
         if (pWin->prevSib) 
             pWin->prevSib->nextSib = pWin->nextSib;
-	Xfree(pWin);
+	xfree(pWin);
     }
 }
 
+/*ARGSUSED*/
 DestroySubwindows(pWin, client)
     WindowPtr pWin;
     ClientPtr client;
@@ -786,7 +797,7 @@ DestroySubwindows(pWin, client)
     
 	FreeResource(pChild->wid, RC_CORE);
 	FreeWindowResources(pChild);
-	Xfree(pChild);
+	xfree(pChild);
 	pChild = pSib;
     }
     pWin->firstChild = (WindowPtr)NULL;
@@ -805,19 +816,19 @@ DestroySubwindows(pWin, client)
 int 
 ChangeWindowAttributes(pWin, vmask, vlist, client)
     WindowPtr pWin;
-    unsigned int vmask;
-    long *vlist;
+    Mask vmask;
+    XID *vlist;
     ClientPtr client;
 {
-    int index;
-    long *pVlist;
+    Mask index;
+    XID *pVlist;
     PixmapPtr pPixmap;
     Pixmap pixID;
     CursorPtr pCursor;
     Cursor cursorID;
     int result;
     ScreenPtr pScreen;
-    unsigned int vmaskCopy = 0;
+    Mask vmaskCopy = 0;
     unsigned int val;
     int error;
 
@@ -829,7 +840,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
     pVlist = vlist;
     while (vmask) 
     {
-	index = 1 << (ffs(vmask) - 1);
+	index = (Mask)1 << (ffs(vmask) - 1);
 	vmask &= ~index;
 	switch (index) 
         {
@@ -996,7 +1007,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	    pWin->saveUnder = val;
 	    break;
 	  case CWEventMask:
-	    result = EventSelectForWindow(pWin, client, (long )*pVlist);
+	    result = EventSelectForWindow(pWin, client, (Mask )*pVlist);
 	    if (result)
 	    {
 		error = result;
@@ -1005,7 +1016,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	    pVlist++;
 	    break;
 	  case CWDontPropagate:
-	    result =  EventSuppressForWindow(pWin, client, (long )*pVlist);
+	    result =  EventSuppressForWindow(pWin, client, (Mask )*pVlist);
 	    if (result)
 	    {
 		error = result;
@@ -1079,7 +1090,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	    if ( cursorID == None)
 	    {
 	        if (pWin->cursor != (CursorPtr)None)
-		    FreeCursor( pWin->cursor);
+		    FreeCursor(pWin->cursor, None);
                 if (pWin == &WindowTable[pWin->drawable.pScreen->myNum])
 		   MakeRootCursor( pWin);
                 else            
@@ -1091,7 +1102,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
                 if (pCursor) 
 		{
     	            if (pWin->cursor != (CursorPtr)None)
-			FreeCursor( pWin->cursor);
+			FreeCursor(pWin->cursor, None);
                     pWin->cursor = pCursor;
 		    pCursor->refcnt++;
 		}
@@ -1548,7 +1559,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	    (* pScreen->Subtract)(pWin->borderExposed, 
 			 pWin->borderClip, pWin->winSize);
 	    /* XXX this is unacceptable overkill */
-	    TraverseTree(pWin, ExposeAll, pScreen); 
+	    TraverseTree(pWin, ExposeAll, (pointer)pScreen); 
 	    DoObscures(pParent); 
 	    HandleExposures(pParent);
 	}
@@ -1635,7 +1646,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 static void
 ChangeBorderWidth(pWin, width)
     WindowPtr pWin;
-    int width;
+    unsigned short width;
 {
     WindowPtr pParent;
     BoxRec box;
@@ -1656,8 +1667,8 @@ ChangeBorderWidth(pWin, width)
     {
 	box.x1 = pWin->absCorner.x - width;
 	box.y1 = pWin->absCorner.y - width;
-	box.x2 = pWin->absCorner.x + (int)pWin->clientWinSize.width + width;
-	box.y2 = pWin->absCorner.y + (int)pWin->clientWinSize.height + width;
+	box.x2 = pWin->absCorner.x + (int)pWin->clientWinSize.width + (int)width;
+	box.y2 = pWin->absCorner.y + (int)pWin->clientWinSize.height + (int)width;
 	(* pScreen->RegionReset)(pWin->borderSize, &box);
         (* pScreen->Intersect)(pWin->borderSize, pWin->borderSize, 
 			       pParent->winSize);
@@ -1693,7 +1704,7 @@ ChangeBorderWidth(pWin, width)
 #define GET_INT16(m, f) \
   	if (m & mask) \
           { \
-             f = (short) *pVlist;\
+             f = (INT16) *pVlist;\
  	    pVlist++; \
          }
 #define GET_CARD16(m, f) \
@@ -1710,7 +1721,7 @@ ChangeBorderWidth(pWin, width)
  	    pVlist++;\
          }
 
-#define ChangeMask (CWX | CWY | CWWidth | CWHeight)
+#define ChangeMask ((Mask)(CWX | CWY | CWWidth | CWHeight))
 
 #define IllegalInputOnlyConfigureMask (CWBorderWidth)
 
@@ -1958,8 +1969,8 @@ ReflectStackChange(pWin, pSib)
 int 
 ConfigureWindow(pWin, mask, vlist, client)
     WindowPtr pWin;
-    unsigned long mask;
-    long *vlist;
+    Mask mask;
+    XID *vlist;
     ClientPtr client;
 {
 #define RESTACK_WIN    0
@@ -1968,8 +1979,8 @@ ConfigureWindow(pWin, mask, vlist, client)
 #define REBORDER_WIN   3
     WindowPtr pSib = (WindowPtr )NULL;
     Window sibwid;
-    int index, tmask;
-    long *pVlist;
+    Mask index, tmask;
+    XID *pVlist;
     short x,   y, beforeX, beforeY;
     unsigned short w = pWin->clientWinSize.width,
                    h = pWin->clientWinSize.height,
@@ -2022,7 +2033,7 @@ ConfigureWindow(pWin, mask, vlist, client)
     tmask = mask & ~ChangeMask;
     while (tmask) 
     {
-	index = 1 << (ffs(tmask) - 1);
+	index = (Mask)1 << (ffs(tmask) - 1);
 	tmask &= ~index;
 	switch (index) 
         {
@@ -2278,7 +2289,7 @@ ReparentWindow(pWin, pParent, x, y, client)
     pScreen = pWin->drawable.pScreen;
     if (pScreen != pParent->drawable.pScreen)
         return(BadMatch);
-    if (TraverseTree(pWin, CompareWIDs, &pParent->wid) == WT_STOPWALKING)
+    if (TraverseTree(pWin, CompareWIDs, (pointer)&pParent->wid) == WT_STOPWALKING)
         return(BadMatch);		
 
     oldx = pWin->absCorner.x;
@@ -2677,7 +2688,8 @@ UnmapSubwindows(pWin, sendExposures)
 				      pWin->winSize, pWin->borderClip);
 	/* XXX should collect union of inferiors instead? */
         (* pWin->drawable.pScreen->RegionCopy)(pWin->exposed, pWin->clipList);
-        HandleExposures(pWin);    		
+	if (sendExposures)
+	    HandleExposures(pWin);
     }
 }
 
@@ -2705,7 +2717,7 @@ HandleSaveSet(client)
 	                    SEND_NOTIFICATION, client);
 	}
     }
-    Xfree((pointer)client->saveSet);
+    xfree(client->saveSet);
     client->numSaved = 0;
     client->saveSet = (pointer *)NULL;
 }
@@ -2833,8 +2845,8 @@ SaveScreens(on, mode)
             if (ScreenSaverAllowExposures != DontAllowExposures)
             {
                 int result;
-                long attributes[1];
-	        int mask = CWBackPixmap;
+                XID attributes[1];
+	        Mask mask = CWBackPixmap;
                 WindowPtr pWin;		
 		CursorMetricRec cm;
                 
@@ -2852,9 +2864,9 @@ SaveScreens(on, mode)
 		     CreateWindow(savedScreenInfo[i].wid,
 		     &WindowTable[i], 
 		     -RANDOM_WIDTH, -RANDOM_WIDTH,
-		     screenInfo.screen[i].width + RANDOM_WIDTH, 
-		     screenInfo.screen[i].height + RANDOM_WIDTH,
-		     0, InputOutput, mask, attributes, 0, 0, 
+		     (unsigned short)screenInfo.screen[i].width + RANDOM_WIDTH, 
+		     (unsigned short)screenInfo.screen[i].height + RANDOM_WIDTH,
+		     0, InputOutput, mask, attributes, 0, (ClientPtr)NULL,
 		     WindowTable[i].visual, &result);
                 if (mask & CWBackPixmap)
 		{
@@ -2865,24 +2877,24 @@ SaveScreens(on, mode)
 				(pWin, CWBackPixmap);
 		}
 	        AddResource(pWin->wid, RT_WINDOW, 
-			savedScreenInfo[i].pWindow,
+			(pointer)savedScreenInfo[i].pWindow,
 			DeleteWindow, RC_CORE);
 		cm.width=32;
 		cm.height=16;
 		cm.xhot=8;
 		cm.yhot=8;
-                srcbits = (unsigned char *)Xalloc( PixmapBytePad(32, 1)*16); 
-		mskbits = (unsigned char *)Xalloc( PixmapBytePad(32, 1)*16); 
+                srcbits = (unsigned char *)xalloc( PixmapBytePad(32, 1)*16); 
+		mskbits = (unsigned char *)xalloc( PixmapBytePad(32, 1)*16); 
                 for (j=0; j<PixmapBytePad(32, 1)*16; j++)
     	            srcbits[j] = mskbits[j] = 0x0;
 		pWin->cursor = AllocCursor( srcbits, mskbits, &cm,
 					    0xFFFF, 0xFFFF, 0xFFFF, 0, 0, 0);
 		AddResource(savedScreenInfo[i].cid, RT_CURSOR,
-			pWin->cursor,
+			(pointer)pWin->cursor,
 			FreeCursor, RC_CORE);	
  		pWin->cursor->refcnt++; 
 	        pWin->overrideRedirect = TRUE;
-                MapWindow(pWin, TRUE, FALSE, FALSE, 0);
+                MapWindow(pWin, TRUE, FALSE, FALSE, (ClientPtr)NULL);
 	        savedScreenInfo[i].blanked = SCREEN_IS_TILED;
 	    }
             else

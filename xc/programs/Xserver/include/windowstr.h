@@ -1,4 +1,4 @@
-/* $Header: windowstr.h,v 1.2 87/09/10 00:22:10 toddb Locked $ */
+/* $Header: windowstr.h,v 1.3 87/09/10 01:43:43 rws Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -65,7 +65,7 @@ typedef struct _Window {
 	CursorPtr cursor;                 /* cursor information */
 
 	ClientPtr client;		/* client object for creator */
-	long wid;                        /* client's name for this window */
+	Window wid;                        /* client's name for this window */
 
 	RegionPtr clipList;               /* clipping rectangle for output*/
 	RegionPtr winSize;                /* inside window dimensions, 
@@ -92,7 +92,6 @@ typedef struct _Window {
 
 	PropertyPtr userProps;            /* client's property list */
 
-        XID backgroundPixmapID;        /* for screen saver, root only */
 	PixmapPtr backgroundTile;
 	unsigned long backgroundPixel;
 	PixmapPtr borderTile;
