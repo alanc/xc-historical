@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.31 89/07/05 15:04:01 jim Exp $
+ * $XConsortium: resize.c,v 1.32 89/07/05 16:03:09 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.31 89/07/05 15:04:01 jim Exp $";
+"$XConsortium: resize.c,v 1.32 89/07/05 16:03:09 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -110,14 +110,16 @@ static void do_auto_clamp (tmp_win)
  *  Inputs:
  *      ev      - the event structure (button press)
  *      tmp_win - the TwmWindow pointer
+ *      fromtitlebar - action invoked from titlebar button
  *
  ***********************************************************************
  */
 
 void
-StartResize(ev, tmp_win)
+StartResize(ev, tmp_win, fromtitlebar)
 XEvent ev;
 TwmWindow *tmp_win;
+Bool fromtitlebar;
 {
     Window      junkRoot;
     int         junkbw, junkDepth;
@@ -140,7 +142,7 @@ TwmWindow *tmp_win;
     origHeight = dragHeight;
     clampTop = clampBottom = clampLeft = clampRight = clampDX = clampDY = 0;
 
-    if (Scr->AutoRelativeResize) do_auto_clamp (tmp_win);
+    if (Scr->AutoRelativeResize && !fromtitlebar) do_auto_clamp (tmp_win);
 
     XMoveWindow(dpy, Scr->SizeWindow, 0, 0);
     XMapRaised(dpy, Scr->SizeWindow);

@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.74 89/07/05 11:56:33 jim Exp $
+ * $XConsortium: menus.c,v 1.75 89/07/06 11:12:04 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.74 89/07/05 11:56:33 jim Exp $";
+"$XConsortium: menus.c,v 1.75 89/07/06 11:12:04 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1203,7 +1203,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 
 	if (w != tmp_win->icon_w)
 	{
-	    StartResize(event, tmp_win);
+	    StartResize (event, tmp_win, (Bool) (tmp_win->resize_w == w));
 	    return TRUE;
 	}
 	break;
