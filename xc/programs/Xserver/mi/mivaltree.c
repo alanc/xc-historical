@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.12 89/07/14 17:14:11 keith Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.13 89/07/16 11:42:30 rws Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    "X.h"
@@ -95,11 +95,11 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 {
     int			dx,
 			dy;
-    RegionPtr		childUniverse;
+    RegionRec		childUniverse;
     register WindowPtr	pChild;
     int     	  	oldVis;
     register BoxPtr  	borderSize;
-    RegionPtr		childUnion;
+    RegionRec		childUnion;
     Bool		overlap;
     RegionPtr		borderVisible;
     Bool		shrunk;
@@ -211,8 +211,8 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     
     if (pChild = pParent->firstChild)
     {
-	childUniverse = (* pScreen->RegionCreate) (NULL, 1);
-	childUnion = (* pScreen->RegionCreate) (NULL, 1);
+	(*pScreen->RegionInit) (&childUniverse, NullBox, 0);
+	(*pScreen->RegionInit) (&childUnion, NullBox, 0);
 	if ((pChild->drawable.y < pParent->lastChild->drawable.y) ||
 	    ((pChild->drawable.y == pParent->lastChild->drawable.y) &&
 	     (pChild->drawable.x < pParent->lastChild->drawable.x)))
@@ -220,7 +220,7 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 	    for (; pChild; pChild = pChild->nextSib)
 	    {
 		if (pChild->viewable)
-		    (* pScreen->RegionAppend)(childUnion, &pChild->borderSize);
+		    (* pScreen->RegionAppend)(&childUnion, &pChild->borderSize);
 	    }
 	}
 	else
@@ -228,10 +228,10 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 	    for (pChild = pParent->lastChild; pChild; pChild = pChild->prevSib)
 	    {
 		if (pChild->viewable)
-		    (* pScreen->RegionAppend)(childUnion, &pChild->borderSize);
+		    (* pScreen->RegionAppend)(&childUnion, &pChild->borderSize);
 	    }
 	}
-	overlap = (* pScreen->RegionValidate)(childUnion);
+	overlap = (* pScreen->RegionValidate)(&childUnion);
 
 	for (pChild = pParent->firstChild;
 	     pChild;
@@ -248,10 +248,10 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 		     * Figure out the new universe from the child's
 		     * perspective and recurse.
 		     */
-		    (* pScreen->Intersect) (childUniverse,
+		    (* pScreen->Intersect) (&childUniverse,
 					    universe,
 					    &pChild->borderSize);
-		    miComputeClips (pChild, pScreen, childUniverse, kind,
+		    miComputeClips (pChild, pScreen, &childUniverse, kind,
 				    exposed);
 		}
 		/*
@@ -265,9 +265,9 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 	    }
 	}
 	if (!overlap)
-	    (* pScreen->Subtract) (universe, universe, childUnion);
-	(* pScreen->RegionDestroy) (childUnion);
-	(* pScreen->RegionDestroy) (childUniverse);
+	    (* pScreen->Subtract) (universe, universe, &childUnion);
+	(* pScreen->RegionUninit) (&childUnion);
+	(* pScreen->RegionUninit) (&childUniverse);
     } /* if any children */
 
     /*
@@ -372,13 +372,13 @@ miValidateTree (pParent, pChild, kind)
 				     * affected */
     VTKind    	  	kind;       /* What kind of configuration caused call */
 {
-    RegionPtr	  	totalClip;  /* Total clipping region available to
+    RegionRec	  	totalClip;  /* Total clipping region available to
 				     * the marked children. pParent's clipList
 				     * merged with the borderClips of all
 				     * the marked children. */
-    RegionPtr	  	childClip;  /* The new borderClip for the current
+    RegionRec	  	childClip;  /* The new borderClip for the current
 				     * child */
-    RegionPtr		exposed;    /* For intermediate calculations */
+    RegionRec		exposed;    /* For intermediate calculations */
     register ScreenPtr	pScreen;
     register WindowPtr	pWin;
 
@@ -386,8 +386,8 @@ miValidateTree (pParent, pChild, kind)
     if (pChild == NullWindow)
 	pChild = pParent->firstChild;
 
-    childClip = (* pScreen->RegionCreate) (NULL, 1);
-    exposed = (* pScreen->RegionCreate) (NULL, 1);
+    (*pScreen->RegionInit) (&childClip, NullBox, 0);
+    (*pScreen->RegionInit) (&exposed, NullBox, 0);
 
     /*
      * compute the area of the parent window occupied
@@ -395,7 +395,7 @@ miValidateTree (pParent, pChild, kind)
      * is the area which can be divied up among the marked
      * children in their new configuration.
      */
-    totalClip = (* pScreen->RegionCreate) (NULL, 1);
+    (*pScreen->RegionInit) (&totalClip, NullBox, 0);
     if ((pChild->drawable.y < pParent->lastChild->drawable.y) ||
 	((pChild->drawable.y == pParent->lastChild->drawable.y) &&
 	 (pChild->drawable.x < pParent->lastChild->drawable.x)))
@@ -403,7 +403,7 @@ miValidateTree (pParent, pChild, kind)
 	for (pWin = pChild; pWin; pWin = pWin->nextSib)
 	{
 	    if (pWin->valdata)
-		(* pScreen->RegionAppend) (totalClip, &pWin->borderClip);
+		(* pScreen->RegionAppend) (&totalClip, &pWin->borderClip);
 	}
     }
     else
@@ -412,13 +412,13 @@ miValidateTree (pParent, pChild, kind)
 	while (1)
 	{
 	    if (pWin->valdata)
-		(* pScreen->RegionAppend) (totalClip, &pWin->borderClip);
+		(* pScreen->RegionAppend) (&totalClip, &pWin->borderClip);
 	    if (pWin == pChild)
 		break;
 	    pWin = pWin->prevSib;
 	}
     }
-    (void)(* pScreen->RegionValidate)(totalClip);
+    (void)(* pScreen->RegionValidate)(&totalClip);
 
     /*
      * Now go through the children of the root and figure their new
@@ -428,7 +428,7 @@ miValidateTree (pParent, pChild, kind)
      */
 
     if (kind != VTStack)
-	(* pScreen->Union) (totalClip, totalClip, &pParent->clipList);
+	(* pScreen->Union) (&totalClip, &totalClip, &pParent->clipList);
 
     for (pWin = pChild;
 	 pWin != NullWindow;
@@ -436,12 +436,12 @@ miValidateTree (pParent, pChild, kind)
     {
 	if (pWin->viewable) {
 	    if (pWin->valdata) {
-		(* pScreen->Intersect) (childClip,
-					totalClip,
+		(* pScreen->Intersect) (&childClip,
+					&totalClip,
  					&pWin->borderSize);
-		miComputeClips (pWin, pScreen, childClip, kind, exposed);
-		(* pScreen->Subtract) (totalClip,
-				       totalClip,
+		miComputeClips (pWin, pScreen, &childClip, kind, &exposed);
+		(* pScreen->Subtract) (&totalClip,
+				       &totalClip,
 				       &pWin->borderSize);
 	    } else if (pWin->visibility == VisibilityNotViewable) {
 		miTreeObscured(pWin);
@@ -455,7 +455,7 @@ miValidateTree (pParent, pChild, kind)
 	}
     }
 
-    (* pScreen->RegionDestroy) (childClip);
+    (* pScreen->RegionUninit) (&childClip);
 
     (* pScreen->RegionInit) (&pParent->valdata->after.exposed, NullBox, 0);
     (* pScreen->RegionInit) (&pParent->valdata->after.borderExposed, NullBox, 0);
@@ -475,20 +475,20 @@ miValidateTree (pParent, pChild, kind)
 	 * clipList.
 	 */
 	(* pScreen->Subtract) (&pParent->valdata->after.exposed,
-			       totalClip, &pParent->clipList);
+			       &totalClip, &pParent->clipList);
 	/* fall through */
     case VTMap:
 	if (pParent->backStorage) {
-	    (* pScreen->Subtract) (exposed, &pParent->clipList, totalClip);
-	    (* pScreen->SaveDoomedAreas)(pParent, exposed, 0, 0);
+	    (* pScreen->Subtract) (&exposed, &pParent->clipList, &totalClip);
+	    (* pScreen->SaveDoomedAreas)(pParent, &exposed, 0, 0);
 	}
 	
-	(* pScreen->RegionCopy) (&pParent->clipList, totalClip);
+	(* pScreen->RegionCopy) (&pParent->clipList, &totalClip);
 	pParent->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 	break;
     }
 
-    (* pScreen->RegionDestroy) (totalClip);
-    (* pScreen->RegionDestroy) (exposed);
+    (* pScreen->RegionUninit) (&totalClip);
+    (* pScreen->RegionUninit) (&exposed);
     return (1);
 }
