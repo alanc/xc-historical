@@ -1,5 +1,5 @@
 /*
-* $Header: Atoms.h,v 1.24 87/12/21 08:31:16 swick Locked $
+* $Header: Atoms.h,v 1.25 88/01/07 17:23:06 swick Locked $
 */
 
 /*
@@ -38,7 +38,6 @@
 #define XtNallowHoriz		"allowHoriz"
 #define XtNallowVert		"allowVert"
 #define XtNancestorSensitive	"ancestorSensitive"
-#define XtNautoChange		"autoChange"
 #define XtNbackground		"background"
 #define XtNborder		"border"
 #define XtNborderWidth		"borderWidth"
@@ -82,6 +81,7 @@
 #define XtNselectTypes		"selectTypes"
 #define XtNsensitive		"sensitive"
 #define XtNshown		"shown"
+#define XtNskipAdjust		"skipAdjust"
 #define XtNspace		"space"
 #define XtNstring		"string"
 #define XtNtextOptions		"textOptions"
