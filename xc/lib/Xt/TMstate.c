@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.75 89/09/11 17:43:37 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.76 89/09/12 16:48:46 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -38,6 +38,18 @@ SOFTWARE.
 #include <stdio.h>
 #include "IntrinsicI.h"
 
+/* usual number of expected keycodes in XtKeysymToKeycodeList */
+#define KEYCODE_ARRAY_SIZE 10
+
+typedef struct _GrabActionRec {
+    struct _GrabActionRec* next;
+    XtActionProc action_proc;
+    Boolean owner_events;
+    unsigned int event_mask;
+    int pointer_mode, keyboard_mode;
+} GrabActionRec;
+
+static GrabActionRec *grabActionList = NULL;
 
 #define StringToAction(string)	((XtAction) StringToQuark(string))
 
@@ -58,6 +70,13 @@ SOFTWARE.
 	str = str - old + *buf;						\
     }
 
+
+#define _InitializeKeysymTables(dpy, pd) \
+    if (pd->modsToKeysyms == NULL) {					\
+        _XtBuildKeysymTable(dpy, pd); /* pd->keysyms*/			\
+        pd->modsToKeysyms = _XtBuildModsToKeysymTable(dpy,pd);		\
+    }
+   
 
 static void FreeActions(action)
   register ActionPtr action;
@@ -280,11 +299,7 @@ static Boolean ComputeLateBindings(event,eventSeq,computed,computedMask)
             (String *)NULL, (Cardinal *)NULL);
          return FALSE;
     }
-    if (perDisplay->modsToKeysyms == NULL) {
-        _XtBuildKeysymTable(dpy,perDisplay); /* perDisplay->keysyms*/
-        perDisplay ->modsToKeysyms =
-            _XtBuildModsToKeysymTable(dpy,perDisplay);
-    }
+    _InitializeKeysymTables(dpy, perDisplay);
     for (ref=0;event->lateModifiers[ref].keysym != NULL;ref++) {
         found = FALSE;
         for (i=0;i<8;i++) {
@@ -342,7 +357,7 @@ Boolean _XtMatchUsingDontCareMods(event,eventSeq)
 {
     Modifiers modifiers_return;
     KeySym keysym_return;
-    Modifiers temp;
+    Modifiers useful_mods;
     int i;
     Modifiers computed = 0;
     Modifiers computedMask = 0;
@@ -352,7 +367,7 @@ Boolean _XtMatchUsingDontCareMods(event,eventSeq)
         resolved = ComputeLateBindings(event,eventSeq,&computed,&computedMask);
     if (!resolved) return FALSE;
     computed |= event->modifiers;
-    computedMask |= event->modifierMask;
+    computedMask |= event->modifierMask; /* gives do-care mask */
 
     if ( (computed & computedMask) ==
         (eventSeq->event.modifiers & computedMask) ) {
@@ -361,14 +376,13 @@ Boolean _XtMatchUsingDontCareMods(event,eventSeq)
             0,&modifiers_return,&keysym_return);
         if ((keysym_return & event->eventCodeMask)  == event->eventCode ) 
              return TRUE;
-        temp = ~computedMask & modifiers_return;
-        if (temp == 0) return FALSE;
-	for (least_mod = 1; (least_mod & modifiers_return)==0;)
-	    least_mod <<= 1;
+        useful_mods = ~computedMask & modifiers_return;
+        if (useful_mods == 0) return FALSE;
+	for (least_mod = 1; (least_mod & useful_mods)==0; least_mod <<= 1);
         for (i = modifiers_return; i >= least_mod; i--)
 	    /* all useful combinations of 8 modifier bits */
-            if  (temp & i != 0) {
-                 XtTranslateKeycode(eventSeq->dpy,(KeyCode)eventSeq->event.eventCode,
+            if (useful_mods & i != 0) {
+		 XtTranslateKeycode(eventSeq->dpy,(KeyCode)eventSeq->event.eventCode,
                     (Modifiers) i,&modifiers_return,&keysym_return);
                  if (keysym_return  ==
                      (event->eventCode &  event->eventCodeMask)) return TRUE;
@@ -463,11 +477,7 @@ static Boolean IsModifier(event)
     ModToKeysymTable* temp;
 
     if (pd != NULL) {
-        if (pd->modsToKeysyms == NULL) {
-            _XtBuildKeysymTable(dpy,pd); /* pd->keysyms*/
-            pd ->modsToKeysyms =
-            _XtBuildModsToKeysymTable(dpy,pd);
-        }
+	_InitializeKeysymTables(dpy, pd);
         for (;k <pd->keysyms_per_keycode;k++) {
             index = ((event->event.eventCode-dpy->min_keycode)*
                              pd->keysyms_per_keycode)+k;
@@ -1892,6 +1902,64 @@ static void _XtMenuPopdownAction(widget, event, params, num_params)
     }
 }
 
+static void GrabAllCorrectKeys(widget, event, grabP)
+    Widget widget;
+    Event *event;
+    GrabActionRec* grabP;
+{
+    Display *dpy = XtDisplay(widget);
+    KeyCode *keycodes;
+    int keycount;
+    XtKeysymToKeycodeList(
+	    dpy,
+	    (KeySym)event->eventCode,
+	    &keycodes,
+	    &keycount
+			 );
+    if (keycount == 0) return;
+    while (keycount--) {
+	if (event->standard) {
+	    /* find standard modifiers that produce this keysym */
+	    KeySym keysym;
+	    int std_mods;
+	    Modifiers modifiers_return;
+	    XtTranslateKeycode( dpy, *keycodes, (Modifiers)0,
+			        &modifiers_return, &keysym );
+	    if (keysym != event->eventCode) {
+		int least_mod = 1;
+		while ((least_mod & modifiers_return)==0) least_mod <<= 1;
+	        for (std_mods = modifiers_return;
+		     std_mods >= least_mod; std_mods--) {
+		    /* check all useful combinations of 8 modifier bits */
+		    if (modifiers_return & std_mods != 0) {
+			XtTranslateKeycode( dpy, *keycodes,
+					    (Modifiers)std_mods,
+					    &modifiers_return, &keysym );
+			if (keysym == event->eventCode) {
+			    XGrabKey( dpy, *keycodes,
+				      (unsigned)event->modifiers | std_mods,
+				      XtWindow(widget),
+				      grabP->owner_events,
+				      grabP->pointer_mode,
+				      grabP->keyboard_mode
+				    );
+			    break;
+			}
+		    }
+		}
+	    }
+	} else /* !event->standard */ {
+	    XGrabKey( dpy, *keycodes,
+		      (unsigned)event->modifiers,
+		      XtWindow(widget),
+		      grabP->owner_events,
+		      grabP->pointer_mode,
+		      grabP->keyboard_mode
+		    );
+	}
+	keycodes++;
+    }
+}
 
 void _XtRegisterGrabs(widget,tm)
     Widget widget;
@@ -1908,8 +1976,9 @@ void _XtRegisterGrabs(widget,tm)
 
     if (stateTable == NULL) return;
     for (count=0; count < stateTable->numQuarks; count++) {
-       if (tm->proc_table[count] ==
-            (XtActionProc)(_XtMenuPopupAction)) {
+      GrabActionRec* grabP;
+      for (grabP = grabActionList; grabP != NULL; grabP = grabP->next) {
+        if (grabP->action_proc == tm->proc_table[count]) {
 	    register StatePtr state;
 	    /* we've found a "grabber" in the action table. Find the */
 	    /* states that call this action. */
@@ -1933,10 +2002,10 @@ void _XtRegisterGrabs(widget,tm)
 				    (unsigned) event->eventCode,
 				    (unsigned) event->modifiers,
 				    XtWindow(widget),
-				    TRUE,
-				    ButtonPressMask|ButtonReleaseMask,
-				    GrabModeAsync,
-				    GrabModeAsync,
+				    grabP->owner_events,
+				    grabP->event_mask,
+				    grabP->pointer_mode,
+				    grabP->keyboard_mode,
 				    None,
 				    None
 				);
@@ -1944,21 +2013,16 @@ void _XtRegisterGrabs(widget,tm)
 	    
 			    case KeyPress:
 			    case KeyRelease:
-				XGrabKey(
-				    XtDisplay(widget),
-				    (int) event->eventCode,
-				    (unsigned) event->modifiers,
-				    XtWindow(widget),
-				    TRUE,
-				    GrabModeAsync,
-				    GrabModeAsync
-				);
+				GrabAllCorrectKeys(widget, event, grabP);
 				break;
 	    
+			    case EnterNotify:
+				break;
+
 			    default:
               XtAppWarningMsg(XtWidgetToApplicationContext(widget),
 		    "invalidPopup","unsupportedOperation","XtToolkitError",
-"Pop-up menu creation is only supported on ButtonPress or EnterNotify events.",
+"Pop-up menu creation is only supported on Button, Key or EnterNotify events.",
                   (String *)NULL, (Cardinal *)NULL);
 			    break;
 			}
@@ -1966,16 +2030,29 @@ void _XtRegisterGrabs(widget,tm)
 		}
 	    }
 	}
+      }
     }
 }
 
 static XtActionsRec tmActions[] = {
-    {"MenuPopup", _XtMenuPopupAction},
-    {"MenuPopdown", _XtMenuPopdownAction},
+    {"XtMenuPopup", _XtMenuPopupAction},
+    {"XtMenuPopdown", _XtMenuPopdownAction},
+    {"MenuPopup", _XtMenuPopupAction}, /* old & obsolete */
+    {"MenuPopdown", _XtMenuPopdownAction}, /* ditto */
 };
 
 
-void _XtPopupInitialize() { XtAddActions(tmActions, XtNumber(tmActions)); }
+void _XtPopupInitialize(app)
+    XtAppContext app;
+{
+    XtAppAddActions(app, tmActions, XtNumber(tmActions));
+    if (grabActionList == NULL)
+	XtRegisterGrabAction( _XtMenuPopupAction, True,
+			      ButtonPressMask | ButtonReleaseMask,
+			      GrabModeAsync,
+			      GrabModeAsync
+			    );
+}
 
 ModToKeysymTable *_XtBuildModsToKeysymTable(dpy,pd)
     Display *dpy;
@@ -2083,9 +2160,7 @@ KeySym _XtKeyCodeToKeySym(dpy,pd,keycode,col)
 {
 /* copied from Xlib */
     int ind;
-     if (pd->keysyms == NULL) {
-	 _XtBuildKeysymTable(dpy,pd); /* pd->keysyms*/
-     }
+     _InitializeKeysymTables(dpy, pd);
      if (col < 0 || col >= pd->keysyms_per_keycode) return (NoSymbol);
      if (keycode < dpy->min_keycode || keycode > dpy->max_keycode)
        return(NoSymbol);
@@ -2093,12 +2168,6 @@ KeySym _XtKeyCodeToKeySym(dpy,pd,keycode,col)
      ind = (keycode - dpy->min_keycode) * pd->keysyms_per_keycode + col;
      return (pd->keysyms[ind]);
 }
-
-
-
-
-
-
 
 void XtTranslateKey(dpy, keycode, modifiers,
                             modifiers_return, keysym_return)
@@ -2172,4 +2241,100 @@ void _XtConvertCase(dpy, keysym, lower_return, upper_return)
     *lower_return = keysym;
     *upper_return = keysym;
 
+}
+
+
+void XtRegisterGrabAction(action_proc, owner_events, event_mask,
+			  pointer_mode, keyboard_mode)
+    XtActionProc action_proc;
+    Boolean owner_events;
+    unsigned int event_mask;
+    int pointer_mode, keyboard_mode;
+{
+    GrabActionRec* actionP;
+
+    for (actionP = grabActionList; actionP != NULL; actionP = actionP->next) {
+	if (actionP->action_proc == action_proc) break;
+    }
+    if (actionP == NULL) {
+	actionP = XtNew(GrabActionRec);
+	actionP->action_proc = action_proc;
+	actionP->next = grabActionList;
+	grabActionList = actionP;
+    }
+#ifdef DEBUG
+    else
+	if (   actionP->owner_events != owner_events
+	    || actionP->event_mask != event_mask
+	    || actionP->pointer_mode != pointer_mode
+	    || actionP->keyboard_mode != keyboard_mode) {
+	    XtWarningMsg(
+		"argsReplaced", "xtRegisterGrabAction", "XtToolkitError",
+		"XtRegisterGrabAction called on same proc with different args"
+			);
+	}
+#endif /*DEBUG*/
+
+    actionP->owner_events = owner_events;
+    actionP->event_mask = event_mask;
+    actionP->pointer_mode = pointer_mode;
+    actionP->keyboard_mode = keyboard_mode;
+}
+
+KeySym *XtGetKeysymTable(dpy, min_keycode_return, keysyms_per_keycode_return)
+    Display *dpy;
+    KeyCode *min_keycode_return;
+    int *keysyms_per_keycode_return;
+{
+    XtPerDisplay pd = _XtGetPerDisplay(dpy);
+    _InitializeKeysymTables(dpy, pd);
+    *min_keycode_return = dpy->min_keycode; /* %%% */
+    *keysyms_per_keycode_return = pd->keysyms_per_keycode;
+    return pd->keysyms;
+}
+
+void XtKeysymToKeycodeList(dpy, keysym, keycodes_return, keycount_return)
+    Display *dpy;
+    KeySym keysym;
+    KeyCode **keycodes_return;
+    Cardinal *keycount_return;
+{
+    XtPerDisplay pd = _XtGetPerDisplay(dpy);
+    int ncols, nrows, row;
+    KeySym *symP;
+    int maxcodes = KEYCODE_ARRAY_SIZE;
+    int ncodes = 0;
+    KeyCode *keycodes, *codeP;
+
+    _InitializeKeysymTables(dpy, pd);
+    if ((keycodes = (KeyCode*)
+	 ALLOCATE_LOCAL(KEYCODE_ARRAY_SIZE*sizeof(KeyCode))) == NULL)
+	_XtAllocError("alloca");
+    codeP = keycodes;
+    ncols = pd->keysyms_per_keycode;
+    nrows = dpy->max_keycode - dpy->min_keycode + 1;
+    for (symP = pd->keysyms, row = 0; row < nrows; row++) {
+	int col;
+	for (col = ncols; col; col--) {
+	    if (keysym == *symP++) {
+		if (ncodes == maxcodes) {
+		    KeyCode* old = keycodes;
+		    keycodes = (KeyCode*)
+			ALLOCATE_LOCAL((maxcodes*=2)*sizeof(KeyCode));
+		    if (keycodes == NULL) _XtAllocError("alloca");
+		    bcopy( old, keycodes, ncodes*sizeof(KeyCode) );
+		    codeP = &keycodes[ncodes];
+		}
+		*codeP++ = dpy->min_keycode + row;
+		ncodes++;
+		while (--col) symP++;
+		break;		/* this row (keycode) */
+	    }
+	} /* end-for col */
+    } /* end-for row */
+
+    *keycodes_return = (KeyCode*)XtMalloc( (unsigned)ncodes*sizeof(KeyCode) );
+    bcopy( keycodes, *keycodes_return, ncodes*sizeof(KeyCode) );
+    DEALLOCATE_LOCAL(keycodes);
+    *keycount_return = ncodes;
 }
