@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 1.3 88/08/30 17:11:12 keith Exp $ */
+/* $XConsortium: scrnintstr.h,v 1.4 88/09/06 15:49:03 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -132,7 +132,7 @@ typedef struct _Screen {
 
     /* Colormap procedures */
 
-    void (* CreateColormap)();		/* pcmap */
+    Bool (* CreateColormap)();		/* pcmap */
     void (* DestroyColormap)();		/* pcmap */
     void (* InstallColormap)();		/* pcmap */
     void (* UninstallColormap)();	/* pcmap */
@@ -175,7 +175,7 @@ typedef struct _ScreenInfo {
 		formats[MAXFORMATS];
     int		arraySize;
     int		numScreens;
-    ScreenPtr	screen;
+    ScreenPtr	screens[MAXSCREENS];
 } ScreenInfo;
 
 extern ScreenInfo screenInfo;
