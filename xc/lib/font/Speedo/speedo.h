@@ -1,4 +1,4 @@
-/* $XConsortium: speedo.h,v 1.3 91/05/11 14:16:13 rws Exp $ */
+/* $XConsortium: speedo.h,v 1.4 91/05/11 14:18:41 rws Exp $ */
 
 /*
 
@@ -25,6 +25,7 @@ WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 #ifndef _SPEEDO_H_
 #define _SPEEDO_H_
 
+#include <X11/Xmd.h>
 
 /***************************** S P E E D O . H *******************************
  ****************************************************************************/
@@ -143,33 +144,23 @@ WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 #ifndef STDEF
 #ifndef SPD_BMAP
 
-#if __STDC__ || defined(sgi) || defined(AIXV3)
-typedef signed char fix7;
-#else
-typedef   char     fix7;
-#endif
+typedef INT8 fix7;
 
 typedef   double   real;
 
-#ifdef VFONT
-typedef   unsigned char
-                   ufix8;
-#else 
-typedef   unsigned char
-                   ufix8,
-                   boolean;
+typedef   CARD8    ufix8;
+#ifndef VFONT
+typedef   CARD8    boolean;
 #endif
 #endif
 
-typedef   short    fix15;
+typedef   INT16    fix15;
 
-typedef   unsigned short
-                   ufix16;
+typedef   CARD16   ufix16;
 
-typedef   long     fix31;
+typedef   INT32    fix31;
 
-typedef   unsigned long
-                   ufix32;
+typedef   CARD32   ufix32;
 #endif
 
 /***** GENERAL CONSTANTS *****/
