@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cpm_tlkt.c,v 5.1 91/02/16 09:48:40 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -61,6 +61,7 @@ String fallbacks[] = {
 	  ",
     "*valuator2*scrollbar.skipAdjust:  FALSE",
     "*valuator2*skipAdjust:  TRUE",
+    "*valuator2*showGrip:  FALSE",
 
     "*valuator3.pane.orientation:  horizontal",
     "*valuator3*scrollbar.orientation:  horizontal",
@@ -74,8 +75,48 @@ String fallbacks[] = {
     "*valuator3*scrollbar.skipAdjust:  FALSE",
     "*valuator3*skipAdjust:  TRUE",
     "*valuator3*showGrip:  FALSE",
-    "*valuator3*showGrip:  FALSE",
 
+    "*valuator4.pane.orientation:  horizontal",
+    "*valuator4*scrollbar.orientation:  horizontal",
+    "*valuator4*scrollbar.length:  50",
+    "*valuator4*scrollbar.translations: \
+          <Btn1Down>:	StartScroll(Continuous) MoveThumb() NotifyThumb() \\n\
+	  <Btn1Motion>:	MoveThumb() NotifyThumb() \\n\
+	  <Btn1Up>:	NotifyScroll(Proportional) RequestSatisfied() \
+			EndScroll() \
+	  ",
+    "*valuator4*scrollbar.skipAdjust:  FALSE",
+    "*valuator4*skipAdjust:  TRUE",
+    "*valuator4*showGrip:  FALSE",
+
+    "*valuator5.pane.orientation:  horizontal",
+    "*valuator5*scrollbar.orientation:  horizontal",
+    "*valuator5*scrollbar.length:  50",
+    "*valuator5*scrollbar.translations: \
+          <Btn1Down>:	StartScroll(Continuous) MoveThumb() NotifyThumb() \\n\
+	  <Btn1Motion>:	MoveThumb() NotifyThumb() \\n\
+	  <Btn1Up>:	NotifyScroll(Proportional) RequestSatisfied() \
+			EndScroll() \
+	  ",
+    "*valuator5*scrollbar.skipAdjust:  FALSE",
+    "*valuator5*skipAdjust:  TRUE",
+    "*valuator5*showGrip:  FALSE",
+
+    "*valuator6.pane.orientation:  horizontal",
+    "*valuator6*scrollbar.orientation:  horizontal",
+    "*valuator6*scrollbar.length:  50",
+    "*valuator6*scrollbar.translations: \
+          <Btn1Down>:	StartScroll(Continuous) MoveThumb() NotifyThumb() \\n\
+	  <Btn1Motion>:	MoveThumb() NotifyThumb() \\n\
+	  <Btn1Up>:	NotifyScroll(Proportional) RequestSatisfied() \
+			EndScroll() \
+	  ",
+    "*valuator6*scrollbar.skipAdjust:  FALSE",
+    "*valuator6*skipAdjust:  TRUE",
+    "*valuator6*showGrip:  FALSE",
+
+    "*choice1*allowHoriz:  TRUE",
+    "*choice1*allowHoriz:  TRUE",
     "*choice1*allowHoriz:  TRUE",
     "*choice1*allowVert:  TRUE",
     "*choice1*list.translations: \
