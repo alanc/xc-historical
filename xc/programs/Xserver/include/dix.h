@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.57 91/02/14 19:36:03 keith Exp $ */
+/* $XConsortium: dix.h,v 1.58 91/04/25 20:46:14 keith Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -74,42 +74,39 @@ SOFTWARE.
     }
 
 #define VALIDATE_DRAWABLE_AND_GC(drawID, pDraw, pGC, client)\
-    if ((client->lastDrawableID != drawID) || (client->lastGCID != stuff->gc))\
+    if ((client->lastGCID != stuff->gc) || (client->lastDrawableID != drawID))\
     {\
-        if (client->lastDrawableID != drawID)\
-    	    pDraw = (DrawablePtr)LookupIDByClass(drawID, RC_DRAWABLE);\
-        else\
+        if (client->lastDrawableID != drawID) {\
+	    pDraw = (DrawablePtr)LookupIDByClass(drawID, RC_DRAWABLE);\
+    	    if (!pDraw)\
+    	    {\
+            	client->errorValue = drawID; \
+	    	return (BadDrawable);\
+    	    }\
+        } else\
 	    pDraw = client->lastDrawable;\
-        if (client->lastGCID != stuff->gc)\
-	    pGC = (GC *)LookupIDByType(stuff->gc, RT_GC);\
-        else\
+        if (client->lastGCID != stuff->gc) {\
+    	    pGC = (GC *)LookupIDByType(stuff->gc, RT_GC);\
+    	    if (!pGC)\
+    	    {\
+            	client->errorValue = stuff->gc;\
+            	return (BadGC);\
+    	    }\
+        } else\
             pGC = client->lastGC;\
-	if (pDraw && pGC)\
-	{\
-	    if ((pDraw->type == UNDRAWABLE_WINDOW) ||\
-		(pGC->depth != pDraw->depth) ||\
-		(pGC->pScreen != pDraw->pScreen))\
-		return (BadMatch);\
-	    client->lastDrawable = pDraw;\
-	    client->lastDrawableID = drawID;\
-            client->lastGC = pGC;\
-            client->lastGCID = stuff->gc;\
-	}\
+	if ((pDraw->type == UNDRAWABLE_WINDOW) ||\
+	    (pGC->depth != pDraw->depth) ||\
+	    (pGC->pScreen != pDraw->pScreen))\
+	    return (BadMatch);\
+	client->lastDrawable = pDraw;\
+	client->lastDrawableID = drawID;\
+	client->lastGC = pGC;\
+	client->lastGCID = stuff->gc;\
     }\
     else\
     {\
         pGC = client->lastGC;\
         pDraw = client->lastDrawable;\
-    }\
-    if (!pDraw)\
-    {\
-        client->errorValue = drawID; \
-	return (BadDrawable);\
-    }\
-    if (!pGC)\
-    {\
-        client->errorValue = stuff->gc;\
-        return (BadGC);\
     }\
     if (pGC->serialNumber != pDraw->serialNumber)\
 	ValidateGC(pDraw, pGC);
