@@ -142,6 +142,7 @@ xwininfo: Window id: 0x60000f "xterm"
   Width: 579
   Height: 316
   Depth: 8
+  Visual Class: PseudoColor
   Border width: 0
   Class: InputOutput
   Colormap: 0x27 (installed)
